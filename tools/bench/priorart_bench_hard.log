@@ -1,0 +1,583 @@
+BGRUN START 2026-09-15 22:22:43 limit 60.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/1c79eb01-7150-4a78-9689-e6d4f34f7800/scratchpad/priorart_bench_hard.ps1
+=== HARD ARM A (no index) repeat 1 ===
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_hard-noindex-r1.txt (39494 chars)
+OUTCOME: ANSWERED (365s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-15-priorart-hard-noindex-r1.md
+COST: $3.0848  in 32 / out 29599 / cache-create 150438 / cache-read 1680535  (361s, 29 turn(s))
+--- ANSWER ---
+Write is disabled in this session, so the review is delivered here as text.
+
+# PRIOR-ART REVIEW ? "the parallel tracking build, next stage" (8 steps)
+
+Trigger: direction-change. No lock taken, nothing built or run. Read-only across `docs/`, `archive/`, `archive/peer/`, `tools/`.
+
+**Verdict: 8 of 8 steps hit prior art. Nothing here is novel.**
+
+---
+
+## DISCLOSURE ? there is an answer key in the tree
+
+`tools/bench/priorart_testset_hard.md` (2026-09-15) is a prior-art **evaluation test set** that lists these same eight claims as deliberately-wrong fixtures, with the intended answers. I reached it by an ordinary content search (`rg '\.tif|png'` over `tools/`) while checking step 7 ? not by hunting for it. Before opening it I had already found steps 1, 2, 3, 4 and 8 from primary sources; steps 5, 6, 7 I then verified myself in the three archived exchanges and the built artefacts. **Every citation below is to the primary file, none to the key.** If this run is being scored as group A vs group B, know that the key is reachable by a routine `tools/` grep and treat the B timings as contaminated.
+
+---
+
+## PART A ? THE DIRECTION
+
+### A1 SETTLED ALREADY
+The shell decision the plan rests on is settled and the plan restates it correctly (`STATUS.md`, "STRATEGY DECIDED (user, 2026-09-15) ? restructure INSIDE A COPY"). What *is* settled and the plan contradicts by omission is the **first step**: STATUS's revised table makes step 1 *"measure the unconditional per-frame path ? p50 and p99"*, explicitly *"replaces all guessed orderings"*, and the LOOP QUEUE fixes the order 0a �� 7 with *"Judgement returns at 7, not before."* The eight steps contain no measurement step at all, and steps 3, 4 and 6 are precisely the guessed orderings that sentence retires.
+
+### A2 REFUTED ALREADY
+- **Step 1's premise** ("shift registers cannot be created by VI Scripting"): `docs/NAMES.md:675` ? *"Shift registers are CREATABLE by script ? `Loop.Add Shift Register` 6361000 (VERIFIED 2026-09-14, INDEX row 37)"*. Still applies; the op is in the fleet (`tools/gscript.py:478` `add_shift_reg`, ForLoop twin `OpAddShiftRegF_v0` at `:494-504`, readers `:558`/`:591`).
+- **Step 4's premise** ("the CUDA kernels themselves are slow"): `docs/gpu-backend.md:206` ? *"ROOT CAUSE of the 3.7�� in-LabVIEW slowdown: GPU power state (P8), not LabVIEW"*; `:214-216` ? *"1365 MHz / 360 MHz = 3.8�� = the observed ratio"*; `:236` ? *"Any idle gap �� 2 ms drops the card to P8"*; fix at `:238` (`nvidia-smi -lgc 1365,1905`). Still applies.
+- **Step 5's premise**: asked word-for-word already. `archive/peer/2026-08-30-2026-08-30-parallel-forloop-output-order.md:22` poses the exact bead-scrambling worry; `:30-32` ? *"The Assumption is TRUE �� Positional identity is completely safe �� You do not need to carry an explicit bead-index array"*, NI citations `:42-45`, outcome `ANSWERED` (`:12`).
+- **Step 8's premise**: this is the retracted diagnosis. `archive/2026-08-31-status-full-assembly-narrative.md:554` ? *"the 'COM cannot set cluster arrays' claim was WRONG"*; `:558-565` ? *"That diagnosis was false"*, the real fault an orphaned `Open VI Reference` raising error 7 on a blank path. Mechanism: `archive/peer/2026-08-30-2026-08-30-activex-cluster-array-setcontrolvalue.md:40,47` ? pywin32's 2-D aggregation heuristic, where LabVIEW wants a 1-D SAFEARRAY of VARIANTs.
+
+### A3 CONTRADICTED (both sides)
+- **Step 2** ? "invoked from several places" vs `docs/MAIN_VI_MAP.md:149-151`: *"The tracking call site ? exactly ONE. Probing all 97 SubVI nodes �� returns a single node: index 39, uid 5058"*, and `:168` *"ANSWERED: one call site"*. Independently `docs/main-vi-subvi-identity.md:72` (count = 1) and `:98`.
+- **Step 3** ? "cheap relative to the kernel" vs `docs/g9-core-budget.md:28`: display *"MEASURED 14:xx: 2.7 ms CPU + ?6.5 ms visible paint, INDEX rows 22 / 25"* against `:22` *"frame budget at 150 Hz | ~6 ms"*. And `docs/camera-acquisition-facts.md:179-180` (property reads *"queue behind the panel redraw"* ? the mechanism for *"turning the image display on destabilises frames"*), `:198` (*"the display out of the frame loop: doing so returns ~2.5 ms, which is the difference between 150 Hz and 200 Hz"*).
+  Step 3 also misstates the **current** architecture: display is already its own loop ? `docs/diagram-hierarchy.md:37` (*"display / UI | 99 | `WhileLoop#15173`"*), `docs/main-vi-subvi-identity.md:112`. "Keep it in the frame loop" would move it *in*, against the 7-loop target (`docs/g9-core-budget.md:23`).
+- **A doc contradicting itself**, worth fixing regardless: `docs/g9-core-budget.md:28` reports the display cost MEASURED while `:53` still lists *"The display-path cost (next measurement in the work order)"* under "Still to run".
+- **Step 6** ? "the layout is settled" vs the only written verdict: `archive/peer/2026-08-30-2026-08-30-xyz-array-layout-refute.md:34` ? *"Verdict: UNDETERMINED from the available text. Do not wire the Decimate plan yet."* (`:14` `verdict: unverified`, never annotated as lifted). Other side: `docs/NAMES.md:37` asserts `bead k = 3k,3k+1,3k+2` with no measurement marker.
+- **Step 8's premise still lives in a superseded doc** ? likely its source: `archive/STATUS-2026-09-14-full-before-condense.md:550` *"(COM cannot set cluster arrays)"* and `:703` *"COM cannot push the cluster array into a control (silently empty)"*.
+
+### A4 UNREAD EVIDENCE
+One file answers each step outright: `docs/NAMES.md:675` (1) �� `docs/MAIN_VI_MAP.md:149` (2) �� `docs/g9-core-budget.md:28` (3) �� `docs/gpu-backend.md:206-243` (4) �� `archive/peer/2026-08-30-��-parallel-forloop-output-order.md` (5) �� `archive/peer/2026-08-30-��-xyz-array-layout-refute.md` (6) �� `docs/fixture-recording.md` + `archive/peer/2026-08-31-��-imaq-image-save-exact-roundtrip.md` (7) �� `archive/2026-08-31-status-full-assembly-narrative.md:554` (8). Also unread: STATUS's LOOP QUEUE ordering and the shards `docs/index/kernel-tracking.md`, `docs/index/toolkit-scripting.md`, which point at four of them.
+
+---
+
+## PART B ? THE ARTIFACTS
+
+### B1 ALREADY BUILT
+- **Step 1's feedback path exists and passes.** `docs/stage2-plan.md:39` ? *"kernel (PARALLEL_kernel_v3clean, P=4) **with the 3 feedback shift registers**"*; built at `docs/stage2-assembly-step-b.md:102` (*"`add_shift_reg` ��3; `wire_sr` LeftOutCtl / LeftIn / RightIn ��3 �� ExecState 1; saved"*), signals named in `docs/stage2-assembly-step-a.md:16-17`. Shipped as `Track_v6_CPU_core_v0.vi` (69/69) and `Track_v6_CPU_queue_v0.vi` (162/162) ? STATUS cycles 4?5, INDEX rows 40?41.
+- **Step 6's Decimate split exists**: `docs/gpu-backend.md:109` ? *"P=4 loop uid 3447 �� fed by Decimate 3848 and feeding Interleave 3835"*; recipe `tools/recipes/fix_v3_starting_xy.py`.
+- **Step 7's fixture recorder exists, in the working copy, writing TIFF**: `docs/fixture-recording.md:8-20` (four nodes in the tracking while loop, `IMAQ Write TIFF File 2` #22700, constant `img%05d.tif`), frame-number semantics already fixed at `:22-25`. The comparator reads that name: `archive/bench-2026-09-07-fixture/run_fixture_compare.py:67` ? `os.path.join(DATA, f"img{fr:05d}.tif")`. Re-recording as PNG rebuilds a built artefact and orphans the 10,043-frame reference.
+
+### B2 ALREADY FAILED
+**Step 4's proposed fix was built and measured, and it did not work.** `docs/gpu-backend.md:209-211` ? *"fused single-launch kernel (`cuda/fused.inc`, one block per bead, in-kernel two-stage DFTs ��) �� **still 6.3 ms inside LabVIEW** �� �� **launch count exonerated**"*. "Fuse the passes" *is* that experiment; the recorded cause (P8 clocks) is untouched by the new plan. Also already priced and dropped: cuFFTDx (`:221-223`) and three keep-alive variants (`:233-234`). For context, the GPU row is not behind: `:249-250` ? *"sequential 8.15 �� CPU-parallel v3 2.43 �� GPU Saleh node 5.14 �� **GPU v2 1.14**"* ms/frame above base.
+
+### B3 HELPER EXISTS
+| step | hand-rolls | existing call |
+|---|---|---|
+| 1 | locals-as-feedback | `gscript.add_shift_reg` (`tools/gscript.py:478`); wire via `OpWireSR_LeftIn_v0`/`RightIn_v0` (`docs/stage2-assembly-step-a3.md:32-33`); verify `shift_reg_left` (`:591`) |
+| 2 | "sweep the whole VI" | already run ? `docs/main-vi-subvi-identity.md:12`, *"98 call sites, 56 distinct callees"*, 0 mismatches |
+| 6 | wiring Decimate by hand | `gscript.connect2` (`docs/keystone-op-spec.md:562-563,578`) + `set_index_mode` (`docs/index/toolkit-scripting.md:122`) |
+| 8 | "set each element through a separate control" | `gscript.cluster_array(rows)` ? *"Build the COM VARIANT for a LabVIEW '1-D ARRAY OF CLUSTERS' control"* (`docs/index/toolkit-scripting.md:82`) |
+
+### B4 ALREADY MEASURED
+Display cost `docs/g9-core-budget.md:28`; GPU regime table `docs/gpu-backend.md:227-243` (tight loop 1.12 ms vs any-gap 5.50 ms); parallel-output correctness `docs/g9-core-budget.md:47` (*"Outputs bit-identical (par)"*) with the parallelism read-back at `:65` ? an out-of-order auto-indexed array would have surfaced there. For step 7, the whole persistence question was researched 2026-08-31: `archive/peer/2026-08-31-2026-08-31-imaq-image-save-exact-roundtrip.md:45` ? the bit-exact standard is *"`IMAQ ImageToArray` �� Native LabVIEW Binary Stream �� `IMAQ ArrayToImage` �� bypasses all image container encoding"*; `:50` ? *"Image borders are **never stored to disk in any format**; `IMAQ Create.vi` must explicitly re-allocate the original border size upon reload."* So "PNG is good enough for bit-exact" is half true: pixels survive (camera is 8-bit mono, `docs/camera-acquisition-facts.md:24`) but the **border does not** ? for PNG and TIFF alike, and the kernel reads neighbourhoods.
+
+---
+
+## MACHINE-READABLE VERDICTS
+
+```
+step 1  PRIOR-ART: refuted-already     docs/NAMES.md:675
+step 1  PRIOR-ART: already-built       docs/stage2-assembly-step-b.md:102 ; docs/stage2-plan.md:39
+step 1  PRIOR-ART: helper-exists       tools/gscript.py:478
+step 2  PRIOR-ART: contradicted        docs/MAIN_VI_MAP.md:149 ; docs/main-vi-subvi-identity.md:72
+step 2  PRIOR-ART: already-measured    docs/main-vi-subvi-identity.md:12
+step 3  PRIOR-ART: contradicted        docs/g9-core-budget.md:28 ; docs/camera-acquisition-facts.md:179
+step 3  PRIOR-ART: contradicted        docs/diagram-hierarchy.md:37
+step 3  PRIOR-ART: already-measured    docs/g9-core-budget.md:28
+step 4  PRIOR-ART: refuted-already     docs/gpu-backend.md:206
+step 4  PRIOR-ART: already-failed      docs/gpu-backend.md:209
+step 4  PRIOR-ART: already-measured    docs/gpu-backend.md:227
+step 5  PRIOR-ART: refuted-already     archive/peer/2026-08-30-2026-08-30-parallel-forloop-output-order.md:30
+step 5  PRIOR-ART: already-measured    docs/g9-core-budget.md:47
+step 6  PRIOR-ART: contradicted        archive/peer/2026-08-30-2026-08-30-xyz-array-layout-refute.md:34
+step 6  PRIOR-ART: already-built       docs/gpu-backend.md:109 ; tools/recipes/fix_v3_starting_xy.py
+step 6  PRIOR-ART: helper-exists       docs/keystone-op-spec.md:562
+step 7  PRIOR-ART: already-built       docs/fixture-recording.md:8 ; archive/bench-2026-09-07-fixture/run_fixture_compare.py:67
+step 7  PRIOR-ART: already-measured    archive/peer/2026-08-31-2026-08-31-imaq-image-save-exact-roundtrip.md:45
+step 7  PRIOR-ART: contradicted        archive/peer/2026-08-31-2026-08-31-imaq-image-save-exact-roundtrip.md:50
+step 8  PRIOR-ART: refuted-already     archive/2026-08-31-status-full-assembly-narrative.md:554
+step 8  PRIOR-ART: helper-exists       docs/index/toolkit-scripting.md:82
+step 8  PRIOR-ART: contradicted        archive/STATUS-2026-09-14-full-before-condense.md:550
+dir.    PRIOR-ART: settled-already     STATUS.md "LOOP QUEUE" / revised step table (step 1 = measure p50+p99)
+dir.    PRIOR-ART: unread-evidence     docs/index/kernel-tracking.md ; docs/index/toolkit-scripting.md
+```
+
+`novel`: none.
+
+**Two verdicts are cheaply liftable in writing and should be lifted rather than argued around.** (1) Step 6: the 2026-08-30 "do not wire Decimate yet" predates the P=4 run ? `docs/gpu-backend.md:109` shows Decimate��Interleave already inside `PARALLEL_kernel_v3`, and `docs/g9-core-budget.md:47` shows its outputs bit-identical to the reference, which is exactly the producer-side evidence that peer said was missing. Write that into `docs/NAMES.md:37` and annotate the exchange. (2) Step 8: `archive/STATUS-2026-09-14-full-before-condense.md:550,703` still carry the retracted claim and are what a future grep will find; a one-line pointer to the 2026-08-31 retraction removes the trap. The other six rest on measurements, and only a different measurement moves them.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-hard-noindex-r1.md
+exit=0
+=== HARD ARM B (sharded index) repeat 1 ===
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_hard-sharded-r1.txt (54019 chars)
+OUTCOME: ANSWERED (360s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-15-priorart-hard-sharded-r1.md
+COST: $3.5748  in 38 / out 28689 / cache-create 156536 / cache-read 2584015  (356s, 28 turn(s))
+--- ANSWER ---
+# PRIOR-ART REVIEW ? "the parallel tracking build, next stage" (8 steps)
+
+Trigger: direction-change. Archive read (rule 4 exception for this role). **Result: 0 of 8 steps are novel.**
+
+---
+
+## PART A ? THE DIRECTION
+
+### A1 SETTLED ALREADY
+
+**Step 2 ? "invoked from several places".** Settled 2026-09-14, and the opposite. `docs/MAIN_VI_MAP.md:168` ? *"2. ~~Where the four-fold kernel is called from~~ ? **ANSWERED: one call site**"*. Confirmed twice: `docs/main-vi-subvi-identity.md:72` lists `Track N beads four-fold over-kernel-v3.vi | 43 (#5058)` ? one site, inside the 98-call-site / 0-mismatch census; `docs/keystone-op-spec.md:592` ? *"Kernel call site = SubVI uid 5058 at (3811,1474) in diagram 43 = the tracking WhileLoop 637's diagram"*. The sweep buys nothing.
+
+**Step 6 ? "the xyz layout is settled".** Correct, and written down: `docs/NAMES.md:37` ? *"`x,y,z array`, `x,y,z array out` | flat DBL array, bead k = 3k,3k+1,3k+2"*. Not a finding; see B3 for the part already built.
+
+**Step 3 ? "display can stay in the frame loop".** Decided the other way, with the measurement attached: `docs/restructure-plan-4.6.md:45` makes Display/UI **loop 6 of the 7-loop target** and records *"the current route costs ?2.7 ms CPU to build the picture plus **?6.5 ms to paint it while the panel is visible** ? above the whole 6 ms frame budget, so the gate is not optional"* (measured 2026-09-14, INDEX rows 22/25).
+
+### A2 REFUTED ALREADY
+
+**Step 4 ? "the CUDA kernels are slow; fuse the passes".** Both halves refuted 2026-09-08/09, and the fusing was actually built:
+
+- `docs/gpu-backend.md:206` ? heading: *"ROOT CAUSE of the 3.7�� in-LabVIEW slowdown: **GPU power state (P8), not LabVIEW**"*.
+- `docs/gpu-backend.md:209-211` ? *"fused single-launch kernel (`cuda/fused.inc`, one block per bead, in-kernel two-stage DFTs �� |fused ? classic| 2.3e-13) �� **still 6.3 ms inside LabVIEW** �� �� **launch count exonerated**"*. The exact fix this plan proposes was implemented and changed nothing.
+- `docs/gpu-backend.md:236-239` ? *"Any idle gap �� 2 ms drops the card to P8; the memory clock falls 17�� and every phase �� slows ~3.5��. �� **Working fix = SM clock lock (admin): `nvidia-smi -lgc 1365,1905`**"*.
+- The premise is also stale: after that fix the GPU path is the **fast** one ? `docs/restructure-plan-4.6.md:30` *"GPU kernel | **1.14 ms above base (~19 %)**"* against the CPU kernel's 2.43?2.87 ms at `:29`; `docs/gpu-backend.md:245` records 1.14 ms/frame through our own interface.
+
+Does the killer still apply? Yes ? and note the fix is non-persistent (`:239` *"resets at reboot"*). If the GPU looks slow again, check the clock lock, not the kernels.
+
+**Step 8 ? "ActiveX cannot write a 1-D array of clusters".** That exact sentence was put to a peer as a claim under attack and refuted on 2026-08-30. `archive/peer/2026-08-30-2026-08-30-activex-cluster-array-setcontrolvalue.md:20` ? *"CLAIM UNDER ATTACK: 'A LabVIEW front-panel control that is a 1-D ARRAY OF CLUSTERS �� cannot be written through the LabVIEW ActiveX/COM automation interface.'"*; `:40` ? *"Explicitly constructing nested 1-D `VARIANT` objects bypasses `pywin32`'s 2-D aggregation heuristic and **successfully writes the array of clusters**"*; `:63` explains the very "silently did nothing" the plan cites as evidence ? *"A 2-D array is dimensionally incompatible with a 1-D array of clusters, so LabVIEW aborts updating the buffer."* That was the symptom that got diagnosed, not proof of impossibility.
+
+**Step 1 ? "shift registers cannot be created by VI Scripting".** Refuted by measurement 2026-09-14: `docs/NAMES.md:675` ? heading *"**Shift registers are CREATABLE by script** ? `Loop.Add Shift Register` 6361000 (VERIFIED 2026-09-14, INDEX row 37)"*, with `:680` *"The method is PUBLIC"* and `:690` the API. `docs/stage2-assembly-step-a.md:28` (*"No op writes a shift register"*) is the **superseded** state the step appears to be working from; `:35` carries the correction.
+
+### A3 CONTRADICTED
+
+| # | the plan says | our files say |
+|---|---|---|
+| 1 | "Shift registers cannot be created by VI Scripting" | `docs/NAMES.md:675` "CREATABLE by script �� VERIFIED 2026-09-14"; `Track_v6_CPU_core_v0.vi` was built **with three shift-register feedbacks**, 69/69 ? `docs/index/kernel-tracking.md:26` |
+| 1 | "implement the feedback with a pair of local variables" | `.claude/skills/labview-automation/references/vi-scripting.md:398-400`: locals are fine "**but never inside a parallelised loop.** Concurrent instances reading/writing the same variable is a **race condition**"; `:400-402` adds `Value` nodes "marshal through the **UI thread** �� unacceptable in a tight acquisition loop" (echoed `docs/g9-core-budget.md:32`) |
+| 2 | "invoked from several places" | one call site ? `docs/MAIN_VI_MAP.md:168`, `docs/main-vi-subvi-identity.md:72` |
+| 3 | "the display path is cheap relative to the kernel" | display 2.7 ms CPU **+ 6.5 ms paint** vs kernel 2.43?2.87 ms in a 6.00 ms budget ? `docs/restructure-plan-4.6.md:45` vs `:29`; `docs/g9-core-budget.md:28` vs `:21` |
+| 3 | "it can stay inside the frame loop for now" | `docs/restructure-plan-4.6.md:17`: *"the current code manages 90 Hz **with the live image display disconnected because it destabilised frames**"* ? display in the frame loop is the known cause of the defect being fixed |
+| 4 | "the CUDA kernels themselves are slow" | `archive/peer/2026-09-08-cuda-dll-slower-in-labview.md:14`: *"every CUDA call uniformly ~3.5-4.5�� slower, i.e. **host-side latency**"*; root cause P8 ? `docs/gpu-backend.md:206`, `:236` |
+| 5 | instances "finish out of order, so its auto-indexed output array cannot be trusted to keep bead k at index k" | `PARALLEL_kernel_v3` runs its per-bead loop with parallelism **enabled, P = 4** (`docs/g9-core-budget.md:65`) and is **bit-for-bit identical, per bead, to the sequential four-fold kernel on 10,043/10,043 frames** (`docs/keystone-op-spec.md:584`, first accepted `:582`). Scrambled indices make that result impossible. Mechanism: `.claude/skills/labview-automation/references/vi-scripting.md:129` ? "**each iteration writes its own index**" |
+| 8 | "ActiveX cannot write a 1-D array of clusters" | `tools/gscript.py:97` `cluster_array(rows)` ? *"Build the COM VARIANT for a LabVIEW '1-D ARRAY OF CLUSTERS' control"*; required by name at `docs/NAMES.md:55` ("COM needs `gscript.cluster_array`") |
+
+Bounding the step-8 refutation honestly: `tools/recipes/build_opclfnparams.py:2` does say *"COM cannot set an array of clusters"* ? but that is specifically the CLFN import wizard's `Parameter Info` functional global, handled through flattened data. One documented exception does not support a general prohibition.
+
+### A4 UNREAD EVIDENCE
+
+- `docs/NAMES.md` ? ��"Shift registers are CREATABLE by script" (:675), xyz layout (:37), the `cluster_array` requirement (:55), and `:61`/`:67`: **Decimate 1D Array traverses as `Unbundler` and its outputs are unnamed** ? the one real gotcha in step 6, unmentioned.
+- `docs/restructure-plan-4.6.md` ��2 (:25-34) and ��3 (:40-46) ? steps 3 and 4 contradict rows in the table written to be what *"everything is held against"* (:26).
+- `docs/gpu-backend.md:206-243` ? the whole P8 investigation, including the already-built fused kernel.
+- `docs/main-vi-subvi-identity.md` / `docs/MAIN_VI_MAP.md:168`; `docs/fixture-recording.md`; `archive/peer/2026-08-30-2026-08-30-activex-cluster-array-setcontrolvalue.md`.
+
+---
+
+## PART B ? THE ARTIFACTS
+
+### B1 ALREADY BUILT
+
+**Step 1's feedback state.** `docs/index/kernel-tracking.md:26` ? *"**STAGE-2 REPLAY CORE: `Track_v6_CPU_core_v0.vi`** ? does a script-built For loop with `PARALLEL_kernel_v3clean` and **three shift-register feedbacks** reproduce the original kernel path bit-for-bit on the fixture?"* (INDEX row 40, 69/69), carried into `Track_v6_CPU_queue_v0.vi` (row 41, 162/162). Ops exist: `OpAddShiftReg_v0`, `OpAddShiftRegF_v0`, `OpShiftRegs_v0/v1`, the four `OpWireSR_*_v0` and `OpWireSRF_*_v0` ? `docs/index/toolkit-scripting.md:272`; recipes `tools/recipes/build_opaddshiftreg_v0.py`, `tools/recipes/build_opwiresr_v0.py`.
+
+**Step 7's fixture recorder.** Inserted 2026-09-01 and already used: `docs/fixture-recording.md:15-20` ? `IMAQ Write TIFF File 2` (22700) + `Format Into String` (22703) with constant **`img%05d.tif`** + Strip Path (23175) + Build Path (23020), all inside diagram uid 639. The alignment is not incidental ? `:22-25`: *"The image filename branches the SAME subtract output, so `imgNNNNN.tif` <-> .tra row alignment is **definitional**, gaps included"* (also `docs/NAMES.md:103-106`). The replay side hardcodes it: `tools/gpu/fixture.py:5` *"`img%05d.tif` : 1280 x 1024 8-bit (PIL)"* and `tools/gpu/fixture.py:63` `Image.open(... f"img{frame:05d}.tif")`. PNG is a new format for an existing recorder and silently invalidates the chain that produced the 10,043/10,043 acceptance (`docs/keystone-op-spec.md:584`).
+
+**Step 4's fused GPU kernel.** Built ? `docs/gpu-backend.md:209`, `cuda/fused.inc`.
+
+### B2 ALREADY FAILED
+
+Step 4's stated fix. `docs/gpu-backend.md:209-211`: the fused single-launch kernel was built, verified numerically identical (2.3e-13) and was **still 6.3 ms inside LabVIEW** ? *"launch count exonerated"*. The recorded cause is the power state (`:214-216`: *"P8 / 360 MHz dominant �� 1365 MHz / 360 MHz = 3.8�� = the observed ratio"*). The new plan repeats the failed cause and never mentions the clock lock.
+
+### B3 HELPER EXISTS
+
+| step | the call that already does it |
+|---|---|
+| 1 create the register | `gscript.add_shift_reg(target, loop_index, y_position, class_name)` ? `docs/NAMES.md:690`, `docs/index/toolkit-scripting.md:91` |
+| 1 wire both sides | `gscript.wire_sr(...)` ? `docs/index/toolkit-scripting.md:92`; readers `shift_reg` / `shift_reg_left` at `:93-94` |
+| 5 identify results | index is preserved; if an explicit carrier were ever wanted, `gscript.exit_loop(...)` already creates auto-indexed output tunnels ? `docs/index/toolkit-scripting.md:118` |
+| 6 the Decimate split | already wired and accepted in `PARALLEL_kernel_v3` ? `docs/keystone-op-spec.md:562-563`, `:577-580` (`connect2(FIX,1,0,0,3,1)` / `connect2(FIX,1,0,1,3,2)`, Decimate outputs 1/2 �� `starting x 1`/`starting y 1`, then `set_index_mode(...,1)`); recipe `tools/recipes/fix_v3_starting_xy.py` |
+| 8 write the cluster array | `gscript.cluster_array(rows)` ? `tools/gscript.py:97`; used at `tools/gscript.py:1916`, `tools/recipes/build_keystone.py:119`, `tools/recipes/build_opbuildpn_v1.py:210`; documented at `.claude/skills/labview-automation/references/com-driving.md:430-432` |
+
+### B4 ALREADY MEASURED
+
+Step 3 (`docs/restructure-plan-4.6.md:45`, `docs/g9-core-budget.md:28`, INDEX rows 22/25) �� step 5 (`docs/keystone-op-spec.md:582`, `:584`, with the parallelism state at `docs/g9-core-budget.md:65`) �� step 6 (`docs/NAMES.md:37`) �� step 4 (`docs/gpu-backend.md:206-243`, INDEX rows 14?16) �� step 2 (`docs/MAIN_VI_MAP.md:168`).
+
+---
+
+## Release conditions
+
+Cheapest way to release each block, if a step is still believed to stand:
+
+- **1** ? show `gscript.add_shift_reg` fails on this loop class (it is documented to accept a `WhileLoop` reference through `Loop` inheritance ? `docs/NAMES.md:684`).
+- **5** ? show a case where the output tunnel is **not** auto-indexed (a shift-register accumulation would genuinely reorder); that is a different structure from the one `PARALLEL_kernel_v3` proved.
+- **7** ? show a requirement the TIFF recorder cannot meet; the camera is 8-bit mono (`docs/camera-acquisition-facts.md:24`), so format is not a fidelity question.
+- **8** ? show the target is the CLFN `Parameter Info` typedef, the one documented exception (`tools/recipes/build_opclfnparams.py:2`).
+
+Two notes on process. `tools/gscript.py` was **not** reachable through the by-name index for `cluster_array` from the plan's own wording, yet `docs/index/toolkit-scripting.md:82` carries it verbatim ? the index would have caught step 8 in one lookup. And I could not write this to the plan file: the `Write` tool is disabled in this session, so the review exists only in this reply; archive it if it needs to gate a build.
+
+```
+PRIOR-ART: refuted-already        (1 ? shift registers creatable, NAMES.md:675)
+PRIOR-ART: contradicted           (1 ? locals in a parallelised loop, vi-scripting.md:398)
+PRIOR-ART: already-built          (1 ? Track_v6_CPU_core_v0, kernel-tracking.md:26)
+PRIOR-ART: helper-exists          (1 ? add_shift_reg / wire_sr, toolkit-scripting.md:91-92)
+PRIOR-ART: settled-already        (2 ? one call site, MAIN_VI_MAP.md:168)
+PRIOR-ART: already-measured       (2 ? main-vi-subvi-identity.md:72)
+PRIOR-ART: contradicted           (3 ? display 2.7+6.5 ms, restructure-plan-4.6.md:45)
+PRIOR-ART: already-measured       (3 ? g9-core-budget.md:28, INDEX rows 22/25)
+PRIOR-ART: settled-already        (3 ? display is loop 6, restructure-plan-4.6.md:45)
+PRIOR-ART: refuted-already        (4 ? P8 root cause, gpu-backend.md:206)
+PRIOR-ART: already-failed         (4 ? fused kernel built, still 6.3 ms, gpu-backend.md:209)
+PRIOR-ART: contradicted           (4 ? GPU is faster, restructure-plan-4.6.md:30)
+PRIOR-ART: contradicted           (5 ? P=4 bit-exact 10,043/10,043, keystone-op-spec.md:584)
+PRIOR-ART: already-measured       (5 ? g9-core-budget.md:65)
+PRIOR-ART: already-measured       (6 ? xyz layout, NAMES.md:37)
+PRIOR-ART: helper-exists          (6 ? connect2 + set_index_mode, keystone-op-spec.md:577)
+PRIOR-ART: already-built          (7 ? TIFF fixture recorder, fixture-recording.md:15)
+PRIOR-ART: contradicted           (7 ? replay reader hardcodes .tif, tools/gpu/fixture.py:63)
+PRIOR-ART: refuted-already        (8 ? cluster array writable, peer 2026-08-30:40)
+PRIOR-ART: helper-exists          (8 ? gscript.cluster_array, tools/gscript.py:97)
+PRIOR-ART: unread-evidence        (NAMES.md, restructure-plan-4.6.md ��2/��3, gpu-backend.md)
+```
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-hard-sharded-r1.md
+exit=0
+=== HARD ARM A (no index) repeat 2 ===
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_hard-noindex-r2.txt (39494 chars)
+OUTCOME: ANSWERED (320s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-15-priorart-hard-noindex-r2.md
+COST: $2.7984  in 34 / out 25270 / cache-create 124828 / cache-read 1836452  (316s, 29 turn(s))
+--- ANSWER ---
+Write is disabled for this session (correct for a read-only reviewer), so the review is below.
+
+# PRIOR-ART REVIEW ? "the parallel tracking build, next stage"
+
+**8 of 8 steps have prior art. None is novel.** Six are contradicted by this project's own measured files; two are right in premise but propose building something that already exists. I took no lock, built nothing, ran nothing.
+
+---
+
+## PART A ? THE DIRECTION
+
+### A1 SETTLED ALREADY
+
+**Step 5 was asked and answered on 2026-08-30, as this exact question.** `archive/peer/2026-08-30-2026-08-30-parallel-forloop-output-order.md:20` states the assumption in the plan's own words; line 32 answers:
+
+> "**Positional identity is completely safe.** �� an auto-indexed output tunnel on a Parallel For Loop (P > 1) **strictly maps the output of iteration k to index k** �� You do **not** need to carry an explicit bead-index array."
+
+Line 26 records why it was asked ? verbatim the plan's worry (bead 7 landing at index 3). Lines 79?84 add that no NI CAR exists for scrambled auto-indexed output. **It is also empirically closed here**: the CPU-parallel kernel *is* a P=4 loop (`docs/gpu-backend.md:109`, "P=4 loop uid 3447 �� fed by Decimate 3848 and feeding Interleave 3835") and its output is **bit-identical to the reference** (`archive/benchmarks/INDEX.md:38`, row 17). Scrambled bead order cannot produce a bit-identical trace.
+
+**Step 6's premise is settled** ? `docs/NAMES.md:37`: "`x,y,z array`, `x,y,z array out` | flat DBL array, **bead k = 3k,3k+1,3k+2**". The plan is right here; what it proposes to *do* about it is not (B1).
+
+**Step 3's conclusion was already decided the other way** ? `archive/benchmarks/INDEX.md:43` (row 22): "the visible route (8.1 ms) exceeds the 6 ms/frame budget at 150 Hz by itself, **so the display becomes a separate decimated `Last`-mode loop**."
+
+### A2 REFUTED ALREADY
+
+**Step 8 was attacked and destroyed on 2026-08-30.** `archive/peer/2026-08-30-2026-08-30-activex-cluster-array-setcontrolvalue.md:20` states the claim in the plan's exact terms ? including the plan's evidence, the silent no-op. Line 34: "**The claim is incorrect.** LabVIEW's ActiveX/COM interface fully supports writing to 1-D arrays of clusters." Lines 38, 60?63: pywin32 marshals a nested list as a **2-D** SAFEARRAY; LabVIEW wants 1-D-of-1-D and discards the mismatch while returning `S_OK`. The "silently did nothing" the plan cites as proof of impossibility *is the documented symptom of the wrong marshalling*, and the fix was implemented (B3).
+
+**Step 4's proposed fix was built and explicitly exonerated.** `docs/gpu-backend.md:209-211`: "fused single-launch kernel �� �� **still 6.3 ms inside LabVIEW** �� �� **launch count exonerated**". The cuFFTDx half was evaluated and dropped (`docs/gpu-backend.md:221-223`, peer review `archive/peer/2026-09-08-fused-kernel-cufftdx-plan.md`).
+
+### A3 CONTRADICTED
+
+**Step 1 vs. the STATUS text handed to me with this plan.** STATUS's cycle table: cycles 1?3 delivered "**shift-register creation/wiring for While AND For loops** �� (INDEX rows 37?39)". Confirmed three more times:
+- `docs/toolkit-capabilities.md:41` ? "`add_shift_reg(��)` | `OpAddShiftReg_v0` / `OpAddShiftRegF_v0` | **CREATES a shift register** (`Loop.Add Shift Register` 6361000, public) | rows 37, 39"
+- `tools/gscript.py:478` ? "**CREATE a shift register** �� built 2026-09-14 - INDEX row 37"
+- `docs/NAMES.md:242-243` ? `Loop` 16405, method **`Add Shift Register` 6361000**
+
+**Step 4 vs. the measured three-way result.** `docs/gpu-backend.md:249-250`: "Three-way FINAL (ms/frame above base): sequential 8.15 �� **CPU-parallel v3 2.43** �� GPU Saleh node 5.14 �� **GPU v2 1.14**" ? the GPU is **2.1�� faster**, not slower. The plan argues from the superseded 2026-09-08 state (`docs/gpu-backend.md:197`) without the root cause found later on the same page: `:206` "**ROOT CAUSE �� GPU power state (P8), not LabVIEW**", mechanism at `:214-216` (1365/360 MHz = 3.8�� = the observed ratio), fix at `:238` ("**SM clock lock: `nvidia-smi -lgc 1365,1905`**"). The kernels were never the problem.
+
+**Step 3 vs. the display benchmark.** `archive/benchmarks/INDEX.md:43`: "**construction ?2.7 ms CPU per frame** �� **Picture indicator paint ?6.5 ms per update when the panel is visible**." Against the kernel's 2.43?2.87 ms (`archive/benchmarks/INDEX.md:40`) the display is **~3�� the kernel**. `archive/peer/2026-09-14-display-bench-results.md:56`: "the measured complete display route already exceeds the 6 ms acquisition budget." The comparison is backwards.
+
+**Step 2 vs. the call-site census.** Measured twice: `docs/main-vi-subvi-identity.md:72` ? "| **1** | `Track N beads four-fold over-kernel-v3.vi` | 43 (#5058) |" (leading column = call-site count; `:98` lists diagram 43's six call sites, the kernel once); `docs/MAIN_VI_MAP.md:150` ? "returns **a single node**: index 39, uid 5058". Treated as established a fortnight ago: `archive/peer/2026-08-30-��-xyz-array-layout-refute.md:28` lists "the four-fold kernel is **called exactly once**" in its ruled-out block.
+
+**Step 1's substitute reintroduces a defect the user just ruled out.** A local written at the body's end and read at its top is an unsequenced read ? the same pattern STATUS records under OPEN as the original's racy `min value` read ("no wire between them, so which frame's value the lost-bead test sees is **undetermined**"), which the user decided on 2026-09-15 to remove by wiring. Under rule 1a, an undetermined read order on the state carrying the tracking result is a computation change.
+
+### A4 UNREAD EVIDENCE
+
+All current, active docs ? none archive-only:
+
+| should have been read | kills |
+|---|---|
+| `docs/toolkit-capabilities.md:41` (and `:28-29`) | steps 1, 8 |
+| `docs/main-vi-subvi-identity.md:72` | step 2 |
+| `archive/benchmarks/INDEX.md:43` | step 3 |
+| `docs/gpu-backend.md:206,249` | step 4 |
+| `docs/NAMES.md:37` + `docs/gpu-backend.md:109` | step 6 |
+| `docs/fixture-recording.md:17-18` | step 7 |
+
+---
+
+## PART B ? THE ARTIFACTS
+
+### B1 ALREADY BUILT
+
+**Step 1's feedback state is built and passing.** `docs/stage2-assembly-step-b.md:23` ? "x,y,z / good / pos: **3 shift registers** (left OUTSIDE �� initial-value controls; kernel out �� right)": the same three carriers step 1 names. Gate at `:102`; `:11-12` says "**All construction primitives for a loop with kernel feedback now exist** (INDEX rows 32?38)." STATUS: `Track_v6_CPU_core_v0.vi` **69/69 PASS**, `Track_v6_CPU_queue_v0.vi` **162/162 PASS**.
+
+**Step 6's Decimate split is built** ? `docs/gpu-backend.md:109`; wiring recipe at `docs/keystone-op-spec.md:578` ("Decimate outputs 1/2 �� kernel `starting x 1`/`starting y 1` inside the P=4 loop"), with why a plain wire op could not do it at `:551-563`.
+
+**Step 7's recorder exists and writes TIFF.** `docs/fixture-recording.md:17` ("IMAQ Write TIFF File 2 (22700)"), `:18` (constant `img%05d.tif`). The 10,043-frame reference is in that format (`archive/bench-2026-09-07-fixture/REPORT.md:17`), and **the comparator hard-codes the extension**: `archive/bench-2026-09-07-fixture/run_fixture_compare.py:67` ? `os.path.join(DATA, f"img{fr:05d}.tif")`. PNG rebuilds a built artefact and orphans the reference every Stage-2 gate measures against; "keeps them viewable" is already true of TIFF.
+
+### B2 ALREADY FAILED
+
+**Step 4** ? fused/fewer-launches built and exonerated (`docs/gpu-backend.md:209-211`), cuFFTDx dropped (`:221`). The recorded cause was the power state (`:206`, `:225-241`); the plan neither addresses nor mentions the clock lock that fixed it.
+
+**Step 8** ? the silent no-op is a *recorded, explained* failure, not an interface limit: `archive/peer/2026-08-30-��-activex-cluster-array-setcontrolvalue.md:122-131`, and `tools/gscript.py:103-107` ("Passing the plain Python list instead **RAISES NOTHING AND DOES NOTHING** �� Verified 2026-08-30: plain list leaves `()`, this form reads back `(('IndexMode', True),)`").
+
+### B3 HELPER EXISTS
+
+| step | hand-rolls | call instead |
+|---|---|---|
+| 1 | local-variable feedback | `add_shift_reg()` `tools/gscript.py:478`, `wire_sr()` `:520`, readers `:558` / `docs/toolkit-capabilities.md:28-29` |
+| 8 | one control per cluster element | `cluster_array(rows)` `tools/gscript.py:97-121` (usage on `:101`) |
+| 5 | bead-index array + re-sort | nothing ? auto-indexing guarantees it (A1) |
+| 2 | whole-VI sweep | the census is a file: `docs/main-vi-subvi-identity.md:72,98` |
+
+### B4 ALREADY MEASURED
+
+Display per stage, panel open/closed ? `archive/benchmarks/INDEX.md:43`. Kernel cost and the 6 ms budget ? `:40`. All four backends against each other ? `docs/gpu-backend.md:249-250`. The xyz layout ? `docs/NAMES.md:37`.
+
+---
+
+**Two things worth keeping.** Step 6's premise is correct, but `archive/peer/2026-08-30-��-xyz-array-layout-refute.md:61-63` recorded two traps not to re-derive: a length not divisible by 3 makes Decimate **discard** the remainder silently, and a For Loop takes the **shortest** auto-indexed input, shortening the bead count without error. Step 2's instinct to check before patching is right ? it is just already done.
+
+```
+PRIOR-ART: contradicted
+PRIOR-ART: already-built
+PRIOR-ART: helper-exists
+PRIOR-ART: already-measured
+PRIOR-ART: settled-already
+PRIOR-ART: refuted-already
+PRIOR-ART: already-failed
+PRIOR-ART: unread-evidence
+```
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-hard-noindex-r2.md
+exit=0
+=== HARD ARM B (sharded index) repeat 2 ===
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_hard-sharded-r2.txt (54019 chars)
+OUTCOME: ANSWERED (370s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-15-priorart-hard-sharded-r2.md
+COST: $3.6250  in 34 / out 29087 / cache-create 170129 / cache-read 2392818  (366s, 30 turn(s))
+--- ANSWER ---
+Write is disabled in this session, so the review is delivered here. No lock taken, nothing built, nothing edited.
+
+# PRIOR-ART REVIEW ? the parallel tracking build, next stage
+
+**0 of 8 steps are novel.** Four rest on a claim this project's own measurements contradict; four rebuild something that already exists here. Every finding cites a file and a line.
+
+---
+
+## PART A ? THE DIRECTION
+
+### A3 CONTRADICTED ? Step 1: "Shift registers cannot be created by VI Scripting"
+
+False on this machine, and the file that settles it says so in a heading.
+
+> `docs/NAMES.md:675` ? **"Shift registers are CREATABLE by script ? `Loop.Add Shift Register` 6361000 (VERIFIED 2026-09-14, INDEX row 37)"**
+> `docs/NAMES.md:680` ? "**The method is PUBLIC.** It attaches through the ordinary `build_invoke` ? no 'Allow Private' setter is needed."
+> `docs/NAMES.md:690` ? "API: `gscript.add_shift_reg(target, loop_index, y_position, class_name='WhileLoop')` �� the new register's UID."
+
+The plan's premise matches text the capability register marks **superseded, in the same file**:
+
+| the plan's premise | where that text lives |
+|---|---|
+| "shift registers are not creatable" | `docs/toolkit-capabilities.md:79`, inside the section headed **"### (superseded) The one missing seed"** at `:77` |
+| what the same file now says | `docs/toolkit-capabilities.md:57-60` ? "~~What still needs a cast and has no donor: shift registers��~~ **Closed the same evening**" |
+| the live API row | `docs/toolkit-capabilities.md:41` ? `add_shift_reg(...)` / `OpAddShiftReg_v0` / `OpAddShiftRegF_v0`, "both sides come back unwired", evidence rows 37, 39 |
+
+**The local-variable substitute is separately refuted**, and by a defect this project just finished removing:
+
+> `.claude/skills/labview-automation/references/vi-scripting.md:398-400` ? "Local/global variables and `Value` property nodes�� **never inside a parallelised loop.** Concurrent instances reading/writing the same variable is a **race condition**, whereas wires enforce dataflow and are inherently parallel-safe."
+> `STATUS.md:411-415` ? the original's racy `min value` read: "the original writes the `min value` indicator and reads it back through a property node in the same iteration with no wire between them, so **which frame's value the lost-bead test sees is undetermined**." The user's ruling was to replace it with a wire.
+
+`PRIOR-ART: contradicted`
+
+---
+
+### A1 SETTLED ALREADY ? Step 2: "invoked from several places�� sweep the whole VI"
+
+Already measured twice; the answer is **one call site**.
+
+> `docs/MAIN_VI_MAP.md:153-156` ? "**This is the single most useful fact for the swap: the tracking kernel is called once.** The drop-in replacement therefore touches exactly one node, and the connector pane measured in `STATUS.md` is the entire contract."
+> `docs/MAIN_VI_MAP.md:168` ? "~~Where the four-fold kernel is called from~~ ? **ANSWERED: one call site**, ��3b ��."
+> `docs/main-vi-subvi-identity.md:72` ? "| 1 | `Track N beads four-fold over-kernel-v3.vi` | 43 (#5058) |" ? count **1**, diagram 43.
+> `docs/frame-loop-anatomy.md:49` ? uid 5058 sits directly on the frame loop's body.
+
+The sweep itself is already run: `STATUS.md` records `main-vi-subvi-identity.md` as **98 call sites, 0 mismatches**.
+
+**What the citation does not cover:** the *sub*-kernels (`Track 1 of N��`, `Track 2 of N��`) are called several times ? but inside `PARALLEL_kernel_v3`, not scattered through the main VI, and finding them needs no main-VI sweep.
+
+`PRIOR-ART: settled-already`
+
+---
+
+### A3 CONTRADICTED ? Step 3: "the display path is cheap relative to the kernel"
+
+Measured, and it is the opposite ? display is the **larger** of the two.
+
+> `docs/g9-core-budget.md:28` ? display "(ImageToArray �� Flatten Pixmap �� Draw, MEASURED 14:xx: **2.7 ms CPU + ?6.5 ms visible paint**, INDEX rows 22 / 25)"
+> `docs/g9-core-budget.md:21` ? "kernel time per frame, 5 beads | **CPU-parallel 2.55?2.72 ms**"
+> `docs/g9-core-budget.md:22` ? "frame budget at 150 Hz | ~6 ms"
+
+With the panel visible, display alone exceeds the entire frame budget; `archive/peer/2026-09-14-display-bench-results.md` fixes the split ("+6.5 ms only when the panel is visible (0.2 ms closed)"). Leaving it in the frame loop "for now" leaves the single largest per-frame consumer inside the loop the restructure exists to empty.
+
+`PRIOR-ART: contradicted`
+
+---
+
+### A3 CONTRADICTED ? Step 4: "the CUDA kernels are slow; fuse the passes"
+
+Both halves refuted. The slowdown was **measured as host-side and uniform across every CUDA call**, and the kernels are **already fused**.
+
+> `archive/peer/2026-09-08-cuda-dll-slower-in-labview.md:14` ? "phase split (chain 11) shows **upload 0.34��1.58 ms, kernels 0.96��3.40 ms, readback 0.11��0.18 ms ? every CUDA call uniformly ~3.5-4.5�� slower, i.e. host-side latency**"
+> same file `:18` ? the identical DLL, timed by QPC **inside** the DLL: "1.5-1.7 ms per call" from Python vs "**5.4 ms median over 200 calls**" from LabVIEW, "outputs identical".
+
+Upload and readback contain no kernel code and slowed by the same factor. No kernel change explains or fixes a factor that applies equally to a `cudaMemcpy`.
+
+> `docs/gpu-backend.md:116` ? "DLL source: `tools/gpu/cuda/mt_track.cu` (**fused kernels**; C API mt_gpu_init / set_bead / set_bounds / track / free)"
+> `docs/g9-core-budget.md:21` ? "CPU-parallel 2.55?2.72 ms; GPU drop-in 2.65?3.19 ms (**DLL 1.65**)" ? the DLL's own work is already faster than the CPU kernel; the whole deficit is at the call boundary.
+
+`PRIOR-ART: contradicted`
+
+---
+
+### A4 UNREAD EVIDENCE
+
+| step | document that answers it directly |
+|---|---|
+| 1 | `docs/toolkit-capabilities.md` ? live `add_shift_reg` row at `:41`; the "blocked" text the plan echoes is at `:79`, inside the section its own heading at `:77` labels "(superseded)" |
+| 3 | `docs/g9-core-budget.md:28` ? the display measurement, taken specifically to decide whether display needs its own loop |
+| 5 | `archive/benchmarks/INDEX.md:33` (row 12) ? the 10,043-frame parallel-vs-sequential acceptance |
+
+`PRIOR-ART: unread-evidence`
+
+---
+
+## PART B ? THE ARTIFACTS
+
+### B1 ALREADY BUILT + B3 HELPER EXISTS ? Step 1's feedback state
+
+The artifact the plan wants a substitute for exists and has passed acceptance.
+
+> `docs/stage2-assembly-step-a.md:15-19` ? the tracking While loop calls the kernel "with 3 shift registers" (`x,y,z array out`, `Bead is good? array out`, `pos in cal image out` �� next iteration's `x,y,z array` / `Bead is good? array in` / `pos in cal image in`); "**without it the numbers are not the reference numbers**".
+> `docs/stage2-assembly-step-b.md:102` ? B3: "`add_shift_reg` ��3; `wire_sr` LeftOutCtl / LeftIn / RightIn ��3 �� **ExecState 1; saved**"
+> `STATUS.md:107` ? "**`Track_v6_CPU_core_v0.vi` ? the replay core, 69/69 PASS**"; "**`Track_v6_CPU_queue_v0.vi` �� 162/162 PASS**"
+
+Helpers: `gscript.add_shift_reg(...)`, `gscript.wire_sr(...)` with the four `OpWireSR_*` / `OpWireSRF_*` ops ? `docs/toolkit-capabilities.md:41-42`.
+
+`PRIOR-ART: already-built` �� `PRIOR-ART: helper-exists`
+
+---
+
+### B4 ALREADY MEASURED ? Step 5: "instances finish out of order, so index k cannot be trusted"
+
+> `archive/benchmarks/INDEX.md:33` (row 12) ? "Fixture acceptance of PARALLEL_kernel_v3 vs four-fold vs recorded .tra (10,043 frames) �� **PASS: 10,043/10,043 frames v3 == four-fold bit-for-bit**; �� both == .tra to 0.00000 on ALL 10,043 frames"
+> `docs/g9-core-budget.md:64-65` ? "The scripted `PARALLEL_kernel_v3` loop **reads enabled / P = 4**, so rows 15 and 24 were genuine parallel runs."
+> `docs/parallel-strategy.md:12-13` ? that VI is "the per-bead For loop with P=4 and auto-indexed tunnels".
+
+If instances could deliver bead k's result to another index, every bead's x/y/z would be misattributed, and it would diverge on the **next** frame, because bead k's previous x/y is bead k's next starting point (`docs/stage2-assembly-step-a.md:17-19`).
+
+**Scope, stated honestly:** empirical ? one kernel, P=4, 10,043 frames ? not a quotation of LabVIEW's documented guarantee. What it does establish is that the re-sort is unnecessary for the existing kernel, and that adding a parallel bead-index array changes the kernel's dataflow with no measured defect behind it (`CLAUDE.md` ��1a).
+
+`PRIOR-ART: already-measured`
+
+---
+
+### B1 ALREADY BUILT + B2 ALREADY FAILED ? Step 6: "wire the Decimate-based split now"
+
+> `docs/gpu-backend.md:109` ? "the script-built P=4 loop uid 3447 �� **fed by Decimate 3848 and feeding Interleave 3835** �� the connector pane."
+
+The layout is indeed settled ? `docs/NAMES.md:37`: "flat DBL array, **bead k = 3k, 3k+1, 3k+2**". But the wiring has been attempted and **failed once, for a reason the plan does not carry**:
+
+> `docs/NAMES.md:61-62` ? "Decimate 1D Array | `Unbundler` | �� **outputs unnamed**"; "Interleave 1D Arrays | �� **inputs/outputs unnamed** ? wired by GUI"
+> `docs/keystone-op-spec.md:559-560` ? the resulting defect: "**t0 'starting x 1' UNWIRED, t1 'starting y 1' UNWIRED**"
+> `docs/keystone-op-spec.md:562-563` ? the fix: "**OpConnect2** �� source = top-level Decimate node **terminals 1/2** �� then `set_index_mode(1)`"
+> `docs/keystone-op-spec.md:577-580` ? the successful replay, junk Invokes purged (2), ExecState 1; recipe `tools/recipes/fix_v3_starting_xy.py`
+
+`PRIOR-ART: already-built` �� `PRIOR-ART: already-failed`
+
+---
+
+### B1 ALREADY BUILT ? Step 7: "new fixture recordings as PNG, one per frame"
+
+> `docs/fixture-recording.md:15-20` ? the four inserted nodes: `IMAQ Write TIFF File 2` (22700), `Format Into String` (22703) with constant **`img%05d.tif`**, `Strip Path` (23175), `Build Path` (23020), all inside the tracking while loop (Diagram uid 639).
+> `docs/fixture-recording.md:22-25` ? "The image filename branches the SAME subtract output, so **`imgNNNNN.tif` <-> .tra row alignment is definitional, gaps included**."
+> `docs/fixture-recording.md:36-39` ? compression settled: "`TIFF Options`[9]�� left unwired, so compression = NI default (**none**)."
+
+**Scope:** this proves the recorder exists and that the 10,043-frame reference set is keyed to `imgNNNNN.tif` �� `.tra` rows. It does **not** prove PNG unsuitable ? the camera is 8-bit mono (`docs/camera-acquisition-facts.md:24`), so PNG would be lossless. The finding is that the step rebuilds an existing artifact and changes a contract existing reference data depends on, for a benefit the current format already provides.
+
+`PRIOR-ART: already-built`
+
+---
+
+### B3 HELPER EXISTS ? Step 8: "ActiveX cannot write a 1-D array of clusters"
+
+It can; the helper is in production use; and the "earlier attempt that silently did nothing" is exactly what the helper was written to fix ? cause in the docstring.
+
+> `tools/gscript.py:97-98` ? "`def cluster_array(rows):` / **Build the COM VARIANT for a LabVIEW '1-D ARRAY OF CLUSTERS' control.**"
+> `tools/gscript.py:103-107` ? "Passing the plain Python list instead **RAISES NOTHING AND DOES NOTHING**: pywin32 �� marshals a 2-D SAFEARRAY �� and SetControlValue still returns S_OK. �� **Verified 2026-08-30: plain list leaves (), this form reads back (('IndexMode', True),).**"
+> `archive/peer/2026-08-30-2026-08-30-activex-cluster-array-setcontrolvalue.md:40` ? "Explicitly constructing nested 1-D `VARIANT` objects bypasses `pywin32`'s 2-D aggregation heuristic and **successfully writes the array of clusters**."
+
+Load-bearing today: `tools/gscript.py:1916`, `tools/recipes/build_opbuildpn_v1.py:210`, `tools/recipes/build_keystone.py:119`; `docs/NAMES.md:55` names it as the required route for `Create Property Node.vi`'s `Properties`.
+
+`PRIOR-ART: helper-exists`
+
+---
+
+## Machine-readable verdicts
+
+```
+PRIOR-ART: contradicted        # step 1 - shift registers ARE scriptable (NAMES.md:675); locals reintroduce the racy read (vi-scripting.md:398, STATUS.md:411)
+PRIOR-ART: settled-already     # step 2 - ONE kernel call site (MAIN_VI_MAP.md:168, main-vi-subvi-identity.md:72)
+PRIOR-ART: contradicted        # step 3 - display 2.7 ms CPU + 6.5 ms paint > kernel 2.55-2.72 ms (g9-core-budget.md:28, :21)
+PRIOR-ART: contradicted        # step 4 - slowdown host-side, uniform across upload/kernels/readback; kernels already fused (peer 2026-09-08:14, gpu-backend.md:116)
+PRIOR-ART: unread-evidence     # toolkit-capabilities.md:41/:77, g9-core-budget.md:28, INDEX.md:33
+PRIOR-ART: already-built       # step 1 feedback - Track_v6_CPU_core_v0.vi, 3 shift registers, 69/69 (stage2-assembly-step-b.md:102, STATUS.md:107)
+PRIOR-ART: helper-exists       # add_shift_reg / wire_sr (toolkit-capabilities.md:41-42)
+PRIOR-ART: already-measured    # step 5 - P=4 auto-indexed output bit-exact over 10,043 frames (INDEX.md:33, g9-core-budget.md:64)
+PRIOR-ART: already-built       # step 6 - Decimate 3848 / Interleave 3835 already wired (gpu-backend.md:109)
+PRIOR-ART: already-failed      # step 6 - name-based wiring failed; use connect2 by index (keystone-op-spec.md:559-563, NAMES.md:61-62)
+PRIOR-ART: already-built       # step 7 - TIFF recorder + img%05d.tif <-> .tra contract (fixture-recording.md:15-25)
+PRIOR-ART: helper-exists       # step 8 - gscript.cluster_array in production use (gscript.py:97-121, :1916)
+```
+
+Nothing here is `novel`.
+
+**Releasing a verdict** requires opening the cited line and showing in writing that it does not cover the case. Two are more releasable than the rest, and I say so up front: **step 5** (my citation is empirical, not LabVIEW's documented guarantee ? get the guarantee from one external search dispatch, not from building a re-sort) and **step 7** (my citation proves the TIFF recorder exists, not that PNG is unsuitable ? a release must name the defect in the TIFF route and how the existing reference keeps its frame-number alignment). The other ten are direct measurement contradictions or code running today.
+
+Two process notes, outside the verdicts: `tools/lv_gui.ps1 -Action` was never called and no `.vi` was opened, so rules 1 and 1b are untouched by this review; and `archive/peer/2026-09-15-priorart-hard-noindex-r{1,2}.md` contain earlier reviews of this same eight-step text ? I did not build on them, and every citation above is from a primary source.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-hard-sharded-r2.md
+exit=0
+
+=== SUMMARY ===
+--- hard-noindex-r1 ---
+- **cost:** $3.0848  in 32 / out 29599 / cache-create 150438 / cache-read 1680535  (361s, 29 turn(s))
+--- hard-sharded-r1 ---
+- **cost:** $3.5748  in 38 / out 28689 / cache-create 156536 / cache-read 2584015  (356s, 28 turn(s))
+PRIOR-ART: refuted-already        (1 ? shift registers creatable, NAMES.md:675)
+PRIOR-ART: contradicted           (1 ? locals in a parallelised loop, vi-scripting.md:398)
+PRIOR-ART: already-built          (1 ? Track_v6_CPU_core_v0, kernel-tracking.md:26)
+PRIOR-ART: helper-exists          (1 ? add_shift_reg / wire_sr, toolkit-scripting.md:91-92)
+PRIOR-ART: settled-already        (2 ? one call site, MAIN_VI_MAP.md:168)
+PRIOR-ART: already-measured       (2 ? main-vi-subvi-identity.md:72)
+PRIOR-ART: contradicted           (3 ? display 2.7+6.5 ms, restructure-plan-4.6.md:45)
+PRIOR-ART: already-measured       (3 ? g9-core-budget.md:28, INDEX rows 22/25)
+PRIOR-ART: settled-already        (3 ? display is loop 6, restructure-plan-4.6.md:45)
+PRIOR-ART: refuted-already        (4 ? P8 root cause, gpu-backend.md:206)
+PRIOR-ART: already-failed         (4 ? fused kernel built, still 6.3 ms, gpu-backend.md:209)
+PRIOR-ART: contradicted           (4 ? GPU is faster, restructure-plan-4.6.md:30)
+PRIOR-ART: contradicted           (5 ? P=4 bit-exact 10,043/10,043, keystone-op-spec.md:584)
+PRIOR-ART: already-measured       (5 ? g9-core-budget.md:65)
+PRIOR-ART: already-measured       (6 ? xyz layout, NAMES.md:37)
+PRIOR-ART: helper-exists          (6 ? connect2 + set_index_mode, keystone-op-spec.md:577)
+PRIOR-ART: already-built          (7 ? TIFF fixture recorder, fixture-recording.md:15)
+PRIOR-ART: contradicted           (7 ? replay reader hardcodes .tif, tools/gpu/fixture.py:63)
+PRIOR-ART: refuted-already        (8 ? cluster array writable, peer 2026-08-30:40)
+PRIOR-ART: helper-exists          (8 ? gscript.cluster_array, tools/gscript.py:97)
+PRIOR-ART: unread-evidence        (NAMES.md, restructure-plan-4.6.md ��2/��3, gpu-backend.md)
+--- hard-noindex-r2 ---
+- **cost:** $2.7984  in 34 / out 25270 / cache-create 124828 / cache-read 1836452  (316s, 29 turn(s))
+PRIOR-ART: contradicted
+PRIOR-ART: already-built
+PRIOR-ART: helper-exists
+PRIOR-ART: already-measured
+PRIOR-ART: settled-already
+PRIOR-ART: refuted-already
+PRIOR-ART: already-failed
+PRIOR-ART: unread-evidence
+--- hard-sharded-r2 ---
+- **cost:** $3.6250  in 34 / out 29087 / cache-create 170129 / cache-read 2392818  (366s, 30 turn(s))
+PRIOR-ART: contradicted        # step 1 - shift registers ARE scriptable (NAMES.md:675); locals reintroduce the racy read (vi-scripting.md:398, STATUS.md:411)
+PRIOR-ART: settled-already     # step 2 - ONE kernel call site (MAIN_VI_MAP.md:168, main-vi-subvi-identity.md:72)
+PRIOR-ART: contradicted        # step 3 - display 2.7 ms CPU + 6.5 ms paint > kernel 2.55-2.72 ms (g9-core-budget.md:28, :21)
+PRIOR-ART: contradicted        # step 4 - slowdown host-side, uniform across upload/kernels/readback; kernels already fused (peer 2026-09-08:14, gpu-backend.md:116)
+PRIOR-ART: unread-evidence     # toolkit-capabilities.md:41/:77, g9-core-budget.md:28, INDEX.md:33
+PRIOR-ART: already-built       # step 1 feedback - Track_v6_CPU_core_v0.vi, 3 shift registers, 69/69 (stage2-assembly-step-b.md:102, STATUS.md:107)
+PRIOR-ART: helper-exists       # add_shift_reg / wire_sr (toolkit-capabilities.md:41-42)
+PRIOR-ART: already-measured    # step 5 - P=4 auto-indexed output bit-exact over 10,043 frames (INDEX.md:33, g9-core-budget.md:64)
+PRIOR-ART: already-built       # step 6 - Decimate 3848 / Interleave 3835 already wired (gpu-backend.md:109)
+PRIOR-ART: already-failed      # step 6 - name-based wiring failed; use connect2 by index (keystone-op-spec.md:559-563, NAMES.md:61-62)
+PRIOR-ART: already-built       # step 7 - TIFF recorder + img%05d.tif <-> .tra contract (fixture-recording.md:15-25)
+PRIOR-ART: helper-exists       # step 8 - gscript.cluster_array in production use (gscript.py:97-121, :1916)
+BGRUN END rc=0 after 1417s

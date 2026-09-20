@@ -1,0 +1,17 @@
+BGRUN START 2026-09-17 03:42:06 limit 5.0 min: py -u tools/bench/selftest_bgrun_fail_scan.py
+bgrun under test: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bgrun.py
+  CASE A end line: 'BGRUN END rc:1 after 0s (inner failure; the process itself said 0)'
+  PASS  A1 a gate-verdict line in a build log forces a non-zero bgrun result  bgrun returned 1 (want 1)
+  PASS  A2 bgrun records WHY it overrode the child's zero  INNER FAILURE line present=True
+  PASS  A3 the child itself exited zero (so only the scan can have caused A1)
+  CASE B end line: 'BGRUN END rc:0 after 0s'
+  PASS  B1 a pass-only build log still ends zero  bgrun returned 0 (want 0)
+  PASS  B2 no override line on a pass-only log  INNER FAILURE line present=False
+  CASE C end line: 'BGRUN END rc:0 after 0s'
+  PASS  C1 word-boundary lines (��URE/��ED/��ures) do not trip the scan  bgrun returned 0 (want 0), override=False
+  CASE D end line: 'BGRUN END rc:0 after 0s'
+  PASS  D1 a review-named log is still exempt from the scan (logclass)  bgrun returned 0 (want 0), override=False
+  temp fixtures deleted
+
+=== selftest_bgrun_fail_scan: 7 pass, 0 fail ===
+BGRUN END rc=0 after 1s

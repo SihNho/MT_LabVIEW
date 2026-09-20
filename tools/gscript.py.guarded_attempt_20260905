@@ -1,0 +1,1077 @@
+"""gscript.py - drive the Op-VI fleet over ActiveX to build LabVIEW code, with verification.
+
+Every Op VI in user.lib\\claudeDev takes a *target VI path* as an argument, so this module is a thin
+typed wrapper around "set the Op's front-panel controls, run it, read its error out". No GUI, no
+screenshots, no coordinates.
+
+Two rules this file exists to enforce, both learned the hard way (see the labview-automation skill):
+
+  * VERIFY, DO NOT ASSUME. An Op returning a clean error cluster proves nothing about *where* its
+    edit landed. Every mutating call here is meant to be bracketed by report() - counting objects,
+    or checking an object's owner - because a wrong-but-clean run is the normal failure mode.
+  * SAVE THE TARGET. Op VIs edit LabVIEW's in-memory copy. Nothing reaches disk until save() is
+    called on the target, and a LabVIEW restart silently discards everything that was not saved.
+
+Third-party: uses pywin32 (https://github.com/mhammond/pywin32) as a dependency only.
+
+Usage:
+  py tools\\gscript.py report <target.vi> <ClassName>     # list objects of a class
+  py tools\\gscript.py kernel <target.vi>                 # build the parallel tracking loop
+"""
+import os
+import subprocess
+import sys
+import threading
+import time
+
+import pythoncom
+from win32com.client import dynamic
+
+PROJECT = r"G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop"
+LV_GUI = os.path.join(PROJECT, "tools", "lv_gui.ps1")
+SHOT_DIR = os.environ.get("TEMP", ".")
+
+CLAUDEDEV = r"C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev"
+BG_VIS = os.path.join(CLAUDEDEV, "background VIs_COPY")
+
+OP_REPORT = os.path.join(CLAUDEDEV, "OpReport_v3.vi")
+OP_FORLOOP = os.path.join(CLAUDEDEV, "OpForLoop_v0.vi")
+OP_SUBVI = os.path.join(CLAUDEDEV, "OpSubVI_v1.vi")
+# v1 = v0 plus a full internal error chain into Clear Errors sinks: a bad terminal
+# name now returns in ~0.03 s with no wire instead of wedging LabVIEW behind a
+# modal 5001 dialog. v0 is kept only as the pristine ancestor.
+OP_WIRE = os.path.join(CLAUDEDEV, "OpWire_v1.vi")
+# The donor-copier: copies ANY GObject by label across VIs (GObject.Move, Duplicate).
+# Its source/target are FIXED static refs to the two MOVE_TEST files - move_by_label()
+# below wraps the substitution protocol. Adapted 2026-08-28 from NI's Simple Move.vi.
+OP_MOVE = os.path.join(CLAUDEDEV, "OpMoveByLabel_v0.vi")
+OP_EXITLOOP = os.path.join(CLAUDEDEV, "OpExitLoop_v0.vi")
+OP_WIREIND = os.path.join(CLAUDEDEV, "OpWireInd_v0.vi")
+# Same lineage, method retargeted Move -> Generic:Delete (Delete lives on Generic, NOT
+# GObject - a GObject-typed Invoke offers only 'Move'). Removes an object by label.
+OP_DELETE = os.path.join(CLAUDEDEV, "OpDeleteByLabel_v0.vi")
+MOVE_DIR = os.path.join(CLAUDEDEV, "NIScriptingExamples", "Moving Objects")
+MOVE_SRC = os.path.join(MOVE_DIR, "Test - Moving Objects Source.vi")
+MOVE_DST = os.path.join(MOVE_DIR, "Test - Moving Objects Target.vi")
+# Pristine copy of MOVE_SRC. The substitution protocol restores MOVE_SRC in a finally
+# block - but a killed process (TaskStop, Ctrl+C) skips it and leaves the donor's bytes
+# sitting in the example file, which then poisons every later run. Happened 2026-08-28.
+MOVE_SRC_ORIG = MOVE_SRC + ".ORIG.bak"
+MOVE_DST_ORIG = MOVE_DST + ".ORIG.bak"
+
+_lv = None
+_cache = {}
+
+
+def lv():
+    global _lv
+    if _lv is None:
+        _lv = dynamic.Dispatch("LabVIEW.Application")
+    return _lv
+
+
+def op(path):
+    """A cached VI reference. Op VIs are non-reentrant, so one reference each is correct."""
+    if path not in _cache:
+        _cache[path] = _viref(path)
+    return _cache[path]
+
+
+def _lv_gui(*args):
+    """Invoke lv_gui.ps1 (no COM - safe from any thread)."""
+    cmd = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command",
+           "& '{}' {}".format(LV_GUI, " ".join(args))]
+    r = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+    return (r.stdout or "") + (r.stderr or "")
+
+
+def cluster_array(rows):
+    """Build the COM VARIANT for a LabVIEW '1-D ARRAY OF CLUSTERS' control.
+
+    `rows` is a sequence of tuples, one per cluster, fields in the cluster's tab order:
+        _set(vi, 'Properties', cluster_array([('IndexMode', True)]))
+
+    Passing the plain Python list instead RAISES NOTHING AND DOES NOTHING: pywin32 sees a
+    sequence of equal-length sequences and marshals a 2-D SAFEARRAY, LabVIEW's coercion
+    rejects the dimension mismatch, and SetControlValue still returns S_OK. LabVIEW wants a
+    1-D SAFEARRAY of VARIANTs whose elements are themselves 1-D SAFEARRAYs of VARIANTs.
+    Verified 2026-08-30: plain list leaves (), this form reads back (('IndexMode', True),).
+    """
+    from win32com.client import VARIANT
+    V = pythoncom.VT_ARRAY | pythoncom.VT_VARIANT
+
+    def field(x):
+        if isinstance(x, bool):
+            return VARIANT(pythoncom.VT_BOOL, x)
+        if isinstance(x, int):
+            return VARIANT(pythoncom.VT_I4, x)
+        if isinstance(x, float):
+            return VARIANT(pythoncom.VT_R8, x)
+        return VARIANT(pythoncom.VT_BSTR, str(x))
+
+    return VARIANT(V, [VARIANT(V, [field(f) for f in row]) for row in rows])
+
+
+def _invoke(vi, method, *args, **kw):
+    """Call any COM method under the SAME watchdog + hard cap as _run().
+
+    The watchdog originally guarded only `Run`, so save / revert / OpenFrontPanel /
+    CloseFrontPanel could still hang forever with no dialog - and did, repeatedly
+    (2026-08-29). Every COM call now goes through here.
+    """
+    timeout = kw.pop("hard_timeout_s", 180.0)
+    ole = vi._oleobj_
+    stream = pythoncom.CoMarshalInterThreadInterfaceInStream(pythoncom.IID_IDispatch, ole)
+    result = {}
+
+    def call():
+        pythoncom.CoInitialize()
+        try:
+            disp = pythoncom.CoGetInterfaceAndReleaseStream(stream, pythoncom.IID_IDispatch)
+            result["ok"] = disp.Invoke(disp.GetIDsOfNames(0, method), 0,
+                                       pythoncom.DISPATCH_METHOD, 1, *args)
+        except Exception as e:                      # noqa: BLE001
+            result["err"] = e
+        finally:
+            pythoncom.CoUninitialize()
+
+    w = threading.Thread(target=call, daemon=True)
+    w.start()
+    w.join(timeout=timeout)
+    if w.is_alive():
+        raise RuntimeError(
+            "COM %s did not return within %.0fs (no dialog) - LabVIEW busy or a second "
+            "client contending" % (method, timeout))
+    if "err" in result:
+        raise result["err"]
+    return result.get("ok")
+
+
+
+# --- every COM call goes through the watchdog thread (2026-09-05) --------------------------------
+# Direct calls (GetVIReference / SetControlValue / GetControlValue / property reads) on the main
+# thread had NO timeout: a wedged LabVIEW UI loop blocked a client for 3 h 48 min with no
+# screenshot and no exception. These helpers route each call through _invoke's daemon thread
+# (hard cap, raises on expiry). References returned by GetVIReference are marshalled back to the
+# caller's apartment so they stay usable on the main thread.
+
+def _set(vi, name, value, hard_timeout_s=60.0):
+    return _invoke(vi, "SetControlValue", name, value, hard_timeout_s=hard_timeout_s)
+
+
+def _get(vi, name, hard_timeout_s=60.0):
+    return _invoke(vi, "GetControlValue", name, hard_timeout_s=hard_timeout_s)
+
+
+def _prop(obj, name, hard_timeout_s=60.0):
+    """Guarded property read (e.g. ExecState, Version)."""
+    ole = obj._oleobj_
+    stream = pythoncom.CoMarshalInterThreadInterfaceInStream(pythoncom.IID_IDispatch, ole)
+    result = {}
+
+    def call():
+        pythoncom.CoInitialize()
+        try:
+            disp = pythoncom.CoGetInterfaceAndReleaseStream(stream, pythoncom.IID_IDispatch)
+            result["ok"] = disp.Invoke(disp.GetIDsOfNames(0, name), 0, pythoncom.DISPATCH_PROPERTYGET, 1)
+        except Exception as e:                      # noqa: BLE001
+            result["err"] = e
+        finally:
+            pythoncom.CoUninitialize()
+    w = threading.Thread(target=call, daemon=True); w.start(); w.join(timeout=hard_timeout_s)
+    if w.is_alive():
+        raise RuntimeError("COM property %s did not return within %.0fs" % (name, hard_timeout_s))
+    if "err" in result:
+        raise result["err"]
+    return result.get("ok")
+
+
+def _viref(path, hard_timeout_s=60.0):
+    """Guarded Application.GetVIReference(path, "", False, 0) -> Dispatch usable on this thread."""
+    ole = lv()._oleobj_
+    stream = pythoncom.CoMarshalInterThreadInterfaceInStream(pythoncom.IID_IDispatch, ole)
+    result = {}
+
+    def call():
+        pythoncom.CoInitialize()
+        try:
+            app = pythoncom.CoGetInterfaceAndReleaseStream(stream, pythoncom.IID_IDispatch)
+            ref = app.Invoke(app.GetIDsOfNames(0, "GetVIReference"), 0, pythoncom.DISPATCH_METHOD, 1,
+                             path, "", False, 0)
+            result["stream"] = pythoncom.CoMarshalInterThreadInterfaceInStream(pythoncom.IID_IDispatch, ref)
+        except Exception as e:                      # noqa: BLE001
+            result["err"] = e
+        finally:
+            pythoncom.CoUninitialize()
+    w = threading.Thread(target=call, daemon=True); w.start(); w.join(timeout=hard_timeout_s)
+    if w.is_alive():
+        raise RuntimeError("COM GetVIReference(%s) did not return within %.0fs" % (os.path.basename(path), hard_timeout_s))
+    if "err" in result:
+        raise result["err"]
+    raw = pythoncom.CoGetInterfaceAndReleaseStream(result["stream"], pythoncom.IID_IDispatch)
+    return dynamic.Dispatch(raw)
+
+def _run(vi, poll_s=6.0, hard_timeout_s=180.0):
+    """Run the VI over COM under a watchdog AND an absolute time cap.
+
+    Two independent failure modes, two guards:
+
+    * A LabVIEW error dialog blocks the Run call indefinitely and is invisible to the
+      caller. A watchdog thread polls the window list; on a modal dialog it screenshots
+      the screen (the diagnosis), posts WM_CLOSE (which releases the call), and records
+      the event so this function raises instead of returning a fake success.
+    * A block that is NOT a dialog - LabVIEW busy, a second COM client contending, an
+      editor operation pending - shows no dialog at all, so the watchdog never fires.
+      With no cap, such a run waits forever: two clients sat blocked for 7 hours on
+      2026-08-28 with ~0 CPU before anyone noticed. So the COM call now runs in a
+      DAEMON thread and the caller waits at most `hard_timeout_s`; on expiry it raises
+      and the abandoned thread dies with the process. Op VIs finish in well under a
+      second, so any cap above a minute is generous.
+
+    Only ONE COM client may drive LabVIEW at a time (project rule 3). Never start a
+    second run while one is alive - that contention is itself a cause of no-dialog
+    hangs.
+    """
+    done = threading.Event()
+    hits = []
+
+    def watchdog():
+        while not done.wait(poll_s):
+            try:
+                out = _lv_gui("-Action", "dialogs")
+            except Exception:
+                continue
+            if "VERDICT: BLOCKED" in out:
+                shot = os.path.join(SHOT_DIR, "gscript_dialog_%d.png" % int(time.time()))
+                try:
+                    _lv_gui("-Action", "shot", "-Out", "'%s'" % shot)
+                except Exception:
+                    shot = "(screenshot failed)"
+                try:
+                    _lv_gui("-Action", "dismiss")
+                except Exception:
+                    pass
+                hits.append(shot)
+
+    w = threading.Thread(target=watchdog, daemon=True)
+    w.start()
+    ole = vi._oleobj_
+    t0 = time.time()
+    result = {}
+
+    # COM is apartment-threaded: an interface pointer cannot simply be handed to
+    # another thread ("called an interface that was marshalled for a different
+    # thread"). Marshal it through a stream, which is the supported way.
+    stream = pythoncom.CoMarshalInterThreadInterfaceInStream(pythoncom.IID_IDispatch, ole)
+
+    def call():
+        pythoncom.CoInitialize()
+        try:
+            disp = pythoncom.CoGetInterfaceAndReleaseStream(stream, pythoncom.IID_IDispatch)
+            disp.Invoke(disp.GetIDsOfNames(0, "Run"), 0, pythoncom.DISPATCH_METHOD, 1)
+            result["ok"] = True
+        except Exception as e:                      # noqa: BLE001 - reported to caller
+            result["err"] = e
+        finally:
+            pythoncom.CoUninitialize()
+
+    worker = threading.Thread(target=call, daemon=True)
+    worker.start()
+    worker.join(timeout=hard_timeout_s)
+    timed_out = worker.is_alive()
+    done.set()
+    w.join(timeout=2)
+    dt = time.time() - t0
+
+    if timed_out:
+        shot = os.path.join(SHOT_DIR, "gscript_hang_%d.png" % int(time.time()))
+        try:
+            _lv_gui("-Action", "shot", "-Out", "'%s'" % shot)
+        except Exception:
+            shot = "(screenshot failed)"
+        raise RuntimeError(
+            "COM Run did not return within %.0fs and no modal dialog was found - "
+            "LabVIEW is busy or another client is contending. Screenshot: %s"
+            % (hard_timeout_s, shot))
+    if "err" in result:
+        raise result["err"]
+    if hits:
+        raise RuntimeError(
+            "run blocked behind a modal dialog (dismissed by watchdog after %.0fs); "
+            "screenshot(s): %s" % (dt, ", ".join(hits)))
+    return dt
+
+
+def _err(vi, name="error out"):
+    try:
+        status, code, src = tuple(_get(vi, name))
+    except Exception:
+        return None
+    return None if not status else f"error {code}: {src.splitlines()[0] if src else ''}"
+
+
+# --- read -------------------------------------------------------------------------------------
+
+def report(target, cls):
+    """Every object of `cls` on target's block diagram, as dicts with class/uid/pos/owner."""
+    vi = op(OP_REPORT)
+    _set(vi, "vi path", target)
+    _set(vi, "Class Name", cls)
+    _set(vi, "index", 0)
+    _run(vi)
+    err = _err(vi)
+    if err:
+        raise RuntimeError(f"report({cls}) on {os.path.basename(target)}: {err}")
+    n = int(_get(vi, "# of Refs"))
+    out = []
+    for i in range(n):
+        _set(vi, "index", i)
+        _run(vi)
+        out.append({
+            "i": i,
+            "class": _get(vi, "Class Name 2"),
+            "uid": int(_get(vi, "UID")),
+            "pos": tuple(_get(vi, "Position")),
+            "owner": _get(vi, "Class Name 3"),
+        })
+    return out
+
+
+def count(target, cls):
+    vi = op(OP_REPORT)
+    _set(vi, "vi path", target)
+    _set(vi, "Class Name", cls)
+    _set(vi, "index", 0)
+    _run(vi)
+    err = _err(vi)
+    if err:
+        raise RuntimeError(f"count({cls}) on {os.path.basename(target)}: {err}")
+    return int(_get(vi, "# of Refs"))
+
+
+def uids(target, cls):
+    return {o["uid"] for o in report(target, cls)}
+
+
+def new_since(target, cls, before):
+    """The objects of `cls` that appeared since the `before` uid set.
+
+    Use this, NOT position matching, to identify what a mutating Op just created. Positions inside a
+    subdiagram are reported in a shifted coordinate space, and a pre-existing object can sit closer
+    to the requested location than the new one - which is exactly how a wrong object gets reported
+    as the result of a successful build.
+    """
+    return [o for o in report(target, cls) if o["uid"] not in before]
+
+
+# A For Loop's body Diagram reports its position at exactly loop_pos + this offset.
+# Measured 2026-08-28 on three loops 700 px apart: offset (10, 22) every time, with the
+# nearest diagram 32 away and the next nearest 688+ - a 21x margin, so selecting a loop's
+# subdiagram by position is unambiguous, not a heuristic.
+LOOP_DIAGRAM_OFFSET = (10, 22)
+
+
+def loop_diagram(target, loop_pos, min_margin=4.0):
+    """The body Diagram of the For Loop at `loop_pos`, selected deterministically.
+
+    Verifies the choice is unambiguous: the runner-up diagram must be at least
+    `min_margin` times farther away. Raises rather than guessing.
+    """
+    want = (loop_pos[0] + LOOP_DIAGRAM_OFFSET[0], loop_pos[1] + LOOP_DIAGRAM_OFFSET[1])
+    dias = [d for d in report(target, "Diagram") if d["owner"] == "ForLoop"]
+    if not dias:
+        raise RuntimeError("no ForLoop-owned Diagram in " + os.path.basename(target))
+    scored = sorted((abs(d["pos"][0] - want[0]) + abs(d["pos"][1] - want[1]), d) for d in dias)
+    best_d, best = scored[0][0], scored[0][1]
+    if len(scored) > 1 and scored[1][0] < best_d * min_margin:
+        raise RuntimeError(
+            "ambiguous loop subdiagram near %s: nearest %d, runner-up %d"
+            % (want, best_d, scored[1][0]))
+    return best
+
+
+def find_at(target, cls, pos, tol=40):
+    """Index of the `cls` object nearest `pos` - the deterministic selector.
+
+    Creation Ops take a `location`, so the caller always knows where its own structure is. Traverse
+    order is unspecified and must never be used as a selector.
+    """
+    best, bestd = None, None
+    for o in report(target, cls):
+        d = abs(o["pos"][0] - pos[0]) + abs(o["pos"][1] - pos[1])
+        if bestd is None or d < bestd:
+            best, bestd = o, d
+    if best is None or bestd > tol:
+        raise RuntimeError(f"no {cls} within {tol} of {pos} in {os.path.basename(target)}")
+    return best
+
+
+# --- write ------------------------------------------------------------------------------------
+
+def for_loop(target, location, tunnels=(), indexing=(), parallel=0):
+    vi = op(OP_FORLOOP)
+    _set(vi, "vi path", target)
+    _set(vi, "location (0, 0)", list(location))
+    _set(vi, "Control Names", list(tunnels))
+    _set(vi, "Inputs Indexing?", list(indexing))
+    _set(vi, "Number of Static Parallel Instances", parallel)
+    dt = _run(vi)
+    err = _err(vi)
+    if err:
+        raise RuntimeError(f"for_loop: {err}")
+    return dt
+
+
+def drop_subvi(target, subvi_path, diagram_index, location):
+    """Place `subvi_path` on the target's `diagram_index`-th Diagram. Get the index from find_at."""
+    vi = op(OP_SUBVI)
+    _set(vi, "vi path", target)
+    _set(vi, "vi path 2", subvi_path)
+    _set(vi, "Class Name", "Diagram")
+    _set(vi, "index", diagram_index)
+    _set(vi, "location (0, 0)", list(location))
+    dt = _run(vi)
+    err = _err(vi)
+    if err:
+        raise RuntimeError(f"drop_subvi: {err}")
+    return dt
+
+
+def open_panel(target, activate=False):
+    """Open the target's front panel - REQUIRED before wire() AND before drop_subvi().
+
+    Wiring a target loaded only via GetVIReference is silently declined (count
+    unchanged, no error): the diagram is not fully in memory. OpenFrontPanel forces
+    the full load. Discovered 2026-08-28 after three silent failures.
+
+    activate defaults to False since 2026-09-05: OpenFrontPanel(activate=True) followed by an
+    lv_gui `focus` (Alt tap) left LabVIEW's UI loop in a state where the next COM Run blocked
+    until a mouse click (test H5, 4/4 reproducible); activate=False never did (H6). Loading
+    does not need activation. Pass activate=True only when the panel must come to the front.
+    """
+    _invoke(_viref(target), "OpenFrontPanel", bool(activate), 1)
+
+
+def close_panel(target):
+    """Close the target's front panel. SAVE FIRST: closing the panel of a modified VI
+    while holding no other reference unloads it and silently discards every edit
+    (a full chain build evaporated this way on 2026-08-28)."""
+    _invoke(_viref(target), "CloseFrontPanel")
+
+
+def wire(target, src_cls, src_i, src_term, dst_cls, dst_i, dst_term, branch=False):
+    """Node-to-node wire by terminal name. Call open_panel(target) first, and save
+    before close_panel() - see those helpers. Control/indicator terminals are class
+    Terminal, not Node, and this cannot reach them - see the skill.
+
+    Semantics learned 2026-08-28: a MISSING destination name raises 5001 inside the
+    Op (cleared silently by OpWire_v1's sinks; count check catches it); a FOUND name
+    whose connect is illegal is declined silently; branching from an ALREADY-WIRED
+    source terminal is also declined silently. Unwired error INPUTS are harmless -
+    only an unwired error OUT that receives an error raises a dialog."""
+    before = count(target, "Wire")
+    vi = op(OP_WIRE)
+    _set(vi, "vi path", target)
+    _set(vi, "Class Name", src_cls)
+    _set(vi, "index", src_i)
+    _set(vi, "Names", [src_term])
+    _set(vi, "Class Name 2", dst_cls)
+    _set(vi, "index 2", dst_i)
+    _set(vi, "Names 2", [dst_term])
+    _run(vi)
+    err = _err(vi)   # readable since 2026-08-29: error out indicator branched onto the chain
+    if err:
+        raise RuntimeError(f"wire {src_term}->{dst_term}: {err}")
+    after = count(target, "Wire")
+    if not branch and after != before + 1:
+        # A BRANCH from an already-wired source does NOT add a Wire object (the wire
+        # owns all its sinks), so this check misreads a successful branch as a decline.
+        # For branches pass branch=True and verify by effect (ExecState, probe).
+        raise RuntimeError(f"wire {src_term}->{dst_term}: wire count {before}->{after}, expected +1 "
+                           "(if the source is already wired this may be a successful BRANCH - "
+                           "re-call with branch=True)")
+    return after
+
+
+def revert(target):
+    """Discard a VI's in-memory changes by reloading from disk (VI method Revert)."""
+    _invoke(_viref(target), "Revert")
+
+
+def copy_into(donor, label, target):
+    """Copy the object labeled `label` from `donor` INTO `target`.
+
+    move_by_label() drops the copy on the Move example's fixed Test-Target; this
+    substitutes `target`'s bytes into that file first, so the copy lands in the real
+    VI, then saves and copies it back. Both example files are restored afterwards.
+
+    Used to give an Op an `error out` indicator. NOTE (2026-09-03): "the fleet cannot create
+    front-panel objects" is a statement about THIS FLEET, not about LabVIEW - VI Scripting
+    creates FP controls/indicators with `New VI Object` (front-panel owner + a control style
+    from the ring: 'Numeric Indicator (classic)', 'Array (classic)', ...). We never built that
+    op because the ring's style codes were unreadable; `RingConstant.Strings And Values[]`
+    (confirmed 2026-09-01) removes that blocker. Until an OpNewFPObject exists, copying from a
+    donor Op is the working path.
+    """
+    import shutil
+    ensure_move_files_pristine()
+    src_bak = MOVE_SRC + ".ci_src"
+    dst_bak = MOVE_DST + ".ci_dst"
+    shutil.copyfile(MOVE_SRC, src_bak)
+    shutil.copyfile(MOVE_DST, dst_bak)
+    try:
+        for p, newbytes in ((MOVE_SRC, donor), (MOVE_DST, target)):
+            try:
+                revert(p)
+            except Exception:
+                pass
+            shutil.copyfile(newbytes, p)
+            try:
+                revert(p)
+            except Exception:
+                pass
+        before = uids(MOVE_DST, "GObject")
+        vi = op(OP_MOVE)
+        _set(vi, "Add Label", label)
+        _run(vi)
+        added = new_since(MOVE_DST, "GObject", before)
+        if not added:
+            raise RuntimeError(f"copy_into({label!r}): nothing was copied")
+        # A freshly copied primitive has unwired required inputs, so the target is legally
+        # BROKEN at this instant. That is expected mid-assembly, not a failure - divert to
+        # the editor's own File > Save, which handles a broken VI (see gui_save).
+        save(MOVE_DST, allow_broken=True)
+        shutil.copyfile(MOVE_DST, target)
+        return added
+    finally:
+        shutil.copyfile(src_bak, MOVE_SRC)
+        shutil.copyfile(dst_bak, MOVE_DST)
+        os.remove(src_bak)
+        os.remove(dst_bak)
+        for p in (MOVE_SRC, MOVE_DST):
+            try:
+                revert(p)
+            except Exception:
+                pass
+
+
+def move_by_label(donor, label, harvest_to=None):
+    """Copy the GObject labeled `label` out of `donor` via OpMoveByLabel_v0.
+
+    Substitution protocol (the op's source/target are fixed static refs):
+      1. revert the two Test files so stale in-memory copies cannot shadow new bytes,
+      2. byte-substitute Test-Source with the donor,
+      3. run the op (Add Label = label); the copy lands on Test-Target's top-level
+         diagram at (0,75),
+      4. verify by uid diff on Test-Target; optionally save it and file-copy the
+         result to `harvest_to`,
+      5. restore Test-Source's original bytes.
+
+    Returns the new object's report dict. The caller usually follows with another
+    edit pass that wires/moves the harvested object where it belongs.
+    """
+    import shutil
+    ensure_move_files_pristine()
+    bak = MOVE_SRC + ".move_bak"
+    shutil.copyfile(MOVE_SRC, bak)
+    try:
+        try:
+            revert(MOVE_DST)
+        except Exception:
+            pass
+        shutil.copyfile(donor, MOVE_SRC)
+        try:
+            revert(MOVE_SRC)
+        except Exception:
+            pass
+        before = uids(MOVE_DST, "GObject")
+        vi = op(OP_MOVE)
+        _set(vi, "Add Label", label)
+        _run(vi)
+        added = new_since(MOVE_DST, "GObject", before)
+        roots = [o for o in added if o["owner"] == "TopLevelDiagram"]
+        if not added:
+            raise RuntimeError(f"move_by_label({label!r}): nothing copied")
+        if harvest_to:
+            size = save(MOVE_DST)
+            shutil.copyfile(MOVE_DST, harvest_to)
+        return (roots or added)[0]
+    finally:
+        shutil.copyfile(bak, MOVE_SRC)
+        os.remove(bak)
+
+
+def ensure_move_files_pristine():
+    """Restore the Move example's Test-Source if a previous run left a donor in it.
+
+    Call at the START of any substitution-protocol operation: a run killed mid-way
+    never reaches its finally block, so the file may still hold foreign bytes.
+    """
+    import shutil
+    restored = False
+    for live, orig in ((MOVE_SRC, MOVE_SRC_ORIG), (MOVE_DST, MOVE_DST_ORIG)):
+        if not os.path.exists(orig):
+            shutil.copyfile(live, orig)            # first run: adopt current as pristine
+            continue
+        if os.path.getsize(live) != os.path.getsize(orig):
+            shutil.copyfile(orig, live)
+            try:
+                revert(live)
+            except Exception:
+                pass
+            restored = True
+    return restored
+
+
+def remove_bad_wires(target):
+    """Edit > Remove Broken Wires on `target` (the Ctrl+B cleanup).
+
+    Deleting a node leaves dangling wires, which break the VI, and save() refuses a
+    BROKEN VI. The VI-class method 'Block Diagram:Remove Bad Wires' exists but is NOT
+    exposed through the ActiveX VirtualInstrument interface (probed 2026-08-28: no
+    dispid under any spelling), so this drives the menu bar - the one GUI route that
+    works reliably (injected right-clicks open nothing; see the skill).
+
+    Coordinates are stable because the window is first moved to a known geometry.
+    """
+    base = os.path.basename(target)
+    open_panel(target)
+    fp = base + " Front Panel"
+    bd = base + " Block Diagram"
+    # Move the panel to a known origin FIRST. Menu-bar coordinates are relative to the
+    # window, and a panel that opened anywhere on screen sent the clicks into empty
+    # space - the block diagram then never opened and the cleanup silently did nothing
+    # (2026-08-28). Never click a menu without pinning the window first.
+    _lv_gui("-Action", "movewin", "-Title", "'%s'" % fp,
+            "-Left", "0", "-Top", "0", "-Width", "1000", "-Height", "700")
+    _lv_gui("-Action", "focus", "-Title", "'%s'" % fp)
+    _lv_gui("-Action", "click", "-X", "293", "-Y", "41", "-Exception", "Approved", "-Evidence", "remove_bad_wires: documented menu recipe (skill gui-recipes.md), no scripting path for Remove Broken Wires over COM")     # Window menu
+    time.sleep(0.9)
+    _lv_gui("-Action", "click", "-X", "343", "-Y", "62", "-Exception", "Approved", "-Evidence", "remove_bad_wires: documented menu recipe (skill gui-recipes.md), no scripting path for Remove Broken Wires over COM")     # Show Block Diagram
+    time.sleep(1.2)
+    _lv_gui("-Action", "movewin", "-Title", "'%s'" % bd,
+            "-Left", "0", "-Top", "0", "-Width", "1400", "-Height", "900")
+    _lv_gui("-Action", "focus", "-Title", "'%s'" % bd)
+    _lv_gui("-Action", "click", "-X", "58", "-Y", "41", "-Exception", "Approved", "-Evidence", "remove_bad_wires: documented menu recipe (skill gui-recipes.md), no scripting path for Remove Broken Wires over COM")      # Edit menu
+    time.sleep(1.2)
+    _lv_gui("-Action", "click", "-X", "123", "-Y", "345", "-Exception", "Approved", "-Evidence", "remove_bad_wires: documented menu recipe (skill gui-recipes.md), no scripting path for Remove Broken Wires over COM")    # Remove Broken Wires
+    time.sleep(0.8)
+    return exec_state(target)
+
+
+def delete_by_label(target, label, allow_broken=False):
+    """Delete the object labeled `label` from `target` (Generic:Delete).
+
+    `allow_broken` keeps going when the deletion legitimately leaves the VI broken -
+    e.g. removing the node that fed a REQUIRED input of the node after it, which is the
+    normal state mid-swap. Bad wires are still cleaned; only the refusal is lifted, and
+    the save is routed through gui_save (COM SaveInstrument hangs on a broken VI).
+
+    Like move_by_label this drives a fixed-static-ref Op through the substitution
+    protocol, but here the edit happens IN the substituted source, so the result is
+    saved and copied back over `target`.
+
+    Returns the set of uids that disappeared. Deleting a node leaves its wires broken -
+    LabVIEW's Edit > Remove Broken Wires (VI method 'Block Diagram:Remove Bad Wires')
+    is the cleanup, not yet scripted here.
+    """
+    import shutil
+    ensure_move_files_pristine()
+    bak = MOVE_SRC + ".del_bak"
+    shutil.copyfile(MOVE_SRC, bak)
+    try:
+        try:
+            revert(MOVE_SRC)
+        except Exception:
+            pass
+        shutil.copyfile(target, MOVE_SRC)
+        try:
+            revert(MOVE_SRC)
+        except Exception:
+            pass
+        before = uids(MOVE_SRC, "GObject")
+        vi = op(OP_DELETE)
+        _set(vi, "Add Label", label)
+        _run(vi)
+        after = uids(MOVE_SRC, "GObject")
+        gone = before - after
+        if not gone:
+            raise RuntimeError(f"delete_by_label({label!r}): nothing was removed")
+        if exec_state(MOVE_SRC) == 0:
+            # deleting a node dangles its wires; clean them or save() will refuse
+            remove_bad_wires(MOVE_SRC)
+            if exec_state(MOVE_SRC) == 0 and not allow_broken:
+                raise RuntimeError(
+                    f"delete_by_label({label!r}): target still BROKEN after removing bad wires")
+        save(MOVE_SRC, allow_broken=allow_broken)
+        shutil.copyfile(MOVE_SRC, target)
+        return gone
+    finally:
+        shutil.copyfile(bak, MOVE_SRC)
+        os.remove(bak)
+        try:
+            revert(MOVE_SRC)
+        except Exception:
+            pass
+
+
+def exit_loop(target, node_index, output_names, diagram_index, node_class="SubVI"):
+    """Create AUTO-INDEXED output tunnels for `output_names` of a node inside a loop.
+
+    Drives OpExitLoop_v0 (erdosmiller `Exit For Loop.vi`). Verified 2026-08-29: three
+    tunnels + three wires in 0.26 s, and the tunnels draw with the hollow-bracket
+    glyph - auto-indexing, which is what keeps `P` parallelism legal. `Loop Terminal
+    Types` therefore does NOT need wiring; the default is already what we want.
+
+    `output_names` must be terminals on the node's CONNECTOR PANE. A name that is only
+    a front-panel label raises 5001 inside the Op, where the Clear Errors sinks eat it
+    and the whole call becomes a silent no-op - which is why this checks the tunnel
+    count and raises instead of trusting a clean return.
+    """
+    before = count(target, "LoopTunnel")
+    vi = op(OP_EXITLOOP)
+    _set(vi, "vi path", target)
+    _set(vi, "Class Name", node_class)
+    _set(vi, "index", node_index)
+    _set(vi, "Names", list(output_names))
+    _set(vi, "Class Name 2", "Diagram")
+    _set(vi, "index 2", diagram_index)
+    _set(vi, "Names 2", [])
+    dt = _run(vi)
+    err = _err(vi)   # readable since 2026-08-29: error out indicator branched onto the chain
+    if err:
+        raise RuntimeError(f"exit_loop: {err}")
+    after = count(target, "LoopTunnel")
+    if after != before + len(output_names):
+        raise RuntimeError(
+            "exit_loop: expected %d new tunnels, got %d - a name is probably not on the "
+            "connector pane" % (len(output_names), after - before))
+    return dt
+
+
+def wire_indicators(target, node_index, src_terms, indicator_names,
+                    diagram_index=0, node_class="SubVI"):
+    """Branch a node's output terminals onto EXISTING front-panel indicators by label.
+
+    Drives OpWireInd_v0 (erdosmiller `Wire Indicators.vi`). Contract proven 2026-08-29
+    on a scratch copy of OpExitLoop_v0:
+
+    - The indicators must ALREADY EXIST on the target's front panel; they are selected
+      by label (`indicator_names`). Nothing is created.
+    - Each source terminal MUST ALREADY BE WIRED: WI branches the indicator onto the
+      wire attached to the source terminal. An UNWIRED source makes it extend an
+      unrelated wire instead -> "This wire connects more than one data source" and the
+      target breaks. Wiring a node's already-sunk `error out` therefore gives the
+      indicator the error value while the Clear Errors sink stays attached - the
+      error-visibility topology the fleet wants, with no dialog risk.
+    - NO new Wire object is created (a branch joins an existing wire), so a wire-count
+      check cannot verify success. This checks ExecState instead: a break raises; a
+      swallowed 5001 (bad name) is still a silent no-op, same as exit_loop - when in
+      doubt, probe the name with the sink-less OpWire_v0 trick (see the skill).
+    - An Op CANNOT edit itself while running (silent no-op, ExecState stays 1) -
+      to edit OpWireInd_v0.vi itself, file-copy the op and run the copy against it.
+    """
+    if os.path.normcase(target) == os.path.normcase(OP_WIREIND):
+        raise RuntimeError("wire_indicators: an op cannot edit itself while running - "
+                           "file-copy the op and drive the copy instead")
+    vi = op(OP_WIREIND)
+    _set(vi, "vi path", target)
+    _set(vi, "Class Name", node_class)
+    _set(vi, "index", node_index)
+    _set(vi, "Names", list(src_terms))
+    _set(vi, "Class Name 2", "Diagram")
+    _set(vi, "index 2", diagram_index)
+    _set(vi, "Names 2", list(indicator_names))
+    dt = _run(vi)
+    err = _err(vi)
+    if err:
+        raise RuntimeError(f"wire_indicators: {err}")
+    if exec_state(target) != 1:
+        raise RuntimeError(
+            "wire_indicators: target BROKEN after wiring - a source terminal was "
+            "probably unwired (WI then extends an unrelated wire; revert the target)")
+    return dt
+
+
+OP_LOOPKERNEL = os.path.join(CLAUDEDEV, "OpLoopKernel_v0.vi")
+
+
+def loop_kernel(target, location, control_names, kernel_path, input_names, parallel=4):
+    """ONE call: parallel For Loop + kernel subVI inside + named tunnel wiring.
+
+    Drives OpLoopKernel_v0 (Create For Loop -> Create SubVI fused in one G dataflow).
+    Mechanism proven 2026-08-29 (SCRATCH_h, ExecState 1 afterwards): Create SubVI wires
+    each of `control_names`' FRONT-PANEL CONTROL terminals (found by Get Controls)
+    straight to the same-index `input_names` terminal on the kernel dropped INSIDE the
+    loop - the border crossing makes LabVIEW auto-create the tunnel, auto-indexed for
+    array sources and plain for scalars (LabVIEW's wiring defaults).
+
+    Learned limits:
+    - The op's `Inputs Indexing?` control is DEAD in this design (tunnels are created by
+      the border-crossing wire, not by Create For Loop's Inputs path, whose `Inputs`
+      output arrives empty - root cause of the original zero-wire runs, never fixed,
+      bypassed instead). Index modes follow LabVIEW defaults; a flat 1D array that must
+      NOT be indexed per-element (e.g. x,y,z) needs separate handling.
+    - Pairing is by array order: control_names[i] -> input_names[i].
+    - A wrong OUTPUT name raises readable 5001; a wrong INPUT name pairs nothing.
+    """
+    before_loops = count(target, "ForLoop")
+    before_subs = uids(target, "SubVI")
+    before_wires = count(target, "Wire")
+    vi = op(OP_LOOPKERNEL)
+    _set(vi, "vi path", target)
+    _set(vi, "location (0, 0)", list(location))
+    _set(vi, "Control Names", list(control_names))
+    _set(vi, "Inputs Indexing?", [])
+    _set(vi, "Number of Static Parallel Instances", parallel)
+    _set(vi, "vi path 2", kernel_path)
+    _set(vi, "Input Names", list(input_names))
+    _set(vi, "Output Names", [])
+    dt = _run(vi)
+    err = _err(vi)
+    if err:
+        raise RuntimeError(f"loop_kernel: {err}")
+    if count(target, "ForLoop") != before_loops + 1:
+        raise RuntimeError("loop_kernel: no new ForLoop")
+    new_subs = new_since(target, "SubVI", before_subs)
+    if len(new_subs) != 1 or new_subs[0]["owner"] != "Diagram":
+        raise RuntimeError(f"loop_kernel: kernel not placed inside a structure: {new_subs}")
+    dw = count(target, "Wire") - before_wires
+    if dw != len(input_names):
+        raise RuntimeError(
+            "loop_kernel: expected %d new wires, got %d - an input name probably "
+            "paired with nothing" % (len(input_names), dw))
+    return new_subs[0]
+
+
+OP_SETINDEXMODE = os.path.join(CLAUDEDEV, "OpSetIndexMode_v0.vi")
+
+
+def set_index_mode(target, tunnel_index, mode):
+    """Write a LoopTunnel's IndexMode in `target` (0 = regular/non-indexed, 1 = auto-indexed).
+
+    Drives OpSetIndexMode_v0 (built 2026-08-31: Traverse('LoopTunnel', index) -> cast ->
+    IndexMode WRITE property node <- 'index 2' control). IndexMode is U32; only 0 and 1
+    are documented - anything else is rejected here (peer-verified, labviewwiki
+    LoopTunnel.IndexMode). Not settable while the target runs. Verify by EFFECT
+    (ExecState flip on a type mismatch) - there is no scripted read-back op yet.
+    """
+    if mode not in (0, 1):
+        raise ValueError("IndexMode: only 0 (regular) and 1 (auto-index) are documented")
+    vi = op(OP_SETINDEXMODE)
+    _set(vi, "vi path", target)
+    _set(vi, "vi path 2", target)
+    _set(vi, "Class Name", "LoopTunnel")
+    _set(vi, "index", int(tunnel_index))
+    _set(vi, "index 2", int(mode))
+    _run(vi)
+    err = _err(vi)
+    if err:
+        raise RuntimeError(f"set_index_mode(tunnel {tunnel_index}, mode {mode}): {err}")
+
+
+OP_WIRECTL = os.path.join(CLAUDEDEV, "OpWireCtl_v0.vi")
+
+
+def wire_control(target, control_names, dst_cls, dst_i, dst_terms, branch=False,
+                 src_diagram_index=0):
+    """Wire FRONT-PANEL CONTROLS to a node's named inputs - the one thing OpWire_v1
+    could never do, because it only ever sourced from Traverse + Get Outputs.
+
+    `OpWireCtl_v0` swaps that source for `Get Controls.vi`, which turns control LABELS
+    into terminal refnums and hands them to `Wire Inputs.vi`'s `Inputs` array. Pass the
+    control labels and the destination terminal names positionally:
+
+        wire_control(target, ['x,y,z array'], 'Unbundler', 0, ['array'])
+
+    A destination name that does not exist raises 5001 inside the Op (loud); a control
+    label that does not exist raises from Get Controls ("Control %s not found").
+    """
+    before = count(target, "Wire")
+    vi = op(OP_WIRECTL)
+    _set(vi, "vi path", target)
+    _set(vi, "Class Name", "Diagram")     # source side: find the block diagram
+    # Get Controls only sees control TERMINALS living on the given diagram - a terminal
+    # placed inside a loop/case needs that subdiagram's index (2026-09-01).
+    _set(vi, "index", src_diagram_index)
+    _set(vi, "Names", list(control_names))
+    _set(vi, "Class Name 2", dst_cls)
+    _set(vi, "index 2", dst_i)
+    _set(vi, "Names 2", list(dst_terms))
+    _run(vi)
+    err = _err(vi)
+    if err:
+        raise RuntimeError("wire_control %s -> %s.%s: %s"
+                           % (list(control_names), dst_cls, list(dst_terms), err))
+    after = count(target, "Wire")
+    if not branch and after != before + len(control_names):
+        # A BRANCH from an already-wired control does NOT add a Wire object - the wire
+        # owns all its sinks - so this check misreads a successful branch as a silent
+        # decline (it did exactly that twice on 2026-08-31 while the branch succeeded).
+        # For branches pass branch=True and verify by effect: ExecState 0->1, or probe.
+        raise RuntimeError("wire_control %s -> %s.%s: Wire %d -> %d, expected +%d "
+                           "(if the control is already wired elsewhere this may be a "
+                           "successful BRANCH - re-call with branch=True)"
+                           % (list(control_names), dst_cls, list(dst_terms),
+                              before, after, len(control_names)))
+    return after
+
+
+def exec_state(target):
+    return int(_prop(_viref(target), "ExecState"))
+
+
+def gui_save(target):
+    """Save a BROKEN VI by focusing its window and sending Ctrl+S.
+
+    COM `SaveInstrument` blocks forever on a VI whose ExecState is 0, but the editor's
+    own File > Save handles one fine (the file shrinks, because a broken VI carries no
+    compiled code - benign, the diagram is intact). Needed because copying a fresh
+    primitive into a target ALWAYS leaves it briefly broken: the primitive's required
+    inputs are not wired yet.
+
+    Sending Ctrl+S to whatever happens to be focused is how an original VI would get
+    saved by accident, so this is guarded three ways: the target must be inside
+    claudeDev, `focus` must find a window whose title carries the target's own file
+    name (it raises if not), and the save is only believed if the file's mtime moves.
+    """
+    if (os.path.normcase(CLAUDEDEV) not in os.path.normcase(target)
+            and os.path.normcase(target) not in SAVE_ALLOWLIST):
+        raise RuntimeError(f"refusing to gui_save outside claudeDev: {target}")
+    name = os.path.basename(target)
+    open_panel(target)
+    before = os.path.getmtime(target)
+    # A VI usually has BOTH a Front Panel and a Block Diagram window, and `focus` matches
+    # the title as a SUBSTRING - so the bare file name is ambiguous. Ctrl+S landed nowhere
+    # when it resolved to the Front Panel (2026-08-30); the Block Diagram window takes it.
+    # The sleep matters too: SetForegroundWindow needs a moment before keys are accepted.
+    for title in ('%s Block Diagram' % name, '%s Front Panel' % name, name):
+        out = _lv_gui("-Action", "focus", "-Title", '"%s"' % title)
+        if "focused" not in out:
+            continue
+        time.sleep(0.8)
+        # H5 (2026-09-05): after a programmatic activation + Alt-tap focus, LabVIEW's UI loop
+        # ignores keys / blocks COM until a real mouse click lands. Click the window's TITLE BAR
+        # (never the panel: a panel click can toggle a control) before sending Ctrl+S.
+        try:
+            import re as _re
+            m = _re.search(r"left=(-?\d+) top=(-?\d+) right=(-?\d+)", _lv_gui("-Action", "rect", "-Title", '"%s"' % title))
+            if m:
+                L, T, R = (int(x) for x in m.groups())
+                _lv_gui("-Action", "click", "-X", str(min(L + 300, R - 120)), "-Y", str(T + 10),
+                        "-Exception", "Approved", "-Evidence", "gui_save: title-bar click to unstick the UI loop (H5)")
+                time.sleep(0.4)
+        except Exception:
+            pass
+        _lv_gui("-Action", "keys", "-Key", "^s", "-WaitMs", "2500", "-Exception", "Approved", "-Evidence", "gui_save: COM SaveInstrument hangs on broken VIs (skill com-driving.md)")
+        # SendKeys '^s' leaves the File MENU ACTIVATED (it renders highlighted). While a
+        # menu is active LabVIEW's UI is modal and EVERY subsequent COM call blocks until
+        # the 180s watchdog fires - twice mistaken for a wedged LabVIEW on 2026-08-30.
+        # Esc dismisses it. Always send it, whether or not the save appeared to work.
+        _lv_gui("-Action", "key", "-Key", "esc")
+        time.sleep(0.4)
+        if os.path.getmtime(target) > before:
+            return os.path.getsize(target)
+    raise RuntimeError(
+        f"gui_save({name}): file mtime did not move after Ctrl+S on every candidate window. "
+        f"Check 'lv_gui.ps1 -Action dialogs' - a modal dialog blocks the save.")
+
+
+# Files OUTSIDE claudeDev that the user explicitly authorized for direct modification.
+# (2026-09-01: fixture recording goes into the working copy itself - user: "카피한 메인 vi
+# 자체를 변경하면 좋을 것 같은데". The ORIGINAL Min_Track N beads 4.5_... stays forbidden.)
+SAVE_ALLOWLIST = {
+    os.path.normcase(r"G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking"
+                     r"\Min_Track N beads V6_ParallelLoop.vi"),
+}
+
+
+def save(target, allow_broken=False):
+    """Persist the in-memory edits. Guarded to claudeDev + explicit allowlist: an
+    original VI must never be saved.
+
+    `allow_broken` diverts a broken VI to gui_save() instead of refusing it.
+    """
+    if (os.path.normcase(CLAUDEDEV) not in os.path.normcase(target)
+            and os.path.normcase(target) not in SAVE_ALLOWLIST):
+        raise RuntimeError(f"refusing to save outside claudeDev: {target}")
+    if exec_state(target) == 0:
+        if allow_broken:
+            return gui_save(target)
+        raise RuntimeError("refusing to save a BROKEN VI - SaveInstrument blocks forever on one")
+    _invoke(_viref(target), "SaveInstrument", hard_timeout_s=300.0)
+    return os.path.getsize(target)
+
+
+# --- recipes ----------------------------------------------------------------------------------
+
+def build_kernel(target, loop_at=(4000, 300), parallel=4,
+                 tunnel="Array of cal clusters",
+                 bead_vi="Track 1 of N bds xyz-kernel-reentrant.vi"):
+    """SUPERSEDED by loop_kernel(). Places an UNWIRED loop + kernel; kept for regression.
+
+    Its `tunnel`/`indexing` arguments are INERT: OpForLoop_v0's tunnel creation has never
+    worked (Create For Loop's `Inputs` output arrives empty), and the "+1 Tunnel" this
+    used to report was the loop's N terminal, which reports as class Tunnel. Use
+    loop_kernel() for anything that must actually carry data. This entry point still
+    exercises for_loop + loop_diagram + drop_subvi + the containment assert, which is
+    why it is kept.
+    """
+    print("NOTE: build_kernel is superseded by loop_kernel() - it wires NOTHING.")
+    print(f"target: {target}")
+    print(f"  before: ForLoop={count(target,'ForLoop')} Diagram={count(target,'Diagram')} "
+          f"SubVI={count(target,'SubVI')}")
+
+    dt = for_loop(target, loop_at, tunnels=[tunnel], indexing=[True], parallel=parallel)
+    print(f"  for_loop P={parallel} at {loop_at}: {dt:.2f}s")
+
+    loop = find_at(target, "ForLoop", loop_at)
+    print(f"  loop found: index={loop['i']} uid={loop['uid']} pos={loop['pos']}")
+
+    inner = loop_diagram(target, loop_at)
+    print(f"  inner diagram: index={inner['i']} uid={inner['uid']} pos={inner['pos']} "
+          f"owner={inner['owner']} (offset-matched, margin-checked)")
+
+    at = (loop_at[0] + 60, loop_at[1] + 60)
+    before_subvis = uids(target, "SubVI")
+    dt = drop_subvi(target, os.path.join(BG_VIS, bead_vi), inner["i"], at)
+    print(f"  drop_subvi {bead_vi} -> diagram[{inner['i']}] at {at}: {dt:.2f}s")
+
+    added = new_since(target, "SubVI", before_subvis)
+    if len(added) != 1:
+        raise RuntimeError(f"expected exactly 1 new SubVI, got {len(added)}: {added}")
+    placed = added[0]
+    print(f"  placed subVI: uid={placed['uid']} pos={placed['pos']} owner={placed['owner']}")
+    if placed["owner"] != "Diagram":
+        raise RuntimeError(
+            "placed subVI's owner is %s, not a structure subdiagram" % placed["owner"])
+    print("  containment: owner is a structure Diagram (not TopLevelDiagram), and the target "
+          "diagram was offset-matched with a verified margin. For an identity-level proof see "
+          "STATUS.md (Owner->GObject cast->UID, or AbstractDiagram 'All Objects[]').")
+    print(f"  after:  ForLoop={count(target,'ForLoop')} Diagram={count(target,'Diagram')} "
+          f"SubVI={count(target,'SubVI')}")
+    print(f"  ExecState={exec_state(target)} (0=BROKEN, expected until the body is wired)")
+    return placed
+
+
+def main():
+    if len(sys.argv) < 3:
+        print(__doc__)
+        return 2
+    cmd, target = sys.argv[1], sys.argv[2]
+    if cmd == "report":
+        for o in report(target, sys.argv[3]):
+            print("  [%d] %-18s uid=%-6d pos=%-14s owner=%s"
+                  % (o["i"], o["class"], o["uid"], str(o["pos"]), o["owner"]))
+    elif cmd == "kernel":
+        build_kernel(target)
+    elif cmd == "save":
+        print("saved,", save(target), "bytes")
+    else:
+        print(f"unknown command {cmd!r}")
+        return 2
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

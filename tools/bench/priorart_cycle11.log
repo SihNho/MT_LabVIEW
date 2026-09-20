@@ -1,0 +1,149 @@
+BGRUN START 2026-09-16 16:24:00 limit 14.0 min: py -u tools/prior_art_review.py --plan-file docs/cycle11-plan.md --slug priorart-cycle11-delete --trigger new-op --model opus --effort high
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-cycle11-delete.txt (19325 chars)
+OUTCOME: ANSWERED (427s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-16-priorart-priorart-cycle11-delete.md
+COST: $4.3327  in 48 / out 30943 / cache-create 196706 / cache-read 3183702  (423s, 37 turn(s))
+--- ANSWER ---
+**Verdict: this cycle is blocked on eight prior-art findings.** The *direction* (give the delete op a live error indicator) is sound and was in fact prescribed in our own files on 2026-09-06 ? but the **method Stage 1 chooses was measured and refuted here two days ago**, Stage 3's A7 is a verbatim restatement of a plan row whose dependencies it drops, and one of its two "new" facts contradicts a document written 2026-09-14.
+
+---
+
+# PART A ? THE DIRECTION
+
+## A1 �� SETTLED ALREADY
+
+**(1) The "reading this cycle is built on" (cycle11-plan.md:25-36) was recorded at build time, 2026-09-06.**
+
+> `docs/keystone-op-spec.md:281` ? *"One auto-error dialog appeared (dismissed by the watchdog; **the Delete node's error out is unwired**) ? same v0 limitation as the other ops."*
+> `docs/keystone-op-spec.md:255-256` ? *"the op's `error out` indicator is unwired (always clean) ? creator errors surface only as auto-error dialogs (watchdog) **until an indicator is attached by a future op**."*
+
+Both halves of the plan's hypothesis ? the Invoke node's `error out` is unwired, and the panel indicator is therefore dead ? are stated as measured facts at the moment `OpDelete_v0` was built, together with the remedy. **Consequence for the build:** Stage 1 step 2's *test* half ("a new indicator appearing is proof the terminal was unwired", :55-56) is spending a mutating `create_indicator` call to re-establish something already in the record. The *fix* half is still needed; the test is not.
+
+**(2) Stage 3's entire A7 is the master plan's A7 row, uncited.**
+
+`docs/pre-rig-master-plan.md:74` already contains all three audits, the `t0-instrumentation-plan.md:65-70` quote, property **288**, and the ASI sentence verbatim ? dated 2026-09-16, *"widened 2026-09-16, rev5 A6"*. The cycle plan reproduces it at :89-96 as if assembling it. Two things are lost in the copy: A7's scope (*"Three audits over **A4's membership***") and its `needs` column (**A4, A6**).
+
+## A2 �� REFUTED ALREADY
+
+**(3) The fp_labels oracle in Stage 1 step 3 was measured wrong on 2026-09-14.**
+
+The plan: *"`fp_labels()` diff �� the label LabVIEW gave it (expected `error out 2`). **The label is the confirmation that terminal 3 really is `error out`**"* (cycle11-plan.md:57-58). Our own run:
+
+> `tools/bench/build_opbuildpn_v1c.log:6-9` ? create indicator on the terminal *named* `error out` (index 10) �� **`new indicator label(s): ['error out 2']; ExecState 0`**
+> `:17` ? *"Remove Bad Wires �� (not a bad-wire problem)"*
+> `:19-24` ? PHASE B on index **15**, the *other* terminal also named `error out` �� `['error out 2']; ExecState 1`
+
+**The label `error out 2` appeared for both the right and the wrong terminal.** It confirms the terminal's *name*, never that it is the error **out**. The recorded discriminator is name **plus `Is Source?`** ? which is exactly how `tools/recipes/build_opaddshiftreg_v0.py:255` does it (`nm == "error out" and s`).
+
+**(4) Label-set diffing as a creation oracle was refuted and formally replaced.**
+
+> `archive/peer/2026-09-15-opwiresource-fail1-uid-indicator-not-created.md:53` ? *"**label-set cardinality is not a valid creation-success oracle**"*; `:101-104` (our own annotation) ? *"The recipe now diffs panel rows **by UID** (`panel_wiring`, a multiset keyed by object uid) �� a duplicate label would make every later read ambiguous."*
+
+The plan reverts to the method that was retired, and P2 (:63) re-states the prediction that failed.
+
+**(5) The stated Falsifier does not falsify.**
+
+Plan: *"if `create_indicator` on that terminal declines (meaning the terminal is already wired), this reading is wrong"* (:35-36). The same archived exchange records a **decline on an unwired terminal**, and its top-ranked cause was neither: `:26-27` ? *"**Unlisted H6: the invoke failed or returned no valid object.**"*, decision table at `:81-87`. A decline is therefore not evidence about wiring, and the recipe would stop on a false conclusion.
+
+## A3 �� CONTRADICTED
+
+**(6) "the dialog is the only error signal there is" (cycle11-plan.md:19) ? not for the failure this cycle exists to fix.**
+
+> `tools/bench/diag_delete_error.log:16-19` ? the *real* delete (valid uid 1319, ExecState 1): **`Run: returned`** �� `'error out' -> status FALSE (clean)` �� `objects that disappeared: NONE`
+
+No dialog. The dialogs in `diag_delete_error_control.log:9-11` came only from the two *impossible* control inputs. So P4's mechanism ("wiring it should remove the dialog", :72-73) is a claim about the control cases; **the regression case produced no dialog, no error and no deletion**, and wiring `error out` may leave it exactly as silent.
+
+**(7) The cycle forbids `net_map`, then re-runs a recipe built on it.**
+
+> plan `:43` ? *"**no `net_map` call anywhere in this cycle until delete is proven**"*
+> plan `:85` ? *"**A1** (`tools/recipes/build_opownerchain_v0.py`) re-run��"*
+> `tools/bench/build_opownerchain_v0.log:4-28, 31-59, 62-90, 92-120, 122-142, 145-164��` ? that recipe's single run performs **~14 `net_map` walks** and reports *"purged 166 junk Invoke(s)"* (:59) with a delete that does not delete.
+
+**(8) "A1 has one of its two failures left" (:88) ? the log says three.**
+
+> `tools/bench/build_opownerchain_v0.log:299` ? *"OpOwnerChain_v0 build: **2 pass, 3 fail** -> B2 ��, B3 ��, B4 ��"*
+
+`STATUS.md` itself says *"FAILED 3/5 gates"*. The plan's fix list covers B2/B4's causes (`#1044` class, ordering); **B3 is not addressed** ? see finding 10.
+
+**(9) "a confirmed instance nobody had connected" (:91-93) ? it was connected on 2026-09-14.**
+
+> `docs/g9-core-budget.md:32-33` ? *"any non-reentrant subVI shared by two loops **serialises them** (both focus subVIs are non-reentrant by design; **keep one caller each**)."*
+
+That is the accidental-mutex consequence, drawn and turned into a design rule two days before this plan calls it unconnected. (Minor, same family: `:86` cites `gscript.py:2084`, which is blank ? the "wire only unwired sinks" sentence is `gscript.py:2110-2111`.)
+
+## A4 �� UNREAD EVIDENCE
+
+**(10) `archive/peer/2026-09-15-priorart-ownerchain.md:117` predicted A1's surviving failure and was never annotated.**
+
+> *"The pending recipe rewires only nodes 163 and 1221 �� and **neither deletes nor re-feeds node 482. It therefore repeats the recorded failure cause.**"*
+> Outcome: `tools/bench/build_opownerchain_v0.log:143` ? *"**FAIL** B3 �� consumers {163: 751, 1221: 751, **482: 1444**}"*
+
+The cycle-11 A1 fix (:85-87) names deletes-before-connects, unwired sinks and `#1044` ? **node 482 appears nowhere**. That review's "What was done with it" is still `(Claude fills in)` (`:139`).
+
+**(11) `docs/pre-rig-master-plan.md:66-77` ? the Phase-A dependency table.** A7 `needs: A4, A6`; A4 `needs: A3`; A3 `needs: A2`; A2 `needs: A1`. The plan runs **A1 �� A7**, skipping A2?A5. A7(a) and A7(c) are both defined *over A4's membership*, which will not exist.
+
+**(12) `docs/keystone-op-spec.md:565-573` (��33) and `:527-531` (��30) ? delete has returned "0 gone" before, on a specific object class.**
+
+> `:567` ? *"`Create Invoke Node.vi` (**Delete on that node returns "0 gone"**��)"* (2026-09-07)
+> `:527-529` ? *"`delete_object` of the erdosmiller creator SubVI node **hangs 120 s** ? the same op deleted six nodes of an FPTARGET copy �� without trouble. **Deleting an lvlib-member subVI node is the specific trigger**"*
+
+This is the same symptom, scoped to an object class, recorded while other deletes in the same session succeeded ? directly relevant to whether the cause is the tool (the plan's premise) or the object, and it is cited nowhere in the plan or in `STATUS.md`'s "assume every `verify=False` delete since the regression did nothing".
+
+---
+
+# PART B ? THE ARTIFACT
+
+## B1 �� ALREADY BUILT (the technique, not the op)
+
+There is no `OpDelete_v1` and no `build_opdelete*.py` among the 121 recipes ? **the artifact is new**. The *operation* is not:
+
+- `tools/recipes/build_opaddshiftreg_v0.py:255-259` ? locates the Invoke node's terminal by `nm == "error out" and s`, then `create_indicator(OP, node, te)` and prints the new label.
+- `tools/recipes/build_opbuildpn_v1.py:118-124` ? the identical step with the identical contract: *"1 Create Indicator on creator.'error out'" / "predict: ControlTerminal +1, Wire +1, ExecState stays 1"*, plus an **address assertion before invoking** (`:103-111`) added after a peer review of the run that got it wrong.
+
+Stage 1 should be a copy of `build_opbuildpn_v1.py`'s step, not a fresh route.
+
+## B2 �� ALREADY FAILED
+
+- Finding (3) above: this exact step, with the plan's exact oracle, produced `error out 2` **and a broken VI** ? `build_opbuildpn_v1c.log:6-19`.
+- **`node_info()` on this VI family is a recorded crash.** `OpDelete_v0` is `OpBuildInvoke_v0` lineage (`docs/keystone-op-spec.md:275` ? *"Copy of OpBuildInvoke_v0 �� GUI delete of the creator��"*), and `docs/keystone-op-spec.md:523` records *"(A) **node_info (Node.Label/Style) CRASHES on OpBuildInvoke/OpBuildPN-type VIs**"* ? echoed in `tools/gscript.py:2233` (*"no Style/Label: crash, spec ��30"*). Stage 1 step 1 (`:53`) makes `node_info()` its only topology reader. **Scope caveat, stated so it can be refuted cheaply:** OpDelete_v0 has had its creator deleted, the crash was never isolated, and `docs/motion-path-audit.md:139-142` logs a separate non-reproduction on different VIs. Check before relying on it; do not assume it away.
+
+## B3 �� HELPER EXISTS
+
+| the plan hand-rolls | the call that already exists |
+|---|---|
+| "terminal 3 is `error out`" (:54-55), an unmeasured index | **`node_terms(target, diagram, node)`** ? *"every terminal of ONE node: **name, `Is Source?`**, wire UID"* (`docs/toolkit-capabilities.md:23`), and **creator-free** (`:54-55`: *"OpSubVIs_v1 / OpNodeTerms_v0 are creator-free"*), so it satisfies the plan's own no-`net_map` rule |
+| `fp_labels()` set diff (:57) | **`panel_wiring(target)`** ? label, indicator flag, UID, *"connected-wire UID (0 = bare)"* (`docs/toolkit-capabilities.md:22`); the UID-keyed oracle the 2026-09-15 review made mandatory |
+| "the front-panel `error out` indicator is wired to something else (or nothing)" (:32) ? asserted | same `panel_wiring` call reads that wire UID **with no edit at all** |
+| P4's premise, that the dialog *is* the unwired error out (:72-73) | **`set_auto_error_handling(target, False)`** ? *"silences the auto error dialog for **every unwired error out** in that VI"* (`tools/gscript.py:2314-2317`). One call on a copy discriminates P4's mechanism before anything is built |
+| A7(a) "which diagram owns it" (:94) | **`subvis(target, diagram)`** + `tools/bench/main_vi_subvis.json` ? *"98 sites, 0 mismatches"* (`docs/toolkit-capabilities.md:21`), tabulated in `docs/main-vi-subvi-identity.md` |
+
+## B4 �� ALREADY MEASURED
+
+- **A7(a), the VISA census** ? `docs/motion-path-audit.md` already is one: `:30-40` the per-VI node counts; `:43-46` `ASI_adjust focus-subvi.vi`'s `Wait (ms)` + VISA on **diagram 8**; `:66-70` the size-1 semaphore in `Send Serial Command.vi`; `:72-74` the byte-count read and 5000 ms timeout; `:84-99` the measured round trip (**2.56 ms**). Only the *membership* mapping is missing ? and `:130` already says so: *"**Step 0 first, unchanged** ? determine which While loop holds what. Nothing above matters if these VIs are not on the per-frame path."* That step is A3/A4.
+- **A7(c), the UI-thread census** ? `docs/g9-core-budget.md:32`: *"UI-thread `Value` property nodes (**106 today; 88 implicit**)"*, and `docs/toolkit-capabilities.md:26` records *"88/88 implicit `Value` nodes of the main VI labelled with a panel label"*. `motion-path-audit.md:122-126` already states the remaining question exactly as the plan restates it.
+- **A7(b), reentrancy** ? the instance (`g9-core-budget.md:33`, `main-vi-panel-map.md:558`) and the property to read (`docs/vi-server-ids.json:62`, `docs/subvi-call-cost-plan.md:72`) are both already on disk.
+- One method note the plan should not lose: `docs/motion-path-audit.md:137-138` ? *"**`node_info` is top-level only** �� a first pass that used only `node_info` would have concluded these VIs were almost empty. Walk every diagram index with `net_map` instead."* With `net_map` banned (:43), A7's censuses need `node_terms`/`subvis` per diagram, not `node_info`.
+
+---
+
+**Cheapest release path, if you want one:** findings 1, 3, 4, 5, and B3 all dissolve into a single Stage-1 rewrite ? `panel_wiring` to read the existing indicator's wire, `node_terms` to get the `error out` terminal's index **and** `Is Source?`, then `create_indicator` guarded by a UID diff, copied from `build_opbuildpn_v1.py:103-124`. Findings 7, 8, 10, 11 are about Stage 3 and are independent of that.
+
+```
+PRIOR-ART: settled-already
+PRIOR-ART: settled-already
+PRIOR-ART: refuted-already
+PRIOR-ART: refuted-already
+PRIOR-ART: refuted-already
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: unread-evidence
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-built
+PRIOR-ART: already-failed
+PRIOR-ART: helper-exists
+PRIOR-ART: already-measured
+```
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-cycle11-delete.md
+BGRUN END rc=0 after 427s

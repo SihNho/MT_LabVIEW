@@ -1,0 +1,62 @@
+BGRUN START 2026-09-13 00:58:56 limit 20.0 min: py -u -c 
+import os,sys,json
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+WORK=r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi'
+tree=json.load(open('tools/bench/diagram_tree_main.json',encoding='utf-8'))['diagrams']
+where={}
+for dia,info in tree.items():
+    for uid in info['uids']: where.setdefault(int(uid),int(dia))
+LOOPS={20:'motor loop',43:'FRAME LOOP',99:'display loop',19:'parent',87:'camera config'}
+objs=g.report(WORK,'Global')
+print('%d Global objects in the VI'%len(objs))
+print()
+# read each global-bearing diagram once, keeping terminal names so the global NAME shows up
+dias=sorted({where.get(o['uid']) for o in objs if where.get(o['uid']) is not None})
+print('diagrams holding a Global:',dias)
+print()
+for d in dias:
+    try: nodes,nets=g.net_map(WORK,diagram_index=d,max_nodes=80,max_terms=24)
+    except Exception as e:
+        print('dia %s FAILED %s'%(d,str(e)[:70])); continue
+    gset={o['uid'] for o in objs if where.get(o['uid'])==d}
+    byu={i:uid for i,(uid,l,t) in nodes.items()}
+    print('=== diagram %-4s %-22s (%d nodes)'%(d,LOOPS.get(d,tree[str(d)]['owner']),len(nodes)))
+    for i,(uid,lbl,terms) in nodes.items():
+        if uid in gset:
+            names=[nm for _,nm,_ in terms if nm]
+            wired=[(t,nm,w) for t,nm,w in terms if w]
+            print('   GLOBAL uid %-7s %s   wires=%s'%(uid,names,[w for _,_,w in wired]))
+            for w,mem in nets.items():
+                if w and any(byu.get(n)==uid for n,_,_ in mem):
+                    others=[(byu.get(n),nm) for n,t,nm in mem if byu.get(n)!=uid]
+                    print('      wire %-7s also touches %s'%(w,others))
+print()
+print('done')
+
+7 Global objects in the VI
+
+diagrams holding a Global: [5, 8, 19, 83]
+
+=== diagram 5    Sequence               (7 nodes)
+   GLOBAL uid 3125    ['Trans position']   wires=[2348]
+      wire 2348    also touches [(3163, 'element'), (31228, 'Value')]
+=== diagram 8    FlatSequenceFrame      (7 nodes)
+   GLOBAL uid 3242    ['Rot position']   wires=[7152]
+      wire 7152    also touches []
+=== diagram 19   parent                 (21 nodes)
+   GLOBAL uid 6951    ['Rot position']   wires=[783]
+      wire 783     also touches [(25380, 'rot pos')]
+   GLOBAL uid 6409    ['Trans position']   wires=[6533]
+      wire 6533    also touches [(25380, 'tran pos')]
+   GLOBAL uid 7202    ['Focus position']   wires=[4859]
+      wire 4859    also touches [(637, 'position [internal units]')]
+=== diagram 83   FlatSequenceFrame      (13 nodes)
+   GLOBAL uid 3115    ['Trans position']   wires=[3359]
+      wire 3359    also touches [(3097, 'Trans Pos (mm)')]
+   GLOBAL uid 3166    ['Rot position']   wires=[3324]
+      wire 3324    also touches [(3160, 'Rot pos (deg)')]
+
+done
+BGRUN END rc=0 after 359s

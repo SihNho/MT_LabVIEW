@@ -1,0 +1,52 @@
+BGRUN START 2026-09-16 19:08:59 limit 13.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools/peer.ps1 -Agent codex -Kind review -TimeoutSec 700 -Slug ownerchain-flatseqframe-1055-r2 -TaskFile C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/peer_task_1055.md
+OUTCOME: ANSWERED (147s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-16-ownerchain-flatseqframe-1055-r2.md
+--- ANSWER ---
+1. **Strongest reason the diagnosis is wrong as stated:** the proposed fix cannot work. `FlatSequenceFrame` is **not** a GObject or a descendant of GObject; it is a direct child of `Generic`, alongside `GObject`. Therefore it has no `GObject.UID` property to read—cast or uncast. The hierarchy is:
+
+```text
+Generic
+├─ FlatSequenceFrame
+└─ GObject
+   ├─ AbstractDiagram → Diagram
+   └─ FlatSequence
+```
+
+See the [VI Server class hierarchy](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy) and the [FlatSequenceFrame class](https://labviewwiki.org/wiki/FlatSequenceFrame_class). Consequently, “read `GObject.UID` directly from the uncast Owner” is not a valid fix, and casting “to the class actually reported” still would not produce a UID because `FlatSequenceFrame` exposes frame properties—not `GObject.UID`.
+
+There is also a measurement gap: the run did **not capture the cast’s own error output**. `read_owner()` gathers `errL`, `errT`, `errO`, `errU`, and `errG`, but omits the mapped cast error `errCO` ([build_opownerchain_v1.py](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_opownerchain_v1.py>)). Thus “the cast failed” is strongly implied, but not directly measured. NI says an incompatible `To More Specific Class` operation returns an error and `Not A Refnum`; the reported 1055 instead comes from a **Property Node** consuming an invalid reference. [NI: To More Specific Class](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/functions/to-more-specific-class.html)
+
+2. **Alternative explanation:** this is not a transient or defective cast; it is a deterministic modelling error in `OpOwnerChain_v1`. For a `Diagram` belonging to a Flat Sequence frame, `Generic.Owner` legitimately returns a valid `Generic` reference whose runtime class is `FlatSequenceFrame`. `Generic.Owner` is expressly typed as `Generic`, and sequence containers can be owning objects. [Generic.Owner documentation](https://labviewwiki.org/wiki/Generic_class/Owner_property)
+
+Because `FlatSequenceFrame` lies outside the GObject subtree, the op then performs an impossible cast to `GObject`. Per NI, that produces `Not A Refnum`; the downstream UID Property Node dereferences it and emits 1055, whose documented meaning is “object reference is invalid.” [NI: error 1055](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019L75SAE&l=en-US)
+
+So the likely chain is:
+
+```text
+Diagram#686
+  → Generic.Owner = valid FlatSequenceFrame ref
+  → cast-to-GObject = incompatible / Not A Refnum
+  → GObject.UID Property Node = error 1055
+```
+
+The correct traversal is therefore class-specific: from `FlatSequenceFrame`, use its read-only properties—particularly `Diagram`—or continue through `Generic.Owner` to reach the enclosing `FlatSequence`, which *is* a GObject. `FlatSequenceFrame` itself has no UID. [FlatSequenceFrame properties](https://labviewwiki.org/wiki/FlatSequenceFrame_class), [FlatSequence hierarchy](https://labviewwiki.org/wiki/FlatSequence_class)
+
+3. **Observation that would falsify your hypothesis:** capture the cast’s error output and cast-result validity. If the input Owner reports `FlatSequenceFrame`, but `To More Specific Class → GObject` reports no error and its output is not `Not A Refnum`, while `GObject.UID` still returns 1055, then the cast-failure explanation is false. Likewise, if another raw-Owner Generic property such as `Class ID` fails with 1055, the Owner reference itself is invalid/stale despite the earlier ClassName result.
+
+4. **Cheapest discriminating test:** without any cast, branch the raw `Generic.Owner` result and read only:
+
+- `Generic.Class Name`
+- `Generic.Class ID`
+- `Generic.Owner`, followed by that owner’s `Generic.Class Name`
+
+For uid 686, the decisive expected result is approximately:
+
+```text
+raw owner: FlatSequenceFrame, class ID 16479
+raw owner’s owner: FlatSequence
+no 1055
+```
+
+If that succeeds, the raw Owner reference is valid and the GObject cast/UID branch is conclusively the bad assumption. If either raw Generic read returns 1055, reference invalidation is the better explanation.
+
+After trying to refute it: **the core mechanism of your hypothesis still holds**, but the suggested repair does not. The op must special-case the `FlatSequenceFrame` branch and traverse via Generic/frame properties; it cannot recover a `GObject.UID` from that frame itself.
+BGRUN END rc=0 after 147s

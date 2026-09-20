@@ -1,0 +1,131 @@
+BGRUN START 2026-09-19 17:32:16 limit 30.0 min: py -u tools/bench/s0_hygiene_probe.py
+=== S0 HYGIENE PROBE  2026-09-19 17:32:16 ===
+
+[A] restart LabVIEW for a clean baseline (standing authority, CLAUDE.md s3)
+A baseline: handles 33969  private 584.5 MB
+  PASS A0 LabVIEW is up  handles=33969
+
+[B] census of the traverse ops and the donor
+  OpReport_v3.vi: 5 nodes, 0 close-ref-like
+      #482     Property                 'Property Node'
+      #241     Property                 'Property Node'
+      #167     IndexArray               'Index Array'
+      #124     SubVI                    'Traverse for GObjects.vi'
+      #43      Function                 'Open VI Reference'
+  OpWireSource_v5.vi: 19 nodes, 0 close-ref-like
+      #1554    Property                 'Property Node'
+      #1329    Property                 'Property Node'
+      #1326    Property                 'Property Node'
+      #1319    Property                 'Property Node'
+      #1221    Function                 'To More Specific Class'
+      #1186    Property                 'Property Node'
+      #310     Property                 'Property Node'
+      #307     Property                 'Property Node'
+      #1044    Function                 'To More Specific Class'
+      #990     SubVI                    'UID to GObject Reference.vi'
+      #163     Property                 'Property Node'
+      #157     Property                 'Property Node'
+      #151     IndexArray               'Index Array'
+      #145     Property                 'Property Node'
+      #482     Property                 'Property Node'
+      #241     Property                 'Property Node'
+      #167     IndexArray               'Index Array'
+      #124     SubVI                    'Traverse for GObjects.vi'
+      #43      Function                 'Open VI Reference'
+  OpReportAll_v0.vi: 5 nodes, 0 close-ref-like
+      #113     ForLoop                  'For Loop'
+      #115     Property                 ''
+      #114     Property                 ''
+      #124     SubVI                    'Traverse for GObjects.vi'
+      #43      Function                 'Open VI Reference'
+  KernelBuilder_v1.vi: 18 nodes, 1 close-ref-like
+      #962     SubVI                    'Get Controls.vi'
+      #816     StaticVIReference        'Track 1 of N bds xyz-kernel-reentrant.vi'
+      #751     SubVI                    'Create SubVI.vi'
+      #544     Function                 'Open VI Reference'
+      #1845    Function                 'Select'
+      #1337    Function                 'Select'
+      #1027    SubVI                    'Create Constant.vi'
+      #491     SubVI                    'Exit For Loop.vi'
+      #410     SubVI                    'Create For Loop.vi'
+      #2066    Function                 'Select'
+      #1657    BuildArray               'Build Array'
+      #906     Function                 'Select'
+      #1236    SubVI                    'Create Constant.vi'
+      #1167    BuildArray               'Build Array'
+      #629     SubVI                    'Create Constant.vi'
+      #347     SubVI                    'Create Constant.vi'
+      #157     Function                 'Close Reference'
+      #1066    Property                 'Property Node'
+  OpSubVI_v0.vi: 4 nodes, 0 close-ref-like
+      #263     Function                 'Open VI Reference'
+      #751     SubVI                    'Create SubVI.vi'
+      #544     Function                 'Open VI Reference'
+      #1066    Property                 'Property Node'
+  PASS P1 OpReport_v3.vi has NO Close Reference  []
+  PASS P1 OpWireSource_v5.vi has NO Close Reference  []
+  PASS P1 OpReportAll_v0.vi has NO Close Reference  []
+  PASS P2 KernelBuilder_v1.vi HAS a Close Reference donor node  [('Function', 'Close Reference', 157)]
+
+[C] scratch copy of the route-B original
+  PASS C0 original md5 before  2a78e17c449cacdaf5da389818526859
+  PASS C1 scratch is byte-identical  SCRATCH_s0probe_173216.vi
+
+[D] 20 consecutive count(target,'Node') - the brief's 20-call test, OLD ops
+  call  0: nodes=626 handles=34336 private=600.6 MB
+  call  1: nodes=626 handles=34333 private=600.9 MB
+  call  2: nodes=626 handles=34335 private=601.0 MB
+  call  3: nodes=626 handles=34338 private=601.0 MB
+  call  4: nodes=626 handles=34338 private=601.0 MB
+  call  5: nodes=626 handles=34339 private=601.0 MB
+  call  6: nodes=626 handles=34341 private=609.4 MB
+  call  7: nodes=626 handles=34342 private=609.5 MB
+  call  8: nodes=626 handles=34342 private=609.5 MB
+  call  9: nodes=626 handles=34344 private=609.6 MB
+  call 10: nodes=626 handles=34345 private=609.5 MB
+  call 11: nodes=626 handles=34346 private=609.5 MB
+  call 12: nodes=626 handles=34347 private=609.5 MB
+  call 13: nodes=626 handles=34347 private=609.5 MB
+  call 14: nodes=626 handles=34348 private=613.7 MB
+  call 15: nodes=626 handles=34349 private=613.7 MB
+  call 16: nodes=626 handles=34357 private=613.7 MB
+  call 17: nodes=626 handles=34357 private=613.7 MB
+  call 18: nodes=626 handles=34359 private=613.7 MB
+  call 19: nodes=626 handles=34349 private=613.7 MB
+D total: handles 34134 -> 34349 (+215)   private 586.5 -> 613.7 MB (+27.2 MB)  over 20 calls
+  **FAIL** P3 kernel handle count flat within +-100 over 20 count(Node) calls  delta +215
+  PASS P4 private bytes grew > 20 MB over 20 count(Node) calls  delta +27.2 MB, matched objects/call = 626
+  PASS D-noerr the 20 count calls all completed  None
+
+[E] 20 consecutive report_all(target,'Diagram') - OLD ops
+  call  0: diagrams=170 handles=34350 private=613.7 MB
+  call  1: diagrams=170 handles=34350 private=613.7 MB
+  call  2: diagrams=170 handles=34348 private=613.7 MB
+  call  3: diagrams=170 handles=34351 private=613.7 MB
+  call  4: diagrams=170 handles=34351 private=613.7 MB
+  call  5: diagrams=170 handles=34353 private=613.7 MB
+  call  6: diagrams=170 handles=34355 private=613.7 MB
+  call  7: diagrams=170 handles=34354 private=613.7 MB
+  call  8: diagrams=170 handles=34356 private=613.7 MB
+  call  9: diagrams=170 handles=34356 private=613.7 MB
+  call 10: diagrams=170 handles=34349 private=613.6 MB
+  call 11: diagrams=170 handles=34350 private=613.6 MB
+  call 12: diagrams=170 handles=34352 private=613.6 MB
+  call 13: diagrams=170 handles=34353 private=613.6 MB
+  call 14: diagrams=170 handles=34354 private=613.6 MB
+  call 15: diagrams=170 handles=34354 private=613.6 MB
+  call 16: diagrams=170 handles=34355 private=613.6 MB
+  call 17: diagrams=170 handles=34357 private=613.6 MB
+  call 18: diagrams=170 handles=34359 private=613.6 MB
+  call 19: diagrams=170 handles=34358 private=613.6 MB
+E total: handles 34349 -> 34358 (+9)   private 613.7 -> 613.6 MB (-0.1 MB)
+  PASS P5 20 report_all(Diagram) calls without error 2  None
+  PASS E-handles flat within +-100  delta +9
+
+[F] cleanup
+  deleted SCRATCH_s0probe_173216.vi
+  PASS F0 original md5 AFTER is unchanged  2a78e17c449cacdaf5da389818526859
+
+END: handles 33969 -> 34226   private 584.5 -> 613.6 MB
+GATES: 12 PASS / 1 FAIL   (158s)
+BGRUN END rc=1 after 158s

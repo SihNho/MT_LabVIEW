@@ -1,0 +1,83 @@
+BGRUN START 2026-09-18 13:14:04 limit 25.0 min: py -u tools/bench/diag_fstunnel_wireterms_panel.py MATERIAL=1
+PREDICTION CONTRACT W1..W9 - see this file's docstring. MEASUREMENT ONLY; nothing is decided here.
+   LabVIEW pid before anything: None
+   scratch C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_fswtp_131404_11468.vi
+  PASS W0 STATIC: this file never calls remove_bad_wires_scripted  | []
+-- md5 before: 97 files (95 originals) --
+
+================ M4 the six wire sites, from the TEXT of build_opfstunnelterm_v1.py ================
+   _v1.py:476  wire_checked(op, "Function", tmsc, T_CAST_OUT, "Property", pn_a, "reference", tag=f"{tag} TMSC->PN_A")
+   _v1.py:483  wire_checked(op, "Function", tmsc, T_CAST_OUT, "Property", pn_b, "reference", tag=f"{tag} TMSC->PN_B")
+   _v1.py:486  wire_checked(op, "Property", pn_a, short_a, "Property", pn_a_uid, "reference", tag=f"{tag} {short_a}->UID")
+   _v1.py:489  wire_checked(op, "Property", pn_b, short_b, "Property", pn_b_uid, "reference", tag=f"{tag} {short_b}->UID")
+   _v1.py:494  wire_checked(op, "Property", pn_b, short_b, "Property", pn_b_cw, "reference", tag=f"{tag} {short_b}->ConnWire")
+   _v1.py:497  wire_checked(op, "Property", pn_b_cw, "Wire", "Property", pn_b_cwu, "reference", tag=f"{tag} ConnWire->UID")
+  NOTE M4 brief-quoted line numbers vs the file's real ones: brief [431, 438, 441, 444, 449, 452] -> actual [476, 483, 486, 489, 494, 497] (offset [45, 45, 45, 45, 45, 45])
+  PASS W4a exactly six wire_checked sites were found in the text of _v1.py  | lines [476, 483, 486, 489, 494, 497]
+   fresh(): killing LabVIEW pid None
+   COM preflight attempt 1/15: pid None->21008, wires 16->16
+   COM preflight OK (pid 21008, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 21008
+  HANDLES after a fresh LabVIEW, before any work: 30361  (fresh baseline ~31,500)
+
+================ REPRODUCE build_one('OUT') -> SCRATCH_fswtp_131404_11468.vi ================
+
+================ B  BUILD SCRATCH_fswtp_131404_11468.vi from OpWireSource_v5  [OUT FlatSequenceOuterTunnel] ================
+   CKPT[00] _v1.py:403  nodes 19  terminals 111  wires 42  ExecState 1  ORPHANS []
+        #894: present=True  node-side carriers [(145, 'error out', 3, 'src')]
+        #1356: present=True  node-side carriers [(151, 'index', 2, 'sink')]
+        #384: present=True  node-side carriers [(145, 'reference', 0, 'sink'), (1044, 'specific class reference', 0, 'src')]
+
+================ M1/M2/M3 at _v1.py:403 (fresh copy, BEFORE the node deletes) ================
+  NOTE report_all(Indicator): EXC report_all(Indicator) on SCRATCH_fswtp_131404_11468.vi: error 1092: Invoke Node in TRef Tr
+  NOTE panel census size: 38 top-level panel objects; 29 with a wired terminal
+
+   ================ WIRE #894 - its OWN Wire.Terms[] (OpWireSource_v5) ================
+      T[0] SOURCE  owner class 'Property'  owner uid 145  classes ['Property', 'Node']  label 'Property Node'
+              kind: block-diagram node; terminal name 'error out' index 3; reciprocal wire 894
+              PANEL ROW: label 'error out 3' uid 825 indicator is_source False wire 894
+      T[1] SINK    owner class 'TopLevelDiagram'  owner uid 3  classes ['Diagram']  label None
+              kind: front-panel ControlTerminal (owner is the diagram, NAMES.md:885); terminal name None index None; reciprocal wire 894
+              PANEL ROW: label 'error out 3' uid 825 indicator is_source False wire 894
+      T[2] END OF LIST (owner_uid 0, is_source False, err '')
+
+   ================ WIRE #1356 - its OWN Wire.Terms[] (OpWireSource_v5) ================
+      T[0] SOURCE  owner class 'TopLevelDiagram'  owner uid 3  classes ['Diagram']  label None
+              kind: front-panel ControlTerminal (owner is the diagram, NAMES.md:885); terminal name None index None; reciprocal wire 1356
+              PANEL ROW: label 'index 2' uid 1334 control is_source True wire 1356
+      T[1] SINK    owner class 'IndexArray'  owner uid 151  classes ['IndexArray', 'Node']  label 'Index Array'
+              kind: block-diagram node; terminal name 'index' index 2; reciprocal wire 1356
+              PANEL ROW: label 'index 2' uid 1334 control is_source True wire 1356
+      T[2] END OF LIST (owner_uid 0, is_source False, err '')
+  PASS W1 each of 894/1356 returns >=1 REAL terminal (owner_uid != 0) from its own Wire.Terms[]  | {'894': 2, '1356': 2}
+  PASS W2 every owner uid found by W1 is classified from a measured table (no UNRESOLVED rows)  | unresolved: []
+
+   NODE #145: Nodes[5]  classes ['Property', 'Node']  label 'Property Node'
+      terminals (5): [(0, 'reference', 'sink', 384), (1, 'reference out', 'src', 0), (2, 'error in (no error)', 'sink', 0), (3, 'error out', 'src', 894), (4, 'Terms[]', 'src', 578)]
+
+   NODE #151: Nodes[6]  classes ['IndexArray', 'Node']  label 'Index Array'
+      terminals (3): [(0, 'array', 'sink', 578), (1, 'element', 'src', 639), (2, 'index', 'sink', 1356)]
+  PASS W3 nodes #145 and #151 are identified with class, label and a full terminal list at :403  | {'145': (['Property', 'Node'], 5), '151': (['IndexArray', 'Node'], 3)}
+  NOTE stop reason: EXC before B4: KeyError 'resolved'
+**FAIL W4b the reproduction found the same front section as run 1 (terms 145 / ia 151 / tmsc 1044 / consumers [157,1319,1326])  | terms None ia None tmsc None consumers None
+   SITE _v1.py:476: SRC Function#tmsc.'specific class reference'  ->  SINK Property#pn_a.'reference'
+   SITE _v1.py:483: SRC Function#tmsc.'specific class reference'  ->  SINK Property#pn_b.'reference'
+   SITE _v1.py:486: SRC Property#pn_a.'OuterTerminal'  ->  SINK Property#pn_a_uid.'reference'
+   SITE _v1.py:489: SRC Property#pn_b.'InnerTerminal'  ->  SINK Property#pn_b_uid.'reference'
+   SITE _v1.py:494: SRC Property#pn_b.'InnerTerminal'  ->  SINK Property#pn_b_cw.'reference'
+   SITE _v1.py:497: SRC None#None.None  ->  SINK None#None.None
+**FAIL W4 all six sites were resolved to a src object+terminal and a sink object+terminal  | [None, None, None, None, None, 'no match']
+
+================ M5 do the wire-894/1356 owners appear as M4 endpoints? ================
+**FAIL W5 the owner set was compared against the six sites' endpoints, with matches AND non-matches printed at name level  | 0 match, 0 non-match
+  NOTE ExecState at the B4 freeze (SUSPECT if a perturbing connect ran at :442 - NAMES.md:898): 1; perturbing connect executed = False
+  NOTE M7 NOT re-run - already measured: tools/bench/diag_fstunnel_wirebroken.log:104-134 (10/10, rc=0)
+  NOTE the six sites' wires in this reproduction: []
+  PASS W7 the ONE scratch VI was created and DELETED in this same run  | C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_fswtp_131404_11468.vi
+  HANDLES after the run: 30678  (fresh baseline ~31,500)
+  PASS W8 all 95 originals (+ the V6 copy and the donor) are md5-identical before and after  | differing: []
+  PASS W9 no motor, no serial port, no camera, motor_gate.py --execute not called (static: this file makes no such call)  | read-only VI Server + one throwaway scratch VI
+
+SUMMARY gates 8/11 pass; failing: ['W4b the reproduction found the same front section as run', 'W4 all six sites were resolved to a src object+terminal ', "W5 the owner set was compared against the six sites' end"]
+raw -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_fstunnel_wireterms_panel.json
+BGRUN END rc=1 after 46s

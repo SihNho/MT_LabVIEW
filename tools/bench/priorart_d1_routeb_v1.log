@@ -1,0 +1,162 @@
+BGRUN START 2026-09-18 21:34:28 limit 20.0 min: py tools\prior_art_review.py --plan-file docs\d1-route-b-plan.md --slug d1-routeb-v1 --trigger cycle-start --recipe tools\recipes\build_d1_routeb_v1.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_d1-routeb-v1.txt (67293 chars)
+OUTCOME: ANSWERED (468s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-18-priorart-d1-routeb-v1.md
+COST: $5.5237  in 30 / out 37221 / cache-create 338804 / cache-read 2409880  (467s, 26 turn(s))
+--- ANSWER ---
+`Write` is disabled in this session, so this review exists only as this answer — the dispatcher's archive file is the copy of record. I took no lock, opened no VI, ran nothing, and modified no project file.
+
+# PRIOR-ART REVIEW — `docs/d1-route-b-plan.md` (route B, the D1 build order)
+
+**Verdict: NOT novel. 8 findings, 0 `novel`.**
+
+The centre of it is one fact: **this plan describes a build that has since been written, run three times and measured.** Its §1 ledger, §4 mechanism table, §6 risk list and §7 contract were overtaken on 2026-09-17/18. Eighteen rows it calls "🔴 NO BUILT ROUTE" were wired — `Is Broken? FALSE` — by an op it says is "NOT BUILT". Four questions it hands to "the judgement session" were answered by name. The one gate it still rests on, `ExecState 1`, is the gate this project measured last night to be reading subVI linkage.
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 `settled-already` — every question §9, §11 and §11a reserve for judgement is decided, and on record as "no", not "not yet"
+
+**Plan's side.** `:392-397` (§9) reserves four things; `:439-441` (§11): *"The one question judgement must answer: do `#1359` and `#29874`'s registers move into 1.2 with their nodes … A material session may not make that call"*; `:451-457` (§11a) leaves the `Z/dZ` temporary pending the same session.
+
+**Other side**, `docs/cycle27-plan.md:89-100` (Pre-decided 13, judgement, cycle 35, 2026-09-18):
+
+> **`docs/cycle15-plan.md`'s `## Pre-decided` 1–4 (`:118-130`) BIND the next D1 build, and BOTH authorisation flags stay `False`.** … `#1359`/`#29874`'s shift registers **MOVE WITH THEIR NODES** into loop 1.2 (`add_shift_reg` + `wire_sr`, `index_mode 1` kept …), and `Z/dZ` → `#2222` t0 is **REORDERED** before the S3-ct reparent … **the judgement session declines, and the answer is "no", not "not yet".** … a build that needs either to be True is the wrong build.
+
+binding `docs/cycle15-plan.md:124-128`. Whether B starts at all (`:392`, and `authorises: nothing` at `:10`) is settled the other way too: `STATUS.md` NEXT makes a **D1 build dispatch the next cycle's first act**, and its "Where to look" line already calls this file **"= the build order"**.
+
+*Scope:* covers §9 bullets 1–2, §11's closing question, §11a's temporary. Does **NOT** cover §9's third and fourth bullets — rule-1a acceptability of `GObject.Move` for the six structures, and whether N1 alone carries the R1 rows' equivalence. I found no decision on either; those stay open.
+
+### A2 `refuted-already` — §10's `OpGetErrors_v0` route was stopped by its own dual review, and both of its fallbacks have since been measured away
+
+**Plan's side.** `:461-542` keeps §10 *"so a future judgement session inherits the plan"*, ordering `OpBuildInvoke_v1` → 452 → `Invoke.Set Method (Allow Private)` (`:518-530`).
+
+Beyond its own quoted stop (`:463-473`) and `docs/cycle15-plan.md:129-130` (Pre-decided 4), two things have changed:
+
+- **The named fallback is useless.** `docs/cycle27-plan.md:106-112`: the bare-terminal census *"returned an IDENTICAL 375 bare named input terminals over 170/170 diagrams on a KNOWN-GOOD copy, so it discriminates nothing"* (`tools/bench/diag_d0_execstate_preload.log:26-36,:65-75`).
+- **The method is probably unreachable on our transport.** `archive/peer/2026-09-18-fstunnel-v1-b4-execstate0-codex.md:156` — *"absent a LabVIEW-side Invoke Node/helper, direct COM invocation is unlikely … an inference from the exported interface"*; disposition `:191` — *"452 leaves the critical path"*.
+
+*Scope:* covers §10 **as an inheritable plan**. Does **NOT** claim it is current work — the plan already marks it NOT AUTHORISED; the ask is that both corrections be written in before anyone inherits it.
+
+### A3-a `contradicted` — "`OpConnectFromWire_v0` … is **NOT BUILT**" contradicts the toolkit table, this plan's own §6, and the run that used it 16 times
+
+**Plan's side**, `:80-81` (§1, listed as MEASURED): *"It needs `OpConnectFromWire_v0` …, which is **NOT BUILT**."*
+
+**Other side (i)** `docs/toolkit-capabilities.md:70`: *"✅ **`OpConnectFromWire_v0.vi`** … **BUILT + SAVED 2026-09-17, 16,524 B, ExecState 1**; run 2 42 pass / 1 fail"*.
+**(ii)** The same file 190 lines later — `:269-271` treats the op as the answer: *"So R1 needs the WRITER … the `OpConnectFromWire_v0` of §11t"*.
+**(iii)** It did the work — `tools/bench/build_d1_routeb_v0_run3.log:322`:
+
+```
+WIRED  #5058 t2 'cross size' <- from-tunnel 2580  OpConnectFromWire_v0 w3853 -> D[24].N[0].T[2] wire 26032, Is Broken? FALSE
+```
+
+and fifteen more (`:326-331,:340-344,:346,:348,:365,:367-368,:380`), with `:532` `SINK RULE 16 OK / 0 REFUSED / 0 BAD`.
+
+*Scope:* covers §1's third bullet and the "19 → 1 the moment it exists" arithmetic at `:83-85`. Does **NOT** touch the R1 DISPOSITION block `:256-272`, correct as written.
+
+### A3-b `contradicted` — §6 R2's "that reader is **not built**", and the live constraint is the opposite one
+
+**Plan**, `:286-289`: *"**`Wire.Is Broken?` 6371004 + `Wire.Terminals[]` 6371003 from a HELD terminal reference**. That reader is **not built**…"*
+
+**`docs/NAMES.md:888-891`**: *"✅ **`Wire.Is Broken?` 6371004 IS BUILT AND MEASURED, 2026-09-17** — and it never needed a new op. … `OpConnectNested_v0/v1` and `OpConnectFromWire_v0` all carry the reader already"* — confirmed by every `Is Broken? FALSE` column in run 3.
+
+⚠️ Not "so use it freely": `docs/NAMES.md:898-911` measures that **reading it perturbs the target** (an idempotent connect took an `ExecState 1` scratch to 0), and `docs/cycle27-plan.md:110-112` withdrew it as a read-only instrument. The sentence is wrong in both directions at once.
+
+*Scope:* the one sentence at `:288-289`. Does **NOT** disturb R2's main holding — RBW-survival is never evidence a wire is good — which is right (`docs/toolkit-capabilities.md:68`).
+
+### A3-c `contradicted` — "the reparent set is 8, not 6" was corrected back to 6: two of the eight are INDICATORS
+
+**Plan**, `:132-138` and the S3 gate `:330`, with R4 (`:302-303`) warning *"missing it costs 3 more 5001s"*.
+
+**`tools/recipes/build_d1_routeb_v0.py:224-231`**: *"… says '8, not 6' and adds `min value` #17257 and `Force (pN) vs Extension (nm) ` #8038 - but both are **INDICATORS**"* (`probe_move_ctlterm_v0.py:7-8`). An indicator's wire is driven by the node feeding it, so neither can ever be a `from-ctl` **source**; the measured set is 7 rows over **six** controls, fixed before run 3 (`archive/peer/2026-09-17-priorart-priorart-routeb-build.md:402`), resolved in run 3 at `…run3.log:492-493`.
+
+*Scope:* the count "8". §2c is **right** about the two half-width controls being missing from REV 4 §5d — run 3 wired all three of their rows (`…run3.log:363-364,:379`).
+
+### A4 `unread-evidence` — four accepted route-B prior-art reviews exist; the frontmatter says none does
+
+**Plan**, `:16-18`: *"B's FIRST ITEM only … The PLAN AS A WHOLE is still NOT DISPATCHED"*.
+
+| file | scope | outcome |
+|---|---|---|
+| `archive/peer/2026-09-17-priorart-priorart-routeb-census.md:365-377` | route B Part 1 census | 6 findings, 0 novel, 6 × `FIXED:` |
+| `archive/peer/2026-09-17-priorart-priorart-routeb-build.md:393-406` | **this plan's own build script** | 7 findings, 0 novel, 7 × `FIXED:` |
+| `archive/peer/2026-09-17-priorart-routeb-run3-{codex,opus}.md:376-409` | run 3's two decisions | 12 findings, 0 novel; **build stopped before it ran** |
+
+Also uncited: `docs/cycle27-plan.md` (the `status: current` plan superseding the cycle-15 framing this file inherits) and `tools/bench/build_d1_routeb_v0_run3.log` (the measurement of this plan's §7).
+
+*Scope:* the frontmatter's claim. Does **NOT** say the body is unreviewed — §6 R1/R2 were revised from the connectfromwire review and say so.
+
+---
+
+## PART B — THE ARTIFACT
+
+### B1 `already-built` — §7's script is written, has run three times, and a v1 for run 4 is on disk
+
+**Plan**, `:319`: *"### S — structural, one run, one log (`tools/recipes/build_d1_route_b.py`, **not written**)"*.
+
+`tools/recipes/build_d1_routeb_v0.py` (logs `…v0.log`, `…_run2.log`, `…_run3.log`; run 3 = `84 pass, 3 fail`, `…run3.log:541`) and **`tools/recipes/build_d1_routeb_v1.py`**, header `:148-149` — *"v1 — RUN 4, 2026-09-18 (cycle 36). EXACTLY FOUR CHANGES over v0"* — whose `:162-169` already implements Pre-decided 13's disposition of the three NO-ROUTE rows.
+
+*Scope:* the "not written" parenthesis. Does **NOT** claim v1 has run — I found no run-4 log.
+
+### B2 `already-failed` — §7's S5/S6 `ExecState` gates were attempted in run 3, ended 0, and the plan reproduces the cause it does not name
+
+**Plan**, `:338-339`: S5 *"**`ExecState 1` warm**, saved"*; S6 *"cold re-open … `ExecState 1`"*.
+
+`docs/cycle27-plan.md:128-138`: *"`build_d1_routeb_v0.py` copies from … and **never preloads it** … while its S5 gate is `g.exec_state(TARGET)` at `:1289` … **that gate has been reading linkage**."* Measured on route B's **own** original: a byte-identical scratch reads **cold 0** (`tools/bench/diag_d1_execstate_preload.log:13`) and **preloaded 1** (`:33`), 7/7 rc=0. The remedy is named at `:156-159` (restore `build_d1_v0.py:461`'s baseline read into `s1()`; `build_d1_routeb_v0.py:302-316` dropped it) and `:149-155` forbids preloading the build itself. §7 carries neither the baseline read nor the UNREAD labelling — and run 3 also **deleted its working copy with the evidence** (`:101-105`).
+
+*Scope:* S5/S6 as acceptance gates. Does **NOT** claim run 3 succeeded: `docs/cycle27-plan.md:142-148` records the 0 as **over-determined** (skipped `s1q`/S4b ⇒ unwired conditional terminals), itself measured-with-error. Nothing is settled either way — the plan simply cannot tell.
+
+### B4 `already-measured` — the "63 / 19" ledger was measured, and three of §4's four disputed rows disagree with the machine
+
+**Plan**: `:60-65` (63 routed / **19** not), the S3w gate `:334` (*"**19 rows cannot meet**"*), table `:174-181`.
+**Measured**, `…run3.log:532`: `S3w ledger: attempted 66, WIRED 63, FAILED 0, NO-ROUTE 3; SINK RULE 16 OK / 0 REFUSED / 0 BAD`.
+
+| plan row | plan's verdict | measured |
+|---|---|---|
+| `:181` 18 tunnel-source rows | 🔴 NO BUILT ROUTE (R1) | **all wired**, `Is Broken? FALSE` (`…run3.log:322,:326-331,:340-344,:346,:348,:365,:367-368,:380`) |
+| `:179` 3 `ForLoop` newline sinks → `OpConnectNested_v1` | index writer | **`wire_control` wired all three** after reparent: `:363`, `:364`, `:379`, each `reparented=True`, `attempts [(24, 'no error', …)]` |
+| `:178` 2 R8 cross-diagram | `OpConnectNested_v1` | **correct** (`:362`, `:378`) |
+| `:180` R3 `#2222` t0 ← `Z/dZ` | no route; control "already drives a wire" | NO-ROUTE for a **different** measured reason: `:386` — *"`'Z/dZ'` carries **NO wire on this copy**"* |
+
+That resolves §11a's own conditional (`:449-450`, *"only needed **if the moves cut w730**"*): `Z/dZ` does carry w730 on a pristine copy (`tools/bench/diag_sr_transport.log:20,:25-26`) and not on the built one. **The moves cut it** — which is exactly why Pre-decided 3's answer is the REORDER, not a later read of the control's wire.
+
+*Scope:* §1's table, S3w's gate sentence, §4's four rows. Does **NOT** dispute the denominator — 66 attempted / 109 cut / 27 source-side reconcile with `…run3.log:529`.
+
+---
+
+## Checked and CLEAN — so the next round does not re-derive it
+
+- **§3's six `GObject.Move` verdicts and the `build_case` refutation** (`:151-163`) — the docstring reason holds (`gscript.py:2756-2764`); untouched since. ✅
+- **§2a's five deletions** — `…run3.log:504` records the post-delete state with `#6384`'s w541 chain and `#12589` t1 among the 26 bare named sinks, exactly as R5 (`:305-306`) requires. ✅
+- **The SINK RULE** (frontmatter `:2`) — implemented, 16 OK / 0 REFUSED / 0 BAD. ⚠️ Read `build_d1_routeb_v1.py:47-55` first: after a `GObject.Move` **every** terminal of a moved structure reads `is_source` FALSE, output tunnels included — a necessary precondition, not an identification.
+- *Prose note, no slug:* **§7's `Diagram 170→174`** (`:327`, `:339`) counts §2b's fourth loop (the 20-slot pool For loop, `:113`); the built recipe makes three and gates **173** with `s1q` unexecuted — already stated rather than silently diverged at `build_d1_routeb_v1.py:80-83`. Both are right about different things, and a build driven from §7 would gate on a number the recipe does not produce.
+
+---
+
+```
+PRIOR-ART: settled-already   (A1 — docs/cycle27-plan.md:89-100 + docs/cycle15-plan.md:124-128 + STATUS.md NEXT vs docs/d1-route-b-plan.md:392-397,:439-441,:451-457,:10 — covers the plan's reserved judgement questions: the registers MOVE WITH THEIR NODES into 1.2 with index_mode 1 kept, Z/dZ -> #2222 t0 is REORDERED before the S3-ct reparent, both authorisation flags stay False permanently ("the answer is no, not not-yet"), and STATUS makes a D1 build dispatch the next cycle's first act. Does NOT cover §9's third and fourth bullets - rule-1a acceptability of GObject.Move for the six structures, and whether N1 alone carries the R1 rows' equivalence - which I found undecided)
+PRIOR-ART: refuted-already   (A2 — docs/d1-route-b-plan.md:463-473 itself + docs/cycle15-plan.md:129-130 + docs/cycle27-plan.md:106-112 + archive/peer/2026-09-18-fstunnel-v1-b4-execstate0-codex.md:156,:191 vs docs/d1-route-b-plan.md:461-542 — covers §10 as an inheritable plan: its own -Dual prior-art stopped it, and since then BOTH fallbacks died - the bare-terminal census returned an IDENTICAL 375 bare sinks over 170/170 diagrams on a KNOWN-GOOD copy so it discriminates nothing, and 452 is absent from the exported VirtualInstrument ActiveX interface so direct COM invocation is unlikely. Does NOT claim §10 is currently authorised work - the plan already marks it NOT AUTHORISED; the ask is that both corrections be written in before a future session inherits it)
+PRIOR-ART: contradicted      (A3-a — docs/d1-route-b-plan.md:80-81 vs docs/toolkit-capabilities.md:70 + docs/d1-route-b-plan.md:269-271 + tools/bench/build_d1_routeb_v0_run3.log:322,:326-331,:340-344,:346,:348,:365,:367-368,:380,:532 — covers §1's claim that OpConnectFromWire_v0 is NOT BUILT and the "19 -> 1 the moment it exists" arithmetic at :83-85: the op was BUILT + SAVED 2026-09-17 at 16,524 B ExecState 1, this same file's §6 disposition already treats it as the answer, and run 3 used it for 16 from-tunnel rows with SINK RULE 16 OK / 0 REFUSED / 0 BAD. Does NOT touch the R1 DISPOSITION block :256-272, which is correct as written)
+PRIOR-ART: contradicted      (A3-b — docs/d1-route-b-plan.md:286-289 vs docs/NAMES.md:888-891 and :898-911 + docs/cycle27-plan.md:110-112 — covers R2's sentence "that reader is not built": Wire.Is Broken? 6371004 IS BUILT AND MEASURED and needed no new op, because OpConnectNested_v0/v1 and OpConnectFromWire_v0 all carry it; the real constraint is the opposite one, that reading it PERTURBS the target (an idempotent connect took an ExecState-1 scratch to 0), so it was withdrawn as a read-only instrument. Does NOT disturb R2's main holding that RBW-survival is never evidence a wire is good - that is right and is repeated at docs/toolkit-capabilities.md:68)
+PRIOR-ART: contradicted      (A3-c — docs/d1-route-b-plan.md:132-138,:330,:302-303 vs tools/recipes/build_d1_routeb_v0.py:224-231 + tools/recipes/probe_move_ctlterm_v0.py:7-8 + archive/peer/2026-09-17-priorart-priorart-routeb-build.md:402 — covers the count "8, not 6" in §2c and gate S3: `min value` #17257 and `Force (pN) vs Extension (nm) ` #8038 are INDICATORS whose wire source is the driving node, so neither can ever be a from-ctl source; the measured set is 7 from-ctl rows over SIX controls and the label list was corrected to six before run 3. Does NOT touch §2c's other half - the two half-width controls missing from REV 4 §5d are real, and run 3 wired all three of their rows after reparenting, …run3.log:363-364,:379)
+PRIOR-ART: unread-evidence   (A4 — archive/peer/2026-09-17-priorart-priorart-routeb-census.md:365-377 + archive/peer/2026-09-17-priorart-priorart-routeb-build.md:393-406 + archive/peer/2026-09-17-priorart-routeb-run3-codex.md and -opus.md:376-409 + docs/cycle27-plan.md + tools/bench/build_d1_routeb_v0_run3.log, none cited in docs/d1-route-b-plan.md:16-18 — covers the frontmatter's claim that only B's FIRST ITEM has been reviewed and "the PLAN AS A WHOLE is still NOT DISPATCHED": four route-B prior-art reviews exist, 25 findings, 0 novel, all ANSWERED and all ACCEPTED IN FULL, one of them on this plan's own build script, plus the status: current cycle plan that supersedes the cycle-15 framing this file inherits. Does NOT claim the body is unreviewed - §6's R1 and R2 blocks were revised from the connectfromwire review and say so)
+PRIOR-ART: already-built     (B1 — tools/recipes/build_d1_routeb_v0.py + tools/recipes/build_d1_routeb_v1.py:148-149,:162-169 + tools/bench/build_d1_routeb_v0_run3.log:541 vs docs/d1-route-b-plan.md:319 — covers §7's parenthesis "tools/recipes/build_d1_route_b.py, not written": the script is written under a different name, has run three times (run 3 = 84 pass / 3 fail), was rewritten before it ran in response to its own prior-art review, and a v1 for run 4 dated 2026-09-18 already encodes Pre-decided 13's disposition of the three NO-ROUTE rows. Does NOT claim v1 has run - I found no run-4 log)
+PRIOR-ART: already-failed    (B2 — docs/d1-route-b-plan.md:338-339 vs docs/cycle27-plan.md:128-138,:156-159,:149-155,:101-105 + tools/bench/diag_d1_execstate_preload.log:13,:33 — covers §7's S5/S6 ExecState acceptance gates: run 3 read ExecState 0 through g.exec_state(TARGET) on an instance with nothing preloaded, and a BYTE-IDENTICAL scratch copy of route B's own original reads cold 0 / preloaded 1, so that gate has been measuring subVI linkage; the remedy - restore build_d1_v0.py:461's baseline read into s1(), add NO preload to the build - is named and is absent from this contract, and run 3 deleted its working copy with the evidence. Does NOT claim run 3 succeeded: the 0 was OVER-DETERMINED by the skipped s1q/S4b, itself measured-with-error, so nothing is settled either way)
+PRIOR-ART: already-measured  (B4 — docs/d1-route-b-plan.md:60-65,:334,:174-181,:449-450 vs tools/bench/build_d1_routeb_v0_run3.log:532,:322,:326-331,:340-344,:346,:348,:362-365,:367-368,:378-380,:386 + tools/bench/diag_sr_transport.log:20,:25-26 — covers the "63 routed / 19 NO-ROUTE" ledger and S3w's "19 rows cannot meet": the measured result is 66 attempted, 63 WIRED, 0 FAILED, 3 NO-ROUTE; the 18 R1 rows all wired with Is Broken? FALSE; the 3 ForLoop newline-named sinks were wired by wire_control after the reparent, not by OpConnectNested_v1 as §4 assigns; and §11a's conditional is resolved the other way - Z/dZ carries w730 on the pristine copy but NO wire on the built one, which is why the answer is the REORDER. Does NOT dispute the denominator: 66 attempted / 109 cut / 27 source-side reconcile with …run3.log:529)
+```
+
+---
+
+## What the citations leave, if it helps
+
+The cheapest release here is not a refutation — it is a **revision of this file from run 3's own log**, since STATUS already calls it "the build order":
+
+1. §1 and S3w — replace the 63/19 ledger with `…run3.log:532`'s 63 / 0 / 3; strike "NOT BUILT" at `:81`.
+2. §4 — move the 18 tunnel-source rows and the 3 newline rows onto their measured mechanisms.
+3. §6 R2 — the reader exists and perturbs; cite `docs/NAMES.md:898-911`, not "not built".
+4. §7 S5/S6 — add the baseline `ExecState` read and 14a's UNREAD labelling; do **not** add a preload to the build.
+5. §9/§11/§11a — replace the reserved questions with the Pre-decided 13 citation, keeping §9's two genuinely open bullets.
+6. Frontmatter — list the four route-B reviews; set `authorises:`/`status:` to what STATUS now says.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-d1-routeb-v1.md
+   STOP RECORD armed: tools/recipes/build_d1_routeb_v1.py sha 9ff90ded8f01 verdict settled-already, refuted-already, contradicted, unread-evidence, already-built, already-failed, already-measured -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 469s

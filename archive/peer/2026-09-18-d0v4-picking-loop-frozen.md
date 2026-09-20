@@ -1,0 +1,152 @@
+﻿# d0v4-picking-loop-frozen
+
+- **agent:** claude
+- **role:** hypothesis
+- **model:** opus (effort max; peer.ps1 default for role hypothesis)
+- **kind:** review
+- **cost:** $3.2775  in 20 / out 42886 / cache-create 166474 / cache-read 986930  (617s, 21 turn(s))
+- **date:** 2026-09-18 17:49:11
+- **outcome:** ANSWERED (618s)
+- **why asked:** MANDATORY failed-prediction review (CLAUDE.md §5): `drive_original_copy_v4.log` gate
+  `13 run1.R4 picking loop ended` FAILED — the done click at (1114,915) did not end the bead-picking loop.
+  Single claude/hypothesis arm, the form D3 accepts since the 2026-09-18 amendment.
+- **verdict:** REFUTES our hypothesis (frame-starved picking loop). Partially tested by measurement the same
+  hour — see "What was done with it". Acceptance is a judgement call, not made in this material session.
+
+## Question
+
+PREDICTION (ours): on `claudeDev\Track_D0_copy_20260918.vi` (the "4.5" copy of the tracking VI), a GUI
+click on `Done Picking \nBeads?` (uid 11819) at panel point (1114,915) would end the bead-picking while
+loop and advance the VI to bead-profile calibration — because the identical click at the identical panel
+rectangle did exactly that on the V6 copy (`tools/bench/drive_original_copy_v3.py`, 16/16, rc=0, 2026-09-17).
+
+OBSERVATION (`tools/bench/drive_original_copy_v4.log`, 2026-09-18 17:25): it did not. Over 303 s the
+picking loop never ended; no `choose bandpass` window and no save dialog ever appeared; the VI stayed
+ExecState=2. Three further readings from the same run:
+ (1) the panel-pick counter `Count` went 0 -> 1 on the first of three picks and then stayed 1;
+ (2) the frame counter `current image number` read 0 for the entire run;
+ (3) the stop Booleans written by VI Server (`stop (end)` uid 7 and `stop (end) 2` uid 19587) were set
+     True and STAYED True — never consumed — through a 61 s single-write test and a further 60 s of 30
+     re-arms. Only a COM Abort ended the VI (ExecState 1 after ~3 s).
+
+OUR HYPOTHESIS (attack this): the bead-picking loop is not iterating at all because it is blocked waiting
+for a camera frame that never arrives, so no front-panel control — the done button included — is ever
+read. One cause explains all three readings together; "the click missed" explains only the first.
+
+ALREADY RULED OUT (do not re-propose these):
+ - Geometry/coordinates: the 4.5 panel rect is (-6,51,1930,1107), size (1936,1056), delta (0,0) against
+   the V6 rect the v3 points were derived from (gate 7 PASS), so the derived click points are v3's exactly.
+ - File mix-up / corruption: md5 of the original and of the copy are identical before and after the run;
+   the copy was never saved and is still on disk.
+ - A stale driver: v4 imports v2/v3's COM apartment, never-joined RunThread and hwnd token wholesale; the
+   three `choose bandpass` clicks in the same run use the proven `clickprobe` path.
+
+Give us the strongest reason our hypothesis is WRONG, one alternative explanation that also covers all
+three readings, what observation would falsify ours, and the single cheapest discriminating test.
+Relevant if it helps: rig state is ASSEMBLED with NO BEADS mounted; camera is 1280x1024 at 90 Hz and a
+new session resets ROI and exposure; the VI is LabVIEW 2026 with IMAQdx.
+
+
+--- HOW TO ANSWER (mandatory, from the dispatcher) ---
+Your job is to REFUTE the claim above, not to confirm it. Do not open with agreement.
+1. Name the single strongest reason the claim is WRONG.
+2. Name at least one ALTERNATIVE explanation of the same evidence.
+3. Name the observation that would FALSIFY the claim.
+4. End with the CHEAPEST discriminating test that separates the claim from your alternative.
+If you still believe the claim holds after all four, say so explicitly and state what would change your mind.
+
+## Answer
+
+I can't write files (Write is disabled, and the brief forbids it anyway) — so here is the review.
+
+---
+
+# REFUTED. The picking loop was running, and the click missed the button by ~65 × 51 px.
+
+## 1. The strongest reason the claim is wrong
+
+**Your own screenshot of the run, `tools/bench/p3_done_check.png` (17:28, mid-run), is a picture of the VI answering the mouse.**
+
+| in the screenshot | consequence |
+|---|---|
+| three **red bead markers** in the `Image` display at ≈(428,637), (551,755), (688,879) — the three commanded points `[(552,756),(430,640),(690,880)]` (`drive_original_copy_v4.log:173-182`) | markers are drawn by the VI's diagram; a loop parked in a camera call draws nothing |
+| **`Bead Pos X = 786, Y = 856`** on the panel | 786 is the image-pixel abscissa of the **third** click (screen 690 → ~393 px into a 638-px-wide view of a 1280-px image → 786). The VI *computed a bead position from pick 3* |
+| the `Image` display holds a **grey, textured live frame** (the small display next to it is black) | frames were arriving |
+| `Count` = 1 **with all three markers present** | `Count` is not the pick counter — pick 3 was processed and `Count` still reads 1 |
+
+So "the loop is not iterating at all … no front-panel control is ever read" is contradicted by the machine's own output, and reading (1) — the one reading you offer as support — **refutes** the hypothesis instead of favouring it.
+
+**And the click demonstrably missed.** In the same image the `Done Picking Beads?` **Yes** button sits at ≈(1160–1200, 850–878), centre ≈(1179,864). The driver clicked **(1114,915)** (`…v4.log:184`) — ~65 px left, ~51 px below, landing near `Cal Zero` / `Max Trans Pos`. That matches the user's independent reading, ≈(1178,864) (`STATUS.md:79-81`).
+
+**Why "identical click, identical rect" was never true — and the md5s prove it.** `DONE_XY = (1114,915)` is a screen point hand-recorded on a **different VI**: v3 drove `Min_Track N beads V6_ParallelLoop.vi` (`drive_original_copy_v2.py:110`, constants `:136-138`), md5 `2a78e17c…`; v4 drove the **4.5** copy, md5 `c39f36e0…` — stated in your own driver header (`drive_original_copy_v4.py:29-35`). Gate 7 compared **window rects** (`…v4.log:160`), which say nothing about where a control sits inside a panel. *The gate passed while the thing it guards was wrong.* (This also refutes the user's "panel not maximised" reading: the rect really is `(-6,51,1930,1107)` on both runs, and the picks landed on the exact commanded pixels.)
+
+## 2. Readings (2) and (3) are worthless — they are stage-4 signals
+
+Your claimed advantage is "one cause explains all three". It is an illusion: (2) and (3) are equally predicted by the null hypothesis *"the VI is sitting healthily in the picking loop and has not been told to leave."*
+
+- **`current image number` = 0** is the **frame loop's** index, the buffer number carried in `Q_meta` (`docs/d1-build-plan.md:495,552,572`; panel uid 34200, `docs/main-vi-panel-map.md:383`). A VI that never enters stage 4 *must* read 0.
+- **The stop Booleans** uid 7 / 19587 are read from terminals owned by `Diagram#639` — **the frame loop body** — with uid 7 → `CompoundArithmetic#11639` → wire 3457 → `WhileLoop#637`'s conditional terminal uid 648 (`docs/main-vi-stop-and-save.md:41-53`, measured and closed 2026-09-17, `:55-75`). **They cannot be read during bead-picking.** The 61 s write and the 30 re-arms were aimed at the wrong loop; the result was guaranteed before the run began.
+- **Second, independent hole in (3):** "stayed True ⇒ never consumed" needs **latch** action. No document here measures the mechanical action of uid 7 / 19587 / 11819, and NI documents that accessing `Value` on a latching Boolean *returns an error* — your get/set succeeded (`…v4.log:165-167`), which argues switch action, where True persists after the diagram reads it and the observation is empty.
+
+**The gap that allowed the diagnosis:** `Done Picking \nBeads?` was read at t = 22.1 s and **not read again until t = 470 s**, after the abort (`…v4.log:165-167,680,712`). For 303 s the driver polled `Count` 60+ times and uid 11819 zero times.
+
+## 3. Alternative explanation, one cause, all three readings
+
+**The done click landed on bare panel because `DONE_XY` belongs to another VI's layout; everything else is the VI behaving as designed.** `Count` is not a pick counter — it is *written* by the diagram on diagrams 86 and 144 and **never read** (`docs/main-vi-panel-map.md:581`), and its semantics have never been measured; calling it "the panel-pick counter" is an unverified assumption doing load-bearing work. (2) and (3) need no cause at all. This covers the markers, the live image and `Bead Pos`, which the camera hypothesis cannot.
+
+The camera limb also fails on its own terms: IMAQdx does not block indefinitely — `IMAQdx Get Image` has a default **5000 ms** timeout and returns **−1074360293 (0xBFF6901B) "Timeout"**. A silent 303 s block needs an infinite timeout *and* a suppressed error, neither shown; the camera free-runs at 90 Hz (`STATUS.md:44-46`).
+
+## 4. What would falsify it — and the honest limit
+
+**Falsifier: any diagram-driven panel update during the picking phase.** Markers, `Bead Pos`, a live image — all three are in `p3_done_check.png`.
+
+**Where the evidence stops.** Panel state persists, so the screenshot proves the loop was alive **through t ≈ 39 s**, not at t = 180 s. A rescued hypothesis — "ran the picks, then blocked at ~t = 40 s" — is not disproved. It is unmotivated (the block must start in the 4 s between the last pick and the done click) and unnecessary (the miss is independently established), but say plainly: **the v4 run does not distinguish "loop died at t≈40" from "loop alive, click missed". It only rules out "the loop never iterated."**
+
+## 5. Cheapest discriminating test
+
+**Issue a fourth bead click at a fresh point in the Image display immediately before the done action, and read `Bead Pos X`/`Y` back over COM.** Changes ⇒ the loop is executing *at that instant* ⇒ camera hypothesis dead, fault is the coordinate. No change ⇒ the loop really is stalled by then. Cost: one click, one COM read, inside a run you must do anyway — and it probes liveness at the moment in question, not 140 s earlier.
+
+**Do the free one first, because it yields the fix:** read uid 11819's own `Position`/`Bounds` from the copy over read-only COM with the VI **not running** (`Position >(All Elements/Left/Top)`, `Bounds >(read-only)` — `docs/NAMES.md:170-171`; `GObject.Position 632A800`, `:213`) and compare with (1114,915). Seconds, no run, no camera, no motors. **And add the mouse-free route:** write `Done Picking \nBeads?` = True by `SetControlValue` and poll — if the picking phase ends, D0 never needs that click; if the write errors, you have just measured that the control is latch-action, which retro-actively voids reading (3).
+
+## 6. Two process findings, unasked
+
+- **No gate anywhere checks control-level correspondence between the V6 panel and the 4.5 panel.** Every panel coordinate this project has recorded belongs to V6 (`docs/main-vi-panel-map.md` throughout); D0 targets the 4.5. Gate 7's name promises geometry and delivers a window-rect comparison.
+- **Every GUI click needs a post-click readback of the control it targeted.** That one missing read is the entire distance between this diagnosis and the right one.
+
+**Sources:** [NI — Error −1074360293 timeout with Vision camera](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000P8jKSAS) · [NI Forums — IMAQdx Get Image2 default 5000 ms timeout](https://forums.ni.com/t5/Machine-Vision/IMAQdx-Get-Image2-vi-Issues/td-p/3329711) · [LabVIEW Wiki — Boolean controls (latch action; `Value` on a latching Boolean errors)](https://labviewwiki.org/wiki/Boolean_controls) · [NI — Using Events with Latched Boolean Controls](https://www.ni.com/docs/en-US/bundle/labview/page/using-events-with-latched-boolean-controls.html) · local: `tools/bench/p3_done_check.png`, `drive_original_copy_v4.log:160,165-184,680,712`, `drive_original_copy_v4.py:29-35`, `drive_original_copy_v2.py:110,136-138`, `docs/main-vi-stop-and-save.md:12,41-75`, `docs/main-vi-panel-map.md:186,372,383,581`, `docs/d1-build-plan.md:495,552,572`, `docs/restructure-plan-4.6.md:264`, `docs/NAMES.md:170-171,213`, `STATUS.md:44-46,78-88`.
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+Dispatched and archived by the cycle-31 MATERIAL session (2026-09-18 17:38–17:49, `tools/bench/peer_d0v4.log`,
+`BGRUN END rc=0 after 619s`). The same session then ran the discriminating measurement its brief prescribed,
+`tools/bench/diag_d0_pickloop_liveness.py` → `tools/bench/diag_d0_pickloop_liveness.log`
+(`BGRUN END rc=1 after 121s`, 14 pass / 3 fail). What that run says about this review, as fact:
+
+1. **Confirmed, §2 first bullet.** `current image number` (uid 34200) read **0 for all 15 samples over 30 s with
+   the VI running and NO click yet made** (gate 9), and 0 again for all 12 samples after the click (gate 12). The
+   review's account — it is the frame loop's (stage-4) index and must read 0 during bead-picking — is consistent
+   with that; our "starved camera" reading is not distinguished by it. **Reading (2) of the failed prediction is
+   therefore not evidence for either hypothesis.**
+2. **Not reproduced, and not testable this way.** This run made NO bead picks (the brief isolated liveness), so
+   `Count` stayed 0 → 0 and the review's `Count`/`Bead Pos`/marker evidence from `p3_done_check.png` was neither
+   confirmed nor refuted here. Its §5 test (a fourth pick immediately before the done action, reading `Bead Pos`
+   back) has **not** been run.
+3. **The click WAS delivered and still did nothing.** One `clickprobe` at the literal (1114,915) returned all four
+   delivery checks true (`sfw_ret`, `fg_after_sfw_is_target`, `fg_at_buttondown_is_target`,
+   `wfp_press_root_is_target`), target hwnd 199004 alive after 500 ms; no `choose bandpass` and no save dialog
+   within 30 s; ExecState stayed 2 throughout (gates 11, 12, L5 stage list). So the failure is **not** a
+   misdirected click at the window level — consistent with the review's "the point is inside the panel but not on
+   the button" account, and with the user's 17:2x screenshot reading of the Yes button at ≈(1178,864).
+4. **The review's "free" test is already measured as unreachable over our COM path.** It proposes reading uid
+   11819's `Position`/`Bounds` read-only. `tools/bench/diag_d0_inventory.log:56` (gate B1 FAIL) records that no
+   traverse class returns a panel uid, and every panel row in `tools/bench/d0_inventory.json` carries
+   `class None pos None`. Not attempted again this cycle.
+5. Untested here: §2's latch-vs-switch argument, §3's "`Count` is written and never read", §6's two process
+   findings.
+
+Whether to accept the review's conclusion, and what D0's next driver does about the done button, are judgement
+calls and were deliberately NOT made in this material session.

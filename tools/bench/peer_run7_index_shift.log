@@ -1,0 +1,97 @@
+BGRUN START 2026-09-19 03:16:20 limit 20.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug routeb-run7-index-shift -TaskFile 'C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/093dcab8-1ec8-4f16-8ef8-e139a8a85cf1/scratchpad/task_run7_index_shift.md' -TimeoutSec 900
+OUTCOME: ANSWERED (760s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-19-routeb-run7-index-shift.md
+COST: $5.1027  in 38 / out 52092 / cache-create 241098 / cache-read 2676018  (758s, 37 turn(s))
+--- ANSWER ---
+Write is disabled for this role (correct — I'm read-only), so the review is the answer itself.
+
+---
+
+# Failed-prediction review — `routeb-run7-index-shift`
+
+**H4 is REFUTED.** Not "weakened" — the run's own log and run 5 contain three independent readings that each kill it, one of them a natural control experiment that nobody seems to have noticed was run.
+
+## 1. The single strongest reason H4 is wrong
+
+**The +1 shift exists before the temporary node does, and run 5 is a control in which the temporary node stayed ALIVE across the `#2222` rows and every one of them wired.**
+
+**R1 — the shift predates its own alleged cause by ~170 log lines.** `tools/bench/build_d1_routeb_v4_run7.log:179` reads `sink #2222 is Diagram[24].Nodes[20]`. That line is emitted by `S3-zdz`, inside `s3()`, and `Equal? #10105` is not created until `:350`, inside `s3w()`. The matching line in run 5 reads `Nodes[19]` (`tools/bench/build_d1_routeb_v2_run5.log:163`). So the run-5→run-6 index difference is already present at a point in the build where **neither run has created a temporary node**. H4's mechanism cannot produce a difference that precedes it.
+
+**R2 — run 5 already ran the experiment, and it came out against H4.** In run 5 the temp-sink bracket *aborted*: `Equal? #10104` was created (`run5.log:332`), `wire_control` into it raised `5001 … Get Controls.vi`, and the row returned NO-ROUTE at `tools/recipes/build_d1_routeb_v4.py:1606-1609` — which is **before** the `delete_object(Comparison)` + `remove_bad_wires_scripted` at `:1665-1669`. The temporary `Equal?` was therefore **never deleted and stayed on Diagram[24] for the rest of run 5** — precisely the state H4 says shifts every index by one — and `#2222` t2/t3/t4/t5 all wired, at `N[19]`, with readbacks and `Is Broken? FALSE` (`run5.log:384-387`). A live temp node neither moved `#2222`'s index nor broke a single row.
+
+**R3 — this fleet does not address nodes by an index it assumed, so "addressing past the end" is not a failure mode it has.** `tools/recipes/build_track_v6_core.py:84-92` builds the walk **keyed by node UID** (`out[u] = (n, labels.get(u), rows)`); `node_index_on` and `terms_of` look the UID up in it (`tools/recipes/build_d1_v0.py:364-380`, `build_d1_routeb_v4.py:445-447`). `node_terms` even returns the node's own `UID` alongside its rows for exactly this reason (`tools/gscript.py:896-902`). A stale cache yields a stale *index*; the next walk yields the truthful one — and J1 forced two walks. More decisively, **`wire_control` never touches `Diagram[].Nodes[]` at all**: its destination is `(class name, class index, terminal NAME)` (`tools/gscript.py:1928-1953`), and the `24` / `56` in t5's `attempts` are `src_diagram_index` — *where to look for the control* — not a node index (`build_d1_routeb_v4.py:1899-1907`). A `Diagram[24].Nodes[]` shift cannot generate `Input Correction Factor not found`.
+
+And the shift is not even uniform, so "every node index moved by +1" is itself an overreading: `#8885` sits at `D[24].N[25]` in run 5 (`run5.log:380`) **and** at `D[24].N[25]` in run 7 (`run7.log:407`), while indices 1–20 move by one. One inserted node shifts every later index uniformly. This does not.
+
+## 2. The alternative that explains all four observations
+
+**A VI-WIDE `Remove Bad Wires`, fired in the middle of the S3w row loop, reaped the debris left by S1d and S3 and took `#2222`'s bare tunnels with it.**
+
+`build_d1_routeb_v4.py:1665-1669` runs `delete_object(Comparison)` then `g.remove_bad_wires_scripted(TARGET)` — LabVIEW's `VI.Block Diagram:Remove Bad Wires`, which "removes all the broken wires on the block diagram of the VI", i.e. the whole VI including every subdiagram ([NI docs](https://www.ni.com/docs/en-US/bundle/labview/page/lvscript/vi_block_diagram058remove_bad_wires.html), [LabVIEW Wiki](https://labviewwiki.org/wiki/VI_class/Block_Diagram.Remove_Bad_Wires_method)). On this recipe's own path it is the **first** RBW since S1t (`:623`); between them the build deleted three subVIs (S1d) and moved 21 nodes plus 6 control terminals (S3), cutting ~109 crossings. That is where -96 comes from.
+
+`#2222` is a CaseStructure (`run7.log:141`) and every one of its input tunnels was cut by the move — `t0 w730, t2 w505, t3 w628, t4 w1773, t5 'Correction Factor' w6096` (`run7.log:274-280`). They sat bare and broken from S3 until this bracket. In LabVIEW, when the last wire on a tunnel goes, the tunnel goes with it ([NI Idea Exchange](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Automatically-Delete-Passthrough-Wires-when-a-Linked-Tunnel-is/idi-p/2421080)) — and this project has already measured it in its own words: *"a wire delete plus Remove Bad Wires — deleted the tunnel and dropped every higher index by one"* (`build_d1_routeb_v4.py:54-55`). Ordering fits: the Z/dZ row **is** `#2222 t0`, the first of the `#2222` group, and its FACT lines (`:349-360`) sit between `#1359`'s (`:347`) and `#8885`'s (`:361`), so the RBW runs **before** t2/t3/t4/t5.
+
+- **t3/t4 `<no such terminal>`** — the tunnels are gone; `is_source=None, wire=None` is `.get()`'s default, i.e. **absent**, which is what a destroyed tunnel looks like and *not* what a wrong-but-valid node looks like (that would return a real name and possibly a real wire).
+- **t5** — `Wire Inputs.vi | Input Correction Factor not found` is the machine's own name lookup reporting that no input on that node carries the name. Destruction explains it; so does the weaker variant that the tunnel survives but loses its inherited name when its wire is cut. Both live on the cut-then-reap axis; neither is an index.
+- **t5's second message** at index 56, `Get Controls.vi | Control Correction Factor not found`, is a different and expected failure: `reparented=True`, so the control terminal is no longer on Diagram[56].
+- **The cache fix changed nothing** because the objects were destroyed, not mis-addressed.
+
+**Where the evidence stops.** It does not separate "the tunnel was deleted" from "the tunnel survives unnamed and the walk under-reported it". This run's read path was demonstrably degrading — `node_labels` 1055 at `:422`, `report_all(Diagram)` error 2 at `:423-428`, fatal error 2 at `:433`, handles 31,128 → 51,328 at `:442`. What the evidence does settle is that the cause is wire/tunnel destruction, not node indexing.
+
+## 3. What would falsify each claim
+
+- **Falsifies H4:** a run in which the temp node is alive across the `#2222` rows and they all wire — **already observed (run 5)**; or `#2222` reading `N[20]` before any temp node exists — **already observed (`run7.log:179`)**.
+- **Falsifies my alternative:** a `node_terms(TARGET, 24, 20)` census immediately before and immediately after `:1669` showing `#2222`'s terminal count unchanged (7 → 7) while t3/t4 still read absent afterwards. Then the loss is in the reader, not the machine.
+
+## 4. Cheapest discriminating test
+
+**Rerun v4 with exactly one line deleted — `remove_bad_wires_scripted` at `:1669`.** Delete the temp node, do not reap. Everything else byte-identical.
+- t3/t4/t5 come back WIRED → the mid-build VI-wide RBW is the cause; the fix is scope, not cache.
+- They still fail → the cause is upstream of the bracket, and the next call is a `node_terms(TARGET, 24, 20)` census at three points (end of S3 / before the bracket / after it) — three op runs, and it shows exactly when the terminal list changed.
+
+Bracket that run with a per-diagram wire count (see Q2), and **log the index that comes back from each J1 invalidation**. Run 7 had that number for free on both sides of the bracket and printed only `cache hit dropped: True`. One integer would have closed this question a cycle ago.
+
+---
+
+## Q2 — is -96 caused by the delete, or pre-existing breakage reaped?
+
+**Almost certainly pre-existing, reaped — but the run does not prove it, and one stated premise is wrong.**
+
+The temp `Equal?` had three terminals and one wire, w29238, and **that wire survived** (`run7.log:356, 358, 360`: sink reads back 29238, `Is Broken? False`, source identity ok). A node with one surviving wire cannot orphan 96. Meanwhile ~109 crossings had been cut since the last RBW.
+
+**REFUTED premise:** "there is no per-diagram wire count" and "building one is out of scope". `gscript.net_map(target, diagram_index)` already returns `nets = {wire_uid: [(node, term, name), …]}` for **one** diagram (`tools/gscript.py:2496-2501`); `len(nets)` is a per-diagram wire count, built, and in the fleet. Caveat, stated plainly: it sees only wires touching a node terminal on that diagram, so a fully orphaned wire is invisible to it — which for this question is a feature, since it counts exactly the wires still attached to something.
+
+**Cheapest discriminator with existing readers, two extra calls:** `g.count(TARGET,'Wire')` at the end of `s3()` and again immediately before `delete_object` at `:1666`. Already ~1937 at end of S3 and unchanged by the delete ⇒ debris predates the bracket. Drops at the delete ⇒ the delete caused it. Stronger and still cheap: call `remove_bad_wires_scripted` a second time straight after the first — a reap is idempotent, so 1841 → 1841 confirms standing debris, while a second large drop means something in the bracket is still manufacturing broken wires.
+
+## Q3 — is a VI-wide RBW ever safe mid-build?
+
+**No.** It is whole-VI by definition, irreversible under script, and in a build whose intermediate state is deliberately full of cut wires it destroys exactly the objects the remaining rows intend to wire. Route A already treated it as hostile: `build_d1_v0.py:1112-1128` runs it once and then checks which of its own wires **died** (`F1v … {len(died)} deleted by it`). Route B v4 calls it inside the row loop with no such check.
+
+In order of preference:
+1. **Do not create the debris.** Capture the temp node's wire UIDs before `delete_object`, then delete exactly those Wire objects — the fleet already deletes by class+index (`g.delete_object(target,'Wire',i)`) — and nothing else.
+2. **Use the diagram-scoped method, which exists.** `AbstractDiagram.Remove Wire Loose Ends`, short name `RemWireLooseEnds`, **method ID 6375409**, class `AbstractDiagram` (16503): "traverses the referenced diagram and removes all wire ends that are not connected to anything", scoped to the referenced diagram, not the VI ([LabVIEW Wiki](https://labviewwiki.org/wiki/AbstractDiagram_class/Remove_Wire_Loose_Ends_method)). This contradicts the plan's premise that only a VI-wide reaper is available. It is still diagram-wide rather than delete-scoped, so prefer (1).
+3. If a VI-wide RBW must run, run it **once at S5, after every row** — never inside the loop — and gate it the way route A does.
+
+## Q4 — does WIRED mean surviving?
+
+**No. It is a mixture, and its weakest members mean only "the call returned without raising."**
+
+| row kind | what the ledger records | verified? |
+|---|---|---|
+| from-tunnel | `wire 26309, Is Broken? FALSE` (`run7.log:366`) | yes — machine readback |
+| `OpConnectNested_v1` | wire uid + count delta (`:389`) | partly |
+| `wire_sr` | `wire_sr RightIn reg[1] -> D[24].N[0].T[3]` (`:367`) | **no uid, no readback** |
+| plain `wire` | `wire Function[38].'x < y?' -> Function[41].'x'` (`:395`) | **no uid, no readback** |
+| `wire_control` | `after` via `next(…, 0)` (`build_d1_routeb_v4.py:1908, 1919`) | **sentinel collision** |
+
+That last one matters for this very diagnosis: `next(…, 0)` returns `0` both for "unwired" and for "no such terminal", so t5's `sink D[24].N[20].T[5] wire 0 -> 0` is **not** evidence that terminal 5 exists. Contrast the from-tunnel path, which uses `.get(t, ("<no such terminal>", None, None))` (`:1798`) and can tell the two apart. The two `#2222` failure modes may well be one failure mode reported by two readers of different quality.
+
+And **nothing re-checks any row at the end.** The bracket removed 96 wires around row 40 of 66; every row wired before it still counts WIRED.
+
+**Cheapest end-of-run verification:** one `set(o["uid"] for o in g.report_all(TARGET,"Wire"))` after S5's RBW, tested against the wire uids the ledger already holds — one traverse, no new op. To cover the rows that record no uid, give `wire_sr`/`wire` the single readback the other paths already do — `next((x["wire"] for x in g.node_terms(TARGET,d,n) if x["i"]==t), None)`, with `None` rather than `0` so absent ≠ bare — and store it. The survival gate itself is not a new device: the pattern is at `build_d1_v0.py:1115-1128`, and route B dropped it.
+
+---
+
+**What would change my mind:** a reading of `#2222`'s index taken from two walks in the *same* run, one with the temp node alive and one after its deletion, showing them differ. That would resurrect H4's mechanism. Run 7 could have produced it for nothing and did not.
+
+**Sources:** [NI — Block Diagram:Remove Bad Wires](https://www.ni.com/docs/en-US/bundle/labview/page/lvscript/vi_block_diagram058remove_bad_wires.html) · [LabVIEW Wiki — Block Diagram.Remove Bad Wires](https://labviewwiki.org/wiki/VI_class/Block_Diagram.Remove_Bad_Wires_method) · [LabVIEW Wiki — AbstractDiagram.Remove Wire Loose Ends](https://labviewwiki.org/wiki/AbstractDiagram_class/Remove_Wire_Loose_Ends_method) · [NI Idea Exchange — tunnel/passthrough wire deletion](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Automatically-Delete-Passthrough-Wires-when-a-Linked-Tunnel-is/idi-p/2421080)
+BGRUN END rc=0 after 760s

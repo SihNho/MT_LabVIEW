@@ -1,0 +1,87 @@
+BGRUN START 2026-09-19 20:58:58 limit 30.0 min: py -u tools/bench/s0_hygiene_probe.py --s0bmut
+=== S0-b-MUT  MUTATION-ONLY ARM  2026-09-19 20:58:58 ===
+S0-b-MUT PREDICTION CONTRACT (printed before the workload runs; every line a machine-checkable GATE):
+  M0  All three op VIs and the route-B original are byte-identical BEFORE and AFTER (rule 1).
+  M1  The loop completes >= 20 `build_property` mutations on the run-stamped scratch copy.
+  G-A No `error 2` ("Memory is full") is raised by ANY call.
+  G-B Kernel handle count flat within +-100, COUNTED FROM CALL 1 (call 0 = the VI load).
+  G-C LabVIEW private-byte drift <= 5 MB over the same call-1..call-N window.
+Pure measurement; nothing branches on a result. The log ends with the THREE-ARM TABLE:
+  traverse-only   -0.1 MB  (on file: `tools/bench/s0_hygiene_probe_run2.log:121-123`)
+  traverse+mutate +34.6 MB (on file: `tools/bench/s0b_refleak_profile.log:61-64`)
+  mutate-only     measured here
+and the classification Pre-decided 28 pre-decided: within 5 MB of +34.6 => traverses contribute ~0,
+G-C MET on traverse-attributable drift; <= 5 MB total => the traverses carry it, G-C genuinely FAILS;
+anything between => OPEN for judgement. The classification is PRINTED, never acted on by this script.
+  N_ITER=20  scratch=SCRATCH_s0bm_205858.vi  artefact=s0b_mutonly_profile.json
+
+[A] restart LabVIEW for a clean baseline (standing authority, CLAUDE.md s3)
+A baseline: handles 33989  private 580.5 MB
+  PASS A0 LabVIEW is up  handles=33989
+
+[B] md5 of the three op VIs and the original, BEFORE the workload
+  OpReport_v3.vi: 0743701a249b6ac20a5dab9ee676c09c
+  OpWireSource_v5.vi: 5dc45a04ea5d809f5ca57e9309ed59c5
+  OpReportAll_v0.vi: ffcec2c75e92dcad514299ba20e66054
+  PASS B0 all three op VIs are on disk  {'OpReport_v3.vi': '0743701a249b6ac20a5dab9ee676c09c', 'OpWireSource_v5.vi': '5dc45a04ea5d809f5ca57e9309ed59c5', 'OpReportAll_v0.vi': 'ffcec2c75e92dcad514299ba20e66054'}
+  ORIGINAL: 2a78e17c449cacdaf5da389818526859
+  PASS B1 original md5 before  2a78e17c449cacdaf5da389818526859
+
+[C] run-stamped scratch copy under claudeDev (the ONLY file written)
+  PASS C0 scratch is byte-identical to the original  SCRATCH_s0bm_205858.vi
+
+[D] call 0 : the VI load via ensure_loaded() - NO explicit traverse, EXCLUDED from G-B/G-C
+  call 0: handles=54395 private=612.4 MB  
+  PASS D0 the VI loaded without raising  clean
+
+[E] 20 iterations of  build_property  ONLY  (the --s0b legs count(Node), report_all(Diagram) and OpWireSource_v5 are REMOVED; the wrapper's own two report_all(Property) calls remain, identically to --s0b)
+  iter  1: newProp=#1133 handles=54558 private=617.4 MB 
+  iter  2: newProp=#1134 handles=54556 private=622.7 MB 
+  iter  3: newProp=#1135 handles=54556 private=623.3 MB 
+  iter  4: newProp=#1141 handles=54558 private=624.1 MB 
+  iter  5: newProp=#1145 handles=54557 private=625.4 MB 
+  iter  6: newProp=#1160 handles=54556 private=629.6 MB 
+  iter  7: newProp=#1162 handles=54553 private=629.6 MB 
+  iter  8: newProp=#1188 handles=54554 private=631.3 MB 
+  iter  9: newProp=#1212 handles=54554 private=631.3 MB 
+  iter 10: newProp=#2086 handles=54553 private=635.5 MB 
+  iter 11: newProp=#13038 handles=54554 private=638.3 MB 
+  iter 12: newProp=#23459 handles=54560 private=638.3 MB 
+  iter 13: newProp=#23492 handles=54560 private=638.3 MB 
+  iter 14: newProp=#23526 handles=54552 private=642.5 MB 
+  iter 15: newProp=#23559 handles=54553 private=642.5 MB 
+  iter 16: newProp=#23603 handles=54553 private=646.6 MB 
+  iter 17: newProp=#23724 handles=54554 private=646.7 MB 
+  iter 18: newProp=#23792 handles=54553 private=650.8 MB 
+  iter 19: newProp=#23853 handles=54554 private=652.0 MB 
+  iter 20: newProp=#23961 handles=54546 private=651.9 MB 
+  PASS M1 the loop completed >= 20 build_property mutations  20 created / 20 iterations
+
+[F] the ONE S0 acceptance criterion (docs/cycle27-plan.md:453-457, :540)
+  call 0 (VI load)      : handles 54395  private 612.4 MB
+  call 1  -> call 20  : handles 54558 -> 54546 (-12)   private 617.4 -> 651.9 MB (+34.5 MB)
+  PASS G-A no error 2 raised by any call  none
+  PASS G-B kernel handles flat +-100 counted FROM CALL 1  delta -12
+  **FAIL** G-C LabVIEW private-byte drift <= 5 MB from call 1  delta +34.5 MB
+
+[G] THREE ARMS (docs/cycle27-plan.md Pre-decided 28)
+  traverse-only    private -0.1 MB   (on file: tools/bench/s0_hygiene_probe_run2.log:121-123)
+  traverse+mutate  private +34.6 MB   (on file: tools/bench/s0b_refleak_profile.log:61-64)
+  mutate-only      private +34.5 MB   (MEASURED HERE)
+  CLASSIFICATION: BRANCH-A  mutate-only accounts for the drift (within 5 MB of +34.6): the traverses contribute ~0, G-C is MET on traverse-attributable drift
+
+[H] artefact: tools\bench\s0b_mutonly_profile.json  md5 6917c1cba61a403561de55a5ac0f5071  4621 B
+  PASS H0 the profile artefact exists and is non-empty  6917c1cba61a403561de55a5ac0f5071
+
+[I] cleanup and the rule-1 md5 gate, AFTER
+  deleted SCRATCH_s0bm_205858.vi
+  PASS M0 OpReport_v3.vi md5 UNCHANGED  0743701a249b6ac20a5dab9ee676c09c -> 0743701a249b6ac20a5dab9ee676c09c
+  PASS M0 OpWireSource_v5.vi md5 UNCHANGED  5dc45a04ea5d809f5ca57e9309ed59c5 -> 5dc45a04ea5d809f5ca57e9309ed59c5
+  PASS M0 OpReportAll_v0.vi md5 UNCHANGED  ffcec2c75e92dcad514299ba20e66054 -> ffcec2c75e92dcad514299ba20e66054
+  PASS M0 original md5 UNCHANGED  2a78e17c449cacdaf5da389818526859
+
+refs: {'opened': 1, 'closed': 1, 'live': 0, 'cached_op_vis': 0}
+END: handles 33989 -> 54394   private 580.5 -> 651.9 MB
+VERDICT  G-A=PASS  G-B=PASS (delta -12 handles)  G-C=FAIL (delta +34.5 MB)
+GATES: 13 PASS / 1 FAIL   (141s)
+BGRUN END rc=1 after 142s

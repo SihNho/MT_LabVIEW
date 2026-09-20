@@ -1,0 +1,73 @@
+BGRUN START 2026-09-20 06:57:30 limit 15.0 min: py -u tools/bench/diag_destidx_drift.py
+=== diag_destidx_drift  2026-09-20 06:57:30   (TEST B; NO VI IS RUN, 34(f); no new op)
+  FACT  LabVIEW handles BEFORE: 34156 (fresh-instance baseline ~31,500)
+  FACT  move_in addresses its DESTINATION by TRAVERSE INDEX: build_d1_v0.py:325 `vi.SetControlValue("index", int(dest_diagram_index))`; diag_index :358 is `[o['uid'] for o in report_all(target,'Diagram')].index(uid)`.
+  FACT  B1 ORIGINAL (read-only probe, 34(k)): HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  B1 the ORIGINAL exists and its md5 equals the pin  2a78e17c449cacdaf5da389818526859
+  FACT  B2 the S2 artefact BEFORE the copy: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  B2 D1_s2_loops.vi md5 == 6ff19497f2309e007a214660bb64b911 and size == 475707 B  md5 6ff19497f2309e007a214660bb64b911 size 475707
+  FACT  B2b: lv_restart rc=0 ['dialogs: ,1346,762| / ENABLED|83887764|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  handles after the restart: 30678
+  FACT  B3 the dated scratch: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_destidx_20260920_065730.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  B3 the scratch is byte-identical to the S2 artefact  6ff19497f2309e007a214660bb64b911
+  FACT  B: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+  FACT  class census BEFORE any edit: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905}
+  PASS  B4 baseline census == the verified S2 numbers {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905}  {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905}
+
+--- step 1: the FULL Diagram traverse list, BEFORE any move
+  OBSERVED uid 3529 -> owner 'Diagram' uid 639 | self 'ControlReferenceConstant'#3529 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 3560 -> owner 'Diagram' uid 639 | self 'ControlReferenceConstant'#3560 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  BEFORE: Diagram class count 173, traverse array length 173, index(#23058)=22, index(#639)=46
+  FACT  BEFORE: owner_of(#3529) = Diagram #639 | owner_of(#3560) = Diagram #639
+  PASS  B5 #23058 and #639 are both in the Diagram traverse list, and owner_of(#3529) reads #639  idx(#23058)=22 idx(#639)=46 owner_of(#3529)=Diagram#639
+
+--- step 2: move 1 of 2  #3529 -> Diagram #23058 (traverse index 22, re-read now, 34(h))
+  FACT  move 1: move_in(#3529 -> Diagram #23058 [index 22] at (60,500)) echoed uid 23035
+  PASS  B6 move 1 was CALLED and its result recorded (REPORTED, no outcome predicted)  23035
+
+--- step 3: RE-READ the whole traverse list and both indices
+  OBSERVED uid 3529 -> owner 'Diagram' uid 23058 | self 'ControlReferenceConstant'#3529 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 3560 -> owner 'Diagram' uid 639 | self 'ControlReferenceConstant'#3560 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  AFTER move 1: Diagram class count 173, traverse array length 173, index(#23058)=22, index(#639)=46
+  FACT  AFTER move 1: owner_of(#3529) = Diagram #23058 | owner_of(#3560) = Diagram #639
+  FACT  AFTER move 1 vs previous: same_set=True same_order=True positions_changed=0 added=[] removed=[]
+  FACT  AFTER move 1 STALE-INDEX PROBE: a script that cached dest_diagram_index=22 (meaning Diagram #23058) would now address Diagram #23058 -> still correct: True
+  PASS  B7 the three post-move-1 readings are recorded (REPORTED)  idx(#23058) 22 -> 22 ; idx(#639) 46 -> 46 ; Diagram count 173 -> 173
+  PASS  B8 DRIFT after move 1 = False (REPORTED, never a requirement)  stale probe: {'cached_index': 22, 'meant_diagram_uid': 23058, 'that_index_now_addresses': 23058, 'still_correct': True}
+
+--- step 4: move 2 of 2  #3560 -> Diagram #23058 (traverse index 22, RE-READ at the call site)
+  FACT  move 2: move_in(#3560 -> Diagram #23058 [index 22] at (60,620)) echoed uid 23035
+  OBSERVED uid 3529 -> owner 'Diagram' uid 23058 | self 'ControlReferenceConstant'#3529 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 3560 -> owner 'Diagram' uid 23058 | self 'ControlReferenceConstant'#3560 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  AFTER move 2: Diagram class count 173, traverse array length 173, index(#23058)=22, index(#639)=46
+  FACT  AFTER move 2: owner_of(#3529) = Diagram #23058 | owner_of(#3560) = Diagram #23058
+  FACT  AFTER move 2 vs previous: same_set=True same_order=True positions_changed=0 added=[] removed=[]
+  FACT  AFTER move 2 STALE-INDEX PROBE: a script that cached dest_diagram_index=22 (meaning Diagram #23058) would now address Diagram #23058 -> still correct: True
+  PASS  B9 the three post-move-2 readings are recorded (REPORTED)  idx(#23058) 22 -> 22 ; idx(#639) 46 -> 46 ; Diagram count 173 -> 173 ; owner_of(#3529)=#23058 owner_of(#3560)=#23058
+  FACT  VERDICT idx(#23058) across the run: [22, 22, 22] ; idx(#639): [46, 46, 46] ; Diagram count: [173, 173, 173] ; traverse order unchanged after move1/move2: True/True
+
+--- step 5: ExecState in-instance under Preload (34(l)), then ONE save attempt
+  FACT  READING B10_after_two_moves_in_instance_preloaded: exec_state(DIAG_destidx_20260920_065730.vi) with the ORIGINAL PRELOADED read-only = 0  (1 = runnable, 0 = broken)
+  PASS  B10 ExecState after the two moves = 0 (1 = runnable, 0 = broken) - REPORTED
+  FACT  SAVE destidx: g.save() took 0.00 s, returned None; exception = 'RuntimeError: refusing to save a BROKEN VI - SaveInstrument blocks forever on one' (allow_broken stays False; gui_save is never called)
+  FACT  SAVE destidx artefact: DIAG_destidx_20260920_065730.vi md5 6ff19497f2309e007a214660bb64b911 size 475707 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  B11 g.save() reachable with allow_broken=False (gui_save NEVER called): False - REPORTED  returned None exception 'RuntimeError: refusing to save a BROKEN VI - SaveInstrument blocks forever on one'
+  FACT  B: preload references released; refs {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 4}
+  FACT  B11 the scratch on disk, final: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_destidx_20260920_065730.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+
+--- close-out
+  FACT  refs at end: {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handles AFTER: 63433 (before 34156)
+  PASS  B12 no live VI Server reference is left open  ref_counts {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 0}
+  FACT  B13 ORIGINAL after the run: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  B13 ORIGINAL md5 unchanged  2a78e17c449cacdaf5da389818526859
+  FACT  B13 D1_s1_copy.vi after the run: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  PASS  B13 D1_s1_copy.vi md5 unchanged  3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  B13 D1_s2_loops.vi after the run: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  B13 D1_s2_loops.vi md5 unchanged  6ff19497f2309e007a214660bb64b911
+
+=== GATES: 15 pass / 0 fail
+=== READINGS json: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_destidx_drift.json
+=== SCRATCH: C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_destidx_20260920_065730.vi
+=== NO VI WAS RUN (34(f)); no new op; no motor, no ASI, no camera, no GUI action.
+BGRUN END rc=0 after 76s

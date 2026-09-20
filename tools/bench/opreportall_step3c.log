@@ -1,0 +1,33 @@
+BGRUN START 2026-09-13 21:15:13 limit 20.0 min: py -u -c 
+import os,sys,time
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+OP=os.path.join(g.CLAUDEDEV,'OpReportAll_v0.vi')
+def snap(t): return '%-22s ForLoop=%d LoopTunnel=%d Property=%d Wire=%d IndexArray=%d ExecState=%s'%(
+    t,g.count(OP,'ForLoop'),g.count(OP,'LoopTunnel'),g.count(OP,'Property'),g.count(OP,'Wire'),g.count(OP,'IndexArray'),g.exec_state(OP))
+g.open_panel(OP); time.sleep(0.8)
+print(snap('as left by the build'),flush=True)
+# the failed wire() removed one wire; clean that up first
+try: g.remove_bad_wires(OP); print(snap('after remove_bad_wires'),flush=True)
+except Exception as e: print('remove_bad_wires:',str(e)[:90],flush=True)
+# the References output is already wired to the old Index Array -> delete that first, then the wire is free
+try:
+    g.delete_object(OP,'IndexArray',0)
+    g.remove_bad_wires(OP)
+    print(snap('old IndexArray deleted'),flush=True)
+except Exception as e:
+    print('delete IndexArray failed:',str(e)[:120],flush=True)
+# now wire References into the loop - no branch needed because nothing else holds it
+props=[o['uid'] for o in g.report(OP,'Property')]
+print('   Property uids:',props,flush=True)
+for i,u in enumerate(props):
+    try:
+        g.wire(OP,'SubVI',0,'References','Property',i,'reference')
+        print(snap('wired -> Property[%d]'%i),flush=True); break
+    except Exception as e:
+        print('   Property[%d] (uid %s): %s'%(i,u,str(e)[:110]),flush=True)
+
+as left by the build   ForLoop=1 LoopTunnel=0 Property=3 Wire=16 IndexArray=1 ExecState=0
+remove_bad_wires: COM Run did not return within 180s and no modal dialog was found - LabVIEW is busy or anot
+BGRUN TIMEOUT killed after 1201s (limit 20.0 min)

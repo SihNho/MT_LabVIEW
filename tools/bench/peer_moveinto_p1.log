@@ -1,0 +1,52 @@
+BGRUN START 2026-09-17 04:57:05 limit 16.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & './tools/peer.ps1' -Agent codex -Kind review -Slug moveinto-p1-execstate0 -TimeoutSec 780 -Task (Get-Content -Raw 'C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/peer_p1.txt')
+OUTCOME: ANSWERED (227s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-17-moveinto-p1-execstate0.md
+--- ANSWER ---
+1. **Strongest reason the A-or-B diagnosis is wrong**
+
+Neither hypothesis accounts for the destructive graph changes. The log proves the two replacement sinks are connected, but it never reports **all terminals formerly attached to wire 464 before deleting that Wire object**.
+
+A LabVIEW wire is one net with one source and potentially many sinks. Deleting the Wire object can therefore disconnect sinks other than `Move.reference`. If one was required, the result is exactly:
+
+- both requested replacement wires exist;
+- no broken wire remains for Remove Bad Wires to remove;
+- `ExecState` remains 0 because a required terminal elsewhere is now bare.
+
+NI explicitly distinguishes an unwired required terminal from a broken wire, and Remove Broken Wires addresses only the latter. [NI: wiring and wire branches](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html), [NI: common causes of broken VIs](https://www.ni.com/en/support/documentation/supplemental/12/debugging-techniques-in-labview.html).
+
+Thus “every requested wire exists” is not evidence that the resulting graph preserved every required connection.
+
+2. **Attack on each proposed explanation**
+
+**(B) is substantially contradicted by the observations.** A datatype/class conflict produces a broken wire. NI says Remove Broken Wires deletes broken wires, yet both replacement wires survived that operation and were subsequently found connected. A direct scripted check is available as `Wire.Is Broken?`. [NI wiring documentation](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html), [Wire scripting properties](https://labviewwiki.org/wiki/Wire_class).
+
+The declared types also argue against B:
+
+- `Diagram` inherits through `AbstractDiagram` from `GObject`.
+- `Move` is a `GObject` method whose `owner` parameter takes an owning object.
+- U2G’s output is already reported as `GObject`, matching the receiver of `GObject.Move`.
+
+[VI Server class hierarchy](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy), [Diagram inheritance](https://labviewwiki.org/wiki/Diagram_class), [GObject.Move contract](https://labviewwiki.org/wiki/GObject_class/Move_method).
+
+B survives only if Remove Bad Wires operated on a different loaded instance, or if the post-cleanup wires report `Is Broken? = TRUE`. Endpoint existence alone is weaker than reading that property.
+
+**(A) is not yet a diagnosis; it is an untested count prediction.** Calling the creators does not establish that extra Invoke nodes survived in the saved, subsequently loaded file. Conversely, finding an extra unwired Invoke would establish that A’s mechanism is present, but not that it is the only break. NI confirms that an Invoke node can break a VI through an unwired/bad terminal. [NI Invoke-node broken-VI example](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019N7CSAU&l=en-US).
+
+**What falsifies A:** a cold traversal of the saved files showing that `OpMoveIn_v0.vi` and `OpMoveOut_v0.vi` have identical Invoke-node signatures—apart from intentionally changed nodes—and that `OpMoveIn_v0.vi` has no additional Invoke whose reference terminal has no connected wire. The scripting API exposes Invoke input terminals and each terminal’s connected wire. [Invoke properties](https://labviewwiki.org/wiki/Invoke_class), [Terminal connected-wire property](https://labviewwiki.org/wiki/Terminal_class/Connected_Wire_property).
+
+3. **Alternative explanation**
+
+The strongest third explanation is **collateral disconnection caused by deleting wire 464 as a whole net**. Read the donor’s `Wire.Terminals[]` for wire 464. If it had any sink besides `Move.reference`, that sink was also removed; if required, it alone explains `ExecState 0`. `Wire.Terminals[]` is explicitly available through VI Scripting. [Wire properties](https://labviewwiki.org/wiki/Wire_class).
+
+A second read-only alternative is a broken or stale-linked subVI—particularly U2G. A caller is broken when a subVI is broken or its connector pane changed after placement, even when every visible caller wire is sound. [NI debugging guidance](https://www.ni.com/en/support/documentation/supplemental/12/debugging-techniques-in-labview.html). Ordinary properties can test `SubVI.Bad SubVI Linkage`, `Missing VI Path`, obtain its `VI Reference`, and then read the callee’s execution state. [SubVI scripting properties](https://labviewwiki.org/wiki/SubVI_class).
+
+After attacking both: B is presently inconsistent with the cleanup-and-survival evidence. A remains plausible, but the supplied log has not yet performed A’s own decisive observation.
+
+4. **Cheapest discriminating test**
+
+Cold-load the saved `OpMoveIn_v0.vi` and `OpMoveOut_v0.vi`, Traverse **only class `Invoke`**, and compare `(class name, method, reference-terminal Connected Wire)`.
+
+- Extra bare-reference Invoke(s) only in `OpMoveIn_v0`: A’s predicted artifact exists.
+- No Invoke delta: A is falsified; inspect donor wire 464’s `Terminals[]` next for collateral sink loss.
+
+That Invoke-only differential is the cheapest read because it tests A’s exact prediction without opening the Error List, invoking `Get Errors`, or modifying either VI.
+BGRUN END rc=0 after 227s

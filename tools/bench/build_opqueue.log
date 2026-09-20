@@ -1,0 +1,260 @@
+BGRUN START 2026-09-14 20:49:59 limit 25.0 min: py -u tools/recipes/build_opqueue.py obtain
+start: SubVI=7 IndexArray=2 Wire=28 ExecState=1
+   Get Outputs 216=216 348=348; Diagram in <- (788, 'specific class reference'); error in <- (348, 'error out'); error out -> [(370, 'error in (no error)')] + ['error out']
+
+== 2 delete Exit For Loop + RBW
+   predict: SubVI -1
+   result : after SubVI=6 IndexArray=2 Wire=23 ExecState=1  (0.1 s)
+
+== 3 drop Create Obtain Queue.vi
+   predict: SubVI +1
+   result : after SubVI=7 IndexArray=2 Wire=23 ExecState=0  (0.1 s)
+
+== 4a Diagram in
+   predict: Wire +1
+   result : after SubVI=7 IndexArray=2 Wire=24 ExecState=0  (0.1 s)
+
+== 4b error in
+   predict: Wire +1
+   result : after SubVI=7 IndexArray=2 Wire=25 ExecState=0  (0.1 s)
+
+== 4c error out -> Clear Errors.vi.'error in (no error)'
+   predict: Wire +1
+   result : after SubVI=7 IndexArray=2 Wire=26 ExecState=0  (0.1 s)
+
+== 5 Index Array for 'element data type'
+   predict: IndexArray +1
+   result : 108  (0.1 s)
+
+== 5-wire Get Outputs.'Outputs' -> IA.array
+   predict: (1, x)
+   result : (1, 0)  (0.0 s)
+
+== 5-wire IA.element -> 'element data type'
+   predict: Wire +1
+   result : after SubVI=7 IndexArray=3 Wire=28 ExecState=0  (0.1 s)
+
+== 6 create_control on 'location (0, 0)'
+   predict: a cluster control
+   result : ([{'i': 8, 'class': 'ControlTerminal', 'uid': 685, 'pos': (1459, 646), 'owner': 'TopLevelDiagram'}], 'location (0, 0)')  (0.1 s)
+   location control: ['location (0, 0)']
+   creator terminals: [('Diagram in', 471), ('location (0, 0)', 701), ('Diagram out', 0), ('element data type', 631), ('queue out', 0), ('error in', 0), ('error out', 534), ('error in (no error)', 476), ('error out', 0)]
+
+VERDICT: BROKEN (ExecState 0, steps [('2 delete Exit For Loop + RBW', 'ok'), ('3 drop Create Obtain Queue.vi', 'ok'), ('4a Diagram in', 'ok'), ('4b error in', 'ok'), ("4c error out -> Clear Errors.vi.'error in (no error)'", 'ok'), ("5 Index Array for 'element data type'", 'ok'), ("5-wire Get Outputs.'Outputs' -> IA.array", 'ok'), ("5-wire IA.element -> 'element data type'", 'ok'), ("6 create_control on 'location (0, 0)'", 'ok')]) - NOT SAVING.
+BGRUN END rc=4 after 20s
+BGRUN START 2026-09-14 20:51:48 limit 25.0 min: cmd C:/ py -u tools/recipes/build_opqueue.py obtain && py -u tools/recipes/build_opqueue.py enqueue && py -u tools/recipes/build_opqueue.py dequeue && py -u tools/recipes/build_opqueue.py release
+'ecipes'��(��) ���� �Ǵ� �ܺ� ����, ������ �� �ִ� ���α׷�, �Ǵ�
+��ġ ������ �ƴմϴ�.
+BGRUN END rc=1 after 0s
+BGRUN START 2026-09-14 20:52:06 limit 25.0 min: py -u tools/recipes/build_opqueue_all.py
+
+######## obtain ########
+start: SubVI=7 IndexArray=2 Wire=28 ExecState=1
+   Get Outputs 216=216 348=348; Diagram in <- (788, 'specific class reference'); error in <- (348, 'error out'); error out -> [(370, 'error in (no error)')] + ['error out']
+
+== 2 delete Exit For Loop + RBW
+   predict: SubVI -1
+   result : after SubVI=6 IndexArray=2 Wire=23 ExecState=1  (0.1 s)
+
+== 3 drop Create Obtain Queue.vi
+   predict: SubVI +1
+   result : after SubVI=7 IndexArray=2 Wire=23 ExecState=0  (0.1 s)
+
+== 4a Diagram in
+   predict: Wire +1
+   result : after SubVI=7 IndexArray=2 Wire=24 ExecState=0  (0.1 s)
+
+== 4b error in
+   predict: Wire +1
+   result : after SubVI=7 IndexArray=2 Wire=25 ExecState=0  (0.1 s)
+
+== 4c creator terminal 15 (own error out) -> Clear Errors.vi.'error in (no error)' (by index)
+   predict: (1, x)
+   result : (1, 0)  (0.0 s)
+
+== 5 Index Array for 'element data type'
+   predict: IndexArray +1
+   result : 108  (0.1 s)
+
+== 5-wire Get Outputs.'Outputs' -> IA.array
+   predict: (1, x)
+   result : (1, 0)  (0.0 s)
+
+== 5-wire IA.element -> 'element data type'
+   predict: Wire +1
+   result : after SubVI=7 IndexArray=3 Wire=28 ExecState=1  (0.1 s)
+
+== 6 create_control on 'location (0, 0)'
+   predict: a cluster control
+   result : ([{'i': 8, 'class': 'ControlTerminal', 'uid': 685, 'pos': (1459, 646), 'owner': 'TopLevelDiagram'}], 'location (0, 0)')  (0.1 s)
+   location control: ['location (0, 0)']
+
+== 7 creator own 'error out' -> 'error out' indicator (connect_ctl, branch)
+   predict: no error text
+   result : None  (0.0 s)
+   creator terminals: [('Diagram in', 471), ('location (0, 0)', 701), ('Diagram out', 0), ('element data type', 631), ('queue out', 0), ('error in', 0), ('error out', 0), ('error in (no error)', 476), ('error out', 534)]
+donor md5 unchanged: True
+
+VERDICT: OpQueueObtain_v0.vi BUILT and SAVED (structural)
+
+######## enqueue ########
+start: SubVI=7 IndexArray=2 Wire=28 ExecState=1
+   Get Outputs 216=216 348=348; Diagram in <- (788, 'specific class reference'); error in <- (348, 'error out'); error out -> [(370, 'error in (no error)')] + ['error out']
+
+== 2 delete Exit For Loop + RBW
+   predict: SubVI -1
+   result : after SubVI=6 IndexArray=2 Wire=23 ExecState=1  (0.1 s)
+
+== 3 drop Create Enqueue Element.vi
+   predict: SubVI +1
+   result : after SubVI=7 IndexArray=2 Wire=23 ExecState=0  (0.1 s)
+
+== 4a Diagram in
+   predict: Wire +1
+   result : after SubVI=7 IndexArray=2 Wire=24 ExecState=0  (0.1 s)
+
+== 4b error in
+   predict: Wire +1
+   result : after SubVI=7 IndexArray=2 Wire=25 ExecState=0  (0.1 s)
+
+== 4c creator terminal 15 (own error out) -> Clear Errors.vi.'error in (no error)' (by index)
+   predict: (1, x)
+   result : (1, 0)  (0.0 s)
+
+== 5 Index Array for 'queue'
+   predict: IndexArray +1
+   result : 108  (0.1 s)
+
+== 5-wire Get Outputs.'Outputs' -> IA.array
+   predict: (1, x)
+   result : (1, 0)  (0.0 s)
+
+== 5-wire IA.element -> 'queue'
+   predict: Wire +1
+   result : after SubVI=7 IndexArray=3 Wire=28 ExecState=0  (0.1 s)
+
+== 5 Index Array for 'element'
+   predict: IndexArray +1
+   result : 110  (0.1 s)
+
+== 5-wire Get Outputs.'Outputs' -> IA.array
+   predict: (1, x)
+   result : (1, 0)  (0.0 s)
+
+== 5-wire IA.element -> 'element'
+   predict: Wire +1
+   result : after SubVI=7 IndexArray=4 Wire=30 ExecState=1  (0.1 s)
+
+== 6 create_control on 'location (0, 0)'
+   predict: a cluster control
+   result : ([{'i': 8, 'class': 'ControlTerminal', 'uid': 714, 'pos': (1459, 646), 'owner': 'TopLevelDiagram'}], 'location (0, 0)')  (0.1 s)
+   location control: ['location (0, 0)']
+
+== 7 creator own 'error out' -> 'error out' indicator (connect_ctl, branch)
+   predict: no error text
+   result : None  (0.0 s)
+   creator terminals: [('Diagram in', 471), ('location (0, 0)', 724), ('Diagram out', 0), ('queue', 631), ('queue out', 0), ('element', 650), ('error in', 0), ('error out', 0), ('error in (no error)', 476), ('error out', 534)]
+donor md5 unchanged: True
+
+VERDICT: OpQueueEnqueue_v0.vi BUILT and SAVED (structural)
+
+######## dequeue ########
+start: SubVI=7 IndexArray=2 Wire=28 ExecState=1
+   Get Outputs 216=216 348=348; Diagram in <- (788, 'specific class reference'); error in <- (348, 'error out'); error out -> [(370, 'error in (no error)')] + ['error out']
+
+== 2 delete Exit For Loop + RBW
+   predict: SubVI -1
+   result : after SubVI=6 IndexArray=2 Wire=23 ExecState=1  (0.1 s)
+
+== 3 drop Create Dequeue Element.vi
+   predict: SubVI +1
+   result : after SubVI=7 IndexArray=2 Wire=23 ExecState=0  (0.1 s)
+
+== 4a Diagram in
+   predict: Wire +1
+   result : after SubVI=7 IndexArray=2 Wire=24 ExecState=0  (0.1 s)
+
+== 4b error in
+   predict: Wire +1
+   result : after SubVI=7 IndexArray=2 Wire=25 ExecState=0  (0.1 s)
+
+== 4c creator terminal 15 (own error out) -> Clear Errors.vi.'error in (no error)' (by index)
+   predict: (1, x)
+   result : (1, 0)  (0.0 s)
+
+== 5 Index Array for 'queue'
+   predict: IndexArray +1
+   result : 108  (0.1 s)
+
+== 5-wire Get Outputs.'Outputs' -> IA.array
+   predict: (1, x)
+   result : (1, 0)  (0.0 s)
+
+== 5-wire IA.element -> 'queue'
+   predict: Wire +1
+   result : after SubVI=7 IndexArray=3 Wire=28 ExecState=1  (0.1 s)
+
+== 6 create_control on 'location (0, 0)'
+   predict: a cluster control
+   result : ([{'i': 8, 'class': 'ControlTerminal', 'uid': 685, 'pos': (1459, 646), 'owner': 'TopLevelDiagram'}], 'location (0, 0)')  (0.1 s)
+   location control: ['location (0, 0)']
+
+== 7 creator own 'error out' -> 'error out' indicator (connect_ctl, branch)
+   predict: no error text
+   result : None  (0.0 s)
+   creator terminals: [('Diagram in', 471), ('location (0, 0)', 701), ('Diagram out', 0), ('queue', 631), ('queue out', 0), ('timeout in ms (-1)', 0), ('element', 0), ('error in', 0), ('error out', 0), ('error in (no error)', 476), ('timed out?', 0), ('error out', 534)]
+donor md5 unchanged: True
+
+VERDICT: OpQueueDequeue_v0.vi BUILT and SAVED (structural)
+
+######## release ########
+start: SubVI=7 IndexArray=2 Wire=28 ExecState=1
+   Get Outputs 216=216 348=348; Diagram in <- (788, 'specific class reference'); error in <- (348, 'error out'); error out -> [(370, 'error in (no error)')] + ['error out']
+
+== 2 delete Exit For Loop + RBW
+   predict: SubVI -1
+   result : after SubVI=6 IndexArray=2 Wire=23 ExecState=1  (0.1 s)
+
+== 3 drop Create Release Queue.vi
+   predict: SubVI +1
+   result : after SubVI=7 IndexArray=2 Wire=23 ExecState=0  (0.1 s)
+
+== 4a Diagram in
+   predict: Wire +1
+   result : after SubVI=7 IndexArray=2 Wire=24 ExecState=0  (0.1 s)
+
+== 4b error in
+   predict: Wire +1
+   result : after SubVI=7 IndexArray=2 Wire=25 ExecState=0  (0.1 s)
+
+== 4c creator terminal 15 (own error out) -> Clear Errors.vi.'error in (no error)' (by index)
+   predict: (1, x)
+   result : (1, 0)  (0.0 s)
+
+== 5 Index Array for 'queue'
+   predict: IndexArray +1
+   result : 108  (0.1 s)
+
+== 5-wire Get Outputs.'Outputs' -> IA.array
+   predict: (1, x)
+   result : (1, 0)  (0.0 s)
+
+== 5-wire IA.element -> 'queue'
+   predict: Wire +1
+   result : after SubVI=7 IndexArray=3 Wire=28 ExecState=1  (0.1 s)
+
+== 6 create_control on 'location (0, 0)'
+   predict: a cluster control
+   result : ([{'i': 8, 'class': 'ControlTerminal', 'uid': 685, 'pos': (1459, 646), 'owner': 'TopLevelDiagram'}], 'location (0, 0)')  (0.1 s)
+   location control: ['location (0, 0)']
+
+== 7 creator own 'error out' -> 'error out' indicator (connect_ctl, branch)
+   predict: no error text
+   result : None  (0.0 s)
+   creator terminals: [('Diagram in', 471), ('location (0, 0)', 701), ('Diagram out', 0), ('queue', 631), ('error in', 0), ('error out', 0), ('error in (no error)', 476), ('error out', 534)]
+donor md5 unchanged: True
+
+VERDICT: OpQueueRelease_v0.vi BUILT and SAVED (structural)
+
+ALL FOUR QUEUE OPS BUILT
+BGRUN END rc=0 after 117s

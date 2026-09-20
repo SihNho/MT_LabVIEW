@@ -1,0 +1,93 @@
+BGRUN START 2026-09-19 21:25:52 limit 22.0 min: py -u tools/prior_art_review.py --plan-file docs/cycle27-plan.md --slug d1-s1-stage --trigger cycle-start --recipe tools/recipes/stage_d1_s1.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_d1-s1-stage.txt (84472 chars)
+OUTCOME: ANSWERED (437s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-19-priorart-d1-s1-stage.md
+COST: $4.2474  in 38 / out 31479 / cache-create 205226 / cache-read 2815988  (433s, 30 turn(s))
+--- ANSWER ---
+Write is disabled in this session, so the review is delivered here — which is the product anyway.
+
+# PRIOR-ART REVIEW — S1 of the Pre-decided 22 stage chain
+
+**slug:** `d1-s1-stage` · **trigger:** cycle-start · **verdict: NOT NOVEL — 5 findings**
+**Under review:** `docs/cycle27-plan.md` Pre-decided 22's S1 row (`:386`) + `STATUS.md:93-95`, and the recipe the dispatch names, `tools/recipes/stage_d1_s1.py`.
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 — settled already? **No, and I am deliberately not firing this slug.**
+Settled *in favour*: the user imposed the staged build 2026-09-19 17:4x (Pre-decided 22, `docs/cycle27-plan.md:381-388`), the S0-decomposition review found a staged save-per-step chain "has never been tried and abandoned" (`archive/peer/2026-09-19-priorart-s0-decomp.md:235`), and the outcome review's binding condition points the same way (`archive/peer/2026-09-19-outcome-review-20260919.md:153`, disposed `:171`). Nothing blocks the direction.
+
+### A2 — refuted already? **No.** The *save route* was flagged unmeasured, not refuted.
+Run 10's save died (`tools/bench/build_d1_routeb_v7_run10.log:367` — `gui_save` mtime never moved), generalised by priorart-s0-decomp finding B1 ("NO STEP MAY SAVE A BROKEN VI", seven logged `gui_save` failure sites). **The new stage addresses that cause instead of repeating it**: `stage_d1_s1.py:51-52` bans `allow_broken=True`, so `tools/gscript.py:2066-2067`'s divert is unreachable by construction. No slug.
+
+### A3 — **CONTRADICTED.** The plan forbids the one mechanism the stage rests on, and has not been amended.
+
+Both sides are inside the file under review:
+
+> `docs/cycle27-plan.md` Pre-decided 16(b): *"**NO PRELOADED BUILD RUN** … the working copy can CROSS-LINK to the in-memory original's subVIs and is then written by `g.save(TARGET)`. **Preload stays confined to read-only ExecState diagnostics, in a step that never saves.**"* — restated verbatim at Pre-decided 20.
+
+against
+
+> `tools/recipes/stage_d1_s1.py:262-278` (phase A) and `:358-412` (phase C): `g.save(...)` is called **inside** `with Preload(...)`, which holds the ORIGINAL resident (`:222`).
+
+Pre-decided 22's S1 row authorises the preload "for every **ExecState read**" (`:383`) — not for a save — so the stage table does not lift 16(b) either. The recipe argues its own licence at `:13-21` (16(b)'s cross-link hazard was "NEVER MEASURED"; phases A/B are that measurement). **That argument may well be right; it is simply not the recipe's to make** — Pre-decided 12: `## Pre-decided` lines are edited by judgement sessions, and a material session that believes one is stale reports it and stops.
+
+Second half, undisposed: 16(b) also says *"a preload can MASK a genuine break … so a preloaded 1 is necessary, never sufficient."* Gate D2 (`:437`) and the S1 row's pass criterion (`:386`) are both exactly that preloaded 1.
+
+### A4 — **UNREAD EVIDENCE.** The fixture is four nodes; S1 deletes two, and the decision saying so is cited nowhere.
+
+`docs/fixture-recording.md:15-20` lists **four** nodes inserted 2026-09-01 — `#22700` IMAQ Write TIFF File 2, `#22703` Format Into String, `#23175` Strip Path, `#23020` Build Path — all inside the frame loop (`:12-13`). `docs/d1-build-plan.md:951-958` measured them as "the **whole** difference" from the true original. `TIFF_DELETE` removes two. Leaving the others is decided and defended:
+
+> `docs/d1-build-plan.md:968-972` — *"`#22703` and `#23020`'s other feeder `#23175` … are **NOT** named for deletion here, and that is deliberate, not an oversight … they become dead-but-legal … **Reported in the run, left standing.**"*
+
+Neither `docs/cycle27-plan.md:386` ("fixture TIFF writer … deleted") nor `stage_d1_s1.py:95-96` ("two FIXTURE nodes … are removed and nothing else changes, so the original's computation is untouched") cites §11h or says two of our own insertions survive into the D1 deliverable. Read alone, that docstring asserts the fixture is gone. It is not.
+
+---
+
+## PART B — THE ARTIFACT
+
+### B1 — **ALREADY BUILT.** The S1 stage script exists in full.
+`tools/recipes/stage_d1_s1.py` is a complete 489-line, four-phase, 17-gate script with its own prediction contract (`:67-97`). Its prior-art dispatch is already open — `tools/bench/priorart_d1_s1_stage.log:1` (`--slug d1-s1-stage --recipe tools/recipes/stage_d1_s1.py`, no `BGRUN END`). But `STATUS.md:94-95` still reads *"it is to be re-cut as a STAGE script"*, which a cold session will obey. **Nothing is to be re-cut.** The artefact itself does not exist: no `D1_s1_copy.vi` in `claudeDev` (only six `SCRATCH_routeb_*_crash_*.vi`).
+*Not re-fired:* `archive/peer/2026-09-19-priorart-s0-closeref.md:579-584` ("lift, don't rewrite") is **satisfied** — `stage_d1_s1.py:30-33` lifts v7's bodies explicitly.
+
+### B2 — already failed? **No** — see A2.
+
+### B3 — **HELPER EXISTS**, and the hand-rolled version will read the wrong number.
+Built helper: `tools/bench/diag_d1_execstate_preload.py` — one condition per **child process**, each with its own `lv_restart` (`:96-97`, driven `:202-203`), because "a `Find the VI named …` modal makes GetVIReference block with no dialog visible to the caller … the PROCESS-level deadline is the guarantee" (`:26-28`). Pre-decided 14a adopted the same rule: *"restart LabVIEW between conditions."*
+
+`stage_d1_s1.py` phase B restarts once (`:299`) then takes four readings in that one instance: `:308`, `:309`, `:313-314`.
+
+14a's own mechanism defeats it: *"A cold read therefore measures **subVI linkage**"*. `ARM` and `CTL` are byte copies calling the **same subVIs under the same qualified names** — reading `ARM` at `:308` loads that hierarchy, so `ctl_cold` at `:309` is a preloaded reading wearing a cold label. `g.exec_state` closes its `vi_ref` (`tools/gscript.py:1978`), which unloads nothing: `archive/peer/2026-09-17-d1-s1-stale-in-memory-copy.md:47` records NI's position that `Open VI Reference` returns/links already-resident VIs and that **closing is asynchronous**; `archive/peer/2026-09-17-moveinto-stale-in-memory-vi.md:109` says reuse of one path requires waiting "until the VI is observably absent".
+
+**The consequence is a false positive, not a null.** Gate B (`:318-321`) expects `(0,1)` for both and calls any difference *"the CROSS-LINKING FINDING Pre-decided 16(b) asked for"*. Expect arm `[0,1]` vs control `[1,1]` → gate B FAILs, the chain stops before phase C, and the log reports a cross-link that never happened — manufactured by the instrument rather than detected by it.
+
+### B4 — **ALREADY MEASURED.** Phase C minus the save ran and passed on 2026-09-17.
+`tools/bench/build_d1_v0_run6.log:19-26`:
+> `:19` BEFORE `{'SubVI': 98, 'Function': 181, 'Node': 626, 'Wire': 1902}`, 28 bare named sinks, ExecState 0 · `:20-21` `#22700`/`#23020` GONE · `:22` newly bare `[]` · **`:23` ExecState unchanged `0 -> 0`** · `:24` AFTER `{97, 180, 624, 1899}` · `:25-26` `#23175`/`#22703` LEFT STANDING
+
+Those are exactly the recipe's pinned `BEFORE` (`:132-133`), `AFTER_S1T` (`:134`) and gates C3/C4/C6/C7; summarised "✅ MEASURED … 4/4" at `docs/d1-build-plan.md:594`. So **only C9 (the save) and phase D are unmeasured** — the same conclusion as `archive/peer/2026-09-19-priorart-s0-closeref.md:584`. Two things to write down before the run, not after: C3/C4/C6/C7 are *replication* (a FAIL means something changed since 2026-09-17, not a discovery); and `:23` measured post-deletion **ExecState 0** cold while the S1 row's criterion is **1 preloaded** — say which number is the criterion.
+
+---
+
+```
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-built
+PRIOR-ART: helper-exists
+PRIOR-ART: already-measured
+```
+
+**Cheapest release per finding**
+
+| finding | release |
+|---|---|
+| A3 | judgement amends Pre-decided 16(b) to cover a save under preload whose artefact is re-read cold **and** preloaded in a fresh instance; recipe header cites it (`FIXED:`) |
+| A4 | cite `docs/d1-build-plan.md:968-972` in the recipe docstring and the S1 row; state that `#22703`/`#23175` survive (`FIXED:`) |
+| B1 | correct `STATUS.md:94-95` — the stage script exists, do not re-cut it (`FIXED:`) |
+| B3 | phase B reuses `diag_d1_execstate_preload.py`'s child-per-condition, restart-per-condition shape (`FIXED:`) |
+| B4 | label C3/C4/C6/C7 as replication of `build_d1_v0_run6.log:19-26`; name the pass-criterion reading (`FIXED:`) |
+
+No new op, tool or device is implied (user's standing order, 2026-09-18 08:53). I took no lock, ran nothing, opened no `.vi`, and touched no motor or camera.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-d1-s1-stage.md
+   STOP RECORD armed: tools/recipes/stage_d1_s1.py sha 1c442a17ffe8 verdict contradicted, unread-evidence, already-built, helper-exists, already-measured -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 437s

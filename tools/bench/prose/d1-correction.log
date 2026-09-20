@@ -1,0 +1,50 @@
+BGRUN START 2026-09-16 22:22:30 limit 5.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent codex -Kind prose -Slug d1-correction -TaskFile tools/bench/prose/d1-correction.in.md
+OUTCOME: ANSWERED (33s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\prose\2026-09-16-d1-correction.md
+--- ANSWER ---
+## 무엇이 틀렸나
+
+제가 제안하고 사용자가 승인한 옵션 A의 문구는 "원본 복사본에서 프레임 루프를 그대로 두고 정지/종료 + 파일 저장만 먼저 붙인 버전"이었습니다. 그러나 측정 결과, 원본에는 이미 정지와 파일 저장이 있습니다. 정지는 `stop (end)` 컨트롤 2개를 프레임 루프 본체 Diagram 639에서 읽는 방식이며, 파일 저장은 루프가 끝난 뒤 diagram 19에서 루프 출력 터널을 통해 `save N xyz traces.vi`로 한 번에 수행됩니다. 따라서 "원본 복사본에 정지·저장을 붙인다"는 실제로는 아무것도 만들지 않는 정의였습니다.
+
+그 결과 제가 cycle15-plan.md에 작성한 D1은 "원본 복사본에서 트래커 호출만 교체"로 바뀌어 있었습니다. 이는 `docs/decisions.md:19`의 확정 결정인 "구조 변경은 원본 복사본 안에서, **hot-path만 바꾸는 방식은 아님**, 빈 VI 재작성도 아님"과 정면으로 어긋납니다. 선행연구 리뷰(cycle15-d1, $3.28, 12개 지적, novel 0)가 이 문제를 잡았습니다.
+
+성과 리뷰가 "정지/저장을 먼저"라고 한 대상은 원본이 아니라 **새 7루프 VI**였습니다. 지금 있는 두 replay VI에는 정지도 저장도 없다는 뜻입니다.
+
+## 확정 결정(decisions.md, 재논의 대상 아님)
+
+수용 기준 C는 카메라 획득·트래킹·모터 읽기·스케줄러·데이터 저장이 각각 자기 루프를 갖도록 하는 것입니다. 프레임 루프(diagram 43)를 비워 7루프로 구성합니다.
+
+구조 변경은 원본 복사본 안에서 수행합니다. 방법은 이미 검증됐으며, 결과는 probe_migrate v2 3/3, v3 5/5입니다. 검증되지 않은 것은 규모와 실행 시간입니다.
+
+GPU 상위 VI를 먼저 기본으로 만들고, CPU 병렬은 그다음 별도 VI로 만듭니다. 카메라는 free-run으로 두고 PC는 읽기만 합니다. 프레임 전달에는 사전 할당 이미지 풀 + 슬롯 인덱스(20슬롯)를 사용합니다.
+
+MAP이 먼저 — 사용자의 지시입니다.
+
+## 오늘 측정된 것 (D1에 필요한 재료)
+
+트래커 seam은 diagram 43의 subVI #5058 `Track N beads four-fold over-kernel-v3.vi`입니다. 터미널 16개를 모두 읽었으며, 구성은 Image In, 루프 터널 6, 시프트 레지스터 2, CaseStructure 입력 2, 출력 3, 미배선 3입니다. 이에 따라 추출 경계가 확정됐습니다.
+
+프레임별 호출이 가능한 커널은 3종입니다. `PARALLEL_kernel_v3clean.vi`는 200프레임×3에서 비트 동일이 확인됐습니다. `GPU_kernel_v1.vi`는 200프레임×3에서 x,y 4.9e-7 px / z 2.9e-6 µm, 0 flip이 확인됐지만, 10,043 프레임 전체는 미실행 상태입니다. `TRACK_kernel_v1.vi`는 CPU/GPU 케이스 선택형입니다. 두 replay VI는 FOR 루프 최상위이고 TIFF 입력을 사용하므로 seam에 꽂을 수 없습니다.
+
+어떤 트래커도 주 VI 안에서 돌아본 적은 없습니다.
+
+원본의 종료는 diagram 83의 `IMAQdx Stop Acquisition → Close Camera → Simple Error Handler`로 구성됩니다. `ASI Close`는 완전 미배선이고 VISA Close는 없습니다. `IMAQ Dispose`는 있습니다.
+
+원본의 정지가 루프 내부 Boolean인지 Abort인지는 아직 미확정입니다. 조건 터미널 읽기가 두 번 실패했으며, 예측 실패 2건에 대한 피어 리뷰는 완료됐습니다. 다음 단계는 재귀 ControlTerminal census + `Loop End Ref` 리더입니다.
+
+정지·저장 배선표는 새 문서 docs/main-vi-stop-and-save.md에 있습니다.
+
+## 정정된 D1 제안
+
+D1은 원본 복사본 안에서 마스터 플랜 Phase 1의 **첫 슬라이스**를 구현하는 작업입니다. 범위는 획득 루프(1.1, 원본 프레임 루프에서 트래커를 뺀 것), 트래킹 루프(1.2, GPU 커널 — GPU 우선 결정), 결과 큐를 소비하는 저장 루프(1.7), 정지·종료 프로토콜(1.9)입니다. 모터·스케줄러 루프(1.3~1.6)는 D2에서 진행합니다.
+
+이 범위는 성과 리뷰의 "획득 → 트래커 → 저장 → 정지/재시작" 슬라이스와 같으며 decisions.md의 방법과 일치합니다.
+
+수용 게이트는 그대로 유지합니다. N1은 픽스처 수치 동일입니다. GPU 커널을 사용한다면 현재 200프레임 기록만 있으므로 10,043 프레임 전체 실행이 먼저 필요합니다. F1은 카메라 라이브 5분 + 파일, F2는 깨끗한 정지·재시작, F3는 로터 signed(D2에서)입니다.
+
+규모는 옵션 A로 제가 말한 것보다 큽니다. 리뷰어가 원래 제안한 슬라이스입니다.
+
+## 질문
+
+1. 정정된 D1(획득+GPU 트래킹+저장+정지, 원본 복사본 안, 모터는 D2)로 진행해도 되는지.
+2. 트래커: GPU 커널로 가되 10,043 프레임 전체 수치 검증을 먼저 돌릴지(측정 1회), 아니면 비트 동일이 확인된 CPU 커널(PARALLEL_kernel_v3clean)로 D1을 먼저 세우고 GPU는 D1이 돌아간 뒤 교체할지. 제 추천은 후자 — 검증 안 된 부품을 한 번에 하나만 넣기 위해. 단 이는 "GPU 먼저" 결정과 순서상 어긋나므로 사용자 판단이 필요함.
+BGRUN END rc=0 after 33s

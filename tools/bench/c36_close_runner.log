@@ -1,0 +1,53 @@
+BGRUN START 2026-09-18 21:58:58 limit 25.0 min: py -u tools/bench/c36_close_runner.py
+== STEP 1: selftest_bgrun_final_line ==
+     -> PASS B1 normal-exit  runner exit 0 (want 0) | last: BGRUN END rc<eq>0 after 0s
+     -> PASS B2 child-rc-nonzero  runner exit 3 (want 3) | last: BGRUN END rc<eq>3 after 0s
+     -> PASS B3 runner-exception  runner exit 125 (want 125) | last: BGRUN END rc<eq>125 after 0s (runner exception: le "C:\Users\KimLab\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 971, in __init__ |  
+     -> PASS B4 timeout  runner exit 124 (want 124) | last: BGRUN TIMEOUT killed after 3s (limit 0.02 min)
+     -> PASS B5 exactly-one-terminal-line  logs with a count other than 1: none
+     -> PASS C0 control-cp949-raises  python -c print(em-dash) under PYTHONIOENCODING=cp949 exit 1
+     -> PASS W1 wait-DONE-emdash  exit 0 (want 0) | out: DONE      w_done.log  | BGRUN END rc<eq>0 after 12s ? done
+    ; WAITED 1/1 logs terminal | err: 
+     -> PASS W2 wait-RUNNING-emdash  exit 3 (want 3) | out: RUNNING   w_running.log  | 2 lines | tail: BGRUN START 2026-09-18 00:00:00 limit 5 min: py -u probe.py // step 3 ? still working
+    ; WAITED 0/1 logs terminal | err: 
+   === selftest_bgrun_final_line: 8 pass, 0 fail ===
+   S1 GATE PASS  (exit 0, summary === selftest_bgrun_final_line: 8 pass, 0 fail ===)
+== STEP 2: T1 external kill of the RUNNER process (measurement, not a gate) ==
+   OBSERVED taskkill on runner pid 9128 -> exit 0
+   OBSERVED log lines=2 last='a'
+   OBSERVED terminal line present: False
+   OBSERVED reviewer's prediction was 'no terminal line'; match=True
+   CLEANUP orphan child pids terminated: ['15052']
+== STEP 3: doc_ingest --cycle 36 (nested bgrun, machinery-classified log) ==
+   guarded existing 2026-09-18-ingest-2026-09-18.md -> 2026-09-18-ingest-2026-09-18-cycle34.md
+   inner runner exit 0 | log last: BGRUN END rc<eq>0 after 187s
+   ingest archives new/changed: ['2026-09-18-ingest-2026-09-18-cycle34.md', '2026-09-18-ingest-2026-09-18.md']
+   S3 GATE PASS
+   --- head of 2026-09-18-ingest-2026-09-18-cycle34.md ---
+      ?# ingest-2026-09-18
+      
+      - **agent:** claude
+      - **role:** ingest
+      - **model:** sonnet (pinned by -Model/-Effort (role ingest))
+      - **kind:** fact
+      - **cost:** $0.8673  in 4 / out 20906 / cache-create 164558 / cache-read 0  (217s, 3 turn(s))
+      - **date:** 2026-09-18 19:19:00
+      - **outcome:** ANSWERED (218s)
+      - **why asked:** (Claude fills in)
+      - **verdict:** unverified
+      
+   --- head of 2026-09-18-ingest-2026-09-18.md ---
+      ?# ingest-2026-09-18
+      
+      - **agent:** claude
+      - **role:** ingest
+      - **model:** sonnet (pinned by -Model/-Effort (role ingest))
+      - **kind:** fact
+      - **cost:** $1.0047  in 6 / out 19595 / cache-create 197194 / cache-read 99681  (184s, 4 turn(s))
+      - **date:** 2026-09-18 22:02:17
+      - **outcome:** ANSWERED (186s)
+      - **why asked:** (Claude fills in)
+      - **verdict:** unverified
+      
+=== c36_close_runner: 0 gate failure(s) ===
+BGRUN END rc=0 after 199s

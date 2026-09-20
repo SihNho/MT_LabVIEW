@@ -1,0 +1,58 @@
+ATTACK this claim. Do not agree with it; find the strongest reason it is wrong.
+
+CONTEXT (LabVIEW VI-Scripting project; you have read-only access to the project directory).
+
+THE ARTEFACTS
+  tools/bench/replay_netmap_truncation.py    - the replay script (files only, no LabVIEW, no COM)
+  tools/bench/replay_netmap_truncation.log   - TWO runs appended: BGRUN START 07:16:03 (line 1) and
+                                               BGRUN START 07:32:10 (line 252). The SECOND run is the current one.
+  tools/bench/replay_netmap_truncation.json  - its readings
+  archive/peer/2026-09-20-c54-netmap-wires-g12.md              - review #1 of this failure
+  archive/peer/2026-09-20-c54-netmap-wires-table-restatement.md - review #2 of this failure
+  tools/bench/main_vi_netmap.json, tools/bench/main_vi_nodeterms.json - the two censuses being compared
+  tools/gscript.py:2549 and :2557-2560 - net_map's terminal cap (max_terms=40) and its three-empties early stop
+
+THE PREDICTION THAT FAILED, and is STILL failing in the newest run
+  replay_netmap_truncation.log:460
+    FAIL  G12 P5 all 12 absent from the netmap wires table
+          absent=5 present=[9051, 9000, 29006, 29122, 28392, 29081, 29106]
+  G12 encodes Pre-decided 38(h)'s wording, that netmap Diagram 19 "is missing all of #637's i40-i58 wire ends"
+  for the twelve wires 9051, 9000, 9649, 11253, 16421, 29006, 29122, 28392, 29081, 29106, 32583, 32344.
+  MEASURED: only 5 of the 12 are absent from the `wires` table; 7 are present there via OTHER nodes of the
+  same diagram, because `nets` is keyed by WIRE UID across the whole diagram, not per node.
+
+THE EXPLANATION I FORMED - ATTACK IT
+  (1) 38(h)'s literal wording is FALSE and G12 is correctly recorded as a failed prediction.
+  (2) The SOUND restatement is G12b, and it now PASSES in the newest run:
+        replay_netmap_truncation.log:461
+          PASS  G12b P5 restated: #637's OWN end is missing for all 12
+                wires with no #637 end in the netmap table: 12 of 12
+  (3) Review #2's ONE refutation was that "G12b has never been run - it is unexecuted code presented as a
+      measurement". That objection is now discharged BY RUNNING IT: the 07:32:10 run executes G12b and the
+      three discriminating tests review #2 prescribed in its section 4, and all four pass:
+        :448 G12c netmap `n` resolves to exactly one nodeterms uid   ambiguous n values: []
+        :449 G12d n=4 resolves to uid 637 and nothing else           n=4 -> [637]
+        :450 G12e every resolved n equals the nodeterms node ORDER at that index
+  (4) Therefore the truncation account stands as MEASURED, not asserted: 52 shortfalls reproduced from
+      cap@40 (1 node: #637) or empties>=3 (51 nodes), 574/626 nodes agree, 0 nodes missing from either census.
+  (5) Therefore this failed prediction is fully explained and a build that touches NOTHING in the netmap
+      code path may proceed.
+
+WHAT I NEED FROM YOU
+  Q1. Is (3) true - does running G12b actually discharge review #2's objection, or does the re-run introduce a
+      NEW defect (for example: a gate rewritten after seeing the data; a test that can only pass; the second
+      run reading state left by the first)? Open the script and check the gate definitions, not my summary.
+  Q2. Is G12b's own wording sound, or is it a second unfalsifiable restatement? Say exactly what observation
+      would make G12b FAIL, and check whether that observation is reachable in these files.
+  Q3. G12c/G12d/G12e claim to invert the netmap `wires` table so that a walk index resolves to exactly one
+      node uid. Name the strongest reason that inversion could be wrong or circular.
+  Q4. Is (5) a laundering step - i.e. does "the failure is explained" actually license the next unrelated
+      build, or is there a residual risk this reasoning hides?
+  Q5. Anything in the two runs' numbers that contradicts the account and that I have not reported.
+
+ALREADY RULED OUT - do not spend the review on these
+  * Whether net_map truncates: MEASURED, cap=40 at tools/gscript.py:2549 and empties>=3 at :2557-2560.
+  * Whether `if t` in sweep_netmap_main.py:63-64 is the cause: it is secondary, already recorded in 38(h).
+  * Whether to rebuild the netmap by re-sweeping LabVIEW: no - main_vi_nodeterms.json is the fuller census.
+  * Review #1's disagreement with review #2 over 40-vs-36 #637 ends in the table: REPORTED, deliberately
+    unresolved, and not the question here.

@@ -1,0 +1,83 @@
+BGRUN START 2026-09-14 10:32:35 limit 20.0 min: py -u tools/recipes/probe_castfree_ladders5.py
+
+######## CONTROL: GObject.Position from Nodes[]-node (donor already uses it) ########
+   P0 donor pristine (control)                          ExecState=1 Invoke=0
+   -> PASS: P0 donor pristine (control): ExecState 1 (expected 1), Invoke 0
+net_map: 8 nodes walked in 1.6 s; 78 junk Invoke(s) purged in 5.2 s
+   P1 after one net_map (purge check)                   ExecState=1 Invoke=0
+   -> PASS: P1 after one net_map (purge check): ExecState 1 (expected 1), Invoke 0
+   -> PASS: P1 Invoke count back to pristine after net_map: 0 -> 0
+   P2 after build_property (unwired reference)          ExecState=0 Invoke=0
+   -> PASS: P2 after build_property (unwired reference): ExecState 0 (expected 0), Invoke 0
+   P3 after reference wire (THE QUESTION)               ExecState=1 Invoke=0
+   -> PASS: P3 after reference wire (THE QUESTION): ExecState 1 (expected 1), Invoke 0
+net_map: 9 nodes walked in 1.7 s; 86 junk Invoke(s) purged in 5.9 s
+   -> PASS: P4 new node terminals: terms=['reference', 'reference out', 'error in (no error)', 'error out', 'Position'] -> data terminals ['Position']
+   P5 after second hop wired (route compiles?)          ExecState=0 Invoke=0
+   -> FAIL: P5 after second hop wired (route compiles?): ExecState 0 (expected 1), Invoke 0
+net_map: 10 nodes walked in 2.0 s; 94 junk Invoke(s) purged in 7.3 s
+   -> PASS: P5 second node terminals read: ['reference', 'reference out', 'error in (no error)', 'error out', 'UID']
+
+######## L1 identity: Nodes[]-node -> AbstractDiagram.SubVIs[] -> IA -> SubVI.VI Name/VI Path ########
+   P0 donor pristine (control)                          ExecState=1 Invoke=0
+   -> PASS: P0 donor pristine (control): ExecState 1 (expected 1), Invoke 0
+net_map: 8 nodes walked in 1.5 s; 78 junk Invoke(s) purged in 5.0 s
+   P1 after one net_map (purge check)                   ExecState=1 Invoke=0
+   -> PASS: P1 after one net_map (purge check): ExecState 1 (expected 1), Invoke 0
+   -> PASS: P1 Invoke count back to pristine after net_map: 0 -> 0
+   P2 after build_property (unwired reference)          ExecState=0 Invoke=0
+   -> PASS: P2 after build_property (unwired reference): ExecState 0 (expected 0), Invoke 0
+   P3 after reference wire (THE QUESTION)               ExecState=1 Invoke=0
+   -> PASS: P3 after reference wire (THE QUESTION): ExecState 1 (expected 1), Invoke 0
+net_map: 9 nodes walked in 1.7 s; 86 junk Invoke(s) purged in 6.0 s
+   -> PASS: P4 new node terminals: terms=['reference', 'reference out', 'error in (no error)', 'error out', 'SubVIs[]'] -> data terminals ['SubVIs[]']
+   P5 after second hop wired (route compiles?)          ExecState=1 Invoke=0
+   -> PASS: P5 after second hop wired (route compiles?): ExecState 1 (expected 1), Invoke 0
+net_map: 11 nodes walked in 2.0 s; 101 junk Invoke(s) purged in 7.8 s
+   -> PASS: P5 second node terminals read: ['reference', 'reference out', 'error in (no error)', 'error out', 'VIName', 'VIPath']
+
+######## L2 panel wiring: Label-node -> Control.Terminal -> Terminal.Is Source?/Connected Wire ########
+   P0 donor pristine (control)                          ExecState=1 Invoke=0
+   -> PASS: P0 donor pristine (control): ExecState 1 (expected 1), Invoke 0
+net_map: 8 nodes walked in 1.5 s; 78 junk Invoke(s) purged in 5.2 s
+   P1 after one net_map (purge check)                   ExecState=1 Invoke=0
+   -> PASS: P1 after one net_map (purge check): ExecState 1 (expected 1), Invoke 0
+   -> PASS: P1 Invoke count back to pristine after net_map: 0 -> 0
+   P2 after build_property (unwired reference)          ExecState=0 Invoke=0
+   -> PASS: P2 after build_property (unwired reference): ExecState 0 (expected 0), Invoke 0
+   P3 after reference wire (THE QUESTION)               ExecState=1 Invoke=0
+   -> PASS: P3 after reference wire (THE QUESTION): ExecState 1 (expected 1), Invoke 0
+net_map: 9 nodes walked in 1.7 s; 86 junk Invoke(s) purged in 5.9 s
+   -> PASS: P4 new node terminals: terms=['reference', 'reference out', 'error in (no error)', 'error out', 'Terminal'] -> data terminals ['Terminal']
+   P5 after second hop wired (route compiles?)          ExecState=1 Invoke=0
+   -> PASS: P5 after second hop wired (route compiles?): ExecState 1 (expected 1), Invoke 0
+net_map: 10 nodes walked in 1.9 s; 95 junk Invoke(s) purged in 7.2 s
+   -> PASS: P5 second node terminals read: ['reference', 'reference out', 'error in (no error)', 'error out', 'IsSource', 'Wire']
+
+################ SUMMARY ################
+  PASS  P0 donor pristine (control)                                            ExecState 1 (expected 1), Invoke 0
+  PASS  P1 after one net_map (purge check)                                     ExecState 1 (expected 1), Invoke 0
+  PASS  P1 Invoke count back to pristine after net_map                         0 -> 0
+  PASS  P2 after build_property (unwired reference)                            ExecState 0 (expected 0), Invoke 0
+  PASS  P3 after reference wire (THE QUESTION)                                 ExecState 1 (expected 1), Invoke 0
+  PASS  P4 new node terminals                                                  terms=['reference', 'reference out', 'error in (no error)', 'error out', 'Position'] -> data terminals ['Position']
+  FAIL  P5 after second hop wired (route compiles?)                            ExecState 0 (expected 1), Invoke 0
+  PASS  P5 second node terminals read                                          ['reference', 'reference out', 'error in (no error)', 'error out', 'UID']
+  PASS  P0 donor pristine (control)                                            ExecState 1 (expected 1), Invoke 0
+  PASS  P1 after one net_map (purge check)                                     ExecState 1 (expected 1), Invoke 0
+  PASS  P1 Invoke count back to pristine after net_map                         0 -> 0
+  PASS  P2 after build_property (unwired reference)                            ExecState 0 (expected 0), Invoke 0
+  PASS  P3 after reference wire (THE QUESTION)                                 ExecState 1 (expected 1), Invoke 0
+  PASS  P4 new node terminals                                                  terms=['reference', 'reference out', 'error in (no error)', 'error out', 'SubVIs[]'] -> data terminals ['SubVIs[]']
+  PASS  P5 after second hop wired (route compiles?)                            ExecState 1 (expected 1), Invoke 0
+  PASS  P5 second node terminals read                                          ['reference', 'reference out', 'error in (no error)', 'error out', 'VIName', 'VIPath']
+  PASS  P0 donor pristine (control)                                            ExecState 1 (expected 1), Invoke 0
+  PASS  P1 after one net_map (purge check)                                     ExecState 1 (expected 1), Invoke 0
+  PASS  P1 Invoke count back to pristine after net_map                         0 -> 0
+  PASS  P2 after build_property (unwired reference)                            ExecState 0 (expected 0), Invoke 0
+  PASS  P3 after reference wire (THE QUESTION)                                 ExecState 1 (expected 1), Invoke 0
+  PASS  P4 new node terminals                                                  terms=['reference', 'reference out', 'error in (no error)', 'error out', 'Terminal'] -> data terminals ['Terminal']
+  PASS  P5 after second hop wired (route compiles?)                            ExecState 1 (expected 1), Invoke 0
+  PASS  P5 second node terminals read                                          ['reference', 'reference out', 'error in (no error)', 'error out', 'IsSource', 'Wire']
+scratch deleted
+BGRUN END rc=3 after 77s

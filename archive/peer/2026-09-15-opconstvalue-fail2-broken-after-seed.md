@@ -1,0 +1,112 @@
+﻿---
+type: peer-review
+status: historical
+date: 2026-09-15
+tags: [peer-review, vi-scripting]
+---
+
+# opconstvalue-fail2-broken-after-seed
+
+- **agent:** codex
+- **date:** 2026-09-15
+- **outcome:** ANSWERED (48s)
+- **why asked:** (Claude fills in)
+- **verdict:** unverified
+
+## Question
+
+ATTACK THIS (LabVIEW 2026 VI Scripting over COM). Log tools/bench/build_opconstvalue_v1.log run 2, script tools/recipes/build_opconstvalue_v1.py (reviewed as archive/peer/2026-09-15-opconstvalue-v1-recipe.md). copy_by_index copied NI's Property Node uid 284 ('Value' data terminal, fed by a To More Specific Class in the example) from 'Navigating Nodes and Wires.vi' diagram 3 into a copy of OpReport_v3.vi: exactly one new Property node (uid 324) with terminals ['reference','reference out','error in (no error)','error out','Value'] appeared at top level; Terminal.Create Control on its 'reference' produced one control labelled 'reference'. The Target's ExecState then read 0, so the protocol refused to save (correct). Nothing else was changed on the donor copy (OpReport_v3 is runnable).
+Candidates: (H1) the copied Property Node is class-configured (Constant, property Value) but Create Control on its 'reference' made a control of the PN's class - should be fine - yet the VI is broken because the PN's 'Value' OUTPUT is a Variant left unwired? (outputs never break a VI) ; (H2) the Move/duplicate produced a Property node whose class/property is NOT preserved (generic, unconfigured) -> broken node; (H3) the copied node arrived with a BROKEN wire stub (its original 'reference' wire came along partially); (H4) OpReport_v3's copy was already broken before the copy (the recipe never gated the donor copy's ExecState - it gates the example's chain only); (H5) the seed control is of a class that the PN rejects (e.g. GObject vs Constant) - a class conflict on that one wire.
+Questions: (1) rank; (2) the cheapest read-only discriminator with the fleet's readers (node terminals with wire uids; panel_wiring; a Remove Bad Wires delta; exec_state of the donor copy before anything is copied); (3) does Move(Duplicate?=TRUE) of a Property Node across VIs preserve its class and selected property - cite; (4) if H2, the alternative: build the Property node with the fleet's build_property('VI Server:Constant', [('634AC00', False)]) - the earlier failure mode was 'the member did not attach' only for PRIVATE members; Constant.Value is public per labviewwiki - so build_property may work directly (the seed then comes from ITS 'reference' input): is that the cleaner route? Read-only; cite what you read.
+
+
+## Answer
+
+## Verdict
+
+My ranking is:
+
+1. **H4 ??donor copy was already broken**
+2. **H3 ??copied node brought a broken/loose wire fragment**
+3. **H2 ??class or selected property was not preserved**
+4. **H5 ??reference-class conflict**
+5. **H1 ??unwired `Value` output**
+
+The current experiment cannot attribute `ExecState = 0` to the copied Property Node because it never established the copied `OpReport_v3.vi` was executable immediately before insertion. That missing baseline dominates every downstream observation.
+
+### Why this order
+
+- **H4 first:** it is a pure experimental-control failure and costs essentially nothing to eliminate.
+- **H3 second:** the source node?셲 reference terminal was wired. A malformed or loose fragment is a normal cause of a broken VI; NI says broken VIs are commonly caused by broken wires or required unwired inputs, and its Remove Bad Wires operation specifically deletes all broken diagram wires. [NI debugging guide](https://lumen.ni.com/pdf/labview101/us/debugging_explanation.pdf), [NI Remove Bad Wires documentation](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/vi/removebadwires.html)
+- **H2 third:** copying clearly reproduced a Property Node-shaped object and its `Value` row, but that does not prove that `PropClassName` and the selected member ID survived correctly.
+- **H5 fourth:** `Terminal.Create Control` invoked on that exact reference terminal should derive the control type from the terminal. Class-dependent Property Nodes obtain their valid properties from the wired reference type; NI explicitly describes wiring a more-specific reference and then selecting properties available for that type. [NI?셲 VI Server class explanation](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YHhtCAG) If the generated control is incompatible, I would suspect H2 or a defective terminal before an independently chosen wrong seed type.
+- **H1 last:** `Value` is a read/output property in this node, so leaving it unwired is not analogous to omitting a required input. NI?셲 generic Property Node diagram distinguishes property outputs from inputs, and its broken-VI guidance points instead to required inputs and broken wires. [NI Function and VI Reference Manual](https://download.ni.com/support/manuals/321526b.pdf), [NI debugging guide](https://lumen.ni.com/pdf/labview101/us/debugging_explanation.pdf)
+
+## Cheapest discriminator
+
+Run this sequence on a disposable copy:
+
+1. **Read `ExecState` immediately after opening/copying `OpReport_v3`, before `copy_by_index`.**
+   - Bad already ??**H4 confirmed**.
+   - Runnable ??H4 eliminated.
+
+2. **After copying the Property Node, report every terminal?셲 wire UID before creating the control.**
+   - The new node?셲 `reference` terminal should be unwired if only the node was copied.
+   - Any unexpected wire UID, especially one terminating nowhere or referring to no surviving source, strongly supports **H3**.
+   - Also inspect the new control terminal and the Property Node reference terminal after `Create Control`; confirm both point to the same single wire UID.
+
+3. **Read the copied node?셲 `PropClassName` and displayed property/member identifiers.**
+   - Expected: `VI Server:Constant` and `634AC00`/`Value`.
+   - Generic/empty/wrong class or absent/wrong item ??**H2 confirmed**.
+   - Correct class and member ??H2 substantially weakened.
+
+4. **Use `panel_wiring` only to verify topology**, not class compatibility. It can show that the generated panel control reaches the intended terminal, but it cannot by itself prove that both endpoint types agree.
+
+5. **Only then try a Remove Bad Wires delta on another disposable copy.**
+   - Record object/wire inventory and `ExecState`, invoke Remove Bad Wires, then record them again.
+   - If a wire disappears and execution becomes valid, **H3 is effectively confirmed**. NI documents that the method removes every broken wire; therefore it is a good discriminator but is not strictly read-only?봧t mutates the disposable VI in memory. [LabVIEW Wiki method record](https://labviewwiki.org/wiki/VI_class/Block_Diagram.Remove_Bad_Wires_method), [NI wire documentation](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+The baseline `ExecState` plus terminal wire-UID report is the cheapest genuinely read-only pair. I would do those before `panel_wiring`.
+
+## Does cross-VI `Move(Duplicate=TRUE)` preserve configuration?
+
+**I could not find an NI guarantee that it preserves a Property Node?셲 `PropClassName` and selected member list across VI ownership boundaries.**
+
+There is evidence that `Move` with duplication is used to copy objects and that supplying an owner in another VI is a recognized use case, but the available discussion concerns locating the new object?봭ot semantic preservation of configured Property Nodes. [NI Community duplicate-object discussion](https://forums.ni.com/t5/LabVIEW/VI-Scripting-get-reference-of-the-duplicate-element/td-p/1882509), [NI Community cross-VI Move discussion](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Scripting-method-Move-add-quot-Moved-Object-Reference/idi-p/2676263)
+
+So the defensible answer is:
+
+- It presumably preserves enough serialized state to duplicate ordinary objects.
+- There is **no sourced basis here for assuming Property Node class/member state is guaranteed**.
+- Read back `PropClassName` and the displayed property IDs from UID 324. That is cheaper and stronger than reasoning from its terminal names.
+
+## If H2: use `build_property` directly
+
+Yes??build_property('VI Server:Constant', [('634AC00', False)])` is the cleaner route, provided the fleet immediately verifies that the member attached.
+
+`634AC00` is documented as the Constant-class `Value` property, returning the constant?셲 value as an LV Variant; the LabVIEW Wiki table marks it read/write and VI Scripting-accessible, not private. [LabVIEW Wiki Constant class](https://labviewwiki.org/wiki/Constant_class)
+
+Recommended construction order:
+
+1. Build the Property Node with class `VI Server:Constant`.
+2. Attach `634AC00` as read.
+3. Read back `PropClassName` and displayed property ID/name.
+4. Create the seed control from **that node?셲 own `reference` terminal**.
+5. Verify the resulting wire UID at both endpoints.
+6. Check `ExecState`.
+
+This avoids dependency on undocumented cross-VI preservation and avoids importing the example?셲 existing reference-wire context. It also directly tests whether the public member attaches in LabVIEW 2026. The prior private-member failure does not establish that this public member will fail; community evidence distinguishes unsupported/private scripting members from exposed ones. [NI Community discussion of private scripting properties](https://forums.ni.com/t5/LabVIEW/VI-Scripting-Can-t-get-or-set-all-available-properties/td-p/4030544)
+
+My strongest attack on the current conclusion is therefore: **you do not yet know that UID 324 broke the VI at all, and its visible `Value` terminal is insufficient evidence that its class/member configuration survived. Baseline the donor, inspect wire UIDs, then read back class/member metadata.**
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+Ranking adopted as the diagnostic sequence inside the recipe: (1) the donor copy's ExecState is gated before
+anything is copied (H4); (2) the copied PN's wire uids are printed and gated to be all zero BEFORE the seed control
+(H3); (3) after the seed, if ExecState is still 0, the PN terminals, panel wiring and a Remove-Bad-Wires delta are
+printed (H3/H2 discrimination); a `PropClassName`/member readback (the reviewer's step 3) is not available in the
+fleet and is recorded as the reader to build if H2 survives. Rerun: `tools/bench/build_opconstvalue_v1.log` (run 3).

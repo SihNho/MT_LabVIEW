@@ -1,0 +1,54 @@
+BGRUN START 2026-09-17 14:43:46 limit 11.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent codex -Kind review -Slug wireinputs-forloop-tunnel-name -TimeoutSec 480 -Task (Get-Content -Raw 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\97b1695e-68c2-4985-8cac-1ca3097b3b15\scratchpad\task_wireinputs.md')
+OUTCOME: ANSWERED (179s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-17-wireinputs-forloop-tunnel-name.md
+--- ANSWER ---
+1. Strongest reason the claim is wrong
+
+The destination was not bare. Therefore the experiment cannot attribute error 5001 to terminal-name matching.
+
+`Wire Inputs.vi` appearing in the error source establishes only that the error originated or propagated there—not which internal operation failed. Error 5001 has no universal LabVIEW meaning: codes 5000–9999 are reserved for user-defined errors, so this library can use 5001 for lookup failure, connection failure, or several conditions. [NI error-code reference](https://download.ni.com/support/manuals/321526b.pdf)
+
+Thus the inference “5001 at `Wire Inputs.vi` ⇒ destination name was not found” is invalid, especially when the post-test `Connected Wire` value was nonzero.
+
+2. Alternative explanations
+
+The strongest alternative is: the name matched, but connection failed because the tunnel was already wired. `Terminal.Connected Wire` explicitly returns the attached wire (property ID `0x634A000`), while `Terminal.Connect Wire` is a separate operation (method ID `0x6349C03`). A failure after lookup would therefore still be reported from `Wire Inputs.vi`. [Terminal API](https://labviewwiki.org/wiki/Terminal_class)
+
+A second alternative is tunnel-side identity. A For Loop tunnel is not one ordinary connector-pane terminal. It comprises a `LoopTunnel`, one outside `OuterTerminal`, and an inside `InnerTerminal`; structure tunnels may require selecting the correct inner or outer reference. [For Loop scripting anatomy](https://rajsite.github.io/unofficial-lvdocs/lvconcepts/anatomy.html), [NI forum example](https://forums.ni.com/t5/LabVIEW/LabvVIEW-Scripting-wiring-a-pass-through-tunnel-inside-a-case/m-p/3945608)
+
+Consequently:
+
+- The census reading `Terminal.Name == "Force\nsmoothing\nhalf-width"` proves that one terminal object exposes that name; `Terminal.Name` is property `0x634A004`. [Terminal Name property](https://labviewwiki.org/wiki/Terminal_class/Name_property)
+- It does not prove that `Wire Inputs.vi` selected that exact terminal reference or the correct tunnel side.
+- `Node.Connect Wires` accepts source/sink terminal-name pairs (method `0x6358C00`), but structure-specific inner/outer resolution remains a separate issue. `Node.Terminals[]` is property `0x6359000`. [Node API](https://labviewwiki.org/wiki/Node_class)
+
+I cannot establish from the public lv-scripting README whether `Wire Inputs.vi` calls `Node.Connect Wires`, manually searches `Node.Terminals[]`, or remaps connection errors to 5001; the repository documents the library at a high level but not that VI’s error contract. [erdosmiller/lv-scripting](https://github.com/erdosmiller/lv-scripting) A reporter listing of `Wire Inputs.vi` would settle that.
+
+3. Observation that would falsify the claim
+
+Either observation would falsify “destination-name matching failed”:
+
+- With terminal 7 verified bare immediately before the call, the unchanged `Wire Inputs.vi` call succeeds using the same newline-containing name.
+- Instrumentation/reporting shows that `Wire Inputs.vi` obtained the exact terminal-7 reference, after which `Connect Wire` produced the error.
+
+The first would implicate occupancy. The second would directly prove that matching had already succeeded.
+
+4. Cheapest discriminating test
+
+On a disposable copy, through VI Server:
+
+1. Read ForLoop `Node.Terminals[]` (`0x6359000`) and select index 7.
+2. Log that terminal’s:
+   - `Name` (`0x634A004`)
+   - `Is Source?` (`0x634A003`)
+   - `Diagram` (`0x634A002`)
+   - `Connected Wire` (`0x634A000`)
+3. If `Connected Wire` is valid, inspect its `Wire.Terminals[]` (`0x6371003`), delete that actual wire, reacquire the terminal reference, and verify `Connected Wire` is now null/invalid. [Wire terminal-list property](https://labviewwiki.org/wiki/Wire_class/Terminals%28%29_property)
+4. Call the unchanged `Wire Inputs.vi` once with the original newline name.
+5. If it still returns 5001, bypass name matching and call terminal `Connect Wire` directly (`0x6349C03`) using the source terminal reference.
+
+Interpretation:
+
+- Bare `Wire Inputs.vi` succeeds: the original failure was occupancy, not name matching.
+- Bare `Wire Inputs.vi` fails but direct `Connect Wire` succeeds: the library’s name/terminal-selection path cannot address that tunnel correctly.
+- Both fail: investigate wrong inner/outer terminal, direction, diagram ownership, or datatype—not name matching alone.
+BGRUN END rc=0 after 179s

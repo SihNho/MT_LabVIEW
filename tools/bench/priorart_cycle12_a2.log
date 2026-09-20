@@ -1,0 +1,73 @@
+BGRUN START 2026-09-16 19:22:18 limit 25.0 min: py -u tools/prior_art_review.py --plan-file docs/cycle12-plan.md --slug priorart-cycle12-a2 --trigger cycle-start
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-cycle12-a2.txt (35216 chars)
+OUTCOME: ANSWERED (481s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-16-priorart-priorart-cycle12-a2.md
+COST: $5.1157  in 68 / out 34052 / cache-create 191640 / cache-read 4695234  (477s, 48 turn(s))
+--- ANSWER ---
+Read-only review complete — no lock taken, nothing built, run or edited. (Write is disabled in this cell, so the review is the answer text below.)
+
+**Headline: three of the cycle's four numbered items are already finished on disk, and the fourth (A2) rests on a premise our own measurement files contradict.**
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 `already-built` — items 1, 2 and 3 are already in the repository
+
+**§1, the `premature-build` device.** `tools/hooks/guard_cycle.py:204-266` is a function named `premature_build()` implementing the plan's two conditions verbatim — (a) `:226-239` walks `tools/bench/priorart_*.log` newer than the newest retrospective and refuses while any lacks `BGRUN END`/`BGRUN TIMEOUT`; (b) `:251-265` refuses when no `archive/peer/*priorart*.md` is newer than the recipe file's own mtime. It is wired into the gate at `:310-312`, and `BUILD_RE` already carries the capture group it needs (`:40`, whose comment reads *"added 2026-09-16 for the `premature-build` device below"*). Diagnostics stay open exactly as §1 requires (`:221-222`).
+
+**§2, the `scope-creep` C7 line.** `tools/audit_cycle.py:227-271` is C7: `--cycle` selects `docs/cycle<N>-plan.md`, else the newest plan (`:237-244`); exclusions are `archive/`, `.claude/` et al. (`:249`) plus `tools/bench/*.log|*.json` (`:256`); it prints a list and no verdict, and `:229-231` states the counter-not-refusal rationale in the decision's own words. The `--cycle` argument is at `:75-77`.
+
+**§3, the `bgrun` review-log exclusion.** `tools/bgrun.py:69` is literally `scan_inner = not logclass.is_review_log(logp)`, with the OPEN-8 story at `:61-68`, the import at `:28`, and coverage of `peer_` / `retro` / `prior?art` / `outcome_review` / `audit_cycle` / `violations` at `tools/logclass.py:46-54`, `:61-63`. The plan's proposal *"Apply `logclass.is_review_log(--log)` and skip the inner-failure scan"* is the line already there.
+
+What is **not** on disk is any record of §1's *"Tested against fake files in a scratch tree"* — no log under `tools/bench/` mentions `premature_build` or C7. That is a disposition question for the cycle audit, not prior art; the code exists.
+
+**Cheap release:** strike items 1–3 from `docs/cycle12-plan.md` citing the three files, then one `FIXED: already-built - docs/cycle12-plan.md:<line> - …` under *"What was done with it"* — the plan edit post-dates this review, so the gate accepts it.
+
+### A3 `contradicted` (i) — §3 and `STATUS.md` OPEN 8 assert a defect `bgrun.py` no longer has
+- plan §3: *"`tools/bgrun.py` … **has no review-log exclusion**"*.
+- `STATUS.md` OPEN 8: *"`bgrun.py` has no such exclusion and scans every line it pumps… **Not patched**"*.
+- `tools/bgrun.py:69`: the exclusion, applied, `:61-68` naming OPEN 8.
+
+STATUS OPEN 8 is stale, and it is the source the plan copied.
+
+### A3 `contradicted` (ii) — §4's premise "five of the six classes have never been checked" is false at the class level
+- `tools/bench/build_diagram_hierarchy_run3.log:2` `diagrams: 170`; `:9` `owner 'FlatSequenceFrame' -> class 'FlatSequence': 21`; `:12-36` prints each unresolved diagram **with its measured owner class**.
+- `tools/bench/diagram_hierarchy.json` carries `"owner_class"` for every resolved diagram, spanning all six: `FlatSequenceFrame` `:7`, `Sequence` `:14`, `CaseStructure` `:21`, `ForLoop` `:42`, `WhileLoop` `:112`, `EventStructure` `:245`.
+- `tools/bench/diagram_tree_main.py:52` stores the same string for all 170 into the `owners` array §4 proposes to round-trip against.
+- Read from the machine, not inferred: `tools/gscript.py:261-281` fills `"owner"` from `Class Name 3`, i.e. `Generic.Owner`'s class — the very property A2 is about.
+
+**Scope it precisely:** the owner **class** is measured for every diagram in all six classes, so gates P0, S1 and the class half of S2 re-derive a measured fact. Genuinely unmeasured: the owner **UID** (`report()` never returns it — our own `archive/peer/2026-09-15-priorart-ownerchain.md:68`) and step 3's structure→parent-diagram hop, which has never returned for any class (`tools/bench/diag_ownerchain_hop.log:7`). A2 should be narrowed to those two, not dropped.
+
+### A3 `contradicted` (iii) — `NAMES.md` lists `FlatSequenceFrame` as a confirmed traversable class; the machine refused it
+- `docs/NAMES.md:564-570`: *"Confirmed working on the main VI: … `Sequence`, **`FlatSequenceFrame`**, `EventStructure`."*
+- `tools/bench/build_diagram_hierarchy_run3.log:8`: `probe class 'FlatSequenceFrame': … **error 1092** … Traverse for GObjects.vi->OpReportAll_v0.vi`; `:9` shows the working name is `FlatSequence`.
+
+Load-bearing for §4: `docs/NAMES.md:578-590` explains that **1092 means the string is not in the VI Server GObject hierarchy at all** (the `PropertyNode` case). Our own machine has already produced evidence for the hypothesis §4 dismisses as *"unverified, from labviewwiki, not the machine"*.
+
+### A4 `unread-evidence` — `docs/NAMES.md:611-622` is never cited
+`:617-619`: *"**`ClassSpecifierConstant.AllTypes[]`** enumerates LabVIEW's VI Server classes programmatically — class IDs, parents, localized and unlocalized names. That is the way to stop guessing class strings entirely: read the list from the machine rather than from a palette label or a wiki."* That is the discriminating test for *"is `FlatSequenceFrame` a sibling of `GObject`, so it has no `GObject.UID`?"* — the question §4 defers to a future op build. `:578-590` is equally uncited, and `:624-628` is that section's own warning that not reading it has already cost one cycle.
+
+---
+
+## PART B — THE ARTIFACT
+
+**B1 `already-built`** — as A1. Also `tools/bench/diag_owner_semantics.py` already exists on disk, complete, with its header at `:1-55`.
+
+**B3 `helper-exists` — step 1 is unnecessary.** `diag_owner_semantics.py:11-13` justifies it: *"`diagram_tree_main.json` … stores diagram INDICES, never diagram uids, **which is why step 1 below exists at all**."* True of that file, false of the other: `tools/bench/diagram_hierarchy.json:5-9` stores `"diagram_uid"` **and** `"diagram_index"` **and** `"owner_class"` in the same index space, and `g.report(target,"Diagram")` (`tools/gscript.py:261-281`, catalogued `docs/toolkit-capabilities.md:104`) returns uid + owner class for all 170 in one call. Delete the node→Diagram hop and gate S1 with it.
+
+**B4 `already-measured`.** `diag_owner_semantics.py:119-132` re-counts each class and gates on `{WhileLoop 3, ForLoop 17, CaseStructure 37, FlatSequence 21, Sequence 4, EventStructure 2}` — the table at `docs/diagram-hierarchy.md:16-24`, measured by `build_diagram_hierarchy_run3.log:3-9`. Defensible as a tripwire; label it as one rather than as A2 content.
+
+**B2 `already-failed` — the FlatSequence arm reproduces a known failure with the explaining read still missing.** `tools/bench/diag_ownerchain_hop.log:7` already measured `Diagram#686 → 'FlatSequenceFrame'`, owner uid 0, `error 1055`, empty cast echo. §4 predicts up to **three** instances of exactly that with `OpOwnerChain_v1` **unchanged** — and unchanged means `read_owner` still reads only `("errL","errT","errO","errU","errG")` (`tools/recipes/build_opownerchain_v1.py:268-269`), imported verbatim at `diag_owner_semantics.py:65`. The cast node's own error already has a label on disk: `tools/bench/opwiresource_v5_labels.json:20` `"errCO": "error out 10"`. Cheapest fix: FS arm at **one** instance plus `errCO` in the tuple — no op change, no new build, and it does not pre-empt the judgement call on codex's uncast reader.
+
+---
+
+PRIOR-ART: already-built     (A1/B1 — guard_cycle.py:204-266 & :310-312; audit_cycle.py:227-271 & :75-77; bgrun.py:69 with logclass.py:46-54)
+PRIOR-ART: contradicted      (A3-i — cycle12-plan.md §3 and STATUS.md OPEN 8 "Not patched" vs bgrun.py:69)
+PRIOR-ART: contradicted      (A3-ii — "five of six classes never checked" vs diagram_hierarchy.json:7,14,21,42,112,245 and build_diagram_hierarchy_run3.log:2-9)
+PRIOR-ART: contradicted      (A3-iii — NAMES.md:564-570 lists FlatSequenceFrame as traversable vs build_diagram_hierarchy_run3.log:8 error 1092)
+PRIOR-ART: unread-evidence   (A4 — NAMES.md:611-622 ClassSpecifierConstant.AllTypes[]; NAMES.md:578-590 what 1092 means)
+PRIOR-ART: helper-exists     (B3 — diagram_hierarchy.json:5-9 diagram_uid; gscript.py:261-281 report(); toolkit-capabilities.md:104)
+PRIOR-ART: already-measured  (B4 — diagram-hierarchy.md:16-24 census re-gated at diag_owner_semantics.py:119-132)
+PRIOR-ART: already-failed    (B2 — diag_ownerchain_hop.log:7 1055 reproduced 3×; errCO unread at build_opownerchain_v1.py:268-269 though labelled at opwiresource_v5_labels.json:20)
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-cycle12-a2.md
+BGRUN END rc=0 after 481s

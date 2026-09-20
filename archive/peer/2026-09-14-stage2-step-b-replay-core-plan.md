@@ -1,0 +1,215 @@
+﻿---
+type: peer-review
+status: historical
+date: 2026-09-14
+tags: [peer-review, stage2, plan]
+---
+
+# stage2-step-b-replay-core-plan
+
+- **agent:** codex
+- **date:** 2026-09-14
+- **outcome:** ANSWERED (129s)
+- **why asked:** (Claude fills in)
+- **verdict:** unverified
+
+## Question
+
+ATTACK THIS PLAN, do not confirm it. Read docs/stage2-assembly-step-b.md (the plan), docs/stage2-plan.md, and archive/peer/2026-09-14-stage2-replay-path-array-control-route.md (your own earlier route ranking) in this project directory. LabVIEW 2026 VI Scripting over COM, zero GUI.
+Attack specifically:
+1. B0: building an op from NI's example 'Drop Digital Numeric Inside Cluster.vi' (examples\Application Control\VI Scripting\Creating Objects) - what does that example's New VI Object call chain look like per NI's published description, and what exactly must be parameterised (style string, VI object class, owner refnum, position)? Is 'Array' the ring spelling, and is the Path element created with a separate New VI Object call owned by the array reference? Cite the NI example documentation or forum posts describing it.
+2. B2: a Boolean ARRAY control 'Stop Flags' auto-indexed into a While loop and its element wired to the conditional terminal via erdosmiller 'Exit While Loop.vi''s 'Stop Condition' - the library creates a tunnel from the control's terminal; forcing that tunnel's IndexMode to 1 afterwards: is a While-loop input tunnel allowed to auto-index (yes in LabVIEW, confirm), and does changing IndexMode on an already-wired tunnel retype its inner terminal cleanly or leave a broken wire? Better alternative: create the loop with 'Create While Loop.vi' Inputs Indexing?=TRUE for that control so the tunnel is born indexed, then wire Stop Condition from the tunnel's INNER terminal - which the fleet cannot address by name (Get Controls gives the control's outer terminal). Which is safer?
+3. B3 ordering: the peer earlier established an untyped register takes its first wire's type; the plan wires LeftOutCtl (initial-value control) first - confirm that is the correct first wire, and that the kernel's 'x,y,z array' input / 'x,y,z array out' output types match the control's type exactly (both 1-D DBL) so no coercion is introduced (rule 1a: computation must be byte-identical).
+4. B4: 10,043 frames in ONE COM run: any risk (auto-indexed output tunnel building a 10,043 x 3N DBL 2-D array - memory/time fine? SetControlValue of a 10,043-element path array over ActiveX - any known size limits?). The hard timeout in gscript._run is 180 s by default; the kernel is ~2 ms/frame plus TIFF reads - estimate.
+5. A While loop auto-indexing an input array: when the loop runs PAST the array length (it will not, since Stop Flags stops it at the last index) - but if Stop Flags and Frame Paths differ in length, what happens? Recommend the guard.
+6. Name the cheapest discriminating test for B0 and any better route you now see.
+Cite paths/URLs you actually read. Read-only; do not open LabVIEW.
+
+
+## Answer
+
+Verdict: do not execute B0?밄4 as written. B0 parameterizes the wrong abstraction, B2 relies on an unverified post-wiring type mutation, and B4?셲 180-second watchdog is too close to measured fixture time.
+
+## 1. B0 ??the proposed generic op is underspecified
+
+NI?셲 published description says `Drop Digital Numeric Inside Cluster.vi` ?쐁reates a nested Front Panel control??by creating a cluster containing a numeric. It does not publish the actual diagram or prove that an Array accepts an element control reference as owner in LabVIEW 2026. [NI Community: LabVIEW Scripting examples](https://forums.ni.com/t5/LabVIEW-APIs-Documents/LabVIEW-Scripting/tac-p/3535358/highlight/true).
+
+The apparent analogue is:
+
+1. `New VI Object` creates the container:
+   - `vi object class`: concrete Cluster/Array class or a sufficiently generic compatible class
+   - `owner refnum`: Panel
+   - `style`: container style
+   - `position`: point cluster
+2. A second `New VI Object` creates the element:
+   - element class
+   - `owner refnum`: returned container reference
+   - element style
+   - element position
+
+That is a reasonable hypothesis, not something NI?셲 short example description establishes.
+
+More importantly, `style` is not safely parameterized as a string or ordinary numeric control. It is a typed ring whose stored values identify object styles. NI explains that discrete ActiveX/VI Server parameters rely on ring constants whose numeric values depend on the referenced API; replacing such a ring with an ordinary number loses that mapping. [NI: Using ActiveX with LabVIEW](https://www.ni.com/docs/ar-SD/csh?context=lvcore_lvconcepts_using_activex_with_labview).
+
+The historic enumerated style list contains:
+
+- `Array` = 21608
+- `Array 1` = 3300
+- `File Path Control` = 21730
+- `File Path Control 1` = 3203
+- `System Path Control` = 21922
+
+It does not list a front-panel style simply called `Path`. [LAVA: New VI Object style list](https://lavag.org/topic/14519-new-vi-object-style-list/).
+
+Therefore the plan?셲 assumptions should be changed:
+
+- `Array` is a known historic style spelling, but not yet verified against the LabVIEW 2026 ring.
+- `Path` is probably the wrong spelling; the relevant modern-looking item is `File Path Control`.
+- The op cannot merely replace the donor?셲 style ring with a normal front-panel control. Either preserve the donor?셲 typed style ring and select a verified numeric item, or build two fixed ops with their correct ring constants.
+- Class and style must agree. The likely classes are Array for the shell and Path/File Path Control for the element, but those concrete class choices remain unverified.
+- The array-as-owner call is plausible: NI defines `owner refnum` as the VI or object that contains the new object, and an array is an element-containing shell. However, only a scratch execution establishes that this particular owner/class/style combination works. The general owner contract is described here: [New VI Object description](https://patentimages.storage.googleapis.com/08/d4/18/58da970ee0c990/US7210117.pdf). NI?셲 array documentation confirms that an array shell can contain a path control, but not the scripting call required to place it. [NI LabVIEW User Manual](https://download.ni.com/support/manuals/320999e.pdf).
+
+B0?셲 prediction is also wrong: creating an array shell plus an element may produce one top-level panel object, but there are two created objects in the ownership tree. The reporter must inspect both the top-level panel census and the array?셲 owned element.
+
+## 2. B2 ??While-loop indexing is legal; mutation after wiring is the risky route
+
+Yes, a While-loop input tunnel may auto-index. It is disabled by default, but when enabled it delivers one array element per iteration. [NI: Auto-Indexing Tunnels with For Loops and While Loops](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000PAghSAG).
+
+NI also documents that indexing may be switched on an existing tunnel. That establishes interactive validity, but I found no NI guarantee that setting `IndexMode=1` programmatically after downstream wiring will automatically retype and preserve that wire. If the tunnel previously exposed `Boolean[]`, changing it to indexing changes the inner terminal to scalar Boolean. The compiler may repair the connected wire, but B2 currently treats that as established when it is not.
+
+Safer ranking:
+
+1. Best with the existing Erdos Miller creator: pass `Stop Flags` and `Frame Paths` in `Inputs` with `Inputs Indexing?=TRUE`, so the tunnels are created with scalar inner types. Extend the fleet to return/address the newly created tunnel?셲 inner terminal reference, then wire that directly to `Stop Condition` or `File Path`.
+2. If the fleet cannot expose inner terminals, pass the arrays through non-indexing tunnels and explicitly use `Index Array` with the loop iteration terminal. The project already has `Create Index Array.vi`; this avoids any tunnel-mode mutation.
+3. Last choice: wire the full array through a normal tunnel, connect downstream, then mutate `IndexMode`. This needs a dedicated scratch test proving both `ExecState` and far-end wire UID/type after mutation.
+
+`Get Controls` returning the outer control terminal is not a reason to accept route 3; it is evidence that the op API lacks the reference B2 actually needs.
+
+## 3. B3 ??initial-value first is correct, but add an exact-type gate
+
+The earlier test established that an untyped register takes the type of its first successful wire. Consequently, wiring `LeftOutCtl` first is the correct order. Wiring a kernel output first would type the register from the body and weaken the proof that initialization matches the intended state.
+
+For the XYZ register, local evidence says both kernel terminals are flat one-dimensional DBL arrays:
+
+- `x,y,z array`
+- `x,y,z array out`
+
+See [docs/NAMES.md](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/docs/NAMES.md), and the measured pane report in `tools/bench/v3_structure.log`.
+
+The loader?셲 `x,y,(blankz) array` also appears as a one-dimensional array in `tools/bench/spec_dump.txt`, and the fixture contains five beads, hence 15 DBLs per XYZ state.
+
+Still, `ExecState=1` alone is insufficient for rule 1a. Add a B3 gate that reports:
+
+- initial control terminal: rank 1, DBL
+- kernel input: rank 1, DBL
+- kernel output: rank 1, DBL
+- register left/right terminal types after all three wires
+- no coercion dots/adaptation nodes on either kernel boundary
+
+For the other two registers, verify their distinct types separately: Boolean array and I32 array. Do not generalize the XYZ proof to all three.
+
+## 4. B4 ??memory is trivial; 180 seconds is not safe
+
+For the measured five-bead fixture:
+
+```text
+10,043 횞 15 횞 8 bytes = 1,205,160 bytes
+```
+
+The raw `XYZ` payload is only about 1.15 MiB. Even with LabVIEW array headers, temporary copies, and COM SAFEARRAY conversion, memory is not a concern.
+
+The path array itself is also modest. I found no published NI size ceiling specific to `SetControlValue` that 10,043 elements would approach. NI does require that control name and datatype match exactly, and documents `Ctrl Val.Set/Get` as supported VI Server data-transfer methods. [NI: Passing Data to Another VI Using VI Server](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019MoeSAE). Absence of a documented limit is not proof that marshaling 10,043 LabVIEW Path objects works; B0?셲 cheapest functional test should include a small ActiveX write before scaling.
+
+The timeout is the real failure:
+
+- Local measured parallel harness: median total 7.98 ms/frame, mean 16.58 ms/frame.
+- Local fixture comparison rows commonly show about 18 ms/frame.
+- At those rates, 10,043 frames take approximately:
+  - median: 80 s
+  - mean: 166.5 s
+  - observed 18 ms: 180.8 s
+
+Those measurements are in `tools/bench/timing_chain5.log` and `tools/bench/fixture_compare_results.jsonl`. The proposed 180-second `_run` default therefore has effectively no margin for cold TIFF reads, antivirus/filesystem jitter, output construction, or the final COM return.
+
+Set `hard_timeout_s` explicitly to at least 600 seconds for B4. Also time these phases separately:
+
+- `SetControlValue(Frame Paths)`
+- VI execution
+- `GetControlValue(XYZ)`
+
+A 180-second timeout failure would otherwise be indistinguishable from a genuinely wedged run, and `_run` abandons the still-running COM thread.
+
+## 5. Unequal input lengths are unsafe in a While loop
+
+A While loop does not terminate when an indexed input array is exhausted. Once it indexes beyond an array?셲 end, LabVIEW supplies the element datatype?셲 default value on subsequent iterations. NI states this explicitly for differently sized arrays. [NI auto-indexing documentation](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000PAghSAG).
+
+Thus:
+
+- Shorter `Frame Paths`: `IMAQ ReadFile` eventually receives an empty/default path.
+- Shorter `Stop Flags`: the missing values become `FALSE`, so the intended final `TRUE` might never arrive.
+- An empty `Stop Flags` array can therefore make the loop indefinite.
+
+Required guard before running:
+
+```text
+len(Frame Paths) == len(Stop Flags)
+len(Frame Paths) > 0
+Stop Flags[-1] == TRUE
+all Stop Flags[0:-1] == FALSE
+```
+
+Inside LabVIEW, the stronger guard is:
+
+```text
+stop = StopFlags[i] OR (i >= min(ArraySize(FramePaths), ArraySize(StopFlags)) - 1)
+```
+
+Even better for this finite replay is a conditional For loop: auto-indexed inputs naturally limit iteration count, while the conditional terminal permits early exit. NI documents conditional For-loop termination. [NI: Configuring LabVIEW For Loops to Exit Conditionally](https://www.ni.com/en/support/documentation/supplemental/07/configuring-labview-for-loops-to-exit-conditionally.html).
+
+## 6. Cheapest discriminating test and better route
+
+The cheapest B0 test is not the current IMAQ compile test. It is a tiny scratch operation:
+
+1. Create `Array` on the panel using the donor?셲 genuine typed style ring.
+2. Report returned class, UID, owner UID, and error.
+3. Create `File Path Control` with the returned array as owner.
+4. Report its class, owner UID, and the array terminal datatype/rank.
+5. Set three paths through ActiveX and read them back.
+6. Save nothing on any mismatch.
+
+This discriminates all B0 uncertainties without a loop, TIFF, kernel, or output tunnel.
+
+A better route may already exist: use a fixed donor containing an array-of-path control and copy that object. Community guidance for difficult `New VI Object` styles is to keep the desired object in a donor and copy it, avoiding fragile class/style synthesis. [NI Community discussion of copying an existing object](https://forums.ni.com/t5/LabVIEW/New-VI-Object-Variant-Constant-VI-Scripting/m-p/2853702). Since the shipped nested-control example still requires modification to change Cluster/Numeric into Array/Path, it is not yet such a donor.
+
+If zero GUI is absolute and no array-of-path donor exists, the next safest executable design is:
+
+- create a string-array control from an already typed string-array terminal;
+- auto-index it;
+- convert each scalar with a copied `String To Path` primitive or a tiny existing subVI.
+
+That adds an explicit conversion but avoids constructing and marshaling an array of LabVIEW Path values. The installed style list contains `String To Path`, but the project?셲 own scripting guidance warns that not every listed primitive is reliably droppable, so this route also needs one cheap scratch creation test.
+
+Local files actually read: `STATUS.md`, `docs/stage2-assembly-step-b.md`, `docs/stage2-plan.md`, the explicitly authorized `archive/peer/2026-09-14-stage2-replay-path-array-control-route.md`, `.agents/skills/labview-automation/references/{vi-scripting,com-driving}.md`, `docs/NAMES.md`, `tools/gscript.py`, and existing plaintext benchmark/reporter outputs. No LabVIEW file or application was opened.
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+All three defects accepted; the plan was rewritten (docs/stage2-assembly-step-b.md "REVISED route"):
+1. **B0 abandoned as written.** `style` is a typed ring, not a string, and ring constants cannot be retargeted by
+   script — so no parameterised `New VI Object` op. Replaced by a route with only proven primitives: a sub-VI
+   `FramePath.vi` (base path + frame index → `img%05d.tif` path) built at TOP LEVEL from `Build Path` and
+   `Format Into String` nodes harvested by `copy_into` (+ `prepare=set_node_label`) from a SMALL lab VI
+   (census `tools/bench/census_path_donors.log`), with controls from `create_control` and a connector pane from
+   `conpane_assign`. No array-of-path control is needed at all.
+2. **No tunnel-mode mutation, and no stop logic at all: the replay core is a FOR loop over `N`.** N wiring by
+   script is proven (`connect_terminals` on the empty For loop's single terminal, row 30's harness), `exit_loop`
+   makes auto-indexed OUTPUT tunnels (the `XYZ` 2-D result), scalar controls cross the border through ordinary
+   tunnels, and the frame index is the loop's own `Loop Counter` 6361400 through one more `Connect Wire` op
+   (`OpWireLoopCounter_v0`). Cost: the register ops are WhileLoop-seeded (a ForLoop ref errors 1055 through that
+   seed), so `add_shift_reg` / `wire_sr` are rebuilt once with the ForLoop seed (`OpLoopCast_v1` donor) — reruns
+   of proven recipes with the donor swapped. The While/queue structure returns in cycle 4 where it belongs.
+3. **B4 timeout ≥ 600 s**, phases timed separately; the exact-type gate on all three registers (DBL / Boolean /
+   I32 arrays) added to B3; input-length guard moot once N drives the stop.

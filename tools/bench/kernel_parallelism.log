@@ -1,0 +1,28 @@
+BGRUN START 2026-09-13 22:16:37 limit 12.0 min: py -u -c 
+import os,sys
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+BG=r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs'
+T=[(os.path.join(g.CLAUDEDEV,'PARALLEL_kernel_v3.vi'),'our CPU kernel'),
+   (os.path.join(g.CLAUDEDEV,'GPU_kernel_v1.vi'),'our GPU kernel'),
+   (BG+r'\Track N beads four-fold over-kernel-v3.vi','ORIGINAL kernel')]
+for p,label in T:
+    if not os.path.exists(p): print('%-22s MISSING'%label,flush=True); continue
+    try:
+        n=g.count(p,'ForLoop'); w=g.count(p,'WhileLoop'); sub=g.count(p,'SubVI')
+        print('%-22s ForLoop=%d WhileLoop=%d SubVI=%d'%(label,n,w,sub),flush=True)
+        # the P terminal: a parallel For Loop reports its instance count. Look at the loop's terminals.
+        for d in range(min(g.count(p,'Diagram'),4)):
+            nodes,_=g.net_map(p,diagram_index=d,max_nodes=30,max_terms=14)
+            for i,(uid,lbl,terms) in nodes.items():
+                names=[nm for _,nm,_ in terms if nm]
+                if any('parallel' in (nm or '').lower() or nm=='P' for nm in names):
+                    print('      dia %d node uid %s  %s'%(d,uid,names),flush=True)
+    except Exception as e:
+        print('%-22s FAILED %s'%(label,str(e)[:100]),flush=True)
+
+our CPU kernel         ForLoop=1 WhileLoop=0 SubVI=1
+our GPU kernel         ForLoop=0 WhileLoop=0 SubVI=2
+ORIGINAL kernel        ForLoop=1 WhileLoop=0 SubVI=6
+BGRUN END rc=0 after 95s

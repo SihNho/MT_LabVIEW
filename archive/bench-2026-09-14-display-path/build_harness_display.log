@@ -1,0 +1,162 @@
+BGRUN START 2026-09-14 13:17:59 limit 25.0 min: py -u tools/recipes/build_harness_display.py
+STOP: missing C:\Program Files\NI\LVAddons\nivisioncommon\1\vi.lib\vision\Basics.llb\IMAQ Create
+BGRUN END rc=2 after 0s
+BGRUN START 2026-09-14 13:18:22 limit 25.0 min: py -u tools/recipes/build_harness_display.py
+base cleared:  SubVI=0 Wire=0 CtlTerm=0 ExecState=1
+
+== 1 drop IMAQ Create
+   predict: +1 SubVI
+net_map: node 0 uid 6 (0 s)
+net_map: node 1 uid 8 (0 s)
+net_map: 1 nodes walked in 0.3 s; 16 junk Invoke(s) purged in 0.3 s
+   dropped IMAQ Create uid 6 Nodes[] 0: ['New Image', 'Border Size', 'Image Name', 'error out', 'Image Type', 'error in (no error)']
+   result : 6  (0.6 s)
+
+== 2 drop IMAQ ReadFile
+   predict: +1 SubVI
+net_map: node 0 uid 6 (0 s)
+net_map: node 1 uid 8 (0 s)
+net_map: node 2 uid 9 (0 s)
+net_map: purged 20/31 junk Invokes (0 s)
+net_map: 2 nodes walked in 0.5 s; 31 junk Invoke(s) purged in 0.5 s
+   dropped IMAQ ReadFile uid 8 Nodes[] 1: ['error out', 'File Data Type out', 'File Type out', 'Image Out', 'Color Palette out', 'File Path', 'error in (no error)', 'File Options', 'Load Color Palette? (No)', 'Image']
+   result : 8  (1.1 s)
+
+== 3 drop IMAQ ImageToArray
+   predict: +1 SubVI
+net_map: node 0 uid 6 (0 s)
+net_map: node 1 uid 8 (0 s)
+net_map: node 2 uid 9 (0 s)
+net_map: node 3 uid 11 (1 s)
+net_map: purged 20/43 junk Invokes (0 s)
+net_map: purged 40/43 junk Invokes (1 s)
+net_map: 3 nodes walked in 0.7 s; 43 junk Invoke(s) purged in 0.7 s
+   dropped IMAQ ImageToArray uid 9 Nodes[] 2: ['error in (no error)', 'Optional Rectangle', 'Image Pixels (U16)', 'Image Pixels (Float)', 'error out', 'Image', 'Image Pixels (U8)', 'Image Pixels (I16)']
+   result : 9  (1.5 s)
+
+== 4 drop Flatten Pixmap.vi
+   predict: +1 SubVI
+net_map: node 0 uid 6 (0 s)
+net_map: node 1 uid 8 (0 s)
+net_map: node 2 uid 9 (0 s)
+net_map: node 3 uid 11 (1 s)
+net_map: node 4 uid 13 (1 s)
+net_map: purged 20/58 junk Invokes (0 s)
+net_map: purged 40/58 junk Invokes (1 s)
+net_map: 4 nodes walked in 1.0 s; 58 junk Invoke(s) purged in 0.9 s
+   dropped Flatten Pixmap.vi uid 11 Nodes[] 3: ['image data', 'mask', 'colors', 'top left', '1-bit pixmap  ', '4-bit pixmap', '8-bit pixmap', '24-bit pixmap']
+   result : 11  (2.0 s)
+
+== 5 drop Draw Flattened Pixmap.vi
+   predict: +1 SubVI
+net_map: node 0 uid 6 (0 s)
+net_map: node 1 uid 8 (0 s)
+net_map: node 2 uid 9 (0 s)
+net_map: node 3 uid 11 (1 s)
+net_map: node 4 uid 13 (1 s)
+net_map: node 5 uid 14 (1 s)
+net_map: purged 20/61 junk Invokes (0 s)
+net_map: purged 40/61 junk Invokes (1 s)
+net_map: purged 60/61 junk Invokes (1 s)
+net_map: 5 nodes walked in 1.1 s; 61 junk Invoke(s) purged in 1.0 s
+   dropped Draw Flattened Pixmap.vi uid 13 Nodes[] 4: []
+   result : 13  (2.1 s)
+
+== 6 image chain wires
+   predict: Wire +4
+   result : after SubVI=5 Wire=4 CtlTerm=0 ExecState=0  (0.4 s)
+
+== 7 ImageToArray -> Flatten Pixmap -> Draw Flattened Pixmap
+   predict: Wire +2 (+ error chain where present)
+   OBSERVED: EXC no terminal among ('Image Pixels', 'Pixels') on uid 9: ['error in (no error)', 'Optional Rectangle', 'Image Pixels (U16)', 'Image Pixels (Float)', 'error out', 'Image', 'Image Pixels (U8)', 'Image Pixels (I16)']
+
+== 8 control Image Name (IMAQ Create)
+   predict: control wired
+   control on 'Image Name' (node 0 t2) -> ['Image Name'] wired=True ExecState 0
+   result : Image Name  (16.7 s)
+
+== 9 control File Path (IMAQ ReadFile)
+   predict: control wired
+   control on 'File Path' (node 1 t7) -> ['File Path'] wired=True ExecState 1
+   result : File Path  (16.7 s)
+
+== 10 indicator on Draw Flattened Pixmap 'new picture'
+   predict: Picture indicator wired
+   OBSERVED: EXC no terminal among ('new picture', 'picture') on uid 13: []
+
+disp3 assembled: SubVI=5 Wire=6 CtlTerm=2 ExecState=1 labels {'Image Name': 'Image Name', 'File Path': 'File Path', 'Picture': None}
+   disp3 not runnable - probing required inputs
+
+== 11 auto error handling OFF + save disp3
+   predict: saved
+   result : 7693  (0.0 s)
+   disp2: SubVI=4 Wire=6 ExecState=1
+   disp1: SubVI=3 Wire=6 ExecState=1
+   disp0: SubVI=2 Wire=4 ExecState=1
+steps: [('1 drop IMAQ Create', 'ok'), ('2 drop IMAQ ReadFile', 'ok'), ('3 drop IMAQ ImageToArray', 'ok'), ('4 drop Flatten Pixmap.vi', 'ok'), ('5 drop Draw Flattened Pixmap.vi', 'ok'), ('6 image chain wires', 'ok'), ('7 ImageToArray -> Flatten Pixmap -> Draw Flattened Pixmap', 'exc'), ('8 control Image Name (IMAQ Create)', 'ok'), ('9 control File Path (IMAQ ReadFile)', 'ok'), ("10 indicator on Draw Flattened Pixmap 'new picture'", 'exc'), ('11 auto error handling OFF + save disp3', 'ok')]
+
+VERDICT: HARNESS_disp3..0 built (structural) - run tools/bench/run_display_bench.py next
+BGRUN END rc=0 after 46s
+BGRUN START 2026-09-14 13:21:27 limit 25.0 min: py -u tools/recipes/build_harness_display.py
+base cleared:  SubVI=0 Wire=0 CtlTerm=0 ExecState=1
+
+== 1 drop IMAQ Create
+   predict: +1 SubVI
+   dropped IMAQ Create uid 6 Nodes[] 0: ['New Image', 'Border Size', 'Image Name', 'error out', 'Image Type', 'error in (no error)']
+   result : 6  (0.1 s)
+
+== 2 drop IMAQ ReadFile
+   predict: +1 SubVI
+   dropped IMAQ ReadFile uid 8 Nodes[] 1: ['error out', 'File Data Type out', 'File Type out', 'Image Out', 'Color Palette out', 'File Path', 'error in (no error)', 'File Options', 'Load Color Palette? (No)', 'Image']
+   result : 8  (0.2 s)
+
+== 3 drop IMAQ ImageToArray
+   predict: +1 SubVI
+   dropped IMAQ ImageToArray uid 9 Nodes[] 2: ['error in (no error)', 'Optional Rectangle', 'Image Pixels (U16)', 'Image Pixels (Float)', 'error out', 'Image', 'Image Pixels (U8)', 'Image Pixels (I16)']
+   result : 9  (0.2 s)
+
+== 4 drop Flatten Pixmap.vi
+   predict: +1 SubVI
+   dropped Flatten Pixmap.vi uid 11 Nodes[] 3: ['image data', 'mask', 'colors', 'top left', '1-bit pixmap  ', '4-bit pixmap', '8-bit pixmap', '24-bit pixmap']
+   result : 11  (0.3 s)
+
+== 5 drop Draw Flattened Pixmap.vi
+   predict: +1 SubVI
+   dropped Draw Flattened Pixmap.vi uid 13 Nodes[] 4: ['new picture', 'image data', 'picture']
+   result : 13  (0.3 s)
+
+== 6 image chain wires
+   predict: Wire +4
+   result : after SubVI=5 Wire=4 CtlTerm=0 ExecState=0  (0.4 s)
+
+== 7 ImageToArray -> Flatten Pixmap -> Draw Flattened Pixmap
+   predict: Wire +2 (+ error chain where present)
+   result : after SubVI=5 Wire=6 CtlTerm=0 ExecState=0  (0.2 s)
+
+== 8 control Image Name (IMAQ Create)
+   predict: control wired
+   control on 'Image Name' (node 0 t2) -> ['Image Name'] wired=True ExecState 0
+   result : Image Name  (16.7 s)
+
+== 9 control File Path (IMAQ ReadFile)
+   predict: control wired
+   control on 'File Path' (node 1 t7) -> ['File Path'] wired=True ExecState 1
+   result : File Path  (16.7 s)
+
+== 10 indicator on Draw Flattened Pixmap 'new picture'
+   predict: Picture indicator wired
+   indicator on 'new picture' (node 4 t3) -> ['new picture'] wired=True ExecState 1
+   result : new picture  (16.8 s)
+
+disp3 assembled: SubVI=5 Wire=9 CtlTerm=3 ExecState=1 labels {'Image Name': 'Image Name', 'File Path': 'File Path', 'Picture': 'new picture'}
+
+== 11 auto error handling OFF + save disp3
+   predict: saved
+   result : 8069  (0.0 s)
+   disp2: SubVI=4 Wire=7 ExecState=1
+   disp1: SubVI=3 Wire=6 ExecState=1
+   disp0: SubVI=2 Wire=4 ExecState=1
+steps: [('1 drop IMAQ Create', 'ok'), ('2 drop IMAQ ReadFile', 'ok'), ('3 drop IMAQ ImageToArray', 'ok'), ('4 drop Flatten Pixmap.vi', 'ok'), ('5 drop Draw Flattened Pixmap.vi', 'ok'), ('6 image chain wires', 'ok'), ('7 ImageToArray -> Flatten Pixmap -> Draw Flattened Pixmap', 'ok'), ('8 control Image Name (IMAQ Create)', 'ok'), ('9 control File Path (IMAQ ReadFile)', 'ok'), ("10 indicator on Draw Flattened Pixmap 'new picture'", 'ok'), ('11 auto error handling OFF + save disp3', 'ok')]
+
+VERDICT: HARNESS_disp3..0 built (structural) - run tools/bench/run_display_bench.py next
+BGRUN END rc=0 after 58s

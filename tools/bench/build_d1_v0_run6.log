@@ -1,0 +1,322 @@
+BGRUN START 2026-09-17 09:56:20 limit 25.0 min: py -u tools/recipes/build_d1_v0.py
+PHASE = 'relocate'  (structural relocation only; --full is not implemented)
+
+=== S0: preconditions
+  PASS  S0a original md5 BEFORE  2a78e17c449cacdaf5da389818526859
+  PASS  S0b OpMoveIn_v0.vi present  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpMoveIn_v0.vi
+  PASS  S0c GPU_kernel_v1.vi present  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\GPU_kernel_v1.vi
+  FACT  LabVIEW handles before: 31072 (fresh-instance baseline ~31,500)
+  PASS  S0d the chosen TRANSPORT 'queue' has a creator BUILT in the fleet today  OpQueueObtain/Enqueue/Dequeue/Release_v0 - EXERCISED, core 162/162
+  FACT  TRANSPORT = 'queue' via gscript.queue_node - OpQueueObtain/Enqueue/Dequeue/Release_v0 - EXERCISED, core 162/162
+
+=== S1: the D1 target
+  PASS  S1z the working copy on DISK is byte-identical to the original, before LabVIEW sees it  2a78e17c449cacdaf5da389818526859 (want 2a78e17c449cacdaf5da389818526859) at C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\Track_v6_D1_GPU_095621.vi
+  FACT  BEFORE census: {'Diagram': 170, 'Node': 626, 'Wire': 1902, 'LoopTunnel': 132, 'ControlTerminal': 114, 'WhileLoop': 3, 'Local': 8, 'SubVI': 98}
+  PASS  S1 the copy matches the BEFORE census  {} (empty = all match)
+  FACT  ExecState of the fresh copy: 0 (0 or 1; the discriminator is PRELOAD, not headlessness - plan s2b; NOT gated)
+
+=== S1t: delete the FIXTURE TIFF writer before any move (plan ��11h)
+  FACT  S1t BEFORE: diagram 43 is Traverse index 43; counts {'SubVI': 98, 'Function': 181, 'Node': 626, 'Wire': 1902}; 28 bare named sinks; ExecState 0
+  PASS  S1t #22700 (IMAQ Write TIFF File 2) is GONE
+  PASS  S1t #23020 (Build Path) is GONE
+  PASS  S1t no STAYING node was left with a bare named input  newly bare []
+  PASS  S1t ExecState unchanged across the deletion  0 -> 0
+  FACT  S1t AFTER: counts {'SubVI': 97, 'Function': 180, 'Node': 624, 'Wire': 1899}; delta {'SubVI': -1, 'Function': -1, 'Node': -2, 'Wire': -3}; 26 bare named sinks (was 28)
+  FACT  S1t LEFT STANDING (��11h, deliberate): #23175 Strip Path present=True - dead-but-legal once #23020 is gone; a source with no sink cannot break a VI
+  FACT  S1t LEFT STANDING (��11h, deliberate): #22703 Format Into String present=True - dead-but-legal once #23020 is gone; a source with no sink cannot break a VI
+
+=== S2: three new While loops on Diagram #686
+  FACT  Diagram#686 (holder of WhileLoop#637) is Traverse index 19
+  FACT  1.2: WhileLoop #1221, body Diagram #1234 at Traverse index 20
+  FACT  1.5: WhileLoop #1223, body Diagram #4989 at Traverse index 20
+  FACT  1.7: WhileLoop #1224, body Diagram #9748 at Traverse index 20
+  PASS  S2 three loops where there was one  WhileLoop 6 (want 6), Diagram 173 (want 173)
+  PASS  S2b #637 still exists  WhileLoops [1224, 1223, 1221, 25380, 637, 15173]
+  OBSERVED uid 6810 -> owner 'Diagram' uid 639 | self 'SubVI'#6810 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #6810 still owned by the frame loop body  owner 639 (want Diagram#639)
+  OBSERVED uid 22700 -> owner 'Diagram' uid 639 | self 'SubVI'#6810 | 482 says 'Diagram' cast 'Diagram' |  
+  **FAIL**  S2c #22700 still owned by the frame loop body  UNRESOLVED READ: owner_of(22700) is not an answer: echoed 'SubVI'#6810, errors ''
+  OBSERVED uid 22082 -> owner 'Diagram' uid 639 | self 'CaseStructure'#22082 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #22082 still owned by the frame loop body  owner 639 (want Diagram#639)
+  OBSERVED uid 12589 -> owner 'Diagram' uid 639 | self 'CaseStructure'#12589 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #12589 still owned by the frame loop body  owner 639 (want Diagram#639)
+  OBSERVED uid 11639 -> owner 'Diagram' uid 639 | self 'CompoundArithmetic'#11639 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #11639 still owned by the frame loop body  owner 639 (want Diagram#639)
+  OBSERVED uid 642 -> owner 'Diagram' uid 639 | self 'ControlTerminal'#642 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #642 still owned by the frame loop body  owner 639 (want Diagram#639)
+
+=== S3: move 23 objects (s11c: #12589 stays on 1.1; s11e.3 adds the 3 control refs), delete #5058, drop GPU_kernel_v1
+  FACT  S3b net neighbours on diagram 43 (stay put, share a net with a mover): [1114, 2136, 3052, 3057, 3191, 4580, 5058, 5119, 10068, 10382, 10825, 11529, 11608, 12589, 20474, 22703, 23175, 29240, 30117]
+  FACT  S3b diagram 19 (A1) censused whole: [194, 250, 637, 781, 1221, 1223, 1224, 1628, 2048, 6384, 6409, 6951, 7201, 7202, 8486, 8953, 9179, 9342, 25091, 25149, 25380, 27605, 28124, 28670] - plan s5b lists only [637, 6384, 2048, 781, 27605]
+  FACT  BEFORE terminal census: 42 nodes on d43 (23 moving + 19 net-neighbours), 162 wired terminals; 24 nodes on d19; 14 shift registers of #637
+  OBSERVED uid 5540 -> owner 'Diagram' uid 1234 | self 'CaseStructure'#5540 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1234 -> owner 'WhileLoop' uid 1221 | self 'Diagram'#1234 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #5540 -> 1.2  owner Diagram#1234 (want Diagram#1234); owner(owner) WhileLoop#1221 (want WhileLoop#1221)
+  OBSERVED uid 9647 -> owner 'Diagram' uid 1234 | self 'Function'#9647 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1234 -> owner 'WhileLoop' uid 1221 | self 'Diagram'#1234 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #9647 -> 1.2  owner Diagram#1234 (want Diagram#1234); owner(owner) WhileLoop#1221 (want WhileLoop#1221)
+  OBSERVED uid 10247 -> owner 'Diagram' uid 1234 | self 'Function'#10247 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1234 -> owner 'WhileLoop' uid 1221 | self 'Diagram'#1234 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10247 -> 1.2  owner Diagram#1234 (want Diagram#1234); owner(owner) WhileLoop#1221 (want WhileLoop#1221)
+  OBSERVED uid 10445 -> owner 'Diagram' uid 1234 | self 'CaseStructure'#10445 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1234 -> owner 'WhileLoop' uid 1221 | self 'Diagram'#1234 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10445 -> 1.2  owner Diagram#1234 (want Diagram#1234); owner(owner) WhileLoop#1221 (want WhileLoop#1221)
+  OBSERVED uid 10950 -> owner 'Diagram' uid 1234 | self 'Comparison'#10950 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1234 -> owner 'WhileLoop' uid 1221 | self 'Diagram'#1234 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10950 -> 1.2  owner Diagram#1234 (want Diagram#1234); owner(owner) WhileLoop#1221 (want WhileLoop#1221)
+  OBSERVED uid 17289 -> owner 'Diagram' uid 1234 | self 'Property'#17289 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1234 -> owner 'WhileLoop' uid 1221 | self 'Diagram'#1234 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #17289 -> 1.2  owner Diagram#1234 (want Diagram#1234); owner(owner) WhileLoop#1221 (want WhileLoop#1221)
+  OBSERVED uid 10969 -> owner 'Diagram' uid 1234 | self 'Function'#10969 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1234 -> owner 'WhileLoop' uid 1221 | self 'Diagram'#1234 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10969 -> 1.2  owner Diagram#1234 (want Diagram#1234); owner(owner) WhileLoop#1221 (want WhileLoop#1221)
+  OBSERVED uid 10757 -> owner 'Diagram' uid 1234 | self 'IndexArray'#10757 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1234 -> owner 'WhileLoop' uid 1221 | self 'Diagram'#1234 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10757 -> 1.2  owner Diagram#1234 (want Diagram#1234); owner(owner) WhileLoop#1221 (want WhileLoop#1221)
+  OBSERVED uid 1359 -> owner 'Diagram' uid 1234 | self 'ForLoop'#1359 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1234 -> owner 'WhileLoop' uid 1221 | self 'Diagram'#1234 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #1359 -> 1.2  owner Diagram#1234 (want Diagram#1234); owner(owner) WhileLoop#1221 (want WhileLoop#1221)
+  OBSERVED uid 2222 -> owner 'Diagram' uid 1234 | self 'CaseStructure'#2222 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1234 -> owner 'WhileLoop' uid 1221 | self 'Diagram'#1234 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #2222 -> 1.2  owner Diagram#1234 (want Diagram#1234); owner(owner) WhileLoop#1221 (want WhileLoop#1221)
+  OBSERVED uid 2626 -> owner 'Diagram' uid 1234 | self 'BuildArray'#2626 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1234 -> owner 'WhileLoop' uid 1221 | self 'Diagram'#1234 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #2626 -> 1.2  owner Diagram#1234 (want Diagram#1234); owner(owner) WhileLoop#1221 (want WhileLoop#1221)
+  OBSERVED uid 6104 -> owner 'Diagram' uid 1234 | self 'IndexArray'#6104 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1234 -> owner 'WhileLoop' uid 1221 | self 'Diagram'#1234 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #6104 -> 1.2  owner Diagram#1234 (want Diagram#1234); owner(owner) WhileLoop#1221 (want WhileLoop#1221)
+  OBSERVED uid 8885 -> owner 'Diagram' uid 1234 | self 'Function'#8885 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1234 -> owner 'WhileLoop' uid 1221 | self 'Diagram'#1234 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #8885 -> 1.2  owner Diagram#1234 (want Diagram#1234); owner(owner) WhileLoop#1221 (want WhileLoop#1221)
+  OBSERVED uid 9833 -> owner 'Diagram' uid 1234 | self 'IndexArray'#9833 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1234 -> owner 'WhileLoop' uid 1221 | self 'Diagram'#1234 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #9833 -> 1.2  owner Diagram#1234 (want Diagram#1234); owner(owner) WhileLoop#1221 (want WhileLoop#1221)
+  OBSERVED uid 11261 -> owner 'Diagram' uid 1234 | self 'BuildArray'#11261 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1234 -> owner 'WhileLoop' uid 1221 | self 'Diagram'#1234 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #11261 -> 1.2  owner Diagram#1234 (want Diagram#1234); owner(owner) WhileLoop#1221 (want WhileLoop#1221)
+  OBSERVED uid 29874 -> owner 'Diagram' uid 1234 | self 'ForLoop'#29874 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1234 -> owner 'WhileLoop' uid 1221 | self 'Diagram'#1234 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #29874 -> 1.2  owner Diagram#1234 (want Diagram#1234); owner(owner) WhileLoop#1221 (want WhileLoop#1221)
+  OBSERVED uid 10686 -> owner 'Diagram' uid 1234 | self 'Function'#10686 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1234 -> owner 'WhileLoop' uid 1221 | self 'Diagram'#1234 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10686 -> 1.2  owner Diagram#1234 (want Diagram#1234); owner(owner) WhileLoop#1221 (want WhileLoop#1221)
+  FACT  1.2 body Diagram#1234 now holds [5540, 22755, 9647, 9254, 10247, 9257, 10445, 9806, 10950, 9267, 17289, 9268, 10969, 10850, 22757, 10757, 1359, 9293, 2222, 9294, 2626, 10947, 6104, 6427, 8885, 9164, 9336, 9833, 9337, 11261, 9343, 29874, 10686, 9344]
+  OBSERVED uid 10407 -> owner 'Diagram' uid 4989 | self 'CaseStructure'#10407 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 4989 -> owner 'WhileLoop' uid 1223 | self 'Diagram'#4989 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10407 -> 1.5  owner Diagram#4989 (want Diagram#4989); owner(owner) WhileLoop#1223 (want WhileLoop#1223)
+  OBSERVED uid 48 -> owner 'Diagram' uid 4989 | self 'SubVI'#48 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 4989 -> owner 'WhileLoop' uid 1223 | self 'Diagram'#4989 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #48 -> 1.5  owner Diagram#4989 (want Diagram#4989); owner(owner) WhileLoop#1223 (want WhileLoop#1223)
+  OBSERVED uid 3529 -> owner 'Diagram' uid 4989 | self 'ControlReferenceConstant'#3529 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 4989 -> owner 'WhileLoop' uid 1223 | self 'Diagram'#4989 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #3529 -> 1.5  owner Diagram#4989 (want Diagram#4989); owner(owner) WhileLoop#1223 (want WhileLoop#1223)
+  OBSERVED uid 3560 -> owner 'Diagram' uid 4989 | self 'ControlReferenceConstant'#3560 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 4989 -> owner 'WhileLoop' uid 1223 | self 'Diagram'#4989 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #3560 -> 1.5  owner Diagram#4989 (want Diagram#4989); owner(owner) WhileLoop#1223 (want WhileLoop#1223)
+  OBSERVED uid 3447 -> owner 'Diagram' uid 4989 | self 'ControlReferenceConstant'#3447 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 4989 -> owner 'WhileLoop' uid 1223 | self 'Diagram'#4989 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #3447 -> 1.5  owner Diagram#4989 (want Diagram#4989); owner(owner) WhileLoop#1223 (want WhileLoop#1223)
+  FACT  1.5 body Diagram#4989 now holds [10407, 24856, 24859, 48, 3529, 24862, 3560, 24865, 3447, 24871]
+  OBSERVED uid 376 -> owner 'Diagram' uid 9748 | self 'SubVI'#376 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 9748 -> owner 'WhileLoop' uid 1224 | self 'Diagram'#9748 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #376 -> 1.7  owner Diagram#9748 (want Diagram#9748); owner(owner) WhileLoop#1224 (want WhileLoop#1224)
+  FACT  1.7 body Diagram#9748 now holds [376, 25231]
+  PASS  S3a the moves destroyed no frame diagram  Diagram 173 (want 173) - structures keep their frames (plan s2b P3)
+  PASS  S3e #5058 deleted and GPU_kernel_v1 dropped into 1.2  new subVI [{'i': 20, 'class': 'SubVI', 'uid': 5058, 'pos': (5493, 3118), 'owner': 'Diagram'}], SubVI count 97 (want 97 = the BEFORE census 98 minus what S1t deleted)
+  FACT  GPU_kernel_v1.vi is uid 5058 on 1.2
+  PASS  S3b-d19 no node on diagram 19 lost a wire (A1: #7202 Global motor pos.vi lives here)  []
+  FACT  S3b-sr shift registers of #637 whose wiring changed: [] (A1 predicts #4256 `position [internal units]`, whose body source #10407 moved to 1.5, and whose FINAL value is the sole feed of `Focus position` on #7202 - it must be re-created on 1.5 AND its outside consumer re-routed, `restructure-plan-4.6.md:348,:354`)
+  FACT  S3b census diff: 109 terminals went wired->bare = the authoritative re-wire list
+      cut  #5540 t0 '' IN was w5709  [moved]
+      cut  #5540 t1 '' IN was w5979  [moved]
+      cut  #5540 t2 'Bead is good? array out' OUT was w5637  [moved]
+      cut  #5540 t3 'Bead is good? array out' IN was w6041  [moved]
+      cut  #5540 t4 '' IN was w5746  [moved]
+      cut  #5540 t5 'x,y,z array out' IN was w1681  [moved]
+      cut  #5540 t6 'x,y,z array out' OUT was w5975  [moved]
+      cut  #9647 t0 'x .and. y?' OUT was w9921  [moved]
+      cut  #9647 t1 'y' IN was w9806  [moved]
+      cut  #9647 t2 'x' IN was w9868  [moved]
+      cut  #10247 t0 'x .or. y?' OUT was w5709  [moved]
+      cut  #10247 t1 'y' IN was w10312  [moved]
+      cut  #10247 t2 'x' IN was w10573  [moved]
+      cut  #10445 t0 '' IN was w9921  [moved]
+      cut  #10445 t1 '' OUT was w10573  [moved]
+      cut  #10445 t2 'Value' IN was w10763  [moved]
+      cut  #10445 t3 'Value' OUT was w11389  [moved]
+      cut  #10950 t0 'x < y?' OUT was w9868  [moved]
+      cut  #10950 t1 'y' IN was w10850  [moved]
+      cut  #10950 t2 'x' IN was w17393  [moved]
+      cut  #17289 t4 'Value' OUT was w17393  [moved]
+      cut  #10969 t0 'array' IN was w121  [moved]
+      cut  #10969 t3 'min value' OUT was w17287  [moved]
+      cut  #10757 t0 'array' IN was w121  [moved]
+      cut  #10757 t1 'element' OUT was w10990  [moved]
+      cut  #10757 t2 'index' IN was w10947  [moved]
+      cut  #1359 t1 '' IN was w9097  [moved]
+      cut  #1359 t2 '' OUT was w9215  [moved]
+      cut  #1359 t3 'Value' IN was w30592  [moved]
+      cut  #1359 t4 '' IN was w28847  [moved]
+      cut  #1359 t5 '' IN was w10187  [moved]
+      cut  #1359 t6 '' OUT was w11352  [moved]
+      cut  #1359 t7 'Force\nsmoothing\nhalf-width' IN was w31059  [moved]
+      cut  #1359 t8 'Extension\nmedian filter\nhalf-width' IN was w31166  [moved]
+      cut  #1359 t9 'Magnet position output' IN was w28338  [moved]
+      cut  #2222 t0 '' IN was w730  [moved]
+      cut  #2222 t1 'Z out' OUT was w4906  [moved]
+      cut  #2222 t2 'x,y,z array out' IN was w505  [moved]
+      cut  #2222 t3 '' IN was w628  [moved]
+      cut  #2222 t4 '' IN was w1773  [moved]
+      cut  #2222 t5 'Correction Factor' IN was w6096  [moved]
+      cut  #2222 t6 'X out' OUT was w6363  [moved]
+      cut  #2626 t0 'appended array' OUT was w4517  [moved]
+      cut  #2626 t1 'element' IN was w16483  [moved]
+      cut  #2626 t2 'element' IN was w30592  [moved]
+      cut  #2626 t3 'element' IN was w4878  [moved]
+      cut  #2626 t4 'array' IN was w505  [moved]
+      cut  #6104 t0 'array' IN was w6363  [moved]
+      cut  #6104 t3 'index (col)' IN was w6427  [moved]
+      cut  #8885 t0 'x*y' OUT was w28847  [moved]
+      cut  #8885 t1 'y' IN was w9164  [moved]
+      cut  #8885 t2 'x' IN was w9012  [moved]
+      cut  #9833 t0 'array' IN was w4906  [moved]
+      cut  #9833 t1 'subarray' OUT was w9012  [moved]
+      cut  #9833 t2 'index (row)' IN was w9924  [moved]
+      cut  #11261 t0 'appended array' OUT was w10908  [moved]
+      cut  #11261 t1 'array' IN was w11352  [moved]
+      cut  #11261 t2 'element' IN was w12256  [moved]
+      cut  #29874 t1 '' OUT was w32890  [moved]
+      cut  #29874 t2 '' IN was w29787  [moved]
+      cut  #29874 t3 '' IN was w28039  [moved]
+      cut  #29874 t4 '' IN was w28847  [moved]
+      cut  #29874 t5 '' OUT was w29591  [moved]
+      cut  #29874 t6 'Extension\nmedian filter\nhalf-width' IN was w31166  [moved]
+      cut  #10686 t0 'x .and. y?' OUT was w10799  [moved]
+      cut  #10686 t1 'y' IN was w9105  [moved]
+      cut  #10686 t2 'x' IN was w3050  [moved]
+      cut  #10407 t0 '' IN was w10799  [moved]
+      cut  #10407 t1 '# slices in stack' IN was w9635  [moved]
+      cut  #10407 t2 'Index of closest\ncal image slice, bead 2' IN was w10990  [moved]
+      cut  #10407 t3 'Outgoing Handle' IN was w11232  [moved]
+      cut  #10407 t4 'VISA out' OUT was w7337  [moved]
+      cut  #10407 t5 'Out position' IN was w7388  [moved]
+      cut  #10407 t6 'position [internal units]' OUT was w9113  [moved]
+      cut  #48 t0 '-Inc reference' IN was w4833  [moved]
+      cut  #48 t1 '+Inc reference' IN was w2819  [moved]
+      cut  #48 t2 'Focus inc reference' IN was w1893  [moved]
+      cut  #48 t3 'VISA resource name' IN was w1731  [moved]
+      cut  #48 t4 'In position' IN was w3947  [moved]
+      cut  #48 t5 'Out position' OUT was w7388  [moved]
+      cut  #48 t6 'Outgoing Handle' OUT was w11232  [moved]
+      cut  #3529 t0 '- Inc (PgDn)' OUT was w4833  [moved]
+      cut  #3560 t0 '+ Inc (PgUp)' OUT was w2819  [moved]
+      cut  #3447 t0 'Focus Step (F1)' OUT was w1893  [moved]
+      cut  #376 t0 'error out' OUT was w541  [moved]
+      cut  #376 t1 'total data array out' OUT was w464  [moved]
+      cut  #376 t2 'error in' IN was w4880  [moved]
+      cut  #376 t3 'file progress' OUT was w5274  [moved]
+      cut  #376 t4 'file number to append out' OUT was w5056  [moved]
+      cut  #376 t5 'current frame data array in' IN was w4517  [moved]
+      cut  #376 t6 'cal cluster path' IN was w3629  [moved]
+      cut  #376 t7 'frame index' IN was w3268  [moved]
+      cut  #376 t8 'saved file refnum' IN was w1397  [moved]
+      cut  #376 t9 'file size' IN was w1581  [moved]
+      cut  #376 t10 'total data array in' IN was w3497  [moved]
+      cut  #376 t11 'selected path' IN was w5090  [moved]
+      cut  #5058 t0 'Bead is good? array in' IN was w5637  [STAYED-BUT-BARED]
+      cut  #5058 t1 'Image In' IN was w3040  [STAYED-BUT-BARED]
+      cut  #5058 t2 'cross size' IN was w373  [STAYED-BUT-BARED]
+      cut  #5058 t3 'Bead is good? array out' OUT was w5859  [STAYED-BUT-BARED]
+      cut  #5058 t4 'x,y,z array out' OUT was w505  [STAYED-BUT-BARED]
+      cut  #5058 t7 'x,y,z array' IN was w5975  [STAYED-BUT-BARED]
+      cut  #5058 t8 'pos in cal image out' OUT was w121  [STAYED-BUT-BARED]
+      cut  #5058 t9 '# of bead 4 packs' IN was w42  [STAYED-BUT-BARED]
+      cut  #5058 t11 '4 pack remainder' IN was w3512  [STAYED-BUT-BARED]
+      cut  #5058 t12 'Array of cal clusters' IN was w3646  [STAYED-BUT-BARED]
+      cut  #5058 t13 'pos in cal image in' IN was w7429  [STAYED-BUT-BARED]
+      cut  #5058 t14 'Real-space cosine window' IN was w3912  [STAYED-BUT-BARED]
+      cut  #5058 t15 'Cosine bandpass\nfor Hilbert ' IN was w4027  [STAYED-BUT-BARED]
+  PASS  S3b the cut set covers plan s8's 13 wired crossings  not cut: [] (a crossing that survived the move is a crossing the move did not have to cut)
+  FACT  S3b-collateral: #5058 excluded from 'staying nodes' - it is DELETED, and the GPU kernel was re-issued the same uid (uid reuse); its 13 cut terminals are plan s8's crossings and stay in the re-wire list
+  PASS  S3b-collateral no STAYING node was bared by a move (rev-4 review B3)  [] - these must be re-wired from their original source before ExecState is read
+
+=== S3c: 8 shift registers, 6 control terminals (plan s5d count corrected)
+  PASS  S3c index 2 really is 1.2's WhileLoop #1221  loop_cast(2) -> loop_uid 1221, errors {}
+  FACT  1.2: shift register created uid 25402 for 'x,y,z array out' (was #1147/#1142)
+  FACT  1.2: shift register created uid 25421 for 'Bead is good? array out' (was #5796/#5805)
+  FACT  1.2: shift register created uid 25438 for 'pos in cal image out' (was #119/#2972)
+  FACT  1.2: shift register created uid 25465 for 'Value' (was #7311/#11001)
+  PASS  S3c index 1 really is 1.5's WhileLoop #1223  loop_cast(1) -> loop_uid 1223, errors {}
+  FACT  1.5: shift register created uid 25501 for 'position [internal units]' (was #4256/#4274)
+  FACT  1.5: shift register created uid 25514 for 'VISA out  <- THE VISA SESSION' (was #4334/#4344)
+  PASS  S3c index 0 really is 1.7's WhileLoop #1224  loop_cast(0) -> loop_uid 1224, errors {}
+  FACT  1.7: shift register created uid 25523 for 'total data array out' (was #15/#51)
+  FACT  1.7: shift register created uid 25545 for 'error out' (was #24/#1108)
+  PASS  S3c 8 shift registers created  8 created
+  FACT  ControlTerminals to move into 1.2, by control label: ['Auto-Reset', 'Reset Tracking', 'Z/dZ', 'Correction Factor', 'min value', 'Force (pN) vs Extension (nm) ']
+
+=== S3d: whole arrays cross NON-INDEXED
+  SKIPPED-PHASE  S3d: the 6 seam tunnels do not exist until PHASE 'full' re-wires the seam
+
+=== S4: conditional terminals
+  PASS  S4a #637's conditional terminal is untouched  loop 637, term 648 (want 648), wire 3457 (want 3457, source #11639); errs ''
+  PASS  S4b 1.2's conditional terminal is reachable and UNWRITTEN (relocate phase)  term 4767 (want != 0), wire 0 (want 0); errs 'error 1055: Property Node in OpLoopEndRef_v0.vi' (1055 on an unwired terminal is EXPECTED - s11e.4, not gated)
+  PASS  S4b 1.5's conditional terminal is reachable and UNWRITTEN (relocate phase)  term 8908 (want != 0), wire 0 (want 0); errs 'error 1055: Property Node in OpLoopEndRef_v0.vi' (1055 on an unwired terminal is EXPECTED - s11e.4, not gated)
+  PASS  S4b 1.7's conditional terminal is reachable and UNWRITTEN (relocate phase)  term 13038 (want != 0), wire 0 (want 0); errs 'error 1055: Property Node in OpLoopEndRef_v0.vi' (1055 on an unwired terminal is EXPECTED - s11e.4, not gated)
+  PASS  S3c panel survived: 114 rows, every label present  114 rows; lost []
+  PASS  S3c ControlTerminal count unchanged  114
+
+=== PHASE 'relocate' ends here. NOT executed, and NOT silently passed:
+  SKIPPED-PHASE  S1q: 8 queues obtained (Q_free/Q_work 20, Q_meta/Q_res/Q_good/Q_rmeta unbounded, Q_focus/Q_focusback 1)
+  SKIPPED-PHASE  S3c-wiring: the 8 created shift registers wired to their body nodes (wire_sr)
+  SKIPPED-PHASE  S3c-ctlterm: the 6 ControlTerminals reparented into 1.2 (plan s5d)
+  SKIPPED-PHASE  S3b-rewire: every cut terminal re-wired through a tunnel / queue / SR (wires cut == wires re-wired)
+  SKIPPED-PHASE  S4b-write: the three sentinel tests driving the new loops' conditional terminals
+  SKIPPED-PHASE  S4s: the sentinel enqueues (-1 / empty array) and 1.7's do-not-write-the-sentinel gate
+  SKIPPED-PHASE  S5: junk purge / remove bad wires / ExecState 1 WARM / save / file size
+  SKIPPED-PHASE  S6: cold re-open in a restarted LabVIEW
+  FACT  ExecState after the relocation: 0 (0 is EXPECTED - the moves CUT border wires, plan s2b; nothing is re-wired in this phase)
+  FACT  the target is NOT saved and NOT cold-opened: a relocation-only artefact is a broken VI, and the skill forbids cold-loading a broken-saved VI headless (recompile spin)
+  FACT  working copy deleted: C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\Track_v6_D1_GPU_095621.vi
+  PASS  S6b original md5 AFTER  2a78e17c449cacdaf5da389818526859
+  FACT  LabVIEW handles after: 33859 (before 31072)
+
+--- FACTS ---
+  LabVIEW handles before: 31072 (fresh-instance baseline ~31,500)
+  TRANSPORT = 'queue' via gscript.queue_node - OpQueueObtain/Enqueue/Dequeue/Release_v0 - EXERCISED, core 162/162
+  BEFORE census: {'Diagram': 170, 'Node': 626, 'Wire': 1902, 'LoopTunnel': 132, 'ControlTerminal': 114, 'WhileLoop': 3, 'Local': 8, 'SubVI': 98}
+  ExecState of the fresh copy: 0 (0 or 1; the discriminator is PRELOAD, not headlessness - plan s2b; NOT gated)
+  S1t BEFORE: diagram 43 is Traverse index 43; counts {'SubVI': 98, 'Function': 181, 'Node': 626, 'Wire': 1902}; 28 bare named sinks; ExecState 0
+  S1t AFTER: counts {'SubVI': 97, 'Function': 180, 'Node': 624, 'Wire': 1899}; delta {'SubVI': -1, 'Function': -1, 'Node': -2, 'Wire': -3}; 26 bare named sinks (was 28)
+  S1t LEFT STANDING (��11h, deliberate): #23175 Strip Path present=True - dead-but-legal once #23020 is gone; a source with no sink cannot break a VI
+  S1t LEFT STANDING (��11h, deliberate): #22703 Format Into String present=True - dead-but-legal once #23020 is gone; a source with no sink cannot break a VI
+  Diagram#686 (holder of WhileLoop#637) is Traverse index 19
+  1.2: WhileLoop #1221, body Diagram #1234 at Traverse index 20
+  1.5: WhileLoop #1223, body Diagram #4989 at Traverse index 20
+  1.7: WhileLoop #1224, body Diagram #9748 at Traverse index 20
+  S3b net neighbours on diagram 43 (stay put, share a net with a mover): [1114, 2136, 3052, 3057, 3191, 4580, 5058, 5119, 10068, 10382, 10825, 11529, 11608, 12589, 20474, 22703, 23175, 29240, 30117]
+  S3b diagram 19 (A1) censused whole: [194, 250, 637, 781, 1221, 1223, 1224, 1628, 2048, 6384, 6409, 6951, 7201, 7202, 8486, 8953, 9179, 9342, 25091, 25149, 25380, 27605, 28124, 28670] - plan s5b lists only [637, 6384, 2048, 781, 27605]
+  BEFORE terminal census: 42 nodes on d43 (23 moving + 19 net-neighbours), 162 wired terminals; 24 nodes on d19; 14 shift registers of #637
+  1.2 body Diagram#1234 now holds [5540, 22755, 9647, 9254, 10247, 9257, 10445, 9806, 10950, 9267, 17289, 9268, 10969, 10850, 22757, 10757, 1359, 9293, 2222, 9294, 2626, 10947, 6104, 6427, 8885, 9164, 9336, 9833, 9337, 11261, 9343, 29874, 10686, 9344]
+  1.5 body Diagram#4989 now holds [10407, 24856, 24859, 48, 3529, 24862, 3560, 24865, 3447, 24871]
+  1.7 body Diagram#9748 now holds [376, 25231]
+  GPU_kernel_v1.vi is uid 5058 on 1.2
+  S3b-sr shift registers of #637 whose wiring changed: [] (A1 predicts #4256 `position [internal units]`, whose body source #10407 moved to 1.5, and whose FINAL value is the sole feed of `Focus position` on #7202 - it must be re-created on 1.5 AND its outside consumer re-routed, `restructure-plan-4.6.md:348,:354`)
+  S3b census diff: 109 terminals went wired->bare = the authoritative re-wire list
+  S3b-collateral: #5058 excluded from 'staying nodes' - it is DELETED, and the GPU kernel was re-issued the same uid (uid reuse); its 13 cut terminals are plan s8's crossings and stay in the re-wire list
+  1.2: shift register created uid 25402 for 'x,y,z array out' (was #1147/#1142)
+  1.2: shift register created uid 25421 for 'Bead is good? array out' (was #5796/#5805)
+  1.2: shift register created uid 25438 for 'pos in cal image out' (was #119/#2972)
+  1.2: shift register created uid 25465 for 'Value' (was #7311/#11001)
+  1.5: shift register created uid 25501 for 'position [internal units]' (was #4256/#4274)
+  1.5: shift register created uid 25514 for 'VISA out  <- THE VISA SESSION' (was #4334/#4344)
+  1.7: shift register created uid 25523 for 'total data array out' (was #15/#51)
+  1.7: shift register created uid 25545 for 'error out' (was #24/#1108)
+  ControlTerminals to move into 1.2, by control label: ['Auto-Reset', 'Reset Tracking', 'Z/dZ', 'Correction Factor', 'min value', 'Force (pN) vs Extension (nm) ']
+  ExecState after the relocation: 0 (0 is EXPECTED - the moves CUT border wires, plan s2b; nothing is re-wired in this phase)
+  the target is NOT saved and NOT cold-opened: a relocation-only artefact is a broken VI, and the skill forbids cold-loading a broken-saved VI headless (recompile spin)
+  working copy deleted: C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\Track_v6_D1_GPU_095621.vi
+  LabVIEW handles after: 33859 (before 31072)
+
+=== build_d1_v0: 56 pass, 1 fail -> S2c #22700 still owned by the frame loop body  (52 s) ===
+BGRUN END rc=1 after 52s

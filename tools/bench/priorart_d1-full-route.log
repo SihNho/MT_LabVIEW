@@ -1,0 +1,115 @@
+BGRUN START 2026-09-17 08:36:07 limit 20.0 min: py tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/plan_d1_full_route.md --slug d1-full-route --trigger direction-change
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_d1-full-route.txt (16524 chars)
+OUTCOME: ANSWERED (636s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-d1-full-route.md
+COST: $6.2260  in 68 / out 47365 / cache-create 223429 / cache-read 5614542  (632s, 44 turn(s))
+--- ANSWER ---
+Write is disabled here, so the review is delivered as text. No lock taken, nothing built, edited or run.
+
+---
+
+# PRIOR-ART REVIEW — `tools/recipes/diag_d1_full_route.py` (cycle 15, D1 PHASE "full", direction change)
+
+**6 findings, 0 novel.**
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 `settled-already` — R1 is not a new join. It is `diag_d1_step0.py`'s own join, which already ran and PASSED
+
+The plan proposes (`tools/recipes/diag_d1_full_route.py:44-45`) to close gap (i) by joining `main_vi_nodeterms.json` + `d1_step0_census.json.tunnels/.shift_regs/.panel` into a wire→source map, predicting 82/82. That join is already code, already ran, and already passed:
+
+- `tools/bench/diag_d1_step0.py:357-358` — `resolved = {}  # wire -> {"kind":..., "detail":...}` with `tun_rows, sr_rows, panel_rows, ws_rows` — the same four inputs, same order.
+- `tools/bench/diag_d1_step0.py:440-457` — what tunnels/SRs/panel cannot resolve falls through to `OpWireSource_v5`, recording `{"kind": "OpWireSource_v5", "owner_class":…, "owner_uid":…, "sinks":[…]}` — the driving object **and** every other sink of the net.
+- `tools/bench/diag_d1_step0.py:631` — written as `"resolved_boundary"`; present at `tools/bench/d1_step0_census.json:4243`.
+- **It passed.** `tools/bench/diag_d1_step0.log:18` — *"after tunnels/SRs/panel: **81/91 boundary wires resolved**; 10 left"*; `:21-22` the ten resolved individually; `:59` — *"**PASS G6 every boundary wire of the step-0 subject set is resolved** — unresolved on subject set: []; overall still open: []"*.
+- The offline re-run R1 wants is already a flag: `diag_d1_step0.py:359-369` (`--offline` *"re-runs ONLY the classification, from the census this script wrote on its LabVIEW pass … re-measuring the same read-only facts to re-run 30 lines of graph code would be a LabVIEW batch for nothing"*).
+
+A second, older implementation of the same join is `tools/bench/wiregraph_frame_loop.py:57-63` (`src[wire] → [(uid, term index, name)]` off `main_vi_nodeterms.json`), already parameterised by diagram (`:16`, `:27`), already gating one-source-per-wire (`:68`), and already documenting the gap the plan re-discovers (`:66-67`: *"A singleton (one side only) is an UNRESOLVED HALF-EDGE, not a proven boundary"*; 83 on diagram 43 — `docs/frame-loop-wire-graph.md:15`).
+
+**Scope.** Covers R1 as *new* code and its `d1_rewire_sources.json` output. It does **not** cover re-running the resolution over the post-run-5 cut set: step 0 resolved 91 *pre-move* boundary wires, the current list is 82 cut wires (`archive/2026-09-17-status-d1-phase-full-narrative.md:130,:137`), and those sets are not proven identical. Re-running is legitimate — as `diag_d1_step0.py --offline` over the new list, not as new code.
+
+### A2 — nothing refutes measuring before building
+
+No archived exchange, retrospective or superseded section argues against inserting a measurement here. The claims it rests on are another matter → A3.
+
+### A3 `contradicted` — two load-bearing sentences, one contradicted by the plan itself 18 lines later
+
+**A3-i. "the only fleet writer that reaches a node on a NESTED diagram addresses a terminal BY NAME."**
+
+- Plan: `diag_d1_full_route.py:15-16`. All of blocker (ii), and R3, rest on it.
+- Its own file: `:31-33` — *"`connect2` (index-addressed sink on ANY diagram …)"*.
+- Machine: `tools/gscript.py:2429-2431` — *"Wire top-level `Nodes[src_node].Terminals[src_term]` into `Nodes[sink_node].Terminals[sink_term]` of **ANY diagram** (… a loop's inner diagram included)"*; ladders at `tools/recipes/build_opconnect2.py:2-5`.
+- Two more index-addressed writers reaching a **body node's** terminal, both absent from the census at `:31-35`: `tools/gscript.py:523-524,527-528` (`wire_sr` `LeftIn`/`RightIn`: *"`Terminals[term_index]` of `Nodes[node_index]` **INSIDE the loop body (Loop.Diagram)**" … "Indices are creation-order Nodes[] / Terminals[]"*), recorded as *"indices, never names"* at `docs/toolkit-capabilities.md:42`; and `docs/toolkit-capabilities.md:51` (`OpStopFromNode_v0`: *"`index 3` = body `Nodes[]` index, `index 4` = that node's `Terminals[]` index"*).
+- Already written down this cycle: `archive/peer/2026-09-17-priorart-priorart-d1-build-rev4b.md:877` — *"every wiring op in the fleet addresses sinks through `Nodes[]→Terminals[]` (`tools/gscript.py:519-529` …)"*.
+
+**Scope.** Covers `:15-16` and the framing of blocker (ii). It does **not** assert a nested→nested index-addressed writer exists — `:35`'s narrower claim is untouched.
+
+**A3-ii. "PHASE 'full' is not executable as written."** The recipe this is a phase of says the opposite about the re-wiring: `tools/recipes/build_d1_v0.py:37-39` — *"(a) 8 queues + enqueue/dequeue + **element wiring** + tunnels + SR wiring + ControlTerminal moves + exit_while → **every op EXISTS and is verified** … the pattern is `tools/recipes/build_track_v6_queue.py` (162/162). **UNWRITTEN**."* Unwritten ≠ unexecutable. The recorded blocker is a different one, untouched by this run: `archive/2026-09-17-status-d1-phase-full-narrative.md:141-147` — the sentinel test's **comparison primitive and literals inside each loop body**, whose one untried route is *"`copy_by_index` with the D1 working copy as BOTH donor and target … followed by `move_in` … **it is the cheapest thing for the next cycle to test**"*.
+
+### A4 `unread-evidence` — four documents that answer "what do I wire it to", none in the plan's "WHAT ALREADY EXISTS"
+
+`diag_d1_full_route.py:22-38` names `main_vi_nodeterms.json`, `d1_step0_census.json`, `opconstvaluen_scan.json`, `move_in`, `wire_source`, `walk`. It does not name:
+
+1. `tools/bench/diag_d1_step0.py` — the script that produced `.resolved_boundary`, which the plan cites only as *"wire → the boundary object that carries it"* (`:27-28`). The stored value is the driving object **plus every sink** (`diag_d1_step0.py:454-456`) — the map R1 says does not exist.
+2. `tools/bench/wiregraph_frame_loop.py` (A1).
+3. `docs/d1-build-plan.md:496-511` — `#5058`'s 16 terminals *with the object on the other end and its D1 carrier*; `:377-389` — all 14 shift registers with the node and terminal each inner wire reaches; `:402-410` — the 7 control terminals with their reader. And the D1 carrier for most cut nets is a **queue or a new tunnel** (`:537-556`), not the original's source object at all.
+4. `tools/recipes/build_track_v6_queue.py` (162/162), named at `build_d1_v0.py:39` as the pattern for exactly this wiring.
+
+---
+
+## PART B — THE ARTIFACT
+
+### B1 — no op does R1/R2/R3 under another name; but the *ladder* R3b uses was measured and rejected on 2026-09-13
+
+No `OpTunnelConnect`/`OpRewire` exists in `claudeDev` (the tunnel family is `OpTunnels_v0`, `OpTunnelRead_v0`, `OpTunnelInd_v0` — readers plus one indicator-creator). But the ladder R3b uses to declare the 19 terminals unreachable is already measured as the wrong one:
+
+`tools/gscript.py:1693-1698` — *"**WHY `create_indicator()` CANNOT DO THIS, measured 2026-09-13**: it addresses `Nodes[]→Terminals[]`, and a sweep of a For Loop's `Terminals[0..13]` produced **DANGLING** indicators for 0-7 … `ForLoop.Terminals[]` are the loop's own infrastructure terminals, and **a Tunnel is a GObject, not a Terminal**, so it inherits no Terminal methods. The documented route adds one hop … `Tunnel.'Outer Term' (6356001) → Terminal ref → Terminal.'Create Indicator' (6349C02)"*.
+
+Both sides of every structure tunnel are already readable on that ladder — `docs/toolkit-capabilities.md:24` (`tunnels()`, 132 censused) and `:52` (`OpTunnelRead_v0`, verified on **both `#5540` output tunnels, 24/24**). A writer is the `6349C02 → 6349C03` swap on a front half proven twice (`tools/gscript.py:1690-1692`), the same additive shape as `OpStopFromNode_v0` (`docs/toolkit-capabilities.md:51`). ⚠️ That is a **new general-purpose op**, frozen for D1 (`tools/recipes/build_d1_v0.py:42-43`, citing `docs/cycle15-plan.md:104`) — a route to price, not a build to start.
+
+**Scope.** Covers R3b's conclusion that the 19 terminals have no route. It does **not** claim a tunnel-terminal writer has been built or measured.
+
+### B3 `helper-exists` — the terminal INDEX and the direction are already in the file the plan calls source-less
+
+`tools/bench/build_d1_v0.json:137-144` stores each cut row as `[node_uid, term_index, name, is_source, wire]` (first row: `5540, 0, "", false, 5709`). So:
+
+- **empty names** are not an addressing problem — the index is in the record, and every index-addressed writer above takes exactly `Terminals[index]`. The remedy is already written: `archive/peer/2026-09-14-stage2-a3-wire-shiftreg-plan.md:129` — *"Prefer terminal name plus direction where names are unique; **use terminal index only when duplicate or empty names force it**."*
+- **`#5540`'s "duplicates"** are its outer/inner pair, disambiguated by `is_source`, which the file carries: `docs/frame-loop-wire-graph.md:17` — *"Nested structures' tunnels appear as terminals of the structure node with BOTH sides (outer wire on the source-flagged entry, inner wire on the sink-flagged entry) — observed on the case structure #5540"*. The `(name, is_source)` rule is this project's own recorded fix (`archive/peer/2026-09-14-opexitwhile-fail1-duplicate-terminal-names.md:24-29`), already imported by the sibling recipe: `tools/recipes/build_d1_v0.py:66-67` — *"**NEVER key a terminal by name alone**"*.
+
+### B4 `already-measured` — an unnamed terminal has been wired by this fleet twice; both R4 separators re-derive recorded facts
+
+**(i) R3's capability question.**
+- `docs/toolkit-capabilities.md:35` — *"an EMPTY For loop's `Node.Terminals[]` has exactly one entry (**unnamed sink**) … an I32 source wired onto it makes the loop runnable"*, evidence `build_harness_copyloop2.log` run 2, **wire 346 on both ends, ExecState 0→1**; disposition `archive/peer/2026-09-14-copyloop2-forloop-terminals-unnamed.md:93-97`.
+- An **unnamed source** terminal wired into a node on a **nested** diagram, by index, numerically accepted: `docs/keystone-op-spec.md:577-580` (`connect2(FIX,1,0,0,3,1)` / `(FIX,1,0,1,3,2)` — Decimate outputs 1/2, which `docs/NAMES.md:61` records as *"outputs unnamed"* — into the kernel inside the P=4 loop, ExecState 1), accepted at `:582-586`.
+
+**(ii) R4's separators.**
+- **T5sep**: `docs/NAMES.md:788` — *"**Never gate on `ExecState` while a required input is still unwired — it cannot discriminate.**"* With `.claude/skills/labview-automation/references/com-driving.md:206` (*"A node with unwired required inputs makes the VI BROKEN"*), explanation A is a standing rule, not an open question. The narrative's own recorded cheapest separator is cheaper than the plan's: `archive/2026-09-17-status-d1-phase-full-narrative.md:108` — *"**read the donor VI's connector pane** for required terminals, or repeat with a body node that has no required input"* — and the reader exists: `tools/gscript.py:2539-2542` (`conpane`).
+- **T6sep**: the answer it must reproduce is published — `docs/toolkit-capabilities.md:48` (*"wire 10850 → constant 10739 / sink `Comparison` 10950, **12/12**"*) and the raw line `tools/bench/diag_d1_step0.log:21-22`.
+
+**Scope.** Covers the separators as sources of *new information*. It does **not** forbid re-running T6sep as a **control** — `docs/toolkit-capabilities.md:213` requires exactly that, and this finding releases on that citation.
+
+---
+
+## The five questions, answered
+
+1. **Yes** — `diag_d1_step0.py:440-457` → `d1_step0_census.json.resolved_boundary`, PASSED 91/91 (`diag_d1_step0.log:18,:59`); `wiregraph_frame_loop.py:57-63` is the same join per diagram. R1 is a re-run, not a build.
+2. **Partly measured, and the route you missed is the Tunnel class.** Unnamed terminals have been wired by index twice (`toolkit-capabilities.md:35`; `keystone-op-spec.md:577-586`), and `gscript.py:1693-1698` measured that `Nodes[]→Terminals[]` is the wrong ladder for a tunnel, naming `Tunnel.Outer Term 6356001` as the right one. Ops absent from your census: `wire_sr` (`gscript.py:523-528`), `OpStopFromNode_v0` (`toolkit-capabilities.md:51`), `OpTunnels_v0`/`OpTunnelRead_v0`/`OpTunnelInd_v0` (`:24,:52`, `gscript.py:1685-1698`).
+3. **T6's fact is published** (`toolkit-capabilities.md:48`, `diag_d1_step0.log:21-22`); **T5's confound is a standing rule** (`NAMES.md:788`) whose recorded cheapest separator is a `conpane()` read, not a built copy.
+4. **Neither cited fact is contradicted.** `connect2`'s source side *is* top-level-only (`build_opconnect2.py:4`, `gscript.py:2429`); `wire()` *is* name-addressed with no index fallback (`gscript.py:1145,1174,1177`; `docs/NAMES.md:52` — `Wire Inputs.vi`: `Names`, `Inputs`). What is contradicted is the sentence you **derived** from them at `:15-16` (A3-i).
+5. **The stated blocker is not the recorded blocker.** `build_d1_v0.py:37-39` says the re-wiring's ops all exist and are merely **UNWRITTEN**, with `build_track_v6_queue.py` (162/162) as the pattern; the recorded blocker is the sentinel comparison primitive + literals inside a loop body, whose one untried route (`copy_by_index` donor==target + `move_in`) this run does not test (`archive/2026-09-17-status-d1-phase-full-narrative.md:141-147`, STATUS OPEN 28).
+
+---
+
+```
+PRIOR-ART: settled-already   (A1 — tools/bench/diag_d1_step0.py:357-358,:440-457,:631 + tools/bench/diag_d1_step0.log:18,:21-22,:59 + tools/bench/diag_d1_step0.py:359-369 + tools/bench/wiregraph_frame_loop.py:16,:27,:57-63,:66-67 vs tools/recipes/diag_d1_full_route.py:44-45 — covers R1 as new code and d1_rewire_sources.json; does NOT cover re-running the resolution over the post-run-5 82-wire set)
+PRIOR-ART: contradicted      (A3-i — tools/recipes/diag_d1_full_route.py:15-16 vs :31-33 + tools/gscript.py:2429-2431,:523-528 + tools/recipes/build_opconnect2.py:2-5 + docs/toolkit-capabilities.md:42,:51 + archive/peer/2026-09-17-priorart-priorart-d1-build-rev4b.md:877 — covers the "only fleet writer / BY NAME" sentence and blocker (ii); does NOT assert a nested->nested index writer exists)
+PRIOR-ART: contradicted      (A3-ii — tools/recipes/build_d1_v0.py:37-39 + archive/2026-09-17-status-d1-phase-full-narrative.md:141-147 vs tools/recipes/diag_d1_full_route.py:8-16 — covers "not executable as written" for the re-wire half; does NOT dispute that the list is source-less as stored)
+PRIOR-ART: unread-evidence   (A4 — tools/bench/diag_d1_step0.py + tools/bench/wiregraph_frame_loop.py + docs/d1-build-plan.md:377-389,:402-410,:496-511,:537-556 + tools/recipes/build_track_v6_queue.py via build_d1_v0.py:39 vs tools/recipes/diag_d1_full_route.py:22-38 — covers the "WHAT ALREADY EXISTS" census)
+PRIOR-ART: helper-exists     (B3 — tools/bench/build_d1_v0.json:137-144 + archive/peer/2026-09-14-stage2-a3-wire-shiftreg-plan.md:129 + archive/peer/2026-09-14-opexitwhile-fail1-duplicate-terminal-names.md:24-29 + tools/recipes/build_d1_v0.py:66-67 + docs/frame-loop-wire-graph.md:17 vs tools/recipes/diag_d1_full_route.py:14-16,:46-48 — covers R2's "unreachable" classification; the record already carries term_index and is_source)
+PRIOR-ART: already-measured  (B4 — docs/toolkit-capabilities.md:35,:48 + archive/peer/2026-09-14-copyloop2-forloop-terminals-unnamed.md:93-97 + docs/keystone-op-spec.md:577-586 + docs/NAMES.md:61,:788 + .claude/skills/labview-automation/references/com-driving.md:206 + archive/2026-09-17-status-d1-phase-full-narrative.md:108 + tools/gscript.py:2539-2542 + tools/bench/diag_d1_step0.log:21-22 vs tools/recipes/diag_d1_full_route.py:55,:57-63 — covers R3b's capability question and both R4 separators as sources of NEW information; does NOT forbid re-running T6sep as a control per docs/toolkit-capabilities.md:213)
+```
+
+**The one that changes what happens next: A1.** The map R1 exists to build already exists, in a script with an `--offline` mode, and it passed on its subject set. The cheapest next step is to point `diag_d1_step0.py --offline` at the 82 post-move wires and spend the saved run on the blocker the record actually names (A3-ii).
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-d1-full-route.md
+BGRUN END rc=0 after 637s

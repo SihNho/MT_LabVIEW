@@ -1,0 +1,147 @@
+BGRUN START 2026-09-14 11:03:04 limit 20.0 min: py -u tools/recipes/build_oppanelwiring_v0.py
+start: ForLoop=0 LoopTunnel=0 Property=4 IndexArray=1 Wire=9 ExecState=1
+net_map: 8 nodes walked in 1.4 s; 78 junk Invoke(s) purged in 1.3 s
+   node uid 43: ['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+   node uid 308: ['array', 'element', 'index']
+   node uid 369: ['error out', 'specific error cleared?', 'error in (no error)', 'specific error code to clear (0: all)']
+   node uid 370: ['error out', 'specific error cleared?', 'error in (no error)', 'specific error code to clear (0: all)']
+   node uid 112: ['reference', 'reference out', 'error in (no error)', 'error out', 'Panel']
+   node uid 113: ['reference', 'reference out', 'error in (no error)', 'error out', 'Controls[]']
+   node uid 114: ['reference', 'reference out', 'error in (no error)', 'error out', 'Label', 'Indicator']
+   node uid 115: ['reference', 'reference out', 'error in (no error)', 'error out', 'Text']
+   Controls[]-node 113; Control[Label,Indicator] node 114; Text node 115; IndexArray rows 1
+
+== 3 delete Text node, Control node, Index Array (downstream first) + RBW
+   predict: Property 4->2, IndexArray 1->0, ExecState 1
+   result : after ForLoop=0 LoopTunnel=0 Property=2 IndexArray=0 Wire=3 ExecState=1  (0.2 s)
+
+== 4 empty For Loop
+   predict: ForLoop 0->1; ExecState 0 EXPECTED
+   result : after ForLoop=1 LoopTunnel=0 Property=2 IndexArray=0 Wire=3 ExecState=0  (0.1 s)
+
+== 5 PN1 Control[Label, Indicator, UID] inside body (metadata only, cannot be poisoned)
+   predict: Property +1
+   result : [{'i': 0, 'class': 'Property', 'uid': 99, 'pos': (3055, 551), 'owner': 'Diagram'}]  (0.1 s)
+
+== 5-check PN1 terminals
+   predict: data terminals == Label, Indicator, UID
+net_map: 1 nodes walked in 0.6 s; 16 junk Invoke(s) purged in 0.5 s
+   result : ['Label', 'Indicator', 'UID']  (1.1 s)
+
+== 5b PN1b Control[Terminal] inside body (the risky row, on its own node)
+   predict: Property +1
+   result : [{'i': 0, 'class': 'Property', 'uid': 100, 'pos': (3055, 671), 'owner': 'Diagram'}]  (0.1 s)
+
+== 6 wire Controls[]-node 'Controls[]' -> PN1 'reference' (crosses the loop)
+   predict: LoopTunnel +1, Wire +2, ExecState 1
+   result : after ForLoop=1 LoopTunnel=1 Property=4 IndexArray=0 Wire=5 ExecState=0  (0.2 s)
+STOP: not runnable after the loop input. Nothing saved.
+BGRUN END rc=3 after 6s
+BGRUN START 2026-09-14 11:05:40 limit 20.0 min: py -u tools/recipes/build_oppanelwiring_v0.py
+start: ForLoop=0 LoopTunnel=0 Property=4 IndexArray=1 Wire=9 ExecState=1
+net_map: 8 nodes walked in 1.4 s; 78 junk Invoke(s) purged in 1.3 s
+   node uid 43: ['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+   node uid 308: ['array', 'element', 'index']
+   node uid 369: ['error out', 'specific error cleared?', 'error in (no error)', 'specific error code to clear (0: all)']
+   node uid 370: ['error out', 'specific error cleared?', 'error in (no error)', 'specific error code to clear (0: all)']
+   node uid 112: ['reference', 'reference out', 'error in (no error)', 'error out', 'Panel']
+   node uid 113: ['reference', 'reference out', 'error in (no error)', 'error out', 'Controls[]']
+   node uid 114: ['reference', 'reference out', 'error in (no error)', 'error out', 'Label', 'Indicator']
+   node uid 115: ['reference', 'reference out', 'error in (no error)', 'error out', 'Text']
+   Controls[]-node 113; Control[Label,Indicator] node 114; Text node 115; IndexArray rows 1
+
+== 3 delete Text node, Control node, Index Array (downstream first) + RBW
+   predict: Property 4->2, IndexArray 1->0, ExecState 1
+   result : after ForLoop=0 LoopTunnel=0 Property=2 IndexArray=0 Wire=3 ExecState=1  (0.2 s)
+
+== 4 empty For Loop
+   predict: ForLoop 0->1; ExecState 0 EXPECTED
+   result : after ForLoop=1 LoopTunnel=0 Property=2 IndexArray=0 Wire=3 ExecState=0  (0.1 s)
+
+== 5 PN1 Control[Label, Indicator, UID] inside body (metadata only, cannot be poisoned)
+   predict: Property +1
+   result : [{'i': 0, 'class': 'Property', 'uid': 99, 'pos': (3055, 551), 'owner': 'Diagram'}]  (0.1 s)
+
+== 5-check PN1 terminals
+   predict: data terminals == Label, Indicator, UID
+net_map: 1 nodes walked in 0.6 s; 16 junk Invoke(s) purged in 0.5 s
+   result : ['Label', 'Indicator', 'UID']  (1.0 s)
+
+== 6 wire Controls[]-node 'Controls[]' -> PN1 'reference' (crosses the loop)
+   predict: LoopTunnel +1, Wire +2, ExecState 1
+   result : after ForLoop=1 LoopTunnel=1 Property=3 IndexArray=0 Wire=5 ExecState=1  (0.2 s)
+
+== 6b PN1b Control[Terminal] inside body (the risky row, on its own node)
+   predict: Property +1; ExecState 0 until 7d2
+   result : [{'i': 0, 'class': 'Property', 'uid': 100, 'pos': (3055, 671), 'owner': 'Diagram'}]  (0.1 s)
+
+== 7a PN2 Text[Text] inside body
+   predict: Property +1
+   result : [{'i': 0, 'class': 'Property', 'uid': 101, 'pos': (3304, 501), 'owner': 'Diagram'}]  (0.1 s)
+
+== 7b PN3 Terminal[IsSource, ConnectedWire] inside body
+   predict: Property +1
+   result : [{'i': 0, 'class': 'Property', 'uid': 102, 'pos': (3297, 671), 'owner': 'Diagram'}]  (0.1 s)
+
+== 7c PN4 GObject[UID] inside body (the wire's UID)
+   predict: Property +1
+   result : [{'i': 0, 'class': 'Property', 'uid': 103, 'pos': (3545, 671), 'owner': 'Diagram'}]  (0.2 s)
+
+== 7d PN1.Label -> PN2.reference
+   predict: Wire +1
+   result : after ForLoop=1 LoopTunnel=1 Property=7 IndexArray=0 Wire=6 ExecState=0  (0.2 s)
+
+== 7d2 PN1.reference out -> PN1b.reference
+   predict: Wire +1
+   result : after ForLoop=1 LoopTunnel=1 Property=7 IndexArray=0 Wire=7 ExecState=0  (0.2 s)
+
+== 7e PN1b.Terminal -> PN3.reference
+   predict: Wire +1
+   result : after ForLoop=1 LoopTunnel=1 Property=7 IndexArray=0 Wire=8 ExecState=0  (0.2 s)
+
+== 7f PN3.Wire -> PN4.reference
+   predict: Wire +1, ExecState 1
+   result : after ForLoop=1 LoopTunnel=1 Property=7 IndexArray=0 Wire=9 ExecState=1  (0.2 s)
+
+== 8.0 exit_loop ['Text'] on Property uid 101
+   predict: LoopTunnel +1
+   result : after ForLoop=1 LoopTunnel=2 Property=7 IndexArray=0 Wire=10 ExecState=1  (0.1 s)
+
+== 8.1 exit_loop ['Indicator', 'UID'] on Property uid 99
+   predict: LoopTunnel +2
+   result : after ForLoop=1 LoopTunnel=4 Property=7 IndexArray=0 Wire=12 ExecState=1  (0.1 s)
+
+== 8.2 exit_loop ['IsSource'] on Property uid 102
+   predict: LoopTunnel +1
+   result : after ForLoop=1 LoopTunnel=5 Property=7 IndexArray=0 Wire=13 ExecState=1  (0.1 s)
+
+== 8.3 exit_loop ['UID'] on Property uid 103
+   predict: LoopTunnel +1
+   result : after ForLoop=1 LoopTunnel=6 Property=7 IndexArray=0 Wire=14 ExecState=1  (0.1 s)
+   optional: error out of TermErr node tunnelled
+   optional: error out of WireErr node tunnelled
+
+== 8x. output tunnels by census = indices [1, 2, 3, 4, 5, 6, 7] (expect 7, in exit_loop order)
+   tunnel 1 -> indicator ['Array']  (carries Text)
+   tunnel 2 -> indicator ['Array 2']  (carries Indicator)
+   tunnel 3 -> indicator ['Array 3']  (carries ControlUID)
+   tunnel 4 -> indicator ['Array 4']  (carries IsSource)
+   tunnel 5 -> indicator ['Array 5']  (carries WireUID)
+   tunnel 6 -> indicator ['Array 6']  (carries TermErr)
+   tunnel 7 -> indicator ['Array 7']  (carries WireErr)
+
+== 9 auto error handling OFF
+   predict: no dialogs for unwired terminals
+   result : None  (0.0 s)
+
+assembled: ForLoop=1 LoopTunnel=8 Property=7 IndexArray=0 Wire=23 ExecState=1
+steps: [('3 delete Text node, Control node, Index Array (downstream first) + RBW', 'ok'), ('4 empty For Loop', 'ok'), ('5 PN1 Control[Label, Indicator, UID] inside body (metadata only, cannot be poisoned)', 'ok'), ('5-check PN1 terminals', 'ok'), ("6 wire Controls[]-node 'Controls[]' -> PN1 'reference' (crosses the loop)", 'ok'), ('6b PN1b Control[Terminal] inside body (the risky row, on its own node)', 'ok'), ('7a PN2 Text[Text] inside body', 'ok'), ('7b PN3 Terminal[IsSource, ConnectedWire] inside body', 'ok'), ("7c PN4 GObject[UID] inside body (the wire's UID)", 'ok'), ('7d PN1.Label -> PN2.reference', 'ok'), ('7d2 PN1.reference out -> PN1b.reference', 'ok'), ('7e PN1b.Terminal -> PN3.reference', 'ok'), ('7f PN3.Wire -> PN4.reference', 'ok'), ("8.0 exit_loop ['Text'] on Property uid 101", 'ok'), ("8.1 exit_loop ['Indicator', 'UID'] on Property uid 99", 'ok'), ("8.2 exit_loop ['IsSource'] on Property uid 102", 'ok'), ("8.3 exit_loop ['UID'] on Property uid 103", 'ok'), ('9 auto error handling OFF', 'ok')]
+label map: {"Array": "Text", "Array 2": "Indicator", "Array 3": "ControlUID", "Array 4": "IsSource", "Array 5": "WireUID", "Array 6": "TermErr", "Array 7": "WireErr"}
+
+== 10 COM save
+   predict: written to disk
+   result : 13328  (0.0 s)
+donor OpFPLabels_v0.vi md5 unchanged: True
+
+VERDICT: OpPanelWiring_v0 BUILT and SAVED (structural only - run tools/bench/test_oppanelwiring.py next)
+BGRUN END rc=0 after 131s

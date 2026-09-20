@@ -1,0 +1,17 @@
+BGRUN START 2026-09-14 10:14:09 limit 5.0 min: py -c 
+import sys; sys.path.insert(0,'tools')
+import gscript as g
+g._lv=None
+MAIN='G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/Min_Track N beads V6_ParallelLoop.vi'
+n0=len(g.report_all(MAIN,'Invoke'))
+print('Invoke objects in the in-memory working copy before revert:', n0)
+g.revert(MAIN)
+n1=len(g.report_all(MAIN,'Invoke'))
+print('after revert:', n1, '(disk file untouched; revert discards in-memory junk)')
+
+Traceback (most recent call last):
+  File "<string>", line 6, in <module>
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 300, in report_all
+    raise RuntimeError(f"report_all({cls}) on {os.path.basename(target)}: {err}")
+RuntimeError: report_all(Invoke) on Min_Track N beads V6_ParallelLoop.vi: error 7: Open VI Reference in OpReportAll_v0.vi<APPEND>
+BGRUN END rc=1 after 0s

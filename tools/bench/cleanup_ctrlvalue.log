@@ -1,0 +1,31 @@
+BGRUN START 2026-09-12 22:03:27 limit 8.0 min: py -u -c 
+import os,sys
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+OP=os.path.join(g.CLAUDEDEV,'OpCtrlValue_v0.vi')
+SRC=os.path.join(g.CLAUDEDEV,'OpFPLabels_v0.vi')
+print('scratch OpCtrlValue_v0 exists:',os.path.exists(OP))
+# the scratch was never saved, so the file on disk is still the untouched copy of the donor; discard it entirely
+try:
+    g.revert(OP); print('reverted scratch')
+except Exception as e: print('revert:',str(e)[:100])
+try:
+    g.close_panel(OP); print('closed scratch panel')
+except Exception as e: print('close:',str(e)[:100])
+import time; time.sleep(0.5)
+try:
+    os.remove(OP); print('deleted scratch file')
+except OSError as e: print('remove:',e)
+print()
+print('DONOR OpFPLabels_v0 ExecState:',g.exec_state(SRC))
+print('donor counts:',{c:g.count(SRC,c) for c in ('Property','IndexArray','Node','Wire')})
+
+scratch OpCtrlValue_v0 exists: True
+reverted scratch
+closed scratch panel
+deleted scratch file
+
+DONOR OpFPLabels_v0 ExecState: 1
+donor counts: {'Property': 4, 'IndexArray': 1, 'Node': 8, 'Wire': 9}
+BGRUN END rc=0 after 1s

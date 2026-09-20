@@ -1,0 +1,44 @@
+BGRUN START 2026-09-17 12:06:34 limit 12.0 min: py -u tools\bench\test_opconnectnested_v1.py
+  FACT  LabVIEW handles before: 31285
+  PASS  V0 OpConnectNested_v0.vi on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpConnectNested_v0.vi
+  PASS  V0 OpCreateConstOnTerm_v0.vi on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpCreateConstOnTerm_v0.vi
+  PASS  V0 OpStopFromNode_v0.vi on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpStopFromNode_v0.vi
+  PASS  V0 EMPTY_v0.vi on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\EMPTY_v0.vi
+  PASS  V1 one While loop created  [{'i': 0, 'class': 'WhileLoop', 'uid': 43, 'pos': (300, 300), 'owner': 'TopLevelDiagram'}] [{'i': 1, 'class': 'Diagram', 'uid': 110, 'pos': (310, 322), 'owner': 'WhileLoop'}]
+  PASS  V1b two body nodes inside the loop body  [{'i': 0, 'class': 'SubVI', 'uid': 45, 'pos': (366, 566), 'owner': 'Diagram'}, {'i': 1, 'class': 'SubVI', 'uid': 44, 'pos': (366, 366), 'owner': 'Diagram'}]
+  FACT  body #44 Nodes[0] 'Error Cluster From Error Code.vi': outs [(0, 'error out')]; bare ins [(1, ''), (2, ''), (3, ''), (4, 'is warning? (False)'), (5, 'show call chain? (False)'), (6, 'error in (no error)'), (7, ''), (8, 'error message ("")'), (9, 'error code (0)')]
+  FACT  body #45 Nodes[1] 'Is Path and Not Empty.vi': outs [(1, 'Is Path and Not Empty?')]; bare ins [(0, ''), (2, ''), (3, ''), (4, 'path'), (5, '')]
+
+=== V2: literals on every bare NAMED input (OpCreateConstOnTerm_v0)
+   #44 t4 'is warning? (False)': wire 195
+   #44 t5 'show call chain? (False)': wire 209
+   #44 t8 'error message ("")': wire 225
+   #44 t9 'error code (0)': wire 241
+   #45 t4 'path': wire 257
+  FACT  V2 literals placed 5, refused 0: placed [(44, 4), (44, 5), (44, 8), (44, 9), (45, 4)]; refused []
+
+=== V3: the loop's conditional terminal, from the body Boolean (OpStopFromNode_v0)
+  FACT  V3 OpStopFromNode_v0 on #45 Nodes[1] t1: error out ''
+  PASS  V4 PRECONDITION: the scratch reads ExecState 1 BEFORE the op under test runs  ExecState 1 - if 0, one of the peer's three causes survived; the run stops here rather than scoring a gate it already knows is invalid
+  PASS  V5 PRE-CALL: the chosen sink terminal is UNWIRED (the assertion v0 lacked)  #45 t0 wire 0
+  FACT  V6 ONE call: sink #45 t0 <- src #44 t0 'error out' (error cluster -> error cluster): op error '', wire delta 1, ExecState 1 -> 0
+  PASS  V6a the sink and the source carry the SAME wire uid  sink w285 / source w285
+  PASS  V6b the sink went UNWIRED -> WIRED  0 -> 285
+  **FAIL**  V6c THE DISCRIMINATOR: ExecState is STILL 1 - the op creates a COMPILABLE wire, not merely a present one  ExecState 1 -> 0
+  FACT  V7 junk Invokes purged: [46]
+  FACT  scratch deleted: SCRATCH_cn1_120634.vi
+  FACT  LabVIEW handles after: 31632 (before 31285)
+
+--- FACTS ---
+  LabVIEW handles before: 31285
+  body #44 Nodes[0] 'Error Cluster From Error Code.vi': outs [(0, 'error out')]; bare ins [(1, ''), (2, ''), (3, ''), (4, 'is warning? (False)'), (5, 'show call chain? (False)'), (6, 'error in (no error)'), (7, ''), (8, 'error message ("")'), (9, 'error code (0)')]
+  body #45 Nodes[1] 'Is Path and Not Empty.vi': outs [(1, 'Is Path and Not Empty?')]; bare ins [(0, ''), (2, ''), (3, ''), (4, 'path'), (5, '')]
+  V2 literals placed 5, refused 0: placed [(44, 4), (44, 5), (44, 8), (44, 9), (45, 4)]; refused []
+  V3 OpStopFromNode_v0 on #45 Nodes[1] t1: error out ''
+  V6 ONE call: sink #45 t0 <- src #44 t0 'error out' (error cluster -> error cluster): op error '', wire delta 1, ExecState 1 -> 0
+  V7 junk Invokes purged: [46]
+  scratch deleted: SCRATCH_cn1_120634.vi
+  LabVIEW handles after: 31632 (before 31285)
+
+=== test_opconnectnested_v1: 10 pass, 1 fail -> V6c THE DISCRIMINATOR: ExecState is STILL 1 - the op creates a COMPILABLE wire, not merely a present one  (3 s) ===
+BGRUN END rc=1 after 3s

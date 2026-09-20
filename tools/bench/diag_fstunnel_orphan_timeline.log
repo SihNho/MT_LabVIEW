@@ -1,0 +1,144 @@
+BGRUN START 2026-09-18 12:38:04 limit 20.0 min: py -u tools/bench/diag_fstunnel_orphan_timeline.py MATERIAL=1
+PREDICTION CONTRACT T1..T9 - see this file's docstring. A miss on T1/T2 REFUTES E-new and is a RESULT.
+   LabVIEW pid before anything: 4628
+   scratch C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_fsotl_123804_12284.vi
+**FAIL T6 STATIC: this file never calls remove_bad_wires_scripted and never reads `Wire.Is Broken?`  | rbw lines []; is-broken lines [97]
+-- md5 before: 97 files (95 originals) --
+   fresh(): killing LabVIEW pid 4628
+   COM preflight attempt 1/15: pid None->4276, wires 16->16
+   COM preflight OK (pid 4276, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 4276
+  HANDLES after a fresh LabVIEW, before any work: 30369  (fresh baseline ~31,500)
+
+================ REPRODUCE build_one('OUT') -> SCRATCH_fsotl_123804_12284.vi (timeline, no removal) ================
+
+================ B  BUILD SCRATCH_fsotl_123804_12284.vi from OpWireSource_v5  [OUT FlatSequenceOuterTunnel] ================
+   CKPT[00] _v1.py:403  nodes 19  terminals 111  wires 42  ExecState 1  ORPHANS []
+        #894: present=True  carried by [(145, 'error out', 3, 'src')]
+        #1356: present=True  carried by [(151, 'index', 2, 'sink')]
+   copy of the donor: ExecState 1, 19 nodes on diagram 0
+   Terms[] PN 145 (wire 578) | Index Array 151 (element wire 639) | front TMSC 1044 (target-class wire 533) | back-half reference sinks [157, 1319, 1326]
+  PASS B1 [OUT FlatSequenceOuterTunnel] the donor copy is legal and the sweep found the front section and >=1 back-half sink  | ExecState 1; terms 145 ia 151 tmsc 1044 consumers [157, 1319, 1326]
+   deleted Node #145 -> gone [145]
+   deleted Node #151 -> gone [151]
+   deleted Wire #578
+   deleted Wire #639
+   deleted Wire #533
+   CKPT[01] _v1.py:442  nodes 17  terminals 103  wires 39  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  carried by NO node terminal
+        #1356: present=True  carried by NO node terminal
+   after the deletes: back-half sinks {157: 0, 1319: 0, 1326: 0}; TMSC target class wire 0
+  PASS B2 [OUT FlatSequenceOuterTunnel] every sink to be re-fed is BARE and the cast's target class is unwired  | {157: 0, 1319: 0, 1326: 0}; target class 0
+   PN_A uid 145 (Nodes[17], OuterTerminal); new control(s) from its `reference`: ['reference 4']
+  PASS B3 [OUT FlatSequenceOuterTunnel] create_control on the OuterTerminal node's `reference` made exactly one new CONTROL  | ['reference 4']
+   CKPT[02] _v1.py:463  nodes 18  terminals 108  wires 40  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  carried by NO node terminal
+        #1356: present=True  carried by NO node terminal
+   deleted the seed->PN_A wire #1651 (the seed's job is to type the CAST)
+   CKPT[03] _v1.py:471  nodes 18  terminals 108  wires 40  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  carried by NO node terminal
+        #1356: present=True  carried by NO node terminal
+   seed 'reference 4' -> TMSC `target class` wire 1457
+   CKPT[04] _v1.py:331  nodes 18  terminals 108  wires 40  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  carried by NO node terminal
+        #1356: present=True  carried by NO node terminal
+   WIRE [OUT FlatSequenceOuterTunnel] TMSC->PN_A Function#1044.'specific class reference' -> Property#145.'reference': src wire BEFORE = 384 -> branch=True; ExecState BEFORE = 0
+   CKPT[05] _v1.py:341  nodes 18  terminals 108  wires 40  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  carried by NO node terminal
+        #1356: present=True  carried by NO node terminal
+        AFTER: src wire 384, dst wire 384; ExecState AFTER = 0
+   TMSC -> PN_A wired; ExecState 0 (0 is expected here - the back half is still bare)
+   CKPT[06] _v1.py:331  nodes 19  terminals 113  wires 40  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  carried by NO node terminal
+        #1356: present=True  carried by NO node terminal
+   WIRE [OUT FlatSequenceOuterTunnel] TMSC->PN_B Function#1044.'specific class reference' -> Property#148.'reference': src wire BEFORE = 384 -> branch=True; ExecState BEFORE = 0
+   CKPT[07] _v1.py:341  nodes 19  terminals 113  wires 40  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  carried by NO node terminal
+        #1356: present=True  carried by NO node terminal
+        AFTER: src wire 384, dst wire 384; ExecState AFTER = 0
+   CKPT[08] _v1.py:331  nodes 20  terminals 118  wires 40  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  carried by NO node terminal
+        #1356: present=True  carried by NO node terminal
+   WIRE [OUT FlatSequenceOuterTunnel] OuterTerminal->UID Property#145.'OuterTerminal' -> Property#151.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+   CKPT[09] _v1.py:341  nodes 20  terminals 118  wires 41  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  carried by NO node terminal
+        #1356: present=True  carried by NO node terminal
+        AFTER: src wire 1694, dst wire 1694; ExecState AFTER = 0
+   CKPT[10] _v1.py:331  nodes 21  terminals 123  wires 41  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  carried by NO node terminal
+        #1356: present=True  carried by NO node terminal
+   WIRE [OUT FlatSequenceOuterTunnel] InnerTerminal->UID Property#148.'InnerTerminal' -> Property#154.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+   CKPT[11] _v1.py:341  nodes 21  terminals 123  wires 42  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  carried by NO node terminal
+        #1356: present=True  carried by NO node terminal
+        AFTER: src wire 1719, dst wire 1719; ExecState AFTER = 0
+   CKPT[12] _v1.py:331  nodes 22  terminals 128  wires 42  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  carried by NO node terminal
+        #1356: present=True  carried by NO node terminal
+   WIRE [OUT FlatSequenceOuterTunnel] InnerTerminal->ConnWire Property#148.'InnerTerminal' -> Property#168.'reference': src wire BEFORE = 1719 -> branch=True; ExecState BEFORE = 0
+   CKPT[13] _v1.py:341  nodes 22  terminals 128  wires 42  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  carried by NO node terminal
+        #1356: present=True  carried by NO node terminal
+        AFTER: src wire 1719, dst wire 1719; ExecState AFTER = 0
+   CKPT[14] _v1.py:331  nodes 23  terminals 133  wires 42  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  carried by NO node terminal
+        #1356: present=True  carried by NO node terminal
+   WIRE [OUT FlatSequenceOuterTunnel] ConnWire->UID Property#168.'Wire' -> Property#169.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+   CKPT[15] _v1.py:341  nodes 23  terminals 133  wires 43  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  carried by NO node terminal
+        #1356: present=True  carried by NO node terminal
+        AFTER: src wire 1766, dst wire 1766; ExecState AFTER = 0
+   back-half sink #157 (Property) re-fed from OuterTerminal (1/3)
+   back-half sink #1319 (Property) re-fed from OuterTerminal (2/3)
+   back-half sink #1326 (Property) re-fed from OuterTerminal (3/3)
+   CKPT[16] _v1.py:506  nodes 23  terminals 133  wires 43  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  carried by NO node terminal
+        #1356: present=True  carried by NO node terminal
+   OuterTerminal wire 1694; back half now {157: 1694, 1319: 1694, 1326: 1694}; ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  PASS B4b [OUT FlatSequenceOuterTunnel] every back-half sink reads the OuterTerminal wire  | 1694 vs {157: 1694, 1319: 1694, 1326: 1694}
+**FAIL B4 [OUT FlatSequenceOuterTunnel] the whole typed chain is LEGAL - the FlatSequenceOuterTunnel property nodes accept the cast output, so the seed really typed the cast  | ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  NOTE stop reason: FROZEN AT B4: B4 [OUT FlatSequenceOuterTunnel] the whole typed chain is LEGAL - the FlatSequenceOuterTunnel property nodes accept the cast output, so the seed really typed the cast | ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+
+================ T1 CKPT[00] (_v1.py:403) - who carries [894, 1356]? ================
+   #894: [{'node': 145, 'node_index': 5, 'term': 'error out', 'term_index': 3, 'is_source': True}]
+   #1356: [{'node': 151, 'node_index': 6, 'term': 'index', 'term_index': 2, 'is_source': False}]
+  PASS T1 at CKPT[00] both [894, 1356] are named by >=1 node terminal, and every naming node is one the recipe deletes next ([145, 151])  | nodes naming them: [145, 151]; predicted [145, 151]
+
+================ T2 the orphan timeline ================
+   CKPT[00] _v1.py:403  orphans []  ExecState 1  wires 42  nodes 19
+   CKPT[01] _v1.py:442  orphans [894, 1356]  ExecState 0  wires 39  nodes 17
+   CKPT[02] _v1.py:463  orphans [894, 1356]  ExecState 0  wires 40  nodes 18
+   CKPT[03] _v1.py:471  orphans [894, 1356]  ExecState 0  wires 40  nodes 18
+   CKPT[04] _v1.py:331  orphans [894, 1356]  ExecState 0  wires 40  nodes 18
+   CKPT[05] _v1.py:341  orphans [894, 1356]  ExecState 0  wires 40  nodes 18
+   CKPT[06] _v1.py:331  orphans [894, 1356]  ExecState 0  wires 40  nodes 19
+   CKPT[07] _v1.py:341  orphans [894, 1356]  ExecState 0  wires 40  nodes 19
+   CKPT[08] _v1.py:331  orphans [894, 1356]  ExecState 0  wires 40  nodes 20
+   CKPT[09] _v1.py:341  orphans [894, 1356]  ExecState 0  wires 41  nodes 20
+   CKPT[10] _v1.py:331  orphans [894, 1356]  ExecState 0  wires 41  nodes 21
+   CKPT[11] _v1.py:341  orphans [894, 1356]  ExecState 0  wires 42  nodes 21
+   CKPT[12] _v1.py:331  orphans [894, 1356]  ExecState 0  wires 42  nodes 22
+   CKPT[13] _v1.py:341  orphans [894, 1356]  ExecState 0  wires 42  nodes 22
+   CKPT[14] _v1.py:331  orphans [894, 1356]  ExecState 0  wires 42  nodes 23
+   CKPT[15] _v1.py:341  orphans [894, 1356]  ExecState 0  wires 43  nodes 23
+   CKPT[16] _v1.py:506  orphans [894, 1356]  ExecState 0  wires 43  nodes 23
+  PASS T2 the orphan set is EMPTY at CKPT[00] and becomes exactly the two wires at a LATER checkpoint  | CKPT[00] orphans []; first checkpoint with [894, 1356] = _v1.py:442 (seq 1)
+  PASS T3 both wire uids are present in the Wire census at EVERY checkpoint (the recipe never deletes them)  | [(0, {'894': True, '1356': True}), (1, {'894': True, '1356': True}), (2, {'894': True, '1356': True}), (3, {'894': True, '1356': True}), (4, {'894': True, '1356': True}), (5, {'894': True, '1356': True}), (6, {'894': True, '1356': True}), (7, {'894': True, '1356': True}), (8, {'8
+
+   ExecState at the freeze point = 0; 43 wires; 384/1694/1719/1766 present = {'384': True, '1694': True, '1719': True, '1766': True}
+  PASS T4 ExecState at the B4 freeze is 0, as run 1 twin A and build_opfstunnelterm_v1 run 1 measured  | ExecState 0; stop FROZEN AT B4: B4 [OUT FlatSequenceOuterTunnel] the whole typed chain is LEGAL - 
+   SITE 1 wire 384: ExecState BEFORE = 0, AFTER = 0
+   SITE 2 wire 384: ExecState BEFORE = 0, AFTER = 0
+   SITE 3 wire 1694: ExecState BEFORE = 0, AFTER = 0
+   SITE 4 wire 1719: ExecState BEFORE = 0, AFTER = 0
+   SITE 5 wire 1719: ExecState BEFORE = 0, AFTER = 0
+   SITE 6 wire 1766: ExecState BEFORE = 0, AFTER = 0
+  PASS T5 the six per-site ExecState BEFORE values were recorded  | 6 rows; before = [0, 0, 0, 0, 0, 0]
+  PASS T7 the scratch VI was created and DELETED in this same run  | C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_fsotl_123804_12284.vi
+  HANDLES after the run: 30740  (fresh baseline ~31,500)
+  PASS T8 all 95 originals (+ the V6 copy and the donor) are md5-identical before and after  | differing: []
+  PASS T9 no motor, no serial port, no camera, motor_gate.py --execute not called (static: this file makes no such call)  | read-only VI Server + one throwaway scratch VI
+
+SUMMARY gates 8/9 pass; failing: ['T6 STATIC: this file never calls remove_bad_wires_script']
+raw -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_fstunnel_orphan_timeline.json
+BGRUN END rc=1 after 88s

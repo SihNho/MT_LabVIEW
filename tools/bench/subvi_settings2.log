@@ -1,0 +1,36 @@
+BGRUN START 2026-09-13 17:20:13 limit 15.0 min: py -u -c 
+import os,sys
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+BG=r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs'
+T=[(BG+r'\Track N beads four-fold over-kernel-v3.vi','ORIGINAL tracking kernel'),
+   (BG+r'\Track N beads one-fold over-kernel-v3.vi','one-fold kernel'),
+   (BG+r'\Track N beads 24-fold over-kernel-v3.vi','24-fold kernel'),
+   (r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\Madcity\ASI_adjust focus-subvi.vi','ASI focus (frame path, NON-reentrant)'),
+   (r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\Madcity\MCL_adjust focus-subvi.vi','MCL focus'),
+   (os.path.join(g.CLAUDEDEV,'PARALLEL_kernel_v3.vi'),'our CPU kernel'),
+   (os.path.join(g.CLAUDEDEV,'TRACK_kernel_v1.vi'),'our switchable kernel')]
+vi0=g.lv()
+print('%-40s %-12s %-14s %s'%('VI','IsReentrant','ReentrancyType','other'))
+for p,label in T:
+    if not os.path.exists(p): print('%-40s MISSING'%label); continue
+    try:
+        vi=vi0.GetVIReference(p,'',False,0)
+        vals={}
+        for prop in ('IsReentrant','ReentrancyType','ExecState','VIType'):
+            try: vals[prop]=getattr(vi,prop)
+            except Exception: vals[prop]='(n/a)'
+        print('%-40s %-12s %-14s %s'%(label,vals['IsReentrant'],vals['ReentrancyType'],{'ExecState':vals['ExecState'],'VIType':vals['VIType']}))
+    except Exception as e:
+        print('%-40s FAILED %s'%(label,str(e)[:90]))
+
+VI                                       IsReentrant  ReentrancyType other
+ORIGINAL tracking kernel                 True         1              {'ExecState': 1, 'VIType': 1}
+one-fold kernel                          True         1              {'ExecState': 1, 'VIType': 1}
+24-fold kernel                           True         1              {'ExecState': 1, 'VIType': 1}
+ASI focus (frame path, NON-reentrant)    False        1              {'ExecState': 1, 'VIType': 1}
+MCL focus                                False        1              {'ExecState': 0, 'VIType': 1}
+our CPU kernel                           True         1              {'ExecState': 1, 'VIType': 1}
+our switchable kernel                    True         1              {'ExecState': 1, 'VIType': 1}
+BGRUN END rc=0 after 4s

@@ -1,0 +1,49 @@
+BGRUN START 2026-09-15 12:47:51 limit 6.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & .\tools\peer.ps1 -Agent codex -Slug optunnelread-removebadwires-ate-the-chain -Task 'CONFIRM (LabVIEW 2026 VI Scripting). Your cause list in archive/peer/2026-09-15-optunnelread-v0-broken-after-retarget.md put Remove Bad Wires removing more than the dangling branch at the top of other plausible causes, and tools/bench/build_optunnelread_v0.log run 3 supports it: the unwired-sink dump after the retarget shows the terminal-reader chain disconnected (the Owner node 157 and two more property nodes had lost their reference), which is exactly the set of nodes fed by the Index Array element - not by the cast. Sequence in the recipe was: delete the Terms[] output wire, delete the seed wires, delete the obsolete Wire.Terms[] NODE, call Remove Bad Wires, then rewire the array input from Tunnel.Inside Terminals[]. My reading: with the Index Array array input momentarily unwired, its element output had no type, so every wire downstream of it counted as broken and Remove Bad Wires deleted the whole chain; the provenance gates then passed because the wires I did check were genuinely correct. REPAIR: no Remove Bad Wires anywhere inside the transient window - delete, rewire, and only then clean up - and re-feed any orphan from the Index Array ELEMENT rather than from the cast output (my previous repair wired Tunnel references into Terminal-class nodes, which is why it did not help). QUESTIONS: (1) confirm or refute that an Index Array with an unwired array input makes its element output type-less so downstream wires are broken and removable; (2) is there a safe idiom for swapping the producer of an already-consumed wire - for instance wiring the new producer into a spare sink first, or using Wire.Disconnect Terminal 6370C0D on just the one sink so the rest of the net survives; (3) after such a swap, is one Remove Bad Wires at the END sufficient, and should I verify with ExecState only after that; (4) any risk that the earlier destructive runs left the saved OpWireSource_v5.vi damaged - it is the donor for this recipe and was verified 12/12 before these runs, and each run starts by copying it afresh. Read-only; cite what you read.'
+OUTCOME: ANSWERED (85s)  archived: archive\peer\2026-09-15-optunnelread-removebadwires-ate-the-chain.md
+--- ANSWER ---
+Confirmed operationally, with one precision: the ?�type-less element output??explanation is strongly supported, but I did not find NI documentation stating that exact compiler-internal wording.
+
+1. The cause is almost certainly the transiently unwired Index Array input.
+
+NI documents that array functions are polymorphic and that Index Array adapts its dimensions/type from the wired array input. NI also warns that Remove Broken Wires deletes every currently broken wire and is dangerous while wiring is incomplete. Therefore, once the array input is removed, the element-output net can no longer resolve its Terminal-reference type; its downstream wires become broken and eligible for removal. [NI Array Functions reference](https://download.ni.com/support/manuals/321526a.pdf), [NI wiring and Remove Broken Wires](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+Run 3 is strong direct evidence for this specific VI: the orphan set contains Owner 157 and property nodes 1319/1326?�the consumers formerly fed by the Index Array element?�rather than nodes directly consuming the Tunnel cast. Re-feeding them from the cast necessarily supplied Tunnel references to Terminal-class consumers and therefore could not repair the graph. See [build_optunnelread_v0.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_optunnelread_v0.log>) and the corrected comments/repair in [build_optunnelread_v0.py](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_optunnelread_v0.py:114>).
+
+So: confirm the operational diagnosis; call ?�type-less??an inference unless the Error List or broken-wire tip explicitly reports unresolved type.
+
+2. The safe swap idiom is per-sink migration, not a spare sink.
+
+A spare sink merely proves that the new producer can produce a legal wire; it does not preserve or migrate the existing consumers. The robust sequence is:
+
+- Snapshot every sink terminal on the old net.
+- Keep the old net intact.
+- For each sink, disconnect only that sink using `Wire.Disconnect Terminal` `6370C0D`.
+- Immediately connect the new producer to that sink using `Terminal.Connect Wire` `6349C03`.
+- Verify that sink?�s new wire UID and source before proceeding.
+- Delete the now-unused producer/node last.
+
+The project registry confirms that the disconnect method belongs to `Wire`, not `Terminal`: [docs/NAMES.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/NAMES.md:749>). NI?�s documented model is one source with potentially many readers, and NI community guidance for producer replacement similarly recommends enumerating every sink and reconnecting them individually. [NI wiring model](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html), [NI community producer-replacement example](https://forums.ni.com/t5/LabVIEW/Scripting-Replace-Control-Reference-Inside-Flat-Sequence/m-p/1865627)
+
+Because I found no public NI API page for method ID `6370C0D`, I would first functionally verify that invoke on a disposable branched net before making it the standard primitive.
+
+For this particular recipe, your simpler revised order is also sound: delete obsolete connections/node, rewire the Index Array input before any cleanup, then clean once. The current recipe now follows that ordering.
+
+3. One Remove Bad Wires at the end should be sufficient, but ExecState should not be the only verification.
+
+Use:
+
+- Provenance/wire-UID gates immediately after each intended rewire.
+- Confirm every expected consumer is attached to the Index Array element.
+- Run Remove Bad Wires once, after the graph is complete.
+- Then require final `ExecState == runnable`.
+
+NI explicitly cautions that Remove Broken Wires can delete wires merely because editing is unfinished. It also notes that a VI with errors cannot run. [NI wiring guidance](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html), [NI broken-run-arrow/Error List guidance](https://www.ni.com/en/support/documentation/supplemental/08/labview-block-diagram-explained.html)
+
+Thus final ExecState belongs after cleanup, but topology gates belong before it. Otherwise cleanup can erase evidence of a failed connection and ExecState alone cannot prove the intended graph survived.
+
+4. The saved `OpWireSource_v5.vi` donor is at very low risk from these runs.
+
+The recipe starts a fresh LabVIEW instance, removes only the destination `OpTunnelRead_v0.vi`, copies `OP_V5` to that separate destination, and opens/edits/saves only the destination. The shown code never writes or saves `OP_V5`: [build_optunnelread_v0.py](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_optunnelread_v0.py:80>).
+
+Therefore destructive edits to the copied VI cannot propagate back to the donor. Residual risk exists only if some earlier, different operation explicitly opened/saved or overwrote the donor path. The cheap conclusive check before reuse is to compare its current checksum with the checksum recorded after the 12/12 verification, then retain the existing initial `ExecState == 1` gate.
+BGRUN END rc=0 after 85s

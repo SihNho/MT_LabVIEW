@@ -1,0 +1,12 @@
+BGRUN START 2026-09-18 16:26:02 limit 3.0 min: py -u tools/bench/selftest_audit_cost_window.py
+=== OPEN 52 self-test: audit_cycle cost-window run clipping ===
+  PASS  T1 before-window excluded : run 13:30:03 (+1199 s, $13.7777) vs window 13:49..14:03 -> runs 0, 0 s, $0.0000
+  PASS  T2 inside-window included : run 13:55:00 (+60 s, $1.0000) -> runs 1, 60 s, $1.0000
+  PASS  T5 after-window excluded : run 14:30:00 (+30 s, $2.5000) -> runs 0, 0 s, $0.0000
+  PASS  T2b mixed file keeps only the in-window run : three runs in one file -> runs 1, 60 s, $1.0000
+  PASS  T3 mtime-trap excluded : file mtime 13:50:02 selects it=True; OLD 1199 s / $13.7777  ->  NEW 0 s / $0.0000
+  PASS  T4 no-bgrun-lines returned whole : a log with no BGRUN START/END keeps the OLD mtime-based treatment (whole body, its $0.5000 still counted): runs 1, 0 s, $0.5000
+  PASS  T6 real-data cycle_12.log excluded : BGRUN START 2026-09-18 13:30:03, file mtime 2026-09-18 13:50:02, window 13:49:00..14:03:00 -> selected by mtime=True | OLD whole-file 19 min 59 s / $13.7777 | NEW 0 run(s) 0 min 0 s / $0.0000
+
+SELFTEST 7 pass / 0 fail
+BGRUN END rc=0 after 0s

@@ -1,0 +1,22 @@
+BGRUN START 2026-09-12 14:46:24 limit 8.0 min: py -u -c 
+import os,sys,hashlib
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+P=os.path.join(g.CLAUDEDEV,'OpFPLabels_v0.vi')
+h=hashlib.md5(open(P,'rb').read()).hexdigest()
+print('on-disk md5:',h,'size',os.path.getsize(P))
+print('ExecState before revert:',g.exec_state(P))
+try:
+    g.revert(P); print('reverted from disk')
+except Exception as e:
+    print('revert failed:',str(e)[:120])
+print('ExecState after revert :',g.exec_state(P))
+print('on-disk md5 unchanged  :',hashlib.md5(open(P,'rb').read()).hexdigest()==h)
+
+on-disk md5: 5f2da97f2d016abf9ad211706d4ab3f6 size 9485
+ExecState before revert: 0
+reverted from disk
+ExecState after revert : 1
+on-disk md5 unchanged  : True
+BGRUN END rc=0 after 0s

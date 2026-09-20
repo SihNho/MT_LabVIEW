@@ -1,0 +1,50 @@
+BGRUN START 2026-09-13 21:13:12 limit 20.0 min: py -u -c 
+import os,sys,shutil,time
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+SRC=os.path.join(g.CLAUDEDEV,'OpReport_v3.vi')
+T=os.path.join(g.CLAUDEDEV,'PROBE_tunwire.vi')
+if os.path.exists(T): os.remove(T)
+shutil.copyfile(SRC,T); time.sleep(0.3)
+g.open_panel(T); time.sleep(0.8)
+def snap(tag):
+    print('   %-26s ForLoop=%d LoopTunnel=%d Wire=%d Property=%d ExecState=%s'%(
+        tag,g.count(T,'ForLoop'),g.count(T,'LoopTunnel'),g.count(T,'Wire'),g.count(T,'Property'),g.exec_state(T)),flush=True)
+snap('start')
+g.for_loop(T,(1400,900)); snap('empty for_loop')
+# build a Property node INSIDE the loop body (diagram 1) - GObject.Position read, a safe verified id
+try:
+    new=g.build_property(T,'VI Server:GObject',[('632A800',False)],(1450,950),diagram_index=1)
+    snap('property built INSIDE loop')
+    print('   new property uid:',[o['uid'] for o in new],flush=True)
+except Exception as e:
+    print('   build_property in loop FAILED:',str(e)[:150],flush=True); raise SystemExit(1)
+# THE QUESTION: wire Traverse.References (OUTSIDE, uid 124) -> the new node's 'reference' (INSIDE).
+# Does wire() create a tunnel across the loop boundary?
+trav=[o['uid'] for o in g.report(T,'SubVI')]
+print('   SubVI uids:',trav,flush=True)
+props=[o['uid'] for o in g.report(T,'Property')]
+newi=props.index(new[0]['uid'])
+try:
+    g.wire(T,'SubVI',0,'References','Property',newi,'reference')
+    snap('after cross-boundary wire')
+    print('   => TUNNEL AUTO-CREATED' if g.count(T,'LoopTunnel')>0 else '   => NO tunnel - wire() cannot cross a loop boundary',flush=True)
+except Exception as e:
+    snap('wire raised')
+    print('   wire FAILED:',str(e)[:150],flush=True)
+try: g.close_panel(T)
+except Exception: pass
+time.sleep(0.3)
+try: os.remove(T); print('scratch deleted',flush=True)
+except OSError: pass
+
+   start                      ForLoop=0 LoopTunnel=0 Wire=17 Property=2 ExecState=1
+   empty for_loop             ForLoop=1 LoopTunnel=0 Wire=17 Property=2 ExecState=0
+   property built INSIDE loop ForLoop=1 LoopTunnel=0 Wire=17 Property=3 ExecState=0
+   new property uid: [326]
+   SubVI uids: [124]
+   after cross-boundary wire  ForLoop=1 LoopTunnel=1 Wire=18 Property=3 ExecState=1
+   => TUNNEL AUTO-CREATED
+scratch deleted
+BGRUN END rc=0 after 2s

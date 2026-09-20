@@ -1,0 +1,130 @@
+BGRUN START 2026-09-17 15:24:00 limit 20.0 min: py -u tools\prior_art_review.py --plan-file C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\97b1695e-68c2-4985-8cac-1ca3097b3b15\scratchpad\priorart_census.md --slug priorart-routeb-census --trigger new-op
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-routeb-census.txt (16747 chars)
+OUTCOME: ANSWERED (502s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-priorart-routeb-census.md
+COST: $5.1198  in 68 / out 35983 / cache-create 208667 / cache-read 4266499  (498s, 46 turn(s))
+--- ANSWER ---
+# PRIOR-ART REVIEW — `tools/recipes/diag_moved_structure_terminals.py` (cycle 15, route B, Part 1)
+
+**Verdict: NOT novel. 6 findings, 0 `novel`.**
+
+The half already on disk is **pass A** (the pre-move census, all five structures) and the **side** question the run says it settles. The genuinely unmeasured half is **pass B** — but the recipe blames the wrong cause for the failure it exists to explain, and this project's own files contain the measurement that identifies the right one.
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 `settled-already` — "a `(node, terminal index)` pair does not name the SIDE" is already a written decision, and the chosen instrument cannot change it
+
+`docs/NAMES.md:900-905`, dated 2026-09-17 — *this cycle*, written from the same T2c2 failure:
+
+> **Two terminals on one wire both reporting `Terminal.Is Source?` 634A003 TRUE = the wire is BROKEN** (two drivers). MEASURED 2026-09-17 on `w1231` (`SelectorTunnel` #5680 + `LoopTunnel` #2497, `Is Broken? True`). ⚠️ A structure TUNNEL has an OUTSIDE terminal and one INSIDE terminal per frame (`Tunnel.Outside Terminal` **6356001**, `Tunnel.Inside Terminals[]` **6356000**) … **A `(node, terminal index)` pair does not name the SIDE.**
+
+The decision the recipe cites (`docs/d1-route-b-plan.md:2`) allows the census *"to settle tunnel-side addressing"*. The census as built reads only `Name` 634A004, `Is Source?` 634A003 and `Connected Wire` 634A000 per index (`tools/recipes/diag_moved_structure_terminals.py:129,:136`). It never reads `Structure.Tunnels[]` 6360801, `Tunnel.Outside Terminal` 6356001 or `Inside Terminals[]` 6356000 — so it cannot report which tunnel an index belongs to, or which side of it.
+
+The peer who prescribed this test wrote five numbered steps and only the first two were implemented — `archive/peer/2026-09-17-cfw-t2c2-broken-wire.md:126-141`: step 3 *"Read Case `Tunnels[]` — `6360801`"*, step 4 *"For every tunnel, read `Outside Terminal` — `6356001`, `Inside Terminals[]` — `6356000`"*, step 5 *"Compare the terminal-1 reference against each outside and inside terminal reference, then report the matched side and that side's `Is Source?`"*. Steps 3–5 are the side.
+
+*Scope:* covers the claim that this census settles tunnel-side addressing. Does **not** say the `is_source` column is useless — it is the SINK RULE's precondition and the run reports it correctly.
+
+### A3 `contradicted` — "index 1 is named `Bead is good? array out`" is contradicted by the project's own pristine census, and by the failing log itself
+
+**Plan's side** (`tools/recipes/diag_moved_structure_terminals.py:12-14`):
+
+> *"the terminal at index 1 is named `Bead is good? array out` — an **OUTPUT** tunnel's outside terminal, i.e. already a source."*
+
+**Other side** — the identity-gated census of the *unmodified original*, `tools/bench/main_vi_nodeterms.json:11292-11315`:
+
+```
+ t1   name ""                          is_source false   wire 5979
+ t2   name "Bead is good? array out"   is_source TRUE    wire 5637
+```
+
+On the pristine VI index 1 is an **unnamed sink** — it already satisfies the SINK RULE. The named output tunnel is index **2**.
+
+**And the failing log records how index 1 became index 2's terminal.** `tools/bench/build_opconnectfromwire_v0_run2.log:96`:
+
+> `FACT  T2 candidate sink #5540 t1 on Diagram[43].N[6]: wire sequence [5979, 5637, 0]`
+
+`5979` is t1's pristine wire, `5637` is **t2's**. The step that produced that sequence is `bare()` — `tools/recipes/build_opconnectfromwire_v0.py:530-545` — which **deletes a Wire object and runs `remove_bad_wires_scripted` between reads**. And `tools/recipes/build_opconnectfromwire_v0.py:522` is `shutil.copyfile(ORIGINAL, WORK)`: the T2 copy was **never moved and never restructured**.
+
+So the drift is real, and its measured trigger is *wire deletion + Remove Bad Wires on one copy* — not a move. Pass A opens an unrestructured copy, pass B a moved copy, and **neither bares a sink**. `P3` can return "IDENTICAL" and OPEN 37 will still be open.
+
+*Does NOT cover* whether a move also drifts indices — that is open; see A4(b).
+
+*Prose note, no slug:* the docstring's *"all 18 from-tunnel rows"* (`:28-29,:47`) reinstates a denominator already corrected and dispositioned — `archive/peer/2026-09-17-priorart-priorart-cfw-recipe.md:454` (*"The measured target set is 16"*), accepted and *"fixed … before it ran"* (`:467-468`), and `STATUS.md` OPEN 36(a). It affects reporting only, since `sink_rule()` branches by membership.
+
+### A4 `unread-evidence` — three files answer this directly; none is cited
+
+**(a) `docs/stage2-assembly-step-e.md:137-147`** — "CENSUS B MEASURED (2026-09-15)", `OpTunnelRead_v0` 24/24, identity-checked, main VI byte-identical. It already names #5540's tunnel *sides*: output tunnels **SelectorTunnel 6016** → `x,y,z array` (wire **5975**) and **SelectorTunnel 5680** → `Bead is good? array in` (wire **5637**); input tunnels 5825/5702 (outer **1681**/**6041**) and 5725/5967 (outer **5746**/**5979**).
+
+Joined to `main_vi_nodeterms.json:11279-11363` **by wire uid**, the complete index → side → tunnel map falls out with **no LabVIEW run**:
+
+```
+ t0 w5709 sink                     t4 w5746 IN  tunnel 5725
+ t1 w5979 IN  tunnel 5967          t5 w1681 IN  tunnel 5825
+ t2 w5637 OUT SelectorTunnel 5680  t6 w5975 OUT SelectorTunnel 6016
+ t3 w6041 IN  tunnel 5702
+```
+
+`SelectorTunnel 5680` is exactly the terminal the broken wire w1231 reported (`build_opconnectfromwire_v0_run2.log:104`).
+
+**(b) `tools/bench/probe_move_into_v0.log:221` vs `:231`** — a measured `move_in` of a `CaseStructure` into a fresh sibling While loop: `Wire 1902 -> 1895, LoopTunnel 132 -> 130`, and `:232` *"ExecState now 0 (0 expected: wires were cut)"*. A move is already measured to destroy 7 wires and 2 loop tunnels. P3 (`:43-46`) predicts the map is *IDENTICAL* after the move and, on failure, budgets a `-Dual` FAILED-PREDICTION review. The `wire` column is already known to change.
+
+**(c) `docs/cycle13-plan.md:126-130`** — the precedent, about one of these same five structures:
+
+> ⚠️ **Rewritten after prior-art B3a and A4 — the ~40-run ownership walk is gone.** `tools/bench/main_vi_nodeterms.json` **already holds ForLoop #1359's ten terminals** under diagram `"43"`, node 16, each with `is_source` and its wire uid. So membership is a file lookup confirmed by **one** `g.node_terms_uid(MAIN, 43, 16)` read …
+
+---
+
+## PART B — THE ARTIFACT
+
+### B4 `already-measured` — pass A already exists on disk, for all five structures, from the same original
+
+`tools/bench/main_vi_nodeterms.json:2` is the same file the recipe copies (`diag_moved_structure_terminals.py:73`). Diagram key `"43"` starts at `:11110`, and all five uids are inside it with per-index `name`, `is_source`, `wire` **and** the four error columns P1d gates on: `#5540` `:11275-11364` (n 6) · `#2222` `:11996` (n 13) · `#1359` `:12293` (n 16) · `#10407` `:12805` · `#29874` `:14383`.
+
+Validity: 626 nodes / 3,328 terminals, **identity verified per node by UID** (`docs/main-vi-panel-map.md:403`), and recorded as current for today's original — `archive/peer/2026-09-16-stop-condterm-failed-prediction.md:33`: *"…(tools/bench/main_vi_nodeterms.json, 2026-09-14, **same md5**)"*. P1b too: `tools/bench/diag_connectfromwire_facts.log:64` — *"B0 Diagram #639 is Traverse('Diagram') index 43"*.
+
+*Scope:* **pass A only**. Does not cover pass B, and does not forbid five confirming `node_terms_uid` reads (~4 s), which is what `docs/cycle13-plan.md:128-130` settled on.
+
+### B3 `helper-exists` — the side reader is built, verified, and was already run on these structures
+
+`docs/toolkit-capabilities.md:59`: `OpTunnelRead_v0.vi` … cast(`Tunnel`) → `Inside Terminals[]` 6356000 → `Connected Wire`, `Terminal.Diagram` 634A002 → `UID` | **"row 43: both #5540 output tunnels, 24/24"**. Also `archive/2026-09-15-status-stage2-cycles-1-7.md:509` and `STATUS.md:102` (*"`OpTunnelRead_v0` already reads both"*).
+
+The recipe rejects `gscript.tunnels()` (`:30-32`) correctly — it is LoopTunnel-only (`tools/gscript.py:887-894`, `:908` hard-codes the class) — and then reaches for no side reader at all, though the one that produced A4(a) is not LoopTunnel-seeded.
+
+*Scope:* the side question only. `OpTunnelRead_v0` carries no `Nodes[]` index, so it does not replace `node_terms`; the two join by wire uid.
+
+### B1 `already-built` — pass A's census machinery is `sweep_nodeterms_main.py`, and the two disagree on one convention
+
+`tools/bench/sweep_nodeterms_main.py:44-77` already does what `census()` + `node_index_map()` do (`diag_moved_structure_terminals.py:115-142`): node index from a stored Nodes[] uid list, `node_terms_uid`'s own UID echo as identity gate (`:50-62`), the four error columns (`:63-64`), recorded rather than absorbed mismatches.
+
+One divergence bites P3a — `sweep_nodeterms_main.py:65-66` **trims trailing empty terminals**:
+
+```python
+while terms and not terms[-1]["name"] and not terms[-1]["wire"]:
+    terms.pop()          # trailing empties (past the end of Terminals[])
+```
+
+`census()` does not. So `len(out)` and the stored census count different things; "terminal COUNT unchanged" (`:222`) is meaningful only within this run, never against the file.
+
+*Scope:* pass A's machinery only. Pass B (loop creation + `move_in` + re-census on the new body) has no precedent I found.
+
+---
+
+## What the citations leave, if it helps
+
+(1) Take pass A from `main_vi_nodeterms.json` + `stage2-assembly-step-e.md:137-147`, confirmed by five `node_terms_uid` identity reads. (2) Keep pass B, re-predicting P3 against `probe_move_into_v0.log:221/:231`. (3) Add the arm the evidence points at — **bare + Remove Bad Wires on an unmoved copy**, the sequence `build_opconnectfromwire_v0_run2.log:96` already caught drifting. (4) If the side is the goal, read 6360801 / 6356001 / 6356000 through `OpTunnelRead_v0`, per `cfw-t2c2-broken-wire.md:126-141` steps 3–5.
+
+---
+
+```
+PRIOR-ART: settled-already   (A1 — docs/NAMES.md:900-905 + archive/peer/2026-09-17-cfw-t2c2-broken-wire.md:126-141 vs tools/recipes/diag_moved_structure_terminals.py:129,:136 — covers the claim that this census settles tunnel-SIDE addressing: "a (node, terminal index) pair does not name the SIDE" is already decided in writing this cycle, and the run reads only Name/Is Source?/Connected Wire, never Structure.Tunnels[] 6360801 / Outside Terminal 6356001 / Inside Terminals[] 6356000. Does NOT claim the is_source column is worthless - it is the SINK RULE's precondition)
+PRIOR-ART: contradicted      (A3 — tools/recipes/diag_moved_structure_terminals.py:12-14 vs tools/bench/main_vi_nodeterms.json:11292-11315 + tools/bench/build_opconnectfromwire_v0_run2.log:96 + tools/recipes/build_opconnectfromwire_v0.py:522,:530-545 — covers the premise "#5540 terminal index 1 is the OUTPUT tunnel 'Bead is good? array out'": on the pristine original t1 is an unnamed sink (is_source false, wire 5979) and t2 is the named source (wire 5637); the T2 copy was a plain copyfile of the original, never restructured, and the index moved only after bare()'s wire delete + Remove Bad Wires. The pre/post-MOVE design therefore cannot reproduce the one drift mechanism this project has measured. Does NOT claim a move cannot also drift indices)
+PRIOR-ART: unread-evidence   (A4 — docs/stage2-assembly-step-e.md:137-147 + tools/bench/probe_move_into_v0.log:221,:231,:232 + docs/cycle13-plan.md:126-130, none cited in tools/recipes/diag_moved_structure_terminals.py:18-32 — covers (a) #5540's tunnel SIDES already measured by OpTunnelRead_v0 24/24 and joinable to main_vi_nodeterms.json by wire uid with zero LabVIEW runs; (b) a measured move already cutting Wire 1902->1895 and LoopTunnel 132->130, against which P3 predicts "IDENTICAL"; (c) the accepted precedent that replaced a LabVIEW walk over #1359 with a file lookup plus ONE identity read. Does NOT assert (a) covers the other four structures' frame contents)
+PRIOR-ART: already-measured  (B4 — tools/bench/main_vi_nodeterms.json:2,:11110,:11275-11364,:11996,:12293,:12805,:14383 + docs/main-vi-panel-map.md:403 + archive/peer/2026-09-16-stop-condterm-failed-prediction.md:33 + tools/bench/diag_connectfromwire_facts.log:64 — covers PASS A in full: per-index name / Is Source? / wire / error columns for all five structures on Diagram "43" of the same original, identity-verified per node by UID and recorded at the same md5, plus P1b. Does NOT cover pass B, and does not forbid five confirming node_terms_uid reads)
+PRIOR-ART: helper-exists     (B3 — docs/toolkit-capabilities.md:59 + archive/2026-09-15-status-stage2-cycles-1-7.md:509 + STATUS.md:102 vs tools/recipes/diag_moved_structure_terminals.py:30-32 — covers the SIDE half: OpTunnelRead_v0.vi is built, 24/24, and its row 43 result is "both #5540 output tunnels"; the recipe rules out gscript.tunnels() for being LoopTunnel-only (true, tools/gscript.py:887-894,:908) and then builds no side reader at all. Does NOT claim OpTunnelRead_v0 replaces node_terms - it carries no Nodes[] index)
+PRIOR-ART: already-built     (B1 — tools/bench/sweep_nodeterms_main.py:44-77, esp. :50-62 and :65-66, vs tools/recipes/diag_moved_structure_terminals.py:115-142,:222 — covers pass A's census/index/identity-gate machinery, already implemented whole-VI, and flags one live divergence: the sweep trims trailing empty terminals and census() does not, so P3a's "terminal COUNT unchanged" is comparable only within this run, never against the stored file. Does NOT cover pass B's loop creation + move_in + re-census, for which I found no precedent)
+```
+
+Note: `Write` is disabled in this session, so this review exists only as this answer — the dispatcher's archive file is the copy of record. I took no lock, opened no VI, and ran nothing.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-routeb-census.md
+BGRUN END rc=0 after 502s

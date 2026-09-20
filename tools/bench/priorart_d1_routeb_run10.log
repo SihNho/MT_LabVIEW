@@ -1,0 +1,167 @@
+BGRUN START 2026-09-19 06:34:52 limit 22.0 min: py -u tools/prior_art_review.py --plan-file C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\f3b51e7b-2c13-48dc-855c-66e285a572a1\scratchpad\priorart_run10_plan.md --slug d1-routeb-run10 --trigger new-op --recipe tools/recipes/build_d1_routeb_v7.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_d1-routeb-run10.txt (39586 chars)
+OUTCOME: ANSWERED (469s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-19-priorart-d1-routeb-run10.md
+COST: $5.6462  in 50 / out 33726 / cache-create 298542 / cache-read 3634733  (468s, 43 turn(s))
+--- ANSWER ---
+# PRIOR-ART REVIEW — `tools/recipes/build_d1_routeb_v7.py`, D1 route-B RUN 10
+
+**VERDICT: NOT NOVEL — 7 findings.**
+
+The **direction** survives: nothing in these files has tried, refuted or decided against phasing a route-B build across two LabVIEW instances so the census runs in a fresh one. The **mechanism as written** does not: two of this project's own measured laws govern exactly the two steps E3 adds, and the census's address key is a cached index carried across a reload, which our own peer record forbids.
+
+Answering the two questions put to me, directly, before the findings:
+
+1. **Has a mid-run restart inside a build recipe already been done here?** The *restart* half, yes, and it works — `tools/recipes/diag_d1_full_route.py:514-532` runs `tools/lv_restart.py` as a subprocess from inside the recipe and gates on its rc; measured green at `tools/bench/diag_d1_full_route_run2.log:5` (`P0r: lv_restart.py rc=0 -> FRESH_INSTANCE_DONE=True`). The *carry mid-build edits across the restart* half also exists, under another name — see F6. So v7's own PRIOR-ART comment (`v7:2182-2191`) is accurate as far as it goes, and every helper it cites is real: `gscript.reset` at `tools/gscript.py:262-269`, `ref_counts` at `:233-240`, `ensure_loaded` at `:1268`, `bench_prep.restart_labview` at `tools/bench/bench_prep.py:74-79` (no COM-liveness wait, correctly rejected).
+2. **Is anything in our files evidence this edit cannot produce a readable census?** Yes — three things, all measured here, and they are precisely the three hazards the brief asked about by name: the recompile spin (F1), the stale save after `error 2` (F2), and index instability across a reload (F5).
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 SETTLED ALREADY — the ORDER of save and restart is settled, and E3 inverts it → `contradicted` (F2)
+
+`.claude/skills/labview-automation/SKILL.md:39-41`, one of the five laws:
+
+> *"Open the panel before editing, save before closing, and **never cold-load a broken-saved VI headless** (recompile spin). **After error 2 (memory full): restart FIRST — a Ctrl+S in that state can write a stale file.**"*
+
+Expanded at `.claude/skills/labview-automation/references/com-driving.md:497-499`:
+
+> *"**A Ctrl+S issued while LabVIEW is in error-2 (memory full) state writes a STALE file** — the mtime moves, the content is the previous save. Work was lost to a 'successful' save. **After any error 2: restart LabVIEW first, save after.**"*
+
+Measured, not advisory — `archive/2026-08-31-status-full-assembly-narrative.md:826-828`: *"Ctrl+S during error 2 (memory full) writes a STALE file: mtime moves, content is the previous state — the first Decimate placement was lost this way despite a 'successful' save."*
+
+`docs/cycle27-plan.md:296-299` (Pre-decided 20) and STATUS's `## NEXT` both mandate the opposite order — *"save the working copy, close it, RESTART LabVIEW … reopen"* — and `v7:2206-2216` implements it that way.
+
+**This is not a hypothetical state.** In run 9 the `error 2` failures all land in the S3w wiring pass: `tools/bench/build_d1_routeb_v6_run9.log:473-483` (11 ledger rows, `report_all(Diagram)`/`report_all(WhileLoop)` → `error 2`), and the ledger line E3 inserts itself after is `:362-363`. So by the time `g.save(TARGET, allow_broken=True)` runs at `v7:2206`, the instance has already emitted `error 2` at least eleven times and is in exactly the state the law names.
+
+**The new gate cannot catch it.** `v7:2231-2232` gates `_md5_reopen == _md5_saved` — both readings of the *same file after the save*. A stale write passes that gate by construction. Worse, a stale write of a copy that has never been saved before reproduces the as-copied original bytes, so the reopened VI carries **none** of the 54 wired rows, and the four-bucket census classifies `wire 0` as **BARE** = *"the row genuinely did not survive"* (`v7:2261-2263`). Run 10 would then report ~51 BARE and R2 would "fail" — a manufactured wiring catastrophe, the exact false-catastrophe class the previous prior-art review's B2 caught one cycle ago. The cheap detector is already in the file: `ORIG_MD5` is pinned in the recipe, and `_md5_saved == ORIG_MD5` is the stale-write signature.
+
+`PRIOR-ART: contradicted`
+
+### A2 REFUTED ALREADY — "serialize an intentionally broken intermediate" was dropped on 2026-09-15 (F3)
+
+`archive/peer/2026-09-15-strtopath-fail4-gui-save-of-broken-target.md:118-124`, under **What was done with it** (i.e. adopted, not merely advised):
+
+> *"`gscript.copy_by_index` rewritten … the VI is then COM-saved ONCE only if `ExecState == 1` — **no keystroke save of a broken intermediate** … `Save.Instrument` on a broken VI stays unverified and unused."*
+
+and the reviewer's reason at `:91`: *"This also removes the need to serialize an intentionally broken intermediate artifact."*
+
+**Does that still apply?** Partly. It was decided for a case (copy a primitive, wire it, then save) where waiting for `ExecState 1` was possible; route B's copy is legitimately broken mid-restructure and cannot reach 1 before the census. So the *rule* does not transfer unchanged — but the *reason* does, and it is the reason F2 and F4 are about. The disposition to beat is on record and the plan does not mention it.
+
+`PRIOR-ART: refuted-already`
+
+### A3 CONTRADICTED — covered by F2 above (same finding, not double-counted).
+
+### A4 UNREAD EVIDENCE — the LabVIEW skill (F7)
+
+`CLAUDE.md`'s "Where to actually look" says `.claude/skills/labview-automation/` holds **all** LabVIEW technique and to invoke it before any LabVIEW work. Two of its five headline laws (`SKILL.md:39-41`) govern precisely the two steps E3 adds — the save and the reopen. Neither Pre-decided 20 (`docs/cycle27-plan.md:286-311`), nor STATUS's NEXT block, nor the artifact's own 20-line PRIOR-ART comment (`v7:2182-2198`) cites the skill once; the comment's prior-art search covered restart mechanisms only. `docs/cycle27-plan.md:307-309` does address the save, but only to establish that saving a claudeDev copy is permitted under rule 1 — it never reaches the question of whether the save will be *truthful*.
+
+`PRIOR-ART: unread-evidence`
+
+---
+
+## PART B — THE ARTIFACT
+
+### B1 ALREADY BUILT — checkpoint → reopen → continue exists, with the two guards v7 omits (F6)
+
+`tools/recipes/build_gpu_kernel.py:140-148`:
+
+> `# 4b. CHECKPOINT: everything above is ~10 min of scripted work; save it so the output-wiring stage can be probed on a copy`
+> `print("checkpoint saved", g.save(OP, allow_broken=True), "->", os.path.basename(CKPT), …)`
+
+and its continuation in a separate process, `tools/recipes/finish_gpu_kernel.py:24-27`:
+
+```
+shutil.copyfile(CKPT, OP); g.report(OP, "SubVI"); g.open_panel(OP); time.sleep(1.0)
+print("checkpoint: nodes", …, "ExecState", g.exec_state(OP), flush=True)
+if g.exec_state(OP) != 1:
+    print("STOP: the checkpoint itself is broken", flush=True); return 3
+```
+
+Two guards there that E3 does not have: the reopened file is **proved intact before anything downstream runs** (`:26-27`), and the reopen is a **report + `open_panel` + settle** rather than a bare reference grab (`:24`). Its docstring (`:1`) also records that the checkpoint it carried was `ExecState 1` — this project has never yet carried a *broken* checkpoint across a restart.
+
+`PRIOR-ART: already-built`
+
+### B2 ALREADY FAILED — `gui_save` of a broken target, twice, by the same two signals E3 relies on (F4)
+
+- `tools/bench/cycle3b_toolkit.log:78` — `plan C: OBSERVED EXC gui_save(Test - Moving Objects Target.vi): file mtime did not move after Ctrl+S on every candidate window.`
+- `tools/bench/build_keystone.log:903` — the identical exception on `Create SubVI.vi`.
+
+Cause, from the review of the first (`archive/peer/2026-09-15-strtopath-fail4-gui-save-of-broken-target.md:32-38`): *"`gui_save()` trusts the text returned by `lv_gui focus`; it never verifies the actual foreground HWND immediately before `^s`"*, and *"mtime alone is weak proof … Check file hash, size, dirty flag … not only `mtime > before`."*
+
+**Does the new plan address that cause or repeat it?** It repeats it. `tools/gscript.py:2009-2018` still decides the window by the `focus` call's **return string** — which `SKILL.md:44-45` explicitly says is not evidence (*"Trust the foreground TITLE PIXELS, not the focus call's return"*) — and `tools/gscript.py:2040-2044` still believes the save on **mtime alone**. The user's standing GUI rule (capture → locate → act → capture → confirm, `docs/cycle27-plan.md:62`) is not satisfied by any of the four state-changing keystrokes/clicks `gui_save` issues (Ctrl+E `:2012`, title-bar click `:2028`, Ctrl+S `:2033`, Esc `:2038`). v7 adds an md5 *after* `gui_save` returns, which is an improvement over mtime for "did the bytes change", and no help at all for "are they the right bytes" (F2).
+
+Note also this save has **never once executed**: no route-B run has ever reached S5, so `g.save()` on this ~470 KB mid-restructure copy is entirely unexercised, and R5 is an untested prediction rather than a repeat of a known-good step.
+
+`PRIOR-ART: already-failed`
+
+### B3 — the reopen: cold-loading a broken-saved VI is measured as a >8-minute recompile spin (F1)
+
+This is the brief's own "recompile spin" question, and the answer is in our files.
+
+`archive/2026-08-31-status-full-assembly-narrative.md:822-825`:
+
+> *"**Never cold-load a broken-saved VI headless**: `GetVIReference` on the 30 KB broken v3 sent LabVIEW into a 100%-CPU recompile spin (>8 min, killed). `open_panel()` first loads the same VI in 16 s. Also `lv()`/`op()`/`GetVIReference` are UNGUARDED COM calls — they hang the caller forever, outside the watchdog."*
+
+Restated as a law at `com-driving.md:492-496`.
+
+**Why it bites here.** `v7:2226` calls `g.ensure_loaded(TARGET)`, which calls `open_panel` (`tools/gscript.py:1335`), which enters `vi_ref(target)` (`:1253`), whose first act is `lv().GetVIReference(target, "", False, 0)` (`:253`). So the first call on the reopened file **is** a cold `GetVIReference` on a broken-saved VI, with no preload — cold by Pre-decided 20's own instruction (`docs/cycle27-plan.md:308-309`, *"the census step opens the saved copy WITHOUT preloading the original"*). The measured spin was on a **30 KB** VI; this target is the main tracking VI (route B's pinned original is 471 KB-class, `docs/cycle27-plan.md:152-154`). And the call sits outside every per-call guard, so the only stop is bgrun's process deadline — against a run that already consumed 1817 s of its 2700 s budget before E3 existed (`tools/bench/build_d1_routeb_v6_run9.log:509`).
+
+I am not claiming the spin is certain — `finish_gpu_kernel.py:24` reopens a checkpoint through the same path without incident, on an `ExecState 1` file. The claim is that this is a *measured* failure mode for exactly the broken-saved case, it is in the brief's own list of things to check for, and the artifact neither cites it nor guards against it.
+
+`PRIOR-ART: already-measured`
+
+### B4 ALREADY MEASURED — the census's address key is a cached index carried across a reload (F5)
+
+`archive/peer/2026-09-15-opwiresource-fail5-traverse-index-order-mismatch.md:26-30`:
+
+> *"There is no documented ordering contract for `Traverse for GObjects.vi` … **Do not assume a cached index remains stable across executions, reloads, edits, or sessions.** If index selection remains anywhere, retain the UID identity gate on every read."*
+
+What v7 does: `sink_addr` parks `(d, u, t)` where **`d` is a diagram INDEX** resolved pre-restart by `diag_index` (`v7:1238-1240`, `:1214-1215`), `claim_wire` stamps it onto the ledger row (`v7:1162-1170`), and after the restart the census re-derives the index space from scratch (`v7:2280-2294`) and tests the **stale** index against the **fresh** map: `if _d not in _maps: _why = f"Diagram[{_d}] UNWALKED"` (`v7:2318-2319`). If the reload changes `Diagram` traverse order by even one position, every addressed row becomes UNREAD and **R1 fails for a reason that has nothing to do with `error 2`** — the run buys the restart and still learns nothing about the hypothesis it exists to test. That this index space does move under this recipe is measured: `archive/peer/2026-09-19-routeb-run7-index-shift.md:44` — *"Run 5 → run 6 moved every node index on Diagram[24] by +1."*
+
+The good half of the same answer, and the fix: **UIDs do survive a save.** Same review, `:61` — *"NI documents that a GObject UID is unique within its VI; remains associated with the same object after saving … Thus a Wire UID obtained by `report_all` should resolve from another op against the same VI, **including after ordinary save/reload**"* — recorded again at `:104`. (The one caution to keep: `:59`, *"a deleted object's UID may later be reused"*; and `archive/peer/2026-09-15-opwiresource-v2-fail1-and-tunnelread-plan.md:47` notes NI does not *promise* stability across unload/reload, so the identity gate stays.) So parking the **diagram UID** instead of the index, and letting `diag_index` (`v7:2282`) re-resolve it after the restart, makes the census cross-restart-safe using only calls the recipe already owns — no new op, no second edit to the wiring pass.
+
+`PRIOR-ART: already-measured`
+
+---
+
+## What I did NOT find, so it is not blocked
+
+- No archived peer review, retrospective or superseded plan section argues against restarting LabVIEW mid-recipe, or against splitting a build across instances. `docs/cycle27-plan.md:310` is the only forward-looking line and it treats unreachability as an `OPEN:`, not a refutation.
+- No measured failure to *reopen* a saved working copy in a fresh instance. The nearest evidence is positive (`finish_gpu_kernel.py:24-27`), and it was on an unbroken file.
+- No cross-instance **UID** instability in our record — only index instability (F5).
+- The recipe's claim that no new restart mechanism is built is true, and `reset()`/`ref_counts()`/`ensure_loaded()`/`lv_restart.py` all exist and behave as cited.
+
+---
+
+```
+PRIOR-ART: already-measured      (F1  cold GetVIReference on a broken-saved VI = >8 min recompile spin;
+                                      archive/2026-08-31-status-full-assembly-narrative.md:822-825,
+                                      com-driving.md:492-496, reached via gscript.py:1335 -> :1253 -> :253)
+PRIOR-ART: contradicted          (F2  save-then-restart vs "after error 2 restart FIRST, a Ctrl+S writes a
+                                      STALE file"; SKILL.md:39-41 + com-driving.md:497-499 +
+                                      archive/2026-08-31-status-full-assembly-narrative.md:826-828
+                                      vs docs/cycle27-plan.md:296-299 and v7:2206-2216;
+                                      error 2 precedes the insertion point — run9.log:473-483 vs :362-363)
+PRIOR-ART: refuted-already       (F3  "no keystroke save of a broken intermediate" adopted 2026-09-15;
+                                      archive/peer/2026-09-15-strtopath-fail4-gui-save-of-broken-target.md:91,:118-124)
+PRIOR-ART: already-failed        (F4  gui_save of a broken target failed twice on the same two signals
+                                      v7 still trusts; tools/bench/cycle3b_toolkit.log:78,
+                                      tools/bench/build_keystone.log:903, gscript.py:2009-2018 and :2040-2044)
+PRIOR-ART: already-measured      (F5  the census matches a PRE-restart diagram INDEX against a POST-restart
+                                      one; v7:1238-1240 and v7:2318-2319 vs
+                                      archive/peer/2026-09-15-opwiresource-fail5-traverse-index-order-mismatch.md:26-30,
+                                      drift measured at archive/peer/2026-09-19-routeb-run7-index-shift.md:44;
+                                      node UIDs are the safe key, same review :61 and :104)
+PRIOR-ART: already-built         (F6  checkpoint -> reopen -> continue already exists with both missing guards;
+                                      tools/recipes/build_gpu_kernel.py:140-148,
+                                      tools/recipes/finish_gpu_kernel.py:1 and :24-27)
+PRIOR-ART: unread-evidence       (F7  .claude/skills/labview-automation/SKILL.md:39-41 — the two laws that
+                                      govern this exact edit, cited nowhere in Pre-decided 20, STATUS NEXT,
+                                      or the artifact's own PRIOR-ART block at v7:2182-2198)
+```
+
+Each of the seven is releasable in the normal way: open the citation and show in writing that it does not cover this case, or change the artifact and release with `FIXED:`. F2 and F5 are the two I would not release on argument alone — F2 because the failure it predicts is silent and would be *read as a wiring catastrophe*, and F5 because it would spend the whole run and return UNREAD for an unrelated reason.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-d1-routeb-run10.md
+   STOP RECORD armed: tools/recipes/build_d1_routeb_v7.py sha d808e10ce4c1 verdict already-measured, contradicted, refuted-already, already-failed, already-built, unread-evidence -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 470s

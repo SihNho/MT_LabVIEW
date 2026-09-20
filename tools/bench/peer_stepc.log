@@ -1,0 +1,97 @@
+BGRUN START 2026-09-15 01:08:42 limit 9.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & '.\tools\peer.ps1' -Agent codex -Slug stage2-step-c-queue-core-plan -TimeoutSec 300 -Task (Get-Content -Raw '.\tools\bench\peer_task_stepc.txt')
+OUTCOME: ANSWERED (143s)  archived: archive\peer\2026-09-15-stage2-step-c-queue-core-plan.md
+--- ANSWER ---
+Verdict: reject Step C as written. It has at least two deterministic correctness holes and one likely deadlock. The Step-B bit-identical result does not protect the queued version.
+
+1. Queue topology: the claimed invariant is false
+
+?�Eight slots > queue depth seven, therefore `Q_img` can never be full??is backwards.
+
+A reachable state is:
+
+```text
+Q_img = 7 queued slots
+ACQ   = owns the eighth slot after Dequeue(Q_free)
+Q_free = 0
+```
+
+The producer then performs `Enqueue(Q_img, timeout=0)` against a full seven-element queue. NI documents that a bounded queue is full at its configured maximum and an enqueue must wait or time out until an element is removed. [NI Obtain Queue documentation](https://www.ni.com/docs/ja-JP/bundle/labview-api-ref/page/functions/obtain-queue.html)
+
+Consequences:
+
+- The eighth enqueue can time out. If its slot is not returned to `Q_free` in the timeout case, replay deadlocks later.
+- The pseudocode in Step C shows `Enqueue(Q_meta,path)` unconditionally after `Enqueue(Q_img,slot)`. Unless a Case structure gates both metadata enqueue and slot return from `timed out?`, it creates a metadata-only ghost and permanently misaligns the pair.
+- Even when `Q_img` succeeds, two independent queue operations are not atomic. An error, abort, or bad refnum between the two enqueues leaves `Q_img` ahead of `Q_meta`; the tracker can then block forever on metadata.
+- The same atomicity defect exists in the `Q_res/Q_good/Q_pos` triple. One failed enqueue makes the sink consume different frames across the three queues or block forever.
+- Step C enqueues `Q_meta`, but its TRK pseudocode never dequeues it. It therefore discards the proposed frame identity and leaves `Q_meta` growing unbounded.
+- Step C also drops plan item 8?�s result metadata queue. Array order alone is not the required `{sequence/frame identity, result}` contract. Repeated paths would additionally make a path string a poor unique event identity.
+
+For lossless replay, make `Q_img` capacity 8 and use blocking enqueue, or retain capacity 7 but treat timeout as a fully tested drop transaction. Separate ?�lock-stepped??queues remain non-atomic either way; counts and sequence IDs must be checked at both ends.
+
+2. Parallel-loop dataflow is valid, but shutdown is not
+
+After the Obtain nodes produce their queue refnums, independent ACQ, TRK, and sink structures can execute concurrently. LabVIEW executes nodes when their inputs are ready, and independent loops can run simultaneously; diagram position supplies no ordering. [NI block-diagram dataflow](https://www.ni.com/docs/en-GB/bundle/labview/page/block-diagram-data-flow.html)
+
+The sink may start first and block on `Dequeue(-1)`; that part is valid. The fatal path is:
+
+1. TRK experiences any `Q_img` gap longer than `T`?�slow first ReadFile, filesystem pause, temporary producer delay, or producer error.
+2. TRK exits even though ACQ has not finished.
+3. ACQ consumes the remaining free slots and ultimately blocks on `Q_free` or loses an enqueue.
+4. The sink waits permanently for its hard-coded `N` results.
+5. Queue releases downstream of the sink never execute.
+
+A timeout is evidence that the queue was empty for `T`, not evidence that the producer has finished. Use an explicit end-of-stream token or a separately synchronized ?�producer finished??condition, then exit only when producer-finished **and** `Q_img` is drained.
+
+There is an additional deterministic bug: wiring `Dequeue.timed out?` only to the While conditional terminal does not prevent the rest of that iteration from executing. A While condition is evaluated after the body iteration. [NI While-loop behavior](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YJYUCA4) On timeout, the element output is its default value, so without a Case structure TRK can process default slot `0`, enqueue a phantom result, and return slot `0` twice. The stop Boolean must also select a Case that skips indexing, kernel execution, result enqueues, and slot return.
+
+This matches the earlier authorized hang report: an empty-producer path plus `Dequeue(-1)` produced an indefinite run, despite `ExecState=1`, in [2026-09-14-opqueue-test-run-hang.md](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/archive/peer/2026-09-14-opqueue-test-run-hang.md).
+
+3. `IMAQ ReadFile` into pooled images is not yet covered by rule 1a
+
+The wiring direction is plausible: NI?�s example connects both `Image` and `File Path` inputs to `IMAQ ReadFile`. [NI IMAQ ReadFile example](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA0VU000000Cwuf0AC&l=en-US)
+
+But bit identity is not established merely because the input is a destination reference. NI documents that Vision image storage is dynamically allocated when operations alter image size, while image creation establishes properties such as type and border. [NI image allocation discussion](https://download.ni.com/support/manuals/323023a.pdf) Thus every pool image must be created with exactly the Step-B working image?�s type and border contract. ReadFile may resize/reallocate storage; that alone should not change decoded pixels, but a type mismatch could cause conversion or an invalid-image-type error.
+
+The necessary gate is an eight-slot scratch comparison:
+
+- read the same TIFF successively into the Step-B working image and each pool image;
+- compare dimensions, image type, border and every pixel?�or a collision-resistant hash of the extracted pixel bytes;
+- then compare one-frame kernel outputs bit-for-bit.
+
+Until that passes, ?�kernel maths untouched??does not prove ?�kernel input unchanged.??
+4. The proposed `StrId.vi` is unnecessary
+
+Simpler typed sources already exist:
+
+- `Q_res`: kernel DBL-array output.
+- `Q_good`: kernel Boolean-array output.
+- `Q_pos`: kernel I32-array output.
+- `Q_free/Q_img`: `IMAQ GetImageSize.X Resolution`, already measured as an I32 source in the passing queue test and named in [NAMES.md](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/docs/NAMES.md).
+- `Q_meta`: copy a `Path To String` primitive and use its String output. Since `StrToPath.vi` already supplies a Path output, `StrToPath.path ??Path To String ??String sample` avoids creating another identity subVI.
+
+The restriction is the current op?�s ?�named node output??interface, not an Obtain Queue requirement. Obtain Queue only needs a wired sample determining the element type.
+
+5. `OpExitWhileNode_v0` pitfalls
+
+The recorded exact terminal name is indeed `timed out?`; [NAMES.md](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/docs/NAMES.md) and the passing queue logs agree. It is Boolean, and a new While loop defaults to Stop if True. [NI While-loop configuration](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YJYUCA4)
+
+Still gate all of these:
+
+- exact case-sensitive output-name lookup;
+- selected node is the intended Dequeue, not another node with `timed out?`;
+- source and conditional-terminal wire UIDs match;
+- conditional mode is explicitly read/set to Stop if True?�do not depend on the donor/default;
+- timeout iteration performs no work, because the stop terminal alone does not short-circuit an iteration.
+
+6. First scratch test
+
+Do **not** start with the proposed ?�empty queue returns within approximately T??test. It can pass while silently processing default slot zero.
+
+First test this exact contract:
+
+> Empty `Q_img`, `Dequeue timeout=200 ms`, timeout-driven Case around all work, and `OpExitWhileNode_v0`. Require one loop iteration, zero kernel/work-side-effect count, zero result enqueues, unchanged `Q_free`, `timed out?=TRUE`, and return within a bounded interval.
+
+That single test attacks the newest primitive and the most dangerous mistaken assumption. After it passes, test a delayed producer where the first item arrives after more than `T`; that should demonstrate why timeout cannot serve as end-of-stream.
+
+Files reviewed: [Step C](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/docs/stage2-assembly-step-c.md), [stage-2 plan](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/docs/stage2-plan.md), [Step B](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/docs/stage2-assembly-step-b.md), and [toolkit capabilities](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/docs/toolkit-capabilities.md).
+BGRUN END rc=0 after 143s

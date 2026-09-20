@@ -1,0 +1,59 @@
+BGRUN START 2026-09-13 00:55:35 limit 20.0 min: py -u -c 
+import os,sys,json
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+WORK=r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi'
+print('=== diagram 19 with terminal names (the parent of the parallel loops)')
+nodes,nets=g.net_map(WORK, diagram_index=19, max_nodes=60, max_terms=24)
+gl={7202,6951,6409}
+for i,(uid,lbl,terms) in nodes.items():
+    names=[nm for _,nm,_ in terms if nm]
+    mark='   <== GLOBAL' if uid in gl else ''
+    print('   node[%d] uid %-7s %s%s'%(i,uid,names[:12],mark))
+print()
+print('=== nets touching the three globals')
+byu={i:uid for i,(uid,l,t) in nodes.items()}
+for w,mem in nets.items():
+    if w==0: continue
+    if any(byu.get(n) in gl for n,t,nm in mem):
+        print('   wire %s:'%w)
+        for n,t,nm in mem: print('      node[%s] uid %s term[%s] %r'%(n,byu.get(n),t,nm))
+json.dump({'nodes':{str(k):[v[0],v[1],[list(x) for x in v[2]]] for k,v in nodes.items()}},open('tools/bench/diagram19.json','w',encoding='utf-8'),indent=1)
+print('written')
+
+=== diagram 19 with terminal names (the parent of the parallel loops)
+   node[0] uid 8486    ['x+1', 'x']
+   node[1] uid 7201    ['x*y', 'y', 'x']
+   node[2] uid 781     ['element', 'initialized array', 'dimension size', 'dimension size']
+   node[3] uid 250     ['IMAQdx Session', 'IMAQdx Session', 'error in (no error)', 'error out', 'LastBufferNumber']
+   node[4] uid 637     ['error out', 'error out', 'x,y,z array out', 'x,y,z array out', 'Value', 'Real-space cosine window', 'Cosine bandpass for Hilbert', 'Session Out', 'position [internal units]', 'position [internal units]', 'VISA out', 'VISA out']
+   node[5] uid 6951    ['Rot position']   <== GLOBAL
+   node[6] uid 6409    ['Trans position']   <== GLOBAL
+   node[7] uid 2048    ['array', 'subarray', 'index', 'length', 'index', 'length']
+   node[8] uid 7202    ['Focus position']   <== GLOBAL
+   node[9] uid 194     ['x-y', 'y', 'x']
+   node[10] uid 1628    ['x-y', 'y', 'x']
+   node[11] uid 6384    ['error out']
+   node[12] uid 8953    ['element', 'initialized array', 'dimension size', 'dimension size', 'dimension size']
+   node[13] uid 9342    ['size(s)', 'array']
+   node[14] uid 9179    ['x-1', 'x']
+   node[15] uid 28124   ['element', 'initialized array', 'dimension size', 'dimension size', 'dimension size']
+   node[16] uid 27605   ['Magnet position output', 'Magnet position input']
+   node[17] uid 28670   ['Magnet position output']
+   node[18] uid 25380   ['Value', 'Mp measure freq', 'final trans pos', 'final trans pos', 'error out', 'rot pos', 'rot pos', 'tran pos', 'tran pos', 'Value']
+   node[19] uid 25091   ['x*y', 'y', 'x']
+   node[20] uid 25149   ['x-y', 'y', 'x']
+
+=== nets touching the three globals
+   wire 4859:
+      node[4] uid 637 term[8] 'position [internal units]'
+      node[8] uid 7202 term[0] 'Focus position'
+   wire 783:
+      node[5] uid 6951 term[0] 'Rot position'
+      node[18] uid 25380 term[5] 'rot pos'
+   wire 6533:
+      node[6] uid 6409 term[0] 'Trans position'
+      node[18] uid 25380 term[7] 'tran pos'
+written
+BGRUN END rc=0 after 162s

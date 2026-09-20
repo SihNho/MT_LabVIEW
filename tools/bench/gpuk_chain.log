@@ -1,0 +1,113 @@
+BGRUN START 2026-09-09 15:44:09 limit 50.0 min: py -u tools/bench/gpuk_chain.py 200
+LabVIEW up after 13 s, version 26.3.1f1
+dialogs: 8,1346,762| / ENABLED|1836814|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+lv_restart rc 0
+deployed 775680 bytes; cal fallback -> G:\Data\SiHyeong\20260906 Kimlab - 50bp 16X WT 90Hz 1p2 Ramp_Newbatch\test\cal002
+base wiped: nodes 0 ExecState 1
+
+== drop HARNESS_loadcal
+   predict: +1
+   observed: 43
+
+== drop IMAQ Create
+   predict: +1
+   observed: 51
+
+== drop IMAQ ReadFile
+   predict: +1
+   observed: 52
+
+== drop make both cosine bandpass
+   predict: +1
+   observed: 54
+
+== drop kernel GPU_kernel_v1.vi
+   predict: +1
+   observed: 55
+
+== C.New Image -> R.Image
+   predict: +1
+   observed: 1
+
+== L.cross size -> W.cross length
+   predict: +1
+   observed: 2
+
+== R.Image Out -> K.Image In
+   predict: +1
+   observed: 3
+
+== L.Array of cal clusters -> K
+   predict: +1
+   observed: 4
+
+== L.cross size -> K.cross size (branch)
+   predict: accepted
+   observed: 4
+
+== W.Hilbert -> K
+   predict: +1
+   observed: 5
+
+== W.real-space -> K
+   predict: +1
+   observed: 6
+
+== control 'Image Name' on Nodes[1]
+   predict: label == name
+   observed: (2, 'Image Name')
+
+== control 'File Path' on Nodes[2]
+   predict: label == name
+   observed: (7, 'File Path')
+
+== control 'x,y,z array' on Nodes[4]
+   predict: label == name
+   observed: (7, 'x,y,z array')
+
+== control 'Bead is good? array in' on Nodes[4]
+   predict: label == name
+   observed: (0, 'Bead is good? array in')
+
+== control 'pos in cal image in' on Nodes[4]
+   predict: label == name
+   observed: (13, 'pos in cal image in')
+
+== control '4 pack remainder' on Nodes[4]
+   predict: label == name
+   observed: (11, '4 pack remainder')
+
+== control '# of bead 4 packs' on Nodes[4]
+   predict: label == name
+   observed: (9, '# of bead 4 packs')
+
+== indicator 'x,y,z array out'
+   predict: label
+   observed: (4, 'x,y,z array out')
+
+== indicator 'Bead is good? array out'
+   predict: label
+   observed: (3, 'Bead is good? array out')
+
+== indicator 'pos in cal image out'
+   predict: label
+   observed: (8, 'pos in cal image out')
+
+assembled: wires 16 ExecState 1 CONTROLS {'Image Name': 'Image Name', 'File Path': 'File Path', 'x,y,z array': 'x,y,z array', 'Bead is good? array in': 'Bead is good? array in', 'pos in cal image in': 'pos in cal image in', '4 pack remainder': '4 pack remainder', '# of bead 4 packs': '# of bead 4 packs'} OUTPUTS {'x,y,z array out': 'x,y,z array out', 'Bead is good? array out': 'Bead is good? array out', 'pos in cal image out': 'pos in cal image out'}
+saved 13660
+build_harness_gpuk rc 0
+frame 4: median ms base 3.5 par 4.8 gpuk 14.9 | worst dev par 0.00e+00 gpuk 2.50e-06
+frame 7: median ms base 3.7 par 5.1 gpuk 14.9 | worst dev par 0.00e+00 gpuk 2.50e-06
+frame 8: median ms base 3.5 par 4.8 gpuk 14.9 | worst dev par 0.00e+00 gpuk 2.50e-06
+frame 57: median ms base 2.9 par 5.1 gpuk 14.2 | worst dev par 0.00e+00 gpuk 2.69e-06
+frame 107: median ms base 2.9 par 5.1 gpuk 14.2 | worst dev par 0.00e+00 gpuk 2.93e-06
+frame 162: median ms base 2.9 par 5.1 gpuk 14.2 | worst dev par 0.00e+00 gpuk 2.93e-06
+frame 214: median ms base 2.9 par 5.1 gpuk 14.2 | worst dev par 0.00e+00 gpuk 2.93e-06
+SUMMARY frames 200
+  base: median 2.92 ms  mean 2.97 ms  sd 0.23 ms
+  par: median 5.12 ms  mean 5.09 ms  sd 0.37 ms
+  gpuk: median 14.23 ms  mean 14.32 ms  sd 0.66 ms
+  KERNEL (median - base) ms/frame: par 2.20, gpuk 11.31
+  functional: worst |dev| vs LabVIEW reference: par 0.00e+00, gpuk 2.93e-06
+run_timing rc 0
+BGRUN END rc=0 after 115s

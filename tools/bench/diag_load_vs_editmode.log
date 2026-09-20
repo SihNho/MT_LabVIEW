@@ -1,0 +1,56 @@
+BGRUN START 2026-09-16 17:25:06 limit 25.0 min: py -u tools/bench/diag_load_vs_editmode.py
+   fresh(): killing LabVIEW pid 13224
+   COM preflight attempt 1/15: pid None->23912, wires 16->16
+   COM preflight OK (pid 23912, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 23912
+  [windows start] 1 line(s): ['LabVIEW']
+
+=== STEP 0  build the VI-property reader (291/292); nothing on disk reads them ===
+  reader donor nodes: [(0, 'Open VI Reference'), (1, 'Unknown'), (2, 'For Loop')]
+  Open VI Reference terminals: [(0, 'error out', True), (1, 'vi reference', True), (2, 'password ("")', False), (3, 'type specifier VI Refnum (for type only)', False), (4, 'error in (no error)', False), (5, 'options', False), (6, 'vi path', False), (7, 'application reference (local)', False)]
+  new PN[3] terminals: [(0, 'reference', False), (1, 'reference out', True), (2, 'error in (no error)', False), (3, 'error out', True), (4, 'PanelLoaded', True), (5, 'DiagramLoaded', True)]
+  connect2 PN.reference <- Open VI Reference.'vi reference': wire delta 0, ExecState 0
+  indicator for 'PanelLoaded' -> label 'Metrics:Front Panel Loaded'
+  indicator for 'DiagramLoaded' -> label 'Metrics:Block Diagram Loaded'
+  indicator for 'error out' -> label 'error out 3'
+  -> FAIL  G0 reader op built and saved, ExecState 1   refusing to save a BROKEN VI - SaveInstrument blocks forever on one
+  (arms continue WITHOUT the flags - the delete counts are the decider either way)
+  [windows after reader build] 6 line(s): ['OpFPLabels_v0.vi Block Diagram', 'OpFPLabels_v0.vi Front Panel', 'OpNodeInfo_v0.vi Block Diagram', 'OpNodeInfo_v0.vi Front Panel', 'ScratchBDLoaded_13016.vi Front Panel', 'LabVIEW']
+
+=== A1  MEASUREMENT: flags on an untouched fresh copy ===
+  [A1] fresh copy: Property=4  flags=UNAVAILABLE
+  PASS  A1 (measurement) Block Diagram Loaded on an untouched copy   flags=UNAVAILABLE
+
+=== A0  baseline: no load at all, then the raw delete ===
+  [A0] fresh copy: Property=4  flags=UNAVAILABLE
+  [A0] DELETE: 4 -> 4  NOTHING REMOVED  run=returned  err=(False, 0, '')  elsewhere=none
+  PASS  A0 nothing removed with no load of any kind (reproduces diag_delete_matrix B1)   4 -> 4
+  [windows after A0/A1] 6 line(s): ['OpFPLabels_v0.vi Block Diagram', 'OpFPLabels_v0.vi Front Panel', 'OpNodeInfo_v0.vi Block Diagram', 'OpNodeInfo_v0.vi Front Panel', 'ScratchBDLoaded_13016.vi Front Panel', 'LabVIEW']
+
+=== A2  THE DECIDING ARM: explicit 23C load, NO panel, then the raw delete ===
+  [A2] fresh copy: Property=4  flags=UNAVAILABLE
+  [windows A2 after load] 6 line(s): ['OpFPLabels_v0.vi Block Diagram', 'OpFPLabels_v0.vi Front Panel', 'OpNodeInfo_v0.vi Block Diagram', 'OpNodeInfo_v0.vi Front Panel', 'ScratchBDLoaded_13016.vi Front Panel', 'LabVIEW']
+  [A2] after node_info(max_n=1) => VI.Block Diagram 23C: flags=UNAVAILABLE
+  [A2] DELETE: 4 -> 4  NOTHING REMOVED  run=returned  err=(False, 0, '')  elsewhere=none
+  -> FAIL  A2a reading VI.Block Diagram (23C) turns Block Diagram Loaded TRUE without a panel   before=None after=None
+  -> FAIL  A2b DECIDER: with the diagram loaded and NO panel, exactly one object is removed   4 -> 4  BDLoaded before=None after=None
+
+=== A3  control: OpenFrontPanel(activate=False), then the raw delete ===
+  [A3] fresh copy: Property=4  flags=UNAVAILABLE
+  [windows A3 after load] 7 line(s): ['ScratchLM_13016_A3.vi Front Panel', 'OpFPLabels_v0.vi Block Diagram', 'OpFPLabels_v0.vi Front Panel', 'OpNodeInfo_v0.vi Block Diagram', 'OpNodeInfo_v0.vi Front Panel', 'ScratchBDLoaded_13016.vi Front Panel', 'LabVIEW']
+  [A3] after open_panel(activate=False) => VI.OpenFrontPanel: flags=UNAVAILABLE
+  [A3] DELETE: 4 -> 3  REMOVED ONE  run=returned  err=(False, 0, '')  elsewhere={'Property': [115]}
+  PASS  A3 control: with OpenFrontPanel exactly one object is removed   4 -> 3  flags=UNAVAILABLE
+  PASS  W1 the 23C route (A2) opened NO new window, while the panel route (A3) did   baseline=6 afterA2=6 afterA3=7
+
+=== A4  A2 removed nothing: is the variable EDIT MODE rather than residency? ===
+  [A4] move on a 23C-loaded, panel-less copy: (853, 300) -> (853, 300)  DID NOT MOVE
+  PASS  A4 a non-delete mutator (GObject.Move) on a 23C-loaded panel-less copy also fails (=> the decline is general, not delete-specific)   (853, 300) -> (853, 300)
+
+=== VERDICT ===
+  A2 REMOVED NOTHING => codex's falsifier is met if BDLoaded was TRUE: the variable is panel/EDIT-MODE context, not diagram residency. open_panel stays; the docstring changes.
+
+=== 5/8 gates as predicted ===
+NOT AS PREDICTED: G0 reader op built and saved, ExecState 1 | A2a reading VI.Block Diagram (23C) turns Block Diagram Loaded TRUE without a panel | A2b DECIDER: with the diagram loaded and NO panel, exactly one object is removed
+wrote G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_load_vs_editmode.json
+BGRUN END rc=0 after 112s

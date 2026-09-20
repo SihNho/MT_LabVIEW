@@ -1,0 +1,64 @@
+ATTACK the explanation below. It is a FAILED PREDICTION in `tools/bench/selftest_stamp_window.log`
+(test `T1b tunnel-decay` in `tools/bench/selftest_stamp_window.py`), and the explanation I formed under
+pressure is what you must try to destroy. Read the files yourself; do not take my summary on trust.
+
+=== WHAT WAS PREDICTED AND WHAT HAPPENED ===
+
+Project context: `archive/peer/*.md` files are written by `tools/peer.ps1` via PowerShell `Set-Content`. Several
+gates date those archives with `guard_cycle.stamp()` = `min(os.path.getctime(p), os.path.getmtime(p))`. STATUS.md
+OPEN 31 asserts the cause of three wrong retrospective windows is: "RE-ARCHIVING an existing slug keeps the OLD
+ctime (NTFS tunneling) and the gate never sees the new review".
+
+T1b PREDICTED: after deleting a file and rewriting the same name following an 18-second delay (NTFS's documented
+15 s tunnel cache), the new file's creation time WOULD move to now.
+T1b OBSERVED (`tools/bench/selftest_stamp_window.log`, run 2026-09-17 16:41): it did NOT move.
+    write1     ctime 16:41:07
+    delete+rewrite after 2 s   ctime 16:41:07  (tunneled, as predicted)
+    delete+rewrite after 18 s  ctime 16:41:07, mtime 16:41:27  (NOT predicted)
+Probe path: `%TEMP%` (`C:\Users\...\AppData\Local\Temp`), Windows 10 19045, Python via `py`.
+
+CONTRADICTING MEASUREMENT from the real archive, same machine, same day:
+`archive/peer/2026-09-17-retrospective-cycle15.md` had mtime 08:06:44 (cited as such inside
+`archive/peer/2026-09-17-retrospective-cycle16.md`'s own EVIDENCE WINDOW line), was re-archived by peer.ps1 at
+13:37, and today reads ctime == mtime == 13:37:04. So over a 5.5 h gap the creation time DID move.
+
+=== MY EXPLANATION, WHICH YOU MUST ATTACK ===
+
+(E1) The 18 s probe is simply inside this volume's tunnel cache — the 15 s figure is a registry default
+     (`MaximumTunnelEntryAgeInSeconds`) that this machine does not necessarily use, and the cache is also
+     size-bounded, so a quiet volume evicts nothing. Therefore T1b's threshold was wrong, not its premise, and
+     tunneling is real but SHORT-LIVED relative to a re-archive hours later.
+
+(E2) Therefore OPEN 31's stated cause is REFUTED for the three windows it was invoked to explain: all three
+     re-archives were hours apart, so `min(ctime, mtime)` was NOT stale for them.
+
+(E3) The real cause of the three wrong windows is in `tools/retrospective.py`, function `cycle_window()`:
+     `end = dispatch_time(retro_archive(n))`, and `retro_archive(n)` matches only basenames ending
+     `retrospective-cycle<n>.md`. A SECOND retrospective of the same cycle number filed under a different slug
+     (`retrospective-cycle15-routeb`) therefore takes its `end` from the FIRST one's dispatch. Evidence, quoted
+     from the archives' own EVIDENCE WINDOW lines:
+       - `2026-09-17-retrospective-cycle15-routeb.md` (dispatched ~16:11) was handed
+         `2026-09-17 07:10:02 .. 2026-09-17 13:32:51`, basis "end = 2026-09-17-retrospective-cycle15.md mtime
+         - 253s (its dispatch)". The route-B build logs it existed to judge are 15:58 and 16:27.
+       - `2026-09-17-retrospective-cycle15-d1-build3.md` was handed `07:10:02 .. 08:04:04`.
+       - `2026-09-17-retrospective-cycle16.md` was handed a 10-SECOND window, `08:06:44 .. 08:06:54`.
+     `guard_cycle.stamp()` is not called anywhere in `tools/retrospective.py` (grep it), so it cannot be the cause.
+
+(E4) The fix I have applied: `end` is always `now` (the moment this review is dispatched), and `start` is the
+     newest retrospective archived before now EXCLUDING this run's own slug — `newest_retro_before()` — rather
+     than "cycle N-1's retrospective". Plus `stamp()` now prefers the archive's own `- **date:**` frontmatter,
+     and peer.ps1 writes `yyyy-MM-dd HH:mm:ss` there.
+
+=== YOUR JOB ===
+1. The strongest reason E1/E2/E3 are WRONG. In particular: is there ANY mechanism other than tunneling by which
+   `min(ctime, mtime)` could be stale for an `archive/peer/*.md` file on this setup — Set-Content's write
+   semantics, file-system redirection, Defender/backup software, a roaming profile, timestamp granularity,
+   `os.path.getctime` semantics on Windows/Python, or copying rather than rewriting?
+2. An ALTERNATIVE explanation of the three wrong windows that does NOT involve `cycle_window()`.
+3. What would FALSIFY E3, concretely.
+4. The CHEAPEST discriminating test between "the T1b probe's threshold was wrong" and "tunneling never applied
+   and something else made the 2 s case look tunneled".
+5. Does E4 introduce a NEW defect? Specifically: with `end = now`, can a cycle's work be counted twice, or lost,
+   when two retrospectives are filed minutes apart (which happened today: cycle15 at 08:06, cycle16 at 08:10,
+   cycle16b at 08:14)? And does excluding the run's own slug break a deliberate re-run of the same review?
+Answer with file:line citations from this project wherever you assert something about its code.

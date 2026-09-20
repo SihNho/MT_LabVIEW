@@ -1,0 +1,68 @@
+BGRUN START 2026-09-10 19:26:12 limit 25.0 min: py -u tools/bench/conpaneassign_chain.py
+LabVIEW up after 15 s, version 26.3.1f1
+dialogs: 8,1346,762| / ENABLED|1443568|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+lv_restart rc 0
+copy of OpFPLabels_v0: nodes 8 wires 9 ExecState 1
+fp: ['vi path', 'Class Name', 'Class Name 2', 'Names', 'Names 2', 'index', 'index 2', 'error out', 'Text', 'Indicator']
+
+== 2 delete the label-reading tail
+   predict: Property 4 -> 2, ExecState 0
+   observed: (2, 5, 1)
+
+== 3 PN VI.Connector Pane:Reference (23E)
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 98, 'pos': (417, 430), 'owner': 'TopLevelDiagram'}]
+
+== 3b OpenVIRef.'vi reference' -> PN_cp.reference
+   predict: accepted
+   observed: 5
+
+== 4 Invoke ConnectorPane.'Assign Control To Terminal' (239A8000)
+   predict: +1 Invoke
+   observed: [{'i': 0, 'class': 'Invoke', 'uid': 99, 'pos': (681, 380), 'owner': 'TopLevelDiagram'}]
+
+== 5 PN_cp output -> INV.reference
+   predict: one candidate accepted
+   observed: ('ConPane', 6)
+
+== 5b IA308.'element' -> INV control input
+   predict: one candidate accepted
+   observed: ('Control', 7)
+   ExecState before the terminal-index control: 0 wires 7
+
+== 6 control on INV's terminal-index input
+   predict: a label naming the terminal index
+   observed: Terminal Index
+
+assembled: nodes 8 wires 8 ExecState 1 
+fp: ['vi path', 'Class Name', 'Class Name 2', 'Names', 'Names 2', 'index', 'index 2', 'error out', 'Text', 'Indicator', 'Terminal Index'] 
+terminal-index control: Terminal Index 
+steps failed: []
+saved 9738
+
+=== TEST on a scratch copy: assign 'index' to terminal 5 ===
+   scratch fp: ['pos in cal image out', 'x,y,z array', 'Image In', 'x,y,z array out', 'Real-space cosine window', 'Cosine bandpass\nfor Hilbert ', '# of bead 4 packs', 'pos in cal image in', 'Bead is good? array in', 'Bead is good? array out', '4 pack remainder', 'cross size', 'Array of cal clusters', 'index']
+   'index' is front-panel object 13
+   assign ran, error out: (False, 0, '')
+   saved scratch 17059
+   terminal[ 0] = 'Bead is good? array in'
+   terminal[ 1] = 'Image In'
+   terminal[ 2] = 'cross size'
+   terminal[ 3] = 'Bead is good? array out'
+   terminal[ 4] = 'x,y,z array out'
+   terminal[ 5] = '(FREE)'
+   terminal[ 6] = '(FREE)'
+   terminal[ 7] = 'x,y,z array'
+   terminal[ 8] = 'pos in cal image out'
+   terminal[ 9] = '# of bead 4 packs'
+   terminal[10] = '(FREE)'
+   terminal[11] = '4 pack remainder'
+   terminal[12] = 'Array of cal clusters'
+   terminal[13] = 'pos in cal image in'
+   terminal[14] = 'Real-space cosine window'
+   terminal[15] = 'Cosine bandpass\nfor Hilbert '
+
+TEST: FAIL - terminal[5] = '(FREE)'
+scratch removed
+build_assign rc 6
+BGRUN END rc=0 after 159s

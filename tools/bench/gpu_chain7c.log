@@ -1,0 +1,37 @@
+BGRUN START 2026-09-08 10:12:59 limit 80.0 min: py -u tools/bench/gpu_chain7.py
+LabVIEW up after 13 s, version 26.3.1f1
+dialogs: 1346,762| / ENABLED|200739764|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+lv_restart rc 0
+baseline SubVIs [(384, (1050, 640)), (105, (900, 640)), (124, (495, 281))] Property [(109, (706, 380))] Wires 10 ExecState 1
+creator SubVI uid 105 at (900, 640)
+
+== 1 delete the creator SubVI
+   predict: ExecState 0
+   observed: ({105}, 0)
+
+== 2 remove its dangling wires
+   predict: ExecState 1
+   observed: ((6, 0), 6, 0)
+   (ExecState after creator removal: 0 - an unwired required input is expected until the new creator is wired)
+
+== 3 drop Create Build Array.vi
+   predict: +1 SubVI; ExecState 0
+   observed: (0.03940272331237793, 0)
+
+== 4 PN.Diagram -> creator Diagram in
+   predict: Wire +1
+   observed: 7
+
+== 5 control location -> location (0, 0)
+   predict: Wire +1
+   observed: 8
+
+assembled Wires 8 ExecState 0
+   node 0 uid 43: [(0, 'error out', 0), (1, 'vi reference', 467), (2, 'password ("")', 0), (3, 'type specifier VI Refnum (for type only)', 0), (4, 'error in (no error)', 0), (5, 'options', 0), (6, 'vi path', 106), (7, 'application reference (local)', 0)]
+   node 1 uid 124: [(0, 'error out', 0), (1, '# of Refs', 0), (2, 'References', 600), (3, 'dup VI Refnum', 0), (4, '', 0), (5, 'Other Refnum', 0), (6, 'Traverse Generated Code (F)', 0), (7, 'Traverse Target', 415), (8, 'error in (no error)', 0), (9, '', 0), (10, 'Class Name', 373), (11, 'VI Refnum', 467)]
+   node 2 uid 308: [(0, 'array', 600), (1, 'element', 0), (2, 'index', 1066)]
+   node 3 uid 109: [(0, 'reference', 467), (1, 'reference out', 0), (2, 'error in (no error)', 0), (3, 'error out', 0), (4, 'Diagram', 350)]
+   node 4 uid 384: [(0, 'error out', 0), (1, '', 0), (2, '', 0), (3, 'specific error cleared?', 0), (4, 'error in (no error)', 0), (5, '', 0), (6, '', 0), (7, 'specific error code to clear (0: all)', 0)]
+STOP: broken - NOT saving
+build OpBuildBA rc 6
+BGRUN END rc=1 after 78s

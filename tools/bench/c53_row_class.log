@@ -1,0 +1,142 @@
+BGRUN START 2026-09-20 06:13:36 limit 3.0 min: py -u tools/bench/c53_row_class.py
+==============================================================================
+TEST A -- 1.5 FOCUS set cut-row classification (file reads only)
+==============================================================================
+inputs: d1_rewire_sources.json (109 rows) | main_vi_netmap.json (source=G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi)
+  PASS  G4a  diagram_owners[43]='WhileLoop'
+  PASS  G4b  diagram_owners[19]='FlatSequenceFrame'
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\c53_row_class.py", line 79, in <module>
+    idx2uid43 = {int(k): v["uid"] if isinstance(v, dict) else v[0] for k, v in d43["nodes"].items()} \
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\c53_row_class.py", line 79, in <dictcomp>
+    idx2uid43 = {int(k): v["uid"] if isinstance(v, dict) else v[0] for k, v in d43["nodes"].items()} \
+KeyError: 'uid'
+BGRUN END rc=1 after 0s
+BGRUN START 2026-09-20 06:14:21 limit 3.0 min: py -u tools/bench/c53_row_class.py
+==============================================================================
+TEST A -- 1.5 FOCUS set cut-row classification (file reads only)
+==============================================================================
+inputs: d1_rewire_sources.json (109 rows) | main_vi_netmap.json (source=G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi)
+  PASS  G4a  diagram_owners[43]='WhileLoop'
+  PASS  G4b  diagram_owners[19]='FlatSequenceFrame'
+  PASS  G1  row owners present = [48, 3447, 3529, 3560, 10407]
+  PASS  G2  netmap terminal ends on the 5 uids = 17 ; rewire cut rows = 17
+  PASS  G3  wire uid mismatches vs netmap: none
+  PASS  G5  no Required field in any cut row -> column reported UNKNOWN
+  FAIL  G2b  netmap WIRED terminals on the 5 uids = 16 ; cut rows = 17
+      per-node total/wired: {10407: '6/6', 48: '7/7', 3529: '1/1', 3560: '1/1', 3447: '1/1'}
+
+--- TABLE: 17 cut terminals ---
+uid    t   terminal name                          src?   action (verbatim)      wire   line  
+---------------------------------------------------------------------------------------------
+10407  0   ''                                     sink   cross-loop:1.2->1.5    10799  1748  
+10407  1   '# slices in stack'                    sink   from-tunnel            9635   1775  
+10407  2   'Index of closest\ncal image slice, be sink   cross-loop:1.2->1.5    10990  1793  
+10407  3   'Outgoing Handle'                      sink   same-loop              11232  1820  
+10407  4   'VISA out'                             SRC    to-sr                  7337   1847  
+10407  5   'Out position'                         sink   same-loop              7388   1865  
+10407  6   'position [internal units]'            SRC    to-sr                  9113   1892  
+48     0   '-Inc reference'                       sink   same-loop              4833   1919  
+48     1   '+Inc reference'                       sink   same-loop              2819   1946  
+48     2   'Focus inc reference'                  sink   same-loop              1893   1973  
+48     3   'VISA resource name'                   sink   from-sr                1731   2000  
+48     4   'In position'                          sink   from-sr                3947   2018  
+48     5   'Out position'                         SRC    source-side            7388   2036  
+48     6   'Outgoing Handle'                      SRC    source-side            11232  2066  
+3529   0   '- Inc (PgDn)'                         SRC    source-side            4833   2096  
+3560   0   '+ Inc (PgUp)'                         SRC    source-side            2819   2126  
+3447   0   'Focus Step (F1)'                      SRC    source-side            1893   2156  
+
+--- COUNTS (measured) ---
+total cut rows                                  : 17
+by action                                       : {"cross-loop:1.2->1.5": 2, "from-tunnel": 1, "same-loop": 5, "to-sr": 2, "from-sr": 2, "source-side": 5}
+action starts 'cross-loop:'                     : 2  -> [(10407, 0, 1748), (10407, 2, 1793)]
+rows whose resolved SOURCE is a node on #639    : 7  -> [(10407, 0), (10407, 2), (10407, 3), (10407, 5), (48, 0), (48, 1), (48, 2)]
+rows whose resolved source is on #686           : 0  (outer_source non-null on a tunnel row)
+rows whose far end is a node planned for 1.2    : 2  -> [(10407, 0), (10407, 2)]
+SR-created rows (to-sr / from-sr)               : 4  -> [(10407, 4), (10407, 6), (48, 3), (48, 4)]
+counterpart terminals on NON-moved nodes (orphaned, not cut): 3 -> [(10686, 0, 'x .and. y?', 10799), (10757, 1, 'element', 10990), (12589, 1, 'position [internal units]', 9113)]
+
+--- C1: claim (i), main_vi_shiftregs_v1.json ---
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\c53_row_class.py", line 268, in <module>
+    pair = next((x for x in sr if x.get("uid") == 4334), None)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\c53_row_class.py", line 268, in <genexpr>
+    pair = next((x for x in sr if x.get("uid") == 4334), None)
+AttributeError: 'str' object has no attribute 'get'
+BGRUN END rc=1 after 0s
+BGRUN START 2026-09-20 06:46:35 limit 4.0 min: py -u tools/bench/c53_row_class.py
+==============================================================================
+TEST A -- 1.5 FOCUS set cut-row classification (file reads only)
+==============================================================================
+inputs: d1_rewire_sources.json (109 rows) | main_vi_netmap.json (source=G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi)
+  PASS  G4a  diagram_owners[43]='WhileLoop'
+  PASS  G4b  diagram_owners[19]='FlatSequenceFrame'
+  PASS  G1  row owners present = [48, 3447, 3529, 3560, 10407]
+  PASS  G2  netmap terminal ends on the 5 uids = 17 ; rewire cut rows = 17
+  PASS  G3  wire uid mismatches vs netmap: none
+  PASS  G5  no Required field in any cut row -> column reported UNKNOWN
+  OBS   netmap per-node `terms` array, total/wired: {10407: '6/6', 48: '7/7', 3529: '1/1', 3560: '1/1', 3447: '1/1'}
+  FAIL  G2b(rewritten) netmap `terms` == the NAMED SUBSET, in order, for EVERY node in both files  574/626 nodes match; violations [{'diagram': '3', 'uid': 30804, 'nodeterms_named': [('System no.', 4375), ('Axes to move', 11058), ('Position values', 32086), ('No.of digits', 0), ('error in', 4360), ('error out', 32594)], 'netmap_terms': [('System no.', 4375), ('Axes to move', 11058), ('Position values', 32086), ('No.of digits', 0), ('error in', 4360)]}, {'diagram': '4', 'uid': 4620, 'nodeterms_named': [('System no.', 4775), ('GOH axes', 4746), ('All axes?', 10194), ('Axis identifier?', 0), ('error in', 30058), ('error out', 4786)], 'netmap_terms': [('System no.', 4775), ('GOH axes', 4746), ('All axes?', 10194), ('Axis identifier?', 0), ('error in', 30058)]}]
+  FAIL  G2c the per-node SHORTFALL equals that node's UNNAMED-terminal count, for EVERY node (refutes 'CaseStructure selector only'; confirms the write-time `if t` filter)  574/626; 130 nodes have a shortfall at all; violations [{'diagram': '3', 'uid': 30804, 'shortfall': 15, 'unnamed': 14}, {'diagram': '4', 'uid': 4620, 'shortfall': 15, 'unnamed': 14}]
+      unnamed-AND-WIRED terminals in main_vi_nodeterms.json: 156 (every one invisible in the netmap `terms` array). WhileLoop #637 t37 among them: True
+  PASS  G6 all 17 cut rows agree with main_vi_nodeterms.json on (name, wire, is_source)  mismatches: none
+  PASS  G6b #10407 t0 (name '', wire 10799) IS carried by that third census, with clean error columns  => d1_rewire_sources.json did NOT invent index 0
+
+--- TABLE: 17 cut terminals ---
+uid    t   terminal name                          src?   action (verbatim)      wire   line  
+---------------------------------------------------------------------------------------------
+10407  0   ''                                     sink   cross-loop:1.2->1.5    10799  1748  
+10407  1   '# slices in stack'                    sink   from-tunnel            9635   1775  
+10407  2   'Index of closest\ncal image slice, be sink   cross-loop:1.2->1.5    10990  1793  
+10407  3   'Outgoing Handle'                      sink   same-loop              11232  1820  
+10407  4   'VISA out'                             SRC    to-sr                  7337   1847  
+10407  5   'Out position'                         sink   same-loop              7388   1865  
+10407  6   'position [internal units]'            SRC    to-sr                  9113   1892  
+48     0   '-Inc reference'                       sink   same-loop              4833   1919  
+48     1   '+Inc reference'                       sink   same-loop              2819   1946  
+48     2   'Focus inc reference'                  sink   same-loop              1893   1973  
+48     3   'VISA resource name'                   sink   from-sr                1731   2000  
+48     4   'In position'                          sink   from-sr                3947   2018  
+48     5   'Out position'                         SRC    source-side            7388   2036  
+48     6   'Outgoing Handle'                      SRC    source-side            11232  2066  
+3529   0   '- Inc (PgDn)'                         SRC    source-side            4833   2096  
+3560   0   '+ Inc (PgUp)'                         SRC    source-side            2819   2126  
+3447   0   'Focus Step (F1)'                      SRC    source-side            1893   2156  
+
+--- COUNTS (measured) ---
+total cut rows                                  : 17
+by action                                       : {"cross-loop:1.2->1.5": 2, "from-tunnel": 1, "same-loop": 5, "to-sr": 2, "from-sr": 2, "source-side": 5}
+action starts 'cross-loop:'                     : 2  -> [(10407, 0, 1748), (10407, 2, 1793)]
+rows whose resolved SOURCE is a node on #639    : 7  -> [(10407, 0), (10407, 2), (10407, 3), (10407, 5), (48, 0), (48, 1), (48, 2)]
+rows whose resolved source is on #686           : 0  (outer_source non-null on a tunnel row)
+rows whose far end is a node planned for 1.2    : 2  -> [(10407, 0), (10407, 2)]
+SR-created rows (to-sr / from-sr)               : 4  -> [(10407, 4), (10407, 6), (48, 3), (48, 4)]
+counterpart terminals on NON-moved nodes (orphaned, not cut): 3 -> [(10686, 0, 'x .and. y?', 10799), (10757, 1, 'element', 10990), (12589, 1, 'position [internal units]', 9113)]
+
+--- C1: claim (i), main_vi_shiftregs_v1.json ---
+      main_vi_shiftregs_v1.json: vi=Min_Track N beads V6_ParallelLoop.vi loop_uid=637 registers=14
+  PASS  C1a  #4334.left = 4344
+  PASS  C1b  #4344 OUTSIDE wire = 4185 (claim 4185)
+  PASS  C1c  #4344 INSIDE wire = 1731  == #48 t3 wire 1731
+  PASS  C1d  #4334 OUTSIDE wire = 7506 (claim 7506)
+  PASS  C1e  #48 t3 action=from-sr sr=(r4334,l4344)
+  PASS  C1f  on diagram idx 19 (#686): 4185 ends=[[4, 11, 'VISA out']]  7506 ends=[[4, 10, 'VISA out']]
+  PASS  C1g  position pair: #4256 outside w4859 / inside w9113 ; #4274 outside w3968 / inside w3947 == #48 t4 w3947
+  PASS  C1h  both SR pairs are registers of loop_uid=637
+      -> both wires appear ONLY as terminals of node idx 4 = uid 637 (= WhileLoop #637) on #686;
+      -> NO other node terminal on #686 carries either wire, so the SOURCE OBJECT of 4185 is
+         UNMEASURED by these files (not a node terminal: constant / control term / FS tunnel).
+
+--- C2: claim (ii), docs/d1-build-plan.md ---
+  PASS  C2a  :402 = '* **Both SR pairs are re-created on the new loop** (`#4256/#4274`, `#4334/#4344`). ⚠️ Without the second pair '
+  PASS  C2b  :402 names both pairs
+  PASS  C2c  :418 = '  failure class. A refnum crossing a loop border **auto-creates its tunnel** (`NAMES.md:762`), a route the plan'
+      :403 = '  VISA session has no carrier at all; §5 of rev 2 never mentioned them.'
+      NOTE (verbatim, :418-419): the same sentence says the route is one 'the plan never named',
+      and :419 says 'Adding move-table rows is a judgement call => flagged (11.6), not patched.'
+
+wrote G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\c53_row_class.json
+19 pass / 2 fail
+BGRUN INNER FAILURE: the command exited 0 but its output reported 2 failure(s); first: FAIL  G2b(rewritten) netmap `terms` == the NAMED SUBSET, in order, for EVERY node in both files  574/626 nodes match; violations [{'diagram': '3', 'uid': 30804,
+BGRUN END rc=1 after 0s (inner failure; the process itself said 0)

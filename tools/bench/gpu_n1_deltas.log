@@ -1,0 +1,41 @@
+BGRUN START 2026-09-17 02:57:10 limit 25.0 min: py -u tools/bench/gpu_n1_deltas.py
+nvidia-smi: NVIDIA GeForce RTX 2060, P0, 1365 MHz, 7000 MHz
+PASS G0a no LabVIEW at start: tasklist labview -> []
+reference session {'session': '2026-09-07 16:00:38', 'frames': 10043, 'every': 1, 'start': 0} frames 10043 beads 5
+PASS G6 recorded lost-bead frames found: 13 rows carry -1.0: [11798, 11800, 11804, 11806, 11808, 11810, 11812, 11814, 11816, 11818, 11820, 11822, 11824]
+[A] mt2_open -> True b'No_Errors beads=5 slices=60 zstep=0.1'
+[A] 2000/10043 frames, 12s
+[A] 4000/10043 frames, 24s
+[A] 6000/10043 frames, 36s
+[A] 8000/10043 frames, 48s
+[A] 10000/10043 frames, 60s
+[A] done 10043 frames in 60s; DLL median 1.62 ms
+PASS G1 run A frame/bead count: XYZ shape (10043, 5, 3)
+PASS G2 reproduces gpu_n1_full_fixture.log: max|dx| 4.13e-06 |dy| 3.13e-05 |dz| 1.28e-05 flips 1 (log: 4.13e-06 / 3.13e-05 / 1.28e-05 / 1)
+bead 0: |dx| max 1.803e-07 @k3641(f4243) exceed 0 first kNone  |dy| max 1.870e-07 @k5333(f6255) exceed 0 first kNone  |dz| max 4.347e-06 @k1965(f2272) exceed 0 first kNone
+bead 1: |dx| max 4.857e-07 @k98(f106) exceed 0 first kNone  |dy| max 2.066e-07 @k2820(f3257) exceed 0 first kNone  |dz| max 6.787e-06 @k5243(f6131) exceed 0 first kNone
+bead 2: |dx| max 3.237e-07 @k685(f742) exceed 0 first kNone  |dy| max 8.989e-08 @k1046(f1179) exceed 0 first kNone  |dz| max 1.279e-05 @k3281(f3801) exceed 0 first kNone
+bead 3: |dx| max 1.177e-07 @k742(f799) exceed 0 first kNone  |dy| max 1.632e-07 @k660(f715) exceed 0 first kNone  |dz| max 3.788e-06 @k8350(f9863) exceed 0 first kNone
+bead 4: |dx| max 4.131e-06 @k10029(f11811) exceed 10 first k10023  |dy| max 3.135e-05 @k10025(f11807) exceed 9 first k10023  |dz| max 3.832e-06 @k250(f265) exceed 0 first kNone
+FLIP k=1679 frame=1937 bead=4 cpu_idx=26 gpu_idx=25 cpu_z=2.547769 gpu_z=2.543102 dz=-4.667e-03
+   k1676 f1934 cpu z 2.560960 idx 26 | gpu z 2.560960 idx 26 | skip False
+   k1677 f1935 cpu z 2.574721 idx 26 | gpu z 2.574721 idx 26 | skip False
+   k1678 f1936 cpu z 2.577262 idx 26 | gpu z 2.577262 idx 26 | skip False
+   k1679 f1937 cpu z 2.547769 idx 26 | gpu z 2.543102 idx 25 | skip False
+   k1680 f1938 cpu z 2.540745 idx 25 | gpu z 2.540745 idx 25 | skip False
+   k1681 f1939 cpu z 2.560959 idx 26 | gpu z 2.560960 idx 26 | skip False
+   k1682 f1940 cpu z 2.565392 idx 26 | gpu z 2.565393 idx 26 | skip False
+CLUSTER: {"n_frames_exceeding_any_axis": 10, "runs": [{"k0": 10023, "k1": 10023, "len": 1, "f0": 11805, "f1": 11805}, {"k0": 10025, "k1": 10025, "len": 1, "f0": 11807, "f1": 11807}, {"k0": 10027, "k1": 10027, "len": 1, "f0": 11809, "f1": 11809}, {"k0": 10029, "k1": 10029, "len": 1, "f0": 11811, "f1": 11811}, {"k0": 10031, "k1": 10031, "len": 1, "f0": 11813, "f1": 11813}, {"k0": 10033, "k1": 10033, "len": 1, "f0": 11815, "f1": 11815}, {"k0": 10035, "k1": 10035, "len": 1, "f0": 11817, "f1": 11817}, {"k0": 10037, "k1": 10037, "len": 1, "f0": 11819, "f1": 11819}, {"k0": 10039, "k1": 10039, "len": 1, "f0": 11821, "f1": 11821}, {"k0": 10041, "k1": 10041, "len": 1, "f0": 11823, "f1": 11823}], "beads_involved": [4], "first_lost_k": 10018, "exceed_k_ge_first_lost": 10, "exceed_k_ge_10018": 10, "exceed_k_in_lost_rows": [], "min_exceed_k": 10023, "max_exceed_k": 10041}
+[B] mt2_open -> True b'No_Errors beads=5 slices=60 zstep=0.1'
+[B] 2000/10043 frames, 12s
+[B] 4000/10043 frames, 24s
+[B] 6000/10043 frames, 36s
+[B] 8000/10043 frames, 47s
+[B] 10000/10043 frames, 59s
+[B] done 10043 frames in 60s; DLL median 1.62 ms
+PASS G3 run B frame/bead count: XYZ shape (10043, 5, 3)
+PASS G4 run B bit-identical to run A: xyz bit-identical=True idx=True good=True differing_doubles=0/150645 max|A-B|=0.000e+00
+PASS G5 json written and reloads: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\gpu_n1_deltas.json 3664885 B, 10043 frame rows
+PASS G0b no LabVIEW at end: tasklist labview -> []
+GATES 8/8 pass; failing: none
+BGRUN END rc=0 after 121s

@@ -1,0 +1,53 @@
+BGRUN START 2026-09-13 00:32:36 limit 15.0 min: py -u -c 
+import os,sys,json
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+WORK=r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi'
+tree=json.load(open('tools/bench/diagram_tree_main.json',encoding='utf-8'))['diagrams']
+where={}
+for dia,info in tree.items():
+    for uid in info['uids']: where.setdefault(int(uid),(int(dia),info['owner']))
+LOOPS={20:'motor loop',43:'FRAME LOOP',99:'display loop',19:'parent of the parallel loops',87:'camera config'}
+out={}
+for cls in ('Local','Global','SequenceLocal'):
+    objs=g.report(WORK,cls)
+    out[cls]=[]
+    print('=== %s : %d'%(cls,len(objs)))
+    for o in objs:
+        d,owner=where.get(o['uid'],(None,'NOT IN TREE'))
+        tag=LOOPS.get(d,'')
+        out[cls].append({'uid':o['uid'],'diagram':d,'owner':owner,'pos':list(o.get('pos') or ()),'loop':tag})
+        print('   uid %-7s diagram %-6s owner %-18s %s  pos %s'%(o['uid'],d,owner,tag,o.get('pos')))
+json.dump(out,open('tools/bench/state_carriers.json','w',encoding='utf-8'),indent=1)
+print()
+print('written')
+
+=== Local : 8
+   uid 2991    diagram 1      owner FlatSequenceFrame    pos (-3514, 1285)
+   uid 4277    diagram 17     owner FlatSequenceFrame    pos (523, 1083)
+   uid 11574   diagram 73     owner CaseStructure        pos (5166, 996)
+   uid 3160    diagram 83     owner FlatSequenceFrame    pos (9190, 919)
+   uid 3097    diagram 83     owner FlatSequenceFrame    pos (9231, 947)
+   uid 2143    diagram 83     owner FlatSequenceFrame    pos (9210, 1160)
+   uid 16942   diagram 99     owner WhileLoop          display loop  pos (-11563, 874)
+   uid 25805   diagram 167    owner FlatSequenceFrame    pos (-5068, 846)
+=== Global : 7
+   uid 3125    diagram 5      owner Sequence             pos (-2917, 2430)
+   uid 3242    diagram 8      owner FlatSequenceFrame    pos (-1490, 1087)
+   uid 7202    diagram 19     owner FlatSequenceFrame  parent of the parallel loops  pos (8895, 980)
+   uid 6951    diagram 19     owner FlatSequenceFrame  parent of the parallel loops  pos (8893, 1006)
+   uid 6409    diagram 19     owner FlatSequenceFrame  parent of the parallel loops  pos (8894, 1034)
+   uid 3115    diagram 83     owner FlatSequenceFrame    pos (9359, 947)
+   uid 3166    diagram 83     owner FlatSequenceFrame    pos (9310, 919)
+=== SequenceLocal : 7
+   uid 0       diagram None   owner NOT IN TREE          pos (0, 0)
+   uid 0       diagram None   owner NOT IN TREE          pos (0, 0)
+   uid 0       diagram None   owner NOT IN TREE          pos (0, 0)
+   uid 0       diagram None   owner NOT IN TREE          pos (0, 0)
+   uid 0       diagram None   owner NOT IN TREE          pos (0, 0)
+   uid 0       diagram None   owner NOT IN TREE          pos (0, 0)
+   uid 0       diagram None   owner NOT IN TREE          pos (0, 0)
+
+written
+BGRUN END rc=0 after 25s

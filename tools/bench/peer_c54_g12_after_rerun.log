@@ -1,0 +1,81 @@
+BGRUN START 2026-09-20 07:43:56 limit 16.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c54-g12-after-rerun -TaskFile tools/bench/peer_task_c54_g12_after_rerun.txt
+OUTCOME: ANSWERED (501s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-20-c54-g12-after-rerun.md
+COST: $3.2380  in 18 / out 38573 / cache-create 163940 / cache-read 1200318  (497s, 14 turn(s))
+--- ANSWER ---
+## REFUTED — (3) is true in the letter and empty in the substance, and (5) is built on the substance
+
+### 1. The single strongest reason the claim is wrong: **you discharged one review and dropped the other, and the dropped one already said G12b cannot fail.**
+
+The brief states *"Review #2's ONE refutation was that G12b has never been run… That objection is now discharged BY RUNNING IT."* There are **two** reviews of this failure, archived four minutes apart, and `archive/peer/2026-09-20-c54-netmap-wires-g12.md:141` says:
+
+> **G12b cannot fail.** No end in any `wires` table can have `t ≥ 40` … G12b is therefore *entailed* by facts already accepted (G8–G11), not measured by anything. A gate that cannot fail is not a test.
+
+Running an unfalsifiable gate does not make it falsifiable. I verified the entailment from the machine, not from that review:
+
+| step | evidence |
+|---|---|
+| every end in any `wires` table has `t ≤ 39` | `tools/gscript.py:2549` `for t in range(max_terms)`, `max_terms=40` at `tools/bench/sweep_netmap_main.py:55` |
+| ends are filed from that same bounded list | `tools/gscript.py:2570-2572` |
+| none of the 12 appears among #637's i0–i39 wires | the run's own table, `replay_netmap_truncation.log:346-385` |
+
+So no end `(4, t, ·)` can carry any of the 12 — the pass was fixed before the gate was written, by data printed 60 lines earlier in the same run.
+
+**Worse: a broken join makes G12b pass more easily, not less.** `has637 = any(e[0] == n637["n"] …)` (`replay_netmap_truncation.py:303`). If `n637["n"]` were wrong, the search looks for the wrong index, finds nothing, and `no_637_end` reaches 12 anyway. G12c/d/e therefore **cannot change G12b's verdict in either direction**. Presenting them as "the three discriminating tests… and all four pass" reads as four independent results; it is one tautology plus three tests that are structurally incapable of moving it.
+
+And review #2's own §2(b) — its most consequential point — is not discharged either. I verified it: `tools/bench/sweep_nodeterms_main.py:76` is `if mine_named[:len(theirs)] != theirs` — a **prefix** test, and for #637 `len(theirs) = 28`. **Rows i40–i58, the only rows the restatement is about, have never been compared against anything, by construction.**
+
+### 2. Alternative explanation of the same evidence: the join was never missing — the run reconstructed something the file states directly
+
+Review #2 asserted (`…-table-restatement.md:114`) that *"`main_vi_netmap.json` does not contain the mapping… `n` survives only inside `wires`."* **That is false, and the run inherited it.** `sweep_netmap_main.py:62-63` writes `rec["nodes"][str(uid)]` while iterating `nodes.items()` in walk order (`nodes[n] = …` built by `for n in range(max_nodes)`, `gscript.py:2527`/`:2573`), and Python's json preserves key order on both dump (`sort_keys` defaults to `False`) and load. So `list(NM["diagrams"]["19"]["nodes"])[4]` **is** the walk-index-4 uid — review #1's free test (0), never run. `tools/bench/c53_row_class.py:89` already depends on exactly that ordering.
+
+A second reading was also already on disk and unused: `sweep_nodeterms_main.py:60-62` records a mismatch class *"Nodes[] order differs from the Step-0 tree"*, and **zero** such mismatches fired — all 11 are uid 22963 (`log:549-553`). That is a stronger, census-wide, pre-existing corroboration of the index join than a 21-node containment test.
+
+### 3. Q3 — the strongest reason the inversion is circular: nodeterms' node order is *net_map's own output*
+
+`sweep_nodeterms_main.py:44-50` enumerates `TREE["diagrams"][k]["uids"]` and passes that position as `n`. Per review #1, `diagram_tree_main.py:67` builds that tree with `net_map(…, max_nodes=120, max_terms=16)`. So G12e — *"every resolved n equals the nodeterms node ORDER at that index"* — compares net_map's `wires` index against a node order **net_map produced**. It is a self-consistency check on one walker's index space, not an independent confirmation. (It does test *stability across two runs on different dates*, which is real and worth keeping — just not what "inverted the table into a bijection" implies.)
+
+Two concrete holes on top of that:
+
+- **`order_ok` excludes the named falsifier.** `replay_netmap_truncation.py:336` filters `if k < len(nt19_order)`, so an `n ≥ 21` — precisely review #2's stated falsifier — is silently skipped rather than failed. Vacuous on diagram 19 (n runs 0…20, `log:427-447`); latent everywhere else.
+- **Containment is subset-only and the netmap side is a subset by construction**, so for the 4 nodes with a single end (`n=5,6,8,11`) uniqueness is carried by the globally-unique wire uid, not by the index.
+
+### 4. Q4 — yes, (5) launders. The licence is written over **code**; the contamination is in **data**.
+
+"Touches nothing in the netmap code path" does not cover the files that still *hold* netmap-derived facts. Consumers on disk right now:
+
+- **`tools/bench/c53_row_class.py:70` → `c53_row_class.json` → an input to this very replay** (`replay_netmap_truncation.py:87`), supplying PART 3's 17 rows. Its `G2` (`:118`) gates the row **count** on the netmap's diagram-43 `wires` table and `G3` (`:126`) gates every row's wire uid on it, keyed by `idx2uid43 = {i: int(k) for i, k in enumerate(d43["nodes"])}` (`:89`).
+- That join is **unvalidated on diagram 43** — G12c/d/e ran on diagram 19 only. `net_map` *skips* indices on a miss without recording them (`gscript.py:2532-2541`), so position ≠ walk index whenever a miss occurs mid-walk. Diagram 43 has **75 nodes** (`sweep_netmap_main.log:46`) and carries two truncated nodes, #6810 (9 named → 1) and #22700 (7 → 2) (`log:275,282`). It is #637's own body — the loop being restructured.
+- `c53_row_class.py:383-386` still prints, and frames its JSON around, *"NO other node terminal on #686 carries either wire, so the SOURCE OBJECT of 4185 is **UNMEASURED**"* — which this run's own G15b retracts (`log:545`: `LeftShiftRegister #4344` / `RightShiftRegister #4334`).
+- `docs/main-vi-state.md:38`, `docs/main-vi-startup.md:12`, `docs/instrument-libraries.md:103` (*"finds **9 rotor call sites**"* — a census count off a file now measured as a lower bound), `tools/bench/globals_direction_main.py:21`, `tools/bench/panel_wiring_from_cache.py:30`, `tools/recipes/build_opsubvis_v0.py:4`.
+
+The replay checked **one** document and passed it. That is not "the truncation account stands"; it is one doc cleared out of seven-plus consumers.
+
+### 5. Q5 — numbers in the two runs that contradict the account and are not in it
+
+- **"0 nodes missing from either census" is one-directional and probably false.** `replay_netmap_truncation.py:157-171` walks nodeterms → netmap only; nothing computes the reverse. Three files say the netmap holds **635** nodes — `tools/bench/analyse_netmap_cache.py:3`, `docs/instrument-libraries.md:103`, `archive/STATUS-2026-09-14-full-before-condense.md:295` — against nodeterms' 626 (`log:256`). Either ~9 netmap nodes were never compared (review #1 §4(d), live), or three active docs carry a stale count. Nobody looked.
+- **The 40-vs-36 dispute is settled by run 2 and still reported as unresolved.** `log:431` `n=4 ends=36`; #637 has exactly 36 wired terminals in i0–i39 (i2, i20, i24, i28 are unwired — `log:348,366,370,374`) and `nets` files only `if uid` (`gscript.py:2571`). The wires table holds **36** of #637's ends — not 40, not 28.
+- **G16 was replaced, not re-run.** Run 1: `FAIL G16 every #637 wire … appears in the doc missing=28` (`log:244`). Run 2: `PASS G16 the doc's #637 outer rows == the complete-census re-derivation` (`log:570`) — a different proposition against two new inputs (`replay_netmap_truncation.py:519-520`). The 28 still prints (`log:562`) but is no longer gated. So "20 pass / 1 fail" is **not comparable** with "14 pass / 2 fail": one failure was retired by redefinition, which is what review #1 §3.3 named `rule-evaded`.
+- **Review #1's four alternatives and its global test were not run.** Its §7 asks for the resolution over *every end of every wire on all 170 diagrams* — *"that single number validates or destroys the cross-census `n` join that G12b rests on."* The bijection ran on 1 diagram of 170, 21 nodes of 626. Its disposition (`…-g12.md:239`) says *"Not run here. That test is the judgement session's to schedule."* It has not been scheduled, and the brief declares the matter closed. Its alternative (c) is not even speculative: uid 22963, net_map's own junk Invoke, **was** recorded as a node (`log:549-553`).
+
+### Where the claim does hold
+
+(1), (2), and the mechanism in (4). P5's literal wording is false and is correctly recorded as a failed prediction; the cap/empties account reproduces all 52 shortfalls with zero unexplained (`log:330-333`); the 7 present wires resolve to walk indices 12/15/16/17 matching nodeterms at the exact `(i, name, wire)` (`log:413-424`, `:439-444`). G15b is a genuine correction. What I refuse is the step from *"the mechanism is understood"* to *"the failed prediction is fully explained, so the next build may proceed."*
+
+### Cheapest discriminating test — files only, ~10 lines, no LabVIEW
+
+```python
+for D in ("19", "43"):                                   # (a) the join, read INSIDE the netmap
+    nm   = NM["diagrams"][D]["nodes"]
+    maxn = max(e[0] for ends in NM["diagrams"][D]["wires"].values() for e in ends)
+    print(D, len(nm), maxn, list(nm)[4])                 # contiguity iff maxn == len(nm)-1
+extra = {(d, u) for d, r in NM["diagrams"].items() for u in r.get("nodes", {})} \
+      - {(d, str(n["uid"])) for d, r in NT["diagrams"].items() for n in r["nodes"]}
+print(len(extra), sorted(extra)[:20])                    # (b) the reverse census check
+```
+
+Three numbers decide it: `list(nm)[4] == "637"` on diagram 19 (if it disagrees with G12d, one file is renumbered and G12b's key is wrong); `maxn == len(nm)-1` on **diagram 43** (if not, `c53_row_class.py:89` is mis-keyed and the 17-row table PART 3 consumes is wrong); `len(extra)` (if ≈9, claim (4) is false as written).
+
+**What would change my mind:** all three coming back clean would retire my §3 and §5 objections — **but not §1**. Nothing can make G12b informative, because its falsifier was excluded by the terminal table printed in the same run. A failed prediction is repaired by a *new prediction that could fail*, not by a corollary of the explanation. The honest record is: P5 false; the mechanism measured by G4/G5/G9/G10; **G12b marked `ENTAILED`, not `PASS`**; and before "the next build may proceed," a grep of the six netmap consumers above rather than a gate.
+
+Sources: [Python `json` — `sort_keys` default and order preservation](https://docs.python.org/3/library/json.html) · [LabVIEW Wiki — GObject class/UID property (deleted UIDs may be reassigned)](https://labviewwiki.org/wiki/GObject_class/UID_property) · [LabVIEW Wiki — AbstractDiagram class/Firing Order property](https://labviewwiki.org/wiki/AbstractDiagram_class/Firing_Order_property) · [NI — Property Node reference](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/functions/property-node.html)
+BGRUN END rc=0 after 501s

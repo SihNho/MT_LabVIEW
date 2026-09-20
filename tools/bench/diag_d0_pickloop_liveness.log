@@ -1,0 +1,529 @@
+BGRUN START 2026-09-18 17:49:40 limit 20.0 min: py -u tools/bench/diag_d0_pickloop_liveness.py
+[   0.2s] LabVIEW handles BEFORE 0 (None/0 = not running yet)
+[   0.2s]   motor_gate --session start  <- rig ����: running the copy executes the original's device init, which drives the PI stage and the ASI
+[   1.9s]     | before: POS?=1=0.00000 TMN?=1=0.00000 TMX?=1=39.00000 ERR?=0
+[   1.9s]     | ERR? after SPA = 0
+[   1.9s]     | LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+[   1.9s]     | REFSTATE RON=0 FRF=1 POS=0 POS_BEFORE=0 ERR=0
+[   1.9s]     | LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+[   1.9s]     | RESULT: controller limits are TMN=0 TMX=39 (mode limits-set)
+[   1.9s]     | PI  : PI controller limits match the file (TMN 0.0000 / TMX 39.0000, tol 0.001) (sender code=0)
+[   1.9s]     | PI  : reference state {"FRF": 1.0, "POS": 0.0, "POS_BEFORE": 0.0, "RON": 0.0} -> REFERENCED, zero unchanged
+[   1.9s]     | before SL: :A X=-3.847494 Y=-4.774393   SU: :A X=0.152497 Y=-0.774402
+[   1.9s]     | SL write -> :A
+[   1.9s]     | SU write -> :A
+[   1.9s]     | LIMITS SL X=-3.847494 Y=-4.774393 SU X=0.152497 Y=-0.774402
+[   1.9s]     | position after (must be unchanged): X=-18473 Y=-27744
+[   1.9s]     | RESULT: controller limits set (mode limits-set)
+[   1.9s]     | ASI : ASI controller limits match the file (SL {'X': -3.8475, 'Y': -4.7744} / SU {'X': 0.1525, 'Y': -0.7744} mm, tol 0.001) (sender code=0)
+[   1.9s]     | SESSION START OK -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\motor_session.json
+[   1.9s] STEP 0 G0 motor gate --session start MOTOR    PASS exit=0; LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0; REFSTATE RON=0 FRF=1 POS=0 POS_BEFORE=0 ERR=0
+[   1.9s] STEP 1 G1 md5(ORIGINAL) before      FILE     PASS c39f36e0675339673b707c59f0784fee
+[   1.9s] STEP 2 G2 the D0 copy exists (nothing copied, saved or deleted) FILE     PASS C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\Track_D0_copy_20260918.vi md5=c39f36e0675339673b707c59f0784fee
+[   1.9s]   com.deq  #1 app
+[  17.6s] STEP 3 G3a apartment2 attach        COM      PASS apartment2 attached, LabVIEW 26.3.1f1
+[  17.6s]   com.deq  #2 preload ('G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi',)
+[  19.5s] STEP 4 G3b ORIGINAL resident READ-ONLY COM      PASS original resident (ExecState=1)
+[  19.5s]   com.deq  #3 open ('C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\Track_D0_copy_20260918.vi',)
+[  19.7s]   com.deq  #4 panel (False,)
+[  19.9s]   com.deq  #5 state
+[  21.2s]   L5 ExecState @after open             = 1
+[  22.1s] STEP 5 G3c copy loads, idle, unblocked COM      PASS ExecState=1; VERDICT: clear (no modal dialog)
+[  23.2s] STEP 6 G4 panel geometry measured   GUI      PASS panel rect=(-6, 51, 1930, 1107) size=(1936, 1056) (v3/V6 rect=(-6, 51, 1930, 1107) size=(1936, 1056), delta=(0, 0)); derived image_rect=(232, 500, 873, 1013) picks=[(552, 756), (430, 640), (690, 880)] done=(1114, 915) bandpass_yes_offset=(146, 281) || the brief's literal done point (1114, 915) is INSIDE the live panel rect; v4's DERIVED done point would be (1114, 915) (recorded, NOT clicked - this run reproduces v4's literal click)
+[  23.2s]   com.deq  #6 set ('stop (end)',)
+[  24.7s]   com.deq  #7 get ('stop (end)',)
+[  25.1s]   com.deq  #8 set ('stop (end) 2',)
+[  25.1s]   com.deq  #9 get ('stop (end) 2',)
+[  25.1s]   com.deq  #10 set ('Done Picking \nBeads?',)
+[  25.1s]   com.deq  #11 get ('Done Picking \nBeads?',)
+[  25.1s] STEP 7 pre reset+readback of the 3 control-flow booleans VISERVER PASS {'stop (end)': False, 'stop (end) 2': False, 'Done Picking \nBeads?': False} (no panel PARAMETER is written - rule 1a)
+[  25.3s]   run[liveness]: entering Run(False) by DISPID 1017
+[  27.2s]   com.deq  #12 state
+[  27.2s]   com.deq  #13 state
+[  27.2s]   L5 ExecState @after Run              = 2
+[  27.2s]   com.deq  #14 state
+[  27.2s] STEP 8 G5 VI left idle after Run(False) COM      PASS ExecState=2 after 2s; Run returned=False
+[  30.4s]   com.deq  #15 get ('current image number',)
+[  30.6s]     L1 t= 0.2s {'frame': 0}
+[  32.6s]   com.deq  #16 get ('current image number',)
+[  32.6s]     L1 t= 2.2s {'frame': 0}
+[  34.6s]   com.deq  #17 get ('current image number',)
+[  35.2s]     L1 t= 4.9s {'frame': 0}
+[  37.2s]   com.deq  #18 get ('current image number',)
+[  37.3s]     L1 t= 7.0s {'frame': 0}
+[  39.3s]   com.deq  #19 get ('current image number',)
+[  39.4s]     L1 t= 9.0s {'frame': 0}
+[  41.4s]   com.deq  #20 get ('current image number',)
+[  41.4s]     L1 t=11.1s {'frame': 0}
+[  43.4s]   com.deq  #21 get ('current image number',)
+[  43.4s]     L1 t=13.1s {'frame': 0}
+[  45.5s]   com.deq  #22 get ('current image number',)
+[  45.5s]     L1 t=15.1s {'frame': 0}
+[  47.5s]   com.deq  #23 get ('current image number',)
+[  47.5s]     L1 t=17.1s {'frame': 0}
+[  49.5s]   com.deq  #24 get ('current image number',)
+[  49.6s]     L1 t=19.3s {'frame': 0}
+[  51.6s]   com.deq  #25 get ('current image number',)
+[  51.7s]     L1 t=21.3s {'frame': 0}
+[  53.7s]   com.deq  #26 get ('current image number',)
+[  53.7s]     L1 t=23.3s {'frame': 0}
+[  55.7s]   com.deq  #27 get ('current image number',)
+[  55.7s]     L1 t=25.4s {'frame': 0}
+[  57.7s]   com.deq  #28 get ('current image number',)
+[  57.8s]     L1 t=27.4s {'frame': 0}
+[  59.8s]   com.deq  #29 get ('current image number',)
+[  59.8s]     L1 t=29.4s {'frame': 0}
+[  61.8s]   com.deq  #30 state
+[  61.8s]   L5 ExecState @after L1               = 2
+[  61.8s] STEP 9 L1 `current image number` BEFORE any click VISERVER FAIL 15 readings over 30s: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ; strictly-increasing=False ; all-zero=True (PASS means the acquisition is live; FAIL with all-zero means it is starved)
+[  61.8s]   com.deq  #31 get ('current image number',)
+[  61.8s]   com.deq  #32 get ('Total Lost Frames',)
+[  61.8s]   com.deq  #33 get ('File Size',)
+[  61.8s]   com.deq  #34 get ('error out 2',)
+[  61.8s]   com.deq  #35 get ('File # Saved',)
+[  61.8s]   com.deq  #36 get ('file progress',)
+[  61.8s]   com.deq  #37 get ('Missing Frames?',)
+[  61.8s]   com.deq  #38 get ('Pos within cal image',)
+[  61.8s]   com.deq  #39 get ('Image',)
+[  61.8s]   com.deq  #40 get ('Width',)
+[  61.8s]   com.deq  #41 get ('Height',)
+[  61.8s]   com.deq  #42 get ('Lost Frame Message',)
+[  61.8s]   com.deq  #43 get ('Initial Time at Start',)
+[  61.8s]   com.deq  #44 get ('Estimated end time (min)',)
+[  61.9s]   com.deq  #45 get ('Time span after start (min)',)
+[  61.9s]   com.deq  #46 get ('Cycle Start Time',)
+[  61.9s]   com.deq  #47 get ('Cal File Path',)
+[  61.9s]   com.deq  #48 get ('Track File Path',)
+[  61.9s]   com.deq  #49 get ('Extension (nm) vs Time (Frame #)',)
+[  61.9s]   com.deq  #50 get ('RotationVISA',)
+[  61.9s]   com.deq  #51 get ('IMAQimage',)
+[  61.9s]   com.deq  #52 get ('CamSessionOut',)
+[  61.9s]   L2[A] read 22 indicators
+[  61.9s]     IND 'current image number'             = 0
+[  61.9s]     IND 'Total Lost Frames'                = 0
+[  61.9s]     IND 'File Size'                        = 3600
+[  61.9s]     IND 'error out 2'                      = (False, 0, '')
+[  61.9s]     IND 'File # Saved'                     = 3600
+[  61.9s]     IND 'file progress'                    = 0
+[  61.9s]     IND 'Missing Frames?'                  = False
+[  61.9s]     IND 'Pos within cal image'             = ()
+[  61.9s]     IND 'Image'                            = ('', 0)
+[  61.9s]     IND 'Width'                            = 1280
+[  61.9s]     IND 'Height'                           = 1024
+[  61.9s]     IND 'Lost Frame Message'               = "Your acquisition lost frames.\nSee the 'lost frames' display to determine how many were lost."
+[  61.9s]     IND 'Initial Time at Start'            = 0
+[  61.9s]     IND 'Estimated end time (min)'         = 0.0
+[  61.9s]     IND 'Time span after start (min)'      = 0
+[  61.9s]     IND 'Cycle Start Time'                 = 0
+[  61.9s]     IND 'Cal File Path'                    = ''
+[  61.9s]     IND 'Track File Path'                  = ''
+[  61.9s]     IND 'Extension (nm) vs Time (Frame #)' = ()
+[  61.9s]     IND 'RotationVISA'                     = ('', 0)
+[  61.9s]     IND 'IMAQimage'                        = ('', 0)
+[  61.9s]     IND 'CamSessionOut'                    = ('', 0)
+[  81.9s]   com.deq  #53 get ('current image number',)
+[  81.9s]   com.deq  #54 get ('Total Lost Frames',)
+[  81.9s]   com.deq  #55 get ('File Size',)
+[  81.9s]   com.deq  #56 get ('error out 2',)
+[  81.9s]   com.deq  #57 get ('File # Saved',)
+[  82.0s]   com.deq  #58 get ('file progress',)
+[  82.0s]   com.deq  #59 get ('Missing Frames?',)
+[  82.0s]   com.deq  #60 get ('Pos within cal image',)
+[  82.0s]   com.deq  #61 get ('Image',)
+[  82.0s]   com.deq  #62 get ('Width',)
+[  82.0s]   com.deq  #63 get ('Height',)
+[  82.0s]   com.deq  #64 get ('Lost Frame Message',)
+[  82.0s]   com.deq  #65 get ('Initial Time at Start',)
+[  82.0s]   com.deq  #66 get ('Estimated end time (min)',)
+[  82.0s]   com.deq  #67 get ('Time span after start (min)',)
+[  82.0s]   com.deq  #68 get ('Cycle Start Time',)
+[  82.0s]   com.deq  #69 get ('Cal File Path',)
+[  82.0s]   com.deq  #70 get ('Track File Path',)
+[  82.0s]   com.deq  #71 get ('Extension (nm) vs Time (Frame #)',)
+[  82.0s]   com.deq  #72 get ('RotationVISA',)
+[  82.0s]   com.deq  #73 get ('IMAQimage',)
+[  82.1s]   com.deq  #74 get ('CamSessionOut',)
+[  82.1s]   L2[B] read 22 indicators
+[  82.1s]     IND 'current image number'             = 0
+[  82.1s]     IND 'Total Lost Frames'                = 0
+[  82.1s]     IND 'File Size'                        = 3600
+[  82.1s]     IND 'error out 2'                      = (False, 0, '')
+[  82.1s]     IND 'File # Saved'                     = 3600
+[  82.1s]     IND 'file progress'                    = 0
+[  82.1s]     IND 'Missing Frames?'                  = False
+[  82.1s]     IND 'Pos within cal image'             = ()
+[  82.1s]     IND 'Image'                            = ('', 0)
+[  82.1s]     IND 'Width'                            = 1280
+[  82.1s]     IND 'Height'                           = 1024
+[  82.1s]     IND 'Lost Frame Message'               = "Your acquisition lost frames.\nSee the 'lost frames' display to determine how many were lost."
+[  82.1s]     IND 'Initial Time at Start'            = 0
+[  82.1s]     IND 'Estimated end time (min)'         = 0.0
+[  82.1s]     IND 'Time span after start (min)'      = 0
+[  82.1s]     IND 'Cycle Start Time'                 = 0
+[  82.1s]     IND 'Cal File Path'                    = ''
+[  82.1s]     IND 'Track File Path'                  = ''
+[  82.1s]     IND 'Extension (nm) vs Time (Frame #)' = ()
+[  82.1s]     IND 'RotationVISA'                     = ('', 0)
+[  82.1s]     IND 'IMAQimage'                        = ('', 0)
+[  82.1s]     IND 'CamSessionOut'                    = ('', 0)
+[  82.1s]   com.deq  #75 state
+[  82.1s]   L5 ExecState @after L2               = 2
+[  82.1s] STEP 10 L2 indicator sweep (frame/rate/error/IMAQ/camera/time), read twice 20 s apart VISERVER PASS 22 indicators selected by regex from the inventory, 22 returned a value, 0 ERR; CHANGED between the two reads: (none)
+[  82.1s]   com.deq  #76 get ('Count',)
+[  82.1s]   com.deq  #77 get ('current image number',)
+[  82.6s]   CLICKPROBE 'Track_D0_copy_20260918.vi' (1114,915) <- `Done Picking \nBeads?` uid 11819 at the brief's literal point
+[  84.5s]   com.deq  #78 state
+[  84.5s]   L5 ExecState @after L3               = 2
+[  84.5s]   com.deq  #79 get ('Count',)
+[  84.5s] STEP 11 L3 ONE clickprobe on `Done Picking \nBeads?` (1114,915) GUI      PASS clicked; panel rect at click time (-6, 51, 1930, 1107) || delivery checks={'sfw_ret': True, 'fg_after_sfw_is_target': True, 'fg_at_buttondown_is_target': True, 'wfp_press_root_is_target': True} -> delivered=True ; target hwnd=199004 alive_after_500ms=True ; Count 0 -> 0
+[  85.1s]   com.deq  #80 get ('current image number',)
+[  85.1s]   com.deq  #81 get ('Count',)
+[  85.7s]     L4 t= 0.0s {'frame': 0, 'count': 0, 'bandpass': False, 'save': False}
+[  87.7s]   com.deq  #82 get ('current image number',)
+[  87.9s]   com.deq  #83 get ('Count',)
+[  88.4s]     L4 t= 2.8s {'frame': 0, 'count': 0, 'bandpass': False, 'save': False}
+[  90.4s]   com.deq  #84 get ('current image number',)
+[  90.4s]   com.deq  #85 get ('Count',)
+[  91.0s]     L4 t= 5.3s {'frame': 0, 'count': 0, 'bandpass': False, 'save': False}
+[  93.0s]   com.deq  #86 get ('current image number',)
+[  93.0s]   com.deq  #87 get ('Count',)
+[  93.5s]     L4 t= 7.9s {'frame': 0, 'count': 0, 'bandpass': False, 'save': False}
+[  95.5s]   com.deq  #88 get ('current image number',)
+[  95.6s]   com.deq  #89 get ('Count',)
+[  96.1s]     L4 t=10.5s {'frame': 0, 'count': 0, 'bandpass': False, 'save': False}
+[  98.1s]   com.deq  #90 get ('current image number',)
+[  98.1s]   com.deq  #91 get ('Count',)
+[  98.6s]     L4 t=13.0s {'frame': 0, 'count': 0, 'bandpass': False, 'save': False}
+[ 100.6s]   com.deq  #92 get ('current image number',)
+[ 100.6s]   com.deq  #93 get ('Count',)
+[ 101.1s]     L4 t=15.5s {'frame': 0, 'count': 0, 'bandpass': False, 'save': False}
+[ 103.1s]   com.deq  #94 get ('current image number',)
+[ 103.1s]   com.deq  #95 get ('Count',)
+[ 103.6s]     L4 t=18.0s {'frame': 0, 'count': 0, 'bandpass': False, 'save': False}
+[ 105.6s]   com.deq  #96 get ('current image number',)
+[ 105.6s]   com.deq  #97 get ('Count',)
+[ 106.2s]     L4 t=20.5s {'frame': 0, 'count': 0, 'bandpass': False, 'save': False}
+[ 108.2s]   com.deq  #98 get ('current image number',)
+[ 108.2s]   com.deq  #99 get ('Count',)
+[ 108.7s]     L4 t=23.1s {'frame': 0, 'count': 0, 'bandpass': False, 'save': False}
+[ 110.7s]   com.deq  #100 get ('current image number',)
+[ 110.7s]   com.deq  #101 get ('Count',)
+[ 111.2s]     L4 t=25.6s {'frame': 0, 'count': 0, 'bandpass': False, 'save': False}
+[ 113.2s]   com.deq  #102 get ('current image number',)
+[ 113.2s]   com.deq  #103 get ('Count',)
+[ 113.7s]     L4 t=28.1s {'frame': 0, 'count': 0, 'bandpass': False, 'save': False}
+[ 116.8s]   com.deq  #104 state
+[ 116.8s]   L5 ExecState @after L4               = 2
+[ 116.8s] STEP 12 L4 `current image number` + `Count` AFTER the click VISERVER FAIL frames=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] counts=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ; `choose bandpass` window appeared=False ; save dialog appeared=False ; frame 0 -> 0 ; Count 0 -> 0
+[ 116.8s]   com.deq  #105 state
+[ 116.8s]   com.deq  #106 abort
+[ 116.9s]   run[liveness]: Run(False) RETURNED after 91.6s (err=None)
+[ 119.9s]   com.deq  #107 state
+[ 119.9s] cleanup: COM Abort issued; ExecState after = 1
+[ 119.9s]   com.deq  #108 state
+[ 119.9s]   L5 ExecState @after abort            = 1
+[ 119.9s] STEP 90 G6 COM Abort returns the VI to idle COM      PASS COM Abort issued; ExecState after = 1 ; ExecState=1 (the VI-Server stop is ALREADY MEASURED as not consumed - v4 - so it is not retried here)
+[ 119.9s]   com.deq  #109 set ('stop (end)',)
+[ 119.9s]   com.deq  #110 set ('stop (end) 2',)
+[ 119.9s]   com.deq  #111 set ('Done Picking \nBeads?',)
+[ 119.9s]   com.deq  #112 closepanel
+[ 119.9s]   com.deq  #113 release
+[ 119.9s] STEP 91 G7 md5(COPY) unchanged - run, never saved, never deleted FILE     PASS c39f36e0675339673b707c59f0784fee -> c39f36e0675339673b707c59f0784fee (exists=True)
+[ 119.9s] STEP 92 G8 md5(ORIGINAL) after      FILE     PASS c39f36e0675339673b707c59f0784fee
+[ 120.2s] LabVIEW handles AFTER 47781 (before 0)
+[ 120.2s]   motor_gate --session start  <- post-run TMX? re-read (the 39 mm ceiling is RAM-only)
+[ 120.9s]     | "0"���� �μ��� �ִ� "Open"��(��) ȣ���ϴ� ���� ���ܰ� �߻��߽��ϴ�. "'COM3' ��Ʈ�� ���� �׼����� �źεǾ����ϴ�."
+[ 120.9s]     | ��ġ G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\motor_send_pi.ps1:50 ����:
+[ 120.9s]     | 5
+[ 120.9s]     | +     $sp.Open()
+[ 120.9s]     | +     ~~~~~~~~~~
+[ 120.9s]     |     + CategoryInfo          : NotSpecified: (:) [], ParentContainsErrorRecordException
+[ 120.9s]     |     + FullyQualifiedErrorId : UnauthorizedAccessException
+[ 120.9s]     | PI  : PI limit readback unreadable (no 'LIMITS TMN=.. TMX=..' line) (sender code=1)
+[ 120.9s]     | PI  : reference state NOT REPORTED -> NOT REFERENCED / zero moved
+[ 120.9s]     | G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\motor_asi_io.ps1 : "0"���� �μ�
+[ 120.9s]     | �� �ִ� "Open"��(��) ȣ���ϴ� ���� ���ܰ� �߻��߽��ϴ�. "'COM4' ��Ʈ�� ���� �׼����� �źεǾ����ϴ�."
+[ 120.9s]     |     + CategoryInfo          : NotSpecified: (:) [motor_asi_io.ps1], MethodInvocationException
+[ 120.9s]     |     + FullyQualifiedErrorId : UnauthorizedAccessException,motor_asi_io.ps1
+[ 120.9s]     | ASI : ASI limit readback unreadable (no 'LIMITS SL .. SU ..' line) (sender code=1)
+[ 120.9s]     | SESSION START REFUSED - no session file written, --execute stays closed
+[ 120.9s] STEP 93 G9 post-run TMX? still 39   MOTOR    FAIL TMX?=None from "(no TMX line in the gate's output)"; gate exit=3
+
+| step | method | result | detail |
+|---|---|---|---|
+| 0 G0 motor gate --session start | MOTOR | PASS | exit=0; LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0; REFSTATE RON=0 FRF=1 POS=0 POS_BEFORE=0 ERR=0 |
+| 1 G1 md5(ORIGINAL) before | FILE | PASS | c39f36e0675339673b707c59f0784fee |
+| 2 G2 the D0 copy exists (nothing copied, saved or deleted) | FILE | PASS | C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\Track_D0_copy_20260918.vi md5=c39f36e0675339673b707c59f0784fee |
+| 3 G3a apartment2 attach | COM | PASS | apartment2 attached, LabVIEW 26.3.1f1 |
+| 4 G3b ORIGINAL resident READ-ONLY | COM | PASS | original resident (ExecState=1) |
+| 5 G3c copy loads, idle, unblocked | COM | PASS | ExecState=1; VERDICT: clear (no modal dialog) |
+| 6 G4 panel geometry measured | GUI | PASS | panel rect=(-6, 51, 1930, 1107) size=(1936, 1056) (v3/V6 rect=(-6, 51, 1930, 1107) size=(1936, 1056), delta=(0, 0)); derived image_rect=(232, 500, 873, 1013) picks=[(552, 756), (430, 640), (690, 880)] done=(1114, 915) bandpass_yes_offset=(146, 281) // the brief's literal done point (1114, 915) is INSIDE the live panel rect; v4's DERIVED done point would be (1114, 915) (recorded, NOT clicked - this |
+| 7 pre reset+readback of the 3 control-flow booleans | VISERVER | PASS | {'stop (end)': False, 'stop (end) 2': False, 'Done Picking \nBeads?': False} (no panel PARAMETER is written - rule 1a) |
+| 8 G5 VI left idle after Run(False) | COM | PASS | ExecState=2 after 2s; Run returned=False |
+| 9 L1 `current image number` BEFORE any click | VISERVER | FAIL | 15 readings over 30s: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ; strictly-increasing=False ; all-zero=True (PASS means the acquisition is live; FAIL with all-zero means it is starved) |
+| 10 L2 indicator sweep (frame/rate/error/IMAQ/camera/time), read twice 20 s apart | VISERVER | PASS | 22 indicators selected by regex from the inventory, 22 returned a value, 0 ERR; CHANGED between the two reads: (none) |
+| 11 L3 ONE clickprobe on `Done Picking \nBeads?` (1114,915) | GUI | PASS | clicked; panel rect at click time (-6, 51, 1930, 1107) // delivery checks={'sfw_ret': True, 'fg_after_sfw_is_target': True, 'fg_at_buttondown_is_target': True, 'wfp_press_root_is_target': True} -> delivered=True ; target hwnd=199004 alive_after_500ms=True ; Count 0 -> 0 |
+| 12 L4 `current image number` + `Count` AFTER the click | VISERVER | FAIL | frames=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] counts=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] ; `choose bandpass` window appeared=False ; save dialog appeared=False ; frame 0 -> 0 ; Count 0 -> 0 |
+| 90 G6 COM Abort returns the VI to idle | COM | PASS | COM Abort issued; ExecState after = 1 ; ExecState=1 (the VI-Server stop is ALREADY MEASURED as not consumed - v4 - so it is not retried here) |
+| 91 G7 md5(COPY) unchanged - run, never saved, never deleted | FILE | PASS | c39f36e0675339673b707c59f0784fee -> c39f36e0675339673b707c59f0784fee (exists=True) |
+| 92 G8 md5(ORIGINAL) after | FILE | PASS | c39f36e0675339673b707c59f0784fee |
+| 93 G9 post-run TMX? still 39 | MOTOR | FAIL | TMX?=None from "(no TMX line in the gate's output)"; gate exit=3 |
+
+L5 ExecState BY STAGE: [{"stage": "after open", "ExecState": 1, "t": 21.2}, {"stage": "after Run", "ExecState": 2, "t": 27.2}, {"stage": "after L1", "ExecState": 2, "t": 61.8}, {"stage": "after L2", "ExecState": 2, "t": 82.1}, {"stage": "after L3", "ExecState": 2, "t": 84.5}, {"stage": "after L4", "ExecState": 2, "t": 116.8}, {"stage": "after abort", "ExecState": 1, "t": 119.9}]
+
+L1 SEQUENCE: [{"t": 0.2, "frame": 0}, {"t": 2.2, "frame": 0}, {"t": 4.9, "frame": 0}, {"t": 7.0, "frame": 0}, {"t": 9.0, "frame": 0}, {"t": 11.1, "frame": 0}, {"t": 13.1, "frame": 0}, {"t": 15.1, "frame": 0}, {"t": 17.1, "frame": 0}, {"t": 19.3, "frame": 0}, {"t": 21.3, "frame": 0}, {"t": 23.3, "frame": 0}, {"t": 25.4, "frame": 0}, {"t": 27.4, "frame": 0}, {"t": 29.4, "frame": 0}]
+
+L4 SEQUENCE: [{"t": 0.0, "frame": 0, "count": 0, "bandpass": false, "save": false}, {"t": 2.8, "frame": 0, "count": 0, "bandpass": false, "save": false}, {"t": 5.3, "frame": 0, "count": 0, "bandpass": false, "save": false}, {"t": 7.9, "frame": 0, "count": 0, "bandpass": false, "save": false}, {"t": 10.5, "frame": 0, "count": 0, "bandpass": false, "save": false}, {"t": 13.0, "frame": 0, "count": 0, "bandpass": false, "save": false}, {"t": 15.5, "frame": 0, "count": 0, "bandpass": false, "save": false}, {"t": 18.0, "frame": 0, "count": 0, "bandpass": false, "save": false}, {"t": 20.5, "frame": 0, "count": 0, "bandpass": false, "save": false}, {"t": 23.1, "frame": 0, "count": 0, "bandpass": false, "save": false}, {"t": 25.6, "frame": 0, "count": 0, "bandpass": false, "save": false}, {"t": 28.1, "frame": 0, "count": 0, "bandpass": false, "save": false}]
+
+L2 A: {"current image number": 0, "Total Lost Frames": 0, "File Size": 3600, "error out 2": [false, 0, ""], "File # Saved": 3600, "file progress": 0, "Missing Frames?": false, "Pos within cal image": [], "Image": ["", 0], "Width": 1280, "Height": 1024, "Lost Frame Message": "Your acquisition lost frames.\nSee the 'lost frames' display to determine how many were lost.", "Initial Time at Start": 0, "Estimated end time (min)": 0.0, "Time span after start (min)": 0, "Cycle Start Time": 0, "Cal File Path": "", "Track File Path": "", "Extension (nm) vs Time (Frame #)": [], "RotationVISA": ["", 0], "IMAQimage": ["", 0], "CamSessionOut": ["", 0]}
+
+L2 B: {"current image number": 0, "Total Lost Frames": 0, "File Size": 3600, "error out 2": [false, 0, ""], "File # Saved": 3600, "file progress": 0, "Missing Frames?": false, "Pos within cal image": [], "Image": ["", 0], "Width": 1280, "Height": 1024, "Lost Frame Message": "Your acquisition lost frames.\nSee the 'lost frames' display to determine how many were lost.", "Initial Time at Start": 0, "Estimated end time (min)": 0.0, "Time span after start (min)": 0, "Cycle Start Time": 0, "Cal File Path": "", "Track File Path": "", "Extension (nm) vs Time (Frame #)": [], "RotationVISA": ["", 0], "IMAQimage": ["", 0], "CamSessionOut": ["", 0]}
+
+FACTS: {
+ "handles_before": 0,
+ "md5_original_before": "c39f36e0675339673b707c59f0784fee",
+ "md5_copy_before": "c39f36e0675339673b707c59f0784fee",
+ "handles_after_open": 64363,
+ "geometry": {
+  "panel_rect": [
+   -6,
+   51,
+   1930,
+   1107
+  ],
+  "v6_panel_rect": [
+   -6,
+   51,
+   1930,
+   1107
+  ],
+  "size_now": [
+   1936,
+   1056
+  ],
+  "size_v6": [
+   1936,
+   1056
+  ],
+  "size_delta": [
+   0,
+   0
+  ],
+  "image_rect": [
+   232,
+   500,
+   873,
+   1013
+  ],
+  "picks": [
+   [
+    552,
+    756
+   ],
+   [
+    430,
+    640
+   ],
+   [
+    690,
+    880
+   ]
+  ],
+  "done_xy": [
+   1114,
+   915
+  ],
+  "bandpass_yes_offset": [
+   146,
+   281
+  ]
+ },
+ "done_literal": [
+  1114,
+  915
+ ],
+ "done_literal_inside_panel": true,
+ "L1_all_zero": true,
+ "L1_rising": false,
+ "L2_labels": [
+  "current image number",
+  "Total Lost Frames",
+  "File Size",
+  "error out 2",
+  "File # Saved",
+  "file progress",
+  "Missing Frames?",
+  "Pos within cal image",
+  "Image",
+  "Width",
+  "Height",
+  "Lost Frame Message",
+  "Initial Time at Start",
+  "Estimated end time (min)",
+  "Time span after start (min)",
+  "Cycle Start Time",
+  "Cal File Path",
+  "Track File Path",
+  "Extension (nm) vs Time (Frame #)",
+  "RotationVISA",
+  "IMAQimage",
+  "CamSessionOut"
+ ],
+ "L2_changed": [],
+ "L3_checks": {
+  "sfw_ret": true,
+  "fg_after_sfw_is_target": true,
+  "fg_at_buttondown_is_target": true,
+  "wfp_press_root_is_target": true
+ },
+ "L3_record": {
+  "probe": "clickprobe",
+  "ts": "2026-09-18 17:51:05.176",
+  "target": {
+   "hwnd": 199004,
+   "title": "Track_D0_copy_20260918.vi",
+   "rect": [
+    -6,
+    51,
+    1930,
+    1107
+   ],
+   "tid": 16752,
+   "pid": 11492
+  },
+  "click_xy": [
+   1114,
+   915
+  ],
+  "press_xy": [
+   1115,
+   915
+  ],
+  "fg_before": {
+   "hwnd": 199004,
+   "title": "Track_D0_copy_20260918.vi"
+  },
+  "gti_before_focus": {
+   "ok": true,
+   "tid": 16752,
+   "flags": 0,
+   "hwndActive": 199004,
+   "hwndFocus": 199004,
+   "hwndCapture": 0,
+   "hwndMenuOwner": 0,
+   "hwndMoveSize": 0,
+   "hwndCaret": 0
+  },
+  "setforegroundwindow": {
+   "ret": true,
+   "lasterror": 5
+  },
+  "fg_after_sfw": {
+   "hwnd": 199004,
+   "title": "Track_D0_copy_20260918.vi"
+  },
+  "fg_after_sfw_is_target": true,
+  "wfp_click_xy": {
+   "x": 1114,
+   "y": 915,
+   "hwnd": 199004,
+   "title": "Track_D0_copy_20260918.vi",
+   "root": 199004,
+   "root_title": "Track_D0_copy_20260918.vi",
+   "is_target": true,
+   "root_is_target": true
+  },
+  "wfp_press_xy": {
+   "x": 1115,
+   "y": 915,
+   "hwnd": 199004,
+   "title": "Track_D0_copy_20260918.vi",
+   "root": 199004,
+   "root_title": "Track_D0_copy_20260918.vi",
+   "is_target": true,
+   "root_is_target": true
+  },
+  "gti_before_click": {
+   "ok": true,
+   "tid": 16752,
+   "flags": 0,
+   "hwndActive": 199004,
+   "hwndFocus": 199004,
+   "hwndCapture": 0,
+   "hwndMenuOwner": 0,
+   "hwndMoveSize": 0,
+   "hwndCaret": 0
+  },
+  "fg_at_buttondown": {
+   "hwnd": 199004,
+   "title": "Track_D0_copy_20260918.vi"
+  },
+  "fg_at_buttondown_is_target": true,
+  "click_ms": 342,
+  "gti_after_click": {
+   "ok": true,
+   "tid": 16752,
+   "flags": 0,
+   "hwndActive": 199004,
+   "hwndFocus": 199004,
+   "hwndCapture": 0,
+   "hwndMenuOwner": 0,
+   "hwndMoveSize": 0,
+   "hwndCaret": 0
+  },
+  "fg_after_click": {
+   "hwnd": 199004,
+   "title": "Track_D0_copy_20260918.vi"
+  },
+  "wfp_after_click": {
+   "x": 1115,
+   "y": 915,
+   "hwnd": 199004,
+   "title": "Track_D0_copy_20260918.vi",
+   "root": 199004,
+   "root_title": "Track_D0_copy_20260918.vi",
+   "is_target": true,
+   "root_is_target": true
+  },
+  "after_500ms": {
+   "alive": true,
+   "title": "Track_D0_copy_20260918.vi",
+   "rect": [
+    -6,
+    51,
+    1930,
+    1107
+   ],
+   "title_changed": false,
+   "rect_changed": false,
+   "gti": {
+    "ok": true,
+    "tid": 16752,
+    "flags": 0,
+    "hwndActive": 199004,
+    "hwndFocus": 199004,
+    "hwndCapture": 0,
+    "hwndMenuOwner": 0,
+    "hwndMoveSize": 0,
+    "hwndCaret": 0
+   }
+  }
+ },
+ "L4_bandpass_seen": false,
+ "L4_save_seen": false,
+ "cleanup_abort": "COM Abort issued; ExecState after = 1",
+ "md5_copy_after": "c39f36e0675339673b707c59f0784fee",
+ "md5_original_after": "c39f36e0675339673b707c59f0784fee",
+ "handles_after": 47781,
+ "motor_after": {
+  "rc": 3,
+  "tmx": null,
+  "line": "(no TMX line in the gate's output)"
+ }
+}
+json: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_d0_pickloop_liveness.json
+
+=== D0 pickloop liveness: 14 pass, 3 fail ===
+FAILING: 9 L1 `current image number` BEFORE any click, 12 L4 `current image number` + `Count` AFTER the click, 93 G9 post-run TMX? still 39
+BGRUN INNER FAILURE: the command exited 0 but its output reported 3 failure(s); first: [ 120.9s] STEP 93 G9 post-run TMX? still 39   MOTOR    FAIL TMX?=None from "(no TMX line in the gate's output)"; gate exit=3
+BGRUN END rc=1 after 121s (inner failure; the process itself said 0)

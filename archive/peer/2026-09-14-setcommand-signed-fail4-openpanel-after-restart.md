@@ -1,0 +1,49 @@
+﻿---
+type: peer-review
+status: historical
+date: 2026-09-14
+tags: [peer-review, main-vi]
+---
+
+# setcommand-signed-fail4-openpanel-after-restart
+
+- **agent:** codex
+- **date:** 2026-09-14
+- **outcome:** ANSWERED (56s)
+- **why asked:** repeated OpenFrontPanel block after a restart (build_setcommand_signed.log run 4) - root cause found meanwhile: close_panel() loads the file before it is overwritten
+- **verdict:** unverified
+
+## Question
+
+REPEATED FAILURE check (brief). tools/bench/build_setcommand_signed.log run 4 (tools/recipes/build_setcommand_signed.py), right after a clean LabVIEW restart (tools/bench/lv_restart_1940.log: up after 22 s, dialogs clear): the FIRST VI Server call of the run - shutil.copyfile(instr.lib SetCommand.vi -> claudeDev SetCommand_signed.vi) then GetVIReference + OpenFrontPanel - blocked 180 s again (bgrun says 'no dialog', but bgrun's scan missed the untitled 'changed on disk' modal an hour ago). Run 1 at 19:35 did the identical copy+open in 0.x s in the previous (long-running) instance. Recorded rule in our skill: 'load a copied VI through an op (Open VI Reference inside LabVIEW, e.g. report_all) BEFORE OpenFrontPanel from COM - open-first hung on some copies while report-then-open took 0.1 s', and 'a freshly restarted instance shows a small untitled startup window for ~60 s; posting WM_CLOSE to it wedges the next OpenFrontPanel'. HYPOTHESES: (a) first-load-after-restart: OpenFrontPanel as the very first call on a fresh instance (LV-Scripting.lvlib / VISA / instr.lib dependencies not yet loaded) blocks or waits on a hidden dialog (e.g. a 'searching for subVI' / 'Getting Started' window); (b) the copied driver VI links to instr.lib siblings and the fresh instance pops a load-time prompt not visible to our scan; (c) a leftover second COM client (the killed run-3 python) still holds the VI Server busy - but LabVIEW was restarted, so no. PLAN: 1) check dialogs/windows + screenshot (doing now); 2) prepend g.report_all(copy,'SubVI') (loads via Open VI Reference inside LabVIEW) before open_panel, as the rule says, and warm the instance with one harmless op call first; 3) rerun. ATTACK: is there a documented reason OpenFrontPanel via ActiveX blocks on a VI whose file was just written, and which of (a)/(b) does the evidence favour; anything else to check before a 3rd retry.
+
+## Answer
+
+Likely **(b), amplified by a copied-over/previously loaded path**, not a generic first-call-after-restart defect.
+
+- Run 4 was not literally the first VI Server interaction: `lv_restart.py` obtained the application/version and checked windows successfully.
+- The restart run ended after 74 s, and the build began about five seconds later. That substantially weakens the known ~60 s startup-window explanation. No `WM_CLOSE` was posted in the supplied sequence.
+- The long-running instance already had the Autonics/instr.lib hierarchy resident, explaining why run 1 loaded the copy in 0.x s. A fresh instance must resolve that hierarchy from disk.
+- NI says moved/copied callers retain dependency paths, search through several locations including `instr.lib`, and prompt for manual location when resolution fails. NI also warns that copying a hierarchy can produce cross-linking, and that LabVIEW cannot keep two different same-named VIs in memory. [NI subVI search paths](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000P9BOSA0&l=en-US), [NI cross-linking guidance](https://www.ni.com/en/support/documentation/supplemental/08/best-practices-for-managing-ni-labview-applications-using-the-pr.html), [NI same-name behavior](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019OjgSAE&l=en-US).
+- NI documents an explicit load-conflict modal when dependencies resolve against conflicting items. [NI Resolve Load Conflict dialog](https://www.ni.com/docs/da-DK/bundle/labview-api-ref/page/dialog-boxes/resolve-load-conflict-dialog-box.html).
+
+There is no NI documentation I found saying ?쏛ctiveX `OpenFrontPanel` blocks because the file was just written.??The documented mechanism is synchronous UI/load work encountering dependency resolution or a modal window. LabVIEW modal windows prevent interaction with other LabVIEW windows, so a missed modal adequately explains the COM wait. [NI modal-window behavior](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019MojSAE&l=en-US)
+
+Before retry 3:
+
+1. Follow the recorded workaround exactly: one harmless warm-up op, then `report_all(copy, "SubVI")`, then `open_panel`.
+2. Timestamp each of `GetVIReference` and `OpenFrontPanel` separately. The current single expression obscures which boundary initiated the modal.
+3. During the preload, enumerate **all visible and invisible owned LabVIEW top-level windows**, including untitled windows; record class, owner, enabled state, and screenshot. Do not dismiss anything automatically.
+4. Verify the copied target was not already in memory before overwriting it. Closing its panel is not proof it was unloaded.
+5. Record the preload?셲 dependency paths/full names if the reporter can expose them cheaply. A resolved sibling outside `instr.lib\Autonics Motor` would confirm cross-linking.
+6. If preload also blocks, copy the complete Autonics dependency directory to an isolated scratch hierarchy as the discriminating test; NI explicitly recommends copying the hierarchy because moving only a caller changes relative dependency resolution. [NI guidance](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000P9BOSA0&l=en-US)
+
+I would not spend another retry testing hypothesis (a) alone. The cheap discriminant is: **native preload succeeds and subsequent COM open takes ~0.1 s ??loader/modal/context issue confirmed; native preload itself blocks ??dependency/load-conflict evidence strongly favors (b).**
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+Root cause turned out to be the recipe itself: close_panel() on the output path LOADED the old file before the overwrite (reviewer's item 4). Preload via report_all adopted; run 5 built cleanly. Verdict: partly right (item 4), the dependency hypothesis was not needed.

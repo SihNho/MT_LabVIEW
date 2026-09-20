@@ -1,0 +1,174 @@
+BGRUN START 2026-09-10 19:15:33 limit 25.0 min: py -u tools/bench/conpane_chain.py
+LabVIEW up after 14 s, version 26.3.1f1
+dialogs: 18,1346,762| / ENABLED|591688|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+lv_restart rc 0
+copy of OpFPLabels_v0: nodes 8 properties [(115, (853, 300)), (114, (704, 300)), (113, (523, 300)), (112, (426, 300))] wires 9 ExecState 1
+fp: ['vi path', 'Class Name', 'Class Name 2', 'Names', 'Names 2', 'index', 'index 2', 'error out', 'Text', 'Indicator']
+   head Property nodes to replace: [112, 113]
+
+== 1 delete the Front Panel / Panel.Controls[] head
+   predict: Property 4 -> 2, ExecState 0
+   observed: (2, 5, 0)
+
+== 2 PN VI.Connector Pane:Reference (23E)
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 112, 'pos': (417, 300), 'owner': 'TopLevelDiagram'}]
+
+== 2b Open VI Reference.'vi reference' -> PN1.reference
+   predict: accepted
+   observed: 6
+
+== 3 PN ConnectorPane [Controls[], Number of Connection Terminals]
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 113, 'pos': (509, 300), 'owner': 'TopLevelDiagram'}]
+
+== 3b PN1 output -> PN2.reference
+   predict: one candidate name accepted
+   observed: ('ConPane', 7)
+
+== 4 PN2.'Controls[]' -> IA308.array
+   predict: accepted
+   'Controls[]': wire Controls[]->array: error 5001: LV-Scripting.lvlib:Get Outputs.vi<ERR>
+   observed: ('Ctrls[]', 8)
+   ExecState after the data wires: 0 wires 8
+
+== 4a OpenVIRef.'error out' -> PN1 error in
+   predict: accepted
+   observed: ('error in (no error)', 9)
+
+== 4a PN1.'error out' -> PN2 error in
+   predict: accepted
+   observed: ('error in (no error)', 10)
+
+== 4a PN2.'error out' -> PN3 (Control) error in
+   predict: accepted
+   observed: ('error in (no error)', 11)
+   ExecState after the error chain: 0 wires 11
+
+== 4b indicator on PN2's 'Number of Connection Terminals'
+   predict: a readable indicator
+   observed: Number of Connection Terminals
+
+assembled: nodes 8 wires 12 ExecState 0 
+fp: ['vi path', 'Class Name', 'Class Name 2', 'Names', 'Names 2', 'index', 'index 2', 'error out', 'Text', 'Indicator', 'Number of Connection Terminals'] 
+steps failed: []
+STOP: broken - NOT saving. Net map of the BROKEN build follows, then the INTACT source for comparison:
+
+--- OpConPane_v0 (broken) ---
+[0] 43 | 
+     t0 'error out' -> 6.2 'error in (no error)'
+     t1 'vi reference' -> 6.0 'reference'
+     t2 'password ("")' -> UNWIRED
+     t3 'type specifier VI Refnum (for type only)' -> UNWIRED
+     t4 'error in (no error)' -> UNWIRED
+     t5 'options' -> UNWIRED
+     t6 'vi path' -> (wire 106, no other terminal in this diagram)
+     t7 'application reference (local)' -> UNWIRED
+[1] 308 | 
+     t0 'array' -> 7.4 'Ctrls[]'
+     t1 'element' -> UNWIRED
+     t2 'index' -> (wire 1066, no other terminal in this diagram)
+[2] 369 | 
+     t0 'error out' -> UNWIRED
+     t1 '' -> UNWIRED
+     t2 '' -> UNWIRED
+     t3 'specific error cleared?' -> UNWIRED
+     t4 'error in (no error)' -> UNWIRED
+     t5 '' -> UNWIRED
+     t6 '' -> UNWIRED
+     t7 'specific error code to clear (0: all)' -> UNWIRED
+[3] 370 | 
+     t0 'error out' -> UNWIRED
+     t1 '' -> UNWIRED
+     t2 '' -> UNWIRED
+     t3 'specific error cleared?' -> UNWIRED
+     t4 'error in (no error)' -> UNWIRED
+     t5 '' -> UNWIRED
+     t6 '' -> UNWIRED
+     t7 'specific error code to clear (0: all)' -> UNWIRED
+[4] 114 | 
+     t0 'reference' -> UNWIRED
+     t1 'reference out' -> UNWIRED
+     t2 'error in (no error)' -> 7.3 'error out'
+     t3 'error out' -> UNWIRED
+     t4 'Label' -> 5.0 'reference'
+     t5 'Indicator' -> (wire 270, no other terminal in this diagram)
+[5] 115 | 
+     t0 'reference' -> 4.4 'Label'
+     t1 'reference out' -> UNWIRED
+     t2 'error in (no error)' -> UNWIRED
+     t3 'error out' -> UNWIRED
+     t4 'Text' -> (wire 253, no other terminal in this diagram)
+[6] 112 | 
+     t0 'reference' -> 0.1 'vi reference'
+     t1 'reference out' -> UNWIRED
+     t2 'error in (no error)' -> 0.0 'error out'
+     t3 'error out' -> 7.2 'error in (no error)'
+     t4 'ConPane' -> 7.0 'reference'
+[7] 113 | 
+     t0 'reference' -> 6.4 'ConPane'
+     t1 'reference out' -> UNWIRED
+     t2 'error in (no error)' -> 6.3 'error out'
+     t3 'error out' -> 4.2 'error in (no error)'
+     t4 'Ctrls[]' -> 1.0 'array'
+     t5 'NumConns' -> (wire 365, no other terminal in this diagram)
+
+--- OpFPLabels_v0 (intact source) ---
+[0] 43 | 
+     t0 'error out' -> UNWIRED
+     t1 'vi reference' -> 4.0 'reference'
+     t2 'password ("")' -> UNWIRED
+     t3 'type specifier VI Refnum (for type only)' -> UNWIRED
+     t4 'error in (no error)' -> UNWIRED
+     t5 'options' -> UNWIRED
+     t6 'vi path' -> (wire 106, no other terminal in this diagram)
+     t7 'application reference (local)' -> UNWIRED
+[1] 308 | 
+     t0 'array' -> 5.4 'Controls[]'
+     t1 'element' -> 6.0 'reference'
+     t2 'index' -> (wire 1066, no other terminal in this diagram)
+[2] 369 | 
+     t0 'error out' -> UNWIRED
+     t1 '' -> UNWIRED
+     t2 '' -> UNWIRED
+     t3 'specific error cleared?' -> UNWIRED
+     t4 'error in (no error)' -> UNWIRED
+     t5 '' -> UNWIRED
+     t6 '' -> UNWIRED
+     t7 'specific error code to clear (0: all)' -> UNWIRED
+[3] 370 | 
+     t0 'error out' -> UNWIRED
+     t1 '' -> UNWIRED
+     t2 '' -> UNWIRED
+     t3 'specific error cleared?' -> UNWIRED
+     t4 'error in (no error)' -> UNWIRED
+     t5 '' -> UNWIRED
+     t6 '' -> UNWIRED
+     t7 'specific error code to clear (0: all)' -> UNWIRED
+[4] 112 | 
+     t0 'reference' -> 0.1 'vi reference'
+     t1 'reference out' -> UNWIRED
+     t2 'error in (no error)' -> UNWIRED
+     t3 'error out' -> UNWIRED
+     t4 'Panel' -> 5.0 'reference'
+[5] 113 | 
+     t0 'reference' -> 4.4 'Panel'
+     t1 'reference out' -> UNWIRED
+     t2 'error in (no error)' -> UNWIRED
+     t3 'error out' -> UNWIRED
+     t4 'Controls[]' -> 1.0 'array'
+[6] 114 | 
+     t0 'reference' -> 1.1 'element'
+     t1 'reference out' -> UNWIRED
+     t2 'error in (no error)' -> UNWIRED
+     t3 'error out' -> UNWIRED
+     t4 'Label' -> 7.0 'reference'
+     t5 'Indicator' -> (wire 270, no other terminal in this diagram)
+[7] 115 | 
+     t0 'reference' -> 6.4 'Label'
+     t1 'reference out' -> UNWIRED
+     t2 'error in (no error)' -> UNWIRED
+     t3 'error out' -> UNWIRED
+     t4 'Text' -> (wire 253, no other terminal in this diagram)
+build_conpane rc 5
+BGRUN END rc=0 after 199s

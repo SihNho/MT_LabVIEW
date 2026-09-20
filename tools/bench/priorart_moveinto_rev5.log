@@ -1,0 +1,69 @@
+BGRUN START 2026-09-17 04:35:15 limit 20.0 min: py -u tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/plan_rev5.txt --trigger new-op --slug priorart-moveinto-rev5
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-moveinto-rev5.txt (52684 chars)
+OUTCOME: ANSWERED (537s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-priorart-moveinto-rev5.md
+COST: $3.8654  in 46 / out 37711 / cache-create 146026 / cache-read 2924212  (533s, 35 turn(s))
+--- ANSWER ---
+Write is disabled here, so the review is below in full.
+
+# PRIOR-ART REVIEW — `tools/recipes/probe_move_into_v0.py` REV 5 (round 4, trigger: new-op)
+
+Scope honoured: only findings that would make the run produce a **wrong answer** or **no answer**.
+
+## PART A — THE DIRECTION
+
+**Nothing blocks.**
+
+- **A1 settled-already — no.** The direction (can `GObject.Move` with a wired `owner` reparent a STRUCTURE WITH ITS CONTENTS inside one VI) is still open on disk. `docs/d1-build-plan.md:56` lists the six structures as *"OPEN — this is D1's only real unknown"*; `docs/toolkit-capabilities.md:374,:391-393` is the other, position-only probe whose reparenting claim was **withdrawn**.
+- **A2 refuted-already — no.** `tools/recipes/probe_relocate_route.py:10-15` deliberately excluded `GObject.Move` with an owner; `docs/decisions.md:19` and `docs/restructure-plan-4.6.md:79-81` settle only the plain-node / subVI-call case.
+- **A3 contradicted — no.** Round 3's A3 is fixed: `probe_move_into_v0.py:552-560` returns 1 with "this run is INVALID" before P3 is attempted.
+- **A4 unread-evidence — no.** Round 3's A4 is fixed: `archive/peer/2026-08-28-copy-nodes-between-vis.md` is cited at `:42-48`, `:51` included.
+
+**Residual, deliberately NOT slugged** (raised and accepted in round 3; REV 5 applied the documented remedy): round 3 asked for the destination-identity gate *"before the move and after it"* (`archive/peer/2026-09-17-priorart-priorart-moveinto-rev4.md:940`). REV 5 took `body_i` from `new_since`'s `i` (`:530-533`, the remedy `docs/NAMES.md:526-530` prescribes) but P2b sits at `:562-571`, **after** the first `move_in` at `:538`, and `sib_i` is still a bare `report_all` index (`:392-394`, `:511`). Neither can now produce a wrong answer — a bad `body_i` fails the control arm and `:552-560` stops with nothing concluded; a bad `sib_i` is harmless because body uid and index both come from `new_since` on whatever loop was created. Cost is an ambiguous burned run, not a false negative.
+
+## PART B — THE ARTIFACT
+
+### B2 `already-failed` — nothing purges the op's junk Invoke nodes, so **P4 cannot pass**, and the failure class is on record with its cause and its rule
+
+`move_in()` (`:397-412`) drives `OpMoveIn_v0`, a byte copy of `OpMoveOut_v0` (`:229`), which `tools/recipes/build_opmoveout.py:11` builds from **`OpNetInfo_v1.vi`** — the family carrying the erdosmiller `Create Invoke Node.vi` creator. The project has measured what that does:
+
+- `tools/gscript.py:2471-2472` — `move_out()`'s own docstring: *"**Leaves the op's junk Invoke on the target** (spec §33)."* One per run; `move_in` is called twice (`:538`, `:574`).
+- `docs/keystone-op-spec.md:567-573` (§33) — *"empty class/ID strings **still make it drop an untyped Invoke node** … **Protocol:** every use of these ops on a target is followed by `new_since(target,"Invoke")` → delete each junk Invoke → Remove Bad Wires."* `move_in()` sets exactly those empty controls at `:405-407` and the neutralised `error in`; §33 says that does not stop the creator.
+- `docs/NAMES.md:307-313` — names `OpMoveOut` explicitly and states the consequence: *"an Invoke node with an unwired `reference` makes the VI **non-executable even when every wire is good** (Remove Bad Wires reports nothing). **Three OpBuildBA recipe runs failed this way.** Rule for every recipe: `inv0 = g.uids(target,"Invoke")` … purge `g.new_since(target,"Invoke", inv0)` … before every ExecState check and before saving."*
+- `tools/gscript.py:2308-2317` — same cause again: *"three OpReportNodes builds ended broken — they had called net_map on the target."*
+
+**What it does to this run.** `Invoke` counts under `Node`: `docs/NAMES.md:315-320` is a `report_all(main,"Node")` census whose 626 total includes the row **`Invoke 1`**. With `n_before` at `:507` and `n_after` at `:596`, the two `move_in` runs leave the scratch at `n_before + 3` (1 WhileLoop + 2 junk Invokes), while `:598` asserts `n_after == n_before + 1`. **P4 fails for a reason unrelated to reparenting** — it prints `**FAIL** P4 no node lost by the two moves`, `main()` returns 1, and per `STATUS.md` OPEN 21 `tools/bgrun.py`'s `^\s*(?:->\s*)?FAIL\b` scan forces `rc=1`, so an otherwise successful P2/P3 measurement lands in a log recorded as a failed run — against a failure budget of 2, on run 2.
+
+**And REV 5 is the run that removed the accidental protection.** Run 1 was purged incidentally by `net_map`: `archive/peer/2026-09-17-priorart-priorart-moveinto-rev4.md:659-666,:705-713` shows `net_map: … 153 junk Invoke(s) purged` / `160 junk Invoke(s) purged` inside run 1's own log. REV 5 correctly deleted `net_map` (`:63`) — **and the purge went with it.** That trap is already written down: `tools/recipes/build_opownerchain_v1.py:231-243` — *"v0 never noticed because its `net_map` calls purged them as a side effect …; **removing net_map removed the purge with it**."*
+
+**B3, same edit** (reported as one finding because it is one edit): the helper is not to be hand-rolled — `purge_junk()` at `build_opownerchain_v1.py:231-243`, same shape as `tools/recipes/fix_v3_starting_xy.py:17-26`, `net_map`'s internal version at `tools/gscript.py:2318,:2377-2396`, and `gscript.subvis(..., purge=True)` at `tools/gscript.py:355,:368-380`.
+
+**The fix:** `inv0 = g.uids(SCRATCH,"Invoke")` right after `g.open_panel(SCRATCH)` at `:505`; before the `:596` count, delete `g.new_since(SCRATCH,"Invoke", inv0)` and report the number purged as a FACT. Then P4 measures node loss instead of the op's own litter.
+
+**What would refute this precisely:** a written record that `OpMoveOut_v0` does **not** carry the creator — a log where `new_since(target,"Invoke")` is empty after a `move_out`/`move_in` run. I could not find one: `grep move_out` across the project returns only the definition, docs and peer summaries, so `gscript.py:2472` and `NAMES.md:310` are the only statements on file and both say the junk is left. `tools/gscript.py:2306`'s inline *"creator: empty class/ID -> creates nothing"* points the other way and is refuted two lines later by its own measurement at `:2308-2311`.
+
+## Checked and clear — so the next reader does not re-derive it
+
+- `owner_read`'s label file is right: `tools/bench/opwiresource_v5_labels.json` carries every key the probe reads (`uid_back`, `cls_back`, `errL/errT/errO/errU/errG`); it is the map `build_opownerchain_v1.py:165` writes.
+- Round 3's B3 is fixed: `handles()` (`:152-168`) calls `bench_prep.labview_handles()` (`tools/bench/bench_prep.py:64-71`), and importing `bench_prep` has no module-level side effects (`:17-19`; `main` guarded at `:167`), so it cannot restart LabVIEW as a side effect.
+- `walk`/`term` are the documented readers (`tools/recipes/build_track_v6_core.py:84-96`) — run 1's two harness defects are genuinely gone.
+- `Diagram#686` is a FlatSequence-owned frame diagram (`docs/diagram-hierarchy.md:83,:86,:95-98`), but the FlatSequence exception never touches the probe's own chains (`:83` shows WhileLoop bodies resolving 3/3). Not a finding.
+
+```
+tools/recipes/probe_move_into_v0.py REV 5
+PRIOR-ART: already-failed   (B2 - no Invoke snapshot/purge anywhere: move_in() :397-412 runs an
+                             OpNetInfo_v1-lineage op twice (:538,:574) and nothing purges what its
+                             creator drops, so :598's "n_after == n_before + 1" cannot hold
+                             (Invoke counts under Node - docs/NAMES.md:315-320).
+                             Cause and rule already on record: tools/gscript.py:2471-2472,
+                             docs/keystone-op-spec.md:567-573, docs/NAMES.md:307-313,
+                             tools/gscript.py:2308-2317. REV 5 removed net_map, which is what
+                             purged run 1 incidentally - archive/peer/2026-09-17-priorart-
+                             priorart-moveinto-rev4.md:659-666,:705-713 - the exact trap recorded
+                             at tools/recipes/build_opownerchain_v1.py:231-243. Helper, not to be
+                             hand-rolled: purge_junk() there, and gscript.subvis(..., purge=True)
+                             tools/gscript.py:355,:368-380)
+```
+
+No other slug. PART A is clear, and every other defect the three earlier rounds named is fixed in REV 5.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-moveinto-rev5.md
+BGRUN END rc=0 after 537s

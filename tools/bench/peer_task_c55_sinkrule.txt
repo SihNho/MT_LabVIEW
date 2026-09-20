@@ -1,0 +1,60 @@
+ATTACK the explanation below. It is a diagnosis formed under pressure after a failed prediction, and your job
+is to find the strongest reason it is WRONG, not to agree with it.
+
+CONTEXT (LabVIEW VI Scripting over COM, a Python "op" fleet driving built LabVIEW op VIs).
+
+The run: tools/bench/diag_queue_typetest_control.py, log tools/bench/diag_queue_typetest_control.log,
+readings tools/bench/diag_queue_typetest_control.json. `BGRUN END rc=1 after 78s`, 9 gates pass / 2 fail.
+The failing lines:
+  FAIL  G3 TWO bare named input terminals were resolved by the FIXED rule  matched=None mismatched=None
+  FAIL  G2 both legs' source and sink share ONE diagram, uid 686 (Traverse index 19)  2 of 4 ends resolved
+
+WHAT THE RUN WAS FOR. We cannot read a terminal's data type with any op we have. So we wanted to test types BY
+CONNECTION: wire a numeric source into a numeric input (MATCHED) and a refnum source into a numeric input
+(MISMATCHED), and read the property `Wire.Is Broken?` (6371004) on each resulting wire. If the mismatched wire
+reads broken, LabVIEW's type propagation is a usable type checker for us. The run never got that far.
+
+WHAT WAS MEASURED (all of it is in the log):
+  * The scratch is a dated byte-identical copy of claudeDev\D1_s2_loops.vi; ExecState 1 before anything.
+  * The live walk of Diagram #686 returned 24 nodes. Both SOURCES resolved:
+      #8486 'Increment', Nodes[0], terminal 0 named 'x+1', is_source, already carrying wire 23519
+      #250  'Property Node', Nodes[3], terminal 1 named 'IMAQdx Session', is_source, carrying wire 6910
+  * owner_of read ('Diagram', 686) for #250, #7201, #8486, #9179, #25091, #25149 - every node involved.
+  * The SINK rule was fixed in advance: take bare named INPUT terminals, in the order
+    #7201, #8486, #9179, #25091, #25149, where "bare" = is_source False AND a non-empty name AND wire == 0.
+    Measured result, node by node:
+      #7201 'Multiply'  Nodes[1]  - 0 bare named inputs
+      #8486 'Increment' Nodes[0]  - 0 bare named inputs
+      #9179 'Decrement' Nodes[14] - 0 bare named inputs
+      #25091 'Multiply' Nodes[19] - 0 bare named inputs
+      #25149 'Subtract' Nodes[20] - 0 bare named inputs
+  * An independent on-disk census of the ORIGINAL VI (tools/bench/main_vi_nodeterms.json, lines 6256-6295)
+    shows #7201's terminals as: t0 'x*y' is_source true wire 8424; t1 'y' is_source false wire 8385;
+    t2 'x' is_source false wire 8518. So its inputs ARE named, and both already carry wires.
+
+THE EXPLANATION I FORMED, WHICH YOU MUST ATTACK:
+  "The arithmetic nodes named by the fixed rule are live nodes inside a working VI, so every one of their input
+   terminals is already wired. Therefore the fixed sink rule has no candidate on this target, the control pair
+   could not be attempted, and the correct response is (1) to dump the full terminal census of Diagram #686 as
+   pure measurement and (2) to leave the choice of a different sink to a later decision - NOT to pick a
+   different sink now, and NOT to wire onto an already-wired input, because a second source on one terminal
+   makes a wire broken for a reason that has nothing to do with type and would destroy the control."
+
+SPECIFICALLY, TELL ME:
+  1. The strongest reason that explanation is wrong or incomplete. In particular: is "0 bare named input
+     terminals" really what was measured, or could the search itself be defective - e.g. is `wire == 0` the
+     correct emptiness test for a LabVIEW terminal reference read over this path, could a terminal legitimately
+     report a non-zero wire uid while still being connectable, or could `is_source` be unreliable here?
+  2. An alternative explanation for the same observation.
+  3. Whether the premise "wiring a second source onto an already-wired input terminal produces a broken wire
+     for a non-type reason" is actually true in LabVIEW. Does `Terminal.Connect Wire` on an occupied INPUT
+     terminal replace the existing wire, add a second source, or fail? Cite LabVIEW/NI documentation if you
+     can. If it REPLACES, then the whole "no candidate" conclusion is wrong and the run could have proceeded.
+  4. Whether a type-mismatch test needs a BARE terminal at all - is there a cheaper construction that exhibits
+     a type mismatch and whose `Is Broken?` we could read, without depending on finding an unwired input?
+  5. The cheapest discriminating test between your alternative and mine.
+
+ALREADY RULED OUT (do not re-propose these):
+  * Building a new op or a type reader. Forbidden by a standing project rule; no new ops this cycle.
+  * Creating queue nodes first. The instrument under test (`Is Broken?`) must be validated before the subject.
+  * Using a GUI click anywhere. The rig is assembled; scripted GUI is not authorised for this run.

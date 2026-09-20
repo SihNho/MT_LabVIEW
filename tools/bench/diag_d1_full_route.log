@@ -1,0 +1,30 @@
+BGRUN START 2026-09-17 09:59:07 limit 30.0 min: py -u tools/recipes/diag_d1_full_route.py
+=== P0: preconditions
+  PASS  P0a original md5 BEFORE  2a78e17c449cacdaf5da389818526859
+  PASS  P0b OpMoveIn_v0 present  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpMoveIn_v0.vi
+  PASS  P0b OpWireSource_v5 present  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpWireSource_v5.vi
+  PASS  P0b OpStopFromNode_v0 present  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpStopFromNode_v0.vi
+  PASS  P0b OpMoveByIndex_v0 present  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpMoveByIndex_v0.vi
+  FACT  LabVIEW handles before: 0 (fresh-instance baseline ~31,500)
+
+=== P1: join the EXISTING resolution (`d1_step0_census.json.resolved_boundary`) to the 82 cut wires
+  FACT  the stored resolution covers 91 boundary wires (diag_d1_step0.log:18 recorded 91/91 on the step-0 subject set); the post-run-5 cut set is 82 wires
+  FACT  P1 covered 45/82 by kind: {'LoopTunnel': 22, 'rightShiftRegister': 4, 'PanelTerminal': 6, 'leftShiftRegister': 8, 'OpWireSource_v5': 5}
+  FACT  P1 NOT covered by the stored resolution (37): [121, 505, 1397, 1893, 2819, 3040, 3050, 3268, 4517, 4833, 4878, 4906, 5090, 5637, 5709, 5975, 6363, 7388, 9012, 9105, 9113, 9868, 9921, 10187, 10573, 10799, 10990, 11232, 11352, 11389, 12256, 16483, 17393, 28847, 29787, 30592, 31166]
+  FACT  P1-B3 addressing mode of the 109 cut terminals: {'name': 81, 'index': 28} - the INDEX rows are addressable because build_d1_v0.json already stores [node_uid, term_index, name, is_source, wire] (review B3; stage2-a3-wire-shiftreg-plan.md:129)
+  FACT  P1-B3 the 28 index-addressed rows: [(5540, 0, '', False, 5709), (5540, 1, '', False, 5979), (5540, 2, 'Bead is good? array out', True, 5637), (5540, 3, 'Bead is good? array out', False, 6041), (5540, 4, '', False, 5746), (5540, 5, 'x,y,z array out', False, 1681), (5540, 6, 'x,y,z array out', True, 5975), (10445, 0, '', False, 9921), (10445, 1, '', True, 10573), (10445, 2, 'Value', False, 10763), (10445, 3, 'Value', True, 11389), (1359, 1, '', False, 9097), (1359, 2, '', True, 9215), (1359, 4, '', False, 28847), (1359, 5, '', False, 10187), (1359, 6, '', True, 11352), (2222, 0, '', False, 730), (2222, 3, '', False, 628), (2222, 4, '', False, 1773), (2626, 1, 'element', False, 16483), (2626, 2, 'element', False, 30592), (2626, 3, 'element', False, 4878), (29874, 1, '', True, 32890), (29874, 2, '', False, 29787), (29874, 3, '', False, 28039), (29874, 4, '', False, 28847), (29874, 5, '', True, 29591), (10407, 0, '', False, 10799)]
+
+=== P2: `copy_by_index` from a SEPARATELY NAMED donor copy, then `move_in` - OPEN 28's route
+  **FAIL**  P2-B1 a copy_by_index session starts on a FRESH LabVIEW instance  NOT restarted. `build_track_v6_queue.py:105-109` records Errno 22 when copy_by_index substituted the Move-example Target while LabVIEW still had it loaded, and `gscript.py:1304-1307` states the rule: 'the caller restarts LabVIEW before a copy_by_index session'. `g._lv = None` clears the Python COM handle, NOT LabVIEW's loaded VIs. Set FRESH_INSTANCE_DONE only after tools/lv_restart.py has run in this process.
+  PASS  P3 original md5 AFTER  2a78e17c449cacdaf5da389818526859
+  FACT  LabVIEW handles after: 0 (before 0)
+  FACT  wrote G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_d1_full_route.json
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\diag_d1_full_route.py", line 575, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\diag_d1_full_route.py", line 534, in main
+    result["p2"] = p2(missing)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\diag_d1_full_route.py", line 361, in p2
+    return res
+UnboundLocalError: local variable 'res' referenced before assignment
+BGRUN END rc=1 after 1s

@@ -1,0 +1,155 @@
+BGRUN START 2026-09-16 21:31:21 limit 30.0 min: py -u tools/outcome_review.py
+   cadence: 6 cycle retrospectives since 2026-09-15-outcome-review-20260915.md (every 5)
+   task written to C:\Users\KimLab\AppData\Local\Temp\outcome-review-20260916.txt (6596 chars)
+OUTCOME: ANSWERED (241s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-16-outcome-review-20260916.md
+--- ANSWER ---
+All findings below come from repository evidence; I make no external factual claims.
+
+## 1. Deliverable
+
+There is **no new experimental deliverable** since the September 15 outcome review.
+
+The only newly runnable user-facing utility is `tools/bench/camera_contract.py`. It ran against the real camera, successfully changed exposure to `Off`/5555 µs, and proved that opening a new session resets it to `Continuous`/1909 µs. That is useful diagnostic evidence, but it does not acquire, track, control motors, schedule, or save an experiment. See [INDEX.md row 44](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/benchmarks/INDEX.md:65>).
+
+The two deliverable VIs are unchanged from the previous review:
+
+- `Track_v6_CPU_core_v0.vi`
+- `Track_v6_CPU_queue_v0.vi`
+
+Their successful runs also predate that review. The queue VI replayed 10,043 TIFF frames in 7.5 seconds, returned all eight pool images, released its queues cleanly, and was bit-identical for the 10,018 pre-loss frames: [build_track_v6_queue_full.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_track_v6_queue_full.log:185>). The core VI ran the same recording in 192 seconds with the same 10,018-frame limit: [build_track_v6_core_full.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_track_v6_core_full.log:97>).
+
+Neither is an experiment program: both use recorded TIFFs, finite `FOR` loops, and have no live acquisition or stop protocol. [STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:59>) says this explicitly.
+
+**Deliverable verdict:** one new diagnostic tool; zero new experiment-capable VIs.
+
+## 2. Goal alignment
+
+The numbered requirements are in [parallelization-requirement.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/project-requirements/parallelization-requirement.md:8>).
+
+1. **Parallelize the post-`Done Picking Beads?` radial-profile phase in multiple parallel while loops — not advanced.**
+
+   No deliverable performs bead selection or radial-profile acquisition, moves the ASI stage through calibration, produces a `.cal` file, or runs that phase in parallel while loops. The current plan has only now identified that a bead-free run still needs a chosen `.cal` file and a way to satisfy the picking gate: [pre-rig-master-plan.md A10](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/pre-rig-master-plan.md:77>).
+
+2. **Split the experiment-loop functions:**
+
+   1. **Motor control — not advanced as a new product.** It was already parallel in the original. No project-produced top-level VI integrates it.
+   2. **Motor reading — not advanced as a product.** Its timing and paths were studied, but the new VIs do not read live motors. The runnable-main plan still lists this as future loop 1.4: [pre-rig-master-plan.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/pre-rig-master-plan.md:89>).
+   3. **Camera acquisition — supporting knowledge advanced; the requirement did not.** Camera identity, operating limits, and exposure reset behavior are measured, but `Track_v6_CPU_queue_v0.vi` uses `IMAQ ReadFile`, not live IMAQdx acquisition. Live acquisition remains future loop 1.1: [pre-rig-master-plan.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/pre-rig-master-plan.md:86>).
+   4. **Scheduler — not advanced as a product.** No new VI executes a schedule. Its transport remains undecided, and the exact consumer was never pinpointed: [restructure-plan-4.6.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/restructure-plan-4.6.md:357>).
+   5. **Merging and saving data — not advanced.** The replay sink returns arrays to indicators; it does not reproduce the experimental writer, file lifecycle, or stop-and-save. The real writer remains future loop 1.7: [pre-rig-master-plan.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/pre-rig-master-plan.md:92>).
+
+3. **Make all those functions run in parallel — not achieved.**
+
+   The project has separated recorded-image loading, tracking, and an array sink. It has not integrated camera acquisition, motors, scheduler, file writing, calibration, or termination.
+
+The substantial goal-aligned success is the **tracking computation**: the CPU-parallel kernel is correct across the complete fixture when the driver supplies reseeding, and the replay queue overlaps TIFF reading with tracking. [INDEX.md rows 12 and 41](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/benchmarks/INDEX.md:33>) document that. But this remains a component proof, not the requested workflow.
+
+The uncomfortable “not moved since the project began” list is therefore: **radial-profile acquisition, integrated motor control, motor reading, live camera acquisition, scheduler execution, experimental saving, normal stop/save, and an end-to-end parallel experiment VI.**
+
+## 3. Cost versus product
+
+The ratio is not defensible.
+
+In 1.2 days since the previous outcome review, output increased by:
+
+- 2 Op VIs
+- 7 recipe scripts
+- 55 peer exchanges
+- 1 benchmark row
+- 10 documents
+- 6 cycle retrospectives
+
+The deliverable set did not change, and no experimental VI became runnable. [STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:63>) already states the essential ratio: many construction artefacts, two replay VIs, zero runnable experimental VIs.
+
+A competent outcome-focused engineer would have skipped or deferred:
+
+- Six retrospectives in 1.2 days and the retrospective-v2 accounting work.
+- Document lint, ingest, frontmatter repair, and disposition of hundreds of archived reviews until after delivery.
+- A universal 170/170-diagram hierarchy when only the frame-loop boundary and its nested structures are needed for the next migration.
+- Re-measuring facts already present—the master plan itself admits A6 required no new measurement: [pre-rig-master-plan.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/pre-rig-master-plan.md:73>).
+- Further general-purpose Op-fleet expansion not required by the immediate live vertical slice.
+- Additional benchmarking that does not end in a live acquisition, clean stop, and reopened saved data file.
+
+The mapping needed for safe migration is legitimate because the user explicitly ordered the map first. The scope error is turning “map the extraction boundary” into “perfectly classify the entire VI before building anything.”
+
+## 4. Ordering at project scale
+
+The user’s **map-first decision remains valid**, and the remaining targeted A3–A5 work can be justified. [decisions.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/decisions.md:39>) records that instruction.
+
+But the larger ordering is still delivery-hostile:
+
+- Cycle 14 builds another Op VI and completes a 170/170 hierarchy before touching the product: [cycle14-plan.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/cycle14-plan.md:9>).
+- File writing is listed as loop 1.7.
+- Frame accounting is 1.8.
+- Stop and shutdown are 1.9, even though the plan itself says a VI without them is not an experiment product: [pre-rig-master-plan.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/pre-rig-master-plan.md:94>).
+
+After the minimum targeted map is complete, **acquisition → tracking → writer → stop/restart** must be the first build slice. Motor and scheduler integration follow immediately. Display refinement, exhaustive hierarchy work, lint cleanup, and generalized tooling do not precede that slice.
+
+Thus the item currently scheduled last that should move first is **stop/shutdown together with actual file writing**. A live VI that cannot save and stop is not a meaningful intermediate outcome.
+
+## 5. Stale decisions
+
+The longest product-relevant unresolved items are:
+
+- **Scheduler transport/atomicity**, open in substance since the September 12 restructuring review. Four scalar locals can expose a half-updated motor command, while the proposed cluster local is currently not buildable with the fleet. It blocks scheduler loop 1.3 and therefore integrated motor commands. [pre-rig-master-plan.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/pre-rig-master-plan.md:88>) records the two candidate routes. This is an engineering decision; it should not wait on the user.
+- **Which rotor command VI the new product uses.** The September 14 user decision says the signed copy; the current plan also says to preserve the original unsigned call. The plan correctly says both cannot hold and loop 1.4 must not be built until the user chooses: [pre-rig-master-plan.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/pre-rig-master-plan.md:89>). This is the oldest actual user decision now blocking construction.
+- **Whether periodic auto-reset is gated by `Auto-Reset`.** STATUS says the wire-level evidence is negative but an internal property read remains possible: [STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:68>). It blocks trustworthy hours-long no-bead testing and interpretation of automatic stop/save.
+- **Dry-run initialization:** which `.cal` file to load and what satisfies `Done Picking Beads?` without beads. This is new on September 16, not weeks old, but it blocks the dry run from reaching the target loops at all: [pre-rig-master-plan.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/pre-rig-master-plan.md:77>).
+
+The earlier `min value` and `Limit of Program` questions are no longer pending: the user chose current-frame semantics and defined the limit as the auto-reset cap. [stage2-assembly-step-e.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/stage2-assembly-step-e.md:98>) records the first; [the same document](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/stage2-assembly-step-e.md:68>) records the second.
+
+Nothing demonstrably sat unanswered by the user for weeks. But the rotor contradiction should have been presented immediately when discovered, and the `.cal`/picking question must be asked before another construction cycle. Neither belongs hidden inside a long plan.
+
+## 6. The experiment test
+
+If a real experiment had to run next week, the user would use the **original VI**.
+
+The project-produced VIs cannot replace it because they lack:
+
+- bead selection and radial-profile/`.cal` acquisition;
+- live camera acquisition;
+- integrated motor reading and control;
+- scheduler execution;
+- experimental trace-file writing;
+- normal stop/save and coordinated shutdown;
+- complete reseed and long-run behavior;
+- the established operator workflow.
+
+This is not merely conservatism. [STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:59>) classifies both new VIs as replay artefacts with no live acquisition or stop protocol.
+
+## 7. Termination
+
+The shortest remaining path is one delivery sequence:
+
+1. Ask the user one combined question: signed or original rotor command VI, which `.cal` file to use for the bead-free run, and how to satisfy `Done Picking Beads?`.
+2. Make the scheduler-transport choice internally; use the already proven lock-stepped publication unless a real cluster donor already exists.
+3. Finish only the frame-loop map needed for the extraction boundary and unconditional path. Stop pursuing global 170-diagram completeness once that boundary is established.
+4. Copy the original so selection, calibration, controls, startup, scheduler UI, and established workflow survive.
+5. Build the first executable slice as **live acquisition → chosen GPU tracker → real file writer → clean stop/restart**, with buffer-number and ownership accounting.
+6. Add scheduler and motor read/control loops to meet the user’s seven-loop acceptance.
+7. Run a supervised 90 Hz dry batch that issues and reads motor commands, produces a real data file, stops cleanly, restarts cleanly, and successfully reopens/validates the saved file.
+8. Hand that VI to the user for the supervised no-rig pilot. Build the CPU top level afterward, as the user directed.
+
+Abandon or freeze until that succeeds:
+
+- retrospective and review-framework development;
+- document lint/frontmatter cleanup;
+- additional general-purpose Op VIs;
+- exhaustive mapping outside the migration boundary;
+- new benchmark themes;
+- further GPU portability or optimization work;
+- display polish beyond a minimally decimated monitor;
+- archive annotation and contradiction cleanup not blocking the build.
+
+The project has enough measurements and enough construction machinery. The remaining failure is not lack of knowledge; it is failure to turn that knowledge into a runnable experiment program.
+
+OUTCOME-VIOLATION: goal-requirement-not-advanced
+OUTCOME-VIOLATION: tooling-over-delivery
+OUTCOME-VIOLATION: product-not-runnable
+OUTCOME-VIOLATION: ordering-stale
+OUTCOME-VIOLATION: decision-starved
+OUTCOME-VIOLATION: scope-inflation
+OUTCOME-VIOLATION: measurement-without-product
+   peer.ps1 rc 0; archived as archive/peer/<date>-outcome-review-20260916.md
+   Now annotate it: 'why asked' and 'verdict', and act on the OUTCOME-VIOLATION lines.
+BGRUN END rc=0 after 241s

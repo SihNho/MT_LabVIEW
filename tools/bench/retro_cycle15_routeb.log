@@ -1,0 +1,71 @@
+BGRUN START 2026-09-17 16:11:13 limit 15.0 min: py -u tools/retrospective.py --cycle 15 --slug retrospective-cycle15-routeb
+   window 2026-09-17 07:10:02 .. 2026-09-17 13:32:51 (383 min); 33 build logs, 25 machinery logs, 10 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle15-routeb.txt (18883 chars)
+OUTCOME: ANSWERED (364s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-17-retrospective-cycle15-routeb.md
+--- ANSWER ---
+## Verdict
+
+The costliest structural fault was continuing the `OpConnectNested` material work after its two-attempt failure budget was exhausted.
+
+Attempt 1 produced no runnable route (`tools/bench/build_opconnectnested_v0_run1.log:41-66`). Attempt 2 then failed its functional test and remained blocked until the 30-minute process deadline (`tools/bench/build_opconnectnested_v0.log:120-134`). The required adversarial review finished around 12:00 (`tools/bench/peer_connectnested_stall3.log:1-42`), which was the point to stop and hand the unresolved timeout-versus-design choice to judgement. Instead, material performed two more failed tests, diagnosed the shared COM timeout layer, ran another reader, and bought another prior-art review.
+
+Counterfactual: had the session handed off after attempt 2’s review at 12:00, this material cycle would have ended around 12:00 instead of 13:32—93 minutes earlier. The priced post-boundary review cost was $5.1763 (`tools/bench/priorart_connectnested_v1.log:5-6`).
+
+A failure-visibility device also failed, mandating the second verdict below: `diag_connectnested_v1_facts` measured the alleged named source as `None`, immediately marked the condition PASS, and ended `rc=0` (`tools/bench/diag_connectnested_v1_facts.log:29-30,62-63`). The gate was literally hard-coded true (`tools/bench/diag_connectnested_v1_facts.py:131-138`). The later prior-art review caught this before construction, so its measured time loss is zero and no dollar figure can be attributed.
+
+## Findings
+
+1. **Repeated failure.** The `OpConnectNested` sequence had four attempts:
+
+   - Attempt 1: route A and fallback B both left `ExecState 0` (`build_opconnectnested_v0_run1.log:41-66`).
+   - Attempt 2: the functional test failed, then the client timed out after 1,801 seconds (`build_opconnectnested_v0.log:120-134`).
+   - Attempt 3: the isolated v0 test still failed compilation (`test_opconnectnested_v0.log:11-17,37-38`).
+   - Attempt 4: even a prevalidated, type-compatible test changed `ExecState 1 → 0` (`test_opconnectnested_v1.log:20-27,43-44`).
+
+   The approach should have changed after attempt 2: hand the timeout/design fork to judgement, then authorize one discriminating experiment. This also repeated an earlier cycle-window breach already identified at D1 attempt 3: the session-wide budget had been reinterpreted as “two per micro-class” (`archive/peer/2026-09-17-retrospective-cycle15-d1-build3.md:182-186`).
+
+2. **Missing tool.** `VI.Get Errors` remained unbuilt despite being the named reader for unexplained broken-VI states (`CLAUDE.md:321-328`). It would have replaced inference around:
+
+   - `OpStopFromNode` remaining broken after the conditional terminal was wired (`build_opstopfromnode_v0_run3.log:55-56`);
+   - the sentinel scratch’s `ExecState 0` (`build_opsentinel_ops.log:31-44`);
+   - `OpConnectNested` producing a present wire while changing `ExecState 1 → 0` (`test_opconnectnested_v1.log:22-27`).
+
+   The material cycle was frozen against silently adding another general-purpose op, so the correct response was to request a judgement decision—not continue explaining broken states indirectly.
+
+3. **Unmeasured steps.** The clearest false measurement was D2: the source walk returned no node, label, terminal, or panel object, but the gate passed “source is NAMED” (`diag_connectnested_v1_facts.log:28-30`). A cheap Boolean check of the values already in memory was available; instead, line 136 passed literal `True` (`diag_connectnested_v1_facts.py:131-138`). Separately, `OpWireSource_v5` failed its published control with error 1055 across every queried wire, and the run correctly marked its conclusions invalid (`diag_d1_full_route_run2.log:27-66`); that disciplined handling contrasts directly with D2.
+
+4. **Rule compliance.**
+
+   - Broken: the session-wide failure budget of two (`CLAUDE.md:250-254`).
+   - Broken: decisions reserved for judgement were made in material sessions (`CLAUDE.md:246-274`).
+   - Formally failed: A4 reported six blank dispositions. At least some are parser-visible empty duplicate headings followed by real dispositions—for example `d1-s1-diagram-count.md:55-66` and `d1-s1-stale-in-memory-copy.md:57-79`. Thus the archival format violated the mechanical contract even where prose disposition existed.
+   - Satisfied: all supplied build runs were bounded; failed gates ended nonzero or timed out, and the original checksum remained unchanged—for example `build_d1_v0_run7.log:354-356,400-401`.
+   - No GUI or hardware action appears in the build record.
+
+   The audit does not evaluate semantic failure-budget compliance, decisions embedded in material dispositions, hard-coded false-positive gates, whether C7 changes were justified, or individual `BGRUN START` records when multiple invocations share one log. A4 is also day-scoped rather than limited to the stated window.
+
+5. **Ordering.** Initial measurement and prior-art-before-build ordering was defensible. It ceased being defensible after the second `OpConnectNested` attempt. Judgement or the broken-VI reader should have preceded attempts 3–4, the nested-terminal research, the shared timeout-tool experiment, and the v1 plan review. The later review itself concluded that one proposed reader inherited an already-failing `OpWireSource_v5` chain (`archive/peer/2026-09-17-priorart-connectnested-v1.md:338-350`).
+
+6. **What was not reported.** The raw D1 run did not merely have a few unfinished wires: only 35 of 66 attempted routes succeeded, seven failed, and 24 had no route (`build_d1_v0_run7.log:326-328`). Stage 2 was entirely skipped, `ExecState` remained zero, and the working copy was deleted rather than delivered (`:342-355`). Thus the cycle ended with no runnable D1.
+
+   The apparently successful v1 facts report also concealed the `None → PASS` contradiction above. Cost-wise, the three successive full-route prior-art rounds alone consumed 1,812 seconds and $18.4911 (`priorart_d1-full-route.log:3-4`; `priorart_d1-full-route-rev2.log:3-4`; `priorart_d1-full-route-rev3.log:3-4`).
+
+7. **Judgement inside material.** Yes. The material disposition accepted a new timeout mechanism as its working hypothesis, classified it as a shared-tool defect, changed the test strategy, and armed a new experiment (`archive/peer/2026-09-17-connectnested-stall.md:117-145`). Another material disposition accepted all six prior-art findings and changed the donor, input signature, and test contract (`archive/peer/2026-09-17-priorart-connect-nested.md:329-339`). Those are design and explanation choices explicitly reserved for judgement.
+
+## Device effect
+
+- **Runner exit propagation:** failed on the hard-coded D2 false pass: `None` was scored PASS and the batch ended `rc=0` (`diag_connectnested_v1_facts.log:29-30,62-63`).
+- **Confirm-bait refusal:** worked; the mandatory adversarial instructions appear in the review (`archive/peer/2026-09-17-connectnested-stall.md:62-68`).
+- **Prior-art review:** worked, albeit late; it found existing two-cast donors, an already-failing dependency, and the insufficient wire-UID gate (`archive/peer/2026-09-17-priorart-connectnested-v1.md:338-373`).
+- **Undisposed-review gate:** no demonstrated bypass. The A4 blanks concern duplicate/ordinary hypothesis-review headings rather than an undisposed prior-art or retrospective followed by another same-kind dispatch.
+- **Split build/review cost reporting:** worked; the audit found and parsed all ten price lines.
+- **Premature-build guard:** worked. The corresponding prior-art reviews completed before the sentinel, constant, and nested-connect recipes began (`priorart_d1-sentinel-ops.log:1-4`; `build_opsentinel_ops.log:1`; `priorart_createconst-term.log:1-6`; `build_opcreateconstonterm_v0.log:1`; `priorart_connect_nested.log:3-6,103`; `build_opconnectnested_v0.log:1`).
+- **Scope counter:** worked by exposing the 22 out-of-plan changes. It is intentionally observational, so a nonzero list is not itself device failure.
+- **Cost-regex repair:** worked; all ten observed cost lines were parsed.
+- **Inner-failure scan:** worked for actual failure markers: representative failed runs ended `rc=1`, and the stalled run ended TIMEOUT (`build_d1_v0_run7.log:400-401`; `build_opconnectnested_v0.log:128-134`).
+- **`OpLoopEndRef_v0`:** worked for its intended question. The original loop’s terminal and source were measured directly as terminal 648, wire 3457, source `#11639` (`build_d1_v0_run7.log:334-338`). The 1055 errors concern newly created loops, not renewed guessing about original loop `#637`.
+
+VIOLATION: repeated-failure-class | loss_min=93 | loss_usd=5.1763 | evidence=tools/bench/build_opconnectnested_v0.log:134
+VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=unreported-fact-runner-exit@tools/bench/diag_connectnested_v1_facts.log:30
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle15-routeb.md
+BGRUN END rc=0 after 365s

@@ -1,0 +1,74 @@
+BGRUN START 2026-09-18 01:06:22 limit 20.0 min: py -u tools\prior_art_review.py --plan-file C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\095f4381-a3d6-4d7e-a99e-b2319b17c982\scratchpad\check_a_plan.md --slug check-a-wiring --trigger new-op --recipe tools/motor_wiring_check.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_check-a-wiring.txt (18223 chars)
+OUTCOME: ANSWERED (371s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-18-priorart-check-a-wiring.md
+COST: $4.8531  in 46 / out 25995 / cache-create 250401 / cache-read 3397879  (367s, 39 turn(s))
+--- ANSWER ---
+## PRIOR-ART REVIEW — `tools/motor_wiring_check.py` (check A)
+
+The direction is sound and not previously refuted. But four measured artefacts covering this build's steps 2–4 were not consulted, and one of them already measured what this design's central rule does at a structure border. Verdict is not `novel`.
+
+---
+
+### PART A — THE DIRECTION
+
+**A1 SETTLED ALREADY — no.** Check A is the current authorised step (`docs/cycle19-plan.md:16`) and the census explicitly reserved this work: *"It does **not** trace the position input backwards; that is check A"* (`docs/motor-call-site-census.md:161-167`). Nothing here is decided against it.
+
+**A2 REFUTED ALREADY — no.** No archived review, retrospective or superseded section argues against a static backward wiring check. The nearest neighbour (`d1-build-plan.md` §11q–11s) abandoned a *premise about tunnel chains*, not the trace method.
+
+**A3 CONTRADICTED — yes, one, and it is narrow.**
+The plan states: *"`net_map()` is deliberately NOT used: it drops junk Invoke nodes into the target and purges them afterwards. On an ORIGINAL that is an in-memory modification I do not want (rule 1)."*
+
+That rationale is contradicted by measurement in our own files:
+- `docs/NAMES.md:332-339` — *"Same scratch, same process, same OpNetInfo_v1: walked **by reference only → 0 junk**; after `open_panel` → **78 junk** … So: reads of the main VI (never opened) never received junk — the STATUS line saying the overnight sweep 'poured junk' into it **was an inference and is withdrawn**."*
+- `docs/toolkit-capabilities.md:76-77` — *"junk Invokes land only on an open target (a reference-only read never receives them — `walk_junk_probe.log`)"*.
+
+The **choice** survives; only the reason is wrong. The reason that does survive is a different one the plan does not cite: `archive/2026-09-16-status-gate-a1-delete-regression.md:143-144` — *"`net_map`'s purge calls it `verify=False` inside `except Exception: pass`, so **no caller anywhere had positive evidence that delete works**"*. And the cost argument is independently decisive (`docs/toolkit-capabilities.md:23` 0.8 s/node vs `:493` net_map ≈ 8 s/node). Fix the sentence, keep the decision.
+
+**A4 UNREAD EVIDENCE — yes, four documents, and they are the ones this build is about to re-derive.**
+
+| what exists | citation | what it covers |
+|---|---|---|
+| Every terminal of **all 626 nodes on all 170 diagrams** of `Min_Track N beads V6_ParallelLoop.vi` — name, `is_source`, wire uid | `tools/bench/main_vi_nodeterms.json:2` (the `vi` field names that path); described at `docs/main-vi-stop-and-save.md:17` | **the plan's steps 2 AND 3, for one of its two targets, already measured 2026-09-14, read-only** |
+| Per-diagram `Nodes[]` uid lists, same VI, 170 diagrams / 635 nodes | `tools/bench/diagram_tree_main.json:2`; generator contract at `tools/bench/sweep_nodeterms_main.py:3-7` | the uid → `Nodes[]`-index map the plan spends **one `node_labels` op run per diagram** to rebuild |
+| `InRangeAndCoerce` is a valid Traverse class and the whole VI holds exactly **3** | `docs/NAMES.md:319`; the three labelled at `tools/bench/main_vi_node_labels.json:292,1490,1715` | the candidate limit-node set is **bounded at 3 and enumerable in one op run**, forward — no backward walk needed to *find* a coerce |
+| Diagram 13 already recorded as a **range clamp** (`In Range?` `coerced(x)` `lower limit`) | `docs/main-vi-startup.md:36` | sits **three frames after** the startup ASI move at `docs/main-vi-startup.md:33` — the line the plan cites as its "known no-limit candidate". The plan cites `:33` and not `:36` |
+
+Concretely, the data the plan's steps 3 and 5 want is already in the file, per terminal, including the "is a limit input unwired?" column: `tools/bench/main_vi_nodeterms.json:4519-4554` — diagram 13, node 0, uid **790**, `In Range?` **wire 0 (unwired)**, `coerced(x)` wire 2254, `lower limit` (sink). One md5 comparison against the current VI validates or invalidates the whole cache; that is the cheap check, not a re-sweep. The 3StateClamping original genuinely has no such cache and does need the live pass.
+
+---
+
+### PART B — THE ARTIFACT
+
+**B1 ALREADY BUILT — no.** No tool performs the original-vs-copy limit comparison. `tools/motor_census.py` stops at call sites (`census()` at `:347-378` uses `g.subvis`, which returns `SubVIs[]` order, not the `Nodes[]` index this needs), and `gscript.py` has `subvis`/`node_labels`/`node_terms`/`node_terms_uid`/`tunnels` but no wire-source wrapper. Building `tools/motor_wiring_check.py` is warranted.
+
+**B2 ALREADY FAILED — no**, with one correction in the plan's favour: the `OpWireSource_v5` caller defect it names is real. `tools/recipes/build_opwiresource_v5.py:161` does `vi.SetControlValue("vi path", MAIN)` — the target is hard-coded and the `vi` argument is the *op*, not the target. Confirmed independently at `docs/d1-build-plan.md:744-746`.
+
+**B3 HELPER EXISTS — yes, two.**
+
+1. **The cross-border backward hop is already built as a composition and already run.** `docs/d1-build-plan.md:727-731`: *"`gscript.tunnels()` gives the old tunnel's OUTER wire; `OpWireSource_v5` walks that wire's `Terms[]` and returns `Is Source?` + owner class/uid; the owner is located and the terminal index derived **offline** from `main_vi_nodeterms.json` + `d1_step0_census.json`. Raw rows: `tools/bench/d1_tunnel_sources.json`."* Driver: `tools/bench/diag_tunnelsource_onehop.py`. Its own prior-art review concluded it was a composition of ops already on disk *before* it was built (`archive/peer/2026-09-17-priorart-tunnelsource-onehop.md`).
+2. **The wire-uid join and backward slice are already written and offline.** `tools/bench/wiregraph_frame_loop.py` builds 92 directed edges and a named *backward slice* from `main_vi_nodeterms.json` with no LabVIEW run at all (`docs/frame-loop-wire-graph.md:15` and the slice at `:43`). The plan's step 4 hand-rolls the same join one wire at a time, at one op run per wire.
+
+**B4 ALREADY MEASURED — yes, twice, and the first is the decision-relevant one.**
+
+1. **The plan's step-4 continuation rule has already been measured at a structure border, and it terminates.** The plan says: *"if that uid is a node in the map, read its terminals and continue."* That is exactly the rule run on 18 comparable hops, with this result — `docs/d1-build-plan.md:733-739`: **`FlatSequenceInnerTunnel` 14 rows, `LeftShiftRegister` 2 rows, both "❌ not a node on any diagram"**; 1 resolved, 1 did not advance. Raw: `tools/bench/diag_tunnelsource_onehop.log:22-45`, e.g. `:28` *"UNRESOLVED owner uid 5818 (FlatSequenceInnerTunnel) is neither a node on diagrams (19, 43, 0) nor a LoopTunnel"*.
+ Two more measurements compound it, neither cited by the plan:
+ - `OpWireSource_v5` returns owner class **`Diagram`** (uid 639) for a border-fed wire, not the border object — `tools/bench/diag_autofocus_border.log:8` and `:20`.
+ - `OpOwnerChain_v1` **terminates silently on a `FlatSequenceFrame` owner** (`owner_uid 0`, `error 1055`, empty cast echo) — `docs/toolkit-capabilities.md:61`. And `FlatSequenceFrame` is the owner class of this plan's headline site: *"d10 FlatSequenceFrame uid 44036 ASI `Move Axis to Position.vi`"* (`docs/motor-call-site-census.md:105`).
+ Under the plan's own default-deny, the startup ASI move — the one site §A singles out — lands in `UNTRACED`. The missing primitive is already researched with ids in the archive: `FlatSequenceInnerTunnel.Left Terminal` **1C3A9000** / `Right Terminal` **1C3A9001** (`archive/peer/2026-09-17-flatseq-tunnel-source-addressing-r3.md:57-62`) — a peer answer, so a hypothesis under rule 5, not a fact.
+
+2. **One hop of the exact trace check A exists to make is already on disk.** `tools/bench/diag_tunnelsource_onehop.log:38-42` — ForLoop `#1359` t9 `Magnet position output` ← LoopTunnel `#28343` ← **RESOLVED `{'diagram': 19, 'node': 16, 'term': 0, 'owner_class': 'SubVI', 'owner_uid': 27605}`** — and `docs/frame-loop-wire-graph.md:264` names that source *"subVI `Max Trans Pos.vi` · `Magnet position output`"*, i.e. the original's limit source. Measured on the same V6 working copy with md5 `2a78e17c449cacdaf5da389818526859` verified before the run (`tools/bench/diag_tunnelsource_onehop.log:2`) — the same md5 the census re-verified on 2026-09-18 (`docs/motor-call-site-census.md:19-21`).
+
+The three mutation negatives on the comparator (G4) are, as far as these files go, genuinely new. That part is not blocked by anything here.
+
+---
+
+```
+PRIOR-ART: unread-evidence
+PRIOR-ART: contradicted
+PRIOR-ART: helper-exists
+PRIOR-ART: already-measured
+PRIOR-ART: already-measured
+```
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-check-a-wiring.md
+   STOP RECORD armed: tools/motor_wiring_check.py sha  verdict unread-evidence, contradicted, helper-exists, already-measured -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 372s

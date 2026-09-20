@@ -1,0 +1,15 @@
+BGRUN START 2026-09-14 00:22:44 limit 10.0 min: py -c 
+import sys,time; sys.path.insert(0,'tools')
+import gscript as g
+g._lv=None
+MAIN=r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi'
+print('Does net_map already give subVI NAMES per diagram? If yes, OpReportNodes_v0 is unnecessary.')
+t0=time.time()
+nodes,wires = g.net_map(MAIN, 0, max_nodes=60, max_terms=6)
+print(f'diagram 0: {len(nodes)} nodes in {time.time()-t0:.1f}s')
+for i,(uid,lbl,terms) in sorted(nodes.items()):
+    print(f'   [{i:3d}] uid={uid:<6} label={lbl!r}')
+
+Does net_map already give subVI NAMES per diagram? If yes, OpReportNodes_v0 is unnecessary.
+diagram 0: 0 nodes in 1.2s
+BGRUN END rc=0 after 1s

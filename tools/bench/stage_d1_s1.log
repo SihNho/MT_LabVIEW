@@ -1,0 +1,118 @@
+BGRUN START 2026-09-19 21:45:13 limit 45.0 min: py -u tools/recipes/stage_d1_s1.py
+stage_d1_s1: ORIGINAL G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+  FACT  S0 the ORIGINAL, read-only: Min_Track N beads V6_ParallelLoop.vi md5 2a78e17c449cacdaf5da389818526859 size 473317 B; version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  S0 original md5 BEFORE equals the pin  2a78e17c449cacdaf5da389818526859
+  FACT  S0 handles at entry: 54371 (0 = LabVIEW not started yet); refs {'opened': 0, 'closed': 0, 'live': 0, 'cached_op_vis': 0}
+
+=== PHASE A: the SAVE-ROUTE ARM ? copy, preload, read, save. No edit whatsoever.
+  FACT  A0: lv_restart rc=0: ['dialogs: 8,1346,762| / ENABLED|9373246|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  A0: LabVIEW handles after the restart: 30685 (fresh-instance baseline ~31,500)
+  FACT  A1 arm BEFORE the save: D1_s1arm_savetest.vi md5 2a78e17c449cacdaf5da389818526859 size 473317 B; version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  A1 the arm copy on disk is byte-identical to the ORIGINAL  2a78e17c449cacdaf5da389818526859
+  FACT  A2: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened on it, nothing saved
+  FACT  A3 exec_state(arm) with the ORIGINAL PRELOADED = 1 (1 = idle/runnable, 0 = broken). Pre-decided 14a predicts 1; this reading is LOGGED, not gated.
+  FACT  A4 g.save(arm) took 0.28 s and returned 475141; exception = None
+  PASS  A4 g.save(arm) returned without raising  None
+  FACT  A2: preload references released; refs {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 0}
+  FACT  A5 arm AFTER the save: D1_s1arm_savetest.vi md5 e0112963cc1b9e3be29d2bb053ba9029 size 475141 B; version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+  FACT  A5 THE BYTES MOVED across the save: md5 2a78e17c449cacdaf5da389818526859 -> e0112963cc1b9e3be29d2bb053ba9029, size 473317 -> 475141 B. No prediction was offered for this; it is the input to gate B, which asks whether whatever was written changed the file's LINKAGE.
+  FACT  A refs at phase end: {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 0}; handles 54482
+  PASS  MD5-A original md5 unchanged after phase A  2a78e17c449cacdaf5da389818526859
+
+=== PHASE B: LINKAGE CONTROL ? ONE CONDITION PER CHILD PROCESS, FOUR FRESH INSTANCES
+  FACT  B1 control: D1_s1ctl_bytecopy.vi md5 2a78e17c449cacdaf5da389818526859 size 473317 B; version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  B1 the control copy on disk is byte-identical to the ORIGINAL  2a78e17c449cacdaf5da389818526859
+  FACT  B1b arm as phase A left it: D1_s1arm_savetest.vi md5 e0112963cc1b9e3be29d2bb053ba9029 size 475141 B; version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  B0a the reused helper preloads THIS ORIGINAL  helper ORIG 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\Min_Track N beads V6_ParallelLoop.vi'
+  PASS  B0b the reused helper pins the same ORIGINAL md5  2a78e17c449cacdaf5da389818526859 vs 2a78e17c449cacdaf5da389818526859
+
+=== S1ARM-COLD  preload=False  target=D1_s1arm_savetest.vi
+  === CHILD S1ARM-COLD  preload=False  target=D1_s1arm_savetest.vi
+    FACT lv_restart rc=0 'dialogs: 8,1346,762| / ENABLED|8129016|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)'
+    FACT handles after restart: 30688  (fresh baseline ~31,500)
+    FACT S1ARM-COLD ==> ExecState 1  (1 = idle/runnable, 0 = broken)   VI.Name 'D1_s1arm_savetest.vi'
+    FACT handles at end: 36624 (delta +5936)
+  GATE PASS S1ARM-COLD child completed  | rc=0 after 68 s
+  FACT  B-i S1ARM-COLD: ExecState 1 on D1_s1arm_savetest.vi (preload=False) in LabVIEW pid 14028; pid before this child 23016; lv_restart rc=0; handles 30688 -> 36624; VI.Name 'D1_s1arm_savetest.vi'
+  PASS  B-i S1ARM-COLD child completed and returned an integer ExecState  1
+
+=== S1CTL-COLD  preload=False  target=D1_s1ctl_bytecopy.vi
+  === CHILD S1CTL-COLD  preload=False  target=D1_s1ctl_bytecopy.vi
+    FACT lv_restart rc=0 'dialogs: ,1346,762| / ENABLED|12060308|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)'
+    FACT handles after restart: 30690  (fresh baseline ~31,500)
+    FACT S1CTL-COLD ==> ExecState 0  (1 = idle/runnable, 0 = broken)   VI.Name 'D1_s1ctl_bytecopy.vi'
+    --- ExecState 0: MEASURE BEFORE CLOSING (cycle27 Pre-decided 14)
+    FACT SUBVI RESOLUTION: 7 calls over the first 8 of 170 diagrams; 4 with empty name/path or a path not on disk
+        UNRESOLVED Diagram[3] uid 30804 name='MOV.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\MOV.vi'
+        UNRESOLVED Diagram[4] uid 4620 name='GOH.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\Limits.llb\\GOH.vi'
+        UNRESOLVED Diagram[5] uid 5403 name='VEL.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\VEL.vi'
+        UNRESOLVED Diagram[5] uid 5497 name='POS?.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\POS?.vi'
+        subVI      Diagram[1] uid 26582 name='Simple Error Handler.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\vi.lib\\Utility\\error.llb\\Simple Error Handler.vi'
+        subVI      Diagram[3] uid 30804 name='MOV.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\MOV.vi'
+        subVI      Diagram[4] uid 4620 name='GOH.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\Limits.llb\\GOH.vi'
+        subVI      Diagram[5] uid 5403 name='VEL.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\VEL.vi'
+        subVI      Diagram[5] uid 5497 name='POS?.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\POS?.vi'
+    FACT handles at end: 36676 (delta +5986)
+  GATE PASS S1CTL-COLD child completed  | rc=0 after 73 s
+  FACT  B-ii S1CTL-COLD: ExecState 0 on D1_s1ctl_bytecopy.vi (preload=False) in LabVIEW pid 21224; pid before this child 14028; lv_restart rc=0; handles 30690 -> 36676; VI.Name 'D1_s1ctl_bytecopy.vi'
+  PASS  B-ii S1CTL-COLD child completed and returned an integer ExecState  0
+
+=== S1ARM-PRELOAD  preload=True  target=D1_s1arm_savetest.vi
+  === CHILD S1ARM-PRELOAD  preload=True  target=D1_s1arm_savetest.vi
+    FACT lv_restart rc=0 'dialogs: ,1346,762| / ENABLED|42994048|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)'
+    FACT handles after restart: 30682  (fresh baseline ~31,500)
+    FACT ORIGINAL preloaded read-only: ExecState 1, VI.Name 'Min_Track N beads V6_ParallelLoop.vi'
+    FACT S1ARM-PRELOAD ==> ExecState 1  (1 = idle/runnable, 0 = broken)   VI.Name 'D1_s1arm_savetest.vi'
+    FACT handles at end: 48345 (delta +17663)
+  GATE PASS S1ARM-PRELOAD child completed  | rc=0 after 69 s
+  FACT  B-iii S1ARM-PRELOAD: ExecState 1 on D1_s1arm_savetest.vi (preload=True) in LabVIEW pid 25544; pid before this child 21224; lv_restart rc=0; handles 30682 -> 48345; VI.Name 'D1_s1arm_savetest.vi'; ORIGINAL's own ExecState while resident 1
+  PASS  B-iii S1ARM-PRELOAD child completed and returned an integer ExecState  1
+
+=== S1CTL-PRELOAD  preload=True  target=D1_s1ctl_bytecopy.vi
+  === CHILD S1CTL-PRELOAD  preload=True  target=D1_s1ctl_bytecopy.vi
+    FACT lv_restart rc=0 'dialogs: 8,1346,762| / ENABLED|5966308|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)'
+    FACT handles after restart: 30704  (fresh baseline ~31,500)
+    FACT ORIGINAL preloaded read-only: ExecState 1, VI.Name 'Min_Track N beads V6_ParallelLoop.vi'
+    FACT S1CTL-PRELOAD ==> ExecState 1  (1 = idle/runnable, 0 = broken)   VI.Name 'D1_s1ctl_bytecopy.vi'
+    FACT handles at end: 49069 (delta +18365)
+  GATE PASS S1CTL-PRELOAD child completed  | rc=0 after 68 s
+  FACT  B-iv S1CTL-PRELOAD: ExecState 1 on D1_s1ctl_bytecopy.vi (preload=True) in LabVIEW pid 21584; pid before this child 25544; lv_restart rc=0; handles 30704 -> 49069; VI.Name 'D1_s1ctl_bytecopy.vi'; ORIGINAL's own ExecState while resident 1
+  PASS  B-iv S1CTL-PRELOAD child completed and returned an integer ExecState  1
+  PASS  B0c each of the four readings came from its OWN LabVIEW instance (four distinct pids)  pids [14028, 21224, 25544, 21584]
+  FACT  B2/B3 (cold, preloaded) ? SAVED ARM [1, 1] vs PRISTINE CONTROL [0, 1]. By Pre-decided 14a a cold reading is UNREAD as a verdict on legality; it measures subVI LINKAGE, which is exactly what this phase asks, and each of the four was taken in its own instance.
+  **FAIL**  B the saved arm's (cold, preloaded) ExecState pair is IDENTICAL to the pristine control's  arm [1, 1] vs control [0, 1] ? a DIFFERENCE IS THE CROSS-LINKING FINDING Pre-decided 16(b) asked for, not an error to hide
+  FACT  STOP at a fatal gate: B the saved arm's (cold, preloaded) ExecState pair is IDENTICAL to the pristine control's ? the chain stops here and every artefact written so far STAYS ON DISK
+  PASS  S6 original md5 AFTER the whole run  2a78e17c449cacdaf5da389818526859
+  FACT  FINAL arm: D1_s1arm_savetest.vi on disk = True, md5 e0112963cc1b9e3be29d2bb053ba9029, 475141 B
+  FACT  FINAL control: D1_s1ctl_bytecopy.vi on disk = True, md5 2a78e17c449cacdaf5da389818526859, 473317 B
+  FACT  FINAL ARTEFACT: D1_s1_copy.vi on disk = False
+  FACT  FINAL refs: {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 0} (`live` should be 0); handles 34198
+
+--- FACTS ---
+  S0 the ORIGINAL, read-only: Min_Track N beads V6_ParallelLoop.vi md5 2a78e17c449cacdaf5da389818526859 size 473317 B; version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+  S0 handles at entry: 54371 (0 = LabVIEW not started yet); refs {'opened': 0, 'closed': 0, 'live': 0, 'cached_op_vis': 0}
+  A0: lv_restart rc=0: ['dialogs: 8,1346,762| / ENABLED|9373246|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  A0: LabVIEW handles after the restart: 30685 (fresh-instance baseline ~31,500)
+  A1 arm BEFORE the save: D1_s1arm_savetest.vi md5 2a78e17c449cacdaf5da389818526859 size 473317 B; version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+  A2: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened on it, nothing saved
+  A3 exec_state(arm) with the ORIGINAL PRELOADED = 1 (1 = idle/runnable, 0 = broken). Pre-decided 14a predicts 1; this reading is LOGGED, not gated.
+  A4 g.save(arm) took 0.28 s and returned 475141; exception = None
+  A2: preload references released; refs {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 0}
+  A5 arm AFTER the save: D1_s1arm_savetest.vi md5 e0112963cc1b9e3be29d2bb053ba9029 size 475141 B; version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+  A5 THE BYTES MOVED across the save: md5 2a78e17c449cacdaf5da389818526859 -> e0112963cc1b9e3be29d2bb053ba9029, size 473317 -> 475141 B. No prediction was offered for this; it is the input to gate B, which asks whether whatever was written changed the file's LINKAGE.
+  A refs at phase end: {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 0}; handles 54482
+  B1 control: D1_s1ctl_bytecopy.vi md5 2a78e17c449cacdaf5da389818526859 size 473317 B; version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+  B1b arm as phase A left it: D1_s1arm_savetest.vi md5 e0112963cc1b9e3be29d2bb053ba9029 size 475141 B; version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+  B-i S1ARM-COLD: ExecState 1 on D1_s1arm_savetest.vi (preload=False) in LabVIEW pid 14028; pid before this child 23016; lv_restart rc=0; handles 30688 -> 36624; VI.Name 'D1_s1arm_savetest.vi'
+  B-ii S1CTL-COLD: ExecState 0 on D1_s1ctl_bytecopy.vi (preload=False) in LabVIEW pid 21224; pid before this child 14028; lv_restart rc=0; handles 30690 -> 36676; VI.Name 'D1_s1ctl_bytecopy.vi'
+  B-iii S1ARM-PRELOAD: ExecState 1 on D1_s1arm_savetest.vi (preload=True) in LabVIEW pid 25544; pid before this child 21224; lv_restart rc=0; handles 30682 -> 48345; VI.Name 'D1_s1arm_savetest.vi'; ORIGINAL's own ExecState while resident 1
+  B-iv S1CTL-PRELOAD: ExecState 1 on D1_s1ctl_bytecopy.vi (preload=True) in LabVIEW pid 21584; pid before this child 25544; lv_restart rc=0; handles 30704 -> 49069; VI.Name 'D1_s1ctl_bytecopy.vi'; ORIGINAL's own ExecState while resident 1
+  B2/B3 (cold, preloaded) ? SAVED ARM [1, 1] vs PRISTINE CONTROL [0, 1]. By Pre-decided 14a a cold reading is UNREAD as a verdict on legality; it measures subVI LINKAGE, which is exactly what this phase asks, and each of the four was taken in its own instance.
+  STOP at a fatal gate: B the saved arm's (cold, preloaded) ExecState pair is IDENTICAL to the pristine control's ? the chain stops here and every artefact written so far STAYS ON DISK
+  FINAL arm: D1_s1arm_savetest.vi on disk = True, md5 e0112963cc1b9e3be29d2bb053ba9029, 475141 B
+  FINAL control: D1_s1ctl_bytecopy.vi on disk = True, md5 2a78e17c449cacdaf5da389818526859, 473317 B
+  FINAL ARTEFACT: D1_s1_copy.vi on disk = False
+  FINAL refs: {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 0} (`live` should be 0); handles 34198
+
+=== stage_d1_s1: 13 pass, 1 fail -> B the saved arm's (cold, preloaded) ExecState pair is IDENTICAL to the pristine control's  (351 s) ===
+BGRUN END rc=1 after 351s

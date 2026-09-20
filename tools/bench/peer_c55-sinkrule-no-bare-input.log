@@ -1,0 +1,69 @@
+BGRUN START 2026-09-20 08:21:10 limit 14.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c55-sinkrule-no-bare-input -TaskFile 'tools/bench/peer_task_c55_sinkrule.txt'
+OUTCOME: ANSWERED (510s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-20-c55-sinkrule-no-bare-input.md
+COST: $3.5444  in 34 / out 36714 / cache-create 139149 / cache-read 2026039  (507s, 32 turn(s))
+--- ANSWER ---
+Write access is correctly denied for this role, so the review is below in full.
+
+---
+
+# 1. The single strongest reason the explanation is WRONG
+
+**The reading the run was chasing is not owed. Your own active files already answer it — and one of them is the docstring of the connect op the run was using.**
+
+- `tools/gscript.py:2412` (`OpConnect_v0`, measured **2026-09-06**): *"Semantics verified on a fresh Index Array: an already-wired source is BRANCHED (wire count unchanged, ExecState 0→1); an already-wired SINK is not safe (LabVIEW re-routes and the VI breaks) — wire only unwired sinks. **Type mismatches make a broken wire.**"*
+- `docs/NAMES.md:875-879` (measured **2026-09-15**): *"LabVIEW joins type-incompatible terminals and draws a broken wire, whose uid still reads identically at both ends… ExecState 1 → 0."*
+- `docs/NAMES.md:908-909` (measured **2026-09-17**): `Is Broken?` read **False on a good wire** and **True on a broken wire**.
+
+A prior-art peer quoted the first sentence three days ago — `archive/peer/2026-09-17-priorart-d1-op-stopfromnode.md:304` — and the "already-wired SINK is not safe" line has been cited at least five times across `archive/peer/` and `tools/recipes/build_opownerchain_v1.py:37`. So "the instrument under test must be validated before the subject" (the premise that excluded queue nodes under 40(d)) rests on a validation the project already holds. The genuinely open residue is narrow and is **about the reader, not about types**: whether the `Is Broken?` readout ordering behaves on a type-mismatched wire as it did on a two-source one. Your explanation does not name that residue; it says "the run never got that far", which reads as though the whole reading is still outstanding. It is not.
+
+**Second strike, independent of prior art: the observation was derivable before LabVIEW was opened, from a number the same log printed four lines earlier.** `diag_queue_typetest_control.log:15` records `ExecState [before the pair] = 1`. A VI whose run arrow is not broken has no unwired *required* input — NI states the broken arrow "generally mean[s] that a required input is not wired, or a wire is broken" — and `Multiply`, `Increment`, `Decrement`, `Subtract` expose **only** required inputs. So "zero bare named inputs on those five nodes" is *entailed* by `ExecState == 1`. It is a contradiction inside the fixed rule, not a property of this target. The repair's docstring (`diag_queue_typetest_control.py:66-67`) calls it "a fact about the TARGET" — that relabels a design error as a discovery, and it is the part of the explanation a peer should refuse.
+
+**Third: the rule's success case was also a failure case.** In a non-broken VI the only bare named inputs that *can* exist are optional or variadic ones — shift registers ("both sides come back unwired", `docs/toolkit-capabilities.md:53`), structure tunnels, Build Array, Bundle. Those are exactly the terminals that **adapt** to whatever is wired, so they cannot exhibit a type mismatch. Had the fixed rule found its two candidates, the MISMATCHED leg would plausibly have read `False`, and the run would have concluded "LabVIEW type propagation is not a usable type checker for us" — a false negative, recorded as a first-class reading. The rule was under-specified in both directions: it never required the sink to be **type-constrained**.
+
+---
+
+# 2. Answers to the specific questions
+
+**Q1 — is "0 bare named input terminals" really what was measured?** Yes, the search is sound, and the doubts in the brief are the wrong doubts:
+
+- `wire == 0` **is** the documented emptiness test on this path — `gscript.py:874`: *"`wire` = connected wire UID, 0 when bare (then conn_err/wire_err carry 1055…)"*. And note the direction of error: a *failed* `Connected Wire` read would yield `wire = 0`, i.e. a **spurious extra** candidate, not the observed famine. A defective read cannot explain this failure.
+- `is_source` is documented at `gscript.py:873` and was verified "on primitives and on NI's example globals" (`docs/toolkit-capabilities.md:23`). The one known `is_source` trap is structure tunnels on a body diagram (`NAMES.md:930-933`) — irrelevant to five arithmetic primitives.
+- Terminal names are real: `main_vi_nodeterms.json:6256-6295` shows `'x'`/`'y'`/`'x*y'`.
+
+But two things *are* defective, and neither is in your list:
+
+- **The log recorded a count, not a census.** `diag_queue_typetest_control.log:39-43` prints `0 bare named input terminal(s) []` per node and no `(name, is_source, wire)` triples. The corroboration you cite is from the **ORIGINAL** VI while the target is `D1_s2_loops.vi`. The claim "their inputs are all already carrying wires" is therefore inferred, and CLAUDE.md calls that `inference-over-measurement`. (The repair adds the census — correctly.)
+- **"24 nodes" is itself truncatable and was not cross-checked.** `walk()` stops at the first node index whose uid reads 0 (`build_opstopfromnode_v0.py:133-135`), so a single failed `node_terms` mid-array silently shortens the diagram. `walk` already fetches `node_labels` at `:130`; comparing `len(labels)` with `len(out)` costs zero extra COM calls and was available in run 1.
+
+**Q2 — alternative explanation of the same evidence.** Not "the target has no bare inputs" but: **the fixed rule was logically incapable of succeeding on any non-broken VI, and the five candidates were selected for arithmetic convenience rather than for the property the experiment needed (a bare, *type-constrained* sink).** Same observation, different locus — plan, not target. This alternative also predicts something yours does not: the full census of Diagram #686 will return bare inputs only on variadic/adapting nodes, and zero bare inputs on any fixed-arity primitive.
+
+**Q3 — is "a second source on an occupied input breaks the wire for a non-type reason" true?** **No — that mechanism is not what was measured, and the real one is already in your toolkit.** `gscript.py:2411`: *"an already-wired SINK is not safe (LabVIEW re-routes and the VI breaks)"* — LabVIEW **re-routes**, it does not quietly attach a second driver. External corroboration that scripting onto an occupied terminal is not a benign operation: in the NI thread *"Script connect existing loose wires to case tunnels"* an attempt to `Connect Wire` onto a tunnel terminal that already had a wire produced an error, and NI's Darren prescribed reading `Joints[]`, **deleting the existing wire**, and re-creating it with `Create Described Wire`. Neither NI's docs nor the LabVIEW Wiki pages for `Terminal.Connect Wire` (6349C03) or `Node.Connect Wires` state the occupied-terminal behaviour at all, so the honest position is: **replacement is not documented, your own measurement says "re-routes and the VI breaks", and the forum says "error"** — the prohibition survives, its stated reason does not. So your conclusion is right by accident, and it was not a judgement that needed making: it is a five-times-cited toolkit fact. (Also note the asymmetry the rule never justified: the run happily used *already-wired* terminals as **sources** — `#8486` carrying wire 23519, `#250` carrying 6910 — because branching a source is safe, `gscript.py:2411` again.)
+
+**Q4 — does a type-mismatch test need a BARE terminal at all?** It needs one, and **it never needed to *find* one — it could have *made* one with ops that already exist.** No new op, no queue node, no GUI:
+
+- `gscript.build_index_array` (`:2322-2329`) — *"the node arrives UNWIRED; wire its `array` input afterwards with `connect_terminals()`"*. Its `index` input is strictly numeric, so refnum→index is a clean mismatch and numeric→index a clean match, **on the same node**, which is what the brief said it preferred.
+- `gscript.drop_subvi` (`:1225`) and `gscript.build_property` (`:2194`) both take a `diagram_index`, so a bare, strictly-typed sink can be manufactured **on Diagram #686 itself**, keeping `OpConnectNested_v1` (5/5 in cycle 54) as the writer.
+
+Your own script lists "a freshly created arithmetic node" among the deferred options (`diag_queue_typetest_control.py:456`). Deferring the *choice* to judgement is defensible under Pre-decided 40. Saying the pair **"could not be attempted"** is not — it was not attempted.
+
+And a sharper point: **`Is Broken?` is the noisier of the two instruments available.** `NAMES.md:912-921` records that reading it *perturbs the target* — an idempotent connect on a VI whose ExecState was 1 left it reading 0 — and the mechanism is explicitly "OPEN". Meanwhile `connect_terminals` returns `(wire delta, ExecState)` directly (`gscript.py:2431`), and `NAMES.md:879` already used `ExecState 1 → 0` as the type-mismatch detector. One wire at a time on a scratch makes ExecState fully localising. The experiment was built around the reader that its own documentation says corrupts the state it would be checked against.
+
+**Q5 — cheapest discriminating test.** One run, ~4 op calls, a dated scratch, no new op, no queue node, no GUI:
+
+1. `build_index_array(scratch, loc)` → `node_terms` on the new node, printing every triple. **Discriminates immediately**: if its inputs are bare and named, "no candidate on this target" was never about the target.
+2. `connect_terminals(numeric source → 'index')`, record `(wire delta, ExecState)`.
+3. `build_index_array` again; `connect_terminals(refnum source → 'index')`, record the same.
+4. Optional, and only now: the idempotent re-connect for `Is Broken?` on each leg, so the reader's ordering is checked *against* an ExecState result already in hand.
+
+Predicted under my reading: step 1 yields bare named inputs; matched stays `ExecState 1`; mismatched goes `1 → 0`. Under yours, step 1 is where you find out — if a freshly created node's inputs also read non-bare, my account is dead and the emptiness test is the culprit after all.
+
+**Falsifier for my reading:** a freshly created node whose inputs do not read bare on this path, or a demonstration that `Wire.Is Broken?` distinguishes type-mismatch brokenness from two-source brokenness.
+
+---
+
+# 3. What the log records and the explanation does not report
+
+Handles went **30,678 after the restart → 63,416** at the end of a 78-second run (`diag_queue_typetest_control.log:10,59`), while gate G10 passed on the Python-side count (6 opened / 6 closed). Against CLAUDE.md's "20 runs leave the handle count flat (±100)" that is a failure of the reference-hygiene rule, measured inside the run that had to restart LabVIEW *because of* the same growth at cycle 54's close (`:9`). G10 measures the client's refs, not LabVIEW's handles, and reported "no live reference" while the handle count doubled. CLAUDE.md's staged-build rule makes this a precondition, not an afterthought — it belongs in the reading.
+
+Sources: [Terminal class — LabVIEW Wiki](https://labviewwiki.org/wiki/Terminal_class) · [Terminal class/Connect Wire method](https://labviewwiki.org/wiki/Terminal_class/Connect_Wire_method) · [Node class/Connect Wires method](https://labviewwiki.org/wiki/Node_class/Connect_Wires_method) · [Script connect existing loose wires to case tunnels — NI forums](https://forums.ni.com/t5/LabVIEW/Script-connect-existing-loose-wires-to-case-tunnels/td-p/4195933) · [Debugging and Handling Errors — NI](https://www.ni.com/academic/students/learn-labview/debugging/) · [VI class/Execution.State property — LabVIEW Wiki](https://labviewwiki.org/wiki/VI_class/Execution.State_property) · [Using Wires to Link Block Diagram Objects — NI](https://www.ni.com/docs/en-TT/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+BGRUN END rc=0 after 511s

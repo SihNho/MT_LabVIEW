@@ -1,0 +1,89 @@
+BGRUN START 2026-09-14 23:46:49 limit 8.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & '.\tools\peer.ps1' -Agent codex -Slug opforloop-v1-fail1-indexmode-zero -TimeoutSec 240 -Task (Get-Content -Raw '.\tools\bench\peer_task_forv1.txt')
+OUTCOME: ANSWERED (61s)  archived: archive\peer\2026-09-14-opforloop-v1-fail1-indexmode-zero.md
+--- ANSWER ---
+H2 is ruled out by the census. H1 is the leading explanation, but the present test does not prove that the creator ?�silently refuses??scalar indexing.
+
+1. Scalar input and `IndexMode`
+
+NI defines input auto-indexing specifically in terms of an **array** entering a loop: each iteration receives one array element, and an indexed array can determine the For Loop count. [NI: Auto-Indexing Tunnels](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000PAghSAG)
+
+The older NI manual is even more explicit: indexing maps 1-D array ??scalar, 2-D array ??1-D array, and so forth. It does not define indexing for an already-scalar input. [NI LabVIEW User Manual, ?�Auto-Indexing Loops??(https://download.ni.com/support/manuals/320999e.pdf)
+
+However, NI?�s `LoopTunnel.IndexMode` documentation only says:
+
+- `0` = Regular
+- `1` = Auto Index
+- read/write, not writable while running
+
+It does **not** document a datatype error, refusal, coercion, or silent fallback when `1` is written on a scalar tunnel. [NI `LoopTunnel.IndexMode`](https://www.ni.com/docs/ko-KR/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/tunnel/looptunnel/indexmode.html)
+
+Therefore:
+
+- The Boolean test is ill-posed as a positive auto-indexing test.
+- The observed `IndexMode=0` is consistent with H1.
+- But the documentation does not establish whether erdosmiller explicitly filters it, LabVIEW normalizes the write, or the creator applies the mode before/after typing in a way that leaves it regular.
+- The erdosmiller repository describes the package as a VI-Scripting code-generation library, but publishes no textual behavioral contract for this creator. [erdosmiller/lv-scripting](https://github.com/erdosmiller/lv-scripting)
+
+Also, `ExecState=0` is not independent evidence that ?�scalar indexing is illegal.??Once the tunnel remained regular, the For Loop still had neither a wired `N` nor an indexed array supplying its count. That alone explains the broken scratch VI.
+
+2. H2 and minimal repair
+
+The diagnostic shows:
+
+- panel `Inputs Indexing?`: wire UID `1981`
+- `Create For Loop.vi`.`Inputs Indexing?`: wire UID `1981`
+
+So H2 is false for `OpForLoop_v1`: the flag reaches the creator.
+
+If another copy actually had H2, the minimal repair would be exactly one wire:
+
+```text
+Inputs Indexing? FP terminal
+    ??Create For Loop.vi / Inputs Indexing?
+```
+
+Then verify the identical nonzero wire UID at both terminals, `ExecState=1`, save the op, and test both `True` and `False` using an array input. No additional property node or wrapper change would be justified.
+
+3. Setting `IndexMode=1` before wiring the inner terminal
+
+This is the safer ordering, provided the **outer terminal is already typed as an array** and the inner terminal is still unwired.
+
+Changing the mode then establishes the intended array?�element boundary before anything inside depends on the tunnel?�s type. It avoids the earlier hazard: changing an already-wired inner terminal from ?�whole array??to ?�element??and thereby invalidating or retyping an existing downstream wire.
+
+I would not call this unconditionally guaranteed by NI: the `IndexMode` page documents mutability but says nothing about ordering or automatic retyping. [NI `LoopTunnel.IndexMode`](https://www.ni.com/docs/ko-KR/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/tunnel/looptunnel/indexmode.html)
+
+Practical rule:
+
+```text
+wire array to outer terminal
+??set IndexMode = 1
+??verify readback = 1
+??wire the now-element-typed inner terminal
+```
+
+Do not extrapolate safety to an untyped tunnel or to one whose inner terminal is already wired.
+
+4. Cheapest discriminating test
+
+Repeat the existing creator test with a genuine 1-D string-array control??Control Names` is an appropriate readily available specimen:
+
+1. Create the For Loop with that control in `Inputs`.
+2. Supply `Inputs Indexing? = True`.
+3. Before wiring anything inside, verify:
+
+   - exactly one new tunnel;
+   - outer wire UID equals the array control-terminal wire UID;
+   - `IndexMode == 1`;
+   - the loop is executable without an `N` wire, assuming no other broken structure.
+
+Then repeat with the same array and `Inputs Indexing? = False`; expect `IndexMode == 0` and an unwired `N` to leave the loop broken.
+
+Interpretation:
+
+- Array `True ??1`, `False ??0`: H1 confirmed operationally; creator flag works.
+- Both yield `0`: not H2?�the wire census already excludes it. Investigate the creator?�s internal indexing-array construction/order.
+- Direct `OpSetIndexMode_v0` changes the same array tunnel to `1`, while the creator leaves it `0`: defect is inside `Create For Loop.vi` or in how its indexing Boolean array aligns with its `Inputs` array.
+- Direct setter also refuses/readbacks `0`: likely LabVIEW-side tunnel typing/state constraint.
+
+The paired `True`/`False` run is stronger than a single array-positive test because it also detects input-array alignment or Boolean-array construction errors.
+BGRUN END rc=0 after 61s

@@ -1,0 +1,31 @@
+BGRUN START 2026-09-13 22:47:32 limit 20.0 min: py -u tools/recipes/probe_arrayout2.py
+== 1-2. build to step 7, then exit_loop to create the OUTPUT tunnel
+   after step 7: {'ForLoop': 1, 'LoopTunnel': 1, 'Property': 1, 'CtlTerm': 10, 'Wire': 9, 'ExecState': 1}
+   after exit_loop: {'ForLoop': 1, 'LoopTunnel': 2, 'Property': 1, 'CtlTerm': 10, 'Wire': 10, 'ExecState': 1}
+   nodes: [(0, 'ForLoop', (1400, 900)), (1, 'Property', (2845, 1851)), (2, 'SubVI', (495, 281)), (3, 'Function', (275, 251))]
+
+== 3. sweep create_indicator over ForLoop Nodes[0].Terminals[0..13]
+   SCORING: a real hit is ControlTerminal +1 AND Wire +1. CtlTerm alone = a dangling indicator,
+   which is what every one of probe 1's six 'hits' turned out to be.
+   t= 0  CtlTerm +1  Wire +0  ExecState=1   -> dangling
+   t= 1  CtlTerm +1  Wire +0  ExecState=1   -> dangling
+   t= 2  CtlTerm +1  Wire +0  ExecState=1   -> dangling
+   t= 3  CtlTerm +1  Wire +0  ExecState=1   -> dangling
+   t= 4  CtlTerm +1  Wire +0  ExecState=1   -> dangling
+   t= 5  CtlTerm +1  Wire +0  ExecState=1   -> dangling
+   t= 6  CtlTerm +1  Wire +0  ExecState=1   -> dangling
+   t= 7  CtlTerm +1  Wire +0  ExecState=1   -> dangling
+   t= 8  CtlTerm +0  Wire +0  ExecState=1   -> nothing
+   t= 9  CtlTerm +0  Wire +0  ExecState=1   -> nothing
+   t=10  CtlTerm +0  Wire +0  ExecState=1   -> nothing
+   t=11  CtlTerm +0  Wire +0  ExecState=1   -> nothing
+   t=12  CtlTerm +0  Wire +0  ExecState=1   -> nothing
+   t=13  CtlTerm +0  Wire +0  ExecState=1   -> nothing
+
+== 4. result: 0 wired hit(s): []
+   No wired hit. The output tunnel is not reachable as a ForLoop terminal; the next candidate is
+   reading exit_loop's own returned tunnel refs (erdosmiller Exit For Loop emits them).
+
+   final: {'ForLoop': 1, 'LoopTunnel': 2, 'Property': 1, 'CtlTerm': 18, 'Wire': 10, 'ExecState': 1}
+scratch PROBE_arrayout2.vi deleted
+BGRUN END rc=0 after 8s

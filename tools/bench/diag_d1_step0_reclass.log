@@ -1,0 +1,198 @@
+BGRUN START 2026-09-17 05:39:03 limit 5.0 min: py -u tools/bench/diag_d1_step0.py --offline
+MAIN md5 before: 2a78e17c449cacdaf5da389818526859
+  PASS  G0a MAIN md5 before == recorded   2a78e17c449cacdaf5da389818526859
+offline: diagram 43 has 75 nodes / 156 wire uids; diagram 19 has 21 nodes / 74 wire uids
+  PASS  G1 the census gives #5058 16 terminals carrying the 13 recorded wires   16 terminals, wires [5637, 3040, 373, 5859, 505, 5975, 121, 42, 3512, 3646, 7429, 3912, 4027]
+  PASS  G2 all 7 backward-slice nodes are on diagram 43   missing []
+  FACT  per-frame seed wires [121, 505, 3040, 3689, 3747, 5859]
+  FACT  91 boundary wires on the move set (one census end only): [42, 373, 464, 541, 628, 634, 697, 730, 1581, 1651, 1678, 1681, 1731, 1773, 1920, 1961, 2641, 2731, 3290, 3457, 3497, 3512, 3629, 3646, 3668, 3853, 3865, 3912, 3947, 3968, 4027, 4029, 4185, 4436, 4441, 4880, 4969, 5056, 5174, 5265, 5274, 5314, 5336, 5746, 5786, 5812, 5859, 5959, 5979, 6041, 6096, 6197, 6427, 6929, 7337, 7429, 7506, 8165, 8254, 8322, 8590, 9097, 9164, 9215, 9635, 9649, 9806, 9924, 10103, 10142, 10312, 10763, 10850, 10908, 10947, 11253, 11527, 11538, 15230, 15277, 16421, 17287, 23003, 28039, 28338, 29404, 29591, 31059, 32344, 32583, 32890]
+  PASS  G0z --offline: the saved census is for this md5   2a78e17c449cacdaf5da389818526859
+  FACT  --offline: reusing 91 resolved wires, 132 tunnels, 14 shift registers, 114 panel rows from d1_step0_census.json
+  PASS  G0b MAIN md5 after == before   2a78e17c449cacdaf5da389818526859
+handles: 0 -> restart -> 0 -> end 0
+  FACT  edge model v1 (wires only): 22 nodes carry a per-frame value, 7 reach a #5058 input. edge model v2 (+14 shift-register hops, +6 indicator->implicit-property hops): 35 and 11
+  FACT  nodes the corrected model adds: [(48, 'ASI_adjust focus-subvi.vi'), (57, 'Case Structure'), (1469, 'Fix to a Certain Pattern'), (1978, 'Increment'), (5058, 'Track N beads four-fold over-kernel-v3.vi'), (5540, 'Case Structure'), (6810, 'get buff image-lost frames.vi'), (9647, 'And'), (10247, 'Or'), (10285, 'Not'), (10382, 'Not'), (10445, 'Case Structure'), (10886, 'Compound Arithmetic'), (10950, 'Less?'), (10969, 'Array Max & Min'), (11529, 'Less?'), (17289, 'min value')]
+
+=== (a) BACKWARD SLICE - the 7 nodes of frame-loop-wire-graph.md:43 ===
+
+  #5540 'Case Structure'  ->  moves-with-kernel   [wire-graph-only model said: stays-with-tunnel]
+      because: per-frame inputs [(0, '', 5709, 'node #10247'), (3, 'Bead is good? array out', 6041, 'shift register, previous iteration of w5859'), (5, 'x,y,z array out', 1681, 'shift register, previous iteration of w505')]; and it reaches a #5058 input
+      IN  t0  ''                                           w5709   <- [(10247, 0, 'x .or. y?', True)]
+      IN  t1  ''                                           w5979   <- {'kind': 'LoopTunnel', 'uid': 5569, 'index_mode': 0, 'side': 'inner', 'out_wire': 5812, 'in_wires': [5979], 'out_name': ''}
+      IN  t3  'Bead is good? array out'                    w6041   <- {'kind': 'leftShiftRegister', 'uid': 5805, 'class': 'LeftShiftRegister', 'side': 'inside'}
+      IN  t4  ''                                           w5746   <- {'kind': 'LoopTunnel', 'uid': 5752, 'index_mode': 0, 'side': 'inner', 'out_wire': 2731, 'in_wires': [5746], 'out_name': ''}
+      IN  t5  'x,y,z array out'                            w1681   <- {'kind': 'leftShiftRegister', 'uid': 1142, 'class': 'LeftShiftRegister', 'side': 'inside'}
+      OUT t2  'Bead is good? array out'                    w5637   -> [(5058, 0, 'Bead is good? array in', False)]
+      OUT t6  'x,y,z array out'                            w5975   -> [(5058, 7, 'x,y,z array', False)]
+
+  #6810 'get buff image-lost frames.vi'  ->  stays-with-acquisition
+      because: it IS the frame source (row 1.8 REUSE); its `Image Out` crosses to 1.2 through Q_work
+      IN  t0  'Session In'                                 w634    <- {'kind': 'LoopTunnel', 'uid': 665, 'index_mode': 0, 'side': 'inner', 'out_wire': 6910, 'in_wires': [634], 'out_name': 'Value'}
+      IN  t5  'Image In'                                   w1651   <- {'kind': 'LoopTunnel', 'uid': 1666, 'index_mode': 0, 'side': 'inner', 'out_wire': 1678, 'in_wires': [1651], 'out_name': 'Value'}
+      IN  t7  'Buffer to extract'                          w5416   <- {'kind': '?'}
+      IN  t11 'error in'                                   w1961   <- {'kind': 'LoopTunnel', 'uid': 924, 'index_mode': 0, 'side': 'inner', 'out_wire': 925, 'in_wires': [1961], 'out_name': 'error out'}
+      OUT t4  'Session Out'                                w4441   -> {'kind': 'LoopTunnel', 'uid': 4442, 'index_mode': 0, 'side': 'inner', 'out_wire': 4436, 'in_wires': [4441], 'out_name': 'Session Out'}
+      OUT t6  'Image Out'                                  w3040   -> [(5058, 1, 'Image In', False), (22700, 11, 'Image', False)]
+      OUT t8  'Missed frames?'                             w3689   -> [(57, 0, '', False)]
+      OUT t10 'current image number'                       w3747   -> [(3191, 2, 'current image number', False), (57, 3, 'current image number', False), (5119, 2, 'x', False)]
+      OUT t15 'error out'                                  w653    -> [(22700, 8, 'error in (no error)', False)]
+
+  #9647 'And'  ->  moves-with-kernel   [wire-graph-only model said: stays-with-tunnel]
+      because: per-frame inputs [(2, 'x', 9868, 'node #10950')]; and it reaches a #5058 input
+      IN  t1  'y'                                          w9806   <- {'kind': 'PanelTerminal', 'label': 'Auto-Reset', 'indicator': False, 'uid': 17472, 'is_source': True}
+      IN  t2  'x'                                          w9868   <- [(10950, 0, 'x < y?', True)]
+      OUT t0  'x .and. y?'                                 w9921   -> [(10445, 0, '', False), (10382, 1, 'x', False)]
+
+  #10247 'Or'  ->  moves-with-kernel   [wire-graph-only model said: stays-with-tunnel]
+      because: per-frame inputs [(2, 'x', 10573, 'node #10445')]; and it reaches a #5058 input
+      IN  t1  'y'                                          w10312  <- {'kind': 'PanelTerminal', 'label': 'Reset Tracking', 'indicator': False, 'uid': 5605, 'is_source': True}
+      IN  t2  'x'                                          w10573  <- [(10445, 1, '', True)]
+      OUT t0  'x .or. y?'                                  w5709   -> [(5540, 0, '', False)]
+
+  #10445 'Case Structure'  ->  moves-with-kernel   [wire-graph-only model said: stays-with-tunnel]
+      because: per-frame inputs [(0, '', 9921, 'node #9647'), (2, 'Value', 10763, 'shift register, previous iteration of w11389')]; and it reaches a #5058 input
+      IN  t0  ''                                           w9921   <- [(9647, 0, 'x .and. y?', True)]
+      IN  t2  'Value'                                      w10763  <- {'kind': 'leftShiftRegister', 'uid': 11001, 'class': 'LeftShiftRegister', 'side': 'inside'}
+      OUT t1  ''                                           w10573  -> [(10247, 2, 'x', False)]
+      OUT t3  'Value'                                      w11389  -> [(11529, 2, 'x', False)]
+
+  #10950 'Less?'  ->  moves-with-kernel   [wire-graph-only model said: stays-with-tunnel]
+      because: per-frame inputs [(2, 'x', 17393, 'node #17289')]; and it reaches a #5058 input
+      IN  t1  'y'                                          w10850  <- {'kind': 'OpWireSource_v5', 'owner_class': 'DigitalNumericConstant', 'owner_uid': 10739, 'sinks': [['Comparison', 10950]]}
+      IN  t2  'x'                                          w17393  <- [(17289, 4, 'Value', True)]
+      OUT t0  'x < y?'                                     w9868   -> [(9647, 2, 'x', False)]
+
+  #17289 'min value'  ->  stays-with-tunnel
+      because: no per-frame input under this model; its value is loop-invariant and crosses the new border on a tunnel
+      OUT t4  'Value'                                      w17393  -> [(10950, 2, 'x', False)]
+  PASS  G8 each of the 7 backward-slice nodes has exactly one classification   {5540: 'moves-with-kernel', 6810: 'stays-with-acquisition', 9647: 'moves-with-kernel', 10247: 'moves-with-kernel', 10445: 'moves-with-kernel', 10950: 'moves-with-kernel', 17289: 'stays-with-tunnel'}
+  PASS  G9 the measured classification agrees with d1-build-plan s4/s8 where the plan states a placement   {5540: ('moves-with-kernel', 'moves-with-kernel'), 6810: ('stays-with-acquisition', 'stays-with-acquisition')}
+
+=== (b) #10407's per-frame inputs derived from the kernel's outputs ===
+  #10407 t2 'Index of closest\ncal image slice, bead 2' <- w10990 <- #10757 'Index Array' 'element'
+  the focus loop's OTHER inputs (not kernel-derived - tunnel / panel / VISA / its own partner):
+    #10407 t0 ''                                           w10799 <- [(10686, 0, 'x .and. y?', True)]
+    #10407 t1 '# slices in stack'                          w9635 <- {'kind': 'LoopTunnel', 'uid': 9641, 'index_mode': 0, 'side': 'inner', 'out_wire': 9649, 'in_wires': [9635], 'out_name': '# slices in stack'}
+    #10407 t3 'Outgoing Handle'                            w11232 <- [(48, 6, 'Outgoing Handle', True)]
+    #10407 t5 'Out position'                               w7388 <- [(48, 5, 'Out position', True)]
+    #48 t0 '-Inc reference'                             w4833 <- [(3529, 0, '- Inc (PgDn)', True)]
+    #48 t1 '+Inc reference'                             w2819 <- [(3560, 0, '+ Inc (PgUp)', True)]
+    #48 t2 'Focus inc reference'                        w1893 <- [(3447, 0, 'Focus Step (F1)', True)]
+    #48 t3 'VISA resource name'                         w1731 <- {'kind': 'leftShiftRegister', 'uid': 4344, 'class': 'LeftShiftRegister', 'side': 'inside'}
+    #48 t4 'In position'                                w3947 <- {'kind': 'leftShiftRegister', 'uid': 4274, 'class': 'LeftShiftRegister', 'side': 'inside'}
+  FACT  NOTIFIER PAYLOAD WIDTH (measured) = 1 value(s): [(10407, 2, 'Index of closest\ncal image slice, bead 2')]
+  PASS  G7 #10407 / #48 consume at least one kernel-derived per-frame value   1
+  FACT  REVERSE CROSSING: #10407 t6 'position [internal units]' w9113 -> #12589 'Case Structure' 'position [internal units]' (a value the 1.5 loop produces that a node outside it consumes)
+  FACT  BEFORE census written: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\d1_step0_census.json (47 nodes on d43, 5 on d19)
+
+--- FACTS ---
+  per-frame seed wires [121, 505, 3040, 3689, 3747, 5859]
+  91 boundary wires on the move set (one census end only): [42, 373, 464, 541, 628, 634, 697, 730, 1581, 1651, 1678, 1681, 1731, 1773, 1920, 1961, 2641, 2731, 3290, 3457, 3497, 3512, 3629, 3646, 3668, 3853, 3865, 3912, 3947, 3968, 4027, 4029, 4185, 4436, 4441, 4880, 4969, 5056, 5174, 5265, 5274, 5314, 5336, 5746, 5786, 5812, 5859, 5959, 5979, 6041, 6096, 6197, 6427, 6929, 7337, 7429, 7506, 8165, 8254, 8322, 8590, 9097, 9164, 9215, 9635, 9649, 9806, 9924, 10103, 10142, 10312, 10763, 10850, 10908, 10947, 11253, 11527, 11538, 15230, 15277, 16421, 17287, 23003, 28039, 28338, 29404, 29591, 31059, 32344, 32583, 32890]
+  --offline: reusing 91 resolved wires, 132 tunnels, 14 shift registers, 114 panel rows from d1_step0_census.json
+  edge model v1 (wires only): 22 nodes carry a per-frame value, 7 reach a #5058 input. edge model v2 (+14 shift-register hops, +6 indicator->implicit-property hops): 35 and 11
+  nodes the corrected model adds: [(48, 'ASI_adjust focus-subvi.vi'), (57, 'Case Structure'), (1469, 'Fix to a Certain Pattern'), (1978, 'Increment'), (5058, 'Track N beads four-fold over-kernel-v3.vi'), (5540, 'Case Structure'), (6810, 'get buff image-lost frames.vi'), (9647, 'And'), (10247, 'Or'), (10285, 'Not'), (10382, 'Not'), (10445, 'Case Structure'), (10886, 'Compound Arithmetic'), (10950, 'Less?'), (10969, 'Array Max & Min'), (11529, 'Less?'), (17289, 'min value')]
+  NOTIFIER PAYLOAD WIDTH (measured) = 1 value(s): [(10407, 2, 'Index of closest\ncal image slice, bead 2')]
+  REVERSE CROSSING: #10407 t6 'position [internal units]' w9113 -> #12589 'Case Structure' 'position [internal units]' (a value the 1.5 loop produces that a node outside it consumes)
+  BEFORE census written: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\d1_step0_census.json (47 nodes on d43, 5 on d19)
+
+SUMMARY 8/8 gates pass; failing: []
+BGRUN END rc=0 after 0s
+BGRUN START 2026-09-17 05:39:29 limit 5.0 min: py -u tools/bench/diag_d1_step0.py --offline
+MAIN md5 before: 2a78e17c449cacdaf5da389818526859
+  PASS  G0a MAIN md5 before == recorded   2a78e17c449cacdaf5da389818526859
+offline: diagram 43 has 75 nodes / 156 wire uids; diagram 19 has 21 nodes / 74 wire uids
+  PASS  G1 the census gives #5058 16 terminals carrying the 13 recorded wires   16 terminals, wires [5637, 3040, 373, 5859, 505, 5975, 121, 42, 3512, 3646, 7429, 3912, 4027]
+  PASS  G2 all 7 backward-slice nodes are on diagram 43   missing []
+  FACT  per-frame seed wires [121, 505, 3040, 3689, 3747, 5859]
+  FACT  91 boundary wires on the move set (one census end only): [42, 373, 464, 541, 628, 634, 697, 730, 1581, 1651, 1678, 1681, 1731, 1773, 1920, 1961, 2641, 2731, 3290, 3457, 3497, 3512, 3629, 3646, 3668, 3853, 3865, 3912, 3947, 3968, 4027, 4029, 4185, 4436, 4441, 4880, 4969, 5056, 5174, 5265, 5274, 5314, 5336, 5746, 5786, 5812, 5859, 5959, 5979, 6041, 6096, 6197, 6427, 6929, 7337, 7429, 7506, 8165, 8254, 8322, 8590, 9097, 9164, 9215, 9635, 9649, 9806, 9924, 10103, 10142, 10312, 10763, 10850, 10908, 10947, 11253, 11527, 11538, 15230, 15277, 16421, 17287, 23003, 28039, 28338, 29404, 29591, 31059, 32344, 32583, 32890]
+  PASS  G0z --offline: the saved census is for this md5   2a78e17c449cacdaf5da389818526859
+  FACT  --offline: reusing 91 resolved wires, 132 tunnels, 14 shift registers, 114 panel rows from d1_step0_census.json
+  PASS  G0b MAIN md5 after == before   2a78e17c449cacdaf5da389818526859
+handles: 0 -> restart -> 0 -> end 0
+  FACT  edge model v1 (wires only): 22 nodes carry a per-frame value, 7 reach a #5058 input. edge model v2 (+14 shift-register hops, +6 indicator->implicit-property hops): 35 and 11
+  FACT  nodes the corrected model adds: [(48, 'ASI_adjust focus-subvi.vi'), (57, 'Case Structure'), (1469, 'Fix to a Certain Pattern'), (1978, 'Increment'), (5058, 'Track N beads four-fold over-kernel-v3.vi'), (5540, 'Case Structure'), (6810, 'get buff image-lost frames.vi'), (9647, 'And'), (10247, 'Or'), (10285, 'Not'), (10382, 'Not'), (10445, 'Case Structure'), (10886, 'Compound Arithmetic'), (10950, 'Less?'), (10969, 'Array Max & Min'), (11529, 'Less?'), (17289, 'min value')]
+
+=== (a) BACKWARD SLICE - the 7 nodes of frame-loop-wire-graph.md:43 ===
+
+  #5540 'Case Structure'  ->  moves-with-kernel   [wire-graph-only model said: stays-with-tunnel]
+      because: per-frame inputs [(0, '', 5709, 'node #10247'), (3, 'Bead is good? array out', 6041, 'shift register, previous iteration of w5859'), (5, 'x,y,z array out', 1681, 'shift register, previous iteration of w505')]; and it reaches a #5058 input
+      IN  t0  ''                                           w5709   <- [(10247, 0, 'x .or. y?', True)]
+      IN  t1  ''                                           w5979   <- {'kind': 'LoopTunnel', 'uid': 5569, 'index_mode': 0, 'side': 'inner', 'out_wire': 5812, 'in_wires': [5979], 'out_name': ''}
+      IN  t3  'Bead is good? array out'                    w6041   <- {'kind': 'leftShiftRegister', 'uid': 5805, 'class': 'LeftShiftRegister', 'side': 'inside'}
+      IN  t4  ''                                           w5746   <- {'kind': 'LoopTunnel', 'uid': 5752, 'index_mode': 0, 'side': 'inner', 'out_wire': 2731, 'in_wires': [5746], 'out_name': ''}
+      IN  t5  'x,y,z array out'                            w1681   <- {'kind': 'leftShiftRegister', 'uid': 1142, 'class': 'LeftShiftRegister', 'side': 'inside'}
+      OUT t2  'Bead is good? array out'                    w5637   -> [(5058, 0, 'Bead is good? array in', False)]
+      OUT t6  'x,y,z array out'                            w5975   -> [(5058, 7, 'x,y,z array', False)]
+
+  #6810 'get buff image-lost frames.vi'  ->  stays-with-acquisition
+      because: it IS the frame source (row 1.8 REUSE); its `Image Out` crosses to 1.2 through Q_work
+      IN  t0  'Session In'                                 w634    <- {'kind': 'LoopTunnel', 'uid': 665, 'index_mode': 0, 'side': 'inner', 'out_wire': 6910, 'in_wires': [634], 'out_name': 'Value'}
+      IN  t5  'Image In'                                   w1651   <- {'kind': 'LoopTunnel', 'uid': 1666, 'index_mode': 0, 'side': 'inner', 'out_wire': 1678, 'in_wires': [1651], 'out_name': 'Value'}
+      IN  t7  'Buffer to extract'                          w5416   <- {'kind': '?'}
+      IN  t11 'error in'                                   w1961   <- {'kind': 'LoopTunnel', 'uid': 924, 'index_mode': 0, 'side': 'inner', 'out_wire': 925, 'in_wires': [1961], 'out_name': 'error out'}
+      OUT t4  'Session Out'                                w4441   -> {'kind': 'LoopTunnel', 'uid': 4442, 'index_mode': 0, 'side': 'inner', 'out_wire': 4436, 'in_wires': [4441], 'out_name': 'Session Out'}
+      OUT t6  'Image Out'                                  w3040   -> [(5058, 1, 'Image In', False), (22700, 11, 'Image', False)]
+      OUT t8  'Missed frames?'                             w3689   -> [(57, 0, '', False)]
+      OUT t10 'current image number'                       w3747   -> [(3191, 2, 'current image number', False), (57, 3, 'current image number', False), (5119, 2, 'x', False)]
+      OUT t15 'error out'                                  w653    -> [(22700, 8, 'error in (no error)', False)]
+
+  #9647 'And'  ->  moves-with-kernel   [wire-graph-only model said: stays-with-tunnel]
+      because: per-frame inputs [(2, 'x', 9868, 'node #10950')]; and it reaches a #5058 input
+      IN  t1  'y'                                          w9806   <- {'kind': 'PanelTerminal', 'label': 'Auto-Reset', 'indicator': False, 'uid': 17472, 'is_source': True}
+      IN  t2  'x'                                          w9868   <- [(10950, 0, 'x < y?', True)]
+      OUT t0  'x .and. y?'                                 w9921   -> [(10445, 0, '', False), (10382, 1, 'x', False)]
+
+  #10247 'Or'  ->  moves-with-kernel   [wire-graph-only model said: stays-with-tunnel]
+      because: per-frame inputs [(2, 'x', 10573, 'node #10445')]; and it reaches a #5058 input
+      IN  t1  'y'                                          w10312  <- {'kind': 'PanelTerminal', 'label': 'Reset Tracking', 'indicator': False, 'uid': 5605, 'is_source': True}
+      IN  t2  'x'                                          w10573  <- [(10445, 1, '', True)]
+      OUT t0  'x .or. y?'                                  w5709   -> [(5540, 0, '', False)]
+
+  #10445 'Case Structure'  ->  moves-with-kernel   [wire-graph-only model said: stays-with-tunnel]
+      because: per-frame inputs [(0, '', 9921, 'node #9647'), (2, 'Value', 10763, 'shift register, previous iteration of w11389')]; and it reaches a #5058 input
+      IN  t0  ''                                           w9921   <- [(9647, 0, 'x .and. y?', True)]
+      IN  t2  'Value'                                      w10763  <- {'kind': 'leftShiftRegister', 'uid': 11001, 'class': 'LeftShiftRegister', 'side': 'inside'}
+      OUT t1  ''                                           w10573  -> [(10247, 2, 'x', False)]
+      OUT t3  'Value'                                      w11389  -> [(11529, 2, 'x', False)]
+
+  #10950 'Less?'  ->  moves-with-kernel   [wire-graph-only model said: stays-with-tunnel]
+      because: per-frame inputs [(2, 'x', 17393, 'node #17289')]; and it reaches a #5058 input
+      IN  t1  'y'                                          w10850  <- {'kind': 'OpWireSource_v5', 'owner_class': 'DigitalNumericConstant', 'owner_uid': 10739, 'sinks': [['Comparison', 10950]]}
+      IN  t2  'x'                                          w17393  <- [(17289, 4, 'Value', True)]
+      OUT t0  'x < y?'                                     w9868   -> [(9647, 2, 'x', False)]
+
+  #17289 'min value'  ->  moves-with-kernel (panel read, no data input)   [wire-graph-only model said: stays-with-tunnel]
+      because: no wired input; it reads a front-panel object that a per-frame node writes, so it is per-frame and must be evaluated in the same loop, after that writer, to keep the original's order
+      OUT t4  'Value'                                      w17393  -> [(10950, 2, 'x', False)]
+  PASS  G8 each of the 7 backward-slice nodes has exactly one classification   {5540: 'moves-with-kernel', 6810: 'stays-with-acquisition', 9647: 'moves-with-kernel', 10247: 'moves-with-kernel', 10445: 'moves-with-kernel', 10950: 'moves-with-kernel', 17289: 'moves-with-kernel (panel read, no data input)'}
+  PASS  G9 the measured classification agrees with d1-build-plan s4/s8 where the plan states a placement   {5540: ('moves-with-kernel', 'moves-with-kernel'), 6810: ('stays-with-acquisition', 'stays-with-acquisition')}
+
+=== (b) #10407's per-frame inputs derived from the kernel's outputs ===
+  #10407 t2 'Index of closest\ncal image slice, bead 2' <- w10990 <- #10757 'Index Array' 'element'
+  the focus loop's OTHER inputs (not kernel-derived - tunnel / panel / VISA / its own partner):
+    #10407 t0 ''                                           w10799 <- [(10686, 0, 'x .and. y?', True)]
+    #10407 t1 '# slices in stack'                          w9635 <- {'kind': 'LoopTunnel', 'uid': 9641, 'index_mode': 0, 'side': 'inner', 'out_wire': 9649, 'in_wires': [9635], 'out_name': '# slices in stack'}
+    #10407 t3 'Outgoing Handle'                            w11232 <- [(48, 6, 'Outgoing Handle', True)]
+    #10407 t5 'Out position'                               w7388 <- [(48, 5, 'Out position', True)]
+    #48 t0 '-Inc reference'                             w4833 <- [(3529, 0, '- Inc (PgDn)', True)]
+    #48 t1 '+Inc reference'                             w2819 <- [(3560, 0, '+ Inc (PgUp)', True)]
+    #48 t2 'Focus inc reference'                        w1893 <- [(3447, 0, 'Focus Step (F1)', True)]
+    #48 t3 'VISA resource name'                         w1731 <- {'kind': 'leftShiftRegister', 'uid': 4344, 'class': 'LeftShiftRegister', 'side': 'inside'}
+    #48 t4 'In position'                                w3947 <- {'kind': 'leftShiftRegister', 'uid': 4274, 'class': 'LeftShiftRegister', 'side': 'inside'}
+  FACT  NOTIFIER PAYLOAD WIDTH (measured) = 1 value(s): [(10407, 2, 'Index of closest\ncal image slice, bead 2')]
+  PASS  G7 #10407 / #48 consume at least one kernel-derived per-frame value   1
+  FACT  REVERSE CROSSING: #10407 t6 'position [internal units]' w9113 -> #12589 'Case Structure' 'position [internal units]' (a value the 1.5 loop produces that a node outside it consumes)
+  FACT  BEFORE census written: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\d1_step0_census.json (47 nodes on d43, 5 on d19)
+
+--- FACTS ---
+  per-frame seed wires [121, 505, 3040, 3689, 3747, 5859]
+  91 boundary wires on the move set (one census end only): [42, 373, 464, 541, 628, 634, 697, 730, 1581, 1651, 1678, 1681, 1731, 1773, 1920, 1961, 2641, 2731, 3290, 3457, 3497, 3512, 3629, 3646, 3668, 3853, 3865, 3912, 3947, 3968, 4027, 4029, 4185, 4436, 4441, 4880, 4969, 5056, 5174, 5265, 5274, 5314, 5336, 5746, 5786, 5812, 5859, 5959, 5979, 6041, 6096, 6197, 6427, 6929, 7337, 7429, 7506, 8165, 8254, 8322, 8590, 9097, 9164, 9215, 9635, 9649, 9806, 9924, 10103, 10142, 10312, 10763, 10850, 10908, 10947, 11253, 11527, 11538, 15230, 15277, 16421, 17287, 23003, 28039, 28338, 29404, 29591, 31059, 32344, 32583, 32890]
+  --offline: reusing 91 resolved wires, 132 tunnels, 14 shift registers, 114 panel rows from d1_step0_census.json
+  edge model v1 (wires only): 22 nodes carry a per-frame value, 7 reach a #5058 input. edge model v2 (+14 shift-register hops, +6 indicator->implicit-property hops): 35 and 11
+  nodes the corrected model adds: [(48, 'ASI_adjust focus-subvi.vi'), (57, 'Case Structure'), (1469, 'Fix to a Certain Pattern'), (1978, 'Increment'), (5058, 'Track N beads four-fold over-kernel-v3.vi'), (5540, 'Case Structure'), (6810, 'get buff image-lost frames.vi'), (9647, 'And'), (10247, 'Or'), (10285, 'Not'), (10382, 'Not'), (10445, 'Case Structure'), (10886, 'Compound Arithmetic'), (10950, 'Less?'), (10969, 'Array Max & Min'), (11529, 'Less?'), (17289, 'min value')]
+  NOTIFIER PAYLOAD WIDTH (measured) = 1 value(s): [(10407, 2, 'Index of closest\ncal image slice, bead 2')]
+  REVERSE CROSSING: #10407 t6 'position [internal units]' w9113 -> #12589 'Case Structure' 'position [internal units]' (a value the 1.5 loop produces that a node outside it consumes)
+  BEFORE census written: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\d1_step0_census.json (47 nodes on d43, 5 on d19)
+
+SUMMARY 8/8 gates pass; failing: []
+BGRUN END rc=0 after 0s

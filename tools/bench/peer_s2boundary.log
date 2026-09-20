@@ -1,0 +1,98 @@
+BGRUN START 2026-09-20 02:44:25 limit 16.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug d1-s2-boundary-recut -TaskFile tools/bench/peer_s2boundary_task.md -TimeoutSec 780
+OUTCOME: ANSWERED (492s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-20-d1-s2-boundary-recut.md
+COST: $3.3597  in 16 / out 38411 / cache-create 173246 / cache-read 825035  (489s, 22 turn(s))
+--- ANSWER ---
+Write is disabled in this session, so the review is my output, as the peer brief specifies.
+
+---
+
+# Failed-prediction review — CLAIM A and CLAIM B
+
+**CLAIM A is wrong.** **CLAIM B is half wrong** — its severing premise holds, its conclusion is refuted by a measurement already in your own logs.
+
+---
+
+## 1. The strongest reason CLAIM A is wrong
+
+**The four cited files do not agree with each other.** What exists is not one design; it is two, and the build cannot tell which binds. CLAIM A was reached by confirming that *a table exists* — nobody cross-read the tables.
+
+| queue | `docs/d1-build-plan.md` §9 | `docs/cycle15-plan.md` Pre-decided 1 |
+|---|---|---|
+| `Q_focusback` | `:555` — "**1 DBL**, `#10407` t6's value" | `:122` — "`#10407` t6 (**Bool**)" |
+| `Q_focus` | `:554` — source `#10757 .element` | `:121` — source `pos in cal image out` |
+| `Q_rmeta` | `:553` — "the kernel's own outputs" | `:120` — `#6810 current image number` (DBL) |
+
+Same queue, same terminal, two different element types. `docs/frame-loop-wire-graph.md:410` settles it: `#10407` t6 is `position [internal units]` (wire 9113), feeding SR `#4256` and `Global motor pos.vi`'s `Focus position`. Numeric. So the document that is wrong is `cycle15-plan.md` — **the binding one**, the one a material session "applies without asking" (`cycle15-plan.md:113`).
+
+**Second, and this is the reading on which "designed on paper" is not what the blocked build needed.** `queue_node` consumes a `src_name` = *a named OUTPUT terminal of a node that already exists on the diagram* (`docs/toolkit-capabilities.md:32`). "The kernel's own outputs" (`:553`) is not a `src_name`. `#10757 .element` (`:554`) names a Dequeue **the build itself creates** — a type source with an ordering constraint the table does not express. Run 3 died on precisely this class: `sr_queue` *"refuses a nameless type source, so both rows would have returned NO-ROUTE"* (`build_d1_routeb_v7.py:113-116`). §9 supplies a resolvable `(node, named output terminal)` pair for at most three of the eight.
+
+**Third:** `cycle15-plan.md:120-121` sources `Q_res`/`Q_good` from the **GPU** kernel's `x,y,z array out` / `Bead is good? array out`. Cycle 49 established that `#5058` is the **CPU** kernel (`STATUS.md:76`, Pre-decided 31(a), fatal gate C2k). Those type sources name a node S2 does not place.
+
+**Alternative explanation of the same evidence.** The v7 comment is neither stale nor a design gap — it is accurate about a different predicate. Read it literally: *"the element types of **the other six** queues are an undesigned row"* — the six beyond the two SR queues the paragraph above had just refused — and "undesigned" plausibly means *not resolved to a `src_name` on this copy*. Under that reading the comment is **current**, and design work is owed.
+
+---
+
+## 2. The strongest reason CLAIM B is wrong
+
+First, what survives. **The severing premise is right** — `STATUS.md:64` (`a5_lands_unwired=True`), `cycle27-plan.md:838` Pre-decided 33(a) correcting 32(f). **And your census conclusion about a constant is right**, which refutes my own opening hypothesis: `Constant` and `Node` are **siblings** under `GObject`, not parent and child ([VI Server Class Hierarchy](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy)), so `AbstractDiagram.Nodes[]` excludes constants and `OpStopFromNode_v0`'s `Loop.Diagram → Nodes[] → Terms[]` ladder can never source one. The conditional terminal is reachable only through `WhileLoop.Loop End Ref` 6362C00 (`toolkit-capabilities.md:62`), and an unwired one is a broken VI ([NI: *Conditional terminal is not wired*](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/conditional-terminal-is-not-wired.html)).
+
+**Now the refutation. The route exists, it is built, and it reached `ExecState 1` on a loop the build created.** `docs/toolkit-capabilities.md:63-64`:
+
+> `OpCreateEqual_v0` places an `Equal?` **with both operands wired from output terminals of one existing node** … its Boolean output then drives the loop's conditional terminal through `OpStopFromNode_v0` (term 119, wire 0 → **387**) and the scratch reads **ExecState 1**.
+> T5 CLOSED BY MEASUREMENT (`tools/bench/build_opsentinel_ops_run3.log`, gates F5c/F6) — *"the op produces a RUNNABLE VI"*. `OpCreateEqual_v0` 23/0.
+
+That is literally question 2's "always-true comparison such as `Equal?` fed both operands from one source", on `WhileLoop#43` of an `EMPTY_v0` copy — **a loop the build created** — and `ExecState 1` is exactly `gscript.save()`'s predicate at `tools/gscript.py:2071`.
+
+`cycle27-plan.md:816-820` already wrote the selection rule: **(1)** a constant-TRUE op wins; **(2)** failing that, `OpCreateEqual_v0` → `OpStopFromNode_v0`. `STATUS.md:22` reports only that *"32(d) rule (1) still has no winner"* — and `STATUS.md:59-64` converts that into "S2 CANNOT END LEGAL". **Rule (2) is never evaluated.** That is the whole gap.
+
+**And the operand need not be inside the body.** `toolkit-capabilities.md:64`: *"Operands may sit on an outer diagram: LabVIEW makes the tunnels (measured `LoopTunnel 0 → 2`)."* That falsifies 32(b)'s premise that the body-node routes "were unreachable only because an empty body has no node to address" — so **create loop → scaffold → save** is legal on an *empty* body, before any `move_in`.
+
+**The smuggled premise.** CLAIM B ends the span at *"its **real** stop condition"*. Your own decided order ends it at a **scaffold** (`cycle27-plan.md:803`). Swapping "legal" for "real" inflates the atomic unit by the entire queue/sentinel design — and CLAIM B then pulls the 13/12/7 re-wiring rows inside it as well. The premise licenses ~3 operations; the conclusion bundles ~20, and the 20 include **the exact stage that killed v3→v7 ten times** (`cycle27-plan.md:830`). That is the user's 2026-09-19 rule run backwards.
+
+Two caveats I will not hide: the scaffold operand must be a **scalar** — `STATUS.md:22` already caught that `#5058` t3 is `Bead is good? array out`, an ARRAY, and `Equal?` on arrays yields an array that will not drive a conditional terminal. And `x == x` is TRUE for every non-NaN value, which satisfies legality unconditionally and satisfies 30(f)'s "must not hang" for any frame counter or position.
+
+---
+
+## 3. An alternative explanation for the ten failures — address invalidation by self-mutation
+
+Neither claim touches this. Every re-wire row is addressed by **terminal INDEX**, and the indices drift because the build's own earlier edits create tunnels and sever wires:
+
+- `toolkit-capabilities.md:70` — T2c2's wire reads `Is Broken? TRUE` because *"terminal index 1 came from a census of the RESTRUCTURED copy and was applied to an UNRESTRUCTURED one."*
+- `archive/peer/2026-09-17-priorart-priorart-routeb-build.md:301` — *"A stale `ti` selects a different, live tunnel's wire, `w_now` is non-zero, and the SINK RULE checks only the sink — so a wrong-but-valid source is wired silently and no gate sees it."*
+- `toolkit-capabilities.md:68` — the RBW-survival gate *"IS uid equality … **Do not cite RBW-survival as evidence a wire is good**"*, and *"terminal-INDEX drift across tunnel creation is a live, unmeasured alternative."*
+
+This predicts the observed pattern exactly: failures concentrated in the one stage that applies a large batch of pre-computed indices *after* many mutations; a different local symptom each time; each explained locally and patched; none fixed. It also predicts that **CLAIM B's boundary will not help** — 32 rows become 13/12/7, but address-then-mutate is unchanged inside each batch.
+
+It sits in tension with CLAUDE.md's own work-cycle rule ("every name resolved at planning time; no mid-run name discovery"). That rule is sound for **names**, which are stable, and unsound for **indices**, which are not stable under mutation. The rule that made your batches replayable is the same rule that makes index-addressed re-wiring unsound.
+
+---
+
+## 4. What falsifies "one complete loop per stage" — and the dependency question
+
+**Falsifier:** `ExecState 1` read on a copy holding one new loop + one moved node + a scaffolded conditional terminal, with the node's cut wires **not** re-wired. One integer separates the loop from its re-wiring and kills the boundary. Conversely, a connector-pane census showing zero Required inputs among the cut rows of `#48`/`#376`/`#5058` falsifies the bare-Required half *a priori*.
+
+**On the dependency you flagged — it does not exist at build time.** All eight Obtains sit at top level on `Diagram #686` (`d1-build-plan.md:593` S1q; `build_d1_routeb_v7.py:100`). So 1.5's Dequeue takes its refnum from an Obtain that exists whether or not 1.2 does, and the `−1` `Equal?` is built from 1.5's own Dequeue output. **Loop `#48` is fully buildable with `#5058`'s loop absent.** The dependency is **runtime only**: with no producer, 1.5 blocks forever.
+
+Two consequences. Intermediate artefacts must never be RUN — state that in the plan rather than leaving it implicit. And **"smallest loop first" orders by the wrong quantity**: cut-wire count is a convenience, and if any intermediate will ever be run, the order is producer-before-consumer (`#5058`'s loop first), not 7 → 12 → 13.
+
+---
+
+## 5. The cheapest discriminating test
+
+On a **scratch copy of the already-saved `claudeDev\D1_s1_copy.vi`** (md5 `3e3d23ce…`) — built ops only, no new op, original never opened:
+
+1. `loop_in('while', …)` → one new While loop on `Diagram #686`
+2. `OpCreateEqual_v0` → `Equal?` on the new body, **both operands from one SCALAR output terminal** of a node on the parent diagram
+3. `OpStopFromNode_v0` → conditional terminal from that `Equal?`
+4. **read `ExecState`** → then `move_in` `#48` → **read `ExecState` again**
+
+**Predictions.** Step 3 → **`ExecState 1`**, reproducing `build_opsentinel_ops_run3.log` F5c/F6 on the real copy; that alone falsifies "S2 cannot end legal". Step 4 → if still **1**, the loop and its re-wiring are separable and the stage cuts far finer than one loop; if **0**, CLAIM B's bare-Required premise is confirmed empirically for `#48`, and phase A's census question is answered by measurement rather than by inventory. Either branch leaves a file.
+
+Four op calls, against a paper census that has now consumed a cycle and two paid prior-art rounds without touching LabVIEW.
+
+---
+
+**What would change my mind on CLAIM B:** a log line showing `OpStopFromNode_v0` failing on a loop whose body holds only an `Equal?`, or a measurement that `OpCreateEqual_v0` cannot place onto a body whose only content is itself. Neither is in `tools/bench/`. Until one is, "no built op can make a new While loop legal" is an inventory conclusion contradicted by your own 23/0 functional record.
+
+**Sources:** [VI Server Class Hierarchy — LabVIEW Wiki](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy) · [NI — Conditional terminal is not wired](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/conditional-terminal-is-not-wired.html) · [NI — Specifying Conditions for While Loops](https://www.ni.com/docs/en-AS/bundle/labview/page/specifying-conditions-for-while-loops.html) · [NI Forums — Wiring the conditional terminal of a while loop created by LabVIEW Scripting](https://forums.ni.com/t5/LabVIEW/Wiring-the-conditional-terminal-of-a-while-loop-created-by/td-p/2115512) · [While loop — LabVIEW Wiki](https://labviewwiki.org/wiki/While_loop)
+BGRUN END rc=0 after 493s

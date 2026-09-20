@@ -1,0 +1,281 @@
+BGRUN START 2026-09-18 15:37:16 limit 3.0 min: py -u tools/bench/motor_gate2_live.py
+
+=== L1 session start :: py tools/motor_gate.py --session start
+   | before: POS?=1=0.00000 TMN?=1=0.00000 TMX?=1=39.00000 ERR?=0
+   | ERR? after SPA = 0
+   | LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+   | RESULT: controller limits are TMN=0 TMX=39 (mode limits-set)
+   | PI  : PI controller limits match the file (TMN 0.0000 / TMX 39.0000, tol 0.001) (sender code=0)
+   | before SL: :A X=-3.847494 Y=-4.774393   SU: :A X=0.152497 Y=-0.774402
+   | SL write -> :A
+   | SU write -> :A
+   | LIMITS SL X=-3.847494 Y=-4.774393 SU X=0.152497 Y=-0.774402
+   | position after (must be unchanged): X=-18475 Y=-27744
+   | RESULT: controller limits set (mode limits-set)
+   | ASI : ASI controller limits match the file (SL {'X': -3.8475, 'Y': -4.7744} / SU {'X': 0.1525, 'Y': -0.7744} mm, tol 0.001) (sender code=0)
+   | SESSION START OK -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\motor_session.json
+   exit code=0
+  PASS  L1 session start, limits verified by readback  PI {"SPA15": 39.0, "SPA30": 0.0, "TMN": 0.0, "TMX": 39.0}  ASI {"SL": {"X": -3.847494, "Y": -4.774393}, "SU": {"X": 0.152497, "Y": -0.774402}}
+
+=== L2 PI MOV 1 5 :: py tools/motor_gate.py --device pi --command MOV 1 5 --execute
+   | ALLOWED (pi): PI absolute move to [1.0, 5.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readback at transmit time; a target outside them answers ERR 7 and does not move)
+   | {"kind": "move", "relative": false, "state_note": "rig assembled: motion allowed by the user's 2026-09-17 ruling, bounded by the CONTROLLER limits this gate installs and re-verifies", "targets_mm": [1.0, 5.0]}
+   | session opened 2026-09-18 15:37:18
+   | LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+   | before: POS?=1=0.00000  SVO?=1=1  FRF?=1=0  VEL?=1=15.00000  ERR?=0
+   | SENT: MOV 1 5
+   | ERR? right after send = 5
+   | after:  POS?=1=0.00000  ONT?=1=1  ERR?=0  elapsed=2.1s
+   | RESULT: NOT at target - final=0 target=5  (ERR right after send was 5)
+   | GATE re-check of the sender's readback: PI controller limits match the file (TMN 0.0000 / TMX 39.0000, tol 0.001)
+   exit code=8
+  FAIL  L2 PI moved to 5  POS after = 0.0
+
+=== L3 PI MOV 1 40 (controller refuses) :: py tools/motor_gate.py --device pi --command MOV 1 40 --execute
+   | ALLOWED (pi): PI absolute move to [1.0, 40.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readback at transmit time; a target outside them answers ERR 7 and does not move)
+   | {"kind": "move", "relative": false, "state_note": "rig assembled: motion allowed by the user's 2026-09-17 ruling, bounded by the CONTROLLER limits this gate installs and re-verifies", "targets_mm": [1.0, 40.0]}
+   | session opened 2026-09-18 15:37:18
+   | LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+   | before: POS?=1=0.00000  SVO?=1=1  FRF?=1=0  VEL?=1=15.00000  ERR?=0
+   | SENT: MOV 1 40
+   | ERR? right after send = 5
+   | after:  POS?=1=0.00000  ONT?=1=1  ERR?=0  elapsed=2.1s
+   | RESULT: NOT at target - final=0 target=40  (ERR right after send was 5)
+   | GATE re-check of the sender's readback: PI controller limits match the file (TMN 0.0000 / TMX 39.0000, tol 0.001)
+   exit code=8
+  FAIL  L3 gate ALLOWED, controller answered ERR 7, axis did not move  ERR=5 POS after=0.0 (was 5)
+
+=== L4 PI MOV 1 0 :: py tools/motor_gate.py --device pi --command MOV 1 0 --execute
+   | ALLOWED (pi): PI absolute move to [1.0, 0.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readback at transmit time; a target outside them answers ERR 7 and does not move)
+   | {"kind": "move", "relative": false, "state_note": "rig assembled: motion allowed by the user's 2026-09-17 ruling, bounded by the CONTROLLER limits this gate installs and re-verifies", "targets_mm": [1.0, 0.0]}
+   | session opened 2026-09-18 15:37:18
+   | LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+   | before: POS?=1=0.00000  SVO?=1=1  FRF?=1=0  VEL?=1=15.00000  ERR?=0
+   | SENT: MOV 1 0
+   | ERR? right after send = 5
+   | after:  POS?=1=0.00000  ONT?=1=1  ERR?=0  elapsed=2.1s
+   | RESULT: reached 0 (target 0)
+   | GATE re-check of the sender's readback: PI controller limits match the file (TMN 0.0000 / TMX 39.0000, tol 0.001)
+   exit code=0
+  PASS  L4 PI back at 0  POS after = 0.0
+
+=== L5 ASI M X=-16475 (+0.2 mm) :: py tools/motor_gate.py --device asi --command M X=-16475 --execute
+   | ALLOWED (asi): ASI absolute move {'X': -16475.0} - the CONTROLLER's SL/SU limits bound it (verified by readback at transmit time)
+   | {"axes": {"X": -16475.0}, "kind": "move", "relative": false, "state_note": "rig assembled: motion allowed by the user's 2026-09-17 ruling, bounded by the CONTROLLER limits this gate installs and re-verifies"}
+   | session opened 2026-09-18 15:37:18
+   | LIMITS SL X=-3.847494 Y=-4.774393 SU X=0.152497 Y=-0.774402
+   | FRESH X=-18475 Y=-27744
+   | SENT: M X=-16475   reply=':A'
+   | after: X=-16473 Y=-27744 status='N' elapsed=1.3s
+   | RESULT: reached X=-16473 (target -16475)
+   | GATE re-check of the sender's readback: ASI controller limits match the file (SL {'X': -3.8475, 'Y': -4.7744} / SU {'X': 0.1525, 'Y': -0.7744} mm, tol 0.001)
+   exit code=0
+  PASS  L5 ASI X reached -16475  X after = -16473.0
+
+=== L6 ASI M X=-18475 (back) :: py tools/motor_gate.py --device asi --command M X=-18475 --execute
+   | ALLOWED (asi): ASI absolute move {'X': -18475.0} - the CONTROLLER's SL/SU limits bound it (verified by readback at transmit time)
+   | {"axes": {"X": -18475.0}, "kind": "move", "relative": false, "state_note": "rig assembled: motion allowed by the user's 2026-09-17 ruling, bounded by the CONTROLLER limits this gate installs and re-verifies"}
+   | session opened 2026-09-18 15:37:18
+   | LIMITS SL X=-3.847494 Y=-4.774393 SU X=0.152497 Y=-0.774402
+   | FRESH X=-16473 Y=-27744
+   | SENT: M X=-18475   reply=':A'
+   | after: X=-18473 Y=-27744 status='N' elapsed=1.3s
+   | RESULT: reached X=-18473 (target -18475)
+   | GATE re-check of the sender's readback: ASI controller limits match the file (SL {'X': -3.8475, 'Y': -4.7744} / SU {'X': 0.1525, 'Y': -0.7744} mm, tol 0.001)
+   exit code=0
+  PASS  L6 ASI X back at -18475  X after = -18473.0
+
+=== L7 ASI HOME X (must be refused) :: py tools/motor_gate.py --device asi --command HOME X --execute
+   | REFUSED (asi): ASI home/origin/zero/save/reset class command 'HOME' (HOME) - NEVER permitted: the controller SL/SU limits are ABSOLUTE coordinates, so shifting the zero would move the fence
+   exit code=3
+  PASS  L7 gate refused HOME X  REFUSED (asi): ASI home/origin/zero/save/reset class command 'HOME' (HOME) - NEVER permitted: the controller SL/SU limits are ABSOLUTE coordinates, so
+
+=== L8 session end (release) :: py tools/motor_gate.py --session end
+   | before: POS?=1=0.00000 TMN?=1=0.00000 TMX?=1=39.00000 ERR?=0
+   | ERR? after SPA = 0
+   | LIMITS TMN=0 TMX=52 SPA15=52 SPA30=0
+   | RESULT: controller limits are TMN=0 TMX=52 (mode limits-release)
+   | PI  : PI controller limits match the file (TMN 0.0000 / TMX 52.0000, tol 0.001) (sender code=0)
+   | before SL: :A X=-3.847494 Y=-4.774393   SU: :A X=0.152497 Y=-0.774402
+   | SL write -> :A
+   | SU write -> :A
+   | LIMITS SL X=-500 Y=-500 SU X=500 Y=500
+   | position after (must be unchanged): X=-18473 Y=-27744
+   | RESULT: controller limits set (mode limits-release)
+   | ASI : ASI controller limits match the file (SL {'X': -500.0, 'Y': -500.0} / SU {'X': 500.0, 'Y': 500.0} mm, tol 0.001) (sender code=0)
+   | SESSION END OK - controller limits released, G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\motor_session.json deleted
+   exit code=0
+  PASS  L8 released: PI TMX 52, ASI SL -500, session file deleted  TMX=52.0 ASI SL X=-500.0 file=False
+
+=== L9 session start again (LEAVE THE LIMITS SET) :: py tools/motor_gate.py --session start
+   | before: POS?=1=0.00000 TMN?=1=0.00000 TMX?=1=52.00000 ERR?=0
+   | ERR? after SPA = 0
+   | LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+   | RESULT: controller limits are TMN=0 TMX=39 (mode limits-set)
+   | PI  : PI controller limits match the file (TMN 0.0000 / TMX 39.0000, tol 0.001) (sender code=0)
+   | before SL: :A X=-500.000000 Y=-500.000000   SU: :A X=500.000000 Y=500.000000
+   | SL write -> :A
+   | SU write -> :A
+   | LIMITS SL X=-3.847494 Y=-4.774393 SU X=0.152497 Y=-0.774402
+   | position after (must be unchanged): X=-18473 Y=-27744
+   | RESULT: controller limits set (mode limits-set)
+   | ASI : ASI controller limits match the file (SL {'X': -3.8475, 'Y': -4.7744} / SU {'X': 0.1525, 'Y': -0.7744} mm, tol 0.001) (sender code=0)
+   | SESSION START OK -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\motor_session.json
+   exit code=0
+  PASS  L9 limits left IN FORCE at the end  PI {"SPA15": 39.0, "SPA30": 0.0, "TMN": 0.0, "TMX": 39.0}  ASI {"SL": {"X": -3.847494, "Y": -4.774393}, "SU": {"X": 0.152497, "Y": -0.774402}}
+
+GATE LOG lines written by this run (transmits only):
+   | 2026-09-18 15:37:20	PI	SENT	rc=8	after:  POS?=1=0.00000  ONT?=1=1  ERR?=0  elapsed=2.1s | RESULT: NOT at target - final=0 target=5  (ERR right after send was 5)
+   | 2026-09-18 15:37:22	PI	SENT	rc=8	after:  POS?=1=0.00000  ONT?=1=1  ERR?=0  elapsed=2.1s | RESULT: NOT at target - final=0 target=40  (ERR right after send was 5)
+   | 2026-09-18 15:37:25	PI	SENT	rc=0	after:  POS?=1=0.00000  ONT?=1=1  ERR?=0  elapsed=2.1s | RESULT: reached 0 (target 0)
+   | 2026-09-18 15:37:27	ASI	SENT	rc=0	after: X=-16473 Y=-27744 status='N' elapsed=1.3s | RESULT: reached X=-16473 (target -16475)
+   | 2026-09-18 15:37:28	ASI	SENT	rc=0	after: X=-18473 Y=-27744 status='N' elapsed=1.3s | RESULT: reached X=-18473 (target -18475)
+  PASS  L10 exactly five transmits reached a port (2 PI moves + 1 refused-by-controller + 2 ASI moves)  5 SENT lines
+
+8/10 GATES PASS, 2 FAIL, 14s
+  FAILING: L2 PI moved to 5 | POS after = 0.0
+  FAILING: L3 gate ALLOWED, controller answered ERR 7, axis did not move | ERR=5 POS after=0.0 (was 5)
+BGRUN END rc=1 after 14s
+BGRUN START 2026-09-18 15:58:47 limit 3.0 min: py -u tools/bench/motor_gate2_live.py
+
+=== L1 session start :: py tools/motor_gate.py --session start
+   | before: POS?=1=0.00000 TMN?=1=0.00000 TMX?=1=39.00000 ERR?=0
+   | ERR? after SPA = 0
+   | LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+   | REFSTATE RON=0 FRF=1 POS=0 POS_BEFORE=0 ERR=0
+   | LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+   | RESULT: controller limits are TMN=0 TMX=39 (mode limits-set)
+   | PI  : PI controller limits match the file (TMN 0.0000 / TMX 39.0000, tol 0.001) (sender code=0)
+   | PI  : reference state {"FRF": 1.0, "POS": 0.0, "POS_BEFORE": 0.0, "RON": 0.0} -> REFERENCED, zero unchanged
+   | before SL: :A X=-3.847494 Y=-4.774393   SU: :A X=0.152497 Y=-0.774402
+   | SL write -> :A
+   | SU write -> :A
+   | LIMITS SL X=-3.847494 Y=-4.774393 SU X=0.152497 Y=-0.774402
+   | position after (must be unchanged): X=-18473 Y=-27744
+   | RESULT: controller limits set (mode limits-set)
+   | ASI : ASI controller limits match the file (SL {'X': -3.8475, 'Y': -4.7744} / SU {'X': 0.1525, 'Y': -0.7744} mm, tol 0.001) (sender code=0)
+   | SESSION START OK -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\motor_session.json
+   exit code=0
+  PASS  L1 session start, limits verified by readback  PI {"SPA15": 39.0, "SPA30": 0.0, "TMN": 0.0, "TMX": 39.0}  ASI {"SL": {"X": -3.847494, "Y": -4.774393}, "SU": {"X": 0.152497, "Y": -0.774402}}
+
+=== L2 PI MOV 1 5 :: py tools/motor_gate.py --device pi --command MOV 1 5 --execute
+   | ALLOWED (pi): PI absolute move to [1.0, 5.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readback at transmit time; a target outside them answers ERR 7 and does not move)
+   | {"kind": "move", "relative": false, "state_note": "rig assembled: motion allowed by the user's 2026-09-17 ruling, bounded by the CONTROLLER limits this gate installs and re-verifies", "targets_mm": [1.0, 5.0]}
+   | session opened 2026-09-18 15:58:49
+   | LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+   | before: POS?=1=0.00000  SVO?=1=1  FRF?=1  VEL?=1=15.00000  ERR?=0
+   | SENT: MOV 1 5
+   | ERR? right after send = 0
+   | after:  POS?=1=5.00000  ONT?=1=1  ERR?=0  elapsed=2.1s
+   | RESULT: reached 5 (target 5)
+   | GATE re-check of the sender's readback: PI controller limits match the file (TMN 0.0000 / TMX 39.0000, tol 0.001)
+   exit code=0
+  PASS  L2 PI moved to 5  POS after = 5.0
+
+=== L3 PI MOV 1 40 (controller refuses) :: py tools/motor_gate.py --device pi --command MOV 1 40 --execute
+   | ALLOWED (pi): PI absolute move to [1.0, 40.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readback at transmit time; a target outside them answers ERR 7 and does not move)
+   | {"kind": "move", "relative": false, "state_note": "rig assembled: motion allowed by the user's 2026-09-17 ruling, bounded by the CONTROLLER limits this gate installs and re-verifies", "targets_mm": [1.0, 40.0]}
+   | session opened 2026-09-18 15:58:49
+   | LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+   | before: POS?=1=5.00000  SVO?=1=1  FRF?=1  VEL?=1=15.00000  ERR?=0
+   | SENT: MOV 1 40
+   | ERR? right after send = 7
+   | after:  POS?=1=5.00000  ONT?=1=1  ERR?=0  elapsed=2.1s
+   | RESULT: REJECTED BY THE CONTROLLER - ERR 7 right after send, POS=5 (target 40)
+   | GATE re-check of the sender's readback: PI controller limits match the file (TMN 0.0000 / TMX 39.0000, tol 0.001)
+   exit code=9
+  PASS  L3 gate ALLOWED, controller answered ERR 7, axis did not move  ERR=7 POS after=5.0 (was 5)
+
+=== L4 PI MOV 1 0 :: py tools/motor_gate.py --device pi --command MOV 1 0 --execute
+   | ALLOWED (pi): PI absolute move to [1.0, 0.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readback at transmit time; a target outside them answers ERR 7 and does not move)
+   | {"kind": "move", "relative": false, "state_note": "rig assembled: motion allowed by the user's 2026-09-17 ruling, bounded by the CONTROLLER limits this gate installs and re-verifies", "targets_mm": [1.0, 0.0]}
+   | session opened 2026-09-18 15:58:49
+   | LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+   | before: POS?=1=5.00000  SVO?=1=1  FRF?=1  VEL?=1=15.00000  ERR?=0
+   | SENT: MOV 1 0
+   | ERR? right after send = 0
+   | after:  POS?=1=0.00000  ONT?=1=1  ERR?=0  elapsed=2.6s
+   | RESULT: reached 0 (target 0)
+   | GATE re-check of the sender's readback: PI controller limits match the file (TMN 0.0000 / TMX 39.0000, tol 0.001)
+   exit code=0
+  PASS  L4 PI back at 0  POS after = 0.0
+
+=== L5 ASI M X=-16475 (+0.2 mm) :: py tools/motor_gate.py --device asi --command M X=-16475 --execute
+   | ALLOWED (asi): ASI absolute move {'X': -16475.0} - the CONTROLLER's SL/SU limits bound it (verified by readback at transmit time)
+   | {"axes": {"X": -16475.0}, "kind": "move", "relative": false, "state_note": "rig assembled: motion allowed by the user's 2026-09-17 ruling, bounded by the CONTROLLER limits this gate installs and re-verifies"}
+   | session opened 2026-09-18 15:58:49
+   | LIMITS SL X=-3.847494 Y=-4.774393 SU X=0.152497 Y=-0.774402
+   | FRESH X=-18473 Y=-27744
+   | SENT: M X=-16475   reply=':A'
+   | after: X=-16473 Y=-27744 status='N' elapsed=1.3s
+   | RESULT: reached X=-16473 (target -16475)
+   | GATE re-check of the sender's readback: ASI controller limits match the file (SL {'X': -3.8475, 'Y': -4.7744} / SU {'X': 0.1525, 'Y': -0.7744} mm, tol 0.001)
+   exit code=0
+  PASS  L5 ASI X reached -16475  X after = -16473.0
+
+=== L6 ASI M X=-18475 (back) :: py tools/motor_gate.py --device asi --command M X=-18475 --execute
+   | ALLOWED (asi): ASI absolute move {'X': -18475.0} - the CONTROLLER's SL/SU limits bound it (verified by readback at transmit time)
+   | {"axes": {"X": -18475.0}, "kind": "move", "relative": false, "state_note": "rig assembled: motion allowed by the user's 2026-09-17 ruling, bounded by the CONTROLLER limits this gate installs and re-verifies"}
+   | session opened 2026-09-18 15:58:49
+   | LIMITS SL X=-3.847494 Y=-4.774393 SU X=0.152497 Y=-0.774402
+   | FRESH X=-16473 Y=-27744
+   | SENT: M X=-18475   reply=':A'
+   | after: X=-18473 Y=-27744 status='N' elapsed=1.3s
+   | RESULT: reached X=-18473 (target -18475)
+   | GATE re-check of the sender's readback: ASI controller limits match the file (SL {'X': -3.8475, 'Y': -4.7744} / SU {'X': 0.1525, 'Y': -0.7744} mm, tol 0.001)
+   exit code=0
+  PASS  L6 ASI X back at -18475  X after = -18473.0
+
+=== L7 ASI HOME X (must be refused) :: py tools/motor_gate.py --device asi --command HOME X --execute
+   | REFUSED (asi): ASI home/origin/zero/save/reset class command 'HOME' (HOME) - NEVER permitted: the controller SL/SU limits are ABSOLUTE coordinates, so shifting the zero would move the fence
+   exit code=3
+  PASS  L7 gate refused HOME X  REFUSED (asi): ASI home/origin/zero/save/reset class command 'HOME' (HOME) - NEVER permitted: the controller SL/SU limits are ABSOLUTE coordinates, so
+
+=== L8 session end (release) :: py tools/motor_gate.py --session end
+   | before: POS?=1=0.00000 TMN?=1=0.00000 TMX?=1=39.00000 ERR?=0
+   | ERR? after SPA = 0
+   | LIMITS TMN=0 TMX=52 SPA15=52 SPA30=0
+   | RESULT: controller limits are TMN=0 TMX=52 (mode limits-release)
+   | PI  : PI controller limits match the file (TMN 0.0000 / TMX 52.0000, tol 0.001) (sender code=0)
+   | before SL: :A X=-3.847494 Y=-4.774393   SU: :A X=0.152497 Y=-0.774402
+   | SL write -> :A
+   | SU write -> :A
+   | LIMITS SL X=-500 Y=-500 SU X=500 Y=500
+   | position after (must be unchanged): X=-18473 Y=-27744
+   | RESULT: controller limits set (mode limits-release)
+   | ASI : ASI controller limits match the file (SL {'X': -500.0, 'Y': -500.0} / SU {'X': 500.0, 'Y': 500.0} mm, tol 0.001) (sender code=0)
+   | SESSION END OK - controller limits released, G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\motor_session.json deleted
+   exit code=0
+  PASS  L8 released: PI TMX 52, ASI SL -500, session file deleted  TMX=52.0 ASI SL X=-500.0 file=False
+
+=== L9 session start again (LEAVE THE LIMITS SET) :: py tools/motor_gate.py --session start
+   | before: POS?=1=0.00000 TMN?=1=0.00000 TMX?=1=52.00000 ERR?=0
+   | ERR? after SPA = 0
+   | LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+   | REFSTATE RON=0 FRF=1 POS=0 POS_BEFORE=0 ERR=0
+   | LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+   | RESULT: controller limits are TMN=0 TMX=39 (mode limits-set)
+   | PI  : PI controller limits match the file (TMN 0.0000 / TMX 39.0000, tol 0.001) (sender code=0)
+   | PI  : reference state {"FRF": 1.0, "POS": 0.0, "POS_BEFORE": 0.0, "RON": 0.0} -> REFERENCED, zero unchanged
+   | before SL: :A X=-500.000000 Y=-500.000000   SU: :A X=500.000000 Y=500.000000
+   | SL write -> :A
+   | SU write -> :A
+   | LIMITS SL X=-3.847494 Y=-4.774393 SU X=0.152497 Y=-0.774402
+   | position after (must be unchanged): X=-18473 Y=-27744
+   | RESULT: controller limits set (mode limits-set)
+   | ASI : ASI controller limits match the file (SL {'X': -3.8475, 'Y': -4.7744} / SU {'X': 0.1525, 'Y': -0.7744} mm, tol 0.001) (sender code=0)
+   | SESSION START OK -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\motor_session.json
+   exit code=0
+  PASS  L9 limits left IN FORCE at the end  PI {"SPA15": 39.0, "SPA30": 0.0, "TMN": 0.0, "TMX": 39.0}  ASI {"SL": {"X": -3.847494, "Y": -4.774393}, "SU": {"X": 0.152497, "Y": -0.774402}}
+
+GATE LOG lines written by this run (transmits only):
+   | 2026-09-18 15:58:51	PI	SENT	rc=0	after:  POS?=1=5.00000  ONT?=1=1  ERR?=0  elapsed=2.1s | RESULT: reached 5 (target 5)
+   | 2026-09-18 15:58:53	PI	SENT	rc=9	after:  POS?=1=5.00000  ONT?=1=1  ERR?=0  elapsed=2.1s | RESULT: REJECTED BY THE CONTROLLER - ERR 7 right after send, POS=5 (target 40)
+   | 2026-09-18 15:58:56	PI	SENT	rc=0	after:  POS?=1=0.00000  ONT?=1=1  ERR?=0  elapsed=2.6s | RESULT: reached 0 (target 0)
+   | 2026-09-18 15:58:58	ASI	SENT	rc=0	after: X=-16473 Y=-27744 status='N' elapsed=1.3s | RESULT: reached X=-16473 (target -16475)
+   | 2026-09-18 15:59:00	ASI	SENT	rc=0	after: X=-18473 Y=-27744 status='N' elapsed=1.3s | RESULT: reached X=-18473 (target -18475)
+  PASS  L10 exactly five transmits reached a port (2 PI moves + 1 refused-by-controller + 2 ASI moves)  5 SENT lines
+
+10/10 GATES PASS, 0 FAIL, 16s
+BGRUN INNER FAILURE: the command exited 0 but its output reported 1 failure(s); first: | 2026-09-18 15:58:53	PI	SENT	rc=9	after:  POS?=1=5.00000  ONT?=1=1  ERR?=0  elapsed=2.1s | RESULT: REJECTED BY THE CONTROLLER - ERR 7 right after send, POS=5 (
+BGRUN END rc=1 after 16s (inner failure; the process itself said 0)

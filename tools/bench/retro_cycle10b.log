@@ -1,0 +1,105 @@
+BGRUN START 2026-09-16 14:24:33 limit 15.0 min: py tools/retrospective.py --cycle 10 --since-hours 20
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_10.txt (4222 chars, 29 logs listed)
+OUTCOME: ANSWERED (265s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-16-retrospective-cycle10.md
+--- ANSWER ---
+The cycle was not run efficiently. Its central failure was procedural: it repeatedly rewrote a moving plan faster than it incorporated already-available evidence. The declared Cycle-10 deliverable??OpOwnerChain_v0`?�was never launched.
+
+1. Repeated failure
+
+Yes. The recurring class was not a LabVIEW failure; it was **plan/evidence inconsistency**:
+
+- Master-plan attempt 1: 13 findings, zero novel.
+- Attempt 2/rev2: 12 findings, zero novel.
+- Attempt 3/rev3: 14 findings, zero novel, including **five repeats from rev2 whose plan text had not changed**.
+- Attempt 4/rev4: 10 findings, zero novel.
+- Attempt 5/rev5: 13 findings, zero novel, including four unresolved repeats.
+
+The approach should have changed at **attempt 2**, before dispatching rev3. Two consecutive zero-novel, contradiction-heavy reviews were enough. At that point the session should have frozen a plan snapshot, made a verdict-to-edit checklist, resolved every row, diffed the result, and only then requested one final review. Rev3 is the proof: it explicitly says five accepted rev2 findings survived unchanged ([rev2 log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/priorart_master_plan_rev2.log:6>), [rev3 log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/priorart_master_plan_rev3.log:6>)).
+
+2. Missing tool
+
+Yes: **`OpOwnerChain_v0`**. More precisely, the recipe existed and had already incorporated its prior review, but the op was never built or run ([STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:35>), [master plan](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/pre-rig-master-plan.md:68>)).
+
+It would have answered or cheaply unlocked:
+
+- The 41/170 unresolved hierarchy links ([hierarchy run 3](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_diagram_hierarchy_run3.log:11>)).
+- The instrument-call walks that stopped at the first nested structure for nearly every site ([motor-owner log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/which_loop_owns_motor.log:4>)).
+- Where the periodic auto-reset remainder leaving tunnel 10177 and period entering tunnel 10114 are assembled outside diagram 43 ([reset-arm log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_reset_arm.log:7>)).
+- The planned VISA, reentrancy, and UI-thread ownership audits.
+
+Its absence caused repeated partial readers, geometric hierarchy inference, and plans built around unresolved ownership.
+
+3. Unmeasured steps
+
+Yes.
+
+- The cycle initially treated autofocus as operator/key-driven based on control-reference shape. The later trace showed that `Fix to a Certain Pattern` is programmatically written, while the effective enable is derived from `Auto-Focus`, reseed state, and the autofocus limit. That direct trace should have preceded the plan?�s autofocus claims.
+- The interval behind property node 30146 was reopened as unknown even though existing node-label data already identified it as `Frame rate = 25`. Rev4 found this without another LabVIEW read.
+- Wire 3362 was reasoned about before the cheap panel/link measurement named `Fix to a Certain Pattern` directly ([autofocus panel log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_autofocus_panel.log:4>)).
+- Whether the periodic reset is gated by `Auto-Reset` remains unresolved: the available measurement stopped at the loop border, even though the missing owner-chain reader was the known next discriminator.
+- The recipe contained three uses of the invalid traverse class string `PropertyNode`; the cheap `PropertyNode` versus `Property` grid was performed only after several plan rounds. It found the defect immediately ([autofocus panel log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_autofocus_panel.log:25>)).
+
+4. Rule compliance
+
+Broken or evaded:
+
+- **One session / stable state:** two sessions concurrently edited active documents, leaving one with a stale `CLAUDE.md` ([STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:10>)). Rev4 says `camera-acquisition-facts.md` changed during review; rev5 says the plan, STATUS, and CLAUDE.md all changed during review ([rev4 log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/priorart_master_plan_rev4.log:114>), [rev5 log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/priorart_master_plan_rev5.log:8>)). Reviews therefore did not consistently assess a fixed artifact.
+- **Failure budget = 2:** formally it applies to material-session failures, so the five plan-review rounds can be defended as ?�judgement.??Substantively that evades the rule?�s purpose: after attempt 2, the same inconsistency class continued through three more expensive rounds.
+- **Use and annotate reviews:** A4 failed. Rev3, rev4, the 1092 failed-prediction review, and both case-frame reviews still have blank disposition sections. This is not just archival hygiene; rev3/rev4 findings later recurred.
+- **Layered documentation:** `STATUS.md` is 124 lines, above its explicit approximate 100-line threshold, and the master plan grew to 355 lines during a cycle nominally about one reader.
+- **Cycle scope:** the cycle began as ?�owner-chain reader, then measurements??([cycle10 plan](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/cycle10-plan.md:9>)) but expanded into a complete Phase 0/A/1/2 build-and-run master plan before the reader was launched.
+
+Satisfied:
+
+- Classified builds used `bgrun` and terminated.
+- The main VI checksum/mtime remained unchanged.
+- The 1092 failed prediction did receive adversarial review and a discriminating grid.
+- No GUI work is evident in this cycle.
+
+What the audit does **not** cover:
+
+- It is explicitly a time-window audit, not a cycle audit ([audit source](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/audit_cycle.py:78>)).
+- A3 accepts **any later review**, without checking that it reviews the specific failure.
+- Its failure regex does not generally treat nonzero exit status, traceback text, embedded `probe exit=1`, or semantic non-results as failures.
+- A5 checks only the main VI, not every original named by rule 1.
+- A6 merely reports the all-time GUI-log line count; it does not prove that this cycle had no unlogged GUI action or that recorded exceptions were justified.
+- C3 excludes peer-review wall time and cost.
+- It does not check stable review snapshots, concurrent sessions, failure-budget enforcement, cycle scope, judgement/material separation, lock correctness, STATUS length, external-search quality, reference/handle hygiene, or whether a review?�s disposition is truthful and complete.
+- Its A4 message prints only the first six blank filenames, although 23 were missing dispositions.
+
+5. Ordering
+
+The initial prior-art review was defensible. The subsequent order was not.
+
+The correct sequence was:
+
+1. Freeze the active documents and dispose every initial review finding.
+2. Run the cheap class-name preflight that would have caught `PropertyNode`.
+3. Build and validate `OpOwnerChain_v0` across one example of each structure class.
+4. Re-run hierarchy and instrument ownership.
+5. Perform the autofocus/reset ownership measurements.
+6. Only then write the wider master plan.
+
+Instead, the session wrote and reviewed the wider plan five times, while later diagnostics discovered facts that should have constrained its first draft. The core Phase-A1 reader remained unlaunched.
+
+6. What was not reported
+
+The raw logs materially understate cost and instability:
+
+- The five master-plan reviews alone consumed **42 min 44 s and $25.0791**. Including the initial Cycle-10 prior-art review gives at least **48 min 40 s and $28.5530**, before the separate attack review. The audit reports only **3 min 12 s inside build `bgrun`**, because peer logs are excluded from C3.
+- Multiple reviews examined moving targets, not stable snapshots.
+- Despite five reviews and extensive active-document editing, Cycle 10 produced no owner-chain op and no runnable experimental VI.
+- The audit?�s ??5 builds??and ??4 reviews??are window totals polluted by earlier-cycle work; the first Cycle-10 retrospective invocation listed four logs, whereas the later 20-hour invocation listed 29.
+- The apparently successful diagnostic logs contain partial results: `diag_autofocus_panel` names only one of two target wires, and `diag_reset_arm` reaches loop tunnels but cannot answer the gating question.
+- The plan-review sequence was not convergence by independent discovery: later logs expressly identify repeated findings whose earlier dispositions said they had been accepted.
+
+VIOLATION: repeated-failure-class
+VIOLATION: tool-not-built
+VIOLATION: inference-over-measurement
+VIOLATION: rule-evaded
+VIOLATION: wrong-ordering
+VIOLATION: unreported-fact
+VIOLATION: scope-creep
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle10.md
+BGRUN INNER FAILURE: the command exited 0 but its output reported 1 failure(s); first: - Its failure regex does not generally treat nonzero exit status, traceback text, embedded `probe exit=1`, or semantic non-results as failures.
+BGRUN END rc=1 after 265s (inner failure; the process itself said 0)

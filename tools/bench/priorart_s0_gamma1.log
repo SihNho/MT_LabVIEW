@@ -1,0 +1,125 @@
+BGRUN START 2026-09-19 20:15:24 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/cycle27-plan.md --slug s0-gamma1 --trigger cycle-start --recipe tools/recipes/build_s0_gamma1.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_s0-gamma1.txt (75884 chars)
+OUTCOME: ANSWERED (508s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-19-priorart-s0-gamma1.md
+COST: $4.1991  in 38 / out 36067 / cache-create 184734 / cache-read 2899775  (504s, 30 turn(s))
+--- ANSWER ---
+Write is disabled in this session (correct for a read-only reviewer), so the review is the answer itself.
+
+---
+
+# PRIOR-ART REVIEW — cycle-27 plan Pre-decided 26 / `tools/recipes/build_s0_gamma1.py` (S0-γ1)
+
+**Verdict: NOT NOVEL.** 9 findings, 5 distinct slugs. The **direction survives** — decomposing S0, porting `docs/s0-diff.md`'s differences one at a time, saving an artefact per step: nothing on file refutes that, and `docs/s0-diff.md` itself is new work. What does not survive is **this γ1 as the first ported step**.
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 `settled-already` — the D2/D4 question already has a measured answer, and it is `ExecState 1`
+
+`docs/toolkit-capabilities.md:398-403` is the probe table for γ1's construction, on γ1's op family (`OpReport_v3.vi`, `Property=2 Wire=17`):
+
+> ```
+> start                       ForLoop=0 LoopTunnel=0 Wire=17 Property=2 ExecState=1
+> empty for_loop              ForLoop=1 LoopTunnel=0 Wire=17 Property=2 ExecState=0
+> build_property INSIDE loop  ForLoop=1 LoopTunnel=0 Wire=17 Property=3 ExecState=0
+> wire() across the boundary  ForLoop=1 LoopTunnel=1 Wire=18 Property=3 ExecState=1
+> ```
+
+Note `Property 2→3` — the two OLD Property consumers were still present and it still reached 1. Again as a full build at `docs/toolkit-capabilities.md:432-443` ("`7 wire References across the boundary  LoopTunnel 0->1, ExecState 0->1`" … "the VI runnable"), and a **second** created body Property node wired from an in-body source at `tools/recipes/build_opreportall_v1.py:162-171`, in a recipe that refuses to save below `ExecState 1` (`:216-221`).
+
+Confirmed on disk **today**, read-only: `tools/bench/s0_op_census.log:104-119` — `OpReportAll_v0.vi` reads `ExecState` **1** COLD, `diagrams: [(0,3,''),(1,272,'ForLoop')]`, body Property `#114`/`#115`, `References` entering `LoopTunnel #511 IndexMode AS READ 1`.
+
+*Scope, so this is not over-broad:* γ1 is not a pure repeat — it holds D6/D7/D10/D11/D14 at the failing side's values. But the proposition it names as its measurement ("the body node is CREATED IN THE BODY", `build_s0_gamma1.py:1`, `:310-327`) is the half already on file.
+
+### A2 `contradicted` — 26(a) excludes the loop machinery, then authorises a recipe that rebuilds it
+
+- `docs/cycle27-plan.md:476-479` — *"**The loop machinery is EXCLUDED as the common cause.** S0 run 2's stage 3 failed with **no loop created, no new tunnel and an EXACT branch** … and still read `ExecState 0`."*
+- `tools/recipes/build_s0_gamma1.py:296-308` — γ1 starts from `OpReport_v3.vi` (`:90`, `:275`), creates a bare For Loop with v3's position formula, and branches a **live outer wire across the new boundary** (`:329-336`).
+
+Stage 3 is at `tools/bench/build_s0_closeref_v3.log:167-202`: it began from a byte copy of `OpReportAll_v0.vi` reading **ExecState 1** (`:168`), added only the copied+reparented node (`:174`, `:180`), an **EXACT** branch of the existing body wire w421 (`:191-192`, `dw=0`, `Is Broken? False`) and the error chain (`:197-199`) — and ended **0** (`:201`). That arm already has loop, tunnel and boundary known-good; it *is* the one-variable rig. γ1 discards it and re-introduces three variables 26(a) had just eliminated.
+
+**The cheaper experiment, from your own files:** start from `OpReportAll_v0.vi` (ExecState 1 cold, census `:104-119`) and change **only** the node's origin — `g.build_property(..., diagram_index=body)` in place of `copy_by_index` + `move_in`. No loop creation, no tunnel, no cross-boundary branch.
+
+### A3 `contradicted` — "one difference per saved artefact" vs the recipe measuring four
+
+- `docs/cycle27-plan.md:450` (S0-γ's binding pass criterion): *"apply the differences S0-α named, **one difference per saved artefact**."*
+- `tools/recipes/build_s0_gamma1.py:36-39`: *"So this run measures **D2+D4+D3+D1 together**, not one difference."*
+
+The recipe is candid and defers the call (`:27`, `:39`) — correct conduct — but as written it does not satisfy the criterion it is built under. D3 is not bookkeeping: it swaps the `Close Reference` primitive for a `GObject.Position` Property node (`:312-313`), so a `1` would be a statement about Property nodes and the repair S0 exists to make would remain unbuilt.
+
+### A4 `unread-evidence` — the mandatory review's falsifier costs two property reads, is already written into the plan, and is absent from γ1
+
+`archive/peer/2026-09-19-s0v3-execstate0.md:141-142`: *"Every `Is Broken?` in the log comes from *inside* the same `connect_from_wire` call that wrote the wire … precisely the ordering H itself calls untrustworthy."* And `:201-202`: *"re-read `Wire.Is Broken?` on the two sink wires AFTER the `ExecState` read (which forces the compile)."*
+
+`docs/cycle27-plan.md:449` already puts that into S0-β. γ1 runs **before** β and takes `Is Broken?` only from `sub.get("Is Broken?")` inside the writer (`build_s0_gamma1.py:251-254`), never re-reading after the final `es()` at `:367`. A full run would again end unable to say whether the wires are broken after compile.
+
+### A4b `unread-evidence` — the positive control states *why* it freed the source first; neither 26 nor γ1 cites it
+
+`tools/recipes/build_opreportall_v1.py:127-128`: *"ORDER MATTERS. `Traverse.References` is ALREADY wired to the old Index Array, so wiring it into a loop would need **branch=True** - or, far better, **delete the consumer FIRST and the source is free**."* Steps 1–3 then delete and run `remove_bad_wires_scripted`, reaching **ExecState 1 before the loop exists** (`docs/toolkit-capabilities.md:432-434`).
+
+γ1's G2w (`build_s0_gamma1.py:293-294`) pins the opposite: *"the consumers are NOT deleted, exactly as v3 left them."* Holding it constant is defensible; it is also the one condition the control's author removed on purpose, and the comparison never mentions it — so a γ1 `0` cannot exonerate copy-and-reparent the way `:36-39` claims.
+
+---
+
+## PART B — THE ARTEFACT
+
+### B4 `already-measured` — γ1's gate sheet is run 2's gate sheet, which passed in full while the VI read 0
+
+`tools/bench/build_s0_closeref_v3.log:70-99` vs `build_s0_gamma1.py`:
+
+| gate | run 2 | γ1 |
+|---|---|---|
+| Traverse present | PASS `:70` | `:287-288` |
+| `References` source terminal | PASS `:71` | `:289-291` |
+| `References` already drives a wire | PASS `:72` (w188) | `:293-294` |
+| exactly one ForLoop diagram | PASS `:75` | `:304-306` |
+| sink not BARE | PASS `:82` (w636 SEGMENTED) | `:259` |
+| `Is Broken?` not True | PASS `:83` (False) | `:260-261` |
+| a LoopTunnel appeared | PASS `:84` (#642) | `:334` |
+| IndexMode 1 as read | PASS `:85-86` | `:242-243` |
+| panel error-out branch | PASS `:89-96` | `:339-354` |
+| **ExecState 1** | **FAIL `:99`** | the measurement |
+
+Every diagnostic gate γ1 would spend a run collecting has already returned PASS on this construction, four times (`:50`, `:99`, `:158`, `:202`). STATUS's released lock block says the same: *"the review's §2 question is SETTLED: the `References` branch IS a valid wire."* The only new line is the final `ExecState`.
+
+### B3 `helper-exists` — the fleet *can* place a primitive on a body diagram, so "NOTHING IN THIS FLEET CAN" is not supported by these files
+
+`build_s0_gamma1.py:19-25`: *"It cannot create the Application-Control primitive `Close Reference`, and **NOTHING IN THIS FLEET CAN**."* Against it:
+
+- `docs/toolkit-capabilities.md:64` — **`OpCreateEqual_v0.vi`** (erdosmiller `Create Equal.vi` in the `queue_node` shape): *"places one `Equal?` Comparison node on a NAMED SUBDIAGRAM"*, **FUNCTIONAL 23/0**, owner chain `#46 → Diagram#110 → WhileLoop#43`, *"the scratch reads **ExecState 1**"*. `:66` (`OpCreateConstOnTerm_v0`) is a second instance.
+- `docs/keystone-op-spec.md:466-469` — *"the style strings are candidates for a scripted primitive dropper (Diagram.New VI Object with the style NAME) — **to be tested**."* Named, never measured.
+- The `Create <X>.vi` family is the standing route (`docs/stage2-plan.md:109-114`, `docs/stage2-assembly-step-e.md:214`).
+
+Whether such an op may be **built** is judgement's. γ1 cites Pre-decided 2 at `:52`; note `docs/cycle27-plan.md` Pre-decided 5 records `OpFsTunnelTerm_v0.vi` built by a firefighter at 2026-09-18 **13:36**, after the 08:53 order — so "no new op" is not obviously what that order said. What is *not* judgement's is the sentence as written: an absolute claim about our own tools, the class CLAUDE.md §5 calls the most error-prone, contradicted in scope by these files.
+
+Smaller, same slug: `tools/gscript.py:1340` `wire(..., branch=True)` (documented `:1347`, `:1381-1389`) is the control's own by-name writer **with** a live-source branch mode — the exact call `build_opreportall_v1.py:128` names. γ1 keeps `connect_from_wire` instead (holding D10); defensible, but say so rather than leave it implicit.
+
+### B1 `already-built` — the success artefact exists on disk
+
+γ1's success state = a For Loop auto-indexing `References` into a created body Property node at `ExecState 1`. That VI is `OpReportAll_v0.vi`: 12,510 B, md5 `ffcec2c75e92dcad514299ba20e66054`, ExecState **1** cold (`tools/bench/s0_op_census.log:100-119`). `docs/REFERENCES.md:196-198` already prescribes it: *"enclose the close in a **For Loop** over the `References` array — a route `docs/toolkit-capabilities.md:438-443` records as already built and measured (`LoopTunnel 0→1`, `ExecState 0→1`), and the shape `OpReportAll_v0.vi` already has on disk."*
+
+### B2 `already-failed` — on the likely outcome the step leaves a `.vi` byte-identical to its input
+
+`build_s0_gamma1.py:398-401` says it itself: the leftover scratch is *"the untouched copy of OpReport_v3; every edit lived in LabVIEW memory."* Precedent from the same day, in STATUS NEXT: *"`claudeDev\SCRATCH_s0_180632.vi` **DELETED 2026-09-19 19:3x** … byte-identical to the original, **so it held nothing**."* That is the pattern behind CLAUDE.md §3's split-and-save rule.
+
+*Precise scope:* `tools/bench/s0_gamma1_readings.json` **does** satisfy the plan's amended finding B1 (a step that necessarily ends illegal saves a DATA file). The finding is narrower — the `.vi` beside it is not an artefact, and if the chain must leave something openable at the point of failure, a step that can only end illegal is the wrong one to start with.
+
+---
+
+```
+PRIOR-ART: settled-already
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-measured
+PRIOR-ART: helper-exists
+PRIOR-ART: already-built
+PRIOR-ART: already-failed
+```
+
+I took no lock, opened no `.vi`, and changed nothing; `tools/bench/s0_op_census.log` and `build_s0_closeref_v3.log` were read as text.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-s0-gamma1.md
+   STOP RECORD armed: tools/recipes/build_s0_gamma1.py sha 63a02ebad9b6 verdict settled-already, contradicted, unread-evidence, already-measured, helper-exists, already-built, already-failed -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 509s

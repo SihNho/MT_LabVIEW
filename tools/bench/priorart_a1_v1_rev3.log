@@ -1,0 +1,90 @@
+BGRUN START 2026-09-16 18:29:05 limit 16.0 min: py -u tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/a1_plan_rev3.md --slug priorart-a1-ownerchain-v1-rev3 --trigger new-op --model opus --effort high
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-a1-ownerchain-v1-rev3.txt (49396 chars)
+OUTCOME: ANSWERED (578s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-16-priorart-priorart-a1-ownerchain-v1-rev3.md
+COST: $4.4705  in 48 / out 41278 / cache-create 171703 / cache-read 3442514  (574s, 36 turn(s))
+--- ANSWER ---
+Write is disabled in this session, so here is the review in full.
+
+# PRIOR-ART REVIEW — `tools/recipes/build_opownerchain_v1.py` (rev 3, not yet run)
+
+**Four findings.** One is measured on this exact donor and would break the op before the first connect; one is a citation the file itself says was fixed and was not; one is a diagnostic already written for gate B5b that was never re-run after the fix it needed landed; one is the plan-of-record still prescribing a delete class this recipe rejects. **One disposition in the archived reviews is half wrong.**
+
+**The direction is not refuted, and is settled in the plan's favour.** `docs/diagram-hierarchy.md:71-79` names `OpOwnerChain_v0` as "the link that would finish this" and states this exact change (*"`OpWireSource_v5` already performs `Generic.Owner` → `ClassName` + cast(GObject) → `UID`, seeded from a Wire; removing that Wire cast is the whole change"*). I independently confirm the premise that no existing reader returns an owner UID: `tools/gscript.py:281` (`"owner": vi.GetControlValue("Class Name 3")`) and `:291` (`("Array 4", "owner")`) — class only.
+
+---
+
+## PART A — THE DIRECTION
+
+### A3 · CONTRADICTED
+
+**(1) The `:19-24` citation round 2 found is still in the file — 27 lines above the paragraph that says it was replaced.**
+
+> `build_opownerchain_v1.py:52` — *"Nodes go by class `Node` (MEASURED: diag_ownerchain_state.log:19-24 lists all seven under `Node`, 1044 and 1221 ONLY there)"*
+> `build_opownerchain_v1.py:79-80` — *"(3) ACCEPTED: two line numbers — `diag_ownerchain_state.log:13-19` (not `:19-24`, which lists nodes this build KEEPS)…"*
+> `tools/bench/diag_ownerchain_state.log:19-24` — those six lines are uids **1044, 241, 163, 1221, 482, 990**; 241, 163 and 482 are nodes this build must KEEP. The seven delete targets are at **`:13-19`**.
+
+`:156` (the `DELETE_NODES` comment) and `:368` (the `gscript.py:2206-2207` pointer) **were** fixed, so the rev-3 brief's "both line-number defects fixed" is false for one of the two sites round 2 named. Also, neither range supports the clause it is cited for: `uid 1221 classes: ['Node']` is at **`:22`**. Release: `:52` → `:13-19`, plus `:22` for the 1221 clause. No rework.
+
+**(2) `STATUS.md` — the document that authorises this run — still prescribes the delete class the recipe rejects.**
+
+> `STATUS.md:182` — *"2. **Delete by Traverse class `GObject`**, resolving each uid's index from `report_all(target,"GObject")` — this removes the `#1044` class question (`SubVI` vs `Node`) entirely instead of guessing it again."*
+> `build_opownerchain_v1.py:153-160` — `Node` for the seven, `Wire` for the two; `:49-53` argues `GObject` is wrong.
+
+Round 2's A1 quoted the first line of that same NEXT block (`STATUS.md:176`) as "nothing to re-open" and did not read item 2. The recipe's argument is the better one (`tools/bench/diag_delete_matrix.log:108-116` Part C never swept `GObject`; `docs/toolkit-capabilities.md:103` puts `GObject` at 10030 against `Terminal` 5763), so the cheap release is one edit to `STATUS.md:182`.
+
+---
+
+## PART B — THE ARTIFACT
+
+### B4 · ALREADY MEASURED
+
+**(3) Deleting a node has measured WIRE collateral on this exact donor; a class-scoped `Node` diff cannot see it; and the wire most exposed is 1081 — the one B2 asserts is preserved and two KEPT nodes require.**
+
+> `tools/bench/diag_delete_matrix.log:112` — `[C OpWireSource_v5.vi/SubVI open_panel=True] 2 -> 1 REMOVED ONE … elsewhere={'SubVI': [990], 'Wire': [1068, 1208]}` — one node delete on a copy of **this donor** took two wire objects with it (`:115` likewise removed `'Wire': [106]`).
+> `tools/bench/diag_ownerchain_state.log:61` — `uid 1044 ALL terminals: [… ('reference', 1081) …]` — the first node deleted is a sink on wire 1081.
+> `tools/bench/census_opwiresource_v5.log:191` node 990 `t2 'GObject' wire 1081` (source); `:200` node 307 `t0 'reference' wire 1081`; `:206` node 310 `t0 'reference' wire 1081` — both KEPT, and `reference` is required on a Property Node.
+> `build_opownerchain_v1.py:368-381` — the guard is `gone = set(before) - set(cls_uids("Node"))`. Wires are not Nodes, so every wire this batch removes is invisible to it; `verify=False` (`:363`) means `delete_object` will not see it either.
+
+Round 1 read `:112` (finding 9) only to argue `GObject` scoping breaks `len(gone)==1`; round 2's audit of refutation (6b) established that *deleting wire 1081* would break the op, and never asked whether *deleting node 1044* removes it anyway. The collateral is not uniform — `:102`/`:110` (Property 1554) and `:113` (IndexArray 151) removed no wire — so this is a measured risk, not a certainty. But nothing catches it: `w_gobj1` is printed and not gated (`:387-388`); B3a gates only that the four `reference` sinks are bare, which a vanished 1081 also satisfies; B2 (`a == b`, non-zero) passes on a brand-new wire exactly as on a preserved 1081. The first failing gate is B5a/B6a — after nine deletes, four connects and ~20 minutes.
+
+Release, already patterned in the tree: snapshot `wb = g.uids(OP, "Wire")` around the delete batch and report the diff (`build_harness_variant.py:65-72`, `build_harness_compare.py:59-66`, `build_harness_loadcal.py:80-89`), plus three assertions before R1 — `twire(by, 990, "GObject") == 1081` and 307 / 310 `reference` == 1081. Three lines, and B2's "expected 1081, preserved" becomes checkable instead of decorative.
+
+### B1 · ALREADY BUILT
+
+**(4) Gate B5b's question already has a dedicated 29-second diagnostic. It aborted on its first delete because of the exact bug `ensure_loaded` has since fixed, and was never re-run.**
+
+> `archive/peer/2026-09-16-ownerchain-b2-b3-failed-prediction.md:183-184` states its purpose in B5b's own words: *"is separating the two worlds (**does ONE verified delete survive save + a fresh LabVIEW?**) before any rebuild."*
+> `tools/bench/diag_save_persists.log:6-9` — copies the donor (`ScratchSavePersist_v0.vi`, uid 1319 present), reaches *"P1 delete uid 1319 (Property) with verify=True"*.
+> `:16-19` — `RuntimeError: delete_object(Property[3]): expected 1 object gone, got 0`, from `gscript.py:1971`. `BGRUN END rc=1 after 29s` (`:20`). It ran at **15:22**; the silent-decline cause was identified later that day (`STATUS.md:36-44`) and `ensure_loaded` landed after it.
+
+Round 2 cited this file (`:41,71,103`) as the source of the `fresh()` pattern and did not report that it never completed. So B5/B5b ask, inside a 25-minute build, the question a 29-second script was written to answer and failed for a reason that no longer exists. Release: run `diag_save_persists.py` first — if one verified delete does not survive `save` + `fresh()`, A1 cannot succeed and is not worth starting — or say in writing that the build proceeds either way and B5b is the first answer.
+
+---
+
+## Dispositions in the archived reviews — audited
+
+| review · finding | claimed | my check |
+|---|---|---|
+| rev2 (3) contradicted | "ACCEPTED, both halves" | **HALF WRONG** — `:156`/`:368` fixed, `:52` still `:19-24`. Finding (1). |
+| rev2 (1) junk Invoke | implemented (`purge_junk` + B4c) | **CORRECT.** Matches `fix_v3_starting_xy.py:17-26,39-41` and `keystone-op-spec.md:565-573` §33; `diag_delete_matrix.log:111` (*"Invoke … none present"*) confirms the `inv0` baseline is empty on this donor. |
+| rev2 (2) `fresh()` | implemented | **CORRECT** — `fresh()`/`lv_pid` at `build_opconstvalue_v1.py:80-87,49-53`; the import resolves. But see (4) for what it does not discharge. |
+| rev1 (6b) wire 1081 | REFUTED | **CORRECT**, citations verified (`census_opwiresource_v5.log:191,197,200,206`). Does not cover (3), which reaches 1081 via node 1044. |
+| rev1 (5) re-sweep | REFUTED | **CORRECT** — `by = sweep()` at `:410` feeds R2, as `…b2-b3-failed-prediction.md:99-108` prescribes. |
+| rev1 (8) | REFUTED / "survives narrowly" | **Agree with rev2** (`toolkit-capabilities.md:49`; `diag_reset_arm.log:14-17`). |
+| rev1 B6 oracle | released as sound | **CORRECT** (`diagram-hierarchy.md:41-47`; `keystone-op-spec.md:592-594`). |
+
+**Notes, deliberately without a slug** (neither blocks a build): `tools/bench/diag_delete_matrix.py:127` loads `("OpDelete_v0.vi", "OpDelete_v1.vi")`, so B7's deletion stops Part A of that diagnostic re-running — still right per `docs/cycle11-plan.md:65`, just record it. And rev2 (4) was released as *"recorded there, not taken here"*, but `STATUS.md:145-147` still says OPEN 1 *"needs A1's owner chain"* and no active document mentions the `tunnels()` + `OpWireSource_v5` route — the release is not yet true of the files.
+
+---
+
+```
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: already-measured
+PRIOR-ART: already-built
+```
+
+**Cheapest release order:** (3) first — one wire snapshot and three assertions, and it is the one that otherwise costs the run; (4) is a 29-second script that may cost nothing and may save everything; (1) is one line number; (2) is one line in `STATUS.md`.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-a1-ownerchain-v1-rev3.md
+BGRUN INNER FAILURE: the command exited 0 but its output reported 1 failure(s); first: > `:16-19` — `RuntimeError: delete_object(Property[3]): expected 1 object gone, got 0`, from `gscript.py:1971`. `BGRUN END rc=1 after 29s` (`:20`). It ran at **
+BGRUN END rc=1 after 578s (inner failure; the process itself said 0)

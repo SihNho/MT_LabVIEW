@@ -1,0 +1,66 @@
+BGRUN START 2026-09-20 04:49:57 limit 18.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug qdonor2-p8-no-saved-artefact -TaskFile 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\313e9365-a40d-4c3b-8b32-39b020308559\scratchpad\qdonor2_p8_task.md' -TimeoutSec 900
+OUTCOME: ANSWERED (522s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-20-qdonor2-p8-no-saved-artefact.md
+COST: $4.4815  in 32 / out 39276 / cache-create 243600 / cache-read 1857362  (518s, 27 turn(s))
+--- ANSWER ---
+Write is disabled in this session, so the review is here rather than in the plan file.
+
+# Review — the claim is wrong in scope and wrong in placement, even though its physics is probably right
+
+## 1. Strongest reason the claim is WRONG
+
+**The prescribed fix contradicts the line it cites, and executing it would make step 2 raise.**
+
+`docs/NAMES.md:476-477` prescribes the donor pattern in this order: `build_index_array` (unwired IA) → `create_control` on its `index` terminal → **then** delete the IA → "the control stays on the pane, unwired, VI runnable." The deletion comes **after** the control exists, because the IA exists only to donate the terminal the control is made from. The claim's fix — delete it "before reading ExecState", i.e. at the end of step 1 — removes the donor before step 2 uses it, and `tools/bench/diag_qdonor2_stage.py:152-156` then raises `"the new IndexArray is not on the top-level Nodes[] walk"`.
+
+That line is a cleanup step being read as a causal diagnosis. It says nothing about ExecState while the IA sits there; it describes a three-move pattern whose *end state* is runnable.
+
+**And the fix cannot make P8 pass even if moved to the right place.** The claim explains one step of seven and never asks whether the other six leave a savable state. By this project's own rule — `tools/gscript.py:1988-1989`, *"copying a fresh primitive into a target ALWAYS leaves it briefly broken: the primitive's required inputs are not wired yet"* — step 4 (`drop_subvi`, dropped unwired) and step 7 (Obtain Queue) are the same shape of edit. Unless each is shown to end fully wired, deleting the IA buys zero saved artefacts. **P8 was unsatisfiable by construction**, and that is what this run actually demonstrated. The explanation is also not new: it is already in `tools/gscript.py:1986-1989`, which is why `gui_save()` exists — and the script explicitly disabled that route (`diag_qdonor2_stage.py:13`).
+
+## 2. Alternative cause the three ruled-out items do not cover
+
+**This project has a measured, unexplained case of an op run taking a scratch from ExecState 1 → 0 while adding nothing broken.** `docs/NAMES.md:912-921` (cycle 23, 2026-09-18): *"READING `Is Broken?` PERTURBS THE TARGET … a B4 scratch whose ExecState was **1** immediately before … wire delta 0 — and ExecState afterwards read **0**" (`tools/bench/diag_fstunnel_rbwvictims.log:169-170`), with *"OPEN — the mechanism is not settled … could be the connect itself, the property node's own execution, or a stale/uncommitted compile state."*
+
+Step 1 is that family of operation. `build_index_array` does not merely place a node: it opens the panel, reads `VI.Block Diagram` (23C) — the first documented diagram load of this scratch in this instance — and runs erdosmiller's creator, which **attempts a `Connect Wire` and fails with 1304** (`docs/keystone-op-spec.md:379-381`). Ruled-out item 2 ("it read 1 seconds earlier") is the same reading pattern as the cycle-23 case, so it does not exclude this.
+
+Two smaller ones the record also cannot exclude:
+- **Step 1 may have created more than the IA.** `build_index_array` checks only that one new *IndexArray* appeared (`tools/gscript.py:2342-2344`), and no Wire/Constant baseline was taken — the census is end-of-run only (`diag_qdonor2_stage.py:216-219`). So "one unwired node" and "one unwired node + one bad wire" are indistinguishable here; the project has a scripted connect that landed a bad wire surviving Remove Bad Wires (`tools/gscript.py:1294-1295`).
+- **"edit error None" is not evidence of a clean edit.** OpBuildIA_v0 sinks the library's `error out` into Clear Errors (`docs/keystone-op-spec.md:377-378`) and the wrapper swallows modal-dialog `RuntimeError`s (`tools/gscript.py:2337-2341`). It means only that no Python exception escaped.
+
+## 3. Against my own alternative — reported, not buried
+
+`tools/bench/stage_d1_s2_loops.log:11,104,107`: stage 2 started from a byte-identical copy of `D1_s1_copy.vi`, edited it **with the ORIGINAL preloaded**, read `exec_state = 1` and saved 475,707 B. So "the first diagram load / the resident ORIGINAL surfaces latent brokenness" is **refuted** for this copy — don't spend a cycle on it. Only the narrow version survives: an op run of the 1304-connect family perturbing compile state, which stage 2 never exercised.
+
+## 4. What would falsify the claim
+
+Run step 1, then **delete the new IndexArray and re-read ExecState**. Claim true → back to **1**. Claim false → stays **0** with the alleged cause removed. Nothing in the run tested reversibility.
+
+## 5. Cheapest discriminating test — one scratch, no VI run, no save, no new op
+
+```
+es_a = g.exec_state(SCRATCH)                       # expect 1
+c_b4 = {c: g.count(SCRATCH, c) for c in ("Wire","Constant","IndexArray","Function","ControlTerminal")}
+g.build_index_array(SCRATCH, Q.IA_AT)
+c_af = <same census>
+es_b = g.exec_state(SCRATCH)                       # observed 0
+g.delete_object(SCRATCH, "IndexArray", <index of the new uid>, verify=True)
+es_c = g.exec_state(SCRATCH)
+```
+
+| readback | claim | alternative |
+|---|---|---|
+| `c_af − c_b4` | `IndexArray +1`, nothing else | another class also moves (+1 Wire / +1 Constant) |
+| `es_c` | **1** | **0** — the IA was not the (only) cause |
+
+Three extra op runs on a throwaway scratch. It is the only reading that changes the next cycle: `es_c == 1` ⇒ the donor pattern is viable and the staging becomes savable by moving the delete between steps 2 and 3; `es_c == 0` ⇒ dropping a donor on the top-level diagram is a dead end and the stage needs a different decomposition.
+
+## 6. Two facts in the same log that went unreported
+
+- **Handles 30,694 → 63,590 in 106 s** (`diag_qdonor2_stage.log:9,39`) — +32,896 against the ~31,500 fresh-start baseline, while P9 reports **zero** live VI Server refs. Something outside the ref ledger is consuming handles; late readings in that run deserve less trust than early ones.
+- **The run left no artefact for the third attempt at this stage.** By CLAUDE.md's own trigger ("the same stage failing twice at the same place … the next cycle's FIRST act is a decomposition plan"), the decomposition is due now, ahead of further cause-hunting.
+
+## Verdict
+
+The claim's physics is probably right — an unwired required input does break a VI, and that is already written into this toolchain. Its diagnosis is wrong in scope (one of at least three independently-breaking steps) and its fix is wrong in placement (it breaks step 2). What would change my mind on the narrow causal point is `es_c == 1` in §5.
+
+Sources: [Index Array function (LabVIEW Wiki)](https://labviewwiki.org/wiki/Index_Array_function) — note it does **not** document required/optional status for the array terminal; [NI forum "Unwired or bad terminal"](https://forums.ni.com/t5/LabVIEW/Unwired-or-bad-terminal/td-p/2772804) — NI staff: the dataflow requirement "can never be met", so "the VI will not compile and run"; [Execution.State property (ID 22D)](https://labviewwiki.org/wiki/VI_class/Execution.State_property) — 0 Bad / 1 Idle, **"Loads the block diagram into memory: No"**; [VI Scripting (LabVIEW Wiki)](https://labviewwiki.org/wiki/VI_Scripting) — "scripting requires recompiling the VI and may break it"; [NI forum "broken VI, but is good when opened"](https://forums.ni.com/t5/LabVIEW/broken-VI-but-is-good-when-opened/td-p/4272389) — programmatic broken-ness with an intact VI.
+BGRUN END rc=0 after 522s

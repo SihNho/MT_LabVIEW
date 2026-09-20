@@ -1,0 +1,431 @@
+BGRUN START 2026-09-17 10:07:51 limit 20.0 min: py tools/outcome_review.py
+   cadence: 5 cycle retrospectives since 2026-09-16-outcome-review-20260916.md (every 5)
+   task written to C:\Users\KimLab\AppData\Local\Temp\outcome-review-20260917.txt (8040 chars)
+OUTCOME: ANSWERED (308s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-17-outcome-review-20260917.md
+--- ANSWER ---
+The outcome remains unacceptable: since the September 16 review, the project produced more machinery but no new experiment-capable VI. The delivery-first correction is directionally right, but it still has not crossed the boundary from construction proof to saved, runnable product.
+
+## 1. Deliverable
+
+Nothing new can be run as an experiment today.
+
+- `Track_v6_CPU_core_v0.vi` and `Track_v6_CPU_queue_v0.vi` already existed at the previous review.
+- The queue artefact’s evidence remains strong but limited: 10,043 recorded frames in 7.5 seconds, 168/168 checks, all eight images returned, and exact results for the first 10,018 frames. It is still a recorded-TIFF replay, not live acquisition: [build_track_v6_queue_full.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_track_v6_queue_full.log:185>).
+- The CPU core likewise ran 10,043 replay frames in 192 seconds and was exact through frame 10,018: [build_track_v6_core_full.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_track_v6_core_full.log:93>).
+
+The apparent new deliverable, `Track_v6_D1_GPU.vi`, does not exist as a runnable artefact:
+
+- Its recipe explicitly says `--full` is not implemented.
+- The relocation run leaves `ExecState 0`.
+- Queues, rewiring, stop sentinels, save, and cold reopen were skipped.
+- The broken working copy was deleted rather than saved: [build_d1_v0_run6.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_d1_v0_run6.log:269>).
+
+`OpCreateEqual_v0.vi`, `OpCreateConst_v0.vi`, and `OpStopFromNode_v0.vi` are new functioning construction tools: their scratch test reached `ExecState 1`, then the scratch was deleted. They are not something the user can conduct an experiment with: [build_opsentinel_ops_run3.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_opsentinel_ops_run3.log:28>).
+
+**Deliverable verdict: zero new user-runnable deliverables since the last outcome review.**
+
+## 2. Goal alignment
+
+The governing requirements are [parallelization-requirement.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/project-requirements/parallelization-requirement.md>) and [project-description.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/project-requirements/project-description.md>).
+
+1. **Parallelize the post-`Done Picking Beads?` radial-profile phase in multiple parallel while loops — has not moved.**
+
+   D1 explicitly preserves the original stages through bead picking and calibration; it restructures the later experiment path. No produced VI parallelizes the radial-profile acquisition, drives that calibration workflow, or writes its `.cal` result in parallel loops. See [cycle15-plan.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/cycle15-plan.md:28>).
+
+2. **Functions in the target experimental loop:**
+
+   1. **Motor control — no project-delivered advancement.** It was already parallel in the original. Neither replay VI nor D1 runs it as part of a new product.
+   2. **Motor reading — has not moved into a runnable product.** It remains D2 work.
+   3. **Camera acquisition — advanced only as component design.** Queue ownership and replay concurrency are proven, but no new VI has performed live IMAQdx acquisition. D1 F1 is unrun.
+   4. **Scheduler — has not moved into a runnable product.** It remains D2, and its atomic transport decision is still contradictory across active documents.
+   5. **Merging and saving — advanced structurally, not operationally.** Node `#376` was successfully relocated in a disposable broken copy, but no new VI has written and reopened an experimental data file.
+
+3. **Split those functions and run them in parallel — not achieved.**
+
+   The replay queue VI proves recorded-image loading, tracking, and an array sink can overlap. That is meaningful component progress. It does not include live acquisition, motor reading/control, scheduler execution, the actual experimental writer, or normal stop/restart.
+
+The uncomfortable “not moved since the project began” list is therefore:
+
+- radial-profile/calibration parallelization;
+- integrated motor control;
+- motor reading;
+- scheduler execution;
+- live experimental saving;
+- an end-to-end parallel experiment VI.
+
+Tracking computation, GPU integration, queue transport, and scripted relocation have advanced—but none completes a numbered user requirement.
+
+## 3. Cost versus product
+
+The ratio is not defensible.
+
+Compared with the September 16 outcome review, approximately half a day added:
+
+- 6 Op VIs;
+- 12 recipe scripts;
+- 86 archived peer exchanges;
+- 13 documents;
+- 5 retrospectives;
+- zero benchmark-catalog rows;
+- zero deliverable VIs.
+
+The result remains the same two replay VIs and zero runnable experimental VIs. `STATUS.md` says this directly: [STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:46>).
+
+A competent outcome-focused engineer would have skipped or deferred:
+
+- five retrospectives in half a day, especially while their time windows remain broken;
+- most of the 86 peer exchanges and the 27 still-undisposed archives;
+- document/lint/framework work unrelated to getting D1 through F1/F2;
+- building separate constant and comparison creator ops after the design already implied that a terminal reference could not survive between them;
+- P2, preload, and constant-value diagnostics unless the full build actually fails on those facts;
+- further global hierarchy completion, CPU-top-level duplication, GPU optimization, portability work, and new benchmark themes.
+
+The direct implementation should have been one fused “create typed `-1` constant and connect it” operation, followed immediately by the full D1 build and its three acceptance runs.
+
+## 4. Ordering at project scale
+
+The previous ordering violation has finally been corrected.
+
+The September 16 review said writer and stop/shutdown—then scheduled last—had to move into the first vertical slice. Cycle 15 now does exactly that: D1 contains acquisition, GPU tracking, file writing, frame accounting, and stop/shutdown, with N1/F1/F2 as its acceptance gates: [cycle15-plan.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/cycle15-plan.md:22>).
+
+So D2 should not leapfrog D1. The right order now is:
+
+1. Resolve the one sentinel-connection implementation.
+2. Run the full D1 build.
+3. Run N1, F1, and F2 immediately.
+4. Hand over the D1 milestone.
+5. Add D2 scheduler, motor reading/control, focus, and display without another tooling or mapping interval.
+
+What is stale is not the current top-level order but the competing active documentation: `pre-rig-master-plan.md` still says finish the map first, while Cycle 15 explicitly supersedes complete mapping for delivery. Likewise, `decisions.md` calls scheduler transport settled as locals while the master plan calls it open. Those contradictions must not be allowed to redirect execution away from D1.
+
+I therefore do **not** find a current project-scale `ordering-stale` violation, provided no diagnostic or framework cycle is inserted before F1/F2.
+
+## 5. Stale decisions
+
+The oldest product-relevant open decision is **scheduler-to-motor transport**, open in substance since September 12.
+
+- [pre-rig-master-plan.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/pre-rig-master-plan.md:89>) says transport remains open because four scalar locals can tear and a cluster donor was unavailable.
+- [decisions.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/decisions.md:28>) nevertheless calls one cluster local settled.
+- D1 uses queues only, while D2 remains blocked behind the unresolved scheduler contract.
+
+This is an engineering decision, not something that should be left waiting on the user. Use the already demonstrated lock-stepped queue approach unless an existing typed command cluster is immediately available.
+
+Other open items:
+
+- **Bead-free initialization:** A10 still requires the `.cal` file and exact method for satisfying `Done Picking Beads?`. The user approved the automated click route, but the calibration input remains unnamed. It blocks a meaningful dry run: [pre-rig-master-plan.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/pre-rig-master-plan.md:77>).
+- **D1 sentinel connection:** open since September 17; it blocks the full build and therefore all N1/F1/F2 evidence. This is strictly an internal implementation choice.
+- **Normal stop proof:** the existing driver scored the restart rather than the preceding stop. F2 remains unproven; see [STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:51>).
+
+Nothing is demonstrably waiting on a user question that should have been asked “weeks ago.” The remaining user-facing initialization question should, however, be asked before F1—not discovered during it. Most current blockage is decision starvation inside engineering, not missing user authority.
+
+## 6. The experiment test
+
+For a real experiment next week, the user must use the **original VI**.
+
+The two project-produced VIs are replay programs. D1 is not saved or runnable. Consequently the project still lacks a replacement that has demonstrated:
+
+- live camera acquisition;
+- bead selection and calibration workflow;
+- motor reading and integrated motor control;
+- scheduler execution;
+- a real experimental file that reopens;
+- clean normal stop and restart;
+- end-to-end operation under the established front-panel workflow.
+
+This is not a preference for the familiar program. It is forced by the current evidence: [STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:46>) says zero runnable experimental VIs, while [build_d1_v0_run6.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_d1_v0_run6.log:269>) shows the prospective replacement was neither completed nor saved.
+
+## 7. Termination
+
+The shortest path to something genuinely useful is:
+
+1. Build one fused operation that creates the typed `-1` constant and connects it to `Equal?` within the same dataflow. Do not add another pair of general-purpose creators.
+2. Implement the already-specified D1 full phase: queues, all 109 boundary reconnections, shift-register wiring, sentinels, save, and cold reopen.
+3. Run N1, then F1 for the approved five minutes, then F2 stop/restart. A saved D1 with those results is the first real delivery milestone.
+4. Resolve the bead-free `.cal` input before F1.
+5. Immediately build D2 using the existing lock-stepped queue pattern for scheduler commands unless a ready typed cluster already exists.
+6. Run one end-to-end dry experiment that exercises motor commands/readback, camera, scheduler, tracking, saving, clean stop, restart, and reopening the produced file.
+7. Hand that VI to the user for a supervised pilot.
+
+D1 alone is a valuable runnable milestone, but it is not yet the user’s full experiment program; D2 is required before claiming the goal.
+
+Abandon or freeze until that pilot passes:
+
+- exhaustive 170/170 hierarchy completion;
+- new general-purpose Op families;
+- CPU-top-level duplication;
+- GPU optimization and portability work;
+- retrospective/review-framework development;
+- lint, frontmatter, and archive-disposition cleanup;
+- new benchmark themes;
+- TSV/TIFF additions not present in the original experiment;
+- display polish beyond a minimal decimated display.
+
+The project has enough measurements, plans, and construction infrastructure. It now needs an uninterrupted delivery sequence.
+
+OUTCOME-VIOLATION: goal-requirement-not-advanced
+OUTCOME-VIOLATION: tooling-over-delivery
+OUTCOME-VIOLATION: product-not-runnable
+OUTCOME-VIOLATION: decision-starved
+OUTCOME-VIOLATION: scope-inflation
+OUTCOME-VIOLATION: measurement-without-product
+   peer.ps1 rc 0; archived as archive/peer/<date>-outcome-review-20260917.md
+   Now annotate it: 'why asked' and 'verdict', and act on the OUTCOME-VIOLATION lines.
+BGRUN END rc=0 after 309s
+BGRUN START 2026-09-18 13:31:56 limit 15.0 min: py tools/outcome_review.py
+   cadence: 5 cycle retrospectives since 2026-09-17-outcome-review-20260917.md (every 5)
+   task written to C:\Users\KimLab\AppData\Local\Temp\outcome-review-20260918.txt (5723 chars)
+OUTCOME: ANSWERED (194s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-18-outcome-review-20260918.md
+--- ANSWER ---
+The outcome is still failing. Since the September 17 review, the project has produced more tooling and diagnostics but no new experiment-capable VI. This is another repeated outcome failure; under the project’s own rule, material work should stop for a user-level re-plan.
+
+## 1. Deliverable
+
+**Nothing new can be run as an experiment today.**
+
+The only runnable deliverable VIs remain the same replay artefacts present at the last review:
+
+- `Track_v6_CPU_queue_v0.vi` processed 10,043 recorded frames in 7.5 seconds, passed 168/168 checks, preserved metadata for every frame, and returned all eight image-pool entries. Its outputs were identical through the first 10,018 frames, before bead loss: [build_track_v6_queue_full.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_track_v6_queue_full.log:185>).
+- `Track_v6_CPU_core_v0.vi` processed the same 10,043 recorded frames in 192 seconds and passed 72/72 checks, again matching through frame 10,018: [build_track_v6_core_full.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_track_v6_core_full.log:97>).
+
+Neither is a live experiment VI. Both consume recorded TIFF paths; neither performs bead selection, calibration, live camera acquisition, scheduling, motor readback, experimental saving, or normal shutdown.
+
+Nothing added since the last review crosses that line:
+
+- D1 route-B run 3 ended at `63 WIRED / 0 FAILED / 3 NO-ROUTE`, `ExecState 0`, and saved nothing: [build_d1_routeb_v0_run3.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_d1_routeb_v0_run3.log:291>).
+- The new tunnel operation failed its legality gates, was not saved, and remains a construction dependency rather than a product: [build_opfstunnelterm_v1_run1.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_opfstunnelterm_v1_run1.log:127>).
+- `STATUS.md` therefore still says “zero runnable experimental VIs”: [STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:53>).
+
+**Deliverable verdict: zero new user-runnable deliverables since the last outcome review.**
+
+## 2. Goal alignment
+
+The controlling requirements are [parallelization-requirement.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/project-requirements/parallelization-requirement.md>) and [project-description.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/project-requirements/project-description.md>).
+
+1. **Parallelize the radial-profile phase after `Done Picking Beads?`: NOT MOVED.**
+
+   No produced VI runs that workflow in multiple parallel while loops or generates its `.cal` output. The active delivery plans preserve this stage unchanged rather than parallelizing it.
+
+2. **Split the experimental loop’s functions:**
+
+   1. **Motor control:** no project advancement. It was already parallel in the original VI.
+   2. **Motor reading:** NOT MOVED into a runnable product.
+   3. **Camera acquisition:** component knowledge advanced substantially, and recorded-image producer/consumer transport works. No project VI has yet run the live camera as part of an experiment.
+   4. **Scheduler:** NOT MOVED into a runnable product. Its command-transport decision remains contradictory between [pre-rig-master-plan.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/pre-rig-master-plan.md:88>) and [decisions.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/decisions.md:28>).
+   5. **Merging and saving:** advanced only in disposable structural work. The writer was moved or recreated in scratch copies, but no new experimental VI has written and reopened a real trace.
+
+3. **Make those functions run in parallel: NOT ACHIEVED.**
+
+   The queue replay VI proves that recorded-image loading, tracking, and collection can overlap. That is valid component progress, but it omits the live acquisition, scheduler, motors, focus, actual writer workflow, and stop protocol named by the requirement.
+
+The uncomfortable “has not moved since the project began” list is:
+
+- radial-profile/calibration parallelization;
+- integrated motor reading;
+- scheduler execution;
+- live experimental saving;
+- a complete parallel experimental VI.
+
+The project did advance the tracking kernel: `PARALLEL_kernel_v3` matched the original across all 10,043 fixture frames, and its isolated CPU time was about 2.43 ms/frame: [benchmark INDEX rows 12–15](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/benchmarks/INDEX.md:33>). That achievement has not been delivered inside the workflow the user operates.
+
+## 3. Cost versus product
+
+**The ratio is not defensible for the product that exists.**
+
+The supplied count is now 181 Op VIs, 139 recipes, 376 peer exchanges, 44 benchmark rows, 59 documents, and 16 retrospectives—for two replay VIs and zero runnable experimental VIs.
+
+Since the September 17 review alone, that is approximately:
+
+- +6 Op VIs;
+- +9 recipes;
+- +64 peer exchanges;
+- +7 documents;
+- +4 retrospectives;
+- +0 benchmark rows;
+- +0 deliverable VIs.
+
+A competent outcome-focused engineer would have skipped or deferred:
+
+- the generalized flat-sequence tunnel-reader operation and its donor-wire investigation;
+- the motor-assurance checker and its supporting tunnel machinery until a delivery actually changes or exercises motor motion;
+- more general-purpose Op VIs beyond the exact operations needed for one runnable vertical slice;
+- repeated route-B rebuilds after the same three unresolved routes remained;
+- further process-framework, lint, audit, review-disposition, and retrospective work;
+- hierarchy completion and comprehensive mapping not required by the first runnable copy;
+- GPU portability, secondary backends, and new benchmark themes until one live VI existed.
+
+Motor safety itself must not be skipped. What should have been skipped is completing a general motor-certification system **before** delivering a no-new-motion copy that preserves the original motor path.
+
+## 4. Ordering at project scale
+
+**The current ordering is stale.**
+
+`STATUS.md` presently orders:
+
+1. finish the flat-sequence tunnel operation;
+2. run the motor-limit static check;
+3. leave D1 paused.
+
+See [STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:61>) and the paused delivery plan in [cycle15-plan.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/cycle15-plan.md:1>).
+
+That order conflicts with `STATUS.md`’s own OPEN 32: repeated outcome failure requires a user re-plan and stands above everything else. It also repeats precisely the behavior the delivery-first correction was meant to stop—building prerequisites for later architecture while no experiment product exists.
+
+What must come first now is:
+
+1. a cold-openable copy of the original with one proven parallel tracking improvement;
+2. a live camera run;
+3. normal stop/restart;
+4. a saved trace that reopens.
+
+Writer and shutdown acceptance—historically late-stage work in [restructure-plan-4.6.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/restructure-plan-4.6.md:201>)—must remain in the first delivery slice. After that, the entirely neglected radial-profile requirement must be placed explicitly in the work order rather than remaining unscheduled.
+
+## 5. Stale decisions
+
+The longest-open product decisions are:
+
+- **Rotor zero**, open since the September 12 restructure plan. It blocks reproducible interpretation of scheduled rotor positions: zero at experiment start and zero after manual bead alignment describe different workflows. This is genuinely a user decision: [restructure-plan-4.6.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/restructure-plan-4.6.md:491>).
+- **Scheduler-to-motor transport**, also open in substance since September 12. The master plan says the invariant is settled but the mechanism is not; `decisions.md` incorrectly presents a cluster local as settled. It blocks scheduler loop 1.3/D2. This is an engineering decision and should not be left waiting on the user.
+- **Outcome re-plan**, OPEN 32. This now blocks all material work by the project’s own rule, but work has continued through multiple additional tooling cycles: [STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:56>).
+- **Motor envelope details:** rotor motion has no supplied envelope, and whether the ASI ±1 mm limit is radial or per-axis remains unanswered. These block full motor certification, but not a delivery that preserves the original path and adds no new motion behavior: [motor-limit-assurance-plan.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/motor-limit-assurance-plan.md:122>).
+- **D1’s current three no-route connections and tunnel-reader failure** are not user decisions. They are implementation choices and must not be allowed to create another user-wait state.
+
+Nothing has literally waited “weeks”; the whole project is only weeks old. But rotor-zero should have been asked when it was first written down on September 12, and the mandatory outcome re-plan should have occurred immediately after the repeated September 16–17 finding—not after another 64 peer exchanges.
+
+## 6. The experiment test
+
+If the user had to run a real experiment next week, they would use the **original `Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi`**.
+
+That is not conservatism. It is forced by the evidence:
+
+- the two shipped project VIs replay TIFFs;
+- D1 has never been saved runnable;
+- no project VI has demonstrated bead selection and `.cal` creation;
+- none has run live acquisition with the scheduler and motor readback;
+- none has produced and reopened an experimental trace;
+- none has demonstrated normal stop and clean restart.
+
+The project has faster and numerically validated kernels, but it has not put one into an experiment program the user can trust.
+
+## 7. Termination
+
+The shortest remaining path to something useful is **not** to complete route B or the seven-loop architecture first.
+
+1. Stop the current tunnel-reader and motor-checker sequence.
+2. Take a copy of the original and replace only its existing tracking-kernel call with the already accepted CPU-parallel kernel. Preserve bead selection, radial calibration, scheduler, motors, saving, and shutdown unchanged.
+3. Cold-open and compile that copy.
+4. Run the existing 10,043-frame fixture through the copy, including the already-proven reseed behavior.
+5. Run it live at 90 Hz for five minutes using the original experimental workflow.
+6. Require: no unexplained buffer-number gaps, recorded `Total Lost Frames`, normal `stop(end)`, a clean restart, and a saved `.tra` file that reopens.
+7. Hand that VI to the user as the first usable milestone.
+8. Then resume the full seven-loop restructuring in thin runnable slices, with radial-profile parallelization explicitly scheduled next.
+
+This uses the strongest finished engineering result—the bit-identical CPU-parallel kernel—without waiting for fresh-loop reconstruction. It also avoids introducing new motor behavior, so unfinished motor-certification tooling is not on its critical path.
+
+Abandon or defer:
+
+- route-B fresh reconstruction as the first delivery method;
+- further general-purpose Op VI expansion;
+- the flat-sequence tunnel-reader unless the minimal copy actually proves it necessary;
+- complete hierarchy mapping;
+- motor-checker infrastructure until the product changes motor paths;
+- second top-level/backend work;
+- new benchmark themes;
+- review-framework and documentation cleanup.
+
+The full parallel architecture remains the eventual goal. What should be abandoned is the belief that it must be completed before the user receives the first runnable improvement.
+
+OUTCOME-VIOLATION: goal-requirement-not-advanced
+OUTCOME-VIOLATION: tooling-over-delivery
+OUTCOME-VIOLATION: product-not-runnable
+OUTCOME-VIOLATION: ordering-stale
+OUTCOME-VIOLATION: decision-starved
+OUTCOME-VIOLATION: scope-inflation
+OUTCOME-VIOLATION: measurement-without-product
+   peer.ps1 rc 0; archived as archive/peer/<date>-outcome-review-20260918.md
+   Now annotate it: 'why asked' and 'verdict', and act on the OUTCOME-VIOLATION lines.
+BGRUN END rc=0 after 194s
+BGRUN START 2026-09-19 17:36:44 limit 20.0 min: py tools/outcome_review.py
+   cadence: 5 cycle retrospectives since 2026-09-18-outcome-review-20260918.md (every 5)
+   task written to C:\Users\KimLab\AppData\Local\Temp\outcome-review-20260919.txt (5984 chars)
+OUTCOME: ANSWERED (149s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-19-outcome-review-20260919.md
+COST: $2.7976  in 20 / out 8925 / cache-create 87911 / cache-read 592925  (146s, 14 turn(s))
+--- ANSWER ---
+I have what I need. Delivering the outcome review as text — the task is read-only and the answer is the deliverable.
+
+---
+
+# OUTCOME REVIEW — 2026-09-19 (fifth in series, 0.8 days after the fourth)
+
+## 1. DELIVERABLE
+
+**Nothing. The user can run nothing today that they could not run at the last outcome review.** The counted output's own deliverable line is unchanged from 2026-09-18: `Track_v6_CPU_core_v0.vi` and `Track_v6_CPU_queue_v0.vi` — the same TIFF-replay artefacts from INDEX rows 40–41 (2026-09-15). The interval's entire material effort was the D1 route-B build, runs 6 through 10 (`build_d1_routeb_v3.py` … `v7.py`), and STATUS.md's NEXT section states the result in the project's own words: the loop *"died at the SAME place every time — S3w re-wiring, row ~54/66, `error 2` from the traverse ops — and left NO file (the crash copies are md5-identical to the untouched V6 original)."* Run 10's record is explicit: **"S5 WAS NEVER REACHED — no D1 VI was saved"**; the working copy was renamed aside as `claudeDev\SCRATCH_routeb_065508_crash_072542.vi` (`archive/2026-09-19-status-cycle42-run10.md:74`, STATUS.md lock block `owner_c42r10r`). The run logs (`tools/bench/build_d1_routeb_v5_run8.log` … `v7_run10.log`, each `BGRUN END rc=1` after ~1820 s) are evidence of a repeatable crash, not of a product.
+
+The one thing genuinely gained is *knowledge*: the failure was localized (reference leaks in the traverse ops descending from `OpSubVI_v0.vi`, handles 31,106 → 50,441 in run 10; LabVIEW `error 2` = "Memory is full"), and the run-10 census contract held (`run10.log:370-371`). That is diagnosis, not deliverable.
+
+## 2. GOAL ALIGNMENT
+
+Against `project-requirements/parallelization-requirement.md`:
+
+- **Req 1 (parallelize the radial-profile / .cal stage after 'Done Picking Beads?'): NOT MOVED since 2026-08-24.** The last review ordered it scheduled or explicitly descoped with the user; it is still in no plan — a grep for "radial" across `docs/` hits only `motor-limit-assurance-plan.md`, `gpu-backend.md`, `MAIN_VI_MAP.md`, and the raw inventory; neither `cycle27-plan.md` nor `d1-route-b-plan.md` mentions it. Third consecutive review flagging this.
+- **Req 2.1 (motor control): already parallel in the original** — no movement needed per the user's own text.
+- **Req 2.2 (motor reading, the named bottleneck): NOT MOVED into anything runnable.** The 2.56 ms/round-trip measurement (INDEX row 19) is unchanged and unembodied.
+- **Req 2.3 (camera acquisition): NOT MOVED.** No project VI acquires live frames; the camera contract (row 44) remains a Python tool.
+- **Req 2.4 (scheduler): NOT MOVED** — deferred to D2, which is behind a D1 that failed five times this interval.
+- **Req 2.5 (merging and saving): NOT MOVED** beyond the replay sink.
+- **Req 3 (split the functions into parallel loops): NOT ACHIEVED in anything the user can run.** Five build attempts at exactly this step all crashed before saving.
+
+The uncomfortable list is now identical for the third review running: requirements 1, 2.2, 2.3, 2.4, 2.5, and 3 have produced nothing the user can run since the project began. What advanced this interval is only the *understanding of why the build tool fails*.
+
+## 3. COST vs PRODUCT
+
+Delta since the last review, 0.8 days: **+6 op VIs (182→188), +7 recipes (140→147), +23 peer exchanges (401→424), +5 retrospectives, +0 benchmark rows, +0 deliverables — and, by STATUS.md's own accounting, ≈ $166 for the five overnight route-B cycles**, plus the itemized reviews around them: the run-8 failed-prediction review $4.4847 (`archive/peer/2026-09-19-routeb-run8-predictions.md`), prior-art run 9 $4.2179, prior-art run 10 $5.6462, the cycle-42 session $5.5451 (`archive/2026-09-19-status-cycle42-run10.md:81`).
+
+**That ratio is not defensible, and the specific waste is nameable.** All five runs died at the same S3w row with the same `error 2`. A competent engineer would have stopped after run 7 — two identical crashes at the same row is a diagnosis, five is a ritual — and gone straight to the root cause the project itself had already recorded: `OpSubVI_v0.vi`'s `Close Reference` was REMOVED (`docs/REFERENCES.md:126`, cited in STATUS NEXT), and the handle-leak audit machinery to detect it existed since INDEX row 11 (2026-09-06). Instead each rerun bought a fresh ~$4–6 prior-art or prediction review, one of which (run 10's F4/F2 refutation) the cycle **refuted and was then proven wrong 30 minutes later by the run itself** (`run10.log:367`; correction at `archive/peer/2026-09-19-priorart-d1-routeb-run10.md:499`) — the review layer paid for and then overridden. What should have been skipped: runs 8, 9, and 10 in their full-length form, and the three reviews that certified them; the E3 save-restart mechanism (v7's +92 lines) built against the skill's own recorded law ("after error 2, restart FIRST"). It took the user's intervention at 17:4x — not the process — to impose the staged build (Pre-decided 22–24, `docs/cycle27-plan.md:370-374`).
+
+Credit: the S0 stage now in flight (`s0_hygiene_probe.py`, STATUS lock `owner_s0`) is the correct, cheap, read-only next act.
+
+## 4. ORDERING AT PROJECT SCALE
+
+The standing order — firefighter cycle: S0 reference hygiene → S1 stripped copy → S2 loops, each stage saved with an md5, "never run a full-length `build_d1_routeb_vN.py` again" (STATUS.md NEXT) — **is right, and is the order the last review's termination section implied a day ago.** Note who set it: the user, after ≈$166 of evidence, not the project's own judgement. Two residual faults:
+
+1. **S0 should have been first all along.** The leak was knowable before run 6: `docs/REFERENCES.md:126` recorded the removed `Close Reference`, and the 20-call flat-handle acceptance test now demanded in S0 is exactly INDEX row 11's method from 2026-09-06. The ordering was stale *within* the interval, not just across it.
+2. **Requirement 1 is still scheduled nowhere** — not last, nowhere. Either place it after D1 or put its descoping to the user. This is the third review to say so; repeating it in STATUS costs one line.
+
+`docs/restructure-plan-4.6.md` remaining deferred to the end is still correct — nothing this interval changed that.
+
+## 5. STALE DECISIONS
+
+- **OPEN 53 (judgement half) — the oldest live user-facing question, and still never actually asked.** Nothing readable proves the PI controller zero equals the original physical zero, i.e. that 0–39 fences the intended physical window (STATUS.md item 53; `archive/2026-09-18-status-cycle36-relocate.md` §9). The last review said it "should have been put to the user the day the limits were armed." A day later it remains open while the rig sits assembled with limits LEFT ON. It is a two-minute question at the rig and it gates every future motor-moving D1 run.
+- **OPEN 42 (undisposed reviews, self-referential audit) — stale since cycle 20**, still accumulating sub-findings (A4 day-boundary miscounting, retrospective-cycle40 F4) faster than consequence. Correctly parked; should stay parked.
+- **OPEN 46 (`SetCommand_signed.vi` on NO disk)**: a *verified hardware-accepted fix* (INDEX row 31, 16/16 + live −1080° test with the user watching) that now exists nowhere. That is a deliverable the project built and then lost; recreating it is one recipe run and it is the only item in OPEN that is pure user value.
+- **OPEN 54 / 47**: machinery-rule litigation; repairs named, deliberately not built — acceptable, but their prose keeps growing.
+
+## 6. THE EXPERIMENT TEST
+
+**The original VI — unchanged verdict, and this interval widened the gap in the original's favor.** For a real experiment next week the user runs `Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi`, because the project's parallel VIs replay recorded TIFFs only, D1 does not exist as a saved file (run 10: "no D1 VI was saved"), and the signed-rotor fix is on no disk (OPEN 46). What the project contributes to that experiment is peripheral: the motor safety envelope (`tools/motor_gate.py`, limits proven to hold through a real 30 mm move) and the D0 unattended driver (`tools/bench/drive_original_copy_v5.py`) — a test harness, not an experiment improvement. Frame loss, the user's stated pain (`project-description.md` §6), is exactly what it was on 2026-08-24.
+
+## 7. TERMINATION
+
+The shortest path is the user's own firefighter order, executed without decoration:
+
+1. **Finish S0** (the probe is in flight): repaired `OpWireSource_v6.vi` / `OpReport_v4.vi`, 20 calls, handles flat ±100, or the finding that they can't be — nothing else in that session.
+2. **S1, S2** exactly as STATUS NEXT specifies, each ending in a saved file + md5. Stop where the order says stop.
+3. Continue the stage chain until a D1 copy reproduces the 10,018 pre-loss fixture frames (the row-41 bar), then drive it live through the D0 harness.
+4. **Before the first D1 motor-moving run, ask the user the OPEN 53 physical-zero question** — it has now outlived two outcome reviews.
+5. **Re-save `SetCommand_signed.vi` to disk** (OPEN 46) — one cheap act that converts an already-verified result back into a possession.
+
+Abandon or freeze: any further full-length route-B recipe (already ordered); further prior-art/prediction reviews on stage scripts under ~100 lines of delta — five reviews at $4–6 each certified five identical crashes this interval; OPEN 42's dispositions and the audit A2/A3/A4 repairs; the `VI.Get Errors` 452 build (correctly NOT AUTHORISED); further STATUS relocation prose. And either schedule requirement 1 or descope it with the user — silence is no longer a neutral option after three reviews.
+
+**The consequence clause: this is a repetition.** The last review found delivery started (D0) then stalled; this interval spent ≈$180+ on five identical failures and delivered nothing runnable. The staged re-plan the rule demands has, in fact, already happened — the user imposed it at 17:4x. So the finding here is not "re-plan" but "the re-plan exists; the next cycle must end with S0/S1 saved files and md5s in a log, or the stop-and-replan escalates to the project's continued existence."
+
+---
+
+OUTCOME-VIOLATION: goal-requirement-not-advanced
+OUTCOME-VIOLATION: product-not-runnable
+OUTCOME-VIOLATION: tooling-over-delivery
+OUTCOME-VIOLATION: decision-starved
+OUTCOME-VIOLATION: ordering-stale
+
+(Mapping notes: `product-not-runnable` returns after being cleared last review — the interval's sole product line, D1, produced zero saved runnable files across five paid attempts. `tooling-over-delivery` covers both the $166 rerun loop with its per-run review tax and the +6 op VIs / +7 recipes against +0 deliverables. `ordering-stale` is for S0-last-instead-of-first within the interval and requirement 1 still unscheduled; the *current* standing order is right and is user-imposed. `decision-starved` is OPEN 53 unasked plus requirement 1's un-put descoping question. Not flagged: `scope-inflation` — growth went into the existing D1 lane, not new scope; `measurement-without-product` — no new benchmark rows were bought this interval, which is itself an improvement.)
+   peer.ps1 rc 0; archived as archive/peer/<date>-outcome-review-20260919.md
+   Now annotate it: 'why asked' and 'verdict', and act on the OUTCOME-VIOLATION lines.
+BGRUN END rc=0 after 149s

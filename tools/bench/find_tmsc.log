@@ -1,0 +1,29 @@
+BGRUN START 2026-09-12 14:11:46 limit 10.0 min: py -u -c 
+import os,sys
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+for name in ('DONOR_Ex3_PrimitiveFunctions.vi','DONOR_Ex1_GetControlsWireIndicators.vi','ScriptDriver_DropForLoop.vi'):
+    D=os.path.join(g.CLAUDEDEV,name)
+    print('='*70); print(name, g.count(D,'Diagram'),'diagrams')
+    for d in range(g.count(D,'Diagram')):
+        try: nodes,_=g.net_map(D, diagram_index=d, max_nodes=60, max_terms=8)
+        except Exception as e: print('  dia',d,'FAIL',str(e)[:60]); continue
+        for i,(uid,lbl,terms) in nodes.items():
+            names=[nm for _,nm,_ in terms if nm]
+            if any('specific' in (nm or '').lower() or 'target class' in (nm or '').lower() for nm in names):
+                print('  *** dia',d,'node',i,'uid',uid,'label',repr(lbl),names)
+        print('  dia',d,':',len(nodes),'nodes')
+
+======================================================================
+DONOR_Ex3_PrimitiveFunctions.vi 2 diagrams
+  dia 0 : 12 nodes
+  dia 1 : 4 nodes
+======================================================================
+DONOR_Ex1_GetControlsWireIndicators.vi 2 diagrams
+  dia 0 : 8 nodes
+  dia 1 : 4 nodes
+======================================================================
+ScriptDriver_DropForLoop.vi 1 diagrams
+  dia 0 : 6 nodes
+BGRUN END rc=0 after 27s

@@ -1,0 +1,70 @@
+BGRUN START 2026-09-12 14:45:11 limit 10.0 min: py -u -c 
+import os,sys,glob
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+ops=sorted(glob.glob(os.path.join(g.CLAUDEDEV,'Op*.vi')))
+print('%d op VIs in claudeDev'%len(ops))
+bad=[]
+for p in ops:
+    try: st=g.exec_state(p)
+    except Exception as e: st='EXC '+str(e)[:60]
+    if st!=1: bad.append((os.path.basename(p),st))
+    print('   %-34s ExecState %s'%(os.path.basename(p),st))
+print()
+print('BROKEN:',bad if bad else 'none')
+
+50 op VIs in claudeDev
+   OP_test1.vi                        ExecState 1
+   OpBuildBA_v0.vi                    ExecState 1
+   OpBuildCase_v0.vi                  ExecState 1
+   OpBuildCase_v1.vi                  ExecState 1
+   OpBuildFlatten_v0.vi               ExecState 1
+   OpBuildIA_v0.vi                    ExecState 1
+   OpBuildInvoke_v0.vi                ExecState 1
+   OpBuildPN_v0.vi                    ExecState 1
+   OpBuildUnflatten_v0.vi             ExecState 1
+   OpCLFNBuild_v0.vi                  ExecState 1
+   OpCLFNParams_v0.vi                 ExecState 1
+   OpCLFNPre_v0.vi                    ExecState 1
+   OpConPaneAssign_v0.vi              ExecState 1
+   OpConPane_v0.vi                    ExecState 1
+   OpConnect2_v0.vi                   ExecState 1
+   OpConnect_v0.vi                    ExecState 1
+   OpCreateControl_v0.vi              ExecState 1
+   OpCreateControl_v1.vi              ExecState 1
+   OpCreateIndicator_v0.vi            ExecState 1
+   OpCreatePropNode_v0.vi             ExecState 1
+   OpDeleteByLabel_v0.vi              ExecState 1
+   OpDelete_v0.vi                     ExecState 1
+   OpExitLoop_v0.vi                   ExecState 1
+   OpFPLabels_v0.vi                   ExecState 0
+   OpFP_v0.vi                         ExecState 1
+   OpForLoop_v0.vi                    ExecState 1
+   OpLoopKernel_v0.vi                 ExecState 1
+   OpMakeDefault_v0.vi                ExecState 1
+   OpMoveByLabel_v0.vi                ExecState 1
+   OpMoveOut_v0.vi                    ExecState 1
+   OpMove_v0.vi                       ExecState 1
+   OpNetInfo_v0.vi                    ExecState 1
+   OpNetInfo_v1.vi                    ExecState 1
+   OpNodeInfo_v0.vi                   ExecState 1
+   OpNode_v0.vi                       ExecState 1
+   OpRemoveBadWires_v0.vi             ExecState 1
+   OpReport_v0.vi                     ExecState 1
+   OpReport_v1.vi                     ExecState 1
+   OpReport_v2.vi                     ExecState 1
+   OpReport_v3.vi                     ExecState 1
+   OpSetAutoErr_v0.vi                 ExecState 1
+   OpSetIndexMode_v0.vi               ExecState 1
+   OpSetLabel_v0.vi                   ExecState 1
+   OpSetName_v0.vi                    ExecState 1
+   OpSubVI_v0.vi                      ExecState 1
+   OpSubVI_v1.vi                      ExecState 1
+   OpWireCtl_v0.vi                    ExecState 1
+   OpWireInd_v0.vi                    ExecState 1
+   OpWire_v0.vi                       ExecState 1
+   OpWire_v1.vi                       ExecState 1
+
+BROKEN: [('OpFPLabels_v0.vi', 0)]
+BGRUN END rc=0 after 3s

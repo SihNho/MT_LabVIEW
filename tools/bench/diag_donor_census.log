@@ -1,0 +1,176 @@
+BGRUN START 2026-09-20 05:20:30 limit 20.0 min: py -u tools\bench\diag_donor_census.py
+=== diag_donor_census  2026-09-20 05:20:30   (MEASUREMENT B, PURE READ; NO VI IS RUN, 34(f); no new op)
+  FACT  LabVIEW handles BEFORE: 30932
+  FACT  B1 DATA TYPES ARE NOT MEASURABLE BY THE BUILT FLEET: no op reads Terminal.DataType; closest are node_terms (name/is_source/wire), report_all (class/uid/pos/owner) and node_info (Node.Style, TOP-LEVEL nodes only). A new op is forbidden (Pre-decided 2). Names + classes are reported instead.
+  FACT  Q1 ORIGINAL (read-only probe, 34(k)): HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  Q1 the ORIGINAL's md5 equals the pin  2a78e17c449cacdaf5da389818526859
+  FACT  Q2 the S2 artefact: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  Q2 D1_s2_loops.vi md5 == 6ff19497f2309e007a214660bb64b911  6ff19497f2309e007a214660bb64b911
+  FACT  Q2b: lv_restart rc=0 ['dialogs: ,1346,762| / ENABLED|11405796|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  handles after the restart: 30690
+  FACT  Q3 the dated scratch: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_donorcensus_20260920_052030.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  Q3 the scratch is byte-identical to the S2 artefact  6ff19497f2309e007a214660bb64b911
+  FACT  class census BEFORE (this run mutates nothing): {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905}
+  PASS  Q4 census == the verified S2 numbers {'Diagram': 173, 'WhileLoop': 6, 'Wire': 1905}  {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905}
+
+--- B1: every node of Diagram #686 in AbstractDiagram.Nodes[] order
+  FACT  Diagram #686 reads Traverse index 19 - re-read here, never cached (34(h))
+  PASS  Q5 the Nodes[] walk of Diagram #686 returns at least 20 nodes  24 nodes
+      NODE Nodes[  0] #8486   Function         'Increment'                             1 named-out, 1 fed-in
+           out t0   'x+1'                                      wire 23519
+      NODE Nodes[  1] #7201   Function         'Multiply'                              1 named-out, 2 fed-in
+           out t0   'x*y'                                      wire 8424
+      NODE Nodes[  2] #781    Function         'Initialize Array'                      1 named-out, 3 fed-in
+           out t1   'initialized array'                        wire 3543
+      NODE Nodes[  3] #250    Property         'Property Node'                         3 named-out, 1 fed-in
+           out t1   'IMAQdx Session'                           wire 6910
+           out t3   'error out'                                wire 925
+           out t4   'LastBufferNumber'                         wire 1827
+      NODE Nodes[  4] #637    Function         'While Loop'                            17 named-out, 38 fed-in
+           out t0   'error out'                                wire 697
+           out t2   'x,y,z array out'                          wire 0
+           out t7   'Session Out'                              wire 4436
+           out t8   'position [internal units]'                wire 4859
+           out t10  'VISA out'                                 wire 7506
+           out t12  'total data array out'                     wire 3957
+           out t15  'error out'                                wire 1899
+           out t18  'file number to append out'                wire 5073
+           out t19  'file progress'                            wire 4337
+           out t20  'LastBufferNumber'                         wire 0
+           out t24  'pos in cal image out'                     wire 0
+           out t28  'Bead is good? array out'                  wire 0
+           out t36  'current image number'                     wire 1420
+           out t43  'F-x out'                                  wire 0
+           out t46  'Value'                                    wire 0
+           out t48  'System no.'                               wire 0
+           out t57  'Value'                                    wire 0
+      NODE Nodes[  5] #6951   SubVI            'Global motor pos.vi'                   0 named-out, 1 fed-in
+      NODE Nodes[  6] #6409   SubVI            'Global motor pos.vi'                   0 named-out, 1 fed-in
+      NODE Nodes[  7] #2048   Function         'Array Subset'                          1 named-out, 3 fed-in
+           out t1   'subarray'                                 wire 4564
+      NODE Nodes[  8] #7202   SubVI            'Global motor pos.vi'                   0 named-out, 1 fed-in
+      NODE Nodes[  9] #194    Function         'Subtract'                              1 named-out, 2 fed-in
+           out t0   'x-y'                                      wire 2160
+      NODE Nodes[ 10] #1628   Function         'Subtract'                              1 named-out, 2 fed-in
+           out t0   'x-y'                                      wire 2315
+      NODE Nodes[ 11] #6384   SubVI            'save N xyz traces.vi'                  1 named-out, 7 fed-in
+           out t1   'error out'                                wire 1920
+      NODE Nodes[ 12] #8953   Function         'Initialize Array'                      1 named-out, 4 fed-in
+           out t1   'initialized array'                        wire 9051
+      NODE Nodes[ 13] #9342   Function         'Array Size'                            1 named-out, 1 fed-in
+           out t0   'size(s)'                                  wire 9211
+      NODE Nodes[ 14] #9179   Function         'Decrement'                             1 named-out, 1 fed-in
+           out t0   'x-1'                                      wire 9166
+      NODE Nodes[ 15] #28124  Function         'Initialize Array'                      1 named-out, 4 fed-in
+           out t1   'initialized array'                        wire 29122
+      NODE Nodes[ 16] #27605  SubVI            'Max Trans Pos.vi'                      1 named-out, 1 fed-in
+           out t0   'Magnet position output'                   wire 28392
+      NODE Nodes[ 17] #28670  Function         'For Loop'                              0 named-out, 2 fed-in
+      NODE Nodes[ 18] #25380  Function         'While Loop'                            5 named-out, 3 fed-in
+           out t2   'final trans pos'                          wire 0
+           out t4   'error out'                                wire 37446
+           out t5   'rot pos'                                  wire 783
+           out t7   'tran pos'                                 wire 6533
+           out t9   'Value'                                    wire 0
+      NODE Nodes[ 19] #25091  Function         'Multiply'                              1 named-out, 2 fed-in
+           out t0   'x*y'                                      wire 25196
+      NODE Nodes[ 20] #25149  Function         'Subtract'                              1 named-out, 2 fed-in
+           out t0   'x-y'                                      wire 25646
+      NODE Nodes[ 21] #23032  Function         'While Loop'                            0 named-out, 1 fed-in
+      NODE Nodes[ 22] #10170  Function         'While Loop'                            0 named-out, 1 fed-in
+      NODE Nodes[ 23] #23041  Function         'While Loop'                            0 named-out, 1 fed-in
+  PASS  Q6 B1 is captured in full for all 24 nodes
+  PASS  Q7 WhileLoop #637 is on Diagram #686 and exposes named output terminals  17 named outputs
+
+--- B3: wire -> source-node map on Diagram #686, then the #637 dependency verdicts
+  FACT  wire -> source-node map built from the walk itself: 32 distinct wires have a SOURCE terminal on Diagram #686
+      B3 #8486   Function         fed-in 1   direct [] | 637 direct=False trans=False => INDEPENDENT of #637
+      B3 #7201   Function         fed-in 2   direct [8486] | 637 direct=False trans=False => INDEPENDENT of #637
+      B3 #781    Function         fed-in 3   direct [7201] | 637 direct=False trans=False => INDEPENDENT of #637
+      B3 #250    Property         fed-in 1   direct [] | 637 direct=False trans=False => INDEPENDENT of #637
+      B3 #637    Function         fed-in 38  direct [250, 781, 8953, 27605, 28124, 28670] | 637 direct=False trans=False => depends on #637
+      B3 #6951   SubVI            fed-in 1   direct [25380] | 637 direct=False trans=False => INDEPENDENT of #637
+      B3 #6409   SubVI            fed-in 1   direct [25380] | 637 direct=False trans=False => INDEPENDENT of #637
+      B3 #2048   Function         fed-in 3   direct [637] | 637 direct=True trans=True => depends on #637
+      B3 #7202   SubVI            fed-in 1   direct [637] | 637 direct=True trans=True => depends on #637
+      B3 #194    Function         fed-in 2   direct [250, 637] | 637 direct=True trans=True => depends on #637
+      B3 #1628   Function         fed-in 2   direct [194, 637] | 637 direct=True trans=True => depends on #637
+      B3 #6384   SubVI            fed-in 7   direct [637, 2048] | 637 direct=True trans=True => depends on #637
+      B3 #8953   Function         fed-in 4   direct [9179] | 637 direct=False trans=False => INDEPENDENT of #637
+      B3 #9342   Function         fed-in 1   direct [] | 637 direct=False trans=False => INDEPENDENT of #637
+      B3 #9179   Function         fed-in 1   direct [9342] | 637 direct=False trans=False => INDEPENDENT of #637
+      B3 #28124  Function         fed-in 4   direct [9179] | 637 direct=False trans=False => INDEPENDENT of #637
+      B3 #27605  SubVI            fed-in 1   direct [] | 637 direct=False trans=False => INDEPENDENT of #637
+      B3 #28670  Function         fed-in 2   direct [25149, 27605] | 637 direct=False trans=False => INDEPENDENT of #637
+      B3 #25380  Function         fed-in 3   direct [] | 637 direct=False trans=False => INDEPENDENT of #637
+      B3 #25091  Function         fed-in 2   direct [] | 637 direct=False trans=False => INDEPENDENT of #637
+      B3 #25149  Function         fed-in 2   direct [25091] | 637 direct=False trans=False => INDEPENDENT of #637
+      B3 #23032  Function         fed-in 1   direct [8486] | 637 direct=False trans=False => INDEPENDENT of #637
+      B3 #10170  Function         fed-in 1   direct [8486] | 637 direct=False trans=False => INDEPENDENT of #637
+      B3 #23041  Function         fed-in 1   direct [8486] | 637 direct=False trans=False => INDEPENDENT of #637
+  FACT  B3 SUMMARY: 18 of 24 nodes on Diagram #686 are INDEPENDENT of WhileLoop #637 (no fed input traces to it inside #686): [8486, 7201, 781, 250, 6951, 6409, 8953, 9342, 9179, 28124, 27605, 28670, 25380, 25091, 25149, 23032, 10170, 23041]
+  PASS  Q8 the measured control #8486 'x+1' is INDEPENDENT of #637  {'uid': 8486, 'node_index': 0, 'class_guess': 'Function', 'label': 'Increment', 'n_fed_inputs': 1, 'direct_source_nodes': [], 'fed_inputs_whose_wire_has_NO_source_on_686': [7478], 'depends_on_637_DIRECTLY': False, 'depends_on_637_TRANSITIVELY': False, 'independent_of_637': True}
+
+--- Q10 spot-check of the wire->source map against OpWireSource_v5
+  OBSERVED wire 7478 Terms[0] source=True owner 'FlatSequenceInnerTunnel' uid 896 reciprocal 7478 |  
+  OBSERVED wire 7478 Terms[1] source=False owner 'Function' uid 8486 reciprocal 7478 |  
+  OBSERVED wire 7478 Terms[2] source=False owner '' uid 0 reciprocal 0 |  error 1055: Property Node in OpWireSource_v5.vi er
+  FACT  spot-check w7478 (into #8486): OpWireSource_v5 source owner [896], walk map says [] -> AGREE
+  OBSERVED wire 8385 Terms[0] source=True owner 'DigitalNumericConstant' uid 1850 reciprocal 8385 |  
+  OBSERVED wire 8385 Terms[1] source=False owner 'Function' uid 7201 reciprocal 8385 |  
+  OBSERVED wire 8385 Terms[2] source=False owner '' uid 0 reciprocal 0 |  error 1055: Property Node in OpWireSource_v5.vi er
+  FACT  spot-check w8385 (into #7201): OpWireSource_v5 source owner [1850], walk map says [] -> AGREE
+  OBSERVED wire 23519 Terms[0] source=True owner 'Function' uid 8486 reciprocal 23519 |  
+  OBSERVED wire 23519 Terms[1] source=False owner 'LoopTunnel' uid 23501 reciprocal 23519 |  
+  OBSERVED wire 23519 Terms[2] source=False owner 'LoopTunnel' uid 23417 reciprocal 23519 |  
+  OBSERVED wire 23519 Terms[3] source=False owner 'LoopTunnel' uid 23172 reciprocal 23519 |  
+  OBSERVED wire 23519 Terms[4] source=False owner 'Function' uid 7201 reciprocal 23519 |  
+  OBSERVED wire 23519 Terms[5] source=False owner '' uid 0 reciprocal 0 |  error 1055: Property Node in OpWireSource_v5.vi er
+  FACT  spot-check w23519 (into #7201): OpWireSource_v5 source owner [8486], walk map says [8486] -> AGREE
+  OBSERVED wire 3865 Terms[0] source=True owner 'DigitalNumericConstant' uid 1849 reciprocal 3865 |  
+  OBSERVED wire 3865 Terms[1] source=False owner 'GrowableFunction' uid 781 reciprocal 3865 |  
+  OBSERVED wire 3865 Terms[2] source=False owner '' uid 0 reciprocal 0 |  error 1055: Property Node in OpWireSource_v5.vi er
+  FACT  spot-check w3865 (into #781): OpWireSource_v5 source owner [1849], walk map says [] -> AGREE
+  OBSERVED wire 2362 Terms[0] source=True owner 'FlatSequenceInnerTunnel' uid 2484 reciprocal 2362 |  
+  OBSERVED wire 2362 Terms[1] source=False owner 'GrowableFunction' uid 781 reciprocal 2362 |  
+  OBSERVED wire 2362 Terms[2] source=False owner 'LoopTunnel' uid 2294 reciprocal 2362 |  
+  OBSERVED wire 2362 Terms[3] source=False owner 'SubVI' uid 6384 reciprocal 2362 |  
+  OBSERVED wire 2362 Terms[4] source=False owner '' uid 0 reciprocal 0 |  error 1055: Property Node in OpWireSource_v5.vi er
+  FACT  spot-check w2362 (into #781): OpWireSource_v5 source owner [2484], walk map says [] -> AGREE
+  OBSERVED wire 694 Terms[0] source=True owner 'FlatSequenceInnerTunnel' uid 625 reciprocal 694 |  
+  OBSERVED wire 694 Terms[1] source=False owner 'Property' uid 250 reciprocal 694 |  
+  OBSERVED wire 694 Terms[2] source=False owner '' uid 0 reciprocal 0 |  error 1055: Property Node in OpWireSource_v5.vi er
+  FACT  spot-check w694 (into #250): OpWireSource_v5 source owner [625], walk map says [] -> AGREE
+  PASS  Q10 every sampled wire agrees (6/6)  6 checked
+
+--- B2: the eight element types against B1 (DOCUMENT-DERIVED types; see the note above)
+      B2 Q_free       IMAQ image refnum          plan src #None   ''                             exists_on_686=False independent_of_637=None
+      B2 Q_work       IMAQ image refnum          plan src #None   ''                             exists_on_686=False independent_of_637=None
+      B2 Q_meta       DBL (buffer number)        plan src #637    'current image number'         exists_on_686=True independent_of_637=False
+      B2 Q_res        DBL[] (array)              plan src #637    'x,y,z array out'              exists_on_686=True independent_of_637=False
+      B2 Q_good       Bool[] (array)             plan src #637    'Bead is good? array out'      exists_on_686=True independent_of_637=False
+      B2 Q_rmeta      DBL (buffer number)        plan src #637    'current image number'         exists_on_686=True independent_of_637=False
+      B2 Q_focus      DBL scalar (slice index)   plan src #None   ''                             exists_on_686=False independent_of_637=None
+      B2 Q_focusback  DBL scalar                 plan src #637    'position [internal units]'    exists_on_686=True independent_of_637=False
+
+--- Q11: proving this run mutated nothing
+  FACT  class census AFTER (must equal BEFORE): {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905}
+  FACT  Q11 the scratch on disk, after the read: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_donorcensus_20260920_052030.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  Q11 nothing was created, moved or saved: census identical AND the scratch's md5 on disk unchanged  census_same=True md5 6ff19497f2309e007a214660bb64b911 vs 6ff19497f2309e007a214660bb64b911
+
+--- close-out
+  FACT  refs at end: {'opened': 0, 'closed': 0, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handles AFTER: 34191 (before 30932)
+  PASS  Q12 no live VI Server reference is left open  ref_counts {'opened': 0, 'closed': 0, 'live': 0, 'cached_op_vis': 0}
+  FACT  Q13 ORIGINAL after the run: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  Q13 ORIGINAL md5 unchanged  2a78e17c449cacdaf5da389818526859
+  FACT  Q13 D1_s1_copy.vi after the run: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  PASS  Q13 D1_s1_copy.vi md5 unchanged  3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  Q13 D1_s2_loops.vi after the run: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  Q13 D1_s2_loops.vi md5 unchanged  6ff19497f2309e007a214660bb64b911
+
+=== GATES: 14 pass / 0 fail
+=== READINGS json: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_donor_census.json
+=== SCRATCH (read only, never saved): C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_donorcensus_20260920_052030.vi
+=== NO VI WAS RUN (34(f)); no new op; nothing mutated.
+BGRUN END rc=0 after 134s

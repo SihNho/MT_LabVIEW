@@ -1,0 +1,52 @@
+BGRUN START 2026-09-14 01:12:09 limit 10.0 min: py -c 
+import sys,time; sys.path.insert(0,'tools')
+import gscript as g
+g._lv=None
+P=r'C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Autonics Motor\SetCommand.vi'
+print('READ ONLY - vendor VI, never saved.')
+for d in range(0,8):
+    try:
+        nodes,wires = g.net_map(P, d, max_nodes=40, max_terms=14)
+        if not nodes: continue
+        print(f'--- diagram {d}: {len(nodes)} nodes ---')
+        for i,(uid,lbl,terms) in sorted(nodes.items()):
+            tn=[t[1] for t in terms if t[1]]
+            print(f'   uid={uid:<5} label={lbl!r:24} terms={tn[:10]}')
+    except Exception as e:
+        print(f'   diagram {d}: {str(e)[:110]}')
+        break
+
+READ ONLY - vendor VI, never saved.
+--- diagram 0: 1 nodes ---
+   uid=188   label=''                       terms=['Ring', 'VISA resource name', 'VISA resource name', 'error in (no error)', 'error out', 'Numeric', 'Baseline Startpoint']
+--- diagram 1: 10 nodes ---
+   uid=795   label=''                       terms=['error out', 'return count', 'VISA resource name out', 'error in (no error)', 'write buffer', 'VISA resource name']
+   uid=838   label=''                       terms=['concatenated string', 'string', 'string']
+   uid=926   label=''                       terms=['error out', 'return count', 'read buffer', 'VISA resource name out', 'error in (no error)', 'byte count', 'VISA resource name']
+   uid=979   label=''                       terms=['substring', 'length (rest)', 'offset (0)', 'string']
+   uid=1013  label=''                       terms=['number', 'offset past number', 'default (0uL)', 'offset', 'string']
+   uid=2841  label=''                       terms=['x*y', 'y', 'x']
+   uid=828   label=''                       terms=['x-y', 'y', 'x']
+   uid=2410  label=''                       terms=['x*y', 'y', 'x']
+   uid=622   label=''                       terms=['x', 'type', '*(type *) &x']
+   uid=784   label=''                       terms=['x*y', 'y', 'x']
+--- diagram 2: 4 nodes ---
+   uid=865   label=''                       terms=['error out', 'return count', 'VISA resource name out', 'error in (no error)', 'write buffer', 'VISA resource name']
+   uid=917   label=''                       terms=['concatenated string', 'string', 'string', 'string']
+   uid=978   label=''                       terms=['decimal integer string', 'width (-)', 'number']
+   uid=1008  label=''                       terms=['x/y', 'y', 'x']
+--- diagram 3: 3 nodes ---
+   uid=2246  label=''                       terms=['error out', 'return count', 'VISA resource name out', 'error in (no error)', 'write buffer', 'VISA resource name']
+   uid=2287  label=''                       terms=['concatenated string', 'string', 'string', 'string']
+   uid=2646  label=''                       terms=['decimal integer string', 'width (-)', 'number']
+--- diagram 4: 6 nodes ---
+   uid=2711  label=''                       terms=['error out', 'return count', 'VISA resource name out', 'error in (no error)', 'write buffer', 'VISA resource name']
+   uid=2752  label=''                       terms=['concatenated string', 'string', 'string', 'string']
+   uid=2845  label=''                       terms=['decimal integer string', 'width (-)', 'number']
+   uid=170   label=''                       terms=['x/y', 'y', 'x']
+   uid=490   label=''                       terms=['x+y', 'y', 'x']
+   uid=1160  label=''                       terms=['x*y', 'y', 'x']
+--- diagram 5: 2 nodes ---
+   uid=435   label=''                       terms=['error out', 'return count', 'VISA resource name out', 'error in (no error)', 'write buffer', 'VISA resource name']
+   uid=489   label=''                       terms=['concatenated string', 'string', 'string']
+BGRUN END rc=0 after 6s

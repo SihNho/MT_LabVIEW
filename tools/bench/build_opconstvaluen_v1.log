@@ -1,0 +1,46 @@
+BGRUN START 2026-09-15 05:44:33 limit 15.0 min: py -u tools/recipes/build_opconstvaluen_v1.py
+   PASS S OpConstValueN_v0.vi (run 2) exists with its labels 
+   LabVIEW pid before: 2632
+   fresh(): killing LabVIEW pid 2632
+   COM preflight attempt 1/15: pid None->3128, wires 16->16
+   COM preflight OK (pid 3128, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 3128
+   PASS B exactly one new Property node (Constant.Terminal) [1064]
+   PASS B the node has 'Terminal' as a SOURCE [('reference', False), ('reference out', True), ('error in (no error)', False), ('error out', True), ('Terminal', True)]
+   PASS C TMSC -> Terminal node 'reference' (branch) on both ends 543/543
+   PASS B exactly one new Property node (Terminal.Connected Wire) [887]
+   FAIL B the node has 'Connected Wire' as a SOURCE [('reference', False), ('reference out', True), ('error in (no error)', False), ('error out', True), ('Wire', True)]
+
+STOP at gate: B the node has 'Connected Wire' as a SOURCE
+BGRUN END rc=1 after 47s
+BGRUN START 2026-09-15 05:46:55 limit 15.0 min: py -u tools/recipes/build_opconstvaluen_v1.py
+   PASS S OpConstValueN_v0.vi (run 2) exists with its labels 
+   LabVIEW pid before: 3128
+   fresh(): killing LabVIEW pid 3128
+   COM preflight attempt 1/15: pid None->4448, wires 16->16
+   COM preflight OK (pid 4448, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 4448
+   PASS B exactly one new Property node (Constant.Terminal) [1064]
+   PASS B the node has 'Terminal' as a SOURCE [('reference', False), ('reference out', True), ('error in (no error)', False), ('error out', True), ('Terminal', True)]
+   PASS C TMSC -> Terminal node 'reference' (branch) on both ends 543/543
+   PASS B exactly one new Property node (Terminal.Wire) [887]
+   PASS B the node has 'Wire' as a SOURCE [('reference', False), ('reference out', True), ('error in (no error)', False), ('error out', True), ('Wire', True)]
+   PASS C Constant.'Terminal' -> Terminal node 'reference' on both ends 1123/1123
+   PASS B exactly one new Property node (GObject.UID) [1072]
+   PASS B the node has 'UID' as a SOURCE [('reference', False), ('reference out', True), ('error in (no error)', False), ('error out', True), ('UID', True)]
+   PASS C 'Wire' (Connected Wire) -> GObject node 'reference' on both ends 1149/1149
+   PASS D indicator on 'UID' ['UID 2']
+   PASS D indicator on 'error out' ['error out 5']
+   PASS D indicator on 'error out' ['error out 6']
+   PASS E op runnable before the save 1
+   labels {'seed': 'reference', 'value': 'Value', 'data': 'data string', 'type': 'type string (7.x only)', 'u8type': 'bytes', 'size': 'data includes array or string size? (T)', 'hex': 'hex string', 'u8': 'value', 'rest': 'rest of the binary string', 'seedN': 'reference 2', 'text': 'Text', 'repr': 'Representation', 'errT': 'error out 3', 'errV': 'error out 4', 'wire': 'UID 2', 'errW': 'error out 5', 'errU': 'error out 6'}
+   DigitalNumericConstant[0] uid=3683 ident=True wire=5003 text='1' repr=1 TD=10 rep_ok=True val=1.0 v0x26008000 tds=[10] body=8B/8 attrs=0 err='' errV='' errT='' errW=''
+   DigitalNumericConstant[1] uid=3130 ident=True wire=3152 text='0' repr=6 TD=7 rep_ok=True val=0 v0x26008000 tds=[7] body=4B/4 attrs=0 err='' errV='' errT='' errW=''
+   PASS T1 identity OK, Value-node error clear, values decode, TD matches Representation, for both reads 
+   PASS T2 each read yields a wire uid > 0 or the Terminal node reports 1055 (unwired) [(5003, ''), (3152, '')]
+   StringConstant[7] uid=22950 ident=True wire=0 text='' repr=0 TD=0 rep_ok=True val=None v0x26008000 tds=[0] unhandled body= attr err='' errV='error 1055: Property Node in O' errT='error 1055: Property Node in O' errW='error 1055: Property Node in OpConstValu'
+   PASS T3 negative control: a StringConstant fails the numeric cast (1055/1057) 
+
+SUMMARY 17/17 PASS
+   PASS T(finally) the main VI file is byte-identical and untouched since the script started
+BGRUN END rc=0 after 324s

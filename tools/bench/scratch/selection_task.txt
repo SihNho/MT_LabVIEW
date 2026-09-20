@@ -1,0 +1,19 @@
+FACT QUESTION about LabVIEW VI Scripting (LabVIEW 2026, driven over ActiveX/COM from Python). I need to know whether the diagram SELECTION can be set programmatically, because it is the input to the subVI-extraction method and currently the only reason a mouse would be needed at all.
+
+WHAT I ALREADY ESTABLISHED (confirmed by a previous search):
+  AbstractDiagram.SubVI From Selection - method ID 6375405 decimal / 0x6147ED, owning class 16503, scope PRIVATE,
+  inputs `Clean Up Wires`, `SubVI`, `Add To Project`, `Apply 'Create SubVI' Plugin`, returns the new VI reference.
+  The three private ini tokens (SuperPrivateScriptingFeatureVisible, SuperPrivateSpecialStuff,
+  SuperSecretPrivateSpecialStuff) are already set in this install.
+
+QUESTIONS:
+
+1. Is there a VI Server PROPERTY or METHOD that SETS which objects are selected on a block diagram? Candidates I can imagine: a `Selection[]` property on Diagram / AbstractDiagram / Panel, or a `Selected` boolean on GObject. Give exact class + property/method name and its Unique ID if you can find one. State the scope (public VI Scripting, private, super-private).
+2. Is there a corresponding READ - can I query what is currently selected?
+3. If selection is settable, does `SubVI From Selection` actually act on it when invoked headlessly (no visible block-diagram window)? Or does the operation require the diagram window to be open/frontmost? Any reports either way.
+4. If selection is NOT settable, is there any other scripted route to "make these N specific nodes into a subVI" - e.g. move objects into a new VI, or an API that takes an array of object references instead of a selection?
+5. Related: can a GObject be moved BETWEEN VIs by script (from one VI's diagram to another's)? I know `GObject.Move` (632A400) moves within a diagram. Is there a cross-VI equivalent, or is copy/paste via the clipboard the only route?
+
+I have working tools for: traversing any class and getting uid/position/owner, reading per-diagram connectivity with terminal names, creating Property and Invoke nodes by class string + ID, wiring by terminal name, deleting objects. What I do NOT have is any way to move a multi-node region into another VI.
+
+Cite labviewwiki, NI documentation, or forum posts with URLs. If the honest answer is "selection is not exposed", say that plainly with what you checked - a documented negative is worth as much to me as a positive.

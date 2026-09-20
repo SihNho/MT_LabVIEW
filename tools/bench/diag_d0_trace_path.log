@@ -1,0 +1,70 @@
+BGRUN START 2026-09-18 17:05:07 limit 20.0 min: py -u tools/bench/diag_d0_trace_path.py
+md5 ORIGINAL BEFORE c39f36e0675339673b707c59f0784fee
+LabVIEW handles BEFORE 0
+
+=== T5 the File-Dialog-shaped node #26615, offline ===
+   diagram 169 (owner FlatSequenceFrame), 9 terminals:
+      t[0] 'error out'                                  SRC wire 0
+      t[1] 'cancelled'                                  SRC wire 0
+      t[2] 'refnum out'                                 SRC wire 59107
+      t[3] 'prepend array or string size? (T)'          sink wire 0
+      t[4] 'prompt (Choose or enter file path)'         sink wire 26689
+      t[5] 'error in'                                   sink wire 0
+      t[6] 'byte order (0:big-endian, network order)'   sink wire 0
+      t[7] 'data'                                       sink wire 26668
+      t[8] 'file (use dialog)'                          sink wire 0
+   PASS T5 node 26615 terminals read offline - 9 terminals
+
+   original resident, ExecState 1
+   D0 copy loaded, ExecState 1
+
+=== T1/T2 which of these objects EXIST in the D0 copy (a plain copy of the ORIGINAL) ===
+   PASS T1 report_all('GObject') ~9996 - 9996 objects
+
+   -- POSITIVE CONTROLS (must be present)
+      uid 6384    PRESENT  class SubVI                  pos (9001, 1133)     owner Diagram        save N xyz traces.vi (diagram 19)
+      uid 376     PRESENT  class SubVI                  pos (4654, 1656)     owner Diagram        save trace.vi (diagram 43)
+      uid 637     PRESENT  class WhileLoop              pos (2633, 927)      owner Diagram        the frame WhileLoop
+      uid 26615   PRESENT  class ReadWriteFile          pos (-3787, 824)     owner Diagram        the 'prompt (Choose or enter file path)' node
+
+   -- FIXTURE SUSPECTS (the question)
+      uid 22700   ABSENT   class -                      pos -                owner -              IMAQ Write TIFF File 2 (Claude fixture 2026-09-01?)
+      uid 23020   ABSENT   class -                      pos -                owner -              Build Path (Claude fixture 2026-09-01?)
+      uid 23175   ABSENT   class -                      pos -                owner -              Strip Path (Claude fixture 2026-09-01?)
+      uid 22703   ABSENT   class -                      pos -                owner -              Format Into String (Claude fixture 2026-09-01?)
+   PASS T2a all 4 positive controls present in the D0 copy - all present
+
+   => fixture suspects ABSENT from the D0 copy: [22700, 23020, 23175, 22703]
+      (ABSENT confirms the pinned memory: those nodes are Claude's 2026-09-01 TIFF fixture in the WORKING COPY, not the original's trace path. PRESENT would refute it.)
+
+=== T3/T4 who SOURCES the path wires (OpWireSource_v5, UID-addressed, on the D0 copy) ===
+
+   -- wire 5104: base path/filename into save N xyz traces #6384
+        w5104 Terms[0] source=True owner 'FlatSequenceInnerTunnel uid 4693 recip w5104 
+        w5104 Terms[1] source=False owner 'SubVI' uid 6384 recip w5104 
+        w5104 Terms[2] source=False owner 'LoopTunnel' uid 5096 recip w5104 
+      SOURCE = 'FlatSequenceInnerTunnel' uid 4693   (report_all class 'FlatSequenceInnerTunnel', pos (1979, 1198), owner 'FlatSequence')
+
+   -- wire 5303: the 'Track File Path' panel object's terminal wire
+        w5303 Terms[0] source=True owner 'Function' uid 29551 recip w5303 
+        w5303 Terms[1] source=False owner 'FlatSequenceInnerTunnel uid 4637 recip w5303 
+        w5303 Terms[2] source=False owner 'Diagram' uid 124 recip w5303 
+      SOURCE = 'Function' uid 29551   (report_all class 'Function', pos (-385, 1430), owner 'Diagram')
+
+   -- wire 3769: the 'Cal File Path' panel object's terminal wire
+        w3769 Terms[0] source=True owner 'FlatSequenceInnerTunnel uid 3775 recip w3769 
+        w3769 Terms[1] source=False owner 'FlatSequenceInnerTunnel uid 3728 recip w3769 
+        w3769 Terms[2] source=False owner 'Diagram' uid 124 recip w3769 
+        w3769 Terms[3] source=False owner 'Function' uid 29716 recip w3769 
+        w3769 Terms[4] source=False owner 'Function' uid 30005 recip w3769 
+      SOURCE = 'FlatSequenceInnerTunnel' uid 3775   (report_all class 'FlatSequenceInnerTunnel', pos (-807, 1326), owner 'FlatSequence')
+   PASS T3 wire 5104 resolved to one source - {'owner_class': 'FlatSequenceInnerTunnel', 'owner_uid': 4693}
+   PASS T4 wire 5303 resolved to one source - {'owner_class': 'Function', 'owner_uid': 29551}
+   PASS T6 ORIGINAL md5 unchanged - c39f36e0675339673b707c59f0784fee -> c39f36e0675339673b707c59f0784fee
+
+md5 ORIGINAL AFTER  c39f36e0675339673b707c59f0784fee
+LabVIEW handles AFTER 66449 (before 0)
+wrote G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\d0_trace_path.json
+
+=== GATES 6 pass / 0 fail ===
+BGRUN END rc=0 after 27s

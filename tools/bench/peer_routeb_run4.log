@@ -1,0 +1,157 @@
+BGRUN START 2026-09-18 22:48:31 limit 20.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Kind review -Slug routeb-run4-error2-and-zdz -TaskFile tools/bench/task_routeb_run4_error2_zdz.md -TimeoutSec 780
+OUTCOME: ANSWERED (566s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-18-routeb-run4-error2-and-zdz.md
+COST: $3.9657  in 28 / out 42336 / cache-create 196634 / cache-read 1749564  (564s, 29 turn(s))
+--- ANSWER ---
+Write is disabled in this session, so the review is the reply. Both claims are refuted.
+
+# Failed-prediction review — D1 route-B v1 run 4
+
+**Both claims are wrong, each refuted by this project's own files.** Claim 1 cites, as the cause of a failure, the handle count at which the identical call demonstrably *succeeded*. Claim 2 says a route does not exist; the route is implemented in the same recipe file that reports it missing, and is switched off by a boolean.
+
+No lock taken, nothing built, nothing run.
+
+---
+
+## CLAIM 1 — "resource-budget failure of the reading instance, not a defect in what the recipe built"
+
+### 1. Strongest reason it is WRONG — 51,284 is the control, not the cause
+
+`build_d1_routeb_v1.py:385-386` are consecutive statements:
+
+```python
+fact(f"S1 LabVIEW handles with the copy open: {labview_handles()}")   # :385
+got = {c: g.count(TARGET, c) for c in BEFORE}                          # :386
+```
+
+and `BEFORE` (`build_d1_routeb_v1.py:244`) contains **`LoopTunnel=132`**. The log records both, adjacent (`build_d1_routeb_v1_run4.log:26-27`):
+
+```
+FACT  S1 LabVIEW handles with the copy open: 51284
+FACT  S1 BEFORE census: {... 'LoopTunnel': 132 ...}
+```
+
+So **`g.count(TARGET, "LoopTunnel")` ran and returned 132 at 51,284 handles** — same function (`gscript.py:951-960`), same op VI (`OpReport_v3`), same target, same process, same `Traverse for GObjects` path. The claim names that number as the reason the same call later failed. It is the number at which it worked.
+
+Corroborated independently: the project already raised ~51.5 k as an open item and **closed it** — `archive/2026-09-17-status-cycle15-narrative.md:148-150` ("30,849 → 51,530 … **CLEARED 2026-09-17**"), with a 12/12 diagnostic recorded running at 51,220 handles (`:154`).
+
+### 2. The handle count at the crash was never measured
+
+- 51,284 is from S1, **~1,600 s before** the failure.
+- 49,062 (`:341`) comes from the `finally:` block (`build_d1_routeb_v1.py:1780-1801`) — **after** the exception, **after** `lv_restart` dropped the process to 30,682 (`:335`), **after** two main-VI copies were re-opened, and **after** the working copy was deleted (`:339`, code `:1793-1795`).
+
+Neither reading brackets the failing call. "Was raised inside `settle_index_modes()` with 51,284 handles open" attributes a start-of-run measurement to an end-of-run event. That is the claim's entire evidentiary basis.
+
+### 3. "Nothing the recipe BUILT is implicated" is asserted over a window where nothing was recorded
+
+`s3w`'s row loop accumulates into `done`/`failed`/`noroute` and prints at `build_d1_routeb_v1.py:1529` — **after** `settle_index_modes()` at `:1517`. The traceback killed that print.
+
+Between the last log line (`:332`) and the crash, up to **66 rows** (`:323`) ran `wire_control`, `v1_connect`, `wire_sr`, `CONNECT_FROM_WIRE`, plus `create_equal`, `delete_object` and `remove_bad_wires_scripted` — and **every outcome was lost**. The claim clears the built state using the one window whose record was discarded.
+
+### 4. Alternative explanation of the same evidence
+
+The 66 writes changed the VI's structure, and `settle_index_modes()` is the **first whole-VI traverse after that burst**. Cross-diagram `Terminal.Connect Wire` **creates border tunnels by itself** — measured twice: `docs/toolkit-capabilities.md:68` (`LoopTunnel 0 → 2`) and `:70` (`LoopTunnel 0 → 1`). Dozens of cross-boundary writes plus a `remove_bad_wires_scripted` pass, against a VI that began with 132 tunnels.
+
+This is **weaker and likelier than rival (a) as you framed it**: the traverse need not be unbounded or cyclic, only *different from the one that succeeded at S1*.
+
+Rival (b) is weakly disfavoured, not excluded — the two "main VI resident" deltas are comparable (+19,784 at S1; +18,380 for *two* VIs at teardown). No in-run sampling exists, so this is suggestive only. Rival (c) is undercut by the same S1 fact: it was an adequate instrument on this target 1,600 s earlier.
+
+### 5. Error 2 is NOT reliably "memory full" on this path
+
+Error 2 is nominally *Memory is full*, but it is overloaded on exactly this call. NI's article covers Error 2 from **`Open VI Reference`**, `Obtain Notifier`, `Obtain Queue`, `.NET Constructor Node`, `Open/Create/Replace File` — and `TRef Traverse.vi` fails at an `Open VI Reference`. NI's FP.Open thread is a case where Error 2 is a **build-configuration** problem with no memory involvement; LAVA carries a thread titled *"Error 2: Memory is full — but it isn't."* So "error 2 ⇒ memory full ⇒ a restart gets past it" has a weak first link.
+
+### 6. What would FALSIFY the claim
+
+A handle reading taken **immediately before** the failing `count()` that is at or below ~51,284. That single number kills it, because S1 proves the call succeeds there.
+
+### 7. Cheapest discriminating test — two lines, inside a run you were doing anyway
+
+`labview_handles()` already exists and is already imported here (`tools/bench/bench_prep.py:61,64-71`; `probe_move_ctlterm_v0.py:115`).
+
+1. Immediately before `build_d1_routeb_v1.py:1170`:
+   ```python
+   fact(f"S3w handles immediately before count(LoopTunnel): {labview_handles()} "
+        f"(S1 read 51284 and the same call returned {BEFORE['LoopTunnel']} there)")
+   ```
+2. Make the ledger survive the exception: move the `done`/`failed`/`noroute` print (`:1529`) **above** `settle_index_modes()` (`:1517`), or wrap the call in `try/except`.
+
+≈51 k ⇒ resource story dead, look at the 66 writes. ≫51 k ⇒ resource story survives **and** the ledger names which rows inflated it — the part the claim needs and lacks.
+
+### 8. Process finding
+
+`build_d1_routeb_v1.py:1793-1795` deletes the working copy in `finally:`. The state that crashed is **gone**; (a)/(b)/(c) can no longer be separated on existing evidence at any price. On an exception the copy should be *renamed aside*, not removed — the rule is "a broken VI is never **saved**", which a rename does not violate.
+
+---
+
+## CLAIM 2 — "`Z/dZ` → `#2222` t0 has NO by-index route on this fleet"
+
+### 1. Strongest reason it is WRONG — the route is in this file, built ops only, off by a flag
+
+`build_d1_routeb_v1.py:1198-1203` states the design in a comment; `:1257-1278` implements it:
+
+| step | code | op | status |
+|---|---|---|---|
+| temporary sink with **NAMED** inputs `x`/`y` | `create_equal(...)` `:1261` | `OpCreateEqual_v0` | FUNCTIONAL 23/0, `toolkit-capabilities.md:64` |
+| wire the control to `x` **by panel label** — never touches `Nodes[]` | `g.wire_control(TARGET,[label],tcls,tix,["x"],branch=True,…)` `:1272-1273` | `wire_control` | `toolkit-capabilities.md:138` |
+| branch that wire's source terminal into the unnamed sink **by index** | `CONNECT_FROM_WIRE(TARGET, zw, srcs[0]["i"], d, n, t, …)` `:1286` | `OpConnectFromWire_v0` | built, T1 functional, `:70` |
+| delete temporary, **re-read the sink after** | `:1291-1306` | `delete_object` + `remove_bad_wires_scripted` | Tier 1 |
+
+It did not run because **`TEMP_SINK_AUTHORISED = False`** (`:285`), with the refusal printed at `:1251-1255`. That is an authorisation decision taken for a stated *risk* reason (the 1055 modal, `docs/NAMES.md:473-480`) — **not a missing capability**.
+
+### 2. The claim's reason is the wrong generalisation
+
+`OpConnectNested_v1` cannot address `#403` because **a ControlTerminal is a Terminal, not a Node** — the project measured this on 2026-09-14 and wrote it verbatim at `tools/recipes/build_opconnectctl_v0.py:4`, then built `OpConnectCtl_v0` (`Panel.Controls[] 6348801 → Control.Terminal 6332006`, `:9-14`) precisely to route around it. Three index spaces already in the fleet bypass `Nodes[]`:
+
+- **panel index** — `Panel.Controls[i] → Control.Terminal` (`OpConnectCtl_v0`, `OpPanelWiring_v0`);
+- **wire index** — `Wire.Terms[j]` (`OpConnectFromWire_v0`, `OpWireSource_v5`);
+- **UID** — `UID to GObject Reference.vi`, and **run 4 resolved `#403` this way itself**: `run4.log:168` `OBSERVED uid 403 -> owner 'Diagram' uid 567 | self 'ControlTerminal'#403` (via `OpOwnerChain_v1`).
+
+### 3. The second premise is wrong about WHICH move cut w730
+
+`diag_sr_transport.log:20-26` shows w730 running `ControlTerminal (Diagram 639, is_source) → Tunnel #2276 → #2222 t0`. In `s3()`:
+
+| lines | what |
+|---|---|
+| `:617-631` | **the 21 node moves** — `#2222` is in `MOVE_TABLE["1.2"]` (`:255`) and leaves Diagram 639 |
+| `:640-680` | S3-zdz, the "reorder" |
+| `:684-697` | the `#403` reparent |
+
+**The node move cut w730, not the reparent.** Run 4 placed the reorder before the *reparent*, which was never the cutting step. Your suggestion — connect *before the moves that cut w730* — therefore means **before `:617`**, and that has **never been tried**; there w730 still exists and `OpConnectFromWire_v0` applies directly, no temporary.
+
+⚠️ **The measurement does not settle this one:** a wire made before `:617` will itself be cut by the subsequent `move_in` of `#2222`, exactly as w730 was, unless the branch lands on something that moves with `#2222`. So the honest ranking is — the temporary-sink route is the cheapest thing *known* to work end to end; "before the node moves" is cheap to test but has an unmeasured survival problem.
+
+### 4. `OpConnectCtl_v0` alone is NOT the fix — direction and scope
+
+`build_opconnectctl_v0.py:11,14`: the invoke runs on the **control's** terminal with `'Wire Source' <- IA_t.element`, so the panel object is the **SINK** (built for an IMAQ Image *Display*, an indicator). `Z/dZ` is a **source** (`diag_sr_transport.log:20`, `is_source: true`), and its node half is `VI.Block Diagram 23C → Nodes[]` (`:12`) = **top-level only**, while `#2222` is on `Diagram[24]`. The mirror arrangement is **new tooling**, which the standing order forbids. Cited to disprove the generalisation, not as the route.
+
+### 5. What would FALSIFY the claim
+
+`:1286`'s `CONNECT_FROM_WIRE` returning a non-zero `after` at `:1287` with `Is Broken?` not `True`.
+
+### 6. Cheapest discriminating test — flip one constant
+
+Set `TEMP_SINK_AUTHORISED = True` (`build_d1_routeb_v1.py:285`) and run that path. The recipe already prints the discriminator at `:1288-1290` (`branched off w<zw> terminal <i> … -> wire <after>, Is Broken? …`) and the post-delete re-read at `:1306`.
+
+- non-zero `after`, `Is Broken?` False ⇒ **Claim 2 refuted by measurement**;
+- `noroute` from `:1263-1267` ⇒ `OpCreateEqual_v0` cannot place a source-less `Equal?` — the one genuinely unmeasured step, and the thing worth learning;
+- the 1055 modal ⇒ the gate was right, and *that* is the finding — not "no route exists".
+
+---
+
+## Summary
+
+| | claim | verdict | decisive citation |
+|---|---|---|---|
+| 1 | resource budget, build innocent | **refuted** | `run4.log:26-27` — the same `count(LoopTunnel)` succeeded at 51,284 handles |
+| 2 | no by-index route | **refuted** | `build_d1_routeb_v1.py:1257-1278` — the route, built ops only, disabled at `:285` |
+
+**What would change my mind on Claim 1:** a handle reading immediately before `:1170` far above 51,284. Even then "nothing the recipe built is implicated" stays unsupported — the 66 unlogged writes are a candidate *consumer* of those handles, so that reading relocates the question rather than closing it.
+
+**What would change my mind on Claim 2:** a run with `TEMP_SINK_AUTHORISED = True` where `OpCreateEqual_v0` cannot place the temporary sink **and** no wire-, panel- or uid-addressed op reaches `#403`. Nothing on file shows that today.
+
+Sources:
+- [Error 2: Memory is Full when Opening a New Reference in LabVIEW — NI](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019KhWSAU)
+- [Error 2: Memory is full occurring at FP.Open invoke node in built application only — NI Community](https://forums.ni.com/t5/LabVIEW/Error-2-Memory-is-full-occurring-at-FP-Open-invoke-node-in-built/td-p/3770243)
+- [Error 2: Memory is full — but it isn't — LAVA](https://lavag.org/topic/18730-error-2-memory-is-full-but-it-isnt/)
+- [Memory Is Full Error in LabVIEW — NI](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000P9mtSAC)
+- [GObject class](https://labviewwiki.org/wiki/GObject_class) · [Node class](https://labviewwiki.org/wiki/Node_class) · [Terminal class](https://labviewwiki.org/wiki/Terminal_class) — LabVIEW Wiki
+BGRUN END rc=0 after 566s

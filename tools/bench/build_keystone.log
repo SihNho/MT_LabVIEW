@@ -1,0 +1,2585 @@
+BGRUN START 2026-09-06 04:27:59 limit 18.0 min: py -u -c 
+import subprocess, sys, time
+r=subprocess.run(['py','tools/bench/bench_prep.py','--restart'],capture_output=True,text=True,timeout=400)
+print('prep rc', r.returncode, (r.stdout.strip().splitlines() or [''])[-1][:220], flush=True)
+if r.returncode!=0: sys.exit(2)
+time.sleep(3)
+r=subprocess.run(['py','-u','tools/recipes/build_keystone_invoke.py'],text=True)
+sys.exit(r.returncode)
+
+prep rc 0 {"restarted": true, "actions": ["opened BD", "closed Context Help"], "handles": 0, "handles_after_restart": 33985, "bd_open": true, "exec_state": 1, "windows": ["GUIBENCH_v0.vi Block Diagram", "GUIBENCH_v0.vi Front Panel
+baseline ExecState 1
+   nodes near the vi-path chain: [('Function', 43, (275, 251))]
+   Open VI Reference -> Function index 2
+
+== drop_subvi(Create Invoke Node.vi)
+   predict: +1 SubVI, ExecState 0
+   observed: (0.10089826583862305, 0)
+   creator index 0 sinks [1, 2]
+
+== IA327.element -> Diagram in
+   predict: branch accepted
+   observed: 26
+
+== OpenVIRef.vi reference -> reference
+   predict: connected with one name
+   observed: ('vi reference', 26)
+
+== control 'Class Name' -> ID String
+   predict: Wire +1
+   observed: EXC wire_control ['Class Name'] -> SubVI.['ID String']: Wire 26 -> 26, expected +1 (if the control is already wired elsewhere this may be a successful BRANCH - re-call with branch=True)
+
+== OpenVIRef.error out -> creator error in (no error)
+   predict: branch accepted
+   observed: 26
+
+== creator error out -> sink 1
+   predict: connected
+   observed: 26
+
+assembled ExecState 0
+STOP: still broken (a required input unwired: check location / ID String); NOT saving
+BGRUN END rc=3 after 72s
+BGRUN START 2026-09-06 04:29:53 limit 2.0 min: py -u -c 
+import sys, time; sys.path.insert(0,'tools'); import lvclick as c
+FP='OpBuildInvoke_v0.vi Front Panel'; BD='OpBuildInvoke_v0.vi Block Diagram'
+print(c.windows(), flush=True)
+c.lv('-Action','focus','-Title',FP); time.sleep(0.4)
+L,T,R,B=c.rect(FP); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3)
+c.act('keys',Key='^e',WaitMs=1500)
+print(c.windows(), flush=True)
+c.lv('-Action','movewin','-Title',BD,'-X','0','-Y','0','-Width','1900','-Height','1000'); time.sleep(0.6)
+print(c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbuildinvoke_bd.png'), flush=True)
+
+['GUIBENCH_v0.vi Block Diagram', 'OpBuildInvoke_v0.vi Front Panel', 'GUIBENCH_v0.vi Front Panel', 'LabVIEW']
+['OpBuildInvoke_v0.vi Block Diagram', 'OpBuildInvoke_v0.vi Front Panel', 'GUIBENCH_v0.vi Block Diagram', 'GUIBENCH_v0.vi Front Panel', 'LabVIEW']
+saved C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbuildinvoke_bd.png (window rect left=0 top=0 right=1900 bottom=1000 (w=1900 h=1000)  -> screen = image + (0,0))
+BGRUN END rc=0 after 9s
+BGRUN START 2026-09-06 04:31:43 limit 2.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,40.0); g._lv=None
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi')
+try: g.close_panel(OP); print('closed (edits discarded)', flush=True)
+except Exception as e: print('close_panel', str(e)[:80], flush=True)
+time.sleep(0.5); print(c.windows(), flush=True)
+try: os.remove(OP); print('OpBuildInvoke_v0.vi (unedited copy) deleted', flush=True)
+except Exception as e: print('delete', str(e)[:80], flush=True)
+
+closed (edits discarded)
+['GUIBENCH_v0.vi Block Diagram', 'GUIBENCH_v0.vi Front Panel', 'LabVIEW']
+OpBuildInvoke_v0.vi (unedited copy) deleted
+BGRUN END rc=0 after 1s
+BGRUN START 2026-09-06 05:37:14 limit 6.0 min: py -u -c 
+import sys, os, shutil, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,60.0); g._lv=None
+c.EVIDENCE='keystone bootstrap (user: 예외 허용 2026-09-06)'
+EM=r'C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Erdos Miller\LV-Scripting\Create Invoke Node.vi'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'OpWire_v1.vi'), OP)
+g.open_panel(OP); time.sleep(1.0)
+FP='OpBuildInvoke_v0.vi Front Panel'; BD='OpBuildInvoke_v0.vi Block Diagram'
+L,T,R,B=c.rect(FP); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3)
+sub0=g.uids(OP,'SubVI'); g.drop_subvi(OP, EM, 0, (875,620)); new=g.new_since(OP,'SubVI',sub0); print('creator', [(o['uid'],o['pos']) for o in new], flush=True)
+c.lv('-Action','focus','-Title',FP); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1500)
+c.lv('-Action','movewin','-Title',BD,'-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.6)
+vp=c.calibrate(OP); print('viewport', vp, flush=True)
+x,y=new[0]['pos']; sx,sy=vp.s(x,y); print('creator icon top-left screen', (sx,sy), flush=True)
+print(c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi_bd.png'), flush=True)
+# hover the left edge of the icon at several rows to reveal input terminal tip strips
+for k,dy in enumerate((2,8,14,20,26,32)):
+    out=c.lv('-Action','hover','-X',str(sx-1),'-Y',str(sy+dy),'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi_hover_%d.png'%k,'-Scale','3')
+    print('hover',k,'at',(sx-1,sy+dy),out.splitlines()[-1][:80], flush=True)
+
+creator [(510, (875, 620))]
+viewport Viewport('OpBuildInvoke_v0.vi Block Diagram', L=0, T=0, dx=11, dy=37)
+creator icon top-left screen (886, 657)
+saved C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi_bd.png (window rect left=0 top=0 right=1400 bottom=900 (w=1400 h=900)  -> screen = image + (0,0))
+hover 0 at (885, 659) zoom: C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz
+hover 1 at (885, 665) zoom: C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz
+hover 2 at (885, 671) zoom: C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz
+hover 3 at (885, 677) zoom: C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz
+hover 4 at (885, 683) zoom: C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz
+hover 5 at (885, 689) zoom: C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz
+BGRUN END rc=0 after 30s
+BGRUN START 2026-09-06 05:38:59 limit 4.0 min: py -u -c 
+import sys, time; sys.path.insert(0,'tools'); import lvclick as c
+BD='OpBuildInvoke_v0.vi Block Diagram'; c.lv('-Action','focus','-Title',BD); time.sleep(0.3)
+sx,sy=886,657
+for name,(x,y) in {'top-center':(sx+16,sy-1),'top-left':(sx+8,sy-1),'top-right':(sx+24,sy-1),'bottom-center':(sx+16,sy+33)}.items():
+    out=c.lv('-Action','hover','-X',str(x),'-Y',str(y),'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi_h_%s.png'%name,'-Scale','3'); print('hover',name,(x,y), flush=True)
+def runs(label, **kw):
+    r=c.probe_runs(**kw); print(label, [(a,b,rgb) for a,b,rgb in r if rgb not in ('FFFFFF',)][:12], flush=True)
+runs('row y=288 x330..450 (Open VI Ref -> Traverse, teal?)', x=330, y=288, x2=450)
+runs('col x=400 y280..300', x=400, y=280, y2=300)
+runs('row y=499 x640..880 (IA327 -> Wire Inputs Node)', x=640, y=499, x2=880)
+runs('col x=800 y480..510', x=800, y=480, y2=510)
+runs('row y=326 x488..510 (Class Name -> Traverse, pink)', x=488, y=326, x2=510)
+runs('col x=500 y318..336', x=500, y=318, y2=336)
+
+hover top-center (902, 656)
+hover top-left (894, 656)
+hover top-right (910, 656)
+hover bottom-center (902, 690)
+row y=288 x330..450 (Open VI Ref -> Traverse, teal?) [(330, 449, '007F7F'), (450, 450, '188B8B')]
+col x=400 y280..300 [(288, 288, '007F7F')]
+row y=499 x640..880 (IA327 -> Wire Inputs Node) [(640, 645, 'FFFFCC'), (646, 646, '4C4C3D'), (673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, 'FFFF00'), (691, 691, '7F7F00'), (772, 773, '007F7F'), (789, 789, 'FFFFDB'), (790, 790, '903A66'), (791, 791, 'B6FFFF'), (794, 794, 'FFDB90'), (795, 795, '3A6666')]
+col x=800 y480..510 [(488, 488, '007F7F'), (490, 490, '7F7F00'), (491, 491, '000000'), (492, 492, '7F7F00'), (494, 494, '000000'), (497, 497, '000000'), (500, 500, '000000'), (503, 504, '007F7F')]
+row y=326 x488..510 (Class Name -> Traverse, pink) [(489, 489, 'CCCCCC'), (490, 490, 'BBBBBB'), (491, 491, '000000'), (495, 495, '000000'), (496, 499, 'FF00FF'), (501, 503, 'FF00FF'), (505, 505, '000000'), (506, 510, 'FF00FF')]
+col x=500 y318..336 [(318, 318, '007F7F'), (325, 325, 'FF00FF')]
+BGRUN END rc=0 after 16s
+BGRUN START 2026-09-06 05:40:02 limit 4.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone bootstrap (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'
+c.lv('-Action','focus','-Title',BD); time.sleep(0.3); c.act('click',X=1311,Y=800); time.sleep(0.3)
+w0=g.count(OP,'Wire'); print('wires before', w0, 'ExecState', g.exec_state(OP), flush=True)
+print('== GUI wire 1: creator Diagram in (885,659) -> existing Diagram-ref wire (800,503) ==', flush=True)
+c.act('wire', X=885, Y=659, X2=800, Y2=503); time.sleep(0.8)
+w1=g.count(OP,'Wire'); print('wires after 1:', w1, flush=True)
+print('== GUI wire 2: creator reference (885,665) -> VI-ref wire (400,288) ==', flush=True)
+c.act('wire', X=885, Y=665, X2=400, Y2=288); time.sleep(0.8)
+w2=g.count(OP,'Wire'); print('wires after 2:', w2, 'ExecState', g.exec_state(OP), flush=True)
+c.lv('-Action','key','-Key','esc')
+print(c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi_after2.png'), flush=True)
+
+wires before 26 ExecState 0
+== GUI wire 1: creator Diagram in (885,659) -> existing Diagram-ref wire (800,503) ==
+Traceback (most recent call last):
+  File "<string>", line 9, in <module>
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 281, in count
+    _run(vi)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 228, in _run
+    raise RuntimeError(
+RuntimeError: COM Run did not return within 45s and no modal dialog was found - LabVIEW is busy or another client is contending. Screenshot: C:\Users\KimLab\AppData\Local\Temp\gscript_hang_1788640853.png
+BGRUN END rc=1 after 52s
+BGRUN START 2026-09-06 05:41:28 limit 5.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,30.0); g._lv=None; c.EVIDENCE='keystone bootstrap (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'COM-HUNG', str(e)[:50], flush=True); return None
+c.lv('-Action','key','-Key','esc'); c.lv('-Action','focus','-Title',BD); time.sleep(0.4); c.act('click',X=1311,Y=800); time.sleep(0.4); c.act('click',X=1311,Y=800); time.sleep(0.4)
+print('ping', c.lv('-Action','ping','-Title',BD), flush=True)
+com('wires before', lambda: g.count(OP,'Wire'))
+print('== GUI wire 1: Diagram in (885,659) -> Diagram-ref wire (800,503) ==', flush=True); c.act('wire', X=885, Y=659, X2=800, Y2=503); time.sleep(0.8)
+c.lv('-Action','key','-Key','esc'); c.act('click',X=1311,Y=800); time.sleep(0.3)
+com('wires after 1', lambda: g.count(OP,'Wire'))
+print('== GUI wire 2: reference (885,665) -> VI-ref wire (400,288) ==', flush=True); c.act('wire', X=885, Y=665, X2=400, Y2=288); time.sleep(0.8)
+c.lv('-Action','key','-Key','esc'); c.act('click',X=1311,Y=800); time.sleep(0.3)
+com('wires after 2', lambda: g.count(OP,'Wire')); com('ExecState', lambda: g.exec_state(OP))
+print(c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi_after2.png')[:60], flush=True)
+
+ping ok 0ms  OpBuildInvoke_v0.vi Block Diagram
+wires before 26
+== GUI wire 1: Diagram in (885,659) -> Diagram-ref wire (800,503) ==
+wires after 1 26
+== GUI wire 2: reference (885,665) -> VI-ref wire (400,288) ==
+wires after 2 26
+ExecState 0
+saved C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-Lab
+BGRUN END rc=0 after 17s
+BGRUN START 2026-09-06 05:42:32 limit 5.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,30.0); g._lv=None; c.EVIDENCE='keystone bootstrap (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'COM-HUNG', str(e)[:50], flush=True); return None
+c.lv('-Action','key','-Key','esc'); c.lv('-Action','focus','-Title',BD); time.sleep(0.4); c.act('click',X=1311,Y=800); time.sleep(0.4)
+c.act('keys',Key='^b',WaitMs=800); c.lv('-Action','key','-Key','esc'); c.act('click',X=1311,Y=800); time.sleep(0.3)
+com('wires after Ctrl+B', lambda: g.count(OP,'Wire'))
+for y in (499,501,503,505): print('row y=%d x647..700:'%y, [(a,b,rgb) for a,b,rgb in c.probe_runs(647,y,x2=700) if rgb!='FFFFFF'][:6], flush=True)
+print('col x=660 y490..515:', [(a,b,rgb) for a,b,rgb in c.probe_runs(660,490,y2=515) if rgb!='FFFFFF'], flush=True)
+
+wires after Ctrl+B 26
+row y=499 x647..700: [(673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, 'FFFF00'), (691, 691, '7F7F00')]
+row y=501 x647..700: [(673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, '000000'), (691, 691, '7F7F00')]
+row y=503 x647..700: [(673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, 'FFFF00'), (691, 691, '7F7F00')]
+row y=505 x647..700: [(673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, '000000'), (691, 691, '7F7F00')]
+col x=660 y490..515: [(509, 509, '007F7F'), (511, 511, '7F7F00'), (512, 512, 'FFFF00'), (513, 513, '7F7F00')]
+BGRUN END rc=0 after 9s
+BGRUN START 2026-09-06 05:43:15 limit 5.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,30.0); g._lv=None; c.EVIDENCE='keystone bootstrap (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'COM-HUNG', str(e)[:50], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1311,Y=800); time.sleep(0.3)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.4); release()
+print('== wire 1 redo: Diagram in (885,659) -> IA327 element wire (660,509) ==', flush=True); c.act('wire', X=885, Y=659, X2=660, Y2=509); time.sleep(0.8); release()
+com('wires', lambda: g.count(OP,'Wire')); com('ExecState', lambda: g.exec_state(OP))
+print('== wire 3: ID String (894,656) -> Class Name wire (508,326) ==', flush=True); c.act('wire', X=894, Y=656, X2=508, Y2=326); time.sleep(0.8); release()
+com('wires', lambda: g.count(OP,'Wire')); com('ExecState', lambda: g.exec_state(OP))
+print(c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi_after3.png')[:40], flush=True)
+
+== wire 1 redo: Diagram in (885,659) -> IA327 element wire (660,509) ==
+wires 26
+ExecState 0
+== wire 3: ID String (894,656) -> Class Name wire (508,326) ==
+wires 26
+ExecState 0
+saved C:\Users\KimLab\AppData\Local\Temp
+BGRUN END rc=0 after 15s
+BGRUN START 2026-09-06 05:44:05 limit 4.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+c.EVIDENCE='keystone bootstrap (user: 예외 허용 2026-09-06)'
+BD='OpBuildInvoke_v0.vi Block Diagram'
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1311,Y=800); time.sleep(0.3)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.4); release()
+c.act('keys',Key='^b',WaitMs=800); release()
+for k,(x,y) in enumerate([(648,496),(648,502),(648,508),(646,502)]):
+    c.lv('-Action','hover','-X',str(x),'-Y',str(y),'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi_ia_%d.png'%k,'-Scale','3'); print('hover',k,(x,y), flush=True)
+print(c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi_after_b.png')[:40], flush=True)
+
+hover 0 (648, 496)
+hover 1 (648, 502)
+hover 2 (648, 508)
+hover 3 (646, 502)
+saved C:\Users\KimLab\AppData\Local\Temp
+BGRUN END rc=0 after 19s
+BGRUN START 2026-09-06 05:45:22 limit 4.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,30.0); g._lv=None; c.EVIDENCE='keystone bootstrap (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'COM-HUNG', str(e)[:50], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1311,Y=800); time.sleep(0.3)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.4); release()
+print('== wire 1 (3rd): Diagram in (885,659) -> END on IA327 icon right half (640,502): LabVIEW snaps to element ==', flush=True)
+c.act('wire', X=885, Y=659, X2=640, Y2=502); time.sleep(0.8); release()
+com('wires', lambda: g.count(OP,'Wire')); com('ExecState', lambda: g.exec_state(OP))
+print(c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi_after4.png')[:40], flush=True)
+
+== wire 1 (3rd): Diagram in (885,659) -> END on IA327 icon right half (640,502): LabVIEW snaps to element ==
+wires 26
+ExecState 0
+saved C:\Users\KimLab\AppData\Local\Temp
+BGRUN END rc=0 after 9s
+BGRUN START 2026-09-06 05:46:23 limit 4.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,30.0); g._lv=None; c.EVIDENCE='keystone bootstrap (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'COM-HUNG', str(e)[:50], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1311,Y=800); time.sleep(0.3)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.4); release()
+c.act('keys',Key='^b',WaitMs=800); release()
+for k,(x,y) in enumerate([(650,499),(650,502),(650,505)]):
+    c.lv('-Action','hover','-X',str(x),'-Y',str(y),'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi_el_%d.png'%k,'-Scale','3'); print('hover',k,(x,y), flush=True)
+release()
+print('== wire 1 (4th): Diagram in (885,659) -> just right of IA327 edge (650,502) ==', flush=True)
+c.act('wire', X=885, Y=659, X2=650, Y2=502); time.sleep(0.8); release()
+com('ExecState', lambda: g.exec_state(OP))
+print(c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi_after5.png')[:40], flush=True)
+
+hover 0 (650, 499)
+hover 1 (650, 502)
+hover 2 (650, 505)
+== wire 1 (4th): Diagram in (885,659) -> just right of IA327 edge (650,502) ==
+ExecState 0
+saved C:\Users\KimLab\AppData\Local\Temp
+BGRUN END rc=0 after 23s
+BGRUN START 2026-09-06 05:47:32 limit 4.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,30.0); g._lv=None; c.EVIDENCE='keystone bootstrap (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'COM-HUNG', str(e)[:50], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1311,Y=800); time.sleep(0.3)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.4); release()
+print('probe col x=673 y495..512:', [(a,b,rgb) for a,b,rgb in c.probe_runs(673,495,y2=512) if rgb!='FFFFFF'], flush=True)
+print('== wire 1 (5th): Diagram in (885,659) -> vertical segment of the element wire (673,503) ==', flush=True)
+c.act('wire', X=885, Y=659, X2=673, Y2=503); time.sleep(0.8); release()
+com('ExecState', lambda: g.exec_state(OP))
+print(c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi_after6.png')[:40], flush=True)
+
+probe col x=673 y495..512: [(495, 508, '007F7F'), (509, 509, '088383'), (511, 511, '7F7F00'), (512, 512, 'FFFF00')]
+== wire 1 (5th): Diagram in (885,659) -> vertical segment of the element wire (673,503) ==
+ExecState 0
+saved C:\Users\KimLab\AppData\Local\Temp
+BGRUN END rc=0 after 10s
+BGRUN START 2026-09-06 05:48:18 limit 4.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import lvclick as c
+c.EVIDENCE='keystone bootstrap (user: 예외 허용 2026-09-06)'; BD='OpBuildInvoke_v0.vi Block Diagram'
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1311,Y=800); time.sleep(0.3)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.4); release(); c.act('keys',Key='^b',WaitMs=800); release()
+for y in range(493,517):
+    r=[(a,b,rgb) for a,b,rgb in c.probe_runs(645,y,x2=700) if rgb in ('007F7F','7F7F00','FFFF00','000000')]
+    if r: print('y=%d'%y, r, flush=True)
+
+y=493 [(673, 673, '007F7F')]
+y=494 [(673, 673, '007F7F')]
+y=495 [(673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, 'FFFF00'), (691, 691, '7F7F00')]
+y=496 [(673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, '000000'), (691, 691, '7F7F00')]
+y=497 [(673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, '000000'), (691, 691, '7F7F00')]
+y=498 [(673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, 'FFFF00'), (691, 691, '7F7F00')]
+y=499 [(673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, 'FFFF00'), (691, 691, '7F7F00')]
+y=500 [(673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, '000000'), (691, 691, '7F7F00')]
+y=501 [(673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, '000000'), (691, 691, '7F7F00')]
+y=502 [(673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, 'FFFF00'), (691, 691, '7F7F00')]
+y=503 [(673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, 'FFFF00'), (691, 691, '7F7F00')]
+y=504 [(673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, '000000'), (691, 691, '7F7F00')]
+y=505 [(673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, '000000'), (691, 691, '7F7F00')]
+y=506 [(673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, 'FFFF00'), (691, 691, '7F7F00')]
+y=507 [(673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, 'FFFF00'), (691, 691, '7F7F00')]
+y=508 [(673, 673, '007F7F'), (689, 689, '7F7F00'), (690, 690, '000000'), (691, 691, '7F7F00')]
+y=509 [(647, 672, '007F7F'), (689, 689, '7F7F00'), (690, 690, '000000'), (691, 691, '7F7F00')]
+y=511 [(647, 700, '7F7F00')]
+y=512 [(647, 647, '000000'), (648, 649, 'FFFF00'), (650, 651, '000000'), (652, 653, 'FFFF00'), (654, 655, '000000'), (656, 657, 'FFFF00'), (658, 659, '000000'), (660, 661, 'FFFF00'), (662, 663, '000000'), (664, 665, 'FFFF00'), (666, 667, '000000'), (668, 669, 'FFFF00'), (670, 671, '000000'), (672, 673, 'FFFF00'), (674, 675, '000000'), (676, 677, 'FFFF00'), (678, 679, '000000'), (680, 681, 'FFFF00'), (682, 683, '000000'), (684, 685, 'FFFF00'), (686, 687, '000000'), (688, 689, 'FFFF00'), (690, 691, '000000'), (692, 693, 'FFFF00'), (694, 695, '000000'), (696, 697, 'FFFF00'), (698, 699, '000000'), (700, 700, 'FFFF00')]
+y=513 [(647, 700, '7F7F00')]
+BGRUN END rc=0 after 16s
+BGRUN START 2026-09-06 05:49:57 limit 8.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone bootstrap (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); FP='OpBuildInvoke_v0.vi Front Panel'; BD='OpBuildInvoke_v0.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:90], flush=True); return None
+def release(title): 
+    c.lv('-Action','key','-Key','esc'); c.lv('-Action','focus','-Title',title); time.sleep(0.3)
+    try:
+        L,T,R,B=c.rect(title); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3)
+    except Exception as e: print('title click', str(e)[:50], flush=True)
+# discard the OpWire-based attempt
+com('close old (discard)', lambda: g.close_panel(OP)); time.sleep(0.5)
+shutil.copyfile(os.path.join(g.CLAUDEDEV,'OpSubVI_v1.vi'), OP); print('OpBuildInvoke_v0 = copy of OpSubVI_v1', flush=True)
+g.open_panel(OP); time.sleep(1.0); release(FP)
+print('baseline ExecState', com('es', lambda: g.exec_state(OP)), flush=True)
+print('nodes:', [(o['class'],o['uid'],o['pos']) for o in g.report(OP,'Node')], flush=True)
+print('controls:', [(o['uid'],o['pos']) for o in g.report(OP,'ControlTerminal')], flush=True)
+ct0=g.uids(OP,'ControlTerminal')
+com('copy_into(OpWire_v1, Class Name 2)', lambda: g.copy_into(os.path.join(g.CLAUDEDEV,'OpWire_v1.vi'), 'Class Name 2', OP))
+com('revert after copy', lambda: g.revert(OP)); g.open_panel(OP); time.sleep(0.8); release(FP)
+new=g.new_since(OP,'ControlTerminal',ct0); print('new controls:', [(o['uid'],o['pos']) for o in new], 'ExecState', com('es', lambda: g.exec_state(OP)), flush=True)
+EM=r'C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Erdos Miller\LV-Scripting\Create Invoke Node.vi'
+sub0=g.uids(OP,'SubVI'); com('drop creator', lambda: g.drop_subvi(OP, EM, 0, (900,640)))
+newsub=g.new_since(OP,'SubVI',sub0); print('creator', [(o['uid'],o['pos']) for o in newsub], flush=True)
+subs=g.report(OP,'SubVI'); ci=next((i for i,o in enumerate(subs) if o['uid'] in {n['uid'] for n in newsub}), None)
+com('wire_control Class Name 2 -> ID String (fresh)', lambda: g.wire_control(OP, ['Class Name 2'], 'SubVI', ci, ['ID String']))
+com('ExecState', lambda: g.exec_state(OP))
+c.lv('-Action','focus','-Title',FP); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1500)
+c.lv('-Action','movewin','-Title',BD,'-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.6)
+print(c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi2_bd.png')[:40], flush=True)
+
+close old (discard) None
+OpBuildInvoke_v0 = copy of OpSubVI_v1
+es 1
+baseline ExecState 1
+nodes: [('SubVI', 584, (915, 492)), ('Function', 316, (275, 401)), ('Function', 683, (653, 279)), ('IndexArray', 308, (605, 284)), ('SubVI', 124, (495, 281)), ('Function', 43, (275, 251))]
+controls: [(96, (229, 244)), (363, (449, 274)), (1056, (560, 287)), (540, (229, 394)), (732, (874, 438)), (866, (955, 501))]
+copy_into(OpWire_v1, Class Name 2) [{'i': 69, 'class': 'ControlTerminal', 'uid': 257, 'pos': (0, 75), 'owner': 'TopLevelDiagram'}]
+revert after copy None
+es 1
+new controls: [(257, (0, 75))] ExecState 1
+drop creator 0.03142952919006348
+creator [(243, (900, 640))]
+wire_control Class Name 2 -> ID String (fresh) 14
+ExecState 0
+saved C:\Users\KimLab\AppData\Local\Temp
+BGRUN END rc=0 after 19s
+BGRUN START 2026-09-06 05:51:00 limit 3.0 min: py -u -c 
+import sys, time; sys.path.insert(0,'tools'); import lvclick as c
+c.EVIDENCE='keystone bootstrap (user: 예외 허용 2026-09-06)'; BD='OpBuildInvoke_v0.vi Block Diagram'
+c.lv('-Action','key','-Key','esc'); c.lv('-Action','focus','-Title',BD); time.sleep(0.4); c.act('click',X=1200,Y=800); time.sleep(0.3)
+c.act('keys',Key='^l',WaitMs=2000)
+wins=c.windows(); print(wins, flush=True)
+t=next((w for w in wins if 'Error' in w or 'error' in w.lower()), None); print('error window:', t, flush=True)
+if t:
+    c.lv('-Action','movewin','-Title',t,'-X','0','-Y','0','-Width','1000','-Height','700'); time.sleep(0.5)
+    print(c.lv('-Action','shotwin','-Title',t,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi2_errlist.png')[:40], flush=True)
+    c.lv('-Action','key','-Key','esc')
+
+['Error list', 'OpBuildInvoke_v0.vi Block Diagram', 'OpBuildInvoke_v0.vi Front Panel', 'GUIBENCH_v0.vi Block Diagram', 'GUIBENCH_v0.vi Front Panel', 'LabVIEW']
+error window: Error list
+saved C:\Users\KimLab\AppData\Local\Temp
+BGRUN END rc=0 after 10s
+BGRUN START 2026-09-06 05:51:58 limit 5.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,30.0); g._lv=None; c.EVIDENCE='keystone bootstrap (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'COM-HUNG', str(e)[:50], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.4); release()
+print('probe col x=702 y400..440:', [(a,b,rgb) for a,b,rgb in c.probe_runs(702,400,y2=440) if rgb!='FFFFFF'][:4], flush=True)
+print('probe row y=288 x380..420:', [(a,b,rgb) for a,b,rgb in c.probe_runs(380,288,x2=420) if rgb!='FFFFFF'][:4], flush=True)
+print('== GUI wire: creator Diagram in (910,679) -> typed Diagram wire (702,420) ==', flush=True); c.act('wire', X=910, Y=679, X2=702, Y2=420); time.sleep(0.8); release()
+com('ExecState after Diagram in', lambda: g.exec_state(OP))
+print('== GUI wire: creator reference (910,685) -> VI ref wire (400,288) ==', flush=True); c.act('wire', X=910, Y=685, X2=400, Y2=288); time.sleep(0.8); release()
+com('ExecState after reference', lambda: g.exec_state(OP))
+print(c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi2_after.png')[:40], flush=True)
+
+probe col x=702 y400..440: [(438, 438, '007F7F')]
+probe row y=288 x380..420: [(380, 420, '007F7F')]
+== GUI wire: creator Diagram in (910,679) -> typed Diagram wire (702,420) ==
+ExecState after Diagram in 1
+== GUI wire: creator reference (910,685) -> VI ref wire (400,288) ==
+ExecState after reference 0
+saved C:\Users\KimLab\AppData\Local\Temp
+BGRUN END rc=0 after 16s
+BGRUN START 2026-09-06 05:52:58 limit 8.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone bootstrap (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:120], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.4); release()
+c.act('keys',Key='^b',WaitMs=800); release()
+es=com('ExecState after Ctrl+B', lambda: g.exec_state(OP))
+if es==1:
+    com('COM save OpBuildInvoke_v0', lambda: g.save(OP))
+    print('size', os.path.getsize(OP), flush=True)
+    TGT=os.path.join(g.CLAUDEDEV,'SCRATCH_bi_target.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'), TGT)
+    g.open_panel(TGT); time.sleep(0.8)
+    before=g.uids(TGT,'Invoke'); print('target Invoke before', sorted(before), flush=True)
+    vi=g.op(OP)
+    vi.SetControlValue('vi path', TGT); vi.SetControlValue('Class Name','Diagram'); vi.SetControlValue('index',0)
+    vi.SetControlValue('vi path 2', ''); vi.SetControlValue('location (0, 0)', [400, 700])
+    vi.SetControlValue('Class Name 2', 'Create from Data Type')
+    print('== RUN OpBuildInvoke_v0 (predict: +1 Invoke on target; error out may carry Create SubVI error) ==', flush=True)
+    com('run', lambda: g._run(vi)); print('error out:', com('err', lambda: g._err(vi)), flush=True)
+    new=g.new_since(TGT,'Invoke',before); print('NEW Invoke nodes:', [(o['uid'],o['pos']) for o in new], 'target ExecState', com('tes', lambda: g.exec_state(TGT)), flush=True)
+    c.lv('-Action','focus','-Title','SCRATCH_bi_target.vi Front Panel'); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1200)
+    c.lv('-Action','movewin','-Title','SCRATCH_bi_target.vi Block Diagram','-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.5)
+    print(c.lv('-Action','shotwin','-Title','SCRATCH_bi_target.vi Block Diagram','-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_target_bd.png')[:40], flush=True)
+else:
+    print('STOP: still broken after Ctrl+B', flush=True)
+
+ExecState after Ctrl+B 1
+COM save OpBuildInvoke_v0 10500
+size 10500
+target Invoke before [538]
+== RUN OpBuildInvoke_v0 (predict: +1 Invoke on target; error out may carry Create SubVI error) ==
+run EXC run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gs
+err None
+error out: None
+tes 0
+NEW Invoke nodes: [(622, (0, 0))] target ExecState 0
+Traceback (most recent call last):
+  File "<string>", line 26, in <module>
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\lvclick.py", line 49, in lv
+    raise RuntimeError(f"lv_gui {args[:2]}: {(r.stdout + r.stderr).strip()[:300]}")
+RuntimeError: lv_gui ('-Action', 'movewin'): No LabVIEW window matching 'SCRATCH_bi_target.vi Block Diagram'.
+��ġ G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\lv_gui.ps1:568 ����:38
+BGRUN TIMEOUT killed after 482s (limit 8.0 min)
+BGRUN START 2026-09-06 06:01:33 limit 3.0 min: py -u -c 
+import sys, time; sys.path.insert(0,'tools'); import lvclick as c
+c.EVIDENCE='keystone bootstrap (user: 예외 허용 2026-09-06)'
+print(c.windows(), flush=True)
+FP='SCRATCH_bi_target.vi Front Panel'; BD='SCRATCH_bi_target.vi Block Diagram'
+c.lv('-Action','key','-Key','esc'); c.lv('-Action','focus','-Title',FP); time.sleep(0.4)
+L,T,R,B=c.rect(FP); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1500)
+print(c.windows(), flush=True)
+c.lv('-Action','movewin','-Title',BD,'-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.6)
+print(c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_target_bd.png')[:40], flush=True)
+
+['OpBuildInvoke_v0.vi Front Panel', 'OpBuildInvoke_v0.vi Block Diagram', 'SCRATCH_bi_target.vi Front Panel', 'GUIBENCH_v0.vi Block Diagram', 'GUIBENCH_v0.vi Front Panel', 'LabVIEW']
+['SCRATCH_bi_target.vi Block Diagram', 'SCRATCH_bi_target.vi Front Panel', 'OpBuildInvoke_v0.vi Front Panel', 'OpBuildInvoke_v0.vi Block Diagram', 'GUIBENCH_v0.vi Block Diagram', 'GUIBENCH_v0.vi Front Panel', 'LabVIEW']
+saved C:\Users\KimLab\AppData\Local\Temp
+BGRUN END rc=0 after 10s
+BGRUN START 2026-09-06 06:02:36 limit 3.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,30.0); g._lv=None
+TGT=os.path.join(g.CLAUDEDEV,'SCRATCH_bi_target.vi'); OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi')
+c.lv('-Action','key','-Key','esc')
+try: inv=g.report(TGT,'Invoke'); print('target Invoke nodes:', [(o['uid'],o['pos']) for o in inv], flush=True)
+except Exception as e: print('report', str(e)[:60], flush=True)
+try: g.close_panel(TGT); print('target closed (discarded)', flush=True)
+except Exception as e: print('close target', str(e)[:60], flush=True)
+try: os.remove(TGT); print('scratch target deleted', flush=True)
+except Exception as e: print('delete', str(e)[:60], flush=True)
+try: print('OpBuildInvoke_v0 ExecState', g.exec_state(OP), 'size', os.path.getsize(OP), flush=True)
+except Exception as e: print('op check', str(e)[:60], flush=True)
+print(c.windows(), flush=True)
+
+target Invoke nodes: [(622, (0, 0)), (538, (1044, 350))]
+target closed (discarded)
+scratch target deleted
+OpBuildInvoke_v0 ExecState 1 size 10500
+['OpBuildInvoke_v0.vi Front Panel', 'OpBuildInvoke_v0.vi Block Diagram', 'GUIBENCH_v0.vi Block Diagram', 'GUIBENCH_v0.vi Front Panel', 'LabVIEW']
+BGRUN END rc=0 after 1s
+BGRUN START 2026-09-06 12:36:49 limit 5.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,30.0); g._lv=None; c.EVIDENCE='keystone bootstrap v1 (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:80], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.4); release()
+c.lv('-Action','movewin','-Title',BD,'-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.5)
+for y in (500,510,520,530): print('row y=%d x915..945:'%y, [(a,b,rgb) for a,b,rgb in c.probe_runs(915,y,x2=945) if rgb!='FFFFFF'][:5], flush=True)
+print('col x=935 y485..545:', [(a,b,rgb) for a,b,rgb in c.probe_runs(935,485,y2=545) if rgb!='FFFFFF'][:6], flush=True)
+c.lv('-Action','hover','-X','927','-Y','676','-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi2_loc_hover.png','-Scale','3')
+print(c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi2_now.png')[:40], flush=True)
+
+row y=500 x915..945: [(918, 918, '993300'), (920, 921, '993300'), (935, 935, '007F7F'), (940, 942, '993300')]
+row y=510 x915..945: [(919, 919, 'FF00FF'), (935, 935, '007F7F'), (940, 942, '993300')]
+row y=520 x915..945: [(919, 919, 'FF00FF'), (935, 935, '007F7F'), (940, 942, '993300')]
+row y=530 x915..945: [(919, 919, 'FF00FF'), (925, 925, '000000'), (926, 932, '007F7F'), (933, 933, '000000'), (934, 938, '007F7F')]
+col x=935 y485..545: [(485, 487, '007F7F'), (489, 491, '993300'), (493, 524, '007F7F'), (525, 525, '000000'), (526, 541, '007F7F'), (542, 542, '000000')]
+saved C:\Users\KimLab\AppData\Local\Temp
+BGRUN END rc=0 after 11s
+BGRUN START 2026-09-06 12:37:31 limit 8.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone bootstrap v1 (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:100], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.4); release()
+print('== GUI wire: creator location (927,676) -> location control wire (941,515) ==', flush=True)
+c.act('wire', X=927, Y=676, X2=941, Y2=515); time.sleep(0.8); release()
+es=com('ExecState after location wire', lambda: g.exec_state(OP))
+if es!=1:
+    c.act('keys',Key='^b',WaitMs=800); release(); print('bad wire removed; ExecState', com('es', lambda: g.exec_state(OP)), flush=True)
+else:
+    com('COM save', lambda: g.save(OP))
+    TGT=os.path.join(g.CLAUDEDEV,'SCRATCH_bi_target.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'), TGT)
+    g.open_panel(TGT); time.sleep(0.8)
+    before=g.uids(TGT,'Invoke')
+    vi=g.op(OP)
+    vi.SetControlValue('vi path', TGT); vi.SetControlValue('Class Name','Diagram'); vi.SetControlValue('index',0)
+    vi.SetControlValue('vi path 2', ''); vi.SetControlValue('location (0, 0)', [500, 600]); vi.SetControlValue('Class Name 2', 'Create from Data Type')
+    print('== RUN (predict: +1 Invoke at (500,600) +-4) ==', flush=True)
+    com('run', lambda: g._run(vi)); print('error out:', com('err', lambda: g._err(vi)), flush=True)
+    new=g.new_since(TGT,'Invoke',before); print('NEW Invoke:', [(o['uid'],o['pos']) for o in new], flush=True)
+    try: g.close_panel(TGT); os.remove(TGT); print('scratch target deleted', flush=True)
+    except Exception as e: print('cleanup', str(e)[:60], flush=True)
+
+== GUI wire: creator location (927,676) -> location control wire (941,515) ==
+ExecState after location wire 1
+COM save 10652
+== RUN (predict: +1 Invoke at (500,600) +-4) ==
+run EXC run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\A
+err None
+error out: None
+NEW Invoke: [(622, (500, 600))]
+scratch target deleted
+BGRUN END rc=0 after 18s
+BGRUN START 2026-09-06 12:38:21 limit 9.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone bootstrap v1 (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:100], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.4); release()
+for y in (334,336,338,340,342): print('row y=%d x598..622:'%y, [(a,b,rgb) for a,b,rgb in c.probe_runs(598,y,x2=622) if rgb!='FFFFFF'][:5], flush=True)
+
+row y=334 x598..622: [(601, 601, 'EEEEEE'), (602, 602, 'AAAAAA'), (603, 603, 'BBBBBB'), (604, 604, '0000FF'), (606, 607, '0000FF')]
+row y=336 x598..622: [(599, 599, '000000'), (601, 601, 'EEEEEE'), (602, 603, '000000'), (604, 604, '0000FF'), (606, 607, '0000FF')]
+row y=338 x598..622: [(598, 598, '000000'), (601, 601, 'DDDDDD'), (602, 602, '000000'), (605, 605, '000000'), (606, 607, '0000FF')]
+row y=340 x598..622: [(599, 599, '000000'), (601, 601, 'DDDDDD'), (602, 602, '000000'), (605, 605, '000000'), (606, 607, '0000FF')]
+row y=342 x598..622: [(601, 601, 'EEEEEE'), (602, 603, '000000'), (604, 604, '0000FF'), (606, 607, '0000FF'), (615, 615, '4C4C3D')]
+BGRUN END rc=0 after 5s
+BGRUN START 2026-09-06 12:39:06 limit 9.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone bootstrap v1 (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:100], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.4); release()
+pts=[]
+for y in range(320,340,2):
+    r=[(a,b,rgb) for a,b,rgb in c.probe_runs(645,y,x2=668) if rgb=='007F7F']
+    if r: print('teal row y=%d:'%y, r, flush=True); pts.append((r[0][0]+ (r[0][1]-r[0][0])//2, y))
+if not pts: print('no teal segment found between IA308 and TMSC', flush=True); sys.exit(0)
+tx,ty=pts[len(pts)//2]; print('branch target', (tx,ty), flush=True)
+print('== GUI wire: creator reference (910,685) -> GObject wire', (tx,ty), '==', flush=True)
+c.act('wire', X=910, Y=685, X2=tx, Y2=ty); time.sleep(0.8); release()
+es=com('ExecState after reference wire', lambda: g.exec_state(OP))
+if es!=1:
+    c.act('keys',Key='^b',WaitMs=800); release(); print('bad wire removed; ExecState', com('es', lambda: g.exec_state(OP)), flush=True); sys.exit(0)
+com('COM save', lambda: g.save(OP))
+TGT=os.path.join(g.CLAUDEDEV,'SCRATCH_bi_target.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'), TGT)
+g.open_panel(TGT); time.sleep(0.8); before=g.uids(TGT,'Invoke')
+vi=g.op(OP); vi.SetControlValue('vi path', TGT); vi.SetControlValue('Class Name','Diagram'); vi.SetControlValue('index',0)
+vi.SetControlValue('vi path 2', ''); vi.SetControlValue('location (0, 0)', [500, 600]); vi.SetControlValue('Class Name 2', 'Remove Bad Wires')
+print('== RUN (predict: +1 Invoke at (500,600), class Diagram, method Remove Bad Wires) ==', flush=True)
+com('run', lambda: g._run(vi)); print('error out:', com('err', lambda: g._err(vi)), flush=True)
+new=g.new_since(TGT,'Invoke',before); print('NEW Invoke:', [(o['uid'],o['pos']) for o in new], 'target ExecState', com('tes', lambda: g.exec_state(TGT)), flush=True)
+c.lv('-Action','focus','-Title','SCRATCH_bi_target.vi Front Panel'); time.sleep(0.3)
+L,T,R,B=c.rect('SCRATCH_bi_target.vi Front Panel'); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1500)
+c.lv('-Action','movewin','-Title','SCRATCH_bi_target.vi Block Diagram','-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.6)
+print(c.lv('-Action','shotwin','-Title','SCRATCH_bi_target.vi Block Diagram','-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_target2.png')[:40], flush=True)
+
+teal row y=320: [(655, 655, '007F7F')]
+teal row y=322: [(655, 655, '007F7F')]
+teal row y=324: [(655, 655, '007F7F')]
+teal row y=326: [(655, 655, '007F7F')]
+teal row y=328: [(655, 655, '007F7F')]
+teal row y=330: [(655, 655, '007F7F')]
+teal row y=332: [(655, 655, '007F7F')]
+teal row y=334: [(655, 655, '007F7F')]
+teal row y=336: [(655, 655, '007F7F')]
+teal row y=338: [(655, 655, '007F7F')]
+branch target (655, 330)
+== GUI wire: creator reference (910,685) -> GObject wire (655, 330) ==
+ExecState after reference wire 1
+COM save 10656
+== RUN (predict: +1 Invoke at (500,600), class Diagram, method Remove Bad Wires) ==
+run EXC run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\A
+err None
+error out: None
+tes 0
+NEW Invoke: [(622, (500, 600))] target ExecState 0
+saved C:\Users\KimLab\AppData\Local\Temp
+BGRUN END rc=0 after 30s
+BGRUN START 2026-09-06 12:40:21 limit 3.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,30.0); g._lv=None
+TGT=os.path.join(g.CLAUDEDEV,'SCRATCH_bi_target.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'
+c.lv('-Action','key','-Key','esc')
+try: g.close_panel(TGT); os.remove(TGT); print('scratch target deleted', flush=True)
+except Exception as e: print('cleanup', str(e)[:60], flush=True)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.4); c.lv('-Action','movewin','-Title',BD,'-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.5)
+print(c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi2_v1.png')[:40], flush=True)
+
+scratch target deleted
+saved C:\Users\KimLab\AppData\Local\Temp
+BGRUN END rc=0 after 4s
+BGRUN START 2026-09-06 12:41:51 limit 4.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,30.0); g._lv=None; c.EVIDENCE='keystone bootstrap v1 (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'
+vi=g.op(OP); vi.SetControlValue('Class Name 2','PROBE-VALUE'); print('Class Name 2 readback:', vi.GetControlValue('Class Name 2'), flush=True)
+c.lv('-Action','key','-Key','esc'); c.lv('-Action','focus','-Title',BD); time.sleep(0.4); c.act('click',X=1200,Y=800); time.sleep(0.3)
+for k,(x,y) in enumerate([(919,710),(927,710),(935,710),(944,681),(944,687),(944,693),(944,699)]):
+    c.lv('-Action','hover','-X',str(x),'-Y',str(y),'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi2_t_%d.png'%k,'-Scale','3'); print('hover',k,(x,y), flush=True)
+c.lv('-Action','key','-Key','esc')
+
+Class Name 2 readback: PROBE-VALUE
+hover 0 (919, 710)
+hover 1 (927, 710)
+hover 2 (935, 710)
+hover 3 (944, 681)
+hover 4 (944, 687)
+hover 5 (944, 693)
+hover 6 (944, 699)
+BGRUN END rc=0 after 24s
+BGRUN START 2026-09-06 12:43:06 limit 9.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone bootstrap v1 (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:100], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.4); release()
+print('probe col x=655 y400..500 (GObject reference wire?):', [(a,b,rgb) for a,b,rgb in c.probe_runs(655,400,y2=500) if rgb!='FFFFFF'][:3], flush=True)
+print('== select the GObject reference wire (655,450) and Delete ==', flush=True)
+c.act('click',X=655,Y=450); time.sleep(0.4); c.act('keys',Key='{DEL}',WaitMs=600); release(); c.act('keys',Key='^b',WaitMs=800); release()
+es=com('ExecState after delete', lambda: g.exec_state(OP))
+print('== GUI wire: reference (910,685) -> typed Diagram wire (702,450) ==', flush=True)
+c.act('wire', X=910, Y=685, X2=702, Y2=450); time.sleep(0.8); release()
+es=com('ExecState after typed reference', lambda: g.exec_state(OP))
+if es!=1: c.act('keys',Key='^b',WaitMs=800); release(); print('removed bad; ExecState', com('es', lambda: g.exec_state(OP)), flush=True); sys.exit(0)
+com('COM save', lambda: g.save(OP))
+TGT=os.path.join(g.CLAUDEDEV,'SCRATCH_bi_target.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'), TGT); g.open_panel(TGT); time.sleep(0.8)
+before=g.uids(TGT,'Invoke'); vi=g.op(OP)
+vi.SetControlValue('vi path', TGT); vi.SetControlValue('Class Name','Diagram'); vi.SetControlValue('index',0); vi.SetControlValue('vi path 2',''); vi.SetControlValue('location (0, 0)',[500,600]); vi.SetControlValue('Class Name 2','Connect Wire')
+print('== RUN (predict: +1 Invoke at (500,600), header Diag, method Connect Wire) ==', flush=True)
+com('run', lambda: g._run(vi)); print('NEW Invoke:', [(o['uid'],o['pos']) for o in g.new_since(TGT,'Invoke',before)], flush=True)
+c.lv('-Action','focus','-Title','SCRATCH_bi_target.vi Front Panel'); time.sleep(0.3); L,T,R,B=c.rect('SCRATCH_bi_target.vi Front Panel'); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1500)
+c.lv('-Action','movewin','-Title','SCRATCH_bi_target.vi Block Diagram','-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.6)
+c.lv('-Action','shotwin','-Title','SCRATCH_bi_target.vi Block Diagram','-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_target3.png')
+print(c.lv('-Action','crop','-In',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_target3.png','-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_target3_node.png','-Left','480','-Top','620','-Width','160','-Height','60','-Scale','4')[:40], flush=True)
+try: g.close_panel(TGT); os.remove(TGT); print('scratch deleted', flush=True)
+except Exception as e: print('cleanup', str(e)[:60], flush=True)
+
+probe col x=655 y400..500 (GObject reference wire?): [(400, 500, '007F7F')]
+== select the GObject reference wire (655,450) and Delete ==
+ExecState after delete 1
+== GUI wire: reference (910,685) -> typed Diagram wire (702,450) ==
+ExecState after typed reference 1
+COM save 10660
+== RUN (predict: +1 Invoke at (500,600), header Diag, method Connect Wire) ==
+run EXC run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\A
+NEW Invoke: [(622, (500, 600))]
+saved C:\Users\KimLab\AppData\Local\Temp
+scratch deleted
+BGRUN END rc=0 after 35s
+BGRUN START 2026-09-06 12:44:39 limit 3.0 min: py -u -c 
+import sys, os, re, pythoncom; sys.path.insert(0,'tools'); import gscript as g
+g._lv=None
+for name in ('Create Invoke Node.vi','Create Property Node.vi'):
+    p=os.path.join(r'C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Erdos Miller\LV-Scripting', name)
+    vi=g.lv().GetVIReference(p,'',False,0); disp=vi._oleobj_; did=disp.GetIDsOfNames(0,'ExportVIStrings')
+    out=os.path.join(os.environ['TEMP'],'vistr_'+name+'.txt'); disp.Invoke(did,0,pythoncom.DISPATCH_METHOD,0,out,False,'')
+    s=open(out,encoding='utf-8',errors='replace').read()
+    ctls=re.findall(r'<CONTROL ID=(\d+) type="([^"]+)" name="([^"]*)">', s)
+    print('==',name, flush=True)
+    for cid,typ,nm in ctls: print('   ',cid,typ,repr(nm), flush=True)
+    m=re.findall(r'<DEFAULT>(.*?)</DEFAULT>', s, re.S); print('   defaults sample:', [x[:30] for x in m[:6]], flush=True)
+
+== Create Invoke Node.vi
+    85 Application Refnum 'error in'
+    85 Application Refnum 'reference'
+    100 Type Definition 'location (0, 0)'
+    83 Cluster ''
+    80 Numeric 'Vertical'
+    80 Numeric 'Horizontal'
+    85 Application Refnum 'reference out'
+    85 Application Refnum 'Diagram out'
+    85 Application Refnum 'Diagram in'
+    83 Cluster 'error out'
+    79 Boolean 'status'
+    80 Numeric 'code'
+    81 String 'source'
+    83 Cluster 'error in (no error)'
+    79 Boolean 'status'
+    80 Numeric 'code'
+    81 String 'source'
+    85 Application Refnum 'error out'
+    81 String 'Class Name'
+    82 Array 'Outputs'
+    85 Application Refnum 'Terminal'
+    82 Array 'Inputs'
+    85 Application Refnum 'y'
+    81 String 'ID String'
+   defaults sample: ['<SAME_AS_LABEL>', '<SAME_AS_LABEL>', '<SAME_AS_LABEL>', '<SAME_AS_LABEL>']
+== Create Property Node.vi
+    85 Application Refnum 'error in'
+    85 Application Refnum 'reference'
+    100 Type Definition 'location (0, 0)'
+    83 Cluster ''
+    80 Numeric 'Vertical'
+    80 Numeric 'Horizontal'
+    85 Application Refnum 'reference out'
+    85 Application Refnum 'Diagram out'
+    85 Application Refnum 'Diagram in'
+    83 Cluster 'error out'
+    79 Boolean 'status'
+    80 Numeric 'code'
+    81 String 'source'
+    83 Cluster 'error in (no error)'
+    79 Boolean 'status'
+    80 Numeric 'code'
+    81 String 'source'
+    85 Application Refnum 'error out'
+    81 String 'Class Name'
+    82 Array 'Properties'
+    83 Cluster 'Property'
+    81 String 'ID String'
+    79 Boolean 'Is Write?'
+    82 Array 'Outputs'
+    85 Application Refnum 'Terminal'
+    82 Array 'Inputs'
+    85 Application Refnum 'y'
+   defaults sample: ['<SAME_AS_LABEL>', '<SAME_AS_LABEL>', '<SAME_AS_LABEL>', '\n\t\t\t<ARRAY nElems=0>\n\t\t\t</ARRA', '<SAME_AS_LABEL>']
+BGRUN END rc=0 after 0s
+BGRUN START 2026-09-06 12:45:40 limit 9.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone bootstrap v1 (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:140], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.4); release()
+subs=g.report(OP,'SubVI'); ci=next(i for i,o in enumerate(subs) if o['pos']==(900,640)); print('creator index', ci, flush=True)
+r=com('wire_control Class Name -> creator Class Name (branch; 5001 = not on pane)', lambda: g.wire_control(OP, ['Class Name'], 'SubVI', ci, ['Class Name'], branch=True))
+es=com('ExecState', lambda: g.exec_state(OP))
+if es!=1: c.act('keys',Key='^b',WaitMs=800); release(); print('ExecState after Ctrl+B', com('es', lambda: g.exec_state(OP)), flush=True); sys.exit(0)
+com('COM save', lambda: g.save(OP))
+TGT=os.path.join(g.CLAUDEDEV,'SCRATCH_bi_target.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'), TGT); g.open_panel(TGT); time.sleep(0.8)
+before=g.uids(TGT,'Invoke'); vi=g.op(OP)
+vi.SetControlValue('vi path', TGT); vi.SetControlValue('Class Name','Diagram'); vi.SetControlValue('index',0); vi.SetControlValue('vi path 2',''); vi.SetControlValue('location (0, 0)',[500,600]); vi.SetControlValue('Class Name 2','Connect Wire')
+print('== RUN (predict: Diag-class node with method Connect Wire at (500,600)) ==', flush=True)
+com('run', lambda: g._run(vi)); print('NEW Invoke:', [(o['uid'],o['pos']) for o in g.new_since(TGT,'Invoke',before)], flush=True)
+c.lv('-Action','focus','-Title','SCRATCH_bi_target.vi Front Panel'); time.sleep(0.3); L,T,R,B=c.rect('SCRATCH_bi_target.vi Front Panel'); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1500)
+c.lv('-Action','movewin','-Title','SCRATCH_bi_target.vi Block Diagram','-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.6)
+c.lv('-Action','shotwin','-Title','SCRATCH_bi_target.vi Block Diagram','-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_target4.png')
+print(c.lv('-Action','crop','-In',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_target4.png','-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_target4_node.png','-Left','480','-Top','620','-Width','200','-Height','60','-Scale','4')[:40], flush=True)
+try: g.close_panel(TGT); os.remove(TGT); print('scratch deleted', flush=True)
+except Exception as e: print('cleanup', str(e)[:60], flush=True)
+
+creator index 0
+wire_control Class Name -> creator Class Name (branch; 5001 = not on pane) 14
+ExecState 1
+COM save 10676
+== RUN (predict: Diag-class node with method Connect Wire at (500,600)) ==
+run EXC run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gscript_dialog_1788666
+NEW Invoke: [(622, (500, 600))]
+Traceback (most recent call last):
+  File "<string>", line 21, in <module>
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\lvclick.py", line 49, in lv
+    raise RuntimeError(f"lv_gui {args[:2]}: {(r.stdout + r.stderr).strip()[:300]}")
+RuntimeError: lv_gui ('-Action', 'movewin'): No LabVIEW window matching 'SCRATCH_bi_target.vi Block Diagram'.
+��ġ G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\lv_gui.ps1:568 ����:38
+BGRUN TIMEOUT killed after 542s (limit 9.0 min)
+BGRUN START 2026-09-06 12:55:26 limit 4.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,30.0); g._lv=None; c.EVIDENCE='keystone bootstrap v1 (user: 예외 허용 2026-09-06)'
+TGT=os.path.join(g.CLAUDEDEV,'SCRATCH_bi_target.vi'); FP='SCRATCH_bi_target.vi Front Panel'; BD='SCRATCH_bi_target.vi Block Diagram'
+c.lv('-Action','key','-Key','esc'); print(c.windows(), flush=True)
+c.lv('-Action','focus','-Title',FP); time.sleep(0.4); L,T,R,B=c.rect(FP); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.4); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3)
+c.act('keys',Key='^e',WaitMs=1800); print(c.windows(), flush=True)
+if BD in c.windows():
+    c.lv('-Action','movewin','-Title',BD,'-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.6)
+    c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_target4.png')
+    print(c.lv('-Action','crop','-In',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_target4.png','-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_target4_node.png','-Left','480','-Top','620','-Width','220','-Height','70','-Scale','4')[:30], flush=True)
+try: g.close_panel(TGT); os.remove(TGT); print('scratch deleted', flush=True)
+except Exception as e: print('cleanup', str(e)[:60], flush=True)
+
+['OpBuildInvoke_v0.vi Front Panel', 'OpBuildInvoke_v0.vi Block Diagram', 'SCRATCH_bi_target.vi Front Panel', 'GUIBENCH_v0.vi Block Diagram', 'GUIBENCH_v0.vi Front Panel', 'LabVIEW']
+['SCRATCH_bi_target.vi Block Diagram', 'SCRATCH_bi_target.vi Front Panel', 'OpBuildInvoke_v0.vi Front Panel', 'OpBuildInvoke_v0.vi Block Diagram', 'GUIBENCH_v0.vi Block Diagram', 'GUIBENCH_v0.vi Front Panel', 'LabVIEW']
+saved C:\Users\KimLab\AppData\
+scratch deleted
+BGRUN END rc=0 after 12s
+BGRUN START 2026-09-06 12:56:18 limit 4.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,30.0); g._lv=None; c.EVIDENCE='read-only view of erdosmiller Create Invoke Node.vi diagram (diagnosis)'
+EM=r'C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Erdos Miller\LV-Scripting\Create Invoke Node.vi'
+g.open_panel(EM); time.sleep(1.0)
+FP='Create Invoke Node.vi Front Panel'; BD='Create Invoke Node.vi Block Diagram'
+c.lv('-Action','focus','-Title',FP); time.sleep(0.4); L,T,R,B=c.rect(FP); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.4); c.act('keys',Key='^e',WaitMs=1800)
+print(c.windows(), flush=True)
+c.lv('-Action','movewin','-Title',BD,'-X','0','-Y','0','-Width','1900','-Height','1000'); time.sleep(0.6)
+print(c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\em_create_invoke_bd.png')[:40], flush=True)
+try: g.close_panel(EM); print('closed (no save)', flush=True)
+except Exception as e: print('close', str(e)[:60], flush=True)
+
+['LV-Scripting.lvlib:Create Invoke Node.vi Block Diagram', 'LV-Scripting.lvlib:Create Invoke Node.vi Front Panel', 'OpBuildInvoke_v0.vi Front Panel', 'OpBuildInvoke_v0.vi Block Diagram', 'GUIBENCH_v0.vi Block Diagram', 'GUIBENCH_v0.vi Front Panel', 'LabVIEW']
+saved C:\Users\KimLab\AppData\Local\Temp
+closed (no save)
+BGRUN END rc=0 after 10s
+BGRUN START 2026-09-06 12:57:27 limit 6.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone bootstrap v1 (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'; FP='OpBuildInvoke_v0.vi Front Panel'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:140], flush=True); return None
+ct0=g.uids(OP,'ControlTerminal')
+com('copy_into(FPTARGET_v0, error out 2)', lambda: g.copy_into(os.path.join(g.CLAUDEDEV,'FPTARGET_v0.vi'), 'error out 2', OP))
+com('revert', lambda: g.revert(OP)); g.open_panel(OP); time.sleep(0.8)
+new=g.new_since(OP,'ControlTerminal',ct0); print('new terminals:', [(o['uid'],o['pos']) for o in new], 'ExecState', com('es', lambda: g.exec_state(OP)), flush=True)
+c.lv('-Action','focus','-Title',FP); time.sleep(0.3); L,T,R,B=c.rect(FP); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1500)
+c.lv('-Action','movewin','-Title',BD,'-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.6)
+if new:
+    x,y=new[0]['pos']; sx,sy=x+11,y+37; print('indicator terminal screen', (sx,sy), flush=True)
+    print('== GUI wire: creator error out (944,693) -> indicator terminal', (sx+2, sy+8), '==', flush=True)
+    c.act('wire', X=944, Y=693, X2=sx+2, Y2=sy+8); time.sleep(0.8); c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+    es=com('ExecState after error wire', lambda: g.exec_state(OP))
+    if es==1: com('COM save', lambda: g.save(OP))
+    else: c.act('keys',Key='^b',WaitMs=800); c.lv('-Action','key','-Key','esc'); print('bad wire removed; ExecState', com('es2', lambda: g.exec_state(OP)), flush=True)
+
+copy_into(FPTARGET_v0, error out 2) EXC run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gscript_dialog_1788667
+revert None
+es 1
+new terminals: [] ExecState 1
+BGRUN END rc=0 after 19s
+BGRUN START 2026-09-06 12:58:33 limit 6.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); SCR=os.path.join(g.CLAUDEDEV,'SCRATCH_del.vi'); shutil.copyfile(OP, SCR)
+g.open_panel(SCR); time.sleep(0.8)
+print('SubVIs before:', [(o['uid'],o['pos']) for o in g.report(SCR,'SubVI')], flush=True)
+for lab in ('Create SubVI.vi','Create SubVI','LV-Scripting.lvlib:Create SubVI.vi'):
+    try:
+        gone=g.delete_by_label(SCR, lab, allow_broken=True); print('delete_by_label', repr(lab), '->', sorted(gone), flush=True); break
+    except Exception as e: print('delete_by_label', repr(lab), 'EXC', str(e)[:120], flush=True)
+try: print('SubVIs after:', [(o['uid'],o['pos']) for o in g.report(SCR,'SubVI')], flush=True)
+except Exception as e: print('report after', str(e)[:80], flush=True)
+try: g.close_panel(SCR)
+except Exception: pass
+try: os.remove(SCR); print('scratch deleted', flush=True)
+except Exception as e: print('delete file', str(e)[:60], flush=True)
+
+SubVIs before: [(243, (900, 640)), (584, (915, 492)), (124, (495, 281))]
+delete_by_label 'Create SubVI.vi' EXC gui_save(Test - Moving Objects Source.vi): file mtime did not move after Ctrl+S on every candidate window. Check 'lv_gui
+BGRUN TIMEOUT killed after 361s (limit 6.0 min)
+BGRUN START 2026-09-06 13:05:14 limit 3.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,30.0); g._lv=None
+SCR=os.path.join(g.CLAUDEDEV,'SCRATCH_del.vi')
+c.lv('-Action','key','-Key','esc'); c.lv('-Action','focus','-Title','GUIBENCH_v0.vi Block Diagram'); time.sleep(0.3); c.act('click',X=1311,Y=800); time.sleep(0.3)
+try: g.close_panel(SCR); print('scratch panel closed', flush=True)
+except Exception as e: print('close', str(e)[:60], flush=True)
+try: os.remove(SCR); print('SCRATCH_del.vi deleted', flush=True)
+except Exception as e: print('delete', str(e)[:60], flush=True)
+print(c.windows(), flush=True); print(c.lv('-Action','ping')[:120], flush=True)
+try: print('COM report ok:', len(g.report(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'),'Invoke')), flush=True)
+except Exception as e: print('COM', str(e)[:60], flush=True)
+
+scratch panel closed
+SCRATCH_del.vi deleted
+['GUIBENCH_v0.vi Block Diagram', 'Test - Moving Objects Source.vi Front Panel', 'OpBuildInvoke_v0.vi Block Diagram', 'OpBuildInvoke_v0.vi Front Panel', 'GUIBENCH_v0.vi Front Panel', 'LabVIEW']
+ok 0ms  GUIBENCH_v0.vi Block Diagram
+ok 0ms  Test - Moving Objects Source.vi Front Panel
+ok 0ms  OpBuildInvoke_v0.vi Blo
+COM report ok: 1
+BGRUN END rc=0 after 4s
+BGRUN START 2026-09-06 13:05:56 limit 5.0 min: py -u -c 
+import sys, os, time, re, pythoncom; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi')
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:140], flush=True); return None
+ct0=g.uids(OP,'ControlTerminal')
+com('copy_into(OpWire_v1, Class Name 2) #2', lambda: g.copy_into(os.path.join(g.CLAUDEDEV,'OpWire_v1.vi'), 'Class Name 2', OP))
+com('revert', lambda: g.revert(OP)); g.open_panel(OP); time.sleep(0.8)
+new=g.new_since(OP,'ControlTerminal',ct0); print('new terminals:', [(o['uid'],o['pos']) for o in new], 'ExecState', com('es', lambda: g.exec_state(OP)), flush=True)
+vi=g.lv().GetVIReference(OP,'',False,0); disp=vi._oleobj_; did=disp.GetIDsOfNames(0,'ExportVIStrings'); out=os.path.join(os.environ['TEMP'],'vistr_op.txt'); disp.Invoke(did,0,pythoncom.DISPATCH_METHOD,0,out,False,'')
+s=open(out,encoding='utf-8',errors='replace').read(); print('string controls:', re.findall(r'<CONTROL ID=\d+ type="String" name="([^"]*)">', s), flush=True)
+
+copy_into(OpWire_v1, Class Name 2) #2 [{'i': 87, 'class': 'ControlTerminal', 'uid': 334, 'pos': (0, 75), 'owner': 'TopLevelDiagram'}]
+revert None
+es 1
+new terminals: [(334, (0, 75))] ExecState 1
+string controls: ['Class Name', 'source', 'Class Name 2', 'Class Name 3']
+BGRUN END rc=0 after 5s
+BGRUN START 2026-09-06 13:07:07 limit 10.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone bootstrap v1 (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'; FP='OpBuildInvoke_v0.vi Front Panel'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:140], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+c.lv('-Action','focus','-Title',FP); time.sleep(0.3); L,T,R,B=c.rect(FP); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1500)
+c.lv('-Action','movewin','-Title',BD,'-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.6); release()
+print('pink at y=325:', [(a,b,rgb) for a,b,rgb in c.probe_runs(700,325,x2=920) if rgb=='FF00FF'][:3], flush=True)
+print('== GUI: select the shared Class Name wire (800,325) + Delete + Ctrl+B ==', flush=True)
+c.act('click',X=800,Y=325); time.sleep(0.4); c.act('keys',Key='{DEL}',WaitMs=600); release(); c.act('keys',Key='^b',WaitMs=800); release()
+com('ExecState after delete (expect 0: Traverse Class Name unwired)', lambda: g.exec_state(OP))
+subs=g.report(OP,'SubVI'); print('subs', [(i,o['uid'],o['pos']) for i,o in enumerate(subs)], flush=True)
+ti=next(i for i,o in enumerate(subs) if o['pos']==(495,281)); ci=next(i for i,o in enumerate(subs) if o['pos']==(900,640))
+com('wire Class Name -> Traverse.Class Name', lambda: g.wire_control(OP, ['Class Name'], 'SubVI', ti, ['Class Name']))
+com('wire Class Name 3 -> creator.Class Name', lambda: g.wire_control(OP, ['Class Name 3'], 'SubVI', ci, ['Class Name']))
+es=com('ExecState', lambda: g.exec_state(OP))
+if es!=1: print('STOP: broken after rewiring', flush=True); c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi3_broken.png'); sys.exit(0)
+com('COM save', lambda: g.save(OP))
+TGT=os.path.join(g.CLAUDEDEV,'SCRATCH_bi_target.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'), TGT); g.open_panel(TGT); time.sleep(0.8)
+before=g.uids(TGT,'Invoke'); vi=g.op(OP)
+vi.SetControlValue('vi path', TGT); vi.SetControlValue('Class Name','Diagram'); vi.SetControlValue('index',0); vi.SetControlValue('vi path 2',''); vi.SetControlValue('location (0, 0)',[500,600])
+vi.SetControlValue('Class Name 3','VI Server:Terminal'); vi.SetControlValue('Class Name 2','6349C03')
+print('== RUN (predict: Term-class node, method Connect Wire, at (500,600)) ==', flush=True)
+com('run', lambda: g._run(vi)); print('NEW Invoke:', [(o['uid'],o['pos']) for o in g.new_since(TGT,'Invoke',before)], flush=True)
+c.lv('-Action','focus','-Title','SCRATCH_bi_target.vi Front Panel'); time.sleep(0.3); L,T,R,B=c.rect('SCRATCH_bi_target.vi Front Panel'); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.4); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1800)
+if 'SCRATCH_bi_target.vi Block Diagram' in c.windows():
+    c.lv('-Action','movewin','-Title','SCRATCH_bi_target.vi Block Diagram','-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.6)
+    c.lv('-Action','shotwin','-Title','SCRATCH_bi_target.vi Block Diagram','-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_target5.png')
+    print(c.lv('-Action','crop','-In',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_target5.png','-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_target5_node.png','-Left','480','-Top','620','-Width','220','-Height','70','-Scale','4')[:30], flush=True)
+try: g.close_panel(TGT); os.remove(TGT); print('scratch deleted', flush=True)
+except Exception as e: print('cleanup', str(e)[:60], flush=True)
+
+pink at y=325: [(703, 705, 'FF00FF'), (707, 709, 'FF00FF'), (711, 713, 'FF00FF')]
+== GUI: select the shared Class Name wire (800,325) + Delete + Ctrl+B ==
+ExecState after delete (expect 0: Traverse Class Name unwired) 1
+subs [(0, 243, (900, 640)), (1, 584, (915, 492)), (2, 124, (495, 281))]
+wire Class Name -> Traverse.Class Name EXC wire_control ['Class Name'] -> SubVI.['Class Name']: Wire 14 -> 14, expected +1 (if the control is already wired elsewhere this may be a suc
+wire Class Name 3 -> creator.Class Name 15
+ExecState 1
+COM save 10764
+== RUN (predict: Term-class node, method Connect Wire, at (500,600)) ==
+run EXC run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gscript_dialog_1788667
+NEW Invoke: [(622, (500, 600))]
+saved C:\Users\KimLab\AppData\
+scratch deleted
+BGRUN END rc=0 after 38s
+BGRUN START 2026-09-06 13:08:38 limit 8.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone bootstrap v1 (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi')
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:120], flush=True); return None
+def test(tag, cls3, idstr):
+    TGT=os.path.join(g.CLAUDEDEV,'SCRATCH_bi_target.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'), TGT); g.open_panel(TGT); time.sleep(0.8)
+    before=g.uids(TGT,'Invoke'); vi=g.op(OP)
+    vi.SetControlValue('vi path', TGT); vi.SetControlValue('Class Name','Diagram'); vi.SetControlValue('index',0); vi.SetControlValue('vi path 2',''); vi.SetControlValue('location (0, 0)',[500,600])
+    vi.SetControlValue('Class Name 3', cls3); vi.SetControlValue('Class Name 2', idstr)
+    print('== RUN', tag, repr(cls3), repr(idstr), '==', flush=True)
+    com('run', lambda: g._run(vi)); print('NEW Invoke:', [(o['uid'],o['pos']) for o in g.new_since(TGT,'Invoke',before)], flush=True)
+    c.lv('-Action','focus','-Title','SCRATCH_bi_target.vi Front Panel'); time.sleep(0.3); L,T,R,B=c.rect('SCRATCH_bi_target.vi Front Panel'); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.4); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1800)
+    if 'SCRATCH_bi_target.vi Block Diagram' in c.windows():
+        c.lv('-Action','movewin','-Title','SCRATCH_bi_target.vi Block Diagram','-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.6)
+        c.lv('-Action','shotwin','-Title','SCRATCH_bi_target.vi Block Diagram','-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_%s.png'%tag)
+        print(c.lv('-Action','crop','-In',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_%s.png'%tag,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_%s_node.png'%tag,'-Left','480','-Top','620','-Width','220','-Height','70','-Scale','4')[:20], flush=True)
+    try: g.close_panel(TGT); os.remove(TGT)
+    except Exception as e: print('cleanup', str(e)[:60], flush=True)
+test('t6_empty', '', '')
+test('t7_diag_empty', 'VI Server:Diagram', '')
+
+== RUN t6_empty '' '' ==
+run EXC run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gs
+NEW Invoke: [(622, (500, 600))]
+== RUN t7_diag_empty 'VI Server:Diagram' '' ==
+run EXC run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gs
+NEW Invoke: [(622, (500, 600))]
+saved C:\Users\KimLa
+BGRUN END rc=0 after 38s
+BGRUN START 2026-09-06 13:10:06 limit 8.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone bootstrap v1 (user: 예외 허용 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'; FP='OpBuildInvoke_v0.vi Front Panel'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:120], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+c.lv('-Action','focus','-Title',FP); time.sleep(0.3); L,T,R,B=c.rect(FP); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1500)
+c.lv('-Action','movewin','-Title',BD,'-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.6); release()
+print('teal near reference terminal y=685:', [(a,b,rgb) for a,b,rgb in c.probe_runs(860,685,x2=912) if rgb=='007F7F'][:3], flush=True)
+print('== GUI: select reference wire segment (895,685) + Delete + Ctrl+B ==', flush=True)
+c.act('click',X=895,Y=685); time.sleep(0.4); c.act('keys',Key='{DEL}',WaitMs=600); release(); c.act('keys',Key='^b',WaitMs=800); release()
+es=com('ExecState (reference unwired -> expect 1)', lambda: g.exec_state(OP))
+c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi3_noref.png')
+if es==1:
+    com('COM save', lambda: g.save(OP))
+    TGT=os.path.join(g.CLAUDEDEV,'SCRATCH_bi_target.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'), TGT); g.open_panel(TGT); time.sleep(0.8)
+    before=g.uids(TGT,'Invoke'); vi=g.op(OP)
+    vi.SetControlValue('vi path', TGT); vi.SetControlValue('Class Name','Diagram'); vi.SetControlValue('index',0); vi.SetControlValue('vi path 2',''); vi.SetControlValue('location (0, 0)',[500,600])
+    vi.SetControlValue('Class Name 3','VI Server:Terminal'); vi.SetControlValue('Class Name 2','6349C03')
+    print('== RUN t8 no-reference: VI Server:Terminal / 6349C03 (predict Term / Connect Wire) ==', flush=True)
+    com('run', lambda: g._run(vi)); print('NEW Invoke:', [(o['uid'],o['pos']) for o in g.new_since(TGT,'Invoke',before)], flush=True)
+    c.lv('-Action','focus','-Title','SCRATCH_bi_target.vi Front Panel'); time.sleep(0.3); L,T,R,B=c.rect('SCRATCH_bi_target.vi Front Panel'); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.4); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1800)
+    if 'SCRATCH_bi_target.vi Block Diagram' in c.windows():
+        c.lv('-Action','movewin','-Title','SCRATCH_bi_target.vi Block Diagram','-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.6)
+        c.lv('-Action','shotwin','-Title','SCRATCH_bi_target.vi Block Diagram','-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_t8.png')
+        print(c.lv('-Action','crop','-In',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_t8.png','-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\bi_t8_node.png','-Left','480','-Top','620','-Width','220','-Height','70','-Scale','4')[:20], flush=True)
+    try: g.close_panel(TGT); os.remove(TGT)
+    except Exception as e: print('cleanup', str(e)[:60], flush=True)
+
+teal near reference terminal y=685: []
+== GUI: select reference wire segment (895,685) + Delete + Ctrl+B ==
+ExecState (reference unwired -> expect 1) 1
+COM save 10752
+== RUN t8 no-reference: VI Server:Terminal / 6349C03 (predict Term / Connect Wire) ==
+run EXC run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gs
+NEW Invoke: [(622, (487, 600))]
+saved C:\Users\KimLa
+BGRUN END rc=0 after 38s
+BGRUN START 2026-09-06 13:11:52 limit 4.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g
+g._run.__defaults__=(6.0,45.0); g._lv=None
+TGT=os.path.join(g.CLAUDEDEV,'SCRATCH_api_target.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'), TGT); g.open_panel(TGT); time.sleep(0.8)
+t=time.time()
+new=g.build_invoke(TGT, 'VI Server:Terminal', '6349C02', (300, 700))
+print('build_invoke ->', new, '%.1fs'%(time.time()-t), flush=True)
+t=time.time()
+new2=g.build_invoke(TGT, 'VI Server:VI', '6349C03', (300, 780))
+print('build_invoke #2 ->', new2, '%.1fs'%(time.time()-t), 'target Invoke count', len(g.report(TGT,'Invoke')), flush=True)
+try: g.close_panel(TGT); os.remove(TGT); print('scratch deleted', flush=True)
+except Exception as e: print('cleanup', str(e)[:60], flush=True)
+
+build_invoke -> [{'i': 0, 'class': 'Invoke', 'uid': 622, 'pos': (285, 700), 'owner': 'TopLevelDiagram'}] 8.4s
+build_invoke #2 -> [{'i': 0, 'class': 'Invoke', 'uid': 625, 'pos': (306, 780), 'owner': 'TopLevelDiagram'}] 8.4s target Invoke count 3
+scratch deleted
+BGRUN END rc=0 after 18s
+BGRUN START 2026-09-06 17:08:30 limit 8.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone step 1a: delete Create SubVI branch (user: 1~3 논스톱 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); BD='OpBuildInvoke_v0.vi Block Diagram'; FP='OpBuildInvoke_v0.vi Front Panel'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:120], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+shutil.copyfile(OP, OP+'.bak_before_delete'); print('backup written', flush=True)
+c.lv('-Action','focus','-Title',FP); time.sleep(0.3); L,T,R,B=c.rect(FP); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1500)
+c.lv('-Action','movewin','-Title',BD,'-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.6); release()
+subs=g.report(OP,'SubVI'); fns=g.report(OP,'Function'); print('subs', [(o['uid'],o['pos']) for o in subs], 'functions', [(o['uid'],o['pos']) for o in fns], flush=True)
+cs=next(o for o in subs if o['uid']==584); ov=next(o for o in fns if o['uid']==316)
+for name,o in (('Create SubVI',cs),('Open VI Ref 2',ov)):
+    x,y=o['pos']; sx,sy=x+11+16,y+37+16
+    print('== GUI delete', name, 'click', (sx,sy), '==', flush=True)
+    c.act('click',X=sx,Y=sy); time.sleep(0.4); c.act('keys',Key='{DEL}',WaitMs=700); release()
+c.act('keys',Key='^b',WaitMs=800); release()
+print('subs after', [(o['uid'],o['pos']) for o in g.report(OP,'SubVI')], 'functions after', [(o['uid'],o['pos']) for o in g.report(OP,'Function')], flush=True)
+es=com('ExecState', lambda: g.exec_state(OP))
+c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbi4_after_delete.png')
+if es==1: com('COM save', lambda: g.save(OP))
+else: print('STOP: broken after delete; not saved (backup kept)', flush=True)
+
+backup written
+subs [(243, (900, 640)), (584, (915, 492)), (124, (495, 281))] functions [(316, (275, 401)), (683, (653, 279)), (43, (275, 251))]
+== GUI delete Create SubVI click (942, 545) ==
+== GUI delete Open VI Ref 2 click (302, 454) ==
+subs after [(243, (900, 640)), (124, (495, 281))] functions after [(683, (653, 279)), (43, (275, 251))]
+ExecState 1
+COM save 9952
+BGRUN END rc=0 after 24s
+BGRUN START 2026-09-06 17:09:35 limit 6.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone step 2 prep (user: 1~3 논스톱 2026-09-06)'
+TGT=os.path.join(g.CLAUDEDEV,'SCRATCH_api_target.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'), TGT); g.open_panel(TGT); time.sleep(0.8)
+t=time.time(); new=g.build_invoke(TGT,'VI Server:Terminal','6349C03',(300,700)); print('build_invoke after cleanup ->', [(o['uid'],o['pos']) for o in new], '%.1fs (no dialog expected)'%(time.time()-t), flush=True)
+try: g.close_panel(TGT); os.remove(TGT)
+except Exception as e: print('cleanup', str(e)[:60], flush=True)
+EM=r'C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Erdos Miller\LV-Scripting\Create Property Node.vi'
+g.open_panel(EM); time.sleep(1.0); FP='Create Property Node.vi Front Panel'; BD='Create Property Node.vi Block Diagram'
+c.lv('-Action','focus','-Title',FP); time.sleep(0.4); L,T,R,B=c.rect(FP); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.4); c.act('keys',Key='^e',WaitMs=1800)
+c.lv('-Action','movewin','-Title',BD,'-X','0','-Y','0','-Width','1900','-Height','1000'); time.sleep(0.6)
+print(c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\em_create_pn_bd.png')[:40], flush=True)
+try: g.close_panel(EM); print('creator closed (no save)', flush=True)
+except Exception as e: print('close', str(e)[:60], flush=True)
+
+build_invoke after cleanup -> [(622, (287, 700))] 0.2s (no dialog expected)
+saved C:\Users\KimLab\AppData\Local\Temp
+creator closed (no save)
+BGRUN END rc=0 after 11s
+BGRUN START 2026-09-06 17:10:58 limit 8.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone step 2: OpBuildPN_v0 (user: 1~3 논스톱 2026-09-06)'
+SRC=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); OP=os.path.join(g.CLAUDEDEV,'OpBuildPN_v0.vi'); BD='OpBuildPN_v0.vi Block Diagram'; FP='OpBuildPN_v0.vi Front Panel'
+EM=r'C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Erdos Miller\LV-Scripting\Create Property Node.vi'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:120], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+if os.path.exists(OP):
+    try: g.close_panel(OP)
+    except Exception: pass
+shutil.copyfile(SRC, OP); g.open_panel(OP); time.sleep(1.0)
+c.lv('-Action','focus','-Title',FP); time.sleep(0.3); L,T,R,B=c.rect(FP); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1500)
+c.lv('-Action','movewin','-Title',BD,'-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.6); release()
+print('subs', [(o['uid'],o['pos']) for o in g.report(OP,'SubVI')], flush=True)
+print('== GUI delete Invoke creator (927,693) ==', flush=True); c.act('click',X=927,Y=693); time.sleep(0.4); c.act('keys',Key='{DEL}',WaitMs=700); release(); c.act('keys',Key='^b',WaitMs=800); release()
+print('subs after delete', [(o['uid'],o['pos']) for o in g.report(OP,'SubVI')], 'ExecState', com('es', lambda: g.exec_state(OP)), flush=True)
+sub0=g.uids(OP,'SubVI'); com('drop Create Property Node.vi', lambda: g.drop_subvi(OP, EM, 0, (900,640)))
+new=g.new_since(OP,'SubVI',sub0); print('PN creator', [(o['uid'],o['pos']) for o in new], flush=True)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.3); release()
+sx,sy=911,677
+for k,(x,y) in enumerate([(910,679),(910,685),(910,691),(910,697),(910,703),(919,676),(927,676),(935,676),(927,710),(944,681),(944,687),(944,693),(944,699)]):
+    c.lv('-Action','hover','-X',str(x),'-Y',str(y),'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\pn_h_%02d.png'%k,'-Scale','3')
+print('hover pass done', flush=True)
+print(c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbpn_bd.png')[:40], flush=True)
+
+subs [(243, (900, 640)), (124, (495, 281))]
+== GUI delete Invoke creator (927,693) ==
+es 1
+subs after delete [(124, (495, 281))] ExecState 1
+drop Create Property Node.vi 0.04289412498474121
+PN creator [(297, (900, 640))]
+hover pass done
+saved C:\Users\KimLab\AppData\Local\Temp
+BGRUN END rc=0 after 61s
+BGRUN START 2026-09-06 17:12:52 limit 8.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone step 2: OpBuildPN_v0 (user: 1~3 논스톱 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildPN_v0.vi'); BD='OpBuildPN_v0.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:120], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.4); release()
+print('== branch Diagram in (910,679) <- typed wire (702,450) ==', flush=True); c.act('wire',X=910,Y=679,X2=702,Y2=450); time.sleep(0.8); release()
+print('== branch location (927,676) <- location wire (941,515) ==', flush=True); c.act('wire',X=927,Y=676,X2=941,Y2=515); time.sleep(0.8); release()
+subs=g.report(OP,'SubVI'); ci=next(i for i,o in enumerate(subs) if o['pos']==(900,640))
+com('wire_control Class Name 3 -> PN creator Class Name', lambda: g.wire_control(OP, ['Class Name 3'], 'SubVI', ci, ['Class Name']))
+com('ExecState (expect 0: Properties unwired)', lambda: g.exec_state(OP))
+c.act('keys',Key='^l',WaitMs=1800); t=next((w for w in c.windows() if w.startswith('Error')), None)
+if t:
+    c.lv('-Action','movewin','-Title',t,'-X','0','-Y','0','-Width','1000','-Height','700'); time.sleep(0.4); c.lv('-Action','shotwin','-Title',t,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbpn_errlist.png'); c.lv('-Action','key','-Key','esc'); time.sleep(0.3)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.3); release()
+print('== right-click Properties terminal (919,676) and capture the context menu ==', flush=True)
+c.act('rclick',X=919,Y=676); time.sleep(1.0)
+print(c.lv('-Action','shot','-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbpn_ctxmenu.png')[:40], flush=True)
+
+== branch Diagram in (910,679) <- typed wire (702,450) ==
+== branch location (927,676) <- location wire (941,515) ==
+wire_control Class Name 3 -> PN creator Class Name 9
+ExecState (expect 0: Properties unwired) 0
+== right-click Properties terminal (919,676) and capture the context menu ==
+saved C:\Users\KimLab\AppData\Local\Temp
+BGRUN END rc=0 after 27s
+BGRUN START 2026-09-06 17:14:07 limit 6.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone step 2: OpBuildPN_v0 (user: 1~3 논스톱 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildPN_v0.vi'); BD='OpBuildPN_v0.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:140], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+c.lv('-Action','key','-Key','esc'); time.sleep(0.3); c.lv('-Action','focus','-Title',BD); time.sleep(0.3); release()
+subs=g.report(OP,'SubVI'); ci=next(i for i,o in enumerate(subs) if o['pos']==(900,640))
+fns=g.report(OP,'Function'); fi=next(i for i,o in enumerate(fns) if o['uid']==683); print('TMSC index', fi, 'creator index', ci, flush=True)
+def d():
+    for nm in ('specific class reference','reference out','reference'):
+        try: return nm, g.wire(OP,'Function',fi,nm,'SubVI',ci,'Diagram in')
+        except Exception as e: print('   ',nm, str(e)[:80], flush=True)
+com('wire TMSC -> Diagram in (script, fresh)', d)
+com('wire_control location -> location (script, fresh)', lambda: g.wire_control(OP, ['location (0, 0)'], 'SubVI', ci, ['location (0, 0)']))
+com('ExecState (expect 0: only Properties missing)', lambda: g.exec_state(OP))
+c.act('keys',Key='^l',WaitMs=1800); t=next((w for w in c.windows() if w.startswith('Error')), None)
+if t: c.lv('-Action','movewin','-Title',t,'-X','0','-Y','0','-Width','1000','-Height','700'); time.sleep(0.4); c.lv('-Action','shotwin','-Title',t,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbpn_errlist2.png'); c.lv('-Action','key','-Key','esc'); time.sleep(0.3)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.3); release()
+print('== rclick Properties (919,676), hover Create (960,724), capture ==', flush=True)
+c.act('rclick',X=919,Y=676); time.sleep(1.0); c.lv('-Action','move','-X','960','-Y','724'); time.sleep(0.4); c.lv('-Action','move','-X','1000','-Y','724'); time.sleep(0.9)
+print(c.lv('-Action','shot','-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbpn_create_submenu.png')[:40], flush=True)
+
+TMSC index 0 creator index 0
+wire TMSC -> Diagram in (script, fresh) ('specific class reference', 10)
+wire_control location -> location (script, fresh) 11
+ExecState (expect 0: only Properties missing) 0
+== rclick Properties (919,676), hover Create (960,724), capture ==
+saved C:\Users\KimLab\AppData\Local\Temp
+BGRUN END rc=0 after 18s
+BGRUN START 2026-09-06 17:15:07 limit 8.0 min: py -u -c 
+import sys, os, time, re, shutil, pythoncom; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone step 2: Create>Control on Properties terminal (user: 1~3 논스톱 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpBuildPN_v0.vi'); BD='OpBuildPN_v0.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:140], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+print('== click Create > Control (1174,743) ==', flush=True); c.act('click',X=1174,Y=743); time.sleep(1.0); release()
+es=com('ExecState (expect 1)', lambda: g.exec_state(OP))
+c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opbpn_after_ctl.png')
+if es!=1: print('STOP: still broken', flush=True); sys.exit(0)
+com('COM save', lambda: g.save(OP))
+vi=g.lv().GetVIReference(OP,'',False,0); disp=vi._oleobj_; did=disp.GetIDsOfNames(0,'ExportVIStrings'); out=os.path.join(os.environ['TEMP'],'vistr_pn.txt'); disp.Invoke(did,0,pythoncom.DISPATCH_METHOD,0,out,False,'')
+s=open(out,encoding='utf-8',errors='replace').read(); print('controls:', re.findall(r'<CONTROL ID=\d+ type="([^"]+)" name="([^"]*)">', s)[:20], flush=True)
+TGT=os.path.join(g.CLAUDEDEV,'SCRATCH_pn_target.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'), TGT); g.open_panel(TGT); time.sleep(0.8)
+before=g.uids(TGT,'Property'); vi=g.op(OP)
+vi.SetControlValue('vi path', TGT); vi.SetControlValue('Class Name','Diagram'); vi.SetControlValue('index',0); vi.SetControlValue('location (0, 0)',[500,600]); vi.SetControlValue('Class Name 3','VI Server:GObject')
+try: vi.SetControlValue('Properties', g.cluster_array([('632A800', False)])); print('Properties set', vi.GetControlValue('Properties'), flush=True)
+except Exception as e: print('Properties set EXC', str(e)[:100], flush=True)
+print('== RUN OpBuildPN_v0 (predict: +1 Property node GObj/Position at (500,600)) ==', flush=True)
+com('run', lambda: g._run(vi)); print('NEW Property:', [(o['uid'],o['pos']) for o in g.new_since(TGT,'Property',before)], flush=True)
+c.lv('-Action','focus','-Title','SCRATCH_pn_target.vi Front Panel'); time.sleep(0.3); L,T,R,B=c.rect('SCRATCH_pn_target.vi Front Panel'); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.4); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1800)
+if 'SCRATCH_pn_target.vi Block Diagram' in c.windows():
+    c.lv('-Action','movewin','-Title','SCRATCH_pn_target.vi Block Diagram','-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.6)
+    c.lv('-Action','shotwin','-Title','SCRATCH_pn_target.vi Block Diagram','-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\pn_t1.png'); print(c.lv('-Action','crop','-In',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\pn_t1.png','-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\pn_t1_node.png','-Left','480','-Top','620','-Width','220','-Height','70','-Scale','4')[:20], flush=True)
+try: g.close_panel(TGT); os.remove(TGT); print('scratch deleted', flush=True)
+except Exception as e: print('cleanup', str(e)[:60], flush=True)
+
+== click Create > Control (1174,743) ==
+ExecState (expect 1) 1
+COM save 10764
+controls: [('Path', 'vi path'), ('String', 'Class Name'), ('Numeric', 'index'), ('Path', 'vi path 2'), ('Type Definition', 'location (0, 0)'), ('Cluster', ''), ('Numeric', 'Vertical'), ('Numeric', 'Horizontal'), ('Cluster', 'error out'), ('Boolean', 'status'), ('Numeric', 'code'), ('String', 'source'), ('String', 'Class Name 2'), ('String', 'Class Name 3'), ('Array', 'Properties'), ('Cluster', 'Property'), ('String', 'ID String'), ('Boolean', 'Is Write?')]
+Properties set (('632A800', False),)
+== RUN OpBuildPN_v0 (predict: +1 Property node GObj/Position at (500,600)) ==
+run 0.04890012741088867
+NEW Property: [(622, (497, 600))]
+saved C:\Users\KimLa
+scratch deleted
+BGRUN END rc=0 after 16s
+BGRUN START 2026-09-06 17:16:47 limit 8.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone step 3: OpDelete_v0 (user: 1~3 논스톱 2026-09-06)'
+SRC=os.path.join(g.CLAUDEDEV,'OpBuildInvoke_v0.vi'); OP=os.path.join(g.CLAUDEDEV,'OpDelete_v0.vi'); BD='OpDelete_v0.vi Block Diagram'; FP='OpDelete_v0.vi Front Panel'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:140], flush=True); return None
+def release(): c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+if os.path.exists(OP):
+    try: g.close_panel(OP)
+    except Exception: pass
+shutil.copyfile(SRC, OP); g.open_panel(OP); time.sleep(1.0)
+c.lv('-Action','focus','-Title',FP); time.sleep(0.3); L,T,R,B=c.rect(FP); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1500)
+c.lv('-Action','movewin','-Title',BD,'-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.6); release()
+fns=g.report(OP,'Function'); tm=next(o for o in fns if o['uid']==683); print('TMSC at', tm['pos'], flush=True)
+for name,(x,y) in (('Invoke creator',(900,640)),('TMSC',tm['pos'])):
+    sx,sy=x+11+16,y+37+12; print('== GUI delete',name,(sx,sy),'==', flush=True); c.act('click',X=sx,Y=sy); time.sleep(0.4); c.act('keys',Key='{DEL}',WaitMs=700); release()
+c.act('keys',Key='^b',WaitMs=800); release()
+print('subs', [(o['uid'],o['pos']) for o in g.report(OP,'SubVI')], 'functions', [(o['uid'],o['pos']) for o in g.report(OP,'Function')], 'ExecState', com('es', lambda: g.exec_state(OP)), flush=True)
+new=com('build_invoke Generic.Delete on the op itself', lambda: g.build_invoke(OP, 'VI Server:Generic', '6327400', (900, 640)))
+ias=g.report(OP,'IndexArray'); ii=next(i for i,o in enumerate(ias) if o['uid']==308); inv=g.report(OP,'Invoke'); vi_i=len(inv)-1
+def w():
+    for nm in ('reference','Generic'):
+        try: return nm, g.wire(OP,'IndexArray',ii,'element','Invoke',vi_i,nm)
+        except Exception as e: print('   ',nm,str(e)[:80], flush=True)
+com('wire IA308.element -> Delete node reference (script)', w)
+es=com('ExecState', lambda: g.exec_state(OP)); c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\opdelete_bd.png')
+if es==1: com('COM save', lambda: g.save(OP))
+else: print('STOP: broken; see capture', flush=True)
+
+TMSC at (653, 279)
+== GUI delete Invoke creator (927, 689) ==
+== GUI delete TMSC (680, 328) ==
+es 1
+subs [(124, (495, 281))] functions [(683, (653, 279)), (43, (275, 251))] ExecState 1
+build_invoke Generic.Delete on the op itself [{'i': 0, 'class': 'Invoke', 'uid': 297, 'pos': (901, 640), 'owner': 'TopLevelDiagram'}]
+    reference wire element->reference: wire count 8->8, expected +1 (if the source is already 
+    Generic wire element->Generic: error 5001: LV-Scripting.lvlib:Wire Inputs.vi<ERR>
+wire IA308.element -> Delete node reference (script) None
+ExecState 1
+COM save 9299
+BGRUN END rc=0 after 24s
+BGRUN START 2026-09-06 17:17:44 limit 4.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g
+g._run.__defaults__=(6.0,45.0); g._lv=None
+OP=os.path.join(g.CLAUDEDEV,'OpDelete_v0.vi'); TGT=os.path.join(g.CLAUDEDEV,'SCRATCH_del_target.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'), TGT); g.open_panel(TGT); time.sleep(0.8)
+ia=g.report(TGT,'IndexArray'); print('IndexArray before:', [(o['uid'],o['pos']) for o in ia], 'Wires', g.count(TGT,'Wire'), flush=True)
+vi=g.op(OP); vi.SetControlValue('vi path', TGT); vi.SetControlValue('Class Name','IndexArray'); vi.SetControlValue('index',0)
+print('== RUN OpDelete_v0 (predict: IndexArray count 3 -> 2, its wires broken/removed) ==', flush=True)
+t=time.time()
+try: g._run(vi); print('run ok %.2fs'%(time.time()-t), flush=True)
+except Exception as e: print('run EXC', str(e)[:120], flush=True)
+ia2=g.report(TGT,'IndexArray'); print('IndexArray after:', [(o['uid'],o['pos']) for o in ia2], 'Wires', g.count(TGT,'Wire'), 'ExecState', g.exec_state(TGT), flush=True)
+try: g.close_panel(TGT); os.remove(TGT); print('scratch deleted', flush=True)
+except Exception as e: print('cleanup', str(e)[:60], flush=True)
+
+IndexArray before: [(534, (975, 350)), (327, (605, 454)), (308, (605, 284))] Wires 28
+== RUN OpDelete_v0 (predict: IndexArray count 3 -> 2, its wires broken/removed) ==
+run EXC run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gs
+IndexArray after: [(327, (605, 454)), (308, (605, 284))] Wires 28 ExecState 0
+scratch deleted
+BGRUN END rc=0 after 10s
+BGRUN START 2026-09-06 17:19:14 limit 6.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone step 3b probe (user: 1~3 논스톱 2026-09-06)'
+SCR=os.path.join(g.CLAUDEDEV,'SCRATCH_nodepn.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'OpDelete_v0.vi'), SCR); g.open_panel(SCR); time.sleep(0.8)
+FP='SCRATCH_nodepn.vi Front Panel'; BD='SCRATCH_nodepn.vi Block Diagram'
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:140], flush=True); return None
+com('delete_object(scratch, Invoke, 0) [the Delete node itself, by script]', lambda: g.delete_object(SCR,'Invoke',0))
+c.lv('-Action','focus','-Title',FP); time.sleep(0.3); L,T,R,B=c.rect(FP); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1500)
+c.lv('-Action','movewin','-Title',BD,'-X','0','-Y','0','-Width','1400','-Height','900'); time.sleep(0.5); c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+c.act('keys',Key='^b',WaitMs=800); c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+print('ExecState after Ctrl+B', com('es', lambda: g.exec_state(SCR)), 'wires', g.count(SCR,'Wire'), flush=True)
+com('build_property Node.Terminals[] PN', lambda: g.build_property(SCR, 'VI Server:Node', [('6359000', False)], (900, 560)))
+ias=g.report(SCR,'IndexArray'); ii=next(i for i,o in enumerate(ias) if o['uid']==308); pns=g.report(SCR,'Property'); pi=len(pns)-1
+com('wire IA308.element -> Node PN reference (GObject wire into a Node-class PN?)', lambda: g.wire(SCR,'IndexArray',ii,'element','Property',pi,'reference'))
+print('ExecState', com('es2', lambda: g.exec_state(SCR)), 'wires', g.count(SCR,'Wire'), flush=True)
+c.lv('-Action','shotwin','-Title',BD,'-Out',r'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\7b982769-ee4e-45be-8846-85edbec23e37\scratchpad\nodepn_probe.png')
+try: g.close_panel(SCR); os.remove(SCR); print('scratch deleted', flush=True)
+except Exception as e: print('cleanup', str(e)[:60], flush=True)
+
+delete_object(scratch, Invoke, 0) [the Delete node itself, by script] {297}
+es 1
+ExecState after Ctrl+B 1 wires 8
+build_property Node.Terminals[] PN [{'i': 0, 'class': 'Property', 'uid': 107, 'pos': (897, 560), 'owner': 'TopLevelDiagram'}]
+wire IA308.element -> Node PN reference (GObject wire into a Node-class PN?) EXC wire element->reference: wire count 8->8, expected +1 (if the source is already wired this may be a successful BRANCH - re-call with branch=
+es2 0
+ExecState 0 wires 8
+scratch deleted
+BGRUN END rc=0 after 23s
+BGRUN START 2026-09-06 17:20:41 limit 6.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None; c.EVIDENCE='keystone step 3a cleanup (user: 1~3 논스톱 2026-09-06)'
+OP=os.path.join(g.CLAUDEDEV,'OpDelete_v0.vi'); CP=os.path.join(g.CLAUDEDEV,'OpDelete_v0_edit.vi')
+def com(label, fn):
+    try: r=fn(); print(label, r, flush=True); return r
+    except Exception as e: print(label, 'EXC', str(e)[:140], flush=True); return None
+try: g.close_panel(OP)
+except Exception: pass
+shutil.copyfile(OP, CP); g.open_panel(CP); time.sleep(0.8)
+fns=g.report(CP,'Function'); fi=next(i for i,o in enumerate(fns) if o['uid']==683); print('TMSC index', fi, 'functions', [(o['uid'],o['pos']) for o in fns], flush=True)
+com('delete_object(copy, Function, TMSC)', lambda: g.delete_object(CP,'Function',fi))
+FP='OpDelete_v0_edit.vi Front Panel'; BD='OpDelete_v0_edit.vi Block Diagram'
+c.lv('-Action','focus','-Title',FP); time.sleep(0.3); L,T,R,B=c.rect(FP); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.3); c.act('keys',Key='^e',WaitMs=1500)
+c.lv('-Action','focus','-Title',BD); time.sleep(0.3); c.act('click',X=1200,Y=800); time.sleep(0.3); c.act('keys',Key='^b',WaitMs=800); c.lv('-Action','key','-Key','esc'); c.act('click',X=1200,Y=800); time.sleep(0.3)
+es=com('ExecState', lambda: g.exec_state(CP))
+if es==1:
+    com('COM save copy', lambda: g.save(CP)); g.close_panel(CP); time.sleep(0.5); shutil.copyfile(CP, OP); os.remove(CP); print('OpDelete_v0.vi replaced by the TMSC-free copy', os.path.getsize(OP), flush=True)
+    TGT=os.path.join(g.CLAUDEDEV,'SCRATCH_del_target.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'), TGT); g.open_panel(TGT); time.sleep(0.8)
+    t=time.time(); gone=com('delete_object(target, IndexArray, 0) (predict: no dialog now)', lambda: g.delete_object(TGT,'IndexArray',0)); print('%.2fs'%(time.time()-t), flush=True)
+    try: g.close_panel(TGT); os.remove(TGT); print('scratch deleted', flush=True)
+    except Exception as e: print('cleanup', str(e)[:60], flush=True)
+else: print('STOP: copy broken; original untouched', flush=True)
+
+TMSC index 0 functions [(683, (653, 279)), (43, (275, 251))]
+delete_object(copy, Function, TMSC) {683}
+ExecState 1
+COM save copy 9148
+OpDelete_v0.vi replaced by the TMSC-free copy 9148
+delete_object(target, IndexArray, 0) (predict: no dialog now) {534}
+8.39s
+scratch deleted
+BGRUN END rc=0 after 31s
+BGRUN START 2026-09-06 17:22:09 limit 2.0 min: py -u -c 
+import sys, os; sys.path.insert(0,'tools'); import gscript as g
+g._run.__defaults__=(6.0,30.0); g._lv=None
+OP=os.path.join(g.CLAUDEDEV,'OpDelete_v0.vi')
+for cls in ('Node','Function','Constant','ClassSpecifierConstant','SubVI','IndexArray','Invoke','Property'):
+    try: print(cls, [(o['class'],o['uid'],o['pos']) for o in g.report(OP,cls)], flush=True)
+    except Exception as e: print(cls,'ERR',str(e)[:60], flush=True)
+
+Node [('Invoke', 297, (897, 640)), ('Function', 683, (653, 279)), ('IndexArray', 308, (605, 284)), ('SubVI', 124, (495, 281)), ('Function', 43, (275, 251))]
+Function [('Function', 683, (653, 279)), ('Function', 43, (275, 251))]
+Constant [('EnumConstant', 389, (444, 246)), ('ClassSpecifierConstant', 755, (587, 243))]
+ClassSpecifierConstant [('ClassSpecifierConstant', 755, (587, 243))]
+SubVI [('SubVI', 124, (495, 281))]
+IndexArray [('IndexArray', 308, (605, 284))]
+Invoke [('Invoke', 297, (897, 640))]
+Property []
+BGRUN END rc=0 after 0s
+BGRUN START 2026-09-06 17:22:54 limit 4.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g
+g._run.__defaults__=(6.0,45.0); g._lv=None
+OP=os.path.join(g.CLAUDEDEV,'OpDelete_v0.vi'); CP=os.path.join(g.CLAUDEDEV,'SCRATCH_delprobe.vi'); shutil.copyfile(OP, CP); g.open_panel(CP); time.sleep(0.8)
+def inv(t): return {c:[o['uid'] for o in g.report(t,c)] for c in ('Function','IndexArray','SubVI','Invoke','Constant','Wire')}
+b=inv(CP); print('before', {k:(v if k!='Wire' else len(v)) for k,v in b.items()}, flush=True)
+fi=b['Function'].index(683); print('Function index of 683 =', fi, flush=True)
+vi=g.op(g.OP_DELETE); vi.SetControlValue('vi path', CP); vi.SetControlValue('Class Name','Function'); vi.SetControlValue('index', fi)
+try: g._run(vi); print('run ok', flush=True)
+except Exception as e: print('run', str(e)[:80], flush=True)
+a=inv(CP); print('after ', {k:(v if k!='Wire' else len(v)) for k,v in a.items()}, flush=True)
+print('gone:', {k:sorted(set(b[k])-set(a[k])) for k in b if k!='Wire'}, flush=True)
+try: g.close_panel(CP); os.remove(CP); print('scratch deleted', flush=True)
+except Exception as e: print('cleanup', str(e)[:60], flush=True)
+
+before {'Function': [43], 'IndexArray': [308], 'SubVI': [124], 'Invoke': [297], 'Constant': [389, 755], 'Wire': 7}
+Traceback (most recent call last):
+  File "<string>", line 7, in <module>
+ValueError: 683 is not in list
+BGRUN END rc=1 after 1s
+BGRUN START 2026-09-06 17:25:59 limit 4.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g
+g._run.__defaults__=(6.0,45.0); g._lv=None
+OP=os.path.join(g.CLAUDEDEV,'OpDelete_v0.vi'); T=os.path.join(g.CLAUDEDEV,'SCRATCH_deltest.vi')
+try: g.close_panel(OP); print('closed stale OpDelete panel', flush=True)
+except Exception as e: print('close_panel', str(e)[:80], flush=True)
+time.sleep(1.0); g._cache.clear() if hasattr(g,'_cache') else None
+print('OpDelete on disk: Functions', [(o['uid'],o['pos']) for o in g.report(OP,'Function')], 'ExecState', g.exec_state(OP), flush=True)
+shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'), T); g.open_panel(T); time.sleep(0.8)
+b=[o['uid'] for o in g.report(T,'IndexArray')]; print('target IndexArray before', b, flush=True)
+t0=time.time(); r=g.delete_object(T,'IndexArray',0); dt=time.time()-t0
+print('delete_object ->', r, 'in %.2fs'%dt, flush=True)
+print('target IndexArray after', [o['uid'] for o in g.report(T,'IndexArray')], 'ExecState', g.exec_state(T), flush=True)
+print('windows:', [w for w in g._lv_gui('-Action','windows').splitlines() if 'Error' in w or 'OpDelete' in w], flush=True)
+try: g.close_panel(T); os.remove(T); print('scratch deleted', flush=True)
+except Exception as e: print('cleanup', str(e)[:60], flush=True)
+
+closed stale OpDelete panel
+OpDelete on disk: Functions [(43, (275, 251))] ExecState 1
+target IndexArray before [534, 327, 308]
+delete_object -> {534} in 0.10s
+target IndexArray after [327, 308] ExecState 0
+windows: []
+scratch deleted
+BGRUN END rc=0 after 3s
+BGRUN START 2026-09-06 17:28:39 limit 3.0 min: py -u -c 
+import sys, os; sys.path.insert(0,'tools'); import gscript as g; g._lv=None
+P=r'C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Erdos Miller\LV-Scripting\Create To More Specific Class.vi'
+vi=g.op(P)
+for n in ('target class','Target Class','class','Class Name','reference','Diagram in','location','location (0, 0)','error in (no error)','ID String','Class'):
+    try: v=vi.GetControlValue(n); print(repr(n),'->',type(v).__name__, repr(v)[:60], flush=True)
+    except Exception as e: print(repr(n),'MISSING', flush=True)
+print('ControlTerminals', [(o['uid'],o['pos']) for o in g.report(P,'ControlTerminal')], flush=True)
+print('Constants', [(o['class'],o['uid'],o['pos']) for o in g.report(P,'Constant')], flush=True)
+print('Functions', [(o['class'],o['uid'],o['pos']) for o in g.report(P,'Function')], flush=True)
+print('SubVIs', [(o['uid'],o['pos']) for o in g.report(P,'SubVI')], flush=True)
+print('Invokes', [(o['uid'],o['pos']) for o in g.report(P,'Invoke')], 'Props', [(o['uid'],o['pos']) for o in g.report(P,'Property')], flush=True)
+
+'target class' -> int 0
+'Target Class' MISSING
+'class' MISSING
+'Class Name' MISSING
+'reference' -> int 0
+'Diagram in' -> int 0
+'location' MISSING
+'location (0, 0)' -> tuple (0, 0)
+'error in (no error)' -> tuple (False, 0, '')
+'ID String' MISSING
+'Class' MISSING
+ControlTerminals [(308, (186, 359)), (251, (579, 350)), (195, (186, 252)), (182, (579, 252)), (169, (579, 437)), (156, (186, 342)), (104, (187, 417)), (91, (187, 449)), (70, (579, 455)), (649, (187, 432))]
+Constants [('ClassSpecifierConstant', 357, (260, 303)), ('RingConstant', 368, (136, 320)), ('ArrayConstant', 410, (345, 278)), ('StringConstant', 431, (348, 300)), ('ArrayConstant', 443, (455, 278)), ('StringConstant', 464, (458, 281))]
+Functions [('Function', 322, (282, 330)), ('Function', 310, (535, 330))]
+SubVIs [(484, (468, 330)), (503, (420, 330))]
+Invokes [] Props []
+BGRUN END rc=0 after 0s
+BGRUN START 2026-09-06 17:30:41 limit 5.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g
+g._run.__defaults__=(6.0,45.0); g._lv=None
+S=os.path.join(g.CLAUDEDEV,'SCRATCH_nodesladder.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'OpBuildPN_v0.vi'), S); g.open_panel(S); time.sleep(0.8)
+fns=g.report(S,'Function'); print('Functions', [(o['uid'],o['pos']) for o in fns], 'Wires', g.count(S,'Wire'), 'ExecState', g.exec_state(S), flush=True)
+ti=max(range(len(fns)), key=lambda i: fns[i]['pos'][0])   # TMSC = rightmost Function (Open VI Ref is at x~275)
+print('TMSC index', ti, fns[ti], flush=True)
+p1=g.build_property(S,'VI Server:Diagram',[('6375809',False)],(700,470)); print('PN Diagram.Nodes[] ->', [(o['uid'],o['pos']) for o in p1], flush=True)
+pi=[o['uid'] for o in g.report(S,'Property')].index(p1[0]['uid'])
+for term in ('specific class reference','reference out','specific class ref'):
+    try: r=g.wire(S,'Function',ti,term,'Property',pi,'reference',branch=True); print('wire TMSC.%s -> PN.reference:'%term, r, flush=True); break
+    except Exception as e: print('  %s: %s'%(term,str(e)[:90]), flush=True)
+print('after: Wires', g.count(S,'Wire'), 'ExecState', g.exec_state(S), flush=True)
+p2=g.build_property(S,'VI Server:Node',[('6359000',False)],(900,470)); print('PN Node.Terminals[] ->', [(o['uid'],o['pos']) for o in p2], flush=True)
+try: g.close_panel(S); os.remove(S); print('scratch deleted', flush=True)
+except Exception as e: print('cleanup', str(e)[:60], flush=True)
+
+Functions [(683, (653, 279)), (43, (275, 251))] Wires 12 ExecState 1
+TMSC index 0 {'i': 0, 'class': 'Function', 'uid': 683, 'pos': (653, 279), 'owner': 'TopLevelDiagram'}
+PN Diagram.Nodes[] -> [(336, (699, 470))]
+wire TMSC.specific class reference -> PN.reference: 12
+after: Wires 12 ExecState 1
+PN Node.Terminals[] -> [(337, (897, 470))]
+scratch deleted
+BGRUN END rc=0 after 1s
+BGRUN START 2026-09-06 17:31:58 limit 3.0 min: py -u -c 
+import sys, os; sys.path.insert(0,'tools'); import gscript as g; g._lv=None
+EM=r'C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Erdos Miller\LV-Scripting'
+def probe(p, names):
+    vi=g.op(p); out=[]
+    for n in names:
+        try: v=vi.GetControlValue(n); out.append((n,type(v).__name__,repr(v)[:30]))
+        except Exception: pass
+    print(os.path.basename(p),'->',out, flush=True)
+C=['vi path','vi path 2','Class Name','Class Name 2','Class Name 3','index','index 2','Names','Names 2','location (0, 0)','location','Diagram in','reference','Properties','error in (no error)','array','# of dimensions','# of indices','number of indices','Number of Indices','indices','Array','error out','Wire Source','target class']
+probe(os.path.join(EM,'Create Index Array.vi'), C)
+probe(os.path.join(g.CLAUDEDEV,'OpDelete_v0.vi'), C)
+probe(os.path.join(g.CLAUDEDEV,'OpBuildPN_v0.vi'), C)
+P=os.path.join(EM,'Create Index Array.vi')
+print('IA lib diagram: SubVIs', [(o['uid'],o['pos']) for o in g.report(P,'SubVI')], 'Invokes', [(o['uid'],o['pos']) for o in g.report(P,'Invoke')], 'Consts', [(o['class'],o['uid']) for o in g.report(P,'Constant')], flush=True)
+
+Create Index Array.vi -> [('location (0, 0)', 'tuple', '(0, 0)'), ('Diagram in', 'int', '0'), ('error in (no error)', 'tuple', "(False, 0, '')"), ('array', 'int', '0'), ('error out', 'tuple', "(False, 0, '')")]
+OpDelete_v0.vi -> [('vi path', 'str', "'C:\\\\Program Files\\\\National I"), ('vi path 2', 'str', "''"), ('Class Name', 'str', "'SubVI'"), ('Class Name 2', 'str', "'SubVI'"), ('Class Name 3', 'str', "'SubVI'"), ('index', 'int', '0'), ('location (0, 0)', 'tuple', '(0, 0)'), ('error out', 'tuple', "(False, 0, '')")]
+OpBuildPN_v0.vi -> [('vi path', 'str', "'C:\\\\Program Files\\\\National I"), ('vi path 2', 'str', "''"), ('Class Name', 'str', "'Diagram'"), ('Class Name 2', 'str', "'SubVI'"), ('Class Name 3', 'str', "'VI Server:Node'"), ('index', 'int', '0'), ('location (0, 0)', 'tuple', '(900, 470)'), ('Properties', 'tuple', "(('6359000', False),)"), ('error out', 'tuple', "(False, 0, '')")]
+IA lib diagram: SubVIs [(3214, (319, 382))] Invokes [(1581, (-12, 368))] Consts [('ClassSpecifierConstant', 357), ('RingConstant', 368)]
+BGRUN END rc=0 after 0s
+BGRUN START 2026-09-06 17:33:29 limit 8.0 min: py -u tools/recipes/build_opmove.py
+baseline Invokes [(297, (897, 640))] IA [(308, (605, 284))] Wires 7 ExecState 1
+
+== 1 delete the Delete invoke
+   predict: 1 Invoke gone; ExecState 0 (dangling wire)
+   observed: ({297}, 0)
+
+== 2 remove_bad_wires
+   predict: ExecState 1
+   observed: 0
+STOP: op broken after cleanup; not saving
+BGRUN END rc=2 after 10s
+BGRUN START 2026-09-06 17:34:18 limit 3.0 min: py -u -c 
+import sys, os; sys.path.insert(0,'tools'); import gscript as g; g._lv=None
+OP=os.path.join(g.CLAUDEDEV,'OpMove_v0.vi')
+print('Wires', [(o['uid'],o['pos']) for o in g.report(OP,'Wire')], flush=True)
+print('Invokes', g.count(OP,'Invoke'), 'IA', g.count(OP,'IndexArray'), 'SubVI', [(o['uid'],o['pos']) for o in g.report(OP,'SubVI')], 'ExecState', g.exec_state(OP), flush=True)
+print('ControlTerminals', [(o['uid'],o['pos']) for o in g.report(OP,'ControlTerminal')], flush=True)
+print('windows:', [w for w in g._lv_gui('-Action','windows').splitlines() if 'OpMove' in w or 'Error' in w], flush=True)
+g._lv_gui('-Action','shotwin','-Title',"'OpMove_v0.vi Block Diagram'",'-Path','tools/bench/opmove_diag.png')
+
+Wires [(605, (626, 303)), (467, (300, 252)), (1066, (576, 303)), (600, (520, 290)), (415, (462, 252)), (373, (465, 290)), (106, (245, 260))]
+Invokes 0 IA 1 SubVI [(124, (495, 281))] ExecState 0
+ControlTerminals [(96, (229, 244)), (363, (449, 274)), (1056, (560, 287)), (540, (229, 394)), (732, (874, 438)), (866, (955, 501)), (257, (0, 75)), (334, (0, 75))]
+windows: ['OpMove_v0.vi Front Panel']
+BGRUN END rc=0 after 1s
+BGRUN START 2026-09-06 17:35:05 limit 8.0 min: py -u tools/recipes/build_opmove.py
+baseline Invokes [(297, (897, 640))] IA [(308, (605, 284))] Wires 7 ExecState 1
+
+== 1 delete the Delete invoke
+   predict: 1 Invoke gone; ExecState 0 (dangling wire)
+   observed: ({297}, 0)
+   wires right of IA308: [(605, (626, 303))]
+
+== 2 delete the dangling wire
+   predict: 1 Wire gone; ExecState 1
+   observed: ({605}, 1)
+
+== 3 build_invoke GObject.Move
+   predict: +1 Invoke at (900,640)
+   observed: [{'i': 0, 'class': 'Invoke', 'uid': 98, 'pos': (892, 640), 'owner': 'TopLevelDiagram'}]
+
+== 4a IA308.element -> reference
+   predict: Wire 6+1
+   observed: 7
+
+== 4b control location -> position
+   predict: one name accepted
+   observed: ('position', 8)
+
+assembled Wires 8 ExecState 1
+
+== 5 COM save
+   predict: size > 0
+   observed: 9337
+target IA before [(534, (975, 350)), (327, (605, 454)), (308, (605, 284))]
+
+== 6 RUN OpMove_v0: IndexArray[0] -> (1200,900)
+   predict: reporter shows (1200,900) for that uid; ExecState unchanged
+   observed: (0.037019968032836914, '0.04s', [(534, (1200, 900)), (327, (605, 454)), (308, (605, 284))], 1)
+scratch target deleted
+
+OpBuildPN_v0 wires: [(313, (868, 601)), (112, (890, 454)), (109, (676, 280)), (105, (16, 91)), (605, (626, 280)), (467, (300, 252)), (1066, (576, 303)), (772, (617, 250)), (600, (520, 290)), (415, (462, 252)), (373, (465, 290)), (106, (245, 260))]
+OpBuildPN_v0 IA: [(308, (605, 284))] SubVIs: [(297, (900, 640)), (124, (495, 281))]
+BGRUN END rc=0 after 3s
+BGRUN START 2026-09-06 17:37:31 limit 8.0 min: py -u tools/recipes/build_opbuildia.py
+baseline SubVIs [(297, (900, 640)), (124, (495, 281))] Functions [(683, (653, 279)), (43, (275, 251))] Wires 12 ExecState 1
+
+== 1 delete the creator SubVI
+   predict: 1 SubVI gone; ExecState 0
+   observed: ({297}, 0)
+
+== 2 delete wires right of the TMSC
+   predict: 3 wires gone; ExecState 1
+   observed: ([(313, (868, 601)), (112, (890, 454)), (109, (676, 280))], 0)
+STOP: op broken after cleanup; not saving
+BGRUN END rc=2 after 3s
+BGRUN START 2026-09-06 17:38:10 limit 8.0 min: py -u tools/recipes/build_opbuildia.py
+baseline SubVIs [(297, (900, 640)), (124, (495, 281))] Functions [(683, (653, 279)), (43, (275, 251))] Wires 12 ExecState 1
+
+== 1 delete the creator SubVI
+   predict: 1 SubVI gone; ExecState 0
+   observed: ({297}, 0)
+
+== 2 delete the creator's wires
+   predict: 4 wires gone; ExecState 1
+   observed: ([(313, (868, 601)), (112, (890, 454)), (109, (676, 280)), (105, (16, 86))], 1)
+
+== 3 drop Create Index Array.vi
+   predict: +1 SubVI; ExecState 0
+   observed: (0.029919862747192383, 0)
+
+== 4a TMSC -> Diagram in
+   predict: accepted (branch, count unchanged or +1)
+   observed: 9
+
+== 4b control location -> location (0, 0)
+   predict: Wire +1
+   observed: 10
+
+assembled Wires 10 (was 8 ) ExecState 0
+STOP: broken with `array` unwired -> array is REQUIRED (or a name mismatch); NOT saving
+BGRUN END rc=4 after 3s
+BGRUN START 2026-09-06 17:39:30 limit 3.0 min: py -u -c 
+import sys, os; sys.path.insert(0,'tools'); import gscript as g; g._lv=None; g._run.__defaults__=(6.0,45.0)
+OP=os.path.join(g.CLAUDEDEV,'OpBuildIA_v0.vi')
+subs=g.report(OP,'SubVI'); ni=max(range(len(subs)), key=lambda i: subs[i]['pos'][0]); ia=[o['uid'] for o in g.report(OP,'IndexArray')].index(308)
+print('in-memory op: SubVIs', [(o['uid'],o['pos']) for o in subs], 'Wires', g.count(OP,'Wire'), 'ExecState', g.exec_state(OP), flush=True)
+try: print('wire IA308.element -> array (branch):', g.wire(OP,'IndexArray',ia,'element','SubVI',ni,'array',branch=True), 'ExecState', g.exec_state(OP), flush=True)
+except Exception as e: print('wire array:', str(e)[:160], flush=True)
+
+in-memory op: SubVIs [(105, (900, 640)), (124, (495, 281))] Wires 10 ExecState 0
+wire IA308.element -> array (branch): 10 ExecState 1
+BGRUN END rc=0 after 1s
+BGRUN START 2026-09-06 17:40:30 limit 6.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g; g._lv=None; g._run.__defaults__=(6.0,45.0)
+OP=os.path.join(g.CLAUDEDEV,'OpBuildIA_v0.vi')
+def st(): return 'Wires %d ExecState %d'%(g.count(OP,'Wire'), g.exec_state(OP))
+fns=g.report(OP,'Function'); ti=max(range(len(fns)), key=lambda i: fns[i]['pos'][0]); tx=fns[ti]['pos'][0]
+wires=g.report(OP,'Wire'); cand=[(i,o) for i,o in enumerate(wires) if o['pos'][0]>=tx+20 and o['pos'][1]<400]
+print('Diagram-in wire candidates', [(o['uid'],o['pos']) for i,o in cand], flush=True)
+g.delete_object(OP,'Wire',cand[0][0]); print('A. Diagram in unwired ->', st(), flush=True)
+if g.exec_state(OP)==1:
+    g.delete_object(OP,'Function',ti); print('B. TMSC deleted ->', st(), flush=True)
+    wires=g.report(OP,'Wire'); d=[i for i,o in enumerate(wires) if 600<=o['pos'][0]<=640 and 240<=o['pos'][1]<=262]
+    print('   class-const wire candidates', [(wires[i]['uid'],wires[i]['pos']) for i in d], flush=True)
+    if d: g.delete_object(OP,'Wire',d[0]); print('C. class-const wire deleted ->', st(), flush=True)
+    cs=[i for i,o in enumerate(g.report(OP,'Constant')) if o['class']=='ClassSpecifierConstant']
+    if cs and g.exec_state(OP)==1: g.delete_object(OP,'Constant',cs[0]); print('D. class constant deleted ->', st(), flush=True)
+print('Wires now', [(o['uid'],o['pos']) for o in g.report(OP,'Wire')], flush=True)
+if g.exec_state(OP)==1:
+    print('SAVE', g.save(OP), flush=True)
+    T=os.path.join(g.CLAUDEDEV,'SCRATCH_buildia_target.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'),T); g.open_panel(T); time.sleep(0.8)
+    terms=g.report(T,'Terminal'); ia_terms=[(i,o) for i,o in enumerate(terms) if o['owner']=='IndexArray']
+    print('target terminals', len(terms), 'IndexArray-owned:', [(i,o['uid'],o['pos']) for i,o in ia_terms][:8], flush=True)
+    k=ia_terms[0][0]; b_ia=g.uids(T,'IndexArray'); b_w=g.count(T,'Wire')
+    vi=g.op(OP); vi.SetControlValue('vi path',T); vi.SetControlValue('Class Name','Terminal'); vi.SetControlValue('index',k); vi.SetControlValue('location (0, 0)',[1300,700])
+    t0=time.time(); g._run(vi); print('RUN %.2fs'%(time.time()-t0), 'new IA', [(o['uid'],o['pos']) for o in g.new_since(T,'IndexArray',b_ia)], 'Wires %d->%d'%(b_w,g.count(T,'Wire')), 'target ExecState', g.exec_state(T), flush=True)
+    g.close_panel(T); os.remove(T); print('scratch deleted', flush=True)
+else: print('NOT SAVED (broken)', flush=True)
+
+Diagram-in wire candidates [(375, (676, 280))]
+A. Diagram in unwired -> Wires 9 ExecState 0
+Wires now [(378, (890, 454)), (605, (626, 280)), (467, (300, 252)), (1066, (576, 303)), (772, (617, 250)), (600, (520, 290)), (415, (462, 252)), (373, (465, 290)), (106, (245, 260))]
+NOT SAVED (broken)
+BGRUN END rc=0 after 1s
+BGRUN START 2026-09-06 17:42:52 limit 3.0 min: py -u -c 
+import sys, os; sys.path.insert(0,'tools'); import gscript as g; g._lv=None
+EM=r'C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Erdos Miller\LV-Scripting'
+C=['source','Source','source terminal','sink','Sink','destination','destination terminal','terminal','Terminal','terminal in','Wire Source','node','Node','reference','error in (no error)','error out','wire','Wire','wire out','connected?','Connected?','condition','Condition','name','Name','type','Type','term type','terminal type','Diagram in','location (0, 0)']
+for f in ('Conditionally Connect Wire.vi','Get Term Type.vi','Get Controls.vi'):
+    vi=g.op(os.path.join(EM,f)); out=[]
+    for n in C:
+        try: v=vi.GetControlValue(n); out.append((n,type(v).__name__))
+        except Exception: pass
+    print(f,'->',out, flush=True)
+    print('   BD: SubVIs', len(g.report(os.path.join(EM,f),'SubVI')), 'Invokes', [(o['uid'],o['pos']) for o in g.report(os.path.join(EM,f),'Invoke')], 'Props', [(o['uid'],o['pos']) for o in g.report(os.path.join(EM,f),'Property')], 'Functions', [(o['uid'],o['pos']) for o in g.report(os.path.join(EM,f),'Function')], 'ControlTerminals', len(g.report(os.path.join(EM,f),'ControlTerminal')), flush=True)
+
+Conditionally Connect Wire.vi -> [('Wire Source', 'int'), ('error in (no error)', 'tuple'), ('error out', 'tuple')]
+   BD: SubVIs 0 Invokes [(83, (849, 303))] Props [] Functions [(169, (796, 367))] ControlTerminals 5
+Get Term Type.vi -> [('Type', 'NoneType')]
+   BD: SubVIs 0 Invokes [] Props [] Functions [(217, (720, 131))] ControlTerminals 3
+Get Controls.vi -> [('error in (no error)', 'tuple'), ('error out', 'tuple'), ('Diagram in', 'int')]
+   BD: SubVIs 1 Invokes [] Props [(1660, (-285, 119)), (896, (-98, 141))] Functions [(1325, (535, 349)), (786, (87, 102)), (466, (7, 107)), (879, (-146, 141)), (634, (248, 252)), (608, (190, 246))] ControlTerminals 6
+BGRUN END rc=0 after 1s
+BGRUN START 2026-09-06 17:46:31 limit 8.0 min: py -u tools/recipes/build_opbuildia.py
+STOP: docs/vi-server-ids.json has no 'VI.Block Diagram' entry
+BGRUN END rc=1 after 0s
+BGRUN START 2026-09-06 17:46:31 limit 2.0 min: py -u -c 
+import sys, os; sys.path.insert(0,'tools'); import gscript as g; g._lv=None
+P=r'C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Erdos Miller\LV-Scripting\Conditionally Connect Wire.vi'; vi=g.op(P); out=[]
+for n in ['Terminal','Terminal in','terminal in','Sink','sink terminal','Sink Terminal','Destination','destination','Term','term','Wire Sink','Wire Destination','Input Terminal','input terminal','Terminal to Wire','wire?','Wired?','wired?','Connected','connected','success','Success','Auto Wire?','Auto Wire? (T)','Auto Route? (F)','Wiring Specs','Wire','wire','Wire out','connect?','Connect?','Condition','Sink in','Source','Terminal Ref','Terminal Refnum','terminal refnum','Terminal (sink)','Diagram in','Node','node','Class Name']:
+    try: v=vi.GetControlValue(n); out.append((n,type(v).__name__))
+    except Exception: pass
+print('CCW extra controls:', out, flush=True)
+
+CCW extra controls: [('Terminal in', 'int')]
+BGRUN END rc=0 after 0s
+BGRUN START 2026-09-06 17:46:55 limit 8.0 min: py -u tools/recipes/build_opbuildia.py
+baseline SubVIs [(297, (900, 640)), (124, (495, 281))] Functions [(683, (653, 279)), (43, (275, 251))] Wires 12 ExecState 1
+
+== 1 delete the creator SubVI
+   predict: 1 SubVI gone; ExecState 0
+   observed: ({297}, 0)
+
+== 2 delete the creator's wires
+   predict: 4 wires; ExecState 1
+   creator wires: deleted [(313, (868, 601)), (112, (890, 454)), (109, (676, 280)), (105, (16, 86))]
+   observed: ([(313, (868, 601)), (112, (890, 454)), (109, (676, 280)), (105, (16, 86))], 1)
+
+== 3 delete TMSC + its wires + class constant
+   predict: Wires 6, ExecState 1
+   TMSC wires: deleted [(772, (617, 250))]
+   observed: (6, 1)
+
+== 4 drop Create Index Array.vi
+   predict: +1 SubVI; ExecState 0
+   observed: (0.02892303466796875, 0)
+
+== 5a build_property VI.Block Diagram
+   predict: +1 Property at (700,380)
+   observed: [{'i': 0, 'class': 'Property', 'uid': 109, 'pos': (706, 380), 'owner': 'TopLevelDiagram'}]
+
+== 5b OpenVIRef.vi reference -> PN.reference (branch)
+   predict: accepted
+   observed: ('vi reference', 6)
+
+== 5c PN.Block Diagram -> creator Diagram in
+   predict: Wire +1
+   observed: EXC wire Block Diagram->Diagram in: error 5001: LV-Scripting.lvlib:Get Outputs.vi<ERR>
+
+== 6a IA308.element -> creator array
+   predict: Wire +1
+   observed: 7
+
+== 6b control location -> location (0, 0)
+   predict: Wire +1
+   observed: 8
+
+assembled Wires 8 (was 6 ) ExecState 0
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_opbuildia.py", line 179, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_opbuildia.py", line 153, in main
+    print("STOP: broken \u2014 NOT saving", flush=True); return 6
+UnicodeEncodeError: 'cp949' codec can't encode character '\u2014' in position 13: illegal multibyte sequence
+BGRUN END rc=1 after 4s
+BGRUN START 2026-09-06 17:48:26 limit 6.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g; g._lv=None; g._run.__defaults__=(6.0,45.0)
+OP=os.path.join(g.CLAUDEDEV,'OpBuildIA_v0.vi')
+subs=g.report(OP,'SubVI'); ni=max(range(len(subs)), key=lambda i: subs[i]['pos'][0]); pi=0
+print('in-memory: Props', [(o['uid'],o['pos']) for o in g.report(OP,'Property')], 'Wires', g.count(OP,'Wire'), 'ExecState', g.exec_state(OP), flush=True)
+ok=None
+for term in ('Diagram','Block Diagram','BD','VI.Block Diagram','Diagram out'):
+    try: r=g.wire(OP,'Property',pi,term,'SubVI',ni,'Diagram in'); print('  wire %r -> Diagram in: %s ExecState %d'%(term,r,g.exec_state(OP)), flush=True); ok=term; break
+    except Exception as e: print('  %r: %s'%(term,str(e)[:100]), flush=True)
+es=g.exec_state(OP); print('ExecState', es, flush=True)
+if es==1:
+    print('SAVE', g.save(OP), flush=True)
+    T=os.path.join(g.CLAUDEDEV,'SCRATCH_buildia_target.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'),T); g.open_panel(T); time.sleep(0.8)
+    terms=g.report(T,'Terminal'); ia_terms=[(i,o) for i,o in enumerate(terms) if o['owner']=='IndexArray']
+    print('target terminals', len(terms), 'IndexArray-owned:', [(i,o['uid'],o['pos']) for i,o in ia_terms][:6], flush=True)
+    k=ia_terms[0][0] if ia_terms else 0; b_ia=g.uids(T,'IndexArray'); b_w=g.count(T,'Wire')
+    vi=g.op(OP); vi.SetControlValue('vi path',T); vi.SetControlValue('Class Name','Terminal'); vi.SetControlValue('index',k); vi.SetControlValue('location (0, 0)',[1300,700])
+    t0=time.time()
+    try: g._run(vi)
+    except Exception as e: print('run:', str(e)[:120], flush=True)
+    print('RUN %.2fs'%(time.time()-t0), 'new IA', [(o['uid'],o['pos']) for o in g.new_since(T,'IndexArray',b_ia)], 'Wires %d->%d'%(b_w,g.count(T,'Wire')), 'target ExecState', g.exec_state(T), 'err', g._err(vi), flush=True)
+    g.close_panel(T); os.remove(T); print('scratch deleted', flush=True)
+else: print('NOT SAVED', flush=True)
+
+in-memory: Props [(109, (706, 380))] Wires 8 ExecState 0
+  wire 'Diagram' -> Diagram in: 9 ExecState 1
+ExecState 1
+SAVE 10632
+target terminals 118 IndexArray-owned: [(11, 554, (975, 350)), (12, 557, (991, 350)), (13, 572, (975, 368)), (56, 333, (605, 454)), (57, 336, (621, 454)), (58, 339, (605, 472))]
+run: run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gs
+RUN 8.00s new IA [(622, (1300, 700))] Wires 28->28 target ExecState 0 err None
+scratch deleted
+BGRUN END rc=0 after 12s
+BGRUN START 2026-09-06 17:49:29 limit 6.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g; g._lv=None; g._run.__defaults__=(6.0,45.0)
+OP=os.path.join(g.CLAUDEDEV,'OpBuildIA_v0.vi')
+T=os.path.join(g.CLAUDEDEV,'SCRATCH_buildia_target.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'),T); g.open_panel(T); time.sleep(0.8)
+terms=g.report(T,'Terminal'); k=next(i for i,o in enumerate(terms) if o['pos']==(605,454))   # IA327 'array' input, wired from Traverse
+b_ia=g.uids(T,'IndexArray'); b_w=g.count(T,'Wire')
+vi=g.op(OP); vi.SetControlValue('vi path',T); vi.SetControlValue('Class Name','Terminal'); vi.SetControlValue('index',k); vi.SetControlValue('location (0, 0)',[1300,700])
+t0=time.time()
+try: g._run(vi)
+except Exception as e: print('run:', str(e)[:120], flush=True)
+print('RUN %.2fs'%(time.time()-t0), 'Terminal[%d]'%k, 'new IA', [(o['uid'],o['pos']) for o in g.new_since(T,'IndexArray',b_ia)], 'Wires %d->%d'%(b_w,g.count(T,'Wire')), 'target ExecState', g.exec_state(T), flush=True)
+g.close_panel(T); os.remove(T); print('scratch deleted', flush=True)
+W=os.path.join(g.CLAUDEDEV,'OpWire_v1.vi')
+for c in ('SubVI','IndexArray','Function','Constant','Property','Invoke','ControlTerminal'):
+    print('OpWire_v1', c, [(o['uid'],o['pos']) + ((o['class'],) if c=='Constant' else ()) for o in g.report(W,c)], flush=True)
+print('OpWire_v1 Wires', g.count(W,'Wire'), 'ExecState', g.exec_state(W), flush=True)
+vi=g.op(W); out=[]
+for n in ('vi path','vi path 2','Class Name','Class Name 2','index','index 2','Names','Names 2','location (0, 0)','error out'):
+    try: v=vi.GetControlValue(n); out.append((n,type(v).__name__))
+    except Exception: pass
+print('OpWire_v1 controls', out, flush=True)
+
+run: run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gs
+RUN 8.29s Terminal[56] new IA [(622, (1300, 700))] Wires 28->28 target ExecState 0
+scratch deleted
+OpWire_v1 SubVI [(370, (980, 540)), (369, (980, 470)), (262, (875, 451)), (216, (725, 281)), (170, (495, 451)), (124, (495, 281))]
+OpWire_v1 IndexArray [(327, (605, 454)), (308, (605, 284))]
+OpWire_v1 Function [(788, (675, 446)), (683, (653, 279)), (43, (275, 251))]
+OpWire_v1 Constant [(389, (444, 246), 'EnumConstant'), (552, (444, 416), 'EnumConstant'), (755, (587, 243), 'ClassSpecifierConstant'), (834, (609, 410), 'ClassSpecifierConstant')]
+OpWire_v1 Property []
+OpWire_v1 Invoke []
+OpWire_v1 ControlTerminal [(96, (229, 244)), (363, (449, 274)), (526, (449, 444)), (926, (679, 240)), (1002, (829, 444)), (1056, (560, 287)), (1098, (559, 415)), (533, (0, 75))]
+OpWire_v1 Wires 26 ExecState 1
+OpWire_v1 controls [('vi path', 'str'), ('Class Name', 'str'), ('Class Name 2', 'str'), ('index', 'int'), ('index 2', 'int'), ('Names', 'tuple'), ('Names 2', 'tuple'), ('error out', 'tuple')]
+BGRUN END rc=0 after 12s
+BGRUN START 2026-09-06 17:50:06 limit 6.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g; g._lv=None; g._run.__defaults__=(6.0,45.0)
+OP=os.path.join(g.CLAUDEDEV,'OpBuildIA_v0.vi')
+T=os.path.join(g.CLAUDEDEV,'SCRATCH_buildia_target.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'),T); g.open_panel(T); time.sleep(0.8)
+terms=g.report(T,'Terminal')
+cands=[(i,o) for i,o in enumerate(terms) if o['owner']=='SubVI' and 500<=o['pos'][0]<=560 and 270<=o['pos'][1]<=305]
+print('Traverse output candidates', [(i,o['uid'],o['pos']) for i,o in cands], flush=True)
+for k,o in cands:
+    b_ia=g.uids(T,'IndexArray'); b_w=g.count(T,'Wire')
+    vi=g.op(OP); vi.SetControlValue('vi path',T); vi.SetControlValue('Class Name','Terminal'); vi.SetControlValue('index',k); vi.SetControlValue('location (0, 0)',[1300,700+60*k%200])
+    t0=time.time()
+    try: g._run(vi)
+    except Exception as e: print('  run:', str(e)[:60], flush=True)
+    nw=g.count(T,'Wire'); print('Terminal[%d] %s: %.2fs new IA %s Wires %d->%d ExecState %d'%(k,o['pos'],time.time()-t0,[(x['uid'],x['pos']) for x in g.new_since(T,'IndexArray',b_ia)],b_w,nw,g.exec_state(T)), flush=True)
+    if nw>b_w: print('SUCCESS with terminal', k, o, flush=True); break
+g.close_panel(T); os.remove(T); print('scratch deleted', flush=True)
+
+Traverse output candidates [(86, 131, (519, 305)), (87, 134, (519, 297)), (88, 137, (519, 289)), (89, 140, (519, 281)), (90, 143, (511, 297)), (91, 146, (511, 281)), (92, 149, (503, 297)), (93, 152, (503, 281))]
+  run: run blocked behind a modal dialog (dismissed by watchdog aft
+Terminal[86] (519, 305): 8.34s new IA [(622, (1300, 860))] Wires 28->28 ExecState 0
+  run: run blocked behind a modal dialog (dismissed by watchdog aft
+Terminal[87] (519, 297): 8.33s new IA [(625, (1300, 720))] Wires 28->28 ExecState 0
+  run: run blocked behind a modal dialog (dismissed by watchdog aft
+Terminal[88] (519, 289): 8.33s new IA [(628, (1300, 780))] Wires 28->28 ExecState 0
+  run: run blocked behind a modal dialog (dismissed by watchdog aft
+Terminal[89] (519, 281): 8.33s new IA [(631, (1300, 840))] Wires 28->28 ExecState 0
+  run: run blocked behind a modal dialog (dismissed by watchdog aft
+Terminal[90] (511, 297): 8.33s new IA [(632, (1300, 700))] Wires 28->28 ExecState 0
+  run: run blocked behind a modal dialog (dismissed by watchdog aft
+Terminal[91] (511, 281): 8.33s new IA [(633, (1300, 760))] Wires 28->28 ExecState 0
+  run: run blocked behind a modal dialog (dismissed by watchdog aft
+Terminal[92] (503, 297): 8.33s new IA [(634, (1300, 820))] Wires 28->28 ExecState 0
+  run: run blocked behind a modal dialog (dismissed by watchdog aft
+Terminal[93] (503, 281): 8.33s new IA [(648, (1300, 880))] Wires 28->28 ExecState 0
+scratch deleted
+BGRUN END rc=0 after 71s
+BGRUN START 2026-09-06 17:51:20 limit 8.0 min: py -u tools/recipes/build_opconnect.py
+baseline Wires 26 ExecState 1
+
+== 1 delete the name-based wiring stage (2 SubVIs, 2 TMSCs, 2 class constants)
+   predict: SubVIs left: 369, 370, 170, 124; ExecState 0
+   observed: ([(370, (980, 540)), (369, (980, 470)), (170, (495, 451)), (124, (495, 281))], 0)
+
+== 2 delete wires right of the Index Arrays + the error-out wire
+   predict: ExecState 1
+   dangling: deleted [(465, (16, 91)), (462, (698, 450)), (383, (676, 283)), (377, (750, 306)), (936, (695, 256)), (878, (750, 290)), (853, (698, 447)), (744, (676, 275))]
+   observed: ([(465, (16, 91)), (462, (698, 450)), (383, (676, 283)), (377, (750, 306)), (936, (695, 256)), (878, (750, 290)), (853, (698, 447)), (744, (676, 275))], 0)
+STOP: broken after strip; not saving
+BGRUN END rc=2 after 8s
+BGRUN START 2026-09-06 17:52:19 limit 5.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g; g._lv=None; g._run.__defaults__=(6.0,45.0)
+OP=os.path.join(g.CLAUDEDEV,'OpBuildIA_v0.vi'); CE=r'C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Utility\error.llb\Clear Errors.vi'
+try: g.close_panel(OP)
+except Exception: pass
+g.open_panel(OP); time.sleep(0.8)
+subs=g.report(OP,'SubVI'); ci=max(range(len(subs)), key=lambda i: subs[i]['pos'][0]); s0=g.uids(OP,'SubVI')
+print('OpBuildIA: SubVIs', [(o['uid'],o['pos']) for o in subs], 'ExecState', g.exec_state(OP), flush=True)
+g.drop_subvi(OP, CE, 0, (1050, 640)); subs=g.report(OP,'SubVI'); si=next(i for i,o in enumerate(subs) if o['uid'] not in s0)
+print('Clear Errors dropped at', subs[si]['pos'], 'wire err:', g.wire(OP,'SubVI',ci,'error out','SubVI',si,'error in (no error)'), 'ExecState', g.exec_state(OP), flush=True)
+if g.exec_state(OP)==1: print('SAVE', g.save(OP), flush=True)
+else: print('NOT SAVED', flush=True)
+
+OpBuildIA: SubVIs [(105, (900, 640)), (124, (495, 281))] ExecState 1
+Clear Errors dropped at (1050, 640) wire err: 10 ExecState 0
+NOT SAVED
+BGRUN END rc=0 after 1s
+BGRUN START 2026-09-06 17:52:20 limit 8.0 min: py -u tools/recipes/build_opconnect.py
+baseline Wires 26 ExecState 1
+
+== 1 delete the name-based wiring stage (2 SubVIs, 2 TMSCs, 2 class constants)
+   predict: SubVIs left: 369, 370, 170, 124; ExecState 0
+   observed: ([(370, (980, 540)), (369, (980, 470)), (170, (495, 451)), (124, (495, 281))], 0)
+
+== 2 delete wires right of the Index Arrays + the error-out wire
+   predict: ExecState 1
+   dangling: deleted [(465, (16, 91)), (462, (698, 450)), (383, (676, 283)), (377, (750, 306)), (936, (695, 256)), (878, (750, 290)), (853, (698, 447)), (851, (631, 412)), (823, (626, 447)), (772, (609, 245)), (744, (676, 275))]
+   observed: ([(465, (16, 91)), (462, (698, 450)), (383, (676, 283)), (377, (750, 306)), (936, (695, 256)), (878, (750, 290)), (853, (698, 447)), (851, (631, 412)), (823, (626, 447)), (772, (609, 245)), (744, (676, 275))], 0)
+STOP: broken after strip; not saving
+BGRUN END rc=2 after 10s
+BGRUN START 2026-09-06 17:53:17 limit 5.0 min: py -u -c 
+import sys, os; sys.path.insert(0,'tools'); import gscript as g; g._lv=None; g._run.__defaults__=(6.0,45.0)
+OP=os.path.join(g.CLAUDEDEV,'OpConnect_v0.vi')
+ws=g.report(OP,'Wire'); print('remaining', [(o['uid'],o['pos']) for o in ws], 'ExecState', g.exec_state(OP), flush=True)
+good=[(576,303),(520,290),(465,290),(462,252),(300,252),(245,260),(576,473),(520,460),(465,460),(462,422),(300,422),(245,430)]
+def near(p): return any(abs(p[0]-a)<=8 and abs(p[1]-b)<=12 for a,b in good)
+sus=[(o['uid'],o['pos']) for o in ws if not near(o['pos'])]
+print('suspects (not near a known chain wire):', sus, flush=True)
+for uid,pos in sus:
+    i=[o['uid'] for o in g.report(OP,'Wire')].index(uid); g.delete_object(OP,'Wire',i); print('  deleted', uid, pos, '-> ExecState', g.exec_state(OP), flush=True)
+    if g.exec_state(OP)==1: break
+print('final Wires', g.count(OP,'Wire'), 'ExecState', g.exec_state(OP), flush=True)
+
+remaining [(390, (520, 455)), (386, (520, 288)), (380, (300, 276)), (1108, (575, 431)), (1066, (576, 303)), (600, (520, 290)), (611, (520, 460)), (578, (462, 422)), (536, (465, 460)), (467, (300, 252)), (415, (462, 252)), (373, (465, 290)), (106, (245, 260))] ExecState 0
+suspects (not near a known chain wire): [(380, (300, 276)), (1108, (575, 431))]
+  deleted 380 (300, 276) -> ExecState 0
+  deleted 1108 (575, 431) -> ExecState 0
+final Wires 11 ExecState 0
+BGRUN END rc=0 after 1s
+BGRUN START 2026-09-06 17:53:33 limit 5.0 min: py -u -c 
+import sys, os, time; sys.path.insert(0,'tools'); import gscript as g; g._lv=None; g._run.__defaults__=(6.0,45.0)
+OP=os.path.join(g.CLAUDEDEV,'OpBuildIA_v0.vi'); CE=r'C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Utility\error.llb\Clear Errors.vi'
+try: g.close_panel(OP)
+except Exception: pass
+g.open_panel(OP); time.sleep(0.8)
+subs=g.report(OP,'SubVI'); cuid=max(subs, key=lambda o: o['pos'][0])['uid']; s0=g.uids(OP,'SubVI')
+print('OpBuildIA reloaded: SubVIs', [(o['uid'],o['pos']) for o in subs], 'Wires', g.count(OP,'Wire'), 'ExecState', g.exec_state(OP), flush=True)
+g.drop_subvi(OP, CE, 0, (1050, 640)); subs=g.report(OP,'SubVI'); ids=[o['uid'] for o in subs]
+si=next(i for i,o in enumerate(subs) if o['uid'] not in s0); ci=ids.index(cuid)
+print('creator index', ci, 'sink index', si, subs[si]['pos'], 'wire:', g.wire(OP,'SubVI',ci,'error out','SubVI',si,'error in (no error)'), 'ExecState', g.exec_state(OP), flush=True)
+if g.exec_state(OP)==1: print('SAVE', g.save(OP), flush=True)
+else: print('NOT SAVED', flush=True)
+
+OpBuildIA reloaded: SubVIs [(105, (900, 640)), (124, (495, 281))] Wires 9 ExecState 1
+creator index 1 sink index 0 (1050, 640) wire: 10 ExecState 1
+SAVE 11136
+BGRUN END rc=0 after 1s
+BGRUN START 2026-09-06 17:54:12 limit 8.0 min: py -u tools/recipes/build_opconnect.py
+baseline Wires 26 ExecState 1
+
+== 1 delete the name-based wiring stage (2 SubVIs, 2 TMSCs, 2 class constants)
+   predict: SubVIs left: 369, 370, 170, 124; ExecState 0
+   observed: ([(370, (980, 540)), (369, (980, 470)), (170, (495, 451)), (124, (495, 281))], 0)
+
+== 2 delete wires right of the Index Arrays + the error-out wire
+   predict: ExecState 1
+   dangling: deleted [(465, (16, 91)), (462, (698, 450)), (390, (520, 455)), (386, (520, 288)), (383, (676, 283)), (377, (750, 306)), (936, (695, 256)), (878, (750, 290)), (853, (698, 447)), (851, (631, 412)), (823, (626, 447)), (772, (609, 245)), (744, (676, 275))]
+   observed: ([(465, (16, 91)), (462, (698, 450)), (390, (520, 455)), (386, (520, 288)), (383, (676, 283)), (377, (750, 306)), (936, (695, 256)), (878, (750, 290)), (853, (698, 447)), (851, (631, 412)), (823, (626, 447)), (772, (609, 245)), (744, (676, 275))], 1)
+
+== 3 drop Conditionally Connect Wire.vi
+   predict: +1 SubVI
+   observed: 0.023962974548339844
+
+== 4a IA308.element -> Terminal in (sink)
+   predict: Wire +1
+   observed: 12
+
+== 4b IA327.element -> Wire Source
+   predict: Wire +1
+   observed: 13
+
+== 4c creator error out -> Clear Errors 369
+   predict: Wire +1
+   observed: 14
+
+assembled Wires 14 (was 11 ) ExecState 0
+STOP: broken - NOT saving
+BGRUN END rc=4 after 11s
+BGRUN START 2026-09-06 17:54:44 limit 4.0 min: py -u -c 
+import sys, os; sys.path.insert(0,'tools'); import gscript as g; g._lv=None; g._run.__defaults__=(6.0,45.0)
+OP=os.path.join(g.CLAUDEDEV,'OpConnect_v0.vi')
+ws=g.report(OP,'Wire'); new=[o for o in ws if o['pos'][0]>=598]; print('creator wires', [(o['uid'],o['pos']) for o in new], 'ExecState', g.exec_state(OP), flush=True)
+for o in sorted(new, key=lambda o: -o['pos'][1]):   # bottom first: IA327->Wire Source, then IA308->Terminal in, then error
+    i=[w['uid'] for w in g.report(OP,'Wire')].index(o['uid']); g.delete_object(OP,'Wire',i); print('  deleted', o['uid'], o['pos'], '-> ExecState', g.exec_state(OP), flush=True)
+
+creator wires [(244, (925, 475)), (240, (626, 459)), (237, (626, 298))] ExecState 0
+  deleted 244 (925, 475) -> ExecState 0
+  deleted 240 (626, 459) -> ExecState 0
+  deleted 237 (626, 298) -> ExecState 0
+BGRUN END rc=0 after 2s
+BGRUN START 2026-09-06 17:55:01 limit 3.0 min: py -u -c 
+import sys, os; sys.path.insert(0,'tools'); import gscript as g; g._lv=None
+P=r'C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Erdos Miller\LV-Scripting\Conditionally Connect Wire.vi'; vi=g.op(P); out=[]
+names=['Wire?','wire?','Connect?','connect?','Condition','condition','Connect','Wired','Wired?','Result','result','Success?','Connected?','Auto Route?','Auto Route? (F)','Auto Wire?','Auto Wire? (T)','Wiring Specs','Wire Ref','Wire ref','wire ref','Wire out','Wire Out','new wire','New Wire','Terminal out','Terminal Out','Terminal in out','Terminal in (dup)','Source Terminal','Sink Terminal','Wire Source out','Terminal','Diagram','Diagram in','Diagram out','Node','Owner','owner','Position','Broken?','broken?','Error?','error?','Bad Wire?','Was Wired?','was wired?','Already Wired?','already wired?','Previously Connected?','Connected','connected','Wire Created?','wire created?','Wire Created','Created?','created?']
+for n in names:
+    try: v=vi.GetControlValue(n); out.append((n,type(v).__name__))
+    except Exception: pass
+print('CCW found:', out, flush=True)
+print('CCW ControlTerminals', [(o['uid'],o['pos']) for o in g.report(P,'ControlTerminal')], flush=True)
+
+CCW found: [('Terminal out', 'int')]
+CCW ControlTerminals [(188, (988, 299)), (202, (738, 339)), (264, (988, 321)), (323, (738, 316)), (337, (737, 299))]
+BGRUN END rc=0 after 0s
+BGRUN START 2026-09-06 17:56:46 limit 10.0 min: py -u tools/recipes/build_opcreatecontrol.py
+baseline Wires 26 ExecState 1
+
+== 1-2 strip to skeleton (OpenVIRef, IA308, IA327, controls, sinks)
+   predict: Wires [106,1066,1108]; ExecState 0
+   observed: ([(1108, (575, 431)), (1066, (576, 303)), (106, (245, 260))], 0)
+
+== 3 build_property VI.Block Diagram
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 112, 'pos': (426, 300), 'owner': 'TopLevelDiagram'}]
+
+== 3b OpenVIRef.vi reference -> PN1.reference
+   predict: accepted
+   observed: 4
+
+== 4 build_property Diagram.Nodes[]
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 113, 'pos': (519, 300), 'owner': 'TopLevelDiagram'}]
+
+== 4b PN1.Diagram -> PN2.reference
+   predict: Wire +1
+   observed: 5
+
+== 4c PN2.Nodes[] -> IA308.array
+   predict: Wire +1
+   observed: 6
+
+== 5 build_property Node.Terminals[]
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 114, 'pos': (697, 300), 'owner': 'TopLevelDiagram'}]
+
+== 5b IA308.element -> PN3.reference (Node-typed)
+   predict: Wire +1
+   observed: 7
+
+== 5c PN3.Terminals[] -> IA327.array
+   predict: Wire +1
+   observed: EXC wire Terminals[]->array: error 5001: LV-Scripting.lvlib:Get Outputs.vi<ERR>
+
+== 6 build_invoke Terminal.Create Control
+   predict: +1 Invoke
+   observed: [{'i': 0, 'class': 'Invoke', 'uid': 115, 'pos': (688, 450), 'owner': 'TopLevelDiagram'}]
+
+== 6b IA327.element -> Invoke.reference (Terminal-typed)
+   predict: Wire +1
+   observed: 8
+
+== 6c Invoke.error out -> Clear Errors 369
+   predict: Wire +1
+   observed: 9
+
+assembled Wires 9 ExecState 0
+STOP: broken - NOT saving
+BGRUN END rc=7 after 12s
+BGRUN START 2026-09-06 17:57:23 limit 10.0 min: py -u tools/recipes/build_opcreatecontrol.py
+baseline Wires 26 ExecState 1
+
+== 1-2 strip to skeleton (OpenVIRef, IA308, IA327, controls, sinks)
+   predict: Wires [106,1066,1108]; ExecState 0
+   observed: ([(1108, (575, 431)), (1066, (576, 303)), (106, (245, 260))], 0)
+
+== 3 build_property VI.Block Diagram
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 112, 'pos': (426, 300), 'owner': 'TopLevelDiagram'}]
+
+== 3b OpenVIRef.vi reference -> PN1.reference
+   predict: accepted
+   observed: 4
+
+== 4 build_property Diagram.Nodes[]
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 113, 'pos': (519, 300), 'owner': 'TopLevelDiagram'}]
+
+== 4b PN1.Diagram -> PN2.reference
+   predict: Wire +1
+   observed: 5
+
+== 4c PN2.Nodes[] -> IA308.array
+   predict: Wire +1
+   observed: 6
+
+== 5 build_property Node.Terminals[]
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 114, 'pos': (697, 300), 'owner': 'TopLevelDiagram'}]
+
+== 5b IA308.element -> PN3.reference (Node-typed)
+   predict: Wire +1
+   observed: 7
+
+== 5c PN3.Terms[] (short name of Terminals[]) -> IA327.array
+   predict: Wire +1
+   observed: 8
+
+== 6 build_invoke Terminal.Create Control
+   predict: +1 Invoke
+   observed: [{'i': 0, 'class': 'Invoke', 'uid': 115, 'pos': (688, 450), 'owner': 'TopLevelDiagram'}]
+
+== 6b IA327.element -> Invoke.reference (Terminal-typed)
+   predict: Wire +1
+   observed: 9
+
+== 6c Invoke.error out -> Clear Errors 369
+   predict: Wire +1
+   observed: 10
+
+assembled Wires 10 ExecState 1
+
+== 7 COM save
+   predict: size > 0
+   observed: 9322
+target nodes (Traverse count) 14 ControlTerminals 8 ExecState 1
+   n=0: 0.13s new controls [(645, (255, 219))] err=None
+   n=1: 0.15s new controls [(662, (473, 214))] err=None
+   n=2: 0.15s new controls [(678, (473, 384))] err=None
+   n=3: 0.17s new controls [] err=None
+   n=4: 0.16s new controls [(690, (575, 206))] err=None
+   n=5: 0.18s new controls [(711, (575, 376))] err=None
+   n=6: 0.21s new controls [(776, (628, 170))] err=None
+   n=7: 0.21s new controls [(852, (650, 337))] err=None
+   n=8: 0.20s new controls [] err=None
+   n=9: 0.19s new controls [] err=None
+   n=10: 0.19s new controls [] err=None
+   n=11: 0.21s new controls [(863, (946, 326))] err=None
+   n=12: 0.22s new controls [(874, (1079, 318))] err=None
+   n=13: 0.23s new controls [(885, (1211, 335))] err=None
+   n=14: run run blocked behind a modal dialog (dismissed by watchdog aft
+   n=14: 8.21s new controls [] err=None
+   n=15: run run blocked behind a modal dialog (dismissed by watchdog aft
+   n=15: 8.49s new controls [] err=None
+HITS [(0, [(645, (255, 219))]), (1, [(662, (473, 214))]), (2, [(678, (473, 384))]), (4, [(690, (575, 206))]), (5, [(711, (575, 376))]), (6, [(776, (628, 170))]), (7, [(852, (650, 337))]), (11, [(863, (946, 326))]), (12, [(874, (1079, 318))]), (13, [(885, (1211, 335))])] target ExecState 1
+scratch target deleted
+BGRUN END rc=0 after 35s
+BGRUN START 2026-09-06 18:00:28 limit 10.0 min: py -u tools/recipes/build_opconnect.py
+baseline Wires 10 ExecState 1 Invokes [(115, (688, 450))]
+
+== 1 delete Create Control invoke + its 2 wires
+   predict: 2 wires gone; Wires 8; ExecState 1
+   observed: ([(246, (766, 455)), (239, (626, 451))], 8, 1)
+
+== 2a build_index_array IAb1 (520,600)
+   predict: +1 IndexArray
+   observed: [{'i': 0, 'class': 'IndexArray', 'uid': 90, 'pos': (520, 600), 'owner': 'TopLevelDiagram'}]
+
+== 2b build_property Node.Terminals[] (700,600)
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 95, 'pos': (697, 600), 'owner': 'TopLevelDiagram'}]
+
+== 2c build_index_array IAb2 (850,600)
+   predict: +1 IndexArray
+   observed: [{'i': 0, 'class': 'IndexArray', 'uid': 98, 'pos': (850, 600), 'owner': 'TopLevelDiagram'}]
+
+== 2d PN2.Nodes[] -> IAb1.array (branch)
+   predict: accepted
+   observed: 8
+
+== 2e IAb1.element -> PNb.reference
+   predict: Wire +1
+   observed: 9
+
+== 2f PNb.Terms[] -> IAb2.array
+   predict: Wire +1
+   observed: 10
+   ladder B assembled: Wires 10 ExecState 1
+
+== 3a control for IAb1.index (node rank of its uid, terminal 1)
+   predict: 1 new ControlTerminal within 90 px of (520,600)
+   observed: (False, [(335, (575, 251))])
+
+== 3b control for IAb2.index
+   predict: 1 new ControlTerminal within 90 px of (850,600)
+   observed: (False, [])
+STOP: index controls not placed as predicted (Nodes[] order hypothesis?) - NOT saving
+BGRUN END rc=4 after 4s
+BGRUN START 2026-09-06 18:01:26 limit 10.0 min: py -u tools/recipes/build_opconnect.py
+baseline Wires 10 ExecState 1 Invokes [(115, (688, 450))]
+
+== 1 delete Create Control invoke + its 2 wires
+   predict: 2 wires gone; Wires 8; ExecState 1
+   observed: ([(246, (766, 455)), (239, (626, 451))], 8, 1)
+
+== 2a build_index_array IAb1 (520,600)
+   predict: +1 IndexArray
+   observed: [{'i': 0, 'class': 'IndexArray', 'uid': 90, 'pos': (520, 600), 'owner': 'TopLevelDiagram'}]
+
+== 2b build_property Node.Terminals[] (700,600)
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 95, 'pos': (697, 600), 'owner': 'TopLevelDiagram'}]
+
+== 2c build_index_array IAb2 (850,600)
+   predict: +1 IndexArray
+   observed: [{'i': 0, 'class': 'IndexArray', 'uid': 98, 'pos': (850, 600), 'owner': 'TopLevelDiagram'}]
+
+== 2d PN2.Nodes[] -> IAb1.array (branch)
+   predict: accepted
+   observed: 8
+
+== 2e IAb1.element -> PNb.reference
+   predict: Wire +1
+   observed: 9
+
+== 2f PNb.Terms[] -> IAb2.array
+   predict: Wire +1
+   observed: 10
+   ladder B assembled: Wires 10 ExecState 1
+
+== 3a control for IAb1.index (Nodes[8], terminal 1)
+   predict: 1 new ControlTerminal within 90 px of (520,600)
+   observed: (True, [(335, (490, 567))])
+
+== 3b control for IAb2.index (Nodes[10])
+   predict: 1 new ControlTerminal within 90 px of (850,600)
+   observed: (True, [(352, (821, 576))])
+   ExecState after controls 1
+
+== 4 build_invoke Terminal.Connect Wire (1000,450)
+   predict: +1 Invoke
+   observed: [{'i': 0, 'class': 'Invoke', 'uid': 99, 'pos': (987, 450), 'owner': 'TopLevelDiagram'}]
+
+== 4a IA327.element -> reference (sink)
+   predict: Wire +1
+   observed: 11
+
+== 4b IAb2.element -> Wire Source
+   predict: Wire +1
+   observed: 12
+
+== 4c error out -> Clear Errors 369
+   predict: Wire +1
+   observed: 13
+
+assembled Wires 13 ExecState 1
+
+== 4d COM save
+   predict: size > 0
+   observed: 10020
+   new index control names found: []
+BGRUN END rc=0 after 4s
+BGRUN START 2026-09-06 18:02:02 limit 3.0 min: py -u -c 
+import sys, os; sys.path.insert(0,'tools'); import gscript as g; g._lv=None
+OP=os.path.join(g.CLAUDEDEV,'OpConnect_v0.vi'); vi=g.op(OP); found=[]
+cands=['index','index 2']+['index %d'%i for i in range(3,12)]+['index%d'%i for i in range(2,6)]+['Index','Index 2','Index 3','index (2)','index (3)','index 2 2','index 2 3','index  2','index_2','index copy','index 2 copy','Numeric','Numeric 2','Numeric 3','numeric','indices','indices 2','index in','index in 2','i','i 2','index0','index1','index2']
+for n in cands:
+    try: v=vi.GetControlValue(n); found.append((n,v))
+    except Exception: pass
+print('FOUND', found, flush=True)
+print('ControlTerminals', [(o['uid'],o['pos']) for o in g.report(OP,'ControlTerminal')], flush=True)
+
+FOUND [('index', 0), ('index 2', 0)]
+ControlTerminals [(96, (229, 244)), (363, (449, 274)), (526, (449, 444)), (926, (679, 240)), (1002, (829, 444)), (1056, (560, 287)), (1098, (559, 415)), (533, (0, 75)), (335, (490, 567)), (352, (821, 576))]
+BGRUN END rc=0 after 0s
+BGRUN START 2026-09-06 18:02:27 limit 3.0 min: py -u -c 
+import sys, os; sys.path.insert(0,'tools'); import gscript as g; g._lv=None
+OP=os.path.join(g.CLAUDEDEV,'OpConnect_v0.vi'); vi=g.op(OP); found=[]
+cands=['index 0','index 1','index 0 2','index 0 3','index 1 2','index(0)','index[0]','n-dimension array','n-dimension array 2','element','element 2','Index 0','idx','idx 2','index 2 (2)','index 0 (2)']
+for n in cands:
+    try: v=vi.GetControlValue(n); found.append((n,v))
+    except Exception: pass
+print('FOUND2', found, flush=True)
+S=os.path.join(g.CLAUDEDEV,'OpSetName_v0.vi'); vs=g.op(S); out=[]
+for n in ('vi path','Class Name','index','Name','name','New Name','new name','Label','label','Names','error out','vi path 2','Class Name 2','index 2'):
+    try: v=vs.GetControlValue(n); out.append((n,type(v).__name__))
+    except Exception: pass
+print('OpSetName controls', out, flush=True)
+
+FOUND2 [('element', 0), ('element 2', 0)]
+OpSetName controls [('vi path', 'str'), ('Class Name', 'str'), ('index', 'int'), ('error out', 'tuple'), ('vi path 2', 'str'), ('Class Name 2', 'str')]
+BGRUN END rc=0 after 0s
+BGRUN START 2026-09-06 18:02:58 limit 4.0 min: py -u -c 
+import sys, os; sys.path.insert(0,'tools'); import gscript as g; g._lv=None; g._run.__defaults__=(6.0,45.0)
+OP=os.path.join(g.CLAUDEDEV,'OpConnect_v0.vi'); n=g.count(OP,'Node'); vi=g.op(OP)
+def labels():
+    out=[]
+    for nm in ['index 3','index 4','index 5','array','array 2','array 3','n-dimension array','n-dimension array 2','element 3','index','index 2']:
+        try: vi.GetControlValue(nm); out.append(nm)
+        except Exception: pass
+    return out
+print('labels before', labels(), flush=True)
+for t in (0,2,3):
+    new=g.create_control(OP, n-3, t); print('term', t, '-> new', [(o['uid'],o['pos']) for o in new], 'labels now', labels(), 'ExecState', g.exec_state(OP), flush=True)
+
+labels before ['index', 'index 2']
+term 0 -> new [(539, (651, 585))] labels now ['index', 'index 2'] ExecState 1
+term 2 -> new [(610, (651, 560))] labels now ['index', 'index 2'] ExecState 1
+term 3 -> new [(669, (708, 526))] labels now ['index', 'index 2'] ExecState 1
+BGRUN END rc=0 after 1s
+BGRUN START 2026-09-06 18:07:51 limit 4.0 min: py -u -c 
+import sys, os; sys.path.insert(0,'tools'); import gscript as g; g._lv=None; g._run.__defaults__=(6.0,45.0)
+OP=os.path.join(g.CLAUDEDEV,'OpConnect_v0.vi'); S=os.path.join(g.CLAUDEDEV,'OpSetName_v0.vi')
+cts=g.report(OP,'ControlTerminal'); i=[o['uid'] for o in cts].index(610)
+vs=g.op(S); vs.SetControlValue('vi path',OP); vs.SetControlValue('Class Name','ControlTerminal'); vs.SetControlValue('index',i); vs.SetControlValue('Class Name 2','probe_name'); vs.SetControlValue('vi path 2','')
+try: g._run(vs); print('setname err', g._err(vs), flush=True)
+except Exception as e: print('setname run', str(e)[:100], flush=True)
+vi=g.op(OP)
+for nm in ('probe_name','index 3','index 4'):
+    try: print('  label', nm, '->', vi.GetControlValue(nm), flush=True)
+    except Exception: print('  label', nm, 'absent', flush=True)
+
+setname run run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\A
+  label probe_name absent
+  label index 3 absent
+  label index 4 absent
+BGRUN END rc=0 after 8s
+BGRUN START 2026-09-06 18:12:59 limit 6.0 min: py -u tools/recipes/build_opcreateindicator.py
+
+== 1 strip the Create Control invoke
+   predict: Wires 8, ExecState 1
+   observed: (8, 1)
+
+== 2 build_invoke Terminal.Create Indicator
+   predict: +1 Invoke
+   observed: [{'i': 0, 'class': 'Invoke', 'uid': 90, 'pos': (685, 450), 'owner': 'TopLevelDiagram'}]
+
+== 2a IA327.element -> reference
+   predict: Wire +1
+   observed: 9
+
+== 2b error out -> Clear Errors 369
+   predict: Wire +1
+   observed: 10
+assembled Wires 10 ExecState 1
+
+== 2c COM save
+   predict: size > 0
+   observed: 9264
+   t=0: 0.15s new [(692, (535, 205))]
+   t=1: 0.15s new [(718, (535, 172))]
+   t=2: 0.16s new [(758, (535, 326))]
+   t=3: 0.16s new [(779, (535, 147))]
+   t=4: 0.16s new []
+   t=5: 0.18s new [(797, (535, 227))]
+   t=6: 0.19s new [(822, (527, 291))]
+   t=7: 0.21s new [(853, (527, 227))]
+HITS (Traverse 124 output terminals) [(0, (535, 205)), (1, (535, 172)), (2, (535, 326)), (3, (535, 147)), (5, (535, 227)), (6, (527, 291)), (7, (527, 227))] target ExecState 1
+scratch target deleted
+BGRUN END rc=0 after 6s
+BGRUN START 2026-09-06 18:14:29 limit 8.0 min: py -u tools/recipes/build_opcreatecontrol_v1.py
+baseline Wires 10 ExecState 1
+
+== 2 build_property Control.Label
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 297, 'pos': (854, 450), 'owner': 'TopLevelDiagram'}]
+
+== 2a Invoke 'Create Control' -> PN4.reference
+   predict: Wire +1
+   observed: 11
+
+== 3 build_property Text.Text
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 298, 'pos': (953, 450), 'owner': 'TopLevelDiagram'}]
+
+== 3a PN4.Label -> PN5.reference
+   predict: Wire +1
+   observed: 12
+   ExecState 1
+   PN5 terminal 0: new [(391, (974, 418))] 'Text' readable=False ExecState 1
+   an indicator appeared but is not labelled 'Text' - STOP
+BGRUN END rc=5 after 2s
+BGRUN START 2026-09-06 18:15:18 limit 8.0 min: py -u tools/recipes/build_opcreatecontrol_v1.py
+baseline Wires 10 ExecState 1
+
+== 2 build_property Control.Label
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 297, 'pos': (854, 450), 'owner': 'TopLevelDiagram'}]
+
+== 2a Invoke 'Create Control' -> PN4.reference
+   predict: Wire +1
+   observed: 11
+
+== 3 build_property Text.Text
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 298, 'pos': (953, 450), 'owner': 'TopLevelDiagram'}]
+
+== 3a PN4.Label -> PN5.reference
+   predict: Wire +1
+   observed: 12
+   ExecState 1
+   PN5 terminal 0: new [(391, (974, 418))] 'Text' readable=False labels=['reference', 'error out'] ExecState 1
+   PN5 terminal 1: new [(433, (1019, 384))] 'Text' readable=False labels=['reference', 'reference out', 'error out'] ExecState 1
+   PN5 terminal 2: new [(570, (974, 376))] 'Text' readable=False labels=['reference', 'reference out', 'error in (no error)', 'error out'] ExecState 1
+   PN5 terminal 3: new [(629, (1019, 342))] 'Text' readable=False labels=['reference', 'reference out', 'error in (no error)', 'error out'] ExecState 1
+   PN5 terminal 4: new [(644, (1019, 457))] 'Text' readable=True labels=['Text', 'reference', 'reference out', 'error in (no error)', 'error out'] ExecState 1
+DISCOVERY: 'Text' output is terminal 4; 4 stray indicator(s) were made - NOT saving. Rerun with --text-term=4
+BGRUN END rc=7 after 4s
+BGRUN START 2026-09-06 18:15:36 limit 8.0 min: py -u tools/recipes/build_opcreatecontrol_v1.py --text-term=4
+baseline Wires 10 ExecState 1
+
+== 2 build_property Control.Label
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 297, 'pos': (854, 450), 'owner': 'TopLevelDiagram'}]
+
+== 2a Invoke 'Create Control' -> PN4.reference
+   predict: Wire +1
+   observed: 11
+
+== 3 build_property Text.Text
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 298, 'pos': (953, 450), 'owner': 'TopLevelDiagram'}]
+
+== 3a PN4.Label -> PN5.reference
+   predict: Wire +1
+   observed: 12
+   ExecState 1
+   PN5 terminal 4: new [(392, (1019, 457))] 'Text' readable=True labels=['Text', 'error out'] ExecState 1
+assembled Wires 13 ExecState 1
+
+== 5 COM save
+   predict: size > 0
+   observed: 9774
+   IA534 terminal 2: new [(648, (929, 353))] label reported = 'index 3'
+   IA534 terminal 0: new [(679, (929, 314))] label reported = 'array'
+   IA534 terminal 1: new [(691, (945, 281))] label reported = 'element'
+scratch target deleted
+BGRUN END rc=0 after 4s
+BGRUN START 2026-09-06 18:16:27 limit 10.0 min: py -u tools/recipes/build_opconnect.py
+baseline Wires 10 ExecState 1 Invokes [(115, (688, 450))]
+
+== 1 delete Create Control invoke + its 2 wires
+   predict: 2 wires gone; Wires 8; ExecState 1
+   observed: ([(246, (766, 455)), (239, (626, 451))], 8, 1)
+
+== 2a build_index_array IAb1 (520,600)
+   predict: +1 IndexArray
+   observed: [{'i': 0, 'class': 'IndexArray', 'uid': 90, 'pos': (520, 600), 'owner': 'TopLevelDiagram'}]
+
+== 2b build_property Node.Terminals[] (700,600)
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 95, 'pos': (697, 600), 'owner': 'TopLevelDiagram'}]
+
+== 2c build_index_array IAb2 (850,600)
+   predict: +1 IndexArray
+   observed: [{'i': 0, 'class': 'IndexArray', 'uid': 98, 'pos': (850, 600), 'owner': 'TopLevelDiagram'}]
+
+== 2d PN2.Nodes[] -> IAb1.array (branch)
+   predict: accepted
+   observed: 8
+
+== 2e IAb1.element -> PNb.reference
+   predict: Wire +1
+   observed: 9
+
+== 2f PNb.Terms[] -> IAb2.array
+   predict: Wire +1
+   observed: 10
+   ladder B assembled: Wires 10 ExecState 1
+
+== 3a control for IAb1.index (Nodes[8], terminal 2 = 'index')
+   predict: 1 new ControlTerminal within 90 px of (520,600); label 'index 3'
+   observed: (True, [(341, (474, 603))], 'index 3')
+
+== 3b control for IAb2.index (Nodes[10], terminal 2)
+   predict: 1 new ControlTerminal within 90 px of (850,600); label 'index 4'
+   observed: (True, [(368, (811, 603))], 'index 4')
+   ExecState after controls 1
+
+== 4 build_invoke Terminal.Connect Wire (1000,450)
+   predict: +1 Invoke
+   observed: [{'i': 0, 'class': 'Invoke', 'uid': 99, 'pos': (987, 450), 'owner': 'TopLevelDiagram'}]
+
+== 4a IA327.element -> reference (sink)
+   predict: Wire +1
+   observed: 13
+
+== 4b IAb2.element -> Wire Source
+   predict: Wire +1
+   observed: 14
+
+== 4c error out -> Clear Errors 369
+   predict: Wire +1
+   observed: 15
+
+assembled Wires 15 ExecState 1
+
+== 4d COM save
+   predict: size > 0
+   observed: 9980
+   new index control names: ['index 3', 'index 4']
+target: sink IA534 rank 11 source Traverse124 rank 1 Wires 28 ExecState 1
+   tb=0: 0.04s Wires 28->27 ExecState 0 err=None
+   tb=1: 0.04s Wires 27->27 ExecState 0 err=None
+   tb=2: 0.04s Wires 27->26 ExecState 0 err=None
+   tb=3: 0.04s Wires 26->26 ExecState 0 err=None
+   tb=4: 0.04s Wires 26->26 ExecState 0 err=None
+   tb=5: 0.04s Wires 26->26 ExecState 0 err=None
+   tb=6: 0.04s Wires 26->26 ExecState 0 err=None
+   tb=7: 0.04s Wires 26->25 ExecState 0 err=None
+HIT source terminal None target ExecState 0
+scratch target deleted
+BGRUN END rc=0 after 5s
+BGRUN START 2026-09-06 18:17:21 limit 6.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g; g._lv=None; g._run.__defaults__=(6.0,45.0)
+OP=os.path.join(g.CLAUDEDEV,'OpConnect_v0.vi'); T=os.path.join(g.CLAUDEDEV,'SCRATCH_connect_target.vi')
+shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'),T); g.open_panel(T); time.sleep(0.8)
+vi=g.op(OP); vi.SetControlValue('vi path',T); vi.SetControlValue('Names',[]); vi.SetControlValue('Names 2',[]); vi.SetControlValue('Class Name',''); vi.SetControlValue('Class Name 2','')
+vi.SetControlValue('index',11); vi.SetControlValue('index 2',0)      # sink: IA534.array
+for tb in (4,5,6,3,1):
+    g.revert(T); time.sleep(0.3); b=g.count(T,'Wire'); e0=g.exec_state(T)
+    vi.SetControlValue('index 3',1); vi.SetControlValue('index 4',tb)   # source: Traverse 124 terminal tb
+    t0=time.time()
+    try: g._run(vi)
+    except Exception as e: print('  run', str(e)[:60], flush=True)
+    print('tb=%d: %.2fs Wires %d->%d ExecState %d->%d err=%s'%(tb,time.time()-t0,b,g.count(T,'Wire'),e0,g.exec_state(T),g._err(vi)), flush=True)
+g.revert(T); g.close_panel(T); os.remove(T); print('scratch deleted', flush=True)
+
+tb=4: 0.02s Wires 28->28 ExecState 1->0 err=None
+tb=5: 0.02s Wires 28->28 ExecState 1->0 err=None
+tb=6: 0.02s Wires 28->28 ExecState 1->0 err=None
+tb=3: 0.02s Wires 28->28 ExecState 1->0 err=None
+tb=1: 0.01s Wires 28->28 ExecState 1->0 err=None
+scratch deleted
+BGRUN END rc=0 after 3s
+BGRUN START 2026-09-06 18:18:27 limit 6.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g; g._lv=None; g._run.__defaults__=(6.0,45.0)
+OP=os.path.join(g.CLAUDEDEV,'OpConnect_v0.vi'); T=os.path.join(g.CLAUDEDEV,'SCRATCH_connect_target.vi')
+shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'),T); g.open_panel(T); time.sleep(0.8)
+vi=g.op(OP); vi.SetControlValue('vi path',T); vi.SetControlValue('Names',[]); vi.SetControlValue('Names 2',[]); vi.SetControlValue('Class Name',''); vi.SetControlValue('Class Name 2','')
+def snap(): return {o['uid']:o['pos'] for o in g.report(T,'Wire')}
+for label,(na,ta,nb,tb) in (('sink=IA534.array src=Trav124.t4',(11,0,1,4)), ('swapped',(1,4,11,0)), ('sink=IA534.array src=IA308.element(4,1)',(11,0,4,1)), ('sink=IA534.index(2) src=IA308.element',(11,2,4,1))):
+    g.revert(T); time.sleep(0.3); w0=snap(); e0=g.exec_state(T)
+    vi.SetControlValue('index',na); vi.SetControlValue('index 2',ta); vi.SetControlValue('index 3',nb); vi.SetControlValue('index 4',tb)
+    try: g._run(vi)
+    except Exception as e: print('  run', str(e)[:60], flush=True)
+    w1=snap(); print(label, ': ExecState %d->%d'%(e0,g.exec_state(T)), 'gone', [(u,w0[u]) for u in w0 if u not in w1], 'new', [(u,w1[u]) for u in w1 if u not in w0], flush=True)
+g.revert(T); g.close_panel(T); os.remove(T); print('scratch deleted', flush=True)
+
+sink=IA534.array src=Trav124.t4 : ExecState 1->0 gone [] new []
+swapped : ExecState 1->0 gone [] new []
+sink=IA534.array src=IA308.element(4,1) : ExecState 1->0 gone [(469, (750, 290))] new []
+sink=IA534.index(2) src=IA308.element : ExecState 1->0 gone [] new []
+scratch deleted
+BGRUN END rc=0 after 5s
+BGRUN START 2026-09-06 18:19:27 limit 6.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g; g._lv=None; g._run.__defaults__=(6.0,45.0)
+OP=os.path.join(g.CLAUDEDEV,'OpConnect_v0.vi'); T=os.path.join(g.CLAUDEDEV,'SCRATCH_connect_target.vi')
+shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'),T); g.open_panel(T); time.sleep(0.8)
+vi=g.op(OP); vi.SetControlValue('vi path',T); vi.SetControlValue('Names',[]); vi.SetControlValue('Names 2',[]); vi.SetControlValue('Class Name',''); vi.SetControlValue('Class Name 2','')
+def snap(): return {o['uid']:o['pos'] for o in g.report(T,'Wire')}
+for tb in (4,6,7,5,3,2,1,0):
+    g.revert(T); time.sleep(0.3)
+    ia=g.build_index_array(T,(1300,700)); n_new=g.count(T,'Node')-1; w0=snap(); e0=g.exec_state(T)
+    vi.SetControlValue('index',n_new); vi.SetControlValue('index 2',0); vi.SetControlValue('index 3',1); vi.SetControlValue('index 4',tb)
+    try: g._run(vi)
+    except Exception as e: print('  run', str(e)[:60], flush=True)
+    w1=snap(); moved=[(u,w0[u],w1[u]) for u in w0 if u in w1 and w0[u]!=w1[u]]
+    print('src Trav124.t%d -> newIA.array: ExecState %d->%d'%(tb,e0,g.exec_state(T)), 'gone', [(u,w0[u]) for u in w0 if u not in w1], 'new', [(u,w1[u]) for u in w1 if u not in w0], 'moved', moved, flush=True)
+g.revert(T); g.close_panel(T); os.remove(T); print('scratch deleted', flush=True)
+
+src Trav124.t4 -> newIA.array: ExecState 0->0 gone [] new [(649, (512, 297))] moved []
+src Trav124.t6 -> newIA.array: ExecState 0->0 gone [] new [(649, (504, 297))] moved []
+src Trav124.t7 -> newIA.array: ExecState 0->0 gone [] new [] moved [(415, (462, 252), (462, 250))]
+src Trav124.t5 -> newIA.array: ExecState 0->0 gone [] new [(649, (512, 281))] moved []
+src Trav124.t3 -> newIA.array: ExecState 0->0 gone [] new [(649, (520, 277))] moved []
+src Trav124.t2 -> newIA.array: ExecState 0->1 gone [] new [] moved []
+src Trav124.t1 -> newIA.array: ExecState 0->0 gone [] new [(649, (520, 293))] moved []
+src Trav124.t0 -> newIA.array: ExecState 0->0 gone [] new [] moved []
+scratch deleted
+BGRUN END rc=0 after 11s
+BGRUN START 2026-09-06 18:20:23 limit 4.0 min: py -u -c 
+import sys, os, time, shutil; sys.path.insert(0,'tools'); import gscript as g; g._lv=None; g._run.__defaults__=(6.0,45.0)
+T=os.path.join(g.CLAUDEDEV,'SCRATCH_final.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'),T); g.open_panel(T); time.sleep(0.8)
+t0=time.time(); ia=g.build_index_array(T,(1300,700)); n=g.count(T,'Node')-1; print('build_index_array', ia[0]['pos'], 'ExecState', g.exec_state(T), '%.2fs'%(time.time()-t0), flush=True)
+t0=time.time(); r=g.connect_terminals(T, n, 0, 1, 2); print('connect_terminals Trav124.GObjectRefs -> newIA.array ->', r, '%.2fs'%(time.time()-t0), flush=True)
+t0=time.time(); c=g.create_control(T, n, 2); print('create_control newIA.index ->', c, '%.2fs'%(time.time()-t0), 'ExecState', g.exec_state(T), flush=True)
+t0=time.time(); print('move_object IndexArray[last] -> (1400,800):', g.move_object(T,'IndexArray',len(g.report(T,'IndexArray'))-1,(1400,800)), '%.2fs'%(time.time()-t0), flush=True)
+g.close_panel(T); os.remove(T); print('scratch deleted; claudeDev SCRATCH files:', [f for f in os.listdir(g.CLAUDEDEV) if f.startswith('SCRATCH')], flush=True)
+print('windows:', [w for w in g._lv_gui('-Action','windows').splitlines() if 'Error' in w or 'SCRATCH' in w], flush=True)
+
+build_index_array (1300, 700) ExecState 0 0.17s
+connect_terminals Trav124.GObjectRefs -> newIA.array -> (0, 1) 0.06s
+create_control newIA.index -> ([{'i': 8, 'class': 'ControlTerminal', 'uid': 660, 'pos': (1254, 703), 'owner': 'TopLevelDiagram'}], 'index 3') 0.26s ExecState 1
+move_object IndexArray[last] -> (1400,800): (1400, 800) 0.15s
+scratch deleted; claudeDev SCRATCH files: ['SCRATCH_delprobe.vi']
+windows: ['SCRATCH_delprobe.vi Front Panel']
+BGRUN END rc=0 after 2s
+BGRUN START 2026-09-06 18:21:39 limit 2.0 min: py -u -c 
+import sys, os; sys.path.insert(0,'tools'); import gscript as g; g._lv=None
+S=os.path.join(g.CLAUDEDEV,'SCRATCH_delprobe.vi')
+try: g.close_panel(S)
+except Exception as e: print('close', str(e)[:60])
+os.remove(S); print('leftover scratch removed; SCRATCH files now:', [f for f in os.listdir(g.CLAUDEDEV) if f.startswith('SCRATCH')], flush=True)
+print('windows:', [w for w in g._lv_gui('-Action','windows').splitlines() if 'SCRATCH' in w or 'Error' in w], flush=True)
+
+leftover scratch removed; SCRATCH files now: []
+windows: []
+BGRUN END rc=0 after 1s

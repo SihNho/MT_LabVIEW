@@ -1,0 +1,187 @@
+BGRUN START 2026-09-16 20:14:37 limit 25.0 min: py -u tools/bench/retro_cycle13_runner.py
+=== cycle-13 retrospective runner ===
+    root G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop
+
+--- A: py tools/audit_cycle.py --cycle 13 ---
+
+== cycle audit, last 24 h: 21 build logs, 38 peer logs, 106 archived reviews
+
+  PASS  A1 every build log came from bgrun: 21/21 ok
+  PASS  A2 every bgrun ended (END or TIMEOUT): all runs accounted for
+  PASS  A3 every failing log is followed by an archived review: 8 logs recorded a failure; unreviewed: none
+  FAIL  A4 every archived review says what was done with it: 81/106 annotated; blank: ['2026-09-15-cycle8-plan-attack.md', '2026-09-15-cycle8-plan-rule-audit.md', '2026-09-15-frameloop-seam-77-crossings.md', '2026-09-15-outcome-review-20260915.md', '2026-09-15-peerps1-bomless-cp949-parse.md', '2026-09-15-priorart-hard-noindex-r1.md']…
+  PASS  A5 the main VI was not modified in this window: md5 2a78e17c449c…, mtime 2026-09-01 12:07
+  PASS  A7 no archive note wikilinks into the active set: archive links stay inside archive
+  n-a   A6 state-changing GUI actions are recorded: 1730 lines in gui_actions.log (all time); this cycle used no GUI if the retrospective agrees
+
+  C1 builds run 22, failure markers 22, logs carrying a failure 8
+  C2 peer reviews dispatched 38, archived 106
+  C3 wall-clock inside bgrun, BUILDS ONLY 24 min 51 s
+  C4 wall-clock inside bgrun, REVIEWS 194 min 1 s; no log reported a cost - treat the review cost as UNKNOWN, not as zero
+  C5 total wall-clock 218 min 52 s  (reviews are 88% of it)
+
+  C6 material-marked recipe/bench runs 12, judgement-session attempts refused 1  <- delegate to the `material` agent instead
+
+  C7 files modified in the window but NOT named in docs\cycle13-plan.md: 59 - docs/MAIN_VI_MAP.md, docs/REFERENCES.md, docs/cycle10-plan.md, docs/cycle11-plan.md, docs/cycle12-plan.md, docs/decisions.md, docs/frame-ownership-design.md, docs/main-vi-startup.md, docs/main-vi-state.md, docs/main-vi-subvi-identity.md, docs/motion-path-audit.md, docs/questions-for-user-2026-09-14.md…
+
+AUDIT VIOLATIONS: A4 every archived review says what was done with it
+
+
+    audit rc=1 in 0.4s
+-> FAIL  A1 audit_cycle --cycle 13 rc==0  rc=1
+-> PASS  A2 audit output has a C7 scope-creep line
+
+--- B: py tools/retrospective.py --cycle 13 ---  (pre-existing archives: 0)
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_13.txt (5734 chars, 38 logs listed)
+OUTCOME: ANSWERED (215s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-16-retrospective-cycle13.md
+--- ANSWER ---
+1. Repeated failure
+
+Within cycle 13’s actual boundary, the same failure did not recur. There was one failed prediction: attempt 1, gate B2, where the existing tunnel/property route reached 0 of 57 FlatSequence-frame diagrams ([diag_hierarchy_a3.log:25](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_hierarchy_a3.log:25>), [line 34](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_hierarchy_a3.log:34>)). The approach changed immediately after attempt 1: mandatory peer review identified the class-specific `FlatSequence.Diagrams[]` route, and a 33-second attach census confirmed it ([diag_flatseq_diagrams_attach.log:9](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_flatseq_diagrams_attach.log:9>)).
+
+The historical `OpCaseFrames_v0` route had failed five times, but cycle 13 explicitly did not retry it ([cycle13-plan.md:88](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/cycle13-plan.md:88>)). The attached audit is a time window, not a cycle boundary—something its own source warns about ([audit_cycle.py:79](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/audit_cycle.py:79>)). The earlier owner-chain/delete recurrences therefore should not be charged again to cycle 13.
+
+2. Missing tool
+
+Yes: a reader equivalent to `OpFlatSequenceDiagrams_v0` was not built:
+
+`Traverse FlatSequence → Diagrams[] 3578BC00 → each Diagram’s GObject.UID 632A813`.
+
+Its absence left all 57 `FlatSequenceFrame` diagrams unresolved. The cycle completed only 112 of 170 diagram links ([diagram-hierarchy.md:118](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/diagram-hierarchy.md:118>), [line 135](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/diagram-hierarchy.md:135>)). The property’s attachment was already proven 5/5 ([diag_flatseq_diagrams_attach.log:9](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_flatseq_diagrams_attach.log:9>)); only the array walk remained.
+
+That reader would have answered:
+
+- B2’s failed prediction directly.
+- All 57 missing structure/frame links.
+- Whether A3 really met its stated “complete the 170-diagram hierarchy” objective.
+- Whether A4 could safely proceed with true nested-frame membership.
+
+Deferring the build was consistent with the prewritten material-session STOP condition, but it made this an incomplete A3 cycle and guaranteed another judgement/build cycle ([cycle13-plan.md:98](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/cycle13-plan.md:98>)).
+
+3. Unmeasured steps
+
+Yes. The cycle inferred a universal API limitation from an incomplete class/property search.
+
+The failed run established only that:
+
+- ordinary `Tunnel`, `Structure`, and `MultiFrameStructure` traversals do not include FlatSequence objects;
+- two guessed tunnel class strings return 1092;
+- the `MultiFrameStructure.Frames[]` ID is invalid on `FlatSequence`.
+
+It did not establish that no FlatSequence-specific accessor existed. Nevertheless the review prompt says the session was “about to write” that the frame diagrams were unreachable “by any traverse-class + property route” ([flatseq-frame-unreachable.md:14](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-16-flatseq-frame-unreachable.md:14>)). The cheap measurement was the class-specific property attach census eventually run in 33 seconds. It found both `Diagrams[]` and `Frames[]` immediately ([diag_flatseq_diagrams_attach.log:9](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_flatseq_diagrams_attach.log:9>), [line 13](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_flatseq_diagrams_attach.log:13>)).
+
+A second understatement concerns 3c. The plan called it “where the 1055 comes from,” but the log explicitly says the instrumentation cannot distinguish cast-generated from downstream-generated error ([diag_hierarchy_a3.log:65](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_hierarchy_a3.log:65>)). It measured where the error becomes observable, not its causal origin.
+
+4. Rule compliance
+
+Broken or evaded:
+
+- External search came too late. `CLAUDE.md` requires external search for every API/capability question and specifically before writing “not possible” ([CLAUDE.md:402](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/CLAUDE.md:402>)). Here the external/API-class search happened only after the 304-second run and universal negative inference.
+- Judgement/material separation was broken. See item 7.
+- Review-use compliance failed across the attached audit window: only 25 of 33 reviews were annotated. The checker only verifies that non-placeholder text exists under “What was done with it”; it does not verify a truthful or appropriate disposition ([audit_cycle.py:127](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/audit_cycle.py:127>)).
+- Documentation layering was violated. `STATUS.md` is well over 400 lines despite the approximately 100-line threshold requiring narrative to be moved into the archive ([CLAUDE.md:329](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/CLAUDE.md:329>), [line 339](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/CLAUDE.md:339>)).
+
+Complied with:
+
+- The original main VI remained byte-identical.
+- All executions used `bgrun` and terminated.
+- The scratch VIs were deleted in their respective runs.
+- No GUI or hardware was used.
+- The failed prediction received an answered, archived peer review before the recovery batch.
+- The five-time-failed `OpCaseFrames_v0` was not retried.
+- The material failure budget was not exceeded: one cycle-13 prediction failed, followed by a changed approach.
+
+What the audit does not cover:
+
+- It is a time window, not a real cycle boundary.
+- It does not assess whether the right question was asked, whether an available reader should have been built, or whether work was ordered sensibly.
+- A3 merely checks for any later review, not whether that review addresses the particular failure ([audit_cycle.py:117](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/audit_cycle.py:117>)).
+- A4 does not validate the correctness of dispositions.
+- A5 checks the main VI only, not every original.
+- A6 reports an all-time GUI-log count and explicitly delegates cycle attribution to the retrospective ([audit_cycle.py:164](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/audit_cycle.py:164>)).
+- C6 counts markers and refusals but cannot detect judgement performed inside a correctly marked material session ([audit_cycle.py:203](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/audit_cycle.py:203>)).
+- It does not check the external-search rule, inference versus measurement, computation equivalence, or whether the stated cycle deliverable was completed.
+
+5. Ordering
+
+The main 3a/3c/3d measurement was defensible, but the FlatSequence branch was ordered incorrectly.
+
+The class-specific property lookup and attach census should have preceded 3b’s negative traversal experiment. The later step took only 33 seconds and directly showed that `6363801` was merely the wrong class’s property ID—not evidence of inaccessible frames. Doing that first would have avoided:
+
+- B2’s failed prediction;
+- the 125-second corrective review;
+- the false universal claim drafted for review;
+- a separate recovery batch.
+
+The 591-second prior-art review also missed this decisive accessor despite 44 turns and $5.1239 cost ([priorart_cycle13.log:3](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/priorart_cycle13.log:3>)). That is the clearest trajectory problem: an expensive local prior-art pass occurred before the short external/class-specific API lookup mandated by the rules.
+
+6. What was not reported
+
+Three points were hidden or understated by the session summary:
+
+- “Measured A3” sounds like completion, but the stated objective was 170 diagrams and the cycle delivered only 112. The missing 57 are not peripheral; they are precisely the nested frames needed by downstream A4 ([STATUS.md:417](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:417>), [line 424](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:424>)).
+- The summary says “3c answered the errCO question,” but the raw log says the experiment cannot locate the causal source of 1055. It only shows `Owner` clean and two downstream readers failing ([STATUS.md:405](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:405>), [diag_hierarchy_a3.log:65](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_hierarchy_a3.log:65>)).
+- Cycle-13 review time exceeded execution time: 591 seconds of prior-art review plus 125 seconds of failed-prediction review, versus 304 + 33 seconds of machine runs. The summary reports the individual numbers but never surfaces that reviews consumed roughly two-thirds of the recorded cycle-specific time. The broader attached audit window is worse—166 minutes of reviews, 86% of recorded time—but must not be mislabeled as cycle 13 because the audit is window-based.
+
+The most consequential omitted fact is that review findings were accepted and actioned inside material sessions despite the closing claim that no judgement occurred there.
+
+7. Judgement inside a material session
+
+Yes.
+
+`STATUS.md` identifies both executions as `material/cycle13-A3` and `material/cycle13-A3b` ([STATUS.md:119](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:119>), [line 123](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:123>)). Inside that material trajectory:
+
+- The cycle-start review’s ten verdicts were “all accepted; none argued,” and those acceptances revised the plan and diagnostic before execution ([cycle13-plan.md:54](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/cycle13-plan.md:54>)). Accepting review findings is expressly judgement work under `CLAUDE.md:232-233`.
+- After B2, the material session accepted the peer’s competing explanation—wrong class-specific property rather than unreachable subtree—and selected/run the confirming diagnostic. The archive says, “REFUTED MY CLAIM” and records the accepted explanation and resulting test ([flatseq-frame-unreachable.md:161](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-16-flatseq-frame-unreachable.md:161>)).
+- It then chose the surviving interpretation written into the active docs: parallel class API, frames reachable, new op deferred ([flatseq-frame-unreachable.md:178](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-16-flatseq-frame-unreachable.md:178>)).
+
+Those are choices between explanations and acceptance of review findings, not bare fact collection. The claim in `STATUS.md:423` that none of the judgement questions was answered inside the material session is too narrow: it leaves the final build/no-build question open, but substantial review judgement had already occurred.
+
+VIOLATION: tool-not-built
+VIOLATION: inference-over-measurement
+VIOLATION: rule-evaded
+VIOLATION: wrong-ordering
+VIOLATION: unreported-fact
+VIOLATION: judgement-in-material
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle13.md
+
+    retrospective rc=0 in 216.1s
+-> PASS  B1 retrospective rc==0  rc=0
+-> PASS  B2 exactly one new retrospective-cycle13 archive  new=['2026-09-16-retrospective-cycle13.md']
+
+--- C: 2026-09-16-retrospective-cycle13.md ---
+    18161 chars, 7 VIOLATION line(s)
+    VIOLATION: <slug>
+    VIOLATION: tool-not-built
+    VIOLATION: inference-over-measurement
+    VIOLATION: rule-evaded
+    VIOLATION: wrong-ordering
+    VIOLATION: unreported-fact
+    VIOLATION: judgement-in-material
+-> PASS  C1 archive contains >=1 VIOLATION line  n=7
+
+--- D: py tools/violations.py --due  (VERBATIM) ---
+<<<DUE-BEGIN>>>
+DUE judgement-in-material: 3 occurrences -> 2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md, 2026-09-16-retrospective-cycle13.md
+    Answer it in docs/violation-decisions.md: a dated block with `DECISION: device` or `DECISION: no-device` and the reason. Dated AFTER the retrospective above.
+<<<DUE-END>>>
+    violations --due rc=1 in 0.1s
+
+--- D2: py tools/violations.py (full count) ---
+
+slug                             count   retrospectives
+tool-not-built                       7   2026-09-15-retrospective-cycle7.md, 2026-09-15-retrospective-cycle8.md, 2026-09-15-retrospective-cycle9.md, 2026-09-16-retrospective-cycle10.md, 2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md, 2026-09-16-retrospective-cycle13.md  (answered 2026-09-16 15:05 in docs/violation-decisions.md)
+inference-over-measurement           7   2026-09-15-retrospective-cycle7.md, 2026-09-15-retrospective-cycle8.md, 2026-09-15-retrospective-cycle9.md, 2026-09-16-retrospective-cycle10.md, 2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md, 2026-09-16-retrospective-cycle13.md  (answered 2026-09-16 15:05 in docs/violation-decisions.md)
+rule-evaded                          7   2026-09-15-retrospective-cycle7.md, 2026-09-15-retrospective-cycle8.md, 2026-09-15-retrospective-cycle9.md, 2026-09-16-retrospective-cycle10.md, 2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md, 2026-09-16-retrospective-cycle13.md  (answered 2026-09-16 15:05 in docs/violation-decisions.md)
+wrong-ordering                       7   2026-09-15-retrospective-cycle7.md, 2026-09-15-retrospective-cycle8.md, 2026-09-15-retrospective-cycle9.md, 2026-09-16-retrospective-cycle10.md, 2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md, 2026-09-16-retrospective-cycle13.md  (answered 2026-09-16 15:05 in docs/violation-decisions.md)
+unreported-fact                      7   2026-09-15-retrospective-cycle7.md, 2026-09-15-retrospective-cycle8.md, 2026-09-15-retrospective-cycle9.md, 2026-09-16-retrospective-cycle10.md, 2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md, 2026-09-16-retrospective-cycle13.md  (answered 2026-09-16 15:05 in docs/violation-decisions.md)
+repeated-failure-class               6   2026-09-15-retrospective-cycle7.md, 2026-09-15-retrospective-cycle8.md, 2026-09-15-retrospective-cycle9.md, 2026-09-16-retrospective-cycle10.md, 2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md  (answered 2026-09-16 15:05 in docs/violation-decisions.md)
+scope-creep                          4   2026-09-15-retrospective-cycle7.md, 2026-09-16-retrospective-cycle10.md, 2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md  (answered 2026-09-16 19:16 in docs/violation-decisions.md)
+premature-build                      4   2026-09-15-retrospective-cycle7.md, 2026-09-15-retrospective-cycle9.md, 2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md  (answered 2026-09-16 19:16 in docs/violation-decisions.md)
+judgement-in-material                3   2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md, 2026-09-16-retrospective-cycle13.md  <== DUE, no decision on file
+
+threshold 3; 1 slug(s) awaiting a response (a mechanical device OR a dated written refusal - user's option C, 2026-09-16)
+
+=== retro_cycle13 runner: 4 pass, 1 fail ===
+=== violations --due rc=1; DUE output is between the markers above ===
+BGRUN END rc=1 after 217s

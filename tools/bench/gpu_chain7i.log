@@ -1,0 +1,58 @@
+BGRUN START 2026-09-08 10:51:54 limit 80.0 min: py -u tools/bench/gpu_chain7.py
+LabVIEW up after 14 s, version 26.3.1f1
+dialogs: 8,1346,762| / ENABLED|9176654|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+lv_restart rc 0
+baseline SubVIs [(384, (1050, 640)), (105, (900, 640)), (124, (495, 281))] Property [(109, (706, 380))] Wires 10 ExecState 1
+
+== 1 delete the creator SubVI
+   predict: ExecState 0
+   observed: ({105}, 0)
+
+== 2 remove its dangling wires
+   predict: 6 wires
+   observed: ((6, 1), 6)
+
+== 3 drop Create Build Array.vi
+   predict: +1 SubVI
+   observed: (0.09973311424255371, 3)
+
+== 4 PN.Diagram -> creator Diagram in
+   predict: Wire +1
+   observed: 7
+
+== 5 control location -> location (0, 0)
+   predict: Wire +1
+   observed: 8
+   creator t5: control 'Inputs' wires 8->9
+
+assembled Wires 9 Invokes 0 ExecState 1
+saved 11376
+
+== 6 RUN OpBuildBA_v0 on a scratch target
+   predict: +1 non-Invoke Node near (1300,700)
+   observed: (0.07129621505737305, [(622, 'BuildArray', (1300, 700))])
+scratch target deleted
+build OpBuildBA rc 0
+LabVIEW up after 14 s, version 26.3.1f1
+dialogs: 8,1346,762| / ENABLED|3804286|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+lv_restart rc 0
+ExecState 1 wires 37 Invokes 0
+new nodes: [(1611, 'BuildArray', (640, 300))]
+I2A.Image Pixels (U8) -> BA.'element': 38
+BA.appended array -> CLFN.Array of Images: 39
+wires 37 -> 39 -> after RBW 39 | ExecState 1 Invokes 0
+saved 38187
+fix_image rc 0
+LabVIEW up after 13 s, version 26.3.1f1
+dialogs: 8,1346,762| / ENABLED|4984786|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+lv_restart rc 0
+deployed 308736
+file 38187 Tue Sep  8 10:54:25 2026
+wires 39 ExecState 1 Invokes 0
+loader beads 5
+frame 4: run 60 ms; msg 'size mismatch nb=5 x=10 out=5x9 good=5 test=120 img=1x1024'; out [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]; ref [708.406465, 300.656898, 2.92212, 390.996027, 266.403092, 2.49166]; max|diff| 1.07e+03
+   pos [0, 0, 0, 0, 0] good [255, 255, 255, 255, 255]
+frame 7: run 44 ms; msg 'size mismatch nb=5 x=10 out=5x9 good=5 test=120 img=1x1024'; out [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]; ref [708.40462, 300.644542, 2.927779, 391.411971, 266.36829, 2.566158]; max|diff| 1.07e+03
+   pos [0, 0, 0, 0, 0] good [255, 255, 255, 255, 255]
+smoke rc 0
+LabVIEW up after 14 s, version 26.3.1f1

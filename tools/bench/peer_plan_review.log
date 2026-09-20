@@ -1,0 +1,114 @@
+BGRUN START 2026-09-12 18:39:06 limit 12.0 min: powershell -NoProfile -Command & .\tools\peer.ps1 -Agent codex -Slug restructure-plan-4.6-attack -Task (Get-Content -Raw .\tools\bench\scratch\review_task.txt)
+OUTCOME: ANSWERED (123s)  archived: archive\peer\2026-09-12-restructure-plan-4.6-attack.md
+--- ANSWER ---
+The plan?�s central safety claim is unsupported: extracting a region into a subVI does not preserve all observable dataflow ?�by construction,??and the proposed queue policy cannot simultaneously promise lossless tracking, nonblocking acquisition, bounded memory, and zero frame loss.
+
+### A. SubVI extraction can change behavior
+
+The boundary argument is too strong. LabVIEW?�s Create SubVI operation only creates terminals for selected wires and reconnects them; NI does not claim semantic equivalence for hidden dependencies such as locals, references, property nodes, or shared resources. [NI: Create and Configure a LabVIEW SubVI](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YK4VCAW)
+
+Specific hazards:
+
+- A local variable belongs to a front-panel object in one VI. After extraction it either refers to a newly created subVI control or must be replaced by a reference to the caller?�s control. Those are different mechanisms. [NI: Local Variables](https://www.ni.com/docs/en-GB/bundle/labview/page/local-variables.html), [NI: Access a main-VI control from a subVI](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YHpJCAW)
+- Passing a control reference into the subVI preserves access to the original object, but property/value access is still reference-based UI work; extraction has not converted it into ordinary dataflow. [NI: Access a main-VI control from a subVI](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YHpJCAW)
+- Local-variable reads and writes have no ordering unless an explicit dependency exists. Splitting formerly adjacent operations into independently scheduled loops makes latent races observable. NI describes races as parallel code changing a shared local/global resource. [NI LabVIEW User Manual](https://download.ni.com/support/manuals/320999e.pdf)
+- Error clusters impose ordering only along the chain that is actually wired. Creating separate loop-local chains removes ordering between operations formerly connected by one error wire. LabVIEW nodes otherwise execute as soon as all inputs are available. [NI: Block Diagram Data Flow](https://www.ni.com/docs/en-GB/bundle/labview/page/block-diagram-data-flow.html)
+- A non-reentrant extracted subVI serializes simultaneous calls. Changing it to reentrant execution can instead duplicate internal state and change behavior. NI states that non-reentrant calls wait for one another. [NI: VI Execution properties](https://www.ni.com/docs/en-AS/bundle/labview-api-ref/page/dialog-boxes/execution-page-vi-properties-dialog-box.html)
+- Uninitialized shift registers, feedback nodes, first-call logic, static references, event registrations, and cached state need an explicit inventory. I cannot tell from this plan whether any cross the proposed boundaries.
+- A subVI?�s ordinary input values are supplied at invocation and its outputs become available when it completes. A long-running ?�loop subVI??therefore cannot use ordinary terminals as live inter-loop state; it needs explicit reference/queue/channel semantics.
+- Extracting an Event Structure is especially risky: latch-action Boolean terminals must be read in the event case for their mechanical action to reset. The plan provides no control-by-control audit.
+
+The necessary gate is not merely ?�bit-identical fixture output.??Require a boundary manifest listing every wire, local/global, property/invoke node, reference, error edge, stateful node, and front-panel terminal affected by extraction.
+
+### B. Pool plus index is viable, but the ownership protocol is incomplete
+
+A fixed image pool plus free-slot/work-slot queues is a reasonable zero-allocation ownership pattern. It is not automatically safer than a queue, DVR, or stream channel: the safety comes from exclusive ownership and complete lifecycle handling, not from the integer index.
+
+IMAQ image data is reference-like: NI says the image reference contains a pointer to an internal structure, while the pixel pointer addresses the underlying image memory. [NI: IMAQ Memory Allocation](https://www.ni.com/en/support/documentation/supplemental/18/ni-imaq-memory-allocation.html)
+
+The plan needs these invariants:
+
+1. Acquisition must first obtain a free slot.
+2. Exactly one owner may access that slot.
+3. Every consumer path?�including kernel error, enqueue failure, shutdown, and file-writer error?�must return or retire it exactly once.
+4. Cleanup must not dispose images until every possible user has stopped.
+5. A GPU raw pointer must not outlive slot ownership or survive a resize/reallocation.
+
+On sustained overload, only three outcomes exist:
+
+- Block waiting for a free slot, which eventually blocks acquisition and recreates the cliff.
+- Drop a newly acquired frame.
+- Reclaim/overwrite an old slot, risking use-after-recycle unless ownership is coordinated.
+
+Thus ?�bounded,???�lossless,???�nonblocking,??and ?�consumer may remain slower??cannot all hold. The stated G6 policy explicitly drops frames, contradicting both ?�lossless path??and the stage?�s ?�no frame loss??acceptance criterion.
+
+Also, a bounded LabVIEW queue with the default `-1` enqueue timeout waits indefinitely when full. [NI: queue-full behavior](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA0VU0000002WyH0AU) The plan must specify zero/finite timeout behavior and handle `timed out`; it must not assume ?�bounded??implies ?�drop.??
+A Stream Channel has explicit last-element shutdown signaling and is a standard alternative, but it does not solve image ownership or overload. [NI Community: Stream Channel shutdown semantics](https://forums.ni.com/t5/LabVIEW/queue-stop/m-p/4359237)
+
+Abort and error handling are substantially underspecified:
+
+- On an ordinary stop, send a typed stop/end message, drain or deliberately discard queued frames, return slots, then release resources.
+- Releasing a queue while another node waits invalidates the refnum and produces error 1122; NI recommends stopping users before release. [NI: Error 1122](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019LYuSAM)
+- Consumer failure needs a reverse fault path that stops acquisition. Otherwise the producer fills the queue/pool and either blocks or drops forever.
+- Hard Abort bypasses diagram cleanup. ?�Next start cleans up??is not adequate for VISA, files, camera acquisition, partial records, or an external GPU call. At minimum, define startup recovery, stale named-resource handling, file repair, safe actuator state, and detection of an outstanding DLL call.
+
+### C. `Last` does not mean ?�cannot harm acquisition??
+The measurement establishes only that one tested workload did not reduce the camera?�s acquired counter. It does not prove noninterference.
+
+`Last` changes which camera-buffer image is returned; NI describes `Last`/`Last New` in terms of selecting the most recent buffer and uniqueness, not CPU isolation, lock isolation, or scheduling guarantees. [NI: IMAQdx Last and Last New](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000001DwvoCAC&l=en-US)
+
+A display consumer can still hurt acquisition through:
+
+- CPU and memory-bandwidth contention while copying, scaling, converting, or rendering a 1.31 MB image.
+- UI-thread contention from property nodes, graph/image redraws, event handling, and panel updates.
+- Execution-system contention; LabVIEW schedules simultaneous work across execution systems and priorities, but that does not reserve a core or deadline for acquisition. [NI: VI Execution properties](https://www.ni.com/docs/en-AS/bundle/labview-api-ref/page/dialog-boxes/execution-page-vi-properties-dialog-box.html)
+- Shared IMAQdx/driver locks or memory-copy contention. This is plausible but not established by the cited NI documentation; it must be measured.
+- Holding the same image reference while another operation expects to overwrite or recycle it.
+- An Event Structure case that performs lengthy UI work, delaying all other UI events.
+
+`Defer Panel Updates` may reduce redraw work, but it is dangerous if an error path leaves updates deferred. The plan needs a guaranteed restore path and should batch values before entering the UI section.
+
+Acceptance must therefore measure processed-frame deadlines, missed buffer numbers, acquisition-call latency distribution, CPU per core, memory bandwidth, UI-thread time, and display age?�not only the acquired-rate counter.
+
+### D. Seven loops is neither inherently too many nor evidence-based
+
+Loop count is the wrong metric. The relevant quantity is runnable work, execution-system assignment, synchronization, and core demand.
+
+The failure mode is oversubscription: the tracking parallel For Loop can occupy the available workers while six other loops wake, causing context switches, cache eviction, memory-bandwidth pressure, priority inversion-like latency, and acquisition jitter. A non-reentrant shared subVI can also serialize nominally independent loops. NI documents both simultaneous execution systems and non-reentrant call serialization. [NI: VI Execution properties](https://www.ni.com/docs/en-AS/bundle/labview-api-ref/page/dialog-boxes/execution-page-vi-properties-dialog-box.html)
+
+Likely trouble points:
+
+- Parallel For Loop worker count plus GPU-driver/IMAQdx threads is omitted.
+- File writing and display copies can saturate memory bandwidth even when average CPU is low.
+- Polling motor or stage loops without blocking waits can consume a core.
+- Assigning priorities casually can starve UI, logging, or shutdown paths.
+- Scheduler-to-motor locals provide no atomic versioning: motor can observe a new speed with an old force/wait value.
+
+Use one immutable command cluster with sequence number and timestamp, sent through a single-owner motor queue. Do not publish a multi-field command through separate locals.
+
+Benchmark candidate architectures at core counts and parallel-For worker counts, including one fewer available core than normal. Seven loops should survive that test; it should not be accepted because seven ?�sounds small.??
+### E. Material omissions
+
+A careful review should stop construction until these are specified:
+
+- **Requirements contradiction:** ?�numerical outputs must not change??conflicts with GPU tolerances in stage 6. Either bit-identical is required, or the scientific owner must approve a numerical-equivalence criterion before implementation.
+- **Frame-loss contradiction:** G6 permits drops while the goal and acceptance say no loss.
+- **Overload contract:** maximum permitted backlog, frame age, drop-new/drop-old policy, and what the experiment does after one dropped frame.
+- **End-to-end timing:** define timestamp source and measure camera exposure ??acquisition ??tracking ??control decision ??file commit. Average Hz hides the documented cliff.
+- **Data integrity:** buffer number, timestamps, slot generation counter, configuration version, schedule version, calibration ID, kernel version, and explicit gap records must accompany every saved result.
+- **Atomic commands:** scheduler targets must be one versioned message, not unrelated local variables.
+- **Single ownership:** identify exactly one loop responsible for each camera session, VISA session, motor interface, file refnum, queue, image, and GPU context.
+- **Coordinated fault state machine:** first-error capture, broadcast stop, acquisition stop, consumer drain/cancel, file finalization, resource closure, and safe instrument state.
+- **Startup recovery:** detect remnants of aborted runs and incomplete output files before enabling hardware.
+- **Backpressure tests:** deliberately slow tracking and disk writing for minutes, not merely inject 8 ms into a display consumer.
+- **Soak and percentile tests:** hours-long run; maximum and p99.9 acquisition latency; CPU thermal throttling; UI interaction; disk stalls; camera reconnect; GPU error; queue saturation.
+- **Fixture limitation:** a prerecorded fixture proves numerical regression, not live buffer ownership, scheduling, timing, or races.
+- **Display correctness:** quantify freshness, duplicate frames, tearing/stale-slot detection, and maximum display latency. `Last` deliberately allows skipped intermediate images.
+- **File-writer capacity:** required sustained bandwidth, flush policy, disk-full behavior, and whether an error stops the experiment or merely logging.
+- **Rollback/version isolation:** shared extracted subVIs mean a later edit changes both CPU and GPU builds, undermining reproducibility unless dependencies are version-pinned.
+- **Scope control:** adding rotor semantics during a timing/scheduling rewrite introduces an independent hardware behavior change and weakens causal testing. It should be a separate change set.
+- **Hardware interlocks and dry-run:** exact command transcript comparison is insufficient evidence that timing changes are safe. Require simulation/stub execution and explicit authorization before any actuator test.
+- **Baseline completeness:** capture outputs, frame numbers, command streams, event timing, UI state, configuration, and environment?�not only x/y/z.
+
+The cheapest decisive checks are: produce the extraction dependency manifest, formalize the pool ownership state machine, resolve the three contradictions above, and run an overload/fault matrix on a camera-only and actuator-stubbed harness. Without those, the seven-loop skeleton is an architectural experiment on a working instrument, not a preservation-by-construction refactor.
+BGRUN END rc=0 after 123s

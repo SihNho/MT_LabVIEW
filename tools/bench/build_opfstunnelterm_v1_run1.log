@@ -1,0 +1,140 @@
+BGRUN START 2026-09-18 10:50:40 limit 20.0 min: py -u tools/recipes/build_opfstunnelterm_v1.py MATERIAL=1
+PREDICTION CONTRACT I0..L5 - see this file's docstring.
+   LabVIEW pid before anything: 15280
+
+-- md5 before --
+   c39f36e0675339673b707c59f0784fee  Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi
+   2a78e17c449cacdaf5da389818526859  Min_Track N beads V6_ParallelLoop.vi
+   5dc45a04ea5d809f5ca57e9309ed59c5  OpWireSource_v5.vi
+  PASS I0a every input path is a real file  | []
+   fresh(): killing LabVIEW pid 15280
+   COM preflight attempt 1/15: pid None->12552, wires 16->16
+   COM preflight OK (pid 12552, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 12552
+  HANDLES after a fresh LabVIEW, before any work: 30353  (fresh baseline ~31,500)
+
+================ I1  WHICH CLASS DOES EACH UID BELONG TO (measured, not assumed) ================
+
+   --- V6 working copy
+       G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+       Diagram                    n=  170  28343=False  43605=False  44036=False
+       LoopTunnel                 n=  132  28343=True  43605=False  44036=False
+       FlatSequenceOuterTunnel    n=   58  28343=False  43605=True  44036=False
+       FlatSequenceInnerTunnel    n=  518  28343=False  43605=False  44036=False
+       SubVI                      n=   98  28343=False  43605=False  44036=True
+
+   --- 3StateClamping ORIGINAL
+       G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi
+       Diagram                    n=  170  28343=False  43605=False  44036=False
+       LoopTunnel                 n=  132  28343=True  43605=False  44036=False
+       FlatSequenceOuterTunnel    n=   58  28343=False  43605=True  44036=False
+       FlatSequenceInnerTunnel    n=  518  28343=False  43605=False  44036=False
+       SubVI                      n=   97  28343=False  43605=False  44036=True
+  NOTE main_vi_nodeterms.json 'vi' (the cached node/terminal index): G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+  NOTE d1_step0_census.json md5 field: 2a78e17c449cacdaf5da389818526859
+
+================ P  does FlatSequenceOuterTunnel inherit Tunnel? (recorded) ================
+   6356001 [Tunnel.Outside Terminal] -> REFUSED build_property(VI Server:FlatSequenceOuterTunnel, ['6356001']): creator refused - error 1077: Invoke Node in LV-Scriptin
+   6356000 [Tunnel.Inside Terminals[]] -> REFUSED build_property(VI Server:FlatSequenceOuterTunnel, ['6356000']): creator refused - error 1077: Invoke Node in LV-Scriptin
+   7CC75C00 [OuterTerminal.Tunnel (on the OUTER TUNNEL class - expected refusal)] -> REFUSED build_property(VI Server:FlatSequenceOuterTunnel, ['7CC75C00']): creator refused - error 1077: Invoke Node in LV-Scripti
+  PASS P0 the scratch VI was created and DELETED in the same run  | C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_fstunnel_probe_4612.vi
+
+================ B  BUILD OpFsTunnelTerm_v0.vi from OpWireSource_v5  [OUT FlatSequenceOuterTunnel] ================
+   copy of the donor: ExecState 1, 19 nodes on diagram 0
+   Terms[] PN 145 (wire 578) | Index Array 151 (element wire 639) | front TMSC 1044 (target-class wire 533) | back-half reference sinks [157, 1319, 1326]
+  PASS B1 [OUT FlatSequenceOuterTunnel] the donor copy is legal and the sweep found the front section and >=1 back-half sink  | ExecState 1; terms 145 ia 151 tmsc 1044 consumers [157, 1319, 1326]
+   deleted Node #145 -> gone [145]
+   deleted Node #151 -> gone [151]
+   deleted Wire #578
+   deleted Wire #639
+   deleted Wire #533
+   after the deletes: back-half sinks {157: 0, 1319: 0, 1326: 0}; TMSC target class wire 0
+  PASS B2 [OUT FlatSequenceOuterTunnel] every sink to be re-fed is BARE and the cast's target class is unwired  | {157: 0, 1319: 0, 1326: 0}; target class 0
+   PN_A uid 145 (Nodes[17], OuterTerminal); new control(s) from its `reference`: ['reference 4']
+  PASS B3 [OUT FlatSequenceOuterTunnel] create_control on the OuterTerminal node's `reference` made exactly one new CONTROL  | ['reference 4']
+   deleted the seed->PN_A wire #1651 (the seed's job is to type the CAST)
+   seed 'reference 4' -> TMSC `target class` wire 1457
+   WIRE [OUT FlatSequenceOuterTunnel] TMSC->PN_A Function#1044.'specific class reference' -> Property#145.'reference': src wire BEFORE = 384 -> branch=True; ExecState BEFORE = 0
+        AFTER: src wire 384, dst wire 384; ExecState AFTER = 0
+   TMSC -> PN_A wired; ExecState 0 (0 is expected here - the back half is still bare)
+   WIRE [OUT FlatSequenceOuterTunnel] TMSC->PN_B Function#1044.'specific class reference' -> Property#148.'reference': src wire BEFORE = 384 -> branch=True; ExecState BEFORE = 0
+        AFTER: src wire 384, dst wire 384; ExecState AFTER = 0
+   WIRE [OUT FlatSequenceOuterTunnel] OuterTerminal->UID Property#145.'OuterTerminal' -> Property#151.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+        AFTER: src wire 1694, dst wire 1694; ExecState AFTER = 0
+   WIRE [OUT FlatSequenceOuterTunnel] InnerTerminal->UID Property#148.'InnerTerminal' -> Property#154.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+        AFTER: src wire 1719, dst wire 1719; ExecState AFTER = 0
+   WIRE [OUT FlatSequenceOuterTunnel] InnerTerminal->ConnWire Property#148.'InnerTerminal' -> Property#168.'reference': src wire BEFORE = 1719 -> branch=True; ExecState BEFORE = 0
+        AFTER: src wire 1719, dst wire 1719; ExecState AFTER = 0
+   WIRE [OUT FlatSequenceOuterTunnel] ConnWire->UID Property#168.'Wire' -> Property#169.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+        AFTER: src wire 1766, dst wire 1766; ExecState AFTER = 0
+   back-half sink #157 (Property) re-fed from OuterTerminal (1/3)
+   back-half sink #1319 (Property) re-fed from OuterTerminal (2/3)
+   back-half sink #1326 (Property) re-fed from OuterTerminal (3/3)
+   OuterTerminal wire 1694; back half now {157: 1694, 1319: 1694, 1326: 1694}; ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  PASS B4b [OUT FlatSequenceOuterTunnel] every back-half sink reads the OuterTerminal wire  | 1694 vs {157: 1694, 1319: 1694, 1326: 1694}
+**FAIL B4 [OUT FlatSequenceOuterTunnel] the whole typed chain is LEGAL - the FlatSequenceOuterTunnel property nodes accept the cast output, so the seed really typed the cast  | ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+   DIAG unwired sinks: [(43, 'password ("")'), (43, 'type specifier VI Refnum (for type only)'), (43, 'options'), (43, 'application reference (local)'), (124, ''), (124, 'Other Refnum'), (124, 'Traverse Generated Code (F)'), (124, ''), (990, ''), (990, ''), (990, ''), (990, ''), (990, ''), (990, '')]
+   DIAG node 145 terminals: [(0, 'reference', False, 384), (1, 'reference out', True, 0), (2, 'error in (no error)', False, 0), (3, 'error out', True, 0), (4, 'OuterTerminal', True, 1694)]
+   DIAG node 148 terminals: [(0, 'reference', False, 384), (1, 'reference out', True, 0), (2, 'error in (no error)', False, 0), (3, 'error out', True, 0), (4, 'InnerTerminal', True, 1719)]
+   DIAG node 168 terminals: [(0, 'reference', False, 1719), (1, 'reference out', True, 0), (2, 'error in (no error)', False, 0), (3, 'error out', True, 0), (4, 'Wire', True, 1766)]
+   DIAG node 1044 terminals: [(0, 'specific class reference', True, 384), (1, 'error out', True, 0), (2, 'target class', False, 1457), (3, 'reference', False, 1081), (4, 'error in', False, 0)]
+
+================ B  BUILD OpFsInnerTunnelTerm_v0.vi from OpWireSource_v5  [IN FlatSequenceInnerTunnel] ================
+   copy of the donor: ExecState 1, 19 nodes on diagram 0
+   Terms[] PN 145 (wire 578) | Index Array 151 (element wire 639) | front TMSC 1044 (target-class wire 533) | back-half reference sinks [157, 1319, 1326]
+  PASS B1 [IN FlatSequenceInnerTunnel] the donor copy is legal and the sweep found the front section and >=1 back-half sink  | ExecState 1; terms 145 ia 151 tmsc 1044 consumers [157, 1319, 1326]
+   deleted Node #145 -> gone [145]
+   deleted Node #151 -> gone [151]
+   deleted Wire #578
+   deleted Wire #639
+   deleted Wire #533
+   after the deletes: back-half sinks {157: 0, 1319: 0, 1326: 0}; TMSC target class wire 0
+  PASS B2 [IN FlatSequenceInnerTunnel] every sink to be re-fed is BARE and the cast's target class is unwired  | {157: 0, 1319: 0, 1326: 0}; target class 0
+   PN_A uid 145 (Nodes[17], LeftTerm); new control(s) from its `reference`: ['reference 4']
+  PASS B3 [IN FlatSequenceInnerTunnel] create_control on the LeftTerm node's `reference` made exactly one new CONTROL  | ['reference 4']
+   deleted the seed->PN_A wire #1651 (the seed's job is to type the CAST)
+   seed 'reference 4' -> TMSC `target class` wire 1457
+   WIRE [IN FlatSequenceInnerTunnel] TMSC->PN_A Function#1044.'specific class reference' -> Property#145.'reference': src wire BEFORE = 384 -> branch=True; ExecState BEFORE = 0
+        AFTER: src wire 384, dst wire 384; ExecState AFTER = 0
+   TMSC -> PN_A wired; ExecState 0 (0 is expected here - the back half is still bare)
+   WIRE [IN FlatSequenceInnerTunnel] TMSC->PN_B Function#1044.'specific class reference' -> Property#148.'reference': src wire BEFORE = 384 -> branch=True; ExecState BEFORE = 0
+        AFTER: src wire 384, dst wire 384; ExecState AFTER = 0
+   WIRE [IN FlatSequenceInnerTunnel] LeftTerm->UID Property#145.'LeftTerm' -> Property#151.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+        AFTER: src wire 1694, dst wire 1694; ExecState AFTER = 0
+   WIRE [IN FlatSequenceInnerTunnel] RightTerm->UID Property#148.'RightTerm' -> Property#154.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+        AFTER: src wire 1719, dst wire 1719; ExecState AFTER = 0
+   WIRE [IN FlatSequenceInnerTunnel] RightTerm->ConnWire Property#148.'RightTerm' -> Property#168.'reference': src wire BEFORE = 1719 -> branch=True; ExecState BEFORE = 0
+        AFTER: src wire 1719, dst wire 1719; ExecState AFTER = 0
+   WIRE [IN FlatSequenceInnerTunnel] ConnWire->UID Property#168.'Wire' -> Property#169.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+        AFTER: src wire 1766, dst wire 1766; ExecState AFTER = 0
+   back-half sink #157 (Property) re-fed from LeftTerm (1/3)
+   back-half sink #1319 (Property) re-fed from LeftTerm (2/3)
+   back-half sink #1326 (Property) re-fed from LeftTerm (3/3)
+   LeftTerm wire 1694; back half now {157: 1694, 1319: 1694, 1326: 1694}; ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  PASS B4b [IN FlatSequenceInnerTunnel] every back-half sink reads the LeftTerm wire  | 1694 vs {157: 1694, 1319: 1694, 1326: 1694}
+**FAIL B4 [IN FlatSequenceInnerTunnel] the whole typed chain is LEGAL - the FlatSequenceInnerTunnel property nodes accept the cast output, so the seed really typed the cast  | ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+   DIAG unwired sinks: [(43, 'password ("")'), (43, 'type specifier VI Refnum (for type only)'), (43, 'options'), (43, 'application reference (local)'), (124, ''), (124, 'Other Refnum'), (124, 'Traverse Generated Code (F)'), (124, ''), (990, ''), (990, ''), (990, ''), (990, ''), (990, ''), (990, '')]
+   DIAG node 145 terminals: [(0, 'reference', False, 384), (1, 'reference out', True, 0), (2, 'error in (no error)', False, 0), (3, 'error out', True, 0), (4, 'LeftTerm', True, 1694)]
+   DIAG node 148 terminals: [(0, 'reference', False, 384), (1, 'reference out', True, 0), (2, 'error in (no error)', False, 0), (3, 'error out', True, 0), (4, 'RightTerm', True, 1719)]
+   DIAG node 168 terminals: [(0, 'reference', False, 1719), (1, 'reference out', True, 0), (2, 'error in (no error)', False, 0), (3, 'error out', True, 0), (4, 'Wire', True, 1766)]
+   DIAG node 1044 terminals: [(0, 'specific class reference', True, 384), (1, 'error out', True, 0), (2, 'target class', False, 1457), (3, 'reference', False, 1081), (4, 'error in', False, 0)]
+
+   killing LabVIEW so the SAVED ops are read back COLD
+   fresh(): killing LabVIEW pid 12552
+   COM preflight attempt 1/15: pid None->15868, wires 16->16
+   COM preflight OK (pid 15868, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 15868
+**FAIL B  the OUT op was built and saved  | build_one returned None - see its gates
+**FAIL B  the IN op was built and saved  | build_one returned None - see its gates
+  HANDLES after the run: 30387  (fresh baseline ~31,500)
+
+-- md5 after --
+   c39f36e0675339673b707c59f0784fee  Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi
+   2a78e17c449cacdaf5da389818526859  Min_Track N beads V6_ParallelLoop.vi
+   5dc45a04ea5d809f5ca57e9309ed59c5  OpWireSource_v5.vi
+  PASS I0 both originals and the donor are byte-identical before and after  | []
+  PASS L5 no motor, no serial port, no camera call anywhere in this run (static: this file makes none)  | read-only VI Server + one scratch VI
+
+SUMMARY gates 12/16 pass; failing: ['B4 [OUT FlatSequenceOuterTunnel] the whole typed cha', 'B4 [IN FlatSequenceInnerTunnel] the whole typed chai', 'B  the OUT op was built and saved', 'B  the IN op was built and saved']
+raw -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opfstunnelterm_v0.json
+BGRUN END rc=1 after 162s

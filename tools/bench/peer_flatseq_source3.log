@@ -1,0 +1,27 @@
+BGRUN START 2026-09-17 14:11:58 limit 20.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent codex -Kind review -Slug flatseq-tunnel-source-addressing-r3 -Task (Get-Content -Raw 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\97b1695e-68c2-4985-8cac-1ca3097b3b15\scratchpad\peer_flatseq2.md')
+OUTCOME: ANSWERED (87s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-17-flatseq-tunnel-source-addressing-r3.md
+--- ANSWER ---
+The claim is wrong because it confuses your creator’s **addressing scheme** with the VI Scripting API’s accepted reference types. `Terminal.Connect Wire` (6349C03) accepts a **Terminal reference or Node reference**; it does not require the terminal’s owner to be a Node or the reference to originate from `Node.Terminals[]`. [LabVIEW Wiki: Connect Wire](https://www.labviewwiki.org/wiki/Terminal_class/Connect_Wire_method)
+
+1. **Yes—with one qualification.** Any valid `Terminal` reference is type-correct as `Wire Source`, including one obtained from:
+
+   - `Wire.Terminals[]` (6371003), whose first element is normally the source. [LabVIEW Wiki: Wire.Terminals[]](https://labviewwiki.org/wiki/Wire_class/Terminals%28%29_property)
+   - Filtering those references with `Terminal.Is Source?` (634A003). [LabVIEW Wiki: Is Source?](https://labviewwiki.org/wiki/Terminal_class/Is_Source%3F_property)
+   - `Tunnel.Inside Terminals[]` (6356000) or `Outside Terminal` (6356001). [LabVIEW Wiki: Tunnel class](https://labviewwiki.org/wiki/Tunnel_class)
+   - A shift register’s inherited `Tunnel` terminal properties; `LeftShiftRegister` inherits from `Tunnel`, and additionally exposes `Right Shift Register` (6374C00). [LabVIEW Wiki: LeftShiftRegister](https://www.labviewwiki.org/wiki/LeftShiftRegister_class)
+
+   “Any” does not guarantee that every attempted connection is legal: diagram membership, source/sink direction and data-type compatibility can still make the resulting wire fail. But **Node ownership is not an API precondition**. NI’s documentation also describes one wire as having one source and potentially many consumers, so an already-wired source can conceptually acquire another branch. [NI: Using Wires to Link Block Diagram Objects](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+2. A `FlatSequenceInnerTunnel` has its own accessors:
+
+   - **Left Terminal** — `1C3A9000`
+   - **Right Terminal** — `1C3A9001`
+
+   Both return Terminal references. [LabVIEW Wiki: FlatSequenceInnerTunnel](https://labviewwiki.org/wiki/FlatSequenceInnerTunnel_class)
+
+   The absence of FlatSequence-owned objects of class `Tunnel` is therefore unsurprising: `FlatSequenceInnerTunnel` is a special `GObject` class, not a `Tunnel` subclass. The alternative explanation for your evidence is that Flat Sequence boundaries are represented through this special owner class, while the actual wire endpoints remain ordinary Terminal references. The old NI discussion saying a **FlatSequence object itself** cannot be passed because it is not a Node does not show that a terminal obtained from `FlatSequenceInnerTunnel.Left/Right Terminal` is unusable. [NI forum: Connect a Terminal to a Flat Sequence Structure](https://forums.ni.com/t5/LabVIEW/Scripting-Connect-a-Terminal-to-a-Flat-Sequence-Structure/td-p/2672239)
+
+3. The claim would be falsified by one observation: `Connect Wire` successfully creates a branch when its `Wire Source` is a Terminal reference owned by `FlatSequenceInnerTunnel` or `LeftShiftRegister`, despite that owner not appearing in `Diagram.Nodes[]`.
+
+**Cheapest discriminating test:** on a scratch VI containing an existing Flat Sequence tunnel wire and an unwired compatible sink on the same frame, read `FlatSequenceInnerTunnel.Left Terminal` or `Right Terminal` once, then call the sink terminal’s `Connect Wire` once with that returned reference. A successful branch settles both questions in exactly **one property read plus one method call**.
+BGRUN END rc=0 after 88s

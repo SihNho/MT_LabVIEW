@@ -1,0 +1,59 @@
+BGRUN START 2026-09-17 03:25:34 limit 15.0 min: py -u tools/retrospective.py --cycle 14
+   window 2026-09-16 20:19:33 .. 2026-09-17 03:25:34 (426 min); 13 build logs, 17 machinery logs, 8 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle14.txt (16420 chars)
+OUTCOME: ANSWERED (299s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-17-retrospective-cycle14.md
+--- ANSWER ---
+## Verdict
+
+The cycle’s costliest structural fault was the repeated D0 bandpass failure inside attempt 3. `drive_original_copy_v2` observed the decisive failure at 02:12:25, 91.6 seconds into run 1, but executed the same path again in run 2 and reproduced it at 410.1 seconds (`tools/bench/drive_original_copy_v2.log:62`, `:201`). The batch finally ended after 683 seconds with thirteen failures (`:392-395`). The approach should have changed immediately after run1.P6 to the click-transaction/HWND probe later used successfully, rather than running the second full cycle.
+
+Estimated loss is 10 minutes; no build log carries a dollar amount. Had attempt 3 stopped at run1.P6 around 02:12 and launched the discriminating review/probe then, the downstream sequence could have advanced roughly ten minutes sooner and the cycle ended around 03:16 instead of 03:25.
+
+A device failure must also be recorded. The exit-propagation device did not protect `diag_stop_condterm_panel`: its own summary reported a failed gate, yet the enclosing run ended with rc=0 (`tools/bench/diag_stop_condterm_panel.log:15-18`). Correct propagation would have produced rc=1 at the same time, so its direct measured time loss is zero.
+
+## Findings
+
+1. **Repeated failure.** D0 attempt 1 ended in a harness exception (`drive_original_copy.log:18-29`); attempt 2 exposed the serialized COM-worker defect and was appropriately followed by adversarial review (`drive_original_copy_run2.log:25-34`; `archive/peer/2026-09-17-d0-com-blocked-in-picking-loop.md:96-115`). Attempt 3 changed the approach, but then repeated its identical bandpass failure internally. The approach should have changed at attempt 3, run1.P6—not after run 2—to the foreground/HWND/input-state probe later embodied by `d0_clickprobe` (`d0_clickprobe.log:13-15`, `:46-50`). Separately, the stop-terminal hypothesis failed twice and was correctly stopped rather than retried; the mandated reader is recorded in `STATUS.md:75-77`.
+
+2. **Missing tool.** No reader should have been built before the first stop-terminal failure. After the second, however, the recursive `ControlTerminal` census followed by `WhileLoop.Loop End Ref` became the specifically required missing reader. Its absence leaves the identity of wire 3457’s conditional-terminal sink unresolved (`STATUS.md:75-77`; `archive/peer/2026-09-16-stop-condterm-panel-fail2.md:125-144`). It would have answered both the mistaken `CaseStructure#22082` identification and the inconclusive panel-wire test. The cycle correctly queued it rather than attempting a third inference.
+
+3. **Unmeasured steps.** D0 v3 declared R11 successful because `current image number` stayed constant even though `ExecState` remained 2 (`drive_original_copy_v3.log:83-126`). Cleanup then spent 60 seconds trying the stop controls and finally aborted the VI (`:128-221`). A cheap VI-Server test—write/read each stop Boolean and poll `ExecState`—was available; the peer review identified precisely that test (`archive/peer/2026-09-17-d0v3-stop-heuristic.md:53-55`). This invalidates R11 but was caught before the retrospective, so I treat it as a finding rather than another structural slug.
+
+4. **Rule compliance.** The cycle satisfied the bgrun discipline, accounted for all terminated runs, preserved the original’s checksum, reviewed every failing log, and stopped the stop-terminal line after two failed explanations. The material failure budget was not honored inside D0 v2: run 2 repeated the already-failed run-1 path (`CLAUDE.md:252-254`; `drive_original_copy_v2.log:62`, `:201`).
+
+   The attached audit does not cover several important things:
+
+   - A4 is explicitly day-granular, so its 40/50 figure cannot attribute all blank dispositions to this window.
+   - C6 counts refused judgement-session attempts but does not inspect decisions written inside material-session disposition text.
+   - A6 says GUI use is “n-a,” although v3 records ten GUI actions (`drive_original_copy_v3.log:308`); it therefore does not actually audit this window’s GUI actions.
+   - C4b’s 5/4 mismatch is a false positive, not missing spend: the four genuine price lines total exactly $13.1671, while the fifth “seen” match is prose containing the token `cost_usd` in `retro_v2_compare.log:100`. The cost parser itself successfully parsed every genuine price line.
+
+5. **Ordering.** The major ordering was defensible: the outcome review caused a user-approved delivery re-plan; cycle-15 prior art completed before its diagnostics; the full GPU fixture ran before D1 construction; and the D1 build review completed without any D1 recipe build appearing in the window (`cycle15-plan.md:14-20`; `priorart_cycle15_d1.log:1-6`; `gpu_n1_full_fixture.log:1-4`; `priorart_d1_build.log:1-6`).
+
+   One gate hole remains: `priorart_cycle14.log` started at 20:21 and never recorded an end or archive result, yet another prior-art dispatch began at 21:56 (`priorart_cycle14.log:1`; `priorart_cycle15_d1.log:1`). Thus the repeated-review disposition device did not catch an in-flight, never-disposed review. No dollar or completed wall-time figure exists for the abandoned review, so its loss cannot be sized.
+
+6. **What the session summary understated.** The headline “16 pass, 0 fail” hides three material facts:
+
+   - R11 used an invalid frozen-counter predicate while the VI remained running (`drive_original_copy_v3.log:126`).
+   - Cleanup required an abort after another 60 seconds (`:219-221`).
+   - The run created 2,041 TIFFs totalling 2,675,689,770 bytes before cleanup (`:228`, `:270-302`).
+
+   The later peer review and current `STATUS.md:92-97` now expose these facts, but the raw batch summary itself did not.
+
+7. **Judgement inside a material session.** Yes. The D0 material session explicitly accepted a review, rejected one finding, refused a retry strategy, and decided that the next build required judgement (`archive/peer/2026-09-17-d0-bandpass-click-not-delivered.md:171-203`). More starkly, the D1 prior-art disposition says a material session accepted all ten findings, rewrote the plan, and let A1/A6 and A4 change cycle direction (`archive/peer/2026-09-17-priorart-priorart-d1-build.md:476-499`). Those are decisions reserved to judgement by `CLAUDE.md:250-274`. This changed what the cycle produced, but the evidence does not establish a defensible additional time or dollar loss, so it remains a finding rather than displacing the measurable repeated-failure fault.
+
+## Device effect
+
+- `unreported-fact`, runner exit propagation: **failed**—an internal failed gate ended rc=0 (`diag_stop_condterm_panel.log:15-18`).
+- `rule-evaded`, adversarial prompt gate: worked; review prompts attacked hypotheses rather than soliciting confirmation, for example `peer_d0_com_blocked.log:1`.
+- `tool-not-built`, prior-art review: worked and materially caught existing contradictions before D1 construction (`priorart_d1_build.log:6-29`, `:132-145`).
+- `repeated-failure-class`, disposition gate: **failed at its in-flight edge**—cycle-15 prior art was dispatched while cycle-14 prior art had neither ended nor produced a disposition (`priorart_cycle14.log:1`; `priorart_cycle15_d1.log:1`).
+- `unreported-fact`, split build/review cost: worked; the four real price lines sum to the reported $13.1671. C4b’s mismatch is a prose-token false positive, not understated cost.
+- `premature-build`: worked; both cycle-15 prior-art reviews completed before any corresponding D1 recipe build, and no D1 build appears among the in-window build logs.
+- `scope-creep`: worked as designed by exposing the 76-file C7 list. The list includes bulk document maintenance and earlier plan files, so visibility worked even though the retrospective must still judge attribution.
+- `device-failed`, cost-regex self-check: the actual price parser worked. Its “seen” sentinel fired once on quoted prose; there is not evidence that such false alerts are routinely bypassed.
+
+VIOLATION: repeated-failure-class | loss_min=10 | loss_usd=? | evidence=tools/bench/drive_original_copy_v2.log:62
+VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=unreported-fact-runner-exit@tools/bench/diag_stop_condterm_panel.log:18
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle14.md
+BGRUN END rc=0 after 300s

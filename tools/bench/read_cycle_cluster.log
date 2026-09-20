@@ -1,0 +1,100 @@
+BGRUN START 2026-09-12 18:32:34 limit 25.0 min: py -u -c 
+import os,sys,json
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+WORK=r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi'
+KEY=('cycle','schedule','force','mag','rot','speed','wait','numcol','time','sub','pos','arr','index','row','col')
+out={}
+for d in (160,161,162,163,165,168):
+    try: nodes,_=g.net_map(WORK, diagram_index=d, max_nodes=60, max_terms=20)
+    except Exception as e: print('dia',d,'FAIL',str(e)[:80]); continue
+    print('=== diagram %d : %d nodes'%(d,len(nodes)))
+    rows=[]
+    for i,(uid,lbl,terms) in nodes.items():
+        names=[nm for _,nm,_ in terms if nm]
+        low=' | '.join(names).lower()
+        hit=sorted({k for k in KEY if k in low})
+        rows.append({'uid':uid,'terms':names,'hit':hit})
+        mark='   <== '+','.join(hit) if hit else ''
+        print('   uid %-6s %s%s'%(uid,names[:12],mark))
+    out[str(d)]=rows
+json.dump(out,open('tools/bench/cycle_cluster.json','w',encoding='utf-8'),indent=1)
+print('written')
+
+=== diagram 160 : 7 nodes
+   uid 23771  ['x*y', 'y', 'x']
+   uid 23782  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 23797  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 23812  ['starting x 1', 'starting y 1']
+   uid 23899  ['appended array', 'array', 'element']   <== arr
+   uid 23911  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+   uid 23929  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+=== diagram 161 : 12 nodes
+   uid 24079  ['x*y', 'y', 'x']
+   uid 24090  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 24105  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 24131  ['x+1', 'x']
+   uid 24140  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 24155  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 24170  ['starting x 1', 'starting y 1', 'starting x 2', 'starting y 2', 'Image', 'cosine window\nfor hilbert', 'color string', 'real-space\ncosine window', 'picture in', 'cross size', 'Picture out']   <== col,mag
+   uid 24257  ['appended array', 'array', 'element', 'element']   <== arr
+   uid 24278  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+   uid 24299  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+   uid 24317  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+   uid 24335  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+=== diagram 162 : 18 nodes
+   uid 24539  ['x*y', 'y', 'x']
+   uid 24550  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 24565  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 24580  ['x+1', 'x']
+   uid 24588  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 24603  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 24618  ['x+1', 'x']
+   uid 24626  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 24641  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 24656  ['starting x 1', 'starting y 1', 'starting x 2', 'starting y 2', 'Image', 'cosine window\nfor hilbert', 'color string', 'real-space\ncosine window', 'picture in', 'cross size', 'Picture out']   <== col,mag
+   uid 24743  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+   uid 24761  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+   uid 24779  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+   uid 24797  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+   uid 24815  ['starting x 1', 'starting y 1']
+   uid 24902  ['appended array', 'array', 'element', 'element', 'element']   <== arr
+   uid 24920  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+   uid 24938  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+=== diagram 163 : 23 nodes
+   uid 22964  ['x*y', 'y', 'x']
+   uid 22975  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 22990  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 23005  ['x+1', 'x']
+   uid 23013  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 23028  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 23043  ['x+1', 'x']
+   uid 23051  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 23066  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 23081  ['x+1', 'x']
+   uid 23089  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 23104  ['array', 'element', 'index (row)', 'index (col)']   <== arr,col,index,row
+   uid 23119  ['starting x 1', 'starting y 1', 'starting x 2', 'starting y 2', 'Image', 'cosine window\nfor hilbert', 'color string', 'real-space\ncosine window', 'picture in', 'cross size', 'Picture out']   <== col,mag
+   uid 23206  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+   uid 23224  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+   uid 23242  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+   uid 23260  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+   uid 23278  ['starting x 1', 'starting y 1', 'starting x 2', 'starting y 2', 'Image', 'cosine window\nfor hilbert', 'color string', 'real-space\ncosine window', 'picture in', 'cross size', 'Picture out']   <== col,mag
+   uid 23365  ['appended array', 'array', 'element', 'element', 'element', 'element']   <== arr
+   uid 23386  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+   uid 23404  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+   uid 23422  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+   uid 23440  ['array', 'output array', 'new element/subarray', 'index (row)', 'index (col)']   <== arr,col,index,row,sub
+=== diagram 165 : 3 nodes
+   uid 25299  ['array', 'subarray', 'disabled index (page)', 'index (row)', 'disabled index (col)']   <== arr,col,index,row,sub
+   uid 25317  ['transposed array', '2D array']   <== arr,pos
+   uid 25325  []
+=== diagram 168 : 5 nodes
+   uid 25910  ['array', 'subarray', 'disabled index (page)', 'index (row)', 'disabled index (col)']   <== arr,col,index,row,sub
+   uid 25928  ['format string', 'initial string', 'resulting string', 'error in', 'error out', 'input 1']
+   uid 25950  ['1-sided cal image', 'color table', '2-sided cal image', 'avg power spectrum of stack', 'pic of cal image']   <== col,mag
+   uid 25968  ['forget radius', 'High bandpass', 'Low bandpass', 'color table', 'Cal image data', 'Power spectrum']   <== col,mag
+   uid 25992  ['appended array', 'element', 'element', 'element']   <== arr
+written
+BGRUN END rc=0 after 583s

@@ -1,0 +1,122 @@
+BGRUN START 2026-09-17 14:03:51 limit 25.0 min: py -u tools\bench\diag_tunnelsource_onehop.py
+  PASS  G0a original working copy md5 BEFORE  2a78e17c449cacdaf5da389818526859
+   fresh(): killing LabVIEW pid 5180
+   COM preflight attempt 1/15: pid None->17996, wires 16->16
+   COM preflight OK (pid 17996, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 17996
+  FACT  LabVIEW handles before: 30384 (fresh-instance baseline ~31,500)
+
+=== G1: the op VIs' own ExecState (the 1055 question, MEASURED)
+  PASS  G1 OpWireSource_v5.vi ExecState 1  ExecState 1
+  PASS  G1 OpTunnels_v0.vi ExecState 1  ExecState 1
+  PASS  G1 OpConnectNested_v1.vi ExecState 1  ExecState 1
+
+=== G2: the published control - wire 10850 on the working copy
+        w10850 Terms[0] source=True owner 'DigitalNumericConstant' uid 10739 recip w10850 
+        w10850 Terms[1] source=False owner 'Comparison' uid 10950 recip w10850 
+  FACT  G2 wire 10850: 2 terminals read, 1 report Is Source? TRUE; first error ''
+  PASS  G2 the control reproduces: exactly one source terminal whose reciprocal wire is itself  [(0, True, 10739, 10850), (1, False, 10950, 10850)]
+  FACT  G2 source owner DigitalNumericConstant uid 10739 = the constant scan's answer
+
+=== G3/G4: the from-tunnel rows, one hop at a time
+  FACT  18 from-tunnel rows; 16 carry outer_source null
+    row #5540 t1 '' <- tunnel #5569 outer w5812
+        w5812 Terms[0] source=True owner 'FlatSequenceInnerTunnel uid 5818 recip w5812 
+        w5812 Terms[1] source=False owner 'LeftShiftRegister' uid 5805 recip w5812 
+        w5812 Terms[2] source=False owner 'LoopTunnel' uid 5569 recip w5812 
+  FACT  offline maps: 626 nodes by uid, 132 LoopTunnels by uid
+      => UNRESOLVED owner uid 5818 (FlatSequenceInnerTunnel) is neither a node on diagrams (19, 43, 0) nor a LoopTunnel
+    row #5540 t4 '' <- tunnel #5752 outer w2731
+        w2731 Terms[0] source=True owner 'FlatSequenceInnerTunnel uid 2886 recip w2731 
+        w2731 Terms[1] source=False owner 'LeftShiftRegister' uid 1142 recip w2731 
+        w2731 Terms[2] source=False owner 'LoopTunnel' uid 5752 recip w2731 
+      => UNRESOLVED owner uid 2886 (FlatSequenceInnerTunnel) is neither a node on diagrams (19, 43, 0) nor a LoopTunnel
+    row #1359 t1 '' <- tunnel #9087 outer w9097
+        w9097 Terms[0] source=True owner 'LeftShiftRegister' uid 9025 recip w9097 
+        w9097 Terms[1] source=False owner 'LoopTunnel' uid 9087 recip w9097 
+      => UNRESOLVED owner uid 9025 (LeftShiftRegister) is neither a node on diagrams (19, 43, 0) nor a LoopTunnel
+    row #1359 t9 'Magnet position output' <- tunnel #28343 outer w28392
+        w28392 Terms[0] source=True owner 'SubVI' uid 27605 recip w28392 
+        w28392 Terms[1] source=False owner 'LoopTunnel' uid 28343 recip w28392 
+        w28392 Terms[2] source=False owner 'LoopTunnel' uid 28311 recip w28392 
+      => RESOLVED {'diagram': 19, 'node': 16, 'term': 0, 'owner_class': 'SubVI', 'owner_uid': 27605, 'term_name': 'Magnet position output'}
+    row #2222 t3 '' <- tunnel #5129 outer w5174
+        w5174 Terms[0] source=True owner 'FlatSequenceInnerTunnel uid 5183 recip w5174 
+        w5174 Terms[1] source=False owner 'LoopTunnel' uid 5129 recip w5174 
+      => UNRESOLVED owner uid 5183 (FlatSequenceInnerTunnel) is neither a node on diagrams (19, 43, 0) nor a LoopTunnel
+    row #2222 t4 '' <- tunnel #5328 outer w5336
+        w5336 Terms[0] source=True owner 'FlatSequenceInnerTunnel uid 5669 recip w5336 
+        w5336 Terms[1] source=False owner 'LoopTunnel' uid 5328 recip w5336 
+      => UNRESOLVED owner uid 5669 (FlatSequenceInnerTunnel) is neither a node on diagrams (19, 43, 0) nor a LoopTunnel
+    row #29874 t3 '' <- tunnel #29911 outer w28039
+        w28039 Terms[0] source=True owner 'LeftShiftRegister' uid 29512 recip w28039 
+        w28039 Terms[1] source=False owner 'LoopTunnel' uid 29911 recip w28039 
+      => UNRESOLVED owner uid 29512 (LeftShiftRegister) is neither a node on diagrams (19, 43, 0) nor a LoopTunnel
+    row #10407 t1 '# slices in stack' <- tunnel #9641 outer w9649
+        w9649 Terms[0] source=True owner 'FlatSequenceInnerTunnel uid 9655 recip w9649 
+        w9649 Terms[1] source=False owner 'LoopTunnel' uid 9641 recip w9649 
+      => UNRESOLVED owner uid 9655 (FlatSequenceInnerTunnel) is neither a node on diagrams (19, 43, 0) nor a LoopTunnel
+    row #376 t6 'cal cluster path' <- tunnel #3644 outer w21
+        w21 Terms[0] source=True owner 'FlatSequenceInnerTunnel uid 1748 recip w21 
+        w21 Terms[1] source=False owner 'LoopTunnel' uid 3644 recip w21 
+        w21 Terms[2] source=False owner 'SubVI' uid 6384 recip w21 
+      => UNRESOLVED owner uid 1748 (FlatSequenceInnerTunnel) is neither a node on diagrams (19, 43, 0) nor a LoopTunnel
+    row #376 t7 'frame index' <- tunnel #2213 outer w2187
+        w2187 Terms[0] source=True owner 'LoopTunnel' uid 2213 recip w2187 
+        w2187 Terms[1] source=False owner 'Function' uid 1628 recip w2187 
+      => UNRESOLVED tunnel 2213 outer wire 2187 does not advance the hop
+    row #376 t9 'file size' <- tunnel #2294 outer w2362
+        w2362 Terms[0] source=True owner 'FlatSequenceInnerTunnel uid 2484 recip w2362 
+        w2362 Terms[1] source=False owner 'GrowableFunction' uid 781 recip w2362 
+        w2362 Terms[2] source=False owner 'LoopTunnel' uid 2294 recip w2362 
+        w2362 Terms[3] source=False owner 'SubVI' uid 6384 recip w2362 
+      => UNRESOLVED owner uid 2484 (FlatSequenceInnerTunnel) is neither a node on diagrams (19, 43, 0) nor a LoopTunnel
+    row #376 t11 'selected path' <- tunnel #5096 outer w5104
+        w5104 Terms[0] source=True owner 'FlatSequenceInnerTunnel uid 4693 recip w5104 
+        w5104 Terms[1] source=False owner 'SubVI' uid 6384 recip w5104 
+        w5104 Terms[2] source=False owner 'LoopTunnel' uid 5096 recip w5104 
+      => UNRESOLVED owner uid 4693 (FlatSequenceInnerTunnel) is neither a node on diagrams (19, 43, 0) nor a LoopTunnel
+    row #5058 t2 'cross size' <- tunnel #2580 outer w3853
+        w3853 Terms[0] source=True owner 'FlatSequenceInnerTunnel uid 3862 recip w3853 
+        w3853 Terms[1] source=False owner 'LoopTunnel' uid 2580 recip w3853 
+      => UNRESOLVED owner uid 3862 (FlatSequenceInnerTunnel) is neither a node on diagrams (19, 43, 0) nor a LoopTunnel
+    row #5058 t9 '# of bead 4 packs' <- tunnel #2396 outer w2641
+        w2641 Terms[0] source=True owner 'FlatSequenceInnerTunnel uid 2932 recip w2641 
+        w2641 Terms[1] source=False owner 'LoopTunnel' uid 2396 recip w2641 
+      => UNRESOLVED owner uid 2932 (FlatSequenceInnerTunnel) is neither a node on diagrams (19, 43, 0) nor a LoopTunnel
+    row #5058 t11 '4 pack remainder' <- tunnel #4432 outer w5265
+        w5265 Terms[0] source=True owner 'FlatSequenceInnerTunnel uid 5287 recip w5265 
+        w5265 Terms[1] source=False owner 'LoopTunnel' uid 4432 recip w5265 
+      => UNRESOLVED owner uid 5287 (FlatSequenceInnerTunnel) is neither a node on diagrams (19, 43, 0) nor a LoopTunnel
+    row #5058 t12 'Array of cal clusters' <- tunnel #3656 outer w3668
+        w3668 Terms[0] source=True owner 'FlatSequenceInnerTunnel uid 3675 recip w3668 
+        w3668 Terms[1] source=False owner 'LoopTunnel' uid 3656 recip w3668 
+      => UNRESOLVED owner uid 3675 (FlatSequenceInnerTunnel) is neither a node on diagrams (19, 43, 0) nor a LoopTunnel
+    row #5058 t14 'Real-space cosine window' <- tunnel #3920 outer w5786
+        w5786 Terms[0] source=True owner 'FlatSequenceInnerTunnel uid 5659 recip w5786 
+        w5786 Terms[1] source=False owner 'LoopTunnel' uid 3920 recip w5786 
+      => UNRESOLVED owner uid 5659 (FlatSequenceInnerTunnel) is neither a node on diagrams (19, 43, 0) nor a LoopTunnel
+    row #5058 t15 'Cosine bandpass\nfor Hilbert ' <- tunnel #4031 outer w4029
+        w4029 Terms[0] source=True owner 'FlatSequenceInnerTunnel uid 5952 recip w4029 
+        w4029 Terms[1] source=False owner 'LoopTunnel' uid 4031 recip w4029 
+      => UNRESOLVED owner uid 5952 (FlatSequenceInnerTunnel) is neither a node on diagrams (19, 43, 0) nor a LoopTunnel
+  FACT  G3 cross-check #1359 t9: one-hop owner 27605 vs census outer_source 27605 AGREE
+  PASS  G3 every row that HAS a census outer_source agrees with the one-hop read  1 cross-checks
+  **FAIL**  G4 at least 3 from-tunnel rows resolve to a (diagram, node, terminal) triple  1 of 18 resolved
+  **FAIL**  G4b ALL from-tunnel rows resolve  1/18
+  FACT  G5 wrote G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\d1_tunnel_sources.json (1/18 resolved)
+  PASS  G6 original working copy md5 AFTER  2a78e17c449cacdaf5da389818526859
+  FACT  LabVIEW handles after: 30891 (before 30384)
+
+--- FACTS ---
+  LabVIEW handles before: 30384 (fresh-instance baseline ~31,500)
+  G2 wire 10850: 2 terminals read, 1 report Is Source? TRUE; first error ''
+  G2 source owner DigitalNumericConstant uid 10739 = the constant scan's answer
+  18 from-tunnel rows; 16 carry outer_source null
+  offline maps: 626 nodes by uid, 132 LoopTunnels by uid
+  G3 cross-check #1359 t9: one-hop owner 27605 vs census outer_source 27605 AGREE
+  G5 wrote G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\d1_tunnel_sources.json (1/18 resolved)
+  LabVIEW handles after: 30891 (before 30384)
+
+=== diag_tunnelsource_onehop: 7 pass, 2 fail -> G4 at least 3 from-tunnel rows resolve to a (diagram, node, terminal) triple, G4b ALL from-tunnel rows resolve  (111 s) ===
+BGRUN END rc=1 after 111s

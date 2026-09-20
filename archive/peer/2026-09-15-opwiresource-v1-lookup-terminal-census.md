@@ -1,0 +1,58 @@
+﻿---
+type: peer-review
+status: historical
+date: 2026-09-15
+tags: [peer-review, vi-scripting]
+---
+
+# opwiresource-v1-lookup-terminal-census
+
+- **agent:** codex
+- **date:** 2026-09-15
+- **outcome:** ANSWERED (57s)
+- **why asked:** (Claude fills in)
+- **verdict:** unverified
+
+## Question
+
+BRIEF ATTACK (LabVIEW 2026 VI Scripting). tools/recipes/build_opwiresource_v1.py run 1 (log tools/bench/build_opwiresource_v1.log) censused vi.lib\VIServer\UID to GObject Reference.vi as you advised rather than guessing its labels. MEASURED terminals (index, name, direction): (0 error out src) (1 "" sink) (2 GObject src) (3 dup Owning VI src) (4-7 "" sink) (8 error in (no error) sink) (9 "" sink) (10 UID sink) (11 Owning VI sink). So the real names are Owning VI (the VI reference input), UID, and GObject (the output), plus a dup Owning VI output and several unconnected connector-pane slots with empty names. My gate demanded exactly two named sinks and one named source and therefore stopped the build - a recipe gate error, not a wrong VI. Planned fix: select the terminals by exact name (Owning VI, UID, GObject) and gate those three by name instead of counting. Questions (cite what you read): (1) is dup Owning VI a DUPLICATE of the VI reference that the caller must close (your earlier note said the VI returns a duplicate reference that should be explicitly closed) - and if I leave that output UNWIRED, is the duplicate still created and leaked inside the VI, or is it only produced when wired? (2) is the GObject output itself a new reference that must be closed, or is it owned by the VI hierarchy? (3) does Owning VI accept an ordinary VI reference from Open VI Reference (my op opens the main VI read-only by path), or does it require a static VI reference? (4) the empty-named terminals: are those unwired connector-pane slots of this VI, i.e. harmless, or a sign that the reporter is enumerating the connector pane rather than the node terminals - our reporter lists node terminals for other subVIs with real names (e.g. Open VI Reference showed vi path, options, password, type specifier). Read-only.
+
+## Answer
+
+Your planned fix is sound, with one refinement: resolve by exact name **and direction**, then require exactly one match for `Owning VI` sink, `UID` sink, and `GObject` source. Do not require `Owning VI` to be globally unique because its flow-through output may carry the same underlying label.
+
+1. **`dup Owning VI` is almost certainly a flow-through output, not a newly opened VI reference.** NI defines flow-through refnum outputs as returning the same value as the corresponding input to establish dataflow. Therefore it does not create a second independently owned reference, and leaving it unwired does not leak a reference. The reporter?셲 `dup` is presumably its disambiguation for the repeated name, not NI saying ?쐂uplicate allocation.??[NI: Block Diagram Data Flow ??Flow-Through Parameters](https://www.ni.com/docs/en-GB/bundle/labview/page/block-diagram-data-flow.html)
+
+   This retracts the earlier advice that this output must explicitly be closed. The caller should close the reference it actually opened with `Open VI Reference`, once all child-object work is finished. [NI: Closing References in LabVIEW](https://www.ni.com/en/support/documentation/supplemental/13/closing-references-in-labview.html)
+
+2. **`GObject` is a child object reference associated with the owning VI, not another VI reference that keeps the VI independently loaded.** NI states that closing the parent VI reference automatically closes its child-object references; close the parent only after the GObject?셲 final use. Explicitly closing the GObject first is permitted but unnecessary for lifetime management in this chain. [NI: Closing VI References that Have Child Object References](https://www.ni.com/en/support/documentation/supplemental/13/closing-references-in-labview.html#toc5)
+
+   Supporting LabVIEW-community guidance is even stronger: GObject references are tied to their VI and `Close Reference` effectively does nothing to them. Treat that as community clarification rather than formal API specification. [NI Community discussion](https://forums.ni.com/t5/LabVIEW/close-reference/m-p/4295235)
+
+3. **`Owning VI` should accept the ordinary VI reference returned by `Open VI Reference`; no static VI reference is required.** NI documents `Open VI Reference` as the standard way to dynamically load a VI and obtain the VI Server reference used with properties and methods. Nothing about this helper?셲 `Owning VI` input suggests a strictly typed callable-VI reference; it is a VI Server `VI` reference used to identify the hierarchy containing the UID. [NI: Creating a VI Server Application](https://www.ni.com/docs/tr-CY/csh?context=lvcore_lvhowto_vi_server)
+
+4. **The empty terminals are harmless unassigned connector-pane slots.** A subVI node exposes the selected connector-pane pattern, including spare terminals that have not been assigned to controls or indicators. NI explicitly recommends connector patterns with unused terminals for future additions. Thus a 12-slot enumeration containing seven unnamed slots is expected; it does not indicate that the reporter accidentally switched to some unrelated object. [NI: Assigning Terminals to Controls and Indicators](https://www.ni.com/docs/en-AS/bundle/labview/page/assigning-terminals-to-controls-and-indicators.html), [NI connector-pane guidelines](https://www.ni.com/en/support/downloads/instrument-drivers/tools-resources/instrument-driver-guidelines/icon-and-connector-panes.html)
+
+Gate recommendation:
+
+- `Owning VI`: name match + sink
+- `UID`: name match + sink
+- `GObject`: name match + source
+- Require one match for each tuple.
+- Ignore unnamed slots and the `Owning VI` source.
+- Optionally also assert the observed terminal count/direction signature to fail closed against future NI changes.
+
+So yes: this was a **recipe-gate error**, not evidence of the wrong NI VI.
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+Applied: the gate matches name AND direction and requires exactly one `Owning VI` sink, one `UID` sink and one
+`GObject` source, ignoring the unnamed connector-pane slots and the `dup Owning VI` flow-through source. The
+earlier "close the duplicate" advice is retracted by this answer and the recipe's docstring was corrected: the
+flow-through output is not a new reference, and the `GObject` child reference dies with the VI reference the op
+already closes — the handle-count delta stays as the measurement of that claim. `Owning VI` takes the ordinary
+`Open VI Reference` output, which is what the op wires. Rerun: `tools/bench/build_opwiresource_v1.log` run 2.

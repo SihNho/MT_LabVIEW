@@ -1,0 +1,37 @@
+BGRUN START 2026-09-08 10:09:06 limit 80.0 min: py -u tools/bench/gpu_chain7.py
+LabVIEW up after 14 s, version 26.3.1f1
+dialogs: ,1346,762| / ENABLED|34867162|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+lv_restart rc 0
+baseline SubVIs [(384, (1050, 640)), (105, (900, 640)), (124, (495, 281))] Property [(109, (706, 380))] Wires 10 ExecState 1
+
+== 1 delete the creator SubVI
+   predict: ExecState 0
+   observed: ({384}, 0)
+
+== 2 remove its dangling wires
+   predict: ExecState 1
+   observed: ((9, 1), 9, 1)
+
+== 3 drop Create Build Array.vi
+   predict: +1 SubVI; ExecState 0
+   observed: (0.10572052001953125, 0)
+
+== 4 PN.Diagram -> creator Diagram in
+   predict: Wire +1
+   observed: EXC wire Diagram->Diagram in: wire count 9->9, expected +1 (if the source is already wired this may be a successful BRANCH - re-call with branch=True)
+
+== 5 control location -> location (0, 0)
+   predict: Wire +1
+   observed: EXC wire_control ['location (0, 0)'] -> SubVI.['location (0, 0)']: Wire 9 -> 9, expected +1 (if the control is already wired elsewhere this may be a successful BRANCH - re-call with branch=True)
+
+assembled Wires 9 ExecState 1
+saved 11256
+
+== 6 RUN OpBuildBA_v0 on a scratch target
+   predict: +1 Node near (1300,700)
+   observed: EXC run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gscript_dialog_1788829827.png
+   Build Array terminals: [(0, 'array', 0), (1, 'element', 0), (2, 'index', 0)]
+scratch target deleted
+build OpBuildBA rc 0
+LabVIEW up after 14 s, version 26.3.1f1
+BGRUN END rc=4294967295 after 128s

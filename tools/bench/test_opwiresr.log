@@ -1,0 +1,71 @@
+BGRUN START 2026-09-14 23:13:33 limit 15.0 min: py -u tools/bench/test_opwiresr.py
+
+######## FUNCTIONAL TEST
+   [watchdog 23:13:43] dialogs ->
+      ENABLED|2425832|786,368,1134,673|
+      blocked|222036168|0,4,1900,1034|OpSubVI_v1.vi Block Diagram
+      blocked|54526014|0,4,1900,1034|SCRATCH_wiresr_9768.vi Block Diagram
+      blocked|4261596|0,4,1000,704|SCRATCH_wiresr_9768.vi Front Panel
+      blocked|5572204|0,4,1500,954|OpSubVI_v1.vi
+      blocked|41420750|0,4,1900,1034|OpFPLabels_v0.vi Block Diagram
+      blocked|67176140|566,182,1676,893|OpFPLabels_v0.vi Front Panel
+      blocked|33751572|0,0,0,0|LabVIEW
+      VERDICT: BLOCKED by 1 modal dialog -> run '-Action dismiss'
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\test_opwiresr.py", line 46, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\test_opwiresr.py", line 37, in main
+    B.test(labels)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_opwiresr_v0.py", line 292, in test
+    sub0 = g.uids(S, "SubVI"); g.drop_subvi(S, COPY_VI, body(), (300, 300))
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 983, in drop_subvi
+    dt = _run(vi)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 235, in _run
+    raise RuntimeError(
+RuntimeError: run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gscript_dialog_1789395223.png
+BGRUN END rc=1 after 12s
+BGRUN START 2026-09-14 23:18:25 limit 15.0 min: py -u tools/bench/test_opwiresr.py
+
+######## FUNCTIONAL TEST
+   body IMAQ Copy node 0: [(0, 'error in (no error)', False, 0), (1, 'Image Dst', False, 0), (2, '', False, 0), (3, 'error out', True, 0), (4, '', False, 0), (5, 'Image Src', False, 532), (6, '', False, 0), (7, 'Image Dst Out', True, 0)]
+   ExecState before the register: 0
+   register uid 526; ExecState 0 (0 expected)
+   op errors: None None None
+   PASS T1 no op errors 
+   register: {'uid': 526, 'class': 'RightShiftRegister', 'out': {'name': 'New Image', 'is_source': True, 'wire': 0}, 'inside': [{'name': 'New Image', 'is_source': False, 'wire': 556}], 'left_uids': [539], 'left': {'uid': 539, 'class': 'LeftShiftRegister', 'out': {'name': 'New Image', 'is_source': False, 'wire': 151}, 'inside': [{'name': 'New Image', 'is_source': True, 'wire': 548}]}, 'errors': {}}
+   PASS T2 left OUTSIDE wire == IMAQ Create.New Image wire 151 vs 151
+   PASS T3 left INSIDE wire == IMAQ Copy.Image Dst wire [{'name': 'New Image', 'is_source': True, 'wire': 548}] vs 548
+   PASS T4 right INSIDE wire == IMAQ Copy.Image Dst Out wire [{'name': 'New Image', 'is_source': False, 'wire': 556}] vs 556
+   PASS T5 ExecState 1 with all three wired 1
+   PASS T6 the VI runs and returns with stop TRUE 0.02 s
+   [watchdog 23:18:37] dialogs ->
+      ENABLED|723028|786,420,1134,620|
+      blocked|41420750|0,4,1900,1034|OpFPLabels_v0.vi Block Diagram
+      blocked|4916956|0,4,1900,1034|SCRATCH_wiresr_8408.vi Block Diagram
+      blocked|16648224|0,4,1000,704|SCRATCH_wiresr_8408.vi Front Panel
+      blocked|222036168|0,4,1900,1034|OpSubVI_v1.vi Block Diagram
+      blocked|5572204|0,4,1500,954|OpSubVI_v1.vi Front Panel
+      blocked|67176140|566,182,1676,893|OpFPLabels_v0.vi
+      blocked|33751572|0,0,0,0|LabVIEW
+      VERDICT: BLOCKED by 1 modal dialog -> run '-Action dismiss'
+   LeftOutCtl: err None, left outside wire 192, ExecState 0
+   PASS T7 LeftOutCtl made a wire from the control terminal 
+   PASS T8 type mismatch -> ExecState 0 (predicted) 
+   FAIL T8b Remove Bad Wires removed exactly the string wire gone=set() expected={192}
+   PASS T8c register 1's three wires survived 
+   after Remove Bad Wires: ExecState 0 (register 2 still unwired -> 0 is fine)
+   PASS T9 no junk Invoke 
+
+SUMMARY 10/11 PASS
+   PASS T1 no op errors
+   PASS T2 left OUTSIDE wire == IMAQ Create.New Image wire
+   PASS T3 left INSIDE wire == IMAQ Copy.Image Dst wire
+   PASS T4 right INSIDE wire == IMAQ Copy.Image Dst Out wire
+   PASS T5 ExecState 1 with all three wired
+   PASS T6 the VI runs and returns with stop TRUE
+   PASS T7 LeftOutCtl made a wire from the control terminal
+   PASS T8 type mismatch -> ExecState 0 (predicted)
+   FAIL T8b Remove Bad Wires removed exactly the string wire
+   PASS T8c register 1's three wires survived
+   PASS T9 no junk Invoke
+BGRUN END rc=1 after 13s

@@ -1,0 +1,117 @@
+BGRUN START 2026-09-16 15:16:49 limit 12.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools/peer.ps1 -Agent codex -Kind review -Slug ownerchain-b2-b3-failed-prediction -TimeoutSec 480 -Task FAILED PREDICTION, LabVIEW 2026 VI Scripting via ActiveX/COM. Attack my explanation before it drives a rebuild.
+
+WHAT WAS BUILT. A donor op VI is copied, then two rewires are applied with a helper that calls the Diagram 'Connect Wire'/connect primitive: connect2(target, diagram, dstNode, dstTerminalName, srcNode, srcTerminalName).
+
+R1: node 241 (a Property node with items Position/ClassName/UID/Owner) gets its 'reference' input wired from node 990's 'GObject' output.
+R2: node 241's 'Owner' OUTPUT is wired to the 'reference' input of THREE consumers: nodes 163, 1221, 482 - all three of which were ALREADY wired to an older wire, uid 751.
+
+PREDICTIONS AND OBSERVATIONS (tools/bench/build_opownerchain_v0.log):
+  B2 predicted: after R1, node 241's 'reference' terminal carries the SAME wire uid that node 990's 'GObject' output carried when read before the connect (1081).
+     OBSERVED **FAIL**: node 241 'reference' = wire 1208, not 1081. connect2 returned without raising.
+  B3 predicted: after R2, node 241's 'Owner' terminal is wired and all three consumers read that same wire.
+     OBSERVED **FAIL**: 'Owner' terminal reports wire 0 (unwired); consumers read {163: 751, 1221: 751, 482: 1444}.
+     All three connect2 calls returned without raising, in the order 163, 1221, 482.
+
+MY TWO HYPOTHESES:
+H1 (B2 is a BAD ASSERTION, not a bad build): connecting creates a NEW wire object rather than extending the pre-existing one, so comparing against a wire uid captured BEFORE the connect can never succeed. The build may be correct.
+H2 (B3): connect2 silently no-ops when the destination input terminal is already wired - which would explain 163 and 1221 keeping wire 751 - but that cannot explain node 482 changing to a new wire 1444, nor 'Owner' reading 0 while a wire supposedly leaves it.
+
+ALREADY RULED OUT: the node uids are correct (the net walk finds all of them each pass); no exception was raised by any connect2; the VI started at ExecState 1.
+
+ANSWER:
+1. In LabVIEW VI Scripting, what exactly happens when you connect to an input terminal that is ALREADY wired - replace, branch, error, or silent no-op? Does it differ for a terminal wired from a DIFFERENT source?
+2. When a new connection is made, is the resulting wire a NEW object with a new uid, or is an existing wire extended and its uid preserved? Is branching one source to three sinks one wire or three?
+3. How can a Property node's OUTPUT terminal report no connected wire while a downstream node reports a wire that must have come from it? Is 'Connected Wire' on an output terminal unreliable, or am I reading the wrong terminal after the node's item list changed?
+4. Does rewiring a Property node's 'reference' input to an object of a DIFFERENT class invalidate its property items (so that the terminal named 'Owner' is no longer the same terminal)?
+5. The cheapest discriminating test, by property read only, to tell 'the build is correct and my assertions are wrong' from 'the rewire did not happen'.
+OUTCOME: ANSWERED (205s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-16-ownerchain-b2-b3-failed-prediction.md
+--- ANSWER ---
+The strongest reason your explanation is wrong is that `Connect Wire` is not a reliable ?�replace this existing input connection??operation. You invoked it on already-wired sinks. Your project?�s own verified contract says that this case can reroute and break the diagram, while branching from an already-wired source is supported ([vi-scripting.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/.agents/skills/labview-automation/references/vi-scripting.md>), [gscript.py](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/gscript.py:2084>)). Therefore wire 1208/1444 is not evidence that the intended rewire succeeded.
+
+1. Already-wired destination
+
+NI?�s public description only says `Terminal.Connect Wire` connects a wire to the terminal; it does not specify an atomic replace/no-op contract for an already-wired sink ([Connect Wire API](https://labviewwiki.org/wiki/Terminal_class/Connect_Wire_method)).
+
+The distinctions are:
+
+- Wired source ??additional unwired sink: a branch is valid.
+- Different source ??already-wired sink: this is not a branch. A valid LabVIEW wire has one source; a wire containing multiple sources is broken ([NI wire model](https://www.ni.com/docs/en-US/bundle/labview/page/using-wires-to-link-block-diagram-objects.html), [Wire.Terminals[]](https://labviewwiki.org/wiki/Wire_class/Terminals%28%29_property)).
+- Your locally measured behavior is ?�reroutes and breaks,??not dependable replacement and not dependable no-op.
+
+H2 is already falsified as a universal explanation: node 482 changed from 751 to 1444. At least that call did something.
+
+For deterministic replacement, first capture the old wire?�s source and all sinks, delete/reconstruct the affected topology, then connect only unwired sinks. An NI example recommends exactly this delete-and-reconnect-all-other-sinks approach when changing one branch ([NI Community](https://forums.ni.com/t5/LabVIEW/Disconnect-wire-through-VI-scripting/m-p/3046935)).
+
+2. Wire identity and branching
+
+H1?�s ?�connecting always creates a new wire??is false.
+
+A normal fan-out is one wire object with one source and several sinks. `Wire.Terminals[]` returns all terminals connected by that wire, with the source first when one exists ([Wire.Terminals[]](https://labviewwiki.org/wiki/Wire_class/Terminals%28%29_property)). NI likewise defines a wire as having one source but potentially many readers ([NI wire model](https://www.ni.com/docs/en-US/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)).
+
+Consequently:
+
+- A successful branch of wire 1081 should normally preserve wire UID 1081.
+- UIDs remain associated with the same object; a new UID means a different wire object was created, or the original was deleted/replaced ([GObject.UID](https://labviewwiki.org/wiki/GObject_class/UID_property)).
+- R1 producing 1208 therefore was not merely ??081 extended normally.??- Because node 241?�s destination was already wired, B2?�s precondition was bad?�but that does not make the build correct. It means B2 detected an uncontrolled replacement/reroute rather than a clean branch.
+
+3. `Owner` unwired while node 482 sees 1444
+
+There is no need to declare `Terminal.Connected Wire` unreliable. The simpler alternative is that 1444 is a dangling or otherwise broken wire with node 482 as a sink but no valid source.
+
+LabVIEW permits broken wire objects, and `Wire.Terminals[]` explicitly accounts for wires with no source or multiple sources ([NI broken wires](https://www.ni.com/docs/en-US/bundle/labview/page/using-wires-to-link-block-diagram-objects.html), [Wire.Terminals[]](https://labviewwiki.org/wiki/Wire_class/Terminals%28%29_property)). Thus ??82 reports wire 1444??does not imply ??444 must originate at node 241.??
+Other viable explanations are:
+
+- `connect2` created a source-less fragment at 482.
+- It connected to a stale or newly regenerated Property-node terminal reference.
+- The name lookup selected a different terminal after Property-node adaptation.
+- Wires 751 and 1444 represent partial, inconsistent results of the three calls.
+
+The observation that would falsify this alternative is: wire 1444?�s `Terminals[]` contains node 241?�s current `Owner` terminal with `Is Source? = TRUE`, plus all three consumer reference terminals. Your present terminal-level readings strongly predict that it will not.
+
+4. Property-node class adaptation
+
+Yes, changing the reference class can invalidate property items that the new class does not support. NI states that a Property Node?�s available properties change with the wired reference type ([NI dynamic Property Node example](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019MTHSA2&l=en-US)); relinking to incompatible types has also been observed to leave an existing item invalid until it is selected again ([NI Community example](https://forums.ni.com/t5/LabVIEW/Changing-the-Property-Node-label-does-not-update-the-Terminal/td-p/1880343)).
+
+But `Owner` itself is defined on the root `Generic` class, so it should remain semantically available for ordinary VI Server objects ([Generic.Owner](https://labviewwiki.org/wiki/Generic_class/Owner_property)). What is not documented is that terminal references or indices remain stable while a dynamic Property Node retypes.
+
+Therefore refresh after R1:
+
+- `Property Items[]` or `Properties[]`
+- `Terminals[]`
+- terminal name
+- `Is Source?`
+- data type
+- connected-wire UID
+
+Do not reuse a terminal index/reference captured before the reference class changed. For Property Nodes, the fixed first four terminals are reference-in, reference-out, error-in, error-out; property-item terminals follow them ([NI Community terminal analysis](https://forums.ni.com/t5/LabVIEW/Scripting-Terminal-Information/td-p/4303374)).
+
+5. Cheapest discriminating test
+
+Use property reads only. Enumerate `Wire.Terminals[]` for wires 751, 1081, 1208, and 1444. For every endpoint record:
+
+```text
+wire UID
+terminal name
+terminal Is Source?
+owning node UID
+terminal index
+```
+
+Also re-read node 241?�s current `Properties[]` and `Terminals[]`.
+
+The required correct topology is:
+
+```text
+R1: one wire
+    source = node 990, GObject
+    sink   = node 241, reference
+
+R2: one wire
+    source = node 241, current Owner property item
+    sinks  = nodes 163, 1221, and 482, reference
+```
+
+If 1208 lacks either R1 endpoint, or 1444 is source-less/only reaches 482 while 751 still reaches 163 and 1221, the rewire failed. Wire UID equality is secondary; endpoint topology is decisive.
+
+My verdict: neither H1 nor H2 survives. The evidence presently favors a partial/broken reroute caused by connecting into already-wired sinks, possibly compounded by Property-node terminal regeneration. I would change my mind only if the endpoint census shows the two exact topologies above.
+BGRUN END rc=0 after 206s

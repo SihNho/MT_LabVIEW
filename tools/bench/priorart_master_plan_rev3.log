@@ -1,0 +1,130 @@
+BGRUN START 2026-09-16 13:19:28 limit 25.0 min: py tools/prior_art_review.py --plan-file docs/pre-rig-master-plan.md --slug master-plan-rev3 --trigger cycle-start
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_master-plan-rev3.txt (43789 chars)
+OUTCOME: ANSWERED (550s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-16-priorart-master-plan-rev3.md
+COST: $4.2706  in 32 / out 43609 / cache-create 210440 / cache-read 2151612  (546s, 29 turn(s))
+--- ANSWER ---
+Write is disabled in this session, so the review is delivered here in full. **14 findings, zero `novel`** ? and five of them are repeats of verdicts the previous review (`archive/peer/2026-09-16-priorart-master-plan-rev2.md`) recorded as accepted, whose plan text did not change.
+
+---
+
+# PART A ? THE DIRECTION
+
+## A1 `settled-already` + `unread-evidence` ? the dry run is already decided as *never unattended*, and the reason is the ASI axis at startup
+
+This governs all of Phase 2 and is the costliest finding.
+
+- `docs/t0-instrumentation-plan.md:128` ? *"Step 4 ? in-situ cross-check (**needs the user present; motor and piezo initialise**)"*; `:130` ? *"**Non-negotiable, not optional.**"*; `:136-138` ? *"**Running the main VI executes its initialisation frame, which contains the PI motor's `GOH` (go home) and the ASI stage's `MOVE AXIS TO POS`, i.e. real motion ? which is why this step waits for the user and never runs unattended.**"*
+- `docs/main-vi-startup.md:33` ? diagram 10 = *"**`ASI TG-1000.lvlib:Initialize.vi` (uid 43997) then `Move Axis to Position.vi` (44036)** ? MEASURED 2026-09-14 �� this frame opens the **ASI stage port (COM4, alias `ASI_Piezo`)** and moves an axis. **The same pair recurs on diagram 88**"*; `:35` ? diagram 12 = `Get Current Position.vi`.
+- Plan 0.5 cites only `main-vi-startup.md:24` (PI motor init) and declares *"the ASI piezo must never be driven"* ? then schedules the run that drives it, never naming the measured call site.
+- `docs/main-vi-startup.md:47` ? *"**PI motor first, then rotor, then serial config.** The ordering of the outer sequence is itself a fact the restructuring must preserve (rule 1a)."* So excising startup is itself a rule-1a change, not a free workaround.
+
+**Why this is a repeat:** raised at `rev2.md:479-486` (verdicts `:595-596`); its own disposition at `rev2.md:632` says *"A1's `unread-evidence` on `main-vi-startup.md:33` �� **is folded into plan item 0.5**."* Compare that review's verbatim copy of 0.5 (`rev2.md:104`) with the current 0.5 ? **the sentence is unchanged.** The folding did not happen.
+
+## A2 `contradicted` ? 1.14 ms/frame is a *tight-loop* number; 90 Hz is the exact duty cycle measured to cost 3.5��
+
+- Plan: *"at **1.14 ms of the 10 ms budget**. What is unproven is the interface inside a live, free-running loop with stop and error handling ? **not the numerics**."*
+- `docs/gpu-backend.md:248` ? that 1.14 ms is *"**200 chained frames**"*, back-to-back.
+- `docs/gpu-backend.md:232` ? *"| 2, 5 or 15 ms gaps | **5.50 ms** | �� **P8 360 MHz SM / 405 MHz mem** |"*
+- `docs/gpu-backend.md:236-241` ? *"**Any idle gap �� 2 ms drops the card to P8**; the memory clock falls 17�� and every phase �� slows ~3.5��. The NVIDIA 'prefer maximum performance' per-app profile does not apply to a CUDA-only process (verified: LabVIEW idle �� P8) �� **Working fix = SM clock lock (admin): `nvidia-smi -lgc 1365,1905`** �� Memory clock lock (`-lmc`) is **NOT supported on the RTX 2060** �� **final in-LabVIEW DLL time 2.12 ms, gpu ? base 5.41 ms**."*
+
+At 90 Hz the GPU idles ~9?10 ms of every 11.111 ms. The numerics **are** what is unproven in this regime, and no clock-lock step appears anywhere in the plan. rev2 raised this as B3 (`rev2.md:554-565`, verdict `:607`); the annotation at `rev2.md:631` absorbed it into *"good news"* and carried 1.14 ms forward without the precondition.
+
+Adjacent, also uncarried: `gpu-backend.md:345-349` ? *"**Never `cudaHostRegister` LabVIEW's IMAQ buffer**"* (32.5 ms/frame, 3 slice flips, 0.3 px deviation after frame ~50) ? live the moment loop 1.1 hands pooled IMAQ refnums to 1.2.
+
+## A3 `contradicted` ? *"`Auto-Reset` OFF �� `# of Auto-Reset` never increments and `Limit of Program` never trips"* has a second, ungated arm
+
+- `docs/stage2-assembly-step-e.md:66` ? `Auto-Reset` gates *"**the lost-bead reseed**"* ? that arm, not the reset system.
+- `docs/stage2-assembly-step-e.md:36-38` ? *"**The periodic auto-reset term is bigger** than one `Or`: `# of Auto-Reset`.Value #9879, `Quotient & Remainder` #10068, `Equal?` #10019, Not/And nodes. **It never fired on this recording**, so the 10,043-frame run cannot validate it ? **it gets a separate small-interval test.**"*
+- `docs/GLOSSARY.md:55` ? *"**# of Auto-Reset** ? periodic re-homing �� (program auto-ends once this counter hits its limit, per an in-VI comment: **"~27mins/100000"**)"*.
+- `docs/keystone-op-spec.md:600-601` ? Case 10445 is *"**a periodic auto-reset whose period never elapsed in this recording**"*.
+- The increment path has never been read: `stage2-assembly-step-e.md:55` ? *"`And` �� 9921 (**sink to find**)"*; `:75-76` ? *"remainder 10187 �� (**sink to find**)"*.
+
+The fixture is 10,043 frames ? **1.9 minutes** at 90 Hz ? shorter than a "~27 min" period, which is why it never fired. The plan proposes **hours**, and its own A8 offers to *"**drop A8**"* ? the #10445 census ? discarding the measurement that would settle the claim while asserting the claim.
+
+## A4 `contradicted` ? the "why reseeding drops frames" mechanism rests on a census our own files later corrected
+
+- Plan: *"| **pass-through** (diagram 81) | no nodes | **reset** (diagram 82) | **one Property Node reading `Value`** (uid 4401 �� wire 5888)"* �� *"a reseeding iteration pays **one extra UI-thread round trip**"* (cited to `keystone-op-spec.md:596-600`, read 2026-09-07).
+- `docs/stage2-assembly-step-e.md:122-138` ? **CENSUS B, 2026-09-15**, `OpTunnelRead_v0` 24/24 + `OpWireSource_v5` 12/12, identity-checked, main VI byte-identical: *"frames of Case #5540 | exactly TWO: diagrams **5582** and **5592**"*; both *"**pure pass-through**"*; `:134` ? *"**Correction to the E0 note**"*; `:137-138` ? *"**neither frame computes anything ? both are pass-throughs**."*
+- `:140-145` ? the reseed values arrive on tunnels from outside the loop (`FlatSequenceInnerTunnel` **2886** / **5818**), not from a property read inside the frame.
+
+The two censuses disagree on the frames' identity *and* their contents. The plan's confidence line ? *"the mechanism is measured (node census, UI-thread cost, budget, cliff)"* ? rests on the superseded half.
+
+Its "free design consequence" is also **already the built design**: `stage2-assembly-step-e.md:143-148` ? *"the reseed values are literally **the loop's INITIALISERS** �� `ReseedMux.vi` belongs BEFORE the kernel �� its `xyz0`/`good0` inputs are the same arrays that initialise the loop's state registers, **which that VI already has in hand**."*
+
+## A5 `contradicted` ? GPU-first dissolves the bit-identity acceptance assigned to stages 0?5, and no replacement is named
+
+The user's GPU-first call is theirs and not under review; its recorded consequence is:
+- `restructure-plan-4.6.md:201` ? stage 2 = *"fixture output **bit-identical for the first 10,018 frames**"*;
+- `:205` ? stage **6** = *"GPU build: swap loop 2's kernel | x/y �� 1e-6 px, z �� 1e-4 ��m"*;
+- `:209-210` ? *"**Stages 0?5 remain bit-identical**; only the GPU build �� uses a tolerance."*
+
+With the GPU kernel in loop 2 from the start, no assembled stage can be accepted bit-identically. The plan states no replacement reference.
+
+## A6 `already-measured` ? A6's second half is already read from the machine
+
+- Plan A6: *"one read of `ASI_adjust focus-subvi.vi`: confirm the criterion, **and whether it transacts serial when it fires**."*
+- `docs/camera-acquisition-facts.md:192-194` ? `read_asi_focus.py` already read all nine diagrams: *"The two real serial VIs sit **inside** that case, on diagram 4: uid 663 = `Move Axis to Position.vi` and uid 929 = `Get Current Position.vi`. **The fixed `Wait (ms)` �� is on diagram 8 �� not unconditional.**"* Restated at `archive/benchmarks/INDEX.md:40`.
+- Genuinely open is only the **off-focus criterion and its writer** (`camera-acquisition-facts.md:156-161`).
+
+## A7 `contradicted` (repeat, unfixed) ? the autofocus "Wait + VISA, every frame" line
+
+Plan: *"autofocus holds the only fixed `Wait` �� plus its own VISA traffic, **called every frame** (`frame-loop-anatomy.md:68, :76`)"* vs `camera-acquisition-facts.md:181-194`: unconditionally it is **five nodes ? two `Value` reads, a comparison, a Case Structure, a pass-through**. The cited document is itself provisional: `frame-loop-anatomy.md:8` *"**DRAFT / PROPOSAL**"*, `:105` *"The Wait's constant �� was **detected, not read**."* Identical to rev2 A5 (`rev2.md:510-515`, verdict `:602`); sentence unchanged.
+
+## A8 `settled-already` (repeat, unfixed) ? 0.2 / 2A / 2B already specified, with more content
+
+`restructure-plan-4.6.md:212-216` ? *"Each live stage records: processed-frame deadline misses, **gaps in buffer numbers**, the acquisition-call latency **distribution including p99.9 and max**, per-core CPU, **UI-thread time**, and display age. Add a **back-pressure test** �� and a **soak run**."* Plan 0.2 records *"p50/p99"* and drops p99.9, max, per-core CPU, UI-thread time and display age ? UI-thread time being the one quantity `camera-acquisition-facts.md:204-208` names as the mechanism behind the user's own symptom. `:201` already states 2A's criterion in the plan's own words. (rev2's cite 183-187 has moved to **212-216** since the 2026-09-16 banner.)
+
+## A9 `unread-evidence` + `helper-exists` ? queue mechanics and the boundary-manifest gate
+
+- `restructure-plan-4.6.md:65-68` ? *"a bounded LabVIEW queue's default enqueue timeout is `-1`, which **waits forever when full** �� releasing a queue while another node is waiting �� raises **error 1122**, so shutdown order is stop �� drain �� release."* Phase 2B asserts *"no deadlock, no queue growth"* with none of it.
+- `:147-167` ? extraction *"does **not** preserve all observable behaviour 'by construction'"*, and *"**each extraction is gated on a written BOUNDARY MANIFEST**"*; `:161-162` ? *"an extracted **Event Structure** is the worst case: **latch-action Boolean terminals must be read inside the event case**."* The frame loop holds one (`frame-loop-anatomy.md:35`) and 1.6 moves the UI out. Phase 1 has no manifest step.
+- The helper exists: `tools/bench/boundary_manifest.py` (`archive/peer/2026-09-15-frameloop-seam-77-crossings.md:50`) ? and that same review **refuted** the "77 crossings" number (`:36`), so re-scope rather than re-derive.
+
+---
+
+# PART B ? THE ARTIFACTS
+
+**B1 `already-measured` (repeat, half-fixed)** ? 1.2's tolerance: `gpu-backend.md:249` (200 frames, x,y 4.9e-7 px / z 2.9e-6 ��m / 0 flips); `gpu-portability.md:112`; `INDEX.md:41` (row 20, 41 + 201 frames); `INDEX.md:37` (row 16 ? `GPU_kernel_v1` already wears the kernel's own connector pane). Say which run 1.2 means: at 200/201 frames it is closed; across the full 10,043-frame fixture it has never been run. Carry `INDEX.md:41`'s constraint: *"the 1e-6 px acceptance is a property of a **MACHINE**, not of this DLL."*
+
+**B2 `already-built`** ? the GPU stop path. `gpu-backend.md:332-343`: built precisely because *"the experiment VI is normally stopped with LabVIEW's Abort button, so `mt2_close` never runs"*; single-context policy + keep-alive idle timeout, verified by `tools/gpu/test_abort.py` ? 12 open-without-close cycles, **0 MB** drift. The plan calls "stop and error handling" unproven without citing this.
+
+**B3 `helper-exists` (repeat, unfixed)** ? `frame-loop-anatomy.md:47` uid 6810 *"camera buffer bookkeeping �� it is the frame source"*; `camera-acquisition-facts.md:353-354` ? `Total Lost Frames` / `Missing Frames?` / lost-frame message already driven by the `LastBufferNumber` shift register on diagrams 19 and 43. 0.2/0.3 must say reuse or replace; **replacing it is a rule-1a behaviour change.**
+
+**B4 `already-measured` (repeat, unfixed)** ? 1.6's display route: `INDEX.md:46` (row 25, Image Display +1.0/+6.9 vs Picture +2.9/+8.0), `INDEX.md:43` (row 22), and `restructure-plan-4.6.md:45` already carries loop 6 with those numbers and the 10?20 Hz gate. 1.6 restates the conclusion uncited.
+
+**B5 `contradicted`** ? `camera-acquisition-facts.md:240-251`: *"**`IMAQdxOpenCamera` hands every session a full frame**"* ? close/re-open reads 1280��1024 again. The VI opens its own session after the Python session closes; exposure persistence across open is **unmeasured in either direction**. 0.4's read-back must be taken *after the VI opens the camera*, or the recorded contract is not the condition the run had.
+
+---
+
+## Where I found NO prior art
+
+Loops 1.1, 1.3, 1.4, 1.5, 1.7 as artefacts; the frame-identity corruption test; "the camera is never gated" verified by instrumenting the boundary; the batch directory at `G:\Data\Sihyeong-Developing\`; A2?A5 and A7 of Phase A; and the user's four decisions (90 Hz / map-first / GPU-first / `Auto-Reset` OFF), which are user calls. The A8 re-scope correctly discharges rev2's A4.
+
+---
+
+```
+PRIOR-ART: settled-already     (A1 ? t0-instrumentation-plan.md:128, :130, :136-138 "never runs unattended")
+PRIOR-ART: unread-evidence     (A1 ? main-vi-startup.md:33 ASI Initialize + Move Axis to Position AT STARTUP, recurs diagram 88; :47)
+PRIOR-ART: contradicted        (A2 ? "1.14 ms, not the numerics" vs gpu-backend.md:232, :236-241, :248 P8 at any idle gap >= 2 ms)
+PRIOR-ART: unread-evidence     (A2 ? gpu-backend.md:345-349 never cudaHostRegister the IMAQ buffer)
+PRIOR-ART: contradicted        (A3 ? "Limit of Program never trips" vs stage2-assembly-step-e.md:36-38, :66; GLOSSARY.md:55; keystone-op-spec.md:600-601)
+PRIOR-ART: contradicted        (A4 ? reseed Property-Node mechanism, keystone-op-spec.md:596-600 vs CENSUS B stage2-assembly-step-e.md:128-138)
+PRIOR-ART: settled-already     (A4 ? "carry the initialisers on a wire" already the design, stage2-assembly-step-e.md:143-148)
+PRIOR-ART: contradicted        (A5 ? GPU-first vs restructure-plan-4.6.md:201, :205, :209-210 "stages 0-5 remain bit-identical")
+PRIOR-ART: already-measured    (A6 ? "does it transact serial when it fires", camera-acquisition-facts.md:192-194; INDEX.md:40)
+PRIOR-ART: contradicted        (A7 ? "Wait + VISA every frame", frame-loop-anatomy.md:68 vs camera-acquisition-facts.md:181-194; :8, :105)
+PRIOR-ART: settled-already     (A8 ? 0.2/2A/2B already specified with more content, restructure-plan-4.6.md:212-216, :201)
+PRIOR-ART: unread-evidence     (A9 ? restructure-plan-4.6.md:65-68 queue timeout -1 / error 1122; :147-167 BOUNDARY MANIFEST; :161-162 latch-action)
+PRIOR-ART: helper-exists       (A9 ? tools/bench/boundary_manifest.py, per archive/peer/2026-09-15-frameloop-seam-77-crossings.md:50, :36)
+PRIOR-ART: already-measured    (B1 ? 1.2's tolerance, gpu-backend.md:249; gpu-portability.md:112; INDEX.md:37, :41)
+PRIOR-ART: already-built       (B2 ? GPU abort/stop path, gpu-backend.md:332-343; tools/gpu/test_abort.py)
+PRIOR-ART: helper-exists       (B3 ? get buff image-lost frames.vi uid 6810, frame-loop-anatomy.md:47; camera-acquisition-facts.md:353-354)
+PRIOR-ART: already-measured    (B4 ? 1.6 display route, INDEX.md:43, :46; restructure-plan-4.6.md:45)
+PRIOR-ART: contradicted        (B5 ? camera contract vs camera-acquisition-facts.md:240-251, open resets attributes)
+```
+
+**Cheapest way to act, if the citations hold when opened:** (1) settle the startup question before anything in Phase 2 is scheduled ? as written the dry run is a *supervised* step that drives the ASI axis; (2) add the `nvidia-smi -lgc` clock lock to Phase 0 and give 1.2 a timing acceptance; (3) either run #10445's census by a working route or stop claiming the run cannot self-terminate; (4) reconcile the two Case #5540 censuses before using the reseed frame-loss account; (5) say what replaces bit-identity for stages 2?5; (6) cite rather than restate for 0.2, 1.2, 1.6, and say reuse-or-replace for uid 6810.
+
+I took no lock, built nothing, and ran nothing.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-master-plan-rev3.md
+BGRUN END rc=0 after 550s

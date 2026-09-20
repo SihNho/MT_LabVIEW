@@ -1,0 +1,28 @@
+BGRUN START 2026-09-15 04:54:49 limit 15.0 min: py -u tools/recipes/build_opconstvalue_v1b.py
+   PASS S OpConstValue_v1.vi (run 4) and OpBuildFlatten_v0.vi exist 
+   LabVIEW pid before: 21912
+   COM preflight OK (pid 21912, two round-trips agree: 16 wires)
+   PASS A exactly one Property node with a 'Value' source [528]
+   PASS A PN.Value already wired (to the run-4 indicator) 598
+   PASS B exactly one new FlattenString [{'i': 0, 'class': 'FlattenString', 'uid': 576, 'pos': (1900, 700), 'owner': 'TopLevelDiagram'}]
+   PASS B PN.Value -> Flatten.anything (branch) shares the wire uid on both ends 598/598/598
+   PASS B indicator on Flatten.'data string' ['data string']
+   PASS B indicator on Flatten.'type string' ['type string (7.x only)']
+   PASS B op runnable before the save 1
+   labels {'seed': 'reference', 'value': 'Value', 'data': 'data string', 'type': 'type string (7.x only)'}
+
+OBSERVED EXC 'latin-1' codec can't encode characters in position 12-15: ordinal not in range(256)
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_opconstvalue_v1b.py", line 165, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_opconstvalue_v1b.py", line 115, in main
+    return test(labels)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_opconstvalue_v1b.py", line 140, in test
+    v, val, code, err, ident, d = read("StringConstant", 7, man_s)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_opconstvalue_v1b.py", line 134, in read
+    code, val, note = decode_flat(d) if isinstance(d, str) and d != POISON else (None, None, f"data={d!r:.20}")
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_opconstvalue_v1b.py", line 44, in decode_flat
+    b = data.encode("latin-1") if isinstance(data, str) else bytes(data)
+UnicodeEncodeError: 'latin-1' codec can't encode characters in position 12-15: ordinal not in range(256)
+
+BGRUN END rc=1 after 66s

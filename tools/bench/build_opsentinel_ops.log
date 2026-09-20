@@ -1,0 +1,50 @@
+BGRUN START 2026-09-17 09:43:20 limit 30.0 min: py -u tools/recipes/build_opsentinel_ops.py both
+  FACT  LabVIEW handles before: 31028 (fresh-instance baseline ~31,500)
+
+################ BUILD OpCreateEqual_v0.vi from Create Equal.vi
+  PASS  W1 OpCreateEqual_v0.vi is a fresh OpExitLoop_v0 copy, ExecState 1
+  FACT  donor: GetOutputs 216=216 348=348; Diagram in <- (788, 'specific class reference'); error in <- (348, 'error out'); error out -> [(370, 'error in (no error)')] + ['error out']
+  PASS  W2 Exit For Loop deleted, creator dropped (SubVI count unchanged)  new [107], SubVI 7 (was 7)
+  PASS  W3 Diagram in / error in / creator's own error out wired  creator error-out terminal index 15
+  PASS  W4 every refnum input wired from Index Array[0] of its Get Outputs (none set over COM)  ['x', 'y']
+  PASS  W5 a control for 'location (0, 0)' (+ every remaining required input)  new controls ['location (0, 0)']; probe-created []
+  PASS  W6 OpCreateEqual_v0.vi ExecState 1  ExecState 1
+  PASS  W6b donor OpExitLoop_v0.vi md5 unchanged  2a09a17e4d4924d8052b923dbc83acfd
+  FACT  OpCreateEqual_v0.vi SAVED; labels {'location': 'location (0, 0)', 'inputs': {'x': 216, 'y': 348}, 'extra_controls': [], 'ctl_by_term': {}, 'creator': 'Create Equal.vi'}
+
+################ BUILD OpCreateConst_v0.vi from Create Constant.vi
+  PASS  W1 OpCreateConst_v0.vi is a fresh OpExitLoop_v0 copy, ExecState 1
+  FACT  donor: GetOutputs 216=216 348=348; Diagram in <- (788, 'specific class reference'); error in <- (348, 'error out'); error out -> [(370, 'error in (no error)')] + ['error out']
+  PASS  W2 Exit For Loop deleted, creator dropped (SubVI count unchanged)  new [107], SubVI 7 (was 7)
+  PASS  W3 Diagram in / error in / creator's own error out wired  creator error-out terminal index 15
+  PASS  W4 every refnum input wired from Index Array[0] of its Get Outputs (none set over COM)  []
+   probe t5 ('Type'): control 'Type' -> ExecState 1
+  PASS  W5 a control for 'location (0, 0)' (+ every remaining required input)  new controls ['location (0, 0)', 'Type']; probe-created [(5, 'Type', 'Type')]
+  PASS  W6 OpCreateConst_v0.vi ExecState 1  ExecState 1
+  PASS  W6b donor OpExitLoop_v0.vi md5 unchanged  2a09a17e4d4924d8052b923dbc83acfd
+  FACT  OpCreateConst_v0.vi SAVED; labels {'location': 'location (0, 0)', 'inputs': {}, 'extra_controls': [(5, 'Type', 'Type')], 'ctl_by_term': {'Type': 'Type'}, 'creator': 'Create Constant.vi'}
+
+################ FUNCTIONAL TEST on a scratch copy of EMPTY_v0
+  PASS  F1 scratch EMPTY_v0 copy opens ExecState 1
+  PASS  F2 one While loop created  +1 diagrams, +1 loops
+  FACT  scratch: WhileLoop #43, body Diagram #110 at Traverse index 1
+  **FAIL**  F3 source node dropped and the scratch is runnable again  ExecState 0, controls [(0, 'Diagram in'), (2, 'location (0, 0)'), (5, 'queue'), (7, 'timeout in ms (-1)'), (9, 'error in'), (11, 'error in (no error)')]
+  FACT  F4 setting the const op's VARIANT inputs: {'Type': 0.0} (labels from the build's own probe)
+  PASS  F4 exactly one new Constant-family object on the body diagram  new [(353, 'Constant', (0, 0))]; op error None
+  OBSERVED uid 353 -> owner 'Diagram' uid 110 | self 'Constant'#353 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 110 -> owner 'WhileLoop' uid 43 | self 'Diagram'#110 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  F4b owner chain: constant -> body Diagram -> the new WhileLoop  353 -> Diagram#110 -> WhileLoop#43 (want Diagram#110 -> WhileLoop#43)
+  FACT  F4 REPORTED (not gated): created class ['Constant'], DigitalNumericConstant count 2 - this is the VARIANT Type/Value marshalling result (B3's open question)
+  PASS  F5 exactly one new node (the Equal?) on the body diagram  new [(45, 'Comparison', (706, 726))]; op error None
+  FACT  F5 LoopTunnel 0 -> 2 (both operands cross the loop border; gscript.wire's rule says this is a RANGE)
+  OBSERVED uid 45 -> owner 'Diagram' uid 110 | self 'Comparison'#45 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 110 -> owner 'WhileLoop' uid 43 | self 'Diagram'#110 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  F5b owner chain: Equal? -> body Diagram -> the new WhileLoop  45 -> Diagram#110 -> WhileLoop#43 (want Diagram#110 -> WhileLoop#43)
+  **FAIL**  F6 the scratch still reads ExecState 1 after both placements  ExecState 0
+  FACT  F6 BARE-TERMINAL CENSUS (the measured cause, not a guess): [(0, 44, 'Create Dequeue Element.vi', 1, ''), (0, 44, 'Create Dequeue Element.vi', 3, ''), (0, 44, 'Create Dequeue Element.vi', 12, ''), (0, 44, 'Create Dequeue Element.vi', 13, '')]
+  FACT  scratch deleted: SCRATCH_sentinel_094320.vi
+  FACT  LabVIEW handles after: 31594
+
+VERDICT: 20 pass / 2 fail   FAILING: ['F3 source node dropped and the scratch is runnable again', 'F6 the scratch still reads ExecState 1 after both placements']
+elapsed 113.5 s
+BGRUN END rc=1 after 114s

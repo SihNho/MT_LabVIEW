@@ -1,0 +1,182 @@
+BGRUN START 2026-09-06 04:19:17 limit 6.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & .\tools\peer.ps1 -Agent codex -Slug fp-control-creation-scripting-routes -Task 'Question about LabVIEW VI Scripting (LabVIEW 2026); answer only with documented facts and URLs; say NOT DOCUMENTED where unsure. I need to create, by script, a FRONT-PANEL CONTROL wired to an INPUT terminal of a subVI node on a block diagram (the subVI is erdosmiller Create Property Node.vi; the input is an array of cluster {ID String, Is Write?}). (1) Terminal class methods: does Terminal have Create Control, Create Indicator, Create Constant? Exact method names and which terminal directions each accepts (input vs output). Does Create Indicator on an INPUT terminal error? (2) Is there a scripting way to convert a constant into a control or an indicator into a control (Constant.Change To Control? Control.Indicator property writable?) - exact names. (3) Can New VI Object create a front-panel control of an ARRAY-OF-CLUSTER type directly from a datatype or from a terminal reference (style names)? (4) Is there any VI Server method that creates a control from a data type or a typedef path? Give the class, method name, parameters, and a source URL for each claim.'
+OUTCOME: ANSWERED (115s)  archived: archive\peer\2026-09-06-fp-control-creation-scripting-routes.md
+--- ANSWER ---
+The shortest documented route is:
+
+> Obtain the subVI input `Terminal` reference ??invoke `Terminal.Create Control`.
+
+Because the terminal already has the required array-of-cluster datatype, this avoids reconstructing `{ID String, Is Write?}` manually.
+
+### 1. `Terminal` methods
+
+The documented `Terminal` scripting methods are:
+
+| Method | Documented purpose | Appropriate direction |
+|---|---|---|
+| `Create Control` | Creates and returns a front-panel control for the terminal; optional `Value` input. [NI API reference](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/terminal/createcontrol.html) | Input terminal |
+| `Create Indicator` | Creates and returns a front-panel indicator for the terminal. [LabVIEW Wiki API listing](https://www.labviewwiki.org/wiki/Terminal_class/Create_Indicator_method) | Output terminal |
+| `Create Constant` | Creates and returns a block-diagram constant for the terminal; optional `Value` input. [NI API reference](https://www.ni.com/docs/en-AS/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/terminal/createconstant.html) | Input terminal |
+
+NI?�s user documentation explicitly describes creating a constant from an input terminal and an indicator from an output terminal. [NI: Creating and Editing User-Defined Constants](https://www.ni.com/docs/en-AS/bundle/labview/page/creating-and-editing-user-defined-constants.html), [NI LabVIEW User Manual](https://download.ni.com/support/manuals/320999b.pdf)
+BGRUN TIMEOUT killed after 361s (limit 6.0 min)
+BGRUN START 2026-09-06 12:57:12 limit 6.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & .\tools\peer.ps1 -Agent codex -Slug invoke-class-name-string-format -Task 'LabVIEW VI Scripting fact question (LabVIEW 2026). The erdosmiller LV-Scripting Create Invoke Node.vi (installed under vi.lib\Erdos Miller\LV-Scripting in the project machine; you can read its exported strings if useful) creates an Invoke Node with New VI Object, then in a case selected by its Class Name string input writes the Invoke class property named MethClassName (i.e. Invoke.Method Class Name), then calls Invoke.Set Method (IDString, AllowAlternateNames=F). We passed Class Name="Diagram" and ID String="Connect Wire" and got an Application-class node with no method. Question 1: what EXACT string does the writable property "Method Class Name" (Invoke node) / "Property Node Class Name" (Property node) expect? Give the documented format and concrete examples for the classes Diagram, VI, Control, Terminal, Generic, GObject (e.g. "VI Server:Generic:GObject:Diagram"?). Cite NI docs or labviewwiki pages. Question 2: for Set Method, is the method ID string the display name ("Connect Wire") or an internal ID (e.g. "ConnectWire"), and does AllowAlternateNames=T accept display names? Cite. Question 3: is there a way to READ the list of valid class-name strings from LabVIEW (e.g. Application property "VI Server Classes" or Invoke.All Supported Methods) that our reporter could call? Answer compactly with sources.'
+OUTCOME: ANSWERED (49s)  archived: archive\peer\2026-09-06-invoke-class-name-string-format.md
+--- ANSWER ---
+1. The class string format is:
+
+`<server class>:<node class>`
+
+For ordinary VI Server nodes, use exactly:
+
+- `VI Server:Diagram`
+- `VI Server:VI`
+- `VI Server:Control`
+- `VI Server:Terminal`
+- `VI Server:Generic`
+- `VI Server:GObject`
+
+Do **not** encode the inheritance path; therefore, not `VI Server:Generic:GObject:Diagram`. The documentation explicitly gives `VI Server:Generic` as its example. The same format applies to both `MethClassName` and `PropClassName`. [Invoke Node Class Name](https://labviewwiki.org/wiki/Invoke_class/Invoke_Node_Class_Name_property), [Property Node Class Name](https://labviewwiki.org/wiki/Property_class/Property_Node_Class_Name_property)
+
+Your call failed for an additional reason: **Connect Wire belongs to Terminal, not Diagram**. Its owning class is Terminal and its method ID is `6349C03`. Thus the relevant class is `VI Server:Terminal`. [Terminal.Connect Wire](https://labviewwiki.org/wiki/Terminal_class/Connect_Wire_method)
+
+2. With `Allow Alternate Names? = FALSE`, `Set Method` expects the method?�s **Unique ID string**, not its display name. For Terminal.Connect Wire, that is:
+BGRUN TIMEOUT killed after 361s (limit 6.0 min)
+BGRUN START 2026-09-06 17:10:39 limit 6.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & .\tools\peer.ps1 -Agent codex -Slug vi-server-property-unique-ids -Task 'LabVIEW VI Scripting fact lookup (LabVIEW 2026). The erdosmiller Create Property Node.vi calls Property.Set Properties[] with IDStrings[] and AllowAlternateNames=FALSE, so property Unique ID strings are required (like method IDs 6349C03 = Terminal.Connect Wire). From labviewwiki.org (each property page lists its Unique ID) or NI docs, give the Unique ID strings for these properties, one per line as "<Class>.<Property> = <ID>": GObject.Position, GObject.Bounds, GObject.Label (or Label.Text), Control.Indicator, Control.Value, Invoke.Method Class Name (MethClassName), Invoke.All Supported Methods, Property.Property Node Class Name (PropClassName), Property.All Supported Properties, ClassSpecifierConstant.All Types[], ClassSpecifierConstant.Class Name, Node.Terms[], Terminal.Name, Terminal.Wire, Diagram.Nodes[] (or Diagram.Objects). Also give the Unique IDs of these METHODS: Terminal.Create Control, Terminal.Create Constant, Diagram.Connect Wire (if it exists on Diagram) , Generic.Delete, GObject.Move, Invoke.Set Method, Property.Set Properties[], Property.Add Property Item After. Cite the page URL for each. If a page does not list an ID, say NOT FOUND for that item; do not guess.'
+OUTCOME: ANSWERED (72s)  archived: archive\peer\2026-09-06-vi-server-property-unique-ids.md
+--- ANSWER ---
+The IDs explicitly listed by LabVIEW Wiki are:
+
+```text
+GObject.Position = 632A800
+```
+[Source](https://labviewwiki.org/wiki/GObject_class/Position_property)
+
+```text
+GObject.Bounds = 632A803
+```
+[Source](https://labviewwiki.org/wiki/GObject_class/Bounds_property)
+
+```text
+GObject.Label = NOT FOUND
+```
+The GObject class does not define a Label property. For controls, use the following two-step chain: [GObject class](https://labviewwiki.org/wiki/GObject_class)
+
+```text
+Control.Label = 6332005
+```
+[Source](https://labviewwiki.org/wiki/Control_class/Label_property)
+
+```text
+Text.Text = 632D800
+```
+[Source](https://labviewwiki.org/wiki/Text_class/Text_property)
+
+```text
+Control.Indicator = 6332007
+```
+[Source](https://labviewwiki.org/wiki/Control_class/Indicator_property)
+
+```text
+Control.Value = 633200D
+```
+[Source](https://labviewwiki.org/wiki/Control_class/Value_property)
+
+```text
+Invoke.Invoke Node Class Name = 6370402
+```
+Short name: `MethClassName`. [Source](https://labviewwiki.org/wiki/Invoke_class/Invoke_Node_Class_Name_property)
+
+```text
+Invoke.All Supported Methods = 637040D
+```
+[Source](https://labviewwiki.org/wiki/Invoke_class/All_Supported_Methods_property)
+
+```text
+Property.Property Node Class Name = 636F804
+```
+Short name: `PropClassName`. [Source](https://labviewwiki.org/wiki/Property_class/Property_Node_Class_Name_property)
+
+```text
+Property.All Supported Properties = 636F80E
+```
+This is the current cluster-array property, not deprecated `636F801`. [Source](https://labviewwiki.org/wiki/Property_class/All_Supported_Properties_property)
+
+```text
+ClassSpecifierConstant.All Types[] = 566EFC05
+```
+[Source](https://labviewwiki.org/wiki/ClassSpecifierConstant_class/All_Types%28%29_property)
+
+```text
+ClassSpecifierConstant.Class Name = 566EFC02
+```
+[Source](https://labviewwiki.org/wiki/ClassSpecifierConstant_class)
+
+```text
+Node.Terminals[] = 6359000
+```
+Data/short name: `Terms[]`. [Source](https://www.labviewwiki.org/wiki/Node_class/Terminals%28%29_property)
+
+```text
+Terminal.Name = 634A004
+```
+[Source](https://labviewwiki.org/wiki/Terminal_class)
+
+```text
+Terminal.Connected Wire = 634A000
+```
+This is the property corresponding to the requested `Terminal.Wire`. [Source](https://labviewwiki.org/wiki/Terminal_class)
+
+```text
+AbstractDiagram.Nodes[] = 6375809
+```
+`Diagram` inherits this property from `AbstractDiagram`. [Source](https://labviewwiki.org/wiki/AbstractDiagram_class)
+
+Alternative enumeration:
+
+```text
+AbstractDiagram.All Objects[] = 6375804
+```
+[Source](https://labviewwiki.org/wiki/AbstractDiagram_class/All_Objects%28%29_property)
+
+Methods:
+
+```text
+Terminal.Create Control = 6349C01
+```
+[Source](https://labviewwiki.org/wiki/Terminal_class/Create_Control_method)
+
+```text
+Terminal.Create Constant = 6349C00
+```
+[Source](https://labviewwiki.org/wiki/Terminal_class/Create_Constant_method)
+
+```text
+Diagram.Connect Wire = NOT FOUND
+```
+The documented Diagram method table does not contain `Connect Wire`; wiring is exposed through `Terminal.Connect Wire = 6349C03` or `Node.Connect Wires = 6358C00`. [Diagram source](https://labviewwiki.org/wiki/Diagram_class), [Terminal source](https://labviewwiki.org/wiki/Terminal_class/Connect_Wire_method), [Node source](https://labviewwiki.org/wiki/Node_class)
+
+```text
+Generic.Delete = 6327400
+```
+[Source](https://labviewwiki.org/wiki/Generic_class/Delete_method)
+
+```text
+GObject.Move = 632A400
+```
+[Source](https://labviewwiki.org/wiki/GObject_class/Move_method)
+
+```text
+Invoke.Set Method = 6370002
+```
+[Source](https://labviewwiki.org/wiki/Invoke_class/Set_Method_method)
+
+```text
+Property.Set Properties[] = 636F405
+```
+[Source](https://labviewwiki.org/wiki/Property_class/Set_Properties%28%29_method)
+
+```text
+Property.Add Property Item After = 636F401
+```
+[Source](https://labviewwiki.org/wiki/Property_class)
+BGRUN END rc=0 after 72s

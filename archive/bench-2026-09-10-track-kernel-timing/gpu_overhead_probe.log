@@ -1,0 +1,76 @@
+BGRUN START 2026-09-10 20:07:43 limit 40.0 min: py -u tools/bench/gpu_overhead_probe.py 200
+LabVIEW up after 15 s, version 26.3.1f1
+dialogs: 18,1346,762| / ENABLED|919366|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+   lv_restart (configure) rc 0
+   configured index=1, saved 17087 bytes
+   configure rc 0
+
+######## A gpuk alone: ['base', 'gpuk']
+LabVIEW up after 14 s, version 26.3.1f1
+dialogs: 8,1346,762| / ENABLED|3540684|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+   lv_restart rc 0
+   warmed 262 MB in 1.0 s
+frame 4: median ms base 7.0 gpuk 6.6 | worst dev gpuk 2.50e-06
+frame 7: median ms base 6.7 gpuk 6.4 | worst dev gpuk 2.50e-06
+frame 8: median ms base 7.0 gpuk 6.6 | worst dev gpuk 2.50e-06
+frame 57: median ms base 7.5 gpuk 10.9 | worst dev gpuk 2.69e-06
+frame 107: median ms base 6.9 gpuk 9.9 | worst dev gpuk 2.93e-06
+frame 162: median ms base 5.8 gpuk 8.3 | worst dev gpuk 2.93e-06
+frame 214: median ms base 4.9 gpuk 7.5 | worst dev gpuk 2.93e-06
+SUMMARY frames 200
+  base: median 4.86 ms  mean 10.47 ms  sd 20.51 ms
+  gpuk: median 7.48 ms  mean 14.16 ms  sd 22.97 ms
+  KERNEL (median - base) ms/frame: gpuk 2.63
+  functional: worst |dev| vs LabVIEW reference: gpuk 2.93e-06
+   run_timing rc 0
+   {"cell": "A gpuk alone", "harnesses": ["base", "gpuk"], "frames": 200, "median_ms": {"base": 4.86, "gpuk": 7.48}, "sd_ms": {"base": 20.51, "gpuk": 22.97}, "kernel_ms": {"gpuk": 2.63}, "worst_dev": {"gpuk": 2.9253520219540974e-06}, "dll_calls": 201, "dll_median": [1.668, 0.394, 1.127, 0.885]}
+
+######## B track alone: ['base', 'track']
+LabVIEW up after 15 s, version 26.3.1f1
+dialogs: 8,1346,762| / ENABLED|1312614|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+   lv_restart rc 0
+   warmed 262 MB in 0.2 s
+frame 4: median ms base 7.4 track 11.1 | worst dev track 2.50e-06
+frame 7: median ms base 21.3 track 10.0 | worst dev track 2.50e-06
+frame 8: median ms base 10.1 track 11.1 | worst dev track 2.50e-06
+frame 57: median ms base 8.4 track 12.7 | worst dev track 2.69e-06
+frame 107: median ms base 7.9 track 12.9 | worst dev track 2.93e-06
+frame 162: median ms base 6.6 track 12.3 | worst dev track 2.93e-06
+frame 214: median ms base 5.3 track 9.8 | worst dev track 2.93e-06
+SUMMARY frames 200
+  base: median 5.33 ms  mean 14.21 ms  sd 45.83 ms
+  track: median 9.80 ms  mean 17.93 ms  sd 20.76 ms
+  KERNEL (median - base) ms/frame: track 4.47
+  functional: worst |dev| vs LabVIEW reference: track 2.93e-06
+   run_timing rc 0
+   {"cell": "B track alone", "harnesses": ["base", "track"], "frames": 200, "median_ms": {"base": 5.33, "track": 9.8}, "sd_ms": {"base": 45.83, "track": 20.76}, "kernel_ms": {"track": 4.47}, "worst_dev": {"track": 2.9253520219540974e-06}, "dll_calls": 201, "dll_median": [1.686, 0.401, 1.074, 0.881]}
+
+######## C both: ['base', 'gpuk', 'track']
+LabVIEW up after 14 s, version 26.3.1f1
+dialogs: 8,1346,762| / ENABLED|1443676|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+   lv_restart rc 0
+   warmed 262 MB in 0.2 s
+frame 4: median ms base 7.6 gpuk 8.9 track 8.4 | worst dev gpuk 2.50e-06 track 2.50e-06
+frame 7: median ms base 7.2 gpuk 12.2 track 13.2 | worst dev gpuk 2.50e-06 track 2.50e-06
+frame 8: median ms base 6.7 gpuk 8.9 track 8.4 | worst dev gpuk 2.50e-06 track 2.50e-06
+frame 57: median ms base 7.6 gpuk 8.9 track 11.9 | worst dev gpuk 2.69e-06 track 2.69e-06
+frame 107: median ms base 6.2 gpuk 7.9 track 9.8 | worst dev gpuk 2.93e-06 track 2.93e-06
+frame 162: median ms base 4.7 gpuk 6.7 track 8.0 | worst dev gpuk 2.93e-06 track 2.93e-06
+frame 214: median ms base 4.7 gpuk 6.9 track 8.3 | worst dev gpuk 2.93e-06 track 2.93e-06
+SUMMARY frames 200
+  base: median 4.71 ms  mean 8.02 ms  sd 12.61 ms
+  gpuk: median 6.91 ms  mean 9.21 ms  sd 8.76 ms
+  track: median 8.26 ms  mean 13.05 ms  sd 17.23 ms
+  KERNEL (median - base) ms/frame: gpuk 2.20, track 3.55
+  functional: worst |dev| vs LabVIEW reference: gpuk 2.93e-06, track 2.93e-06
+   run_timing rc 0
+   {"cell": "C both", "harnesses": ["base", "gpuk", "track"], "frames": 200, "median_ms": {"base": 4.71, "gpuk": 6.91, "track": 8.26}, "sd_ms": {"base": 12.61, "gpuk": 8.76, "track": 17.23}, "kernel_ms": {"gpuk": 2.2, "track": 3.55}, "worst_dev": {"gpuk": 2.9253520219540974e-06, "track": 2.9253520219540974e-06}, "dll_calls": 402, "dll_median": [1.615, 0.401, 1.024, 0.881]}
+
+######## VERDICT
+    A gpuk alone: kernel ms {'gpuk': 2.63} | DLL calls 201 median [1.668, 0.394, 1.127, 0.885]
+   B track alone: kernel ms {'track': 4.47} | DLL calls 201 median [1.686, 0.401, 1.074, 0.881]
+          C both: kernel ms {'gpuk': 2.2, 'track': 3.55} | DLL calls 402 median [1.615, 0.401, 1.024, 0.881]
+
+  track alone 4.47 - gpuk alone 2.63 = +1.84 ms/frame
+  -> H2: the cost is real and belongs to TRACK's GPU frame; compare the DLL medians to place it
+BGRUN END rc=0 after 302s

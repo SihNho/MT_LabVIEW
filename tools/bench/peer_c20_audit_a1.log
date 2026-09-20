@@ -1,0 +1,94 @@
+BGRUN START 2026-09-18 02:38:33 limit 20.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent codex -Slug c20-audit-a1-motorgate -TaskFile 'C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/917eacce-7204-4a6b-a905-376c3bf6b242/scratchpad/task_c20_audit_a1.md' -TimeoutSec 780 -Dual
+=== DUAL ARM 1/2: codex -> c20-audit-a1-motorgate-codex ===
+OUTCOME: ANSWERED (112s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-18-c20-audit-a1-motorgate-codex.md
+--- ANSWER ---
+The claim is wrong as stated: `motor_gate.log` is not merely a decision ledger, so registering the entire filename as “machinery” would hide real hardware-execution evidence.
+
+1. **Strongest reason**
+
+   The file mixes dry decisions with live commands and transmission results:
+
+   - `tools/bench/motor_gate.log:52-53`: `ALLOW LIVE` followed by `PI SENT rc=0`
+   - `tools/bench/motor_gate.log:57-58`: another live PI move and result
+   - `tools/bench/motor_gate.log:67-71`: live ASI moves and `SENT rc=0`
+
+   This follows directly from `tools/motor_gate.py:322-328` and `:405-430`: both decisions and transmission results append to the same file. A filename-only `motor_gate` exclusion would remove all of that from A1–A3 because `audit_cycle.py:168` classifies first and `:200` searches failures only within `build_logs`.
+
+   Thus the proposed remedy can suppress evidence, not merely correct classification.
+
+2. **Alternative explanation**
+
+   A1 is caused by a mixed-purpose, append-only ledger being treated as one semantic object. Its recent mtime pulls old live executions into a rolling 24-hour window, while its lack of `BGRUN START` makes the whole file fail A1. The proper remedy could be splitting decision records from execution-run logs, or classifying individual records by content—not globally excluding `motor_gate.log`.
+
+   A2 also exposes a broken identity protocol, not simply a missing exclusion. `audit_cycle.py:186-197` already implements the proposed own-log exemption using `BGRUN_LOG`, but `bgrun.py:112-113` starts the audited child without setting that variable. Python children inherit only the parent environment unless an explicit `env` mapping replaces it; nothing here adds `BGRUN_LOG` ([Python subprocess documentation](https://docs.python.org/3.10/library/subprocess.html)). Therefore the supposedly needed exclusion already exists and demonstrably cannot identify its own log.
+
+   Also, `c19_audit.log` in A3 is not the current audit’s open log: it is the completed earlier run, ending at `tools/bench/c19_audit.log:41`. Excluding it may be correct policy, but calling both A3 entries “self-referential” conflates a prior audit artifact with the currently open one.
+
+3. **Observation that falsifies the claim**
+
+   The claim that filename registration is a safe remedy is falsified if a synthetic `motor_gate.log` containing `ALLOW LIVE`, `SENT rc=1`, or another genuine execution failure disappears from A3 after registration. The existing mixed live records already make that outcome likely.
+
+   The self-log account would be falsified if the audit child actually receives `BGRUN_LOG` equal to its runner-log path; current source shows no such assignment.
+
+4. **Verdict**
+
+   These lines do not justify rollback of cycle-19 work, but they also do not justify releasing cycle 20 merely by adding classifier entries. The safe repair is larger: give audit runs a reliable runner-log identity, and separate or content-classify the motor decision ledger versus live execution evidence.
+
+The cheapest discriminating test is a hardware-free bgrun probe that prints `repr(os.getenv("BGRUN_LOG"))`. If it prints `None`, the existing own-log exemption is unreachable and the alternative explanation wins; if it prints the exact audit-log path, the proposed self-exclusion theory survives.
+=== DUAL ARM 2/2: claude/hypothesis (opus, effort max, web) -> c20-audit-a1-motorgate-opus ===
+OUTCOME: ANSWERED (376s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-18-c20-audit-a1-motorgate-opus.md
+COST: $2.7392  in 18 / out 27346 / cache-create 159952 / cache-read 866495  (374s, 18 turn(s))
+--- ANSWER ---
+**The claim is wrong on all three gates, and the machine recorded the counter-example five minutes before the run the explanation examined.** Write is disabled in this session (correct for a read-only peer), so the review is below.
+
+---
+
+## 1. Strongest reason the claim is WRONG
+
+**A2 is not self-referential.** `tools/bench/c19_audit.log:7` — the same check, same code, 02:21:40:
+
+```
+FAIL  A2 every bgrun ended (END or TIMEOUT): unfinished: ['c19_audit.log', 'c19_doc_ingest.log']
+```
+
+`c19_doc_ingest.log` is not the audit's own log. It is a real concurrent bgrun: `tools/bench/c19_doc_ingest.log:1` `BGRUN START 2026-09-18 02:21:37 … doc_ingest.py --cycle 19 --model sonnet`, `:25` `BGRUN END rc=0 after 191s`. The audit read it **3 s after it started**, correctly called it unfinished, and by 02:27 it had ended and left the list. A2's list is *whatever is genuinely in flight at read time* — the check doing its job (`tools/audit_cycle.py:23-25`). The explanation generalised a structural property from the one sample where nothing else happened to be running.
+
+**And the exclusion it proposes to add already exists, as dead code.** `tools/audit_cycle.py:190` reads `os.environ.get("BGRUN_LOG","")` for exactly this (`:187-198`, comment: built because "the first retrospective duly reported A2 as failed"). Nothing in the project ever sets `BGRUN_LOG` — that read is its only occurrence outside peer transcripts. `tools/bgrun.py:112-113` passes no `env=`, and the child then inherits the parent's environment: *"If env is not None, it must be a mapping that defines the environment variables for the new process; these are used instead of the default behavior of inheriting the current process' environment"* ([docs.python.org/3/library/subprocess.html](https://docs.python.org/3/library/subprocess.html)). So `in_flight` at `:195` has been **unreachable since it was written** — a `device-failed` instance (threshold 1), not noise.
+
+## 2. Alternative explanations of the same evidence
+
+**(a) The classifier defect is the `c19_` prefix, not a missing `motor_gate` entry.** `REVIEW_LOG_RE` is `^`-anchored (`tools/logclass.py:46-71`). `doc_ingest` **is** registered (`:60`), `audit_cycle` **is** registered (`:52`) — and `c19_doc_ingest.log`/`c19_audit*.log` were still classified as builds. "Two register entries" fixes nothing structurally; `c20_*` re-breaks it next cycle. This is `logclass.py`'s own KNOWN LIMIT (`:28-32`).
+
+**(b) A1 is plausibly a WINDOW artefact — this audit never audited cycle 19.** `c19_audit2.log:1` shows bare `py -u tools\audit_cycle.py`: no `--from`, `--to` or `--cycle`, though `docs/cycle19-plan.md` exists. `:3` says "last 24 h (a TIME WINDOW, not a cycle boundary)" and `:23` compares C7 against **`cycle20-plan.md`**. `audit_cycle.py:11-20` calls the explicit window preferred. A 24 h roll reaches `motor_gate.log`'s last write (2026-09-17 23:11) — previous-cycle work.
+
+**(c) A3 is RECENCY, not self-reference, and has already discharged.** `audit_cycle.py:201-208`: `unreviewed` = failing logs with no `archive/peer/*.md` newer. Only the newest failing log can ever appear — a real build log written last fails identically. The codex arm of this dispatch was archived at **02:40:26**, newer than both audit logs, so A3 passes on the next run **with no code change**.
+
+**(d) The A1 remedy suppresses the only hardware evidence there is.** `REVIEW_LOG_RE` is "Excluded in EVERY role" (`logclass.py:45-46`), consumed by `audit_cycle.py:169`, `guard_peer.py:90`, `bgrun.py:142`. `motor_gate.log:51-82` records live transmissions (`:52-53` `ALLOW LIVE` + `PI SENT rc=0 … POS?=1=30.00000`; `:67-82` live ASI). Its contents match **neither** failure scanner — `audit_cycle.py:70-72` and `guard_peer.py:67` have no `SENT rc=<nonzero>` alternative — so **A1 is the only gate that sees this file at all**. Registering it blinds every mechanism to physical motor motion, including the only mechanical check on STATUS.md:38-39's P1 rule.
+
+**(e) "ALREADY RULED OUT (a)" is contradicted by its own file.** `--execute` **is** implemented (`tools/motor_gate.py:360-434`, via `motor_send_pi.ps1`/`motor_asi_io.ps1`); `:37-39` and `:339` ("NOT IMPLEMENTED") are stale, describing a pyserial route that was not the one built. Only `--execute` produces a `LIVE` row (`:369`, `dry=not a.execute`) or `SENT rc=` (`:405-409`, `:428-433`). The defensible claim is narrower: those calls are 23:07–23:11, ~35 min *before* P1 was declared (STATUS.md:86).
+
+## 3. What would falsify my position
+
+A bgrun child printing a non-`None` `BGRUN_LOG` equal to its runner-log path; or a cycle-19-**windowed** audit that still lists `motor_gate.log` under A1; or a synthetic `motor_gate.log` with `SENT rc=1` still reaching A1/A3 after registration.
+
+## 4. Cheapest discriminating test — one run, no hardware, no code change
+
+Re-run the identical audit twice, changing only the invocation, nothing else in flight:
+
+```
+py tools/bgrun.py --max-min 8 --log tools/bench/c19_audit_bare.log   -- py -u tools/audit_cycle.py
+py tools/bgrun.py --max-min 8 --log tools/bench/c19_audit_window.log -- py -u tools/audit_cycle.py --cycle 19 \
+    --from "<mtime docs/cycle19-plan.md>" --to "<mtime docs/cycle20-plan.md>"
+```
+
+| | claim predicts | I predict |
+|---|---|---|
+| A1 `motor_gate.log` | fails in both | fails bare, **passes windowed** |
+| A2 own log | fails in both | fails in both — dead exemption, not a missing rule |
+| A3 | fails in both | **passes in both** (02:40 peer file already newer) |
+
+Confirmatory 5 s half: `py tools/bgrun.py --max-min 1 --log tools/bench/probe_bgrun_env.log -- py -c "import os;print(repr(os.environ.get('BGRUN_LOG')))"` → `None` ⇒ `audit_cycle.py:195` must be **built**, not re-specified.
+
+**Consequence for what this drives:** do not put `motor_gate` in `REVIEW_LOG_RE` — if it must leave A1, give it a third role-dependent predicate as `WATCHDOG_LOG_RE` was kept visible to `guard_peer` (`logclass.py:34-39, 72-76`), and teach both scanners `SENT rc=<nonzero>` first. Rename the `c19_*` machinery logs to the registered forms. Make `bgrun.py` export `BGRUN_LOG`. Cycle 20's "proceed, nothing real failed" premise does not hold: two devices failed, and `device-failed` carries threshold 1.
+=== DUAL DONE: codex rc=0, opus rc=0  (archive\peer\2026-09-18-c20-audit-a1-motorgate-codex.md, -c20-audit-a1-motorgate-opus.md) ===
+BGRUN END rc=0 after 488s

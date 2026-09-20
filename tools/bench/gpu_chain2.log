@@ -1,0 +1,27 @@
+BGRUN START 2026-09-08 09:08:26 limit 50.0 min: py -u tools/bench/gpu_chain2.py
+LabVIEW up after 14 s, version 26.3.1f1
+dialogs: 8,1346,762| / ENABLED|3279968|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+lv_restart rc 0
+ExecState 1 wires 36
+node 0 uid 2471 : [(2, 'error in (no error)', 87), (3, 'error out', 147), (6, 'Threads', 166), (7, 'Threads', 199), (8, 'DIM1', 224), (9, 'DIM1', 241), (10, 'DIM2', 256), (11, 'DIM2', 273), (12, 'DIM3', 288), (13, 'DIM3', 305), (14, 'DIM4', 320), (15, 'DIM4', 337), (16, 'X Array', 1955), (17, 'X Array', 1989), (18, 'Y Array', 459), (19, 'Y Array', 498), (20, 'Cross Size', 1879), (21, 'Cross Size', 560), (22, 'Cross Thickness', 590), (23, 'Cross Thickness', 608), (25, 'Array of Images', 718), (26, 'X Output', 763), (27, 'X Output', 820), (28, 'Y Output', 0), (29, 'Y Output', 904), (31, 'Z Output', 988), (32, 'Array Cal Cluster 2', 4329), (33, 'Array Cal Cluster 2', 0), (34, 'Bead Is Good Array', 1418), (35, 'Bead Is Good Array', 1452), (36, 'Error Message', 1466), (37, 'Error Message', 1482), (38, 'Test Array', 1888), (39, 'Test Array', 1548)]
+node 1 uid 427 SubVI: [(2, 'Array of cal clusters', 4329), (3, 'cross size', 1879)]
+node 2 uid 922 SubVI: [(0, 'New Image', 1873), (2, 'Image Name', 2006)]
+node 3 uid 967 SubVI: [(3, 'Image Out', 1876), (7, 'File Path', 2033), (11, 'Image', 1873)]
+node 4 uid 989 SubVI: [(0, 'cross length', 1879), (1, 'Real-space cosine window', 1888)]
+node 5 uid 990 SubVI: []
+CLFN t28 (Y Output) wire [0] | t32 (Array Cal Cluster) wire [4329]
+W node 4 Hilbert terminal 2 wire 0
+g.wire W.Hilbert -> CLFN.Y Output -> 37 wires 36 -> 37
+ExecState 1 wires 36
+saved 37139
+after save: t28 [0] t32 [4329]
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\fix_gpu_harness2.py", line 52, in <module>
+    t0 = time.time(); g._run(vi); dt = time.time() - t0
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 233, in _run
+    raise result["err"]
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 207, in call
+    disp.Invoke(disp.GetIDsOfNames(0, "Run"), 0, pythoncom.DISPATCH_METHOD, 1)
+pywintypes.com_error: (-2147352567, '���ܰ� �߻��߽��ϴ�.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify that you can run it.', None, 0, 0), None)
+fix2+smoke rc 1
+BGRUN END rc=1 after 918s

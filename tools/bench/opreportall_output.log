@@ -1,0 +1,39 @@
+BGRUN START 2026-09-13 22:03:07 limit 12.0 min: py -u -c 
+import os,sys,time
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+OP=os.path.join(g.CLAUDEDEV,'OpReportAll_v0.vi')
+def snap(t): return '%-24s LoopTunnel=%d Property=%d Wire=%d ControlTerminal=%d ExecState=%s'%(
+    t,g.count(OP,'LoopTunnel'),g.count(OP,'Property'),g.count(OP,'Wire'),g.count(OP,'ControlTerminal'),g.exec_state(OP))
+g.open_panel(OP); time.sleep(0.8)
+print(snap('as built'),flush=True)
+# what does the in-loop Property node actually expose, and what indicators exist?
+nodes,_=g.net_map(OP,diagram_index=1,max_nodes=20,max_terms=12)
+for i,(uid,lbl,terms) in nodes.items():
+    print('   loop body node[%d] uid %-6s %s'%(i,uid,[nm for _,nm,_ in terms if nm]),flush=True)
+print('   indicators:',[l for _,l,ind in g.fp_labels(OP,max_n=30) if ind],flush=True)
+# wire the Property node's Position OUT to the front-panel 'Position' indicator's terminal.
+# wire() takes node classes, and a front-panel terminal is class ControlTerminal - try by index.
+cts=g.report(OP,'ControlTerminal')
+print('   ControlTerminal count:',len(cts),flush=True)
+props=[o['uid'] for o in g.report(OP,'Property')]
+print('   Property uids:',props,flush=True)
+for i,ct in enumerate(cts):
+    try:
+        g.wire(OP,'Property',0,'Position','ControlTerminal',i,'')
+        print(snap('wired out via ControlTerminal[%d]'%i),flush=True); break
+    except Exception as e:
+        pass
+else:
+    print('   no ControlTerminal accepted the wire - output side needs another route',flush=True)
+print(snap('final'),flush=True)
+
+as built                 LoopTunnel=1 Property=1 Wire=9 ControlTerminal=10 ExecState=1
+   loop body node[0] uid 114    ['reference', 'reference out', 'error in (no error)', 'error out', 'Position']
+   indicators: ['# of Refs', 'error out', 'Position', 'Class Name 2', 'UID', 'Class Name 3', 'error out 2']
+   ControlTerminal count: 10
+   Property uids: [114]
+   no ControlTerminal accepted the wire - output side needs another route
+final                    LoopTunnel=1 Property=1 Wire=9 ControlTerminal=10 ExecState=0
+BGRUN END rc=0 after 10s

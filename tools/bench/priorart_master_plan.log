@@ -1,0 +1,139 @@
+BGRUN START 2026-09-16 12:41:46 limit 25.0 min: py tools/prior_art_review.py --plan-file docs/pre-rig-master-plan.md --slug master-plan --trigger direction-change
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_master-plan.txt (23622 chars)
+OUTCOME: ANSWERED (494s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-16-priorart-master-plan.md
+COST: $4.7071  in 50 / out 36465 / cache-create 196589 / cache-read 3658640  (489s, 33 turn(s))
+--- ANSWER ---
+Prior-art review complete. **Zero `novel`** ? 13 findings, every one with a file and line. The plan's technical content is largely right; what it repeatedly does is schedule work our own files already did, and one of its stated motivations is factually false.
+
+---
+
+# PART A ? THE DIRECTION
+
+## A1. C4's stated reason is false: `Last` vs `Next` was MEASURED on this camera, not calculated
+
+`docs/pre-rig-master-plan.md:69` ? *"`Last` vs `Next` measured on the real camera, not modelled. The 74.9 Hz vs 123.0 Hz figure behind the design decision is a calculation"*.
+
+It is not a calculation. `docs/camera-acquisition-facts.md:64-72`: *"The same sweep at 150 Hz with `Buffer Number Mode` = `Last`�� | 8 ms | **74.9 Hz** | **123.0 Hz** |"*, from `tools/bench/camera_budget_sweep.py` on the real JAI SP-5000M-USB via `niimaqdx.dll` (`:44-49`). Same numbers at `archive/bench-2026-09-12-camera-identity/REPORT.md:122-123`, and `archive/benchmarks/INDEX.md:40` (row 19). The only thing not measured is the same comparison through **LabVIEW's** `IMAQdx Get Image` rather than the C API. As written, C4 is a re-run of a closed measurement.
+
+## A2. C3's acceptance metric contradicts the settled design
+
+C3 (`:68`) makes **`Images Missed` = 0** the criterion. The settled readout is `Buffer Number Mode = Last` (STATUS.md, "camera readout"). `docs/camera-acquisition-facts.md:79-81`: *"`Images Missed` is meaningless in `Last` mode for the same reason ? a skipped buffer there is intentional, not lost work."* NI's own `Acquire Most Recent Image` has no such indicator at all (`:439-440`). The phrase is inherited verbatim from the pre-`Last` deferral lists (`archive/peer/2026-09-16-priorart-prior-art.md:519`, `:541`) and predates the 2026-09-15 decision. The buffer-number continuity C3 also lists is the correct metric; the `Images Missed` half must go.
+
+## A3. Our own camera file contradicts itself about `Camera Name` ? and C3/C4 must pick a route across that contradiction
+
+- `docs/camera-acquisition-facts.md:13-15`: *"the examples' `Camera Name` is an IMAQdx Session control that reads back as `('', 0)` and could not be set from Python, and an empty name opens a dialog that blocks every later COM call until LabVIEW is killed."*
+- `docs/camera-acquisition-facts.md:429` (same file, 416 lines later): *"**`Camera Name` is a plain string control.** The one unknown in driving a harness over COM�� simply does not arise."*
+
+Both cannot be true of the same VI. This is the "summary line contradicts its own section" case, and it sits directly under C3/C4's feet.
+
+## A4. C2 is already measured, and the plan escalates it above what its own predecessor said
+
+C2 (`:67`) lists `needs: A7 + motor`. `docs/motion-path-audit.md:84-99` measured it on the real PI C-863.11 Mercury over COM3: `POS?` median **2.56 ms** (min 2.49, p95 2.63, max 2.64, 30 samples; one 11.67 ms outlier in 150), model **1.2 ms fixed + 86.8 ��s/byte**, four reply lengths agreeing to 0.2 ms. `:108-114`: *"The serial read is not slow, and it cannot be made much faster."* MOV/VEL costing two round trips is at `:58-62`.
+
+`docs/cycle10-plan.md:80` already disposed of this: H3 is *"largely arithmetic over numbers we already have (`docs/motion-path-audit.md:58-62, :90-98, :108-120`)"*. The open quantity is the per-frame **rate** of reads, which A7 yields offline. Nothing on record asks for a new round-trip measurement.
+
+## A5. A6 is not new, and most of it is answered in a document the plan never cites
+
+This is the costliest finding, because A6 is declared *"a stop-the-line item"* (`:48`) that blocks the ASI split order, and it is listed as needing A3 ? the 170-diagram walk.
+
+`docs/main-vi-panel-map.md:538-559`, **measured 2026-09-14** (`report_all(main,"Node")`, 626 nodes, 21 `ControlReferenceConstant` nodes), already answers A6's search:
+
+| diagram | the three focus buttons go to |
+|---|---|
+| 16 (startup) | `check N bead pos v3-kimlab.vi` (`-Inc/+Inc/Focus inc reference`) |
+| 43 (frame loop) | `ASI_adjust focus-subvi.vi` |
+| 99 (display loop) | `ASI_adjust focus-subvi.vi`, second call site |
+
+And two of A6's three search categories are closed with a **negative** answer: `docs/main-vi-panel-map.md:618` lists `Focus Step (F1)`, `+ Inc (PgUp)`, `- Inc (PgDn)` among *"bare-terminal objects still without a `Value` node"*; `:282-284` shows no wired terminal; `:418` shows no local either. So there are no `Value` property writes and no locals to find.
+
+Further, the criterion A6 says is unidentified has a recorded candidate: `docs/keystone-op-spec.md:594` ? *"the autofocus **Case 10407** driven by **bead 2's cal-slice index**"* ? corroborated by `tools/bench/which_loop_owns_motor.log:13` (`diagram 73 �� ASI move �� CaseStructure#10407`). The panel also carries wired controls `Auto-Focus` (#38) and `Limit of Auto-Focus` (#48) (`main-vi-panel-map.md:318`, `:328`).
+
+**Consequence for the ordering:** A6 does **not** need A3. The call sites are already localized, and `tools/bench/read_asi_focus.py` already reads that subVI's nine diagrams (`camera-acquisition-facts.md:181-194`). The stop-the-line item can be closed from existing files plus one subVI read ? which also means C6 and D8 are not behind the hierarchy walk.
+
+## A6. The ordering is the one the outcome review refuted, and it has grown since
+
+`archive/peer/2026-09-15-outcome-review-20260915.md:163`: *"the current `NEXT` starts with another reader Op, frame-polarity tooling, and a structural census before live camera work. **That is backwards for outcome risk.**"* Its prescribed order (`:165-173`): reseed �� live acquisition �� minimum scheduler/motor/save �� *then* structural confirmation. `:225` puts *"additional measurement campaigns not tied to the live acceptance or saved output"* under **Abandon**. It fired `scope-inflation` and `tooling-over-delivery` (`:230`, `:234`).
+
+The plan's Ordering ��1 and ��4 put A1?A3 first and return judgement at D1 behind A5 and B2 ? ten analysis/measurement items before the first delivery slice, sixteen before the seven loops.
+
+**What does NOT refute the plan, stated plainly so this verdict is not read as wider than it is:** the user overrode the review's *hot-path-only* recommendation (STATUS.md: acceptance bar **C**, restructure inside a copy), and on 2026-09-16 explicitly chose the reader over a delivery slice (`docs/cycle10-plan.md:15-16`). A1 is authorised. What was authorised was **one** reader; Track A is now eight items, Track B two, Track C six. CLAUDE.md:5 (rule 5): *"An `OUTCOME-VIOLATION` is NOT answered by building a device�� the next cycle becomes a **delivery** cycle, and on repetition the work stops for a re-plan with the user."*
+
+## A7. Unread evidence
+
+- `docs/main-vi-panel-map.md` ? the obvious document for A6, cited nowhere in the plan.
+- `docs/motion-path-audit.md` ? the obvious document for C2/A7, cited nowhere.
+- `archive/peer/2026-09-15-outcome-review-20260915.md:151` ? under *"Do not build"*: *"the currently planned `VI.Get Errors` reader **and `OpCaseFrames_v0` structural confirmation**"* ? A8's dependency.
+
+---
+
+# PART B ? THE ARTIFACTS
+
+## B1. A8 depends on an op that failed five times; the plan says only "LabVIEW RO"
+
+`CLAUDE.md:212`: *"`OpCaseFrames_v0` looked closed-spec and **failed five times** ? grinding is more expensive than the judgement it avoids."* Recorded cause: `archive/2026-09-15-status-cycle7-reseed-measurements.md:43-44` ? *"two property nodes created before either was wired, so the VI was broken at gate A; the recipe now builds one node at a time."* Method and property IDs: `docs/stage2-assembly-step-e.md:216` (`Frames[]` 6363801, `Frame Names` 6365002). A8 (`:46`) carries none of this, and the failure budget rule (CLAUDE.md, MATERIAL sessions, budget = 2) applies to it directly.
+
+Census A itself is genuinely still required ? `docs/stage2-assembly-step-e.md:180`: *"Case #10445 may not be collapsed into an `Or` until its frames are read"*. It is the **route** that is already-failed, not the need.
+
+## B2. B2's question already has a measured answer
+
+`docs/camera-acquisition-facts.md:92-101` is the per-stage budget table: budget 6.00 ms; acquisition 0.12 ms (2 %); CPU kernel 2.43?2.87 ms (~42 %); one serial round trip 2.56 ms (~43 %). Display was added since: `archive/benchmarks/INDEX.md:43` (row 22) ? construction ?2.7 ms CPU + Picture paint ?6.5 ms visible, *"the visible route (8.1 ms) exceeds the 6 ms/frame budget at 150 Hz by itself"*; `:46` (row 25) ? Image Display +1.0 closed / +6.9 visible, ?1.9 ms CPU saved (the number D7 cites, correctly).
+
+So "which owner dominates" is answered: display, then serial, then kernel. What B1/B2 genuinely add is the **p99, in situ, inside the original's frame loop** ? which `docs/frame-loop-anatomy.md:98-104` already frames as open (*"Which case frames are actually taken each iteration�� the 75-node figure is an upper bound"*). Worded as *"measured, not assumed"*, B2 reads as a first measurement and will re-derive four numbers we hold.
+
+## B3. C3's numbers, in the exact hardware state the plan treats as its discovery
+
+`archive/bench-2026-09-12-camera-identity/REPORT.md:10-12`: *"**Hardware state:** rig disassembled, motors detached, camera connected. Operating all four instruments was cleared by the user for this state."* The reframing "camera needs no beads" was not only true then ? it was exercised then.
+
+- 150 Hz with zero frames lost: `REPORT.md:101` ? 149.99 Hz, frame period 6.67 ms, **budget 6 ms at zero loss**; 7 ms �� 75.0 Hz, 299 missed.
+- Acquisition-call latency incl. p99 **and max**: `REPORT.md:109` ? median 122.6 ��s, p90 149, **p99 206, max 218** over 300 calls.
+
+Genuinely new in C3: **p99.9**, and the same figures through LabVIEW with every loop running ? which the plan already carries separately as **E2**. As written, C3 and E2 overlap.
+
+## B4. The camera helpers exist and are named for C1 but not for C3/C4
+
+`tools/bench/camera_budget_sweep.py`, `tools/bench/imaqdx_limits.py` (with `--restore`, the standing camera obligation ? `archive/STATUS-2026-09-14-full-before-condense.md:53-58`), `tools/bench/imaqdx_ctypes.py`. C1 says *"already exists ? scope it, do not rebuild it"*; C3/C4 say nothing equivalent and imply new construction.
+
+## B5. C1's residual is real but smaller than stated, and the safety gate is unmentioned
+
+`docs/camera-acquisition-facts.md:110-126`: ASI measured 2026-09-12 on COM4, 50 exchanges, 0 timeouts ? median 1.128 ms, min 0.960, **p90 1.292, max 3.200**; fixed overhead **0.69 ms measured**, and a ~16-byte `WHERE`-style query **~2.1 ms ? 35 % of the budget** (*"the 16-byte estimate is an estimate; the 0.69 ms is measured"*). So the gap is p99 at the real command length, not p50 ? the plan asks for both. Command safety lives in `archive/peer/2026-09-12-asi-tiger-readonly-commands.md`; the script ships with a blacklist, an **empty-by-default whitelist** and an `-IUnderstandTheRisk` gate (`camera-acquisition-facts.md:128-131`), so `WHERE` must be cleared against that exchange and whitelisted before C1 runs. The plan does not say so.
+
+## B6. E4's three-way benchmark is on record at kernel level
+
+`archive/benchmarks/INDEX.md:36` (row 15): *"Three-way final: seq 8.15 �� CPU-par 2.43 �� GPU v2 1.14"*; row 16 the drop-in comparison at 5 beads; row 24 the five-core repeat. E4's wording (*"original �� CPU-parallel �� GPU ? on the fixture, no motor"*) is that sentence. If E4 means the **VI-level** comparison it must say so, or it re-runs a closed test.
+
+## B7. D2's reseed rule is already derived and validated to 10,043 frames
+
+`docs/keystone-op-spec.md:604-608`: the driver rule (`run_fixture_compare.py --reseed=main`) ? *"if the previous frame's kernel output contains ?1, feed x,y,z := cal positions and good := all TRUE�� else plain feedback"* ? and *"Full rerun with `--reseed=main`: **10,043/10,043 identical, worst dev vs .tra 0.00000**"*. The four selector feeders and the peer-reviewed two-`Select` design are in `archive/2026-09-15-status-cycle7-reseed-measurements.md:17-26`. D2's remaining work is the LabVIEW-side `ReseedMux.vi`, not the rule.
+
+## B8. "An existing 3-row schedule" has no recorded content, and its consumer is not located
+
+C5/E3 accept against *"an existing 3-row schedule"*. `docs/restructure-plan-4.6.md:359`: *"`CycleSchedule` reads back as `((0.0,), (0.0,), (0.0,))`, i.e. **one column**"* ? three rows of zero. And `archive/peer/2026-09-15-outcome-review-20260915.md:187`: *"The exact scheduler consumer is an engineering unknown�� stages 3?4 remain blocked behind locating or reconstructing it."* C5, E3 and D4 all sit on that unlocated consumer.
+
+---
+
+## Where I found NO prior art ? these are clear
+
+A1 (no structure��home-diagram reader exists; `gscript.py:847 loop_diagram()` is the position matcher A3 correctly retires, and `tools/bench/which_loop_owns_motor.log:4-14` prints the blocker 18 times), A2, A3, A4's nested-frame delta, A5, A7, B1's p99, D1, D3, D5, D6, D7, D8, E1, E2, E5 and Track F. Track D's preamble is accurate: `probe_migrate_v2` 3/3 and `probe_migrate_v3` 5/5 with `ExecState == 1` are at `archive/peer/2026-09-16-priorart-prior-art.md:412-443`. D7's ?1.9 ms is correctly sourced to INDEX row 25.
+
+---
+
+```
+PRIOR-ART: contradicted          (A1 ? C4 "is a calculation" vs camera-acquisition-facts.md:64-72)
+PRIOR-ART: already-measured      (A1 ? Last/Next 74.9 vs 123.0, REPORT.md:122-123, INDEX.md:40)
+PRIOR-ART: contradicted          (A2 ? C3's "Images Missed = 0" vs camera-acquisition-facts.md:79-81)
+PRIOR-ART: contradicted          (A3 ? camera-acquisition-facts.md:13-15 vs :429 on `Camera Name`)
+PRIOR-ART: already-failed        (A3 ? NI example over COM failed 3��, REPORT.md:30-34)
+PRIOR-ART: already-measured      (A4 ? motor read 2.56 ms, motion-path-audit.md:84-99, :108-114)
+PRIOR-ART: unread-evidence       (A5 ? main-vi-panel-map.md:538-559, :618; keystone-op-spec.md:594)
+PRIOR-ART: refuted-already       (A6 ? outcome-review-20260915.md:163, :165-173, :225)
+PRIOR-ART: already-failed        (B1 ? OpCaseFrames_v0, CLAUDE.md:212; outcome-review:151)
+PRIOR-ART: already-measured      (B2 ? camera-acquisition-facts.md:92-101; INDEX.md:43, :46)
+PRIOR-ART: already-measured      (B3 ? REPORT.md:101, :109, :10-12)
+PRIOR-ART: helper-exists         (B4/B5 ? camera_budget_sweep.py, imaqdx_limits.py --restore, serial_roundtrip_asi.ps1)
+PRIOR-ART: already-measured      (B6/B7 ? INDEX.md:36; keystone-op-spec.md:604-608)
+PRIOR-ART: contradicted          (B8 ? restructure-plan-4.6.md:359; outcome-review:187)
+```
+
+The cheapest way to act on this, if the findings hold when the citations are opened: **A6 comes out of Track A and closes this week from `main-vi-panel-map.md` plus one read of `ASI_adjust focus-subvi.vi`** ? it is not blocked on A3, and that removes the plan's own stop-the-line item from the critical path.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-master-plan.md
+BGRUN END rc=0 after 494s

@@ -1,0 +1,89 @@
+BGRUN START 2026-09-18 02:21:23 limit 5.0 min: py -u tools\bench\c19_close_release_probe.py
+====================================================================================================
+C1 - DOES THE RELEASE ACTUALLY RELEASE?
+====================================================================================================
+records in store            : 1
+records for the check-A path: 1
+{
+  "created_utc": "2026-09-17T16:12:34Z",
+  "recipe_path": "tools/motor_wiring_check.py",
+  "released": null,
+  "review_file": "archive/peer/2026-09-18-priorart-check-a-wiring.md",
+  "reviewed_sha256": null,
+  "verdict": [
+    "unread-evidence",
+    "contradicted",
+    "helper-exists",
+    "already-measured"
+  ]
+}
+C1a    HIT   released field BEFORE = None
+
+guard_cycle.released_slugs(review) -> released=['already-measured', 'contradicted', 'helper-exists', 'unread-evidence']
+C1b    HIT   all four verdict slugs released, 0 rejected line(s)
+
+review_time basis           : frontmatter date+time 2026-09-18 01:12
+review instant              : 2026-09-18 01:12:34
+docs/motor-limit-assurance-plan.md mtime : 2026-09-18 02:17:05
+comparison the code performs: `if fm <= rt: reject`  (guard_cycle.py:147)
+SAME-DAY ACCEPTED?          : YES - fm(1789665426) > rt(1789661554)
+C1e    HIT   basis carries a TIME, so midnight is not used
+
+stop_record._released(record) -> ok=True
+   line: FIXED: unread-evidence - docs/motor-limit-assurance-plan.md:69 - Check A now consumes main_vi_nodeterms.json and diagram_tree_main.json under md5 vali
+   why : (no reason - the release is valid)
+C1c    HIT   the four FIXED: lines DO constitute a valid release
+
+stop_record.check_command('py tools/motor_wiring_check.py --all') -> allow=False
+--- VERBATIM GATE MESSAGE ---
+BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe has a released stop record, but the file itself cannot be read, so the release cannot be matched to any bytes.
+  recipe      : tools/motor_wiring_check.py
+  review      : archive/peer/2026-09-18-priorart-check-a-wiring.md
+  verdict     : unread-evidence, contradicted, helper-exists, already-measured
+  reviewed sha: (none)
+  unreadable: tools/motor_wiring_check.py
+
+A prior-art verdict other than `novel` stops the work, and cycle 18 exists because stopping the
+BUILD was not enough: on route-B run 3 the recipe LAUNCHED six seconds after the review that said it
+could not pass. The only releases are the two that already exist, written into the review file
+itself and paid for with a citation:
+  REFUTED: <slug> - <file>:<line> says X, which does not cover Y because ...
+  FIXED:   <slug> - <path>:<line> - <one sentence saying what changed>
+(`FIXED:` releases only if the cited path exists, changed AFTER the review, and the line sits under
+'## What was done with it'.) An assertion is not a refutation and a promise is not a fix.
+CYCLE_GUARD_OFF is not a release and does not reach this gate.
+
+--- END VERBATIM ---
+C1d    HIT   gate verdict = REFUSE
+C1a2   HIT   stop_records.json byte-identical before/after this probe
+released field AFTER        : None
+
+====================================================================================================
+C2 - NEGATIVE PROOF OF THE RELEASE PATH (throwaway fixture, deleted in this run)
+====================================================================================================
+fixture old-path AGENTS.md mtime = 2026-09-15 14:33 (review instant 2026-09-18 01:12)
+
+C2a  FIXED line citing a path that DOES NOT EXIST
+    released_slugs -> [] ; rejected -> ['cited path does not exist under the project: docs/no-such-file-at-all.md']
+    _released      -> ok=False why=no valid release line in C:\Users\KimLab\AppData\Local\Temp\c19_relneg_t5uitl8r\C2a.md for: contradicted       rejected FIXED : contradicted - cited path does not exist under the project: docs/no-such
+C2a    HIT   REFUSED as required
+
+C2b  FIXED line citing a path OLDER than the review
+    released_slugs -> [] ; rejected -> ['AGENTS.md last changed 2026-09-15 14:33, which is NOT after the review (frontmatter date+time 2026-09-18 01:12']
+    _released      -> ok=False why=no valid release line in C:\Users\KimLab\AppData\Local\Temp\c19_relneg_t5uitl8r\C2b.md for: contradicted       rejected FIXED : contradicted - AGENTS.md last changed 2026-09-15 14:33, which is NOT aft
+C2b    HIT   REFUSED as required
+
+C2c  FIXED line placed OUTSIDE '## What was done with it'
+    released_slugs -> [] ; rejected -> ["a FIXED line sits ABOVE '## What was done with it'; only that section releases: FIXED: contradicted - docs/mot"]
+    _released      -> ok=False why=no valid release line in C:\Users\KimLab\AppData\Local\Temp\c19_relneg_t5uitl8r\C2c.md for: contradicted       rejected FIXED : (any) - a FIXED line sits ABOVE '## What was done with it'; only that se
+C2c    HIT   REFUSED as required
+
+C2ctl CONTROL: the SAME line inside the section -> ok=True (must be True, else C2c is vacuous)
+C2ctl  HIT   control releases, so C2c's refusal is about PLACEMENT
+
+throwaway fixture deleted: C:\Users\KimLab\AppData\Local\Temp\c19_relneg_t5uitl8r exists=False
+
+====================================================================================================
+PREDICTION CONTRACT: 10/10 HIT
+MISSES: none
+BGRUN END rc=0 after 0s

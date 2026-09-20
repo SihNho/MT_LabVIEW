@@ -1,0 +1,124 @@
+BGRUN START 2026-09-17 04:05:36 limit 20.0 min: py -u tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/plan_rev2.txt --trigger new-op --slug priorart-loopendref-rev2
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-loopendref-rev2.txt (68739 chars)
+OUTCOME: ANSWERED (728s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-priorart-loopendref-rev2.md
+COST: $6.4735  in 64 / out 49388 / cache-create 223962 / cache-read 5997729  (724s, 46 turn(s))
+--- ANSWER ---
+Prior-art review complete — read-only, no lock taken, nothing built, run, or edited. I read `docs/`, `archive/peer/`, `tools/bench/*.log`, `tools/recipes/` and `tools/gscript.py` directly.
+
+**Headline:** File 1 is released — all seven round‑1 verdicts landed, I opened every citation and each one says what the disposition claims. File 2 is not: REV 3 fixed the U2G terminal lookup but left a *second* defect that is visible in run 1's own log, and it hand‑rolls two helpers the project already owns (one of which carries exactly the fix that second defect needs).
+
+---
+
+# FILE 1 — `build_oploopendref_v0.py` REV 2
+
+## Did the seven fixes land? Verified one by one, against the cited files
+
+| round‑1 finding | citation I opened | landed? |
+|---|---|---|
+| A3‑i ordering | `docs/main-vi-stop-and-save.md:72-74` (the two‑step order), `docs/violation-decisions.md:281-290` (2026‑09‑17 03:38, "DECISION: device … build the reader `OpLoopEndRef_v0`", naming `0x06362C00` and the read‑only #637 verification) | **yes** — the docstring now states the real ordering and names the later dated decision as what supersedes it. The supersession is legitimate: `:285` says "STATUS OPEN 13 already names the reader", `:288` names only this one |
+| A3‑ii zero branch | `tools/bench/drive_original_copy_v3.log:80-81` | **yes** — both the docstring and the `out["verdict"]` string read INCONCLUSIVE / READER SUSPECT |
+| A3‑iii Abort citation | `docs/frame-ownership-design.md:105`; `docs/main-vi-stop-and-save.md:75-78` | **yes**, and the document itself was corrected — `:75-77` now cites `:105` and names the review |
+| A4 unread evidence | `docs/toolkit-capabilities.md:510-511` — "fp_labels returns 114 objects and `report("ControlTerminal")` returns 114 — every front-panel object has exactly one diagram terminal in this VI" | **yes**, quoted accurately |
+| B3‑i census not 1077 | `docs/toolkit-capabilities.md:234-238` ("'no 1077' is NOT a verdict that a property attached … Any 'does property X exist on class Y?' test must use that"), `docs/NAMES.md:241-247` (the Loop/ForLoop/WhileLoop id block is "not yet verified on this machine"; `WhileLoop: Loop End Ref 6362C00` at `:246`) | **yes** — L3 is the census |
+| B3‑ii helpers imported | `tools/recipes/build_opcaseframes_v0.py:48-59` `prop_node(cls, pid, label, pos) -> (uid, name)` and `:62-71` `add_indicator(uid, name, key, labels)` | **yes**, and the call shapes match the real definitions; both read the module‑global `OP` at call time, so `CF.OP = OP` is a sufficient rebinding |
+| B4 confirming not discovering | `tools/bench/test_oploopcast.log:84` | **yes** |
+
+## PART A / PART B — no blocking prior art found in the current text
+
+**A1/A2** — the direction is *ordered*, not refuted: `docs/violation-decisions.md:287-290`. No slug (a decision that mandates the build is not prior art that stops it).
+
+**B1** — still genuinely novel. I re‑checked independently rather than trusting round 1: the only `6362C00` / `LpEndRef` hits in the project are this recipe, docs, peer logs, and NI **example** nodes seen during seeding (`tools/bench/build_opwhilecast_v0.log:34` node uid 291 terminal 4 `'LpEndRef'`; `tools/bench/probe_example_forloop.log:16`, same node with `HasConditionalTerm` two lines up at `:14` — so that is the **ForLoop** id 6362002, not 6362C00). No op, recipe or claudeDev VI reads a While loop's conditional terminal.
+
+### Three prose findings, deliberately **without** slugs — each would cost more to block than it saves
+
+1. **Supporting evidence the docstring does not cite, which lowers L4/L5's risk.** `tools/recipes/build_oploopcast_v0.py:280-287` already builds and verifies the identical downstream shape on this donor lineage — `Tunnel['Outside Terminal']` → `Terminal['Connected Wire']` → `GObject['UID']`, each link exact‑class or upcast, `ExecState 1` at every step (`:276-279` is the gate the docstring does cite). So "a property node's reference output feeding a `Terminal`‑class property node" is already proven here. The residual risk — that `WhileLoop.Loop End Ref` returns something *other* than a Terminal ref, making PN_IS/PN_CW a **downcast** (the break recorded at `build_opcaseframes_v0.py:93-97` and `archive/peer/2026-09-15-opcaseframes-multiframe-to-casestructure-downcast.md:32`) — is real but bounded, and L4/L5 stop without saving, which is the coded response. Cheapest insurance if you want it: one `GObject.Class Name` read off PN_LER's output, the same practice `docs/NAMES.md:276-277` used for `Loop.Shift Registers[]`.
+2. **`FRAME_DIAGRAM = 43` is a cached Traverse index.** It matches the record (`docs/main-vi-stop-and-save.md:26-29`: index 43 ↔ uid 639, same md5), but `archive/peer/2026-09-15-opwiresource-fail5-traverse-index-order-mismatch.md:29` says not to assume a cached index survives sessions, and the sibling recipe in this same cycle re‑resolves by uid. I am **not** slugging it because the only consumer is `node_labels(MAIN, 43)` for a cosmetic label, and a wrong index yields an empty label rather than a wrong one — it cannot manufacture a false fact.
+3. **Dead duplicates left by the REV‑2 edit:** `node_terms_of()` is now unreferenced (its callers `data_term`/`make_indicator` were deleted), and `import build_track_v6_core as B` is unused — while `B.walk()` (`tools/recipes/build_track_v6_core.py:84-92`) is the very helper `CF.prop_node`/`CF.add_indicator` use. Cosmetic; noted so it does not get copied forward.
+
+---
+
+# FILE 2 — `probe_move_into_v0.py` REV 3
+
+## PART A
+
+### A3 `contradicted` — the docstring's account of the fix contradicts the file 130 lines later
+
+`probe_move_into_v0.py:9-10`: *"Phase 1 **now resolves every terminal through `node_terms_uid` by exact name**, and finds the VI reference by following the wire…"*, repeated at `:243`: *"Every terminal below is therefore resolved through node_terms_uid, by EXACT name, **never through net_map**."*
+
+`:132` `census()` still calls `g.net_map`, and `:173-180` resolves the Move Invoke's `reference` **and `owner`** — the two terminals the whole op turns on — out of that `net_map` result via `find_term()`. The claim covers the U2G block only.
+
+### A4 `unread-evidence` — run 1's cause was already written down, in two of our own files, before the new diagnostic ran
+
+The docstring credits `tools/bench/diag_u2g_terminals.py` with measuring why `net_map` returned four of twelve terminals. Our files already said it:
+
+- `tools/gscript.py:2352-2355` — the walker stops after three consecutive empty terminals, with the comment *"out-of-range terminal — OR an unassigned connector-pane slot of a subVI (**2026-09-07: those truncated the list**)"*. `UID to GObject Reference.vi` has empties at conpane slots 4–7 (`tools/bench/diag_u2g_terminals.log`, section A), which is precisely four terminals returned.
+- `docs/toolkit-capabilities.md:482-485` — *"**SUPERSEDED 2026-09-14:** `node_terms` (OpNodeTerms_v0) reads every terminal of every `Nodes[]` node with direction and wire … the 'invisible object kinds' below were never invisible to the array readers, **only to the per-terminal walker's end-of-list heuristics**."* The capability row is `:23` (`node_terms` / `node_terms_uid`, ~0.8 s/node vs the walker's ~8 s/node).
+
+This is not merely a citation gap: it is why the remaining `net_map` use at `:132`/`:173` is still the wrong reader, and `docs/toolkit-capabilities.md:294` records `net_map` on an op leaving the target `ExecState 0`. Run 1 paid ~35 s of walking plus ~15 s purging 313 junk Invokes out of a 69 s run for terminals the documented reader returns correctly.
+
+## PART B
+
+### B2 `already-failed` — the name-keyed terminal dict, and the failure is in this probe's own log
+
+`find_term()` (`:137-144`) builds `names = {nm: (ti, w) for ti, nm, w in terms}` — keyed by **name only**. The Move Invoke has four duplicated names (measured, `tools/bench/probe_move_into_v0.log:44`: `8:'owner'=w872, 9:'owner'=w0`, same for `Move`, `position`, `duplicate`), so the dict keeps the **output** side. The run recorded it:
+
+- `tools/bench/probe_move_into_v0.log:46` — `Move Invoke = node[13] uid 741; owner term (9, 0)` (index 9, wire 0 — the unwired output),
+- `:47` — `owner wire 0 also touches []`, so the loop at `:182-187` that is meant to **delete the old `VI.Block Diagram` owner source (uid 744) never deletes anything**, and `:51` then branches the Diagram cast onto a name that resolves ambiguously on an already-wired input.
+
+This exact defect class was diagnosed and its remedy adopted here a month ago:
+
+- `archive/peer/2026-09-14-opexitwhile-fail1-duplicate-terminal-names.md:24-29` — *"Duplicate-name dict entries selected the output-side … whose unwired `wire == 0` then falsely matched … **Require `(name, is_source)` and never source-match unless `wire != 0`**"*; `:47` records the fix adopted and the rebuild passing 5/5.
+- `docs/toolkit-capabilities.md:242-244` (active doc) — *"the erdosmiller creator's connector pane has **two terminals named `error out`** … **Names do not carry direction**; `Terminal.Is Source?` (634A003) does."*
+
+REV 3 states that only the U2G resolution changed, so this is untouched. **The cost if it ships:** `gscript.wire()` documents that *"a FOUND name whose connect is illegal is **declined silently**"* (`tools/gscript.py:1149-1152`) and the call passes `branch=True`, which disables the count check — so `OpMoveIn_v0` can be built with its `owner` still fed by `VI.Block Diagram`, move nodes to the **top level**, and return P2/P3 = FAIL. That reads as *"reparenting into a nested diagram is impossible with today's fleet"* — a false negative on the single question D1 turns on (`docs/d1-build-plan.md:123-130`).
+
+### B3‑i `helper-exists` — both hand-rolled scanners already exist, and one of them *is* the fix for B2
+
+`tools/recipes/build_track_v6_core.py:84-92`:
+```python
+def walk(target, diagram=0):          # uid-keyed, via node_terms_uid, the documented reader
+def term(rows, name, source):         # :95-96 — matches (name, is_source), not name alone
+```
+`term()` is the direction-keyed lookup `find_term()` should be; `walk()` is `all_terms()` (`:244-251`) plus the two open-coded `for cand in range(60)` scans at `:272-278` and `:283-289`. Both are already imported and used by the sibling recipes (`build_opcaseframes_v0.py:37`, `build_opwiresource_v5.py:38`) — including the one this cycle's File 1 now imports.
+
+### B3‑ii `helper-exists` — `owner_of()` drops the guards `read_owner()` exists to carry
+
+`probe_move_into_v0.py:352-356` claims it *"mirrors `read_owner()` of `tools/recipes/build_opownerchain_v1.py:246` VERBATIM except that the target path is a parameter"*. I opened it. `read_owner` (`:246-279`) also returns **five error columns** (`errL, errT, errO, errU, errG`, `:268-269`) and the **`uid_back` / `cls_back` identity cross-check** (`:274-275`); its docstring `:247-248` says the poisoning exists *"so a property read that never ran is visible instead of being mistaken for an answer"*. `owner_of()` keeps the poison but returns only `(ownercls, owner_uid)` — so a read that **errored** and a move that **failed** both surface as `owner_uid == 0`, again on P2/P3. The identity gate is the one `archive/peer/2026-09-15-opwiresource-fail5-traverse-index-order-mismatch.md:29` requires *"on every read"*. (`OWNER_LABELS = opwiresource_v5_labels.json` is correct — `build_opownerchain_v1.py:165`.)
+
+## Where I found NO prior art for File 2 — and one premise I checked rather than assumed
+
+- **P1's premise is sound, and the evidence is stronger than the docstring's citation.** `move_out` reparenting is not merely a docstring claim: `tools/bench/moveout_chain.log:36-37` shows `move_out -> 2471` followed by `top-level node uids after move: [2471, 874, …]` — the moved CLFN appearing in the **top-level** `Nodes[]`. Worth citing, since `docs/toolkit-capabilities.md:366` records the *other* probe (position-only `move_object`) as *"reparenting is inferred, not proven"*, and `archive/peer/2026-09-13-scripted-diagram-selection.md:162` asserts `GObject.Move` *"changes the position of an object within its existing owner"*.
+- **P3 (a structure with its contents, by `GObject.Move` with an owner)** — still never attempted here, as the round‑1 d1 review found. Genuinely open.
+- **No slug, but the cheapest upgrade available:** P3 tests "the contents came with it" only by total `Diagram` count (`:440`), matching `docs/d1-build-plan.md:128-129`. The direct test is one more call to the `owner_of` already in the script, and it is already measured‑good for this class — `docs/diagram-hierarchy.md:85` (`206 → CaseStructure#57 … agrees 3/3`) and `:92` (*"Five of the six classes behave like `CaseStructure`. Diagram → owner returns the structure's class and a usable uid"*).
+
+---
+
+## Verdicts
+
+```
+FILE 1 — tools/recipes/build_oploopendref_v0.py REV 2
+PRIOR-ART: novel
+    All seven round-1 verdicts verified as landed against their own citations
+    (violation-decisions.md:281-290; main-vi-stop-and-save.md:72-74,:75-78;
+     toolkit-capabilities.md:234-238,:510-511; NAMES.md:241-247;
+     build_opcaseframes_v0.py:48-59,:62-71; drive_original_copy_v3.log:80-81;
+     test_oploopcast.log:84). B1 re-verified independently: still novel.
+
+FILE 2 — tools/recipes/probe_move_into_v0.py REV 3
+PRIOR-ART: contradicted     (A3 — probe_move_into_v0.py:9-10,:243 "every terminal … never through net_map"
+                             vs :132,:173-180, which resolve Move.owner/.reference out of net_map)
+PRIOR-ART: unread-evidence  (A4 — tools/gscript.py:2352-2355 and docs/toolkit-capabilities.md:482-485,:23
+                             already record the walker's end-of-list truncation and name node_terms_uid
+                             as the reader; also :294)
+PRIOR-ART: already-failed   (B2 — find_term() at :137-144 keys terminals by NAME only;
+                             archive/peer/2026-09-14-opexitwhile-fail1-duplicate-terminal-names.md:24-29,:47
+                             and docs/toolkit-capabilities.md:242-244;
+                             MEASURED failing in this probe's own tools/bench/probe_move_into_v0.log:44,:46-47)
+PRIOR-ART: helper-exists    (B3-i — tools/recipes/build_track_v6_core.py:84-92 walk(), :95-96 term(name, is_source))
+PRIOR-ART: helper-exists    (B3-ii — tools/recipes/build_opownerchain_v1.py:246-279, esp. :247-248,:268-269,:274-275;
+                             archive/peer/2026-09-15-opwiresource-fail5-traverse-index-order-mismatch.md:29)
+```
+
+All four blocking slugs are File 2's, and all four are disposable by one edit apiece — key terminals by `(name, is_source)` via `build_track_v6_core.term()`, route the remaining `net_map` reads through `walk()`/`node_terms_uid`, and restore `read_owner`'s error and identity columns in `owner_of()`. File 1 is clear to build as written.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-loopendref-rev2.md
+BGRUN END rc=0 after 728s

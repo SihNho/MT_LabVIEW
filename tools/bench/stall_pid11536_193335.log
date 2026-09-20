@@ -1,0 +1,8 @@
+STALL: 2026-09-18 19:36:21 pid 11536 alive 166s, log stale, CPU +0.00s in the last 75s
+dialog: unknown
+cmd pid 11536: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe -c "import time,os,re;p='tools/bench/cycle_runner.log';n=len(open(p,encoding='utf-8',errors='replace').read());[time.sleep(20) for _ in iter(int,1) if not re.search(r'RUNNER STOP',open(p,encoding='utf-8',errors='replace').read()[n:])] if False else None
+import time,re
+p='tools/bench/cycle_runner.log'
+n=len(open(p,encoding='utf-8',errors='replace').read())
+while not re.search(r'RUNNER STOP', open(p,encoding='utf-8',errors='replace').read()[n:]): time.sleep(20)
+print('RUNNER EXITED')"

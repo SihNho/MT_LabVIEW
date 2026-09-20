@@ -1,0 +1,39 @@
+BGRUN START 2026-09-15 12:30:27 limit 20.0 min: py -u tools/recipes/build_opwiresource_v4.py
+   PASS S the v3 op exists 
+   LabVIEW pid before: None
+   fresh(): killing LabVIEW pid None
+   COM preflight attempt 1/15: pid None->10996, wires 16->16
+   COM preflight OK (pid 10996, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 10996
+   PASS A the copied v3 op is runnable [('copy of v3', 1)]
+   WIRING uid 241 label 'Property Node': [('reference', 'sink', 318), ('reference out', 'src', 0), ('error in (no error)', 'sink', 425), ('error out', 'src', 325), ('Position', 'src', 471), ('ClassName', 'src', 555), ('UID', 'src', 308), ('Owner', 'src', 523)]
+   WIRING uid 1044 label 'To More Specific Class': [('specific class reference', 'src', 384), ('error out', 'src', 0), ('target class', 'sink', 533), ('reference', 'sink', 1081), ('error in', 'sink', 0)]
+   WIRING uid 1221 label 'To More Specific Class': [('specific class reference', 'src', 1257), ('error out', 'src', 0), ('target class', 'sink', 1237), ('reference', 'sink', 523), ('error in', 'sink', 0)]
+   PASS A exactly one cast node is fed by Generic.'Owner' [(1044, 1081), (1221, 523)] vs Owner wire 523
+   PASS A exactly one UID node is fed by that cast's output cast out wire 1257; UID nodes [(241, 318), (307, 1081), (1186, 1257), (1329, 1417)]
+   WIRING owner wire 523 -> cast 1221 -> out wire 1257 -> UID node 1186
+   PASS exactly one new Property node (Generic.ClassName) [1554]
+   PASS the node has 'ClassName' as a SOURCE [('reference', False), ('reference out', True), ('error in (no error)', False), ('error out', True), ('ClassName', True)]
+   PASS B cast output -> the new ClassName node on both ends 1257
+   PASS exactly one new panel object for 'ClassName' (cast_class) [{'label': 'Class Name 6', 'indicator': True, 'uid': 1587, 'is_source': False, 'wire': 1614, 'term_err': 0, 'wire_err': 0}]
+   PASS it is an INDICATOR with a unique label (cast_class) {'label': 'Class Name 6', 'indicator': True, 'uid': 1587, 'is_source': False, 'wire': 1614, 'term_err': 0, 'wire_err': 0}
+   PASS exactly one new panel object for 'error out' (errCO) [{'label': 'error out 10', 'indicator': True, 'uid': 1604, 'is_source': False, 'wire': 1673, 'term_err': 0, 'wire_err': 0}]
+   PASS it is an INDICATOR with a unique label (errCO) {'label': 'error out 10', 'indicator': True, 'uid': 1604, 'is_source': False, 'wire': 1673, 'term_err': 0, 'wire_err': 0}
+OBSERVED ExecState per step: [('copy of v3', 1), ('class-of-cast-output node', 1), ('indicators', 1)]
+   PASS C op runnable before the save [('copy of v3', 1), ('class-of-cast-output node', 1), ('indicators', 1)]
+   labels {'seedW': 'reference 2', 'ownercls': 'Class Name 4', 'errT': 'error out 3', 'errO': 'error out 4', 'errU': 'error out 5', 'uid_in': 'UID 2', 'uid_back': 'UID 3', 'cls_back': 'Class Name 5', 'errL': 'error out 6', 'seedG': 'reference 3', 'owner_uid': 'UID 4', 'errG': 'error out 7', 'term_index': 'index 2', 'is_source': 'Is Source?', 'recip_wire': 'UID 5', 'errS': 'error out 8', 'errWU': 'error out 9', 'cast_class': 'Class Name 6', 'errCO': 'error out 10'}
+OBSERVED: wire 10850 Terms[0] source=True owner 'DigitalNumericConstant' uid 3628 reciprocal wire 10850 | cast-output class 'Diagram'  
+OBSERVED: wire 10850 Terms[1] source=False owner 'Comparison' uid 3628 reciprocal wire 10850 | cast-output class 'Diagram'  
+OBSERVED: wire 10850 Terms[2] source=False owner '' uid 3628 reciprocal wire 0 | cast-output class 'Diagram'  error 1055: Property Node in OpWireSource_v4.vi er
+OBSERVED: wire 10850 Terms[3] source=False owner '' uid 3628 reciprocal wire 0 | cast-output class 'Diagram'  error 1055: Property Node in OpWireSource_v4.vi er
+OBSERVED: wire 10850 Terms[4] source=False owner '' uid 3628 reciprocal wire 0 | cast-output class 'Diagram'  error 1055: Property Node in OpWireSource_v4.vi er
+OBSERVED: wire 10850 Terms[5] source=False owner '' uid 3628 reciprocal wire 0 | cast-output class 'Diagram'  error 1055: Property Node in OpWireSource_v4.vi er
+   PASS T0 at least one terminal was read without error [{'wire': 10850, 'index': 0, 'uid_back': 10850, 'wire_class': 'Wire', 'is_source': True, 'owner_class': 'DigitalNumericConstant', 'owner_uid': 3628, 'recip_wire': 10850, 'cast_class': 'Diagram', 'err': '', 'errs': ''}]
+SUMMARY wire 10850: 6 terminals read, 1 report Is Source? TRUE, 1 of those also point back at this wire
+   SOURCE: owner DigitalNumericConstant uid 3628 = the v2 wire-walk's answer
+   PASS T1 the wire has EXACTLY ONE source terminal whose reciprocal wire is itself (else the net is broken or ambiguous and neither earlier claim may be trusted) [(0, True, 3628, 10850), (1, False, 3628, 10850), (2, False, 3628, 0), (3, False, 3628, 0), (4, False, 3628, 0), (5, False, 3628, 0)]
+   FAIL T2 the cast output denotes the SAME object as the owner (class equality) for the source terminal cast 'Diagram' vs owner 'DigitalNumericConstant'
+   PASS T(finally) the main VI file is byte-identical and untouched
+
+STOP at gate: T2 the cast output denotes the SAME object as the owner (class equality) for the source terminal
+BGRUN END rc=1 after 56s

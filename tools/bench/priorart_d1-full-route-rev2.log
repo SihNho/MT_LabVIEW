@@ -1,0 +1,131 @@
+BGRUN START 2026-09-17 08:52:46 limit 20.0 min: py tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/plan_d1_full_route2.md --slug d1-full-route-rev2 --trigger direction-change
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_d1-full-route-rev2.txt (16258 chars)
+OUTCOME: ANSWERED (666s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-d1-full-route-rev2.md
+COST: $7.0852  in 86 / out 50227 / cache-create 220434 / cache-read 7249532  (662s, 55 turn(s))
+--- ANSWER ---
+Write is disabled here, so the review is delivered as text. No lock taken, nothing built, edited or run.
+
+---
+
+# PRIOR-ART REVIEW — `tools/recipes/diag_d1_full_route.py` REV 2 (cycle 15, D1 PHASE "full")
+
+The six findings of `archive/peer/2026-09-17-priorart-d1-full-route.md` are not re-litigated.
+
+**8 findings, 0 novel.**
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 `already-measured` — P2a's number is in the record TWICE, and the two records disagree
+
+The recipe makes P2a the pivot: *"Which number an OPEN panel gives is unmeasured, and it decides whether this route exists at all"* (`tools/recipes/diag_d1_full_route.py:76-78`, repeated verbatim in the FACT line at `:308-310`).
+
+It is measured, twice, on a fresh byte-copy of this same original, on the same day:
+
+- **1.** `tools/bench/drive_original_copy_v3.log:9-12` — copy at `claudeDev\D0_MAINCOPY_20260917_024503.vi`; `#3 open` = `GetVIReference` (`tools/bench/drive_original_copy_v2.py:208-210`), `#4 panel (False,)` = `OpenFrontPanel(False, 1)` (`:211-213`), `#5 state` = `int(vi.ExecState)` (`:214-215`) → **`STEP 2 R1 copy loads, idle  COM  PASS ExecState=1`**, at 02:45. `:8` also records the **original itself** resident at `ExecState=1`.
+- **0.** `tools/bench/build_d1_v0_run5.log:13-16` — copy at `claudeDev\Track_v6_D1_GPU_081752.vi`; `tools/recipes/build_d1_v0.py:413` opens the panel (`g.open_panel(TARGET)`) and `:419` reads `g.exec_state(TARGET)` → **0**, at 08:17 the same morning.
+
+So the precondition `copy_by_index` needs (`tools/gscript.py:1351-1354`) has already been observed **holding** once and **failing** once, and P2a as written reproduces one of the two without telling you which variable produced it.
+
+**Scope.** Covers P2a as a *new* measurement and its framing as the deciding unknown. It does **not** cover measuring the **discriminator** between the two records — the ~1.3 s gap between panel-open and read in v3 versus the immediate read in `build_d1_v0`, the `GetVIReference` that preceded the panel in v3, warm versus cold instance. That is genuinely unmeasured, it is one line of code, and it is the measurement this run should buy.
+
+### A2 `contradicted` — "a scratch copy reads 0 **headlessly**" describes a measurement whose panel was open
+
+- Plan side: `docs/d1-build-plan.md:203` — *"a scratch copy of the original reads **`ExecState 0`** when opened **headlessly**, before any edit"*; repeated at `tools/recipes/build_d1_v0.py:419` and `tools/bench/build_d1_v0_run5.log:16`, and inherited by `diag_d1_full_route.py:76-78`.
+- Machine side: the panel **was** open. `tools/recipes/build_d1_v0.py:413` is `g.open_panel(TARGET)`, and `open_panel` is `OpenFrontPanel` (`tools/gscript.py:1047,:1059`); the read at `:419` is six lines later. Against `drive_original_copy_v3.log:12` (**ExecState=1** after the same call) the word "headlessly" is doing load-bearing work it cannot carry.
+
+**Scope.** Covers the "headlessly" qualifier in `d1-build-plan.md:203` and every sentence resting on it. It does **not** claim the number 0 was misread, nor that 1 is the right answer.
+
+### A3 `contradicted` — "an NI example as a `copy_*` donor is a recorded crash" is not what the record says
+
+- Recipe: `diag_d1_full_route.py:36-37` — *"`copy_*` from vi.lib / an NI example is a recorded LabVIEW crash"*, which is what removes every donor except the working copy itself.
+- The record names **vi.lib**, not NI examples: `docs/keystone-op-spec.md:136-143` — *"substituting **`Create Property Node.vi`**'s bytes into the Move example's source file and running OpMoveByLabel **CRASHED LabVIEW** … **Rule: copy_into only from claudeDev donors we built ourselves; never from vi.lib.**"* `Create Property Node.vi` is a vi.lib\Erdos Miller file (`tools/bench/erdos_creators.log:2,:19`).
+- An **NI example** donor is recorded WORKING, twice, through `copy_by_index` itself: `tools/recipes/build_opconstvalue_v1.py:39` (`EX = claudeDev\NIScriptingExamples\Finding and Modifying Objects\Navigating Nodes and Wires.vi`), used at `:169` (Property) and `:199` (Function) — `tools/bench/build_opconstvalue_v1.log:21-25,:45-49`, all PASS.
+
+**Scope.** Covers the premise that excludes NI-example donors and therefore the claim that donor==target is forced. It does **not** dispute the vi.lib prohibition, and does **not** assert the main VI is a safe donor.
+
+### A4 `contradicted` — §11f.2 authorises the GOAL and prescribes a DIFFERENT ORDER; it never names this route
+
+- Recipe: `diag_d1_full_route.py:41-42` — *"`docs/d1-build-plan.md` s11f.2 **AUTHORISES exactly this**"*.
+- §11f.2, verbatim: `docs/d1-build-plan.md:652-654` — *"**Authorised for PHASE 'full'** (narrow, D1 parts only): the sentinel comparison primitive and the literals it needs inside the loop bodies — **`OpConstValue`/`build_case` first**, additive builds only where those cannot produce the node."*
+
+It authorises the **objective**, names two tools to try **first**, and permits **additive builds** as the fallback. `copy_by_index` is neither of the named two nor an additive build, and "donor == target" appears nowhere in it.
+
+**Scope.** Covers the authorisation claim at `:41-42`. It does **not** dispute that the objective is authorised, and does **not** assert `OpConstValue`/`build_case` can produce the node — `OpConstValue_v1`/`OpConstValueN_v1` are READERS (`docs/toolkit-capabilities.md:46-47`) and `build_case` is top-level with a front-panel selector (`tools/gscript.py:2616-2625`), so §11f.2's "first" clause may well be discharged on inspection. That discharge has to be written down, not skipped.
+
+### A5 `refuted-already` — `restore_move_fixtures()` in a `finally` is the exact defect this project fixed on 2026-09-15
+
+- Recipe: `diag_d1_full_route.py:452-456` calls `g.restore_move_fixtures()` inside `main`'s `finally`.
+- The helper forbids it: `tools/gscript.py:1268-1272` — *"ONLY when nothing of theirs is loaded (call it at the START of a copy, **never in a finally while a VI may still be in memory**: peer `archive/peer/2026-09-15-strtopath-fail4-gui-save-of-broken-target.md` — restoring the disk under a loaded, dirty VI creates the changed-on-disk split-brain that needs a LabVIEW restart)."*
+- The exchange: that file's `:75` — *"On failure: do **not** restore disk bytes in `finally`"*; `:81` — *"The current unconditional disk restore in `finally` should be treated as the **primary protocol defect**."* Disposition `:118-122`: adopted in full, LabVIEW restarted, `copy_by_index` rewritten.
+- **The failure path is live here.** `tools/gscript.py:1351-1354` raises *before* `close_panel(MOVE_DST)` at `:1357`, and `:1292-1293` says on failure *"nothing is restored … the next call's restore (with nothing loaded, or after a restart) cleans up"*. Given A1, the P2b raise is a realistic branch — and on it the recipe restores fixture bytes under a still-loaded, dirty `MOVE_DST` holding the main VI's contents.
+
+**Scope.** Covers the `finally` placement at `:452-456`. It does **not** object to the sanctioned start-of-copy call.
+
+---
+
+## PART B — THE ARTIFACT
+
+### B1 `already-measured` — P2c is run 5's S3, passed three times six hours earlier
+
+P2c predicts *"owner chain uid → body Diagram → that WhileLoop, and NO new panel object (ControlTerminal 114, Local 8)"* for a **Constant** `move_in`-ed into a freshly created While body (`diag_d1_full_route.py:82-85,:393-399`).
+
+`tools/bench/build_d1_v0_run5.log:100-108` records exactly that, three times, with the same reader:
+
+```
+OBSERVED uid 3529 -> owner 'Diagram' uid 1194 | self 'ControlReferenceConstant'#3529 …
+PASS  S3 #3529 -> 1.5  owner Diagram#1194 …; owner(owner) WhileLoop#1134 …
+```
+
+…and `#3560`, `#3447` identically; `:109` lists the body's contents. The no-panel-object half is S3c in the same run — `ControlTerminal` still 114 (`archive/2026-09-17-status-d1-phase-full-narrative.md:132`). Why a Constant is reachable was written up the same day: `:31-35`.
+
+**Scope.** Covers *"a diagram Constant can be `move_in`-ed into a new While body, owner chain verified, no panel object"*. It does **not** cover a **freshly copied** constant as the subject — provenance is the one untested variable — so P2c is legitimate only as the second half of P2b's outcome, never as a question of its own.
+
+### B2 `unread-evidence` — "donor == target" is the recipe's own addition; the recorded route does not need it
+
+- Recipe: `:37-38` and `:74` — *"The one route that touches no original and no vi.lib donor is `copy_by_index` with the D1 working copy as BOTH donor and target"*.
+- The sibling recipe wrote this route down first, without that requirement: `tools/recipes/build_d1_v0.py:43-47` — *"a route exists with BUILT ops: the original itself carries donor constants of exactly the needed values … so `copy_by_index` … + `move_in` (12/0) places them with no new op. **MEASURED, UNWRITTEN — see CONST_DONORS below.**"* — and `:237` `CONST_DONORS = {0: 3130, 1: 3683, 20: 451, -1: 4609, 25: 25175}`, already emitted in run 5's JSON (`:900`).
+- A **second, separately named copy of the original** is an ordinary claudeDev donor (copies are always permitted, CLAUDE.md rule 1), keeps `copy_by_index` in its recorded shape, and clears its only same-file guard trivially (`tools/gscript.py:1313-1314` refuses identical *paths*).
+- Also on record about this call inside one VI: `tools/recipes/probe_move_into_v0.py:88-90` — *"`copy_by_index()` … copies an object into a target's TOP-LEVEL diagram … it cannot place into a nested diagram and **cannot relocate inside one VI. Not a route.**"*
+
+**Scope.** Covers the claim that donor==target is *the* route and its framing as the untried novelty. It does **not** claim donor==target fails; and `probe_move_into_v0.py:88-90` is about **relocating**, not duplicating (`duplicate=True`, `tools/gscript.py:1330`), so it is a caution, not a refutation.
+
+### B3 `unread-evidence` — P2d's "only fleet feeders" list omits three things already in our own files
+
+`diag_d1_full_route.py:405-410` concludes the comparison half stops because *"the only fleet feeders at top level are `create_control` … or another TOP-LEVEL node's output, and a Constant is not a `Nodes[]` member"*. Three omissions:
+
+1. **`Constant.Terminal` 634AC04** — *"a base-`Constant` property and therefore applies to every actual Constant descendant"* (`archive/peer/2026-09-15-opconstvaluen-scan-three-selectors-missing.md:74-76`), already read inside a built op (`docs/toolkit-capabilities.md:47`), whose partner `Terminal.Connect Wire` **6349C03** is already a WRITER inside a built op (`docs/toolkit-capabilities.md:51`, `OpStopFromNode_v0`). A copied constant feeding a copied primitive's required input creates **no panel object** — precisely the additive build §11f.2 permits once `OpConstValue`/`build_case` are shown not to produce the node.
+2. **The erdosmiller creators, already censused terminal by terminal.** `archive/bench-2026-09-14-stage2-toolkit/probe_queue_vis.log:10` — `Create Equal.vi: … 'Diagram in' … 'x' … 'x = y?' … 'y' … 'Compare Aggregates?'`; `:9` — `Create Constant.vi: … 'Diagram in' … 'Type' … 'Terminal' … 'Value'`. The pattern that turns such a creator into an op placing a node **on any diagram by Traverse index, with an input already wired**, is `queue_node` (`tools/gscript.py:928-934`; `docs/toolkit-capabilities.md:32`, *"places one queue primitive on any diagram"*, exercised 162/162) — built from the same `Create *.vi` family in the same folder.
+3. **The sibling recipe already states this design question and its status**: `tools/recipes/build_d1_v0.py:40-47` and `:844-847` — *"`create_control` adds a PANEL CONTROL and contradicts the plan's own 'ControlTerminal still 114', while `Terminal.Create Constant` 6349C00 is catalogued only and an op for it is frozen by `cycle15-plan.md:104`"*. P2d reports this as a fresh OPEN; it is a restatement.
+
+**One consequence inside P2d itself.** `traverse_index`'s candidate classes (`:246-247`) are `DigitalNumericConstant, Function, CaseStructure, SubVI, IndexArray, ForLoop, Node`, and the class our files record for the `x=y?`/`x<y?` primitives is **`Comparison`** (`docs/toolkit-capabilities.md:48`, *"sink `Comparison` 10950"*). If `Function` does not subsume it, P2d's FACT line reports `None[None]` for `Equal?` #10019 and the "design call" is reported off a lookup failure rather than the arithmetic the docstring promises.
+
+**Scope.** Covers the enumeration at `:405-410` and the candidate list at `:246-247`. It does **not** claim (1) or (2) is a built placer today — both are new/additive builds and the general-purpose freeze (`docs/cycle15-plan.md:104`, `build_d1_v0.py:42-43`) still governs. Routes to price, not builds to start.
+
+---
+
+## The five questions, answered
+
+1. **`copy_by_index` with donor == target: never tried here, and the record does not require it.** Every recorded call is donor ≠ target (`build_opconstvalue_v1.py:169,:199`, `build_opwiresource_v1.py:177`, `build_opwiresource_v2.py:144`, `build_strtopath.py:113`, `build_track_v6_queue.py:136`). The recorded route needs only a donor that *contains* the constants (`build_d1_v0.py:43-47,:237`). Two recorded reasons it can still fail, neither about the donor: the ExecState-1-before-save rule (`gscript.py:1351-1354`) against A1's split record, and the fixture protocol (A5). One recorded caution about this call inside one VI: `probe_move_into_v0.py:88-90`.
+2. **Yes — recorded twice, in disagreement.** `drive_original_copy_v3.log:9-12` = **1** (panel opened, then read); `build_d1_v0_run5.log:13-16` = **0** (panel opened at `build_d1_v0.py:413`, read at `:419`). `d1-build-plan.md:203`'s "headlessly" is false of the measurement it describes.
+3. **Yes for the `move_in` half — run 5, S3, three times** (`build_d1_v0_run5.log:100-109`). The copy half is done elsewhere but never on a constant, and the *composition* is untried, so P2b is the only part of P2 that asks something new.
+4. **Your P2d stop is over-stated.** The record contains a way to feed a copied primitive with no panel object: `Constant.Terminal` 634AC04 + `Terminal.Connect Wire` 6349C03, both inside built ops (`toolkit-capabilities.md:47,:51`); and `Create Equal.vi` / `Create Constant.vi` are censused (`probe_queue_vis.log:9-10`) with `queue_node` as the proven placement pattern (`toolkit-capabilities.md:32`). Neither is built today, so the *stop* may still be right — but state it as "frozen, and here are the two priced routes", not "no feeder exists".
+5. **Contradicted cited facts:** the NI-example crash claim (A3), the §11f.2 authorisation (A4), the "unmeasured open-panel ExecState" (A1) and the "headlessly" qualifier it inherits (A2). Correctly cited and untouched: `gscript.py:1351-1354`, `gscript.py:1360`, `toolkit-capabilities.md:494`, `toolkit-capabilities.md:213` (the control rule), `CONST_DONORS[-1] = 4609`, and the stale-in-memory-VI class behind the per-stage filenames.
+
+---
+
+```
+PRIOR-ART: already-measured  (A1 — tools/bench/drive_original_copy_v3.log:8-12 + tools/bench/drive_original_copy_v2.py:114,:208-215 + tools/bench/build_d1_v0_run5.log:13-16 + tools/recipes/build_d1_v0.py:413,:419 vs tools/recipes/diag_d1_full_route.py:76-78,:308-310 — covers P2a as a new measurement and as "the deciding unknown"; does NOT cover measuring the discriminator between the recorded 0 and 1)
+PRIOR-ART: contradicted      (A2 — docs/d1-build-plan.md:203 + tools/recipes/build_d1_v0.py:413 + tools/gscript.py:1047,:1059 vs tools/bench/drive_original_copy_v3.log:12 — covers the word "headlessly" and every claim resting on it; does NOT claim either number was misread)
+PRIOR-ART: contradicted      (A3 — docs/keystone-op-spec.md:136-143 + tools/bench/erdos_creators.log:2,:19 + tools/recipes/build_opconstvalue_v1.py:39,:169,:199 + tools/bench/build_opconstvalue_v1.log:21-25,:45-49 vs tools/recipes/diag_d1_full_route.py:36-37 — covers "an NI example is a recorded crash" and the donor exclusion built on it; does NOT dispute the vi.lib prohibition)
+PRIOR-ART: contradicted      (A4 — docs/d1-build-plan.md:652-654 vs tools/recipes/diag_d1_full_route.py:41-42 — covers "s11f.2 AUTHORISES exactly this"; does NOT dispute that the objective is authorised, nor assert OpConstValue/build_case can produce the node)
+PRIOR-ART: refuted-already   (A5 — tools/gscript.py:1268-1272,:1292-1293,:1351-1357 + archive/peer/2026-09-15-strtopath-fail4-gui-save-of-broken-target.md:75,:81,:118-122 vs tools/recipes/diag_d1_full_route.py:452-456 — covers restore_move_fixtures() in a finally; does NOT object to the start-of-copy call)
+PRIOR-ART: already-measured  (B1 — tools/bench/build_d1_v0_run5.log:100-109 + archive/2026-09-17-status-d1-phase-full-narrative.md:31-35,:132 vs tools/recipes/diag_d1_full_route.py:82-85,:393-399 — covers "a Constant move_in-ed into a new While body, owner chain, no panel object"; does NOT cover a freshly COPIED constant as the subject)
+PRIOR-ART: unread-evidence   (B2 — tools/recipes/build_d1_v0.py:43-47,:237,:900 + tools/gscript.py:1313-1314,:1330 + tools/recipes/probe_move_into_v0.py:88-90 vs tools/recipes/diag_d1_full_route.py:37-38,:74 — covers "donor == target is the one route"; does NOT claim donor == target fails, and probe_move_into_v0.py:88-90 is cited for RELOCATION, not duplication)
+PRIOR-ART: unread-evidence   (B3 — docs/toolkit-capabilities.md:32,:47,:48,:51 + archive/peer/2026-09-15-opconstvaluen-scan-three-selectors-missing.md:74-76 + archive/bench-2026-09-14-stage2-toolkit/probe_queue_vis.log:9-10 + tools/gscript.py:928-934 + tools/recipes/build_d1_v0.py:40-47,:844-847 vs tools/recipes/diag_d1_full_route.py:405-410,:246-247 — covers P2d's "only fleet feeders" enumeration and the Comparison-class omission; does NOT claim any of these is a built placer today, and the general-purpose freeze still governs)
+```
+
+**The one that changes what happens next: A1 + A2.** P2a is the gate the whole P2 run hangs on, and our own files already answer it — with two different numbers taken five and a half hours apart on the same day. Re-running P2a as specified buys one more sample of a bimodal measurement. What is actually unmeasured is the **variable** separating `drive_original_copy_v3.log:12` from `build_d1_v0_run5.log:16`, and that is a one-line change to P2a: read `exec_state` immediately after `open_panel`, then again after a short settle, and record both. If the second read is 1, `copy_by_index`'s precondition holds, A5's failure branch never fires, and P2b/P2c become the cheap run they were meant to be.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-d1-full-route-rev2.md
+BGRUN END rc=0 after 667s

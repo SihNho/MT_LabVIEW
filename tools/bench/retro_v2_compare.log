@@ -1,0 +1,308 @@
+BGRUN START 2026-09-16 20:50:05 limit 45.0 min: py -u tools/bench/retro_v2_compare_runner.py
+=== retrospective v2 comparison runner: cycles 11, 12, 13 ===
+    root G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop
+
+================ cycle 11 ================
+-> PASS  D11 guard_peer undisposed() is false before this dispatch
+   window 2026-09-16 17:38:44 .. 2026-09-16 19:33:32 (115 min); 4 build logs, 7 machinery logs, 7 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-v2-cycle11.txt (12511 chars)
+OUTCOME: ANSWERED (362s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-16-retrospective-v2-cycle11.md
+--- ANSWER ---
+## Verdict
+
+The most costly structural fault was **scope creep across the cycle boundary**. Cycle 11’s substantive work was complete after the successful owner-chain review at approximately 19:13, but cycle-12 device implementation, planning, and its $5.1157 prior-art review remained inside the cycle-11 window until 19:33. Had the boundary been stamped immediately after that review, cycle 11 would have ended around 19:13 instead of 19:33: **20 minutes earlier**. Evidence: `priorart_cycle12_a2.log:1-4`.
+
+A second, comparably material accounting fault is mandatory under the device rule: both `unreported-fact` devices malfunctioned. Most importantly, C4 claimed that no review log contained cost although four logs contain `COST:` lines totalling **$20.4241**. The parser recognizes lowercase JSON-style keys but not the literal `COST:` format (`audit_cycle.py:231-234`). This did not extend execution, but it materially falsified the cycle’s cost output.
+
+The previous retrospective’s nine-slug result is invalid for this window. Its delete failures, autofocus retries, missing flag reader, and premature `OpDelete_v1` build all occurred before 17:38:44.
+
+## Findings
+
+1. **Repeated failure.** No LabVIEW build failure class repeated: `OpOwnerChain_v1` passed 20/20 gates (`build_opownerchain_v1.log:58`). What repeated was the runner’s false inner-failure detection:
+
+   - Attempt 1: a quoted historical failure made `priorart_a1_v1_rev3.log` end `rc=1` (`:89-90`).
+   - Attempt 2: the successful phrase “20 pass, 0 fail” made the build end `rc=1` (`build_opownerchain_v1.log:58-60`).
+   - Attempt 3: reviewer prose again made `retro_cycle11.log` end `rc=1` (`:102-103`).
+
+   The approach should have changed at **attempt 2**: replace the broad text match with structured/anchored failure records. The later review-log exclusion addressed attempts 1 and 3 but deliberately left the build-log “0 fail” false positive intact (`cycle12-plan.md:19-20`).
+
+2. **Missing tool.** The owner-chain wrapper did not read the already-present cast error indicator `errCO`. Consequently, the FlatSequence failure showed downstream error 1055 but did not directly measure whether the cast itself failed. The successful peer review identified this gap (`peer_ownerchain-flatseqframe-1055-r2.log:14-20`). Reading `errCO`, or using the recorded `ClassSpecifierConstant.AllTypes[]` class-tree reader, would have answered the failed prediction and potentially avoided the timeout plus retry—183 + 147 seconds (`peer_ownerchain-flatseqframe-1055.log:2-3`; retry `:2,52`). This is a finding, not the cycle’s principal violation, because no implementation decision was taken from the inference.
+
+3. **Unmeasured steps.** “The cast failed” was inferred while `errCO` was omitted. The session otherwise handled this correctly: `diag_ownerchain_hop` labelled its output “measured, no interpretation” (`:16`), dispatched an adversarial review, and left the design decision open. The reset diagnostic likewise measured the outer wiring but left the final interpretation for judgement rather than silently implementing it.
+
+4. **Rule compliance.**
+
+   Satisfied:
+
+   - All four build logs used and terminated under `bgrun`.
+   - Prior art completed before the 18:52 recipe execution.
+   - The successful build was preceded by the 82-second save-persistence diagnostic (`diag_save_persists.log:21-48`).
+   - The main VI remained byte-identical (`build_opownerchain_v1.log:56`; `diag_ownerchain_hop.log:27`).
+   - No GUI or hardware activity is evidenced.
+
+   Broken or evaded:
+
+   - The judgement/material split was broken: the material session wrote the recipe and conducted three review rounds (`STATUS.md:140-143`), while its archived dispositions accepted, refuted, and prioritized findings (`…priorart-a1-ownerchain-v1.md:466-482`; rev3 `:849-864`). Those are decisions reserved to judgement by `CLAUDE.md:228-256`.
+   - The retrospective began at 19:06:50 while the mandatory failed-prediction review was still in flight; it finished at 19:11:08, before the successful review was archived at 19:12:55 (`retro_cycle11.log:1,103`; `peer_ownerchain-flatseqframe-1055-r2.log:1-2`).
+   - Cycle-12 work began before the cycle-11 boundary was closed.
+
+   The audit does **not** prove review quality or exact cycle attribution. A3 accepts any later archive mtime rather than matching the review to the failure (`audit_cycle.py:160-168`). A4 scopes reviews by filename date, not the 115-minute interval (`:130-139`), and merely checks for a nonempty disposition tail (`:170-182`). A5 checks only the main VI (`:184-189`); A6 reports the all-time GUI log (`:207-211`); C6 cannot detect judgement performed inside a correctly marked material session (`:246-267`). Thus A4’s blank-review result is real housekeeping evidence, but not proof that all listed files belong to this cycle.
+
+5. **Ordering.** The central execution order was defensible: three prior-art rounds completed, the cheap persistence test ran, and then the 90-second build passed. The closeout order was not: the retrospective should have followed the answered owner-chain review, and the cycle boundary should have been written before device/cycle-12 work. Counterfactually: review answered by about 19:12:55 → cycle boundary at about 19:13 → cycle-12 work begins afterward.
+
+6. **What was not reported.**
+
+   - C4 understated monetary cost. The four cost-bearing logs total **$20.4241**: $4.9719, $5.8660, $4.4705, and $5.1157 (`priorart_a1_v1.log:4`; rev2 `:4`; rev3 `:4`; `priorart_cycle12_a2.log:4`).
+   - The audit’s “one failing build log” is a parser false positive: the actual build passed 20/20 (`build_opownerchain_v1.log:58-60`).
+   - The cycle plan is internally inconsistent: Stage 3 specifies the A1 build (`cycle11-plan.md:112-125`), while its out-of-scope declaration says “No new op” (`:135-138`).
+   - C7’s nine out-of-plan files accurately exposes that device implementation and cycle-12 preparation occurred before the boundary.
+
+7. **Judgement inside a material session.** Yes. `STATUS.md:140-143` assigns recipe writing, three prior-art dispatches, and the persistence rerun to `material/cycle11-A1`. That session then accepted/refuted findings and chose implementations—for example the class strategy, Remove Bad Wires placement, and scope releases (`…priorart-a1-ownerchain-v1.md:474-482`; rev3 `:856-864`). Those are precisely “what to accept from a review” decisions reserved to judgement by `CLAUDE.md:232-256`. By contrast, the later material run and closeout diagnostic largely stayed within their pre-scripted measurement roles (`STATUS.md:132-139`).
+
+## Device effect
+
+| Device | Result this cycle |
+|---|---|
+| `unreported-fact` — propagate inner failure | **Failed.** It fired on successful or merely quoted text three times, including “20 pass, 0 fail” (`build_opownerchain_v1.log:58-60`). |
+| `rule-evaded` — adversarial review gate | Worked. The owner-chain prompt explicitly required refutation, and the answered review supplied alternatives and falsifiers (`…ownerchain-flatseqframe-1055-r2.md:49-105`). |
+| `tool-not-built` — prior-art review | Worked. It found the existing persistence diagnostic, which was then run before the build (`…priorart-a1-ownerchain-v1-rev3.md:856-859`; `diag_save_persists.log:21-48`). |
+| `repeated-failure-class` — require disposition before redispatch | Worked for the three A1 rounds: each archived review contains a substantive disposition before the next released build (`…priorart-a1-ownerchain-v1.md:466-503`; rev2 `:819-868`; rev3 `:849-877`). A4’s blanks are day-scoped unrelated reviews, not evidence that this gate was bypassed. |
+| `unreported-fact` — split and report review cost | **Failed.** Wall time was separated, but the parser omitted literal `COST:` records (`audit_cycle.py:220-242`), hiding $20.4241. |
+| `premature-build` | Worked/no recurrence after installation. The 18:52 recipe followed completed prior-art; after the device was installed at 19:16, no later recipe ran within this window. Its reported live refusal concerned the still-running cycle-12 review (`cycle12-plan.md:15-17`). |
+| `scope-creep` | Worked as designed. C7 emitted the nine-file out-of-plan list; it is explicitly a counter rather than a refusal (`audit_cycle.py:269-313`). The retrospective, not the device, must judge the list—and here it reveals the 20-minute boundary overrun. |
+
+VIOLATION: scope-creep | loss_min=20 | loss_usd=5.1157 | evidence=tools/bench/priorart_cycle12_a2.log:4
+VIOLATION: device-failed | loss_min=0 | loss_usd=20.4241 | evidence=unreported-fact-cost-split@tools/audit_cycle.py:232
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-v2-cycle11.md
+
+    retrospective.py rc=0 in 362.4s
+-> PASS  A11 rc==0 and exactly one new archive  rc=0, new=['2026-09-16-retrospective-v2-cycle11.md']
+-> PASS  B11 archive outcome is ANSWERED  outcome=ANSWERED (362s)
+-> PASS  C11 archive carries >=1 VIOLATION line  n=4
+OBSERVED: cycle 11 v2 emitted 4 VIOLATION line(s)  (v1 emitted 9); contract asks for 1, at most 2
+    VIOLATION: <slug> | loss_min=<number> | loss_usd=<number or ?> | evidence=<file:line>
+    VIOLATION: none
+    VIOLATION: scope-creep | loss_min=20 | loss_usd=5.1157 | evidence=tools/bench/priorart_cycle12_a2.log:4
+    VIOLATION: device-failed | loss_min=0 | loss_usd=20.4241 | evidence=unreported-fact-cost-split@tools/audit_cycle.py:232
+    cost line in dispatcher output: NONE (codex prints no cost)
+    disposition written into archive\peer\2026-09-16-retrospective-v2-cycle11.md
+
+================ cycle 12 ================
+-> PASS  D12 guard_peer undisposed() is false before this dispatch
+   window 2026-09-16 19:33:32 .. 2026-09-16 19:59:00 (25 min); 1 build logs, 2 machinery logs, 7 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-v2-cycle12.txt (11756 chars)
+OUTCOME: ANSWERED (241s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-16-retrospective-v2-cycle12.md
+--- ANSWER ---
+## Structural verdict
+
+The cycle’s dominant structural fault was that a **MATERIAL session exercised judgement and cleared the cycle gate**. It accepted all nine findings from the old, over-broad retrospective and declared that cycle 13 was unblocked ([archive/peer/2026-09-16-retrospective-cycle12.md:218](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-16-retrospective-cycle12.md:218>)). That is exactly the decision CLAUDE.md reserves for judgement sessions.
+
+The second violation is mandatory under the device rule: the review-cost device failed. The explicit-window audit said no review log reported a cost, although `priorart_cycle13.log` contains `COST: $5.1239` ([tools/bench/priorart_cycle13.log:4](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/priorart_cycle13.log:4>)). The cause is visible in the parser: it recognizes JSON-like `cost_usd` fields but not the documented uppercase `COST:` format ([tools/audit_cycle.py:233](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/audit_cycle.py:233>)).
+
+Counterfactuals:
+
+- Had the material session stopped at the retrospective disposition at 19:46 and handed the nine findings to judgement, this cycle would have ended at approximately 19:46 rather than continuing to the 19:59 cycle-13 plan boundary: 13 minutes.
+- Had C4 recognized `COST:` when the explicit-window audit ran, the audit would have ended at the same time but reported `$5.1239`, rather than “cost UNKNOWN.” Thus the device failure’s time loss is zero; `$5.1239` is the amount hidden, not additional spend.
+
+## Findings
+
+1. **Repeated failure:** No repeated build-failure class occurred inside the stated window. The only build/diagnostic completed 54/54 with `rc=0` ([diag_owner_semantics.log:178](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_owner_semantics.log:178>)). The retrospective wrapper later failed once, on a CP949 `UnicodeEncodeError` ([retro_cycle12.log:30](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/retro_cycle12.log:30>)); there was no second attempt in the window, so no attempt number at which a repeated approach should have changed. The many failures cited by retrospective v1 came from its 20/24-hour sliding audit and predate 19:33:32.
+
+2. **Missing tool:** None made this cycle materially more expensive. A2 deliberately used the existing, unchanged `OpOwnerChain_v1` ([cycle12-plan.md:70](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/cycle12-plan.md:70>)) and finished in 73 seconds. `ClassSpecifierConstant.AllTypes[]` remained a useful future discriminator, but the plan explicitly carried it to judgement rather than requiring it for A2 ([cycle12-plan.md:101](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/cycle12-plan.md:101>)).
+
+3. **Unmeasured steps:** The A2 result itself was measurement-led: all 170 diagrams were censused ([diag_owner_semantics.log:7](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_owner_semantics.log:7>)), sampled owner semantics were reported, and interpretation was explicitly deferred ([cycle12-plan.md:110](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/cycle12-plan.md:110>)). The log’s description of `errCO` as “the cast node’s own error” was inaccurate, but the cycle did not use that label to choose an A2 design action; cycle 13’s prior-art review later corrected it.
+
+4. **Rule compliance:** The build followed `bgrun`, terminated, used no GUI, and preserved the main-VI checksum ([diag_owner_semantics.log:177](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_owner_semantics.log:177>)). Two rules were broken:
+
+   - “Session = one cycle”: cycle-13 review work began at 19:42:48, before cycle 12’s retrospective wrapper ended at 19:44:15 ([priorart_cycle13.log:1](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/priorart_cycle13.log:1>)).
+   - Judgement/material separation: the MATERIAL session accepted the retrospective findings and decided that no device or block followed ([retrospective-cycle12.md:218-235](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-16-retrospective-cycle12.md:218>)).
+
+   The audit does not check overlapping cycles, which role authored a disposition, whether a disposition made a judgement decision, or whether C4 understands every documented cost format. Its A4 result is also day-granular, so the 35 reviews and blank annotations cannot be attributed to this 25-minute cycle.
+
+5. **Ordering:** It was not defensible to launch cycle 13’s prior-art review while cycle 12’s retrospective was still running—and before discovering that the wrapper ended `rc=1`. The cycle-13 diagnostic was then modified at 19:57 and the cycle-13 plan closed at 19:59. This is real wrong ordering, but I treat it as the consequence of the more fundamental `judgement-in-material` fault rather than emitting a third slug.
+
+6. **What was not reported:** Three facts were easy to miss:
+
+   - The retrospective wrapper itself failed with `rc=1` despite producing an archive ([retro_cycle12.log:30-36](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/retro_cycle12.log:30>)).
+   - Retrospective v1’s 20/24-hour evidence set included 20 builds and 33–37 reviews from earlier cycles, so its nine-slug result was not cycle-12 evidence ([retrospective-cycle12.md:46](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-16-retrospective-cycle12.md:46>)).
+   - C7 correctly exposed `tools/bench/diag_hierarchy_a3.py` as out of the cycle-12 plan; it was cycle-13 work performed before the cycle-13 boundary.
+
+7. **Judgement inside a material session:** Yes. The disposition explicitly says it was written by the “cycle-13 MATERIAL session,” accepts all nine findings as true, checks the violation gate, and concludes that the retrospective does not block cycle 13 ([retrospective-cycle12.md:218-235](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-16-retrospective-cycle12.md:218>)). Accepting review findings and deciding their gate consequence are judgement actions.
+
+## Device effect
+
+- **`unreported-fact`—runner exit propagation:** Worked. The embedded Unicode exception produced outer `BGRUN END rc=1`, not false success ([retro_cycle12.log:30-36](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/retro_cycle12.log:30>)).
+- **`rule-evaded`—confirm-bait refusal/adversarial prompt:** No failure found. The sole completed prior-art review attacked the plan and returned ten adverse findings rather than confirmation ([priorart_cycle13.log:20](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/priorart_cycle13.log:20>)).
+- **`tool-not-built`—prior-art review:** Worked. It found four contradictions plus unread, failed, helper, and already-measured evidence; the plan records all ten as accepted and revised ([cycle13-plan.md:54](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/cycle13-plan.md:54>)).
+- **`repeated-failure-class`—undisposed-review gate:** Its target fault did not recur. The preceding cycle-12 prior-art review had a substantive disposition before the new dispatch ([priorart-cycle12 archive:552](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-16-priorart-priorart-cycle12-a2.md:552>)). The gate remains blind to the wrong session authoring the disposition, but that is the separate judgement violation above.
+- **`unreported-fact`—C3/C4 cost separation:** **Failed.** C4 counted the review’s wall time but missed its explicit `$5.1239` `COST:` line because the parser lacks that format.
+- **`premature-build`:** No recipe build occurred. The only build-class activity was an allowed diagnostic ([diag_owner_semantics.log:1](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_owner_semantics.log:1>)).
+- **`scope-creep`:** The counter worked: C7 exposed the out-of-plan cycle-13 diagnostic. Because this device is expressly a counter rather than a refusal, detecting the change is not device failure.
+
+VIOLATION: judgement-in-material | loss_min=13 | loss_usd=? | evidence=archive/peer/2026-09-16-retrospective-cycle12.md:218
+VIOLATION: device-failed | loss_min=0 | loss_usd=5.1239 | evidence=tools/bench/priorart_cycle13.log:4
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-v2-cycle12.md
+
+    retrospective.py rc=0 in 241.4s
+-> PASS  A12 rc==0 and exactly one new archive  rc=0, new=['2026-09-16-retrospective-v2-cycle12.md']
+-> PASS  B12 archive outcome is ANSWERED  outcome=ANSWERED (241s)
+-> PASS  C12 archive carries >=1 VIOLATION line  n=4
+OBSERVED: cycle 12 v2 emitted 4 VIOLATION line(s)  (v1 emitted 9); contract asks for 1, at most 2
+    VIOLATION: <slug> | loss_min=<number> | loss_usd=<number or ?> | evidence=<file:line>
+    VIOLATION: none
+    VIOLATION: judgement-in-material | loss_min=13 | loss_usd=? | evidence=archive/peer/2026-09-16-retrospective-cycle12.md:218
+    VIOLATION: device-failed | loss_min=0 | loss_usd=5.1239 | evidence=tools/bench/priorart_cycle13.log:4
+    cost line in dispatcher output: $5.1239
+    disposition written into archive\peer\2026-09-16-retrospective-v2-cycle12.md
+
+================ cycle 13 ================
+-> PASS  D13 guard_peer undisposed() is false before this dispatch
+   window 2026-09-16 19:59:00 .. 2026-09-16 20:22:59 (24 min); 2 build logs, 3 machinery logs, 7 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-v2-cycle13.txt (11933 chars)
+OUTCOME: ANSWERED (212s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-16-retrospective-v2-cycle13.md
+--- ANSWER ---
+The one structural fault was wrong ordering: the FlatSequence-specific property lookup should have preceded attempt 1’s negative traversal sweep. That mistake triggered a false failed prediction and a 125-second review; the later 33-second census immediately found the correct accessor (`tools/bench/diag_flatseq_diagrams_attach.log:7-14`).
+
+Loss is 2 minutes, rounded from the logged 125 seconds. No dollar amount was recorded (`tools/bench/peer_flatseq_unreachable.log:2`; the archive’s cost field is blank at `archive/peer/2026-09-16-flatseq-frame-unreachable.md:6`). Counterfactual: had the `FlatSequence.Diagrams[]` census run at attempt 1, around 20:00, the same necessary 33-second measurement would have occurred first and the 125-second corrective review would not have run; sequential downstream work could have ended around 20:21 instead of 20:23.
+
+## Findings
+
+1. Repeated failure
+
+No failure class recurred inside the specified window. Attempt 1 failed once at B2, reaching 0/57 diagrams (`tools/bench/diag_hierarchy_a3.log:25-35`). The approach changed immediately after attempt 1 to the class-specific accessor, confirmed 5/5 (`tools/bench/diag_flatseq_diagrams_attach.log:7-27`).
+
+The five historical `OpCaseFrames_v0` attempts were already recorded when the plan was written (`docs/cycle13-plan.md:88-100`); they predate 19:59 and must not be charged to this cycle.
+
+2. Missing tool
+
+`OpFlatSeqDiagrams_v0`—`FlatSequence → Diagrams[] → GObject.UID`—was absent. It would have resolved the remaining 57 frame diagrams and completed A3’s 170/170 hierarchy; cycle 14 consequently specifies exactly that op (`docs/cycle14-plan.md:27-32`).
+
+This is a finding, not a separate structural fault: cycle 13 explicitly prohibited building a new op and contained a prewritten stop condition (`docs/cycle13-plan.md:32-37,98-100`). The session followed that stop rather than forgetting the reader.
+
+3. Unmeasured steps
+
+The session generalized from “our tested generic routes returned none” to “no traverse-class plus property route can reach these diagrams” (`archive/peer/2026-09-16-flatseq-frame-unreachable.md:14-19`). That was broader than the measurements at `tools/bench/diag_hierarchy_a3.log:25-36`.
+
+A cheap measurement was available: the subsequent 33-second census found both `Diagrams[]` and `Frames[]` (`tools/bench/diag_flatseq_diagrams_attach.log:7-14`). This is part of the single ordering fault, not another violation.
+
+4. Rule compliance
+
+Broken or only formally satisfied:
+
+- Mandatory external search occurred only after the universal negative was drafted. The rule specifically says to search before writing that a route is impossible (`CLAUDE.md:416-424`).
+- Judgement/material separation was crossed; see finding 7 (`CLAUDE.md:228-255`).
+- Cycle-14’s prior-art review began at 20:21:06 before the cycle-14 plan received its boundary mtime at 20:22:59 (`tools/bench/priorart_cycle14.log:1`). That is poor session/cycle separation under `CLAUDE.md:220-222`, although no completed cost or harmful result is available inside this window.
+- C7 found two unplanned files. The recovery diagnostic is understandable, and the retrospective runner is cycle machinery; neither demonstrably changed the outcome enough to constitute scope creep.
+
+Complied with:
+
+- Both builds used `bgrun` and ended explicitly (`tools/bench/diag_hierarchy_a3.log:124`; `tools/bench/diag_flatseq_diagrams_attach.log:27`).
+- The failed prediction received an answered adversarial review before recovery (`tools/bench/peer_flatseq_unreachable.log:1-4`).
+- The main VI checksum remained unchanged (`tools/bench/diag_hierarchy_a3.log:121`).
+- The scratch VI was deleted (`tools/bench/diag_flatseq_diagrams_attach.log:23-24`).
+- No GUI or hardware activity is evidenced.
+- The failure budget was respected.
+
+The audit does not establish exact-window A4 compliance: it says explicitly that A4 is day-granular. Its blank reviews therefore cannot be attributed to 19:59–20:22. It also does not check review correctness, external-search timing, judgement inside a nominally material session, every original file, or whether A3’s 170/170 deliverable was completed.
+
+5. Ordering
+
+The 3a, 3c, and 3d measurements were defensible and useful. The FlatSequence branch was not: the class-specific lookup and 33-second attachment census should have been attempt 1, before generic negative traversal.
+
+A second, smaller ordering concern is that `priorart_cycle14.log` started before the cycle-14 plan’s final mtime. Because that review has no end or cost line inside the window, the evidence does not support assigning it structural loss yet.
+
+6. What was not reported
+
+The current handoff is substantially more accurate than the first retrospective:
+
+- It explicitly says A3 completed 112 clean diagrams and left 57 frames (`STATUS.md:87-90`).
+- It preserves the limitation that 3c located where 1055 became observable, not where it originated (`tools/bench/diag_hierarchy_a3.log:64-65`).
+
+What the earlier retrospective understated or misattributed is its own accounting. It charged a 591-second, $5.1239 prior-art review that occurred before the 19:59 boundary (`archive/peer/2026-09-16-retrospective-cycle13.md:191`). Within the exact window, builds were 5:37 and completed reviews were 5:42; review cost was unknown, not $5.1239. `priorart_cycle14.log` had only started by the cutoff and cannot yet be counted as completed review time.
+
+7. Judgement inside a material session
+
+Yes. After the failed measurement, the material trajectory:
+
+- accepted the peer’s competing explanation;
+- chose and ran the confirming diagnostic;
+- selected the surviving interpretation for the documentation;
+- deferred the new op as a judgement question.
+
+Those decisions are recorded at `archive/peer/2026-09-16-flatseq-frame-unreachable.md:161-189`, while `CLAUDE.md:232-233` reserves accepting review findings and choosing between explanations for judgement sessions.
+
+I am not promoting this to a second structural violation: no counterfactual shows that placing the same decision in a judgement session would have reduced cost or changed the produced evidence. It is a real rule-compliance finding, but not one with a defensible loss estimate.
+
+## Device effect
+
+None of the seven listed devices demonstrably failed:
+
+- `unreported-fact`, exit propagation: worked. B2 failed at `diag_hierarchy_a3.log:34`, and the outer log correctly ended `rc=1` at line 124.
+- `rule-evaded`, adversarial-review gate: worked. The prompt explicitly ordered an attack (`archive/peer/2026-09-16-flatseq-frame-unreachable.md:14-19`), and the answer opened by rejecting the claim (`tools/bench/peer_flatseq_unreachable.log:4`).
+- `tool-not-built`, prior-art review: no applicable recipe build occurred. Cycle 13 deliberately stopped before a new op, while cycle 14 began its prior-art gate at `tools/bench/priorart_cycle14.log:1`.
+- `repeated-failure-class`, disposition gate: no repeated in-window failure occurred. Attempt 1 was followed by an annotated review and changed approach (`archive/peer/2026-09-16-flatseq-frame-unreachable.md:161-189`).
+- `unreported-fact`, build/review cost separation: worked. The attached audit separately reported C3 and C4, matching the implementation at `tools/audit_cycle.py:221-240`.
+- `premature-build`: no recipe build occurred after the unfinished cycle-14 prior-art review; cycle 14 also records the recipe as blocked (`docs/cycle14-plan.md:15-23,43`).
+- `scope-creep`: worked as designed. C7 surfaced both unplanned files; the device is a counter, not a refusal (`tools/audit_cycle.py:312`).
+
+VIOLATION: wrong-ordering | loss_min=2 | loss_usd=? | evidence=tools/bench/peer_flatseq_unreachable.log:2
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-v2-cycle13.md
+
+    retrospective.py rc=0 in 212.3s
+-> PASS  A13 rc==0 and exactly one new archive  rc=0, new=['2026-09-16-retrospective-v2-cycle13.md']
+-> PASS  B13 archive outcome is ANSWERED  outcome=ANSWERED (212s)
+-> PASS  C13 archive carries >=1 VIOLATION line  n=3
+OBSERVED: cycle 13 v2 emitted 3 VIOLATION line(s)  (v1 emitted 6); contract asks for 1, at most 2
+    VIOLATION: <slug> | loss_min=<number> | loss_usd=<number or ?> | evidence=<file:line>
+    VIOLATION: none
+    VIOLATION: wrong-ordering | loss_min=2 | loss_usd=? | evidence=tools/bench/peer_flatseq_unreachable.log:2
+    cost line in dispatcher output: NONE (codex prints no cost)
+    disposition written into archive\peer\2026-09-16-retrospective-v2-cycle13.md
+
+--- E: py tools/violations.py (both VIOLATION forms) ---
+
+slug                         count  loss_min   retrospectives
+wrong-ordering                   8      2(1)   2026-09-15-retrospective-cycle7.md, 2026-09-15-retrospective-cycle8.md, 2026-09-15-retrospective-cycle9.md, 2026-09-16-retrospective-cycle10.md, 2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md, 2026-09-16-retrospective-cycle13.md, 2026-09-16-retrospective-v2-cycle13.md  (answered 2026-09-16 15:05 in docs/violation-decisions.md)
+tool-not-built                   7         -   2026-09-15-retrospective-cycle7.md, 2026-09-15-retrospective-cycle8.md, 2026-09-15-retrospective-cycle9.md, 2026-09-16-retrospective-cycle10.md, 2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md, 2026-09-16-retrospective-cycle13.md  (answered 2026-09-16 15:05 in docs/violation-decisions.md)
+inference-over-measurement       7         -   2026-09-15-retrospective-cycle7.md, 2026-09-15-retrospective-cycle8.md, 2026-09-15-retrospective-cycle9.md, 2026-09-16-retrospective-cycle10.md, 2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md, 2026-09-16-retrospective-cycle13.md  (answered 2026-09-16 15:05 in docs/violation-decisions.md)
+rule-evaded                      7         -   2026-09-15-retrospective-cycle7.md, 2026-09-15-retrospective-cycle8.md, 2026-09-15-retrospective-cycle9.md, 2026-09-16-retrospective-cycle10.md, 2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md, 2026-09-16-retrospective-cycle13.md  (answered 2026-09-16 15:05 in docs/violation-decisions.md)
+unreported-fact                  7         -   2026-09-15-retrospective-cycle7.md, 2026-09-15-retrospective-cycle8.md, 2026-09-15-retrospective-cycle9.md, 2026-09-16-retrospective-cycle10.md, 2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md, 2026-09-16-retrospective-cycle13.md  (answered 2026-09-16 15:05 in docs/violation-decisions.md)
+repeated-failure-class           6         -   2026-09-15-retrospective-cycle7.md, 2026-09-15-retrospective-cycle8.md, 2026-09-15-retrospective-cycle9.md, 2026-09-16-retrospective-cycle10.md, 2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md  (answered 2026-09-16 15:05 in docs/violation-decisions.md)
+scope-creep                      5     20(1)   2026-09-15-retrospective-cycle7.md, 2026-09-16-retrospective-cycle10.md, 2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md, 2026-09-16-retrospective-v2-cycle11.md  (answered 2026-09-16 19:16 in docs/violation-decisions.md)
+premature-build                  4         -   2026-09-15-retrospective-cycle7.md, 2026-09-15-retrospective-cycle9.md, 2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md  (answered 2026-09-16 19:16 in docs/violation-decisions.md)
+judgement-in-material            4     13(1)   2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md, 2026-09-16-retrospective-cycle13.md, 2026-09-16-retrospective-v2-cycle12.md  <== DUE, no decision on file
+device-failed                    2      0(2)   2026-09-16-retrospective-v2-cycle11.md, 2026-09-16-retrospective-v2-cycle12.md  <== DUE, no decision on file
+
+threshold 3 (device-failed: 1); 2 slug(s) awaiting a response (a mechanical device OR a dated written refusal - user's option C, 2026-09-16)
+loss_min column: 'x(n)' = x minutes reported across n of that slug's occurrences; v1 archives carry no figure at all, so '-' means UNMEASURED, not zero.
+reported loss across all slugs: 35 min, $30.66, from 5 violation line(s) that carried one
+-> PASS  E violations.py exits 0 over old+new archives  rc=0
+
+--- E2: py tools/violations.py --due (VERBATIM) ---
+<<<DUE-BEGIN>>>
+DUE judgement-in-material: 4 occurrences (threshold 3) -> 2026-09-16-retrospective-cycle11.md, 2026-09-16-retrospective-cycle12.md, 2026-09-16-retrospective-cycle13.md, 2026-09-16-retrospective-v2-cycle12.md [reported loss: 13 min, from 1 of 4 occurrence(s)]
+    Answer it in docs/violation-decisions.md: a dated block with `DECISION: device` or `DECISION: no-device` and the reason. Dated AFTER the retrospective above.
+DUE device-failed: 2 occurrences (threshold 1) -> 2026-09-16-retrospective-v2-cycle11.md, 2026-09-16-retrospective-v2-cycle12.md [reported loss: 0 min, $25.55, from 2 of 2 occurrence(s)]
+    THRESHOLD 1: a device that let its own fault through is broken, not unlucky. Fix or withdraw the device named in the evidence field before the next build.
+    Answer it in docs/violation-decisions.md: a dated block with `DECISION: device` or `DECISION: no-device` and the reason. Dated AFTER the retrospective above.
+<<<DUE-END>>>
+    violations --due rc=1
+
+=== SUMMARY (for tools/bench/retro_v2_comparison.md) ===
+cycle 11: 362s runner / peer 362s, outcome ANSWERED, cost ?, 4 VIOLATION line(s)
+    VIOLATION: <slug> | loss_min=<number> | loss_usd=<number or ?> | evidence=<file:line>
+    VIOLATION: none
+    VIOLATION: scope-creep | loss_min=20 | loss_usd=5.1157 | evidence=tools/bench/priorart_cycle12_a2.log:4
+    VIOLATION: device-failed | loss_min=0 | loss_usd=20.4241 | evidence=unreported-fact-cost-split@tools/audit_cycle.py:232
+cycle 12: 241s runner / peer 241s, outcome ANSWERED, cost $5.1239, 4 VIOLATION line(s)
+    VIOLATION: <slug> | loss_min=<number> | loss_usd=<number or ?> | evidence=<file:line>
+    VIOLATION: none
+    VIOLATION: judgement-in-material | loss_min=13 | loss_usd=? | evidence=archive/peer/2026-09-16-retrospective-cycle12.md:218
+    VIOLATION: device-failed | loss_min=0 | loss_usd=5.1239 | evidence=tools/bench/priorart_cycle13.log:4
+cycle 13: 212s runner / peer 212s, outcome ANSWERED, cost ?, 3 VIOLATION line(s)
+    VIOLATION: <slug> | loss_min=<number> | loss_usd=<number or ?> | evidence=<file:line>
+    VIOLATION: none
+    VIOLATION: wrong-ordering | loss_min=2 | loss_usd=? | evidence=tools/bench/peer_flatseq_unreachable.log:2
+
+=== retro_v2_compare: 13 pass, 0 fail ===
+BGRUN END rc=0 after 816s

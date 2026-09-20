@@ -1,0 +1,50 @@
+BGRUN START 2026-09-17 13:37:09 limit 30.0 min: py -u tools\recipes\build_opconnectnested_v1.py
+  FACT  LabVIEW handles before: 31281 (fresh-instance baseline ~31,500)
+  PASS  V0z original working-copy md5 before  2a78e17c449cacdaf5da389818526859
+
+=== V0: the donor
+  PASS  V0a OpConnectNested_v0.vi on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpConnectNested_v0.vi
+  PASS  V0b the NI example donor on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\NIScriptingExamples\Finding and Modifying Objects\Navigating Nodes and Wires.vi
+  PASS  V0 donor ExecState 1  ExecState 1
+
+=== V1: the copy
+  PASS  V1 the copy is runnable with exactly ONE To More Specific Class  ExecState 1, TMSC [683], 19 nodes
+
+=== V2: identification BY WIRE TOPOLOGY (never by uid)
+   SINK  : IA(term) #239 <- PN #237 <- IA(node) #236(index w452) <- PN #235 <- head #683 (w645)
+   SOURCE: IA(term) #753 <- PN #751 <- IA(node) #750(index w888) <- PN #744 <- head #683 (w645)
+  PASS  V2 both ladders currently share ONE head wire off the single TMSC (v0's branch)  heads #683/#683 w645/w645; Nodes[] PNs #235/#744
+  PASS  V2b the sink head property node's data output is 'Nodes[]'  ['Nodes[]']
+  PASS  V2b the source head property node's data output is 'Nodes[]'  ['Nodes[]']
+  FACT  V2 the TMSC-output net w645 also feeds [(243, 'Diagram in'), (235, 'reference')] (these are re-wired in V4)
+
+=== V3: bare the SOURCE Nodes[] reference, then create the TYPED SEED on it
+      V3 deleted wire net w645
+  PASS  V3a the source Nodes[] `reference` is BARE after the net delete  wire 0
+  PASS  V3 exactly ONE new control created = the typed seed  new controls ['reference'], op-reported label 'reference'
+  PASS  V3b the seed arrived WIRED to the source Nodes[] `reference`  seed 'reference' wire 1010
+  FACT  V3 seed control 'reference' (uid 970) on w1010
+
+=== V4: restore the old TMSC's other sinks; build the SOURCE-DIAGRAM Index Array
+      V4 #683.'specific class reference' -> #243.'Diagram in': wire 991 / 991 OK
+      V4 #683.'specific class reference' -> #235.'reference': wire 991 / 991 OK
+  PASS  V4a exactly one new Index Array  [{'i': 0, 'class': 'IndexArray', 'uid': 645, 'pos': (2500, 1500), 'owner': 'TopLevelDiagram'}]
+      V4 #124.'References' -> #645.'array': wire 600 / 600 OK
+  PASS  V4b exactly ONE new control = the source-diagram index  ['index 6'] (op-reported 'index 6')
+  PASS  V4 the op is RUNNABLE before the copy (copy_by_index copies the FILE)  ExecState 1
+  FACT  V4 saved intermediate (14530 B); seed 'reference', src-diagram control 'index 6'
+
+=== V5: copy a second To More Specific Class (copy_by_index, the proven route)
+  **FAIL**  Vx build/test completed without an unhandled exception  EXC unhashable type: 'dict'
+  PASS  Vz original working-copy md5 after  2a78e17c449cacdaf5da389818526859
+  FACT  LabVIEW handles after: 32010 (before 31281)
+
+--- FACTS ---
+  LabVIEW handles before: 31281 (fresh-instance baseline ~31,500)
+  V2 the TMSC-output net w645 also feeds [(243, 'Diagram in'), (235, 'reference')] (these are re-wired in V4)
+  V3 seed control 'reference' (uid 970) on w1010
+  V4 saved intermediate (14530 B); seed 'reference', src-diagram control 'index 6'
+  LabVIEW handles after: 32010 (before 31281)
+
+=== build_opconnectnested_v1: 15 pass, 1 fail -> Vx build/test completed without an unhandled exception  (46 s) ===
+BGRUN END rc=1 after 46s

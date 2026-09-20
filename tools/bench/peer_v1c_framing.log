@@ -1,0 +1,136 @@
+BGRUN START 2026-09-15 05:09:07 limit 6.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & .\tools\peer.ps1 -Agent codex -Slug opconstvalue-v1c-framing -Task (Get-Content -Raw 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\6959fd57-add7-402e-9ed9-9a94ff2b4d5f\scratchpad\peer_task_v1c_framing.txt')
+OUTCOME: ANSWERED (93s)  archived: archive\peer\2026-09-15-opconstvalue-v1c-framing.md
+--- ANSWER ---
+Your revised framing is essentially correct, but there is one byte-boundary error in the annotation: the string TD has no padding byte after `format string`. The `00` following the final `67` is the first byte of `nTypesUsed = 00 01`.
+
+1. Overall interpretation
+
+The documented post?�LabVIEW 8 flattened-variant structure is:
+
+```text
+U32 LabVIEW version
+U32 nTDs
+TD[nTDs]
+varint nTypesUsed
+varint TypesUsed[nTypesUsed]
+flattened value
+I32 attribute count
+attributes...
+```
+
+NI documents the outer sequence as version, type descriptor, flattened value, and signed 32-bit attribute count; all integers are big-endian. The detailed type-descriptor documentation expands ?�type descriptor??into `nTDs`, the TD list, `nTypesUsed`, and the `TypesUsed` indices. [NI: flattened variant format](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YGQrCAO&l=en-US), [NI-derived type-descriptor documentation](https://rajsite.github.io/unofficial-lvdocs/lvconcepts/Type_Descriptors.html)
+
+Your 53 bytes therefore segment as:
+
+```text
+26 00 80 00                         version
+
+00 00 00 01                         nTDs = 1
+
+00 16                               TD length = 22
+40 30                               named string TD
+ff ff ff ff                         variable-sized string
+0d                                  label length = 13
+66 6f 72 6d 61 74 20 73
+74 72 69 6e 67                      "format string"
+
+00 01                               nTypesUsed = 1
+00 00                               TypesUsed[0] = TD index 0
+
+00 00 00 0b                         data string length = 11
+69 6d 67 25 30 35 64 2e
+74 69 66                            "img%05d.tif"
+
+00 00 00 00                         attribute count = 0
+```
+
+The TD length is exactly:
+
+```text
+4-byte TD header
++ 4-byte string dimension
++ 1-byte Pascal length
++ 13-byte label
+= 22 bytes
+```
+
+There is therefore no TD padding here: `1 + 13 = 14`, already even. NI specifies that a name is a Pascal string and increases the TD size by its Pascal-string length rounded to an even number of bytes. [Type Descriptors](https://rajsite.github.io/unofficial-lvdocs/lvconcepts/Type_Descriptors.html)
+
+The string data itself is correctly `I32 length + bytes`, with no element count beyond that length. [NI Flattened Data, ?�Strings and Paths??(https://www.ni.com/docs/en-US/bundle/labview/page/flattened-data.html)
+
+One caution: treating `0x26008000` as ?�a LabVIEW 2026 version field??is supported by your direct LabVIEW-2026 observation, but NI warns that variant representation can change by release. The parser should accept or explicitly whitelist observed versions, not infer a permanently stable subfield interpretation from this one value. [NI flattened-variant article](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YGQrCAO&l=en-US)
+
+2. The two I16 values and the DBL case
+
+Yes:
+
+```text
+00 01  = nTypesUsed
+00 00  = first zero-based TD index
+```
+
+They are not part of the string TD. A TD consumes exactly the number of bytes declared by its initial I16 length; here that boundary occurs immediately after the final `67`. NI describes both fields as variable-width integers: values below 32768 occupy 16 bits, while larger values use a four-byte representation with the high bit set. [Type Descriptors](https://rajsite.github.io/unofficial-lvdocs/lvconcepts/Type_Descriptors.html)
+
+For an unnamed scalar DBL, expect:
+
+```text
+00 00 00 01        nTDs
+00 04 00 0a        TD: size 4, DBL
+00 01              nTypesUsed
+00 00              index 0
+<8-byte DBL>
+00 00 00 00        zero attributes
+```
+
+For a named DBL:
+
+```text
+00 nn 40 0a <Pascal label> [even padding if required]
+```
+
+The `0x40` high-byte convention is demonstrated by NI?�s named-enum example, while NI also cautions that the entire high byte is reserved/internal and should be ignored when comparing type identity. Thus, parse the base type as the low byte, but do not generalize every high-byte bit as a permanently documented flag. [Type Descriptors](https://rajsite.github.io/unofficial-lvdocs/lvconcepts/Type_Descriptors.html)
+
+Whether `Constant.Value` supplies a name for a particular numeric constant is an empirical property of that returned variant. Your string result strongly suggests the object label is included, but the parser must support both named and unnamed DBL TDs.
+
+There is no scalar element-count I32. A DBL body is exactly eight big-endian bytes. Counts precede variable-size strings and each array dimension, not scalar numerics. [NI Flattened Data](https://www.ni.com/docs/en-US/bundle/labview/page/flattened-data.html)
+
+3. Numeric TD table
+
+Your table is correct:
+
+| Code | Type | Flattened bytes |
+|---:|---|---:|
+| `01` | I8 | 1 |
+| `02` | I16 | 2 |
+| `03` | I32 | 4 |
+| `04` | I64 | 8 |
+| `05` | U8 | 1 |
+| `06` | U16 | 2 |
+| `07` | U32 | 4 |
+| `08` | U64 | 8 |
+| `09` | SGL | 4 |
+| `0A` | DBL | 8 |
+| `0B` | EXT | 16 |
+
+The official flattened-data documentation explicitly says flattened numerics are big-endian, shows an eight-byte DBL example, and specifies that EXT is always stored as a 16-byte, 128-bit extended-precision quantity. That normalized flattened representation applies across platforms, including LabVIEW 2026 on x64 Windows; it is not the host compiler?�s native `long double` layout. [NI Flattened Data](https://www.ni.com/docs/en-US/bundle/labview/page/flattened-data.html)
+
+The numeric TD-code list is documented here: [Type Descriptors](https://rajsite.github.io/unofficial-lvdocs/lvconcepts/Type_Descriptors.html).
+
+4. How a wrong DBL framing can pass your gates
+
+Yes, `finite + exact consumption + attrs==0` is insufficient. Eight arbitrary bytes frequently decode as a finite IEEE-754 number. A two- or four-byte displacement can therefore produce a plausible-looking finite value, particularly when adjacent framing bytes are mostly zero.
+
+Add these gates:
+
+- Require every TD to end exactly at its declared length.
+- Require `nTypesUsed >= 1`, every index `< nTDs`, and resolve the value type through `TypesUsed[0]`.
+- Require the resolved TD?�s low-byte code to equal the expected type.
+- Derive body length exclusively from that TD: exactly 8 for DBL.
+- Require the attribute-count field to begin exactly at `data_start + 8`, not merely that some trailing four bytes decode as zero.
+- Compare the decoded value against an independent LabVIEW-side value representation, not just `finite`.
+- Validate with several deliberately chosen sentinels whose big-endian bytes are recognizable, for example `0.25` ??`3f d0 00 00 00 00 00 00`, which NI publishes directly. [NI Flattened Data](https://www.ni.com/docs/en-US/bundle/labview/page/flattened-data.html)
+- Include at least `+0`, `-0`, a non-integer finite value, and a large-normal value. Comparing raw expected bytes catches endian and offset mistakes that ordinary numeric equality?�especially for signed zero?�can miss.
+- Best gate: take the body slice selected by the parser, unflatten it explicitly as DBL in LabVIEW, and require equality with `Variant To Data(DBL)` from the original variant. This tests the parser-selected boundary independently of Python?�s IEEE decoding. NI states that `Unflatten From String` requires a wired type to decode otherwise untyped flattened data. [NI Flattened Data](https://www.ni.com/docs/en-US/bundle/labview/page/flattened-data.html)
+
+Bottom line: hypothesis A failed because it omitted the documented `nTypesUsed/TypesUsed` save-buffer suffix. Your replacement framing matches the documentation and the 53-byte specimen, after correcting the nonexistent padding byte after the label.
+BGRUN END rc=0 after 93s

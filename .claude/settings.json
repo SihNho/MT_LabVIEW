@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "permissions": {
+    "allow": [
+      "PowerShell(& .\\tools\\lv_gui.ps1 *)",
+      "PowerShell(& .\\tools\\peer.ps1 *)",
+      "PowerShell(py *)",
+      "PowerShell(Stop-Process -Name LabVIEW *)",
+      "PowerShell(Get-Process *)",
+      "Read",
+      "Glob",
+      "Grep",
+      "Bash(ls *)",
+      "Bash(tasklist *)",
+      "Bash(certutil -hashfile *)",
+      "Bash(py tools/*)",
+      "Edit(**/*.md)",
+      "Edit(tools/*.ps1)",
+      "PowerShell(py tools\\gemini_executor.py *)",
+      "Bash(py tools/gemini_executor.py *)",
+      "PowerShell(py tools\\uitars_grounder.py *)",
+      "Bash(py tools/uitars_grounder.py *)",
+      "PowerShell(ollama *)",
+      "PowerShell(& *llama-server* *)"
+    ],
+    "deny": [
+      "Edit(**/*.vi)",
+      "Write(**/*.vi)",
+      "Edit(**/*.ctl)",
+      "Write(**/*.ctl)",
+      "Edit(**/*.lvlib)",
+      "Write(**/*.lvlib)",
+      "Edit(**/*.lvproj)",
+      "Write(**/*.lvproj)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\lv_stallcheck.ps1\"",
+            "timeout": 90,
+            "statusMessage": "checking for stalled LabVIEW clients"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_bash.py\"",
+            "timeout": 15,
+            "statusMessage": "guard: LabVIEW commands must be short or backgrounded"
+          },
+          {
+            "type": "command",
+            "command": "py \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_peer.py\"",
+            "timeout": 15,
+            "statusMessage": "guard: a failed prediction must be peer-reviewed before the next build"
+          },
+          {
+            "type": "command",
+            "command": "py \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_cycle.py\"",
+            "timeout": 180,
+            "statusMessage": "guard: the previous cycle must have a retrospective before a new build starts"
+          }
+        ]
+      },
+      {
+        "matcher": "Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_session.py\"",
+            "timeout": 15,
+            "statusMessage": "guard: one session = one cycle (dispatch cap, closed after the retrospective)"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/answer_first.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

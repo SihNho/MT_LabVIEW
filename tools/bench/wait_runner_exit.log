@@ -1,0 +1,8 @@
+BGRUN START 2026-09-18 19:33:35 limit 200.0 min: py -c import time,os,re;p='tools/bench/cycle_runner.log';n=len(open(p,encoding='utf-8',errors='replace').read());[time.sleep(20) for _ in iter(int,1) if not re.search(r'RUNNER STOP',open(p,encoding='utf-8',errors='replace').read()[n:])] if False else None
+import time,re
+p='tools/bench/cycle_runner.log'
+n=len(open(p,encoding='utf-8',errors='replace').read())
+while not re.search(r'RUNNER STOP', open(p,encoding='utf-8',errors='replace').read()[n:]): time.sleep(20)
+print('RUNNER EXITED')
+RUNNER EXITED
+BGRUN END rc=0 after 4022s

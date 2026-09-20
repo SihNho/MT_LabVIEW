@@ -1,0 +1,21 @@
+BGRUN START 2026-09-18 19:56:11 limit 20.0 min: py -u tools/bench/diag_count_indicator.py
+== diag_count_indicator - READ-ONLY. target C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\Track_D0_copy_20260918.vi
+  . ORIGINAL md5 BEFORE 2a78e17c449cacdaf5da389818526859 (recorded 2a78e17c449cacdaf5da389818526859, match=True)
+  . D0 copy  md5 BEFORE c39f36e0675339673b707c59f0784fee  (exists)
+  PASS G1a the D0 claudeDev copy exists  | Track_D0_copy_20260918.vi
+  . ExecState of the D0 copy: 0
+  PASS G2a panel_wiring returned >= 100 rows  | 114 rows
+  PASS G2b exactly one row is labelled exactly 'Count'  | 1 exact matches; labels containing 'count' (case-insensitive): [('Count', 28051, False)]
+  . Count row VERBATIM: label='Count' uid=28051 indicator=False is_source=True wire=30530 term_err=0 wire_err=0
+  **FAIL** G3 `Count` is an INDICATOR  | indicator=False
+  **FAIL** G4a its terminal is a SINK (is_source False)  | is_source=True
+  PASS G4b its terminal carries a NON-ZERO connected wire  | wire=30530
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_count_indicator.py", line 285, in <module>
+    rc = main()
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_count_indicator.py", line 209, in main
+    terms = wire_terms(D0, row["wire"])
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_count_indicator.py", line 96, in wire_terms
+    with open(LABELS, encoding="utf-8") as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\tools\\bench\\opwiresource_v5_labels.json'
+BGRUN END rc=1 after 19s

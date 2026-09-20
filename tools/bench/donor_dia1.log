@@ -1,0 +1,53 @@
+BGRUN START 2026-09-12 14:12:32 limit 8.0 min: py -u -c 
+import os,sys
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+for name in ('DONOR_Ex3_PrimitiveFunctions.vi','DONOR_Ex1_GetControlsWireIndicators.vi'):
+    D=os.path.join(g.CLAUDEDEV,name)
+    print('='*70); print(name)
+    for d in (0,1):
+        try: nodes,_=g.net_map(D, diagram_index=d, max_nodes=60, max_terms=10)
+        except Exception as e: print(' dia',d,'FAIL',str(e)[:70]); continue
+        print(' --- diagram',d)
+        for i,(uid,lbl,terms) in nodes.items():
+            print('   node[%d] uid %-6s %s'%(i,uid,[nm for _,nm,_ in terms if nm]))
+
+======================================================================
+DONOR_Ex3_PrimitiveFunctions.vi
+ --- diagram 0
+   node[0] uid 65     ['error out', 'vi refnum', 'type specifier VI Refnum (for type only)', 'password', 'not connected', 'error in (no error)', 'vi type (standard vi)', 'template', 'application refnum']
+   node[1] uid 612    ['vi refnum', 'vi refnum', 'error out', 'error out']
+   node[2] uid 672    ['Diagram in']
+   node[3] uid 1066   ['reference', 'reference out', 'error in (no error)', 'error out', 'Diagram', 'BDWin.Open']
+   node[4] uid 1490   ['Diagram in']
+   node[5] uid 1955   ['error?', 'code out', 'error code (no error:0)', 'error source (" ")', 'source out', 'error out', 'message', 'type of dialog (OK msg:1)', 'error in (no error)']
+   node[6] uid 2030   ['reference', 'reference out', 'error in (no error)', 'error out', 'Relayout', 'Relayout', 'Alignment', 'Alignment']
+   node[7] uid 157    ['error out', 'error in (no error)', 'reference']
+   node[8] uid 662    ['Diagram in', 'location (0, 0)', 'Diagram out', 'Type', 'Terminal', 'Value']
+   node[9] uid 484    ['Diagram in', 'location (0, 0)', 'Diagram out', 'x', 'x+y', 'y']
+   node[10] uid 780    ['array', 'element', 'index']
+   node[11] uid 923    ['appended array', 'element']
+   node[12] uid 450    ['reference', 'error in (no error)']
+ --- diagram 1
+   node[0] uid 365    ['error out', 'object refnum', 'bounds', 'auto wire? (F)', 'path', 'vi object class', 'error in (no error)', 'position/next to', 'style', 'owner refnum']
+   node[1] uid 777    ['reference', 'reference out', 'error in (no error)', 'error out', 'Label.Text', 'Indicator']
+   node[2] uid 1060   ['error out', 'error in (no error)', 'reference']
+   node[3] uid 447    ['cluster', 'Label.Text', 'element']
+======================================================================
+DONOR_Ex1_GetControlsWireIndicators.vi
+ --- diagram 0
+   node[0] uid 65     ['error out', 'vi refnum', 'type specifier VI Refnum (for type only)', 'password', 'not connected', 'error in (no error)', 'vi type (standard vi)', 'template', 'application refnum']
+   node[1] uid 612    ['vi refnum', 'vi refnum', 'error out', 'error out']
+   node[2] uid 672    ['Diagram in']
+   node[3] uid 1066   ['reference', 'reference out', 'error in (no error)', 'error out', 'Diagram', 'BDWin.Open']
+   node[4] uid 1490   ['Diagram in']
+   node[5] uid 1955   ['error?', 'code out', 'error code (no error:0)', 'error source (" ")', 'source out', 'error out', 'message', 'type of dialog (OK msg:1)', 'error in (no error)']
+   node[6] uid 2030   ['reference', 'reference out', 'error in (no error)', 'error out', 'Relayout', 'Relayout', 'Alignment', 'Alignment']
+   node[7] uid 157    ['error out', 'error in (no error)', 'reference']
+ --- diagram 1
+   node[0] uid 365    ['error out', 'object refnum', 'bounds', 'auto wire? (F)', 'path', 'vi object class', 'error in (no error)', 'position/next to', 'style', 'owner refnum']
+   node[1] uid 777    ['reference', 'reference out', 'error in (no error)', 'error out', 'Label.Text', 'Indicator']
+   node[2] uid 1060   ['error out', 'error in (no error)', 'reference']
+   node[3] uid 447    ['cluster', 'Label.Text', 'element']
+BGRUN END rc=0 after 25s

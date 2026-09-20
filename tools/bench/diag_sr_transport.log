@@ -1,0 +1,30 @@
+BGRUN START 2026-09-17 17:46:36 limit 20.0 min: cmd C:/ py -u tools\bench\bench_prep.py --restart && py -u tools\bench\diag_sr_transport.py
+Microsoft Windows [Version 10.0.19045.6466]
+(c) Microsoft Corporation. All rights reserved.
+
+G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop>BGRUN END rc=0 after 0s
+BGRUN START 2026-09-17 17:48:00 limit 18.0 min: py -u tools/bench/diag_sr_transport.py
+  PASS  P0a original md5 BEFORE  2a78e17c449cacdaf5da389818526859
+  FACT  #637 is WhileLoop[1]; Diagram #639 is Traverse index 43
+  FACT  reg[8] RIGHT #9018 <-> LEFT #9025; left inside [9097], left outside 9051; right inside [9215], right outside 0
+  FACT  reg[12] RIGHT #29505 <-> LEFT #29512; left inside [28039], left outside 29122; right inside [29591], right outside 0
+  PASS  P1 both LeftShiftRegisters found on #637  found [9025, 29512] of [9025, 29512]
+  PASS  P2 LEFT #9025 inside wire == w9097  inside wires [9097]
+  FACT  RIGHT #9018 inside w9215: [('LoopTunnel', 9227, True), ('RightShiftRegister', 9018, False), ('', 0, False)]
+  FACT     w9215 source owner #9227 (LoopTunnel), on diagram 43 = False, terminal name None, Traverse None
+  PASS  P3 #9025: the partner-right writer's terminal is UNNAMED (documents confirmed on the machine)  no named terminal on any right-inside wire - as predicted
+  PASS  P2 LEFT #29512 inside wire == w28039  inside wires [28039]
+  FACT  RIGHT #29505 inside w29591: [('LoopTunnel', 29616, True), ('RightShiftRegister', 29505, False), ('', 0, False)]
+  FACT     w29591 source owner #29616 (LoopTunnel), on diagram 43 = False, terminal name None, Traverse None
+  PASS  P3 #29512: the partner-right writer's terminal is UNNAMED (documents confirmed on the machine)  no named terminal on any right-inside wire - as predicted
+  PASS  P4 Z/dZ present exactly once as a CONTROL  [{"label": "Z/dZ", "indicator": false, "uid": 47, "is_source": true, "wire": 730, "term_err": 0, "wire_err": 0}]
+  FACT  Z/dZ w730[0]: is_source=True owner Diagram#639 name None traverse None
+  FACT  Z/dZ w730[1]: is_source=False owner Tunnel#2276 name None traverse None
+  FACT  Z/dZ w730[2]: is_source=False owner #0 name None traverse None
+  PASS  P5 Z/dZ's net enumerated  3 terminals; named sinks []
+  PASS  P6 #2222 t0 is a bare-able SINK with a wire  name '' is_source False wire 730
+  FACT  #2222 t0's wire w730: [('Diagram', 639, True), ('Tunnel', 2276, False), ('', 0, False)]
+  PASS  P0b original md5 AFTER  2a78e17c449cacdaf5da389818526859
+
+=== diag_sr_transport: 10 pass, 0 fail; json G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\sr_transport.json ===
+BGRUN END rc=0 after 200s

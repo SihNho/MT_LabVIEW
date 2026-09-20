@@ -1,0 +1,30 @@
+BGRUN START 2026-09-13 19:43:33 limit 10.0 min: py -u -c 
+import os,sys
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+for n in ('OpCLFNBuild_v0.vi','OpConPane_v0.vi','OpReport_v3.vi','OpNetInfo_v1.vi','OpFPLabels_v0.vi'):
+    p=os.path.join(g.CLAUDEDEV,n)
+    if not os.path.exists(p): print('%-24s MISSING'%n); continue
+    try:
+        labs=g.fp_labels(p,max_n=60)
+        vi=g.lv().GetVIReference(p,'',False,0)
+        print('=== %s'%n,flush=True)
+        for uid,lbl,ind in labs:
+            if not ind: continue
+            try:
+                v=vi.GetControlValue(lbl)
+                t=type(v).__name__
+                extra=' len=%d'%len(v) if isinstance(v,tuple) else ''
+            except Exception as e:
+                t='(unreadable)'; extra=''
+            print('     indicator %-34r %s%s'%(lbl,t,extra),flush=True)
+    except Exception as e:
+        print('%-24s FAILED %s'%(n,str(e)[:80]),flush=True)
+
+OpCLFNBuild_v0.vi        FAILED (-2147352567, '���ܰ� �߻��߽��ϴ�.', (6500, 'LabVIEW', 'LabVIEW: (Hex 0x3E8) The VI is n
+OpConPane_v0.vi          FAILED (-2147352567, '���ܰ� �߻��߽��ϴ�.', (6500, 'LabVIEW', 'LabVIEW: (Hex 0x3E8) The VI is n
+OpReport_v3.vi           FAILED (-2147352567, '���ܰ� �߻��߽��ϴ�.', (6500, 'LabVIEW', 'LabVIEW: (Hex 0x3E8) The VI is n
+OpNetInfo_v1.vi          FAILED (-2147352567, '���ܰ� �߻��߽��ϴ�.', (6500, 'LabVIEW', 'LabVIEW: (Hex 0x3E8) The VI is n
+OpFPLabels_v0.vi         FAILED (-2147352567, '���ܰ� �߻��߽��ϴ�.', (6500, 'LabVIEW', 'LabVIEW: (Hex 0x3E8) The VI is n
+BGRUN END rc=0 after 0s

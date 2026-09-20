@@ -1,0 +1,68 @@
+BGRUN START 2026-09-19 19:02:38 limit 16.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Kind review -Slug s0v3-execstate0 -TaskFile 'tools/bench/peer_s0v3_execstate0_task.md' -TimeoutSec 840
+OUTCOME: ANSWERED (472s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-19-s0v3-execstate0.md
+COST: $2.5484  in 16 / out 36021 / cache-create 111258 / cache-read 807312  (468s, 17 turn(s))
+--- ANSWER ---
+Write is disabled for this session, so the review is the reply — which matches the brief ("your output is your answer, nothing else"). I built nothing, ran nothing, and took no lock.
+
+---
+
+# Verdict: H is refuted
+
+Not "unproven" — refuted on two independent grounds, one external and one from your own files. And the premise underneath H is in worse shape than H is: **the repair you are building cannot do what it was built to do.**
+
+## 1. The single strongest reason H is WRONG
+
+**The same failure signature is already recorded in this project, on a node that is not `Close Reference` and a refnum that is not a GObject.**
+
+`tools/gscript.py:1293-1295`:
+
+> Two attempts at a standalone flag reader failed identically (`tools/bench/diag_bdloaded_reader.log`): the branch into a **VI-class Property Node's `reference`** lands as a **BAD wire (uid 467, ExecState 0, remove_bad_wires does not clear it)**.
+
+No `Close Reference`. No GObject. No For Loop. Same sink-terminal name, same writer, same `ExecState 0`. H cannot explain that instance, so H is not the explanation of this failure class — it is an explanation shaped around whichever node happened to be in this build.
+
+Your own recipe header knew this: `build_s0_closeref_v3.py:26-27` cites gscript:1293-1295 and calls the question "open on measurement." The run returned `ExecState 0` and the framing moved to the node instead of to the writer the file had just finished naming. That is the framing error.
+
+Second, independent ground: **there is no type for `Close Reference` to reject** — see Q2.
+
+## 2. Alternative explanations of the same evidence
+
+**A1 (leading) — the broken object is a wire the run never looked at.** `Is Broken?` was read on the uid returned by the *sink terminal*. A bad-wire fragment left by the branch is a **separate object** elsewhere on the diagram. Nothing in the 601 s enumerated all wires. gscript:1293-1295 records exactly that object, and records that Remove Broken Wires does not clear it. Fully consistent with "every wire we asked about reads good, VI broken."
+
+**A2 — the break is not a wire at all, and no reader in the run could see it.** `Wire.Is Broken?` cannot see a broken **node** or a broken **structure**. Shape (a) creates a new For Loop, and your own record says that breaks the VI — `archive/WORKLOG.md:86-87`: *"A bare For Loop makes its target show BROKEN afterwards — that is correct, not a defect, since nothing has wired `N` or its tunnels yet."* The recipe reads `ExecState` before any change (`:60`) and then not again until after both wires (`:98`). **There is no measurement that the loop ever un-broke.**
+
+**A3 — nothing cleans up.** `gscript.py:2237` (your docstring) says wires left by an op are broken and "call `remove_bad_wires()` afterwards if the VI must run"; `remove_bad_wires_scripted()` exists at `gscript.py:2477`. The recipe never calls it, so a transient bad wire survives intact to the G5 read.
+
+## 3. What would FALSIFY H
+
+H predicts a **type conflict** at `reference`. LabVIEW renders a type conflict as a **broken wire**. So:
+
+> **Re-read `Wire.Is Broken?` on the two sink wires AFTER the `ExecState` read.** `ExecState` forces the compile, so type propagation has certainly run. **Still `False` ⇒ H is dead.** Flips to `True` ⇒ H survives.
+
+That read was never taken. Every `Is Broken?` in the log comes from *inside* the same `connect_from_wire` call that wrote the wire (`:31`, `:80`, `:139`, `:191`) — precisely the ordering H itself calls untrustworthy. H's own escape clause is untested, and testing it costs two property reads.
+
+## 4. CHEAPEST discriminating test
+
+**Wire the whole `References` array straight into `Close Reference` on the top-level diagram. No For Loop, no reparent, no tunnel. One `connect_from_wire` call.**
+
+`Close Reference` accepts a **1-D array of references** and closes them all — so the For Loop was never required. This kills three of four suspects in one run, and if it passes it *is* the repair: `ExecState 1` ⇒ the loop construction was the fault; `ExecState 0` ⇒ loop exonerated, suspect is the writer (A1) or the copied node. Follow-up in the same script, all existing ops: `ExecState` after **each** step (copy / ref wire / error wire); a **full-diagram wire census** (`Is Broken?` on every wire, not the sink's); `remove_bad_wires_scripted()` before the final read; and the `dup VI Refnum` variant as a type control.
+
+## Your three questions
+
+**Q1 — best explanation?** No. A1 is, because A1 has a recorded instance and H has a recorded counter-example in the same line.
+
+**Q2 — does `Close Reference` accept a GObject refnum?** **Yes — and closing one does nothing.** From the NI forum thread: **TheQ (Quentin Alldredge, NI)** — *"Anything that is a GObject … does not need a 'Close Reference'. In fact, if it is used, it does not actually do anything on references to GObjects."* **Rolf Kalbermatter** — *"Any refnum you get with an explicit Open or similar function needs to get closed"*; the VI Server returns the same refnum for the others and Close Reference *"recognize[s] such refnums and simply do[es] nothing on them."* The node accepts the wire. H's mechanism does not exist.
+
+**Q3 — other reasons?** Yes: A1, A2, A3. The `error out`-also-feeding-an-indicator branch is *not* one — that is legal and is a red herring.
+
+## The finding that outranks the whole question
+
+`Traverse for GObjects.vi` returns **GObject** references — the one class that does not need closing and on which `Close Reference` is a **no-op**. The per-iteration `Owner` reference (`build_s0_closeref_v3.py:9-11`) is also a GObject. So the repair as designed **cannot reduce the handle count**, and five failed gates and 601 s went into wiring a function that does nothing to these refnums. The reference on these diagrams that genuinely needs closing is the **VI refnum** — `Open VI Reference` #43, visible at `build_s0_closeref_v3.log:21` with no `Close Reference` near it (equivalently the Traverse's `dup VI Refnum`, `:22`). That is Rolf's "explicit Open" class.
+
+**Limits, stated plainly:** the no-op claim is an NI-employee + Rolf forum statement, not formal NI documentation, and the thread carries no version context for LabVIEW 2026. NI's formal page says close what you open, carving out implicit references and *unwired* property/invoke `reference out` — it neither contradicts acceptance nor settles the GObject case. **What settles it locally is a measurement you already own and did not run:** CLAUDE.md's acceptance criterion for this work is *"20 runs leave the handle count flat (±100)"* via `tools/bench/handle_audit.py`. Run it against the **unrepaired** ops first. If the count is already flat, this stage closes by measurement rather than by a build. CLAUDE.md already records that the original leak diagnosis was wrong against the ~31,500 baseline — two independent reasons to measure before wiring anything else.
+
+**Suggested ordering:** (1) `handle_audit.py`, 20 runs, unrepaired ops; (2) if growth is real, target the VI-class refnum, not the GObject array; (3) only if a GObject close is still wanted, the single-wire array form, never the For Loop; (4) add the §3 post-`ExecState` re-read and the full-diagram wire census to the gate set permanently — this run's instrumentation could not see the failure it was measuring.
+
+**What would change my mind:** the §3 re-read flipping to `True` after the compile, on both wire topologies. That would put a type conflict back on the table and I would want the `dup VI Refnum` control run immediately after.
+
+Sources: [close reference — NI Community](https://forums.ni.com/t5/LabVIEW/close-reference/td-p/4295193) · [Closing References in LabVIEW — NI](https://www.ni.com/en/support/documentation/supplemental/13/closing-references-in-labview.html) · [Close Reference — NI node reference](https://www.ni.com/docs/en-US/bundle/labview-nxg-nodes-api-ref/page/close-reference.html) · [Close Reference function — LabVIEW Wiki](https://labviewwiki.org/wiki/Close_Reference_function) · [Obtaining References to Objects Using VI Scripting — NI](https://www.ni.com/docs/en-MY/bundle/labview/page/obtaining-references-to-objects-in-a-known-target-vi-using-vi-scripting.html)
+BGRUN END rc=0 after 472s

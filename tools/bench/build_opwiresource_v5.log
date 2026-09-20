@@ -1,0 +1,56 @@
+BGRUN START 2026-09-15 12:34:15 limit 20.0 min: py -u tools/recipes/build_opwiresource_v5.py
+   PASS S the v4 op exists 
+   LabVIEW pid before: None
+   fresh(): killing LabVIEW pid None
+   COM preflight attempt 1/15: pid None->22676, wires 16->16
+   COM preflight OK (pid 22676, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 22676
+   PASS A the copied v4 op is runnable [('copy of v4', 1)]
+   WIRING Owner candidate 241: reference wire 318 (Terms[] element wire is 639); Owner out 523
+   WIRING Owner candidate 157: reference wire 639 (Terms[] element wire is 639); Owner out 751
+   PASS A exactly one Owner node is fed by the Terms[] Index Array element [157]
+   PASS A exactly one cast feeds a UID node (that is the owner-uid branch) [1221]
+   WIRING owner-uid branch: cast 1221 is fed by wire 523; the correct Owner output is 751
+   PASS B the cast's current input wire exists 523
+   PASS B REFERENCE PROVENANCE: the cast's reference comes from the Terms[]-element Owner node 751/751
+   FAIL B the op is runnable after the rewire [('copy of v4', 1), ('wrong Owner wire removed', 0), ('owner-uid branch rewired', 0)]
+
+STOP at gate: B the op is runnable after the rewire
+BGRUN END rc=1 after 34s
+BGRUN START 2026-09-15 12:37:07 limit 20.0 min: py -u tools/recipes/build_opwiresource_v5.py
+   PASS S the v4 op exists 
+   LabVIEW pid before: 22676
+   fresh(): killing LabVIEW pid 22676
+   COM preflight attempt 1/15: pid None->23120, wires 16->16
+   COM preflight OK (pid 23120, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 23120
+   PASS A the copied v4 op is runnable [('copy of v4', 1)]
+   WIRING Owner candidate 241: reference wire 318 (Terms[] element wire is 639); Owner out 523
+   WIRING Owner candidate 157: reference wire 639 (Terms[] element wire is 639); Owner out 751
+   PASS A exactly one Owner node is fed by the Terms[] Index Array element [157]
+   PASS A exactly one cast feeds a UID node (that is the owner-uid branch) [1221]
+   WIRING owner-uid branch: cast 1221 is fed by wire 523; the correct Owner output is 751
+   PASS B the cast's current input wire exists 523
+   PASS B REFERENCE PROVENANCE: the cast's reference comes from the Terms[]-element Owner node 751/751
+   DIAG unwired sinks after the rewire: [(43, 'Open VI Reference', 'password ("")'), (43, 'Open VI Reference', 'type specifier VI Refnum (for type only)'), (43, 'Open VI Reference', 'options'), (43, 'Open VI Reference', 'application reference (local)'), (124, 'Traverse for GObjects.vi', ''), (124, 'Traverse for GObjects.vi', 'Other Refnum'), (124, 'Traverse for GObjects.vi', 'Traverse Generated Code (F)'), (124, 'Traverse for GObjects.vi', ''), (482, 'Property Node', 'reference'), (990, 'UID to GObject Reference.vi', ''), (990, 'UID to GObject Reference.vi', ''), (990, 'UID to GObject Reference.vi', ''), (990, 'UID to GObject Reference.vi', ''), (990, 'UID to GObject Reference.vi', ''), (990, 'UID to GObject Reference.vi', '')]
+   DIAG terminals on the Owner wire 751: [(157, 'Property Node', 'Owner'), (163, 'Property Node', 'reference'), (1221, 'To More Specific Class', 'reference')]
+   DIAG re-fed node 482 (Property Node) 'reference' from the Owner output
+OBSERVED ExecState per step: [('copy of v4', 1), ('wrong Owner wire removed', 0), ('owner-uid branch rewired', 0), ('orphaned references re-fed', 1)]
+   PASS B the op is runnable after the rewire [('copy of v4', 1), ('wrong Owner wire removed', 0), ('owner-uid branch rewired', 0), ('orphaned references re-fed', 1)]
+OBSERVED ExecState per step: [('copy of v4', 1), ('wrong Owner wire removed', 0), ('owner-uid branch rewired', 0), ('orphaned references re-fed', 1)]
+   PASS C op runnable before the save [('copy of v4', 1), ('wrong Owner wire removed', 0), ('owner-uid branch rewired', 0), ('orphaned references re-fed', 1)]
+   labels {'seedW': 'reference 2', 'ownercls': 'Class Name 4', 'errT': 'error out 3', 'errO': 'error out 4', 'errU': 'error out 5', 'uid_in': 'UID 2', 'uid_back': 'UID 3', 'cls_back': 'Class Name 5', 'errL': 'error out 6', 'seedG': 'reference 3', 'owner_uid': 'UID 4', 'errG': 'error out 7', 'term_index': 'index 2', 'is_source': 'Is Source?', 'recip_wire': 'UID 5', 'errS': 'error out 8', 'errWU': 'error out 9', 'cast_class': 'Class Name 6', 'errCO': 'error out 10'}
+OBSERVED: wire 10850 Terms[0] source=True owner 'DigitalNumericConstant' uid 10739 reciprocal wire 10850 | cast-output class 'DigitalNumericConstant'  
+OBSERVED: wire 10850 Terms[1] source=False owner 'Comparison' uid 10950 reciprocal wire 10850 | cast-output class 'Comparison'  
+OBSERVED: wire 10850 Terms[2] source=False owner '' uid 0 reciprocal wire 0 | cast-output class ''  error 1055: Property Node in OpWireSource_v5.vi er
+   (index 2 past the end of Terms[] - stopping)
+   PASS T0 at least one terminal was read without error [{'wire': 10850, 'index': 0, 'uid_back': 10850, 'wire_class': 'Wire', 'is_source': True, 'owner_class': 'DigitalNumericConstant', 'owner_uid': 10739, 'recip_wire': 10850, 'cast_class': 'DigitalNumericConstant', 'err': '', 'errs': ''}]
+SUMMARY wire 10850: 2 terminals read, 1 report Is Source? TRUE, 1 of those also point back at this wire
+   SOURCE: owner DigitalNumericConstant uid 10739 = the constant scan's answer (value I32 0)
+   PASS T1 the wire has EXACTLY ONE source terminal whose reciprocal wire is itself (else the net is broken or ambiguous and neither earlier claim may be trusted) [(0, True, 10739, 10850), (1, False, 10950, 10850)]
+   PASS T2 the cast output denotes the SAME object as the owner (class equality) for the source terminal cast 'DigitalNumericConstant' vs owner 'DigitalNumericConstant'
+   PASS T3 that single source is one of the two claimed constants 10739 vs [3628, 10739]
+
+SUMMARY 12/12 PASS
+   PASS T(finally) the main VI file is byte-identical and untouched
+BGRUN END rc=0 after 48s

@@ -1,0 +1,69 @@
+BGRUN START 2026-09-17 02:14:48 limit 8.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & './tools/peer.ps1' -Agent codex -Kind review -Slug d0-bandpass-click-not-delivered -TaskFile 'C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/peer_bandpass.md' -Timeout 360
+OUTCOME: ANSWERED (213s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-17-d0-bandpass-click-not-delivered.md
+--- ANSWER ---
+Your explanation is wrong in its main LabVIEW mechanism: **a static Event structure does not need to have been entered before it can receive the click.** LabVIEW registers static front-panel events when the VI enters run mode and queues them until the Event structure handles them. NI explicitly says its event queue prevents loss of user events. Therefore, “the Event structure had not been entered yet, so the click was silently swallowed” is not a valid explanation unless this VI uses late **dynamic** registration—something the supplied evidence does not establish. [NI’s 2026 event documentation](https://www.ni.com/en/support/documentation/supplemental/06/event-driven-programming-in-labview.html), [NI discussion of static registration timing](https://forums.ni.com/t5/LabVIEW/Event-structure-not-clearing-the-Queue-after-it-exits-the-SubVI/td-p/3041157).
+
+### 1. What can actually discard or defer this click
+
+- **Mechanical action:** Latch When Released requires press and release within the control, then remains asserted until the diagram reads the terminal. Switch actions persist instead. None of these actions arbitrarily discards a correctly delivered down/up pair. [NI LabVIEW User Manual](https://download.ni.com/support/manuals/320999b.pdf). Your helper actually moves from `(175,353)` to `(176,353)` before button-down, but performs no motion between down and up, so mechanical action does not explain this miss unless ownership/capture changed. See [lv_gui.ps1](/G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/lv_gui.ps1:226).
+
+- **Redraw:** ordinary Windows repainting is not a documented click-loss condition. Mouse input is queued, while `WM_PAINT` is normally dispatched only when higher-priority queued messages are gone. [Microsoft WM_PAINT documentation](https://learn.microsoft.com/en-us/windows/win32/gdi/wm-paint), [message-queue documentation](https://learn.microsoft.com/en-us/windows/win32/winmsg/about-messages-and-message-queues).
+
+- **“Lock front panel”:** LabVIEW defers front-panel interactions and later processes them in order; it does not normally throw them away. Thus, a click still having no effect two minutes later means either the locking event never completed—a persistent UI/dataflow deadlock—or the click never reached this front panel. It does not support a brief “not ready yet” interval. [NI lock-panel explanation](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019MlVSAU), [NI description of buffered interactions](https://forums.ni.com/t5/LabVIEW/Unexpected-effect-of-Lock-Front-Panel-in-Event-Structure/td-p/1546832).
+
+- **Foreground/activation:** this is genuinely possible, but the harness did not measure it. `SetForegroundWindow` can return zero under documented foreground-lock conditions, and Windows can activate an inactive window while discarding the initiating mouse message via `MA_ACTIVATEANDEAT`. [SetForegroundWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setforegroundwindow), [WM_MOUSEACTIVATE](https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-mouseactivate). Your `Focus` ignores the return value and never calls `GetForegroundWindow`; see [lv_gui.ps1](/G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/lv_gui.ps1:207).
+
+- **Synthetic-input delivery:** `mouse_event` merely inserts synthetic mouse input and has no return value; Microsoft has superseded it with `SendInput`. A low-level mouse hook can identify and suppress injected input. I found no NI documentation saying LabVIEW 2026 itself rejects injected clicks—and the three successful calls prove this installation normally accepts them. [mouse_event](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-mouse_event), [low-level mouse hook behavior](https://learn.microsoft.com/en-us/windows/win32/winmsg/lowlevelmouseproc).
+
+So `lv_gui` printing `click 175,353` proves only that its function returned, not that the Yes control received either mouse message.
+
+### 2. Strong alternative explanation
+
+The strongest alternative is a **z-order/foreground race**, not calibration readiness.
+
+The stored 02:12 screenshot has the bandpass panel on top, while the later diagnostic capture has the main VI covering it even though the bandpass HWND still exists: [stuck screenshot](/G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/bench/d0_shots_v2/20260917_021053_bandpass_stuck_run1_1.png), [later screenshot](/G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/bench/d0_shots_v2/diag_bandpass_now.png). Therefore z-order was unstable during this run.
+
+`Find` proves only that a visible titled HWND exists; the rectangle proves only where that HWND would be. Neither proves that the HWND was foreground or topmost at button-down. Windows normally routes mouse input to the window under the cursor unless another window owns mouse capture. [Microsoft mouse-input routing](https://learn.microsoft.com/en-gb/windows/win32/inputdev/about-mouse-input).
+
+That fits all evidence:
+
+- The manual clicks worked when the subVI was stably foreground.
+- The harness left roughly 0.5 seconds after `Focus` for the main VI or subVI to re-raise.
+- A click delivered to the main panel or consumed during activation creates no queued bandpass event, so nothing “catches up” later.
+- The existing automation notes already warn that a just-refocused click can merely activate a pane and that foreground title pixels must be verified; see [lv_gui.ps1](/G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/lv_gui.ps1:65).
+
+A second plausible alternative is a persistent front-panel lock/deadlock. That would defer the click indefinitely, rather than swallow it because the Event structure was briefly not ready.
+
+### 3. Observation that would falsify your explanation
+
+This would falsify both branches of your explanation:
+
+> At least 10 seconds after the panel appears, verify immediately before button-down that `GetForegroundWindow()` is the bandpass HWND, `WindowFromPoint(176,353)` belongs to that HWND, and no window has mouse capture or menu mode; the injected click still fails, but an immediate physical click at the same point succeeds.
+
+The delay rules out “too early”; the HWND checks rule out activation consumption. Windows exposes foreground, active, focus, capture, and menu state through `GetForegroundWindow` and `GetGUIThreadInfo`. [GetForegroundWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getforegroundwindow), [GUITHREADINFO](https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-guithreadinfo).
+
+### 4. Do not use an ungated retry loop
+
+Blind retries are unsafe. LabVIEW can buffer interactions while a panel is locked, and this subVI apparently reuses the same title, HWND location, and Yes coordinate for successive beads. A delayed first click plus a scheduled retry could accept bead 1 and then land on bead 2.
+
+Treat every screenshot state as a transaction token:
+
+1. Before clicking, require the bandpass title, expected rectangle, foreground HWND, and screenshot/OCR showing the expected `Bead # n`.
+2. Issue exactly one click for that token.
+3. Do not click again until one of these occurs:
+   - the bandpass window is absent continuously for a settling interval;
+   - the fixed `Bead #` ROI changes from `n` to `n+1`;
+   - the Save dialog appears.
+4. If the screenshot remains byte-/template-equivalent, allow one retry only after re-verifying foreground, `WindowFromPoint`, capture, menu mode, and the same bead number.
+5. Once `Bead # n+1` appears, invalidate every pending retry for `n`.
+
+Also fix the accounting bug: [bandpass_round](/G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/bench/drive_original_copy_v2.py:509) increments `answered` even when `closed=False`.
+
+### 5. Cheapest discriminating test
+
+On the existing stuck panel, run one external PowerShell/Python probe that, in the same process and immediately around one click, logs:
+
+`bandpass HWND → SetForegroundWindow return → GetForegroundWindow → WindowFromPoint(176,353) → GUITHREADINFO hwndCapture/menu flags → mouse down/up → same values afterward`.
+
+Do it once immediately and once after 10 seconds, with no retry loop. If the foreground/point check is wrong, the z-order alternative wins. If the verified late click advances, your timing/activation explanation survives. If the verified late click still fails but a physical click succeeds, your explanation is falsified and the injected-input path is the problem.
+BGRUN END rc=0 after 213s

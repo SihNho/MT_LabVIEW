@@ -1,0 +1,40 @@
+BGRUN START 2026-09-16 22:09:28 limit 12.0 min: powershell -NoProfile -Command & .\tools\peer.ps1 -Agent codex -Kind review -Slug stop-condterm-failed-prediction -TaskFile 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\97b1695e-68c2-4985-8cac-1ca3097b3b15\scratchpad\peer_stopterm.txt' -TimeoutSec 420
+OUTCOME: ANSWERED (126s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-16-stop-condterm-failed-prediction.md
+--- ANSWER ---
+1. The strongest defect is that (3) treats a non-unique scripting signature as identification. “Terminal owner is Diagram and absent from every node’s `Terminals[]`” does **not** uniquely mean “While Loop conditional terminal.” Front-panel `ControlTerminal` objects have exactly that behavior: their generic owner is the diagram, not the corresponding front-panel control/indicator or a diagram node. This is explicitly described by NI’s Darren Nattinger in an accepted VI Scripting answer. [NI Community: wire terminal ownership](https://forums.ni.com/t5/LabVIEW/Vi-Scripting-inconsistent-behaviour-of-terms-of-a-wire-owner/td-p/3309055)
+
+Therefore, the safe wording is: “wire 3457 has two diagram-owned sinks not claimed by `Diagram.Nodes[]`; one may be the loop conditional terminal.” The measurements do not establish “one is.”
+
+2. A concrete alternative explanation is that one or both sinks are front-panel indicator terminals. A front-panel control terminal is a wire source; an indicator terminal is a sink, and both are represented on the block diagram as `ControlTerminal` objects rather than node terminals. [NI’s block-diagram documentation](https://www.ni.com/en/support/documentation/supplemental/08/labview-block-diagram-explained.html) This produces precisely the reported combination:
+
+- terminal is a sink of wire 3457;
+- `Generic.Owner` is Diagram 639;
+- no entry in any node’s `Terminals[]` claims it.
+
+Another unresolved category is a loop-owned special terminal—particularly the loop end/conditional terminal itself—but “diagram-owned” does not distinguish it from a `ControlTerminal`. I would not claim that Case selector terminals share this signature without a direct class read; the measured Case input already appears as the distinct `Tunnel` object 22085.
+
+The available shift-register reader also matters: a right-hand shift-register element could consume an in-loop value. Checking `Loop.Shift Registers[]` can eliminate that possibility, but it cannot positively identify the conditional terminal unless the returned references expose their connected wires.
+
+On (1): placement directly on body Diagram 639 does support per-iteration sampling at the language level. NI’s While Loop instructions specifically place the Stop control terminal inside the loop, while explaining that data entering through an external tunnel is supplied on the first iteration. [NI: Build and Configure a While Loop](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YJYUCA4) NI’s tutorial also demonstrates changing controls while a loop runs and seeing the results update. [NI LabVIEW tutorial](https://learn.ni.com/learn/article/labview-tutorial)
+
+Thus, a control terminal directly owned by the loop-body diagram is not a pre-loop-tunnel read. It might repeatedly return the same Boolean value, and its precise sampling moment within an iteration is not ordered unless data dependencies impose ordering, but semantically it is available from inside each iteration. I see no credible “placed directly on Diagram 639 but read only once” alternative in the supplied topology.
+
+On (2): the evidence supports it. Wire 15229 has only Tunnel 22085 as its sink, and that tunnel belongs to CaseStructure 22082. Nothing supplied connects that branch directly to WhileLoop 637’s end terminal.
+
+3. The decisive falsification of (3) would be:
+
+> `WhileLoop#637.Loop End Ref.Connected Wire` is not wire 3457, including an invalid/unwired reference.
+
+A cheaper sufficient falsifier would be the existing front-panel census showing that **both** wire-3457 sinks correspond to front-panel indicators. One matching indicator only explains one branch and leaves the other unidentified.
+
+No existing reader listed can conclusively identify the conditional terminal. The necessary new reader is the WhileLoop-class property:
+
+- Property: `Loop End Ref`
+- Property ID: `0x06362C00`
+- Target: WhileLoop uid 637
+- Then read the returned terminal’s `Connected Wire` and compare its UID with 3457.
+
+The community-maintained scripting class table documents this property and ID, and an NI forum discussion independently identifies `Loop End Ref` as the route to the conditional terminal. [WhileLoop property table](https://labviewwiki.org/wiki/WhileLoop_class), [NI Community discussion](https://forums.ni.com/t5/LabVIEW/VI-Scripting-locate-loop-iteration-and-conditional-terminals/td-p/4344904)
+
+**Cheapest discriminating test:** search the already-existing front-panel census for every object whose connected wire UID is 3457. If it returns two indicators, (3) is false and the alternative is confirmed. If it returns zero or one, the test is inconclusive; the conclusive next step is the new `WhileLoop.Loop End Ref` (`0x06362C00`) reader.
+BGRUN END rc=0 after 126s

@@ -1,0 +1,84 @@
+BGRUN START 2026-09-15 14:01:57 limit 12.0 min: py -u tools/retrospective.py --cycle 7
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_7.txt (5555 chars, 77 logs listed)
+OUTCOME: ANSWERED (166s)  archived: archive\peer\2026-09-15-retrospective-cycle7.md
+--- ANSWER ---
+1. **REPEATED FAILURE ??yes.** The recurring class was: `ExecState` becomes `0`; no compiler/broken-wire reader exists; the cause is inferred from wiring topology; another derived op is patched and rerun.
+
+   The sequence is visible in:
+
+   - `build_opwiresource_v1.log`, attempt 2: unexplained `ExecState 0`.
+   - `build_opwiresource_v5.log`, attempt 1: `ExecState 1 ??0` after deleting/rewiring a branch.
+   - `build_optunnelread_v0.log`, attempts 2??: remains broken after retarget and inferred orphan repair.
+   - `build_opcaseframes_v0.log`, attempts 1, 3, 4, and 5: repeated broken-VI gates with successively inferred causes.
+
+   The approach should have changed **after `OpWireSource_v5` attempt 1**?�the second inferred broken-VI diagnosis. Its next attempt should have built the diagnostic reader required by `CLAUDE.md:207??14`, not patched the op again. Independently, **`OpCaseFrames_v0` attempt 3 should never have run**: attempts 1 and 2 exhausted the material-session failure budget in `CLAUDE.md:178??80`.
+
+2. **MISSING TOOL ??yes: a broken-VI diagnostic reader.** The most immediately useful missing op was `Wire.Is Broken?` (`6371004`), backed by `Wire.Get Error List` (`6370C0A`); `VI.Get Errors` method 452 was also missing for unwired required terminals and non-wire compiler errors.
+
+   It would have answered or sharply localized:
+
+   - `OpWireSource_v1` attempt 2;
+   - `OpWireSource_v5` attempt 1;
+   - `OpTunnelRead_v0` attempts 2??;
+   - `OpCaseFrames_v0` attempts 1, 3, 4, and 5.
+
+   This was known early: `archive/peer/2026-09-15-opwiresource-v1-fail2-execstate-zero-after-readbacks.md` explicitly names all three APIs. Nevertheless, construction continued through several derivative ops. The later review `...opcaseframes-multiframe-to-casestructure-downcast.md` adds an important constraint: method 452 should come from a known-good donor because direct attachment had reportedly failed before. Therefore the cheapest first reader was probably `Wire.Is Broken?`, not another direct method-452 experiment.
+
+3. **UNMEASURED STEPS ??yes.**
+
+   - Three selector feeders were rediscovered through the new constant/wire-source fleet even though `docs/main-vi-panel-map.md` already mapped their wire UIDs to `Auto-Reset`, `Reset Tracking`, and `Limit of Program`. `docs/stage2-assembly-step-e.md:66??7` admits this retrospectively.
+   - The original E0 conclusion placed Case #5540 ?�after the kernel.??Later wire-source/tunnel measurements proved that it selects the kernel input. The correction is recorded at `stage2-assembly-step-e.md:123`. The earlier placement was inference made while a direct consumer/source walk was available.
+   - Frame 5592 was declared the reseed frame from functional behavior while structural polarity remained unmeasured. `stage2-assembly-step-e.md:203` labels this a ?�functional argument, pending the structural one.??That is useful evidence, but it should not have been promoted to a settled diagram fact before `FrameNames` was read.
+
+4. **RULE COMPLIANCE ??several rules were broken or satisfied only formally.**
+
+   Broken:
+
+   - **Failure budget of two:** `OpConstValue_v1` ran six attempts; `OpWireSource_v0`, `OpTunnelRead_v0`, and `OpCaseFrames_v0` each ran five. This directly violates `CLAUDE.md:178??80`.
+   - **Build the reader after the second inferred diagnosis:** continued construction violated `CLAUDE.md:207??14`.
+   - **Session = one cycle:** `archive/2026-09-15-status-stage2-cycles-1-7.md` identifies the same session `6959fd57` across cycles 1??. The audit then attributes 77 build logs?�including rotor work and cycles 1???�to ?�cycle 7,??contrary to `CLAUDE.md:164??66`.
+   - **One batch = one runner:** the logs show repeated build-only, test-only, restart, diagnostic, and bookkeeping batches instead of one runner/notification as required by `CLAUDE.md:160??63`.
+
+   Formally satisfied or evaded:
+
+   - A3/A4 count archived and annotated reviews, but seven reviews were annotated only after the audit caught them; `STATUS.md:24` says so.
+   - Several peer prompts say ?�BRIEF CONFIRM,??despite `CLAUDE.md:308??11` requiring the adversary to refute rather than confirm. Many files also retain `verdict: unverified` and `why asked: (Claude fills in)`.
+   - A2 is still failed: `retro_cycle7.log` contains only `BGRUN START`, with no `END` or `TIMEOUT`. Thus `STATUS.md` saying the audit ?�passed after remediation??is inaccurate for the attached audit.
+
+   Properly satisfied:
+
+   - Build commands represented in the audit used `bgrun`.
+   - Every logged failure eventually acquired an archived review.
+   - The main VI checksum remained unchanged.
+   - No cycle-7 GUI operation or hardware act appears in the cited raw logs.
+
+   The audit does **not** check failure-budget enforcement, reader-threshold enforcement, cycle/session boundaries, one-runner batching, whether reviews preceded repairs, whether prompts were genuinely adversarial, whether discriminating tests ran, whether peer claims were machine-confirmed, reference/handle hygiene, numeric equivalence, hardware safety, or whether the evidence set actually belongs to cycle 7. A6 merely counts all-time GUI log lines; it does not prove this cycle used no GUI.
+
+5. **ORDERING ??materially wrong.** A defensible order was:
+
+   1. Consult the existing panel map.
+   2. Build `Wire.Is Broken?`/compiler-error diagnostics once repeated `ExecState 0` appeared.
+   3. Build the case-frame reader.
+   4. Measure Cases #10445 and #5540.
+   5. Only then build `ReseedMux`.
+
+   Instead, the cycle built successive layers of diagnostic machinery, repeatedly debugged those tools without the broken-VI reader, and performed Census B while Census A?�listed first by the design review and still semantically blocking the selector?�remained open. Doing Census B first was individually defensible because it exposed the topology error; doing it before the diagnostic reader was not.
+
+6. **WHAT WAS NOT REPORTED OR WAS UNDERSTATED.**
+
+   - The ?�cycle 7??evidence set is not cycle 7 alone. It includes rotor testing and stages explicitly called cycles 1?? in the session history. That makes the audit?�s costs and compliance conclusions poorly scoped.
+   - The retrospective itself never terminated: `retro_cycle7.log` has a start line only. `STATUS.md` understates this by saying the audit passed.
+   - The raw `OpCaseFrames` log shows five attempts in about twelve minutes, including three consecutive post-retarget broken states. The session summary narrates each diagnosis separately, obscuring that they were one recurring failure class.
+   - `OpCaseFrames` attempt 5 regressed earlier than attempts 1??: it failed immediately after wiring the seed because two property nodes were created before either was wired. The summary calls this merely ?�a second defect surfaced.??   - The audit?�s ??3/83 annotated??hides that seven annotations were retrospective remediation, not contemporaneous evidence that reviews guided the corresponding next attempt.
+   - The session summary preserves the successful conclusions but softens the amount of discarded construction: the audit reports 95 failure markers across 23 failing logs and 131 builds, while the active status foregrounds Census B as completed.
+
+VIOLATION: repeated-failure-class
+VIOLATION: tool-not-built
+VIOLATION: inference-over-measurement
+VIOLATION: rule-evaded
+VIOLATION: wrong-ordering
+VIOLATION: unreported-fact
+VIOLATION: scope-creep
+VIOLATION: premature-build
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle7.md
+BGRUN END rc=0 after 166s

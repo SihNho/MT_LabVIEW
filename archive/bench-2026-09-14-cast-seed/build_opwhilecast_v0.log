@@ -1,0 +1,109 @@
+BGRUN START 2026-09-14 17:04:06 limit 25.0 min: py -u tools/recipes/build_oploopcast_v0.py WhileLoop
+start: SubVI=1 Function=3 Property=1 Wire=12 ForLoop=0 ExecState=1
+net_map: node 0 uid 43 (0 s)
+net_map: node 1 uid 124 (0 s)
+net_map: node 2 uid 308 (0 s)
+net_map: node 3 uid 683 (1 s)
+net_map: node 4 uid 316 (1 s)
+net_map: node 5 uid 220 (1 s)
+net_map: node 6 uid 334 (1 s)
+net_map: purged 20/65 junk Invokes (0 s)
+net_map: purged 40/65 junk Invokes (1 s)
+net_map: purged 60/65 junk Invokes (1 s)
+net_map: 6 nodes walked in 1.2 s; 65 junk Invoke(s) purged in 1.1 s
+   IndexMode WRITE PN uid 220
+
+== 1 delete IndexMode PN + RBW
+   predict: Property -1, ExecState 1
+   result : after SubVI=1 Function=3 Property=0 Wire=9 ForLoop=0 ExecState=1  (0.1 s)
+net_map: node 0 uid 43 (0 s)
+net_map: node 1 uid 124 (0 s)
+net_map: node 2 uid 308 (0 s)
+net_map: node 3 uid 683 (1 s)
+net_map: node 4 uid 316 (1 s)
+net_map: node 5 uid 118 (1 s)
+net_map: purged 20/57 junk Invokes (0 s)
+net_map: purged 40/57 junk Invokes (1 s)
+net_map: 5 nodes walked in 1.0 s; 57 junk Invoke(s) purged in 1.0 s
+   TMSC uid 683; 'target class' wire uid 772
+
+== 3-save op before copy_into
+   predict: saved, panel closed
+   result : (10206, None)  (0.0 s)
+   example node 0 uid 399: [(0, 'reference', 474), (1, 'reference out', 0), (2, 'error in (no error)', 0), (3, 'error out', 0), (4, 'LpCounter', 0)]
+   example node 1 uid 291: [(0, 'reference', 474), (1, 'reference out', 0), (2, 'error in (no error)', 0), (3, 'error out', 0), (4, 'LpEndRef', 0)]
+   example node 2 uid 572: [(0, 'reference', 474), (1, 'reference out', 0), (2, 'error in (no error)', 0), (3, 'error out', 0), (4, 'Diagram', 0)]
+   scratch example: seed property node Nodes[] 0 uid 399, its 'reference' wire 474
+
+== 3b delete the class-constant wire on the scratch
+   predict: Wire -1 (the five reference inputs become unwired)
+   result : 0  (0.0 s)
+
+== 3c create_control on LpCount node 'reference' (input, ForLoop-typed)
+   predict: one new CONTROL on the scratch panel
+   result : ([{'i': 0, 'class': 'ControlTerminal', 'uid': 95, 'pos': (283, 191), 'owner': 'TopLevelDiagram'}], 'reference')  (0.1 s)
+   create_control returned ([{'i': 0, 'class': 'ControlTerminal', 'uid': 95, 'pos': (283, 191), 'owner': 'TopLevelDiagram'}], 'reference'); new controls ['reference']
+
+== 3d delete the four other property nodes on the scratch + RBW
+   predict: Property 5->1, ExecState 1 (2 deleted)
+   result : 1  (0.1 s)
+
+== 3e copy_into(scratch, seed, op)
+   predict: one new GObject on the op; the seed label on its panel
+   result : [{'i': 55, 'class': 'ControlTerminal', 'uid': 334, 'pos': (0, 75), 'owner': 'TopLevelDiagram'}]  (1.4 s)
+   op panel new controls: ['reference']; after SubVI=1 Function=3 Property=0 Wire=9 ForLoop=0 ExecState=1
+
+== 6 delete the TMSC target-class wire
+   predict: Wire -1
+   result : after SubVI=1 Function=3 Property=0 Wire=8 ForLoop=0 ExecState=0  (0.1 s)
+
+== 7 wire_control seed -> TMSC 'target class'
+   predict: Wire +1, ExecState 1
+   result : after SubVI=1 Function=3 Property=0 Wire=9 ForLoop=0 ExecState=1  (0.1 s)
+
+== 8a PN_U GObject[UID] <- TMSC out
+   predict: Property +1
+   result : 230  (0.1 s)
+
+== 8a-wire
+   predict: Wire +1
+   result : after SubVI=1 Function=3 Property=1 Wire=10 ForLoop=0 ExecState=1  (0.2 s)
+
+== 8f PN_SR Loop[Shift Registers[]] <- TMSC out (branch)
+   predict: Property +1 (class Loop accepted)
+   result : 238  (0.1 s)
+
+== 8f-wire
+   predict: Wire +1
+   result : after SubVI=1 Function=3 Property=2 Wire=10 ForLoop=0 ExecState=1  (0.1 s)
+
+== 8g For loop
+   predict: ForLoop +1
+   result : after SubVI=1 Function=3 Property=2 Wire=10 ForLoop=1 ExecState=0  (0.2 s)
+
+== 8h PN_SU GObject[UID] inside
+   predict: Property +1
+   result : 323  (0.1 s)
+
+== 8h-wire (crosses the loop)
+   predict: LoopTunnel +1, ExecState 1
+   result : after SubVI=1 Function=3 Property=3 Wire=12 ForLoop=1 ExecState=1  (0.2 s)
+
+== 8i exit_loop PN_SU ['UID']
+   predict: LoopTunnel +1
+   result : after SubVI=1 Function=3 Property=3 Wire=13 ForLoop=1 ExecState=1  (0.2 s)
+
+== 10 auto error handling OFF
+   predict: no dialog
+   result : None  (0.0 s)
+
+assembled: SubVI=1 Function=3 Property=3 Wire=16 ForLoop=1 ExecState=1
+label map: {"Array": "ShiftRegUIDs", "UID": "LoopUID", "error out 2": "ShiftRegsErr", "reference": "seed"}
+
+== 11 COM save
+   predict: written
+   result : 12758  (0.0 s)
+donor md5 unchanged: True
+
+VERDICT: OpWhileCast_v0.vi BUILT and SAVED (structural only - run tools/bench/test_oploopcast.py next)
+BGRUN END rc=0 after 99s

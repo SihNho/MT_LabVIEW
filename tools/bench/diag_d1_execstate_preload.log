@@ -1,0 +1,48 @@
+BGRUN START 2026-09-18 20:22:44 limit 25.0 min: py -u tools/bench/diag_d1_execstate_preload.py
+=== diag_d1_execstate_preload  2026-09-18 20:22:44
+  GATE PASS G0a ORIGINAL exists  | G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+  FACT md5 ORIGINAL BEFORE   2a78e17c449cacdaf5da389818526859   Min_Track N beads V6_ParallelLoop.vi   473317 bytes
+  GATE PASS G0b ORIGINAL md5 equals route B's pinned ORIG_MD5  | disk 2a78e17c449cacdaf5da389818526859 vs build_d1_routeb_v0.py:173 2a78e17c449cacdaf5da389818526859
+  FACT fresh scratch copy made in this run: SCRATCH_d1_execstate_202244.vi  md5 2a78e17c449cacdaf5da389818526859  473317 bytes
+  GATE PASS G1 scratch copy is byte-identical to the ORIGINAL  | scratch 2a78e17c449cacdaf5da389818526859 vs original 2a78e17c449cacdaf5da389818526859
+
+=== E1a-COLD-D1SCRATCH  preload=False  target=SCRATCH_d1_execstate_202244.vi
+  === CHILD E1a-COLD-D1SCRATCH  preload=False  target=SCRATCH_d1_execstate_202244.vi
+    FACT lv_restart rc=0 'dialogs: 8,1346,762| / ENABLED|3868644|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)'
+    FACT handles after restart: 30686  (fresh baseline ~31,500)
+    FACT E1a-COLD-D1SCRATCH ==> ExecState 0  (1 = idle/runnable, 0 = broken)   VI.Name 'SCRATCH_d1_execstate_202244.vi'
+    --- ExecState 0: MEASURE BEFORE CLOSING (cycle27 Pre-decided 14)
+    FACT SUBVI RESOLUTION: 7 calls over the first 8 of 170 diagrams; 4 with empty name/path or a path not on disk
+        UNRESOLVED Diagram[3] uid 30804 name='MOV.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\MOV.vi'
+        UNRESOLVED Diagram[4] uid 4620 name='GOH.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\Limits.llb\\GOH.vi'
+        UNRESOLVED Diagram[5] uid 5403 name='VEL.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\VEL.vi'
+        UNRESOLVED Diagram[5] uid 5497 name='POS?.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\POS?.vi'
+        subVI      Diagram[1] uid 26582 name='Simple Error Handler.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\vi.lib\\Utility\\error.llb\\Simple Error Handler.vi'
+        subVI      Diagram[3] uid 30804 name='MOV.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\MOV.vi'
+        subVI      Diagram[4] uid 4620 name='GOH.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\Limits.llb\\GOH.vi'
+        subVI      Diagram[5] uid 5403 name='VEL.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\VEL.vi'
+        subVI      Diagram[5] uid 5497 name='POS?.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\POS?.vi'
+    FACT handles at end: 37003 (delta +6317)
+  GATE PASS E1a-COLD-D1SCRATCH child completed  | rc=0 after 73 s
+
+=== E1b-PRELOAD-D1SCRATCH  preload=True  target=SCRATCH_d1_execstate_202244.vi
+  === CHILD E1b-PRELOAD-D1SCRATCH  preload=True  target=SCRATCH_d1_execstate_202244.vi
+    FACT lv_restart rc=0 'dialogs: 8,1346,762| / ENABLED|2100266|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)'
+    FACT handles after restart: 30689  (fresh baseline ~31,500)
+    FACT ORIGINAL preloaded read-only: ExecState 1, VI.Name 'Min_Track N beads V6_ParallelLoop.vi'
+    FACT E1b-PRELOAD-D1SCRATCH ==> ExecState 1  (1 = idle/runnable, 0 = broken)   VI.Name 'SCRATCH_d1_execstate_202244.vi'
+    FACT handles at end: 50246 (delta +19557)
+  GATE PASS E1b-PRELOAD-D1SCRATCH child completed  | rc=0 after 69 s
+  GATE PASS G6 scratch copy deleted by the run that made it  | SCRATCH_d1_execstate_202244.vi
+  FACT md5 ORIGINAL AFTER    2a78e17c449cacdaf5da389818526859
+  GATE PASS G5 ORIGINAL md5 UNCHANGED  | 2a78e17c449cacdaf5da389818526859 -> 2a78e17c449cacdaf5da389818526859
+
+=== SUMMARY TABLE
+  E1a-COLD-D1SCRATCH       preload=False ExecState=0          VI.Name='SCRATCH_d1_execstate_202244.vi'
+  E1b-PRELOAD-D1SCRATCH    preload=True  ExecState=1          VI.Name='SCRATCH_d1_execstate_202244.vi'
+  FACT D1 route-B scratch copy: cold 0 vs preloaded 1 -> DIFFERENT
+  FACT handles (after restart -> end): cold (30686, 37003), preload (30689, 50246)
+  FACT ORIGINAL's own ExecState while preloaded: 1
+
+=== GATES 7 pass / 0 fail
+BGRUN END rc=0 after 151s

@@ -1,0 +1,167 @@
+BGRUN START 2026-09-14 17:25:36 limit 25.0 min: py -u tools/recipes/build_opshiftregs_v1.py
+start: IndexArray=2 ForLoop=2 LoopTunnel=8 Property=14 Wire=46 ExecState=1
+   IndexArray uid 657 Nodes[] 8: [(0, 'array', 558), (1, 'element', 770), (2, 'index', 751)]
+   IndexArray uid 308 Nodes[] 2: [(0, 'array', 600), (1, 'element', 605), (2, 'index', 1066)]
+
+== 3 PN_LR RightShiftRegister[Left Registers[]]
+   predict: Property +1 (class accepted by the creator)
+   result : 1676  (0.2 s)
+
+== 3-wire IA.element -> PN_LR.reference (branch)
+   predict: Wire +0/+1, ExecState 1 = GATE (element typed RightShiftRegister)
+   result : after IndexArray=2 ForLoop=2 LoopTunnel=8 Property=15 Wire=46 ExecState=0  (0.2 s)
+STOP: GATE failed - the element is not accepted as RightShiftRegister (typed seed needed). Nothing saved.
+BGRUN END rc=4 after 3s
+BGRUN START 2026-09-14 17:27:12 limit 25.0 min: py -u tools/recipes/build_opshiftregs_v1.py
+start: IndexArray=2 ForLoop=2 LoopTunnel=8 Property=14 Wire=46 ExecState=1
+   top-level property nodes (data terminal, wire): {230: ('UID', 620), 238: ('ShiftRegs[]', 558), 663: ('ClassName', 1477), 664: ('Outer Term', 847), 665: ('Name', 1508), 668: ('IsSource', 1521), 671: ('Wire', 936), 672: ('UID', 1493), 719: ('InsideTerms[]', 1092)}
+   IndexArray uid 657 Nodes[] 8: [(0, 'array', 558), (1, 'element', 770), (2, 'index', 751)]
+   IndexArray uid 308 Nodes[] 2: [(0, 'array', 600), (1, 'element', 605), (2, 'index', 1066)]
+   Shift Registers[] wire 558 -> IA uid 657
+
+== 3 PN_LR RightShiftRegister[Left Registers[]]
+   predict: Property +1 (class accepted by the creator)
+   result : 1676  (0.3 s)
+
+== 3-wire IA.element -> PN_LR.reference (branch)
+   predict: Wire +0/+1, ExecState 1 = GATE (element typed RightShiftRegister)
+   result : after IndexArray=2 ForLoop=2 LoopTunnel=8 Property=15 Wire=46 ExecState=1  (0.2 s)
+   PN_LR data terminal 'LeftRegs[]'
+
+== 4a For loop (top level)
+   predict: ForLoop +1
+   result : after IndexArray=2 ForLoop=3 LoopTunnel=8 Property=15 Wire=46 ExecState=0  (0.2 s)
+   new diagram [(1778, 'ForLoop')], new loop [1682]
+
+== 4b PN_LU GObject[UID] inside loop A
+   predict: Property +1
+   result : 1683  (0.3 s)
+
+== 4c PN_LR array -> PN_LU.ref (crosses)
+   predict: LoopTunnel +1, ExecState 1
+   result : after IndexArray=2 ForLoop=3 LoopTunnel=9 Property=16 Wire=48 ExecState=1  (0.2 s)
+
+== 4d exit_loop PN_LU ['UID']
+   predict: LoopTunnel +1
+   result : after IndexArray=2 ForLoop=3 LoopTunnel=10 Property=16 Wire=49 ExecState=1  (0.2 s)
+   loop A output -> 'Array 7' = LeftUIDs
+
+== 5a build_index_array
+   predict: IndexArray +1
+   result : [{'i': 0, 'class': 'IndexArray', 'uid': 1684, 'pos': (1550, 2200), 'owner': 'TopLevelDiagram'}]  (0.1 s)
+
+== 5b connect IA2.array <- PN_LR data (branch)
+   predict: branched, ExecState 1
+   result : (0, 1)  (0.1 s)
+
+== 5c create_control on IA2.index
+   predict: one new control
+   result : ([{'i': 27, 'class': 'ControlTerminal', 'uid': 1889, 'pos': (1504, 2203), 'owner': 'TopLevelDiagram'}], 'index 4')  (0.4 s)
+   left index control: ['index 4']
+
+== 6a PN_LC2 GObject[Class Name] <- IA2.element
+   predict: Property +1
+   result : 1686  (0.3 s)
+
+== 6a-wire
+   predict: Wire +1
+   result : after IndexArray=3 ForLoop=3 LoopTunnel=10 Property=17 Wire=52 ExecState=1  (0.2 s)
+
+== 6b PN_LO Tunnel[Outside Terminal] <- LC2 out
+   predict: Property +1, ExecState 1
+   result : 1689  (0.3 s)
+
+== 6b-wire
+   predict: Wire +1
+   result : after IndexArray=3 ForLoop=3 LoopTunnel=10 Property=18 Wire=53 ExecState=1  (0.2 s)
+
+== 6c PN_LON Terminal[Name]
+   predict: Property +1
+   result : 1690  (0.3 s)
+
+== 6c-wire LO.outer -> LON.ref
+   predict: Wire +1
+   result : after IndexArray=3 ForLoop=3 LoopTunnel=10 Property=19 Wire=54 ExecState=1  (0.2 s)
+
+== 6d PN_LOS Terminal[Is Source?]
+   predict: Property +1
+   result : 1708  (0.3 s)
+
+== 6e PN_LOC Terminal[Connected Wire]
+   predict: Property +1
+   result : 1789  (0.3 s)
+
+== 6f PN_LOW GObject[UID]
+   predict: Property +1
+   result : 1806  (0.3 s)
+
+== 6g LON -> LOS -> LOC -> LOW wires
+   predict: Wire +3, ExecState 1
+   result : after IndexArray=3 ForLoop=3 LoopTunnel=10 Property=22 Wire=57 ExecState=1  (0.5 s)
+
+== 7a PN_LI Tunnel[Inside Terminals[]] <- LO ref out
+   predict: Property +1
+   result : 1877  (0.3 s)
+
+== 7a-wire
+   predict: Wire +1
+   result : after IndexArray=3 ForLoop=3 LoopTunnel=10 Property=23 Wire=58 ExecState=1  (0.2 s)
+
+== 7b For loop (top level)
+   predict: ForLoop +1
+   result : after IndexArray=3 ForLoop=4 LoopTunnel=10 Property=23 Wire=58 ExecState=0  (0.2 s)
+   new diagram [(2133, 'ForLoop')], new loop [1910]
+
+== 7c PN_LIN Terminal[Name] inside loop B
+   predict: Property +1
+   result : 1935  (0.4 s)
+
+== 7d PN_LI array -> PN_LIN.ref (crosses)
+   predict: LoopTunnel +1, ExecState 1
+   result : after IndexArray=3 ForLoop=4 LoopTunnel=11 Property=24 Wire=60 ExecState=1  (0.2 s)
+
+== 7e PN_LIS inside
+   predict: Property +1
+   result : 1960  (0.4 s)
+
+== 7f PN_LIC inside
+   predict: Property +1
+   result : 1364  (0.4 s)
+
+== 7g PN_LIW inside
+   predict: Property +1
+   result : 1440  (0.4 s)
+
+== 7h inner chain wires
+   predict: Wire +3, ExecState 1
+   result : after IndexArray=3 ForLoop=4 LoopTunnel=11 Property=27 Wire=63 ExecState=1  (0.5 s)
+
+== 7i exit_loop ['Name']
+   predict: LoopTunnel +1
+   result : after IndexArray=3 ForLoop=4 LoopTunnel=12 Property=27 Wire=64 ExecState=1  (0.2 s)
+
+== 7i exit_loop ['IsSource']
+   predict: LoopTunnel +1
+   result : after IndexArray=3 ForLoop=4 LoopTunnel=13 Property=27 Wire=65 ExecState=1  (0.2 s)
+
+== 7i exit_loop ['UID']
+   predict: LoopTunnel +1
+   result : after IndexArray=3 ForLoop=4 LoopTunnel=14 Property=27 Wire=66 ExecState=1  (0.2 s)
+   loop B output -> 'Array 8' = LeftInName
+   loop B output -> 'Array 9' = LeftInIsSource
+   loop B output -> 'Array 10' = LeftInWireUID
+
+== 9 auto error handling OFF
+   predict: no dialog
+   result : None  (0.0 s)
+
+assembled: IndexArray=3 ForLoop=4 LoopTunnel=14 Property=27 Wire=76 ExecState=1
+label map: {"Array": "ShiftRegUIDs", "UID": "LoopUID", "error out 2": "ShiftRegsErr", "reference": "seed", "Array 2": "InName", "Array 3": "InIsSource", "Array 4": "InWireUID", "Array 5": "InConnErr", "Array 6": "InWireErr", "Class Name 3": "ClassName", "UID 2": "OutWireUID", "Name": "OutName", "Is Source?": "OutIsSource", "error out 3": "OuterErr", "error out 4": "OutConnErr", "error out 5": "InsideErr", "index 3": "index2", "Array 7": "LeftUIDs", "index 4": "index3", "Array 8": "LeftInName", "Array 9": "LeftInIsSource", "Array 10": "LeftInWireUID", "Class Name 4": "LeftClassName", "UID 3": "LeftOutWireUID", "Name 2": "LeftOutName", "Is Source? 2": "LeftOutIsSource", "error out 6": "LeftRegsErr", "error out 7": "LeftOuterErr", "error out 8": "LeftInsideErr"}
+
+== 10 COM save
+   predict: written
+   result : 23178  (0.0 s)
+donor md5 unchanged: True
+
+VERDICT: OpShiftRegs_v1 BUILT and SAVED (structural only - run tools/bench/test_opshiftregs_v1.py next)
+BGRUN END rc=0 after 260s

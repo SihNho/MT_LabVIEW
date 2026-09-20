@@ -1,0 +1,20 @@
+BGRUN START 2026-09-12 05:16:42 limit 15.0 min: py -u tools/bench/diagram_tree_validate.py
+
+=== TRACK_kernel_v1 (built 2026-09-10: case 154, CPU frame 155, GPU frame 156) ===
+   Diagram objects: 3 -> owners ['', 'CaseStructure', 'CaseStructure']
+   diagram  0 owner=                   node uids=[154]
+   diagram  1 owner=CaseStructure      node uids=[155]
+   diagram  2 owner=CaseStructure      node uids=[156]
+   SubVI uids [155, 156] | CaseStructure uids [154]
+   top-level diagram index [], case-frame diagram indices [1, 2]
+   FAIL: expected 1 top-level diagram and 2 case frames
+
+=== PARALLEL_kernel_v3 (a For Loop with the bead kernel inside) ===
+   Diagram objects: 2 -> owners ['', 'ForLoop']
+   diagram  0 owner=                   node uids=[3447, 3848, 3835]
+   diagram  1 owner=ForLoop            node uids=[3449]
+   SubVI uids [3449] | ForLoop-owned diagram indices [1]
+   PASS: the kernel subVI sits on the ForLoop's inner diagram
+
+VALIDATION: FAIL - do not walk the main VI yet
+BGRUN END rc=5 after 24s

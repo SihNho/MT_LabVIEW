@@ -1,0 +1,182 @@
+BGRUN START 2026-09-18 01:38:37 limit 16.0 min: powershell -Command & 'tools/peer.ps1' -Agent codex -Slug walk-run1-path-constants -TaskFile 'tools/bench/peer_task_walk_run1.txt' -Dual -TimeoutSec 780
+=== DUAL ARM 1/2: codex -> walk-run1-path-constants-codex ===
+OUTCOME: ANSWERED (210s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-18-walk-run1-path-constants-codex.md
+--- ANSWER ---
+The claim is wrong as an inference: the bad V6 path explains why C2/C5 produced no useful result, but it cannot establish that no second defect exists. The upstream `Open VI Reference` failure masked every downstream operation.
+
+1. Strongest reason
+
+C5’s “NO terminals” is synthesized by the Python wrapper, not reported by LabVIEW.
+
+In [probe_flatseq_walk.py](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/probe_flatseq_walk.py:301>), `wire_source()`:
+
+- catches `_run()` exceptions;
+- reads only the op’s aggregate `error out`;
+- ignores the nine stage-specific errors exposed in the label map;
+- breaks when outputs retain the preloaded `0/FALSE/"POISON"` defaults;
+- translates that state to “NO terminals.”
+
+Consequently, the same message can mean:
+
+- target open failed;
+- UID-to-GObject conversion failed;
+- wire downcast failed;
+- `Wire.Terminals[]` failed;
+- indexing failed;
+- or the array was genuinely empty.
+
+The invalid path certainly caused run 1’s result, but run 1 never exercised the downstream chain. It therefore supplies zero evidence that the chain works after the path is fixed.
+
+Even `error 7 at Open VI Reference` is not uniquely diagnostic of a nonexistent top-level path: NI documents error 7 from a VI Server open when the target is non-executable, has a missing subVI/driver/DLL, or has another linkage problem. The nonexistent path is established here by the Python filesystem failure, not by error 7 alone. [NI: Error 7 or 1003 with VI Server](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000kIHWSA2)
+
+2. Alternative explanations
+
+For C2, the class string and property IDs passing on a scratch VI prove that LabVIEW recognizes the `FlatSequenceInnerTunnel` class metadata. They do not prove that `Traverse for GObjects` returns instances of that class from V6. After a successful open, `report_all()` could still return zero or fewer than 14 because of traversal visibility, class-name matching, or the op’s array-return path. That hypothesis was not reached in run 1.
+
+For C5, a successful open could be followed by failure in `UID to GObject Reference.vi` or `Wire.Terminals[]`. NI says a valid wire’s `Terminals[]` references the terminals connected by that wire and places its source first when one exists. Thus a connected wire producing no readable index 0 is evidence of an invalid/unresolved wire reference or a property-read failure—not normal flat-sequence behavior. [NI `Wire.Terminals[]`](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/wire/terminals.html)
+
+The flat-sequence boundary itself is not a strong explanation for an empty array. Repository evidence already shows the same `OpWireSource_v5` successfully reading wires whose terminal owners are `FlatSequenceInnerTunnel`, for example [stop_save_seam.json](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/stop_save_seam.json:352>). It remains possible that these particular nested-diagram UIDs expose a lookup/scoping problem, but run 1 cannot distinguish that from the bad path.
+
+A cached wire UID should not spontaneously change merely because the VI was closed and reopened. NI says a GObject UID remains associated with the same object after saving; reuse is possible after an object is deleted, which is why class/label should also be checked. [NI `GObject.UID`](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/uid.html)
+
+Therefore:
+
+- If the exact V6 file MD5 really remained `2a78e17c449cacdaf5da389818526859`, a normal saved-file UID-staleness explanation is weak.
+- But run 1 did not verify that MD5: both “before” and “after” were the same `ERR [Errno 2]` string for the wrong path, and C1 counted equality of those error strings as “unchanged.” So run 1 itself did not establish that the cached census and the file actually tested had matching content.
+
+There are also two direct defects outside C2/C5 that make the literal “two constants explain every failure” statement false:
+
+- `Max Trans Pos.vi` is not inside an LLB. Its logged path contains duplicated `zz_LabView VI\zz_LabView VI`, so the LLB explanation cannot account for that miss.
+- C6 passed despite four entries having `None`, because its gate excludes every record whose existence check is false. It therefore tests only the subset that already passed existence checking.
+
+3. Observation that falsifies the claim
+
+The claim is falsified if, in one fresh session:
+
+1. the corrected V6 path exists and its MD5 matches the cached census;
+2. an independent trivial read proves that V6 opened successfully;
+3. then either:
+
+   - `report_all(V6, "FlatSequenceInnerTunnel")` returns fewer than 14 objects, or
+   - wire 44089’s UID round-trip succeeds but `Terms[0]` cannot be read, has a nonzero stage error, does not point back to wire 44089, or has no valid owner.
+
+That would isolate a failure strictly downstream of the corrected path.
+
+4. Cheapest discriminating test
+
+Do not rerun the full probe. In one bounded fresh session, perform only:
+
+- Assert corrected V6 `isfile` and print its MD5 beside the census MD5.
+- Perform one cheap successful-open control, such as `count(V6, "Diagram")`.
+- Call `report_all(V6, "FlatSequenceInnerTunnel")` once.
+- Run `OpWireSource_v5` only for wire `44089`, terminal index `0`.
+- Print every stage-specific error cluster (`errL`, `errT`, `errO`, `errU`, `errG`, `errS`, `errWU`, `errCO`), plus `uid_back`, wire class, `Is Source?`, owner class/UID, and reciprocal wire UID.
+
+NI specifies that index 0 is the source when a source exists, so no eight-index walk is necessary. [NI wire-to-node procedure](https://www.ni.com/docs/en-US/bundle/labview/page/navigating-from-a-wire-to-a-node-using-vi-scripting.html)
+
+If both C2 and that one terminal read pass cleanly, “wrong V6 path only” gains strong support for C2/C5. If the open control passes but either downstream read fails, the claim is decisively false.
+=== DUAL ARM 2/2: claude/hypothesis (opus, effort max, web) -> walk-run1-path-constants-opus ===
+OUTCOME: ANSWERED (462s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-18-walk-run1-path-constants-opus.md
+COST: $3.2463  in 18 / out 32529 / cache-create 197865 / cache-read 771327  (458s, 21 turn(s))
+--- ANSWER ---
+No LabVIEW lock taken, nothing built, nothing edited, nothing run. Review follows.
+
+---
+
+# REFUTATION — "two wrong path constants, just rerun"
+
+## 1. The single strongest reason the claim is WRONG
+
+**The wrong path did not merely prevent C2 and C5 from being tested — it silently disabled the rule-1 integrity gate, and that gate reported PASS.** The claim's frame ("the measurement never happened, so nothing else is implicated") stops one question too early: it never asks what *else* the bad path switched off.
+
+`probe_flatseq_walk.py:108-116` — `md5()` returns the **string** `f"ERR {e}"` on failure. `main()` then compares snapshots by string equality (`:496-498`). For the V6 working copy, before and after were both `"ERR [Errno 2] No such file or directory: …"` (`probe_flatseq_walk.log:7` and `:102`) — equal strings — so:
+
+```
+PASS C1 every pre-existing .vi md5 unchanged  | []          (log:110)
+```
+
+passed **without ever hashing the file it exists to protect**, and the same vacuous pass covered MOV/VEL/GOH and `Max Trans Pos.vi`. Four of the nine rule-1 files were never checked and the gate certified them unchanged.
+
+The same defect is in the other passing gate. `:475-478`:
+
+```python
+all(... for v in RESULTS["m3"].values() if v.get("exists"))
+```
+
+The `if v.get("exists")` filter **excludes exactly the entries that failed**. C6 "every motion subVI opened and reported ≥1 diagram" PASSED while printing four `None`s inside its own detail line (`log:98`). So the headline "4 of 6 gates pass" is wrong: two gates were measured (C3, C4), two passed vacuously (C1, C6), two failed. Fixing `V6 = …` repairs none of this.
+
+This is not academic for the next run. Run 1 never opened MOV/VEL/GOH/TMX?. **Run 2 is the first run that loads third-party PI Mercury driver VIs out of two LLBs into LabVIEW 2026** — precisely the relink-and-dirty hazard CLAUDE.md rule 1 is written about — and it does so behind a `md5()` that returns a value equal to itself on failure. The claim calls that "a rerun".
+
+**Additionally, the claim miscounts its own causes.** There were **three** wrong path constants, not two. `Max Trans Pos.vi` is not in an LLB, so explanation (b) does not cover it. The log's path (`log:14`, `log:94`) is `…\MinLab\zz_LabView VI\zz_LabView VI\DY\Background VIs\…` — `zz_LabView VI` is **doubled**. The file exists at the single-segment path (Glob: `G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\DY\Background VIs\Max Trans Pos.vi`). `probe_flatseq_walk.py:72` already carries the corrected `LAB`, and the run-1 post-mortem in the docstring (`:31-38`) does not mention it.
+
+And the script has been edited more than the claim admits: run 1 printed **two** `SetCommand_signed candidate` lines (`log:96-97`) against one entry in `SIGNED_HINTS` (`:91`), and `M3_VIS` now holds **ten** entries (`:76-87`) while the log shows only **seven** VIs attempted. So run 2 is not a rerun of run 1's experiment — at least three independent things changed. Calling it a rerun is how a changed variable goes unnoticed.
+
+**Finally, "nothing about the ops is implicated" is false on the log's own text.** Fourteen times (`log:36-49`):
+
+```
+error 7: Open VI Reference in OpOwnerChain_v1.vi<APPEND> error 1055: To More Specific Class in UID to GObject Reference.vi
+```
+
+Error 1055 is "Object reference is invalid" ([NI](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019L75SAE)). Had `OpOwnerChain_v1` serialised its error cluster, `UID to GObject Reference.vi` would have received error 7 on error-in and returned it unchanged — a conforming LabVIEW VI does nothing when error-in is set. It could not have *generated* a new 1055. So the downcast **ran anyway**, on a reference the previous node had failed to produce: the op's error chain is not serialised. Its outputs after an upstream failure are indeterminate rather than absent, which makes `error out` the only trustworthy thing it emits — and that is exactly the value the M2 walk throws away (next section). The path revealed this; it did not cause it.
+
+## 2. Alternative explanation for `hop 1: wire 44089 returned NO terminals at all`
+
+**That string is not a measurement. It is the probe's default whenever the op fails to overwrite the poison at `term_index = 0` — for any reason at all.**
+
+`wire_source()` (`:301-336`) poisons the outputs, runs the op, captures `err`, builds `r`, and then at `:332`:
+
+```python
+if r["owner_uid"] == 0 and not r["is_source"] and r["owner_class"] in ("POISON", ""):
+    break
+```
+
+The break fires **before** `out.append(r)`, so `r["err"]` is discarded — never printed, never stored. `src is None` then produces the string at `:352`. At least five mutually exclusive causes emit it byte-identically:
+
+1. **error 7, path missing** — the claim's story; outputs never written.
+2. **`Wire.Terminals[]` returned an empty array** → `Index Array` on an empty array yields the default element **with no error** → the downcast then errors 1055 → discarded.
+3. **The uid did not resolve to a Wire object** (wrong VI, or the NI-documented UID-reuse case) → 1055 → discarded.
+4. **Terminal 0 exists but `Is Source?` / `Class Name` failed to read** → poison survives.
+5. **A `SetControlValue` label mismatch** left the op reading the previous iteration's inputs.
+
+Cause 1 is *sufficient* — I traced it and it holds. It is nowhere near *necessary*. The decisive consequence: **after the path is fixed, causes 2–5 print the same line**, so a plain rerun cannot discharge C5 in either direction. (Caveat, stated as inference not measurement: cause 2 assumes `OpWireSource_v5` indexes `Terminals[]` with the Index Array primitive. I cannot confirm that — AGENTS.md forbids me opening the `.vi`. Ask for reporter output on that op if it matters.)
+
+**On your cached-UID sub-question — the seeds are sound, and I can say so from the files.** `main_vi_nodeterms.json:2` names the **correct** working-copy path; node uid 44036 is at `:4188`; wires 44089/44104/44107 are its terminals at `:4291/:4303/:4315`. So the seeds were not hand-copied. And LabVIEW UIDs are documented as persistent: *"A UID is always associated with the same object, even after you save the VI… UIDs are unique, and persist for the lifetime of the object, across saves, compiles, VI copies"* ([LabVIEW Wiki](https://labviewwiki.org/wiki/GObject_class/UID_property)). Unchanged md5 therefore makes silent drift unlikely — **but** the same page carries NI's caveat that a *deleted* object's UID may be reassigned, with the advice to validate by also reading Class Name, which the walk does not do at the point it breaks. And your premise is not actually established by this run: run 1 has **no** md5 of the working copy at all. The nearest recorded hash is `motor_census_v6-workingcopy.json:5` = `2a78e17c449cacdaf5da389818526859` (taken 2026-09-17 23:49). Comparing against it is a real check nobody has run.
+
+**One repeat you should know about.** The `.llb` sub-claim is mechanically right — an LLB is a single file, so `os.path.exists` on an internal path is always False, and I confirmed both `General command.llb` and `Limits.llb` really are at the hardcoded location. But this is **not a one-file typo: the same false test already fired in the previous probe of the same cycle.** `probe_flatseq_offline2.log:18-24` shows `MOV.vi exists=False MOV.vi` and `SetCommand.vi exists=False SetCommand.vi` — with the bare **basename** as the path, because the census stores callees as names, not paths (`probe_flatseq_offline2.py:47-50,59`). `SetCommand.vi` demonstrably exists (md5 `d8b7a775…`, `log:13`) and Q3 called it absent. So the walk's M3 paths were **hand-written guesses**, not census-derived as its docstring claims (`:11-17`), and "existence-checked something that was never a path" is a `repeated-failure-class`, not a constant.
+
+## 3. The observation that would FALSIFY the claim
+
+Run 2 with all three constants fixed and `os.path.isfile` confirming each target:
+
+- **C5 still prints `NO terminals at all`** → falsified; the path was not the only cause.
+- **C2 still raises error 7** on a path `isfile()` confirms → falsified; error 7 here is not "file not found" (it also fires on qualified-name/library-structure problems — [NI forums](https://forums.ni.com/t5/LabVIEW/Error-7-occurred-at-Open-VI-Reference/td-p/2778322)).
+- **C2 returns a number but < 14, or 0** → "never tested" is confirmed, but the implied "the class is fine" is refuted and `d1-build-plan.md:735` comes back into play. Note `probe_flatseq_instances.json` is **not** a traverse result — it is mined from a prior wire walk's hops (`probe_flatseq_offline2.py:62-77`), so "14" is a lower bound of convenience, not an independent prediction.
+- **Confirming outcome:** C2 ≥ 14 and C5 ≥ 1 hop with *only* the constants changed. Even then it shows cause 1 was sufficient, not that 2–5 are absent — those three wires simply would not exercise them.
+
+## 4. Cheapest discriminating test
+
+**Step 0 — seconds, pure Python, no LabVIEW, before spending a COM run:** `isfile(V6)`; `md5(V6) == "2a78e17c449cacdaf5da389818526859"` (`motor_census_v6-workingcopy.json:5`); `isfile` on both LLBs and on the de-doubled `Max Trans Pos.vi`. I have already done three of these — the LLBs and `Max Trans Pos.vi` exist. **The md5 comparison is the one still open**, and it is the only thing that currently substantiates "the file's md5 is unchanged".
+
+**Step 1 — the actual discriminator, one line, no new op, same 43 s:** move `out.append(r)` **above** the break at `probe_flatseq_walk.py:332` and print `r["err"]` and `r["owner_class"]` on every iteration *including the breaking one*. That converts the ambiguous default into a reading:
+
+| what `err` says on the breaking iteration | verdict |
+|---|---|
+| contains `error 7` | wrong path only — claim confirmed |
+| contains `1055` | uid didn't resolve / `Terminals[]` empty — **a second defect, independent of the path** |
+| empty, outputs still `POISON` | the op ran clean and returned nothing — the FlatSequence/`Terminals[]` hypothesis is live |
+
+Three mutually exclusive outcomes, zero extra cost. Without it, run 2 is not an experiment — it re-runs an instrument that cannot report its own failure mode, and either result brings you back here.
+
+**Step 2 — same run, free, and do not skip it:** make `md5()` return a sentinel that does **not** compare equal to itself (or track `exists` separately), and make C6 count filtered-out entries as failures. Otherwise the run that first loads third-party LLB VIs into LabVIEW 2026 can again report PASS for files it never touched.
+
+## Where I still think the claim holds, and what would change my mind
+
+**"The wrong V6 path is sufficient to produce every observed failure"** — I believe this; I traced the mechanism through `wire_source`'s break and it is sound. **"Therefore nothing else is implicated and no further diagnosis is warranted"** — this does not follow, and the log contradicts it in four places (C1 vacuous, C6 vacuous, the op's unserialised error chain, the third wrong constant). What would change my mind is the Step-1 instrumented run showing `error 7` on the breaking iteration for all three seed wires, C2 ≥ 14, and C6 passing with all seven — sorry, all **ten** — M3 entries actually opened. That is one run away and costs one line more than the rerun the claim proposes.
+
+**Sources:**
+- [GObject class/UID property — LabVIEW Wiki](https://labviewwiki.org/wiki/GObject_class/UID_property)
+- [Error 1055 from a Property or Invoke Node — NI](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019L75SAE)
+- [Error 7 occurred at Open VI Reference — NI Community](https://forums.ni.com/t5/LabVIEW/Error-7-occurred-at-Open-VI-Reference/td-p/2778322)
+- [Error 7 at Open VI Reference for a Stand-Alone Application — NI](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000P8MGSA0)
+=== DUAL DONE: codex rc=0, opus rc=0  (archive\peer\2026-09-18-walk-run1-path-constants-codex.md, -walk-run1-path-constants-opus.md) ===
+BGRUN END rc=0 after 673s

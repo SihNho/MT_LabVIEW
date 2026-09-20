@@ -1,0 +1,35 @@
+BGRUN START 2026-09-14 00:15:55 limit 8.0 min: py -c 
+import sys,os,shutil,time; sys.path.insert(0,'tools')
+import gscript as g
+g._lv=None
+S=os.path.join(g.CLAUDEDEV,'SCRATCH_nodeinfo_inspect.vi')
+if os.path.exists(S):
+    try: os.remove(S)
+    except OSError: pass
+shutil.copyfile(os.path.join(g.CLAUDEDEV,'OpNodeInfo_v0.vi'), S)
+g.open_panel(S); time.sleep(0.9)
+print('ExecState', g.exec_state(S))
+for cls in ('SubVI','Property','Invoke','IndexArray','Function','ControlTerminal','Diagram'):
+    try:
+        objs=g.report(S,cls)
+        print(f'{cls} n={len(objs)}:', [(o["uid"],o["pos"],o["owner"]) for o in objs])
+    except Exception as e: print(cls,'EXC',str(e)[:90])
+print('--- net_map diagram 0 ---')
+for row in g.net_map(S,0,max_nodes=30,max_terms=22): print('  ',row)
+try:
+    g.close_panel(S); time.sleep(0.3); os.remove(S); print('scratch deleted')
+except Exception as e: print('cleanup', str(e)[:80])
+
+ExecState 1
+SubVI n=2: [(370, (980, 540), 'TopLevelDiagram'), (369, (980, 470), 'TopLevelDiagram')]
+Property n=4: [(115, (853, 300), 'TopLevelDiagram'), (114, (697, 300), 'TopLevelDiagram'), (113, (502, 300), 'TopLevelDiagram'), (112, (426, 300), 'TopLevelDiagram')]
+Invoke n=0: []
+IndexArray n=1: [(308, (605, 284), 'TopLevelDiagram')]
+Function n=1: [(43, (275, 251), 'TopLevelDiagram')]
+ControlTerminal n=10: [(96, (229, 244), 'TopLevelDiagram'), (363, (449, 274), 'TopLevelDiagram'), (526, (449, 444), 'TopLevelDiagram'), (926, (679, 240), 'TopLevelDiagram'), (1002, (829, 444), 'TopLevelDiagram'), (1056, (560, 287), 'TopLevelDiagram'), (1098, (559, 415), 'TopLevelDiagram'), (533, (0, 75), 'TopLevelDiagram'), (242, (919, 307), 'TopLevelDiagram'), (257, (775, 323), 'TopLevelDiagram')]
+Diagram n=1: [(3, (0, 75), '')]
+--- net_map diagram 0 ---
+   {0: (43, '', [(0, 'error out', 0), (1, 'vi reference', 138), (2, 'password ("")', 0), (3, 'type specifier VI Refnum (for type only)', 0), (4, 'error in (no error)', 0), (5, 'options', 0), (6, 'vi path', 106), (7, 'application reference (local)', 0)]), 1: (308, '', [(0, 'array', 167), (1, 'element', 193), (2, 'index', 1066)]), 2: (369, '', [(0, 'error out', 0), (1, '', 0), (2, '', 0), (3, 'specific error cleared?', 0), (4, 'error in (no error)', 0), (5, '', 0), (6, '', 0), (7, 'specific error code to clear (0: all)', 0)]), 3: (370, '', [(0, 'error out', 0), (1, '', 0), (2, '', 0), (3, 'specific error cleared?', 0), (4, 'error in (no error)', 0), (5, '', 0), (6, '', 0), (7, 'specific error code to clear (0: all)', 0)]), 4: (112, '', [(0, 'reference', 138), (1, 'reference out', 0), (2, 'error in (no error)', 0), (3, 'error out', 0), (4, 'Diagram', 163)]), 5: (113, '', [(0, 'reference', 163), (1, 'reference out', 0), (2, 'error in (no error)', 0), (3, 'error out', 0), (4, 'Nodes[]', 167)]), 6: (114, '', [(0, 'reference', 193), (1, 'reference out', 0), (2, 'error in (no error)', 0), (3, 'error out', 0), (4, 'Label', 224), (5, 'Style', 273)]), 7: (115, '', [(0, 'reference', 224), (1, 'reference out', 0), (2, 'error in (no error)', 0), (3, 'error out', 0), (4, 'Text', 253)])}
+   {138: [(0, 1, 'vi reference'), (4, 0, 'reference')], 106: [(0, 6, 'vi path')], 167: [(1, 0, 'array'), (5, 4, 'Nodes[]')], 193: [(1, 1, 'element'), (6, 0, 'reference')], 1066: [(1, 2, 'index')], 163: [(4, 4, 'Diagram'), (5, 0, 'reference')], 224: [(6, 4, 'Label'), (7, 0, 'reference')], 273: [(6, 5, 'Style')], 253: [(7, 4, 'Text')]}
+scratch deleted
+BGRUN END rc=0 after 3s

@@ -1,0 +1,28 @@
+BGRUN START 2026-09-14 23:56:46 limit 8.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & '.\tools\peer.ps1' -Agent codex -Slug strtopath-fail1-move-by-label-1054 -TimeoutSec 240 -Task (Get-Content -Raw '.\tools\bench\peer_task_strtopath_1054.txt')
+OUTCOME: ANSWERED (65s)  archived: archive\peer\2026-09-14-strtopath-fail1-move-by-label-1054.md
+--- ANSWER ---
+The leading cause is not H1?�H5. It is a missing edit-state prerequisite: `prepare()` attempted to mutate `Test-Source` before opening its front panel, so `Node.Label` was probably declined silently.
+
+Ranking:
+
+1. **Missing `OpenFrontPanel` before `set_node_label` ??most likely.** The failed log contains no evidence that `STP` was ever written. The successful precedent explicitly calls `open_panel(src)` before labeling a Call Library Function Node ([copy_clfn2.py](/G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/bench/copy_clfn2.py:13)). The current repair already adopts that prerequisite and verifies the result ([build_strtopath.py](/G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/recipes/build_strtopath.py:65)).
+2. **H2, wrong node index ??plausible but secondary.** The census establishes index 7/UID 194 as `String To Path` ([census_savetraces_terms.log](/G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/bench/census_savetraces_terms.log:4)), but only an immediate UID/label readback proves both operations use identical ordering.
+3. **H1, primitive cannot acquire a label ??possible, but weakened substantially.** The precedent labeled a `CallLibrary` node, not a generic arithmetic primitive, so it is not a perfect class match. However, an NI employee explicitly says For Loops and Compound Arithmetic functions have names and can be found by `Open VI Object Reference`; functions are therefore not categorically excluded from name lookup. [NI forum](https://forums.ni.com/t5/LabVIEW-APIs-Discussions/Feedback-Request-Open-VI-Object-Reference/m-p/3401796)
+4. **H3, class filter excludes Function ??unlikely.** The same NI evidence shows that `Open VI Object Reference` can return function objects by name. A restrictive class input inside this particular Op remains possible, but it would likely have broken the successful CallLibrary precedent too.
+5. **H4, revert/static-reference race ??very unlikely.** Code order is substitute ??revert/load ??`prepare()` ??run Op; there is no revert after `prepare()` ([gscript.py](/G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/gscript.py:1125)). LabVIEW identifies already-loaded VIs by their in-memory identity/name, so a static reference should normally see that same loaded instance; NI documents name-based reference lookup as searching VIs already in memory. [NI reference-loading documentation](https://www.ni.com/en/support/documentation/supplemental/06/calling-a-labview-vi-by-reference.html)
+6. **H5, whitespace mismatch ??least likely.** Both write and lookup receive the same Python literal `"STP"`; there is no transformation between them.
+
+Cheapest discriminating test:
+
+- Open `Test-Source`?�s panel.
+- Run `set_node_label(src, 0, 7, "STP")`.
+- Immediately call `node_labels(src, 0)`.
+- Require specifically `UID 194 ??"STP"`, not merely that some node contains `STP`.
+- Only then run `OpMoveByLabel_v0`.
+
+The current recipe tests ?�some UID has `STP`?? tighten lines 71??4 to require `labs.get(194) == "STP"`. This separates the missing-open-panel cause, H1, and H2 in one readback.
+
+If UID 194 reads `STP` but lookup still returns 1054, request reporter output for `OpMoveByLabel_v0` showing the `Open VI Object Reference` node?�s `vi object class` input and its source. Do not open the compiled Op. At that point H3 becomes the leading candidate. NI community guidance also recommends `TRef Find Object By Label.vi` over `Open VI Object Reference` because the latter is fragile. [NI forum](https://forums.ni.com/t5/LabVIEW/add-event-cases-to-an-event-structure-using-scripting/m-p/3098775/highlight/true)
+
+Minimal repair: keep the newly added `open_panel(src)` plus UID-specific readback inside `prepare()`. A saved donor copy is unnecessary unless the readback proves an in-memory label still cannot be found; it adds another save/load boundary without addressing the presently observed missing edit-state prerequisite.
+BGRUN END rc=0 after 65s

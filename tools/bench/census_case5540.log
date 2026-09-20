@@ -1,0 +1,68 @@
+BGRUN START 2026-09-15 03:46:14 limit 8.0 min: py -u tools/bench/census_case5540.py
+
+#10019 'Equal?' (n35):
+     0 | 'x = y?'                       | S | wire 10249
+     1 | 'y'                            | s | wire 10142
+     2 | 'x'                            | s | wire 10079
+
+#5540 'Case Structure' (n6):
+     0 | ''                             | s | wire 5709
+     1 | ''                             | s | wire 5979
+     2 | 'Bead is good? array out'      | S | wire 5637
+     3 | 'Bead is good? array out'      | s | wire 6041
+     4 | ''                             | s | wire 5746
+     5 | 'x,y,z array out'              | s | wire 1681
+     6 | 'x,y,z array out'              | S | wire 5975
+
+#10950 'Less?' (n31):
+     0 | 'x < y?'                       | S | wire 9868
+     1 | 'y'                            | s | wire 10850
+     2 | 'x'                            | s | wire 17393
+
+#10247 'Or' (n28):
+     0 | 'x .or. y?'                    | S | wire 5709
+     1 | 'y'                            | s | wire 10312
+     2 | 'x'                            | s | wire 10573
+
+#17289 'min value' (n32):
+     0 | 'reference'                    | s | wire 0
+     1 | 'reference out'                | S | wire 0
+     2 | 'error in (no error)'          | s | wire 0
+     3 | 'error out'                    | S | wire 0
+     4 | 'Value'                        | S | wire 17393
+
+#9647 'And' (n33):
+     0 | 'x .and. y?'                   | S | wire 9921
+     1 | 'y'                            | s | wire 9806
+     2 | 'x'                            | s | wire 9868
+
+#10068 'Quotient & Remainder' (n18):
+     0 | 'floor(x/y)'                   | S | wire 0
+     1 | 'x-y*floor(x/y)'               | S | wire 10187
+     2 | 'y'                            | s | wire 10103
+     3 | 'x'                            | s | wire 3268
+
+#9879 '# of Auto-Reset' (n34):
+     0 | 'reference'                    | s | wire 0
+     1 | 'reference out'                | S | wire 0
+     2 | 'error in (no error)'          | s | wire 0
+     3 | 'error out'                    | S | wire 0
+     4 | 'Value'                        | S | wire 10079
+
+#10969 'Array Max & Min' (n30):
+     0 | 'array'                        | s | wire 121
+     1 | 'max value'                    | S | wire 0
+     2 | 'max index (indices)'          | S | wire 0
+     3 | 'min value'                    | S | wire 17287
+     4 | 'min index (indices)'          | S | wire 0
+
+Sources of those input wires (same diagram):
+   wire 121: #5058 'Track N beads four-fold over-kernel-v3.vi'.'pos in cal image out' -> #10969.'array'
+   wire 5709: #10247 'Or'.'x .or. y?' -> #5540.''
+   wire 10573: #10445 'Case Structure'.'' -> #10247.'x'
+   wire 9868: #10950 'Less?'.'x < y?' -> #9647.'x'
+   wire 17393: #17289 'min value'.'Value' -> #10950.'x'
+   wire 10079: #9879 '# of Auto-Reset'.'Value' -> #10019.'x'
+
+CaseStructure-owned diagrams on the VI: 76 (cannot tell which belong to #5540 from owner class alone)
+BGRUN END rc=0 after 80s

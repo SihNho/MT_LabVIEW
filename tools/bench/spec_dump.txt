@@ -1,0 +1,592 @@
+
+===== rect coord from center.vi
+ fp: {'x': ('int', 0, 'CTRL'), 'y': ('int', 0, 'CTRL'), 'rectangle coordinates': ('array', [0], 'IND'), 'half-length of pixmap': ('int', 100, 'CTRL')}
+ Constant: []
+ Node: [(117, (212, 167)), (106, (231, 136)), (88, (254, 175)), (63, (242, 237)), (43, (208, 194))]
+ ControlTerminal: [(168, (169, 96)), (220, (139, 284)), (324, (294, 172)), (190, (25, 193))]
+ Structure: []
+ SubVI: []
+ diagram 0:
+   node 0 uid 63: t0='x+y'@w144, t1='y'@w147, t2='x'@w132
+   node 1 uid 43: t0='x+y'@w141, t1='y'@w132, t2='x'@w150
+   node 2 uid 106: t0='x-y'@w135, t1='y'@w132, t2='x'@w150
+   node 3 uid 117: t0='x-y'@w138, t1='y'@w132, t2='x'@w147
+   node 4 uid 88: t0='appended array'@w335, t1='element'@w135, t2='element'@w138, t3='element'@w141, t4='element'@w144
+   single-ended wires: 335
+
+===== Tracking-fit prepped I of r to cal.vi
+ fp: {'Real portion of hilbert/bandpass filtered r-shifted claibration image': ('array', [0], 'CTRL'), 'Index of closest cal image slice': ('int', 0, 'IND'), 'prepped I(r)': ('array', [0], 'CTRL')}
+ Constant: [(79, (81, 431))]
+ Node: [(190, (480, 381)), (43, (55, 404)), (87, (118, 414)), (147, (315, 434)), (136, (271, 431)), (125, (226, 421))]
+ ControlTerminal: [(250, (-14, 384)), (265, (520, 401)), (303, (199, 180))]
+ Structure: [(43, (55, 404)), (87, (118, 414))]
+ SubVI: []
+ diagram 0:
+   node 0 uid 43: 
+   node 1 uid 190: t0='array'@w306, t1='max value'@w0, t2='max index (indices)'@w0, t3='min value'@w0, t4='min index (indices)'@w270
+   single-ended wires: 306 270
+ diagram 1:
+   node 0 uid 87: 
+   single-ended wires: 
+ diagram 2:
+   node 0 uid 125: t0='x-y'@w167, t1='y'@w173, t2='x'@w170
+   node 1 uid 136: t0='x*y'@w164, t1='y'@w167, t2='x'@w167
+   node 2 uid 147: t0='x+y'@w158, t1='y'@w161, t2='x'@w164
+   single-ended wires: 173 170 158 161
+
+===== tracking- quadratic fit to phase nghbrd.vi
+ fp: {'neighborhood phases': ('array', [0], 'CTRL'), 'bead z pos as a cal image index': ('float', 0.0, 'IND'), 'index of best-fit cal image slice': ('int', 0, 'CTRL')}
+ Constant: [(57, (460, 209)), (69, (275, 135)), (90, (319, 138)), (116, (382, 247)), (128, (266, 270)), (291, (115, 200)), (312, (282, 203))]
+ Node: [(302, (404, 236)), (98, (487, 230)), (43, (451, 353))]
+ ControlTerminal: [(235, (32, 253)), (254, (618, 340)), (270, (-341, 354))]
+ Structure: []
+ SubVI: [(302, (404, 236)), (98, (487, 230))]
+ diagram 0:
+   node 0 uid 98: t0='error'@w0, t1='P(a)'@w190, t2='P(x)'@w193, t3='a'@w196
+   node 1 uid 43: t0='x+y'@w241, t1='y'@w257, t2='x'@w190
+   node 2 uid 302: t0='Y'@w238, t1='polynomial order'@w202, t2='Coefficient Constraint'@w0, t3=''@w0, t4='Best Polynomial Fit'@w0, t5='X'@w205, t6='Polynomial Coefficients'@w193, t7='Weight'@w324, t8=''@w0, t9='tolerance'@w0, t10=''@w0, t11='method'@w0, t12=''@w0, t13='algorithm'@w199, t14='residue'@w0, t15='error'@w0
+   single-ended wires: 196 241 257 238 202 205 324 199
+
+===== Tracking-prep I of r.vi
+ fp: {'cosine bandpass': ('array', [0], 'CTRL'), 'radial intensity profile': ('array', [0], 'CTRL'), 'forget radius': ('int', 0, 'CTRL'), 'halfcross': ('int', 0, 'CTRL'), 'r shifted complex cosine/hilbert filtered intensity profile (aka the corkscrew)': ('array', [0], 'IND'), 'prepped I(r)': ('array', [0], 'IND')}
+ Constant: [(366, (7, 264))]
+ Node: [(345, (9, 228)), (337, (222, 344)), (298, (164, 227)), (250, (270, 236)), (101, (235, 237)), (90, (275, 341)), (74, (304, 328)), (63, (346, 323)), (55, (66, 233)), (43, (118, 238))]
+ ControlTerminal: [(146, (105, 291)), (182, (73, 146)), (197, (220, 327)), (212, (178, 345)), (248, (401, 271)), (423, (249, 389))]
+ Structure: []
+ SubVI: [(298, (164, 227)), (250, (270, 236))]
+ diagram 0:
+   node 0 uid 337: t0='x-1'@w381, t1='x'@w384
+   node 1 uid 90: t0='x+y'@w438, t1='y'@w381, t2='x'@w447
+   node 2 uid 345: t0='deleted portion'@w0, t1='array'@w387, t2='length'@w0, t3='array w/ subset deleted'@w378, t4='index'@w375
+   node 3 uid 55: t0='reversed array'@w444, t1='array'@w378
+   node 4 uid 43: t0='appended array'@w441, t1='array'@w444, t2='array'@w387
+   node 5 uid 298: t0='error'@w0, t1=''@w0, t2=''@w0, t3='FFT {X}'@w435
+   node 6 uid 101: t0='x*y'@w432, t1='y'@w390, t2='x'@w435
+   node 7 uid 250: t0='error'@w0, t1=''@w0, t2=''@w0, t3='X'@w429
+   node 8 uid 74: t0='array'@w429, t1='subarray'@w426, t2='index'@w438, t3='length'@w0
+   node 9 uid 63: t0='x + iy'@w426, t1='x'@w393, t2='y'@w0
+   single-ended wires: 384 447 375 441 432 390 393
+
+===== tracking-calculate phase in neighborhood.vi
+ fp: {'neighborhood phases': ('array', [0], 'IND'), 'index of best-fit cal image slice': ('int', 0, 'CTRL'), 'complex 1D radial intensity profile post cosine bandpass/hilbert transform aka the "corkscrew"': ('array', [0], 'CTRL'), '2D array of complex cal image intensities (aka cal corkscrews) r shifted!': ('array', [0], 'CTRL'), '2D array of prepped cal image amplitudes r shifted!': ('array', [0], 'CTRL')}
+ Constant: [(90, (-147, 324))]
+ Node: [(337, (-169, 373)), (329, (-185, 372)), (109, (-69, 144)), (290, (116, 220)), (282, (84, 243)), (274, (80, 199)), (152, (-32, 154)), (216, (8, 291)), (205, (-16, 292)), (238, (39, 243)), (227, (2, 201)), (98, (-106, 186)), (65, (-156, 261)), (43, (-152, 192))]
+ ControlTerminal: [(375, (388, 227)), (397, (-341, 354)), (433, (-371, 48)), (481, (-294, 271)), (523, (-337, 179))]
+ Structure: [(109, (-69, 144)), (152, (-32, 154))]
+ SubVI: []
+ diagram 0:
+   node 0 uid 98: t0='r * e^(i*theta)'@w403, t1='r'@w439, t2='theta'@w0
+   node 1 uid 329: t0='x-1'@w381, t1='x'@w384
+   node 2 uid 337: t0='x-1'@w378, t1='x'@w381
+   node 3 uid 43: t0='array'@w484, t1='subarray'@w436, t2='index'@w378, t3='length'@w526, t4='index'@w0, t5='length'@w0
+   node 4 uid 65: t0='array'@w442, t1='subarray'@w400, t2='index'@w378, t3='length'@w526, t4='index'@w0, t5='length'@w0
+   node 5 uid 109: 
+   single-ended wires: 403 439 384 484 436 442 400
+ diagram 1:
+   node 0 uid 152: 
+   node 1 uid 274: t0='sum'@w316, t1='numeric array'@w325
+   node 2 uid 282: t0='sum'@w319, t1='numeric array'@w322
+   node 3 uid 290: t0='x/y'@w313, t1='y'@w316, t2='x'@w319
+   single-ended wires: 325 322 313
+ diagram 2:
+   node 0 uid 205: t0='x/y'@w252, t1='y'@w258, t2='x'@w255
+   node 1 uid 216: t0='r * e^(i*theta)'@w252, t1='r'@w0, t2='theta'@w249
+   node 2 uid 227: t0='x*y'@w261, t1='y'@w267, t2='x'@w270
+   node 3 uid 238: t0='x*y'@w264, t1='y'@w249, t2='x'@w261
+   single-ended wires: 258 255 267 270 264
+
+===== tracking-fit parabola to avg profile.vi
+ fp: {'Input cross-correlation': ('array', [0], 'CTRL'), '# of points for parabola': ('int', 5, 'CTRL'), 'parabola-based interpolated position of maximum': ('float', 0.0, 'IND')}
+ Constant: [(181, (105, 317)), (212, (170, 224)), (218, (169, 260)), (251, (248, 294)), (272, (-135, 340))]
+ Node: [(398, (117, 267)), (77, (-53, 342)), (70, (-78, 335)), (267, (-107, 334)), (255, (-19, 321)), (208, (294, 282)), (266, (254, 266)), (222, (224, 244)), (196, (184, 242)), (185, (184, 206)), (162, (61, 148)), (104, (46, 310)), (129, (73, 324)), (82, (-86, 133))]
+ ControlTerminal: [(318, (-47, 102)), (325, (-152, 275)), (327, (331, 284))]
+ Structure: [(104, (46, 310))]
+ SubVI: [(398, (117, 267))]
+ diagram 0:
+   node 0 uid 267: t0='x/y'@w76, t1='y'@w308, t2='x'@w271
+   node 1 uid 82: t0='array'@w304, t1='max value'@w0, t2='max index (indices)'@w232, t3='min value'@w0, t4='min index (indices)'@w0
+   node 2 uid 70: t0='floor(x): largest int <= x'@w339, t1='x'@w76
+   node 3 uid 77: t0='32bit integer'@w84, t1='number'@w339
+   node 4 uid 255: t0='x-y'@w288, t1='y'@w84, t2='x'@w232
+   node 5 uid 162: t0='array'@w304, t1='subarray'@w301, t2='index'@w288, t3='length'@w271
+   node 6 uid 104: t0=''@w271, t1=''@w288, t2=''@w294
+   node 7 uid 196: t0='array'@w306, t1='element'@w282, t2='index'@w268
+   node 8 uid 185: t0='array'@w306, t1='element'@w284, t2='index'@w276
+   node 9 uid 222: t0='x/y'@w289, t1='y'@w282, t2='x'@w284
+   node 10 uid 266: t0='-x'@w291, t1='x'@w289
+   node 11 uid 208: t0='x/y'@w329, t1='y'@w296, t2='x'@w291
+   node 12 uid 398: t0='Y'@w301, t1='polynomial order'@w274, t2='Coefficient Constraint'@w0
+   single-ended wires: 308 294 268 276 329 296 274
+ diagram 1:
+   node 0 uid 129: t0='x+y'@w140, t1='y'@w147, t2='x'@w142
+   single-ended wires: 140 147 142
+
+===== tracking-prep avgx,y profiles.vi
+ fp: {'Along x': ('array', [0], 'CTRL'), 'Along y': ('array', [0], 'CTRL'), '# of endpoints for normalization': ('int', 0, 'CTRL'), 'cross size': ('int', 0, 'CTRL'), 'real-space cosine window': ('array', [0], 'CTRL'), 'prepped avg profile along X': ('array', [0], 'IND'), 'prepped avg profile along Y': ('array', [0], 'IND')}
+ Constant: [(448, (320, 218))]
+ Node: [(489, (377, 281)), (380, (327, 274)), (172, (342, 224)), (440, (377, 167)), (429, (327, 160)), (197, (419, 276)), (385, (419, 162)), (366, (278, 278)), (355, (278, 164)), (207, (74, 109)), (298, (177, 224)), (275, (177, 184)), (309, (216, 212)), (263, (173, 260)), (286, (216, 172)), (253, (173, 146)), (187, (458, 281)), (170, (458, 167))]
+ ControlTerminal: [(457, (26, 133)), (459, (26, 313)), (467, (26, 54)), (446, (26, 221)), (455, (415, 231)), (423, (489, 169)), (477, (489, 283))]
+ Structure: [(207, (74, 109))]
+ SubVI: []
+ diagram 0:
+   node 0 uid 172: t0='x*y'@w378, t1='y'@w470, t2='x'@w521
+   node 1 uid 207: t0=''@w470, t1='Along x'@w438, t2='Along y'@w432, t3='cross size'@w447, t4=''@w408, t5=''@w411, t6=''@w397, t7=''@w417
+   node 2 uid 366: t0='appended array'@w426, t1='array'@w397, t2='array'@w417
+   node 3 uid 380: t0='sum'@w492, t1='numeric array'@w426
+   node 4 uid 489: t0='x/y'@w428, t1='y'@w378, t2='x'@w492
+   node 5 uid 355: t0='appended array'@w421, t1='array'@w408, t2='array'@w411
+   node 6 uid 429: t0='sum'@w504, t1='numeric array'@w421
+   node 7 uid 440: t0='x/y'@w425, t1='y'@w378, t2='x'@w504
+   node 8 uid 385: t0='x-y'@w435, t1='y'@w425, t2='x'@w438
+   node 9 uid 170: t0='x*y'@w474, t1='y'@w454, t2='x'@w435
+   node 10 uid 197: t0='x-y'@w430, t1='y'@w428, t2='x'@w432
+   node 11 uid 187: t0='x*y'@w491, t1='y'@w454, t2='x'@w430
+   single-ended wires: 521 447 474 491
+ diagram 1:
+   node 0 uid 263: t0='array'@w348, t1='element'@w325, t2='index'@w340
+   node 1 uid 253: t0='array'@w346, t1='element'@w331, t2='index'@w340
+   node 2 uid 298: t0='x-y'@w333, t1='y'@w340, t2='x'@w343
+   node 3 uid 309: t0='array'@w348, t1='element'@w322, t2='index'@w333
+   node 4 uid 275: t0='x-y'@w338, t1='y'@w340, t2='x'@w343
+   node 5 uid 286: t0='array'@w346, t1='element'@w328, t2='index'@w338
+   single-ended wires: 325 331 322 328
+
+===== tracking-average x,y in cross.vi
+ fp: {'Image': ('bytes/memoryview', [0], 'CTRL'), 'x center': ('int', 0, 'CTRL'), 'y center': ('int', 0, 'CTRL'), 'cross arm width': ('int', 0, 'CTRL'), 'cross size': ('int', 0, 'CTRL'), 'avg profile along x': ('array', [0], 'IND'), 'avg profile along y': ('array', [0], 'IND')}
+ Constant: [(267, (15, 336)), (298, (20, 276))]
+ Node: [(281, (163, 205)), (299, (159, 150)), (188, (269, 121)), (231, (362, 152)), (504, (300, 155)), (197, (330, 149)), (149, (209, 134)), (379, (150, 484)), (478, (139, 424)), (433, (182, 400)), (424, (224, 353)), (377, (249, 405)), (361, (337, 448)), (630, (288, 438)), (407, (319, 416)), (341, (70, 335)), (251, (76, 275)), (271, (48, 270)), (256, (43, 330))]
+ ControlTerminal: [(241, (43, 109)), (146, (-51, 143)), (229, (-51, 196)), (244, (-51, 249)), (238, (-51, 302)), (280, (454, 421)), (324, (477, 117))]
+ Structure: [(188, (269, 121)), (377, (249, 405))]
+ SubVI: []
+ diagram 0:
+   node 0 uid 271: t0='x/y'@w335, t1='y'@w332, t2='x'@w292
+   node 1 uid 251: t0='32bit integer'@w338, t1='number'@w335
+   node 2 uid 256: t0='x/y'@w326, t1='y'@w322, t2='x'@w279
+   node 3 uid 341: t0='32bit integer'@w350, t1='number'@w326
+   node 4 uid 299: t0='x-y'@w266, t1='y'@w350, t2='x'@w284
+   node 5 uid 379: t0='x-y'@w492, t1='y'@w350, t2='x'@w265
+   node 6 uid 281: t0='x-y'@w295, t1='y'@w338, t2='x'@w265
+   node 7 uid 149: t0='array'@w254, t1='subarray'@w239, t2='index'@w266, t3='length'@w279, t4='index'@w295, t5='length'@w292
+   node 8 uid 188: t0=''@w0, t1=''@w239, t2='cross arm width'@w292, t3=''@w325
+   node 9 uid 478: t0='x-y'@w486, t1='y'@w338, t2='x'@w284
+   node 10 uid 433: t0='array'@w254, t1='subarray'@w483, t2='index'@w486, t3='length'@w292, t4='index'@w492, t5='length'@w279
+   node 11 uid 424: t0='transposed array'@w453, t1='2D array'@w483
+   node 12 uid 377: t0=''@w0, t1=''@w453, t2=''@w440, t3='cross arm width'@w292
+   single-ended wires: 332 322 325 440
+ diagram 1:
+   node 0 uid 504: t0='single precision float'@w155, t1='number'@w657
+   node 1 uid 197: t0='sum'@w517, t1='numeric array'@w155
+   node 2 uid 231: t0='x/y'@w623, t1='y'@w554, t2='x'@w517
+   single-ended wires: 657 623 554
+ diagram 2:
+   node 0 uid 630: t0='single precision float'@w720, t1='number'@w714
+   node 1 uid 407: t0='sum'@w521, t1='numeric array'@w720
+   node 2 uid 361: t0='x/y'@w534, t1='y'@w150, t2='x'@w521
+   single-ended wires: 714 534 150
+
+===== tracking-calculate radial profile-openv2.vi
+ fp: {'Input Image': ('bytes/memoryview', [0], 'CTRL'), 'half cross': ('int', 0, 'CTRL'), 'y center': ('float', 0.0, 'CTRL'), 'x center': ('float', 0.0, 'CTRL'), 'radial intensity profile': ('array', [0], 'IND')}
+ Constant: [(265, (-332, 55)), (465, (-524, 380))]
+ Node: [(1076, (495, 66)), (1139, (600, 114)), (246, (566, 109)), (451, (-505, 367)), (470, (-479, 456)), (396, (-439, 536)), (385, (-372, 507)), (418, (-372, 465)), (407, (-398, 491)), (379, (-404, 452)), (386, (-412, 422)), (373, (-435, 394)), (349, (-381, 319)), (154, (-242, 287)), (269, (-301, 76)), (103, (-217, 88)), (518, (-99, 247)), (618, (-118, 151)), (611, (-142, 147)), (603, (-165, 147)), (597, (-129, 243)), (583, (-157, 242)), (580, (-121, 275)), (532, (-149, 270)), (526, (-133, 332)), (504, (-165, 328)), (164, (-70, 94)), (863, (175, 524)), (900, (289, 547)), (928, (211, 390)), (917, (143, 315)), (868, (137, 361)), (849, (107, 361)), (889, (383, 435)), (877, (226, 274)), (765, (387, 385)), (799, (409, 415)), (834, (408, 359)), (822, (340, 410)), (767, (351, 357)), (750, (216, 523)), (791, (192, 547)), (780, (224, 189)), (768, (268, 256)), (751, (268, 146)), (757, (186, 249)), (726, (196, 146)), (715, (63, 354)), (705, (224, 552)), (694, (143, 521)), (683, (113, 508)), (666, (92, 468)), (213, (-41, 245))]
+ ControlTerminal: [(275, (-424, 318)), (281, (-529, 288)), (267, (-531, 456)), (268, (-489, 537)), (262, (708, 130))]
+ Structure: [(1076, (495, 66)), (103, (-217, 88)), (164, (-70, 94))]
+ SubVI: []
+ diagram 0:
+   node 0 uid 269: t0='element'@w296, t1='initialized array'@w260, t2='dimension size'@w298
+   node 1 uid 451: t0='x*y'@w488, t1='y'@w483, t2='x'@w298
+   node 2 uid 396: t0='ceil(x): smallest int >= x'@w486, t1='x'@w479
+   node 3 uid 386: t0='x-y'@w475, t1='y'@w298, t2='x'@w486
+   node 4 uid 407: t0='x-y'@w490, t1='y'@w486, t2='x'@w479
+   node 5 uid 385: t0='x+y'@w491, t1='y'@w298, t2='x'@w490
+   node 6 uid 470: t0='ceil(x): smallest int >= x'@w468, t1='x'@w485
+   node 7 uid 373: t0='x-y'@w476, t1='y'@w298, t2='x'@w468
+   node 8 uid 349: t0='array'@w318, t1='subarray'@w495, t2='index'@w476, t3='length'@w488, t4='index'@w475, t5='length'@w488
+   node 9 uid 379: t0='x-y'@w474, t1='y'@w468, t2='x'@w485
+   node 10 uid 418: t0='x+y'@w492, t1='y'@w298, t2='x'@w474
+   node 11 uid 154: t0='x*y'@w332, t1='y'@w298, t2='x'@w298
+   node 12 uid 103: t0=''@w0, t1=''@w495, t2=''@w492, t3=''@w491, t4=''@w257, t5=''@w260, t6=''@w336, t7=''@w260, t8='half cross'@w298, t9=''@w332
+   node 13 uid 1076: t0=''@w0, t1=''@w257, t2=''@w263, t3=''@w336
+   single-ended wires: 296 483 318 263
+ diagram 1:
+   node 0 uid 246: t0='x/y'@w1138, t1='y'@w1151, t2='x'@w1125
+   node 1 uid 1139: t0='double precision float'@w1215, t1='number'@w1138
+   single-ended wires: 1151 1125 1215
+ diagram 2:
+   node 0 uid 504: t0='x-y'@w626, t1='y'@w153, t2='x'@w225
+   node 1 uid 526: t0='x*y'@w617, t1='y'@w626, t2='x'@w626
+   node 2 uid 532: t0='x-y'@w630, t1='y'@w617, t2='x'@w149
+   node 3 uid 580: t0='sqrt(x)'@w629, t1='x'@w630
+   node 4 uid 603: t0='x+y'@w641, t1='y'@w629, t2='x'@w629
+   node 5 uid 611: t0='ceil(x): smallest int >= x'@w637, t1='x'@w641
+   node 6 uid 618: t0='32bit integer'@w634, t1='number'@w637
+   node 7 uid 583: t0='x-y'@w632, t1='y'@w629, t2='x'@w230
+   node 8 uid 597: t0='ceil(x): smallest int >= x'@w635, t1='x'@w632
+   node 9 uid 518: t0='32bit integer'@w510, t1='number'@w635
+   node 10 uid 164: t0=''@w634, t1=''@w242, t2=''@w230, t3=''@w234, t4=''@w240, t5=''@w236, t6=''@w238, t7=''@w617, t8=''@w510
+   single-ended wires: 153 225 149 242 234 240 236 238
+ diagram 3:
+   node 0 uid 213: t0='x+y'@w341, t1='y'@w226, t2='x'@w229
+   node 1 uid 666: t0='x-y'@w865, t1='y'@w341, t2='x'@w343
+   node 2 uid 715: t0='array'@w340, t1='element'@w978, t2='index'@w341
+   node 3 uid 683: t0='x*y'@w909, t1='y'@w865, t2='x'@w865
+   node 4 uid 694: t0='x+y'@w1074, t1='y'@w342, t2='x'@w909
+   node 5 uid 863: t0='sqrt(x)'@w947, t1='x'@w1074
+   node 6 uid 791: t0='floor(x): largest int <= x'@w949, t1='x'@w947
+   node 7 uid 705: t0='32bit integer'@w985, t1='number'@w949
+   node 8 uid 757: t0='array'@w338, t1='element'@w977, t2='index'@w985
+   node 9 uid 726: t0='array'@w337, t1='element'@w939, t2='index'@w985
+   node 10 uid 900: t0='x+1'@w980, t1='x'@w985
+   node 11 uid 750: t0='x-y'@w976, t1='y'@w949, t2='x'@w947
+   node 12 uid 928: t0='x*y'@w975, t1='y'@w976, t2='x'@w978
+   node 13 uid 849: t0='-x'@w965, t1='x'@w976
+   node 14 uid 868: t0='x+1'@w983, t1='x'@w965
+   node 15 uid 877: t0='x+y'@w953, t1='y'@w983, t2='x'@w977
+   node 16 uid 917: t0='x*y'@w972, t1='y'@w983, t2='x'@w978
+   node 17 uid 780: t0='x+y'@w952, t1='y'@w972, t2='x'@w939
+   node 18 uid 751: t0='array'@w337, t1='output array'@w967, t2='new element/subarray'@w952, t3='index'@w985
+   node 19 uid 767: t0='array'@w967, t1='element'@w951, t2='index'@w980
+   node 20 uid 765: t0='x+y'@w960, t1='y'@w975, t2='x'@w951
+   node 21 uid 834: t0='array'@w967, t1='output array'@w969, t2='new element/subarray'@w960, t3='index'@w980
+   node 22 uid 768: t0='array'@w338, t1='output array'@w970, t2='new element/subarray'@w953, t3='index'@w985
+   node 23 uid 822: t0='array'@w970, t1='element'@w962, t2='index'@w980
+   node 24 uid 889: t0='x+y'@w955, t1='y'@w976, t2='x'@w962
+   node 25 uid 799: t0='array'@w970, t1='output array'@w346, t2='new element/subarray'@w955, t3='index'@w980
+   single-ended wires: 226 229 343 340 342 969 346
+
+===== tracking-find avg profile center.vi
+ fp: {'averaged profile from cross': ('array', [0], 'CTRL'), 'cosine window for hilbert': ('array', [0], 'CTRL'), 'starting profile center': ('int', 0, 'CTRL'), 'half cross': ('int', 0, 'CTRL'), 'new profile center': ('float', 0.0, 'IND'), 'Output Array': ('array', [0], 'IND'), 'Shift from start': ('float', 0.0, 'IND')}
+ Constant: [(241, (232, 243)), (387, (369, 243)), (986, (369, 243)), (147, (806, 376)), (393, (-68, 316)), (302, (-92, 352))]
+ Node: [(66, (-133, 248)), (1044, (306, 74)), (692, (718, 207)), (471, (-25, 327)), (325, (-78, 346)), (258, (2, 121)), (1213, (252, 228)), (1379, (29, 237)), (484, (133, 205)), (244, (560, 246)), (324, (513, 260)), (190, (133, 319)), (1392, (239, 237)), (1139, (389, 228)), (461, (343, 205)), (318, (27, 331)), (293, (63, 163)), (560, (116, 352)), (566, (137, 376)), (553, (95, 394)), (513, (149, 240)), (501, (121, 285)), (521, (93, 232)), (307, (99, 334)), (374, (560, 246)), (363, (280, 271)), (1405, (244, 237)), (1175, (389, 228)), (959, (343, 205)), (446, (27, 331)), (749, (63, 163)), (818, (116, 352)), (883, (137, 376)), (807, (95, 394)), (901, (149, 240)), (890, (121, 285)), (796, (93, 232)), (879, (99, 334)), (972, (560, 246)), (948, (280, 271)), (188, (-86, 263)), (150, (-58, 277)), (169, (878, 375)), (141, (817, 336)), (139, (785, 331))]
+ ControlTerminal: [(225, (-196, 163)), (228, (-133, 325)), (220, (829, 408)), (233, (-2, 513)), (236, (908, 377)), (669, (346, 78)), (1443, (874, 286))]
+ Structure: [(258, (2, 121)), (293, (63, 163)), (560, (116, 352)), (749, (63, 163)), (818, (116, 352))]
+ SubVI: [(66, (-133, 248)), (1213, (252, 228)), (1379, (29, 237)), (1392, (239, 237)), (1139, (389, 228)), (1405, (244, 237)), (1175, (389, 228))]
+ diagram 0:
+   node 0 uid 325: t0='x*y'@w483, t1='y'@w401, t2='x'@w224
+   node 1 uid 471: t0='x/y'@w444, t1='y'@w483, t2='x'@w306
+   node 2 uid 66: t0='error'@w0, t1=''@w0, t2=''@w0, t3='FFT {X}'@w222
+   node 3 uid 188: t0='x*y'@w223, t1='y'@w218, t2='x'@w222
+   node 4 uid 150: t0='x*y'@w214, t1='y'@w223, t2='x'@w223
+   node 5 uid 258: t0=''@w214, t1='half cross'@w224, t2='parabola-based\ninterpolated position\nof maximum'@w712, t3=''@w444, t4=''@w713, t5=''@w483, t6=''@w677, t7=''@w1062, t8=''@w1064, t9=''@w1067
+   node 6 uid 1044: t0='appended array'@w723, t1='element'@w1062, t2='element'@w1064, t3='element'@w1067
+   node 7 uid 692: t0='result'@w249, t1='value'@w712, t2='value'@w713, t3='value'@w677
+   node 8 uid 139: t0='x-y'@w212, t1='y'@w224, t2='x'@w249
+   node 9 uid 141: t0='x/y'@w227, t1='y'@w213, t2='x'@w212
+   node 10 uid 169: t0='x+y'@w238, t1='y'@w231, t2='x'@w227
+   single-ended wires: 401 306 218 723 213 238 231
+ diagram 1:
+   node 0 uid 1379: t0='error'@w0, t1=''@w0, t2=''@w0, t3='X'@w512
+   node 1 uid 190: t0='array (last n elements first)'@w520, t1='array'@w512, t2='n'@w283
+   node 2 uid 484: t0='r * e^(i*theta)'@w520, t1='r'@w533, t2='theta'@w0
+   node 3 uid 1213: t0='parabola-based\ninterpolated position\nof maximum'@w664, t1='# of points for parabola'@w275, t2='Input cross-correlation'@w533
+   node 4 uid 324: t0='nearest integer value'@w663, t1='number'@w664
+   node 5 uid 244: t0='x-y'@w273, t1='y'@w663, t2='x'@w664
+   single-ended wires: 283 275 273
+ diagram 2:
+   node 0 uid 318: t0='x*y'@w445, t1='y'@w544, t2='x'@w348
+   node 1 uid 293: t0=''@w0, t1=''@w407, t2=''@w445, t3=''@w430, t4='half cross'@w396, t5=''@w641
+   node 2 uid 1392: t0='error'@w0, t1=''@w0, t2=''@w0, t3='X'@w491
+   node 3 uid 363: t0='array (last n elements first)'@w395, t1='array'@w491, t2='n'@w396
+   node 4 uid 461: t0='r * e^(i*theta)'@w395, t1='r'@w657, t2='theta'@w0
+   node 5 uid 1139: t0='parabola-based\ninterpolated position\nof maximum'@w562, t1='# of points for parabola'@w394, t2='Input cross-correlation'@w657
+   node 6 uid 374: t0='x-y'@w459, t1='y'@w517, t2='x'@w562
+   single-ended wires: 544 348 407 430 641 394 459 517
+ diagram 3:
+   node 0 uid 553: t0='x > y?'@w420, t1='y'@w548, t2='x'@w339
+   node 1 uid 521: t0='r * e^(i*theta)'@w345, t1='r'@w437, t2='theta'@w568
+   node 2 uid 560: t0=''@w420, t1=''@w339, t2=''@w630, t3=''@w572
+   node 3 uid 307: t0='x*y'@w438, t1='y'@w572, t2='x'@w343
+   node 4 uid 501: t0='x+y'@w563, t1='y'@w438, t2='x'@w568
+   node 5 uid 513: t0='r * e^(i*theta)'@w466, t1='theta'@w563, t2='r'@w437
+   single-ended wires: 548 345 630 343 466
+ diagram 4:
+   single-ended wires: 
+ diagram 5:
+   node 0 uid 566: t0='x-y'@w605, t1='y'@w518, t2='x'@w261
+   single-ended wires: 605 518 261
+ diagram 6:
+   node 0 uid 446: t0='x*y'@w1002, t1='y'@w704, t2='x'@w1005
+   node 1 uid 749: t0=''@w0, t1=''@w725, t2=''@w1002, t3=''@w1001, t4='half cross'@w998, t5=''@w995
+   node 2 uid 1405: t0='error'@w0, t1=''@w0, t2=''@w0, t3='X'@w1000
+   node 3 uid 948: t0='array (last n elements first)'@w1010, t1='array'@w1000, t2='n'@w998
+   node 4 uid 959: t0='r * e^(i*theta)'@w1010, t1='r'@w994, t2='theta'@w0
+   node 5 uid 1175: t0='parabola-based\ninterpolated position\nof maximum'@w993, t1='# of points for parabola'@w1008, t2='Input cross-correlation'@w994
+   node 6 uid 972: t0='x-y'@w710, t1='y'@w990, t2='x'@w993
+   single-ended wires: 704 1005 725 1001 995 1008 710 990
+ diagram 7:
+   node 0 uid 807: t0='x > y?'@w943, t1='y'@w921, t2='x'@w942
+   node 1 uid 796: t0='r * e^(i*theta)'@w939, t1='r'@w936, t2='theta'@w933
+   node 2 uid 818: t0=''@w943, t1=''@w942, t2=''@w915, t3=''@w912
+   node 3 uid 879: t0='x*y'@w927, t1='y'@w912, t2='x'@w944
+   node 4 uid 890: t0='x+y'@w930, t1='y'@w927, t2='x'@w933
+   node 5 uid 901: t0='r * e^(i*theta)'@w924, t1='theta'@w930, t2='r'@w936
+   single-ended wires: 921 939 915 944 924
+ diagram 8:
+   single-ended wires: 
+ diagram 9:
+   node 0 uid 883: t0='x-y'@w875, t1='y'@w869, t2='x'@w872
+   single-ended wires: 875 869 872
+
+===== Track 1 of N bds xyz-kernel-reentrant.vi
+ fp: {'Image': ('array', [2], 'CTRL'), 'starting x 1': ('int', 0, 'CTRL'), 'starting y 1': ('int', 0, 'CTRL'), 'real-space cosine window': ('array', [0], 'CTRL'), 'cosine window for hilbert': ('array', [0], 'CTRL'), 'Index of closest cal image slice, bead 1': ('int', 0, 'IND'), 'Z pos 1': ('float', 0.0, 'IND'), 'X pos 1': ('float', 0.0, 'IND'), 'Y pos 1': ('float', 0.0, 'IND'), 'Calibration cluster 1': ('array', [7], 'CTRL'), 'bead 1 z position as a cal image index': ('float', 0.0, 'IND'), 'Bead 1 is good? in': ('bool', False, 'CTRL'), 'Bead 1 is good? out': ('bool', False, 'IND'), 'cross size': ('int', 128, 'CTRL')}
+ Constant: [(756, (577, 268)), (621, (577, 182)), (614, (570, 103)), (793, (-394, 328)), (1074, (-351, 409)), (1180, (490, 124)), (1195, (479, 167)), (1229, (490, 210)), (1241, (479, 253)), (1276, (493, 53)), (929, (-418, 374)), (1137, (429, 80)), (876, (-567, 347))]
+ Node: [(318, (-586, -103)), (1015, (453, 73)), (948, (-341, 349)), (415, (-394, 367)), (887, (-502, 358)), (411, (-533, 353)), (1552, (-410, 290)), (1506, (296, 82)), (1456, (436, 35)), (1396, (-222, 367)), (1345, (-345, 298)), (1250, (-277, 310)), (1164, (387, 43)), (1126, (338, 98)), (1078, (-39, 281)), (1297, (570, 123)), (1262, (500, 89)), (1251, (517, 46)), (1215, (523, 246)), (1204, (520, 203)), (1166, (523, 160)), (1148, (520, 117)), (192, (-460, 303)), (250, (-273, 407)), (995, (-327, 402)), (941, (-222, 314)), (989, (-136, 36)), (996, (500, -49)), (925, (-161, 348)), (914, (-161, 291))]
+ ControlTerminal: [(1503, (-635, 279)), (1677, (-635, -75)), (231, (-635, 496)), (358, (-635, 428)), (468, (-635, 6)), (524, (629, 172)), (385, (629, -58)), (97, (629, 258)), (609, (629, 356)), (534, (-635, 74)), (672, (629, 23)), (671, (-636, -143)), (741, (629, 91)), (869, (-635, 349))]
+ Structure: [(318, (-586, -103))]
+ SubVI: [(1552, (-410, 290)), (1506, (296, 82)), (1456, (436, 35)), (1396, (-222, 367)), (1345, (-345, 298)), (1250, (-277, 310)), (1164, (387, 43)), (1126, (338, 98)), (1078, (-39, 281)), (192, (-460, 303)), (941, (-222, 314))]
+ diagram 0:
+   node 0 uid 318: t0=''@w1149, t1='new profile\ncenter'@w1010, t2='Calibration cluster 1'@w1021, t3='Index of closest\ncal image slice'@w363, t4='starting x 1'@w1076, t5='starting y 1'@w1073, t6='Image'@w1097, t7='real-space\ncosine window'@w853, t8='cosine window\nfor hilbert'@w1067, t9='new profile\ncenter'@w1061, t10='new profile\ncenter'@w1055, t11='bead z pos as a cal image index'@w1013, t12=''@w1077, t13='cross size'@w1026
+   single-ended wires: 1149 1010 1021 363 1076 1073 1097 853 1067 1061 1055 1013 1077 1026
+ diagram 1:
+   single-ended wires: 
+ diagram 2:
+   node 0 uid 411: t0='x*y'@w900, t1='y'@w990, t2='x'@w896
+   node 1 uid 887: t0='32bit integer'@w997, t1='number'@w900
+   node 2 uid 192: t0='rectangle coordinates'@w1088, t1='half-length of pixmap'@w997, t2='y'@w1471, t3='x'@w1458
+   node 3 uid 989: t0='input cluster'@w1416, t1='forget radius'@w685, t2='z step'@w285, t3='cosine bandpass'@w901, t4='2D array of prepped\ncal image amplitudes\nr shifted!'@w243, t5='2D array of complex\ncal image intensities\n(aka cal corkscrews)\nr shifted!'@w1025, t6='Real portion of\nhilbert/bandpass filtered\nr-shifted claibration image'@w310, t7='# slices in stack'@w802
+   node 4 uid 415: t0='x/y'@w971, t1='y'@w966, t2='x'@w990
+   node 5 uid 948: t0='32bit integer'@w1048, t1='number'@w971
+   node 6 uid 995: t0='x/y'@w521, t1='y'@w1108, t2='x'@w990
+   node 7 uid 250: t0='32bit integer'@w1009, t1='number'@w521
+   node 8 uid 1015: t0='x-y'@w1083, t1='y'@w1219, t2='x'@w802
+   node 9 uid 1552: t0='error in (no error)'@w0, t1='Optional Rectangle'@w1088
+   node 10 uid 1345: t0='x center'@w997, t1='y center'@w997, t2='Image'@w1007, t3='cross size'@w990, t4='cross arm width'@w985, t5='avg profile along x'@w1023, t6='avg profile along y'@w1027
+   node 11 uid 1250: t0='Along x'@w1023, t1='Along y'@w1027, t2='cross size'@w990, t3='real-space\ncosine window'@w1504, t4='# of endpoints\nfor normalization'@w1048, t5='prepped avg profile\nalong X'@w1016, t6='prepped avg profile\nalong Y'@w1019
+   node 12 uid 941: t0='Shift from start'@w1058, t1='new profile\ncenter'@w1546, t2='cosine window\nfor hilbert'@w1517, t3='half cross'@w1009, t4='starting profile\ncenter'@w1458, t5='averaged profile\nfrom cross'@w1016
+   node 13 uid 1166: t0='x < y?'@w1352, t1='y'@w1325, t2='x'@w1546
+   node 14 uid 1148: t0='x > y?'@w1349, t1='y'@w1321, t2='x'@w1546
+   node 15 uid 914: t0='x+y'@w749, t1='y'@w997, t2='x'@w1058
+   node 16 uid 1396: t0='Shift from start'@w1052, t1='new profile\ncenter'@w1560, t2='cosine window\nfor hilbert'@w1517, t3='half cross'@w1009, t4='starting profile\ncenter'@w1471, t5='averaged profile\nfrom cross'@w1019
+   node 17 uid 1215: t0='x < y?'@w1358, t1='y'@w1331, t2='x'@w1560
+   node 18 uid 1204: t0='x > y?'@w1355, t1='y'@w1328, t2='x'@w1560
+   node 19 uid 925: t0='x+y'@w234, t1='y'@w997, t2='x'@w1052
+   node 20 uid 1078: t0='radial intensity profile'@w889, t1='y center'@w234, t2='x center'@w749, t3='half cross'@w1009, t4='Input Image'@w1007
+   node 21 uid 1506: t0='prepped I(r)'@w233, t1='r shifted\ncomplex\ncosine/hilbert filtered\nintensity profile\n(aka the corkscrew)'@w240, t2='forget radius'@w685, t3='halfcross'@w1009, t4='cosine bandpass'@w901, t5='radial intensity profile'@w889
+   node 22 uid 1126: t0='Index of closest\ncal image slice'@w1439, t1='Real portion of\nhilbert/bandpass filtered\nr-shifted claibration image'@w310, t2='prepped I(r)'@w233
+   node 23 uid 1164: t0='neighborhood phases'@w789, t1='index of best-fit\ncal image slice'@w1439, t2='2D array of complex\ncal image intensities\n(aka cal corkscrews)\nr shifted!'@w1025, t3='2D array of prepped\ncal image amplitudes\nr shifted!'@w243, t4='complex 1D radial intensity profile\npost cosine bandpass/hilbert transform\naka the "corkscrew"'@w240
+   node 24 uid 1456: t0='bead z pos as a cal image index'@w1574, t1='neighborhood phases'@w789, t2='index of best-fit\ncal image slice'@w1439
+   node 25 uid 1262: t0='x < y?'@w1343, t1='y'@w1083, t2='x'@w1574
+   node 26 uid 1251: t0='x > y?'@w1340, t1='y'@w1334, t2='x'@w1574
+   node 27 uid 1297: t0='result'@w1588, t1='value'@w1349, t2='value'@w1352, t3='value'@w1355, t4='value'@w1358, t5='value'@w1340, t6='value'@w1343
+   node 28 uid 996: t0='x*y'@w1404, t1='y'@w285, t2='x'@w1574
+   single-ended wires: 896 1416 966 1108 1219 985 1504 1325 1321 1331 1328 1334 1588 1404
+
+===== Omars IMAQ ImageToArray.vi
+ fp: {'Image': ('array', [2], 'CTRL'), 'Optional Rectangle': ('array', [4], 'CTRL'), 'error out': ('array', [3], 'IND'), 'error in (no error)': ('array', [3], 'CTRL'), 'Image Pixels (U8)': ('bytes/memoryview', [0], 'IND'), 'Image Pixels (I16)': ('array', [0], 'IND'), 'Image Pixels (Float)': ('array', [0], 'IND')}
+ Constant: [(281, (225, 131)), (335, (228, 134))]
+ Node: [(239, (326, 61))]
+ ControlTerminal: [(272, (423, 167)), (274, (210, 227)), (276, (210, 108)), (278, (210, 83)), (303, (423, 98)), (308, (423, 121)), (309, (423, 144))]
+ Structure: []
+ SubVI: []
+ diagram 0:
+   node 0 uid 239: t0='path in'@w0, t1='path out'@w0, t2='error in (no error)'@w0, t3='error out'@w0, t4=''@w0, t5=''@w0, t6='Image'@w296, t7='Image'@w0, t8='subRegion'@w280, t9='subRegion'@w0, t10='u8Array'@w341, t11='u8Array'@w295, t12='i16Array'@w0, t13='i16Array'@w293, t14='sglArray'@w0, t15='sglArray'@w294, t16='error in (no error)'@w286, t17='error in (no error)'@w283
+   single-ended wires: 296 280 341 295 293 294 286 283
+
+===== make both cosine bandpass.vi
+ fp: {'Cosine bandpass for Hilbert': ('array', [0], 'IND'), 'Real-space cosine window': ('array', [0], 'IND'), 'cross length': ('int', 128, 'CTRL')}
+ Constant: [(61, (-653, 704)), (115, (-626, 775))]
+ Node: [(101, (-596, 769)), (93, (-674, 716)), (78, (-475, 742)), (70, (-565, 745)), (43, (-615, 696))]
+ ControlTerminal: [(154, (-385, 766)), (187, (-353, 693)), (209, (-812, 611))]
+ Structure: []
+ SubVI: [(78, (-475, 742)), (43, (-615, 696))]
+ diagram 0:
+   node 0 uid 101: t0='x/y'@w190, t1='y'@w193, t2='x'@w196
+   node 1 uid 70: t0='-x'@w215, t1='x'@w190
+   node 2 uid 78: t0='Cosine bandpass'@w124, t1='HIGH bandpass\n(mode)'@w190, t2='LOW bandpass\n(mode)'@w215, t3='# of points (cross size)'@w196
+   node 3 uid 93: t0='x-1'@w212, t1='x'@w196
+   node 4 uid 43: t0='Cosine bandpass'@w157, t1='HIGH bandpass\n(mode)'@w212, t2='LOW bandpass\n(mode)'@w218, t3='# of points (cross size)'@w196
+   single-ended wires: 193 124 157 218
+
+===== proc cal image-make bandpass.vi
+ fp: {'# of points (cross size)': ('int', 0, 'CTRL'), 'LOW bandpass (mode)': ('float', 0.0, 'CTRL'), 'HIGH bandpass (mode)': ('float', 0.0, 'CTRL'), 'Cosine bandpass': ('array', [0], 'IND')}
+ Constant: [(233, (265, 141)), (112, (163, 252)), (363, (359, 214))]
+ Node: [(346, (355, 169)), (79, (157, 102)), (192, (181, 304)), (181, (195, 245)), (170, (205, 197)), (149, (194, 178)), (159, (178, 201)), (137, (200, 137)), (125, (184, 123)), (114, (182, 155)), (200, (235, 111)), (318, (275, 201)), (251, (256, 145)), (243, (245, 183))]
+ ControlTerminal: [(305, (99, 85)), (308, (56, 281)), (310, (50, 148)), (260, (386, 146))]
+ Structure: [(79, (157, 102)), (200, (235, 111))]
+ SubVI: []
+ diagram 0:
+   node 0 uid 79: t0=''@w307, t1=''@w357, t2='LOW bandpass\n(mode)'@w312, t3='HIGH bandpass\n(mode)'@w314
+   node 1 uid 346: t0='x*y'@w267, t1='y'@w367, t2='x'@w357
+   single-ended wires: 307 312 314 267 367
+ diagram 1:
+   node 0 uid 159: t0='x-y'@w264, t1='y'@w269, t2='x'@w266
+   node 1 uid 125: t0='x <= y?'@w289, t1='y'@w266, t2='x'@w271
+   node 2 uid 114: t0='x >= y?'@w293, t1='y'@w269, t2='x'@w271
+   node 3 uid 149: t0='x-y'@w285, t1='y'@w269, t2='x'@w271
+   node 4 uid 170: t0='x/y'@w282, t1='y'@w264, t2='x'@w285
+   node 5 uid 181: t0='x*y'@w275, t1='y'@w280, t2='x'@w282
+   node 6 uid 192: t0='cos(x)'@w273, t1='x'@w275
+   node 7 uid 137: t0='x .and. y?'@w291, t1='y'@w293, t2='x'@w289
+   node 8 uid 200: t0=''@w291, t1=''@w287, t2=''@w273, t3=''@w264
+   single-ended wires: 280 287
+ diagram 2:
+   single-ended wires: 
+ diagram 3:
+   node 0 uid 243: t0='-x'@w330, t1='x'@w263
+   node 1 uid 251: t0='x+1'@w259, t1='x'@w330
+   node 2 uid 318: t0='x/y'@w0, t1='y'@w240, t2='x'@w259
+   single-ended wires: 263 240
+
+===== prep cal image.vi
+ fp: {'Raw cal image': ('array', [0], 'CTRL'), 'forget radius': ('int', 0, 'CTRL'), 'r-shifted corkscrew cal': ('array', [0], 'IND'), 'r shifted cal ampl': ('array', [0], 'IND'), 'r shifted cal real': ('array', [0], 'IND'), 'LOW bandpass (mode)': ('float', 0.0, 'CTRL'), 'HIGH bandpass (mode)': ('float', 0.0, 'CTRL'), '# of points (cross size)': ('int', 128, 'CTRL')}
+ Constant: [(430, (556, 544)), (512, (418, 106))]
+ Node: [(612, (470, 226)), (565, (493, 157)), (486, (448, 100)), (406, (590, 535)), (84, (660, 255)), (83, (136, 258)), (794, (329, 392)), (783, (305, 389)), (744, (256, 390)), (622, (644, 334)), (577, (502, 371)), (549, (541, 338)), (419, (242, 117))]
+ ControlTerminal: [(72, (23, 256)), (129, (392, 455)), (312, (643, 450)), (357, (702, 344)), (402, (720, 252)), (712, (71, 98)), (168, (72, 174)), (459, (234, 45))]
+ Structure: [(83, (136, 258))]
+ SubVI: [(794, (329, 392)), (744, (256, 390)), (419, (242, 117))]
+ diagram 0:
+   node 0 uid 486: t0='x/y'@w599, t1='y'@w536, t2='x'@w655
+   node 1 uid 565: t0='32bit integer'@w263, t1='number'@w599
+   node 2 uid 419: t0='Cosine bandpass'@w1031, t1='HIGH bandpass\n(mode)'@w736, t2='LOW bandpass\n(mode)'@w728, t3='# of points (cross size)'@w655
+   node 3 uid 406: t0='flag'@w458
+   node 4 uid 612: t0='x-1'@w478, t1='x'@w263
+   node 5 uid 577: t0='x+y'@w701, t1='y'@w478, t2='x'@w109
+   node 6 uid 83: t0=''@w0, t1='Raw cal image'@w139, t2='Cosine bandpass'@w1031, t3='X'@w692
+   node 7 uid 549: t0='array'@w692, t1='subarray'@w235, t2='index'@w0, t3='length'@w0, t4='index'@w701, t5='length'@w0
+   node 8 uid 622: t0='r * e^(i*theta)'@w235, t1='r'@w216, t2='theta'@w0
+   node 9 uid 84: t0='x + iy'@w235, t1='x'@w191, t2='y'@w0
+   single-ended wires: 536 736 728 458 109 139 216 191
+ diagram 1:
+   node 0 uid 744: t0='error'@w0, t1=''@w0, t2=''@w0, t3='FFT {X}'@w868
+   node 1 uid 783: t0='x*y'@w862, t1='y'@w868, t2='x'@w178
+   node 2 uid 794: t0='error'@w0, t1=''@w0, t2=''@w0, t3='X'@w175
+   single-ended wires: 862 178 175
+
+===== build cal image.vi
+ fp: {'avg power spectrum of stack': ('array', [0], 'IND'), '1-sided cal image': ('array', [0], 'CTRL'), 'pic of cal image': ('str', '', 'IND'), 'color table': ('array', [0], 'CTRL'), '2-sided cal image': ('array', [0], 'IND')}
+ Constant: [(125, (7, 298))]
+ Node: [(304, (393, 127)), (333, (410, 171)), (296, (350, 132)), (248, (90, 48)), (277, (176, 78)), (240, (117, 431)), (232, (182, 362)), (188, (6, 402)), (217, (37, 442)), (93, (-13, 262)), (160, (113, 341)), (134, (29, 279)), (152, (102, 294)), (85, (175, 460)), (43, (216, 439))]
+ ControlTerminal: [(430, (498, 326)), (510, (-152, 279)), (573, (256, 434)), (628, (170, 532)), (457, (107, 512))]
+ Structure: [(304, (393, 127)), (248, (90, 48)), (188, (6, 402)), (93, (-13, 262))]
+ SubVI: [(277, (176, 78)), (43, (216, 439))]
+ diagram 0:
+   node 0 uid 93: t0=''@w0, t1='1-sided cal image'@w520, t2=''@w358
+   node 1 uid 232: t0='transposed array'@w352, t1='2D array'@w358
+   node 2 uid 248: t0=''@w0, t1=''@w358, t2='Power Spectrum'@w364
+   node 3 uid 296: t0='transposed array'@w367, t1='2D array'@w364
+   node 4 uid 304: t0=''@w0, t1=''@w367, t2=''@w370
+   node 5 uid 188: t0=''@w0, t1=''@w352, t2=''@w355
+   node 6 uid 240: t0='transposed array'@w385, t1='2D array'@w355
+   node 7 uid 85: t0='unsigned 8bit integer'@w373, t1='number'@w385
+   node 8 uid 43: t0='picture'@w0, t1=''@w0, t2='top left point(0, 0)'@w0, t3='data'@w373, t4='color table'@w376, t5=''@w0, t6='new picture'@w348, t7=''@w0, t8='mask'@w0
+   single-ended wires: 520 370 376 348
+ diagram 1:
+   node 0 uid 333: t0='sum'@w341, t1='numeric array'@w344
+   single-ended wires: 341 344
+ diagram 2:
+   node 0 uid 277: t0='X'@w292, t1='Power Spectrum'@w289, t2='error'@w0
+   single-ended wires: 292 289
+ diagram 3:
+   node 0 uid 217: t0='reversed array'@w225, t1='array'@w228
+   single-ended wires: 225 228
+ diagram 4:
+   node 0 uid 134: t0='deleted portion'@w0, t1='array'@w175, t2='length'@w0, t3='array w/ subset deleted'@w181, t4='index'@w184
+   node 1 uid 152: t0='reversed array'@w178, t1='array'@w181
+   node 2 uid 160: t0='appended array'@w172, t1='array'@w178, t2='array'@w175
+   single-ended wires: 184 172
+
+===== calibration- generate 1 I of r, reentrant.vi
+ fp: {'Picture out': ('str', '', 'IND'), 'Image': ('array', [2], 'CTRL'), 'starting x 1': ('int', 0, 'CTRL'), 'starting y 1': ('int', 0, 'CTRL'), 'real-space cosine window': ('array', [0], 'CTRL'), 'cosine window for hilbert': ('array', [0], 'CTRL'), 'color string': ('str', '', 'CTRL'), 'X pos 1': ('float', 0.0, 'IND'), 'Y pos 1': ('float', 0.0, 'IND'), 'radial intensity profile 1': ('array', [0], 'IND'), 'picture in': ('str', '', 'CTRL'), 'cross size': ('int', 128, 'CTRL')}
+ Constant: [(793, (-191, 166)), (1074, (-210, 216)), (507, (-384, -71)), (548, (-305, 107))]
+ Node: [(252, (-234, 116)), (295, (-324, -80)), (527, (-367, -80)), (255, (-265, 111)), (386, (117, -118)), (681, (-32, -108)), (605, (277, 134)), (192, (-203, 17)), (250, (-140, 219)), (995, (-180, 210)), (964, (-10, 34)), (941, (-13, -23)), (810, (-67, 13)), (418, (-117, 14)), (925, (34, 55)), (914, (32, -5)), (874, (66, -116)), (882, (51, -141)), (814, (-181, -74))]
+ ControlTerminal: [(212, (298, -134)), (1503, (-284, -57)), (1677, (-287, -15)), (231, (-287, 27)), (358, (-295, 173)), (468, (-294, 223)), (362, (-286, -142)), (97, (104, -31)), (609, (108, 21)), (69, (317, 131)), (700, (73, -250)), (454, (-449, 124))]
+ Structure: []
+ SubVI: [(386, (117, -118)), (605, (277, 134)), (192, (-203, 17)), (964, (-10, 34)), (941, (-13, -23)), (810, (-67, 13)), (418, (-117, 14)), (814, (-181, -74))]
+ diagram 0:
+   node 0 uid 255: t0='x*y'@w471, t1='y'@w990, t2='x'@w599
+   node 1 uid 252: t0='32bit integer'@w997, t1='number'@w471
+   node 2 uid 192: t0='rectangle coordinates'@w1088, t1='half-length of pixmap'@w997, t2='y'@w1073, t3='x'@w1076
+   node 3 uid 681: t0='cluster'@w722, t1='array'@w1088
+   node 4 uid 527: t0='x/y'@w485, t1='y'@w597, t2='x'@w990
+   node 5 uid 295: t0='32bit integer'@w357, t1='number'@w485
+   node 6 uid 995: t0='x/y'@w521, t1='y'@w1108, t2='x'@w990
+   node 7 uid 250: t0='32bit integer'@w1009, t1='number'@w521
+   node 8 uid 814: t0='error in (no error)'@w0, t1='Optional Rectangle'@w1088
+   node 9 uid 418: t0='x center'@w997, t1='y center'@w997, t2='Image'@w1007, t3='cross size'@w990, t4='cross arm width'@w985, t5='avg profile along x'@w1023, t6='avg profile along y'@w1027
+   node 10 uid 810: t0='Along x'@w1023, t1='Along y'@w1027, t2='cross size'@w990, t3='real-space\ncosine window'@w853, t4='# of endpoints\nfor normalization'@w357, t5='prepped avg profile\nalong X'@w1016, t6='prepped avg profile\nalong Y'@w1019
+   node 11 uid 941: t0='Shift from start'@w1058, t1='new profile\ncenter'@w1061, t2='cosine window\nfor hilbert'@w1067, t3='half cross'@w1009, t4='starting profile\ncenter'@w1076, t5='averaged profile\nfrom cross'@w1016
+   node 12 uid 874: t0='16bit integer'@w1085, t1='number'@w1061
+   node 13 uid 914: t0='x+y'@w749, t1='y'@w997, t2='x'@w1058
+   node 14 uid 964: t0='Shift from start'@w1052, t1='new profile\ncenter'@w1055, t2='cosine window\nfor hilbert'@w1067, t3='half cross'@w1009, t4='starting profile\ncenter'@w1073, t5='averaged profile\nfrom cross'@w1019
+   node 15 uid 882: t0='16bit integer'@w1082, t1='number'@w1055
+   node 16 uid 925: t0='x+y'@w234, t1='y'@w997, t2='x'@w1052
+   node 17 uid 605: t0='radial intensity profile'@w403, t1='y center'@w234, t2='x center'@w749, t3='half cross'@w1009, t4='Input Image'@w1007
+   node 18 uid 386: t0='new picture'@w1952, t1='y of center, rel to picture'@w1082, t2='color string'@w1946, t3='8-bit pixmap'@w1007, t4='radius'@w1009, t5='x of center, rel to picture'@w1085, t6='Rectangle'@w722, t7='picture'@w719
+   single-ended wires: 599 597 1108 985 853 403 1952 1946 719
+
+===== calibration- generate 2 I of r, reentrant.vi
+ fp: {'Picture out': ('str', '', 'IND'), 'Image': ('array', [2], 'CTRL'), 'starting x 1': ('int', 0, 'CTRL'), 'starting y 1': ('int', 0, 'CTRL'), 'real-space cosine window': ('array', [0], 'CTRL'), 'cosine window for hilbert': ('array', [0], 'CTRL'), 'color string': ('str', '', 'CTRL'), 'X pos 1': ('float', 0.0, 'IND'), 'Y pos 1': ('float', 0.0, 'IND'), 'starting x 2': ('int', 0, 'CTRL'), 'starting y 2': ('int', 0, 'CTRL'), 'X pos 2': ('float', 0.0, 'IND'), 'Y pos 2': ('float', 0.0, 'IND'), 'radial intensity profile 1': ('array', [0], 'IND'), 'radial intensity profile 2': ('array', [0], 'IND'), 'picture in': ('str', '', 'CTRL'), 'cross size': ('int', 128, 'CTRL')}
+ Constant: [(793, (-191, 166)), (1074, (-210, 216)), (1782, (-182, 646)), (595, (-399, 65)), (730, (-402, -42))]
+ Node: [(781, (-353, -44)), (419, (-380, -50)), (482, (-344, 77)), (789, (-372, 72)), (140, (-106, 465)), (1695, (103, 756)), (1912, (-268, 591)), (1860, (-75, 608)), (1839, (-78, 551)), (1791, (-132, 587)), (1743, (-182, 588)), (1625, (52, 456)), (1567, (-31, 629)), (1556, (-33, 569)), (1548, (1, 458)), (1540, (-14, 433)), (1508, (-246, 500)), (681, (-32, -108)), (605, (277, 134)), (192, (-203, 17)), (250, (-140, 219)), (995, (-180, 210)), (964, (-10, 34)), (941, (-13, -23)), (810, (-67, 13)), (418, (-117, 14)), (343, (117, -118)), (925, (34, 55)), (914, (32, -5)), (874, (66, -116)), (882, (51, -141)), (814, (-181, -74))]
+ ControlTerminal: [(212, (306, 466)), (1503, (-358, -103)), (1677, (-287, -15)), (231, (-287, 27)), (358, (-295, 173)), (468, (-294, 223)), (362, (-286, -142)), (97, (104, -31)), (609, (108, 21)), (1081, (-480, 551)), (1111, (-480, 593)), (69, (317, 131)), (700, (73, -250)), (1257, (134, 513)), (1272, (130, 625)), (541, (133, 699)), (715, (-400, 102))]
+ Structure: []
+ SubVI: [(1695, (103, 756)), (1912, (-268, 591)), (1860, (-75, 608)), (1839, (-78, 551)), (1791, (-132, 587)), (1743, (-182, 588)), (1625, (52, 456)), (1508, (-246, 500)), (605, (277, 134)), (192, (-203, 17)), (964, (-10, 34)), (941, (-13, -23)), (810, (-67, 13)), (418, (-117, 14)), (343, (117, -118)), (814, (-181, -74))]
+ diagram 0:
+   node 0 uid 419: t0='x/y'@w871, t1='y'@w778, t2='x'@w990
+   node 1 uid 781: t0='32bit integer'@w642, t1='number'@w871
+   node 2 uid 789: t0='x*y'@w680, t1='y'@w990, t2='x'@w772
+   node 3 uid 482: t0='32bit integer'@w997, t1='number'@w680
+   node 4 uid 1912: t0='rectangle coordinates'@w1937, t1='half-length of pixmap'@w997, t2='y'@w2027, t3='x'@w2024
+   node 5 uid 140: t0='cluster'@w718, t1='array'@w1937
+   node 6 uid 192: t0='rectangle coordinates'@w1088, t1='half-length of pixmap'@w997, t2='y'@w1073, t3='x'@w1076
+   node 7 uid 681: t0='cluster'@w722, t1='array'@w1088
+   node 8 uid 995: t0='x/y'@w521, t1='y'@w1108, t2='x'@w990
+   node 9 uid 250: t0='32bit integer'@w1009, t1='number'@w521
+   node 10 uid 814: t0='error in (no error)'@w0, t1='Optional Rectangle'@w1088
+   node 11 uid 1508: t0='error in (no error)'@w0, t1='Optional Rectangle'@w1937
+   node 12 uid 1743: t0='x center'@w997, t1='y center'@w997, t2='Image'@w2021, t3='cross size'@w990, t4='cross arm width'@w2003, t5='avg profile along x'@w2015, t6='avg profile along y'@w2018
+   node 13 uid 1791: t0='Along x'@w2015, t1='Along y'@w2018, t2='cross size'@w990, t3='real-space\ncosine window'@w853, t4='# of endpoints\nfor normalization'@w642, t5='prepped avg profile\nalong X'@w2009, t6='prepped avg profile\nalong Y'@w2012
+   node 14 uid 418: t0='x center'@w997, t1='y center'@w997, t2='Image'@w1007, t3='cross size'@w990, t4='cross arm width'@w985, t5='avg profile along x'@w1023, t6='avg profile along y'@w1027
+   node 15 uid 810: t0='Along x'@w1023, t1='Along y'@w1027, t2='cross size'@w990, t3='real-space\ncosine window'@w853, t4='# of endpoints\nfor normalization'@w642, t5='prepped avg profile\nalong X'@w1016, t6='prepped avg profile\nalong Y'@w1019
+   node 16 uid 1839: t0='Shift from start'@w2036, t1='new profile\ncenter'@w1131, t2='cosine window\nfor hilbert'@w1067, t3='half cross'@w1009, t4='starting profile\ncenter'@w2024, t5='averaged profile\nfrom cross'@w2009
+   node 17 uid 1548: t0='16bit integer'@w1940, t1='number'@w1131
+   node 18 uid 1556: t0='x+y'@w1967, t1='y'@w997, t2='x'@w2036
+   node 19 uid 1860: t0='Shift from start'@w2042, t1='new profile\ncenter'@w1144, t2='cosine window\nfor hilbert'@w1067, t3='half cross'@w1009, t4='starting profile\ncenter'@w2027, t5='averaged profile\nfrom cross'@w2012
+   node 20 uid 1540: t0='16bit integer'@w1943, t1='number'@w1144
+   node 21 uid 1567: t0='x+y'@w1964, t1='y'@w997, t2='x'@w2042
+   node 22 uid 941: t0='Shift from start'@w1058, t1='new profile\ncenter'@w1061, t2='cosine window\nfor hilbert'@w1067, t3='half cross'@w1009, t4='starting profile\ncenter'@w1076, t5='averaged profile\nfrom cross'@w1016
+   node 23 uid 874: t0='16bit integer'@w1085, t1='number'@w1061
+   node 24 uid 914: t0='x+y'@w749, t1='y'@w997, t2='x'@w1058
+   node 25 uid 964: t0='Shift from start'@w1052, t1='new profile\ncenter'@w1055, t2='cosine window\nfor hilbert'@w1067, t3='half cross'@w1009, t4='starting profile\ncenter'@w1073, t5='averaged profile\nfrom cross'@w1019
+   node 26 uid 882: t0='16bit integer'@w1082, t1='number'@w1055
+   node 27 uid 925: t0='x+y'@w234, t1='y'@w997, t2='x'@w1052
+   node 28 uid 1695: t0='radial intensity profile'@w1118, t1='y center'@w1964, t2='x center'@w1967, t3='half cross'@w1009, t4='Input Image'@w2021
+   node 29 uid 605: t0='radial intensity profile'@w403, t1='y center'@w234, t2='x center'@w749, t3='half cross'@w1009, t4='Input Image'@w1007
+   node 30 uid 343: t0='new picture'@w1952, t1='y of center, rel to picture'@w1082, t2='color string'@w1946, t3='8-bit pixmap'@w1007, t4='radius'@w1009, t5='x of center, rel to picture'@w1085, t6='Rectangle'@w722, t7='picture'@w719
+   node 31 uid 1625: t0='new picture'@w1934, t1='y of center, rel to picture'@w1943, t2='color string'@w1946, t3='8-bit pixmap'@w2021, t4='radius'@w1009, t5='x of center, rel to picture'@w1940, t6='Rectangle'@w718, t7='picture'@w1952
+   single-ended wires: 778 772 1108 2003 985 1118 403 719 1934
+
+===== Load and prep N cal images.vi
+ fp: {'cal-file refnum': ('int', 0, 'IND'), '# slices in stack': ('int', 0, 'IND'), '# of beads': ('int', 0, 'IND'), 'x,y,(blankz) array': ('array', [0], 'IND'), 'exp/ref array': ('array', [0], 'IND'), 'cross size': ('int', 0, 'IND'), 'Array of cal clusters': ('array', [0], 'IND')}
+ Constant: [(86, (118, 209)), (151, (118, 258)), (543, (118, 168)), (468, (-88, 294)), (540, (-88, 350)), (196, (-21, 308)), (673, (-590, 136)), (657, (138, 164)), (1171, (91, 161)), (1192, (94, 164)), (1163, (140, 129)), (1153, (112, 22)), (1140, (120, 101)), (1095, (34, 117)), (1130, (37, 120)), (1086, (111, 60)), (932, (31, 62)), (1078, (34, 65)), (763, (31, 14)), (910, (34, 17)), (638, (-584, 457)), (653, (-88, 169)), (704, (-466, 37)), (1116, (-531, -30))]
+ Node: [(1031, (-345, 44)), (692, (2, 169)), (802, (-64, 157)), (647, (-131, 156)), (621, (-548, 448)), (1138, (130, 305)), (1108, (-9, 264)), (458, (-3, 350)), (751, (47, 309)), (5, (3, 308)), (769, (51, 345)), (689, (-64, 338)), (611, (-64, 282)), (539, (-131, 281)), (410, (203, 333)), (231, (47, 106)), (609, (203, 150)), (542, (142, 156)), (163, (142, 246)), (98, (142, 197)), (105, (270, 132)), (43, (203, 203)), (771, (-290, 205)), (738, (-329, 250))]
+ ControlTerminal: [(259, (-286, 109)), (420, (-131, 212)), (182, (375, 73)), (911, (270, 327)), (395, (-131, 395)), (695, (47, 52)), (1506, (375, 141))]
+ Structure: [(231, (47, 106))]
+ SubVI: [(1031, (-345, 44)), (609, (203, 150)), (43, (203, 203))]
+ diagram 0:
+   node 0 uid 621: t0='flag'@w656
+   node 1 uid 738: t0='error out'@w0, t1='cancelled'@w0, t2='data'@w784, t3='refnum out'@w42, t4='data type'@w780, t5='prompt (Open existing file)'@w0, t6='error in'@w0, t7='byte order (0:big-endian, network order)'@w0, t8='count'@w0, t9='file (use dialog)'@w1212
+   node 2 uid 771: t0='input cluster'@w784, t1='cal image array'@w933, t2='# slices in stack'@w172, t3='bandpass/forget array'@w143, t4='obj step between slices'@w833, t5='x,y pos array'@w257, t6='exp/ref array'@w406, t7='Pixel distance'@w0
+   node 3 uid 1108: t0='transposed array'@w1132, t1='2D array'@w257
+   node 4 uid 539: t0='size(s)'@w448, t1='array'@w257
+   node 5 uid 689: t0='array'@w448, t1='element'@w697, t2='index'@w812
+   node 6 uid 611: t0='array'@w448, t1='element'@w457, t2='index'@w530
+   node 7 uid 5: t0='element'@w449, t1='initialized array'@w6, t2='dimension size'@w457
+   node 8 uid 751: t0='appended array'@w210, t1='array'@w1132, t2='element'@w6
+   node 9 uid 1138: t0='transposed array'@w1156, t1='2D array'@w210
+   node 10 uid 647: t0='size(s)'@w1115, t1='array'@w933
+   node 11 uid 802: t0='array'@w1115, t1='element'@w1220, t2='index'@w1214
+   node 12 uid 692: t0='x+1'@w1242, t1='x'@w1220
+   node 13 uid 458: t0='x+1'@w997, t1='x'@w697
+   node 14 uid 769: t0='x*y'@w745, t1='y'@w997, t2='x'@w457
+   node 15 uid 410: t0='array'@w1156, t1='output array'@w963, t2='dimension size'@w745
+   node 16 uid 231: t0=''@w0, t1=''@w1075, t2='cal image array'@w933, t3='bandpass/forget array'@w143, t4='obj step between slices'@w833, t5=''@w216, t6=''@w1242, t7='# slices in stack'@w172
+   node 17 uid 1031: t0='start path'@w796, t1='prompt'@w1216, t2=''@w0, t3='button label'@w0, t4='selected path'@w1212, t5=''@w0, t6=''@w0, t7='default name'@w0, t8='exists'@w0, t9=''@w0, t10='cancelled'@w0, t11='error in'@w0, t12='pattern (all files)'@w0, t13=''@w0, t14='pattern label'@w0, t15='error out'@w0
+   single-ended wires: 656 42 780 406 812 530 449 1214 963 1075 216 796 1216
+ diagram 1:
+   node 0 uid 542: t0='array'@w211, t1='element'@w80, t2='index'@w815
+   node 1 uid 163: t0='array'@w211, t1='element'@w213, t2='index'@w789
+   node 2 uid 98: t0='array'@w211, t1='element'@w29, t2='index'@w480
+   node 3 uid 43: t0='Cosine bandpass'@w290, t1='HIGH bandpass\n(mode)'@w213, t2='LOW bandpass\n(mode)'@w29, t3='# of points (cross size)'@w757
+   node 4 uid 609: t0='Raw cal image'@w509, t1='LOW bandpass\n(mode)'@w29, t2='HIGH bandpass\n(mode)'@w213, t3='forget radius'@w80, t4='# of points (cross size)'@w757, t5='r-shifted corkscrew cal'@w296, t6='r shifted cal ampl'@w293, t7='r shifted cal real'@w299
+   node 5 uid 105: t0='output cluster'@w982, t1='cluster'@w0, t2='element'@w80, t3='obj step between slices'@w152, t4='Cosine bandpass'@w290, t5='r shifted cal ampl'@w293, t6='r-shifted corkscrew cal'@w296, t7='r shifted cal real'@w299, t8='# slices in stack'@w725
+   single-ended wires: 815 789 480 509 982 152 725

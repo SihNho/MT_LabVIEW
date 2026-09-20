@@ -1,0 +1,43 @@
+=== environment ===
+name, compute_cap, driver_version
+NVIDIA GeForce RTX 2060, 7.5, 616.64
+Cuda compilation tools, release 12.6, V12.6.85
+Build cuda_12.6.r12.6/compiler.35059454_0
+
+=== nvcc 12.6 can emit cubins for ===
+sm_50 sm_52 sm_53 sm_60 sm_61 sm_62 sm_70 sm_72 sm_75 sm_80 sm_86 sm_87 sm_89 sm_90 
+
+=== BEFORE: mt_track.dll.sm75only.bak ===
+ELF file    1: mt_track.sm_75.cubin
+ELF file    2: mt_track.sm_75.cubin
+PTX file    1: mt_track.sm_75.ptx
+
+=== AFTER: mt_track.dll ===
+ELF file    1: mt_track.sm_75.cubin
+ELF file    2: mt_track.sm_86.cubin
+ELF file    3: mt_track.sm_89.cubin
+ELF file    4: mt_track.sm_75.cubin
+ELF file    5: mt_track.sm_86.cubin
+ELF file    6: mt_track.sm_89.cubin
+PTX file    1: mt_track.sm_75.ptx
+
+=== dynamic dependencies (cudart absent => static) ===
+Dump of file tools\gpu\cuda\mt_track.dll
+
+File Type: DLL
+
+  Image has the following dependencies:
+
+    cufft64_11.dll
+    KERNEL32.dll
+    VCRUNTIME140.dll
+    api-ms-win-crt-heap-l1-1-0.dll
+    api-ms-win-crt-runtime-l1-1-0.dll
+    api-ms-win-crt-environment-l1-1-0.dll
+    api-ms-win-crt-string-l1-1-0.dll
+    api-ms-win-crt-math-l1-1-0.dll
+    api-ms-win-crt-stdio-l1-1-0.dll
+    api-ms-win-crt-convert-l1-1-0.dll
+=== md5 ===
+d4c98cea80db37a8e9b9ea8402b2e84c *tools/gpu/cuda/mt_track.dll
+ab9070cc4457d11b7f2b6025641c3c70 *tools/gpu/cuda/mt_track.dll.sm75only.bak

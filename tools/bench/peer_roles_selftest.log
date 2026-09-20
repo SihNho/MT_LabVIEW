@@ -1,0 +1,38 @@
+BGRUN START 2026-09-18 16:07:47 limit 12.0 min: py -u tools/bench/peer_roles_selftest.py
+peer_roles_selftest - role routing trial, 2026-09-18
+
+=== A. guard_peer.review_quality() - who may discharge a failed prediction ===
+  PASS  A1 claude/hypothesis ANSWERED -> ACCEPTED
+  PASS  A2 claude/audit ANSWERED -> REJECTED   agent claude in a non-hypothesis role is the rule/consistency audit, not a framing adversary (needs -Role hypothesis: opus, effort max)
+  PASS  A3 claude, no role line, opus effort max -> ACCEPTED
+  PASS  A4 claude, no role line, sonnet -> REJECTED   agent claude in a non-hypothesis role is the rule/consistency audit, not a framing adversary (needs -Role hypothesis: opus, effort max)
+  PASS  A5 codex ANSWERED -> ACCEPTED
+  PASS  A6 gemini ANSWERED -> ACCEPTED
+  PASS  A7 claude/hypothesis TIMEOUT -> REJECTED   outcome TIMEOUT - the call told you nothing
+  PASS  A8 pre-2026-09-15 archive, no outcome line -> ACCEPTED
+
+=== B. peer.ps1 -DryRun - routing, no dispatch ===
+  PASS  B1 -Kind fact, no -Agent
+        model=fable (effort low; peer.ps1 default for role fact) | args=-p --model fable --permission-mode plan --output-format json --effort low --safe-mode --allowedTools WebSearch WebFetch --disallowedTools Bash PowerSh
+  PASS  B2 -Kind prose, no -Agent
+        model=fable (effort low; peer.ps1 default for role prose) | args=-p --model fable --permission-mode plan --output-format json --effort low --safe-mode --disallowedTools Bash PowerShell Edit Write NotebookEdit Agent
+  PASS  B3 -Agent claude -Role hypothesis
+        model=opus (effort max; peer.ps1 default for role hypothesis) | args=-p --model opus --permission-mode plan --output-format json --effort max --allowedTools WebSearch WebFetch Read Glob Grep --disallowedTools Bash Power
+  PASS  B4 -Agent codex -Kind fact
+        model=gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15)) | args=exec -s read-only --skip-git-repo-check -o C:\Users\KimLab\AppData\Local\Temp\peer_codex_1137491742.txt -m gpt-5.6-sol -c model_reasoning_effort=mediu
+  PASS  B5 -Agent claude -Role priorart
+        model=opus (effort high; peer.ps1 default for role priorart) | args=-p --model opus --permission-mode plan --output-format json --effort high --disallowedTools Bash PowerShell Edit Write NotebookEdit Agent
+  PASS  B6 outcome_review.py --dry-run
+        model=fable (effort medium; peer.ps1 default for role outcome) | args=-p --model fable --permission-mode plan --output-format json --effort medium --safe-mode --allowedTools WebSearch WebFetch Read Glob Grep --disallowed
+
+=== C. ONE REAL CALL on the new default fact route (fable / low / thin) ===
+    OUTCOME: ANSWERED (4s)  model: fable (effort low; peer.ps1 default for role fact)  archived: archive\peer\2026-09-18-selftest-fact-role.md
+    COST: $0.6380  in 2 / out 4 / cache-create 31889 / cache-read 0  (3s, 1 turn(s))
+    OK
+  PASS  C1 real fact call ANSWERED   rc=0
+  PASS  C2 cost line present   $0.6380  in 2 / out 4 / cache-create 31889 / cache-read 0  (3s, 1 turn(s))
+    MEASURED fable/low/thin fact call: $0.6380  in 2 / out 4 / cache-create 31889 / cache-read 0  (3s, 1 turn(s))
+    COMPARE opus/max full-context arm (2026-09-17): $1.8621, cache-create 158,866, 70s
+
+=== RESULT: 16 PASS / 0 FAIL ===
+BGRUN END rc=0 after 7s

@@ -1,0 +1,23 @@
+BGRUN START 2026-09-16 14:29:06 limit 10.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools/peer.ps1 -Agent gemini -Kind review -Slug uid9775-read-not-write -Task LabVIEW VI Scripting semantics. Attack this reading before it goes into a plan.
+
+CLAIM: an IMAQdx Property Node (uid 9775) on a LabVIEW 2026 startup diagram READS the camera Height/Width; it does NOT write them.
+
+MEASUREMENT. A scripting VI takes a WIRE UID, gets the Wire reference, walks Wire.Terms[] and per terminal reads Terminal 'Is Source?' (634A003), 'Connected Wire' (634A000) and Generic.Owner -> class name + UID. Observed:
+  wire 32937 Terms[0] IsSource=True  owner class 'Property' uid 9775  reciprocal wire 32937
+  wire 32937 Terms[1] IsSource=False owner class 'Diagram'  uid 13236 reciprocal wire 32937
+  wire 32937 Terms[2] -> error 1055 (past end of Terms[])
+  wire 32938 identical (source Property 9775, sink Diagram 13236)
+An earlier dump established node uid 9775 has terminals ['IMAQdx Session','IMAQdx Session','error in','error out','Height','Width'], Height wired to 32937 and Width to 32938.
+
+MY INFERENCE: IsSource=True on the node's own terminal means it DRIVES the wire, so that terminal is an OUTPUT, so the node is in READ mode for both properties. The far end owned by a 'Diagram' rather than a node suggests a front-panel indicator terminal.
+
+WHY IT MATTERS: the instrument's owner said from memory that a CONSTANT is fed INTO this property node, i.e. a WRITE that sets the camera ROI. My measurement says the opposite, and I am about to write 'the VI does not set the frame size' into a build plan.
+
+ANSWER THESE:
+1. Is Terminal 'Is Source?' TRUE unambiguous evidence the terminal is an OUTPUT? Any case where a Property Node in WRITE mode reports IsSource TRUE on the written terminal?
+2. Can one Property Node mix read and write terminals, and does that change Terms[] ordering or Is Source? behaviour?
+3. Is Generic.Owner returning class 'Diagram' a reliable signature of a front-panel control/indicator terminal, or could it be a constant, tunnel or shift register?
+4. Cheapest INDEPENDENT discriminating test, given I can read arbitrary VI Server properties by UID and must not open the editor?
+5. Strongest reason my inference is wrong.
+OUTCOME: TIMEOUT (180s)  model: (agy default, not readable) (agy built-in default)  archived: archive\peer\2026-09-16-uid9775-read-not-write.md
+BGRUN END rc=2 after 184s

@@ -1,0 +1,124 @@
+BGRUN START 2026-09-16 20:00:53 limit 40.0 min: py -u tools/bench/diag_hierarchy_a3.py
+MAIN md5 before: 2a78e17c449cacdaf5da389818526859
+   fresh(): killing LabVIEW pid None
+   COM preflight attempt 1/15: pid None->23312, wires 16->16
+   COM preflight OK (pid 23312, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 23312
+A0 report_all('Diagram'): 170 rows, owner-class histogram {'': 1, 'FlatSequenceFrame': 57, 'Sequence': 11, 'CaseStructure': 76, 'ForLoop': 17, 'WhileLoop': 3, 'EventStructure': 5}
+  PASS  A0 TRIPWIRE 170 diagrams and the owner-class histogram matches diagram_tree_main.json   n=170
+A0 FlatSequence structures: 21 [681, 2499, 12938, 14682, 16543, 17398, 17710, 18024, 18252, 18654, 18963, 19272, 19358, 25681, 26415, 26957, 27349, 27886, 28381, 28557, 43914]
+
+=== 3a  FULL HIERARCHY, FIVE CLEAN CLASSES ===
+  PASS  A1 exactly 112 diagrams have a clean owner class (170 - 57 FlatSequenceFrame - 1 top level)   got 112
+    ... 20/112 diagrams, 12 distinct structures, 38 s
+    ... 40/112 diagrams, 24 distinct structures, 75 s
+    ... 60/112 diagrams, 34 distinct structures, 119 s
+    ... 80/112 diagrams, 46 distinct structures, 164 s
+    ... 100/112 diagrams, 56 distinct structures, 203 s
+  PASS  A2 every clean diagram resolves to a structure (non-zero uid, no error, class as recorded)   0 failed: []
+  PASS  A3 every structure resolves to a parent Diagram (non-zero, no error)   0 failed: []
+  PASS  A4 ZERO disagreements with the POSITION-MATCHED owner_uid   agree 100 / disagree 0 / no position answer 12
+  PASS  A5 every structure uid is in diagram_tree_main.json structures[<class>]   0 outside: []
+  X B3b structure -> parent, machine vs the diagram_tree_main.json `uids` lookup: 112 agree, 0 DISAGREE, 0 the file has no answer for (reported, never gated - the file is partial by construction: no FlatSequence, no tunnels, 120-node cap)
+  3a SUMMARY: 112 diagrams -> 63 distinct structures; agree 100, disagree 0, newly resolved 12; of the 41 position-unresolved, 12 now resolved
+
+=== 3b  FLATSEQUENCE TOP-DOWN: does a reader we ALREADY OWN return the frames' DIAGRAM uids? ===
+  B1 traverse class 'Tunnel': {'count': 468, 'error': ''}
+  B1 traverse class 'SequenceTunnel': {'count': None, 'error': 'count(SequenceTunnel) on Min_Track N beads V6_ParallelLoop.vi: error 1092: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.'}
+  B1 traverse class 'FlatSequenceTunnel': {'count': None, 'error': 'count(FlatSequenceTunnel) on Min_Track N beads V6_ParallelLoop.vi: error 1092: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObje'}
+  B1 traverse class 'Structure': {'count': 63, 'error': ''}
+  B1 traverse class 'MultiFrameStructure': {'count': 43, 'error': ''}
+  B2 report_all('Tunnel') = 468 objects, owner-class histogram {'CaseStructure': 173, 'Sequence': 58, 'ForLoop': 130, 'WhileLoop': 91, 'EventStructure': 16}
+  B2 130 'Tunnel' objects report owner class 'ForLoop' (docs/NAMES.md:67 says a For loop's N terminal reports as 'Tunnel'; part D checks which belong to #1359)
+  B2 tunnels owned by a FlatSequence / FlatSequenceFrame: 0
+  -> FAIL  B2 an EXISTING reader returned frame DIAGRAM uids that are FlatSequenceFrame-owned diagrams   0 of the 57 reached: []
+  3b COVERAGE: 0 / 57 FlatSequence frame diagrams reached top-down
+  B3 attach census VI Server:FlatSequence + Frames[] 6363801: CREATOR REFUSED: build_property(VI Server:FlatSequence, ['6363801']): creator refused - error 1077: Invoke Node in LV-Scripting.lvlib:Create Property Node.vi->OpBuildP; terminals None
+  B3 scratch ScratchA3_21976.vi deleted: True
+
+=== 3c  WHERE THE 1055 COMES FROM: every error indicator read SEPARATELY ===
+  control, a CLEAN diagram (639):
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+        errL                         (   'error out 6') = ''
+        errT                         (   'error out 3') = ''
+        errO                         (   'error out 4') = ''
+        errU                         (   'error out 5') = ''
+        errG                         (   'error out 7') = ''
+        errS                         (   'error out 8') = ''
+        errWU                        (   'error out 9') = ''
+        errCO                        (  'error out 10') = ''
+        error out (the op's own)     (     'error out') = ''
+  the FlatSequenceFrame case (diagram 113):
+  OBSERVED uid 113 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#113 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+        errL                         (   'error out 6') = ''
+        errT                         (   'error out 3') = ''
+        errO                         (   'error out 4') = ''
+        errU                         (   'error out 5') = ''
+        errG                         (   'error out 7') = 'error 1055: Property Node in OpOwnerChain_v1.vi'
+        errS                         (   'error out 8') = ''
+        errWU                        (   'error out 9') = ''
+        errCO                        (  'error out 10') = 'error 1055: Property Node in OpOwnerChain_v1.vi'
+        error out (the op's own)     (     'error out') = ''
+  PASS  C1 the control diagram comes back with every error indicator empty   non-empty: []
+  PASS  C1 the FlatSequenceFrame case carries 1055 in errCO (reproducing A2)   errCO = 'error 1055: Property Node in OpOwnerChain_v1.vi'
+  3c MEASURED: indicators carrying 1055 = ['errCO', 'errG']
+  3c READ THIS BEFORE INTERPRETING (prior-art A3-i, build_opwiresource_v4.py:108-115): `errCO` is the error of a `Generic.ClassName` PROPERTY NODE hanging off the CAST'S OUTPUT, i.e. DOWNSTREAM of the cast; the cast itself (`To More Specific Class`, a Function) has NO error indicator in this op. `errG` is the UID Property Node, also downstream. So this run says WHICH indicator carries the 1055 - it cannot separate 'the cast generated it' from 'a downstream node generated it'. The conclusion is NOT written here.
+
+=== 3d  STATUS OPEN 1: ALL tunnels of ForLoop #1359 and what drives each input ===
+  D1 recorded: diagram '43' node index 16 uid 1359, 10 terminals
+        recorded t0  name ''                                     is_source False wire 0
+        recorded t1  name ''                                     is_source False wire 9097
+        recorded t2  name ''                                     is_source True  wire 9215
+        recorded t3  name 'Value'                                is_source False wire 30592
+        recorded t4  name ''                                     is_source False wire 28847
+        recorded t5  name ''                                     is_source False wire 10187
+        recorded t6  name ''                                     is_source True  wire 11352
+        recorded t7  name 'Force\nsmoothing\nhalf-width'         is_source False wire 31059
+        recorded t8  name 'Extension\nmedian filter\nhalf-width' is_source False wire 31166
+        recorded t9  name 'Magnet position output'               is_source False wire 28338
+  PASS  D1 live node_terms_uid(diagram 43, node 16) returns uid 1359 and the recorded wire set   live uid 1359, 10 terms, wires [0, 9097, 9215, 30592, 28847, 10187, 11352, 31059, 31166, 28338]
+  D1 ForLoop #1359: 10 terminals - inputs [9097, 30592, 28847, 10187, 31059, 31166, 28338], outputs [9215, 11352], BARE (unwired) terminal indices [0]
+  PASS  D1b the PERIODIC remainder wire 10187 is one of #1359's INPUT wires (A2 said 10177 -> ForLoop#1359)   [9097, 30592, 28847, 10187, 31059, 31166, 28338]
+  PASS  D1c the `Auto-Reset` control's wire 9806 (uid 17472, main-vi-panel-map.md:317) is NOT directly among #1359's terminal wires   inputs [9097, 30592, 28847, 10187, 31059, 31166, 28338] outputs [9215, 11352]
+  D2 node_labels on diagram 639 (index 43): 75 nodes
+  D2 panel_wiring: 114 front-panel objects
+  D3 tunnel 10177 idx 33 name '' outer wire 10187 out_is_source False inner [10166] INTO the loop (input tunnel)
+  D4 resolving the driving node of ForLoop #1359's 7 INPUT wires with OpWireSource_v5: [9097, 30592, 28847, 10187, 31059, 31166, 28338]
+OBSERVED: wire 9097 Terms[0] source=True owner 'LeftShiftRegister' uid 9025 reciprocal wire 9097 | cast-output class 'LeftShiftRegister'  
+OBSERVED: wire 9097 Terms[1] source=False owner 'LoopTunnel' uid 9087 reciprocal wire 9097 | cast-output class 'LoopTunnel'  
+OBSERVED: wire 9097 Terms[2] source=False owner '' uid 0 reciprocal wire 0 | cast-output class ''  error 1055: Property Node in OpWireSource_v5.vi er
+  D4 t1 '' wire 9097: source ('LeftShiftRegister', 9025) label ''; panel control on the same wire: None; sinks [('LoopTunnel', 9087)]
+OBSERVED: wire 30592 Terms[0] source=True owner 'Property' uid 30117 reciprocal wire 30592 | cast-output class 'Property'  
+OBSERVED: wire 30592 Terms[1] source=False owner 'SelectorTunnel' uid 20497 reciprocal wire 30592 | cast-output class 'SelectorTunnel'  
+OBSERVED: wire 30592 Terms[2] source=False owner 'LoopTunnel' uid 9503 reciprocal wire 30592 | cast-output class 'LoopTunnel'  
+OBSERVED: wire 30592 Terms[3] source=False owner 'BuildArray' uid 2626 reciprocal wire 30592 | cast-output class 'BuildArray'  
+OBSERVED: wire 30592 Terms[4] source=False owner '' uid 0 reciprocal wire 0 | cast-output class ''  error 1055: Property Node in OpWireSource_v5.vi er
+  D4 t3 'Value' wire 30592: source ('Property', 30117) label 'Trans Pos (mm)'; panel control on the same wire: None; sinks [('SelectorTunnel', 20497), ('LoopTunnel', 9503), ('BuildArray', 2626)]
+OBSERVED: wire 28847 Terms[0] source=True owner 'Function' uid 8885 reciprocal wire 28847 | cast-output class 'Function'  
+OBSERVED: wire 28847 Terms[1] source=False owner 'LoopTunnel' uid 10004 reciprocal wire 28847 | cast-output class 'LoopTunnel'  
+OBSERVED: wire 28847 Terms[2] source=False owner 'LoopTunnel' uid 30135 reciprocal wire 28847 | cast-output class 'LoopTunnel'  
+OBSERVED: wire 28847 Terms[3] source=False owner '' uid 0 reciprocal wire 0 | cast-output class ''  error 1055: Property Node in OpWireSource_v5.vi er
+  D4 t4 '' wire 28847: source ('Function', 8885) label 'Multiply'; panel control on the same wire: None; sinks [('LoopTunnel', 10004), ('LoopTunnel', 30135)]
+OBSERVED: wire 10187 Terms[0] source=True owner 'Function' uid 10068 reciprocal wire 10187 | cast-output class 'Function'  
+OBSERVED: wire 10187 Terms[1] source=False owner 'LoopTunnel' uid 10177 reciprocal wire 10187 | cast-output class 'LoopTunnel'  
+OBSERVED: wire 10187 Terms[2] source=False owner '' uid 0 reciprocal wire 0 | cast-output class ''  error 1055: Property Node in OpWireSource_v5.vi er
+  D4 t5 '' wire 10187: source ('Function', 10068) label 'Quotient & Remainder'; panel control on the same wire: None; sinks [('LoopTunnel', 10177)]
+OBSERVED: wire 31059 Terms[0] source=True owner 'Diagram' uid 639 reciprocal wire 31059 | cast-output class 'Diagram'  
+OBSERVED: wire 31059 Terms[1] source=False owner 'LoopTunnel' uid 31051 reciprocal wire 31059 | cast-output class 'LoopTunnel'  
+OBSERVED: wire 31059 Terms[2] source=False owner '' uid 0 reciprocal wire 0 | cast-output class ''  error 1055: Property Node in OpWireSource_v5.vi er
+  D4 t7 'Force\nsmoothing\nhalf-width' wire 31059: source ('Diagram', 639) label ''; panel control on the same wire: {'label': 'Force\nsmoothing\nhalf-width', 'uid': 28148, 'indicator': False}; sinks [('LoopTunnel', 31051)]
+OBSERVED: wire 31166 Terms[0] source=True owner 'Diagram' uid 639 reciprocal wire 31166 | cast-output class 'Diagram'  
+OBSERVED: wire 31166 Terms[1] source=False owner 'LoopTunnel' uid 31137 reciprocal wire 31166 | cast-output class 'LoopTunnel'  
+OBSERVED: wire 31166 Terms[2] source=False owner 'LoopTunnel' uid 30896 reciprocal wire 31166 | cast-output class 'LoopTunnel'  
+OBSERVED: wire 31166 Terms[3] source=False owner '' uid 0 reciprocal wire 0 | cast-output class ''  error 1055: Property Node in OpWireSource_v5.vi er
+  D4 t8 'Extension\nmedian filter\nhalf-width' wire 31166: source ('Diagram', 639) label ''; panel control on the same wire: {'label': 'Extension\nmedian filter\nhalf-width', 'uid': 28996, 'indicator': False}; sinks [('LoopTunnel', 31137), ('LoopTunnel', 30896)]
+OBSERVED: wire 28338 Terms[0] source=True owner 'LoopTunnel' uid 28343 reciprocal wire 28338 | cast-output class 'LoopTunnel'  
+OBSERVED: wire 28338 Terms[1] source=False owner 'LoopTunnel' uid 28370 reciprocal wire 28338 | cast-output class 'LoopTunnel'  
+OBSERVED: wire 28338 Terms[2] source=False owner '' uid 0 reciprocal wire 0 | cast-output class ''  error 1055: Property Node in OpWireSource_v5.vi er
+  D4 t9 'Magnet position output' wire 28338: source ('LoopTunnel', 28343) label ''; panel control on the same wire: None; sinks [('LoopTunnel', 28370)]
+  3d SUMMARY: 10 terminals on ForLoop #1359; 7 input wires resolved; control-terminal sources []; function sources [28847, 10187]; rows mentioning 'Auto-Reset': 0; Auto-Reset wire 9806 a terminal wire of #1359: False
+  3d COUNT TERMINAL: a For loop's N terminal is a terminal of the ForLoop NODE, not a LoopTunnel, so g.tunnels() never exposes it - node_terms does, and it is reported above as a BARE terminal index (wire 0) if N is unwired   BARE indices: [0]
+  PASS  Z main VI md5 unchanged (rule 1d: read-only)
+   wrote G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diagram_tree_a3.json
+=== diag_hierarchy_a3: 12 pass, 1 fail ===
+BGRUN END rc=1 after 304s

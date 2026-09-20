@@ -1,0 +1,65 @@
+BGRUN START 2026-09-09 11:42:58 limit 20.0 min: py -u tools/bench/params_chain.py
+LabVIEW up after 15 s, version 26.3.1f1
+dialogs: 8,1346,762| / ENABLED|1640050|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+lv_restart rc 0
+base cleared: nodes 0 ExecState 1
+
+== drop Parameter Info.vi (A, Get)
+   predict: +1 SubVI
+   observed: 6
+
+== A output terminal name (probe indicator, then delete it)
+   predict: label containing 'info'
+   observed: parameters info out
+
+== OpBuildFlatten: Flatten
+   predict: +1 FlattenString
+   observed: 8
+
+== A.parameters info out -> Flatten.anything
+   predict: +1 wire
+   observed: 1
+
+== indicator Flatten.data string
+   predict: label
+   observed: data string
+
+== indicator Flatten.type string
+   predict: label
+   observed: type string (7.x only)
+
+== OpBuildUnflatten: Unflatten
+   predict: +1 FlattenUnflattenString
+   observed: 9
+
+== A.parameters info out -> Unflatten.type (branch)
+   predict: accepted
+   observed: 3
+
+== control Unflatten.binary string
+   predict: control
+   observed: binary string
+
+== indicator Unflatten.error out
+   predict: label
+   observed: error out
+
+== drop Parameter Info.vi (B, Set)
+   predict: +1 SubVI
+   observed: 11
+
+== Unflatten.value -> B.parameters info
+   predict: +1 wire
+   observed: 6
+
+== control B.operation
+   predict: control
+   observed: operation
+
+assembled: nodes 4 wires 7 ExecState 1 LABELS {'out_name': 'parameters info out', 'data string': 'data string', 'type string': 'type string (7.x only)', 'binary string': 'binary string', 'error out': 'error out', 'operation': 'operation'}
+saved 8391
+data string = '00000000'
+type string (7.x only) = (682, 16448, 1, -1, -1, 652, 16464, 11, 24, 16432, -1, -1, 3664, 24946, 24941, 25972, 25970, 8270, 24941, 25856, 20, 16387, 3662, 30061, 8260, 26989, 25966, 29545, 28526, 29440, 122, 16406, 10, 1870, 30061, 25970, 26979, 1345, 29298, 24953, 1619, 29810, 26990, 26376, 22369, 30309, 26223, 29293, 4164, 26983, 26996, 24940, 8279, 24950, 25958, 28530, 27917, 17513, 26473, 29793, 27680, 21601, 25196, 25863, 16739, 29801, 30309, 22531, 16750, 30997, 18798, 29556, 24942, 25445, 8260, 24948, 24864, 20591, 26990, 29797, 29188, 22127, 26980, 3664, 24946, 24941, 25972, 25970, 8276, 31088, 25856, 76, 16406, 12, 585, 14339, 18737, 13827, 18739, 12803, 18742, 13314, 21816, 853, 12598, 853, 13106, 853, 13876, 851, 18252, 836, 16972, 1872, 21586, 8265, 20052, 2128, 21586, 8277, 18766, 21504, 3150, 30061, 25970, 26979, 8276, 31088, 25856, 46, 16406, 2, 2114, 31008, 22113, 27765, 25872, 20591, 26990, 29797, 29216, 21615, 8278, 24940, 30053, 3408, 24946, 24941, 8272, 24947, 29545, 28263, 74, 16406, 3, 4673, 29298, 24953, 8260, 24948, 24864, 20591, 26990, 29797, 29196, 16754, 29281, 31008, 18529, 28260, 27749, 5185, 29298, 24953, 8264, 24942, 25708, 25888, 20591, 26990, 29797, 29184, 3393, 29298, 2495
+error out = (True, 74, 'Unflatten From String in OpCLFNParams_v0.vi')
+build_opclfnparams rc 0
+BGRUN END rc=0 after 317s

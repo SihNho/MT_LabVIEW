@@ -1,0 +1,34 @@
+﻿---
+type: peer-review
+status: historical
+date: 2026-09-14
+tags: [peer-review, plan]
+---
+
+# loopcast-typed-terminal-seed-plan
+
+- **agent:** codex
+- **date:** 2026-09-14
+- **outcome:** ANSWERED (51s)
+- **why asked:** plan review before OpLoopCast_v0 - the GUI-free cast seed (a ForLoop-typed control made from Create For Loop.vi's output terminal feeding TMSC target class)
+- **verdict:** unverified
+
+## Question
+
+PLAN REVIEW (attack hard; one paragraph + a yes/no on the key claim, with NI/LabVIEW-Wiki citations). CONTEXT: LabVIEW 2026 VI Scripting driven from Python over COM; we can drop subVIs, create front-panel controls from a node terminal (Terminal.Create Control - the control takes the TERMINAL's type), delete nodes/wires, wire controls and terminals, build property nodes of a named class. We CANNOT create or retarget a class-specifier constant (needs a typed ref to one: circular; docs/toolkit-capabilities.md 'the one missing seed', archive/peer/2026-09-14-cast-route-research.md), so To More Specific Class (TMSC) can only target classes for which a donor op already holds a class constant (Diagram, LoopTunnel, ...). Blocked by that: ForLoop/Loop-typed refs (shift registers = the frame loop's state carriers, Loop Count, parallel instances). NEW IDEA: TMSC's 'target class' input is a refnum INPUT - LabVIEW documents it as taking a class specifier constant OR any refnum of the desired class (please confirm/refute with a citation - this is the key claim). erdosmiller LV-Scripting 'Create For Loop.vi' has a ForLoop-typed output refnum terminal. PLAN: copy donor OpTunnels_v0 (Traverse by Class Name + index -> Index Array -> TMSC(LoopTunnel) -> property nodes); drop Create For Loop.vi on the op diagram; Terminal.Create Control on its ForLoop-typed output -> a ForLoop-refnum front-panel control (typed seed, value irrelevant); delete the Create For Loop node (control stays - proven pattern); delete the LoopTunnel class constant that feeds TMSC 'target class' (+Remove Bad Wires); wire the seed control's terminal -> TMSC 'target class'; set the Traverse Class Name control to 'ForLoop' at run time; replace the LoopTunnel property nodes by a Loop/ForLoop property node (e.g. Loop Count / Shift Registers[] / Loop Counter) + GObject.UID; prediction: ExecState 1 and, on HARNESS_copyloop (one For loop, N wired), Loop Count returns a Tunnel ref whose Outside Terminal's Connected Wire uid == the known N wire (346); on the main VI (17 ForLoops), Shift Registers[] non-empty for the frame loop. ATTACK: (a) does the TMSC accept a control-terminal wire (a refnum control's value is a null/invalid ref at run time - does TMSC read only the TYPE of that input, so a null-valued input is fine?); (b) does deleting the class constant + rewiring keep the TMSC's output type = the new input type (is the output type derived from the target class WIRE type at compile time?); (c) exact property names/IDs on Loop and ForLoop for shift registers (Left/Right Shift Registers[]?), Loop Count, and whether they are readable on a VI opened by reference only; (d) any risk this typed control breaks when saved (refnum control with class ForLoop is legal on a panel?).
+
+## Answer
+
+**Key claim ??YES.** NI explicitly states that TMSC?셲 `target class` accepts ?쏿 class specifier constant **or any wire of the target type**?? therefore a ForLoop-typed refnum control terminal is a valid compile-time type seed, and its runtime value may be null?봳he standard class-specifier constant itself always contains `Not A Refnum`, proving TMSC uses that input?셲 wire type rather than requiring a live object ([NI: To More Specific Class](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/functions/to-more-specific-class.html), [NI: Class Specifier Constant](https://www.ni.com/docs/en-AS/bundle/labview-api-ref/page/constants/class-specifier.html)). Rewiring should adapt TMSC?셲 output to `ForLoop` at compile time, but delete/rebuild downstream property nodes only after that adaptation; do not assume existing LoopTunnel nodes will retarget cleanly. The exact supported properties are `ForLoop.Loop Count` ID `6362000`, returning the N-terminal reference; inherited `Loop.Loop Counter` ID `6361400`; and inherited `Loop.Shift Registers[]` ID `6361402`, returning shift-register references?봳here are no documented `Left/Right Shift Registers[]` properties ([LabVIEW Wiki: ForLoop class](https://labviewwiki.org/wiki/ForLoop_class), [LabVIEW Wiki: Loop class](https://labviewwiki.org/wiki/Loop_class)). These are VI Scripting properties marked unavailable only in the run-time engine, so an edit-time VI opened by reference is the intended inspection context. A saved ForLoop-refnum front-panel control is legal: NI specifically says a class-specifier constant can be created from a refnum control or terminal; nevertheless, the plan needs one cheap acceptance gate before touching the main reader?봲ave/reopen the scratch op, confirm the control remains ForLoop-typed, TMSC output accepts `Loop Count`, `ExecState == 1`, and wire UID `346` is recovered. The main remaining attack is therefore not conceptual but implementation-specific: `Shift Registers[]` yields shift-register objects, not directly named left/right arrays, so their terminal/side mapping must be inspected separately rather than assumed.
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+The key claim held on the machine: a ForLoop-typed refnum control wired to TMSC 'target class' typed the cast, a
+ForLoop property node compiled on its output and OpLoopCast_v0 recovered HARNESS_copyloop's N wire 346 and all 17
+For loops of the main VI (test_oploopcast.log). The seed SOURCE in this plan was wrong (Create For Loop.vi has no
+ForLoop-typed output) and was replaced by NI's Structures example (…loopcast-seed-from-ni-example.md). The
+save/reopen gate the reviewer asked for is T0/T1 of the test. Verdict: correct on the mechanism.

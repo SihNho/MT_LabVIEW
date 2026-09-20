@@ -1,0 +1,119 @@
+BGRUN START 2026-09-17 06:57:08 limit 25.0 min: py -u tools/prior_art_review.py --plan-file docs/d1-build-plan.md --slug priorart-d1-build-rev4c --trigger new-op
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-d1-build-rev4c.txt (68242 chars)
+OUTCOME: ANSWERED (548s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-priorart-d1-build-rev4c.md
+COST: $5.0036  in 50 / out 40387 / cache-create 198101 / cache-read 4025301  (544s, 33 turn(s))
+--- ANSWER ---
+Prior-art review complete — read-only, no lock taken, nothing built, run or edited. **6 findings, zero `novel`.**
+
+The plan under review carries three escalated blockers from the rev4b review (the timeout-gated Case, drop-new vs latest-wins, the conditional-terminal writer), and the `new-op` trigger means the next step builds an op to lift them. Four of the five artefacts that would require are already specified, named, priced or built in this project's own **current** files, and the plan cites none of them.
+
+---
+
+# PART A — THE DIRECTION
+
+## A1 `unread-evidence` — the ops §11c needs are already named, scoped and cost-estimated in an ACTIVE document the plan never cites
+
+`docs/stage2-assembly-step-e.md` (`status: current`, 2026-09-15) has a section titled *"Construction (after E0), **with the primitives the fleet lacks named up front**"*:
+
+- `:209-210` — "the fleet can build **Cases and comparison primitives only at a VI's top level**, so it is a sub-VI" — the constraint *and* the recorded remedy.
+- `:215-216` — "a **Boolean Case** (`Create Case Structure (Boolean).vi` → **`OpBuildCaseBool_v0`**, selector from the detector's output — **`build_case` today takes a CONTROL as selector, so a variant fed by `Get Outputs` is needed**)".
+- `:217-218` — "**Case output tunnels** (`Exit Structure.vi`/`Exit Multi Frame Structure.vi` → **`OpExitCase_v0`**)".
+- `:221-222` — "Toolkit gaps … `OpBuildLess_v0`/`OpBuildEqual_v0`, `OpBuildOrArray_v0`, **`OpBuildCaseBool_v0` (selector from a node output)**, `OpExitCase_v0`. **Estimated 4 ops.**"
+- `:39-40` — which creators the donor library ships: "**`Create Less?.vi` does not exist** in the library (**Equal / Or Array / And Array / Index Array / Case (Boolean) / Exit Structure do**)", missing primitives coming from "`copy_by_index` of a donor".
+
+That is item-for-item what the plan says it lacks: `docs/d1-build-plan.md:16` ("its reverse-crossing poll needs **a Case** the counts do not contain"), `:523` and `:545` ("**1.7's append is gated by the −1 test**"), `:544` (each new loop's conditional terminal "**driven by its own sentinel test**"). A `−1` test is a comparison primitive; a gated append is a Boolean-selector Case plus output tunnels.
+
+`stage2-assembly-step-e.md`, `OpBuildCaseBool_v0` and `OpExitCase_v0` appear **nowhere** in `docs/d1-build-plan.md` or `tools/recipes/build_d1_v0.py` (project-wide grep; the only hits are step-e itself, `HOME.md:16`, `pre-rig-master-plan.md`, `camera-acquisition-facts.md` and the archives).
+
+**Scope:** covers the plan's and the recipe's account of what is missing for §9a's sentinel test and §11c's poll, and step-e's absence from the evidence base. It does **not** claim those four ops are built — step-e calls them gaps — nor that step-e's `Reseed.vi` design should be adopted.
+
+## A2 `settled-already` — "no new general-purpose op VIs" is already decided for the duration of D1, and this plan leans on it three times
+
+`docs/cycle15-plan.md:102-104` — "## Frozen while D1 is built (**outcome review Q7, adopted**) — **No new general-purpose op VIs**, no hierarchy completion beyond what D1 needs, …"
+
+The plan does not merely coexist with it; it uses it as a premise:
+
+- `docs/d1-build-plan.md:65` — the Local route is "a **new general-purpose op**, which `docs/cycle15-plan.md:104` **freezes for the duration of D1**";
+- `docs/d1-build-plan.md:602` — §11c picks queues as "the one transport exercised 162/162, **needing no new op under the cycle-15 freeze**";
+- `tools/recipes/build_d1_v0.py:42-43` — `Terminal.Create Constant` "is CATALOGUED ONLY … and an op for it is a **NEW op, frozen by `docs/cycle15-plan.md:104`**".
+
+So "build a new op to unblock D1" is a question already decided the other way, by the outcome review, after two outcome reviews found zero runnable experimental VIs. Lifting it belongs to the authority that set it — and if it is lifted, the plan loses the premise it used to rule out the Local at `:65` and the constant op at recipe `:42-43`; both then need re-arguing on merits.
+
+**Scope:** covers creating a new op inside cycle 15 and the three places this plan uses the freeze as a premise. It does **not** say the needed op is unbuildable, and takes no position on whether the freeze should be lifted.
+
+## A3 `contradicted` — §6 calls three objects "Locals" that this project measured as CONTROL REFERENCES, while §0-BLOCKER's central argument is a census of the VI's Locals
+
+The plan, `docs/d1-build-plan.md:383-384`:
+
+> "`#48` t0/t1/t2 ← **Locals** `- Inc (PgDn)` **`#3529`**, `+ Inc (PgUp)` **`#3560`**, `Focus Step (F1)` **`#3447`**"
+
+The measurement:
+
+- `docs/main-vi-panel-map.md:403` — "Class census by Traverse: **`Local` 8**"; `:409-416` tables all eight by uid — **2991, 4277, 11574, 3160, 3097, 2143, 16942, 25805**. `#3529`, `#3560`, `#3447` are **not among them**.
+- `docs/main-vi-panel-map.md:418-419` — "Bare-terminal objects **with NO local either**: **`+ Inc (PgUp)`, `- Inc (PgDn)`, `Focus Step (F1)`** … **Resolved 14:5x** … the rest by **control references**".
+- `docs/camera-acquisition-facts.md:333-334` — "the first three of those eight (**`Focus Step (F1)`, `+ Inc`, `- Inc`**) are the **control references handed to `ASI_adjust focus-subvi.vi`**".
+
+Two reasons this is not a naming slip:
+
+1. **§0-BLOCKER's argument is a Local census.** `docs/d1-build-plan.md:53` rules the Local route out partly because "the VI's **8** Locals are bound to `Total Lost Frames` ×2, `File # Saved`, `Focus Pos (Track)`, `Rot pos (deg)`, `Trans Pos (mm)`, `Picture`, `Color table`. **None** is `stop (end)`, a slice index, a frame counter or a spare Boolean." §6 then asserts three *further* Locals in the same VI. Both cannot be a complete account of the same eight objects; the panel-map table is the measured one.
+2. **All three feed `#48`, which moves to 1.5.** They appear in no row of §5a's 47-node move table (`:279-311`), in no line of the "20 moves / 27 stay" contract (`:313-315`), and in no gate of §10 — yet three refnum sources of a moving node are exactly §7.2b's own failure class (`:444-460`, "moving `#376` bares six terminals on nodes that never move", the death of phase P run 2). A control reference also crosses a border differently (`docs/NAMES.md:762` — "Wiring a refnum output from the top level into a node inside a loop **auto-creates the tunnel**"), and the plan names neither the class, nor the route, nor the three tunnels.
+
+**Scope:** covers the word "Locals" at `:383-384` and the absence of `#3447`/`#3529`/`#3560` from §5a, the counts and §10. It does **not** say `#48` should stay on 1.1, and does not reopen §0-BLOCKER's conclusion — only the premise that its eight-Local census is a complete account of the autofocus chain's inputs.
+
+---
+
+# PART B — THE ARTIFACT
+
+## B1 `helper-exists` — the conditional-terminal writer is a FRONT-HALF swap on an existing op, and this fleet has already built that exact swap four times
+
+- `docs/toolkit-capabilities.md:31` — `exit_while` "**wires a While loop's conditional terminal** from the Boolean control named `stop_control` (**Get Controls → Index Array → Exit While Loop `Stop Condition`**)", `test_opexitwhile.log` **5/5: ExecState 0 → 1, the VI runs and stops**. The terminal is already written by a built, verified op; what is bound is the **source**.
+- `docs/NAMES.md:751-752` — the donor's pane, measured: "`Exit While Loop.vi` connector: 0 `Diagram in`, 1 `Conditional Terminals`, 2 `Loop Terminal Types`, 5/6 `Outputs` in/out, 7/8 `Shift Registers` in/out, **9 `Stop Condition`**, 11/15 error." `Stop Condition` is a **terminal refnum input**, not a control name.
+- `archive/bench-2026-09-14-stage2-toolkit/build_opexitwhile.py:2-3` — our own op header: "'Stop Condition' fed from a front-panel control chosen **BY NAME**: VI.Block Diagram → Get Controls(Control Names) → Index Array[0] → Stop Condition." The restriction is **our recipe's front half**.
+- `docs/toolkit-capabilities.md:42` — swapping that front half is routine here, already done four times in one family: `OpWireSR_*` "wires ONE side of a register with `Terminal.Connect Wire` on the sink: **body node via `Loop.Diagram→Nodes[]→Terminals[]`**, **top-level node** via `VI.Block Diagram`, **control** via `Panel.Controls[]` — indices, never names".
+- `docs/NAMES.md:747-750` records the precedent verbatim for the sibling creator: "`Create For Loop.vi` / `Create While Loop.vi` `Control Names` **DO work** … hence the morning's 'Control Names route not available' — **a defect of OUR op, not of the library**."
+
+**Scope:** covers the claim that a sentinel-driven conditional terminal needs a **new op family** or a missing capability. It does **not** claim the swap has been built or measured — it has not — and it leaves `OpLoopEndRef_v0`'s read path (16/0) and A1's separate Case question untouched. It says the price is one derived variant against a proven front half, and that a verdict of "unreachable" would be the third false *impossible* in this plan's own three days (`docs/d1-build-plan.md:36-38`; `archive/peer/2026-09-17-priorart-priorart-d1-build-rev4.md:789-791`).
+
+## B2 `already-built` — a Case creator exists and is functionally verified; its two limits are recorded, not undiscovered
+
+- `tools/gscript.py:2616-2625` — `build_case(target, location, selector_name, input_names, frame_names)` via **`OpBuildCase_v1`**: "**Functional contract (tools/bench/case_v1_test.py, 2026-09-10): +1 CaseStructure, +2 Diagrams … +1 wire per name … ExecState 1, no dialog, ~0.1 s**".
+- `docs/NAMES.md:369,:383-385` — "built + **functionally verified** 2026-09-10 … Diagrams 1→3, Wires +3, ExecState 1", with the `Frames`-array trap (`:379-382`, error 1302 behind an 8 s modal) already written down; `docs/toolkit-capabilities.md:124`.
+- Its limits are recorded: selector must be a panel control (`stage2-assembly-step-e.md:216`), and it lands on the **top-level** diagram (`:209-210`) — and this cycle measured the answer to the second: `docs/d1-build-plan.md:195`, "**`CaseStructure #12589` → owner `Diagram #1170`, total `Diagram` count UNCHANGED 171 → 171** — the frames came with it", 12/0.
+
+So "a Case inside a loop body" composes from two existing, measured ops (`build_case` + `move_in`). What §10 lacks is the **accounting**: S2 fixes `Diagram 171 → 174` (`:539`) and S3 asserts Diagram count "unchanged **by the moves**" (`:540`), while every Case adds **+2 Diagrams** at creation (`gscript.py:2623`). A counting gap in the contract, not a missing capability.
+
+**Scope:** covers treating "a Case" as unbuildable, and §10's Diagram counts. It does **not** claim a **node-output-selector** Case is built, nor that Case output tunnels exist — A1's citation says both are named gaps.
+
+## B3 `already-measured` — the sentinel literals and the poll's guard already have measured, no-new-op routes
+
+- **The literals.** `tools/recipes/build_d1_v0.py:43-47` — "a route exists with BUILT ops: the original itself carries donor constants of exactly the needed values (`tools/bench/opconstvaluen_scan.json`, 180 numerics: value 0 ×69, 1 ×36, **20 ×2** …, **−1 ×1** (uid 4609 rep 3), 25 ×1), so `copy_by_index` (row 39, verified on built-in primitives) + `move_in` (12/0) places them **with no new op**. **MEASURED, UNWRITTEN**." Sentinel `−1`, bounds `20`/`1`, timeout `0` are all in that scan.
+- **The poll's guard.** `docs/NAMES.md:755-756` — "`Create Dequeue Element.vi` 5 `queue`, 7 `timeout in ms (-1)`, 8 `element`, **14 `timed out?`**"; created-node terminal names at `:761-762`; op built and verified at `docs/toolkit-capabilities.md:32` (`test_opqueue.log` 7/7).
+
+**Scope:** covers any new op proposed for **placing constant values** or for **reading a dequeue's `timed out?`**. It does **not** cover the Case that consumes the guard (A1/B2), and does not claim the literals route has been executed — the recipe's own word is *UNWRITTEN*.
+
+---
+
+## Checked and cleared — so the next round does not re-derive it
+
+1. **rev4b's six findings still stand and are honestly recorded** (`docs/d1-build-plan.md:14-18`; disposition at `archive/peer/2026-09-17-priorart-priorart-d1-build-rev4b.md:944-962`). None of my six duplicates one of theirs.
+2. **End-of-stream sentinels are the right prior art**, cited correctly (`docs/stage2-assembly-step-c.md:45`, `docs/frame-ownership-design.md:102-103`). Not challenged.
+3. **`move_in` (12/0) and the ControlTerminal reparent (9/0)** are this cycle's own measured product, not re-derivable prior art.
+4. **Addendum to rev4b's B2, deliberately not a new slug.** `build_d1_v0.py:48-50` concludes "no donor in this project holds an open/write/close chain" from two options. Besides the `drop_subvi`-of-vi.lib route rev4b named, the project's own node census of the main VI was not opened: `tools/bench/main_vi_node_labels.json` records **`Write to Binary File`** (`:2799`), `Refnum to Path` (`:214`), `Path To String` (`:218`), `String To Path` (`:244`), `Build Path` (`:1001`), `Strip Path` (`:1005`) — and `copy_by_index` copies built-in primitives (`docs/toolkit-capabilities.md:44`). A binary write is not a TSV text write, so this does **not** establish a route; it establishes that the census which would settle it was never consulted.
+5. **Not slugged, one line.** `docs/frame-ownership-design.md:89-95` names what latest-wins mechanically *is* — "`IMAQdx Get Image` with **`Buffer Number Mode = Last`** … **no `Lossy Enqueue Element`**". rev4b's A3 cited `:89-93` for the policy; `:92-95` also carries the mechanism, and §11c's "freshest wins" sentence consults neither. Already escalated under rev4b A3 — re-slugging would block the same sentence twice.
+
+---
+
+```
+PRIOR-ART: unread-evidence  (A1 — docs/stage2-assembly-step-e.md:39-40,:209-210,:215-218,:221-222 vs docs/d1-build-plan.md:16,:523,:544,:545 and tools/recipes/build_d1_v0.py — covers the plan's account of which primitives are missing for the sentinel test and the timeout-gated poll, not whether step-e's four named ops are built)
+PRIOR-ART: settled-already  (A2 — docs/cycle15-plan.md:102-104 vs docs/d1-build-plan.md:65,:602 and tools/recipes/build_d1_v0.py:42-43 — covers creating a new general-purpose op inside cycle 15 and the three places this plan uses the freeze as a premise; takes no position on lifting it)
+PRIOR-ART: contradicted     (A3 — docs/main-vi-panel-map.md:403,:409-416,:418-419 + docs/camera-acquisition-facts.md:333-334 vs docs/d1-build-plan.md:383-384, with the omission at :279-311,:313-315 — covers the word "Locals" for #3447/#3529/#3560 and their absence from the move table, the counts and s10)
+PRIOR-ART: helper-exists    (B1 — docs/toolkit-capabilities.md:31,:42 + docs/NAMES.md:747-750,:751-752 + archive/bench-2026-09-14-stage2-toolkit/build_opexitwhile.py:2-3 — covers the claim that a sentinel-driven conditional terminal needs a new op family; does not claim the front-half swap has been built or measured)
+PRIOR-ART: already-built    (B2 — tools/gscript.py:2616-2625 + docs/NAMES.md:369,:379-385 + docs/toolkit-capabilities.md:124 + docs/d1-build-plan.md:195 vs docs/d1-build-plan.md:16,:539-540 — covers treating "a Case" as unbuildable and s10's Diagram counts; does NOT cover a node-output selector or Case output tunnels, which A1 shows are named gaps)
+PRIOR-ART: already-measured (B3 — tools/recipes/build_d1_v0.py:43-47 + tools/bench/opconstvaluen_scan.json + docs/NAMES.md:755-756,:761-762 + docs/toolkit-capabilities.md:32,:44 — covers a new op for placing constant literals or for reading a dequeue's `timed out?`; does not cover the Case that consumes the guard)
+```
+
+**The two that change what happens next.** **A1** — before any op is built, open `docs/stage2-assembly-step-e.md:207-222`: four ops are already named, scoped and priced there, and one of them (`OpBuildCaseBool_v0`, "selector from a node output") *is* the blocker, so the next build should be that op under its recorded name rather than a fresh invention. **A2** — that build is frozen by `docs/cycle15-plan.md:104`, and this plan leans on the freeze three times; either the authority that set it lifts it, or §0-BLOCKER's Local refusal and the recipe's constant-op refusal both have to be re-argued without it.
+
+Two notes on this session's mechanics: the `Write` tool is disabled here, so the review exists only in this reply — it needs archiving under `archive/peer/` by the dispatching session to count as a gate-visible review. And the plan-mode scaffolding this session was started with expects an `ExitPlanMode` call that is not in my tool set; there is nothing to implement in any case, since this review is read-only by brief.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-d1-build-rev4c.md
+BGRUN END rc=0 after 548s

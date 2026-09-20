@@ -1,0 +1,67 @@
+BGRUN START 2026-09-19 18:23:29 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug s0run1-closeorder -TaskFile C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\f2ef5a61-b304-4e10-8838-fc1b0a99ee43\scratchpad\peer_s0run1.task
+OUTCOME: ANSWERED (538s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-19-s0run1-closeorder.md
+COST: $3.6393  in 26 / out 40579 / cache-create 167398 / cache-read 1612876  (534s, 23 turn(s))
+--- ANSWER ---
+**REFUTED.** The claim's central factual premise — that `OpReportAll_v0`'s two body Property nodes are PARALLEL — is false, and this project's own build record of that VI says so. Write is disabled for this role, so the review is below.
+
+---
+
+## 1. Strongest reason the claim is wrong: the body is a CHAIN, and it mints a second reference
+
+`tools/recipes/build_opreportall_v1.py` is the build record of the very VI being repaired:
+
+| step | what it built |
+|---|---|
+| `:144-149` | **PN1** = Property on `VI Server:GObject`, items Position · UID · ClassName · **Owner**, inside the body |
+| `:158-160` | `g.wire(... "References", "Property", pidx(pn1_uid), "reference")` — PN1 fed by the auto-indexed `References` tunnel |
+| `:162-165` | **PN2** = Property on `VI Server:Generic`, item ClassName |
+| `:168-171` | `g.wire(OP, "Property", pidx(pn1_uid), **T_OWNER**, "Property", pidx(pn2_uid), "reference")` |
+
+**PN2's `reference` is PN1's `Owner` output.** They are chained — through a property *output* that returns a NEW reference, not through the `reference` pass-through the gate inspected. "Both `reference out` = 0" (`log:116-117`) is true and irrelevant. The wire uids corroborate the build order: w421 (PN1.reference, step 6) < w548 (PN1.Owner → PN2.reference, step 8).
+
+Three consequences:
+
+- **(a) The stated reason for the two-wire repair is false.** "One dependency cannot order a close after both" (`build_s0_closeref_v1.py:99-104`, repeated verbatim in `build_s0_closeref_v2.py:118-120,:360`) — PN2 is *already* downstream of PN1, so a single dependency on PN2 orders the close after both.
+- **(b) The repair leaves one reference per iteration unclosed.** Each iteration PN1 mints an `Owner` reference that PN2 consumes and nothing closes. NI: "If you open a reference … LabVIEW creates a new reference every time"; the analogous `Owning VI` property's help says "Close this reference when you are finished using it." So S0 would close N traversed refs and leak N owner refs — and the gates cannot see it, by the session's own citation (`tools/gscript.py:227-228`). The scope claim at `build_s0_closeref_v1.py:62-63` is not this op's whole hygiene obligation.
+- **(c) Node selection is provenance-blind.** `p_ref = next((u for u in body_pns if tab[u]["ref_out"] is not None))` over `body_pns = sorted(...)` (v1 `:348`, v2 `:366`): *every* Property node has a `reference out` terminal, so gate G3c is vacuous and the choice is "lowest UID". It picks PN1 by accident of numbering. If that order ever differs, the repair wires the close to **PN2**'s pass-through — closing the `Owner` ref, leaving the traversed element open, inverting the stage's purpose, at ExecState 1, passing every gate.
+
+**On your direct question — is "refnum from A + `error in` from B" sufficient to order the close after both?** Yes, as ordering. A LabVIEW node fires only when every wired input has data, so `Close Reference` waits for both. That is not the defect. The defect is that it is the wrong repair for a chain that mints a second reference, and that the error wire carries a *known* fault: PN2 is precisely the node documented to raise **error 1055 "Object reference is invalid"** on class `Diagram` — `fix_opreportall_errors.py:1-15`, "most likely the `Owner` of the top-level diagram, which is the one object in the traversal with nothing above it" — which is why auto error handling was disabled. Claim (3) routes that error into `Close Reference.error in`, on the class this recipe's own equivalence gate exercises (`log:129`). **The evidence does not settle whether the close then still happens:** NI documents `Close File` as closing "regardless of whether an error occurred in a preceding operation", and cleanup nodes generally follow that pattern, but the LabVIEW Wiki page for `Close Reference` is a stub and I found no NI statement for it. Buying that uncertainty for ordering PN2 already provides is a bad trade.
+
+## 2. Alternative explanation of `log:32-33` — a reading where the branch did NOT succeed
+
+The line reads `connect_from_wire(References) dw=1 **ExecState=0** err='' sub={'UID 2': 636, 'Is Broken?': False}`.
+
+The prior art the recipe says it follows records the opposite for the same step — `docs/toolkit-capabilities.md:438`: "wire References across the boundary → LoopTunnel 0->1, **ExecState 0->1** ← the array supplies N". That flip to 1 *is* the evidence of auto-indexing. S0 got 0. S0 also did not use that route: the measured one is `g.wire()` after deleting the Index Array to free the source (`build_opreportall_v1.py:127-130`); S0 must preserve it, so it substituted a branch. And `gscript.wire`'s own docstring says the definitive check on a crossing is "the EFFECT (**ExecState**, or the tunnel appearing)" (`tools/gscript.py:1361-1362`) — the gate took the tunnel half and ignored the ExecState half pointing the other way.
+
+**Alternative:** the tunnel was not auto-indexing, so wire 636 carried the whole array into a scalar refnum input — the configuration the four archived failures are about — and `Is Broken? False` is the anomaly to explain (type propagation not yet run), not the reassurance. This project has already measured that shape twice: `tools/gscript.py:1293-1295` — "the **branch into a … Property Node's `reference` lands as a BAD wire (uid 467, ExecState 0, remove_bad_wires does not clear it)**" (`tools/bench/diag_bdloaded_reader.log`). The session cited that same paragraph for a different point (`:64-67`) and did not notice it records this failure mode.
+
+Decisively: the run crashed in `settle_tunnel` at `i = tun_index(dst, u)`, and the `note()` printing `index_mode` is the **next** statement (v1 `:239,:263-265`). **The index mode was never read.** Claim (2) converts "we never measured it" into "it was measured working" — about a VI that no longer exists (`log:136` G-A0 FAIL; stubs deleted at `:51,:95,:120`), which under the user's 2026-09-19 rule means nobody can open it to check.
+
+In fairness: ExecState 0 there is *also* consistent with an innocent mid-build state. The log cannot distinguish the two — that is the point.
+
+## 3. What would falsify this review
+
+Falsifies **me**: a body census showing PN #115's `reference` sourced from a **LoopTunnel** inner terminal (two independent auto-indexed tunnels off one array), not from #114's `Owner`; plus the input tunnel reading `IndexMode == 1` immediately after `connect_from_wire`.
+
+Falsifies the **claim**: `wire_source_owner(RA_V0, 548)` returning owner uid **114** with source terminal `Owner`; and/or `IndexMode == 0` on the tunnel `connect_from_wire` created.
+
+## 4. Cheapest discriminating test
+
+One read-only script, no edits, no saves, no new op, ~2 minutes — every call already exists:
+
+```python
+g.net_map(RA_V0, 1)                        # body: node → terminal → wire (used at build_opreportall_v1.py:102)
+[g.tunnels(RA_V0, i) for i in range(g.count(RA_V0, "LoopTunnel"))]   # IndexMode + inner/outer wires
+wire_source_owner(RA_V0, 421); wire_source_owner(RA_V0, 548)         # who drives each PN's `reference`
+```
+
+In one run this settles: chain vs parallel; which PN carries the auto-indexed traversed reference (the provenance the selection code lacks); whether an `Owner` reference is minted and left unclosed; how many tunnels the loop has. **Stage 3 needs no build to be decided.**
+
+Second arm, scratch copy, saves nothing: run `connect_from_wire` and `g.wire` into a fresh For Loop and print `index_mode` and `exec_state` *immediately after each* — separates "branch is fine, IndexMode just needed setting" from `gscript.py:1293-1295`'s bad-wire result.
+
+## Not disputed
+
+`gscript.uids()` returning a set (`tools/gscript.py:1021`) is plainly a coding defect. What does not follow is claim (1)'s second half and claim (4)'s "nothing else needs to change": in stages 1–2 the design was never exercised past the crash point, so the log is silent on it rather than supportive.
+
+**Sources:** [Closing References in LabVIEW — NI](https://www.ni.com/en/support/documentation/supplemental/13/closing-references-in-labview.html) · [Generic class/Owning VI property — LabVIEW Wiki](https://labviewwiki.org/wiki/Generic_class/Owning_VI_property) · [Generic class/Owner property — LabVIEW Wiki](https://labviewwiki.org/wiki/Generic_class/Owner_property) · [Close File (G Dataflow) — NI](http://www.ni.com/documentation/en/labview/latest/node-ref/close-file/) · [Close Reference function — LabVIEW Wiki (stub)](https://labviewwiki.org/wiki/Close_Reference_function)
+BGRUN END rc=0 after 538s

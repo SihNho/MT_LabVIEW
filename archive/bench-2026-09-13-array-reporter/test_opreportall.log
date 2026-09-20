@@ -1,0 +1,57 @@
+BGRUN START 2026-09-13 23:13:55 limit 40.0 min: py -u tools/recipes/test_opreportall.py
+======== A. SMALL VI - correctness ========
+
+---- small: class 'Node' ----
+   14 objects
+   report_all:   14 rows in    0.05 s
+   report    :   14 rows in    0.15 s
+   correctness: IDENTICAL
+   speed-up   : 3.0x
+
+---- small: class 'Wire' ----
+   28 objects
+   report_all:   28 rows in    0.05 s
+   report    :   28 rows in    0.31 s
+   correctness: IDENTICAL
+   speed-up   : 5.9x
+
+---- small: class 'ControlTerminal' ----
+   8 objects
+   report_all:    8 rows in    0.05 s
+   report    :    8 rows in    0.09 s
+   correctness: IDENTICAL
+   speed-up   : 2.0x
+
+---- small: class 'Diagram' ----
+   1 objects
+   report_all FAILED: run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gscript_dialog_1789308844.png
+
+scratch small VI deleted
+
+======== B. MAIN VI (read-only) - the speed claim ========
+
+---- main: class 'Property' ----
+   106 objects
+   report_all:  106 rows in    1.15 s
+   report    :  106 rows in  108.13 s
+   correctness: IDENTICAL
+   speed-up   : 93.8x
+
+---- main: class 'Node' ----
+   626 objects
+   report_all:  626 rows in    1.70 s
+   report    :  626 rows in  646.50 s
+   correctness: IDENTICAL
+   speed-up   : 379.8x
+
+################ SUMMARY ################
+target  class                n  report_all     report   speed  verdict
+small   Node                14       0.05s      0.15s    3.0x  IDENTICAL
+small   Wire                28       0.05s      0.31s    5.9x  IDENTICAL
+small   ControlTerminal      8       0.05s      0.09s    2.0x  IDENTICAL
+small   Diagram              1        FAIL          -       -  report_all failed: run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gs
+main    Property           106       1.15s    108.13s   93.8x  IDENTICAL
+main    Node               626       1.70s    646.50s  379.8x  IDENTICAL
+
+VERDICT: FAIL - do NOT switch report() over yet; see the mismatching rows above
+BGRUN END rc=2 after 770s

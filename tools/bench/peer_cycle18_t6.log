@@ -1,0 +1,159 @@
+BGRUN START 2026-09-18 00:25:33 limit 16.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Dual -Slug cycle18-t6-regression -TimeoutSec 780 -TaskFile 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\938fcbac-f7c1-491c-9590-23adf799a008\scratchpad\cycle18_t6_task.txt'
+=== DUAL ARM 1/2: codex -> cycle18-t6-regression-codex ===
+OUTCOME: ANSWERED (214s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-18-cycle18-t6-regression-codex.md
+--- ANSWER ---
+The claim’s weakest—and presently unjustified—part is “it has been failing since T4–T6 were added.” The contemporaneous record is not stale from a three-case version: it explicitly names T4, T5, and T6 and records T6 as refused in a 6/6 run ([narrative](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/2026-09-17-status-d1-phase-full-narrative.md:254>)). The self-test itself has a September 17 09:29 timestamp, while that narrative was updated later at 10:01. Therefore the historical statement cannot stand unless the 6/6 record is proved false. The record is not merely outdated; it is either wrong, or it describes different `guard_cycle.py` behavior.
+
+For the current source, however, a line-by-line walk identifies T6 as the sole failure:
+
+- T1: recipe time is `rt+600`; review stamp is `rt`. No review is newer, so the FIXED exemption is examined. The cited recipe exists and is newer than `review_time=rt`, so lines 406–412 allow it. Pass.
+- T2: same timing, but no citation. Lines 413–425 refuse it. Pass.
+- T3: no review exists, so `newer` and `latest` are empty; lines 413–425 refuse it. Pass.
+- T4: `fixed_citations()` explicitly rejects FIXED lines above the disposition heading at lines 128–131. It then refuses. Pass.
+- T5: the cited file does not exist, rejected at lines 138–141. It then refuses. Pass.
+- T6: the test sets the recipe to `rt-600` and expects refusal ([self-test](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/selftest_guard_cycle_fixed.py:101>)). The review stamp is `rt`, so this decides the result:
+
+> `newer = [p for p, t in revs if t > rmt]`  
+> `if not newer:`
+
+([guard_cycle.py](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_cycle.py:377>))
+
+For T6, `newer` is nonempty. The entire refusal/exemption branch is skipped, and line 426 returns `None`, meaning allowed. That makes T6 fail exactly as suspected.
+
+There is no credible date rollover or DST alternative. Both the recipe setup and frontmatter parser feed the identical local `2026-09-17 10:00` tuple to `time.mktime`; T6 has a ten-minute margin, not a boundary equality. Python defines `mktime()` as converting a local-time tuple, with `-1` requesting automatic DST determination ([Python `time` documentation](https://docs.python.org/3/library/time.html)). `time.time()` only filters BENCH log entries, and BENCH is empty here.
+
+The cycle-18 release refactor is algebraically equivalent. For every slug:
+
+```text
+s not in refuted and s not in fixed
+```
+
+is exactly:
+
+```text
+s not in (refuted | fixed)
+```
+
+A FIXED slug outside `PRIOR_ART_SLUGS` cannot create a difference because `fixed_citations()` rejects it first. A `REFUTED:` line in the QUESTION cannot create a difference either: both the stated old expression and `released_slugs()` scan the complete `body`. There is no concrete body on which those two expressions differ.
+
+The new import also does not explain this self-test. `stop_record.py` performs no top-level import of `guard_cycle`; its lazy import occurs only inside `_released()` ([stop_record.py](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/stop_record.py:240>)), which `premature_build()` never calls. `stop_record.ROOT` is a separate module variable and does not assign `guard_cycle.ROOT`. If the lazy import were eventually reached, Python would return the already registered module from `sys.modules`; modules are placed there before their bodies execute specifically to handle recursive imports ([Python import-system documentation](https://docs.python.org/3/reference/import.html)).
+
+An alternative explanation for the same evidence is therefore historical code drift: the recorded 6/6 may have been real under the September 17 `guard_cycle.py`, while the current September 18 rewrite introduced the branch behavior now visible—even if the intended edit description says otherwise. A second alternative is that the narrative’s 6/6 was copied or asserted without preserving raw output. No original per-case log remains in the repository, so the available evidence cannot distinguish those histories.
+
+What would falsify the present T6 diagnosis is a direct observation that, with `rmt=rt-600`, `stamp(review) <= rmt`, or that `premature_build()` returns a refusal. What would falsify the historical-regression alternative is a dated raw September 17 per-case output showing T6 already failing, or a trustworthy pre-cycle18 `guard_cycle.py` demonstrating the same path and result.
+
+After all four attacks, I believe the narrow current-code conclusion holds: T6 is the 5/1 failure, and the stated release-set refactor cannot cause it. I do not accept the broader “has been failing since added” claim without resolving the explicit 6/6 record.
+
+The cheapest discriminating test is a standalone two-case temporary probe—not the blocked suite—that prints only `recipe_mtime`, `stamp(review)`, `newer`, and `premature_build()` for T1 (`rt+600`) and T6 (`rt-600`). If it reports T1 allowed and T6 allowed, the current-case diagnosis is settled; then only the missing September 17 raw output or pre-cycle18 source can decide whether this is old test debt or later code drift.
+=== DUAL ARM 2/2: claude/hypothesis (opus, effort max, web) -> cycle18-t6-regression-opus ===
+OUTCOME: ANSWERED (558s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-18-cycle18-t6-regression-opus.md
+COST: $4.0548  in 24 / out 41139 / cache-create 230269 / cache-read 1354952  (554s, 21 turn(s))
+--- ANSWER ---
+Write is disabled in this session, as the read-only brief requires — the review is below.
+
+---
+
+# The claim is wrong where it matters most: T6 **passed** on 2026-09-17, and the thing that broke it was not cycle 18
+
+I confirm only the narrow part — T6 is the failing case — and refute the three load-bearing parts: "unreachable by construction", "failing since T4–T6 were added", and the implied disposition that the test's premise is wrong.
+
+## 1. The single strongest reason the claim is wrong
+
+**T6 was reachable, was reached, and passed — under seven minutes before its own threshold — and the project's 6/6 record is accurate rather than stale.**
+
+The claim says the recipe being older than the review makes the FIXED branch unreachable "BY CONSTRUCTION". That is an *atemporal* statement about the test. But reachability here is decided by `stamp()`, and `stamp()` was rewritten on the afternoon of 2026-09-17.
+
+The fixture pins only mtime:
+
+```python
+os.utime(p, (rt, rt))          # selftest_guard_cycle_fixed.py:65
+```
+
+On Windows `os.utime` sets atime and mtime only — it cannot set creation time — while `os.path.getctime`/`st_ctime` *is* creation time ([python docs via note.nkmk.me](https://note.nkmk.me/en/python-os-stat-file-timestamp/), [GeeksforGeeks os.utime](https://www.geeksforgeeks.org/python/python-os-utime-method/)). So the review file's ctime is **the wall clock of whoever runs the test**.
+
+Pre-OPEN-31, `stamp()` was `min(ctime, mtime)` — `guard_cycle.py:222-223` still describes that as its whole design. T6 sets `rmt = rt-600 = 2026-09-17 09:50:00`, and the gate turns on one line:
+
+```python
+revs  = [(p, stamp(p)) for p in glob.glob(os.path.join(PEER, "*priorart*.md")))]   # guard_cycle.py:377
+newer = [p for p, t in revs if t > rmt]                                            # :378
+if not newer:                                                                      # :379
+```
+
+* run **before 09:50** → `stamp = min(ctime≈09:4x, 10:00) = 09:4x` → `newer` empty → block entered → `fixed_citations` rejects the backdated citation at `guard_cycle.py:147` (`fm 09:50 <= rt 10:00`) → refusal → **T6 PASS**
+* run **today** → `stamp()` reads the frontmatter and returns exactly `rt` = 10:00 > 09:50 → `newer` non-empty → `premature_build` returns `None` → **T6 FAIL**
+
+And the machine dates it. `tools/bench/build_opsentinel_ops.log:1`:
+
+```
+BGRUN START 2026-09-17 09:43:20 limit 30.0 min: py -u tools/recipes/build_opsentinel_ops.py both
+```
+
+`archive/2026-09-17-status-d1-phase-full-narrative.md:254-258` records 6/6 and says the exemption *then* "released the real case twice in this session (`build_opsentinel_ops.py`, `build_d1_v0.py`)". So the 6/6 run precedes 09:43:20 — **inside** the window where T6 passes, with under seven minutes of margin (run 3 started 09:50:24, already 24 s past the threshold).
+
+The OPEN-31 rewrite is dated by the archives it produced: `archive/peer/2026-09-17-open31b-stamp-opus.md:105` (17:05:54) and `:29`/`:106` (16:49:45). `tools/peer.ps1:538` confirms the same round is when frontmatter gained a time. That is ~7 hours *after* the 6/6.
+
+The internal check is exact: under this story **only T6 flips**, because T1–T5 all use `offset=+600` (`rmt` = 10:10) and `newer` is empty under both the old and the new `stamp`. 6/6 → 5 pass / 1 fail, one case. Nothing else in the file moves.
+
+So the contradiction the brief asked me to resolve resolves *against* the claim. The claim offered "stale or wrong" as the only two branches for the 6/6 line and never considered "correct, and the gate changed underneath it".
+
+## 2. Which case fails, by reading, with the deciding lines
+
+T6 — confirmed independently, and T1–T5 confirmed passing:
+
+| | `rmt` | `newer` | path taken | result |
+|---|---|---|---|---|
+| T1 | rt+600 | empty | `fixed_citations` → `fp in cited` → `None` (`:411-412`) | ALLOWED ✓ |
+| T2 | rt+600 | empty | no FIXED line → `cited` empty → refusal (`:413`) | REFUSED ✓ |
+| T3 | rt+600 | empty (`revs` empty) | `latest` None → refusal | REFUSED ✓ |
+| T4 | rt+600 | empty | FIXED above the heading → `bad` (`:129-131`) | REFUSED ✓ |
+| T5 | rt+600 | empty | path missing (`:139-141`) | REFUSED ✓ |
+| **T6** | **rt-600** | **non-empty** | **`if not newer:` skipped → `return None` (`:426`)** | **ALLOWED ✗** |
+
+The two lines that decide it are `selftest_guard_cycle_fixed.py:101` (`recipe_mtime_offset=-600`) and `guard_cycle.py:378-379`.
+
+## 3. An alternative explanation of the same `5 pass / 1 fail`
+
+**The regression is real and belongs to OPEN 31, not to cycle 18.** `stamp()` learning to read `- **date:**` collapsed an asymmetry the morning code depended on: `review_time()` read the frontmatter (`:101-109`) while `stamp()` read the filesystem (`:244`). `review_time`'s own docstring is written in the future tense — *"If peer.ps1 ever writes a time too"* (`:99`) — which dates it before peer.ps1 carried one. T6 was passing precisely because those two clocks disagreed. OPEN 31 made them agree, and the test died.
+
+Under this alternative, cycle 18's regression cover **worked**: it is the first thing to detect a side-effect of the OPEN-31 change, and the explanation under review would dispose of it as "the test's premise is wrong" — deleting the detector. `stamp()` is read by `premature_build`, the verdict gate, `newest_retrospective()`, `retrospective.py:186,225,300`, and now by `stop_record` through `released_slugs`. If it moved one gate it may have moved others, and that question does not get asked if T6 is written off.
+
+## 4. The brief's other four candidates — checked, and three are dead ends
+
+**(2) The `released_slugs` refactor cannot differ.** `s not in A and s not in B` ⟺ `s not in (A|B)`, by definition of union; both read the same `body`. Neither named sub-case produces a difference: a non-`PRIOR_ART_SLUGS` slug is rejected at `:135-137` before reaching `ok`, and `slugs` at `:520` is already filtered, so a stray member of `released` can only match nothing. **There is no body of text on which the two expressions differ.**
+
+There *is* a standing fail-open, though it is not this failure and not new: `PRIOR-ART:` slugs are read only from the answer half (`:519-520`), while `REFUTED:` is read from the whole `body` (`:179`) — the exact defect the `:518` comment says it fixed for slugs. Cycle 18 has now **exported** that asymmetry to a second gate (`stop_record.py:257`), so a line-initial `REFUTED: <slug>` anywhere in a review file now releases a launch stop record too. I found no current instance — the templates at `:536` and `stop_record.py:285` emit `<slug>` in angle brackets, which `[a-z-]+` cannot match — so this is a widened blast radius, not a live hole.
+
+**(3) `import stop_record` is inert on this path.** `guard_cycle.py:61` inserts the *real* `ROOT/tools` at import time, before any monkeypatch; `stop_record`'s module body (`:59-74`) only computes paths and compiles regexes; it never reads or writes `guard_cycle.ROOT`; and `premature_build` never calls it — the only call site is `main()` (`:462`), which the self-test never invokes (`selftest:75` calls `premature_build` directly). The lazy import at `stop_record.py:254-256` runs at call time, never during import, so it cannot bind a half-initialised module. The driver's own probe asserted this and passed (`cycle18_stopgate_driver.py:62-72`).
+
+**(4) Clock dependence — yes, and it is the answer.** Not `MAX_AGE_S` (no age filter is applied to `revs` at `:377-378`), not the `priorart_*.log` scan (BENCH is an empty temp dir, `selftest:51-52`), not DST (both sides derive from the same `time.mktime(..., -1)`, so any offset cancels; KST has none). The live dependence is `stamp()`'s `base = min(getctime, getmtime)` at `:244` against a fixture that pins only mtime. **T6 was always a time bomb; OPEN 31 detonated it.**
+
+**(5) The record.** Resolved above — and one thing worth stating plainly: `grep -n "SELFTEST guard_cycle"` across the whole project returns **exactly one hit**, the `print` at `selftest_guard_cycle_fixed.py:106`. No log anywhere records this self-test's output. The 6/6 was read off a terminal, never archived, which is why the claim could treat it as soft evidence. That is a gap in the record, not grounds to assume the record is wrong.
+
+## 5. What would falsify my account
+
+* The probe below showing `len(newer) == 0` for T6 today → my reading of the short-circuit is wrong and the fault is inside `fixed_citations`.
+* The self-test having actually been run **after 09:50** on 2026-09-17 → even the old `stamp` gives `min(10:0x, 10:00) = 10:00 > 09:50`, T6 would have failed then too, and 6/6 would be an unmeasured assertion.
+* `_fm_date`/the frontmatter branch of `stamp()` turning out to predate 09:43 → the morning run could not have passed.
+
+**Where the evidence does not settle it:** I have the session window (`narrative:240`, `retrospective-cycle15-d1-build3.md:236` — "logs written 09:3x–10:0x") and the 09:43:20 bgrun line, but the ordering "self-test ran, *then* the recipe was released" is a sentence in a narrative, not a machine record, because no log of the self-test exists. That sentence is the one inferential link in my chain, and the window it has to fit is only ~7 minutes wide. I would not call this settled beyond the probe in §6.
+
+## 6. The cheapest discriminating test
+
+**Zero-cost, already done:** the `grep` in §4(5) — one hit, the `print` itself. No archived measurement of this self-test has ever existed.
+
+**Then, ~1 second and gated by nothing:** a ~10-line probe in the scratchpad, **outside** `tools/recipes/` and `tools/bench/`. `guard_cycle.BUILD_RE` requires `tools/recipes/` (`:40`) and `guard_peer.RUNS_RE` requires `tools/recipes|bench` (`guard_peer.py:45`), so a file anywhere else is touched by neither gate — no `CYCLE_GUARD_OFF`, no `PEER_GUARD_OFF`, no waiting on this review. It imports `guard_cycle`, rebuilds the same temp tree, and prints per case: `stamp(review)`, `review_time(review)`, `rmt`, `len(newer)`, and the return value.
+
+* Predicts my account: T6 shows `stamp == review_time == rt`, `len(newer) == 1`; T1–T5 show `0`.
+* **The decisive step:** stub `guard_cycle._fm_date = lambda p: (None, False)` — that is precisely the pre-OPEN-31 `stamp` — and re-run T6. If it flips to PASS, the 6/6 is vindicated and the regression is dated to OPEN 31. If it still fails, my account is wrong.
+
+Two facts worth having on record for whoever runs this: the driver **already echoes** the per-case lines (`cycle18_stopgate_driver.py:89`, with `:85-88` noting run 1 swallowed them), so "we cannot see which case failed" expires on its own once `guard_peer`'s 6-hour `MAX_AGE_S` window (`guard_peer.py:69`) passes over `cycle18_stopgate.log`. And this review cannot lift that gate regardless — `review_quality` rejects `agent: claude` (`guard_peer.py:143-146`); only the codex arm of this dual dispatch discharges it.
+
+## 7. What I would do with T6 — and what I would not
+
+**Do not delete it.** Its named condition, the `fm <= rt` rejection at `guard_cycle.py:147-151`, is the entire strictness argument for `FIXED:` ("a promise is not a fix"), it is fully reachable from `main()`'s verdict gate and from `stop_record._released` where no `newer` short-circuit exists, and it currently has **no test at all**. Retarget T6 at `released_slugs`/`fixed_citations` directly, and assert on `stamp()` and `review_time()` as numbers so wall-clock creation time stops deciding the verdict.
+
+Within `premature_build` the branch is still reachable, narrowly: entering needs `stamp = min(fm, mt) <= rmt` while rejecting needs `review_time = fm >= recipe_mtime`, so it requires `mt < fm` — an archive whose mtime precedes its own frontmatter stamp (a re-archive under NTFS tunneling, a hand-edited date, a clock step). Narrow, but "narrow" is not "by construction".
+
+**Sources:** [os.stat / getctime on Windows](https://note.nkmk.me/en/python-os-stat-file-timestamp/) · [os.path.getctime](https://www.geeksforgeeks.org/python-os-path-getctime-method/) · [os.utime sets atime/mtime only](https://www.geeksforgeeks.org/python/python-os-utime-method/) · [ctime is not creation time off Windows](https://dev.to/nguyendhn/bty-day-5-ctime-does-not-refer-to-creation-time-2mkl)
+=== DUAL DONE: codex rc=0, opus rc=0  (archive\peer\2026-09-18-cycle18-t6-regression-codex.md, -cycle18-t6-regression-opus.md) ===
+BGRUN END rc=0 after 772s

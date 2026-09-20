@@ -1,0 +1,47 @@
+BGRUN START 2026-09-15 18:54:33 limit 15.0 min: py -u tools/prior_art_review.py --slug ownerchain --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/1c79eb01-7150-4a78-9689-e6d4f34f7800/scratchpad/plan_ownerchain.txt
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_ownerchain.txt (32243 chars)
+OUTCOME: ANSWERED (245s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-15-priorart-ownerchain.md
+--- ANSWER ---
+No exact general-purpose UID?�owner-UID op is already built. However, the acceptance value is already measured, and the recipe repeats a recorded rewire failure.
+
+1. ALREADY BUILT ??No exact match
+
+`report()` returns the object?�s own UID but only its owner?�s class: [`tools/gscript.py:260`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/gscript.py:260>) and [`tools/gscript.py:275`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/gscript.py:275>). `report_all()` has the same `{class, uid, pos, owner}` schema: [`tools/gscript.py:290`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/gscript.py:290>) and [`tools/gscript.py:316`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/gscript.py:316>).
+
+The closest built op is `OpWireSource_v5`, but it returns the owner UID of an indexed wire terminal, not an arbitrary UID-addressed object: [`docs/toolkit-capabilities.md:48`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/toolkit-capabilities.md:48>). The project itself calls `OpOwnerChain_v0` ?�the missing reader?? [`STATUS.md:358`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:358>).
+
+The reusable `Owner ??ClassName + cast(GObject) ??UID` subchain is already built inside `OpWireSource_v5`: [`tools/recipes/build_opownerchain_v0.py:9`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_opownerchain_v0.py:9>) and [`tools/recipes/build_opownerchain_v0.py:20`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_opownerchain_v0.py:20>). That is donor prior art, not the finished arbitrary-object op.
+
+2. ALREADY MEASURED ??Yes, the acceptance oracle
+
+The exact functional-check answer is already recorded:
+
+- `CaseStructure#10407` lives on diagram 43: [`docs/diagram-hierarchy.md:46`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/diagram-hierarchy.md:46>).
+- Diagram 43 is UID 639 and contains case 10407: [`docs/keystone-op-spec.md:593`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/keystone-op-spec.md:593>).
+- The JSON?�s diagram-43 UID list already contains structure UID 10407: [`tools/bench/diagram_tree_main.json:370`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diagram_tree_main.json:370>) and [`tools/bench/diagram_tree_main.json:397`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diagram_tree_main.json:397>).
+
+The general 170-diagram hierarchy and full motor-loop question remain unresolved: [`docs/diagram-hierarchy.md:60`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/diagram-hierarchy.md:60>) and [`docs/diagram-hierarchy.md:73`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/diagram-hierarchy.md:73>).
+
+3. ALREADY FAILED ??Yes, twice in two relevant ways
+
+`VI.Get Errors` method 452 was attempted on 2026-09-09 and 2026-09-14. Both runs produced only generic reference/error terminals and left the op at `ExecState 0`: [`tools/bench/build_opgeterrors.log:1`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_opgeterrors.log:1>)??`tools/bench/build_opgeterrors.log:18`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_opgeterrors.log:18>). The recorded cause is that the private method did not resolve/attach, even with the private scripting tokens: [`docs/toolkit-capabilities.md:244`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/toolkit-capabilities.md:244>). The new plan avoids this route, so it does not repeat that failure.
+
+More seriously, the first `OpWireSource_v5` rewire failed because wire 751 had another consumer, node 482. The op stayed broken until that orphaned reference was re-fed: [`tools/bench/build_opwiresource_v5.log:35`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_opwiresource_v5.log:35>)??`tools/bench/build_opwiresource_v5.log:39`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_opwiresource_v5.log:39>). The census confirms node 482 consumes wire 751: [`tools/bench/census_opwiresource_v5.log:160`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/census_opwiresource_v5.log:160>).
+
+The pending recipe rewires only nodes 163 and 1221: [`tools/recipes/build_opownerchain_v0.py:130`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_opownerchain_v0.py:130>)??`tools/recipes/build_opownerchain_v0.py:143`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_opownerchain_v0.py:143>), and neither deletes nor re-feeds node 482. It therefore repeats the recorded failure cause. Gate B5 should stop the save, but the build is likely to fail there.
+
+4. HELPER EXISTS ??No missing toolkit call
+
+The recipe already uses the appropriate existing calls: `net_map`, `connect2`, `report_all`, `delete_object`, `remove_bad_wires_scripted`, and `save`. The local `term_wire`/`term_index` functions merely query the returned census. No existing helper directly supplies arbitrary-object owner UID.
+
+5. CONTRADICTED ??Yes
+
+The recipe says the missing datum is ?�the diagram that a STRUCTURE itself lives on?? [`tools/recipes/build_opownerchain_v0.py:3`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_opownerchain_v0.py:3>)??`tools/recipes/build_opownerchain_v0.py:7`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_opownerchain_v0.py:7>). The reviewed belief says the opposite?�that structure?�home-diagram is already available. The JSON supports that only for catalogued nodes, such as 10407 on diagram 43, while the hierarchy report warns that FlatSequence structures may be absent from those UID lists: [`docs/diagram-hierarchy.md:66`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/diagram-hierarchy.md:66>)??`docs/diagram-hierarchy.md:69`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/diagram-hierarchy.md:69>). Thus the claimed availability is partial, not general.
+
+There is also a recipe/code contradiction: the docstring says seven Wire-specific nodes, including node 17, will be deleted: [`tools/recipes/build_opownerchain_v0.py:27`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_opownerchain_v0.py:27>). `DELETE_UIDS` contains only six and omits node 17/UID 1329: [`tools/recipes/build_opownerchain_v0.py:57`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_opownerchain_v0.py:57>)??`tools/recipes/build_opownerchain_v0.py:62`](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_opownerchain_v0.py:62>).
+
+PRIOR-ART: already-measured  
+PRIOR-ART: already-failed  
+PRIOR-ART: contradicted
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-ownerchain.md
+BGRUN END rc=0 after 245s

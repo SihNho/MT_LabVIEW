@@ -1,0 +1,62 @@
+BGRUN START 2026-09-13 19:43:04 limit 12.0 min: py -u -c 
+import os,sys,glob
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+ops=sorted(glob.glob(os.path.join(g.CLAUDEDEV,'Op*.vi')))
+print('%d ops; looking for ARRAY indicators on their panes'%len(ops),flush=True)
+import time
+for p in ops:
+    n=os.path.basename(p)
+    try:
+        labs=g.fp_labels(p,max_n=40)
+    except Exception as e:
+        print('  %-32s fp_labels failed: %s'%(n,str(e)[:60]),flush=True); continue
+    inds=[l for _,l,ind in labs if ind]
+    # names that suggest an array output
+    arr=[l for l in inds if any(k in l for k in ('[]','Array','array','Terms','Refs','List'))]
+    if arr:
+        print('  %-32s ARRAY-ish indicators: %s'%(n,arr),flush=True)
+
+50 ops; looking for ARRAY indicators on their panes
+  OP_test1.vi                      ARRAY-ish indicators: ['x,y,z array out', 'Bead is good? array out']
+  OpCLFNPre_v0.vi                  fp_labels failed: (-2147023170, '���� ���ν����� ȣ������ ���߽��ϴ�.', None, None)
+  OpConPaneAssign_v0.vi            fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpConPane_v0.vi                  fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpConnect2_v0.vi                 fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpConnect_v0.vi                  fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpCreateControl_v0.vi            fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpCreateControl_v1.vi            fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpCreateIndicator_v0.vi          fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpCreatePropNode_v0.vi           fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpDeleteByLabel_v0.vi            fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpDelete_v0.vi                   fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpExitLoop_v0.vi                 fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpFPLabels_v0.vi                 fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpFP_v0.vi                       fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpForLoop_v0.vi                  fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpLoopKernel_v0.vi               fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpMakeDefault_v0.vi              fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpMoveByLabel_v0.vi              fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpMoveOut_v0.vi                  fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpMove_v0.vi                     fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpNetInfo_v0.vi                  fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpNetInfo_v1.vi                  fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpNodeInfo_v0.vi                 fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpNode_v0.vi                     fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpRemoveBadWires_v0.vi           fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpReport_v0.vi                   fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpReport_v1.vi                   fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpReport_v2.vi                   fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpReport_v3.vi                   fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpSetAutoErr_v0.vi               fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpSetIndexMode_v0.vi             fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpSetLabel_v0.vi                 fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpSetName_v0.vi                  fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpSubVI_v0.vi                    fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpSubVI_v1.vi                    fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpWireCtl_v0.vi                  fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpWireInd_v0.vi                  fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpWire_v0.vi                     fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+  OpWire_v1.vi                     fp_labels failed: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+BGRUN END rc=0 after 109s

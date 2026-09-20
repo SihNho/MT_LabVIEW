@@ -1,0 +1,44 @@
+BGRUN START 2026-09-13 19:19:55 limit 15.0 min: py -u -c 
+import os,sys,time,statistics as st
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+WORK=r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi'
+SMALL=os.path.join(g.CLAUDEDEV,'OpReport_v3.vi')
+
+def timeit(fn,n=1):
+    ts=[]
+    for _ in range(n):
+        t0=time.perf_counter(); fn(); ts.append((time.perf_counter()-t0)*1000)
+    return ts
+
+# 1. bare op run, no target work: how long is ONE _run round trip?
+vi=g.op(g.OP_REPORT)
+vi.SetControlValue('vi path',SMALL); vi.SetControlValue('Class Name','Property'); vi.SetControlValue('index',0)
+ts=timeit(lambda: g._run(vi),20)
+print('bare _run on a SMALL vi      median %.1f ms  min %.1f  max %.1f'%(st.median(ts),min(ts),max(ts)),flush=True)
+
+# 2. same but pointed at the BIG main VI - does target size change per-call cost?
+vi.SetControlValue('vi path',WORK); vi.SetControlValue('Class Name','Property'); vi.SetControlValue('index',0)
+ts=timeit(lambda: g._run(vi),20)
+print('bare _run on the MAIN vi     median %.1f ms  min %.1f  max %.1f'%(st.median(ts),min(ts),max(ts)),flush=True)
+
+# 3. SetControlValue cost alone (no run)
+ts=timeit(lambda: vi.SetControlValue('index',3),50)
+print('SetControlValue alone        median %.3f ms'%st.median(ts),flush=True)
+
+# 4. GetControlValue cost alone
+ts=timeit(lambda: vi.GetControlValue('UID'),50)
+print('GetControlValue alone        median %.3f ms'%st.median(ts),flush=True)
+print(flush=True)
+print('=> if bare _run dominates, the fix is FEWER RUNS (batch inside the op).',flush=True)
+print('=> if Set/Get dominate, the fix is fewer control touches per iteration.',flush=True)
+
+bare _run on a SMALL vi      median 10.4 ms  min 9.4  max 15.3
+bare _run on the MAIN vi     median 960.8 ms  min 946.7  max 3017.8
+SetControlValue alone        median 0.069 ms
+GetControlValue alone        median 0.062 ms
+
+=> if bare _run dominates, the fix is FEWER RUNS (batch inside the op).
+=> if Set/Get dominate, the fix is fewer control touches per iteration.
+BGRUN END rc=0 after 22s

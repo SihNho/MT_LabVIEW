@@ -1,0 +1,128 @@
+BGRUN START 2026-09-17 05:35:30 limit 20.0 min: py -u tools/prior_art_review.py --plan-file docs/d1-build-plan.md --slug d1-build-rev3 --trigger new-op
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_d1-build-rev3.txt (42373 chars)
+OUTCOME: ANSWERED (502s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-d1-build-rev3.md
+COST: $4.5639  in 36 / out 36615 / cache-create 210961 / cache-read 3077509  (498s, 28 turn(s))
+--- ANSWER ---
+Prior-art review complete — read-only, no lock taken, nothing built or run. **8 findings, zero `novel`.** The single most costly one is A1/A2: a 12/12 diagnostic run (`tools/bench/diag_d1_step0.log`, 2026-09-17 05:35) already measured two of the plan's five OPEN items and produced a third fact — a **reverse crossing out of the new 1.5 loop** — that no section of REV 3 has a route for. The plan's `measured_in:` frontmatter does not list that log.
+
+---
+
+# PART A — THE DIRECTION
+
+## A1 `already-measured` — the notifier payload width and the backward-slice classification are already measured; the plan defers both to "step 0 of the build"
+
+`docs/d1-build-plan.md:196` — *"the equivalent for `#10407` is **not measured** and is a one-run diagnostic, not a build item"*; `:347` — *"step 0 also measures what `#10407` reads per frame"*; `:344` — *"**Step 0 of the build is the backward-slice census** (the 7 nodes of `frame-loop-wire-graph.md:43`)"*; `:366` (OPEN 3) — *"One diagnostic run answers it"*.
+
+That run happened, 12/12 gates, 35 s, MAIN md5 unchanged:
+
+- `tools/bench/diag_d1_step0.log:143` — *"FACT **NOTIFIER PAYLOAD WIDTH (measured) = 1 value(s)**: [(10407, 2, 'Index of closest\ncal image slice, bead 2')]"*. So §5's ⚠️ branch (cluster → no Bundle writer → DBL array or a second notifier) is closed: one DBL.
+- `:129` (gate G8) — all seven backward-slice nodes already carry exactly one classification: `{5540: stays-with-tunnel, 6810: stays-with-acquisition, 9647/10247/10445/10950/17289: stays-with-tunnel}`, each with its reason printed at `:79-128`.
+- `:146` — the BEFORE census is on disk: `tools/bench/d1_step0_census.json` (47 nodes on d43, 5 on d19), which is exactly the artefact `:343-344` says the recipe must take *before* the move.
+
+**Scope:** this does not touch the *design* decisions of §5 or §11a; it says the three measurements they are waiting on are done, and a build that re-runs them repeats a 35 s run whose output is already in `tools/bench/`.
+
+## A2 `unread-evidence` — the same log records a REVERSE crossing out of the new focus loop, and 91 boundary wires where §8 tables 16
+
+`docs/d1-build-plan.md:169` sends `CaseStructure #10407` to the new 1.5 loop and `:165-167` sends `CaseStructure #12589` to 1.2. `:182-185` designs **one** direction of traffic (tracking → focus, latest-result notifier).
+
+- `tools/bench/diag_d1_step0.log:145` — *"FACT **REVERSE CROSSING**: `#10407` t6 'position [internal units]' **w9113** → `#12589` 'Case Structure' 'position [internal units]' (a value the 1.5 loop produces that a node outside it consumes)"*. §8's per-terminal table (`:230-247`) has no row for wire 9113 — it tables `#5058`'s 16 terminals only — and §9's queue/notifier table (`:277-285`) carries nothing in that direction. As written, D1 splits a per-frame data dependency with no transport.
+- `:8` — *"FACT **91 boundary wires** on the move set (one census end only)"*, of which `:18` says 81 resolve to tunnels/SRs/panel and 10 do not. The plan's OPEN 2 (`:362-365`) asks precisely *"is that re-wiring list complete at §8, or does the backward slice add rows?"* — the count exists.
+- `:141-142` — `#48` t3 `VISA resource name` ← `LeftShiftRegister #4344` and t4 `In position` ← `LeftShiftRegister #4274`. §5's *"its other inputs by the same route and values as today"* (`:34`) is, for these two, a shift register of the loop the case is being moved **out of**.
+
+**Scope:** covers §5's handoff design and §8's table only. It does not claim the notifier is wrong; it claims the plan is missing the return path and the measured size of the re-wiring job.
+
+## A3 `contradicted` — F1's floor is 20 s here and 5 minutes in the user-approved gate
+
+- `docs/d1-build-plan.md:324` — *"**Phase F1 — live, ≥ 20 s**"*.
+- `docs/cycle15-plan.md:77` (the `decided_by: user 2026-09-16` acceptance table) — *"D1 runs live on the camera at 90 Hz with no beads … **for ≥ 5 min**, produces a data file through the original's writer, and the file reopens"*.
+- `archive/prose/2026-09-17-d1-d2-explained-r2.md:136`, the text the user approved — *"F1 **카메라 라이브 5분** + 파일 생성·재열기"*.
+
+A run gated at 20 s satisfies the plan's prediction contract and fails the cycle's. The plan supplies the reason for the tension at `:326-328` (`#22700` ≈ 118 MB/s ⇒ ~35 GB over five minutes) and reconciles it nowhere — no section says the 5-minute gate is amended, or how F1 reaches it with the TIFF write unconditional. Both documents are `status: current`.
+
+## A4 `settled-already` — F1's "Recorded:" list re-specifies an adopted instrumentation minimum, against a rule written to stop exactly that
+
+`docs/d1-build-plan.md:325-326` records six items (frames acquired/tracked/written, file grows, `Q_work`/`Q_res` high-water, slot ledger, handles, TIFFs); `:221` calls the reconciliation gate *"(new — no equivalent exists in `tools/bench/` or `archive/benchmarks/INDEX.md`)"*.
+
+- `docs/pre-rig-master-plan.md:55` (item 0.2) — *"**What every run records — the list already exists; use it, do not re-specify it.** `stage2-plan.md:83-88` holds the **adopted** live-instrumentation minimum … **with its acceptance** … a run whose settings are not recorded is not a measurement; **a list that exists twice drifts**."* The same row adds the four items that list predates: *the stop reason, the motor command/readback pairs, the reseed counter, and the full front-panel control snapshot.*
+- `docs/stage2-plan.md:83-88` is that list — requested/returned buffer numbers, gap count/size, overwrite/error count, acquisition-call duration p99.9/max, acquisition→dequeue and acquisition→kernel-done latency, enqueue timeouts, longest full interval, acquired/copied/enqueued/dequeued/processed/returned counts, slot-invariant violations — *"Acceptance = zero gaps, zero drops, zero slot violations, processed = acquired"*. That acceptance **is** §7's reconciliation gate in specification form; `pre-rig-master-plan.md:159-165` (2A) states it again as run criteria.
+
+**Scope:** the *implementation* of a buffer-number reconciliation check may well be new; the **specification and its acceptance are adopted**, so §7 and F1 must cite them rather than write a shorter list beside them.
+
+## A5 `contradicted` — "the only owner of the ASI VISA session" is false as measured, and the session it isolates has no close
+
+`docs/d1-build-plan.md:179-181` — *"`CaseStructure #10407` and `#48 ASI_adjust focus-subvi.vi` move to their own While loop, **which is the only owner of the ASI VISA session**. Nothing on the frame path can block on it — rule 1c is satisfied **by construction**"*.
+
+- `docs/main-vi-panel-map.md:550` — *"| 99 (display loop) | … | `ASI_adjust focus-subvi.vi` (**second call site**) |"*; `:558` — *"`ASI_adjust focus-subvi.vi` — **non-reentrant by design** — is called from **both the frame loop (43) and the display loop (99)** with the same three button references."* Moving uid 48 relocates one of two call sites; the other keeps calling the same non-reentrant VI.
+- `docs/pre-rig-master-plan.md:74` (A7b) names this VI as the project's one confirmed instance of the hazard: a shared non-reentrant subVI is *"**an accidental mutex**: the second caller blocks until the first returns, and if the first is inside a serial round trip the frame loop stops for exactly that long"*.
+- The exclusivity requirement itself is settled and has a recorded reason the plan does not carry: `archive/2026-09-16-status-cycles-8-10-narrative.md:182-183` — *"the ASI loop must **exclusively own the VISA session**, because case `#10407`'s **`Outgoing Handle` carries resource ownership, not just a value**."*
+- And the shutdown: `docs/main-vi-stop-and-save.md:136` — `ASI TG-1000.lvlib:Close.vi` #29815 has *"every terminal **bare** (wire 0) — no error chain, no VISA wire on this diagram"*; `:143-145` — *"**No VISA Close node is on diagram 83**"*. `archive/prose/2026-09-17-d1-d2-explained-r2.md:178` states the consequence the user was shown: *"원본에 VISA Close가 없고 ASI Close가 미배선이므로 **1.9에서 새로 넣어야 한다**"*. `docs/d1-build-plan.md:330-331` (F2) gates on error 1122 and the `.tra`, not on the VISA/ASI close of the loop D1 newly makes the session's owner.
+
+**Scope:** blocks the exclusivity claim and the words *"by construction"*, plus F2's shutdown coverage. It does **not** block giving row 1.5 its own loop — that is settled at `docs/pre-rig-master-plan.md:91`.
+
+---
+
+# PART B — THE ARTIFACT
+
+## B1 `unread-evidence` — the notifier is a transport the fleet cannot build, chosen without the check that row 1.3 exists to force
+
+`docs/d1-build-plan.md:34`, `:169`, `:182-185`, `:284` make the wake-up a LabVIEW **Notifier** (`N_focus`, latest-wins, non-blocking).
+
+- `tools/gscript.py:923-924` — `_QUEUE_OPS = {"obtain": …, "enqueue": …, "dequeue": …, "release": …}`, four erdosmiller **queue** creators; `:928` `queue_node()` is the only primitive-placing wrapper of that kind, and the word *notifier* appears nowhere in `gscript.py` or in `tools/recipes/`. `docs/toolkit-capabilities.md:32` lists the same four and nothing else.
+- `docs/toolkit-capabilities.md:549-553` is the rule this file was written to enforce: *"Before a plan depends on a capability, it must name **where that capability was last exercised**. If the answer is 'it is in the list' … the plan has an untested assumption in it and should say so out loud — as a gate, with a cheap test scheduled before the work that depends on it."* §5 and §9 name no exercise.
+- `docs/pre-rig-master-plan.md:89` (row 1.3) records this exact mistake being made and caught: *"**(ii) The replacement was not buildable.** 'One cluster local' was proposed **without checking the fleet** … So the requirement is fixed and the transport is not … **Pick before loop 3 is built, not now, and record the pick here**; do not build 1.3 against the sentence that happens to be in front of you."* The plan cites `toolkit-capabilities.md:32,:46-49` at `:193-194` for the *cluster* half of that lesson and not the transport half.
+- There is no donor to copy one from: `ARCHITECTURE.md:60` — *"**No LabVIEW Queue, Notifier, Semaphore, or Rendezvous primitives appear anywhere** in the decompiled text of 4.4/4.5/4.6"*, and `copy_into` / `copy_by_index` need a labelled donor object (`docs/toolkit-capabilities.md:122`).
+- Building the three notifier ops collides with `docs/cycle15-plan.md:104` — *"**No new general-purpose op VIs**, no hierarchy completion beyond what D1 needs"* — the freeze the outcome review imposed for the duration of this build.
+
+**Scope:** the *requirement* (lossy, non-blocking, latest-wins, no serial on the frame path) is settled and not challenged. What has no prior art is the **mechanism**: a notifier has never been created by this fleet, and the two buildable alternatives already named for the identical problem are lock-stepped publication (`docs/stage2-assembly-step-c.md:21-26`, 162/162) and a donor typedef built as an explicit item.
+
+## B2 `contradicted` — "those seven come from the writer loop's own shift registers" is not what `#6384`'s inputs were measured to be
+
+`docs/d1-build-plan.md:210-212` — *"seven come off `#637`'s output tunnels and the eighth is an `Array Subset` (#2048) … In D1 those seven come from **the writer loop's own shift registers** instead — **same values, different carrier**, which is scheduling."*
+
+`docs/main-vi-stop-and-save.md:115-121`, the measurement the same paragraph cites:
+
+| `#6384` input | measured source |
+|---|---|
+| t5 `desired # data points` | `#637` **outer terminal 14** — also feeds `dimension size` of `#781` (Initialize Array, outside the loop) |
+| t6 `cal cluster path` | `#637` **outer terminal 23** |
+| t11 `base path/filename` | `#637` **outer terminal 17** |
+| t7 `actual # data points` | `#637` t19 **`file progress`** |
+| t10 `file # to append` | `#637` t18 **`file number to append out`** |
+
+The first three are loop-invariant values passing *through* the loop, not accumulated per-frame state — a writer-loop shift register is not the same carrier, it is a different source. The next two are **outputs of `#376 save trace.vi`**, not of any register: `docs/frame-loop-wire-graph.md:168` (wire 5274, *source only*, `#376` t3 `file progress`) and `:166` (wire 5056, *source only*, `#376` t4 `file number to append out`). Reproducing them means reproducing `#376`'s computation, which CLAUDE.md rule 1a calls a change of decomposition requiring justification or a numeric check.
+
+And the plan does not say what becomes of `#376`: REV 2 gave the writer loop *"`#376 save trace.vi` and its three shift registers"* (`archive/peer/2026-09-17-priorart-priorart-d1-build.md:113`); REV 3's §4 writer row (`docs/d1-build-plan.md:171`) drops it and no later section places it, while `docs/main-vi-stop-and-save.md:151` still lists it as one of diagram 43's six subVI calls and `:125` as `#6384`'s in-loop partner through wire 541.
+
+## B3 `unread-evidence` — F1's pass criterion "the streamed file grows during the run" has a recorded no-bead failure mode, with a prescribed remedy, neither of them cited
+
+`docs/d1-build-plan.md:325` records *"the streamed file **grows during** the run"* as an F1 result, under the no-bead condition stated in the same paragraph.
+
+`docs/pre-rig-master-plan.md:269-274` — *"⚠️ **One thing to verify in the run rather than assume.** With no beads and no reseed, `Bead is good?` stays false for every bead. If anything downstream is gated on bead validity — **`save trace.vi` #376 writing records**, the WLC fit, **the result enqueue** — those paths may sit idle, and **'the file writer loop ran' would be a false positive**. So the run's record must show **what each loop actually did** … rows written, results enqueued and dequeued, bytes on disk. **If the writer turns out to be starved, inject synthetic results** rather than turning `Auto-Reset` back on."*
+
+The condition that makes this live is already decided for these runs: `docs/pre-rig-master-plan.md:195-200` — *"**✅ DECIDED by the user, 2026-09-16: `Auto-Reset` OFF**"*. So under D1's own F1 conditions the gate can read empty for a reason that is not a defect, and it can read non-empty without proving anything about ordering — and the remedy has been chosen in advance.
+
+---
+
+## Where I found NO prior art
+
+- **Move-then-rewire as a build ORDER** (`docs/d1-build-plan.md:339-345`): that `GObject.Move` cuts border wires (Wire 1902→1895, LoopTunnel 132→130) is new to `tools/bench/probe_move_into_v0.log`, and no earlier document prescribes a re-wire pass after a relocation.
+- **`OpMoveIn_v0.vi`** — built and gated this cycle; nothing earlier reparents a structure with its contents. The 2026-09-13 exchange said the opposite (`archive/peer/2026-09-13-scripted-diagram-selection.md:162`) and was refuted by measurement, which is recorded.
+- **The TSV streamed format** (`docs/d1-build-plan.md:349-351`) — no format is decided anywhere for row 1.7; `pre-rig-master-plan.md:93` gives only the acceptance.
+- **Four loops inside a copy of the original at this scale** — `docs/decisions.md:19` calls scale *"untested"*, which is a statement that it has not been done.
+
+---
+
+```
+PRIOR-ART: already-measured   (A1 — tools/bench/diag_d1_step0.log:143 notifier width = 1, :129 the 7-node backward-slice classification, :146 d1_step0_census.json vs docs/d1-build-plan.md:196,:344,:347,:366)
+PRIOR-ART: unread-evidence    (A2 — tools/bench/diag_d1_step0.log:145 reverse crossing w9113 #10407 t6 -> #12589, :8 91 boundary wires, :141-142 #48's VISA-name shift register, vs docs/d1-build-plan.md:182-185,:230-247)
+PRIOR-ART: contradicted       (A3 — docs/d1-build-plan.md:324 "F1 >= 20 s" vs docs/cycle15-plan.md:77 ">= 5 min" and archive/prose/2026-09-17-d1-d2-explained-r2.md:136)
+PRIOR-ART: settled-already    (A4 — docs/pre-rig-master-plan.md:55 "the list already exists; use it, do not re-specify it" + docs/stage2-plan.md:83-88 vs docs/d1-build-plan.md:221,:325-326)
+PRIOR-ART: contradicted       (A5 — docs/main-vi-panel-map.md:550,:558 second non-reentrant call site on diagram 99, docs/pre-rig-master-plan.md:74, archive/2026-09-16-status-cycles-8-10-narrative.md:182-183, docs/main-vi-stop-and-save.md:136,:143-145, archive/prose/2026-09-17-d1-d2-explained-r2.md:178 vs docs/d1-build-plan.md:179-181,:330-331)
+PRIOR-ART: unread-evidence    (B1 — tools/gscript.py:923-924,:928; docs/toolkit-capabilities.md:32,:549-553; docs/pre-rig-master-plan.md:89; ARCHITECTURE.md:60; docs/cycle15-plan.md:104 vs docs/d1-build-plan.md:34,:182-185,:284)
+PRIOR-ART: contradicted       (B2 — docs/main-vi-stop-and-save.md:115-121,:125,:151 and docs/frame-loop-wire-graph.md:166,:168 vs docs/d1-build-plan.md:210-212,:171)
+PRIOR-ART: unread-evidence    (B3 — docs/pre-rig-master-plan.md:269-274,:195-200 vs docs/d1-build-plan.md:325)
+```
+
+One note for whoever disposes of this: A1 and A2 are cheap to clear — the log is 35 s old work already on disk, so the disposition is "cite it and fold its three facts into §5, §8 and §11a", not a new run. B1 is the one that can change the cycle's shape: if the notifier stays, an op family has to be built inside a freeze that forbids it, so the decision belongs to a judgement session, not to the build recipe.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-d1-build-rev3.md
+BGRUN END rc=0 after 503s

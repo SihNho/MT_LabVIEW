@@ -1,0 +1,59 @@
+BGRUN START 2026-09-18 18:17:26 limit 15.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -TimeoutSec 780 -Slug tmx-lastfield-parse -TaskFile 'C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/65a1e34f-8e02-4570-b9c4-69fc023ffb64/scratchpad/tmx_task.txt'
+OUTCOME: ANSWERED (417s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-18-tmx-lastfield-parse.md
+COST: $2.6711  in 18 / out 28624 / cache-create 147462 / cache-read 797604  (416s, 15 turn(s))
+--- ANSWER ---
+Write is disabled for this role (as the peer brief requires), so the review is this answer.
+
+# The claim is right about Q1's premise, wrong about its evidence, and wrong in its conclusion
+
+## 1. Strongest reason the claim is WRONG
+
+**The cause you name is no longer checkable against anything the machine wrote — and "`tmx_from` needs no further change" does not follow from it either way.**
+
+Two parts:
+
+**(a) The self-test destroys its own evidence.** The FAIL line prints `label`, `got`, `line`, `want` and *not* the input (`tools/bench/drive_original_copy_v4.py:306-307`). The only artefact that could have shown a `    | ` prefix was the source, and the source now holds the *un*-prefixed string with a comment explaining the prefix (`:271-275`). This project is not a git repository, and `tools/bench/drive_original_copy_v4*` globs to four files, none a pre-edit copy. So "the test string carried the log's prefix" rests entirely on recollection of what was typed. That is the exact pattern CLAUDE.md says to answer by building the reader — and it is why the claim is now making a *second* unrun prediction ("it should now pass") about the same file that just falsified the first one.
+
+**(b) The conclusion is false independent of the fixture.** The driver deliberately re-implemented a parser the gate already owns in a stronger form. `motor_gate.py:281-290` (`parse_pi_limits`) uses an anchored whole-text regex; `drive_original_copy_v4.py:216-217` states it avoids "importing its parsers on a path that could fail" and substitutes whitespace-tokenise + `startswith("TMX?=")` + last-`=`-field. The false red at gate 93 is the *duplicate* parser breaking on a shape the original never meets, because the gate's own `LIMITS` line is already normalised (`motor_send_pi.ps1:58` formats `[double]`s produced by `Num`, `:41`). Patching the duplicate entrenches the duplication, and the self-test then freezes the duplicate's behaviour as a contract.
+
+## 2. Alternative explanation of the same evidence
+
+`got=None line="(no TMX line in the gate's output)"` is produced by **any** fixture where no line survives `s.strip().startswith("before:")` (`:219-222`). The `    | ` prefix is one. At least two others are as likely and are **not** fixed by removing a prefix:
+
+- **The log's quoted wrapper.** `drive_original_copy_v5.log:439` reads `TMX?=None from 'before: POS?=…'`. Your Q1 already notices that quote carries no `    | `. The simplest reading is not that you stripped a prefix by hand — it is that the paste came from line 439's phrase, i.e. `TMX?=None from 'before: …'`. `.strip().startswith("before:")` is False for that too, and the output is byte-identical. Same class ("unfaithful fixture"), different mechanism — and your proposed edit is a no-op against it.
+- **An invisible character.** Text copied through a terminal can carry U+FEFF. Python's `str.strip()` strips `\xa0` (it is `isspace()`) but **not** `\ufeff`, so a BOM-prefixed fixture gives exactly this symptom, survives a visual diff, and survives "remove the prefix".
+
+## 3. What would falsify the claim
+
+Re-run `--selftest` with the fixture untouched. Case 1 still failing with `line="(no TMX line…)"` kills the prefix story outright. Seeing `repr(text)` come back as `'    | before: …'` confirms it. Neither has been done, so this is still a prediction.
+
+## 4. Cheapest discriminating test
+
+One line, no COM, no motor, no LabVIEW — add the input to the failure print at `drive_original_copy_v4.py:306-307`:
+
+```python
+print("  %s | %-34s | got=%r line=%r (want %r) text=%r" % (..., want, text), flush=True)
+```
+
+then `py tools/bench/drive_original_copy_v4.py --selftest`. It separates all three alternatives in one run and is the reader the "diagnosis guessed twice" rule asks for. **Run it before editing the fixture again** — the current edit has already destroyed the evidence once.
+
+---
+
+## Your three questions
+
+**Q1 — established, but not by the evidence you cite.** The FAIL-detail quote at `v5.log:439` *is* weakly circular: it is printed from a variable by the same code path under test, so it can only ever display a string that already passed `startswith("before:")` — it cannot show what a rejected line looked like. The non-circular proof is the sender and the gate: `motor_send_pi.ps1:52` emits `before: POS?={0} TMN?={1} TMX?={2} ERR?={3}` flush-left via `Write-Output`, and `motor_gate.py:369` (`session_start`) re-emits the sender text as `out(text.strip())` — one strip of the whole block, no per-line decoration. The `    | ` at `v5.log:423` is added afterwards by `drive_original_copy_v4.py:211`. Right answer, wrong citation.
+
+**Q2 — yes, but not through the shapes you listed; the danger is the anchor, not the split.**
+
+- PI GCS answers a travel-limit query as `<AxisID>"="<float><LF>`, i.e. `1=39.000000` — so `<cmd>=<axis>=<value>` is the *only* form this controller produces. Which means `before/plain` (`:276-278`) and `LIMITS fallback / per-axis` (`:288-290`) encode shapes this sender **cannot emit** (`LIMITS` is built from parsed doubles). Three of nine cases are fiction that passes, and the one case taken from a real machine record is the one that failed. That is the coverage picture 8/9 hides.
+- **Silent wrong numbers I could not construct:** a serial desync (`Ask` discards, writes, reads — `motor_send_pi.ps1:38-39`) makes `TMX?` return TMN's or POS's reply → `0.0` or `30.0` → fails loud against `tmx == 39.0` (`drive_original_copy_v5.py:659`). Multi-axis continuation is moot — the C-863.11 is single-axis and `Ask` reads one line. Trailing units do not appear on GCS travel queries. So on *this* controller the last-field rule itself is not the hazard.
+- **Silent wrong numbers that are real:** (i) whitespace tokenisation — if a reply ever carries an internal space, `s.split()` cuts it and the matched token becomes `TMX?=1`, whose last field is **`1.0`**, not `None`; (ii) the missing anchor — if `motor_send_pi.ps1:52`'s label ever changes (`TMX=`, `TMX? =`), no token matches and `tmx_from` falls through to the `LIMITS` line, which in `limits-set` mode is printed **after** the SPA write (`:53-58`), i.e. it reports the value the gate just wrote. `39.0` → gate 93 PASSes without ever reading what the controller held after the LabVIEW run. That is your silent false green on a motor-limit check, it needs no exotic reply shape, and self-test case `before wins over LIMITS` cements the precedence that hides it. Note the fallback is also semantically wrong for this gate's question: `before:` is pre-write and answers "still 39 after the run"; `LIMITS` is post-write and answers "did we just set 39".
+
+**Q3 — no.** Anchor on the line, and preferably fix it at the sender. The PS1 already owns a numeric parser that handles `1=39.000000` (`Num`, `motor_send_pi.ps1:41`) and already emits normalised machine-readable lines. Have `:52` additionally print `PRELIMITS TMN=<num> TMX=<num>` from `Num (Ask 'TMN?')` / `Num (Ask 'TMX?')`, and read it downstream with the anchored-regex shape of `motor_gate.py:283-284`. Then no downstream parser needs to know about `<axis>=<value>`, a label change fails loudly instead of falling through, and the `before:`/`LIMITS` precedence question disappears. If the token scan is kept, at minimum make `tmx_from` return `(None, s)` when a `before:` line exists but carries no `TMX?=` token, instead of falling through.
+
+---
+
+**Do I still believe any of the claim?** Yes — the *class* ("the fixture was unfaithful, not the parser") is probably right, and Q1's premise is correct. What I reject is that it is established, and that "no further change" follows. What would change my mind on the mechanism: a `text=%r` re-run showing `'    | before: …'`. What would change my mind on the conclusion: a `PRELIMITS`-style normalised line already existing somewhere I did not find, or evidence that gate 93's fall-through to `LIMITS` is unreachable in practice — I could not show that from the sender's code.
+
+Sources: [Mercury GCS Commands MS163E102](https://twiki.cern.ch/twiki/pub/ILCBDSColl/Phase2Preparations/Mercury_GCS_Commands_MS163E102.pdf) · [C-863 Mercury Controller User Manual MS205E](https://www.le.infn.it/~chiodini/allow_listing/pi/Manuals/C-863_UserManual_MS205E200.pdf)
+BGRUN END rc=0 after 417s

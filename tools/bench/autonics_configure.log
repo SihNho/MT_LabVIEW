@@ -1,0 +1,22 @@
+BGRUN START 2026-09-14 01:02:01 limit 6.0 min: py -c 
+import sys; sys.path.insert(0,'tools')
+import gscript as g
+g._lv=None
+for nm in ['Configure.vi','Close.vi']:
+    P=r'C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Autonics Motor'+'\'+nm
+    print(f'--- {nm} (READ ONLY, never saved) ---')
+    try:
+        rows=g.fp_labels(P, max_n=30)
+        ref=g.lv().GetVIReference(P,'',False,0)
+        for i,lab,ind in rows:
+            try: v=ref.GetControlValue(lab)
+            except Exception: v='<unreadable>'
+            print(f'   {i:2d} {"IND" if ind else "CTL"} {lab!r:28} = {v!r}')
+    except Exception as e:
+        print('   EXC', str(e)[:160])
+
+  File "<string>", line 6
+    P=r'C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Autonics Motor'+'\'+nm
+                                                                                     ^
+SyntaxError: unterminated string literal (detected at line 6)
+BGRUN END rc=1 after 0s

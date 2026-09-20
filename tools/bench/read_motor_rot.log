@@ -1,0 +1,46 @@
+BGRUN START 2026-09-12 18:28:23 limit 20.0 min: py -u -c 
+import os,sys,shutil,time
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+SRC=r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\SiHyeong Modified\Motor control v5_No Recording.vi'
+DST=os.path.join(g.CLAUDEDEV,'READ_motorv5.vi')
+if os.path.exists(DST): os.remove(DST)
+shutil.copyfile(SRC,DST); time.sleep(0.3)
+n=g.count(DST,'Diagram'); print('diagrams:',n)
+KEY=('rot','turn','deg','angle','pos','visa','last','accum','current')
+for d in range(n):
+    try: nodes,_=g.net_map(DST, diagram_index=d, max_nodes=60, max_terms=16)
+    except Exception as e: print(' dia',d,'FAIL',str(e)[:70]); continue
+    hits=[]
+    for i,(uid,lbl,terms) in nodes.items():
+        names=[nm for _,nm,_ in terms if nm]
+        low=' | '.join(names).lower()
+        if any(k in low for k in KEY): hits.append((uid,names))
+    if hits:
+        print('=== diagram %d : %d nodes'%(d,len(nodes)))
+        for uid,names in hits: print('   uid %-6s %s'%(uid,names[:12]))
+try: g.close_panel(DST)
+except Exception: pass
+time.sleep(0.3)
+try: os.remove(DST)
+except OSError: pass
+print('done')
+
+diagrams: 18
+=== diagram 0 : 6 nodes
+   uid 820    ['error in', 'error out', 'Numeric', 'last trans pos', 'last rot pos', 'Numeric', 'Pos_degree', 'tran display ref', 'rot display ref', 'final trans pos', 'Rot VISA in', 'VISA resource name Out']
+   uid 43     ['error out', 'Send to trans', 'send to trans ref', 'change of trans value ref', 'send to rot ref', 'change of rot value ref', 'error out', 'Axes to move', 'Pos_degree', 'Pos_degree', 'change of trans speen ref', 'final trans pos']
+=== diagram 6 : 7 nodes
+   uid 3630   ['Axes to move', 'System no.', 'error out', 'error out', 'final trans pos', 'Numeric', 'Stop one-way']
+   uid 2711   ['error out', 'Pos_degree', 'VISA resource name Out', 'error in (no error)', 'Numeric', 'Ring', 'VISA resource name']
+=== diagram 8 : 5 nodes
+   uid 3976   ['System no.', 'Axes to move', 'Position values', 'No.of digits', 'error in']
+=== diagram 10 : 1 nodes
+   uid 82     ['error out', 'send to trans ref', 'change of trans value ref', 'send to rot ref', 'change of rot value ref', 'error out', 'Axes to move', 'Pos_degree', 'Pos_degree', 'change of trans speen ref', 'Numeric', 'final trans pos']
+=== diagram 13 : 3 nodes
+   uid 2172   ['System no.', 'Axes to move', 'Position values', 'No.of digits', 'error in']
+=== diagram 16 : 3 nodes
+   uid 2411   ['error out', 'Pos_degree', 'VISA resource name Out', 'error in (no error)', 'Numeric', 'Ring', 'VISA resource name']
+done
+BGRUN END rc=0 after 33s

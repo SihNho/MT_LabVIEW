@@ -1,0 +1,130 @@
+BGRUN START 2026-09-15 11:08:29 limit 6.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & .\tools\peer.ps1 -Agent codex -Slug opconstvaluen-scan-three-selectors-missing -Task 'ATTACK THIS (LabVIEW 2026 VI Scripting, read-only). tools/recipes/build_opconstvaluen_v1.py --scan (log tools/bench/opconstvaluen_scan.log) read all 180 DigitalNumericConstants of the main VI: value (Constant.Value 634AC00 through a DigitalNumericConstant-typed property node), Numeric Text, Representation, and the wire each one feeds (Constant.Terminal 634AC04 -> Terminal.Connected Wire 634A000 short name Wire -> GObject.UID 632A813). Identity failures 0; main VI untouched; 17/17 acceptance gates passed earlier. RESULT: exactly ONE of the four reseed selector wires was matched - wire 10850 (Less?.y on diagram 43, the lost-bead threshold) <- constant uid 10739, index 70, value 0, TD 3 (I32), Representation 3, text 0. The other three selector wires (10312 Or.y, 9806 And.y, 10142 Equal?.y; docs/stage2-assembly-step-e.md) matched NO numeric constant. Many constants reported wire 0 with error 1055 on the Wire/UID nodes (unwired constants). FAILED PREDICTION: all four feeders are numeric constants readable this way. MY EXPLANATION: (a) Or.y and And.y are BOOLEAN terminals, so their feeders are BooleanConstants - a different class, which my DigitalNumericConstant-typed op cannot cast (it errors 1055, as the StringConstant negative control showed); (b) Equal?.y compares against the # of Auto-Reset property value, so its feeder may be a numeric constant that the reporter did not enumerate under the class name DigitalNumericConstant (e.g. an EnumConstant/RingConstant, a fixed-point or a typedef constant), or not a constant at all (a local variable / control terminal / property read). Note the traverse IS recursive into nested diagrams - the matched constant 10739 feeds a wire INSIDE case-structure diagram 43. Questions (cite what you read): (1) rank (a) and (b) and name any other class that can source a Boolean or numeric wire and would be missed by a DigitalNumericConstant filter; (2) does the Traverse class-name filter used by our reporter (Class Name string e.g. DigitalNumericConstant) match SUBCLASSES too, so that passing Constant would enumerate every constant class in one pass? cite the Traverse/ClassSpecifier semantics; (3) is Constant.Terminal 634AC04 available on the BASE Constant class for every constant subclass (so one base-typed op can report the fed wire for all constants regardless of class) - and would Constant.Value stay void through that base-typed node (measured earlier for Boolean and numeric), meaning values still need a per-class typed node; (4) for a wire whose source is NOT a constant (control terminal, local variable, property node output), what is the cheapest read-only way to name the source object from the wire uid - Wire.Terminals[] then Terminal.Owner / Generic.Owner 6327806? give the exact property IDs and the short names their property-node terminals will carry; (5) anything that makes a 180-read scan miss a constant that DOES feed one of those wires (e.g. a wire with several segments having different UIDs per segment, or the constant feeding a tunnel whose inner wire has a different uid than the one my census recorded)?'
+OUTCOME: ANSWERED (108s)  archived: archive\peer\2026-09-15-opconstvaluen-scan-three-selectors-missing.md
+--- ANSWER ---
+Your explanation is mostly right, but I would tighten it in two places:
+
+- `(a)` is highly likely, though the source need not specifically be a `BooleanConstant`.
+- For `(b)`, a nonconstant source is much more likely than an exotic numeric constant because your earlier topology already identifies `# of Auto-Reset` as the upstream value.
+
+1. Ranking the missing feeders
+
+1. **`Or.y` and `And.y`: Boolean source ??very high confidence.**
+
+   A `DigitalNumericConstant` cannot directly be the Boolean source unless an intervening conversion/comparison node exists; LabVIEW wires are typed, although compatible numeric types can be coerced. [NI?�s wiring documentation](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+   Most likely source classes:
+
+   - `BooleanConstant`
+   - `ControlTerminal` from a Boolean control
+   - `Local`, `Global`, or shared-variable read
+   - `Property` output, especially `Value`
+   - `Function`, `Comparison`, `CompoundArithmetic`, `SubVI`, or Boolean Case output
+   - tunnel, shift register, or feedback-node output
+
+   Thus `(a)` is correct as ?�not a digital numeric constant,??but **`BooleanConstant` is only one candidate**.
+
+2. **`Equal?.y`: runtime numeric source ??high confidence.**
+
+   Since the measured chain says it is the `# of Auto-Reset` property value, the primary hypothesis should be:
+
+   - `Property` node output, possibly transported through a tunnel; or
+   - a `Local`/`ControlTerminal` if the census attribution was one hop removed.
+
+   Exotic constants??EnumConstant`, `RingConstant`, fixed-point, refnum-like numeric constants, polymorphic/typedef-backed constants?�remain possible, but rank below the already observed property-dataflow explanation.
+
+   A typedef does not by itself establish a distinct scripting class, so ?�typedef constant??is not yet a useful positive hypothesis. Measure its actual `Class Name`.
+
+2. Does Traverse include subclasses?
+
+**Yes: use `Class Name = Constant` to obtain the Constant class and its descendants.** The strongest directly relevant NI-hosted evidence is an NI Community answer recommending exactly three Traverse calls??SubVI`, `Constant`, and `Control`?�for finding all linkable objects. That recommendation only works if the filter includes descendants. The same discussion says `GObject` retrieves all diagram objects. [NI Community: Traverse for GObjects](https://forums.ni.com/t5/LabVIEW/Scripting-Reference-all-objects-traverse/td-p/3811133)
+
+This also attacks part of `(b)`: if you traverse `Constant`, any genuine descendant constant should appear in that pass even if it was missed by `DigitalNumericConstant`.
+
+Important distinction:
+
+- The filter determines which runtime classes qualify.
+- `Traverse for GObjects.vi` still returns **GObject-typed references**, not a statically `Constant[]` wire. A downcast/typed chain is still needed for class-specific properties.
+
+Recommended cheap census:
+
+1. Traverse `Constant`.
+2. Report `Class Name`, UID, `Constant.Terminal`, connected-wire UID.
+3. Only then dispatch values to class-typed readers.
+
+3. Base `Constant.Terminal` and `Constant.Value`
+
+**`Constant.Terminal` `634AC04` is a base-`Constant` property and therefore applies to every actual Constant descendant.** A single Constant-typed navigation op should be able to report:
+
+`Constant.Terminal ??Terminal.Connected Wire ??Wire.UID`
+
+for `BooleanConstant`, `StringConstant`, numeric subclasses, enum/ring constants, and other Constant descendants.
+
+**Do not generalize the same way for the value.** Your measured LabVIEW 2026 behavior is decisive:
+
+- base-typed `Constant.Value` returned a void variant for Boolean and numeric constants;
+- `StringConstant` happened to carry data;
+- the `DigitalNumericConstant`-typed property node returned the numeric value correctly.
+
+Therefore the safe design is:
+
+- base `Constant` op for identity, class, terminal and wire;
+- per-concrete-class typed op for `Value`.
+
+Treat the base `Value` result as unusable unless independently validated for that concrete class. NI?�s navigation example likewise downcasts an owner to `StringConstant` before accessing its class-specific value. [NI: Navigating from a Wire to a Node](https://www.ni.com/docs/en-US/bundle/labview/page/navigating-from-a-wire-to-a-node-using-vi-scripting.html)
+
+4. Cheapest source-object lookup from a wire UID
+
+Use the wire directly; do not search all constants or nodes again:
+
+```text
+Wire
+  ??Wire.Terminals[]             6371003, output "Terms[]"
+  ??Index Array[0]
+  ??Terminal.Owner              6327806, output "Owner"
+  ??Generic.Class Name          6327803, output "ClassName"
+  ??GObject.UID                 632A813, output "UID"
+```
+
+NI specifies that index 0 of `Wire.Terminals[]` is the source when one exists; sinks begin at index 1 in unspecified order. It also explicitly prescribes `Terminal.Owner` to navigate from that terminal to the connected object. [NI navigation procedure](https://www.ni.com/docs/en-US/bundle/labview/page/navigating-from-a-wire-to-a-node-using-vi-scripting.html), [NI `Wire.Terminals[]`](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/wire/terminals.html)
+
+Exact property-node output names:
+
+| Property | ID | Output short name |
+|---|---:|---|
+| `Wire.Terminals[]` | `6371003` | `Terms[]` |
+| `Generic.Owner` / `Terminal.Owner` | `6327806` | `Owner` |
+| `Generic.Class Name` | `6327803` | `ClassName` |
+| `GObject.UID` | `632A813` | `UID` |
+| `Node.Label` | `6359001` | `Label` |
+| `Text.Text` | `632D800` | `Text` |
+
+`Owner` returns a Generic/GObject reference, so `ClassName` and `UID` are the cheapest cast-free identity. NI confirms both that `Owner` returns a Generic reference and that its short name is `Owner`. [NI `Owner`](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/owner2.html)
+
+Then specialize by reported class:
+
+- ordinary node terminal ??owner should be `Property`, `Local`, `Comparison`, `Function`, `SubVI`, etc.;
+- `ControlTerminal` is a caveat: its owner can be the containing diagram rather than the front-panel control. In that case, identify the terminal itself by class/name/UID and join it to the existing panel-wiring census, rather than trusting `Owner` to return the control.
+
+`Node.Label ??Text.Text` can add a human-readable name, but UID + concrete class should remain identity.
+
+5. Can the 180-read scan miss a real feeder?
+
+**Yes?�structure boundaries are the leading failure mode. Ordinary visual wire segments are not.**
+
+- Bends and straight visual segments are parts of one wire object; they should not acquire separate UIDs merely because the drawing has several segments. NI distinguishes segments/branches graphically but models the wire as one source with potentially many sinks. [NI wire structure](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+- Fan-out is not a problem: `Wire.Terminals[]` represents the source plus all sinks. NI says the source is first and other terminals are unordered. [NI `Terminals[]`](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/wire/terminals.html)
+- **A tunnel is a problem:** the wires on the two sides of a structure boundary are separate wire objects and can have different UIDs. A constant may therefore report the outer wire while your selector census recorded the inner wire, or vice versa.
+- Nested Case structures strengthen that risk: a tunnel may have a distinct inside wire for each subdiagram/case.
+- Shift registers and feedback paths likewise separate the incoming, body, and outgoing nets.
+- A constant wired to a tunnel can therefore be present in all 180 reads yet fail an exact UID equality test against the final selector wire.
+- `wire = 0` plus error 1055 is consistent with an unwired terminal, but ensure errors are reset per element; otherwise an expected unwired constant could poison later iterations if the op?�s error dataflow is serialized.
+
+The cheapest decisive next check is therefore:
+
+1. Traverse `Constant` once and report class/UID/direct wire.
+2. For each missing selector wire, use `Wire.Terminals[][0] ??Owner`.
+3. If the owner is a tunnel/structure boundary, walk outward through that tunnel?�s inside/outside terminal properties and compare UIDs on both sides.
+4. Only build Boolean/value readers after the source owner/class is known.
+
+That will distinguish ?�wrong constant class??from ?�not a constant??and ?�same dataflow, different tunnel-side wire UID??without another 180-value scan.
+BGRUN END rc=0 after 108s

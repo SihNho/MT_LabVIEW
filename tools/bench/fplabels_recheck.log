@@ -1,0 +1,19 @@
+BGRUN START 2026-09-12 14:46:50 limit 8.0 min: py -u -c 
+import os,sys
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+rows=g.fp_labels(os.path.join(g.CLAUDEDEV,'OpReport_v3.vi'), max_n=25)
+print('fp_labels WORKS again:',len(rows),'front-panel objects')
+for r in rows[:8]: print('   ',r)
+
+fp_labels WORKS again: 10 front-panel objects
+    (0, 'vi path', False)
+    (1, 'Class Name', False)
+    (2, '# of Refs', True)
+    (3, 'error out', True)
+    (4, 'index', False)
+    (5, 'Position', True)
+    (6, 'Class Name 2', True)
+    (7, 'UID', True)
+BGRUN END rc=0 after 9s

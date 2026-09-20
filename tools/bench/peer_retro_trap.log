@@ -1,0 +1,75 @@
+BGRUN START 2026-09-18 16:40:04 limit 20.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug retro-closes-session -TaskFile tools/bench/task_retro_session_trap.md -TimeoutSec 900
+OUTCOME: ANSWERED (463s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-18-retro-closes-session.md
+COST: $3.6945  in 28 / out 32012 / cache-create 199093 / cache-read 1760297  (462s, 24 turn(s))
+--- ANSWER ---
+Write is disabled for this role (correct — read-only peer), so the review is here in full. I took no lock, ran nothing, changed nothing.
+
+---
+
+# Failed-prediction review — "guard_session over-triggered on a previous cycle's retrospective"
+
+**The over-trigger diagnosis is wrong on its central claim, and both proposed remedies are worse than the fault. A different, worse defect sits next to it and is live right now.**
+
+## 1. The strongest reason the claim is WRONG
+
+**There is no such object as "a previous cycle's retrospective" in this system, so the hook cannot over-trigger on a distinction that does not exist.**
+
+- `tools/retrospective.py:299` — "**END IS ALWAYS NOW**". The run launched at 16:37:22 got the window `2026-09-18 14:07:40 .. 16:37:22` (`tools/bench/retro.log:67`). It reviews everything up to the instant cycle 29 began. It is not cycle 28's review in any operational sense — it is *this* session's closing review with cycle 28's label on the filename.
+- `tools/retrospective.py:210-214` says so in writing: "**A cycle number is a label Claude chooses**; four of today's reviews were filed as 'cycle 15' and 'cycle 16' within the same eight hours." OPEN 31 *removed* cycle-number-keyed logic (`retro_archive(n-1)`) from the window computation for exactly this reason.
+- `guard_cycle.newest_retrospective()` (`tools/hooks/guard_cycle.py:326-347`) reads no cycle number either. Any ANSWERED retrospective, whatever its label, opens the gate.
+- The prompt this session was handed states the rule with no exception for whose cycle it was — `tools/cycle_prompt.md:35-38`: "After the retrospective runs, `tools/hooks/guard_session.py` refuses further material dispatches; **that refusal is the end of your cycle, not a problem to route around.**"
+
+The session performed a cycle's *closing* act as its *opening* act. The gate observed the one event the machine defines as "a cycle just closed". That is designed behaviour, not the `audit_cycle` cost-window class of bug (that one was arithmetic; this is a correct reading of an act the session chose).
+
+**Conceded, because it is the brief's strongest surviving point:** `guard_cycle` gates only *recipe builds* (`BUILD_RE`, `guard_cycle.py:40`) while `guard_session` refuses *every* material dispatch, so the mark cost more than the retrospective bought. The right repair is §3, not "ask which cycle".
+
+## 2. Alternative explanation of the same evidence
+
+**The retrospective was never the binding constraint on D0.**
+
+- No D0 recipe exists (`tools/recipes/*d0*.py` → nothing) and no D0 prior-art review is archived. `guard_cycle.premature_build()` (`:468-514`) refuses a recipe with no prior-art review newer than itself — a second gate the retrospective does not discharge, whose release is the cycle's longest pole.
+- The debt was not cycle 28's alone: the unreviewed window spans 150 min and **12 build logs** (`retro.log:67`), covering the user-present P2 motor session *and* runner cycle 15. Work accrues to `tools/bench/` from sessions the runner never spawned; the next runner cycle inherits it. No hook change touches that.
+- The premise does check out, and that sharpens rather than softens the critique: 12 ≥ `CYCLE_BUILD_BUDGET` = 10 (`guard_cycle.py:47, 654-662`), so the retrospective gate really was armed. The session was right that a debt existed and wrong about what paying it costs.
+
+## 3. The defect that is actually there — and is live
+
+**`retro_done` is armed by an intention; the gate it mirrors is armed by an answer.**
+
+- `guard_bash.py:226-227` calls `mark_retro_done` from a **PreToolUse** hook — before the command runs, receiving only the tool input, never a result ("`PreToolUse` | Before a tool call executes"; `PostToolUse` is the one that runs after — https://code.claude.com/docs/en/hooks). Nothing ever clears the mark. Under `bgrun` even PostToolUse wouldn't help: the Bash call succeeds the moment the job launches.
+- `guard_cycle.newest_retrospective()` counts an archive **only if** `outcome: ANSWERED` — a timed-out review "told you nothing".
+- **Current state:** `tools/bench/retro.log:66-68` shows `BGRUN START 16:37:22 … --cycle 28` with **no `BGRUN END`**, and `archive/peer/` holds **no `*retrospective-cycle28*.md`**. Same file: starts with no outcome line for cycles 18, 22, 22 (`:51,:57,:60`) — ~4 of 7.
+- Repetition: `{"dispatches": 0, "retro_done": true}` appears in **3 of 17** session files (`session_767e2876…`, `session_1360a5cf…`, `session_79adc6e5…` = this one).
+
+Repair that fits: `guard_session` reads the predicate `guard_cycle` already owns — closed when an ANSWERED archive newer than session start exists, not when a command was typed. One predicate, two callers (`tools/logclass.py`'s own lesson). It is a repair to an existing device, so it survives `docs/cycle27-plan.md:31` Pre-decided 2. It deliberately does **not** grant the brief's request.
+
+## 4. Holes in each remedy (Q2)
+
+**A — `--cycle N` check:** (1) *There is no trustworthy N* — the runner says **CYCLE 15** (`cycle_runner.log:21`) while the session says 28/29, and `cycle_runner.session_cmd()` (`:98-107`) passes no cycle number to the session at all. (2) With plumbing, N is written by the session on its own command line, so "close me" becomes opt-in — one argument from the laundering the brief rules out, and it re-introduces precisely what OPEN 31 removed. It flips a fail-safe gate (closes too eagerly) into a fail-open one; `guard_session.py:9`: "Prose cannot enforce 'now stop' on the session that is enjoying itself." The runner re-reading STATUS does **not** compensate — its only counters are non-zero exit twice and byte-identical NEXT twice (`cycle_runner.py:388-401`), neither of which sees a session quietly dispatching on. (3) It leaves §3 untouched.
+
+**B — the runner pays the debt:** (1) **Nobody annotates it** — CLAUDE.md requires every review annotated, `doc_lint` warns on placeholder dispositions, and a `VIOLATION:` slug would land in `violations.py`'s tally unread. (2) It is arguably a **new process device**, which `docs/cycle27-plan.md:31` forbids this cycle — naming it in a review is a finding, building it is not available. (3) It needs a fourth copy of "is a retrospective owed"; import `guard_cycle`, never restate it. (4) Run while a session is live, it reproduces the overlapping-window defect at `retrospective.py:305-308`.
+
+## 5. What should have been done at cycle 29's start (Q4)
+
+The system's own precedent answers it: **one retrospective at the END, labelled 29, covers cycle 28 automatically**, because `newest_retro_before()` starts the window at the last archive whatever its label — which `STATUS.md:107` records having already done: *"cycle 25 has no retrospective and 26's covers it."*
+
+1. Ask the machine what blocks, for free (see §7 step 1). 2. Dispatch the **D0 prior-art review first** — required by `premature_build`, blocked by nothing. 3. Dispatch the D0 material work that is not a recipe build while it runs. 4. Close with one retrospective labelled 29; its window pays both debts in one dispatch. 5. If step 1 shows a build genuinely cannot start first, accept that this is a **debt-paying session**: run it, annotate, write NEXT, exit at ~$6 instead of a full cycle's ~$25 (`cycle_runner.log` cost column) — and say so. What is not acceptable is running it first and being surprised.
+
+## 6. What would falsify my reading
+
+If `guard_cycle`, fed the intended D0 command, refuses **only** for the retrospective reason — nothing from `stop_record`, `violations --due`, `outcome_review --due`, `premature_build` or the prior-art verdict gate — **and** the `--cycle 28` archive lands ANSWERED inside its 20-minute deadline, then the sequence would have been sufficient but for the mark, and "over-trigger" becomes the better description of the cost.
+
+## 7. Cheapest discriminating test (Q3)
+
+One read-only command — no LabVIEW, no agent, no model:
+
+```
+echo {"tool_name":"Bash","tool_input":{"command":"py tools/recipes/<D0 recipe>.py"}} | py tools/hooks/guard_cycle.py
+```
+
+- Refusal names `premature_build` / prior-art / the launch gate → the retrospective was never binding: **correct trigger, wrong action by the session**.
+- Refusal names only the retrospective → the brief's reading survives, and §6's second condition decides it.
+
+Free and answerable now, and it separates the two better than any hook test: does `archive/peer/2026-09-18-retrospective-cycle28.md` exist with `outcome: ANSWERED`, and does `retro.log` carry a `BGRUN END` for 16:37:22? If not, the session is closed **and** the gate is still armed — an outcome neither proposed remedy prevents.
+
+**Sources:** [Claude Code hooks reference](https://code.claude.com/docs/en/hooks) — PreToolUse timing and input. All other claims are cited to `file:line` in this project.
+BGRUN END rc=0 after 464s

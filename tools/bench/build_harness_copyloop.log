@@ -1,0 +1,25 @@
+BGRUN START 2026-09-14 14:24:40 limit 15.0 min: py -u tools/recipes/build_harness_copyloop.py
+base: SubVI=4 ForLoop=0 LoopTunnel=0 Wire=9 panel=['Image Name', 'Image Name 2', 'File Path'] ExecState=1
+   ReadFile uid 8; outer IMAQ Copy uid 11
+
+== 2a drop Flatten Pixmap.vi (only to obtain a 2D U8 control)
+   predict: +1
+   dropped Flatten Pixmap.vi uid 238 diagram 0 Nodes[] 4: ['image data', 'mask', 'colors', 'top left', '1-bit pixmap  ', '4-bit pixmap', '8-bit pixmap', '24-bit pixmap']
+   result : 238  (0.4 s)
+
+== 2b create_control on Flatten '8-bit pixmap'
+   predict: a 2D U8 array control appears
+   result : ([{'i': 3, 'class': 'ControlTerminal', 'uid': 330, 'pos': (54, 693), 'owner': 'TopLevelDiagram'}], '8-bit pixmap')  (0.1 s)
+   array control label: '8-bit pixmap'
+
+== 2c delete the Flatten node (+RBW) - the control stays
+   predict: SubVI -1, ExecState 1
+   result : after SubVI=4 ForLoop=0 LoopTunnel=0 Wire=9 panel=['Image Name', 'Image Name 2', 'File Path', '8-bit pixmap'] ExecState=1  (8.5 s)
+
+== 3a for_loop(tunnels=[rows_label], indexing=[True])
+   predict: ForLoop +1, LoopTunnel +1 (indexed input from the control)
+   result : after SubVI=4 ForLoop=1 LoopTunnel=0 Wire=9 panel=['Image Name', 'Image Name 2', 'File Path', '8-bit pixmap'] ExecState=0  (8.5 s)
+   array control terminal after for_loop: {'label': '8-bit pixmap', 'indicator': False, 'uid': 285, 'is_source': True, 'wire': 0, 'term_err': 0, 'wire_err': 1055}
+   GATE (one indexed input tunnel wired from the control, ExecState 1): FAIL
+STOP: the Control Names route did not produce the indexed tunnel - mechanism NOT available; nothing saved.
+BGRUN END rc=4 after 53s

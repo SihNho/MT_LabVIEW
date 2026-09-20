@@ -1,0 +1,51 @@
+BGRUN START 2026-09-12 18:30:46 limit 20.0 min: py -u -c 
+import os,sys,json
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+WORK=r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi'
+tree=json.load(open('tools/bench/diagram_tree_main.json',encoding='utf-8'))['diagrams']
+where={}
+for dia,info in tree.items():
+    for uid in info['uids']: where.setdefault(int(uid),(int(dia),info['owner']))
+res={}
+for cls in ('IndexArray','CaseStructure','ArraySubset','ReplaceArraySubset'):
+    try: objs=g.report(WORK,cls)
+    except Exception as e:
+        print('%-20s not traversable: %s'%(cls,str(e)[:70])); continue
+    per={}
+    for o in objs:
+        d,owner=where.get(o['uid'],(None,'NOT IN TREE'))
+        per.setdefault(d,[]).append(o['uid'])
+    res[cls]=per
+    print('%-20s %3d nodes  -> diagrams %s'%(cls,len(objs),dict(sorted(per.items(),key=lambda kv:-len(kv[1])))))
+ia=res.get('IndexArray',{})
+print()
+print('=== diagrams ranked by Index Array count (the schedule splitter should be high) ===')
+for d,uids in sorted(ia.items(),key=lambda kv:-len(kv[1]))[:12]:
+    owner=tree[str(d)]['owner'] if d is not None and str(d) in tree else '?'
+    n=len(tree[str(d)]['uids']) if d is not None and str(d) in tree else 0
+    print('   diagram %-5s %2d IndexArray  owner %-18s (%d nodes total)'%(d,len(uids),owner,n))
+json.dump(res,open('tools/bench/array_node_map.json','w',encoding='utf-8'),indent=1)
+print('written')
+
+IndexArray            47 nodes  -> diagrams {163: [23104, 23089, 23051, 23066, 23013, 23028, 22975, 22990], 162: [24626, 24641, 24603, 24588, 24565, 24550], 44: [25078, 30714, 30604, 1753], 161: [24155, 24140, 24105, 24090], 6: [28123, 27773, 27761], 7: [27582, 27594, 27606], 69: [16004, 7962, 2536], 43: [10757, 9833, 6104], 48: [9200, 29367], 68: [26102, 5925], 160: [23797, 23782], 5: [3163], 47: [50], 50: [30331], 74: [8741], 117: [18199], 165: [25299], 168: [25910]}
+CaseStructure         37 nodes  -> diagrams {43: [12589, 18716, 22082, 20474, 10445, 10407, 2222, 3191, 57, 5540], 100: [18975, 18666, 18267, 18036, 17722, 17410, 16970], 21: [27905, 27364, 26991, 26441, 25810], 61: [21600, 20548], 99: [15968, 16238], 2: [3826], 9: [2857], 53: [11869], 62: [21630], 64: [21726], 83: [195], 87: [13507], 134: [16369], 142: [28709], 150: [22086], 158: [23619]}
+ArraySubset          not traversable: report(ArraySubset) on Min_Track N beads V6_ParallelLoop.vi: error 109
+ReplaceArraySubset   not traversable: report(ReplaceArraySubset) on Min_Track N beads V6_ParallelLoop.vi: er
+
+=== diagrams ranked by Index Array count (the schedule splitter should be high) ===
+   diagram 163    8 IndexArray  owner ForLoop            (23 nodes total)
+   diagram 162    6 IndexArray  owner CaseStructure      (18 nodes total)
+   diagram 44     4 IndexArray  owner ForLoop            (10 nodes total)
+   diagram 161    4 IndexArray  owner CaseStructure      (12 nodes total)
+   diagram 6      3 IndexArray  owner FlatSequenceFrame  (19 nodes total)
+   diagram 7      3 IndexArray  owner ForLoop            (6 nodes total)
+   diagram 69     3 IndexArray  owner CaseStructure      (13 nodes total)
+   diagram 43     3 IndexArray  owner WhileLoop          (75 nodes total)
+   diagram 48     2 IndexArray  owner ForLoop            (3 nodes total)
+   diagram 68     2 IndexArray  owner CaseStructure      (4 nodes total)
+   diagram 160    2 IndexArray  owner CaseStructure      (7 nodes total)
+   diagram 5      1 IndexArray  owner Sequence           (8 nodes total)
+written
+BGRUN END rc=0 after 85s

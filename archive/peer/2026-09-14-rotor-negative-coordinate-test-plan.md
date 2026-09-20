@@ -1,0 +1,44 @@
+﻿---
+type: peer-review
+status: historical
+date: 2026-09-14
+tags: [peer-review, rotor, plan]
+---
+
+# rotor-negative-coordinate-test-plan
+
+- **agent:** codex
+- **date:** 2026-09-14
+- **outcome:** ANSWERED (73s)
+- **why asked:** plan review before the hardware acceptance of the signed rotor read (CLL X, PIC -10, PIC 10; motion approved by the user)
+- **verdict:** unverified
+
+## Question
+
+PLAN REVIEW (attack; brief). Hardware acceptance of the signed rotor read (user approved motion; rig disassembled, rotor free). Measured so far (tools/bench/hw_rotor_read.log): PMC-2HS two-axis reply 'POS 000186A0,00000000' (X = 100000 pulses = the lab's +200-turn baseline), 0.72 deg/pulse, first read after Configure times out then reads agree on both VIs. Your vocabulary answer: CLL X (clear active counter, no motion), PIC <n> (relative, negative = CCW, no response), STO X. PLAN: (1) build RAWCMD.vi by script = a copy of the driver's Configure.vi (VISA Open + VISA Write of an init constant, top-level diagram) with the write-buffer constant replaced by a string control, so any command string can be sent through the same VISA alias 'Rotor'; (2) sequence, each step followed by a POS read via SetCommand_signed.vi AND a copy of the original (first read after opening discarded): POS -> 'CLL X\r' -> POS expect 00000000 -> 'PIC -10\r' (= -7.2 deg) -> wait 2 s -> POS expect FFFFFFF6: signed -7.2 deg, original +3.09e9 deg -> 'PIC 10\r' -> POS expect 00000000; (3) leave the counter at 0 (the new VI uses baseline 0 by the user's decision) unless the user asks to restore +100000 (a 200-turn PIC). ATTACK: (a) does 'CLL X' need the axis letter in the 2HS syntax ('CLL X' vs 'CLL XY') and is there a risk it also clears something needed (e.g. soft limits) - manual wording; (b) a PIC while the previous PIC is still executing: is the controller busy-safe (ignored / queued / error), and how to know motion finished (a status query, e.g. 'STA'?), so the POS read after PIC -10 is not taken mid-move; (c) does the init write in Configure.vi matter (unknown constant) - keep it as is; (d) any command the driver's frame D (concat of two constants -> write, no number) is likely to be (STO? HOM?) so we never trigger it: which Ring value would reach it given 5 frames for 4 ring items?
+
+## Answer
+
+Plan needs two changes before acceptance.
+
+- **`CLL X\r` is correct.** On a PMC-2HS, `CLL X` clears only X; `CLL XY` clears both axes. The manual distinguishes `CLL` (?쏿ctive position counter?? from `CLR` (?쏿ctual position counter??. It does not say `CLL` changes software limits or other configuration, so there is no documented soft-limit-clearing risk. Do not substitute `CLR`. [PMC-1HS/PMC-2HS manual, CLL/CLR](https://manualzz.com/doc/61665026/autonics-pmc-1hs-usb--pmc-2hs-232--pmc-2hs-usb-instructio...)
+
+- **Replace the fixed 2-second wait with completion polling.** `PIC` has no response, and the manual does not document whether another motion command is queued, rejected, or acted upon while moving. Poll `INR X\r` and wait until its `DRV` status is 0 (?쏣nd??; then read `POS` twice and require agreement. Also check `ERR`, or issue `ERD X` if it is set. [PMC manual, PIC and INR/DRV](https://manualzz.com/doc/61665026/autonics-pmc-1hs-usb--pmc-2hs-232--pmc-2hs-usb-instructio...)
+
+- **The RAWCMD construction description is ambiguous.** If the existing write-buffer constant is replaced by the command control, the unknown initialization string is no longer sent?봮nly its VISA-open/configuration path is retained. If instead RAWCMD sends the old constant *and then* the requested command on every invocation, do not proceed until the constant is identified: it could alter controller state. Reporter output containing the constant and write order would settle this cheaply.
+
+- **Treat every fresh VISA/open session as needing a discarded first `POS`,** given the observed timeout. Endpoint criterion should therefore be: discard first read, obtain two subsequent matching reads.
+
+- Expected signed test is sound: `FFFFFFF6` is ??0 in 32-bit two?셲 complement, hence ??.2째. Unsigned interpretation would be 4,294,967,286 pulses = 3,092,376,445.92째, not merely ?쏿bout 3.09e9.??The manual confirms that `POS` returns hexadecimal pulse counts but does not document signed interpretation. [PMC manual, POS](https://manualzz.com/doc/61665026/autonics-pmc-1hs-usb--pmc-2hs-232--pmc-2hs-usb-instructio...)
+
+- **Frame D cannot be mapped from ?쐄ive frames/four ring items.??* The fifth frame may be Default, duplicate, or unreachable; no Ring value can safely be inferred. Require reporter output showing the Ring items/values, case selector labels, and both concatenated constants. Do not exercise D speculatively. `STO` is harmless only in the narrow sense that it commands a decelerating stop; `HOM` initiates hardware motion. [PMC manual, STO/HOM](https://manualzz.com/doc/61665026/autonics-pmc-1hs-usb--pmc-2hs-232--pmc-2hs-usb-instructio...)
+
+Verdict: approve only after adding `INR` completion polling and resolving whether RAWCMD preserves or replaces the unknown initialization write. Leaving the active counter at zero is consistent with the stated decision.
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+Both conditions applied: RAWCMD replaces the init constant (its wire deleted, control on write buffer); the fixed wait became position-stability polling (two consecutive POS agree; INR needs a read path RAWCMD lacks). Frame D was never exercised. Hardware acceptance PASS (hw_rotor_signed_test.log). Verdict: correct and useful.

@@ -1,0 +1,31 @@
+BGRUN START 2026-09-14 10:42:05 limit 15.0 min: py -u tools/bench/test_opsubvis.py
+T1 scratch: 2 names ['Clear Errors.vi', 'Clear Errors.vi'], paths ['Clear Errors.vi', 'Clear Errors.vi'], uids [370, 369], err=None, 0.03 s
+   -> PASS: T1 UID set == report_all SubVI uids: op [369, 370] vs traverse [369, 370]
+   -> PASS: T1 names/paths non-empty and aligned: 2/2/2
+T2 main diagram 43: 0 subVI calls in 1.28 s, err=None
+   -> FAIL: T2 UID set == cache (diagram 43 uids n subvis): op 0 vs cache 6; missing [48, 376, 1114, 5058, 6810, 22700] extra []
+   -> FAIL: T2 tracking kernel call uid 5058 present: name = -
+   -> PASS: T3 diagram 0 (no subVI in cache): empty arrays, no error: names 0 uids 0 err=None 0.75 s
+   -> FAIL: T3b diagram 9999 (invalid): SubVIs[] error out non-empty, arrays empty: err=None uids 0 0.75 s
+   -> PASS: T2 UIDs unique (duplicate call sites keep distinct UIDs): 0 rows
+   -> FAIL: T2b diagram 1 (exactly one subVI in cache): [] uids [] err=None
+   -> PASS: T4 handles over 30 runs on scratch: samples [(0, 31347), (10, 31347), (20, 31347), (30, 31348)]; post-idle 31348 (+1); slope +0.03 handles/run; 8 s
+   -> PASS: T4 handles over 50 runs on main VI diagram 43: samples [(0, 31352), (10, 31363), (20, 31373), (30, 31382), (40, 31391), (50, 31400)]; post-idle 31401 (+49); slope +0.95 handles/run; 57 s
+   -> PASS: T5 main-VI run time: 1.28 s per run (single, diagram 43)
+   -> FAIL: T6 vestigial chain with index 2 = 999: arrays still correct, no dialog: 0 uids, err(op error out)=None, 0.76 s
+
+################ SUMMARY ################
+  PASS  T1 UID set == report_all SubVI uids                        op [369, 370] vs traverse [369, 370]
+  PASS  T1 names/paths non-empty and aligned                       2/2/2
+  FAIL  T2 UID set == cache (diagram 43 uids n subvis)             op 0 vs cache 6; missing [48, 376, 1114, 5058, 6810, 22700] extra []
+  FAIL  T2 tracking kernel call uid 5058 present                   name = -
+  PASS  T3 diagram 0 (no subVI in cache): empty arrays, no error   names 0 uids 0 err=None 0.75 s
+  FAIL  T3b diagram 9999 (invalid): SubVIs[] error out non-empty, arrays empty err=None uids 0 0.75 s
+  PASS  T2 UIDs unique (duplicate call sites keep distinct UIDs)   0 rows
+  FAIL  T2b diagram 1 (exactly one subVI in cache)                 [] uids [] err=None
+  PASS  T4 handles over 30 runs on scratch                         samples [(0, 31347), (10, 31347), (20, 31347), (30, 31348)]; post-idle 31348 (+1); slope +0.03 handles/run; 8 s
+  PASS  T4 handles over 50 runs on main VI diagram 43              samples [(0, 31352), (10, 31363), (20, 31373), (30, 31382), (40, 31391), (50, 31400)]; post-idle 31401 (+49); slope +0.95 handles/run; 57 s
+  PASS  T5 main-VI run time                                        1.28 s per run (single, diagram 43)
+  FAIL  T6 vestigial chain with index 2 = 999: arrays still correct, no dialog 0 uids, err(op error out)=None, 0.76 s
+cleanup: (-2147352567, '���ܰ� �߻��߽��ϴ�.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot clos
+BGRUN END rc=3 after 80s

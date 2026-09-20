@@ -1,0 +1,24 @@
+BGRUN START 2026-09-15 04:08:02 limit 7.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & '.\tools\peer.ps1' -Agent codex -Slug opconstvalue-fail3-copied-pn-is-a-write -TimeoutSec 200 -Task (Get-Content -Raw '.\tools\bench\peer_task_cv3.txt')
+OUTCOME: ANSWERED (32s)  archived: archive\peer\2026-09-15-opconstvalue-fail3-copied-pn-is-a-write.md
+--- ANSWER ---
+Your diagnosis is strong, but I would change the preferred fix: **flip PN 324 to read first; rebuild only if that fails verification.**
+
+1. **Yes??Value` being a sink is effectively definitive evidence of write configuration.** NI defines a property terminal on the left/input side as setting the property, while a right/output terminal gets it. Your reporter correctly identifying `reference out` as a source independently supports its direction semantics. The only remaining counter-hypothesis is a reporter bug specific to property-item terminals, which is now very weak. [NI Property Node reference](https://download.ni.com/support/manuals/321526b.pdf)
+
+2. **`build_property('VI Server:Constant', [('634AC00', False)])` should work, subject to builder spelling/implementation.** `634AC00` is the direct `Constant.Value` property and is read/write?�not private or indirect. `Set Properties[]` accepts property ID strings and returns the resulting `PropertyItem` references. I found no external documentation confirming the exact textual class token `VI Server:Constant`; your fleet?�s established naming convention is the best evidence for that part. [Constant class](https://labviewwiki.org/wiki/Constant_class), [Set Properties[]](https://labviewwiki.org/wiki/Property_class/Set_Properties%28%29_method)
+
+   Cheap gate: immediately census the new node and require exactly one `Value` source terminal before creating the indicator or wiring further.
+
+3. **Flipping the copied node is scriptable and probably cheaper.** The accepted NI solution says the `PropertyItem` references returned by `Set Properties[]` can be configured individually; another scripting reference explicitly describes obtaining the item from `Properties[]` and setting `IsWrite`. Set PN 324?�s sole property item to `Is Write? = FALSE`, then require `Value` to change from sink to source and require a clean compile. [NI Community accepted solution](https://forums.ni.com/t5/LabVIEW/LabVIEW-VI-scripting-property-change-to-Write/td-p/3943441), [Property-item scripting discussion](https://lavag.org/profile/26690-darin/)
+
+4. **Deleting PN 324 should not erase or re-generalize the already-created seed control.** The control is now a separate diagram object; your create-then-cut result is stronger evidence than anything external I found. The practical risk is cleanup code deleting unused objects, not type loss caused by deleting the donor node itself. Preserve the seed?�s UID and re-census its terminal type after deletion.
+
+Recommended order:
+
+- Flip PN 324 to read.
+- Verify `Value` is a source, wire count is expected, and compile succeeds.
+- Only if flipping fails, delete PN 324 and build the fresh `VI Server:Constant` / `634AC00` read node.
+- Keep the seed until all typed oracles pass.
+
+So the diagnosis survives the attack; only the proposed first-choice repair changes.
+BGRUN END rc=0 after 33s

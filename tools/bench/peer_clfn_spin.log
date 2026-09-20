@@ -1,0 +1,64 @@
+BGRUN START 2026-09-08 09:04:27 limit 6.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools/bench/peer_clfn_spin.ps1
+OUTCOME: ANSWERED (98s)  archived: archive\peer\2026-09-08-clfn-cluster-spin.md
+--- ANSWER ---
+The evidence does not currently support H1 as a known LabVIEW defect. The wire is suspicious, but the diagnosis overstates what the observations establish.
+
+1. Evidence for H1
+
+I found no NI documentation or post-2020 NI forum report describing a compile/type-propagation hang specifically caused by wiring an array of clusters containing arrays into an Adapt-to-Type CLFN parameter.
+
+What the sources do establish is:
+
+- Adapt to Type intentionally supports clusters containing LabVIEW handles. NI?�s generated example represents an array inside a cluster as a LabVIEW array handle and explicitly says LabVIEW passes handles to the DLL. That makes your datatype complicated, but not documented as unsupported or pathological. [NI: How Do I Use ?�Adapt To Type??for CLFNs?](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019L0sSAE&l=en-US)
+- NI community guidance says clusters containing arrays are non-flat; Adapt to Type passes their native LabVIEW handle representation and is suitable only when the DLL understands those LabVIEW-native structures. [NI Community: malloc to receive a struct](https://forums.ni.com/t5/LabVIEW/call-library-function-node-malloc-to-recieve-a-struct/m-p/731522)
+- Arrays of clusters have been used with Adapt to Type and pointer-to-handle formats. Reported problems concern ABI layout, padding, and handle interpretation?�not compiler hangs. [NI Community: Passing an Array of Clusters](https://forums.ni.com/t5/LabVIEW/Passing-an-Array-of-Clusters-from-LabVIEW-to-a-DLL/td-p/1623538)
+- Recent discussion still treats fixed arrays, nested dynamic arrays, and struct layout as interoperability hazards, rather than identifying a known compiler-loop defect. [NI Community: CLFN with C structs](https://forums.ni.com/t5/LabVIEW/Call-library-function-node-C-DLL-with-structs/m-p/4451808)
+
+Therefore I would classify H1 as plausible but uncorroborated. The strongest counterargument is that `Connect Wire` returned successfully. Unless the call returned before a deferred compilation pass finished, that shifts suspicion toward the first subsequent call or execution.
+
+The restored file having 36 wires is weak evidence for ?�Remove Bad Wires removed it.??It is equally compatible with the new wire never being saved, the process being killed before persistence, or a later delete/report operation never completing.
+
+2. Cheapest discriminating test
+
+Use fresh LabVIEW processes and disposable generated VIs for each case. Record a timestamp immediately before and after every COM invocation in the client. Never combine the wire, traversal, deletion, and run in one opaque sequence.
+
+Run this three-way test:
+
+| Case | Script after constructing the common 36-wire harness | Interpretation |
+|---|---|---|
+| A | Connect only the calibration wire; make no traversal, delete, save, or Run call. From a watchdog process, sample LabVIEW CPU and attempt one cheap VI Server property read after a fixed delay. | One-core spin before any further scripted operation strongly favors H1. |
+| B | Do not connect that wire; invoke exactly the suspected Traverse/report or delete operation. Do not run the VI. | A hang here favors H2. |
+| C | Leave the calibration input unwired and invoke Run, with DLL-side entry/exit logging if already available. Do no traversal/delete first. | Entry into the DLL followed by a hang favors H3. No DLL entry points back toward compilation/VI Server. |
+
+The most valuable first run is A. It removes both H2 and H3 simultaneously. Allowing a quiet interval before the property read matters: immediately issuing traversal again would obscure whether deferred compilation or traversal consumed the CPU.
+
+For a still cheaper preliminary check, inspect the existing client log or add manager-side timestamps around each COM call. If `Connect Wire` has a recorded return time and the next call has no return, the statement ?�the wire operation hung??is not justified; at most, the wire may have triggered deferred work that caused the next call to block.
+
+For C, DLL entry logging is much more discriminating than LabVIEW execution state. A CLFN blocks its LabVIEW execution thread until the native function returns, so a DLL that loops can make later automation calls appear frozen. [NI Community: LabVIEW execution threads and CLFN blocking](https://forums.ni.com/t5/LabVIEW/How-does-labview-use-memory-in-call-library-function-node/td-p/3672647)
+
+3. C-string bypass risk
+
+The bypass is safe only under a strict buffer contract.
+
+LabVIEW converts a C String Pointer parameter to a null-terminated `char *`; LabVIEW strings themselves are not C strings. [NI: Converting a LabVIEW String for a CLFN](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YILoCAO&l=en-US)
+
+If LabVIEW supplies exactly `path byte length + 1` bytes, overwriting it with a status string is memory-safe only when:
+
+```text
+encoded status byte length + 1 <= encoded path byte length + 1
+```
+
+and the DLL always writes the terminating NUL. ?�Shorter??must mean shorter in encoded bytes, not characters.
+
+The risks are:
+
+- A longer status overruns LabVIEW?�s buffer and can corrupt memory. C provides the callee no inherent way to discover the allocation size. [NI Community: proper DLL string buffers](https://forums.ni.com/t5/LabVIEW/Call-Library-Node-Questions-proper-way-to-provide-buffer-to-DLL/td-p/4288421)
+- Missing NUL termination can make LabVIEW scan beyond the allocation when converting the result back. NI notes that non-constant C-string parameters are scanned after return to determine their resulting length. [NI: string-transfer best practices](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA0VU0000000Jlp0AE&l=en-US)
+- A short path provides a correspondingly tiny output buffer. NI?�s guidance is to configure an explicit minimum size or pass a deliberately initialized buffer when the DLL produces output. [NI Community: allocate the result-string buffer](https://forums.ni.com/t5/LabVIEW/Call-library-function-node-input-issue/m-p/4007212/highlight/true)
+- Embedded NULs cannot be represented in this interface. If arbitrary bytes are needed, NI recommends a U8 array/data pointer instead. [NI: C string versus byte-array pointer](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YILoCAO&l=en-US)
+- The DLL must not retain the pointer after returning; it is a LabVIEW-managed call buffer, not persistent DLL-owned storage. This last point is an ABI inference rather than a statement I found explicitly documented.
+
+My recommendation: keep the bypass, but do not rely on path length as output capacity. Either make the parameter input-only and return status separately, or configure/provide a fixed explicit buffer at least as large as the DLL?�s documented maximum status plus NUL. Also verify whether the DLL expects ANSI/code-page bytes or UTF-8; ?�C String Pointer??alone does not establish the DLL?�s pathname encoding.
+
+Bottom line: H1 remains a useful experimental hypothesis, not a supported diagnosis. A wire-only replay in a fresh process is the cheapest decisive test; the unwired calibration bypass is reasonable, while reusing the path buffer for output is safe only with a proven byte-capacity and termination contract.
+BGRUN END rc=0 after 98s

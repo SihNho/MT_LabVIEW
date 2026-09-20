@@ -1,0 +1,37 @@
+BGRUN START 2026-09-16 13:40:10 limit 20.0 min: py -u tools/bench/diag_autofocus_panel.py
+=== GOAL 1: panel_wiring(MAIN) - which control drives wires 3362 / 3268
+  114 rows (60 controls / 54 indicators)
+  *** wire 3362 = front-panel CONTROL 'Fix to a Certain Pattern' (uid 10230, is_source=True)   <- the NOT's input - can it block autofocus?
+  --- wire 3268 is NOT on any panel terminal: it is a CONSTANT or a local on diagram 639 (the shared frame counter)
+
+  focus/reset-related panel rows:
+    'Focus Step (F1)'                      uid 87      wire 0       CTL src=True
+    'Reset Tracking'                       uid 5605    wire 10312   CTL src=True
+    'Focus Pos (Track)'                    uid 9238    wire 5773    IND src=False
+    'Focus Deviation from the Center'      uid 9391    wire 9797    CTL src=True
+    'Auto-Reset'                           uid 17472   wire 9806    CTL src=True
+    'Auto-Focus'                           uid 24266   wire 7527    CTL src=True
+    '# of Auto-Reset'                      uid 9768    wire 10205   IND src=False
+    'Auto-reset zero'                      uid 10208   wire 11253   CTL src=True
+    'Autoreference? 1=Y'                   uid 10485   wire 4981    CTL src=True
+    'Set Focus  (0->50)'                   uid 11009   wire 6119    CTL src=True
+    'Limit of Program'                     uid 9654    wire 10142   CTL src=True
+    'Limit of Auto-Focus'                  uid 10173   wire 11527   CTL src=True
+    'Focus Pos (Start)'                    uid 11344   wire 42795   CTL src=True
+    'Focus Pos (Cal)'                      uid 12216   wire 22269   IND src=False
+    'Max Travel Limit'                     uid 33150   wire 33805   IND src=False
+
+=== GOAL 2: does error 1092 follow the CLASS NAME or the VI?
+  FAIL  count(MAIN, 'PropertyNode')                    -> count(PropertyNode) on Min_Track N beads V6_ParallelLoop.vi: error 1092: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for G
+  FAIL  report_all(MAIN, 'PropertyNode')               -> report_all(PropertyNode) on Min_Track N beads V6_ParallelLoop.vi: error 1092: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse 
+  OK    count(MAIN, 'Property')                        -> 106
+  OK    report_all(MAIN, 'Property')                   -> 106
+  FAIL  count(small op VI, 'PropertyNode')             -> count(PropertyNode) on OpWireSource_v5.vi: error 1092: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpRepo
+  FAIL  report_all(small op VI, 'PropertyNode')        -> report_all(PropertyNode) on OpWireSource_v5.vi: error 1092: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->O
+  OK    count(small op VI, 'Property')                 -> 12
+  OK    report_all(small op VI, 'Property')            -> 12
+
+   PASS main VI unchanged; wrote G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\autofocus_panel.json
+
+=== SUMMARY 1/2 target wires named from the panel ===
+BGRUN END rc=0 after 20s

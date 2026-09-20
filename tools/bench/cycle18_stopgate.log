@@ -1,0 +1,113 @@
+BGRUN START 2026-09-18 00:22:47 limit 10.0 min: py -u tools/bench/cycle18_stopgate_driver.py MATERIAL=1
+=== cycle 18 - prior-art STOP RECORD + LAUNCH GATE ===
+
+[1] compile
+  PASS  compiles: tools/stop_record.py
+  PASS  compiles: tools/hooks/guard_cycle.py
+  PASS  compiles: tools/hooks/guard_bash.py
+  PASS  compiles: tools/prior_art_review.py
+  PASS  compiles: tools/bench/stop_record_selftest.py
+
+[2] import sanity (guard_cycle imports stop_record; stop_record imports guard_cycle LAZILY)
+  PASS  no circular import; all three entry points present   guard_cycle.released_slugs True
+guard_bash.stop_gate True
+stop_record.check_command True 
+
+[3] the four acceptance cases (plan Pre-decided 4)
+    | === stop_record launch gate: self-test (cycle 18, plan Pre-decided 4) ===
+    |   PASS  C1a record written, keyed to path+hash   837e05e2617c
+    |   PASS  C1b launch REFUSED (spelling 1)   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdict that is
+    |   PASS  C1b launch REFUSED (spelling 2)   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdict that is
+    |   PASS  C1b launch REFUSED (spelling 3)   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdict that is
+    |   PASS  C1c an unrelated command is untouched
+    |   PASS  C1d a DIFFERENT recipe is untouched (refusal is per record, not per directory)
+    |   PASS  C2a launch PASSES after a valid FIXED: line
+    |   PASS  C2b the release is stamped with the CURRENT sha256   837e05e2617c
+    |   PASS  C2c a second launch of the same bytes still passes
+    |   PASS  C3a launch REFUSED again after the recipe changed   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe was RELEASED for different bytes than the
+    |   PASS  C3b the refusal names BOTH hashes
+    |   PASS  C3c the record was NOT cleared by the re-save
+    |   PASS  C4a corrupt store REFUSES a tools/recipes launch (fail closed)   BLOCKED by tools/stop_record.py (fail-closed): the prior-art stop-record store cannot be read, so no launch of a recipe can be shown to be released.
+    |   PASS  C4b corrupt store leaves an unrelated command alone
+    |   PASS  C4c a DELETED store is missing-but-expected, not a release   BLOCKED by tools/stop_record.py (fail-closed): the prior-art stop-record store cannot be read, so no launch of a recipe can be shown to be released.
+    |   PASS  C4d ... and still does not wedge a grep
+    |   PASS  C0 the scratch recipe was deleted in the same run
+    |   PASS  C0 the REAL store was never touched   ('absent', 'absent') -> ('absent', 'absent')
+    | === stop_record selftest: 18 pass, 0 fail ===
+  PASS  stop_record_selftest   === stop_record selftest: 18 pass, 0 fail ===
+
+[4] regression: the EXISTING guard_cycle self-tests still pass after the refactor
+  -> FAIL  regression selftest_guard_cycle_fixed.py   premature_build (b): 5 pass / 1 fail
+  PASS  regression selftest_guard_cycle_rerun.py   selftest_guard_cycle_rerun: 4 pass, 0 fail
+
+[5] doc_lint (output written to tools/bench/cycle18_doc_lint.txt, not echoed - see docstring)
+    doc_lint summary line : DOC-LINT FAIL: 1 fail, 3 warn, 6 pass
+    doc_lint failcount    : 1   warncount: 3   failing checks: (none)
+  -> FAIL  doc_lint ran and its failing checks are the pre-existing L6 only   (none)
+
+=== cycle18 stop-gate driver: 8 pass, 2 fail ===
+BGRUN END rc=1 after 1s
+BGRUN START 2026-09-18 00:39:32 limit 10.0 min: py -u tools/bench/cycle18_stopgate_driver.py MATERIAL=1
+=== cycle 18 - prior-art STOP RECORD + LAUNCH GATE ===
+
+[1] compile
+  PASS  compiles: tools/stop_record.py
+  PASS  compiles: tools/hooks/guard_cycle.py
+  PASS  compiles: tools/hooks/guard_bash.py
+  PASS  compiles: tools/prior_art_review.py
+  PASS  compiles: tools/bench/stop_record_selftest.py
+
+[2] import sanity (guard_cycle imports stop_record; stop_record imports guard_cycle LAZILY)
+  PASS  no circular import; all three entry points present   guard_cycle.released_slugs True
+guard_bash.stop_gate True
+stop_record.check_command True 
+
+[3] the four acceptance cases (plan Pre-decided 4)
+    | === stop_record launch gate: self-test (cycle 18, plan Pre-decided 4) ===
+    |   PASS  C1a record written, keyed to path+hash   837e05e2617c
+    |   PASS  C1b launch REFUSED (spelling 1)   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdict that is
+    |   PASS  C1b launch REFUSED (spelling 2)   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdict that is
+    |   PASS  C1b launch REFUSED (spelling 3)   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdict that is
+    |   PASS  C1c an unrelated command is untouched
+    |   PASS  C1d a DIFFERENT recipe is untouched (refusal is per record, not per directory)
+    |   PASS  C2a launch PASSES after a valid FIXED: line
+    |   PASS  C2b the release is stamped with the CURRENT sha256   837e05e2617c
+    |   PASS  C2c a second launch of the same bytes still passes
+    |   PASS  C3a launch REFUSED again after the recipe changed   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe was RELEASED for different bytes than the
+    |   PASS  C3b the refusal names BOTH hashes
+    |   PASS  C3c the record was NOT cleared by the re-save
+    |   PASS  C4a corrupt store REFUSES a tools/recipes launch (fail closed)   BLOCKED by tools/stop_record.py (fail-closed): the prior-art stop-record store cannot be read, so no launch of a recipe can be shown to be released.
+    |   PASS  C4b corrupt store leaves an unrelated command alone
+    |   PASS  C4c a DELETED store is missing-but-expected, not a release   BLOCKED by tools/stop_record.py (fail-closed): the prior-art stop-record store cannot be read, so no launch of a recipe can be shown to be released.
+    |   PASS  C4d ... and still does not wedge a grep
+    |   PASS  C0 the scratch recipe was deleted in the same run
+    |   PASS  C0 the REAL store was never touched   ('absent', 'absent') -> ('absent', 'absent')
+    | === stop_record selftest: 18 pass, 0 fail ===
+  PASS  stop_record_selftest   === stop_record selftest: 18 pass, 0 fail ===
+
+[4] regression: the EXISTING guard_cycle self-tests after the refactor
+    |   temp: C:\Users\KimLab\AppData\Local\Temp\guardcycle_yzlsfnop
+    |   PASS  C1 first run after an edit, no log under the review -> REFUSED  blocked
+    |   PASS  C2 edited after a failed run that ran under the review -> ALLOWED  allowed
+    |   PASS  C3 no prior-art review at all -> REFUSED  blocked
+    |   PASS  C4 (regression) review newer than the recipe -> ALLOWED  allowed
+    | 
+    | === selftest_guard_cycle_rerun: 4 pass, 0 fail ===
+  PASS  regression selftest_guard_cycle_rerun.py   selftest_guard_cycle_rerun: 4 pass, 0 fail
+    | T1   PASS     expected=ALLOWED  got=ALLOWED  
+    | T2   PASS     expected=REFUSED  got=REFUSED  | BLOCKED by tools/hooks/guard_cycle.py: this RECIPE HAS NO PRIOR-ART RE
+    | T3   PASS     expected=REFUSED  got=REFUSED  | BLOCKED by tools/hooks/guard_cycle.py: this RECIPE HAS NO PRIOR-ART RE
+    | T4   PASS     expected=REFUSED  got=REFUSED  | BLOCKED by tools/hooks/guard_cycle.py: this RECIPE HAS NO PRIOR-ART RE
+    | T5   PASS     expected=REFUSED  got=REFUSED  | BLOCKED by tools/hooks/guard_cycle.py: this RECIPE HAS NO PRIOR-ART RE
+    | T6   FAIL     expected=REFUSED  got=ALLOWED  
+    | 
+    | SELFTEST guard_cycle premature_build (b): 5 pass / 1 fail
+  KNOWN  selftest_guard_cycle_fixed.py (NOT a cycle-18 gate): premature_build (b): 5 pass / 1 fail   -> reviewed DUAL, both ANSWERED: archive/peer/2026-09-18-cycle18-t6-regression-{codex,opus}.md; T6 vs archive/2026-09-17-status-d1-phase-full-narrative.md:254 (6/6) is OPEN for judgement
+
+[5] doc_lint (output written to tools/bench/cycle18_doc_lint.txt, not echoed - see docstring)
+    doc_lint summary line : DOC-LINT FAIL: 1 fail, 3 warn, 6 pass
+    doc_lint failcount    : 1   warncount: 3   failing checks: L6
+  PASS  doc_lint ran and its failing checks are the pre-existing L6 only   L6
+
+=== cycle18 stop-gate driver: 9 pass, 0 fail ===
+BGRUN END rc=0 after 1s

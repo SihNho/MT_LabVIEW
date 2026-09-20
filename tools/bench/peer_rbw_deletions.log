@@ -1,0 +1,93 @@
+BGRUN START 2026-09-17 14:26:10 limit 11.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent codex -Kind review -Slug rbw-deleted-wires-run9 -TimeoutSec 480 -Task (Get-Content -Raw 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\97b1695e-68c2-4985-8cac-1ca3097b3b15\scratchpad\task_rbw.md')
+OUTCOME: ANSWERED (133s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-17-rbw-deleted-wires-run9.md
+--- ANSWER ---
+1. **The claim is wrong because the gate never measured brokenness or deletion.** `Terminal.Connect Wire` (`6349C03`) has **no return value**. The “creation-time wire UID” is therefore a later read of `Terminal.Connected Wire`, not an identity token returned by the operation. `Connected Wire` merely reports the wire currently connected to that terminal. Comparing that object’s UID after a topology-changing operation tests object identity—not whether the logical connection survived. [Connect Wire semantics](https://labviewwiki.org/wiki/Terminal_class/Connect_Wire_method) · [Connected Wire property](https://labviewwiki.org/wiki/Terminal_class/Connected_Wire_property)
+
+This distinction is decisive for row 1:
+
+```text
+#1359 t4: Connected Wire 26189 → 26412
+```
+
+That terminal was not observed becoming disconnected. The classifier called it “deleted” solely because its current wire object differed. Therefore “3 deleted by RBW” is not established; at most, two became null and one changed identity.
+
+2. **The strongest alternative is net canonicalization plus index drift.**
+
+LabVIEW defines a wire as having one source and potentially many sinks, while `Wire.Terminals[]` (`6371003`) returns all terminals connected by that wire. A second sink is therefore normally an enlargement of an existing wire/net, not necessarily creation of another wire object. [NI’s wire model](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html) · [Wire properties](https://labviewwiki.org/wiki/Wire_class)
+
+That fits the `delta 0` row directly:
+
+```text
+Multiply source already drives wire 26189
+second sink added
+sink Connected Wire = 26189
+total wire count delta = 0
+```
+
+`Connect Wire` does not “return the existing wire” or “return a new wire”—again, it returns nothing. The subsequent `Connected Wire` read apparently found the existing multi-terminal wire `26189`.
+
+On renumbering versus replacement:
+
+- LabVIEW does **not renumber a surviving object**. A UID remains associated with the same object, including across saves.
+- If `26189 → 26412` was read from the same terminal object, then either LabVIEW replaced/reassociated the wire object while canonicalizing the net, or the terminal became connected to a different wire.
+- But your code re-resolves `Node.Terminals[index]`. That prevents a stale reference while introducing another ambiguity: after tunnel creation/removal, does `T[4]` still identify the same logical loop terminal? The documented way to interpret `Terminals[]` indices is by the connector information, supplemented with `Is Source?` and datatype; re-reading the same numeric index alone does not prove semantic identity. [UID semantics](https://labviewwiki.org/wiki/GObject_class/UID_property) · [terminal-index guidance](https://forums.ni.com/t5/LabVIEW/Scripting-Terminal-Information/td-p/4303374) · [NI Context Help terminal-number option](https://www.ni.com/docs/ar-SD/csh?context=lvcore_lvdialog_vi_server_config_options)
+
+The highly suspicious fact is that row 1’s `T[4]` changed specifically to `26412`, the UID associated with the later cross-diagram connection. That is more suggestive of terminal-index movement or topology reassociation than simple deletion of a broken branch.
+
+The two `→0` cases remain compatible with actual deletion, but also with:
+
+- re-resolving a different terminal after dynamic tunnel changes;
+- RBW removing a loose intermediary segment while the intended net survives through another tunnel-side wire object;
+- the attempted connection being silently absent and a transient/bad segment being removed.
+
+`Diagram.Wires[]` only enumerates wires connecting top-level objects in that particular diagram, which matters across structure boundaries. A cross-boundary logical connection can involve distinct diagram-local wire objects and tunnel terminals. [AbstractDiagram.Wires[] (`6375805`)](https://labviewwiki.org/wiki/AbstractDiagram_class)
+
+3. **The observation that falsifies your reading is:**
+
+Immediately after `Connect Wire`, before RBW:
+
+```text
+Wire.Is Broken? == FALSE
+Wire.Terminals[] contains the intended source and sink terminal identities
+```
+
+and after RBW:
+
+```text
+the same source and sink remain in one connected component,
+even if Connected Wire UID changes
+```
+
+That would directly falsify “Connect Wire created a broken wire which RBW deleted.” `Wire.Is Broken?` (`6371004`) is the property that actually asks the proposed question; NI also defines RBW (`VI.Block Diagram:Remove Bad Wires`, method `0x410`) as removing broken wires. [Wire.Is Broken?](https://labviewwiki.org/wiki/Wire_class) · [Remove Bad Wires](https://labviewwiki.org/wiki/VI_class)
+
+Conversely, your reading would gain strong support if, before RBW, the exact wire object reports `Is Broken? = TRUE`, `Terminals[]` contains the intended endpoints, and afterward that UID is absent from every relevant `Diagram.Wires[]` and the held sink terminal’s `Connected Wire` is null.
+
+4. **A UID-equality gate over a net is not sound.**
+
+A UID answers “is this the exact same GObject?” It does not answer:
+
+- whether a source still reaches a sink;
+- whether a wire is broken;
+- whether a branch survived;
+- whether LabVIEW replaced or canonicalized its wire representation;
+- whether an index now denotes a different terminal.
+
+UID reuse is even permitted after deletion. Use UID only as one field in an object snapshot, not as the survival criterion. [UID documentation](https://labviewwiki.org/wiki/GObject_class/UID_property)
+
+**Cheapest discriminating test:** for one minimal two-sink case, retain the exact source and sink terminal references—do not re-index them—then snapshot these immediately before RBW:
+
+```text
+sink.Connected Wire            634A000
+wire.UID                       632A813
+wire.Is Broken?                6371004
+wire.Terminals[]               6371003
+each terminal.UID              632A813
+each terminal.Is Source?       634A003
+each terminal.Diagram          634A002
+```
+
+Optionally snapshot each relevant diagram’s `Wires[]` (`6375805`) and `VI.Get Errors` (`0x452`). Invoke RBW (`0x410`), then repeat the same reads from both the **held terminal reference** and a freshly indexed terminal reference.
+
+- `Is Broken? = TRUE` before RBW and disappearance afterward supports your claim.
+- `Is Broken? = FALSE`, preserved endpoint connectivity, or disagreement between held-reference and fresh-index results refutes it and identifies UID movement/index drift as the failure in F1v.
+BGRUN END rc=0 after 134s

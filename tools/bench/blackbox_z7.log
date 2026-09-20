@@ -1,0 +1,42 @@
+BGRUN START 2026-09-07 21:09:36 limit 25.0 min: py -u tools/bench/blackbox_chain.py
+LabVIEW up after 15 s, version 26.3.1f1
+dialogs: 1346,762| / ENABLED|285675044|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+lv_restart rc 0
+   t0: indicator 'radial intensity profile'
+   t1: control 'y center'
+   t2: control 'x center'
+   t3: control 'half cross'
+   t4: control 'Input Image'
+   harness HARNESS_tracking-calculate radial profile-openv2.vi: 4 controls, 1 indicators, ExecState 1
+   t0: indicator 'prepped I(r)'
+   t1: indicator 'r shifted\ncomplex\ncosine/hilbert filtered\nintensity profile\n(aka the corkscrew)'
+   t2: control 'forget radius'
+   t3: control 'halfcross'
+   t4: control 'cosine bandpass'
+   t5: control 'radial intensity profile'
+   harness HARNESS_Tracking-prep I of r.vi: 4 controls, 2 indicators, ExecState 1
+   t0: indicator 'Index of closest\ncal image slice'
+   t1: control 'Real portion of\nhilbert/bandpass filtered\nr-shifted claibration image'
+   t2: control 'prepped I(r)'
+   harness HARNESS_Tracking-fit prepped I of r to cal.vi: 2 controls, 1 indicators, ExecState 1
+   t0: indicator 'neighborhood phases'
+   t1: control 'index of best-fit\ncal image slice'
+   t2: control '2D array of complex\ncal image intensities\n(aka cal corkscrews)\nr shifted!'
+   t3: control '2D array of prepped\ncal image amplitudes\nr shifted!'
+   t4: control 'complex 1D radial intensity profile\npost cosine bandpass/hilbert transform\naka the "corkscrew"'
+   harness HARNESS_tracking-calculate phase in neighborhood.vi: 4 controls, 1 indicators, ExecState 1
+   t0: indicator 'bead z pos as a cal image index'
+   t1: control 'neighborhood phases'
+   t2: control 'index of best-fit\ncal image slice'
+   harness HARNESS_tracking- quadratic fit to phase nghbrd.vi: 2 controls, 1 indicators, ExecState 1
+
+=== bead 0: numpy idx 29 z_index 29.219624; ref idx 29 z_index 29.221202
+  radial: LV len 60 max|diff| 9.262e-05  argmax|diff| 42  LV[:4] [72.720428 68.178665 60.468262 58.784481]  np[:4] [72.720433 68.178662 60.468256 58.784476]
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\blackbox_z.py", line 66, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\blackbox_z.py", line 49, in main
+    print(f"  prep: LV len {len(prep_lv)} max|diff| {np.max(np.abs(prep_lv - prep_np)):.3e}; cork: LV len {len(cork_lv)} max|diff| {np.max(np.abs(cork_lv - cork_np)):.3e}  LV[:2] {cork_lv[:2]} np[:2] {cork_np[:2]}", flush=True)
+ValueError: operands could not be broadcast together with shapes (0,) (37,) 
+capture rc 1
+BGRUN END rc=1 after 386s

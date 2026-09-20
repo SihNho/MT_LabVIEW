@@ -1,0 +1,29 @@
+BGRUN START 2026-09-16 19:03:12 limit 12.0 min: py -u tools/bench/diag_ownerchain_hop.py
+MAIN md5 before: 2a78e17c449cacdaf5da389818526859
+   fresh(): killing LabVIEW pid None
+   COM preflight attempt 1/15: pid None->14952, wires 16->16
+   COM preflight OK (pid 14952, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 14952
+  OBSERVED uid 686 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#686 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  OBSERVED uid 8634 -> owner 'Diagram' uid 7911 | self 'GrowableFunction'#8634 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 8953 -> owner 'Diagram' uid 686 | self 'GrowableFunction'#8953 | 482 says 'Diagram' cast 'Diagram' |  
+  -> FAIL  P1a uid 686 resolved (non-zero owner, no error)   owner_uid 0 err '' 'error 1055: Property Node in OpOwnerChain_v1.vi'
+  PASS  P1b the op's self-read echoes 686 as class 'Diagram'
+  -> FAIL  P2 686's owner is a structure or the VI   got 'FlatSequenceFrame'
+  -> FAIL  P3 the second hop was reachable   hop 1 returned owner uid 0
+  PASS  P4 8634 -> owner class 'Diagram', non-zero
+  PASS  P4 8953 -> owner class 'Diagram', non-zero
+CHAIN (measured, no interpretation):
+  uid    686 (Diagram) -> owner FlatSequenceFrame#0
+  uid   8634 (GrowableFunction) -> owner Diagram#7911
+  uid   8953 (GrowableFunction) -> owner Diagram#686
+  PASS  P5 census still true for LoopTunnel #10114 (the PERIODIC period crosses here (out_name '# FD points'))
+  PASS  P6 LoopTunnel #10114: exactly one side is the source
+  MEASURED LoopTunnel #10114 idx 62: out_is_source False (wire 9000, name '# FD points') | in_is_source [True] (wires [10103], names ['# FD points']) | index_mode 0 => data flows INTO the loop (outer consumes, inner emits)
+  PASS  P5 census still true for LoopTunnel #10177 (the PERIODIC remainder crosses here)
+  PASS  P6 LoopTunnel #10177: exactly one side is the source
+  MEASURED LoopTunnel #10177 idx 33: out_is_source False (wire 10187, name '') | in_is_source [True] (wires [10166], names ['']) | index_mode 0 => data flows INTO the loop (outer consumes, inner emits)
+   wrote G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\ownerchain_hop.json
+  PASS  main VI md5 unchanged (rule 1d: read-only)
+=== diag_ownerchain_hop: 8 pass, 3 fail ===
+BGRUN END rc=1 after 34s

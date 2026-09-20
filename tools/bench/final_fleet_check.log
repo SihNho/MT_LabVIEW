@@ -1,0 +1,29 @@
+BGRUN START 2026-09-13 19:54:01 limit 10.0 min: py -u -c 
+import os,sys,glob,hashlib
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+# close the stray OpFPLabels panels the probe left open, then verify the whole fleet
+P=os.path.join(g.CLAUDEDEV,'OpFPLabels_v0.vi')
+print('OpFPLabels md5:',hashlib.md5(open(P,'rb').read()).hexdigest(),'(expect 5f2da97f2d016abf9ad211706d4ab3f6)',flush=True)
+try: g.close_panel(P); print('closed its panel',flush=True)
+except Exception as e: print('close_panel:',str(e)[:90],flush=True)
+ops=sorted(glob.glob(os.path.join(g.CLAUDEDEV,'Op*.vi')))
+bad=[]
+for p in ops:
+    try: st=g.exec_state(p)
+    except Exception: st='EXC'
+    if st!=1: bad.append((os.path.basename(p),st))
+print('%d ops, %d not ExecState 1: %s'%(len(ops),len(bad),bad or 'none'),flush=True)
+print('scratch files left:',[os.path.basename(x) for x in glob.glob(os.path.join(g.CLAUDEDEV,'PROBE_*.vi'))+glob.glob(os.path.join(g.CLAUDEDEV,'INSPECT_*.vi'))] or 'none',flush=True)
+try:
+    print('fp_labels works:',len(g.fp_labels(os.path.join(g.CLAUDEDEV,'OpWire_v1.vi'),max_n=20)),'objects',flush=True)
+except Exception as e:
+    print('fp_labels:',str(e)[:110],flush=True)
+
+OpFPLabels md5: 5f2da97f2d016abf9ad211706d4ab3f6 (expect 5f2da97f2d016abf9ad211706d4ab3f6)
+closed its panel
+50 ops, 0 not ExecState 1: none
+scratch files left: ['INSPECT_ASI_adjust focus-subvi.vi', 'INSPECT_Global motor pos.vi', 'INSPECT_Max Trans Pos.vi', 'INSPECT_Mercury_comm.vi', 'INSPECT_Motor control v5_No Recording.vi', 'INSPECT_probe.vi']
+fp_labels works: 8 objects
+BGRUN END rc=0 after 11s

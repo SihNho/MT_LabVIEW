@@ -1,0 +1,188 @@
+BGRUN START 2026-09-18 11:54:09 limit 25.0 min: py -u tools/bench/diag_fstunnel_rbwvictims.py MATERIAL=1
+PREDICTION CONTRACT M0..M7 - see this file's docstring.
+   LabVIEW pid before anything: 4228
+   twin C (untouched) C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_fsrvC_115410_3164.vi
+   twin D (RBW)       C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_fsrvD_115410_3164.vi
+-- md5 before: 98 files (95 originals) --
+   c39f36e0675339673b707c59f0784fee  Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi
+   fresh(): killing LabVIEW pid 4228
+   COM preflight attempt 1/15: pid None->11620, wires 16->16
+   COM preflight OK (pid 11620, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 11620
+  HANDLES after a fresh LabVIEW, before any work: 30356  (fresh baseline ~31,500)
+
+   DONOR OpWireSource_v5.vi (read-only): 42 wires; 894 present = True; 1356 present = True
+  NOTE donor wire uids: [106, 188, 224, 303, 308, 318, 325, 373, 384, 415, 425, 467, 471, 531, 533, 555, 573, 578, 590, 639, 751, 834, 894, 953, 1012, 1068, 1081, 1134, 1149, 1208, 1237, 1257, 1282, 1341, 1356, 1417, 1442, 1458, 1517, 1576, 1614, 1673]
+
+================ REPRODUCE build_one('OUT') -> SCRATCH_fsrvC_115410_3164.vi (census=True) ================
+
+================ B  BUILD SCRATCH_fsrvC_115410_3164.vi from OpWireSource_v5  [OUT FlatSequenceOuterTunnel] ================
+   CKPT[00] sweep() from _v1.py:403  42 wires  894=True  1356=True
+   copy of the donor: ExecState 1, 19 nodes on diagram 0
+   Terms[] PN 145 (wire 578) | Index Array 151 (element wire 639) | front TMSC 1044 (target-class wire 533) | back-half reference sinks [157, 1319, 1326]
+  PASS B1 [OUT FlatSequenceOuterTunnel] the donor copy is legal and the sweep found the front section and >=1 back-half sink  | ExecState 1; terms 145 ia 151 tmsc 1044 consumers [157, 1319, 1326]
+   deleted Node #145 -> gone [145]
+   deleted Node #151 -> gone [151]
+   deleted Wire #578
+   deleted Wire #639
+   deleted Wire #533
+   CKPT[01] sweep() from _v1.py:442  39 wires  894=True  1356=True
+   after the deletes: back-half sinks {157: 0, 1319: 0, 1326: 0}; TMSC target class wire 0
+  PASS B2 [OUT FlatSequenceOuterTunnel] every sink to be re-fed is BARE and the cast's target class is unwired  | {157: 0, 1319: 0, 1326: 0}; target class 0
+   PN_A uid 145 (Nodes[17], OuterTerminal); new control(s) from its `reference`: ['reference 4']
+  PASS B3 [OUT FlatSequenceOuterTunnel] create_control on the OuterTerminal node's `reference` made exactly one new CONTROL  | ['reference 4']
+   CKPT[02] sweep() from _v1.py:463  40 wires  894=True  1356=True
+   deleted the seed->PN_A wire #1651 (the seed's job is to type the CAST)
+   CKPT[03] sweep() from _v1.py:471  40 wires  894=True  1356=True
+   seed 'reference 4' -> TMSC `target class` wire 1457
+   CKPT[04] sweep() from _v1.py:331  40 wires  894=True  1356=True
+   WIRE [OUT FlatSequenceOuterTunnel] TMSC->PN_A Function#1044.'specific class reference' -> Property#145.'reference': src wire BEFORE = 384 -> branch=True; ExecState BEFORE = 0
+   CKPT[05] sweep() from _v1.py:341  40 wires  894=True  1356=True
+        AFTER: src wire 384, dst wire 384; ExecState AFTER = 0
+   TMSC -> PN_A wired; ExecState 0 (0 is expected here - the back half is still bare)
+   CKPT[06] sweep() from _v1.py:331  40 wires  894=True  1356=True
+   WIRE [OUT FlatSequenceOuterTunnel] TMSC->PN_B Function#1044.'specific class reference' -> Property#148.'reference': src wire BEFORE = 384 -> branch=True; ExecState BEFORE = 0
+   CKPT[07] sweep() from _v1.py:341  40 wires  894=True  1356=True
+        AFTER: src wire 384, dst wire 384; ExecState AFTER = 0
+   CKPT[08] sweep() from _v1.py:331  40 wires  894=True  1356=True
+   WIRE [OUT FlatSequenceOuterTunnel] OuterTerminal->UID Property#145.'OuterTerminal' -> Property#151.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+   CKPT[09] sweep() from _v1.py:341  41 wires  894=True  1356=True
+        AFTER: src wire 1694, dst wire 1694; ExecState AFTER = 0
+   CKPT[10] sweep() from _v1.py:331  41 wires  894=True  1356=True
+   WIRE [OUT FlatSequenceOuterTunnel] InnerTerminal->UID Property#148.'InnerTerminal' -> Property#154.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+   CKPT[11] sweep() from _v1.py:341  42 wires  894=True  1356=True
+        AFTER: src wire 1719, dst wire 1719; ExecState AFTER = 0
+   CKPT[12] sweep() from _v1.py:331  42 wires  894=True  1356=True
+   WIRE [OUT FlatSequenceOuterTunnel] InnerTerminal->ConnWire Property#148.'InnerTerminal' -> Property#168.'reference': src wire BEFORE = 1719 -> branch=True; ExecState BEFORE = 0
+   CKPT[13] sweep() from _v1.py:341  42 wires  894=True  1356=True
+        AFTER: src wire 1719, dst wire 1719; ExecState AFTER = 0
+   CKPT[14] sweep() from _v1.py:331  42 wires  894=True  1356=True
+   WIRE [OUT FlatSequenceOuterTunnel] ConnWire->UID Property#168.'Wire' -> Property#169.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+   CKPT[15] sweep() from _v1.py:341  43 wires  894=True  1356=True
+        AFTER: src wire 1766, dst wire 1766; ExecState AFTER = 0
+   back-half sink #157 (Property) re-fed from OuterTerminal (1/3)
+   back-half sink #1319 (Property) re-fed from OuterTerminal (2/3)
+   back-half sink #1326 (Property) re-fed from OuterTerminal (3/3)
+   CKPT[16] sweep() from _v1.py:506  43 wires  894=True  1356=True
+   OuterTerminal wire 1694; back half now {157: 1694, 1319: 1694, 1326: 1694}; ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  PASS B4b [OUT FlatSequenceOuterTunnel] every back-half sink reads the OuterTerminal wire  | 1694 vs {157: 1694, 1319: 1694, 1326: 1694}
+**FAIL B4 [OUT FlatSequenceOuterTunnel] the whole typed chain is LEGAL - the FlatSequenceOuterTunnel property nodes accept the cast output, so the seed really typed the cast  | ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  NOTE twin C stop reason: FROZEN AT B4: B4 [OUT FlatSequenceOuterTunnel] the whole typed chain is LEGAL - the FlatSequenceOuterTunnel property nodes accept the cast output, so the seed really typed the cast | ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  PASS M0c twin C reached the B4 gate (so the frozen state IS the B4 point)  | FROZEN AT B4: B4 [OUT FlatSequenceOuterTunnel] the whole typed chain is LEGAL - the FlatSequenceOuterTunnel property nodes accept the cast output, so the seed really typed the cast | ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  PASS M0 [C] the reproduction matches run 1 object for object  | terms 145 ia 151 tmsc 1044 consumers [157, 1319, 1326] wires [384, 384, 1694, 1719, 1719, 1766]
+  PASS M0b [C] ExecState at the B4 point is 0 (run 1, build_opfstunnelterm_v1_run1.log:75)  | ExecState 0
+  NOTE recipe roles by node uid: {145: 'PN_A (face A property node)', 151: 'PN face-A -> GObject.UID', 1044: 'front To More Specific Class', 157: 'donor back-half `reference` sink', 1319: 'donor back-half `reference` sink', 1326: 'donor back-half `reference` sink', 148: 'PN_B (face B property node)', 154: 'PN face-B -> GObject.UID', 168: 'PN face-B -> Connected Wire', 169: 'PN Connected Wire -> GObject.UID'}
+  NOTE report_all(Indicator): EXC report_all(Indicator) on SCRATCH_fsrvC_115410_3164.vi: error 1092: Invoke Node in TRef Tra
+  NOTE twin C Wire census at B4: 43 wires: [106, 188, 224, 303, 308, 318, 325, 373, 384, 415, 425, 467, 471, 531, 555, 573, 590, 751, 834, 894, 953, 1012, 1068, 1081, 1134, 1149, 1208, 1237, 1257, 1282, 1341, 1356, 1417, 1442, 1457, 1458, 1517, 1576, 1614, 1673, 1694, 1719, 1766]
+  PASS M1a wire 894 exists in the twin-C Wire census at the B4 point  | 43 wires
+
+   ================ IDENTITY of wire 894 (RBW victim on dispatch 1's twin) ================
+      END  NONE - no terminal of any diagram-0 node reads this wire uid (the measurement)
+      OpWireSource_v5 per-terminal: [{'i': 0, 'is_source': False, 'owner_class': 'TopLevelDiagram', 'owner_uid': 3, 'recip': 894}, {'i': 1, 'is_source': False, 'owner_class': '', 'owner_uid': 0, 'recip': 0}]
+      terminal count reported = 2; Is Source? TRUE at index/indices [] (>=2 sources = broken, docs/NAMES.md:900)
+  PASS M1a wire 1356 exists in the twin-C Wire census at the B4 point  | 43 wires
+
+   ================ IDENTITY of wire 1356 (RBW victim on dispatch 1's twin) ================
+      END  NONE - no terminal of any diagram-0 node reads this wire uid (the measurement)
+      OpWireSource_v5 per-terminal: [{'i': 0, 'is_source': True, 'owner_class': 'TopLevelDiagram', 'owner_uid': 3, 'recip': 1356}, {'i': 1, 'is_source': False, 'owner_class': '', 'owner_uid': 0, 'recip': 0}]
+      terminal count reported = 2; Is Source? TRUE at index/indices [0] (>=2 sources = broken, docs/NAMES.md:900)
+   CONTRAST site wire 384 ends: [(1044, 'specific class reference', 'front To More Specific Class'), (145, 'reference', 'PN_A (face A property node)'), (148, 'reference', 'PN_B (face B property node)')]
+   CONTRAST site wire 1694 ends: [(157, 'reference', 'donor back-half `reference` sink'), (1319, 'reference', 'donor back-half `reference` sink'), (1326, 'reference', 'donor back-half `reference` sink'), (145, 'OuterTerminal', 'PN_A (face A property node)'), (151, 'reference', 'PN face-A -> GObject.UID')]
+   CONTRAST site wire 1719 ends: [(148, 'InnerTerminal', 'PN_B (face B property node)'), (154, 'reference', 'PN face-B -> GObject.UID'), (168, 'reference', 'PN face-B -> Connected Wire')]
+   CONTRAST site wire 1766 ends: [(168, 'Wire', 'PN face-B -> Connected Wire'), (169, 'reference', 'PN Connected Wire -> GObject.UID')]
+
+   ================ M2 CHECKPOINT TIMELINE (Wire census per sweep) ================
+      wire 894: first checkpoint = {'seq': 0, 'v1_line': 403, 'n_wires': 42}
+      wire 1356: first checkpoint = {'seq': 0, 'v1_line': 403, 'n_wires': 42}
+      CKPT[00] _v1.py:403   42 wires  894=True  1356=True
+      CKPT[01] _v1.py:442   39 wires  894=True  1356=True
+      CKPT[02] _v1.py:463   40 wires  894=True  1356=True
+      CKPT[03] _v1.py:471   40 wires  894=True  1356=True
+      CKPT[04] _v1.py:331   40 wires  894=True  1356=True
+      CKPT[05] _v1.py:341   40 wires  894=True  1356=True
+      CKPT[06] _v1.py:331   40 wires  894=True  1356=True
+      CKPT[07] _v1.py:341   40 wires  894=True  1356=True
+      CKPT[08] _v1.py:331   40 wires  894=True  1356=True
+      CKPT[09] _v1.py:341   41 wires  894=True  1356=True
+      CKPT[10] _v1.py:331   41 wires  894=True  1356=True
+      CKPT[11] _v1.py:341   42 wires  894=True  1356=True
+      CKPT[12] _v1.py:331   42 wires  894=True  1356=True
+      CKPT[13] _v1.py:341   42 wires  894=True  1356=True
+      CKPT[14] _v1.py:331   42 wires  894=True  1356=True
+      CKPT[15] _v1.py:341   43 wires  894=True  1356=True
+      CKPT[16] _v1.py:506   43 wires  894=True  1356=True
+  PASS M2 a checkpoint timeline was recorded for the whole build up to B4 (>=10 checkpoints)  | 17 checkpoints
+  PASS M2b the ORIGIN of 894 and 1356 is decided from the machine (donor census + first checkpoint), not argued  | first {894: {'seq': 0, 'v1_line': 403, 'n_wires': 42}, 1356: {'seq': 0, 'v1_line': 403, 'n_wires': 42}}; donor has 894=True 1356=True
+
+================ REPRODUCE build_one('OUT') -> SCRATCH_fsrvD_115410_3164.vi (census=False) ================
+
+================ B  BUILD SCRATCH_fsrvD_115410_3164.vi from OpWireSource_v5  [OUT FlatSequenceOuterTunnel] ================
+   copy of the donor: ExecState 1, 19 nodes on diagram 0
+   Terms[] PN 145 (wire 578) | Index Array 151 (element wire 639) | front TMSC 1044 (target-class wire 533) | back-half reference sinks [157, 1319, 1326]
+  PASS B1 [OUT FlatSequenceOuterTunnel] the donor copy is legal and the sweep found the front section and >=1 back-half sink  | ExecState 1; terms 145 ia 151 tmsc 1044 consumers [157, 1319, 1326]
+   deleted Node #145 -> gone [145]
+   deleted Node #151 -> gone [151]
+   deleted Wire #578
+   deleted Wire #639
+   deleted Wire #533
+   after the deletes: back-half sinks {157: 0, 1319: 0, 1326: 0}; TMSC target class wire 0
+  PASS B2 [OUT FlatSequenceOuterTunnel] every sink to be re-fed is BARE and the cast's target class is unwired  | {157: 0, 1319: 0, 1326: 0}; target class 0
+   PN_A uid 145 (Nodes[17], OuterTerminal); new control(s) from its `reference`: ['reference 4']
+  PASS B3 [OUT FlatSequenceOuterTunnel] create_control on the OuterTerminal node's `reference` made exactly one new CONTROL  | ['reference 4']
+   deleted the seed->PN_A wire #1651 (the seed's job is to type the CAST)
+   seed 'reference 4' -> TMSC `target class` wire 1457
+   WIRE [OUT FlatSequenceOuterTunnel] TMSC->PN_A Function#1044.'specific class reference' -> Property#145.'reference': src wire BEFORE = 384 -> branch=True; ExecState BEFORE = 0
+        AFTER: src wire 384, dst wire 384; ExecState AFTER = 0
+   TMSC -> PN_A wired; ExecState 0 (0 is expected here - the back half is still bare)
+   WIRE [OUT FlatSequenceOuterTunnel] TMSC->PN_B Function#1044.'specific class reference' -> Property#148.'reference': src wire BEFORE = 384 -> branch=True; ExecState BEFORE = 0
+        AFTER: src wire 384, dst wire 384; ExecState AFTER = 0
+   WIRE [OUT FlatSequenceOuterTunnel] OuterTerminal->UID Property#145.'OuterTerminal' -> Property#151.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+        AFTER: src wire 1694, dst wire 1694; ExecState AFTER = 0
+   WIRE [OUT FlatSequenceOuterTunnel] InnerTerminal->UID Property#148.'InnerTerminal' -> Property#154.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+        AFTER: src wire 1719, dst wire 1719; ExecState AFTER = 0
+   WIRE [OUT FlatSequenceOuterTunnel] InnerTerminal->ConnWire Property#148.'InnerTerminal' -> Property#168.'reference': src wire BEFORE = 1719 -> branch=True; ExecState BEFORE = 0
+        AFTER: src wire 1719, dst wire 1719; ExecState AFTER = 0
+   WIRE [OUT FlatSequenceOuterTunnel] ConnWire->UID Property#168.'Wire' -> Property#169.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+        AFTER: src wire 1766, dst wire 1766; ExecState AFTER = 0
+   back-half sink #157 (Property) re-fed from OuterTerminal (1/3)
+   back-half sink #1319 (Property) re-fed from OuterTerminal (2/3)
+   back-half sink #1326 (Property) re-fed from OuterTerminal (3/3)
+   OuterTerminal wire 1694; back half now {157: 1694, 1319: 1694, 1326: 1694}; ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  PASS B4b [OUT FlatSequenceOuterTunnel] every back-half sink reads the OuterTerminal wire  | 1694 vs {157: 1694, 1319: 1694, 1326: 1694}
+**FAIL B4 [OUT FlatSequenceOuterTunnel] the whole typed chain is LEGAL - the FlatSequenceOuterTunnel property nodes accept the cast output, so the seed really typed the cast  | ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  NOTE twin D stop reason: FROZEN AT B4: B4 [OUT FlatSequenceOuterTunnel] the whole typed chain is LEGAL - the FlatSequenceOuterTunnel property nodes accept the cast output, so the seed really typed the cast | ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  PASS M0d twin D reached the B4 gate  | FROZEN AT B4: B4 [OUT FlatSequenceOuterTunnel] the whole typed chain is LEGAL - the FlatSequenceOuterTunnel property nodes accept the cast output, so the seed really typed the cast | ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  PASS M0 [D] the reproduction matches run 1 object for object  | terms 145 ia 151 tmsc 1044 consumers [157, 1319, 1326] wires [384, 384, 1694, 1719, 1719, 1766]
+  PASS M0b [D] ExecState at the B4 point is 0 (run 1, build_opfstunnelterm_v1_run1.log:75)  | ExecState 0
+
+   twin D before RBW: ExecState 0, 43 wires
+   RBW on twin D: ExecState 0 -> 1; 43 -> 41 wires; REMOVED [894, 1356]; added []; err ''
+  PASS M3a Remove Bad Wires ran on twin D and its removed-wire SET was recorded  | removed [894, 1356]
+
+   ================ M4 TERMINALS THAT LOST THEIR WIRE TO RBW ================
+      NONE - no terminal that was wired before RBW reads 0 after it
+  PASS M4 the per-terminal before/after map was produced for twin D (terminals counted both sides)  | 133 -> 133 terminals
+
+   ================ M3 #384 AFTER the removal ================
+      #384 still present after RBW = True; site wires {1694: True, 1719: True, 1766: True}; ExecState after RBW = 1
+  PASS M3b all three other site wires (1694/1719/1766) still exist after RBW  | {1694: True, 1719: True, 1766: True}
+      READ w384 via sink #145.'reference' (Nodes[17] T[0], wire term 0): UID 2 = 384, Is Broken? = False, wire delta 0, ExecState 0, op err ''
+      #384 POST-RBW `Wire.Is Broken?` 6371004 = False; ExecState after the read = 0
+  PASS M3 the post-RBW `Wire.Is Broken?` value for #384 was read with UID 2 == 384  | row {'sink': [145, 'reference'], 'sink_node_index': 17, 'sink_term_index': 0, 'wire_term_index': 0, 'wire_delta': 0, 'exec_after': 0, 'op_err': '', 'uid2': 384, 'is_broken': False, 'name': 'reference'}
+  NOTE node_info (style, label) on twin D AFTER everything: [(0, 'Open VI Reference', 'Open VI Reference'), (1, 'Unknown', 'Traverse for GObjects.vi'), (2, 'Index Array', 'Index Array'), (3, 'Property Node', 'Property Node'), (4, 'Property Node', 'Property Node'), (5, 'Property Node', 'Property Node'), (6, 'Property Node', 'Property Node'), (7, 'Unknown', 'UID to GObject Reference.vi'), (8, 'To More Specific Class', 'To More Specific Class'), (9, 'Property
+  NOTE Wire census after node_info (perturbation check): [106, 188, 224, 303, 308, 318, 325, 373, 384, 415, 425, 467, 471, 531, 555, 573, 590, 751, 834, 953, 1012, 1068, 1081, 1134, 1149, 1208, 1237, 1257, 1282, 1341, 1417, 1442, 1457, 1458, 1517, 1576, 1614, 1673, 1694, 1719, 1766]
+
+   ================ M5 TEXTUAL HITS ================
+      token '894': no hit
+      token '1356': no hit
+  PASS M5 the textual search ran over both files for every token  | ['894', '1356']
+  PASS M6a both scratch VIs were created and DELETED in this same run  | C gone True, D gone True
+  HANDLES after the run: 30848  (fresh baseline ~31,500)
+-- md5 after: 98 files (95 originals) --
+   c39f36e0675339673b707c59f0784fee  Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi
+  PASS M6 all 95 originals (+ the V6 copy and the two reader ops) are md5-identical before and after  | differing: []
+  PASS M7 no motor, no serial port, no camera, motor_gate.py --execute not called (static: this file makes no such call)  | read-only VI Server + two throwaway twin scratches
+
+SUMMARY gates 18/18 pass; failing: []
+raw -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_fstunnel_rbwvictims.json
+BGRUN END rc=0 after 125s

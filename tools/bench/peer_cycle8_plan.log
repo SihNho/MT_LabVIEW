@@ -1,0 +1,163 @@
+BGRUN START 2026-09-15 17:01:45 limit 20.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/1c79eb01-7150-4a78-9689-e6d4f34f7800/scratchpad/peer_cycle8_plan.ps1
+=== PEER 1: codex, attack the framing ===
+OUTCOME: ANSWERED (395s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-15-cycle8-plan-attack.md
+--- ANSWER ---
+The plan is wrong as sequenced: it assumes the new latest-wins policy is compatible with the existing image-pool ownership design, but that design still says ?�no free slot ??drop the new frame.??Reusing the oldest queued slot is a different state machine. Until that is specified and stress-tested, the system can produce exactly the forbidden failure: descriptor `{frame=N, slot=S}` reaching tracking after slot `S` has been overwritten with frame `M`.
+
+### 1. Strongest reason the plan is wrong
+
+The overload-policy change invalidated [frame-ownership-design.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/frame-ownership-design.md>):
+
+- The existing design requires acquisition to obtain a free slot before filling it.
+- When none is free, it drops the new frame.
+- The new policy instead evicts the oldest unprocessed frame and immediately reuses that frame?�s slot.
+
+That reuse is safe only if eviction and recovery of the corresponding slot descriptor are atomic with respect to tracking?�s dequeue. LabVIEW?�s Lossy Enqueue can help because it removes the oldest queued element without blocking and returns both the overflowed element and an `overflow?` flag?�but the plan does not yet say how acquisition obtains the destination slot before copying, handles slots already owned by tracking, or prevents stale descriptor/slot reuse. [NI?�s Lossy Enqueue specification](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/functions/lossy-enqueue-element.html)
+
+This is the largest unnamed risk. Step 7 says ?�including overload,??but overload is now an architectural redesign, not merely another test case.
+
+A workable shape may require an extra FILLING slot and rotation: acquire into the one slot not owned by either queue or tracking, lossy-enqueue its descriptor, and?�on overflow?�use the returned old descriptor?�s slot as the next FILLING slot. Generation numbers or pixel sentinels should detect accidental reuse. NI specifically warns that IMAQ image values are references to reusable memory and can display/process the wrong image when buffers are overwritten without explicit ordering. [NI image-buffer race explanation](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000PAovSAG)
+
+### 2. Alternative explanations of the evidence
+
+Two apparent successes/failures have less favorable explanations:
+
+- The earlier ?�moving a node broke the VI??result does not prove reparenting failed. [toolkit-capabilities.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/toolkit-capabilities.md>) records that the VI was already broken because the newly created For Loop had no `N`; the probe also capped both node counts at 40 and therefore did not establish whether ownership changed.
+- The 10,018 bit-identical frames can be explained by the fixture supplying stable, contiguous TIFF inputs with no forced queue overflow. It establishes kernel numerics before bead loss, not live handoff correctness. A live IMAQ image is reusable referenced memory, unlike an immutable TIFF file already read for that iteration. [NI on IMAQ image references and execution ordering](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000P8khSAC)
+
+### 3. What would falsify the plan?�s claims
+
+Any one of these observations falsifies the relevant claim:
+
+- Under forced overload, tracking receives `{frame=N, slot=S}` while the pixels in `S` carry a sentinel for another frame.
+- A slot is returned twice, never returned, or reused while tracking owns it.
+- A representative moved fragment cannot be saved/reopened runnable with its owners, terminal types, case membership, and data dependencies preserved.
+- After an injected gap immediately before a lost-bead condition, the new code?�s reseed/state trajectory differs from an explicitly specified gap-aware reference.
+
+Conversely, my ownership objection would be defeated by a prolonged forced-overload run showing monotonically ordered result IDs, exact accounting of every discarded ID, zero pixel/descriptor mismatches, constant pool cardinality, and clean stop/error drainage.
+
+### 4. Answers to (a)??e)
+
+**(a) LabVIEW supports changing diagrams; the present toolkit does not yet provide the general operation required.**
+
+NI documents `GObject.Move` with an optional `owner`: specifying an owner moves the object into that owner; specifying an owner in another VI makes a copy. Thus a destination subdiagram is supported in principle. [NI `GObject.Move`](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/move.html) NI also documents pasting clipboard contents onto an `AbstractDiagram`. [NI `AbstractDiagram.Paste`](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/abstractdiagram/pasteselection.html)
+
+Locally, however:
+
+- `move_object()` leaves `owner` unwired, so it only changes position within the current diagram.
+- `move_out()` hardcodes the destination as the top-level block diagram and explicitly says the attached wires break.
+- `copy_by_index()` copies an object from a donor; it is not an existing-node relocation into an arbitrary subdiagram.
+- Direct construction inside a specified diagram is tested, but that rebuilds nodes rather than relocating the existing fragment.
+
+Therefore the in-copy method does **not** collapse because LabVIEW lacks the operation. It remains unproven because the fleet lacks a verified `source UID ??arbitrary destination Diagram UID` relocation operation and, more importantly, a verified way to preserve or reconstruct the fragment?�s crossing wires and structure semantics.
+
+**(b) A structural feasibility experiment must precede the 170-diagram hierarchy.**
+
+Recommended order:
+
+1. Minimal `MoveToDiagram`/selection-paste experiment on a disposable synthetic VI.
+2. Repeat on one representative but harmless fragment in a copy of the main VI, compile-only.
+3. If both pass, build the complete hierarchy and use it to select real extraction boundaries.
+4. Then census, unconditional-path analysis, timing, and construction.
+
+The hierarchy is valuable, but it cannot establish whether the construction method works. Spending several cycles cataloguing 170 diagrams before testing the indispensable mutation primitive is backwards.
+
+**(c) Kernel trust survives only as a narrow numerical claim.**
+
+Trust currently covers the kernel given the same ordered inputs and state, through the first 10,018 pre-loss frames. It does not cover:
+
+- asynchronous producer/consumer scheduling;
+- explicit frame gaps;
+- reused IMAQ memory;
+- reseed behavior after arbitrary gaps;
+- error and stop propagation;
+- timestamps and frame identity;
+- output ordering and lossless writer drainage.
+
+LabVIEW?�s dataflow rules mean changing wiring and loop boundaries can change execution ordering even when the individual mathematical nodes are unchanged. [NI dataflow execution model](https://www.ni.com/docs/en-GB/bundle/labview/page/block-diagram-data-flow.html)
+
+**(d) Additional validation that still needs the assembled rig**
+
+Beyond scheduler/motor-command timing:
+
+- Camera throughput, jitter, returned buffer-number behavior, driver overwrites, and `Images Missed` at 150 Hz.
+- Whether acquisition timestamps correspond closely enough to physical exposure/capture time.
+- PI motor-reading latency and its interaction with other motor traffic.
+- Actual ASI focus-command frequency, latency, and exclusive VISA ownership during focus activity.
+- Live reseed after gaps, motion, blur, and bead loss patterns not represented by the 13 fixture events.
+- End-to-end picking/calibration/experiment workflow against real images.
+- Real hardware error behavior: timeouts, unavailable buffers, and device communication failures.
+
+Synthetic load can validate writer throughput, queue drainage, UI contention, and pool invariants without the rig; it cannot validate the device/driver timing distribution.
+
+**(e) Biggest unnamed risk**
+
+The latest-wins decision silently superseded the already-reviewed free/work-queue ownership protocol. Unless that protocol is redesigned first, a frame number in the result does not guarantee that tracking actually processed that frame?�s pixels.
+
+I do not believe the current plan holds as written. I would change my mind after a representative cross-diagram relocation survives save/reopen and the revised ownership protocol passes forced-overload invariants.
+
+**Cheapest discriminating test:** before hierarchy work, run an entirely synthetic image-pool test with a deliberately slow consumer, unique frame IDs embedded both in each descriptor and its pixels, and enough production to force hundreds of evictions; fail on the first ID mismatch, duplicate/lost slot return, unexplained gap, or shutdown leak.
+exit=0
+=== PEER 2: claude, rule and consistency audit ===
+OUTCOME: ANSWERED (244s)  model: sonnet (peer.ps1 default)  archived: archive\peer\2026-09-15-cycle8-plan-rule-audit.md
+--- ANSWER ---
+claude.exe : Permission deny rule (.claude\settings.json): Write(**/*.vi) is not matched by file permission checks ??on
+ly Edit(path) rules are. Use Edit(**/*.vi) instead (Edit rules cover all file-editing tools).
+��ġ ��:5 ����:36
++     Get-Content $promptFile -Raw | & $exe @exeArgs 2>&1 | Out-String
++                                    ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Permission deny...editing tools).:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Permission deny rule (.claude\settings.json): Write(**/*.ctl) is not matched by file permission checks ??only Edit(path
+) rules are. Use Edit(**/*.ctl) instead (Edit rules cover all file-editing tools).
+Permission deny rule (.claude\settings.json): Write(**/*.lvlib) is not matched by file permission checks ??only Edit(pa
+th) rules are. Use Edit(**/*.lvlib) instead (Edit rules cover all file-editing tools).
+Permission deny rule (.claude\settings.json): Write(**/*.lvproj) is not matched by file permission checks ??only Edit(p
+ath) rules are. Use Edit(**/*.lvproj) instead (Edit rules cover all file-editing tools).
+**The plan does not hold as currently worded ??step 7 schedules building/testing an overload mechanism that this project's own prior peer review already found broken, and the fix was never incorporated.**
+
+### 1. Strongest reason the plan is wrong
+
+The plan restates STATUS.md's OVERLOAD POLICY verbatim ("latest-wins... abandon the oldest unprocessed frame, reuse its slot") and schedules step 7 to build/test it. But **three of this project's own design documents still specify the opposite mechanism**, unrevised:
+
+| doc | mechanism |
+|---|---|
+| `docs/frame-ownership-design.md:77` ??"if no free slot is available, acquisition **drops the new frame** and counts it" | drop-new |
+| `docs/restructure-plan-4.6.md:386` ??"the acquisition loop **drops the new frame and counts it**" | drop-new |
+| `docs/stage2-plan.md:47-48` ??`Q_img` timeout 0 ??"counted as dropped **by the tracker**" | drop-new |
+| `STATUS.md:161` / this plan ??"abandon the **oldest unprocessed** frame, reuse its slot" | drop-old / evict |
+
+STATUS.md:166 documents a revision to `restructure-plan-4.6.md`'s transport table, but only on the "lossless vs. order-preserving" label ??it never touches this mechanism conflict, so it *looks* settled but isn't.
+
+**This exact conflict is already peer-reviewed and on file, unresolved.** `archive/peer/2026-09-15-cycle8-plan-attack.md` (dispatched against essentially this same plan, one cycle earlier) answered: *"The overload-policy change invalidated `frame-ownership-design.md`... Reusing the oldest queued slot is a different state machine... Step 7 says 'including overload,' but overload is now an architectural redesign, not merely another test case... The latest-wins decision silently superseded the already-reviewed free/work-queue ownership protocol."* It named a candidate primitive (`Lossy Enqueue Element.vi`) and a candidate ownership fix (an extra FILLING slot, generation numbers/sentinels against stale reuse) ??**none of which appear in `docs/toolkit-capabilities.md`, `docs/NAMES.md`, or `docs/stage2-*.md`**. Nobody has checked whether the fleet can even build drop-old semantics.
+
+The rule-1a defense at STATUS.md:167-169 ("not a rule-1a break, the original already loses frames") only covers *whether* loss may happen ??it doesn't cover *which frame* gets discarded, and an unsafe evict-oldest design risks something worse than the original ever did: a result silently computed from the **wrong frame's pixels** (stale slot reuse), not just a missing one. The fixture's bit-identical result ??the plan's headline evidence ??is silent on this, since STATUS.md:169 itself admits "on the fixture there is no overflow."
+
+### 2. Alternative explanation
+
+STATUS.md's wording may be a **policy statement** (no stale frame is ever saved), not a **mechanism mandate**. The existing drop-new design guarantees the same outcome by refusing new arrivals instead of evicting old ones, and with a shallow pool (N=8 at 150 Hz ??53 ms backlog) the two may be **numerically indistinguishable**. If so this is a wording slip in STATUS.md, not a real design fork.
+
+### 3. What would falsify which reading
+
+A forced-overload synthetic test where drop-new and drop-old discard the *same* frame in practice (pool drains fast enough that oldest-queued ??newest-arriving) falsifies "real conflict" and downgrades this to a wording fix. Any stale-slot reuse, duplicate/lost slot return, or frame-number/pixel mismatch confirms the cycle-8 review's reading.
+
+### 4. Cheapest discriminating test
+
+Exactly what the cycle-8 review already specified (`archive/peer/2026-09-15-cycle8-plan-attack.md:166`), no rig needed: a synthetic image-pool test, slow consumer, unique frame IDs embedded in both descriptor and pixel buffer, enough production to force hundreds of evictions/refusals ??run once under literal drop-new, once under literal drop-old, diff the ID-accounting logs. This also settles whether `Lossy Enqueue Element.vi` is even reachable from this fleet (not currently in `OpQueue_v0`'s donor list).
+
+**I don't believe the plan holds as worded for step 7** until either the ownership-protocol redesign the cycle-8 review demanded is written and reviewed, or the test above shows the two mechanisms are equivalent at this pool depth (in which case keep the existing drop-new design and just fix STATUS.md's wording).
+
+---
+
+**Secondary findings (not blocking):**
+- **A.** `OpOwnerChain_v0` (work-queue item 1) is donor-evidenced only for owner chains *inside a Case frame* (`docs/NAMES.md:823`), but item 2 plans to use it across all 170 diagrams' full nesting (While/For/Event/Sequence too) ??untested generalization, and `restructure-plan-4.6.md:277-279` already flags a related gap (7 `SequenceLocal`s with `uid 0`). Test against one node under each structure type before running it project-wide.
+- **B.** Rule 1 / 1b / 1c / GUI gate: **clean**. All 7 steps are read-only reads of the original or work on an explicit copy; none imply GUI; none touch the ASI piezo, motor, or live camera (fixture replay only).
+- **C.** The work-queue table states each item's *dependency* but not its *acceptance level* (structural vs. functional), which the verification-level rule requires. Step 7 in particular conflates a genuinely-functional reseed test with an overload claim that can't be functionally verified on the fixture as scoped ??split its acceptance line before dispatch.
+
+
+exit=0
+=== ARCHIVED ===
+2026-09-15-cycle8-plan-attack.md
+2026-09-15-cycle8-plan-rule-audit.md
+BGRUN END rc=0 after 639s

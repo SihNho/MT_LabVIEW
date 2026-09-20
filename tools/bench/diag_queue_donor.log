@@ -1,0 +1,119 @@
+BGRUN START 2026-09-20 04:22:34 limit 30.0 min: py -u tools/bench/diag_queue_donor.py
+=== diag_queue_donor  2026-09-20 04:22:34   (Pre-decided 35(b) MEASUREMENT; NO VI IS RUN, 34(f); PICKS NOTHING)
+  FACT  LabVIEW handles BEFORE: 34289 (fresh-instance baseline ~31,500)
+
+--- SUB-STEP 1: which BUILT ops can place a diagram constant at all (read from the files)
+  FACT  CONST-OP OpCreateConst_v0.vi  on_disk=True size=12412
+           caller   : build_opsentinel_ops.create_node('const', ...)  tools/recipes/build_opsentinel_ops.py:387-405
+           places   : ONE constant on a CHOSEN diagram ('Class Name 2'='Diagram'/'index 2'), UNWIRED; 'Type' and 'Value' are VARIANTs and the created object's Terminal is NOT returned to the caller
+           evidence : docs/toolkit-capabilities.md:65 - FUNCTIONAL 23/0, new Constant #354, owner chain #354 -> Diagram#110 -> WhileLoop#43; the VARIANT route produced an EMPTY value
+  FACT  CONST-OP OpCreateConstOnTerm_v0.vi  on_disk=True size=17330
+           caller   : no gscript wrapper; recipe tools/recipes/build_opcreateconstonterm_v0.py
+           places   : ONE constant ON A TERMINAL of a WhileLoop BODY node ('Class Name'='WhileLoop'/'index', 'index 3'=body Nodes[] index, 'index 4'=Terminals[] index) - typed by the sink and ALREADY WIRED, so it cannot place a free constant on an arbitrary diagram
+           evidence : docs/toolkit-capabilities.md:66 - FUNCTIONAL 22/0, DigitalNumericConstant #159, value read back -1 through OpConstValueN_v1, scratch ExecState 1
+  FACT  gscript itself has NO constant wrapper: `grep -ni constant tools/gscript.py` returns only comments (:1312, :1329, :1410) - the only BUILT caller of a constant creator is build_opsentinel_ops.create_node('const', ...)
+  FACT  MEASURED ELSEWHERE, and it is the reason this question exists: `AbstractDiagram.Nodes[]` EXCLUDES constants - `Constant` and `Node` are SIBLINGS under `GObject` (tools/bench/peer_s2boundary.log:37; archive/2026-09-18-status-cycle19-flatseq.md:87)
+  PASS  Q2 at least one BUILT op can place a diagram constant  on disk: ['OpCreateConst_v0.vi', 'OpCreateConstOnTerm_v0.vi']
+
+--- the files (read-only probes, 34(k))
+  FACT  ORIGINAL: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  FACT  S1 claudeDev\D1_s1_copy.vi: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  FACT  S2 claudeDev\D1_s2_loops.vi (never opened by this file): HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  Q0 the ORIGINAL and the S1 artefact exist and the ORIGINAL's md5 equals the pin  orig md5 2a78e17c449cacdaf5da389818526859; s1 exists 1
+  FACT  F1: lv_restart rc=0 ['dialogs: 8,1346,762| / ENABLED|9308128|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  handles after the restart: 30689
+  FACT  the scratch copy: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_qdonor_042234.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  PASS  Q1 the scratch copy is byte-identical to D1_s1_copy.vi  3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  P: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+  FACT  class census of the scratch BEFORE any edit: {'Diagram': 170, 'WhileLoop': 3, 'SubVI': 97, 'Function': 180, 'Constant': 301, 'ControlTerminal': 114, 'Wire': 1899, 'Comparison': 14, 'LoopTunnel': 132}
+
+--- the census of Diagram #686 (34(h): re-read, never cached across a mutation)
+  FACT  Diagram #686 reads Traverse index 19 ? re-read here, never cached across a mutation (34(h))
+      NODE Nodes[  0] #8486   Function       'Increment'                                  named-source [(0, 'x+1')]
+      NODE Nodes[  1] #7201   Function       'Multiply'                                   named-source [(0, 'x*y')]
+      NODE Nodes[  2] #781    Function       'Initialize Array'                           named-source [(1, 'initialized array')]
+      NODE Nodes[  3] #250    Property       'Property Node'                              named-source [(1, 'IMAQdx Session'), (3, 'error out'), (4, 'LastBufferNumber')]
+      NODE Nodes[  4] #637    Function       'While Loop'                                 named-source [(0, 'error out'), (2, 'x,y,z array out'), (7, 'Session Out'), (8, 'position [internal units]'), (10, 'VISA out'), (12, 'total data array out')]
+      NODE Nodes[  5] #6951   SubVI          'Global motor pos.vi'                        named-source []
+      NODE Nodes[  6] #6409   SubVI          'Global motor pos.vi'                        named-source []
+      NODE Nodes[  7] #2048   Function       'Array Subset'                               named-source [(1, 'subarray')]
+      NODE Nodes[  8] #7202   SubVI          'Global motor pos.vi'                        named-source []
+      NODE Nodes[  9] #194    Function       'Subtract'                                   named-source [(0, 'x-y')]
+      NODE Nodes[ 10] #1628   Function       'Subtract'                                   named-source [(0, 'x-y')]
+      NODE Nodes[ 11] #6384   SubVI          'save N xyz traces.vi'                       named-source [(1, 'error out')]
+      NODE Nodes[ 12] #8953   Function       'Initialize Array'                           named-source [(1, 'initialized array')]
+      NODE Nodes[ 13] #9342   Function       'Array Size'                                 named-source [(0, 'size(s)')]
+      NODE Nodes[ 14] #9179   Function       'Decrement'                                  named-source [(0, 'x-1')]
+      NODE Nodes[ 15] #28124  Function       'Initialize Array'                           named-source [(1, 'initialized array')]
+      NODE Nodes[ 16] #27605  SubVI          'Max Trans Pos.vi'                           named-source [(0, 'Magnet position output')]
+      NODE Nodes[ 17] #28670  Function       'For Loop'                                   named-source []
+      NODE Nodes[ 18] #25380  Function       'While Loop'                                 named-source [(2, 'final trans pos'), (4, 'error out'), (5, 'rot pos'), (7, 'tran pos'), (9, 'Value')]
+      NODE Nodes[ 19] #25091  Function       'Multiply'                                   named-source [(0, 'x*y')]
+      NODE Nodes[ 20] #25149  Function       'Subtract'                                   named-source [(0, 'x-y')]
+  PASS  Q3 node #8486 still offers the named source terminal 'x+1' on Diagram #686  named source terminals [(0, 'x+1')]
+
+--- SHAPE S-A: an EXISTING node's named output terminal (#8486 'x+1') - the baseline
+  FACT  SHAPE S-A (Function[36] . 'x+1' - node #8486 Nodes[0], the operand cycle 50's scaffold accepted on the first attempt): accepted=True; new Function uids [23032] {'23032': 'Obtain Queue'}; op error None
+  PASS  Q4 the BASELINE shape S-A is accepted (if it is not, no later rejection means anything)  None
+  PASS  Q5a shape S-A was attempted and scored
+
+--- SHAPE S-B: the FRAME LOOP #637's own outer named output terminal 'current image number' (mechanical acceptance only - 35(a) forbids its USE)
+  FACT  node #637 appears on the census as class_guess 'Function' with 17 named source terminals; 'current image number' is PRESENT
+  FACT  SHAPE S-B (WhileLoop[1] . 'current image number' - the frame loop's outer boundary terminal 36 (docs/d1-build-plan.md:580), the shape the five 'A' rows of the ?9 table name): accepted=True; new Function uids [23038] {'23038': 'Obtain Queue'}; op error None
+  PASS  Q5b shape S-B was attempted and scored
+
+--- SHAPE S-C: a diagram CONSTANT placed by OpCreateConst_v0 on Diagram #686
+  FACT  OpCreateConst_v0 on Diagram #686: op error None; new Constant objects [(23258, 'Constant')]; new Node objects [] (a constant is NOT a Node - siblings under GObject)
+  OBSERVED uid 23258 -> owner 'Diagram' uid 686 | self 'Constant'#23258 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  the new constant #23258 (class 'Constant') owner ('Diagram', 686); appears in AbstractDiagram.Nodes[] of #686: False; readable named SOURCE terminals: []
+  FACT  SHAPE S-C (Constant[141] . '' - a diagram constant placed by OpCreateConst_v0, addressed as Traverse 'Constant', src_name ''): accepted=False; new Function uids [] {}; op error 'RuntimeError: queue_node(obtain): error 1057: To More Specific Class in OpQueueObtain_v0.vi (new nodes [])'
+  PASS  Q5c shape S-C was attempted and scored
+
+--- SHAPE S-D: a ControlTerminal created by create_control on an UNWIRED NAMED INPUT of a Diagram #686 node (this CHANGES the scratch's computation - scratch only)
+  FACT  create_control source: node #250 Nodes[3] (Property) unwired named INPUT terminal 2 'error in (no error)'
+  FACT  create_control -> new ControlTerminal(s) [], label None
+  PASS  Q5d shape S-D was attempted and scored
+
+--- the scratch's ExecState and the save attempt (both values legitimate; allow_broken stays False, gui_save is never called)
+  FACT  class census of the scratch AFTER the attempts: {'Diagram': 170, 'WhileLoop': 3, 'SubVI': 97, 'Function': 182, 'Constant': 302, 'ControlTerminal': 114, 'Wire': 1899, 'Comparison': 14, 'LoopTunnel': 132}
+  FACT  scratch ExecState with the ORIGINAL preloaded: 1 
+  FACT  g.save(scratch) returned 475834; exception None
+  FACT  the scratch after the save attempt: DIAG_qdonor_042234.vi md5 cbdc6cfcc260bad4c79b7b47a6c339c5 size 475834 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  Q6 the scratch's ExecState and save attempt are recorded  ExecState 1, save 475834
+  FACT  P: preload references released; refs {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 8}
+
+--- SUB-STEP 3: `docs/d1-build-plan.md` §9 (:576-585), read here, against the MEASURED shapes
+      ?9 Q_free` / `Q_work type IMAQ image refnum (the pool  src `IMAQ Cr term **20** (`decisions.md:22`)   state ?
+      ?9 Q_meta       type buffer number, DBL           src `#6810 c term unbounded                    state ?
+      ?9 Q_res` / `Q_good` / `Q_rmeta type DBL[] / Bool[] / DBL         src the kern term unbounded                    state ?
+      ?9 Q_free       type IMAQ image refnum            src ?        term ?                            state **B** ? needs the stage that drops `IMAQ Create.vi` onto `Di
+      ?9 Q_work       type IMAQ image refnum            src ?        term ?                            state **B** ? same stage
+      ?9 Q_meta       type buffer number, DBL (`docs/d1 src **#637** term `current image number`       state **A** ??R1 ??R2
+      ?9 Q_res        type DBL[]                        src **#637** term `x,y,z array out`            state **A** ??R1 ??R2
+      ?9 Q_good       type Bool[]                       src **#637** term `Bead is good? array out`    state **A** ??R1 ??R2
+      ?9 Q_rmeta      type buffer number, DBL           src **#637** term `current image number`       state **A** ??R1 ??R2
+      ?9 Q_focus      type 1 DBL, the slice index       src ?        term ?                            state **C** ? nothing on `#686` carries the SCALAR, and no planned
+      ?9 Q_focusback  type **1 DBL** (see the decision  src **#637** term `position [internal units]`  state **A** ??R1 ??R2
+      ?9 Q_meta       type **buffer number ?1** (`#6810 src 1.1, onc term 1.2                          state ?
+      ?9 Q_work       type the pool slot that carries t src 1.1      term 1.2                          state ?
+      ?9 Q_rmeta      type **buffer number ?1**         src 1.2, onc term 1.7                          state ?
+      ?9 Q_res` / `Q_good type **empty array** (the kernel  src 1.2      term 1.7                          state ?
+      ?9 Q_focus      type **?1** (a slice index is ? 0 src 1.2, onc term 1.5                          state ?
+  FACT  ?9 rows read from G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\docs\d1-build-plan.md: 16 (lines [551, 552, 553, 578, 579, 580, 581, 582, 583, 584, 585, 630, 631, 632, 633, 634])
+  FACT  MEASURED shape acceptance, for the judgement session to apply to those rows: {'S-A': True, 'S-B': True, 'S-C': False, 'S-D': None}
+  FACT  Per ?9, the rows whose designated donor is a `#637` OUTER terminal (shape S-B) are Q_meta, Q_res, Q_good, Q_rmeta, Q_focusback (state A); Q_free and Q_work are state B (no source on #686 until the IMAQ Create stage); Q_focus is state C (no scalar slice index on #686 at all). 35(a) forbids USING an S-B pair; this diagnostic reports only whether the op ACCEPTS each shape.
+
+--- close-out
+  FACT  refs at end: {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handles AFTER: 60234 (before 34289)
+  PASS  Q7 no live VI Server reference is left open  ref_counts {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 0}
+  FACT  Q8 ORIGINAL after the run: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  FACT  Q8 D1_s1_copy.vi after the run: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  FACT  Q8 D1_s2_loops.vi after the run: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  Q8 the ORIGINAL, D1_s1_copy.vi and D1_s2_loops.vi are all unchanged  orig 2a78e17c449cacdaf5da389818526859 s1 3e3d23cefd3a334001aa9d6156bf1aee s2 6ff19497f2309e007a214660bb64b911
+
+=== GATES: 12 pass / 0 fail
+=== READINGS json: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_queue_donor.json
+=== SCRATCH: C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_qdonor_042234.vi
+=== FACTS ONLY - no donor is picked and no queue stage is written (35(b) reserves both for the judgement session). NO VI WAS RUN (34(f)); no motor, no ASI, no camera, no GUI action.
+BGRUN END rc=0 after 154s

@@ -1,0 +1,54 @@
+BGRUN START 2026-09-17 07:39:45 limit 12.0 min: py -u tools/bench/diag_filewrite_donor.py
+  PASS  D1 the NI text-file example exists  C:\Program Files\National Instruments\LabVIEW 2026\examples\File IO\Text (ASCII)\Write to Text File and Read from Text File.vi
+
+=== D5: the subVI route (no copy, no new op - drop_subvi covers a .vi)
+  PASS  D5 Open File+.vi  C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Utility\file.llb\Open File+.vi
+  PASS  D5 Close File+.vi  C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Utility\file.llb\Close File+.vi
+  PASS  D5 Write File+ (string).vi  C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Utility\file.llb\Write File+ (string).vi
+  PASS  D5 Write Characters To File.vi  C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Utility\file.llb\Write Characters To File.vi
+
+=== D2/D3/D4: a COPY of the example, censused read-only
+  PASS  D2 the copy opens and is runnable  ExecState 1
+  COUNT Node             19
+  COUNT SubVI            2
+  COUNT Diagram          6
+  COUNT Constant         2
+  COUNT Wire             44
+  COUNT ControlTerminal  5
+  NODE  uid 221  label 'Case Structure'
+  NODE  uid 943  label 'Simple Error Handler.vi'
+  NODE  uid 1316  label 'Dflt Data Dir.vi'
+  NODE  uid 1331  label 'Build Path'
+  NODE  uid 1342  label 'Delete'
+  **FAIL**  D3a a file OPEN node is on the example's diagram  case structure | simple error handler.vi | dflt data dir.vi | build path | delete
+  **FAIL**  D3b a TEXT WRITE node is on the example's diagram  case structure | simple error handler.vi | dflt data dir.vi | build path | delete
+  **FAIL**  D3c a CLOSE node is on the example's diagram  case structure | simple error handler.vi | dflt data dir.vi | build path | delete
+
+=== D4: Traverse class+index for copy_by_index
+  SubVI[0] uid 1316 pos (-230, 195)
+  SubVI[1] uid 943 pos (406, 242)
+  Node[0] uid 1342 pos (-146, 223)
+  Node[1] uid 1331 pos (-189, 211)
+  Node[2] uid 1316 pos (-230, 195)
+  Node[3] uid 943 pos (406, 242)
+  Node[4] uid 221 pos (-92, 32)
+  Node[5] uid 321 pos (172, 242)
+  Node[6] uid 108 pos (80, 239)
+  Node[7] uid 194 pos (40, 242)
+  Node[8] uid 508 pos (203, 242)
+  Node[9] uid 414 pos (149, 242)
+  Node[10] uid 2039 pos (313, 242)
+  Node[11] uid 1127 pos (258, 242)
+  Node[12] uid 1097 pos (94, 242)
+  Node[13] uid 1186 pos (155, 242)
+  Node[14] uid 1153 pos (230, 242)
+  Node[15] uid 1249 pos (126, 242)
+  Node[16] uid 1216 pos (224, 242)
+  Node[17] uid 5370 pos (-59, 242)
+  Node[18] uid 5339 pos (147, 242)
+  SUBVI-CALL[0] uid 1316 name 'Dflt Data Dir.vi' path 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\vi.lib\\Utility\\file.llb\\Dflt Data Dir.vi'
+  SUBVI-CALL[1] uid 943 name 'Simple Error Handler.vi' path 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\vi.lib\\Utility\\error.llb\\Simple Error Handler.vi'
+  PASS  D6 scratch copy deleted in the same run  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_filewrite_donor_073945.vi
+
+=== diag_filewrite_donor: 7 pass, 3 fail -> D3a a file OPEN node is on the example's diagram, D3b a TEXT WRITE node is on the example's diagram, D3c a CLOSE node is on the example's diagram ===
+BGRUN END rc=1 after 1s

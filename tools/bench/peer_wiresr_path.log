@@ -1,0 +1,34 @@
+BGRUN START 2026-09-14 23:15:43 limit 8.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & '.\tools\peer.ps1' -Agent codex -Slug wiresr-test-fail2-imaqcopy-llb-path -TimeoutSec 240 -Task (Get-Content -Raw '.\tools\bench\peer_task_wiresr_path.txt')
+OUTCOME: ANSWERED (125s)  archived: archive\peer\2026-09-14-wiresr-test-fail2-imaqcopy-llb-path.md
+--- ANSWER ---
+The diagnosis is mostly correct, but the applied fix still contains a path error.
+
+1. The window pattern strongly supports automatic error handling. NI says it suspends execution, opens the failing node?�s block diagram, highlights that node, and displays an error dialog. That matches the enabled 348×305 untitled window plus every VI window disabled and `OpSubVI_v1.vi Block Diagram` appearing in [test_opwiresr.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/test_opwiresr.log:4>). The blank title itself is not specifically guaranteed by NI, but it does not weaken the diagnosis. [NI automatic-error-handling documentation](https://www.ni.com/docs/en-AS/bundle/labview-api-ref/page/dialog-boxes/execution-page-vi-properties-dialog-box.html)
+
+2. Crucial correction: the installed files show:
+
+   - `Basics.llb`: `C:\Program Files\NI\LVAddons\nivisioncommon\1\vi.lib\vision\Basics.llb`
+   - `Management.llb`: `C:\Program Files\NI\LVAddons\nivision\1\vi.lib\vision\Management.llb`
+   - No `nivisioncommon\1\...\Management.llb` exists.
+
+   Therefore the current `COPY_VI` in [build_opwiresr_v0.py](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_opwiresr_v0.py:54>) is still invalid. It must be:
+
+   ```python
+   r"C:\Program Files\NI\LVAddons\nivision\1\vi.lib\vision\Management.llb\IMAQ Copy"
+   ```
+
+   The static LLB scan finds `IMAQ Copy` in that `Management.llb`; it does not find it in `Basics.llb`. Error 7 is exactly consistent with a nonexistent or inaccessible path. [NI error-7 guidance](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019OgmSAE&l=en-US)
+
+3. `OpSubVI_v1` should not be an exception to the fleet convention. Disable automatic error handling, because `drop_subvi()` already reads `error out` and raises it at [gscript.py](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/gscript.py:983>). NI likewise recommends disabling automatic handling in reusable API VIs and reporting errors through error clusters. [NI VI guidelines](https://www.ni.com/en/support/downloads/instrument-drivers/tools-resources/instrument-driver-guidelines/vis-names-and-properties.html)
+
+   The risk of merely disabling it is silent error loss if the op?�s error indicator is not genuinely connected to `Open VI Reference`. Verify that connection/reporting once; otherwise a failed drop could look like a clean no-op.
+
+4. Cheapest proving test: correct both the LLB and package root, then run one isolated `drop_subvi` on a disposable scratch and require:
+
+   - no modal watchdog hit,
+   - returned `error out` is clear,
+   - SubVI count increases by exactly one,
+   - the new node?�s reported path/name is `IMAQ Copy`.
+
+The two prior identical failures already provide the negative control. No restart or full T1?�T9 batch is needed to establish causality.
+BGRUN END rc=0 after 125s

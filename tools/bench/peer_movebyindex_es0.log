@@ -1,0 +1,33 @@
+BGRUN START 2026-09-15 00:09:43 limit 8.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & '.\tools\peer.ps1' -Agent codex -Slug movebyindex-fail1-execstate0 -TimeoutSec 240 -Task (Get-Content -Raw '.\tools\bench\peer_task_movebyindex_es0.txt')
+OUTCOME: ANSWERED (76s)  archived: archive\peer\2026-09-15-movebyindex-fail1-execstate0.md
+--- ANSWER ---
+Most likely both (a) and (b) are present, with (a) the first thing to fix.
+
+Ranking:
+
+1. **(a) Unwired `Traverse Target` ??very likely.** `Traverse for GObjects.vi` requires selecting what is traversed: `0=FP`, `1=BD`, `2=Other`. Your recipe wires `VI Refnum` and `Class Name` but apparently creates nothing on `Traverse Target`. For this operation it must be **BD (I32/ring value 1)**. `error in` and `Traverse Generated Code` have usable defaults; `Other Refnum` is ignored for FP/BD. The published connector description lists all these inputs and their semantics. [Traverse for GObjects connector documentation](https://rajsite.github.io/unofficial-lvdocs/glang/TRef_Traverse_for_References.html)
+
+2. **(b) Retained specific Invoke-node class ??also highly plausible.** `References` is explicitly an array of **GObject references**, and the documentation says to downcast elements with `To More Specific Class` only when necessary. [Traverse for GObjects connector documentation](https://rajsite.github.io/unofficial-lvdocs/glang/TRef_Traverse_for_References.html) The `Move` method itself belongs to the **GObject class**, so no downcast is logically necessary: a GObject-typed Move Invoke node is the correct consumer. [GObject `Move` method](https://labviewwiki.org/wiki/GObject_class/Move_method) However, if the copied donor Invoke node retained a subclass reference terminal established by the old OVOR output, feeding it a parent GObject wire is a class conflict even though UID 336 appears at both endpoints. NI confirms incompatible endpoint types produce broken wires. [NI wiring documentation](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+3. **(c) Error-chain arrangement ??unlikely.** An unconnected `Traverse.error out` cannot break the caller; required status applies to inputs, not outputs. Recommended and optional terminals may remain unwired without breaking execution. [NI required-terminal documentation](https://www.ni.com/docs/ar-IQ/csh?context=lvcore_lvhowto_specifying_required_recomm)
+
+4. **(d) Branched Revert `reference out` ??essentially ruled out.** Outputs need not be consumed, and branching an output is ordinary LabVIEW dataflow. [NI required-terminal documentation](https://www.ni.com/docs/ar-IQ/csh?context=lvcore_lvhowto_specifying_required_recomm)
+
+5. **(e)/(f) Index control and two consumers ??effectively ruled out.** An I32 index is normal for Index Array, and fan-out to multiple consumers is legal unless one consumer demands an incompatible type. The latter collapses back into (b), not a branching defect. [NI wiring documentation](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+The single cheapest read-only discriminator is:
+
+> **Report the class counts after construction and ask specifically whether a `BrokenWire` object exists.**
+
+- `BrokenWire > 0` strongly selects **(b)**: UID equality proves connectivity, not type compatibility.
+- `BrokenWire = 0` with `ExecState=0` strongly selects **(a)** or another required unwired terminal.
+- If class counts cannot distinguish broken from valid wires, the next-cheapest report is simply the Traverse terminal table: verify `Traverse Target.wire_uid != 0`.
+
+Fix order:
+
+1. Create a control/constant from `Traverse Target` and set it to **BD = 1**.
+2. Recheck `ExecState`.
+3. If still broken, **retype/recreate the Invoke node as `Generic » GObject » Move`** and reconnect UID 336. Do not add `To More Specific Class`: the Traverse result and the owning class of `Move` are both GObject. A class-specifier constant is only needed for an actual downcast. [NI class-specifier documentation](https://www.ni.com/docs/en-AS/bundle/labview-api-ref/page/constants/class-specifier.html)
+
+I would not invest in a typed-seed workaround here. The clean solution for (b) is a GObject-typed Move Invoke node.
+BGRUN END rc=0 after 77s

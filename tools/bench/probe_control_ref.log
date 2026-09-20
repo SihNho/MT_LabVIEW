@@ -1,0 +1,28 @@
+BGRUN START 2026-09-12 14:43:54 limit 15.0 min: py -u tools/bench/probe_control_ref.py
+=== step 1: does OpFPLabels_v0 exist and what is it made of?
+   counts: {'Property': 4, 'IndexArray': 1, 'SubVI': 2, 'Node': 8, 'Wire': 9}
+
+=== step 2: its property nodes, with their properties as terminal names
+             node[0] uid 43     ['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+             node[1] uid 308    ['array', 'element', 'index']
+             node[2] uid 369    ['error out', 'specific error cleared?', 'error in (no error)', 'specific error code to clear (0: all)']
+             node[3] uid 370    ['error out', 'specific error cleared?', 'error in (no error)', 'specific error code to clear (0: all)']
+   PROPERTY node[4] uid 112    ['reference', 'reference out', 'error in (no error)', 'error out', 'Panel']
+   PROPERTY node[5] uid 113    ['reference', 'reference out', 'error in (no error)', 'error out', 'Controls[]']
+   PROPERTY node[6] uid 114    ['reference', 'reference out', 'error in (no error)', 'error out', 'Label', 'Indicator']
+   PROPERTY node[7] uid 115    ['reference', 'reference out', 'error in (no error)', 'error out', 'Text']
+
+=== step 3: the front-panel objects it exposes (its own pane)
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\probe_control_ref.py", line 64, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\probe_control_ref.py", line 52, in main
+    for uid, lbl, ind in g.fp_labels(FPLABELS, max_n=40):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 1257, in fp_labels
+    _run(vi)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 233, in _run
+    raise result["err"]
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 207, in call
+    disp.Invoke(disp.GetIDsOfNames(0, "Run"), 0, pythoncom.DISPATCH_METHOD, 1)
+pywintypes.com_error: (-2147352567, '���ܰ� �߻��߽��ϴ�.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify that you can run it.', None, 0, 0), None)
+BGRUN END rc=1 after 2s

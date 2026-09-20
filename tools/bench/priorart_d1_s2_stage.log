@@ -1,0 +1,103 @@
+BGRUN START 2026-09-20 00:55:15 limit 22.0 min: py -u tools\prior_art_review.py --plan-file C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\21ab50d6-76f3-4870-b0ed-ffbf9e64f053\scratchpad\s2_plan.md --slug d1-s2-stage --trigger cycle-start --recipe tools/recipes/stage_d1_s2.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_d1-s2-stage.txt (100552 chars)
+OUTCOME: ANSWERED (411s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-20-priorart-d1-s2-stage.md
+COST: $4.3885  in 34 / out 33706 / cache-create 222654 / cache-read 2638203  (407s, 26 turn(s))
+--- ANSWER ---
+# PRIOR-ART REVIEW — `tools/recipes/stage_d1_s2.py` (D1 stage S2), cycle 49
+
+**Verdict: NOT NOVEL.** The *stage boundary* — start from `D1_s1_copy.vi`, end with a saved `D1_s2_loops.vi` — is genuinely new and survives. **Phase A does not**: three of its four questions are already answered in this project's own files, and the branch its answers will actually select is one the project decided against with measurements.
+
+(I could not write the review to a file — `Write` is disabled this session. Full text below.)
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 SETTLED ALREADY — "does `move_in` reach a freshly created While-loop body?" is measured, twice, in the real VI
+
+`stage_d1_s2.py:464-511` builds four predicates for this and `:144` predicts all four TRUE. The answer is already on disk:
+
+- `tools/bench/build_d1_routeb_v7_run10.log:70-74` — three fresh While loops on `Diagram #686`; `:76` `PASS S2 WhileLoop 3 -> 6 and Diagram 170 -> 173`.
+- `tools/bench/build_d1_routeb_v7_run10.log:116-173` — **21 `move_in` landings into loop bodies created in that same run**, each gated on the owner chain (`owner Diagram#567 … owner(owner) WhileLoop#48`; `Diagram#2063 … WhileLoop#338`).
+- `docs/d1-build-plan.md:873` — route A run 7, in the real VI: "`WhileLoop 3→6`, `Diagram 170→173`, 23 moves, `#5058` deleted + `GPU_kernel_v1.vi` dropped".
+
+A1 as coded greps exactly that log (`stage_d1_s2.py:478`). It is a citation lookup, not a measurement, and it does not need the LabVIEW `Preload` instance phase A opens around it (`:696-700`).
+
+### A2 REFUTED ALREADY — the `movein` branch relocates `#5058`, and `#5058` is the **CPU** kernel
+
+`stage_d1_s2.py:229` maps row 1.2 to `(5058, GPU_KERNEL, "GPU_kernel_v1.vi")`; `movein_three()` `:946-964` moves **uid 5058** into the new body and logs it under the label `GPU_kernel_v1.vi` (`:951`, `:962`). On that branch the constant `GPU_KERNEL` (`:226`) is never used. uid 5058 is not the GPU kernel:
+
+- `docs/d1-route-b-plan.md:135` — "**5058** | `Track N beads four-fold over-kernel-v3.vi` | replaced by a fresh `GPU_kernel_v1.vi` in 1.2"; `:165`, `:168`.
+- `docs/d1-build-plan.md:287` — "**DELETED; `GPU_kernel_v1.vi` dropped into 1.2**".
+- `docs/frame-loop-wire-graph.md:69` — "#5058 subVI Track N beads four-fold over-kernel-v3.vi".
+
+So `movein` builds a tracking loop around the CPU kernel and never introduces the GPU one — against D1's definition ("acquisition loop · **GPU-kernel tracking loop** · file-writer loop", `docs/cycle27-plan.md` §"The three deliverables") and Pre-decided 6. The callees are not interchangeable: `docs/d1-build-plan.md:526` — of the GPU kernel's six extra pane inputs, "**None exists on `#5058`**" — with the rule-1a statement at `:537-538`.
+
+The reason for delete-and-re-drop was never "`move_in` cannot reach the body"; it is `docs/d1-route-b-plan.md:62-72` — those three calls carry **32 re-wire rows, all NAMED**, and dropping them fresh removes all 32 from the cut census. Nothing retired that.
+
+`stage_d1_s2.py:144` predicts A1 TRUE, so `select_branch` (`:731-735`) takes `movein` the moment A3 returns any route, with phases C/D forbidden from returning to judgement (`:110`, `:971-972`). D5 cannot catch it (`:163-166`): a moved node keeps its uid **and its path**, and the row is expected to change diagram.
+
+### A3 CONTRADICTED — `a3_route_exists` is predicted FALSE; `docs/toolkit-capabilities.md` records three measured routes
+
+`stage_d1_s2.py:146-149` predicts FALSE ⇒ `stop_after_a`, i.e. the cycle ends with no VI (`:725-730`). Against that:
+
+- `docs/toolkit-capabilities.md:31` — `exit_while` / **`OpExitWhile_v0`**: "wires a While loop's conditional terminal from the Boolean control named `stop_control`", evidence `test_opexitwhile.log` 5/5: **ExecState 0 → 1, the VI runs and stops**. Absent from A3's fixed candidate list (`stage_d1_s2.py:573-581`), though the parent recipe lists it among reused helpers (`build_d1_routeb_v7.py:19`).
+- `docs/toolkit-capabilities.md:63` + `:64` — `OpStopFromNode_v0` driven by `OpCreateEqual_v0`: "term 119, wire 0 → 387 and the scratch then read **ExecState 1** — the op produces a RUNNABLE VI". The recipe records this (`:621-627`) and declines it as "a design change", yet it is what the plan already specifies for these three loops: `build_d1_routeb_v7.py:136`.
+- `docs/toolkit-capabilities.md:66` — `OpCreateConstOnTerm_v0`, 22/0, constant "TYPED BY THE SINK and **ALREADY WIRED**", value read back `-1`, scratch **ExecState 1**.
+
+Both machine tests behind the FALSE are string accidents against a prose table, and each decides the whole stage:
+
+- R-a (`:590`) needs one line citing both `6349C00` and `6362C00`. Line `:63` carries 6362C00 with **6349C03**; line `:66` carries 6349C00 without 6362C00 — the predicate can only fail.
+- R-b's type-reader grep (`:597-598`, `Terminal.*Type`, case-insensitive, filtered on "terminal") matches `docs/toolkit-capabilities.md:66`'s "**Terminal**.Create Constant … **TYPED** BY THE SINK". So the run will most likely report `a3_route_exists = TRUE`, `stop_after_a` will not happen, and the branch taken is `movein` — A2 above.
+
+### A4 UNREAD EVIDENCE — `docs/d1-route-b-plan.md` §2b and `docs/d1-build-plan.md` §8a answer A2
+
+`stage_d1_s2.py:561-565` concludes "no row can be PROVEN safe" without citing:
+
+- `docs/d1-route-b-plan.md:148` — `drop_subvi` "takes a **diagram index**, so a loop body is legal".
+- `docs/d1-route-b-plan.md:154`, `:158-159` — the GPU kernel's six extra pane inputs are already assigned to `OpCreateConstOnTerm_v0` constants "typed by the sink and already wired", with measured values from `gpu_kernel_v1_fp.json`.
+- `docs/d1-build-plan.md:523-536` — the six extras one by one, including `Function`, "the `IMAQ GetImagePixelPtr` node's own **REQUIRED** `Function` input, promoted to the pane", which `docs/NAMES.md:564-565` measured by effect on 2026-09-09.
+
+The requiredness question A2 declares unanswerable is, for the one input that matters, already answered and already remedied in the build order.
+
+---
+
+## PART B — THE ARTEFACT
+
+### B1 ALREADY BUILT — every construction step of phase C has passed its gates in the real VI
+
+`tools/bench/build_d1_routeb_v7_run10.log:70-74` (three loops) · `:76` (`WhileLoop 3 -> 6`, `Diagram 170 -> 173`) · `:106` (`PASS S2d SubVI 94 -> 97`); and `docs/d1-build-plan.md:873` under route A. What is new and right is the boundary: the copy from the S1 artefact (`stage_d1_s2.py:990`) and C9's save — `docs/cycle27-plan.md` 29(b) records no run has ever saved a modified copy of the main VI. Phase A is not what stands between the stage and that.
+
+### B2 ALREADY FAILED — "three empty While loops" is a state already measured at `ExecState 0`, and it is what the selectable branches produce
+
+`docs/toolkit-capabilities.md:67`: "a fresh While loop's unwired conditional terminal is a broken VI by itself (`build_opstopfromnode_v0.py:438-441`)" — the scratch read **ExecState 0**. `tools/gscript.py:2065-2071` reaches `SaveInstrument` only at `ExecState != 0`, and `allow_broken=True` is banned (29(d)).
+
+With A2 fail-closed (`stage_d1_s2.py:561-562` — `a2_proven_no_unwired_required` is hard-coded `[]`), `redrop_all` is **unreachable** and `redrop_subset` runs with `handled = []`: nothing is dropped into any body (`:1019-1027`). `place_true_constant` then asks `_boolean_sink` (`:831-843`) for an unwired non-source terminal of a node **inside the loop body**, of which there are none, so it returns `None` and the gate at `:801` fails. Both scaffold ops are body-node-addressed by construction: `OpCreateConstOnTerm_v0` invokes on `WhileLoop[i].Diagram.Nodes[n].Terminals[t]` (`docs/toolkit-capabilities.md:66`), and `OpStopFromNode_v0`'s source is `Loop.Diagram → Nodes[] → Terms[]` (`:63`). Net: of four branches, one is refuted, one cannot save, one is unreachable, one ends with no VI.
+
+### B3 HELPER EXISTS — `_boolean_sink` hand-rolls type identification this job does not need
+
+`stage_d1_s2.py:831-843` picks the sink by a regex on terminal **names** (`\?|bool|stop|enable`), while R-b's stated guarantee is "the constant is guaranteed **Boolean**" (`:601-602`). A name is not a type. And `OpCreateConstOnTerm_v0` wires the constant into whichever sink it picks (`docs/toolkit-capabilities.md:66`, "terminal wire 0 → 176") — so on the `movein` branch it would wire a `True` into an input terminal of an **original** node moved into that body: a rule-1a change on a path S2 is not meant to touch, left for S3w. The route needing no type reader is built, measured to ExecState 1, and already nominated for these loops: `OpCreateEqual_v0` → `OpStopFromNode_v0` (`docs/toolkit-capabilities.md:64`; `build_d1_routeb_v7.py:136`).
+
+### B4 ALREADY MEASURED — A4 re-reads an ExecState pair taken hours earlier on the same md5
+
+`tools/bench/stage_d1_s1_cd.log:153` (COLD 1) and `:155` (PRELOADED 1), same file, same md5 — quoted by the recipe itself (`stage_d1_s2.py:105`, `:677-678`) and then re-taken at the cost of two child processes and two LabVIEW restarts (`:655-657`). The md5 gate at `:691-695` already covers "has the artefact moved".
+
+---
+
+## MACHINE-READABLE
+
+```
+PRIOR-ART: settled-already
+PRIOR-ART: refuted-already
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-built
+PRIOR-ART: already-failed
+PRIOR-ART: helper-exists
+PRIOR-ART: already-measured
+```
+
+**The one that costs a whole cycle if ignored:** `refuted-already`. `stage_d1_s2.py:229` + `:946-964` versus `docs/d1-route-b-plan.md:135` and `docs/d1-build-plan.md:287` — the `movein` branch is not a cheaper spelling of S2; it silently builds D1 around the CPU kernel, and no gate in the file catches it.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-d1-s2-stage.md
+   STOP RECORD armed: tools/recipes/stage_d1_s2.py sha 3e9025596187 verdict settled-already, refuted-already, contradicted, unread-evidence, already-built, already-failed, helper-exists, already-measured -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 412s

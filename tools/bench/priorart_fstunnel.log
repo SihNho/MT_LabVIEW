@@ -1,0 +1,81 @@
+BGRUN START 2026-09-18 03:04:33 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/priorart_plan_fstunnel.md --slug fstunnel-reader --recipe tools/recipes/build_opfstunnelterm_v0.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_fstunnel-reader.txt (18133 chars)
+OUTCOME: ANSWERED (524s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-18-priorart-fstunnel-reader.md
+COST: $5.3903  in 38 / out 37889 / cache-create 301390 / cache-read 2857971  (520s, 33 turn(s))
+--- ANSWER ---
+Write is disabled this session (as in the 2026-09-17 prior-art dispatch), so the review is delivered here in full — which is what `peer.ps1` archives.
+
+**4 findings, 0 `novel`.** The *core* is genuinely unbuilt — no op casts to either flat-sequence tunnel class and the FSOT cast has executed zero times here. What is already in our files and did not make it into the contract: the op reads the sibling class that owns 1 of the 15 measured non-node crossings; the accepted dual review's direction test is absent and L4 would score a *non-advancing* hop as a crossing; the L4 walk re-implements a helper §A.1 item 5 names, dropping that helper's guard; and the `owner uid` half of the OUT is already measured to fail silently at a flat-sequence frame.
+
+---
+
+# PART A — THE DIRECTION
+
+## A1 — cleared, the direction is authorised, not settled against
+`docs/motor-limit-assurance-plan.md:66-67` (§A.1 item 3, SETTLED per STATUS): check A *"needs one new primitive, the **UID-addressed tunnel reader** (`UID → TMSC(FlatSequence*Tunnel) → Outer/Inner terminal`), which is built and proven on a live instance BEFORE check A runs."* `docs/cycle20-plan.md:36-48` makes it step 2. No slug.
+
+## A2 — cleared, no surviving refutation; the outer read is what the reviewers prescribed
+`archive/peer/2026-09-18-walk-run2-flatseq-crossing-codex.md:94-103` prescribes exactly `internal wire → source Terminal → owner FlatSequenceOuterTunnel → Outer Terminal (3195B800) → Connected Wire (634A000) → that wire's source`, and `:141-153` says *"Do not build the inner-tunnel reader first."* No slug.
+
+## A3 `contradicted` — the op reads the class that owns ONE of fifteen measured crossings, while both documents it cites say `FlatSequence*Tunnel`
+
+- The artifact is `FlatSequenceOuterTunnel`-only: `FSOT = "VI Server:FlatSequenceOuterTunnel"` (`tools/recipes/build_opfstunnelterm_v0.py:103`), one cast (`:418`, `:449`), and gate L2 *requires* every non-FSOT uid to be REFUSED (`:579-582`).
+- `docs/cycle20-plan.md:39` — step 2 is *"`UID → TMSC(FlatSequence*Tunnel) → OuterTerminal / InnerTerminal` **(and the inner-tunnel `LeftTerm` / `RightTerm`)**"*; `docs/motor-limit-assurance-plan.md:66-67` likewise `FlatSequence*Tunnel`.
+- The measured population: `docs/d1-build-plan.md:735-738` — of the 18 rows whose outer wire's single source terminal is a non-node object, **14 are `FlatSequenceInnerTunnel`**, 2 `LeftShiftRegister`, 1 `SubVI`, 1 *does not advance*. `docs/vi-server-ids.json:141` — on the same V6 copy, FSIT **518** vs FSOT **58**. And `tools/bench/probe_flatseq_outer.log:24` is the proof this op cannot reach them: `1C3A9000` REFUSED 1077 on the outer class.
+
+**Scope:** covers the claim that this op is *the* primitive and that step 2's "Done when" is met. It does NOT say the FSOT reader is wrong, unnecessary, or that both classes must ship in one build.
+
+## A4 `unread-evidence` — the dual review's direction test (T2) is not in the contract, and L4 cannot tell "crossed" from "did not advance"
+
+`archive/peer/2026-09-18-walk-run2-flatseq-crossing-opus.md`, ACCEPTED, its other two tests run the same session:
+- `:109-112` — the outer tunnel has two faces and which one you arrived on is undetermined: *"A reader that hardcodes one side is right half the time and silently returns a wrong origin the other half. For a motor-safety trace that is worse than stopping."*
+- `:130` falsifier **(c)**: *"The far face's `Connected Wire` returns the same wire uid you arrived on; the hop does not advance."* Measured precedent: `docs/d1-build-plan.md:738`, *"the hop does not advance (`#376` t7)"*.
+- `:144` **T2**: read the arrived terminal's UID, then 3195B800 **and** 3195B801 — *"whichever matches names the face you are standing on; the other is the continuation."*
+- `:187-192` disposition: *"NOT done, and reported to the judgement session as the one open question: T2's live read of 3195B800 / 3195B801 on uid 43605"* — T2 is what this op was authorised to close.
+
+The recipe wires the entire back half (`Is Source?` / `Connected Wire` / `Owner`) from **OuterTerminal only** (`:463-466`); InnerTerminal yields a bare UID and no wire (`:449-460`). The walk takes `nxt = r["recip_wire"]` unconditionally (`:626-632`), and `crossed` (`:649-652`) is true for any non-zero `recip_wire` — falsifier (c) reads as PASS. L1 (`:573-576`) has the same shape.
+
+**Scope:** gates L1/L4 and the single-face back half. It does NOT claim OuterTerminal is the wrong face for uid 43605 — `archive/2026-09-18-status-cycle19-flatseq.md:48-49` records 44036's owner structure as `FlatSequenceFrame`, which makes OuterTerminal right *there*; that is exactly why a one-site pass would generalise a half-right reader into check A.
+
+---
+
+# PART B — THE ARTIFACT
+
+## B1 — cleared, nothing under another name
+106 `Op*.vi` in `claudeDev`: no `*FsTunnel*` / `*FlatSeq*` / `*OuterTunnel*`. `OpTunnelRead_v0` casts to `Tunnel` (`docs/toolkit-capabilities.md:71`) and `probe_flatseq_outer.log:25` measured `634A002` REFUSED 1077 on the outer class, so it cannot serve.
+
+## B2 — cleared, never attempted
+`docs/vi-server-ids.json:142` and the opus arm `:128` — *"The cast claim 2 rests on has executed zero times."* Nearest live contact: `tools/bench/diag_d1_step0.log:23`, an FSOT (uid 16579) resolved as a wire's source owner through `Generic.Owner` + cast(**GObject**) — never cast to FSOT.
+
+**Also cleared, and stronger than the plan's own citation:** the seed. The plan cites `build_oploopcast_v0.py:201-202`, the expensive NI-example + `copy_into` route (`:162-168`). The *direct* route it actually uses is already built and measured twice — `docs/toolkit-capabilities.md:70` (`OpConnectFromWire_v0`: a Wire-typed seed from a `"VI Server:Wire"` property node's own `reference`; `build_opconnectfromwire_v0.py:243-251`, including the gate that the seed **arrives wired**) and `:68` (`OpConnectNested_v1`). Gates B3/B4 are a re-confirmation, not a first test.
+
+## B3 `helper-exists` — the L4 walk re-implements the helper §A.1 item 5 names, minus its guard
+`docs/motor-limit-assurance-plan.md:72-76`: *"**Reuse the two helpers instead of hand-rolling the join:** `tools/bench/diag_tunnelsource_onehop.py` (the cross-border hop, already built and run)…"* That loop is `diag_tunnelsource_onehop.py:198-233` — one hop at a time from Python, owner located from the `main_vi_nodeterms.json` / `d1_step0_census.json` caches (`:161-163`, `:224`), and at **`:230`** the explicit *"tunnel … does not advance the hop"* refusal. `build_opfstunnelterm_v0.py:600-652` rebuilds all of it (own hop loop, own cache load `:603-609`, own stop strings) and drops that refusal — the very guard A4 asks for.
+
+**Scope:** the L4 walk loop only. It does NOT claim the op is redundant: `resolve()` hops only through `LoopTunnel`s (`tunnel_map`, `:193-197`), which is why it stopped at the flat sequence.
+
+## B4 `already-measured` — "owner class + uid" is measured to fail SILENTLY at a flat-sequence frame, and no gate reads the uid
+The OUT promises, for the outer terminal, *"its OWNER class + uid"* (`build_opfstunnelterm_v0.py:5-6`), from the donor's `Owner → Class Name` / `Owner → cast(GObject) → UID` branch — the branch `OpOwnerChain_v1` is made of (`docs/toolkit-capabilities.md:61`). Its behaviour at this boundary is on disk: `tools/bench/diag_ownerchain_hop.log:7` — `uid 686 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#686 | 482 says 'FlatSequenceFrame' cast '' | error 1055`, written up as *"an owner chain terminates silently at a flat-sequence frame"*. L1 (`:573-576`) asserts `outer_term_uid != 0`, `err_outer == ''` and `ownercls` non-empty — it never reads `owner_uid`, never reads the `errs` column the recipe itself collects (`:557-559`). The documented silent mode passes L1 as a success, on the one run whose purpose is to certify the read.
+
+**Scope:** L1 and the owner-uid half of the OUT. It does NOT claim the terminal's owner *is* a `FlatSequenceFrame` — that is unmeasured.
+
+---
+
+## Cleared on inspection
+- **Fixture keying:** `tools/bench/d1_step0_census.json:2` `"md5": "2a78e17c449cacdaf5da389818526859"` = the **V6 copy**, which is the recipe's target, so index 65 is keyed correctly; `STATUS.md:59-61`'s ORIGINAL-vs-COPY warning is about the motor call-site census, a different artefact.
+- `archive/peer/2026-09-14-optunnels-v0-plan.md:45` (*"do not use the unrelated `FlatSequenceOuterTunnel.Inner Terminal`, ID `3195B801`"*) warns against using it **on a LoopTunnel**; this op uses it on its own class.
+- Ids, class strings, the 1077 discriminator and the Traverse counts are first-hand (`probe_flatseq_outer.log:17-29`, `vi-server-ids.json:126-141`) and cited correctly. No prior flat-sequence-reader review exists; `2026-09-17-priorart-tunnelsource-onehop.md:391-399` names this gap as still open, as the plan says.
+
+---
+
+```
+PRIOR-ART: contradicted      (A3 — tools/recipes/build_opfstunnelterm_v0.py:103,:418,:579-582 vs docs/cycle20-plan.md:39 + docs/motor-limit-assurance-plan.md:66-67 + docs/d1-build-plan.md:735-738 + docs/vi-server-ids.json:141 + tools/bench/probe_flatseq_outer.log:24 — covers the claim that this op is THE primitive and that step 2 is complete: it casts only to FlatSequenceOuterTunnel while both authorising documents say FlatSequence*Tunnel and 14 of the 18 measured non-node crossings are FlatSequenceInnerTunnel-owned, a class the 1077 discriminator proves this op cannot read; does NOT claim the FSOT reader is wrong or that both classes belong in one build)
+PRIOR-ART: unread-evidence   (A4 — archive/peer/2026-09-18-walk-run2-flatseq-crossing-opus.md:109-112,:130,:144,:187-192 + …-codex.md:153 + docs/d1-build-plan.md:738 vs tools/recipes/build_opfstunnelterm_v0.py:463-466,:573-576,:626-632,:649-652 — covers gates L1/L4 and the single-face back half: the accepted review's T2 (compare the arrived terminal against BOTH faces) is the open question this op was authorised to close and is absent, and L4 scores falsifier (c) — a hop returning the wire it arrived on — as CROSSED; does NOT claim OuterTerminal is the wrong face for uid 43605)
+PRIOR-ART: helper-exists     (B3 — docs/motor-limit-assurance-plan.md:72-76 + tools/bench/diag_tunnelsource_onehop.py:161-163,:193-197,:198-233,:230 vs tools/recipes/build_opfstunnelterm_v0.py:600-652 — covers the L4 walk loop only: §A.1 item 5 names that helper as the one to reuse, its resolve() already implements the one-hop-from-Python loop, cache-based owner lookup, max-hops and the "does not advance the hop" refusal, and the recipe rebuilds all of it without that refusal; does NOT claim the op itself is redundant, since resolve() hops only through LoopTunnels)
+PRIOR-ART: already-measured  (B4 — tools/bench/diag_ownerchain_hop.log:7 + docs/toolkit-capabilities.md:61 vs tools/recipes/build_opfstunnelterm_v0.py:5-6,:557-559,:573-576 — covers the owner-uid half of the OUT and gate L1: the donor's Owner→cast→UID branch is already measured to return the class but uid 0 with error 1055 at a FlatSequenceFrame, silently, while L1 gates on ownercls only and never on owner_uid or the errs column the recipe itself collects; does NOT claim the outer terminal's owner IS a FlatSequenceFrame)
+```
+
+**The two that change what happens next.** **A4** is cheapest and most load-bearing: one extra branch (InnerTerminal → `Connected Wire` → `UID`) plus one comparison against the arrival wire turns L4 from "a non-zero wire came back" into the test both review arms asked for — without it the run can pass on uid 43605 and leave the direction question open. **A3** decides what cycle 20 may claim when it passes: an outer-only reader closes 1 of 15 measured non-node crossings, so either the FSIT cast joins this build (the seed route is identical) or step 2's "Done when" and check A's `UNTRACED` default get restated in writing.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-fstunnel-reader.md
+   STOP RECORD armed: tools/recipes/build_opfstunnelterm_v0.py sha de04c05f5f65 verdict contradicted, unread-evidence, helper-exists, already-measured -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 524s

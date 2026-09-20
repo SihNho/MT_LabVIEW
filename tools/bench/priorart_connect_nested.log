@@ -1,0 +1,103 @@
+BGRUN START 2026-09-17 11:04:30 limit 20.0 min: py -u tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/plan_connect_nested.md --slug connect-nested --trigger new-op
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_connect-nested.txt (15613 chars)
+BGRUN START 2026-09-17 11:09:43 limit 20.0 min: py -u tools\prior_art_review.py --plan-file C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\97b1695e-68c2-4985-8cac-1ca3097b3b15\scratchpad\plan_connect_nested.md --slug connect-nested --trigger new-op
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_connect-nested.txt (15757 chars)
+OUTCOME: ANSWERED (446s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-connect-nested.md
+COST: $4.0788  in 40 / out 32493 / cache-create 185680 / cache-read 2818965  (443s, 35 turn(s))
+--- ANSWER ---
+Prior-art review complete — read-only: no lock, no build, no edit, no `.vi` opened, no hardware.
+
+**6 findings, 0 `novel`.** The op is genuinely unbuilt and `Terminal.Connect Wire` with two traversed terminals is not refuted anywhere. But the named donor is the *wrong* ladder and structurally cannot do the case that matters; "resolves all 31 rows" is contradicted by the same file 39 lines later and by the run-7 log row by row; a nearer donor already exists that is one property-node swap away; and the census written for this very op — which already says both of these things — is not cited.
+
+---
+
+# PART A — THE DIRECTION
+
+## A1 — cleared
+
+The direction is settled **in favour**, and a fourth op is explicitly authorised: `docs/d1-build-plan.md:652-662` (§11m, judgement 2026-09-17) — *"Authorised: `OpConnectNested_v0` … The freeze lift is now closed at four ops"* — and `STATUS.md:104-105` pre-empts the obvious objection: *"the fourth op is the re-wire itself, not a diagnostic."* Nothing in `docs/cycle15-plan.md`'s freeze or in outcome-review OPEN 32 (`STATUS.md:87-94`) contradicts that. The route's two halves are each proven: `Terminal.Connect Wire` 6349C03 as a writer (`docs/toolkit-capabilities.md:51`, wire 0 → 387, ExecState 1) and a `(diagram, node, terminal)` ladder ending on a Terminal reference (`docs/toolkit-capabilities.md:23`, `OpNodeTerms_v0`).
+
+## A2 — no refutation found
+
+Nothing in `archive/peer/`, a retrospective or a superseded section argues against two traversed terminals into one `Connect Wire`. The opposite: `archive/peer/2026-09-06-connect-ladder-plan-attack.md:20-21` put **exactly this construction** to codex in 2026-09-06 — *"Terminal.Connect Wire (6349C03) with the second ladder's terminal as the wire source to wire two arbitrary terminals by indices"* — and the verdict at `:115` was *"Connect Wire probably works for an unoccupied compatible sink"*, with the objection being **node-index stability** (`:40`), not the method. That objection is answered for this use: every index here is read from the census immediately before the call (`tools/recipes/build_d1_v0.py:943-1041`).
+
+## A3-i `contradicted` — the donor named is a **loop**-anchored ladder, not a diagram-indexed one, and the plan's own diagnostic says it cannot do test (c)
+
+The brief and `docs/d1-build-plan.md:658-659` both say the body is *"`OpStopFromNode_v0`'s body-node ladder (Traverse Diagram[i] → Nodes[j] → Terminals[k]) duplicated for the source side"*, with inputs *"(diagram index, node index, terminal index)"*.
+
+`OpStopFromNode_v0`'s ladder is not that. Three files say so:
+
+- `tools/recipes/build_opcreateconstonterm_v0.py:17-19`, verbatim: *"Traverse(`WhileLoop`)[index] -> `To More Specific Class`#683 -> PN `VI Server:Loop`[`Diagram` 6361401] -> PN `AbstractDiagram`[`Nodes[]`] -> IndexArray(`index 3`) -> PN `Node`[`Terms[]`] -> IndexArray(`index 4`)"*.
+- `docs/toolkit-capabilities.md:51` — the op's signature is `Class Name`='WhileLoop', **`index` = the loop**, `index 3` = body `Nodes[]`, `index 4` = `Terminals[]`. There is no diagram index.
+- `tools/bench/diag_connectnested_donors.log:55,65` — the census shows `#683 To More Specific Class` → `#1168 Property 'Diagram' (reference IN w366)`, i.e. `Diagram` read **off the WhileLoop-typed reference**. No Traverse-"Diagram" node exists in that VI.
+
+And the consequence is already written down, by this project, for this op: `tools/bench/diag_connectnested_donors.py:11-13` — *"the body-node ladder starts at a **WhileLoop-typed** reference … so BOTH ends of a wire built that way would sit on the SAME loop. §11m's test (c) needs two DIFFERENT diagrams."*
+
+**Scope:** the donor identification and the input signature, not the method. It matters because test (c) — source on a different nested diagram from the sink — is the case the 17 `from-tunnel` rows need, and it is the one this donor structurally cannot express. The correct donor is B3-i below.
+
+## A3-ii `contradicted` — "It resolves all 31 rows" is contradicted by the same file 39 lines later, by STATUS, and by the run-7 log row by row
+
+> `docs/d1-build-plan.md:659` (§11m): **"It resolves all 31 rows."**
+
+- Same file, `:698` (§11L): the 24 are *"**8 rows** whose sink or source terminal HAS NO NAME … **16** `from-tunnel` rows whose outer wire has **no NAMED node source**"*. A row with no identified source is not an addressing problem — an op whose source input is `(diagram, node, terminal)` has nothing to put in those three fields.
+- The log itself, `tools/bench/build_d1_v0_run7.log:302-325` — 24 rows, and the split is **7 / 17**, not 8 / 16: six `same-loop … unnamed end` (`:302,:305,:306,:308,:312,:314`), one `from-ctl` (`:309`), seventeen `from-tunnel`. Of those seventeen, **sixteen print `(none)`** for `outer_source`; exactly one (`:317`, `#376 t7`) carries an identified source — `{'kind':'node','diagram':'19','uid':637,'i':37,'name':''}` — and that one is genuinely this op's case.
+- The 7 FAILED are assigned to a **different** fix by `STATUS.md:101-102`: *"6 × `Get Controls.vi` 5001 — the moving `ControlTerminal`s should be reparented first per §5d, **not wired from the panel**"*.
+
+On the evidence in hand the op reaches **6 + 1 = 7 of the 24**, plus plausibly the single `'subarray'→'x'` name failure = **8 of 31**, not 31. The remaining 16 need a *source resolution*, and the 6 control rows need §5d.
+
+**Scope:** the "all 31" claim and the 8/16 split. It does **not** say the op is unnecessary — 7 rows have no other route.
+
+## A4 `unread-evidence` — the donor census written **for this op** answers two of its questions and is cited nowhere
+
+`tools/bench/diag_connectnested_donors.py` (ran 11:09 today, `…donors.log:1`) exists precisely to decide this build, and `tools/bench/connectnested_donors.json` holds the **complete** census of all six donors (`OpNetInfo_v1`, `OpNodeTerms_v0`, `OpConnect_v0`, `OpStopFromNode_v0`, `OpCreateConstOnTerm_v0`, `OpWhileCast_v0`, at json `:3,:707,:1293,:1870,:2795,:3736`). Its header already states A3-i (`:11-13`) and already identifies the right half-ladder (`:14-18`: *"`OpNetInfo_v1` … ALREADY ENDS on a Terminal reference addressed by (diagram index, node index, terminal index), which is exactly one half of `OpConnectNested_v0`"*). The brief under review cites neither, and repeats the claim the header refutes. *(Observation, not a finding: `…donors.log` stops mid-`OpStopFromNode_v0` at line 71 with no `BGRUN END` line while the JSON is complete — the log is short, the measurement is not.)*
+
+---
+
+# PART B — THE ARTIFACT
+
+## B1 — cleared: the op does not exist
+
+`claudeDev` holds `OpConnect_v0`, `OpConnect2_v0`, `OpConnectCtl_v0` and nothing else matching `OpConn*`. No recipe builds a both-ends-nested writer. `connect_terminals` (`tools/gscript.py:2202-2212`) takes **both** ends from `VI.Block Diagram → Nodes[]` — top-level on both sides, not merely the source; `connect2` (`:2428-2431`) takes a Traverse-"Diagram" sink and a top-level source. So the capability gap is real as stated.
+
+## B2 — cleared: not attempted, and the known 1055 trap is avoided by construction
+
+No record of this build failing. The nearby recorded failure is `docs/NAMES.md:473-475` — the 1055 modal that killed `OpBuildCase_v0` when a **terminal refnum crossed COM** — and this design keeps every refnum inside the op, the same fix `OpCreateEqual_v0` used (`docs/toolkit-capabilities.md:52`, *"both operands are fetched INSIDE the op, so no terminal refnum crosses COM"*).
+
+## B3-i `helper-exists` — `OpConnect2_v0` is the donor: it already has one nested ladder, one Connect Wire, and a complete source ladder, and `OpConnect_v0` already proves two ladders sharing one traversed array
+
+- `tools/recipes/build_opconnect2.py:3-6`: *"sink: Traverse "Diagram"[index] -> TMSC -> Nodes[][index 2] -> Terminals[][index 3] (`OpNetInfo_v1`'s ladder); source: VI -> Block Diagram (23C) -> Nodes[][index 4] -> Terminals[][index 5]; `Terminal.Connect Wire` (6349C03) on the sink."* The **whole source ladder plus its two controls was built in 20 lines** at `:56-76`, and the swap needed here is one node: replace the `VI Server:VI [23C]` property node at `:56` with a second `Index Array` on the Traverse `References` array, plus one diagram-index control.
+- That branch is already proven on a built op: `tools/bench/diag_connectnested_donors.log:42-47` — in `OpConnect_v0`, `Nodes[1]` and `Nodes[8]` **both take `array` = w171**, i.e. one `Nodes[]` array feeding two independent Index Arrays. That is the diagnostic's own Q2 (`diag_connectnested_donors.py:22-24`), answered in the affirmative by a shipped VI.
+- The same file records what the plan's route costs instead: `build_opconnect2.py:5-6` — *"LabVIEW creates the loop tunnel itself when the sink is inside a structure (Connect Wire crosses borders)"*.
+
+**Scope:** which donor to copy and how the two ladders share one Traverse call. Not the method, not the op's necessity.
+
+## B3-ii `helper-exists` — the 16 unresolved sources have a named call, and its failure here is already logged as an unchased defect
+
+`OpWireSource_v5` is *"**which object drives a wire** — addressed by UID, so no traverse index is involved"* (`docs/toolkit-capabilities.md:48`, 12/12; `docs/NAMES.md:940`). That is exactly the question `build_d1_v0_run7.log:303` asks and fails to answer offline (*"tunnel #5569 outer wire w5812 has no NAMED node source in any census"*) — the join is over static censuses (`tools/recipes/build_d1_v0.py:1013-1017`), never over the machine. And the reason it was not used is already recorded, as a **deferred defect, not a dead end**: `docs/d1-build-plan.md:672-673` — *"`diag_d1_full_route.py` is retired (its T6 control showed `OpWireSource_v5` returning 1055 for every wire — a separate defect, logged, **not chased now**)"*, carried at `STATUS.md:69`.
+
+**Scope:** the 16 `(none)` rows only. It does not touch the 7 rows the new op genuinely unlocks, and it is not an argument for building a reader before F1/F2 — it names the existing call and the recorded reason it is currently unusable, which the plan's "resolves all 31" silently steps over.
+
+## B4 `already-measured` — an unnamed tunnel terminal reached by `(node index, terminal index)` and accepted by `Connect Wire` is measured; cross-diagram `Connect Wire` is already researched
+
+Test (b) — *"body node → an UNNAMED tunnel of a nested structure"* — is the measured content of `docs/toolkit-capabilities.md:35`: *"an EMPTY For loop's `Node.Terminals[]` has exactly one entry (**unnamed sink**) = the count tunnel's outside terminal; an I32 source wired onto it makes the loop runnable"*, via `connect_terminals(target, loop_node, 0, src_node, src_term)`, verified *"wire 346 on both ends, ExecState 0→1"* (`build_harness_copyloop2.log` run 2). A structure node's tunnels appearing as unnamed entries in its `Terminals[]` is visible again in `tools/bench/diag_connectnested_donors.log:31` (`Nodes[9] #142 For Loop`, terminals 2-8 all `''`).
+
+Test (c) is likewise not unexplored: `archive/peer/2026-09-14-stage2-a3-wire-shiftreg-plan.md:56` — *"practitioner evidence that `Terminal.Connect Wire` can connect terminals across different diagrams using an automatically routed wire"* (NI Community, retired NI employee) — alongside `tools/gscript.py:2430-2431`, which records LabVIEW creating the tunnel itself for a nested sink.
+
+**Scope:** the *addressing* of an unnamed tunnel terminal and its acceptance as a Connect Wire endpoint, at top level. It does **not** cover a tunnel whose owning structure sits on a nested diagram, and it does not make (c) measured — it makes (c) the only part of the test plan that is actually new, which matters because §11m's gate reports (c) rather than gating it.
+
+---
+
+```
+PRIOR-ART: contradicted     (A3-i  — tools/recipes/build_opcreateconstonterm_v0.py:17-19 + docs/toolkit-capabilities.md:51 + tools/bench/diag_connectnested_donors.log:55,:65 + tools/bench/diag_connectnested_donors.py:11-13 vs docs/d1-build-plan.md:658-659 — covers the DONOR and the input signature: OpStopFromNode_v0's ladder is Traverse "WhileLoop"[i] -> Loop.Diagram 6361401, addressed by LOOP index, and cannot express two different diagrams; does NOT question 6349C03 or the op's necessity)
+PRIOR-ART: contradicted     (A3-ii — docs/d1-build-plan.md:698 + tools/bench/build_d1_v0_run7.log:302-325 + STATUS.md:101-102 vs docs/d1-build-plan.md:659 — covers "It resolves all 31 rows" and the 8/16 split (the log says 7/17): 16 rows have NO identified source and 6 are assigned to §5d, so the op reaches ~8 of 31; does NOT say the op is unnecessary)
+PRIOR-ART: unread-evidence  (A4    — tools/bench/diag_connectnested_donors.py:8-28 + tools/bench/connectnested_donors.json:3,:707,:1293,:1870,:2795,:3736 — the complete six-donor census written for THIS op, whose header already states A3-i and already names the right half-ladder, is cited nowhere in the brief)
+PRIOR-ART: helper-exists    (B3-i  — tools/recipes/build_opconnect2.py:3-6,:56-76 + tools/bench/diag_connectnested_donors.log:42-47 — covers WHICH donor: OpConnect2_v0 already carries the nested sink ladder + Connect Wire + a full source ladder built in 20 lines, and OpConnect_v0 proves two Index Arrays branching one Nodes[] array; does NOT cover the method or the freeze authorisation)
+PRIOR-ART: helper-exists    (B3-ii — docs/toolkit-capabilities.md:48 + docs/NAMES.md:940 + docs/d1-build-plan.md:672-673 + STATUS.md:69 vs tools/recipes/build_d1_v0.py:1013-1017 — covers the 16 rows with outer_source "(none)": OpWireSource_v5 is the existing call for "which object drives this wire", and its 1055 here is already logged as an unchased defect; does NOT cover the 7 rows the new op unlocks)
+PRIOR-ART: already-measured (B4    — docs/toolkit-capabilities.md:35 + tools/bench/diag_connectnested_donors.log:31 + archive/peer/2026-09-14-stage2-a3-wire-shiftreg-plan.md:56 + tools/gscript.py:2430-2431 vs the §11m test plan's (a)/(b) — covers test (b): an unnamed tunnel terminal addressed by (node index, terminal index) and accepted by Connect Wire is measured functional; does NOT cover a tunnel on a NESTED diagram, and does not make test (c) measured)
+```
+
+**The two that change what happens next.** **A3-i + B3-i** — copy `OpConnect2_v0`, not `OpStopFromNode_v0`: the plan's donor is anchored to a loop index and, by the project's own diagnostic header, puts both ends on the same loop, which is the one thing the op exists to avoid. **A3-ii** — the row accounting is wrong in the plan's own direction: build the op for the 7 rows it actually reaches, and decide separately what happens to the 16 whose source is unidentified, because run 8 cannot go "straight to save → N1 → F1 → F2" with 16 cut terminals still unwired.
+
+**Checked and cleared:** the op is genuinely unbuilt (`claudeDev` `OpConn*` = three files, none of them this); no archived exchange refutes `Terminal.Connect Wire` with two traversed terminals — the 2026-09-06 attack on this exact construction objected to node-index stability, which this build handles by reading indices at call time; the known 1055 refnum-over-COM trap is avoided by construction; the bare-sink rule (`tools/gscript.py:2206-2207`) is honoured.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-connect-nested.md
+BGRUN END rc=0 after 447s

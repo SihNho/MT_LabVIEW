@@ -1,0 +1,124 @@
+BGRUN START 2026-09-08 10:32:32 limit 6.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools/bench/peer_errlist.ps1
+OUTCOME: ANSWERED (144s)  archived: archive\peer\2026-09-08-vi-error-list-by-script.md
+--- ANSWER ---
+Yes. The premise that there is no programmatic Error List accessor is incorrect: LabVIEW has a hidden/private VI method specifically for this.
+
+## 1. Programmatic Error List
+
+### VI class: `Get Errors`
+
+- Long/data name: `Get Errors`
+- Method ID: `0x452`
+- Owning class: VI, class ID `2`
+- Scope: Private, also categorized as a VI Scripting method
+- Outputs/parameters: `Errors`, `Details`, and optional `Call Dangerously?`
+- Availability: LabVIEW development environment; the class table marks it as available through VI Server, but it is unsupported/private.
+
+The parameter metadata is incomplete publicly, but both `Errors` and `Details` are required outputs. [LabVIEW Wiki method entry](https://labviewwiki.org/wiki/VI_class/Get_Errors_method)
+
+This is the method you want. An NI Community example reports that it returns all errors from a broken scripted VI, although the returned representation/text differs slightly from the interactive Error List. The original poster confirmed it was usable for exactly this purpose. [NI Community: Error list in VI scripting](https://forums.ni.com/t5/LabVIEW/Error-list-in-VI-scripting/td-p/2263216/highlight/true)
+
+It may not appear in the Invoke Node menu even when ordinary VI Scripting is enabled. The forum thread recommends these INI tokens:
+
+```ini
+SuperPrivateScriptingFeatureVisible=True
+SuperSecretPrivateSpecialStuff=True
+SuperPrivateSpecialStuff=True
+```
+
+The method can also be copied from an existing VI even when it remains absent from the menu. [NI Community accepted solution and follow-up](https://forums.ni.com/t5/LabVIEW/Error-list-in-VI-scripting/m-p/2268238)
+
+Important distinction: `Get Errors` is a native VI Server Invoke Node method. I found no evidence that it is directly exported as an Automation method on the ActiveX VI object/type library. In your architecture, the reliable route is therefore an Op VI containing the native Invoke Node, called through ActiveX?�not assuming Python can dispatch `vi.GetErrors()` directly.
+
+There is also:
+
+### Wire class: `Get Error List`
+
+- Long name: `Get Error List`
+- Data name: `GetErrorList`
+- Method ID: `0x6370C0A`
+- Owning class: Wire, class ID `16439`
+- Scope: Private
+- Required output: `Error List`
+
+This returns errors associated with one wire, rather than the complete VI Error List. [LabVIEW Wiki](https://labviewwiki.org/wiki/Wire_class/Get_Error_List_method)
+
+## 2. Indirect diagnostics
+
+The useful scripting properties are narrower than the suggested names.
+
+### Broken wires
+
+`Wire.Is Broken?`
+
+- Property ID: `0x6371004`
+- Scope: VI Scripting
+- Read-only Boolean
+- Meaning: true if the wire is broken or otherwise in a bad state.
+
+There is no documented `Wire.IsBad`; its actual public scripting name is `Is Broken?`. [Wire class table](https://labviewwiki.org/wiki/Wire_class)
+
+Useful companions:
+
+- `Wire.Terminals[]`, ID `0x6371003`, VI Scripting. Multiple source terminals themselves imply a broken wire. [LabVIEW Wiki](https://labviewwiki.org/wiki/Wire_class/Terminals%28%29_property)
+- `Wire.Get Error List`, ID `0x6370C0A`, private, gives the wire-specific error list. [LabVIEW Wiki](https://labviewwiki.org/wiki/Wire_class/Get_Error_List_method)
+
+I found no `Diagram.Bad Wires[]` property in the published class inventories. Enumerating diagram objects recursively and testing each Wire?�s `Is Broken?` is the supported scripting-style approach.
+
+### Terminals
+
+The Terminal class does not expose a type-conflict or ?�bad terminal??Boolean. Relevant VI Scripting properties are:
+
+- `Connected Wire`, ID `0x634A000`
+- `Type Descriptor`, ID `0x634A001`
+- `Is Source?`, ID `0x634A003`
+- `Name`, ID `0x634A004`
+- `Coercion Dot?`, ID `0x634A006`
+- `Type Descriptor (Full)`, ID `0x634A007`
+- `Data Type`, ID `0x634A008`
+
+Thus, a type conflict is best detected from the connected Wire?�s `Is Broken?` or `Get Error List`; terminal type descriptors can help explain the mismatch but do not themselves identify an error. [Terminal class table](https://labviewwiki.org/wiki/Terminal_class)
+
+### SubVIs
+
+The relevant properties are:
+
+- `VI Reference`, ID `0x635E406`, VI Scripting, read-only.
+- `Bad SubVI Linkage`, ID `0x635E40B`, VI Scripting, read-only; true when connector-pane changes require relinking.
+- `Missing VI Path`, ID `0x635E40C`, VI Scripting, read-only.
+- `Missing VI Name`, ID `0x635E40D`, VI Scripting, read-only.
+
+There is no listed `Is Missing` property. A missing-call node can instead be recognized through `Missing VI Path`/`Missing VI Name` and failure to obtain a valid `VI Reference`. [SubVI class table](https://labviewwiki.org/wiki/SubVI_class)
+
+### Generic nodes
+
+I found no general `Node.Bad`, `Node.Is Bad?`, or equivalent property in the published Node-class inventory. `Node.Terminals[]`, ID `0x6359000`, provides the terminals for inspection, but actual compiler diagnostics should come from `VI.Get Errors` or the object-specific error-list methods. [Node.Terminals[]](https://www.labviewwiki.org/wiki/Node_class/Terminals%28%29_property)
+
+## 3. Opening the Error List without Ctrl+L
+
+Yes:
+
+### Application class: `Error Window:Open`
+
+- Method ID: `0x89D`
+- Owning class: Application, class ID `1`
+- Scope: Private
+- Long name: `Error Window:Open`
+
+It is the direct private method for opening the Error List/Error Window. [Application method table](https://labviewwiki.org/wiki/Application_class)
+
+Related methods:
+
+- `VI.Refresh Error Window Entry`, ID `0x473`, private. This appears intended to refresh that VI?�s entry before/while displaying the window. [VI class table](https://labviewwiki.org/wiki/VI_class)
+- `Application.Error Window:Defer Updates`, ID `0x915`, private. [Application method table](https://labviewwiki.org/wiki/Application_class)
+
+The likely screenshot sequence is:
+
+1. Invoke `VI.Refresh Error Window Entry` on the broken VI.
+2. Invoke `Application.Error Window:Open`.
+3. Capture the Error List window.
+
+Because these are private native methods, I would implement that sequence inside an Op VI. I found no reliable evidence that `Error Window:Open` is exposed directly through the LabVIEW ActiveX automation type library.
+
+Bottom line: use VI private method `Get Errors`, ID `0x452`, for machine-readable diagnostics. Use Application private method `Error Window:Open`, ID `0x89D`, when you specifically need the UI for a screenshot.
+BGRUN END rc=0 after 144s

@@ -1,0 +1,156 @@
+BGRUN START 2026-09-16 21:56:45 limit 25.0 min: py -u tools/prior_art_review.py --plan-file docs/cycle15-plan.md --trigger direction-change --slug priorart-cycle15-d1
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-cycle15-d1.txt (15607 chars)
+OUTCOME: ANSWERED (418s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-16-priorart-priorart-cycle15-d1.md
+COST: $3.2756  in 34 / out 32696 / cache-create 148709 / cache-read 1941967  (414s, 27 turn(s))
+--- ANSWER ---
+Write is disabled in this session, so the review is delivered here in full. **12 findings, zero `novel`.** The two that matter most are A1 and A2: the plan's product is the one construction method `docs/decisions.md` explicitly excludes, and it is the inverse of the option the user actually chose.
+
+---
+
+# PART A — THE DIRECTION
+
+## A1 `settled-already` + `contradicted` — a hot-path-only swap is the one method the settled decision excludes, and the plan cites that decision as its warrant
+
+`docs/cycle15-plan.md:24-25` — *"**A copy of the original VI** (`restructure_inside_a_copy_of_the_original` decision) in which **only the per-frame tracking call is swapped**"*.
+
+`docs/decisions.md:19` — the row it names:
+
+> | **construction method** | restructure **inside a COPY of the original** — **not a hot-path-only swap**, not a fresh rebuild in an empty VI. |
+
+That file is `status: current`, dated **2026-09-16** (`docs/decisions.md:4`) — it already survived the re-plan this cycle is written under — and `STATUS.md:24` names it as *"Settled decisions that must not be re-opened"*. The exclusion was taken against this exact alternative, and the record says so twice more:
+
+- `archive/2026-09-16-status-cycles-8-10-narrative.md:199-201` — *"the hot-path-only plan would have left the ASI serial subVI #48 and the ten property nodes in the frame loop"*, written as the reason the user rejected it.
+- `archive/peer/2026-09-15-priorart-hard-noindex-r1.md:207` — *"Not the outcome review's hot-path-only swap, and not a fresh rebuild in an empty VI"*, recording the 2026-09-15 16:3x strategy decision.
+
+The plan does not mention that the decision it cites excludes what it builds. **Still applies?** Yes — the 2026-09-16 re-plan changed *ordering*, not construction method; see A2.
+
+## A2 `settled-already` — option A, as put to the user and as they answered it, is the INVERSE of D1
+
+`docs/cycle15-plan.md:9` claims `decided_by: user 2026-09-16 ("A로 진행하자")`. Option A is on record at `archive/prose/2026-09-16-outcome-replan.md:87` (identical at `:38`) — the document the user answered:
+
+> **A. delivery 사이클:** … 후보는 **원본의 복사본 안에서 프레임 루프를 그대로 두고 "정지/종료 + 파일 저장"만 먼저 붙인 버전**이다(리뷰 Q4 권고).
+
+Option A = frame loop **left alone**, stop/shutdown + file saving **added**. D1 = frame loop **changed** (tracker swapped), stop/writer **left alone** (`cycle15-plan.md:26-27`). Both halves are inverted.
+
+The recommendation behind it is equally explicit: `archive/peer/2026-09-16-outcome-review-20260916.md:187` — *"the item currently scheduled last that should move first is **stop/shutdown together with actual file writing**"*; restated at `:274`.
+
+`cycle15-plan.md:31-33` disposes of diverging from *"the reviewer's full slice"* — but the divergence needing disposal is from **option A itself**, the plan's own claimed authority. And `archive/prose/2026-09-16-outcome-replan.md:99` shows the matching question was asked separately and no file records an answer: *"3. 정지/종료 + 파일 저장을 첫 납품으로 잡는 데 동의하는지, 아니면 다른 최소 산출물이 있는지."*
+
+## A3 `contradicted` — *"no motors are needed for D1"* against the original's own startup
+
+`cycle15-plan.md:62` — *"F1/F2 live (camera only; **no motors are needed for D1**)"*. D1 is a copy of the original (`:24`), and running the original **is** motion:
+
+- `docs/main-vi-startup.md:24` — diagram 1, *"**PI motor init**, driven straight from the panel control `Set Focus (0->50)`"*; `:27` — diagram 4 is PI **GOH (go home)**; `:33` — diagram 10 is `ASI TG-1000.lvlib:Initialize.vi` **then `Move Axis to Position.vi`**, *"the same pair recurs on diagram 88"*.
+- `docs/t0-instrumentation-plan.md:136-138` — *"Running the main VI executes its initialisation frame, which contains the PI motor's `GOH` … and the ASI stage's `MOVE AXIS TO POS`, i.e. **real motion** — which is why this step waits for the user and **never runs unattended**."*
+- `STATUS.md` OPEN 5 — *"**Startup drives instruments** (ASI on diagrams 10/88, PI on 1/3/4/5)"*.
+
+The rig state permits it, so this does not block F1 — but the premise is false as written, and the *never unattended* condition attaches to F1's ≥ 5-minute run and is not carried into the plan.
+
+## A4 `contradicted` — F1's *"live on the camera at 90 Hz"* against what the original does to the camera
+
+`cycle15-plan.md:40` requires D1 to run *"live on the camera at 90 Hz"* with acquisition *"left exactly as the original has it"* (`:26-27`).
+
+- `docs/camera-acquisition-facts.md:621-622` — *"the main VI references exactly **six** IMAQdx VIs … and **none of them sets an attribute**"*.
+- `archive/benchmarks/INDEX.md:65` (row 44, 2026-09-16) — *"**every run starts at auto-exposure** unless the VI writes it, and nothing in `docs/main-vi-startup.md` shows the original doing so"*.
+- `docs/decisions.md:37` — the decided condition is 90 Hz / `ExposureAuto` OFF / ≈5 556 µs, and *"**A session open RESETS exposure** …, so the acquisition loop must write and read back the contract itself — no external pre-pass can do it."*
+
+An unmodified original cannot satisfy F1 at the decided condition; the contract write is a build item (`docs/pre-rig-master-plan.md:87`, Phase 1.1 — *"the contract write belongs on diagram 87 immediately after the open"*). Either F1 drops the condition or D1 grows a second change.
+
+## A5 `contradicted` — N1 runs D1 on recorded TIFFs while D1's acquisition is the live camera
+
+`cycle15-plan.md:39` — N1 is *"On the recorded fixture (10,043 frames, 5 beads)"*; `:26` keeps *"live camera acquisition"* unchanged.
+
+- `STATUS.md:59-62` — the existing artefacts are *"**replay** artefacts — recorded TIFFs, `FOR` loops, no live acquisition"*.
+- `archive/benchmarks/INDEX.md:61` (row 40) — the replay head is *"`Frame Paths` String[] auto-indexed → `StrToPath` → `IMAQ ReadFile` → kernel"*.
+
+N1 requires replacing the acquisition front end — the thing `:27` forbids. The numeric gate and the product definition cannot both hold.
+
+## A6 `contradicted` — F3's `SetCommand_signed.vi` against the settled-decisions file, on a pair the files record as UNRESOLVED
+
+`cycle15-plan.md:42` states F3 as closed. Two current files disagree:
+
+- **for**: `docs/pre-rig-master-plan.md:90` — *"✅ **DECIDED by the user 2026-09-16 — `SetCommand_signed.vi`** …"*
+- **against**: `docs/decisions.md:29` — *"the rotor row calls `SetCommand.vi` **exactly as the existing `Send to Rot` path does** … The signed variant is a separate hardware-verified artefact, **not** something the restructuring adopts"* — same date, `status: current`, the file STATUS points to as settled.
+- and the project knows: `STATUS.md` OPEN 12 — *"6 resolved in the docs, **1 left to the user** (PAIR 4, rotor `SetCommand`)"*; `archive/prose/2026-09-16-outcome-replan.md:98` lists it as open question 2.
+
+Independently: repointing `SetCommand.vi` → `SetCommand_signed.vi` inside a copy of the original is a **second** behaviour change, which `cycle15-plan.md:24-27` says D1 does not make.
+
+## A7 `unread-evidence` — `docs/pre-rig-master-plan.md`, which STATUS names as THE plan, is not cited once
+
+`STATUS.md:23` — *"**`docs/pre-rig-master-plan.md` is THE plan**"*. The cycle-15 plan never mentions it; it supersedes only `docs/cycle14-plan.md` (`:8`). What it already contains and the plan re-derives:
+
+- `:95` — **Phase 1.9 STOP AND SHUTDOWN**, with the primitive named (`exit_while`, 5/5 verified), the stop-inside-the-loop rule (`stage2-plan.md:90-94`), the error-1122 order *"stop the users → drain → release"*, and the Abort-bypasses-cleanup consequence. F2 is that row's acceptance, re-stated without it.
+- `:88` — **Phase 1.2** already fixes the GPU frame set: *"the frame set is `INDEX.md:36` row 15 — 200 chained frames, 5 beads, **not the 10,043-frame fixture**"*, and *"Extending the comparison to all 10,043 fixture frames is a separate, cheap run and **is not assumed here**"* — exactly what N1 assumes.
+- `:87` — Phase 1.1 carries the camera contract and its diagram (87).
+
+---
+
+# PART B — THE ARTIFACT
+
+## B1 `already-measured` — step 1a's question is already answered in the two files step 1a names
+
+`cycle15-plan.md:49-52` sends a material session to establish *"which trackers hold a **passed** numeric-acceptance record today, at what tolerance, against which reference"*:
+
+- `archive/benchmarks/INDEX.md:61` (row 40) — *"72/72 PASS — all 10,043 frames … the 10,018 frames before the first lost bead are bit-identical (XYZ/GOOD/POS)"*.
+- `archive/benchmarks/INDEX.md:62` (row 41) — *"168/168 PASS … the 10,018 pre-loss frames bit-identical"*.
+- `docs/decisions.md:38` — GPU: *"outputs inside tolerance (x,y 4.9e-7 px / z 2.9e-6 µm / 0 flips)"*.
+- `docs/pre-rig-master-plan.md:88` — the tolerance's two qualifiers (200-frame set; the 1e-6 figure is a property of a **machine**, re-run with `N=200 py tools/gpu/test_mt2.py`).
+
+## B2 `contradicted` — neither row-40/41 artefact is a per-frame subVI that can be swapped into uid 5058
+
+`cycle15-plan.md:50` offers *"rows 40–41 for the CPU queue tracker"* as a swap candidate. Those are **top-level replay VIs**: `STATUS.md:61-62` — *"both are **replay** artefacts — recorded TIFFs, `FOR` loops, no live acquisition, no stop protocol"*. What is drop-in compatible with the call site is the *kernel*: `archive/STATUS-2026-09-14-full-before-condense.md:613-614` — *"**both kernels already share the connector pane**, so the backend can be selected at EDIT time by `SubVI.Replace` (635E001) on the single kernel call site"*. Step 1a's menu is mis-typed: the choice is between kernels, not between the row-40/41 VIs.
+
+## B3 `unread-evidence` — the swap primitive is named in the record, was recommended for building, and does not exist
+
+The build step (`cycle15-plan.md:60`) assumes the fleet can repoint a subVI call site. It cannot today:
+
+- `archive/STATUS-2026-09-14-full-before-condense.md:594` — *"`SubVI.Replace` = 635E001 … is the route for the single kernel call site (MAIN_VI_MAP node 39 / uid 5058)"*; `:615` — *"**Recommend building that** before pushing further on the case structure."*
+- `docs/vi-server-ids.json:117` — the entry is still `"SubVI.Replace (labviewwiki, 2026-09-09, UNVERIFIED)"`.
+- `tools/gscript.py` — no wrapper anywhere in the public surface (`:66`–`:2616`); the nearest are `drop_subvi` (`:1031`) and `delete_object` (`:2035`), i.e. delete-and-rewire, and uid 5058's pane is the wide one (`frame-loop-anatomy.md:49`).
+
+The plan's one build step rests on an unbuilt, UNVERIFIED primitive it never names.
+
+## B4 `already-measured` — the tracker swap's numeric equivalence was already measured as a drop-in
+
+`archive/STATUS-2026-09-14-full-before-condense.md:595-596` — *"**15:4x VERIFIED numerically as a drop-in** (HARNESS_gpuk …, 200 frames) … outputs vs the LabVIEW reference: par 0.00, gpuk 2.93e-6 (z only)"*, settled over three repeats at `:600-603` (INDEX row 16). What has **never** been done is the in-situ run — `:604-605`: *"**NOT YET RUN in the main VI:** that VI initialises the motor and the piezo, so the frame-delay run waits for the user."* That blocker is now lifted by the rig state, and it is the one genuinely new thing D1 does.
+
+## B5 `unread-evidence` — step 1b's three "unknowns" are all already measured, in a document STATUS lists as closed
+
+`cycle15-plan.md:53-56` calls for a headless read because *"`docs/main-vi-state.md` and `main-vi-startup.md` do not say"*. Those are the wrong two documents; `STATUS.md:58` lists `main-vi-subvi-identity` in the same closed-analysis set.
+
+| step 1b asks | already on disk |
+|---|---|
+| *"the camera-close / VISA-close nodes and which diagram owns them"* | `docs/main-vi-subvi-identity.md:105` — **diagram 83**: `ASI TG-1000.lvlib:Close.vi` #29815 · `IMAQdx Close Camera.vi` #2078 · `IMAQdx Stop Acquisition.vi` #1839 · `IMAQ Dispose` #2431 · `Simple Error Handler.vi` #3587, #560 (also `:36`, `:59`, `:64`) |
+| *"the call site of `save N xyz traces.vi` and what feeds it"* | `docs/main-vi-subvi-identity.md:68` and `:90` — **diagram 19, node #6384**; feeds at `docs/frame-loop-wire-graph.md:413` (#376 `error out` wire 541 → #6384 t8 `error in` wire 1899), `:275-276`; and `docs/main-vi-state.md:131` |
+| *"the stop Boolean's terminal"* | `docs/main-vi-panel-map.md:280` — `stop (end)`, control uid **7**, wire **6929**; `:329` — `stop (end) 2`, control uid **19587**, wire **15230** |
+
+Step 1c (`:57-58`) is correctly scoped. Steps 1a and 1b are not.
+
+---
+
+## Where I found NO prior art
+
+- **D1 as a hand-off** — no record of any artefact ever being handed to the user with gate values; `STATUS.md:63` says the count is zero. The delivery *framing* is novel and is not what any finding above disputes.
+- **F2's clean stop and restart on a copy of the original** — never attempted anywhere in `archive/` or `tools/bench/`. `frame-ownership-design.md:92-97` describes the Abort hazard; nothing has tested the original's own stop path.
+- **An in-situ frame-delay run of the main VI** — blocked since 2026-09-09 on the user's presence, unblocked only now by the rig state.
+
+---
+
+```
+PRIOR-ART: settled-already    (A1 — docs/decisions.md:19 "not a hot-path-only swap"; archive/2026-09-16-status-cycles-8-10-narrative.md:199-201)
+PRIOR-ART: settled-already    (A2 — archive/prose/2026-09-16-outcome-replan.md:87 option A = frame loop untouched + stop/save added; archive/peer/2026-09-16-outcome-review-20260916.md:187)
+PRIOR-ART: contradicted       (A3 — cycle15-plan.md:62 "no motors" vs main-vi-startup.md:24,:27,:33 and t0-instrumentation-plan.md:136-138)
+PRIOR-ART: contradicted       (A4 — cycle15-plan.md:40 "90 Hz" vs camera-acquisition-facts.md:621-622, INDEX.md:65, decisions.md:37)
+PRIOR-ART: contradicted       (A5 — cycle15-plan.md:39 fixture replay vs :26 live acquisition unchanged; STATUS.md:59-62)
+PRIOR-ART: contradicted       (A6 — cycle15-plan.md:42 SetCommand_signed vs decisions.md:29; STATUS.md OPEN 12 PAIR 4)
+PRIOR-ART: unread-evidence    (A7 — docs/pre-rig-master-plan.md:95 Phase 1.9, :88 Phase 1.2, :87 Phase 1.1 uncited)
+PRIOR-ART: already-measured   (B1 — INDEX.md:61, :62; decisions.md:38; pre-rig-master-plan.md:88)
+PRIOR-ART: contradicted       (B2 — rows 40/41 are replay VIs, STATUS.md:61-62, not swappable kernels)
+PRIOR-ART: unread-evidence    (B3 — SubVI.Replace 635E001 recommended at archive/STATUS-2026-09-14-full-before-condense.md:615, UNVERIFIED at docs/vi-server-ids.json:117, absent from tools/gscript.py)
+PRIOR-ART: already-measured   (B4 — archive/STATUS-2026-09-14-full-before-condense.md:595-603 drop-in verified, par 0.00 / gpu z 2.93e-6)
+PRIOR-ART: unread-evidence    (B5 — main-vi-subvi-identity.md:105, :68, :90; frame-loop-wire-graph.md:413; main-vi-panel-map.md:280, :329)
+```
+
+Note for whoever archives this: Write and Edit are disabled in this session, so nothing was written to `archive/peer/` — the review above is the full product and needs to be saved by the dispatching session.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-cycle15-d1.md
+BGRUN END rc=0 after 418s

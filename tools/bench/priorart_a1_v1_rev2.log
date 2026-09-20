@@ -1,0 +1,126 @@
+BGRUN START 2026-09-16 18:15:07 limit 16.0 min: py -u tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/a1_plan_rev2.md --slug priorart-a1-ownerchain-v1-rev2 --trigger new-op --model opus --effort high
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-a1-ownerchain-v1-rev2.txt (43897 chars)
+OUTCOME: ANSWERED (625s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-16-priorart-priorart-a1-ownerchain-v1-rev2.md
+COST: $5.8660  in 64 / out 44005 / cache-create 222049 / cache-read 5090128  (621s, 47 turn(s))
+--- ANSWER ---
+# PRIOR-ART REVIEW — `build_opownerchain_v1.py` (rev 2, not yet run)
+
+**Verdict: 6 findings. One of them (the junk-Invoke purge) is a protocol this project wrote down, applied in the only other recipe that calls `connect2`, and this rewrite silently dropped when it removed `net_map`. Two more are gates that do not measure what they claim. I confirm two of your three round-1 refutations and narrow the third.**
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 · SETTLED ALREADY — in the plan's favour, no slug
+
+`STATUS.md` → NEXT: *"🔶 **RE-RUN A1 as `build_opownerchain_v1.py`**, and expect the `ensure_loaded` fix to carry most of it"*, and B7 (delete `OpDelete_v1.vi`) is decided in the same paragraph. Nothing to re-open.
+
+Also released, because I checked and it is clean: deleting under Traverse class **`Node`** is established practice, not a guess — `tools/recipes/build_harness_copy.py:83`, `build_gpu_kernel.py:92`, `build_harness_gpu2.py:99`, `build_opclfnparams.py:101`, `tools/bench/astra_wiring_bench.py:38` all delete by `"Node"`. Round-1 finding (3) was disposed correctly.
+
+---
+
+### A4 · UNREAD EVIDENCE
+
+**(1) `connect2` drops a junk Invoke node on the target per run, the purge protocol is written in our spec, and this recipe calls it four times and never purges. `net_map` — the thing rev 2 removed — is what was silently paying this bill in v0.**
+
+> `docs/keystone-op-spec.md:565-573`, §33 — *"OpNetInfo_v1 / **OpConnect2_v0** keep the erdosmiller `Create Invoke Node.vi` … empty class/ID strings still make it drop an untyped Invoke node — 1,403 junk nodes on a scratch in one net_map … **Protocol: every use of these ops on a target is followed by `new_since(target,"Invoke")` → delete each junk Invoke → Remove Bad Wires** (fix_v3_starting_xy.py `purge_junk`)."*
+> `tools/recipes/fix_v3_starting_xy.py:5-6` — the same sentence, in the docstring of **the only other recipe in the tree that calls `connect2`**; `:17-26` is `purge_junk`; `:39-41` is `connect2`, `connect2`, **`purge_junk`**.
+> `tools/gscript.py:2308-2317` — junk Invokes "left it ExecState 0 … it explains … why every ladder probe and **three OpReportNodes builds ended broken** — they had called net_map on the target."
+> `tools/bench/build_opownerchain_v0.log:51-59` — v0's second pass purged **166** junk Invokes. That purge was `net_map`'s, and rev 2's change (5) deleted `net_map` from the recipe without moving the purge anywhere.
+
+`connect2` (`tools/gscript.py:2432`) now also calls `ensure_loaded`, i.e. the target's panel is open for every one of the four calls, which is the state `docs/toolkit-capabilities.md:54-56` says junk lands on (*"junk Invokes land only on an open target"*).
+
+**Predicted outcome as written:** four untyped Invoke nodes on `OpOwnerChain_v1`, gate **B3b**/`B5a` reading `ExecState 0`, and — if the single Remove Bad Wires happens to clear it — four junk nodes **saved into the op**. Release path: snapshot `uids(OP,"Invoke")` before R1 and run `purge_junk` after the connects (before the final Remove Bad Wires), or show in writing that `OpConnect2_v0`'s creator has since been removed.
+
+**(2) Gate B5 cannot tell "saved to disk" from "still in this LabVIEW's memory" — and that is the exact distinction the v0 post-mortem could not make, which is why `fresh()` was brought in.**
+
+> recipe: *"B5 ExecState == 1 before the single save; after `save` + `g.reset()` + reopen it is STILL 1."*
+> `tools/gscript.py:80-87`, `reset()` — *"Forget the Application AND every cached op-VI proxy."* It clears `_lv`, `_cache`, `_loaded`. **It does not restart LabVIEW.** The next `exec_state(OP)` re-acquires a reference to the same still-loaded (panel-open) VI in the same instance.
+> `archive/peer/2026-09-16-ownerchain-b2-b3-failed-prediction.md:178-184` — *"`tools/bench/diag_ownerchain_state.log` read the SAVED op and found the donor's topology entirely unchanged … The connects' in-memory effects (1208, 1444) were gone … `tools/bench/diag_save_persists.py` is separating the two worlds (**does ONE verified delete survive save + a fresh LabVIEW?**) before any rebuild."*
+> `tools/bench/diag_save_persists.py:41,71,103` — `from build_opconstvalue_v1 import fresh`, called around the save.
+> `tools/recipes/build_opconstvalue_v1.py:80-87`, `fresh()` — kills the LabVIEW process, sleeps 8 s, `g.reset()`, `com_preflight()`.
+
+The recipe already reads that file (`MAIN` is annotated *"verbatim from tools/recipes/build_opconstvalue_v1.py:42"`), so the helper was one line away. Release path: call `fresh()` between `save` and the re-read, or state in writing that B5 claims in-memory legality only — and then do not let B5 stand as the answer to "did the edits persist", which is still open from 2026-09-16.
+
+---
+
+### A3 · CONTRADICTED
+
+**(3) The line reference for the delete class does not say what it is cited for, and the wrong `gscript.py` pointer that round-1 finding (4) fixed is still live inside the code.**
+
+> recipe (twice — docstring and the `DELETE_NODES` comment): *"MEASURED in `tools/bench/diag_ownerchain_state.log:19-24` — all seven are enumerated under `Node`"*
+> `tools/bench/diag_ownerchain_state.log:19-24` — those six lines are uids **1044, 241, 163, 1221, 482, 990**. Four of them are not delete targets; three of them (241, 163, 482) are nodes the build must **keep**. The seven delete targets are at **`:13-19`** (145, 151, 157, 1319, 1326, 1329 at `:13-18`, 1044 at `:19`).
+>
+> recipe, B3a stop branch: `print("STOP: refusing to connect into a wired sink (gscript.py:2110 - LabVIEW re-routes and breaks it)")`
+> `tools/gscript.py:2108-2110` — `except RuntimeError as e:` / `if "modal dialog" not in str(e):` / `raise` — `move_object`'s handler, exactly as round-1 finding (4) said.
+
+The docstring fixed the pointer to `:2206-2207` (which I verified is correct) and then the executable line printed the wrong one anyway. That is the fifth appearance of this pointer in a build that claims to have retired it. Release path: change `:19-24` → `:13-19` and `:2110` → `:2206-2207`. No rework.
+
+---
+
+## PART B — THE ARTIFACT
+
+### B4 · ALREADY MEASURED
+
+**(4) "Which diagram does this node live on" is already measured for the whole main VI — for every node, not just the five structure classes the docstring's release sentence allows. And the motivating case's driving node is reachable today with two verified ops, one of which is the donor.**
+
+> recipe, release of finding (1): *"for the five catalogued structure classes, structure -> home diagram is already a lookup in `tools/bench/diagram_tree_main.json` … This op exists for what that file does NOT hold"*
+> `tools/bench/diagram_tree_main.py:67-68` — `nodes, _ = g.net_map(WORK, diagram_index=k, …)` / `uids = [uid for uid, _lbl, _t in nodes.values()]`. The per-diagram `uids` list is **net_map's full NODE list**, not a structure roster.
+> `tools/bench/diagram_tree_main.json:370-405` — diagram 43's list holds `5058` (SubVI), `10068` (**Function**), `10950` (Comparison), `1359`, `10407`, … The structures roster is a *separate* key (`:54-55` of the script).
+
+So node → home diagram is a lookup for every node the walk saw, and the recipe's own scope sentence understates its own prior art.
+
+For **OPEN 1** specifically, the hop the recipe says is unreached is one op short of reached:
+
+> `docs/toolkit-capabilities.md:24` — `tunnels(target, index)` returns the tunnel's **outer terminal (name / source? / wire)**, 132 tunnels censused.
+> `docs/toolkit-capabilities.md:48` — `OpWireSource_v5` = *"**which object drives a wire** — addressed by UID … per terminal: `Is Source?`, reciprocal wire, **owner class + owner `UID`**"*, verified *"row 43: wire 10850 → constant 10739 / sink Comparison 10950, 12/12"*.
+> `tools/bench/diag_reset_arm.log:14-17` — this pair was **already run on this exact question**: *"RESULT wire 10103: source ('LoopTunnel', 10114); sinks [('Function', 10068)]"*, and `:27-28` even returns `owner 'Diagram' uid 639`.
+
+**Scope, precisely — this does not kill the op.** I verified the recipe's negative claim myself: `10114` and `10177` appear **0 times** in `diagram_tree_main.json`, and the walk is capped at `max_nodes=120` per diagram (`diagram_tree_main.py:67`), so the JSON is not a general answer. But the measurement that would tell you whether A1 is needed for OPEN 1 at all — read the **outer** wire of 10114/10177 with `tunnels()`, hand it to `OpWireSource_v5`, look the driver's uid up in the JSON — costs two op runs and has never been run. Release path: run it, or say in writing why the answer would not change the decision.
+
+**(5) Gate B4b re-measures a comparison already recorded in the helper it calls, and does not measure the pair the review it answers actually named.**
+
+> recipe: *"(7) cross-op Traverse index transfer is MEASURED before it is used, not assumed (gate B4b)"* — B4b compares `report(OP, cls)` vs `report_all(OP, cls)`.
+> `tools/gscript.py:823-827`, `uids()` — *"report_all, not report: one op run instead of one per object (**rows verified IDENTICAL 2026-09-13**)."*
+> `tools/gscript.py:2095`, `move_object` — *"the `index`-th object of class `cls` (**Traverse order, same as `report()`**)"*, and `move_object` was *"built by script on 2026-09-06 **from OpDelete_v0**"* (`:2097`).
+> `archive/peer/2026-09-15-opwiresource-fail5-traverse-index-order-mismatch.md:28-30` — *"Do not assume indices from `OpReportAll_v0` select the same objects in `OpReport_v3`-derived operations … Do not assume a cached index remains stable across executions, reloads, **edits**, or sessions … If index selection remains anywhere, **retain the UID identity gate on every read**."*
+
+B4b runs **once, before nine edits**, and compares two reporters — never `OpDelete_v0`'s own Traverse, which is the third enumeration and the one that selects the victim. The thing that actually protects this build is the per-delete `gone == {uid}` diff, which is `:30`'s prescription. Release path: one sentence saying B4b re-confirms `gscript.py:824` on this target and these classes, and that the identity gate, not B4b, is the guard.
+
+### B3 · HELPER EXISTS
+
+**(6) The per-delete class-scoped before/after diff is `delete_object(..., verify=True)`, re-implemented.**
+
+> recipe: `g.delete_object(OP, cls, idx, verify=False)` then `gone = set(before) - set(cls_uids(cls))`, stop unless `gone == {uid}`.
+> `tools/gscript.py:2054,2085-2087` — `before = uids(target, cls) if verify else None` … `gone = before - uids(target, cls)` … `if len(gone) != 1: raise`. Same snapshot, same class scope, same op runs.
+> `tools/gscript.py:2045-2048` — *"⚠️ **verify=False MEANS THIS CALL CANNOT TELL YOU WHETHER IT DELETED ANYTHING** … Use verify=False only with a snapshot around the batch, and never as a way to make a failing delete quiet."*
+
+Round-1 finding (9) justified `verify=False` by `GObject`'s cross-class collateral; with the class now `Node`/`Wire` that reason is gone, and `verify=True` gives an identical check for free. Release path: one written sentence — *"we keep our own diff so the loop STOPS on the first mismatch instead of raising mid-batch"* — which is a real difference and costs nothing to say.
+
+---
+
+## Round-1 dispositions — audited against the files
+
+| # | your disposition | my check |
+|---|---|---|
+| 5 | **REFUTED** (the sweep between R1 and R2 exists) | **CORRECT.** `by = sweep()` runs immediately after R1, and R2's `by[u][0]` / `tindex(by, N_IDENT, "Owner")` come from it. The citation does not cover this build. |
+| 6b | **REFUTED** (wire 1081 must not be deleted) | **CORRECT, and the citation is exact.** `tools/bench/census_opwiresource_v5.log:197,200,206` — node 1044 `reference` 1081, node **307** `reference` **1081**, node **310** `reference` **1081**. Deleting 1081 would bare two required `reference` inputs, and `archive/peer/2026-09-15-opwiresource-fail3-branch-wire-is-one-object.md:24` (*"deleting the Wire GObject removes the complete net — including the healthy sink"*) makes that certain, not likely. |
+| 8 | **REFUTED** (no existing op reaches OPEN 1's object) | **SURVIVES NARROWLY.** `docs/toolkit-capabilities.md:49` does give `OpTunnelRead_v0` the *inner* frame diagram, so your reading is right, and no op gives a node's home diagram. But the clause *"the node DRIVING the outer terminal … which no existing op reaches"* is wrong about the **node**: `tunnels()` + `OpWireSource_v5` reach it, and `diag_reset_arm.log:14-17` already did. Filed as finding (4), not as a re-opening of (8). |
+| 1, 2, 3, 4, 6a, 7, 9 | accepted / implemented | Verified present in the file. (2) is implemented exactly as the `optunnelread` review prescribes; (3)'s class choice is well-supported prior art; (4)'s docstring fix is right but see finding (3) for where the old pointer survives. |
+
+Also verified clean, so nobody re-checks them: B0's expected topology (`census_opwiresource_v5.log:152,161,183,221` — 241.`reference` 318; 163/1221/482 `reference` 751), the `:57-59` and `nodes 11/12/10` citations, and every `gscript.py` line number in the docstring except the two named above.
+
+---
+
+```
+PRIOR-ART: unread-evidence
+PRIOR-ART: unread-evidence
+PRIOR-ART: contradicted
+PRIOR-ART: already-measured
+PRIOR-ART: already-measured
+PRIOR-ART: helper-exists
+```
+
+**Cheapest release path:** (1) is one `purge_junk` call and a snapshot — it is the one that will otherwise cost the run. (2) is `fresh()`, already imported elsewhere. (3) is two line numbers. (5) and (6) release in a sentence each. (4) releases either by one written argument or, better, by two op runs that may make the whole build unnecessary for OPEN 1 — that is the one worth spending ten minutes on before the 25-minute batch.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-a1-ownerchain-v1-rev2.md
+BGRUN END rc=0 after 626s

@@ -1,0 +1,48 @@
+BGRUN START 2026-09-13 21:12:25 limit 20.0 min: py -u -c 
+import os,sys,shutil,time
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+SRC=os.path.join(g.CLAUDEDEV,'OpReport_v3.vi')
+T=os.path.join(g.CLAUDEDEV,'PROBE_tunnel.vi')
+if os.path.exists(T): os.remove(T)
+shutil.copyfile(SRC,T); time.sleep(0.3)
+g.open_panel(T); time.sleep(0.8)
+def snap(tag):
+    print('   %-22s ForLoop=%d LoopTunnel=%d Diagram=%d Wire=%d ExecState=%s'%(
+        tag,g.count(T,'ForLoop'),g.count(T,'LoopTunnel'),g.count(T,'Diagram'),g.count(T,'Wire'),g.exec_state(T)),flush=True)
+snap('start')
+g.for_loop(T,(1400,900)); snap('after for_loop')
+# Traverse node (uid 124) has 'References'; try wiring it INTO a node that is inside the loop.
+# First: is there anything inside the loop to wire to? No. So test the other direction -
+# does wire() from an OUTSIDE node to an INSIDE position auto-create a tunnel?
+# With an empty loop there is no sink, so instead test the documented route: drop a subVI INSIDE the loop.
+fl=[o for o in g.report(T,'ForLoop')]
+print('   ForLoop uid/pos:',[(o['uid'],o['pos']) for o in fl],flush=True)
+dias=g.report(T,'Diagram')
+print('   diagrams:',[(i,d.get('owner')) for i,d in enumerate(dias)],flush=True)
+# the loop body is the diagram whose owner is the ForLoop
+body=[i for i,d in enumerate(dias) if 'For' in str(d.get('owner'))]
+print('   loop body diagram index:',body,flush=True)
+if body:
+    try:
+        g.drop_subvi(T, os.path.join(g.CLAUDEDEV,'OpWire_v1.vi'), body[0], (1450,950))
+        snap('after drop INSIDE loop')
+        print('   => a node CAN be placed directly inside a loop body by diagram index',flush=True)
+    except Exception as e:
+        print('   drop_subvi into loop FAILED:',str(e)[:130],flush=True)
+try: g.close_panel(T)
+except Exception: pass
+time.sleep(0.3)
+try: os.remove(T); print('scratch deleted',flush=True)
+except OSError: pass
+
+   start                  ForLoop=0 LoopTunnel=0 Diagram=1 Wire=17 ExecState=1
+   after for_loop         ForLoop=1 LoopTunnel=0 Diagram=2 Wire=17 ExecState=0
+   ForLoop uid/pos: [(324, (1400, 900))]
+   diagrams: [(0, ''), (1, 'ForLoop')]
+   loop body diagram index: [1]
+   after drop INSIDE loop ForLoop=1 LoopTunnel=0 Diagram=2 Wire=17 ExecState=0
+   => a node CAN be placed directly inside a loop body by diagram index
+scratch deleted
+BGRUN END rc=0 after 2s

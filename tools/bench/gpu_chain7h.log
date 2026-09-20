@@ -1,0 +1,30 @@
+BGRUN START 2026-09-08 10:50:14 limit 80.0 min: py -u tools/bench/gpu_chain7.py
+LabVIEW up after 14 s, version 26.3.1f1
+dialogs: 8,1346,762| / ENABLED|5047962|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+lv_restart rc 0
+baseline SubVIs [(384, (1050, 640)), (105, (900, 640)), (124, (495, 281))] Property [(109, (706, 380))] Wires 10 ExecState 1
+
+== 1 delete the creator SubVI
+   predict: ExecState 0
+   observed: ({105}, 0)
+
+== 2 remove its dangling wires
+   predict: 6 wires
+   observed: ((6, 1), 6)
+
+== 3 drop Create Build Array.vi
+   predict: +1 SubVI
+   observed: (0.0947580337524414, 3)
+
+== 4 PN.Diagram -> creator Diagram in
+   predict: Wire +1
+   observed: 7
+
+== 5 control location -> location (0, 0)
+   predict: Wire +1
+   observed: 8
+   creator t5: control 'Inputs' wires 8->9
+   creator t6: control 'appended array' wires 9->9
+STOP: unexpected terminal
+build OpBuildBA rc 5
+BGRUN END rc=1 after 75s

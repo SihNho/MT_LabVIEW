@@ -1,0 +1,22 @@
+BGRUN START 2026-09-15 17:55:49 limit 15.0 min: py -u tools/recipes/probe_relocate_route.py
+scratch = C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_relocate_0a.vi
+  census start: {'WhileLoop': 0, 'SubVI': 6, 'Wire': 13, 'LoopTunnel': 2, 'Diagram': 2, 'ExecState': 1}
+  PASS  G1 scratch opens and reports a census  2
+  census after while_loop: {'WhileLoop': 1, 'SubVI': 6, 'Wire': 13, 'LoopTunnel': 2, 'Diagram': 3, 'ExecState': 0}
+  PASS  G2 a new While loop exists  0 -> 1, uid 0.1486186981201172
+  PASS  G2b a new Diagram appeared  2 -> 3
+  census after drop_subvi: {'WhileLoop': 1, 'SubVI': 7, 'Wire': 13, 'LoopTunnel': 2, 'Diagram': 3, 'ExecState': 0}
+  PASS  G3 the subVI was dropped  6 -> 7 on diagram index 2
+  wire() raised: wire ->String: error 1057: To More Specific Class in OpWire_v1.vi
+  census after wire: {'WhileLoop': 1, 'SubVI': 7, 'Wire': 13, 'LoopTunnel': 2, 'Diagram': 3, 'ExecState': 0}
+  **FAIL**  G4 a loop tunnel was created by wiring across the border  2 -> 2 (wire() ok=False)
+  census after delete: {'WhileLoop': 1, 'SubVI': 6, 'Wire': 13, 'LoopTunnel': 2, 'Diagram': 3, 'ExecState': 0}
+  PASS  G5 an existing subVI was deleted  7 -> 6 (call ok=True)
+  census final: {'WhileLoop': 1, 'SubVI': 6, 'Wire': 13, 'LoopTunnel': 2, 'Diagram': 3, 'ExecState': 0}
+  **FAIL**  G6 the VI is not broken after cleanup  0
+
+elapsed 1.2s
+scratch deleted
+
+=== 0a RESULT: 5 pass, 2 fail -> G4 a loop tunnel was created by wiring across the border, G6 the VI is not broken after cleanup ===
+BGRUN END rc=1 after 1s

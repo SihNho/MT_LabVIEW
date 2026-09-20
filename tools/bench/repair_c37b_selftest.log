@@ -1,0 +1,52 @@
+BGRUN START 2026-09-19 00:50:23 limit 6.0 min: py -u tools/bench/repair_c37_stall_selftest.py
+=== repair_c37_stall_selftest: lv_stallcheck.ps1 leaf-command-line freshness clause ===
+  launched C37FRESHMARK leaf under bgrun log tools\bench\stall_selftest_c37_c37freshmark.log
+  launched C37STALEMARK leaf under bgrun log tools\bench\stall_selftest_c37_c37stalemark.log
+  launched C37NOLOGMARK leaf under bgrun log tools\bench\stall_selftest_c37_c37nologmark.log
+  launched C37WAITMARK wait_logs.py leaf under bgrun log tools\bench\stall_selftest_c37_c37waitmark.log
+  processes carrying C37FRESHMARK: ['9464', '23588', '16728']
+    children of 9464: ['23588 py.exe']
+    children of 23588: ['8084 conhost.exe', '16728 python.exe']
+    children of 16728: []
+  processes carrying C37STALEMARK: ['1532', '13664', '22128']
+    children of 1532: ['13664 py.exe']
+    children of 13664: ['5632 conhost.exe', '22128 python.exe']
+    children of 22128: []
+  processes carrying C37NOLOGMARK: ['8284', '25420', '18676']
+    children of 8284: ['25420 py.exe']
+    children of 25420: ['23016 conhost.exe', '18676 python.exe']
+    children of 18676: []
+  processes carrying C37WAITMARK: ['2080', '13488', '26372']
+    children of 2080: ['13488 py.exe']
+    children of 13488: ['26032 conhost.exe', '26372 python.exe']
+    children of 26372: []
+  watchdog run1 stdout 0 chars, run2 stdout 655 chars
+    [explain] C37WAITMARK EXPLAIN pid 13488: skip - tools/wait_logs.py waiter (holds no LabVIEW client)
+    [explain] C37STALEMARK EXPLAIN pid 13664: skip - wrapper (has a live child)
+    [explain] C37FRESHMARK EXPLAIN pid 23588: skip - wrapper (has a live child)
+    [explain] C37NOLOGMARK EXPLAIN pid 25420: skip - wrapper (has a live child)
+    [explain] C37STALEMARK EXPLAIN pid 1532: skip - wrapper (has a live child)
+    [explain] C37WAITMARK EXPLAIN pid 2080: skip - tools/wait_logs.py waiter (holds no LabVIEW client)
+    [explain] C37NOLOGMARK EXPLAIN pid 8284: skip - wrapper (has a live child)
+    [explain] C37FRESHMARK EXPLAIN pid 9464: skip - wrapper (has a live child)
+    [explain] C37FRESHMARK EXPLAIN pid 16728: skip - a log on its own command line is fresh: C:\Users\KimLab\AppData\Local\Temp\c37stall_td6b_w6m\watched_fresh.log written 0s ago
+    [explain] C37NOLOGMARK EXPLAIN pid 18676: skip - CPU +0.00s over 1s (needs dt >= 2s and dcpu <= 0.05)
+    [explain] C37STALEMARK EXPLAIN pid 22128: skip - CPU +0.00s over 1s (needs dt >= 2s and dcpu <= 0.05)
+    [explain] C37WAITMARK EXPLAIN pid 26372: skip - tools/wait_logs.py waiter (holds no LabVIEW client)
+  --- stall record written by the test ---
+    | STALL: 2026-09-19 00:50:41 pid 18676 alive 17s, job log tools\bench\stall_selftest_c37_c37nologmark.log last written 17s, CPU +0.00s in the last 4s; pid 22128 alive 17s, job log tools\bench\stall_self
+    | dialog: no modal dialog - LabVIEW busy or two clients contending
+    | cmd pid 18676 (started 20260919005023): C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe -c "import time;time.sleep(60)  # C37NOLOGMARK"
+    | cmd pid 22128 (started 20260919005023): C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe -c "import time;time.sleep(60)  # C37STALEMARK C:\Users\KimLab\AppData\Local\Temp\c37stall_td
+  PASS G1 leaf whose own command line names a FRESH log is NOT flagged  | marker C37FRESHMARK absent from record and message
+  PASS G2 leaf whose own command line names a STALE log IS still flagged  | marker C37STALEMARK present
+  PASS G3 leaf with NO log on its command line IS still flagged (real-client coverage)  | marker C37NOLOGMARK present
+  PASS G4 the G1 skip is attributed to the NEW clause  | EXPLAIN pid 23588: skip - wrapper (has a live child); EXPLAIN pid 9464: skip - wrapper (has a live child); EXPLAIN pid 16728: skip - a log on its own command line is fresh: C:\Users\KimLab\AppData\Loc
+  PASS G5 a tools/wait_logs.py leaf with every log on its command line STALE is NOT flagged  | marker C37WAITMARK absent from record and message (G2 is the counterfactual: same shape, fires)
+  PASS G6 the G5 skip is attributed to the wait_logs clause  | EXPLAIN pid 13488: skip - tools/wait_logs.py waiter (holds no LabVIEW client); EXPLAIN pid 2080: skip - tools/wait_logs.py waiter (holds no LabVIEW client); EXPLAIN pid 26372: skip - tools/wait_logs.p
+  C37FRESHMARK job log last line: BGRUN START 2026-09-19 00:50:23 limit 3.0 min: py -c import time;time.sleep(60)  # C37FRESHMARK C:\Users\KimLab\AppData\Local\Temp\c37stall_td6b_w6m\w
+  C37STALEMARK job log last line: BGRUN START 2026-09-19 00:50:23 limit 3.0 min: py -c import time;time.sleep(60)  # C37STALEMARK C:\Users\KimLab\AppData\Local\Temp\c37stall_td6b_w6m\w
+  C37NOLOGMARK job log last line: BGRUN START 2026-09-19 00:50:23 limit 3.0 min: py -c import time;time.sleep(60)  # C37NOLOGMARK
+  C37WAITMARK job log last line: BGRUN START 2026-09-19 00:50:23 limit 3.0 min: py -u tools\wait_logs.py --seconds 60 C:\Users\KimLab\AppData\Local\Temp\c37stall_td6b_w6m\watched_C37W
+=== repair_c37_stall_selftest: 6 pass, 0 fail ===
+BGRUN END rc=0 after 20s

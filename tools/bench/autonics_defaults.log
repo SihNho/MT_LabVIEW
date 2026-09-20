@@ -1,0 +1,23 @@
+BGRUN START 2026-09-14 00:58:35 limit 6.0 min: py -c 
+import sys; sys.path.insert(0,'tools')
+import gscript as g
+g._lv=None
+P=r'C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Autonics Motor\SetCommand.vi'
+print('READ ONLY - saved DEFAULT values of the driver VI (never saved back).')
+ref=g.lv().GetVIReference(P,'',False,0)
+for lab in ['Baseline Startpoint','Numeric','Ring','Pos_degree','read buffer','read buffer 2','VISA resource name']:
+    try:
+        v=ref.GetControlValue(lab)
+        print(f'   {lab!r:26} = {v!r}')
+    except Exception as e:
+        print(f'   {lab!r:26} <unreadable: {str(e)[:70]}>')
+
+READ ONLY - saved DEFAULT values of the driver VI (never saved back).
+   'Baseline Startpoint'      = 200.0
+   'Numeric'                  = 0.0
+   'Ring'                     = 0
+   'Pos_degree'               = 0.0
+   'read buffer'              = ''
+   'read buffer 2'            = ''
+   'VISA resource name'       = ('', 0)
+BGRUN END rc=0 after 0s

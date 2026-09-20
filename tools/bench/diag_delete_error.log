@@ -1,0 +1,24 @@
+BGRUN START 2026-09-16 15:29:57 limit 12.0 min: py -u tools/bench/diag_delete_error.py
+   fresh(): killing LabVIEW pid None
+   COM preflight attempt 1/15: pid None->15248, wires 16->16
+   COM preflight OK (pid 15248, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 15248
+copied donor -> ScratchDeleteError_v0.vi
+
+=== P3 is the target editable, measured in THIS instance ===
+  ExecState = 1  (1 = idle/editable)
+  uid 1319 present=True, traverse index=3, Property count=12
+
+=== P1 what does OpDelete_v0 actually expose? ===
+  error-shaped terminals present: ['error out']
+
+=== P2 run one delete and read those terminals ===
+  Run: returned
+  'error out'            -> status FALSE (clean)   raw=(False, 0, '')
+
+  objects that disappeared: NONE   uid 1319 still present=True
+
+=== VERDICT: error out is CLEAN and nothing was deleted - the reviewer's own falsifier; object locking, wrong method, or a LabVIEW defect ===
+  scratch removed: ScratchDeleteError_v0.vi
+wrote G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_delete_error.json
+BGRUN END rc=0 after 29s

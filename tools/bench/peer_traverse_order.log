@@ -1,0 +1,70 @@
+BGRUN START 2026-09-15 11:48:52 limit 6.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & .\tools\peer.ps1 -Agent codex -Slug opwiresource-fail5-traverse-index-order-mismatch -Task 'ATTACK THIS (LabVIEW 2026 VI Scripting over COM). tools/recipes/build_opwiresource_v0.py --test-only (log tools/bench/build_opwiresource_v0.log, run 5): the cross-check gate you helped design caught a real defect. I took the wire list with gscript.uids(MAIN,"Wire") - which is backed by the fleet reporter OpReportAll_v0 (arrays out, ONE op run; 1902 wires in 3.3 s) - found uid 10850 at index 742, set the op index to 742, and the op (OpWireSource_v0, a different op VI derived from OpReport_v3 via OpConstValue_v1, with its own Traverse) reported that it had traversed uid 3512, not 10850. Its owner class came back LoopTunnel. Identity gate therefore FAILED and nothing was concluded. Context: the earlier 180-object constant scan used gscript.report() (the per-object OpReport_v3 reporter) for the list and the SAME op family for the reads, and its per-read identity check passed 180/180 - so within OpReport_v3-derived ops the index order is self-consistent. MY DIAGNOSIS: index order is per-op, not global - the arrays op (report_all) and the per-object op (report) each run their own Traverse, and our own gscript docstring already warns that Traverse order is unspecified and must never be used as a selector; I violated that by mixing two enumerations. Options: (A) build the index list with gscript.report() (same op family as the read) - but that is one op run per object, about 1900 runs, the very thing that timed out at 20 minutes; (B) let the op build its own index->uid map (one run per index, same cost); (C) follow your earlier recommendation and remove indexing entirely with vi.lib\VIServer\UID to GObject Reference.vi (confirmed present on this machine, 8 KB) - drop it into a new op, feed VI reference + a UID control, cast the result to Wire, and keep the existing Terms[] -> source terminal -> Owner -> ClassName chain. Questions (cite what you read): (1) is the per-op Traverse order explanation right, and is Traverse order at least STABLE within one VI/session so that a cached index->uid map from the same op would remain valid, or must every read verify identity (as mine does)? (2) for (C): what are the connector-pane terminal names of UID to GObject Reference.vi, and does it need the VI reference or a Block Diagram reference? does it error or return a null refnum for a UID that does not exist, and does it search nested structure diagrams (my four wires live inside a case-structure diagram)? (3) any reason a Wire uid taken from ONE op (report_all) would not be recognised by that lookup VI in another op - i.e. are GObject UIDs global per VI and stable across op boundaries and sessions? (4) the LoopTunnel answer for whatever uid 3512 is: does it suggest the Terms[] element 0 convention (source first) is unreliable for tunnels, and should the walk instead pick the terminal whose Is Source? is TRUE? give the property ID and short name for Terminal Is Source?. Read-only; cite.'
+OUTCOME: ANSWERED (95s)  archived: archive\peer\2026-09-15-opwiresource-fail5-traverse-index-order-mismatch.md
+--- ANSWER ---
+Your diagnosis is strongly supported, but ?�per-op Traverse order??is slightly too specific: the failure proves only that the two independently produced arrays are not positionally compatible. Different traversal implementations, callbacks, filters, diagram roots, or object-loading states could all cause that?�not necessarily nondeterminism in Traverse itself.
+
+1. Traverse ordering
+
+There is no documented ordering contract for `Traverse for GObjects.vi`. Community reverse-engineering describes a complicated depth-first order influenced by creation order and container hierarchy, which is evidence of implementation behavior?�not an API guarantee. Therefore:
+
+- Do not assume indices from `OpReportAll_v0` select the same objects in `OpReport_v3`-derived operations.
+- Do not assume a cached index remains stable across executions, reloads, edits, or sessions.
+- If index selection remains anywhere, retain the UID identity gate on every read.
+
+Your 180/180 result demonstrates repeatability for that particular op family and run; it does not establish a supported stability guarantee. [NI Community discussion of Traverse ordering](https://forums.ni.com/t5/LabVIEW/String-reference/td-p/4430179)
+
+Option A would probably repair the immediate family mismatch, but it remains dependent on undocumented ordering. C is architecturally better because it uses the actual identifier as the selector.
+
+2. `UID to GObject Reference.vi`
+
+The sources support these terminals semantically:
+
+- input: target **VI reference**
+- input: **UID** (`I32`)
+- output: **GObject reference**
+- error in/error out are also present in versions discussed by LAVA.
+
+It takes a VI reference, not a Block Diagram reference. An NI engineer describes the intended construction as a static reference to the target VI followed by lookup of the object?�s fixed UID. [NI employee explanation](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Create-reference-in-a-new-vi-if-scripting-is-enabled/idc-p/4035635)
+
+I could not find an authoritative text source that exposes the exact LabVIEW-2026 connector-label capitalization. Likely labels are `VI Ref`, `UID`, `GObject Ref`, `error in`, and `error out`, but treat those first three spellings as unverified until the manager obtains Context Help or reporter output from the installed VI.
+
+Most importantly, do **not** design on the assumption that an absent UID cleanly returns an error or null reference. A reported failure mode is an occasional LabVIEW crash when the lookup receives a nonexistent/unverified UID. The VI also returns a duplicate reference that should be explicitly closed, and it works only in the development environment?�not the Runtime Engine. [LAVA investigation](https://lavag.org/topic/21759-does-anyone-know-how-to-convert-a-vi-server-refnum-to-the-underlying-pointer/?comment=133516&do=findComment), [NI Community invalid-UID warning](https://forums.ni.com/t5/LabVIEW/Unique-ID-for-all-front-panel-object/td-p/4151242/page/3)
+
+The lookup is reported to find subobjects such as array scrollbars and individual control decorations, strongly suggesting it consults the VI-wide object registry rather than traversing only the top diagram. That supports nested case-diagram wires, but I found no explicit NI statement naming nested structure diagrams. A cheap safe verification is to submit one already-confirmed nested-wire UID?�not a fabricated negative UID?�and verify returned UID, class `Wire`, and diagram ownership. [NI Community subobject report](https://forums.ni.com/t5/LabVIEW/Unique-ID-for-all-front-panel-object/td-p/4151242/page/3)
+
+3. UID scope and stability
+
+There is no op-boundary problem provided both ops hold references to the same target VI instance. NI documents that a GObject UID:
+
+- is unique within its VI;
+- remains associated with the same object after saving;
+- should be checked alongside class or label because a deleted object?�s UID may later be reused.
+
+Thus a Wire UID obtained by `report_all` should resolve from another op against the same VI, including after ordinary save/reload. It is not globally unique across different VIs. Packaging or transformations can also complicate identity?�for example, a community report says building typedefs into a packed project library appeared to reassign their UIDs. [NI UID documentation](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/uid.html), [PPL caveat](https://forums.ni.com/t5/LabVIEW/Unique-ID-for-all-front-panel-object/td-p/4151242/page/3)
+
+Keep the returned-object checks:
+
+1. returned reference valid;
+2. returned UID equals requested UID;
+3. class is `Wire`;
+4. optionally confirm owning VI identity.
+
+That also protects against accidentally passing the op VI reference instead of `MAIN`.
+
+4. `Terms[0]` and `LoopTunnel`
+
+No: `LoopTunnel` does not itself discredit the element-zero convention. The documented scripting description says the first `Wire.Terminals[]` reference is the source when a source exists; remaining terminals have no defined order. For a broken wire with multiple sources, extra sources need not be grouped at the beginning. [Wire `Terminals[]` property](https://labviewwiki.org/wiki/Wire_class/Terminals%28%29_property)
+
+A tunnel can legitimately be the source terminal for the wire segment on one side of a structure, so owner class `LoopTunnel` is not anomalous. NI also documents that an ordinary wire has one source and potentially many sinks. [NI wire semantics](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+Nevertheless, checking `Is Source?` is a worthwhile defensive measure, particularly for broken or unusual wires:
+
+- Property ID: `634A003`
+- Short name/data name: `IsSource`
+- Long name: `Is Source?`
+- Type: Boolean, read-only
+
+[Terminal `Is Source?` property](https://labviewwiki.org/wiki/Terminal_class/Is_Source%3F_property)
+
+Recommended result: implement C, pass the target **VI reference**, avoid deliberately testing nonexistent UIDs because of the reported crash hazard, close the returned duplicate reference, and retain UID-plus-class verification. For valid, unbroken wires, `Terms[0]` is supported; scanning for `IsSource == TRUE` adds useful corruption/broken-wire detection but should not change the normal answer.
+BGRUN END rc=0 after 95s

@@ -1,0 +1,121 @@
+﻿---
+type: peer-review
+status: historical
+date: 2026-09-14
+tags: [peer-review, plan]
+---
+
+# autonomous-loop-plan
+
+- **agent:** codex
+- **date:** 2026-09-14
+- **outcome:** ANSWERED (91s)
+- **why asked:** the user's all-day autonomous loop: plan review of the day's targets.
+- **verdict:** ACTED ON. Node.Label rejected as identity (correct: identity came from AbstractDiagram.SubVIs[] -> SubVI.VI Name, docs/main-vi-subvi-identity.md); the panel-wiring and global-direction ladders were built as OpPanelWiring_v0 / OpNodeTerms_v0; every document gap named in the plan was closed by measurement the same day (STATUS 2026-09-14).
+
+## Question
+
+ATTACK this plan for an unattended day of LabVIEW 2026 VI Scripting work. I will build ONLY what survives your attack. PROBLEM: our scripted property nodes are built by erdosmiller Create Property Node from a class string; a class-specific property node (SubVI, Global, ClassSpecifierConstant, Terminal...) fed a GObject-typed reference from 'Traverse for GObjects.vi' goes to ExecState 0 - measured. A cast via To More Specific Class needs a class-specifier constant of the right class, and setting one needs a ClassSpecifierConstant-class property node, which needs a cast: circular. Private 'Allow Private' setters could not be verified either way (reader failed). GUI is forbidden today. THE PLAN, three ladders that I claim need NO cast because the enumerating property already returns the right static type: (1) Traverse('Diagram') -> Index Array -> To More Specific Class(Diagram) [this cast EXISTS in a working donor op] -> AbstractDiagram.Nodes[] 6375809 -> Index Array -> Node.Label 6359001 -> Text.Text 632D800 READ. Claim: Nodes[] returns NODE-typed refs, so a Node-class property node accepts them; and Node.Label on a subVI call returns the callee VI name (measured once on a top-level diagram: ('Unknown', 'Traverse for GObjects.vi')). One node per op call, no For Loop, ~635 calls total. (2) VI.Front Panel 23D -> Panel.Controls[] 6348801 -> Index Array -> Control.Terminal (property, ID unknown to me) -> Terminal.Connected Wire 634A000 -> gives whether each front-panel object is wired. (3) for VI-Global access nodes: Nodes[] -> Node.Terminals[] 6359000 -> Index Array -> Terminal properties to decide READ vs WRITE - which Terminal property carries direction (Terminal.Direction? Is Input? 'Is Output?')? QUESTIONS: (a) does Control.Terminal exist on the Control class in VI Scripting, with what ID and return type, and does it return a Terminal-typed reference usable by a Terminal-class property node without a cast? (b) confirm AbstractDiagram.Nodes[] returns Node-typed (not GObject-typed) references, and that Node.Label on a SubVI node returns the VI name rather than an empty user label - or is the name only there because the node's label DEFAULTS to the VI name and can be empty if someone cleared it? (c) which Terminal-class property distinguishes an input terminal from an output terminal, by ID? (d) a Global node's field: is it the terminal NAME, or a Global-class property (which would need the cast)? (e) anything in ladder (1) that will break on a 473 KB VI with 170 diagrams that did not break on small VIs - reference count, stale refs across 635 calls, Traverse re-run cost? Cite labviewwiki class pages with property IDs.
+
+## Answer
+
+Verdict: ladder 2 probably survives; ladder 1?셲 type path survives but its naming strategy does not; ladder 3 can infer read/write but cannot reliably identify the global field without a Global-class property. I would not approve the unattended 635-call run as written.
+
+(a) Control.Terminal
+
+`Control.Terminal` exists:
+
+- Property ID: `6332006`
+- Read-only, VI Scripting scope
+- Returns the block-diagram terminal belonging to the control
+- It loads both the front panel and block diagram into memory. [LabVIEW Wiki: Control.Terminal](https://labviewwiki.org/wiki/Control_class/Terminal_property)
+
+The Wiki reports its datatype as `LVClassBDConst Refnum`, not explicitly `Terminal Refnum`. Curiously, it reports the same datatype for `Node.Terminals[]`, even though that property is documented as returning terminal references. [LabVIEW Wiki: Node.Terminals[]](https://labviewwiki.org/wiki/Node_class/Terminals%28%29_property)
+
+Therefore I would call direct compatibility with a Terminal-class property node highly likely, but not proven from the metadata. Before building ladder 2, make one tiny donor:
+
+`Control.Terminal 6332006 ??Terminal.Is Source? 634A003`
+
+If that compiles and runs, `Connected Wire 634A000` uses exactly the same reference-input class and the ladder survives. Do not extrapolate merely from the English description.
+
+Also handle controls with no diagram terminal: the Control-class documentation explicitly notes that some controls/indicators do not have terminals. [LabVIEW Wiki: Control class](https://labviewwiki.org/wiki/Control_class)
+
+(b) Nodes[] and Node.Label
+
+`AbstractDiagram.Nodes[]`, ID `6375809`, is explicitly described as returning nodes, whereas `All Objects[]`, ID `6375804`, explicitly returns `GObject` references. That strongly supports your claim that `Nodes[]` is statically Node-typed. [LabVIEW Wiki: AbstractDiagram class](https://labviewwiki.org/wiki/AbstractDiagram_class), [LabVIEW Wiki: All Objects[] datatype](https://labviewwiki.org/wiki/AbstractDiagram_class/All_Objects%28%29_property)
+
+But `Node.Label ??Text.Text` is not a sound way to obtain callee names. The fatal qualification is in the Node documentation:
+
+> You must display the label at least once before this property can return the text.
+
+That applies to property `6359001`. Thus a hidden or never-materialized label may give no usable result. [LabVIEW Wiki: Node.Label](https://labviewwiki.org/wiki/Node_class)
+
+Moreover, `Node.Label` returns the node?셲 label object, not its semantic identity. The actual semantic property is `SubVI.VI Name`, ID `635E401`; `SubVI.VI Path` is `635E403`, and missing subVIs have separate missing-name/path properties. [LabVIEW Wiki: SubVI class](https://labviewwiki.org/wiki/SubVI_class)
+
+The fact that you once observed `Traverse for GObjects.vi` demonstrates a common current label value, not an invariant. A user-visible label can be hidden, altered, or absent, and the ?쐂isplay once??precondition alone defeats unattended completeness.
+
+Attack result: ladder 1 is acceptable for enumerating Node references and generic Node properties, but rejected for authoritative callee identification.
+
+A potentially better no-cast route is `AbstractDiagram.SubVIs[]` (`6375802`), documented as returning top-level SubVI references, followed by `SubVI.VI Name 635E401`. You must first prove its output is statically SubVI-typed with one donor compile/run. [LabVIEW Wiki: AbstractDiagram class](https://labviewwiki.org/wiki/AbstractDiagram_class)
+
+(c) Terminal direction
+
+Use:
+
+- `Terminal.Is Source?`
+- Property ID `634A003`
+- Boolean: true for source, false for sink. [LabVIEW Wiki: Terminal.Is Source?](https://labviewwiki.org/wiki/Terminal_class/Is_Source%3F_property)
+
+There is no need to search for `Direction`, `Is Input?`, or `Is Output?`.
+
+Be precise about interpretation: source/sink is diagram dataflow direction, not necessarily connector-pane ?쐇nput/output??terminology. For an ordinary global access node:
+
+- read global: value terminal emits data ??source
+- write global: value terminal consumes data ??sink
+
+That mapping is a dataflow inference. Validate it once against one known read and one known write before relying on it unattended.
+
+(d) Global field identity
+
+Do not assume `Terminal.Name 634A004` is the global field name. It returns the terminal?셲 non-translatable identifier, but the documentation does not promise that this identifier equals the selected global control. [LabVIEW Wiki: Terminal.Name](https://labviewwiki.org/wiki/Terminal_class/Name_property)
+
+The authoritative Global properties are:
+
+- `6354800` ??`VI Name`
+- `6354801` ??`Write?`
+- `6354802` ??`Control Name`
+- `6354803` ??`Label` [LabVIEW Wiki: Global class](https://labviewwiki.org/wiki/Global_class)
+
+Therefore ladder 3 can use `Terminal.Is Source?` to infer read/write, but it does not solve ?쐗hich global VI and field???Those require `Global.VI Name` and `Global.Control Name`, hence the cast/class-node problem remains.
+
+Reject ladder 3 if field identity is required.
+
+(e) Large-VI hazards
+
+The 473 KB size is not itself the main danger. The dangerous parts are:
+
+- `Nodes[]` returns nodes for the referenced diagram. You must enumerate every nested diagram separately; one top-level `Nodes[]` is not recursive. The Wiki repeatedly describes the diagram collection properties in terms of top-level contents. [LabVIEW Wiki: AbstractDiagram class](https://labviewwiki.org/wiki/AbstractDiagram_class)
+- Re-running Traverse for every node makes the work approximately `635 횞 whole-VI traversal`, not 635 cheap indexed reads. On 170 diagrams this is needless quadratic-style repetition.
+- Every Traverse/Nodes/Label call may return new reference allocations. NI says repeated property-node calls provide no guarantee that the same reference allocation is reused and recommends closing returned references. [NI: Closing References in LabVIEW](https://www.ni.com/en/support/documentation/supplemental/13/closing-references-in-labview.html)
+- NI also warns that child references can become invalid if their parent VI reference is closed first. Preserve strict lifetime ordering. [NI: Closing References in LabVIEW](https://www.ni.com/en/support/documentation/supplemental/13/closing-references-in-labview.html)
+- Stale references should not arise merely from reading an unchanged VI, but edits, deletion, recompilation, or prematurely closing the owning VI can invalidate them. The Generic-class documentation explicitly notes that owning-VI-derived references can become invalid when the VI leaves memory. [LabVIEW Wiki: Generic class](https://labviewwiki.org/wiki/Generic_class)
+
+Minimum safe redesign:
+
+1. Traverse diagrams once.
+2. For each diagram, obtain `Nodes[]` once.
+3. Extract all required generic Node/Terminal data in that same invocation.
+4. Close child references before the owning VI reference.
+5. Treat `Node.Label` only as optional display text, never identity.
+6. Do not claim global-field identification until `Global.Control Name 6354802` becomes reachable.
+7. Run one compile/run probe for each claimed static-type edge before generating the large operation.
+
+So: approve the static-type hypothesis provisionally for `Nodes[] ??Node` and `Control.Terminal/Node.Terminals[] ??Terminal`; reject the label-name claim, reject global-field discovery, and reject the 635 complete traversals.
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+See the **verdict** line at the top of this file (filled 2026-09-14 14:2x; the day's outcomes are in STATUS.md and docs/).

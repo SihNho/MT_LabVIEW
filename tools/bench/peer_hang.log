@@ -1,0 +1,63 @@
+BGRUN START 2026-09-07 04:07:28 limit 12.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & .\tools\peer.ps1 -Agent codex -Slug com-run-hang-opbuildpn-copy -Task (Get-Content -Raw tools/bench/peer_task_hang.txt)
+OUTCOME: ANSWERED (56s)  archived: archive\peer\2026-09-07-com-run-hang-opbuildpn-copy.md
+--- ANSWER ---
+## Verdicts
+
+1. **The evidence does not specifically implicate copying or library-path resolution.** It implicates executing `OpReport_v3.vi` synchronously while that VI performs a UI-thread-sensitive scripting operation.
+
+`Run(True)` is expected to block until the reporter finishes. Moreover, NI documents that the Run VI method must wait for the UI to be idle, and NI warns that a VI launched through Run VI may execute in the UI execution system unless configured otherwise. Thus a responsive top-level LabVIEW window does **not** prove that the scripting request or the reporter?�s execution context is making progress. ([LabVIEW Wiki: Run VI](https://www.labviewwiki.org/wiki/VI_class/Run_VI_method), [NI: Run VI versus Call by Reference](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019MqkSAE&l=en-US))
+
+Check these known execution waits first:
+
+- `OpReport_v3.vi` or `Traverse for GObjects.vi` is non-reentrant and already reserved/running. Run VI cannot run a VI reserved by another caller, while non-reentrant calls wait for the existing invocation. ([LabVIEW Wiki: Run VI](https://www.labviewwiki.org/wiki/VI_class/Run_VI_method), [NI execution properties](https://www.ni.com/docs/en-AS/bundle/labview-api-ref/page/dialog-boxes/execution-page-vi-properties-dialog-box.html))
+- A subVI has **Suspend when called** enabled. That explicitly waits for user interaction and need not look like a conventional modal dialog. ([NI execution properties](https://www.ni.com/docs/en-AS/bundle/labview-api-ref/page/dialog-boxes/execution-page-vi-properties-dialog-box.html))
+- A node is waiting for front-panel activity with the default `-1` timeout. This is a documented indefinite, non-modal wait. ([NI: Wait For Front Panel Activity](https://www.ni.com/docs/ar-SO/bundle/labview-api-ref/page/functions/wait-for-front-panel-activity.html))
+- Traverse or an operation it invokes is waiting for the UI/root loop. VI Server operations that load from disk explicitly wait for UI-idle state, and Run VI itself is marked as UI-idle-dependent. ([NI: Creating a VI Server Application](https://www.ni.com/docs/tr-CY/csh?context=lvcore_lvhowto_vi_server), [LabVIEW Wiki: Run VI](https://www.labviewwiki.org/wiki/VI_class/Run_VI_method))
+
+2. **A copied VI can expose a dependency conflict, but there is no sourced evidence that ?�Dependency loaded from new path??makes Traverse deadlock.**
+
+LabVIEW VIs remember dependency locations; opening a copy can cause LabVIEW to find an already-loaded dependency elsewhere and record a load warning. That behavior is established. ([NI forum: dependency loaded from new path](https://forums.ni.com/t5/LabVIEW/Warning-List-Dependecy-Loaded-from-new-path-issue/td-p/4309058), [NI forum: Load Warning Summary](https://forums.ni.com/t5/LabVIEW/quot-Load-Warning-Summary-quot-dialog-box-Dependency-loaded-from/td-p/3349081))
+
+But the stronger diagnosis?�library loading blocks `Traverse for GObjects` indefinitely?�is unsupported by the sources I found. The facts attack it:
+
+- Restarting LabVIEW did not clear the failure.
+- The identical copy/delete/report sequence previously succeeded.
+- The front panel being open in edit mode is normal for scripting and does not itself imply a wait.
+- The later startup modal after a forced kill could be crash/recovery residue; it does not establish that an invisible prompt caused the original hang.
+
+Treat the copied VI/library dependency as a **trigger candidate**, not yet the cause.
+
+3. **Cheapest discriminating test: one instance, three targets, asynchronous reporter, progress marker.**
+
+Without modifying the targets, have the manager run this sequence in a fresh LabVIEW instance:
+
+1. Report a known-good, already-loaded VI.
+2. Report the original `OpBuildPN_v0.vi`.
+3. Make/open a fresh copy, then report the copy without deleting anything.
+4. Delete the creator node, then report that same copy.
+5. Immediately repeat step 1.
+
+For each call, use `Run(False)` and poll the reporter?�s `Execution.State`; NI documents `Wait Until Done=False` as the way to avoid blocking the caller. ([NI: running VIs simultaneously](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YHyLCAW&l=en-US), [LabVIEW Wiki: Execution State](https://www.labviewwiki.org/wiki/VI_class))
+
+Interpretation:
+
+- Only steps 3/4 hang, while step 5 succeeds ??copied-target state triggers Traverse.
+- Steps 3/4 hang and step 5 then hangs ??LabVIEW instance/shared Traverse state is poisoned.
+- Reporter reaches ?�before Traverse??but not ?�after Traverse????Traverse is localized.
+- Reporter never reaches ?�before Traverse????Run/reservation/execution-system problem, not target traversal.
+- A tiny reporter variant that only opens the target reference and reads a simple property succeeds while Traverse hangs ??strongest cheap evidence against dependency loading and for Traverse itself.
+
+The single most valuable artifact is a progress value written immediately before and after `Traverse for GObjects`. It converts ?�Run hung??into an exact boundary.
+
+4. **Recovery exists in the API, but it is not a reliable watchdog guarantee.**
+
+`VirtualInstrument.Abort()` is the documented ActiveX method and is equivalent to LabVIEW?�s Abort Execution button. ([NI: ActiveX Abort](https://www.ni.com/docs/fa-AF/bundle/labview-api-ref/page/properties-and-methods/activex/vi/abort.html)) However:
+
+- An NI forum report says ActiveX abort can require the **same VI reference used to start the VI**, so do not assume a newly obtained second reference is equivalent. ([NI forum: stopping an ActiveX-run VI](https://forums.ni.com/t5/LabVIEW/How-can-I-stop-a-VI-that-is-running-via-ActiveX/td-p/127696))
+- Abort applies to a running top-level VI and can fail when the VI is part of another VI?�s calling hierarchy. ([NI forum: aborting a subVI](https://forums.ni.com/t5/LabVIEW/problem-to-open-and-abort-a-subvi-by-invoke-node/td-p/3340140))
+- If the blocking call owns the only thread/reference capable of issuing `Abort`, it is unusable. Therefore call `Run(False)`, retain that reference, and let a separate watchdog thread/process call `Abort()` on it.
+- If the server?�s COM/UI dispatch is itself wedged, the abort call may also block. There is no documented per-call timeout on `VirtualInstrument.Run`.
+- `Application.Quit()` exists, but it exits LabVIEW and may encounter save handling; it is graceful shutdown, not a dependable replacement for process termination. ([NI ActiveX Application methods](https://www.ni.com/docs/zh-CN/bundle/labview-api-ref/page/properties-and-methods/activex/application-m.html))
+
+**Bottom line:** change the automation pattern to `Run(False) ??poll Execution.State/progress ??Abort on the original reference`. The first test should instrument the boundary around Traverse; presently, blaming copied lvlib dependencies is premature.
+BGRUN END rc=0 after 56s

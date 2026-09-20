@@ -1,0 +1,62 @@
+BGRUN START 2026-09-15 03:20:28 limit 8.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & '.\tools\peer.ps1' -Agent codex -Slug queue-fail2-errno22-copy-after-load -TimeoutSec 240 -Task (Get-Content -Raw '.\tools\bench\peer_task_errno22b.txt')
+OUTCOME: ANSWERED (65s)  archived: archive\peer\2026-09-15-queue-fail2-errno22-copy-after-load.md
+--- ANSWER ---
+H1 is plausible in broad form?�LabVIEW?�s loaded VI prevents truncation?�but the specific attribution is not established. The evidence actually weakens the `ERROR_SHARING_VIOLATION ??EINVAL` branch.
+
+1. CRT/Python translation
+
+- Modern CRT mappings associate `ERROR_SHARING_VIOLATION` (32) with `EACCES`, not `EINVAL`. A reproduced `_dosmaperr` table shows that mapping explicitly. [CRT-derived mapping table](https://tangled.org/huwcampbell.com/reactos/commit/de7e7074592e1e8d119f1f5b8907c532037bf4ac)
+- Older CRTs apparently once omitted code 32 and fell through to `EINVAL`, but that report dates from 2005; it is not persuasive evidence about Python 3.10?�s UCRT. [PostgreSQL investigation](https://www.postgresql.org/message-id/db4hlo%24sm4%241%40news.hub.org)
+- `ERROR_USER_MAPPED_FILE` (1224) is not present in the reproduced normal mapping table, so an unmapped-error fallback to `EINVAL` remains credible. However, I did not find an authoritative current-UCRT source explicitly showing 1224?�s result.
+- Python?�s Windows `open()` calls `_wopen()`, then constructs the exception with `PyErr_SetFromErrnoWithFilenameObject`, i.e. from CRT `errno`, not from `GetLastError()`. [CPython `_io/fileio.c`](https://github.com/python/cpython/blob/main/Modules/_io/fileio.c)
+- Therefore `winerror is None` is expected on this path: Python documents that `winerror` is only populated when a native Windows error is supplied to the exception constructor. [CPython `OSError` documentation](https://github.com/python/cpython/blob/main/Doc/library/exceptions.rst?plain=1)
+
+Verdict: errno 22/no `winerror` is compatible with an unmapped Windows error such as 1224, but is inconsistent with the ordinary current mapping of sharing violation 32, which should normally become errno 13.
+
+2. What the LabVIEW evidence proves
+
+NI clearly documents that a VI can remain in memory while its on-disk file changes, and warns that loading the panel afterward can combine inconsistent in-memory and on-disk portions and corrupt the VI. [NI: ?�VI Has Changed on Disk??(https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000kEssSAE&l=en-US)
+
+NI also says opening a VI reference allocates memory for the referenced VI and that closing references allows LabVIEW to dispose of it from memory. [NI: Closing References](https://www.ni.com/en/support/documentation/supplemental/13/closing-references-in-labview.html)
+
+That supports:
+
+- `GetVIReference(path)` loads or retains the VI in memory.
+- External replacement while it remains loaded is unsafe.
+- Closing the front panel is not necessarily equivalent to unloading the VI or releasing every reference.
+
+It does **not** establish that LabVIEW memory-maps the `.vi`, nor that it keeps a non-share-write file handle open. NI?�s own changed-on-disk warning demonstrates that at least some external modifications can succeed while a VI is loaded. Thus ?�loaded VI prevents overwrite??is probably conditional on LabVIEW state, resource loading, references, antivirus, or timing?�not a universal LabVIEW invariant.
+
+3. Reorder and probe
+
+The reorder is the correct operational fix:
+
+1. Start a fresh LabVIEW instance.
+2. Perform every restore/substitution before *any* VI Server call can name either fixture.
+3. Verify destination bytes/hash.
+4. Only then obtain VI references and operate on them.
+
+But the experiment distinguishes only:
+
+> failure depends on something caused by loading the VI
+
+It does not distinguish memory mapping from an incompatible open handle, lingering reference, scanner interaction, or another load-triggered filesystem action. Microsoft documents that incompatible handle sharing causes `CreateFile` to fail with `ERROR_SHARING_VIOLATION`. [Microsoft `CreateFile`](https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilea)
+
+Do not use `open(path, 'r+b')` as the principal probe:
+
+- It does not truncate the file, whereas `open(..., 'wb')` does.
+- A mapped file may permit opening and ordinary writes yet reject shrinking/truncation. CPython?�s mmap investigation specifically records `SetEndOfFile` failing with `ERROR_USER_MAPPED_FILE` when section references remain. [CPython issue evidence](https://bugs.python.org/msg371050)
+- It is also a TOCTOU check; success does not guarantee the following copy succeeds.
+
+Better: let the real copy attempt be the probe, catch the exception once, record `errno`, `winerror`, message, paths, sizes and timestamps, and abort without retrying or making further COM calls. ?�Destination unavailable after VI load; restart required??is justified. ?�File memory-mapped??is not yet justified.
+
+For a conclusive diagnostic, instrument a native Windows open/truncate path that captures `GetLastError()` immediately. Code 32 supports incompatible sharing; code 1224 supports a mapped-section/truncation conflict. Python?�s ordinary `open()` has already discarded that distinction.
+
+4. Revert after pre-load substitution
+
+There is no expected filesystem-lock risk from substituting bytes before the first reference. NI explicitly recommends creating an unopened disk copy to avoid loading/cross-linking it in memory. [NI recommendations](https://www.ni.com/en/support/documentation/supplemental/07/recommendations-when-using-multiple-versions-of-labview-and-labv.html)
+
+But ?�revert on an unloaded VI = load??is misleading. Obtaining the reference first loads the already-substituted disk image; at that point it is the version LabVIEW last loaded. A subsequent revert is likely redundant, not a mechanism for discovering newer bytes. More importantly, it cannot restore the pre-substitution file, because LabVIEW never loaded those old bytes in that fresh instance.
+
+Bottom line: adopt the reorder, but phrase the finding as ?�naming/loading the fixture makes later truncating replacement fail.??Do not promote it to ?�LabVIEW memory-maps VI files??until native instrumentation captures `GetLastError() == 1224`.
+BGRUN END rc=0 after 65s

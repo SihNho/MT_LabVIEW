@@ -1,0 +1,30 @@
+BGRUN START 2026-09-18 21:59:10 limit 18.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe -u G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\doc_ingest.py --cycle 36
+   3 file(s); cycle 36 window 2026-09-18 20:38:36 .. 2026-09-18 21:59:10 (start = archive/peer/2026-09-18-retrospective-cycle35.md stamp (the LAST retrospective written before this one; a plan mtime lags the work - see the docstring); end = now, at window computation (minutes before the dispatch itself; codex E4-1))
+   task written to C:\Users\KimLab\AppData\Local\Temp\docingest_ingest-2026-09-18.txt (1845 chars)
+OUTCOME: ANSWERED (186s)  model: sonnet (pinned by -Model/-Effort (role ingest))  archived: archive\ingest\2026-09-18-ingest-2026-09-18.md
+COST: $1.0047  in 6 / out 19595 / cache-create 197194 / cache-read 99681  (184s, 4 turn(s))
+--- ANSWER ---
+CONTRADICTIONS: 4
+
+PAIR 1
+  A: STATUS.md:10  "🆕 **USER RULE 17:5x = `docs/cycle27-plan.md` Pre-decided 9 — EVERY GUI action is capture → locate → act → capture → confirm; derived or remembered coordinates are NEVER clicked blind.**"
+  B: STATUS.md:95  "Run `py tools/violations.py` first: if `repeated-failure-class` has reached 3, record a FINDING in `docs/violation-decisions.md` — the device threshold stays SUSPENDED (line 10), and a repair is not a device."
+  conflict: line 95 asserts that this same document's own line 10 states the "device threshold SUSPENDED" order, but line 10 actually states an unrelated GUI-capture-verification rule — both cannot be the content of line 10.
+
+PAIR 2
+  A: CLAUDE.md:352-353  "⚠️ **SUSPENDED since 2026-09-18 08:53** by the user's standing order (*"장치는 더 민들지 말고 계속 진행"*, `STATUS.md` line 10)"
+  B: STATUS.md:10  "🆕 **USER RULE 17:5x = `docs/cycle27-plan.md` Pre-decided 9 — EVERY GUI action is capture → locate → act → capture → confirm...**"
+  conflict: CLAUDE.md attributes the "stop building devices, keep going" suspension order to STATUS.md line 10, but that line's actual content is the GUI-capture rule, not the suspension order.
+
+PAIR 3
+  A: docs/violation-decisions.md:392-393  "**The device threshold is SUSPENDED** by the user's standing order of 2026-09-18 08:53 — *"장치는 더 민들지 말고 계속 진행"* (`STATUS.md` line 10)"
+  B: STATUS.md:10  "🆕 **USER RULE 17:5x = `docs/cycle27-plan.md` Pre-decided 9 — EVERY GUI action is capture → locate → act → capture → confirm...**"
+  conflict: same as Pair 2 — the cited line does not contain the statement attributed to it.
+
+PAIR 4
+  A: docs/violation-decisions.md:333-336  "What "계속 진행" means is fixed in STATUS.md `## NEXT`: the motor-limit assurance work in its settled order — run the written tunnel reader → check A → control Data-Entry ranges → check B → check C — and **no further process device (gate, hook, record, lock) is built in these cycles**"
+  B: STATUS.md:56-61  "TWO CYCLES SINCE D0 HAVE NOT TOUCHED D1. The next cycle's FIRST ACT is a D1 BUILD dispatch... NO machinery repairs, NO watchdog reviews, NO audit fixes, NO doc relocation before that dispatch has RUN... A cycle that ends without a D1 build log is a wrong-ordering cycle by definition."
+  conflict: violation-decisions.md states STATUS.md's `## NEXT` section mandates motor-limit-assurance work (tunnel reader → checks A/B/C) as what "계속 진행" requires next, while STATUS.md's actual `## NEXT` section mandates a D1 build dispatch as the required first act instead — the two name different, incompatible next actions for the same section.
+   peer.ps1 rc 0; archived as archive/ingest/2026-09-18-ingest-2026-09-18.md
+CONTRADICTIONS: 4
+BGRUN END rc=0 after 187s

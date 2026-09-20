@@ -1,0 +1,153 @@
+BGRUN START 2026-09-15 12:07:37 limit 8.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & .\tools\peer.ps1 -Agent codex -Slug reseed-vi-design-cycle7 -Task (Get-Content -Raw 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\6959fd57-add7-402e-9ed9-9a94ff2b4d5f\scratchpad\peer_task_reseed_design.txt')
+OUTCOME: ANSWERED (127s)  archived: archive\peer\2026-09-15-reseed-vi-design-cycle7.md
+--- ANSWER ---
+Verdict: do not build the proposed `Reseed.vi` yet. Two unresolved measurements?�Case #10445 and both frames of Case #5540?�can still invalidate the inferred selector and TRUE-frame outputs. The fixture cannot protect against either mistake because the periodic branch never fires and its two candidate loss predicates coincide.
+
+1. Periodic reset: preserve it, but keep its state outside `Reseed.vi`
+
+Where the Boolean expression is physically located does not determine behavior; wired data dependencies determine execution order in LabVIEW. Therefore, computing `periodic reset?` immediately outside the subVI and passing it in is computation-preserving if the complete measured network and frame timing are retained. [NI: Block Diagram Data Flow](https://www.ni.com/docs/en-GB/bundle/labview/page/block-diagram-data-flow.html)
+
+I recommend separating detection from switching:
+
+```text
+periodic reset? ?�??lost reset? ?�?�?�?�?�?��? exact measured selector ?�??ReseedMux.vi
+manual reset? ?�?�?�??```
+
+`ReseedMux.vi` would have:
+
+```text
+xyz raw, good raw, xyz0, reseed?
+    ??xyz next, good next
+```
+
+The loop-level selector logic would receive `pos`, `Auto-Reset`, `Reset Tracking`, `# of Auto-Reset`, `Limit of Program`, and any measured `# FD points`/frame-phase input.
+
+Reasons:
+
+- `# of Auto-Reset` is global per-frame state, not per-bead state.
+- The counter should not be incremented inside `Reseed.vi` unless the unread contents prove that the original does so there.
+- Passing `periodic reset?` avoids infecting the mux with counter ownership and later P-instance semantics.
+- It also permits a separate small-interval periodic test.
+
+Leaving the periodic term out is acceptable only for a deliberately labeled fixture-development stub. It is not a behavior-preserving rebuild and cannot pass rule 1a. The risk is not merely a missing occasional reset: the unread inner Case may gate, suppress, or phase the periodic condition, or update related state even when the final selector is false. The currently known incomplete chain is documented at [stage2-assembly-step-e.md:68](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/stage2-assembly-step-e.md:68>).
+
+2. Case #10445 cannot yet be collapsed into an Or
+
+A Boolean Case output is equivalent to a Boolean expression only after proving:
+
+- which case label is True and which is False;
+- the exact source connected to output 10573 in each frame;
+- whether either output tunnel uses ?�default if unwired??
+- whether the output is a constant, passthrough, inversion, periodic predicate, or another value;
+- whether either frame performs side effects or state updates;
+- whether coercion or tunnel behavior changes the datatype/value.
+
+LabVIEW executes only the selected Case subdiagram; a Boolean expression or Select replacement can change execution if either branch contains active code. [NI: Case Structures](https://www.ni.com/docs/en-AS/bundle/labview/page/case-structures-executing-a-section-of-code-based-on-input-values.html)
+
+The current topology is particularly suspicious: the lost term feeds both #10445?�s selector and Not #10382, while #10445 also passes an unidentified `Value`. That is not enough evidence for `lost OR periodic`.
+
+The settling measurement is narrow:
+
+1. Enumerate #10445?�s case labels/default status.
+2. For each frame, list every node and tunnel.
+3. For output 10573, trace its inside source to the originating terminal/constant.
+4. Trace every input tunnel consumed by that source.
+5. Record any writes, locals, property nodes, shift registers, or counter-related nodes in either frame.
+6. Record tunnel ?�default if unwired??state.
+
+Do this before construction.
+
+3. Build from `min(pos) < 0`, not from `xyz contains -1`
+
+The diagram measurement is the specification: `min(pos out) < 0`, gated by `Auto-Reset`, subject to the documented indicator-property race. The driver?�s `xyz contains -1.0` rule is an observational surrogate that happens to agree on this fixture. See the measured chain at [stage2-assembly-step-e.md:45](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/stage2-assembly-step-e.md:45>) and the driver?�s substitution at [run_fixture_compare.py:98](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/run_fixture_compare.py:98>).
+
+The direct-dataflow version intentionally resolves the original property-node race. Without a wire dependency, LabVIEW does not guarantee read/write order; NI explicitly warns not to infer left-to-right execution. [NI: Block Diagram Data Flow](https://www.ni.com/docs/en-GB/bundle/labview/page/block-diagram-data-flow.html) Value-property reads and writes without ordering can therefore race. [NI Community discussion](https://forums.ni.com/t5/LabVIEW/Will-property-node-cause-race-condition/td-p/1185685)
+
+The cheapest discriminating analysis on the existing JSONL is to tabulate, for every frame `n`:
+
+```text
+A[n] = min(pos[n]) < 0
+B[n] = any(xyz[n] == -1.0)
+C[n] = min(pos[n-1]) < 0
+```
+
+Then inspect:
+
+```text
+A XOR B   ??quantity discrimination
+A XOR C   ??current-versus-previous-frame timing discrimination
+```
+
+For each disagreement, examine whether frame `n+1` shows the calibration-reset consequence. Apply the `Auto-Reset` gate when its per-frame value is available.
+
+If both XOR sets are empty?�as the reported 13/13 coincidence suggests?�the recording cannot discriminate the hypotheses. Running two replay rules and getting the same output does not add evidence when their predicates are identical. A synthetic frame with negative `pos` but no `-1.0` in xyz, and the converse, is then required.
+
+4. Prove both #5540 frames before building
+
+Yes, wait. ?�TRUE means `xyz0` plus all-TRUE good??is currently established by the driver, not by the original diagram.
+
+The cheapest census is not a whole-frame recursive inventory. For each #5540 frame:
+
+- identify the inside terminal of output tunnels 5975 and 5637;
+- walk backward only along the two source cones;
+- report originating controls/tunnels/constants and intervening nodes;
+- report case-label polarity and ?�default if unwired??
+- for the good output, capture the complete source chain?�especially Array Size, Initialize Array, Boolean constant value, and which input determines the size;
+- for xyz, prove whether the source is exactly t1 or t4 and identify those outer values.
+
+That directly proves the two outputs with minimal reporter work. Build should wait because a mistaken frame polarity or array-size source can pass all non-loss frames and fail only at the 13 reseeds.
+
+5. Parallel-instance risks
+
+The proposed subVI is parallel-safe only if it remains a pure, stateless array transformation and executes once per completed frame, after all bead results are assembled.
+
+Do not:
+
+- put `# of Auto-Reset` mutation inside each P instance;
+- compute loss independently per bead partition if one lost bead resets the entire array;
+- store frame state in an uninitialized shift register, feedback node, local, or property node inside a shared-clone subVI;
+- permit multiple instances to write the same counter or logging target.
+
+A non-reentrant subVI serializes simultaneous calls. Shared-clone reentrancy uses a clone pool, while preallocated clones give each call site separate persistent state; neither makes shared counter ownership automatically correct. [NI: VI Execution properties](https://www.ni.com/docs/en-AS/bundle/labview-api-ref/page/dialog-boxes/execution-page-vi-properties-dialog-box.html)
+
+Thus:
+
+- call the reseed decision/mux once at the loop aggregation level;
+- keep it stateless;
+- keep the auto-reset counter in one loop-level owner;
+- log one `reseeded?` event per frame, not per partition.
+
+Also, `reseeded?` should mean the final measured #5540 selector?�not merely the lost-bead predicate.
+
+6. Cheaper construction: use Select, pending the frame census
+
+If both #5540 frames contain only pure value selection, two Select primitives can replace the output Case:
+
+```text
+xyz next  = Select(reseed?, xyz0, xyz raw)
+good next = Select(reseed?, true-array, good raw)
+```
+
+NI documents Select as returning either its true or false input according to the Boolean selector; Case is needed when the selected condition controls which code executes. [NI: Select versus Case](https://www.ni.com/en/support/documentation/supplemental/21/labview-equivalent-of-if--if-else--and-switch-statements.html)
+
+This removes:
+
+- the Boolean Case builder;
+- node-output-to-Case-selector support;
+- Exit Structure;
+- Case output-tunnel construction.
+
+It does not remove the need for:
+
+- Array Max & Min;
+- Less?;
+- scalar And;
+- scalar Or;
+- Array Size and Initialize Array, unless a proven equivalent source already exists.
+
+Do not use `Or Array Elements` or `And Array Elements` merely to combine two scalar Booleans. The original nodes are scalar And/Or according to the census, so substituting array-reduction nodes adds unnecessary shape/coercion risk. Copying known-good scalar Less/And/Or/Select primitives from a donor is the smaller construction route.
+
+However, Select is safe only after proving that both #5540 frames are side-effect-free value sources. A Case executes only one subdiagram, whereas values feeding a Select can be computed regardless of which value is selected. [NI: Case execution semantics](https://www.ni.com/docs/en-AS/bundle/labview/page/case-structures-executing-a-section-of-code-based-on-input-values.html)
+
+Final recommendation: perform the two targeted frame censuses first, finish the periodic chain, then implement a stateless `ReseedMux.vi` using two Select nodes and keep the exact selector/counter logic once per frame outside it. Until those measurements are complete, ?�behavior-preserving??is not yet supportable.
+BGRUN END rc=0 after 127s

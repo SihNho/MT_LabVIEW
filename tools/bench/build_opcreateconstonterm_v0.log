@@ -1,0 +1,78 @@
+BGRUN START 2026-09-17 10:47:22 limit 30.0 min: py -u tools\recipes\build_opcreateconstonterm_v0.py
+  FACT  LabVIEW handles before: 31244 (fresh-instance baseline ~31,500)
+
+=== W0: the donor
+  PASS  W0a OpStopFromNode_v0.vi on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpStopFromNode_v0.vi
+  PASS  W0 donor ExecState 1  ExecState 1
+
+=== W1: the copy
+  FACT  copy census: {'Node': 20, 'Property': 11, 'Wire': 33, 'ControlTerminal': 23, 'Invoke': 1, 'IndexArray': 3, 'Constant': 7}, ExecState 1
+  PASS  W1 the copy holds exactly one Invoke and both body-ladder Index Arrays  Invokes [1224]; IA(node) #1176 via w1270; IA(term) #1200 via w1328; ExecState 1
+
+=== W2: delete the Connect Wire invoke
+  PASS  W2 the Connect Wire invoke is gone and the op still compiles  Invoke 0, ExecState 1
+
+=== W3/W4: Invoke Terminal[Create Constant 6349C00]
+  PASS  W3 Invoke Terminal[6349C00] created  uid 300
+  FACT  W4 6349C00 TERMINAL CENSUS (never measured before): [(0, 'reference', 'IN'), (1, 'reference out', 'OUT'), (2, 'error in (no error)', 'IN'), (3, 'error out', 'OUT'), (4, 'Create Constant', 'IN'), (5, 'Create Constant', 'OUT'), (6, 'Value', 'IN'), (7, 'Value', 'OUT')]
+      W4 'element' -> 'reference': wire 1327 / 1327 OK
+
+=== W5: a control for EVERY parameter input of the invoke (A3: expect an optional `Value`)
+  FACT  W5 parameter inputs to satisfy: [(4, 'Create Constant'), (6, 'Value')]
+   t4 ('Create Constant'): no control created (optional-and-declined or already wired)
+   t6 ('Value'): control 'Value' -> ExecState 1
+  PASS  W5 the invoke's parameter inputs all carry controls  controls [(6, 'Value', 'Value')]; value control 'Value'; ExecState 1
+
+=== W6: the created-object reference and the error, brought out (prior-art B4)
+  FACT  W6 created-object outputs on the invoke: [(5, 'Create Constant'), (7, 'Value')]
+      W6 'Create Constant' -> 'reference': wire 1450 / 1450 OK
+  PASS  W6 the op returns the created object's UID and the invoke's own error  uid indicator 'UID 4', error indicator 'error out 8'
+
+=== W7: ExecState and save
+  PASS  W7 ExecState 1 - the op is runnable  ExecState 1
+  FACT  saved C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpCreateConstOnTerm_v0.vi (17330 bytes); labels -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opcreateconstonterm_labels.json
+  PASS  W7b donor OpStopFromNode_v0.vi md5 unchanged  a8b46d711543952f3a3dcd91cf1d0f27
+
+=== T: FUNCTIONAL test on a scratch copy of EMPTY_v0
+  PASS  T0a EMPTY_v0.vi present  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\EMPTY_v0.vi
+  PASS  T0b the numeric-input donor subVI exists  C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Utility\error.llb\Error Cluster From Error Code.vi
+  PASS  T1 one While loop created  [{'i': 0, 'class': 'WhileLoop', 'uid': 43, 'pos': (300, 300), 'owner': 'TopLevelDiagram'}] [{'i': 1, 'class': 'Diagram', 'uid': 110, 'pos': (310, 322), 'owner': 'WhileLoop'}]
+  FACT  scratch: WhileLoop #43, body Diagram #110 at Traverse index 1
+  PASS  T2 the numeric-input node is inside the loop body  [{'i': 0, 'class': 'SubVI', 'uid': 44, 'pos': (386, 386), 'owner': 'Diagram'}]
+  FACT  body node #44 (body Nodes[0]): bare inputs [(4, 'is warning? (False)'), (5, 'show call chain? (False)'), (6, 'error in (no error)'), (8, 'error message ("")'), (9, 'error code (0)')]; outputs [(0, 'error out')]
+  PASS  T2b a bare input terminal was found to build the constant on  bare inputs [(4, 'is warning? (False)'), (5, 'show call chain? (False)'), (6, 'error in (no error)'), (8, 'error message ("")'), (9, 'error code (0)')]
+  FACT  op oracle (prior-art B4): error out ''; invoke error ''; created UID 159
+  PASS  T3o the invoke reported no error of its own
+  PASS  T3 exactly one new Constant-family object  new [(159, 'DigitalNumericConstant', (359, 381))]
+  PASS  T3b the target terminal is now WIRED (wire 0 -> non-zero)  terminal t9 wire 0 -> 176
+  PASS  T3c no panel object was created (D1 S4s: ControlTerminal unchanged)  0 -> 0
+  OBSERVED uid 159 -> owner 'Diagram' uid 110 | self 'DigitalNumericConstant'#159 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 110 -> owner 'WhileLoop' uid 43 | self 'Diagram'#110 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  T4 owner chain: constant -> body Diagram -> the new WhileLoop  159 -> Diagram#110 -> WhileLoop#43 (want Diagram#110 -> WhileLoop#43)
+  PASS  T5a the created object is a TYPED numeric constant (class echo, before any value read)  class echo 'DigitalNumericConstant' (the VARIANT route of OpCreateConst_v0 produced the base 'Constant' - build_opsentinel_ops_run3.log:38)
+  FACT  T5 created constant #159: class DigitalNumericConstant, OpConstValueN_v1 -> {'cls': 'DigitalNumericConstant', 'uid_back': 159, 'text': '-1', 'repr': 3, 'wire': 176, 'err': ''}
+  PASS  T5 the constant carries -1  text '-1', Representation 3, err ''
+  FACT  T5b A4/§11i:750-753 ANSWERED - OpCreateConst_v0(Type=DBL, Value=-1) -> [(169, 'Constant')], OpConstValueN_v1 {'cls': 'Constant', 'uid_back': 169, 'text': '', 'repr': 0, 'wire': 0, 'err': ''}, op error None
+  FACT  T6 OpStopFromNode_v0 error out: ''
+  PASS  T6 the scratch reads ExecState 1 with the wired literal in place  ExecState 1; junk Invokes purged []
+  FACT  scratch deleted: SCRATCH_constonterm_104722.vi
+  FACT  LabVIEW handles after: 31857 (before 31244)
+
+--- FACTS ---
+  LabVIEW handles before: 31244 (fresh-instance baseline ~31,500)
+  copy census: {'Node': 20, 'Property': 11, 'Wire': 33, 'ControlTerminal': 23, 'Invoke': 1, 'IndexArray': 3, 'Constant': 7}, ExecState 1
+  W4 6349C00 TERMINAL CENSUS (never measured before): [(0, 'reference', 'IN'), (1, 'reference out', 'OUT'), (2, 'error in (no error)', 'IN'), (3, 'error out', 'OUT'), (4, 'Create Constant', 'IN'), (5, 'Create Constant', 'OUT'), (6, 'Value', 'IN'), (7, 'Value', 'OUT')]
+  W5 parameter inputs to satisfy: [(4, 'Create Constant'), (6, 'Value')]
+  W6 created-object outputs on the invoke: [(5, 'Create Constant'), (7, 'Value')]
+  saved C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpCreateConstOnTerm_v0.vi (17330 bytes); labels -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opcreateconstonterm_labels.json
+  scratch: WhileLoop #43, body Diagram #110 at Traverse index 1
+  body node #44 (body Nodes[0]): bare inputs [(4, 'is warning? (False)'), (5, 'show call chain? (False)'), (6, 'error in (no error)'), (8, 'error message ("")'), (9, 'error code (0)')]; outputs [(0, 'error out')]
+  op oracle (prior-art B4): error out ''; invoke error ''; created UID 159
+  T5 created constant #159: class DigitalNumericConstant, OpConstValueN_v1 -> {'cls': 'DigitalNumericConstant', 'uid_back': 159, 'text': '-1', 'repr': 3, 'wire': 176, 'err': ''}
+  T5b A4/§11i:750-753 ANSWERED - OpCreateConst_v0(Type=DBL, Value=-1) -> [(169, 'Constant')], OpConstValueN_v1 {'cls': 'Constant', 'uid_back': 169, 'text': '', 'repr': 0, 'wire': 0, 'err': ''}, op error None
+  T6 OpStopFromNode_v0 error out: ''
+  scratch deleted: SCRATCH_constonterm_104722.vi
+  LabVIEW handles after: 31857 (before 31244)
+
+=== build_opcreateconstonterm_v0: 22 pass, 0 fail  (17 s) ===
+BGRUN END rc=0 after 17s

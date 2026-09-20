@@ -1,0 +1,69 @@
+BGRUN START 2026-09-15 13:09:24 limit 6.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & .\tools\peer.ps1 -Agent codex -Slug opcaseframes-multiframe-to-casestructure-downcast -Task 'ATTACK THIS (LabVIEW 2026 VI Scripting). tools/bench/build_opcaseframes_v0.log run 4: after following your advice - delete the inherited TERMINAL readers, identify the frame-uid node before deleting so the stub wire does not hide it, delete the last dead reader instead of re-feeding it - the VI is STILL ExecState 0 with no unwired required inputs left (the remaining unwired sinks are optional subVI inputs on Open VI Reference / Traverse for GObjects.vi / UID to GObject Reference.vi). NEW DIAGNOSIS, from the pattern that already bit me twice tonight: my To More Specific Class is targeted at MultiFrameStructure, because I took the typed seed control from the MultiFrameStructure.Frames[] 6363801 node reference. But the Frame Names property 6365002 belongs to the CHILD class CaseStructure, so feeding a MultiFrameStructure-typed reference into a CaseStructure-class property node is a DOWNCAST - the same thing that broke an earlier op when Generic.Owner was wired into a GObject-class node (ExecState 1 -> 0, and the endpoint-uid gate could not see it because a broken wire reports the same uid at both ends). FIX: take the seed from the CaseStructure.Frame Names node reference instead, so the cast emits CaseStructure; feeding that into the MultiFrameStructure-class Frames[] node is then an UPCAST and legal. QUESTIONS: (1) confirm the direction - is CaseStructure a child of MultiFrameStructure such that one cast targeted at CaseStructure can drive BOTH nodes; (2) is Frames[] 6363801 really declared on MultiFrameStructure (so an upcast works) or would I be better off looking for a CaseStructure-level equivalent; (3) is there a cheap way to see WHICH wire is broken - you named VI.Get Errors method 452 earlier and I am about to build a reader for it, since I have now guessed at broken-VI causes three times in a row; is 452 invoked on the VI class with no parameters, and what does it return; (4) anything else in this op that would still break it after the seed change. Read-only; cite what you read.'
+OUTCOME: ANSWERED (68s)  archived: archive\peer\2026-09-15-opcaseframes-multiframe-to-casestructure-downcast.md
+--- ANSWER ---
+Your new diagnosis is strong and is the most likely remaining defect. A `CaseStructure`-typed cast can legally drive both property nodes.
+
+1. Class direction
+
+The hierarchy is:
+
+`Generic ??GObject ??Node ??Structure ??MultiFrameStructure ??CaseStructure`
+
+Therefore:
+
+- `MultiFrameStructure ??CaseStructure` is a downcast and requires `To More Specific Class`.
+- `CaseStructure ??MultiFrameStructure` is an implicit upcast and is legal.
+- A cast targeted at `CaseStructure` can feed both `CaseStructure.FrameNames` and inherited `MultiFrameStructure.Frames[]`.
+
+This directly matches your observed transition: the VI remains runnable after wiring the `MultiFrameStructure` node, then becomes broken only after adding the `CaseStructure` consumer. [CaseStructure hierarchy](https://labviewwiki.org/wiki/CaseStructure_class)
+
+2. Ownership of `Frames[]`
+
+Yes: `6363801 Frames[]` is declared on `MultiFrameStructure`, not separately on `CaseStructure`. It returns an array of frame references. Since `CaseStructure` inherits `MultiFrameStructure`, the CaseStructure reference can feed this parent-class property without another cast. There is no advantage in searching for a CaseStructure-specific equivalent; forum references to ?�CaseStructure.Frames[]??are describing the inherited property. [MultiFrameStructure properties](https://labviewwiki.org/wiki/MultiFrameStructure_class)
+
+So the clean graph is:
+
+```text
+GObject reference
+    ??To More Specific Class, target = CaseStructure
+CaseStructure ref
+    ?��??�??CaseStructure.FrameNames
+    ?��??�??MultiFrameStructure.Frames[]
+```
+
+Take the typed seed from the `CaseStructure.FrameNames` property node exactly as proposed.
+
+3. Broken-wire diagnostics
+
+Do not build another `VI.Get Errors` node directly from numeric method ID `452`. This project already tried that twice, including with the private INI flags; LabVIEW created only generic reference/error terminals and did not resolve `Errors` or `Details`. That makes it a poor next discriminator.
+
+The public description says:
+
+- owning class: `VI`
+- method ID: `452`
+- scope: private
+- outputs/parameters: required `Errors`, required `Details`, optional `Call Dangerously?`
+- no ordinary return value
+
+So it is not strictly ?�no parameters.??It has no required input parameter beyond the VI reference, but it exposes two required result terminals and one optional Boolean input. [Get Errors method record](https://labviewwiki.org/wiki/VI_class/Get_Errors_method)
+
+Community evidence says the copied/prebuilt node works, returns usable but not necessarily GUI-identical errors, and is normally hidden. Thus the viable route is copying the known-good attached node from the forum donor/snippet?�not asking your builder to attach `452` again. [NI Community discussion](https://forums.ni.com/t5/LabVIEW/Error-list-in-VI-scripting/td-p/2263216)
+
+For this failure, the cheaper reader is wire-local:
+
+- `Wire.Is Broken?` property `6371004`
+- then `Wire.Get Error List` method `6370C0A` only for wires reporting broken
+
+That directly catches the class-conflict wire that endpoint-UID equality cannot distinguish. It will not diagnose an unwired required terminal, so retain your unwired-sink census alongside it. [Wire class API](https://labviewwiki.org/wiki/Wire_class)
+
+4. Other credible remaining causes
+
+After changing the seed, I see two checks worth retaining:
+
+- Check both fan-out branches with `Wire.Is Broken?`. Provenance/UID equality does not establish type legality, as you already measured.
+- Confirm the `Frames[]` element is feeding only generic/GObject-compatible readers. Your run-4 log says the inherited terminal readers and dead UID reader are gone, so that portion now looks clean.
+
+One subtlety: the run-4 log?�s `PASS C PROVENANCE cast output -> Frame Names node` proves connectivity, not compatibility. That is exactly why the proposed change fits the evidence.
+
+Verdict: make the one seed change first. I would predict `ExecState` returns to runnable. If it does not, enumerate every wire and read `6371004`; postpone `Get Errors 452` until you have a genuinely attached donor node.
+BGRUN END rc=0 after 68s

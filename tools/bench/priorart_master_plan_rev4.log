@@ -1,0 +1,116 @@
+BGRUN START 2026-09-16 13:37:48 limit 25.0 min: py tools/prior_art_review.py --plan-file docs/pre-rig-master-plan.md --slug master-plan-rev4 --trigger cycle-start
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_master-plan-rev4.txt (50647 chars)
+OUTCOME: ANSWERED (574s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-16-priorart-master-plan-rev4.md
+COST: $5.6428  in 66 / out 40092 / cache-create 200014 / cache-read 5280033  (570s, 48 turn(s))
+--- ANSWER ---
+No prior-art-free direction here: **10 findings, zero `novel`** ? and the two most expensive ones concern work the live session is doing *right now*, which our own files already answered.
+
+First, credit where due: rev3's A2?A7, A9 and B2?B5 are all discharged in this revision (clock lock added as 0.6, periodic auto-reset arm corrected, reseed mechanism retracted, bit-identity replacement named, A6 done, 1.7 cites the queue mechanics and `boundary_manifest.py`, 1.8 decides reuse-or-replace, 0.4 rescoped on measurement). rev3's A1 is discharged **only for the ASI half**, and rev3's B1 is unchanged.
+
+---
+
+# PART A ? THE DIRECTION
+
+## A1 `unread-evidence` ? 0.5 disarms one instrument out of three that the same startup drives
+
+0.5 quotes `t0-instrumentation-plan.md:136-138` ? but that sentence reads *"its initialisation frame, which contains **the PI motor's `GOH` (go home)** and the ASI stage's `MOVE AXIS TO POS`"*. The plan keeps the ASI half and drops the PI half. The measured startup is broader still:
+
+- `docs/main-vi-startup.md:24` diagram 1 = *"PI motor init, driven straight from the panel control `Set Focus (0->50)` (=51.5 today)"*; `:26` diagram 3 = *"PI **MOV** (absolute position)"*; `:27` diagram 4 = *"PI **GOH** (go home)"*; `:28` diagram 5 = *"PI **VEL** then a position query"*.
+- `docs/rotor-sign-diagnosis.md:124-126` ? *"**The controller counter was left at 0** �� the original main VI (Baseline 200) would now command its first absolute move as a **200-turn trip**, so either restore the old coordinate (`PIC 100000`��) before running the original again, or run only the new VI."* Same fact at `docs/instrument-libraries.md:324-325` and `STATUS.md:61-62`.
+- `docs/rotor-sign-diagnosis.md:127` ? *"**Remaining: repoint the NEW main VI's rotor calls to `SetCommand_signed.vi` (stage 2).**"* That build task appears nowhere in Phase 1's list (1.1?1.8), yet 2B's rotor row (`pre-rig-master-plan.md:165`) accepts *"absolute degrees �� the counter is at 0"* ? which is true only of a VI carrying the signed repoint.
+
+A copy of the original started today issues PI MOV/GOH from a panel control and, on its first absolute rotor move, a 200-turn trip. Motors are permitted (rule 1b), so this is not forbidden ? it is **unnamed**, and 0.5 is the section whose whole job is naming it.
+
+## A2 `already-measured` ? the interval N behind Property Node #30146 is `Frame rate` = 25, read from the machine on 2026-09-14
+
+This is the fact the LabVIEW lock is currently held for (`STATUS.md:38-42`, *"resolve wire 3362 / 31234 / 3268 and Property Node #30146"*), and which `docs/camera-acquisition-facts.md:266-268` calls *"Still open: N �� pending the peer answer on whether an implicit property node's linked object is readable at all in LabVIEW 2026."*
+
+It is not open, and that peer answer arrived two days ago:
+
+- `tools/bench/main_vi_node_labels.json:2979-2983` ? `"30146": { "diagram": 43, "label": "Frame rate", "is_panel_label": true }`.
+- `docs/frame-loop-wire-graph.md:120` ? *"#30146 Property `Frame rate`.Value (implicit)"*, with provenance at `:10-13` (`OpNodeLabels_v0`, `Node.Label` read headless; *"An implicit property node's name is the panel object it is bound to"*).
+- `archive/benchmarks/INDEX.md:48` (row 27) ? *"**88/88 implicit nodes returned a non-empty label that is a panel label** (45 distinct objects, 40 READ / 48 WRITE)"*.
+- `archive/peer/2026-09-14-implicit-property-node-linked-object.md:13` asks exactly *"which scripting property names the bound control, and is it reachable cast-free"*; `:26-27` answers (`Linked Control` 636F806 needs a cast; `Node.Label �� Text.Text` does not); `:40-43` records that the reader was built and confirmed on the machine.
+- `docs/main-vi-panel-map.md:83` ? `Frame rate` is CTL uid 98, **value 25**; `:469` ? diagram 43, node 30146, **READ**.
+
+So **N = 25**: the autofocus case fires every 25 frames ? **3.6 times a second at 90 Hz**. That number belongs in 1.5's gating and in A7's serial audit today, and it removes a LabVIEW read from the critical path.
+
+## A3 `contradicted` ? the candidate list for #30146 is refuted by our own wire graph
+
+`docs/camera-acquisition-facts.md:219-220`: *"which control feeds Property Node **#30146** (the interval N ? **panel candidates are `Limit of Auto-Focus` #48 and `Focus Deviation from the Center` #33**)"*, carried forward verbatim into `pre-rig-master-plan.md:69` and `STATUS.md:189`.
+
+Against `docs/frame-loop-wire-graph.md:120` above. Neither candidate is right, and the same file's own line `:262-264` already warns *"do not assume `Auto-Focus` turns autofocus off."*
+
+## A4 `already-measured` ? wire 3362 was re-derived from LabVIEW today; it was on disk on 2026-09-14
+
+`docs/camera-acquisition-facts.md:242-245` (added during this review) names it from `panel_wiring(MAIN)`, *"114 rows"*, run 2026-09-16. That is the **same 114-row census** already written up as `docs/main-vi-panel-map.md:261-263` (*"Wiring column ? measured 2026-09-14 with `OpPanelWiring_v0` (`Control.Terminal` �� `Terminal.Connected Wire`)"*, source `tools/bench/main_vi_panel_wiring.json`), whose row `:311` reads:
+
+| # | label | type | terminal wired | wire uid | control uid |
+|---|---|---|---|---|---|
+| 31 | `Fix to a Certain Pattern` | CTL | YES | **3362** | **10230** |
+
+Corroborated at `docs/frame-loop-wire-graph.md:458` (3362 listed among control-terminal-sourced wires) and `:56` (`#1469 Property 'Fix to a Certain Pattern'.Value` on the same loop). `camera-acquisition-facts.md:233-235` even prescribes the route ? *"the label comes from `panel_wiring`, not from the signature"* ? while the answer that census produced was already in a doc. The conclusion is right; the LabVIEW session that produced it was avoidable.
+
+## A5 `unread-evidence` ? the copy configures the camera itself, on a diagram the plan never names
+
+0.4/1.1 freeze the run at 1280��1024 / 90 Hz and put the exposure write *"right after `IMAQdx Open Camera`"*. In a copy of the original that is **diagram 87, the startup frame** (`docs/stage2-plan.md:17` ? *"Camera session opened in the startup frames (diagram 87: `IMAQdx Open Camera` �� `Configure Grab`)"*), not the acquisition loop ? and that same frame holds:
+
+- `docs/camera-acquisition-facts.md:382-384` ? *"uid **9775** is the **IMAQdx property node**"* with terminals `Height`, `Width`; `:414-417` ? it belongs to camera **initialisation**;
+- `:428-430` ? *"**Still open, and it is the whole question: is uid 9775 reading or writing?** �� a *write* means the VI sets it and the value on the wire is the answer"*;
+- `:338-351` ? the 640��512 observation is recorded as **one unexplained observation**, four hypotheses falsified;
+- `:353-355` ? *"its front-panel **indicators** `Width` and `Height` hold **640** and **512** �� that run ended with the camera at 640 �� 512"*; same at `archive/benchmarks/INDEX.md:40`.
+
+If uid 9775 writes, the dry run's condition is set by the copy, not by the contract ? and every budget number in Phase 2 is against the wrong frame size.
+
+## A6 `contradicted` ? the plan's headline promises the stress test its own decision removes
+
+- `pre-rig-master-plan.md:37-39` ? *"**Free bonus** �� `tracking renewal` �� fires continuously. That is a **free, continuous reseed stress test**"*; `:166` (2B) ? *"run for hours **with reseed firing continuously**"*; `:170-172` (2C) ? *"the run exercises reseed for free: **reseed event counts, the reset counter**, the state fed into the next kernel call"*.
+- Against `:188-190` ? with `Auto-Reset` OFF *"the **bead-loss arm cannot fire**"* ? and `:213-215`, under **"What this deliberately does NOT test"**: *"the reseed path itself, reset counters, state handed to the next kernel call"*.
+
+Both halves are in one document 130 lines apart, and the claim has already propagated to `STATUS.md:147`. What survives the OFF decision is only the **periodic** arm (`:192-201`), which is not a reseed stress test.
+
+## A7 `unread-evidence` ? how the tracking loop gets initialised with no beads was raised by codex and answered only for the tracking half
+
+`archive/peer/2026-09-16-master-plan-attack.md:73` ? *"The tracking loop requires **valid initial bead coordinates, calibration clusters, good flags, and reseed state**, as shown in stage2-plan.md:17"*; `:85` ? *"E2 needs either a representative sample or **an explicit hybrid test mode that injects fixture tracking inputs** while exercising live acquisition."*
+
+The plan (`:31-35`) answers the *tracking-fails* half and never the *initialisation* half:
+- `docs/stage2-plan.md:21-23` ? the kernel takes `Array of cal clusters`, `Real-space cosine window`, `Cosine bandpass for Hilbert`, built at startup (`main-vi-startup.md:29-30`, diagrams 6?7, from `cal image array`);
+- `docs/main-vi-panel-map.md:359` ? `Done Picking \nBeads?` is a **wired control** (uid 11819).
+
+Which `.cal` a bead-free batch loads, and what satisfies the picking gate, is unwritten ? and `:241-246`'s false-positive warning covers only the writer, not this.
+
+---
+
+# PART B ? THE ARTIFACTS
+
+**B1 `already-built`** ? 0.6 proposes to *"Register `nvidia-smi -lgc 1365,1905` as a logon task with highest privileges"*. It exists: `tools/gpu/register_gpu_clock_lock.ps1:3-6` ? `New-ScheduledTaskAction -Execute nvidia-smi.exe -Argument "-lgc 1365,1905"`, `-AtLogOn`, `-RunLevel Highest`, task name *"GPU clock lock (LabVIEW tracking)"*. `docs/gpu-backend.md:239` already prescribed it. What is genuinely unknown is whether it was ever **run** on this box ? a `Get-ScheduledTask` check, not a build.
+
+**B2 `helper-exists`** ? 0.6's *"verify the pstate under the real 90 Hz duty cycle"* has its harness: `tools/gpu/regime_test.py` is the nvidia-smi pstate/SM/mem sampler behind the table at `gpu-backend.md:227-234`, and `tools/gpu/regime_test_lock.py:22` already runs `regime("15 ms gaps under clock lock", 0.015, 0)`. Change the gap to 0.0111; do not write a third script.
+
+**B3 `already-measured` (repeat of rev3 B1, unchanged)** ? 1.2's acceptance still says *"against the CPU kernel **on the fixture**"* (`:82`) with no frame count and no machine caveat. `docs/gpu-backend.md:245-251` is **200 chained frames**; `archive/benchmarks/INDEX.md:41` (row 20) adds the constraint that must travel with the number: *"**the 1e-6 px acceptance is a property of a MACHINE, not of this DLL** ? cuFFT guarantees bitwise reproducibility only for a fixed GPU model, so it must be re-run on any new box (`N=200 py tools/gpu/test_mt2.py`)"*. `INDEX.md:37` (row 16) also records `GPU_kernel_v1` already wearing the kernel's own connector pane.
+
+---
+
+## Where I found NO prior art
+
+Loops 1.1, 1.3, 1.4, 1.5, 1.7, 1.8 as artefacts; Phase A2?A5 and A7; 0.1's batch directory and 0.2's record list; the frame-identity corruption test; "the camera is never gated" verified at the boundary; and the user's four decisions (90 Hz �� map-first �� GPU-first �� `Auto-Reset` OFF), which are theirs to make.
+
+```
+PRIOR-ART: unread-evidence   (A1 ? main-vi-startup.md:24, :26-28 PI MOV/GOH at startup; t0-instrumentation-plan.md:136-138 names GOH too; rotor-sign-diagnosis.md:124-127 200-turn trip + "repoint to SetCommand_signed.vi" never in Phase 1)
+PRIOR-ART: already-measured  (A2 ? N = `Frame rate` = 25: main_vi_node_labels.json:2979-2983; frame-loop-wire-graph.md:120; INDEX.md:48; main-vi-panel-map.md:83, :469)
+PRIOR-ART: unread-evidence   (A2 ? archive/peer/2026-09-14-implicit-property-node-linked-object.md:13, :26-27, :40-43 answers the "pending peer question" at camera-acquisition-facts.md:266-268)
+PRIOR-ART: contradicted      (A3 ? camera-acquisition-facts.md:219-220 candidates #48/#33 vs frame-loop-wire-graph.md:120; carried into pre-rig-master-plan.md:69 and STATUS.md:189)
+PRIOR-ART: already-measured  (A4 ? wire 3362 = `Fix to a Certain Pattern` uid 10230, main-vi-panel-map.md:311, census of 2026-09-14 at :261-263)
+PRIOR-ART: unread-evidence   (A5 ? diagram 87 / uid 9775 read-or-write OPEN and the 640x512 unexplained: camera-acquisition-facts.md:382-384, :414-417, :428-430, :338-351, :353-355; INDEX.md:40; stage2-plan.md:17)
+PRIOR-ART: contradicted      (A6 ? "free continuous reseed stress test" pre-rig-master-plan.md:37-39, :166, :170-172 vs :188-190, :213-215; propagated to STATUS.md:147)
+PRIOR-ART: unread-evidence   (A7 ? no-bead initialisation: master-plan-attack.md:73, :85; stage2-plan.md:21-23; main-vi-startup.md:29-30; main-vi-panel-map.md:359)
+PRIOR-ART: already-built     (B1 ? tools/gpu/register_gpu_clock_lock.ps1:3-6 is 0.6's logon task; gpu-backend.md:239)
+PRIOR-ART: helper-exists     (B2 ? tools/gpu/regime_test.py, regime_test_lock.py:22 for the duty-cycle pstate check)
+PRIOR-ART: already-measured  (B3 ? 1.2's tolerance: gpu-backend.md:245-251 = 200 frames; INDEX.md:41 machine caveat; INDEX.md:37)
+```
+
+**Cheapest way to act, if the citations hold when opened:** (1) close `N = Frame rate = 25` from `main_vi_node_labels.json` and release the lock ? nothing in A6's remainder needs LabVIEW; (2) extend 0.5 to name the PI MOV/GOH sites and the rotor repoint, or state in writing why they are safe; (3) add diagram 87 / uid 9775 to Phase A before the camera contract is called frozen; (4) delete the "free reseed stress test" sentence from the plan and STATUS, or reinstate the arm that would make it true; (5) say which fixture run 1.2's tolerance means, and carry INDEX row 20's machine caveat with it; (6) check for the scheduled task instead of building it.
+
+I took no lock, opened no `.vi`, built nothing and ran nothing. One note on method: `docs/camera-acquisition-facts.md` changed under me mid-review (the `Fix to a Certain Pattern` section at :242-264 appeared between two reads), consistent with the live session holding the lock ? findings A2/A4 are written against the file as it stands now.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-master-plan-rev4.md
+BGRUN END rc=0 after 575s

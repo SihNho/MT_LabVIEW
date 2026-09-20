@@ -1,0 +1,43 @@
+BGRUN START 2026-09-05 20:37:57 limit 3.0 min: py -u -c 
+import sys; sys.path.insert(0,'tools'); import gscript as g, os, time
+T=os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'); g._lv=None; t=time.time()
+print('exec_state', g.exec_state(T), '%.2fs'%(time.time()-t), flush=True)
+print('invoke', [(o['uid'],o['pos']) for o in g.report(T,'Invoke')], flush=True)
+print('count wires', g.count(T,'Wire'), flush=True)
+vi=g.op(g.OP_REPORT); g._set(vi,'index',3); print('set/get index ->', g._get(vi,'index'), flush=True)
+print('cluster_array set', g._set(vi,'Class Name','Invoke'), g._get(vi,'Class Name'), flush=True)
+print('version via _prop', g._prop(g.lv(),'Version'), flush=True)
+print('SMOKE_OK', flush=True)
+
+exec_state 1 0.01s
+Traceback (most recent call last):
+  File "<string>", line 5, in <module>
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 321, in report
+    best_d, best = scored[0][0], scored[0][1]
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 292, in _run
+    def new_since(target, cls, before):
+RuntimeError: COM Run did not return within 180s and no modal dialog was found - LabVIEW is busy or another client is contending. Screenshot: C:\Users\KimLab\AppData\Local\Temp\gscript_hang_1788608457.png
+BGRUN END rc=1 after 181s
+BGRUN START 2026-09-05 20:41:06 limit 2.0 min: py -u -c 
+import sys; sys.path.insert(0,'tools'); import gscript as g, os, time
+T=os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'); g._lv=None; t=time.time()
+print('exec_state', g.exec_state(T), flush=True)
+print('invoke', [(o['uid'],o['pos']) for o in g.report(T,'Invoke')], 'count wires', g.count(T,'Wire'), '%.2fs'%(time.time()-t), flush=True)
+print('SMOKE_OK', flush=True)
+
+exec_state 1
+BGRUN TIMEOUT killed after 121s (limit 2.0 min)
+BGRUN START 2026-09-05 20:43:28 limit 1.5 min: py -u -c 
+import sys; sys.path.insert(0,'tools'); import gscript as g, lvclick as c, os, time
+g._run.__defaults__=(6.0,40.0)
+T=os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'); BD='GUIBENCH_v0.vi Block Diagram'
+c.lv('-Action','focus','-Title',BD); time.sleep(0.4); c.act('click',X=1311,Y=791); time.sleep(0.5)
+print('windows', c.windows(), flush=True)
+t=time.time(); g._lv=None
+try: print('report after click:', len(g.report(T,'Invoke')), '%.2fs'%(time.time()-t), flush=True); print('RELEASED', flush=True)
+except Exception as e: print('STILL HUNG:', str(e)[:80], flush=True)
+
+windows ['GUIBENCH_v0.vi Block Diagram', 'SCRATCH_keystone.vi Front Panel', 'GUIBENCH_v0.vi Front Panel', 'LabVIEW']
+report after click: 1 0.04s
+RELEASED
+BGRUN END rc=0 after 3s

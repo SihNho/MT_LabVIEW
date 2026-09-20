@@ -1,0 +1,353 @@
+BGRUN START 2026-09-18 20:51:55 limit 8.0 min: py -u tools/bench/repair_c36_selftest.py
+=== repair_c36_selftest: lv_stallcheck.ps1 + bgrun.py repairs ===
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\repair_c36_selftest.py", line 75, in <module>
+    r = run([PY, "-c", launcher], timeout=60)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\repair_c36_selftest.py", line 50, in run
+    return subprocess.run(cmd, cwd=ROOT, stdin=subprocess.DEVNULL, capture_output=True,
+  File "C:\Users\KimLab\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 505, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+  File "C:\Users\KimLab\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1154, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+  File "C:\Users\KimLab\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1530, in _communicate
+    raise TimeoutExpired(self.args, orig_timeout)
+subprocess.TimeoutExpired: Command '['C:\\Users\\KimLab\\AppData\\Local\\Programs\\Python\\Python310\\python.exe', '-c', "import subprocess,sys;p=subprocess.Popen([sys.executable,'-c','import time;time.sleep(300)  # C36BENIGNMARK']);print(p.pid)"]' timed out after 60 seconds
+BGRUN END rc=1 after 174s
+BGRUN START 2026-09-18 20:55:36 limit 8.0 min: py -u tools/bench/repair_c36_selftest.py
+=== repair_c36_selftest: lv_stallcheck.ps1 + bgrun.py repairs ===
+  benign poller pid 26536 (parent exited; no bgrun ancestor)
+  watchdog run1 stdout 0 chars, run2 stdout 0 chars
+  (no stall record written)
+  PASS G1 benign sleep-poller with no bgrun job log is NOT flagged  | marker C36BENIGNMARK absent from record and message
+  -> FAIL G2 genuine stalled client under bgrun IS still flagged  | the watchdog named no client carrying the marker
+  inner job log last line: BGRUN END rc=0 after 30s
+=== bgrun.py: BGRUN_LOG in the child environment, and end-to-end ===
+  --- probe_bgrun_env_c36.log ---
+    | BGRUN START 2026-09-18 20:56:06 limit 2.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe -c import os;print('CHILD_BGRUN_LOG=' + repr(os.environ.get('BGRUN_LOG')))
+    | CHILD_BGRUN_LOG='G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\probe_bgrun_env_c36.log'
+    | BGRUN END rc=0 after 0s
+  PASS G3 bgrun child sees BGRUN_LOG = its OWN runner's --log path  | child read 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\probe_bgrun_env_c36.log'
+  PASS G4 bgrun still ends the log with a BGRUN END line (end-to-end)  | BGRUN END rc=0 after 0s
+  PASS G5 this runner's own environment carries BGRUN_LOG (direct child case)  | 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools/bench/repair_c36_selftest.log'
+=== M1: the four logs STATUS NEXT item (e) says lost their BGRUN END guarantee ===
+  diag_fstunnelterm_v2_panelcost.log  lines=48 mtime=2026-09-18 13:29:15 has_END=False has_DETACH_line=False
+      first: BGRUN START 2026-09-18 13:29:13 limit 12.0 min: py -u tools/bench/diag_fstunnelterm_v2_panelcost.py MATERIAL=1
+      last :    >>> CALLOUT uid 1334 (index 2): WIRED to #1356; label on the machine 'index 2'
+  p2_open_copy.log  lines=8 mtime=2026-09-18 14:35:35 has_END=False has_DETACH_line=False
+      first: BGRUN START 2026-09-18 14:35:32 limit 180.0 min: py -u tools/bench/p2_open_copy.py 10000
+      last : holding references 10000 s (the user runs the VI by hand now)
+  prose_cycle25.log  lines=1 mtime=2026-09-18 13:56:30 has_END=False has_DETACH_line=False
+      first: BGRUN START 2026-09-18 13:56:30 limit 8.0 min: powershell -Command & 'tools/peer.ps1' -Agent codex -Kind prose -Slug cycle25-replan -TaskFile tools/bench/prose_cycle25_re
+      last : BGRUN START 2026-09-18 13:56:30 limit 8.0 min: powershell -Command & 'tools/peer.ps1' -Agent codex -Kind prose -Slug cycle25-replan -TaskFile tools/bench/prose_cycle25_re
+  wait_runner_exit.log  lines=8 mtime=2026-09-18 20:40:37 has_END=True has_DETACH_line=False
+      first: BGRUN START 2026-09-18 19:33:35 limit 200.0 min: py -c import time,os,re;p='tools/bench/cycle_runner.log';n=len(open(p,encoding='utf-8',errors='replace').read());[time.sl
+      last : BGRUN END rc=0 after 4022s
+=== F1-F4: the stall reviewer's falsification probes (peer_stall_c35.log:50-53) ===
+  [F1 probe] Get-CimInstance Win32_Process -Filter "ProcessId=11536" ->
+    | (no row: pid 11536 does not exist now)
+  [F2/F3 probe] cycle_runner.log mtime=2026-09-18 20:40:22, RUNNER STOP lines=3
+    | 6: RUNNER STOP | 2026-09-18 03:56:02 | STATUS.md carries a STOP marker: STOP — **the runner exits here (cycle 20, 2026-09-18 04:0x). TWO independent mech
+    | 20: RUNNER STOP | 2026-09-18 14:11:36 | STATUS.md carries a STOP marker: STOP — 러너 정지 (cycle 26, 2026-09-18 14:05). 세 번째 연속 성과 리뷰 실패(OPEN 32) ⇒ **사용자의 재계획
+    | 33: RUNNER STOP | 2026-09-18 20:40:22 | STATUS.md carries a STOP marker: STOP — runner handover only (2026-09-18 19:4x): the runner exits after the curren
+  [F4 probe] live cycle_runner.py processes ->
+    | ProcessId    : 16708
+    | CreationDate : 2026-09-18 ���� 4:54:46
+    | 
+    | ProcessId    : 4616
+    | CreationDate : 2026-09-18 ���� 5:25:04
+    | 
+    | ProcessId    : 15300
+    | CreationDate : 2026-09-18 ���� 5:55:08
+    | 
+    | ProcessId    : 21936
+    | CreationDate : 2026-09-18 ���� 6:25:19
+    | 
+    | ProcessId    : 26200
+    | CreationDate : 2026-09-18 ���� 6:55:24
+    | 
+    | ProcessId    : 24844
+    | CreationDate : 2026-09-18 ���� 7:25:28
+    | 
+    | ProcessId    : 24864
+    | CreationDate : 2026-09-18 ���� 7:55:40
+    | 
+    | ProcessId    : 21676
+    | CreationDate : 2026-09-18 ���� 8:25:51
+    | 
+    | ProcessId    : 24996
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 15508
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 24936
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 25440
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 3732
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 13556
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 10136
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 9596
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 16156
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 26512
+    | CreationDate : 2026-09-18 ���� 8:56:02
+    | 
+    | ProcessId    : 2924
+    | CreationDate : 2026-09-18 ���� 8:56:02
+    | 
+    | ProcessId    : 9788
+    | CreationDate : 2026-09-18 ���� 8:56:02
+    | 
+    | ProcessId    : 7232
+    | CreationDate : 2026-09-18 ���� 8:56:06
+  [F4 probe] cycle_21.log lines=47 -> HAS BGRUN END/TIMEOUT; last: BGRUN END rc=0 after 4076s
+  [F2 cross-check] wait_runner_exit.log (the bgrun job of pid 11536) last line: BGRUN END rc=0 after 4022s
+  F1 satisfied (pid 11536 row exists with a CreationDate != 2026-09-18 19:33:35): NO - no such process now, so F1 cannot be evaluated
+  F2 satisfied (pid gone AND no RUNNER STOP after 19:33:35): False
+  F3 satisfied (pid alive AND a RUNNER STOP exists): False
+  F4 satisfied (no live cycle_runner AND cycle_21.log has no BGRUN END): False
+=== repair_c36_selftest: 4 pass, 1 fail ===
+BGRUN END rc=1 after 31s
+BGRUN START 2026-09-18 20:58:32 limit 8.0 min: py -u tools/bench/repair_c36_selftest.py
+=== repair_c36_selftest: lv_stallcheck.ps1 + bgrun.py repairs ===
+  benign poller pid 23588 (parent exited; no bgrun ancestor)
+  processes carrying C36STALLMARK: ['21380', '20232'] (the leaf is the one with no child)
+  benign poller pid 23588
+  watchdog run1 stdout 0 chars, run2 stdout 0 chars
+    [explain] EXPLAIN pid 20232: skip - wrapper (has a live child)
+    [explain] EXPLAIN pid 21380: skip - wrapper (has a live child)
+    [explain] EXPLAIN pid 23588: skip - no bgrun --log among its ancestors (not a job this watchdog watches)
+  (no stall record written)
+  PASS G1 benign sleep-poller with no bgrun job log is NOT flagged  | marker C36BENIGNMARK absent from record and message
+  -> FAIL G2 genuine stalled client under bgrun IS still flagged  | the watchdog named no client carrying the marker
+  inner job log last line: BGRUN END rc=0 after 30s
+=== bgrun.py: BGRUN_LOG in the child environment, and end-to-end ===
+  --- probe_bgrun_env_c36.log ---
+    | BGRUN START 2026-09-18 20:59:02 limit 2.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe -c import os;print('CHILD_BGRUN_LOG=' + repr(os.environ.get('BGRUN_LOG')))
+    | CHILD_BGRUN_LOG='G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\probe_bgrun_env_c36.log'
+    | BGRUN END rc=0 after 0s
+  PASS G3 bgrun child sees BGRUN_LOG = its OWN runner's --log path  | child read 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\probe_bgrun_env_c36.log'
+  PASS G4 bgrun still ends the log with a BGRUN END line (end-to-end)  | BGRUN END rc=0 after 0s
+  PASS G5 this runner's own environment carries BGRUN_LOG (direct child case)  | 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools/bench/repair_c36_selftest.log'
+=== M1: the four logs STATUS NEXT item (e) says lost their BGRUN END guarantee ===
+  diag_fstunnelterm_v2_panelcost.log  lines=48 mtime=2026-09-18 13:29:15 has_END=False has_DETACH_line=False
+      first: BGRUN START 2026-09-18 13:29:13 limit 12.0 min: py -u tools/bench/diag_fstunnelterm_v2_panelcost.py MATERIAL=1
+      last :    >>> CALLOUT uid 1334 (index 2): WIRED to #1356; label on the machine 'index 2'
+  p2_open_copy.log  lines=8 mtime=2026-09-18 14:35:35 has_END=False has_DETACH_line=False
+      first: BGRUN START 2026-09-18 14:35:32 limit 180.0 min: py -u tools/bench/p2_open_copy.py 10000
+      last : holding references 10000 s (the user runs the VI by hand now)
+  prose_cycle25.log  lines=1 mtime=2026-09-18 13:56:30 has_END=False has_DETACH_line=False
+      first: BGRUN START 2026-09-18 13:56:30 limit 8.0 min: powershell -Command & 'tools/peer.ps1' -Agent codex -Kind prose -Slug cycle25-replan -TaskFile tools/bench/prose_cycle25_re
+      last : BGRUN START 2026-09-18 13:56:30 limit 8.0 min: powershell -Command & 'tools/peer.ps1' -Agent codex -Kind prose -Slug cycle25-replan -TaskFile tools/bench/prose_cycle25_re
+  wait_runner_exit.log  lines=8 mtime=2026-09-18 20:40:37 has_END=True has_DETACH_line=False
+      first: BGRUN START 2026-09-18 19:33:35 limit 200.0 min: py -c import time,os,re;p='tools/bench/cycle_runner.log';n=len(open(p,encoding='utf-8',errors='replace').read());[time.sl
+      last : BGRUN END rc=0 after 4022s
+=== F1-F4: the stall reviewer's falsification probes (peer_stall_c35.log:50-53) ===
+  [F1 probe] Get-CimInstance Win32_Process -Filter "ProcessId=11536" ->
+    | (no row: pid 11536 does not exist now)
+  [F2/F3 probe] cycle_runner.log mtime=2026-09-18 20:40:22, RUNNER STOP lines=3
+    | 6: RUNNER STOP | 2026-09-18 03:56:02 | STATUS.md carries a STOP marker: STOP — **the runner exits here (cycle 20, 2026-09-18 04:0x). TWO independent mech
+    | 20: RUNNER STOP | 2026-09-18 14:11:36 | STATUS.md carries a STOP marker: STOP — 러너 정지 (cycle 26, 2026-09-18 14:05). 세 번째 연속 성과 리뷰 실패(OPEN 32) ⇒ **사용자의 재계획
+    | 33: RUNNER STOP | 2026-09-18 20:40:22 | STATUS.md carries a STOP marker: STOP — runner handover only (2026-09-18 19:4x): the runner exits after the curren
+  [F4 probe] live cycle_runner.py processes ->
+    | ProcessId    : 16708
+    | CreationDate : 2026-09-18 ���� 4:54:46
+    | 
+    | ProcessId    : 4616
+    | CreationDate : 2026-09-18 ���� 5:25:04
+    | 
+    | ProcessId    : 15300
+    | CreationDate : 2026-09-18 ���� 5:55:08
+    | 
+    | ProcessId    : 21936
+    | CreationDate : 2026-09-18 ���� 6:25:19
+    | 
+    | ProcessId    : 26200
+    | CreationDate : 2026-09-18 ���� 6:55:24
+    | 
+    | ProcessId    : 24844
+    | CreationDate : 2026-09-18 ���� 7:25:28
+    | 
+    | ProcessId    : 24864
+    | CreationDate : 2026-09-18 ���� 7:55:40
+    | 
+    | ProcessId    : 21676
+    | CreationDate : 2026-09-18 ���� 8:25:51
+    | 
+    | ProcessId    : 24996
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 15508
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 24936
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 25440
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 3732
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 13556
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 10136
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 9596
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 16156
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 26512
+    | CreationDate : 2026-09-18 ���� 8:56:02
+    | 
+    | ProcessId    : 2924
+    | CreationDate : 2026-09-18 ���� 8:56:02
+    | 
+    | ProcessId    : 9788
+    | CreationDate : 2026-09-18 ���� 8:56:02
+    | 
+    | ProcessId    : 24052
+    | CreationDate : 2026-09-18 ���� 8:59:03
+  [F4 probe] cycle_21.log lines=47 -> HAS BGRUN END/TIMEOUT; last: BGRUN END rc=0 after 4076s
+  [F2 cross-check] wait_runner_exit.log (the bgrun job of pid 11536) last line: BGRUN END rc=0 after 4022s
+  F1 satisfied (pid 11536 row exists with a CreationDate != 2026-09-18 19:33:35): NO - no such process now, so F1 cannot be evaluated
+  F2 satisfied (pid gone AND no RUNNER STOP after 19:33:35): False
+  F3 satisfied (pid alive AND a RUNNER STOP exists): False
+  F4 satisfied (no live cycle_runner AND cycle_21.log has no BGRUN END): False
+=== repair_c36_selftest: 4 pass, 1 fail ===
+BGRUN END rc=1 after 31s
+BGRUN START 2026-09-18 20:59:42 limit 8.0 min: py -u tools/bench/repair_c36_selftest.py
+=== repair_c36_selftest: lv_stallcheck.ps1 + bgrun.py repairs ===
+  benign poller pid 25768 (parent exited; no bgrun ancestor)
+  processes carrying C36STALLMARK: ['724', '22188', '18992'] (the leaf is the one with no child)
+    children of 724: ['22188 py.exe']
+    children of 22188: ['24104 conhost.exe', '18992 python.exe']
+    children of 18992: []
+    children of 25768: []
+  watchdog run1 stdout 0 chars, run2 stdout 475 chars
+    [explain] EXPLAIN pid 22188: skip - wrapper (has a live child)
+    [explain] EXPLAIN pid 724: skip - wrapper (has a live child)
+    [explain] EXPLAIN pid 18992: skip - CPU +0.00s over 1s (needs dt >= 2s and dcpu <= 0.05)
+    [explain] EXPLAIN pid 25768: skip - no bgrun --log among its ancestors (not a job this watchdog watches)
+  --- stall record written by the test ---
+    | STALL: 2026-09-18 20:59:54 pid 18992 alive 11s, job log tools\bench\stall_selftest_c36_inner.log last written 11s, CPU +0.00s in the last 4s
+    | dialog: unknown
+    | cmd pid 18992 (started 20260918205943): C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe -c "import time;time.sleep(30)  # C36STALLMARK"
+  PASS G1 benign sleep-poller with no bgrun job log is NOT flagged  | marker C36BENIGNMARK absent from record and message
+  PASS G2 genuine stalled client under bgrun IS still flagged  | marker C36STALLMARK present in the stall record
+  inner job log last line: BGRUN END rc=0 after 30s
+=== bgrun.py: BGRUN_LOG in the child environment, and end-to-end ===
+  --- probe_bgrun_env_c36.log ---
+    | BGRUN START 2026-09-18 21:00:13 limit 2.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe -c import os;print('CHILD_BGRUN_LOG=' + repr(os.environ.get('BGRUN_LOG')))
+    | CHILD_BGRUN_LOG='G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\probe_bgrun_env_c36.log'
+    | BGRUN END rc=0 after 0s
+  PASS G3 bgrun child sees BGRUN_LOG = its OWN runner's --log path  | child read 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\probe_bgrun_env_c36.log'
+  PASS G4 bgrun still ends the log with a BGRUN END line (end-to-end)  | BGRUN END rc=0 after 0s
+  PASS G5 this runner's own environment carries BGRUN_LOG (direct child case)  | 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools/bench/repair_c36_selftest.log'
+=== M1: the four logs STATUS NEXT item (e) says lost their BGRUN END guarantee ===
+  diag_fstunnelterm_v2_panelcost.log  lines=48 mtime=2026-09-18 13:29:15 has_END=False has_DETACH_line=False
+      first: BGRUN START 2026-09-18 13:29:13 limit 12.0 min: py -u tools/bench/diag_fstunnelterm_v2_panelcost.py MATERIAL=1
+      last :    >>> CALLOUT uid 1334 (index 2): WIRED to #1356; label on the machine 'index 2'
+  p2_open_copy.log  lines=8 mtime=2026-09-18 14:35:35 has_END=False has_DETACH_line=False
+      first: BGRUN START 2026-09-18 14:35:32 limit 180.0 min: py -u tools/bench/p2_open_copy.py 10000
+      last : holding references 10000 s (the user runs the VI by hand now)
+  prose_cycle25.log  lines=1 mtime=2026-09-18 13:56:30 has_END=False has_DETACH_line=False
+      first: BGRUN START 2026-09-18 13:56:30 limit 8.0 min: powershell -Command & 'tools/peer.ps1' -Agent codex -Kind prose -Slug cycle25-replan -TaskFile tools/bench/prose_cycle25_re
+      last : BGRUN START 2026-09-18 13:56:30 limit 8.0 min: powershell -Command & 'tools/peer.ps1' -Agent codex -Kind prose -Slug cycle25-replan -TaskFile tools/bench/prose_cycle25_re
+  wait_runner_exit.log  lines=8 mtime=2026-09-18 20:40:37 has_END=True has_DETACH_line=False
+      first: BGRUN START 2026-09-18 19:33:35 limit 200.0 min: py -c import time,os,re;p='tools/bench/cycle_runner.log';n=len(open(p,encoding='utf-8',errors='replace').read());[time.sl
+      last : BGRUN END rc=0 after 4022s
+=== F1-F4: the stall reviewer's falsification probes (peer_stall_c35.log:50-53) ===
+  [F1 probe] Get-CimInstance Win32_Process -Filter "ProcessId=11536" ->
+    | (no row: pid 11536 does not exist now)
+  [F2/F3 probe] cycle_runner.log mtime=2026-09-18 20:40:22, RUNNER STOP lines=3
+    | 6: RUNNER STOP | 2026-09-18 03:56:02 | STATUS.md carries a STOP marker: STOP — **the runner exits here (cycle 20, 2026-09-18 04:0x). TWO independent mech
+    | 20: RUNNER STOP | 2026-09-18 14:11:36 | STATUS.md carries a STOP marker: STOP — 러너 정지 (cycle 26, 2026-09-18 14:05). 세 번째 연속 성과 리뷰 실패(OPEN 32) ⇒ **사용자의 재계획
+    | 33: RUNNER STOP | 2026-09-18 20:40:22 | STATUS.md carries a STOP marker: STOP — runner handover only (2026-09-18 19:4x): the runner exits after the curren
+  [F4 probe] live cycle_runner.py processes ->
+    | ProcessId    : 16708
+    | CreationDate : 2026-09-18 ���� 4:54:46
+    | 
+    | ProcessId    : 4616
+    | CreationDate : 2026-09-18 ���� 5:25:04
+    | 
+    | ProcessId    : 15300
+    | CreationDate : 2026-09-18 ���� 5:55:08
+    | 
+    | ProcessId    : 21936
+    | CreationDate : 2026-09-18 ���� 6:25:19
+    | 
+    | ProcessId    : 26200
+    | CreationDate : 2026-09-18 ���� 6:55:24
+    | 
+    | ProcessId    : 24844
+    | CreationDate : 2026-09-18 ���� 7:25:28
+    | 
+    | ProcessId    : 24864
+    | CreationDate : 2026-09-18 ���� 7:55:40
+    | 
+    | ProcessId    : 21676
+    | CreationDate : 2026-09-18 ���� 8:25:51
+    | 
+    | ProcessId    : 24996
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 15508
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 24936
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 25440
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 3732
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 13556
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 10136
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 9596
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 16156
+    | CreationDate : 2026-09-18 ���� 8:41:28
+    | 
+    | ProcessId    : 26512
+    | CreationDate : 2026-09-18 ���� 8:56:02
+    | 
+    | ProcessId    : 2924
+    | CreationDate : 2026-09-18 ���� 8:56:02
+    | 
+    | ProcessId    : 9788
+    | CreationDate : 2026-09-18 ���� 8:56:02
+    | 
+    | ProcessId    : 18084
+    | CreationDate : 2026-09-18 ���� 9:00:13
+  [F4 probe] cycle_21.log lines=47 -> HAS BGRUN END/TIMEOUT; last: BGRUN END rc=0 after 4076s
+  [F2 cross-check] wait_runner_exit.log (the bgrun job of pid 11536) last line: BGRUN END rc=0 after 4022s
+  F1 satisfied (pid 11536 row exists with a CreationDate != 2026-09-18 19:33:35): NO - no such process now, so F1 cannot be evaluated
+  F2 satisfied (pid gone AND no RUNNER STOP after 19:33:35): False
+  F3 satisfied (pid alive AND a RUNNER STOP exists): False
+  F4 satisfied (no live cycle_runner AND cycle_21.log has no BGRUN END): False
+=== repair_c36_selftest: 5 pass, 0 fail ===
+BGRUN END rc=0 after 31s

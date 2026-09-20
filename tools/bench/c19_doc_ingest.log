@@ -1,0 +1,25 @@
+BGRUN START 2026-09-18 02:21:37 limit 12.0 min: py -u tools\doc_ingest.py --cycle 19 --model sonnet
+   8 file(s); cycle 19 window 2026-09-18 00:02:53 .. 2026-09-18 02:21:37 (start = archive/peer/2026-09-18-retrospective-cycle17.md stamp (the LAST retrospective written before this one; a plan mtime lags the work - see the docstring); end = now, at window computation (minutes before the dispatch itself; codex E4-1))
+   task written to C:\Users\KimLab\AppData\Local\Temp\docingest_ingest-2026-09-18.txt (1974 chars)
+OUTCOME: ANSWERED (189s)  model: sonnet (pinned by -Model/-Effort (role ingest))  archived: archive\ingest\2026-09-18-ingest-2026-09-18.md
+COST: $0.9964  in 6 / out 17444 / cache-create 200184 / cache-read 105822  (188s, 9 turn(s))
+--- ANSWER ---
+CONTRADICTIONS: 3
+
+PAIR 1
+  A: STATUS.md:88  "**CYCLE 19 IS RUNNING — read `docs/cycle19-plan.md` (`status: current`) + its `## Pre-decided`."
+  B: docs/cycle19-plan.md:3  "status: done"
+  conflict: STATUS.md asserts that `docs/cycle19-plan.md` currently carries `status: current` and is the actively-running cycle, but the plan file's own frontmatter declares itself `done` (and `docs/cycle20-plan.md:3` separately declares itself `status: current`) — the plan cannot be simultaneously "current/running" and "done".
+
+PAIR 2
+  A: STATUS.md:15  "⚠️ `peer.ps1` only as `powershell -Command "& 'tools/peer.ps1' … -TaskFile <f>"`, **`-Dual -TimeoutSec >= 780`**."
+  B: CLAUDE.md:554  "**Every failed-prediction review from 2026-09-17 uses `-Dual`.**"
+  conflict: STATUS states `-Dual` (with `-TimeoutSec >= 780`) as the required form for every `peer.ps1` invocation with no scope qualifier, while CLAUDE.md scopes mandatory `-Dual` usage specifically to failed-prediction (hypothesis) reviews, implying other peer.ps1 dispatches (prior-art, fact, ordinary review) are not required to use it.
+
+PAIR 3
+  A: docs/cycle19-plan.md:33-34  "codex refuted the claim that T6 has failed since it was written, citing `archive/2026-09-17-status-d1-phase-full-narrative.md:254` recording 6/6 with T4/T5/T6 named."
+  B: docs/cycle20-plan.md:20-24  "**T6 has never passed**: no `selftest_guard_cycle_fixed.log` exists and no log names it PASS, so the archived '6/6' recorded each test's *expected* verdict in prose, not an outcome."
+  conflict: cycle19 reports codex's position (drawn from the same "6/6" archive line) that T6 has not failed since it was written, while cycle20 asserts flatly that T6 has never passed and that the identical "6/6" record never represented an actual test outcome at all — both cannot be true of the same record.
+   peer.ps1 rc 0; archived as archive/ingest/2026-09-18-ingest-2026-09-18.md
+CONTRADICTIONS: 3
+BGRUN END rc=0 after 191s

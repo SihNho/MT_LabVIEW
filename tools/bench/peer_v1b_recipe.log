@@ -1,0 +1,97 @@
+BGRUN START 2026-09-15 04:52:22 limit 6.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & .\tools\peer.ps1 -Agent codex -Slug opconstvalue-v1b-recipe-flatten -Task (Get-Content -Raw 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\6959fd57-add7-402e-9ed9-9a94ff2b4d5f\scratchpad\peer_task_v1b_recipe.txt')
+OUTCOME: ANSWERED (62s)  archived: archive\peer\2026-09-15-opconstvalue-v1b-recipe-flatten.md
+--- ANSWER ---
+Verdict: do not run this recipe unchanged. The overall approach is sound, but `decode_flat()` is not yet justified by NI?�s documented flattened-variant layout, and its current bounds handling can misdiagnose malformed or truncated data as a marshalling failure.
+
+1. Flattening the variant
+
+Your deviation is valid: `Flatten To String` on a LabVIEW variant does not merely emit TD `0x53` followed by an opaque nested payload. NI explicitly says it flattens ?�the variant and all its contents, including attributes,??while `Variant To Flattened String` extracts only the contained value and discards attributes. [NI: Handling Variant Data](https://www.ni.com/docs/ar-IQ/bundle/labview/page/handling-variant-data.html), [NI: Differences Between Flatten to String and Variant To Flattened String](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019RPPSA2&l=en-US)
+
+Therefore the `data string` should contain:
+
+- LabVIEW version
+- contained-value type descriptor
+- contained value
+- attribute count
+- attributes, if any
+
+NI?�s current description says exactly that and specifies big-endian integers. [NI: Understanding Flattened Variant Data Format](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YGQrCAO&l=en-US)
+
+The problem is the parser?�s assumed framing:
+
+```python
+ver, ntd = struct.unpack(">ii", b[:8])
+```
+
+NI describes the second component as ?�a type descriptor,??not an I32 count of descriptors. Older detailed descriptions show individual TDs beginning with an I16 byte length and I16 type code, plus a compact ?�types used??list whose count is not necessarily an I32 in that location. [Unofficial LabVIEW type-descriptor documentation](https://rajsite.github.io/unofficial-lvdocs/lvconcepts/Type_Descriptors.html), [NI Community annotated flattened-variant format](https://forums.ni.com/t5/LabVIEW/Format-of-the-variant-in-binary-file/td-p/2114958/page/2)
+
+So attack point 1 resolves as:
+
+- `Flatten To String` is the correct primitive.
+- The expected outer TD is the contained type, not merely `0x53`.
+- But the exact `version + I32 #TDs + repeated TDs` parser is insufficiently supported and may be wrong for LabVIEW 2026.
+
+Cheap pre-build fix: validate `decode_flat()` against one known flattened string and one known numeric produced by an isolated scratch fixture, or use `Variant To Flattened String` if the creator is available. That function exists specifically to return the contained value?�s `data string` and `type string`, avoiding manual parsing of the variant wrapper. [NI: Flattened String To Variant](https://www.ni.com/docs/gd-GB/bundle/labview-api-ref/page/functions/flattened-string-to-variant.html)
+
+At minimum, harden the parser before interpreting failures:
+
+- Treat version as unsigned `>I`.
+- Bounds-check before every TD header and `p += ln`.
+- Reject `ln < 4`, odd lengths, excessive descriptor counts, and `p > len(b)-4`.
+- Verify the final attribute count is actually zero; `b[p:-4]` is valid only in that case.
+- Require the decoded data length to match the TD exactly.
+- Log `repr(d)`, `len(d)`, and the complete initial bytes when parsing fails.
+
+2. Embedded NULs over ActiveX
+
+A BSTR can preserve embedded NUL characters: its length is stored separately, and Microsoft explicitly notes that `SysStringLen` can differ from `strlen` when a BSTR contains embedded NULs. [Microsoft: SysStringLen](https://learn.microsoft.com/en-us/windows/win32/api/oleauto/nf-oleauto-sysstringlen)
+
+NI maps an ActiveX `BSTR` to a LabVIEW string. [NI: Using ActiveX with LabVIEW](https://www.ni.com/docs/ar-SD/csh?context=lvcore_lvconcepts_using_activex_with_labview)
+
+Thus truncation is not inherent to either BSTR or LabVIEW?�s documented type mapping. I found no NI source guaranteeing the complete LabVIEW-server ??pywin32 `GetControlValue` path for embedded NULs, however. The safe conclusion is: preservation is expected, but must be measured.
+
+Your proposed symptom is correct: truncation at the first NUL produces `len(d)` shorter than the structural minimum or than the length implied by the TD. Add one decisive scratch test containing `b"A\x00B\x00C"` before trusting numeric results. Do not infer truncation merely from `decode_flat()` failing, because the parser framing is independently suspect.
+
+3. Branch wiring
+
+The gate is as strong as this fleet can make it:
+
+```python
+a and a == b == w_val
+```
+
+The project?�s `.claude/skills/labview-automation/references/vi-scripting.md` and `docs/NAMES.md` record that illegal name-based connections may be declined silently and that branches do not add a new Wire object. Reading the same existing wire UID at the original source and the new `anything` sink is good evidence that the branch landed.
+
+There is no type reason to reject it: `anything` is polymorphic and accepts variant data. NI documents `Flatten To String` as accepting arbitrary data. [NI archived Function Reference](https://download.ni.com/support/manuals/321526a.pdf)
+
+One caveat: the recipe assumes `walk()` reports the same logical Wire UID for all branches. That has already been locally established for this toolkit, so I would not block on it.
+
+4. The numeric acceptance gate is too weak
+
+Yes, this could pass with a wrong-class read. The gate proves only that at least three returned blobs parse as numeric and contain at least two values. It does not prove that calls requested `DigitalNumericConstant[0..5]`, nor that each result belongs to the expected object.
+
+Possible false-pass cases include:
+
+- `Class Name` or `index` silently retaining a previous value.
+- The op repeatedly selecting another set of diverse numeric objects.
+- A parser offset accidentally landing on plausible numeric TD bytes.
+- Stale front-panel outputs after a failed op run, especially because `_err(...) or ""` cannot distinguish every stale-output scenario.
+
+Strengthen the gate by returning identity from the op?�at least selected object UID and actual class name?�and assert both for every request. Also clear or poison all result indicators before each run and require them to change. Best of all, compare all six results with independently known values or a reporter-generated UID/class/value manifest rather than merely ?�three diverse numbers.??
+Also reject non-finite floats and implausible descriptor counts. A wrong offset can decode arbitrary eight bytes as a valid DBL.
+
+5. Risk to the original main VI
+
+The recipe does not explicitly save `MAIN`; its only `g.save()` targets `OP`, and all diagram mutation calls target `OP`. A `Value` property read and flattening occur in the op, so the intended path does not modify or execute the main VI.
+
+Residual risks are operational rather than disk writes:
+
+- Opening the main VI can load its dependency hierarchy.
+- An incorrectly wired property node could perform a write only if its `Value` terminal direction were wrong; the recipe verifies it as a source before modification.
+- A bug inside the pre-existing op could target or save the wrong VI, but this recipe itself contains no `save(MAIN)`.
+- The main VI may remain loaded after repeated tests if the op does not close its reference. The skill explicitly warns that references must be closed; inspect the reporter output for a `Close Reference` chain before running.
+
+I would add before/after `MAIN` checksum and modification-time gates. They do not prevent damage, but they make the ?�original unchanged??claim auditable. NI?�s VI Server documentation distinguishes obtaining a reference from running the referenced VI; merely opening a VI reference does not execute its block diagram. [NI: Open VI Reference](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/functions/open-vi-reference.html)
+
+Bottom line: approve the node addition and wire-UID gate, but reject the current functional test until the flattened-variant framing is empirically established and object identity is included in the numeric gate.
+BGRUN END rc=0 after 62s

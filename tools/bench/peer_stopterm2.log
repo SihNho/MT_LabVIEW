@@ -1,0 +1,59 @@
+BGRUN START 2026-09-16 22:15:30 limit 12.0 min: powershell -NoProfile -Command & .\tools\peer.ps1 -Agent codex -Kind review -Slug stop-condterm-panel-fail2 -TaskFile 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\97b1695e-68c2-4985-8cac-1ca3097b3b15\scratchpad\peer_stopterm2.txt' -TimeoutSec 420
+OUTCOME: ANSWERED (106s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-16-stop-condterm-panel-fail2.md
+--- ANSWER ---
+The conclusion is wrong because it treats a nonrecursive panel census as exhaustive. `Diagram` ownership does not distinguish a loop conditional terminal from a front-panel `ControlTerminal`: LabVIEW control terminals are diagram-owned, exactly matching the observed ownership of `TurnOff`. [NI’s Darren explains this ownership behavior explicitly.](https://forums.ni.com/t5/LabVIEW/Vi-Scripting-inconsistent-behaviour-of-terms-of-a-wire-owner/td-p/3309055)
+
+### (a) “Exactly one other sink”
+
+That wording is safe only as:
+
+> “Wire 3457 has exactly one additional **direct, distinct, non-source terminal reference**.”
+
+`Wire.Terminals[]` returns the terminals connected to that wire object; LabVIEW permits one source and multiple sinks. [Wire property reference](https://labviewwiki.org/wiki/Wire_class) [NI wiring documentation](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+A structure-border crossing can lead to another wire object whose downstream sinks are not in wire 3457’s `Terminals[]`. Therefore the complete signal fan-out may be larger, but wire 3457’s direct sink count is not. That distinction does not support identifying the remaining direct sink as the conditional terminal.
+
+It could be smaller only if the reporter counted the same reference twice or misclassified the source. Before writing “exactly one other,” compare the two non-source terminal references for equality—not merely their owner class, wire UID, or coordinates.
+
+### (b) Alternative explanation
+
+The strongest alternative is:
+
+> The unmatched sink is another front-panel `ControlTerminal`, belonging to a control or indicator nested on a tab page and omitted by `panel_wiring`.
+
+NI documents that controls within tab pages require walking the tab’s `Pages` and each page’s `Controls[]`; a top-level census does not reach them. [NI tab-control traversal documentation](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019O8LSAU) Controls placed on tab pages still have ordinary block-diagram terminals. [NI LabVIEW User Manual](https://download.ni.com/support/manuals/320999e.pdf)
+
+This alternative explains all current evidence:
+
+- both sinks report owner `Diagram#639`;
+- one is already proven to be a `ControlTerminal` (`TurnOff`);
+- the other is absent from a deliberately nonrecursive panel census;
+- neither appears in the ordinary `Diagram.Nodes[]` terminal census.
+
+Both reported sinks being `TurnOff` counted as “terminal plus owner” is not the normal API interpretation: `Wire.Terminals[]` returns terminal references, while the owner is obtained separately; a `ControlTerminal` simply happens to return its containing diagram as owner. [NI Community explanation](https://forums.ni.com/t5/LabVIEW/Vi-Scripting-inconsistent-behaviour-of-terms-of-a-wire-owner/td-p/3309055) Reference equality would cheaply rule out an actual duplicate.
+
+### (c) Existing-reader question
+
+The listed readers do not yet prove the unmatched sink is conditional:
+
+- `Owner = Diagram#639` is nondiscriminating.
+- Absence from `Diagram.Nodes[]` is nondiscriminating because the known `TurnOff` control terminal is also absent.
+- The node-label reader helps only if the terminal is exposed through the node enumeration that already missed it.
+- `Shift Registers[]` can exclude shift-register terminals but cannot positively identify the loop-end terminal.
+- `Wire.Terminals[]` supplies the decisive sink reference, but nothing listed compares it with `WhileLoop#637`’s loop-end reference.
+
+However, you do **not** yet need a new property node to test the strongest alternative. LabVIEW’s supplied `Traverse for GObjects.vi` recursively finds objects inside tabs, clusters, loops, and other containers. [NI Community description](https://forums.ni.com/t5/LabVIEW/get-references-to-all-controls-on-front-panel/m-p/694003/highlight/true) A recursive panel census followed by the existing `Connected Wire` check can determine whether another panel object carries 3457.
+
+### (d) Correct property and verification
+
+If recursive panel traversal finds no second carrier, `WhileLoop.Loop End Ref` is the correct direct API. The recorded property ID is `0x06362C00`, and it returns the While Loop’s end terminal. [WhileLoop class/property table](https://labviewwiki.org/wiki/WhileLoop_class) A practical VI-Scripting example likewise identifies `LoopEndRef` as the way to obtain a While Loop’s conditional terminal. [NI Community solved thread](https://forums.ni.com/t5/LabVIEW/VI-Scripting-locate-loop-iteration-and-conditional-terminals/td-p/4344904)
+
+Before hard-coding the numeric ID, verify it in LabVIEW 2026’s VI Server Class Browser by selecting `WhileLoop` and locating `Loop End Ref`; NI documents that the Class Browser searches properties and can create the selected property directly. [NI Class Browser instructions](https://download.ni.com/evaluation/training/lvcore2_coursemanual_english_sample.pdf)
+
+The claim is falsified if either:
+
+- recursive panel traversal finds a second panel object whose diagram terminal has connected wire 3457; or
+- the unmatched sink reference is unequal to `WhileLoop#637.Loop End Ref`.
+
+The cheapest discriminating test is therefore **a recursive front-panel census using `Traverse for GObjects.vi`, reusing the existing terminal/Connected-Wire check for UID 3457**. Only if that returns no second carrier should you build the `Loop End Ref` reader and compare its reference directly with the two non-source references from `Wire.Terminals[]`.
+BGRUN END rc=0 after 107s

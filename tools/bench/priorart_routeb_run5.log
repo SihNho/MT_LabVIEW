@@ -1,0 +1,126 @@
+BGRUN START 2026-09-18 23:21:40 limit 18.0 min: py -u tools\prior_art_review.py --plan-file tools\bench\priorart_routeb_run5_plan.md --slug d1-routeb-run5 --trigger direction-change --recipe tools/recipes/build_d1_routeb_v2.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_d1-routeb-run5.txt (28927 chars)
+OUTCOME: ANSWERED (420s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-18-priorart-d1-routeb-run5.md
+COST: $4.7737  in 42 / out 28505 / cache-create 267431 / cache-read 2773111  (418s, 32 turn(s))
+--- ANSWER ---
+Prior-art review complete. Verdict: **not novel — six findings, one of which is load-bearing** (change 1 cannot execute as written).
+
+---
+
+# PRIOR-ART REVIEW — `tools/recipes/build_d1_routeb_v2.py` (D1 route-B RUN 5)
+
+## PART A — THE DIRECTION
+
+### A1 SETTLED ALREADY — the answer on file is still "no", and no binding document was amended
+
+The question "may the temporary sink be used for the `Z/dZ` row?" was decided twice, and **both decisions are still the live text**:
+
+- `docs/cycle27-plan.md:99-100` — *"the judgement session declines, and the answer is 'no', not 'not yet'. `SR_QUEUE_AUTHORISED` and `TEMP_SINK_AUTHORISED` stay `False`; **a build that needs either to be True is the wrong build**."* (Pre-decided 13, cycle 35)
+- `docs/d1-route-b-plan.md:572-576` — *"**The temporary is DISARMED PERMANENTLY** (`TEMP_SINK_AUTHORISED = False`, Pre-decided 13 … only the judgement session could turn it on and it has declined)"*
+
+The cycle-36 judgement did reverse half of this (`STATUS.md:110-115`), but **it reversed it only in STATUS**. Neither Pre-decided 13 nor §11a was edited, and `docs/cycle27-plan.md:87-88` (Pre-decided 12) says Pre-decided lines are edited by judgement sessions and *"a material session that believes one is stale reports it and stops."* So run 5 launches into a plan that forbids it, and the first material session to read §11a will stop.
+
+Sharper: the v1 stop record was **released by the edit that wrote that sentence** — `tools/bench/stop_records.json:71` pays with `FIXED: settled-already - docs/d1-route-b-plan.md:475 - §9/§11/§11a now cite cycle27-plan Pre-decided 13 instead of reserving the questions`. v2 now contradicts the document whose amendment released v1.
+
+*What this citation covers:* only that the binding documents were never amended. It does not say the cycle-36 decision was wrong. Cheap release: a judgement session records the revision in `cycle27-plan.md:89-100` and `d1-route-b-plan.md:563-576`, then cites those lines.
+
+### A2 REFUTED ALREADY — the flag's stated grounds were refuted a day before run 4, and the real hazard is a different one
+
+`archive/peer/2026-09-17-zdz-wirecut-opus.md:136` (ANSWERED, `-Dual`, accepted in full at `:160-184`) already demolished the citation both the recipe and the plan still repeat:
+
+> *"`docs/NAMES.md:468` is the heading "OpBuildCase_v0 … SUPERSEDED by v1"; `:473-475` is about `SetControlValue` on that op's `Selector` refnum control … Worse, the row you cite as support says the opposite: `docs/toolkit-capabilities.md:52` describes `OpCreateEqual_v0` as "both operands are fetched INSIDE the op, so no terminal refnum crosses COM (**the fix for `docs/NAMES.md:473-475`**…)". You cited the fix as evidence of the defect it fixes."*
+
+That text is **still verbatim in the file under review** at `build_d1_routeb_v2.py:305-308` and in the runtime refusal message at `:1297-1300`.
+
+But the same paragraph (`:138`) replaces it with a hazard that is still open: `src_names=()` → `Names=[]` / `Names 2=[]` (`tools/recipes/build_opsentinel_ops.py:397,:400`) → `Get Outputs` empty → `Index Array[0]` returns **a default refnum with no error** → an invalid refnum reaches `Create Equal.vi`'s `x`/`y` from *inside*. *"Whether `Create Equal.vi` guards it … is not recorded anywhere in this project."*
+
+So the plan's *"uses ONLY already-built ops … no new op, no new device"* is true of the op **inventory** and false of the **call shape**. `OpCreateEqual_v0`'s `FUNCTIONAL 23/0` (`docs/toolkit-capabilities.md:64`) was measured with both operand names supplied — its documented signature is `Names=[x source terminal]` / `Names 2=[y source terminal]`. The recipe's own docstring says so: `build_d1_routeb_v2.py:960-962` — *"calling it with an EMPTY name list is unmeasured."*
+
+*What this covers:* the risk framing, not the decision. Running the test is defensible — but as `archive/peer/2026-09-18-routeb-run4-error2-and-zdz.md:242` says, the interesting outcome is *"`OpCreateEqual_v0` cannot place a source-less `Equal?` — the one genuinely unmeasured step"*, and the plan should predict it rather than assert built-ness.
+
+### A3 CONTRADICTED — **change 1 cannot reach the temporary-sink branch. Flipping the flag changes nothing.**
+
+This is the finding that matters. The plan (and `…run4-error2-and-zdz.md:205`, `:239`, `:252`) states the branch *"did not run solely because `TEMP_SINK_AUTHORISED = False` (`:285`)"*. **The code has a guard above it that returns first.**
+
+In `from_ctl_unnamed` there are two `not zw` branches, in this order:
+
+| lines (v2 / v1) | branch | guard |
+|---|---|---|
+| `v2:1267-1295` / `v1:1222-1250` | the **v1/B2 RETRY** (`OpConnectNested_v1`, by index) | `not zw and (sink_uid,sink_t)==ZDZ_SINK and PREWIRED[ZDZ_SINK]["ct"]` |
+| `v2:1296-1301` / `v1:1251-1256` | the `TEMP_SINK_AUTHORISED` refusal | `not zw and not TEMP_SINK_AUTHORISED` |
+| `v2:1302-1326` / `v1:1257-1278` | **the temporary sink itself** | `not zw` |
+
+`PREWIRED[ZDZ_SINK]["ct"]` is always set: `build_d1_routeb_v2.py:720` — `PREWIRED[ZDZ_SINK] = dict(before_reparent=zdz_wire, ct=zdz_ct)` — and run 4 resolved `zdz_ct = #403` (`tools/bench/build_d1_routeb_v1_run4.log:15`, `:162`). So whenever the sink is bare, the RETRY branch runs. Inside it, `n_src = node_index_on(bi, ct_uid)` (`v2:1271`) is **the same `Diagram[].Nodes[]` lookup that is measured to return `None` for a ControlTerminal**, so `:1274` appends `noroute` and `return False` at `:1278` — line `:1296` is never evaluated.
+
+And if `zw` is non-zero, neither branch runs at all. **In every reachable state, `TEMP_SINK_AUTHORISED = True` is inert.** Run 5 would spend the LabVIEW lock and hand back the same NO-ROUTE row, with the discriminator at `:1288-1290`/`:1306` never printed.
+
+Second contradiction, same family: the plan asserts what run 4 *"did not run … solely because"* — but run 4 cannot show that. Both branches append silently (`v2:1275-1278`, `:1297-1300`; no `print`), and the ledger was lost to the crash (`STATUS.md:89`, `…run4.log:348-353`). The claim is an inference from code that reads the other way.
+
+*Required extra edit (not in the four):* the RETRY must **fall through** to the temp sink when `n_src is None` (record the NO-ROUTE reason as a `fact`, don't `return False`), or the RETRY's guard must add `and node_index_on(bi, ct_uid) is not None`. *What this citation does not cover:* whether the temp sink then works — that is precisely what run 5 should measure, once it is reachable.
+
+### A3b CONTRADICTED (artefact hygiene) — run 5 overwrites run 4's own JSON record
+
+`build_d1_routeb_v2.py:243` keeps `OUT = …/build_d1_routeb_v1.json`, and `:1869-1870` writes it inside `finally:` on **every** path including the crash path. `tools/bench/build_d1_routeb_v1.json` is on disk now. Change 4 exists because *"the state that crashed is gone; (a)/(b)/(c) can no longer be separated on existing evidence at any price"* (`archive/peer/2026-09-18-routeb-run4-error2-and-zdz.md:188`) and because Pre-decided 14 requires measuring before deleting (`docs/cycle27-plan.md:101-104`). Preserving the `.vi` while overwriting the `.json` of the run being diagnosed is self-defeating. `:1874`'s summary line also still prints `build_d1_routeb_v1`, which will mislabel the run-5 log under a gate keyed to path + hash.
+
+### A4 UNREAD EVIDENCE — `archive/peer/2026-09-17-zdz-wirecut-{opus,codex}.md`
+
+The plan cites exactly one exchange (`…-routeb-run4-error2-and-zdz.md`). The **`-Dual` exchange devoted to this single row**, whose conclusions were accepted in full and written back at `…zdz-wirecut-opus.md:160-184`, is not mentioned — and it contains (i) the refutation of the 1055 citation, (ii) the real hazard mechanism, (iii) the no-new-op alternative (B3 below), and (iv) `:130`, which already recorded — with external sources — that `Diagram.Nodes[]` cannot list a ControlTerminal. Reading it is also the cheapest route to A3: it is the document that already framed this row as an *ordering* question rather than a structural one (`:100`).
+
+---
+
+## PART B — THE ARTIFACT
+
+### B4 ALREADY MEASURED — the RETRY branch re-asks a question answered on 2026-09-14
+
+Run 4's single FAIL (`…run4.log:162-164`, *"MEASURED, not inferred"*) re-measured something already written in three places before it:
+
+- `docs/d1-route-b-plan.md:239` — *"`Z/dZ` uid 47, a `ControlTerminal`, which `Diagram.Nodes[]` does not list (**R3**)"*
+- `docs/main-vi-startup.md:64-66` — *"a front-panel object's diagram terminal is a **`ControlTerminal`, a Terminal, not a Node** — it is simply not in the walk"*
+- `tools/recipes/build_opconnectctl_v0.py:4` — *"a ControlTerminal is a Terminal, not a Node"*, the reason `OpConnectCtl_v0` was built (`:9-14`), as `…run4-error2-and-zdz.md:209` itself points out
+
+v2 keeps the RETRY unchanged, so run 5 pays for a **third** measurement of the same fact — and (per A3) pays for it *instead of* the test it was built to run.
+
+### B3 HELPER EXISTS — a no-new-node version of the same shape, already enumerated by the toolkit
+
+`archive/peer/2026-09-17-zdz-wirecut-opus.md:134`:
+
+> *"A no-new-op option exists…: `wire_control` `Z/dZ` → any bare **named** input on 1.2's body (the build already enumerates them via `bare_named_sinks`, `build_d1_v0.py:482`), branch that wire onto `#2222` t0 with `OpConnectFromWire_v0`, then remove the temporary segment. It is the same temporary-sink shape with an existing node instead of a created one."*
+
+`bare_named_sinks` is at `tools/recipes/build_d1_v0.py:482-491` and **v2 already imports it** (`:224-225`). This variant avoids the one genuinely unmeasured step (source-less `create_equal`, A2) while exercising the identical branch-and-delete question, and it inherits the same delete hazard the recipe already handles at `v2:1336-1351`. The plan does not weigh it.
+
+*What this covers:* that an untried cheaper variant of the same test exists and is unmentioned. It does **not** say the created-`Equal?` route is wrong — `…opus.md:134` itself calls the alternative "worse" in one respect (it borrows a live sink).
+
+### B1 ALREADY BUILT / B2 — the other three changes
+
+- **Change 2** (`fact(labview_handles())`): `labview_handles` is already imported (`v2:222`) and already called at S0/S1/end (`v2:183`, `:387`, `:1867`). Reuse, no finding. Note the review's own caveat stands — *"that reading relocates the question rather than closing it"* (`…run4-error2-and-zdz.md:254`).
+- **Change 3** (ledger print above `settle_index_modes()`): no prior art; it is the direct fix for the lost 66 rows. No finding.
+- **Change 4** (rename aside on the exception path): implements `…run4-error2-and-zdz.md:188` verbatim, and `os.rename` is not a LabVIEW save, so *"a broken VI is never written"* (`v2:1861`, `docs/cycle27-plan.md:102`) is untouched. No finding — except A3b, which cancels half of its purpose.
+- **The new-file-name manoeuvre** is legitimate under `docs/cycle18-plan.md:53-56` (a changed hash means unreviewed; v2 is being reviewed on its own bytes). I spot-checked "nothing else differs" at the four sites and the S0 cleanup (`v2:389-397`); I cannot run a diff, so that claim is verified by inspection, not mechanically.
+
+---
+
+## What would release this review
+
+| finding | cheapest release |
+|---|---|
+| A3 (load-bearing) | **not refutable as written** — make the RETRY fall through when `n_src is None`, then `FIXED:` citing the patched line |
+| A1 | judgement amends `cycle27-plan.md:89-100` + `d1-route-b-plan.md:563-576` to record the cycle-36 revision; `FIXED:` those lines |
+| A2 | rewrite `v2:305-308` and `:1297-1300` to cite the real hazard (`…zdz-wirecut-opus.md:138`) and predict the source-less-`create_equal` outcome |
+| A3b | point `OUT` at `build_d1_routeb_v2.json`; fix `:1874`'s label |
+| A4 | cite `…zdz-wirecut-{opus,codex}.md` in the recipe docstring |
+| B3 | one sentence saying why the created `Equal?` is preferred over the bare-named-sink variant |
+| B4 | state that the RETRY is kept only as a logged control, or delete it |
+
+```
+PRIOR-ART: contradicted
+PRIOR-ART: settled-already
+PRIOR-ART: refuted-already
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-measured
+PRIOR-ART: helper-exists
+```
+
+The one sentence to carry forward if nothing else is read: **`TEMP_SINK_AUTHORISED = True` is inert while the v1/B2 RETRY at `build_d1_routeb_v2.py:1267-1295` returns before `:1296`, because `PREWIRED[ZDZ_SINK]["ct"]` is `#403` (`:720`, `…run4.log:162`) and a ControlTerminal has no `Diagram[].Nodes[]` index** — so run 5 as specified spends the lock and returns run 4's NO-ROUTE unchanged.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-d1-routeb-run5.md
+   STOP RECORD armed: tools/recipes/build_d1_routeb_v2.py sha e4fc5bb197ef verdict contradicted, settled-already, refuted-already, unread-evidence, already-measured, helper-exists -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 420s

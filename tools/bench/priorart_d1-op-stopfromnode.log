@@ -1,0 +1,107 @@
+BGRUN START 2026-09-17 07:51:22 limit 25.0 min: py -u tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/pa_stopop_rev2.md --slug d1-op-stopfromnode --trigger new-op
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_d1-op-stopfromnode.txt (16341 chars)
+OUTCOME: ANSWERED (498s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-d1-op-stopfromnode.md
+COST: $4.3335  in 42 / out 36391 / cache-create 180428 / cache-read 3191691  (494s, 36 turn(s))
+--- ANSWER ---
+Prior-art review complete — read-only: no lock, no build, no edit, no `.vi` opened, no hardware. (Write/ExitPlanMode are not in this session's tool set; the review is this reply.)
+
+**5 findings, 0 `novel`.** The artifact is genuinely unbuilt and the direct route is not refuted anywhere. But two cited facts are stale in our own files, two construction helpers already exist with safeguards the copy drops, and the T6 discriminator measures something measured twice — with a type LabVIEW accepts.
+
+---
+
+# PART A — THE DIRECTION
+
+## A1 — cleared (so the next round does not re-litigate it)
+
+The direction is settled **in favour** and the op is already on the schedule: `docs/d1-build-plan.md:655-657` (§11e.2) lifts the freeze narrowly for D1's stop op; `STATUS.md:104-110` (OPEN 29) records the design replacement to `OpStopFromNode_v0.vi` on the `OpLoopEndRef_v0` donor; `STATUS.md:128-130` schedules "finish `OpStopFromNode_v0`" as the next material step. Both halves of the route are individually verified — `docs/NAMES.md:246-249` (`Loop End Ref` 6362C00 → a `Terminal`, ✅ 2026-09-17) and `tools/recipes/build_opwiresr_v0.py:4` (Connect Wire on the sink).
+
+## A2 — no refutation found
+
+Nothing in `archive/peer/`, the retrospectives or a superseded plan section argues against writing a conditional terminal with `Terminal.Connect Wire`, and **nothing refutes branching `LpEndRef` into the invoke's `reference`**. The recorded semantics *permit* it: `docs/NAMES.md:231-232` — "A wired source is branched; a wired **sink** is re-routed (breaks the VI) — wire unwired sinks only." Both W7 branches are source-side on the op's own diagram, and the target sink is measured **unwired** (`tools/bench/build_d1_v0_run4.log:243-245`: terms 1183 / 1204 / 1225, wire 0). A non-node-terminal sink is already proven working: `OpWireSR_RightIn_v0`'s Connect Wire sink is a shift-register *inside* terminal (`tools/recipes/build_opwiresr_v0.py:259`), `tools/bench/test_opwiresr.log:38` T4 PASS.
+
+## A3-i `contradicted` — the sentence that authorises this build names a different op, and that sentence is the live subject of STATUS's open question 2
+
+> **The recipe** (`tools/recipes/build_opstopfromnode_v0.py:8-9`): "§11e.2 lifted the cycle-15 op freeze narrowly for this one op."
+
+- `docs/d1-build-plan.md:655-657` (§11e.2): "only ops this plan names as D1 parts — **the stop front-half swap on `OpExitWhile_v0`** (rev4c B1) and a streaming-write donor for §7.1". Repeated verbatim at `:703-705` (§11d item 8).
+- The freeze itself: `docs/cycle15-plan.md:104` — "No new general-purpose op VIs …".
+- The wording is not dormant: `STATUS.md:125-126` makes "**Does the narrow unfreeze (§11e.2) cover …**" one of the three open judgement questions. A sentence whose scope is currently being adjudicated cannot also be quoted as covering an op it does not name.
+
+**Scope, tightly.** This covers the *authorising sentence*, not the substance — `STATUS.md:104-110` and `:128` record and schedule this exact op, so the intent is plainly there. Repair is one sentence in §11e.2 naming `OpStopFromNode_v0` and its `OpLoopEndRef_v0` donor. It does **not** say the op is unauthorised and does not touch §11c/§9a's sentinel direction.
+
+*(Mechanics, not a finding: the STATUS.md pasted into this brief is one revision behind disk — the disk copy already carries 27b-corrected, 27c, 29, 30. Re-read STATUS from disk before quoting it.)*
+
+## A3-ii `contradicted` — `Loop.Diagram` 6361401 is UNVERIFIED in the names file and MEASURED-PASS in the log; "built this exact chain four times" is twice
+
+Direct answer to the ask: **verified on the machine, never a failure — but the document still says otherwise.**
+
+- `docs/NAMES.md:241-242`: "Loop / ForLoop property IDs (LabVIEW Wiki, 2026-09-14; **not yet verified on this machine** — no Loop-typed ref yet): `Loop` class 16405: … **`Diagram` 6361401** …"
+- `tools/bench/build_opwiresr_v0.log:25-29` and `:69-73` — gate **B0** "PN_D Loop[Diagram] 6361401 (UNVERIFIED property - the gate)" → "PN_D data terminal: **'Diagram'**" → "'specific class reference' -> 'reference': wire 366 / 366 OK", with `tools/recipes/build_opwiresr_v0.py:234-235` stopping the build if ExecState ≠ 1. It did not stop. `docs/toolkit-capabilities.md:42` ships the chain in four ops.
+- Same paragraph, half-updated: `docs/NAMES.md:246-249` marks `WhileLoop.Loop End Ref` "✅ VERIFIED ON THE MACHINE 2026-09-17".
+
+And the count: the **Loop[Diagram] → Nodes[] → Terms[]** chain is built **twice** — `tools/recipes/build_opwiresr_v0.py:227-236` gates it on `variant in ("LeftIn", "RightIn")`; `LeftOutNode` uses `VI.Block Diagram` (`:238-239`), `LeftOutCtl` uses `Panel.Controls[]` (`:241-245`). What is built four times is the Connect Wire invoke (`:255-263`).
+
+**Scope:** the stale verification line and the count. **Not** the chain's validity — that is proven, twice, by log.
+
+## A4 — no unread governing document
+
+`docs/stage2-plan.md:90-94` (read-once rule) is honoured by the sentinel design; `docs/NAMES.md:264-266` independently records the `create_control` top-level-only limit the recipe cites to `tools/gscript.py:2155`; the duplicate-terminal-name trap is honoured by keying on `(name, is_source)` (`build_opstopfromnode_v0.py:114-118`).
+
+---
+
+# PART B — THE ARTIFACT
+
+## B1 — cleared: the op does not exist and nothing else can do it
+
+- The only writer of a conditional terminal is `OpExitWhile_v0`, **by panel-control name** — `docs/toolkit-capabilities.md:31`.
+- `connect_terminals` / `connect2` cannot reach it: both address `Nodes[n].Terminals[t]` (`tools/gscript.py:2202-2208`, `:2428`), and the conditional terminal is in **no** node's `Terminals[]` — `tools/recipes/build_oploopendref_v0.py:33-35`.
+- No such op on disk (claudeDev `Op*Wire*` listing; the only bench file for this slug is this review's own dispatch log). **No `already-built`, no `already-failed`** — the OpExitWhile variant was deleted unrun (`STATUS.md:107-109`).
+
+## B2 `helper-exists` — `loop_end_ref()` already exists, and the copy drops exactly the safeguards its docstring exists to carry
+
+- `tools/recipes/build_d1_v0.py:710-743` — `loop_end_ref(target, loop_index)`, docstring: "…**every output is POISONED before the run**, and **the four per-property error columns are read**, because 'no error out' is not a verdict that a property resolved (`toolkit-capabilities.md:234-238`)."
+- The copy at `tools/recipes/build_opstopfromnode_v0.py:289-307` poisons only `CondTermUID`/`CondWireUID`/`LoopUID` — **not `IsSource`** — and reads **none** of `LoopEndRefErr`/`IsSourceErr`/`ConnWireErr`/`WireUIDErr`. Gates **T3, T3b, T4** (`:367-375`) are scored entirely on that unguarded read: a property that silently failed to resolve returns a defaulted `0`, read as "not wired yet".
+
+**Scope:** the driver function only. Import it (`from build_d1_v0 import loop_end_ref`) or copy it whole.
+
+## B3 `helper-exists` — the censusing property-node and indicator helpers exist, were imported by *this very donor* on a prior-art disposition, and are hand-rolled here without their assertions
+
+- `tools/recipes/build_opcaseframes_v0.py:48-59` `prop_node()` creates the node **and censuses its single data SOURCE terminal**; `:62-71` `add_indicator()` asserts one new panel object, that it **is** an indicator, and that its label is **unique**.
+- The donor recipe imports both and says why: `tools/recipes/build_oploopendref_v0.py:39-41` ("IMPORTED and called, not re-written" — prior-art B3-ii), `:122`, `:240-246`; the rule at `:69-75` (L3): "each … is CREATED **and its DATA TERMINAL is censused** … 'No error 1077' is explicitly NOT the verdict."
+- The measurement behind it: `docs/toolkit-capabilities.md:234-238` — a **valid id on the wrong class** creates a property node with **no data terminal and no error at all**.
+- The new recipe: `pn()` (`build_opstopfromnode_v0.py:158-160`) returns a uid with no census, gate **W2** (`:218`) asserts only `bool(d)`, data terminals come from the **index-4 convention** (`:137-139`), and the indicator block (`:245-255`) takes `new[0]` with no uniqueness assertion. It matters *here specifically*: W2 puts `Diagram` **6361401 on class `VI Server:Loop`** while the wire arrives from a **WhileLoop**-typed reference — the exact "is this property on this class?" question the census rule was written for. A miss surfaces as `StopIteration` inside `connect()`, not as a gate.
+
+**Scope:** `pn()`, `data_name()`, the indicator block. Not `walk`/`term`/`connect`/`idx` (normal per-recipe duplication).
+
+## B4 `already-measured` — T6 measures semantics already measured twice, and the type it picks is one LabVIEW accepts on a conditional terminal
+
+The question T6 asks — "does a type-mismatched Connect Wire sink break the VI, so the op is not a no-op?" — is written down:
+
+- `tools/gscript.py:2206-2207` (OpConnect_v0, 2026-09-06): "…**Type mismatches make a broken wire.**"
+- `tools/recipes/build_opwiresr_v0.py:32-33` predicted it and `tools/bench/test_opwiresr.log:51-53` measured it: a **String** control terminal onto an image-typed register terminal → "left outside wire 192, ExecState 0", **T7 PASS / T8 PASS**.
+
+**And the chosen mismatch is not a mismatch.** `build_opstopfromnode_v0.py:54-55, 380-418` wires the node's `error out` **cluster** onto a second loop's conditional terminal and requires ExecState 1 → 0. LabVIEW accepts an error cluster there — only the `status` field passes, and the shortcut items become *Stop if Error / Continue While Error* ([LabVIEW Wiki, While loop](https://labviewwiki.org/wiki/While_loop), the same wiki this project took 6362C00 from, `docs/NAMES.md:241`). Predicted outcome **1 → 1**, T6 FAILs, and a working op is blocked by its own gate — the class this cycle has already paid for (`STATUS.md:92-95`, 27b "THE FIVE FAILS ARE MY GATES, NOT THE MACHINE").
+
+Either repair suffices: (a) pick a source that is genuinely neither Boolean nor error cluster — the T2 census at `:339-341` already lists the node's outputs; or (b) make it **positive**: `OpWireSource_v5` (12/12, `docs/toolkit-capabilities.md:48`) resolves the new wire's source terminal, so assert it is the body node's Boolean output. (b) also proves direction, which T4's uid equality does not.
+
+One more measured fact assumed the other way: `:384-385` says "Remove Bad Wires then restores it, so the scratch is left clean". The only measurement says otherwise — `tools/bench/test_opwiresr.log:54`, **T8b FAIL, `gone=set()` expected `{192}`**, and `:56` "after Remove Bad Wires: ExecState 0". Harmless (the scratch is deleted at `:433`), but the comment should not outlive the measurement.
+
+**Scope:** T6's novelty, its mismatching type, and that comment. **Not** T3/T3b/T4/T5, and no claim that the op writes nothing.
+
+---
+
+```
+PRIOR-ART: contradicted     (A3-i  — docs/d1-build-plan.md:655-657,:703-705 + docs/cycle15-plan.md:104 + STATUS.md:125-126 vs tools/recipes/build_opstopfromnode_v0.py:8-9 — covers the authorising SENTENCE naming OpExitWhile_v0, not the op's substance, which STATUS.md:104-110,:128 already records and schedules)
+PRIOR-ART: contradicted     (A3-ii — docs/NAMES.md:241-242 vs tools/bench/build_opwiresr_v0.log:25-29,:69-73 + tools/recipes/build_opwiresr_v0.py:234-235 + docs/toolkit-capabilities.md:42; and "four times" vs build_opwiresr_v0.py:227-245 where the chain is built TWICE — covers the stale verification line and the count, NOT the chain's validity, which is proven by log)
+PRIOR-ART: helper-exists    (B2    — tools/recipes/build_d1_v0.py:710-743 vs tools/recipes/build_opstopfromnode_v0.py:289-307 — covers the loop_end_ref driver: the copy omits the IsSource poison and all four per-property error columns that T3/T3b/T4 depend on; does NOT question the op design)
+PRIOR-ART: helper-exists    (B3    — tools/recipes/build_opcaseframes_v0.py:48-71 + tools/recipes/build_oploopendref_v0.py:39-41,:69-75,:122,:240-246 + docs/toolkit-capabilities.md:234-238 vs build_opstopfromnode_v0.py:137-139,:158-160,:218,:245-255 — covers pn()/data_name()/the indicator block; does NOT cover walk/term/connect/idx)
+PRIOR-ART: already-measured (B4    — tools/gscript.py:2206-2207 + tools/recipes/build_opwiresr_v0.py:32-33 + tools/bench/test_opwiresr.log:51-54,:56 + labviewwiki While loop vs build_opstopfromnode_v0.py:54-55,:380-418,:384-385 — covers T6's novelty, its choice of the error cluster as the mismatch, and the Remove-Bad-Wires comment; does NOT cover T3/T3b/T4/T5)
+```
+
+**The two that change what happens next.** **B4** — T6 will almost certainly read 1 → 1 and fail a working op; switch to a real mismatch or to the positive `OpWireSource_v5` check before the run. **B2** — import `build_d1_v0.loop_end_ref`, or T3/T4 are scored on reads nobody checked.
+
+**Checked and cleared:** the op is genuinely unbuilt; no archived exchange refutes the direct route or the `LpEndRef` branch; a non-node-terminal Connect Wire sink is already measured working (`test_opwiresr.log:38`); the three target conditional terminals are measured unwired (`build_d1_v0_run4.log:243-245`); the "no run" justification is independently recorded at `docs/NAMES.md:264-266`.
+
+Sources: [LabVIEW Wiki — While loop](https://labviewwiki.org/wiki/While_loop)
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-d1-op-stopfromnode.md
+BGRUN END rc=0 after 498s

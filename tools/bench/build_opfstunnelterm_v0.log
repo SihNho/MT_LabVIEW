@@ -1,0 +1,80 @@
+BGRUN START 2026-09-18 08:59:47 limit 45.0 min: py -u tools/recipes/build_opfstunnelterm_v0.py MATERIAL=1
+PREDICTION CONTRACT I0..L5 - see this file's docstring.
+   LabVIEW pid before anything: None
+
+-- md5 before --
+   c39f36e0675339673b707c59f0784fee  Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi
+   2a78e17c449cacdaf5da389818526859  Min_Track N beads V6_ParallelLoop.vi
+   5dc45a04ea5d809f5ca57e9309ed59c5  OpWireSource_v5.vi
+  PASS I0a every input path is a real file  | []
+   fresh(): killing LabVIEW pid None
+   COM preflight attempt 1/15: pid None->10436, wires 16->16
+   COM preflight OK (pid 10436, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 10436
+  HANDLES after a fresh LabVIEW, before any work: 30735  (fresh baseline ~31,500)
+
+================ I1  WHICH CLASS DOES EACH UID BELONG TO (measured, not assumed) ================
+
+   --- V6 working copy
+       G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+       Diagram                    n=  170  28343=False  43605=False  44036=False
+       LoopTunnel                 n=  132  28343=True  43605=False  44036=False
+       FlatSequenceOuterTunnel    n=   58  28343=False  43605=True  44036=False
+       FlatSequenceInnerTunnel    n=  518  28343=False  43605=False  44036=False
+       SubVI                      n=   98  28343=False  43605=False  44036=True
+
+   --- 3StateClamping ORIGINAL
+       G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi
+       Diagram                    n=  170  28343=False  43605=False  44036=False
+       LoopTunnel                 n=  132  28343=True  43605=False  44036=False
+       FlatSequenceOuterTunnel    n=   58  28343=False  43605=True  44036=False
+       FlatSequenceInnerTunnel    n=  518  28343=False  43605=False  44036=False
+       SubVI                      n=   97  28343=False  43605=False  44036=True
+  NOTE main_vi_nodeterms.json 'vi' (the cached node/terminal index): G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+  NOTE d1_step0_census.json md5 field: 2a78e17c449cacdaf5da389818526859
+
+================ P  does FlatSequenceOuterTunnel inherit Tunnel? (recorded) ================
+   6356001 [Tunnel.Outside Terminal] -> REFUSED build_property(VI Server:FlatSequenceOuterTunnel, ['6356001']): creator refused - error 1077: Invoke Node in LV-Scriptin
+   6356000 [Tunnel.Inside Terminals[]] -> REFUSED build_property(VI Server:FlatSequenceOuterTunnel, ['6356000']): creator refused - error 1077: Invoke Node in LV-Scriptin
+   7CC75C00 [OuterTerminal.Tunnel (on the OUTER TUNNEL class - expected refusal)] -> REFUSED build_property(VI Server:FlatSequenceOuterTunnel, ['7CC75C00']): creator refused - error 1077: Invoke Node in LV-Scripti
+  PASS P0 the scratch VI was created and DELETED in the same run  | C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_fstunnel_probe_9244.vi
+
+================ B  BUILD OpFsTunnelTerm_v0.vi from OpWireSource_v5  [OUT FlatSequenceOuterTunnel] ================
+   copy of the donor: ExecState 1, 19 nodes on diagram 0
+   Terms[] PN 145 (wire 578) | Index Array 151 (element wire 639) | front TMSC 1044 (target-class wire 533) | back-half reference sinks [157, 1319, 1326]
+  PASS B1 [OUT FlatSequenceOuterTunnel] the donor copy is legal and the sweep found the front section and >=1 back-half sink  | ExecState 1; terms 145 ia 151 tmsc 1044 consumers [157, 1319, 1326]
+   deleted Node #145 -> gone [145]
+   deleted Node #151 -> gone [151]
+   deleted Wire #578
+   deleted Wire #639
+   deleted Wire #533
+   after the deletes: back-half sinks {157: 0, 1319: 0, 1326: 0}; TMSC target class wire 0
+  PASS B2 [OUT FlatSequenceOuterTunnel] every sink to be re-fed is BARE and the cast's target class is unwired  | {157: 0, 1319: 0, 1326: 0}; target class 0
+   PN_A uid 145 (Nodes[17], OuterTerminal); new control(s) from its `reference`: ['reference 4']
+  PASS B3 [OUT FlatSequenceOuterTunnel] create_control on the OuterTerminal node's `reference` made exactly one new CONTROL  | ['reference 4']
+   deleted the seed->PN_A wire #1651 (the seed's job is to type the CAST)
+   seed 'reference 4' -> TMSC `target class` wire 1457
+
+OBSERVED EXC wire specific class reference->reference: wire count 40->40 with 0 new tunnel(s), expected 41 (if the source is already wired this may be a successful BRANCH - re-call with branch=True)
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_opfstunnelterm_v0.py", line 821, in main
+    labels_by_kind[kind] = build_one(kind)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_opfstunnelterm_v0.py", line 392, in build_one
+    g.wire(op, "Function", cidx(op, "Function", tmsc), T_CAST_OUT, "Property", cidx(op, "Property", pn_a),
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 1330, in wire
+    raise RuntimeError(
+RuntimeError: wire specific class reference->reference: wire count 40->40 with 0 new tunnel(s), expected 41 (if the source is already wired this may be a successful BRANCH - re-call with branch=True)
+
+**FAIL Z the run completed without an unhandled exception  | wire specific class reference->reference: wire count 40->40 with 0 new tunnel(s), expected 41 (if the source is already wired this may be a successful BRANCH - re-call with branch=True)
+  HANDLES after the run: 31319  (fresh baseline ~31,500)
+
+-- md5 after --
+   c39f36e0675339673b707c59f0784fee  Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi
+   2a78e17c449cacdaf5da389818526859  Min_Track N beads V6_ParallelLoop.vi
+   5dc45a04ea5d809f5ca57e9309ed59c5  OpWireSource_v5.vi
+  PASS I0 both originals and the donor are byte-identical before and after  | []
+  PASS L5 no motor, no serial port, no camera call anywhere in this run (static: this file makes none)  | read-only VI Server + one scratch VI
+
+SUMMARY gates 7/8 pass; failing: ['Z the run completed without an unhandled exception']
+raw -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opfstunnelterm_v0.json
+BGRUN END rc=1 after 91s

@@ -1,0 +1,30 @@
+BGRUN START 2026-09-14 10:08:19 limit 12.0 min: py -u tools/recipes/probe_builder_artifact.py
+
+######## net_map ONLY (no build): does the walker itself break the target? ########
+   pristine                             ExecState=1  Node=8 Property=4 Invoke=0 Wire=9 Constant=2 DigitalNumericConstant=0 StringConstant=0 Terminal=60 ControlTerminal=10 Diagram=1 SubVI=2 Function=1 IndexArray=1 GObject=85
+   after ONE net_map call               ExecState=0  Node=83 Property=4 Invoke=75 Wire=9 Constant=2 DigitalNumericConstant=0 StringConstant=0 Terminal=510 ControlTerminal=10 Diagram=1 SubVI=2 Function=1 IndexArray=1 GObject=610
+      objects ADDED by net_map: {'Node': (8, 83), 'Invoke': (0, 75), 'Terminal': (60, 510), 'GObject': (85, 610)}
+   after Remove Bad Wires               ExecState=0  Node=83 Property=4 Invoke=75 Wire=9 Constant=2 DigitalNumericConstant=0 StringConstant=0 Terminal=510 ControlTerminal=10 Diagram=1 SubVI=2 Function=1 IndexArray=1 GObject=610
+   after deleting Invoke(s) + RBW       ExecState=1  Node=8 Property=4 Invoke=0 Wire=9 Constant=2 DigitalNumericConstant=0 StringConstant=0 Terminal=60 ControlTerminal=10 Diagram=1 SubVI=2 Function=1 IndexArray=1 GObject=85
+   VERDICT (net_map only): net_map BREAKS the target and purging Invokes RESTORES it
+
+######## v1 (current): OpBuildPN_v1.vi ########
+   pristine                             ExecState=1  Node=8 Property=4 Invoke=0 Wire=9 Constant=2 DigitalNumericConstant=0 StringConstant=0 Terminal=60 ControlTerminal=10 Diagram=1 SubVI=2 Function=1 IndexArray=1 GObject=85
+   after build_property (control prop)  ExecState=0  Node=9 Property=5 Invoke=0 Wire=9 Constant=2 DigitalNumericConstant=0 StringConstant=0 Terminal=65 ControlTerminal=10 Diagram=1 SubVI=2 Function=1 IndexArray=1 GObject=92
+      objects ADDED by the builder: {'Node': (8, 9), 'Property': (4, 5), 'Terminal': (60, 65), 'GObject': (85, 92)}
+   after Remove Bad Wires               ExecState=0  Node=9 Property=5 Invoke=0 Wire=9 Constant=2 DigitalNumericConstant=0 StringConstant=0 Terminal=65 ControlTerminal=10 Diagram=1 SubVI=2 Function=1 IndexArray=1 GObject=92
+   after deleting the new node + RBW    ExecState=1  Node=8 Property=4 Invoke=0 Wire=9 Constant=2 DigitalNumericConstant=0 StringConstant=0 Terminal=60 ControlTerminal=10 Diagram=1 SubVI=2 Function=1 IndexArray=1 GObject=85
+      objects still differing from pristine: {}
+   VERDICT (v1 (current)): target RESTORED to runnable; leftover classes none
+
+######## v0 (yesterday's): OpBuildPN_v0.vi ########
+   pristine                             ExecState=1  Node=8 Property=4 Invoke=0 Wire=9 Constant=2 DigitalNumericConstant=0 StringConstant=0 Terminal=60 ControlTerminal=10 Diagram=1 SubVI=2 Function=1 IndexArray=1 GObject=85
+   after build_property (control prop)  ExecState=0  Node=9 Property=5 Invoke=0 Wire=9 Constant=2 DigitalNumericConstant=0 StringConstant=0 Terminal=65 ControlTerminal=10 Diagram=1 SubVI=2 Function=1 IndexArray=1 GObject=92
+      objects ADDED by the builder: {'Node': (8, 9), 'Property': (4, 5), 'Terminal': (60, 65), 'GObject': (85, 92)}
+   after Remove Bad Wires               ExecState=0  Node=9 Property=5 Invoke=0 Wire=9 Constant=2 DigitalNumericConstant=0 StringConstant=0 Terminal=65 ControlTerminal=10 Diagram=1 SubVI=2 Function=1 IndexArray=1 GObject=92
+   after deleting the new node + RBW    ExecState=1  Node=8 Property=4 Invoke=0 Wire=9 Constant=2 DigitalNumericConstant=0 StringConstant=0 Terminal=60 ControlTerminal=10 Diagram=1 SubVI=2 Function=1 IndexArray=1 GObject=85
+      objects still differing from pristine: {}
+   VERDICT (v0 (yesterday's)): target RESTORED to runnable; leftover classes none
+
+scratch deleted
+BGRUN END rc=0 after 261s

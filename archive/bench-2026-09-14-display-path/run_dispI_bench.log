@@ -1,0 +1,23 @@
+BGRUN START 2026-09-14 14:09:38 limit 20.0 min: py -u tools/bench/run_dispI_bench.py
+warm-up: 210 frames pre-read
+   closed  disp0: median 1.87 ms  p90 2.68 ms
+   closed  disp1: median 2.41 ms  p90 2.62 ms
+   closed  disp3: median 4.74 ms  p90 5.02 ms
+   closed  dispI: median 3.44 ms  p90 3.65 ms
+   open    disp0: median 6.86 ms  p90 7.26 ms
+   open    disp1: median 7.06 ms  p90 7.48 ms
+   open    disp3: median 14.87 ms  p90 15.60 ms
+   open    dispI: median 13.98 ms  p90 14.49 ms
+   closed2 disp0: median 1.87 ms  p90 2.02 ms
+   closed2 disp1: median 2.42 ms  p90 2.58 ms
+   closed2 disp3: median 4.82 ms  p90 5.02 ms
+   closed2 dispI: median 3.54 ms  p90 3.74 ms
+
+route cost (same condition): disp3 - disp0 = Picture route; dispI - disp1 = Image Display terminal (dispI = disp1's chain + the display branch):
+   closed  Picture route (ImageToArray+Flatten+Draw->Picture)     2.87 ms
+   closed  Image Display terminal (branch off Image Out)          1.03 ms
+   open    Picture route (ImageToArray+Flatten+Draw->Picture)     8.01 ms
+   open    Image Display terminal (branch off Image Out)          6.92 ms
+   closed2 Picture route (ImageToArray+Flatten+Draw->Picture)     2.94 ms
+   closed2 Image Display terminal (branch off Image Out)          1.13 ms
+BGRUN END rc=0 after 24s

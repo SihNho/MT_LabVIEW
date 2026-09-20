@@ -1,0 +1,44 @@
+BGRUN START 2026-09-15 17:57:43 limit 20.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/1c79eb01-7150-4a78-9689-e6d4f34f7800/scratchpad/run_0a_round2.ps1
+=== MANDATORY REVIEW of the failed prediction ===
+OUTCOME: ANSWERED (167s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-15-probe0a-run1-two-gate-fails.md
+--- ANSWER ---
+1. **Strongest reason the claim is wrong:** the repaired probe no longer tests construct?�wire?�delete. It tests ?�create a loop with a prebuilt tunnel, increment a global SubVI count, then delete objects.??Nothing proves that the new subVI consumes the tunnel or that the migrated configuration ever compiles. Thus success would merely repeat the already-known `while_loop(tunnels=...)` capability, not establish the proposed relocation substitute.
+
+2. **Alternative explanations:**
+
+   - G4?�s 1057 is not evidence of a structural LabVIEW prohibition, but it can be a real toolkit limitation: NI defines 1057 as ?�object cannot be cast to the specified type.??[NI?�s error-1057 article](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019OwLSAU). `gscript.wire()` itself says it cannot reach control terminals, yet run 1 invoked it with class `Terminal` ([gscript.py](/G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/gscript.py:1064)). Therefore OpWire may simply lack the source-reference type needed for this migration. Switching to another specialized operation bypasses that limitation; it does not prove the toolkit supports the general wiring required by the real restructure.
+   - G3 proves only `SubVI: 6 ??7`. Its predicate never queries the selected diagram ([probe_relocate_route.py](/G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/recipes/probe_relocate_route.py:108)). ?�On diagram index 2??is printed from the input argument, not measured from the resulting object. Worse, `body_index = DiagramCount - 1` assumes traversal order implies newest diagram, while the toolkit elsewhere warns that traversal order is not a valid selector. Settle this with `AbstractDiagram.SubVIs[]` on the independently identified new body: require a new UID whose VI path equals `StrToPath.vi`.
+   - There is a second instrumentation warning: `while_loop()` returns elapsed run time, not a loop UID ([gscript.py](/G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/gscript.py:995)). Run 1 nevertheless labels `0.1486?? as the loop UID. That weakens every ownership inference based on the wrapper?�s reported result.
+
+3. **Observation that would falsify ?�both are merely probe defects??** use independently verified endpoint references?�confirmed source terminal, newly created body diagram, new `StrToPath.vi` UID and named sink terminal. If the identical source-to-sink connection succeeds when both nodes share a diagram but produces 1057 or no tunnel when the sink is in the loop, the failure is associated with the toolkit?�s boundary-wiring path, not the guessed endpoint alone.
+
+4. **G6 and rerunning:** reversibility is a worthwhile additional safety gate, but it is not a replacement for compilability of the migrated state. NI says required unwired terminals and broken wires make a VI nonexecutable and recommends reading the Error List for the specific cause. [NI debugging guidance](https://www.ni.com/getting-started/labview-basics/debug.htm). The correct functional gate is: wire a temporary Boolean to the new loop?�s conditional terminal, complete the actual source?�tunnel?�new-subVI connection, and require `ExecState == 1` before cleanup. Then test reversibility separately.
+
+   Current ?�reversibility??is also too weak: the recipe deletes an original subVI, then deletes the loop containing its replacement and removes bad wires. `ExecState == 1` afterward could mean ?�all broken dependencies were erased,??not ?�baseline behavior was restored.??Require baseline equality of per-diagram subVI identities, tunnels and terminal wire connectivity?�not just executability.
+
+Repairing and rerunning is the wrong move even at failure class 1 if the repair changes the tested capability into one already proven, retains the unverified diagram-index assumption, or lacks a compiled intermediate migrated state. That would spend the retry without discriminating the diagnosis.
+
+**Cheapest discriminating test:** on the same scratch harness, identify the newly added diagram by UID delta, drop `StrToPath.vi`, confirm its new UID/path through that diagram?�s nonrecursive `SubVIs[]`, wire the named control through the border into a named terminal of that exact UID, temporarily wire the While conditional, and check `ExecState == 1`?�stop there before deletion.
+peer exit=0
+
+=== 0a RUN 2 (repaired probe) ===
+scratch = C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_relocate_0a.vi
+  census start: {'WhileLoop': 1, 'SubVI': 6, 'Wire': 13, 'LoopTunnel': 2, 'Diagram': 3, 'ExecState': 0}
+  PASS  G1 scratch opens and reports a census  3
+  census after while_loop: {'WhileLoop': 2, 'SubVI': 6, 'Wire': 13, 'LoopTunnel': 3, 'Diagram': 4, 'ExecState': 0}
+  PASS  G2 a new While loop exists  1 -> 2, uid 0.04787850379943848
+  PASS  G2b a new Diagram appeared  3 -> 4
+  PASS  G4 a border tunnel was created from the named control  2 -> 3
+  census after drop_subvi: {'WhileLoop': 2, 'SubVI': 7, 'Wire': 13, 'LoopTunnel': 3, 'Diagram': 4, 'ExecState': 0}
+  PASS  G3 the subVI was dropped  6 -> 7 on diagram index 3
+  census after delete: {'WhileLoop': 2, 'SubVI': 6, 'Wire': 13, 'LoopTunnel': 3, 'Diagram': 4, 'ExecState': 0}
+  PASS  G5 an existing subVI was deleted  7 -> 6 (call ok=True)
+  census final: {'WhileLoop': 1, 'SubVI': 6, 'Wire': 13, 'LoopTunnel': 2, 'Diagram': 3, 'ExecState': 0}
+  **FAIL**  G6 deleting the scratch loop restores the VI  0
+
+elapsed 0.5s
+scratch deleted
+
+=== 0a RESULT: 6 pass, 1 fail -> G6 deleting the scratch loop restores the VI ===
+probe exit=1
+BGRUN END rc=0 after 168s

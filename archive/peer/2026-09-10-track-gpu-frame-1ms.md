@@ -1,0 +1,106 @@
+﻿---
+type: peer-review
+status: historical
+date: 2026-09-10
+tags: [peer-review, gpu]
+---
+
+# track-gpu-frame-1ms
+
+- **agent:** codex
+- **date:** 2026-09-10
+- **outcome:** ANSWERED (116s)
+- **why asked:** (Claude fills in)
+- **verdict:** unverified
+
+## Question
+
+Attack this, do not confirm it. LabVIEW 2026, bead-tracking benchmark. Four harness VIs are identical except for the tracking kernel subVI inside: base (no kernel), par (CPU-parallel kernel), gpuk (a subVI that calls a CUDA DLL through one Call Library Function Node), track (a subVI containing a Case Structure whose frame 0 holds the same CPU kernel and frame 1 holds the same GPU kernel; the frame is chosen by a numeric control whose SAVED DEFAULT selects the backend). run_timing drives base then par then gpuk then track on each frame, 200 frames, and computes kernel time = median(harness) - median(base). Measured over 3 repeats: with the case selecting the CPU frame, track 2.84 ms/frame vs par 2.87 (no overhead at all). With the case selecting the GPU frame, track 3.04 vs gpuk 1.98, i.e. +1.06 ms, reproducible. My leading hypothesis H1: it is a measurement artefact, because on the GPU setting the GPU is called TWICE per frame (once by gpuk, once by track) and track is always the second caller, so it pays for a still-busy GPU, a just-used pinned staging buffer or a non-empty driver queue. Alternative H2: a real cost in the case frame. Already ruled out: the Case Structure itself (the CPU frame shows zero overhead), disk IO (frames are pre-cached, warming takes 0.2 s for 262 MB), and CPU contention (a contaminated run was discarded; these runs have base sd around 6 to 13 ms and no inverted rows). Questions: (1) name concrete mechanisms other than H1 and H2 that would add about 1 ms only on the GPU path of a case structure, including anything about how LabVIEW schedules a Call Library Function Node inside a Case Structure, the UI thread versus any-thread setting of a CLFN, subVI reentrancy, or data copies of an IMAQ image refnum and a large cluster array across a case tunnel; (2) is there a known LabVIEW behaviour where a CLFN inside a structure is executed in a different thread or with different inplaceness than the same subVI called at top level; (3) what single cheap measurement best separates your top candidate from H1. Cite sources.
+
+## Answer
+
+H1 is plausible, but the current evidence does not distinguish it from a deterministic host-side copy or thread handoff. My leading alternative is a large-array copy introduced at the `track` call boundary or Case tunnel, not inherent Case Structure overhead.
+
+1. Concrete alternatives to H1/H2
+
+- **Copy-on-write of the large cluster array.** A Case tunnel, branched wire, subVI connector, or CLFN pointer parameter can extend the value?셲 lifetime so LabVIEW cannot reuse its buffer. LabVIEW?셲 compiler explicitly inserts copies when another consumer needs the original value; ?쏶how Buffer Allocations??exposes those sites. A copy of roughly 100??00 MB/s effective memory traffic can readily occupy about 1 ms, depending on size and layout. [NI compiler/inplaceness explanation](https://www.ni.com/en/support/documentation/supplemental/10/ni-labview-compiler--under-the-hood.html), [NI buffer-allocation tool](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000PAcBSAW&l=en-US)
+
+- **CLFN parameter incorrectly treated as writable.** LabVIEW cannot infer that a pointer parameter is input-only. If an array passed to the CUDA DLL is not marked `const` in the CLFN configuration, LabVIEW may preserve the original and supply a writable copy?봯articularly when the wire is branched or remains live outside the Case. Marking a genuinely read-only long array/string as constant can avoid copies. [NI Community explanation by Rolf Kalbermatter](https://forums.ni.com/t5/LabVIEW/How-does-labview-use-memory-in-call-library-function-node/td-p/3672647), [NI CLFN parameter documentation](https://www.ni.com/docs/ru-RU/bundle/labview-api-ref/page/functions/call-library-function-node.html)
+
+- **UI-thread arbitration.** A CLFN configured for ?쏳un in UI thread??must arbitrate for the UI/root thread and may require a thread switch. Millisecond-scale latency and jitter are credible if that thread is servicing ActiveX, front-panel work, or other UI-thread CLFNs. ?쏳un in any thread??executes in the diagram?셲 current execution thread. [NI CLFN performance guidance](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA0VU000000A0bR0AS&l=en-US), [NI Community thread-model explanation](https://forums.ni.com/t5/LabVIEW/Force-Call-Library-Function-DLL-to-run-outside-of-UI-thread-Run/td-p/3649893)
+
+  However, this explanation requires an actual configuration or caller execution-system difference. Merely putting the same subVI inside a Case does not establish one.
+
+- **Host-thread-sensitive DLL/CUDA state.** With ?쏳un in any thread,??successive calls can execute on different LabVIEW worker threads. A DLL that uses thread-local buffers, per-thread initialization, or per-thread CUDA streams could therefore take a slow path specifically through the extra wrapper/call chain. CUDA?셲 primary context is process/device-wide, but CUDA error state is per host thread, and per-thread default streams are possible. [CUDA runtime initialization](https://docs.nvidia.com/cuda/cuda-programming-guide/02-basics/intro-to-cuda-cpp.html), [CUDA per-thread/default-stream behavior](https://docs.nvidia.com/cuda/archive/12.0.0/pdf/CUDA_Runtime_API.pdf)
+
+- **Different synchronization boundary inside the DLL.** CUDA launches are asynchronous, while transfers and allocation/resource pressure can synchronize or block. Therefore the measured CLFN duration may include work submitted earlier, or it may stop before its own GPU work finishes. NVIDIA explicitly warns that CUDA calls can block for internal-resource reasons and that pageable-memory staging can introduce synchronization. [CUDA synchronization behavior](https://docs.nvidia.com/cuda/archive/13.0.3/cuda-driver-api/api-sync-behavior.html)
+
+  This weakens the specific ?쐉ust-used pinned buffer??part of H1: pinned memory normally exists to avoid pageable staging. The actual mechanism would need to be buffer reuse guarded by events, allocation, stream synchronization, or another resource dependency inside your DLL.
+
+- **Reentrant clone allocation or serialization.** A non-reentrant subVI serializes simultaneous callers; shared-clone reentrancy allocates clones on demand and can introduce jitter; preallocated clones minimize call overhead. [NI VI execution properties](https://www.ni.com/docs/en-AS/bundle/labview-api-ref/page/dialog-boxes/execution-page-vi-properties-dialog-box.html)
+
+  This is a weak candidate here: sequential execution and a 200-frame median should eliminate a one-time clone allocation. It matters only if calls overlap asynchronously or stateful clone selection changes the CUDA path.
+
+- **CLFN maximum error checking.** Maximum checking adds memory and execution overhead, including guard checking around arrays. This would be GPU-only because only that path contains the CLFN, although it should affect `gpuk` equally if it truly invokes the exact same CLFN object/configuration. [NI CLFN error-checking guidance](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000P6tcSAC&l=en-US)
+
+- **IMAQ image copying is unlikely at the Case tunnel itself.** An IMAQ image wire contains a reference/pointer to an internal image structure, not the pixel buffer, so tunnelling the refnum does not normally copy image pixels. An explicit IMAQ copy, snapshot display, conversion to an array, or DLL-side copy is different. [NI IMAQ memory model](https://www.ni.com/en/support/documentation/supplemental/18/ni-imaq-memory-allocation.html), [NI image-reference explanation](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000P8khSAC&l=en-US)
+
+2. Is there a known Case-specific CLFN scheduling rule?
+
+I found no documented LabVIEW behavior saying that a CLFN is assigned a different thread merely because it resides inside a Case Structure, nor that Case membership inherently changes the CLFN?셲 parameter marshalling.
+
+Documented scheduling is controlled by:
+
+- the CLFN?셲 UI-thread versus any-thread setting;
+- the VI/caller?셲 preferred execution system;
+- dataflow readiness;
+- subVI reentrancy and clone policy.
+
+NI says subVIs normally inherit the caller?셲 execution system, while an any-thread CLFN runs in whichever eligible execution thread is executing the diagram. [NI execution properties](https://www.ni.com/docs/en-AS/bundle/labview-api-ref/page/dialog-boxes/execution-page-vi-properties-dialog-box.html), [NI CLFN threading guidance](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA0VU000000A0bR0AS&l=en-US)
+
+A structure can nevertheless change **buffer liveness and compiler inplaceness**, especially where values cross tunnels or are used after the structure. That is an optimizer consequence, not a special CLFN-in-Case execution rule. [NI compiler description](https://www.ni.com/en/support/documentation/supplemental/10/ni-labview-compiler--under-the-hood.html)
+
+3. Best single cheap measurement
+
+Run the same benchmark with the GPU pair in randomized or alternating order:
+
+- odd frames: `gpuk ??track`
+- even frames: `track ??gpuk`
+
+Record each raw duration by caller and position; do not initially subtract medians.
+
+Interpretation:
+
+- If the ??.06 ms penalty follows **second position**, H1 is strongly supported.
+- If it remains attached to **track regardless of order**, H1 is substantially falsified and a track-specific copy/thread-boundary difference becomes the leading candidate.
+- If only the first call after switching caller identity is slow, investigate host-thread/TLS, clone state, or lazy initialization.
+
+This crossover test is stronger than running 200 `gpuk` frames followed by 200 `track` frames because it controls temperature and drift while directly changing the causal variable H1 asserts: caller order. I would then use ?쏶how Buffer Allocations??only as the follow-up localization test.
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+Dispatched because a prediction failed: TRACK_kernel_v1 was expected to cost the same as the bare kernel plus < 0.5 ms and it
+cost +1.06 ms on the GPU backend only. The peer's main service was **killing my leading hypothesis before I built on it**:
+it insisted the evidence did not separate a measurement artefact from a host-side copy, and named copy-on-write across the
+case tunnel and the CLFN's non-const pointer parameter as better candidates.
+
+The experiment (tools/bench/gpu_overhead_probe.py, three 200-frame cells, DLL per-frame log on) then falsified H1 outright:
+
+| cell | gpuk kernel | track kernel | DLL internal median |
+|---|---|---|---|
+| A gpuk alone | 2.63 | | 1.668 |
+| B track alone | | 4.47 | 1.686 |
+| C both, one session | 2.20 | 3.55 | 1.615 |
+
+`track` is slower even when it is the ONLY GPU caller, so "being second in the pass" explains nothing. The DLL's own time is
+identical everywhere, so the cost is entirely on the LabVIEW side of the wrapper: gpuk spends 0.6-1.0 ms there, track 1.9-2.8.
+The peer's copy-on-write candidate is therefore the surviving explanation, and its own recommended follow-up (Show Buffer
+Allocations) is the next step if the cost is ever worth removing. It is not worth removing today: calling GPU_kernel_v1
+directly at the main VI's single call site costs nothing and was always the intended deployment.
+
+Not used: the crossover/order-swap test it proposed, because cell B already removes the order variable entirely and cell C
+reproduced the gap in one session.

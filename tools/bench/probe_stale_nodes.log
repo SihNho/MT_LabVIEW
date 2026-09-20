@@ -1,0 +1,20 @@
+BGRUN START 2026-09-14 09:54:45 limit 12.0 min: py -u tools/recipes/probe_stale_nodes.py
+scratch ExecState 1
+   walk after S-1 pristine                      :  8 nodes, donor8 present=True, new seen=[]
+created good=1766 questioned=1792; report_all Property count = 6
+   walk after S0 creation only                  :  8 nodes, donor8 present=True, new seen=[]
+   walk after S1 remove_bad_wires_scripted      :  8 nodes, donor8 present=True, new seen=[]
+   walk after S2 one wire()                     :  8 nodes, donor8 present=True, new seen=[]
+   walk after S3 close+open panel               :  8 nodes, donor8 present=True, new seen=[]
+   walk after S4 fresh op instance              :  8 nodes, donor8 present=True, new seen=[]
+
+################ SUMMARY ################
+  S0 creation only             control=True new nodes seen=[]
+  S1 remove_bad_wires          control=True new nodes seen=[]
+  S2 wire                      control=True new nodes seen=[]
+  S3 reopen                    control=True new nodes seen=[]
+  S4 fresh op                  control=True new nodes seen=[]
+
+VERDICT: new nodes NEVER became visible through Nodes[] - the walker is reading a different Diagram object or Nodes[] excludes them; do not build on the walker until this is resolved
+scratch deleted
+BGRUN END rc=0 after 10s

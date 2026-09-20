@@ -1,0 +1,51 @@
+BGRUN START 2026-09-17 05:17:35 limit 12.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\peer.ps1 -Agent codex -Kind review -Slug moveinto-stale-in-memory-vi -TaskFile C:\Users\KimLab\AppData\Local\Temp\peer_task_movein_stale.txt
+OUTCOME: ANSWERED (97s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-17-moveinto-stale-in-memory-vi.md
+--- ANSWER ---
+## 1. Strongest reason the diagnosis is wrong
+
+The evidence does **not identify the failed `g.open_panel()` call as the thing retaining the VI**. It establishes only that `GetVIReference(OPIN)` returned a previously edited in-memory instance. The same instance could instead be retained by another automation reference, an open panel, a project/application hierarchy, or another caller. NI explicitly warns that a VI remains resident while references or other ownership relationships exist, and that reference closure does not necessarily dispose it immediately. [NI: Closing References in LabVIEW](https://www.ni.com/en/support/documentation/supplemental/13/closing-references-in-labview.html)
+
+Thus, “stale in-memory VI” is strongly supported; “specifically the reference leaked by `g.open_panel()`” is not yet demonstrated.
+
+The PID and handle count add almost nothing: neither identifies which VI is resident or which reference owns it.
+
+## 2. Alternative explanation
+
+A competing explanation is a **post-copy disk race**:
+
+1. `copyfile()` successfully copied the donor.
+2. Another still-active helper or cleanup path subsequently rewrote `OPIN` with run 2’s modified state.
+3. `GetVIReference()` then loaded that state legitimately from disk.
+
+“No exception from `copyfile()`” proves that the copy completed, but not that the destination remained unchanged until `GetVIReference()`. This alternative predicts the same nodes, UIDs, and `ExecState 0`.
+
+A second alternative is that the VI was resident for a reason other than the returned top-level COM object—such as another VI reference or an open hierarchy. NI documents that closing one reference is insufficient when another reference or ownership relationship remains. [NI: Closing References in LabVIEW](https://www.ni.com/en/support/documentation/supplemental/13/closing-references-in-labview.html)
+
+## 3. Observation that would falsify the diagnosis
+
+The diagnosis is falsified if, immediately before `GetVIReference(OPIN)`:
+
+- a helper executing inside the relevant application instance reports that `OPIN` is absent from **All VIs in Memory**;
+- the donor and destination have identical byte hashes;
+- and `walk(OPIN)` nevertheless returns run 2’s graph.
+
+NI specifically recommends **All VIs in Memory** to determine when a VI has actually left memory; ordinary reference closure is insufficient because disposal can be asynchronous. The property may require a helper running inside LabVIEW because remote access to it is restricted. [NI: Closing References in LabVIEW](https://www.ni.com/en/support/documentation/supplemental/13/closing-references-in-labview.html), [NI: calling internal properties externally](https://forums.ni.com/t5/Developer-Center-Resources/Calling-Internal-LabVIEW-Properties-Externally/ta-p/3518788)
+
+Restarting the same LabVIEW application instance and reproducing the stale graph from a hash-verified donor copy would also falsify same-process retention.
+
+## Correct disk-reload procedure
+
+- **`Revert VI`**: This is the direct operation for an already-resident VI. It discards its in-memory edits and reloads the VI from disk. It refreshes the existing VI object; it does **not evict** it. [NI’s changed-on-disk guidance](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000kEssSAE)
+
+- **Close every reference**: This can permit eviction only after every explicit reference and other reason for residency is gone. Disposal may occur asynchronously, so closing and immediately reopening introduces a race. Confirm absence through **All VIs in Memory** before reusing the pathname. [NI: Closing References in LabVIEW](https://www.ni.com/en/support/documentation/supplemental/13/closing-references-in-labview.html)
+
+- **Close Front Panel**: This closes the window, not the VI Server references. It is not an eviction guarantee. NI treats closing a panel and closing references as distinct operations. [NI: programmatically closing VI panels](https://knowledge.ni.com/KnowledgeArticleDetails?OpenDocument=&id=kA00Z0000019SItSAM)
+
+- **Unique working copy per run**: Use a unique **filename**, not merely a unique directory. This does not evict anything, but it prevents a previous object under the old identity from satisfying the new `GetVIReference()` request. Open VI Reference either returns an existing in-memory VI or dynamically loads one from disk. [NI: Creating a VI Server Application](https://www.ni.com/docs/tr-CY/csh?context=lvcore_lvhowto_vi_server)
+
+For a production recipe, unique per-run names are the most deterministic approach. For deliberate reuse of one path, use `Revert VI`, or release everything and wait until the VI is observably absent before replacing and reopening it.
+
+After all four attacks, I still think the **broad stale-in-memory diagnosis is the best fit**. What remains unproved is the narrower attribution to `g.open_panel()` rather than some other retaining reference. Seeing `OPIN` absent from All VIs in Memory immediately before the bad read would change my mind.
+
+**Cheapest discriminating test:** in the same LabVIEW process, copy the same hash-verified donor bytes to both `OpMoveIn_v0.vi` and a nonce filename such as `OpMoveIn_probe_051556.vi`; open and walk the nonce copy first, then the fixed-name copy. If the nonce shows uid 744/236/237/240 correctly while the fixed name shows run 2’s state, the disk-race alternative loses and in-memory identity reuse wins.
+BGRUN END rc=0 after 98s

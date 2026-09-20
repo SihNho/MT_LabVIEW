@@ -1,0 +1,121 @@
+BGRUN START 2026-09-17 04:24:50 limit 20.0 min: py -u tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/plan_rev3.txt --trigger new-op --slug priorart-moveinto-rev4
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-moveinto-rev4.txt (54001 chars)
+OUTCOME: ANSWERED (480s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-priorart-moveinto-rev4.md
+COST: $4.1702  in 36 / out 32986 / cache-create 189479 / cache-read 2901257  (476s, 33 turn(s))
+--- ANSWER ---
+## Answer
+
+REV 4's four fixes all landed — I opened each citation and checked the current text. But the file still carries four prior-art problems, one of them **newly created by the B3‑ii fix**, and one that is the same defect class round 2 blocked (`already-failed`), moved from the *terminal* index to the *diagram* index.
+
+---
+
+## Did the four round‑2 fixes land?
+
+| round‑2 slug | disposition claimed | verified in the current text |
+|---|---|---|
+| A3 `contradicted` (docstring vs `net_map`) | `net_map`/`find_term` gone from the whole file | ✅ `probe_move_into_v0.py:172` binds `walk, term = B.walk, B.term`; there is no `g.net_map(` call and no `census()`/`find_term()` anywhere in the file. |
+| A4 `unread-evidence` (walker truncation) | credited to our own files | ✅ `:10-16` now cites `tools/gscript.py:2352-2355` and `docs/toolkit-capabilities.md:482-485,:23,:294`, with `diag_u2g_terminals.log` demoted to confirmation. |
+| B2 `already-failed` (name-keyed terminals) | `(name, is_source)` everywhere + a new gate | ✅ `:215-216` selects the Move Invoke by *two SINK* terminals; `:222` takes `term(mv_rows,"owner",False)`; `:233` filters `wire_ends` by `e[3]`; `:266-270` asserts the old owner source was actually deleted; `:279-281` asserts the sink is bare; `:294-297` is the new P1a. This closes run 1's `8:'owner'=w872 / 9:'owner'=w0` mis-pick (`tools/bench/probe_move_into_v0.log:44,:46-47`). |
+| B3‑i / B3‑ii `helper-exists` | helpers imported; `read_owner`'s columns restored | ✅ `:106` imports `build_track_v6_core`; `:440-446` carries `errL/errT/errO/errU/errG`, `uid_back`, `cls_back`, `cast_class` — matching `tools/recipes/build_opownerchain_v1.py:268-269,:274-275`, and the label keys exist in `tools/bench/opwiresource_v5_labels.json:4-13`. |
+
+---
+
+## PART A — THE DIRECTION
+
+### A3 `contradicted` — REV 4's own fix lets a **failed control arm** fall through into the answer
+
+Three of our files say a failed control invalidates the run:
+
+- `probe_move_into_v0.py:90` — *"Any of P1/P2/P3 failing stops the run and reports — no repair pass, no second construction (failure budget)."*
+- `docs/d1-build-plan.md:126-127` — *"**P2 (CONTROL)** … A failure here **invalidates the run (`INVALID`, conclude nothing)**."*
+- `docs/toolkit-capabilities.md:212-215` — *"Every probe of a suspected capability limit gets one from now on: attempt the known-good case through the identical code path, and **if it fails, print INVALID and conclude nothing**."* (`:201-206` is the record of three probes whose verdicts were void for exactly this.)
+
+The code does the opposite. `:509-519` runs P2, and a failing gate is only appended to `fails`; `:521-542` then runs P3 and **prints a verdict on the single question D1 turns on**, and `:548` prints P4. Nothing between them returns.
+
+This is *worse* in REV 4 than in REV 3, and by the B3‑ii fix: in REV 3 an unresolved owner read raised out of `owner_of()` (`rev3 :934`) and the run died in the `finally` before P3. REV 4 wraps it — `:517-519` `except Exception … gate(..., False, "UNRESOLVED READ")` — so the one case the fix was introduced to detect is now the case that **continues into P3**. The comment at `:506-507` ("a failure here means the probe is broken, not the capability") states the doctrine the code then declines to apply.
+
+One `return 1` after P2 (matching `:90` and the plan's `INVALID`) closes it.
+
+### A4 `unread-evidence` — the archived exchange whose whole subject is `GObject.Move` **with a destination `owner`** is not cited, and it answers the premise
+
+`probe_move_into_v0.py:42-47` builds its justification on `archive/peer/2026-09-13-scripted-diagram-selection.md:162` and says *"our own `move_out` already contradicts that exchange's general claim."* It never cites the exchange that already settled the point with external sources:
+
+- `archive/peer/2026-08-28-copy-nodes-between-vis.md:23` — *"The actual general-purpose mechanism is `GObject.Move`, with a destination `owner` …"*
+- `:47` — *"Thus `Move` really does support re-owning/copying across diagrams; **it is not limited to moving within the original diagram**"* (labviewwiki `GObject_class/Move_method` + an NI forum thread).
+- `:158` — *"One node/object: `source GObject → Move(owner = target AbstractDiagram, position, Duplicate? = TRUE)`."*
+- `:51` — the gotcha that bears directly on `move_in()`'s return value (`:390`): *"`Move` returns/retains the source reference, not a reference to the duplicate … compare destination object lists before and after."*
+
+This is not a missing footnote. `docs/d1-build-plan.md:63-64` writes, of `move_out` versus the 2026‑09‑13 claim, *"Both are on disk and **neither was cited before**"* — while the same plan cites this third file at `:40` and `:67` for the paste trap. The file was opened for one line and its central paragraph was missed; the probe's `:3` *"HAS NEVER BEEN MEASURED"* is true of **our machine**, but the direction was externally answered on 2026‑08‑28, and that changes what a P2/P3 failure would mean.
+
+---
+
+## PART B — THE ARTIFACT
+
+### B2 `already-failed` — the destination **diagram index** is derived exactly the way NAMES.md records three runs being burned, and nothing gates it
+
+`probe_move_into_v0.py:393-394`:
+
+```python
+def diag_index(target, uid):
+    return [o["uid"] for o in g.report_all(target, "Diagram")].index(uid)
+```
+
+That value is what selects the destination for every mutation: `:490-491` (`sib_i`, the diagram the new loop is created on), `:494` `g.loop_in("while", SCRATCH, sib_i, …)`, and `:503,:508,:523` (`body_i` into `move_in`).
+
+- `docs/NAMES.md:511-524` — *"Step 0a burned three runs on this. Each run needed the Traverse **index** of a newly created loop body so that `drop_subvi(…)` would place the subVI inside it, and each attempt derived that index the wrong way"*; attempt 3 used a position in another listing and *"the subVI landed on the harness's existing loop body"*. `:526-530` gives the recorded remedy: **use `new_since()`, whose rows carry the real Traverse index `i` and the uid** — and the probe *already calls it* at `:495` and throws `i` away.
+- `docs/d1-build-plan.md:45`, in this plan's own inventory: *"identify what a mutating op created — **by uid, never by a cached Traverse index** … `tools/gscript.py:833-836` (`new_since`), `archive/peer/2026-09-15-opwiresource-fail5-traverse-index-order-mismatch.md:29`."*
+- `archive/peer/2026-09-15-opwiresource-fail5-traverse-index-order-mismatch.md:28-30` — *"**Do not assume indices from `OpReportAll_v0` select the same objects in `OpReport_v3`-derived operations** … If index selection remains anywhere, retain the UID identity gate on every read."* That failure was measured: `report_all` index 742 = uid 10850, the op traversed uid 3512.
+- `tools/gscript.py:870-871` — *"Traverse order is unspecified and must never be used as a selector."*
+
+`OpMoveIn_v0` and `OpWhileLoopIn_v0` each run their **own** Traverse; `report_all` is a third enumerator. Nothing in the run checks that the diagram the op reached is the diagram meant: P2a (`:497-499`) gates only `+1 Diagram, +1 WhileLoop` — a whole-VI count, which `docs/NAMES.md:517` records as the check that *"silently"* passed a wrong placement, and `:534` says *"verify arrival by **listing that diagram's contents** … never by a whole-VI count."* A wrong index here does not look like a probe bug; it prints **P2/P3 FAIL** — the identical false negative on the identical question that round 2's B2 finding blocked.
+
+What would refute this precisely: show in writing that `OpMoveOut`/`OpWhileLoopIn`'s Traverse `Diagram` order is the same enumeration as `report_all`'s. `tools/recipes/probe_migrate_v3.py:57,:97-102` is the closest evidence (same `fidx` derivation, 5/5) — but it verified arrival by **listing the diagram** (`g.subvis(SCRATCH, body_i)`), which this probe does not. The cheap fixes are already in the file's imports: `body_i = new_dg[0]["i"]`, and one `g.node_labels(SCRATCH, body_i)` (`tools/gscript.py:393-400`, uid-carrying, one op run) asserting the new loop body is the intended diagram before the move and holds the moved uid after it.
+
+### B3 `helper-exists` — `handles()` is a hand-rolled `tasklist` that records no handle count, and the reader exists
+
+`probe_move_into_v0.py:143-150` shells `tasklist /FI "IMAGENAME eq LabVIEW.exe" /FO CSV /NH`, which returns image name, PID and memory — **never a handle count**. `:88` (P5) nevertheless promises *"LabVIEW **handle count** is recorded before and after."* Run 1 shows what was actually recorded: `tools/bench/probe_move_into_v0.log:3` — the tasklist "no matching task" error string.
+
+The reader is already written: `tools/bench/bench_prep.py:64-71` `labview_handles()` (`Get-Process LabVIEW … HandleCount`), with `HANDLE_LIMIT` at `:61` and the restart-above-limit policy at `:111-117` — the mechanism `CLAUDE.md`'s "Reference hygiene — close every reference, and PROVE it by handle count" requires (*"Measured, not assumed"*). Note the plan is weaker than the probe: `docs/d1-build-plan.md:131` says only *"LabVIEW **process state** recorded before and after"* — so either the docstring's P5 claim comes down to match the code, or the one-line call comes in.
+
+---
+
+## Where I found NO prior art — checked, not assumed
+
+- **P3 (a structure with its contents, by `GObject.Move` with a wired `owner`) is still genuinely open here.** `docs/d1-build-plan.md:56` lists the six structures as *"OPEN — this is D1's only real unknown"*; `docs/toolkit-capabilities.md:374,:391-393` is the *other* probe (position-only `move_object`), whose reparenting claim was withdrawn. Nothing on disk measures this.
+- **The donor premise holds.** `gscript.py:2469-2481` `move_out()` is exactly as described, `owner` fixed to `VI.Block Diagram`.
+- **`owner_read`'s label file is right** — `opwiresource_v5_labels.json` is the map `build_opownerchain_v1.py:165` writes.
+- **Two prose notes, no slug, no block:** `:64` still lists `net_map` among "readers used" though REV 4 removed it (the same docstring-vs-code shape round 2 slugged, but a single stale word in an inventory line); `FRAME_BODY_UID` at `:116` is now unused.
+
+---
+
+## Verdicts
+
+```
+tools/recipes/probe_move_into_v0.py REV 4
+PRIOR-ART: contradicted     (A3 - :90 "Any of P1/P2/P3 failing stops the run" and
+                             docs/d1-build-plan.md:126-127 "INVALID, conclude nothing" and
+                             docs/toolkit-capabilities.md:212-215, vs :509-519/:521-542, where a
+                             failed or UNRESOLVED P2 falls through and P3 still prints a verdict -
+                             newly caused by REV 4's try/except around owner_of())
+PRIOR-ART: unread-evidence  (A4 - archive/peer/2026-08-28-copy-nodes-between-vis.md:23,:43,:47,:53,:158
+                             answers "does Move with a destination owner reparent across diagrams"
+                             with sources; :51 is the no-reference-returned gotcha for move_in() at :390.
+                             Cited nowhere in the file; docs/d1-build-plan.md:63-64 says "neither was
+                             cited before" while citing the same file at :40,:67)
+PRIOR-ART: already-failed   (B2 - diag_index() :393-394 feeding :490-494,:503,:508,:523 derives a
+                             Traverse index from a report_all listing with no identity gate;
+                             docs/NAMES.md:511-534 (three runs burned, remedy = new_since()'s own i,
+                             "verify by listing that diagram's contents, never by a whole-VI count"),
+                             docs/d1-build-plan.md:45, and
+                             archive/peer/2026-09-15-opwiresource-fail5-traverse-index-order-mismatch.md:28-30;
+                             new_since() is already called at :495 and its i is discarded; P2a :497-499
+                             gates only counts)
+PRIOR-ART: helper-exists    (B3 - handles() :143-150 records no handle count though :88 promises one
+                             (tools/bench/probe_move_into_v0.log:3);
+                             tools/bench/bench_prep.py:64-71 labview_handles() is the reader,
+                             with HANDLE_LIMIT :61 and the restart policy :111-117)
+```
+
+All four are one edit apiece: `return 1` after a failed P2; cite the 2026‑08‑28 exchange (and let it soften `:3`); take `body_i` from `new_since`'s `i` plus one `node_labels()` gate on the destination; call `bench_prep.labview_handles()` or drop P5's claim to what the plan says.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-moveinto-rev4.md
+BGRUN END rc=0 after 481s

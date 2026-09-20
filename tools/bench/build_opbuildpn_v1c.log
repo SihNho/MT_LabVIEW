@@ -1,0 +1,43 @@
+BGRUN START 2026-09-14 09:59:03 limit 15.0 min: py -u tools/recipes/build_opbuildpn_v1.py
+start: ExecState 1, indicators ['error out']
+creator SubVI index 4; terminal indices: error out=10, Outputs=8
+Nodes[4] is uid 297 with 16 terminals; need indices 10, 8 < 16
+
+== 1 Create Indicator on creator.'error out'
+   predict: ControlTerminal +1, Wire +1, ExecState stays 1
+   OBSERVED: [{'i': 9, 'class': 'ControlTerminal', 'uid': 7293, 'pos': (940, 643), 'owner': 'TopLevelDiagram'}]
+   new indicator label(s): ['error out 2']; ExecState 0; Wire 12->13
+
+== 2 Create Indicator on creator.'Outputs'
+   predict: ControlTerminal +1, Wire +1, ExecState stays 1
+   OBSERVED: [{'i': 10, 'class': 'ControlTerminal', 'uid': 7330, 'pos': (940, 604), 'owner': 'TopLevelDiagram'}]
+   new indicator label(s): ['Outputs']; ExecState 0; Wire 13->14
+
+assembled: ExecState 0, indicators now ['error out', 'error out 2', 'Outputs']
+   DIAGNOSTIC Remove Bad Wires on the unsaved copy: ExecState 0->0, Wire 14->14 (not a bad-wire problem)
+
+== PHASE B: index 10 broke the VI; retry on a fresh copy with the other 'error out' (index 15)
+
+== B1 Create Indicator on creator terminal 15 ('error out' #2)
+   predict: ExecState stays 1 if THIS is the real source
+   OBSERVED: [{'i': 9, 'class': 'ControlTerminal', 'uid': 457, 'pos': (940, 649), 'owner': 'TopLevelDiagram'}]
+   label(s) ['error out 2']; ExecState 1; Wire 12->13
+
+== B2 Create Indicator on creator.'Outputs'
+   predict: ExecState stays 1
+   OBSERVED: [{'i': 10, 'class': 'ControlTerminal', 'uid': 495, 'pos': (940, 613), 'owner': 'TopLevelDiagram'}]
+   label(s) ['Outputs']; ExecState 1; Wire 13->14
+   phase B assembled: ExecState 1
+saved OpBuildPN_v1
+   CONTROL GObject.Position 632A800         creator error=(False, 0, '')  Outputs len=1   (expected: pass)
+   KNOWN-BAD bogus id FFFFFFF               creator error=(True, 1077, 'Invoke Node in LV-Scripting.lvlib:Create Property Node.vi->OpBuildPN_v1.vi\n<APPEND>\nMethod Name: <b>Set Properties[]</b>')  Outputs len=0   (expected: fail)
+   Control.Terminal 6332006                 creator error=(False, 0, '')  Outputs len=1   (expected: ?)
+   AbstractDiagram.SubVIs[] 6375802         creator error=(False, 0, '')  Outputs len=1   (expected: ?)
+
+known-bad creator error code/source recorded: (1077, 'Invoke Node in LV-Scripting.lvlib:Create Property Node.vi->OpBuildPN_v1.vi\n<APPEND>\nMethod Name: <b>Set Properties[]</b>')
+VERDICT:
+  v1 DISCRIMINATES: control clean with count 1, known-bad raises. Rows 3-4 are real readings.
+    Control.Terminal 6332006                 -> ATTACHED (clean error, count 1)
+    AbstractDiagram.SubVIs[] 6375802         -> ATTACHED (clean error, count 1)
+scratch target deleted
+BGRUN END rc=0 after 103s

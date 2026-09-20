@@ -1,0 +1,46 @@
+BGRUN START 2026-09-17 07:16:21 limit 40.0 min: py -u tools/recipes/build_d1_v0.py
+PHASE = 'relocate'  (structural relocation only; --full is not implemented)
+
+=== S0: preconditions
+  PASS  S0a original md5 BEFORE  2a78e17c449cacdaf5da389818526859
+  PASS  S0b OpMoveIn_v0.vi present  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpMoveIn_v0.vi
+  PASS  S0c GPU_kernel_v1.vi present  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\GPU_kernel_v1.vi
+  FACT  LabVIEW handles before: 54384 (fresh-instance baseline ~31,500)
+  PASS  S0d the chosen TRANSPORT 'queue' has a creator BUILT in the fleet today  OpQueueObtain/Enqueue/Dequeue/Release_v0 - EXERCISED, core 162/162
+  FACT  TRANSPORT = 'queue' via gscript.queue_node - OpQueueObtain/Enqueue/Dequeue/Release_v0 - EXERCISED, core 162/162
+
+=== S1: the D1 target
+  FACT  BEFORE census: {'Diagram': 170, 'Node': 626, 'Wire': 1902, 'LoopTunnel': 132, 'ControlTerminal': 114, 'WhileLoop': 3, 'Local': 8, 'SubVI': 98}
+  PASS  S1 the copy matches the BEFORE census  {} (empty = all match)
+  FACT  ExecState of the fresh copy: 0 (0 is EXPECTED headlessly - plan s2b; not gated)
+
+=== S2: three new While loops on Diagram #686
+  FACT  Diagram#686 (holder of WhileLoop#637) is Traverse index 19
+  FACT  1.2: WhileLoop #1133, body Diagram #1170 at Traverse index 20
+  FACT  1.5: WhileLoop #1134, body Diagram #1194 at Traverse index 20
+  FACT  1.7: WhileLoop #1135, body Diagram #1215 at Traverse index 20
+  PASS  S2 three loops where there was one  WhileLoop 6 (want 6), Diagram 173 (want 174)
+  PASS  S2b #637 still exists  WhileLoops [1135, 1134, 1133, 25380, 637, 15173]
+  OBSERVED uid 6810 -> owner 'Diagram' uid 639 | self 'SubVI'#6810 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #6810 still owned by the frame loop body  owner 639 (want Diagram#639)
+  OBSERVED uid 22700 -> owner 'Diagram' uid 639 | self 'SubVI'#22700 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #22700 still owned by the frame loop body  owner 639 (want Diagram#639)
+  OBSERVED uid 22082 -> owner 'Diagram' uid 639 | self 'CaseStructure'#22082 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #22082 still owned by the frame loop body  owner 639 (want Diagram#639)
+  OBSERVED uid 12589 -> owner 'Diagram' uid 639 | self 'CaseStructure'#12589 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #12589 still owned by the frame loop body  owner 639 (want Diagram#639)
+  OBSERVED uid 11639 -> owner 'Diagram' uid 639 | self 'CompoundArithmetic'#11639 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #11639 still owned by the frame loop body  owner 639 (want Diagram#639)
+  OBSERVED uid 642 -> owner 'Diagram' uid 639 | self 'ControlTerminal'#642 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #642 still owned by the frame loop body  owner 639 (want Diagram#639)
+
+=== S3: move 20 nodes (s11c: #12589 stays on 1.1), delete #5058, drop GPU_kernel_v1
+  FACT  S3b net neighbours on diagram 43 (stay put, share a net with a mover): [1114, 2136, 3052, 3057, 3191, 3447, 3529, 3560, 4580, 5058, 5119, 10068, 10382, 10825, 11529, 11608, 12589, 20474, 22703, 23175, 29240, 30117]
+  FACT  S3b diagram 19 (A1) censused whole: [194, 250, 637, 781, 1133, 1134, 1135, 1628, 2048, 6384, 6409, 6951, 7201, 7202, 8486, 8953, 9179, 9342, 25091, 25149, 25380, 27605, 28124, 28670] - plan s5b lists only [637, 6384, 2048, 781, 27605]
+  FACT  BEFORE terminal census: 42 nodes on d43 (20 moving + 22 net-neighbours), 164 wired terminals; 24 nodes on d19; 14 shift registers of #637
+  OBSERVED uid 5540 -> owner 'Diagram' uid 1215 | self 'CaseStructure'#5540 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 1215 -> owner 'WhileLoop' uid 1135 | self 'Diagram'#1215 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  **FAIL**  S3 #5540 -> 1.2  owner Diagram#1215 (want Diagram#1170); owner(owner) WhileLoop#1135 (want WhileLoop#1133)
+  PASS  S6b original md5 AFTER  2a78e17c449cacdaf5da389818526859
+  FACT  LabVIEW handles after: 54726 (before 54384)
+BGRUN END rc=1 after 22s

@@ -1,0 +1,170 @@
+BGRUN START 2026-09-14 19:35:43 limit 15.0 min: py -u tools/recipes/build_setcommand_signed.py
+start: Wire=74 ExecState=1
+   read frame nodes: [(795, 'VISA Write'), (838, 'Concatenate Strings'), (926, 'VISA Read'), (979, 'String Subset'), (1013, 'Hexadecimal String To Number'), (2841, 'Multiply'), (828, 'Subtract'), (2410, 'Multiply'), (622, 'Type Cast'), (784, 'Multiply')]
+   String Subset 979 (Nodes[] 3, substring wire 1183); Hex 1013 (Nodes[] 4, number wire 2939); Type Cast 622 (Nodes[] 8, x wire 1183); scale Multiply 2841 (Nodes[] 5)
+
+== 2a delete wire number->Multiply.x
+   predict: Wire -1
+   result : after Wire=73 ExecState=0  (0.2 s)
+
+== 2b delete the substring wire (Hex.string / TypeCast.x / 'read buffer 2')
+   predict: Wire -1, ExecState 0
+   result : after Wire=72 ExecState=0  (0.2 s)
+
+== 3a substring -> Hex.string
+   predict: (1, 0)
+   result : (0, 0)  (8.0 s)
+
+== 3b Hex.number -> TypeCast.x
+   predict: (1, 0)
+   result : (0, 0)  (8.3 s)
+
+== 3c TypeCast.out -> Multiply.x (branch)
+   predict: (0 or 1, 1)
+   result : (0, 0)  (8.3 s)
+
+== 3d substring -> 'read buffer 2' indicator (connect_ctl)
+   predict: no error text
+   result : error 1055: Invoke Node in OpConnectCtl_v0.vi  (0.0 s)
+   after: Hex [('number', 0), ('offset past number', 0), ('default (0uL)', 0), ('offset', 0), ('string', 0)]; TypeCast [('x', 0), ('type', 687), ('*(type *) &x', 1055)]; Multiply [('x*y', 2444), ('y', 2937), ('x', 0)]
+   wiring check False, ExecState 0
+
+VERDICT: BROKEN / wiring mismatch - NOT SAVING.
+BGRUN END rc=4 after 37s
+BGRUN START 2026-09-14 19:37:37 limit 15.0 min: py -u tools/recipes/build_setcommand_signed.py
+start: Wire=74 ExecState=1
+   read frame nodes: [(795, 'VISA Write'), (838, 'Concatenate Strings'), (926, 'VISA Read'), (979, 'String Subset'), (1013, 'Hexadecimal String To Number'), (2841, 'Multiply'), (828, 'Subtract'), (2410, 'Multiply'), (622, 'Type Cast'), (784, 'Multiply')]
+   String Subset 979 (Nodes[] 3, substring wire 1183); Hex 1013 (Nodes[] 4, number wire 2939); Type Cast 622 (Nodes[] 8, x wire 1183); scale Multiply 2841 (Nodes[] 5)
+
+== 2a delete wire number->Multiply.x
+   predict: Wire -1
+   result : after Wire=73 ExecState=0  (0.2 s)
+
+== 2b delete the substring wire (Hex.string / TypeCast.x / 'read buffer 2')
+   predict: Wire -1, ExecState 0
+   result : after Wire=72 ExecState=0  (0.2 s)
+
+== 3a substring -> Hex.string (wire by name)
+   predict: Wire +1
+   result : after Wire=73 ExecState=0  (0.2 s)
+
+== 3b Hex.number -> TypeCast.x
+   predict: Wire +1
+   result : after Wire=74 ExecState=0  (0.2 s)
+
+== 3c TypeCast.out -> Multiply.x (branch)
+   predict: ExecState 1
+   result : after Wire=74 ExecState=1  (0.2 s)
+
+== 3d substring -> 'read buffer 2' indicator (Wire Indicators by name, branch)
+   predict: no exception
+   result : 0.023936033248901367  (0.1 s)
+   after: Hex [('number', 601), ('offset past number', 0), ('default (0uL)', 0), ('offset', 0), ('string', 598)]; TypeCast [('x', 601), ('type', 687), ('*(type *) &x', 1055)]; Multiply [('x*y', 2444), ('y', 2937), ('x', 1055)]
+   wiring check True, ExecState 1
+
+== 4 save SetCommand_signed.vi
+   predict: written
+   result : 21577  (0.1 s)
+
+== 5a TEST-signed: delete VISA Read -> String Subset.string wire
+   predict: Wire -1
+   result : None  (0.0 s)
+
+== 5b TEST-signed: create_control on String Subset.string
+   predict: a 'string' control
+   result : ([], None)  (8.2 s)
+   TEST-signed injected control: []; ExecState 0
+STOP: signed TEST copy not runnable - the deliverable IS saved; test copies not saved.
+BGRUN END rc=5 after 32s
+BGRUN START 2026-09-14 19:39:40 limit 15.0 min: py -u tools/recipes/build_setcommand_signed.py
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_setcommand_signed.py", line 205, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_setcommand_signed.py", line 61, in main
+    shutil.copyfile(SRC, OP); time.sleep(0.3); g.open_panel(OP); time.sleep(1.0)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 836, in open_panel
+    _invoke(lv().GetVIReference(target, "", False, 0), "OpenFrontPanel", bool(activate), 1)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 142, in _invoke
+    raise RuntimeError(
+RuntimeError: COM OpenFrontPanel did not return within 180s (no dialog) - LabVIEW busy or a second client contending
+BGRUN END rc=1 after 181s
+BGRUN START 2026-09-14 19:46:05 limit 15.0 min: py -u tools/recipes/build_setcommand_signed.py
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_setcommand_signed.py", line 215, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_setcommand_signed.py", line 61, in main
+    shutil.copyfile(SRC, OP); time.sleep(0.3); g.open_panel(OP); time.sleep(1.0)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 836, in open_panel
+    _invoke(lv().GetVIReference(target, "", False, 0), "OpenFrontPanel", bool(activate), 1)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 142, in _invoke
+    raise RuntimeError(
+RuntimeError: COM OpenFrontPanel did not return within 180s (no dialog) - LabVIEW busy or a second client contending
+BGRUN END rc=1 after 181s
+BGRUN START 2026-09-14 19:52:00 limit 15.0 min: py -u tools/recipes/build_setcommand_signed.py
+   preload via report_all: 0 subVIs in 0.1 s
+   open_panel: 1.0 s
+start: Wire=74 ExecState=1
+   read frame nodes: [(795, 'VISA Write'), (838, 'Concatenate Strings'), (926, 'VISA Read'), (979, 'String Subset'), (1013, 'Hexadecimal String To Number'), (2841, 'Multiply'), (828, 'Subtract'), (2410, 'Multiply'), (622, 'Type Cast'), (784, 'Multiply')]
+   String Subset 979 (Nodes[] 3, substring wire 1183); Hex 1013 (Nodes[] 4, number wire 2939); Type Cast 622 (Nodes[] 8, x wire 1183); scale Multiply 2841 (Nodes[] 5)
+
+== 2a delete wire number->Multiply.x
+   predict: Wire -1
+   result : after Wire=73 ExecState=0  (0.4 s)
+
+== 2b delete the substring wire (Hex.string / TypeCast.x / 'read buffer 2')
+   predict: Wire -1, ExecState 0
+   result : after Wire=72 ExecState=0  (0.4 s)
+
+== 3a substring -> Hex.string (wire by name)
+   predict: Wire +1
+   result : after Wire=73 ExecState=0  (1.3 s)
+
+== 3b Hex.number -> TypeCast.x
+   predict: Wire +1
+   result : after Wire=74 ExecState=0  (0.5 s)
+
+== 3c TypeCast.out -> Multiply.x (branch)
+   predict: ExecState 1
+   result : after Wire=74 ExecState=1  (0.5 s)
+
+== 3d substring -> 'read buffer 2' indicator (Wire Indicators by name, branch)
+   predict: no exception
+   result : 0.06382989883422852  (0.1 s)
+   after: Hex [('number', 601), ('offset past number', 0), ('default (0uL)', 0), ('offset', 0), ('string', 598)]; TypeCast [('x', 601), ('type', 687), ('*(type *) &x', 1055)]; Multiply [('x*y', 2444), ('y', 2937), ('x', 1055)]
+   wiring check True, ExecState 1
+
+== 4 save SetCommand_signed.vi
+   predict: written
+   result : 21577  (0.1 s)
+
+== 5a TEST-signed: copy_into donor 'Text' string control
+   predict: one new GObject
+   result : [{'i': 314, 'class': 'ControlTerminal', 'uid': 617, 'pos': (0, 75), 'owner': 'TopLevelDiagram'}]  (35.5 s)
+   TEST-signed panel has 'Text' control: True
+
+== 5b TEST-signed: delete VISA Read -> String Subset.string wire
+   predict: Wire -1
+   result : None  (0.0 s)
+
+== 5c TEST-signed: wire_control 'Text' -> String Subset.string (into the frame)
+   predict: ExecState 1
+   OBSERVED: EXC wire_control ['Text'] -> Function.['string']: Wire 73 -> 75, expected +1 (if the control is already wired elsewhere this may be a successful BRANCH - re-call with branch=True)
+   TEST-signed String Subset.string wire 616; ExecState 1
+
+== 5a TEST-original: copy_into donor 'Text' string control
+   predict: one new GObject
+   result : [{'i': 314, 'class': 'ControlTerminal', 'uid': 603, 'pos': (0, 75), 'owner': 'TopLevelDiagram'}]  (15.6 s)
+   TEST-original panel has 'Text' control: True
+
+== 5b TEST-original: delete VISA Read -> String Subset.string wire
+   predict: Wire -1
+   result : None  (0.0 s)
+
+== 5c TEST-original: wire_control 'Text' -> String Subset.string (into the frame)
+   predict: ExecState 1
+   OBSERVED: EXC wire_control ['Text'] -> Function.['string']: Wire 73 -> 75, expected +1 (if the control is already wired elsewhere this may be a successful BRANCH - re-call with branch=True)
+   TEST-original String Subset.string wire 602; ExecState 1
+instr.lib original md5 unchanged: True
+
+VERDICT: SetCommand_signed.vi + _TEST built (structural) - run tools/bench/test_setcommand_signed.py next
+BGRUN END rc=0 after 82s

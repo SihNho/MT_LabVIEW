@@ -1,0 +1,623 @@
+BGRUN START 2026-09-19 23:23:31 limit 8.0 min: py -u tools/bench/t2_rsrc_blockdiff.py
+Python BGRUN END rc=9009 after 0s
+BGRUN START 2026-09-19 23:24:11 limit 8.0 min: python -u tools/bench/t2_rsrc_blockdiff.py
+T2 -- OFFLINE RSRC BLOCK-LEVEL DIFF   (read-only; no LabVIEW, no COM, no lock)
+started 2026-09-19 23:24:11
+recipe constants read from G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\stage_d1_s1.py
+  LEFT  (ORIGINAL) = G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi   [pinned md5 2a78e17c449cacdaf5da389818526859]
+  RIGHT (no-edit COM save) = C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1arm_savetest.vi
+
+ORIGINAL md5 BEFORE : 2a78e17c449cacdaf5da389818526859   (pin 2a78e17c449cacdaf5da389818526859)  -> MATCH
+RIGHT    md5 BEFORE : e0112963cc1b9e3be29d2bb053ba9029
+sizes: LEFT 473317 B   RIGHT 475141 B   delta +1824 B
+
+SELF-CHECKS (a mis-parse must not be reported as a measurement)
+  LEFT   PASS  C1 magic RSRC\r\n\x00\x03   b'RSRC\r\n\x00\x03'
+  LEFT   PASS  C2 info_offset+info_size == filesize   470064+3253 vs 473317
+  LEFT   PASS  C3 data_offset+data_size == info_offset   32+470032 vs 470064
+  LEFT   PASS  C0c block count sane (1..512)   45
+  LEFT   PASS  C4 all idents printable ASCII
+  LEFT   **FAIL**  C5 every payload inside the data region   98 of 110 inside
+  LEFT   **FAIL**  C6 payloads tile the data region, no overlap   overlaps=[('BDEx#-1', 'BDHb#-1'), ('BDHb#-1', 'BDPW#-1'), ('BDPW#-1', 'BDSE#-1')] covered=9692923926 of data_size=470032
+  RIGHT  PASS  C1 magic RSRC\r\n\x00\x03   b'RSRC\r\n\x00\x03'
+  RIGHT  PASS  C2 info_offset+info_size == filesize   471904+3237 vs 475141
+  RIGHT  PASS  C3 data_offset+data_size == info_offset   32+471872 vs 471904
+  RIGHT  PASS  C0c block count sane (1..512)   45
+  RIGHT  PASS  C4 all idents printable ASCII
+  RIGHT  **FAIL**  C5 every payload inside the data region   98 of 110 inside
+  RIGHT  **FAIL**  C6 payloads tile the data region, no overlap   overlaps=[('BDEx#-1', 'BDHb#-1'), ('BDHb#-1', 'BDPW#-1'), ('BDPW#-1', 'BDSE#-1')] covered=9692923926 of data_size=471872
+  => tables are **UNTRUSTED (a self-check failed)**
+
+LEFT  ORIGINAL : type=LVIN creator=LBVW  info_off=470064 info_size=3253 data_off=32 data_size=470032  blocks=45
+LEFT  ORIGINAL : version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+RIGHT SAVED    : type=LVIN creator=LBVW  info_off=471904 info_size=3237 data_off=32 data_size=471872  blocks=45
+RIGHT SAVED    : version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+
+PER-BLOCK TABLE -- LEFT (ORIGINAL), 45 blocks
+  ident  n_sec     offset       size  sha256
+  LVSR       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  RTSG       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  CCST       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  LIvi       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  CONP       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  TM80      18         36     515612  b64c7e2e9b3584c9763e6733178828ecfa52ce35b95db018fbd3cbe5032f7862
+  DFDS       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  LIds       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  VICD      18         36     989268  63108a5464f6ac6bd883d726fee6c6d7cc5e2d678a102ead9d2aad6b995fff64
+  GCDI       1         40     473277  94c6c594ba02fa27a9042c41a1dae36cb4891aab38db62e18d6010d2c3616238
+  vers       5         36     473608  a026e4a17966bd15fe60f892992e0f483789876380ab7c8ea8942072d7405615
+  SCSR       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  DLDR       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  FPTD       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  CPMp       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BFAL       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  NUID       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  SUID       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BNID       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  GCPR       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BDPW       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  ICON       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  icl8       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  CPC2       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BKMK       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  LIfp       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  FPEx       1         38     473279  386d8467302506f33f7df71d3e3517bf077eb1c9e9d5849e1e36ad55e97dfa8d
+  STR        8         36     473967  8aa4e91254069d14075c71f172a80720e53643e5e17c78a30135e79f54d05858
+  PICC      30         36    1147155  172c20f4ffec70417875d3e1c797b4cbd4367006f1ee9f1f1b1c85dda88378cc
+  MNGI      13         36     951551  fe1cd3a4fe737c819c4b9b7910fec3dc41d9a85113d982cf21b9886868c99b23
+  FPHb       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  FPSE       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  LPIN       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  VPDP       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  LIbd       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BDEx       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BDHb       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BDSE       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  VITS       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  DTHP       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  MUID       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  HIST       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  PRT        1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  VCTP       1        164     473153  66537b7fdd00621423e1d5bc50e38d884ec1f6b7c716c658a4c4b92d7b65b7a3
+  FTAB       1         -1          0  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+PER-BLOCK TABLE -- RIGHT (SAVED), 45 blocks
+  ident  n_sec     offset       size  sha256
+  LVSR       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  RTSG       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  CCST       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  LIvi       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  CONP       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  TM80      18         36     517436  4016f2acab9b7beb5fe944124d8fcb33d1d032de715793158914fff0c3de0319
+  DFDS       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  LIds       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  VICD      18         36     992916  039a759b658df36018c42cedfbe0085c425070c7af2bf0840194d2a79c43a078
+  GCDI       1         40     475101  2e71053c651c17dff864aaf67af4bb9005a8d44d157257925b1ecb1375946eee
+  vers       5         36     475432  b1fc2792b49af417db8adc249c7996ef05694ed6894dac452e80645de6effa95
+  SCSR       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  DLDR       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  FPTD       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  CPMp       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BFAL       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  NUID       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  SUID       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BNID       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  GCPR       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BDPW       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  ICON       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  icl8       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  CPC2       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BKMK       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  LIfp       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  FPEx       1         38     475103  f93738528aee339cb5a8bd541ce0d57fec61f6bfeb23105397f8c1bb5520edfa
+  STR        8         36     475791  fee98717c606e9483fb4b74906e0e561d56a1413e7bacbc0dc7fbe04ec78aa95
+  PICC      30         36    1150803  4de8b3054bbb13881ccd050108526a288d58202b0b127e242a040d5069d21b44
+  MNGI      13         36     955199  88cebaeb438feef0232585328e8236a6479d289fdf8bd966fc06b7abe8eec602
+  FPHb       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  FPSE       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  LPIN       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  VPDP       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  LIbd       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BDEx       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BDHb       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BDSE       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  VITS       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  DTHP       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  MUID       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  HIST       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  PRT        1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  VCTP       1        164     474977  6006c20d2cc59c27c0e750cba073259e43956fe640427925272d40be206695f2
+  FTAB       1         -1          0  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+SET 1 -- PRESENT ON BOTH AND BYTE-IDENTICAL : 36
+  BDEx    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BDHb    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BDPW    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BDSE    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BFAL    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BKMK    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  BNID    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  CCST    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  CONP    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  CPC2    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  CPMp    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  DFDS    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  DLDR    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  DTHP    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  FPHb    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  FPSE    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  FPTD    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  FTAB    0 B  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  GCPR    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  HIST    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  ICON    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  LIbd    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  LIds    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  LIfp    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  LIvi    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  LPIN    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  LVSR    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  MUID    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  NUID    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  PRT     160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  RTSG    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  SCSR    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  SUID    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  VITS    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  VPDP    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  icl8    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+
+SET 2 -- PRESENT ON BOTH AND DIFFERENT : 9
+  FPEx    LEFT    473279 B  n_sec=1  386d8467302506f33f7df71d3e3517bf077eb1c9e9d5849e1e36ad55e97dfa8d
+          RIGHT   475103 B  n_sec=1  f93738528aee339cb5a8bd541ce0d57fec61f6bfeb23105397f8c1bb5520edfa
+          delta +1824 B
+  GCDI    LEFT    473277 B  n_sec=1  94c6c594ba02fa27a9042c41a1dae36cb4891aab38db62e18d6010d2c3616238
+          RIGHT   475101 B  n_sec=1  2e71053c651c17dff864aaf67af4bb9005a8d44d157257925b1ecb1375946eee
+          delta +1824 B
+  MNGI    LEFT    951551 B  n_sec=13  fe1cd3a4fe737c819c4b9b7910fec3dc41d9a85113d982cf21b9886868c99b23
+          RIGHT   955199 B  n_sec=13  88cebaeb438feef0232585328e8236a6479d289fdf8bd966fc06b7abe8eec602
+          delta +3648 B
+  PICC    LEFT   1147155 B  n_sec=30  172c20f4ffec70417875d3e1c797b4cbd4367006f1ee9f1f1b1c85dda88378cc
+          RIGHT  1150803 B  n_sec=30  4de8b3054bbb13881ccd050108526a288d58202b0b127e242a040d5069d21b44
+          delta +3648 B
+           section -1: 196607 B 616093f7d48fa733  ->  196607 B a2dc745cbd4d993f
+  STR     LEFT    473967 B  n_sec=8  8aa4e91254069d14075c71f172a80720e53643e5e17c78a30135e79f54d05858
+          RIGHT   475791 B  n_sec=8  fee98717c606e9483fb4b74906e0e561d56a1413e7bacbc0dc7fbe04ec78aa95
+          delta +1824 B
+  TM80    LEFT    515612 B  n_sec=18  b64c7e2e9b3584c9763e6733178828ecfa52ce35b95db018fbd3cbe5032f7862
+          RIGHT   517436 B  n_sec=18  4016f2acab9b7beb5fe944124d8fcb33d1d032de715793158914fff0c3de0319
+          delta +1824 B
+           section -1: 40998 B 58614002201c883a  ->  40998 B 7cc2241f0ac9600a
+  VCTP    LEFT    473153 B  n_sec=1  66537b7fdd00621423e1d5bc50e38d884ec1f6b7c716c658a4c4b92d7b65b7a3
+          RIGHT   474977 B  n_sec=1  6006c20d2cc59c27c0e750cba073259e43956fe640427925272d40be206695f2
+          delta +1824 B
+  VICD    LEFT    989268 B  n_sec=18  63108a5464f6ac6bd883d726fee6c6d7cc5e2d678a102ead9d2aad6b995fff64
+          RIGHT   992916 B  n_sec=18  039a759b658df36018c42cedfbe0085c425070c7af2bf0840194d2a79c43a078
+          delta +3648 B
+           section -1: 40998 B 58614002201c883a  ->  40998 B 7cc2241f0ac9600a
+  vers    LEFT    473608 B  n_sec=5  a026e4a17966bd15fe60f892992e0f483789876380ab7c8ea8942072d7405615
+          RIGHT   475432 B  n_sec=5  b1fc2792b49af417db8adc249c7996ef05694ed6894dac452e80645de6effa95
+          delta +1824 B
+
+SET 3 -- PRESENT ON ONE SIDE ONLY : LEFT-only 0 [] ; RIGHT-only 0 []
+
+TOTALS: identical=36  different=9  left-only=0  right-only=0 ; payload bytes 5976470 -> 5998358 (+21888)
+
+PREDICTION CONTRACT
+  **FAIL**  P1 both parse, self-checks C1..C6 all PASS
+  PASS  P2 same set of block idents on both sides
+  PASS  P3 at least one block differs
+ORIGINAL md5 AFTER  : 2a78e17c449cacdaf5da389818526859   -> UNCHANGED
+RIGHT    md5 AFTER  : e0112963cc1b9e3be29d2bb053ba9029   -> UNCHANGED
+P4 ORIGINAL md5 == pin, before AND after : PASS
+
+ARTEFACT G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\t2_rsrc_blockdiff.json  md5 1ab4d1c5ee4b4b6f0b41f89f3e9e918f  197961 B
+elapsed 0.1 s
+ARTEFACT G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\t2_rsrc_blockdiff.log  md5 2b198bcfe40b8d5541b301ea59e671ae  18122 B
+BGRUN END rc=1 after 0s
+BGRUN START 2026-09-19 23:26:34 limit 8.0 min: python -u tools/bench/t2_rsrc_blockdiff.py
+T2 -- OFFLINE RSRC BLOCK-LEVEL DIFF   (read-only; no LabVIEW, no COM, no lock)
+started 2026-09-19 23:26:35
+recipe constants read from G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\stage_d1_s1.py
+  LEFT  (ORIGINAL) = G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi   [pinned md5 2a78e17c449cacdaf5da389818526859]
+  RIGHT (no-edit COM save) = C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1arm_savetest.vi
+
+ORIGINAL md5 BEFORE : 2a78e17c449cacdaf5da389818526859   (pin 2a78e17c449cacdaf5da389818526859)  -> MATCH
+RIGHT    md5 BEFORE : e0112963cc1b9e3be29d2bb053ba9029
+sizes: LEFT 473317 B   RIGHT 475141 B   delta +1824 B
+
+SELF-CHECKS (a mis-parse must not be reported as a measurement)
+  LEFT   PASS  C1 magic RSRC\r\n\x00\x03   b'RSRC\r\n\x00\x03'
+  LEFT   PASS  C2 info_offset+info_size == filesize   470064+3253 vs 473317
+  LEFT   PASS  C3 data_offset+data_size == info_offset   32+470032 vs 470064
+  LEFT   PASS  C0c block count sane (1..512)   45
+  LEFT   PASS  C4 all idents printable ASCII
+  LEFT   PASS  C5 every payload inside the data region   131 of 131 inside
+  LEFT   PASS  C6 payloads tile the data region, no overlap   overlaps=[] covered=469931 of data_size=470032
+  LEFT   **FAIL**  C7 covered bytes == rsrc_data_size exactly   covered=469931 data_size=470032 uncovered=101
+  RIGHT  PASS  C1 magic RSRC\r\n\x00\x03   b'RSRC\r\n\x00\x03'
+  RIGHT  PASS  C2 info_offset+info_size == filesize   471904+3237 vs 475141
+  RIGHT  PASS  C3 data_offset+data_size == info_offset   32+471872 vs 471904
+  RIGHT  PASS  C0c block count sane (1..512)   45
+  RIGHT  PASS  C4 all idents printable ASCII
+  RIGHT  PASS  C5 every payload inside the data region   131 of 131 inside
+  RIGHT  PASS  C6 payloads tile the data region, no overlap   overlaps=[] covered=471771 of data_size=471872
+  RIGHT  **FAIL**  C7 covered bytes == rsrc_data_size exactly   covered=471771 data_size=471872 uncovered=101
+  => tables are **UNTRUSTED (a self-check failed)**
+
+LEFT  ORIGINAL : type=LVIN creator=LBVW  info_off=470064 info_size=3253 data_off=32 data_size=470032  blocks=45
+LEFT  ORIGINAL : version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+RIGHT SAVED    : type=LVIN creator=LBVW  info_off=471904 info_size=3237 data_off=32 data_size=471872  blocks=45
+RIGHT SAVED    : version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+
+PER-BLOCK TABLE -- LEFT (ORIGINAL), 45 blocks
+  ident  n_sec     offset       size  sha256
+  LVSR       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  RTSG       1        200         16  f0de4502ac289aa9dbe6c70e0667464ce0e22cf695d979433a8ad1f2ac40732d
+  CCST       1        220          4  df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119
+  LIvi       1        228       7815  d874b3df47e64813079b00cdb437ae7bf08983799c91f9aee14b8acc12190e2b
+  CONP       1       8048          2  87afe6086fe4571e37657e76281301f189c75ebae1d2eaafb56d578067a1d95e
+  TM80      18       8056       1516  74ab618d5a285fe6022530c4920eae2f04dbdb7de62e265fd996b2471f8c5d97
+  DFDS       1       9644      11453  a72f2c66cb065a6737096b19012892ca69a4d9050877f52be4c29d2f5342c34b
+  LIds       1      21104       4588  ade10c48d3460b0a1e8d23737442d60d72a5510b77ffe377b53cecdec157657a
+  VICD      18      25696     124741  867d3d910897ce4e216eea6c77e4fc64ba4fcd6c93a951d587334ee5f0ca7d90
+  GCDI       1     150540       2414  7c38a6766f7e18c2739604394062e318b6b048eb1f48d1ec5ced6c2a837a159b
+  vers       5     152960         66  bccc714cdabfc19b9786463bed307a1d0d0f58d7e0a6bc30ce4afba92459d2fa
+  SCSR       1     153052         20  7fbc38891b0f1c26818f5147ae6823f1a89120850156e6958885c4423b4c7f9a
+  DLDR       1     153076         28  16297934b5984ef021a2927727fe3e1d80e80c70f64055ed67cf428b36b5f994
+  FPTD       1     153108          2  9a969b192992e04cdf28b09bc97d14468e92b1e434baba2017e42ac19c338c81
+  CPMp       1     153116          4  16b8cb1fe734fbc60c6763c94c9e4cc55840ae966e7e508ba82f539d82702511
+  BFAL       1     153124      12208  2f8dc1ebb3a0d19b57af86f7a7151fddd8ce7f4fdf8ccd0491ac27bb8b58a915
+  NUID       1     165336       3420  b4be8bda499268ccde1b9aaf30dd3e53f987b64a0cd786a3b9d454d29dcfb1a7
+  SUID       1     168760      15228  97fdc486377a7b659aa41a9f0914fe0b790831b7b45f5c1d89c614d8a0170562
+  BNID       1     183992       1364  0470450de0da1049f42f291b64d6d4bd45b47d24f141429bb9fd452866f8c02c
+  GCPR       1     185360         13  dd46c3eebb1884ff3b5258c0a2fc9398e560a29e0780d4b53869b6254aa46a96
+  BDPW       1     185380         48  f860e39c70bb2302dd7a96de9285376949ffe8d9005b1d692e09e6c7584cc68a
+  ICON       1     185432        128  c05584efe5db031154617bcbbb50002aaacf5d322d1e425ac8aa416ff56b7922
+  icl8       1     185564       1024  5f6a6b9a7308901d80593d9854ce68de72137b15b02a754b71e0c1f39ac36238
+  CPC2       1     186592          2  3158392409ea5ff62f9aa401a275b9abd0759089da52442ef0e7cdb641137b06
+  BKMK       1     186600        377  60c162a699bd39b72fad33105120259af83f0c4cac58aa16150ff34ed07f6dce
+  LIfp       1     186984        287  5a6695694e4f5bd5be496a5e9a00deaec4a5cd3fa8d0f0777e7673cd28ea6173
+  FPEx       1     187276         12  163e7f66d58036ccb1d0b0058d8f46e7cd639816f570e5eb32853ea73634e4cd
+  STR        8     187292       2050  03f0420b13bd4cdb7c8ad4581cc9d26cdbbc824117a9574d036f4f9716424342
+  PICC      30     189392        360  34f67870f3e4763e08b0ba3bcb3e2fa0b758d1fbb626b97ff61736213313c509
+  MNGI      13     189872      26491  e20a3692feb7ec0dd6fe35a7afbecb84f234d141ef8ae273fa446dcb3908c6ce
+  FPHb       1     216436      31810  5f3082464c8142818a7f413bc34b42ff7291e1c50bc8234266def7421aeb8a10
+  FPSE       1     248252          4  02581c9b750504c9ff32677243e38214bb082958667dbf658637a44107dde1cf
+  LPIN       1     248260        304  221acf7a6ad63bf899bedc319e1486c3d51743f05be84cd605e1cf2c8e7b4d08
+  VPDP       1     248568          4  df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119
+  LIbd       1     248576      10243  a1936754cd5e2bfa90263858835834f9706633190eee0f47fc15fe9c7b9307fb
+  BDEx       1     258824        264  0eead74cba1ec1d85c85e976506fce70bb8ef355e086b06500d80bf4f1ab523b
+  BDHb       1     259092     191211  1b2e596a0987bd2b9ce46c0e2dca491d4c4d5eae1b85194e15619d8ca7f70de1
+  BDSE       1     450308          4  b205d73614a324bc479a7c4e920ed849c5f1c8ec5cf8497df787252b72a93870
+  VITS       1     450316        154  950add614b463c86ad175cd1eff83243b52bee17576cd142a4219c20fa4f38b8
+  DTHP       1     450476          4  89f81c1f0ef1f71ab405a53681b4d5b4313992f35353f29b2a241d9fa1aa0552
+  MUID       1     450484          4  1829ea3397d5b884a1e6602302b64e57fc77586ee9bfb919ebca3a95d710e199
+  HIST       1     450492         40  0f0b018e694d3ceb2f75b7e41a1c252bc5513d81498ced1eebd933a4f0e4e793
+  PRT        1     450536        128  90a34a338932f00b4143ede391c436c69685f1118930904fe2a1ecd41e7a544c
+  VCTP       1     450668      19140  c02459fe549f81425d9e9b4f8cb9aaa18cba2be262407454633c76f6523b70a4
+  FTAB       1     469812        252  f3de990ed52780357fc5fcdbf8daf690641e2c806ed8e13548fa4ec1054f21bb
+
+PER-BLOCK TABLE -- RIGHT (SAVED), 45 blocks
+  ident  n_sec     offset       size  sha256
+  LVSR       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  RTSG       1        200         16  f0de4502ac289aa9dbe6c70e0667464ce0e22cf695d979433a8ad1f2ac40732d
+  CCST       1        220          4  df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119
+  LIvi       1        228       8735  5fa9ab4221d5464b44e5e9c9608fbb8ee137f3c0ab208c30421580283c52d557
+  CONP       1       8968          2  87afe6086fe4571e37657e76281301f189c75ebae1d2eaafb56d578067a1d95e
+  TM80      18       8976       1516  74ab618d5a285fe6022530c4920eae2f04dbdb7de62e265fd996b2471f8c5d97
+  DFDS       1      10564      11453  a72f2c66cb065a6737096b19012892ca69a4d9050877f52be4c29d2f5342c34b
+  LIds       1      22024       4588  ade10c48d3460b0a1e8d23737442d60d72a5510b77ffe377b53cecdec157657a
+  VICD      18      26616     124741  867d3d910897ce4e216eea6c77e4fc64ba4fcd6c93a951d587334ee5f0ca7d90
+  GCDI       1     151460       2414  7c38a6766f7e18c2739604394062e318b6b048eb1f48d1ec5ced6c2a837a159b
+  vers       5     153880         66  bccc714cdabfc19b9786463bed307a1d0d0f58d7e0a6bc30ce4afba92459d2fa
+  SCSR       1     153972         20  7fbc38891b0f1c26818f5147ae6823f1a89120850156e6958885c4423b4c7f9a
+  DLDR       1     153996         28  16297934b5984ef021a2927727fe3e1d80e80c70f64055ed67cf428b36b5f994
+  FPTD       1     154028          2  9a969b192992e04cdf28b09bc97d14468e92b1e434baba2017e42ac19c338c81
+  CPMp       1     154036          4  16b8cb1fe734fbc60c6763c94c9e4cc55840ae966e7e508ba82f539d82702511
+  BFAL       1     154044      12208  2f8dc1ebb3a0d19b57af86f7a7151fddd8ce7f4fdf8ccd0491ac27bb8b58a915
+  NUID       1     166256       3420  b4be8bda499268ccde1b9aaf30dd3e53f987b64a0cd786a3b9d454d29dcfb1a7
+  SUID       1     169680      15228  97fdc486377a7b659aa41a9f0914fe0b790831b7b45f5c1d89c614d8a0170562
+  BNID       1     184912       1364  0470450de0da1049f42f291b64d6d4bd45b47d24f141429bb9fd452866f8c02c
+  GCPR       1     186280         13  dd46c3eebb1884ff3b5258c0a2fc9398e560a29e0780d4b53869b6254aa46a96
+  BDPW       1     186300         48  f860e39c70bb2302dd7a96de9285376949ffe8d9005b1d692e09e6c7584cc68a
+  ICON       1     186352        128  c05584efe5db031154617bcbbb50002aaacf5d322d1e425ac8aa416ff56b7922
+  icl8       1     186484       1024  5f6a6b9a7308901d80593d9854ce68de72137b15b02a754b71e0c1f39ac36238
+  CPC2       1     187512          2  3158392409ea5ff62f9aa401a275b9abd0759089da52442ef0e7cdb641137b06
+  BKMK       1     187520        377  60c162a699bd39b72fad33105120259af83f0c4cac58aa16150ff34ed07f6dce
+  LIfp       1     187904        287  5a6695694e4f5bd5be496a5e9a00deaec4a5cd3fa8d0f0777e7673cd28ea6173
+  FPEx       1     188196         12  163e7f66d58036ccb1d0b0058d8f46e7cd639816f570e5eb32853ea73634e4cd
+  STR        8     188212       2050  03f0420b13bd4cdb7c8ad4581cc9d26cdbbc824117a9574d036f4f9716424342
+  PICC      30     190312        360  34f67870f3e4763e08b0ba3bcb3e2fa0b758d1fbb626b97ff61736213313c509
+  MNGI      13     190792      26491  e20a3692feb7ec0dd6fe35a7afbecb84f234d141ef8ae273fa446dcb3908c6ce
+  FPHb       1     217356      31810  5f3082464c8142818a7f413bc34b42ff7291e1c50bc8234266def7421aeb8a10
+  FPSE       1     249172          4  02581c9b750504c9ff32677243e38214bb082958667dbf658637a44107dde1cf
+  LPIN       1     249180        304  221acf7a6ad63bf899bedc319e1486c3d51743f05be84cd605e1cf2c8e7b4d08
+  VPDP       1     249488          4  df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119
+  LIbd       1     249496      11163  0adae2cae64a12d46e2c0b34afaa9f8fa1d1accdeae2026c43c3ad08548db4cd
+  BDEx       1     260664        264  0eead74cba1ec1d85c85e976506fce70bb8ef355e086b06500d80bf4f1ab523b
+  BDHb       1     260932     191211  1b2e596a0987bd2b9ce46c0e2dca491d4c4d5eae1b85194e15619d8ca7f70de1
+  BDSE       1     452148          4  b205d73614a324bc479a7c4e920ed849c5f1c8ec5cf8497df787252b72a93870
+  VITS       1     452156        154  950add614b463c86ad175cd1eff83243b52bee17576cd142a4219c20fa4f38b8
+  DTHP       1     452316          4  89f81c1f0ef1f71ab405a53681b4d5b4313992f35353f29b2a241d9fa1aa0552
+  MUID       1     452324          4  1829ea3397d5b884a1e6602302b64e57fc77586ee9bfb919ebca3a95d710e199
+  HIST       1     452332         40  0f0b018e694d3ceb2f75b7e41a1c252bc5513d81498ced1eebd933a4f0e4e793
+  PRT        1     452376        128  90a34a338932f00b4143ede391c436c69685f1118930904fe2a1ecd41e7a544c
+  VCTP       1     452508      19140  c02459fe549f81425d9e9b4f8cb9aaa18cba2be262407454633c76f6523b70a4
+  FTAB       1     471652        252  f3de990ed52780357fc5fcdbf8daf690641e2c806ed8e13548fa4ec1054f21bb
+
+SET 1 -- PRESENT ON BOTH AND BYTE-IDENTICAL : 43
+  BDEx    264 B  0eead74cba1ec1d85c85e976506fce70bb8ef355e086b06500d80bf4f1ab523b
+  BDHb    191211 B  1b2e596a0987bd2b9ce46c0e2dca491d4c4d5eae1b85194e15619d8ca7f70de1
+  BDPW    48 B  f860e39c70bb2302dd7a96de9285376949ffe8d9005b1d692e09e6c7584cc68a
+  BDSE    4 B  b205d73614a324bc479a7c4e920ed849c5f1c8ec5cf8497df787252b72a93870
+  BFAL    12208 B  2f8dc1ebb3a0d19b57af86f7a7151fddd8ce7f4fdf8ccd0491ac27bb8b58a915
+  BKMK    377 B  60c162a699bd39b72fad33105120259af83f0c4cac58aa16150ff34ed07f6dce
+  BNID    1364 B  0470450de0da1049f42f291b64d6d4bd45b47d24f141429bb9fd452866f8c02c
+  CCST    4 B  df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119
+  CONP    2 B  87afe6086fe4571e37657e76281301f189c75ebae1d2eaafb56d578067a1d95e
+  CPC2    2 B  3158392409ea5ff62f9aa401a275b9abd0759089da52442ef0e7cdb641137b06
+  CPMp    4 B  16b8cb1fe734fbc60c6763c94c9e4cc55840ae966e7e508ba82f539d82702511
+  DFDS    11453 B  a72f2c66cb065a6737096b19012892ca69a4d9050877f52be4c29d2f5342c34b
+  DLDR    28 B  16297934b5984ef021a2927727fe3e1d80e80c70f64055ed67cf428b36b5f994
+  DTHP    4 B  89f81c1f0ef1f71ab405a53681b4d5b4313992f35353f29b2a241d9fa1aa0552
+  FPEx    12 B  163e7f66d58036ccb1d0b0058d8f46e7cd639816f570e5eb32853ea73634e4cd
+  FPHb    31810 B  5f3082464c8142818a7f413bc34b42ff7291e1c50bc8234266def7421aeb8a10
+  FPSE    4 B  02581c9b750504c9ff32677243e38214bb082958667dbf658637a44107dde1cf
+  FPTD    2 B  9a969b192992e04cdf28b09bc97d14468e92b1e434baba2017e42ac19c338c81
+  FTAB    252 B  f3de990ed52780357fc5fcdbf8daf690641e2c806ed8e13548fa4ec1054f21bb
+  GCDI    2414 B  7c38a6766f7e18c2739604394062e318b6b048eb1f48d1ec5ced6c2a837a159b
+  GCPR    13 B  dd46c3eebb1884ff3b5258c0a2fc9398e560a29e0780d4b53869b6254aa46a96
+  HIST    40 B  0f0b018e694d3ceb2f75b7e41a1c252bc5513d81498ced1eebd933a4f0e4e793
+  ICON    128 B  c05584efe5db031154617bcbbb50002aaacf5d322d1e425ac8aa416ff56b7922
+  LIds    4588 B  ade10c48d3460b0a1e8d23737442d60d72a5510b77ffe377b53cecdec157657a
+  LIfp    287 B  5a6695694e4f5bd5be496a5e9a00deaec4a5cd3fa8d0f0777e7673cd28ea6173
+  LPIN    304 B  221acf7a6ad63bf899bedc319e1486c3d51743f05be84cd605e1cf2c8e7b4d08
+  LVSR    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  MNGI    26491 B  e20a3692feb7ec0dd6fe35a7afbecb84f234d141ef8ae273fa446dcb3908c6ce
+  MUID    4 B  1829ea3397d5b884a1e6602302b64e57fc77586ee9bfb919ebca3a95d710e199
+  NUID    3420 B  b4be8bda499268ccde1b9aaf30dd3e53f987b64a0cd786a3b9d454d29dcfb1a7
+  PICC    360 B  34f67870f3e4763e08b0ba3bcb3e2fa0b758d1fbb626b97ff61736213313c509
+  PRT     128 B  90a34a338932f00b4143ede391c436c69685f1118930904fe2a1ecd41e7a544c
+  RTSG    16 B  f0de4502ac289aa9dbe6c70e0667464ce0e22cf695d979433a8ad1f2ac40732d
+  SCSR    20 B  7fbc38891b0f1c26818f5147ae6823f1a89120850156e6958885c4423b4c7f9a
+  STR     2050 B  03f0420b13bd4cdb7c8ad4581cc9d26cdbbc824117a9574d036f4f9716424342
+  SUID    15228 B  97fdc486377a7b659aa41a9f0914fe0b790831b7b45f5c1d89c614d8a0170562
+  TM80    1516 B  74ab618d5a285fe6022530c4920eae2f04dbdb7de62e265fd996b2471f8c5d97
+  VCTP    19140 B  c02459fe549f81425d9e9b4f8cb9aaa18cba2be262407454633c76f6523b70a4
+  VICD    124741 B  867d3d910897ce4e216eea6c77e4fc64ba4fcd6c93a951d587334ee5f0ca7d90
+  VITS    154 B  950add614b463c86ad175cd1eff83243b52bee17576cd142a4219c20fa4f38b8
+  VPDP    4 B  df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119
+  icl8    1024 B  5f6a6b9a7308901d80593d9854ce68de72137b15b02a754b71e0c1f39ac36238
+  vers    66 B  bccc714cdabfc19b9786463bed307a1d0d0f58d7e0a6bc30ce4afba92459d2fa
+
+SET 2 -- PRESENT ON BOTH AND DIFFERENT : 2
+  LIbd    LEFT     10243 B  n_sec=1  a1936754cd5e2bfa90263858835834f9706633190eee0f47fc15fe9c7b9307fb
+          RIGHT    11163 B  n_sec=1  0adae2cae64a12d46e2c0b34afaa9f8fa1d1accdeae2026c43c3ad08548db4cd
+          delta +920 B
+           section 0: 10243 B a1936754cd5e2bfa  ->  11163 B 0adae2cae64a12d4
+  LIvi    LEFT      7815 B  n_sec=1  d874b3df47e64813079b00cdb437ae7bf08983799c91f9aee14b8acc12190e2b
+          RIGHT     8735 B  n_sec=1  5fa9ab4221d5464b44e5e9c9608fbb8ee137f3c0ab208c30421580283c52d557
+          delta +920 B
+           section 0: 7815 B d874b3df47e64813  ->  8735 B 5fa9ab4221d5464b
+
+SET 3 -- PRESENT ON ONE SIDE ONLY : LEFT-only 0 [] ; RIGHT-only 0 []
+
+TOTALS: identical=43  different=2  left-only=0  right-only=0 ; payload bytes 469407 -> 471247 (+1840)
+
+PREDICTION CONTRACT
+  **FAIL**  P1 both parse, self-checks C1..C7 all PASS
+  PASS  P2 same set of block idents on both sides
+  PASS  P3 at least one block differs
+ORIGINAL md5 AFTER  : 2a78e17c449cacdaf5da389818526859   -> UNCHANGED
+RIGHT    md5 AFTER  : e0112963cc1b9e3be29d2bb053ba9029   -> UNCHANGED
+P4 ORIGINAL md5 == pin, before AND after : PASS
+
+ARTEFACT G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\t2_rsrc_blockdiff.json  md5 b52efd34bc96f1b9915ac0d8ba3dba6a  228362 B
+elapsed 0.0 s
+ARTEFACT G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\t2_rsrc_blockdiff.log  md5 fad18bcd5ca185a862dcea4b6941b601  17047 B
+BGRUN END rc=1 after 0s
+BGRUN START 2026-09-19 23:27:08 limit 8.0 min: python -u tools/bench/t2_rsrc_blockdiff.py
+T2 -- OFFLINE RSRC BLOCK-LEVEL DIFF   (read-only; no LabVIEW, no COM, no lock)
+started 2026-09-19 23:27:08
+recipe constants read from G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\stage_d1_s1.py
+  LEFT  (ORIGINAL) = G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi   [pinned md5 2a78e17c449cacdaf5da389818526859]
+  RIGHT (no-edit COM save) = C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1arm_savetest.vi
+
+ORIGINAL md5 BEFORE : 2a78e17c449cacdaf5da389818526859   (pin 2a78e17c449cacdaf5da389818526859)  -> MATCH
+RIGHT    md5 BEFORE : e0112963cc1b9e3be29d2bb053ba9029
+sizes: LEFT 473317 B   RIGHT 475141 B   delta +1824 B
+
+SELF-CHECKS (a mis-parse must not be reported as a measurement)
+  LEFT   PASS  C1 magic RSRC\r\n\x00\x03   b'RSRC\r\n\x00\x03'
+  LEFT   PASS  C2 info_offset+info_size == filesize   470064+3253 vs 473317
+  LEFT   PASS  C3 data_offset+data_size == info_offset   32+470032 vs 470064
+  LEFT   PASS  C0c block count sane (1..512)   45
+  LEFT   PASS  C4 all idents printable ASCII
+  LEFT   PASS  C5 every payload inside the data region   131 of 131 inside
+  LEFT   PASS  C6 payloads tile the data region, no overlap   overlaps=[] covered=469931 of data_size=470032
+  LEFT   PASS  C7 all inter-section gaps are 4-byte alignment padding (0..3)   n_gaps=132 total_pad=101 max=3 offenders=[]
+  RIGHT  PASS  C1 magic RSRC\r\n\x00\x03   b'RSRC\r\n\x00\x03'
+  RIGHT  PASS  C2 info_offset+info_size == filesize   471904+3237 vs 475141
+  RIGHT  PASS  C3 data_offset+data_size == info_offset   32+471872 vs 471904
+  RIGHT  PASS  C0c block count sane (1..512)   45
+  RIGHT  PASS  C4 all idents printable ASCII
+  RIGHT  PASS  C5 every payload inside the data region   131 of 131 inside
+  RIGHT  PASS  C6 payloads tile the data region, no overlap   overlaps=[] covered=471771 of data_size=471872
+  RIGHT  PASS  C7 all inter-section gaps are 4-byte alignment padding (0..3)   n_gaps=132 total_pad=101 max=3 offenders=[]
+  => tables are TRUSTED
+  LEFT   gap histogram (bytes of padding -> how many gaps): {'0': 86, '1': 11, '2': 15, '3': 20}
+  RIGHT  gap histogram (bytes of padding -> how many gaps): {'0': 86, '1': 11, '2': 15, '3': 20}
+
+LEFT  ORIGINAL : type=LVIN creator=LBVW  info_off=470064 info_size=3253 data_off=32 data_size=470032  blocks=45
+LEFT  ORIGINAL : version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+RIGHT SAVED    : type=LVIN creator=LBVW  info_off=471904 info_size=3237 data_off=32 data_size=471872  blocks=45
+RIGHT SAVED    : version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+
+PER-BLOCK TABLE -- LEFT (ORIGINAL), 45 blocks
+  ident  n_sec     offset       size  sha256
+  LVSR       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  RTSG       1        200         16  f0de4502ac289aa9dbe6c70e0667464ce0e22cf695d979433a8ad1f2ac40732d
+  CCST       1        220          4  df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119
+  LIvi       1        228       7815  d874b3df47e64813079b00cdb437ae7bf08983799c91f9aee14b8acc12190e2b
+  CONP       1       8048          2  87afe6086fe4571e37657e76281301f189c75ebae1d2eaafb56d578067a1d95e
+  TM80      18       8056       1516  74ab618d5a285fe6022530c4920eae2f04dbdb7de62e265fd996b2471f8c5d97
+  DFDS       1       9644      11453  a72f2c66cb065a6737096b19012892ca69a4d9050877f52be4c29d2f5342c34b
+  LIds       1      21104       4588  ade10c48d3460b0a1e8d23737442d60d72a5510b77ffe377b53cecdec157657a
+  VICD      18      25696     124741  867d3d910897ce4e216eea6c77e4fc64ba4fcd6c93a951d587334ee5f0ca7d90
+  GCDI       1     150540       2414  7c38a6766f7e18c2739604394062e318b6b048eb1f48d1ec5ced6c2a837a159b
+  vers       5     152960         66  bccc714cdabfc19b9786463bed307a1d0d0f58d7e0a6bc30ce4afba92459d2fa
+  SCSR       1     153052         20  7fbc38891b0f1c26818f5147ae6823f1a89120850156e6958885c4423b4c7f9a
+  DLDR       1     153076         28  16297934b5984ef021a2927727fe3e1d80e80c70f64055ed67cf428b36b5f994
+  FPTD       1     153108          2  9a969b192992e04cdf28b09bc97d14468e92b1e434baba2017e42ac19c338c81
+  CPMp       1     153116          4  16b8cb1fe734fbc60c6763c94c9e4cc55840ae966e7e508ba82f539d82702511
+  BFAL       1     153124      12208  2f8dc1ebb3a0d19b57af86f7a7151fddd8ce7f4fdf8ccd0491ac27bb8b58a915
+  NUID       1     165336       3420  b4be8bda499268ccde1b9aaf30dd3e53f987b64a0cd786a3b9d454d29dcfb1a7
+  SUID       1     168760      15228  97fdc486377a7b659aa41a9f0914fe0b790831b7b45f5c1d89c614d8a0170562
+  BNID       1     183992       1364  0470450de0da1049f42f291b64d6d4bd45b47d24f141429bb9fd452866f8c02c
+  GCPR       1     185360         13  dd46c3eebb1884ff3b5258c0a2fc9398e560a29e0780d4b53869b6254aa46a96
+  BDPW       1     185380         48  f860e39c70bb2302dd7a96de9285376949ffe8d9005b1d692e09e6c7584cc68a
+  ICON       1     185432        128  c05584efe5db031154617bcbbb50002aaacf5d322d1e425ac8aa416ff56b7922
+  icl8       1     185564       1024  5f6a6b9a7308901d80593d9854ce68de72137b15b02a754b71e0c1f39ac36238
+  CPC2       1     186592          2  3158392409ea5ff62f9aa401a275b9abd0759089da52442ef0e7cdb641137b06
+  BKMK       1     186600        377  60c162a699bd39b72fad33105120259af83f0c4cac58aa16150ff34ed07f6dce
+  LIfp       1     186984        287  5a6695694e4f5bd5be496a5e9a00deaec4a5cd3fa8d0f0777e7673cd28ea6173
+  FPEx       1     187276         12  163e7f66d58036ccb1d0b0058d8f46e7cd639816f570e5eb32853ea73634e4cd
+  STR        8     187292       2050  03f0420b13bd4cdb7c8ad4581cc9d26cdbbc824117a9574d036f4f9716424342
+  PICC      30     189392        360  34f67870f3e4763e08b0ba3bcb3e2fa0b758d1fbb626b97ff61736213313c509
+  MNGI      13     189872      26491  e20a3692feb7ec0dd6fe35a7afbecb84f234d141ef8ae273fa446dcb3908c6ce
+  FPHb       1     216436      31810  5f3082464c8142818a7f413bc34b42ff7291e1c50bc8234266def7421aeb8a10
+  FPSE       1     248252          4  02581c9b750504c9ff32677243e38214bb082958667dbf658637a44107dde1cf
+  LPIN       1     248260        304  221acf7a6ad63bf899bedc319e1486c3d51743f05be84cd605e1cf2c8e7b4d08
+  VPDP       1     248568          4  df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119
+  LIbd       1     248576      10243  a1936754cd5e2bfa90263858835834f9706633190eee0f47fc15fe9c7b9307fb
+  BDEx       1     258824        264  0eead74cba1ec1d85c85e976506fce70bb8ef355e086b06500d80bf4f1ab523b
+  BDHb       1     259092     191211  1b2e596a0987bd2b9ce46c0e2dca491d4c4d5eae1b85194e15619d8ca7f70de1
+  BDSE       1     450308          4  b205d73614a324bc479a7c4e920ed849c5f1c8ec5cf8497df787252b72a93870
+  VITS       1     450316        154  950add614b463c86ad175cd1eff83243b52bee17576cd142a4219c20fa4f38b8
+  DTHP       1     450476          4  89f81c1f0ef1f71ab405a53681b4d5b4313992f35353f29b2a241d9fa1aa0552
+  MUID       1     450484          4  1829ea3397d5b884a1e6602302b64e57fc77586ee9bfb919ebca3a95d710e199
+  HIST       1     450492         40  0f0b018e694d3ceb2f75b7e41a1c252bc5513d81498ced1eebd933a4f0e4e793
+  PRT        1     450536        128  90a34a338932f00b4143ede391c436c69685f1118930904fe2a1ecd41e7a544c
+  VCTP       1     450668      19140  c02459fe549f81425d9e9b4f8cb9aaa18cba2be262407454633c76f6523b70a4
+  FTAB       1     469812        252  f3de990ed52780357fc5fcdbf8daf690641e2c806ed8e13548fa4ec1054f21bb
+
+PER-BLOCK TABLE -- RIGHT (SAVED), 45 blocks
+  ident  n_sec     offset       size  sha256
+  LVSR       1         36        160  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  RTSG       1        200         16  f0de4502ac289aa9dbe6c70e0667464ce0e22cf695d979433a8ad1f2ac40732d
+  CCST       1        220          4  df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119
+  LIvi       1        228       8735  5fa9ab4221d5464b44e5e9c9608fbb8ee137f3c0ab208c30421580283c52d557
+  CONP       1       8968          2  87afe6086fe4571e37657e76281301f189c75ebae1d2eaafb56d578067a1d95e
+  TM80      18       8976       1516  74ab618d5a285fe6022530c4920eae2f04dbdb7de62e265fd996b2471f8c5d97
+  DFDS       1      10564      11453  a72f2c66cb065a6737096b19012892ca69a4d9050877f52be4c29d2f5342c34b
+  LIds       1      22024       4588  ade10c48d3460b0a1e8d23737442d60d72a5510b77ffe377b53cecdec157657a
+  VICD      18      26616     124741  867d3d910897ce4e216eea6c77e4fc64ba4fcd6c93a951d587334ee5f0ca7d90
+  GCDI       1     151460       2414  7c38a6766f7e18c2739604394062e318b6b048eb1f48d1ec5ced6c2a837a159b
+  vers       5     153880         66  bccc714cdabfc19b9786463bed307a1d0d0f58d7e0a6bc30ce4afba92459d2fa
+  SCSR       1     153972         20  7fbc38891b0f1c26818f5147ae6823f1a89120850156e6958885c4423b4c7f9a
+  DLDR       1     153996         28  16297934b5984ef021a2927727fe3e1d80e80c70f64055ed67cf428b36b5f994
+  FPTD       1     154028          2  9a969b192992e04cdf28b09bc97d14468e92b1e434baba2017e42ac19c338c81
+  CPMp       1     154036          4  16b8cb1fe734fbc60c6763c94c9e4cc55840ae966e7e508ba82f539d82702511
+  BFAL       1     154044      12208  2f8dc1ebb3a0d19b57af86f7a7151fddd8ce7f4fdf8ccd0491ac27bb8b58a915
+  NUID       1     166256       3420  b4be8bda499268ccde1b9aaf30dd3e53f987b64a0cd786a3b9d454d29dcfb1a7
+  SUID       1     169680      15228  97fdc486377a7b659aa41a9f0914fe0b790831b7b45f5c1d89c614d8a0170562
+  BNID       1     184912       1364  0470450de0da1049f42f291b64d6d4bd45b47d24f141429bb9fd452866f8c02c
+  GCPR       1     186280         13  dd46c3eebb1884ff3b5258c0a2fc9398e560a29e0780d4b53869b6254aa46a96
+  BDPW       1     186300         48  f860e39c70bb2302dd7a96de9285376949ffe8d9005b1d692e09e6c7584cc68a
+  ICON       1     186352        128  c05584efe5db031154617bcbbb50002aaacf5d322d1e425ac8aa416ff56b7922
+  icl8       1     186484       1024  5f6a6b9a7308901d80593d9854ce68de72137b15b02a754b71e0c1f39ac36238
+  CPC2       1     187512          2  3158392409ea5ff62f9aa401a275b9abd0759089da52442ef0e7cdb641137b06
+  BKMK       1     187520        377  60c162a699bd39b72fad33105120259af83f0c4cac58aa16150ff34ed07f6dce
+  LIfp       1     187904        287  5a6695694e4f5bd5be496a5e9a00deaec4a5cd3fa8d0f0777e7673cd28ea6173
+  FPEx       1     188196         12  163e7f66d58036ccb1d0b0058d8f46e7cd639816f570e5eb32853ea73634e4cd
+  STR        8     188212       2050  03f0420b13bd4cdb7c8ad4581cc9d26cdbbc824117a9574d036f4f9716424342
+  PICC      30     190312        360  34f67870f3e4763e08b0ba3bcb3e2fa0b758d1fbb626b97ff61736213313c509
+  MNGI      13     190792      26491  e20a3692feb7ec0dd6fe35a7afbecb84f234d141ef8ae273fa446dcb3908c6ce
+  FPHb       1     217356      31810  5f3082464c8142818a7f413bc34b42ff7291e1c50bc8234266def7421aeb8a10
+  FPSE       1     249172          4  02581c9b750504c9ff32677243e38214bb082958667dbf658637a44107dde1cf
+  LPIN       1     249180        304  221acf7a6ad63bf899bedc319e1486c3d51743f05be84cd605e1cf2c8e7b4d08
+  VPDP       1     249488          4  df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119
+  LIbd       1     249496      11163  0adae2cae64a12d46e2c0b34afaa9f8fa1d1accdeae2026c43c3ad08548db4cd
+  BDEx       1     260664        264  0eead74cba1ec1d85c85e976506fce70bb8ef355e086b06500d80bf4f1ab523b
+  BDHb       1     260932     191211  1b2e596a0987bd2b9ce46c0e2dca491d4c4d5eae1b85194e15619d8ca7f70de1
+  BDSE       1     452148          4  b205d73614a324bc479a7c4e920ed849c5f1c8ec5cf8497df787252b72a93870
+  VITS       1     452156        154  950add614b463c86ad175cd1eff83243b52bee17576cd142a4219c20fa4f38b8
+  DTHP       1     452316          4  89f81c1f0ef1f71ab405a53681b4d5b4313992f35353f29b2a241d9fa1aa0552
+  MUID       1     452324          4  1829ea3397d5b884a1e6602302b64e57fc77586ee9bfb919ebca3a95d710e199
+  HIST       1     452332         40  0f0b018e694d3ceb2f75b7e41a1c252bc5513d81498ced1eebd933a4f0e4e793
+  PRT        1     452376        128  90a34a338932f00b4143ede391c436c69685f1118930904fe2a1ecd41e7a544c
+  VCTP       1     452508      19140  c02459fe549f81425d9e9b4f8cb9aaa18cba2be262407454633c76f6523b70a4
+  FTAB       1     471652        252  f3de990ed52780357fc5fcdbf8daf690641e2c806ed8e13548fa4ec1054f21bb
+
+SET 1 -- PRESENT ON BOTH AND BYTE-IDENTICAL : 43
+  BDEx    264 B  0eead74cba1ec1d85c85e976506fce70bb8ef355e086b06500d80bf4f1ab523b
+  BDHb    191211 B  1b2e596a0987bd2b9ce46c0e2dca491d4c4d5eae1b85194e15619d8ca7f70de1
+  BDPW    48 B  f860e39c70bb2302dd7a96de9285376949ffe8d9005b1d692e09e6c7584cc68a
+  BDSE    4 B  b205d73614a324bc479a7c4e920ed849c5f1c8ec5cf8497df787252b72a93870
+  BFAL    12208 B  2f8dc1ebb3a0d19b57af86f7a7151fddd8ce7f4fdf8ccd0491ac27bb8b58a915
+  BKMK    377 B  60c162a699bd39b72fad33105120259af83f0c4cac58aa16150ff34ed07f6dce
+  BNID    1364 B  0470450de0da1049f42f291b64d6d4bd45b47d24f141429bb9fd452866f8c02c
+  CCST    4 B  df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119
+  CONP    2 B  87afe6086fe4571e37657e76281301f189c75ebae1d2eaafb56d578067a1d95e
+  CPC2    2 B  3158392409ea5ff62f9aa401a275b9abd0759089da52442ef0e7cdb641137b06
+  CPMp    4 B  16b8cb1fe734fbc60c6763c94c9e4cc55840ae966e7e508ba82f539d82702511
+  DFDS    11453 B  a72f2c66cb065a6737096b19012892ca69a4d9050877f52be4c29d2f5342c34b
+  DLDR    28 B  16297934b5984ef021a2927727fe3e1d80e80c70f64055ed67cf428b36b5f994
+  DTHP    4 B  89f81c1f0ef1f71ab405a53681b4d5b4313992f35353f29b2a241d9fa1aa0552
+  FPEx    12 B  163e7f66d58036ccb1d0b0058d8f46e7cd639816f570e5eb32853ea73634e4cd
+  FPHb    31810 B  5f3082464c8142818a7f413bc34b42ff7291e1c50bc8234266def7421aeb8a10
+  FPSE    4 B  02581c9b750504c9ff32677243e38214bb082958667dbf658637a44107dde1cf
+  FPTD    2 B  9a969b192992e04cdf28b09bc97d14468e92b1e434baba2017e42ac19c338c81
+  FTAB    252 B  f3de990ed52780357fc5fcdbf8daf690641e2c806ed8e13548fa4ec1054f21bb
+  GCDI    2414 B  7c38a6766f7e18c2739604394062e318b6b048eb1f48d1ec5ced6c2a837a159b
+  GCPR    13 B  dd46c3eebb1884ff3b5258c0a2fc9398e560a29e0780d4b53869b6254aa46a96
+  HIST    40 B  0f0b018e694d3ceb2f75b7e41a1c252bc5513d81498ced1eebd933a4f0e4e793
+  ICON    128 B  c05584efe5db031154617bcbbb50002aaacf5d322d1e425ac8aa416ff56b7922
+  LIds    4588 B  ade10c48d3460b0a1e8d23737442d60d72a5510b77ffe377b53cecdec157657a
+  LIfp    287 B  5a6695694e4f5bd5be496a5e9a00deaec4a5cd3fa8d0f0777e7673cd28ea6173
+  LPIN    304 B  221acf7a6ad63bf899bedc319e1486c3d51743f05be84cd605e1cf2c8e7b4d08
+  LVSR    160 B  0bebc746efafcbaa86a4d206c423356acf26476ff7041fd9beaf414dbe7d75d2
+  MNGI    26491 B  e20a3692feb7ec0dd6fe35a7afbecb84f234d141ef8ae273fa446dcb3908c6ce
+  MUID    4 B  1829ea3397d5b884a1e6602302b64e57fc77586ee9bfb919ebca3a95d710e199
+  NUID    3420 B  b4be8bda499268ccde1b9aaf30dd3e53f987b64a0cd786a3b9d454d29dcfb1a7
+  PICC    360 B  34f67870f3e4763e08b0ba3bcb3e2fa0b758d1fbb626b97ff61736213313c509
+  PRT     128 B  90a34a338932f00b4143ede391c436c69685f1118930904fe2a1ecd41e7a544c
+  RTSG    16 B  f0de4502ac289aa9dbe6c70e0667464ce0e22cf695d979433a8ad1f2ac40732d
+  SCSR    20 B  7fbc38891b0f1c26818f5147ae6823f1a89120850156e6958885c4423b4c7f9a
+  STR     2050 B  03f0420b13bd4cdb7c8ad4581cc9d26cdbbc824117a9574d036f4f9716424342
+  SUID    15228 B  97fdc486377a7b659aa41a9f0914fe0b790831b7b45f5c1d89c614d8a0170562
+  TM80    1516 B  74ab618d5a285fe6022530c4920eae2f04dbdb7de62e265fd996b2471f8c5d97
+  VCTP    19140 B  c02459fe549f81425d9e9b4f8cb9aaa18cba2be262407454633c76f6523b70a4
+  VICD    124741 B  867d3d910897ce4e216eea6c77e4fc64ba4fcd6c93a951d587334ee5f0ca7d90
+  VITS    154 B  950add614b463c86ad175cd1eff83243b52bee17576cd142a4219c20fa4f38b8
+  VPDP    4 B  df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119
+  icl8    1024 B  5f6a6b9a7308901d80593d9854ce68de72137b15b02a754b71e0c1f39ac36238
+  vers    66 B  bccc714cdabfc19b9786463bed307a1d0d0f58d7e0a6bc30ce4afba92459d2fa
+
+SET 2 -- PRESENT ON BOTH AND DIFFERENT : 2
+  LIbd    LEFT     10243 B  n_sec=1  a1936754cd5e2bfa90263858835834f9706633190eee0f47fc15fe9c7b9307fb
+          RIGHT    11163 B  n_sec=1  0adae2cae64a12d46e2c0b34afaa9f8fa1d1accdeae2026c43c3ad08548db4cd
+          delta +920 B
+           section 0: 10243 B a1936754cd5e2bfa  ->  11163 B 0adae2cae64a12d4
+  LIvi    LEFT      7815 B  n_sec=1  d874b3df47e64813079b00cdb437ae7bf08983799c91f9aee14b8acc12190e2b
+          RIGHT     8735 B  n_sec=1  5fa9ab4221d5464b44e5e9c9608fbb8ee137f3c0ab208c30421580283c52d557
+          delta +920 B
+           section 0: 7815 B d874b3df47e64813  ->  8735 B 5fa9ab4221d5464b
+
+SET 3 -- PRESENT ON ONE SIDE ONLY : LEFT-only 0 [] ; RIGHT-only 0 []
+
+TOTALS: identical=43  different=2  left-only=0  right-only=0 ; payload bytes 469407 -> 471247 (+1840)
+
+PREDICTION CONTRACT
+  PASS  P1 both parse, self-checks C1..C7 all PASS
+  PASS  P2 same set of block idents on both sides
+  PASS  P3 at least one block differs
+ORIGINAL md5 AFTER  : 2a78e17c449cacdaf5da389818526859   -> UNCHANGED
+RIGHT    md5 AFTER  : e0112963cc1b9e3be29d2bb053ba9029   -> UNCHANGED
+P4 ORIGINAL md5 == pin, before AND after : PASS
+
+ARTEFACT G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\t2_rsrc_blockdiff.json  md5 0b8d68e9613e4384f5f07ec618ac29fc  228562 B
+elapsed 0.0 s
+ARTEFACT G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\t2_rsrc_blockdiff.log  md5 770f3f644c3c60249e23d8cc1dfdfde8  17237 B
+BGRUN END rc=0 after 0s

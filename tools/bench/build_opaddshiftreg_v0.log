@@ -1,0 +1,34 @@
+BGRUN START 2026-09-14 22:30:34 limit 15.0 min: py -u tools/recipes/build_opaddshiftreg_v0.py
+
+== A0 (diagnostic, read-only) OpExitWhile_v0's 'Shift Registers' feeder
+   Get Outputs 216: 'Node in' wire 744; 'Outputs' -> (107, 'Outputs')
+   Get Outputs 348: 'Node in' wire 347; 'Outputs' -> (107, 'Shift Registers')
+start: Property=3 Invoke=0 Wire=16 ExecState=1
+   node 43 (n=0) 'Open VI Reference': ['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+   node 124 (n=1) 'Traverse for GObjects.vi': ['error out', '# of Refs', 'References', 'dup VI Refnum', 'Other Refnum', 'Traverse Generated Code (F)', 'Traverse Target', 'error in (no error)', 'Class Name', 'VI Refnum']
+   node 308 (n=2) 'Index Array': ['array', 'element', 'index']
+   node 683 (n=3) 'To More Specific Class': ['specific class reference', 'error out', 'target class', 'reference', 'error in']
+   node 316 (n=4) 'Open VI Reference': ['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+   node 230 (n=5) 'Property Node': ['reference', 'reference out', 'error in (no error)', 'error out', 'UID']
+   node 238 (n=6) 'Property Node': ['reference', 'reference out', 'error in (no error)', 'error out', 'ShiftRegs[]']
+   node 313 (n=7) 'For Loop': ['ShiftRegs[]']
+   TMSC node: 683
+
+== A1 Invoke Loop.Add Shift Register (6361000)
+   predict: Invoke +1
+   result : 675  (0.1 s)
+   Invoke terminals: ['reference', 'reference out', 'error in (no error)', 'error out', 'Add Shift Register', 'Add Shift Register', 'Y Position', 'Y Position']
+   PASS A1 the method attached (non-generic terminals present) ['Add Shift Register', 'Add Shift Register', 'Y Position', 'Y Position']
+   PASS A1 'Y Position' input present ['Add Shift Register', 'Add Shift Register', 'Y Position', 'Y Position']
+
+== A1b TMSC 'specific class reference' -> Invoke.reference (branch)
+   predict: Wire +1, ExecState 1
+   result : after Property=3 Invoke=1 Wire=16 ExecState=0  (0.1 s)
+STOP: the WhileLoop reference is not accepted by a Loop-class invoke (ExecState 0).
+
+donor md5 unchanged: True
+
+SUMMARY 2/2 PASS   steps [('A1 Invoke Loop.Add Shift Register (6361000)', 'ok'), ("A1b TMSC 'specific class reference' -> Invoke.reference (branch)", 'ok')]
+   PASS A1 the method attached (non-generic terminals present)
+   PASS A1 'Y Position' input present
+BGRUN END rc=1 after 3s

@@ -1,0 +1,36 @@
+BGRUN START 2026-09-12 21:28:00 limit 15.0 min: py -u -c 
+import os,sys,shutil,time
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+LV=r'C:\Program Files\National Instruments\LabVIEW 2026'
+T=[('erdosmiller Create SubVI', LV+r'\vi.lib\Erdos Miller\LV-Scripting\Create SubVI.vi'),
+   ('NI Create SubVI Method',    LV+r'\resource\plugins\PopupMenus\edit time panel and diagram\Create SubVI from Selected Wires.llb\CreateSubVIWires_Create SubVI Method.vi')]
+for label,p in T:
+    print('='*72); print(label); print('  ',p)
+    if not os.path.exists(p.split('.llb')[0]+'.llb' if '.llb' in p else p):
+        print('   MISSING'); continue
+    try:
+        labs=g.fp_labels(p,max_n=40)
+        print('   controls  :',[l for _,l,i in labs if not i])
+        print('   indicators:',[l for _,l,i in labs if i])
+    except Exception as e:
+        print('   fp_labels failed:',str(e)[:150])
+    try:
+        print('   nodes:',g.count(p,'Node'),' invoke:',g.count(p,'Invoke'),' property:',g.count(p,'Property'))
+    except Exception as e:
+        print('   count failed:',str(e)[:120])
+
+========================================================================
+erdosmiller Create SubVI
+   C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Erdos Miller\LV-Scripting\Create SubVI.vi
+   controls  : ['location (0, 0)', 'Diagram in', 'error in (no error)', 'Input Names', 'Inputs', 'Output Names', 'VI Reference']
+   indicators: ['Diagram out', 'error out', 'Outputs']
+   nodes: 5  invoke: 0  property: 1
+========================================================================
+NI Create SubVI Method
+   C:\Program Files\National Instruments\LabVIEW 2026\resource\plugins\PopupMenus\edit time panel and diagram\Create SubVI from Selected Wires.llb\CreateSubVIWires_Create SubVI Method.vi
+   controls  : ['error in (no error)', 'TopLevelDiagram']
+   indicators: ['SubVI', 'error out', 'Created VI']
+   count failed: count(Node) on CreateSubVIWires_Create SubVI Method.vi: error 1040: Property Node (arg 1) in TRef Traverse.vi->VI Script
+BGRUN END rc=0 after 18s

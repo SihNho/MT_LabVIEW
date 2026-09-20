@@ -1,0 +1,45 @@
+BGRUN START 2026-09-18 13:23:01 limit 25.0 min: py tools/retrospective.py --cycle 23
+   window 2026-09-18 03:42:17 .. 2026-09-18 13:23:01 (581 min); 18 build logs, 25 machinery logs, 11 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle23.txt (18016 chars)
+OUTCOME: ANSWERED (279s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-18-retrospective-cycle23.md
+--- ANSWER ---
+The cycle’s main structural fault was inference over a cheap existing measurement. After `diag_fstunnel_rbwvictims` saw no **node** endpoint for wires 894/1356, the session promoted that into “the donor ships orphan wires,” designed v2 around pre-cleaning them, and paid for review and firefighter work. The direct endpoint read later showed both wires had node and front-panel ends at the fresh-copy checkpoint; deleting nodes 145/151 created the loose ends (`tools/bench/diag_fstunnel_wireterms_panel_run2.log:37-53`, `:61-69`).
+
+Had `panel_wiring` plus each wire’s own `Wire.Terms[]` been run immediately after the 11:56 rbwvictims result, the measured two-run sequence indicates the answer would have arrived around 12:00. The erroneous direction instead survived until the cycle was killed/replaced at 12:59. Directly attributable priced work was the v2 prior-art review ($4.7805), the failed-prediction review ($5.1740), and the v2 firefighter session ($10.3798): $20.3343 total.
+
+A second, mandatory device finding is the cost-audit device. Although the audit claims an exact 03:42:17–13:23:01 window, it counted all 5,160 seconds of `cycle_5.log`, which began at 02:30:02 (`tools/bench/cycle_5.log:1`, `:53`). That imports 72 minutes from before the stated window. The $39.8614 log cost (`tools/bench/cycle_5.log:52`) cannot safely be time-prorated, so the dollar loss is unknown.
+
+## Findings
+
+1. **Repeated failure.** The v0 wire-count failure occurred identically on attempts 1 and 2 (`tools/bench/build_opfstunnelterm_v0.log:66-80`; `tools/bench/build_opfstunnelterm_v0_run2.log:66-80`). Attempt 2 was the correct change point, and the session did change to a discriminating wire-semantics measurement rather than launching attempt 3. The later v1 B4 failure likewise led to diagnostics, not another blind rebuild.
+
+2. **Missing tool.** No missing reader caused the dominant loss. `Wire.Is Broken?` was already built, and `panel_wiring` was already verified; the peer explicitly identifies the latter as the cheapest existing test (`archive/peer/2026-09-18-fstunnel-orphans-empty-at-ckpt00-opus.md:143-164`). The failure was choosing a node-only reader, not failing to build another tool.
+
+3. **Unmeasured steps.** The load-bearing claim was inferred from `Diagram.Nodes[]`. The raw log even showed `Terminal.Owner = TopLevelDiagram` and an `Indicator` census exception (`tools/bench/diag_fstunnel_rbwvictims.log:75-88`), yet the cycle concluded “no terminal.” The later timeline proved the fresh-copy orphan set was empty and became `{894,1356}` immediately after deleting nodes 145/151 (`tools/bench/diag_fstunnel_orphan_timeline.log:16-27`); the panel read then identified the other endpoints (`tools/bench/diag_fstunnel_wireterms_panel_run2.log:37-53`).
+
+4. **Rule compliance.** Original-file, hardware, checksum, bgrun, failure-budget, and no-GUI rules were respected. The material/judgement split was not clean: the material session produced the 187-line v2 design after its own hand-off said the consequence was “judgement’s call” (`archive/2026-09-18-status-cycle23-close.md:19-20`, `:24`, `:28-40`). Cycle closure was also violated semantically: cycles 6–8 exited while reviews or retrospectives were still pending despite the runner brief requiring retrospective completion before exit (`tools/bench/cycle_6.log:32-38`, `tools/bench/cycle_runner_main_20260918.log:2-4`). The audit does not test decision ownership, whether cycles overlap unfinished reviews, the truth of endpoint interpretations, or exact time clipping within a log.
+
+5. **Ordering.** The endpoint read belonged immediately after rbwvictims attempt 1, before v2 was written or reviewed. Instead, the cycle wrote pre-clean logic and purchased prior-art review first (`archive/2026-09-18-status-cycle23-close.md:28-43`, `:57-67`). The 975-second original-VI sweep occurred before step 2 closed, contrary to the plan’s dependency (`docs/cycle21-plan.md:31-48`), although it ran while the blocked review path was pending and produced reusable evidence, so I do not rank it as structural loss.
+
+6. **What was not reported.** The cycle summary understated that “orphan” meant only “not present in the node-terminal census.” It also did not foreground that the prior-art review found four issues but emitted no machine-readable verdict, leaving the launch gate unarmed (`archive/2026-09-18-status-cycle23-close.md:57-67`). Finally, the audit’s 655-minute/$145.3674 headline includes pre-window work from cycle 5 and therefore is not an exact-window total.
+
+7. **Judgement inside material.** Yes. The stop-gate review disposition says the material session accepted findings and executed the selected dispatch route (`archive/peer/2026-09-18-stopgate-priorart-deadlock-opus.md:169-205`). More consequentially, cycle-23 material designed the v2 pre-clean after the evidence record itself reserved the interpretation for judgement (`archive/2026-09-18-status-cycle23-close.md:19-40`). I do not rank this separately because its measurable loss is already captured by the inference fault.
+
+## Device effect
+
+- Runner inner-exit propagation: no failing build was falsely reported successful in-window.
+- Confirm-bait refusal/adversarial review: no evasion found.
+- Prior-art checklist: it found four v2 defects before launch, but its absent machine verdict left the stop record unarmed; no prohibited recipe launch followed.
+- Undisposed-review gate: A4 found five blank dispositions, but none establishes a later same-kind prior-art/retrospective dispatch that this specific gate should have refused.
+- Build/review cost separation: **failed** by importing 72 pre-window minutes from `cycle_5.log`.
+- Premature-build gate: worked; v2 never launched before its review completed.
+- Scope counter: could not operate because `docs/cycle23-plan.md` does not exist. That is an evidence gap, but the available record does not establish out-of-plan work strongly enough to count a second device failure.
+- Cost-regex repair: worked, 13/13 cost lines parsed.
+- Inner `FAIL` scanner: no false-success recurrence. Its self-test briefly false-positive-classified a passing line (`tools/bench/selftest_cycle_runner_ff.log:31-36`) and was immediately corrected and rerun (`:37-41`); it was not routinely bypassed.
+- `OpLoopEndRef_v0`: the stop-condition fault did not recur.
+- Stop-record/launch gate: no recipe launched against a blocking verdict; the v2 arming omission was exposed before launch.
+
+VIOLATION: inference-over-measurement | loss_min=59 | loss_usd=20.3343 | evidence=tools/bench/diag_fstunnel_rbwvictims.log:80
+VIOLATION: device-failed | loss_min=72 | loss_usd=? | evidence=tools/bench/cycle_5.log:1
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle23.md
+BGRUN END rc=0 after 280s

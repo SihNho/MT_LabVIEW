@@ -1,0 +1,156 @@
+BGRUN START 2026-09-18 11:06:33 limit 32.0 min: powershell -Command & 'tools/peer.ps1' -Dual -Role hypothesis -Slug fstunnel-v1-b4-execstate0 -TimeoutSec 900 -TaskFile 'tools/bench/peer_task_fstunnel_v1_b4_execstate0.md'
+=== DUAL ARM 1/2: codex -> fstunnel-v1-b4-execstate0-codex ===
+NOTE: quota-looking text appeared, but a liveness probe succeeded - NOT benching codex.
+OUTCOME: ANSWERED (196s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-18-fstunnel-v1-b4-execstate0-codex.md
+--- ANSWER ---
+The required-input-terminal claim is wrong. Its proposed cause already exists unchanged in the legal control state.
+
+1. Strongest refutation
+
+The fresh donor has `ExecState == 1` while nodes 43, 124, and 990—and every cited unwired/empty terminal—are already present with the same wire-zero state. After the recipe, those terminals remain identical while only recipe-created objects and connections differ. That is a direct same-VI counterexample to “those unwired terminals cause `ExecState == 0`”:
+
+- Fresh legal state and target nodes: [diag_fstunnel_orphans.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_fstunnel_orphans.log:20>)
+- Fresh terminal inventories: same file at lines 23–62.
+- B4 broken state: same file at line 102.
+- Unchanged B4 terminal inventories: same file at lines 107–146.
+
+Requiredness is not inferred from “input + wire 0.” LabVIEW separately classifies connector-pane inputs as required, recommended, or optional; only an unwired required input breaks the caller. Recommended and optional inputs may remain unwired without even generating a warning. [NI: Setting Required, Recommended, and Optional Inputs and Outputs](https://www.ni.com/docs/ar-IQ/csh?context=lvcore_lvhowto_specifying_required_recomm)
+
+Node 43 is especially weak evidence: NI documents `vi path` as the required Open VI Reference input, while the type specifier is used only when a typed reference is wanted and an unwired local application reference has defined local behavior. [NI: Calling a LabVIEW VI by Reference](https://www.ni.com/en/support/documentation/supplemental/06/calling-a-labview-vi-by-reference.html), [NI Open VI Reference reference manual](https://download.ni.com/support/manuals/321526b.pdf)
+
+2. Alternative explanation
+
+Between the two proposed explanations, the evidence favors a broken newly-created connection, not the inherited unwired terminals.
+
+Equal nonzero wire UIDs prove attachment, not compilability. NI explicitly says wiring can create a broken wire and that incompatible terminal data types are a standard cause. [NI: Using Wires to Link Block Diagram Objects](https://www.ni.com/docs/en-US/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+The strongest candidate is therefore the cast-output → property-node `reference` connection at one or both of:
+
+- TMSC → PN_A, recipe line 476
+- TMSC → PN_B, recipe line 483
+
+A plausible mechanism is that scripting attached the wire before type propagation/adaptation produced a compatible property-node reference type. The common downstream GObject/property chain is another possibility. The identical OUT/IN result supports a shared construction error; it does not implicate unchanged donor nodes.
+
+This does not prove which wire is broken. It establishes that the current UID evidence cannot clear those wires.
+
+3. What “EMPTY” terminals mean
+
+Nodes 124 and 990 are ordinary SubVI call nodes. Their terminal arrays reflect connector-pane slots. An empty reported name can mean an unassigned/spare connector-pane terminal—or, less commonly, a connected terminal whose associated control label is empty. It is not a special “broken node” state.
+
+NI explicitly recommends connector-pane patterns containing unused terminals for later expansion, so unused/unnamed slots are valid. [NI: Icon and Connector Panes](https://www.ni.com/en/support/downloads/instrument-drivers/tools-resources/instrument-driver-guidelines/icon-and-connector-panes.html), [NI: Assigning Terminals to Controls and Indicators](https://www.ni.com/docs/en-AS/bundle/labview/page/assigning-terminals-to-controls-and-indicators.html)
+
+Thus an empty name says nothing about requiredness. D1 proves that point empirically for these exact instances.
+
+4. Readers for the cause
+
+The project’s stronger claim—“no reader exists”—is also too broad.
+
+- `VI.Get Errors`, method `452`, exists as a private VI Server/VI Scripting method. Its observed signature is:
+
+  - `Errors`: 1-D string array output
+  - `Details`: 1-D string array output
+  - `Call Dangerously?`: optional Boolean input
+
+  An NI-hosted discussion reports that the result is accessible through “the 2 string arrays” and that it returns usable error information, though not exactly the Error List presentation. [NI Community: Error list in VI scripting](https://forums.ni.com/t5/LabVIEW/Error-list-in-VI-scripting/m-p/2269168) The community VI Server catalog confirms private method `452` and those three parameter names, although its type table is incomplete. [LabVIEW Wiki: VI.Get Errors](https://labviewwiki.org/wiki/VI_class/Get_Errors_method)
+
+- `Wire.Get Error List`, private method `6370C0A`, returns an I32 error-list array for a particular Wire reference. Iterating wires and calling it would identify the offending wire by identity even if the returned reason needs decoding. [LabVIEW Wiki: Wire.Get Error List](https://labviewwiki.org/wiki/Wire_class/Get_Error_List_method)
+
+- `Wire.Is Broken?` answers only whether a wire is broken, not why.
+
+- Without building any op VI, LabVIEW’s Error List UI already reports the cause and can highlight the offending diagram location through “Show Error.” A specific broken wire also has a `List Errors` shortcut and displays its reason when hovered. [NI: Debugging Tools in LabVIEW](https://www.ni.com/getting-started/labview-basics/debug.htm), [NI: Correcting Broken Wires](https://www.ni.com/docs/en-US/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+I find no defensible basis for saying `VI.Get Errors` can be invoked directly as `VirtualInstrument.GetErrors` over the existing COM reference. This is a private VI Server method, while external ActiveX clients are limited to members exported by LabVIEW’s ActiveX type library. NI says that type library defines the exported `Application` and `VirtualInstrument` interfaces; the documented `VirtualInstrument` ActiveX method list does not include `GetErrors`. [NI: ActiveX and LabVIEW](https://www.ni.com/en/shop/labview/activex-and-labview.html), [VirtualInstrument ActiveX method catalog](https://documentation.help/NI-ActiveX-LabView/VI_Class_Method.html)
+
+Therefore, absent a LabVIEW-side Invoke Node/helper, direct COM invocation is unlikely. That is an inference from the exported interface, not a vendor-documented prohibition. NI does not appear to publish an official API-reference page or supported signature for private method `452`; the exact signature above comes from the NI-hosted discussion and community catalog, not supported vendor documentation.
+
+5. Concrete falsification
+
+The original claim is already falsified by D1: its alleged cause is present unchanged in an executable state.
+
+A one-run falsifier would be even more explicit: at B4, obtain the Error List and observe either:
+
+- “connected terminals have different types,” highlighting one of the six new wires; or
+- another error associated with a recipe-created property node.
+
+Either result rules out nodes 43/124/990 as the cause. Conversely, the competing broken-wire explanation would be falsified if every new wire reports unbroken and Error List specifically identifies an unwired required input on one of those three inherited nodes.
+
+The cheapest discriminating test is: pause at B4 on the disposable scratch, open LabVIEW’s existing Error List by clicking the broken Run arrow or selecting View → Error List, record the first error’s text, then use Show Error. It requires no new op VI, no save, and directly separates “required terminal on 43/124/990” from “broken/type-incompatible new wire.”
+=== DUAL ARM 2/2: claude/hypothesis (opus, effort max, web) -> fstunnel-v1-b4-execstate0-opus ===
+OUTCOME: ANSWERED (656s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-18-fstunnel-v1-b4-execstate0-opus.md
+COST: $3.9688  in 20 / out 44969 / cache-create 220139 / cache-read 973952  (655s, 18 turn(s))
+--- ANSWER ---
+Write is disabled in this role (correct — AGENTS.md: the peer's output *is* its answer), so the review is below.
+
+---
+
+# REFUTED — and the session's own D1 diagnostic is what refutes it
+
+The evidence does not favour the competing broken-wire explanation either. It does not *reach* either hypothesis, because **not one `Wire` object was read — in the failing run or in the diagnostic built to explain it.**
+
+## 1. The single strongest reason the claim is WRONG
+
+**A condition present in the LEGAL state cannot be the cause of the BROKEN state.** FACT 1: the fresh donor copy is `ExecState 1` with nodes 43, 124, 990 already present. FACT 4: their unwired sinks are present, wire-0, *in that same legal copy*. Same objects, same terminals, same zeros — one VI runs, one does not.
+
+And the noun in the claim is false by definition. NI lists *"A required block diagram terminal is unwired"* as a cause of a broken VI, and required means *"the block diagram … **will be** broken if you do not wire the required inputs."* There is no state in which a VI is `ExecState 1` with a required input unwired — so FACT 1 **proves those inputs are not required**. Node 43 is `Open VI Reference`; `password`, `type specifier VI Refnum (for type only)`, `options`, `application reference (local)` are optional by design.
+
+**Second leg, independent and just as fatal: the claim's only positive evidence comes from a detector this project already measured as blind to this failure class.**
+
+`docs/NAMES.md:969-972` (measured 2026-09-15, peer-confirmed):
+
+> **Deleting a node leaves its wire behind as a loose stub** … a later connection from that source then counts as a BRANCH, and **a search for "unwired sinks" will NOT find the orphaned consumer, because its `reference` still reports the stub's uid.** Identify and CACHE the consumer node and the wire uid BEFORE deleting, then delete node, **delete wire**, rewire.
+
+The `DIAG unwired sinks` scan tests `r["wire"] == 0`; an orphan on a stub reports non-zero and is invisible. And `build_opfstunnelterm_v1.py:519` additionally filters out every terminal whose name starts with `error` — while the donor has a live error chain (FACT 2: node 43 `error out` w590 → node 124 `error in` w590). Blind twice over. That list is not evidence about what is unwired; it is the output of the wrong instrument.
+
+Third, smaller: node 990's EMPTY sinks were measured and written down on 2026-09-15 at `docs/NAMES.md:855-859` — *"the remaining connector-pane slots report EMPTY names"*, on this exact subVI. The claim re-derived a documented non-event as a novel cause.
+
+## 2. Alternative explanation — the loose stub wire #384
+
+I rank this **above** the type-conflict story you asked me to attack hardest.
+
+- Your own docstring says it: `:303-305` — *"the TMSC `specific class reference` output already owned a **residual source-only stub wire #384**"*.
+- Provenance: the recipe *identifies* the TMSC by `twire(tmsc, T_CAST_OUT) == twire(pn_terms,'reference')` (`:411-412`), so 384's only known sink was node 145. `:426-434` deletes node 145. `:435-441` deletes wires 578, 639, 533 — **never 384.** That is exactly the sequence `NAMES.md:969-972` says leaves a stub and exactly the prescription that was skipped.
+- NI: *"The block diagram contains a broken wire because of a mismatch of data types **or a loose, unconnected end**."* Branching two new sinks onto a wire does not heal a loose segment — so 384 can be broken at B4 while reading `src 384 → dst 384` perfectly.
+- It explains every observation: identical failure in both classes, B4b passing, `ExecState 0` already at the first site, and why a node-terminal-only diagnostic could not see it.
+
+Two more live alternatives: **(B)** the same mechanism with a hidden victim — any orphan on a stub, error chain included (`NAMES.md:311`: an unwired `reference` breaks the VI *"even when every wire is good"*); **(C)** your type conflict — and note section P never settled it: all three `FlatSequenceOuterTunnel` inheritance probes were 1077-refused (`run1.log:37-39`), so the back half's acceptance of an `OuterTerminal` reference went in unknown.
+
+And the framing itself: `:307-310` records that the instrument used **cannot establish "not B"**. The honest report was *cause unknown; no wire was read.*
+
+## 3. What would falsify the claim
+
+It already is falsified — any VI that is `ExecState 1` with those terminals unwired kills it, and FACT 1 is that VI. Constructive version in one run: wire all 14 sinks at B4 and read `ExecState`; still 0 ⇒ dead. It cannot be rescued, because requiredness lives in the subVIs' connector panes and the recipe never edits them (donor md5 unchanged, `run1.log:135`).
+
+## 4. Cheapest discriminating test
+
+**T1 — Remove Bad Wires diff at B4.** One run, no new op, only calls this recipe already makes: read `uids(op,"Wire")` + `ExecState` → `remove_bad_wires_scripted` (VI method **410**, public, `docs/toolkit-capabilities.md:132`) → read both again, print the removed set.
+
+| observation | reading |
+|---|---|
+| `ExecState → 1`, exactly `{384}` gone | **stub confirmed** — claim dead, type conflict dead |
+| still 0, `{1694}`/`{1766}` gone | **type conflict** — sink `reference` now bare, 0 expected |
+| still 0, nothing gone | no bad wire ⇒ node-level cause; claim still dead by §1 |
+
+The *removed-uid set* is the measurement, not `ExecState`. `NAMES.md:962-967` forbids RBW inside a transient edit window; B4 is the end of the window on a scratch copy, which is the sanctioned place.
+
+**T2 — non-destructive, and it NAMES the object: it is already built.** `Wire.Is Broken?` **6371004** ships inside `OpConnectNested_v0/v1` and `OpConnectFromWire_v0` (`docs/NAMES.md:888-897`, built and measured 2026-09-17, `False` on a good wire / `True` on a two-source wire). Read it on the sink terminals of 384 / 1694 / 1719 / 1766. ⚠️ Branch the Invoke's own `error out` into that node's `error in` (gate `W7b`) or it reports the *old* wire.
+
+## 5. Q2 — "no reader that names the broken object?" **False.**
+
+1. **`Wire.Is Broken?` 6371004 IS BUILT AND MEASURED** — `docs/NAMES.md:888-897`, dated 2026-09-17, *"it never needed a new op."* **`CLAUDE.md:346` is stale**, and the brief inherited the stale line. Two active docs contradict each other about the one capability this cycle spent its budget working around.
+2. A second measured signature: two terminals on one wire both `Terminal.Is Source?` 634A003 TRUE (`NAMES.md:900-901`, measured on `w1231`). `OpWireSource_v5` — *the donor of this very recipe* — walks a wire's terminals from a bare UID (`:954-960`).
+3. **`Wire.Get Error List` 6370C0A** (private, output `Error List`) sits at `NAMES.md:899` and is **absent from CLAUDE.md's list** — that is per-wire error *text*, closer to what was wanted than `VI.Get Errors`.
+4. `VI.Get Errors` **452** is real — labviewwiki's VI class table lists it, RTE Yes, no published signature; NI publishes **no public API** returning Error List text. It is reachable over COM in principle (an ordinary Invoke node on `VI Server:VI`); the failure is *member selection*, not transport — two attempts gave *"only `reference out` / `error out` — no `Errors`, no `Details`"* (`toolkit-capabilities.md:169`). **The obvious external answer is already-tried prior art**: the forum's `SuperPrivateScriptingFeatureVisible` / `SuperSecretPrivateSpecialStuff` ini tokens were included in the 2026-09-09 attempt (`d1-route-b-plan.md:485`). Untried lever: `Invoke.Set Method (Allow Private)` **6370003**, `ID String = "Get Errors"`, `Allow Alternate Names? = TRUE`, class set first (`toolkit-capabilities.md:189-194`). And `OpGetErrors_v0` is **NOT AUTHORISED** — stopped by its own dual prior-art review (`d1-route-b-plan.md:463-473`). Unverified lead only: the same wiki table lists a `VI Linker Errors` property (257, RTE Yes); I could not confirm what it returns — don't plan on it. The GUI Error List does name the object (Items-with-errors / Errors-and-warnings / Details, double-click to highlight).
+
+**None of it is needed here**: "which of four wires is broken" already has a built reader.
+
+## 6. Q3 — empty-named terminals
+
+A subVI node's terminals mirror its **connector pane**, a fixed pattern (12 slots for the common 4‑2‑2‑4). Unassigned slots exist as terminals with no name, cannot be wired, cannot be required. Nodes 124 and 990 show 12 terminals with 2 and 6 unnamed — that signature exactly. It **never breaks a VI**, and here it is not even an inference: measured 2026-09-15 (`NAMES.md:855-859`) and confirmed legal by FACT 1. FACT 3 is right that "which property item is selected" doesn't apply to 43/124/990 — but it *does* apply to the recipe's own nodes 145/148/168, no reader for it exists here, and it was not checked.
+
+## 7. What would change my mind
+
+T1 returning `ExecState 1` with **nothing removed**. Short of that, §1 rests on your own measurement and cannot be argued away: whatever breaks this VI, it is not a terminal that is equally unwired in the copy that runs.
+
+**Sources:** [NI — Debugging Techniques in LabVIEW](https://www.ni.com/en/support/documentation/supplemental/12/debugging-techniques-in-labview.html) · [Setting Required, Recommended, and Optional Inputs](https://rajsite.github.io/unofficial-lvdocs/lvhowto/Specifying_Required_Recomm.html) · [LabVIEW Wiki — VI class](https://labviewwiki.org/wiki/VI_class) · [NI Forums — programmatically check the error messages of a broken VI](https://forums.ni.com/t5/LabVIEW/how-to-programmatically-check-the-error-messages-of-a-broken-vi/td-p/3336258) · [NI Forums — Error list in VI scripting](https://forums.ni.com/t5/LabVIEW/Error-list-in-VI-scripting/td-p/2263216) · [LAVA — SuperSecretPrivateSpecialStuff](https://lavag.org/topic/15869-what-exactly-is-supersecretprivatespecialstuff-for/) · [LabVIEW Wiki — Connector pane](https://labviewwiki.org/wiki/Connector_pane)
+=== DUAL DONE: codex rc=0, opus rc=0  (archive\peer\2026-09-18-fstunnel-v1-b4-execstate0-codex.md, -fstunnel-v1-b4-execstate0-opus.md) ===
+BGRUN END rc=0 after 860s

@@ -1,0 +1,52 @@
+BGRUN START 2026-09-12 18:12:00 limit 10.0 min: py -u -c 
+import os,sys
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+WORK=r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi'
+KEY=('cycle','numcol','mag','force','rot','speed','wait','schedule','trans','trap','torque','turn','angle')
+labs=g.fp_labels(WORK,max_n=400)
+hits=[(u,l,i) for u,l,i in labs if any(k in l.lower() for k in KEY)]
+print('%d of %d front-panel objects are scheduler/motor related'%(len(hits),len(labs)))
+vi=g.lv().GetVIReference(WORK,'',False,0)
+for u,l,ind in hits:
+    try: v=vi.GetControlValue(l)
+    except Exception as e: v='(unreadable %s)'%str(e)[:50]
+    s=repr(v)
+    if len(s)>160: s=s[:160]+' ...'
+    print('   %-10s %-38r = %s'%('indicator' if ind else 'CONTROL',l,s))
+
+32 of 114 front-panel objects are scheduler/motor related
+   indicator  'Pos within cal image'                 = ()
+   indicator  'Image'                                = ('', 0)
+   CONTROL    'Rot step (turns)'                     = 0.0
+   indicator  'Rot pos (deg)'                        = 0.0
+   indicator  'Max Trans Pos'                        = 24.6
+   CONTROL    'Trans Speed (mm/s)'                   = 15.0
+   CONTROL    'Stop Trans'                           = False
+   indicator  'Force (pN) vs Extension (nm) '        = ()
+   CONTROL    'Current pos rot?'                     = 0.0
+   indicator  'SubCycle'                             = 0.0
+   CONTROL    'Set # of Cycles'                      = 3
+   CONTROL    'Start Cycles'                         = False
+   indicator  'Cycle Start Time'                     = 0
+   CONTROL    '# to avg per image'                   = 20.0
+   CONTROL    '# images in stack'                    = 60.0
+   CONTROL    '1 L-Turn'                             = False
+   CONTROL    '1 R-Turn'                             = False
+   CONTROL    'Rot Step (deg) '                      = 0.0
+   CONTROL    'Rot \nSpeed'                          = 100.0
+   CONTROL    'Send to Rot'                          = False
+   CONTROL    'Trans Step (mm)'                      = 0.0
+   CONTROL    'Send to Trans'                        = False
+   indicator  'Trans Pos (mm)'                       = 0.0
+   CONTROL    'Force\nsmoothing\nhalf-width'         = 1
+   indicator  'Total cycle #'                        = 0.0
+   indicator  'RotationVISA'                         = ('', 0)
+   indicator  'IMAQimage'                            = ('', 0)
+   indicator  'current image number'                 = 0
+   indicator  'TurnOff'                              = False
+   CONTROL    'CycleSchedule'                        = ((0.0,), (0.0,), (0.0,))
+   indicator  'Mag Position'                         = ()
+   CONTROL    'NumCol'                               = 0
+BGRUN END rc=0 after 115s

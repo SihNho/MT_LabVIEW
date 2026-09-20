@@ -1,0 +1,95 @@
+BGRUN START 2026-09-18 02:05:15 limit 18.0 min: py -u tools\bench\probe_flatseq_outer.py
+PREDICTION CONTRACT T1a..T2b - see this file's docstring.
+
+-- md5 before --
+   c39f36e0675339673b707c59f0784fee  Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi
+   2a78e17c449cacdaf5da389818526859  Min_Track N beads V6_ParallelLoop.vi
+   803964bbf95bca5b402dfc7c328d5fec  Move Axis to Position.vi
+   d8b7a775b8ba818728092af65cb6862c  SetCommand.vi
+   929887a9634b83a457a71e381686c291  General command.llb
+   66148b5478b6c6e8717d9516e220e8fd  Limits.llb
+   8fd0154dc524f607d682110ef877432f  Max Trans Pos.vi
+   fresh(): killing LabVIEW pid None
+   COM preflight attempt 1/15: pid None->640, wires 16->16
+   COM preflight OK (pid 640, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 640
+
+================ T1: FlatSequenceOuterTunnel property census ================
+   632A813 [CONTROL GObject.UID] -> ATTACHED  short names ['UID']
+   6327803 [CONTROL Generic.Class Name] -> ATTACHED  short names ['ClassName']
+   3195B800 [Outer Terminal (peer)] -> ATTACHED  short names ['OuterTerminal']
+   3195B801 [Inner Terminal (peer; in our files since 09-14)] -> ATTACHED  short names ['InnerTerminal']
+   3195B802 [Frame (peer)] -> ATTACHED  short names ['Frame']
+   3195B803 [block census, undocumented] -> REFUSED build_property(VI Server:FlatSequenceOuterTunnel, ['3195B803']): creator refused - error 1077: Invoke Node in LV-Scripting.lvlib:Create Property Node.vi->OpBuildPN_v1.vi
+   1C3A9000 [INNER-tunnel LeftTerm - must NOT attach here] -> REFUSED build_property(VI Server:FlatSequenceOuterTunnel, ['1C3A9000']): creator refused - error 1077: Invoke Node in LV-Scripting.lvlib:Create Property Node.vi->OpBuildPN_v1.vi
+   634A002 [Terminal.Diagram - inheritance probe] -> REFUSED build_property(VI Server:FlatSequenceOuterTunnel, ['634A002']): creator refused - error 1077: Invoke Node in LV-Scripting.lvlib:Create Property Node.vi->OpBuildPN_v1.vi
+   scratch VI deleted
+  PASS T1a the class string 'VI Server:FlatSequenceOuterTunnel' resolves  | ATTACHED
+  PASS T1b 3195B800 / 3195B801 / 3195B802 all ATTACH  | {'3195B800': 'ATTACHED', '3195B801': 'ATTACHED', '3195B802': 'ATTACHED'}
+  PASS T1c the INNER-tunnel id 1C3A9000 does NOT attach to the OUTER class (the classes are distinct)  | REFUSED build_property(VI Server:FlatSequenceOuterTunnel, ['1C3A9000']): creator refused - error 1077: Invoke Node in LV-Scripting.lvlib:Create Property Node.vi->OpBuildPN_v1.vi
+   count(V6, 'FlatSequenceOuterTunnel') = 58
+   count(V6, 'FlatSequenceInnerTunnel') = 518
+   count(V6, 'FlatSequence') = 21
+   count(V6, 'FlatSequenceFrame') = EXC count(FlatSequenceFrame) on Min_Track N beads V6_ParallelLoop.vi: error 1092: Invoke Node 
+
+================ T2: M3 label-scan sensitivity ================
+
+   === MOV.vi
+       d0: ['Unbundle By Name', 'Case Structure']
+       d1: ['Build command substring.vi', 'Not Equal?', 'Commanded axes connected?.vi', 'Not', 'And', 'Case Structure']
+       d2: ['Case Structure']
+       d5: ['Concatenate Strings', 'PI Send String.vi']
+       TOTAL 11 node rows, 11 non-empty labels (100 %), limit matches 0
+
+   === VEL.vi
+       d0: ['Unbundle By Name', 'Case Structure']
+       d1: ['Case Structure', 'Not Equal?', 'Not', 'And', 'Case Structure']
+       d2: ['Build command substring.vi', 'Commanded axes connected?.vi']
+       d3: ['Array Size', 'Not Equal To 0?', 'Global1.vi', 'Global2 (Array).vi', 'Format Into String', 'Concatenate Strings', 'Case Structure', 'Decrement', 'Index Array', 'Unbundle By Name', 'Equal?', 'Or Array Elements', 'Index Array', 'Not Equal?', 'And', 'Case Structure']
+       d7: ['Index Array', 'Format Into String', 'Concatenate Strings']
+       d8: ['Case Structure']
+       d11: ['Concatenate Strings', 'PI Send String.vi', 'ERR?.vi']
+       TOTAL 32 node rows, 32 non-empty labels (100 %), limit matches 0
+
+   === GOH.vi
+       d0: ['Unbundle By Name', 'Case Structure']
+       d1: ['To Upper Case', 'Not', 'Build query command substring.vi', 'GOH.vi', 'Equal?', 'And', 'Concatenate Strings', 'Commanded axes connected?.vi', 'PI Send String.vi', 'Case Structure', 'GOH axes']
+       TOTAL 13 node rows, 13 non-empty labels (100 %), limit matches 0
+
+   === TMX?.vi
+       d0: ['Unbundle By Name', 'Case Structure', 'TMX?.vi']
+       d1: ['To Upper Case', 'Not', 'Build query command substring.vi', 'Equal?', 'And', 'Compound Arithmetic', 'Or', 'Concatenate Strings', 'Commanded axes connected?.vi', 'PI Send String.vi', 'PI Receive String.vi', 'Assign values from string to axes.vi', 'Case Structure', 'Query axes', 'Maximum travel limit']
+       TOTAL 18 node rows, 18 non-empty labels (100 %), limit matches 1
+
+   === ASI Move Axis to Position.vi
+       d0: ['Case Structure']
+       d1: ['Case Structure', 'Not A Number/Path/Refnum?', 'Equal?', 'Or']
+       d2: ['Send Serial Command.vi', 'Concatenate Strings', 'Axis Enum to String.vi', 'Convert Double to String.vi']
+       TOTAL 9 node rows, 9 non-empty labels (100 %), limit matches 0
+
+   === Autonics SetCommand.vi
+       d0: ['Case Structure']
+       d1: ['VISA Write', 'Concatenate Strings', 'VISA Read', 'String Subset', 'Hexadecimal String To Number', 'Multiply', 'Subtract', 'Multiply', 'Type Cast', 'Multiply']
+       d2: ['VISA Write', 'Concatenate Strings', 'Number To Decimal String', 'Divide']
+       d3: ['VISA Write', 'Concatenate Strings', 'Number To Decimal String']
+       d4: ['VISA Write', 'Concatenate Strings', 'Number To Decimal String', 'Divide', 'Add', 'Multiply']
+       d5: ['VISA Write', 'Concatenate Strings']
+       TOTAL 26 node rows, 26 non-empty labels (100 %), limit matches 0
+
+   === Max Trans Pos.vi
+       TOTAL 0 node rows, 0 non-empty labels (0 %), limit matches 0
+  PASS T2a node_labels returned rows and at least one non-empty label overall  | {'MOV.vi': (11, 11), 'VEL.vi': (32, 32), 'GOH.vi': (13, 13), 'TMX?.vi': (18, 18), 'ASI Move Axis to Position.vi': (9, 9), 'Autonics SetCommand.vi': (26, 26), 'Max Trans Pos.vi': (0, 0)}
+
+-- md5 after --
+   c39f36e0675339673b707c59f0784fee  Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi
+   2a78e17c449cacdaf5da389818526859  Min_Track N beads V6_ParallelLoop.vi
+   803964bbf95bca5b402dfc7c328d5fec  Move Axis to Position.vi
+   d8b7a775b8ba818728092af65cb6862c  SetCommand.vi
+   929887a9634b83a457a71e381686c291  General command.llb
+   66148b5478b6c6e8717d9516e220e8fd  Limits.llb
+   8fd0154dc524f607d682110ef877432f  Max Trans Pos.vi
+  PASS T2b every pre-existing .vi md5 unchanged  | []
+
+SUMMARY gates 5/5 pass; failing: []
+raw -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\probe_flatseq_outer.json
+BGRUN END rc=0 after 46s

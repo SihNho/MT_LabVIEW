@@ -1,0 +1,112 @@
+BGRUN START 2026-09-15 05:03:21 limit 6.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & .\tools\peer.ps1 -Agent codex -Slug opconstvalue-v1c-recipe-byte-route -Task (Get-Content -Raw 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\6959fd57-add7-402e-9ed9-9a94ff2b4d5f\scratchpad\peer_task_v1c_recipe.txt')
+OUTCOME: ANSWERED (99s)  archived: archive\peer\2026-09-15-opconstvalue-v1c-recipe-byte-route.md
+--- ANSWER ---
+Verdict: **do not run unchanged**. The byte route itself is supported by NI, but the recipe needs several acceptance-test hardenings. No repository files were modified or executed.
+
+1. Unflatten behavior
+
+The proposed conversion is valid. NI explicitly says that when `data includes array or string size?` is FALSE, LabVIEW derives the top-level array size from the memory size of `binary string`. For U8 elements, every input byte is one complete element, so the expected remainder is empty. NI also says `rest of the binary string` contains bytes not converted when the input length is not a multiple of the element size. [NI: Unflatten From String](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/functions/unflatten-from-string.html)
+
+A normal U8-array control is legal on `type`: NI describes `type` as a ?�normally constructed LabVIEW type,??not a special type descriptor. Its runtime contents do not specify the array length in this mode; the wire?�s datatype specializes the output. [NI: Unflatten From String](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/functions/unflatten-from-string.html)
+
+Byte order cannot change individual U8 elements because endian selection only changes byte ordering within multibyte representations. That conclusion follows from NI?�s endian definition; it is not stated as a U8-specific sentence. [NI: Unflatten From String](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/functions/unflatten-from-string.html)
+
+However, add an indicator on `rest of the binary string` and require `rest == ""` on every read. Presently both hex and U8 outputs originate from the same Unflatten output, so their equality cannot detect a shared truncation. They are independent COM encodings, not independent extraction paths.
+
+2. Runtime Boolean control
+
+Setting the Boolean immediately before synchronous `Run` is a sound design. NI?�s documented VI Server sequence is set control values first, then invoke Run; non-reentrancy does not cause Run to restore defaults. [NI: Passing Data Using VI Server](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019MoeSAE)
+
+Still, verify the write:
+
+```python
+vi.SetControlValue(labels["size"], False)
+must("size control readback is False",
+     vi.GetControlValue(labels["size"]) is False)
+```
+
+This matters because weakly typed COM writes can fail through type mismatch, and NI requires the control name and datatype to match. [NI: Passing Data Using VI Server](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019MoeSAE)
+
+A scripted constant would be structurally safer after construction, but I found no NI documentation establishing that scripting property `634AC00` writes a Boolean constant?�s value. NI only documents creating a typed constant and editing its value interactively. Therefore, do not replace the measured control route with an unmeasured `Constant.Value` write before this build. [NI: Creating and Editing User-Defined Constants](https://www.ni.com/docs/en-GB/bundle/labview/page/creating-and-editing-user-defined-constants.html)
+
+3. Lowercase hex output
+
+Unknown from public NI documentation. I could not find a public connector/help page for `Bytes to Lowercase Hex String.vi` establishing exactly two lowercase digits per byte with no decoration.
+
+The test should explicitly require:
+
+```python
+len(hx) == 2 * len(b_u8)
+and hx == hx.lower()
+and all(c in "0123456789abcdef" for c in hx)
+and bytes.fromhex(hx) == b_u8
+```
+
+The current equality proves decodability and equivalence but does not establish lowercase; `bytes.fromhex` accepts uppercase and whitespace.
+
+4. SAFEARRAY/pywin32
+
+Do not assume a tuple. Current pywin32 deliberately maps `SAFEARRAY(VT_UI1)` to a buffer-like Python value for performance; its changelog warns that code expecting a tuple of integers can break. [pywin32 changelog](https://github.com/mhammond/pywin32/blob/main/CHANGES.md#notable-changes-in-this-transition)
+
+The current iterable conversion happens to accept `bytes`, `bytearray`, `memoryview`, and tuples, but it has two weaknesses:
+
+- A non-iterable unexpected value raises during `all(...)`.
+- An empty valid result becomes false in `if b_u8`, although the selected fixtures are nonempty.
+
+Use a guarded normalization:
+
+```python
+def normalize_u8(v):
+    if v is None or isinstance(v, str):
+        return None
+    try:
+        return bytes(v)
+    except (TypeError, ValueError):
+        try:
+            return bytes(int(x) for x in v)
+        except (TypeError, ValueError, OverflowError):
+            return None
+```
+
+I found no authoritative promise that LabVIEW returns an empty U8 array as `None`; treat its exact empty representation as unknown and measure it separately.
+
+5. Wrong-object false positives
+
+The UID plus class comparison is strong provided UIDs are unique within this VI, but I found no external NI page guaranteeing that property?�s uniqueness or lifetime.
+
+Add these cheap gates:
+
+- Restore the v1b `# of Refs == len(manifest)` check for each class.
+- Require `0 <= i < len(manifest)` before running.
+- Require the returned reporter index, if available, to equal `i`.
+- Poison and verify `# of Refs`, UID, class, hex, U8, value, data, and the new remainder.
+- Verify the size-control readback before each Run.
+- Add a deliberately invalid/out-of-range index test and require an error or unmistakably poisoned outputs.
+
+The two byte outputs do not protect object identity because both are derived from the same selected reference.
+
+Correction to my interim observation: `decode_flat` does enforce exact numeric-body consumption, zero attributes, and finite floats internally. The final `val is not None` gate therefore inherits those checks. The wording is accurate.
+
+6. Risk to the original main VI
+
+The constructed `Constant.Value` node is a read property: the recipe verifies that `Value` is a source terminal. Thus the intended dataflow only reads the selected constant.
+
+The disk MD5/mtime gate is useful but insufficient by itself:
+
+- It runs only after every test succeeds. An exception before the last line skips the audit.
+- It detects saving, not an unsaved in-memory dirty original.
+- The code does not explicitly close the main-VI reference obtained inside the op.
+
+Put the MD5/mtime audit in `finally`, and ideally also report the original VI?�s modification/dirty state before and after if the reporter exposes it. NI recommends closing VI references to avoid unexpected behavior. [NI: Passing Data Using VI Server](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019MoeSAE)
+
+Required pre-run changes:
+
+- Add and assert an empty remainder indicator.
+- Read back `size == False` before every Run.
+- Accept buffer-style U8 results.
+- Assert lowercase/no-whitespace/exact hex length.
+- Restore `# of Refs` and range gates.
+- Move the main-file integrity audit into `finally`.
+
+With those changes, I see no documentation-based objection to the byte route itself.
+BGRUN END rc=0 after 100s

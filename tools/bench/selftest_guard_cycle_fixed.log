@@ -1,0 +1,34 @@
+BGRUN START 2026-09-18 02:47:14 limit 3.0 min: py -u tools/bench/selftest_guard_cycle_fixed.py
+T1   PASS     expected=ALLOWED  got=ALLOWED  
+T2   PASS     expected=REFUSED  got=REFUSED  | BLOCKED by tools/hooks/guard_cycle.py: this RECIPE HAS NO PRIOR-ART RE
+T3   PASS     expected=REFUSED  got=REFUSED  | BLOCKED by tools/hooks/guard_cycle.py: this RECIPE HAS NO PRIOR-ART RE
+T4   PASS     expected=REFUSED  got=REFUSED  | BLOCKED by tools/hooks/guard_cycle.py: this recipe's `FIXED:` RELEASE 
+T5   PASS     expected=REFUSED  got=REFUSED  | BLOCKED by tools/hooks/guard_cycle.py: this RECIPE HAS NO PRIOR-ART RE
+T6   PASS     expected=REFUSED  got=REFUSED  | BLOCKED by tools/hooks/guard_cycle.py: this recipe's `FIXED:` RELEASE 
+
+================================================================================================
+B1 BAD  INPUT  - FIXED: cites a path last changed BEFORE the review (CLAUDE.md:449 b)   expected=REFUSED  got=REFUSED  ->  PASS
+------------------------------------------------------------------------------------------------
+BLOCKED by tools/hooks/guard_cycle.py: this recipe's `FIXED:` RELEASE DOES NOT VALIDATE.
+  recipe        : tools/recipes/r.py  (last changed 2026-09-17 09:50)
+  review        : archive\peer\2026-09-17-priorart-selftest.md
+  why it failed : (b) tools/recipes/r.py last changed 2026-09-17 09:50, which is NOT after the review (frontmatter date+time 2026-09-17 10:00) - a fix must post-date the finding it answers
+
+CLAUDE.md:449 - a `FIXED:` line releases only when (a) the cited path exists, (b) it was last
+changed AFTER the review, and (c) the line sits under '## What was done with it'.
+A promise is not a fix and an assertion is not a refutation: a claim that fails the
+filesystem check is worth LESS than no claim, because it says the finding was answered when
+the bytes say it was not. Make the change the line describes (then it post-dates the review),
+or write the honest release - and `CYCLE_GUARD_OFF` is never the answer.
+
+================================================================================================
+
+================================================================================================
+B2 GOOD INPUT  - the same FIXED: line, path last changed AFTER the review   expected=ALLOWED  got=ALLOWED  ->  PASS
+------------------------------------------------------------------------------------------------
+(premature_build returned None - ALLOWED, so the gate emits no text)
+================================================================================================
+
+SELFTEST guard_cycle premature_build (b): 6 pass / 0 fail
+NEGATIVE PROOF (plan Pre-decided 3): 2 pass / 0 fail   [B1 must REFUSE, B2 must ALLOW]
+BGRUN END rc=0 after 0s

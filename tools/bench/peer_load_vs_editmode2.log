@@ -1,0 +1,17 @@
+BGRUN START 2026-09-16 17:31:03 limit 9.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent codex -Slug load-vs-editmode-23c-retry -Task ATTACK this, measured in tools/bench/diag_load_vs_editmode.log (LabVIEW 2026, VI Scripting over ActiveX). Do not agree first; cite NI or labviewwiki.
+
+MEASURED, each arm a FRESH copy of a small op VI (4 Property objects), identical op (Open VI Reference -> Traverse for GObjects 'Property' -> Index Array -> Invoke Generic.Delete 6327400), index 0, same process:
+  A0 nothing first                                              4 -> 4  NOTHING deleted, error cluster (False,0,'')
+  A2 read VI 'Block Diagram' (23C) first, no window, then delete 4 -> 4  NOTHING deleted
+  A3 VI.OpenFrontPanel(activate=False) first, then delete        4 -> 3  deleted uid 115
+  A4 same 23C-loaded panel-less copy, GObject.Move instead: (853,300) -> (853,300) DID NOT MOVE
+  A Win32 window census confirms A2 opened no window, A3 opened one.
+The 23C read was performed by RUNNING a separate op VI whose dataflow is Open VI Reference(path) -> Property Node VI.Block Diagram 23C -> AbstractDiagram.Nodes[] -> Index Array -> node reads; that op then RETURNS and its refnums go out of scope.
+
+CLAIM 1 to attack: because a documented diagram load (23C: 'Loads the block diagram into memory: Yes') was performed and BOTH delete and move were still silently declined, while OpenFrontPanel makes both work, diagram RESIDENCY is not the variable - panel/edit-mode/UI context is. The hole to attack hardest: I could NOT read Metrics:Block Diagram Loaded (292) in this run, so I have not proved the diagram was loaded at delete time. Is a block diagram loaded through 23C guaranteed to STAY in memory after the refnum that loaded it is closed and the loading VI stops running, or is it unloaded again? If it does not stay, what holds it - an open diagram refnum, VI.'Block Diagram Window:Open' (237), an Open VI Reference option flag - and how could that be held across a SEPARATE later op-VI run?
+
+CLAIM 2 to attack: the flag reader failed to build. In a COPY of an op (Open VI Reference -> Traverse -> For loop) I created a Property Node of class 'VI Server:VI' with items 291 and 292 (they ATTACHED: terminals came back named PanelLoaded and DiagramLoaded), then wired its 'reference' input by BRANCHING the Open VI Reference node's 'vi reference' output with Terminal.Connect Wire 6349C03. Result: wire-count delta 0 and ExecState 0 (BROKEN). My explanations: (a) the branch silently did not happen, leaving 'reference' bare; (b) the node was created at (60,900), possibly inside the donor's For Loop while owned by the top-level diagram. Does a VI-class Property Node reject a reference from an Open VI Reference with no type specifier? Do 291/292 carry a requirement I am missing? Is a wire delta of 0 consistent with a successful BRANCH, or does a branch always add a Wire object? What else breaks a VI in exactly this shape?
+
+ALREADY RULED OUT: wrong method ID (6327400 confirmed); the op VI broken (ExecState 1); target running/reserved (idle fresh copy); error reporting (Generic.Delete has no semantic return value; the cluster read (False,0,'') even in the SUCCESSFUL A3).
+OUTCOME: TIMEOUT (180s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-16-load-vs-editmode-23c-retry.md
+BGRUN END rc=2 after 206s

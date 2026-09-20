@@ -1,0 +1,43 @@
+BGRUN START 2026-09-18 18:16:30 limit 3.0 min: py -u tools/bench/drive_original_copy_v4.py --selftest
+  FAIL | before/per-axis (the real v5 line) | got=None line="(no TMX line in the gate's output)" (want 39.0)
+  PASS | before/plain                       | got=39.0 line='before: POS?=0.00000 TMN?=0 TMX?=39.00000 ERR?=0' (want 39.0)
+  PASS | before/negative per-axis           | got=-2.5 line='before: TMX?=1=-2.50000' (want -2.5)
+  PASS | before wins over LIMITS            | got=39.0 line='before: TMX?=1=39.00000' (want 39.0)
+  PASS | LIMITS fallback / plain            | got=39.0 line='LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0' (want 39.0)
+  PASS | LIMITS fallback / per-axis         | got=39.0 line='LIMITS TMN=0 TMX=1=39.00000 SPA15=39 SPA30=0' (want 39.0)
+  PASS | malformed value                    | got=None line='before: TMX?=1=thirty-nine' (want None)
+  PASS | empty value                        | got=None line='before: TMX?=' (want None)
+  PASS | no TMX anywhere                    | got=None line="(no TMX line in the gate's output)" (want None)
+SELFTEST tmx_from: 8 pass / 1 fail
+BGRUN END rc=1 after 0s
+BGRUN START 2026-09-18 18:25:57 limit 3.0 min: py -u tools/bench/drive_original_copy_v4.py --selftest
+  PASS | before/per-axis (the real v5 line)       | got=39.0 line='before: POS?=1=30.00000 TMN?=1=0.00000 TMX?=1=39.00000 ERR?=0' (want 39.0)
+  PASS | log-decorated line is NOT parsed         | got=None line="(no TMX line in the gate's output)" (want None)
+  PASS | before/plain (tolerance only)            | got=39.0 line='before: POS?=0.00000 TMN?=0 TMX?=39.00000 ERR?=0' (want 39.0)
+  PASS | before/negative per-axis                 | got=-2.5 line='before: TMX?=1=-2.50000' (want -2.5)
+  PASS | before wins over LIMITS                  | got=39.0 line='before: TMX?=1=39.00000' (want 39.0)
+  PASS | LIMITS fallback / plain                  | got=39.0 line='LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0' (want 39.0)
+  PASS | LIMITS fallback / per-axis (tolerance only) | got=39.0 line='LIMITS TMN=0 TMX=1=39.00000 SPA15=39 SPA30=0' (want 39.0)
+  PASS | malformed value                          | got=None line='before: TMX?=1=thirty-nine' (want None)
+  PASS | empty value                              | got=None line='before: TMX?=' (want None)
+  PASS | no TMX anywhere                          | got=None line="(no TMX line in the gate's output)" (want None)
+SELFTEST tmx_from: 10 pass / 0 fail
+BGRUN END rc=0 after 0s
+BGRUN START 2026-09-18 18:45:48 limit 10.0 min: py -u tools/bench/drive_original_copy_v4.py --selftest
+  PASS | before/per-axis (the real v5 line)       | got=39.0 line='before: POS?=1=30.00000 TMN?=1=0.00000 TMX?=1=39.00000 ERR?=0' (want 39.0)
+  PASS | log-decorated line is NOT parsed         | got=None line="(no TMX line in the gate's output)" (want None)
+  PASS | before/plain (tolerance only)            | got=39.0 line='before: POS?=0.00000 TMN?=0 TMX?=39.00000 ERR?=0' (want 39.0)
+  PASS | before/negative per-axis                 | got=-2.5 line='before: TMX?=1=-2.50000' (want -2.5)
+  PASS | before wins over LIMITS                  | got=39.0 line='before: TMX?=1=39.00000' (want 39.0)
+  PASS | LIMITS fallback / plain                  | got=39.0 line='LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0' (want 39.0)
+  PASS | LIMITS fallback / per-axis (tolerance only) | got=39.0 line='LIMITS TMN=0 TMX=1=39.00000 SPA15=39 SPA30=0' (want 39.0)
+  PASS | malformed value                          | got=None line='before: TMX?=1=thirty-nine' (want None)
+  PASS | empty value                              | got=None line='before: TMX?=' (want None)
+  FAIL | no TMX anywhere                          | got=None line='before: POS?=1=0.00000 ERR?=0' (want None)  text='before: POS?=1=0.00000 ERR?=0'
+  PASS | FALL-THROUGH: before: without TMX?= never reads LIMITS | got=None line='before: POS?=1=30.00000 TMN?=1=0.00000 ERR?=0' (want None)
+  PASS | PRELIMITS beats a post-write LIMITS      | got=39.0 line='PRELIMITS TMN=0 TMX=39' (want 39.0)
+  PASS | PRELIMITS anchored left: a log-decorated copy is NOT read | got=39.0 line='before: POS?=1=30.00000 TMX?=1=39.00000 ERR?=0' (want 39.0)
+  PASS | PRELIMITS anchored right: trailing fields are NOT read | got=39.0 line='before: POS?=1=30.00000 TMX?=1=39.00000 ERR?=0' (want 39.0)
+  PASS | PRELIMITS with an empty field is NOT read | got=None line='before: POS?=1=30.00000 ERR?=0' (want None)
+SELFTEST tmx_from: 14 pass / 1 fail
+BGRUN END rc=1 after 0s

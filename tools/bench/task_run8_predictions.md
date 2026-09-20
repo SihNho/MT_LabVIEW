@@ -1,0 +1,24 @@
+D1 route-B run 8 (`tools/bench/build_d1_routeb_v5_run8.log`, `BGRUN END rc=1 after 1822s`, 80 PASS / 0 FAIL gates) was a one-line discriminator and EVERY prediction on record missed. Attack the framing below; do not confirm it.
+
+THE CHANGE UNDER TEST (K1): `tools/recipes/build_d1_routeb_v5.py:1760` deleted the VI-wide `remove_bad_wires_scripted(target)` that v4 called from INSIDE the S3w row loop (v4 `:1669`), putting nothing in its place. K2 made the post-delete wire-count gate PER-DIAGRAM (`:520` `diagram_wire_count()`, `:1613`, `:1842`). K3 added a survival census of the ledger's uids after the S3w ledger line (`:1130`, `:2036`, `:2120`).
+
+PREDICTIONS ON RECORD (STATUS.md NEXT, written by the cycle-39 judgement session): t3/t4 leave NO-ROUTE · t5 leaves FAILED · `Z/dZ` t0 stays wired at w29238 · per-diagram Wire delta 0.
+
+OBSERVED in run 8:
+- `#2222` t3 WIRED (`:411`, w29180, Is Broken? FALSE), t4 WIRED (`:412`, w29347), t5 WIRED (`:413`, w29406, `reparented=True`, attempts `[(24,'no error',29406)]`), t2 WIRED (`:410`). Run 7 had t3/t4 NO-ROUTE and t5 FAILED.
+- `Z/dZ` t0 FAILED (`:418`) on reading (b) ONLY: PER-DIAGRAM Diagram[24] 31 -> 32, delta +1; VI-wide logged beside it 1937 -> 1938, delta +1. (a) source identity True (the control's own wire 29238 == the sink wire 29238, exactly 1 reciprocal source terminal, self-echo ('Diagram',567), expected ControlTerminal uid 403), (c) `Is Broken? False`, (d) sink wire read back 29238.
+- Ledger `:363`: attempted 66 / WIRED 53 / FAILED 12 / NO-ROUTE 1 (run 7: 66/54/9/3; run 6: 55/7/4; run 5: 57/6/3). ELEVEN of the twelve FAILED rows carry `error 2` (`:419-:429`); the twelfth is `Z/dZ`'s J2 gate. The single NO-ROUTE (`:430`) is `#10407 t1 '# slices in stack' <- from-tunnel 9641, w9649 has 0 source terminals, not 1: []`.
+- K3's SURVIVAL CENSUS — the measurement this run existed to produce — is UNREAD (`:364`): `report_all(Wire)` raised `error 2: ... Traverse for GObjects.vi->OpReportAll_v0.vi | <APPEND> | Method Name: Class Operator:Traverse (Traverse Failed)` after 50 uids had been claimed.
+- `error 2` still crashes the run in `settle_index_modes` (`:432`, `:454`, `count(LoopTunnel)`), handles 35,555 immediately before (`:431`); handles before the run 31,130, after 50,709. Victim rows went 6 in run 7 -> 11 in run 8, and the victim CLASS widened: 10 `report_all(Diagram)` + 1 `report_all(WhileLoop)` (`:423`), plus `report_all(Wire)` at `:364`.
+- ExecState: S1 baseline 0 COLD (`:37`, logged UNREAD); the live copy PRELOADED 1 (`:437`). Original md5 unchanged, `:13` and `:440`. REFS final `{'opened':31,'closed':31,'live':0,'cached_op_vis':25}` (`:442`).
+
+ALREADY RULED OUT — do not re-propose:
+- `gscript.net_map` as a wire-counting instrument: it calls `remove_bad_wires_scripted(target)` internally (`tools/gscript.py:2507-2516`, `:2568-2588`), so it re-fires the very reaper K1 removed, twice per row.
+- "a constant cannot explain a change", applied to `error 2`: that was cycle 39's reading and run 8 falsifies it (6 -> 11 victims, new victim classes).
+- `live: 0` in the REFS line as evidence that refnums are balanced: `_REF_CLOSED` increments unconditionally in `vi_ref`'s `finally` (`tools/gscript.py:251-259`), so it is a tautology.
+
+QUESTIONS:
+Q1. Every miss is in the direction of MORE wired rows — which is what K1's own diagnosis implied and the recorded predictions denied. Give the strongest case that the recorded predictions were the correct null and that run 8's improvement has a cause OTHER than removing the in-loop reaper. Name that cause, and name the cheapest test that separates it from "the reaper was eating the build's own scaffolding".
+Q2. The `Z/dZ` per-diagram delta is +1, not 0, across a bracket that creates one `Equal?` node, wires it, reads it, and deletes it. What single wire would a CORRECT cleanup leave behind? Is +1 evidence of a leak, of the sink wire itself being counted inside the bracket, or of the count being taken at the wrong boundary? Answer against `build_d1_routeb_v5.py:520`, `:1613`, `:1842`.
+Q3. `error 2` (Traverse Failed) now hits `report_all(Wire)`, `report_all(Diagram)`, `report_all(WhileLoop)` and `count(LoopTunnel)`, always above ~35.5k handles, and grew 6 -> 11 victims when the only intended change was deleting a reaper. What is the causal chain, and is the handle count a cause, a symptom, or a coincidence? Search externally for LabVIEW VI-Scripting `Class Operator:Traverse (Traverse Failed)` / error 2 and say what the vendor's own material attributes it to.
+Q4. Name the ONE cheapest read-only measurement that would make a surviving-wire census readable — or prove it unreadable over this COM path — given that `report_all(Wire)` is the call that dies. Four preserved crash copies are on disk, newest `...\claudeDev\SCRATCH_routeb_035814_crash_042836.vi`.

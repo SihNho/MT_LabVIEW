@@ -1,0 +1,311 @@
+BGRUN START 2026-09-20 07:53:09 limit 25.0 min: py -u tools/bench/diag_queue_trial_census.py
+=== diag_queue_trial_census  2026-09-20 07:53:10   (Pre-decided 36(d) TRIAL CENSUS; NO VI IS RUN, 34(f); no new op; PICKS NOTHING)
+  FACT  LabVIEW handles BEFORE: 34158 (fresh-instance baseline ~31,500)
+  FACT  36(c) WALL, restated so it is never quietly forgotten: NO BUILT OP READS Terminal.DataType. node_terms gives name/is_source/wire, report_all gives class/uid/pos/owner, node_info gives Node.Style for TOP-LEVEL nodes only and #686 is not top level. Building a type reader is a NEW OP and Pre-decided 2 forbids it. So a donor's TYPE is never printed here - only what the op DID.
+  FACT  T1 ORIGINAL (read-only probe, 34(k)): HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  T1 the ORIGINAL's md5 equals the pin  2a78e17c449cacdaf5da389818526859
+  FACT  T2 the S2 artefact: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T2 D1_s2_loops.vi md5 == 6ff19497f2309e007a214660bb64b911  6ff19497f2309e007a214660bb64b911
+
+--- the donor list: the 18 nodes of 36(c), their named output terminals taken from tools/bench/diag_donor_census.json (the brief forbids re-deriving them)
+      DONOR #8486   Function   'Increment'               t0   'x+1'
+      DONOR #7201   Function   'Multiply'                t0   'x*y'
+      DONOR #781    Function   'Initialize Array'        t1   'initialized array'
+      DONOR #250    Property   'Property Node'           t1   'IMAQdx Session'
+      DONOR #250    Property   'Property Node'           t3   'error out'
+      DONOR #250    Property   'Property Node'           t4   'LastBufferNumber'
+      DONOR #8953   Function   'Initialize Array'        t1   'initialized array'
+      DONOR #9342   Function   'Array Size'              t0   'size(s)'
+      DONOR #9179   Function   'Decrement'               t0   'x-1'
+      DONOR #28124  Function   'Initialize Array'        t1   'initialized array'
+      DONOR #27605  SubVI      'Max Trans Pos.vi'        t0   'Magnet position output'
+      DONOR #25380  Function   'While Loop'              t2   'final trans pos'
+      DONOR #25380  Function   'While Loop'              t4   'error out'
+      DONOR #25380  Function   'While Loop'              t5   'rot pos'
+      DONOR #25380  Function   'While Loop'              t7   'tran pos'
+      DONOR #25380  Function   'While Loop'              t9   'Value'
+      DONOR #25091  Function   'Multiply'                t0   'x*y'
+      DONOR #25149  Function   'Subtract'                t0   'x-y'
+  FACT  donor list: 18 (node, named output terminal) pairs over 12 of the 18 nodes; 6 nodes expose NO named output terminal and contribute no donor: [6951, 6409, 28670, 23032, 10170, 23041]
+  PASS  T4 uid 637 (35(a)'s BANNED donor) is ABSENT from the donor list  18 donors
+  FACT  T2b: lv_restart rc=0 ['dialogs: ,1346,762| / ENABLED|12650946|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  handles after the restart: 30689
+  FACT  T3 the dated scratch: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_qtrial_20260920_075310_1.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T3 the scratch is byte-identical to the S2 artefact  6ff19497f2309e007a214660bb64b911
+  FACT  P: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+  FACT  class census BEFORE any attempt: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905, 'Function': 183}
+  FACT  scratch ExecState BEFORE any attempt, ORIGINAL preloaded: 1
+
+--- the LIVE walk of Diagram #686 (34(h): re-read, never cached) against the census JSON
+  FACT  Diagram #686 reads Traverse index 19 on this scratch
+  PASS  T5 the live walk finds all 18 nodes of 36(c) on Diagram #686  missing []; walk returned 24 nodes
+  PASS  T6 the live named-output-terminal list equals the census JSON's, node for node  0 nodes differ: []
+
+--- resolving each donor node's addressable Traverse class BY MEMBERSHIP (never from its label)
+  FACT  node #250: cls_of guess 'Property'; Traverse classes containing it ['Property', 'Node']; class USED 'Property'
+  FACT  node #781: cls_of guess 'Function'; Traverse classes containing it ['Node']; class USED 'Node'
+  FACT  node #7201: cls_of guess 'Function'; Traverse classes containing it ['Function', 'Node']; class USED 'Function'
+  FACT  node #8486: cls_of guess 'Function'; Traverse classes containing it ['Function', 'Node']; class USED 'Function'
+  FACT  node #8953: cls_of guess 'Function'; Traverse classes containing it ['Node']; class USED 'Node'
+  FACT  node #9179: cls_of guess 'Function'; Traverse classes containing it ['Function', 'Node']; class USED 'Function'
+  FACT  node #9342: cls_of guess 'Function'; Traverse classes containing it ['Function', 'Node']; class USED 'Function'
+  FACT  node #25091: cls_of guess 'Function'; Traverse classes containing it ['Function', 'Node']; class USED 'Function'
+  FACT  node #25149: cls_of guess 'Function'; Traverse classes containing it ['Function', 'Node']; class USED 'Function'
+  FACT  node #25380: cls_of guess 'Function'; Traverse classes containing it ['WhileLoop', 'Node']; class USED 'WhileLoop'
+  FACT  node #27605: cls_of guess 'SubVI'; Traverse classes containing it ['SubVI', 'Node']; class USED 'SubVI'
+  FACT  node #28124: cls_of guess 'Function'; Traverse classes containing it ['Node']; class USED 'Node'
+
+--- THE TRIAL: one `queue_node('obtain')` per donor. A refusal is a legitimate outcome and its VERBATIM text is the reading.
+  OBSERVED uid 23492 -> owner 'Diagram' uid 686 | self 'Function'#23492 | 482 says 'Diagram' cast 'Diagram' |  
+      CREATED #23492 Nodes[24] report_all {'i': 28, 'class': 'Function', 'uid': 23492, 'pos': (4587, 6512), 'owner': 'Diagram'} owner_of ('Diagram', 686)
+           term t0   'name (unnamed)'               is_source=False wire=0
+           term t1   'element data type'            is_source=False wire=23519
+           term t2   'create if not found? (T)'     is_source=False wire=0
+           term t3   'error in (no error)'          is_source=False wire=0
+           term t4   'max queue size (-1, unlimited)' is_source=False wire=0
+           term t5   'queue out'                    is_source=True wire=0
+           term t6   'created new?'                 is_source=True wire=0
+           term t7   'error out'                    is_source=True wire=0
+  FACT  ATTEMPT 0: donor #8486[0] . 'x+1' via Traverse 'Function'[39] -> accepted=True; new Function uids [23492]; ExecState 1 -> 1 (changed=False); op error VERBATIM None
+  OBSERVED uid 23493 -> owner 'Diagram' uid 686 | self 'Function'#23493 | 482 says 'Diagram' cast 'Diagram' |  
+      CREATED #23493 Nodes[25] report_all {'i': 28, 'class': 'Function', 'uid': 23493, 'pos': (4847, 6512), 'owner': 'Diagram'} owner_of ('Diagram', 686)
+           term t0   'name (unnamed)'               is_source=False wire=0
+           term t1   'element data type'            is_source=False wire=8424
+           term t2   'create if not found? (T)'     is_source=False wire=0
+           term t3   'error in (no error)'          is_source=False wire=0
+           term t4   'max queue size (-1, unlimited)' is_source=False wire=0
+           term t5   'queue out'                    is_source=True wire=0
+           term t6   'created new?'                 is_source=True wire=0
+           term t7   'error out'                    is_source=True wire=0
+  FACT  ATTEMPT 1: donor #7201[0] . 'x*y' via Traverse 'Function'[41] -> accepted=True; new Function uids [23493]; ExecState 1 -> 1 (changed=False); op error VERBATIM None
+  OBSERVED uid 23495 -> owner 'Diagram' uid 686 | self 'Function'#23495 | 482 says 'Diagram' cast 'Diagram' |  
+      CREATED #23495 Nodes[26] report_all {'i': 28, 'class': 'Function', 'uid': 23495, 'pos': (5107, 6512), 'owner': 'Diagram'} owner_of ('Diagram', 686)
+           term t0   'name (unnamed)'               is_source=False wire=0
+           term t1   'element data type'            is_source=False wire=3543
+           term t2   'create if not found? (T)'     is_source=False wire=0
+           term t3   'error in (no error)'          is_source=False wire=0
+           term t4   'max queue size (-1, unlimited)' is_source=False wire=0
+           term t5   'queue out'                    is_source=True wire=0
+           term t6   'created new?'                 is_source=True wire=0
+           term t7   'error out'                    is_source=True wire=0
+  FACT  ATTEMPT 2: donor #781[1] . 'initialized array' via Traverse 'Node'[163] -> accepted=True; new Function uids [23495]; ExecState 1 -> 1 (changed=False); op error VERBATIM None
+  OBSERVED uid 23496 -> owner 'Diagram' uid 686 | self 'Function'#23496 | 482 says 'Diagram' cast 'Diagram' |  
+      CREATED #23496 Nodes[27] report_all {'i': 28, 'class': 'Function', 'uid': 23496, 'pos': (5367, 6512), 'owner': 'Diagram'} owner_of ('Diagram', 686)
+           term t0   'name (unnamed)'               is_source=False wire=0
+           term t1   'element data type'            is_source=False wire=6910
+           term t2   'create if not found? (T)'     is_source=False wire=0
+           term t3   'error in (no error)'          is_source=False wire=0
+           term t4   'max queue size (-1, unlimited)' is_source=False wire=0
+           term t5   'queue out'                    is_source=True wire=0
+           term t6   'created new?'                 is_source=True wire=0
+           term t7   'error out'                    is_source=True wire=0
+  FACT  ATTEMPT 3: donor #250[1] . 'IMAQdx Session' via Traverse 'Property'[35] -> accepted=True; new Function uids [23496]; ExecState 1 -> 1 (changed=False); op error VERBATIM None
+  OBSERVED uid 23498 -> owner 'Diagram' uid 686 | self 'Function'#23498 | 482 says 'Diagram' cast 'Diagram' |  
+      CREATED #23498 Nodes[28] report_all {'i': 28, 'class': 'Function', 'uid': 23498, 'pos': (5627, 6512), 'owner': 'Diagram'} owner_of ('Diagram', 686)
+           term t0   'name (unnamed)'               is_source=False wire=0
+           term t1   'element data type'            is_source=False wire=925
+           term t2   'create if not found? (T)'     is_source=False wire=0
+           term t3   'error in (no error)'          is_source=False wire=0
+           term t4   'max queue size (-1, unlimited)' is_source=False wire=0
+           term t5   'queue out'                    is_source=True wire=0
+           term t6   'created new?'                 is_source=True wire=0
+           term t7   'error out'                    is_source=True wire=0
+  FACT  ATTEMPT 4: donor #250[3] . 'error out' via Traverse 'Property'[35] -> accepted=True; new Function uids [23498]; ExecState 1 -> 1 (changed=False); op error VERBATIM None
+  OBSERVED uid 23499 -> owner 'Diagram' uid 686 | self 'Function'#23499 | 482 says 'Diagram' cast 'Diagram' |  
+      CREATED #23499 Nodes[29] report_all {'i': 28, 'class': 'Function', 'uid': 23499, 'pos': (5887, 6512), 'owner': 'Diagram'} owner_of ('Diagram', 686)
+           term t0   'name (unnamed)'               is_source=False wire=0
+           term t1   'element data type'            is_source=False wire=1827
+           term t2   'create if not found? (T)'     is_source=False wire=0
+           term t3   'error in (no error)'          is_source=False wire=0
+           term t4   'max queue size (-1, unlimited)' is_source=False wire=0
+           term t5   'queue out'                    is_source=True wire=0
+           term t6   'created new?'                 is_source=True wire=0
+           term t7   'error out'                    is_source=True wire=0
+  FACT  ATTEMPT 5: donor #250[4] . 'LastBufferNumber' via Traverse 'Property'[35] -> accepted=True; new Function uids [23499]; ExecState 1 -> 1 (changed=False); op error VERBATIM None
+  OBSERVED uid 23502 -> owner 'Diagram' uid 686 | self 'Function'#23502 | 482 says 'Diagram' cast 'Diagram' |  
+      CREATED #23502 Nodes[30] report_all {'i': 28, 'class': 'Function', 'uid': 23502, 'pos': (6147, 6512), 'owner': 'Diagram'} owner_of ('Diagram', 686)
+           term t0   'name (unnamed)'               is_source=False wire=0
+           term t1   'element data type'            is_source=False wire=9051
+           term t2   'create if not found? (T)'     is_source=False wire=0
+           term t3   'error in (no error)'          is_source=False wire=0
+           term t4   'max queue size (-1, unlimited)' is_source=False wire=0
+           term t5   'queue out'                    is_source=True wire=0
+           term t6   'created new?'                 is_source=True wire=0
+           term t7   'error out'                    is_source=True wire=0
+  FACT  ATTEMPT 6: donor #8953[1] . 'initialized array' via Traverse 'Node'[156] -> accepted=True; new Function uids [23502]; ExecState 1 -> 1 (changed=False); op error VERBATIM None
+  OBSERVED uid 23547 -> owner 'Diagram' uid 686 | self 'Function'#23547 | 482 says 'Diagram' cast 'Diagram' |  
+      CREATED #23547 Nodes[31] report_all {'i': 28, 'class': 'Function', 'uid': 23547, 'pos': (6407, 6512), 'owner': 'Diagram'} owner_of ('Diagram', 686)
+           term t0   'name (unnamed)'               is_source=False wire=0
+           term t1   'element data type'            is_source=False wire=9211
+           term t2   'create if not found? (T)'     is_source=False wire=0
+           term t3   'error in (no error)'          is_source=False wire=0
+           term t4   'max queue size (-1, unlimited)' is_source=False wire=0
+           term t5   'queue out'                    is_source=True wire=0
+           term t6   'created new?'                 is_source=True wire=0
+           term t7   'error out'                    is_source=True wire=0
+  FACT  ATTEMPT 7: donor #9342[0] . 'size(s)' via Traverse 'Function'[43] -> accepted=True; new Function uids [23547]; ExecState 1 -> 1 (changed=False); op error VERBATIM None
+  OBSERVED uid 23589 -> owner 'Diagram' uid 686 | self 'Function'#23589 | 482 says 'Diagram' cast 'Diagram' |  
+      CREATED #23589 Nodes[32] report_all {'i': 28, 'class': 'Function', 'uid': 23589, 'pos': (6667, 6512), 'owner': 'Diagram'} owner_of ('Diagram', 686)
+           term t0   'name (unnamed)'               is_source=False wire=0
+           term t1   'element data type'            is_source=False wire=9166
+           term t2   'create if not found? (T)'     is_source=False wire=0
+           term t3   'error in (no error)'          is_source=False wire=0
+           term t4   'max queue size (-1, unlimited)' is_source=False wire=0
+           term t5   'queue out'                    is_source=True wire=0
+           term t6   'created new?'                 is_source=True wire=0
+           term t7   'error out'                    is_source=True wire=0
+  FACT  ATTEMPT 8: donor #9179[0] . 'x-1' via Traverse 'Function'[43] -> accepted=True; new Function uids [23589]; ExecState 1 -> 1 (changed=False); op error VERBATIM None
+  OBSERVED uid 23724 -> owner 'Diagram' uid 686 | self 'Function'#23724 | 482 says 'Diagram' cast 'Diagram' |  
+      CREATED #23724 Nodes[33] report_all {'i': 28, 'class': 'Function', 'uid': 23724, 'pos': (6927, 6512), 'owner': 'Diagram'} owner_of ('Diagram', 686)
+           term t0   'name (unnamed)'               is_source=False wire=0
+           term t1   'element data type'            is_source=False wire=29122
+           term t2   'create if not found? (T)'     is_source=False wire=0
+           term t3   'error in (no error)'          is_source=False wire=0
+           term t4   'max queue size (-1, unlimited)' is_source=False wire=0
+           term t5   'queue out'                    is_source=True wire=0
+           term t6   'created new?'                 is_source=True wire=0
+           term t7   'error out'                    is_source=True wire=0
+  FACT  ATTEMPT 9: donor #28124[1] . 'initialized array' via Traverse 'Node'[156] -> accepted=True; new Function uids [23724]; ExecState 1 -> 1 (changed=False); op error VERBATIM None
+  OBSERVED uid 23801 -> owner 'Diagram' uid 686 | self 'Function'#23801 | 482 says 'Diagram' cast 'Diagram' |  
+      CREATED #23801 Nodes[34] report_all {'i': 28, 'class': 'Function', 'uid': 23801, 'pos': (7187, 6512), 'owner': 'Diagram'} owner_of ('Diagram', 686)
+           term t0   'name (unnamed)'               is_source=False wire=0
+           term t1   'element data type'            is_source=False wire=28392
+           term t2   'create if not found? (T)'     is_source=False wire=0
+           term t3   'error in (no error)'          is_source=False wire=0
+           term t4   'max queue size (-1, unlimited)' is_source=False wire=0
+           term t5   'queue out'                    is_source=True wire=0
+           term t6   'created new?'                 is_source=True wire=0
+           term t7   'error out'                    is_source=True wire=0
+  FACT  ATTEMPT 10: donor #27605[0] . 'Magnet position output' via Traverse 'SubVI'[24] -> accepted=True; new Function uids [23801]; ExecState 1 -> 1 (changed=False); op error VERBATIM None
+  OBSERVED uid 23886 -> owner 'Diagram' uid 686 | self 'Function'#23886 | 482 says 'Diagram' cast 'Diagram' |  
+      CREATED #23886 Nodes[35] report_all {'i': 28, 'class': 'Function', 'uid': 23886, 'pos': (7447, 6512), 'owner': 'Diagram'} owner_of ('Diagram', 686)
+           term t0   'name (unnamed)'               is_source=False wire=0
+           term t1   'element data type'            is_source=False wire=24688
+           term t2   'create if not found? (T)'     is_source=False wire=0
+           term t3   'error in (no error)'          is_source=False wire=0
+           term t4   'max queue size (-1, unlimited)' is_source=False wire=0
+           term t5   'queue out'                    is_source=True wire=0
+           term t6   'created new?'                 is_source=True wire=0
+           term t7   'error out'                    is_source=True wire=0
+  FACT  ATTEMPT 11: donor #25380[2] . 'final trans pos' via Traverse 'WhileLoop'[3] -> accepted=True; new Function uids [23886]; ExecState 1 -> 1 (changed=False); op error VERBATIM None
+  OBSERVED uid 24009 -> owner 'Diagram' uid 686 | self 'Function'#24009 | 482 says 'Diagram' cast 'Diagram' |  
+      CREATED #24009 Nodes[36] report_all {'i': 28, 'class': 'Function', 'uid': 24009, 'pos': (7707, 6512), 'owner': 'Diagram'} owner_of ('Diagram', 686)
+           term t0   'name (unnamed)'               is_source=False wire=0
+           term t1   'element data type'            is_source=False wire=37446
+           term t2   'create if not found? (T)'     is_source=False wire=0
+           term t3   'error in (no error)'          is_source=False wire=0
+           term t4   'max queue size (-1, unlimited)' is_source=False wire=0
+           term t5   'queue out'                    is_source=True wire=0
+           term t6   'created new?'                 is_source=True wire=0
+           term t7   'error out'                    is_source=True wire=0
+  FACT  ATTEMPT 12: donor #25380[4] . 'error out' via Traverse 'WhileLoop'[3] -> accepted=True; new Function uids [24009]; ExecState 1 -> 1 (changed=False); op error VERBATIM None
+  OBSERVED uid 24154 -> owner 'Diagram' uid 686 | self 'Function'#24154 | 482 says 'Diagram' cast 'Diagram' |  
+      CREATED #24154 Nodes[37] report_all {'i': 28, 'class': 'Function', 'uid': 24154, 'pos': (7967, 6512), 'owner': 'Diagram'} owner_of ('Diagram', 686)
+           term t0   'name (unnamed)'               is_source=False wire=0
+           term t1   'element data type'            is_source=False wire=783
+           term t2   'create if not found? (T)'     is_source=False wire=0
+           term t3   'error in (no error)'          is_source=False wire=0
+           term t4   'max queue size (-1, unlimited)' is_source=False wire=0
+           term t5   'queue out'                    is_source=True wire=0
+           term t6   'created new?'                 is_source=True wire=0
+           term t7   'error out'                    is_source=True wire=0
+  FACT  ATTEMPT 13: donor #25380[5] . 'rot pos' via Traverse 'WhileLoop'[3] -> accepted=True; new Function uids [24154]; ExecState 1 -> 1 (changed=False); op error VERBATIM None
+  OBSERVED uid 24330 -> owner 'Diagram' uid 686 | self 'Function'#24330 | 482 says 'Diagram' cast 'Diagram' |  
+      CREATED #24330 Nodes[38] report_all {'i': 28, 'class': 'Function', 'uid': 24330, 'pos': (8227, 6512), 'owner': 'Diagram'} owner_of ('Diagram', 686)
+           term t0   'name (unnamed)'               is_source=False wire=0
+           term t1   'element data type'            is_source=False wire=6533
+           term t2   'create if not found? (T)'     is_source=False wire=0
+           term t3   'error in (no error)'          is_source=False wire=0
+           term t4   'max queue size (-1, unlimited)' is_source=False wire=0
+           term t5   'queue out'                    is_source=True wire=0
+           term t6   'created new?'                 is_source=True wire=0
+           term t7   'error out'                    is_source=True wire=0
+  FACT  ATTEMPT 14: donor #25380[7] . 'tran pos' via Traverse 'WhileLoop'[3] -> accepted=True; new Function uids [24330]; ExecState 1 -> 1 (changed=False); op error VERBATIM None
+  OBSERVED uid 24402 -> owner 'Diagram' uid 686 | self 'Function'#24402 | 482 says 'Diagram' cast 'Diagram' |  
+      CREATED #24402 Nodes[39] report_all {'i': 28, 'class': 'Function', 'uid': 24402, 'pos': (8487, 6512), 'owner': 'Diagram'} owner_of ('Diagram', 686)
+           term t0   'name (unnamed)'               is_source=False wire=0
+           term t1   'element data type'            is_source=False wire=25009
+           term t2   'create if not found? (T)'     is_source=False wire=0
+           term t3   'error in (no error)'          is_source=False wire=0
+           term t4   'max queue size (-1, unlimited)' is_source=False wire=0
+           term t5   'queue out'                    is_source=True wire=0
+           term t6   'created new?'                 is_source=True wire=0
+           term t7   'error out'                    is_source=True wire=0
+  FACT  ATTEMPT 15: donor #25380[9] . 'Value' via Traverse 'WhileLoop'[3] -> accepted=True; new Function uids [24402]; ExecState 1 -> 1 (changed=False); op error VERBATIM None
+  OBSERVED uid 24465 -> owner 'Diagram' uid 686 | self 'Function'#24465 | 482 says 'Diagram' cast 'Diagram' |  
+      CREATED #24465 Nodes[40] report_all {'i': 28, 'class': 'Function', 'uid': 24465, 'pos': (8747, 6512), 'owner': 'Diagram'} owner_of ('Diagram', 686)
+           term t0   'name (unnamed)'               is_source=False wire=0
+           term t1   'element data type'            is_source=False wire=25196
+           term t2   'create if not found? (T)'     is_source=False wire=0
+           term t3   'error in (no error)'          is_source=False wire=0
+           term t4   'max queue size (-1, unlimited)' is_source=False wire=0
+           term t5   'queue out'                    is_source=True wire=0
+           term t6   'created new?'                 is_source=True wire=0
+           term t7   'error out'                    is_source=True wire=0
+  FACT  ATTEMPT 16: donor #25091[0] . 'x*y' via Traverse 'Function'[48] -> accepted=True; new Function uids [24465]; ExecState 1 -> 1 (changed=False); op error VERBATIM None
+  OBSERVED uid 24551 -> owner 'Diagram' uid 686 | self 'Function'#24551 | 482 says 'Diagram' cast 'Diagram' |  
+      CREATED #24551 Nodes[41] report_all {'i': 28, 'class': 'Function', 'uid': 24551, 'pos': (9007, 6512), 'owner': 'Diagram'} owner_of ('Diagram', 686)
+           term t0   'name (unnamed)'               is_source=False wire=0
+           term t1   'element data type'            is_source=False wire=25646
+           term t2   'create if not found? (T)'     is_source=False wire=0
+           term t3   'error in (no error)'          is_source=False wire=0
+           term t4   'max queue size (-1, unlimited)' is_source=False wire=0
+           term t5   'queue out'                    is_source=True wire=0
+           term t6   'created new?'                 is_source=True wire=0
+           term t7   'error out'                    is_source=True wire=0
+  FACT  ATTEMPT 17: donor #25149[0] . 'x-y' via Traverse 'Function'[48] -> accepted=True; new Function uids [24551]; ExecState 1 -> 1 (changed=False); op error VERBATIM None
+
+--- the scoring
+  FACT  COUNTS: 18 donors attempted, 18 ACCEPTED, 0 REFUSED; refusal error numbers {}
+  FACT  ACCEPTED pair: node #8486 . 'x+1' -> created [23492]
+  FACT  ACCEPTED pair: node #7201 . 'x*y' -> created [23493]
+  FACT  ACCEPTED pair: node #781 . 'initialized array' -> created [23495]
+  FACT  ACCEPTED pair: node #250 . 'IMAQdx Session' -> created [23496]
+  FACT  ACCEPTED pair: node #250 . 'error out' -> created [23498]
+  FACT  ACCEPTED pair: node #250 . 'LastBufferNumber' -> created [23499]
+  FACT  ACCEPTED pair: node #8953 . 'initialized array' -> created [23502]
+  FACT  ACCEPTED pair: node #9342 . 'size(s)' -> created [23547]
+  FACT  ACCEPTED pair: node #9179 . 'x-1' -> created [23589]
+  FACT  ACCEPTED pair: node #28124 . 'initialized array' -> created [23724]
+  FACT  ACCEPTED pair: node #27605 . 'Magnet position output' -> created [23801]
+  FACT  ACCEPTED pair: node #25380 . 'final trans pos' -> created [23886]
+  FACT  ACCEPTED pair: node #25380 . 'error out' -> created [24009]
+  FACT  ACCEPTED pair: node #25380 . 'rot pos' -> created [24154]
+  FACT  ACCEPTED pair: node #25380 . 'tran pos' -> created [24330]
+  FACT  ACCEPTED pair: node #25380 . 'Value' -> created [24402]
+  FACT  ACCEPTED pair: node #25091 . 'x*y' -> created [24465]
+  FACT  ACCEPTED pair: node #25149 . 'x-y' -> created [24551]
+  PASS  T7 every donor was attempted and scored  18 attempts for 18 donors
+  PASS  T8 the 36(a) baseline donor #8486 'x+1' is ACCEPTED  accepted=True error None
+  PASS  T9 every acceptance was read back (node_terms rows AND a report_all row)  18 of 18
+
+--- T10: ARE TWO ACCEPTANCES ON DIFFERENTLY-TYPED DONORS DISTINGUISHABLE BY ANY BUILT OP? (36(d) ASSUMES they are; this MEASURES it)
+      SIGNATURE (18 acceptances): {"class": "Function", "label": "Obtain Queue", "n_terms": 8, "owner": "Diagram", "terms": [[0, "name (unnamed)", false], [1, "element data type", false], [2, "create if not found? (T)", false], [3, "error in (no error)", false], [4, "max queue size (-1, unlimited)", false], [5, "queue out", true], [6, "created new?", true], [7, "error out", true]]}
+          members: [(8486, 'x+1'), (7201, 'x*y'), (781, 'initialized array'), (250, 'IMAQdx Session'), (250, 'error out'), (250, 'LastBufferNumber'), (8953, 'initialized array'), (9342, 'size(s)'), (9179, 'x-1'), (28124, 'initialized array'), (27605, 'Magnet position output'), (25380, 'final trans pos'), (25380, 'error out'), (25380, 'rot pos'), (25380, 'tran pos'), (25380, 'Value'), (25091, 'x*y'), (25149, 'x-y')]
+  FACT  ? THE READING: all 18 acceptances produce an IDENTICAL readable signature. Two `Obtain Queue` nodes created from DIFFERENTLY-SHAPED donors are INDISTINGUISHABLE by every built op - report_all (class/uid/pos/owner), node_terms (name/is_source/wire) and node_labels all return the same thing. 36(d)'s premise 'a created Obtain Queue can be read back' holds only for the node's EXISTENCE, not for its ELEMENT TYPE.
+  PASS  T10 the distinguishability reading is recorded (18 acceptances -> 1 distinct readable signatures)  1 signature = indistinguishable by the built fleet
+  FACT  ExecState: 1 before any attempt -> 1 after all of them; 0 individual attempts moved it: []
+  PASS  T11 ExecState before/after every attempt is recorded  18 attempts
+  FACT  class census AFTER all attempts: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1907, 'Function': 201}
+  FACT  g.save(scratch) returned 481777; exception VERBATIM None (allow_broken False, gui_save never called)
+  FACT  the scratch after the save attempt: DIAG_qtrial_20260920_075310_1.vi md5 ada51e8441e1a82ed081ab021abdbbe5 size 481777 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  T12 the save attempt is recorded  returned 481777, exception None
+  FACT  P: preload references released; refs {'opened': 42, 'closed': 42, 'live': 0, 'cached_op_vis': 6}
+
+--- close-out
+  FACT  refs at end: {'opened': 42, 'closed': 42, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handles AFTER: 60211 (before 34158)
+  PASS  T13 no live VI Server reference is left open  ref_counts {'opened': 42, 'closed': 42, 'live': 0, 'cached_op_vis': 0}
+  FACT  T14 ORIGINAL after the run: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  T14 ORIGINAL md5 unchanged  2a78e17c449cacdaf5da389818526859
+  FACT  T14 D1_s1_copy.vi after the run: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  PASS  T14 D1_s1_copy.vi md5 unchanged  3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  T14 D1_s2_loops.vi after the run: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T14 D1_s2_loops.vi md5 unchanged  6ff19497f2309e007a214660bb64b911
+
+=== GATES: 16 pass / 0 fail
+=== GATES ARE REPORTED, NOT REQUIRED - the READING is the deliverable (34(j) pattern).
+=== READINGS json: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_queue_trial_census.json
+=== SCRATCHES: ['C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\DIAG_qtrial_20260920_075310_1.vi']  (restarts from a clean scratch: 0)
+=== FACTS ONLY - no donor is picked and no queue stage is written (36(d) reserves both for the judgement session). NO VI WAS RUN (34(f)); no new op; no motor, no ASI, no camera, no GUI.
+BGRUN END rc=0 after 114s

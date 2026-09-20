@@ -1,0 +1,41 @@
+BGRUN START 2026-09-14 19:54:37 limit 10.0 min: py -u tools/bench/test_setcommand_signed.py
+   Ring 0: signed Pos_degree 0.0 sub '' | original 0.0 sub ''
+   Ring 1: signed Pos_degree 0.0 sub '' | original 0.0 sub ''
+   Ring 2: signed Pos_degree 72.0 sub '00000064' | original 72.0 sub '00000064'
+   Ring 3: signed Pos_degree 0.0 sub '00000064' | original 0.0 sub '00000064'
+   PASS T0 exactly one read case on both copies {2: (72.0, 72.0, '00000064')}
+   PASS T0 substring window == the 8 hex digits '00000064'
+   read case = Ring 2; k = 0.72 deg/pulse (from the original)
+   PASS T1 00000000 baseline 0: signed == original signed 0.0/'00000000' original 0.0/'00000000'
+   PASS T1 00000000 baseline 200: signed == original signed -72000.0/'00000000' original -72000.0/'00000000'
+   PASS T1 00000001 baseline 0: signed == original signed 0.72/'00000001' original 0.72/'00000001'
+   PASS T1 00000001 baseline 200: signed == original signed -71999.28/'00000001' original -71999.28/'00000001'
+   PASS T1 00000064 baseline 0: signed == original signed 72.0/'00000064' original 72.0/'00000064'
+   PASS T1 00000064 baseline 200: signed == original signed -71928.0/'00000064' original -71928.0/'00000064'
+   PASS T1 7FFFFFFE baseline 0: signed == original signed 1546188225.12/'7FFFFFFE' original 1546188225.12/'7FFFFFFE'
+   PASS T1 7FFFFFFE baseline 200: signed == original signed 1546116225.12/'7FFFFFFE' original 1546116225.12/'7FFFFFFE'
+   PASS T1 7FFFFFFF baseline 0: signed == original signed 1546188225.84/'7FFFFFFF' original 1546188225.84/'7FFFFFFF'
+   PASS T1 7FFFFFFF baseline 200: signed == original signed 1546116225.84/'7FFFFFFF' original 1546116225.84/'7FFFFFFF'
+   PASS T2 signed FFFFFFF6 -> -10*k got -7.199999999999999 expected -7.199999999999999
+   PASS T2 signed FFFFFFFF -> -1*k got -0.72 expected -0.72
+   PASS T2 signed 80000000 -> -2147483648*k got -1546188226.56 expected -1546188226.56
+   PASS T3 original FFFFFFF6 -> +4294967286*k (the bug) got 3092376445.92
+
+SUMMARY 16/16 PASS
+   PASS T0 exactly one read case on both copies
+   PASS T0 substring window == the 8 hex digits
+   PASS T1 00000000 baseline 0: signed == original
+   PASS T1 00000000 baseline 200: signed == original
+   PASS T1 00000001 baseline 0: signed == original
+   PASS T1 00000001 baseline 200: signed == original
+   PASS T1 00000064 baseline 0: signed == original
+   PASS T1 00000064 baseline 200: signed == original
+   PASS T1 7FFFFFFE baseline 0: signed == original
+   PASS T1 7FFFFFFE baseline 200: signed == original
+   PASS T1 7FFFFFFF baseline 0: signed == original
+   PASS T1 7FFFFFFF baseline 200: signed == original
+   PASS T2 signed FFFFFFF6 -> -10*k
+   PASS T2 signed FFFFFFFF -> -1*k
+   PASS T2 signed 80000000 -> -2147483648*k
+   PASS T3 original FFFFFFF6 -> +4294967286*k (the bug)
+BGRUN END rc=0 after 0s

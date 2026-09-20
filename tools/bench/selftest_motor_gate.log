@@ -1,0 +1,226 @@
+BGRUN START 2026-09-17 22:01:59 limit 4.0 min: py -u tools/bench/selftest_motor_gate.py
+selftest_motor_gate - NO MOTION, NO PORT. unit check: 1.0 mm = 10000 ASI units (0.1 um each)
+
+ok   case                               dev    command                            got      want     reason
+PASS 1  PI 40 mm                        pi     MOV 1 40                           REFUSE   REFUSE   PI target 40.0000 mm is outside the envelope 0.0..39.0 mm (Max Trans Pos 40.94 is coerced by the ORIGINAL VI o
+PASS 2  PI -1 mm                        pi     MOV 1 -1                           REFUSE   REFUSE   PI target -1.0000 mm is outside the envelope 0.0..39.0 mm (Max Trans Pos 40.94 is coerced by the ORIGINAL VI o
+PASS 3  PI 39 mm                        pi     MOV 1 39                           ALLOW    ALLOW    PI absolute move to [1.0, 39.0] mm, inside 0.0..39.0
+PASS 4  PI 39.0001 mm                   pi     MOV 1 39.0001                      REFUSE   REFUSE   PI target 39.0001 mm is outside the envelope 0.0..39.0 mm (Max Trans Pos 40.94 is coerced by the ORIGINAL VI o
+PASS 4b PI 0 mm                         pi     MOV 1 0                            ALLOW    ALLOW    PI absolute move to [1.0, 0.0] mm, inside 0.0..39.0
+PASS 4c PI relative, no fresh read      pi     MVR 1 1.0                          REFUSE   REFUSE   PI relative move (MVR) needs a FRESH POS? read and it is not available - refused
+PASS 4d PI relative 12 -> 13 mm         pi     MVR 1 1.0                          ALLOW    ALLOW    PI relative move to [13.0, 13.0] mm, inside 0.0..39.0
+PASS 4e PI relative 12 -> 40 mm         pi     MVR 1 28.0                         REFUSE   REFUSE   PI target 40.0000 mm is outside the envelope 0.0..39.0 mm (Max Trans Pos 40.94 is coerced by the ORIGINAL VI o
+PASS 4f PI GOH                          pi     GOH                                REFUSE   REFUSE   PI 'GOH' (go to home) is a home/reference move - never permitted inside the envelope
+PASS 5  ASI '!'                         asi    !                                  REFUSE   REFUSE   ASI home/origin/save/reset class command '!' (HOME) - NEVER permitted (user 2026-09-17: ASI x/y never home/ori
+PASS 5  ASI 'HOME X'                    asi    HOME X                             REFUSE   REFUSE   ASI home/origin/save/reset class command 'HOME' (HOME) - NEVER permitted (user 2026-09-17: ASI x/y never home/
+PASS 5  ASI 'H X'                       asi    H X                                REFUSE   REFUSE   ASI home/origin/save/reset class command 'H' (HERE) - NEVER permitted (user 2026-09-17: ASI x/y never home/ori
+PASS 5  ASI 'Z'                         asi    Z                                  REFUSE   REFUSE   ASI home/origin/save/reset class command 'Z' (ZERO) - NEVER permitted (user 2026-09-17: ASI x/y never home/ori
+PASS 5  ASI 'ZERO X'                    asi    ZERO X                             REFUSE   REFUSE   ASI home/origin/save/reset class command 'ZERO' (ZERO) - NEVER permitted (user 2026-09-17: ASI x/y never home/
+PASS 5  ASI 'HM X'                      asi    HM X                               REFUSE   REFUSE   ASI home/origin/save/reset class command 'HM' (SETHOME) - NEVER permitted (user 2026-09-17: ASI x/y never home
+PASS 5  ASI 'AZ X'                      asi    AZ X                               REFUSE   REFUSE   ASI home/origin/save/reset class command 'AZ' (AZERO) - NEVER permitted (user 2026-09-17: ASI x/y never home/o
+PASS 5  ASI 'SP'                        asi    SP                                 REFUSE   REFUSE   ASI home/origin/save/reset class command 'SP' (SAVEPOS) - NEVER permitted (user 2026-09-17: ASI x/y never home
+PASS 5  ASI 'SS'                        asi    SS                                 REFUSE   REFUSE   ASI home/origin/save/reset class command 'SS' (SAVESET) - NEVER permitted (user 2026-09-17: ASI x/y never home
+PASS 5  ASI '~'                         asi    ~                                  REFUSE   REFUSE   ASI home/origin/save/reset class command '~' (RESET) - NEVER permitted (user 2026-09-17: ASI x/y never home/or
+PASS 5  ASI '\\'                        asi    \                                  REFUSE   REFUSE   ASI home/origin/save/reset class command '\\' (HALT) - NEVER permitted (user 2026-09-17: ASI x/y never home/or
+PASS 5  ASI 'MC X'                      asi    MC X                               REFUSE   REFUSE   ASI home/origin/save/reset class command 'MC' (MOTCTRL) - NEVER permitted (user 2026-09-17: ASI x/y never home
+PASS 6  ASI R X=15000 (+1.5 mm)         asi    R X=15000                          REFUSE   REFUSE   ASI x/y target (11.5000, 5.0000) mm is 1.5000 mm from the ANCHOR (10.0000, 5.0000) mm - the limit is 1.0 mm. T
+PASS 6b ASI M X=115000 (abs 11.5 mm)    asi    M X=115000                         REFUSE   REFUSE   ASI x/y target (11.5000, 5.0000) mm is 1.5000 mm from the ANCHOR (10.0000, 5.0000) mm - the limit is 1.0 mm. T
+PASS 7  ASI R X=8000 (+0.8 mm)          asi    R X=8000                           ALLOW    ALLOW    ASI relative x/y move, target 0.8000 mm from the anchor (limit 1.0)
+PASS 7b ASI R X=8000 AGAIN              asi    R X=8000                           REFUSE   REFUSE   ASI x/y target (11.6000, 5.0000) mm is 1.6000 mm from the ANCHOR (10.0000, 5.0000) mm - the limit is 1.0 mm. T
+PASS 7c ASI R X=5000 Y=5000 (0.707 mm)  asi    R X=5000 Y=5000                    ALLOW    ALLOW    ASI relative x/y move, target 0.7071 mm from the anchor (limit 1.0)
+PASS 7d ASI R X=8000 Y=8000 (1.13 mm)   asi    R X=8000 Y=8000                    REFUSE   REFUSE   ASI x/y target (10.8000, 5.8000) mm is 1.1314 mm from the ANCHOR (10.0000, 5.0000) mm - the limit is 1.0 mm. T
+PASS 8  ASI M Z=5000000 (+500 mm)       asi    M Z=5000000                        ALLOW    ALLOW    ASI absolute move on Z only (focus axis, no limit): {'Z': 5000000.0}
+PASS 8b ASI R Z=-900000                 asi    R Z=-900000                        ALLOW    ALLOW    ASI relative move on Z only (focus axis, no limit): {'Z': -900000.0}
+PASS 9  PI 10 mm, no anchor             pi     MOV 1 10                           REFUSE   REFUSE   anchor file G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\moto
+PASS 9b ASI query, no anchor            asi    /                                  REFUSE   REFUSE   anchor file G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\moto
+PASS 10 ASI FOO                         asi    FOO X=1                            REFUSE   REFUSE   ASI command 'FOO' is not on the allow-list (default-deny)
+PASS 10b PI BAR                         pi     BAR 1 2                            REFUSE   REFUSE   PI command 'BAR' is not on the allow-list (default-deny)
+PASS 10c rotor PIC -1500                rotor  PIC -1500                          REFUSE   REFUSE   rotor command 'PIC' refused: the user's 2026-09-17 safe envelope covers the ASI and the PI only, so NO rotor m
+PASS 10d unknown device                 piezo  MOV 1 1                            REFUSE   REFUSE   unknown device 'piezo' (expected one of asi, pi, rotor)
+PASS 11 PI 10 mm while ������              pi     MOV 1 10                           REFUSE   REFUSE   STATUS.md says the rig state is ������ / EXPERIMENT RUNNING - no motor and no instrument access at all (CLAUDE.md
+PASS 11b ASI query while ������            asi    /                                  REFUSE   REFUSE   STATUS.md says the rig state is ������ / EXPERIMENT RUNNING - no motor and no instrument access at all (CLAUDE.md
+PASS 11c PI query, rig state unknown    pi     POS?                               REFUSE   REFUSE   STATUS.md carries no machine-readable `rig-state:` line - default-deny (only the user announces a state change
+PASS 12 query pi   'POS?'               pi     POS?                               ALLOW    ALLOW    PI read-only query 'POS?'
+PASS 12 query pi   'TMN?'               pi     TMN?                               ALLOW    ALLOW    PI read-only query 'TMN?'
+PASS 12 query pi   'TMX?'               pi     TMX?                               ALLOW    ALLOW    PI read-only query 'TMX?'
+PASS 12 query asi  '/'                  asi    /                                  ALLOW    ALLOW    ASI read-only query '/'
+PASS 12 query asi  'W X'                asi    W X                                ALLOW    ALLOW    ASI read-only query 'W'
+PASS 12 query asi  'W X Y Z'            asi    W X Y Z                            ALLOW    ALLOW    ASI read-only query 'W'
+PASS 12 query asi  'RB X'               asi    RB X                               ALLOW    ALLOW    ASI read-only query 'RB'
+PASS 12 query rotor 'POS'               rotor  POS                                ALLOW    ALLOW    rotor read-only query 'POS'
+PASS 13 ASI BU Y=3                      asi    BU Y=3                             REFUSE   REFUSE   ASI 'BU' with argument 'Y=3': an argument carrying '=', '+' or '-' is a WRITE, not a query (BU Y=#, BU Z+ ...)
+PASS 13b ASI compound                   asi    M X=1 ; M Y=1                      REFUSE   REFUSE   compound command 'M X=1 ; M Y=1' (contains ';' or an embedded terminator) - one command per decision
+PASS 13c ASI W X=3                      asi    W X=3                              REFUSE   REFUSE   ASI 'W' with argument 'X=3': an argument carrying '=', '+' or '-' is a WRITE, not a query (BU Y=#, BU Z+ ...)
+PASS 14 ASI M X=100000 no read          asi    M X=100000                         REFUSE   REFUSE   ASI x/y move needs a FRESH position read of both axes (WHERE X Y) and it is not available - refused (relative 
+PASS 14b ASI R X=100 no read            asi    R X=100                            REFUSE   REFUSE   ASI x/y move needs a FRESH position read of both axes (WHERE X Y) and it is not available - refused (relative 
+PASS 15 CLI refuse                      cli    --device pi --command MOV 1 40 --dry-run --anchor C:\Users\K rc=3     rc=3     REFUSED (pi): PI target 40.0000 mm is outside the envelope 0.0..39.0 mm (Max Trans Pos 40.
+PASS 15b CLI allow                      cli    --device pi --command MOV 1 39 --dry-run --anchor C:\Users\K rc=0     rc=0     
+PASS 15c CLI allow z                    cli    --device asi --command M Z=5000000 --dry-run --anchor C:\Use rc=0     rc=0     
+PASS 15d CLI refuse home                cli    --device asi --command ! --dry-run --anchor C:\Users\KimLab\ rc=3     rc=3     REFUSED (asi): ASI home/origin/save/reset class command '!' (HOME) - NEVER permitted (user
+PASS 15e CLI sim-pos allow              cli    --device asi --command R X=8000 --dry-run --sim-pos X=100000 rc=0     rc=0     
+PASS 15f CLI sim-pos refuse             cli    --device asi --command R X=8000 --dry-run --sim-pos X=108000 rc=3     rc=3     REFUSED (asi): ASI x/y target (11.6000, 5.0000) mm is 1.6000 mm from the ANCHOR (10.0000, 
+PASS 15g CLI missing anchor             cli    --device pi --command MOV 1 10 --dry-run --anchor C:\Users\K rc=3     rc=3     REFUSED (pi): anchor file G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Trackin
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_motor_gate.py", line 201, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_motor_gate.py", line 191, in main
+    print("%-4s %-34s %-6s %-34s %-8s %-8s %s" % ("PASS" if ok else "FAIL", label, dev, cmd, got, want,
+UnicodeEncodeError: 'cp949' codec can't encode character '\ufffd' in position 172: illegal multibyte sequence
+BGRUN END rc=1 after 1s
+BGRUN START 2026-09-17 22:02:42 limit 4.0 min: py -u tools/bench/selftest_motor_gate.py
+selftest_motor_gate - NO MOTION, NO PORT. unit check: 1.0 mm = 10000 ASI units (0.1 um each)
+
+ok   case                               dev    command                            got      want     reason
+PASS 1  PI 40 mm                        pi     MOV 1 40                           REFUSE   REFUSE   PI target 40.0000 mm is outside the envelope 0.0..39.0 mm (Max Trans Pos 40.94 is coerced by the ORIGINAL VI o
+PASS 2  PI -1 mm                        pi     MOV 1 -1                           REFUSE   REFUSE   PI target -1.0000 mm is outside the envelope 0.0..39.0 mm (Max Trans Pos 40.94 is coerced by the ORIGINAL VI o
+PASS 3  PI 39 mm                        pi     MOV 1 39                           ALLOW    ALLOW    PI absolute move to [1.0, 39.0] mm, inside 0.0..39.0
+PASS 4  PI 39.0001 mm                   pi     MOV 1 39.0001                      REFUSE   REFUSE   PI target 39.0001 mm is outside the envelope 0.0..39.0 mm (Max Trans Pos 40.94 is coerced by the ORIGINAL VI o
+PASS 4b PI 0 mm                         pi     MOV 1 0                            ALLOW    ALLOW    PI absolute move to [1.0, 0.0] mm, inside 0.0..39.0
+PASS 4c PI relative, no fresh read      pi     MVR 1 1.0                          REFUSE   REFUSE   PI relative move (MVR) needs a FRESH POS? read and it is not available - refused
+PASS 4d PI relative 12 -> 13 mm         pi     MVR 1 1.0                          ALLOW    ALLOW    PI relative move to [13.0, 13.0] mm, inside 0.0..39.0
+PASS 4e PI relative 12 -> 40 mm         pi     MVR 1 28.0                         REFUSE   REFUSE   PI target 40.0000 mm is outside the envelope 0.0..39.0 mm (Max Trans Pos 40.94 is coerced by the ORIGINAL VI o
+PASS 4f PI GOH                          pi     GOH                                REFUSE   REFUSE   PI 'GOH' (go to home) is a home/reference move - never permitted inside the envelope
+PASS 5  ASI '!'                         asi    !                                  REFUSE   REFUSE   ASI home/origin/save/reset class command '!' (HOME) - NEVER permitted (user 2026-09-17: ASI x/y never home/ori
+PASS 5  ASI 'HOME X'                    asi    HOME X                             REFUSE   REFUSE   ASI home/origin/save/reset class command 'HOME' (HOME) - NEVER permitted (user 2026-09-17: ASI x/y never home/
+PASS 5  ASI 'H X'                       asi    H X                                REFUSE   REFUSE   ASI home/origin/save/reset class command 'H' (HERE) - NEVER permitted (user 2026-09-17: ASI x/y never home/ori
+PASS 5  ASI 'Z'                         asi    Z                                  REFUSE   REFUSE   ASI home/origin/save/reset class command 'Z' (ZERO) - NEVER permitted (user 2026-09-17: ASI x/y never home/ori
+PASS 5  ASI 'ZERO X'                    asi    ZERO X                             REFUSE   REFUSE   ASI home/origin/save/reset class command 'ZERO' (ZERO) - NEVER permitted (user 2026-09-17: ASI x/y never home/
+PASS 5  ASI 'HM X'                      asi    HM X                               REFUSE   REFUSE   ASI home/origin/save/reset class command 'HM' (SETHOME) - NEVER permitted (user 2026-09-17: ASI x/y never home
+PASS 5  ASI 'AZ X'                      asi    AZ X                               REFUSE   REFUSE   ASI home/origin/save/reset class command 'AZ' (AZERO) - NEVER permitted (user 2026-09-17: ASI x/y never home/o
+PASS 5  ASI 'SP'                        asi    SP                                 REFUSE   REFUSE   ASI home/origin/save/reset class command 'SP' (SAVEPOS) - NEVER permitted (user 2026-09-17: ASI x/y never home
+PASS 5  ASI 'SS'                        asi    SS                                 REFUSE   REFUSE   ASI home/origin/save/reset class command 'SS' (SAVESET) - NEVER permitted (user 2026-09-17: ASI x/y never home
+PASS 5  ASI '~'                         asi    ~                                  REFUSE   REFUSE   ASI home/origin/save/reset class command '~' (RESET) - NEVER permitted (user 2026-09-17: ASI x/y never home/or
+PASS 5  ASI '\\'                        asi    \                                  REFUSE   REFUSE   ASI home/origin/save/reset class command '\\' (HALT) - NEVER permitted (user 2026-09-17: ASI x/y never home/or
+PASS 5  ASI 'MC X'                      asi    MC X                               REFUSE   REFUSE   ASI home/origin/save/reset class command 'MC' (MOTCTRL) - NEVER permitted (user 2026-09-17: ASI x/y never home
+PASS 6  ASI R X=15000 (+1.5 mm)         asi    R X=15000                          REFUSE   REFUSE   ASI x/y target (11.5000, 5.0000) mm is 1.5000 mm from the ANCHOR (10.0000, 5.0000) mm - the limit is 1.0 mm. T
+PASS 6b ASI M X=115000 (abs 11.5 mm)    asi    M X=115000                         REFUSE   REFUSE   ASI x/y target (11.5000, 5.0000) mm is 1.5000 mm from the ANCHOR (10.0000, 5.0000) mm - the limit is 1.0 mm. T
+PASS 7  ASI R X=8000 (+0.8 mm)          asi    R X=8000                           ALLOW    ALLOW    ASI relative x/y move, target 0.8000 mm from the anchor (limit 1.0)
+PASS 7b ASI R X=8000 AGAIN              asi    R X=8000                           REFUSE   REFUSE   ASI x/y target (11.6000, 5.0000) mm is 1.6000 mm from the ANCHOR (10.0000, 5.0000) mm - the limit is 1.0 mm. T
+PASS 7c ASI R X=5000 Y=5000 (0.707 mm)  asi    R X=5000 Y=5000                    ALLOW    ALLOW    ASI relative x/y move, target 0.7071 mm from the anchor (limit 1.0)
+PASS 7d ASI R X=8000 Y=8000 (1.13 mm)   asi    R X=8000 Y=8000                    REFUSE   REFUSE   ASI x/y target (10.8000, 5.8000) mm is 1.1314 mm from the ANCHOR (10.0000, 5.0000) mm - the limit is 1.0 mm. T
+PASS 8  ASI M Z=5000000 (+500 mm)       asi    M Z=5000000                        ALLOW    ALLOW    ASI absolute move on Z only (focus axis, no limit): {'Z': 5000000.0}
+PASS 8b ASI R Z=-900000                 asi    R Z=-900000                        ALLOW    ALLOW    ASI relative move on Z only (focus axis, no limit): {'Z': -900000.0}
+PASS 9  PI 10 mm, no anchor             pi     MOV 1 10                           REFUSE   REFUSE   anchor file G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\moto
+PASS 9b ASI query, no anchor            asi    /                                  REFUSE   REFUSE   anchor file G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\moto
+PASS 10 ASI FOO                         asi    FOO X=1                            REFUSE   REFUSE   ASI command 'FOO' is not on the allow-list (default-deny)
+PASS 10b PI BAR                         pi     BAR 1 2                            REFUSE   REFUSE   PI command 'BAR' is not on the allow-list (default-deny)
+PASS 10c rotor PIC -1500                rotor  PIC -1500                          REFUSE   REFUSE   rotor command 'PIC' refused: the user's 2026-09-17 safe envelope covers the ASI and the PI only, so NO rotor m
+PASS 10d unknown device                 piezo  MOV 1 1                            REFUSE   REFUSE   unknown device 'piezo' (expected one of asi, pi, rotor)
+PASS 11 PI 10 mm while ???              pi     MOV 1 10                           REFUSE   REFUSE   STATUS.md says the rig state is EXPERIMENT RUNNING (experiment in progress) - no motor and no instrument acces
+PASS 11b ASI query while ???            asi    /                                  REFUSE   REFUSE   STATUS.md says the rig state is EXPERIMENT RUNNING (experiment in progress) - no motor and no instrument acces
+PASS 11c PI query, rig state unknown    pi     POS?                               REFUSE   REFUSE   STATUS.md carries no machine-readable `rig-state:` line - default-deny (only the user announces a state change
+PASS 12 query pi   'POS?'               pi     POS?                               ALLOW    ALLOW    PI read-only query 'POS?'
+PASS 12 query pi   'TMN?'               pi     TMN?                               ALLOW    ALLOW    PI read-only query 'TMN?'
+PASS 12 query pi   'TMX?'               pi     TMX?                               ALLOW    ALLOW    PI read-only query 'TMX?'
+PASS 12 query asi  '/'                  asi    /                                  ALLOW    ALLOW    ASI read-only query '/'
+PASS 12 query asi  'W X'                asi    W X                                ALLOW    ALLOW    ASI read-only query 'W'
+PASS 12 query asi  'W X Y Z'            asi    W X Y Z                            ALLOW    ALLOW    ASI read-only query 'W'
+PASS 12 query asi  'RB X'               asi    RB X                               ALLOW    ALLOW    ASI read-only query 'RB'
+PASS 12 query rotor 'POS'               rotor  POS                                ALLOW    ALLOW    rotor read-only query 'POS'
+PASS 13 ASI BU Y=3                      asi    BU Y=3                             REFUSE   REFUSE   ASI 'BU' with argument 'Y=3': an argument carrying '=', '+' or '-' is a WRITE, not a query (BU Y=#, BU Z+ ...)
+PASS 13b ASI compound                   asi    M X=1 ; M Y=1                      REFUSE   REFUSE   compound command 'M X=1 ; M Y=1' (contains ';' or an embedded terminator) - one command per decision
+PASS 13c ASI W X=3                      asi    W X=3                              REFUSE   REFUSE   ASI 'W' with argument 'X=3': an argument carrying '=', '+' or '-' is a WRITE, not a query (BU Y=#, BU Z+ ...)
+PASS 14 ASI M X=100000 no read          asi    M X=100000                         REFUSE   REFUSE   ASI x/y move needs a FRESH position read of both axes (WHERE X Y) and it is not available - refused (relative 
+PASS 14b ASI R X=100 no read            asi    R X=100                            REFUSE   REFUSE   ASI x/y move needs a FRESH position read of both axes (WHERE X Y) and it is not available - refused (relative 
+PASS 15 CLI refuse                      cli    --device pi --command MOV 1 40 --dry-run --anchor C:\Users\K rc=3     rc=3     REFUSED (pi): PI target 40.0000 mm is outside the envelope 0.0..39.0 mm (Max Trans Pos 40.
+PASS 15b CLI allow                      cli    --device pi --command MOV 1 39 --dry-run --anchor C:\Users\K rc=0     rc=0     
+PASS 15c CLI allow z                    cli    --device asi --command M Z=5000000 --dry-run --anchor C:\Use rc=0     rc=0     
+PASS 15d CLI refuse home                cli    --device asi --command ! --dry-run --anchor C:\Users\KimLab\ rc=3     rc=3     REFUSED (asi): ASI home/origin/save/reset class command '!' (HOME) - NEVER permitted (user
+PASS 15e CLI sim-pos allow              cli    --device asi --command R X=8000 --dry-run --sim-pos X=100000 rc=0     rc=0     
+PASS 15f CLI sim-pos refuse             cli    --device asi --command R X=8000 --dry-run --sim-pos X=108000 rc=3     rc=3     REFUSED (asi): ASI x/y target (11.6000, 5.0000) mm is 1.6000 mm from the ANCHOR (10.0000, 
+PASS 15g CLI missing anchor             cli    --device pi --command MOV 1 10 --dry-run --anchor C:\Users\K rc=3     rc=3     REFUSED (pi): anchor file G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Trackin
+PASS 15h CLI experiment banner          cli    --device pi --command MOV 1 10 --dry-run --anchor C:\Users\K rc=3     rc=3     REFUSED (pi): STATUS.md says the rig state is EXPERIMENT RUNNING (experiment in progress) 
+PASS 16 raw serial one-liner            hook   $sp = New-Object System.IO.Ports.SerialPort COM4,115200; $sp rc=2     rc=2     BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 16b rotor motion script            hook   MATERIAL=1 py tools/bench/hw_rotor_signed_test.py rc=2     rc=2     BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 16c rotor visible script           hook   MATERIAL=1 py -u tools/bench/hw_rotor_visible.py rc=2     rc=2     BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 16d build_rawcmd                   hook   MATERIAL=1 py tools/recipes/build_rawcmd.py rc=2     rc=2     BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 16e drive_original_copy            hook   MATERIAL=1 py -u tools/bench/drive_original_copy.py rc=2     rc=2     BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 16f pyserial one-liner             hook   py -c "import serial; serial.Serial('COM3').write(b'MOV 1 40 rc=2     rc=2     BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 17 query script (ps1)              hook   & .\tools\bench\read_motor_anchor.ps1 rc=0     rc=0     
+PASS 17b rotor READ script              hook   MATERIAL=1 py -u tools/bench/hw_rotor_read.py rc=0     rc=0     
+PASS 17c the gateway itself             hook   py tools/motor_gate.py --device asi --command "M X=8000" --d rc=0     rc=0     
+PASS 17d grep of a blocked name         hook   grep -n SerialPort tools/bench/serial_roundtrip.ps1 rc=0     rc=0     
+PASS 17e serial_roundtrip (queries)     hook   & .\tools\bench\serial_roundtrip.ps1 -Port COM3 rc=0     rc=0     
+
+70/70 PASS, 0 FAIL
+NO MOTION COMMAND WAS SENT AND NO PORT WAS OPENED BY THIS RUN.
+BGRUN INNER FAILURE: the command exited 0 but its output reported 11 failure(s); first: PASS 15 CLI refuse                      cli    --device pi --command MOV 1 40 --dry-run --anchor C:\Users\K rc=3     rc=3     REFUSED (pi): PI target 40.0000 mm
+BGRUN END rc=1 after 1s (inner failure; the process itself said 0)
+BGRUN START 2026-09-17 22:03:20 limit 4.0 min: py -u tools/bench/selftest_motor_gate.py
+selftest_motor_gate - NO MOTION, NO PORT. unit check: 1.0 mm = 10000 ASI units (0.1 um each)
+
+ok   case                               dev    command                            got      want     reason
+PASS 1  PI 40 mm                        pi     MOV 1 40                           REFUSE   REFUSE   PI target 40.0000 mm is outside the envelope 0.0..39.0 mm (Max Trans Pos 40.94 is coerced by the ORIGINAL VI o
+PASS 2  PI -1 mm                        pi     MOV 1 -1                           REFUSE   REFUSE   PI target -1.0000 mm is outside the envelope 0.0..39.0 mm (Max Trans Pos 40.94 is coerced by the ORIGINAL VI o
+PASS 3  PI 39 mm                        pi     MOV 1 39                           ALLOW    ALLOW    PI absolute move to [1.0, 39.0] mm, inside 0.0..39.0
+PASS 4  PI 39.0001 mm                   pi     MOV 1 39.0001                      REFUSE   REFUSE   PI target 39.0001 mm is outside the envelope 0.0..39.0 mm (Max Trans Pos 40.94 is coerced by the ORIGINAL VI o
+PASS 4b PI 0 mm                         pi     MOV 1 0                            ALLOW    ALLOW    PI absolute move to [1.0, 0.0] mm, inside 0.0..39.0
+PASS 4c PI relative, no fresh read      pi     MVR 1 1.0                          REFUSE   REFUSE   PI relative move (MVR) needs a FRESH POS? read and it is not available - refused
+PASS 4d PI relative 12 -> 13 mm         pi     MVR 1 1.0                          ALLOW    ALLOW    PI relative move to [13.0, 13.0] mm, inside 0.0..39.0
+PASS 4e PI relative 12 -> 40 mm         pi     MVR 1 28.0                         REFUSE   REFUSE   PI target 40.0000 mm is outside the envelope 0.0..39.0 mm (Max Trans Pos 40.94 is coerced by the ORIGINAL VI o
+PASS 4f PI GOH                          pi     GOH                                REFUSE   REFUSE   PI 'GOH' (go to home) is a home/reference move - never permitted inside the envelope
+PASS 5  ASI '!'                         asi    !                                  REFUSE   REFUSE   ASI home/origin/save/reset class command '!' (HOME) - NEVER permitted (user 2026-09-17: ASI x/y never home/ori
+PASS 5  ASI 'HOME X'                    asi    HOME X                             REFUSE   REFUSE   ASI home/origin/save/reset class command 'HOME' (HOME) - NEVER permitted (user 2026-09-17: ASI x/y never home/
+PASS 5  ASI 'H X'                       asi    H X                                REFUSE   REFUSE   ASI home/origin/save/reset class command 'H' (HERE) - NEVER permitted (user 2026-09-17: ASI x/y never home/ori
+PASS 5  ASI 'Z'                         asi    Z                                  REFUSE   REFUSE   ASI home/origin/save/reset class command 'Z' (ZERO) - NEVER permitted (user 2026-09-17: ASI x/y never home/ori
+PASS 5  ASI 'ZERO X'                    asi    ZERO X                             REFUSE   REFUSE   ASI home/origin/save/reset class command 'ZERO' (ZERO) - NEVER permitted (user 2026-09-17: ASI x/y never home/
+PASS 5  ASI 'HM X'                      asi    HM X                               REFUSE   REFUSE   ASI home/origin/save/reset class command 'HM' (SETHOME) - NEVER permitted (user 2026-09-17: ASI x/y never home
+PASS 5  ASI 'AZ X'                      asi    AZ X                               REFUSE   REFUSE   ASI home/origin/save/reset class command 'AZ' (AZERO) - NEVER permitted (user 2026-09-17: ASI x/y never home/o
+PASS 5  ASI 'SP'                        asi    SP                                 REFUSE   REFUSE   ASI home/origin/save/reset class command 'SP' (SAVEPOS) - NEVER permitted (user 2026-09-17: ASI x/y never home
+PASS 5  ASI 'SS'                        asi    SS                                 REFUSE   REFUSE   ASI home/origin/save/reset class command 'SS' (SAVESET) - NEVER permitted (user 2026-09-17: ASI x/y never home
+PASS 5  ASI '~'                         asi    ~                                  REFUSE   REFUSE   ASI home/origin/save/reset class command '~' (RESET) - NEVER permitted (user 2026-09-17: ASI x/y never home/or
+PASS 5  ASI '\\'                        asi    \                                  REFUSE   REFUSE   ASI home/origin/save/reset class command '\\' (HALT) - NEVER permitted (user 2026-09-17: ASI x/y never home/or
+PASS 5  ASI 'MC X'                      asi    MC X                               REFUSE   REFUSE   ASI home/origin/save/reset class command 'MC' (MOTCTRL) - NEVER permitted (user 2026-09-17: ASI x/y never home
+PASS 6  ASI R X=15000 (+1.5 mm)         asi    R X=15000                          REFUSE   REFUSE   ASI x/y target (11.5000, 5.0000) mm is 1.5000 mm from the ANCHOR (10.0000, 5.0000) mm - the limit is 1.0 mm. T
+PASS 6b ASI M X=115000 (abs 11.5 mm)    asi    M X=115000                         REFUSE   REFUSE   ASI x/y target (11.5000, 5.0000) mm is 1.5000 mm from the ANCHOR (10.0000, 5.0000) mm - the limit is 1.0 mm. T
+PASS 7  ASI R X=8000 (+0.8 mm)          asi    R X=8000                           ALLOW    ALLOW    ASI relative x/y move, target 0.8000 mm from the anchor (limit 1.0)
+PASS 7b ASI R X=8000 AGAIN              asi    R X=8000                           REFUSE   REFUSE   ASI x/y target (11.6000, 5.0000) mm is 1.6000 mm from the ANCHOR (10.0000, 5.0000) mm - the limit is 1.0 mm. T
+PASS 7c ASI R X=5000 Y=5000 (0.707 mm)  asi    R X=5000 Y=5000                    ALLOW    ALLOW    ASI relative x/y move, target 0.7071 mm from the anchor (limit 1.0)
+PASS 7d ASI R X=8000 Y=8000 (1.13 mm)   asi    R X=8000 Y=8000                    REFUSE   REFUSE   ASI x/y target (10.8000, 5.8000) mm is 1.1314 mm from the ANCHOR (10.0000, 5.0000) mm - the limit is 1.0 mm. T
+PASS 8  ASI M Z=5000000 (+500 mm)       asi    M Z=5000000                        ALLOW    ALLOW    ASI absolute move on Z only (focus axis, no limit): {'Z': 5000000.0}
+PASS 8b ASI R Z=-900000                 asi    R Z=-900000                        ALLOW    ALLOW    ASI relative move on Z only (focus axis, no limit): {'Z': -900000.0}
+PASS 9  PI 10 mm, no anchor             pi     MOV 1 10                           REFUSE   REFUSE   anchor file G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\moto
+PASS 9b ASI query, no anchor            asi    /                                  REFUSE   REFUSE   anchor file G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\moto
+PASS 10 ASI FOO                         asi    FOO X=1                            REFUSE   REFUSE   ASI command 'FOO' is not on the allow-list (default-deny)
+PASS 10b PI BAR                         pi     BAR 1 2                            REFUSE   REFUSE   PI command 'BAR' is not on the allow-list (default-deny)
+PASS 10c rotor PIC -1500                rotor  PIC -1500                          REFUSE   REFUSE   rotor command 'PIC' refused: the user's 2026-09-17 safe envelope covers the ASI and the PI only, so NO rotor m
+PASS 10d unknown device                 piezo  MOV 1 1                            REFUSE   REFUSE   unknown device 'piezo' (expected one of asi, pi, rotor)
+PASS 11 PI 10 mm while ???              pi     MOV 1 10                           REFUSE   REFUSE   STATUS.md says the rig state is EXPERIMENT RUNNING (experiment in progress) - no motor and no instrument acces
+PASS 11b ASI query while ???            asi    /                                  REFUSE   REFUSE   STATUS.md says the rig state is EXPERIMENT RUNNING (experiment in progress) - no motor and no instrument acces
+PASS 11c PI query, rig state unknown    pi     POS?                               REFUSE   REFUSE   STATUS.md carries no machine-readable `rig-state:` line - default-deny (only the user announces a state change
+PASS 12 query pi   'POS?'               pi     POS?                               ALLOW    ALLOW    PI read-only query 'POS?'
+PASS 12 query pi   'TMN?'               pi     TMN?                               ALLOW    ALLOW    PI read-only query 'TMN?'
+PASS 12 query pi   'TMX?'               pi     TMX?                               ALLOW    ALLOW    PI read-only query 'TMX?'
+PASS 12 query asi  '/'                  asi    /                                  ALLOW    ALLOW    ASI read-only query '/'
+PASS 12 query asi  'W X'                asi    W X                                ALLOW    ALLOW    ASI read-only query 'W'
+PASS 12 query asi  'W X Y Z'            asi    W X Y Z                            ALLOW    ALLOW    ASI read-only query 'W'
+PASS 12 query asi  'RB X'               asi    RB X                               ALLOW    ALLOW    ASI read-only query 'RB'
+PASS 12 query rotor 'POS'               rotor  POS                                ALLOW    ALLOW    rotor read-only query 'POS'
+PASS 13 ASI BU Y=3                      asi    BU Y=3                             REFUSE   REFUSE   ASI 'BU' with argument 'Y=3': an argument carrying '=', '+' or '-' is a WRITE, not a query (BU Y=#, BU Z+ ...)
+PASS 13b ASI compound                   asi    M X=1 ; M Y=1                      REFUSE   REFUSE   compound command 'M X=1 ; M Y=1' (contains ';' or an embedded terminator) - one command per decision
+PASS 13c ASI W X=3                      asi    W X=3                              REFUSE   REFUSE   ASI 'W' with argument 'X=3': an argument carrying '=', '+' or '-' is a WRITE, not a query (BU Y=#, BU Z+ ...)
+PASS 14 ASI M X=100000 no read          asi    M X=100000                         REFUSE   REFUSE   ASI x/y move needs a FRESH position read of both axes (WHERE X Y) and it is not available - refused (relative 
+PASS 14b ASI R X=100 no read            asi    R X=100                            REFUSE   REFUSE   ASI x/y move needs a FRESH position read of both axes (WHERE X Y) and it is not available - refused (relative 
+PASS 15 CLI refuse                      cli    --device pi --command MOV 1 40 --dry-run --anchor C:\Users\K code=3   code=3   REFUSED (pi): PI target 40.0000 mm is outside the envelope 0.0..39.0 mm (Max Trans Pos 40.
+PASS 15b CLI allow                      cli    --device pi --command MOV 1 39 --dry-run --anchor C:\Users\K code=0   code=0   
+PASS 15c CLI allow z                    cli    --device asi --command M Z=5000000 --dry-run --anchor C:\Use code=0   code=0   
+PASS 15d CLI refuse home                cli    --device asi --command ! --dry-run --anchor C:\Users\KimLab\ code=3   code=3   REFUSED (asi): ASI home/origin/save/reset class command '!' (HOME) - NEVER permitted (user
+PASS 15e CLI sim-pos allow              cli    --device asi --command R X=8000 --dry-run --sim-pos X=100000 code=0   code=0   
+PASS 15f CLI sim-pos refuse             cli    --device asi --command R X=8000 --dry-run --sim-pos X=108000 code=3   code=3   REFUSED (asi): ASI x/y target (11.6000, 5.0000) mm is 1.6000 mm from the ANCHOR (10.0000, 
+PASS 15g CLI missing anchor             cli    --device pi --command MOV 1 10 --dry-run --anchor C:\Users\K code=3   code=3   REFUSED (pi): anchor file G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Trackin
+PASS 15h CLI experiment banner          cli    --device pi --command MOV 1 10 --dry-run --anchor C:\Users\K code=3   code=3   REFUSED (pi): STATUS.md says the rig state is EXPERIMENT RUNNING (experiment in progress) 
+PASS 16 raw serial one-liner            hook   $sp = New-Object System.IO.Ports.SerialPort COM4,115200; $sp code=2   code=2   BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 16b rotor motion script            hook   MATERIAL=1 py tools/bench/hw_rotor_signed_test.py code=2   code=2   BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 16c rotor visible script           hook   MATERIAL=1 py -u tools/bench/hw_rotor_visible.py code=2   code=2   BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 16d build_rawcmd                   hook   MATERIAL=1 py tools/recipes/build_rawcmd.py code=2   code=2   BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 16e drive_original_copy            hook   MATERIAL=1 py -u tools/bench/drive_original_copy.py code=2   code=2   BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 16f pyserial one-liner             hook   py -c "import serial; serial.Serial('COM3').write(b'MOV 1 40 code=2   code=2   BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 17 query script (ps1)              hook   & .\tools\bench\read_motor_anchor.ps1 code=0   code=0   
+PASS 17b rotor READ script              hook   MATERIAL=1 py -u tools/bench/hw_rotor_read.py code=0   code=0   
+PASS 17c the gateway itself             hook   py tools/motor_gate.py --device asi --command "M X=8000" --d code=0   code=0   
+PASS 17d grep of a blocked name         hook   grep -n SerialPort tools/bench/serial_roundtrip.ps1 code=0   code=0   
+PASS 17e serial_roundtrip (queries)     hook   & .\tools\bench\serial_roundtrip.ps1 -Port COM3 code=0   code=0   
+
+70/70 PASS, 0 FAIL
+NO MOTION COMMAND WAS SENT AND NO PORT WAS OPENED BY THIS RUN.
+BGRUN END rc=0 after 1s

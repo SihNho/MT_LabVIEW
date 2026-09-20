@@ -1,0 +1,27 @@
+BGRUN START 2026-09-16 17:36:36 limit 20.0 min: py -u tools/bench/diag_bdloaded_reader.py
+   fresh(): killing LabVIEW pid 23912
+   COM preflight attempt 1/15: pid None->23084, wires 16->16
+   COM preflight OK (pid 23084, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 23084
+=== build the Metrics reader (attempt 2, PN at (2400,60)) ===
+  [after copy] ExecState 1
+  [after AEH off] ExecState 1
+  PASS  R1 ExecState 1 after copy + set_auto_error_handling
+  [after build_property] ExecState 1
+  -> FAIL  R2 the VI is broken while the new PN's `reference` is bare (expected)   ExecState 1
+  PN[3] terminals: [(0, 'reference', False, 0), (1, 'reference out', True, 0), (2, 'error in (no error)', False, 0), (3, 'error out', True, 0), (4, 'PanelLoaded', True, 0), (5, 'DiagramLoaded', True, 0)]
+  connect2 -> wire delta 0, ExecState 0, PN.reference wire uid 467
+  PN[3] terminals now: [(0, 'reference', 467), (1, 'reference out', 0), (2, 'error in (no error)', 0), (3, 'error out', 0), (4, 'PanelLoaded', 0), (5, 'DiagramLoaded', 0)]
+  [after remove_bad_wires] ExecState 0
+  after RBW: PN.reference wire uid 467
+  -> FAIL  R3 PN.reference is wired AND the VI is whole again   wire=467 ExecState=0
+wrote G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_bdloaded_reader.json
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_bdloaded_reader.py", line 256, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_bdloaded_reader.py", line 206, in main
+    reader = build_reader()
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_bdloaded_reader.py", line 119, in build_reader
+    raise RuntimeError(f"reader still broken (ExecState {st}, reference wire {wired})")
+RuntimeError: reader still broken (ExecState 0, reference wire 467)
+BGRUN END rc=1 after 66s

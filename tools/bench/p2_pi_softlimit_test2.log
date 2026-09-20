@@ -1,0 +1,11 @@
+BGRUN START 2026-09-18 14:51:21 limit 2.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools/bench/p2_pi_softlimit_test2.ps1
+state: SVO?=1=1 FRF?=1=0 ERR?=0 POS?=1=0.00000 TMN?=1=0.00000 TMX?=1=39.00000
+ABORT: axis not referenced - no move attempted
+BGRUN END rc=7 after 0s
+BGRUN START 2026-09-18 15:08:41 limit 2.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools/bench/p2_pi_softlimit_test2.ps1
+state: SVO?=1=1 FRF?=1=1 ERR?=0 POS?=1=0.00000 TMN?=1=0.00000 TMX?=1=39.00000
+MOV 1 40   -> ERR?=7 (expect 7)  POS 0 -> 0
+MOV 1 38.5 -> ERR?=0 (expect 0)  settled POS=38.5 (expect 38.5)
+MOV 1 0    -> ERR?=0  settled POS=0
+RESULT: controller soft limit CONFIRMED (40 refused with 7, 38.5 moved, back at 0)
+BGRUN END rc=0 after 11s

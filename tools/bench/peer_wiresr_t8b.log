@@ -1,0 +1,28 @@
+BGRUN START 2026-09-14 23:19:36 limit 8.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & '.\tools\peer.ps1' -Agent codex -Slug wiresr-test-t8b-untyped-register-and-fplabels-dialog -TimeoutSec 240 -Task (Get-Content -Raw '.\tools\bench\peer_task_wiresr_t8b.txt')
+OUTCOME: ANSWERED (64s)  archived: archive\peer\2026-09-14-wiresr-test-t8b-untyped-register-and-fplabels-dialog.md
+--- ANSWER ---
+(A) Your typing explanation is strongest, but T7 is slightly overstated.
+
+- NI documents that a shift register adopts the datatype of the first object wired to it. Thus wire 192 can legally make the previously untyped register a string register; the two missing body-side connections?�not a type conflict?�explain `ExecState 0`. [NI LabVIEW User Manual](https://download.ni.com/support/manuals/320999e.pdf)
+- A genuinely broken wire should be deleted by Remove Bad Wires; that is the documented behavior. [NI wiring documentation](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html) Therefore `gone=set()` is evidence that 192 was legal, unless method 410 silently targeted the wrong VI/diagram or otherwise no-op?�d. The present test has no broken-wire positive control, so it cannot exclude that tooling failure.
+- Yes: if the register is first typed from an IMAQ-image terminal on any side, subsequently connecting a string initializer should either produce a broken wire or be rejected by `Connect Wire`. All shift-register terminals must ultimately carry the same type. [NI LabVIEW User Manual](https://download.ni.com/support/manuals/320999e.pdf)
+- T7 currently proves only that the left outside terminal reports a nonzero wire UID: [build_opwiresr_v0.py](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/recipes/build_opwiresr_v0.py:343). It does not re-read the `Image Name` control terminal and assert the same UID. Add that equality check before calling the op fully proven.
+- Recommendation: drop T8/T8b from normal acceptance. If type-mismatch behavior matters, make a separate test that first types all three register sides as IMAQ, confirms `ExecState 1`, then attempts the string connection and distinguishes ?�broken wire created??from ?�connection rejected.??Do not make the wiring op?�s acceptance depend on which behavior LabVIEW chooses.
+
+(B) Automatic error handling is likely involved, but ?�a label-less object caused it??is unnecessarily speculative.
+
+`fp_labels()` deliberately probes indices until one is out of range, and its own docstring says termination currently costs ?�one 8 s dialog.??It catches the resulting watchdog `RuntimeError` as its end-of-array signal: [gscript.py](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/gscript.py:1947). That matches the timing immediately before `LeftOutCtl` much better than an exceptional label object.
+
+Crucially, `fp_labels()` does **not** read `error out`. Consequently, simply disabling automatic error handling is unsafe: `_run()` may return normally on the first out-of-range access, so the loop can continue to `max_n=200` and append stale/invalid output values. NI confirms that disabling automatic handling suppresses the dialog but does not itself handle or clear the error. [NI: Prevent LabVIEW Error Dialog Box](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019SFfSAM&l=en-US)
+
+Other possible sources of an untitled modal include load/search dialogs, password prompts, save/conflict prompts, or explicit dialog/error-handler VIs; size and blank title alone cannot identify it. The window log proves a real enabled top-level candidate while all VI windows were disabled, but not its owner, class, text, or originating VI.
+
+Cheapest discriminator:
+
+1. Call `fp_labels(S)` alone on the same scratch.
+2. Record each requested index plus `OpFPLabels_v0`?�s error-out value.
+3. On the first modal, capture HWND, class, owner HWND, child-control text, and the current index before dismissing it.
+4. Repeat with an exact valid-count iteration, avoiding the out-of-range sentinel.
+
+If the bounded run produces no modal and index `N` consistently produces it, (B) is settled. The proper fix is then: expose/read `error out` and terminate on the expected bounds error, **then** disable automatic error handling and save the op. The same fleet treatment is safer for `OpSubVI_v1` because `drop_subvi()` already retrieves its returned error; `fp_labels()` presently does not.
+BGRUN END rc=0 after 64s

@@ -1,0 +1,26 @@
+BGRUN START 2026-09-17 15:18:10 limit 12.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Dual -Kind fact -Slug dual-selftest -TimeoutSec 240 -TaskFile 'C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/dualtest.md'
+=== DUAL ARM 1/2: codex -> dual-selftest-codex ===
+-TaskFile not found: fact
+위치 G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\peer.ps1:138 문자:39
++ ... not (Test-Path $TaskFile)) { throw "-TaskFile not found: $TaskFile" }
++                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (-TaskFile not found: fact:String) [], RuntimeException
+    + FullyQualifiedErrorId : -TaskFile not found: fact
+ 
+BGRUN END rc=1 after 0s
+BGRUN START 2026-09-17 15:18:41 limit 14.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Dual -Kind fact -Slug dual-selftest -TimeoutSec 300 -TaskFile 'C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/dualtest.md'
+=== DUAL ARM 1/2: codex -> dual-selftest-codex ===
+OUTCOME: ANSWERED (26s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-17-dual-selftest-codex.md
+--- ANSWER ---
+Property ID `6371004` (“Is Broken?”) returns `TRUE` when the wire is broken or in a bad state. The terminals property’s short name is `Terms[]`; source: [LabVIEW Wiki Wire class](https://labviewwiki.org/wiki/Wire_class) and [Terminals[] property](https://labviewwiki.org/wiki/Wire_class/Terminals%28%29_property).
+=== DUAL ARM 2/2: claude/hypothesis (opus, effort max, web) -> dual-selftest-opus ===
+OUTCOME: ANSWERED (74s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-17-dual-selftest-opus.md
+COST: $1.8621  in 10 / out 4581 / cache-create 158866 / cache-read 258782  (70s, 11 turn(s))
+--- ANSWER ---
+**Answer (3 sentences).**
+
+`6371004` is the **`Wire` class `Is Broken?` property** — a read-only VI Scripting boolean that returns TRUE when the wire is broken or in a bad state; strictly it is a property **ID**, not a "short name" (the short name this machine prints on the property node is `Broken?`, `docs/NAMES.md:357` — note `docs/NAMES.md:888` writes it as `Is Broken?`, an in-house inconsistency worth reconciling). The wire's terminals property is **`Terminals[]`, ID `6371003`, short/data name `Terms[]`** — element 0 is the source terminal when a valid source exists, the rest are unordered, and more than one source in the list *is itself* the broken condition. Sources: [LabVIEW Wiki — Wire class](https://labviewwiki.org/wiki/Wire_class) and [Wire class/Terminals() property](https://labviewwiki.org/wiki/Wire_class/Is_Broken%3F_property); locally `docs/vi-server-ids.json:59-60` and `docs/NAMES.md:357`.
+
+One reviewer's note outside the three sentences: `docs/vi-server-ids.json:111` still labels `Wire.Is Broken?` **UNVERIFIED**, while `docs/NAMES.md:888` and `tools/bench/build_opconnectfromwire_v0_run2.log:89,103` record it built and measured (False on a good wire, True on a two-source wire) — the JSON registry is stale relative to the machine's own record.
+=== DUAL DONE: codex rc=0, opus rc=0  (archive\peer\2026-09-17-dual-selftest-codex.md, -dual-selftest-opus.md) ===
+BGRUN END rc=0 after 100s

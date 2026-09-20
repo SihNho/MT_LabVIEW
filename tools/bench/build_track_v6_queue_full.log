@@ -1,0 +1,364 @@
+BGRUN START 2026-09-15 03:39:57 limit 40.0 min: py -u tools/recipes/build_track_v6_queue.py --n=200 --full
+P PathToStr.vi exists - reused
+
+== BUILD queue core
+H1 loader default -> 23183 bytes
+   PASS drop HARNESS_loadcal.vi [43]
+   PASS drop make both cosine bandpass.vi [44]
+   PASS H2 'cross size' -> 'cross length' 101/101
+   PASS drop IMAQ Create [45]
+   PASS drop IMAQ ReadFile [46]
+   PASS drop PARALLEL_kernel_v3clean.vi [47]
+   PASS drop PathToStr.vi [48]
+   PASS H2 control 'Image Name' on sample node ['Image Name']
+   PASS H2 control 'File Path' on sample node ['File Path']
+   PASS H2 'New Image' -> 'Image' 295/295
+   PASS H2 'Image Out' -> 'Image In' 298/298
+   PASS H2 'Array of cal clusters' -> 'Array of cal clusters' 301/301
+   PASS H2 'cross size' -> 'cross size' 101/101
+   PASS H2 'Cosine bandpass for Hilbert' -> 'Cosine bandpass\nfor Hilbert ' 307/307
+   PASS H2 'Real-space cosine window' -> 'Real-space cosine window' 310/310
+   PASS H3 control 'x,y,z array' ['x,y,z array']
+   PASS H3 control 'Bead is good? array in' ['Bead is good? array in']
+   PASS H3 control 'pos in cal image in' ['pos in cal image in']
+   PASS H3 control '4 pack remainder' ['4 pack remainder']
+   PASS H3 control '# of bead 4 packs' ['# of bead 4 packs']
+   PASS H3 KT indicator 'x,y,z array out' ['x,y,z array out']
+   PASS H3 KT indicator 'Bead is good? array out' ['Bead is good? array out']
+   PASS H3 KT indicator 'pos in cal image out' ['pos in cal image out']
+   PASS drop Get Controls.vi [49]
+   PASS H4 frame paths free String[] control 'Control Names'
+   PASS drop Get Controls.vi [49]
+   PASS H4 pool names free String[] control 'Control Names 2'
+   PASS H4 two distinct String[] controls 'Control Names' 'Control Names 2'
+   PASS H ExecState 1 with the head + KT wired (kernel inputs satisfied) 1
+   PASS queue obtain from 'New Image' [49]
+   PASS queue obtain from 'New Image' [88]
+   PASS queue obtain from 'string' [100]
+   PASS queue obtain from 'string' [127]
+   PASS queue obtain from 'x,y,z array out' [166]
+   PASS queue obtain from 'Bead is good? array out' [217]
+   PASS queue obtain from 'pos in cal image out' [256]
+   PASS L pool loop created 602
+   PASS drop IMAQ Create [698]
+   PASS L one tunnel from 'Control Names 2' 1
+   PASS L IndexMode 1 and inner wire == 'Image Name' [932] vs 932
+   PASS queue enqueue from 'queue out' [724]
+   PASS L 'New Image' -> 'element' 970/970
+   PASS A ACQ loop created 779
+   PASS drop StrToPath.vi [805]
+   PASS drop IMAQ ReadFile [831]
+   PASS A one tunnel from 'Control Names' 1
+   PASS A IndexMode 1 and inner wire == 'string' [1137] vs 1137
+   PASS queue dequeue from 'queue out' [907]
+   PASS A 'element' -> 'Image' 1097/1097
+   PASS A 'error out' -> 'error in (no error)' 1175/1175
+   PASS A 'path' -> 'File Path' 1182/1182
+   PASS queue enqueue from 'queue out' [966]
+   PASS A 'Image Out' -> 'element' 1215/1215
+   PASS A 'error out' -> 'error in (no error)' 1222/1222
+   PASS queue enqueue from 'queue out' [976]
+   PASS A meta one tunnel from 'Control Names' 1
+   PASS A meta IndexMode 1 and inner wire == 'element' [1257] vs 1257
+   PASS A chain 'error out' -> 'error in (no error)' 1221/1221
+   PASS T TRK loop created 984
+   PASS drop PARALLEL_kernel_v3clean.vi [985]
+   PASS T count one tunnel from 'Control Names' 1
+   PASS T count IndexMode 1 and inner wire == 'cross size' [1408] vs 1408
+   PASS T count count tunnel: inner unwired, 'cross size' back to wire 0, still IndexMode 1 [0] sink 0
+   PASS queue dequeue from 'queue out' [1058]
+   PASS queue dequeue from 'queue out' [1139]
+   PASS T 'element' -> 'Image In' 1270/1270
+   PASS T 'error out' -> 'error in (no error)' 1473/1473
+   T 'Array of cal clusters': tunnel flipped to IndexMode 0 -> (1501, [1480], 0), sink wire now 1480
+   PASS T 'Array of cal clusters' -> 'Array of cal clusters' across the border (one new non-indexed tunnel 1501->1480) a=1501 b=1480 new tunnels [(1501, [1480], 0, False, [True], 0, 0)]
+   PASS T 'cross size' -> 'cross size' across the border (one new non-indexed tunnel 1518->1499) a=1518 b=1499 new tunnels [(1518, [1499], 0, False, [True], 0, 0)]
+   T 'Cosine bandpass for Hilbert': tunnel flipped to IndexMode 0 -> (1527, [1495], 0), sink wire now 1495
+   PASS T 'Cosine bandpass for Hilbert' -> 'Cosine bandpass\nfor Hilbert ' across the border (one new non-indexed tunnel 1527->1495) a=1527 b=1495 new tunnels [(1527, [1495], 0, False, [True], 0, 0)]
+   T 'Real-space cosine window': tunnel flipped to IndexMode 0 -> (1534, [1489], 0), sink wire now 1489
+   PASS T 'Real-space cosine window' -> 'Real-space cosine window' across the border (one new non-indexed tunnel 1534->1489) a=1534 b=1489 new tunnels [(1534, [1489], 0, False, [True], 0, 0)]
+   PASS T control '4 pack remainder' -> kernel 
+   PASS T control '# of bead 4 packs' -> kernel 
+   PASS T register 0: Shift Registers[] == before + {uid} [468]
+   PASS T register 1: Shift Registers[] == before + {uid} [468, 1538]
+   PASS T register 2: Shift Registers[] == before + {uid} [468, 1538, 1558]
+   PASS T reg 0 LeftIn -> kernel 'x,y,z array' 
+   PASS T reg 1 LeftIn -> kernel 'Bead is good? array in' 
+   PASS T reg 2 LeftIn -> kernel 'pos in cal image in' 
+   PASS queue enqueue from 'queue out' [101]
+   PASS queue enqueue from 'queue out' [102]
+   PASS queue enqueue from 'queue out' [103]
+   PASS queue enqueue from 'queue out' [300]
+   PASS queue enqueue from 'queue out' [306]
+   PASS T 'x,y,z array out' -> 'element' 1190/1190
+   PASS T 'Bead is good? array out' -> 'element' 1747/1747
+   PASS T 'pos in cal image out' -> 'element' 1755/1755
+   PASS T 'element' -> 'element' 1758/1758
+   PASS T 'element' -> 'element' 1270/1270
+   PASS T chain 'error out' -> 'error in (no error)' 1761/1761
+   PASS T chain 'error out' -> 'error in (no error)' 1764/1764
+   PASS T chain 'error out' -> 'error in (no error)' 1767/1767
+   PASS T chain 'error out' -> 'error in (no error)' 1770/1770
+   PASS T chain 'error out' -> 'error in (no error)' 1773/1773
+   PASS T reg 0 RightIn <- kernel 'x,y,z array out' 
+   PASS T reg 1 RightIn <- kernel 'Bead is good? array out' 
+   PASS T reg 2 RightIn <- kernel 'pos in cal image out' 
+   PASS S sink loop created 1188
+   PASS queue dequeue from 'queue out' [1189]
+   PASS S count one tunnel from 'Control Names' 1
+   PASS S count IndexMode 1 and inner wire == 'timeout in ms (-1)' [1745] vs 1745
+   PASS S count count tunnel: inner unwired, 'timeout in ms (-1)' back to wire 0, still IndexMode 1 [0] sink 0
+   PASS queue dequeue from 'queue out' [1425]
+   PASS queue dequeue from 'queue out' [1426]
+   PASS queue dequeue from 'queue out' [1616]
+   PASS S chain 'error out' -> 'error in (no error)' 1719/1719
+   PASS S chain 'error out' -> 'error in (no error)' 1989/1989
+   PASS S chain 'error out' -> 'error in (no error)' 1993/1993
+   PASS S output tunnel for xyz 
+   PASS S indicator xyz 
+   PASS S output tunnel for good 
+   PASS S indicator good 
+   PASS S output tunnel for pos 
+   PASS S indicator pos 
+   PASS S output tunnel for meta 
+   PASS S indicator meta 
+   PASS T export exported 'queue out' through one tunnel 
+   PASS T export last-value mode 
+   PASS S export exported 'error out' through one tunnel 
+   PASS S export last-value mode 
+   PASS D drain loop created 1653
+   PASS queue dequeue from 'queue out' [1654]
+   PASS D count one tunnel from 'Control Names 2' 1
+   PASS D count IndexMode 1 and inner wire == 'timeout in ms (-1)' [2314] vs 2314
+   PASS D count count tunnel: inner unwired, 'timeout in ms (-1)' back to wire 0, still IndexMode 1 [0] sink 0
+   PASS D drain error in <- sink error out (after the sink) 
+   PASS D 'timed out?' indexed output 
+   PASS D export exported 'queue out' through one tunnel 
+   PASS D export last-value mode 
+   PASS queue release from 'queue out' [949]
+   PASS queue release from 'queue out' [1685]
+   PASS S rel 'error out' -> 'error in (no error)' 2431/2431
+   PASS queue release from 'queue out' [2015]
+   PASS S rel 'error out' -> 'error in (no error)' 2458/2458
+   PASS queue release from 'queue out' [2430]
+   PASS S rel 'error out' -> 'error in (no error)' 2482/2482
+   PASS queue release from 'queue out' [2435]
+   PASS S rel 'error out' -> 'error in (no error)' 2506/2506
+   PASS queue release from 'queue out' [2437]
+   PASS S rel 'error out' -> 'error in (no error)' 2530/2530
+   PASS queue release from 'queue out' [2461]
+   PASS S rel 'error out' -> 'error in (no error)' 2554/2554
+   PASS O ExecState 1 1
+   SAVED; labels {'sample_name': 'Image Name', 'sample_path': 'File Path', 'x,y,z array': 'x,y,z array', 'Bead is good? array in': 'Bead is good? array in', 'pos in cal image in': 'pos in cal image in', '4 pack remainder': '4 pack remainder', '# of bead 4 packs': '# of bead 4 packs', 'kt_xyz': 'x,y,z array out', 'kt_good': 'Bead is good? array out', 'kt_pos': 'pos in cal image out', 'frame_paths': 'Control Names', 'pool_names': 'Control Names 2', 'xyz': 'x,y,z array out 2', 'good': 'Bead is good? array out 2', 'pos': 'pos in cal image out 2', 'meta': 'Array', 'drain': 'Array 2', 'release_error': 'error out'}
+   PASS T reference session loaded 2026-09-07 16:00:38
+
+== T1 queue-core run: 1 frames
+   run 0.0 s (23.9 ms/frame); rows [1, 1, 1] meta 1
+   PASS T1 one row per frame 
+   PASS T1 META[n] == Frame Paths[n] for every n 
+   PASS T1 KT one-shot (frame 0 on the sample image) == reference row 0 (xyz, good, pos) [708.4064650452955, 300.656897608343, 2.9221202286207433] vs [708.4064650452955, 300.656897608343, 2.9221202286207433]
+   PASS T1 Q_free drained: 8 dequeues, none timed out (the pool came back whole) [False, False, False, False, False, False, False, False]
+   PASS T1 releases clean (False, 0, '')
+   pre-loss: identical 1, different 0; first diff None
+   PASS T1 XYZ/GOOD/POS bit-identical before the first lost bead 
+
+== T2 queue-core run: 2 frames
+   run 0.0 s (10.0 ms/frame); rows [2, 2, 2] meta 2
+   PASS T2 one row per frame 
+   PASS T2 META[n] == Frame Paths[n] for every n 
+   PASS T2 KT one-shot (frame 0 on the sample image) == reference row 0 (xyz, good, pos) [708.4064650452955, 300.656897608343, 2.9221202286207433] vs [708.4064650452955, 300.656897608343, 2.9221202286207433]
+   PASS T2 Q_free drained: 8 dequeues, none timed out (the pool came back whole) [False, False, False, False, False, False, False, False]
+   PASS T2 releases clean (False, 0, '')
+   pre-loss: identical 2, different 0; first diff None
+   PASS T2 XYZ/GOOD/POS bit-identical before the first lost bead 
+
+== T200 queue-core run: 200 frames
+   run 0.2 s (0.9 ms/frame); rows [200, 200, 200] meta 200
+   PASS T200 one row per frame 
+   PASS T200 META[n] == Frame Paths[n] for every n 
+   PASS T200 KT one-shot (frame 0 on the sample image) == reference row 0 (xyz, good, pos) [708.4064650452955, 300.656897608343, 2.9221202286207433] vs [708.4064650452955, 300.656897608343, 2.9221202286207433]
+   PASS T200 Q_free drained: 8 dequeues, none timed out (the pool came back whole) [False, False, False, False, False, False, False, False]
+   PASS T200 releases clean (False, 0, '')
+   pre-loss: identical 200, different 0; first diff None
+   PASS T200 XYZ/GOOD/POS bit-identical before the first lost bead 
+
+== Tfull queue-core run: 10043 frames
+   run 7.5 s (0.7 ms/frame); rows [10043, 10043, 10043] meta 10043
+   PASS Tfull one row per frame 
+   PASS Tfull META[n] == Frame Paths[n] for every n 
+   PASS Tfull KT one-shot (frame 0 on the sample image) == reference row 0 (xyz, good, pos) [708.4064650452955, 300.656897608343, 2.9221202286207433] vs [708.4064650452955, 300.656897608343, 2.9221202286207433]
+   PASS Tfull Q_free drained: 8 dequeues, none timed out (the pool came back whole) [False, False, False, False, False, False, False, False]
+   PASS Tfull releases clean (False, 0, '')
+   pre-loss: identical 10018, different 0; first diff None
+   PASS Tfull XYZ/GOOD/POS bit-identical before the first lost bead 
+
+SUMMARY 168/168 PASS
+   PASS drop HARNESS_loadcal.vi
+   PASS drop make both cosine bandpass.vi
+   PASS H2 'cross size' -> 'cross length'
+   PASS drop IMAQ Create
+   PASS drop IMAQ ReadFile
+   PASS drop PARALLEL_kernel_v3clean.vi
+   PASS drop PathToStr.vi
+   PASS H2 control 'Image Name' on sample node
+   PASS H2 control 'File Path' on sample node
+   PASS H2 'New Image' -> 'Image'
+   PASS H2 'Image Out' -> 'Image In'
+   PASS H2 'Array of cal clusters' -> 'Array of cal clusters'
+   PASS H2 'cross size' -> 'cross size'
+   PASS H2 'Cosine bandpass for Hilbert' -> 'Cosine bandpass\nfor Hilbert '
+   PASS H2 'Real-space cosine window' -> 'Real-space cosine window'
+   PASS H3 control 'x,y,z array'
+   PASS H3 control 'Bead is good? array in'
+   PASS H3 control 'pos in cal image in'
+   PASS H3 control '4 pack remainder'
+   PASS H3 control '# of bead 4 packs'
+   PASS H3 KT indicator 'x,y,z array out'
+   PASS H3 KT indicator 'Bead is good? array out'
+   PASS H3 KT indicator 'pos in cal image out'
+   PASS drop Get Controls.vi
+   PASS H4 frame paths free String[] control
+   PASS drop Get Controls.vi
+   PASS H4 pool names free String[] control
+   PASS H4 two distinct String[] controls
+   PASS H ExecState 1 with the head + KT wired (kernel inputs satisfied)
+   PASS queue obtain from 'New Image'
+   PASS queue obtain from 'New Image'
+   PASS queue obtain from 'string'
+   PASS queue obtain from 'string'
+   PASS queue obtain from 'x,y,z array out'
+   PASS queue obtain from 'Bead is good? array out'
+   PASS queue obtain from 'pos in cal image out'
+   PASS L pool loop created
+   PASS drop IMAQ Create
+   PASS L one tunnel from 'Control Names 2'
+   PASS L IndexMode 1 and inner wire == 'Image Name'
+   PASS queue enqueue from 'queue out'
+   PASS L 'New Image' -> 'element'
+   PASS A ACQ loop created
+   PASS drop StrToPath.vi
+   PASS drop IMAQ ReadFile
+   PASS A one tunnel from 'Control Names'
+   PASS A IndexMode 1 and inner wire == 'string'
+   PASS queue dequeue from 'queue out'
+   PASS A 'element' -> 'Image'
+   PASS A 'error out' -> 'error in (no error)'
+   PASS A 'path' -> 'File Path'
+   PASS queue enqueue from 'queue out'
+   PASS A 'Image Out' -> 'element'
+   PASS A 'error out' -> 'error in (no error)'
+   PASS queue enqueue from 'queue out'
+   PASS A meta one tunnel from 'Control Names'
+   PASS A meta IndexMode 1 and inner wire == 'element'
+   PASS A chain 'error out' -> 'error in (no error)'
+   PASS T TRK loop created
+   PASS drop PARALLEL_kernel_v3clean.vi
+   PASS T count one tunnel from 'Control Names'
+   PASS T count IndexMode 1 and inner wire == 'cross size'
+   PASS T count count tunnel: inner unwired, 'cross size' back to wire 0, still IndexMode 1
+   PASS queue dequeue from 'queue out'
+   PASS queue dequeue from 'queue out'
+   PASS T 'element' -> 'Image In'
+   PASS T 'error out' -> 'error in (no error)'
+   PASS T 'Array of cal clusters' -> 'Array of cal clusters' across the border (one new non-indexed tunnel 1501->1480)
+   PASS T 'cross size' -> 'cross size' across the border (one new non-indexed tunnel 1518->1499)
+   PASS T 'Cosine bandpass for Hilbert' -> 'Cosine bandpass\nfor Hilbert ' across the border (one new non-indexed tunnel 1527->1495)
+   PASS T 'Real-space cosine window' -> 'Real-space cosine window' across the border (one new non-indexed tunnel 1534->1489)
+   PASS T control '4 pack remainder' -> kernel
+   PASS T control '# of bead 4 packs' -> kernel
+   PASS T register 0: Shift Registers[] == before + {uid}
+   PASS T register 1: Shift Registers[] == before + {uid}
+   PASS T register 2: Shift Registers[] == before + {uid}
+   PASS T reg 0 LeftIn -> kernel 'x,y,z array'
+   PASS T reg 1 LeftIn -> kernel 'Bead is good? array in'
+   PASS T reg 2 LeftIn -> kernel 'pos in cal image in'
+   PASS queue enqueue from 'queue out'
+   PASS queue enqueue from 'queue out'
+   PASS queue enqueue from 'queue out'
+   PASS queue enqueue from 'queue out'
+   PASS queue enqueue from 'queue out'
+   PASS T 'x,y,z array out' -> 'element'
+   PASS T 'Bead is good? array out' -> 'element'
+   PASS T 'pos in cal image out' -> 'element'
+   PASS T 'element' -> 'element'
+   PASS T 'element' -> 'element'
+   PASS T chain 'error out' -> 'error in (no error)'
+   PASS T chain 'error out' -> 'error in (no error)'
+   PASS T chain 'error out' -> 'error in (no error)'
+   PASS T chain 'error out' -> 'error in (no error)'
+   PASS T chain 'error out' -> 'error in (no error)'
+   PASS T reg 0 RightIn <- kernel 'x,y,z array out'
+   PASS T reg 1 RightIn <- kernel 'Bead is good? array out'
+   PASS T reg 2 RightIn <- kernel 'pos in cal image out'
+   PASS S sink loop created
+   PASS queue dequeue from 'queue out'
+   PASS S count one tunnel from 'Control Names'
+   PASS S count IndexMode 1 and inner wire == 'timeout in ms (-1)'
+   PASS S count count tunnel: inner unwired, 'timeout in ms (-1)' back to wire 0, still IndexMode 1
+   PASS queue dequeue from 'queue out'
+   PASS queue dequeue from 'queue out'
+   PASS queue dequeue from 'queue out'
+   PASS S chain 'error out' -> 'error in (no error)'
+   PASS S chain 'error out' -> 'error in (no error)'
+   PASS S chain 'error out' -> 'error in (no error)'
+   PASS S output tunnel for xyz
+   PASS S indicator xyz
+   PASS S output tunnel for good
+   PASS S indicator good
+   PASS S output tunnel for pos
+   PASS S indicator pos
+   PASS S output tunnel for meta
+   PASS S indicator meta
+   PASS T export exported 'queue out' through one tunnel
+   PASS T export last-value mode
+   PASS S export exported 'error out' through one tunnel
+   PASS S export last-value mode
+   PASS D drain loop created
+   PASS queue dequeue from 'queue out'
+   PASS D count one tunnel from 'Control Names 2'
+   PASS D count IndexMode 1 and inner wire == 'timeout in ms (-1)'
+   PASS D count count tunnel: inner unwired, 'timeout in ms (-1)' back to wire 0, still IndexMode 1
+   PASS D drain error in <- sink error out (after the sink)
+   PASS D 'timed out?' indexed output
+   PASS D export exported 'queue out' through one tunnel
+   PASS D export last-value mode
+   PASS queue release from 'queue out'
+   PASS queue release from 'queue out'
+   PASS S rel 'error out' -> 'error in (no error)'
+   PASS queue release from 'queue out'
+   PASS S rel 'error out' -> 'error in (no error)'
+   PASS queue release from 'queue out'
+   PASS S rel 'error out' -> 'error in (no error)'
+   PASS queue release from 'queue out'
+   PASS S rel 'error out' -> 'error in (no error)'
+   PASS queue release from 'queue out'
+   PASS S rel 'error out' -> 'error in (no error)'
+   PASS queue release from 'queue out'
+   PASS S rel 'error out' -> 'error in (no error)'
+   PASS O ExecState 1
+   PASS T reference session loaded
+   PASS T1 one row per frame
+   PASS T1 META[n] == Frame Paths[n] for every n
+   PASS T1 KT one-shot (frame 0 on the sample image) == reference row 0 (xyz, good, pos)
+   PASS T1 Q_free drained: 8 dequeues, none timed out (the pool came back whole)
+   PASS T1 releases clean
+   PASS T1 XYZ/GOOD/POS bit-identical before the first lost bead
+   PASS T2 one row per frame
+   PASS T2 META[n] == Frame Paths[n] for every n
+   PASS T2 KT one-shot (frame 0 on the sample image) == reference row 0 (xyz, good, pos)
+   PASS T2 Q_free drained: 8 dequeues, none timed out (the pool came back whole)
+   PASS T2 releases clean
+   PASS T2 XYZ/GOOD/POS bit-identical before the first lost bead
+   PASS T200 one row per frame
+   PASS T200 META[n] == Frame Paths[n] for every n
+   PASS T200 KT one-shot (frame 0 on the sample image) == reference row 0 (xyz, good, pos)
+   PASS T200 Q_free drained: 8 dequeues, none timed out (the pool came back whole)
+   PASS T200 releases clean
+   PASS T200 XYZ/GOOD/POS bit-identical before the first lost bead
+   PASS Tfull one row per frame
+   PASS Tfull META[n] == Frame Paths[n] for every n
+   PASS Tfull KT one-shot (frame 0 on the sample image) == reference row 0 (xyz, good, pos)
+   PASS Tfull Q_free drained: 8 dequeues, none timed out (the pool came back whole)
+   PASS Tfull releases clean
+   PASS Tfull XYZ/GOOD/POS bit-identical before the first lost bead
+BGRUN END rc=0 after 360s

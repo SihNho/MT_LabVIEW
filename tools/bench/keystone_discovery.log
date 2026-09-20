@@ -1,0 +1,163 @@
+BGRUN START 2026-09-05 20:44:01 limit 15.0 min: py -u tools/recipes/keystone_discovery.py
+
+== close stale scratch
+   predict: closed or not loaded
+   observed: None
+baseline {'SubVI': 6, 'Wire': 26, 'ControlTerminal': 8, 'IndexArray': 2} ExecState 1
+
+== D1 drop_subvi(Create Property Node.vi)
+   predict: +1 SubVI, ExecState 0 (required inputs unwired)
+   observed: (0.028490304946899414, {'SubVI': 7, 'Wire': 26, 'ControlTerminal': 8, 'IndexArray': 2}, 0)
+   creator uid/pos: [(510, (875, 620))]
+   indices: creator 0 IA327 0 IA308 1 GetOutputs 4
+
+== D3a IndexArray327.element -> creator 'Diagram in' (branch)
+   predict: connected: Wire +1 or branch accepted
+   observed: 26
+
+== D3b IndexArray308.element -> creator 'reference' (branch)
+   predict: connected
+   observed: 26
+
+== D3d GetOutputs.error out -> creator error in (branch)
+   predict: connected with one of the two names
+   observed: ('error in (no error)', 26)
+   counts now {'SubVI': 7, 'Wire': 26, 'ControlTerminal': 8, 'IndexArray': 2} ExecState 0
+
+== save (gui_save path, allow_broken)
+   predict: file mtime moves
+   observed: EXC gui_save(SCRATCH_keystone.vi): file mtime did not move after Ctrl+S on every candidate window. Check 'lv_gui.ps1 -Action dialogs' - a modal dialog blocks the save.
+
+== D2 copy_into(creator, 'Properties')
+   predict: +1 ControlTerminal (array of cluster) on the scratch
+BGRUN TIMEOUT killed after 901s (limit 15.0 min)
+BGRUN START 2026-09-05 21:00:05 limit 3.0 min: py -u -c 
+import sys; sys.path.insert(0,'tools'); import gscript as g, lvclick as c, os, time
+g._run.__defaults__=(6.0,40.0); g._lv=None
+BD='GUIBENCH_v0.vi Block Diagram'; SCR=os.path.join(g.CLAUDEDEV,'SCRATCH_keystone.vi')
+c.lv('-Action','focus','-Title',BD); time.sleep(0.4); c.act('click',X=1311,Y=791); time.sleep(0.5)
+print('windows before', c.windows(), flush=True)
+try: g.close_panel(SCR); print('scratch panel closed', flush=True)
+except Exception as e: print('close_panel:', str(e)[:80], flush=True)
+M=os.path.join(g.CLAUDEDEV,'NIScriptingExamples','Moving Objects')
+for f in ('Test - Moving Objects Source.vi','Test - Moving Objects Target.vi'):
+    try: g.revert(os.path.join(M,f)); print('reverted', f, flush=True)
+    except Exception as e: print('revert', f, str(e)[:60], flush=True)
+time.sleep(0.5)
+try: os.remove(SCR); print('scratch file deleted', flush=True)
+except Exception as e: print('delete:', str(e)[:80], flush=True)
+print('windows after', c.windows(), flush=True)
+try: print('COM probe report:', len(g.report(os.path.join(g.CLAUDEDEV,'GUIBENCH_v0.vi'),'Invoke')), flush=True)
+except Exception as e: print('COM probe FAIL', str(e)[:60], flush=True)
+
+windows before ['GUIBENCH_v0.vi Block Diagram', 'SCRATCH_keystone.vi Front Panel', 'GUIBENCH_v0.vi Front Panel', 'LabVIEW']
+scratch panel closed
+reverted Test - Moving Objects Source.vi
+reverted Test - Moving Objects Target.vi
+scratch file deleted
+windows after ['GUIBENCH_v0.vi Block Diagram', 'GUIBENCH_v0.vi Front Panel', 'LabVIEW']
+COM probe report: 1
+BGRUN END rc=0 after 4s
+BGRUN START 2026-09-06 04:19:37 limit 5.0 min: py -u -c 
+import sys, os, shutil, time; sys.path.insert(0,'tools'); import gscript as g, lvclick as c
+g._run.__defaults__=(6.0,45.0); g._lv=None
+EM=r'C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Erdos Miller\LV-Scripting\Create Property Node.vi'
+SCR=os.path.join(g.CLAUDEDEV,'SCRATCH_fpctl.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'OpWire_v1.vi'), SCR)
+g.open_panel(SCR); time.sleep(1.0)
+try:
+    L,T,R,B=c.rect('SCRATCH_fpctl.vi Front Panel'); c.act('click',X=min(L+300,R-120),Y=T+10); time.sleep(0.4)
+except Exception as e: print('title click skipped', str(e)[:60], flush=True)
+sub0=g.uids(SCR,'SubVI'); g.drop_subvi(SCR, EM, 0, (875,620))
+subs=g.report(SCR,'SubVI'); ci=next(i for i,o in enumerate(subs) if o['uid'] not in sub0)
+ct0=g.uids(SCR,'ControlTerminal'); print('creator index', ci, 'ControlTerminals before', len(ct0), flush=True)
+vi=g.op(os.path.join(g.CLAUDEDEV,'OpFP_v0.vi'))
+vi.SetControlValue('vi path', SCR); vi.SetControlValue('Class Name','SubVI'); vi.SetControlValue('index', ci); vi.SetControlValue('Names', ['Properties'])
+print('== TEST: Terminal.Create Indicator on the creator INPUT terminal Properties (predict: error or an indicator wired to an input) ==', flush=True)
+try:
+    g._run(vi); print('error out:', g._err(vi), flush=True)
+except Exception as e: print('run EXC', str(e)[:120], flush=True)
+new=g.new_since(SCR,'ControlTerminal',ct0); print('new ControlTerminals:', [(o['uid'],o['pos']) for o in new], 'ExecState', g.exec_state(SCR), flush=True)
+try: g.close_panel(SCR)
+except Exception as e: print('close', str(e)[:60])
+os.remove(SCR); print('scratch deleted', flush=True)
+
+creator index 0 ControlTerminals before 8
+== TEST: Terminal.Create Indicator on the creator INPUT terminal Properties (predict: error or an indicator wired to an input) ==
+run EXC run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gs
+new ControlTerminals: [] ExecState 0
+scratch deleted
+BGRUN END rc=0 after 11s
+BGRUN START 2026-09-06 04:20:58 limit 4.0 min: py -u -c 
+import sys, os, shutil, time, threading, subprocess; sys.path.insert(0,'tools'); import gscript as g
+g._lv=None
+SRC=g.MOVE_SRC; ORIG=g.MOVE_SRC_ORIG; DON=os.path.join(g.CLAUDEDEV,'OpWire_v1.vi')
+print('== T1: is copy_into\'s revert-after-byte-swap the wedge? ==', flush=True)
+print('pristine?', os.path.getsize(SRC), os.path.getsize(ORIG), flush=True)
+g.open_panel(SRC); time.sleep(1.0); print('opened MOVE_SRC panel', flush=True)
+def watch():
+    for i in range(6):
+        time.sleep(5)
+        out=g._lv_gui('-Action','dialogs'); v=[l for l in out.splitlines() if l.startswith('VERDICT')]
+        wins=[l.split('|',3)[3] for l in out.splitlines() if '|' in l]
+        print('   watch', i, v, wins[:4], flush=True)
+threading.Thread(target=watch, daemon=True).start()
+shutil.copyfile(DON, SRC); print('bytes swapped (OpWire_v1 -> MOVE_SRC)', flush=True)
+t=time.time()
+try:
+    g._invoke(g.lv().GetVIReference(SRC,'',False,0),'Revert', hard_timeout_s=40); print('revert OK %.1fs'%(time.time()-t), flush=True)
+except Exception as e: print('revert EXC %.0fs'%(time.time()-t), str(e)[:100], flush=True)
+time.sleep(6)
+try: g.close_panel(SRC); print('closed', flush=True)
+except Exception as e: print('close EXC', str(e)[:80], flush=True)
+shutil.copyfile(ORIG, SRC); print('MOVE_SRC restored from ORIG', os.path.getsize(SRC), flush=True)
+try: g._invoke(g.lv().GetVIReference(SRC,'',False,0),'Revert', hard_timeout_s=40); print('post-restore revert OK', flush=True)
+except Exception as e: print('post-restore revert EXC', str(e)[:80], flush=True)
+
+== T1: is copy_into's revert-after-byte-swap the wedge? ==
+pristine? 4656 4656
+opened MOVE_SRC panel
+bytes swapped (OpWire_v1 -> MOVE_SRC)
+revert OK 0.1s
+   watch 0 ['VERDICT: clear (no modal dialog)'] ['Test - Moving Objects Source.vi Front Panel', 'OpFP_v0.vi Block Diagram', 'OpFP_v0.vi Front Panel', 'GUIBENCH_v0.vi Block Diagram']
+closed
+MOVE_SRC restored from ORIG 4656
+post-restore revert OK
+BGRUN END rc=0 after 7s
+BGRUN START 2026-09-06 04:21:38 limit 5.0 min: py -u -c 
+import sys, os, shutil, time; sys.path.insert(0,'tools'); import gscript as g
+g._run.__defaults__=(6.0,45.0); g._lv=None
+EM=r'C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Erdos Miller\LV-Scripting\Create Property Node.vi'
+SCR=os.path.join(g.CLAUDEDEV,'SCRATCH_ci.vi'); shutil.copyfile(os.path.join(g.CLAUDEDEV,'OpWire_v1.vi'), SCR)
+def T(label, fn):
+    t=time.time()
+    try: r=fn(); print('  %-40s OK %.1fs %s'%(label, time.time()-t, str(r)[:60]), flush=True); return r
+    except Exception as e: print('  %-40s EXC %.0fs %s'%(label, time.time()-t, str(e)[:110]), flush=True); return None
+print('== T2: copy_into step by step (donor=Create Property Node.vi, label Properties, target=scratch) ==', flush=True)
+try:
+    T('revert MOVE_SRC', lambda: g.revert(g.MOVE_SRC)); T('revert MOVE_DST', lambda: g.revert(g.MOVE_DST))
+    shutil.copyfile(EM, g.MOVE_SRC); shutil.copyfile(SCR, g.MOVE_DST); print('  bytes substituted', flush=True)
+    T('revert MOVE_SRC (donor bytes)', lambda: g.revert(g.MOVE_SRC)); T('revert MOVE_DST (scratch bytes)', lambda: g.revert(g.MOVE_DST))
+    before=T('uids MOVE_DST GObject', lambda: g.uids(g.MOVE_DST,'GObject'))
+    vi=g.op(g.OP_MOVE); vi.SetControlValue('Add Label','Properties'); print('  OP_MOVE ready', flush=True)
+    T('RUN OP_MOVE', lambda: (g._run(vi), g._err(vi)))
+    added=T('new_since MOVE_DST', lambda: g.new_since(g.MOVE_DST,'GObject',before or set()))
+    T('exec_state MOVE_DST', lambda: g.exec_state(g.MOVE_DST))
+    T('save MOVE_DST (allow_broken)', lambda: g.save(g.MOVE_DST, allow_broken=True))
+    print('  MOVE_DST size', os.path.getsize(g.MOVE_DST), flush=True)
+finally:
+    shutil.copyfile(g.MOVE_SRC_ORIG, g.MOVE_SRC); shutil.copyfile(g.MOVE_DST_ORIG, g.MOVE_DST)
+    T('revert MOVE_SRC (restored)', lambda: g.revert(g.MOVE_SRC)); T('revert MOVE_DST (restored)', lambda: g.revert(g.MOVE_DST))
+    try: os.remove(SCR)
+    except Exception: pass
+    print('  restored + scratch deleted', flush=True)
+
+== T2: copy_into step by step (donor=Create Property Node.vi, label Properties, target=scratch) ==
+  revert MOVE_SRC                          OK 0.0s None
+  revert MOVE_DST                          OK 0.0s None
+  bytes substituted
+  revert MOVE_SRC (donor bytes)            OK 0.1s None
+  revert MOVE_DST (scratch bytes)          OK 0.1s None
+  uids MOVE_DST GObject                    OK 4.3s {3, 526, 533, 536, 1056, 552, 1066, 43, 51, 54, 57, 60, 573,
+  OP_MOVE ready
+  RUN OP_MOVE                              EXC 0s (-2147023170, '���� ���ν����� ȣ������ ���߽��ϴ�.', None, None)
+BGRUN TIMEOUT killed after 301s (limit 5.0 min)

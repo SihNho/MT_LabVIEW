@@ -1,0 +1,14 @@
+BGRUN START 2026-09-19 22:54:59 limit 5.0 min: py -u tools/bench/static_audit_recipe.py tools/recipes/stage_d1_s1.py
+=== static audit: tools/recipes/stage_d1_s1.py ===
+  md5    2d69b0dc71ac2c3764819a791d327b2d
+  sha256 c003d8547b503462430a9caa41c13c3456d514030816b14a4f06df3bb6917718
+  bytes  56383
+  lines  815
+  PASS  S1 ast.parse
+  PASS  S2 py_compile
+  -> FAIL  S3 no `allow_broken` anywhere   lines [37, 124, 452, 472, 678]
+  -> FAIL  S4 no `net_map` anywhere   lines [126, 656]
+  -> FAIL  S5 every `.save(` call is plain (no args)   argful at lines [472, 678]
+  PASS  S6 exactly ONE remove_bad_wires_scripted call, outside any loop   calls at [654] (in_loop flags [False])
+=== static audit: 3 pass, 3 fail ===
+BGRUN END rc=1 after 0s

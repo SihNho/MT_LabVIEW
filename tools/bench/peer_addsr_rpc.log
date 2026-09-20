@@ -1,0 +1,134 @@
+BGRUN START 2026-09-14 22:37:50 limit 9.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & '.\tools\peer.ps1' -Agent codex -Slug addshiftreg-run2-rpc-unavailable -TimeoutSec 300 -Task (Get-Content -Raw '.\tools\bench\peer_task_addsr_rpc.txt')
+OUTCOME: ANSWERED (110s)  archived: archive\peer\2026-09-14-addshiftreg-run2-rpc-unavailable.md
+--- ANSWER ---
+The evidence favors neither H1 nor H2 as stated. It most strongly favors a third explanation:
+
+**H3 ??the cached `OpNodeLabels_v0.vi` COM proxy became disconnected while the LabVIEW process remained alive.**
+
+H1?�s ?�client attached to the killed, still-tearing-down process??is difficult to reconcile with the timestamps. H2?�s ?�new copy crashed LabVIEW??is difficult to reconcile with both the successful census and the apparently surviving process.
+
+## 1. What the evidence favors
+
+### Why H1 is weak
+
+The killed PID 7148 was confirmed absent before the batch began. The LabVIEW process found afterward had `StartTime 22:36:01`, approximately 18 seconds after the 22:35:43 batch start. Unless the process observations missed another LabVIEW instance, the successful A0 calls almost certainly caused or used the 22:36:01 instance?�not PID 7148.
+
+More importantly, H1 predicts that the process serving the successful calls subsequently disappeared. You have not shown that:
+
+- the PID serving A0 differed from the PID present afterward;
+- the 22:36:01 process exited;
+- another LabVIEW process replaced it.
+
+A StartTime alone cannot establish ?�second launch.??You need PID and StartTime sampled during the successful calls and again after the failure.
+
+### Why H2 is also weak
+
+The copied `OpAddShiftReg_v0.vi` had already survived:
+
+- `OpenFrontPanel`;
+- three separate censuses?�Property, Invoke, and Wire;
+- an `ExecState` read returning 1.
+
+Only then did the failure occur on:
+
+```python
+vi = op(OP_NODE_LABELS)
+vi.SetControlValue("vi path", target)
+```
+
+That is a call on the cached **reporter VI reference**, before the reporter ran or traversed the copied target. See [gscript.py](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/gscript.py:383>) and the traceback in [build_opaddshiftreg_v0_run2.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_opaddshiftreg_v0_run2.log>).
+
+Therefore the successful census materially weakens H2. It does not completely exclude delayed target-specific corruption, because the earlier counts and `ExecState` do not exercise `Node.Label`. But the repository records `node_labels` successfully covering 626 nodes across 170 diagrams without crashing, which also makes ?�ordinary label traversal crashes on this small copy??a poor prior; see [NAMES.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/NAMES.md:227>).
+
+The strongest discriminator would be:
+
+- same PID survived ??no process crash; investigate a disconnected proxy, VI unload/reload, endpoint failure, resource exhaustion, or internal LabVIEW subsystem failure;
+- serving PID exited and Windows/WER records a fault ??H2/crash family;
+- serving PID changed between readiness probes and failure ??H1/restart family.
+
+The reported handle count of 30,651 is suspicious, but without a baseline or time series it proves nothing.
+
+## 2. What `0x800706BA` actually means
+
+`-2147023174` is `HRESULT_FROM_WIN32(1722)`, namely `RPC_S_SERVER_UNAVAILABLE`. It is **not diagnostic proof that the server process exited**.
+
+Microsoft says RPC 1722 occurs when a lower transport reports a connectivity failure; possible causes include resource limitations, the higher-level protocol not running, or the higher-level protocol itself returning the error. RPC ?�has no special insight??into the underlying failure. [Microsoft?�s RPC 1722 documentation](https://learn.microsoft.com/en-us/troubleshoot/windows-server/active-directory/replication-error-1722-rpc-server-unavailable)
+
+A dead server or stale proxy is compatible with 1722, but not uniquely identified by it. Conversely:
+
+- A normally busy COM STA should ordinarily produce `RPC_E_SERVERCALL_RETRYLATER` (`0x8001010A`).
+- A message-filter rejection ordinarily produces `RPC_E_SERVERCALL_REJECTED` (`0x8001010B`).
+- A disconnected COM object has the more specific `RPC_E_DISCONNECTED` (`0x80010108`).
+- Wrong-apartment use has `RPC_E_WRONG_THREAD` (`0x8001010E`).
+
+Those are distinct documented COM results. [Microsoft COM/RPC error-code table](https://learn.microsoft.com/th-th/windows/win32/com/com-error-codes-3)
+
+Thus ?�merely busy??or ?�merely marshalled across apartments??is not the best reading of this exact code. But endpoint loss, server-side RPC failure, resource exhaustion, a stale proxy, or a server that remains as a Windows process while its automation endpoint is gone are all still compatible.
+
+## 3. Readiness after forced termination
+
+I found no NI-documented LabVIEW ActiveX readiness event stronger than successfully creating the Application object and completing real VI Server operations.
+
+NI documents that:
+
+- `LabVIEW.Application` creates an Application automation object;
+- `GetVIReference` creates the dependent VirtualInstrument object;
+- loading a VI from disk may wait until LabVIEW?�s UI is idle.
+
+[NI ActiveX documentation](https://www.ni.com/en/support/documentation/supplemental/06/converting-visual-basic-activex-examples-to-equivalent-labview.html) and [NI VI Server documentation](https://www.ni.com/docs/tr-CY/csh?context=lvcore_lvhowto_vi_server)
+
+`WaitForInputIdle` is not a sufficient ActiveX readiness signal. Microsoft defines it only as the GUI message loop reaching an idle state, principally useful for waiting until a main window exists. It says nothing about LabVIEW?�s ActiveX class factory, VI Server, compilation, or scripting subsystems. [Microsoft `WaitForInputIdle`](https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.process.waitforinputidle)
+
+Therefore repeated cheap round trips with an unchanged PID are a reasonable **project-specific health check**, but not a documented LabVIEW guarantee. A good preflight would:
+
+1. `Dispatch`;
+2. obtain PID/StartTime;
+3. `GetVIReference` to one fixed, known-good tiny VI;
+4. read a cheap property such as `ExecState`;
+5. release every obtained proxy;
+6. wait briefly;
+7. create a completely new Application and VI reference and repeat;
+8. require the same PID/StartTime.
+
+Do not merely repeat calls through cached proxies.
+
+There is also a defect in the currently added `com_preflight`: it sets `g._lv = None` but does not clear `g._cache`. Since `op()` returns cached VirtualInstrument proxies, later attempts can continue testing an old disconnected proxy rather than the newly dispatched Application. See [build_opaddshiftreg_v0.py](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_opaddshiftreg_v0.py:52>) and [gscript.py](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/gscript.py:61>).
+
+## 4. Forced termination and stale ROT registrations
+
+Abrupt termination prevents LabVIEW from performing its orderly shutdown, including explicit revocation of ActiveX registrations. Microsoft documents that strongly registered active objects must be explicitly revoked, and that orderly shutdown should revoke the active object and disconnect external clients. [Microsoft `RegisterActiveObject`](https://learn.microsoft.com/en-us/windows/win32/api/oleauto/nf-oleauto-registeractiveobject)
+
+That establishes a theoretical stale-registration window, but it does **not** establish that LabVIEW uses a strong ROT registration in precisely this way or that a stale entry persisted here.
+
+Also distinguish:
+
+- COM class registration in the registry: persistent configuration identifying how to launch LabVIEW;
+- ROT/active-object registration: runtime association with an existing automation object.
+
+A forced kill does not normally make the registry ?�point at the dying PID.??H1 currently conflates these mechanisms.
+
+A client cannot prove freshness from `Dispatch` alone. It should:
+
+- record PID/StartTime before and after activation;
+- make a real call on both Application and a newly obtained VI proxy;
+- discard all old Application and VI references after any RPC failure;
+- perform a fresh activation;
+- confirm the PID/StartTime is stable.
+
+If an old proxy returns 1722 while a freshly activated proxy immediately works against the same live PID, that is strong evidence of a stale/disconnected proxy?�not a process crash.
+
+## 5. Cheapest discriminating test
+
+Run one read-only probe against the already-running, stable LabVIEW instance:
+
+> Record PID/StartTime; create a **new, uncached** Application reference and a **new, uncached** `OpNodeLabels_v0` reference; call `SetControlValue("vi path", copied_path)` and run `node_labels` once; record PID/StartTime again.
+
+Interpretation:
+
+- New uncached call succeeds, while the old cached reference fails ??stale/disconnected proxy; refutes H2 and the dying-process form of H1.
+- PID disappears or changes exactly when traversing the copy ??crash/restart; favors H2.
+- It fails with 1722 but the identical fresh probe against the original donor succeeds in the same PID ??target-specific H2 family.
+- Both targets fail while the PID remains unchanged ??server/endpoint/resource problem, not copy-specific H2.
+
+This is more discriminating than repeating the entire build, takes seconds, and directly tests the operation at the failure boundary.
+BGRUN END rc=0 after 111s

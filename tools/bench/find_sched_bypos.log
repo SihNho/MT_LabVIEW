@@ -1,0 +1,70 @@
+BGRUN START 2026-09-13 08:01:38 limit 25.0 min: py -u -c 
+import os,sys,json
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+WORK=r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi'
+tree=json.load(open('tools/bench/diagram_tree_main.json',encoding='utf-8'))['diagrams']
+# place every DIAGRAM by the bounding box of the nodes it owns, using report() positions for Nodes-visible classes
+pos={}
+for cls in ('SubVI','Property','IndexArray','CaseStructure'):
+    for o in g.report(WORK,cls): pos[o['uid']]=o.get('pos')
+box={}
+for d,info in tree.items():
+    ps=[pos[u] for u in info['uids'] if pos.get(u)]
+    if ps:
+        xs=[p[0] for p in ps]; ys=[p[1] for p in ps]
+        box[int(d)]=(min(xs),min(ys),max(xs),max(ys),len(ps),info['owner'])
+TARGETS={'CycleSchedule':(-10604,1049),'Total cycle #':(-11968,1601),'Mag Position':(-8545,887),
+         'NumCol':(-6265,963),'SubCycle':(3160,987),'Start Cycles':(6054,1258)}
+print('%d diagrams have a position box'%len(box))
+for name,(tx,ty) in TARGETS.items():
+    cands=[(d,b) for d,b in box.items() if b[0]-400<=tx<=b[2]+400 and b[1]-400<=ty<=b[3]+400]
+    cands.sort(key=lambda kv: kv[1][4])
+    print()
+    print('%-18s at (%d,%d): %d candidate diagrams'%(name,tx,ty,len(cands)))
+    for d,b in cands[:6]:
+        print('    diagram %-5s x[%6d..%6d] y[%5d..%5d]  %2d placed nodes  owner %s'%(d,b[0],b[2],b[1],b[3],b[4],b[5]))
+json.dump({str(k):list(v) for k,v in box.items()},open('tools/bench/diagram_boxes.json','w',encoding='utf-8'),indent=1)
+print()
+print('written')
+
+102 diagrams have a position box
+
+CycleSchedule      at (-10604,1049): 2 candidate diagrams
+    diagram 145   x[-10556..-10556] y[  649..  649]   1 placed nodes  owner FlatSequenceFrame
+    diagram 146   x[-10424..-10258] y[  727..  745]   2 placed nodes  owner FlatSequenceFrame
+
+Total cycle #      at (-11968,1601): 7 candidate diagrams
+    diagram 103   x[-11741..-11741] y[ 1676.. 1676]   1 placed nodes  owner FlatSequenceFrame
+    diagram 104   x[-11634..-11634] y[ 1666.. 1666]   1 placed nodes  owner FlatSequenceFrame
+    diagram 107   x[-12200..-12200] y[ 1678.. 1678]   1 placed nodes  owner FlatSequenceFrame
+    diagram 108   x[-12089..-12089] y[ 1666.. 1666]   1 placed nodes  owner FlatSequenceFrame
+    diagram 141   x[-11950..-11950] y[ 1219.. 1219]   1 placed nodes  owner Sequence
+    diagram 144   x[-11784..-11784] y[ 1249.. 1249]   1 placed nodes  owner CaseStructure
+
+Mag Position       at (-8545,887): 5 candidate diagrams
+    diagram 150   x[ -8779.. -8779] y[  831..  831]   1 placed nodes  owner Sequence
+    diagram 151   x[ -8670.. -8670] y[  932..  932]   1 placed nodes  owner CaseStructure
+    diagram 154   x[ -8911.. -8911] y[  864..  864]   1 placed nodes  owner Sequence
+    diagram 157   x[ -8342.. -8151] y[  931.. 1035]   2 placed nodes  owner Sequence
+    diagram 163   x[ -8343.. -7870] y[  963.. 1145]  10 placed nodes  owner ForLoop
+
+NumCol             at (-6265,963): 1 candidate diagrams
+    diagram 165   x[ -5934.. -5934] y[  860..  860]   1 placed nodes  owner ForLoop
+
+SubCycle           at (3160,987): 10 candidate diagrams
+    diagram 46    x[  3016..  3016] y[ 1203.. 1203]   1 placed nodes  owner EventStructure
+    diagram 56    x[  3338..  3338] y[ 1387.. 1387]   1 placed nodes  owner CaseStructure
+    diagram 57    x[  3351..  3351] y[ 1344.. 1344]   1 placed nodes  owner CaseStructure
+    diagram 70    x[  3331..  3331] y[ 1014.. 1014]   1 placed nodes  owner CaseStructure
+    diagram 48    x[  2970..  2972] y[ 1177.. 1218]   2 placed nodes  owner ForLoop
+    diagram 19    x[  2280..  9001] y[ 1130.. 2416]   3 placed nodes  owner FlatSequenceFrame
+
+Start Cycles       at (6054,1258): 3 candidate diagrams
+    diagram 19    x[  2280..  9001] y[ 1130.. 2416]   3 placed nodes  owner FlatSequenceFrame
+    diagram 59    x[  6078..  6078] y[ 1435.. 1640]   4 placed nodes  owner CaseStructure
+    diagram 43    x[  2946..  6148] y[  964.. 2646]  29 placed nodes  owner WhileLoop
+
+written
+BGRUN END rc=0 after 282s

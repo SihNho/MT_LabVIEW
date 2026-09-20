@@ -1,0 +1,92 @@
+BGRUN START 2026-09-14 22:10:44 limit 12.0 min: py -u tools/recipes/build_oploopin.py for
+start: SubVI=7 Wire=28 ExecState=1
+
+== 2 delete Exit For Loop + RBW
+   predict: SubVI -1
+   result : after SubVI=6 Wire=23 ExecState=1  (0.1 s)
+
+== 3 drop Create For Loop.vi
+   predict: SubVI +1
+   result : after SubVI=7 Wire=23 ExecState=0  (0.1 s)
+
+== 4a Diagram in <- TMSC (Class Name 2 / index 2)
+   predict: Wire +1
+   result : after SubVI=7 Wire=24 ExecState=1  (0.1 s)
+
+== 4b error in
+   predict: Wire +1
+   result : after SubVI=7 Wire=25 ExecState=1  (0.1 s)
+
+== 4c error out -> Clear Errors.vi.'error in (no error)'
+   predict: Wire +1
+   result : after SubVI=7 Wire=26 ExecState=1  (0.1 s)
+
+== 4d Get Outputs.'Outputs' -> creator 'Inputs'
+   predict: Wire +1
+   result : after SubVI=7 Wire=27 ExecState=1  (0.1 s)
+
+== 5 create_control on 'location (0, 0)'
+   predict: one new control
+   result : ([{'i': 8, 'class': 'ControlTerminal', 'uid': 668, 'pos': (1459, 646), 'owner': 'TopLevelDiagram'}], 'location (0, 0)')  (0.2 s)
+
+== 5 create_control on 'Inputs Indexing?'
+   predict: one new control
+   result : ([{'i': 9, 'class': 'ControlTerminal', 'uid': 717, 'pos': (1453, 646), 'owner': 'TopLevelDiagram'}], 'Inputs Indexing?')  (0.2 s)
+
+== 5 create_control on 'Number of Static Parallel Instances'
+   predict: one new control
+   result : ([{'i': 10, 'class': 'ControlTerminal', 'uid': 735, 'pos': (1453, 710), 'owner': 'TopLevelDiagram'}], 'Number of Static Parallel Instances')  (0.2 s)
+   controls: {'location (0, 0)': 'location (0, 0)', 'Inputs Indexing?': 'Inputs Indexing?', 'Number of Static Parallel Instances': 'Number of Static Parallel Instances'}
+
+== 6 error out -> 'error out' indicator
+   predict: branch
+   result : 0.023445606231689453  (0.1 s)
+   creator terminals: [('Diagram in', 471), ('Inputs Indexing?', 727), ('location (0, 0)', 678), ('Diagram out', 0), ('Inputs', 615), ('Inputs', 0), ('Shift Register Inputs', 0), ('Shift Registers', 0), ('Loop Count Terminal', 0), ('Loop Counter', 0), ('error in (no error)', 476), ('Number of Static Parallel Instances', 746), ('error out', 534)]
+donor md5 unchanged: True
+
+VERDICT: OpForLoopIn_v0.vi BUILT and SAVED (structural)
+BGRUN END rc=0 after 63s
+BGRUN START 2026-09-14 22:11:53 limit 12.0 min: py -u tools/recipes/build_oploopin.py while
+start: SubVI=7 Wire=28 ExecState=1
+
+== 2 delete Exit For Loop + RBW
+   predict: SubVI -1
+   result : after SubVI=6 Wire=23 ExecState=1  (0.1 s)
+
+== 3 drop Create While Loop.vi
+   predict: SubVI +1
+   result : after SubVI=7 Wire=23 ExecState=0  (0.1 s)
+
+== 4a Diagram in <- TMSC (Class Name 2 / index 2)
+   predict: Wire +1
+   result : after SubVI=7 Wire=24 ExecState=1  (0.1 s)
+
+== 4b error in
+   predict: Wire +1
+   result : after SubVI=7 Wire=25 ExecState=1  (0.1 s)
+
+== 4c error out -> Clear Errors.vi.'error in (no error)'
+   predict: Wire +1
+   result : after SubVI=7 Wire=26 ExecState=1  (0.1 s)
+
+== 4d Get Outputs.'Outputs' -> creator 'Inputs'
+   predict: Wire +1
+   result : after SubVI=7 Wire=27 ExecState=1  (0.1 s)
+
+== 5 create_control on 'location (0, 0)'
+   predict: one new control
+   result : ([{'i': 8, 'class': 'ControlTerminal', 'uid': 668, 'pos': (1459, 646), 'owner': 'TopLevelDiagram'}], 'location (0, 0)')  (0.2 s)
+
+== 5 create_control on 'Inputs Indexing?'
+   predict: one new control
+   result : ([{'i': 9, 'class': 'ControlTerminal', 'uid': 717, 'pos': (1454, 703), 'owner': 'TopLevelDiagram'}], 'Inputs Indexing?')  (0.2 s)
+   controls: {'location (0, 0)': 'location (0, 0)', 'Inputs Indexing?': 'Inputs Indexing?'}
+
+== 6 error out -> 'error out' indicator
+   predict: branch
+   result : 0.0239105224609375  (0.1 s)
+   creator terminals: [('Diagram in', 471), ('location (0, 0)', 678), ('Diagram out', 0), ('Inputs', 615), ('Inputs', 0), ('Shift Register Inputs', 0), ('Shift Registers', 0), ('Inputs Indexing?', 727), ('Loop Counter', 0), ('error in (no error)', 476), ('error out', 534)]
+donor md5 unchanged: True
+
+VERDICT: OpWhileLoopIn_v0.vi BUILT and SAVED (structural)
+BGRUN END rc=0 after 46s

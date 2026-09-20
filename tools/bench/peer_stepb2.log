@@ -1,0 +1,97 @@
+BGRUN START 2026-09-14 23:38:47 limit 9.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & '.\tools\peer.ps1' -Agent codex -Slug stage2-step-b-revised-forloop-route -TimeoutSec 300 -Task (Get-Content -Raw '.\tools\bench\peer_task_stepb2.txt')
+OUTCOME: ANSWERED (132s)  archived: archive\peer\2026-09-14-stage2-step-b-revised-forloop-route.md
+--- ANSWER ---
+Verdict: the For-loop architecture is sound, but `FramePath.vi` is not safe as specified. The five-argument `Format Into String` donor is the most likely failure.
+
+The prompt?�s design supersedes the checked-in ?�REVISED route,??which still describes contiguous Loop Counter indexing and `Build Path`; [docs/stage2-assembly-step-b.md](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/docs/stage2-assembly-step-b.md) must be updated before execution.
+
+### (a) Five-input `Format Into String`
+
+Do not leave the donor at five argument terminals with only two intended values.
+
+NI documents these `Format Into String` errors:
+
+- 81: format specifier type mismatch
+- 83: more arguments than specifiers
+- 84: more specifiers than arguments
+
+When `format string` is a control rather than a constant, its value cannot be validated at compile time, so the VI may have a good arrow and then return a formatting error at runtime. This is not error 85; error 85 belongs to scanning/parsing failures. [NI Function and VI Reference Manual, Format Into String](https://download.ni.com/support/manuals/321526a.pdf), [NI error-85 explanation](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019N4XSAU).
+
+Thus `%s\img%05d.tif` plus five argument terminals risks error 83 if the three unused terminals remain arguments. Their being unwired does not establish that they disappear from the node?�s argument list?�the node explicitly has default-valued argument terminals.
+
+The suggested workaround of adding three `%s` conversions is also unsafe:
+
+- Unwired donor arguments are not proven to be string-typed or empty-valued.
+- A `%s` paired with a numeric/default numeric argument can produce error 81.
+- Even if made safe, it conceals an unnecessary and structurally incorrect arity.
+
+Minimal safe form:
+
+1. Use a donor already resized to exactly two arguments, or script the copied node down to two.
+2. Wire `Path To String` output to argument 1.
+3. Wire the scalar DBL frame ID to argument 2.
+4. Use `%s\img%05d.tif`.
+5. Wire or report `error out` during the test.
+
+`%d` is valid for DBL input: NI says the numeric conversion codes, including `d`, accept any numeric G datatype, and `%d` rounds the argument. [NI format syntax](https://download.ni.com/support/manuals/321526a.pdf), [NI Community example showing `%d` rounding DBL](https://forums.ni.com/t5/LabVIEW/Question-regarding-Format-Specifier-Syntax/m-p/3214603).
+
+There is no rounding risk for integral frame IDs through 11,824. Such small integers are represented exactly by DBL; `%d` therefore returns the same integer. If malformed fixture data could contain fractional IDs, add an explicit integral-value assertion rather than silently accepting `%d` rounding. LabVIEW uses nearest-even rounding for floating-to-integer conversion. [NI rounding rules](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000P82kSAC).
+
+One wording defect also needs resolution: `input 1` cannot simultaneously be a front-panel ?�base string??control and receive the `Path To String` output. The clean connector pane is `path`, `format string`, and `index`; argument 1 is internal wiring.
+
+### (b) Create-control/delete-wire trick
+
+Conceptually, yes. Creating a control from a terminal creates a separate front-panel control of the terminal?�s correct datatype and wires its diagram terminal to the source. Deleting only that wire should leave the control and terminal in place. [NI LabVIEW manual](https://download.ni.com/support/manuals/320999b.pdf).
+
+If the source terminal is genuinely `Real-space cosine window: DBL[]`, the resulting control should be rank-1 DBL?�not merely ?�some numeric array.??But that exact VI Scripting sequence is not established by the documentation alone. Gate it with a reporter after deletion:
+
+- control still exists by UID
+- class is Array
+- rank is 1
+- element representation is DBL
+- terminal has zero connected wires
+
+Do not identify it solely by its copied label, because it originates from an unrelated kernel input.
+
+### (c) For-loop indexing and output type
+
+This part is correct.
+
+An auto-indexed `DBL[]` input supplies one scalar DBL per iteration. Non-indexed inputs pass their complete value unchanged into every iteration. If no explicit `N` is wired, the array length sets the iteration count; if `N` or another indexed array is also present, LabVIEW uses the smallest limiting size. [NI auto-indexing rules](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000PAghSAG).
+
+An auto-indexed output that receives `x,y,z array out: DBL[]` each iteration accumulates those 1-D rows into a 2-D DBL array. NI explicitly describes the inverse-rank behavior: scalars accumulate into 1-D arrays and 1-D arrays into 2-D arrays. [NI LabVIEW User Manual](https://download.ni.com/support/manuals/320999e.pdf).
+
+Therefore `exit_loop` is the right primitive only if its reporter proves that it created an indexing output tunnel rather than a last-value tunnel. Also test the orientation as `[frame, xyz-element]`, because the fixture comparison will depend on dimension order.
+
+### (d) Feedback registers
+
+Yes: initialized shift registers have the same inter-iteration semantics on For and While loops. The external initializer supplies iteration zero; each right-terminal value becomes the left-terminal value on the following iteration; after completion the final right value exits. NI expressly supports shift registers on both loop types and requires every connected value to have the same datatype. [NI shift-register manual](https://download.ni.com/support/manuals/320999e.pdf), [NI For-loop shift-register walkthrough](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YKYuCAO).
+
+The semantic hazards are elsewhere:
+
+- A zero-length `Frame IDs` array means zero kernel executions.
+- All three register paths still need exact rank/representation gates.
+- Parallelism must remain disabled because each iteration consumes the previous iteration?�s state.
+
+The ForLoop-typed scripting seed is a construction requirement demonstrated by the local 1055 result; it does not change runtime shift-register semantics.
+
+### (e) Most likely break and cheapest test
+
+The likeliest break is `FramePath.vi`?�s copied five-argument `Format Into String`, specifically dynamic format validation and ambiguous unused argument terminals?�not the For loop.
+
+Cheapest discriminating test: build only `FramePath.vi`, with no image I/O or kernel, and call it over COM for:
+
+- `base = C:\fixture`
+- IDs `0`, `1`, `9999`, `10000`, `11824`
+- expected strings ending in `img00000.tif`, `img00001.tif`, `img09999.tif`, `img10000.tif`, and `img11824.tif`
+
+For every call, read:
+
+- resulting path converted back to string
+- `error out` code/source
+- execution state
+
+Before running it, report that `Format Into String` has exactly two argument terminals and that argument 1 is string while argument 2 is DBL. This single test discriminates donor arity, `%d` handling, zero-padding, backslash construction, Path/String conversion, connector-pane assignment, and COM invocation without touching TIFFs or the kernel.
+
+Finally, [the archived review](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/archive/peer/2026-09-14-stage2-step-b-replay-core-plan.md) correctly killed the earlier parameterized-style and While-loop tunnel-mutation routes, but its conclusion that Loop Counter indexing was sufficient is invalidated by the newly stated 124 gaps. The lookup array is mandatory.
+BGRUN END rc=0 after 132s

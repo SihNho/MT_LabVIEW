@@ -1,0 +1,190 @@
+BGRUN START 2026-09-17 16:44:52 limit 20.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Dual -Slug priorart-opgeterrors -Kind fact -TimeoutSec 900 -TaskFile 'C:\Users\KimLab\AppData\Local\Temp/priorart_opgeterrors.txt'
+=== DUAL ARM 1/2: codex -> priorart-opgeterrors-codex ===
+OUTCOME: ANSWERED (216s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-17-priorart-opgeterrors-codex.md
+--- ANSWER ---
+## Part A — The direction
+
+### A1 — Not settled
+
+The technical question remains open: “`VI.Get Errors` 452 is still the missing instrument,” and the existing bare-input counts “discriminated nothing.” The judgement session authorized an experiment; it did not answer whether method 452 can be attached successfully. [STATUS.md:89](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:89>) [docs/d1-route-b-plan.md:403](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/d1-route-b-plan.md:403>)
+
+### A2 — Refuted already, but conditionally
+
+On 2026-09-15 the outcome review explicitly put the reader among work to skip and said to abandon “`VI.Get Errors` … unless the delivery actually fails without them”; it classified the project as `tooling-over-delivery`. [archive/peer/2026-09-15-outcome-review-20260915.md:151](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-15-outcome-review-20260915.md:151>) [archive/peer/2026-09-15-outcome-review-20260915.md:218](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-15-outcome-review-20260915.md:218>)
+
+That refutation does not plainly cover the current case: its stated exception may now apply because route B remains unsaved at `ExecState 0` after its two-run budget. [STATUS.md:83](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:83>) [STATUS.md:87](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:87>)
+
+### A3 — Contradicted
+
+1. The plan says `net_map` cannot see nodes created by another op and that the old recipe verified “exactly through that broken route.” [docs/d1-route-b-plan.md:438](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/d1-route-b-plan.md:438>)
+
+   The implementation record says the opposite: fresh nodes were hidden by the walker’s own junk, and “the earlier ‘stale reference’ reading … was wrong.” [tools/gscript.py:2452](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/gscript.py:2452>) [tools/gscript.py:2457](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/gscript.py:2457>) Toolkit documentation also labels that reasoning “SUPERSEDED” and attributes it to walker junk. [docs/toolkit-capabilities.md:144](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/toolkit-capabilities.md:144>)
+
+   Moreover, the old recipe did not use `net_map` for its terminal verdict; it created indicators on terminal indices and inspected their labels/wires. [tools/recipes/build_opgeterrors.py:49](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_opgeterrors.py:49>)
+
+2. `docs/violation-decisions.md` says the cycle-9 retrospective found that the missing tool was “NOT a LabVIEW reader” and that `VI.Get Errors` would have been tooling drift. [docs/violation-decisions.md:71](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/violation-decisions.md:71>)
+
+   The cited retrospective actually says, “The primary one was `VI.Get Errors`,” lists the failed states it would have explained, and says its prior build failures did not justify continued inference. [archive/peer/2026-09-15-retrospective-cycle9.md:91](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-15-retrospective-cycle9.md:91>) [archive/peer/2026-09-15-retrospective-cycle9.md:95](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-15-retrospective-cycle9.md:95>) [archive/peer/2026-09-15-retrospective-cycle9.md:101](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-15-retrospective-cycle9.md:101>)
+
+### A4 — Unread evidence
+
+The obvious missed evidence is the correction embedded in `tools/gscript.py`: it withdraws the stale-node explanation that §10b.3 treats as established. [tools/gscript.py:2452](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/gscript.py:2452>) [tools/gscript.py:2457](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/gscript.py:2457>)
+
+## Part B — The artifact
+
+### B1 — Not already built successfully
+
+A matching recipe exists, but it never produced a saved working `OpGetErrors_v0`: both runs ended `STOP: not saved`. [tools/recipes/build_opgeterrors.py:1](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_opgeterrors.py:1>) [tools/bench/build_opgeterrors.log:7](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_opgeterrors.log:7>) [tools/bench/build_opgeterrors.log:16](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_opgeterrors.log:16>)
+
+### B2 — Already failed
+
+The exact old build failed on 2026-09-09 and 2026-09-14. Both runs produced only `reference out` and `error out 2`, remained `ExecState 0`, and exited `rc=5` without saving. [tools/bench/build_opgeterrors.log:1](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_opgeterrors.log:1>) [tools/bench/build_opgeterrors.log:10](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_opgeterrors.log:10>)
+
+The new plan does address the repeated implementation: it first proposes `OpBuildInvoke_v1` with the creator’s real error and outputs exposed, then requires named-terminal census rather than accepting node creation. [docs/d1-route-b-plan.md:426](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/d1-route-b-plan.md:426>) [docs/d1-route-b-plan.md:448](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/d1-route-b-plan.md:448>) The historical failure still applies as prior art, but it does not establish that this revised path will fail.
+
+### B3 — No helper-exists finding
+
+`node_terms()` already supplies the required terminal-name census, and the plan explicitly uses it rather than reimplementing it. [docs/toolkit-capabilities.md:23](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/toolkit-capabilities.md:23>) [docs/d1-route-b-plan.md:439](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/d1-route-b-plan.md:439>)
+
+### B4 — Not already measured
+
+The current broken-VI cause remains unmeasured; the two existing input censuses explicitly produced no verdict. [STATUS.md:89](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:89>)
+
+PRIOR-ART: refuted-already
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-failed
+=== DUAL ARM 2/2: claude/hypothesis (opus, effort max, web) -> priorart-opgeterrors-opus ===
+OUTCOME: ANSWERED (452s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-17-priorart-opgeterrors-opus.md
+COST: $3.9164  in 36 / out 32006 / cache-create 194024 / cache-read 2213998  (448s, 33 turn(s))
+--- ANSWER ---
+## Bottom line
+
+**Not `novel` — eleven findings, and two of them are hard stops that codex's 16:48 review did not reach.** One correction to my opening line first: I said §10b.1's premise was contradicted by the code. It is not. `tools/gscript.py:2094-2123` confirms §10b.1 exactly — `build_invoke()` swallows the modal-dialog error and its docstring says *"the op's `error out` indicator is now unwired, so read creator errors from the dialog watchdog, not from `_err()`"* — while `build_property()` at `tools/gscript.py:2156-2158` raises on `error out 2`. **§10b.1 is the one pillar of §10b that survives this review intact.**
+
+Also timely: `STATUS.md:31-34` now reads `status: acquired`, owner `material/cycle15-route-B-3-save-it`, purpose *"…OPEN 39 OpGetErrors_v0"*. This build is in flight as I write.
+
+---
+
+# PART A — the direction
+
+## A1 · SETTLED-ALREADY — a judgement decision from *today* forbids exactly this class of work before F1/F2
+
+`docs/d1-build-plan.md:859-860`, under the heading §11j *"DECIDED (judgement, 2026-09-17, after the sentinel-ops wall and the THIRD consecutive outcome violation)"*:
+
+> **2. No diagnostic, framework, or review cycle before F1/F2** — the outcome reviewer's own ordering, adopted: third op → PHASE "full" → save → N1 → F1 (5 min) → F2.
+
+`OpGetErrors_v0` is a diagnostic. The precondition still holds: `STATUS.md:87-88` says *"ExecState is 0 warm and **nothing was saved** — `Track_v6_D1_GPU.vi` does not exist."* F1/F2 have not run. §10 does not cite §11j.2 and does not argue it is superseded.
+
+## A2 · REFUTED-ALREADY — the outcome review named this reader specifically, and the repeat escalates it
+
+`archive/peer/2026-09-15-outcome-review-20260915.md:146,151`:
+
+> "A competent engineer pursuing the stated outcome would have skipped or deferred: … **The currently planned `VI.Get Errors` reader** and `OpCaseFrames_v0` structural confirmation."
+
+That objection is *stronger* now, not weaker. `STATUS.md:71-72`: *"**32 outcome review: six `OUTCOME-VIOLATION`s, SECOND consecutive time ⇒ the work stops for a re-plan with the USER.** Not answerable by a device."* And `CLAUDE.md:419`: an `OUTCOME-VIOLATION` *"is NOT answered by building a device."*
+
+**Does it still apply — honestly?** There is exactly one precedent for overriding it, and it matters: `docs/cycle10-plan.md:28-29` records the same fork — build the reader, or honour *"further readers are tooling drift"* — and resolves it *"The user chose the reader."* So this is overridable. **By the user.** A material or judgement session authorising it internally is the move the rule exists to block.
+
+## A3 · CONTRADICTED — five, one of them inside §10's own file
+
+**(i) The same document refuses this build 17 lines above §10.** `docs/d1-route-b-plan.md:384-386`:
+
+> **5. No fifth op is authorised by this plan.** B uses the four the freeze lift closed at … R1's resolution may need one; that is the judgement session's call, not this file's.
+
+§10 (`docs/d1-route-b-plan.md:401`) authorises **two** new ops. The carve-out is for **one** op, scoped to **R1's resolution** — the cross-loop transport question, `STATUS.md:85-87` (OPEN 38). `OpGetErrors_v0` is OPEN 39 (`STATUS.md:89`), a different item. The carve-out does not cover it. This is precisely the failure mode the brief names: a section contradicting its own file.
+
+**(ii) §10b.3 misdescribes the old recipe — and this voids the pillar.** §10b.3 asserts *"The old `build_opgeterrors.py` verifies exactly through that broken route [`net_map`]."* It does not. `tools/recipes/build_opgeterrors.py:49-59` probes terminals with `g.create_indicator()` + `g.fp_labels()`; `net_map` appears nowhere in the file. `tools/bench/build_opgeterrors.log:5-7` and `:14-16` show it printing terminal **names** directly:
+
+```
+   t1: indicator 'reference out'
+   t3: indicator 'error out 2'
+assembled: ExecState 0 outputs ['reference out', 'error out 2']
+```
+
+So "the walker was broken" does **not** explain the two prior failures. That negative result stands unexplained, and §10b.3 — one of four pillars — collapses.
+
+**(iii) The two files disagree about why `net_map` failed, and the plan quotes the retracted one.** `docs/toolkit-capabilities.md:225-228` says `net_map` *"does not see nodes created by another op in the same session."* `tools/gscript.py:2451-2457` says the opposite and retracts it: *"(a) why fresh nodes were 'invisible': they sat in `Nodes[]` behind the walker's OWN junk … **The earlier 'stale reference' reading recorded in STATUS was wrong**"* — and that `net_map` was then fixed (*"snapshot Invoke uids first, purge what the walk added"*). The plan cites the doc. Two consequences: wrong cause, and the "broken route" is no longer broken.
+
+**(iv) The archive carries a FALSE success record for this exact op.** `archive/peer/2026-09-09-clfn-scripted-node-broken-with-arguments.md:195`:
+
+> "the private VI method Get Errors (0x452) enabled via LabVIEW.ini tokens … and **built as OpGetErrors_v0 to read the real error text. Results in `tools/bench/diag_chain.log` and `docs/gpu-backend.md`.**"
+
+`tools/bench/diag_chain.log` exists and contains **no** match for `Get Errors`, `Errors`, `Details` or `error text`; `docs/gpu-backend.md` contains no match for `Get Errors`, `OpGetErrors` or `0x452`. Against it, `archive/STATUS-2026-09-14-full-before-condense.md:575`: *"OpGetErrors_v0 NOT achieved: VI method 0x452 yields no outputs through the erdosmiller creator even with the three private-scripting [tokens]."* Flagging this because a future session reading only line 195 will believe the op exists and works.
+
+**(v)** `docs/violation-decisions.md:71-73` reports the cycle-9 retrospective as finding the missing tool was *"NOT a LabVIEW reader — building `VI.Get Errors` 'would have been more tooling drift'"*. The retrospective says the reverse: `archive/peer/2026-09-15-retrospective-cycle9.md:95` *"The primary one was **`VI.Get Errors`**"*, and `:101` *"its absence did not justify continuing to classify `ExecState 0` by inference."* (Codex found this one; I confirm it independently.)
+
+## A4 · UNREAD-EVIDENCE — the file that gave you `452` offers two other routes on the same page
+
+`archive/peer/2026-09-08-vi-error-list-by-script.md` is the origin of the ID §10 is built on. §10's ladder (452 → 6370003 → donor) never mentions either of these, both on that page:
+
+- **`:115-141`** — `Application.Error Window:Open` **0x89D** + `VI.Refresh Error Window Entry` **0x473** (both private), with the sequence spelled out: refresh the VI's entry, open the Error Window, capture it. This answers "why is this VI `ExecState 0`" **without attaching any member to a node's output terminals** — the exact thing that failed twice — and this project already owns the capture tool (`tools/lv_gui.ps1`).
+- **`:53-62`** — `Wire.Get Error List` **0x6370C0A** (private, required output `Error List`), also recorded as unbuilt at `docs/NAMES.md:898-899`. Route B's failure is about **63 wires**; per-wire errors fit the actual question better than a whole-VI list.
+
+---
+
+# PART B — the artifact
+
+## B1 / B3 · HELPER-EXISTS — §10c.2's "next step" is already written and already run
+
+§10c.2 presents `Invoke.Set Method (Allow Private)` **6370003** as new work, citing only the peer archive. It exists as runnable code: `tools/recipes/probe_allow_private3.py:112` calls `g.build_invoke(S, "VI Server:Invoke", "6370003", …)`, with a known-good control at `:105` and a three-branch verdict at `:120-134`. Its result, `tools/bench/probe_allow_private3.log:10-13`:
+
+```
+== Invoke.Set Method (Allow Private)
+   class=VI Server:Invoke id=6370003
+   objects created by ONE call: 1
+   of those, 0 were readable; 0 carry method-specific terminals
+```
+
+Note the run's own docstring premise (a ~67-node spray) did **not** reproduce — one object. Verdict was `STILL INCONCLUSIVE` (`:25-26`), so this does not refute the branch — but it does mean the code is written, the discipline is in place, and re-running it under the fixed `net_map`/`node_terms()` is minutes, not a build.
+
+Separately: `node_terms()` (`tools/gscript.py:816-824`) is the clean reader the plan correctly names — *"0 junk per call - the reason to prefer this over `net_map` for one node."* It has existed since 2026-09-14. That further undercuts §10b.3's "the reader was broken" story.
+
+## B2 · ALREADY-FAILED — twice, with identical output, both unsaved
+
+`tools/bench/build_opgeterrors.log:1-18` — 2026-09-09 12:45 (`rc=5`, 152 s) and 2026-09-14 01:34 (`rc=5`, 151 s), both ending `assembled: ExecState 0 outputs ['reference out', 'error out 2']` / `STOP: not saved`. The new plan addresses **one** named cause (the creator's swallowed error — legitimately, per §10b.1). Pillars 2, 3 and 4 do not survive A3 above.
+
+## B4 · ALREADY-MEASURED — §10b.2's acceptance test has already been run twice and returned "refused"
+
+§10b.2 proposes: *"after creating the 452 Invoke, enumerate the node's terminals and print their NAMES; `Errors`/`Details` present = attached, `reference out`/`error out` only = refused."* That is what `tools/bench/build_opgeterrors.log:5-7,14-16` already records, over terminal indices 0–7, twice: only `reference out` and `error out 2`.
+
+The expected names are externally confirmed, so the census had a correct target: LabVIEW Wiki gives VI class `Get Errors`, **method ID 452, scope Private**, parameters **`Errors` (String Array, required)**, **`Details` (String Array, required)**, `Call Dangerously?` (Boolean, optional).
+
+---
+
+# One external fact that changes §10c.2's dead end
+
+§10c.2's terminal branch: *"the recorded fallback is `Create from Reference` from a donor — **not attempted this session; it needs a donor VI that contains the node, and none is known to exist in this project.**"*
+
+Contradicted in our own files — `docs/toolkit-capabilities.md:187-189` calls it *"a **real route, not a GUI one**"* — and contradicted externally. The NI thread on this exact method offers a **code snippet**: *"You can just drag the snippet onto a block diagram"*, as an alternative to the INI tokens. A LabVIEW snippet is a PNG carrying the diagram code, so **the donor is manufacturable, not merely findable**. And NI's own Idea Exchange entry confirms there is no public accessor at all, which raises the donor branch's value rather than lowering it. This is the "absence in what you happen to be looking at is not evidence of absence" error `CLAUDE.md` warns about.
+
+# What this evidence does NOT settle
+
+- **Whether 452 can attach through the ordinary setter is still unknown.** Both prior runs used a creator that swallows its own error (`tools/gscript.py:2102-2103`), so "silently refused" versus "1077" is genuinely undetermined. §10b.1 is right about this, and `OpBuildInvoke_v1` is the correct instrument to find out.
+- **Whether `net_map`'s purge fix would have changed the 2026-09-14 result cannot be told from these logs** — and it does not matter, because that run never called `net_map` (A3-ii).
+- **Nothing here says the reader is worthless.** The cycle-9 retrospective (`:95-101`) argues it is the primary missing tool. The dispute is about *ordering and authority*, not value — and `docs/cycle10-plan.md:28-29` shows who settles that.
+
+---
+
+```
+PRIOR-ART: settled-already
+PRIOR-ART: refuted-already
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: helper-exists
+PRIOR-ART: already-failed
+PRIOR-ART: already-measured
+```
+
+**Sources:**
+- [LabVIEW Wiki — VI class / Get Errors method](https://labviewwiki.org/wiki/VI_class/Get_Errors_method)
+- [NI Community — how to programmatically check the error messages of a broken vi using labview scripting](https://forums.ni.com/t5/LabVIEW/how-to-programmatically-check-the-error-messages-of-a-broken-vi/td-p/3336258)
+- [NI Community — Error list in VI scripting](https://forums.ni.com/t5/LabVIEW/Error-list-in-VI-scripting/td-p/2263216)
+- [NI Idea Exchange — Programmatically access "Error List"](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Programmatically-access-Error-List/idi-p/2015364)
+=== DUAL DONE: codex rc=0, opus rc=0  (archive\peer\2026-09-17-priorart-opgeterrors-codex.md, -priorart-opgeterrors-opus.md) ===
+BGRUN END rc=0 after 669s

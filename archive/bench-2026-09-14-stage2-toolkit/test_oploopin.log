@@ -1,0 +1,23 @@
+BGRUN START 2026-09-14 22:12:56 limit 10.0 min: py -u tools/bench/test_oploopin.py
+outer body diagram 1 (uid 334); inner IMAQ Copy uid 240 SubVI index 0; ExecState 1
+T1: new ForLoop 380; new diagrams [(2, 418, 'ForLoop')]; new tunnels [(0, 432, 'ForLoop')]; ExecState 0
+   PASS T1 one new ForLoop, one new diagram owned by ForLoop 
+   PASS T1 new loop is a node of the OUTER body 
+   tunnel 0: outer 'Image Dst Out' wire 443 src=False inner ['Image Dst Out'] [0] mode 0
+   PASS T1 one new tunnel, outer wire == IMAQ Copy 'Image Dst Out' [443] vs 443
+T2: new WhileLoop 383; new diagrams [(2, 439, 'WhileLoop')]; inside outer body True
+   PASS T2 nested While loop inside the outer body 
+T3: ReadFile 'File Path' wire 497; new tunnels [(1, 503, 'ForLoop'), (4, 520, 'ForLoop')]
+   tunnel 1: outer 'File Path' 514 -> inner [497]
+   tunnel 4: outer 'File Path' 530 -> inner [514]
+   PASS T3 control wired through two borders: 2 new tunnels, inner terminal wired 2 tunnels, wire 497
+   PASS T4 no junk Invoke []
+
+SUMMARY 6/6 PASS
+   PASS T1 one new ForLoop, one new diagram owned by ForLoop
+   PASS T1 new loop is a node of the OUTER body
+   PASS T1 one new tunnel, outer wire == IMAQ Copy 'Image Dst Out'
+   PASS T2 nested While loop inside the outer body
+   PASS T3 control wired through two borders: 2 new tunnels, inner terminal wired
+   PASS T4 no junk Invoke
+BGRUN END rc=0 after 2s

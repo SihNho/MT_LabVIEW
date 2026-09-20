@@ -1,0 +1,94 @@
+BGRUN START 2026-09-14 10:03:51 limit 7.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent codex -Slug castfree-ladders-execstate0 -Task ATTACK this (LabVIEW 2026 VI Scripting, ActiveX-driven ops; you reviewed the plan as autonomous-loop-plan and the builder fix as opbuildpn-v1-plan). NOW MEASURED with the fixed builder that raises on the creator's error: on scratch copy A (donor chain: Open VI Ref -> VI.Block Diagram -> AbstractDiagram.Nodes[] node -> ..., ExecState 1) I create an AbstractDiagram-class Property node with SubVIs[] 6375802 - creator error clean, Outputs 1, its output terminal is literally named 'SubVIs[]' (confirmed by a successful wire to an Index Array). Then I wire the donor's Nodes[]-node 'reference out' (a Diagram-typed dup reference, unwired before) into the new node's 'reference' - wire count +1, no error - and ExecState reads 0. Same pattern on scratch B: Control-class node with Control.Terminal 6332006 (output 'Terminal', confirmed), fed from the donor's Control.Label-node 'reference out' (Control-typed dup): ExecState 0 after the wire. I did NOT read ExecState between creation and wiring. QUESTIONS: (a) a freshly created Property node with its required 'reference' UNWIRED makes the VI broken - after the reference is wired, what else on a brand-new scripted Property node can keep it broken? candidates: the property row created as WRITE vs READ mismatch, a property whose return type has no valid wire type when unconnected (e.g. an array of refnums output left unwired is fine, so not that), or the node needing 'error in' - which is not required; (b) is wiring a Diagram-typed dup reference into an AbstractDiagram-class node an UPCAST LabVIEW accepts on a property node's reference input, or does the property node's reference terminal require the EXACT class it was configured with (so the target must be cast to AbstractDiagram / to Control explicitly)? Same for Control-typed into a Control-class node - identical class, so if THAT is broken the cause is not typing; (c) could the erdosmiller creator, when given a location/diagram, place the node INSIDE a structure or on a different diagram than the reference source so the wire crosses a boundary illegally? (owner reported 'TopLevelDiagram' for such nodes earlier); (d) give the cheapest discriminating sequence readable without an error list: I propose ExecState after creation (expect 0: unwired required input), after wiring (measured 0), after Remove Bad Wires (if 1 and wire count -1 -> illegal wire; if 0 -> node itself), after deleting the new node (if 1 -> the node was the only fault). Anything missing? Cite labviewwiki/NI.
+OUTCOME: ANSWERED (111s)  archived: archive\peer\2026-09-14-castfree-ladders-execstate0.md
+--- ANSWER ---
+Your measurements substantially rule out class typing. The strongest remaining suspect is a bad/dangling wire or some other pre-existing/new-node structural defect?�not a need to cast `Diagram ??AbstractDiagram`.
+
+### (a) What can keep the new Property Node broken?
+
+For these two properties, very little:
+
+- `AbstractDiagram.SubVIs[]` is read-only, and `Control.Terminal` is a read property. A node successfully exposing an output named `SubVIs[]` or `Terminal` is strong evidence that the row was configured for **read**, not write. LabVIEW read rows have outputs; write rows have value inputs. A write row with its value input unwired would indeed break the VI, but that does not fit your observed terminal direction. [NI Property Node direction documentation](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000kF58SAE&l=en-US), [LabVIEW Wiki: `AbstractDiagram.SubVIs[]` is read-only](https://labviewwiki.org/wiki/AbstractDiagram_class)
+- An unwired read-property output is legal. LabVIEW requires only terminals identified as required; outputs do not have to be consumed. [NI wiring documentation](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+- `error in` is optional; it is not the missing requirement.
+- The explicit `reference` input is the required input in this configuration. Therefore creation alone should make the VI broken until a valid reference wire attaches.
+- Other plausible causes after wiring are:
+  - The new wire exists as a Wire object but is broken, loose, or not actually connected at both endpoints.
+  - A stale/dangling wire fragment was left during the connection.
+  - The property row is malformed despite the creator returning clean?�less likely given the correct output name, but deletion testing remains necessary.
+  - The source and destination are on different owning diagrams.
+  - Another creator artifact was added besides the intended Property Node.
+
+Your ?�array of refnums left unwired??hypothesis is correctly rejected: `SubVIs[]` being an unused output is not itself a compile error.
+
+### (b) Is `Diagram ??AbstractDiagram` accepted?
+
+Yes. That is an implicit **upcast/widening conversion**, and an exact-class match is not required.
+
+The published VI Server hierarchy is:
+
+```text
+GObject
+?��? AbstractDiagram
+   ?��? Diagram
+   ?? ?��? TopLevelDiagram
+   ?��? MathDiagram
+```
+
+Thus a `Diagram` reference is already an `AbstractDiagram` reference. Wiring the child-class reference into a terminal typed as its ancestor does not require `To More Generic Class`. [LabVIEW Wiki class hierarchy](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy), [AbstractDiagram class page](https://labviewwiki.org/wiki/AbstractDiagram_class)
+
+NI describes VI Server classes as an inheritance hierarchy where lower-level classes inherit the properties and methods of their parent classes. Explicit `To More Specific Class` is needed in the opposite direction?�for example, when a generic `Control` reference must access `Numeric`-specific properties. [NI: What Is the VI Server?](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019MTCSA2&l=en-US), [NI control-casting example](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YHhtCAG&l=en-US)
+
+Therefore:
+
+- `Diagram ??AbstractDiagram` should be legal.
+- `Control ??Control` is exact and unquestionably should be legal.
+- Since the Control case also remains broken, adding explicit casts to either ladder is poorly supported by the evidence. Do not build casts yet.
+
+One caveat: confirm the source really is the donor Property Node?�s **dup reference** terminal, not an adjacent `error out` terminal. Property Nodes pack those outputs closely, and wire count alone does not prove endpoint identity.
+
+### (c) Could the creator put it inside a structure accidentally?
+
+Not merely because its coordinates overlap a structure.
+
+A diagram object?�s containment is determined by its **owner/diagram reference**, not by its screen location. Objects inside structures belong to the structure/subdiagram; LabVIEW exposes `Owner` specifically as the reference to the owning object. [LabVIEW Wiki: `Owner` property](https://labviewwiki.org/wiki/Generic_class/Owner_property)
+
+The erdosmiller library is explicitly a diagram-generation library, and its creation calls operate on the supplied diagram. [erdosmiller/lv-scripting](https://github.com/erdosmiller/lv-scripting) NI?�s own nested-diagram scripting example separately demonstrates dropping an object inside a While Loop, consistent with needing the nested diagram as the creation target rather than merely choosing coordinates inside the loop?�s bounds. [NI VI Scripting overview and examples](https://forums.ni.com/t5/LabVIEW-APIs-Documents/LabVIEW-Scripting/ta-p/3535340)
+
+So if the new node?�s actual owner reports `TopLevelDiagram`, it is not inside a Case/Loop subdiagram, even if drawn over one. But compare the **owners of both endpoint terminals/nodes**, not only the new node?�s reported class.
+
+### (d) Cheapest discriminating sequence
+
+Your sequence contains one important logical error:
+
+> After Remove Bad Wires, `ExecState == 1` and wire count ?? means illegal wire.
+
+Usually that cannot happen here. If Remove Bad Wires deletes the Property Node?�s illegal reference wire, the node again has its required `reference` input unwired, so the VI should remain broken. NI says Remove Broken Wires deletes broken wires; it does not repair the now-unwired required terminal. [NI broken-wire documentation](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+Use this sequence instead:
+
+1. **Baseline:** `ExecState == 1`; record node and wire counts.
+2. **Create Property Node:** record `ExecState`, exact terminal names/directions, node count, and creator Outputs.
+   - Expected: `ExecState == 0` because `reference` is unwired.
+3. **Record ownership before wiring:** source-node owner, destination-node owner, and preferably source/destination terminal owners.
+   - They must resolve to the same diagram.
+4. **Wire:** record wire count and `ExecState`.
+5. **Verify the actual new wire endpoints**, if any readable endpoint property exists:
+   - source terminal name/UID;
+   - sink terminal name/UID;
+   - both endpoints connected;
+   - wire owner.
+   A `+1` wire count alone is insufficient.
+6. **Remove Bad Wires:** record wire count and whether the specific new wire survives.
+   - Wire disappears: the connection was broken/loose/illegal, but `ExecState` will probably remain `0` because `reference` is again unwired.
+   - Wire survives: it is probably structurally valid; the fault is elsewhere in the new node or another creator artifact.
+7. **Delete the new Property Node and its residual wires/artifacts:**  
+   - `ExecState == 1`: everything added in this transaction contained the only fault.
+   - Still `0`: the operation damaged or added something beyond that node/wire, or the baseline changed.
+8. **Best discriminator:** repeat on a pristine scratch copy with the known-exact `Control ??Control` case first. If that remains broken while the wire survives Remove Bad Wires, inspect row direction and creator artifacts?�not casts.
+
+The decisive result would be:
+
+- `Control ??Control`, same owner, correct terminal endpoints, wire survives Remove Bad Wires, but VI remains broken until the node is deleted.
+
+That would directly indict the created Property Node configuration or an accompanying creator artifact. It would simultaneously refute the upcast and diagram-boundary explanations.
+BGRUN END rc=0 after 111s

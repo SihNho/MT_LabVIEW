@@ -1,0 +1,32 @@
+BGRUN START 2026-09-13 19:46:38 limit 10.0 min: py -u -c 
+import os,sys,hashlib
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+P=os.path.join(g.CLAUDEDEV,'OpFPLabels_v0.vi')
+print('file exists:',os.path.exists(P),' size',os.path.getsize(P),flush=True)
+print('md5:',hashlib.md5(open(P,'rb').read()).hexdigest(),flush=True)
+print('(expected 5f2da97f2d016abf9ad211706d4ab3f6)',flush=True)
+try: print('ExecState:',g.exec_state(P),flush=True)
+except Exception as e: print('exec_state failed:',str(e)[:90],flush=True)
+# can we even get a reference to it?
+try:
+    vi=g.lv().GetVIReference(P,'',False,0); print('GetVIReference OK',flush=True)
+    try:
+        vi.OpenFrontPanel(); print('OpenFrontPanel OK',flush=True)
+    except Exception as e: print('OpenFrontPanel failed:',str(e)[:100],flush=True)
+except Exception as e:
+    print('GetVIReference FAILED:',str(e)[:110],flush=True)
+# and can another op still run?
+try:
+    print('count via OpReport_v3:',g.count(os.path.join(g.CLAUDEDEV,'OpWire_v1.vi'),'Node'),flush=True)
+except Exception as e: print('count failed:',str(e)[:90],flush=True)
+
+file exists: True  size 9485
+md5: 5f2da97f2d016abf9ad211706d4ab3f6
+(expected 5f2da97f2d016abf9ad211706d4ab3f6)
+ExecState: 1
+GetVIReference OK
+OpenFrontPanel failed: 'NoneType' object is not callable
+count via OpReport_v3: 11
+BGRUN END rc=0 after 14s

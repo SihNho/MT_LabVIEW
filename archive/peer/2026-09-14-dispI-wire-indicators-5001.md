@@ -1,0 +1,30 @@
+﻿---
+type: peer-review
+status: historical
+date: 2026-09-14
+tags: [peer-review]
+---
+
+# dispI-wire-indicators-5001
+
+- **agent:** codex
+- **date:** 2026-09-14
+- **outcome:** ANSWERED (10s)
+- **why asked:** failed prediction: Wire Indicators.vi raised 5001 for the Image Display target.
+- **verdict:** probe (a) run: 'File Type out' -> 'Image' also 5001 -> H1 confirmed (the library's indicator lookup does not see a Vision Image Display); resolved by OpConnectCtl_v0 (Terminal.Connect Wire).
+
+## Question
+
+FAILED PREDICTION check, brief. tools/bench/build_harness_dispI.log (recipe tools/recipes/build_harness_dispI.py): gscript.wire_indicators(target, SubVI index of IMAQ ReadFile, ['Image Out'], ['Image'], 0, node_class='SubVI') raised 'error 5001: LV-Scripting.lvlib:Wire Indicators.vi' - erdosmiller's Wire Indicators.vi (branches a node's OUTPUT terminals, found by name via Get Outputs, onto existing front-panel INDICATORS found by label via Get Controls/Indicators). The node's outputs per node_terms include exactly 'Image Out'; the panel has exactly one object, the IMAQ Image Display indicator labelled 'Image' (fp_labels). Error 5001 in this library = a name was not found. HYPOTHESES: (H1) Get Indicators by label does not return an IMAQ Image Display control (it is a Vision-installed control type, maybe not enumerated as a plain Indicator by the library's Panel.Controls[] filter, or its label text differs from its caption 'Image'); (H2) 'Image Out' is not the name Get Outputs uses for that terminal on IMAQ ReadFile (a polymorphic/typedef output?); (H3) the Image Display terminal already carries something (it was wired in the donor to IMAQdx Snap's output - the node was deleted and Remove Bad Wires ran; a leftover wire stub?). DISCRIMINATORS I can run by script: (a) wire_indicators with a different output name on the same node ('File Type out' -> 'Image' should then fail on TYPE, not 5001 - error text differs) - separates H1 from H2; (b) gscript.wire(src SubVI 'Image Out' -> dst class 'ControlTerminal' index 0, terminal name = ?) - what terminal NAME does a front-panel indicator's diagram terminal carry for Wire Inputs.vi (its label? 'Image'?); (c) node_terms on the ControlTerminal? (not a Node). Which is most likely and what is the cheapest decisive probe? One paragraph.
+
+## Answer
+
+H1 is most likely: LabVIEW distinguishes an object?셲 **label** from its caption, and scripting enumeration/filtering can treat specialized Vision controls differently; H3 is least likely because deleting the source and removing broken wires should not cause a *name-not-found* lookup error. The cheapest decisive probe is **(a)**: request `File Type out -> Image`; if it still returns 5001, the unresolved name is almost certainly the panel indicator (`Image`), supporting H1; if it reaches a datatype/wiring error, `Image` was found and H2 is implicated. Probe (b) is more invasive and confounded by `ControlTerminal` terminal-name conventions; (c) is unlikely to help because a control terminal is not the SubVI-style node interface queried by `node_terms`. NI confirms that labels identify objects programmatically while captions are separate display text: [NI ??Difference Between Label and Caption](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000P8mVSAS).
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+See the **verdict** line at the top of this file (filled 2026-09-14 14:2x; the day's outcomes are in STATUS.md and docs/).

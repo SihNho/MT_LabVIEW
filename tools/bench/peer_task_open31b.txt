@@ -1,0 +1,65 @@
+ATTACK the two claims below. They are the explanations I formed for the two remaining failures in
+`tools/bench/selftest_stamp_window.log` (tests T2 and T5 in `tools/bench/selftest_stamp_window.py`). This is the
+SECOND round on this self-test; your predecessor's answer is
+`archive/peer/2026-09-17-open31-window-codex.md` and its findings are already applied and annotated there. Read
+the files; do not take my summary on trust.
+
+=== FAILURE 1: T2 "stamp-monotone" - 3 regressions out of 339 archives ===
+
+`tools/hooks/guard_cycle.stamp()` dates an archived peer review. It used to be `min(ctime, mtime)`. It now
+prefers the archive's own `- **date:** YYYY-MM-DD HH:MM:SS` frontmatter line (peer.ps1 has written a time there
+since today), falls back to `max(min(ctime, mtime), midnight-of-the-date)` for date-only archives, and to
+`min(ctime, mtime)` otherwise.
+
+T2 PREDICTED: `new_stamp >= old_stamp` for every file in `archive/peer/` (0 regressions).
+T2 OBSERVED: 3 regressions. Measured individually afterwards:
+    2026-09-17-open31-window-codex.md          old 16:59:22  new 16:49:45   delta -577.7 s
+    2026-09-17-priorart-opgeterrors-codex.md   old 16:48:28  new 16:48:28   delta  -0.9 s
+    2026-09-17-priorart-opgeterrors-opus.md    old 16:56:00  new 16:56:00   delta  -0.8 s
+
+MY EXPLANATION, WHICH YOU MUST ATTACK:
+(F1) Two of the three are sub-second float rounding between the frontmatter's whole-second time and the file's
+     fractional mtime, and are not regressions at all.
+(F2) The third is the fix WORKING. I annotated that archive ("What was done with it") at 16:59, which pushed its
+     mtime 578 s past the moment the review was actually written (16:49). `stamp()`'s stated purpose, in its own
+     docstring and in `tools/violations.py:108-120`, is that annotating a review must NOT make it look newer -
+     every review owes a disposition, so an mtime-based stamp would re-block the build of the session that wrote
+     the disposition. So a DOWNWARD correction toward the frontmatter time is the intended behaviour, and my
+     `new >= old` invariant was simply the wrong assertion.
+(F3) The invariants that ARE true, which I have replaced it with: (a) a stamp is never later than the file's own
+     mtime; (b) where the frontmatter carries a time, the stamp equals it exactly; (c) the counts of lifted and
+     lowered files are reported as an observation, not gated.
+
+=== FAILURE 2: T5 for `retrospective-cycle16b` - still MISSES after the fix ===
+
+T5's gate: a retrospective must at least see THE NEWEST BUILD LOG THAT EXISTED WHEN IT WAS DISPATCHED.
+For `2026-09-17-retrospective-cycle16b.md`: dispatch 08:11:43, newest build log at that moment
+`build_opstopfromnode_v0.log` @ 08:04:50. Windows:
+    OLD code : 13:37:04 .. 08:07:42   MISSES (inverted, and the archive itself recorded 08:06:44 .. 08:07:42)
+    NEW code : 08:10:33 .. 08:11:43   MISSES (start = the previous retrospective, cycle16, archived 08:10:33)
+The other two cases now pass (`retrospective-cycle15-d1-build3` and `retrospective-cycle15-routeb`).
+
+MY EXPLANATION, WHICH YOU MUST ATTACK:
+(F4) 08:04:50 is orphaned by the gap your predecessor named as E4-2: cycle 15's review ended its window at its
+     own pre-audit `now` (08:04:04) while cycle 16's review started at cycle15's archive COMPLETION mtime
+     (08:06:44). Work in 08:04:04 .. 08:06:44 belongs to no window, and no choice of `end` in `cycle_window()`
+     can reach back past `start`.
+(F5) Therefore this case cannot be closed by the change under test, and closing it needs a RECORDED closure
+     timestamp per review rather than one derived from file times - which is a design change a material session
+     may not make. The self-test now reports it as `KNOWN-GAP(E4-2)` with the numbers instead of as a failure of
+     the fix.
+
+=== YOUR JOB ===
+1. The strongest reason F1/F2/F3 are wrong. In particular: is there ANY case in this project where a stamp being
+   pulled BACKWARD by frontmatter would open a gate that should stay shut? Check every caller of
+   `guard_cycle.stamp()` (`guard_cycle.py` newest_retrospective / the prior-art block / line ~407,
+   `tools/retrospective.py` newest_retro_before) and say which direction of error is dangerous for each.
+2. Is (b) - "the stamp equals the frontmatter time exactly" - a hole? peer.ps1 writes that line itself
+   (`tools/peer.ps1`, the `$dateStamp` variable and the archive heredoc). What stops a peer's ANSWER TEXT, or a
+   later hand edit, from containing a line that the regex `^\-\s*\*\*date:\*\*` matches earlier in the file?
+   Where exactly does `guard_cycle._fm_date` read from, and how much of the file?
+3. An ALTERNATIVE explanation of the T5 cycle16b miss that does NOT involve E4-2.
+4. What would falsify F4, concretely.
+5. Is `KNOWN-GAP` a legitimate test outcome here, or is it the "regrading a gate that blocks you" antipattern
+   that `tools/violations.py:90-93` warns about in its own comments? Argue the case against me.
+Answer with file:line citations from this project wherever you assert something about its code.

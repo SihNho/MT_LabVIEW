@@ -1,0 +1,144 @@
+BGRUN START 2026-09-18 11:43:04 limit 25.0 min: py -u tools/bench/diag_fstunnel_wirebroken.py MATERIAL=1
+PREDICTION CONTRACT P1..P10 - see this file's docstring.
+   LabVIEW pid before anything: 6972
+   scratch A C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_fswbA_114304_20656.vi
+   scratch B C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_fswbB_114304_20656.vi
+-- md5 before: 98 files (95 originals) --
+   c39f36e0675339673b707c59f0784fee  Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi
+  NOTE P9 guard_cycle.newest_retrospective(): {'file': 'archive/peer/2026-09-18-retrospective-cycle19.md', 'stamp': '2026-09-18 03:42:17'}
+  NOTE P9 guard_cycle.newest_build_log(): {'file': 'tools/bench/diag_fstunnel_wirebroken.log', 'stamp': '2026-09-18 11:43:05'}
+  NOTE P9 retrospective NEWER than the newest build log: False
+   fresh(): killing LabVIEW pid 6972
+   COM preflight attempt 1/15: pid None->4228, wires 16->16
+   COM preflight OK (pid 4228, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 4228
+  HANDLES after a fresh LabVIEW, before any work: 30353  (fresh baseline ~31,500)
+
+================ REPRODUCE build_one('OUT') -> SCRATCH_fswbB_114304_20656.vi ================
+
+================ B  BUILD SCRATCH_fswbB_114304_20656.vi from OpWireSource_v5  [OUT FlatSequenceOuterTunnel] ================
+   copy of the donor: ExecState 1, 19 nodes on diagram 0
+   Terms[] PN 145 (wire 578) | Index Array 151 (element wire 639) | front TMSC 1044 (target-class wire 533) | back-half reference sinks [157, 1319, 1326]
+  PASS B1 [OUT FlatSequenceOuterTunnel] the donor copy is legal and the sweep found the front section and >=1 back-half sink  | ExecState 1; terms 145 ia 151 tmsc 1044 consumers [157, 1319, 1326]
+   deleted Node #145 -> gone [145]
+   deleted Node #151 -> gone [151]
+   deleted Wire #578
+   deleted Wire #639
+   deleted Wire #533
+   after the deletes: back-half sinks {157: 0, 1319: 0, 1326: 0}; TMSC target class wire 0
+  PASS B2 [OUT FlatSequenceOuterTunnel] every sink to be re-fed is BARE and the cast's target class is unwired  | {157: 0, 1319: 0, 1326: 0}; target class 0
+   PN_A uid 145 (Nodes[17], OuterTerminal); new control(s) from its `reference`: ['reference 4']
+  PASS B3 [OUT FlatSequenceOuterTunnel] create_control on the OuterTerminal node's `reference` made exactly one new CONTROL  | ['reference 4']
+   deleted the seed->PN_A wire #1651 (the seed's job is to type the CAST)
+   seed 'reference 4' -> TMSC `target class` wire 1457
+   WIRE [OUT FlatSequenceOuterTunnel] TMSC->PN_A Function#1044.'specific class reference' -> Property#145.'reference': src wire BEFORE = 384 -> branch=True; ExecState BEFORE = 0
+        AFTER: src wire 384, dst wire 384; ExecState AFTER = 0
+   TMSC -> PN_A wired; ExecState 0 (0 is expected here - the back half is still bare)
+   WIRE [OUT FlatSequenceOuterTunnel] TMSC->PN_B Function#1044.'specific class reference' -> Property#148.'reference': src wire BEFORE = 384 -> branch=True; ExecState BEFORE = 0
+        AFTER: src wire 384, dst wire 384; ExecState AFTER = 0
+   WIRE [OUT FlatSequenceOuterTunnel] OuterTerminal->UID Property#145.'OuterTerminal' -> Property#151.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+        AFTER: src wire 1694, dst wire 1694; ExecState AFTER = 0
+   WIRE [OUT FlatSequenceOuterTunnel] InnerTerminal->UID Property#148.'InnerTerminal' -> Property#154.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+        AFTER: src wire 1719, dst wire 1719; ExecState AFTER = 0
+   WIRE [OUT FlatSequenceOuterTunnel] InnerTerminal->ConnWire Property#148.'InnerTerminal' -> Property#168.'reference': src wire BEFORE = 1719 -> branch=True; ExecState BEFORE = 0
+        AFTER: src wire 1719, dst wire 1719; ExecState AFTER = 0
+   WIRE [OUT FlatSequenceOuterTunnel] ConnWire->UID Property#168.'Wire' -> Property#169.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+        AFTER: src wire 1766, dst wire 1766; ExecState AFTER = 0
+   back-half sink #157 (Property) re-fed from OuterTerminal (1/3)
+   back-half sink #1319 (Property) re-fed from OuterTerminal (2/3)
+   back-half sink #1326 (Property) re-fed from OuterTerminal (3/3)
+   OuterTerminal wire 1694; back half now {157: 1694, 1319: 1694, 1326: 1694}; ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  PASS B4b [OUT FlatSequenceOuterTunnel] every back-half sink reads the OuterTerminal wire  | 1694 vs {157: 1694, 1319: 1694, 1326: 1694}
+**FAIL B4 [OUT FlatSequenceOuterTunnel] the whole typed chain is LEGAL - the FlatSequenceOuterTunnel property nodes accept the cast output, so the seed really typed the cast  | ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  NOTE scratch B stop reason: FROZEN AT B4: B4 [OUT FlatSequenceOuterTunnel] the whole typed chain is LEGAL - the FlatSequenceOuterTunnel property nodes accept the cast output, so the seed really typed the cast | ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+   RBW on scratch B: ExecState 0 -> 1; 43 -> 41 wires; REMOVED [894, 1356]; added []; err ''
+  PASS P6 Remove Bad Wires ran on the B4 scratch and its removed-wire SET was recorded  | removed [894, 1356]
+
+================ REPRODUCE build_one('OUT') -> SCRATCH_fswbA_114304_20656.vi ================
+
+================ B  BUILD SCRATCH_fswbA_114304_20656.vi from OpWireSource_v5  [OUT FlatSequenceOuterTunnel] ================
+   copy of the donor: ExecState 1, 19 nodes on diagram 0
+   Terms[] PN 145 (wire 578) | Index Array 151 (element wire 639) | front TMSC 1044 (target-class wire 533) | back-half reference sinks [157, 1319, 1326]
+  PASS B1 [OUT FlatSequenceOuterTunnel] the donor copy is legal and the sweep found the front section and >=1 back-half sink  | ExecState 1; terms 145 ia 151 tmsc 1044 consumers [157, 1319, 1326]
+   deleted Node #145 -> gone [145]
+   deleted Node #151 -> gone [151]
+   deleted Wire #578
+   deleted Wire #639
+   deleted Wire #533
+   after the deletes: back-half sinks {157: 0, 1319: 0, 1326: 0}; TMSC target class wire 0
+  PASS B2 [OUT FlatSequenceOuterTunnel] every sink to be re-fed is BARE and the cast's target class is unwired  | {157: 0, 1319: 0, 1326: 0}; target class 0
+   PN_A uid 145 (Nodes[17], OuterTerminal); new control(s) from its `reference`: ['reference 4']
+  PASS B3 [OUT FlatSequenceOuterTunnel] create_control on the OuterTerminal node's `reference` made exactly one new CONTROL  | ['reference 4']
+   deleted the seed->PN_A wire #1651 (the seed's job is to type the CAST)
+   seed 'reference 4' -> TMSC `target class` wire 1457
+   WIRE [OUT FlatSequenceOuterTunnel] TMSC->PN_A Function#1044.'specific class reference' -> Property#145.'reference': src wire BEFORE = 384 -> branch=True; ExecState BEFORE = 0
+        AFTER: src wire 384, dst wire 384; ExecState AFTER = 0
+   TMSC -> PN_A wired; ExecState 0 (0 is expected here - the back half is still bare)
+   WIRE [OUT FlatSequenceOuterTunnel] TMSC->PN_B Function#1044.'specific class reference' -> Property#148.'reference': src wire BEFORE = 384 -> branch=True; ExecState BEFORE = 0
+        AFTER: src wire 384, dst wire 384; ExecState AFTER = 0
+   WIRE [OUT FlatSequenceOuterTunnel] OuterTerminal->UID Property#145.'OuterTerminal' -> Property#151.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+        AFTER: src wire 1694, dst wire 1694; ExecState AFTER = 0
+   WIRE [OUT FlatSequenceOuterTunnel] InnerTerminal->UID Property#148.'InnerTerminal' -> Property#154.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+        AFTER: src wire 1719, dst wire 1719; ExecState AFTER = 0
+   WIRE [OUT FlatSequenceOuterTunnel] InnerTerminal->ConnWire Property#148.'InnerTerminal' -> Property#168.'reference': src wire BEFORE = 1719 -> branch=True; ExecState BEFORE = 0
+        AFTER: src wire 1719, dst wire 1719; ExecState AFTER = 0
+   WIRE [OUT FlatSequenceOuterTunnel] ConnWire->UID Property#168.'Wire' -> Property#169.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+        AFTER: src wire 1766, dst wire 1766; ExecState AFTER = 0
+   back-half sink #157 (Property) re-fed from OuterTerminal (1/3)
+   back-half sink #1319 (Property) re-fed from OuterTerminal (2/3)
+   back-half sink #1326 (Property) re-fed from OuterTerminal (3/3)
+   OuterTerminal wire 1694; back half now {157: 1694, 1319: 1694, 1326: 1694}; ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  PASS B4b [OUT FlatSequenceOuterTunnel] every back-half sink reads the OuterTerminal wire  | 1694 vs {157: 1694, 1319: 1694, 1326: 1694}
+**FAIL B4 [OUT FlatSequenceOuterTunnel] the whole typed chain is LEGAL - the FlatSequenceOuterTunnel property nodes accept the cast output, so the seed really typed the cast  | ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  NOTE scratch A stop reason: FROZEN AT B4: B4 [OUT FlatSequenceOuterTunnel] the whole typed chain is LEGAL - the FlatSequenceOuterTunnel property nodes accept the cast output, so the seed really typed the cast | ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  PASS P2a the reproduction reached the B4 gate (so the frozen state IS the B4 point)  | FROZEN AT B4: B4 [OUT FlatSequenceOuterTunnel] the whole typed chain is LEGAL - the FlatSequenceOuterTunnel property nodes accept the cast output, so the seed really typed the cast | ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  PASS P1 the reproduction matches run 1 object for object (terms/ia/tmsc/consumers and all six wires)  | terms 145 ia 151 tmsc 1044 consumers [157, 1319, 1326] wires [384, 384, 1694, 1719, 1719, 1766] vs run1 [384, 384, 1694, 1719, 1719, 1766]
+  PASS P2 ExecState at the B4 point is 0, as run 1 measured (build_opfstunnelterm_v1_run1.log:75)  | ExecState 0
+  NOTE P4 Wire census at B4: 43 wires; #384 present = True
+  PASS P4 the residual stub wire #384 is present in the Wire census at the B4 point  | 43 wires
+  NOTE wire 384 sinks at B4: [(145, 'reference'), (148, 'reference')]
+  NOTE wire 1694 sinks at B4: [(151, 'reference')]
+  NOTE wire 1719 sinks at B4: [(154, 'reference'), (168, 'reference')]
+  NOTE wire 1766 sinks at B4: [(169, 'reference')]
+
+   --- wire 384 ---
+      READ w384 via sink #145.'reference' (Nodes[17] T[0], wire term 0): UID 2 = 384, Is Broken? = True, wire delta 0, ExecState 0, op err ''
+      OpWireSource_v5 (read-only) w384: [{'i': 0, 'is_source': True, 'owner_class': 'Function', 'owner_uid': 1044, 'recip': 384}, {'i': 1, 'is_source': False, 'owner_class': 'Property', 'owner_uid': 145, 'recip': 384}, {'i': 2, 'is_source': False, 'owner_class': 'Property', 'owner_uid': 148, 'recip': 384}, {'i': 3, 'is_source': False, 'owner_class': '', 'owner_uid': 0, 'recip': 0}]
+      terminals reporting Is Source? TRUE = 1  (>=2 = broken, docs/NAMES.md:900)
+
+   --- wire 1694 ---
+      READ w1694 via sink #151.'reference' (Nodes[19] T[0], wire term 0): UID 2 = 1694, Is Broken? = False, wire delta 0, ExecState 0, op err ''
+      OpWireSource_v5 (read-only) w1694: [{'i': 0, 'is_source': True, 'owner_class': 'Property', 'owner_uid': 145, 'recip': 1694}, {'i': 1, 'is_source': False, 'owner_class': 'Property', 'owner_uid': 151, 'recip': 1694}, {'i': 2, 'is_source': False, 'owner_class': 'Property', 'owner_uid': 157, 'recip': 1694}, {'i': 3, 'is_source': False, 'owner_class': 'Property', 'owner_uid': 1319, 'recip': 1694}, {'i': 4, 'is_source': False, 'owner_class': 'Property', 'owner_uid': 1326, 'recip': 1694}, {'i': 5, 'is_source': False, 'owner_class': '', 'owner_uid': 0, 'recip': 0}]
+      terminals reporting Is Source? TRUE = 1  (>=2 = broken, docs/NAMES.md:900)
+
+   --- wire 1719 ---
+      READ w1719 via sink #154.'reference' (Nodes[20] T[0], wire term 0): UID 2 = 1719, Is Broken? = False, wire delta 0, ExecState 0, op err ''
+      OpWireSource_v5 (read-only) w1719: [{'i': 0, 'is_source': True, 'owner_class': 'Property', 'owner_uid': 148, 'recip': 1719}, {'i': 1, 'is_source': False, 'owner_class': 'Property', 'owner_uid': 154, 'recip': 1719}, {'i': 2, 'is_source': False, 'owner_class': 'Property', 'owner_uid': 168, 'recip': 1719}, {'i': 3, 'is_source': False, 'owner_class': '', 'owner_uid': 0, 'recip': 0}]
+      terminals reporting Is Source? TRUE = 1  (>=2 = broken, docs/NAMES.md:900)
+
+   --- wire 1766 ---
+      READ w1766 via sink #169.'reference' (Nodes[22] T[0], wire term 0): UID 2 = 1766, Is Broken? = False, wire delta 0, ExecState 0, op err ''
+      OpWireSource_v5 (read-only) w1766: [{'i': 0, 'is_source': True, 'owner_class': 'Property', 'owner_uid': 168, 'recip': 1766}, {'i': 1, 'is_source': False, 'owner_class': 'Property', 'owner_uid': 169, 'recip': 1766}, {'i': 2, 'is_source': False, 'owner_class': '', 'owner_uid': 0, 'recip': 0}]
+      terminals reporting Is Source? TRUE = 1  (>=2 = broken, docs/NAMES.md:900)
+
+================ THE SEVEN ROWS ================
+   SITE _v1:476 (brief :431) #1044.specific class reference -> #145.reference wire 384: Is Broken? = True  (sources on that wire: 1)
+   SITE _v1:483 (brief :438) #1044.specific class reference -> #148.reference wire 384: Is Broken? = True  (sources on that wire: 1)
+   SITE _v1:486 (brief :441) #145.OuterTerminal -> #151.reference wire 1694: Is Broken? = False  (sources on that wire: 1)
+   SITE _v1:489 (brief :444) #148.InnerTerminal -> #154.reference wire 1719: Is Broken? = False  (sources on that wire: 1)
+   SITE _v1:494 (brief :449) #148.InnerTerminal -> #168.reference wire 1719: Is Broken? = False  (sources on that wire: 1)
+   SITE _v1:497 (brief :452) #168.Wire -> #169.reference wire 1766: Is Broken? = False  (sources on that wire: 1)
+   STUB WIRE #384: Is Broken? = True; sources 1; sinks at B4 [(145, 'reference'), (148, 'reference')]
+  PASS P3 every distinct wire at the six sites returned a boolean `Is Broken?` from the op's own 6371004 readout with UID 2 == the wire asked about  | read [384, 1694, 1719, 1766] of [384, 1694, 1719, 1766]
+  PASS P4b the stub wire #384 row was produced  | per_wire keys [384, 1694, 1719, 1766]
+  NOTE ExecState after all reads (perturbation check): 0
+  PASS P7 both scratch VIs were created and DELETED in this same run  | A gone True, B gone True
+  HANDLES after the run: 30830  (fresh baseline ~31,500)
+-- md5 after: 98 files (95 originals) --
+   c39f36e0675339673b707c59f0784fee  Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi
+  PASS P8 all 95 originals (+ the V6 copy and the two reader ops) are md5-identical before and after  | differing: []
+  PASS P10 no motor, no serial port, no camera, motor_gate.py --execute not called (static: this file makes no such call)  | read-only VI Server + two scratch VIs
+
+SUMMARY gates 10/10 pass; failing: []
+raw -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_fstunnel_wirebroken.json
+BGRUN END rc=0 after 118s

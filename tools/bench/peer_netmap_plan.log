@@ -1,0 +1,95 @@
+BGRUN START 2026-09-14 07:03:29 limit 7.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent codex -Slug netmap-sweep-plan -Task ATTACK this PLAN before I rely on its output. I have already launched it without review, which is the mistake I want caught. CONTEXT: LabVIEW 2026, a 473 KB main VI with 170 diagrams (76 CaseStructure, 57 FlatSequenceFrame, 17 ForLoop, 11 Sequence, 5 EventStructure, 3 WhileLoop, 1 top level). I must document, WITHOUT modifying anything: (1) which front-panel objects are actually wired vs legacy leftovers, (2) who writes and who reads the three fields of a VI Global (Trans position / Rot position / Focus position), (3) what value the main VI feeds into the 'Baseline Startpoint' input of the rotor driver's SetCommand.vi. THE PLAN: run our net_map op over all 170 diagrams once (~26 s each, ~74 min), cache the result as JSON, and answer every later question by searching that cache for TERMINAL NAMES - the premise being that a node's terminal names identify which subVI it is (a node carrying 'Baseline Startpoint', 'Pos_degree', 'Ring', 'Numeric' IS the Autonics SetCommand.vi call), so I never need the node LABEL, which our tooling cannot read per diagram. WHAT I KNOW: net_map returns {node index: (uid, label, [(terminal index, terminal name, wire id)])} plus a wire map; on 12 sampled main-VI diagrams it returned 66 nodes and ZERO labels; it DOES return terminal names, and I have already used terminal names successfully to identify nodes inside a small driver VI and inside our own scripted ops. ATTACK: (a) will a SUBVI CALL SITE actually expose its connector-pane terminal NAMES through this kind of traversal, or do subVI nodes on a caller's diagram expose only generic/positional terminals - is my success inside small VIs evidence about subVI CALLS at all? (b) a VI Global read/write appears on a diagram as a Global node - does it expose the FIELD name as a terminal name, or only 'Global'? how do I tell a READ from a WRITE? (c) is 74 minutes of repeated traversal on one VI likely to leak references or degrade the LabVIEW instance (we have had handle-count problems before)? (d) is there a fundamentally cheaper route to 'which front-panel control is wired to what' that I am ignoring - e.g. Control.Terminal, Terminal.Connected Wire (634A000), or walking Panel.Controls[] instead of diagrams? Cite NI docs or labviewwiki property/method names where possible.
+OUTCOME: ANSWERED (89s)  archived: archive\peer\2026-09-14-netmap-sweep-plan.md
+--- ANSWER ---
+The plan?�s central premise is unsafe. Stop treating terminal-name signatures as node identity. If the current run is already inside a traversal, let that call finish and stop cleanly; do not kill the COM client mid-call, because this project?�s own automation notes say that can leave the op reserved.
+
+### Verdict by question
+
+**(a) SubVI call terminals probably do expose connector-pane names?�but that does not identify the SubVI.**
+
+A caller-side SubVI node has actual connector-pane terminals, and LabVIEW?�s `Node.Connect Wires` accepts source/sink terminal names. `Terminal.Name` returns the terminal?�s non-translatable identifier. This supports your observation that names such as `Baseline Startpoint` can appear at a call site. [Node.Connect Wires](https://www.labviewwiki.org/wiki/Node_class/Connect_Wires_method), [Terminal.Name](https://labviewwiki.org/wiki/Terminal_class/Name_property)
+
+But the inference:
+
+> `{Baseline Startpoint, Pos_degree, Ring, Numeric}` ??Autonics `SetCommand.vi`
+
+is invalid unless you have independently proved that signature unique across every possible node in this VI. Connector labels are API conventions and can be duplicated by unrelated VIs. Your successful small-VI tests demonstrate that terminal lookup works; they do **not** establish unique SubVI identity.
+
+Use the node?�s class and the SubVI-specific identity properties:
+
+- `SubVI.VI Path` ??`635E403`
+- `SubVI.VI Name` ??`635E401`
+- `SubVI.VI Reference` ??`635E406`
+
+These exist specifically to identify the called VI. [SubVI class](https://labviewwiki.org/wiki/SubVI_class)
+
+For `Baseline Startpoint`, the cheap authoritative route is:
+
+1. Traverse for `SubVI` once across the VI.
+2. Filter on `VI Path` ending in the exact Autonics `SetCommand.vi` path?�not terminal signature.
+3. On that call node, get its terminals and select exact `Terminal.Name == "Baseline Startpoint"`.
+4. Read `Terminal.Connected Wire` (`634A000`).
+5. Follow that wire to its source terminal/node.
+6. Inspect the actual source?�constant, front-panel terminal, local/global, calculation, tunnel, etc.
+
+`Terminal.Connected Wire` is explicitly the scripting property that returns the attached wire reference. [Terminal.Connected Wire](https://labviewwiki.org/wiki/Terminal_class/Connected_Wire_property)
+
+**(b) Do not derive VI Global fields or direction from terminal names. The Global node has direct properties for both.**
+
+The `Global` scripting class exposes exactly what you need:
+
+- `VI Name` (`6354800`)
+- `Write?` (`6354801`) ??`TRUE` means write, `FALSE` means read
+- `Control Name` (`6354802`) ??the field/control inside the global VI
+- `Label` (`6354803`)
+
+Therefore, traverse for class `Global` once and report `(diagram, UID, VI Name, Control Name, Write?)`. That directly answers who reads/writes `Trans position`, `Rot position`, and `Focus position`. Whether the node?�s data terminal happens to say `Global`, the field name, or something else is irrelevant. [Global class](https://labviewwiki.org/wiki/Global_class)
+
+Your present cache design omits the two authoritative properties and substitutes a weaker observation. That is the most serious semantic defect in the plan.
+
+**(c) Seventy-four minutes is not automatically a leak, but it is an unnecessarily large exposure window.**
+
+VI Scripting returns references for diagrams, nodes, terminals, and wires. Your own project skill explicitly requires closing all of them and warns that unclosed references can leak severely. The existing `STATUS.md` handle audit found roughly flat behavior for smaller tested workloads, but that does not validate this new 170-diagram nested traversal.
+
+The relevant risk is not simply ??70 calls.??It is:
+
+> references created per diagram × references not deterministically closed × 170
+
+Before trusting a full run, the op would need a measured soak test showing:
+
+- process handle count before and after each batch;
+- private bytes or working set;
+- UI message latency;
+- all terminal, wire, node, diagram, and target-VI references closed on success and error paths;
+- no monotonic growth after the caller exits.
+
+LabVIEW scripting objects expose `Owner`, so nested ownership does not remove the need to manage the references your traversal returns. [Generic.Owner](https://labviewwiki.org/wiki/Generic_class/Owner_property)
+
+More importantly, `STATUS.md` already records that this project rejected broad per-diagram `net_map` as too expensive and adopted one class traversal followed by selective mapping. The proposed run repeats an already identified bad scaling pattern.
+
+**(d) Yes: there is a fundamentally cheaper front-panel-first route.**
+
+For each front-panel control/indicator:
+
+1. Walk the panel?�s controls, recursively descending container controls where necessary.
+2. Read `Control.Terminal` (`6332006`).
+3. From that terminal, read `Terminal.Connected Wire` (`634A000`).
+4. Record `Terminal.Is Source?` (`634A003`) and follow the wire endpoints only when you need ?�wired to what.??
+`Control.Terminal` is explicitly documented as the navigation path from a front-panel control to its block-diagram terminal. [Control.Terminal](https://labviewwiki.org/wiki/Control_class/Terminal_property) The terminal class supplies `Connected Wire`, `Is Source?`, `Name`, datatype, and owning diagram. [Terminal class](https://labviewwiki.org/wiki/Terminal_class)
+
+This is approximately proportional to the 114 panel objects, not 170 complete diagram graphs. Containers matter because an object?�s immediate owner can be a cluster rather than the panel; `Generic.Owner` documents that ownership hierarchy. [Generic.Owner](https://labviewwiki.org/wiki/Generic_class/Owner_property)
+
+One qualification: ?�terminal has a wire??proves **structural wiring**, not operational relevance. A wired terminal can feed code in a case that never executes, be overwritten later, or affect only display/debug logic. Label the result ?�wired/unwired,??not ?�used/legacy,??unless you separately establish reachability and execution semantics.
+
+### Recommended replacement plan
+
+Use three narrow inventories:
+
+- **Panel wiring:** panel controls ??`Control.Terminal` ??`Connected Wire`.
+- **VI Global access:** one `Global` traversal ??`VI Name`, `Control Name`, `Write?`.
+- **Rotor baseline:** one `SubVI` traversal ??filter exact `VI Path` ??trace only the `Baseline Startpoint` wire.
+
+Only invoke `net_map` on the few diagrams discovered by those inventories. Cache UIDs, class, exact SubVI path/global properties, terminal direction, datatype, wire endpoints, and owning-diagram identity. Treat terminal names as selectors **within an already identified node**, never as node identity.
+
+So the launch-before-review mistake is real: the run may still produce useful raw graph data, but the planned interpretation can confidently misidentify both SubVI calls and global accesses.
+BGRUN END rc=0 after 89s

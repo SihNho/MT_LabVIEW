@@ -1,0 +1,534 @@
+BGRUN START 2026-09-17 15:50:09 limit 45.0 min: py -u tools/recipes/build_d1_routeb_v0.py --restart
+  FACT  lv_restart rc=0
+
+=== S0: preconditions
+  PASS  S0a original md5 BEFORE  2a78e17c449cacdaf5da389818526859
+  PASS  S0b the eight writer/reader ops are on disk  missing []
+  PASS  S0c the three subVIs to drop fresh are on disk  missing []
+  PASS  S0d TRANSPORT 'queue' has a creator in the fleet today  gscript.queue_node -> OpQueueObtain/Enqueue/Dequeue/Release_v0, core 162/162
+  FACT  LabVIEW handles before: 30682 (fresh-instance baseline ~31,500)
+
+=== S3-ct: resolve the 6 ControlTerminal uids BY EFFECT, on a throwaway copy
+  PASS  S3-ct ctlterm_owners.json was recorded at THIS original's md5  2a78e17c449cacdaf5da389818526859
+  FACT  S3-ct 31 ControlTerminals are owned by Diagram #639 (docs/d1-build-plan.md:220 says 31)
+  PASS  S3-ct the probe copy got a destination loop  [{'i': 20, 'class': 'Diagram', 'uid': 1170, 'pos': (6197, 2734), 'owner': 'WhileLoop'}]
+  FACT  S3-ct 'Reset Tracking': control #5605 <- ControlTerminal #5634 (its panel row's wire changed when #5634 moved - probe_move_ctlterm_v0.py:327-351's route)
+  FACT  S3-ct 'Z/dZ': control #47 <- ControlTerminal #403 (its panel row's wire changed when #403 moved - probe_move_ctlterm_v0.py:327-351's route)
+  FACT  S3-ct 'Correction Factor': control #9289 <- ControlTerminal #9306 (its panel row's wire changed when #9306 moved - probe_move_ctlterm_v0.py:327-351's route)
+  FACT  S3-ct 'Auto-Reset': control #17472 <- ControlTerminal #17487 (its panel row's wire changed when #17487 moved - probe_move_ctlterm_v0.py:327-351's route)
+  FACT  S3-ct 'Force\nsmoothing\nhalf-width': control #28148 <- ControlTerminal #28170 (its panel row's wire changed when #28170 moved - probe_move_ctlterm_v0.py:327-351's route)
+  FACT  S3-ct 'Extension\nmedian filter\nhalf-width': control #28996 <- ControlTerminal #29091 (its panel row's wire changed when #29091 moved - probe_move_ctlterm_v0.py:327-351's route)
+  PASS  S3-ct all 6 labels resolved to a ControlTerminal uid  unresolved [] after 31 candidates
+  FACT  S3-ct probe copy deleted in the same run: SCRATCH_ctprobe_155009.vi
+
+=== S1: the D1 working copy
+  PASS  S1z the working copy on DISK is byte-identical to the original before LabVIEW sees it  2a78e17c449cacdaf5da389818526859 at C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_routeb_155009.vi
+  FACT  S1 BEFORE census: {'Diagram': 170, 'Node': 626, 'Wire': 1902, 'LoopTunnel': 132, 'ControlTerminal': 114, 'WhileLoop': 3, 'Local': 8, 'SubVI': 98, 'Function': 181}
+  PASS  S1 the copy matches the BEFORE census  {} (empty = all match)
+
+=== S1t: delete the FIXTURE TIFF writer before any other edit (��11h)
+  PASS  S1t Diagram #639 is Traverse index 43  index 43
+  PASS  S1t #22700 (IMAQ Write TIFF File 2) present before deletion  not among SubVI
+  PASS  S1t #23020 (Build Path) present before deletion  not among Function
+  PASS  S1t #22700 (IMAQ Write TIFF File 2) is GONE
+  PASS  S1t #23020 (Build Path) is GONE
+  PASS  S1t counts moved exactly as ��11h predicts (SubVI -1, Function -1, Node -2, Wire -3)  {'SubVI': 98, 'Function': 181, 'Node': 626, 'Wire': 1902} -> {'SubVI': 97, 'Function': 180, 'Node': 624, 'Wire': 1899}
+  PASS  S1t no STAYING node was left with a bare named input  newly bare []
+
+=== S1d: delete #5058 / #48 / #376 ? they are re-DROPPED fresh, not moved (route B ��2a)
+  PASS  S1d #5058 (GPU_kernel_v1.vi) is a node on diagram 43 and its terminals read  16 terminals
+  FACT  S1d #5058 GPU_kernel_v1.vi -> 1.2: 16 terminals, 13 wired (all enter the re-wire list)
+  PASS  S1d #48 (ASI_adjust focus-subvi.vi) is a node on diagram 43 and its terminals read  7 terminals
+  FACT  S1d #48 ASI_adjust focus-subvi.vi -> 1.5: 7 terminals, 7 wired (all enter the re-wire list)
+  PASS  S1d #376 (save trace.vi) is a node on diagram 43 and its terminals read  12 terminals
+  FACT  S1d #376 save trace.vi -> 1.7: 12 terminals, 12 wired (all enter the re-wire list)
+  PASS  S1d #5058 (GPU_kernel_v1.vi) found for deletion  not in report_all('SubVI')
+  PASS  S1d #48 (ASI_adjust focus-subvi.vi) found for deletion  not in report_all('SubVI')
+  PASS  S1d #376 (save trace.vi) found for deletion  not in report_all('SubVI')
+  PASS  S1d all three uids are gone and SubVI 97 -> 94  SubVI 97 -> 94; still present []
+  FACT  S1d 26 bare named sinks on diagram 43 after the three deletes (��2a: #6384's error chain via w541 and #12589 t1 via w9113 are among them)
+  FACT  S1d re-wire rows captured from the deleted nodes: 32
+
+=== S2: three fresh While loops on Diagram #686
+  FACT  Diagram#686 (holder of WhileLoop#637) is Traverse index 19
+  PASS  S2 loop 1.2 created  +1 diagrams, +1 while loops
+  FACT  1.2: WhileLoop #48, body Diagram #567
+  PASS  S2 loop 1.5 created  +1 diagrams, +1 while loops
+  FACT  1.5: WhileLoop #338, body Diagram #2063
+  PASS  S2 loop 1.7 created  +1 diagrams, +1 while loops
+  FACT  1.7: WhileLoop #376, body Diagram #4972
+  PASS  S2 WhileLoop 3 -> 6 and Diagram 170 -> 173  WhileLoop 6, Diagram 173
+  PASS  S2b #637 still exists
+  OBSERVED uid 6810 -> owner 'Diagram' uid 639 | self 'SubVI'#6810 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #6810 still owned by the frame loop body  owner 639
+  OBSERVED uid 22082 -> owner 'Diagram' uid 639 | self 'CaseStructure'#22082 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #22082 still owned by the frame loop body  owner 639
+  OBSERVED uid 12589 -> owner 'Diagram' uid 639 | self 'CaseStructure'#12589 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #12589 still owned by the frame loop body  owner 639
+  OBSERVED uid 11639 -> owner 'Diagram' uid 639 | self 'CompoundArithmetic'#11639 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #11639 still owned by the frame loop body  owner 639
+  OBSERVED uid 642 -> owner 'Diagram' uid 639 | self 'ControlTerminal'#642 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #642 still owned by the frame loop body  owner 639
+
+=== S2d: drop the three subVIs FRESH, each inside its own loop body
+  PASS  S2d GPU_kernel_v1.vi dropped into 1.2  new subVIs [{'i': 16, 'class': 'SubVI', 'uid': 483, 'pos': (5493, 3118), 'owner': 'Diagram'}]
+  OBSERVED uid 483 -> owner 'Diagram' uid 567 | self 'SubVI'#483 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S2d GPU_kernel_v1.vi owner chain: uid -> body Diagram -> WhileLoop  #483 -> Diagram#567 (want 567) -> WhileLoop#48 (want 48)
+  FACT  S2d GPU_kernel_v1.vi: old #5058 -> fresh #483 on 1.2
+  PASS  S2d ASI_adjust focus-subvi.vi dropped into 1.5  new subVIs [{'i': 16, 'class': 'SubVI', 'uid': 485, 'pos': (5493, 3918), 'owner': 'Diagram'}]
+  OBSERVED uid 485 -> owner 'Diagram' uid 2063 | self 'SubVI'#485 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 2063 -> owner 'WhileLoop' uid 338 | self 'Diagram'#2063 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S2d ASI_adjust focus-subvi.vi owner chain: uid -> body Diagram -> WhileLoop  #485 -> Diagram#2063 (want 2063) -> WhileLoop#338 (want 338)
+  FACT  S2d ASI_adjust focus-subvi.vi: old #48 -> fresh #485 on 1.5
+  PASS  S2d save trace.vi dropped into 1.7  new subVIs [{'i': 16, 'class': 'SubVI', 'uid': 490, 'pos': (5493, 4718), 'owner': 'Diagram'}]
+  OBSERVED uid 490 -> owner 'Diagram' uid 4972 | self 'SubVI'#490 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 4972 -> owner 'WhileLoop' uid 376 | self 'Diagram'#4972 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S2d save trace.vi owner chain: uid -> body Diagram -> WhileLoop  #490 -> Diagram#4972 (want 4972) -> WhileLoop#376 (want 376)
+  FACT  S2d save trace.vi: old #376 -> fresh #490 on 1.7
+  PASS  S2d SubVI 94 -> 97  SubVI 97 (want 97)
+  FACT  S2d uid REUSE check: 0 of 3 fresh drops came back with the deleted uid [] (harmless - RETARGET is then the identity for that row; the hazard is only if a drop had preceded a delete, which S1d/S2d's ordering forbids)
+
+=== S3: move 21 nodes + 8 ControlTerminals (route B ��2c)
+  FACT  S3b net neighbours on diagram 43 (stay put, share a net with a mover): [3057, 3191, 4580, 5119, 10068, 10382, 10825, 11529, 11608, 12589, 20474, 22703, 29240, 30117]
+  FACT  S3b BEFORE: 35 nodes on d43 (21 moving + 14 neighbours), 24 on d19, 14 shift registers of #637
+  FACT  S3b #637 is Diagram[19].Nodes[4] with 59 outside terminals; 40 of them are INPUT tunnels carrying a wire
+  OBSERVED uid 5540 -> owner 'Diagram' uid 567 | self 'CaseStructure'#5540 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #5540 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 9647 -> owner 'Diagram' uid 567 | self 'Function'#9647 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #9647 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 10247 -> owner 'Diagram' uid 567 | self 'Function'#10247 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10247 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 10445 -> owner 'Diagram' uid 567 | self 'CaseStructure'#10445 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10445 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 10950 -> owner 'Diagram' uid 567 | self 'Comparison'#10950 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10950 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 17289 -> owner 'Diagram' uid 567 | self 'Property'#17289 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #17289 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 10969 -> owner 'Diagram' uid 567 | self 'Function'#10969 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10969 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 10757 -> owner 'Diagram' uid 567 | self 'IndexArray'#10757 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10757 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 1359 -> owner 'Diagram' uid 567 | self 'ForLoop'#1359 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #1359 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 2222 -> owner 'Diagram' uid 567 | self 'CaseStructure'#2222 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #2222 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 2626 -> owner 'Diagram' uid 567 | self 'BuildArray'#2626 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #2626 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 6104 -> owner 'Diagram' uid 567 | self 'IndexArray'#6104 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #6104 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 8885 -> owner 'Diagram' uid 567 | self 'Function'#8885 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #8885 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 9833 -> owner 'Diagram' uid 567 | self 'IndexArray'#9833 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #9833 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 11261 -> owner 'Diagram' uid 567 | self 'BuildArray'#11261 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #11261 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 29874 -> owner 'Diagram' uid 567 | self 'ForLoop'#29874 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #29874 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 10686 -> owner 'Diagram' uid 567 | self 'Function'#10686 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10686 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 10407 -> owner 'Diagram' uid 2063 | self 'CaseStructure'#10407 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 2063 -> owner 'WhileLoop' uid 338 | self 'Diagram'#2063 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10407 -> 1.5  owner Diagram#2063 (want Diagram#2063); owner(owner) WhileLoop#338 (want WhileLoop#338)
+  OBSERVED uid 3529 -> owner 'Diagram' uid 2063 | self 'ControlReferenceConstant'#3529 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 2063 -> owner 'WhileLoop' uid 338 | self 'Diagram'#2063 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #3529 -> 1.5  owner Diagram#2063 (want Diagram#2063); owner(owner) WhileLoop#338 (want WhileLoop#338)
+  OBSERVED uid 3560 -> owner 'Diagram' uid 2063 | self 'ControlReferenceConstant'#3560 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 2063 -> owner 'WhileLoop' uid 338 | self 'Diagram'#2063 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #3560 -> 1.5  owner Diagram#2063 (want Diagram#2063); owner(owner) WhileLoop#338 (want WhileLoop#338)
+  OBSERVED uid 3447 -> owner 'Diagram' uid 2063 | self 'ControlReferenceConstant'#3447 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 2063 -> owner 'WhileLoop' uid 338 | self 'Diagram'#2063 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #3447 -> 1.5  owner Diagram#2063 (want Diagram#2063); owner(owner) WhileLoop#338 (want WhileLoop#338)
+  OBSERVED uid 5634 -> owner 'Diagram' uid 567 | self 'ControlTerminal'#5634 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3-ct ControlTerminal #5634 ('Reset Tracking') -> 1.2  owner Diagram#567 (want 567), owner(owner) #48 (want 48)
+  OBSERVED uid 403 -> owner 'Diagram' uid 567 | self 'ControlTerminal'#403 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3-ct ControlTerminal #403 ('Z/dZ') -> 1.2  owner Diagram#567 (want 567), owner(owner) #48 (want 48)
+  OBSERVED uid 9306 -> owner 'Diagram' uid 567 | self 'ControlTerminal'#9306 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3-ct ControlTerminal #9306 ('Correction Factor') -> 1.2  owner Diagram#567 (want 567), owner(owner) #48 (want 48)
+  OBSERVED uid 17487 -> owner 'Diagram' uid 567 | self 'ControlTerminal'#17487 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3-ct ControlTerminal #17487 ('Auto-Reset') -> 1.2  owner Diagram#567 (want 567), owner(owner) #48 (want 48)
+  OBSERVED uid 28170 -> owner 'Diagram' uid 567 | self 'ControlTerminal'#28170 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3-ct ControlTerminal #28170 ('Force\nsmoothing\nhalf-width') -> 1.2  owner Diagram#567 (want 567), owner(owner) #48 (want 48)
+  OBSERVED uid 29091 -> owner 'Diagram' uid 567 | self 'ControlTerminal'#29091 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3-ct ControlTerminal #29091 ('Extension\nmedian filter\nhalf-width') -> 1.2  owner Diagram#567 (want 567), owner(owner) #48 (want 48)
+  PASS  S3-ct ControlTerminal count unchanged by the reparent (moved, not destroyed)  114 -> 114
+  PASS  S3a the moves destroyed no frame diagram  Diagram 173
+  PASS  S3 Local still 8 (route B ��6 R7)  Local 8
+  PASS  S3b-d19 no node on diagram 19 OTHER THAN #637 lost a wire (A1: #7202 Global motor pos.vi lives here)  []
+  FACT  S3b-d19 #637's own outside terminals that lost their wire: 0 (EXPECTED - a tunnel dies with its inner wire)
+  FACT  S3b-sr shift registers of #637 whose wiring changed: []
+      cut  #5058 t0 'Bead is good? array in' IN was w5637  [deleted]
+      cut  #5058 t1 'Image In' IN was w3040  [deleted]
+      cut  #5058 t2 'cross size' IN was w373  [deleted]
+      cut  #5058 t3 'Bead is good? array out' OUT was w5859  [deleted]
+      cut  #5058 t4 'x,y,z array out' OUT was w505  [deleted]
+      cut  #5058 t7 'x,y,z array' IN was w5975  [deleted]
+      cut  #5058 t8 'pos in cal image out' OUT was w121  [deleted]
+      cut  #5058 t9 '# of bead 4 packs' IN was w42  [deleted]
+      cut  #5058 t11 '4 pack remainder' IN was w3512  [deleted]
+      cut  #5058 t12 'Array of cal clusters' IN was w3646  [deleted]
+      cut  #5058 t13 'pos in cal image in' IN was w7429  [deleted]
+      cut  #5058 t14 'Real-space cosine window' IN was w3912  [deleted]
+      cut  #5058 t15 'Cosine bandpass\nfor Hilbert ' IN was w4027  [deleted]
+      cut  #48 t0 '-Inc reference' IN was w4833  [deleted]
+      cut  #48 t1 '+Inc reference' IN was w2819  [deleted]
+      cut  #48 t2 'Focus inc reference' IN was w1893  [deleted]
+      cut  #48 t3 'VISA resource name' IN was w1731  [deleted]
+      cut  #48 t4 'In position' IN was w3947  [deleted]
+      cut  #48 t5 'Out position' OUT was w7388  [deleted]
+      cut  #48 t6 'Outgoing Handle' OUT was w11232  [deleted]
+      cut  #376 t0 'error out' OUT was w541  [deleted]
+      cut  #376 t1 'total data array out' OUT was w464  [deleted]
+      cut  #376 t2 'error in' IN was w4880  [deleted]
+      cut  #376 t3 'file progress' OUT was w5274  [deleted]
+      cut  #376 t4 'file number to append out' OUT was w5056  [deleted]
+      cut  #376 t5 'current frame data array in' IN was w4517  [deleted]
+      cut  #376 t6 'cal cluster path' IN was w3629  [deleted]
+      cut  #376 t7 'frame index' IN was w3268  [deleted]
+      cut  #376 t8 'saved file refnum' IN was w1397  [deleted]
+      cut  #376 t9 'file size' IN was w1581  [deleted]
+      cut  #376 t10 'total data array in' IN was w3497  [deleted]
+      cut  #376 t11 'selected path' IN was w5090  [deleted]
+      cut  #5540 t0 '' IN was w5709  [moved]
+      cut  #5540 t1 '' IN was w5979  [moved]
+      cut  #5540 t2 '' OUT was w5637  [moved]
+      cut  #5540 t3 '' IN was w6041  [moved]
+      cut  #5540 t4 '' IN was w5746  [moved]
+      cut  #5540 t5 '' IN was w1681  [moved]
+      cut  #5540 t6 '' OUT was w5975  [moved]
+      cut  #9647 t0 'x .and. y?' OUT was w9921  [moved]
+      cut  #9647 t1 'y' IN was w9806  [moved]
+      cut  #9647 t2 'x' IN was w9868  [moved]
+      cut  #10247 t0 'x .or. y?' OUT was w5709  [moved]
+      cut  #10247 t1 'y' IN was w10312  [moved]
+      cut  #10247 t2 'x' IN was w10573  [moved]
+      cut  #10445 t0 '' IN was w9921  [moved]
+      cut  #10445 t1 '' OUT was w10573  [moved]
+      cut  #10445 t2 'Value' IN was w10763  [moved]
+      cut  #10445 t3 'Value' OUT was w11389  [moved]
+      cut  #10950 t0 'x < y?' OUT was w9868  [moved]
+      cut  #10950 t1 'y' IN was w10850  [moved]
+      cut  #10950 t2 'x' IN was w17393  [moved]
+      cut  #17289 t4 'Value' OUT was w17393  [moved]
+      cut  #10969 t0 'array' IN was w121  [moved]
+      cut  #10969 t3 'min value' OUT was w17287  [moved]
+      cut  #10757 t0 'array' IN was w121  [moved]
+      cut  #10757 t1 'element' OUT was w10990  [moved]
+      cut  #10757 t2 'index' IN was w10947  [moved]
+      cut  #1359 t1 '' IN was w9097  [moved]
+      cut  #1359 t2 '' OUT was w9215  [moved]
+      cut  #1359 t3 'Value' IN was w30592  [moved]
+      cut  #1359 t4 '' IN was w28847  [moved]
+      cut  #1359 t5 '' IN was w10187  [moved]
+      cut  #1359 t6 '' OUT was w11352  [moved]
+      cut  #1359 t7 'Force\nsmoothing\nhalf-width' IN was w31059  [moved]
+      cut  #1359 t8 'Extension\nmedian filter\nhalf-width' IN was w31166  [moved]
+      cut  #1359 t9 'Magnet position output' IN was w28338  [moved]
+      cut  #2222 t0 '' IN was w730  [moved]
+      cut  #2222 t1 'Z out' OUT was w4906  [moved]
+      cut  #2222 t2 'x,y,z array out' IN was w505  [moved]
+      cut  #2222 t3 '' IN was w628  [moved]
+      cut  #2222 t4 '' IN was w1773  [moved]
+      cut  #2222 t5 'Correction Factor' IN was w6096  [moved]
+      cut  #2222 t6 'X out' OUT was w6363  [moved]
+      cut  #2626 t0 'appended array' OUT was w4517  [moved]
+      cut  #2626 t1 'element' IN was w16483  [moved]
+      cut  #2626 t2 'element' IN was w30592  [moved]
+      cut  #2626 t3 'element' IN was w4878  [moved]
+      cut  #2626 t4 'array' IN was w505  [moved]
+      cut  #6104 t0 'array' IN was w6363  [moved]
+      cut  #6104 t3 'index (col)' IN was w6427  [moved]
+      cut  #8885 t0 'x*y' OUT was w28847  [moved]
+      cut  #8885 t1 'y' IN was w9164  [moved]
+      cut  #8885 t2 'x' IN was w9012  [moved]
+      cut  #9833 t0 'array' IN was w4906  [moved]
+      cut  #9833 t1 'subarray' OUT was w9012  [moved]
+      cut  #9833 t2 'index (row)' IN was w9924  [moved]
+      cut  #11261 t0 'appended array' OUT was w10908  [moved]
+      cut  #11261 t1 'array' IN was w11352  [moved]
+      cut  #11261 t2 'element' IN was w12256  [moved]
+      cut  #29874 t1 '' OUT was w32890  [moved]
+      cut  #29874 t2 '' IN was w29787  [moved]
+      cut  #29874 t3 '' IN was w28039  [moved]
+      cut  #29874 t4 '' IN was w28847  [moved]
+      cut  #29874 t5 '' OUT was w29591  [moved]
+      cut  #29874 t6 'Extension\nmedian filter\nhalf-width' IN was w31166  [moved]
+      cut  #10686 t0 'x .and. y?' OUT was w10799  [moved]
+      cut  #10686 t1 'y' IN was w9105  [moved]
+      cut  #10686 t2 'x' IN was w3050  [moved]
+      cut  #10407 t0 '' IN was w10799  [moved]
+      cut  #10407 t1 '# slices in stack' IN was w9635  [moved]
+      cut  #10407 t2 '' IN was w10990  [moved]
+      cut  #10407 t3 'Outgoing Handle' IN was w11232  [moved]
+      cut  #10407 t4 'VISA out' OUT was w7337  [moved]
+      cut  #10407 t5 'Out position' IN was w7388  [moved]
+      cut  #10407 t6 'position [internal units]' OUT was w9113  [moved]
+      cut  #3529 t0 '- Inc (PgDn)' OUT was w4833  [moved]
+      cut  #3560 t0 '+ Inc (PgUp)' OUT was w2819  [moved]
+      cut  #3447 t0 'Focus Step (F1)' OUT was w1893  [moved]
+  FACT  S3b census diff: 109 terminals to re-connect (32 from the three deleted subVIs + 77 from the moves)
+  PASS  S3b the cut set covers plan ��8's 13 wired crossings  not cut: []
+  PASS  S3b-collateral no STAYING node was bared by a move  []
+
+=== S3c: 8 shift registers (4 on 1.2, 2 on 1.5, 2 on 1.7)
+  PASS  S3c index 2 really is 1.2's WhileLoop #48  loop_cast(2) -> 48, errors {}
+  FACT  1.2: shift register #25635 for 'x,y,z array out' (was #1147/#1142)
+  FACT  1.2: shift register #25642 for 'Bead is good? array out' (was #5796/#5805)
+  FACT  1.2: shift register #25668 for 'pos in cal image out' (was #119/#2972)
+  FACT  1.2: shift register #25737 for 'Value' (was #7311/#11001)
+  PASS  S3c index 1 really is 1.5's WhileLoop #338  loop_cast(1) -> 338, errors {}
+  FACT  1.5: shift register #25814 for 'position [internal units]' (was #4256/#4274)
+  FACT  1.5: shift register #25840 for 'VISA out  <- THE VISA SESSION' (was #4334/#4344)
+  PASS  S3c index 0 really is 1.7's WhileLoop #376  loop_cast(0) -> 376, errors {}
+  FACT  1.7: shift register #25889 for 'total data array out' (was #15/#51)
+  FACT  1.7: shift register #25970 for 'error out' (was #24/#1108)
+  PASS  S3c 8 shift registers created  8
+  PASS  S3c ControlTerminal still 114  114
+
+=== F0: the re-wire source map, completed inside the build (��11j.2)
+  FACT  F0 source map: 109/109 resolved, by action {'cross-loop': 5, 'from-stay': 11, 'from-tunnel': 18, 'to-sr': 12, 'from-sr': 8, 'same-loop': 16, 'source-side': 27, 'from-ctl': 7, 'from-const': 5}
+  PASS  F0 every cut terminal has a resolved source  unresolved 0
+  FACT  S3w rows to connect: 66 (the other 43 are source-side, from-stay or cross-loop = queue endpoints)
+      op readback {'UID': 5540, 'Name': '', 'UID 2': 0, 'Is Broken?': False}
+      op readback {'UID': 10247, 'Name': 'x', 'UID 2': 0, 'Is Broken?': False}
+      op readback {'UID': 10445, 'Name': '', 'UID 2': 0, 'Is Broken?': False}
+      op readback {'UID': 1359, 'Name': '', 'UID 2': 0, 'Is Broken?': False}
+      op readback {'UID': 8885, 'Name': 'x', 'UID 2': 0, 'Is Broken?': False}
+      op readback {'UID': 11261, 'Name': 'array', 'UID 2': 0, 'Is Broken?': False}
+      op readback {'UID': 29874, 'Name': '', 'UID 2': 0, 'Is Broken?': False}
+      WIRED    #48 t0 '-Inc reference' <- same-loop 3529  wire ControlReferenceConstant[7].'- Inc (PgDn)' -> SubVI[19].'-Inc reference'
+      WIRED    #48 t1 '+Inc reference' <- same-loop 3560  wire ControlReferenceConstant[6].'+ Inc (PgUp)' -> SubVI[19].'+Inc reference'
+      WIRED    #48 t2 'Focus inc reference' <- same-loop 3447  wire ControlReferenceConstant[5].'Focus Step (F1)' -> SubVI[19].'Focus inc reference'
+      WIRED    #48 t3 'VISA resource name' <- from-sr None  wire_sr LeftIn reg[1] -> D[21].N[0].T[3]
+      WIRED    #48 t4 'In position' <- from-sr None  wire_sr LeftIn reg[0] -> D[21].N[0].T[4]
+      WIRED    #376 t0 'error out' <- to-sr None  wire_sr RightIn reg[1] -> D[20].N[0].T[0]
+      WIRED    #376 t1 'total data array out' <- to-sr None  wire_sr RightIn reg[0] -> D[20].N[0].T[1]
+      WIRED    #376 t2 'error in' <- from-sr None  wire_sr LeftIn reg[1] -> D[20].N[0].T[2]
+      WIRED    #376 t6 'cal cluster path' <- from-tunnel 3644  OpConnectFromWire_v0 w21 -> D[20].N[0].T[6] wire 26198, Is Broken? FALSE
+      WIRED    #376 t7 'frame index' <- from-tunnel 2213  OpConnectFromWire_v0 w2187 -> D[20].N[0].T[7] wire 26435, Is Broken? FALSE
+      WIRED    #376 t9 'file size' <- from-tunnel 2294  OpConnectFromWire_v0 w2362 -> D[20].N[0].T[9] wire 26599, Is Broken? FALSE
+      WIRED    #376 t10 'total data array in' <- from-sr None  wire_sr LeftIn reg[0] -> D[20].N[0].T[10]
+      WIRED    #376 t11 'selected path' <- from-tunnel 5096  OpConnectFromWire_v0 w5104 -> D[20].N[0].T[11] wire 26942, Is Broken? FALSE
+      WIRED    #5540 t0 '' <- same-loop 10247  OpConnectNested_v1 D[24].N[5].T[0] -> D[24].N[1].T[0] wire 27047 (delta 1, ExecState 0) [unnamed end (sink '', source 'x .or. y?')]
+      WIRED    #5540 t3 '' <- from-sr None  wire_sr LeftIn reg[1] -> D[24].N[1].T[3]
+      WIRED    #5540 t5 '' <- from-sr None  wire_sr LeftIn reg[0] -> D[24].N[1].T[5]
+      WIRED    #9647 t1 'y' <- from-ctl 17472  wire_control 'Auto-Reset' -> 'y'; sink D[24].N[3].T[1] wire 0 -> 27179; reparented=True; attempts [(24, 'no error', 27179)]
+      WIRED    #9647 t2 'x' <- same-loop 10950  wire Function[38].'x < y?' -> Function[41].'x'
+      WIRED    #10247 t1 'y' <- from-ctl 5605  wire_control 'Reset Tracking' -> 'y'; sink D[24].N[5].T[1] wire 0 -> 27206; reparented=True; attempts [(24, 'no error', 27206)]
+      WIRED    #10247 t2 'x' <- same-loop 10445  OpConnectNested_v1 D[24].N[7].T[1] -> D[24].N[5].T[2] wire 27225 (delta 1, ExecState 0) [unnamed end (sink 'x', source '')]
+      WIRED    #10445 t0 '' <- same-loop 9647  OpConnectNested_v1 D[24].N[3].T[0] -> D[24].N[7].T[0] wire 27290 (delta 1, ExecState 0) [unnamed end (sink '', source 'x .and. y?')]
+      WIRED    #10445 t2 'Value' <- from-sr None  wire_sr LeftIn reg[3] -> D[24].N[7].T[2]
+      WIRED    #10445 t3 'Value' <- to-sr None  wire_sr RightIn reg[3] -> D[24].N[7].T[3]
+      WIRED    #10950 t1 'y' <- from-const 10739  OpCreateConstOnTerm_v0 value 0 -> uid 27390 
+      WIRED    #10950 t2 'x' <- same-loop 17289  wire Property[18].'Value' -> Function[38].'x'
+      WIRED    #10969 t0 'array' <- to-sr None  wire_sr RightIn reg[2] -> D[24].N[13].T[0]
+      WIRED    #10757 t0 'array' <- to-sr None  wire_sr RightIn reg[2] -> D[24].N[16].T[0]
+      WIRED    #10757 t2 'index' <- from-const 10929  OpCreateConstOnTerm_v0 value 0 -> uid 27428 
+      WIRED    #1359 t4 '' <- same-loop 8885  OpConnectNested_v1 D[24].N[25].T[0] -> D[24].N[17].T[4] wire 27451 (delta 1, ExecState 0) [unnamed end (sink '', source 'x*y')]
+      WIRED    #1359 t7 'Force\nsmoothing\nhalf-width' <- from-ctl 28148  wire_control 'Force\nsmoothing\nhalf-width' -> 'Force\nsmoothing\nhalf-width'; sink D[24].N[17].T[7] wire 0 -> 27728; reparented=True; attempts [(24, 'no error', 27728)]
+      WIRED    #1359 t8 'Extension\nmedian filter\nhalf-width' <- from-ctl 28996  wire_control 'Extension\nmedian filter\nhalf-width' -> 'Extension\nmedian filter\nhalf-width'; sink D[24].N[17].T[8] wire 0 -> 27742; reparented=True; attempts [(24, 'no error', 27742)]
+      WIRED    #1359 t9 'Magnet position output' <- from-tunnel 28343  OpConnectFromWire_v0 w28392 -> D[24].N[17].T[9] wire 27774, Is Broken? FALSE
+      WIRED    #2222 t2 'x,y,z array out' <- to-sr None  wire_sr RightIn reg[0] -> D[24].N[19].T[2]
+      WIRED    #2222 t3 '' <- from-tunnel 5129  OpConnectFromWire_v0 w5174 -> D[24].N[19].T[3] wire 27928, Is Broken? FALSE
+      WIRED    #2222 t4 '' <- from-tunnel 5328  OpConnectFromWire_v0 w5336 -> D[24].N[19].T[4] wire 28113, Is Broken? FALSE
+      WIRED    #2222 t5 'Correction Factor' <- from-ctl 9289  wire_control 'Correction Factor' -> 'Correction Factor'; sink D[24].N[19].T[5] wire 0 -> 28295; reparented=True; attempts [(24, 'no error', 28295)]
+      WIRED    #2626 t4 'array' <- to-sr None  wire_sr RightIn reg[0] -> D[24].N[21].T[4]
+      WIRED    #6104 t0 'array' <- same-loop 2222  wire CaseStructure[3].'X out' -> IndexArray[9].'array'
+      WIRED    #6104 t3 'index (col)' <- from-const 6404  OpCreateConstOnTerm_v0 value 0 -> uid 28321 
+      WIRED    #8885 t1 'y' <- from-const 9050  OpCreateConstOnTerm_v0 value 1000.0 -> uid 28342 
+      WIRED    #8885 t2 'x' <- same-loop 9833  OpConnectNested_v1 D[24].N[27].T[1] -> D[24].N[25].T[2] wire 28366 (delta 1, ExecState 0) [retry by index after wire subarray->x: error 5001: LV-Scripting.lvlib:Get Outputs]
+      WIRED    #9833 t0 'array' <- same-loop 2222  wire CaseStructure[3].'Z out' -> IndexArray[8].'array'
+      WIRED    #9833 t2 'index (row)' <- from-const 9906  OpCreateConstOnTerm_v0 value 0 -> uid 28491 
+      WIRED    #11261 t1 'array' <- same-loop 1359  OpConnectNested_v1 D[24].N[17].T[6] -> D[24].N[29].T[1] wire 28520 (delta 1, ExecState 0) [unnamed end (sink 'array', source '')]
+      WIRED    #29874 t4 '' <- same-loop 8885  OpConnectNested_v1 D[24].N[25].T[0] -> D[24].N[31].T[4] wire 27451 (delta 0, ExecState 0) [unnamed end (sink '', source 'x*y')]
+      WIRED    #29874 t6 'Extension\nmedian filter\nhalf-width' <- from-ctl 28996  wire_control 'Extension\nmedian filter\nhalf-width' -> 'Extension\nmedian filter\nhalf-width'; sink D[24].N[31].T[6] wire 0 -> 27742; reparented=True; attempts [(24, 'no error', 27742)]
+      WIRED    #10407 t1 '# slices in stack' <- from-tunnel 9641  OpConnectFromWire_v0 w9649 -> D[21].N[2].T[1] wire 28818, Is Broken? FALSE
+      WIRED    #10407 t3 'Outgoing Handle' <- same-loop 48  wire SubVI[19].'Outgoing Handle' -> CaseStructure[2].'Outgoing Handle'
+      WIRED    #10407 t4 'VISA out' <- to-sr None  wire_sr RightIn reg[1] -> D[21].N[2].T[4]
+      WIRED    #10407 t5 'Out position' <- same-loop 48  wire SubVI[19].'Out position' -> CaseStructure[2].'Out position'
+      WIRED    #10407 t6 'position [internal units]' <- to-sr None  wire_sr RightIn reg[0] -> D[21].N[2].T[6]
+      NO-ROUTE #5058 t2 'cross size' <- from-tunnel 2580  sink #483 is not on None's body diagram
+      NO-ROUTE #5058 t3 'Bead is good? array out' <- to-sr None  to-sr needs a destination LOOP and this sink stays where it is (d1_rewire_map assigns `dest` only to the movers)
+      NO-ROUTE #5058 t4 'x,y,z array out' <- to-sr None  to-sr needs a destination LOOP and this sink stays where it is (d1_rewire_map assigns `dest` only to the movers)
+      NO-ROUTE #5058 t8 'pos in cal image out' <- to-sr None  to-sr needs a destination LOOP and this sink stays where it is (d1_rewire_map assigns `dest` only to the movers)
+      NO-ROUTE #5058 t9 '# of bead 4 packs' <- from-tunnel 2396  sink #483 is not on None's body diagram
+      NO-ROUTE #5058 t11 '4 pack remainder' <- from-tunnel 4432  sink #483 is not on None's body diagram
+      NO-ROUTE #5058 t12 'Array of cal clusters' <- from-tunnel 3656  sink #483 is not on None's body diagram
+      NO-ROUTE #5058 t13 'pos in cal image in' <- from-sr None  from-sr needs a destination LOOP and this sink stays where it is (d1_rewire_map assigns `dest` only to the movers)
+      NO-ROUTE #5058 t14 'Real-space cosine window' <- from-tunnel 3920  sink #483 is not on None's body diagram
+      NO-ROUTE #5058 t15 'Cosine bandpass\nfor Hilbert ' <- from-tunnel 4031  sink #483 is not on None's body diagram
+      NO-ROUTE #5540 t1 '' <- from-tunnel 5569  outer wire w5812 is on 2 of #637's outside terminals now (was terminal t30 before the moves) - its tunnel died with the inner wire the move cut, so there is nothing to branch from
+      NO-ROUTE #5540 t4 '' <- from-tunnel 5752  outer wire w2731 is on 2 of #637's outside terminals now (was terminal t31 before the moves) - its tunnel died with the inner wire the move cut, so there is nothing to branch from
+      NO-ROUTE #1359 t1 '' <- from-tunnel 9087  outer wire w9097 is on 0 of #637's outside terminals now (was terminal tNone before the moves) - its tunnel died with the inner wire the move cut, so there is nothing to branch from
+      NO-ROUTE #2222 t0 '' <- from-ctl 47  control 'Z/dZ' / sink name '': wire_control is name-addressed on BOTH ends (R3)
+      NO-ROUTE #29874 t3 '' <- from-tunnel 29911  outer wire w28039 is on 0 of #637's outside terminals now (was terminal tNone before the moves) - its tunnel died with the inner wire the move cut, so there is nothing to branch from
+
+  --- the SINK RULE, row by row (route B frontmatter) ---
+      SINK-OK       #376 t6 'cal cluster path' <- from-tunnel 3644  src w21.Terms[0] owner FlatSequenceInnerTunnel#1748 -> D[20].N[0].T[6] 'cal cluster path'; wire 0 -> 26198; Is Broken? False; delta 1; ExecState 0; err ''
+      SINK-OK       #376 t7 'frame index' <- from-tunnel 2213  src w2187.Terms[0] owner LoopTunnel#2213 -> D[20].N[0].T[7] 'frame index'; wire 0 -> 26435; Is Broken? False; delta 1; ExecState 0; err ''
+      SINK-OK       #376 t9 'file size' <- from-tunnel 2294  src w2362.Terms[0] owner FlatSequenceInnerTunnel#2484 -> D[20].N[0].T[9] 'file size'; wire 0 -> 26599; Is Broken? False; delta 1; ExecState 0; err ''
+      SINK-OK       #376 t11 'selected path' <- from-tunnel 5096  src w5104.Terms[0] owner FlatSequenceInnerTunnel#4693 -> D[20].N[0].T[11] 'selected path'; wire 0 -> 26942; Is Broken? False; delta 1; ExecState 0; err ''
+      SINK-OK       #1359 t9 'Magnet position output' <- from-tunnel 28343  src w28392.Terms[0] owner SubVI#27605 -> D[24].N[17].T[9] 'Magnet position output'; wire 0 -> 27774; Is Broken? False; delta 1; ExecState 0; err ''
+      SINK-OK       #2222 t3 '' <- from-tunnel 5129  src w5174.Terms[0] owner FlatSequenceInnerTunnel#5183 -> D[24].N[19].T[3] ''; wire 0 -> 27928; Is Broken? False; delta 1; ExecState 0; err ''
+      SINK-OK       #2222 t4 '' <- from-tunnel 5328  src w5336.Terms[0] owner FlatSequenceInnerTunnel#5669 -> D[24].N[19].T[4] ''; wire 0 -> 28113; Is Broken? False; delta 1; ExecState 0; err ''
+      SINK-OK       #10407 t1 '# slices in stack' <- from-tunnel 9641  src w9649.Terms[0] owner FlatSequenceInnerTunnel#9655 -> D[21].N[2].T[1] '# slices in stack'; wire 0 -> 28818; Is Broken? False; delta 1; ExecState 0; err ''
+  FACT  S3w ledger: attempted 66, WIRED 51, FAILED 0, NO-ROUTE 15; SINK RULE 8 OK / 0 REFUSED / 0 BAD
+  PASS  S3w 0 rows FAILED  0 failed: []
+  **FAIL**  S3w 0 rows NO-ROUTE (route B ��7's own gate)  15 have none: ["#5058 t2 'cross size' <- from-tunnel 2580", "#5058 t3 'Bead is good? array out' <- to-sr None", "#5058 t4 'x,y,z array out' <- to-sr None", "#5058 t8 'pos in cal image out' <- to-sr None", "#5058 t9 '# of bead 4 packs' <- from-tunnel 2396", "#5058 t11 '4 pack remainder' <- from-tunnel 4432", "#5058 t12 'Array of cal clusters' <- from-tunnel 3656", "#5058 t13 'pos in cal image in' <- from-sr None"]
+
+=== S1q: the 8 queues
+  SKIPPED-GATE  S1q: the S3w ledger is not clean. A queue endpoint cannot give a route to a sink that has none, and an unsound base makes every count below meaningless (route B ��7 S3w).
+
+=== S4: conditional terminals
+  PASS  S4a #637's conditional terminal is untouched  loop 637, term 648 (want 648), wire 3457 (want 3457); errs ''
+  FACT  S4 1.2: conditional terminal 1224, wire 0 (0 = the loop never stops); errs 'error 1055: Property Node in OpLoopEndRef_v0.vi'
+  FACT  S4 1.5: conditional terminal 3952, wire 0 (0 = the loop never stops); errs 'error 1055: Property Node in OpLoopEndRef_v0.vi'
+  FACT  S4 1.7: conditional terminal 5058, wire 0 (0 = the loop never stops); errs 'error 1055: Property Node in OpLoopEndRef_v0.vi'
+  SKIPPED-GATE  S4b/S4s: the three sentinel Equal?s and their -1 literals need the queues of S1q; with S1q unexecuted there is no `Dequeue.element` to compare against.
+  PASS  S3c panel survived: 114 rows  114 rows
+
+=== S5: purge, remove bad wires, ExecState
+  PASS  S5a every junk Invoke left by the mutating ops is gone  still present []
+  FACT  S5 purged 42 junk Invoke(s): [5104, 2362, 2187, 21, 9506, 24531, 9924, 9377, 9376, 6073, 10288, 10284, 5336, 5174, 7974, 7917, 10353, 10319, 10315, 25071, 24976, 24906, 24823, 24753, 24651, 9344, 9343, 9337, 9336, 9164, 6427, 10947, 9294, 9293, 22757, 10850, 9268, 9267, 9806, 9257, 9254, 22755]
+  **FAIL**  S5 ExecState 1 WARM  ExecState 0
+
+  --- ExecState 0: the MEASUREMENT, over every diagram (not an explanation)
+  FACT  S5m 420 BARE NAMED INPUT terminals across 173 diagrams (a bare named sink pins ExecState at 0 - plan ��2a)
+      BARE  Diagram[1]#3628 Nodes[2].T[0] 'reference'
+      BARE  Diagram[1]#3628 Nodes[2].T[2] 'error in (no error)'
+      BARE  Diagram[1]#3628 Nodes[3].T[0] 'reference'
+      BARE  Diagram[1]#3628 Nodes[3].T[2] 'error in (no error)'
+      BARE  Diagram[1]#3628 Nodes[4].T[0] 'reference'
+      BARE  Diagram[1]#3628 Nodes[4].T[2] 'error in (no error)'
+      BARE  Diagram[1]#3628 Nodes[5].T[0] 'reference'
+      BARE  Diagram[1]#3628 Nodes[5].T[2] 'error in (no error)'
+      BARE  Diagram[1]#3628 Nodes[6].T[0] 'reference'
+      BARE  Diagram[1]#3628 Nodes[6].T[2] 'error in (no error)'
+      BARE  Diagram[1]#3628 Nodes[6].T[4] 'Reinit To Dflt'
+      BARE  Diagram[1]#3628 Nodes[7].T[3] 'error code (no error:0)'
+      BARE  Diagram[1]#3628 Nodes[7].T[4] 'error source (" ")'
+      BARE  Diagram[1]#3628 Nodes[7].T[8] 'type of dialog (OK msg:1)'
+      BARE  Diagram[1]#3628 Nodes[7].T[9] 'error in (no error)'
+      BARE  Diagram[3]#3886 Nodes[1].T[4] 'No.of digits'
+      BARE  Diagram[4]#4406 Nodes[0].T[4] 'Axis identifier?'
+      BARE  Diagram[5]#5038 Nodes[1].T[4] 'No.of digits'
+      BARE  Diagram[5]#5038 Nodes[1].T[6] 'Without axis ID?'
+      BARE  Diagram[5]#5038 Nodes[2].T[4] 'Axis identifier?'
+      BARE  Diagram[5]#5038 Nodes[3].T[2] 'index'
+      BARE  Diagram[5]#5038 Nodes[5].T[0] 'reference'
+      BARE  Diagram[5]#5038 Nodes[5].T[2] 'error in (no error)'
+      BARE  Diagram[5]#5038 Nodes[6].T[0] 'reference'
+      BARE  Diagram[5]#5038 Nodes[6].T[2] 'error in (no error)'
+      BARE  Diagram[7]#27537 Nodes[5].T[1] 'cluster'
+      BARE  Diagram[8]#113 Nodes[2].T[0] 'reference'
+      BARE  Diagram[8]#113 Nodes[2].T[2] 'error in (no error)'
+      BARE  Diagram[8]#113 Nodes[6].T[0] 'reference'
+      BARE  Diagram[8]#113 Nodes[6].T[2] 'error in (no error)'
+      BARE  Diagram[9]#124 Nodes[2].T[0] 'reference'
+      BARE  Diagram[9]#124 Nodes[2].T[2] 'error in (no error)'
+      BARE  Diagram[9]#124 Nodes[4].T[2] 'length'
+      BARE  Diagram[9]#124 Nodes[8].T[0] 'reference'
+      BARE  Diagram[9]#124 Nodes[8].T[2] 'error in (no error)'
+      BARE  Diagram[10]#43928 Nodes[0].T[5] 'Baud Rate (115200)'
+      BARE  Diagram[10]#43928 Nodes[0].T[7] 'timeout (500ms)'
+      BARE  Diagram[10]#43928 Nodes[0].T[8] 'error in (no error)'
+      BARE  Diagram[10]#43928 Nodes[1].T[7] 'error in (no error)'
+      BARE  Diagram[12]#44169 Nodes[0].T[8] 'error in (no error)'
+      BARE  Diagram[15]#5031 Nodes[0].T[8] 'error in (no error)'
+      BARE  Diagram[15]#5031 Nodes[0].T[10] 'VI reference (current VI)'
+      BARE  Diagram[16]#3121 Nodes[6].T[14] 'Set obj'
+      BARE  Diagram[16]#3121 Nodes[7].T[0] 'reference'
+      BARE  Diagram[16]#3121 Nodes[7].T[2] 'error in (no error)'
+      BARE  Diagram[16]#3121 Nodes[8].T[0] 'reference'
+      BARE  Diagram[16]#3121 Nodes[8].T[2] 'error in (no error)'
+      BARE  Diagram[17]#1817 Nodes[3].T[8] 'error in (no error)'
+      BARE  Diagram[17]#1817 Nodes[3].T[10] 'VI reference (current VI)'
+      BARE  Diagram[17]#1817 Nodes[4].T[0] 'reference'
+      BARE  Diagram[17]#1817 Nodes[4].T[2] 'error in (no error)'
+      BARE  Diagram[17]#1817 Nodes[5].T[0] 'reference'
+      BARE  Diagram[17]#1817 Nodes[5].T[2] 'error in (no error)'
+      BARE  Diagram[17]#1817 Nodes[6].T[0] 'reference'
+      BARE  Diagram[17]#1817 Nodes[6].T[2] 'error in (no error)'
+      BARE  Diagram[18]#4866 Nodes[7].T[0] 'reference'
+      BARE  Diagram[18]#4866 Nodes[7].T[2] 'error in (no error)'
+      BARE  Diagram[18]#4866 Nodes[8].T[0] 'reference'
+      BARE  Diagram[18]#4866 Nodes[8].T[2] 'error in (no error)'
+      BARE  Diagram[18]#4866 Nodes[9].T[0] 'reference'
+  FACT  working copy deleted (a broken VI is never written): SCRATCH_routeb_155009.vi
+  PASS  S6b original md5 AFTER  2a78e17c449cacdaf5da389818526859
+  FACT  LabVIEW handles after: 38781 (before 30682)
+
+--- FACTS ---
+  LabVIEW handles before: 30682 (fresh-instance baseline ~31,500)
+  S3-ct 31 ControlTerminals are owned by Diagram #639 (docs/d1-build-plan.md:220 says 31)
+  S3-ct 'Reset Tracking': control #5605 <- ControlTerminal #5634 (its panel row's wire changed when #5634 moved - probe_move_ctlterm_v0.py:327-351's route)
+  S3-ct 'Z/dZ': control #47 <- ControlTerminal #403 (its panel row's wire changed when #403 moved - probe_move_ctlterm_v0.py:327-351's route)
+  S3-ct 'Correction Factor': control #9289 <- ControlTerminal #9306 (its panel row's wire changed when #9306 moved - probe_move_ctlterm_v0.py:327-351's route)
+  S3-ct 'Auto-Reset': control #17472 <- ControlTerminal #17487 (its panel row's wire changed when #17487 moved - probe_move_ctlterm_v0.py:327-351's route)
+  S3-ct 'Force\nsmoothing\nhalf-width': control #28148 <- ControlTerminal #28170 (its panel row's wire changed when #28170 moved - probe_move_ctlterm_v0.py:327-351's route)
+  S3-ct 'Extension\nmedian filter\nhalf-width': control #28996 <- ControlTerminal #29091 (its panel row's wire changed when #29091 moved - probe_move_ctlterm_v0.py:327-351's route)
+  S3-ct probe copy deleted in the same run: SCRATCH_ctprobe_155009.vi
+  S1 BEFORE census: {'Diagram': 170, 'Node': 626, 'Wire': 1902, 'LoopTunnel': 132, 'ControlTerminal': 114, 'WhileLoop': 3, 'Local': 8, 'SubVI': 98, 'Function': 181}
+  S1d #5058 GPU_kernel_v1.vi -> 1.2: 16 terminals, 13 wired (all enter the re-wire list)
+  S1d #48 ASI_adjust focus-subvi.vi -> 1.5: 7 terminals, 7 wired (all enter the re-wire list)
+  S1d #376 save trace.vi -> 1.7: 12 terminals, 12 wired (all enter the re-wire list)
+  S1d 26 bare named sinks on diagram 43 after the three deletes (��2a: #6384's error chain via w541 and #12589 t1 via w9113 are among them)
+  S1d re-wire rows captured from the deleted nodes: 32
+  Diagram#686 (holder of WhileLoop#637) is Traverse index 19
+  1.2: WhileLoop #48, body Diagram #567
+  1.5: WhileLoop #338, body Diagram #2063
+  1.7: WhileLoop #376, body Diagram #4972
+  S2d GPU_kernel_v1.vi: old #5058 -> fresh #483 on 1.2
+  S2d ASI_adjust focus-subvi.vi: old #48 -> fresh #485 on 1.5
+  S2d save trace.vi: old #376 -> fresh #490 on 1.7
+  S2d uid REUSE check: 0 of 3 fresh drops came back with the deleted uid [] (harmless - RETARGET is then the identity for that row; the hazard is only if a drop had preceded a delete, which S1d/S2d's ordering forbids)
+  S3b net neighbours on diagram 43 (stay put, share a net with a mover): [3057, 3191, 4580, 5119, 10068, 10382, 10825, 11529, 11608, 12589, 20474, 22703, 29240, 30117]
+  S3b BEFORE: 35 nodes on d43 (21 moving + 14 neighbours), 24 on d19, 14 shift registers of #637
+  S3b #637 is Diagram[19].Nodes[4] with 59 outside terminals; 40 of them are INPUT tunnels carrying a wire
+  S3b-d19 #637's own outside terminals that lost their wire: 0 (EXPECTED - a tunnel dies with its inner wire)
+  S3b-sr shift registers of #637 whose wiring changed: []
+  S3b census diff: 109 terminals to re-connect (32 from the three deleted subVIs + 77 from the moves)
+  1.2: shift register #25635 for 'x,y,z array out' (was #1147/#1142)
+  1.2: shift register #25642 for 'Bead is good? array out' (was #5796/#5805)
+  1.2: shift register #25668 for 'pos in cal image out' (was #119/#2972)
+  1.2: shift register #25737 for 'Value' (was #7311/#11001)
+  1.5: shift register #25814 for 'position [internal units]' (was #4256/#4274)
+  1.5: shift register #25840 for 'VISA out  <- THE VISA SESSION' (was #4334/#4344)
+  1.7: shift register #25889 for 'total data array out' (was #15/#51)
+  1.7: shift register #25970 for 'error out' (was #24/#1108)
+  F0 source map: 109/109 resolved, by action {'cross-loop': 5, 'from-stay': 11, 'from-tunnel': 18, 'to-sr': 12, 'from-sr': 8, 'same-loop': 16, 'source-side': 27, 'from-ctl': 7, 'from-const': 5}
+  S3w rows to connect: 66 (the other 43 are source-side, from-stay or cross-loop = queue endpoints)
+  S3w ledger: attempted 66, WIRED 51, FAILED 0, NO-ROUTE 15; SINK RULE 8 OK / 0 REFUSED / 0 BAD
+  S4 1.2: conditional terminal 1224, wire 0 (0 = the loop never stops); errs 'error 1055: Property Node in OpLoopEndRef_v0.vi'
+  S4 1.5: conditional terminal 3952, wire 0 (0 = the loop never stops); errs 'error 1055: Property Node in OpLoopEndRef_v0.vi'
+  S4 1.7: conditional terminal 5058, wire 0 (0 = the loop never stops); errs 'error 1055: Property Node in OpLoopEndRef_v0.vi'
+  S5 purged 42 junk Invoke(s): [5104, 2362, 2187, 21, 9506, 24531, 9924, 9377, 9376, 6073, 10288, 10284, 5336, 5174, 7974, 7917, 10353, 10319, 10315, 25071, 24976, 24906, 24823, 24753, 24651, 9344, 9343, 9337, 9336, 9164, 6427, 10947, 9294, 9293, 22757, 10850, 9268, 9267, 9806, 9257, 9254, 22755]
+  S5m 420 BARE NAMED INPUT terminals across 173 diagrams (a bare named sink pins ExecState at 0 - plan ��2a)
+  working copy deleted (a broken VI is never written): SCRATCH_routeb_155009.vi
+  LabVIEW handles after: 38781 (before 30682)
+
+=== build_d1_routeb_v0: 84 pass, 2 fail -> S3w 0 rows NO-ROUTE (route B ��7's own gate), S5 ExecState 1 WARM  (415 s) ===
+BGRUN END rc=1 after 482s

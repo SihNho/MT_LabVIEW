@@ -1,0 +1,10 @@
+BGRUN START 2026-09-18 21:04:25 limit 20.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Kind review -Slug stall-liveness-class-c36 -TaskFile tools/bench/peer_task_stall_c36.md -TimeoutSec 780
+OUTCOME: ANSWERED (507s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-18-stall-liveness-class-c36.md
+COST: $3.1587  in 18 / out 34537 / cache-create 177492 / cache-read 899644  (506s, 16 turn(s))
+--- ANSWER ---
+Write is disabled for this role, so nothing was written — correct for a read-only reviewer; the review above is the deliverable.
+
+**Summary for the manager:** claim 1's causal attribution is false (4 of 7 stall records name sweeps, drivers and a recipe build, and the three oldest came from a predicate that no longer exists), though its conclusion about the repair survives — and for a sharper reason than the claim gives: repair 2's own motivating example had a bgrun ancestor, so the repair does not touch the case its comment cites. Claim 2 is refuted outright: `tools/bgrun.py` has no `try/finally` or `atexit` anywhere, and `stall_pid20500_143532.log:1` records the supposedly-terminated tree alive 595 s after its log fell silent.
+
+The repair that fixes the class is not in the watchdog. It is (1) a `try/finally` around `bgrun.main()` plus a non-fatal stdout echo, which makes `bgrun.py:7-10`'s promise true for the first time, and then (2) letting `guard_peer.py` retract a stall record whose named job later ends `BGRUN END rc=0` — outcome instead of snapshot. Both live in files that already exist; (2) is unsound until (1) is done.
+BGRUN END rc=0 after 508s

@@ -1,0 +1,333 @@
+BGRUN START 2026-09-14 23:45:56 limit 40.0 min: py -u tools/recipes/cycle3_toolkit.py
+
+################ 1 OpForLoop_v1  23:45:56
+copy ExecState 1
+before: Control Terminals wire 0, Inputs wire 0 (predict 0, 0)
+   PASS B1 the wire is on both ends 389 / 389
+   PASS B2 ExecState 1 1
+donor md5 unchanged: True
+   PASS T0 the control is on the scratch 
+   new tunnels: [(0, 139)]
+   PASS T1 exactly one new tunnel 
+   tunnel: outer wire 150 mode 0 inner [0]; control wire 150
+   PASS T2 outer wire == the control terminal's wire 
+   FAIL T3 IndexMode 1 (auto-indexed) 0
+   ExecState 0 (0 expected: indexing a scalar Boolean is illegal - structural test only)
+
+SUMMARY 5/6 PASS
+   PASS B1 the wire is on both ends
+   PASS B2 ExecState 1
+   PASS T0 the control is on the scratch
+   PASS T1 exactly one new tunnel
+   PASS T2 outer wire == the control terminal's wire
+   FAIL T3 IndexMode 1 (auto-indexed)
+################ 1 OpForLoop_v1 -> rc 1  23:46:00
+
+STOP: 1 OpForLoop_v1 failed (rc 1). Nothing further built; next batch after review.
+BGRUN END rc=1 after 4s
+BGRUN START 2026-09-14 23:48:02 limit 40.0 min: py -u tools/recipes/cycle3_toolkit.py
+
+################ 1 OpForLoop_v1  23:48:02
+copy ExecState 1
+before: Control Terminals wire 0, Inputs wire 0 (predict 0, 0)
+   PASS B1 the wire is on both ends 389 / 389
+   PASS B2 ExecState 1 1
+donor md5 unchanged: True
+   string-array control 'Control Names': uid 101 wire 0 (0 = free) ; ExecState 1
+   PASS T0 a free String[] control is on the scratch 
+   new tunnels: [(0, 162)]
+   PASS T1 exactly one new tunnel 
+   tunnel: outer wire 173 mode 1 inner [0]; control wire 173
+   PASS T2 outer wire == the control terminal's wire 
+   PASS T3 IndexMode 1 (auto-indexed array input) 1
+   PASS T4 ExecState 1 (an indexed array input alone makes a legal For loop: N = array length) 1
+   PASS T5 runs with 3 elements and returns 0.01 s
+   PASS T6 runs with an EMPTY array (zero iterations) and returns 
+
+SUMMARY 9/9 PASS
+   PASS B1 the wire is on both ends
+   PASS B2 ExecState 1
+   PASS T0 a free String[] control is on the scratch
+   PASS T1 exactly one new tunnel
+   PASS T2 outer wire == the control terminal's wire
+   PASS T3 IndexMode 1 (auto-indexed array input)
+   PASS T4 ExecState 1 (an indexed array input alone makes a legal For loop: N = array length)
+   PASS T5 runs with 3 elements and returns
+   PASS T6 runs with an EMPTY array (zero iterations) and returns
+################ 1 OpForLoop_v1 -> rc 0  23:48:22
+
+################ 2a OpAddShiftRegF_v0  23:48:22
+   COM preflight OK (pid 4232, two round-trips agree: 16 wires)
+
+== A0 (diagnostic, read-only) OpExitWhile_v0's 'Shift Registers' feeder
+   Get Outputs 216: 'Node in' wire 744; 'Outputs' -> (107, 'Outputs')
+   Get Outputs 348: 'Node in' wire 347; 'Outputs' -> (107, 'Shift Registers')
+start: Property=9 Invoke=0 Wire=26 ExecState=1
+   node 43 (n=0) 'Open VI Reference': ['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+   node 124 (n=1) 'Traverse for GObjects.vi': ['error out', '# of Refs', 'References', 'dup VI Refnum', 'Other Refnum', 'Traverse Generated Code (F)', 'Traverse Target', 'error in (no error)', 'Class Name', 'VI Refnum']
+   node 308 (n=2) 'Index Array': ['array', 'element', 'index']
+   node 683 (n=3) 'To More Specific Class': ['specific class reference', 'error out', 'target class', 'reference', 'error in']
+   node 316 (n=4) 'Open VI Reference': ['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+   node 230 (n=5) 'Property Node': ['reference', 'reference out', 'error in (no error)', 'error out', 'UID']
+   node 238 (n=6) 'Property Node': ['reference', 'reference out', 'error in (no error)', 'error out', 'LpCount']
+   node 313 (n=7) 'Property Node': ['reference', 'reference out', 'error in (no error)', 'error out', 'Outer Term']
+   node 323 (n=8) 'Property Node': ['reference', 'reference out', 'error in (no error)', 'error out', 'Wire']
+   node 324 (n=9) 'Property Node': ['reference', 'reference out', 'error in (no error)', 'error out', 'UID']
+   node 330 (n=10) 'Property Node': ['reference', 'reference out', 'error in (no error)', 'error out', 'ShiftRegs[]']
+   node 331 (n=11) 'For Loop': ['ShiftRegs[]']
+   node 978 (n=12) 'Property Node': ['reference', 'reference out', 'error in (no error)', 'error out', 'IsParallelismEnabled']
+   node 984 (n=13) 'Property Node': ['reference', 'reference out', 'error in (no error)', 'error out', 'NumStaticParWorkers']
+   TMSC node: 683
+
+== A1 Invoke Loop.Add Shift Register (6361000)
+   predict: Invoke +1
+   result : 1202  (0.1 s)
+   Invoke terminals: ['reference', 'reference out', 'error in (no error)', 'error out', 'Add Shift Register', 'Add Shift Register', 'Y Position', 'Y Position']
+   PASS A1 the method attached (non-generic terminals present) ['Add Shift Register', 'Add Shift Register', 'Y Position', 'Y Position']
+   PASS A1 'Y Position' input present ['Add Shift Register', 'Add Shift Register', 'Y Position', 'Y Position']
+
+== A1b TMSC 'specific class reference' -> Invoke.reference (branch)
+   predict: same wire uid on both ends
+   result : after Property=9 Invoke=1 Wire=26 ExecState=0  (0.1 s)
+   PASS A1b the branch landed (Invoke.reference wire == TMSC output wire) src=366 ref=366
+   'Y Position' sink terminal index: 6
+   control on 'Y Position' -> ['Y Position']
+   return SOURCE terminal index: 5 ([(4, 'Add Shift Register', False), (5, 'Add Shift Register', True), (6, 'Y Position', False), (7, 'Y Position', True)])
+
+== B1 PN GObject[UID] on the returned reference
+   predict: Property +1
+   result : 1205  (0.2 s)
+
+== B2 Invoke return -> PN.reference BY INDEX (never by the duplicated name)
+   predict: wire on both ends
+   result : (1, 1)  (0.0 s)
+   indicator on UID -> ['UID 3']
+   indicator on Invoke.error out -> ['error out 7']
+
+== C auto error handling OFF
+   predict: silent
+   result : None  (0.0 s)
+
+assembled: Property=10 Invoke=1 Wire=30 ExecState=1 labels {'y_position': 'Y Position', 'uid': 'UID 3', 'error': 'error out 7'}
+   saved; labels -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opaddshiftregF_labels.json
+
+== A2 (functional) add a shift register to a scratch While loop
+   predict: shift_reg_uids 0 -> 1, element == the op's reported UID, one LeftShiftRegister, both sides unwired
+   scratch (For loop): ExecState 1
+   before: {'loop_uid': 239, 'n_wire_uid': 346, 'shift_reg_uids': [], 'errors': {}, 'parallel_enabled': False, 'static_instances': 0}
+   add_shift_reg -> uid 424, error None
+   after : {'loop_uid': 239, 'n_wire_uid': 346, 'shift_reg_uids': [424], 'errors': {}, 'parallel_enabled': False, 'static_instances': 0}
+   PASS A2 no error from the invoke None
+   PASS A2 shift_reg_uids 0 -> 1 [] -> [424]
+   PASS A2 the created register is the one the op reported 424 vs [424]
+   (For seed: left/right terminal census skipped - readers are WhileLoop-seeded)
+   PASS A2 no junk Invoke on the scratch 
+   scratch ExecState after the register: 0 (0 is expected and correct: an unwired shift register breaks the VI until both sides are wired)
+
+donor md5 unchanged: True
+
+SUMMARY 7/7 PASS   steps [('A1 Invoke Loop.Add Shift Register (6361000)', 'ok'), ("A1b TMSC 'specific class reference' -> Invoke.reference (branch)", 'ok'), ('B1 PN GObject[UID] on the returned reference', 'ok'), ('B2 Invoke return -> PN.reference BY INDEX (never by the duplicated name)', 'ok'), ('C auto error handling OFF', 'ok')]
+   PASS A1 the method attached (non-generic terminals present)
+   PASS A1 'Y Position' input present
+   PASS A1b the branch landed (Invoke.reference wire == TMSC output wire)
+   PASS A2 no error from the invoke
+   PASS A2 shift_reg_uids 0 -> 1
+   PASS A2 the created register is the one the op reported
+   PASS A2 no junk Invoke on the scratch
+################ 2a OpAddShiftRegF_v0 -> rc 0  23:49:29
+
+################ 2b OpWireSRF_*_v0  23:49:29
+
+######## BUILD OpWireSRF_LeftIn_v0.vi  (seed ForLoop)
+start: Property=9 IndexArray=1 Invoke=0 Wire=26 ExecState=1
+   TMSC 683, Open VI Reference 43, Loop[ShiftRegs[]] PN 330
+
+== R1 IA_r on ShiftRegs[] (branch)
+   predict: same wire both ends
+   result : 1202  (0.1 s)
+   R1 'ShiftRegs[]' -> 'array': wire 657 / 657 OK
+   control on 'index' -> ['index 3']
+
+== R2 PN_LR RightShiftRegister[Left Registers[]]
+   predict: Property +1
+   result : 1205  (0.2 s)
+   R2 'element' -> 'reference': wire 1259 / 1259 OK
+   R3 'LeftRegs[]' -> 'array': wire 1278 / 1278 OK
+   R4 'element' -> 'reference': wire 1301 / 1301 OK
+   R5 'reference out' -> 'reference': wire 1327 / 1327 OK
+   R6 'InsideTerms[]' -> 'array': wire 1345 / 1345 OK
+   R7 'element' -> 'reference': wire 1259 / 1259 OK
+   R8 'InsideTerms[]' -> 'array': wire 1385 / 1385 OK
+   register chain: ExecState 1
+
+== B0 PN_D Loop[Diagram] 6361401 (UNVERIFIED property - the gate)
+   predict: Property +1, data terminal 'Diagram'
+   result : 1323  (0.2 s)
+   PN_D data terminal: 'Diagram'
+   B0 'specific class reference' -> 'reference': wire 366 / 366 OK
+   B1 'Diagram' -> 'reference': wire 1431 / 1431 OK
+   B2 'Nodes[]' -> 'array': wire 1449 / 1449 OK
+   control on 'index' -> ['index 4']
+   B3 'element' -> 'reference': wire 1489 / 1489 OK
+   B4 'Terms[]' -> 'array': wire 1508 / 1508 OK
+   control on 'index' -> ['index 5']
+   node chain: ExecState 1
+
+== C1 Invoke Terminal.Connect Wire
+   predict: Invoke +1
+   result : 1428  (0.1 s)
+   C2 sink 'element' -> 'reference': wire 1558 / 1558 OK
+   C3 src 'element' -> 'Wire Source': wire 1589 / 1589 OK
+   indicator on 'error out' -> ['error out 7']
+
+assembled LeftIn: Property=16 IndexArray=7 Invoke=1 Wire=42 ExecState=1 labels {'index_reg': 'index 3', 'index_node': 'index 4', 'index_term': 'index 5', 'error': 'error out 7'}
+
+######## BUILD OpWireSRF_RightIn_v0.vi  (seed ForLoop)
+start: Property=9 IndexArray=1 Invoke=0 Wire=26 ExecState=1
+   TMSC 683, Open VI Reference 43, Loop[ShiftRegs[]] PN 330
+
+== R1 IA_r on ShiftRegs[] (branch)
+   predict: same wire both ends
+   result : 1202  (0.1 s)
+   R1 'ShiftRegs[]' -> 'array': wire 657 / 657 OK
+   control on 'index' -> ['index 3']
+
+== R2 PN_LR RightShiftRegister[Left Registers[]]
+   predict: Property +1
+   result : 1205  (0.2 s)
+   R2 'element' -> 'reference': wire 1259 / 1259 OK
+   R3 'LeftRegs[]' -> 'array': wire 1278 / 1278 OK
+   R4 'element' -> 'reference': wire 1301 / 1301 OK
+   R5 'reference out' -> 'reference': wire 1327 / 1327 OK
+   R6 'InsideTerms[]' -> 'array': wire 1345 / 1345 OK
+   R7 'element' -> 'reference': wire 1259 / 1259 OK
+   R8 'InsideTerms[]' -> 'array': wire 1385 / 1385 OK
+   register chain: ExecState 1
+
+== B0 PN_D Loop[Diagram] 6361401 (UNVERIFIED property - the gate)
+   predict: Property +1, data terminal 'Diagram'
+   result : 1323  (0.2 s)
+   PN_D data terminal: 'Diagram'
+   B0 'specific class reference' -> 'reference': wire 366 / 366 OK
+   B1 'Diagram' -> 'reference': wire 1431 / 1431 OK
+   B2 'Nodes[]' -> 'array': wire 1449 / 1449 OK
+   control on 'index' -> ['index 4']
+   B3 'element' -> 'reference': wire 1489 / 1489 OK
+   B4 'Terms[]' -> 'array': wire 1508 / 1508 OK
+   control on 'index' -> ['index 5']
+   node chain: ExecState 1
+
+== C1 Invoke Terminal.Connect Wire
+   predict: Invoke +1
+   result : 1428  (0.1 s)
+   C2 sink 'element' -> 'reference': wire 1558 / 1558 OK
+   C3 src 'element' -> 'Wire Source': wire 1589 / 1589 OK
+   indicator on 'error out' -> ['error out 7']
+
+assembled RightIn: Property=16 IndexArray=7 Invoke=1 Wire=42 ExecState=1 labels {'index_reg': 'index 3', 'index_node': 'index 4', 'index_term': 'index 5', 'error': 'error out 7'}
+
+######## BUILD OpWireSRF_LeftOutNode_v0.vi  (seed ForLoop)
+start: Property=9 IndexArray=1 Invoke=0 Wire=26 ExecState=1
+   TMSC 683, Open VI Reference 43, Loop[ShiftRegs[]] PN 330
+
+== R1 IA_r on ShiftRegs[] (branch)
+   predict: same wire both ends
+   result : 1202  (0.1 s)
+   R1 'ShiftRegs[]' -> 'array': wire 657 / 657 OK
+   control on 'index' -> ['index 3']
+
+== R2 PN_LR RightShiftRegister[Left Registers[]]
+   predict: Property +1
+   result : 1205  (0.2 s)
+   R2 'element' -> 'reference': wire 1259 / 1259 OK
+   R3 'LeftRegs[]' -> 'array': wire 1278 / 1278 OK
+   R4 'element' -> 'reference': wire 1301 / 1301 OK
+   R5 'reference out' -> 'reference': wire 1327 / 1327 OK
+   R6 'InsideTerms[]' -> 'array': wire 1345 / 1345 OK
+   R7 'element' -> 'reference': wire 1259 / 1259 OK
+   R8 'InsideTerms[]' -> 'array': wire 1385 / 1385 OK
+   register chain: ExecState 1
+   B0 'vi reference' -> 'reference': wire 467 / 467 OK
+   B1 'Diagram' -> 'reference': wire 1431 / 1431 OK
+   B2 'Nodes[]' -> 'array': wire 1449 / 1449 OK
+   control on 'index' -> ['index 4']
+   B3 'element' -> 'reference': wire 1489 / 1489 OK
+   B4 'Terms[]' -> 'array': wire 1508 / 1508 OK
+   control on 'index' -> ['index 5']
+   node chain: ExecState 1
+
+== C1 Invoke Terminal.Connect Wire
+   predict: Invoke +1
+   result : 1428  (0.1 s)
+   C2 sink 'Outer Term' -> 'reference': wire 1558 / 1558 OK
+   C3 src 'element' -> 'Wire Source': wire 1588 / 1588 OK
+   indicator on 'error out' -> ['error out 7']
+
+assembled LeftOutNode: Property=16 IndexArray=7 Invoke=1 Wire=42 ExecState=1 labels {'index_reg': 'index 3', 'index_node': 'index 4', 'index_term': 'index 5', 'error': 'error out 7'}
+
+######## BUILD OpWireSRF_LeftOutCtl_v0.vi  (seed ForLoop)
+start: Property=9 IndexArray=1 Invoke=0 Wire=26 ExecState=1
+   TMSC 683, Open VI Reference 43, Loop[ShiftRegs[]] PN 330
+
+== R1 IA_r on ShiftRegs[] (branch)
+   predict: same wire both ends
+   result : 1202  (0.1 s)
+   R1 'ShiftRegs[]' -> 'array': wire 657 / 657 OK
+   control on 'index' -> ['index 3']
+
+== R2 PN_LR RightShiftRegister[Left Registers[]]
+   predict: Property +1
+   result : 1205  (0.2 s)
+   R2 'element' -> 'reference': wire 1259 / 1259 OK
+   R3 'LeftRegs[]' -> 'array': wire 1278 / 1278 OK
+   R4 'element' -> 'reference': wire 1301 / 1301 OK
+   R5 'reference out' -> 'reference': wire 1327 / 1327 OK
+   R6 'InsideTerms[]' -> 'array': wire 1345 / 1345 OK
+   R7 'element' -> 'reference': wire 1259 / 1259 OK
+   R8 'InsideTerms[]' -> 'array': wire 1385 / 1385 OK
+   register chain: ExecState 1
+   B0 'vi reference' -> 'reference': wire 467 / 467 OK
+   B1 'Panel' -> 'reference': wire 1431 / 1431 OK
+   B2 'Controls[]' -> 'array': wire 1450 / 1450 OK
+   control on 'index' -> ['index 4']
+   B3 'element' -> 'reference': wire 1489 / 1489 OK
+   node chain: ExecState 1
+
+== C1 Invoke Terminal.Connect Wire
+   predict: Invoke +1
+   result : 1405  (0.1 s)
+   C2 sink 'Outer Term' -> 'reference': wire 1526 / 1526 OK
+   C3 src 'Terminal' -> 'Wire Source': wire 1556 / 1556 OK
+   indicator on 'error out' -> ['error out 7']
+
+assembled LeftOutCtl: Property=16 IndexArray=6 Invoke=1 Wire=40 ExecState=1 labels {'index_reg': 'index 3', 'index_ctl': 'index 4', 'error': 'error out 7'}
+
+######## FUNCTIONAL TEST (For seed)
+   ExecState before the register: 0
+   register uid 392; ExecState 0 (0 expected)
+   PASS F1 no op errors None None None
+   PASS F2 body copy 'Image Dst' wired (left inside) 449
+   PASS F3 body copy 'Image Dst Out' wired (right inside) 459
+   PASS F4 top IMAQ Create 'New Image' wired (left outside) 151
+   PASS F5 ExecState 1 with all three wired 1
+   PASS F6 the VI runs 1024 iterations and returns 0.01 s
+   PASS F7 no junk Invoke 
+
+donor md5 unchanged: True
+SUMMARY 7/7 PASS
+   PASS F1 no op errors
+   PASS F2 body copy 'Image Dst' wired (left inside)
+   PASS F3 body copy 'Image Dst Out' wired (right inside)
+   PASS F4 top IMAQ Create 'New Image' wired (left outside)
+   PASS F5 ExecState 1 with all three wired
+   PASS F6 the VI runs 1024 iterations and returns
+   PASS F7 no junk Invoke
+################ 2b OpWireSRF_*_v0 -> rc 0  23:55:15
+
+################ 3 StrToPath.vi  23:55:15
+   OBSERVED copy_into: EXC run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gscript_dialog_1789397722.png
+   FAIL C1 one object copied None
+################ 3 StrToPath.vi -> rc 2  23:55:23
+
+STOP: 3 StrToPath.vi failed (rc 2). Nothing further built; next batch after review.
+BGRUN END rc=2 after 441s

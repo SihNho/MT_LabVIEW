@@ -1,0 +1,197 @@
+BGRUN START 2026-09-17 17:02:01 limit 18.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Dual -Slug open31b-stamp -TimeoutSec 780 -TaskFile 'tools/bench/peer_task_open31b.txt'
+=== DUAL ARM 1/2: codex -> open31b-stamp-codex ===
+NOTE: quota-looking text appeared, but a liveness probe succeeded - NOT benching codex.
+OUTCOME: ANSWERED (224s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-17-open31b-stamp-codex.md
+--- ANSWER ---
+The strongest reason the explanation is wrong is that T5’s miss has a directly evidenced alternative cause: the cycle16b command explicitly supplied `--since-hours 1.2`, but `retrospective.py` ignored it because that option is used only when `cycle_window()` returns no boundary. The test now converts that unresolved miss into success without testing the ignored override.
+
+### 1. F1/F2/F3: backward correction is not universally safe
+
+F1 is plausible for the two sub-second deltas: `peer.ps1` records only whole seconds in `$dateStamp`, while the filesystem timestamps retain finer resolution ([peer.ps1:545](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/peer.ps1:545>), [peer.ps1:557](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/peer.ps1:557>)). But that does not validate F3’s proposed invariants.
+
+The serious hole is that `stamp()` treats an unvalidated text match as authoritative and returns it without clamping or provenance checks ([guard_cycle.py:215](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_cycle.py:215>)-[220](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_cycle.py:220>)). Therefore:
+
+- “Never later than mtime” is not an invariant of `stamp()`; it is merely true of the current corpus. A future or edited timed line is returned exactly.
+- “Equals the frontmatter time exactly” proves parser consistency, not timestamp authenticity.
+- Counting lifted/lowered files without gating cannot detect a dangerous wrong-file ordering.
+
+There are concrete fail-open cases when a stamp is pulled backward:
+
+- `newest_retrospective()` chooses the maximum stamp ([guard_cycle.py:247](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_cycle.py:247>)-[260](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_cycle.py:260>)). A timestamp that is too high is directly dangerous: builds before that false boundary disappear from `since`, potentially preventing the retrospective gate from becoming overdue ([guard_cycle.py:499](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_cycle.py:499>)-[524](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_cycle.py:524>)). A too-low timestamp is normally fail-closed by counting extra builds.
+
+- `premature_build()` compares prior-art stamps with the recipe mtime ([guard_cycle.py:336](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_cycle.py:336>)-[355](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_cycle.py:355>)). Too high is fail-open: a review can appear to postdate recipe text it never saw. Too low is generally fail-closed.
+
+- The prior-art verdict gate examines only the archive that sorts last ([guard_cycle.py:449](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_cycle.py:449>)-[472](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_cycle.py:472>)). Pulling the real newest review behind another file can be fail-open if the displaced review has unresolved blocking findings but the newly selected archive does not. It can also falsely block if the replacement archive has stale findings.
+
+- `newest_retro_before()` uses the stamp as the next window’s start ([retrospective.py:218](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/retrospective.py:218>)-[234](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/retrospective.py:234>)). Too late is dangerous because it silently removes build evidence. Too early primarily causes overlap and re-review, possibly producing duplicate or misattributed violations.
+
+Thus F2 is justified only for that one archive if its canonical date line is trusted. It does not establish that backward movement is safe as a general property.
+
+### 2. `_fm_date` is not actually a frontmatter parser
+
+`_fm_date()` reads exactly the first 4,000 characters and runs a multiline regex over the entire block ([guard_cycle.py:162](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_cycle.py:162>)-[179](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/hooks/guard_cycle.py:179>)). It does not:
+
+- delimit a metadata section;
+- require the match to occur before `## Question`;
+- require exactly one date line;
+- reject dates after mtime;
+- distinguish an edited line from one generated by `peer.ps1`.
+
+A peer’s ordinary answer cannot shadow the generated header: the genuine date is emitted before the task and answer ([peer.ps1:550](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/peer.ps1:550>)-[568](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/peer.ps1:568>)), and regex search returns the earlier header match. The answer may also fall beyond the 4,000-character read.
+
+Nothing, however, prevents a later hand edit from inserting a matching line above the genuine line, changing the genuine line, or deleting it so a question/task match becomes authoritative. Consequently T2b’s exact-equality assertion ([selftest_stamp_window.py:144](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/selftest_stamp_window.py:144>)-[154](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/selftest_stamp_window.py:154>)) tests the dangerous behavior rather than protecting against it.
+
+### 3. Alternative explanation for cycle16b: the explicit override was ignored
+
+The actual invocation was:
+
+`retrospective.py --cycle 16 --slug retrospective-cycle16b --since-hours 1.2`
+
+([retro_cycle16b.log:1](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/retro_cycle16b.log:1>)).
+
+But `--since-hours` is applied only if `cycle_window()` fails completely ([retrospective.py:326](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/retrospective.py:326>)-[330](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/retrospective.py:330>)). Since a previous retrospective existed, the requested 1.2-hour start was silently discarded.
+
+The archived reviewer independently identified exactly this defect: the option “cannot override the previous-retrospective boundary used here” ([retrospective-cycle16b.md:16](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-17-retrospective-cycle16b.md:16>)-[18](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-17-retrospective-cycle16b.md:18>)).
+
+Had the supplied override controlled `start`, the window would have reached back well before the build:
+
+- build started at 08:04:05 ([build_opstopfromnode_v0.log:1](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_opstopfromnode_v0.log:1>));
+- it ended 45 seconds later ([build_opstopfromnode_v0.log:55](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_opstopfromnode_v0.log:55>));
+- cycle16b was launched at 08:10:39 ([retro_cycle16b.log:1](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/retro_cycle16b.log:1>)).
+
+So E4-2 describes a real defect, but it is not the only explanation for this miss and is not the strongest proximate explanation of this particular rerun.
+
+### 4. What would falsify F4
+
+F4’s causal claim is falsified if a replay that honors the actual `--since-hours 1.2` invocation covers the 08:04:50 target while keeping the same end. That would demonstrate that no recorded-closure redesign was necessary to close this specific case; only correct override precedence was required.
+
+Conversely, F4 would be strengthened if the project explicitly established that `--since-hours` was never intended to override an available computed boundary and that cycle16b was deliberately required to begin at the previous archive stamp. The command and archived review currently point the other way.
+
+### 5. `KNOWN-GAP` is regrading this gate
+
+The original T5 contract says all three retrospectives must contain the newest build log existing at dispatch ([selftest_stamp_window.py:211](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/selftest_stamp_window.py:211>)-[215](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/selftest_stamp_window.py:215>)). Cycle16b still violates that contract ([selftest_stamp_window.log:29](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/selftest_stamp_window.log:29>)).
+
+The replacement branch classifies any missed target older than the chosen start as successful `KNOWN-GAP`, without proving why that start is late ([selftest_stamp_window.py:274](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/selftest_stamp_window.py:274>)-[285](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/selftest_stamp_window.py:285>)). It therefore masks E4-2, an ignored override, a forged frontmatter date, or any other late-start defect equally.
+
+That is the antipattern described in [violations.py:90](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/violations.py:90>)-[93](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/violations.py:93>): a blocking gate was changed after it blocked. A legitimate known-gap result should remain non-passing—such as XFAIL/OPEN—or be authorized as a changed requirement. It should not increment `RESULTS` as `True`.
+
+The named log also has not demonstrated the regraded outcome: its latest recorded run still says `FAIL` and exits nonzero ([selftest_stamp_window.log:29](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/selftest_stamp_window.log:29>)-[34](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/selftest_stamp_window.log:34>)).
+
+Cheapest discriminating test: calculate cycle16b twice at its historical dispatch—once with the current predecessor-derived start `08:10:33`, once with the command’s explicit `dispatch − 1.2 hours` start—and test only whether `08:04:50` is contained. If the override window passes, the observed miss is explained without E4-2; if both miss, F4 survives.
+=== DUAL ARM 2/2: claude/hypothesis (opus, effort max, web) -> open31b-stamp-opus ===
+OUTCOME: ANSWERED (684s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-17-open31b-stamp-opus.md
+COST: $4.3862  in 34 / out 47290 / cache-create 204893 / cache-read 2213779  (680s, 26 turn(s))
+--- ANSWER ---
+**Verdict: F1 is wrong in mechanism (harmless), F2/F3 are wrong in the direction that matters, and F4/F5 are wrong on the facts — the log they call orphaned *was* inside an archived window, and the "recorded closure timestamp" F5 says you'd need already exists in every archive and is already parsed by the very test file under discussion.**
+
+---
+
+## 1. The single strongest reason the claim is WRONG
+
+**Measured on your own corpus, the new `stamp()` does nothing except lower the stamps of the exact archives the gates read.**
+
+`selftest_stamp_window.log:25` — *"339 archives read, 3 regressions, **0 lifted by their own frontmatter date**"*.
+
+Only four archives in `archive/peer/` carry a frontmatter **time**, and three of them are your three "regressions":
+
+```
+open31b-stamp-codex.md        17:05:54   (written after the 16:59 run)
+open31-window-codex.md        16:49:45   ← regression −577.7 s
+priorart-opgeterrors-opus.md  16:56:00   ← regression −0.8 s
+priorart-opgeterrors-codex.md 16:48:28   ← regression −0.9 s
+```
+
+All 340 archives carry a `- **date:**` line (grep, one occurrence each), so `stamp()` never reaches case 3, and the other 336 take case 2, `max(base, midnight)` (`guard_cycle.py:220`) — which is a **no-op by construction**: an archive's `min(ctime,mtime)` is essentially never earlier than midnight of the date its own text states, because both come from the same `Get-Date` call (`peer.ps1:537,545`). Hence 0 lifted.
+
+So the change's stated purpose — repair a stale re-archive stamp **upward** (`guard_cycle.py:193-209`) — has **zero measured effect on 339 files**, while its side effect moved three stamps **down**, and those three are precisely the newest, gate-relevant archives (two of them `*priorart*`, read by `guard_cycle.py:336` and `:451`).
+
+F2 defends the downward move as "the fix working." The corpus says the fix *only* does the downward move. A change whose intended effect is unobservable and whose only observable effect is the side effect is not "working"; it is a different change than the one that was justified.
+
+And the justification itself is thin: `log:24` — T1c, the **only real archive examined**, reads `ctime 13:37:04 / mtime 13:37:04 -> stale-by 0 s`. The one genuine re-archive in the project does **not** exhibit the defect the change was built for. The first run said so explicitly (`log:4`: *"a re-archive HOURS later does NOT keep the old ctime, so OPEN 31's stated cause does not explain a same-day/next-day re-archive"*). T1d is the surviving evidence — and see §4 for why T1d does not license a conclusion about `archive/peer/`.
+
+## 2. Alternative explanations of the same evidence
+
+**Alt-A (for T2):** the three deltas are not "two roundings and one fix working." They are **one class**: every file where case 1 applies. peer.ps1 formats `HH:mm:ss` (truncating the fraction, `peer.ps1:545`) and then renders and writes the archive, so the frontmatter time is *systematically earlier* than mtime by (truncation + write latency) — the 0.8–0.9 s you measured. The 577.7 s file is the same rule applied to a file that was later annotated. The population is "files with a time line," n=3, all negative; there is no second phenomenon to explain.
+
+**Alt-B (for T5/cycle16b):** the miss is not E4-2. It is the **test asserting something the change was written to forbid**. `newest_retro_before()` exists to stop a review re-reviewing already-reviewed work (`retrospective.py:210-214`). The window is therefore `[previous review's close, my dispatch]` by construction. For any review dispatched with **no build in that interval**, `newest_build_log_before(disp)` necessarily returns a log from *before* the previous close — guaranteed MISS. cycle16b was dispatched 08:11:43, 70 s after `retrospective-cycle16` closed at 08:10:33, with no build between. The gate at `selftest_stamp_window.py:211-215` is unsatisfiable for that shape, and the two PASSes pass only because a build happened to land inside their intervals.
+
+**Alt-C (for the orphan itself):** the gap mechanism is not "the reviewer's own runtime." Read the recorded windows:
+
+```
+cycle14        2026-09-16 20:19:33 .. 2026-09-17 03:25:34   ANSWERED (299s)
+cycle15        2026-09-17 07:10:02 .. 08:04:04              start = cycle14 archive mtime
+```
+(`archive/peer/2026-09-17-retrospective-cycle14.md:8,17,18`; `...-cycle15.md:17,18`)
+
+cycle14 closed at **03:30:33** (03:25:34 + 299 s) and cycle15 started at **07:10:02** — a **3 h 44 min** orphan of exactly the same shape as your 160 s one. Only 299 s of it is reviewer runtime; the remaining **3 h 39 min is annotation moving the archive's mtime**. So the real defect in `start` is not "completion mtime vs pre-audit now" — it is **"whenever Claude last edited the file"**. `stamp()` is supposed to defend against that (`guard_cycle.py:249-250`), but it can only do so for archives carrying a frontmatter time: 4 of 340. Every pre-today archive still hands the chain an annotation-inflated start.
+
+## 3. What would falsify the claims
+
+- **F2/F3 falsified by:** a caller for which a *backward* stamp opens a gate. There are two — see Q1. F3's invariant set contains no clause covering either.
+- **F3(a) falsified by:** a single archive whose `- **date:**` line is later than its mtime. `stamp()` has **no such clamp** (`guard_cycle.py:215-220` returns `fm` verbatim). (a) is a property of today's data, not of the function.
+- **F4 falsified by:** `build_opstopfromnode_v0.log` @ 08:04:50 lying inside *any* archived retrospective window. **It does.** `2026-09-17-retrospective-cycle15-routeb.md:17` records `07:10:02 .. 13:32:51`. That log was reviewed — by the over-wide window whose existence is the stated reason `newest_retro_before()` was written (`retrospective.py:210-214`). "Belongs to no window" is false as a statement about what was actually reviewed.
+- **F5 falsified by:** the record already existing. `retrospective.py:331` writes the window into the task; `peer.ps1:564` embeds the task verbatim; so **every retrospective archive carries its own `start .. end` in machine-readable form at line 17**, and `selftest_stamp_window.py:232-241` (`WIN_RE`, `parse_recorded`) **already parses it**. codex's own recommendation was "use the previous review's recorded `end`, not archive completion mtime" (`2026-09-17-open31-window-codex.md:168`) — that is one line in `newest_retro_before()`, not a new boundary record. Replaying the chain: cycle16 with `start = cycle15's recorded end (08:04:04)` gives `08:04:04..08:06:54`, which **covers 08:04:50**, and cycle16b then correctly does not need it.
+
+## 4. The cheapest discriminating test
+
+One read-only script, no LabVIEW, ~10 s:
+
+1. Parse `WIN_RE` over every `archive/peer/*retrospective*.md`; list every build log in `tools/bench/` whose mtime falls in **no** window. (Settles F4 immediately: 08:04:50 is covered by routeb; 03:25:34→07:10:02 is the real hole.)
+2. Re-run the chain with `start = parse_recorded(prev)[1]` instead of `stamp(prev)` and recount uncovered logs. If the count drops, F5's "needs a design change" is dead.
+3. Run the T1/T1b/T1d probes **on `G:` instead of `%TEMP%`**. `selftest_stamp_window.py:69` uses `os.environ["TEMP"]` = `C:\Users\KimLab\AppData\Local\Temp`, while `archive/peer/` is on `G:` — the project already knows these are different mounts (`guard_cycle.py:389-391`). **Every tunneling and in-place-overwrite conclusion was measured on the wrong volume**, and T1c (the G: archive, ctime == mtime) contradicts T1d (C:, ctime preserved). Until the probe runs on G:, the mechanism behind the stamp() change is unmeasured on the filesystem it applies to.
+
+---
+
+## Q1 — direction of error, per caller
+
+| caller | dangerous direction | why |
+|---|---|---|
+| `newest_retrospective()` → cycle gate, `guard_cycle.py:250,499-523` | **forward** | a later retro shrinks `since` and makes `retro[1] < log[1]` false → gate opens. Backward = more blocking = safe. |
+| `newest_retrospective()` → `premature_build` floor, `:309-318` | **forward** | a higher floor skips running priorart logs. Backward = safe. |
+| `newest_retro_before()`, `retrospective.py:229,289` | **forward** | narrower window, silent evidence loss (`retrospective.py:244` states this tradeoff). |
+| **`premature_build` re-run exemption, `guard_cycle.py:336-355`** | **BACKWARD** | `latest = max(revs, key=stamp)`; any build log with `mtime > latest[1]` proves "already ran under that review" → `return None` = **ALLOWED**. Pull `latest` back by Δ and every build that ran in the Δ **before the review was archived** — i.e. builds launched *inside their own review* — becomes evidence of an allowed re-run. That is the `premature-build` fault this device exists to refuse, verbatim (`guard_cycle.py:264-269`). Measured Δ today: **578 s**. |
+| **prior-art verdict gate, `guard_cycle.py:451-452`** | **BACKWARD** | `pa[-1]` is chosen by stamp order. Pull the newest review below the second-newest and the gate reads an **older** review — whose verdicts are already refuted/fixed — while the real newest review's open verdicts go unenforced. Separately, `time.time() - stamp(pa[-1]) <= MAX_AGE_S` expires the gate early; unclamped, a wrong date line disables it entirely. |
+
+So: **two of five call sites want the opposite clamp from the other three**, and one `stamp()` serves all five. F3's invariants (a)(b)(c) say nothing about either. "A downward correction is the point" is true for annotation-inflation and false for prior-art selection — the function cannot be right for both without a caller-specific rule.
+
+## Q2 — is (b) "the stamp equals the frontmatter time exactly" a hole?
+
+**Yes, but not the hole you asked about.**
+
+Regex injection is currently not live: `_fm_date` reads the first 4000 bytes (`guard_cycle.py:169-173`), peer.ps1 writes the header first (`peer.ps1:550-558`), `FM_DATE_RE` requires a line-initial `- ` so an indented quote cannot match, and a grep of all 340 archives finds **exactly one** `^- **date:**` per file. `frontmatter.py:109-114` writes YAML `date: …`, not `- **date:**`, so a bulk pass still cannot match it.
+
+The real holes:
+
+1. **No clamp, in either direction.** `guard_cycle.py:217-219` returns `fm` verbatim. The file whose text sets the gate's clock is the file the *gated session is required to edit* (every review owes a disposition). Under `min(ctime,mtime)` no text edit could move a gate; now one line can, by any amount. Minimum repair: enforce F3(a) in the code — `return min(fm, mtime)` — which makes T2a a tautology, where an invariant belongs.
+2. **Two clocks for one review.** `_fm_date` reads 4000 bytes; `review_time()` (`guard_cycle.py:100`) searches the whole body with the same regex. `premature_build` dates a review with `stamp()`, `fixed_citations` dates the *same* review with `review_time()`. They can disagree.
+3. **`dispatch_time()` still uses raw `getmtime`** (`retrospective.py:246`) — the E4-4 defence applied to `newest_retro_before` was never applied one function away, in the same file. For a re-archived or annotated file it reports a dispatch hours off; the T5 replay's OLD column (`13:37:04..08:07:42`) is that bug printing itself.
+4. **External, load-bearing:** `base` rests on `os.path.getctime` = creation time on Windows. As of **Python 3.12 `st_ctime` is deprecated on Windows and is documented to change to metadata-change time in a future release**, with `st_birthtime` as the replacement. On that upgrade `min(ctime,mtime)` silently becomes `min(metadata-change-time, mtime)` and every gate here changes behaviour with no error. This argues the frontmatter route is directionally right — and that the `base` half needs `st_birthtime` with a fallback, not a docstring.
+
+## Q3 — alternative explanation of the cycle16b miss, without E4-2
+
+See Alt-B above: **the gate at `selftest_stamp_window.py:211-215` is unsatisfiable for a review dispatched with no intervening build**, which is exactly cycle16b (prev closed 08:10:33, dispatched 08:11:43). Reinforced by Alt-C: the orphan that *does* exist was created at **cycle16's** window computation, not at cycle16b's, and by the 3 h 44 min cycle14→cycle15 hole, which E4-2 cannot explain (299 s of reviewer runtime, 3 h 39 min of annotation).
+
+The correct acceptance criterion is **"the union of archived windows covers every build log"**, not "each review sees the newest build log at its dispatch."
+
+## Q4 — what falsifies F4, concretely
+
+Any window containing 08:04:50. `2026-09-17-retrospective-cycle15-routeb.md:17` = `07:10:02 .. 13:32:51`. **F4 is falsified as written.** What survives is the weaker, still-true claim: *under the new derivation*, no window would contain it — and that is repairable at `start`, which F4's "no choice of `end` can reach back past `start`" quietly excludes from the solution space. `start` is a free parameter at `retrospective.py:289`.
+
+## Q5 — is `KNOWN-GAP` legitimate?
+
+**No — and it is closer to the `violations.py:90-93` antipattern than the T2 replacement is.**
+
+That comment's standard is not "never change a failing check"; it is *"the block was reported and **stood until the user decided** — regrading a gate that blocks you is the `rule-evaded` slug itself."* The test is:
+
+- **T2's replacement passes it.** `new >= old` was a genuinely wrong assertion, the replacement is *stricter* in one respect (T2a/T2b add constraints the old test lacked), and the corrected invariants are stated. Defensible on the merits — though defended with the wrong story (see §1).
+- **`KNOWN-GAP` fails it.** `selftest_stamp_window.py:280-285` appends `True` to `RESULTS`, so `main()` (`:305-307`) returns **0** where it returned 1. The exit code an unattended `bgrun` reads was changed by the session whose test was failing, in the same file, minutes later, without the user deciding — and the question it suppresses ("did the review see what it had to judge?") is the exact question the change was made to fix, still answered **no**. It is also mislabelled: it attributes the failure to a defect "handed to judgement," which stops anyone looking again — and the attribution is wrong (Q4).
+
+Honest forms that keep both the information and the red light: count `KNOWN-GAP` separately and exit non-zero (or 2) while any exist; or mark it `xfail` with an expiry and a named owner; or — best — replace the per-review gate with the union-coverage gate, which is the assertion you actually want and which cycle16b would then pass on its merits.
+
+---
+
+**Would change my mind:** on F2/F3, a caller census showing no gate reads a stamp in the "backward opens it" direction — I found two (`guard_cycle.py:336-355`, `:451-452`). On F5, a demonstration that `parse_recorded()`'s window line is absent or unparseable in some retrospective archives — I found it present and parsed in all seven of today's.
+
+**Sources:** [Microsoft KB 172190 (file tunneling)](https://www.betaarchive.com/wiki/index.php/Microsoft_KB_Archive/172190) · [File system tunneling: 15 s default, keyed on the removed name, applies to rename](https://unminioncurioso.blogspot.com/2020/07/ill-be-back-in-15-seconds-or-maybe-not.html) · [Python 3.12: `st_ctime` deprecated on Windows, use `st_birthtime`](https://github.com/python/cpython/issues/117267)
+=== DUAL DONE: codex rc=0, opus rc=0  (archive\peer\2026-09-17-open31b-stamp-codex.md, -open31b-stamp-opus.md) ===
+BGRUN END rc=0 after 916s

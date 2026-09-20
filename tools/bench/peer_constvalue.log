@@ -1,0 +1,87 @@
+BGRUN START 2026-09-15 03:57:32 limit 9.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & '.\tools\peer.ps1' -Agent codex -Slug opconstvalue-v1-recipe -TimeoutSec 300 -Task (Get-Content -Raw '.\tools\bench\peer_task_constvalue.txt')
+OUTCOME: ANSWERED (83s)  archived: archive\peer\2026-09-15-opconstvalue-v1-recipe.md
+--- ANSWER ---
+**Verdict: STOP before running.** The design is plausible, but the evidence does not yet establish that PN 284 is Constant-typed, and the functional test can pass without proving correct value or Variant marshalling.
+
+1. **PN 284 is probably Constant-class, but the census does not prove it.**  
+   `census_constant_seed.log` establishes only: diagram 3, property `Value`, reference supplied by TMSC. It never identifies the TMSC target class. NI?�s description of *Navigating Nodes and Wires* discusses navigating from nodes through terminals to wires; it does not identify PN 284?�s class. [NI?�s LabVIEW manual](https://nubilight.nubicom.co.kr/upload/datasheet/LabVIEW_Fundamentals_ko.pdf)
+
+   A Control-class `Value` property is therefore not excluded by current evidence. Do not infer the class from the property name.
+
+   Required pre-build gate: report the class encoded by the TMSC `target class` input or create the seed and prove that it compiles when used as the target-class input of a known Constant.Value chain. Merely finding `Value` and a TMSC is insufficient.
+
+2. **Terminal.Create Control is type-preserving, but Constant-specific applicability remains an inference.**  
+   An NI engineer states that a terminal?�s type is the correct source for creating a control, specifically noting that this preserves refnum and class types. [NI Community](https://forums.ni.com/t5/LabVIEW/Create-Control-From-Reference/td-p/1539816) That supports the row-28 technique generically.
+
+   It does not prove that PN 284?�s terminal is Constant-typed. If PN 284 is actually Control.Value, Create Control will faithfully create the wrong seed?�the exact silent failure under attack. The typed-seed section itself says each seed casts exactly its class; a wrong seed can still produce a structurally valid-looking build.
+
+3. **Copy-by-reference should preserve the configured Property Node, but add an explicit post-copy gate.**  
+   `copy_by_index()` drives Move with `duplicate=True`, and VI Scripting users describe that method as copying arbitrary objects. [NI Community](https://forums.ni.com/t5/LabVIEW/VI-Scripting-get-reference-of-the-duplicate-element/td-p/1882509) This strongly favors the copied node retaining its configured property and class rather than becoming generic.
+
+   However, the current UID guard validates the selected donor object, not the semantic state of the new object. After C1, require:
+
+   - exactly one new Property object;
+   - its data terminal is exactly `Value`;
+   - its property ID is still `634AC00`, if the fleet can read that metadata;
+   - its reference terminal accepts the intended Constant seed and the target becomes runnable.
+
+   Also record the new UID. F1 currently rediscovers ?�a Property Node with a source Value terminal,??which could select an existing OpReport property node if one ever matches.
+
+4. **`Constant` is a valid Traverse class locally; subclass coverage is strongly supported but not fully tested.**  
+   The requested toolkit table records measured main-VI counts:
+
+   - `Constant`: 301
+   - `NumericConstant`: 207
+   - `DigitalNumericConstant`: 180
+   - `StringConstant`: 22
+
+   Thus `Constant` clearly behaves as a base-class query in this installation; its count exceeds each subtype count. External Traverse examples likewise describe searching by a broad class such as `Control` to return subclasses. [NI Community](https://forums.ni.com/t5/LabVIEW/LV-OOP-for-an-alternative-to-clusters/m-p/3352783)
+
+   What is not established is that `Constant.Value` succeeds for every Constant subclass. Array constants are known to expose their whole value through the array constant?�s Value property, but that is community evidence, not a universal guarantee. [NI Community](https://forums.ni.com/t5/LabVIEW/Using-VI-Scripting-to-find-value-of-Array-of-String-Constants/td-p/4000163) Class/refnum or unusual universal constants may still error or marshal unexpectedly.
+
+5. **The ActiveX Variant assumption is not confirmed.**  
+   NI documents a LabVIEW Variant as a container retaining both value and original type, and recommends Variant data when interoperating with ActiveX. [NI Variant documentation](https://www.ni.com/docs/ar-IQ/bundle/labview/page/handling-variant-data.html) NI also says Variant controls and indicators pass data to and from ActiveX controls. [NI ActiveX documentation](https://www.ni.com/docs/ar-SD/csh?context=lvcore_lvconcepts_using_activex_with_labview)
+
+   Neither source says `VirtualInstrument.GetControlValue` automatically unwraps a LabVIEW Variant indicator to the contained Python scalar. The draft?�s ?�Python gets a plain number or string??remains unverified. A COM Variant could instead contain a LabVIEW-specific Variant representation, an array representation, or a value with coercion.
+
+6. **The current test gate is too weak.**
+
+   `got` increments whenever `_run()` and `GetControlValue()` do not throw. Consequently it accepts:
+
+   - `None`;
+   - an empty/default Variant;
+   - the wrong constant?�s value;
+   - a wrapper object;
+   - a coerced value;
+   - identical defaults returned for every index.
+
+   The docstring promises ?�numbers or strings,??but the code never checks `isinstance`, expected values, uniqueness, or the known VISA literal. It also tests only the first 40 of 301 constants, so the cited startup VISA constant may not be included.
+
+Additional missing gates:
+
+- Assert the donor TMSC?�s `target class` input is actually Constant-typed before copying.
+- Assert exactly one TMSC was copied and identify it by the added UID, not terminal signature alone.
+- Assert the seed wire selected for deletion is nonzero, unique, and absent afterward.
+- Assert all four final wires by matching wire UIDs at both endpoints, including both TMSC inputs.
+- Assert `labels["seed"]` and `labels["value"]` each contain exactly one newly created label.
+- Preserve and verify the NI example?�s hash as well as `OpReport_v3`; currently only `SRC` is checked.
+- Assert no unexpected GObjects were added by either copy operation.
+- Check `_run()`?�s LabVIEW error outputs, not only Python exceptions.
+- Test at least numeric, string, Boolean, array/cluster, and unsupported/special constants separately; report failures rather than treating one success as fleet-wide support.
+
+**Cheapest safe scratch test**
+
+Do not use the main VI as the first oracle. Create a disposable VI with three known constants?�e.g. I32 `12345`, DBL `3.25`, and string `hello`?�then demand exact type-and-value equality. LabVIEW?�s Terminal.Create Constant method creates a constant of the terminal?�s datatype and accepts an optional value, so the claim that the fleet ?�cannot create constants??is too strong; this is the cleanest headless fixture if that method is already reachable. [NI Terminal.Create Constant](https://www.ni.com/docs/en-AS/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/terminal/createconstant.html)
+
+Minimum acceptance:
+
+```text
+I32    -> Python int/compatible integer, exactly 12345
+DBL    -> Python float, exactly 3.25
+String -> Python str, exactly "hello"
+```
+
+Also read two different constants consecutively and then reread the first, proving the indicator updates rather than returning a stale/default value.
+
+Only after that passes should the manager run a reference-only main-VI sample. The present `got >= 1` gate is not adequate to certify OpConstValue_v1.
+BGRUN END rc=0 after 83s

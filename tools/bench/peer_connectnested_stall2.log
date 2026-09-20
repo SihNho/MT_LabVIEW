@@ -1,0 +1,48 @@
+BGRUN START 2026-09-17 11:57:12 limit 12.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools\peer.ps1 -Agent gemini -Slug connectnested-stall -Task ATTACK this claim about a LabVIEW scripting run that died on its watchdog deadline.
+
+THE LOG: tools/bench/build_opconnectnested_v0.log (run 2, started 11:25, killed 11:55).
+THE SCRIPT: tools/recipes/build_opconnectnested_v0.py.
+
+WHAT HAPPENED, line by line from the log:
+ - The BUILD half completed and PASSED: OpConnectNested_v0.vi was assembled from a copy of OpConnect2_v0.vi,
+   read ExecState 1, and was COM-saved (14234 bytes). Donor md5 unchanged.
+ - The FUNCTIONAL test then ran on a scratch copy of EMPTY_v0.vi: a While loop was created, two subVIs were
+   dropped inside its body, a For loop was created on the top-level diagram (T3a PASS, 11:27).
+ - The next call was `OpMoveIn_v0` (via build_d1_v0.move_in), reparenting that For loop into the While loop's
+   body diagram. It returned: COM Run did not return within 120s and no modal dialog was found - LabVIEW is
+ busy or another client is contending.
+ - After that the log went SILENT for 28 minutes. No further gate line was printed, although the very next
+   statements are ordinary read-only COM calls (`node_labels` / `node_terms` walks over the body diagram).
+ - bgrun killed the process tree at its 30-minute deadline: BGRUN TIMEOUT killed after 1801s.
+ - A window listing taken at 11:36 showed NO modal dialog: only SCRATCH_connnested_112503.vi Block Diagram /
+ Front Panel, OpFPLabels_v0.vi Block Diagram / Front Panel, GUIBENCH_v0.vi ..., LabVIEW.
+ - LabVIEW had been restarted at 11:08 and handles read 31,260 before this run (fresh baseline ~31,500).
+ - Exactly one COM client was running. No GUI automation, no hardware, no second script.
+
+MY EXPLANATION (this is what you must attack):
+`GObject.Move` of a FOR LOOP into a While loop's body diagram wedged LabVIEW's scripting engine. The Move call
+never returned; every later VI Server call from the same client then blocked behind it, which is why an ordinary
+read-only diagram walk printed nothing for 28 minutes. The op under test is unaffected - it was already built,
+verified ExecState 1 and saved BEFORE this call - so the correct action is to drop `move_in` from the test
+(unnamed terminals already exist on nodes inside the loop body, so the capability can be tested without it),
+restart LabVIEW, and re-run the test.
+
+ALREADY RULED OUT (do not re-propose these without new evidence):
+ - A modal dialog blocking COM: the 11:36 window listing shows none, and the watchdog itself reports it searched
+   for one and found none.
+ - A handle leak / memory pressure: handles were 31,260 at the start, at the fresh-instance baseline.
+ - Two clients contending: only this one script was running against LabVIEW.
+ - The op under test being broken: it read ExecState 1 and was saved before the stalling call.
+
+WHAT I NEED FROM YOU:
+ 1. The strongest reason my explanation is WRONG.
+ 2. A DIFFERENT explanation for 28 minutes of silence after a 120-second watchdog fired - in particular, is it
+    more likely that the client was blocked in LabVIEW, or that the watchdog's own recovery path (it takes a
+    screenshot and searches for a dialog) is what hung, or that the subsequent calls each silently consumed
+    their own 90-120 s watchdog without printing (the walk loops over up to 40 nodes)?
+ 3. What single observation would DISCRIMINATE between those, cheaply, on the next run.
+ 4. Whether drop move_in from the test is the right response or whether it hides a defect that will reappear
+    in the real build (tools/recipes/build_d1_v0.py calls the same `move_in` 23 times per run, and has completed
+    it in ~118 s total as recently as run 7 - tools/bench/build_d1_v0_run7.log).
+
+BGRUN END rc=2 after 4s

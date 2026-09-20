@@ -1,0 +1,77 @@
+---
+type: peer-review
+status: historical
+date: 2026-09-07
+tags: [peer-review]
+disposition: legacy
+---
+
+# tmsc-class-bootstrap-attack
+
+- **agent:** codex
+- **date:** 2026-09-07
+- **outcome:** ANSWERED (81s)
+- **why asked:** (Claude fills in)
+- **verdict:** unverified
+
+## Question
+
+LabVIEW 2026 VI Scripting, cite sources (labviewwiki.org, NI forums, github erdosmiller/lv-scripting). ATTACK this claim: <<To give a scripted op a class-TYPED reference (e.g. to write ClassSpecifierConstant.Class Name or call Node.Terminals[]), a To More Specific Class node with a class constant of that class is required, and the ONLY way to set that constant to a new class (e.g. ClassSpecifierConstant) without already having a typed reference is a manual GUI click on the constant picker.>> Already ruled out by us: (a) Create Property Node.vi / Create Invoke Node.vi from erdosmiller make a node of any class from a class-name string, but wiring a GObject-typed wire (Traverse for GObjects output) into a class-specific Property Node re-types the node to GObj (downcast refused); (b) New VI Object numeric styles create nothing; (c) ClassSpecifierConstant.Class Name (566EFC02) and Set Type (566EF800) exist but need a ClassSpecifierConstant-typed reference. Questions: (1) erdosmiller Create To More Specific Class.vi has a numeric target class input - what does it expect (VI Server class ID? the Type/All Types[] ID string as a number?) and how would one obtain the value for ClassSpecifierConstant or Node from a class name by script? Read the library if you can find its docs/source. (2) Is there ANY VI Server method or property that returns an already-typed reference (e.g. Diagram.New VI Object with the class wired from a ring, Constant.Terminal, VI.Create from Data Type returning typed refs, Traverse for GObjects variants that return typed arrays, or the Preserve Run-Time Class / Type Cast trick) usable from a Python COM client through an op VI? (3) If the GUI act is truly required: the exact left-click picker path to ClassSpecifierConstant in a VI Server Class constant menu on LabVIEW 2026 (VI Server > Generic > GObject > ... ?). Answer concisely with a verdict per question.
+
+## Answer
+
+The claim is false: a manual picker click is not the only bootstrap. The erdosmiller helper?셲 numeric input is the VI Server `ClassID`, so it can programmatically create a correctly typed `To More Specific Class`.
+
+1. **`Create To More Specific Class.vi`: use the numeric VI Server Class ID.**
+
+   It does not expect the hexadecimal property ID or a numeric conversion of the `All Types[]` ?쏹nique ID string.??It expects the class?셲 U32 `ClassID`:
+
+   - `ClassSpecifierConstant` = **16452**
+   - `Node` = **16421**
+   - `Terminal` = **16385**
+
+   These values are listed in the VI Server hierarchy; `Generic.Class ID` is documented as a U32 that uniquely identifies a VI Server class. [LabVIEW Wiki hierarchy](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy), [Class ID property](https://labviewwiki.org/wiki/Generic_class/Class_ID_property), [erdosmiller/lv-scripting](https://github.com/erdosmiller/lv-scripting)
+
+   Therefore, through an op VI, call `Create To More Specific Class.vi` with **16452** or **16421**. That should generate the cast with the required compiled output type without first supplying a typed reference constant.
+
+   For name-to-ID lookup, use a lookup table derived from `ClassSpecifierConstant.All Types[]`; its records contain ID, parent ID, unlocalized name, and localized name. The bootstrap problem remains for directly reading `All Types[]`, but it does not matter for known IDs, and the IDs can be embedded or passed from Python. LabVIEW?셲 shipped `Get Class Hierarchy from Class Name.vi` returns names, not documented numeric IDs. [All Types[] description](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy), [NI forum description of the hierarchy VI](https://forums.ni.com/t5/VI-Analyzer-Enthusiasts/Useful-VIs-in-analyzerutils-llb/ta-p/3507132)
+
+2. **No general typed-reference-returning discovery API found?봟ut it is unnecessary.**
+
+   `Traverse for GObjects` and diagram object collections intentionally return generic GObject references. `New VI Object` creates an object but does not dynamically specialize the caller?셲 output wire. `Preserve Run-Time Class`, ordinary `Type Cast`, and `Variant to Data` still require a compile-time type exemplar; they cannot manufacture a new VI Server refnum type from a runtime string.
+
+   Class-specific properties can return typed children?봣or example, `ClassSpecifierConstant.Terminal` returns a Terminal reference?봟ut only after obtaining the class-specific owner reference, so they do not solve bootstrap. [ClassSpecifierConstant properties](https://labviewwiki.org/wiki/ClassSpecifierConstant_class)
+
+   The usable scripted bootstrap is instead:
+
+   `generic object reference ??generated TMSC configured with ClassID 16452/16421 ??typed reference`
+
+   This is exactly the use of a Class Specifier Constant: it supplies type information and always contains `Not A Refnum`; it is not itself a live object reference. [NI Class Specifier Constant documentation](https://www.ni.com/docs/en-AS/bundle/labview-api-ref/page/constants/class-specifier.html)
+
+3. **Manual fallback path in LabVIEW 2026:**
+
+   With scripting enabled, left-click the Class Specifier Constant and choose:
+
+   `Generic ??GObject ??Constant ??RefNumConstant ??ClassSpecifierConstant`
+
+   For `Node`:
+
+   `Generic ??GObject ??Node`
+
+   The equivalent context-menu route is:
+
+   `Right-click ??Select VI Server Class ??Generic ??GObject ????
+
+   The hierarchy itself confirms the `Constant ??RefNumConstant ??ClassSpecifierConstant` nesting. [LabVIEW Wiki](https://labviewwiki.org/wiki/ClassSpecifierConstant_class) NI documents the same `Select VI Server Class ??Generic ??GObject ???? interaction pattern. [NI example](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YHpJCAW&l=en-US%2F1000)
+
+   There is also a non-picker GUI shortcut: select the constant, press `Ctrl-Space`, type `ClassSpecifierConstant`, and invoke the shipped VI Server Rename Quick Drop action. Thus even interactively, a hierarchy click is not the only route. [NI forum: VI Server Rename](https://forums.ni.com/t5/LabVIEW-APIs-Documents/Quick-Drop-Keyboard-Shortcut-VI-Server-Rename/ta-p/3501708)
+
+**Bottom line:** test the erdosmiller helper with target class **16452**. If its output reporter shows a TMSC whose specific-reference terminal is `ClassSpecifierConstant`, the ?쐌anual GUI click required??hypothesis is decisively disproved.
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+(Claude fills in)

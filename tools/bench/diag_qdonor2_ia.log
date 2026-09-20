@@ -1,0 +1,55 @@
+BGRUN START 2026-09-20 05:00:52 limit 20.0 min: py -u tools\bench\diag_qdonor2_ia.py
+=== diag_qdonor2_ia  2026-09-20 05:00:52   (the review's DISCRIMINATING TEST; NO VI IS RUN, 34(f))
+  FACT  LabVIEW handles BEFORE: 33976
+  FACT  ORIGINAL: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  FACT  S1 claudeDev\D1_s1_copy.vi: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  FACT  S2 claudeDev\D1_s2_loops.vi (never opened by this file): HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  I0a the ORIGINAL's md5 equals the pin  2a78e17c449cacdaf5da389818526859
+  FACT  F1: lv_restart rc=0 ['dialogs: ,1346,762| / ENABLED|21497392|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  handles after the restart: 30689
+  FACT  the scratch copy: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_qdonor2ia_050052.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  PASS  I0b the scratch copy is byte-identical to D1_s1_copy.vi  3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  P: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+  FACT  READING es_a untouched: exec_state = 1 (err None)
+  PASS  I1 es_a recorded  es_a = 1
+  FACT  census BEFORE build_index_array: {'Wire': 1899, 'Constant': 301, 'IndexArray': 47, 'Function': 180, 'ControlTerminal': 114, 'Node': 624, 'SubVI': 97}
+  FACT  build_index_array: op error None; new IndexArray #22968; census AFTER {'Wire': 1899, 'Constant': 301, 'IndexArray': 48, 'Function': 180, 'ControlTerminal': 114, 'Node': 625, 'SubVI': 97}
+  FACT  DISCRIMINATOR 1 - census delta across build_index_array: {'IndexArray': 1, 'Node': 1}  (the review's CLAIM predicts {'IndexArray': 1} and nothing else; its ALTERNATIVE predicts another class also moves)
+  PASS  I2 the census delta across build_index_array is recorded  {'IndexArray': 1, 'Node': 1}
+  FACT  READING es_b after build_index_array: exec_state = 0 (err None)
+  PASS  I3 es_b recorded  es_b = 0
+  FACT  the new IndexArray #22968 is TOP-LEVEL Nodes[0]; bare named inputs [(0, 'array'), (2, 'index')]
+  FACT  create_control on the IndexArray's `index` terminal: ControlTerminal #23070 label 'index' (err None)
+  PASS  I4 create_control attempted and scored  None
+  FACT  READING es_b2 after create_control: exec_state = 0 (err None)
+  FACT  delete_object(IndexArray #22968): error None; IndexArray count now 47
+  FACT  READING es_c after deleting the IndexArray: exec_state = 0 (err None)
+  FACT  DISCRIMINATOR 2 - es_c = 0. The review: **1** => the CLAIM (an unwired Index Array is what broke the VI, and the donor pattern is viable); **0** => its ALTERNATIVE (the op run perturbed compile state; dropping a donor on the top-level diagram is a dead end).
+  PASS  I5 the IndexArray was deleted and es_c recorded  es_c = 0
+  FACT  SAVE after es_c after deleting the IndexArray: NOT ATTEMPTED (ExecState 0; allow_broken stays False, gui_save never called)
+  PASS  I6 a save was attempted wherever ExecState read 1  0 save(s): []
+  OBSERVED uid 23070 -> owner 'TopLevelDiagram' uid 536 | self 'ControlTerminal'#23070 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  OBSERVED uid 23070 -> owner 'Diagram' uid 686 | self 'ControlTerminal'#23070 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  move_in(ControlTerminal #23070 -> Diagram #686): owner 'TopLevelDiagram'#536 -> 'Diagram'#686 (on #686: True), error None
+  FACT  the free ControlTerminal #23070 on Diagram #686: in AbstractDiagram.Nodes[] False; named SOURCE terminals []
+  FACT  READING es_d after move_in to Diagram #686: exec_state = 0 (err None)
+  FACT  SAVE after es_d after move_in to Diagram #686: NOT ATTEMPTED (ExecState 0; allow_broken stays False, gui_save never called)
+  PASS  I7 move_in attempted, owner re-read, ExecState + save recorded  on_686 True, es_d 0
+  FACT  class census at the end: {'Wire': 1900, 'Constant': 301, 'IndexArray': 47, 'Function': 180, 'ControlTerminal': 115, 'Node': 625, 'SubVI': 97}
+  FACT  P: preload references released; refs {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 9}
+  FACT  the scratch as it now stands on disk: DIAG_qdonor2ia_050052.vi md5 3e3d23cefd3a334001aa9d6156bf1aee size 474202 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+
+--- close-out
+  FACT  refs at end: {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handles AFTER: 63544 (before 33976)
+  PASS  I8 no live VI Server reference is left open  ref_counts {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 0}
+  FACT  I9 ORIGINAL after the run: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  FACT  I9 D1_s1_copy.vi after the run: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  FACT  I9 D1_s2_loops.vi after the run: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  I9 the ORIGINAL, D1_s1_copy.vi and D1_s2_loops.vi are all unchanged  orig 2a78e17c449cacdaf5da389818526859 s1 3e3d23cefd3a334001aa9d6156bf1aee s2 6ff19497f2309e007a214660bb64b911
+
+=== GATES: 11 pass / 0 fail
+=== READINGS json: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_qdonor2_ia.json
+=== SCRATCH: C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_qdonor2ia_050052.vi
+=== FACTS ONLY - no donor is picked and no queue stage is written. NO VI WAS RUN (34(f)).
+BGRUN END rc=0 after 94s

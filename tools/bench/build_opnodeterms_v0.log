@@ -1,0 +1,128 @@
+BGRUN START 2026-09-14 12:03:17 limit 20.0 min: py -u tools/recipes/build_opnodeterms_v0.py
+start: ForLoop=0 LoopTunnel=0 Property=5 IndexArray=3 SubVI=3 Wire=27 ExecState=1
+net_map: 13 nodes walked in 2.4 s; 130 junk Invoke(s) purged in 2.4 s
+   node uid 43: ['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+   node uid 124 (SubVI): ['error out', '# of Refs', 'References', 'dup VI Refnum', 'Other Refnum', 'Traverse Generated Code (F)', 'Traverse Target', 'error in (no error)', 'Class Name', 'VI Refnum']
+   node uid 308: ['array', 'element', 'index']
+   node uid 683: ['specific class reference', 'error out', 'target class', 'reference', 'error in']
+   node uid 243 (SubVI): ['Diagram in', 'ID String', 'location (0, 0)', 'Diagram out', 'reference', 'reference out', 'Inputs', 'Outputs', 'error in', 'error out', 'error in (no error)', 'Class Name', 'error out']
+   node uid 235: ['reference', 'reference out', 'error in (no error)', 'error out', 'Nodes[]']
+   node uid 236: ['array', 'element', 'index']
+   node uid 237: ['reference', 'reference out', 'error in (no error)', 'error out', 'Terms[]']
+   node uid 239: ['array', 'element', 'index']
+   node uid 240: ['reference', 'reference out', 'error in (no error)', 'error out', 'UID']
+   node uid 241: ['reference', 'reference out', 'error in (no error)', 'error out', 'Name', 'Wire']
+   node uid 242: ['reference', 'reference out', 'error in (no error)', 'error out', 'UID', 'Broken?']
+   node uid 399 (SubVI): ['error out', 'specific error cleared?', 'error in (no error)', 'specific error code to clear (0: all)']
+
+== 2 delete the creator SubVI + RBW
+   predict: SubVI -1, ExecState 1
+   result : after ForLoop=0 LoopTunnel=0 Property=5 IndexArray=3 SubVI=2 Wire=23 ExecState=1  (0.1 s)
+net_map: 12 nodes walked in 2.0 s; 111 junk Invoke(s) purged in 2.0 s
+   Terminals[]-node 237 output ('Terms[]', 485); IA_t 239; Terminal PN 241; Wire PN None; IAs 3
+STOP: chain not recognised. Nothing saved.
+BGRUN END rc=2 after 11s
+BGRUN START 2026-09-14 12:05:30 limit 20.0 min: py -u tools/recipes/build_opnodeterms_v0.py
+start: ForLoop=0 LoopTunnel=0 Property=5 IndexArray=3 SubVI=3 Wire=27 ExecState=1
+net_map: 13 nodes walked in 2.4 s; 130 junk Invoke(s) purged in 2.4 s
+   node uid 43: ['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+   node uid 124 (SubVI): ['error out', '# of Refs', 'References', 'dup VI Refnum', 'Other Refnum', 'Traverse Generated Code (F)', 'Traverse Target', 'error in (no error)', 'Class Name', 'VI Refnum']
+   node uid 308: ['array', 'element', 'index']
+   node uid 683: ['specific class reference', 'error out', 'target class', 'reference', 'error in']
+   node uid 243 (SubVI): ['Diagram in', 'ID String', 'location (0, 0)', 'Diagram out', 'reference', 'reference out', 'Inputs', 'Outputs', 'error in', 'error out', 'error in (no error)', 'Class Name', 'error out']
+   node uid 235: ['reference', 'reference out', 'error in (no error)', 'error out', 'Nodes[]']
+   node uid 236: ['array', 'element', 'index']
+   node uid 237: ['reference', 'reference out', 'error in (no error)', 'error out', 'Terms[]']
+   node uid 239: ['array', 'element', 'index']
+   node uid 240: ['reference', 'reference out', 'error in (no error)', 'error out', 'UID']
+   node uid 241: ['reference', 'reference out', 'error in (no error)', 'error out', 'Name', 'Wire']
+   node uid 242: ['reference', 'reference out', 'error in (no error)', 'error out', 'UID', 'Broken?']
+   node uid 399 (SubVI): ['error out', 'specific error cleared?', 'error in (no error)', 'specific error code to clear (0: all)']
+
+== 2 delete the creator SubVI + RBW
+   predict: SubVI -1, ExecState 1
+   result : after ForLoop=0 LoopTunnel=0 Property=5 IndexArray=3 SubVI=2 Wire=23 ExecState=1  (0.1 s)
+net_map: 12 nodes walked in 2.0 s; 111 junk Invoke(s) purged in 2.0 s
+   Terminals[]-node 237 output ('Terms[]', 485); IA_t 239; Terminal PN 241; Wire PN 242; IAs 3
+
+== 3 delete Wire PN, Terminal PN, IA_t (downstream first) + RBW
+   predict: Property -2, IndexArray -1, ExecState 1
+   result : after ForLoop=0 LoopTunnel=0 Property=3 IndexArray=2 SubVI=2 Wire=14 ExecState=1  (0.2 s)
+
+== 4 empty For Loop
+   predict: ForLoop +1; ExecState 0 EXPECTED
+   result : after ForLoop=1 LoopTunnel=0 Property=3 IndexArray=2 SubVI=2 Wire=14 ExecState=0  (0.2 s)
+
+== 5 PN_N Terminal[Name] inside body
+   predict: Property +1
+   result : [{'i': 0, 'class': 'Property', 'uid': 145, 'pos': (3047, 1851), 'owner': 'Diagram'}]  (0.1 s)
+
+== 5-check PN_N terminals
+   predict: data terminals == ['Name']
+net_map: 1 nodes walked in 0.4 s; 14 junk Invoke(s) purged in 0.4 s
+   result : ['Name']  (0.8 s)
+
+== 6 wire Terminals[]-node output -> PN_N 'reference' (crosses the loop)
+   predict: LoopTunnel +1, Wire +2, ExecState 1
+   result : after ForLoop=1 LoopTunnel=1 Property=4 IndexArray=2 SubVI=2 Wire=16 ExecState=1  (0.2 s)
+
+== 7a PN_S Terminal[Is Source?] inside body
+   predict: Property +1
+   result : [{'i': 0, 'class': 'Property', 'uid': 148, 'pos': (3247, 1851), 'owner': 'Diagram'}]  (0.1 s)
+
+== 7b PN_C Terminal[Connected Wire] inside body
+   predict: Property +1
+   result : [{'i': 0, 'class': 'Property', 'uid': 151, 'pos': (3447, 1851), 'owner': 'Diagram'}]  (0.1 s)
+
+== 7c PN_W GObject[UID] inside body
+   predict: Property +1
+   result : [{'i': 0, 'class': 'Property', 'uid': 154, 'pos': (3645, 1851), 'owner': 'Diagram'}]  (0.1 s)
+
+== 7d PN_N.reference out -> PN_S.reference
+   predict: Wire +1
+   result : after ForLoop=1 LoopTunnel=1 Property=7 IndexArray=2 SubVI=2 Wire=17 ExecState=0  (0.2 s)
+
+== 7e PN_S.reference out -> PN_C.reference
+   predict: Wire +1
+   result : after ForLoop=1 LoopTunnel=1 Property=7 IndexArray=2 SubVI=2 Wire=18 ExecState=0  (0.2 s)
+
+== 7f PN_C.Wire -> PN_W.reference
+   predict: Wire +1, ExecState 1
+   result : after ForLoop=1 LoopTunnel=1 Property=7 IndexArray=2 SubVI=2 Wire=19 ExecState=1  (0.2 s)
+
+== 8.0 exit_loop ['Name'] on PN_N
+   predict: LoopTunnel +1
+   result : after ForLoop=1 LoopTunnel=2 Property=7 IndexArray=2 SubVI=2 Wire=20 ExecState=1  (0.1 s)
+
+== 8.1 exit_loop ['IsSource'] on PN_S
+   predict: LoopTunnel +1
+   result : after ForLoop=1 LoopTunnel=3 Property=7 IndexArray=2 SubVI=2 Wire=21 ExecState=1  (0.1 s)
+
+== 8.2 exit_loop ['UID'] on PN_W
+   predict: LoopTunnel +1
+   result : after ForLoop=1 LoopTunnel=4 Property=7 IndexArray=2 SubVI=2 Wire=22 ExecState=1  (0.1 s)
+
+== 8x. output tunnels by census = [1, 2, 3, 4, 5, 6, 7] (expect 7)
+   tunnel 1 -> indicator ['Array']  (carries Name)
+   tunnel 2 -> indicator ['Array 2']  (carries IsSource)
+   tunnel 3 -> indicator ['Array 3']  (carries WireUID)
+   tunnel 4 -> indicator ['Array 4']  (carries NameErr)
+   tunnel 5 -> indicator ['Array 5']  (carries SrcErr)
+   tunnel 6 -> indicator ['Array 6']  (carries ConnErr)
+   tunnel 7 -> indicator ['Array 7']  (carries WireErr)
+
+== 9 auto error handling OFF
+   predict: silent on unwired terminals
+   result : None  (0.0 s)
+
+assembled: ForLoop=1 LoopTunnel=8 Property=7 IndexArray=2 SubVI=2 Wire=33 ExecState=1
+steps: [('2 delete the creator SubVI + RBW', 'ok'), ('3 delete Wire PN, Terminal PN, IA_t (downstream first) + RBW', 'ok'), ('4 empty For Loop', 'ok'), ('5 PN_N Terminal[Name] inside body', 'ok'), ('5-check PN_N terminals', 'ok'), ("6 wire Terminals[]-node output -> PN_N 'reference' (crosses the loop)", 'ok'), ('7a PN_S Terminal[Is Source?] inside body', 'ok'), ('7b PN_C Terminal[Connected Wire] inside body', 'ok'), ('7c PN_W GObject[UID] inside body', 'ok'), ('7d PN_N.reference out -> PN_S.reference', 'ok'), ('7e PN_S.reference out -> PN_C.reference', 'ok'), ('7f PN_C.Wire -> PN_W.reference', 'ok'), ("8.0 exit_loop ['Name'] on PN_N", 'ok'), ("8.1 exit_loop ['IsSource'] on PN_S", 'ok'), ("8.2 exit_loop ['UID'] on PN_W", 'ok'), ('9 auto error handling OFF', 'ok')]
+label map: {"Array": "Name", "Array 2": "IsSource", "Array 3": "WireUID", "Array 4": "NameErr", "Array 5": "SrcErr", "Array 6": "ConnErr", "Array 7": "WireErr"}
+
+== 10 COM save
+   predict: written to disk
+   result : 16014  (0.0 s)
+donor OpNetInfo_v1.vi md5 unchanged: True
+
+VERDICT: OpNodeTerms_v0 BUILT and SAVED (structural only - run tools/bench/test_opnodeterms.py next)
+BGRUN END rc=0 after 142s

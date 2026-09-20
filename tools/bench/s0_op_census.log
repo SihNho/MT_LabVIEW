@@ -1,0 +1,338 @@
+BGRUN START 2026-09-19 20:12:36 limit 25.0 min: py -u tools/bench/s0_op_census.py
+s0_op_census.py - S0 PHASE 1: READ-ONLY census of the four traverse ops. EDITS NOTHING, SAVES NO VI.
+
+WHY (cycle 45, act 2 brief): S0 run 2's stage 3 failed with **no loop created, no new tunnel and an EXACT
+branch** (`tools/bench/build_s0_closeref_v3.log:178`, `:190-192`, `:202`, `dw=0`) and still read `ExecState 0`.
+Whether the construction (For Loop + a body node + the `References` array wired into it) was ALREADY on disk in
+each op is UNMEASURED, and reading it is cheap. This file is that reading.
+
+WHAT ALREADY EXISTS - checked before a line was written (CLAUDE.md "check what already exists"):
+  * `tools/bench/s0_hygiene_probe.py` / `_run2.log` - counts nodes and the reference-creating CHAIN per op, and
+    profiles handles/private bytes. It does NOT report ForLoop / Close Reference / tunnel IndexMode per op, and it
+    does not read ExecState cold. Those three are what this census adds; nothing here re-measures the probe.
+  * `tools/bench/s0_body_census.py` / `.log` - the BODY of `OpReportAll_v0` only (one op, one diagram).
+  * `tools/bench/s0_terminal_names.py` / `.log` - the exact terminal bytes used below (`References`, `reference`,
+    `error in (no error)`), 6/6, read-only.
+  * `gscript.report_all` / `tunnels` / `node_terms_uid` / `node_labels` / `exec_state` - all built; NO NEW OP.
+  * `fresh()` / `mem()` / `com_preflight()` are cut from `tools/recipes/build_s0_closeref_v3.py:201-249`
+    (the same bytes, so the "cold in a fresh instance" condition is the SAME condition run 2 used).
+
+PREDICTION CONTRACT - printed before anything runs; every line is a gate, PASS/FAIL, and NO gate stops the run
+(this is a measurement, not a build):
+  C0  the route-B original's md5 is the pinned value BEFORE and AFTER, and every existing op VI's md5 is
+      unchanged AFTER (rule 1: this census modifies nothing).
+  C1  `OpReport_v3.vi`, `OpWireSource_v5.vi`, `OpReportAll_v0.vi` exist and are read; any VI that does not exist
+      is reported as MISSING and is not a failure of this census.
+  C2  each existing op reads `ExecState` COLD in a fresh instance. **Predicted 1** for all three
+      (`docs/cycle27-plan.md:434-439`, measured seven times). A 0 would be a NEW fact.
+  C3  per op, three structural facts are printed: ForLoop present Y/N, a `Close Reference` Function node present
+      Y/N (identified by its measured terminal triple, `docs/NAMES.md:239-243`), and whether the Traverse's
+      `References` wire enters a LoopTunnel - with that tunnel's IndexMode AS READ.
+      Predicted from `docs/REFERENCES.md:151-159`: OpReport_v3 N/N/N, OpWireSource_v5 N/N/N,
+      OpReportAll_v0 **Y** ForLoop / N Close Reference / **Y** References-into-loop. Any deviation is the finding.
+  C4  LabVIEW handle count and private bytes are printed before and after.
+
+  py tools/bgrun.py --material --max-min 30 --log tools/bench/s0_op_census.log -- py -u tools/bench/s0_op_census.py
+
+
+=== S0 PHASE 1 CENSUS  2026-09-19 20:12:36 ===
+   LabVIEW handles BEFORE 34366, private bytes 614850560
+   original md5 BEFORE 2a78e17c449cacdaf5da389818526859
+   PASS C0a the route-B original is the pinned md5 BEFORE 2a78e17c449cacdaf5da389818526859
+   md5 BEFORE OpReport_v3.vi: 0743701a249b6ac20a5dab9ee676c09c
+   md5 BEFORE OpWireSource_v5.vi: 5dc45a04ea5d809f5ca57e9309ed59c5
+   md5 BEFORE OpReportAll_v1.vi: None
+   md5 BEFORE OpReportAll_v0.vi: ffcec2c75e92dcad514299ba20e66054
+   md5 BEFORE KernelBuilder_v1.vi: bc334a72b3076a81c42d1e9ab2a622fd
+   fresh(): killing LabVIEW pid 5936
+   COM preflight OK (pid 24492, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 24492
+
+=== OpReport_v3.vi ===
+   PASS C1 OpReport_v3.vi: exists on disk 
+   md5 0743701a249b6ac20a5dab9ee676c09c  (10235 B)
+   CONDITION: fresh LabVIEW instance, preflighted, nothing edited, first read of this VI
+   PASS C2 OpReport_v3.vi: ExecState COLD == 1 (predicted, docs/cycle27-plan.md:434-439) ExecState 1
+   diagrams: [(0, 3, '')]
+   FAIL C3a OpReport_v3.vi: For Loop present ForLoop count 0
+      D[0] node 0 #43 'Open VI Reference' terms=['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+      D[0] node 1 #124 'Traverse for GObjects.vi' terms=['error out', '# of Refs', 'References', 'dup VI Refnum', '', 'Other Refnum', 'Traverse Generated Code (F)', 'Traverse Target', 'error in (no error)', '', 'Class Name', 'VI Refnum']
+      D[0] node 2 #167 'Index Array' terms=['array', 'element', 'index']
+      D[0] node 3 #241 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'Position', 'ClassName', 'UID', 'Owner']
+      D[0] node 4 #482 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'ClassName']
+   FAIL C3b OpReport_v3.vi: a `Close Reference` Function node is present 0 found: []
+   Traverse #124 'References' drives wire 188
+   FAIL C3c OpReport_v3.vi: the `References` wire enters a LoopTunnel matching tunnels [] (IndexMode None)
+
+=== OpWireSource_v5.vi ===
+   PASS C1 OpWireSource_v5.vi: exists on disk 
+   md5 5dc45a04ea5d809f5ca57e9309ed59c5  (18163 B)
+   CONDITION: fresh LabVIEW instance, preflighted, nothing edited, first read of this VI
+   PASS C2 OpWireSource_v5.vi: ExecState COLD == 1 (predicted, docs/cycle27-plan.md:434-439) ExecState 1
+   diagrams: [(0, 3, '')]
+   FAIL C3a OpWireSource_v5.vi: For Loop present ForLoop count 0
+      D[0] node 0 #43 'Open VI Reference' terms=['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+      D[0] node 1 #124 'Traverse for GObjects.vi' terms=['error out', '# of Refs', 'References', 'dup VI Refnum', '', 'Other Refnum', 'Traverse Generated Code (F)', 'Traverse Target', 'error in (no error)', '', 'Class Name', 'VI Refnum']
+      D[0] node 5 #145 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'Terms[]']
+      D[0] node 6 #151 'Index Array' terms=['array', 'element', 'index']
+      D[0] node 7 #157 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'Owner']
+      D[0] node 8 #163 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'ClassName']
+      D[0] node 2 #167 'Index Array' terms=['array', 'element', 'index']
+      D[0] node 3 #241 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'Position', 'ClassName', 'UID', 'Owner']
+      D[0] node 11 #307 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'UID']
+      D[0] node 12 #310 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'ClassName']
+      D[0] node 4 #482 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'ClassName']
+      D[0] node 9 #990 'UID to GObject Reference.vi' terms=['error out', '', 'GObject', 'dup Owning VI', '', '', '', '', 'error in (no error)', '', 'UID', 'Owning VI']
+      D[0] node 10 #1044 'To More Specific Class' terms=['specific class reference', 'error out', 'target class', 'reference', 'error in']
+      D[0] node 13 #1186 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'UID']
+      D[0] node 14 #1221 'To More Specific Class' terms=['specific class reference', 'error out', 'target class', 'reference', 'error in']
+      D[0] node 15 #1319 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'IsSource']
+      D[0] node 16 #1326 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'Wire']
+      D[0] node 17 #1329 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'UID']
+      D[0] node 18 #1554 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'ClassName']
+   FAIL C3b OpWireSource_v5.vi: a `Close Reference` Function node is present 0 found: []
+   Traverse #124 'References' drives wire 188
+   FAIL C3c OpWireSource_v5.vi: the `References` wire enters a LoopTunnel matching tunnels [] (IndexMode None)
+
+=== OpReportAll_v1.vi ===
+   FAIL C1 OpReportAll_v1.vi: exists on disk MISSING - not a census failure, reported as MISSING
+
+=== OpReportAll_v0.vi ===
+   PASS C1 OpReportAll_v0.vi: exists on disk 
+   md5 ffcec2c75e92dcad514299ba20e66054  (12510 B)
+   CONDITION: fresh LabVIEW instance, preflighted, nothing edited, first read of this VI
+   PASS C2 OpReportAll_v0.vi: ExecState COLD == 1 (predicted, docs/cycle27-plan.md:434-439) ExecState 1
+   diagrams: [(0, 3, ''), (1, 272, 'ForLoop')]
+   PASS C3a OpReportAll_v0.vi: For Loop present ForLoop count 1
+      D[0] node 0 #43 'Open VI Reference' terms=['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+      D[0] node 2 #113 'For Loop' terms=['', 'References', '', '', '', '']
+      D[0] node 1 #124 'Traverse for GObjects.vi' terms=['error out', '# of Refs', 'References', 'dup VI Refnum', '', 'Other Refnum', 'Traverse Generated Code (F)', 'Traverse Target', 'error in (no error)', '', 'Class Name', 'VI Refnum']
+      D[1] node 0 #114 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'Position', 'UID', 'ClassName', 'Owner']
+      D[1] node 1 #115 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'ClassName']
+   FAIL C3b OpReportAll_v0.vi: a `Close Reference` Function node is present 0 found: []
+   Traverse #124 'References' drives wire 524
+   LoopTunnel[0] #511 IndexMode AS READ 1 outer w524 inner [421]
+   LoopTunnel[1] #566 IndexMode AS READ 1 outer w678 inner [577]
+   LoopTunnel[2] #569 IndexMode AS READ 1 outer w711 inner [586]
+   LoopTunnel[3] #573 IndexMode AS READ 1 outer w743 inner [596]
+   LoopTunnel[4] #582 IndexMode AS READ 1 outer w775 inner [605]
+   PASS C3c OpReportAll_v0.vi: the `References` wire enters a LoopTunnel matching tunnels [{'i': 0, 'uid': 511, 'index_mode': 1, 'out_wire': 524, 'in_wires': [421], 'out_name': 'References'}] (IndexMode 1)
+
+=== md5 AFTER (rule 1: this census modified nothing) ===
+   md5 AFTER  OpReport_v3.vi: 0743701a249b6ac20a5dab9ee676c09c
+   PASS C0b OpReport_v3.vi: UNCHANGED by this census 0743701a249b6ac20a5dab9ee676c09c -> 0743701a249b6ac20a5dab9ee676c09c
+   md5 AFTER  OpWireSource_v5.vi: 5dc45a04ea5d809f5ca57e9309ed59c5
+   PASS C0b OpWireSource_v5.vi: UNCHANGED by this census 5dc45a04ea5d809f5ca57e9309ed59c5 -> 5dc45a04ea5d809f5ca57e9309ed59c5
+   md5 AFTER  OpReportAll_v1.vi: None
+   PASS C0b OpReportAll_v1.vi: UNCHANGED by this census None -> None
+   md5 AFTER  OpReportAll_v0.vi: ffcec2c75e92dcad514299ba20e66054
+   PASS C0b OpReportAll_v0.vi: UNCHANGED by this census ffcec2c75e92dcad514299ba20e66054 -> ffcec2c75e92dcad514299ba20e66054
+   md5 AFTER  KernelBuilder_v1.vi: bc334a72b3076a81c42d1e9ab2a622fd
+   PASS C0b KernelBuilder_v1.vi: UNCHANGED by this census bc334a72b3076a81c42d1e9ab2a622fd -> bc334a72b3076a81c42d1e9ab2a622fd
+   PASS C0c the route-B original is UNCHANGED 2a78e17c449cacdaf5da389818526859 -> 2a78e17c449cacdaf5da389818526859
+
+   LabVIEW handles AFTER 34195 (delta -171), private bytes 576372736 (delta -38.5 MB)
+   gscript VI Server reference counters: {'opened': 3, 'closed': 3, 'live': 0, 'cached_op_vis': 5}
+
+   CENSUS WRITTEN G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\s0_op_census.json
+   census md5 701b75215b63845dfef5e50b28b8f097  (7827 B)
+
+=== 15 PASS / 8 FAIL ===
+   FAIL C3a OpReport_v3.vi: For Loop present
+   FAIL C3b OpReport_v3.vi: a `Close Reference` Function node is present
+   FAIL C3c OpReport_v3.vi: the `References` wire enters a LoopTunnel
+   FAIL C3a OpWireSource_v5.vi: For Loop present
+   FAIL C3b OpWireSource_v5.vi: a `Close Reference` Function node is present
+   FAIL C3c OpWireSource_v5.vi: the `References` wire enters a LoopTunnel
+   FAIL C1 OpReportAll_v1.vi: exists on disk
+   FAIL C3b OpReportAll_v0.vi: a `Close Reference` Function node is present
+BGRUN INNER FAILURE: the command exited 0 but its output reported 17 failure(s); first: FAIL C3a OpReport_v3.vi: For Loop present ForLoop count 0
+BGRUN END rc=1 after 60s (inner failure; the process itself said 0)
+BGRUN START 2026-09-19 20:36:23 limit 25.0 min: py -u tools/bench/s0_op_census.py
+s0_op_census.py - S0 PHASE 1: READ-ONLY census of the four traverse ops. EDITS NOTHING, SAVES NO VI.
+
+WHY (cycle 45, act 2 brief): S0 run 2's stage 3 failed with **no loop created, no new tunnel and an EXACT
+branch** (`tools/bench/build_s0_closeref_v3.log:178`, `:190-192`, `:202`, `dw=0`) and still read `ExecState 0`.
+Whether the construction (For Loop + a body node + the `References` array wired into it) was ALREADY on disk in
+each op is UNMEASURED, and reading it is cheap. This file is that reading.
+
+WHAT ALREADY EXISTS - checked before a line was written (CLAUDE.md "check what already exists"):
+  * `tools/bench/s0_hygiene_probe.py` / `_run2.log` - counts nodes and the reference-creating CHAIN per op, and
+    profiles handles/private bytes.
+    ** CORRECTION, 2026-09-19 21:0x, forced by `archive/peer/2026-09-19-census-notfail.md` section 1 (ANSWERED,
+    claude/hypothesis opus max): RUN 1 OF THIS FILE CLAIMED HERE THAT THE PROBE "does NOT report ForLoop /
+    Close Reference / tunnel IndexMode per op �� nothing here re-measures the probe". THAT CLAIM WAS FALSE.
+    `s0_hygiene_probe_run2.log:9`,`:15`,`:41` already report close-ref counts per op, `:36` already prints
+    `#113 ForLoop 'For Loop'`, and `:65-68` already gate them WITH THE CORRECT POLARITY
+    (`PASS P1 OpReport_v3.vi has NO Close Reference []`, `PASS P2 KernelBuilder_v1.vi HAS a Close Reference
+    donor node [('Function','Close Reference',157)]`). Only the per-tunnel IndexMode table and the COLD
+    ExecState readings were new, and run 1 produced both (`s0_op_census.log:114-118`, `:55`,`:71`,`:104`). **
+  * Run 1 of this census is IN THIS SAME LOG FILE, above the second `BGRUN START` - 15 PASS / 8 FAIL, and its
+    JSON is preserved at `tools/bench/s0_op_census.json` (run 2 writes a DIFFERENT file, `��_run2.json`).
+  * `tools/bench/s0_body_census.py` / `.log` - the BODY of `OpReportAll_v0` only (one op, one diagram).
+  * `tools/bench/s0_terminal_names.py` / `.log` - the exact terminal bytes used below (`References`, `reference`,
+    `error in (no error)`), 6/6, read-only.
+  * `gscript.report_all` / `tunnels` / `node_terms_uid` / `node_labels` / `exec_state` - all built; NO NEW OP.
+  * `fresh()` / `mem()` / `com_preflight()` are cut from `tools/recipes/build_s0_closeref_v3.py:201-249`
+    (the same bytes, so the "cold in a fresh instance" condition is the SAME condition run 2 used).
+
+PREDICTION CONTRACT - printed before anything runs; every line is a gate, PASS/FAIL, and NO gate stops the run
+(this is a measurement, not a build):
+  C0  the route-B original's md5 is the pinned value BEFORE and AFTER, and every existing op VI's md5 is
+      unchanged AFTER (rule 1: this census modifies nothing).
+  C1  `OpReport_v3.vi`, `OpWireSource_v5.vi`, `OpReportAll_v0.vi` exist and are read; any VI that does not exist
+      is reported as MISSING and is not a failure of this census.
+  C2  each existing op reads `ExecState` COLD in a fresh instance. **Predicted 1** for all three
+      (`docs/cycle27-plan.md:434-439`, measured seven times). A 0 would be a NEW fact.
+  C3  per op, three structural facts are printed: ForLoop present Y/N, a `Close Reference` Function node present
+      Y/N (identified by its measured terminal triple, `docs/NAMES.md:239-243`), and whether the Traverse's
+      `References` wire enters a LoopTunnel - with that tunnel's IndexMode AS READ.
+      Predicted from `docs/REFERENCES.md:151-159` and gated as MEASURED == EXPECTED (see `EXPECT` below):
+      OpReport_v3 N/N/N, OpWireSource_v5 N/N/N, OpReportAll_v0 **Y** ForLoop / N Close Reference /
+      **Y** References-into-loop. A FAIL line therefore means a DEVIATION, which is the finding.
+  C3d the two independent `Close Reference` detectors (terminal triple, node label) AGREE on every VI.
+  C3e **POSITIVE CONTROL** (added run 2 on the review's section-4 test): `KernelBuilder_v1.vi` is censused too,
+      expected ForLoop N / Close Reference **Y** (#157) / References-into-loop N. If C3b prints `0 found: []`
+      there, the triple detector is BLIND and the three nulls above are instrument failures, not measurements.
+  C4  LabVIEW handle count and private bytes are printed before and after.
+
+  py tools/bgrun.py --material --max-min 30 --log tools/bench/s0_op_census.log -- py -u tools/bench/s0_op_census.py
+
+
+=== S0 PHASE 1 CENSUS  2026-09-19 20:36:23 ===
+   LabVIEW handles BEFORE 33969, private bytes 580132864
+   original md5 BEFORE 2a78e17c449cacdaf5da389818526859
+   PASS C0a the route-B original is the pinned md5 BEFORE 2a78e17c449cacdaf5da389818526859
+   md5 BEFORE OpReport_v3.vi: 0743701a249b6ac20a5dab9ee676c09c
+   md5 BEFORE OpWireSource_v5.vi: 5dc45a04ea5d809f5ca57e9309ed59c5
+   md5 BEFORE OpReportAll_v1.vi: None
+   md5 BEFORE OpReportAll_v0.vi: ffcec2c75e92dcad514299ba20e66054
+   md5 BEFORE KernelBuilder_v1.vi: bc334a72b3076a81c42d1e9ab2a622fd
+   fresh(): killing LabVIEW pid 24492
+   COM preflight OK (pid 26508, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 26508
+
+=== OpReport_v3.vi ===
+   PASS C1 OpReport_v3.vi: presence on disk REPORTED present
+   md5 0743701a249b6ac20a5dab9ee676c09c  (10235 B)
+   CONDITION: fresh LabVIEW instance, preflighted, nothing edited, first read of this VI
+   PASS C2 OpReport_v3.vi: ExecState COLD == 1 (predicted, docs/cycle27-plan.md:434-439) ExecState 1
+   diagrams: [(0, 3, '')]
+   PASS C3a OpReport_v3.vi: For Loop present == False (docs/REFERENCES.md:151-159) ForLoop count 0
+      D[0] node 0 #43 'Open VI Reference' terms=['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+      D[0] node 1 #124 'Traverse for GObjects.vi' terms=['error out', '# of Refs', 'References', 'dup VI Refnum', '', 'Other Refnum', 'Traverse Generated Code (F)', 'Traverse Target', 'error in (no error)', '', 'Class Name', 'VI Refnum']
+      D[0] node 2 #167 'Index Array' terms=['array', 'element', 'index']
+      D[0] node 3 #241 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'Position', 'ClassName', 'UID', 'Owner']
+      D[0] node 4 #482 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'ClassName']
+   PASS C3d OpReport_v3.vi: the two detectors AGREE (terminal triple vs node label) triple [] vs label []
+   PASS C3b OpReport_v3.vi: `Close Reference` node present == False (docs/REFERENCES.md:151-159) 0 found: []
+   Traverse #124 'References' drives wire 188
+   PASS C3c OpReport_v3.vi: `References` enters a LoopTunnel == False (docs/REFERENCES.md:151-159) matching tunnels [] (IndexMode None)
+
+=== OpWireSource_v5.vi ===
+   PASS C1 OpWireSource_v5.vi: presence on disk REPORTED present
+   md5 5dc45a04ea5d809f5ca57e9309ed59c5  (18163 B)
+   CONDITION: fresh LabVIEW instance, preflighted, nothing edited, first read of this VI
+   PASS C2 OpWireSource_v5.vi: ExecState COLD == 1 (predicted, docs/cycle27-plan.md:434-439) ExecState 1
+   diagrams: [(0, 3, '')]
+   PASS C3a OpWireSource_v5.vi: For Loop present == False (docs/REFERENCES.md:151-159) ForLoop count 0
+      D[0] node 0 #43 'Open VI Reference' terms=['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+      D[0] node 1 #124 'Traverse for GObjects.vi' terms=['error out', '# of Refs', 'References', 'dup VI Refnum', '', 'Other Refnum', 'Traverse Generated Code (F)', 'Traverse Target', 'error in (no error)', '', 'Class Name', 'VI Refnum']
+      D[0] node 5 #145 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'Terms[]']
+      D[0] node 6 #151 'Index Array' terms=['array', 'element', 'index']
+      D[0] node 7 #157 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'Owner']
+      D[0] node 8 #163 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'ClassName']
+      D[0] node 2 #167 'Index Array' terms=['array', 'element', 'index']
+      D[0] node 3 #241 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'Position', 'ClassName', 'UID', 'Owner']
+      D[0] node 11 #307 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'UID']
+      D[0] node 12 #310 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'ClassName']
+      D[0] node 4 #482 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'ClassName']
+      D[0] node 9 #990 'UID to GObject Reference.vi' terms=['error out', '', 'GObject', 'dup Owning VI', '', '', '', '', 'error in (no error)', '', 'UID', 'Owning VI']
+      D[0] node 10 #1044 'To More Specific Class' terms=['specific class reference', 'error out', 'target class', 'reference', 'error in']
+      D[0] node 13 #1186 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'UID']
+      D[0] node 14 #1221 'To More Specific Class' terms=['specific class reference', 'error out', 'target class', 'reference', 'error in']
+      D[0] node 15 #1319 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'IsSource']
+      D[0] node 16 #1326 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'Wire']
+      D[0] node 17 #1329 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'UID']
+      D[0] node 18 #1554 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'ClassName']
+   PASS C3d OpWireSource_v5.vi: the two detectors AGREE (terminal triple vs node label) triple [] vs label []
+   PASS C3b OpWireSource_v5.vi: `Close Reference` node present == False (docs/REFERENCES.md:151-159) 0 found: []
+   Traverse #124 'References' drives wire 188
+   PASS C3c OpWireSource_v5.vi: `References` enters a LoopTunnel == False (docs/REFERENCES.md:151-159) matching tunnels [] (IndexMode None)
+
+=== OpReportAll_v1.vi ===
+   PASS C1 OpReportAll_v1.vi: presence on disk REPORTED (MISSING is an accepted outcome) MISSING
+
+=== OpReportAll_v0.vi ===
+   PASS C1 OpReportAll_v0.vi: presence on disk REPORTED present
+   md5 ffcec2c75e92dcad514299ba20e66054  (12510 B)
+   CONDITION: fresh LabVIEW instance, preflighted, nothing edited, first read of this VI
+   PASS C2 OpReportAll_v0.vi: ExecState COLD == 1 (predicted, docs/cycle27-plan.md:434-439) ExecState 1
+   diagrams: [(0, 3, ''), (1, 272, 'ForLoop')]
+   PASS C3a OpReportAll_v0.vi: For Loop present == True (docs/REFERENCES.md:151-159) ForLoop count 1
+      D[0] node 0 #43 'Open VI Reference' terms=['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+      D[0] node 2 #113 'For Loop' terms=['', 'References', '', '', '', '']
+      D[0] node 1 #124 'Traverse for GObjects.vi' terms=['error out', '# of Refs', 'References', 'dup VI Refnum', '', 'Other Refnum', 'Traverse Generated Code (F)', 'Traverse Target', 'error in (no error)', '', 'Class Name', 'VI Refnum']
+      D[1] node 0 #114 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'Position', 'UID', 'ClassName', 'Owner']
+      D[1] node 1 #115 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'ClassName']
+   PASS C3d OpReportAll_v0.vi: the two detectors AGREE (terminal triple vs node label) triple [] vs label []
+   PASS C3b OpReportAll_v0.vi: `Close Reference` node present == False (docs/REFERENCES.md:151-159) 0 found: []
+   Traverse #124 'References' drives wire 524
+   LoopTunnel[0] #511 IndexMode AS READ 1 outer w524 inner [421]
+   LoopTunnel[1] #566 IndexMode AS READ 1 outer w678 inner [577]
+   LoopTunnel[2] #569 IndexMode AS READ 1 outer w711 inner [586]
+   LoopTunnel[3] #573 IndexMode AS READ 1 outer w743 inner [596]
+   LoopTunnel[4] #582 IndexMode AS READ 1 outer w775 inner [605]
+   PASS C3c OpReportAll_v0.vi: `References` enters a LoopTunnel == True (docs/REFERENCES.md:151-159) matching tunnels [{'i': 0, 'uid': 511, 'index_mode': 1, 'out_wire': 524, 'in_wires': [421], 'out_name': 'References'}] (IndexMode 1)
+
+=== KernelBuilder_v1.vi ===
+   PASS C1 KernelBuilder_v1.vi: presence on disk REPORTED present
+   md5 bc334a72b3076a81c42d1e9ab2a622fd  (113996 B)
+   CONDITION: fresh LabVIEW instance, preflighted, nothing edited, first read of this VI
+   PASS C2 KernelBuilder_v1.vi: ExecState COLD RECORDED (no prediction exists for the donor) ExecState 1
+   diagrams: [(0, 3, '')]
+   PASS C3a KernelBuilder_v1.vi: For Loop present == False (docs/REFERENCES.md:151-159) ForLoop count 0
+      D[0] node 1 #157 'Close Reference' terms=['error out', 'error in (no error)', 'reference']   <- CLOSEREF by triple   <- CLOSEREF by label
+      D[0] node 2 #347 'Create Constant.vi' terms=['Diagram in', '', 'location (0, 0)', '', 'Diagram out', 'Type', 'Terminal', 'Value', '', '', '', 'error in (no error)', '', '', '', 'error out']
+      D[0] node 9 #410 'Create For Loop.vi' terms=['Diagram in', 'Inputs Indexing?', 'location (0, 0)', '', 'Diagram out', 'Inputs', 'Inputs', 'Shift Register Inputs', 'Shift Registers', 'Loop Count Terminal', 'Loop Counter', 'error in (no error)', 'Number of Static Parallel Instances', '', '', 'error out']
+      D[0] node 10 #491 'Exit For Loop.vi' terms=['Diagram in', 'Conditional Terminals', 'Loop Terminal Types', '', 'Diagram out', 'Outputs', 'Outputs', 'Shift Registers', 'Shift Registers', 'Stop Condition', '', 'error in (no error)', '', '', '', 'error out']
+      D[0] node 14 #544 'Open VI Reference' terms=['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+      D[0] node 3 #629 'Create Constant.vi' terms=['Diagram in', '', 'location (0, 0)', '', 'Diagram out', 'Type', 'Terminal', 'Value', '', '', '', 'error in (no error)', '', '', '', 'error out']
+      D[0] node 15 #751 'Create SubVI.vi' terms=['Diagram in', 'VI Reference', 'location (0, 0)', '', 'Diagram out', 'Input Names', 'Outputs', 'Inputs', '', 'Output Names', '', 'error in (no error)', '', '', '', 'error out']
+      D[0] node 16 #816 'Track 1 of N bds xyz-kernel-reentrant.vi' terms=['']
+      D[0] node 6 #906 'Select' terms=['s? t:f', 'f', 's', 't']
+      D[0] node 17 #962 'Get Controls.vi' terms=['Diagram in', '', '', '', 'Diagram out', 'Control Names', 'Control Terminals', '', '', '', '', 'error in (no error)', '', '', '', 'error out']
+      D[0] node 11 #1027 'Create Constant.vi' terms=['Diagram in', '', 'location (0, 0)', '', 'Diagram out', 'Type', 'Terminal', 'Value', '', '', '', 'error in (no error)', '', '', '', 'error out']
+      D[0] node 0 #1066 'Property Node' terms=['reference', 'reference out', 'error in (no error)', 'error out', 'Diagram', 'BDWin.Open']
+      D[0] node 4 #1167 'Build Array' terms=['appended array', 'element', 'element']
+      D[0] node 5 #1236 'Create Constant.vi' terms=['Diagram in', '', 'location (0, 0)', '', 'Diagram out', 'Type', 'Terminal', 'Value', '', '', '', 'error in (no error)', '', '', '', 'error out']
+      D[0] node 12 #1337 'Select' terms=['s? t:f', 'f', 's', 't']
+      D[0] node 7 #1657 'Build Array' terms=['appended array', 'element']
+      D[0] node 13 #1845 'Select' terms=['s? t:f', 'f', 's', 't']
+      D[0] node 8 #2066 'Select' terms=['s? t:f', 'f', 's', 't']
+   PASS C3d KernelBuilder_v1.vi: the two detectors AGREE (terminal triple vs node label) triple [157] vs label [157]
+   PASS C3b KernelBuilder_v1.vi: `Close Reference` node present == True (docs/REFERENCES.md:151-159) 1 found: [{'uid': 157, 'diagram': 0, 'node_index': 1, 'label': 'Close Reference', 'terminals': [(0, 'error out', True, 2813), (1, 'error in (no error)', False, 2436), (2, 'reference', False, 1587)]}]
+   Traverse #None 'References' drives wire None
+   PASS C3c KernelBuilder_v1.vi: `References` enters a LoopTunnel == False (docs/REFERENCES.md:151-159) matching tunnels [] (IndexMode None)
+
+=== md5 AFTER (rule 1: this census modified nothing) ===
+   md5 AFTER  OpReport_v3.vi: 0743701a249b6ac20a5dab9ee676c09c
+   PASS C0b OpReport_v3.vi: UNCHANGED by this census 0743701a249b6ac20a5dab9ee676c09c -> 0743701a249b6ac20a5dab9ee676c09c
+   md5 AFTER  OpWireSource_v5.vi: 5dc45a04ea5d809f5ca57e9309ed59c5
+   PASS C0b OpWireSource_v5.vi: UNCHANGED by this census 5dc45a04ea5d809f5ca57e9309ed59c5 -> 5dc45a04ea5d809f5ca57e9309ed59c5
+   md5 AFTER  OpReportAll_v1.vi: None
+   PASS C0b OpReportAll_v1.vi: UNCHANGED by this census None -> None
+   md5 AFTER  OpReportAll_v0.vi: ffcec2c75e92dcad514299ba20e66054
+   PASS C0b OpReportAll_v0.vi: UNCHANGED by this census ffcec2c75e92dcad514299ba20e66054 -> ffcec2c75e92dcad514299ba20e66054
+   md5 AFTER  KernelBuilder_v1.vi: bc334a72b3076a81c42d1e9ab2a622fd
+   PASS C0b KernelBuilder_v1.vi: UNCHANGED by this census bc334a72b3076a81c42d1e9ab2a622fd -> bc334a72b3076a81c42d1e9ab2a622fd
+   PASS C0c the route-B original is UNCHANGED 2a78e17c449cacdaf5da389818526859 -> 2a78e17c449cacdaf5da389818526859
+
+   LabVIEW handles AFTER 34228 (delta 259), private bytes 587956224 (delta 7.8 MB)
+   gscript VI Server reference counters: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 5}
+
+   CENSUS WRITTEN G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\s0_op_census_run2.json
+   census md5 362f1e52f1925e021cd3ad4ecbe6c03c  (11372 B)
+
+=== 32 PASS / 0 FAIL ===
+BGRUN END rc=0 after 72s

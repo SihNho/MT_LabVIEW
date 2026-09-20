@@ -1,0 +1,51 @@
+BGRUN START 2026-09-14 20:55:33 limit 10.0 min: py -u tools/bench/test_opqueue.py
+GetImageSize SubVI index 1; loop body diagram 1; ExecState 1
+   PASS T1 obtain: one new Function node [381]
+   Obtain Queue node 381: [(0, 'name (unnamed)', False, 0), (1, 'element data type', False, 346), (2, 'create if not found? (T)', False, 0), (3, 'error in (no error)', False, 0), (4, 'max queue size (-1, unlimited)', False, 0), (5, 'queue out', True, 0), (6, 'created new?', True, 0), (7, 'error out', True, 0)]; ExecState 1
+   PASS T2 enqueue: one new node in the body [383]
+   Enqueue node 383: [(0, 'queue', False, 462), (1, 'element', False, 0), (2, 'timeout in ms (-1)', False, 0), (3, 'error in (no error)', False, 0), (4, 'queue out', True, 0), (5, 'timed out?', True, 0), (6, 'error out', True, 0)]
+   after element wire: [(0, 'queue', False, 462), (1, 'element', False, 465), (2, 'timeout in ms (-1)', False, 0), (3, 'error in (no error)', False, 0), (4, 'queue out', True, 0), (5, 'timed out?', True, 0), (6, 'error out', True, 0)]; ExecState 1
+   PASS T3 dequeue: one new node [385]
+   Dequeue node 385: [(0, 'queue', False, 478), (1, 'timeout in ms (-1)', False, 0), (2, 'error in (no error)', False, 0), (3, 'queue out', True, 0), (4, 'element', True, 0), (5, 'timed out?', True, 0), (6, 'error out', True, 0)]
+   indicators: ['element', 'timed out?']
+   PASS T4 release: one new node [386]
+   PASS T5 ExecState 1 1
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\test_opqueue.py", line 109, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\test_opqueue.py", line 89, in main
+    t0 = time.time(); g._run(vi); dt = time.time() - t0
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 228, in _run
+    raise RuntimeError(
+RuntimeError: COM Run did not return within 60s and no modal dialog was found - LabVIEW is busy or another client is contending. Screenshot: C:\Users\KimLab\AppData\Local\Temp\gscript_hang_1789387012.png
+BGRUN END rc=1 after 80s
+BGRUN START 2026-09-14 22:03:37 limit 10.0 min: py -u tools/bench/test_opqueue.py
+GetImageSize SubVI index 1; loop body diagram 1; ExecState 1
+   PASS T1 obtain: one new Function node [381]
+   Obtain Queue node 381: [(0, 'name (unnamed)', False, 0), (1, 'element data type', False, 346), (2, 'create if not found? (T)', False, 0), (3, 'error in (no error)', False, 0), (4, 'max queue size (-1, unlimited)', False, 0), (5, 'queue out', True, 0), (6, 'created new?', True, 0), (7, 'error out', True, 0)]; ExecState 1
+   PASS T2 enqueue: one new node in the body [383]
+   Enqueue node 383: [(0, 'queue', False, 462), (1, 'element', False, 0), (2, 'timeout in ms (-1)', False, 0), (3, 'error in (no error)', False, 0), (4, 'queue out', True, 0), (5, 'timed out?', True, 0), (6, 'error out', True, 0)]
+   after element wire: [(0, 'queue', False, 462), (1, 'element', False, 465), (2, 'timeout in ms (-1)', False, 0), (3, 'error in (no error)', False, 0), (4, 'queue out', True, 0), (5, 'timed out?', True, 0), (6, 'error out', True, 0)]; ExecState 1
+   PASS T3 dequeue: one new node [385]
+   Dequeue node 385: [(0, 'queue', False, 478), (1, 'timeout in ms (-1)', False, 0), (2, 'error in (no error)', False, 0), (3, 'queue out', True, 0), (4, 'element', True, 0), (5, 'timed out?', True, 0), (6, 'error out', True, 0)]
+   indicators: ['element', 'timed out?']; timeout control: ['timeout in ms (-1)']
+   census: Obtain.queue out wire 478; Enqueue queue/element wires [('queue', 462), ('element', 465)]; Dequeue.queue wire 478
+   tunnel 0: outer 'Image Dst Out' wire 393 src=False -> inner ['Image Dst Out'] wires [376]
+   tunnel 1: outer 'Image Out' wire 419 src=False -> inner ['Image Out'] wires [379]
+   tunnel 2: outer 'queue out' wire 478 src=False -> inner ['queue out'] wires [462]
+   tunnel 3: outer 'X Resolution' wire 490 src=False -> inner ['X Resolution'] wires [465]
+   PASS T4 release: one new node [386]
+   PASS T5 ExecState 1 1
+   run 0.09 s: {'element': 1280, 'timed out?': False}
+   PASS T5 dequeued element == 1280 (X Resolution) 1280
+   PASS T5 not timed out False
+
+SUMMARY 7/7 PASS
+   PASS T1 obtain: one new Function node
+   PASS T2 enqueue: one new node in the body
+   PASS T3 dequeue: one new node
+   PASS T4 release: one new node
+   PASS T5 ExecState 1
+   PASS T5 dequeued element == 1280 (X Resolution)
+   PASS T5 not timed out
+BGRUN END rc=0 after 41s

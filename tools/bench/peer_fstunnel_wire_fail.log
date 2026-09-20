@@ -1,0 +1,28 @@
+BGRUN START 2026-09-18 09:06:25 limit 16.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Dual -Slug fstunnel-wire-fail -TaskFile 'tools/bench/task_fstunnel_wire_fail.md' -TimeoutSec 780
+=== DUAL ARM 1/2: codex -> fstunnel-wire-fail-codex ===
+OUTCOME: ANSWERED (112s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-18-fstunnel-wire-fail-codex.md
+--- ANSWER ---
+The strongest reason the framing is wrong is that the exception reports a failed Python assertion, not a failed LabVIEW connection. `gscript.wire()` considers every non-boundary, non-`branch=True` connection successful only if the diagram gains a Wire object ([gscript.py](/G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/gscript.py:1322)). But LabVIEW wires have one source and potentially many destinations, so adding a destination can modify an existing Wire object without increasing the object count. [NI describes that one-source/many-reader wire model explicitly](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html).
+
+More importantly, the recipe itself supplies a concrete untested source of such a branch:
+
+- It discovers `tmsc` by requiring its `specific class reference` output to share the wire entering the soon-to-be-deleted `pn_terms` ([recipe line 327](/G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/recipes/build_opfstunnelterm_v0.py:327)).
+- It deletes `pn_terms`, `w_terms`, `el_w`, and `w_targetclass`, but never records or deletes the wire on the TMSC output ([recipe line 342](/G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/recipes/build_opfstunnelterm_v0.py:342)).
+- Gate B2 checks the old consumers and TMSC’s `target class`; it does not check TMSC’s `specific class reference` output ([recipe line 359](/G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/recipes/build_opfstunnelterm_v0.py:359)).
+
+Thus the best alternative is a residual/dangling donor wire still attached to the TMSC output. Connecting PN_A could have successfully added a sink to that existing Wire object, yielding exactly `40 → 40`. That is neither UID corruption nor evidence that `create_control` left PN_A wired.
+
+UID reuse is especially weak causally because `cidx()` does not pass UID 145 to the wiring Op. It performs a fresh `report_all("Property")`, converts UID 145 into the current class-list index, and passes that index ([recipe line 270](/G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/recipes/build_opfstunnelterm_v0.py:270)). Reuse matters only if that fresh enumeration resolves to the wrong live object—not merely because 145 belonged to an earlier, deleted object.
+
+Falsifiers:
+
+- **UID/stale-object explanation:** falsified if the fresh Property enumeration at `cidx`’s returned index reports UID 145, property `OuterTerminal`, and the expected `reference` terminal.
+- **`create_control` left PN_A already wired:** falsified if PN_A’s `reference` terminal reports Connected Wire UID 0 immediately before the attempted connection.
+- **Residual donor-wire/helper false-negative explanation:** falsified if TMSC’s `specific class reference` terminal reports Connected Wire UID 0 immediately before the call, or if after the raw call PN_A remains unwired.
+- **Property Node cannot accept the typed wire while carrying its property list:** falsified if both endpoints report the same nonzero Connected Wire UID after the call. It is also contrary to NI’s documented TMSC pattern, which specifically wires the cast output into a class-specific Property Node ([NI](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YHhtCAG)).
+- **Wrong endpoint/class mismatch:** falsified by that same shared-wire read plus the expected UID/property identity.
+
+The error-1077 measurement does not change this diagnosis. Error 1077 means “invalid property value,” so it says those generic IDs are invalid for that class/context; it says nothing about whether this wiring operation succeeded ([NI](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000P6FSSA0&l=en-US)). It supports retaining the measured FlatSequence-specific IDs, but is orthogonal to the `40 → 40` exception.
+
+**Cheapest discriminating test:** at the failing state, invoke the raw OpWire once without `gscript.wire()`’s count assertion, then make one reporter read returning the `wire` fields for TMSC `specific class reference` and PN_A `reference`. If they are the same nonzero UID, the connection succeeded and the helper’s wire-count test is the failure; if TMSC is nonzero and PN_A is zero, LabVIEW declined the connection; if both are zero, there was no branch and the endpoint resolution must be investigated.
+=== DUAL ARM 2/2: claude/hypothesis (opus, effort max, web) -> fstunnel-wire-fail-opus ===

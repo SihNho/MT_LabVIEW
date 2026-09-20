@@ -1,0 +1,55 @@
+BGRUN START 2026-09-13 23:28:15 limit 20.0 min: py -u tools/recipes/fix_opreportall_errors.py
+== 1. silence automatic error handling on OpReportAll_v0
+   ExecState 1 -> 1
+   saved
+
+== 2. rebuild a small scratch target and re-run the Diagram comparison
+
+---- class 'Diagram' ----
+   report_all: 1 rows in 0.13 s  (no dialog)
+   report    : 1 rows
+   report_all rows:
+       (3, 'TopLevelDiagram', (0, 75), '')
+   report rows:
+       (3, 'TopLevelDiagram', (0, 75), '')
+   -> IDENTICAL
+
+---- class 'Node' ----
+   report_all: 14 rows in 0.05 s  (no dialog)
+   report    : 14 rows
+   report_all rows:
+       (610, 'Property', (1213, 350), 'TopLevelDiagram')
+       (538, 'Invoke', (1044, 350), 'TopLevelDiagram')
+       (534, 'IndexArray', (975, 350), 'TopLevelDiagram')
+       (341, 'SubVI', (875, 451), 'TopLevelDiagram')
+       (370, 'SubVI', (980, 540), 'TopLevelDiagram')
+       (369, 'SubVI', (980, 470), 'TopLevelDiagram')
+       (788, 'Function', (675, 446), 'TopLevelDiagram')
+       (683, 'Function', (653, 279), 'TopLevelDiagram')
+       (327, 'IndexArray', (605, 454), 'TopLevelDiagram')
+       (308, 'IndexArray', (605, 284), 'TopLevelDiagram')
+       (216, 'SubVI', (725, 281), 'TopLevelDiagram')
+       (170, 'SubVI', (495, 451), 'TopLevelDiagram')
+       (124, 'SubVI', (495, 281), 'TopLevelDiagram')
+       (43, 'Function', (275, 251), 'TopLevelDiagram')
+   report rows:
+       (610, 'Property', (1213, 350), 'TopLevelDiagram')
+       (538, 'Invoke', (1044, 350), 'TopLevelDiagram')
+       (534, 'IndexArray', (975, 350), 'TopLevelDiagram')
+       (341, 'SubVI', (875, 451), 'TopLevelDiagram')
+       (370, 'SubVI', (980, 540), 'TopLevelDiagram')
+       (369, 'SubVI', (980, 470), 'TopLevelDiagram')
+       (788, 'Function', (675, 446), 'TopLevelDiagram')
+       (683, 'Function', (653, 279), 'TopLevelDiagram')
+       (327, 'IndexArray', (605, 454), 'TopLevelDiagram')
+       (308, 'IndexArray', (605, 284), 'TopLevelDiagram')
+       (216, 'SubVI', (725, 281), 'TopLevelDiagram')
+       (170, 'SubVI', (495, 451), 'TopLevelDiagram')
+       (124, 'SubVI', (495, 281), 'TopLevelDiagram')
+       (43, 'Function', (275, 251), 'TopLevelDiagram')
+   -> IDENTICAL
+
+scratch target deleted
+
+VERDICT: the dialog is gone and the rows agree
+BGRUN END rc=0 after 3s

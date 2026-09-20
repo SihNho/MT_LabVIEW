@@ -1,0 +1,152 @@
+BGRUN START 2026-09-16 12:55:17 limit 25.0 min: py tools/prior_art_review.py --plan-file docs/pre-rig-master-plan.md --slug master-plan-rev2 --trigger direction-change
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_master-plan-rev2.txt (33785 chars)
+OUTCOME: ANSWERED (419s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-16-priorart-master-plan-rev2.md
+COST: $3.8909  in 28 / out 30811 / cache-create 202569 / cache-read 2189616  (415s, 24 turn(s))
+--- ANSWER ---
+Prior-art review complete. **Zero `novel` ? 12 findings, each with a file and line.** The rewrite fixed what the last two reviews caught; what it now does is (a) put an *already-built, already-benchmarked* artefact on its critical path as an open risk, (b) reinstate one item its own predecessor marked `already-failed`, and (c) restate a measured budget as the frame period.
+
+---
+
+# PART A ? THE DIRECTION
+
+## A1. "Does it run dry?" is already answered as **never unattended, user present** ? and the reason is the ASI stage
+
+This is the costliest finding, because it governs all of Phase 2.
+
+`docs/t0-instrumentation-plan.md:128` ? *"**Step 4 ? in-situ cross-check (needs the user present; motor and piezo initialise)**"*, and `:136-138`: *"Running the main VI executes its initialisation frame, which contains the PI motor's `GOH` (go home) and the ASI stage's `MOVE AXIS TO POS`, i.e. real motion ? **which is why this step waits for the user and never runs unattended**."* `:130` calls it *"Non-negotiable, not optional."*
+
+The plan's 0.5 cites `main-vi-startup.md:24` (diagram 1, PI motor init) and frames the hazard as *"motor initialisation and focus-setting paths"*. The same document names the sharper one two rows down ? `main-vi-startup.md:33`: diagram 10 = *"**`ASI TG-1000.lvlib:Initialize.vi` (uid 43997) then `Move Axis to Position.vi` (44036)** ? MEASURED 2026-09-14"*, and `:35` diagram 12 = `Get Current Position.vi`. A copy of the original that keeps its startup **drives the ASI axis on every run**, which is the one instrument the plan itself declares must never move (`pre-rig-master-plan.md:59`, 0.5's own note).
+
+Two consequences the plan does not carry:
+
+- `main-vi-startup.md:47` ? *"**PI motor first, then rotor, then serial config.** The ordering of the outer sequence is itself a fact the restructuring must preserve (rule 1a: behaviour, not just numbers)."* So excising startup is not a free workaround.
+- The plan states rule 1b as *"the ASI piezo must never be driven"*, while `CLAUDE.md` ��1b now reads *"Confirm the detached state from the recorded rig state before driving it; that is a check to run, not a question to ask."* The plan is stricter than the rule it cites, and still schedules the run that violates its own stricter form.
+
+## A2. Phase 0.2 and 2A's back-pressure/soak were specified on 2026-09-12 ? and the plan's version has lost content
+
+`docs/restructure-plan-4.6.md:183-187`: *"**Acceptance must measure more than a rate.** �� Each live stage records: processed-frame deadline misses, **gaps in buffer numbers**, the acquisition-call latency **distribution including p99.9 and max**, per-core CPU, UI-thread time, and display age. Add a **back-pressure test** ? deliberately slow tracking and disk writing for minutes, not an 8 ms injection ? and a soak run long enough to expose thermal throttling and disk stalls."*
+
+Plan 0.2 presents its list as *"decided before the first run"*; 2A's back-pressure row and 2B's soak row are that paragraph. The plan's list **drops p99.9 and max, per-core CPU, UI-thread time and display age** ? and UI-thread time is the one `camera-acquisition-facts.md:206-208` identifies as the mechanism behind the user's own symptom. The archive convention for what a run records is also already fixed (`archive/benchmarks/INDEX.md:27-29`).
+
+## A3. The 11.111 ms budget contradicts the measurement the plan cites elsewhere
+
+- Plan, decision 1 and Phase 1 ordering: *"at 90 Hz the per-frame budget is **11.111 ms**, not the 6.00 ms�� motor reading alone is 23 % of it."*
+- `docs/camera-acquisition-facts.md:53`: | 90.00 Hz | 11.11 ms | **budget (zero frames lost) 10 ms** | 12 ms �� 45.0 Hz processed, 179 missed |, and `:58` ? *"So **the budget is the frame period minus about 1 ms**."* `archive/benchmarks/INDEX.md:40` states it again: *"budget ~= frame period - 1 ms -> 90 Hz **10 ms**"*.
+
+The plan substitutes the period for the budget, which is the exact substitution that file was written to prevent. The error is 11 % of the whole budget, and 2.56 ms is **25.6 %** of 10 ms, not 23 %.
+
+## A4. A8 is scheduled in Phase A and forbidden 50 lines later in the same document
+
+- Phase A, A8: *"**Census A ? Case #10445 frames**, before the reseed `Or` collapse | LabVIEW RO"*.
+- The same plan, "Already measured ? CITE, do not redo" (`docs/pre-rig-master-plan.md:135`): *"`OpCaseFrames_v0` | **already failed**; do not retry (CLAUDE.md 'failure budget = 2')"*.
+
+Census A means reading a CaseStructure's frames, which is what `OpCaseFrames_v0` is (`docs/stage2-assembly-step-e.md:216` ? `Frames[]` 6363801 + `Frame Names` 6365002; `CLAUDE.md:212` ? *"failed five times"*; cause recorded at `archive/2026-09-15-status-cycle7-reseed-measurements.md:43-44`). The plan schedules the need, forbids the only route, and names no alternative. The need itself is real (`stage2-assembly-step-e.md:180`) ? it is the **route** that is closed.
+
+Worse, this was already found. `archive/peer/2026-09-16-priorart-master-plan.md:464` returned `already-failed (B1 ? OpCaseFrames_v0)`, and `:490` dispositioned it as *"overtaken by the rewrite ? the items they cite (�� `OpCaseFrames_v0` ��) are **no longer proposed work**"*. Old Track A's A8 (`:96`) survived into the new Phase A verbatim. The disposition is factually wrong, and the same is true of the ordering verdict A6, whose target ? an eight-item Track A ahead of the first delivery slice ? is unchanged.
+
+## A5. The autofocus cost claim cites the superseded half of our own record
+
+- Plan, Phase 1 ordering: *"autofocus holds the only fixed `Wait` on the motion path plus its own VISA traffic, called **every frame** (`frame-loop-anatomy.md:68, :76`)."*
+- `docs/camera-acquisition-facts.md:181-194` (a direct read of the subVI, 2026-09-12): the unconditional top-level diagram holds **five nodes** ? two `Value` property nodes, a comparison, a Case Structure and a pass-through; *"The two real serial VIs sit **inside** that case, on diagram 4�� **The fixed `Wait (ms)` the motion audit found is on diagram 8, also inside a nested frame ? not unconditional.**"*
+
+Both sides are ours. What is unconditional per frame is two UI-thread property reads, not a Wait plus VISA. (The user's 2026-09-15/16 corrections change the *frequency and trigger* of the expensive branch ? `:169-179`, `:140-165` ? not its conditionality.)
+
+## A6. 0.4 cites a tool that cannot apply the camera contract the decision rests on
+
+Plan 0.4: *"Apply it with `imaqdx_limits.py --restore` plus the fixed exposure."*
+
+`tools/bench/imaqdx_limits.py:93-96` writes exactly four attributes ? `OffsetX`, `OffsetY`, `Width`, `Height`. The string `Exposure` does not occur anywhere in the file; frame rate is **read only** (`:58-67`), and its docstring `:12-16` scopes the writes to the ROI and says *"Binning is never touched."* The 90.0009 Hz figure is the camera's as-found value (`camera-acquisition-facts.md:25`), not something `--restore` sets.
+
+Also unresolved by the plan: `camera-acquisition-facts.md:240-251` measured that **`IMAQdxOpenCamera` resets the ROI on every open** ? *"3. close, re-open, read | **1280 �� 1024** again"* ? so a contract written by a separate Python session is not established to survive LabVIEW opening the camera; for `ExposureTime`/`ExposureAuto` persistence is unmeasured in either direction.
+
+This repeats a finding already sustained against the previous draft: `archive/peer/2026-09-16-master-plan-attack.md:79` and `:192` ? *"C1 is not implementable with the cited tool"* (`serial_roundtrip_asi.ps1:50`, `$SAFE = @('/')`).
+
+## A7. Unread evidence
+
+- **`docs/cycle10-plan.md:63-70`** ? revised the same day, after all eight prior-art verdicts were accepted. It is a **five**-step list: A8 is gone, step 3 is recorded as *"a RE-RUN, not a measurement"* (`:112-115`, the script already resolved 18 of 19 call sites), and `:118-120` says *"**Step 5's body-only half is already written down**�� Do not re-derive the body list."* Phase A reinstates eight items and carries none of these qualifications, while STATUS calls cycle 10 "track A of the master plan".
+- **`docs/restructure-plan-4.6.md:48-68`** ? the inter-loop transport table and the queue mechanics Phase 2's *"no deadlock, no queue growth"* rests on: a bounded queue's default enqueue timeout is `-1` and **waits forever when full**; releasing a queue with a waiter raises **error 1122**; shutdown order is stop �� drain �� release. Phase 1 restates the seven loops without any of it.
+
+---
+
+# PART B ? THE ARTIFACTS
+
+## B1. The GPU interface is built, callable from LabVIEW, and benchmarked ? it is not a critical-path unknown
+
+Plan: *"Whether that interface is actually built and callable is now on the critical path"* / *"if it is not, that is phase 1's first task."* It is:
+
+- `docs/gpu-backend.md:245-251` ? *"**HARNESS_gpu2** (script-built: IMAQ Create �� ReadFile �� GetImagePixelPtr �� one CLFN `mt2_track_simple`, DBL in/out, no image copies) vs HARNESS_base, 200 chained frames, 5 beads: **1.14 ms/frame**�� outputs == reference (x,y 4.9e-7 px, z 2.9e-6 ��m, 0 flips, 0 good mismatches)."*
+- `archive/benchmarks/INDEX.md:36` (row 15), evidence `archive/bench-2026-09-09-gpu2-in-labview/REPORT.md`.
+- `archive/benchmarks/INDEX.md:37` (row 16) ? **`GPU_kernel_v1`**, the GPU backend **as a drop-in kernel carrying the tracking kernel's own connector pane**, 3 repeats �� 200 frames.
+- `docs/t0-instrumentation-plan.md:165` ? *"`GPU_kernel_v1` **already takes the raw IMAQ pixel pointer** and skips `Omars IMAQ ImageToArray` entirely."*
+- The build path is a one-call wrapper: `gpu-backend.md:330` ? `gscript.build_clfn(target, location, dll, fn, flat_hex)`.
+
+Loop 1.2's description ? *"single call per frame, raw image in; designed fresh, not copied from the Saleh-lab donor"* ? is a description of the accepted design that was already implemented (`gpu-backend.md:253-265`, the `mt2_*` C API).
+
+## B2. 1.2's numeric acceptance is already met and recorded three times
+
+x/y �� 1e-6 px, z �� 1e-4 ��m against the CPU kernel: `gpu-backend.md:249` (200 chained frames), `docs/gpu-portability.md:87` (201 frames ? dx 4.31e-07, dy 1.74e-07 px, dz 3.83e-06 ��m, 0 flips), `archive/benchmarks/INDEX.md:41` (row 20, 41 frames identical to every digit before and after the multi-arch rebuild). `gpu-portability.md:112` states the standing tolerance in the same words the plan uses.
+
+What is **not** on record is that tolerance across the full 10,043-frame fixture. If that is what 1.2 means, it must say so; as written it re-runs a closed test ? the same shape as the E4 verdict at `archive/peer/2026-09-16-priorart-master-plan.md:437`.
+
+## B3. Making the GPU the default at 90 Hz has a measured precondition the plan omits
+
+`docs/gpu-backend.md:225-241`, measured with `tools/gpu/regime_test.py`:
+
+| regime | DLL t | sampled state |
+|---|---|---|
+| tight loop | 1.12 ms | P2 1905 MHz SM |
+| **2, 5 or 15 ms gaps** | **5.50 ms** | **P8 360 MHz SM / 405 MHz mem** |
+
+*"**Any idle gap �� 2 ms drops the card to P8**; the memory clock falls 17�� and every phase �� slows ~3.5��. The NVIDIA 'prefer maximum performance' per-app profile does not apply to a CUDA-only process (verified: LabVIEW idle �� P8). �� **Working fix = SM clock lock (admin): `nvidia-smi -lgc 1365,1905`** (resets at reboot; register as a logon task with highest privileges for the rig)"* ? and keep-alive v2/v3 both failed (`:233-234`).
+
+At 90 Hz the GPU is idle ~9.5 ms of every 11.111 ms. Phase 1.2 and Phase 2 contain no timing acceptance and no clock-lock step, so the default backend is scheduled into exactly the duty cycle already measured to cost it 3.5��. Related and also unmentioned: `gpu-backend.md:345-349`, *"**Never `cudaHostRegister` LabVIEW's IMAQ buffer**"* ? relevant the moment acquisition hands pooled image refnums to the GPU loop.
+
+## B4. The buffer accounting of 0.2/0.3 partly exists inside the VI being copied
+
+`docs/frame-loop-anatomy.md:47` ? uid 6810, *"camera buffer bookkeeping �� **yes** ? it is the frame source"* (`get buff image-lost frames.vi`, MAIN_VI_MAP ��3b). It is driven by the `LastBufferNumber` shift register on diagrams 19 and 43 (`camera-acquisition-facts.md:354`; `keystone-op-spec.md:594`, *"current image number / LastBufferNumber logic"*) and already feeds panel objects `Total Lost Frames`, `Missing Frames?`, `Lost Frame Message` (`camera-acquisition-facts.md:282-285`). The plan must say whether it reuses or replaces this ? replacing it is a rule-1a behaviour change, not instrumentation.
+
+## B5. 2B and 2C cannot both be true: the reseed path is gated, and the cap stops the program
+
+- 2B: *"**run for hours with reseed firing continuously**; no leak, no deadlock, no queue growth."*
+- 2C: *"`Limit of Program`'s stop-and-save at the cap"* listed as an observable of the same run.
+
+`docs/GLOSSARY.md:48-54`: *"**the maximum number of auto-resets allowed in one run** �� Each loss triggers an auto-reset; when the reset count reaches this limit the program **stops and saves the data collected so far**, rather than grinding on with no beads. Measured in the diagram: `Equal?` compares it with `# of Auto-Reset` ? the test is **equality**, not 'greater than'."* And `docs/stage2-assembly-step-e.md:66`: wire 9806 �� control **`Auto-Reset`** ? *"gates the lost-bead reseed - **it fires only while the user has Auto-Reset on**"*.
+
+So with a bead-free field: `Auto-Reset` ON �� the counter reaches the limit almost at once and the program terminates ? there are no hours; `Auto-Reset` OFF �� no reseed fires and the "free stress test" does not exist. Either the limit is raised (a control value that must be recorded as part of 0.2's snapshot, not assumed) or 2B's soak and 2C's stress test are separate runs.
+
+One more scope correction on 2C: the periodic auto-reset arm is Case 10445, and `keystone-op-spec.md:600-601` records it as *"a periodic auto-reset **whose period never elapsed in this recording**"*. The empty stage injects the **loss** arm, not codex's full scenario list.
+
+## B6. 1.6's display decision is already measured and already written into the architecture
+
+`archive/benchmarks/INDEX.md:46` (row 25) ? Image Display +1.0 ms closed / +6.9 ms visible vs Picture 2.9 / 8.0, ?1.9 ms CPU saved; row 22 (`:43`) ? construction ?2.7 ms + Picture paint ?6.5 ms visible. `docs/restructure-plan-4.6.md:45` already carries loop 6 with those numbers and the 10?20 Hz gate. 1.6 restates the conclusion with no citation; cite it rather than re-deriving it.
+
+---
+
+## Where I found NO prior art ? these are clear
+
+Building the seven-loop top level **inside a copy** at scale (the method is proven at `probe_migrate_v2` 3/3 / `v3` 5/5, the scale is not); loops 1.1, 1.3, 1.4, 1.5, 1.7 as artefacts; the frame-identity corruption test; "the camera is never gated" verified by instrumenting the boundary; A2?A5 and A7 of Phase A; the batch-directory convention at `G:\Data\Sihyeong-Developing\`; and the user's three decisions themselves (90 Hz / map-first / GPU-first), which are user calls and not mine to review.
+
+---
+
+```
+PRIOR-ART: settled-already     (A1 ? t0-instrumentation-plan.md:128, :136-138 "never runs unattended"; main-vi-startup.md:33, :47)
+PRIOR-ART: unread-evidence     (A1 ? main-vi-startup.md:33 ASI Initialize + Move Axis to Position at startup, cited only at :24)
+PRIOR-ART: settled-already     (A2 ? restructure-plan-4.6.md:183-187 is Phase 0.2 + 2A + 2B, with more content)
+PRIOR-ART: contradicted        (A3 ? plan's 11.111 ms budget vs camera-acquisition-facts.md:53, :58; INDEX.md:40)
+PRIOR-ART: contradicted        (A4 ? Phase A "A8 Census A" vs pre-rig-master-plan.md:135 "do not retry")
+PRIOR-ART: already-failed      (A4 ? OpCaseFrames_v0, CLAUDE.md:212; 2026-09-15-status-cycle7-reseed-measurements.md:43-44)
+PRIOR-ART: refuted-already     (A4 ? outcome-review-20260915.md:151, :225; disposition at priorart-master-plan.md:490 is wrong)
+PRIOR-ART: contradicted        (A5 ? frame-loop-anatomy.md:68 vs camera-acquisition-facts.md:181-194)
+PRIOR-ART: contradicted        (A6 ? 0.4 cites imaqdx_limits.py for exposure; imaqdx_limits.py:93-96 writes ROI only)
+PRIOR-ART: unread-evidence     (A7 ? cycle10-plan.md:63-70, :112-120; restructure-plan-4.6.md:48-68)
+PRIOR-ART: already-built       (B1 ? gpu-backend.md:245-251; INDEX.md:36, :37; t0-instrumentation-plan.md:165)
+PRIOR-ART: already-measured    (B2 ? gpu-backend.md:249; gpu-portability.md:87, :112; INDEX.md:41)
+PRIOR-ART: already-measured    (B3 ? gpu-backend.md:225-241, P8 at any idle gap �� 2 ms; clock lock required)
+PRIOR-ART: helper-exists       (B4 ? get buff image-lost frames.vi uid 6810, frame-loop-anatomy.md:47; camera-acquisition-facts.md:354)
+PRIOR-ART: contradicted        (B5 ? 2B "hours of continuous reseed" vs GLOSSARY.md:48-54 and stage2-assembly-step-e.md:66)
+PRIOR-ART: already-measured    (B6 ? INDEX.md:43, :46; restructure-plan-4.6.md:45)
+```
+
+The cheapest way to act on this, if the citations hold when opened: **delete the GPU-interface risk item and replace loop 1.2 with "drop in `GPU_kernel_v1`, add the `nvidia-smi -lgc` logon task, and state whether the tolerance run is the 10,043-frame fixture"** (B1?B3 collapse into one line); **move A8 out of Phase A until a route exists** (A4); and **decide Phase 2's startup question before anything else** ? under `t0-instrumentation-plan.md:128-138` the dry run as written is a supervised step that drives the ASI axis, which is the one thing the plan says it will never do.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-master-plan-rev2.md
+BGRUN END rc=0 after 419s

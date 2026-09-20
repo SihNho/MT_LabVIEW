@@ -1,0 +1,16 @@
+BGRUN START 2026-09-18 21:48:01 limit 5.0 min: py -u tools/bench/selftest_bgrun_final_line.py
+  -> PASS B1 normal-exit  runner exit 0 (want 0) | last: BGRUN END rc<eq>0 after 0s
+  -> PASS B2 child-rc-nonzero  runner exit 3 (want 3) | last: BGRUN END rc<eq>3 after 0s
+  -> PASS B3 runner-exception  runner exit 125 (want 125) | last: BGRUN END rc<eq>125 after 0s (runner exception: le "C:\Users\KimLab\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 971, in __init__ |  
+  -> PASS B4 timeout  runner exit 124 (want 124) | last: BGRUN TIMEOUT killed after 3s (limit 0.02 min)
+  -> PASS B5 exactly-one-terminal-line  logs with a count other than 1: none
+  -> PASS C0 control-cp949-raises  python -c print(em-dash) under PYTHONIOENCODING=cp949 exit 1
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_bgrun_final_line.py", line 149, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_bgrun_final_line.py", line 139, in main
+    gate(name, ok, "exit %d (want %d) | out: %s | err: %s"
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_bgrun_final_line.py", line 61, in gate
+    print("  -> PASS %s  %s" % (name, safe(detail)), flush=True)
+UnicodeEncodeError: 'cp949' codec can't encode character '\u2014' in position 106: illegal multibyte sequence
+BGRUN END rc=1 after 3s

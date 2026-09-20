@@ -1,0 +1,84 @@
+BGRUN START 2026-09-16 20:06:55 limit 15.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & './tools/peer.ps1' -Agent codex -Kind review -TimeoutSec 700 -Slug flatseq-frame-unreachable -Task (Get-Content -Raw 'C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/peer_fs_task.txt')
+OUTCOME: ANSWERED (125s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-16-flatseq-frame-unreachable.md
+--- ANSWER ---
+1. The claim is wrong: `FlatSequence` has its own direct `Diagrams[]` accessor.
+
+The concrete route is:
+
+```text
+Traverse "FlatSequence"
+→ VI Server:FlatSequence.Diagrams[]       property ID 0x3578BC00
+→ each returned Diagram reference
+→ GObject.UID                             property ID 0x632A813
+```
+
+`FlatSequence` also has its own `Frames[]`, property ID `0x3578BC07`. These are FlatSequence-specific properties, separate from `MultiFrameStructure.Frames[]` (`0x6363801`). The class/property catalog explicitly lists both `Diagrams[]` and `Frames[]` on class `FlatSequence` (class ID 16459). [FlatSequence class property table](https://labviewwiki.org/wiki/FlatSequence_class)
+
+That directly defeats “cannot get ... by any traverse-class + property route.” You already know the first step works and returns 21 FlatSequence references. `Diagrams[]` should return the actual frame-diagram references, bypassing `FlatSequenceFrame`, tunnels, `Owner`, and casts entirely. `Diagram` inherits from `GObject`, so its UID is readable through `GObject.UID` (`0x632A813`). [VI Server class hierarchy](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy), [GObject.UID](https://labviewwiki.org/wiki/GObject_class/UID_property)
+
+There is also a secondary route for frames that have an outer tunnel:
+
+```text
+Traverse "FlatSequenceOuterTunnel"        class ID 16481
+→ Inner Terminal                          property ID 0x3195B801
+→ Terminal.Diagram                        property ID 0x634A002
+→ GObject.UID                             property ID 0x632A813
+```
+
+NI’s current API reference says `FlatSequenceOuterTunnel.Frame` returns the containing Flat Sequence frame, while the class catalog gives `Inner Terminal` and `Frame` IDs `0x3195B801` and `0x3195B802`. [NI: FlatSequenceOuterTunnel.Frame](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/flatsequenceoutertunnel/frame.html), [FlatSequenceOuterTunnel properties](https://labviewwiki.org/wiki/FlatSequenceOuterTunnel_class), [Terminal.Diagram](https://labviewwiki.org/wiki/Terminal_class/Diagram_property)
+
+Candidate verdicts:
+
+- FlatSequence-specific accessor: **yes—`Diagrams[]` and `Frames[]`.**
+- Going down from FlatSequence: **yes—use `Diagrams[]` directly; it is better than `Frames[]` for UID retrieval.**
+- `Diagram.Owner`: not the right downward route. Its returned `FlatSequenceFrame` is useful as an identity/reference but is not a `GObject`.
+- Object inside a frame: viable if the frame is nonempty; its owning Diagram reference is enough to read the Diagram UID. It is not a complete census method because an empty frame supplies no seed object.
+- `ClassSpecifierConstant.AllTypes[]`: useful to confirm the real class hierarchy, but unnecessary for access and not itself a route to instances.
+
+2. Alternative explanation of the 1077/1092/UID-0 pattern
+
+The evidence indicates a **parallel-class API**, not an unreachable subtree:
+
+```text
+Generic
+├─ FlatSequenceFrame
+└─ GObject
+   ├─ AbstractDiagram → Diagram
+   ├─ FlatSequence
+   ├─ FlatSequenceInnerTunnel
+   ├─ FlatSequenceOuterTunnel
+   └─ Structure → MultiFrameStructure
+```
+
+The published hierarchy places `FlatSequenceFrame` directly under `Generic`, while `FlatSequence`, its special tunnel classes, diagrams, and ordinary structures are separate descendants under `GObject`. [VI Server class hierarchy](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy)
+
+That explains every symptom:
+
+- `Structure` returning 63 is expected because `FlatSequence` is not a subclass of `Structure`.
+- `MultiFrameStructure` returning 43 is expected because FlatSequence has its own API. NI explicitly describes FlatSequence as having been implemented as a separate scripting class because its frame/tunnel semantics differ from other structures. [NI Community explanation](https://forums.ni.com/t5/LabVIEW/Scripting-Connect-a-Terminal-to-a-Flat-Sequence-Structure/m-p/2672477)
+- Error 1077 from attaching `0x6363801` to `VI Server:FlatSequence` means the property belongs to the wrong class. The correct FlatSequence properties are `0x3578BC00` and `0x3578BC07`.
+- Error 1092 traversing `FlatSequenceFrame` is consistent with the traversal operation enumerating `GObject` instances while `FlatSequenceFrame` is not a `GObject`.
+- UID 0 downstream of `To More Specific Class` is the default result of an invalid cast: `FlatSequenceFrame → GObject` is not a legal inheritance conversion. An NI Community diagnosis of this exact FlatSequenceFrame mistake says the cast fails because the class does not inherit from `GObject`. [NI Community: failed FlatSequenceFrame cast](https://forums.ni.com/t5/LabVIEW/Scripting-Positions-of-objects-in-Block-Diagram/td-p/3992381/page/2)
+
+Thus “FlatSequence is outside the `Structure`/`MultiFrameStructure`/ordinary-`Tunnel` class branches” survives. “Its frame diagrams are unreachable by any traverse-class + property route” does not.
+
+3. Single observation that falsifies the claim
+
+> One LabVIEW 2026 read of `FlatSequence.Diagrams[]` (`0x3578BC00`) returns a valid Diagram reference whose `GObject.UID` (`0x632A813`) is nonzero.
+
+One successful frame is enough to falsify the universal claim.
+
+4. Cheapest discriminating test
+
+In one read-only op call on the copied VI:
+
+```text
+Traverse class "FlatSequence"
+→ take the first returned reference
+→ read FlatSequence.Diagrams[] (0x3578BC00)
+→ read GObject.UID (0x632A813) from every returned element
+→ report property error, array length, UIDs, and ClassName values
+```
+
+Do not involve `Frames[]`, `Owner`, tunnels, or casts. If it returns `N > 0`, class names `Diagram`, and nonzero UIDs, the claim is dead. If creating or reading the correctly typed `0x3578BC00` property itself fails in LabVIEW 2026, that would instead support a 2026-specific API regression or permission gap—not the present “outside the subtree” explanation.
+BGRUN END rc=0 after 125s

@@ -1,0 +1,109 @@
+BGRUN START 2026-09-17 15:01:59 limit 40.0 min: py -u tools/recipes/build_opconnectfromwire_v0.py
+  FACT  LabVIEW handles at start: 30902
+
+=== W0: donors
+  PASS  W0 OpConnectNested_v1.vi on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpConnectNested_v1.vi
+  PASS  W0 OpWireSource_v5.vi on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpWireSource_v5.vi
+  PASS  W0 NI example on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\NIScriptingExamples\Finding and Modifying Objects\Navigating Nodes and Wires.vi
+  PASS  W0 UID to GObject Reference.vi on disk  C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\VIServer\UID to GObject Reference.vi
+  PASS  W0 EMPTY_v0.vi on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\EMPTY_v0.vi
+  PASS  W0 Error Cluster..vi on disk  C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Utility\error.llb\Error Cluster From Error Code.vi
+  PASS  W0 donor OpConnectNested_v1 ExecState 1  ExecState 1
+
+=== W1: the copy, and the topology read BY WIRE, never by uid
+  PASS  W1 the copy is a CLEAN OpConnectNested_v1: ExecState 1, 21 nodes, exactly TWO TMSC, and none of this build's own additions present  ExecState 1, TMSC [683, 1045], 21 nodes, stale additions []
+  PASS  W1b the Invoke's `Wire Source` is currently fed  Invoke #757 w969
+   OLD SOURCE : IA(term) #753 <- PN #751 <- IA(node) #750(index w888) <- PN #744 <- head #1045 (w1096)
+  FACT  W1 Invoke #757; old source ladder head TMSC #1045; Open VI Reference #43 'vi reference' w467
+
+=== W2: drop `UID to GObject Reference.vi`
+  PASS  W2 exactly one new SubVI  [1088]
+  PASS  W2b it carries `GObject` (out), `Owning VI` and `UID` (in)  #1088 terminals [(0, 'error out', True), (1, '', False), (2, 'GObject', True), (3, 'dup Owning VI', True), (4, '', False), (5, '', False), (6, '', False), (7, '', False), (8, 'error in (no error)', False), (9, '', False), (10, 'UID', False), (11, 'Owning VI', False)]
+
+=== W3: feed it the VI reference (a BRANCH off Open VI Reference)
+      W3 #43.'vi reference' -> #1088.'Owning VI': wire 467 / 467 OK
+
+=== W4: the source WIRE's uid control
+  PASS  W4 exactly ONE new control = the source wire's UID  ['UID 3']
+
+=== W5: the `Wire.Terms[]` property node
+  PASS  W5 exactly one new Property node  [1091]
+  PASS  W5b its data output is `Terms[]`  ['Terms[]']
+
+=== W6: the WIRE-TYPED SEED (create_control on that node's own `reference`)
+  PASS  W6 exactly ONE new control = the Wire-typed seed  ['reference 2']
+  PASS  W6b the seed arrived WIRED to the `Terms[]` node's `reference`  seed 'reference 2' wire 1198
+
+=== W7: one indicator on each new error out
+  FACT  W7 #1088 (uidvi) error indicator ['error out 2']
+  FACT  W7 #1091 (wirepn) error indicator ['error out 3']
+  PASS  W7 both new error outs carry an indicator  {'uidvi': 'error out 2', 'wirepn': 'error out 3'}
+
+=== W7b: ORDER the built-in `Is Broken?` readout AFTER the write (prior-art A1)
+  PASS  W7b exactly one Property node reads `Wire` off the SINK terminal reference  [241]
+  PASS  W7b2 its `error in (no error)` is currently UNWIRED (that is why run 9 read `UID 2: 0`)  #241 error in w0
+      W7b #757.'error out' -> #241.'error in (no error)': wire 1027 / 1027 OK
+  FACT  W7b Invoke #757 `error out` now also drives #241 `error in` - the `Is Broken?` / `UID 2` readback is forced to run AFTER `Connect Wire`
+
+=== W8: runnable + saved BEFORE copy_by_index (it copies the FILE)
+  PASS  W8 ExecState 1 before the copy  ExecState 1
+  FACT  W8 saved intermediate (16084 B); seed 'reference 2', wire-uid control 'UID 3'
+
+=== W9: the THIRD To More Specific Class (copy_by_index, the proven route)
+      W9 new TMSC #1295 Nodes[23]
+      W9a deleted wire net w1198
+      W9b seed 'reference 2' -> TMSC #1295 'target class': wire 1308 OK
+      W9c #1088.'GObject' -> #1295.'reference': wire 1329 / 1329 OK
+      W9d #1295.'specific class reference' -> #1091.'reference': wire 1332 / 1332 OK
+      W9 ExecState inside finish: 1
+  FACT  W9 copy_by_index added [1295, 1312, 1315, 1319, 1322, 1325], selected uid 99; new TMSC #1295
+
+=== W10: the Index Array that picks the terminal ON THE WIRE
+  PASS  W10 exactly one new Index Array  [{'i': 0, 'class': 'IndexArray', 'uid': 1324, 'pos': (900, 2400), 'owner': 'TopLevelDiagram'}]
+      W10 #1091.'Terms[]' -> #1324.'array': wire 1348 / 1348 OK
+  PASS  W10b exactly ONE new control = the terminal index on the wire  ['index 7']
+
+=== W11: re-point the Invoke's `Wire Source`
+      W11 deleted wire net w969
+  PASS  W11a the Invoke's `Wire Source` is BARE  w0
+      W11 #1324.'element' -> #757.'Wire Source': wire 1334 / 1334 OK
+
+=== W12: save
+  PASS  W12a auto error handling is OFF (the dead source ladder's error outs are unwired)
+  PASS  W12 ExecState 1 - the op is runnable  ExecState 1
+  FACT  W12 saved C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpConnectFromWire_v0.vi (16524 bytes); labels -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opconnectfromwire_v0_labels.json
+  PASS  W12b donor OpConnectNested_v1.vi md5 unchanged  b7a1bb56cefe2b4632125e6bda0d7221
+  PASS  W12c NI example md5 unchanged  34bfb1226ec46a80a959c7906d2d2054
+
+=== T1: branch from an OUTER wire into a node inside a NEW While loop (scratch EMPTY_v0)
+  PASS  T1a two subVIs on diagram 0 and one new While-loop body diagram  A #43 B #44; new diagrams [176]
+  PASS  T1b the outer pair has `error out` / `error in (no error)`  {'i': 0, 'name': 'error out', 'is_source': True, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 43} / {'i': 6, 'name': 'error in (no error)', 'is_source': False, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 44}
+      T1 #43.'error out' -> #44.'error in (no error)': wire 226 / 226 OK
+  FACT  T1 outer wire w226 (A #43.error out -> B #44.error in)
+  FACT  T1 OpWireSource_v5 on w226: [{'i': 0, 'is_source': True, 'owner_class': 'SubVI', 'owner_uid': 43, 'recip': 226}, {'i': 1, 'is_source': False, 'owner_class': 'SubVI', 'owner_uid': 44, 'recip': 226}, {'i': 2, 'is_source': False, 'owner_class': '', 'owner_uid': 0, 'recip': 0}]
+  PASS  T1c the outer wire has exactly ONE source terminal, owned by subVI A  [{'i': 0, 'is_source': True, 'owner_class': 'SubVI', 'owner_uid': 43, 'recip': 226}] vs A #43
+  PASS  T1d the body node has a BARE `error in (no error)`  {'i': 6, 'name': 'error in (no error)', 'is_source': False, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 46}
+  FACT  T1 op error ''; sub-errors {'err_uidvi': '', 'err_wirepn': '', 'UID 2': 229, 'Is Broken?': False, 'Name': 'error in (no error)'}; wire delta 1; LoopTunnel 0 -> 1; ExecState 0 -> 0
+  PASS  T1e the op reported NO error  '' {'err_uidvi': '', 'err_wirepn': '', 'UID 2': 229, 'Is Broken?': False, 'Name': 'error in (no error)'}
+  PASS  T1f the body node's `error in` went 0 -> NON-ZERO  wire 229
+  PASS  T1f2 the op's OWN `Wire.Is Broken?` 6371004 on the created wire reads FALSE (ordered by W7b) - THIS is the sound gate, not uid equality after RBW  Is Broken? False, UID 2 229
+  PASS  T1g it still carries a wire AFTER Remove Bad Wires (non-zero; uid EQUALITY is not the test - ��11u.1)  wire 229 -> 229, ExecState 0
+  FACT  T1h OpWireSource_v5 on the NEW wire w229: [{'i': 0, 'is_source': True, 'owner_class': 'LoopTunnel', 'owner_uid': 235, 'recip': 229}, {'i': 1, 'is_source': False, 'owner_class': 'SubVI', 'owner_uid': 46, 'recip': 229}, {'i': 2, 'is_source': False, 'owner_class': '', 'owner_uid': 0, 'recip': 0}]
+  FACT  T1 scratch ExecState 0 (REPORTED, not gated: a While loop whose conditional terminal is unwired is a broken VI by itself - build_opstopfromnode_v0.py:438-441)
+
+=== T2: a source wire whose only source terminal is owned by a FlatSequenceInnerTunnel
+  FACT  T2 working copy SCRATCH_cfw2_150159.vi ExecState 0 (a fresh copy already reads 0 - diag_connectfromwire_facts.log B0)
+  FACT  T2 sink #5540 t1 on Diagram[43].N[6]: wire 5979 -> 5637 after baring
+  **FAIL**  T2a2 the sink terminal is ACTUALLY bare (wire 0) before the op is called  wire 5979 -> 5637
+  **FAIL**  T2 stopped: T2a2 the sink terminal is ACTUALLY bare (wire 0) before the op is called
+  PASS  T3 scratch deleted: SCRATCH_cfw1_150159.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_cfw1_150159.vi
+  PASS  T3 scratch deleted: SCRATCH_cfw2_150159.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_cfw2_150159.vi
+  FACT  LabVIEW handles at end: 34110
+
+  NOTE on the gate: `Wire.Is Broken?` 6371004 IS read here - node #242 of the donor, ordered after the write by W7b - so T1f2/T2c2 are the sound gate and uid equality after Remove Bad Wires is not used anywhere in this file (docs/d1-build-plan.md ��11u.1).
+
+=== build_opconnectfromwire_v0: 37 pass, 2 fail -> T2a2 the sink terminal is ACTUALLY bare (wire 0) before the op is called, T2 stopped: T2a2 the sink terminal is ACTUALLY bare (wire 0) before the op is called ===
+  PASS  T3 scratch deleted: SCRATCH_cfw1_150159.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_cfw1_150159.vi
+  PASS  T3 scratch deleted: SCRATCH_cfw2_150159.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_cfw2_150159.vi
+  PASS  Z(finally) original md5 unchanged  2a78e17c449cacdaf5da389818526859
+BGRUN END rc=1 after 129s

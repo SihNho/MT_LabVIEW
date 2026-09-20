@@ -1,0 +1,47 @@
+BGRUN START 2026-09-13 19:52:52 limit 15.0 min: py -u -c 
+import os,sys,shutil,time
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+SRC=os.path.join(g.CLAUDEDEV,'OpReport_v3.vi')
+T=os.path.join(g.CLAUDEDEV,'PROBE_reparent.vi')
+if os.path.exists(T): os.remove(T)
+shutil.copyfile(SRC,T); time.sleep(0.3)
+g.open_panel(T); time.sleep(0.8)
+print('start: Diagram=%d ForLoop=%d Node=%d ExecState=%s'%(g.count(T,'Diagram'),g.count(T,'ForLoop'),g.count(T,'Node'),g.exec_state(T)),flush=True)
+# 1. drop an empty For Loop somewhere clear of the existing nodes
+try:
+    g.for_loop(T,(1400,900))
+    print('for_loop placed: ForLoop=%d Diagram=%d'%(g.count(T,'ForLoop'),g.count(T,'Diagram')),flush=True)
+except Exception as e:
+    print('for_loop FAILED:',str(e)[:130],flush=True); raise SystemExit(1)
+# 2. where is the loop, and what are the Property nodes' positions?
+fl=g.report(T,'ForLoop'); print('ForLoop pos/bounds:',[(o['uid'],o['pos']) for o in fl],flush=True)
+props=g.report(T,'Property'); print('Property nodes:',[(o['uid'],o['pos']) for o in props],flush=True)
+# 3. THE UNPROVEN STEP: move a Property node so it sits inside the loop's area.
+#    Does LabVIEW reparent it (diagram count of the loop body gains a node)?
+before=[len(g.net_map(T,diagram_index=d,max_nodes=40,max_terms=4)[0]) for d in range(g.count(T,'Diagram'))]
+print('nodes per diagram BEFORE:',before,flush=True)
+tgt=props[-1]
+g.move_object(T,'Property',[o['uid'] for o in props].index(tgt['uid']),(1450,950))
+time.sleep(0.5)
+after=[len(g.net_map(T,diagram_index=d,max_nodes=40,max_terms=4)[0]) for d in range(g.count(T,'Diagram'))]
+print('nodes per diagram AFTER :',after,flush=True)
+print('REPARENTED' if before!=after else 'NOT reparented - position alone does not move a node into a structure',flush=True)
+print('ExecState:',g.exec_state(T),flush=True)
+try: g.close_panel(T)
+except Exception: pass
+time.sleep(0.3)
+try: os.remove(T); print('scratch deleted',flush=True)
+except OSError: pass
+
+start: Diagram=1 ForLoop=0 Node=5 ExecState=1
+for_loop placed: ForLoop=1 Diagram=2
+ForLoop pos/bounds: [(324, (1400, 900))]
+Property nodes: [(482, (859, 520)), (241, (756, 409))]
+nodes per diagram BEFORE: [40, 40]
+nodes per diagram AFTER : [40, 40]
+NOT reparented - position alone does not move a node into a structure
+ExecState: 0
+scratch deleted
+BGRUN END rc=0 after 24s

@@ -1,0 +1,39 @@
+BGRUN START 2026-09-13 19:51:25 limit 12.0 min: py -u -c 
+import os,sys,time,statistics as st
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+WORK=r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi'
+vi=g.op(g.OP_REPORT)
+vi.SetControlValue('vi path',WORK); vi.SetControlValue('Class Name','Property')
+def t(fn,n=8):
+    ts=[]
+    for _ in range(n):
+        t0=time.perf_counter(); fn(); ts.append((time.perf_counter()-t0)*1000)
+    return st.median(ts)
+# does the SAME index cost the same as a DIFFERENT index? if LabVIEW caches the loaded VI,
+# the per-call cost should be flat either way - that tells us the cost is the TRAVERSE, not the load.
+vi.SetControlValue('index',0)
+a=t(lambda: g._run(vi))
+print('repeat index 0          %.1f ms'%a,flush=True)
+b=t(lambda: (vi.SetControlValue('index',(int(vi.GetControlValue('index'))+1)%50), g._run(vi)))
+print('walking indices         %.1f ms'%b,flush=True)
+# and a class with FEWER objects - if cost tracks object COUNT, Traverse is the cost
+vi.SetControlValue('Class Name','Local'); vi.SetControlValue('index',0)
+c=t(lambda: g._run(vi))
+print('class Local (8 objects) %.1f ms'%c,flush=True)
+vi.SetControlValue('Class Name','Terminal'); vi.SetControlValue('index',0)
+d=t(lambda: g._run(vi),4)
+print('class Terminal (5763)   %.1f ms'%d,flush=True)
+print(flush=True)
+print('=> if Local is much cheaper than Terminal, the cost is the TRAVERSE size, and',flush=True)
+print('   a narrower class is a free speedup with no op surgery at all.',flush=True)
+
+repeat index 0          992.2 ms
+walking indices         998.0 ms
+class Local (8 objects) 991.2 ms
+class Terminal (5763)   1221.6 ms
+
+=> if Local is much cheaper than Terminal, the cost is the TRAVERSE size, and
+   a narrower class is a free speedup with no op surgery at all.
+BGRUN END rc=0 after 29s

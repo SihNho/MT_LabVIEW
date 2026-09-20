@@ -1,0 +1,60 @@
+BGRUN START 2026-09-15 05:26:31 limit 15.0 min: py -u tools/recipes/build_opconstvaluen_v0.py
+   LabVIEW pid before: 21912
+   COM preflight OK (pid 21912, two round-trips agree: 16 wires)
+   PASS S OpConstValue_v1.vi (v1c, byte route) exists with its labels 
+   PASS A the Constant seed feeds TMSC.'target class' 533
+   PASS B exactly one new Property node (Value) [782]
+   PASS B the node has 'Value' as a SOURCE [('reference', False), ('reference out', True), ('error in (no error)', False), ('error out', True), ('Value', True)]
+   PASS B exactly one new Property node (Numeric Text) [801]
+   FAIL B the node has 'Numeric Text' as a SOURCE [('reference', False), ('reference out', True), ('error in (no error)', False), ('error out', True), ('RadixVis', True)]
+
+STOP at gate: B the node has 'Numeric Text' as a SOURCE
+BGRUN END rc=1 after 7s
+BGRUN START 2026-09-15 05:30:58 limit 15.0 min: py -u tools/recipes/build_opconstvaluen_v0.py
+   LabVIEW pid before: None
+   fresh(): killing LabVIEW pid None
+   COM preflight attempt 1/15: pid None->2632, wires 16->16
+   COM preflight OK (pid 2632, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 2632
+   PASS S OpConstValue_v1.vi (v1c, byte route) exists with its labels 
+   PASS A the Constant seed feeds TMSC.'target class' 533
+   PASS B exactly one new Property node (Value) [782]
+   PASS B the node has 'Value' as a SOURCE [('reference', False), ('reference out', True), ('error in (no error)', False), ('error out', True), ('Value', True)]
+   PASS B exactly one new Property node (NumText) [801]
+   PASS B the node has 'NumText' as a SOURCE [('reference', False), ('reference out', True), ('error in (no error)', False), ('error out', True), ('NumText', True)]
+   PASS B exactly one new Property node (Representation) [813]
+   PASS B the node has 'Representation' as a SOURCE [('reference', False), ('reference out', True), ('error in (no error)', False), ('error out', True), ('Representation', True)]
+   PASS B exactly one new control (DigitalNumericConstant-typed) on pnN.'reference' ['reference 2']
+   PASS C new control -> TMSC.'target class' on both ends 
+   PASS C the old Constant seed is now free 
+   PASS C TMSC -> Value node 'reference' (branch) shares the uid with TMSC -> ConstantPN.'reference' 543/543/543
+   PASS C TMSC -> NumText node 'reference' (branch) shares the uid with TMSC -> ConstantPN.'reference' 543/543/543
+   PASS C TMSC -> Representation node 'reference' (branch) shares the uid with TMSC -> ConstantPN.'reference' 543/543/543
+   PASS D ConstantPN.'Value' -> Flatten/indicator wire removed 
+   PASS D pnN.'Value' -> Flatten.'anything' on both ends 817/817
+   PASS E exactly one new Property node (Text) [533]
+   PASS E pnX.'NumText' -> pnT.'reference' on both ends 915/915
+   PASS E indicator on 'Text' ['Text']
+   PASS E indicator on 'Representation' ['Representation']
+   PASS E indicator on 'error out' ['error out 3']
+   PASS E indicator on 'error out' ['error out 4']
+   PASS F op runnable before the save 1
+   labels {'seed': 'reference', 'value': 'Value', 'data': 'data string', 'type': 'type string (7.x only)', 'u8type': 'bytes', 'size': 'data includes array or string size? (T)', 'hex': 'hex string', 'u8': 'value', 'rest': 'rest of the binary string', 'seedN': 'reference 2', 'text': 'Text', 'repr': 'Representation', 'errT': 'error out 3', 'errV': 'error out 4'}
+   PASS T0 the reporter's actual classes under 'DigitalNumericConstant' are exactly that class ['DigitalNumericConstant']
+   DigitalNumericConstant[0] uid=3683 ident=True text='1' repr=1 bytes=31 TD=None val=None bad TD length 7 at 8 raw=26008000000000010007400a0 err='' errV='' errT=''
+   DigitalNumericConstant[1] uid=3130 ident=True text='0' repr=6 bytes=43 TD=None val=None bad TD length 23 at 8 raw=260080000000000100174007 err='' errV='' errT=''
+   DigitalNumericConstant[2] uid=3575 ident=True text='1' repr=3 bytes=37 TD=None val=None bad TD length 17 at 8 raw=260080000000000100114003 err='' errV='' errT=''
+   DigitalNumericConstant[3] uid=10631 ident=True text='0' repr=3 bytes=41 TD=None val=None bad TD length 21 at 8 raw=260080000000000100154003 err='' errV='' errT=''
+   DigitalNumericConstant[4] uid=27549 ident=True text='0' repr=3 bytes=31 TD=None val=None bad TD length 11 at 8 raw=2600800000000001000b4003 err='' errV='' errT=''
+   DigitalNumericConstant[5] uid=27561 ident=True text='1' repr=3 bytes=31 TD=None val=None bad TD length 11 at 8 raw=2600800000000001000b4003 err='' errV='' errT=''
+   PASS T1 all 6 numeric reads: identity OK, op error out clear, Value-node error clear 
+   PASS T1 all 6 'Numeric Text' -> Text.Text are non-empty strings (display text, grammar logged, not asserted) ['1', '0', '1', '0', '0', '1']
+OBSERVED: texts ['1', '0', '1', '0', '0', '1'] parsed [1, 0, 1, 0, 0, 1] repr [1, 6, 3, 3, 3, 3]
+OBSERVED: DigitalNumericConstant-typed Value variant: void=[False, False, False, False, False, False] data=[False, False, False, False, False, False]
+   T2: the DigitalNumericConstant-typed node's Value is void too (discriminator 2 -> read-side, not static typing)
+   StringConstant[7] uid=22950 ident=True text='' repr=0 bytes=20 TD=0 val=None v0x26008000 tds=[0] unhandled body= attrs=0 err='' errV='error 1055: Property Node in OpConstValu' errT='error 1055: Property Node in OpConstValu'
+   FAIL T3 negative control: a StringConstant through the numeric cast raises the class-cast error 1057 
+   PASS T(finally) the main VI file is byte-identical and untouched since the script started
+
+STOP at gate: T3 negative control: a StringConstant through the numeric cast raises the class-cast error 1057
+BGRUN END rc=1 after 357s

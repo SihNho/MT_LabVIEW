@@ -1,0 +1,95 @@
+BGRUN START 2026-09-19 04:53:40 limit 20.0 min: powershell -Command & 'tools/peer.ps1' -Agent gemini -Slug stall-selftest-c39-g78b -TaskFile tools/bench/task_stall_selftest_c39_inline.md -TimeoutSec 900
+OUTCOME: ANSWERED (24s)  model: (agy default, not readable) (agy built-in default)  archived: archive\peer\2026-09-19-stall-selftest-c39-g78b.md
+--- ANSWER ---
+The claim that the defect lies entirely in the test's case-sensitivity is **unfounded and dangerous**. The evidence indicates that the repair altered the watchdog's output contract and conflated "suppressing a gating file" with "suppressing stall detection."
+
+---
+
+### 1. The Single Strongest Reason the Claim is WRONG
+
+**The repair breaks the watchdog's core contract by conflating modal dialog detection with stall detection.**
+
+A LabVIEW worker can hang in two distinct ways:
+1. **Blocked by UI:** A modal dialog halts the UI thread (`VERDICT: BLOCKED`).
+2. **Deadlocked / Frozen in Engine:** An infinite loop, COM deadlock, or ActiveX thread lockup where **no dialog appears**, but the worker is dead.
+
+Gate G7 explicitly specifies: `'no modal dialog' writes NO gating record (the leaf IS still flagged in the message)`. 
+The test was explicitly written to enforce that when no dialog is present, the watchdog must **still flag the leaf** as stalled/suspect in its telemetry/advisory message while refraining from dropping a hard build-blocking file on disk. 
+
+The repair at line 273 silenced the flag entirely (`flagged=False`). Treating `flagged=False` as a casing bug misinterprets the requirement: the watchdog has been demoted from a process stall detector to a simple modal-dialog detector, blinding the rig to engine deadlocks.
+
+---
+
+### 2. Alternative Explanations of the Same Evidence
+
+1. **Type Poisoning of `$record` (Truthy String vs. Null/Path):**
+   In PowerShell, assigning `$record = "NOT WRITTEN - ..."` turns a variable originally typed as a file-path-or-null into a **truthy string** (`[bool]$record -eq $true`). Any downstream code or test harness asserting:
+   ```powershell
+   if ($record) { ... }
+   ```
+   evaluates to `$true` even when no record was written. If the test runner inspects `$record` or expects `$null` / an empty string on non-blocking runs, setting it to an arbitrary prose message breaks consumer contract assumptions.
+
+2. **Unparseable Leaf Telemetry:**
+   The assertion in G7 looks for the leaf identifier in the watchdog's report/message. The repair replaced the leaf-flagging message block with the literal string `NOT WRITTEN - the dialog check did not return VERDICT: BLOCKED ...`. In doing so, the leaf PID/name was dropped or moved into an unparseable format, causing the parser to return `flagged=False`.
+
+---
+
+### 3. Observations that Would FALSIFY the Claim
+
+1. **Offline Regex Re-evaluation Remains `False`:** 
+   Evaluating the assertion logic of G7 against the verbatim log output using case-insensitive matching (`-match` / `(?i)`) **still returns `flagged=False`**.
+2. **Downstream Path Resolution Exception:** 
+   Any consumer passing `$record` to `Test-Path`, `Get-Item`, `[System.IO.File]::Exists()`, or `Remove-Item` throws:
+   `System.ArgumentException: Illegal characters in path.` (caused by the colon `:` in `VERDICT: BLOCKED`).
+3. **Undetected Worker Hang in Production:** 
+   A worker process hangs with 0% CPU and an unresponsive ActiveX interface without triggering a dialog. The repaired watchdog outputs `NOT WRITTEN`, exits 0, and the rig deadlocks indefinitely because the leaf was never flagged.
+
+---
+
+### 4. Direct Answers to Your Questions
+
+#### Q1: Strongest reading under which `flagged=False` is a REAL defect of the watchdog
+G7's specification (`'no modal dialog' writes NO gating record (the leaf IS still flagged in the message)`) proves that non-dialog stalls were designed to emit an advisory warning identifying the suspect leaf. By tying the watchdog's leaf-flagging state entirely to `VERDICT: BLOCKED`, the repair silently stripped out the rig's ability to detect COM/ActiveX deadlocks and non-dialog hangs. The test caught this regression: the leaf ceased to be flagged.
+
+#### Q2: How `:48-:49` can pass while the repair is broken in production
+Lines `:48-:49` only verify two binary file states:
+1. Did a file appear when `MODAL DIALOG PRESENT` was injected? (Yes)
+2. Was the file absent when clean? (Yes)
+
+This test does **not** verify how downstream scripts consume `$record`. In production:
+- If a post-flight cleanup or aggregation script checks `if ($record) { Test-Path $record }`, PowerShell throws a fatal path exception because `NOT WRITTEN - ... VERDICT: BLOCKED` contains a colon (`:`), which is illegal in Windows filenames outside drive letters.
+- If a caller checks `if ([string]::IsNullOrEmpty($record))`, it will believe a stall record exists because the string is non-empty.
+
+#### Q3: The cheapest discriminating test WITHOUT running LabVIEW
+Do not execute LabVIEW or launch a test run. Run an offline evaluation of the test assertion against the existing log file `tools/bench/repair_c39_stall_selftest.log`:
+
+```powershell
+# In PowerShell: test the assertion logic against the actual output in the log
+$logMessage = "NOT WRITTEN - the dialog check did not return VERDICT: BLOCKED ..." # (extract exact text from line 49)
+$testPattern = "<G7_ASSERTION_REGEX>"
+
+# Test 1: Exact case (current test)
+$caseSensitive = [regex]::IsMatch($logMessage, $testPattern)
+
+# Test 2: Case-insensitive (claim hypothesis)
+$caseInsensitive = [regex]::IsMatch($logMessage, $testPattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+
+[PSCustomObject]@{
+    CaseSensitive   = $caseSensitive
+    CaseInsensitive = $caseInsensitive
+}
+```
+
+- **If `CaseInsensitive` is `False`:** The claim is **definitively refuted**. The failure is due to a missing leaf marker/telemetry, not letter casing.
+- **If `CaseInsensitive` is `True`:** The claim of a casing mismatch in the assertion holds for G7, **provided** you also confirm that `$record` being a non-path sentinel string does not violate downstream callers.
+
+---
+
+### Final Assessment
+
+The claim that the failure is merely a casing bug is **rejected**. The repair introduced a sentinel string containing invalid path characters (`:`) into a variable contract previously holding a path, and it appears to have suppressed leaf-level stall reporting whenever a dialog is absent. 
+
+What would change this assessment: Demonstrating that (1) making G7's regex case-insensitive evaluates `flagged=True` on the existing log, and (2) no downstream consumer ever tests or reads `$record` as a file system path when no stall occurs.
+
+
+BGRUN END rc=0 after 25s

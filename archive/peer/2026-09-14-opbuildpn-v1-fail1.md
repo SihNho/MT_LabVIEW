@@ -1,0 +1,38 @@
+﻿---
+type: peer-review
+status: historical
+date: 2026-09-14
+tags: [peer-review]
+---
+
+# opbuildpn-v1-fail1
+
+- **agent:** codex
+- **date:** 2026-09-14
+- **outcome:** ANSWERED (31s)
+- **why asked:** OpBuildPN_v1 build failure 1.
+- **verdict:** fixed (Nodes[] index of the creator); OpBuildPN_v1 built and in use.
+
+## Question
+
+ATTACK this diagnosis quickly (LabVIEW 2026 VI Scripting, ActiveX-driven ops). FAILED PREDICTION: my recipe called our op 'Terminal.Create Indicator' on the erdosmiller creator subVI's 'error out' (terminal 10) and 'Outputs' (terminal 8) expecting two new front-panel indicators; observed ZERO new ControlTerminals for both calls, and the VI's ExecState went from 1 to 0 although no object was added. MY DIAGNOSIS: an addressing-space bug - the op takes the node as an index into AbstractDiagram.Nodes[] (per its docstring), but I passed the creator's index within a class-filtered 'SubVI' traversal (0). Nodes[] index 0 is a different node (Open VI Reference, 8 terminals), so terminals 10 and 8 were out of range / already wired -> 'no control', as the op's docstring warns. FIX: take the creator's Nodes[] index from our diagram walker, which iterates Nodes[] by index and reports uid per index. QUESTIONS: (a) does that fully explain ZERO new controls? (b) what could make ExecState go to 0 with no new object - could Terminal.Create Indicator on an out-of-range terminal index partially mutate the node or leave a dangling wire, or is the more likely cause that the op's own error dialog/abort left the target in an edit state that 'Remove Bad Wires' would clear? (c) is there any documented behaviour of Create Indicator when the terminal is already wired (the creator's 'error out' is unwired, 'Outputs' unwired - fine - but confirm it creates AND wires in one step)? Cite labviewwiki Terminal.Create Indicator if possible. Short answer wanted.
+
+## Answer
+
+Your diagnosis explains the zero controls, but probably not the new broken state by itself.
+
+- **(a) Yes, strongly.** If `Nodes[0]` is an eight-terminal Open VI Reference node, valid zero-based terminal indices are presumably `0??`; both `8` and `10` are invalid. That cleanly predicts two no-op/error outcomes. Confirm by recording the op?셲 error cluster and selected node UID?봭ot merely the control count.
+
+- **(b) `ExecState 1 ??0` means Idle ??Bad**, not ?쐃dit state.??It proves the target became non-executable. A dialog or abort alone should not explain `Bad`; some diagram mutation likely occurred?봫ost plausibly a loose/broken wire or another incomplete edit inside the op. ?쏳emove Bad Wires??is therefore a useful diagnostic, but not yet the diagnosis. NI lists loose/broken wires and required unwired inputs among causes of a broken VI. [Execution.State values](https://labviewwiki.org/wiki/VI_class/Execution.State_property), [NI debugging guidance](https://www.ni.com/getting-started/labview-basics/debug.htm)
+
+- **(c) Yes.** `Terminal.Create Indicator` says it ?쐁reates an indicator **for the terminal**??and returns its reference?봲emantically the scripting equivalent of Create 쨩 Indicator, so creation and terminal connection are one operation. The documentation does **not** state what happens when the terminal is already wired; do not assume a documented no-op versus error. [LabVIEW Wiki: Create Indicator](https://labviewwiki.org/wiki/Terminal_class/Create_Indicator_method)
+
+Best attack: use the walker?셲 `Nodes[]` index, assert UID/class and `terminalIndex < Terminals[].length` before invocation, capture the op error, then inspect the target?셲 Error List before trying Remove Bad Wires. If correcting the address eliminates both symptoms, the diagnosis holds; if `Bad` persists, the op has a partial-mutation/error-handling bug.
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+See the **verdict** line at the top of this file (filled 2026-09-14 14:2x; the day's outcomes are in STATUS.md and docs/).

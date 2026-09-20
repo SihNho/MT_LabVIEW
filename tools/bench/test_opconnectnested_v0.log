@@ -1,0 +1,38 @@
+BGRUN START 2026-09-17 12:02:06 limit 12.0 min: py -u tools\bench\test_opconnectnested_v0.py
+  FACT  LabVIEW handles before: 31266
+  PASS  T0a OpConnectNested_v0.vi on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpConnectNested_v0.vi
+  PASS  T0b the op is runnable and shipped as ROUTE B  ExecState 1, route 'B', src_diag None
+  PASS  T1 one While loop created  [{'i': 0, 'class': 'WhileLoop', 'uid': 43, 'pos': (300, 300), 'owner': 'TopLevelDiagram'}] [{'i': 1, 'class': 'Diagram', 'uid': 110, 'pos': (310, 322), 'owner': 'WhileLoop'}]
+  FACT  scratch: WhileLoop #43, body Diagram #110 at Traverse index 1
+  PASS  T1b two body nodes are inside the loop body  [{'i': 0, 'class': 'SubVI', 'uid': 45, 'pos': (366, 526), 'owner': 'Diagram'}, {'i': 1, 'class': 'SubVI', 'uid': 44, 'pos': (366, 366), 'owner': 'Diagram'}]
+  FACT  body #45 Nodes[1] 'Is Path and Not Empty.vi': outs [(1, 'Is Path and Not Empty?')]; bare ins [(0, ''), (2, ''), (3, ''), (4, 'path'), (5, '')]
+  FACT  body #44 Nodes[0] 'Error Cluster From Error Code.vi': outs [(0, 'error out')]; bare ins [(1, ''), (2, ''), (3, ''), (4, 'is warning? (False)'), (5, 'show call chain? (False)'), (6, 'error in (no error)'), (7, ''), (8, 'error message ("")'), (9, 'error code (0)')]
+  PASS  T1c one body node owns an `error out` and the other is the sink  SRC 44 SNK 45
+  FACT  T2 (a) sink #45 t4 <- src #44 t0 'error out': op error '', wire delta 1, ExecState 0
+  PASS  T2 (a) BODY -> BODY by INDEX on a NESTED diagram: sink wired, SAME wire uid on both ends  sink w206 / source w206
+  **FAIL**  T2b (a) the scratch COMPILES with that wire (ExecState 1)  ExecState 0
+  FACT  T3 (b) unnamed bare input terminals on body node #45: [0, 2, 3, 5]
+  FACT  T3 (b) sink #45 t0 '' <- src #44 t0: op error '', wire delta 0, ExecState 0
+  PASS  T3 (b) an UNNAMED terminal on a NESTED diagram is REACHED by index (wire 0 -> non-zero)  unnamed-terminal wire 206 (source w206); this is the capability no name-addressed op has
+  FACT  T3 ExecState after the unnamed-terminal wire: 0 - a type-incompatible pair makes a BROKEN wire (a LabVIEW type fact, not an op failure); the gate above is wire identity
+  FACT  T4 (c) source on a DIFFERENT nested diagram: NOT EXPRESSIBLE. The op carries ONE diagram index (ROUTE B) because two independent nested diagrams need a SECOND `To More Specific Class`, measured impossible in build run 1 (GObject element -> Diagram-class property node = ExecState 0).
+  FACT  T5 junk Invokes purged: [48, 46]
+  FACT  scratch deleted: SCRATCH_cn_120206.vi
+  FACT  LabVIEW handles after: 31587 (before 31266)
+
+--- FACTS ---
+  LabVIEW handles before: 31266
+  scratch: WhileLoop #43, body Diagram #110 at Traverse index 1
+  body #45 Nodes[1] 'Is Path and Not Empty.vi': outs [(1, 'Is Path and Not Empty?')]; bare ins [(0, ''), (2, ''), (3, ''), (4, 'path'), (5, '')]
+  body #44 Nodes[0] 'Error Cluster From Error Code.vi': outs [(0, 'error out')]; bare ins [(1, ''), (2, ''), (3, ''), (4, 'is warning? (False)'), (5, 'show call chain? (False)'), (6, 'error in (no error)'), (7, ''), (8, 'error message ("")'), (9, 'error code (0)')]
+  T2 (a) sink #45 t4 <- src #44 t0 'error out': op error '', wire delta 1, ExecState 0
+  T3 (b) unnamed bare input terminals on body node #45: [0, 2, 3, 5]
+  T3 (b) sink #45 t0 '' <- src #44 t0: op error '', wire delta 0, ExecState 0
+  T3 ExecState after the unnamed-terminal wire: 0 - a type-incompatible pair makes a BROKEN wire (a LabVIEW type fact, not an op failure); the gate above is wire identity
+  T4 (c) source on a DIFFERENT nested diagram: NOT EXPRESSIBLE. The op carries ONE diagram index (ROUTE B) because two independent nested diagrams need a SECOND `To More Specific Class`, measured impossible in build run 1 (GObject element -> Diagram-class property node = ExecState 0).
+  T5 junk Invokes purged: [48, 46]
+  scratch deleted: SCRATCH_cn_120206.vi
+  LabVIEW handles after: 31587 (before 31266)
+
+=== test_opconnectnested_v0: 7 pass, 1 fail -> T2b (a) the scratch COMPILES with that wire (ExecState 1)  (3 s) ===
+BGRUN END rc=1 after 3s

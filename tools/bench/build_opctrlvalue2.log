@@ -1,0 +1,47 @@
+BGRUN START 2026-09-12 22:02:49 limit 20.0 min: py -u tools/recipes/build_opctrlvalue.py
+
+== 1 donor inventory
+   predict: 4 Property nodes, 1 IndexArray, ExecState 1
+   observed: ({'Property': 4, 'IndexArray': 1, 'Node': 86, 'Wire': 9}, 0)
+
+== 2 locate the Control property node (the one reading Label + Indicator)
+   predict: one node whose terminals include 'Label' and 'Indicator'
+   observed: [(0, 43, ['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']), (1, 308, ['array', 'element', 'index']), (2, 369, ['error out', 'specific error cleared?', 'error in (no error)', 'specific error code to clear (0: all)']), (3, 370, ['error out', 'specific error cleared?', 'error in (no error)', 'specific error code to clear (0: all)']), (4, 112, ['reference', 'reference out', 'error in (no error)', 'error out', 'Panel']), (5, 113, ['reference', 'reference out', 'error in (no error)', 'error out', 'Controls[]']), (6, 114, ['reference', 'reference out', 'error in (no error)', 'error out', 'Label', 'Indicator']), (7, 115, ['reference', 'reference out', 'error in (no error)', 'error out', 'Text'])]
+   -> target node index 6, uid 114, terminals ['reference', 'reference out', 'error in (no error)', 'error out', 'Label', 'Indicator']
+
+== 3 delete the Text property node (uid 115) - meaningless without a Label reference
+   predict: Property 4 -> 3
+   observed: 3
+
+== 4 delete the Label/Indicator property node (uid 114)
+   predict: Property 3 -> 2
+   observed: 2
+
+== 5 clean up the wires those deletions orphaned
+   predict: no error
+   observed: 0
+
+== 6 build Property('VI Server:Control', [Control.Value read]) where uid 114 was
+   predict: Property 2 -> 3
+   observed: [{'i': 0, 'class': 'Property', 'uid': 110, 'pos': (708, 300), 'owner': 'TopLevelDiagram'}]
+
+== 6b index of the new Property node
+   predict: the last one
+   observed: 2
+
+== 7 wire IndexArray.element -> the new node's `reference`
+   predict: Wire count +1
+   observed: EXC wire element->reference: wire count 9->8, expected +1 (if the source is already wired this may be a successful BRANCH - re-call with branch=True)
+
+== 8a locate the new node in Nodes[] order and find its `Value` terminal
+   predict: one node carrying both `reference` and `Value`
+   observed: EXC no node with both `reference` and `Value` terminals - the property did not take
+
+== 9 save
+   predict: ExecState 1
+   observed: EXC refusing to save a BROKEN VI - SaveInstrument blocks forever on one
+
+steps: [('1 donor inventory', True), ('2 locate the Control property node (the one reading Label + Indicator)', True), ('3 delete the Text property node (uid 115) - meaningless without a Label reference', True), ('4 delete the Label/Indicator property node (uid 114)', True), ('5 clean up the wires those deletions orphaned', True), ("6 build Property('VI Server:Control', [Control.Value read]) where uid 114 was", True), ('6b index of the new Property node', True), ("7 wire IndexArray.element -> the new node's `reference`", False), ('8a locate the new node in Nodes[] order and find its `Value` terminal', False), ('9 save', False)]
+final ExecState: None
+counts: {'Property': 3, 'IndexArray': 1, 'Node': 224, 'Wire': 8}
+BGRUN END rc=1 after 12s

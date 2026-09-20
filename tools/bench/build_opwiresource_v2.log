@@ -1,0 +1,49 @@
+BGRUN START 2026-09-15 12:14:10 limit 20.0 min: py -u tools/recipes/build_opwiresource_v2.py
+   PASS S the v1 op exists 
+   LabVIEW pid before: None
+   fresh(): killing LabVIEW pid None
+   COM preflight attempt 1/15: pid None->22392, wires 16->16
+   COM preflight OK (pid 22392, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 22392
+   PASS A the copied v1 op is runnable [('copy of v1', 1)]
+   PASS exactly one new Property node (GObject.UID) [1186]
+   PASS the node has 'UID' as a SOURCE [('reference', False), ('reference out', True), ('error in (no error)', False), ('error out', True), ('UID', True)]
+   PASS A exactly one new control (GObject-typed seed) [{'label': 'reference 3', 'indicator': False, 'uid': 1222, 'is_source': True, 'wire': 1244, 'term_err': 0, 'wire_err': 0}]
+   PASS A it is a CONTROL with a unique label {'label': 'reference 3', 'indicator': False, 'uid': 1222, 'is_source': True, 'wire': 1244, 'term_err': 0, 'wire_err': 0}
+   PASS A the GObject-typed control survives, unwired 
+   FAIL B exactly one new To More Specific Class (by added uid) []
+
+STOP at gate: B exactly one new To More Specific Class (by added uid)
+BGRUN END rc=1 after 54s
+BGRUN START 2026-09-15 12:19:18 limit 20.0 min: py -u tools/recipes/build_opwiresource_v2.py
+   PASS S the v1 op exists 
+   LabVIEW pid before: 22392
+   fresh(): killing LabVIEW pid 22392
+   COM preflight attempt 1/15: pid None->21188, wires 16->16
+   COM preflight OK (pid 21188, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 21188
+   PASS A the copied v1 op is runnable [('copy of v1', 1)]
+   PASS exactly one new Property node (GObject.UID) [1186]
+   PASS the node has 'UID' as a SOURCE [('reference', False), ('reference out', True), ('error in (no error)', False), ('error out', True), ('UID', True)]
+   PASS A exactly one new control (GObject-typed seed) [{'label': 'reference 3', 'indicator': False, 'uid': 1222, 'is_source': True, 'wire': 1244, 'term_err': 0, 'wire_err': 0}]
+   PASS A it is a CONTROL with a unique label {'label': 'reference 3', 'indicator': False, 'uid': 1222, 'is_source': True, 'wire': 1244, 'term_err': 0, 'wire_err': 0}
+   PASS A the op is runnable with the seed left wired [('copy of v1', 1), ('spare GObject.UID node placed (unwired -> broken is expected)', 0), ('spare node + GObject seed (still wired)', 1)]
+   PASS B exactly one new To More Specific Class (from copy_by_index's own `added`) [1221] of added [1221, 1240, 1243, 1247, 1250, 1253]
+   PASS B GObject seed -> TMSC2.'target class' 
+   PASS B Generic.'Owner' -> TMSC2.'reference' (branch) on both ends 523/523
+   PASS B TMSC2 -> spare GObject.UID node 'reference' on both ends 1257/1257
+   PASS B the target is runnable again (the downcast is now legal through the cast) 
+   PASS exactly one new panel object for 'UID' (owner_uid) [{'label': 'UID 4', 'indicator': True, 'uid': 1260, 'is_source': False, 'wire': 1282, 'term_err': 0, 'wire_err': 0}]
+   PASS it is an INDICATOR with a unique label (owner_uid) {'label': 'UID 4', 'indicator': True, 'uid': 1260, 'is_source': False, 'wire': 1282, 'term_err': 0, 'wire_err': 0}
+   PASS exactly one new panel object for 'error out' (errG) [{'label': 'error out 7', 'indicator': True, 'uid': 1273, 'is_source': False, 'wire': 1341, 'term_err': 0, 'wire_err': 0}]
+   PASS it is an INDICATOR with a unique label (errG) {'label': 'error out 7', 'indicator': True, 'uid': 1273, 'is_source': False, 'wire': 1341, 'term_err': 0, 'wire_err': 0}
+OBSERVED ExecState per step: [('copy of v1', 1), ('spare GObject.UID node placed (unwired -> broken is expected)', 0), ('spare node + GObject seed (still wired)', 1), ('TMSC2 copied and wired', 1), ('indicators added', 1)]
+   PASS C op runnable before the save [('copy of v1', 1), ('spare GObject.UID node placed (unwired -> broken is expected)', 0), ('spare node + GObject seed (still wired)', 1), ('TMSC2 copied and wired', 1), ('indicators added', 1)]
+   labels {'seedW': 'reference 2', 'ownercls': 'Class Name 4', 'errT': 'error out 3', 'errO': 'error out 4', 'errU': 'error out 5', 'uid_in': 'UID 2', 'uid_back': 'UID 3', 'cls_back': 'Class Name 5', 'errL': 'error out 6', 'seedG': 'reference 3', 'owner_uid': 'UID 4', 'errG': 'error out 7'}
+   UID 10850: readback 10850 class 'Wire' -> SOURCE 'DigitalNumericConstant' uid 3628  
+   PASS T0 the lookup still resolves the cross-check wire (readback, class Wire, no error) {'wire': 10850, 'uid_back': 10850, 'wire_class': 'Wire', 'owner_class': 'DigitalNumericConstant', 'owner_uid': 3628, 'err': '', 'errs': ''}
+   FAIL T1 wire 10850's source is DigitalNumericConstant uid 10739 - class AND uid now match the value scan {'wire': 10850, 'uid_back': 10850, 'wire_class': 'Wire', 'owner_class': 'DigitalNumericConstant', 'owner_uid': 3628, 'err': '', 'errs': ''}
+   PASS T(finally) the main VI file is byte-identical and untouched
+
+STOP at gate: T1 wire 10850's source is DigitalNumericConstant uid 10739 - class AND uid now match the value scan
+BGRUN END rc=1 after 126s

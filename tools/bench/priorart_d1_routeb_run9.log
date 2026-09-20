@@ -1,0 +1,116 @@
+BGRUN START 2026-09-19 05:14:35 limit 22.0 min: py -u tools/prior_art_review.py --plan-file C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\afd5b088-c50e-462b-a940-be7617a57823\scratchpad\priorart_run9_plan.md --slug d1-routeb-run9 --trigger new-op --recipe tools/recipes/build_d1_routeb_v6.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_d1-routeb-run9.txt (34828 chars)
+OUTCOME: ANSWERED (404s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-19-priorart-d1-routeb-run9.md
+COST: $4.2179  in 28 / out 28705 / cache-create 266698 / cache-read 1666345  (403s, 25 turn(s))
+--- ANSWER ---
+**Verdict: NOT NOVEL.** E1 is clean — nothing in these files refutes it. E2 (the walk-based survival census) is hit four times. Full review below; every finding names a file and line, and none touches E1, the per-bead maths, or the launch command.
+
+---
+
+# PART A — THE DIRECTION
+
+## A1 SETTLED ALREADY — **no finding** (the settlements *authorise* this work)
+
+Both edits are verbatim executions of binding decisions, and the citations check out:
+
+- E1 = `docs/cycle27-plan.md:233-250` (Pre-decided 19, cycle-40 judgement): *"The `Z/dZ` temp-sink bracket's correct Wire-count null is `+1`, NOT `0` — so `build_d1_routeb_v5.py:1842` asserts an inverted null and must read `_b_ok = (_wddelta == 1)`."*
+- E2 = `docs/cycle27-plan.md:223-232` (Pre-decided 18 as amended): *"the census may NOT be read with `report_all(Wire)` … assert `wmap(TARGET, d)[node][2][t]["wire"] == claimed_uid` over the four diagrams the build touches (20 / 21 / 24 / 56)."*
+
+A decision that authorises the work is not prior art against it. No slug.
+
+## A2 REFUTED ALREADY — nothing kills E1
+
+I searched for an archived argument that the bracket's null is 0 (that the delete should take the wire with it). There is none; the opposite is measured — `tools/bench/build_d1_routeb_v5_run8.log:358` *"after deleting the temporary sink, #2222 t0 carries wire 29238"*, with `:360` reading (a) True, (c) `Is Broken? False`, (d) 29238 and only (b) failing at +1.
+
+One loose citation, **not** a finding: `build_d1_routeb_v6.py:1608-1609` cites `docs/toolkit-capabilities.md:70` for *"`OpConnectFromWire_v0` only BRANCHES that same net, at delta 0"*. That row records `sink wire 0 → 229 … LoopTunnel 0 → 1` and says nothing about a wire delta; the delta-0-branch sentence is at `:67` (`OpConnectNested_v0`). The claim is independently measured at `…run8.log:356` (`delta 0`), which the comment also cites, so the conclusion stands on its own evidence. Fix the pointer; do not re-open the decision.
+
+## A3 CONTRADICTED (i) — the review E2 rests on contradicts itself, and predictions 2 and 4 inherit both halves
+
+`archive/peer/2026-09-19-routeb-run8-predictions.md` is the accepted source of Pre-decided 18-as-amended. Two of its own paragraphs cannot both be true of run 9:
+
+> `:155` — **"6 → 11 victims is a change in *when* exhaustion arrives, not in *what* fails. The failing call sites are the same."**
+
+> `:175` — **"Cost: at most one walk per diagram actually touched (20, 21, 24, 56) — most already cached at that point … and it degrades gracefully: a diagram that raises leaves its rows `UNREAD` rather than killing the whole census as `:364` did."**
+
+If the fault is an exhaustion state that takes whatever traverse runs next (`:155`), swapping `report_all(Wire)` for other traverse calls at the same point in the same instance changes which call carries the error, not whether the census is readable. The plan's **prediction 2** rests on `:175`; **prediction 4** rests on `:155`. Neither the plan nor Pre-decided 18 reconciles them, so run 9 cannot miss prediction 2 without the disposition having been pre-argued both ways.
+
+## A3 CONTRADICTED (ii) — the artifact contradicts its own gate 16 lines later
+
+`build_d1_routeb_v6.py:1849` is E1: `_b_ok = (_wddelta == 1)`. The message that *reports* that gate was not edited:
+
+- `build_d1_routeb_v6.py:1865` — `f"b(PER-DIAGRAM Wire delta 0)={_b_ok}"`
+
+So if the `Z/dZ` row fails for any reason, run 9's log states the **old, refuted** null as the criterion. This is the shape that has already cost this project a cycle twice: `…run8.log:418` made `Z/dZ` look machine-failed when only the gate was wrong (`docs/cycle27-plan.md:245-247`), and `WIRED 53` was read as a survival count (`docs/cycle27-plan.md:226-227`). One string.
+
+## A4 UNREAD EVIDENCE — none
+
+The two documents bearing on E2 are both cited in the recipe: `archive/peer/2026-09-17-rbw-deleted-wires-run9.md` at `build_d1_routeb_v6.py:1176`, and route A's pattern at `:272-273`. The evidence was read; B4 shows its *consequence* was not carried into the census's readout. No slug.
+
+---
+
+# PART B — THE ARTIFACT
+
+## B2 ALREADY FAILED — this census, at this point, has already failed, for a cause E2 does not remove
+
+Attempted at `tools/recipes/build_d1_routeb_v5.py:2125`, run 8:
+
+> `tools/bench/build_d1_routeb_v5_run8.log:364` — *"S3w K3 SURVIVAL CENSUS UNREAD (RuntimeError: report_all(Wire) … error 2 … Traverse for GObjects.vi->OpReportAll_v0.vi …) — reported, not hidden; 50 uid(s) had been claimed"*
+
+The recorded cause is **not** "`report_all(Wire)` is too big" — it is the traverse layer, proved on three call sites with no `Wire` class involved: `…run8.log:419-429` (ten rows killed by `report_all(Diagram)`, one by `report_all(WhileLoop)`) and `…run8.log:432`/`:454` (`count(LoopTunnel)` → `OpReport_v3.vi`, Traverse Failed). All eleven of those rows are processed **immediately before** the census point — the ledger prints after the row loop (`v6:2125-2127`).
+
+E2 keeps that layer at that same point and adds to it:
+
+| E2 call | what it runs | measured status at the census point |
+|---|---|---|
+| `diag_index(TARGET,_du)` ×4 — `v6:2155` | `[o["uid"] for o in g.report_all(target,"Diagram")]` — `build_d1_v0.py:357-358`, `gscript.py:488-504` | the **dominant error-2 victim**, 10 rows, `…run8.log:419-429` |
+| `wmap(TARGET,_di,fresh=True)` ×4 — `v6:2164` | `build_track_v6_core.py:84-92` = one `node_labels` + up to 80 `node_terms_uid`, each a `Class Name='Diagram'` traverse op (`gscript.py:587-605`, `:870-895`) | same op family; ~0.8 s per node call already measured (`build_d1_v0.py:365-368`) |
+
+Two cheap closures:
+
+1. **The cache the peer assumed is not used.** `:175` says *"most already cached at that point"*; `v6:2164` passes `fresh=True`, re-walking all four. `fresh=True` re-walking is already on record as a candidate cause of the 6 → 11 worsening (STATUS NEXT, on K2's `:1613`).
+2. **The four indices are already in hand** — resolved repeatedly during the pass (`v6:1600`, `:1668-1669`, `:2033-2034`) and printed as `D[24]`/`D[20]`/`D[21]`/`D[56]` in every ledger row (`…run8.log:365-417`). Caching them removes four `report_all(Diagram)` calls without changing what the census measures.
+
+**And if `diag_index` raises for all four, the census does not report UNREAD — it reports a number.** `v6:2157` logs "has NO index" and `continue`s, `_maps` stays empty, every row falls through `:2179-2186` with `_read=None`, `_hit=False`, into `_bad`; the headline at `:2194-2196` then reads *"53 wire uid(s) claimed … 0 READ BACK AT THE CLAIMED TERMINAL, 53 did NOT"* — a total-loss verdict produced by an unread instrument. That is precisely the failure Pre-decided 18 exists to end (`docs/cycle27-plan.md:226-227`), sign-flipped.
+
+## B4 ALREADY MEASURED — "the uid at this terminal changed" has already been measured NOT to mean "the wire is gone"
+
+E2's comparison is `_hit = (_read == _u)` (`v6:2186`). Route A ran the identical comparison — `next((x["wire"] for x in g.node_terms(TARGET, sd, sn) if x["i"]==st), 0) == wire` (`tools/recipes/build_d1_v0.py:1119-1121`) — and its verdict was measured wrong:
+
+> `tools/bench/build_d1_v0_run9.log:268-269` — *"8 made, 5 SURVIVED … 3 deleted by it"*, of which `RBW-DELETED #1359 t4 '' <- same-loop 8885  wire 26189 -> 26412` — a **non-zero** wire.
+
+> `archive/peer/2026-09-17-rbw-deleted-wires-run9.md:88` — *"That terminal was not observed becoming disconnected. The classifier called it 'deleted' solely because its current wire object differed. Therefore '3 deleted by RBW' is not established."* `:90` — *"The strongest alternative is net canonicalization plus index drift."*
+
+> `docs/toolkit-capabilities.md:68` — *"the 'survives RBW' check at `build_d1_v0.py:1118-1121` IS uid equality … it measures object identity, not survival. **Do not cite RBW-survival as evidence a wire is good.**"* — and, on this very build's wires, *"LabVIEW creates the border tunnels itself (`LoopTunnel 0 → 2`, wire delta 3), so the sink and source wire uids **differ** — a cross-boundary wire is several segments."* Route B makes exactly those (`…run8.log:388`, `:396`, `:406`).
+
+v6 is **better instrumented** than route A — it prints what the terminal actually reads and where the claimed uid is seen (`:2197-2199`) — so the fix is confined to the headline: a terminal carrying a *different non-zero* wire is a third category (re-segmented/canonicalised), not a member of `_bad`, and `:2194-2196` must not become quotable as "N wires survived".
+
+## B3 HELPER EXISTS — `_tag_addr` re-parses an address `sink_addr` already returned
+
+`v6:2141-2150` recovers `(sink uid, terminal index)` by splitting the formatted ledger tag, then re-finds the diagram by scanning `_maps` (`:2181-2185`). The row loop already holds it: `sink_addr(...)` returns *"(body diagram index, node index, terminal index) for a sink, re-resolved NOW"* (`v6:1173-1177`), printed as `D[{d}].N[{n}].T[{t}]` at `:1870`. `claim_wire(tag, kind, uid)` (`:1130-1137`) simply does not carry it. Cost of the hand-roll: any tag not in `#<uid> t<i>` shape yields `_su=None → _read=None → _bad`, indistinguishable from destruction — the same conflation as B2. Passing `(d,n,t)` at the ten `claim_wire` sites (`:1227`, `:1478-1479`, `:1581`, `:1869`, `:1941`, `:2005`, `:2073`, `:2109`) removes the parser, the `RETARGET` re-application at `:2180` and the `_maps` scan.
+
+## B1 ALREADY BUILT — the pattern, yes; the recipe says so
+
+`build_d1_v0.py:1115-1128` is the same check and `v6:272-273` names it. Folded into B3 — the objection is the hand-rolled address, not the pattern.
+
+---
+
+## What releases each finding
+
+- **A3(i)** — reconcile `:155` with `:175` in one sentence in the plan (e.g. "an UNREAD census while traverse is already failing is a result, not a prediction miss"), or refute one.
+- **A3(ii)** — one string at `v6:1865`.
+- **B2** — cache the four already-resolved diagram indices; report an unwalked diagram's rows as `UNREAD`, never `MISMATCH`.
+- **B4** — split "terminal carries a different non-zero wire" out of `_bad` in `:2194`.
+- **B3** — carry `(d,n,t)` in `claim_wire`, or show a row kind where it is unavailable.
+
+```
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: already-failed
+PRIOR-ART: already-measured
+PRIOR-ART: helper-exists
+```
+
+I took no lock, opened no VI, built and ran nothing; every claim is a read of `docs/cycle27-plan.md`, `docs/toolkit-capabilities.md`, `tools/recipes/build_d1_routeb_v{5,6}.py`, `tools/recipes/build_d1_v0.py`, `tools/recipes/build_track_v6_core.py`, `tools/gscript.py`, `tools/bench/build_d1_routeb_v5_run8.log`, `tools/bench/build_d1_v0_run9.log` and the two archived peer files cited. (The plan file could not be written — the Write tool is disabled this session — so this reply is the review.)
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-d1-routeb-run9.md
+   STOP RECORD armed: tools/recipes/build_d1_routeb_v6.py sha 07c6b5d6a37e verdict contradicted, already-failed, already-measured, helper-exists -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 405s

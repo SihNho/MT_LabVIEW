@@ -1,0 +1,134 @@
+BGRUN START 2026-09-15 19:51:10 limit 25.0 min: py -u tools/prior_art_review.py --slug testrun1-flatindex --trigger direction-change --model opus --effort high --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/1c79eb01-7150-4a78-9689-e6d4f34f7800/scratchpad/priorart_test_plan.txt
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_testrun1-flatindex.txt (122978 chars)
+OUTCOME: ANSWERED (231s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-15-priorart-testrun1-flatindex.md
+COST: $2.9149  in 22 / out 18416 / cache-create 170953 / cache-read 1489746  (228s, 18 turn(s))
+--- ANSWER ---
+Write is disabled in this session (correct for a read-only reviewer), so the review is below.
+
+# PRIOR-ART REVIEW ??delivery-cycle plan (trigger: direction-change)
+
+**Four of the five steps are prior art. Nothing here is `novel`.** A same-day prior-art review of steps 3 and 4 already exists and already returned these verdicts: `archive/peer/2026-09-15-priorart-ownerchain.md:129-131`.
+
+---
+
+## PART A ??THE DIRECTION
+
+### A1 SETTLED ALREADY ??step 2 ("the central risk") closed ~2 h before this plan was written
+
+The plan: *"everything downstream depends on an operation the fleet has never performed??before anything else is built I will establish whether VI Scripting can move a node to a different diagram."*
+
+- `tools/bench/probe_migrate_v3.log:12` ??`PASS M5 THE MIGRATED STATE COMPILES (ExecState == 1)`, 5/5 in 2 s, at 18:30 today.
+- `STATUS.md:283` ??*"SETTLED by attempt 5 (`tools/recipes/probe_migrate_v3.py`, 5/5, 18:30) ??the migrated state COMPILES"*, and the same block: *"`GObject.Move` is not needed and was never used."*
+
+What remains open is **scale and runtime** (75 nodes, 21 sibling couplings) ??`STATUS.md:283-297` says so explicitly. Re-establishing feasibility re-runs a settled test.
+
+### A1b SETTLED ALREADY ??the ordering decision already exists, and it is "measure first"
+
+`STATUS.md:124` ??*"The SHELL decision stands; the **ORDERING was refuted** by the plan review and is replaced"*; `STATUS.md:133` replaces it with *"measure the unconditional per-frame path ??p50 **and p99** | replaces all guessed orderings"*, queued again at `STATUS.md:362`. Step 1 is the superseded ordering restated.
+
+### A2 REFUTED ALREADY ??the ~2.5 ms ASI justification, refuted the same day
+
+`archive/peer/2026-09-15-restructure-in-copy-plan.md:11-16`:
+> *"The 5.06 ms 'kernel + one serial round trip' is **not** the ordinary-frame cost??So 'move ASI out to win ~2.5 ms per frame' is **void**, and ASI-first ordering has no performance support."*  ??and line 93: *"replace 'kernel, then ASI, then display' with 'measure unconditional latency??"*
+
+**Does it still apply? The refuted half does.** `docs/camera-acquisition-facts.md:142-152` (the user's correction) restores ASI to the critical path ??but on **p99 / frames-dropped-during-focus** grounds, *"not an average-throughput one"* (line 148-149). The plan cites the throughput number ("the difference between 150 Hz and 200 Hz"), which is precisely the half that stayed dead. ASI-owns-its-loop survives; *"largest single win, so it goes first"* does not.
+
+### A3 CONTRADICTED ??the plan's central number contradicts its own source file, 55 lines apart
+
+Both sides, same file `docs/camera-acquisition-facts.md`:
+
+| line | text |
+|---|---|
+| 140 | **"ANSWERED: the frame loop does NOT transact serial every iteration (2026-09-12)"** |
+| 155-167 | the unconditional top-level diagram **"holds five nodes"**; the real serial VIs "sit **inside** that case, on diagram 4 ??not unconditional" |
+| 169 | **"So serial does not block 150 Hz."** |
+| 195-198 | *"Kernel + a single serial round trip is **5.06 ms of the 6.00 ms** ??doing so returns ~2.5 ms, which is the difference between 150 Hz and 200 Hz"* ??**the passage the plan quotes** |
+
+And `:177-181` names what *is* paid every frame: **two `Value` property nodes = two UI-thread round trips** ??a different quantity and a different fix from the one step 1 performs.
+
+### A3b CONTRADICTED ??"the two consumers of wire 751" is false in our own census
+
+`tools/bench/census_opwiresource_v5.log` ??**three**, not two:
+```
+161:  t0 'reference'  wire 751   (node 4, uid 482 ??Property Node)
+183:  t0 'reference'  wire 751   (uid 163)
+221:  t3 'reference'  wire 751   (uid 1221)
+181:  t4 'Owner'      wire 751   (uid 157 ??the source the plan deletes)
+```
+
+### A3c CONTRADICTED ??STATUS still carries the index rule NAMES.md retracted, and step 5 rests on that class of rule
+
+| file | text |
+|---|---|
+| `STATUS.md:321` | *"a newly created Diagram lands at **Traverse index 0**, not at the end (measured)"* |
+| `docs/NAMES.md:518-522` | *"**That was wrong** ??it was the hash order of a set??attempt 4 measured the same body (uid 472) at **Traverse index 1**??**there is no rule about where a new diagram lands, and looking for one is the error.**"* |
+
+Step 5 proposes a different rule (`count("Diagram") - 1`) for the same job.
+
+### A4 UNREAD EVIDENCE
+
+1. `archive/peer/2026-09-15-priorart-ownerchain.md` ??reviews steps 3 and 4, verdicts at 129-131; its §3 (lines 111-117) is the exact defect this plan re-introduces.
+2. `tools/recipes/build_opownerchain_v0.py:64-69` ??**already fixed**: *"THE THIRD CONSUMER??wire 751 has THREE consumers, not two ??node 163, node 1221 AND node 482 ??and `build_opwiresource_v5.log:35-39` records that the first v5 rewire failed for exactly this reason."*
+3. `docs/NAMES.md:509-532` ??the write-up of the three lost 0a runs and the helpers step 5 should use.
+
+---
+
+## PART B ??THE ARTIFACTS
+
+### B1 ALREADY BUILT ??step 4's recipe exists, and the plan's wording regresses it
+
+`tools/recipes/build_opownerchain_v0.py`: donor at line 54, uid table 57-62, prediction contract B1-B6 at 30-38, three-consumer fix at 64-69 (`REWIRE_SINKS` line 69 lists all three). **Never run** ??no `build_opownerchain_v0.log` exists ??so the *build* is open, the *design* is not. Rewriting it from the plan's two-consumer description undoes the correction. Step 3's recipe also exists: `tools/recipes/build_opgeterrors.py`.
+
+### B2 ALREADY FAILED ??`VI.Get Errors` (452), twice, cause recorded, cause unaddressed
+
+`tools/bench/build_opgeterrors.log`:
+```
+ 1: BGRUN START 2026-09-09 12:45:12 ??build_opgeterrors.py
+ 7: assembled: ExecState 0 outputs ['reference out', 'error out 2']   8: STOP: not saved   9: rc=5
+10: BGRUN START 2026-09-14 01:34:19 ??build_opgeterrors.py
+16: assembled: ExecState 0 outputs ['reference out', 'error out 2']  17: STOP: not saved  18: rc=5
+```
+Cause: `docs/toolkit-capabilities.md:147` (*"no `Errors`, no `Details`"*), `:149` (*"the **member selection** is silently refused"*), `:184-186` (the three private ini tokens *"were already True throughout ??they were never the missing piece"*), `:244` (logged as standing failure).
+
+**Releasable, and here is exactly how.** `docs/toolkit-capabilities.md:170-179` names two routes the failures did **not** cover: (a) *"`ID String = "Get Errors"` with `Allow Alternate Names? = TRUE` ??that separates an ID-format problem from access filtering"*; (b) *"`Create from Reference` ??a donor VI plus a scripted copy is a real route"*. A plan naming (a) or (b) escapes this citation. "Build method 452 as an op" does not.
+
+### B2b ALREADY FAILED ??the step-4 rewire's failure mode, with its fix, on record
+
+`tools/bench/build_opwiresource_v5.log:35-38`:
+```
+35: DIAG unwired sinks after the rewire: [??(482,'Property Node','reference') ??
+37: DIAG re-fed node 482 (Property Node) 'reference' from the Owner output
+38: ExecState per step: [('copy of v4',1), ('wrong Owner wire removed',0), ('owner-uid branch rewired',0), ('orphaned references re-fed',1)]
+```
+Deleting the Wire-specific front section removes node 157, wire 751's **source**; 482 is orphaned ??ExecState 0.
+
+### B3 HELPER EXISTS ??step 5 hand-rolls what `new_since()` returns
+
+`docs/NAMES.md:526-528` ??*"`gscript.new_since(target, cls, before_uid_set)` ??each carries its real Traverse index `i` **and** its uid. Its own docstring says it: 'Use this, **NOT** position matching, to identify what a mutating Op just created.'"* Plus `loop_diagram()` (`:529-531`) and *"verify arrival by **listing** that diagram's contents (`subvis`), never by a whole-VI count"* (`:532`). `probe_migrate_v3.log:5` did exactly this ??*"body uid 882 at Traverse index 1"*. `count("Diagram")-1` is the named cause of the two void runs (`docs/NAMES.md:515`, `STATUS.md:322`).
+
+### B4 ALREADY MEASURED ??step 4's acceptance oracle is written down
+
+`archive/peer/2026-09-15-priorart-ownerchain.md:105-107` ??`docs/diagram-hierarchy.md:46` (10407 on diagram 43), `docs/keystone-op-spec.md:593` (diagram 43 = uid 639), `tools/bench/diagram_tree_main.json:370,397`. The recipe already encodes it at `build_opownerchain_v0.py:36-38`.
+
+---
+
+```
+PRIOR-ART: settled-already      (step 2 ??probe_migrate_v3.log:12, STATUS.md:283)
+PRIOR-ART: settled-already      (step 1 ordering ??STATUS.md:124,133)
+PRIOR-ART: refuted-already      (step 1 ASI-first ??restructure-in-copy-plan.md:11-16,93)
+PRIOR-ART: contradicted         (camera-acquisition-facts.md:140,169 vs :195-198)
+PRIOR-ART: contradicted         (wire 751 consumers ??census_opwiresource_v5.log:161,183,221)
+PRIOR-ART: contradicted         (STATUS.md:321 vs docs/NAMES.md:518-522)
+PRIOR-ART: unread-evidence      (priorart-ownerchain.md; build_opownerchain_v0.py:64-69)
+PRIOR-ART: already-built        (tools/recipes/build_opownerchain_v0.py ??written, corrected, unrun)
+PRIOR-ART: already-failed       (VI.Get Errors 452 ??build_opgeterrors.log:1-18; toolkit-capabilities.md:147,244)
+PRIOR-ART: already-failed       (orphaned node 482 ??build_opwiresource_v5.log:35-39)
+PRIOR-ART: helper-exists        (new_since / loop_diagram / subvis ??docs/NAMES.md:526-532)
+PRIOR-ART: already-measured     (owner oracle 10407 ??Diagram 639 ??priorart-ownerchain.md:105-107)
+```
+
+The only genuinely open work in this plan is step 4's **execution** (the recipe exists and has never been run) and step 3 **if** rewritten onto one of the two untried routes at `docs/toolkit-capabilities.md:170-179`.
+
+I took no lock, opened no `.vi`, and changed nothing.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-testrun1-flatindex.md
+BGRUN END rc=0 after 232s

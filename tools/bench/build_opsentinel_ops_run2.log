@@ -1,0 +1,49 @@
+BGRUN START 2026-09-17 09:47:35 limit 30.0 min: py -u tools/recipes/build_opsentinel_ops.py both
+  FACT  LabVIEW handles before: 31042 (fresh-instance baseline ~31,500)
+
+################ BUILD OpCreateEqual_v0.vi from Create Equal.vi
+  PASS  W1 OpCreateEqual_v0.vi is a fresh OpExitLoop_v0 copy, ExecState 1
+  FACT  donor: GetOutputs 216=216 348=348; Diagram in <- (788, 'specific class reference'); error in <- (348, 'error out'); error out -> [(370, 'error in (no error)')] + ['error out']
+  PASS  W2 Exit For Loop deleted, creator dropped (SubVI count unchanged)  new [107], SubVI 7 (was 7)
+  PASS  W3 Diagram in / error in / creator's own error out wired  creator error-out terminal index 15
+  PASS  W4 every refnum input wired from Index Array[0] of its Get Outputs (none set over COM)  ['x', 'y']
+  PASS  W5 a control for 'location (0, 0)' (+ every remaining required input)  new controls ['location (0, 0)']; probe-created []
+  PASS  W6 OpCreateEqual_v0.vi ExecState 1  ExecState 1
+  PASS  W6b donor OpExitLoop_v0.vi md5 unchanged  2a09a17e4d4924d8052b923dbc83acfd
+  FACT  OpCreateEqual_v0.vi SAVED; labels {'location': 'location (0, 0)', 'inputs': {'x': 216, 'y': 348}, 'extra_controls': [], 'ctl_by_term': {}, 'creator': 'Create Equal.vi'}
+
+################ BUILD OpCreateConst_v0.vi from Create Constant.vi
+  PASS  W1 OpCreateConst_v0.vi is a fresh OpExitLoop_v0 copy, ExecState 1
+  FACT  donor: GetOutputs 216=216 348=348; Diagram in <- (788, 'specific class reference'); error in <- (348, 'error out'); error out -> [(370, 'error in (no error)')] + ['error out']
+  PASS  W2 Exit For Loop deleted, creator dropped (SubVI count unchanged)  new [107], SubVI 7 (was 7)
+  PASS  W3 Diagram in / error in / creator's own error out wired  creator error-out terminal index 15
+  PASS  W4 every refnum input wired from Index Array[0] of its Get Outputs (none set over COM)  []
+   probe t5 ('Type'): control 'Type' -> ExecState 1
+   force t7 ('Value'): control 'Value' -> ExecState 1
+  PASS  W5 a control for 'location (0, 0)' (+ every remaining required input)  new controls ['location (0, 0)', 'Type', 'Value']; probe-created [(5, 'Type', 'Type'), (7, 'Value', 'Value')]
+  PASS  W6 OpCreateConst_v0.vi ExecState 1  ExecState 1
+  PASS  W6b donor OpExitLoop_v0.vi md5 unchanged  2a09a17e4d4924d8052b923dbc83acfd
+  FACT  OpCreateConst_v0.vi SAVED; labels {'location': 'location (0, 0)', 'inputs': {}, 'extra_controls': [(5, 'Type', 'Type'), (7, 'Value', 'Value')], 'ctl_by_term': {'Type': 'Type', 'Value': 'Value'}, 'creator': 'Create Constant.vi'}
+
+################ FUNCTIONAL TEST on a scratch copy of EMPTY_v0
+  PASS  F1 scratch EMPTY_v0 copy opens ExecState 1
+  PASS  F2 one While loop created  +1 diagrams, +1 loops
+  FACT  scratch: WhileLoop #43, body Diagram #110 at Traverse index 1
+  PASS  F3 source node dropped with every NAMED input wired to a control  bare named inputs []; controls [(0, 'Diagram in'), (2, 'location (0, 0)'), (5, 'queue'), (7, 'timeout in ms (-1)'), (9, 'error in'), (11, 'error in (no error)')]; ExecState 0 (0 is EXPECTED here - F2's loop has an unwired conditional terminal)
+  FACT  F4 setting the const op's VARIANT inputs: {'Type': 0.0, 'Value': -1.0} (labels from the build's own probe)
+  PASS  F4 exactly one new Constant-family object on the body diagram  new [(354, 'Constant', (0, 0))]; op error None
+  OBSERVED uid 354 -> owner 'Diagram' uid 110 | self 'Constant'#354 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 110 -> owner 'WhileLoop' uid 43 | self 'Diagram'#110 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  F4b owner chain: constant -> body Diagram -> the new WhileLoop  354 -> Diagram#110 -> WhileLoop#43 (want Diagram#110 -> WhileLoop#43)
+  FACT  F4 REPORTED (not gated): created class ['Constant'], DigitalNumericConstant count 2 - this is the VARIANT Type/Value marshalling result (B3's open question)
+  PASS  F5 exactly one new node (the Equal?) on the body diagram  new [(46, 'Comparison', (706, 726))]; op error None
+  FACT  F5 LoopTunnel 0 -> 2 (both operands cross the loop border; gscript.wire's rule says this is a RANGE)
+  OBSERVED uid 46 -> owner 'Diagram' uid 110 | self 'Comparison'#46 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 110 -> owner 'WhileLoop' uid 43 | self 'Diagram'#110 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  F5b owner chain: Equal? -> body Diagram -> the new WhileLoop  46 -> Diagram#110 -> WhileLoop#43 (want Diagram#110 -> WhileLoop#43)
+  **FAIL**  Fx functional test completed  EXC (-2147352567, '���ܰ� �߻��߽��ϴ�.', (5005, 'LabVIEW', "LabVIEW : parameter %p not found in the VI's connector pane. ", None, 0, 0), None)
+  FACT  LabVIEW handles after: 31624
+
+VERDICT: 21 pass / 1 fail   FAILING: ['Fx functional test completed']
+elapsed 114.0 s
+BGRUN END rc=1 after 114s

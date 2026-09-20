@@ -1,0 +1,20 @@
+BGRUN START 2026-09-19 07:38:58 limit 20.0 min: py -u tools/doc_ingest.py --cycle 42
+   2 file(s); cycle 42 window 2026-09-19 06:21:00 .. 2026-09-19 07:38:58 (start = archive/peer/2026-09-19-retrospective-cycle41.md stamp (the LAST retrospective written before this one; a plan mtime lags the work - see the docstring); end = now, at window computation (minutes before the dispatch itself; codex E4-1))
+   task written to C:\Users\KimLab\AppData\Local\Temp\docingest_ingest-2026-09-19.txt (1815 chars)
+OUTCOME: ANSWERED (130s)  model: sonnet (pinned by -Model/-Effort (role ingest))  archived: archive\ingest\2026-09-19-ingest-2026-09-19.md
+COST: $0.7964  in 4 / out 12996 / cache-create 166614 / cache-read 0  (129s, 2 turn(s))
+--- ANSWER ---
+PAIR 1
+  A: STATUS.md:23  "F3/F4 refuted in the review file"
+  B: STATUS.md:22  "exactly the review's F4 `already-failed` finding, which this cycle's release line REFUTED on the premise that "the save path is COM g.save, not gui_save""
+  conflict: The v7 build's release line asserts F4 (gui_save already fails on a broken target) was refuted because the save path is COM `g.save`, not `gui_save` — but the same STATUS.md entry for the actual run 10 result states `g.save` diverted to `gui_save` and failed exactly as F4 predicted, so F4's premise cannot have been both refuted and confirmed.
+
+PAIR 2
+  A: STATUS.md:26  "F3 `refuted-already`: "no keystroke save of a broken intermediate" was adopted 2026-09-15."
+  B: STATUS.md:22  "`g.save(TARGET, allow_broken=True)` saw ExecState 0 and diverted to `gui_save`... gui_save raised `file mtime did not move after Ctrl+S on every candidate window`"
+  conflict: One statement asserts the adopted policy is "no keystroke save of a broken intermediate," while the other reports the E3 code path attempting a Ctrl+S (keystroke) save on a target with ExecState 0 (broken) — the policy and the reported behavior cannot both hold.
+
+CONTRADICTIONS: 2
+   peer.ps1 rc 0; archived as archive/ingest/2026-09-19-ingest-2026-09-19.md
+CONTRADICTIONS: 2
+BGRUN END rc=0 after 132s

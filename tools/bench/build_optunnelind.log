@@ -1,0 +1,32 @@
+BGRUN START 2026-09-13 22:51:28 limit 15.0 min: py -u tools/recipes/build_optunnelind.py
+start: Property=1 Invoke=0 Wire=12 ExecState=1
+
+== 1 delete the donor's IndexMode property node
+   predict: Property 1->0, then ExecState 0 until the replacement is wired (broken is EXPECTED here)
+   OBSERVED: after Property=0 Invoke=0 Wire=9 ExecState=1
+
+== 2 Property(Tunnel.Outside Terminal) READ
+   predict: Property 0->1
+   OBSERVED: [{'i': 0, 'class': 'Property', 'uid': 118, 'pos': (733, 250), 'owner': 'TopLevelDiagram'}]
+
+== 3 wire To More Specific Class -> the property node's `reference`
+   predict: Wire +1
+   OBSERVED: EXC wire specific class reference out->reference: error 5001: LV-Scripting.lvlib:Get Outputs.vi<ERR>
+
+== 4 Invoke(Terminal.Create Indicator)
+   predict: Invoke 0->1
+   OBSERVED: [{'i': 0, 'class': 'Invoke', 'uid': 119, 'pos': (885, 250), 'owner': 'TopLevelDiagram'}]
+
+== 5 wire the property's `Outside Terminal` -> the Invoke's `reference`
+   predict: Wire +1; a wrong terminal NAME is declined SILENTLY, so the wire count is the check
+   OBSERVED: EXC wire Outside Terminal->reference: error 5001: LV-Scripting.lvlib:Get Outputs.vi<ERR>
+
+-- terminal names on the top-level diagram (diagnosis for a silent name mismatch) --
+    {0: (43, '', [(0, 'error out', 0), (1, 'vi reference', 467), (2, 'password ("")', 0), (3, 'type specifier VI Refnum (for type only)', 0), (4, 'error in (no error)', 0), (5, 'options', 0), (6, 'vi path', 106), (7, 'application reference (local)', 0)]), 1: (124, '', [(0, 'error out', 0), (1, '# of Refs', 0), (2, 'References', 600), (3, 'dup VI Refnum', 0), (4, '', 0), (5, 'Other Refnum', 0), (6, 'Traverse Generated Code (F)', 0), (7, 'Traverse Target', 415), (8, 'error in (no error)', 0), (9, '', 0), (10, 'Class Name', 373), (11, 'VI Refnum', 467)]), 2: (308, '', [(0, 'array', 600), (1, 'element', 605), (2, 'index', 1066)]), 3: (683, '', [(0, 'specific class reference', 0), (1, 'error out', 0), (2, 'target class', 772), (3, 'reference', 605), (4, 'error in', 0)]), 4: (316, '', [(0, 'error out', 0), (1, 'vi reference', 0), (2, 'password ("")', 0), (3, 'type specifier VI Refnum (for type only)', 0), (4, 'error in (no error)', 0), (5, 'options', 0), (6, 'vi path', 550), (7, 'application reference (local)', 0)]), 5: (118, '', [(0, 'reference', 0), (1, 'reference out', 0), (2, 'error in (no error)', 0), (3, 'error out', 0), (4, 'Outer Term', 0)]), 6: (119, '', [(0, 'reference', 0), (1, 'reference out', 0), (2, 'error in (no error)', 0), (3, 'error out', 0), (4, 'Create Indicator', 0), (5, 'Create Indicator', 0)])}
+    {467: [(0, 1, 'vi reference'), (1, 11, 'VI Refnum')], 106: [(0, 6, 'vi path')], 600: [(1, 2, 'References'), (2, 0, 'array')], 415: [(1, 7, 'Traverse Target')], 373: [(1, 10, 'Class Name')], 605: [(2, 1, 'element'), (3, 3, 'reference')], 1066: [(2, 2, 'index')], 772: [(3, 2, 'target class')], 550: [(4, 6, 'vi path')]}
+
+assembled: Property=1 Invoke=75 Wire=9 ExecState=0
+steps: [("1 delete the donor's IndexMode property node", 'ok'), ('2 Property(Tunnel.Outside Terminal) READ', 'ok'), ("3 wire To More Specific Class -> the property node's `reference`", 'exc'), ('4 Invoke(Terminal.Create Indicator)', 'ok'), ("5 wire the property's `Outside Terminal` -> the Invoke's `reference`", 'exc')]
+
+VERDICT: BROKEN - NOT SAVING. The file on disk is still the untouched donor copy.
+BGRUN END rc=4 after 4s

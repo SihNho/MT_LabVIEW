@@ -1,0 +1,63 @@
+ATTACK the explanation below. It is the one UNPREDICTED result in `tools/bench/build_d1_routeb_v0_run3.log`
+(84 pass / 3 fail, 540 s). Read the files; do not take my summary on trust.
+
+=== WHAT WAS PREDICTED AND WHAT HAPPENED ===
+
+Row under test: `#2222` t0 (an UNNAMED sink on a `CaseStructure` that MOVES into new loop 1.2) whose source is
+the front-panel control `Z/dZ`, uid 47. The plan (decision 2 of the session brief) was: use the control's OWN
+wire if it has one, branch off it by index with `OpConnectFromWire_v0`; only if it has none, make a temporary
+named sink.
+
+MEASURED FIRST, read-only on a PRISTINE copy of the original — `tools/bench/diag_sr_transport.log`, 10 pass /
+0 fail (`tools/bench/sr_transport.json`):
+    P4  Z/dZ is on the panel exactly once as a CONTROL: {"label":"Z/dZ","indicator":false,"uid":47,
+        "is_source":true,"wire":730,"term_err":0,"wire_err":0}
+    P5  w730's terminals: [0] is_source=True owner Diagram#639 ; [1] is_source=False owner Tunnel#2276 ;
+        [2] owner #0 (empty).  NO NAMED SINK on the net.
+    P6  #2222 t0: name '' , is_source False , wire 730  -> the SAME net.
+
+THEN, in the build (`build_d1_routeb_v0_run3.log:386`), AFTER S1t/S1d's deletes, S2's three new loops, S3's 21
+node moves and 6 ControlTerminal reparents:
+    NO-ROUTE #2222 t0 '' <- from-ctl 47   'Z/dZ' carries NO wire on this copy
+`g.panel_wiring(TARGET)` reported `wire = 0` for the label `Z/dZ`. So the wire the pristine original has is gone
+by the time the row is reached.
+
+=== MY EXPLANATION, WHICH YOU MUST ATTACK ===
+
+(G1) w730's only sink was `Tunnel #2276`. `#2222` (the Case structure) moved into 1.2's body, and whatever
+     structure owned `Tunnel #2276` either moved with it or had the tunnel removed, so the net lost its sink and
+     was deleted — either by the move itself or by one of the build's `remove_bad_wires_scripted` calls. A wire
+     with a source and no sink is exactly what Remove Bad Wires removes.
+(G2) Therefore the "use the control's own wire" branch of decision 2 can never fire in this build, and the
+     TEMPORARY NAMED SINK is not a fallback but the only route.
+(G3) The temporary-sink mechanism is currently disarmed (`TEMP_SINK_AUTHORISED = False`) because the way it was
+     written — `OpCreateEqual_v0` with `src_names=()` — contradicts that op's recorded contract (both operands
+     come from `Get Outputs`, `docs/toolkit-capabilities.md:52`) and `docs/NAMES.md:468-480` records that an
+     invalid terminal refnum makes the creator call `Connect Wire` with an invalid reference and raise an
+     **error-1055 MODAL DIALOG that an error-out indicator does not silence** — disqualifying in an unattended
+     run under this project's bgrun discipline.
+(G4) So the row needs a named sink that some EXISTING, MEASURED helper can create, and the candidates I know of
+     are: `gscript.create_indicator(target, node_index, terminal_index)` (creates an indicator FROM a node's
+     output terminal — wrong direction for a control), the "temporary indicator, branch, delete" trick recorded
+     in `archive/bench-2026-09-09-gpu-dropin-kernel/build_gpu_kernel.py:14-15` and
+     `docs/stage2-assembly-step-b.md:48-50,:63-67`, and `drop_subvi` of some VI with a named input of the right
+     type. None of them is obviously right for a CONTROL terminal whose only consumer is an unnamed Case tunnel.
+
+=== YOUR JOB ===
+1. The strongest reason G1 is WRONG. What else destroys a front-panel control's wire during a sequence of
+   deletes / loop creations / `GObject.Move` reparents? Could `Z/dZ`'s TERMINAL itself have been reparented by
+   S3-ct (the build reparents 6 ControlTerminals, and `Z/dZ` is one of the six — see `CTLTERM_LABELS_12` in
+   `tools/recipes/build_d1_routeb_v0.py`), and would `panel_wiring` then report wire 0 even though a wire still
+   exists?  That would make G1 the wrong diagnosis entirely.
+2. What would FALSIFY G1, using only readers this project already has (`gscript.panel_wiring`,
+   `gscript.node_terms`, `gscript.tunnels`, `build_opconnectfromwire_v0.wire_source_owner` = `OpWireSource_v5`,
+   `gscript.report_all`)?  Name the cheapest discriminating test and where in the build it must run.
+3. An ALTERNATIVE route for this row that uses only mechanisms this project has ALREADY MEASURED — in
+   particular, is there one that never needs a temporary object at all? Consider the ORDER of operations: the
+   wire exists before the moves.
+4. Is G3's modal-dialog risk real for `OpCreateEqual_v0` specifically, or am I over-reading a record about a
+   different creator? Cite the op's own test log if it contradicts me.
+5. This row is 1 of 66 and the VI cannot reach `ExecState 1` anyway (the 8 queues and the 3 sentinels are
+   unbuilt, so three While loops have unwired conditional terminals). Argue the case that chasing this row now
+   is the wrong work, and say what the right next measurement is.
+Answer with file:line citations from this project wherever you assert something about its code.

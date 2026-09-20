@@ -1,0 +1,203 @@
+BGRUN START 2026-09-15 15:24:07 limit 30.0 min: py -u C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/1c79eb01-7150-4a78-9689-e6d4f34f7800/scratchpad/verify_review_layers.py
+=== A: confirm-bait must be refused ===
+  PASS  A refused  rc=1
+  PASS  A no archive written
+=== B: an honest review question gets the adversarial suffix ===
+  PASS  B answered  rc=0
+  PASS  B suffix appended
+  PASS  B peer actually refuted
+=== C: the claude peer, as rule/consistency auditor ===
+  PASS  C answered  rc=0
+  PASS  C header records agent+kind
+  PASS  C audited against the file
+=== D: guard_peer.review_quality ===
+  PASS  D ANSWERED+codex -> True
+  PASS  D TIMEOUT+codex -> False  outcome TIMEOUT - the call told you nothing
+  PASS  D QUOTA+gemini -> False  outcome QUOTA - the call told you nothing
+  PASS  D ANSWERED+claude -> False  agent claude is not a framing adversary (needs codex or gemini)
+  PASS  D legacy, no outcome line -> True
+=== E/F: outcome_review ===
+  PASS  E due  DUE: no outcome review has ever been archived
+  PASS  F task builds
+  PASS  F counts are real
+=== G: guard_cycle now gates on the outcome review ===
+  PASS  G blocks  rc=2
+  PASS  G names the outcome review
+=== cleanup ===
+  removed 2026-09-15-vt-adversarial.md
+  removed 2026-09-15-vt-claude.md
+  peer archive count: 216
+
+=== RESULT: ALL PASS ===
+
+=== MANDATORY REVIEW OF THE FAILED PREDICTION (run 1: B, C and F all failed) ===
+icrosoft.powershell.core/about/about_character_encoding?view=powershell-7.6)
+
+3. **Falsifying observation:** Decode the exact original bytes through the same Windows PowerShell 5.1 source-loading path. If the final ASCII `0x27` remains U+0027 and appears as the closing delimiter in the parser?�s token extent, then the claimed ?�consumed closing quote??mechanism is falsified?�even if encoding corruption elsewhere still caused the error.
+
+4. **Why comments survived:** PowerShell ignores everything after `#` through the newline. Thus a mojibaked em dash in a comment can display as `??` for weeks without changing tokenization. The same corruption in executable string text can create a recognized quote character or disturb decoding near a delimiter. [PowerShell comments](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_comments?view=powershell-7.6)
+
+The broader diagnosis?�BOM-less UTF-8 misread through the legacy ANSI code page?�remains likely, but the asserted CP949-trail-byte mechanism does not hold without decoder-level evidence.
+
+**Cheapest discriminating test:** On disposable copies containing only the exact problematic line, parse?�not execute??A) the original and (B) a version with ASCII `A` inserted immediately before the closing apostrophe. `0x41` is a valid CP949 trail byte. If A fails and B parses, boundary consumption is supported; if both fail, inspect the decoded text for an injected typographic quote or ordinary syntax corruption.
+
+
+=== FIRST OUTCOME REVIEW (codex, the real dispatch) ===
+   cadence: no outcome review has ever been archived
+   task written to C:\Users\KimLab\AppData\Local\Temp\outcome-review-20260915.txt (4348 chars)
+OUTCOME: ANSWERED (286s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-15-outcome-review-20260915.md
+--- ANSWER ---
+All claims below come from repository evidence; I use no external factual claims.
+
+## 1. Deliverable
+
+The strongest new runnable artefact is **`Track_v6_CPU_queue_v0.vi`**, but it is a fixture-replay prototype, not an experimental VI.
+
+Evidence:
+
+- [build_track_v6_queue_full.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_track_v6_queue_full.log:185>) ran 10,043 recorded TIFF frames in 7.5 seconds.
+- The same log reports 168/168 checks passing, metadata aligned for all frames, all eight image-pool entries returned, and clean queue releases.
+- Numerical identity holds only for the first 10,018 frames, before the first bead loss. The reseed behavior is not implemented, so the full recording is not yet equivalent to the original.
+- [stage2-assembly-step-c.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/stage2-assembly-step-c.md:16>) explicitly describes it as three replay-mode `FOR` loops with no live stop/timeout protocol; live mode is deferred.
+
+`Track_v6_CPU_core_v0.vi` is also runnable. [build_track_v6_core_full.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_track_v6_core_full.log:97>) processed the same 10,043 frames in 192 seconds and passed 72/72 checks, but likewise diverged after bead loss.
+
+Therefore:
+
+- **New runnable replay/test artefacts:** yes.
+- **New runnable experimental artefact:** none.
+- ?�Numerically exact on the fixture??in `STATUS.md` is too broad; both full logs say exact only through frame 10,018.
+
+`SetCommand_signed.vi` is a separately useful side artefact: `archive/benchmarks/INDEX.md` row 31 records 16/16 injected-reply tests and a successful real-hardware ??.2°/return-to-zero test. It is not integrated into a new experiment program.
+
+## 2. Goal alignment
+
+The governing requirements are [parallelization-requirement.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/project-requirements/parallelization-requirement.md>) and [project-description.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/project-requirements/project-description.md>).
+
+1. **Parallelize the post?�“Done Picking Beads???path in multiple parallel while loops ??partial advancement, not delivered.**
+
+   The project demonstrated a parallel acquisition/tracking/sink topology in replay, but it uses finite `FOR` loops and begins with already recorded images and loaded calibration. It neither performs the bead radial-profile/calibration phase nor provides live parallel `WHILE` loops. Evidence: `stage2-assembly-step-c.md` and the target/acceptance distinction in [stage2-plan.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/stage2-plan.md:34>).
+
+2. **Functions inside the target loop:**
+
+   1. **Motor control ??has not advanced as an integrated deliverable.**  
+      The original already had this parallelized. The signed rotor reader advanced a driver copy, but no new top-level VI runs the motor-control loop.
+
+   2. **Motor reading ??has not moved into a product.**  
+      Timing and call-path measurements exist, but neither new deliverable performs live motor reading. Stage 3 remains future work in [restructure-plan-4.6.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/restructure-plan-4.6.md:173>).
+
+   3. **Camera acquisition ??plumbing advanced; the requirement itself has not been accepted.**  
+      Replay uses `IMAQ ReadFile`, not live IMAQdx acquisition. The required 150 Hz, zero-gap live run remains undone; see [stage2-plan.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/stage2-plan.md:125>).
+
+   4. **Motor scheduler ??has not moved into a product.**  
+      Its location and intended queue contract were studied, but `restructure-plan-4.6.md` still schedules the split as stage 3 and says the exact schedule consumer is not pinpointed.
+
+   5. **Merging and saving data ??has not moved into a product.**  
+      The replay sink accumulates array indicators; it does not reproduce `save trace.vi`, file lifecycle, disk-error behavior, or stop-and-save. The real writer is explicitly deferred to stage 5.
+
+3. **Split all those functions and run them in parallel ??not achieved.**
+
+   Only recorded-image acquisition, tracking, and an array sink have been separated. Motor reading/control, scheduler, file writing, display, calibration, and termination are absent.
+
+The one substantial goal-aligned advance is the tracking computation: `PARALLEL_kernel_v3clean.vi` is integrated into a functioning queue pipeline and is exact until the unimplemented reseed condition. Everything else above is the uncomfortable ?�not moved??list.
+
+## 3. Cost versus product
+
+The ratio is not defensible for the product that exists: 168 Op VIs, 116 recipes, 217 peer exchanges, 43 benchmark rows, and 39 documents produced two replay VIs and zero runnable experimental VIs.
+
+Some measurements were valuable. The failure is sequencing: enabling infrastructure, optional branches, and generality consumed the project before the first live vertical slice.
+
+A competent engineer pursuing the stated outcome would have skipped or deferred:
+
+- GUI-model, grounding, clicker, and handle studies in `archive/benchmarks/INDEX.md` rows 1??1 after a workable automation route existed.
+- GPU implementation, backend-switch timing, and portability work in rows 13??8 and 20 until the CPU experiment VI worked live. The user?�s requirement says GPU is something to consider **after** parallelization.
+- Most general-purpose Op-fleet expansion not required by the next deliverable.
+- The currently planned `VI.Get Errors` reader and `OpCaseFrames_v0` structural confirmation. `STATUS.md` already says the fixture functionally establishes frame 5592 as the reseed frame.
+- Rotor-row feature work until the existing three-row experiment path had been delivered.
+- Further benchmarks that do not terminate in a saved experimental data file.
+
+The shortest engineering route was a narrow copy of the original workflow with only its hot experimental loop replaced?�not a reusable LabVIEW construction platform.
+
+## 4. Ordering at project scale
+
+The standing order is stale in two ways.
+
+First, [STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md>) still preserves the 2026-09-13 order ?�restructuring LAST.??But [questions-for-user-2026-09-14.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/questions-for-user-2026-09-14.md:81>) records the later user direction: restructuring first. Execution has already followed the later direction, but the authoritative work-order text was not corrected.
+
+Second, the current `NEXT` starts with another reader Op, frame-polarity tooling, and a structural census before live camera work. That is backwards for outcome risk. The stage-2 definition itself requires fixture correctness **and** a live 150 Hz test. Replay throughput from OS-cached TIFFs does not establish live acquisition, buffer ownership, deadline behavior, or frame loss.
+
+The new order should be:
+
+1. Obtain the two pending user decisions.
+2. Implement the minimum reseed behavior without building another general reader.
+3. Add live IMAQdx acquisition and run the stage-2 live acceptance immediately.
+4. Add the minimum scheduler/motor/save path needed to generate a real experiment file.
+5. Only then return to structural confirmation, generalized tooling, display refinement, rotor extensions, or GPU.
+
+Thus work currently scheduled late?�live integration and the minimum file-writer/scheduler vertical slice?�should come first.
+
+## 5. Stale decisions
+
+The longest genuinely open user decisions are both from 2026-09-15, not weeks ago:
+
+- **Racy `min value` semantics**, recorded first in the dawn addendum of `docs/questions-for-user-2026-09-14.md` and in [stage2-assembly-step-e.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/stage2-assembly-step-e.md:81>). It blocks choosing whether the rebuilt loss test uses current-frame deterministic data or attempts to preserve the original?�s timing race. It also blocks full 10,043-frame equivalence.
+- **`Limit of Program` behavior**, recorded after the selector inputs were measured. It blocks finalizing the auto-reset/termination contract and proving that parallel shutdown preserves the original operational behavior.
+
+These discoveries are recent, so there is no evidence they should have been asked weeks ago. They should, however, be asked **now**, before another tooling cycle.
+
+Other apparent questions are stale documentation, not pending user decisions:
+
+- `Global motor pos.vi` is answered?�keep it as a readability container?�and `STATUS.md` calls it non-blocking.
+- Rotor sign/zero is marked decided and hardware-verified in `STATUS.md`, while `restructure-plan-4.6.md` still contains an older ?�open question.??- The exact scheduler consumer is an engineering unknown, not a user decision; stages 3?? remain blocked behind locating or reconstructing it.
+
+## 6. The experiment test
+
+For a real experiment next week, the user should run the **original VI**.
+
+The project?�s new VIs cannot replace it because they currently lack:
+
+- live camera acquisition and its 150 Hz acceptance;
+- bead selection and radial-profile/calibration acquisition;
+- motor reading and integrated motor control;
+- scheduler execution;
+- actual trace-file writing;
+- operational stop/save and coordinated shutdown;
+- display/UI behavior;
+- complete bead-loss reseeding.
+
+That is not a cautious preference; it follows directly from `stage2-plan.md`, `stage2-assembly-step-c.md`, and stages 2?? of `restructure-plan-4.6.md`. The latter also explicitly states that the original remains the experiment-running program during construction.
+
+## 7. Termination: shortest usable path
+
+The shortest route is a **CPU-only delivery cycle around the existing original workflow**:
+
+1. Ask the user the two pending questions together: deterministic `min value` semantics and exact `Limit of Program` behavior.
+2. Freeze the Op fleet, structural readers, GUI research, GPU work, rotor-row extension, and new benchmark topics.
+3. Create a new CPU top-level from a copy of the original so bead selection, calibration, controls, scheduler, motor behavior, stop/save, and established experiment workflow survive.
+4. Replace only the experiment?�s acquisition/tracking hot path with the already verified queue core.
+5. Add the small reseed selector dictated by the user?�s answers.
+6. Run one acceptance sequence that ends in a real saved trace: live camera at the target rate, zero buffer gaps/lost frames, normal schedule/motor activity, clean stop, and reopen/validate the produced data.
+7. Hand that CPU VI to the user for a supervised pilot. Display decimation can be minimal; GPU and architectural polish follow only after the pilot succeeds.
+
+Abandon for this delivery:
+
+- further general-purpose scripting infrastructure;
+- `VI.Get Errors` and frame-polarity work unless the delivery actually fails without them;
+- GPU and portability work;
+- rotor fourth-row integration;
+- seven-loop architectural purity;
+- additional measurement campaigns not tied to the live acceptance or saved output.
+
+The project has enough knowledge and components. Its next problem is not missing tooling; it is failure to cross the boundary from replay proof to experiment product.
+
+OUTCOME-VIOLATION: goal-requirement-not-advanced
+OUTCOME-VIOLATION: tooling-over-delivery
+OUTCOME-VIOLATION: product-not-runnable
+OUTCOME-VIOLATION: ordering-stale
+OUTCOME-VIOLATION: decision-starved
+OUTCOME-VIOLATION: scope-inflation
+OUTCOME-VIOLATION: measurement-without-product
+   peer.ps1 rc 0; archived as archive/peer/<date>-outcome-review-20260915.md
+   Now annotate it: 'why asked' and 'verdict', and act on the OUTCOME-VIOLATION lines.
+outcome_review rc=0
+BGRUN END rc=0 after 493s

@@ -1,0 +1,105 @@
+BGRUN START 2026-09-19 17:42:03 limit 20.0 min: py tools\prior_art_review.py --plan-file docs\cycle27-plan.md --slug s0-closeref --trigger cycle-start --recipe tools/recipes/build_s0_closeref_v0.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_s0-closeref.txt (64392 chars)
+OUTCOME: ANSWERED (226s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-19-priorart-s0-closeref.md
+COST: $2.6564  in 26 / out 16312 / cache-create 149076 / cache-read 1515460  (221s, 21 turn(s))
+--- ANSWER ---
+I have what I need. Here is the review.
+
+---
+
+# PRIOR-ART REVIEW — cycle-start, D1 staged build (S0 → S1 → S2)
+
+**Verdict: NOT NOVEL.** The *direction* — building D1 as saved stages — is genuinely new and nothing in these files opposes it. But **S0 as specified is not new**: its measurement has already been run, its acceptance criterion has already been measured non-discriminating, its central premise is contradicted by our own numbers, and its build mechanism has already failed four times under a reason no document in the plan cites.
+
+## PART A — THE DIRECTION
+
+### A1 — settled already (the staged direction itself: NOT blocked)
+I found nothing in `docs/`, `STATUS.md` or `archive/` that has tried, refuted or decided against phasing D1 into saved per-stage artefacts. `CLAUDE.md` §3 and the user's 2026-09-19 order are its origin, and `docs/cycle27-plan.md` Pre-decided 22 is its first statement. **This half of the plan is clear** — the findings below are all about S0's content, not about staging.
+
+### A2 — refuted already: the `Close Reference` was removed **on purpose**, and the stated reason was that wiring it *fails*
+The plan (`STATUS.md` NEXT §1) and `docs/cycle27-plan.md` Pre-decided 21(c) both treat the missing `Close Reference` as an oversight — "a RULE-COMPLIANCE REPAIR", justified by `docs/REFERENCES.md:126`, which indeed says only "`Close Reference` removed" with no reason. The reason is recorded elsewhere, and it is not oversight:
+
+> `archive/WORKLOG.md:84-86` — "`OpSubVI_v0` deliberately **leaks its references**: `Close Reference` **defeated four wiring attempts** and, for chained operations, keeping the target in memory is wanted anyway."
+
+> `archive/VI_SCRIPTING_GUIDE.md:479-480` — "v0 Op VIs may **leak references deliberately** — leaving the target VI in memory is wanted for chained operations, and **`Close Reference`'s refnum input is awkward to wire by hand**."
+
+**Does it still apply?** Half of it is answered and half is not, and the recipe only knows about the half that is answered:
+- The *"keeping the target in memory is wanted"* half **is** addressed — `tools/recipes/build_s0_closeref_v0.py:40-46` deliberately does **not** close the `Open VI Reference` refnum, for exactly this reason (citing `tools/gscript.py:1293-1295`). Good.
+- The *"defeated four wiring attempts"* half is **unaddressed and uncited**. The new recipe's G3 (`:52-53`) wires the refnum input — the precise input both records name as the thing that failed — and treats its failure mode as an open discriminating test. Four prior failures at that input is prior art the build must answer before it spends the run, not discover again.
+
+### A3 — contradicted (three, and the first one is load-bearing)
+
+**(i) The leak premise is contradicted by our own measurement, taken 4 hours ago.**
+`docs/cycle27-plan.md` Pre-decided 21(b) states the live cause of `error 2` is "a leaked GObject reference per matched object" inside `report_all`/`count`, arithmetic being "`count(Diagram)` matches 170 objects and `count(Node)` 626, so ~30 successful `report_all(Diagram)` calls leak thousands of refnums". Measured, same day:
+
+> `tools/bench/s0_hygiene_probe_run2.log:121-123` — "E total: handles 34349 -> 34358 (**+9**) private 613.7 -> 613.6 MB (**-0.1 MB**) … PASS P5 20 report_all(Diagram) calls **without error 2** … PASS E-handles flat within +-100"
+
+Twenty `report_all(Diagram)` calls × 170 matched objects = **3,400 objects that should have leaked**, and they moved the handle count by 9 and private bytes by *minus* 0.1 MB, with no `error 2`. The `count(Node)` window that did grow (`:95`, +215 handles / +27.2 MB) is **dominated by its first call** — `:75` shows call 0 already at 34336 against the 34134 pre-loop baseline, i.e. **+202 of the +215 is the first call**, which is the VI load, not the traverse. The recipe's own docstring concedes this at `:34-35` ("dominated by the FIRST call, which loads the 473 KB VI and its dependency tree; the report_all window … is FLAT") — yet Pre-decided 21(b), which the recipe cites at `:39` as naming "the live cause", still stands unamended.
+
+Note also that the skill names **two** causes and 21(b) carries only one: `com-driving.md:308-312` — "Op VIs that deliberately skip `Close Reference`, **plus loading large VIs and their whole dependency trees repeatedly**, accumulate until the process cannot allocate. Observed on LabVIEW 2026 at **~770 MB** private bytes". The probe ended at 613.6 MB (`run2.log:129`), below that threshold.
+
+**(ii) `docs/NAMES.md` contradicts itself on the terminal this build wires.**
+> `:741` — "`Traverse for GObjects.vi` | `error out`, `# of Refs`, **`References`**, `dup VI Refnum`, …" (so index 2 = `References`)
+> `:230` — "Traverse for GObjects.vi: **terminal 2 = `GObject Refs` output** (the only source that made a fresh Index Array legal)."
+
+Same file, same node, same terminal index, two names. `build_s0_closeref_v0.py:22` cites `:741` and wires by the name `References`. One of these is wrong and a by-name wire against the wrong one fails.
+
+**(iii) Save-then-restart vs restart-then-save.** `com-driving.md:314-317` — "**Recovery order matters: SAVE FIRST, then restart**" — against the rule STATUS records as F2, "after error 2, **restart FIRST** — a Ctrl+S in that state writes a STALE file" (`SKILL.md:39-41`, `com-driving.md:497-499`). S0 saves VIs; whichever is right, the skill currently says both.
+
+### A4 — unread evidence
+Three documents bear directly on S0 and are cited nowhere in `docs/cycle27-plan.md` Pre-decided 21, `STATUS.md` NEXT §1, or the recipe's own "WHAT ALREADY EXISTS" block (`build_s0_closeref_v0.py:10-23`):
+1. `archive/WORKLOG.md:84-86` — why the node was removed (four failed wiring attempts).
+2. `archive/VI_SCRIPTING_GUIDE.md:479-480` — the same decision, stated as a standing design rule for v0 ops.
+3. `docs/toolkit-capabilities.md:372-443` — the project's already-built route for consuming the `References` **array** (see B3).
+
+## PART B — THE ARTIFACT
+
+### B1 — already built: S1 and S2's bodies exist, with measured counts
+`STATUS.md` NEXT §2–3 specifies S1 (copy, delete the fixture TIFF writer + the three re-dropped nodes) and S2 (three While loops + 3 subVIs). Both are already written and already carry prediction contracts:
+- `tools/recipes/build_d1_routeb_v7.py:697 def s1()`, `:728 def s1t()`, `:788 def s2()`
+- `:74` — "S1t `#22700` `#23020` deleted -> SubVI 98->97, Function 181->180, Node 626->624, Wire 1902->1899"
+
+What is genuinely new in stages S1/S2 is only the **save + fresh-instance boundary** between them. These bodies should be lifted, not rewritten — rewriting them re-opens counts that are already measured.
+
+### B2 — already failed: this exact wiring, four times
+As A2. `archive/WORKLOG.md:85`. The new plan does change the *method* (scripted `copy_by_index` + gated wiring rather than by-hand GUI wiring, `build_s0_closeref_v0.py:11-12`), which is a real difference — but the recipe never states that four attempts failed, so it cannot show it addresses the cause.
+
+### B3 — helper exists: the `References` array already has a verified consumption route, and it is a For Loop
+G3 (`build_s0_closeref_v0.py:52-53`) wires the whole `References` **array** straight into `Close Reference`'s single refnum sink and calls "does Close Reference accept an ARRAY of refnums?" the stage's discriminating test. The project already settled how that array is consumed, and built it:
+
+> `docs/toolkit-capabilities.md:438` — "7 wire References across the boundary  LoopTunnel 0->1, ExecState 0->1   <- the array supplies N"
+> `:441-443` — "State after step 7: `LoopTunnel=1, Property=1, ExecState=1` — a For Loop auto-indexing the `References` array into a Property node inside its body, and the VI runnable. **The structure this whole optimisation depends on is buildable by script.**"
+
+That is the shape `OpReportAll_v0.vi` already has on disk — Traverse + For Loop (`tools/bench/s0_hygiene_probe_run2.log:35-40`). A close-over-an-array belongs inside that loop. Two further specifics already on file that G3 will otherwise rediscover: `:408` "`wire()` across a loop boundary AUTO-CREATES the tunnel", and `:447-449` — crossing a boundary creates **two** wire segments plus the tunnel, so G3's "read back non-zero and **EQUAL** on both ends" is the wrong assertion for a boundary-crossing wire (the same segmentation caveat Pre-decided 18's `SEGMENTED` bucket exists for).
+
+Also for G4: a worked, scripted wire into `Close Reference`'s error input already exists in a KernelBuilder-derived VI, keyed on the same donor uid 157 —
+`archive/bench-2026-09-14-stage2-toolkit/build_opwhileloop.py:99` and its log `:3` ("Close Reference 157"). G4's bespoke "identify the PN whose error-out wire is the one the panel's `error out` indicator carries" is more machinery than that precedent needed.
+
+### B4 — already measured: the 20-call test **has been run**, and its ±100 criterion is already known not to discriminate
+`STATUS.md` NEXT §1 sets the acceptance gate: "prove it: 20 consecutive calls in ONE script, handle count flat (±100), **else the repair is not accepted**". That test ran at 17:32 today, before this cycle, on the old unrepaired ops:
+
+> `tools/bench/s0_hygiene_probe_run2.log:95-97` — "D total: handles 34134 -> 34349 (**+215**) … **FAIL** P3 kernel handle count flat within +-100 … PASS P4 private bytes grew > 20 MB"
+> `:121-123` — the `report_all(Diagram)` window: **+9**, flat, PASS.
+
+So the criterion **already fails on `count(Node)` and already passes on `report_all(Diagram)` with the leak still in place** — it is measuring first-call VI loading, not refnum hygiene. The probe's own docstring predicted this in advance: `tools/bench/s0_hygiene_probe.py:21-24` — "Expected to PASS even though the op leaks, **because VI Server refnums are not kernel handles** — this is the brief's stated criterion and this line measures whether it can discriminate at all." It measured that it cannot. Gating S0's acceptance on it will either reject a correct repair or accept a no-op.
+
+Relatedly, `tools/gscript.py:227-239` (quoted at `s0_hygiene_probe.py:8-12`) already records that the kernel handle count "cannot see VI Server refnums at all" — so the ±100 handle criterion was documented as blind to this leak class before it was adopted as the acceptance gate.
+
+## What this means for the cycle
+
+Nothing here blocks **staging D1**, and S1/S2 can proceed on existing, measured bodies (B1). What is blocked is **S0 as written**: it would spend a run proving a premise our own log contradicts (A3 i), against an acceptance gate already measured blind (B4), using a wiring the record says failed four times (A2/B2), when the array-consumption route is already built (B3).
+
+The cheap reordering, if judgement wants one: the repair is still *owed* under the reference-hygiene rule and should be built — but as a **For-Loop-enclosed** close (B3), accepted on **private bytes** and a repeat of the E-block traverse series, not on ±100 kernel handles; and `error 2` should be treated as an open question the repair is not predicted to close, since `report_all(Diagram)` has now run 20 times leak-and-all without raising it.
+
+```
+PRIOR-ART: refuted-already
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-built
+PRIOR-ART: already-failed
+PRIOR-ART: helper-exists
+PRIOR-ART: already-measured
+```
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-s0-closeref.md
+   STOP RECORD armed: tools/recipes/build_s0_closeref_v0.py sha 843e9c0c93a3 verdict refuted-already, contradicted, unread-evidence, already-built, already-failed, helper-exists, already-measured -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 226s

@@ -1,0 +1,151 @@
+BGRUN START 2026-09-18 12:35:54 limit 32.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & 'tools/peer.ps1' -Dual -Slug fstunnel-orphans-empty-at-ckpt00 -TaskFile 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\8b92c641-ae60-48b1-8bcd-eac8bf3621b2\scratchpad\peer_orphans_empty.txt' -TimeoutSec 900
+=== DUAL ARM 1/2: codex -> fstunnel-orphans-empty-at-ckpt00-codex ===
+OUTCOME: ANSWERED (107s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-18-fstunnel-orphans-empty-at-ckpt00-codex.md
+--- ANSWER ---
+## 1. Strongest reason E-new is wrong
+
+E-new assigns causation without identifying the endpoints. The observation proves only:
+
+- At `:403`, some `OpNodeTerms` rows report `wire = 894` and `wire = 1356`.
+- At B4, no such rows remain.
+
+It does **not** prove those rows belong to nodes `#145` or `#151`. Until those carrier rows are identified, “deleting #145/#151 created the orphans” is an unsupported attribution.
+
+LabVIEW’s terminal ownership model makes that omission important. Ordinary node terminals are owned by their nodes, but control terminals can be owned by the diagram rather than the corresponding front-panel object. Structure tunnels also have distinct outer and per-subdiagram inner terminals. Thus, a generic diagram-0 “node terminals” census is not necessarily a complete or uniform model of every endpoint class. [NI Community: terminal ownership](https://forums.ni.com/t5/LabVIEW/Vi-Scripting-inconsistent-behaviour-of-terms-of-a-wire-owner/td-p/3309055), [NI Community: inner and outer tunnel terminals](https://forums.ni.com/t5/LabVIEW/LabvVIEW-Scripting-wiring-a-pass-through-tunnel-inside-a-case/td-p/3945608)
+
+That supplies a plausible way for the reporter’s classification to change after structural editing or diagram fix-up without the explicit deletions being the causal event. It does **not**, by itself, show that structure terminals spontaneously disconnect merely because more nodes exist.
+
+There is also contrary pressure against this attack: LabVIEW practitioners deliberately wire through temporary generic nodes and then delete those nodes, leaving the intended wire geometry behind. NI material likewise treats deleting diagram objects and subsequently running “Remove Bad Wires” as normal behavior. Those observations make E-new mechanically plausible, even though they do not identify these two wires. [NI Community: temporary bundle nodes deleted while wire remains](https://forums.ni.com/t5/LabVIEW-APIs-Discussions/What-is-up-with-the-DeleteJoint-method/m-p/3384955), [NI user manual example](https://download.ni.com/support/manuals/320999b.pdf)
+
+## 2. Alternative explanation
+
+The strongest alternative is a **reporter-semantic or diagram-fix-up transition**, not bounded enumeration by itself:
+
+1. At `:403`, `OpNodeTerms` returns two terminal records whose `wire` field is 894/1356.
+2. Those records are not true current endpoints of the Wire objects—for example, they are structure-related proxy terminals, stale associations exposed before diagram recompilation, or reporter output whose `wire` column has broader semantics than “this terminal occurs in `Wire.Terms[]`.”
+3. A later construction operation forces LabVIEW to normalize the diagram, removing those associations.
+4. The wires then appear orphaned at B4 even if neither carrier was one of the explicitly deleted nodes.
+
+This is plausible enough to test because LabVIEW’s scripting object graph is not ownership-uniform, and tunnel terminals have inner/outer representations. It is not yet supported by direct evidence.
+
+The bounded `sweep(..., n=120)` theory is weaker:
+
+- Missing later nodes or terminals can make the algorithm report **too many** orphans.
+- It cannot normally explain an empty orphan set: to suppress 894 and 1356, the sampled rows must positively contain those exact values.
+- The fact that `:403` enumerates a node later deleted is not an alternative to E-new. If that node’s real terminals carry the two wires and its deletion removes those connections, that is precisely E-new.
+- More terminals at B4 should provide more opportunities to find carriers, not fewer. The reversal therefore suggests actual carrier loss or changed semantics, not merely a larger census.
+
+An accidental or stale UID match remains possible, but it requires showing that `OpNodeTerms.wire` is not a direct live attached-wire reference. NI’s conventional scripting approach is to obtain a node’s `Terminals[]` and navigate from the terminal to its connected wire, so a persistent nonzero wire reference should ordinarily be treated as meaningful until contradicted by `Wire.Terms[]`. [NI Community: navigating node terminals and using terminal properties](https://forums.ni.com/t5/LabVIEW/Scripting-Terminal-Information/td-p/4303374)
+
+## 3. What would falsify E-new
+
+Any of these observations would falsify its causal claim:
+
+- At `:403`, every carrier of 894/1356 belongs to objects that survive through B4.
+- The carriers remain present immediately after deleting `#145`, `#151`, 578, 639, and 533, but disappear after a later non-delete construction operation.
+- Direct `Wire.Terms[]` inspection at `:403` shows that neither wire actually contains the supposed `OpNodeTerms` carrier terminals.
+- Skipping the suspect deletes while executing the remaining construction still produces `{894,1356}` as B4 orphans.
+- Performing only the suspect deletes fails to produce those orphans.
+
+Conversely, E-new receives strong causal support if the named carrier terminal belongs to `#145` or `#151`, disappears immediately when that node is deleted, and the same Wire UID remains in the diagram with no other endpoint.
+
+## 4. Does the proposed test discriminate?
+
+Yes—with one addition.
+
+Printing `(node uid, terminal name, terminal index, is_source)` for every row naming 894/1356 before and after each delete is the correct first test. It identifies the presently missing causal fact: who carries the wires and exactly when that carrier disappears.
+
+However, also print each wire’s own `Wire.Terms[]` terminal identities. Otherwise both the orphan calculation and the proposed test depend on the same `OpNodeTerms.wire` column and cannot detect a shared reporter-semantics bug.
+
+A null result—no terminal rows name the wires even though the computed orphan set is empty—would mean the diagnostic is internally inconsistent. Likely causes would be cached data, a different sweep instance feeding the reducer, UID coercion/collision, or hidden carrier classes not included in the printed subset. It would invalidate both the fresh-copy conclusion and E-new until the orphan reducer’s actual inputs were dumped.
+
+## 5. Consequences if E-new survives
+
+More than gate A0a changes:
+
+- A0a is unsatisfiable if it demands `{894,1356}` on every untouched fresh donor copy.
+- The statements that the donor “ships two orphan/bad wires” in `STATUS.md` and `docs/toolkit-capabilities.md` are false. The donor ships two attached wires that later become debris.
+- Any pre-clean step that deletes 894/1356 from the untouched donor is not merely unnecessary; it risks deleting valid attached wiring.
+- The B4 `remove_bad_wires_scripted` result remains valid, but its interpretation changes from donor sanitation to cleanup of build-produced damage.
+- The 18/18 reproducibility establishes deterministic B4 victims, not donor-origin orphanhood.
+- Any donor-quality conclusion, recipe invariant, or test fixture derived from the claimed fresh-copy orphan set must be revised.
+- The cleanup may be masking a construction defect. The better repair could be to prevent the orphan-producing edit or explicitly disconnect/delete the affected wires when removing their owners, rather than relying on a global cleanup afterward.
+- Claims such as “RBW removes no live connections” remain supported at B4 by the unchanged terminal count, but they do not show that earlier valid donor connectivity was preserved.
+
+After attacking it, I still think E-new is the leading explanation: the count arithmetic is compatible with it, deletion is known to leave bad-wire remnants, and the bounded-sweep theory has the wrong error direction. What would change my mind is seeing the two fresh carrier terminals belong to surviving objects, or seeing the transition occur at a non-delete operation.
+
+The cheapest discriminating test is: at `:403`, dump the two wires’ `Wire.Terms[]` plus all matching `OpNodeTerms` rows; then repeat immediately after each individual deletion. If the carrier is `#145/#151` and vanishes on that deletion, E-new wins. If it survives all deletes and disappears later, the fix-up/reporter alternative wins.
+=== DUAL ARM 2/2: claude/hypothesis (opus, effort max, web) -> fstunnel-orphans-empty-at-ckpt00-opus ===
+OUTCOME: ANSWERED (749s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-18-fstunnel-orphans-empty-at-ckpt00-opus.md
+COST: $5.1740  in 30 / out 53214 / cache-create 236150 / cache-read 2248309  (747s, 29 turn(s))
+--- ANSWER ---
+**E-new is wrong, and so is the claim it replaces. Both rest on a reader that is structurally blind to the endpoint class these two wires actually have.**
+
+---
+
+## 1. The single strongest reason E-new is WRONG
+
+**"Orphan" is a category error.** The measurement both stories are built on — `orphan_wires()` (`build_opfstunnelterm_v2.py:462-467`, re-typed at `diag_fstunnel_preclean_twins.py:161-166`) and `ends_of()`/`term_map()` (`diag_fstunnel_rbwvictims.py:335-348`) — sweeps `Diagram.Nodes[]` via `sweep()` (`_v1.py:248-255`). It answers *"does any **node** terminal read this wire?"*, and the project has been reading its answer as *"does this wire have an endpoint at all?"*
+
+Your own reader already told you those are different questions. `OpWireSource_v5` reports, for each wire, exactly one real terminal whose `Terminal.Owner` is **`TopLevelDiagram` #3** (`diag_fstunnel_rbwvictims.log:81,87`). Per NI's own answer on exactly this behaviour: node terminals report their `Owner` as the node, but *"for the ControlTerminal, you get the Diagram/TopLevelDiagram or whatever place you have put in that indicator"* — because *"Items that inherit from the 'Control' class are front panel objects. The 'ControlTerminal' class represents the terminals for those controls on the diagram."* And `ControlTerminal → Terminal → GObject`; it is **not** a Node, so `Diagram.Nodes[]` can never return it.
+
+Confirmed locally, without LabVIEW: the seed **control** created at `_v1.py:455` never appears in the node census. `diag_fstunnel_orphans.log:21` = 19 node uids fresh; `:105` = 23 at B4; the delta is exactly `{148, 154, 168, 169}` — the four new property nodes. The control's terminal is absent from both.
+
+So at B4 those wires are **not endpoint-less**. Each still terminates on a front-panel object. E-new's premise — *"deleting a NODE leaves wires that terminated on it with no node endpoint"* — is true and irrelevant; its conclusion, that the recipe *created two orphans*, is unproven because nothing measured has ever been capable of detecting an orphan.
+
+**A second, purely local error in E-new's own sentence:** `_v1.py` contains **zero** calls to `remove_bad_wires_scripted` (grep over the file: no hit). There is no "end-of-build RBW". `_v1` reaches `B5a` at `ExecState 0` and refuses to save (`_v1.py:554-558`). The RBW calls that removed `[894, 1356]` were made by the *diagnostics* at the B4 freeze (`rbwvictims.py:520`, `preclean_twins.py:177`) and by `_v2.preclean()`, which runs **before** construction. The clause "the end-of-build `remove_bad_wires_scripted` is removing debris the build itself produced" describes code that does not exist.
+
+On your Q1 as posed: the structure-tunnel idea is the right *shape* of objection but the wrong object — a tunnel's terminal would report the **structure** as owner, not the top-level diagram. The measured owner names the diagram, which is the ControlTerminal signature.
+
+## 2. Alternative explanation of "`[]` at :403, `{894,1356}` at B4" — no orphan is created anywhere
+
+Both wires keep a live **panel** end throughout and lose only their **node** end:
+
+| wire | `Is Source?` on its ControlTerminal | what that makes it | the node end `_v1.py:426-434` deletes |
+|---|---|---|---|
+| **1356** | TRUE (`rbwvictims.log:87`) | a **CONTROL** feeding a node input | Index Array **#151** `index` — the donor's `term_index`, label `"index 2"` (`opwiresource_v5_labels.json:14`) |
+| **894** | FALSE (`rbwvictims.log:81`) | an **INDICATOR** fed by a node output | Terms[] PN **#145** `error out` — the donor gives every PN its own error indicator; `errT` = `"error out 3"` (`…_labels.json:4`) |
+
+That reproduces every number with nothing left over: at `:403` each wire has two terminals (one node, one panel) → `ExecState 1`, orphan set `[]`; after the deletes each has one (panel only, loose other end) → invisible to a node sweep, and genuinely bad, so RBW removes it.
+
+**The consequence E-new misses is the one that matters:** on this reading `_v1.py` **silently disconnects one front-panel CONTROL and one front-panel INDICATOR from every op it builds from this donor**, and no measurement taken could see it. `A0d`'s *"the TERMINAL count is unchanged (no node lost a connection)"* and M4's *"NONE — no terminal that was wired before RBW reads 0 after it"* (`rbwvictims.log:162-164`) count **node** terminals only. They are literally true and they conceal exactly the loss that occurred.
+
+A second, weaker alternative, ranked below: the `wire` column at `:403` could carry a spurious non-zero value — `node_terms` returns `conn_err`/`wire_err` per row (`gscript.py:860-867`) and **neither diagnostic printed them**. I rank it low (it would have to coincide with both uids), but it costs nothing to print in the same run.
+
+## 3. What would falsify each claim
+
+- **Falsifies my reading (and restores E-new):** `panel_wiring()` on a fresh donor copy shows **no** row with `wire == 894` and none with `wire == 1356`. Then the `TopLevelDiagram` owner is not a ControlTerminal here and the wires really are endpoint-less.
+- **Falsifies E-new:** a panel row naming 894/1356 that is **still there at B4** — the wire never became endpoint-less at all, so nothing was orphaned.
+
+On your Q3: the test you propose discriminates E-new's *proximate mechanism* but not its *conclusion*, and **its null branch is logically impossible**. The orphan set and the per-terminal dump are computed from the same `sweep()` rows; "no terminal names them, yet the orphan set is still empty" cannot both hold unless two back-to-back `sweep()` calls disagree. So that branch tests only sweep determinism — worth one extra call and a diff, not a run.
+
+## 4. Cheapest discriminating test
+
+One read-only script, one throwaway copy, ~4 op runs, no construction, no new op, no GUI. **`panel_wiring` already exists and is already functionally verified** (`gscript.py:772-809`; `toolkit-capabilities.md:22`, `test_oppanelwiring.log` 11/11, "constructed orphan = exactly +1"):
+
+1. `g.panel_wiring(op)` at `_v1.py:403` → print every row with `wire in (894, 1356)`: `label`, `indicator`, `is_source`.
+2. The same call at the B4 freeze, and once more after RBW.
+3. `wire_source_owner(op, 894)` / `(op, 1356)` at `:403` — expect **2** terminals there against the 1 measured at B4.
+4. Your test (which sweep rows name 894/1356 at `:403`) in the same script — it answers the other half, *which node end was lost*.
+5. Free: the `conn_err`/`wire_err` columns for those rows.
+
+Rows at `:403` **and** at B4 ⇒ never orphans; the build silently strands two panel objects. No rows at either point ⇒ E-new stands. Caveat: `panel_wiring` is **not recursive** — cluster elements and tab pages are not rows, so a missing row is the next thing to rule out, not proof.
+
+Separately, and it is the attribution nobody has made: at B4, `delete_object` **only** those two wires and read `exec_state`. The 0→1 flip has never been separated from `#384`'s `Is Broken? True → False` across the same RBW call (`toolkit-capabilities.md:600-601`). Twin B attempted this at the wrong point — `:403`, where the VI is already legal and there is nothing to remove.
+
+## 5. What else in the written record is wrong (your Q4 — it is more than gate A0a)
+
+- **`_v2.py`'s whole `preclean()` is unsatisfiable, not just A0a.** `A0c` (RBW removes exactly `[894,1356]`) and `A0d` (42 → 40, terminals unchanged) fail for the same reason: on a fresh copy at `ExecState 1` both wires are fully connected and RBW should remove nothing. **Drop `_v2`, don't patch it.**
+- **`_v2.py:109-116`**, the stated reason for deleting gate A0b — *"BY CONSTRUCTION an A0a orphan has no sink"* — is wrong for 894, which has a sink: an indicator's terminal. Whether `Wire.Is Broken?` is reachable through `connect_ctl` (the panel-object wiring op, `gscript.py:929-948`) was never asked.
+- **`docs/toolkit-capabilities.md:584-610`**: the heading, "every copy starts with two bad wires", and especially `:597` *"Removing exactly those two costs no node its connection"* — the dangerous sentence, true as written and hiding the loss it was used to rule out. Also `:595` "reports 2 terminals for each" mis-reads its own reader: `wire_source_owner` appends the empty sentinel row **before** breaking (`rbwvictims.py:242-244`), so the count is 1 real + 1 empty.
+- **`STATUS.md`** carries the same claim.
+- **Gate L1 of `_v1.py`** ("an EMPTY `errs` column") would pass **vacuously** on an indicator that is no longer wired, since a bare indicator reads its default forever. `read_tunnel`'s poisoning (`_v1.py:574-588`) covers the value outputs but not this.
+- **Process:** this is not `tool-not-built`. `panel_wiring` was built and verified on 2026-09-14 and is listed one screen above the section that got this wrong. Four diagnostics in one cycle asked "what are this wire's ends?" with a node-only reader and none reached for it.
+
+**What would change my mind:** step 1 above returning no panel row for either uid. I hold the ControlTerminal reading with high confidence on the external documentation and on your own 19→23 node census, but I have *not* measured that these two specific wires land on `"index 2"` and `"error out 3"` — that pairing is a named, falsifiable prediction for the test to confirm or kill, not a measurement.
+
+Sources: [NI Forums — VI Scripting: inconsistent behaviour of terms[] of a wire / owner](https://forums.ni.com/t5/LabVIEW/Vi-Scripting-inconsistent-behaviour-of-terms-of-a-wire-owner/td-p/3309055) · [LabVIEW Wiki — ControlTerminal class](https://labviewwiki.org/wiki/ControlTerminal_class) · [LabVIEW Wiki — Wire class](https://labviewwiki.org/wiki/Wire_class) · [LabVIEW Wiki — GObject class](https://labviewwiki.org/wiki/GObject_class) · [LabVIEW Wiki — AbstractDiagram class/Nodes() property](https://labviewwiki.org/wiki/AbstractDiagram_class/Nodes()_property) · [NI — VI class: Block Diagram:Remove Bad Wires](https://www.ni.com/docs/en-US/bundle/labview/page/lvscript/vi_block_diagram058remove_bad_wires.html)
+
+*(Note: I could not write the plan file — `Write` is disabled in this session, consistent with the read-only peer brief. The review above is the whole answer.)*
+=== DUAL DONE: codex rc=0, opus rc=0  (archive\peer\2026-09-18-fstunnel-orphans-empty-at-ckpt00-codex.md, -fstunnel-orphans-empty-at-ckpt00-opus.md) ===
+BGRUN END rc=0 after 856s

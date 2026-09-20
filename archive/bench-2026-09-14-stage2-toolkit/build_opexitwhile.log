@@ -1,0 +1,152 @@
+BGRUN START 2026-09-14 20:44:16 limit 12.0 min: py -u tools/recipes/build_opexitwhile.py
+start: SubVI=7 Wire=28 ExecState=1
+   Exit For Loop 292: sources {'Diagram in': (788, 'specific class reference'), 'Outputs': (124, '# of Refs'), 'Shift Registers': (124, '# of Refs'), 'error in (no error)': (348, 'error out')}; error out -> nodes [(370, 'error in (no error)')], indicators ['error out']
+
+== 2 delete Exit For Loop + RBW
+   predict: SubVI -1
+   result : after SubVI=6 Wire=23 ExecState=1  (0.1 s)
+
+== 3 drop Exit While Loop.vi
+   predict: SubVI +1
+   result : after SubVI=7 Wire=23 ExecState=0  (0.1 s)
+
+== 3-wire specific class reference -> While.'Diagram in'
+   predict: Wire +1
+   result : after SubVI=7 Wire=24 ExecState=0  (0.1 s)
+
+== 3-wire # of Refs -> While.'Outputs'
+   predict: Wire +1
+   result : after SubVI=7 Wire=25 ExecState=0  (0.1 s)
+
+== 3-wire # of Refs -> While.'Shift Registers'
+   predict: Wire +1
+   OBSERVED: EXC wire # of Refs->Shift Registers: wire count 25->25 with 0 new tunnel(s), expected 26 (if the source is already wired this may be a successful BRANCH - re-call with branch=True)
+
+== 3-wire error out -> While.'error in (no error)'
+   predict: Wire +1
+   result : after SubVI=7 Wire=26 ExecState=0  (0.1 s)
+
+== 3-wire While.'error out' -> Clear Errors.vi.'error in (no error)'
+   predict: Wire +1
+   result : after SubVI=7 Wire=27 ExecState=0  (0.1 s)
+
+== 3-wire While.'error out' -> 'error out' indicator
+   predict: branch
+   OBSERVED: EXC wire_indicators: target BROKEN after wiring - a source terminal was probably unwired (WI then extends an unrelated wire; revert the target)
+   after swap: SubVI=7 Wire=27 ExecState=0
+
+== 4 PN VI[Block Diagram]
+   predict: Property +1
+   result : 108  (0.1 s)
+
+== 4-wire Open VI Reference.'vi reference' -> PN.reference (branch)
+   predict: ok
+   result : after SubVI=7 Wire=27 ExecState=0  (0.1 s)
+
+== 5a drop Get Controls.vi
+   predict: SubVI +1
+   result : after SubVI=8 Wire=27 ExecState=0  (0.1 s)
+
+== 5b PN.'Diagram' -> Get Controls.'Diagram in'
+   predict: Wire +1
+   result : after SubVI=8 Wire=28 ExecState=0  (0.1 s)
+
+== 5c create_control on Get Controls.'Control Names'
+   predict: a string-array control
+   result : ([{'i': 8, 'class': 'ControlTerminal', 'uid': 739, 'pos': (554, 852), 'owner': 'TopLevelDiagram'}], 'Control Names')  (0.2 s)
+   Control Names control: ['Control Names']
+
+== 6a build_index_array
+   predict: IndexArray +1
+   result : 111  (0.1 s)
+
+== 6b connect Get Controls.'Control Terminals' -> IA.array
+   predict: (1, x)
+   result : (1, 0)  (0.0 s)
+
+== 6c IA.element -> While.'Stop Condition'
+   predict: Wire +1, ExecState 1
+   result : after SubVI=8 Wire=31 ExecState=0  (0.1 s)
+   element route broken - fallback: delete that wire and feed the whole 'Control Terminals' array
+
+== 6d Get Controls.'Control Terminals' -> While.'Stop Condition' (array)
+   predict: ExecState 1
+   result : after SubVI=8 Wire=30 ExecState=0  (0.1 s)
+   Exit While Loop terminals: [('Diagram in', 471), ('Conditional Terminals', 0), ('Loop Terminal Types', 0), ('', 0), ('Diagram out', 0), ('Outputs', 476), ('Outputs', 0), ('Shift Registers', 476), ('Shift Registers', 0), ('Stop Condition', 759), ('', 0), ('error in (no error)', 534), ('', 0), ('', 0), ('', 0), ('error out', 615)]
+
+VERDICT: BROKEN (ExecState 0, steps [('2 delete Exit For Loop + RBW', 'ok'), ('3 drop Exit While Loop.vi', 'ok'), ("3-wire specific class reference -> While.'Diagram in'", 'ok'), ("3-wire # of Refs -> While.'Outputs'", 'ok'), ("3-wire # of Refs -> While.'Shift Registers'", 'exc'), ("3-wire error out -> While.'error in (no error)'", 'ok'), ("3-wire While.'error out' -> Clear Errors.vi.'error in (no error)'", 'ok'), ("3-wire While.'error out' -> 'error out' indicator", 'exc'), ('4 PN VI[Block Diagram]', 'ok'), ("4-wire Open VI Reference.'vi reference' -> PN.reference (branch)", 'ok'), ('5a drop Get Controls.vi', 'ok'), ("5b PN.'Diagram' -> Get Controls.'Diagram in'", 'ok'), ("5c create_control on Get Controls.'Control Names'", 'ok'), ('6a build_index_array', 'ok'), ("6b connect Get Controls.'Control Terminals' -> IA.array", 'ok'), ("6c IA.element -> While.'Stop Condition'", 'ok'), ("6d Get Controls.'Control Terminals' -> While.'Stop Condition' (array)", 'ok')]) - NOT SAVING.
+BGRUN END rc=4 after 21s
+BGRUN START 2026-09-14 20:47:05 limit 12.0 min: py -u tools/recipes/build_opexitwhile.py
+start: SubVI=7 Wire=28 ExecState=1
+   Exit For Loop 292: sources {'Diagram in': (788, 'specific class reference'), 'Outputs': (216, 'Outputs'), 'Shift Registers': (348, 'Outputs'), 'error in (no error)': (348, 'error out')}; error out -> nodes [(370, 'error in (no error)')], indicators ['error out']
+
+== 2 delete Exit For Loop + RBW
+   predict: SubVI -1
+   result : after SubVI=6 Wire=23 ExecState=1  (0.1 s)
+
+== 3 drop Exit While Loop.vi
+   predict: SubVI +1
+   result : after SubVI=7 Wire=23 ExecState=0  (0.1 s)
+
+== 3-wire specific class reference -> While.'Diagram in'
+   predict: Wire +1
+   result : after SubVI=7 Wire=24 ExecState=0  (0.1 s)
+
+== 3-wire Outputs -> While.'Outputs'
+   predict: Wire +1
+   result : after SubVI=7 Wire=25 ExecState=0  (0.1 s)
+
+== 3-wire Outputs -> While.'Shift Registers'
+   predict: Wire +1
+   result : after SubVI=7 Wire=26 ExecState=0  (0.1 s)
+
+== 3-wire error out -> While.'error in (no error)'
+   predict: Wire +1
+   result : after SubVI=7 Wire=27 ExecState=0  (0.1 s)
+
+== 3-wire While.'error out' -> Clear Errors.vi.'error in (no error)'
+   predict: Wire +1
+   result : after SubVI=7 Wire=28 ExecState=0  (0.1 s)
+   after swap: SubVI=7 Wire=28 ExecState=0
+
+== 4 PN VI[Block Diagram]
+   predict: Property +1
+   result : 108  (0.1 s)
+
+== 4-wire Open VI Reference.'vi reference' -> PN.reference (branch)
+   predict: ok
+   result : after SubVI=7 Wire=28 ExecState=0  (0.1 s)
+
+== 5a drop Get Controls.vi
+   predict: SubVI +1
+   result : after SubVI=8 Wire=28 ExecState=0  (0.1 s)
+
+== 5b PN.'Diagram' -> Get Controls.'Diagram in'
+   predict: Wire +1
+   result : after SubVI=8 Wire=29 ExecState=0  (0.1 s)
+
+== 5c create_control on Get Controls.'Control Names'
+   predict: a string-array control
+   result : ([{'i': 8, 'class': 'ControlTerminal', 'uid': 742, 'pos': (554, 852), 'owner': 'TopLevelDiagram'}], 'Control Names')  (0.2 s)
+   Control Names control: ['Control Names']
+
+== 6a build_index_array
+   predict: IndexArray +1
+   result : 111  (0.1 s)
+
+== 6b connect Get Controls.'Control Terminals' -> IA.array
+   predict: (1, x)
+   result : (1, 0)  (0.0 s)
+
+== 6c IA.element -> While.'Stop Condition'
+   predict: Wire +1, ExecState 1
+   result : after SubVI=8 Wire=32 ExecState=1  (0.1 s)
+
+== 7 While.'error out' -> 'error out' indicator (last: wire_indicators needs ExecState 1)
+   predict: branch
+   result : 0.022938013076782227  (0.0 s)
+   Exit While Loop terminals: [('Diagram in', 471), ('Conditional Terminals', 0), ('Loop Terminal Types', 0), ('', 0), ('Diagram out', 0), ('Outputs', 476), ('Outputs', 0), ('Shift Registers', 534), ('Shift Registers', 0), ('Stop Condition', 771), ('', 0), ('error in (no error)', 615), ('', 0), ('', 0), ('', 0), ('error out', 618)]
+donor md5 unchanged: True
+
+VERDICT: OpExitWhile_v0 BUILT and SAVED (structural) - test next
+BGRUN END rc=0 after 21s

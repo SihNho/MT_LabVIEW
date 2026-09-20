@@ -1,0 +1,50 @@
+BGRUN START 2026-09-19 17:47:45 limit 12.0 min: py -u tools/bench/s0_terminal_names.py
+=== S0 TERMINAL NAMES (read-only) ===
+
+-- OpReport_v3.vi
+   node #124 (index 1) label 'Traverse for GObjects.vi'
+       [ 0] 'error out'                        source=True  wire=425
+       [ 1] '# of Refs'                        source=True  wire=303
+       [ 2] 'References'                       source=True  wire=188
+       [ 3] 'dup VI Refnum'                    source=True  wire=0
+       [ 4] ''                                 source=False wire=0
+       [ 5] 'Other Refnum'                     source=False wire=0
+       [ 6] 'Traverse Generated Code (F)'      source=False wire=0
+       [ 7] 'Traverse Target'                  source=False wire=415
+       [ 8] 'error in (no error)'              source=False wire=590
+       [ 9] ''                                 source=False wire=0
+       [10] 'Class Name'                       source=False wire=373
+       [11] 'VI Refnum'                        source=False wire=467
+  PASS T0 the Traverse node was found on OpReport_v3  [124]
+   SOURCE terminal names, exact bytes: ['error out', '# of Refs', 'References', 'dup VI Refnum']
+  PASS T1 exactly one of {'References','GObject Refs'} is a real SOURCE name  all names ['error out', '# of Refs', 'References', 'dup VI Refnum', '', 'Other Refnum', 'Traverse Generated Code (F)', 'Traverse Target', 'error in (no error)', '', 'Class Name', 'VI Refnum']
+
+-- KernelBuilder_v1.vi
+   node #157 (index 1) label 'Close Reference'
+       [ 0] 'error out'                        source=True  wire=2813
+       [ 1] 'error in (no error)'              source=False wire=2436
+       [ 2] 'reference'                        source=False wire=1587
+  PASS T2a the Close Reference donor node was found  [157]
+   SINK terminal names: ['error in (no error)', 'reference']
+   NON-ERROR sink (the refnum input): ['reference']
+  PASS T2 exactly one non-error SINK on Close Reference  ['reference']
+
+-- OpWireSource_v5.vi
+   node #124 (index 1) label 'Traverse for GObjects.vi'
+       [ 0] 'error out'                        source=True  wire=425
+       [ 1] '# of Refs'                        source=True  wire=303
+       [ 2] 'References'                       source=True  wire=188
+       [ 3] 'dup VI Refnum'                    source=True  wire=0
+       [ 4] ''                                 source=False wire=0
+       [ 5] 'Other Refnum'                     source=False wire=0
+       [ 6] 'Traverse Generated Code (F)'      source=False wire=0
+       [ 7] 'Traverse Target'                  source=False wire=415
+       [ 8] 'error in (no error)'              source=False wire=590
+       [ 9] ''                                 source=False wire=0
+       [10] 'Class Name'                       source=False wire=373
+       [11] 'VI Refnum'                        source=False wire=467
+  PASS T3 OpWireSource_v5 carries the same Traverse node  [124]
+  PASS T3b its terminal names are identical to OpReport_v3's  
+
+GATES: 6 PASS / 0 FAIL
+BGRUN END rc=0 after 5s

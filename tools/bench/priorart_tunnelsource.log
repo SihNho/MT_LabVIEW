@@ -1,0 +1,98 @@
+BGRUN START 2026-09-17 13:51:51 limit 20.0 min: py -u tools\prior_art_review.py --plan-file C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\97b1695e-68c2-4985-8cac-1ca3097b3b15\scratchpad\plan_tunnelsource_onehop.md --slug tunnelsource-onehop --trigger new-op
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_tunnelsource-onehop.txt (18284 chars)
+OUTCOME: ANSWERED (457s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-tunnelsource-onehop.md
+COST: $5.0663  in 50 / out 33735 / cache-create 232648 / cache-read 3792372  (453s, 42 turn(s))
+--- ANSWER ---
+Prior-art review complete — read-only: no lock taken, no build, no edit, no `.vi` opened, no hardware touched. (The plan file could not be written — `Write` is disabled this session — so the review is here in full.)
+
+**5 findings, 0 `novel`.** The composition route is the right one to prefer, but it is already implemented twice in working code; the "chain" premise that shaped both this plan and the review before it is a hard-coded template string, not a measurement; and the 1055 that §11q.2 calls "cause unrecorded" has a cause readable from the files — the failing caller never sets the op's UID input.
+
+---
+
+# PART A — THE DIRECTION
+
+## A1 — cleared, not settled elsewhere
+`docs/d1-build-plan.md:689-700` (§11r, today) *is* the judgement decision, and `:719` (§11p) fixes the two-artifact budget. Nothing in `STATUS.md`, `docs/` or `archive/` decides against it. No slug.
+
+## A2 — no surviving refutation
+`docs/d1-route-b-plan.md:316-321` argues the opposite (*"there is no named origin to find … B never asks the question"*), but its force was the **named**-origin requirement, which `OpConnectNested_v1` removed (`docs/toolkit-capabilities.md:56`, FUNCTIONAL warm and cold). Not a refutation of §11r. No slug.
+
+## A3 `contradicted` — "the machine's own account" is a literal in the recipe, and it fired on a row that HAD a resolved source
+
+- `tools/recipes/build_d1_v0.py:1012-1018` prints *"the value comes from further out through more unnamed tunnels"* for **every** `from-tunnel` row whose `outer_source` is not a **NAMED node** — `if osrc.get("kind") != "node" or not osrc.get("name") …`.
+- `tools/bench/build_d1_v0_run7.log:317` prints it for `#376 t7` while quoting a **resolved** source in the same line: `({'kind': 'node', 'diagram': '19', 'uid': 637, 'i': 37, 'name': '', 'is_source': True})`. That row's blocker was the empty `name` — addressing, which v1 removed.
+
+**Scope:** the sentence's evidentiary status and the "16 rows are a CHAIN" premise built on it (`d1-build-plan.md:740-743`). It does **not** claim the other 16 rows do resolve — only that no run has measured that they do not.
+
+## A4 `unread-evidence` — the read §11r specifies has already been run on the main VI, and returned an owner class the plan's OUT does not cover
+
+`tools/bench/diag_autofocus_border.log:19-26` walked a wire's whole `Terms[]` with `OpWireSource_v5`, printing `source=`, owner class and owner uid per terminal — the plan's exact output, on the real VI, read-only:
+
+```
+:20  wire 3268 Terms[0] source=True owner 'Diagram' uid 639 …
+:26  RESULT wire 3268 driven by ('Diagram', 639); sinks [… ('LoopTunnel', 2213) …]
+```
+
+Published at `docs/camera-acquisition-facts.md:225-230` — **two of the three** wires read that way are driven by `Diagram` 639 — with the consequence at `:235-237`: *"A source terminal owned by a `Diagram` is the control-terminal signature … the label comes from `panel_wiring`, not from the signature."*
+
+The plan's OUT enumerates two owner cases (node → `Nodes[]/Terminals[]` index; tunnel → tunnel index). **Diagram-owned source terminals are a third**, they are the commonest one measured so far, and they carry no `Nodes[]/Terminals[]` index for `OpConnectNested_v1` to address. `#2213` — one of the 17 rows — is a sink on that very wire.
+
+**Scope:** the OUT case enumeration and P3's oracle. It does not say the outer-terminal hop is wrong.
+
+---
+
+# PART B — THE ARTIFACT
+
+## B1 — cleared on the name
+`claudeDev` holds `OpTunnels_v0.vi`, `OpTunnelRead_v0.vi`, `OpTunnelInd_v0.vi`; no `OpTunnelSource*`.
+
+## B2 `already-failed` — the 1055 has a cause in our files, and it is the CALLER, not `OpWireSource_v5`
+
+The op is **UID-addressed**: `docs/toolkit-capabilities.md:48` — *"addressed by UID, so no traverse index is involved"*; the UID input is `"UID 2"` (`tools/bench/opwiresource_v5_labels.json:7`).
+
+The wrapper that failed 38/38 never sets it:
+
+- `tools/recipes/diag_d1_full_route.py:265-273` (docstring `:253` = *"build_opstopfromnode_v0.py:350-388 verbatim"*; same code at `tools/recipes/build_opstopfromnode_v0.py:368-376`) sets `"vi path"`, `"Class Name"="Wire"`, `"index"` = a **Traverse index** and `term_index` — and never `lab["uid_in"]`.
+- The callers that WORK do: `tools/recipes/build_opwiresource_v5.py:161` — `vi.SetControlValue(labels["uid_in"], wire_uid)` — used by `tools/bench/diag_d1_step0.py:75-76` and `tools/bench/diag_autofocus_border.py:48`.
+- And they got right answers **with the same 1055 present as the documented terminator**: `tools/bench/diag_d1_step0.log:21-22` — `wire 10850 Terms[2] … error 1055` then `wire 10850 -> {'owner_class': 'DigitalNumericConstant', 'owner_uid': 10739 …}`; ten wires resolved at `:21-58`. `docs/NAMES.md:944`: *"Walk `term index` 0,1,2… until error 1055 = past the end"*.
+
+With `UID 2` at 0 the cast has no object, `Wire.Terms[]` is empty, and term index 0 is already past the end — which is exactly what the failure says: `"error column at t0"` for all 38 wires (`tools/bench/diag_d1_full_route.json:49-52`, `:54-202`).
+
+Consequences for the plan as written:
+1. **P1/P2 buy a measurement of a hypothesis the files already exclude** ("the op VI itself is broken on disk / the target was ExecState 0"). `diag_d1_step0.log:21-58` is the op working on the real VI.
+2. **P2's control cannot be run as described.** `read_terminal` hard-codes the target: `build_opwiresource_v5.py:161` sets `"vi path"` to `MAIN` (`:35`, imported from `build_opconstvalue_v1`) — the ORIGINAL — so "wire 10850 on the working copy" reads the original instead; the other wrapper reproduces the defect above. `docs/NAMES.md:945` says the published 12/12 was *"Verified on the main VI"*, not on a copy.
+3. Reusing either wrapper repeats the cause. The same defect is still live in `build_opstopfromnode_v0.py:350-388` — it is what `docs/toolkit-capabilities.md:51` records as the open *"T6 (`OpWireSource_v5` returned no terminals for w147)"*.
+
+**Scope:** the back half's precondition and gates P1/P2. It does **not** claim the op is defect-free on a freshly copied target — only that the recorded failure is explained by the caller, and that no run has yet addressed the op by UID and failed.
+
+## B3 `helper-exists` — the composition is already implemented twice, and the front half is inside built ops
+
+- **The full composition, working and measured:** `tools/bench/diag_d1_step0.py:375-395` censuses every tunnel (gate `G3a` = 132 LoopTunnels) and `:432-455` resolves the remaining boundary wires with `OpWireSource_v5`, writing `resolved_boundary`/`tunnels`/`wiresource` to `d1_step0_census.json` — `tools/bench/diag_d1_full_route_run2.log:15` records **91/91**.
+- **The one hop, with the plan's own rationale already in its comment:** `tools/bench/d1_rewire_map.py:205-214` — *"A LoopTunnel is a CARRIER, not a source: the value that reaches the moved node comes from whatever drives the tunnel's OUTER wire … LabVIEW makes the new loop's tunnel itself"* — takes `out_wire` and looks up the source terminal on it. It produced the 109/109 source map (STATUS OPEN 28b).
+- **The LabVIEW-side chain, already shipped:** `tools/recipes/build_oploopcast_v0.py:21` carries `Tunnel[Outside Terminal 6356001] → Terminal[Connected Wire 634A000]`; `archive/bench-2026-09-13-array-reporter/build_optunnelind.py:16,:56,:109-110` builds 6356001 → Terminal (and records the short name `Outer Term`); `tools/gscript.py:889,:919` returns `out_wire`; `tools/gscript.py:816-824` (`node_terms`) already returns `{i, name, is_source, wire}`, the "index within its owner" the plan says it will derive.
+
+**Scope:** the construction cost and the "compose two ops" framing — this is an **edit to `d1_rewire_map.py`**, not new construction. It does not claim the iteration exists (see B4).
+
+## B4 `already-measured` — the data to follow the chain is already on disk, and one of the 17 rows is already resolved
+
+- `d1_step0_census.json` holds **all 132** LoopTunnels with `out_wire` and `in_wires` (`diag_d1_step0.py:378-385`); `main_vi_nodeterms.json` holds every diagram's nodes and terminals with `i`/`name`/`is_source`/`wire` (`d1_rewire_map.py:119-125`).
+- `d1_rewire_map.py:212-214` resolves the outer wire against **node terminals, constants and controls only** — it never consults `tun_by_wire`, built 50 lines earlier at `:152-158` from the same census. The tunnel→tunnel hop was never *tried*; its data was already in the same dict.
+- `#376 t7` is already resolved offline (`build_d1_v0_run7.log:317`), so P3's three-row oracle has at most one row that needs the reader, and P4 is at most 16 rows.
+
+**Scope:** the run's necessity and P3/P4's counts. It does not claim the offline join will resolve all 16 — it claims that has never been measured and costs no LabVIEW to measure.
+
+---
+
+```
+PRIOR-ART: contradicted      (A3 — tools/recipes/build_d1_v0.py:1012-1018 + tools/bench/build_d1_v0_run7.log:317 vs docs/d1-build-plan.md:740-743 — covers the evidentiary status of "the value comes from further out through more unnamed tunnels": a literal printed whenever outer_source is not a NAMED node, fired on a row whose source WAS resolved; does NOT claim the other 16 rows resolve)
+PRIOR-ART: unread-evidence   (A4 — tools/bench/diag_autofocus_border.log:19-26 + docs/camera-acquisition-facts.md:225-230,:235-237 vs the plan's OUT spec — the same read has been run on the main VI and returned source terminals whose Generic.Owner is a Diagram (639): a third owner case with no Nodes[]/Terminals[] index, identifiable only via panel_wiring; does NOT say the outer-terminal hop is wrong)
+PRIOR-ART: already-failed    (B2 — tools/recipes/diag_d1_full_route.py:253,:265-273 + tools/recipes/build_opstopfromnode_v0.py:368-376 + tools/bench/opwiresource_v5_labels.json:7 + docs/toolkit-capabilities.md:48 + tools/recipes/build_opwiresource_v5.py:35,:161 + tools/bench/diag_d1_step0.log:21-58 + docs/NAMES.md:944-945 — covers the 1055 precondition and gates P1/P2: the failing wrapper never sets the op's UID input while the op is UID-addressed, the working callers do and answer correctly with the same 1055 as terminator, and read_terminal hard-codes the ORIGINAL so "the control on the working copy" cannot be run as written; does NOT claim the op is defect-free on a copied target)
+PRIOR-ART: helper-exists     (B3 — tools/bench/diag_d1_step0.py:375-395,:432-455 + tools/bench/diag_d1_full_route_run2.log:15 + tools/bench/d1_rewire_map.py:205-214 + tools/recipes/build_oploopcast_v0.py:21 + archive/bench-2026-09-13-array-reporter/build_optunnelind.py:16,:109-110 + tools/gscript.py:816-824,:889,:919 — covers construction cost: tunnel census + OpWireSource_v5 + offline join is implemented and measured 91/91, the one-hop outer-wire lookup already exists with the plan's own rationale in its comment, and 6356001 → Connected Wire is inside two built ops; does NOT claim the iteration exists)
+PRIOR-ART: already-measured  (B4 — tools/bench/d1_step0_census.json via tools/bench/diag_d1_step0.py:378-385 + tools/bench/d1_rewire_map.py:119-125,:152-158,:212-214 + tools/bench/build_d1_v0_run7.log:317 — covers the LabVIEW run's necessity and P3/P4's counts: all 132 tunnels with out_wire/in_wires and every diagram's terminals are already on disk, the outer-wire lookup never consults the tunnel map it had already built, and #376 t7 is already resolved; does NOT claim the offline join will resolve all 16)
+```
+
+**The two that change what happens next.** **B2** — the 1055 is a caller defect (`UID 2` never set); repair the wrapper before spending P1/P2 on "is the op broken on disk", and do not reuse `read_terminal` unpatched, since it reads the ORIGINAL. **B3 + B4** — the chain can be followed offline today from `d1_step0_census.json` + `main_vi_nodeterms.json` by having `d1_rewire_map.py:212-214` consult the `tun_by_wire` map it already builds; that is the cheapest discriminator for whether the 16 rows have a reachable source at all, and it costs no LabVIEW run.
+
+**Checked and cleared:** no `OpTunnelSource*.vi` exists; `OpTunnels_v0` does carry `Outside Terminal` (`gscript.py:892`) and does return `out_wire` (`:919`), as the plan says; `OpWireSource_v5` does contain the `Owner → To More Specific Class → UID` cast (`toolkit-capabilities.md:48`), so the plan's answers to objections 3 and 4 stand on our own files; and §11p (`d1-build-plan.md:702-719`) authorises this artifact by name.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-tunnelsource-onehop.md
+BGRUN END rc=0 after 458s

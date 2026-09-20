@@ -1,0 +1,320 @@
+{
+ "lv": {
+  "doc": "",
+  "pos": [],
+  "neg": []
+ },
+ "op": {
+  "doc": "A cached VI reference. Op VIs are non-reentrant, so one reference each is correct.",
+  "pos": [],
+  "neg": []
+ },
+ "cluster_array": {
+  "doc": "Build the COM VARIANT for a LabVIEW '1-D ARRAY OF CLUSTERS' control.",
+  "pos": [
+   "Verified 2026-08-30: plain list leaves (), this form reads back (('IndexMode', True),)."
+  ],
+  "neg": []
+ },
+ "report": {
+  "doc": "Every object of `cls` on target's block diagram, as dicts with class/uid/pos/owner.",
+  "pos": [],
+  "neg": []
+ },
+ "count": {
+  "doc": "",
+  "pos": [],
+  "neg": []
+ },
+ "uids": {
+  "doc": "",
+  "pos": [],
+  "neg": []
+ },
+ "new_since": {
+  "doc": "The objects of `cls` that appeared since the `before` uid set.",
+  "pos": [],
+  "neg": []
+ },
+ "loop_diagram": {
+  "doc": "The body Diagram of the For Loop at `loop_pos`, selected deterministically.",
+  "pos": [],
+  "neg": []
+ },
+ "find_at": {
+  "doc": "Index of the `cls` object nearest `pos` - the deterministic selector.",
+  "pos": [],
+  "neg": []
+ },
+ "for_loop": {
+  "doc": "",
+  "pos": [],
+  "neg": []
+ },
+ "drop_subvi": {
+  "doc": "Place `subvi_path` on the target's `diagram_index`-th Diagram. Get the index from find_at.",
+  "pos": [],
+  "neg": []
+ },
+ "open_panel": {
+  "doc": "Open the target's front panel - REQUIRED before wire() AND before drop_subvi().",
+  "pos": [],
+  "neg": [
+   "Wiring a target loaded only via GetVIReference is silently declined (count"
+  ]
+ },
+ "close_panel": {
+  "doc": "Close the target's front panel. SAVE FIRST: closing the panel of a modified VI",
+  "pos": [],
+  "neg": []
+ },
+ "wire": {
+  "doc": "Node-to-node wire by terminal name. Call open_panel(target) first, and save",
+  "pos": [],
+  "neg": [
+   "Terminal, not Node, and this cannot reach them - see the skill."
+  ]
+ },
+ "revert": {
+  "doc": "Discard a VI's in-memory changes by reloading from disk (VI method Revert).",
+  "pos": [],
+  "neg": []
+ },
+ "copy_into": {
+  "doc": "Copy the object labeled `label` from `donor` INTO `target`.",
+  "pos": [
+   "(confirmed 2026-09-01) removes that blocker. Until an OpNewFPObject exists, copying from a"
+  ],
+  "neg": [
+   "Used to give an Op an `error out` indicator. NOTE (2026-09-03): \"the fleet cannot create"
+  ]
+ },
+ "move_by_label": {
+  "doc": "Copy the GObject labeled `label` out of `donor` via OpMoveByLabel_v0.",
+  "pos": [],
+  "neg": [
+   "1. revert the two Test files so stale in-memory copies cannot shadow new bytes,"
+  ]
+ },
+ "ensure_move_files_pristine": {
+  "doc": "Restore the Move example's Test-Source if a previous run left a donor in it.",
+  "pos": [],
+  "neg": []
+ },
+ "remove_bad_wires": {
+  "doc": "Edit > Remove Broken Wires on `target` (the Ctrl+B cleanup).",
+  "pos": [
+   "works reliably (injected right-clicks open nothing; see the skill)."
+  ],
+  "neg": []
+ },
+ "delete_by_label": {
+  "doc": "Delete the object labeled `label` from `target` (Generic:Delete).",
+  "pos": [],
+  "neg": []
+ },
+ "exit_loop": {
+  "doc": "Create AUTO-INDEXED output tunnels for `output_names` of a node inside a loop.",
+  "pos": [
+   "Drives OpExitLoop_v0 (erdosmiller `Exit For Loop.vi`). Verified 2026-08-29: three"
+  ],
+  "neg": []
+ },
+ "wire_indicators": {
+  "doc": "Branch a node's output terminals onto EXISTING front-panel indicators by label.",
+  "pos": [],
+  "neg": [
+   "check cannot verify success. This checks ExecState instead: a break raises; a",
+   "- An Op CANNOT edit itself while running (silent no-op, ExecState stays 1) -"
+  ]
+ },
+ "loop_kernel": {
+  "doc": "ONE call: parallel For Loop + kernel subVI inside + named tunnel wiring.",
+  "pos": [],
+  "neg": [
+   "output arrives empty - root cause of the original zero-wire runs, never fixed,"
+  ]
+ },
+ "set_index_mode": {
+  "doc": "Write a LoopTunnel's IndexMode in `target` (0 = regular/non-indexed, 1 = auto-indexed).",
+  "pos": [
+   "are documented - anything else is rejected here (peer-verified, labviewwiki"
+  ],
+  "neg": []
+ },
+ "wire_control": {
+  "doc": "Wire FRONT-PANEL CONTROLS to a node's named inputs - the one thing OpWire_v1",
+  "pos": [],
+  "neg": []
+ },
+ "exec_state": {
+  "doc": "",
+  "pos": [],
+  "neg": []
+ },
+ "gui_save": {
+  "doc": "Save a BROKEN VI by focusing its window and sending Ctrl+S.",
+  "pos": [],
+  "neg": []
+ },
+ "save": {
+  "doc": "Persist the in-memory edits. Guarded to claudeDev + explicit allowlist: an",
+  "pos": [],
+  "neg": []
+ },
+ "build_kernel": {
+  "doc": "SUPERSEDED by loop_kernel(). Places an UNWIRED loop + kernel; kept for regression.",
+  "pos": [],
+  "neg": [
+   "SUPERSEDED by loop_kernel(). Places an UNWIRED loop + kernel; kept for regression.",
+   "Its `tunnel`/`indexing` arguments are INERT: OpForLoop_v0's tunnel creation has never"
+  ]
+ },
+ "main": {
+  "doc": "",
+  "pos": [],
+  "neg": []
+ },
+ "build_invoke": {
+  "doc": "Create an Invoke Node on `target`'s diagram: class `cls` (\"VI Server:Terminal\", \"VI Server:VI\",",
+  "pos": [],
+  "neg": []
+ },
+ "build_property": {
+  "doc": "Create a Property Node on `target`'s diagram: class `cls` (\"VI Server:GObject\", ...),",
+  "pos": [
+   "Verified 2026-09-06: (\"632A800\", False) with \"VI Server:GObject\" -> 'GObj / Position' node."
+  ],
+  "neg": []
+ },
+ "delete_object": {
+  "doc": "Delete the `index`-th object of Traverse class `cls` on `target` (Generic.Delete over a",
+  "pos": [],
+  "neg": []
+ },
+ "move_object": {
+  "doc": "Move the `index`-th object of class `cls` (Traverse order, same as report()) on `target` to the",
+  "pos": [
+   "on 2026-09-06 from OpDelete_v0: build_invoke + wire + wire_control; verified IndexArray -> (1200,900)"
+  ],
+  "neg": []
+ },
+ "build_index_array": {
+  "doc": "Place an Index Array primitive on `target`'s top-level block diagram at `location` (erdosmiller",
+  "pos": [],
+  "neg": [
+   "`source_terminal_index`) raised error 1304 (\"Index Count\") for every terminal tried, so the node"
+  ]
+ },
+ "node_rank": {
+  "doc": "WRONG in general — kept as a warning. Nodes[] is CREATION order; uid rank matched it on GUIBENCH_v0 only",
+  "pos": [],
+  "neg": []
+ },
+ "create_control": {
+  "doc": "Create a front-panel control wired to terminal `terminal_index` (Node.Terminals[] order = the Context",
+  "pos": [],
+  "neg": []
+ },
+ "create_indicator": {
+  "doc": "Indicator wired to terminal `terminal_index` of Nodes[node_index] (Terminal.Create Indicator 6349C02 —",
+  "pos": [],
+  "neg": []
+ },
+ "connect_terminals": {
+  "doc": "Wire Nodes[src_node].Terminals[src_term] (source) into Nodes[sink_node].Terminals[sink_term] (sink) on",
+  "pos": [
+   "CREATION order, Terminals[] the Context-Help index). ~0.04 s. Semantics verified on a fresh Index Array:"
+  ],
+  "neg": []
+ },
+ "fp_labels": {
+  "doc": "[(index, label, is_indicator)] for every front-panel object of `target` in tabbing order",
+  "pos": [],
+  "neg": []
+ },
+ "node_info": {
+  "doc": "[(Nodes[] index, style name, label text)] for the top-level block-diagram nodes of `target` in",
+  "pos": [],
+  "neg": []
+ },
+ "remove_bad_wires_scripted": {
+  "doc": "LabVIEW's Ctrl+B by script: VI.'Block Diagram:Remove Bad Wires' (410) on `target` (OpRemoveBadWires_v0,",
+  "pos": [],
+  "neg": []
+ },
+ "net_map": {
+  "doc": "Connectivity of one diagram of `target` (Traverse \"Diagram\" index; 0 = top level), read headlessly with",
+  "pos": [],
+  "neg": []
+ },
+ "print_net_map": {
+  "doc": "",
+  "pos": [],
+  "neg": []
+ },
+ "set_auto_error_handling": {
+  "doc": "Write VI.'Automatic Error Handling' (242) of `target` — OpSetAutoErr_v0 (2026-09-07). FALSE silences the",
+  "pos": [],
+  "neg": []
+ },
+ "connect2": {
+  "doc": "Wire top-level Nodes[src_node].Terminals[src_term] into Nodes[sink_node].Terminals[sink_term] of ANY diagram",
+  "pos": [],
+  "neg": []
+ },
+ "set_node_label": {
+  "doc": "Write the label of Nodes[node_index] of Traverse \"Diagram\"[diagram_index] on `target` (OpSetLabel_v0, built by",
+  "pos": [],
+  "neg": []
+ },
+ "move_out": {
+  "doc": "Move Nodes[node_index] of Traverse \"Diagram\"[diagram_index] to the TOP-LEVEL diagram of `target` at `position`",
+  "pos": [],
+  "neg": []
+ },
+ "build_clfn": {
+  "doc": "Place a CLFN on `target` calling `fn` of `dll` with the parameter list `flat_hex` (flattened Parameter Info array,",
+  "pos": [],
+  "neg": []
+ },
+ "conpane": {
+  "doc": "The connector pane of `target` as {terminal index: control label}, with None for a FREE terminal (OpConPane_v0,",
+  "pos": [],
+  "neg": []
+ },
+ "conpane_assign": {
+  "doc": "Assign the front-panel control `control_label` of `target` to connector-pane terminal `terminal_index`",
+  "pos": [
+   "(ConnectorPane.Assign Control To Terminal 239A8000 — OpConPaneAssign_v0, 2026-09-10). Verified on TRACK_kernel_v1."
+  ],
+  "neg": []
+ },
+ "make_default": {
+  "doc": "Set `values` ({control label: value}) on `target` through VI Server, then make ALL current front-panel values the",
+  "pos": [],
+  "neg": []
+ },
+ "build_case": {
+  "doc": "Place a Case Structure on `target`'s top-level diagram (erdosmiller `Create Case Structure.vi` via OpBuildCase_v1,",
+  "pos": [],
+  "neg": [
+   "old integer \"2\" — trips error 1302 `Frame Names` INSIDE the library VI, an 8 s dialog no sink of ours can catch."
+  ]
+ },
+ "field": {
+  "doc": "",
+  "pos": [],
+  "neg": []
+ },
+ "call": {
+  "doc": "",
+  "pos": [],
+  "neg": []
+ },
+ "watchdog": {
+  "doc": "",
+  "pos": [],
+  "neg": []
+ }
+}

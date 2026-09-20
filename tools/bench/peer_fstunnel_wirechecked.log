@@ -1,0 +1,53 @@
+BGRUN START 2026-09-18 10:17:56 limit 17.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role priorart -Kind fact -Slug priorart-fstunnel-wirechecked -TimeoutSec 840 -TaskFile 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\3a05e9cc-c707-47b5-ad8a-c65c069908d7\scratchpad\task_priorart_fstunnel_wirechecked.md'
+OUTCOME: ANSWERED (239s)  model: opus (effort high; peer.ps1 default for role priorart)  archived: archive\peer\2026-09-18-priorart-fstunnel-wirechecked.md
+COST: $3.3253  in 28 / out 17578 / cache-create 217305 / cache-read 1425418  (237s, 24 turn(s))
+--- ANSWER ---
+**Verdict: NOT novel.** Verification by terminal identity is this project's *documented standing rule*, already implemented six times under the name `connect()`, and the false-negative branch of the count assertion is written in a comment **inside that very assertion**.
+
+---
+
+## (1) The helper already exists — six recipes, same function
+
+| file:line | what it is |
+|---|---|
+| `tools/recipes/build_opstopfromnode_v0.py:180-193` | `connect(src_uid, src_name, dst_uid, dst_name, branch=False, tag="")` — *"Wire by name, verified by the SAME wire uid on BOTH ends - never by a count, never by ExecState (docs/toolkit-capabilities.md row 37)."* Body = `wire_checked` steps 2–3 exactly: call `g.wire`, re-walk, read the source-side and sink-side `.wire`, `ok = bool(a) and a == b`, raise on mismatch. |
+| `tools/recipes/build_opconnectnested_v1.py:196-209` | same function; docstring says *"build_opconnectnested_v0.connect verbatim"* |
+| `tools/recipes/build_opconnectnested_v0.py:158` | the original |
+| `tools/recipes/build_opwiresr_v0.py:155-166` | same, *"row 37: never by count, never by ExecState"* |
+| `tools/recipes/build_opmovebyindex.py:81-87` | same, reported through `check()` |
+| `tools/recipes/build_opcreateconstonterm_v0.py:160` | same signature |
+| `tools/recipes/build_opaddshiftreg_v0.py:201-212` | the first one — the A1b gate *is* wire-uid equality |
+| `tools/recipes/build_track_v6_core.py:111-139` | `wire_sub(...)` — the **strictly more general** version: same diagram ⇒ uid equality; across a border ⇒ one new `LoopTunnel`, `out_wire == source`, `in_wires == [sink]`, `IndexMode 0`, clean error fields |
+
+And the recipe under review **already used the pattern itself** before the change — `tools/recipes/build_opfstunnelterm_v0.py:462-467`, gate `B4b`.
+
+## (2) The behaviour is already on record — code, docs, and an archived review
+
+- `tools/gscript.py:1327-1329`, the comment inside the assertion the recipe died on: *"A BRANCH from an already-wired source does NOT add a Wire object (the wire owns all its sinks), so this check misreads a successful branch as a decline. For branches pass branch=True and verify by effect."*
+- `docs/NAMES.md:785-788` — logged 2026-09-14 as one of *"two COM/recipe traps … both of which cost a batch"*, with the remedy stated: *"Verify a branch by reading the **wire UID on both terminal ends** (`node_terms`): a real branch shares the existing Wire object, so the two UIDs are equal."*
+- `archive/peer/2026-09-14-addshiftreg-fail1-branch-or-decline.md:66-83` (codex refuting "unchanged count = branch succeeded") and `:129-154` — *"equality of the two terminal-reported wire UIDs is the discriminator that raw wire count lacks"*; `:176-195` records it measured and adopted.
+- `docs/toolkit-capabilities.md:138`; earlier firings of the same false negative in `archive/bench-2026-09-14-stage2-toolkit/build_opexitwhile.log:23` and `archive/bench-2026-09-14-rotor-sign/build_setcommand_signed.log:151,165`.
+
+The cycle-21 measurement (`tools/bench/diag_fstunnel_wire_semantics.json`) re-derived on hardware what is printed two lines above the raise.
+
+## (3) Two limits already measured that the change does not carry
+
+**(3a) uid equality does not prove the wire is GOOD.** `docs/NAMES.md:861-867` (measured 2026-09-15, `tools/bench/build_opwiresource_v0.log`): *"LabVIEW joins type-incompatible terminals and draws a broken wire, whose uid still reads identically at both ends. Gate `exec_state == 1` after any wire whose types are not obviously compatible."* The measured case is a **property-node `reference` downcast** — the shape of call sites `:441`, `:444`, `:452`. Corroborated by `archive/2026-09-16-status-cycles-8-10-narrative.md:146` and `.claude/skills/labview-automation/references/gui-recipes.md:283-290` (the 3/3 "branch breaks the diagram" cases were **all TYPE mismatches**). The recipe's `B4`/`B5` ExecState gates (`:76-77`, `:464-467`) are the net that catches this — but the docstring at `:290-291` enumerates only *declined* and *wrong endpoint* and records no false positive.
+
+**(3b) the unconditional equal-and-non-zero test is documented-wrong across a border — scope only.** `docs/NAMES.md:822-823`: *"A border-crossing wire is TWO Wire objects through a tunnel (uids differ at the two ends — never gate a cross-border wire on uid equality…)"*; `archive/2026-09-17-status-d1-route-a-run9.md:15`; concrete cost at `tools/recipes/build_track_v6_core.py:112-116` (*"'New Image' -> 'Image' read 531/506 and my equal-uid gate stopped the build"*). `gscript.wire`'s count test tolerates crossings (`tools/gscript.py:1322-1324`); `wire_checked` does not, so it is **strictly narrower** than what it replaces. **It does not hit the six call sites** — all read through `sweep(op)`, diagram 0 only (`build_opfstunnelterm_v0.py:358-359`), every node created on diagram 0 (`:406, :436, :439, :442, :447, :450`).
+
+## The one ingredient with no prior instance: `branch=(src_before != 0)`
+
+Every existing helper takes `branch` as a caller argument (`build_opstopfromnode_v0.py:180`, `build_opconnectnested_v1.py:196`, `build_opwiresr_v0.py:155`, `build_opmovebyindex.py:81`, `build_opcreateconstonterm_v0.py:160`, `build_track_v6_core.py:111`). **Nothing contradicts the derivation:** `branch` never reaches LabVIEW — `gscript.wire` sets no control from it (`tools/gscript.py:1310-1318`); it only guards the count assertion at `:1325`. So deriving it changes which assertion runs, nothing about the edit. No file records a case where a wired source had to be connected non-branching, or the converse, because the flag has no such meaning in this codebase. The one recorded asymmetry runs the other way — `tools/gscript.py:1296-1306`, LabVIEW may MERGE a crossing segment (+1 where +2 was expected), which is why the bound is a range — and it argues *for* the identity test.
+
+---
+
+PRIOR-ART: helper-exists
+PRIOR-ART: already-built
+PRIOR-ART: settled-already
+PRIOR-ART: already-measured
+PRIOR-ART: unread-evidence
+PRIOR-ART: contradicted
+
+*(Note: the `Write` tool is disabled in this session, so this review exists only as this answer — nothing was written to disk, no lock taken, nothing built or run.)*
+BGRUN END rc=0 after 239s

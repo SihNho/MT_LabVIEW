@@ -1,0 +1,11 @@
+BGRUN START 2026-09-06 17:36:51 limit 12.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & .\tools\peer.ps1 -Agent codex -Slug connect-ladder-plan-attack -Task (Get-Content -Raw tools/bench/peer_task_connect.txt)
+OUTCOME: ANSWERED (86s)  archived: archive\peer\2026-09-06-connect-ladder-plan-attack.md
+--- ANSWER ---
+Verdict: the ladder is technically plausible, but indexing `Diagram.Nodes[]` is not a safe object-identification scheme. The most likely failure is selecting the wrong node, followed by assuming generic `Node.Terminals[]` indices for growable nodes such as Index Array.
+
+1. `Diagram.Nodes[]` order
+
+**Verdict: undocumented; do not assume it matches `Traverse for GObjects.vi`.**
+
+`AbstractDiagram.Nodes[]` only promises ?�references to all the nodes in the diagram.??It specifies no ordering contract. [LabVIEW Wiki: `AbstractDiagram.Nodes[]`](https://www.labviewwiki.org/wiki/AbstractDiagram_class/Nodes()_property)
+BGRUN TIMEOUT killed after 720s (limit 12.0 min)

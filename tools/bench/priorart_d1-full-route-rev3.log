@@ -1,0 +1,124 @@
+BGRUN START 2026-09-17 09:09:08 limit 20.0 min: py tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/plan_d1_full_route3.md --slug d1-full-route-rev3 --trigger direction-change
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_d1-full-route-rev3.txt (14871 chars)
+OUTCOME: ANSWERED (510s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-d1-full-route-rev3.md
+COST: $5.1799  in 58 / out 36408 / cache-create 191918 / cache-read 4700423  (507s, 44 turn(s))
+--- ANSWER ---
+Write is disabled here, so the review is delivered as text. No lock taken, nothing built, edited or run. The 14 findings of `2026-09-17-priorart-d1-full-route.md` and `…-rev2.md` are not re-litigated.
+
+---
+
+# PRIOR-ART REVIEW — `tools/recipes/diag_d1_full_route.py` REV 3 (cycle 15, D1 PHASE "full")
+
+**6 findings, 0 novel.** Four of them land on P1b and P2a — the two halves REV 3 kept as "genuinely unrecorded".
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 `already-measured` — P1b's whole subject, w3268, was resolved from the machine on 2026-09-16 with the same op
+
+REV 3 keeps P1b as the one reader call the stored resolution does not cover, predicting w3268 and citing the rev1 disposition (`tools/recipes/diag_d1_full_route.py:85-89`). That call has already been made, on the original itself, read-only, md5 unchanged:
+
+- `tools/bench/diag_autofocus_border.py:50-54` lists `(3268, "the modulo's dividend - assumed to be the frame index")` among the three wires; `:48` imports `read_terminal` from `build_opwiresource_v5` — **the same `OpWireSource_v5`** the recipe's `wire_source()` drives (`diag_d1_full_route.py:237-272`).
+- `tools/bench/diag_autofocus_border.log:19-26` — six terminals read, ending
+  `RESULT wire 3268 driven by ('Diagram', 639); sinks [('Function', 2136), ('SelectorTunnel', 3045), ('LoopTunnel', 2213), ('Function', 10068), ('SubVI', 1114)]; 1 source terminal(s) of 6 read`.
+- Published: `docs/camera-acquisition-facts.md:225-230`, under the heading *"Read from the machine, 2026-09-16 (`tools/bench/diag_autofocus_border.log`, `OpWireSource_v5`, MAIN md5 unchanged)"*.
+
+**Scope.** Covers `wire_source(copy, 3268)` as a measurement of **the source**. It does **not** cover the sink list: `diag_autofocus_border.py:62` is `for i in range(6)`, so terminals 6+ were never read, while `docs/frame-loop-wire-graph.md:151` names six sinks for this wire. Re-running with `max_terms=8` to **complete the sink enumeration** is legitimate and this finding releases on that; re-running to learn the source is not.
+
+### A2 `contradicted` — P1b's predicted content is the opposite of what the machine returned, including the rule-1a clause
+
+- Plan: `diag_d1_full_route.py:86-89` — *"Predicted content: w3268 (six sinks … and **no source among nodes, tunnels, registers, constants or panel terminals**). **If its owner is `WhileLoop #637`, the source is the frame loop's ITERATION terminal `i`**, and that is a rule-1a FACT about moving `#376` to 1.7."*
+- Machine: `tools/bench/diag_autofocus_border.log:20` — `wire 3268 Terms[0] source=True owner 'Diagram' uid 639`. The owner is **`Diagram` 639**, the frame loop's body diagram, not `WhileLoop #637`, and a source terminal exists.
+- What a `Diagram`-owned source terminal means here is already written down: `docs/camera-acquisition-facts.md:235-237` — *"**A source terminal owned by a `Diagram` is the control-terminal signature** … A constant on the same diagram looks identical, so the label comes from `panel_wiring`, not from the signature."* That is precisely the two categories `:86-89` says the source is **not** in.
+
+So the conditional the plan carries forward as a rule-1a fact — `#376`'s `i` — is refuted on the record before the run starts.
+
+**Scope.** Covers `:86-89`'s prediction and its rule-1a conditional. It does **not** decide *which* diagram-owned object drives w3268; `camera-acquisition-facts.md:237` says that needs a `panel_wiring` label, and that read is untaken.
+
+### A3 `contradicted` — P2a's citation does not say what P2a reads. `gscript.py:1351` reads `MOVE_DST`, not the target
+
+- Plan: `diag_d1_full_route.py:94-97` and the FACT line at `:359-363` — *"The precondition `copy_by_index` needs (`gscript.py:1351-1354`: **the Target must be ExecState 1**)"*, and the code then reads `ExecState` of **`T0`** at three points (`:344-358`).
+- Machine: `tools/gscript.py:1351` is `es = exec_state(MOVE_DST)`. `MOVE_DST` is the fixed NI Move-example fixture `…\claudeDev\NIScriptingExamples\Moving Objects\Test - Moving Objects Target.vi` (`tools/gscript.py:55`), onto which the target's *bytes* are copied at `:1321` (`_copy("target -> MOVE_DST", target, MOVE_DST)`) and reverted at `:1322-1326`. The gate fires **after** the Move and after the `finish` hook (`:1339-1354`), and the result is copied back to `target` only at `:1360`.
+
+The number P2a collects is therefore the ExecState of a *different file*, at a *different path*, at a *different point in the protocol*, from the one the gate reads. Every recorded caller gates its own op instead, before the call (`build_opconstvalue_v1.py:166`, `build_opwiresource_v1.py:176`, `build_opwiresource_v2.py:143`).
+
+**Scope.** Covers the mapping of `gscript.py:1351-1354` onto `T0`'s own path in `:94-97`/`:359-363`. It does **not** claim the fixture will read a different number than `T0` would — that is unmeasured, and reading `exec_state(MOVE_DST)` is the read that matches the citation.
+
+### A4 `unread-evidence` — the discriminator candidate is in the record **three times**, one line above the plan's own citation
+
+The plan cites `drive_original_copy_v3.log:9-12` for the **1** (`:97-98`). The decisive line is `:7-8`, immediately before the range it quotes:
+
+```
+[  13.3s]   com.deq  #2 preload ('…\Min_Track N beads V6_ParallelLoop.vi',)
+[  14.6s] STEP 1b original resident (read-only) COM  PASS original resident (ExecState=1)
+```
+
+`preload` is `app.GetVIReference(<the ORIGINAL>)` (`tools/bench/drive_original_copy_v2.py:205-207`, dispatched at `:739-740`) — i.e. **the whole original hierarchy is made resident before the copy is opened** at `:743-745`. The record then splits cleanly:
+
+| ExecState of a fresh claudeDev byte-copy | original preloaded first? | evidence |
+|---|---|---|
+| **1** | yes | `drive_original_copy_v3.log:7-12` · `drive_original_copy_v2.log:8-13` · `d0_clickprobe.log:7-12` |
+| **0** | no | `build_d1_v0_run5.log:13-16` · `build_d1_v0_run4.log:18` · `probe_move_into_v0.log:217` |
+
+Three and three, on the same original, same claudeDev destination, all within one day. The elapsed gap between panel-open and read is ~1.3–1.4 s in **all three** of the "1" runs, so time is fully confounded with preload. P2a varies **only** elapsed time on one copy (`:349-358`, a 2 s settle) and never preload — so it cannot separate the two, and on a run with no preload it is predicted by six data points to print `0, 0, 0`.
+
+**Scope.** Covers P2a's claim to be *the* discriminator (`:94-102`). It does **not** assert preload is the cause — it has never been varied in a controlled pair, and doing that (one copy read with the original resident, one without, same instance) is one line and is the measurement still worth buying.
+
+### A5 `contradicted` — the P2 banner still announces the design rev2 B2 removed
+
+- `diag_d1_full_route.py:335` — `print("\n=== P2: `copy_by_index` with donor == target, then `move_in` …")`.
+- The same file, `:47-49` and `:155-159`, `:406`: donor == target is **dropped**; the donor is `TDONOR`, a separately named second copy.
+
+The banner is what lands in `tools/bench/diag_d1_full_route.log`, which is what the retrospective, `audit_cycle` and the next session read. A one-line edit releases it.
+
+**Scope.** Covers the string at `:335` only. Nothing else in the file still carries donor == target.
+
+---
+
+## PART B — THE ARTIFACT
+
+### B1 `already-failed` — a `copy_by_index` session that does not start on a FRESH LabVIEW instance is a recorded Errno 22 failure, and the recipe does not restart
+
+- `tools/recipes/build_track_v6_queue.py:105-109`, `fresh_labview()`: *"Run 1 (03:16): **`copy_by_index` died with Errno 22 on the Move-example Target while LabVIEW still had that VI LOADED** from the 00:3x StrToPath copy — the substitution protocol must never overwrite a loaded VI's file (peer …-strtopath-fail4 / …-queue-fail1-errno22). **A `copy_by_index` session therefore starts on a FRESH instance** (standing restart permission)."* It kills LabVIEW at `:111-114` and is called at `:121`, immediately before the copy at `:136`.
+- The helper states the same rule about itself: `tools/gscript.py:1304-1307` — *"substitute the bytes FIRST, on an instance where nothing of theirs is loaded (**the caller restarts LabVIEW before a `copy_by_index` session**)"*, and `:1309-1319` exists only to attribute that Errno 22.
+- `build_opconstvalue_v1.py:197` calls `fresh()` before its second `copy_by_index` at `:199`.
+- `diag_d1_full_route.py` calls `copy_by_index` at `:410` with no restart anywhere in the file; `g._lv = None` at `:481` clears only the Python COM handle, not LabVIEW's loaded VIs, and the run is dispatched into the long-lived instance the lock currently names.
+
+**Scope.** Covers the missing fresh-instance step before `:410`. It does **not** claim the fixtures are loaded right now — that is exactly what the recorded protocol refuses to depend on.
+
+### B2 `unread-evidence` — "provenance is the only untested variable" omits that BOTH files are relocated to the fixture paths, and the hierarchy hazard is already on file
+
+`:107-110` names provenance as the one untested variable, inheriting rev2 B1. But the protocol does not copy an object *from* `TDONOR` *into* `T0` in place: `tools/gscript.py:1321` byte-copies **both** onto `Test - Moving Objects Source.vi` / `…Target.vi` and `:1322-1326` `revert()`s them **there**, under `claudeDev\NIScriptingExamples\Moving Objects\` (`gscript.py:53-55`). Two ~473 kB copies of the main VI (`drive_original_copy_v2.log:3`) are then loaded from a directory that is not their hierarchy's.
+
+Every donor on record is small and self-contained — NI example (`build_opconstvalue_v1.py:39`), `OpReport_v3`/`OpWireSource_v5` lineage (`build_opwiresource_v1.py:177`, `build_opwiresource_v2.py:144`), `save N xyz traces.vi` (`build_strtopath.py:31`, `build_track_v6_queue.py:38`). **None is the main VI**, so REV 3's question 2 is correctly identified as unasked — but the variable it introduces is not provenance alone. The hazard class is recorded: `archive/peer/2026-09-14-setcommand-signed-fail4-openpanel-after-restart.md:38-39` — *"moving only a caller changes relative dependency resolution; NI explicitly recommends copying the hierarchy"*.
+
+**Scope.** Covers the "only untested variable is PROVENANCE" framing at `:107-110`. It does **not** predict the copy fails, and it does not touch P2c's owner-chain half.
+
+---
+
+## The five questions, answered
+
+1. **The ExecState "discriminator" is not measured, but it is also not what P2a measures (A3), and the candidate variable is already in the record six times (A4).** No file says what makes a fresh copy read 1 rather than 0. What the files do say is that all three recorded **1**s follow a `preload` of the original and all three recorded **0**s do not. P2a as written varies neither that nor the file the gate actually reads.
+2. **`copy_by_index` has never been run with a copy of the main VI as donor** — every recorded donor is a small op VI or `save N xyz traces.vi` (citations in B2). The thing the record does add is that the *target* is relocated to the fixture path too, and that a session without a fresh instance is a recorded Errno 22 (B1).
+3. **Your §11f.2 discharge is correct, and I could not break it.** `docs/toolkit-capabilities.md:46-47` describes `OpConstValue_v1` and `OpConstValueN_v1` purely as readers of `Constant.Value` 634AC00 (the `Constant.Terminal` 634AC04 hop in `:47` is read-only, to report the wire a constant drives); `tools/gscript.py:2616-2625` places a Case Structure **on `target`'s top-level diagram** from a front-panel selector by label, with a contract of *"+1 CaseStructure, +2 Diagrams, +1 wire per name"* and no constant and no primitive. `gscript.py`'s full public surface contains no constant creator. Neither named tool can produce the node; the fallback clause is reached.
+4. **Yes — `docs/camera-acquisition-facts.md:230` / `tools/bench/diag_autofocus_border.log:20-26`: w3268 is driven by `Diagram` 639, not by `WhileLoop #637`'s `i`** (A1, A2). The only part of P1b still worth a call is the sink list beyond terminal index 5.
+5. **Contradicted cited facts:** `gscript.py:1351-1354` as "the Target must be ExecState 1" (A3), P1b's predicted w3268 content and its rule-1a conditional (A2), and the P2 banner (A5). **Correctly cited and untouched:** `gscript.py:1313-1314` (identical *paths*), `gscript.py:1360`, `gscript.py:1268-1272` and the absent `finally` restore, `docs/toolkit-capabilities.md:213` releasing T6 as a control, `docs/toolkit-capabilities.md:46-47`, `:48`, `:51`, `:494`, `gscript.py:2616-2625`, `cycle15-plan.md:104`'s freeze, `build_d1_v0.py:40-47,:844-847` as the restatement source, `Comparison` in the candidate list, and `BEFORE_COUNTS` against `build_d1_v0_run5.log:14`.
+
+One non-blocking note, no slug: `move_in()` at `:202-218` is now the **third** verbatim copy of `probe_move_ctlterm_v0.py:160-178` (the second is in `build_d1_v0.py`), and `gscript.py` has no `move_in`. It is honestly cited, so it is not a finding — but the toolkit gap behind three copies is real.
+
+---
+
+```
+PRIOR-ART: already-measured  (A1 — tools/bench/diag_autofocus_border.log:19-26 + tools/bench/diag_autofocus_border.py:48,:50-54,:59-62 + docs/camera-acquisition-facts.md:225-230 vs tools/recipes/diag_d1_full_route.py:85-89,:383-391 — covers wire_source(copy,3268) as a SOURCE measurement; does NOT cover sink terminals beyond index 5, which diag_autofocus_border.py:62 never read)
+PRIOR-ART: contradicted      (A2 — tools/bench/diag_autofocus_border.log:20 + docs/camera-acquisition-facts.md:230,:235-237 + docs/frame-loop-wire-graph.md:151,:455 vs tools/recipes/diag_d1_full_route.py:86-89 — covers "no source among nodes, tunnels, registers, constants or panel terminals" and the "owner is WhileLoop #637 -> iteration terminal i" rule-1a conditional; does NOT decide which diagram-owned object drives w3268)
+PRIOR-ART: contradicted      (A3 — tools/gscript.py:55,:1321,:1322-1326,:1339-1354,:1360 + tools/recipes/build_opconstvalue_v1.py:166 + tools/recipes/build_opwiresource_v2.py:143 vs tools/recipes/diag_d1_full_route.py:94-97,:344-358,:359-363 — covers mapping the gscript.py:1351-1354 gate onto T0's own path; does NOT claim MOVE_DST reads a different number than T0)
+PRIOR-ART: unread-evidence   (A4 — tools/bench/drive_original_copy_v3.log:7-8 + tools/bench/drive_original_copy_v2.py:205-207,:739-745 + tools/bench/drive_original_copy_v2.log:8-13 + tools/bench/d0_clickprobe.log:7-12 + tools/bench/build_d1_v0_run4.log:18 + tools/bench/probe_move_into_v0.log:217 vs tools/recipes/diag_d1_full_route.py:94-102 — covers P2a's claim to BE the discriminator; does NOT assert preload is proven causal, since it has never been varied in a controlled pair)
+PRIOR-ART: contradicted      (A5 — tools/recipes/diag_d1_full_route.py:335 vs :47-49,:155-159,:406 — covers the P2 banner string that still announces donor == target; nothing else in the file carries it)
+PRIOR-ART: already-failed    (B1 — tools/recipes/build_track_v6_queue.py:105-115,:121,:136 + tools/gscript.py:1304-1307,:1309-1319 + tools/recipes/build_opconstvalue_v1.py:197,:199 vs tools/recipes/diag_d1_full_route.py:410,:481 — covers the missing fresh-LabVIEW step before a copy_by_index session; does NOT claim the Move fixtures are loaded right now)
+PRIOR-ART: unread-evidence   (B2 — tools/gscript.py:53-55,:1321,:1322-1326 + tools/recipes/build_opconstvalue_v1.py:39 + tools/recipes/build_opwiresource_v1.py:177 + tools/recipes/build_strtopath.py:31 + tools/recipes/build_track_v6_queue.py:38 + tools/bench/drive_original_copy_v2.log:3 + archive/peer/2026-09-14-setcommand-signed-fail4-openpanel-after-restart.md:38-39 vs tools/recipes/diag_d1_full_route.py:107-110 — covers "provenance is the only untested variable"; does NOT predict the copy fails, and does not touch P2c's owner-chain half)
+```
+
+**The one that changes what happens next: A4 with A3.** P2 is the run REV 3 exists for, and its gate is a number read from the wrong file (A3) by a procedure that cannot move the variable the record actually differs on (A4). The cheap fix keeps the run and costs nothing extra: start the session on a fresh instance (B1), read `exec_state` on a copy **without** preloading the original, then `GetVIReference` the original and read the same copy again — that is the controlled pair — and have `copy_by_index` report `exec_state(MOVE_DST)` at `gscript.py:1351` when it raises. P1b, meanwhile, should shrink to "complete the sink list past terminal 5", because its source answer has been on file since 2026-09-16.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-d1-full-route-rev3.md
+BGRUN END rc=0 after 511s

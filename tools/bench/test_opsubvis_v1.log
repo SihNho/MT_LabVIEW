@@ -1,0 +1,51 @@
+BGRUN START 2026-09-14 10:51:04 limit 15.0 min: py -u tools/bench/test_opsubvis.py
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\test_opsubvis.py", line 164, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\test_opsubvis.py", line 66, in main
+    expect = {o["uid"] for o in g.report_all(S, "SubVI")}
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 300, in report_all
+    raise RuntimeError(f"report_all({cls}) on {os.path.basename(target)}: {err}")
+RuntimeError: report_all(SubVI) on SCRATCH_test_opsubvis.vi: error 1012: Property Node (arg 1) in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpReportAll_v0.vi
+BGRUN END rc=1 after 0s
+BGRUN START 2026-09-14 10:53:00 limit 15.0 min: py -u tools/bench/test_opsubvis.py
+   -> PASS: T0 junk Invokes dropped on the target per call (0 = creator-free op): 0 per call
+   -> PASS: T1 purge: scratch Invoke count and ExecState unchanged after a call: Invoke 0 -> 0, ExecState 1 -> 1
+T1 scratch: 2 names ['Clear Errors.vi', 'Clear Errors.vi'], paths ['Clear Errors.vi', 'Clear Errors.vi'], uids [370, 369], err=None, 0.17 s
+   -> PASS: T1 UID set == report_all SubVI uids: op [369, 370] vs traverse [369, 370]
+   -> PASS: T1 names/paths non-empty and aligned: 2/2/2
+T2 main diagram 43: 6 subVI calls in 3.54 s, err=None
+      uid  22700  IMAQ Write TIFF File 2
+      uid   1114  WLC function sub.vi
+      uid     48  ASI_adjust focus-subvi.vi
+      uid   5058  Track N beads four-fold over-kernel-v3.vi
+      uid    376  save trace.vi
+      uid   6810  get buff image-lost frames.vi
+   -> PASS: T2 UID set == cache (diagram 43 uids n subvis): op 6 vs cache 6; missing [] extra []
+   -> PASS: T2 tracking kernel call uid 5058 present: name = Track N beads four-fold over-kernel-v3.vi
+   -> PASS: T3 diagram 0 (no subVI in cache): empty arrays, no error: names 0 uids 0 err=None 3.04 s
+   -> PASS: T3b diagram 9999 (invalid): SubVIs[] error out non-empty, arrays empty: err='error 1055: Property Node in OpSubVIs_v1.vi' uids 0 3.09 s
+   -> PASS: T2 UIDs unique (duplicate call sites keep distinct UIDs): 0 rows
+   -> PASS: T2b diagram 1 (exactly one subVI in cache): ['Simple Error Handler.vi'] uids [26582] err=None
+   -> PASS: T4 handles over 30 runs on scratch: samples [(0, 31487), (10, 31488), (20, 31487), (30, 31487)]; post-idle 31484 (-3); slope -0.01 handles/run; 10 s
+   -> PASS: T4 handles over 30 runs on main VI diagram 43: samples [(0, 31499), (10, 31527), (20, 31549), (30, 31578)]; post-idle 31578 (+79); slope +2.59 handles/run; 93 s
+   -> PASS: T5 main-VI run time: 3.54 s per run (single, diagram 43)
+   -> PASS: T6 vestigial chain with index 2 = 999: arrays still correct, no dialog: 6 uids, err(SubVIs[] error out)=None, 2.89 s
+
+################ SUMMARY ################
+  PASS  T0 junk Invokes dropped on the target per call (0 = creator-free op) 0 per call
+  PASS  T1 purge: scratch Invoke count and ExecState unchanged after a call Invoke 0 -> 0, ExecState 1 -> 1
+  PASS  T1 UID set == report_all SubVI uids                        op [369, 370] vs traverse [369, 370]
+  PASS  T1 names/paths non-empty and aligned                       2/2/2
+  PASS  T2 UID set == cache (diagram 43 uids n subvis)             op 6 vs cache 6; missing [] extra []
+  PASS  T2 tracking kernel call uid 5058 present                   name = Track N beads four-fold over-kernel-v3.vi
+  PASS  T3 diagram 0 (no subVI in cache): empty arrays, no error   names 0 uids 0 err=None 3.04 s
+  PASS  T3b diagram 9999 (invalid): SubVIs[] error out non-empty, arrays empty err='error 1055: Property Node in OpSubVIs_v1.vi' uids 0 3.09 s
+  PASS  T2 UIDs unique (duplicate call sites keep distinct UIDs)   0 rows
+  PASS  T2b diagram 1 (exactly one subVI in cache)                 ['Simple Error Handler.vi'] uids [26582] err=None
+  PASS  T4 handles over 30 runs on scratch                         samples [(0, 31487), (10, 31488), (20, 31487), (30, 31487)]; post-idle 31484 (-3); slope -0.01 handles/run; 10 s
+  PASS  T4 handles over 30 runs on main VI diagram 43              samples [(0, 31499), (10, 31527), (20, 31549), (30, 31578)]; post-idle 31578 (+79); slope +2.59 handles/run; 93 s
+  PASS  T5 main-VI run time                                        3.54 s per run (single, diagram 43)
+  PASS  T6 vestigial chain with index 2 = 999: arrays still correct, no dialog 6 uids, err(SubVIs[] error out)=None, 2.89 s
+cleanup: (-2147352567, '���ܰ� �߻��߽��ϴ�.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot clos
+BGRUN END rc=0 after 140s

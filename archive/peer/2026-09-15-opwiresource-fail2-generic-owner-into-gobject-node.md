@@ -1,0 +1,112 @@
+﻿---
+type: peer-review
+status: historical
+date: 2026-09-15
+tags: [peer-review, vi-scripting]
+---
+
+# opwiresource-fail2-generic-owner-into-gobject-node
+
+- **agent:** codex
+- **date:** 2026-09-15
+- **outcome:** ANSWERED (75s)
+- **why asked:** (Claude fills in)
+- **verdict:** unverified
+
+## Question
+
+ATTACK THIS (LabVIEW 2026 VI Scripting). tools/recipes/build_opwiresource_v0.py run 2 (log tools/bench/build_opwiresource_v0.log), using your UID-multiset oracle from archive/peer/2026-09-15-opwiresource-fail1-uid-indicator-not-created.md: creating the indicator on Generic.ClassName 6327803 works (one new panel row, uid 831, label Class Name 4, indicator True, its ControlTerminal 846); creating the indicator on GObject.UID 632A813 returns an EMPTY list from the fleet op (no new panel row, no new ControlTerminal, panel count 21 -> 21, no exception, no error text) - so H6 (the invoke declined) is confirmed and H1/H2/H3 are dead. Diagram has 11 nodes, so the 80-node walker is not involved. NEW HYPOTHESIS: the chain is Wire.Terms[] 6371003 -> Index Array[0] -> Property(VI Server:Generic).Owner 6327806 -> and I wired that Owner OUTPUT into a property node built for class VI Server:GObject (for UID 632A813). Generic is the PARENT of GObject, so Generic -> GObject is a DOWNCAST: the wire is probably BROKEN (my gate only compared wire uids on both ends, which a broken wire also satisfies), and Terminal.Create Indicator declines on a node whose reference input is broken. Questions (cite): (1) is that right - does Generic.Owner return a Generic-class reference that cannot be wired into a GObject-class property node without a To More Specific Class, and would the resulting broken wire explain a silent Create Indicator decline (no error)? (2) is there a UID property on the Generic class itself (or another cast-free identity: Generic has Class Name 6327803 - does it also expose a unique identifier)? give the property ID if it exists; (3) if a downcast is unavoidable, is To More Specific Class with target class GObject the only scripted route, or does the Owner property have a sibling that returns a GObject-typed reference directly (e.g. GObject.Owner)? (4) my planned repair - drop the UID node, keep Owner -> ClassName (which works), and identify WHICH object of that class feeds the wire with a separate base-Constant scan op (Constant.Terminal 634AC04 -> Terminal.Connected Wire 634A000 short name Wire -> GObject.UID 632A813 on a Constant-typed chain, already written as tools/recipes/build_opconstwire_v0.py) - does that second op have the same downcast problem? There the UID node consumes a Wire reference returned by Terminal.Connected Wire, and Wire is a GObject subclass, so I expect it to be an UPCAST and legal - confirm or refute; (5) a cheap in-run measurement to prove the broken-wire diagnosis: read ExecState immediately after wiring Owner -> the GObject node (expect 0) and again after deleting that node (expect 1) - better ideas?
+
+## Answer
+
+Your type diagnosis is right; the proposed explanation for the empty `Create Indicator` result is plausible but not yet proved.
+
+1. `Generic.Owner ??GObject` is an illegal downcast
+
+`Generic.Owner` is declared to return a `Generic` reference. Although the runtime referent may be a `Wire`, the compile-time wire type remains `Generic`. A parent reference cannot connect directly to an input requiring its child class `GObject`; NI?셲 own examples cast generic references with `To More Specific Class` before accessing subclass properties. Conversely, child-to-parent reference wiring is legal. [NI class-specifier documentation](https://www.ni.com/docs/en-AS/bundle/labview-api-ref/page/constants/class-specifier.html), [NI example requiring a Generic?뭩pecific cast](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YH1ACAW&l=en-CA), [NI class-wire inheritance statement](https://www.ni.com/en/support/documentation/bugs/08/archived--labview-8-5-x-known-issues-by-date.html)
+
+Therefore:
+
+```text
+Generic.Owner output ??GObject.UID reference input
+```
+
+should be a broken wire. Your UID equality gate cannot distinguish a healthy wire from a broken wire: NI explicitly says incompatible terminals can still be joined, producing a dashed wire with a red X. [NI wire documentation](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+That strongly explains why only the GObject UID branch fails while `Generic.ClassName` succeeds.
+
+However, I would not call the silent `Create Indicator` decline documented behavior. NI documents that Create Indicator creates and wires an indicator from an output terminal, but I found no NI statement that its scripting equivalent must silently return an empty array when the source terminal?셲 datatype is invalid or unresolved. [NI user-manual description](https://download.ni.com/support/manuals/320999b.pdf) Thus:
+
+- broken Generic?묰Object wire: essentially confirmed by the declared types;
+- broken input causing this particular empty return: strong hypothesis, requiring your proposed measurement.
+
+2. Generic has no documented UID property
+
+The published Generic-class example shows its property set as `Class ID`, `Class Name`, `Owner`, and `Owning VI`; it does not show UID. [NI Core 2 exercise manual](https://download.ni.com/evaluation/training/lvcore2_exercisemanual_polish_sample.pdf)
+
+Therefore I find no Generic-level unique object identifier and no Generic UID property ID to give you. `632A813` is specifically the GObject UID property in your discovered 2026 property table, not an inherited Generic property. `Class Name` is only a type identity, not an instance identity.
+
+3. A downcast is required; no direct GObject Owner sibling is evident
+
+For an arbitrary `Generic.Owner`, the normal VI Server route is:
+
+```text
+Generic.Owner
+??To More Specific Class(target = GObject)
+??GObject.UID
+```
+
+NI explicitly describes using a GObject target cast when traversing generic references before accessing GObject and descendant properties. [NI Community traversal example](https://forums.ni.com/t5/LabVIEW/Why-does-my-LabVIEW-occasionally-display-in-Chinese/m-p/1471602/highlight/true)
+
+I find no documented sibling property that returns `GObject` directly. Even selecting inherited `Owner` on a GObject property node would not necessarily change the property?셲 declared return type. That generic return is necessary because an owner can be something other than a GObject; notably, NI records that `ControlTerminal.Owner` can return the containing diagram instead of the connected node. [NI wire-to-owner discussion](https://forums.ni.com/t5/LabVIEW/Vi-Scripting-inconsistent-behaviour-of-terms-of-a-wire-owner/td-p/3309055)
+
+`To More Specific Class` is not necessarily the only conceivable scripted construction, but it is the standard and documented VI Server conversion. Its target should be a GObject class-specifier constant. [NI class-specifier documentation](https://www.ni.com/docs/en-AS/bundle/labview-api-ref/page/constants/class-specifier.html)
+
+4. The Constant.Terminal ??Connected Wire ??GObject.UID chain should be legal
+
+If `Terminal.Connected Wire` is declared as `Wire`, then:
+
+```text
+Wire ??GObject.UID
+```
+
+is child-to-parent widening/upcasting because `Wire` inherits from GObject. No `To More Generic Class` node should be required: NI states that a child-class wire can connect to a parent-class terminal. [NI inheritance/wiring statement](https://www.ni.com/en/support/documentation/bugs/08/archived--labview-8-5-x-known-issues-by-date.html)
+
+So `build_opconstwire_v0.py` does not have the same downcast defect, assuming the source terminal really is the `Connected Wire` result and not another intervening `Generic.Owner` result.
+
+One caveat: verify the property?셲 declared output class, not merely the short runtime class name `Wire`. The runtime class name alone cannot prove the wire?셲 compile-time type.
+
+5. Best cheap proof: three-state A/B/A, not just node deletion
+
+Your `ExecState` measurement is good. NI defines state `0`/Bad as non-executable and `1`/Idle as executable but not running. [NI execution-state explanation](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YIEJCA4&l=en-US), [numeric enum mapping](https://forums.ni.com/t5/LabVIEW/How-to-tell-if-VI-is-running/m-p/721963)
+
+I would measure:
+
+```text
+A. Before Owner?뭊ID wiring                       expect 1
+B. After direct Generic.Owner?묰Object.UID wire   expect 0
+C. Delete only that wire, retain the UID node    expect 1
+D. Insert Generic?묰Object cast and rewire         expect 1
+E. Create UID indicator                          expect one new indicator
+```
+
+Deleting only the wire is cleaner than deleting the entire UID node because it isolates the wire?셲 effect. Step D is the decisive positive control: if the cast restores `ExecState=1` and Create Indicator starts working, the diagnosis is closed.
+
+Also record the offending wire object?셲 UID and, if convenient, one screenshot after B. NI says an incompatible wire is visibly dashed black with a red X. [NI wire documentation](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+Bottom line: repair run 2?셲 identity path either with an explicit Generic?묰Object cast or, more economically, remove UID from that chain and use the cast-free Constant?묬onnected Wire?뭊ID scan. Your planned split is type-correct.
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+Adopted. The wire-uid-equality gate is now known to be blind to a BROKEN wire (NI joins incompatible terminals and
+draws a dashed wire), so the recipe measures ExecState in the reviewer's A/B/C order — before the wire, after
+wiring `Generic.Owner` into the GObject-class node, after deleting only that wire, and after deleting the node —
+and prints CONFIRMED/NOT confirmed rather than asserting the diagnosis. Step D (insert a `Generic → GObject` cast
+and retry) is deferred because it needs a second To More Specific Class; the identity is taken instead from the
+cast-free `Constant.Terminal → Connected Wire → GObject.UID` scan, which the reviewer confirms is an upcast and
+type-correct. Also recorded: `Generic` exposes no UID property, so class name is the only cast-free identity on
+that node. Rerun: `tools/bench/build_opwiresource_v0.log` run 3.

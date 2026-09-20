@@ -1,0 +1,56 @@
+BGRUN START 2026-09-14 13:50:07 limit 8.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent codex -Slug image-display-harness-plan -Task PLAN REVIEW (attack; brief). GOAL: close the gap left in archive/bench-2026-09-14-display-path/REPORT.md - measure the IMAQ Image Display control route (image reference wired directly to the control's terminal, NI's documented normal way) against the Picture route (construction 2.7 ms + visible paint 6.5 ms per frame at 1280x1024 U8). DONOR: NI's example 'C:\Program Files\NI\LVAddons\niimaqdx\1\examples\Vision Acquisition\NI-IMAQdx\Basic Acquisition\Acquire Single Image (Snap).vi' copied to claudeDev (copies are allowed; the original is never touched). RECIPE: copy -> open_panel -> delete every diagram node (the fleet's cleared-base pattern) and every panel object EXCEPT the Image Display indicator (delete ControlTerminals by label diff) -> drop IMAQ Create + IMAQ ReadFile (File Path control) -> wire ReadFile 'Image Out' to the Image Display indicator by label with erdosmiller Wire Indicators (gscript.wire_indicators, proven) -> auto error handling off -> save HARNESS_dispI. BENCH: same per-Run method as the display bench (disp0 = Create+ReadFile base; dispI = + Image Display terminal write), panel closed / open / closed again, 200 frames pre-read, cost = dispI - disp0 per condition; compare with disp3 (Picture route) from the same session. ATTACK: (1) does an Image Display control update when its terminal is written in a VI run headlessly via COM with the panel closed (expect ~0 cost) and does opening the panel make it paint every write (or does it coalesce like other indicators - is 'Synchronous Display' relevant)?; (2) the example's Image Display may have properties set (snapshot mode? zoom-to-fit? palette?) that change cost - which properties matter and how to read them cast-free (Control.Label only... an 'ImageDisplay' class property needs a cast) - state them as unknowns to record; (3) risk that deleting panel objects of an example VI by ControlTerminal deletion breaks the VI (e.g. the example's cluster/session controls) - the recipe requires ExecState 1 before saving; (4) is the comparison fair: Picture route paints a LabVIEW picture (GDI), Image Display paints via NI's own control - both on the UI thread? Cheapest checks.
+OUTCOME: ANSWERED (48s)  archived: archive\peer\2026-09-14-image-display-harness-plan.md
+--- ANSWER ---
+Verdict: sound direction, but the current benchmark can easily measure ?�terminal/reference assignment plus deferred repaint??instead of visible per-frame Image Display cost.
+
+1. Closed vs. open panel
+
+- Closed-panel cost should be treated as an empirical baseline, not assumed to be zero. In non-Snapshot mode, the display retains a reference to the IMAQ buffer rather than copying it, so repeated writes can be extremely cheap. [NI Vision manual](https://download.ni.com/support/manuals/371007b.pdf)
+- An open panel does not guarantee one paint per write. LabVIEW normally may reduce display-update frequency; enabling Synchronous Display is NI?�s prescribed way to keep the front panel synchronized with diagram writes. [NI performance guidance](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000kHjFSAU&l=en-US)
+- Therefore benchmark both `Synchronous Display = False` and `True`. The latter is the defensible ?�paint every frame??comparison. NI also documents that forcing pending redraws can be done through Defer Panel Updates, but that mechanism itself should stay outside the timed interval. [NI force-update guidance](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000g0R1SAI&l=en-US)
+
+Fatal check: alternate at least two visibly different images. Rewriting the same image reference or identical pixels may not invalidate the display, so 200 repetitions of one `ReadFile` result do not prove 200 paints.
+
+2. Donor properties
+
+The important unknowns to record before stripping the donor are:
+
+- Snapshot Mode ??highest risk; it copies image data and NI explicitly warns that it can reduce performance. Default is disabled. [NI Vision manual](https://download.ni.com/support/manuals/371007b.pdf)
+- Synchronous Display.
+- Zoom mode/factor, especially Zoom-to-Fit.
+- Palette or user palette.
+- Display bounds and whether the entire 1280×1024 image is visible.
+- Visible scrollbars, ROI tools, image-information area, label/caption.
+- Existing ROI/overlay state and interpolation/rendering options, if exposed in LabVIEW 2026.
+
+There is no general cast-free route to Image Display-specific properties. NI?�s documented procedure is Generic Control reference ??`To More Specific Class` ??`ImageControl`; generic `Control.Label` cannot expose Snapshot, palette, zoom, or ImageControl methods. [NI casting procedure](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000001DkcWCAS&l=en-US)
+
+Cheapest check: capture the donor?�s right-click configuration and visible layout, then use one small typed ImageControl reporter. Do not silently inherit unknown donor settings.
+
+3. Destructive clearing risk
+
+`ExecState == 1` is a necessary fleet guard but not enough evidence that the saved VI is structurally valid. After deleting diagram nodes first, verify:
+
+- every non-display terminal and corresponding panel object is gone;
+- the Image Display terminal still belongs to the retained indicator;
+- no orphaned connector-pane assignment or required typedef dependency remains;
+- the VI is runnable both immediately and after save?�close?�reopen.
+
+Make save?�close?�reopen plus a one-frame smoke run mandatory. That catches donor corruption or unsaved recompilation effects better than checking execution state alone.
+
+4. Fairness of `dispI` versus `disp3`
+
+The comparison is fair as an end-to-end choice?�Picture route versus native Image Display route?�but not as a pure renderer comparison. The Picture route constructs LabVIEW picture data; non-Snapshot Image Display ordinarily displays the underlying IMAQ buffer by reference. [NI display alternatives](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019M7zSAE&l=en-US), [NI buffer behavior](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019MA0SAM)
+
+Minimum credible matrix:
+
+- panel closed, synchronous off;
+- panel open, synchronous off;
+- panel open, synchronous on;
+- alternating frames in every condition;
+- randomized/interleaved `disp0`, `dispI`, and `disp3`;
+- identical panel size, visible image area, zoom, and window exposure;
+- report median and tail latency, not only the mean.
+
+If open/synchronous-off is cheap but synchronous-on approaches the Picture cost, the original result was coalescing. If both remain cheap while alternating frames visibly change, the native Image Display route genuinely wins. Do not claim that both paint paths execute wholly on the UI thread without a trace; the elapsed end-to-end measurements are sufficient for the engineering decision.
+BGRUN END rc=0 after 48s

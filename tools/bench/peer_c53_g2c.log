@@ -1,0 +1,79 @@
+BGRUN START 2026-09-20 06:48:12 limit 16.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c53-netmap-terms-truncation -TaskFile 'tools/bench/c53_g2c_task.md'
+OUTCOME: ANSWERED (530s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-20-c53-netmap-terms-truncation.md
+COST: $3.1620  in 26 / out 38662 / cache-create 137347 / cache-read 1548814  (526s, 22 turn(s))
+--- ANSWER ---
+Write is disabled in this session (correct for a read-only peer role), so the review is here in full rather than in a file.
+
+# REFUTED on mechanism — and the conclusion is not a discovery. It was measured and written down on 2026-09-14; the two gates failed because the **gates** are mis-specified.
+
+## 1. The single strongest reason the claim is wrong
+
+**The `max_terms=40` cap explains #637 exactly — the one node the restructure depends on.**
+
+`net_map`'s terminal loop is `for t in range(max_terms)` — `tools/gscript.py:2549`. It reads terminal indices **0–39 only**. For #637 (`main_vi_nodeterms.json:6424-7131`, 59 terminals) the unnamed terminals inside i0–i39 are i14, 17, 22, 23, 26, 27, 30, 31, 32, 33, 34, 37 = **12**, so named inside i0–i39 = 40 − 12 = **28** — exactly the netmap's length. Verified by direct probe of `main_vi_netmap.json`, not inferred:
+
+| probe | is | meaning |
+|---|---|---|
+| `["error out", 6197]` = #637 **i39**, last index `range(40)` visits | **present** | the walk got there |
+| `["# FD points", 9000]` = #637 **i42**, first dropped named terminal | **absent** | it stopped there |
+| `["# slices in stack", 9649]` (i45), `["System no.", 16421]` (i49), `["# DT points", 29006]` (i50) | **absent** | everything past 39 is gone |
+
+The brief's own measurement already said so: *"the cap model raises the match from 574 to 575"*, and #637 is the **only** one of the 52 with ≥40 terminals — so the one node the cap explained **is** #637. The brief then presents #637 as the unexplained worst case. "None is 40" counts the wrong quantity: `max_terms` bounds terminals **read**; the array length counts named terminals **written** (`sweep_netmap_main.py:64`).
+
+The proposed mechanism is separately falsified by #637's own record: i2, i20, i24, i28 all carry `errs[3] = 1055` — [LabVIEW "Object reference is invalid"](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019L75SAE), i.e. the wire read failed — and all four are **inside** the emitted 28. An errored property read demonstrably does not stop the walk.
+
+## 2. Alternative explanation for the other 51 — a documented heuristic, not an error
+
+`tools/gscript.py:2557-2560`: the walk breaks after **three consecutive terminals that are both unnamed and unwired** (`empties >= 3`). The comment states what it was built for — *"an unassigned connector-pane slot of a subVI (2026-09-07: those truncated the list)"*. Raising the threshold 1 → 3 narrowed the failure; it did not remove it.
+
+The two violations your log actually printed (`c53_row_class.log:80`) are textbook cases: **#30804 and #4620**, 20 terminals / 6 named each, netmap drops exactly one trailing **named and wired** terminal — `error out` in both, the conventional bottom-right pane slot, reachable only past the unassigned middle slots.
+
+So there are **two** mechanisms — cap (#637 alone) and `empties>=3` (the rest). The brief invented a third to cover both. Two more stops exist and are **invisible to any netmap↔nodeterms comparison keyed on nodes present in both files**: `MISS_LIMIT = 4` on the node loop (`:2525-2541`) and the junk-Invoke signature that breaks the **whole** walk (`:2564-2567`). Those drop entire nodes, so the 626 denominator is itself not a safe baseline.
+
+## 3. It was already known, and G2b/G2c ask for something the record contradicts
+
+`tools/bench/sweep_nodeterms_main.py:7`: *"the cache is 'at least' — **it truncated on some diagrams**"*. Its collection-time check (`:76`) was deliberately a **prefix** test, `mine_named[:len(theirs)] != theirs`, across all 626 nodes. Result — `sweep_nodeterms_main.log:189-200`: 626 checked, 11 mismatches, **all** of them `"node index out of range (UID 0)"` on uid 22963, and **zero** terminal-list disagreements.
+
+G2b (`A == Bn`) and G2c (`shortfall == unnamed`) demand **equality** where the project's own record said **prefix**. The prior review's prediction contradicted a fact on disk; the FAILs are the gate's, and the "52 violations" are the documented truncation being rediscovered.
+
+## 4. What was not reported, and is worse than a short count
+
+`nets` is built inside the same truncated loop (`gscript.py:2570-2572`), so the netmap's **`wires`** table inherits every truncation. Diagram 19 is missing all of #637's i40–i58 wire ends — 9051, 9000, 9649, 11253, 16421, 29006, 29122, 28392, 29081, 29106, 32583, 32344 — border wires of the loop being rebuilt.
+
+And `c53_row_class.log:127-129` prints a **negative** claim straight off that table (`c53_row_class.py:366-371`): *"NO other node terminal on #686 carries either wire, so the SOURCE OBJECT of 4185 is UNMEASURED."* A truncated census cannot support "nothing else carries this wire". That must be re-derived from nodeterms before anything is built on it.
+
+Your reassurance about the 17 rows does hold — but for a reason you didn't state: the five focus nodes have 6/7/1/1/1 netmap terminals (`c53_row_class.log:79`), far below both stops, and G6 confirms them independently. Not because they "fall in the 574-node complete set" — that set is defined by agreement with a file, not by completeness.
+
+## 5. What would falsify my account
+
+A node whose netmap array is shorter than the replay below predicts **while** (a) having no run of 3 consecutive unnamed+unwired terminals, (b) holding fewer than 40 terminals, and (c) showing clean `errs` on the first dropped terminal. That is the first real evidence of an unmodelled early stop. Symmetrically, mine dies if any of the 52 is not reproduced by cap-or-`empties3`.
+
+## 6. Cheapest discriminating test — files only, ~25 lines, no LabVIEW, no COM
+
+Replay `gscript.py:2548-2569` over `main_vi_nodeterms.json`, apply `sweep_netmap_main.py:64`'s `if t` filter, diff against `main_vi_netmap.json` for every node in both:
+
+```python
+JUNK = ["reference", "reference out", "error in (no error)", "error out", "Method", "Method"]
+def replay(terms, max_terms=40):
+    em, empties, stop = [], 0, "end-of-list"
+    for t in terms[:max_terms]:
+        if t["name"] == "" and t["wire"] == 0:
+            empties += 1
+            if empties >= 3: stop = "empties3@i%d" % t["i"]; break
+            em.append(t); continue
+        empties = 0; em.append(t)
+        if len(em) == 6 and [x["name"] for x in em] == JUNK: return None, "junk"
+    else:
+        if len(terms) > max_terms: stop = "cap@40"
+    while em and em[-1]["name"] == "" and em[-1]["wire"] == 0: em.pop()
+    return [(x["name"], x["wire"]) for x in em if x["name"]], stop
+```
+
+Predictions, all machine-checkable: **626/626 reproduce**; `cap@40` holds **exactly #637**; `empties3` holds the other **51**, #30804 and #4620 among them; `unexplained` is **empty**. That is also your "do the 52 lengths correlate with anything readable" answer — they correlate with the index of the first 3-empty run, and with nothing else. Second lookup, one line, real consequence: build wire → ends from **nodeterms** for diagram 19 and resolve 4185 / 7506, so C1f's negative claim rests on the untruncated census.
+
+**Do not re-sweep LabVIEW for this.** `main_vi_nodeterms.json` already *is* the complete census — 626 nodes, 3328 terminals, real indices, `is_source`, per-field error columns. Derive the wire table from it and retire `main_vi_netmap.json` as a census. A re-sweep at `max_terms=80` would spend ~74 min of LabVIEW time re-collecting what is on disk.
+
+**What would change my mind:** the replay leaving any node in `unexplained`. Then the RuntimeError break at `:2554-2555` (a transient run failure, which files cannot distinguish from a deterministic stop) becomes the live hypothesis — and *that* is the point at which the measurement genuinely does not separate the two causes.
+
+Sources: [NI — Error 1055 from a Property or Invoke Node](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019L75SAE) · [NI Community — "Error 1055 at Property Node: Object reference is invalid"](https://forums.ni.com/t5/LabVIEW/quot-Error-1055-at-Property-Node-Object-reference-is-invalid/td-p/3365922) · [NI Community — Scripting: Terminal Information (`Terminals[]` usage)](https://forums.ni.com/t5/LabVIEW/Scripting-Terminal-Information/td-p/4303374)
+BGRUN END rc=0 after 530s

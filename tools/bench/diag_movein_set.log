@@ -1,0 +1,129 @@
+BGRUN START 2026-09-20 05:18:04 limit 20.0 min: py -u tools\bench\diag_movein_set.py
+=== diag_movein_set  2026-09-20 05:18:04   (MEASUREMENT A; NO VI IS RUN, 34(f); no new op)
+  FACT  LabVIEW handles BEFORE: 33967 (fresh-instance baseline ~31,500)
+  FACT  A0 the S2 recipe labelled the loops: a = WhileLoop #23032 (body #23058, at 2600,2600); b = WhileLoop #10170 (body #23166, at 2600,3400); c = WhileLoop #23041 (body #23405, at 2600,4200)
+  FACT  P1 ORIGINAL (read-only probe, 34(k)): HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  P1 the ORIGINAL exists and its md5 equals the pin  2a78e17c449cacdaf5da389818526859
+  FACT  P2 the S2 artefact BEFORE the copy: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  P2 D1_s2_loops.vi md5 == 6ff19497f2309e007a214660bb64b911 and size == 475707 B  md5 6ff19497f2309e007a214660bb64b911 size 475707
+  FACT  P2b: lv_restart rc=0 ['dialogs: ,1346,762| / ENABLED|13044216|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  handles after the restart: 30687
+  FACT  P3 the dated scratch: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_moveinset_20260920_051804.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  P3 the scratch is byte-identical to the S2 artefact  6ff19497f2309e007a214660bb64b911
+
+--- A1: does `move_in` take more than one node per call?
+  FACT  A1 python side: `move_in` is NOT in tools/gscript.py (which has only move_out :2674 / move_object :2299). It is build_d1_v0.py:318 `move_in(target, uid, dest_diagram_index, position)` and writes ONE int to the op control 'UID 3' (:332), echoing ONE uid back (:335).
+      OPCTL 'vi path'                    type=str        seq=False 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user
+      OPCTL 'Class Name'                 type=str        seq=False 'SubVI'
+      OPCTL 'index'                      type=int        seq=False 0
+      OPCTL 'vi path 2'                  type=str        seq=False ''
+      OPCTL 'location (0, 0)'            type=tuple      seq=True  (0, 0)
+      OPCTL 'error out'                  type=tuple      seq=True  (False, 0, '')
+      OPCTL 'Class Name 2'               type=str        seq=False 'SubVI'
+      OPCTL 'Class Name 3'               type=str        seq=False 'SubVI'
+      OPCTL 'error in (no error)'        type=tuple      seq=True  (False, 0, '')
+      OPCTL 'index 2'                    type=int        seq=False 0
+      OPCTL 'index 3'                    type=int        seq=False 0
+      OPCTL 'UID'                        type=int        seq=False 0
+      OPCTL 'Name'                       type=str        seq=False ''
+      OPCTL 'UID 2'                      type=int        seq=False 0
+      OPCTL 'Is Broken?'                 type=bool       seq=False False
+      OPCTL 'error in'                   type=int        seq=False 0
+      OPCTL 'position'                   type=tuple      seq=True  (0, 0)
+      OPCTL 'UID 3'                      type=int        seq=False 0
+  PASS  P4 A1: OpMoveIn_v0.vi exposes 'UID 3' and its value is a SCALAR, not a sequence => ONE node per call  control record [{'label': 'UID 3', 'value_type': 'int', 'is_sequence': False, 'repr': '0'}]
+  FACT  A: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+  FACT  class census BEFORE any edit: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905}
+  PASS  P5 baseline census == the verified S2 numbers {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905}  {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905}
+
+--- A2 BEFORE the moves: #48 and #3529, terminal by terminal
+  OBSERVED uid 48 -> owner 'Diagram' uid 639 | self 'SubVI'#48 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  TERMS BEFORE #48 (owner Diagram #639, Diagram index 46, Nodes[11], label 'ASI_adjust focus-subvi.vi'): 7 terminals, 7 carry a wire
+        t0  '-Inc reference'             src=False wire=4833   errs(n/s/c/w)=0/0/0/0
+        t1  '+Inc reference'             src=False wire=2819   errs(n/s/c/w)=0/0/0/0
+        t2  'Focus inc reference'        src=False wire=1893   errs(n/s/c/w)=0/0/0/0
+        t3  'VISA resource name'         src=False wire=1731   errs(n/s/c/w)=0/0/0/0
+        t4  'In position'                src=False wire=3947   errs(n/s/c/w)=0/0/0/0
+        t5  'Out position'               src=True  wire=7388   errs(n/s/c/w)=0/0/0/0
+        t6  'Outgoing Handle'            src=True  wire=11232  errs(n/s/c/w)=0/0/0/0
+  OBSERVED uid 3529 -> owner 'Diagram' uid 639 | self 'ControlReferenceConstant'#3529 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  TERMS BEFORE #3529 (owner Diagram #639, Diagram index 46, Nodes[1], label '- Inc (PgDn)'): 1 terminals, 1 carry a wire
+        t0  '- Inc (PgDn)'               src=True  wire=4833   errs(n/s/c/w)=0/0/0/0
+  OBSERVED wire 4833 Terms[0] source=True owner 'ControlReferenceConstant' uid 3529 reciprocal 4833 |  
+  OBSERVED wire 4833 Terms[1] source=False owner 'SubVI' uid 48 reciprocal 4833 |  
+  OBSERVED wire 4833 Terms[2] source=False owner '' uid 0 reciprocal 0 |  error 1055: Property Node in OpWireSource_v5.vi er
+  FACT  WIRE BEFORE w4833: 2 terminal(s) read; sources-that-point-back [('ControlReferenceConstant', 3529)]
+  FACT  wire 4833 present in the whole-VI Wire list BEFORE: True
+  **FAIL**  P6 #48 is on Diagram #639 with 7 wired terminals; #3529 t0 '- Inc (PgDn)' carries wire 4833  sink owner 639 wired 7; src rows [(0, '- Inc (PgDn)', 4833)]
+  PASS  P7 wire 4833 has exactly ONE source terminal and its owner uid is 3529  sources [('ControlReferenceConstant', 3529)]
+  FACT  A2 order: A1 says ONE node per call, so TWO successive calls - move 1 = the SOURCE #3529, move 2 = the SINK #48, both into the body Diagram #23058 of loop a (WhileLoop #23032)
+
+--- A2 move 1 of 2: #3529 -> body Diagram #23058 at (60, 260)
+  FACT  move 1: move_in(#3529 -> Diagram #23058 [index 22] at (60, 260)) echoed uid 23035
+  FACT  class census AFTER move 1: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905}
+  FACT  wire 4833 present in the whole-VI Wire list AFTER move 1: True
+  OBSERVED uid 48 -> owner 'Diagram' uid 639 | self 'SubVI'#48 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  TERMS AFTER move 1 #48 (owner Diagram #639, Diagram index 46, Nodes[10], label 'ASI_adjust focus-subvi.vi'): 7 terminals, 7 carry a wire
+        t0  '-Inc reference'             src=False wire=4833   errs(n/s/c/w)=0/0/0/0
+        t1  '+Inc reference'             src=False wire=2819   errs(n/s/c/w)=0/0/0/0
+        t2  'Focus inc reference'        src=False wire=1893   errs(n/s/c/w)=0/0/0/0
+        t3  'VISA resource name'         src=False wire=1731   errs(n/s/c/w)=0/0/0/0
+        t4  'In position'                src=False wire=3947   errs(n/s/c/w)=0/0/0/0
+        t5  'Out position'               src=True  wire=7388   errs(n/s/c/w)=0/0/0/0
+        t6  'Outgoing Handle'            src=True  wire=11232  errs(n/s/c/w)=0/0/0/0
+  OBSERVED uid 3529 -> owner 'Diagram' uid 23058 | self 'ControlReferenceConstant'#3529 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  TERMS AFTER move 1 #3529 (owner Diagram #23058, Diagram index 22, Nodes[1], label '- Inc (PgDn)'): 1 terminals, 0 carry a wire
+        t0  '- Inc (PgDn)'               src=True  wire=0      errs(n/s/c/w)=0/0/0/1055
+  OBSERVED wire 4833 Terms[0] source=False owner 'SubVI' uid 48 reciprocal 4833 |  
+  OBSERVED wire 4833 Terms[1] source=False owner '' uid 0 reciprocal 0 |  error 1055: Property Node in OpWireSource_v5.vi er
+  FACT  WIRE AFTER move 1 w4833: 1 terminal(s) read; sources-that-point-back []
+
+--- A2 move 2 of 2: #48 -> body Diagram #23058 at (60, 380)
+  FACT  move 2: move_in(#48 -> Diagram #23058 [index 22] at (60, 380)) echoed uid 23035
+  FACT  class census AFTER move 2: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905}
+  FACT  wire 4833 present in the whole-VI Wire list AFTER move 2: True
+  OBSERVED uid 48 -> owner 'Diagram' uid 23058 | self 'SubVI'#48 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  TERMS AFTER move 2 #48 (owner Diagram #23058, Diagram index 22, Nodes[4], label 'ASI_adjust focus-subvi.vi'): 7 terminals, 0 carry a wire
+        t0  '-Inc reference'             src=False wire=0      errs(n/s/c/w)=0/0/0/1055
+        t1  '+Inc reference'             src=False wire=0      errs(n/s/c/w)=0/0/0/1055
+        t2  'Focus inc reference'        src=False wire=0      errs(n/s/c/w)=0/0/0/1055
+        t3  'VISA resource name'         src=False wire=0      errs(n/s/c/w)=0/0/0/1055
+        t4  'In position'                src=False wire=0      errs(n/s/c/w)=0/0/0/1055
+        t5  'Out position'               src=True  wire=0      errs(n/s/c/w)=0/0/0/1055
+        t6  'Outgoing Handle'            src=True  wire=0      errs(n/s/c/w)=0/0/0/1055
+  OBSERVED uid 3529 -> owner 'Diagram' uid 23058 | self 'ControlReferenceConstant'#3529 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  TERMS AFTER move 2 #3529 (owner Diagram #23058, Diagram index 22, Nodes[1], label '- Inc (PgDn)'): 1 terminals, 0 carry a wire
+        t0  '- Inc (PgDn)'               src=True  wire=0      errs(n/s/c/w)=0/0/0/1055
+  OBSERVED wire 4833 Terms[0] source=False owner '' uid 0 reciprocal 0 |  error 1055: Property Node in OpWireSource_v5.vi er
+  FACT  WIRE AFTER move 2 w4833: 0 terminal(s) read; sources-that-point-back []
+
+--- A2 verdict on wire 4833
+  FACT  P10 VERDICT wire 4833 after BOTH nodes moved into one body: **SEVERED** - #3529 t0 wire 0, #48 t0 wire 0, uid 4833 still present in the VI: True, whole-VI Wire 1905 -> 1905 (delta +0)
+  PASS  P10 the verdict for wire 4833 is recorded (REPORTED, never a requirement): SEVERED
+
+--- A3: ExecState in-instance under Preload (34(l)), then ONE save attempt
+  FACT  READING A3_after_both_moves_in_instance_preloaded: exec_state(DIAG_moveinset_20260920_051804.vi) with the ORIGINAL PRELOADED read-only = 0  (1 = runnable, 0 = broken)
+  PASS  P11 A3 ExecState after both moves = 0 (1 = runnable, 0 = broken) - REPORTED
+  FACT  SAVE moveinset: g.save() took 0.00 s, returned None; exception = 'RuntimeError: refusing to save a BROKEN VI - SaveInstrument blocks forever on one' (allow_broken stays False; gui_save is never called)
+  FACT  SAVE moveinset artefact: DIAG_moveinset_20260920_051804.vi md5 6ff19497f2309e007a214660bb64b911 size 475707 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  P12 A3 g.save() reachable with allow_broken=False (gui_save NEVER called): False - REPORTED  returned None exception 'RuntimeError: refusing to save a BROKEN VI - SaveInstrument blocks forever on one'
+  FACT  A: preload references released; refs {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 8}
+  FACT  A3 the scratch on disk, final: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_moveinset_20260920_051804.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+
+--- close-out
+  FACT  refs at end: {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handles AFTER: 60237 (before 33967)
+  PASS  P13 no live VI Server reference is left open  ref_counts {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 0}
+  FACT  P14 ORIGINAL after the run: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  P14 ORIGINAL md5 unchanged  2a78e17c449cacdaf5da389818526859
+  FACT  P14 D1_s1_copy.vi after the run: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  PASS  P14 D1_s1_copy.vi md5 unchanged  3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  P14 D1_s2_loops.vi after the run: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  P14 D1_s2_loops.vi md5 unchanged  6ff19497f2309e007a214660bb64b911
+
+=== GATES: 13 pass / 1 fail; failing: P6 #48 is on Diagram #639 with 7 wired terminals; #3529 t0 '- Inc (PgDn)' carries wire 4833
+=== READINGS json: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_movein_set.json
+=== SCRATCH: C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_moveinset_20260920_051804.vi
+=== NO VI WAS RUN (34(f)); no new op; no motor, no ASI, no camera, no GUI action.
+BGRUN INNER FAILURE: the command exited 0 but its output reported 2 failure(s); first: **FAIL**  P6 #48 is on Diagram #639 with 7 wired terminals; #3529 t0 '- Inc (PgDn)' carries wire 4833  sink owner 639 wired 7; src rows [(0, '- Inc (PgDn)', 483
+BGRUN END rc=1 after 101s (inner failure; the process itself said 0)

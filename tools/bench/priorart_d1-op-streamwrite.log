@@ -1,0 +1,136 @@
+BGRUN START 2026-09-17 07:35:15 limit 25.0 min: py -u tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/pa_writeop.md --slug d1-op-streamwrite --trigger new-op
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_d1-op-streamwrite.txt (14418 chars)
+OUTCOME: ANSWERED (506s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-d1-op-streamwrite.md
+COST: $4.7603  in 54 / out 36784 / cache-create 180998 / cache-read 4060893  (503s, 43 turn(s))
+--- ANSWER ---
+## PRIOR-ART REVIEW — streaming text-file write for `d1-build-plan.md` §7.1 (trigger: new-op / donor route)
+
+**Verdict: not novel.** Seven findings, all with citations. Two of them (A1, A2) say the route survey under review was already run by an earlier reviewer and already contradicted by a recipe in `tools/recipes/`; one (A3) says one of the two named donor classes is a recorded LabVIEW crash; one (A5) says the *premise* of §7.1 — "the original saves once at the end" — is sourced to a document this project wrote, and conflicts with the project's own pane census of `#376`.
+
+---
+
+# PART A — the direction
+
+### A1 `unread-evidence` — the route survey omits `drop_subvi`, and a prior review already said so
+
+The proposal surveys exactly two routes: `New VI Object` (rejected, error 1054) and copy-from-donor (`copy_by_index`). That is the same two-option framing that **rev4b already attacked eight days of work ago — on this exact §7.1 sentence**:
+
+> `archive/peer/2026-09-17-priorart-priorart-d1-build-rev4b.md:898` — *"`:48-49` reaches 'no route' from exactly two options — `New VI Object`, and a donor **inside this project** — and never checks the third route this project has proven, `drop_subvi` of a **vi.lib** VI (`docs/stage2-plan.md:113`: "`drop_subvi` of the vi.lib VIs (**proven** for IMAQ Create/ReadFile/Copy/GetImageSize)")."*
+
+`docs/stage2-plan.md:113` and `docs/toolkit-capabilities.md:119` both stand. rev4b's disposition (`:957`) withdrew the `build_status: READY` line and **did not act on the route point**; rev4c's item 4 (`:908`) added a second half to it and also declined to slug it. This is the third pass at the same sentence with the same omission.
+
+**Scope:** covers the proposal's enumeration of construction routes for the file nodes. It does **not** claim any particular vi.lib file VI is droppable, nor that its connector pane is known — that is unmeasured.
+
+### A2 `contradicted` — "candidate donors not yet opened" vs a recipe that opens one of them and copies out of it
+
+The proposal: *"Candidate donors **not yet opened**: … `save N xyz traces.vi` #6384 … RULE 1 forbids modifying any of them; `copy_by_index` must be read-only on the donor."*
+
+Our own files:
+
+- `tools/recipes/build_strtopath.py:8` — *"Donor node: **claudeDev/background VIs_COPY/save N xyz traces.vi**, top-level n7 **uid 194** 'String To Path'"*; `:31` sets that path as `DONOR`; `:110-113` runs `g.report(DONOR, "Function")`, finds uid 194's index, and calls `g.copy_by_index(DONOR, "Function", i_stp, OP, expect_uid=194, finish=finish)`.
+- `:10` — *"the donor file itself is never edited"* — the rule-1 concern the proposal raises is already solved, and the rule-1-safe copy already exists on disk as `claudeDev\background VIs_COPY\`.
+- `archive/2026-09-15-status-stage2-cycles-1-7.md:219` — *"Run 3 … **100/101 PASS** … `copy_by_index` now works with substitute-before-load"*.
+
+So that donor has been opened, censused by class+index, and successfully copied out of — the exact operation the proposal describes as untried.
+
+**Scope:** covers only the "not yet opened / must first solve rule 1" framing for `save N xyz traces.vi` and the donor-copy directory. It says nothing about `save trace.vi` #376, whose diagram genuinely has never been opened in these files.
+
+### A3 `already-failed` — a vi.lib / NI-example VI as a `copy_*` donor is a recorded LabVIEW crash
+
+The proposal lists *"NI's shipped examples/vi.lib VIs"* among the candidate donors for `copy_by_index`.
+
+> `docs/keystone-op-spec.md:136-143` — *"**copy_into is unsafe with library VIs as donors** (2026-09-06 04:3x). Step-by-step replay (T2): substituting `Create Property Node.vi`'s bytes into the Move example's source file and running OpMoveByLabel **CRASHED LabVIEW** (COM RPC failure −2147023170, process gone; the earlier 'hangs' of copy_into were the same failure seen through the 180 s watchdog). … **Rule: copy_into only from claudeDev donors we built ourselves; never from vi.lib.**"*
+
+`copy_by_index` is the same family and the same file-substitution protocol — `OpMoveByIndex_v0` is `OpMoveByLabel_v0` with label→index (`archive/2026-09-15-status-stage2-cycles-1-7.md:120`), and its own failures were in that protocol (`:209-217`, Errno 22 on the Move-example Target file). Nothing in these files records `copy_by_index` ever being tried with a vi.lib donor; what is recorded is that the byte-substitution of a vi.lib VI killed the process.
+
+**Scope:** covers **vi.lib / NI-example VIs as donors for the `copy_*` (Move-example substitution) family** only. It does **not** cover `drop_subvi`, which is proven on vi.lib VIs (A1), and it does not cover a project VI donor under `background VIs_COPY\`, which is proven (A2).
+
+### A4 `unread-evidence` — Abort, and the "open file refnums with partial records" hazard already written down
+
+§7.1's shape is: open on Diagram 19 → write inside 1.7 → close after 1.7. Two active documents speak to exactly that and are cited nowhere in §7 or §10:
+
+> `docs/frame-ownership-design.md:105-109` — *"**Abort.** The user stops experiments with LabVIEW's Abort button, which **bypasses diagram cleanup entirely** — no shutdown sequence runs. 'The next start cleans up' is only acceptable if it is concrete, so it must cover: stale named queues, undisposed IMAQ images, an open camera session, **open file refnums with partial records**, VISA sessions, and an outstanding GPU DLL call."*
+>
+> `docs/frame-ownership-design.md:111-113` — *"**Single ownership, named.** Exactly one loop owns each of: the camera session, each VISA session, the motor interface, **each file refnum**, each queue, the image pool, the GPU context."*
+
+`docs/main-vi-stop-and-save.md:97` records that this is the project's statement about how the VI is normally stopped. Under an Abort the `Close File` never runs and the last buffered rows are lost — and F2 (`docs/d1-build-plan.md:595-601`) tests `stop (end)` by `SetControlValue`, not Abort, so the gate cannot see it. Related and also unconsulted: `docs/restructure-plan-4.6.md:489` lists *"file-writer capacity and **disk-full policy**"* as **deferred but recorded**, and 1.7 as specified would own two file refnums (the new TSV one, and `#376`'s `saved file refnum`).
+
+**Scope:** covers the absence of an Abort/partial-record and refnum-ownership statement from §7.1 and §10. It does not claim the streaming write is wrong, only that the two documents that constrain its lifecycle were not opened.
+
+### A5 `contradicted` — "the user's requirement verbatim" cites a document we wrote, and its premise conflicts with our own census of `#376`
+
+> `docs/d1-build-plan.md:412-414` — *"appends one line per result to an open file refnum — **the user's requirement verbatim**: '저장 루프는 원본처럼 끝에 한 번 저장하지 않고 실행 중 계속 파일에 쓴다' (`archive/prose/2026-09-17-d1-d2-explained-r2.md:114`)."*
+
+That file is one of **our own reports**: CLAUDE.md §5 defines `archive/prose/` as the reporter's output, written by codex from Claude's fact list and *"invisible to every gate"*. Line 114 sits in the design walkthrough (`### 1.7 저장 루프`, `:112-116`), beside the same file's other design sentences. It is our sentence to the user, not the user's sentence to us — so "verbatim" is an attribution this project's own rules contradict.
+
+Its premise conflicts with our measurements of the original:
+
+- `docs/main-vi-stop-and-save.md:151` — `#376 save trace.vi` is one of the six subVI calls **inside** the frame loop, i.e. it runs once per frame.
+- `docs/NAMES.md:111-118` — its pane carries `saved file refnum`, `file # to append`, `file number to append out`, `file progress`, `file size`, `selected path` — the shape of an incremental appender, not of an end-of-run dump.
+- `docs/main-vi-stop-and-save.md:120` — `#6384`'s `file # to append` is fed from `#637` t18 `file number to append out`, i.e. the post-loop call *continues* a file numbering the in-loop call was already advancing.
+
+**Scope:** covers the "user's requirement verbatim" attribution and the premise "원본처럼 끝에 한 번 저장". It does **not** assert that the original streams — `save trace.vi`'s diagram has never been opened in these files, so whether it flushes per frame is unmeasured, and that is precisely the gap. If the user did state the requirement directly, cite that message; if not, §7.1 is a design choice arguing against an unmeasured baseline.
+
+---
+
+# PART B — the artifact
+
+### B1 `helper-exists` — the recipe lists the placer 15 lines below the line that says no placer exists
+
+> `tools/recipes/build_d1_v0.py:63` — *"stop: `g.exit_while`; **subVI: `g.drop_subvi`**; delete: `g.delete_object`"* (under the header "WHAT ALREADY EXISTS — checked before a line was written").
+>
+> `tools/recipes/build_d1_v0.py:48-50` — *"placing a file-I/O primitive needs either `New VI Object` … or a donor copy, and no donor in this project holds an open/write/close chain."*
+
+`docs/toolkit-capabilities.md:119` (*"place a subVI call | `drop_subvi` | panel open first"*) and `docs/stage2-plan.md:113` (*proven* for vi.lib VIs) make the third route a built, verified op — and a vi.lib VI that encapsulates open/write/close in one call needs **no refnum crossing a loop border at all**, which also disposes of A4's Abort exposure between the border and the Close.
+
+**Scope:** covers the claim that placing the write requires `New VI Object` or a `copy_*` donor, and the recipe's "ONE thing D1 cannot build today". It does **not** claim a specific vi.lib VI's pane, arity or append semantics — measure that before building.
+
+### B2 `already-built` — file-I/O nodes have already been placed and wired into a working copy of the original, on this very diagram
+
+> `docs/fixture-recording.md:8-13` — *"what was inserted into the working copy (2026-09-01) … **All four nodes sit inside the tracking while loop (Diagram uid 639)** … Saved 473,317 B … ExecState 1."*
+> `:17-20` — `IMAQ Write TIFF File 2` (22700), `Format Into String` (22703), `Strip Path` (23175), `Build Path` (23020), with their wiring.
+> `:51-58` — *"**How it was built** … TIFF writer via `gscript.drop_subvi` (LLB member path has NO `.vi` extension); **the three primitives via the right-click Functions palette** (Quick Drop is broken in this install, peer reviewed); node-to-node wires via `gscript.wire` (branch=True added); … the format constant via *Edit Format String…*."*
+> `tools/gui_actions.log:85-87` — the authorized clicks: *"fixture insertion: open Functions palette then **File I/O subpalette**"*, *"enter File I/O subpalette"*.
+
+`Open/Create/Replace File`, `Write to Text File` and `Close File` live on that same File I/O palette, and the format/header constant is the same `Edit Format String…` step already performed. So "place a file-I/O node into a copy of the original and wire it" is a solved, executed, logged operation in this project.
+
+**Scope:** covers the assertion that this construction has no precedent here. It is **not** an endorsement of the GUI route — that is a CLAUDE.md §3 decision, and `.claude/skills/labview-automation/references/gui-recipes.md:245-253` is the recipe if it is ever taken. It does not claim `Write to Text File` specifically has been placed.
+
+### B3 `already-measured` — a copied node keeps its donor's arity, and this is why `StrToPath.vi` exists
+
+> `docs/stage2-assembly-step-b.md:43-45` — *"the review … showed a copied instance **keeps its donor's argument count** (5 or 6 in every small lab VI, `tools/bench/census_fis_donors.log`), **a node's arity is not scriptable**, and a mismatch is **NI error 83/84 at RUN time**. `String To Path` is 1-in/1-out — no arity — harvested with `copy_into(prepare=set_node_label)`…"*
+> `archive/peer/2026-09-14-stage2-step-b-revised-forloop-route.md:125` — *"Accepted in full. (a) The five-argument donor is rejected: a copied `Format Into String` keeps its arity and a node's [arity is not scriptable]"*; `:41`, `:47` give the mechanism.
+> `docs/toolkit-capabilities.md:45` records this as the reason `StrToPath.vi` was built at all.
+
+§7.1's row format (`buffer_no  t_ms  x_0 y_0 z_0 good_0 … `) needs an array→string or format step, and the file nodes themselves carry donor-fixed configuration (an `operation` enum on the open, the instance/EOL configuration on the write). Every copied node inherits that and it is not scriptable — a run-time error 83/84, not a build-time one, so **`ExecState 1` will not catch it**.
+
+**Scope:** covers copying a multi-argument formatting or configured file node from a donor and assuming its terminals or configuration can be changed afterwards. It does not cover 1-in/1-out primitives, for which the copy route is proven.
+
+---
+
+## Checked and cleared — so the next round does not re-derive it
+
+1. **The proposal's greps are accurate as far as they go.** Diagram 43's "4 file-IO-flagged nodes" (`docs/frame-loop-anatomy.md:54-55`) are identified in `tools/bench/loop_contents.log:23,36,85,86` as `#376`, `File # Saved` #3052, Build Path #23020, Strip Path #23175 — **no open/write/close chain**, so that document does not refute the claim. The `Write to Binary File` in the census is on diagram **169** with a date/time-stamp chain (`tools/bench/main_vi_node_labels.json:2776-2800`, uid 26615); rev4c already ruled that *"a binary write is not a TSV text write, so this does not establish a route"* (`archive/peer/…-rev4c.md:908`). Not re-slugged.
+2. **Erdos Miller LV-Scripting has no file-I/O creator** — consistent with the 85-entry listing at `archive/peer/…-rev4b.md:160-166` (queue set, event set, DVR set). Not challenged.
+3. **Two artefacts per run, `.tra` judged by N1** is already recorded (`docs/d1-build-plan.md:443-444`), as is the starved-writer caveat for F1 (`:589-591`). Not re-slugged.
+4. **Row 1.7 being step-4 work run before step 1's measurement** (`docs/decisions.md:46,:49,:52`; `archive/peer/2026-09-15-outcome-review-20260915.md:132` — *"The real writer is explicitly deferred to stage 5"*) is already recorded honestly as OPEN §11.5 (`docs/d1-build-plan.md:666-667`). Blocking on it would be over-broad.
+5. **No recorded decision forbids a second file handle on the writer path.** The nearest constraints are `frame-ownership-design.md:111-113` (one owning loop per refnum — satisfied if only 1.7 writes) and `restructure-plan-4.6.md:489` (disk-full policy deferred). Answering the ASK directly: **no prohibition exists; the gap is that no policy exists either.**
+
+---
+
+```
+PRIOR-ART: unread-evidence  (A1 — archive/peer/2026-09-17-priorart-priorart-d1-build-rev4b.md:898 + docs/stage2-plan.md:113 + docs/toolkit-capabilities.md:119 vs the proposal's two-route survey and tools/recipes/build_d1_v0.py:48-50 — covers the enumeration of construction routes; does not claim any vi.lib file VI's pane is known)
+PRIOR-ART: contradicted     (A2 — tools/recipes/build_strtopath.py:8,:10,:31,:110-113 + archive/2026-09-15-status-stage2-cycles-1-7.md:120,:219 vs "candidate donors not yet opened" — covers save N xyz traces.vi and the rule-1 donor-copy concern only; save trace.vi #376's diagram is genuinely unopened)
+PRIOR-ART: already-failed   (A3 — docs/keystone-op-spec.md:136-143 + archive/2026-09-15-status-stage2-cycles-1-7.md:120,:209-217 vs "NI's shipped examples/vi.lib VIs" as copy_by_index donors — covers the copy_* substitution family with a vi.lib donor; does NOT cover drop_subvi, proven on vi.lib)
+PRIOR-ART: unread-evidence  (A4 — docs/frame-ownership-design.md:105-109,:111-113 + docs/main-vi-stop-and-save.md:97 + docs/restructure-plan-4.6.md:489 vs docs/d1-build-plan.md:410-444,:539-558,:595-601 — covers the Abort/partial-record, refnum-ownership and disk-full gaps in §7.1 and §10)
+PRIOR-ART: contradicted     (A5 — docs/main-vi-stop-and-save.md:120,:151 + docs/NAMES.md:111-118 + CLAUDE.md's archive/prose definition vs docs/d1-build-plan.md:412-414 and archive/prose/2026-09-17-d1-d2-explained-r2.md:112-116 — covers the "user's requirement verbatim" attribution and the "original saves once at the end" premise; does not assert the original streams)
+PRIOR-ART: helper-exists    (B1 — tools/recipes/build_d1_v0.py:63 + docs/toolkit-capabilities.md:119 + docs/stage2-plan.md:113 vs tools/recipes/build_d1_v0.py:48-50 — covers the claim that placing the write needs New VI Object or a copy_* donor; does not claim a specific vi.lib VI is verified)
+PRIOR-ART: already-built    (B2 — docs/fixture-recording.md:8-20,:51-58 + tools/gui_actions.log:85-87 + .claude/skills/labview-automation/references/gui-recipes.md:245-253 — covers "this is the ONE thing D1 cannot build today"; does not endorse the GUI route, which is a CLAUDE.md §3 decision)
+PRIOR-ART: already-measured (B3 — docs/stage2-assembly-step-b.md:43-46 + archive/peer/2026-09-14-stage2-step-b-revised-forloop-route.md:41,:47,:125 + docs/toolkit-capabilities.md:45 — covers copying a multi-argument or configured node and assuming its arity/configuration is scriptable; does not cover 1-in/1-out primitives)
+```
+
+**The two that change what happens next.** **A5** first, because it is cheapest and it can delete the work: before building a second writer, establish what `#376 save trace.vi` actually does with `saved file refnum` and `file # to append` — that VI already moves into 1.7 (`docs/d1-build-plan.md:302,:420`), so if it already appends per frame, §7.1's TSV is a second artefact whose only argument is an unsourced premise. Then **A1/B1**: if the write is still wanted, the route to measure is `drop_subvi` of a vi.lib file VI that encapsulates open/write/close in one call — it needs no new op, no refnum across a loop border, and it removes A4's Abort exposure — not `copy_by_index` from vi.lib, which A3 shows is a recorded crash.
+
+**Mechanics:** this review is read-only by brief and exists only in this reply — it needs archiving under `archive/peer/2026-09-17-priorart-streaming-write-donor.md` by the dispatching session to be visible to `guard_cycle.py`. I took no lock, opened no `.vi`, and changed nothing; there is no plan to approve, so I am not calling `ExitPlanMode`.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-d1-op-streamwrite.md
+BGRUN END rc=0 after 507s

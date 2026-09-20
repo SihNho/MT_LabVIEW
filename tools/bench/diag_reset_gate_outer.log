@@ -1,0 +1,31 @@
+BGRUN START 2026-09-16 18:56:43 limit 12.0 min: py -u tools/bench/diag_reset_gate_outer.py
+MAIN md5 before: 2a78e17c449cacdaf5da389818526859
+   fresh(): killing LabVIEW pid None
+   COM preflight attempt 1/15: pid None->23648, wires 16->16
+   COM preflight OK (pid 23648, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 23648
+PASS  census still true for LoopTunnel #10114 (the PERIODIC period enters the frame loop here (out_name '# FD points')): live uid 10114 out_wire 9000 in_wires [10103] out_is_source False vs recorded out_wire 9000 in_wires [10103]
+PASS  census still true for LoopTunnel #10177 (the PERIODIC remainder crosses the frame-loop border here): live uid 10177 out_wire 10187 in_wires [10166] out_is_source False vs recorded out_wire 10187 in_wires [10166]
+OBSERVED: wire 9000 Terms[0] source=True owner 'Diagram' uid 686 reciprocal wire 9000 | cast-output class 'Diagram'  
+OBSERVED: wire 9000 Terms[1] source=False owner 'GrowableFunction' uid 8953 reciprocal wire 9000 | cast-output class 'GrowableFunction'  
+OBSERVED: wire 9000 Terms[2] source=False owner 'LoopTunnel' uid 10114 reciprocal wire 9000 | cast-output class 'LoopTunnel'  
+OBSERVED: wire 9000 Terms[3] source=False owner '' uid 0 reciprocal wire 0 | cast-output class ''  error 1055: Property Node in OpWireSource_v5.vi er
+RESULT wire 9000 [10114 OUTER (never read) - the period's source outside the loop]: source ('Diagram', 686); sinks [('GrowableFunction', 8953), ('LoopTunnel', 10114)]
+OBSERVED: wire 10103 Terms[0] source=True owner 'LoopTunnel' uid 10114 reciprocal wire 10103 | cast-output class 'LoopTunnel'  
+OBSERVED: wire 10103 Terms[1] source=False owner 'Function' uid 10068 reciprocal wire 10103 | cast-output class 'Function'  
+OBSERVED: wire 10103 Terms[2] source=False owner '' uid 0 reciprocal wire 0 | cast-output class ''  error 1055: Property Node in OpWireSource_v5.vi er
+RESULT wire 10103 [10114 INNER (re-read; diag_reset_arm: ('LoopTunnel',10114) -> ('Function',10068))]: source ('LoopTunnel', 10114); sinks [('Function', 10068)]
+OBSERVED: wire 10187 Terms[0] source=True owner 'Function' uid 10068 reciprocal wire 10187 | cast-output class 'Function'  
+OBSERVED: wire 10187 Terms[1] source=False owner 'LoopTunnel' uid 10177 reciprocal wire 10187 | cast-output class 'LoopTunnel'  
+OBSERVED: wire 10187 Terms[2] source=False owner '' uid 0 reciprocal wire 0 | cast-output class ''  error 1055: Property Node in OpWireSource_v5.vi er
+RESULT wire 10187 [10177 side A (re-read; diag_reset_arm: ('Function',10068) -> ('LoopTunnel',10177))]: source ('Function', 10068); sinks [('LoopTunnel', 10177)]
+OBSERVED: wire 10166 Terms[0] source=True owner 'LoopTunnel' uid 10177 reciprocal wire 10166 | cast-output class 'LoopTunnel'  
+OBSERVED: wire 10166 Terms[1] source=False owner 'GrowableFunction' uid 8634 reciprocal wire 10166 | cast-output class 'GrowableFunction'  
+OBSERVED: wire 10166 Terms[2] source=False owner '' uid 0 reciprocal wire 0 | cast-output class ''  error 1055: Property Node in OpWireSource_v5.vi er
+RESULT wire 10166 [10177 side B (never read) - the remaining side of the remainder tunnel]: source ('LoopTunnel', 10177); sinks [('GrowableFunction', 8634)]
+OBSERVED signature: LoopTunnel #10114 outer wire 9000 source ('Diagram', 686) -> NEITHER signature - class 'Diagram', the decision is assembled further out
+OBSERVED signature: LoopTunnel #10177 outer wire 10187 source ('Function', 10068) -> matches the GATED signature (combiner class 'Function')
+   wrote G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\reset_gate_outer.json
+   PASS main VI unchanged (rule 1d: read-only)
+=== SUMMARY 4/4 wires resolved, census agreement 2/2 ===
+BGRUN END rc=0 after 46s

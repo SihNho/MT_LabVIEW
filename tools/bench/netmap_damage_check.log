@@ -1,0 +1,21 @@
+BGRUN START 2026-09-12 14:45:48 limit 10.0 min: py -u -c 
+import os,sys
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+WORK=r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi'
+targets=[('MAIN VI working copy',WORK)]
+for n in ('DONOR_Ex3_PrimitiveFunctions.vi','DONOR_Ex1_GetControlsWireIndicators.vi','ScriptDriver_DropForLoop.vi','OpFPLabels_v0.vi'):
+    targets.append((n, os.path.join(g.CLAUDEDEV,n)))
+for label,p in targets:
+    try: st=g.exec_state(p)
+    except Exception as e: st='EXC '+str(e)[:70]
+    mark='  <== BROKEN' if st==0 else ''
+    print('%-42s ExecState %s%s'%(label,st,mark))
+
+MAIN VI working copy                       ExecState 1
+DONOR_Ex3_PrimitiveFunctions.vi            ExecState 1
+DONOR_Ex1_GetControlsWireIndicators.vi     ExecState 1
+ScriptDriver_DropForLoop.vi                ExecState 1
+OpFPLabels_v0.vi                           ExecState 0  <== BROKEN
+BGRUN END rc=0 after 1s

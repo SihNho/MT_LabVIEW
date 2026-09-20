@@ -1,0 +1,36 @@
+BGRUN START 2026-09-14 20:40:46 limit 10.0 min: py -u tools/recipes/build_opwhileloop.py
+start: SubVI=5 Wire=28 ExecState=1
+   For node 410: Diagram in <- (629, 'Diagram out') (wire 1031); error in <- (629, 'error out') (wire 1098); Get Controls 962; Close Reference 157
+
+== 2 delete Create For Loop + RBW
+   predict: SubVI -1
+   result : after SubVI=4 Wire=21 ExecState=1  (0.1 s)
+
+== 3 drop Create While Loop.vi
+   predict: SubVI +1
+   result : after SubVI=5 Wire=21 ExecState=0  (0.1 s)
+
+== 4a Diagram out -> While.'Diagram in'
+   predict: Wire +1
+   result : after SubVI=5 Wire=22 ExecState=1  (0.1 s)
+
+== 4b error chain in
+   predict: Wire +1
+   result : after SubVI=5 Wire=23 ExecState=1  (0.1 s)
+
+== 4c While.'error out' -> Close Reference.'error in (no error)'
+   predict: Wire +1
+   result : after SubVI=5 Wire=24 ExecState=1  (0.1 s)
+
+== 4d controls -> 'Inputs Indexing?', 'location (0, 0)'
+   predict: ExecState toward 1
+   result : after SubVI=5 Wire=26 ExecState=1  (0.1 s)
+
+== 4e Get Controls.'Control Terminals' -> While.'Inputs'
+   predict: Wire +1
+   result : after SubVI=5 Wire=27 ExecState=1  (0.1 s)
+   While node terminals: [('Diagram in', 421), ('', 0), ('location (0, 0)', 433), ('', 0), ('Diagram out', 0), ('Inputs', 436), ('Inputs', 0), ('Shift Register Inputs', 0), ('Shift Registers', 0), ('Inputs Indexing?', 430), ('Loop Counter', 0), ('error in (no error)', 424), ('', 0), ('', 0), ('', 0), ('error out', 427)]
+donor md5 unchanged: True
+
+VERDICT: OpWhileLoop_v0 BUILT and SAVED (structural) - test next
+BGRUN END rc=0 after 3s

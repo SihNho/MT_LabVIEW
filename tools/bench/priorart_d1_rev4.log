@@ -1,0 +1,113 @@
+BGRUN START 2026-09-17 06:16:47 limit 25.0 min: py -u tools/prior_art_review.py --plan-file docs/d1-build-plan.md --trigger new-op --slug priorart-d1-build-rev4 --model opus --effort high
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-d1-build-rev4.txt (51952 chars)
+OUTCOME: ANSWERED (548s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-priorart-d1-build-rev4.md
+COST: $6.6714  in 66 / out 37769 / cache-create 258597 / cache-read 6281687  (545s, 45 turn(s))
+--- ANSWER ---
+Prior-art review complete — read-only, no lock taken, nothing built or run. **7 findings, zero `novel`.** The most costly is B3: the exact failure class that stopped phase P's run 2 (a shared net whose collateral sinks stay behind) is present and **already measured** inside rev 4's own move table, and gate S3b is scoped so it cannot see it.
+
+---
+
+# PART A — THE DIRECTION
+
+## A1 `contradicted` — "the Local creator does NOT exist" is a claim this project formally **withdrew** the same day, and rev 4 reinstates it as the thing that stops the build
+
+- `docs/d1-build-plan.md:14` (frontmatter) — *"build_status: BLOCKED at S0 — the transport §11b.1 decided (LOCAL variables) has **NO creator in the fleet**"*; `:30` — *"the transport §11b.1 decided **cannot be built by this fleet**"*; `:91` — *"| a `Local` node | 🔴 **NO CREATOR** |"*.
+- Against it, an **accepted and FIXED** prior-art disposition of 2026-09-17: `archive/peer/2026-09-17-priorart-ctlterm-move.md:601-608` — *"`A3-i` `contradicted` — **a false 'impossible' that I wrote**, caught exactly where CLAUDE.md says to look for one … The citation is **withdrawn** in both files … §0d now reads **'UNMEASURED, NOT IMPOSSIBLE'**."* Its evidence: `docs/toolkit-capabilities.md:263` (`Local` is a valid Traverse class, 8 objects), `docs/NAMES.md:246` (`Local.Control Name` **6355400**) with `archive/peer/2026-09-14-implicit-property-node-linked-object.md:28-29` recording it **read/write**, and `docs/restructure-plan-4.6.md:242-243` (copy-from-donor is the recorded route for a node the fleet cannot create).
+- `STATUS.md` OPEN **24b** still carries that correction verbatim: *"the other half, a **`Local`** … is **unmeasured, not impossible** (\"no Local creator\" was WRONG, withdrawn; `restructure-plan-4.6.md:225-226` already adopts locals)"*.
+- The plan **knows this** — `docs/d1-build-plan.md:45-46` says *"This is exactly the shape §0d recorded as 'route (ii) is UNMEASURED, NOT IMPOSSIBLE'"* — and then its heading, its frontmatter and its §1a row state the stronger claim anyway. `tools/recipes/build_d1_v0.py:119` hard-codes the stronger one into the machine: `"local": ("create_local", "NONE - no Local creator exists in the fleet")`, so S0 refuses **even after** judgement picks locals.
+
+**Scope:** covers the words "NO CREATOR" / "cannot be built" and the S0 refusal *as written*. It does **not** claim a Local can be created — nobody has measured that either way; it claims "unmeasured" is the recorded state and a build gate may not be keyed to "impossible".
+
+## A2 `contradicted` — "a queue contradicts freshest-wins" is refuted by this project's own transport table
+
+`docs/d1-build-plan.md:76-77` — *"Choosing it for the wake-up contradicts §5's own reasoning (per-frame traffic for a UI Boolean; **a lossless FIFO where 'freshest wins' was wanted**)"*, repeated at `:470-471` (OPEN 1: *"The only buildable alternative is a queue, which contradicts §6's own requirement"*).
+
+`docs/restructure-plan-4.6.md:55`, the inter-loop transport table: *"| 2 → 6 | **local variable / 1-element queue** | lossy by design; the display only needs the newest |"* — a queue and a local are recorded **as alternatives for the same latest-value duty**, not as opposites.
+
+**Scope:** covers only the claim that a queue is *necessarily* the wrong semantics. It does not say a 1-element queue is right here, and it does not touch `docs/decisions.md:21` (*"no `Lossy Enqueue Element`"*), which is scoped to the **acquisition** path (the camera must never be gated), not to a 3.6 Hz focus wake-up.
+
+## A3 `unread-evidence` — the transport census never opened the creator library every writer op in this fleet was wrapped from
+
+`docs/d1-build-plan.md:74-75` — *"**What the fleet CAN build for a cross-loop value, measured:** queues — 4 creators … **That is the only transport with evidence**"*, and `:63-71` prices an `OpLocal` family. Four places were checked (`:37-41`): `gscript.py`, `claudeDev\Op*.vi`, `tools/recipes/`, `vi-server-ids.json`. The **donor library** was not.
+
+- `docs/REFERENCES.md:29-30` — LV-Scripting is installed at `vi.lib\Erdos Miller\LV-Scripting\`, **84 VIs**; `docs/stage2-plan.md:110` records that the four queue ops were built by wrapping `Create Obtain Queue / Enqueue Element / Dequeue Element / Release Queue.vi` from exactly that folder.
+- That same folder ships `Create Create User Event.vi`, `Create Generate User Event.vi`, `Create Register for Events.vi`, `Create Destroy User Event.vi` and `Create Event Structure.vi` — and the project already recorded one of them as on the shelf: `docs/stage2-plan.md:114` — *"| Event structure (stage 5) | erdosmiller `Create Event Structure.vi` — **not needed in stage 2** |"*.
+- The distinction the plan collapses is the one `docs/toolkit-capabilities.md:14-15` exists to enforce (*"an entry … is a **candidate**. Only use counts as evidence"*): **exercised** (queues, 162/162) is not the same set as **buildable**. Neither is `ARCHITECTURE.md:60`'s "no Queue/Notifier primitive appears in the original" an obstacle — the queue ops needed no donor either, only a creator.
+
+**Scope:** covers the sentence "that is the only transport with evidence" only insofar as it is used at `:44` and `:470` to conclude *only a queue is buildable*. It asserts nothing about whether user events are appropriate or cheap.
+
+## A4 `contradicted` — F1's disk budget contradicts its own rate line and a measurement in the plan's own `measured_in:`
+
+`docs/d1-build-plan.md:453-454` — *"`#22700` writes a **1.3 MB TIFF per frame ≈ 118 MB/s at 90 Hz** … so 5 min ≈ **35 GB**. **60 s ≈ 4 GB**, deleted in the same run"*. 118 MB/s × 60 s ≈ **7.1 GB**, not 4 GB — the 5-minute figure uses the rate, the 60-second figure does not.
+
+Measured, in a file the plan lists at `:13`: `tools/bench/drive_original_copy_v3.log:81` — *"`.tif`: (**2041**, **2675689770**)"* = 2.68 GB of TIFF from roughly 22 s of frame loop (`archive/2026-09-17-status-d0-and-gpu-narrative.md:211`, *"frame loop, 20 s … 2 041 TIFFs / 2.68 GB"*). Scaled to 60 s that is ~7–8 GB.
+
+**Scope:** one number, and it matters because F1 is an **unattended overnight** run that deletes in the same run (`STATUS.md` OPEN 18 — *"bound it or the disk fills"*). It does not reopen the 60 s vs 5 min question, which the plan already flags as OPEN 4.
+
+---
+
+# PART B — THE ARTIFACT
+
+## B1 `helper-exists` — the "`Control Name` **writer**" piece is the `OpSetIndexMode_v0` pattern, which is already built twice
+
+`docs/d1-build-plan.md:63-72` prices the Local route as three pieces — a seed, a creator, and *"a `Control Name` **writer**. That is a new op family and its own cycle"*. The writer is the one piece the fleet already owns a working template for:
+
+- `tools/gscript.py:1658-1679` `set_index_mode()` → `OpSetIndexMode_v0`, described at `:1661-1662` as *"Traverse('LoopTunnel', index) -> cast -> IndexMode **WRITE property node** <- 'index 2' control"* — i.e. Traverse a named class by index, cast, write one property from a front-panel control. That is the shape a `Local.Control Name` write takes.
+- `tools/gscript.py:2451-2454` `set_node_label()` → `OpSetLabel_v0`, a second property **write** op (`Node.Label` 6359001 → `Text.Text` write).
+- Deriving a new op from those front halves is the fleet's normal move, recorded twice: `tools/gscript.py:1690-1692` — `OpTunnelInd_v0` was *"built 2026-09-13 from OpSetIndexMode_v0, whose front half `Traverse(…) -> IndexArray -> To More Specific Class` was **already proven**"* — and `docs/toolkit-capabilities.md:50`, where `OpLoopEndRef_v0` is an *"additive build on OpWhileCast_v0 (nothing deleted)"*, 16/16, done **this cycle**.
+- And the rule for a catalogued-but-unexercised id is not a blocker: `docs/toolkit-capabilities.md:549-553` — *"it must name where that capability was last exercised. If the answer is 'it is in the list' … the plan has an untested assumption in it and **should say so out loud — as a gate, with a cheap test** scheduled before the work that depends on it."*
+
+**Scope:** the **writer** piece only. The seed and the creator pieces of `:63-70` are untouched by this, and whether such an op falls under `docs/cycle15-plan.md:104`'s freeze is a judgement call — but "its own cycle" is priced against a template that already exists.
+
+## B2 `unread-evidence` — §0-BLOCKER item 3 assumes three Boolean readers without citing the two stop mechanisms this project already recorded for live mode
+
+`docs/d1-build-plan.md:53-56` — *"**The stop, in all three new loops.** §3's rule is that every new loop reads its stop from a terminal inside its own body … The other two need a second and third reader of the same Boolean, **i.e. a Local**."*
+
+- `docs/stage2-assembly-step-c.md:45` — *"**Live mode (step D) is where the While tracker, an end-of-stream token and a timeout-gated Case are unavoidable**; none of that is built here."* 1.2 and 1.7 are queue **consumers** of 1.1; a token is the recorded live-mode mechanism for ending them, and it needs no second reader of the panel Boolean.
+- `docs/frame-ownership-design.md:102-103` — *"A consumer that dies must stop acquisition … First error wins: capture it, **broadcast stop**, let each loop drain and release its own resources."*
+- `docs/pre-rig-master-plan.md:95` (row 1.9) states the requirement as *"every loop stops from a Boolean read **inside** it"* and *"**Seven loops need seven stops and one order**"* — it never says seven panel-terminal readers, and `docs/stage2-plan.md:92-94` offers the local/terminal pair as **examples**, not as an exhaustive list.
+
+**Scope:** covers only the inference "three new loops ⇒ three readers of `stop (end)` ⇒ a Local is required". The read-once rule itself (`stage2-plan.md:90-91`) is correct and is not challenged.
+
+## B3 `already-measured` — `#376`'s non-register inputs sit on **shared nets whose other sinks stay on 1.1**, and S3b is scoped so it cannot detect the break that class caused in phase P
+
+`docs/d1-build-plan.md:246` moves `#376 save trace.vi` to 1.7 and describes it only as *"fed from `Q_res`/`Q_good`/`Q_rmeta`, outputs leave through 1.7's tunnels"*. §5c (`:278-279`) tables its two shift registers. **No section tables `#376`'s other inputs**, which are measured:
+
+| wire | `#376` terminal | other sinks on the same net | those nodes in D1 |
+|---|---|---|---|
+| `docs/frame-loop-wire-graph.md:151` w3268 | t7 `x` | `#2136` t3, `#3191` t1, `#10068` t3, `#1114` t0, `#29240` t3 | **all stay 1.1** (`d1-build-plan.md:251-255`) |
+| `:167` w5090 | t11 `selected path` | `#23175` t0 (Strip Path) | **stays 1.1** (`:255`) |
+| `:158` w3629 | t6 `cal cluster path` | — | not tabled |
+| `:145` w1581 | t9 `file size` | — | not tabled |
+
+This is the exact failure the plan's own §2a records: `docs/d1-build-plan.md:127-131` — *"**wire 464 is ONE net** whose collateral sinks `#237`/`#240` were bared by the delete, **pinning ExecState at 0**"* (`tools/bench/diag_movein_p1_break.log`, 5/5; `archive/peer/2026-09-17-moveinto-p1-execstate0.md`, whose third explanation was right). Its signature is *no broken wire and nothing for Remove Bad Wires* — a silent bare terminal.
+
+And the gate cannot catch it: `docs/d1-build-plan.md:433` (S3b) censuses *"`node_terms` of **every moving node** before and after"*. On w3268 the collateral sinks are on nodes that **do not move**, so they fall outside the census on both passes, and `ExecState` is explicitly not read until S5 (`:440`).
+
+**Scope:** covers §5a's `#376` row, §7, and S3b's census scope. It does not say `#376` should stay on 1.1 — that is a rule-1a decomposition call (`§11b.3`), untouched here.
+
+---
+
+## Checked and cleared — so the next round does not re-derive it
+
+1. **The move-count arithmetic is fixed.** `:258-259` now reads *"17 → 1.2 … 21 moves + 1 delete + 1 drop"*, and `tools/recipes/build_d1_v0.py:147-152` holds 17 / 3 / 1. Rev 3's mismatch is gone.
+2. **Rev 3's six escalated findings are all carried, not dropped**: A3→`:451-456` + OPEN 4; A4→`:463` cites `pre-rig-master-plan.md:55` instead of re-listing; A5→`§11b.2` + `:313-316` (no VISA close added, second call site recorded); B1→§0-BLOCKER; B2→`:246`, `§11b.3`; B3→`:468-471`'s N/A rule for a starved writer.
+3. **No op is re-invented.** `build_d1_v0.py:105-109` imports `gscript`, `read_owner` (`OpOwnerChain_v1`) and `labview_handles` rather than re-implementing them — the duplication `archive/peer/2026-09-17-priorart-ctlterm-move.md:579` flagged is not repeated.
+4. **`#22700` being unconditional is measured, not assumed** — `archive/2026-09-17-status-d0-and-gpu-narrative.md:180-182`: *"no front-panel CONTROL gates the TIFF writer (0/60 labels; uid 22700 sits directly on the frame `WhileLoop`'s diagram, not in a Case)"*.
+5. **Not slugged, but worth one edit:** `docs/d1-build-plan.md:10` lists `archive/peer/2026-09-17-priorart-d1-build-rev4.md` under `reviewed_by:` — **this review, which did not exist when the line was written**; `archive/peer/` holds no such file. Since `tools/doc_lint.py` checks that every cited path exists, that line will fail the cycle-close lint. I have left it un-slugged because blocking a build over frontmatter would be over-broad.
+
+---
+
+```
+PRIOR-ART: contradicted    (A1 — docs/d1-build-plan.md:14,:30,:91 and tools/recipes/build_d1_v0.py:119 vs archive/peer/2026-09-17-priorart-ctlterm-move.md:601-608 "the citation is WITHDRAWN … UNMEASURED, NOT IMPOSSIBLE", STATUS.md OPEN 24b, and the plan's own :45-46 — covers ONLY "NO CREATOR"/"cannot be built" and S0's refusal keyed to it)
+PRIOR-ART: contradicted    (A2 — docs/restructure-plan-4.6.md:55 "local variable / 1-element queue … lossy by design" vs docs/d1-build-plan.md:76-77,:470-471 — covers only "a queue contradicts freshest-wins")
+PRIOR-ART: unread-evidence (A3 — docs/REFERENCES.md:29-30 + docs/stage2-plan.md:110,:114 and the installed vi.lib\Erdos Miller\LV-Scripting folder's user-event/event-structure creators vs docs/d1-build-plan.md:37-41,:74-75 — the four-place census omitted the creator library the queue ops came from)
+PRIOR-ART: contradicted    (A4 — docs/d1-build-plan.md:453-454 "118 MB/s … 60 s ≈ 4 GB" vs its own 5-min arithmetic and tools/bench/drive_original_copy_v3.log:81 "2041 TIFFs / 2675689770 B" in ~22 s)
+PRIOR-ART: helper-exists   (B1 — tools/gscript.py:1658-1679,:1690-1692,:2451-2454 and docs/toolkit-capabilities.md:50,:549-553 vs docs/d1-build-plan.md:63-72 — covers the "Control Name writer = a new op family and its own cycle" pricing only)
+PRIOR-ART: unread-evidence (B2 — docs/stage2-assembly-step-c.md:45 end-of-stream token, docs/frame-ownership-design.md:102-103 broadcast stop, docs/pre-rig-master-plan.md:95 vs docs/d1-build-plan.md:53-56 — covers "the other two need a second and third reader of the same Boolean, i.e. a Local")
+PRIOR-ART: already-measured (B3 — docs/frame-loop-wire-graph.md:145,:151,:158,:167 (#376 t6/t7/t9/t11 and w3268's five staying sinks) + the plan's own :127-131 / tools/bench/diag_movein_p1_break.log vs docs/d1-build-plan.md:246,:433 — covers §5a's #376 row and S3b's moving-nodes-only census scope)
+```
+
+One note for whoever disposes of this: **A1 and B3 are the two that change what happens next.** A1 is cheap — the honest state is "unmeasured", so S0's refusal should be keyed to *"TRANSPORT undecided"* (which is true and is judgement's call) rather than to *"a Local cannot exist"* (which this project withdrew in writing on the same day). B3 is not cheap and is not a wording fix: S3b's census is scoped to moving nodes, and phase P measured that this exact class of break leaves no broken wire to find.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-d1-build-rev4.md
+BGRUN END rc=0 after 549s

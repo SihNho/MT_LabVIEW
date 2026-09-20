@@ -1,0 +1,21 @@
+BGRUN START 2026-09-13 19:45:51 limit 8.0 min: py -u -c 
+import os,sys,time
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+for attempt in range(3):
+    try:
+        n=g.count(os.path.join(g.CLAUDEDEV,'OpReport_v3.vi'),'Node')
+        print('count WORKS: Node =',n,flush=True); break
+    except Exception as e:
+        print('attempt %d: %s'%(attempt+1,str(e)[:90]),flush=True)
+        g._lv=None; time.sleep(8)
+try:
+    rows=g.fp_labels(os.path.join(g.CLAUDEDEV,'OpReport_v3.vi'),max_n=20)
+    print('fp_labels WORKS:',len(rows),'objects',flush=True)
+except Exception as e:
+    print('fp_labels FAILED:',str(e)[:130],flush=True)
+
+count WORKS: Node = 5
+fp_labels FAILED: (-2147023170, '���� ���ν����� ȣ������ ���߽��ϴ�.', None, None)
+BGRUN END rc=0 after 28s

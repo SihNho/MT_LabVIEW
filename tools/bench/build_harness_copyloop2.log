@@ -1,0 +1,57 @@
+BGRUN START 2026-09-14 14:28:47 limit 15.0 min: py -u tools/recipes/build_harness_copyloop2.py
+base: SubVI=4 ForLoop=0 LoopTunnel=0 Wire=9 ExecState=1
+
+== 2a drop IMAQ GetImageSize (top)
+   predict: +1
+   dropped IMAQ GetImageSize uid 238 diagram 0 Nodes[] 4: ['Y Resolution', 'X Resolution', 'Image', 'error out', 'error in (no error)']
+   result : 238  (0.5 s)
+
+== 2b ReadFile 'Image Out' -> GetImageSize 'Image' (branch)
+   predict: ExecState 1
+   result : after SubVI=5 ForLoop=0 LoopTunnel=0 Wire=9 ExecState=1  (0.2 s)
+
+== 3a empty For Loop
+   predict: ForLoop +1, ExecState 0 (no N)
+   result : after SubVI=5 ForLoop=1 LoopTunnel=0 Wire=9 ExecState=0  (0.1 s)
+   loop node uid 239 Nodes[] 5 terminals: [(0, '', False, 0)]
+STOP: no terminal named 'N' on the loop node; unwired sinks are [(0, '')] - recorded, nothing saved.
+BGRUN END rc=4 after 3s
+BGRUN START 2026-09-14 14:33:35 limit 15.0 min: py -u tools/recipes/build_harness_copyloop2.py
+base: SubVI=4 ForLoop=0 LoopTunnel=0 Wire=9 ExecState=1
+
+== 2a drop IMAQ GetImageSize (top)
+   predict: +1
+   dropped IMAQ GetImageSize uid 238 diagram 0 Nodes[] 4: ['Y Resolution', 'X Resolution', 'Image', 'error out', 'error in (no error)']
+   result : 238  (0.4 s)
+
+== 2b ReadFile 'Image Out' -> GetImageSize 'Image' (branch)
+   predict: ExecState 1
+   result : after SubVI=5 ForLoop=0 LoopTunnel=0 Wire=9 ExecState=1  (0.2 s)
+
+== 3a empty For Loop
+   predict: ForLoop +1, ExecState 0 (no N)
+   result : after SubVI=5 ForLoop=1 LoopTunnel=0 Wire=9 ExecState=0  (0.1 s)
+   loop node uid 239 Nodes[] 5 terminals: [(0, '', False, 0)]
+   no terminal named 'N'; the single unwired sink (0, '') is taken as the count terminal (test: ExecState)
+
+== 4 connect_terminals: loop N <- GetImageSize 'Y Resolution'
+   predict: wire +1, ExecState 1 (empty loop with N)
+   result : after SubVI=5 ForLoop=1 LoopTunnel=0 Wire=10 ExecState=1  (0.1 s)
+   N check: loop terminal 0 wire 346, 'Y Resolution' wire 346, ExecState 1
+
+== 5a drop IMAQ Copy inside the body
+   predict: +1
+   dropped IMAQ Copy uid 240 diagram 1 Nodes[] 0: ['error in (no error)', 'Image Dst', 'error out', 'Image Src', 'Image Dst Out']
+   result : 240  (0.2 s)
+
+== 5b outer Copy 'Image Dst Out' -> inner 'Image Dst'
+   predict: tunnel +1
+   result : after SubVI=6 ForLoop=1 LoopTunnel=1 Wire=12 ExecState=0  (0.2 s)
+
+== 5c ReadFile 'Image Out' -> inner 'Image Src' (branch)
+   predict: tunnel +1, ExecState 1
+   result : after SubVI=6 ForLoop=1 LoopTunnel=2 Wire=13 ExecState=1  (0.2 s)
+   copyloop0: SubVI=5 ForLoop=1 ExecState=1
+
+VERDICT: HARNESS_copyloop and copyloop0 built (structural) - run tools/bench/run_copyloop_bench.py next
+BGRUN END rc=0 after 5s

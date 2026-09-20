@@ -1,0 +1,115 @@
+BGRUN START 2026-09-17 09:30:04 limit 20.0 min: py tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/priorart_sentinel_ops.txt --slug priorart-d1-sentinel-ops --trigger new-op
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-d1-sentinel-ops.txt (15708 chars)
+OUTCOME: ANSWERED (431s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-priorart-d1-sentinel-ops.md
+COST: $4.1930  in 46 / out 29927 / cache-create 177530 / cache-read 3338670  (427s, 42 turn(s))
+--- ANSWER ---
+# PRIOR-ART REVIEW — `OpCreateEqual_v0` / `OpCreateConst_v0` (trigger: new-op)
+
+**Seven findings, none of them "you may not do this".** Two are about the *artifacts* (a generic wrapper-builder for exactly this job already exists and has been run three times; one of those runs blocked for the reason `Create Equal.vi`'s inputs will reproduce), two are about cheaper already-built halves the plan does not price, and three are about the record. `Create Constant.vi` — the half the plan says it is least sure about — is the half with the most prior art.
+
+---
+
+# PART A — THE DIRECTION
+
+## A1 — decided, and the decision is the plan's own. **No slug.**
+
+`docs/d1-build-plan.md:645-650` (§11g.1, judgement, 2026-09-17) already chose route (c) by name and lifted `docs/cycle15-plan.md:104`'s freeze "for **exactly these two ops**", and `:651-653` (§11g.2) says no further prior-art dispatch is owed "unless an op beyond the two in (1) is created". The plan cites this itself. I record it so the judgement session knows the *direction* question is closed in writing and that everything below is about the artifacts and the record — **I am not emitting a slug for A1**, because blocking a build on "you already decided to do this" is an over-broad match.
+
+## A2 `refuted-already` — the choice "erdosmiller `Create *.vi` vs. the documented VI-Server method" has been put to a peer twice here, and **both times the peer refused the library VI and named the documented method**. Neither precedent is cited.
+
+Both sides, verbatim:
+
+> **The plan:** "§11g.1 chose **route (c)**: wrap the erdosmiller LV-Scripting creators … (b) `Constant.Terminal` **634AC04** + `Terminal.Connect Wire` **6349C03** … is recorded as the alternative."
+
+- `archive/peer/2026-09-14-stage2-shiftreg-primitive.md:85` — *"That is the documented creation route the plan should try first. It is substantially cleaner than using `Exit While Loop.vi` as an **undocumented side-effect generator**. I found no writable WhileLoop property or `New VI Object` style that should be preferred. **The direct Loop invoke method is the answer.**"* Disposition at `:126-129`: accepted and acted on — `docs/stage2-assembly-step-a.md` was rewritten around the direct method, `OpAddShiftReg_v0` was built on `Loop.Add Shift Register` 6361000, and *"the `Exit While Loop` side-effect route was not touched."*
+- The same precedent was re-applied **~18 hours before this plan**, in this cycle: `archive/peer/2026-09-17-priorart-d1-op-exitwhile-node.md:259` cites it to refuse an erdosmiller front-half, and the outcome is written into the capability table — `docs/toolkit-capabilities.md:51`: *"Route chosen by its prior-art review, which **refused** the erdosmiller `Exit While Loop.vi` front-half swap."* `OpStopFromNode_v0`, the op this same plan depends on, exists **because** that refusal was accepted.
+
+**Does it still apply? Partly, and I will not overstate it.** The shift-register precedent was about using a library VI for a *side effect* it does not document (`Exit While Loop.vi`'s `Shift Registers` input); `Create Equal.vi` / `Create Constant.vi` doing their documented job is a weaker case, and the `queue_node` family (`docs/toolkit-capabilities.md:32`) is itself four library creators that work. So this finding covers the **unstated precedent and the unpriced (b)** — not the conclusion. Route (b) is not a sketch: see B3, where it turns out to be one property ID away from two ops that are already built.
+
+## A3 `contradicted` — "162/162" is the tracker VI's gate count, not the queue ops'. The wrapper shape's own evidence is **7/7**.
+
+Both sides:
+
+- **The plan:** "the `queue_node` pattern … the wrapper shape that already placed `Create Obtain Queue` / `Enqueue Element` / `Dequeue Element` / `Release Queue` on arbitrary diagrams (**4 ops, core 162/162**)." Repeated at `STATUS.md:99-100`.
+- `STATUS.md:73` (Where things stand) — *"`Track_v6_CPU_core_v0.vi` 69/69 · `…queue_v0.vi` **162/162**"*, i.e. 162/162 is the gate count of **`Track_v6_CPU_queue_v0.vi`**, a replay tracker.
+- `docs/toolkit-capabilities.md:32` — the four `OpQueue*_v0` ops' own evidence line is *"`test_opqueue.log` **7/7**: typed queue, enqueue inside a loop through auto tunnels, element 1280 dequeued in a 0.09 s run"*.
+
+**Why it is a finding and not pedantry:** 162/162 is being used to say how hard the *wrapper shape* has been exercised, and the number belongs to a different artifact. The shape's real record is 7/7 plus whatever the tracker build exercised indirectly. **Scope:** covers the figure and the sentence that attaches it to the pattern. It does not question that the queue ops work.
+
+## A4 `unread-evidence` — `docs/stage2-assembly-step-e.md` (status: `current`) specifies **this exact artifact under another name**, in a **different** wrapper pattern, and carries the library census the plan re-derives.
+
+- `docs/stage2-assembly-step-e.md:213-215` — a detector *"created by wrapping erdosmiller `Create Less?.vi` / **`Create Equal.vi`** / `Create Or Array Elements.vi` as ops in the **`OpBuildIA_v0` pattern**"*; `:221-222` — *"Toolkit gaps (each = one op + one functional test, the row-32 pattern): `OpBuildLess_v0`/**`OpBuildEqual_v0`**, `OpBuildOrArray_v0`, `OpBuildCaseBool_v0` …"*.
+- The same file, `:39-41`, holds the library census the plan sources from `probe_queue_vis.log`: *"**`Create Less?.vi` does not exist** in the library (Equal / Or Array / And Array / Index Array / Case (Boolean) / Exit Structure do)."*
+
+So a current document already names the op (`OpBuildEqual_v0`), already chose a **different** template for it (`OpBuildIA_v0`, not `queue_node`), and already answers "is the creator there". The plan's question 1 lists `OpConstValue*`, `build_case`, `OpBuildIA`, `copy_by_index` — it knows the pattern but not that the op was specified against it. **Scope:** it does not say `OpBuildIA_v0` is the better template; it says the plan is choosing between two in-house templates without knowing the other one was already selected for this node.
+
+---
+
+# PART B — THE ARTIFACT
+
+## B1 `already-built` — a **generic op-builder for an erdosmiller creator** exists and has been run to completion three times. The plan does not mention it.
+
+- `tools/recipes/build_opcreator.py:1-8` — *"generic op builder for an erdosmiller node CREATOR: `Op<Name>_v0.vi` places the creator's node on a target's top-level diagram at `location (0, 0)` … copy `OpBuildIA_v0`, **swap the creator SubVI**, wire `PN VI.Block Diagram` → `Diagram in` and the location control, then **give every remaining REQUIRED input a front-panel control (probe terminals until ExecState == 1)**, purge junk Invokes, save, and **test on a scratch target**."* Usage line `:5-6` is literally `--creator "<Create X.vi>" --op Op<Name>_v0`.
+- It works: `tools/bench/creators_chain.log:15-21` — `Create Flatten to String.vi` → `OpBuildFlatten_v0`, *"assembled … ExecState 1 controls [(5, 'anything')] / saved / test: new nodes on scratch: [(622, 'FlattenString', (1300, 700))]"*; `:32-38` — the same for `Create Unflatten from String.vi` → `OpBuildUnflatten_v0`.
+- Driver pattern for running such an op is built too: `tools/recipes/build_opclfn.py:150` — `creator_node(OP, class, position)` *"run a creator op (`OpBuildFlatten_v0` / `OpBuildUnflatten_v0`) on OP; returns the new node's uid"*.
+
+**Scope, tightly, because this must not cost more than it should.** `build_opcreator.py` places the node on the **top-level** diagram (`:3` and `:50`: `PN VI.Block Diagram → 'Diagram in'`), so it does **not** do the named-subdiagram placement D1 needs, and the `gscript.build_creator(...)` wrapper its docstring promises at `:7` was never written (no `def build_creator` in `tools/gscript.py`; no `tools/bench/build_op_*.log` exists). The finding is: **the two ops are a parameter change plus a diagram-addressing change to an existing, exercised recipe**, not new construction — and the plan prices them as new.
+
+## B2 `already-failed` — the generic creator-wrapper was pointed at a creator with **refnum inputs** and every run then **blocked behind a modal dialog**. `Create Equal.vi`'s `x`/`y` are that same kind of input, and the plan sources only one of them.
+
+- The attempt: `tools/bench/caseop_chain.py:6-7` → `build_opcreator.py --creator "Create Case Structure.vi" --op OpBuildCase_v0`. Result `tools/bench/caseop_chain.log:18-21` — *"assembled … ExecState 1 controls [(5, 'Selector'), (7, 'Inputs'), (9, 'Frames')] / saved / **test run: run blocked behind a modal dialog (dismissed by watchdog after 8s)** / test: new nodes on scratch: [(622, 'CaseStructure', …)]"*.
+- The cause, written down: `docs/NAMES.md:473-475` — *"**Never SetControlValue on `Selector`.** It is a **terminal refnum**; writing 0 into it makes the creator call `Connect Wire` with an invalid reference → **error 1055 dialog** … that blocks the run"*; `:478-480` — *"The Selector error is **NOT silenced** by an error-out indicator … **Until the op can be given a real Selector terminal refnum, every case-structure creation blocks an unattended run.**"*
+- That `Create Equal.vi`'s inputs are the same kind: `archive/2026-08-31-status-full-assembly-narrative.md:526-529` — *"The library's `Create *.vi` family is a refnum algebra — verified on `Create Add.vi` (`x`,`y` in as **wire-source refnums**, `x+y` out as a **terminal refnum**) and `Create Constant.vi` (`Type`/`Value` in, **`Terminal` out**)."*
+- And the constraint that follows, from the same page, `:531-534`: *"refnums live only inside **one VI's dataflow**, so a chain of node creation must sit in **one fused op**, never split across COM calls. That is why `OpLoopKernel_v0` had to fuse Create For Loop → Create SubVI."*
+
+**Does the plan address the cause or repeat it?** Half and half, and this is the finding that matters most.
+- **Addressed:** choosing the `queue_node` shape is exactly the recorded fix — `tools/gscript.py:928-934` fetches the refnum *inside* the op (`Traverse src_cls[src_index] . src_name` via Get Outputs) instead of setting it over COM. For `Equal?`'s first input that is solved.
+- **Repeated:** the plan builds **two separate ops** and `OpCreateConst_v0` returns nothing a second op run can use — `Create Constant.vi`'s output is `Terminal` (a refnum, `tools/bench/erdos_creators.log:41`), which dies with the op's dataflow. The plan's `OpCreateEqual_v0` input list names **one** source node (`Class Name`/`index`/`Names`); nothing in it says how the constant's terminal reaches `y`. Either the two creations fuse into one op (the `:531-534` rule), or `OpCreateEqual_v0` needs a second addressing path that finds the already-placed constant on the body diagram — and that path is not specified.
+
+**Scope:** covers the split into two ops and the unsourced second input. It does not say the `queue_node` shape fails; it says the cause that killed `OpBuildCase_v0` is still live on the input the plan leaves unwired.
+
+## B3 `helper-exists` — for the constant (the plan's own least-sure half) the documented method is **one property ID away from two ops that already exist**, and it removes both variant inputs from the COM boundary. Also: `Text.Text` **writing** and **named-subdiagram addressing** are each already built.
+
+Taking the plan's three sub-questions in turn:
+
+**(i) Creating a typed constant with a value.** `archive/peer/2026-09-06-fp-control-creation-scripting-routes.md:36` — *"`Create Constant` | Creates and returns a **block-diagram constant for the terminal; optional `Value` input**"* (NI API reference, cited there). ID catalogued at `docs/NAMES.md:213` and `docs/vi-server-ids.json:69` (`"Terminal.Create Constant": "6349C00"`). The fleet already owns **two ops on the identical ladder with the sibling IDs**: `tools/gscript.py:2155-2161` — `create_control` = `Terminal.Create Control` **6349C01**, *"OpCreateControl_v0, built by script 2026-09-06 on the ladder VI→Block Diagram→Nodes[]→IA→Terminals[]→IA"*, and `tools/gscript.py:2180-2182` — `create_indicator` = **6349C02**, *"same ladder"*. A constant creator is that op with the ID changed — and because it creates the constant **from the sink terminal**, it is **correctly typed and already wired**, so `Create Constant.vi`'s two **variant** inputs (`Type`, `Value` — `tools/bench/erdos_creators.log:40,42`, both reading `None`) never have to cross COM at all. That boundary is not hypothetical: `archive/2026-09-15-status-stage2-cycles-1-7.md:290` records numeric values coming back through it as *"`None`, no error (Variant-of-numeric marshalling suspected)"*, and `archive/2026-08-31-status-full-assembly-narrative.md:576-579` records a pywin32→LabVIEW array-of-cluster write that **LabVIEW discarded while returning `S_OK`**.
+
+**(ii) "Does anything in the fleet set a constant's value after creating it?"** No op does — but **both halves are built and measured**. `docs/NAMES.md:924-927` — `VI Server:DigitalNumericConstant` `634D007` **NumText** (*"the `Numeric Text` reference → `Text.Text` 632D800"*), measured by attaching each. The read direction is already inside `OpConstValueN_v1` (`docs/toolkit-capabilities.md:47`). And **writing `Text.Text` is already an op**: `docs/d1-build-plan.md:96-97` — *"built a second time as `OpSetLabel_v0` (`gscript.py:2451-2454`, `Node.Label` 6359001 → `Text.Text` **write**)"*.
+
+**(iii) Named-subdiagram addressing is not unique to `queue_node`.** `tools/gscript.py:2451-2458` — `set_node_label(target, diagram_index, node_index, text)` addresses *"`Nodes[node_index]` of Traverse `"Diagram"[diagram_index]`"* **and performs a property write**. That is the plan's required addressing and a write, in one already-built op, on the `OpNetInfo_v1` ladder.
+
+**Scope, honestly.** `create_control` / `create_indicator` walk the **top-level** `Nodes[]` and *"cannot reach nodes inside frames — their ladder walks the TOP-LEVEL `Nodes[]` (index 1+ is out of range → an 8 s dialog per try)"* (`docs/NAMES.md:460-461`). So route (b) needs the same subdiagram work route (c) needs; it is **not free**, and I am not calling it cheaper. The finding is that the plan states (b) as a bare ID pair and never notices it is a one-ID derivative of two built ops that also dissolves the variant problem — so the two routes have never actually been priced against each other.
+
+## B4 `already-measured` — the acceptance gate the plan proposes ("owner chain uid → body `Diagram` → the right `WhileLoop`") has already been run, with the same reader, on these three bodies.
+
+> **The plan:** "Acceptance for each: … the node appears on the named subdiagram (owner chain uid → body Diagram → the right WhileLoop)".
+
+- `tools/bench/build_d1_v0_run5.log:100-108` — `OpOwnerChain_v1` on three Constant-class objects placed inside the new 1.5 body: *"uid **3529** → owner 'Diagram' uid **1194** … uid 1194 → owner 'WhileLoop' uid **1134** … PASS"*, likewise `#3560` and `#3447`; `:109` — *"FACT 1.5 body Diagram#1194 now holds [10407, 25033, 48, 25048, **3529**, 25054, **3560**, 25056, **3447**, 25062]"*.
+- Already recorded as prior art once: `archive/peer/2026-09-17-priorart-d1-full-route-rev2.md:422-426` — *"Run 5 **already measured** a Constant `move_in`-ed into a freshly created While body with the same reader, three times … with `ControlTerminal` still 114. The only untested variable is **provenance**."*
+
+**Scope:** the three objects were `ControlReferenceConstant`s **relocated** into the body, not primitives freshly created there — so the *provenance* half is genuinely untested and the new ops must still be run. What is already on file is the **gate**: the owner-chain assertion and its expected uids. Write the test against `#1170`/`#1194`/`#1215` and `#1133`/`#1134`/`#1135` from `STATUS.md:79-82`; do not re-derive them.
+
+---
+
+## What I did **not** find, so nobody re-checks it
+
+- **No refutation of the direction itself.** Nothing in `archive/`, the retrospectives or a superseded plan section argues that a sentinel test must not be built from a comparison primitive plus a literal inside the body.
+- **The library census is right.** `Create Equal.vi` and `Create Constant.vi` both exist and are terminal-censused: `tools/bench/probe_queue_vis.log:9-10`, and `Create Constant.vi` independently at `tools/bench/erdos_creators.log:34-42`. `docs/stage2-assembly-step-e.md:39-41` confirms it from the other side (`Create Less?.vi` is the one that is absent).
+- **`queue_node`'s docstring says what the plan says it says.** `tools/gscript.py:928-934`, *"Place one queue primitive on Traverse `'Diagram'[diagram_index]` of `target`"*; `.claude/skills/labview-automation/references/vi-scripting.md:308` says what the plan quotes.
+- **One fact that supports the plan and is worth having in the recipe:** `OpForLoop_v0` **already calls `Create Constant.vi` three times** on its own diagram (`tools/bench/probe_opforloop.log:12-13,16`) — `Type` wired from a constant inside the op, **`Value` wire 0 (unwired)**. So the creator is exercised in this fleet, in exactly the shape that takes the *default* value. A sentinel that can be expressed with a default (`0`, `FALSE`) needs no value-setting at all; only the `−1` literal does.
+
+---
+
+```
+PRIOR-ART: refuted-already   (A2 — archive/peer/2026-09-14-stage2-shiftreg-primitive.md:85 + :126-129, and archive/peer/2026-09-17-priorart-d1-op-exitwhile-node.md:259 / docs/toolkit-capabilities.md:51; covers the uncited precedent and the unpriced route (b), NOT the conclusion)
+PRIOR-ART: contradicted      (A3 — the plan's "4 ops, core 162/162" and STATUS.md:99-100 vs STATUS.md:73 "…queue_v0.vi 162/162" and docs/toolkit-capabilities.md:32 "test_opqueue.log 7/7")
+PRIOR-ART: unread-evidence   (A4 — docs/stage2-assembly-step-e.md:213-215, :221-222, :39-41 — this op specified as OpBuildEqual_v0 in the OpBuildIA_v0 pattern, plus the library census)
+PRIOR-ART: already-built     (B1 — tools/recipes/build_opcreator.py:1-8 + tools/bench/creators_chain.log:15-21,32-38; generic erdosmiller-creator wrapper, run 3x. Scope: top-level diagram only; gscript.build_creator was never written)
+PRIOR-ART: already-failed    (B2 — tools/bench/caseop_chain.log:20 + docs/NAMES.md:473-475,478-480; refnum input set over COM ⇒ 1055 modal on every run. queue_node fixes input #1; the constant's Terminal refnum into Equal.y is unsourced, cf. archive/2026-08-31-status-full-assembly-narrative.md:531-534 "one fused op")
+PRIOR-ART: helper-exists     (B3 — archive/peer/2026-09-06-fp-control-creation-scripting-routes.md:36 + docs/vi-server-ids.json:69 + tools/gscript.py:2155-2161,:2180-2182 (6349C01/02 ladder); docs/NAMES.md:924-927 + docs/d1-build-plan.md:96-97 / tools/gscript.py:2451-2454 (Text.Text write); tools/gscript.py:2451-2458 (Diagram-index + Nodes[] addressing). Scope: docs/NAMES.md:460-461 — that ladder is top-level only)
+PRIOR-ART: already-measured  (B4 — tools/bench/build_d1_v0_run5.log:100-109 + archive/peer/2026-09-17-priorart-d1-full-route-rev2.md:422-426; the owner-chain gate and its uids. Scope: relocated ControlReferenceConstants, so fresh-creation provenance is still untested)
+```
+
+**The cheapest way to release most of this:** B1/B4 are `FIXED:` lines away (derive the recipe from `build_opcreator.py`, reuse run 5's gate). A3/A4 are one edit each. **B2 is the one that should change the build**: decide, in writing, whether `Equal?`'s `y` comes from a fused single op or from a second addressing path, before the recipe is written — that is the input that took `OpBuildCase_v0` down.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-d1-sentinel-ops.md
+BGRUN END rc=0 after 432s

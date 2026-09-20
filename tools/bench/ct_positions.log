@@ -1,0 +1,38 @@
+BGRUN START 2026-09-13 07:57:11 limit 20.0 min: py -u -c 
+import os,sys,json
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+WORK=r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi'
+labs=g.fp_labels(WORK,max_n=400)
+cts=g.report(WORK,'ControlTerminal')
+print('fp_labels=%d  ControlTerminal=%d'%(len(labs),len(cts)))
+WANT=('cycleschedule','numcol','subcycle','total cycle','cycle start','estimated end','set # of cycles','start cycles','mag position')
+# pair by index and see whether the ordering is consistent (both come from the same traverse order)
+rows=[]
+for i,((u,lbl,ind),ct) in enumerate(zip(labs,cts)):
+    rows.append({'i':i,'fp_uid':u,'label':lbl,'ind':ind,'ct_uid':ct['uid'],'pos':list(ct.get('pos') or ()),'owner':ct.get('owner')})
+print()
+print('scheduler controls, with the ControlTerminal paired by index:')
+for r in rows:
+    if any(k in r['label'].lower() for k in WANT):
+        print('   [%3d] %-26r fp_uid %-6s ct_uid %-7s pos %-16s owner %s'%(r['i'],r['label'],r['fp_uid'],r['ct_uid'],r['pos'],r['owner']))
+json.dump(rows,open('tools/bench/ct_positions.json','w',encoding='utf-8'),indent=1,ensure_ascii=False)
+print()
+print('written')
+
+fp_labels=114  ControlTerminal=114
+
+scheduler controls, with the ControlTerminal paired by index:
+   [ 52] 'SubCycle'                 fp_uid 52     ct_uid 17487   pos [3160, 987]      owner Diagram
+   [ 53] 'Set # of Cycles'          fp_uid 53     ct_uid 24281   pos [3651, 1042]     owner Diagram
+   [ 54] 'Start Cycles'             fp_uid 54     ct_uid 9723    pos [6054, 1258]     owner Diagram
+   [ 56] 'Estimated end time (min)' fp_uid 56     ct_uid 9939    pos [2838, 1489]     owner Diagram
+   [ 59] 'Cycle Start Time'         fp_uid 59     ct_uid 10785   pos [3440, 1225]     owner Diagram
+   [ 99] 'Total cycle #'            fp_uid 99     ct_uid 11532   pos [-11968, 1601]   owner Diagram
+   [105] 'CycleSchedule'            fp_uid 105    ct_uid 25964   pos [-10604, 1049]   owner Diagram
+   [106] 'Mag Position'             fp_uid 106    ct_uid 12239   pos [-8545, 887]     owner Diagram
+   [107] 'NumCol'                   fp_uid 107    ct_uid 12561   pos [-6265, 963]     owner Diagram
+
+written
+BGRUN END rc=0 after 230s

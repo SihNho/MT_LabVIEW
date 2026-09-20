@@ -1,0 +1,183 @@
+﻿# retrospective-cycle9
+
+- **agent:** codex
+- **model:** gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))
+- **kind:** fact
+- **date:** 2026-09-15
+- **outcome:** ANSWERED (254s)
+- **why asked:** (Claude fills in)
+- **verdict:** unverified
+
+## Question
+
+RETROSPECTIVE of cycle 9 (read-only; you may open any file in the project).
+
+Attack HOW this cycle was run. You are not being asked about any single hypothesis - those were
+reviewed one at a time already, and every one of those reviews passed. You are being asked about the trajectory.
+
+Answer these, in order, and be concrete about which log or file shows it:
+
+1. REPEATED FAILURE. Did the same class of failure recur? On which attempt should the approach have changed, and to
+   what? Name the attempt number.
+2. MISSING TOOL. Is there a reader or op that was NOT built and whose absence made the cycle more expensive? Say
+   which failures it would have answered.
+3. UNMEASURED STEPS. Was anything decided by inference where a measurement was available and cheap?
+4. RULE COMPLIANCE. Read the attached CLAUDE.md. Which of its rules were broken, evaded, or satisfied only
+   formally? The compliance audit output is attached - say also what the audit does NOT cover.
+5. ORDERING. Was the cycle's order of work defensible, or should some later step have come first?
+6. WHAT WAS NOT REPORTED. From the raw logs, is there anything the session's own summary would have hidden or
+   understated?
+
+Then END YOUR ANSWER with machine-readable lines, one per structural fault, using a slug from this list:
+  repeated-failure-class 쨌 tool-not-built 쨌 inference-over-measurement 쨌 rule-evaded 쨌 wrong-ordering 쨌
+  unreported-fact 쨌 scope-creep 쨌 premature-build
+Format exactly:
+  VIOLATION: <slug>
+Use `VIOLATION: none` if there are none. Do not invent new slugs; map to the closest one and explain in the prose.
+
+=== COMPLIANCE AUDIT (tools/audit_cycle.py, machine-generated) ===
+
+== cycle audit, last 1.6 h: 16 build logs, 0 peer logs, 64 archived reviews
+
+  PASS  A1 every build log came from bgrun: 16/16 ok
+  FAIL  A2 every bgrun ended (END or TIMEOUT): unfinished: ['retro_cycle9.log']
+  PASS  A3 every failing log is followed by an archived review: 0 logs recorded a failure; unreviewed: none
+  FAIL  A4 every archived review says what was done with it: 55/64 annotated; blank: ['2026-09-15-cycle8-plan-attack.md', '2026-09-15-cycle8-plan-rule-audit.md', '2026-09-15-frameloop-seam-77-crossings.md', '2026-09-15-outcome-review-20260915.md', '2026-09-15-peerps1-bomless-cp949-parse.md', '2026-09-15-priorart-ownerchain.md']??
+  PASS  A5 the main VI was not modified in this window: md5 2a78e17c449c?? mtime 2026-09-01 12:07
+  PASS  A7 no archive note wikilinks into the active set: archive links stay inside archive
+  n-a   A6 state-changing GUI actions are recorded: 1730 lines in gui_actions.log (all time); this cycle used no GUI if the retrospective agrees
+
+  C1 builds run 17, failure markers 0, logs carrying a failure 0
+  C2 peer reviews dispatched 0, archived 64
+  C3 wall-clock inside bgrun 15 min 39 s
+
+AUDIT VIOLATIONS: A2 every bgrun ended (END or TIMEOUT), A4 every archived review says what was done with it
+
+
+=== BUILD LOGS OF THIS CYCLE (read them directly, they are the primary record) ===
+tools/bench/build_diagram_hierarchy.log
+tools/bench/build_diagram_hierarchy_run2.log
+tools/bench/build_diagram_hierarchy_run3.log
+tools/bench/census_0a_names.log
+tools/bench/census_boolean_controls.log
+tools/bench/census_opwiresource_v5.log
+tools/bench/priorart_ownerchain.log
+tools/bench/probe_migrate_compiles.log
+tools/bench/probe_migrate_v2.log
+tools/bench/probe_migrate_v3.log
+tools/bench/probe_relocate_route.log
+tools/bench/probe_relocate_route_run2.log
+tools/bench/retro_cycle8.log
+tools/bench/retro_cycle8_run2.log
+tools/bench/retro_cycle9.log
+tools/bench/which_loop_owns_motor.log
+
+The rules are in CLAUDE.md at the project root; the cycle's own documents are STATUS.md and docs/stage2-assembly-step-e.md; every hypothesis-level review of this cycle is in archive/peer/.
+
+## Answer
+
+1. Repeated failure
+
+Yes. The recurring class was not merely ?쐗iring failed?? it was using a structurally unsuitable or incorrectly addressed probe and then treating weak whole-VI evidence as if it answered whether the migrated state compiled.
+
+- Attempt 1 guessed the new diagram as `DiagramCount - 1`, called elapsed time a loop UID, guessed terminal `"String"`, and failed G4 and G6 ([probe_relocate_route.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/probe_relocate_route.log:5>)).
+- Attempt 2 reused the same scratch path and began from the broken in-memory residue of attempt 1. It again failed G6. Worse, its outer runner ended `rc=0` although the embedded probe says `probe exit=1` ([probe_relocate_route_run2.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/probe_relocate_route_run2.log:25>)).
+- Attempt 3 finally verified diagram-local placement, but still used a harness with no Boolean control, repeated the 1057 terminal-routing failure, and could not establish compilation: H1, H5, and H6 all failed ([probe_migrate_compiles.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/probe_migrate_compiles.log:5>)).
+- Attempt 4 suppressed compilation as ?쐍ot a gate??and accepted topology despite a Path-to-String mismatch ([probe_migrate_v2.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/probe_migrate_v2.log:12>)).
+- Attempt 5 finally chose a suitable harness: a For loop needing no conditional terminal and a type-compatible String source. It compiled ([probe_migrate_v3.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/probe_migrate_v3.log:3>)).
+
+The approach should have changed at **attempt 2**, the second failed/void run, as required by the two-failure budget. It should have stopped the material session and moved directly to the eventual attempt-5 design: unique scratch path, UID-delta diagram identification, diagram-local membership verification, a type-compatible source, and a structure that can compile without an unavailable conditional-terminal input.
+
+2. Missing tool
+
+Two missing readers increased cost.
+
+The primary one was **`VI.Get Errors`**. It would have explained:
+
+- why attempts 1 and 2 remained at `ExecState 0` after cleanup;
+- whether attempt 3?셲 H6 failure came from the unwired While conditional, the failed String connection, or another broken object;
+- whether attempt 4?셲 `ExecState 0` was really ?쐃xpected??or whether its Path-to-String wire was broken.
+
+Attempt 4 explicitly says this decision required `VI.Get Errors` and that it was not built ([probe_migrate_v2.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/probe_migrate_v2.log:12>)). CLAUDE.md already names it as the required reader after the second inferred broken-VI diagnosis ([CLAUDE.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/CLAUDE.md:214>)). Prior attempts to build it had failed, but its absence did not justify continuing to classify `ExecState 0` by inference.
+
+The second was **`OpOwnerChain_v0`**. Without it, three hierarchy runs used positional matching, still left 41 of 170 diagrams unresolved, and the motor-owner walk stopped at the first nested structure for almost every call site ([build_diagram_hierarchy_run3.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_diagram_hierarchy_run3.log:10>), [which_loop_owns_motor.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/which_loop_owns_motor.log:4>)). The direct reader was considered only afterward.
+
+3. Unmeasured steps
+
+Yes.
+
+- The diagram?셲 traversal index and `while_loop()` return value were inferred in attempts 1??. The subsequent cheap census measured that a new diagram appeared at index 0 and that `while_loop()` returned a floating-point duration, not a UID ([census_0a_names.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/census_0a_names.log:39>)). That census should have preceded attempt 1.
+- Attempt 2 printed that the subVI landed on a particular diagram, but the gate measured only a whole-VI SubVI count. The peer had already warned that the location was printed from the input argument rather than measured ([probe0a review](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-15-probe0a-run1-two-gate-fails.md:56>)).
+- Attempt 3 discovered only during execution that its harness had no Boolean control. The dedicated census confirming this was run afterward, at 18:29 ([census_boolean_controls.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/census_boolean_controls.log:1>)).
+- Attempt 4 inferred that its `ExecState 0` was solely the unwired conditional terminal, although the same run contained a Path-to-String mismatch. Attempt 5 provided the cheap direct measurement by removing both competing explanations.
+- The hierarchy work inferred ownership from geometric proximity even though the missing direct owner reader was already identified. The resulting document concedes that the distance rule does not generalize and that FlatSequence links remain unverified ([diagram-hierarchy.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/diagram-hierarchy.md:52>)).
+
+4. Rule compliance
+
+Broken or evaded:
+
+- **Failure budget = 2:** after attempt 2, work continued through attempts 3, 4, and 5 in the same trajectory. Calling attempt 3 a ?쐂ifferent test??satisfied the wording formally but did not perform the required handoff to a judgement session ([CLAUDE.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/CLAUDE.md:185>)).
+- **Every failed prediction gets peer review:** attempt 1 was reviewed, but no archived review was created after attempt 2?셲 G6 failure or attempt 3?셲 three failures. The hierarchy TypeError and run-2 `rc=1` likewise have no intervening review. Only `probe0a-run1-two-gate-fails.md` appears between 17:55 and 18:32.
+- **Discovery paid up front:** terminal names, diagram-index behavior, the loop-return value, and available Boolean controls were measured only after failed builds. This directly conflicts with ?쐃very name resolved ??at planning time; no mid-run name discovery??([CLAUDE.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/CLAUDE.md:223>)).
+- **Review disposition:** the attempt-1 review and owner-chain prior-art review still contain `(Claude fills in)` and `verdict: unverified`, despite being used to drive subsequent work ([probe review](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-15-probe0a-run1-two-gate-fails.md:7>), [owner-chain review](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-15-priorart-ownerchain.md:7>)).
+- **Layered documentation:** `STATUS.md` is 426 lines, over four times the explicit approximately-100-line threshold. It also contains duplicate `status`, `owner`, and `since` keys in its lock block?봣irst acquired, then released?봲o the mandatory at-a-glance lock is ambiguous ([STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:9>)).
+- **One cycle per session:** cycle 8?셲 retrospective ended at 17:54 and cycle-9 attempt 1 started at 17:55, while STATUS retained the same long-running session state. That is a formal cycle boundary without the cold-start session boundary the rule requires.
+- **Verification level:** the status headline says the migration method is ?쐏roven end to end,??although the evidence is structural compilation only and scale/runtime remain untested. The later caveat repairs the substance, but the headline violates the required explicit verification-level language ([STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:283>)).
+
+Satisfied:
+
+- All listed commands were launched through `bgrun`.
+- The main VI checksum remained unchanged.
+- The logs show scratch-copy work and read-only main-VI inspection, with no motor or ASI execution.
+- Attempt 1?셲 failed prediction was reviewed through the prescribed peer mechanism before the next probe.
+
+What the audit does not cover?봞nd in places gets wrong:
+
+- A3/C1 report zero failing logs despite explicit `**FAIL**` markers and several `BGRUN END rc=1` lines.
+- An inner probe failure can be hidden by an outer `rc=0`, exactly as in attempt 2.
+- A2 is currently a self-observation artifact: `retro_cycle9.log` is unfinished because the retrospective is reading its own still-running wrapper log. It is not evidence that an earlier cycle command escaped its deadline.
+- It does not enforce the two-failure budget, peer review after each actual failed prediction, session boundaries, upfront discovery, semantic adequacy of gates, verification-level wording, STATUS length, or lock-block validity.
+- A5 checks only the main VI, not every protected original.
+- A6 is `n-a`; an all-time GUI-log count does not prove that this cycle used no GUI.
+- ?? peer logs??misses reviews nested inside build logs.
+- A4 detects incomplete dispositions, but its own count is inconsistent: 55 of 64 annotated implies nine blanks, while only six filenames are printed.
+
+5. Ordering
+
+The highest-level decision?봯rove the migration primitive before cataloguing 170 diagrams?봶as defensible.
+
+The actual order underneath it was not:
+
+1. `census_0a_names` should have preceded attempt 1.
+2. The Boolean-control census or direct selection of `HARNESS_track` should have preceded attempt 3.
+3. After attempt 2, the cycle should have switched immediately to the attempt-5 discriminator.
+4. The recorded queue says `OpOwnerChain_v0` first, full hierarchy second, motor-owner analysis third ([STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:354>)). Execution did the reverse: three hierarchy runs at 18:32??8:33, motor analysis at 18:35, donor census at 18:50, and owner-chain prior-art review at 18:58.
+5. Consequently, the hierarchy builder and motor analysis were knowingly run without the link required to finish either question. That was premature construction, not merely harmless exploration.
+
+6. What was not reported
+
+The raw record is materially harsher than the summary and audit:
+
+- The audit?셲 ?쐚ero failures??hides at least four cycle-9 work logs ending `rc=1`: attempt 1, attempt 3, hierarchy run 1, and hierarchy run 2.
+- Attempt 2 is an additional concealed failure: its wrapper ended `rc=0`, but the embedded probe says `probe exit=1`.
+- Attempt 4?셲 ?? pass, 0 fail??did not answer compilability; it explicitly demoted `ExecState 0` to a non-gate. STATUS first headlines attempt 4 as ?쏛NSWERED??and only later retracts that strength.
+- The hierarchy?셲 successful run 3 remained incomplete: 41 diagrams unresolved. The subsequent motor report reached a While loop for only the already-known motor, frame, and display bodies; almost all instrument call-site chains stopped early.
+- The session summary says hypothesis-level review discipline was operating, but no reviews exist for attempts 2?? or the two failed hierarchy runs.
+- STATUS simultaneously contains ??a ANSWERED,???쐓ettled by attempt 5,??and a later stale table saying ??a NOT YET ANSWERED?? runs spent.??Its length and contradictory chronology make it unsuitable as the cold-start truth source required by CLAUDE.md.
+- The current A2 failure should not be reported as a completed-run violation: it is the retrospective observing itself in flight.
+
+VIOLATION: repeated-failure-class
+VIOLATION: tool-not-built
+VIOLATION: inference-over-measurement
+VIOLATION: rule-evaded
+VIOLATION: wrong-ordering
+VIOLATION: unreported-fact
+VIOLATION: premature-build
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+(Claude fills in)

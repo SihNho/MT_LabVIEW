@@ -1,0 +1,51 @@
+BGRUN START 2026-09-12 00:40:09 limit 20.0 min: py -u tools/bench/nodeinfo_crash_probe.py
+
+######################################################################
+#### cell 1 control: modern VI, no probe
+LabVIEW up after 14 s, version 26.3.1f1
+dialogs: 18,1346,762| / ENABLED|656398|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+   lv_restart rc 0
+target: PARALLEL_kernel_v3.vi
+counts: {'Node': 4, 'Diagram': 2, 'SubVI': 1, 'Wire': 28}
+node_info OK, nodes: 3
+   [0] 'For Loop' 'For Loop'
+   [1] 'Decimate 1D Array' 'Decimate 1D Array'
+   [2] 'Interleave 1D Arrays' 'Interleave 1D Arrays'
+CELL OK
+
+   cell rc 0
+   LabVIEW after the cell: alive
+
+######################################################################
+#### cell 2 old VI, NO property probe
+LabVIEW up after 14 s, version 26.3.1f1
+dialogs: 18,1346,762| / ENABLED|263732|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+   lv_restart rc 0
+target: INSPECT_probe.vi
+counts: {'Node': 13, 'Diagram': 9, 'SubVI': 4, 'Wire': 34}
+node_info OK, nodes: 2
+   [0] 'Unbundle By Name' 'Unbundle By Name'
+   [1] 'Case Structure' 'Case Structure'
+CELL OK
+
+   cell rc 0
+   LabVIEW after the cell: alive
+
+######################################################################
+#### cell 3 old VI, WITH property probe
+LabVIEW up after 14 s, version 26.3.1f1
+dialogs: 18,1346,762| / ENABLED|722492|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+   lv_restart rc 0
+target: INSPECT_probe.vi
+counts: {'Node': 13, 'Diagram': 9, 'SubVI': 4, 'Wire': 34}
+props: {'PreferredExecSystem': 7, 'VIType': 1}
+node_info OK, nodes: 2
+   [0] 'Unbundle By Name' 'Unbundle By Name'
+   [1] 'Case Structure' 'Case Structure'
+CELL OK
+
+   cell rc 0
+   LabVIEW after the cell: alive
+
+DONE
+BGRUN END rc=0 after 243s

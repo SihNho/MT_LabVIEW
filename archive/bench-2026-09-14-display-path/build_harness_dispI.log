@@ -1,0 +1,117 @@
+BGRUN START 2026-09-14 13:51:59 limit 15.0 min: py -u tools/recipes/build_harness_dispI.py
+donor copy: Node=6 SubVI=6 Wire=14 CtlTerm=2 panel=['Image', 'Camera Name'] ExecState=1
+cleared: Node=0 SubVI=0 Wire=0 CtlTerm=1 panel=['Image'] ExecState=1
+
+== 3 drop IMAQ Create
+   predict: +1
+   dropped IMAQ Create uid 6 Nodes[] 0: ['New Image', 'Border Size', 'Image Name', 'error out', 'Image Type', 'error in (no error)']
+   result : 6  (0.2 s)
+
+== 4 drop IMAQ ReadFile
+   predict: +1
+   dropped IMAQ ReadFile uid 8 Nodes[] 1: ['error out', 'File Data Type out', 'File Type out', 'Image Out', 'Color Palette out', 'File Path', 'error in (no error)', 'File Options', 'Load Color Palette? (No)', 'Image']
+   result : 8  (0.2 s)
+
+== 5 C.New Image -> R.Image; C.error out -> R.error in
+   predict: Wire +2
+   result : after Node=2 SubVI=2 Wire=2 CtlTerm=1 panel=['Image'] ExecState=0  (8.5 s)
+
+== 6 control Image Name
+   predict: wired
+   control on 'Image Name' -> ['Image Name'] wired=True ExecState 0
+   result : Image Name  (16.7 s)
+
+== 7 control File Path
+   predict: wired
+   control on 'File Path' -> ['File Path'] wired=True ExecState 1
+   result : File Path  (16.8 s)
+
+== 8 wire_indicators: ReadFile 'Image Out' -> indicator 'Image' (the Image Display)
+   predict: Wire +1, ExecState 1
+   OBSERVED: EXC wire_indicators: error 5001: LV-Scripting.lvlib:Wire Indicators.vi<ERR>
+
+VERDICT: BROKEN or INCOMPLETE (ExecState 1, image wire False, steps [('3 drop IMAQ Create', 'ok'), ('4 drop IMAQ ReadFile', 'ok'), ('5 C.New Image -> R.Image; C.error out -> R.error in', 'ok'), ('6 control Image Name', 'ok'), ('7 control File Path', 'ok'), ("8 wire_indicators: ReadFile 'Image Out' -> indicator 'Image' (the Image Display)", 'exc')]) - NOT SAVING.
+BGRUN END rc=4 after 78s
+BGRUN START 2026-09-14 13:56:15 limit 15.0 min: py -u tools/recipes/build_harness_dispI.py
+donor copy: Node=6 SubVI=6 Wire=14 CtlTerm=2 panel=['Image', 'Camera Name'] ExecState=1
+cleared: Node=0 SubVI=0 Wire=0 CtlTerm=1 panel=['Image'] ExecState=1
+
+== 3 drop IMAQ Create
+   predict: +1
+   dropped IMAQ Create uid 6 Nodes[] 0: ['New Image', 'Border Size', 'Image Name', 'error out', 'Image Type', 'error in (no error)']
+   result : 6  (0.2 s)
+
+== 4 drop IMAQ ReadFile
+   predict: +1
+   dropped IMAQ ReadFile uid 8 Nodes[] 1: ['error out', 'File Data Type out', 'File Type out', 'Image Out', 'Color Palette out', 'File Path', 'error in (no error)', 'File Options', 'Load Color Palette? (No)', 'Image']
+   result : 8  (0.2 s)
+
+== 4b drop IMAQ ImageToArray (consumer of Image Out, = disp1's chain)
+   predict: +1
+   dropped IMAQ ImageToArray uid 9 Nodes[] 2: ['error in (no error)', 'Optional Rectangle', 'Image Pixels (U16)', 'Image Pixels (Float)', 'error out', 'Image', 'Image Pixels (U8)', 'Image Pixels (I16)']
+   result : 9  (0.3 s)
+
+== 5 C.New Image -> R.Image; R.Image Out -> A.Image; error chain
+   predict: Wire +4
+   result : after Node=3 SubVI=3 Wire=4 CtlTerm=1 panel=['Image'] ExecState=0  (8.7 s)
+
+== 6 control Image Name
+   predict: wired
+   control on 'Image Name' -> ['Image Name'] wired=True ExecState 0
+   result : Image Name  (16.8 s)
+
+== 7 control File Path
+   predict: wired
+   control on 'File Path' -> ['File Path'] wired=True ExecState 1
+   result : File Path  (16.8 s)
+
+== 8 wire_indicators: ReadFile 'Image Out' (now wired) -> indicator 'Image' (the Image Display), a BRANCH
+   predict: no new Wire object (a branch), ExecState stays 1, the Image terminal's wire becomes non-zero
+   OBSERVED: EXC wire_indicators: error 5001: LV-Scripting.lvlib:Wire Indicators.vi<ERR>
+   probe: 'File Type out' -> 'Image': wire_indicators: error 5001: LV-Scripting.lvlib:Wire Indicators.vi<ERR>
+   panel wiring after the branch: [{'label': 'Image', 'indicator': True, 'uid': 464, 'is_source': False, 'wire': 0, 'term_err': 0, 'wire_err': 1055}, {'label': 'Image Name', 'indicator': False, 'uid': 218, 'is_source': True, 'wire': 245, 'term_err': 0, 'wire_err': 0}, {'label': 'File Path', 'indicator': False, 'uid': 233, 'is_source': True, 'wire': 267, 'term_err': 0, 'wire_err': 0}]
+
+VERDICT: BROKEN or INCOMPLETE (ExecState 1, image wire False, steps [('3 drop IMAQ Create', 'ok'), ('4 drop IMAQ ReadFile', 'ok'), ("4b drop IMAQ ImageToArray (consumer of Image Out, = disp1's chain)", 'ok'), ('5 C.New Image -> R.Image; R.Image Out -> A.Image; error chain', 'ok'), ('6 control Image Name', 'ok'), ('7 control File Path', 'ok'), ("8 wire_indicators: ReadFile 'Image Out' (now wired) -> indicator 'Image' (the Image Display), a BRANCH", 'exc')]) - NOT SAVING.
+BGRUN END rc=4 after 78s
+BGRUN START 2026-09-14 14:07:49 limit 15.0 min: py -u tools/recipes/build_harness_dispI.py
+donor copy: Node=6 SubVI=6 Wire=14 CtlTerm=2 panel=['Image', 'Camera Name'] ExecState=1
+cleared: Node=0 SubVI=0 Wire=0 CtlTerm=1 panel=['Image'] ExecState=1
+
+== 3 drop IMAQ Create
+   predict: +1
+   dropped IMAQ Create uid 6 Nodes[] 0: ['New Image', 'Border Size', 'Image Name', 'error out', 'Image Type', 'error in (no error)']
+   result : 6  (0.2 s)
+
+== 4 drop IMAQ ReadFile
+   predict: +1
+   dropped IMAQ ReadFile uid 8 Nodes[] 1: ['error out', 'File Data Type out', 'File Type out', 'Image Out', 'Color Palette out', 'File Path', 'error in (no error)', 'File Options', 'Load Color Palette? (No)', 'Image']
+   result : 8  (0.2 s)
+
+== 4b drop IMAQ ImageToArray (consumer of Image Out, = disp1's chain)
+   predict: +1
+   dropped IMAQ ImageToArray uid 9 Nodes[] 2: ['error in (no error)', 'Optional Rectangle', 'Image Pixels (U16)', 'Image Pixels (Float)', 'error out', 'Image', 'Image Pixels (U8)', 'Image Pixels (I16)']
+   result : 9  (0.3 s)
+
+== 5 C.New Image -> R.Image; R.Image Out -> A.Image; error chain
+   predict: Wire +4
+   result : after Node=3 SubVI=3 Wire=4 CtlTerm=1 panel=['Image'] ExecState=0  (8.7 s)
+
+== 6 control Image Name
+   predict: wired
+   control on 'Image Name' -> ['Image Name'] wired=True ExecState 0
+   result : Image Name  (16.8 s)
+
+== 7 control File Path
+   predict: wired
+   control on 'File Path' -> ['File Path'] wired=True ExecState 1
+   result : File Path  (16.8 s)
+
+== 8 connect_ctl: ReadFile 'Image Out' -> Image Display terminal (branch, Terminal.Connect Wire)
+   predict: wire on the Image terminal; ImageToArray wire kept; ExecState 1
+   connect_ctl -> err=None; Image terminal wire = 259; ImageToArray.Image wire = 278; wires 6 -> 7; ExecState 1
+   result : 259  (8.6 s)
+   panel wiring after the branch: [{'label': 'Image', 'indicator': True, 'uid': 464, 'is_source': False, 'wire': 259, 'term_err': 0, 'wire_err': 0}, {'label': 'Image Name', 'indicator': False, 'uid': 218, 'is_source': True, 'wire': 245, 'term_err': 0, 'wire_err': 0}, {'label': 'File Path', 'indicator': False, 'uid': 233, 'is_source': True, 'wire': 267, 'term_err': 0, 'wire_err': 0}]
+steps: [('3 drop IMAQ Create', 'ok'), ('4 drop IMAQ ReadFile', 'ok'), ("4b drop IMAQ ImageToArray (consumer of Image Out, = disp1's chain)", 'ok'), ('5 C.New Image -> R.Image; R.Image Out -> A.Image; error chain', 'ok'), ('6 control Image Name', 'ok'), ('7 control File Path', 'ok'), ("8 connect_ctl: ReadFile 'Image Out' -> Image Display terminal (branch, Terminal.Connect Wire)", 'ok')]
+
+VERDICT: HARNESS_dispI built and saved (structural) - run tools/bench/run_dispI_bench.py next
+BGRUN END rc=0 after 87s

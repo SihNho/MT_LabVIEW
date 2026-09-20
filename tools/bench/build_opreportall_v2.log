@@ -1,0 +1,66 @@
+BGRUN START 2026-09-13 23:11:26 limit 25.0 min: py -u tools/recipes/build_opreportall_v1.py
+start: ForLoop=0 LoopTunnel=0 Property=2 CtlTerm=10 Wire=17 ExecState=1
+
+== 1 delete the OLD Index Array - frees Traverse.'References'
+   predict: IndexArray 1->0
+   OBSERVED: after ForLoop=0 LoopTunnel=0 Property=2 CtlTerm=10 Wire=14 ExecState=0
+
+== 2 delete the two OLD Property nodes (they read ONE element, not the array)
+   predict: Property 2->0
+   OBSERVED: after ForLoop=0 LoopTunnel=0 Property=0 CtlTerm=10 Wire=7 ExecState=1
+
+== 3 empty For Loop
+   predict: ForLoop 0->1; ExecState 0 is EXPECTED - an empty loop has no N
+   OBSERVED: after ForLoop=1 LoopTunnel=0 Property=0 CtlTerm=10 Wire=7 ExecState=0
+
+== 4 find the loop body diagram
+   predict: one diagram owned by a ForLoop
+   OBSERVED: [1]
+
+== 5 Property(Position, UID, Class Name, Owner) INSIDE the loop body
+   predict: Property 0->1 - GObject inherits Generic, so one node carries all four
+   OBSERVED: [{'i': 0, 'class': 'Property', 'uid': 114, 'pos': (2845, 1851), 'owner': 'Diagram'}]
+
+== 6 wire Traverse.'References' -> that node's `reference` (CROSSES the loop boundary)
+   predict: LoopTunnel 0->1, Wire +2 (outside + inside segments), and ExecState 0->1 because the array supplies N
+   OBSERVED: after ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=10 Wire=9 ExecState=1
+
+== 7 Property(Class Name) on the OWNER, also inside the body
+   predict: Property 1->2 - this is what makes report()'s `owner` field
+   OBSERVED: [{'i': 0, 'class': 'Property', 'uid': 115, 'pos': (2851, 2051), 'owner': 'Diagram'}]
+
+== 8 wire PN1.'Owner' -> PN2.`reference` (both inside the body, so NO new tunnel)
+   predict: Wire +1, LoopTunnel unchanged
+   OBSERVED: after ForLoop=1 LoopTunnel=1 Property=2 CtlTerm=10 Wire=10 ExecState=1
+
+== 9 exit_loop: auto-indexed OUTPUT tunnels for Position, UID, Class Name
+   predict: LoopTunnel 1->4
+   OBSERVED: after ForLoop=1 LoopTunnel=4 Property=2 CtlTerm=10 Wire=13 ExecState=1
+
+== 10 exit_loop: the owner's Class Name
+   predict: LoopTunnel +1
+   OBSERVED: after ForLoop=1 LoopTunnel=5 Property=2 CtlTerm=10 Wire=14 ExecState=1
+
+== 11. tunnels now 5; indices 1..4 should be the outputs
+   tunnel 1 -> indicator ['Array']  (expected to carry Position)
+   tunnel 2 -> indicator ['Array 2']  (expected to carry UID)
+   tunnel 3 -> indicator ['Array 3']  (expected to carry ClassName)
+   tunnel 4 -> indicator ['Array 4']  (expected to carry Owner Class Name)
+
+assembled: ForLoop=1 LoopTunnel=5 Property=2 CtlTerm=14 Wire=18 ExecState=1
+steps: [("1 delete the OLD Index Array - frees Traverse.'References'", 'ok'), ('2 delete the two OLD Property nodes (they read ONE element, not the array)', 'ok'), ('3 empty For Loop', 'ok'), ('4 find the loop body diagram', 'ok'), ('5 Property(Position, UID, Class Name, Owner) INSIDE the loop body', 'ok'), ("6 wire Traverse.'References' -> that node's `reference` (CROSSES the loop boundary)", 'ok'), ('7 Property(Class Name) on the OWNER, also inside the body', 'ok'), ("8 wire PN1.'Owner' -> PN2.`reference` (both inside the body, so NO new tunnel)", 'ok'), ('9 exit_loop: auto-indexed OUTPUT tunnels for Position, UID, Class Name', 'ok'), ("10 exit_loop: the owner's Class Name", 'ok')]
+label map (indicator label -> what it carries): {
+  "Array": "Position",
+  "Array 2": "UID",
+  "Array 3": "ClassName",
+  "Array 4": "Owner Class Name"
+}
+
+== 12 COM save
+   predict: the op is written to disk
+   OBSERVED: 12498
+label map written: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opreportall_labels.json
+
+VERDICT: OpReportAll_v0 assembled and saved - STRUCTURAL. It has not been CALLED yet.
+Next: call it on a real target, compare its arrays with report()'s per-object results, and TIME both.
+BGRUN END rc=0 after 74s

@@ -1,0 +1,41 @@
+BGRUN START 2026-09-13 21:14:38 limit 25.0 min: py -u tools/recipes/build_opreportall.py
+start: ForLoop=0 LoopTunnel=0 Property=2 Wire=17 ExecState=1
+
+== 1 empty For Loop
+   predict: ForLoop 0->1, Diagram 1->2, ExecState 0 (an empty loop has no N)
+   observed: after: ForLoop=1 LoopTunnel=0 Property=2 Wire=17 ExecState=0
+
+== 2 find the loop body diagram
+   predict: one diagram owned by a ForLoop
+   observed: [1]
+
+== 3 wire Traverse.'References' -> into the loop (tunnel should auto-create)
+   predict: LoopTunnel 0->1 and ExecState back to 1
+   observed: None
+   NOTE: step 3 needs a sink INSIDE the loop before a wire can land, so the real order is
+   3a build the Property node in the body, 3b wire across. The tunnel still appears on the wire;
+   what the user's ordering point fixes is that the ARRAY wire is made before any output plumbing,
+   so N resolves at the earliest possible moment.
+
+== 3a Property(GObject.Position) INSIDE the loop body
+   predict: Property 2->3, still ExecState 0
+   observed: after: ForLoop=1 LoopTunnel=0 Property=3 Wire=17 ExecState=0
+
+== 3b index of the new Property node
+   predict: the last one
+   observed: 2
+
+== 3c wire Traverse.'References' -> new node.'reference'  (CROSSES the boundary)
+   predict: LoopTunnel 0->1, Wire +1, ExecState 0->1
+   observed: EXC wire References->reference: wire count 17->16, expected +1 (if the source is already wired this may be a successful BRANCH - re-call with branch=True)
+
+== STOPPING BEFORE THE OUTPUT SIDE.
+   Steps 4 (auto-indexed OUTPUT tunnels -> indicators) and 5 (delete the old Index Array and Property
+   nodes) are the remaining work. The output tunnel is the one piece with no verified route yet:
+   exit_loop() only accepts CONNECTOR-PANE terminal names, which a Property node's outputs are not.
+   The probe above shows wire() creates an INPUT tunnel; whether wiring outward from inside the loop to an
+   existing indicator creates an auto-indexed OUTPUT tunnel is the next thing to test.
+
+steps: [('1 empty For Loop', True), ('2 find the loop body diagram', True), ("3 wire Traverse.'References' -> into the loop (tunnel should auto-create)", True), ('3a Property(GObject.Position) INSIDE the loop body', True), ('3b index of the new Property node', True), ("3c wire Traverse.'References' -> new node.'reference'  (CROSSES the boundary)", False)]
+final: ForLoop=1 LoopTunnel=0 Property=3 Wire=16 ExecState=0
+BGRUN END rc=0 after 2s

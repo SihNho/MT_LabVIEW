@@ -1,0 +1,115 @@
+BGRUN START 2026-09-16 19:42:48 limit 25.0 min: py -u tools/prior_art_review.py --plan-file docs/cycle13-plan.md --trigger cycle-start --slug priorart-cycle13-a3
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-cycle13-a3.txt (42172 chars)
+OUTCOME: ANSWERED (591s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-16-priorart-priorart-cycle13-a3.md
+COST: $5.1239  in 56 / out 42363 / cache-create 206406 / cache-read 4000957  (588s, 44 turn(s))
+--- ANSWER ---
+Review complete — read-only; no lock, no build, no edits. `Write` is disabled in this session, so the review is delivered here as text for the dispatcher to archive.
+
+# PRIOR-ART REVIEW — `priorart-cycle13-a3` (trigger: cycle-start)
+
+Subject: `docs/cycle13-plan.md` (cycle 13, A3 — complete the 170-diagram hierarchy).
+
+## PART A — THE DIRECTION
+
+### A1 · SETTLED ALREADY — nothing blocking
+The direction is decided **in the plan's favour** and no file retires it: `docs/pre-rig-master-plan.md:70` carries A3 with `needs: A2`, and A2 is closed (`docs/diagram-hierarchy.md:71-109`, 54 gates / 0 fail). No slug.
+
+### A2 · REFUTED ALREADY — none for the direction
+The *route* chosen for 3b has a refuted sibling (B2), but no file argues against completing the hierarchy from the machine. No slug.
+
+### A3 · CONTRADICTED — four
+
+**(i) `errCO` is NOT "the cast node's own error", so 3c cannot decide what it is written to decide.**
+
+> `docs/cycle13-plan.md:76-79` — *"read the error output of the node **upstream** of the cast … alongside `errCO` (`"error out 10"`, the cast node's own error…)"*
+
+> `tools/recipes/build_opwiresource_v4.py:108-109` — `pnCO = prop_node("VI Server:Generic", "6327803", "ClassName", …)` then `g.wire(OP, "Function", fi("Function", cast), "specific class reference", "Property", fi("Property", pnCO), "reference", branch=True)`; `:115` — `add_indicator(pnCO, "error out", "errCO", labels)`
+
+`errCO` is the error of a **`Generic.ClassName` Property Node hanging off the cast's OUTPUT** — downstream of the cast. The cast is a `To More Specific Class` **Function** with **no error indicator anywhere in the op**. So both indicators 3c reasons over (`errCO`, and `errG` on the UID node) are downstream: "the cast generated it" and "a downstream node generated it" are not separable by this test. The mislabel is already propagated into `docs/diagram-hierarchy.md:99` and `tools/bench/diag_owner_semantics.py:114`.
+
+**(ii) The `Auto-Reset` gating question is asserted closed in one active doc and held open in another.**
+
+> `docs/camera-acquisition-facts.md:238-242` — *"the periodic auto-reset is real, it is driven by frame count, and **it is not gated by the `Auto-Reset` control**."*
+
+> `docs/pre-rig-master-plan.md:224-227` — *"Until it is walked, "the periodic arm is ungated" and "it is gated somewhere outside" are both live, **so the plan may not assert either**."*
+
+Both current, both 2026-09-16. 3d (`docs/cycle13-plan.md:90-91`) proceeds on the master plan's side — which I think is right — but one of the two documents is wrong and neither is listed for correction.
+
+**(iii) An active doc still carries the claim STATUS has already corrected.**
+
+> `docs/stage2-assembly-step-e.md:76-79` — *"remainder 10187 → **`LoopTunnel` #10177 — it LEAVES the frame loop**" … "**So the periodic term is assembled outside diagram 43**"*
+
+`STATUS.md` OPEN 1 records the opposite from measurement (#10177 is an **input** tunnel of `ForLoop 1359`, which sits on diagram 639). That file is not in "Files this cycle expects to touch".
+
+**(iv) "An unsupported property ID raises 1077" is not established for a valid ID on the wrong class.**
+
+> `docs/cycle13-plan.md:65` — *"an unsupported property ID raises **1077** … that is a machine verdict"*
+
+> `docs/toolkit-capabilities.md:226` — the measured 1077 came from a **deliberately bogus** id `FFFFFFF`. `:131` — `Control.Value` `633200D`, a **valid** ID: *"node created, property did not attach: no `Value` terminal"* — silently. `:233-235` — *"Whether `Control.Value` 633200D and `VI:Get Errors` 452 were walker artefacts or genuine 1077s is **now a one-call question each**."*
+
+The fleet's robust check is the **data-terminal-name census**, already in use at `tools/bench/build_opcaseframes_v0.log:10-11`.
+
+### A4 · UNREAD EVIDENCE
+
+**`docs/frame-loop-wire-graph.md` is cited nowhere in the plan and already answers much of 3d:**
+- `:440` — **#1359 t1** (wire **9097**) is fed by **left shift register 9018**, initialised by `#8953 Initialize Array` — not a control terminal.
+- `:417` — **#1359 t2** (wire 9215) writes right register 8.
+- `:264` — frame-loop input tunnel **28343** comes from `subVI Max Trans Pos.vi · Magnet position output` → **#1359 · `Magnet position output`**.
+- `:236` — *"31 LoopTunnels belong to the frame loop (25 inputs, 6 outputs)"*; `:451` — the census covered *"all 132 tunnels of the VI"*.
+
+**`docs/main-vi-panel-map.md` is likewise uncited, although `docs/NAMES.md:848-851` names it as mandatory** (*"Before building a reader for the main VI, read `docs/main-vi-panel-map.md`"*), and `docs/main-vi-panel-map.md:317` already pins `Auto-Reset` (uid 17472) to **wire 9806**. 3d's *"whether any is labelled `Auto-Reset`"* is a wire-uid membership test against a number already on disk.
+
+## PART B — THE ARTIFACT
+
+### B1 · ALREADY BUILT — not for 3a
+3a (machine-read owner **uid** for the 112 non-FlatSequence diagrams) is new; the existing artefacts are what it replaces (`tools/bench/diagram_hierarchy.json`; `tools/bench/which_loop_owns_motor.log:4-22`, which stops at exactly the hop A3 supplies). No slug.
+
+### B2 · ALREADY FAILED — 3b is the first step of the route that failed five times
+The plan knows `OpCaseFrames_v0` failed (`docs/cycle13-plan.md:71`) but attributes it to the wrong step: the **attach passed in every run**; the failures were downstream.
+
+> `archive/2026-09-15-status-stage2-cycles-1-7.md:536-539` — *"the op inherits a TERMINAL-reader chain from its donor and the Index Array now carries DIAGRAM references"*; `:544-547` — *"Still ExecState 0 … the SAME downcast trap one level up: the seed came from the MultiFrameStructure node"*
+
+So 3b buys exactly one uncovered fact (does `6363801` attach to `VI Server:FlatSequence`); everything after it re-enters the recorded failure and the plan's STOP condition fires.
+
+### B3 · HELPER EXISTS — two
+
+**(a) 3d's membership step.** The plan sweeps `g.tunnels()` — a **VI-wide** access index over all 132 tunnels (`tools/gscript.py:747-754`) — then runs `OpOwnerChain_v1` per tunnel uid (`docs/cycle13-plan.md:84-88`). `tools/gscript.py:731-740` `node_terms_uid()` returns *"node_terms plus the node's own UID"*: one op run gives 1359's terminals with identity proof and no ownership walk. The rows are already on disk at `tools/bench/main_vi_nodeterms.json:12295-12333` (uid 1359, terms with `is_source` and wire uids).
+
+**(b) 3a's ~63 memoised structure→parent hops.** `tools/bench/diagram_tree_main.json:3-29` keys each diagram by index with `owner` class and a `uids` node list, so *structure → home diagram* is a file lookup for catalogued structures. Raised twice, never disposed:
+
+> `archive/peer/2026-09-15-priorart-ownerchain.md:125` — *"structure→home-diagram is already available … only for catalogued nodes … partial, not general."*
+> `archive/peer/2026-09-16-priorart-priorart-a1-ownerchain-v1.md:334-342` — *"diagram **43** … `uids` list contains **1359** (:389) and **10407** (:397) … for the five catalogued structure classes, structure → home diagram is a lookup in a file we already have"*
+
+Scope: does **not** cover FlatSequence, tunnels, or nodes past net_map's cap; re-measuring is defensible as verification — but the plan neither cites the file nor says why.
+
+### B4 · ALREADY MEASURED — two
+
+**(a) `MultiFrameStructure.Frames[]` 6363801 attaches — measured five times.**
+> `tools/bench/build_opcaseframes_v0.log:9-11` — *"PASS exactly one new Property node (MultiFrameStructure.Frames[] 6363801) [1780]"* / *"exactly one data SOURCE terminal (Frames[])"* / *"CENSUS VI Server:MultiFrameStructure 6363801 -> data terminal 'Frames[]'"*; repeated at `:36-38`, `:61-63`, `:90-92`, `:120-122`.
+
+The `VI Server:MultiFrameStructure` half of 3b is answered, and `docs/NAMES.md:841` ("short name UNKNOWN") is stale against this log. Only the `VI Server:FlatSequence` half is new.
+
+**(b) `errO` is already read, and already came back dirty on this exact case.**
+> `tools/recipes/build_opownerchain_v1.py:268-269` — `errs = " ".join(… for k in ("errL","errT","errO","errU","errG") …)`
+> `tools/bench/diag_owner_semantics.log:96-98` — diagram 113: *"errs 'error 1055: Property Node in OpOwnerChain_v1.vi' cast '' errCO 'error 1055: …'"*
+
+`errs` **excludes** `errCO`, so A2 already measured that one of `errL/errT/errO/errU/errG` carries the 1055. The only new information in 3c is **which** — so de-merge all five; `errG` (the UID node downstream of the cast) is the competing candidate and the one codex's mechanism predicts (`archive/peer/2026-09-16-ownerchain-flatseqframe-1055-r2.md:74` — *"that produces `Not A Refnum`; the downstream UID Property Node dereferences it and emits 1055"*). Reading `errO` alone does not settle it.
+
+---
+
+```
+PRIOR-ART: contradicted        (A3-i  errCO is a downstream ClassName node, not the cast)
+PRIOR-ART: contradicted        (A3-ii Auto-Reset gating asserted closed vs held open)
+PRIOR-ART: contradicted        (A3-iii stage2-assembly-step-e.md:76-79 vs the measured correction)
+PRIOR-ART: contradicted        (A3-iv 1077 is not a verdict for a valid ID on the wrong class)
+PRIOR-ART: unread-evidence     (A4  frame-loop-wire-graph.md, main-vi-panel-map.md)
+PRIOR-ART: already-failed      (B2  the Frames[] route = OpCaseFrames_v0, 5 runs)
+PRIOR-ART: helper-exists       (B3a node_terms_uid for 3d membership)
+PRIOR-ART: helper-exists       (B3b diagram_tree_main.json for structure -> parent)
+PRIOR-ART: already-measured    (B4a Frames[] 6363801 attach on MultiFrameStructure)
+PRIOR-ART: already-measured    (B4b errO already read and merged into errs)
+```
+
+**Cheapest way through, if it helps the release:** 3a stands (novel, and the plan's own cost note is sound); 3c should de-merge all five error indicators rather than read `errO` as if new, and should stop describing `errCO` as the cast's error; 3b should test only the `VI Server:FlatSequence` attach and cite the five `MultiFrameStructure` passes for the rest; 3d should start from `main_vi_nodeterms.json:12295` + `node_terms_uid`, and test the `Auto-Reset` question as "is wire 9806 among 1359's input wires".
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-cycle13-a3.md
+BGRUN END rc=0 after 592s

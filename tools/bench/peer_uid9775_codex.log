@@ -1,0 +1,41 @@
+BGRUN START 2026-09-16 14:32:48 limit 12.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools/peer.ps1 -Agent codex -Kind review -Slug uid9775-read-not-write-codex -TimeoutSec 480 -Task LabVIEW 2026 VI Scripting. Answer compactly; a gemini attempt timed out at 180s.
+
+CLAIM TO ATTACK: an IMAQdx Property Node (uid 9775) on a LabVIEW startup diagram READS camera Height/Width; it does NOT write them.
+
+MEASURED (tools/bench/diag_9775_direction.log, this project): a scripting VI takes a WIRE UID, walks Wire.Terms[] and per terminal reads Terminal 'Is Source?' (634A003), 'Connected Wire' (634A000), Generic.Owner -> class + UID:
+  wire 32937 Terms[0] IsSource=True  owner 'Property' uid 9775   reciprocal 32937
+  wire 32937 Terms[1] IsSource=False owner 'Diagram'  uid 13236  reciprocal 32937
+  wire 32937 Terms[2] -> error 1055 (past end)
+  wire 32938 identical.
+Node uid 9775 terminals: ['IMAQdx Session','IMAQdx Session','error in','error out','Height','Width']; Height->32937, Width->32938.
+
+MY INFERENCE: IsSource TRUE on the node's own terminal = that terminal DRIVES the wire = an OUTPUT = the property is being READ. Far end owned by a 'Diagram' = a front-panel terminal.
+
+WHY IT MATTERS: the rig's owner said from memory that a CONSTANT is fed INTO this node (a WRITE setting the camera ROI). My measurement says the opposite and is about to go into a build plan as 'the VI does not set the frame size'.
+
+ALREADY RULED OUT: position-proximity around uid 9775 (invalid - this diagram was Clean Up'd, positions carry no meaning); the Nodes[] net walk (front-panel terminals and constants are not Nodes, so it saw only one terminal per net).
+
+ANSWER:
+1. Is Terminal 'Is Source?' TRUE unambiguous evidence of an OUTPUT terminal? Any case where a Property Node in WRITE mode reports IsSource TRUE on the written terminal?
+2. Can one Property Node mix read and write terminals; does that change Terms[] order or Is Source?
+3. Is Generic.Owner = 'Diagram' a reliable signature of a front-panel control/indicator terminal, or could it be a constant, tunnel or shift register?
+4. Cheapest INDEPENDENT discriminating test by VI Server property read (I can read any property by UID, must not open the editor)?
+5. Strongest reason my inference is wrong.
+OUTCOME: ANSWERED (103s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-16-uid9775-read-not-write-codex.md
+--- ANSWER ---
+The attack succeeds only against the build-plan conclusion, not against the direction of node 9775.
+
+1. `Is Source? = TRUE` means that terminal is an output/source. NI explicitly recommends this property to distinguish node inputs from outputs. A write-property?�s value terminal is necessarily an input, so it should report `FALSE`; I found no documented exception where the written-value terminal reports `TRUE`. [NI employee guidance](https://forums.ni.com/t5/LabVIEW/How-to-create-fixed-point-number-using-LabVIEW-VI-scripting/m-p/2838374/highlight/true)
+
+2. One Property Node can mix reads and writes. Direction is per property item; mixing does not reverse `Is Source?`. The conventional terminal sequence remains ref-in, ref-out, error-in, error-out, then property-item terminals, but use `Property Items[].Terminal` rather than depending on array order. [NI documentation](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000kF58SAE&l=en-US), [terminal-order example](https://forums.ni.com/t5/LabVIEW/Scripting-Terminal-Information/td-p/4303374)
+
+3. `Owner = Diagram` is characteristic of a `ControlTerminal`: unlike ordinary node terminals, ControlTerminals are directly owned by their diagram. Owner alone is not formal type proof; also read the terminal?�s runtime class. If it is `ControlTerminal`, it is a front-panel control/indicator terminal?�not a constant, tunnel, or shift register. [NI discussion and explanation](https://forums.ni.com/t5/LabVIEW/Vi-Scripting-inconsistent-behaviour-of-terms-of-a-wire-owner/td-p/3309055)
+
+4. The observation that falsifies your claim is: the `Height` or `Width` `PropertyItem.Is Write` value is `TRUE`, or its `PropertyItem.Terminal` is not the terminal attached to wire 32937/32938. `Is Write = TRUE` specifically means a write item; `FALSE` means read.
+
+5. Strongest alternative explanation: node 9775 reads Height/Width exactly as measured, but some other node?�possibly elsewhere in startup or a called VI?�writes ROI dimensions. Therefore, ?�uid 9775 does not set frame size??is supported; ?�the VI does not set frame size??is not established by this evidence.
+
+I still believe the narrow claim holds. What would change my mind is `PropertyItem.Is Write = TRUE`.
+
+Cheapest discriminating test: resolve uid 9775 ??read `Property Items[]` ??for the Height and Width items read only `Property`, `Is Write`, and `Terminal` UID. No editor opening, wire traversal, or position inference. [NI scripting solution showing individual property-item references](https://forums.ni.com/t5/LabVIEW/LabVIEW-VI-scripting-property-change-to-Write/m-p/3943545/highlight/true)
+BGRUN END rc=0 after 104s

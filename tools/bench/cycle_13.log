@@ -1,0 +1,54 @@
+BGRUN START 2026-09-18 13:50:02 limit 180.0 min: claude.exe -p --model opus --effort max --output-format json --permission-mode acceptEdits You are the JUDGEMENT session for exactly ONE cycle of this project. You were spawned by
+`tools/cycle_runner.py`; when this cycle ends you exit and the runner spawns the next session fresh.
+Nobody is watching this session. Everything you need is on disk.
+
+## Read, in this order, and nothing else
+1. `CLAUDE.md` — the standing rules. They bind you; do not work from a summary of them.
+2. `STATUS.md` — the lock, the rig-state banner, where things stand, OPEN, and NEXT.
+3. The ONE plan document STATUS.md names as current (its frontmatter says `status: current`), including its
+   `## Pre-decided` section.
+Do not read `archive/` (CLAUDE.md rule 4), do not read whole logs, do not re-read what is already in context.
+
+## The rig state and LabVIEW permission are whatever STATUS.md's banner says — NEVER infer them
+STATUS.md's hardware banner is the only authority on the rig state (분해 / 조립 / 실험중) and therefore on what
+may be touched. Only the user announces a state change, and the announcement reaches you only as an edit to that
+banner. A quiet period, a released lock, an empty `tasklist`, the hour of the night, or the fact that the previous
+cycle ran something are NOT evidence that the state changed. If the banner says an experiment is running or
+imminent, no LabVIEW and no instrument is touched in this cycle — you do the work that needs neither, and if the
+whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding the experiment must be over.
+
+## What you do in this cycle
+- **Delegate every piece of material work** to the `material` agent (`.claude/agents/material.md`) with the
+  Agent tool: writing and running recipes or diagnostics, anything touching LabVIEW, log reading (`log-reader`),
+  peer dispatch, STATUS/INDEX bookkeeping. You never run `tools/recipes/*.py` or `tools/bench/*.py` yourself and
+  never read a whole log yourself — `tools/hooks/guard_bash.py` refuses it and it is the point of the split.
+- **A brief states the MEASUREMENT, never the result-dependent ACTION.** "If A removes 1, do X, else do Y" is
+  not delegation; it moves the decision into the session that must not make it. Ask for the measurement, get the
+  facts back, then decide.
+- **Answer from the plan first.** If the plan's `## Pre-decided` section already settles a question, apply it and
+  say which line — do not re-open it, and do not ask the user.
+- **Decide** the things only judgement can decide: design, what to accept from a review, rule-1a equivalence,
+  which discriminating experiment to run next.
+- **Close the cycle**: run `py tools/bgrun.py --max-min 10 --log tools/bench/retro.log -- py tools/retrospective.py
+  --cycle <N>`, annotate what it returns, then rewrite STATUS.md's `## NEXT` section so the next session can start
+  cold from it.
+- **Then stop.** Do not start a second cycle. After the retrospective runs,
+  `tools/hooks/guard_session.py` refuses further material dispatches; that refusal is the end of your cycle, not a
+  problem to route around. The same hook refuses the 9th material dispatch — if you reach it, the cycle was too
+  big: write NEXT and exit so the runner starts a fresh session.
+
+## The NEXT line is your whole output
+The runner reads STATUS.md's `## NEXT` section to decide whether to continue: **if it is byte-identical after two
+consecutive cycles the runner stops**, because a cycle that changed nothing is a loop. So NEXT must say what the
+NEXT session should do first, concretely, with the file and the plan section to start from — never "continue the
+work". If you are blocked on something only the user can answer, write it as the first line of NEXT and put `STOP`
+at the start of a line near the top of STATUS.md; the runner exits and the user reads it.
+
+## Cost discipline
+One cycle, one context. Fewer, larger turns; chain a build and its bookkeeping into one runner; never dispatch a
+sub-agent for something already answered in the plan. You are the expensive model — your turns are reading
+STATUS + plan, deciding, and delegating.
+
+Warning: no stdin data received in 3s, proceeding without it. If piping from a slow command, redirect stdin explicitly: < /dev/null to skip, or wait longer.
+{"duration_api_ms":542682,"stop_reason":"end_turn","session_id":"4a30c2d5-ba99-41cc-b869-d02bd12e975f","total_cost_usd":5.75523525,"usage":{"input_tokens":6,"cache_creation_input_tokens":13585,"cache_read_input_tokens":386446,"output_tokens":9925,"output_tokens_details":{"thinking_tokens":6718},"server_tool_use":{"web_search_requests":0,"web_fetch_requests":0},"service_tier":"standard","cache_creation":{"ephemeral_1h_input_tokens":13585,"ephemeral_5m_input_tokens":0},"inference_geo":"not_available","iterations":[{"input_tokens":2,"output_tokens":255,"cache_read_input_tokens":135906,"cache_creation_input_tokens":1274,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":1274},"type":"message"}],"speed":"standard"},"modelUsage":{"claude-opus-5":{"inputTokens":84,"outputTokens":39305,"cacheReadInputTokens":3945063,"cacheCreationInputTokens":358003,"webSearchRequests":0,"costUSD":5.75523525,"contextWindow":1000000,"maxOutputTokens":64000,"canonicalModel":"claude-opus-5","provider":"firstParty","costBasis":"list"}},"permission_denials":[],"terminal_reason":"completed","fast_mode_state":"off","fast_mode_disabled_reason":"sdk_opt_in_required","origin":{"kind":"task-notification"},"subagent_stats":{"spawned":2,"requested":{"background":0,"foreground":0,"unset":2},"started_in_background":2,"max_depth":1,"spawned_by_subagents":0,"completed":2,"failed":0,"killed":{"parent":0,"user":0,"system":0},"refused":{"depth_limit":0,"concurrency_limit":0,"budget":0},"by_type":{"material":2}},"is_error":false,"num_turns":4,"subtype":"success","api_error_status":null,"result":"Retrospective and the codex prose dispatch are both running under `bgrun`. I'll write STATUS once they return — the retrospective's verdict has to be annotated in the same edit, and STATUS also needs trimming from 127 lines to under the 110-line lint threshold.","ttft_ms":81402,"type":"result","duration_ms":137045,"uuid":"86439068-4c1d-4e48-881c-19f550a7b80b","ttft_stream_ms":1294,"time_to_request_ms":106,"queued_turn_count":0}
+BGRUN END rc=0 after 402s

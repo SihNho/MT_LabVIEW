@@ -1,0 +1,94 @@
+BGRUN START 2026-09-14 00:20:58 limit 25.0 min: py -u tools/recipes/build_opreportnodes.py
+start: ForLoop=0 LoopTunnel=0 Property=7 IndexArray=3 CtlTerm=17 Wire=28 ExecState=1
+the node carrying `Nodes[]` is uid 235
+`Nodes[]` is wire 428; the Index Array consuming it is uid 236
+
+== 1 delete Index Array 236 (the one on wire 428)
+   predict: IndexArray -1
+   OBSERVED: after ForLoop=0 LoopTunnel=0 Property=7 IndexArray=2 CtlTerm=17 Wire=25 ExecState=0
+property nodes to delete: [744, 741, 242, 241, 240, 237] (keeping [235])
+
+== 2 delete donor property node 744
+   predict: Property -1
+   OBSERVED: after ForLoop=0 LoopTunnel=0 Property=6 IndexArray=2 CtlTerm=17 Wire=23 ExecState=0
+
+== 2 delete donor property node 741
+   predict: Property -1
+   OBSERVED: after ForLoop=0 LoopTunnel=0 Property=5 IndexArray=2 CtlTerm=17 Wire=23 ExecState=0
+
+== 2 delete donor property node 242
+   predict: Property -1
+   OBSERVED: after ForLoop=0 LoopTunnel=0 Property=4 IndexArray=2 CtlTerm=17 Wire=19 ExecState=0
+
+== 2 delete donor property node 241
+   predict: Property -1
+   OBSERVED: after ForLoop=0 LoopTunnel=0 Property=3 IndexArray=2 CtlTerm=17 Wire=17 ExecState=0
+
+== 2 delete donor property node 240
+   predict: Property -1
+   OBSERVED: after ForLoop=0 LoopTunnel=0 Property=2 IndexArray=2 CtlTerm=17 Wire=16 ExecState=0
+
+== 2 delete donor property node 237
+   predict: Property -1
+   OBSERVED: after ForLoop=0 LoopTunnel=0 Property=1 IndexArray=2 CtlTerm=17 Wire=15 ExecState=0
+
+== 3 empty For Loop
+   predict: ForLoop 0->1; ExecState 0 expected until N is supplied
+   OBSERVED: after ForLoop=1 LoopTunnel=0 Property=1 IndexArray=2 CtlTerm=17 Wire=15 ExecState=0
+
+== 4 find the loop body diagram
+   predict: one diagram owned by a ForLoop
+   OBSERVED: [1]
+
+== 5 Property(Node.Label, Node.Style) INSIDE the loop body
+   predict: Property +1 - a NODE-class node, which `Nodes[]` elements satisfy with NO cast
+   OBSERVED: [{'i': 0, 'class': 'Property', 'uid': 136, 'pos': (3045, 1851), 'owner': 'Diagram'}]
+
+== 6 wire `Nodes[]` -> that node's `reference` (CROSSES the loop boundary)
+   predict: LoopTunnel 0->1, Wire +2, ExecState -> 1 because the array now supplies N
+   OBSERVED: after ForLoop=1 LoopTunnel=1 Property=2 IndexArray=2 CtlTerm=17 Wire=17 ExecState=0
+
+== 7 Property(Text.Text) INSIDE the body - Node.Label returns a Text REFNUM, not a string
+   predict: Property +1
+   OBSERVED: [{'i': 0, 'class': 'Property', 'uid': 139, 'pos': (3054, 2051), 'owner': 'Diagram'}]
+
+== 8 wire Node.`Label` -> the Text node's `reference`
+   predict: Wire +1, LoopTunnel unchanged (both inside the body)
+   OBSERVED: after ForLoop=1 LoopTunnel=1 Property=3 IndexArray=2 CtlTerm=17 Wire=18 ExecState=0
+
+== 9 exit_loop: auto-indexed tunnel for Node.Style
+   predict: LoopTunnel +1
+   OBSERVED: after ForLoop=1 LoopTunnel=2 Property=3 IndexArray=2 CtlTerm=17 Wire=19 ExecState=0
+
+== 10 exit_loop: auto-indexed tunnel for the label Text
+   predict: LoopTunnel +1
+   OBSERVED: after ForLoop=1 LoopTunnel=3 Property=3 IndexArray=2 CtlTerm=17 Wire=20 ExecState=0
+
+== 10a delete 1 orphaned Index Array(s) [239]
+   predict: IndexArray count drops; these are donor leftovers with no `array` input
+   OBSERVED: after ForLoop=1 LoopTunnel=3 Property=3 IndexArray=1 CtlTerm=17 Wire=19 ExecState=0
+
+== 11. array indicators for tunnels 1..2
+   tunnel 1 -> ['Array']  (Style)
+   tunnel 2 -> ['Array 2']  (Label text)
+
+assembled: ForLoop=1 LoopTunnel=3 Property=3 IndexArray=1 CtlTerm=19 Wire=21 ExecState=0
+steps: [('1 delete Index Array 236 (the one on wire 428)', 'ok'), ('2 delete donor property node 744', 'ok'), ('2 delete donor property node 741', 'ok'), ('2 delete donor property node 242', 'ok'), ('2 delete donor property node 241', 'ok'), ('2 delete donor property node 240', 'ok'), ('2 delete donor property node 237', 'ok'), ('3 empty For Loop', 'ok'), ('4 find the loop body diagram', 'ok'), ('5 Property(Node.Label, Node.Style) INSIDE the loop body', 'ok'), ("6 wire `Nodes[]` -> that node's `reference` (CROSSES the loop boundary)", 'ok'), ('7 Property(Text.Text) INSIDE the body - Node.Label returns a Text REFNUM, not a string', 'ok'), ("8 wire Node.`Label` -> the Text node's `reference`", 'ok'), ('9 exit_loop: auto-indexed tunnel for Node.Style', 'ok'), ('10 exit_loop: auto-indexed tunnel for the label Text', 'ok'), ('10a delete 1 orphaned Index Array(s) [239]', 'ok')]
+label map: {
+  "Array": "Style",
+  "Array 2": "Label text"
+}
+
+-- net_map (BROKEN at the end) --
+   diagram 0:
+      {0: (43, '', [(0, 'error out', 0), (1, 'vi reference', 467), (2, 'password ("")', 0), (3, 'type specifier VI Refnum (for type only)', 0), (4, 'error in (no error)', 383), (5, 'options', 0), (6, 'vi path', 106), (7, 'application reference (local)', 0)]), 1: (124, '', [(0, 'error out', 0), (1, '# of Refs', 0), (2, 'References', 600), (3, 'dup VI Refnum', 0), (4, '', 0), (5, 'Other Refnum', 0), (6, 'Traverse Generated Code (F)', 0), (7, 'Traverse Target', 415), (8, 'error in (no error)', 0), (9, '', 0), (10, 'Class Name', 373), (11, 'VI Refnum', 467)]), 2: (308, '', [(0, 'array', 600), (1, 'element', 605), (2, 'index', 1066)]), 3: (683, '', [(0, 'specific class reference', 645), (1, 'error out', 0), (2, 'target class', 772), (3, 'reference', 605), (4, 'error in', 0)]), 4: (243, '', [(0, 'Diagram in', 645), (1, 'ID String', 312), (2, 'location (0, 0)', 742), (3, '', 0), (4, 'Diagram out', 0), (5, 'reference', 0), (6, 'reference out', 0), (7, 'Inputs', 0), (8, 'Outputs', 0), (9, 'error in', 771), (10, 'error out', 0), (11, 'error in (no error)', 0), (12, 'Class Name', 336), (13, '', 0), (14, '', 0), (15, 'error out', 0)]), 5: (235, '', [(0, 'reference', 645), (1, 'reference out', 0), (2, 'error in (no error)', 0), (3, 'error out', 0), (4, 'Nodes[]', 581)]), 6: (399, '', [(0, 'error out', 0), (1, '', 0), (2, '', 0), (3, 'specific error cleared?', 0), (4, 'error in (no error)', 0), (5, '', 0), (6, '', 0), (7, 'specific error code to clear (0: all)', 0)])}
+      {467: [(0, 1, 'vi reference'), (1, 11, 'VI Refnum')], 383: [(0, 4, 'error in (no error)')], 106: [(0, 6, 'vi path')], 600: [(1, 2, 'References'), (2, 0, 'array')], 415: [(1, 7, 'Traverse Target')], 373: [(1, 10, 'Class Name')], 605: [(2, 1, 'element'), (3, 3, 'reference')], 1066: [(2, 2, 'index')], 645: [(3, 0, 'specific class reference'), (4, 0, 'Diagram in'), (5, 0, 'reference')], 772: [(3, 2, 'target class')], 312: [(4, 1, 'ID String')], 742: [(4, 2, 'location (0, 0)')], 771: [(4, 9, 'error in')], 336: [(4, 12, 'Class Name')], 581: [(5, 4, 'Nodes[]')]}
+   diagram 1:
+      {0: (136, '', [(0, 'reference', 519), (1, 'reference out', 0), (2, 'error in (no error)', 0), (3, 'error out', 0), (4, 'Label', 607), (5, 'Style', 633)]), 1: (139, '', [(0, 'reference', 607), (1, 'reference out', 0), (2, 'error in (no error)', 0), (3, 'error out', 0), (4, 'Text', 759)])}
+      {519: [(0, 0, 'reference')], 607: [(0, 4, 'Label'), (1, 0, 'reference')], 633: [(0, 5, 'Style')], 759: [(1, 4, 'Text')]}
+   diagram 2:
+      {}
+      {}
+
+VERDICT: BROKEN - NOT SAVING. OpSetLabel_v0 is untouched.
+BGRUN END rc=5 after 60s

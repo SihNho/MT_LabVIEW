@@ -1,0 +1,55 @@
+﻿---
+type: peer-review
+status: historical
+date: 2026-09-15
+tags: [peer-review, vi-scripting]
+---
+
+# opwiresource-fail3-branch-wire-is-one-object
+
+- **agent:** codex
+- **date:** 2026-09-15
+- **outcome:** ANSWERED (55s)
+- **why asked:** (Claude fills in)
+- **verdict:** unverified
+
+## Question
+
+BRIEF ATTACK (LabVIEW 2026 VI Scripting). tools/recipes/build_opwiresource_v0.py run 3 (log tools/bench/build_opwiresource_v0.log) executed your A/B/C ExecState sequence from archive/peer/2026-09-15-opwiresource-fail2-generic-owner-into-gobject-node.md. RESULT: A(before wiring Generic.Owner into the GObject-class UID node)=1, B(after that wire)=0 -> your downcast/broken-wire diagnosis is CONFIRMED. But C and D came out 0 and 0, and my gate (runnable again after removing the node) FAILED. My explanation: step C is not separable in this graph - Generic.Owner already fed Generic.ClassName, and I added the UID node with branch=True, so BOTH sinks hang on ONE wire object with a single uid (751). Deleting that wire therefore also disconnected ClassName, leaving its required reference input unwired (broken), and deleting the UID node afterwards could not restore it. Repair: do not delete the wire at all - delete the UID node and run Remove Bad Wires, which is what run 2 did (the branch segment goes with the node). Questions (cite): (1) is that right - in VI Server a branched wire is a single Wire object whose Terminals[] holds the source plus every sink, so there is no per-branch object to delete, and deleting it removes every segment? (2) does Diagram.Remove Bad Wires remove only BROKEN wires, so it cannot restore a healthy wire I deleted myself? (3) given (1), what IS the scripted way to remove one branch while keeping the others - delete the SINK node, or is there a Terminal.Disconnect Wire method (give the ID if it exists)? (4) with the node deleted and Remove Bad Wires run, is ExecState 1 the right expectation, or can a stale broken-wire fragment persist that needs another Remove Bad Wires pass? Read-only; cite what you read.
+
+## Answer
+
+Your explanation is essentially right, with one important correction: there is a scripted per-sink disconnect method, but it belongs to `Wire`, not `Terminal`.
+
+1. **Yes.** A branched net is represented by one `Wire` object. `Wire.Terminals[]` (property ID `6371003`) returns every terminal connected to that wire. Branch geometry is represented by joints/segments, not separate Wire objects. Therefore deleting the Wire GObject removes the complete net?봧ncluding the healthy `Generic.ClassName` sink. [LabVIEW Wiki: Wire class](https://labviewwiki.org/wiki/Wire_class)
+
+2. **Yes.** `Block Diagram:Remove Bad Wires` explicitly ?쐒emoves all the broken wires?? it does not reconstruct a previously deleted healthy connection. Thus C destroyed the ClassName connection, and neither Remove Bad Wires nor later deletion of the UID node could restore it. [NI: Block Diagram?봕emove Bad Wires](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/vi/removebadwires.html)
+
+3. **There is a direct scripted method:** `Wire.Disconnect Terminal`, method ID **`6370C0D`**. There is no corresponding `Terminal.Disconnect Wire`; `Terminal` instead provides `Connect Wire`, ID **`6349C03`**. The clean targeted operation is therefore:
+
+   - obtain the existing Wire from the sink?셲 `Terminal.Connected Wire` (`634A000`);
+   - invoke **`Wire.Disconnect Terminal` (`6370C0D`)** with that sink terminal;
+   - delete the now-unused UID node;
+   - optionally call Remove Bad Wires for any loose/broken residue.
+
+   Deleting the sink node first is also valid for a disposable node and is probably the simpler repair in this particular recipe. [Wire method table](https://labviewwiki.org/wiki/Wire_class), [Terminal property/method table](https://labviewwiki.org/wiki/Terminal_class)
+
+4. **ExecState 1 is the correct structural expectation** after deleting the UID node and invoking Remove Bad Wires once, provided the original ClassName branch was never deleted and nothing else is broken. The method is defined as removing *all* broken wires, so a second pass should not normally be necessary. [NI API reference](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/vi/removebadwires.html)
+
+   One caveat: an older scripting report says programmatic Remove Bad Wires sometimes failed to retrigger compilation immediately?봳he VI still appeared broken until run, despite the wires having been removed. That describes stale compile state, not a fragment requiring another cleanup pass. [NI Community report](https://forums.ni.com/t5/LabVIEW/Undo-for-Programmatic-BD-cleanup/m-p/1019990)
+
+**Verdict:** Run 3?셲 C/D gate was invalid because C deleted the entire pre-existing branched net. The minimal corrected A/B/C sequence is: baseline ??add bad branch ??delete UID node ??`Remove Bad Wires` ??expect ExecState 1. For a reusable branch-removal primitive, use **`Wire.Disconnect Terminal` `6370C0D`**.
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+Confirmed and applied: the corrected sequence (baseline → add the bad branch → delete the UID NODE → Remove Bad
+Wires → expect ExecState 1) is what the recipe now runs; step C is recorded as not separable. New fact taken into
+NAMES.md: the per-sink primitive is **`Wire.Disconnect Terminal` 6370C0D** (there is no `Terminal.Disconnect
+Wire`; `Terminal.Connect Wire` 6349C03 is the counterpart) — worth an op if a branch ever has to be removed from a
+wire that must survive. The stale-compile caveat after a programmatic Remove Bad Wires is noted; if ExecState
+stays 0 with no broken wires, that is the first thing to check rather than adding another cleanup pass.
+Rerun: `tools/bench/build_opwiresource_v0.log` run 4.

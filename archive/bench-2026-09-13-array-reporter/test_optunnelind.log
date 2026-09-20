@@ -1,0 +1,35 @@
+BGRUN START 2026-09-13 22:54:14 limit 15.0 min: py -u tools/recipes/test_optunnelind.py
+== 1-2. build the target and create the auto-indexed OUTPUT tunnel
+    ready: LoopTunnel=2 CtlTerm=10 Wire=10 ExecState=1
+   indicators already present: ['# of Refs', 'Class Name 2', 'Class Name 3', 'Position', 'UID', 'error out', 'error out 2']
+
+== 3-4. tunnel 0: set_index_mode(1), then tunnel_indicator()
+   index mode set to 1 (auto-index)
+   FAILED: tunnel_indicator(tunnel 0): indicator created but NOT WIRED (Wire +0) - a dangling indicator, same failure mode as create_indicator on a loop terminal
+    after: LoopTunnel=2 CtlTerm=11 Wire=10 ExecState=1
+
+== 3-4. tunnel 1: set_index_mode(1), then tunnel_indicator()
+   index mode set to 1 (auto-index)
+   OP RETURNED: [(608, (2861, 1899))]
+    after: LoopTunnel=2 CtlTerm=12 Wire=11 ExecState=1
+
+== 5. THE ACTUAL TEST - datatype of every indicator, read over COM
+   (label, value, verdict, existed_before)
+    ('# of Refs', '0', 'scalar/cluster', True)
+    ('error out', "(False, 0, '')", 'scalar/cluster', True)
+    ('Position', '(0, 0)', 'scalar/cluster', True)
+    ('Class Name 2', "''", 'scalar/cluster', True)
+    ('UID', '0', 'scalar/cluster', True)
+    ('Class Name 3', "''", 'scalar/cluster', True)
+    ('error out 2', "(False, 0, '')", 'scalar/cluster', True)
+    ('GObj Refnum', '0', 'scalar/cluster', False)
+    ('Array', '()', 'ARRAY (empty)', False)
+
+################ VERDICT ################
+per-tunnel: [(0, 'failed: tunnel_indicator(tunnel 0): indicator created but NOT WIRED (Wire +0) - a dangli'), (1, 'created+wired')]
+PASS - OpTunnelInd_v0 produced a NEW ARRAY indicator: ['Array']
+This is the piece OpReportAll_v0 was missing. FUNCTIONAL, not merely structural.
+
+final: LoopTunnel=2 CtlTerm=12 Wire=11 ExecState=1
+scratch target deleted
+BGRUN END rc=0 after 21s

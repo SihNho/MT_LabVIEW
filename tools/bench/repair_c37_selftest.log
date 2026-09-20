@@ -1,0 +1,83 @@
+BGRUN START 2026-09-19 00:24:53 limit 6.0 min: py -u tools/bench/repair_c37_stall_selftest.py
+=== repair_c37_stall_selftest: lv_stallcheck.ps1 leaf-command-line freshness clause ===
+  launched C37FRESHMARK leaf under bgrun log tools\bench\stall_selftest_c37_c37freshmark.log
+  launched C37STALEMARK leaf under bgrun log tools\bench\stall_selftest_c37_c37stalemark.log
+  launched C37NOLOGMARK leaf under bgrun log tools\bench\stall_selftest_c37_c37nologmark.log
+  processes carrying C37FRESHMARK: ['20772', '4280', '22492']
+    children of 20772: ['4280 py.exe']
+    children of 4280: ['23016 conhost.exe', '22492 python.exe']
+    children of 22492: []
+  processes carrying C37STALEMARK: ['24436', '13796', '21024']
+    children of 24436: ['13796 py.exe']
+    children of 13796: ['15512 conhost.exe', '21024 python.exe']
+    children of 21024: []
+  processes carrying C37NOLOGMARK: ['18488', '24644', '21560']
+    children of 18488: ['24644 py.exe']
+    children of 24644: ['22160 conhost.exe', '21560 python.exe']
+    children of 21560: []
+  watchdog run1 stdout 0 chars, run2 stdout 779 chars
+    [explain] C37FRESHMARK EXPLAIN pid 4280: skip - wrapper (has a live child)
+    [explain] C37STALEMARK EXPLAIN pid 13796: skip - wrapper (has a live child)
+    [explain] C37NOLOGMARK EXPLAIN pid 24644: skip - wrapper (has a live child)
+    [explain] C37NOLOGMARK EXPLAIN pid 18488: skip - wrapper (has a live child)
+    [explain] C37FRESHMARK EXPLAIN pid 20772: skip - wrapper (has a live child)
+    [explain] C37STALEMARK EXPLAIN pid 21024: skip - CPU +0.00s over 1s (needs dt >= 2s and dcpu <= 0.05)
+    [explain] C37NOLOGMARK EXPLAIN pid 21560: skip - CPU +0.00s over 1s (needs dt >= 2s and dcpu <= 0.05)
+    [explain] C37FRESHMARK EXPLAIN pid 22492: skip - CPU +0.00s over 1s (needs dt >= 2s and dcpu <= 0.05)
+    [explain] C37STALEMARK EXPLAIN pid 24436: skip - wrapper (has a live child)
+  --- stall record written by the test ---
+    | STALL: 2026-09-19 00:25:09 pid 21024 alive 16s, job log tools\bench\stall_selftest_c37_c37stalemark.log last written 16s, CPU +0.00s in the last 4s; pid 21560 alive 16s, job log tools\bench\stall_self
+    | dialog: no modal dialog - LabVIEW busy or two clients contending
+    | cmd pid 21024 (started 20260919002453): C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe -c "import time;time.sleep(60)  # C37STALEMARK C:\Users\KimLab\AppData\Local\Temp\c37stall_ae
+    | cmd pid 21560 (started 20260919002453): C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe -c "import time;time.sleep(60)  # C37NOLOGMARK"
+    | cmd pid 22492 (started 20260919002453): C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe -c "import time;time.sleep(60)  # C37FRESHMARK C:\Users\KimLab\AppData\Local\Temp\c37stall_ae
+  -> FAIL G1 leaf whose own command line names a FRESH log is NOT flagged  | marker C37FRESHMARK absent from record and message
+  PASS G2 leaf whose own command line names a STALE log IS still flagged  | marker C37STALEMARK present
+  PASS G3 leaf with NO log on its command line IS still flagged (real-client coverage)  | marker C37NOLOGMARK present
+  -> FAIL G4 the G1 skip is attributed to the NEW clause  | EXPLAIN pid 4280: skip - wrapper (has a live child); EXPLAIN pid 20772: skip - wrapper (has a live child); EXPLAIN pid 22492: skip - CPU +0.00s over 1s (needs dt >= 2s and dcpu <= 0.05)
+  C37FRESHMARK job log last line: BGRUN START 2026-09-19 00:24:53 limit 3.0 min: py -c import time;time.sleep(60)  # C37FRESHMARK C:\Users\KimLab\AppData\Local\Temp\c37stall_aelc1ojp\w
+  C37STALEMARK job log last line: BGRUN START 2026-09-19 00:24:53 limit 3.0 min: py -c import time;time.sleep(60)  # C37STALEMARK C:\Users\KimLab\AppData\Local\Temp\c37stall_aelc1ojp\w
+  C37NOLOGMARK job log last line: BGRUN START 2026-09-19 00:24:53 limit 3.0 min: py -c import time;time.sleep(60)  # C37NOLOGMARK
+=== repair_c37_stall_selftest: 2 pass, 2 fail ===
+BGRUN END rc=1 after 19s
+BGRUN START 2026-09-19 00:25:43 limit 6.0 min: py -u tools/bench/repair_c37_stall_selftest.py
+=== repair_c37_stall_selftest: lv_stallcheck.ps1 leaf-command-line freshness clause ===
+  launched C37FRESHMARK leaf under bgrun log tools\bench\stall_selftest_c37_c37freshmark.log
+  launched C37STALEMARK leaf under bgrun log tools\bench\stall_selftest_c37_c37stalemark.log
+  launched C37NOLOGMARK leaf under bgrun log tools\bench\stall_selftest_c37_c37nologmark.log
+  processes carrying C37FRESHMARK: ['10928', '17080', '10924']
+    children of 10928: ['17080 py.exe']
+    children of 17080: ['4296 conhost.exe', '10924 python.exe']
+    children of 10924: []
+  processes carrying C37STALEMARK: ['9484', '5708', '4012']
+    children of 9484: ['5708 py.exe']
+    children of 5708: ['21724 conhost.exe', '4012 python.exe']
+    children of 4012: []
+  processes carrying C37NOLOGMARK: ['2988', '15884', '10488']
+    children of 2988: ['15884 py.exe']
+    children of 15884: ['25776 conhost.exe', '10488 python.exe']
+    children of 10488: []
+  watchdog run1 stdout 0 chars, run2 stdout 654 chars
+    [explain] C37STALEMARK EXPLAIN pid 5708: skip - wrapper (has a live child)
+    [explain] C37NOLOGMARK EXPLAIN pid 15884: skip - wrapper (has a live child)
+    [explain] C37FRESHMARK EXPLAIN pid 17080: skip - wrapper (has a live child)
+    [explain] C37NOLOGMARK EXPLAIN pid 2988: skip - wrapper (has a live child)
+    [explain] C37STALEMARK EXPLAIN pid 4012: skip - CPU +0.00s over 1s (needs dt >= 2s and dcpu <= 0.05)
+    [explain] C37STALEMARK EXPLAIN pid 9484: skip - wrapper (has a live child)
+    [explain] C37NOLOGMARK EXPLAIN pid 10488: skip - CPU +0.00s over 1s (needs dt >= 2s and dcpu <= 0.05)
+    [explain] C37FRESHMARK EXPLAIN pid 10924: skip - a log on its own command line is fresh: C:\Users\KimLab\AppData\Local\Temp\c37stall_wi4_rlhb\watched_fresh.log written 0s ago
+    [explain] C37FRESHMARK EXPLAIN pid 10928: skip - wrapper (has a live child)
+  --- stall record written by the test ---
+    | STALL: 2026-09-19 00:25:59 pid 4012 alive 16s, job log tools\bench\stall_selftest_c37_c37stalemark.log last written 16s, CPU +0.00s in the last 4s; pid 10488 alive 16s, job log tools\bench\stall_selft
+    | dialog: no modal dialog - LabVIEW busy or two clients contending
+    | cmd pid 4012 (started 20260919002543): C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe -c "import time;time.sleep(60)  # C37STALEMARK C:\Users\KimLab\AppData\Local\Temp\c37stall_wi4
+    | cmd pid 10488 (started 20260919002543): C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe -c "import time;time.sleep(60)  # C37NOLOGMARK"
+  PASS G1 leaf whose own command line names a FRESH log is NOT flagged  | marker C37FRESHMARK absent from record and message
+  PASS G2 leaf whose own command line names a STALE log IS still flagged  | marker C37STALEMARK present
+  PASS G3 leaf with NO log on its command line IS still flagged (real-client coverage)  | marker C37NOLOGMARK present
+  PASS G4 the G1 skip is attributed to the NEW clause  | EXPLAIN pid 17080: skip - wrapper (has a live child); EXPLAIN pid 10924: skip - a log on its own command line is fresh: C:\Users\KimLab\AppData\Local\Temp\c37stall_wi4_rlhb\watched_fresh.log written 0
+  C37FRESHMARK job log last line: BGRUN START 2026-09-19 00:25:43 limit 3.0 min: py -c import time;time.sleep(60)  # C37FRESHMARK C:\Users\KimLab\AppData\Local\Temp\c37stall_wi4_rlhb\w
+  C37STALEMARK job log last line: BGRUN START 2026-09-19 00:25:43 limit 3.0 min: py -c import time;time.sleep(60)  # C37STALEMARK C:\Users\KimLab\AppData\Local\Temp\c37stall_wi4_rlhb\w
+  C37NOLOGMARK job log last line: BGRUN START 2026-09-19 00:25:43 limit 3.0 min: py -c import time;time.sleep(60)  # C37NOLOGMARK
+=== repair_c37_stall_selftest: 4 pass, 0 fail ===
+BGRUN END rc=0 after 19s

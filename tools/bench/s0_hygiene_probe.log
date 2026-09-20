@@ -1,0 +1,79 @@
+BGRUN START 2026-09-19 17:30:54 limit 30.0 min: py -u tools/bench/s0_hygiene_probe.py
+=== S0 HYGIENE PROBE  2026-09-19 17:30:54 ===
+
+[A] restart LabVIEW for a clean baseline (standing authority, CLAUDE.md s3)
+A baseline: handles 34238  private 619.3 MB
+  PASS A0 LabVIEW is up  handles=34238
+
+[B] census of the traverse ops and the donor
+  OpReport_v3.vi: 5 nodes, 0 close-ref-like
+      #482     Property                 'Property Node'
+      #241     Property                 'Property Node'
+      #167     IndexArray               'Index Array'
+      #124     SubVI                    'Traverse for GObjects.vi'
+      #43      Function                 'Open VI Reference'
+  OpWireSource_v5.vi: 19 nodes, 0 close-ref-like
+      #1554    Property                 'Property Node'
+      #1329    Property                 'Property Node'
+      #1326    Property                 'Property Node'
+      #1319    Property                 'Property Node'
+      #1221    Function                 'To More Specific Class'
+      #1186    Property                 'Property Node'
+      #310     Property                 'Property Node'
+      #307     Property                 'Property Node'
+      #1044    Function                 'To More Specific Class'
+      #990     SubVI                    'UID to GObject Reference.vi'
+      #163     Property                 'Property Node'
+      #157     Property                 'Property Node'
+      #151     IndexArray               'Index Array'
+      #145     Property                 'Property Node'
+      #482     Property                 'Property Node'
+      #241     Property                 'Property Node'
+      #167     IndexArray               'Index Array'
+      #124     SubVI                    'Traverse for GObjects.vi'
+      #43      Function                 'Open VI Reference'
+  OpReportAll_v0.vi: 5 nodes, 0 close-ref-like
+      #113     ForLoop                  'For Loop'
+      #115     Property                 ''
+      #114     Property                 ''
+      #124     SubVI                    'Traverse for GObjects.vi'
+      #43      Function                 'Open VI Reference'
+  KernelBuilder_v1.vi: 18 nodes, 1 close-ref-like
+      #962     SubVI                    'Get Controls.vi'
+      #816     StaticVIReference        'Track 1 of N bds xyz-kernel-reentrant.vi'
+      #751     SubVI                    'Create SubVI.vi'
+      #544     Function                 'Open VI Reference'
+      #1845    Function                 'Select'
+      #1337    Function                 'Select'
+      #1027    SubVI                    'Create Constant.vi'
+      #491     SubVI                    'Exit For Loop.vi'
+      #410     SubVI                    'Create For Loop.vi'
+      #2066    Function                 'Select'
+      #1657    BuildArray               'Build Array'
+      #906     Function                 'Select'
+      #1236    SubVI                    'Create Constant.vi'
+      #1167    BuildArray               'Build Array'
+      #629     SubVI                    'Create Constant.vi'
+      #347     SubVI                    'Create Constant.vi'
+      #157     Function                 'Close Reference'
+      #1066    Property                 'Property Node'
+  OpSubVI_v0.vi: 4 nodes, 0 close-ref-like
+      #263     Function                 'Open VI Reference'
+      #751     SubVI                    'Create SubVI.vi'
+      #544     Function                 'Open VI Reference'
+      #1066    Property                 'Property Node'
+  PASS P1 OpReport_v3.vi has NO Close Reference  []
+  PASS P1 OpWireSource_v5.vi has NO Close Reference  []
+  PASS P1 OpReportAll_v0.vi has NO Close Reference  []
+  PASS P2 KernelBuilder_v1.vi HAS a Close Reference donor node  [('Function', 'Close Reference', 157)]
+
+[C] scratch copy of the route-B original
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\s0_hygiene_probe.py", line 218, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\s0_hygiene_probe.py", line 148, in main
+    m0 = md5(ORIGINAL)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\s0_hygiene_probe.py", line 72, in md5
+    with open(p, "rb") as f:
+FileNotFoundError: [Errno 2] No such file or directory: 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\Min_Track N beads V6_ParallelLoop.vi'
+BGRUN END rc=1 after 59s

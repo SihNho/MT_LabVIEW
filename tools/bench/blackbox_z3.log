@@ -1,0 +1,41 @@
+BGRUN START 2026-09-07 21:02:24 limit 20.0 min: py -u tools/bench/blackbox_z.py
+   t0: control 'radial intensity profile'
+   t1: control 'y center'
+   t2: control 'x center'
+   t3: control 'half cross'
+   t4: control 'Input Image'
+   harness HARNESS_tracking-calculate radial profile-openv2.vi: 5 controls, 0 indicators, ExecState 1
+   t0: control 'prepped I(r)'
+   t1: control 'r shifted\ncomplex\ncosine/hilbert filtered\nintensity profile\n(aka the corkscrew)'
+   t2: control 'forget radius'
+   t3: control 'halfcross'
+   t4: control 'cosine bandpass'
+   t5: control 'radial intensity profile'
+   harness HARNESS_Tracking-prep I of r.vi: 6 controls, 0 indicators, ExecState 1
+   t0: control 'Index of closest\ncal image slice'
+   t1: control 'Real portion of\nhilbert/bandpass filtered\nr-shifted claibration image'
+   t2: control 'prepped I(r)'
+   harness HARNESS_Tracking-fit prepped I of r to cal.vi: 3 controls, 0 indicators, ExecState 1
+   t0: control 'neighborhood phases'
+   t1: control 'index of best-fit\ncal image slice'
+   t2: control '2D array of complex\ncal image intensities\n(aka cal corkscrews)\nr shifted!'
+   t3: control '2D array of prepped\ncal image amplitudes\nr shifted!'
+   t4: control 'complex 1D radial intensity profile\npost cosine bandpass/hilbert transform\naka the "corkscrew"'
+   harness HARNESS_tracking-calculate phase in neighborhood.vi: 5 controls, 0 indicators, ExecState 1
+   t0: control 'bead z pos as a cal image index'
+   t1: control 'neighborhood phases'
+   t2: control 'index of best-fit\ncal image slice'
+   harness HARNESS_tracking- quadratic fit to phase nghbrd.vi: 3 controls, 0 indicators, ExecState 1
+
+=== bead 0: numpy idx 29 z_index 29.219624; ref idx 29 z_index 29.221202
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\blackbox_z.py", line 66, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\blackbox_z.py", line 41, in main
+    o = sh.run(H["tracking-calculate radial profile-openv2"], {"Input Image": [[int(v) for v in row] for row in sub], "half cross": half,
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\subvi_harness.py", line 76, in run
+    return reg[name]
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\subvi_harness.py", line 76, in <dictcomp>
+    return reg[name]
+KeyError: 'radial intensity profile'
+BGRUN END rc=1 after 205s

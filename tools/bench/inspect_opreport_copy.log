@@ -1,0 +1,51 @@
+BGRUN START 2026-09-13 19:50:16 limit 15.0 min: py -u -c 
+import os,sys,shutil,time
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+SRC=os.path.join(g.CLAUDEDEV,'OpReport_v3.vi')
+CPY=os.path.join(g.CLAUDEDEV,'INSPECT_report_copy.vi')
+if os.path.exists(CPY): os.remove(CPY)
+shutil.copyfile(SRC,CPY); time.sleep(0.3)
+print('inspecting a COPY (never the live op)',flush=True)
+print('counts:',{c:g.count(CPY,c) for c in ('Node','SubVI','Property','Invoke','ForLoop','WhileLoop','IndexArray','Wire','Diagram')},flush=True)
+print(flush=True)
+print('front panel:',flush=True)
+for uid,lbl,ind in g.fp_labels(CPY,max_n=40):
+    print('   %-10s %r'%('indicator' if ind else 'CONTROL',lbl),flush=True)
+print(flush=True)
+for d in range(g.count(CPY,'Diagram')):
+    try: nodes,_=g.net_map(CPY,diagram_index=d,max_nodes=40,max_terms=16)
+    except Exception as e: print('dia %d FAILED %s'%(d,str(e)[:60]),flush=True); continue
+    print('=== diagram %d : %d nodes'%(d,len(nodes)),flush=True)
+    for i,(uid,lbl,terms) in nodes.items():
+        print('   node[%d] uid %-6s %s'%(i,uid,[nm for _,nm,_ in terms if nm][:12]),flush=True)
+try: g.close_panel(CPY)
+except Exception: pass
+time.sleep(0.3)
+try: os.remove(CPY); print('scratch deleted',flush=True)
+except OSError: pass
+
+inspecting a COPY (never the live op)
+counts: {'Node': 5, 'SubVI': 1, 'Property': 2, 'Invoke': 0, 'ForLoop': 0, 'WhileLoop': 0, 'IndexArray': 1, 'Wire': 17, 'Diagram': 1}
+
+front panel:
+   CONTROL    'vi path'
+   CONTROL    'Class Name'
+   indicator  '# of Refs'
+   indicator  'error out'
+   CONTROL    'index'
+   indicator  'Position'
+   indicator  'Class Name 2'
+   indicator  'UID'
+   indicator  'Class Name 3'
+   indicator  'error out 2'
+
+=== diagram 0 : 5 nodes
+   node[0] uid 43     ['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+   node[1] uid 124    ['error out', '# of Refs', 'References', 'dup VI Refnum', 'Other Refnum', 'Traverse Generated Code (F)', 'Traverse Target', 'error in (no error)', 'Class Name', 'VI Refnum']
+   node[2] uid 167    ['array', 'element', 'index']
+   node[3] uid 241    ['reference', 'reference out', 'error in (no error)', 'error out', 'Position', 'ClassName', 'UID', 'Owner']
+   node[4] uid 482    ['reference', 'reference out', 'error in (no error)', 'error out', 'ClassName']
+scratch deleted
+BGRUN END rc=0 after 11s

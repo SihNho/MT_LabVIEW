@@ -1,0 +1,20 @@
+BGRUN START 2026-09-18 02:07:20 limit 12.0 min: py -u tools\bench\probe_walk_stop_control.py
+md5 before: {'Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi': 'c39f36e0675339673b707c59f0784fee', 'Min_Track N beads V6_ParallelLoop.vi': '2a78e17c449cacdaf5da389818526859'}
+   fresh(): killing LabVIEW pid None
+   COM preflight attempt 1/15: pid None->9528, wires 16->16
+   COM preflight OK (pid 9528, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 9528
+
+LIVE diagram 10 Nodes[]: [(43997, 'Initialize.vi'), (44036, 'Move Axis to Position.vi')]
+CACHED diagram 10 Nodes[]: [43997, 44036]
+  PASS N1 the cache is not short for diagram 10 (live == cached)  | live [43997, 44036] vs cached [43997, 44036]
+   uid  43605 FlatSequenceOuterTunnel    in Nodes[d10]=False Traverse(FlatSequenceOuterTunnel)=58 contains_it=True   <- the T[8] Position source - the flat-sequence boundary
+   uid  43955 EnumConstant               in Nodes[d10]=False Traverse(EnumConstant)=14 contains_it=True   <- the T[9] Axis source - the ORACLE, a constant that is in the VI
+   uid  43937 VISAResourceNameConstant   in Nodes[d10]=False Traverse(VISAResourceNameConstant)=3 contains_it=True   <- the T[10] VISA in source, 2 hops out
+   uid  43997 SubVI                      in Nodes[d10]=True  Traverse(SubVI)=98 contains_it=True   <- ASI Initialize.vi - a POSITIVE control, known to be in Nodes[]
+   uid  44036 SubVI                      in Nodes[d10]=True  Traverse(SubVI)=98 contains_it=True   <- the call site itself - positive control
+  PASS N2 all three stop objects are ABSENT from Nodes[] yet Traverse-visible  | [(43605, False, True), (43955, False, True), (43937, False, True)]
+  PASS N3 both originals' md5 unchanged  | {'Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi': 'c39f36e0675339673b707c59f0784fee', 'Min_Track N beads V6_ParallelLoop.vi': '2a78e17c449cacdaf5da389818526859'}
+
+SUMMARY gates 3/3 pass; failing: []
+BGRUN END rc=0 after 35s

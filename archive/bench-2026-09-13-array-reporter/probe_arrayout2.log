@@ -1,0 +1,119 @@
+BGRUN START 2026-09-13 22:45:33 limit 20.0 min: py -u tools/recipes/probe_arrayout.py
+
+############ Q3: exit_loop on a Property node ############
+
+== Q3 setup: rebuild to end-of-step-7
+   predict: ForLoop=1 LoopTunnel=1 Property=1 ExecState=1 (input tunnel supplies N)
+    state: ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=10 Wire=9 ExecState=1
+   OBSERVED: (1, 0)
+
+== Q3 exit_loop(Property, ['Position'])
+   predict: IF Get Outputs enumerates node terminals: LoopTunnel 1->2, auto-indexed, ExecState stays 1. IF it needs a connector pane: RuntimeError 'expected 1 new tunnels, got 0'
+   OBSERVED: after ForLoop=1 LoopTunnel=2 Property=1 CtlTerm=10 Wire=10 ExecState=1
+
+############ Q1: ForLoop.Terminals[] ############
+
+== Q1 setup: rebuild to end-of-step-7
+   predict: same state as Q3 setup
+    state: ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=10 Wire=9 ExecState=1
+   OBSERVED: (1, 0)
+
+== Q1 find the ForLoop in Nodes[]
+   predict: one node whose class contains 'For'
+   OBSERVED: (0, {'i': 0, 'class': 'ForLoop', 'uid': 113, 'pos': (1400, 900), 'owner': 'TopLevelDiagram'})
+
+== Q1 create_indicator(ForLoop node 0, terminal 0)
+   predict: a new ControlTerminal means tunnels ARE addressable; none means they are not
+   OBSERVED: t=0 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=11 Wire=9 ExecState=1
+
+== Q1 create_indicator(ForLoop node 0, terminal 1)
+   predict: a new ControlTerminal means tunnels ARE addressable; none means they are not
+   OBSERVED: t=1 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=12 Wire=9 ExecState=1
+
+== Q1 create_indicator(ForLoop node 0, terminal 2)
+   predict: a new ControlTerminal means tunnels ARE addressable; none means they are not
+   OBSERVED: t=2 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=13 Wire=9 ExecState=1
+
+== Q1 create_indicator(ForLoop node 0, terminal 3)
+   predict: a new ControlTerminal means tunnels ARE addressable; none means they are not
+   OBSERVED: t=3 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=14 Wire=9 ExecState=1
+
+== Q1 create_indicator(ForLoop node 0, terminal 4)
+   predict: a new ControlTerminal means tunnels ARE addressable; none means they are not
+   OBSERVED: t=4 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=15 Wire=9 ExecState=1
+
+== Q1 create_indicator(ForLoop node 0, terminal 5)
+   predict: a new ControlTerminal means tunnels ARE addressable; none means they are not
+   OBSERVED: t=5 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=16 Wire=9 ExecState=1
+
+############ Q2: create_indicator on the Property node inside the loop ############
+
+== Q2 setup: rebuild to end-of-step-7
+   predict: same state as Q3 setup
+    state: ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=10 Wire=9 ExecState=1
+   OBSERVED: (1, 0)
+   Property node indices within Nodes[]: [1]
+
+== Q2 create_indicator(Property node 1, terminal 0)
+   predict: ControlTerminal +1 on SOME diagram; the interesting part is WHICH diagram and what type
+   OBSERVED: t=0 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=11 Wire=9 ExecState=1
+
+== Q2 create_indicator(Property node 1, terminal 1)
+   predict: ControlTerminal +1 on SOME diagram; the interesting part is WHICH diagram and what type
+   OBSERVED: t=1 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=12 Wire=9 ExecState=1
+
+== Q2 create_indicator(Property node 1, terminal 2)
+   predict: ControlTerminal +1 on SOME diagram; the interesting part is WHICH diagram and what type
+   OBSERVED: t=2 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=13 Wire=9 ExecState=1
+
+== Q2 create_indicator(Property node 1, terminal 3)
+   predict: ControlTerminal +1 on SOME diagram; the interesting part is WHICH diagram and what type
+   OBSERVED: t=3 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=14 Wire=10 ExecState=1
+
+== Q2 inventory of every ControlTerminal (class/uid/pos/owner)
+   predict: position is meaningful on THIS VI - we built it; only the MAIN VI was Cleaned Up
+   OBSERVED: [(96, 'ControlTerminal', (229, 244), 'TopLevelDiagram'), (363, 'ControlTerminal', (449, 274), 'TopLevelDiagram'), (289, 'ControlTerminal', (535, 282), 'TopLevelDiagram'), (412, 'ControlTerminal', (535, 248), 'TopLevelDiagram'), (214, 'ControlTerminal', (629, 417), 'TopLevelDiagram'), (459, 'ControlTerminal', (834, 416), 'TopLevelDiagram'), (544, 'ControlTerminal', (834, 380), 'TopLevelDiagram'), (296, 'ControlTerminal', (834, 343), 'TopLevelDiagram'), (562, 'ControlTerminal', (931, 527), 'TopLevelDiagram'), (516, 'ControlTerminal', (932, 497), 'TopLevelDiagram'), (576, 'ControlTerminal', (536, 222), 'TopLevelDiagram'), (593, 'ControlTerminal', (536, 197), 'TopLevelDiagram'), (628, 'ControlTerminal', (535, 164), 'TopLevelDiagram'), (642, 'ControlTerminal', (535, 318), 'TopLevelDiagram')]
+
+== Q2 node inventory, to read those positions against the loop's extent
+   predict: the ForLoop's own position, so inside-vs-outside can be judged
+   OBSERVED: [(0, 'ForLoop', (1400, 900)), (1, 'Property', (2845, 1851)), (2, 'SubVI', (495, 281)), (3, 'Function', (275, 251))]
+
+################ SUMMARY ################
+[ok] Q3 setup: rebuild to end-of-step-7
+      (1, 0)
+[ok] Q3 exit_loop(Property, ['Position'])
+      after ForLoop=1 LoopTunnel=2 Property=1 CtlTerm=10 Wire=10 ExecState=1
+[ok] Q1 setup: rebuild to end-of-step-7
+      (1, 0)
+[ok] Q1 find the ForLoop in Nodes[]
+      (0, {'i': 0, 'class': 'ForLoop', 'uid': 113, 'pos': (1400, 900), 'owner': 'TopLevelDiagram'})
+[ok] Q1 create_indicator(ForLoop node 0, terminal 0)
+      t=0 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=11 Wire=9 ExecState=1
+[ok] Q1 create_indicator(ForLoop node 0, terminal 1)
+      t=1 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=12 Wire=9 ExecState=1
+[ok] Q1 create_indicator(ForLoop node 0, terminal 2)
+      t=2 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=13 Wire=9 ExecState=1
+[ok] Q1 create_indicator(ForLoop node 0, terminal 3)
+      t=3 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=14 Wire=9 ExecState=1
+[ok] Q1 create_indicator(ForLoop node 0, terminal 4)
+      t=4 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=15 Wire=9 ExecState=1
+[ok] Q1 create_indicator(ForLoop node 0, terminal 5)
+      t=5 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=16 Wire=9 ExecState=1
+[ok] Q2 setup: rebuild to end-of-step-7
+      (1, 0)
+[ok] Q2 create_indicator(Property node 1, terminal 0)
+      t=0 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=11 Wire=9 ExecState=1
+[ok] Q2 create_indicator(Property node 1, terminal 1)
+      t=1 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=12 Wire=9 ExecState=1
+[ok] Q2 create_indicator(Property node 1, terminal 2)
+      t=2 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=13 Wire=9 ExecState=1
+[ok] Q2 create_indicator(Property node 1, terminal 3)
+      t=3 ForLoop=1 LoopTunnel=1 Property=1 CtlTerm=14 Wire=10 ExecState=1
+[ok] Q2 inventory of every ControlTerminal (class/uid/pos/owner)
+      [(96, 'ControlTerminal', (229, 244), 'TopLevelDiagram'), (363, 'ControlTerminal', (449, 274), 'TopLevelDiagram'), (289, 'ControlTerminal', (535, 282), 'TopLevelDiagram'), (412, 'ControlTerminal', (535, 248), 'TopLevelDiagram'), (214, 'ControlTerminal', (629, 417), 'TopLevelDiagram'), (459, 'ControlT
+[ok] Q2 node inventory, to read those positions against the loop's extent
+      [(0, 'ForLoop', (1400, 900)), (1, 'Property', (2845, 1851)), (2, 'SubVI', (495, 281)), (3, 'Function', (275, 251))]
+
+written: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\probe_arrayout_results.txt
+scratch PROBE_arrayout.vi deleted
+BGRUN END rc=0 after 10s

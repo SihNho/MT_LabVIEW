@@ -1,0 +1,22 @@
+BGRUN START 2026-09-13 19:44:00 limit 10.0 min: py -u -c 
+import os,sys,glob
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+ops=sorted(glob.glob(os.path.join(g.CLAUDEDEV,'Op*.vi')))
+bad=[]
+for p in ops:
+    try: st=g.exec_state(p)
+    except Exception as e: st='EXC'
+    if st!=1: bad.append((os.path.basename(p),st))
+print('%d ops, %d not ExecState 1: %s'%(len(ops),len(bad),bad),flush=True)
+# the 6500 was a RUN-state conflict, not damage: prove fp_labels still works on a fresh target
+try:
+    rows=g.fp_labels(os.path.join(g.CLAUDEDEV,'OpReport_v3.vi'),max_n=20)
+    print('fp_labels still works:',len(rows),'objects',flush=True)
+except Exception as e:
+    print('fp_labels FAILED:',str(e)[:140],flush=True)
+
+50 ops, 1 not ExecState 1: [('OpFPLabels_v0.vi', 2)]
+fp_labels FAILED: (-2147352567, '���ܰ� �߻��߽��ϴ�.', (6500, 'LabVIEW', 'LabVIEW: (Hex 0x3E8) The VI is not in a state compatible with this operation.', None, 0, 0),
+BGRUN END rc=0 after 3s

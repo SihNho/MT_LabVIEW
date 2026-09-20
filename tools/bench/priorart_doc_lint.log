@@ -1,0 +1,74 @@
+BGRUN START 2026-09-16 21:10:56 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/doc-lint-plan.md --trigger new-op --slug doc-lint
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_doc-lint.txt (16180 chars)
+OUTCOME: ANSWERED (298s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-16-priorart-doc-lint.md
+COST: $2.5619  in 32 / out 22152 / cache-create 126614 / cache-read 1483582  (295s, 27 turn(s))
+--- ANSWER ---
+# PRIOR-ART REVIEW — `docs/doc-lint-plan.md` (trigger: new-op)
+
+Nothing was built, run, edited or locked. Findings only.
+
+## PART A — THE DIRECTION
+
+### A1 SETTLED ALREADY — **no finding, deliberately**
+The direction is settled *in the plan's favour*: `CLAUDE.md` §4 ("Documents are LINTED by code and INGESTED by a model every cycle") is the user's own 2026-09-16 instruction, and the plan cites it correctly. Two undocumented precedents exist for the practice — `archive/WORKLOG.md:109` (*"the markdown set was linted and restructured: STATUS.md was cut back from ~700 lines"*) and `archive/2026-08-31-status-full-assembly-narrative.md:10` (*"Last updated: 2026-08-30 (ingest/lint for a fresh session)"*) — both manual, neither a tool. I do not fire the slug; it would block work the user ordered.
+
+### A2 REFUTED ALREADY — **fires**
+Building two more process tools is what the outcome layer ruled against six days ago, and the plan never mentions it.
+
+- `archive/peer/2026-09-15-outcome-review-20260915.md:227` — *"The project has enough knowledge and components. Its next problem is not missing tooling; it is failure to cross the boundary from replay proof to experiment product."*
+- same file `:182` — *"They should, however, be asked **now**, before another tooling cycle."*
+- same file `:230` — `OUTCOME-VIOLATION: tooling-over-delivery`
+- `CLAUDE.md` §5 — *"An `OUTCOME-VIOLATION` is NOT answered by building a device … the next cycle becomes a **delivery** cycle."*
+
+Still applies: `STATUS.md` still states the gap as current ("…two replay VIs and **zero runnable experimental VIs**"), and cycles 11–14 were each tooling cycles (`docs/cycle14-plan.md:9` builds `OpFlatSeqDiagrams_v0`). Nothing in the record shows the owed delivery cycle ran.
+
+**Scope:** this does not say the lint is wrong. It says a standing verdict that stops tooling work is undischarged and unaddressed here. Release route: `REFUTED:` citing `CLAUDE.md` §4 (a user order outranks a peer verdict), or `FIXED:` pointing at where the delivery cycle is recorded.
+
+### A3 CONTRADICTED — **fires, three ways**
+
+**(i) "Nothing implements it" is false** — plan `docs/doc-lint-plan.md:12`. Against it:
+- `tools/audit_cycle.py:170-182` — A4 already implements plan check **6** verbatim, *including* the file list the plan offers as its addition (`:182` prints `blank: {blank[:6]}…`).
+- `tools/audit_cycle.py:193-205` — A7 is already a documentation lint (archive→active wikilink direction).
+- `tools/frontmatter.py:19-21,101-104` — already writes and detects frontmatter, i.e. check **1**'s half.
+
+**(ii) The dispatch line defeats the invisibility requirement three lines below it.** Plan `:58` says `-Kind fact`; `:61-63` demands `archive/ingest/`, invisible to the gates. `tools/peer.ps1:429` — `$archDir = if ($Kind -eq 'prose') { $proseDir } else { $peerDir }`, with `:79` `[ValidateSet('review','fact','prose')]`. As written, `-Kind fact` archives into `archive\peer\`.
+
+**(iii) The exclusion list is incomplete.** Plan `:62` names `guard_peer.py`, `prior_art_review.py`, `violations.py` — and omits `tools/audit_cycle.py`, which globs the same directory twice: `:134` (A4 will demand a disposition for it) and `:165`, where A3 is satisfied by **any** `archive/peer/*.md` newer than the failing log. Combined with (ii), an ingest pass silently discharges the failed-prediction audit for every failing log in the window.
+
+### A4 UNREAD EVIDENCE — **fires**
+`tools/logclass.py` — the one classifier deciding whether a new dispatcher's bgrun log counts as a build. The plan runs `doc_ingest` under `bgrun` (`:58-60`) and never names it. See B2. Secondarily `archive/peer/2026-09-15-outcome-review-20260915.md` (A2).
+
+## PART B — THE ARTIFACT
+
+### B1 ALREADY BUILT — **fires**
+Plan check **6** (`:38-39`) = `tools/audit_cycle.py:170-182` — same condition, same FAIL semantics (`audit_cycle.py:315-321` exits 1 on it), same file list. It is failing right now: `tools/bench/retro_cycle13.log:12` — `FAIL A4 … 81/106 annotated`. Duplicating it gives one condition two FAIL sources.
+
+### B2 ALREADY FAILED — **fires**
+A new review dispatcher whose log is unregistered in the classifier has broken this project **four times**: `tools/logclass.py:9-17` lists them; `tools/hooks/guard_peer.py:85-89` records the sharpest — *"`priorart_test_run1.log` blocked the next run because the reviewer had CITED `build_opgeterrors.log`'s 'STOP: not saved / rc=5'."* `tools/logclass.py:46-54` shows the registered prefixes (`peer_`, `retro`, `outcome_review`, `prior_?art`, `audit_cycle`, `violations`) — **no ingest or lint term**. `doc_ingest` is the fifth dispatcher, and its output is contradictions quoted verbatim from documents, so `FAILURE_RE` (`audit_cycle.py:62`: `STOP at gate|VERDICT: BROKEN|FAIL`) will match it.
+
+Same class: check **2** (dangling citations, **FAIL**) repeats the shape of the checker that already cried wolf — `tools/audit_cycle.py:170-173`: *"matching the whole file reported 66 false violations on its first run (2026-09-15) — a checker that cries wolf gets ignored, which is worse than not having it."* And check **7**'s hundreds of WARN lines land inside the retrospective's evidence block, because `tools/retrospective.py:346` embeds audit stdout verbatim into the peer's task.
+
+### B3 HELPER EXISTS — **fires**
+- check 1 → `tools/frontmatter.py:115-116` (`--dry-run` already lists every `.md` lacking frontmatter).
+- check 2's path resolution → `tools/hooks/guard_cycle.py:130-137` already resolves a project-relative citation and reports *"cited path does not exist under the project"*.
+- the whole model half → `tools/peer.ps1:181` already defines the **RULE AND CONSISTENCY AUDITOR** preamble and `:250` already pins it to sonnet for this exact role; `tools/prior_art_review.py:124-175` is the dispatcher scaffolding (plan-file → task file → `peer.ps1` → archive). A role mechanism also already exists — `prior_art_review.py:170` passes `-Role priorart` — so distinguishing the ingest needs no new `-Kind`.
+- it has been run before: `archive/peer/2026-09-15-cycle8-plan-rule-audit.md:51` — *"you are this project's rule and consistency auditor"*.
+
+### B4 ALREADY MEASURED — **no finding**
+The no-index question is measured and the plan cites it correctly (`tools/bench/priorart_scores.md`). The §4 first run is only *partly* pre-swept — `archive/2026-09-16-status-cycles-8-10-narrative.md:69,:165` record that a 2026-09-16 lint pass already added superseding banners and removed a stale block — but that pass was manual and not contradiction-systematic, so the run is not redundant. No slug.
+
+## State facts (no slug attached)
+- Four cycle plans are `status: current` today (`docs/cycle11-plan.md:3`, `cycle12`, `cycle13`, `cycle14`), so check **4** FAILs on its first run.
+- `supersedes:` exists in two files and is empty in both (`docs/cycle11-plan.md:8`), so check **5** is a no-op today.
+- `tools/retrospective.py:294-296` ignores `audit_cycle`'s return code, so the plan's "no new gate" claim does hold.
+
+---
+
+PRIOR-ART: refuted-already
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-built
+PRIOR-ART: already-failed
+PRIOR-ART: helper-exists
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-doc-lint.md
+BGRUN END rc=0 after 299s

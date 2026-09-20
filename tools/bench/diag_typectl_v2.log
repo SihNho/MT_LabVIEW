@@ -1,0 +1,110 @@
+BGRUN START 2026-09-20 08:39:12 limit 25.0 min: py -u tools/bench/diag_typectl_v2.py
+=== diag_typectl_v2  2026-09-20 08:39:12   (Pre-decided 40(c)+(d) ATTEMPT 2; SINKS GIVEN, no sink rule; NO QUEUE NODE, 40(d); NO VI IS RUN, 34(f); no new op; INTERPRETS NOTHING)
+  FACT  LabVIEW handles BEFORE (attempt 1 left ~63,400; fresh-instance baseline ~31,500): 34166
+  FACT  THE INSTRUMENT UNDER TEST is `Wire.Is Broken?` 6371004, carried by OpConnectNested_v1's own readout (docs/NAMES.md:902-911 - the plan's :888-897 citation is WRONG and is not used). THE ORDERING TRAP (NAMES.md:905-911): that readout's `error in (no error)` ships UNWIRED, so on the WRITING pass it may run BEFORE the Connect Wire and describe the OLD wire; the ORDERED reading is pass2, an IDEMPOTENT re-connect (NAMES.md:912-918). Any ExecState taken after a pass2 is SUSPECT (NAMES.md:917-921), so both ExecState readings are taken BEFORE the Is Broken? read on every leg.
+  FACT  T1 ORIGINAL (read-only probe, 34(k)): HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  T1 the ORIGINAL's md5 equals the pin  2a78e17c449cacdaf5da389818526859
+  FACT  T2 the S2 artefact: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T2 D1_s2_loops.vi md5 == 6ff19497f2309e007a214660bb64b911  6ff19497f2309e007a214660bb64b911
+  FACT  T2b RESTART (attempt 1 left ~63,400 handles against a ~31,500 baseline; standing restart permission, CLAUDE.md 3): lv_restart rc=0 ['dialogs: ,1346,762| / ENABLED|47122816|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  LabVIEW handles AFTER the restart: 30689
+
+=================== LEG M-matched  (sink #2048 t4)  scratch DIAG_typectl_v2_20260920_083912_A_t4.vi
+  FACT  T3 the M-matched scratch at creation: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_typectl_v2_20260920_083912_A_t4.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T3 the M-matched scratch is byte-identical to the S2 artefact  6ff19497f2309e007a214660bb64b911
+  FACT  P-M-matched: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+  FACT  class census [before] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905, 'Function': 183}
+  FACT  Diagram #686 reads Traverse index 19 on this scratch
+  FACT  the walk of Diagram #686 returned 24 nodes
+  OBSERVED uid 250 -> owner 'Diagram' uid 686 | self 'Property'#250 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#250) = ('Diagram', 686)
+  OBSERVED uid 2048 -> owner 'Diagram' uid 686 | self 'GrowableFunction'#2048 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#2048) = ('Diagram', 686)
+  OBSERVED uid 8486 -> owner 'Diagram' uid 686 | self 'Function'#8486 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#8486) = ('Diagram', 686)
+  PASS  G2 [M-matched] owner_of reads ('Diagram', 686) for every node in this leg  {'250': ('Diagram', 686), '2048': ('Diagram', 686), '8486': ('Diagram', 686)}
+  FACT  GIVEN sink #2048 'Array Subset' Nodes[7]; its t4/t5 read live: [{'i': 4, 'name': 'index', 'is_source': False, 'wire': 0}, {'i': 5, 'name': 'length', 'is_source': False, 'wire': 0}]
+  PASS  G0 [M-matched] #2048 t4 and t5 are bare (wire 0), NAMED and non-source on this scratch  [{'i': 4, 'name': 'index', 'is_source': False, 'wire': 0}, {'i': 5, 'name': 'length', 'is_source': False, 'wire': 0}]
+  FACT  M-matched source resolved: {'node_uid': 8486, 'node_index': 0, 'label': 'Increment', 'term_index': 0, 'term_name': 'x+1', 'term_wire': 23519}
+  PASS  G1 [M-matched] the source terminal #8486 'x+1' is resolved on this leg's own live walk  {'node_uid': 8486, 'node_index': 0, 'label': 'Increment', 'term_index': 0, 'term_name': 'x+1', 'term_wire': 23519}
+  FACT  ExecState [M-matched BEFORE the connection] = 1
+
+--- M-matched PASS 1: the write. OpConnectNested_v1, same-diagram (src_diag == sink_diag).
+      [op stdout]       op readback {'UID': 2048, 'Name': 'index', 'UID 2': 0, 'Is Broken?': False}
+  FACT  M-matched pass1 (write): wire_delta=0  op error column VERBATIM ''  op indicators {'UID': 2048, 'Name': 'index', 'UID 2': 0, 'Is Broken?': False}
+  FACT  M-matched: sink #2048 t4 now carries wire 23519 (read from node_terms, NOT from the op) - {'node_uid_readback': 2048, 'term': {'i': 4, 'name': 'index', 'is_source': False, 'wire': 23519, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 0, 'node_uid': 2048}, 'wire': 23519}
+  FACT  ExecState [M-matched IMMEDIATELY AFTER the connection (before any Is Broken? read)] = 0
+
+--- M-matched PASS 2: the ORDERED `Is Broken?` reading - an IDEMPOTENT re-connect of the SAME pair (docs/NAMES.md:912-918). Expect wire_delta 0. Every ExecState after this is SUSPECT.
+      [op stdout]       op readback {'UID': 2048, 'Name': 'index', 'UID 2': 23519, 'Is Broken?': False}
+  FACT  M-matched pass2 (idempotent, THE READING): wire_delta=0  op error column VERBATIM ''  op indicators {'UID': 2048, 'Name': 'index', 'UID 2': 23519, 'Is Broken?': False}
+  FACT  ExecState [M-matched after the Is Broken? read (SUSPECT per NAMES.md:917-921)] = 0
+  FACT  M-matched LEG READING: source #8486 t0 'x+1' -> sink #2048 t4 'index' | wire uid 23519 | op error column pass1 '' / pass2 '' | `Is Broken?` pass1 False (MAYBE STALE) / ORDERED pass2 False | wire_delta pass1 0 / pass2 0 | ExecState before 1 -> after 0
+  FACT  class census [after] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905, 'Function': 183}
+  FACT  ExecState [M-matched immediately before the save attempt (SUSPECT)] = 0
+  FACT  M-matched g.save(scratch) returned None; exception/reason VERBATIM 'NOT ATTEMPTED: ExecState is 0 and the brief permits a save only at ExecState != 0. A leg that ends at 0 is an expected and legitimate outcome.' (allow_broken False, gui_save never called)
+  FACT  M-matched scratch after the save attempt: DIAG_typectl_v2_20260920_083912_A_t4.vi md5 6ff19497f2309e007a214660bb64b911 size 475707 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+  FACT  P-M-matched: preload references released; refs {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 6}
+
+=================== LEG X-mismatched  (sink #2048 t4)  scratch DIAG_typectl_v2_20260920_083912_A_t4.vi
+  FACT  T3 the X-mismatched scratch at creation: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_typectl_v2_20260920_083912_A_t4.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T3 the X-mismatched scratch is byte-identical to the S2 artefact  6ff19497f2309e007a214660bb64b911
+  FACT  P-X-mismatched: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+  FACT  class census [before] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905, 'Function': 183}
+  FACT  Diagram #686 reads Traverse index 19 on this scratch
+  FACT  the walk of Diagram #686 returned 24 nodes
+  OBSERVED uid 250 -> owner 'Diagram' uid 686 | self 'Property'#250 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#250) = ('Diagram', 686)
+  OBSERVED uid 2048 -> owner 'Diagram' uid 686 | self 'GrowableFunction'#2048 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#2048) = ('Diagram', 686)
+  OBSERVED uid 8486 -> owner 'Diagram' uid 686 | self 'Function'#8486 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#8486) = ('Diagram', 686)
+  PASS  G2 [X-mismatched] owner_of reads ('Diagram', 686) for every node in this leg  {'250': ('Diagram', 686), '2048': ('Diagram', 686), '8486': ('Diagram', 686)}
+  FACT  GIVEN sink #2048 'Array Subset' Nodes[7]; its t4/t5 read live: [{'i': 4, 'name': 'index', 'is_source': False, 'wire': 0}, {'i': 5, 'name': 'length', 'is_source': False, 'wire': 0}]
+  PASS  G0 [X-mismatched] #2048 t4 and t5 are bare (wire 0), NAMED and non-source on this scratch  [{'i': 4, 'name': 'index', 'is_source': False, 'wire': 0}, {'i': 5, 'name': 'length', 'is_source': False, 'wire': 0}]
+  FACT  X-mismatched source resolved: {'node_uid': 250, 'node_index': 3, 'label': 'Property Node', 'term_index': 1, 'term_name': 'IMAQdx Session', 'term_wire': 6910}
+  PASS  G1 [X-mismatched] the source terminal #250 'IMAQdx Session' is resolved on this leg's own live walk  {'node_uid': 250, 'node_index': 3, 'label': 'Property Node', 'term_index': 1, 'term_name': 'IMAQdx Session', 'term_wire': 6910}
+  FACT  ExecState [X-mismatched BEFORE the connection] = 1
+
+--- X-mismatched PASS 1: the write. OpConnectNested_v1, same-diagram (src_diag == sink_diag).
+      [op stdout]       op readback {'UID': 2048, 'Name': 'index', 'UID 2': 0, 'Is Broken?': False}
+  FACT  X-mismatched pass1 (write): wire_delta=0  op error column VERBATIM ''  op indicators {'UID': 2048, 'Name': 'index', 'UID 2': 0, 'Is Broken?': False}
+  FACT  X-mismatched: sink #2048 t4 now carries wire 6910 (read from node_terms, NOT from the op) - {'node_uid_readback': 2048, 'term': {'i': 4, 'name': 'index', 'is_source': False, 'wire': 6910, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 0, 'node_uid': 2048}, 'wire': 6910}
+  FACT  ExecState [X-mismatched IMMEDIATELY AFTER the connection (before any Is Broken? read)] = 0
+
+--- X-mismatched PASS 2: the ORDERED `Is Broken?` reading - an IDEMPOTENT re-connect of the SAME pair (docs/NAMES.md:912-918). Expect wire_delta 0. Every ExecState after this is SUSPECT.
+      [op stdout]       op readback {'UID': 2048, 'Name': 'index', 'UID 2': 6910, 'Is Broken?': True}
+  FACT  X-mismatched pass2 (idempotent, THE READING): wire_delta=0  op error column VERBATIM ''  op indicators {'UID': 2048, 'Name': 'index', 'UID 2': 6910, 'Is Broken?': True}
+  FACT  ExecState [X-mismatched after the Is Broken? read (SUSPECT per NAMES.md:917-921)] = 0
+  FACT  X-mismatched LEG READING: source #250 t1 'IMAQdx Session' -> sink #2048 t4 'index' | wire uid 6910 | op error column pass1 '' / pass2 '' | `Is Broken?` pass1 False (MAYBE STALE) / ORDERED pass2 True | wire_delta pass1 0 / pass2 0 | ExecState before 1 -> after 0
+  FACT  class census [after] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905, 'Function': 183}
+  FACT  ExecState [X-mismatched immediately before the save attempt (SUSPECT)] = 0
+  FACT  X-mismatched g.save(scratch) returned None; exception/reason VERBATIM 'NOT ATTEMPTED: ExecState is 0 and the brief permits a save only at ExecState != 0. A leg that ends at 0 is an expected and legitimate outcome.' (allow_broken False, gui_save never called)
+  FACT  X-mismatched scratch after the save attempt: DIAG_typectl_v2_20260920_083912_A_t4.vi md5 6ff19497f2309e007a214660bb64b911 size 475707 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+  FACT  P-X-mismatched: preload references released; refs {'opened': 17, 'closed': 17, 'live': 0, 'cached_op_vis': 6}
+  FACT  t5 SUBSTITUTION RULE: matched-leg wire uid 23519, matched-leg op error column '' -> triggered=False
+
+--- the REPORTED gates over both legs
+  PASS  G3 each attempted leg's machine error column is recorded VERBATIM  [('M-matched', 'A', ''), ('X-mismatched', 'A', '')]
+  PASS  G4 a wire uid was read back from each attempted leg's sink terminal (0 is a legitimate reading)  [('M-matched', 'A', 23519), ('X-mismatched', 'A', 6910)]
+  PASS  G5 ExecState recorded BEFORE and immediately AFTER the connection on each attempted leg  [('M-matched', 'A', 1, 0), ('X-mismatched', 'A', 1, 0)]
+  PASS  G6 an ORDERED `Is Broken?` reading was taken per attempted leg via an IDEMPOTENT re-connect  [('M-matched', 'A', False, 'wire_delta 0'), ('X-mismatched', 'A', True, 'wire_delta 0')]
+  PASS  G7 each leg's save attempt is recorded; allow_broken False, gui_save never called  [('M-matched', 'A', None, 'NOT ATTEMPTED: ExecState is 0 and the brief permits a save only at ExecState != 0. A leg that ends at 0 is an expected and legitimate outcome.'), ('X-mismatched', 'A', None, 'NOT ATTEMPTED: ExecState is 0 and the brief permits a save only at ExecState != 0. A leg that ends at 0 is an expected and legitimate outcome.')]
+  FACT  ? THE CONTROL PAIR, SIDE BY SIDE, INTERPRETED BY NOBODY HERE: [{'leg': 'M-matched', 'seq': 'A', 'source': 8486, 'source_term': 'x+1', 'sink': (2048, 4), 'wire': 23519, 'op_error': '', 'ExecState before -> after': (1, 0), 'Is Broken? (ordered)': False}, {'leg': 'X-mismatched', 'seq': 'A', 'source': 250, 'source_term': 'IMAQdx Session', 'sink': (2048, 4), 'wire': 6910, 'op_error': '', 'ExecState before -> after': (1, 0), 'Is Broken? (ordered)': True}]
+
+--- close-out
+  FACT  refs at end: {'opened': 17, 'closed': 17, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handles AFTER: 60591 (before 34166, after the restart 30689). Attempt 1 measured ~32,700 added per 78-second run while ref_counts read 6/6/0 live.
+  PASS  G8 no live VI Server reference is left open  ref_counts {'opened': 17, 'closed': 17, 'live': 0, 'cached_op_vis': 0}
+  FACT  T14 ORIGINAL after the run: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  T14 ORIGINAL md5 unchanged  2a78e17c449cacdaf5da389818526859
+  FACT  T14 D1_s1_copy.vi after the run: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  PASS  T14 D1_s1_copy.vi md5 unchanged  3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  T14 D1_s2_loops.vi after the run: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T14 D1_s2_loops.vi md5 unchanged  6ff19497f2309e007a214660bb64b911
+
+=== GATES: 19 pass / 0 fail
+=== GATES ARE REPORTED, NOT REQUIRED - the READING is the deliverable (34(j)/37(e) pattern). The rc does NOT depend on either `Is Broken?` value or on either `ExecState`; a leg that refuses is a reading, not a failure.
+=== READINGS json: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_typectl_v2.json
+=== NOTHING IS INTERPRETED HERE. The branch after this measurement is the judgement session's (Pre-decided 40). NO QUEUE NODE WAS CREATED (40(d)); NO VI WAS RUN (34(f)); no new op; no motor, no ASI, no camera, no GUI.
+BGRUN END rc=0 after 88s

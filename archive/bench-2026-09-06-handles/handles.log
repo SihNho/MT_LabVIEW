@@ -1,0 +1,14 @@
+BGRUN START 2026-09-06 04:15:09 limit 6.0 min: py -u -c 
+import subprocess, json, time, sys
+def handles():
+    r=subprocess.run(['powershell','-NoProfile','-Command','(Get-Process LabVIEW -ErrorAction SilentlyContinue | Select-Object -First 1).HandleCount'],capture_output=True,text=True)
+    return int(r.stdout.strip() or 0)
+print('handles before restart', handles(), flush=True)
+r=subprocess.run(['py','tools/bench/bench_prep.py','--restart'],capture_output=True,text=True,timeout=300)
+print('bench_prep rc', r.returncode, (r.stdout.strip().splitlines() or [''])[-1][:200], flush=True)
+time.sleep(5); print('handles after restart + prep', handles(), flush=True)
+
+handles before restart 32479
+bench_prep rc 0 {"restarted": true, "actions": ["opened BD", "closed Context Help"], "bd_open": true, "exec_state": 1, "windows": ["GUIBENCH_v0.vi Block Diagram", "GUIBENCH_v0.vi Front Panel", "LabVIEW"]}
+handles after restart + prep 31513
+BGRUN END rc=0 after 70s

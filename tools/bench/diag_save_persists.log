@@ -1,0 +1,48 @@
+BGRUN START 2026-09-16 15:22:22 limit 12.0 min: py -u tools/bench/diag_save_persists.py
+   fresh(): killing LabVIEW pid None
+   COM preflight attempt 1/15: pid None->1632, wires 16->16
+   COM preflight OK (pid 1632, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 1632
+copied donor -> ScratchSavePersist_v0.vi (18163 bytes)
+  [before] Property count=12  uid 1319 present=True  ExecState=1
+
+=== P1 delete uid 1319 (Property) with verify=True ===
+  scratch removed: ScratchSavePersist_v0.vi
+wrote G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_save_persists.json
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_save_persists.py", line 131, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_save_persists.py", line 78, in main
+    gone = g.delete_object(SCRATCH, TARGET_CLS, idx, verify=True)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 1971, in delete_object
+    raise RuntimeError(f"delete_object({cls}[{index}]): expected 1 object gone, got {len(gone)}")
+RuntimeError: delete_object(Property[3]): expected 1 object gone, got 0
+BGRUN END rc=1 after 29s
+BGRUN START 2026-09-16 18:41:48 limit 10.0 min: py -u tools/bench/diag_save_persists.py
+   fresh(): killing LabVIEW pid 23084
+   COM preflight attempt 1/15: pid None->2004, wires 16->16
+   COM preflight OK (pid 2004, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 2004
+copied donor -> ScratchSavePersist_v0.vi (18163 bytes)
+  [before] Property count=12  uid 1319 present=True  ExecState=1
+
+=== P1 delete uid 1319 (Property) with verify=True ===
+  delete_object returned gone=[1319]  -> P1 PASS
+  [after delete, same process] Property count=11  uid 1319 present=False  ExecState=0
+  P2 PASS
+
+=== P3/P4 save, then a FRESH LabVIEW reads the file ===
+  ExecState before save = 1
+  save() returned size 18021
+   fresh(): killing LabVIEW pid 2004
+   COM preflight attempt 1/15: pid None->5476, wires 16->16
+   COM preflight OK (pid 5476, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 5476
+  [after save + FRESH LabVIEW] Property count=11  uid 1319 present=False  ExecState=1
+  disk size 18021 vs donor 18163  -> P4 PASS
+  P3 PASS
+
+=== VERDICT: W2 - save works; that build's edits never happened ===
+  scratch removed: ScratchSavePersist_v0.vi
+wrote G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_save_persists.json
+BGRUN END rc=0 after 82s

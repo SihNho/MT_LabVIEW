@@ -1,0 +1,55 @@
+BGRUN START 2026-09-10 03:47:51 limit 6.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools/peer.ps1 -Agent codex -Slug opbuildcase-v1-ia-unwired -TimeoutSec 240 -Task Attack this diagnosis, do not confirm it. Context: LabVIEW 2026 VI Scripting with erdosmiller lv-scripting (vi.lib\Erdos Miller\LV-Scripting). Our op OpBuildCase_v1.vi wraps 'Create Case Structure.vi' (inputs Diagram in, location, Selector = Terminal refnum, Inputs = array of Terminal refnums, Frames). We feed Selector/Inputs from 'Get Controls.vi' (Diagram in, Control Names -> Control Terminals) plus an Index Array (element 0) for the Selector. Diagnosis: the Index Array created by 'Create Index Array.vi' through our OpBuildIA_v0 arrives with its 'array' input UNWIRED (the library's array input gave error 1304 for every terminal, see docs/keystone-op-spec.md section 24), so every attempt today (6 different source terminals) left the VI broken for the same reason; the fix is to wire Get Controls.'Control Terminals' -> IndexArray.'array' by terminal name via 'Wire Inputs.vi' (our OpWire_v0), then IndexArray.'element' -> creator.'Selector'. Already ruled out: node-index confusion (Nodes[] creation order vs Traverse order), left-edge vs right-edge terminal, wire-count arithmetic (a branch adds no Wire object). Questions: (1) name alternative causes that would still leave ExecState 0 after that wiring (is 'Control Terminals' an array of Terminal refnums or of Control refnums? does Get Controls.vi have other outputs? is 'array' the Index Array primitive's terminal name for Wire Inputs.vi?); (2) what single cheap test discriminates them; (3) does Create Case Structure.vi in this library wire the Selector terminal itself, and what happens when Selector is a String or Boolean terminal vs a numeric one? Read the library VIs under the project's vi.lib path if the sandbox allows; cite sources.
+OUTCOME: ANSWERED (106s)  archived: archive\peer\2026-09-10-opbuildcase-v1-ia-unwired.md
+--- ANSWER ---
+The proposed fix is plausible, but it is not yet diagnostic. A correctly wired Index Array can still leave the generated VI broken for several independent reasons.
+
+1. Alternative causes after adding the wire
+
+- **Wrong endpoint selected on Index Array.** `Wire Inputs.vi` may identify terminals by the scripting `Terminal.Name`, not by the palette/help label ?�array.??Confirm the actual reported terminal name, direction, and connector index. Do not assume lowercase `array`.
+- **Polymorphic type has not propagated yet.** Until the array input is wired and LabVIEW recompiles, Index Array?�s `element` terminal may remain unresolved. Creating the selector wire in the same operation before type propagation could fail or produce a broken wire.
+- **Wrong Index Array output.** A resized Index Array can have multiple element outputs. Node identity may be correct while the chosen output terminal is not element 0.
+- **Stale or cross-diagram references.** Structure creation can move objects into subdiagrams. A terminal reference captured before that mutation might subsequently refer to an object on the wrong diagram or become invalid.
+- **Selector is wired twice.** Given that `Create Case Structure.vi` explicitly accepts a `Selector` terminal reference, the strongest interpretation is that the creator itself wires that source to the newly created case-selector terminal. If `Inputs` also contains that terminal, or a later OpWire targets the selector again, the VI can remain broken.
+- **Invalid `Frames` for the selector type.** Boolean selectors support True/False cases; integer, string, and enum selectors support multiple cases. Labels prepared for numeric cases may be invalid after the selector resolves as Boolean or String. LabVIEW changes the permitted case labels based on selector type. [NI case-structure documentation](https://www.ni.com/en/support/documentation/supplemental/21/labview-equivalent-of-if--if-else--and-switch-statements.html)
+- **Incomplete case coverage.** Numeric or string selectors require either exhaustive values or a default case. A missing default can break the VI independently of the Index Array wire. [NI LabVIEW User Manual](https://download.ni.com/support/manuals/320999e.pdf)
+- **Unsupported numeric representation.** Case selectors accept integer-like numeric values; floating-point inputs are coerced to integers and cannot define fractional cases. [NI KnowledgeBase](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019O15SAE)
+- **Unwired output tunnels created from `Inputs`.** If the creator makes case tunnels or output tunnels, every output tunnel may require a source in every case unless ?�Use Default If Unwired??is enabled. That failure would survive a correct selector chain.
+- **A different broken object elsewhere.** `ExecState == 0` alone does not identify the Index Array as the remaining cause; you need the broken-run explanation or explicit wire endpoint report.
+
+On your specific type questions:
+
+- `Get Controls.vi`?�s output named **Control Terminals** is overwhelmingly likely to be an array of **Terminal refnums**, not Control refnums?�both its name and successful connection to an Index Array expecting a reference array should establish that. But I cannot prove its connector pane or other outputs from the public repository: the implementation is distributed as compiled LabVIEW VIs, and the public project page provides no textual connector specification. [erdosmiller/lv-scripting repository](https://github.com/erdosmiller/lv-scripting)
+- I cannot establish from a public source that the primitive terminal?�s scripting name is exactly `array`.
+- I likewise cannot enumerate `Get Controls.vi`?�s other outputs without reporter output.
+
+2. Single cheapest discriminating test
+
+Have the manager generate only this three-node chain in a fresh scratch VI:
+
+`Get Controls.Control Terminals ??Index Array.<reported input> ??simple indicator`
+
+Do **not** create the Case Structure yet. Immediately report:
+
+- every Index Array terminal?�s name, direction, data type, and connected wire count;
+- both endpoints of each wire;
+- the VI broken-run explanation.
+
+This one test separates the main hypotheses:
+
+- No first wire: terminal-name or reference/diagram problem.
+- First wire exists, but `element` remains unresolved: wrong input/output or delayed type propagation.
+- Chain compiles: the remaining fault is inside `Create Case Structure.vi`, `Frames`, or its `Inputs`, not the Index Array.
+- Broken for another object: the diagnosis was attributing a global broken state to the wrong node.
+
+3. What `Create Case Structure.vi` probably does
+
+Because its public interface takes `Selector` as a **Terminal refnum**, it almost certainly creates and wires the case-selector terminal itself; otherwise that input would have no meaningful purpose. Treat this as an inference, not a verified fact?�the definitive evidence is reporter output for that library VI or one minimal generated example.
+
+Expected selector behavior:
+
+- **Boolean:** the Case Structure becomes True/False. Supplying six arbitrary frames is suspect; LabVIEW?�s Boolean selector normally has exactly the two Boolean cases. [NI](https://www.ni.com/en/support/documentation/supplemental/21/labview-equivalent-of-if--if-else--and-switch-statements.html)
+- **String:** labels are string values, matching is normally case-sensitive, and multiple cases are allowed. A default case is needed unless the possible domain is exhaustively represented. [NI manual](https://download.ni.com/support/manuals/320999e.pdf)
+- **Numeric:** the selector is integer-based; multiple cases and ranges are allowed, with a default required for values not explicitly covered. Floating-point sources are coerced rather than enabling fractional case labels. [NI manual](https://download.ni.com/support/manuals/320999e.pdf), [NI KnowledgeBase](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019O15SAE)
+
+The key attack on the diagnosis is therefore: **prove the isolated Index Array chain compiles before changing the case builder.** If it does, wiring `Control Terminals ??array` was necessary but was not the root cause of the persistent broken VI.
+BGRUN END rc=0 after 107s

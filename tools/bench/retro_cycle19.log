@@ -1,0 +1,54 @@
+BGRUN START 2026-09-18 03:36:08 limit 16.0 min: py -u tools/retrospective.py --cycle 19
+   window 2026-09-18 00:02:53 .. 2026-09-18 03:36:08 (213 min); 17 build logs, 16 machinery logs, 11 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle19.txt (17374 chars)
+OUTCOME: ANSWERED (368s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-18-retrospective-cycle19.md
+--- ANSWER ---
+The most costly structural fault was cycle-boundary ordering: cycle 20 began at 02:30 while cycle 19’s retrospective, started at 02:28, had produced neither an outcome nor an end marker. The evidence window therefore includes 66 minutes of next-cycle work and at least $8.1295 in priced reviews. A second finding is mandatory because the `premature-build` device demonstrably failed its refusal case.
+
+## Findings
+
+1. **Repeated failure.** The same failure class did not recur unchecked. Walk attempt 1 failed C2 and C5 because its paths were wrong ([probe_flatseq_walk.log:21](tools/bench/probe_flatseq_walk.log:21), [probe_flatseq_walk.log:62](tools/bench/probe_flatseq_walk.log:62)); the approach changed immediately after attempt 1 to an adversarial dual review and an instrumented attempt 2. Attempt 2 passed 9/9 ([probe_flatseq_walk_run2.log:174](tools/bench/probe_flatseq_walk_run2.log:174)). Its interpretation then failed—reaching an outer tunnel was mistaken for crossing it—and again the next action changed to targeted outer-tunnel and stop-object probes rather than a third blind walk ([2026-09-18-walk-run2-flatseq-crossing-codex.md:80](archive/peer/2026-09-18-walk-run2-flatseq-crossing-codex.md:80), [probe_flatseq_outer.log:27](tools/bench/probe_flatseq_outer.log:27)). Attempt 1 was the correct change point, and it was honored.
+
+2. **Missing tool.** The missing primitive was the UID-addressed `FlatSequenceInnerTunnel`/`FlatSequenceOuterTunnel` reader. Its absence stopped 14 of 18 previously measured border walks and affected 32 of 43 in-scope sites ([2026-09-18-priorart-check-a-wiring.md:295](archive/peer/2026-09-18-priorart-check-a-wiring.md:295), [2026-09-18-priorart-check-a-wiring.md:340](archive/peer/2026-09-18-priorart-check-a-wiring.md:340)). It would have answered which tunnel face the walk reached, the continuation wire, and whether the trace genuinely crossed the flat-sequence boundary. That absence changed the cycle’s endpoint: planned done meant check A covering all 43 sites ([cycle19-plan.md:66](docs/cycle19-plan.md:66)), but the hand-off says nothing was built and check A moved to cycle 21 ([STATUS.md:53](STATUS.md:53), [STATUS.md:88](STATUS.md:88)). This is principally an ordering finding: the prior measurement already exposed the missing primitive before check A was scoped.
+
+3. **Unmeasured steps.** The initial check-A design ignored cheap existing measurements: cached terminal data, the three enumerated coerce nodes, and the already-terminating flat-sequence continuation rule ([2026-09-18-priorart-check-a-wiring.md:269](archive/peer/2026-09-18-priorart-check-a-wiring.md:269), [2026-09-18-priorart-check-a-wiring.md:293](archive/peer/2026-09-18-priorart-check-a-wiring.md:293)). The prior-art gate caught this before construction, so no bad check was built. Separately, the claim that T6 had previously passed rested on a prose “6/6” statement rather than per-test output; the later disposition records that T6 had never been measured passing ([2026-09-18-cycle18-t6-regression-codex.md:184](archive/peer/2026-09-18-cycle18-t6-regression-codex.md:184)). After those points, the cycle generally measured rather than inferred: live traversal, class attachment, negative controls, and unchanged hashes were all recorded.
+
+4. **Rule compliance.**
+
+   - Hardware discipline was respected: no motor or serial action appears, and the live diagnostic reports both originals and the donor op byte-identical afterward ([diag_uid_identity.log:54](tools/bench/diag_uid_identity.log:54)).
+   - Prior art correctly stopped the proposed check-A build; the material session wrote no release and built nothing ([2026-09-18-priorart-check-a-wiring.md:321](archive/peer/2026-09-18-priorart-check-a-wiring.md:321)).
+   - The failure-review rule was followed after both failed predictions.
+   - The material/judgement separation was not respected semantically: material dispositions accepted review findings and chose/run result-dependent actions, discussed under finding 7.
+   - The one-cycle ordering rule was broken formally: the first cycle-19 retrospective has only a start record ([retro.log:54](tools/bench/retro.log:54)), while the next judgement cycle began two minutes later ([cycle_5.log:1](tools/bench/cycle_5.log:1)).
+   - Documentation closure was only formal: final lint still reports STATUS at 111 lines against the 110-line limit in the attached audit.
+
+   The audit does not test whether material sessions made judgement decisions, whether one cycle began before the preceding retrospective completed, whether a regex recognizes decorated failure markers, or whether a review disposition’s reasoning is sound. A4 is also filename-date scoped rather than exact-window scoped, as the audit itself warns.
+
+5. **Ordering.** Running prior art before building was defensible and valuable. The bad ordering was at the cycle boundary: cycle 20 started at 02:30 before cycle 19 had a completed retrospective. Had the runner waited at 02:30, cycle 19 would have ended there instead of absorbing work through 03:36. Within check A, the reader prerequisite should also have been recognized at planning time because the existing border measurement already showed the continuation rule terminating ([2026-09-18-priorart-check-a-wiring.md:295](archive/peer/2026-09-18-priorart-check-a-wiring.md:295)).
+
+6. **What was not reported.** The largest hidden fact is that walk attempt 1 printed two failed gates yet ended `rc=0`: C2 failed at line 22, C5 failed at line 62, and bgrun reported success at line 114 ([probe_flatseq_walk.log:22](tools/bench/probe_flatseq_walk.log:22)). The session still noticed and reviewed the failures, so this did not corrupt the technical conclusion, but the mechanical record falsely classified the batch. The closing summary also understated the boundary problem: it said the retrospective was dispatching, while its log never acquired an outcome/end before the next cycle started.
+
+7. **Judgement inside a material session.** Yes. The run-1 disposition says the review was “accepted in full” and every fix was applied before the next run by the material session ([2026-09-18-walk-run1-path-constants-opus.md:186](archive/peer/2026-09-18-walk-run1-path-constants-opus.md:186)). The run-2 dispositions similarly accepted the central objection and immediately selected and ran the prescribed tests ([2026-09-18-walk-run2-flatseq-crossing-codex.md:163](archive/peer/2026-09-18-walk-run2-flatseq-crossing-codex.md:163), [2026-09-18-walk-run2-flatseq-crossing-opus.md:162](archive/peer/2026-09-18-walk-run2-flatseq-crossing-opus.md:162)). Accepting/rejecting review findings and choosing the next experiment are explicitly reserved to judgement by [CLAUDE.md:287](CLAUDE.md:287). I do not rank this separately because the selected experiments were useful and no independently measurable loss follows.
+
+## Device effect
+
+| Device | Result this window |
+|---|---|
+| Runner inner-exit propagation | Failed on the decorated `**FAIL` records: the batch still ended `rc=0` ([probe_flatseq_walk.log:22](tools/bench/probe_flatseq_walk.log:22), [probe_flatseq_walk.log:114](tools/bench/probe_flatseq_walk.log:114)). |
+| Confirm-bait refusal/adversarial prompt | Worked. Failed-prediction questions explicitly demanded refutation ([2026-09-18-walk-run1-path-constants-codex.md:71](archive/peer/2026-09-18-walk-run1-path-constants-codex.md:71)). |
+| Prior-art review | Worked. It found four non-novel conditions and the stopped artifact was not created ([2026-09-18-priorart-check-a-wiring.md:307](archive/peer/2026-09-18-priorart-check-a-wiring.md:307), [2026-09-18-priorart-check-a-wiring.md:321](archive/peer/2026-09-18-priorart-check-a-wiring.md:321)). |
+| Undisposed-review gate | Worked for the final audit: all 12 archived reviews were annotated. |
+| Build/review cost split | Worked: the attached audit separately reports 10 build minutes and 260:47 review minutes. |
+| `premature-build` gate | Failed. T6 expected refusal and got allowance ([cycle18_stopgate.log:102](tools/bench/cycle18_stopgate.log:102)). The later repaired test passes 6/6 with the negative proof ([selftest_guard_cycle_fixed.log:32](tools/bench/selftest_guard_cycle_fixed.log:32)). |
+| Scope counter | Worked by exposing 28 out-of-plan files; it did not prevent the scope expansion because it is deliberately advisory. |
+| Cost-regex self-check | Worked: the attached audit reports 10 cost lines seen and 10 parsed. |
+| `FAIL` inner-failure scan | Failed because its regex did not match `**FAIL`; bgrun consequently returned success ([probe_flatseq_walk.log:112](tools/bench/probe_flatseq_walk.log:112), [probe_flatseq_walk.log:114](tools/bench/probe_flatseq_walk.log:114)). |
+| `OpLoopEndRef_v0` reader | Not exercised: no stop-terminal diagnosis occurred in this window. |
+| Stop record + launch gate | Worked. The check-A review stopped the unwritten tool, and the later cycle-20 release probe showed a valid release without clearing the stored record ([c20_release_probe.log:8](tools/bench/c20_release_probe.log:8), [c20_release_probe.log:20](tools/bench/c20_release_probe.log:20)). |
+
+For the `premature-build` failure, the directly attributable cycle-19 diagnosis session ran 887 seconds and cost $8.9402475. Had the refusal case worked when exercised at 00:39, the 00:59–01:13 T6 diagnosis session would not have been needed and check-A work could have begun about 15 minutes earlier.
+
+VIOLATION: wrong-ordering | loss_min=66 | loss_usd=8.1295 | evidence=tools/bench/cycle_5.log:1
+VIOLATION: device-failed | loss_min=15 | loss_usd=8.9402475 | evidence=premature-build@tools/bench/cycle18_stopgate.log:102
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle19.md
+BGRUN END rc=0 after 370s

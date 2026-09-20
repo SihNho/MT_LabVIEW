@@ -1,0 +1,62 @@
+BGRUN START 2026-09-18 19:58:17 limit 20.0 min: py -u tools/bench/diag_count_indicator.py
+== diag_count_indicator - READ-ONLY. target C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\Track_D0_copy_20260918.vi
+  . ORIGINAL md5 BEFORE 2a78e17c449cacdaf5da389818526859 (recorded 2a78e17c449cacdaf5da389818526859, match=True)
+  . D0 copy  md5 BEFORE c39f36e0675339673b707c59f0784fee  (exists)
+  PASS G1a the D0 claudeDev copy exists  | Track_D0_copy_20260918.vi
+  . ExecState of the D0 copy: 0
+  PASS G2a panel_wiring returned >= 100 rows  | 114 rows
+  PASS G2b exactly one row is labelled exactly 'Count'  | 1 exact matches; labels containing 'count' (case-insensitive): [('Count', 28051, False)]
+  . Count row VERBATIM: label='Count' uid=28051 indicator=False is_source=True wire=30530 term_err=0 wire_err=0
+  PASS G3 `Count`'s panel role RECORDED  | CONTROL (the panel writes it, the diagram reads it) | indicator=False
+  PASS G4a its terminal's direction RECORDED  | is_source=True (SOURCE: it drives the wire)
+  PASS G4b its terminal carries a NON-ZERO connected wire  | wire=30530
+  . the copy has 170 Diagram objects (Traverse order = diagram_index)
+  . w30530 term[0]: {'i': 0, 'is_source': True, 'owner_class': 'Diagram', 'owner_uid': 15795, 'recip': 30530}
+  . w30530 term[1]: {'i': 1, 'is_source': False, 'owner_class': 'Comparison', 'owner_uid': 29111, 'recip': 30530}
+  . w30530 term[2]: {'i': 2, 'is_source': False, 'owner_class': 'SelectorTunnel', 'owner_uid': 31929, 'recip': 30530}
+  . w30530 term[3]: {'i': 3, 'is_source': False, 'owner_class': '', 'owner_uid': 0, 'recip': 0}
+  PASS G5 exactly one terminal of w30530 is the SOURCE  | 1 source terminals: [('Diagram', 15795)]
+  **FAIL** G6 every terminal of w30530 resolved to an owner  | 3 of 4 resolved
+  . w30530 term[0] SOURCE 'Diagram'#15795 owner chain: #15795 (self reads 'Diagram'#15795) -> 'Sequence'#15649  err=''
+  . w30530 term[0] SOURCE 'Diagram'#15795 owner chain: #15649 (self reads 'Sequence'#15649) -> 'Diagram'#15622  err=''
+  . w30530 term[0] SOURCE 'Diagram'#15795 owner chain: #15622 (self reads 'Diagram'#15622) -> 'EventStructure'#15544  err=''
+  . w30530 term[0] SOURCE 'Diagram'#15795 owner chain: #15544 (self reads 'EventStructure'#15544) -> 'Diagram'#15266  err=''
+  PASS G7 w30530 term[0] SOURCE 'Diagram'#15795: the owner chain reaches a Diagram  | chain: [('Diagram', 'Sequence', 15649), ('Sequence', 'Diagram', 15622), ('Diagram', 'EventStructure', 15544), ('EventStructure', 'Diagram', 15266)]
+  . w30530 term[0] SOURCE 'Diagram'#15795 lives on Diagram #15622 (Traverse index [140]); that diagram's own owner: [('EventStructure', 15544)]
+  . w30530 term[0] SOURCE 'Diagram'#15795 NODE on that diagram: 'NOT in Nodes[] - not a Node object'
+  . w30530 term[1] SINK 'Comparison'#29111 owner chain: #29111 (self reads 'Comparison'#29111) -> 'Diagram'#15795  err=''
+  . w30530 term[1] SINK 'Comparison'#29111 owner chain: #15795 (self reads 'Diagram'#15795) -> 'Sequence'#15649  err=''
+  . w30530 term[1] SINK 'Comparison'#29111 owner chain: #15649 (self reads 'Sequence'#15649) -> 'Diagram'#15622  err=''
+  . w30530 term[1] SINK 'Comparison'#29111 owner chain: #15622 (self reads 'Diagram'#15622) -> 'EventStructure'#15544  err=''
+  PASS G7 w30530 term[1] SINK 'Comparison'#29111: the owner chain reaches a Diagram  | chain: [('Comparison', 'Diagram', 15795), ('Diagram', 'Sequence', 15649), ('Sequence', 'Diagram', 15622), ('Diagram', 'EventStructure', 15544)]
+  . w30530 term[1] SINK 'Comparison'#29111 lives on Diagram #15795 (Traverse index [142]); that diagram's own owner: [('Sequence', 15649)]
+  . w30530 term[1] SINK 'Comparison'#29111 NODE on that diagram: [{'uid': 29111, 'label': 'Equal?'}]
+  .     w30530 term[1] SINK 'Comparison'#29111 term[0] name='x = y?' is_source=True wire=29334
+  .     w30530 term[1] SINK 'Comparison'#29111 term[1] name='y' is_source=False wire=29234
+  .     w30530 term[1] SINK 'Comparison'#29111 term[2] name='x' is_source=False wire=30530
+  . w30530 term[2] SINK 'SelectorTunnel'#31929 owner chain: #31929 (self reads 'SelectorTunnel'#31929) -> 'CaseStructure'#28709  err=''
+  . w30530 term[2] SINK 'SelectorTunnel'#31929 owner chain: #28709 (self reads 'CaseStructure'#28709) -> 'Diagram'#15795  err=''
+  . w30530 term[2] SINK 'SelectorTunnel'#31929 owner chain: #15795 (self reads 'Diagram'#15795) -> 'Sequence'#15649  err=''
+  . w30530 term[2] SINK 'SelectorTunnel'#31929 owner chain: #15649 (self reads 'Sequence'#15649) -> 'Diagram'#15622  err=''
+  PASS G7 w30530 term[2] SINK 'SelectorTunnel'#31929: the owner chain reaches a Diagram  | chain: [('SelectorTunnel', 'CaseStructure', 28709), ('CaseStructure', 'Diagram', 15795), ('Diagram', 'Sequence', 15649), ('Sequence', 'Diagram', 15622)]
+  . w30530 term[2] SINK 'SelectorTunnel'#31929 lives on Diagram #15795 (Traverse index [142]); that diagram's own owner: [('Sequence', 15649)]
+  . w30530 term[2] SINK 'SelectorTunnel'#31929 NODE on that diagram: 'NOT in Nodes[] - not a Node object'
+  . PANEL OBJECTS whose label mentions count/bead/num/total/picked/ref (12):
+  .     'Total Lost Frames' uid=421 INDICATOR wire=27824 is_source=False
+  .     'exp/ref \narray' uid=4983 INDICATOR wire=2332 is_source=False
+  .     '# of Auto-Reset' uid=9768 INDICATOR wire=10205 is_source=False
+  .     '# of Points' uid=10008 control wire=1150 is_source=True
+  .     'Autoreference? 1=Y' uid=10485 control wire=4981 is_source=True
+  .     'Set # of Cycles' uid=9871 control wire=15283 is_source=True
+  .     'Done Picking \nBeads?' uid=11819 control wire=19456 is_source=True
+  .     'Bead Pos' uid=11831 INDICATOR wire=15789 is_source=False
+  .     'Count' uid=28051 control wire=30530 is_source=True
+  .     'Total cycle #' uid=30309 INDICATOR wire=31687 is_source=False
+  .     'current image number' uid=34200 INDICATOR wire=3747 is_source=False
+  .     'NumCol' uid=29660 control wire=32901 is_source=True
+  PASS G1 ORIGINAL md5 unchanged  | 2a78e17c449cacdaf5da389818526859 -> 2a78e17c449cacdaf5da389818526859
+  PASS G8 D0 copy md5 unchanged (read-only)  | c39f36e0675339673b707c59f0784fee -> c39f36e0675339673b707c59f0784fee
+  . LabVIEW handles at the end: 57809
+  . wrote G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\count_indicator.json
+SELFTEST diag_count_indicator: 12 pass / 1 fail  (20 s)
+BGRUN END rc=1 after 20s

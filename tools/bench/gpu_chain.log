@@ -1,0 +1,98 @@
+BGRUN START 2026-09-08 08:39:13 limit 75.0 min: py -u tools/bench/gpu_chain.py
+LabVIEW up after 14 s, version 26.3.1f1
+dialogs: 8,1346,762| / ENABLED|6096522|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+lv_restart rc 0
+DLL deployed
+(a) plain API: 6 frames; DLL-vs-NumPy worst |dx| 4.09e-12 |dy| 3.81e-12 |dz| 1.33e-15 um; DLL-vs-LabVIEW worst |dx| 1.31e-07 |dy| 8.09e-08 |dz| 2.60e-06 um; index flips 0; time 1.81 ms/frame (5 beads, incl. 1.3 MB image upload)
+(b) LabVIEW-handle entry: rc 0 text b'No_Errors' 3.7 ms; x,y,z [708.406465 300.656898   2.922123 390.996027 266.403092   2.491661] pos [29 25 27 25 25] good [1 1 1 1 1]
+    reference frame 4: [708.406465 300.656898   2.92212  390.996027 266.403092   2.49166 ] pos [29, 25, 27, 25, 25] good [True, True, True, True, True]
+    max|diff| vs LabVIEW reference: 2.50e-06
+    second call 1.5 ms rc 0
+ctypes test rc 0
+ExecState 1
+labels: [('error in (no error)', False), ('error out', True), ('Threads', False), ('Threads 2', True), ('DIM1', False), ('DIM1 2', True), ('DIM2', False), ('DIM2 2', True), ('DIM3', False), ('DIM3 2', True), ('DIM4', False), ('DIM4 2', True), ('X Array', False), ('X Array 2', True), ('Y Array', False), ('Y Array 2', True), ('Cross Size', False), ('Cross Size 2', True), ('Cross Thickness', False), ('Cross Thickness 2', True), ('Array of Images', False), ('Array of Images 2', True), ('X Output', False), ('X Output 2', True), ('Y Output', False), ('Y Output 2', True), ('Z Output', False), ('Z Output 2', True), ('Array Cal Cluster', False), ('Array Cal Cluster 2', True), ('Bead Is Good Array', False), ('Bead Is Good Array 2', True), ('Error Message', False), ('Error Message 2', True), ('Test Array', False), ('Test Array 2', True)]
+run ok 0.1s
+  'Error Message 2' = size mismatch nb=0 x=3 y=1 yout=0 test=120
+  'error out' = (False, 0, '')
+  'X Array 2' = (1, 2, 3)
+  'Y Array 2' = (1,)
+smoke rc 0
+base ExecState 1 nodes 1 wires 36
+   X Array: wire 390 deleted
+   Cross Size: wire 531 deleted
+   Array of Images: wire 657 deleted
+   Y Output: wire 861 deleted
+   Z Output: wire 945 deleted
+   Array Cal Cluster: wire 1180 deleted
+   Test Array: wire 1514 deleted
+   X Array out (placeholder indicator): wire 427 deleted
+
+== drop HARNESS_loadcal
+   predict: +1
+   observed: 427
+
+== drop IMAQ Create
+   predict: +1
+   observed: 922
+
+== drop IMAQ ReadFile
+   predict: +1
+   observed: 967
+
+== drop make both cosine bandpass
+   predict: +1
+   observed: 989
+
+== drop Omars IMAQ ImageToArray
+   predict: +1
+   observed: 990
+
+== C.New Image -> R.Image
+   predict: +1
+   observed: 29
+
+== R.Image Out -> I2A.Image
+   predict: +1
+   observed: 30
+
+== L.cross size -> W.cross length
+   predict: +1
+   observed: 31
+
+== I2A.Image Pixels (U8) -> CLFN.Array of Images
+   predict: +1
+   observed: 32
+
+== L.Array of cal clusters -> CLFN.Array Cal Cluster
+   predict: +1
+   observed: EXC wire Array of cal clusters->Array Cal Cluster: error 5001: LV-Scripting.lvlib:Wire Inputs.vi<ERR>
+
+== L.cross size -> CLFN.Cross Size (branch)
+   predict: accepted
+   observed: 32
+
+== W.Hilbert -> CLFN.Y Output
+   predict: +1
+   observed: 33
+
+== W.real-space -> CLFN.Test Array
+   predict: +1
+   observed: 34
+
+== L.x,y,(blankz) array -> CLFN.X Array (adapt)
+   predict: +1
+   observed: 35
+   X Array (adapt wire): wire 1891 deleted
+   X Array DBL control: X Array 3
+   X Array out indicator: X Array 4
+
+== Bead Is Good Array -> CLFN.Z Output (branch)
+   predict: accepted
+   observed: 36
+   control 'Image Name' on Nodes[10] t2: 'Image Name'
+   control 'File Path' on Nodes[11] t7: 'File Path'
+
+assembled: wires 36 ExecState 1 CONTROLS {'x,y,z array': 'X Array 3', 'Bead is good? array in': 'Bead Is Good Array', 'pos in cal image in': 'Y Array', 'Error Message': 'Error Message', 'Image Name': 'Image Name', 'File Path': 'File Path'} OUTPUTS {'x,y,z array out': 'X Array 4', 'Bead is good? array out': 'Z Output 2', 'pos in cal image out': 'Y Array 2', 'Error Message out': 'Error Message 2'}
+saved 37659
+build gpu harness rc 0
+LabVIEW up after 14 s, version 26.3.1f1

@@ -1,0 +1,192 @@
+BGRUN START 2026-09-18 13:16:42 limit 25.0 min: py -u tools/bench/diag_fstunnel_wireterms_panel.py MATERIAL=1
+PREDICTION CONTRACT W1..W9 - see this file's docstring. MEASUREMENT ONLY; nothing is decided here.
+   LabVIEW pid before anything: 21008
+   scratch C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_fswtp_131642_4012.vi
+  PASS W0 STATIC: this file never calls remove_bad_wires_scripted  | []
+-- md5 before: 97 files (95 originals) --
+
+================ M4 the six wire sites, from the TEXT of build_opfstunnelterm_v1.py ================
+   _v1.py:476  wire_checked(op, "Function", tmsc, T_CAST_OUT, "Property", pn_a, "reference", tag=f"{tag} TMSC->PN_A")
+   _v1.py:483  wire_checked(op, "Function", tmsc, T_CAST_OUT, "Property", pn_b, "reference", tag=f"{tag} TMSC->PN_B")
+   _v1.py:486  wire_checked(op, "Property", pn_a, short_a, "Property", pn_a_uid, "reference", tag=f"{tag} {short_a}->UID")
+   _v1.py:489  wire_checked(op, "Property", pn_b, short_b, "Property", pn_b_uid, "reference", tag=f"{tag} {short_b}->UID")
+   _v1.py:494  wire_checked(op, "Property", pn_b, short_b, "Property", pn_b_cw, "reference", tag=f"{tag} {short_b}->ConnWire")
+   _v1.py:497  wire_checked(op, "Property", pn_b_cw, "Wire", "Property", pn_b_cwu, "reference", tag=f"{tag} ConnWire->UID")
+  NOTE M4 brief-quoted line numbers vs the file's real ones: brief [431, 438, 441, 444, 449, 452] -> actual [476, 483, 486, 489, 494, 497] (offset [45, 45, 45, 45, 45, 45])
+  PASS W4a exactly six wire_checked sites were found in the text of _v1.py  | lines [476, 483, 486, 489, 494, 497]
+   fresh(): killing LabVIEW pid 21008
+   COM preflight attempt 1/15: pid None->14440, wires 16->16
+   COM preflight OK (pid 14440, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 14440
+  HANDLES after a fresh LabVIEW, before any work: 30360  (fresh baseline ~31,500)
+
+================ REPRODUCE build_one('OUT') -> SCRATCH_fswtp_131642_4012.vi ================
+
+================ B  BUILD SCRATCH_fswtp_131642_4012.vi from OpWireSource_v5  [OUT FlatSequenceOuterTunnel] ================
+   CKPT[00] _v1.py:403  nodes 19  terminals 111  wires 42  ExecState 1  ORPHANS []
+        #894: present=True  node-side carriers [(145, 'error out', 3, 'src')]
+        #1356: present=True  node-side carriers [(151, 'index', 2, 'sink')]
+        #384: present=True  node-side carriers [(145, 'reference', 0, 'sink'), (1044, 'specific class reference', 0, 'src')]
+
+================ M1/M2/M3 at _v1.py:403 (fresh copy, BEFORE the node deletes) ================
+  NOTE report_all(Indicator): EXC report_all(Indicator) on SCRATCH_fswtp_131642_4012.vi: error 1092: Invoke Node in TRef Tra
+  NOTE panel census size: 38 top-level panel objects; 29 with a wired terminal
+
+   ================ WIRE #894 - its OWN Wire.Terms[] (OpWireSource_v5) ================
+      T[0] SOURCE  owner class 'Property'  owner uid 145  classes ['Property', 'Node']  label 'Property Node'
+              kind: block-diagram node; terminal name 'error out' index 3; reciprocal wire 894
+              PANEL ROW: label 'error out 3' uid 825 indicator is_source False wire 894
+      T[1] SINK    owner class 'TopLevelDiagram'  owner uid 3  classes ['Diagram']  label None
+              kind: front-panel ControlTerminal (owner is the diagram, NAMES.md:885); terminal name None index None; reciprocal wire 894
+              PANEL ROW: label 'error out 3' uid 825 indicator is_source False wire 894
+      T[2] END OF LIST (owner_uid 0, is_source False, err '')
+
+   ================ WIRE #1356 - its OWN Wire.Terms[] (OpWireSource_v5) ================
+      T[0] SOURCE  owner class 'TopLevelDiagram'  owner uid 3  classes ['Diagram']  label None
+              kind: front-panel ControlTerminal (owner is the diagram, NAMES.md:885); terminal name None index None; reciprocal wire 1356
+              PANEL ROW: label 'index 2' uid 1334 control is_source True wire 1356
+      T[1] SINK    owner class 'IndexArray'  owner uid 151  classes ['IndexArray', 'Node']  label 'Index Array'
+              kind: block-diagram node; terminal name 'index' index 2; reciprocal wire 1356
+              PANEL ROW: label 'index 2' uid 1334 control is_source True wire 1356
+      T[2] END OF LIST (owner_uid 0, is_source False, err '')
+  PASS W1 each of 894/1356 returns >=1 REAL terminal (owner_uid != 0) from its own Wire.Terms[]  | {'894': 2, '1356': 2}
+  PASS W2 every owner uid found by W1 is classified from a measured table (no UNRESOLVED rows)  | unresolved: []
+
+   NODE #145: Nodes[5]  classes ['Property', 'Node']  label 'Property Node'
+      terminals (5): [(0, 'reference', 'sink', 384), (1, 'reference out', 'src', 0), (2, 'error in (no error)', 'sink', 0), (3, 'error out', 'src', 894), (4, 'Terms[]', 'src', 578)]
+
+   NODE #151: Nodes[6]  classes ['IndexArray', 'Node']  label 'Index Array'
+      terminals (3): [(0, 'array', 'sink', 578), (1, 'element', 'src', 639), (2, 'index', 'sink', 1356)]
+  PASS W3 nodes #145 and #151 are identified with class, label and a full terminal list at :403  | {'145': (['Property', 'Node'], 5), '151': (['IndexArray', 'Node'], 3)}
+   copy of the donor: ExecState 1, 19 nodes on diagram 0
+   Terms[] PN 145 (wire 578) | Index Array 151 (element wire 639) | front TMSC 1044 (target-class wire 533) | back-half reference sinks [157, 1319, 1326]
+  PASS B1 [OUT FlatSequenceOuterTunnel] the donor copy is legal and the sweep found the front section and >=1 back-half sink  | ExecState 1; terms 145 ia 151 tmsc 1044 consumers [157, 1319, 1326]
+   deleted Node #145 -> gone [145]
+   deleted Node #151 -> gone [151]
+   deleted Wire #578
+   deleted Wire #639
+   deleted Wire #533
+   CKPT[01] _v1.py:442  nodes 17  terminals 103  wires 39  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  node-side carriers NONE
+        #1356: present=True  node-side carriers NONE
+        #384: present=True  node-side carriers [(1044, 'specific class reference', 0, 'src')]
+
+================ M6 at _v1.py:442 (immediately after the two node deletes) ================
+   ExecState = 0; 39 wires; present {'894': True, '1356': True, '384': True}
+   #894: present True, sinks NONE, Is Broken? = None  (NO SINK NODE TERMINAL - the only measured `Wire.Is Broken?` route (OpConnectFromWire_v0's post-Invoke readout) needs one; docs/NAMES.md:909-911)
+   #1356: present True, sinks NONE, Is Broken? = None  (NO SINK NODE TERMINAL - the only measured `Wire.Is Broken?` route (OpConnectFromWire_v0's post-Invoke readout) needs one; docs/NAMES.md:909-911)
+   #384: present True, sinks NONE, Is Broken? = None  (NO SINK NODE TERMINAL - the only measured `Wire.Is Broken?` route (OpConnectFromWire_v0's post-Invoke readout) needs one; docs/NAMES.md:909-911)
+  PASS W6 at :442 ExecState and the Wire census were read, and each of 894/1356/384 got either an `Is Broken?` value or a measured REASON it has no route  | ExecState 0; perturbing connect executed = False
+   after the deletes: back-half sinks {157: 0, 1319: 0, 1326: 0}; TMSC target class wire 0
+  PASS B2 [OUT FlatSequenceOuterTunnel] every sink to be re-fed is BARE and the cast's target class is unwired  | {157: 0, 1319: 0, 1326: 0}; target class 0
+   PN_A uid 145 (Nodes[17], OuterTerminal); new control(s) from its `reference`: ['reference 4']
+  PASS B3 [OUT FlatSequenceOuterTunnel] create_control on the OuterTerminal node's `reference` made exactly one new CONTROL  | ['reference 4']
+   CKPT[02] _v1.py:463  nodes 18  terminals 108  wires 40  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  node-side carriers NONE
+        #1356: present=True  node-side carriers NONE
+        #384: present=True  node-side carriers [(1044, 'specific class reference', 0, 'src')]
+   deleted the seed->PN_A wire #1651 (the seed's job is to type the CAST)
+   CKPT[03] _v1.py:471  nodes 18  terminals 108  wires 40  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  node-side carriers NONE
+        #1356: present=True  node-side carriers NONE
+        #384: present=True  node-side carriers [(1044, 'specific class reference', 0, 'src')]
+   seed 'reference 4' -> TMSC `target class` wire 1457
+   CKPT[04] _v1.py:331  nodes 18  terminals 108  wires 40  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  node-side carriers NONE
+        #1356: present=True  node-side carriers NONE
+        #384: present=True  node-side carriers [(1044, 'specific class reference', 0, 'src')]
+   WIRE [OUT FlatSequenceOuterTunnel] TMSC->PN_A Function#1044.'specific class reference' -> Property#145.'reference': src wire BEFORE = 384 -> branch=True; ExecState BEFORE = 0
+   CKPT[05] _v1.py:341  nodes 18  terminals 108  wires 40  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  node-side carriers NONE
+        #1356: present=True  node-side carriers NONE
+        #384: present=True  node-side carriers [(1044, 'specific class reference', 0, 'src'), (145, 'reference', 0, 'sink')]
+        AFTER: src wire 384, dst wire 384; ExecState AFTER = 0
+   TMSC -> PN_A wired; ExecState 0 (0 is expected here - the back half is still bare)
+   CKPT[06] _v1.py:331  nodes 19  terminals 113  wires 40  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  node-side carriers NONE
+        #1356: present=True  node-side carriers NONE
+        #384: present=True  node-side carriers [(1044, 'specific class reference', 0, 'src'), (145, 'reference', 0, 'sink')]
+   WIRE [OUT FlatSequenceOuterTunnel] TMSC->PN_B Function#1044.'specific class reference' -> Property#148.'reference': src wire BEFORE = 384 -> branch=True; ExecState BEFORE = 0
+   CKPT[07] _v1.py:341  nodes 19  terminals 113  wires 40  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  node-side carriers NONE
+        #1356: present=True  node-side carriers NONE
+        #384: present=True  node-side carriers [(1044, 'specific class reference', 0, 'src'), (145, 'reference', 0, 'sink'), (148, 'reference', 0, 'sink')]
+        AFTER: src wire 384, dst wire 384; ExecState AFTER = 0
+   CKPT[08] _v1.py:331  nodes 20  terminals 118  wires 40  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  node-side carriers NONE
+        #1356: present=True  node-side carriers NONE
+        #384: present=True  node-side carriers [(1044, 'specific class reference', 0, 'src'), (145, 'reference', 0, 'sink'), (148, 'reference', 0, 'sink')]
+   WIRE [OUT FlatSequenceOuterTunnel] OuterTerminal->UID Property#145.'OuterTerminal' -> Property#151.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+   CKPT[09] _v1.py:341  nodes 20  terminals 118  wires 41  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  node-side carriers NONE
+        #1356: present=True  node-side carriers NONE
+        #384: present=True  node-side carriers [(1044, 'specific class reference', 0, 'src'), (145, 'reference', 0, 'sink'), (148, 'reference', 0, 'sink')]
+        AFTER: src wire 1694, dst wire 1694; ExecState AFTER = 0
+   CKPT[10] _v1.py:331  nodes 21  terminals 123  wires 41  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  node-side carriers NONE
+        #1356: present=True  node-side carriers NONE
+        #384: present=True  node-side carriers [(1044, 'specific class reference', 0, 'src'), (145, 'reference', 0, 'sink'), (148, 'reference', 0, 'sink')]
+   WIRE [OUT FlatSequenceOuterTunnel] InnerTerminal->UID Property#148.'InnerTerminal' -> Property#154.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+   CKPT[11] _v1.py:341  nodes 21  terminals 123  wires 42  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  node-side carriers NONE
+        #1356: present=True  node-side carriers NONE
+        #384: present=True  node-side carriers [(1044, 'specific class reference', 0, 'src'), (145, 'reference', 0, 'sink'), (148, 'reference', 0, 'sink')]
+        AFTER: src wire 1719, dst wire 1719; ExecState AFTER = 0
+   CKPT[12] _v1.py:331  nodes 22  terminals 128  wires 42  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  node-side carriers NONE
+        #1356: present=True  node-side carriers NONE
+        #384: present=True  node-side carriers [(1044, 'specific class reference', 0, 'src'), (145, 'reference', 0, 'sink'), (148, 'reference', 0, 'sink')]
+   WIRE [OUT FlatSequenceOuterTunnel] InnerTerminal->ConnWire Property#148.'InnerTerminal' -> Property#168.'reference': src wire BEFORE = 1719 -> branch=True; ExecState BEFORE = 0
+   CKPT[13] _v1.py:341  nodes 22  terminals 128  wires 42  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  node-side carriers NONE
+        #1356: present=True  node-side carriers NONE
+        #384: present=True  node-side carriers [(1044, 'specific class reference', 0, 'src'), (145, 'reference', 0, 'sink'), (148, 'reference', 0, 'sink')]
+        AFTER: src wire 1719, dst wire 1719; ExecState AFTER = 0
+   CKPT[14] _v1.py:331  nodes 23  terminals 133  wires 42  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  node-side carriers NONE
+        #1356: present=True  node-side carriers NONE
+        #384: present=True  node-side carriers [(1044, 'specific class reference', 0, 'src'), (145, 'reference', 0, 'sink'), (148, 'reference', 0, 'sink')]
+   WIRE [OUT FlatSequenceOuterTunnel] ConnWire->UID Property#168.'Wire' -> Property#169.'reference': src wire BEFORE = 0 -> branch=False; ExecState BEFORE = 0
+   CKPT[15] _v1.py:341  nodes 23  terminals 133  wires 43  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  node-side carriers NONE
+        #1356: present=True  node-side carriers NONE
+        #384: present=True  node-side carriers [(1044, 'specific class reference', 0, 'src'), (145, 'reference', 0, 'sink'), (148, 'reference', 0, 'sink')]
+        AFTER: src wire 1766, dst wire 1766; ExecState AFTER = 0
+   back-half sink #157 (Property) re-fed from OuterTerminal (1/3)
+   back-half sink #1319 (Property) re-fed from OuterTerminal (2/3)
+   back-half sink #1326 (Property) re-fed from OuterTerminal (3/3)
+   CKPT[16] _v1.py:506  nodes 23  terminals 133  wires 43  ExecState 0  ORPHANS [894, 1356]
+        #894: present=True  node-side carriers NONE
+        #1356: present=True  node-side carriers NONE
+        #384: present=True  node-side carriers [(1044, 'specific class reference', 0, 'src'), (145, 'reference', 0, 'sink'), (148, 'reference', 0, 'sink')]
+   OuterTerminal wire 1694; back half now {157: 1694, 1319: 1694, 1326: 1694}; ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  PASS B4b [OUT FlatSequenceOuterTunnel] every back-half sink reads the OuterTerminal wire  | 1694 vs {157: 1694, 1319: 1694, 1326: 1694}
+**FAIL B4 [OUT FlatSequenceOuterTunnel] the whole typed chain is LEGAL - the FlatSequenceOuterTunnel property nodes accept the cast output, so the seed really typed the cast  | ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  NOTE stop reason: FROZEN AT B4: B4 [OUT FlatSequenceOuterTunnel] the whole typed chain is LEGAL - the FlatSequenceOuterTunnel property nodes accept the cast output, so the seed really typed the cast | ExecState per step [('TMSC -> PN_A', 0), ('back half re-fed', 0)]
+  PASS W4b the reproduction found the same front section as run 1 (terms 145 / ia 151 / tmsc 1044 / consumers [157,1319,1326])  | terms 145 ia 151 tmsc 1044 consumers [157, 1319, 1326]
+   SITE _v1.py:476: SRC Function#tmsc(uid 1044).'specific class reference'  ->  SINK Property#pn_a(uid 145).'reference'
+   SITE _v1.py:483: SRC Function#tmsc(uid 1044).'specific class reference'  ->  SINK Property#pn_b(uid 148).'reference'
+   SITE _v1.py:486: SRC Property#pn_a(uid 145).'OuterTerminal'  ->  SINK Property#pn_a_uid(uid 151).'reference'
+   SITE _v1.py:489: SRC Property#pn_b(uid 148).'InnerTerminal'  ->  SINK Property#pn_b_uid(uid 154).'reference'
+   SITE _v1.py:494: SRC Property#pn_b(uid 148).'InnerTerminal'  ->  SINK Property#pn_b_cw(uid 168).'reference'
+   SITE _v1.py:497: SRC Property#pn_b_cw(uid 168).'Wire'  ->  SINK Property#pn_b_cwu(uid 169).'reference'
+  PASS W4 all six sites were resolved to a src object+terminal and a sink object+terminal  | [None, None, None, None, None, None]
+
+================ M5 do the wire-894/1356 owners appear as M4 endpoints? ================
+   M4 endpoint objects (recipe name -> measured uid): {'tmsc': [1044], 'pn_a': [145], 'pn_b': [148], 'pn_a_uid': [151], 'pn_b_uid': [154], 'pn_b_cw': [168], 'pn_b_cwu': [169]}
+   objects known at :403: tmsc #1044, the DELETED Terms[] PN #145, the DELETED Index Array #151. pn_a/pn_b/pn_a_uid/pn_b_uid/pn_b_cw/pn_b_cwu are BUILT AFTER :442 and do not exist at :403.
+   MATCH-BY-UID owner #145 ('Property Node', block-diagram node) shares its uid with M4 endpoint(s) ['pn_a'] - ?? CHECK UID REUSE: those endpoints are nodes the recipe BUILDS after deleting #145/#151, so an equal uid is not the same object
+   MATCH-BY-UID owner #151 ('Index Array', block-diagram node) shares its uid with M4 endpoint(s) ['pn_a_uid'] - ?? CHECK UID REUSE: those endpoints are nodes the recipe BUILDS after deleting #145/#151, so an equal uid is not the same object
+   NO MATCH     owner #3 (None, front-panel ControlTerminal (owner is the diagram, NAMES.md:885)) is NOT an endpoint of any of the six sites (endpoint uids [145, 148, 151, 154, 168, 169, 1044])
+  PASS W5 the owner set was compared against the six sites' MEASURED endpoints, with matches AND non-matches printed at name level  | 2 match, 1 non-match; endpoint uids [145, 148, 151, 154, 168, 169, 1044]
+  NOTE ExecState at the B4 freeze (SUSPECT if a perturbing connect ran at :442 - NAMES.md:898): 0; perturbing connect executed = False
+  NOTE M7 NOT re-run - already measured: tools/bench/diag_fstunnel_wirebroken.log:104-134 (10/10, rc=0)
+  NOTE the six sites' wires in this reproduction: [384, 384, 1694, 1719, 1719, 1766]
+  PASS W7 the ONE scratch VI was created and DELETED in this same run  | C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_fswtp_131642_4012.vi
+  HANDLES after the run: 30697  (fresh baseline ~31,500)
+  PASS W8 all 95 originals (+ the V6 copy and the donor) are md5-identical before and after  | differing: []
+  PASS W9 no motor, no serial port, no camera, motor_gate.py --execute not called (static: this file makes no such call)  | read-only VI Server + one throwaway scratch VI
+
+SUMMARY gates 12/12 pass; failing: []
+raw -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_fstunnel_wireterms_panel.json
+BGRUN END rc=0 after 91s

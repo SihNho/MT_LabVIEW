@@ -1,0 +1,31 @@
+BGRUN START 2026-09-18 19:14:53 limit 10.0 min: py -u tools/bench/tmx_sendmode_probe.py
+tmx_sendmode_probe - the peer's discriminating test (archive/peer/2026-09-18-tmx-selftest-contract.md:102-113)
+source of tmx_from: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\drive_original_copy_v4.py
+
+FIXTURE a - send mode  (:111 before:, no TMX?= token; pre-write LIMITS at :105)
+    in  | LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+    in  | before: POS?=1=30.00000  SVO?=1  FRF?=1  VEL?=1.0  ERR?=0
+RESULT a | value=None | line='before: POS?=1=30.00000  SVO?=1  FRF?=1  VEL?=1.0  ERR?=0'
+
+FIXTURE b - limits-set (:58 before:, TMX?= always present)  [CONTROL]
+    in  | before: POS?=1=30.00000 TMN?=1=0.00000 TMX?=1=39.00000 ERR?=0
+    in  | PRELIMITS TMN=0 TMX=39
+    in  | ERR? after SPA = 0
+    in  | LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+    in  | RESULT: controller limits are TMN=0 TMX=39 (mode limits-set)
+RESULT b | value=39.0 | line='PRELIMITS TMN=0 TMX=39'
+
+FIXTURE c - send mode + PRELIMITS present
+    in  | LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+    in  | PRELIMITS TMN=0 TMX=39
+    in  | before: POS?=1=30.00000  SVO?=1  FRF?=1  VEL?=1.0  ERR?=0
+RESULT c | value=39.0 | line='PRELIMITS TMN=0 TMX=39'
+
+GATE P1 three results printed                                | PASS
+GATE P2 (b) control returns 39.0 off the before: line        | FAIL
+GATE P3 (c) PRELIMITS outranks everything -> 39.0            | PASS
+
+VERDICT (a) send-mode: value=None -> CONFIRMS the peer (rule 3 pre-empts rule 4; rule 4 is dead code in send mode)
+NOT PATCHED. Reporting only; the judgement session decides (brief, cycle 34 dispatch C).
+SELFTEST tmx_sendmode_probe: 2 pass / 1 fail
+BGRUN END rc=1 after 0s

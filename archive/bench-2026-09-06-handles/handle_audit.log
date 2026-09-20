@@ -1,0 +1,13 @@
+BGRUN START 2026-09-06 04:17:02 limit 12.0 min: py -u tools/bench/handle_audit.py
+baseline handles 31537
+A 20x report (this process): handles 31537 -> 31566  delta +29  (9s)
+   child: child done 
+B child 20x report + clean exit: handles 31567 -> 31563  delta -4  (5s)
+C 10x open_panel/revert/close_panel: handles 31558 -> 31565  delta +7  (4s)
+D 10x drop_subvi + revert (scratch): handles 31565 -> 31616  delta +51  (4s)
+   child killed mid-loop
+E child killed mid-work: handles 31613 -> 31611  delta -2  (9s)
+F 20x lv_gui windows (no COM): handles 31611 -> 31612  delta +1  (11s)
+scratch deleted
+final handles (this process still alive) 31612
+BGRUN END rc=0 after 57s

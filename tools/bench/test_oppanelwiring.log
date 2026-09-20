@@ -1,0 +1,104 @@
+BGRUN START 2026-09-14 11:08:54 limit 15.0 min: py -u tools/bench/test_oppanelwiring.py
+T1 scratch: 10 rows in 0.10 s, err=None
+      {'label': 'vi path', 'indicator': False, 'uid': 78, 'is_source': True, 'wire': 106, 'term_err': 0, 'wire_err': 0}
+      {'label': 'Class Name', 'indicator': False, 'uid': 346, 'is_source': True, 'wire': 0, 'term_err': 0, 'wire_err': 1055}
+      {'label': 'Class Name 2', 'indicator': False, 'uid': 503, 'is_source': True, 'wire': 0, 'term_err': 0, 'wire_err': 1055}
+      {'label': 'Names', 'indicator': False, 'uid': 889, 'is_source': True, 'wire': 0, 'term_err': 0, 'wire_err': 1055}
+      {'label': 'Names 2', 'indicator': False, 'uid': 965, 'is_source': True, 'wire': 0, 'term_err': 0, 'wire_err': 1055}
+      {'label': 'index', 'indicator': False, 'uid': 1041, 'is_source': True, 'wire': 1066, 'term_err': 0, 'wire_err': 0}
+      {'label': 'index 2', 'indicator': False, 'uid': 1083, 'is_source': True, 'wire': 0, 'term_err': 0, 'wire_err': 1055}
+      {'label': 'error out', 'indicator': True, 'uid': 457, 'is_source': False, 'wire': 0, 'term_err': 0, 'wire_err': 1055}
+      {'label': 'Text', 'indicator': True, 'uid': 232, 'is_source': False, 'wire': 253, 'term_err': 0, 'wire_err': 0}
+      {'label': 'Style', 'indicator': True, 'uid': 244, 'is_source': False, 'wire': 273, 'term_err': 0, 'wire_err': 0}
+   -> PASS: T1 label multiset == fp_labels: op ['Class Name', 'Class Name 2', 'Names', 'Names 2', 'Style', 'Text', 'error out', 'index', 'index 2', 'vi path'] vs fp ['Class Name', 'Class Name 2', 'Names', 'Names 2', 'Style', 'Text', 'error out', 'index', 'index 2', 'vi path']
+   -> PASS: T1 Indicator flags == fp_labels: per label
+   -> PASS: T1 control UIDs unique: 10 rows
+   -> FAIL: T1 every wire UID non-zero and a real Wire on the scratch: zeros ['Class Name', 'Class Name 2', 'Names', 'Names 2', 'index 2', 'error out'], foreign []
+   -> PASS: T1 IsSource == not Indicator: []
+net_map: 8 nodes walked in 1.4 s; 78 junk Invoke(s) purged in 1.3 s
+   -> FAIL: T2 exactly one orphan after create_control + delete its wire: orphans ['Class Name', 'Class Name 2', 'Names', 'Names 2', 'index 2', 'error out', 'error in (no error)']; made=([{'i': 10, 'class': 'ControlTerminal', 'uid': 390, 'pos': (456, 226), 'owner': 'TopLevelDiagram'}], 'error in (no error)'); wires deleted 1; rows 10->11
+T3 main VI: 114 rows (60 CTL / 54 IND) in 0.84 s, err=None
+      ORPHANS (terminal unwired on the diagram): 10
+         CTL  #    87  'Focus Step (F1)'
+         CTL  #   159  '+ Inc (PgUp)'
+         CTL  #   174  '- Inc (PgDn)'
+         IND  #     6  'File # Saved'
+         CTL  #    41  'continue tracking'
+         IND  # 31543  'Image'
+         CTL  #  5700  'Send'
+         CTL  #  5789  'Rot step (turns)'
+         CTL  #  7715  'Stop Trans'
+         CTL  # 11595  'Rot \nSpeed'
+   -> PASS: T3 114 rows, 60 CTL / 54 IND (docs/main-vi-panel-map.md): 114 rows, 60/54
+   -> PASS: T3 every non-zero wire UID is a real Wire on the main VI: foreign []
+   -> PASS: T3 IsSource == not Indicator on the main VI: 0 disagreements
+      -> tools/bench/main_vi_panel_wiring.json
+   -> PASS: T4 handles over 20 runs on scratch: samples [(0, 31911), (10, 31911), (20, 31911)]; post-idle 31911 (+0); slope +0.00/run; 6 s
+   -> PASS: T4 handles over 20 runs on main VI: samples [(0, 31915), (10, 31926), (20, 31937)]; post-idle 31937 (+22); slope +1.10/run; 27 s
+
+################ SUMMARY ################
+  PASS  T1 label multiset == fp_labels                                 op ['Class Name', 'Class Name 2', 'Names', 'Names 2', 'Style', 'Text', 'error out', 'index', 'index 2', 'vi path'] vs fp ['Class Name', 'Class Name 2'
+  PASS  T1 Indicator flags == fp_labels                                per label
+  PASS  T1 control UIDs unique                                         10 rows
+  FAIL  T1 every wire UID non-zero and a real Wire on the scratch      zeros ['Class Name', 'Class Name 2', 'Names', 'Names 2', 'index 2', 'error out'], foreign []
+  PASS  T1 IsSource == not Indicator                                   []
+  FAIL  T2 exactly one orphan after create_control + delete its wire   orphans ['Class Name', 'Class Name 2', 'Names', 'Names 2', 'index 2', 'error out', 'error in (no error)']; made=([{'i': 10, 'class': 'ControlTerminal'
+  PASS  T3 114 rows, 60 CTL / 54 IND (docs/main-vi-panel-map.md)       114 rows, 60/54
+  PASS  T3 every non-zero wire UID is a real Wire on the main VI       foreign []
+  PASS  T3 IsSource == not Indicator on the main VI                    0 disagreements
+  PASS  T4 handles over 20 runs on scratch                             samples [(0, 31911), (10, 31911), (20, 31911)]; post-idle 31911 (+0); slope +0.00/run; 6 s
+  PASS  T4 handles over 20 runs on main VI                             samples [(0, 31915), (10, 31926), (20, 31937)]; post-idle 31937 (+22); slope +1.10/run; 27 s
+scratch deleted
+BGRUN END rc=3 after 58s
+BGRUN START 2026-09-14 11:11:27 limit 15.0 min: py -u tools/bench/test_oppanelwiring.py
+T1 scratch: 10 rows in 0.09 s, err=None
+      {'label': 'vi path', 'indicator': False, 'uid': 78, 'is_source': True, 'wire': 106, 'term_err': 0, 'wire_err': 0}
+      {'label': 'Class Name', 'indicator': False, 'uid': 346, 'is_source': True, 'wire': 0, 'term_err': 0, 'wire_err': 1055}
+      {'label': 'Class Name 2', 'indicator': False, 'uid': 503, 'is_source': True, 'wire': 0, 'term_err': 0, 'wire_err': 1055}
+      {'label': 'Names', 'indicator': False, 'uid': 889, 'is_source': True, 'wire': 0, 'term_err': 0, 'wire_err': 1055}
+      {'label': 'Names 2', 'indicator': False, 'uid': 965, 'is_source': True, 'wire': 0, 'term_err': 0, 'wire_err': 1055}
+      {'label': 'index', 'indicator': False, 'uid': 1041, 'is_source': True, 'wire': 1066, 'term_err': 0, 'wire_err': 0}
+      {'label': 'index 2', 'indicator': False, 'uid': 1083, 'is_source': True, 'wire': 0, 'term_err': 0, 'wire_err': 1055}
+      {'label': 'error out', 'indicator': True, 'uid': 457, 'is_source': False, 'wire': 0, 'term_err': 0, 'wire_err': 1055}
+      {'label': 'Text', 'indicator': True, 'uid': 232, 'is_source': False, 'wire': 253, 'term_err': 0, 'wire_err': 0}
+      {'label': 'Style', 'indicator': True, 'uid': 244, 'is_source': False, 'wire': 273, 'term_err': 0, 'wire_err': 0}
+   -> PASS: T1 label multiset == fp_labels: op ['Class Name', 'Class Name 2', 'Names', 'Names 2', 'Style', 'Text', 'error out', 'index', 'index 2', 'vi path'] vs fp ['Class Name', 'Class Name 2', 'Names', 'Names 2', 'Style', 'Text', 'error out', 'index', 'index 2', 'vi path']
+   -> PASS: T1 Indicator flags == fp_labels: per label
+   -> PASS: T1 control UIDs unique: 10 rows
+   -> PASS: T1 every non-zero wire UID is a real Wire on the scratch: orphans ['Class Name', 'Class Name 2', 'Names', 'Names 2', 'error out', 'index 2'] (donor's stripped controls); errs [('Class Name', 0, 1055), ('Class Name 2', 0, 1055), ('Names', 0, 1055), ('Names 2', 0, 1055), ('index 2', 0, 1055), ('error out', 0, 1055)]
+   -> PASS: T1 IsSource == not Indicator: []
+net_map: 8 nodes walked in 1.4 s; 78 junk Invoke(s) purged in 1.3 s
+   -> PASS: T2 the constructed orphan is exactly the +1 over the baseline orphan set (rows N -> N+1, array not shortened): new orphan ['error in (no error)']; made=([{'i': 10, 'class': 'ControlTerminal', 'uid': 390, 'pos': (; wires deleted 1; rows 10->11; errs [('error in (no error)', 0, 1055)]
+T3 main VI: 114 rows (60 CTL / 54 IND) in 0.81 s, err=None
+      ORPHANS (terminal unwired on the diagram): 10
+         CTL  #    87  'Focus Step (F1)'
+         CTL  #   159  '+ Inc (PgUp)'
+         CTL  #   174  '- Inc (PgDn)'
+         IND  #     6  'File # Saved'
+         CTL  #    41  'continue tracking'
+         IND  # 31543  'Image'
+         CTL  #  5700  'Send'
+         CTL  #  5789  'Rot step (turns)'
+         CTL  #  7715  'Stop Trans'
+         CTL  # 11595  'Rot \nSpeed'
+   -> PASS: T3 114 rows, 60 CTL / 54 IND (docs/main-vi-panel-map.md): 114 rows, 60/54
+   -> PASS: T3 every non-zero wire UID is a real Wire on the main VI: foreign []
+   -> PASS: T3 IsSource == not Indicator on the main VI: 0 disagreements
+      -> tools/bench/main_vi_panel_wiring.json
+   -> PASS: T4 handles over 20 runs on scratch: samples [(0, 31938), (10, 31939), (20, 31939)]; post-idle 31938 (+0); slope +0.05/run; 6 s
+   -> PASS: T4 handles over 20 runs on main VI: samples [(0, 31941), (10, 31952), (20, 31961)]; post-idle 31962 (+21); slope +1.00/run; 27 s
+
+################ SUMMARY ################
+  PASS  T1 label multiset == fp_labels                                 op ['Class Name', 'Class Name 2', 'Names', 'Names 2', 'Style', 'Text', 'error out', 'index', 'index 2', 'vi path'] vs fp ['Class Name', 'Class Name 2'
+  PASS  T1 Indicator flags == fp_labels                                per label
+  PASS  T1 control UIDs unique                                         10 rows
+  PASS  T1 every non-zero wire UID is a real Wire on the scratch       orphans ['Class Name', 'Class Name 2', 'Names', 'Names 2', 'error out', 'index 2'] (donor's stripped controls); errs [('Class Name', 0, 1055), ('Class
+  PASS  T1 IsSource == not Indicator                                   []
+  PASS  T2 the constructed orphan is exactly the +1 over the baseline orphan set (rows N -> N+1, array not shortened) new orphan ['error in (no error)']; made=([{'i': 10, 'class': 'ControlTerminal', 'uid': 390, 'pos': (; wires deleted 1; rows 10->11; errs [('error in 
+  PASS  T3 114 rows, 60 CTL / 54 IND (docs/main-vi-panel-map.md)       114 rows, 60/54
+  PASS  T3 every non-zero wire UID is a real Wire on the main VI       foreign []
+  PASS  T3 IsSource == not Indicator on the main VI                    0 disagreements
+  PASS  T4 handles over 20 runs on scratch                             samples [(0, 31938), (10, 31939), (20, 31939)]; post-idle 31938 (+0); slope +0.05/run; 6 s
+  PASS  T4 handles over 20 runs on main VI                             samples [(0, 31941), (10, 31952), (20, 31961)]; post-idle 31962 (+21); slope +1.00/run; 27 s
+scratch deleted
+BGRUN END rc=0 after 58s

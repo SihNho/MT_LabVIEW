@@ -1,0 +1,177 @@
+BGRUN START 2026-09-15 01:06:08 limit 30.0 min: py -u tools/recipes/build_track_v6_core.py --n=200 --full
+
+== D scratch discriminator: tunnel wire-then-index route
+   PASS drop Get Controls.vi [43]
+   PASS D free String[] control 'Control Names'
+   PASS drop StrToPath.vi [44]
+   PASS D exactly one tunnel from wire_control 1
+   D tunnel: mode 1 outer 216 inner [200]; StrToPath.string 200
+   PASS D IndexMode 1 and inner wire == StrToPath.string wire 
+   PASS D ExecState 1 after the route 1
+   PASS D the scratch runs and returns with a two-element input 0.01 s
+
+== BUILD
+H1 loader default -> 23183 bytes
+   PASS drop HARNESS_loadcal.vi [43]
+   PASS drop IMAQ Create [44]
+   PASS drop make both cosine bandpass.vi [45]
+   PASS H2 'cross size' -> 'cross length' 125/125
+   PASS H2 control 'Image Name' on IMAQ Create ['Image Name']
+   PASS drop PARALLEL_kernel_v3clean.vi [46]
+   PASS H3 control 'x,y,z array' ['x,y,z array']
+   PASS H3 control 'Bead is good? array in' ['Bead is good? array in']
+   PASS H3 control 'pos in cal image in' ['pos in cal image in']
+   PASS H3 control '4 pack remainder' ['4 pack remainder']
+   PASS H3 control '# of bead 4 packs' ['# of bead 4 packs']
+   PASS H3 the 5 controls survive by UID, terminals unwired 
+   PASS H3 SubVI count -1 
+   PASS H3 no pre-existing object lost set()
+   H3 extra objects (the five controls and their parts): 5
+   PASS drop Get Controls.vi [46]
+   PASS H4 free String[] control 'Control Names'
+   PASS L1 one For loop 
+   PASS drop StrToPath.vi [47]
+   PASS drop IMAQ ReadFile [48]
+   PASS drop PARALLEL_kernel_v3clean.vi [49]
+   PASS L3 exactly one tunnel from wire_control 1
+   L3 tunnel: mode 1 outer 537 inner [521]; StrToPath.string 521
+   PASS L3 IndexMode 1 and inner wire == StrToPath.string wire 
+   PASS L4 'New Image' -> 'Image' across the border (one new non-indexed tunnel 549->524) a=549 b=524 new tunnels [(549, [524], 0, False, [True], 0, 0)]
+   PASS L4 'path' -> 'File Path' 531/531
+   PASS L4 'Image Out' -> 'Image In' 543/543
+   L4 'Array of cal clusters': tunnel flipped to IndexMode 0 -> (568, [552], 0), sink wire now 552
+   PASS L4 'Array of cal clusters' -> 'Array of cal clusters' across the border (one new non-indexed tunnel 568->552) a=568 b=552 new tunnels [(568, [552], 0, False, [True], 0, 0)]
+   PASS L4 'cross size' -> 'cross size' across the border (one new non-indexed tunnel 578->555) a=578 b=555 new tunnels [(578, [555], 0, False, [True], 0, 0)]
+   L4 'Cosine bandpass for Hilbert': tunnel flipped to IndexMode 0 -> (587, [469], 0), sink wire now 469
+   PASS L4 'Cosine bandpass for Hilbert' -> 'Cosine bandpass\nfor Hilbert ' across the border (one new non-indexed tunnel 587->469) a=587 b=469 new tunnels [(587, [469], 0, False, [True], 0, 0)]
+   L4 'Real-space cosine window': tunnel flipped to IndexMode 0 -> (597, [561], 0), sink wire now 561
+   PASS L4 'Real-space cosine window' -> 'Real-space cosine window' across the border (one new non-indexed tunnel 597->561) a=597 b=561 new tunnels [(597, [561], 0, False, [True], 0, 0)]
+   PASS L4 control '4 pack remainder' -> kernel 
+   PASS L4 control '# of bead 4 packs' -> kernel 
+   PASS R register 0: Shift Registers[] == before + {uid} [] -> [600] (+600)
+   PASS R register 1: Shift Registers[] == before + {uid} [600] -> [600, 530] (+530)
+   PASS R register 2: Shift Registers[] == before + {uid} [530, 600] -> [600, 530, 629] (+629)
+   R register indices by UID: [0, 1, 2]
+   PASS R reg 0 LeftOutCtl <- 'x,y,z array' (control terminal wired) 
+   PASS R reg 0 LeftIn -> kernel 'x,y,z array' 
+   PASS R reg 1 LeftOutCtl <- 'Bead is good? array in' (control terminal wired) 
+   PASS R reg 1 LeftIn -> kernel 'Bead is good? array in' 
+   PASS R reg 2 LeftOutCtl <- 'pos in cal image in' (control terminal wired) 
+   PASS R reg 2 LeftIn -> kernel 'pos in cal image in' 
+   PASS R three output tunnels 3
+   PASS R output 'x,y,z array out' pairs with exactly ONE new tunnel, IndexMode 1 [661]
+   PASS R output 'Bead is good? array out' pairs with exactly ONE new tunnel, IndexMode 1 [664]
+   PASS R output 'pos in cal image out' pairs with exactly ONE new tunnel, IndexMode 1 [668]
+   PASS R the three paired tunnels are distinct {'x,y,z array out': 661, 'Bead is good? array out': 664, 'pos in cal image out': 668}
+   PASS R reg 0 RightIn <- kernel 'x,y,z array out' (still one wire uid) 
+   PASS R reg 1 RightIn <- kernel 'Bead is good? array out' (still one wire uid) 
+   PASS R reg 2 RightIn <- kernel 'pos in cal image out' (still one wire uid) 
+   PASS O indicator for 'x,y,z array out' ['x,y,z array out']
+   PASS O indicator for 'Bead is good? array out' ['Bead is good? array out']
+   PASS O indicator for 'pos in cal image out' ['pos in cal image out']
+   PASS O ExecState 1 1
+   SAVED; labels {'image_name': 'Image Name', 'x,y,z array': 'x,y,z array', 'Bead is good? array in': 'Bead is good? array in', 'pos in cal image in': 'pos in cal image in', '4 pack remainder': '4 pack remainder', '# of bead 4 packs': '# of bead 4 packs', 'frame_paths': 'Control Names', 'xyz': 'x,y,z array out', 'good': 'Bead is good? array out', 'pos': 'pos in cal image out'}
+   PASS T reference session loaded 2026-09-07 16:00:38
+
+== T1 fixture run: 1 frames
+   set 0.00 s; run 0.0 s (19.9 ms/frame); get 0.02 s; rows [1, 1, 1]
+   PASS T1 one row per frame for XYZ/GOOD/POS 
+   PASS T1 row widths match the reference 15/15 5/5 5/5
+   pre-loss frames: identical 1, different 0; first difference None; post-loss worst |dxyz| 0.0 at None
+   PASS T1 XYZ/GOOD/POS bit-identical to the reference before the first lost bead 
+
+== T2 fixture run: 2 frames
+   set 0.00 s; run 0.0 s (7.5 ms/frame); get 0.02 s; rows [2, 2, 2]
+   PASS T2 one row per frame for XYZ/GOOD/POS 
+   PASS T2 row widths match the reference 15/15 5/5 5/5
+   pre-loss frames: identical 2, different 0; first difference None; post-loss worst |dxyz| 0.0 at None
+   PASS T2 XYZ/GOOD/POS bit-identical to the reference before the first lost bead 
+
+== T200 fixture run: 200 frames
+   set 0.00 s; run 0.3 s (1.4 ms/frame); get 0.02 s; rows [200, 200, 200]
+   PASS T200 one row per frame for XYZ/GOOD/POS 
+   PASS T200 row widths match the reference 15/15 5/5 5/5
+   pre-loss frames: identical 200, different 0; first difference None; post-loss worst |dxyz| 0.0 at None
+   PASS T200 XYZ/GOOD/POS bit-identical to the reference before the first lost bead 
+
+== Tfull fixture run: 10043 frames
+   set 0.03 s; run 192.0 s (19.1 ms/frame); get 0.06 s; rows [10043, 10043, 10043]
+   PASS Tfull one row per frame for XYZ/GOOD/POS 
+   PASS Tfull row widths match the reference 15/15 5/5 5/5
+   pre-loss frames: identical 10018, different 0; first difference None; post-loss worst |dxyz| 1072.2824824812158 at 11801
+   PASS Tfull XYZ/GOOD/POS bit-identical to the reference before the first lost bead 
+
+SUMMARY 72/72 PASS
+   PASS drop Get Controls.vi
+   PASS D free String[] control
+   PASS drop StrToPath.vi
+   PASS D exactly one tunnel from wire_control
+   PASS D IndexMode 1 and inner wire == StrToPath.string wire
+   PASS D ExecState 1 after the route
+   PASS D the scratch runs and returns with a two-element input
+   PASS drop HARNESS_loadcal.vi
+   PASS drop IMAQ Create
+   PASS drop make both cosine bandpass.vi
+   PASS H2 'cross size' -> 'cross length'
+   PASS H2 control 'Image Name' on IMAQ Create
+   PASS drop PARALLEL_kernel_v3clean.vi
+   PASS H3 control 'x,y,z array'
+   PASS H3 control 'Bead is good? array in'
+   PASS H3 control 'pos in cal image in'
+   PASS H3 control '4 pack remainder'
+   PASS H3 control '# of bead 4 packs'
+   PASS H3 the 5 controls survive by UID, terminals unwired
+   PASS H3 SubVI count -1
+   PASS H3 no pre-existing object lost
+   PASS drop Get Controls.vi
+   PASS H4 free String[] control
+   PASS L1 one For loop
+   PASS drop StrToPath.vi
+   PASS drop IMAQ ReadFile
+   PASS drop PARALLEL_kernel_v3clean.vi
+   PASS L3 exactly one tunnel from wire_control
+   PASS L3 IndexMode 1 and inner wire == StrToPath.string wire
+   PASS L4 'New Image' -> 'Image' across the border (one new non-indexed tunnel 549->524)
+   PASS L4 'path' -> 'File Path'
+   PASS L4 'Image Out' -> 'Image In'
+   PASS L4 'Array of cal clusters' -> 'Array of cal clusters' across the border (one new non-indexed tunnel 568->552)
+   PASS L4 'cross size' -> 'cross size' across the border (one new non-indexed tunnel 578->555)
+   PASS L4 'Cosine bandpass for Hilbert' -> 'Cosine bandpass\nfor Hilbert ' across the border (one new non-indexed tunnel 587->469)
+   PASS L4 'Real-space cosine window' -> 'Real-space cosine window' across the border (one new non-indexed tunnel 597->561)
+   PASS L4 control '4 pack remainder' -> kernel
+   PASS L4 control '# of bead 4 packs' -> kernel
+   PASS R register 0: Shift Registers[] == before + {uid}
+   PASS R register 1: Shift Registers[] == before + {uid}
+   PASS R register 2: Shift Registers[] == before + {uid}
+   PASS R reg 0 LeftOutCtl <- 'x,y,z array' (control terminal wired)
+   PASS R reg 0 LeftIn -> kernel 'x,y,z array'
+   PASS R reg 1 LeftOutCtl <- 'Bead is good? array in' (control terminal wired)
+   PASS R reg 1 LeftIn -> kernel 'Bead is good? array in'
+   PASS R reg 2 LeftOutCtl <- 'pos in cal image in' (control terminal wired)
+   PASS R reg 2 LeftIn -> kernel 'pos in cal image in'
+   PASS R three output tunnels
+   PASS R output 'x,y,z array out' pairs with exactly ONE new tunnel, IndexMode 1
+   PASS R output 'Bead is good? array out' pairs with exactly ONE new tunnel, IndexMode 1
+   PASS R output 'pos in cal image out' pairs with exactly ONE new tunnel, IndexMode 1
+   PASS R the three paired tunnels are distinct
+   PASS R reg 0 RightIn <- kernel 'x,y,z array out' (still one wire uid)
+   PASS R reg 1 RightIn <- kernel 'Bead is good? array out' (still one wire uid)
+   PASS R reg 2 RightIn <- kernel 'pos in cal image out' (still one wire uid)
+   PASS O indicator for 'x,y,z array out'
+   PASS O indicator for 'Bead is good? array out'
+   PASS O indicator for 'pos in cal image out'
+   PASS O ExecState 1
+   PASS T reference session loaded
+   PASS T1 one row per frame for XYZ/GOOD/POS
+   PASS T1 row widths match the reference
+   PASS T1 XYZ/GOOD/POS bit-identical to the reference before the first lost bead
+   PASS T2 one row per frame for XYZ/GOOD/POS
+   PASS T2 row widths match the reference
+   PASS T2 XYZ/GOOD/POS bit-identical to the reference before the first lost bead
+   PASS T200 one row per frame for XYZ/GOOD/POS
+   PASS T200 row widths match the reference
+   PASS T200 XYZ/GOOD/POS bit-identical to the reference before the first lost bead
+   PASS Tfull one row per frame for XYZ/GOOD/POS
+   PASS Tfull row widths match the reference
+   PASS Tfull XYZ/GOOD/POS bit-identical to the reference before the first lost bead
+BGRUN END rc=0 after 397s

@@ -1,0 +1,161 @@
+BGRUN START 2026-09-18 01:54:53 limit 16.0 min: powershell -Command & 'tools/peer.ps1' -Agent codex -Slug walk-run2-flatseq-crossing -TaskFile 'tools/bench/peer_task_walk_run2.txt' -Dual -TimeoutSec 780
+=== DUAL ARM 1/2: codex -> walk-run2-flatseq-crossing-codex ===
+OUTCOME: ANSWERED (100s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-18-walk-run2-flatseq-crossing-codex.md
+--- ANSWER ---
+1. **Strongest refutation:** the walk did not cross the boundary; it reached the frame-side endpoint of the boundary.
+
+`Wire.Terminals[]` documents only the endpoints of that particular wire; its first entry is the source when one exists. Therefore the measured statement should be: “the source terminal of wire 44089 is owned by `FlatSequenceOuterTunnel` 43605,” not “the ultimate source is tunnel 43605.” [Wire.Terminals[] documentation](https://labviewwiki.org/wiki/Wire_class/Terminals%28%29_property)
+
+A flat-sequence outer tunnel contains two distinct terminal references:
+
+- `3195B800` — **Outer Terminal**, short name `Out Term`
+- `3195B801` — **Inner Terminal**, short name `In Term`
+- `3195B802` — **Frame**
+
+The outer terminal belongs to the enclosing diagram’s wire; the inner terminal belongs to the frame’s wire. [FlatSequenceOuterTunnel class](https://labviewwiki.org/wiki/FlatSequenceOuterTunnel_class)
+
+Thus `Is Source? = TRUE` is entirely plausible for the **inner terminal** feeding the motion call inside the frame. It says nothing about the source on the separate enclosing-diagram wire. Merely changing `Diagram[d].Nodes[n]` addressing to UID addressing does not cross between those two terminal objects. The walk must explicitly map:
+
+```text
+internal wire
+→ source Terminal
+→ owner FlatSequenceOuterTunnel
+→ Outer Terminal (3195B800)
+→ Terminal.Connected Wire (634A000)
+→ that wire’s source
+```
+
+`Terminal.Connected Wire` is the documented way to obtain the wire attached to a returned terminal reference. [Terminal class](https://labviewwiki.org/wiki/Terminal_class)
+
+2. **Alternative explanation**
+
+The observed hop terminated normally at the internal face of an outer tunnel. LabVIEW represents the tunnel as the source of the internal wire because the tunnel forwards a value entering through a separate external wire. That is boundary arrival, not boundary traversal.
+
+More importantly, B measured the wrong class for this occurrence:
+
+- `FlatSequenceInnerTunnel` represents a connection between adjacent flat-sequence frames. Its properties are `Left Terminal` `1C3A9000`, `Right Terminal` `1C3A9001`, `Left Frame` `1C3A9002`, and `Right Frame` `1C3A9003`. [FlatSequenceInnerTunnel class](https://labviewwiki.org/wiki/FlatSequenceInnerTunnel_class)
+- `FlatSequenceOuterTunnel` represents an enclosure/frame boundary and exposes `Outer Terminal` `3195B800` and `Inner Terminal` `3195B801`. [FlatSequenceOuterTunnel class](https://labviewwiki.org/wiki/FlatSequenceOuterTunnel_class)
+
+The documented anatomy explicitly depicts these as different object and terminal pairs. [Flat-sequence scripting anatomy](https://rajsite.github.io/unofficial-lvdocs/lvconcepts/anatomy.html)
+
+Consequently, the proposed operation
+
+```text
+UID 43605 → cast to FlatSequenceInnerTunnel → LeftTerm/RightTerm
+```
+
+should fail: 43605 was reported as `FlatSequenceOuterTunnel`, and the two tunnel classes are separate children of `GObject`, not parent/child classes. An invalid `To More Specific Class` cast returns a type-cast error; NI describes error 1057 as “Object cannot be cast to the specified type.” [NI error-1057 explanation](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019OwLSAU&l=en-US)
+
+The 14 successfully resolved inner-tunnel UIDs therefore do not validate traversal of outer tunnel 43605.
+
+3. **What would falsify claim 2**
+
+On a genuine `FlatSequenceInnerTunnel`, claim 2 is falsified if either `LeftTerm` or `RightTerm`:
+
+- is `Not A Refnum`,
+- raises a property/read or cast error,
+- is not a `Terminal` reference,
+- has no `Connected Wire` despite a visibly connected side,
+- returns a connected wire whose `Terminals[]` does not reciprocally contain that terminal, or
+- points to the wrong adjacent frame/diagram.
+
+Property-node creation proves only that the property ID is valid for the class. It does not prove that a particular runtime reference is that class or that the returned terminal is connected and usable.
+
+For uid 43605 specifically, an error from casting it to `FlatSequenceInnerTunnel` already falsifies the proposed one-op reader, although it would not disprove an appropriately typed **outer-tunnel** reader.
+
+4. **Cheapest discriminating test**
+
+Do not build the inner-tunnel reader first. Reuse the existing scratch property-node probe and test `VI Server:FlatSequenceOuterTunnel` with `3195B800`, `3195B801`, and `3195B802`. Then make one real-instance read of uid 43605 and, for both returned terminals, print:
+
+```text
+valid ref?
+Terminal.Diagram
+Terminal.Is Source?
+Terminal.Connected Wire UID
+Does that wire’s Terminals[] contain this exact terminal?
+```
+
+One known tunnel is enough. If `3195B801` reproduces wire 44089 while `3195B800` yields a different enclosing-diagram wire, the alternative is proven and the correct traversal is `Inner Terminal → tunnel → Outer Terminal`, not UID addressing or `LeftTerm/RightTerm`.
+
+The broader conclusion—flat sequences need not be hard barriers—may ultimately hold. But the run did **not** establish it: it demonstrated arrival at an outer tunnel and separately characterized the unrelated inner-tunnel class.
+=== DUAL ARM 2/2: claude/hypothesis (opus, effort max, web) -> walk-run2-flatseq-crossing-opus ===
+OUTCOME: ANSWERED (445s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-18-walk-run2-flatseq-crossing-opus.md
+COST: $2.7678  in 18 / out 32390 / cache-create 151462 / cache-read 772515  (441s, 15 turn(s))
+--- ANSWER ---
+Write is disabled in this session, so the review is delivered here as text (which is what `peer.ps1` archives anyway). Nothing was built, run, opened or edited; no LabVIEW lock taken.
+
+---
+
+# Failed-prediction review — "the flat sequence is not a barrier, it is a missing reader"
+
+**Verdict: claim 1 survives only in its narrow form. Claims 2 and 3 do not — the run characterised the wrong class.**
+
+## 1. The single strongest reason the claim is wrong
+
+**The object that blocked the walk is not the class that was measured, and the two are siblings that share nothing.**
+
+The ASI walk stopped on **`FlatSequenceOuterTunnel` uid 43605** (`probe_flatseq_walk_run2.log:79,83`). Measurements B and C are entirely about **`FlatSequenceInnerTunnel`**. Per the vendor-community property tables:
+
+| class | inheritance (verbatim) | its complete property set |
+|---|---|---|
+| `FlatSequenceInnerTunnel` | `Generic → GObject → FlatSequenceInnerTunnel` | 1C3A9000 Left Terminal · 1C3A9001 Right Terminal · 1C3A9002 Left Frame · 1C3A9003 Right Frame |
+| `FlatSequenceOuterTunnel` | `Generic > GObject > FlatSequenceOuterTunnel` | **3195B800 Outer Terminal · 3195B801 Inner Terminal · 3195B802 Frame** |
+
+Neither derives from `Tunnel` — which is exactly why 6356000/6356001 were refused (`:55-56`). That measurement was correct; it was taken on the class that was not in the way. The two classes share no property id, no short name, and not even an id block (`1C3A9xxx` vs `3195Bxxx`).
+
+So **claim 2's reader — `UID → To More Specific Class(FlatSequenceInnerTunnel) → LeftTerm/RightTerm` — applied to uid 43605 fails at the cast.** Claim 3 then generalises from a reader that does not apply to the case claim 1 observed.
+
+Worth naming because it is the expensive part: **`3195B801` has been in this project's own files with its wiki URL since 2026-09-14.** `archive/peer/2026-09-14-optunnels-v0-plan.md:45` says verbatim *"do not use the unrelated `FlatSequenceOuterTunnel.Inner Terminal`, ID `3195B801`"*. I found that by content grep, not by browsing `archive/`, and I verified it against the live wiki rather than trusting the archived peer answer.
+
+### Brief Q1 — is "43605 is the SOURCE of wire 44089" the right reading?
+
+The reading is true but **directionally undetermined**, which is the part that matters. `FlatSequenceOuterTunnel` has two faces. The run never read `Outer Terminal`, never read `Inner Terminal`, never read `Frame`, and never read the source terminal's own UID or its `Terminal.Diagram` (634A002 — already in use by `OpTunnelRead_v0`, `docs/toolkit-capabilities.md:71`).
+
+- Source = **inner** face ⇒ node 44036 is inside a frame; the continuation is `Outer Terminal` 3195B800 out to the enclosing diagram. (So the answer to your second half is yes — an outer tunnel *can* be followed to what feeds it from outside.)
+- Source = **outer** face ⇒ 43605 is an OUTPUT tunnel, 44036 sits *outside* the sequence downstream of it, and the continuation is `Inner Terminal` 3195B801 *into* the frame. The origin is inside, not outside.
+
+A reader that hardcodes one side is right half the time and **silently returns a wrong origin** the other half. For a motor-safety trace that is worse than stopping. Also note `Frame` is **singular** — one outer tunnel belongs to one frame — unlike `Tunnel.Inside Terminals[]`, so `OpTunnelRead_v0`'s frame-disambiguation pattern does not transfer.
+
+## 2. Alternative explanation — nothing flat-sequence-specific was observed
+
+The STOP message is not evidence about flat sequences at all. The **identical** message fires at `:90` for `EnumConstant` uid 43955 and at `:102` for `VISAResourceNameConstant` uid 43937 — objects that unambiguously *are* nodes on a diagram. The predicate is `idx.get(ou) is None` (`tools/bench/probe_flatseq_walk.py:444-448`) against `main_vi_nodeterms.json`, a cache of **626 nodes over 170 diagrams** (`:76`) for a VI containing 518 `FlatSequenceInnerTunnel` objects alone (`:39`).
+
+The message therefore means *"not in our JSON"*, not *"not a node"* — and **it cannot distinguish a flat-sequence boundary from an ordinary constant.** Under this alternative the run observed one short cache and three objects that fell out of it; the tunnel happened to be one. A FlatSequence reader would not have changed the other two stops, which undercuts claim 3's "it is a missing reader" directly.
+
+Secondary: reaching the boundary object is not crossing it. Every property read that would *constitute* a crossing has zero measurements behind it.
+
+## 3. What would falsify claim 2 (brief Q3)
+
+Error 1077 means *"you use a property ID that is not in the AllProps list"* — a **class-registry lookup at build time**. It says nothing about a read on a live instance. Your own log proves the gap exists: `:81` shows a Property Node inside `OpWireSource_v5.vi` that built fine and returned **error 1055** at run time.
+
+Claim 2 is falsified by any one of:
+
+- **(a)** `To More Specific Class` GObject → `FlatSequenceInnerTunnel` raises **1057** on a live uid. *This has never been attempted.* `OpOwnerChain_v1`'s `cast_class` returned `'FlatSequence'` for all 14 rows (`:60-73`) — that is a cast of the **owner**, not of the tunnel (`probe_flatseq_walk.py:291-303`). The cast claim 2 rests on has executed zero times.
+- **(b)** The read yields a Terminal reference whose `Terminal.Connected Wire` (634A000) is empty or errors 1055 — property read succeeds, walk still cannot continue.
+- **(c)** The far face's `Connected Wire` returns **the same wire uid** you arrived on; the hop does not advance. One "the hop does not advance" row is already on record (`docs/d1-build-plan.md:738`).
+- **(d)** The far terminal's source is another inner tunnel with no termination rule — raised as A3-ii and still unanswered (`docs/d1-build-plan.md:813-820`).
+
+Every one of these leaves 1C3A9000/1C3A9001 "attaching to the class" exactly as measured while claim 2 is false.
+
+**Precedent that should worry check A specifically:** `OpOwnerChain_v1` is *measured* to **terminate silently at a `FlatSequenceFrame`** (`docs/toolkit-capabilities.md:49`, quoted at `docs/d1-build-plan.md:834`), a class present in the main VI. In a motor-safety trace a silent termination reads as "no other source".
+
+## 4. Cheapest discriminating test — no new op, no build, one recipe
+
+Both mechanisms already exist in the run that just passed 9/9. Two parameter changes:
+
+**T1 — class table (~80 s, 0 builds).** Rerun `m1()` unchanged with `FSIT_CLASS = "VI Server:FlatSequenceOuterTunnel"` and `M1_IDS = [632A813 ctrl, 6327803 ctrl, 3195B800, 3195B801, 3195B802, 3195B803, 1C3A9000]`.
+*Prediction contract:* 3195B800/801/802 ATTACH and print their data-terminal short names (`docs/NAMES.md` needs these — gscript wires by short name); 3195B803 and 1C3A9000 REFUSE with 1077. If 1C3A9000 attaches, my sibling model is wrong and claim 2 partly survives. Scratch VI in `claudeDev`, deleted after — identical safety profile to the run that already passed.
+
+**T2 — the half that actually decides (same recipe).** The walk already holds the source Terminal reference for wire 44089. Read `GObject.UID` 632A813 on it; then on uid 43605 read 3195B800 and 3195B801 and take each one's UID. Whichever matches names the face you are standing on; the other is the continuation. That one comparison settles direction, the live cast and the live read together — and it separates the claim from §2, because a failed cast or read makes "missing reader" wrong for a different reason than claim 3 gives.
+
+**Free negative control for §2:** make the STOP predicate distinguish *in the VI but absent from the cache* from *genuinely not a node*. The `EnumConstant` at `:90` is the oracle — it must come back "in the VI, not in the cache."
+
+## Where I could be wrong
+
+Claim 1's narrow form — LabVIEW returned the boundary object without error, and `Diagram[d].Nodes[n]` addressing is what stopped the walk — I am not disputing. What would change my mind on the rest: T1 showing 1C3A9000/1C3A9001 attaching to `VI Server:FlatSequenceOuterTunnel`, **plus** T2 showing a live read on 43605 returning a Terminal whose `Connected Wire` is a different wire on a different diagram.
+
+As it stands the evidence does not distinguish "a flat-sequence boundary is crossable" from "one cached JSON is short" — and it contains no measurement at all of the class that did the blocking.
+
+**Sources:** [FlatSequenceOuterTunnel class](https://labviewwiki.org/wiki/FlatSequenceOuterTunnel_class) · [FlatSequenceInnerTunnel class](https://labviewwiki.org/wiki/FlatSequenceInnerTunnel_class) · [Outer Terminal property](https://labviewwiki.org/wiki/FlatSequenceOuterTunnel_class/Outer_Terminal_property) · [NI: error 1077 = ID not in AllProps](https://forums.ni.com/t5/LabVIEW/VI-Scripting-Can-t-get-or-set-all-available-properties/td-p/4030544) · [VI Server Class Hierarchy](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy)
+=== DUAL DONE: codex rc=0, opus rc=0  (archive\peer\2026-09-18-walk-run2-flatseq-crossing-codex.md, -walk-run2-flatseq-crossing-opus.md) ===
+BGRUN END rc=0 after 545s

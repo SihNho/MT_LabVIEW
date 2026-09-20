@@ -1,0 +1,164 @@
+BGRUN START 2026-09-20 01:47:07 limit 20.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & 'tools/peer.ps1' -Agent claude -Role priorart -Kind fact -Model opus -Effort high -TimeoutSec 900 -Slug priorart-d1-s2-stage-r2 -TaskFile 'C:\Users\KimLab\AppData\Local\Temp\priorart_d1-s2-stage-r2.txt'
+OUTCOME: ANSWERED (559s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-20-priorart-d1-s2-stage-r2.md
+COST: $5.1531  in 36 / out 44910 / cache-create 227884 / cache-read 3502647  (555s, 28 turn(s))
+--- ANSWER ---
+I have read the current bytes in full, plus the round‑1 review, the plan, and the measured record behind each of the recipe's claims. Here is the review.
+
+---
+
+# PRIOR-ART REVIEW — `tools/recipes/stage_d1_s2.py` @ sha256 `71f12e121f95`, round 2
+
+## 0. The eight round-1 findings: ALL VERIFIED FIXED IN THESE BYTES — no slug is re-raised for any of them
+
+| round-1 slug | status in the current file |
+|---|---|
+| `settled-already` | **FIXED** — `stage_d1_s2.py:591-656`: `a1_move_in_reaches_new_loop_bodies` is recorded `True` with `"measured_here": False` and its three citations; P3 counts the archived landings (`:612-615`) instead of deciding. No LabVIEW time is spent on it. |
+| `refuted-already` | **FIXED** — `:319-329` names `#5058` `Track N beads four-fold over-kernel-v3.vi`; gate **C2k** at `:1233-1236` reads the name off the artefact with `g.subvis` and is FATAL. `GPU_kernel_v1.vi` survives only inside the comment that records the correction (`:319-322`), never as a label or log string. |
+| `contradicted` | **FIXED** — `OpExitWhile_v0` is in the table (`:764-780`); the `a3_route_exists = FALSE` prediction is gone; selection is mechanical (`:917-934`). |
+| `unread-evidence` | **FIXED** — `:709-713` cites `docs/d1-route-b-plan.md:148/:154/:158-159`, `docs/d1-build-plan.md:523-536`, `docs/NAMES.md:564-565` instead of probing. |
+| `already-built` | **FIXED** — `make_loops()` `:1115-1142` and `movein_three()` `:1145-1174` are v7's steps re-cut. |
+| `already-failed` | **FIXED** — one fixed shape (`select_branch` `:1013-1039`), and 32(b)'s order puts the scaffold after `move_in` (`:1244-1256`), so "three empty While loops" is never a saved state. |
+| `helper-exists` | **`_boolean_sink` / `place_true_constant` / `_stop_from_node` are absent from the file.** ⚠️ The *fault class* returns at the operand — see **B2** below. |
+| `already-measured` | **FIXED** — `a4_start_state()` `:958-981` is md5 + two citations, no child process, no restart. |
+
+Also verified clean: `allow_broken` appears nowhere; `gscript.exit_while` is never called; `SCAFFOLD_STOP_CONTROL` does not exist; `gscript.net_map` is not imported.
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 — SETTLED ALREADY. The answer phase A will spend a cycle producing is already on file, **with a better cause**
+
+The stage's live question is "can S2 end at a legal state?" — 30(g)/31(i)/32(d)(3) all hang off it, and the recipe's own prediction contract (`stage_d1_s2.py:226-231`) says the answer is **no**, so the run ends with `s2a_legality.json` and no VI.
+
+That answer, and a *named cause for it*, was written down in advance seven cycles ago:
+
+> `tools/recipes/build_d1_routeb_v7.py:131-135` — "⚠️ **STATED IN ADVANCE, NOT DISCOVERED AFTERWARDS: THESE CANNOT PRODUCE `ExecState 1`.** `s1q` and `s4b` are both still SKIPPED — the element types of the other six queues are an undesigned row (STATUS NEXT) and **the three sentinel `Equal?`s depend on them** — so 1.2 / 1.5 / 1.7 keep UNWIRED CONDITIONAL TERMINALS, which is a broken VI by construction."
+
+And the designed scaffold for exactly these three loops is already specified and costed:
+
+> `docs/d1-route-b-plan.md:153` — "| 6 | 3 sentinel `Equal?` + 3 sentinel literals (−1) | `OpCreateEqual_v0` 23/0 · `OpCreateConstOnTerm_v0` 22/0 |"
+
+This is not a duplicate of round-1 A1 (which was about `move_in` reaching a new body). What it covers is the *stage boundary question itself*, and the finding is not "don't run phase A" — it is that **the two diagnoses differ and the recorded one is the useful one**. A3 will report the blocker as "no built op delivers a Boolean constant TRUE to a conditional terminal", which sends judgement hunting for an op (and Pre-decided 2 forbids building one). v7:133 reports the blocker as *the queue element types are an undesigned design row* — an upstream decision that is judgement's to make and that needs no op at all. A DATA artefact that names only the first cause will steer the next cycle wrong.
+
+What is **not** covered by this citation: v7's sentence is about the loops *as route B builds them* (with queues). It does not say a temporary scaffold is impossible, and it does not touch 32(b)'s new ordering. Phase A's table is still the thing that rules the temporary routes in or out.
+
+### A2 — 32(f), the stage's entire rule-1a argument, is CONTRADICTED by the measured behaviour of `move_in`, and by the recipe's own code 1,100 lines later
+
+Header `stage_d1_s2.py:65-67`, reproducing Pre-decided 32(f):
+
+> "`move_in` turns each crossing wire into a While-loop tunnel and tunnels do not auto-index unless told to, **so values pass through unchanged**."
+
+Against it, the recipe itself:
+
+> `stage_d1_s2.py:1158-1159` — `fact(f"C4 move_in #{uid} {label} -> {row}: {len(t)} terminals, {len(wired)} wired BEFORE the move (**a move CUTS them** … and they enter the re-wire list for S3w)")`
+
+and the measurement behind that:
+
+> `docs/d1-route-b-plan.md:57-58` — "Route A relocated the tracker's whole neighbourhood and then had to **re-connect 109 cut terminals over 24 uids** (MEASURED, `d1_rewire_sources.json`: `cut_terminals 109, resolved 109`)."
+> `docs/d1-route-b-plan.md:67` — the rows belonging to `#5058` / `#48` / `#376` are "**32**, and all 32 carry a NAME".
+
+A move does not make tunnels; it **severs** the wires. So on branch 1 the three relocated call sites arrive in their new bodies with **~32 wired terminals cut**, D6 will find `new_tunnels == []` and log "this stage created NO new LoopTunnel" (`:1339-1341`), and 32(f)'s pass-through sentence describes a mechanism the stage does not use. The honest rule-1a statement for S2 is the opposite one: *S2 cuts 32 named terminals that only S3w restores, so the S2 artefact is not computation-preserving on its own and must be labelled as such.*
+
+Two citations in support of the cut behaviour are also wrong, so the log will print nothing where it promises evidence:
+
+- `stage_d1_s2.py:140-141` and `:1159` cite **`docs/s0-diff.md:46`** for "a move CUTS the moved object's wires". That line is the **error-terminal neutraliser** row: "D22 | error-terminal neutraliser passed to the writer | … `move_in` does the same — `tools/recipes/build_d1_v0.py:328-331`". It says nothing about cut wires.
+- `a1_move_in()` `:648` greps `docs/d1-build-plan.md` for `"a move CUTS"`. **That string does not occur anywhere under `docs/`** — the grep returns empty, and `rec["wire_behaviour"]` ships with no evidence at all.
+
+The correct citation exists and is one line away: `docs/d1-route-b-plan.md:57-58` and `:67`.
+
+### A3 — CONTRADICTED. The A3-complete gate cannot pass against `docs/toolkit-capabilities.md`, so the "15 PASS / 0 FAIL" prediction is unreachable
+
+`stage_d1_s2.py:885-899` defines a machine-checkable completeness scan: every WRITER row of the capability file that names a conditional terminal or a created constant must have all ops named on it present in A3's table, else gate `A3-complete` fails. The prediction contract at `:260-263` lists `A3-complete (nf)` among **15 PASS / 0 FAIL**.
+
+`docs/toolkit-capabilities.md` holds exactly 12 `WRITER` lines (25, 30, 31, 32, 34, 63, 64, 65, 66, 67, 68, 70). At least four of them pass the filter and name an op absent from `table_ops` (`:889`):
+
+- **`:30`** — "| `while_loop(…)` (WRITER) | `OpWhileLoop_v0` | … **Conditional terminal left unwired** → wire a stop via the next op | …" — matches `conditional terminal`; regex `Op[A-Za-z0-9_]+_v\d` yields **`OpWhileLoop_v0`** and **`OpForLoop_v0`**, neither in the table.
+- **`:63`** — the `OpStopFromNode_v0` row names **`OpWireSource_v5`** ("the same defect as row `OpWireSource_v5` above").
+- **`:64`** — the `OpCreateEqual_v0` row names its donor **`OpExitLoop_v0`**.
+- **`:65` / `:66`** — both name **`OpConstValueN_v1`**.
+
+So `uncovered` is non-empty, `A3-complete` FAILS, `fails` is non-empty, and `main()` returns **1** (`:1505`). The run therefore ends `BGRUN END rc=1` on a recipe whose header predicted 0 FAIL — which under CLAUDE.md §5 is a failed prediction owing a mandatory peer review, and under CLAUDE.md §3 it is the first of the two consecutive same-recipe failures that arm the firefighter ladder. The gate is over-broad by its own regex (`OpWhileLoop_v0` creates a loop, it does not write the terminal); either the filter or the table must change, but as written the prediction cannot hold.
+
+### A4 — UNREAD EVIDENCE. A3's central "why" is stated as an absence of evidence where the project holds a positive measurement
+
+`stage_d1_s2.py:792-795`, the reason `OpStopFromNode_v0` cannot deliver a constant:
+
+> "**nothing measured in this project shows** a Constant appearing in `AbstractDiagram.Nodes[]`, and the one built op that creates a VALUE-CARRYING constant (`OpCreateConstOnTerm_v0`) creates it already wired to a node terminal and returns a UID, not a `Nodes[]` index."
+
+The conclusion is right; the epistemic status is wrong, and CLAUDE.md §5 names this exact phrasing as the error to stamp out ("absence in what you happen to be looking at is not evidence of absence"). Three files measure it positively:
+
+- `docs/frame-loop-wire-graph.md:460` — "constants are **not** Nodes[] — **301 in the VI**".
+- `archive/2026-09-18-status-cycle19-flatseq.md:87` — "Caveat that remains: `Nodes[]` **excludes constants**"; and `:62` — "constant is obviously in the VI, and it too is **outside** `Nodes[]`".
+- `docs/d1-build-plan.md:998` — `Terminal.Create Constant` 6349C00's ladder "walks the **top-level** `Nodes[]`", which is why `OpCreateConstOnTerm_v0` needed subdiagram addressing at all.
+
+With those cited, A3's `delivers_constant=False` row for `OpStopFromNode_v0` stops being "UNPROVEN, which under 32(d) is not TRUE" and becomes **MEASURED-EXCLUDED** — which is what 32(c) asked A3 for ("the measured evidence line"), and which is the difference between a DATA artefact judgement can close a question with and one it cannot.
+
+---
+
+## PART B — THE ARTEFACT
+
+### B1 — ALREADY BUILT, and correctly reused. No slug.
+
+`make_loops()` `:1115-1142` is v7 `s2()`; the `move_in` + owner-chain gate in `movein_three()` `:1145-1174` is v7's S3 block; both passed in the real VI (`tools/bench/build_d1_routeb_v7_run10.log:70-76`, `:116-176`), and route A reached the same structural state (`docs/d1-build-plan.md:873` — "`WhileLoop 3→6`, `Diagram 170→173`, 23 moves"). The genuinely new part is the stage boundary — copy from the S1 artefact (`:1200`) and the save at `:1297` — and `docs/cycle27-plan.md` 29(b) confirms no run has ever saved a modified copy of the main VI, so that part is not prior art.
+
+Worth stating so it is not re-litigated: **none of v7's 21 landings was a SubVI-class node.** The 17 into 1.2 and the 4 into 1.5 are listed at `docs/d1-route-b-plan.md:164-168`, and `:166-168` records that "`#48` is **not** moved in B, it is dropped fresh" and "`#376` is dropped fresh, so 1.7 receives no moved node at all". `move_in` is uid-addressed, so class does not enter (`docs/d1-build-plan.md:325`) — the recipe's P4 echo cites this correctly. This is a caveat on A1's settledness, not a refutation of it.
+
+### B2 — ALREADY FAILED. The self-comparison scaffold repeats round-1 B3's fault at the operand, on a call shape nothing has measured
+
+`scaffold_loop()` `:1070-1078` picks the `Equal?`'s operand by ordinal position and compares a terminal with itself:
+
+```python
+outs = [(i, nm) for i, (nm, src, _w) in sorted(terms.items()) if src and nm and nm != "error out"]
+op_name = outs[0][1]
+err = CREATE_NODE("equal", eq_labels, TARGET, body_index, (120, 120), src_cls="SubVI", src_index=src_i,
+                  src_names=[op_name, op_name])
+```
+
+Three things on file bear on it:
+
+1. **It is round-1's B3 under a new name.** `archive/peer/2026-09-20-priorart-d1-s2-stage.md:1027` — "`stage_d1_s2.py:831-843` picks the sink by a regex on terminal **names** … **A name is not a type.**" That finding was accepted. The name-regex is gone; the *type-blindness* moved to the operand, where it matters more, because `Equal?`'s output type is decided by its operands. For row 1.2 the lowest-indexed named source of `#5058` is **t3 `Bead is good? array out`** (`docs/frame-loop-wire-graph.md:171` — "| 5859 | source only | #5058 t3 | `Bead is good? array out` |"), an array. `Equal?` on two arrays yields a Boolean **array**, which cannot drive a scalar conditional terminal — and the gate at `:1105-1108` only checks that `CondWireUID` became non-zero, which a broken wire also does.
+
+2. **The `Names` shape is unmeasured.** The only 23/0 record of `OpCreateEqual_v0` passed **two different names from a source node outside the body**: `tools/recipes/build_opsentinel_ops.py:504-505` — `src_names=["queue out", "element"]`, under the comment `# ---- F5: the Equal? on the body diagram, both operands from the top-level source node`. `src_names=[n, n]` from a source *inside* the body has never been run.
+
+3. **Every prior route-B recipe carries the standing warning about exactly this.** `tools/recipes/build_d1_routeb_v0.py:774-776` (repeated verbatim at `v1.py:920-922`, `v4.py:1150-1152`, `v5.py:1238-1240`) — "⚠️ The op's documented use wires x and y from a source node's named outputs; calling it with an EMPTY name list is **unmeasured**, which is why the caller reports the exception verbatim instead of retrying." The new call is a different unmeasured shape with no such reporting discipline.
+
+**Scope of this finding:** under the recipe's own A3 prediction this code never executes — I confirmed the `proof` regex at `:905-906` cannot match `tools/bench/build_opsentinel_ops_run3.log:44` ("the Equal?'s **Boolean output** now drives the loop's conditional terminal … cond terminal 119 -> 119, wire 0 -> 387"), which contains neither "Boolean value" nor "value … TRUE", so `rule2_ok` is False and the branch is `stop_after_a`. But round 1 demonstrated that precisely this kind of grep-predicate prediction flips (`archive/peer/2026-09-20-priorart-d1-s2-stage.md:996-999`), and this is the file's only implemented scaffold route, aimed at the real VI.
+
+### B3 — HELPER EXISTS: no. The reader 32(f) needs is correctly identified.
+
+`gscript.tunnels` / `OpTunnels_v0` does return `IndexMode` per LoopTunnel (`docs/toolkit-capabilities.md:24`), and phase D uses it (`:1350`). No hand-rolling. (It will simply have nothing to read — see **A2**.)
+
+### B4 — ALREADY MEASURED (reported as a FINDING, not a slug): A2's connector-pane census is on file
+
+`a2_conpanes()` `:659-721` is declared MOOT and "SELECTS NOTHING" (`:716`), yet it is the only reason phase A restarts LabVIEW (`fresh("A0")` `:988`) and opens the ORIGINAL under `Preload` (`:997`). Its stated justification — "the S3w re-wire list will want them" (`:661-662`, `:148`) — is already satisfied: `docs/d1-build-plan.md:876` records "**The re-wire source map is COMPLETE: 109 / 109** (`tools/bench/d1_rewire_map.py` → `d1_rewire_sources.json`)", and `docs/d1-route-b-plan.md:67` already splits out the 32 rows belonging to these three calls, "all 32 carry a NAME". I am not slugging this: the cost is a restart and three cheap reads, and a fresh call-site terminal census of `D1_s1_copy.vi` (not of the original) is legitimately new. It is here so the next reader does not mistake it for an unanswered question.
+
+---
+
+## What I am NOT re-raising, and why
+
+- **Round-1 A2's second half** — "The reason for delete-and-re-drop was never '`move_in` cannot reach the body'; it is `docs/d1-route-b-plan.md:62-72` … Nothing retired that" (`archive/peer/2026-09-20-priorart-d1-s2-stage.md:984`). Pre-decided **32(e)** answered it head-on and went the other way on rule-1a grounds. That is a disposed judgement call, not an open prior-art question, and the recipe records it faithfully at `:61-64` and `:212-214`. No slug.
+- **Round-1 A2's first half** — "`movein` builds a tracking loop around the CPU kernel and never introduces the GPU one". Answered by 31(a): the swap is its own later stage, and gate C2k enforces that S2 assumes nothing about it. No slug.
+
+---
+
+## MACHINE-READABLE
+
+```
+PRIOR-ART: settled-already
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-failed
+```
+
+**Citations, one per finding, for the disposition:**
+
+- `settled-already` — `tools/recipes/build_d1_routeb_v7.py:131-135` (+ `docs/d1-route-b-plan.md:153`)
+- `contradicted` (32(f) / `move_in` cuts wires) — `stage_d1_s2.py:65-67` vs `docs/d1-route-b-plan.md:57-58` and `:67`, and `stage_d1_s2.py:1158-1159`; miscitations at `stage_d1_s2.py:140-141` / `:648` vs `docs/s0-diff.md:46`
+- `contradicted` (A3-complete cannot pass) — `stage_d1_s2.py:885-899` and `:260-263` vs `docs/toolkit-capabilities.md:30`, `:63`, `:64`, `:65`
+- `unread-evidence` — `stage_d1_s2.py:792-795` vs `docs/frame-loop-wire-graph.md:460`, `archive/2026-09-18-status-cycle19-flatseq.md:87`, `docs/d1-build-plan.md:998`
+- `already-failed` — `stage_d1_s2.py:1070-1078` vs `archive/peer/2026-09-20-priorart-d1-s2-stage.md:1027`, `tools/recipes/build_opsentinel_ops.py:504-505`, `tools/recipes/build_d1_routeb_v0.py:774-776`, `docs/frame-loop-wire-graph.md:171`
+
+Nothing was built, edited, run or locked; no LabVIEW was touched.
+BGRUN END rc=0 after 560s

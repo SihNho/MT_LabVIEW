@@ -1,0 +1,514 @@
+BGRUN START 2026-09-19 06:55:08 limit 60.0 min: py -u tools/recipes/build_d1_routeb_v7.py
+
+=== S0: preconditions
+
+  --- S0 crash-copy MEASUREMENT (evidence; nothing here deletes it)
+  FACT  S0 crash copy SCRATCH_routeb_235020_crash_001808.vi: md5 2a78e17c449cacdaf5da389818526859, size 473317 bytes
+  FACT  S0 crash copy ExecState COLD (no preload) = 0 - by Pre-decided 14a a cold 0 is UNREAD as a verdict on the copy; it measures subVI linkage
+  FACT  S0 crash copy: lv_restart BEFORE the preloaded read (nothing the cold read left resident can confound it) rc=0; handles now 30692
+  FACT  S0 crash copy: the ORIGINAL is resident READ-ONLY, its own ExecState 1
+  FACT  S0 **crash copy PRELOADED ExecState = 1** (1 = idle/runnable, 0 = broken)
+  FACT  S0 crash copy: lv_restart AFTER the preloaded read (so the build itself starts in a clean instance) rc=0; handles now 30683
+  FACT  S0 crash copy: original md5 across the preloaded read 2a78e17c449cacdaf5da389818526859 -> 2a78e17c449cacdaf5da389818526859 (UNCHANGED); nothing saved, nothing run; the crash copy is STILL ON DISK = True
+  PASS  S0a original md5 BEFORE  2a78e17c449cacdaf5da389818526859
+  PASS  S0b the eight writer/reader ops are on disk  missing []
+  PASS  S0c the three subVIs to drop fresh are on disk  missing []
+  PASS  S0d TRANSPORT 'queue' has a creator in the fleet today  gscript.queue_node -> OpQueueObtain/Enqueue/Dequeue/Release_v0, core 162/162
+  FACT  LabVIEW handles before: 31106 (fresh-instance baseline ~31,500)
+  FACT  S0 crash-copy MEASUREMENT already ran at the top of S0; the file is untouched and stays on disk: True
+  FACT  S0 refnum counters at entry: {'opened': 2, 'closed': 2, 'live': 0, 'cached_op_vis': 0} (in-process VI Server refs opened by gscript - NOT the kernel handle count, which cannot see them)
+
+=== S3-ct: resolve the 6 ControlTerminal uids BY EFFECT, on a throwaway copy
+  PASS  S3-ct ctlterm_owners.json was recorded at THIS original's md5  2a78e17c449cacdaf5da389818526859
+  FACT  S3-ct 31 ControlTerminals are owned by Diagram #639 (docs/d1-build-plan.md:220 says 31)
+  PASS  S3-ct the probe copy got a destination loop  [{'i': 20, 'class': 'Diagram', 'uid': 1170, 'pos': (6197, 2734), 'owner': 'WhileLoop'}]
+  FACT  S3-ct 'Reset Tracking': control #5605 <- ControlTerminal #5634 (its panel row's wire changed when #5634 moved - probe_move_ctlterm_v0.py:327-351's route)
+  FACT  S3-ct 'Z/dZ': control #47 <- ControlTerminal #403 (its panel row's wire changed when #403 moved - probe_move_ctlterm_v0.py:327-351's route)
+  FACT  S3-ct 'Correction Factor': control #9289 <- ControlTerminal #9306 (its panel row's wire changed when #9306 moved - probe_move_ctlterm_v0.py:327-351's route)
+  FACT  S3-ct 'Auto-Reset': control #17472 <- ControlTerminal #17487 (its panel row's wire changed when #17487 moved - probe_move_ctlterm_v0.py:327-351's route)
+  FACT  S3-ct 'Force\nsmoothing\nhalf-width': control #28148 <- ControlTerminal #28170 (its panel row's wire changed when #28170 moved - probe_move_ctlterm_v0.py:327-351's route)
+  FACT  S3-ct 'Extension\nmedian filter\nhalf-width': control #28996 <- ControlTerminal #29091 (its panel row's wire changed when #29091 moved - probe_move_ctlterm_v0.py:327-351's route)
+  PASS  S3-ct all 6 labels resolved to a ControlTerminal uid  unresolved [] after 31 candidates
+  FACT  S3-ct probe copy deleted in the same run: SCRATCH_ctprobe_065508.vi
+  FACT  REFS after resolve_ctlterms: {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 5}
+
+=== S1: the D1 working copy
+  PASS  S1z the working copy on DISK is byte-identical to the original before LabVIEW sees it  2a78e17c449cacdaf5da389818526859 at C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_routeb_065508.vi
+  FACT  S1 BASELINE ExecState of the untouched working copy = 0 ? read COLD (no preload), so by cycle27 Pre-decided 14a this value is UNREAD as a verdict on legality; it measures subVI LINKAGE in this instance. Its job is to be compared with S5's read, taken the same way.
+  FACT  S1 LabVIEW handles with the copy open: 51334
+  FACT  S1 BEFORE census: {'Diagram': 170, 'Node': 626, 'Wire': 1902, 'LoopTunnel': 132, 'ControlTerminal': 114, 'WhileLoop': 3, 'Local': 8, 'SubVI': 98, 'Function': 181}
+  PASS  S1 the copy matches the BEFORE census  {} (empty = all match)
+  FACT  REFS after S1: {'opened': 7, 'closed': 7, 'live': 0, 'cached_op_vis': 5}
+
+=== S1t: delete the FIXTURE TIFF writer before any other edit (��11h)
+  PASS  S1t Diagram #639 is Traverse index 43  index 43
+  PASS  S1t #22700 (IMAQ Write TIFF File 2) present before deletion  not among SubVI
+  PASS  S1t #23020 (Build Path) present before deletion  not among Function
+  PASS  S1t #22700 (IMAQ Write TIFF File 2) is GONE
+  PASS  S1t #23020 (Build Path) is GONE
+  PASS  S1t counts moved exactly as ��11h predicts (SubVI -1, Function -1, Node -2, Wire -3)  {'SubVI': 98, 'Function': 181, 'Node': 626, 'Wire': 1902} -> {'SubVI': 97, 'Function': 180, 'Node': 624, 'Wire': 1899}
+  PASS  S1t no STAYING node was left with a bare named input  newly bare []
+  FACT  REFS after S1t: {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 9}
+
+=== S1d: delete #5058 / #48 / #376 ? they are re-DROPPED fresh, not moved (route B ��2a)
+  PASS  S1d #5058 (GPU_kernel_v1.vi) is a node on diagram 43 and its terminals read  16 terminals
+  FACT  S1d #5058 GPU_kernel_v1.vi -> 1.2: 16 terminals, 13 wired (all enter the re-wire list)
+  PASS  S1d #48 (ASI_adjust focus-subvi.vi) is a node on diagram 43 and its terminals read  7 terminals
+  FACT  S1d #48 ASI_adjust focus-subvi.vi -> 1.5: 7 terminals, 7 wired (all enter the re-wire list)
+  PASS  S1d #376 (save trace.vi) is a node on diagram 43 and its terminals read  12 terminals
+  FACT  S1d #376 save trace.vi -> 1.7: 12 terminals, 12 wired (all enter the re-wire list)
+  PASS  S1d #5058 (GPU_kernel_v1.vi) found for deletion  not in report_all('SubVI')
+  PASS  S1d #48 (ASI_adjust focus-subvi.vi) found for deletion  not in report_all('SubVI')
+  PASS  S1d #376 (save trace.vi) found for deletion  not in report_all('SubVI')
+  PASS  S1d all three uids are gone and SubVI 97 -> 94  SubVI 97 -> 94; still present []
+  FACT  S1d 26 bare named sinks on diagram 43 after the three deletes (��2a: #6384's error chain via w541 and #12589 t1 via w9113 are among them)
+  FACT  S1d re-wire rows captured from the deleted nodes: 32
+  FACT  REFS after S1d: {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 9}
+
+=== S2: three fresh While loops on Diagram #686
+  FACT  Diagram#686 (holder of WhileLoop#637) is Traverse index 19
+  PASS  S2 loop 1.2 created  +1 diagrams, +1 while loops
+  FACT  1.2: WhileLoop #48, body Diagram #567
+  PASS  S2 loop 1.5 created  +1 diagrams, +1 while loops
+  FACT  1.5: WhileLoop #338, body Diagram #2063
+  PASS  S2 loop 1.7 created  +1 diagrams, +1 while loops
+  FACT  1.7: WhileLoop #376, body Diagram #4972
+  PASS  S2 WhileLoop 3 -> 6 and Diagram 170 -> 173  WhileLoop 6, Diagram 173
+  PASS  S2b #637 still exists
+  OBSERVED uid 6810 -> owner 'Diagram' uid 639 | self 'SubVI'#6810 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #6810 still owned by the frame loop body  owner 639
+  OBSERVED uid 22082 -> owner 'Diagram' uid 639 | self 'CaseStructure'#22082 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #22082 still owned by the frame loop body  owner 639
+  OBSERVED uid 12589 -> owner 'Diagram' uid 639 | self 'CaseStructure'#12589 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #12589 still owned by the frame loop body  owner 639
+  OBSERVED uid 11639 -> owner 'Diagram' uid 639 | self 'CompoundArithmetic'#11639 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #11639 still owned by the frame loop body  owner 639
+  OBSERVED uid 642 -> owner 'Diagram' uid 639 | self 'ControlTerminal'#642 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  S2c #642 still owned by the frame loop body  owner 639
+  FACT  REFS after S2: {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 10}
+
+=== S2d: drop the three subVIs FRESH, each inside its own loop body
+  PASS  S2d GPU_kernel_v1.vi dropped into 1.2  new subVIs [{'i': 16, 'class': 'SubVI', 'uid': 483, 'pos': (5493, 3118), 'owner': 'Diagram'}]
+  OBSERVED uid 483 -> owner 'Diagram' uid 567 | self 'SubVI'#483 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S2d GPU_kernel_v1.vi owner chain: uid -> body Diagram -> WhileLoop  #483 -> Diagram#567 (want 567) -> WhileLoop#48 (want 48)
+  FACT  S2d GPU_kernel_v1.vi: old #5058 -> fresh #483 on 1.2
+  PASS  S2d ASI_adjust focus-subvi.vi dropped into 1.5  new subVIs [{'i': 16, 'class': 'SubVI', 'uid': 485, 'pos': (5493, 3918), 'owner': 'Diagram'}]
+  OBSERVED uid 485 -> owner 'Diagram' uid 2063 | self 'SubVI'#485 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 2063 -> owner 'WhileLoop' uid 338 | self 'Diagram'#2063 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S2d ASI_adjust focus-subvi.vi owner chain: uid -> body Diagram -> WhileLoop  #485 -> Diagram#2063 (want 2063) -> WhileLoop#338 (want 338)
+  FACT  S2d ASI_adjust focus-subvi.vi: old #48 -> fresh #485 on 1.5
+  PASS  S2d save trace.vi dropped into 1.7  new subVIs [{'i': 16, 'class': 'SubVI', 'uid': 490, 'pos': (5493, 4718), 'owner': 'Diagram'}]
+  OBSERVED uid 490 -> owner 'Diagram' uid 4972 | self 'SubVI'#490 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 4972 -> owner 'WhileLoop' uid 376 | self 'Diagram'#4972 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S2d save trace.vi owner chain: uid -> body Diagram -> WhileLoop  #490 -> Diagram#4972 (want 4972) -> WhileLoop#376 (want 376)
+  FACT  S2d save trace.vi: old #376 -> fresh #490 on 1.7
+  PASS  S2d SubVI 94 -> 97  SubVI 97 (want 97)
+  FACT  S2d uid REUSE check: 0 of 3 fresh drops came back with the deleted uid [] (harmless - RETARGET is then the identity for that row; the hazard is only if a drop had preceded a delete, which S1d/S2d's ordering forbids)
+  FACT  REFS after S2d: {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 11}
+
+=== S3: move 21 nodes + 8 ControlTerminals (route B ��2c)
+  FACT  S3b net neighbours on diagram 43 (stay put, share a net with a mover): [3057, 3191, 4580, 5119, 10068, 10382, 10825, 11529, 11608, 12589, 20474, 22703, 29240, 30117]
+  FACT  S3b BEFORE: 35 nodes on d43 (21 moving + 14 neighbours), 24 on d19, 14 shift registers of #637
+  FACT  S3b #637 is Diagram[19].Nodes[4] with 59 outside terminals; 40 of them are INPUT tunnels carrying a wire
+  OBSERVED uid 5540 -> owner 'Diagram' uid 567 | self 'CaseStructure'#5540 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #5540 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 9647 -> owner 'Diagram' uid 567 | self 'Function'#9647 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #9647 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 10247 -> owner 'Diagram' uid 567 | self 'Function'#10247 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10247 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 10445 -> owner 'Diagram' uid 567 | self 'CaseStructure'#10445 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10445 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 10950 -> owner 'Diagram' uid 567 | self 'Comparison'#10950 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10950 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 17289 -> owner 'Diagram' uid 567 | self 'Property'#17289 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #17289 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 10969 -> owner 'Diagram' uid 567 | self 'Function'#10969 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10969 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 10757 -> owner 'Diagram' uid 567 | self 'IndexArray'#10757 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10757 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 1359 -> owner 'Diagram' uid 567 | self 'ForLoop'#1359 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #1359 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 2222 -> owner 'Diagram' uid 567 | self 'CaseStructure'#2222 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #2222 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 2626 -> owner 'Diagram' uid 567 | self 'BuildArray'#2626 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #2626 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 6104 -> owner 'Diagram' uid 567 | self 'IndexArray'#6104 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #6104 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 8885 -> owner 'Diagram' uid 567 | self 'Function'#8885 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #8885 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 9833 -> owner 'Diagram' uid 567 | self 'IndexArray'#9833 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #9833 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 11261 -> owner 'Diagram' uid 567 | self 'BuildArray'#11261 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #11261 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 29874 -> owner 'Diagram' uid 567 | self 'ForLoop'#29874 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #29874 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 10686 -> owner 'Diagram' uid 567 | self 'Function'#10686 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10686 -> 1.2  owner Diagram#567 (want Diagram#567); owner(owner) WhileLoop#48 (want WhileLoop#48)
+  OBSERVED uid 10407 -> owner 'Diagram' uid 2063 | self 'CaseStructure'#10407 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 2063 -> owner 'WhileLoop' uid 338 | self 'Diagram'#2063 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #10407 -> 1.5  owner Diagram#2063 (want Diagram#2063); owner(owner) WhileLoop#338 (want WhileLoop#338)
+  OBSERVED uid 3529 -> owner 'Diagram' uid 2063 | self 'ControlReferenceConstant'#3529 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 2063 -> owner 'WhileLoop' uid 338 | self 'Diagram'#2063 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #3529 -> 1.5  owner Diagram#2063 (want Diagram#2063); owner(owner) WhileLoop#338 (want WhileLoop#338)
+  OBSERVED uid 3560 -> owner 'Diagram' uid 2063 | self 'ControlReferenceConstant'#3560 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 2063 -> owner 'WhileLoop' uid 338 | self 'Diagram'#2063 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #3560 -> 1.5  owner Diagram#2063 (want Diagram#2063); owner(owner) WhileLoop#338 (want WhileLoop#338)
+  OBSERVED uid 3447 -> owner 'Diagram' uid 2063 | self 'ControlReferenceConstant'#3447 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 2063 -> owner 'WhileLoop' uid 338 | self 'Diagram'#2063 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3 #3447 -> 1.5  owner Diagram#2063 (want Diagram#2063); owner(owner) WhileLoop#338 (want WhileLoop#338)
+
+=== S3-zdz: the REORDERED 'Z/dZ' -> #2222 t0 wire (cycle15 Pre-decided 3)
+  FACT  S3-zdz ControlTerminal for 'Z/dZ' = #403; on Diagram[56] it is Nodes[None] with terminals []; sink #2222 is Diagram[24].Nodes[19] t0 = ('', False, 0)
+  FACT  S3-zdz NOT ATTEMPTED ? the ControlTerminal is #403 and its node index on Diagram[56] is None. `OpConnectNested_v1` addresses Diagram[].Nodes[].Terminals[] (build_opconnectnested_v1.py:418-420), so a ControlTerminal that does not appear in that diagram's Nodes[] has no by-index route. MEASURED, not inferred.
+  FACT  S3-zdz PRE-REPARENT state RECORDED, NOT GATED (J3): #2222 t0 carries wire 0 before the #403 reparent. Under Pre-decided 13a this row runs through the TEMPORARY SINK, which wires it AFTER the reparent, so a non-zero reading here is not required and a zero one is not a failure. The verification of this row is the J2 gate after the temp-sink bracket.
+  OBSERVED uid 5634 -> owner 'Diagram' uid 567 | self 'ControlTerminal'#5634 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3-ct ControlTerminal #5634 ('Reset Tracking') -> 1.2  owner Diagram#567 (want 567), owner(owner) #48 (want 48)
+  OBSERVED uid 403 -> owner 'Diagram' uid 567 | self 'ControlTerminal'#403 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3-ct ControlTerminal #403 ('Z/dZ') -> 1.2  owner Diagram#567 (want 567), owner(owner) #48 (want 48)
+  OBSERVED uid 9306 -> owner 'Diagram' uid 567 | self 'ControlTerminal'#9306 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3-ct ControlTerminal #9306 ('Correction Factor') -> 1.2  owner Diagram#567 (want 567), owner(owner) #48 (want 48)
+  OBSERVED uid 17487 -> owner 'Diagram' uid 567 | self 'ControlTerminal'#17487 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3-ct ControlTerminal #17487 ('Auto-Reset') -> 1.2  owner Diagram#567 (want 567), owner(owner) #48 (want 48)
+  OBSERVED uid 28170 -> owner 'Diagram' uid 567 | self 'ControlTerminal'#28170 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3-ct ControlTerminal #28170 ('Force\nsmoothing\nhalf-width') -> 1.2  owner Diagram#567 (want 567), owner(owner) #48 (want 48)
+  OBSERVED uid 29091 -> owner 'Diagram' uid 567 | self 'ControlTerminal'#29091 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 567 -> owner 'WhileLoop' uid 48 | self 'Diagram'#567 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  PASS  S3-ct ControlTerminal #29091 ('Extension\nmedian filter\nhalf-width') -> 1.2  owner Diagram#567 (want 567), owner(owner) #48 (want 48)
+  PASS  S3-ct ControlTerminal count unchanged by the reparent (moved, not destroyed)  114 -> 114
+  FACT  S3-zdz AFTER the #403 reparent, #2222 t0 carries wire 0 (was 0 before it). Non-zero = the reorder held and this terminal never enters the S3w ledger; 0 = the move cut it and S3w retries.
+  PASS  S3a the moves destroyed no frame diagram  Diagram 173
+  PASS  S3 Local still 8 (route B ��6 R7)  Local 8
+  PASS  S3b-d19 no node on diagram 19 OTHER THAN #637 lost a wire (A1: #7202 Global motor pos.vi lives here)  []
+  FACT  S3b-d19 #637's own outside terminals that lost their wire: 0 (EXPECTED - a tunnel dies with its inner wire)
+  FACT  S3b-sr shift registers of #637 whose wiring changed: []
+      cut  #5058 t0 'Bead is good? array in' IN was w5637  [deleted]
+      cut  #5058 t1 'Image In' IN was w3040  [deleted]
+      cut  #5058 t2 'cross size' IN was w373  [deleted]
+      cut  #5058 t3 'Bead is good? array out' OUT was w5859  [deleted]
+      cut  #5058 t4 'x,y,z array out' OUT was w505  [deleted]
+      cut  #5058 t7 'x,y,z array' IN was w5975  [deleted]
+      cut  #5058 t8 'pos in cal image out' OUT was w121  [deleted]
+      cut  #5058 t9 '# of bead 4 packs' IN was w42  [deleted]
+      cut  #5058 t11 '4 pack remainder' IN was w3512  [deleted]
+      cut  #5058 t12 'Array of cal clusters' IN was w3646  [deleted]
+      cut  #5058 t13 'pos in cal image in' IN was w7429  [deleted]
+      cut  #5058 t14 'Real-space cosine window' IN was w3912  [deleted]
+      cut  #5058 t15 'Cosine bandpass\nfor Hilbert ' IN was w4027  [deleted]
+      cut  #48 t0 '-Inc reference' IN was w4833  [deleted]
+      cut  #48 t1 '+Inc reference' IN was w2819  [deleted]
+      cut  #48 t2 'Focus inc reference' IN was w1893  [deleted]
+      cut  #48 t3 'VISA resource name' IN was w1731  [deleted]
+      cut  #48 t4 'In position' IN was w3947  [deleted]
+      cut  #48 t5 'Out position' OUT was w7388  [deleted]
+      cut  #48 t6 'Outgoing Handle' OUT was w11232  [deleted]
+      cut  #376 t0 'error out' OUT was w541  [deleted]
+      cut  #376 t1 'total data array out' OUT was w464  [deleted]
+      cut  #376 t2 'error in' IN was w4880  [deleted]
+      cut  #376 t3 'file progress' OUT was w5274  [deleted]
+      cut  #376 t4 'file number to append out' OUT was w5056  [deleted]
+      cut  #376 t5 'current frame data array in' IN was w4517  [deleted]
+      cut  #376 t6 'cal cluster path' IN was w3629  [deleted]
+      cut  #376 t7 'frame index' IN was w3268  [deleted]
+      cut  #376 t8 'saved file refnum' IN was w1397  [deleted]
+      cut  #376 t9 'file size' IN was w1581  [deleted]
+      cut  #376 t10 'total data array in' IN was w3497  [deleted]
+      cut  #376 t11 'selected path' IN was w5090  [deleted]
+      cut  #5540 t0 '' IN was w5709  [moved]
+      cut  #5540 t1 '' IN was w5979  [moved]
+      cut  #5540 t2 '' OUT was w5637  [moved]
+      cut  #5540 t3 '' IN was w6041  [moved]
+      cut  #5540 t4 '' IN was w5746  [moved]
+      cut  #5540 t5 '' IN was w1681  [moved]
+      cut  #5540 t6 '' OUT was w5975  [moved]
+      cut  #9647 t0 'x .and. y?' OUT was w9921  [moved]
+      cut  #9647 t1 'y' IN was w9806  [moved]
+      cut  #9647 t2 'x' IN was w9868  [moved]
+      cut  #10247 t0 'x .or. y?' OUT was w5709  [moved]
+      cut  #10247 t1 'y' IN was w10312  [moved]
+      cut  #10247 t2 'x' IN was w10573  [moved]
+      cut  #10445 t0 '' IN was w9921  [moved]
+      cut  #10445 t1 '' OUT was w10573  [moved]
+      cut  #10445 t2 'Value' IN was w10763  [moved]
+      cut  #10445 t3 'Value' OUT was w11389  [moved]
+      cut  #10950 t0 'x < y?' OUT was w9868  [moved]
+      cut  #10950 t1 'y' IN was w10850  [moved]
+      cut  #10950 t2 'x' IN was w17393  [moved]
+      cut  #17289 t4 'Value' OUT was w17393  [moved]
+      cut  #10969 t0 'array' IN was w121  [moved]
+      cut  #10969 t3 'min value' OUT was w17287  [moved]
+      cut  #10757 t0 'array' IN was w121  [moved]
+      cut  #10757 t1 'element' OUT was w10990  [moved]
+      cut  #10757 t2 'index' IN was w10947  [moved]
+      cut  #1359 t1 '' IN was w9097  [moved]
+      cut  #1359 t2 '' OUT was w9215  [moved]
+      cut  #1359 t3 'Value' IN was w30592  [moved]
+      cut  #1359 t4 '' IN was w28847  [moved]
+      cut  #1359 t5 '' IN was w10187  [moved]
+      cut  #1359 t6 '' OUT was w11352  [moved]
+      cut  #1359 t7 'Force\nsmoothing\nhalf-width' IN was w31059  [moved]
+      cut  #1359 t8 'Extension\nmedian filter\nhalf-width' IN was w31166  [moved]
+      cut  #1359 t9 'Magnet position output' IN was w28338  [moved]
+      cut  #2222 t0 '' IN was w730  [moved]
+      cut  #2222 t1 'Z out' OUT was w4906  [moved]
+      cut  #2222 t2 'x,y,z array out' IN was w505  [moved]
+      cut  #2222 t3 '' IN was w628  [moved]
+      cut  #2222 t4 '' IN was w1773  [moved]
+      cut  #2222 t5 'Correction Factor' IN was w6096  [moved]
+      cut  #2222 t6 'X out' OUT was w6363  [moved]
+      cut  #2626 t0 'appended array' OUT was w4517  [moved]
+      cut  #2626 t1 'element' IN was w16483  [moved]
+      cut  #2626 t2 'element' IN was w30592  [moved]
+      cut  #2626 t3 'element' IN was w4878  [moved]
+      cut  #2626 t4 'array' IN was w505  [moved]
+      cut  #6104 t0 'array' IN was w6363  [moved]
+      cut  #6104 t3 'index (col)' IN was w6427  [moved]
+      cut  #8885 t0 'x*y' OUT was w28847  [moved]
+      cut  #8885 t1 'y' IN was w9164  [moved]
+      cut  #8885 t2 'x' IN was w9012  [moved]
+      cut  #9833 t0 'array' IN was w4906  [moved]
+      cut  #9833 t1 'subarray' OUT was w9012  [moved]
+      cut  #9833 t2 'index (row)' IN was w9924  [moved]
+      cut  #11261 t0 'appended array' OUT was w10908  [moved]
+      cut  #11261 t1 'array' IN was w11352  [moved]
+      cut  #11261 t2 'element' IN was w12256  [moved]
+      cut  #29874 t1 '' OUT was w32890  [moved]
+      cut  #29874 t2 '' IN was w29787  [moved]
+      cut  #29874 t3 '' IN was w28039  [moved]
+      cut  #29874 t4 '' IN was w28847  [moved]
+      cut  #29874 t5 '' OUT was w29591  [moved]
+      cut  #29874 t6 'Extension\nmedian filter\nhalf-width' IN was w31166  [moved]
+      cut  #10686 t0 'x .and. y?' OUT was w10799  [moved]
+      cut  #10686 t1 'y' IN was w9105  [moved]
+      cut  #10686 t2 'x' IN was w3050  [moved]
+      cut  #10407 t0 '' IN was w10799  [moved]
+      cut  #10407 t1 '# slices in stack' IN was w9635  [moved]
+      cut  #10407 t2 '' IN was w10990  [moved]
+      cut  #10407 t3 'Outgoing Handle' IN was w11232  [moved]
+      cut  #10407 t4 'VISA out' OUT was w7337  [moved]
+      cut  #10407 t5 'Out position' IN was w7388  [moved]
+      cut  #10407 t6 'position [internal units]' OUT was w9113  [moved]
+      cut  #3529 t0 '- Inc (PgDn)' OUT was w4833  [moved]
+      cut  #3560 t0 '+ Inc (PgUp)' OUT was w2819  [moved]
+      cut  #3447 t0 'Focus Step (F1)' OUT was w1893  [moved]
+  FACT  S3b census diff: 109 terminals to re-connect (32 from the three deleted subVIs + 77 from the moves)
+  PASS  S3b the cut set covers plan ��8's 13 wired crossings  not cut: []
+  PASS  S3b-collateral no STAYING node was bared by a move  []
+  FACT  REFS after S3: {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 12}
+
+=== S3c: 8 shift registers (4 on 1.2, 2 on 1.5, 2 on 1.7)
+  PASS  S3c index 2 really is 1.2's WhileLoop #48  loop_cast(2) -> 48, errors {}
+  FACT  1.2: shift register #25635 for 'x,y,z array out' (was #1147/#1142)
+  FACT  1.2: shift register #25642 for 'Bead is good? array out' (was #5796/#5805)
+  FACT  1.2: shift register #25668 for 'pos in cal image out' (was #119/#2972)
+  FACT  1.2: shift register #25737 for 'Value' (was #7311/#11001)
+  PASS  S3c index 1 really is 1.5's WhileLoop #338  loop_cast(1) -> 338, errors {}
+  FACT  1.5: shift register #25814 for 'position [internal units]' (was #4256/#4274)
+  FACT  1.5: shift register #25840 for 'VISA out  <- THE VISA SESSION' (was #4334/#4344)
+  PASS  S3c index 0 really is 1.7's WhileLoop #376  loop_cast(0) -> 376, errors {}
+  FACT  1.7: shift register #25889 for 'total data array out' (was #15/#51)
+  FACT  1.7: shift register #25970 for 'error out' (was #24/#1108)
+  FACT  1.2: shift register #26032 MOVED WITH ITS NODES for #1359 For Loop register (unnamed) (was right #9018 / left #9025 on #637); reader #1359 t1, writer #1359 t2; the original's initial value #8953 Initialize Array t1 'initialized array' w9051 is NOT wired here ? v0 wires no initial value for any of its 8 registers either (reported, not silently changed)
+  FACT  1.2: shift register #26082 MOVED WITH ITS NODES for #29874 For Loop register (unnamed) (was right #29505 / left #29512 on #637); reader #29874 t3, writer #29874 t5; the original's initial value #28124 Initialize Array t1 'initialized array' w29122 is NOT wired here ? v0 wires no initial value for any of its 8 registers either (reported, not silently changed)
+  PASS  S3c 10 shift registers created (8 of D1.SHIFT_REGS + 2 MOVED, v1/B1)  10
+  PASS  S3c ControlTerminal still 114  114
+  FACT  REFS after S3c: {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 14}
+
+=== F0: the re-wire source map, completed inside the build (��11j.2)
+  FACT  F0 source map: 109/109 resolved, by action {'cross-loop': 5, 'from-stay': 11, 'from-tunnel': 18, 'to-sr': 12, 'from-sr': 8, 'same-loop': 16, 'source-side': 27, 'from-ctl': 7, 'from-const': 5}
+  PASS  F0 every cut terminal has a resolved source  unresolved 0
+  FACT  S3w rows to connect: 66 (the other 43 are source-side, from-stay or cross-loop = queue endpoints)
+  FACT  S3w LoopTunnel identity map built: 132 of 132 tunnels read (uid -> outer wire; used instead of matching #637's terminals by wire value)
+      op readback {'UID': 5540, 'Name': '', 'UID 2': 0, 'Is Broken?': False}
+      op readback {'UID': 10247, 'Name': 'x', 'UID 2': 0, 'Is Broken?': False}
+      op readback {'UID': 10445, 'Name': '', 'UID 2': 0, 'Is Broken?': False}
+  FACT  S3w #1359 For Loop register (unnamed): #1359 on Diagram[24].Nodes[17], terminals [(0, ('', False, 0)), (1, ('', False, 0)), (2, ('', True, 0)), (3, ('Value', False, 0)), (4, ('', False, 0)), (5, ('', False, 0)), (6, ('', True, 0)), (7, ('Force\nsmoothing\nhalf-width', False, 0)), (8, ('Extension\nmedian filter\nhalf-width', False, 0)), (9, ('Magnet position output', False, 0))]
+      op readback {'UID': 1359, 'Name': '', 'UID 2': 0, 'Is Broken?': False}
+  FACT  S3w 'Z/dZ': RETRY not possible - ControlTerminal #403 is not in Diagram[24].Nodes[] (index None, terminals []), and OpConnectNested_v1 addresses Diagram[].Nodes[].Terminals[] only [logged control only - falling through to the temporary sink]
+  FACT  J1 create_equal: cached wire map for Diagram[24] INVALIDATED after the create (cache hit dropped: True); new Comparison uids [10105], err 'None'
+  FACT  S3w 'Z/dZ' A2 READER: create_equal called with src_names=() (SENT.create_node src_cls='Comparison', src_index=0, src_names=(), Diagram[24]); created Equal? #10105 terminal census = {0: ('x = y?', True, 0), 1: ('y', False, 0), 2: ('x', False, 0)}. PREDICTED signature of the silent-default-refnum failure is a BARE sink, read by this row's own discriminator below.
+  FACT  S3w 'Z/dZ' P1 TWO-INDEX RETRY into the temporary sink: reparented=True, 1.2-body Diagram index 24, frame-body Diagram index 56, order [24, 56], temp `x` terminal index 2; attempts (index, outcome, sink wire) = [(24, 'no error', 29238)]; temp `x` wire 29238; control panel wire 29238; refs {'opened': 26, 'closed': 26, 'live': 0, 'cached_op_vis': 25}
+  OBSERVED uid 403 -> owner 'Diagram' uid 567 | self 'ControlTerminal'#403 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  S3w 'Z/dZ' P2 ControlTerminal CENSUS before wire_source_owner(w29238): {'ct_uid': 403, 'owner_class': 'Diagram', 'owner_uid': 567, 'owner_diagram_index': 24, 'wire_on_control': 29238}; 1.2-body Diagram index 24, frame-body Diagram index 56; refs {'opened': 26, 'closed': 26, 'live': 0, 'cached_op_vis': 25}
+  FACT  S3w 'Z/dZ' P2 wire_source_owner(w29238) returned 3 terminal(s), 1 of them sources: [{'i': 0, 'is_source': True, 'owner_class': 'Diagram', 'owner_uid': 567}, {'i': 1, 'is_source': False, 'owner_class': 'Comparison', 'owner_uid': 10105}, {'i': 2, 'is_source': False, 'owner_class': '', 'owner_uid': 0}]
+  FACT  S3w 'Z/dZ' -> #2222 t0: temporary Equal? #10105 created as a named sink; branched off w29238 terminal 0 (owner Diagram#567) -> wire 29238, Is Broken? False, delta 0, ExecState 0, err ''
+  FACT  J1 temp-sink delete: cached wire map for Diagram[24] INVALIDATED after the delete (cache hit dropped: True). Every row addressed after this point re-walks the diagram.
+  FACT  S3w 'Z/dZ': after deleting the temporary sink, #2222 t0 carries wire 29238
+  OBSERVED uid 403 -> owner 'Diagram' uid 567 | self 'ControlTerminal'#403 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  S3w 'Z/dZ' J2 GATE READINGS (all taken AFTER the temporary sink was deleted): (a) source identity ok=True - control's own wire 29238 vs sink wire 29238, 1 reciprocal source terminal(s) on w29238, ControlTerminal self-echo ('Diagram', 567), terms [{'i': 0, 'is_source': True, 'owner_class': 'Diagram', 'owner_uid': 567, 'recip': 29238}, {'i': 1, 'is_source': False, 'owner_class': 'Tunnel', 'owner_uid': 2276, 'recip': 29238}, {'i': 2, 'is_source': False, 'owner_class': '', 'owner_uid': 0, 'recip': 0}]; (b) Wire count ok=True - K2 PER-DIAGRAM Diagram[24] (31, 32, 1) (before, after, delta) IS THE GATE; VI-WIDE (1937, 1938, 1) (before, after, delta) is reported BESIDE it so the two instruments can be compared once; (c) Is Broken? ok=True - False; (d) sink wire read back from the machine ok=True - 29238
+
+  --- S3w LEDGER (printed BEFORE settle_index_modes, run 5) ---
+  FACT  S3w ledger PRE-SETTLE: attempted 66, WIRED 54, FAILED 11, NO-ROUTE 1
+  FACT  S3w/E3 PARKING THE DIAGRAM UIDS FAILED (RuntimeError: report_all(Diagram) on SCRATCH_routeb_065508.vi: error 2: Invoke Node in TRef Tr) - every census row that carries only a pre-restart diagram index will be UNREAD
+  FACT  S3w/E3 PRE-SAVE COUNTS UNREAD (RuntimeError: count(Node) on SCRATCH_routeb_065508.vi: error 2: Invoke Node in TRef Traverse.v) - the intactness proof cannot then be taken, and the census will report every row UNREAD
+  FACT  S3w/E3 PRE-SAVE state: nodes None, wires None, parked diagram uids [567, 2063, 4972, 639, 686], index->uid map NOT TAKEN, handles 35541
+  FACT  S3w/E3 THE FRESH-INSTANCE CENSUS WAS NOT REACHED - RuntimeError: gui_save(SCRATCH_routeb_065508.vi): file mtime did not move after Ctrl+S on every candidate window. Check 'lv_gui.ps1 -Action dialogs' - a m
+  **FAIL**  S3w/E3 the census below runs in a FRESH LabVIEW instance on a PROVEN-INTACT reopened copy (Pre-decided 20 + F2) - a FAIL here means every census row is reported UNREAD and the census reading is NOT the fresh-instance measurement run 10 exists to take  fresh=False intact=False reopen=Nones why=RuntimeError: gui_save(SCRATCH_routeb_065508.vi): file mtime did not move after Ctrl+S on every candidate window. Check 'lv_gui.ps1 -Action dialogs' - a m
+  FACT  S3w K3 CENSUS WALK: parked diagram uids [567, 2063, 4972, 639, 686] -> post-restart indices [None, None, None, None, None], 0 walked, 1 UNWALKED {'<no fresh proven-intact instance>': "the fresh-instance / intactness gate FAILED (RuntimeError: gui_save(SCRATCH_routeb_065508.vi): file mtime did not move after Ctrl+S on every candidate window. Check 'lv_gui.ps1 -Action dialogs' - a m) - NOTHING is walked and EVERY row below is UNREAD, by contract"}
+  FACT  CENSUS: 0 survived / 0 bare / 51 unread of 51 claimed
+  FACT  S3w K3 CENSUS DETAIL: EXACT 0, SEGMENTED 0 (a different NON-ZERO wire on the claimed terminal - legitimate survival, `docs/toolkit-capabilities.md:68`), BARE 0, UNREAD 51
+      UNREAD    w26122 [from_tunnel] #5058 t2 'cross size' <- from-tunnel 2580 | (diagram UID,node,terminal)=(None, 483, 2) reads None | reason: sink #483 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w26412 [wire_sr] #5058 t3 'Bead is good? array out' <- to-sr None | (diagram UID,node,terminal)=(None, 483, 3) reads None | reason: sink #483 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w26427 [wire_sr] #5058 t4 'x,y,z array out' <- to-sr None | (diagram UID,node,terminal)=(None, 483, 4) reads None | reason: sink #483 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w26454 [wire_sr] #5058 t8 'pos in cal image out' <- to-sr None | (diagram UID,node,terminal)=(None, 483, 8) reads None | reason: sink #483 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w26491 [from_tunnel] #5058 t9 '# of bead 4 packs' <- from-tunnel 2396 | (diagram UID,node,terminal)=(None, 483, 9) reads None | reason: sink #483 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w26738 [from_tunnel] #5058 t11 '4 pack remainder' <- from-tunnel 4432 | (diagram UID,node,terminal)=(None, 483, 11) reads None | reason: sink #483 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w26945 [from_tunnel] #5058 t12 'Array of cal clusters' <- from-tunnel 3656 | (diagram UID,node,terminal)=(None, 483, 12) reads None | reason: sink #483 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w27056 [wire_sr] #5058 t13 'pos in cal image in' <- from-sr None | (diagram UID,node,terminal)=(None, 483, 13) reads None | reason: sink #483 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w27078 [from_tunnel] #5058 t14 'Real-space cosine window' <- from-tunnel 3920 | (diagram UID,node,terminal)=(None, 483, 14) reads None | reason: sink #483 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w27189 [from_tunnel] #5058 t15 'Cosine bandpass\nfor Hilbert ' <- from-tunnel 4031 | (diagram UID,node,terminal)=(None, 483, 15) reads None | reason: sink #483 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w27278 [wire] #48 t0 '-Inc reference' <- same-loop 3529 | (diagram UID,node,terminal)=(None, 485, 0) reads None | reason: sink #485 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w27290 [wire] #48 t1 '+Inc reference' <- same-loop 3560 | (diagram UID,node,terminal)=(None, 485, 1) reads None | reason: sink #485 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w27298 [wire] #48 t2 'Focus inc reference' <- same-loop 3447 | (diagram UID,node,terminal)=(None, 485, 2) reads None | reason: sink #485 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w27312 [wire_sr] #48 t3 'VISA resource name' <- from-sr None | (diagram UID,node,terminal)=(None, 485, 3) reads None | reason: sink #485 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w27316 [wire_sr] #48 t4 'In position' <- from-sr None | (diagram UID,node,terminal)=(None, 485, 4) reads None | reason: sink #485 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w27325 [wire_sr] #376 t0 'error out' <- to-sr None | (diagram UID,node,terminal)=(None, 490, 0) reads None | reason: sink #490 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w27334 [wire_sr] #376 t1 'total data array out' <- to-sr None | (diagram UID,node,terminal)=(None, 490, 1) reads None | reason: sink #490 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w27341 [wire_sr] #376 t2 'error in' <- from-sr None | (diagram UID,node,terminal)=(None, 490, 2) reads None | reason: sink #490 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w27345 [from_tunnel] #376 t6 'cal cluster path' <- from-tunnel 3644 | (diagram UID,node,terminal)=(None, 490, 6) reads None | reason: sink #490 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w27428 [from_tunnel] #376 t7 'frame index' <- from-tunnel 2213 | (diagram UID,node,terminal)=(None, 490, 7) reads None | reason: sink #490 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w27720 [from_tunnel] #376 t9 'file size' <- from-tunnel 2294 | (diagram UID,node,terminal)=(None, 490, 9) reads None | reason: sink #490 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w27902 [wire_sr] #376 t10 'total data array in' <- from-sr None | (diagram UID,node,terminal)=(None, 490, 10) reads None | reason: sink #490 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w27907 [from_tunnel] #376 t11 'selected path' <- from-tunnel 5096 | (diagram UID,node,terminal)=(None, 490, 11) reads None | reason: sink #490 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w28045 [v1_connect] #5540 t0 '' <- same-loop 10247 | (diagram UID,node,terminal)=(None, 5540, 0) reads None | reason: sink #5540 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w28250 [from_tunnel] #5540 t1 '' <- from-tunnel 5569 | (diagram UID,node,terminal)=(None, 5540, 1) reads None | reason: sink #5540 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w28358 [wire_sr] #5540 t3 '' <- from-sr None | (diagram UID,node,terminal)=(None, 5540, 3) reads None | reason: sink #5540 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w28361 [from_tunnel] #5540 t4 '' <- from-tunnel 5752 | (diagram UID,node,terminal)=(None, 5540, 4) reads None | reason: sink #5540 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w28451 [wire_sr] #5540 t5 '' <- from-sr None | (diagram UID,node,terminal)=(None, 5540, 5) reads None | reason: sink #5540 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w28475 [wire_control] #9647 t1 'y' <- from-ctl 17472 | (diagram UID,node,terminal)=(None, 9647, 1) reads None | reason: sink #9647 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w28486 [wire] #9647 t2 'x' <- same-loop 10950 | (diagram UID,node,terminal)=(None, 9647, 2) reads None | reason: sink #9647 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w28502 [wire_control] #10247 t1 'y' <- from-ctl 5605 | (diagram UID,node,terminal)=(None, 10247, 1) reads None | reason: sink #10247 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w28518 [v1_connect] #10247 t2 'x' <- same-loop 10445 | (diagram UID,node,terminal)=(None, 10247, 2) reads None | reason: sink #10247 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w28665 [v1_connect] #10445 t0 '' <- same-loop 9647 | (diagram UID,node,terminal)=(None, 10445, 0) reads None | reason: sink #10445 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w28809 [wire_sr] #10445 t2 'Value' <- from-sr None | (diagram UID,node,terminal)=(None, 10445, 2) reads None | reason: sink #10445 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w28818 [wire_sr] #10445 t3 'Value' <- to-sr None | (diagram UID,node,terminal)=(None, 10445, 3) reads None | reason: sink #10445 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w28902 [wire] #10950 t2 'x' <- same-loop 17289 | (diagram UID,node,terminal)=(None, 10950, 2) reads None | reason: sink #10950 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w26454 [wire_sr] #10969 t0 'array' <- to-sr None | (diagram UID,node,terminal)=(None, 10969, 0) reads None | reason: sink #10969 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w26454 [wire_sr] #10757 t0 'array' <- to-sr None | (diagram UID,node,terminal)=(None, 10757, 0) reads None | reason: sink #10757 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w28976 [sr_moved.RightIn] #1359 t1 '' <- from-tunnel 9087 | (diagram UID,node,terminal)=(None, 10757, 2) reads None | reason: sink #10757 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w28983 [sr_moved.LeftIn] #1359 t1 '' <- from-tunnel 9087 | (diagram UID,node,terminal)=(None, 10757, 2) reads None | reason: sink #10757 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w10413 [v1_connect] #1359 t4 '' <- same-loop 8885 | (diagram UID,node,terminal)=(None, 1359, 4) reads None | reason: sink #1359 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w29069 [wire_control] #1359 t7 'Force\nsmoothing\nhalf-width' <- from-ctl 28148 | (diagram UID,node,terminal)=(None, 1359, 7) reads None | reason: sink #1359 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w29072 [wire_control] #1359 t8 'Extension\nmedian filter\nhalf-width' <- from-ctl 28996 | (diagram UID,node,terminal)=(None, 1359, 8) reads None | reason: sink #1359 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w29075 [from_tunnel] #1359 t9 'Magnet position output' <- from-tunnel 28343 | (diagram UID,node,terminal)=(None, 1359, 9) reads None | reason: sink #1359 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w29238 [from_ctl_unnamed] #2222 t0 '' <- from-ctl 47 | (diagram UID,node,terminal)=(None, 2222, 0) reads None | reason: sink #2222 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w26427 [wire_sr] #2222 t2 'x,y,z array out' <- to-sr None | (diagram UID,node,terminal)=(None, 2222, 2) reads None | reason: sink #2222 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w29180 [from_tunnel] #2222 t3 '' <- from-tunnel 5129 | (diagram UID,node,terminal)=(None, 2222, 3) reads None | reason: sink #2222 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w29347 [from_tunnel] #2222 t4 '' <- from-tunnel 5328 | (diagram UID,node,terminal)=(None, 2222, 4) reads None | reason: sink #2222 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w29406 [wire_control] #2222 t5 'Correction Factor' <- from-ctl 9289 | (diagram UID,node,terminal)=(None, 2222, 5) reads None | reason: sink #2222 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w26427 [wire_sr] #2626 t4 'array' <- to-sr None | (diagram UID,node,terminal)=(None, 2626, 4) reads None | reason: sink #2626 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+      UNREAD    w29409 [wire] #6104 t0 'array' <- same-loop 2222 | (diagram UID,node,terminal)=(None, 6104, 0) reads None | reason: sink #6104 is on none of the walked diagram uids [] (unwalked: ['<no fresh proven-intact instance>'])
+  FACT  S3w K3 CENSUS COVERAGE: 54 WIRED rows, 50 of them registered a wire uid; rows with NO uid recorded (so NOT covered by the census): ["#10950 t1 'y' <- from-const 10739", "#10757 t2 'index' <- from-const 10929", "#6104 t3 'index (col)' <- from-const 6404", "#8885 t1 'y' <- from-const 9050"]
+      WIRED    #5058 t2 'cross size' <- from-tunnel 2580  OpConnectFromWire_v0 w3853 -> D[24].N[0].T[2] wire 26122, Is Broken? FALSE
+      WIRED    #5058 t3 'Bead is good? array out' <- to-sr None  wire_sr RightIn reg[1] -> D[24].N[0].T[3] wire 26412 (ok)
+      WIRED    #5058 t4 'x,y,z array out' <- to-sr None  wire_sr RightIn reg[0] -> D[24].N[0].T[4] wire 26427 (ok)
+      WIRED    #5058 t8 'pos in cal image out' <- to-sr None  wire_sr RightIn reg[2] -> D[24].N[0].T[8] wire 26454 (ok)
+      WIRED    #5058 t9 '# of bead 4 packs' <- from-tunnel 2396  OpConnectFromWire_v0 w2641 -> D[24].N[0].T[9] wire 26491, Is Broken? FALSE
+      WIRED    #5058 t11 '4 pack remainder' <- from-tunnel 4432  OpConnectFromWire_v0 w5265 -> D[24].N[0].T[11] wire 26738, Is Broken? FALSE
+      WIRED    #5058 t12 'Array of cal clusters' <- from-tunnel 3656  OpConnectFromWire_v0 w3668 -> D[24].N[0].T[12] wire 26945, Is Broken? FALSE
+      WIRED    #5058 t13 'pos in cal image in' <- from-sr None  wire_sr LeftIn reg[2] -> D[24].N[0].T[13] wire 27056 (ok)
+      WIRED    #5058 t14 'Real-space cosine window' <- from-tunnel 3920  OpConnectFromWire_v0 w5786 -> D[24].N[0].T[14] wire 27078, Is Broken? FALSE
+      WIRED    #5058 t15 'Cosine bandpass\nfor Hilbert ' <- from-tunnel 4031  OpConnectFromWire_v0 w4029 -> D[24].N[0].T[15] wire 27189, Is Broken? FALSE
+      WIRED    #48 t0 '-Inc reference' <- same-loop 3529  wire ControlReferenceConstant[7].'- Inc (PgDn)' -> SubVI[19].'-Inc reference' wire 27278 (ok)
+      WIRED    #48 t1 '+Inc reference' <- same-loop 3560  wire ControlReferenceConstant[6].'+ Inc (PgUp)' -> SubVI[19].'+Inc reference' wire 27290 (ok)
+      WIRED    #48 t2 'Focus inc reference' <- same-loop 3447  wire ControlReferenceConstant[5].'Focus Step (F1)' -> SubVI[19].'Focus inc reference' wire 27298 (ok)
+      WIRED    #48 t3 'VISA resource name' <- from-sr None  wire_sr LeftIn reg[1] -> D[21].N[0].T[3] wire 27312 (ok)
+      WIRED    #48 t4 'In position' <- from-sr None  wire_sr LeftIn reg[0] -> D[21].N[0].T[4] wire 27316 (ok)
+      WIRED    #376 t0 'error out' <- to-sr None  wire_sr RightIn reg[1] -> D[20].N[0].T[0] wire 27325 (ok)
+      WIRED    #376 t1 'total data array out' <- to-sr None  wire_sr RightIn reg[0] -> D[20].N[0].T[1] wire 27334 (ok)
+      WIRED    #376 t2 'error in' <- from-sr None  wire_sr LeftIn reg[1] -> D[20].N[0].T[2] wire 27341 (ok)
+      WIRED    #376 t6 'cal cluster path' <- from-tunnel 3644  OpConnectFromWire_v0 w21 -> D[20].N[0].T[6] wire 27345, Is Broken? FALSE
+      WIRED    #376 t7 'frame index' <- from-tunnel 2213  OpConnectFromWire_v0 w2187 -> D[20].N[0].T[7] wire 27428, Is Broken? FALSE
+      WIRED    #376 t9 'file size' <- from-tunnel 2294  OpConnectFromWire_v0 w2362 -> D[20].N[0].T[9] wire 27720, Is Broken? FALSE
+      WIRED    #376 t10 'total data array in' <- from-sr None  wire_sr LeftIn reg[0] -> D[20].N[0].T[10] wire 27902 (ok)
+      WIRED    #376 t11 'selected path' <- from-tunnel 5096  OpConnectFromWire_v0 w5104 -> D[20].N[0].T[11] wire 27907, Is Broken? FALSE
+      WIRED    #5540 t0 '' <- same-loop 10247  OpConnectNested_v1 D[24].N[5].T[0] -> D[24].N[1].T[0] wire 28045 (delta 1, ExecState 0) [unnamed end (sink '', source 'x .or. y?')]
+      WIRED    #5540 t1 '' <- from-tunnel 5569  OpConnectFromWire_v0 w5812 -> D[24].N[1].T[1] wire 28250, Is Broken? FALSE
+      WIRED    #5540 t3 '' <- from-sr None  wire_sr LeftIn reg[1] -> D[24].N[1].T[3] wire 28358 (ok)
+      WIRED    #5540 t4 '' <- from-tunnel 5752  OpConnectFromWire_v0 w2731 -> D[24].N[1].T[4] wire 28361, Is Broken? FALSE
+      WIRED    #5540 t5 '' <- from-sr None  wire_sr LeftIn reg[0] -> D[24].N[1].T[5] wire 28451 (ok)
+      WIRED    #9647 t1 'y' <- from-ctl 17472  wire_control 'Auto-Reset' -> 'y'; sink D[24].N[3].T[1] wire 28475 (ok); reparented=True; attempts [(24, 'no error', 28475)]
+      WIRED    #9647 t2 'x' <- same-loop 10950  wire Function[38].'x < y?' -> Function[41].'x' wire 28486 (ok)
+      WIRED    #10247 t1 'y' <- from-ctl 5605  wire_control 'Reset Tracking' -> 'y'; sink D[24].N[5].T[1] wire 28502 (ok); reparented=True; attempts [(24, 'no error', 28502)]
+      WIRED    #10247 t2 'x' <- same-loop 10445  OpConnectNested_v1 D[24].N[7].T[1] -> D[24].N[5].T[2] wire 28518 (delta 1, ExecState 0) [unnamed end (sink 'x', source '')]
+      WIRED    #10445 t0 '' <- same-loop 9647  OpConnectNested_v1 D[24].N[3].T[0] -> D[24].N[7].T[0] wire 28665 (delta 1, ExecState 0) [unnamed end (sink '', source 'x .and. y?')]
+      WIRED    #10445 t2 'Value' <- from-sr None  wire_sr LeftIn reg[3] -> D[24].N[7].T[2] wire 28809 (ok)
+      WIRED    #10445 t3 'Value' <- to-sr None  wire_sr RightIn reg[3] -> D[24].N[7].T[3] wire 28818 (ok)
+      WIRED    #10950 t1 'y' <- from-const 10739  OpCreateConstOnTerm_v0 value 0 -> uid 28825 
+      WIRED    #10950 t2 'x' <- same-loop 17289  wire Property[18].'Value' -> Function[38].'x' wire 28902 (ok)
+      WIRED    #10969 t0 'array' <- to-sr None  wire_sr RightIn reg[2] -> D[24].N[13].T[0] wire 26454 (ok)
+      WIRED    #10757 t0 'array' <- to-sr None  wire_sr RightIn reg[2] -> D[24].N[15].T[0] wire 26454 (ok)
+      WIRED    #10757 t2 'index' <- from-const 10929  OpCreateConstOnTerm_v0 value 0 -> uid 28936 
+      WIRED    #1359 t1 '' <- from-tunnel 9087  MOVED REGISTER reg[4] #26032 on 1.2 (#1359 For Loop register (unnamed)): RightIn <- D[24].N[17].T[2] wire 28976 | LeftIn -> D[24].N[17].T[1] wire 28983; initial value NOT wired (same as the other 8 registers)
+      WIRED    #1359 t4 '' <- same-loop 8885  OpConnectNested_v1 D[24].N[25].T[0] -> D[24].N[17].T[4] wire 10413 (delta 1, ExecState 0) [unnamed end (sink '', source 'x*y')]
+      WIRED    #1359 t7 'Force\nsmoothing\nhalf-width' <- from-ctl 28148  wire_control 'Force\nsmoothing\nhalf-width' -> 'Force\nsmoothing\nhalf-width'; sink D[24].N[17].T[7] wire 29069 (ok); reparented=True; attempts [(24, 'no error', 29069)]
+      WIRED    #1359 t8 'Extension\nmedian filter\nhalf-width' <- from-ctl 28996  wire_control 'Extension\nmedian filter\nhalf-width' -> 'Extension\nmedian filter\nhalf-width'; sink D[24].N[17].T[8] wire 29072 (ok); reparented=True; attempts [(24, 'no error', 29072)]
+      WIRED    #1359 t9 'Magnet position output' <- from-tunnel 28343  OpConnectFromWire_v0 w28392 -> D[24].N[17].T[9] wire 29075, Is Broken? FALSE
+      WIRED    #2222 t0 '' <- from-ctl 47  OpConnectFromWire_v0 w29238 -> D[24].N[19].T[0] wire 29238 (temporary Equal? #10105 created as a named sink, temporary deleted=True)
+      WIRED    #2222 t2 'x,y,z array out' <- to-sr None  wire_sr RightIn reg[0] -> D[24].N[19].T[2] wire 26427 (ok)
+      WIRED    #2222 t3 '' <- from-tunnel 5129  OpConnectFromWire_v0 w5174 -> D[24].N[19].T[3] wire 29180, Is Broken? FALSE
+      WIRED    #2222 t4 '' <- from-tunnel 5328  OpConnectFromWire_v0 w5336 -> D[24].N[19].T[4] wire 29347, Is Broken? FALSE
+      WIRED    #2222 t5 'Correction Factor' <- from-ctl 9289  wire_control 'Correction Factor' -> 'Correction Factor'; sink D[24].N[19].T[5] wire 29406 (ok); reparented=True; attempts [(24, 'no error', 29406)]
+      WIRED    #2626 t4 'array' <- to-sr None  wire_sr RightIn reg[0] -> D[24].N[21].T[4] wire 26427 (ok)
+      WIRED    #6104 t0 'array' <- same-loop 2222  wire CaseStructure[3].'X out' -> IndexArray[9].'array' wire 29409 (ok)
+      WIRED    #6104 t3 'index (col)' <- from-const 6404  OpCreateConstOnTerm_v0 value 0 -> uid 29412 
+      WIRED    #8885 t1 'y' <- from-const 9050  OpCreateConstOnTerm_v0 value 1000.0 -> uid 29422 
+      FAILED   #8885 t2 'x' <- same-loop 9833  report_all(Diagram) on SCRATCH_routeb_065508.vi: error 2: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpReportAll_v
+      FAILED   #9833 t0 'array' <- same-loop 2222  report_all(Diagram) on SCRATCH_routeb_065508.vi: error 2: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpReportAll_v
+      FAILED   #9833 t2 'index (row)' <- from-const 9906  report_all(Diagram) on SCRATCH_routeb_065508.vi: error 2: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpReportAll_v
+      FAILED   #11261 t1 'array' <- same-loop 1359  report_all(Diagram) on SCRATCH_routeb_065508.vi: error 2: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpReportAll_v
+      FAILED   #29874 t3 '' <- from-tunnel 29911  report_all(WhileLoop) on SCRATCH_routeb_065508.vi: error 2: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpReportAll
+      FAILED   #29874 t4 '' <- same-loop 8885  report_all(Diagram) on SCRATCH_routeb_065508.vi: error 2: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpReportAll_v
+      FAILED   #29874 t6 'Extension\nmedian filter\nhalf-width' <- from-ctl 28996  report_all(Diagram) on SCRATCH_routeb_065508.vi: error 2: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpReportAll_v
+      FAILED   #10407 t3 'Outgoing Handle' <- same-loop 48  report_all(Diagram) on SCRATCH_routeb_065508.vi: error 2: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpReportAll_v
+      FAILED   #10407 t4 'VISA out' <- to-sr None  report_all(Diagram) on SCRATCH_routeb_065508.vi: error 2: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpReportAll_v
+      FAILED   #10407 t5 'Out position' <- same-loop 48  report_all(Diagram) on SCRATCH_routeb_065508.vi: error 2: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpReportAll_v
+      FAILED   #10407 t6 'position [internal units]' <- to-sr None  report_all(Diagram) on SCRATCH_routeb_065508.vi: error 2: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpReportAll_v
+      NO-ROUTE #10407 t1 '# slices in stack' <- from-tunnel 9641  w9649 has 0 source terminals, not 1: []
+  FACT  S3w handles IMMEDIATELY BEFORE g.count(TARGET, 'LoopTunnel') in settle_index_modes: 35984 (1 pending IndexMode rows)
+  FACT  CRASH RuntimeError: count(LoopTunnel) on SCRATCH_routeb_065508.vi: error 2: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpReport_v3.vi  - the working copy is RENAMED ASIDE, not deleted
+
+=== C: preloaded re-read of the LIVE broken copy, BEFORE it is deleted (Pre-decided 14)
+  FACT  C: lv_restart rc=0 (a fresh instance, so the build's residents cannot confound the reading); handles now 30695
+  FACT  C: the ORIGINAL is resident READ-ONLY, its own ExecState 1
+  FACT  C: **PRELOADED ExecState of the LIVE working copy SCRATCH_routeb_065508.vi = 1** (1 = idle/runnable, 0 = broken). Compare with S1's baseline and S5's cold read.
+  FACT  C: original md5 across the preloaded read: 2a78e17c449cacdaf5da389818526859 -> 2a78e17c449cacdaf5da389818526859 (UNCHANGED); nothing was saved, nothing was run
+  FACT  working copy RENAMED ASIDE after a crash (NOT deleted): C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_routeb_065508_crash_072542.vi
+  PASS  S6b original md5 AFTER  2a78e17c449cacdaf5da389818526859
+  FACT  LabVIEW handles after: 50441 (before 31106)
+  FACT  REFS final: {'opened': 33, 'closed': 33, 'live': 0, 'cached_op_vis': 25} (in-process VI Server refs; `live` should be 0 and `cached_op_vis` is the bounded one-per-op-VI cache)
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_d1_routeb_v7.py", line 2818, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_d1_routeb_v7.py", line 2747, in main
+    led = s3w(loops, regs, r3, fresh_uid)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_d1_routeb_v7.py", line 2482, in s3w
+    settle_index_modes()
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_d1_routeb_v7.py", line 1560, in settle_index_modes
+    n_tun = g.count(TARGET, "LoopTunnel")
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 1013, in count
+    raise RuntimeError(f"count({cls}) on {os.path.basename(target)}: {err}")
+RuntimeError: count(LoopTunnel) on SCRATCH_routeb_065508.vi: error 2: Invoke Node in TRef Traverse.vi->VI Scripting - Traverse.lvlib:Traverse for GObjects.vi->OpReport_v3.vi | <APPEND> | Method Name: <b>Class Operator:Traverse</b> (Traverse Failed)
+BGRUN END rc=1 after 1835s

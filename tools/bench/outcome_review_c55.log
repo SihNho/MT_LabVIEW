@@ -1,0 +1,95 @@
+BGRUN START 2026-09-20 09:07:13 limit 25.0 min: py -u tools/outcome_review.py
+   cadence: 7 cycle retrospectives since 2026-09-19-outcome-review-20260919.md (every 5)
+   task written to C:\Users\KimLab\AppData\Local\Temp\outcome-review-20260920.txt (5814 chars)
+OUTCOME: ANSWERED (199s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-20-outcome-review-20260920.md
+COST: $3.2236  in 14 / out 13751 / cache-create 104582 / cache-read 444292  (198s, 16 turn(s))
+--- ANSWER ---
+I've read the requirements, STATUS.md, the full benchmark INDEX, the previous outcome review and its disposition, and the restructure plan. Here is the review.
+
+---
+
+# OUTCOME REVIEW — 2026-09-20 (sixth in series, 0.6 days after the fifth)
+
+## 1. DELIVERABLE
+
+**The user can RUN nothing today that they could not run at the last outcome review.** Two files were saved in the interval and both are forbidden to run by the project's own rule:
+
+- `claudeDev\D1_s1_copy.vi` (cycle 48, 20/0 gates, md5 `3e3d23ce…`, 474,202 B — STATUS.md:9, evidence relocated to `archive/2026-09-20-status-cycle49-relocate.md` §1) — a hygiene-verified **copy of the original**.
+- `claudeDev\D1_s2_loops.vi` (cycle 51, accepted 52, md5 `6ff19497…`, ExecState 1 COLD and PRELOADED — STATUS.md:9) — that copy plus **three empty scaffolded While loops**.
+
+Both are "structural intermediates — none may be RUN (34(f))", in STATUS.md's own words to the user (STATUS.md:74). The counted output's deliverable line — `Track_v6_CPU_core_v0.vi`, `Track_v6_CPU_queue_v0.vi` — is **unchanged for the third review running**; those are the 2026-09-15 TIFF-replay artefacts (INDEX rows 40–41). The last review's disposition made "each cycle ends with saved files + md5s in a log" the binding acceptance condition (`archive/peer/2026-09-19-outcome-review-20260919.md:171`), and the interval met it — but *saved* was a proxy for *progress toward runnable*, and the letter was satisfied while the product line moved zero. What genuinely advanced is again knowledge: the move-and-rewire machinery is proven on real rows (43/0, `tools/bench/diag_s3_focus_trial.{log,json}`, STATUS.md:58), and the `Wire.Is Broken?` type instrument produced its first discriminating reading (matched → False, mismatched → True, `owner_c55m2`, STATUS.md:23). Diagnosis, not deliverable — the same closing sentence as the fifth review.
+
+## 2. GOAL ALIGNMENT
+
+Against `project-requirements/parallelization-requirement.md`:
+
+- **Req 1 (parallelize the radial-profile/.cal stage after 'Done Picking Beads?'): NOT MOVED since 2026-08-24 — fourth consecutive review saying so.** It is still in no plan; STATUS.md:77 parks it as a "USER-ONLY decision … NOT a blocker", which is precisely how it has stayed unasked through four reviews.
+- **Req 2.1 (motor control): already parallel in the original** (user's own text) — nothing owed.
+- **Req 2.2 (motor reading, the named bottleneck): NOT MOVED** into anything runnable. The 2.56 ms/round-trip case (INDEX row 19) remains unembodied.
+- **Req 2.3 (camera acquisition): NOT MOVED.** No project VI acquires a live frame; the camera contract is still a Python tool (INDEX row 44).
+- **Req 2.4 (scheduler): NOT MOVED** — behind D2, behind a D1 whose stage plan was withdrawn this interval (S3 CLOSED, STATUS.md:9, :59).
+- **Req 2.5 (merging/saving): NOT MOVED** beyond the replay sink of row 41.
+- **Req 3 (split the loop's functions into parallel loops): advanced in evidence, not in product.** S2 put three empty loops on the diagram; the five focus nodes moved and re-wired successfully in a diagnostic; the resulting VI could not be saved (ExecState 0) and the stage decomposition itself was declared unworkable: *"no ordering of the existing stage list makes it savable"* (STATUS.md:59).
+
+The uncomfortable list is unchanged for the fourth review: **requirements 1, 2.2, 2.3, 2.4, 2.5, and 3 have produced nothing the user can run since the project began.**
+
+## 3. COST vs PRODUCT
+
+Delta over 0.6 days: **+17 op VIs (188→205), +9 recipes (147→156), +33 peer exchanges (424→457), +7 retrospectives (28→36), +1 doc, +0 benchmark rows, +0 runnable deliverables.** That is a retrospective every ~2 waking hours and 33 peer exchanges bought against two unrunnable intermediates. The money is also understated by the project's own audit: cycle 53's real spend was **$53.67 against an audited $14.17** (STATUS.md:74, `tools/bench/cycle_40.log:61-62`); itemized this interval: $4.7775 prior-art (STATUS.md:28), $2.9744 + ~$2.8 for a **duplicate** opus/max review dispatched by two concurrent sessions on the same question (STATUS.md:22, :71), $3.24 for a `judgement-in-material` violation (STATUS.md:68).
+
+**Not defensible.** What a competent engineer would have skipped, by name:
+
+- **The entire STATUS relocation ritual.** Cycles 53, 54 and 55 each spent session time moving lock-key paragraphs "byte-identically by a copy, never retyped", with sha256 captured before and after (STATUS.md:22, :26, :27, :75). This is a hand-rolled, lossy version control — and it already lost data: *"cycle 53's `## NEXT` HAS NO VERBATIM SOURCE ON DISK … this is not a git repo"* (STATUS.md:26). `git init` is one command; a `.gitignore` already exists in the tree. Every relocation hour since has bought what a commit gives for free, minus the part it lost.
+- **Cycle 55 material #3 in its entirety**: the reverse census walk resolving 635-vs-626 — the discrepancy turned out to be the census tool's **own junk Invoke node** counted by its own sibling tool (STATUS.md:22). Bookkeeping about the instruments' self-pollution; zero distance toward any requirement.
+- **The 7-retrospectives-plus-peer-disposal cadence** — `guard_peer` now blocks each retrospective until the previous retrospective's review is disposed (STATUS.md:70, :73): a queue of paperwork gating paperwork.
+- **The second queue trial census run** after STATUS itself recorded *"the trial census has no discriminating power left; running more of it buys nothing"* (STATUS.md:61).
+
+Credit where due: S1 and S2 were the user-ordered delivery lane, landed cheaply, and cycle 55's Is-Broken? validation was the standing plan's FIRST ACT executed as written.
+
+## 4. ORDERING AT PROJECT SCALE
+
+The standing NEXT (STATUS.md:62-67: FIRST ACT = validate `Is Broken?`, SECOND ACT = reverse walk) **has already been executed** — both acts landed in cycle 55 — so the written order is now exhausted, and the banner's replacement instruction, *"the next act is a DIAGNOSTIC, not a stage"* (STATUS.md:9), is stale on the project's own evidence:
+
+1. The instrument question is **answered**: the mismatched wire read `Is Broken? = True`, the matched one `False` (STATUS.md:23). The deliberately-not-pre-decided branch (STATUS.md:63) resolves to its good arm — LabVIEW's type propagation is the type checker. Another diagnostic buys nothing a delivery attempt wouldn't also reveal.
+2. The decisive fact of the interval — **a saved stage must be closed under its wire sources** (STATUS.md:59) — dictates the next act directly: build the minimal *closed* loop set (loop 1.5 **plus** the loop 1.2 that feeds `#10407` t0/t2, plus whatever t6 needs) in ONE session and save at ExecState 1. That is a stage, not a diagnostic, and it should come first.
+3. `docs/restructure-plan-4.6.md` staying deferred remains right — it is the 7-loop end state (restructure-plan-4.6.md §3) and D1 is its bridge. But **requirement 1 being scheduled nowhere is not "deferred", it is dropped** — fourth review flagging it.
+
+## 5. STALE DECISIONS
+
+- **OPEN 53 (physical zero)** — open since 2026-09-18, called "a two-minute question at the rig" by the fifth review (`…outcome-review-20260919.md:132`), still unasked while the rig sits assembled with limits armed (STATUS.md:34, :53). It gates every future motor-moving D1 run.
+- **Requirement 1 schedule-or-descope** — flagged by reviews three, four, five; still parked at STATUS.md:77.
+- **OPEN 46 (`SetCommand_signed.vi` on NO disk)** — a **hardware-accepted fix the user personally watched pass** (INDEX row 31: −1080.0° tracked live, 20:28) exists nowhere (STATUS.md:55). The fifth review's termination list said "one cheap act that converts an already-verified result back into a possession" (`:149`); 0.6 days later it is still not done. This is the purest user-value item in the whole OPEN list.
+- **The mechanism of starvation is visible**: STATUS.md:77 labels all three "NOT blockers." Nothing labelled non-blocking is ever asked. They should be put to the user as a batch, this week.
+- **OPEN 32 rider** (STATUS.md:51 — "the next outcome review judges it"; that is this review): **judged — D0 may be closed as a delivered *harness*, not as a closed product gap.** `tools/bench/drive_original_copy_v5.py` twice drove a copy of the original unattended end to end (STATUS.md:49); that is real and it is the acceptance rig D1 will need. It is not a new runnable experimental VI — the runnable thing in that sentence is still the original.
+
+## 6. THE EXPERIMENT TEST
+
+**The original VI, `Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi` — the same verdict as all five previous reviews.** The project's two runnable VIs replay recorded TIFFs (INDEX rows 40–41); its three D1 files may not be run by the project's own rule (STATUS.md:74, 34(f)); the one hardware improvement it verified (signed rotor read) is on no disk (STATUS.md:55). What the project would contribute to next week's experiment is peripheral: the motor safety envelope (`tools/motor_gate.py`, held through a real 30 mm move — STATUS.md:34) and the camera-contract tool. Frame loss — the user's stated pain, `project-description.md` §6 — is exactly what it was on 2026-08-24.
+
+## 7. TERMINATION
+
+Shortest path to something the user can use:
+
+1. **Declare the type instrument validated and take the branch** (the reading exists: STATUS.md:23). No further instrument diagnostics.
+2. **One delivery cycle: build the minimal closed-under-sources loop set** on `D1_s2_loops.vi` — the loops that jointly own every wire source of the moved nodes — save at ExecState 1 with md5 in a log. The machinery for every individual step is already proven 43/0 (STATUS.md:58).
+3. **Acceptance = the row-40/41 bar**: replay the fixture, 10,018 pre-loss frames bit-identical, then drive it live through the D0 harness (`drive_original_copy_v5.py`).
+4. **Ask the user the three parked questions now, as one message**: OPEN 53's physical zero; schedule-or-descope requirement 1; and authorize the one recipe run that re-saves `SetCommand_signed.vi`.
+5. **`git init` the project directory** and retire the relocation/sha256 ritual the same day.
+
+Abandon to get there: the STATUS relocation ritual (item 5 replaces it); the retrospective-plus-disposal cadence at anything like 7 per 0.6 days; further census forensics (the 635/626 class of question); further queue trial censuses; doc-lint dangling-citation prose; the `audit_cycle` A1–A4 repairs (correctly parked, keep them parked).
+
+**Consequence clause: this is the third consecutive review with an unchanged deliverable line and the fourth with the same unmoved-requirements list.** The fifth review already said the escalation on repetition is "the project's continued existence" (`…outcome-review-20260919.md:153`). The interval did execute the ordered S1/S2 deliveries — so the lane works when it is pointed at delivery — but it then withdrew the stage plan and reverted to diagnostics. The next cycle must be the closed-set build of item 2, ending in a saved, ExecState-1, replay-accepted D1 file, or the re-plan conversation with the user is owed in full — including whether restructure-plan-4.6's 7-loop target should be reached by a simpler route than scripted surgery on the original.
+
+---
+
+OUTCOME-VIOLATION: goal-requirement-not-advanced
+OUTCOME-VIOLATION: product-not-runnable
+OUTCOME-VIOLATION: tooling-over-delivery
+OUTCOME-VIOLATION: decision-starved
+OUTCOME-VIOLATION: ordering-stale
+OUTCOME-VIOLATION: measurement-without-product
+
+(Mapping notes: `product-not-runnable` — the interval's two saved files are banned from running by rule 34(f) and the deliverable line is unchanged since 2026-09-15. `tooling-over-delivery` — +17 op VIs, +9 recipes, +33 peer exchanges, +7 retrospectives against zero runnable product, plus the relocation ritual substituting for `git init`. `decision-starved` — OPEN 53, requirement 1, and OPEN 46 all carried as "not blockers" and never actually put to the user, across multiple reviews. `ordering-stale` — the standing NEXT is exhausted, its successor instruction says "diagnostic" where the interval's own measurement dictates a closed-set delivery stage, and requirement 1 is still scheduled nowhere. `measurement-without-product` — cycle 55 material #3: a forensic reconciliation of the census tooling's own junk node, plus a second trial census run after its discriminating power was recorded as zero. Not flagged: `scope-inflation` — growth stayed inside the existing D1/bookkeeping lanes.)
+   peer.ps1 rc 0; archived as archive/peer/<date>-outcome-review-20260920.md
+   Now annotate it: 'why asked' and 'verdict', and act on the OUTCOME-VIOLATION lines.
+BGRUN END rc=0 after 200s

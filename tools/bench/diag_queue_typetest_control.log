@@ -1,0 +1,312 @@
+BGRUN START 2026-09-20 08:17:14 limit 20.0 min: py -u tools/bench/diag_queue_typetest_control.py
+=== diag_queue_typetest_control  2026-09-20 08:17:15   (Pre-decided 40(c)+(d); NO QUEUE NODE IS CREATED, 40(d); NO VI IS RUN, 34(f); no new op; INTERPRETS NOTHING)
+  FACT  LabVIEW handles BEFORE (cycle 54 closed at 60,211; fresh-instance baseline ~31,500): 34207
+  FACT  THE INSTRUMENT UNDER TEST is `Wire.Is Broken?` 6371004, carried by OpConnectNested_v1's own readout (docs/NAMES.md:902-911). THE ORDERING TRAP (NAMES.md:905-911): that readout's `error in (no error)` ships UNWIRED, so on the WRITING pass it may run BEFORE the Connect Wire and describe the OLD wire. Both passes are therefore recorded per leg, and the ORDERED reading is pass2, an IDEMPOTENT re-connect of the same pair (NAMES.md:912-918). Any ExecState taken after a pass2 is SUSPECT (NAMES.md:917-921), so every per-leg ExecState is taken BEFORE the idempotent passes begin.
+  FACT  T1 ORIGINAL (read-only probe, 34(k)): HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  T1 the ORIGINAL's md5 equals the pin  2a78e17c449cacdaf5da389818526859
+  FACT  T2 the S2 artefact: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T2 D1_s2_loops.vi md5 == 6ff19497f2309e007a214660bb64b911  6ff19497f2309e007a214660bb64b911
+  FACT  T2b RESTART (handles were 60,211 at cycle 54's close; standing restart permission, CLAUDE.md 3): lv_restart rc=0 ['dialogs: ,1346,762| / ENABLED|20121142|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  LabVIEW handles AFTER the restart: 30678
+  FACT  T3 the dated scratch: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_qtypectl_20260920_081715.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T3 the scratch is byte-identical to the S2 artefact  6ff19497f2309e007a214660bb64b911
+  FACT  P: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+  FACT  class census BEFORE the pair: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905, 'Function': 183}
+  FACT  ExecState [before the pair] = 1
+
+--- the LIVE walk of Diagram #686 (34(h): re-read, never cached)
+  FACT  Diagram #686 reads Traverse index 19 on this scratch
+  FACT  the walk of Diagram #686 returned 24 nodes
+  PASS  G1 the live walk finds BOTH source candidates (#8486, #250) on Diagram #686  {8486: True, 250: True}
+
+--- owner_of for every node this run touches (the brief's step 1)
+  OBSERVED uid 250 -> owner 'Diagram' uid 686 | self 'Property'#250 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#250) = ('Diagram', 686)
+  OBSERVED uid 7201 -> owner 'Diagram' uid 686 | self 'Function'#7201 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#7201) = ('Diagram', 686)
+  OBSERVED uid 8486 -> owner 'Diagram' uid 686 | self 'Function'#8486 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#8486) = ('Diagram', 686)
+  OBSERVED uid 9179 -> owner 'Diagram' uid 686 | self 'Function'#9179 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#9179) = ('Diagram', 686)
+  OBSERVED uid 25091 -> owner 'Diagram' uid 686 | self 'Function'#25091 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#25091) = ('Diagram', 686)
+  OBSERVED uid 25149 -> owner 'Diagram' uid 686 | self 'Function'#25149 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#25149) = ('Diagram', 686)
+  FACT  MATCHED source resolved: {'node_uid': 8486, 'node_index': 0, 'label': 'Increment', 'class_guess': 'Function', 'term_index': 0, 'term_name': 'x+1', 'term_wire': 23519}
+  FACT  MISMATCHED source resolved: {'node_uid': 250, 'node_index': 3, 'label': 'Property Node', 'class_guess': 'Property', 'term_index': 1, 'term_name': 'IMAQdx Session', 'term_wire': 6910}
+
+--- the sinks: the brief's FIXED mechanical rule. A bare named input terminal = is_source False AND a non-empty name AND wire == 0.
+  FACT  sink candidate #7201 'Multiply' (Nodes[1]): 0 bare named input terminal(s) []
+  FACT  sink candidate #8486 'Increment' (Nodes[0]): 0 bare named input terminal(s) []
+  FACT  sink candidate #9179 'Decrement' (Nodes[14]): 0 bare named input terminal(s) []
+  FACT  sink candidate #25091 'Multiply' (Nodes[19]): 0 bare named input terminal(s) []
+  FACT  sink candidate #25149 'Subtract' (Nodes[20]): 0 bare named input terminal(s) []
+  FACT  MATCHED sink: None
+  FACT  MISMATCHED sink: None
+  FAIL  G3 TWO bare named input terminals were resolved by the FIXED rule  matched=None mismatched=None
+  FACT  the two sinks are on DIFFERENT node (the brief prefers the SAME node where possible): #None and #None
+  FAIL  G2 both legs' source and sink share ONE diagram, uid 686 (Traverse index 19)  2 of 4 ends resolved on that diagram
+  FACT  one or more ends could not be resolved - the connections are NOT attempted. This is the reading, reported as one.
+  FACT  class census AFTER the pair: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905, 'Function': 183}
+  FACT  ExecState [immediately before the save attempt (SUSPECT)] = 1
+  FACT  g.save(scratch) returned 475741; exception VERBATIM None (allow_broken False, gui_save never called)
+  FACT  the scratch after the save attempt: DIAG_qtypectl_20260920_081715.vi md5 098ca9fb689af72e1194a2c39e47aee0 size 475741 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  G9 the save attempt is recorded, allow_broken False, gui_save never called  returned 475741, exception None
+  FACT  P: preload references released; refs {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 5}
+
+--- close-out
+  FACT  refs at end: {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handles AFTER: 63416 (before 34207, after the restart 30678)
+  PASS  G10 no live VI Server reference is left open  ref_counts {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 0}
+  FACT  T14 ORIGINAL after the run: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  T14 ORIGINAL md5 unchanged  2a78e17c449cacdaf5da389818526859
+  FACT  T14 D1_s1_copy.vi after the run: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  PASS  T14 D1_s1_copy.vi md5 unchanged  3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  T14 D1_s2_loops.vi after the run: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T14 D1_s2_loops.vi md5 unchanged  6ff19497f2309e007a214660bb64b911
+
+=== GATES: 9 pass / 2 fail; failing: G3 TWO bare named input terminals were resolved by the FIXED rule; G2 both legs' source and sink share ONE diagram, uid 686 (Traverse index 19)
+=== GATES ARE REPORTED, NOT REQUIRED - the READING is the deliverable (34(j)/37(e) pattern), and the rc does NOT depend on either `Is Broken?` value.
+=== READINGS json: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_queue_typetest_control.json
+=== NOTHING IS INTERPRETED HERE. The branch after this measurement is the judgement session's (Pre-decided 40). NO QUEUE NODE WAS CREATED (40(d)); NO VI WAS RUN (34(f)); no new op; no motor, no ASI, no camera, no GUI.
+BGRUN INNER FAILURE: the command exited 0 but its output reported 3 failure(s); first: FAIL  G3 TWO bare named input terminals were resolved by the FIXED rule  matched=None mismatched=None
+BGRUN END rc=1 after 78s (inner failure; the process itself said 0)
+BGRUN START 2026-09-20 08:30:38 limit 20.0 min: py -u tools/bench/diag_queue_typetest_control.py
+=== diag_queue_typetest_control  2026-09-20 08:30:38   (Pre-decided 40(c)+(d); NO QUEUE NODE IS CREATED, 40(d); NO VI IS RUN, 34(f); no new op; INTERPRETS NOTHING)
+  FACT  LabVIEW handles BEFORE (cycle 54 closed at 60,211; fresh-instance baseline ~31,500): 34160
+  FACT  THE INSTRUMENT UNDER TEST is `Wire.Is Broken?` 6371004, carried by OpConnectNested_v1's own readout (docs/NAMES.md:902-911). THE ORDERING TRAP (NAMES.md:905-911): that readout's `error in (no error)` ships UNWIRED, so on the WRITING pass it may run BEFORE the Connect Wire and describe the OLD wire. Both passes are therefore recorded per leg, and the ORDERED reading is pass2, an IDEMPOTENT re-connect of the same pair (NAMES.md:912-918). Any ExecState taken after a pass2 is SUSPECT (NAMES.md:917-921), so every per-leg ExecState is taken BEFORE the idempotent passes begin.
+  FACT  T1 ORIGINAL (read-only probe, 34(k)): HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  T1 the ORIGINAL's md5 equals the pin  2a78e17c449cacdaf5da389818526859
+  FACT  T2 the S2 artefact: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T2 D1_s2_loops.vi md5 == 6ff19497f2309e007a214660bb64b911  6ff19497f2309e007a214660bb64b911
+  FACT  T2b RESTART (handles were 60,211 at cycle 54's close; standing restart permission, CLAUDE.md 3): lv_restart rc=0 ['dialogs: ,1346,762| / ENABLED|11600892|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  LabVIEW handles AFTER the restart: 30684
+  FACT  T3 the dated scratch: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_qtypectl_20260920_083038.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T3 the scratch is byte-identical to the S2 artefact  6ff19497f2309e007a214660bb64b911
+  FACT  P: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+  FACT  class census BEFORE the pair: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905, 'Function': 183}
+  FACT  ExecState [before the pair] = 1
+
+--- the LIVE walk of Diagram #686 (34(h): re-read, never cached)
+  FACT  Diagram #686 reads Traverse index 19 on this scratch
+  FACT  the walk of Diagram #686 returned 24 nodes
+      NODE #8486   Nodes[0  ] Function       'Increment'
+           t0   'x+1'                        is_source=True  wire=23519
+           t1   'x'                          is_source=False wire=7478
+      NODE #7201   Nodes[1  ] Function       'Multiply'
+           t0   'x*y'                        is_source=True  wire=8424
+           t1   'y'                          is_source=False wire=8385
+           t2   'x'                          is_source=False wire=23519
+      NODE #781    Nodes[2  ] Function       'Initialize Array'
+           t0   'element'                    is_source=False wire=3865
+           t1   'initialized array'          is_source=True  wire=3543
+           t2   'dimension size'             is_source=False wire=2362
+           t3   'dimension size'             is_source=False wire=8424
+      NODE #250    Nodes[3  ] Property       'Property Node'
+           t0   'IMAQdx Session'             is_source=False wire=694
+           t1   'IMAQdx Session'             is_source=True  wire=6910
+           t2   'error in (no error)'        is_source=False wire=0
+           t3   'error out'                  is_source=True  wire=925
+           t4   'LastBufferNumber'           is_source=True  wire=1827
+      NODE #637    Nodes[4  ] Function       'While Loop'
+           t0   'error out'                  is_source=True  wire=697
+           t1   'error out'                  is_source=False wire=925
+           t2   'x,y,z array out'            is_source=True  wire=0
+           t3   'x,y,z array out'            is_source=False wire=2731
+           t4   'Value'                      is_source=False wire=6910
+           t5   'Real-space cosine window'   is_source=False wire=5786
+           t6   'Cosine bandpass for Hilbert' is_source=False wire=4029
+           t7   'Session Out'                is_source=True  wire=4436
+           t8   'position [internal units]'  is_source=True  wire=4859
+           t9   'position [internal units]'  is_source=False wire=3968
+           t10  'VISA out'                   is_source=True  wire=7506
+           t11  'VISA out'                   is_source=False wire=4185
+           t12  'total data array out'       is_source=True  wire=3957
+           t13  'total data array out'       is_source=False wire=3543
+           t14  ''                           is_source=False wire=2362
+           t15  'error out'                  is_source=True  wire=1899
+           t16  'error out'                  is_source=False wire=4969
+           t17  ''                           is_source=False wire=5104
+           t18  'file number to append out'  is_source=True  wire=5073
+           t19  'file progress'              is_source=True  wire=4337
+           t20  'LastBufferNumber'           is_source=True  wire=0
+           t21  'LastBufferNumber'           is_source=False wire=1827
+           t22  ''                           is_source=False wire=3668
+           t23  ''                           is_source=False wire=21
+           t24  'pos in cal image out'       is_source=True  wire=0
+           t25  'pos in cal image out'       is_source=False wire=8590
+           t26  ''                           is_source=False wire=5174
+           t27  ''                           is_source=False wire=5336
+           t28  'Bead is good? array out'    is_source=True  wire=0
+           t29  'Bead is good? array out'    is_source=False wire=5812
+           t30  ''                           is_source=False wire=5812
+           t31  ''                           is_source=False wire=2731
+           t32  ''                           is_source=False wire=2641
+           t33  ''                           is_source=False wire=5265
+           t34  ''                           is_source=False wire=3853
+           t35  'Value'                      is_source=False wire=1678
+           t36  'current image number'       is_source=True  wire=1420
+           t37  ''                           is_source=True  wire=2187
+           t38  'LastBufferNumber'           is_source=False wire=1827
+           t39  'error out'                  is_source=False wire=6197
+           t40  ''                           is_source=True  wire=0
+           t41  ''                           is_source=False wire=9051
+           t42  '# FD points'                is_source=False wire=9000
+           t43  'F-x out'                    is_source=True  wire=0
+           t44  'F-x out'                    is_source=False wire=0
+           t45  '# slices in stack'          is_source=False wire=9649
+           t46  'Value'                      is_source=True  wire=0
+           t47  'Value'                      is_source=False wire=11253
+           t48  'System no.'                 is_source=True  wire=0
+           t49  'System no.'                 is_source=False wire=16421
+           t50  '# DT points'                is_source=False wire=29006
+           t51  ''                           is_source=True  wire=0
+           t52  ''                           is_source=False wire=29122
+           t53  'Magnet position output'     is_source=False wire=28392
+           t54  ''                           is_source=False wire=29081
+           t55  ''                           is_source=False wire=29106
+           t56  'Value'                      is_source=False wire=32583
+           t57  'Value'                      is_source=True  wire=0
+           t58  'Value'                      is_source=False wire=32344
+      NODE #6951   Nodes[5  ] SubVI          'Global motor pos.vi'
+           t0   'Rot position'               is_source=False wire=783
+      NODE #6409   Nodes[6  ] SubVI          'Global motor pos.vi'
+           t0   'Trans position'             is_source=False wire=6533
+      NODE #2048   Nodes[7  ] Function       'Array Subset'
+           t0   'array'                      is_source=False wire=3957
+           t1   'subarray'                   is_source=True  wire=4564
+           t2   'index'                      is_source=False wire=5314
+           t3   'length'                     is_source=False wire=4337
+           t4   'index'                      is_source=False wire=0
+           t5   'length'                     is_source=False wire=0
+      NODE #7202   Nodes[8  ] SubVI          'Global motor pos.vi'
+           t0   'Focus position'             is_source=False wire=4859
+      NODE #194    Nodes[9  ] Function       'Subtract'
+           t0   'x-y'                        is_source=True  wire=2160
+           t1   'y'                          is_source=False wire=1827
+           t2   'x'                          is_source=False wire=1420
+      NODE #1628   Nodes[10 ] Function       'Subtract'
+           t0   'x-y'                        is_source=True  wire=2315
+           t1   'y'                          is_source=False wire=2187
+           t2   'x'                          is_source=False wire=2160
+      NODE #6384   Nodes[11 ] SubVI          'save N xyz traces.vi'
+           t0   ''                           is_source=False wire=0
+           t1   'error out'                  is_source=True  wire=1920
+           t2   ''                           is_source=False wire=0
+           t3   ''                           is_source=False wire=0
+           t4   ''                           is_source=False wire=0
+           t5   'desired # data points'      is_source=False wire=2362
+           t6   'cal cluster path'           is_source=False wire=21
+           t7   'actual # data points'       is_source=False wire=4337
+           t8   'error in'                   is_source=False wire=1899
+           t9   'data array'                 is_source=False wire=4564
+           t10  'file # to append'           is_source=False wire=5073
+           t11  'base path/filename'         is_source=False wire=5104
+      NODE #8953   Nodes[12 ] Function       'Initialize Array'
+           t0   'element'                    is_source=False wire=8997
+           t1   'initialized array'          is_source=True  wire=9051
+           t2   'dimension size'             is_source=False wire=9166
+           t3   'dimension size'             is_source=False wire=9788
+           t4   'dimension size'             is_source=False wire=9000
+      NODE #9342   Nodes[13 ] Function       'Array Size'
+           t0   'size(s)'                    is_source=True  wire=9211
+           t1   'array'                      is_source=False wire=9415
+      NODE #9179   Nodes[14 ] Function       'Decrement'
+           t0   'x-1'                        is_source=True  wire=9166
+           t1   'x'                          is_source=False wire=9211
+      NODE #28124  Nodes[15 ] Function       'Initialize Array'
+           t0   'element'                    is_source=False wire=28301
+           t1   'initialized array'          is_source=True  wire=29122
+           t2   'dimension size'             is_source=False wire=9166
+           t3   'dimension size'             is_source=False wire=28516
+           t4   'dimension size'             is_source=False wire=29006
+      NODE #27605  Nodes[16 ] SubVI          'Max Trans Pos.vi'
+           t0   'Magnet position output'     is_source=True  wire=28392
+           t1   'Magnet position input'      is_source=False wire=24756
+      NODE #28670  Nodes[17 ] Function       'For Loop'
+           t0   ''                           is_source=False wire=25646
+           t1   ''                           is_source=True  wire=29081
+           t2   ''                           is_source=True  wire=29106
+           t3   'Magnet position output'     is_source=False wire=28392
+      NODE #25380  Nodes[18 ] Function       'While Loop'
+           t0   'Value'                      is_source=False wire=27745
+           t1   'Mp measure freq'            is_source=False wire=31575
+           t2   'final trans pos'            is_source=True  wire=0
+           t3   'final trans pos'            is_source=False wire=32441
+           t4   'error out'                  is_source=True  wire=37446
+           t5   'rot pos'                    is_source=True  wire=783
+           t6   'rot pos'                    is_source=False wire=0
+           t7   'tran pos'                   is_source=True  wire=6533
+           t8   'tran pos'                   is_source=False wire=0
+           t9   'Value'                      is_source=True  wire=0
+      NODE #25091  Nodes[19 ] Function       'Multiply'
+           t0   'x*y'                        is_source=True  wire=25196
+           t1   'y'                          is_source=False wire=25190
+           t2   'x'                          is_source=False wire=24756
+      NODE #25149  Nodes[20 ] Function       'Subtract'
+           t0   'x-y'                        is_source=True  wire=25646
+           t1   'y'                          is_source=False wire=25200
+           t2   'x'                          is_source=False wire=25196
+      NODE #23032  Nodes[21 ] Function       'While Loop'
+           t0   ''                           is_source=False wire=23519
+      NODE #10170  Nodes[22 ] Function       'While Loop'
+           t0   ''                           is_source=False wire=23519
+      NODE #23041  Nodes[23 ] Function       'While Loop'
+           t0   ''                           is_source=False wire=23519
+  FACT  Diagram #686 census: 24 nodes, 139 terminals. Nodes with at least one BARE NAMED input: [(250, 3, 'Property Node', [2]), (637, 4, 'While Loop', [44]), (2048, 7, 'Array Subset', [4, 5]), (25380, 18, 'While Loop', [6, 8])]
+  FACT  Diagram #686 census: nodes with at least one BARE UNNAMED input: [(6384, 11, 'save N xyz traces.vi', [0, 2, 3, 4])]
+  PASS  G0 the FULL terminal census of Diagram #686 is recorded (every node, every terminal)  24 nodes
+  PASS  G1 the live walk finds BOTH source candidates (#8486, #250) on Diagram #686  {8486: True, 250: True}
+
+--- owner_of for every node this run touches (the brief's step 1)
+  OBSERVED uid 250 -> owner 'Diagram' uid 686 | self 'Property'#250 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#250) = ('Diagram', 686)
+  OBSERVED uid 7201 -> owner 'Diagram' uid 686 | self 'Function'#7201 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#7201) = ('Diagram', 686)
+  OBSERVED uid 8486 -> owner 'Diagram' uid 686 | self 'Function'#8486 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#8486) = ('Diagram', 686)
+  OBSERVED uid 9179 -> owner 'Diagram' uid 686 | self 'Function'#9179 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#9179) = ('Diagram', 686)
+  OBSERVED uid 25091 -> owner 'Diagram' uid 686 | self 'Function'#25091 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#25091) = ('Diagram', 686)
+  OBSERVED uid 25149 -> owner 'Diagram' uid 686 | self 'Function'#25149 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#25149) = ('Diagram', 686)
+  FACT  MATCHED source resolved: {'node_uid': 8486, 'node_index': 0, 'label': 'Increment', 'class_guess': 'Function', 'term_index': 0, 'term_name': 'x+1', 'term_wire': 23519}
+  FACT  MISMATCHED source resolved: {'node_uid': 250, 'node_index': 3, 'label': 'Property Node', 'class_guess': 'Property', 'term_index': 1, 'term_name': 'IMAQdx Session', 'term_wire': 6910}
+
+--- the sinks: the brief's FIXED mechanical rule. A bare named input terminal = is_source False AND a non-empty name AND wire == 0.
+  FACT  sink candidate #7201 'Multiply' (Nodes[1]): 0 bare named input terminal(s) []
+  FACT  sink candidate #8486 'Increment' (Nodes[0]): 0 bare named input terminal(s) []
+  FACT  sink candidate #9179 'Decrement' (Nodes[14]): 0 bare named input terminal(s) []
+  FACT  sink candidate #25091 'Multiply' (Nodes[19]): 0 bare named input terminal(s) []
+  FACT  sink candidate #25149 'Subtract' (Nodes[20]): 0 bare named input terminal(s) []
+  FACT  MATCHED sink: None
+  FACT  MISMATCHED sink: None
+  PASS  G3 the bare-named-input search over the FIXED sink order is RECORDED (its OUTCOME is a reading, not a requirement)  matched=None mismatched=None
+  FACT  ? THE FIXED SINK RULE HAS NO CANDIDATE ON THIS TARGET. Every numeric-arithmetic node the brief names ([7201, 8486, 9179, 25091, 25149]) exposes ZERO bare named input terminals on Diagram #686 - their inputs are all already carrying wires, because these are live nodes of a working VI. The control pair is therefore NOT attempted. Choosing a different sink - a different node, an already-wired terminal, an unnamed terminal, or a freshly created arithmetic node - is a DESIGN decision and is reserved for the judgement session. The full census above is the material for it.
+  FACT  the two sinks are on DIFFERENT node (the brief prefers the SAME node where possible): #None and #None
+  PASS  G2 every end this run resolved lies on ONE diagram, uid 686 (Traverse index 19) - owner_of read directly, not inferred  2 of 4 ends resolved; owner_of rows {'250': ('Diagram', 686), '7201': ('Diagram', 686), '8486': ('Diagram', 686), '9179': ('Diagram', 686), '25091': ('Diagram', 686), '25149': ('Diagram', 686)}
+  FACT  one or more ends could not be resolved - the connections are NOT attempted. This is the reading, reported as one.
+  FACT  class census AFTER the pair: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905, 'Function': 183}
+  FACT  ExecState [immediately before the save attempt (SUSPECT)] = 1
+  FACT  g.save(scratch) returned 475741; exception VERBATIM None (allow_broken False, gui_save never called)
+  FACT  the scratch after the save attempt: DIAG_qtypectl_20260920_083038.vi md5 dc6b96d175a77cd7571ae4ed9ac18bf2 size 475741 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  G9 the save attempt is recorded, allow_broken False, gui_save never called  returned 475741, exception None
+  FACT  P: preload references released; refs {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 5}
+
+--- close-out
+  FACT  refs at end: {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handles AFTER: 63422 (before 34160, after the restart 30684)
+  PASS  G10 no live VI Server reference is left open  ref_counts {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 0}
+  FACT  T14 ORIGINAL after the run: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  T14 ORIGINAL md5 unchanged  2a78e17c449cacdaf5da389818526859
+  FACT  T14 D1_s1_copy.vi after the run: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  PASS  T14 D1_s1_copy.vi md5 unchanged  3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  T14 D1_s2_loops.vi after the run: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T14 D1_s2_loops.vi md5 unchanged  6ff19497f2309e007a214660bb64b911
+
+=== GATES: 12 pass / 0 fail
+=== GATES ARE REPORTED, NOT REQUIRED - the READING is the deliverable (34(j)/37(e) pattern), and the rc does NOT depend on either `Is Broken?` value.
+=== READINGS json: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_queue_typetest_control.json
+=== NOTHING IS INTERPRETED HERE. The branch after this measurement is the judgement session's (Pre-decided 40). NO QUEUE NODE WAS CREATED (40(d)); NO VI WAS RUN (34(f)); no new op; no motor, no ASI, no camera, no GUI.
+BGRUN END rc=0 after 78s

@@ -1,0 +1,71 @@
+BGRUN START 2026-09-17 15:59:59 limit 20.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Dual -Slug routeb-run1-noroute -TimeoutSec 420 -TaskFile 'C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/dual_noroute.md'
+=== DUAL ARM 1/2: codex -> routeb-run1-noroute-codex ===
+OUTCOME: ANSWERED (87s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-17-routeb-run1-noroute-codex.md
+--- ANSWER ---
+The strongest reason your explanation is wrong is that `dest = "1.2"` proves only **where** `#483` is; it does not prove that `sink_term` still identifies the same semantic connector. Your proposal can turn ten honest `NO-ROUTE`s into ten wrong-but-valid wires.
+
+### 1. Class 1 is not established as a one-line caller fix
+
+The immediate diagnosis is sound: `dest=None` prevents locating `#483`. But the proposed repair assumes:
+
+```text
+old #5058 terminal index i ≡ new #483 terminal index i
+```
+
+Nothing presented establishes that invariant. The fresh kernel has a different pane population—13 shared items plus six extras—while the deleted instance reportedly had 16 terminals. Connector-pane assignments are independently configurable, and NI warns that connector-pattern or assignment changes can require rewiring and cause incompatibilities. [NI connector-pane guidelines](https://www.ni.com/en/support/documentation/supplemental/21/driver-and-vi-library-development-guidelines.html)
+
+The fact that `#48` and `#376` resolved says only that their destination lookup worked. It does not validate `#5058 → #483` terminal-index equivalence.
+
+**Alternative explanation:** all ten rows failed first because `dest=None`, but after fixing that, some could target different controls—or extra pane items—because the fresh kernel’s `Terminals[]` ordering differs. Compatible data types could even make those wires non-broken while semantically wrong; LabVIEW permits compatible-type coercion. [NI wiring documentation](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+**What falsifies this alternative:** for every affected index, old and fresh nodes report the same tuple:
+
+```text
+(index, connector control/indicator name, direction, datatype)
+```
+
+Names alone are insufficient where names are blank or duplicated.
+
+### 2. Class 2’s legality claim is right, but its tie-break is not
+
+A LabVIEW wire has one source and may feed many readers, so one net feeding two loop tunnels is legal. [NI wiring documentation](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+But `Is Source? == FALSE` identifies only a sink. It does not establish **which sink is the intended tunnel**. Both hits can be input tunnels of `#637`; in that case your proposed rule remains ambiguous. Worse, silently choosing the first hit could produce a type-correct, executable, wrong connection.
+
+The log already preserves stronger identity evidence—`was t30` and `was t31`. The correct discriminator should be the original tunnel identity or a semantic fingerprint of its inner endpoint, not merely wire UID plus direction.
+
+**Alternative explanation:** `w5812` and `w2731` legitimately fan out to two input tunnels, and the intended tunnels are distinguishable only by former index, tunnel UID, datatype, or the node/terminal reached on the inner side.
+
+**What falsifies this alternative:** show that exactly one of each pair is a non-source terminal. If both are non-source, your tie-break is invalid.
+
+### 3. Class 3 does not prove “queue”
+
+A source terminal owned by `LeftShiftRegister` proves ownership, not timing semantics. It does not by itself distinguish:
+
+- a value available before either loop begins, which can be branched normally;
+- a final value available after loop 1.1 completes, which creates sequencing rather than streaming;
+- a per-iteration value that truly requires queue/channel transport.
+
+Channel wires are specifically an asynchronous mechanism allowing a sink loop to consume values while the source loop is still executing. [NI channel-wire documentation](https://www.ni.com/en/support/documentation/supplemental/16/channel-wires.html)
+
+Therefore, “owned by a shift register” is insufficient evidence that a queue is required. You need the producer/consumer timing requirement. `NO-ROUTE` may be the correct conservative result, but the stated causal classification is unproven.
+
+### 4. ExecState 0 is informative, just not diagnostic
+
+It establishes that LabVIEW considers the VI non-executable. It does **not** establish that the 15 rows caused that state: `NO-ROUTE` does not tell you whether each sink is required, and the VI could instead contain a broken wire, incompatible subVI interface, or another required unwired input. NI lists all of those as standard causes of a broken VI. [NI debugging documentation](https://www.ni.com/getting-started/labview-basics/debug.htm)
+
+Your 420-terminal count is indeed a poor instrument because LabVIEW requires **required** inputs to be wired, not every named input. [NI wiring documentation](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+The right instrument is the compiler-backed Error List—or `VI.Get Errors` if method 452 exposes equivalent records—capturing at least:
+
+```text
+severity, description, owning object UID/class, diagram UID, terminal index
+```
+
+Validate the hidden method once against the GUI Error List; the GUI list is NI’s documented source for the actual reasons a VI is broken. [NI Error List documentation](https://www.ni.com/getting-started/labview-basics/debug.htm)
+
+**Cheapest discriminating test:** do not rebuild. Run one read-only terminal reporter against the old kernel definition and fresh kernel definition, emitting `(index, name, direction, datatype)` only for the ten referenced indices; in the same report, emit the owner/tunnel UID and `Is Source?` for both hits of `w5812` and `w2731`. If all kernel tuples match and each duplicated net has exactly one non-source hit, your fixes survive; otherwise the one-line `dest` fix and/or the direction tie-break is refuted.
+=== DUAL ARM 2/2: claude/hypothesis (opus, effort max, web) -> routeb-run1-noroute-opus ===
+OUTCOME: TIMEOUT (420s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-17-routeb-run1-noroute-opus.md
+=== DUAL DONE: codex rc=0, opus rc=2  (archive\peer\2026-09-17-routeb-run1-noroute-codex.md, -routeb-run1-noroute-opus.md) ===
+BGRUN END rc=0 after 512s

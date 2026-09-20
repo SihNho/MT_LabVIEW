@@ -1,0 +1,47 @@
+BGRUN START 2026-09-19 04:57:21 limit 15.0 min: py tools/retrospective.py --cycle 40
+   window 2026-09-19 03:52:04 .. 2026-09-19 04:57:21 (65 min); 3 build logs, 10 machinery logs, 11 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle40.txt (16407 chars)
+OUTCOME: ANSWERED (239s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-19-retrospective-cycle40.md
+COST: $3.1161  in 10 / out 16755 / cache-create 99764 / cache-read 282961  (237s, 14 turn(s))
+--- ANSWER ---
+All primary records read. Here is the outcome review of cycle 40.
+
+## Verdict up front
+
+This cycle was run well and was worth its cost, and I say that as the reviewer paid to say otherwise. In 65 minutes it did exactly what STATUS NEXT ordered, in the ordered order: run 8 launched 6 minutes into the window (03:58:14, `tools/bench/build_d1_routeb_v5_run8.log`), its mandatory failed-prediction review was dispatched in the foreground and held to completion (ANSWERED, $4.4847, `tools/bench/peer_run8_predictions.log:2-3` — the cycle-33 orphan trap explicitly avoided), and the one authorized repair was done strictly after run 8 and driven to 8/8 (`tools/bench/repair_c40_stall_selftest.log:55`). Run 8 falsified every prediction — that is a measurement, not a waste; the $4.48 review it bought is the most information-dense artifact of the last several cycles (inverted J2(b) null, the −97 true reaper delta, "crash copies are the pristine original"). I found no structural fault that changed what the cycle cost, produced, or whether it produced anything.
+
+## FINDINGS
+
+**1. Repeated failure.** No class of failure recurred *within the window*. The stall-watchdog self-test failed once (4 PASS / 4 FAIL, `tools/bench/repair_c39_stall_selftest.log:54`) and the approach changed at attempt 2 exactly as it should: the assertion defect was identified, a peer was dispatched (mandated by guard_peer anyway, `tools/bench/task_stall_selftest_c39.md` as quoted in `archive/peer/2026-09-19-stall-selftest-c39-g78.md:23`), and the re-run passed 8/8 nine minutes later. The `error 2` class did recur inside run 8 (victims 6 → 11, `build_d1_routeb_v5_run8.log:431-432` per STATUS.md:21), but the recipe that made it worse was built in cycle 39; attributing that design here would violate the window.
+
+**2. Missing tool.** Two, both named by the run-8 review rather than by me: (a) the terminal re-read census — K3's `report_all(TARGET,'Wire')` died of `error 2` (`build_d1_routeb_v5_run8.log:364` per STATUS.md:21), so the survival question the whole run existed to answer went UNREAD; the `wmap`-based per-terminal re-read (`peer_run8_predictions.log:125-129`) is strictly cheaper and would have survived. (b) a one-line md5 check on the preserved crash copies — the review shows all of them are byte-identical to the untouched original (`peer_run8_predictions.log:119`), so the Q-B3 reader STATUS still points at them would return a spectacular false finding.
+
+**3. Unmeasured steps.** One small instance: the claim "the 4 FAILs are the test's own case-sensitive assertion" was dispatched for review with the fix already applied but never evaluated offline first — gemini's own answer names the cheap offline regex check that would have settled it without a dispatch (`archive/peer/2026-09-19-stall-selftest-c39-g78b.md`, §3 / `peer_stall_selftest_c39b.log:64-84`). The re-run then settled it by measurement anyway (flagged=True, `repair_c40_stall_selftest.log:49-53`), so the cost was one free gemini round, not a wrong decision.
+
+**4. Rule compliance.** Broken: A4 — 3 archived reviews blank (audit FAIL line), but only one is substantively this cycle's: `2026-09-19-routeb-run8-predictions.md`, a $4.48 mandatory review closed-out UNDISPOSED (STATUS.md:21 says so candidly). Of the other two, `stall-selftest-c39-g78.md` is a 15-second ERROR exchange (`peer_stall_selftest_c39.log:2`) whose disposition is trivial, and `stoprecord-release-deadlock-codex.md` is stamped 01:22:14 (`archive/peer/2026-09-19-stoprecord-release-deadlock-codex.md:8`) — **before the window**; A4's day granularity pulls cycle 39's file into this cycle's blame, and the audit header admits this. Formally satisfied only: L3, STATUS at 131 lines vs the ~100 rule (self-flagged at STATUS.md:101). What the audit does NOT cover: the judgement session's own spend (no COST line exists for `claude -p` cells — carried item, STATUS.md:47/104, so C4's $4.48 is a floor, not a total); and whether an annotated review was *acted on* — A4 checks a section exists, not that the finding moved anything.
+
+**5. Ordering.** Defensible and in fact exemplary: the user's explicit order ("A cycle that ends without a D1 build log is a wrong-ordering cycle by definition", STATUS.md:59) was answered with a launch at minute 6; the repair authorized "AFTER run 8 launches, never before" (STATUS.md:85-87) ran at 04:45, after run 8 ended at 04:28; the retrospective was last (04:57:21, `retro_c40.log:1`).
+
+**6. What was not reported.** The session's STATUS update is unusually honest about the misses ("EVERY PREDICTION MISSED", STATUS.md:21). What it leaves standing is the hazard: STATUS's NEXT section (written cycle 39, STATUS.md:74-77) still directs the Q-B3 reader at the three preserved crash copies, and the run-8 review proved those copies are the pristine original md5 `2a78e17c…` (`peer_run8_predictions.log:119`); nothing in the window corrected that pointer. A next session that follows STATUS as written will run a read-only pass that "finds" all ~50 claimed wires GONE. Also quietly present: the stall watchdog fired its **sixth** consecutive false positive mid-run-8 (`tools/bench/stall_pid22060_035814.log:1`, 04:16:17, on a job that finished normally at 04:28) — the session's own task file states the measured precision 0 of 6 (`archive/peer/2026-09-19-stall-selftest-c39-g78.md:17`), which is one more firing than STATUS's "five times, wrong five times" (STATUS.md:123-124) records.
+
+**7. Judgement inside a material session.** No cited evidence of one. C6 reports 4 material-marked runs, 0 refused judgement-session attempts. The one decision that could have gone wrong — accepting or rejecting gemini's rejection of the "it's the test" claim — was in the end not taken by anyone as a judgement call: the 04:54 re-run measured `flagged=True` with no record written (`repair_c40_stall_selftest.log:49-53`), which satisfies both gemini's "the leaf must still be flagged" contract and the session's "assertion bug" claim simultaneously, so measurement dissolved the disagreement.
+
+## DEVICE EFFECT
+
+Judged one by one against the window; none of the devices on file failed inside it.
+
+- **bgrun inner-FAIL scan** (device-failed, 09-17): worked twice — `repair_c39_stall_selftest.log:55` forces `rc=1` on `-> FAIL` lines, and run 8 ended rc=1.
+- **Cost-regex repair** (device-failed, 09-16 21:07): worked — C4b "cost lines seen 1 / parsed 1", and the one COST line ($4.4847) is real (`peer_run8_predictions.log:3`).
+- **Stop record + launch gate** (device-failed, 09-18): the release-deadlock it caused is real but occurred at 01:22, before this window (`archive/peer/2026-09-19-stoprecord-release-deadlock-codex.md:8`) — that failure belongs to cycle 39's ledger, and inside this window the gate correctly allowed run 8 (STATUS.md:62-64). Note for the next reviewer: the deadlock finding implies the run-8 review's two one-line recipe fixes cannot be applied to v5 in place without re-tripping it.
+- **Blank-disposition refusal** (repeated-failure-class, 09-16 15:05): did not fire and by its spec should not have — the blanks are hypothesis-kind reviews, and the newest *retrospective* was fully disposed (STATUS.md:81-84), so the 04:57 retro dispatch was legitimately allowed. This is a scope gap (the device cannot see a blank hypothesis review), a finding, not a device failure.
+- **Confirm-bait refusal / adversarial append** (rule-evaded): worked — the mandatory adversarial preamble is present verbatim in the dispatched task (`archive/peer/2026-09-19-stall-selftest-c39-g78.md:31-37`).
+- **premature-build gate, C7 scope list, prior-art, OpLoopEndRef**: not adversely exercised; no new recipe was built in-window, C7 produced its list (8 files, all explicable as the authorized repair + bookkeeping).
+- The **stall watchdog** — the one thing that did fail in-window (false positive #6 at 04:16) — is *not* on the machine-extracted device list, and this cycle is the one that finally repaired it to 8/8 self-tested. Charging `device-failed` for it would be slugging the fault the cycle just fixed.
+
+## Loss accounting for the faults I declined to elevate
+
+The self-test detour (buggy first-run assertions → gemini round → re-run) cost roughly 9–11 minutes of a 65-minute cycle (04:45:53 first run to 04:55:16 pass) with no dollar figure — neither gemini exchange carries a COST line. The undisposed run-8 review cost nothing in-window; its cost lands next cycle only if the disposition is skipped again. Neither changed what the cycle produced or when it ended in any way that survives the contract's bar for "structural," and manufacturing a slug from them would be the saturation this format replaced.
+
+VIOLATION: none
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle40.md
+BGRUN END rc=0 after 240s

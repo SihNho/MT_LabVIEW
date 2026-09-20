@@ -1,0 +1,150 @@
+BGRUN START 2026-09-17 15:36:54 limit 25.0 min: py -u tools\prior_art_review.py --plan-file C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\97b1695e-68c2-4985-8cac-1ca3097b3b15\scratchpad\priorart_build.md --slug priorart-routeb-build --trigger new-op
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-routeb-build.txt (17588 chars)
+OUTCOME: ANSWERED (505s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-priorart-routeb-build.md
+COST: $5.4703  in 34 / out 36774 / cache-create 298475 / cache-read 3132010  (501s, 31 turn(s))
+--- ANSWER ---
+I read the recipe, the route‑B plan, the ops it calls, the route‑A logs, and the archived reviews. Verdict: **NOT novel — 7 findings, 0 `novel`.** The centre of it is finding (1): the ControlTerminal resolver's premise is contradicted by a measurement already on disk, and the project already wrote down the hop it would actually need.
+
+---
+
+# PRIOR‑ART REVIEW — `tools/recipes/build_d1_routeb_v0.py`
+
+## PART A — THE DIRECTION
+
+### A1 `settled-already` — the ControlTerminal‑uid hop was already specified this cycle, and the property it needs is recorded UNVERIFIED and unbuilt
+
+`docs/d1-build-plan.md:787-788` (§11p.2, 2026‑09‑17) specifies this exact chain and then says what breaks it, in the same sentence:
+
+> `Wire.Terminals[]` 6371003 → `Is Source?`/`Owner` (**a ControlTerminal's owner is its diagram — use `ControlTerminal.Control` 6353000**)
+
+`docs/vi-server-ids.json:137` carries the same fact as a **VERIFIED‑HERE** entry:
+
+> `"Generic.Owner": "6327806 VERIFIED-HERE (Basic Development Environment scope; a ControlTerminal's Owner is the DIAGRAM, not a node)"`
+
+and `:145` records the replacement hop as unbuilt: `"ControlTerminal.Control": "6353000 UNVERIFIED"`. `docs/d1-build-plan.md:830` repeats that `6353000` is UNVERIFIED.
+
+So the answer to *"is there a reader I have missed?"* is **no — and the project already wrote down which property a reader would have to use, and it is not `Owner`.**
+
+*Scope:* covers `resolve_ctlterms()`'s route (`build_d1_routeb_v0.py:348-375`). Does **not** say a ControlTerminal cannot be reparented — `probe_move_ctlterm_v0.log:132` measures that it can (Q3, `#642 → Diagram#1170`, count 114 → 114).
+
+### A3 `contradicted` — "the wire's SOURCE terminal's owner is the ControlTerminal" is contradicted by this project's own measurement, twice over
+
+**Plan's side**, `build_d1_routeb_v0.py:31-33` and the gate at `:368`:
+
+> `panel_wiring(label) -> wire` then `OpWireSource_v5(wire)` -> the wire's SOURCE terminal's owner, **which for a control's own wire IS the `ControlTerminal`** … GATED on `owner_class == 'ControlTerminal'`
+
+**Other side (i) — the same `Generic.Owner` hop, measured on a real ControlTerminal.** `OpWireSource_v5` reads `Generic.Owner` **6327806** of the indexed `Wire.Terms[]` element (`docs/toolkit-capabilities.md:48`; `tools/recipes/build_opwiresource_v5.py:92-93,:155-160`), and `OpOwnerChain_v1` is *"`OpWireSource_v5` with the `Wire` cast and the whole `Wire.Terms[]` front section removed"* (`docs/toolkit-capabilities.md:49`) — the identical hop. Run it on the `stop (end)` terminal, `tools/bench/probe_move_ctlterm_v0.log:47`:
+
+```
+OBSERVED uid 642 -> owner 'Diagram' uid 639 | self 'ControlTerminal'#642 | 482 says 'Diagram' cast 'Diagram'
+```
+
+`owner_class` comes back **`'Diagram'`**. The op returns the owner only — it has no output for the terminal's *own* uid (`build_opwiresource_v5.py:92-93`: the identity node *"describes the TRAVERSED object"*, i.e. the wire). So the gate at `:368` cannot fire, `out` stays empty, all eight `S3-ct` gates FAIL, and **no control terminal is reparented**.
+
+**Other side (ii) — independent of how `Owner` behaves: two of the eight labels are INDICATORS.** `tools/recipes/probe_move_ctlterm_v0.py:7-8`:
+
+> indicators `min value` #17257 (w17287 **<-** #10969, read back by the implicit property #17289) and `Force (pN) vs Extension (nm) ` #8038 (w10908 **<-** #11261)
+
+On an indicator's wire the `Is Source?` terminal is owned by the driving **node** (#10969 / #11261), never by the terminal. Both labels are in `CTLTERM_LABELS_12` (`build_d1_routeb_v0.py:156-158`). Correspondingly, `tools/bench/d1_rewire_sources.json` has **7 `from-ctl` rows** (`:10`) and every one is `"indicator": false` over six controls — `Auto-Reset` (`:231-235`), `Reset Tracking` (`:303-308`), `Force\nsmoothing\nhalf-width` (`:854-859`), `Extension\nmedian filter\nhalf-width` (`:879-884`, `:1640-1645`), `Z/dZ` (`:920-925`), `Correction Factor` (`:1037-1042`). Neither indicator label appears.
+
+*Scope:* covers the resolver's premise and the 8‑label list. Does **not** cover `panel_wiring(label) → wire` (that half is sound, `tools/gscript.py:772-809`), nor the claim that reparenting is required by §4.
+
+### A3‑b `contradicted` — the from‑tunnel SOURCE index *is* cached across the moves, contrary to the recipe's own header
+
+**Plan's side**, `build_d1_routeb_v0.py:42-45`:
+
+> **The from-tunnel SOURCE is re-read at wiring time, never cached.** … the outer wire is re-resolved as *the wire currently on `#637`'s own outside terminal for that tunnel*
+
+**What the code does.** `by_wire637` is built from a read of `#637` taken **before any move** (`:396-403`, the comment says so: *"read on Diagram #686 BEFORE any move"*), returned at `:490`, and `from_tunnel()` uses it to pick the terminal **index**: `ti = r3["by_wire637"].get(ts["outer_wire"])` (`:601`), then re-reads `live637` fresh and indexes it with that pre‑move `ti` (`:607-609`). Only the *wire value* is re‑read; the *index* is cached.
+
+**And the same function measures that those indices move.** `:462-467`:
+
+> `#637` itself legitimately loses outside terminals: its tunnels die with the wires the moves cut.
+
+`tools/bench/probe_move_into_v0.log:231` measured it for **two** moves: `Wire 1902 -> 1895, LoopTunnel 132 -> 130`. Route B performs 21 node moves plus 8 terminal moves (`MOVE_TABLE`, `:148-153`). A stale `ti` selects a *different, live* tunnel's wire, `w_now` is non‑zero, and the SINK RULE checks only the sink (`:623-629`) — so a wrong‑but‑valid source is wired silently and no gate sees it.
+
+*Scope:* covers `from_tunnel`'s source addressing only. Does **not** touch the sink‑side read, which is correct as written.
+
+### A4 `unread-evidence` — the project's own "valid route" for this join, and the candidate list, are both on disk and neither is cited
+
+**(a)** `docs/main-vi-panel-map.md:242-245`:
+
+> The valid route is `Traverse('ControlTerminal')` → `Terminal.Connected Wire` (634A000) **with the terminal's label**
+
+repeated verbatim at `docs/main-vi-startup.md:70-72`. Joined to `panel_wiring`'s `label → wire` this gives `label → ControlTerminal uid` with **no `Owner` hop at all**. (I checked: no built reader does it — `grep ControlTerminal tools/gscript.py` returns only creators, `:1845-1857`, `:2300-2336`. So this is evidence of the right shape, not a helper you can call today.)
+
+**(b)** The candidate set is already enumerated. `docs/d1-build-plan.md:220`:
+
+> **31 `ControlTerminal`s are owned by `Diagram#639`** … `642, 3173, 3453, 1924, 4837, 5634, 403, 9306, …`; full list in `tools/bench/ctlterm_owners.json`
+
+measured at `tools/bench/probe_move_ctlterm_v0.log:123`. Eight targets out of 31 known uids is a bounded search; the recipe re-derives from zero.
+
+---
+
+## PART B — THE ARTIFACT
+
+### B1 `already-built` — an identification route from a panel label to its ControlTerminal uid exists and is MEASURED 9/0. It identifies *by effect*
+
+`tools/recipes/probe_move_ctlterm_v0.py:327-351` moves a candidate and reads which `panel_wiring` row lost its wire. It worked on the first try, `tools/bench/probe_move_ctlterm_v0.log:134`:
+
+> moved ControlTerminal uid(s) `[642]`; panel rows whose connected wire changed …: `[((7, 'stop (end)'), 6929, 0)]`
+
+— control uid 7, terminal uid 642, one move, 14 s for the whole run (`:155`). The design note at `:68-75` states the premise the recipe restates as if new.
+
+*Scope:* this identifies **after** the move, which §4's ordering (`docs/d1-route-b-plan.md:193-195`) does not forbid — a candidate can be moved, checked, and moved back with the same `move_in`. It does **not** give a pre‑move lookup, and the log's own caveat holds (`:73-75`): a bare or tab‑nested terminal changes no row.
+
+### B2 `already-failed` — the `from-ctl` branch as written repeats run 9's failure exactly, because it assumes the reparent that A3 shows will not happen
+
+`build_d1_routeb_v0.py:688-698` sets `sd = diag_index(TARGET, loops["1.2"]["body"])` **unconditionally** — the comment at `:688-689` says *"After S3-ct that is 1.2's body"* — and passes it to `wire_control`. When `resolve_ctlterms` returns `{}` the terminals are still on `Diagram #639`, and `Get Controls.vi` looks on the wrong diagram. That is precisely run 9, `tools/bench/build_d1_v0_run9.log:315-316`:
+
+```
+FAILED  #9647  t1 'y' <- from-ctl 17472  wire_control ['Auto-Reset'] -> Function.['y']: error 5001: LV-Scripting.lvlib:Get Controls.vi
+FAILED  #10247 t1 'y' <- from-ctl 5605   wire_control ['Reset Tracking'] -> Function.['y']: error 5001: …
+```
+
+and the recorded cause, `docs/d1-build-plan.md:1169`:
+
+> run 9 **skipped** the reparent step — `build_d1_v0_run9.log:358` `SKIPPED-PHASE S3c-ctlterm: the 6 ControlTerminals reparented into 1.2` — so the controls stayed on `Diagram #639`
+
+The new plan addresses that cause **only** through `resolve_ctlterms`. With that gate unable to fire, six rows fail 5001 again and S3w's "0 FAILED" gate cannot be met.
+
+*Scope:* covers the `from-ctl` branch's dependency on the reparent. Does **not** claim `src_diagram_index` is the wrong parameter — §11u.2's diagnosis stands (`'Auto-Reset'` wires cleanly with index **43**, `docs/d1-route-b-plan.md:73-78`).
+
+### B4 `already-measured` — re-targeting a deleted subVI to a fresh drop has already been run, and it measured **uid reuse**
+
+Route A already did the delete‑and‑re‑drop for the kernel: `tools/recipes/build_d1_v0.py:648-661` (S3e, `#5058` deleted, `GPU_kernel_v1.vi` dropped into 1.2), and `d1_rewire_map.py:184-185` already classifies those rows `from-kernel` — *"`#5058` is DELETED; the GPU kernel takes its place in 1.2"*. So `RETARGET` is not a new idea; what is new is extending it to `#48`/`#376`.
+
+The measurement that extension has to survive, `tools/recipes/build_d1_v0.py:719-726`:
+
+> ⚠️ uid REUSE: after the delete, `drop_subvi(GPU_kernel_v1.vi)` came back with **uid 5058 again** (run 4, `S3e` FACT)
+
+Route B deletes three uids and then drops three subVIs (`s1d` `:260-290`, `s2d` `:321-344`). The ordering is safe as written — every delete precedes every drop, and `S1d`'s "all three uids are gone" gate (`:281-284`) runs in between — but the recipe never records the hazard, and `S3b-collateral`'s `staying` filter (`:487-489`) keys on those same uids.
+
+*Scope:* covers the re-targeting mechanism and the uid-reuse fact. This is **not** a record of the extension failing — I found no run that deleted `#48`/`#376`.
+
+---
+
+## Checked and CLEAN — so the next round does not re-derive it
+
+- **BEFORE census, including `Function 181`** — measured exactly, `tools/bench/build_d1_v0_run9.log:19`: `{'SubVI': 98, 'Function': 181, 'Node': 626, 'Wire': 1902}` plus `:14` for the other five classes. ✅
+- **S1t deltas `SubVI 98→97, Function 181→180, Node 626→624, Wire 1902→1899`** — measured, `build_d1_v0_run9.log:24`. ✅
+- **`Diagram 170 → 173` / `WhileLoop 3 → 6` for three While loops** — measured (`STATUS.md` OPEN 28 headline; `build_d1_v0_run3.log:13` reads a restructured copy at `Diagram 173, WhileLoop 6`). ✅ ⚠️ *Prose note, no slug:* `docs/d1-route-b-plan.md:327` and `:339` gate on **Diagram 174** because §2b `:113` includes a **fourth** loop (the 20‑slot pool For loop). The recipe builds three and gates on 173 (`:307-310`, `:843-846`), and `s1q` is explicitly not executed (`:768-770`). The counts are right for what is built; the plan's S2/S6 rows are not what this recipe asserts.
+- **"1.7 receives no moved node"** — consistent: `MOVE_TABLE["1.7"] = []` (`:152`) and `#376` is deleted then re-dropped, while `d1_rewire_map.MOVE["1.7"] = [376]` (`d1_rewire_map.py:44`) only supplies `dest` for its rows. ✅
+- **`OpConnectFromWire_v0` is functional** — as far as T1: `docs/toolkit-capabilities.md:58` records BUILT + SAVED, 16,524 B, ExecState 1, T1 `Is Broken? FALSE`. T2c2 is still red and `STATUS.md` OPEN 37 is open, but the recipe says so. ✅
+- **The SINK RULE** — already blessed: `archive/peer/2026-09-17-priorart-priorart-routeb-census.md:370` records *"Route B's build recipe … was already reading the sink's `is_source`/`wire` live before every from-tunnel write, which is exactly the defence this finding calls for."* No gscript helper does a refuse‑if‑source check; the nearest built shape is `bare()` at `tools/recipes/build_opconnectfromwire_v0.py:530-545`. Keep it as written — but note `docs/NAMES.md:905`, *"A `(node, terminal index)` pair does not name the SIDE"*: the read makes the write safe, it does not prove the index names the intended tunnel side.
+
+---
+
+```
+PRIOR-ART: settled-already   (A1 — docs/d1-build-plan.md:787-788 + docs/vi-server-ids.json:137,:145,:830 vs tools/recipes/build_d1_routeb_v0.py:27-33 — covers the question "is there a reader I have missed?": §11p.2 already specified this exact hop on 2026-09-17 and recorded in the same sentence that a ControlTerminal's Owner is its DIAGRAM, so the route needs ControlTerminal.Control 6353000, which vi-server-ids.json:145 marks UNVERIFIED and nothing builds. Does NOT say a ControlTerminal cannot be reparented — probe_move_ctlterm_v0.log:132 measures that it can)
+PRIOR-ART: contradicted      (A3 — tools/recipes/build_d1_routeb_v0.py:31-33,:368 vs tools/bench/probe_move_ctlterm_v0.log:47 + docs/toolkit-capabilities.md:48,:49 + tools/recipes/build_opwiresource_v5.py:92-93,:155-160, and independently tools/recipes/probe_move_ctlterm_v0.py:7-8 + tools/bench/d1_rewire_sources.json:10,:231-235,:303-308,:854-859,:879-884,:920-925,:1037-1042 — covers the premise "a control's own wire's SOURCE terminal is owned by the ControlTerminal": the identical Generic.Owner 6327806 hop returns owner 'Diagram'#639 for ControlTerminal #642, and two of the eight labels are INDICATORS whose wire source is owned by the driving node, so the owner_class=='ControlTerminal' gate cannot fire and all 8 reparents are skipped. Does NOT cover panel_wiring(label)->wire, which is sound)
+PRIOR-ART: contradicted      (A3-b — tools/recipes/build_d1_routeb_v0.py:42-45 vs :396-403,:490,:601,:607-609 and :462-467 + tools/bench/probe_move_into_v0.log:231 — covers the header claim "the from-tunnel SOURCE is re-read at wiring time, never cached": only the wire VALUE is re-read; the terminal INDEX ti on #637 comes from a read taken before any move, while the same function measures that #637's tunnels die with the wires the moves cut, and two moves alone were measured at Wire 1902->1895, LoopTunnel 132->130. A drifted ti selects a live wrong tunnel and the SINK RULE, which checks only the sink, cannot see it. Does NOT touch the sink-side read)
+PRIOR-ART: already-failed    (B2 — tools/recipes/build_d1_routeb_v0.py:688-698 vs tools/bench/build_d1_v0_run9.log:315-316 + docs/d1-build-plan.md:1169 — covers the from-ctl branch: it passes src_diagram_index = 1.2's body unconditionally, which is correct only if S3-ct reparented the terminals; run 9 skipped that step and the same two labels failed with error 5001 from Get Controls.vi. With A3 standing, the recipe reproduces that failure and S3w's "0 FAILED" gate cannot be met. Does NOT claim src_diagram_index is the wrong parameter — §11u.2's measurement that 'Auto-Reset' wires cleanly with index 43 stands)
+PRIOR-ART: unread-evidence   (A4 — docs/main-vi-panel-map.md:242-245 + docs/main-vi-startup.md:70-72 + docs/d1-build-plan.md:220 + tools/bench/ctlterm_owners.json, none cited in tools/recipes/build_d1_routeb_v0.py:27-33 — covers (a) the project's own recorded "valid route" for this join, Traverse('ControlTerminal') -> Terminal.Connected Wire 634A000 with the terminal's label, which needs no Owner hop; and (b) the candidate set already being enumerated as 31 ControlTerminals owned by Diagram#639. Does NOT claim a built reader exists for (a) — I checked gscript.py and there is none)
+PRIOR-ART: already-built     (B1 — tools/recipes/probe_move_ctlterm_v0.py:68-75,:327-351 + tools/bench/probe_move_ctlterm_v0.log:134 — covers identification of which ControlTerminal belongs to which panel label: the by-EFFECT route is built and measured 9 pass / 0 fail in 14 s, naming control uid 7 'stop (end)' as ControlTerminal #642. Does NOT provide a pre-move lookup, and the log's own caveat holds that a bare or tab-nested terminal changes no panel row)
+PRIOR-ART: already-measured  (B4 — tools/recipes/build_d1_v0.py:648-661,:719-726 + tools/bench/d1_rewire_map.py:184-185 — covers the re-targeting mechanism: delete-then-drop-fresh plus a from-kernel row class already exists and was run in route A, and that run MEASURED uid reuse, drop_subvi returning the deleted node's uid 5058 again. Route B's ordering happens to be safe (all deletes precede all drops, gated at :281-284) but the hazard is unrecorded. Does NOT record any failure of extending this to #48/#376 — no run has done that)
+```
+
+I took no lock, opened no VI, ran nothing, and modified no project file.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-routeb-build.md
+BGRUN END rc=0 after 506s

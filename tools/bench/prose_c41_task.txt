@@ -1,0 +1,44 @@
+Write a short report for the owner of a LabVIEW instrument-control project, in KOREAN, in plain everyday
+language. He is a physicist, not a software engineer: explain by what happened and what it means, never by
+naming a code construct. Write flowing prose in 5 short paragraphs, no bullet lists, no headings, no emoji.
+Do not add advice, next steps or encouragement. Do not invent any number that is not below.
+
+The purpose of the text: tell him what one overnight work cycle produced, and clearly mark the three
+judgement calls he may want to overturn. End with the sentence that invites him to overturn any of them.
+
+FACTS (all measured; use them, do not embellish):
+
+1. The automated build of the new experiment VI ran for 30 minutes last night (run number 9). All 80 of its
+   internal checks passed and none failed. It attempted 66 wiring connections: 54 made, 11 failed, 1 had no
+   route. The previous run had 53 made and 12 failed, so this reverses last cycle's backward step.
+2. A connection called "Z/dZ" had been reported as failing for four runs in a row. It turned out the TEST was
+   wrong, not the connection: the test demanded the wire count be unchanged, when the whole point of that step
+   is to leave exactly one new wire. Corrected this cycle, and the machine now confirms the connection four
+   independent ways: both ends are the same wire, it is not broken, it reads back correctly, and the count
+   moved by exactly one. That question is now closed.
+3. The one measurement the run existed to produce could NOT be read. To confirm that the 54 wires actually
+   survived (rather than merely being attempted), the program must list the contents of four diagrams. All five
+   attempts died of a LabVIEW fault called "error 2", which means memory or reference allocation. So the run
+   reported "51 unread" instead of a number. The 54 figure is therefore still an attempt count, not a survival
+   count.
+4. Before the run, a $4.22 automated review of the new code predicted exactly this failure, AND predicted that
+   the code as first written would have reported "0 survived, 51 gone" — a false catastrophe. It was changed to
+   report "could not read" separately from "missing". That change is the reason last night produced an honest
+   blank instead of a frightening wrong answer.
+5. "error 2" is now the only thing blocking delivery. It killed 11 of the wiring attempts, all 5 of the
+   measurement attempts, and finally crashed the run before its last step. No run of this route has ever
+   finished, so there is still no saved new VI. The old explanation for it — too many open handles — is dead:
+   runs were healthy at 51,349 handles and crashed at 35,555.
+6. The original VI was not touched. Its checksum is identical before and after, and nothing was saved or run.
+
+THE THREE JUDGEMENT CALLS TO MARK CLEARLY AS HIS TO OVERTURN:
+
+(a) One of the five written-in-advance predictions was "no wire is missing". Technically it came out true, but
+    nothing was actually read back, so the prediction was never tested. It was recorded as UNTESTED rather than
+    as passed. Counting it as a pass would have made the cycle look more successful than it was.
+(b) A queued experiment (a separate scratch test) was retired WITHOUT running it, because two consecutive builds
+    already show the same answer it was meant to find. This saves one run; it can be run anyway if he prefers.
+(c) The next run's single change is to save the half-finished copy, RESTART LabVIEW, reopen it, and take the
+    missing measurement in the fresh session. This is both the only route to that measurement and the test of
+    why "error 2" happens. It does mean the build will restart LabVIEW in the middle of itself — there is
+    standing permission for restarts, but it is being flagged because it is new behaviour for a build.

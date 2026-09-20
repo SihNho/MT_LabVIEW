@@ -1,0 +1,19 @@
+BGRUN START 2026-09-16 15:31:21 limit 12.0 min: py -u tools/bench/diag_delete_error_control.py
+   fresh(): killing LabVIEW pid None
+   COM preflight attempt 1/15: pid None->14352, wires 16->16
+   COM preflight OK (pid 14352, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 14352
+copied donor -> ScratchDeleteCtl_v0.vi; Property count=12, ExecState=1
+
+=== P1 controls that CANNOT succeed ===
+  [A out-of-range index] Class='Property' index=999999  Run: raised run blocked behind a modal dialog (dismissed by watchdog after 9s); screenshot(s): C:\Users\KimLab\A
+        error out -> status FALSE (clean)   raw=(False, 0, '')
+  [B unknown class] Class='NoSuchClassXYZ' index=0  Run: raised run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\A
+        error out -> status FALSE (clean)   raw=(False, 0, '')
+
+  P2 objects that disappeared during the controls: NONE
+
+=== VERDICT: P1 FALSE - `error out` never moves for ANY input, so it is a DEAD indicator. diag_delete_error.log proves nothing about the method's error, and OpDelete_v0 must be rebuilt with the Invoke Node's error wired out before any claim about delete is made. ===
+  scratch removed: ScratchDeleteCtl_v0.vi
+wrote G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_delete_error_control.json
+BGRUN END rc=0 after 45s

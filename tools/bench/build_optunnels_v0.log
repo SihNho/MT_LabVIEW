@@ -1,0 +1,158 @@
+BGRUN START 2026-09-14 12:58:30 limit 25.0 min: py -u tools/recipes/build_optunnels_v0.py
+start: ForLoop=0 LoopTunnel=0 Property=1 Wire=12 ExecState=1
+net_map: node 0 uid 43 (0 s)
+net_map: node 1 uid 124 (0 s)
+net_map: node 2 uid 308 (0 s)
+net_map: node 3 uid 683 (1 s)
+net_map: node 4 uid 316 (1 s)
+net_map: node 5 uid 220 (1 s)
+net_map: node 6 uid 334 (1 s)
+net_map: purged 20/65 junk Invokes (0 s)
+net_map: purged 40/65 junk Invokes (1 s)
+net_map: purged 60/65 junk Invokes (1 s)
+net_map: 6 nodes walked in 1.1 s; 65 junk Invoke(s) purged in 1.1 s
+   node uid 43 n 0: ['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+   node uid 124 n 1: ['error out', '# of Refs', 'References', 'dup VI Refnum', 'Other Refnum', 'Traverse Generated Code (F)', 'Traverse Target', 'error in (no error)', 'Class Name', 'VI Refnum']
+   node uid 308 n 2: ['array', 'element', 'index']
+   node uid 683 n 3: ['specific class reference', 'error out', 'target class', 'reference', 'error in']
+   node uid 316 n 4: ['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+   node uid 220 n 5: ['reference', 'reference out', 'error in (no error)', 'error out', 'IndexMode']
+   IndexMode WRITE PN 220; To More Specific Class 683
+
+== 2 delete the IndexMode WRITE PN + RBW
+   predict: Property -1, ExecState 1
+   result : after ForLoop=0 LoopTunnel=0 Property=0 Wire=9 ExecState=1  (0.1 s)
+
+== 3 PN_T LoopTunnel[Outer Term, InsideTerms[], IndexMode, UID]
+   predict: Property +1
+   result : 118  (0.1 s)
+
+== 3b TMSC 'specific class reference' -> PN_T.reference
+   predict: Wire +1, ExecState 1
+   result : after ForLoop=0 LoopTunnel=0 Property=1 Wire=10 ExecState=1  (0.1 s)
+
+== 3c PN_T rows (walk)
+   predict: 4 data terminals
+net_map: node 0 uid 43 (0 s)
+net_map: node 1 uid 124 (0 s)
+net_map: node 2 uid 308 (0 s)
+net_map: node 3 uid 683 (1 s)
+net_map: node 4 uid 316 (1 s)
+net_map: node 5 uid 118 (1 s)
+net_map: node 6 uid 119 (1 s)
+net_map: purged 20/68 junk Invokes (0 s)
+net_map: purged 40/68 junk Invokes (1 s)
+net_map: purged 60/68 junk Invokes (1 s)
+net_map: 6 nodes walked in 1.2 s; 68 junk Invoke(s) purged in 1.1 s
+   result : ['Outer Term', 'InsideTerms[]', 'IndexMode', 'UID']  (2.3 s)
+   PN_T terminal names: outer='Outer Term' inside='InsideTerms[]' indexmode='IndexMode' uid='UID'
+
+== 4a PN_ON Terminal[Name]
+   predict: Property +1
+   result : 119  (0.1 s)
+
+== 4b PN_T.outer -> PN_ON.reference
+   predict: Wire +1, ExecState 1
+   result : after ForLoop=0 LoopTunnel=0 Property=2 Wire=11 ExecState=1  (0.1 s)
+
+== 4c PN_OS Terminal[Is Source?]
+   predict: Property +1
+   result : 120  (0.1 s)
+
+== 4d PN_OC Terminal[Connected Wire]
+   predict: Property +1
+   result : 121  (0.1 s)
+
+== 4e PN_OW GObject[UID]
+   predict: Property +1
+   result : 122  (0.1 s)
+
+== 4f ON.ref out -> OS.ref; OS.ref out -> OC.ref; OC.Wire -> OW.ref
+   predict: Wire +3, ExecState 1
+   result : after ForLoop=0 LoopTunnel=0 Property=5 Wire=14 ExecState=1  (0.3 s)
+
+== 5a empty For Loop
+   predict: ForLoop +1; ExecState 0 EXPECTED
+   result : after ForLoop=1 LoopTunnel=0 Property=5 Wire=14 ExecState=0  (0.1 s)
+
+== 5b PN_IN Terminal[Name] inside body
+   predict: Property +1
+   result : 125  (0.1 s)
+
+== 5c PN_T.InsideTerms[] -> PN_IN.reference (crosses the loop)
+   predict: LoopTunnel +1, Wire +2, ExecState 1
+   result : after ForLoop=1 LoopTunnel=1 Property=6 Wire=16 ExecState=1  (0.2 s)
+
+== 5d PN_IS Terminal[Is Source?] inside
+   predict: Property +1
+   result : 340  (0.1 s)
+
+== 5e PN_IC Terminal[Connected Wire] inside
+   predict: Property +1
+   result : 407  (0.2 s)
+
+== 5f PN_IW GObject[UID] inside
+   predict: Property +1
+   result : 436  (0.2 s)
+
+== 5g inner chain wires
+   predict: Wire +3, ExecState 1
+   result : after ForLoop=1 LoopTunnel=1 Property=9 Wire=19 ExecState=1  (0.4 s)
+
+== 5h exit_loop ['Name']
+   predict: LoopTunnel +1
+   result : after ForLoop=1 LoopTunnel=2 Property=9 Wire=20 ExecState=1  (0.1 s)
+
+== 5h exit_loop ['IsSource']
+   predict: LoopTunnel +1
+   result : after ForLoop=1 LoopTunnel=3 Property=9 Wire=21 ExecState=1  (0.1 s)
+
+== 5h exit_loop ['UID']
+   predict: LoopTunnel +1
+   result : after ForLoop=1 LoopTunnel=4 Property=9 Wire=22 ExecState=1  (0.1 s)
+   tunnel 1 -> ['Array'] (carries InName)
+   tunnel 2 -> ['Array 2'] (carries InIsSource)
+   tunnel 3 -> ['Array 3'] (carries InWireUID)
+   tunnel 4 -> ['Array 4'] (carries InConnErr)
+   tunnel 5 -> ['Array 5'] (carries InWireErr)
+net_map: node 0 uid 43 (0 s)
+net_map: node 1 uid 124 (0 s)
+net_map: node 2 uid 308 (1 s)
+net_map: node 3 uid 683 (1 s)
+net_map: node 4 uid 316 (1 s)
+net_map: node 5 uid 118 (2 s)
+net_map: node 6 uid 119 (2 s)
+net_map: node 7 uid 120 (2 s)
+net_map: node 8 uid 121 (2 s)
+net_map: node 9 uid 122 (3 s)
+net_map: node 10 uid 123 (3 s)
+net_map: node 11 uid 458 (3 s)
+net_map: purged 20/110 junk Invokes (1 s)
+net_map: purged 40/110 junk Invokes (1 s)
+net_map: purged 60/110 junk Invokes (2 s)
+net_map: purged 80/110 junk Invokes (2 s)
+net_map: purged 100/110 junk Invokes (3 s)
+net_map: 11 nodes walked in 3.3 s; 110 junk Invoke(s) purged in 3.3 s
+   OutName: node 6 terminal 4 ('Name') -> indicator ['Name']
+   OutIsSource: node 7 terminal 4 ('IsSource') -> indicator ['Is Source?']
+   OutWireUID: node 9 terminal 4 ('UID') -> indicator ['UID']
+   OutConnErr: node 8 terminal 3 ('error out') -> indicator ['error out 2']
+   OutWireErr: node 9 terminal 3 ('error out') -> indicator ['error out 3']
+   IndexMode: node 5 terminal 6 ('IndexMode') -> indicator ['Index Mode']
+   TunnelUID: node 5 terminal 7 ('UID') -> indicator ['UID 2']
+
+== 7 auto error handling OFF
+   predict: silent on unwired terminals
+   result : None  (0.0 s)
+
+assembled: ForLoop=1 LoopTunnel=6 Property=9 Wire=36 ExecState=1
+steps: [('2 delete the IndexMode WRITE PN + RBW', 'ok'), ('3 PN_T LoopTunnel[Outer Term, InsideTerms[], IndexMode, UID]', 'ok'), ("3b TMSC 'specific class reference' -> PN_T.reference", 'ok'), ('3c PN_T rows (walk)', 'ok'), ('4a PN_ON Terminal[Name]', 'ok'), ('4b PN_T.outer -> PN_ON.reference', 'ok'), ('4c PN_OS Terminal[Is Source?]', 'ok'), ('4d PN_OC Terminal[Connected Wire]', 'ok'), ('4e PN_OW GObject[UID]', 'ok'), ('4f ON.ref out -> OS.ref; OS.ref out -> OC.ref; OC.Wire -> OW.ref', 'ok'), ('5a empty For Loop', 'ok'), ('5b PN_IN Terminal[Name] inside body', 'ok'), ('5c PN_T.InsideTerms[] -> PN_IN.reference (crosses the loop)', 'ok'), ('5d PN_IS Terminal[Is Source?] inside', 'ok'), ('5e PN_IC Terminal[Connected Wire] inside', 'ok'), ('5f PN_IW GObject[UID] inside', 'ok'), ('5g inner chain wires', 'ok'), ("5h exit_loop ['Name']", 'ok'), ("5h exit_loop ['IsSource']", 'ok'), ("5h exit_loop ['UID']", 'ok'), ('7 auto error handling OFF', 'ok')]
+label map: {"Array": "InName", "Array 2": "InIsSource", "Array 3": "InWireUID", "Array 4": "InConnErr", "Array 5": "InWireErr", "Name": "OutName", "Is Source?": "OutIsSource", "UID": "OutWireUID", "error out 2": "OutConnErr", "error out 3": "OutWireErr", "Index Mode": "IndexMode", "UID 2": "TunnelUID"}
+
+== 8 COM save
+   predict: written to disk
+   result : 15916  (0.0 s)
+donor OpSetIndexMode_v0.vi md5 unchanged: True
+
+VERDICT: OpTunnels_v0 BUILT and SAVED (structural only - run tools/bench/test_optunnels.py next)
+BGRUN END rc=0 after 228s

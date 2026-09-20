@@ -1,0 +1,90 @@
+BGRUN START 2026-09-18 00:49:53 limit 25.0 min: py -u tools\bench\cycle18_arming_driver.py MATERIAL=1
+=== cycle 18 (second half) - an OMISSION is a refusal; the opt-out is explicit ===
+
+[1] compile
+  PASS  compiles: tools/prior_art_review.py
+  PASS  compiles: tools/hooks/guard_cycle.py
+  PASS  compiles: tools/stop_record.py
+  PASS  compiles: tools/bench/stop_record_selftest.py
+
+[2] item 1 - prior_art_review.py refuses an omission, accepts a reasoned opt-out
+  PASS  the flag exists and its reason is mandatory (metavar REASON)
+  PASS  the silent NOT-ARMED print path is gone
+  PASS  --help still works and lists both flags
+  PASS  omission -> non-zero exit   rc 2
+  PASS  the refusal prints the CURRENT command form
+  PASS  both flags together -> refused   rc 2
+
+[3] item 2 - guard_cycle's refusal text names the true current command
+  PASS  guard_cycle prints a command carrying --recipe
+  PASS  ... and names the opt-out for a review with genuinely no recipe
+
+[4] item 3 - no ACTIVE file still prescribes the old command form
+  PASS  every active prescription of the command carries --recipe   none
+
+[5] the SIX acceptance cases (plan Pre-decided 4 + the 2026-09-18 arming decision)
+    | === stop_record launch gate: self-test (cycle 18, plan Pre-decided 4) ===
+    |   PASS  C1a record written, keyed to path+hash   837e05e2617c
+    |   PASS  C1b launch REFUSED (spelling 1)   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdict that is
+    |   PASS  C1b launch REFUSED (spelling 2)   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdict that is
+    |   PASS  C1b launch REFUSED (spelling 3)   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdict that is
+    |   PASS  C1c an unrelated command is untouched
+    |   PASS  C1d a DIFFERENT recipe is untouched (refusal is per record, not per directory)
+    |   PASS  C2a launch PASSES after a valid FIXED: line
+    |   PASS  C2b the release is stamped with the CURRENT sha256   837e05e2617c
+    |   PASS  C2c a second launch of the same bytes still passes
+    |   PASS  C3a launch REFUSED again after the recipe changed   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe was RELEASED for different bytes than the
+    |   PASS  C3b the refusal names BOTH hashes
+    |   PASS  C3c the record was NOT cleared by the re-save
+    |   PASS  C4a corrupt store REFUSES a tools/recipes launch (fail closed)   BLOCKED by tools/stop_record.py (fail-closed): the prior-art stop-record store cannot be read, so no launch of a recipe can be shown to be released.
+    |   PASS  C4b corrupt store leaves an unrelated command alone
+    |   PASS  C4c a DELETED store is missing-but-expected, not a release   BLOCKED by tools/stop_record.py (fail-closed): the prior-art stop-record store cannot be read, so no launch of a recipe can be shown to be released.
+    |   PASS  C4d ... and still does not wedge a grep
+    |   PASS  C5a --recipe omitted with no opt-out -> NON-ZERO exit   rc 2
+    |   PASS  C5b the refusal names both the required flag and the opt-out   REFUSED by tools/prior_art_review.py: no --recipe, and no explicit opt-out.
+    |   PASS  C5c the refusal prints the current command form
+    |   PASS  C5d no peer was dispatched (no new archive/peer file)
+    |   PASS  C5e no stop record was written (the REAL store is untouched)
+    |    task written to C:\Users\KimLab\AppData\Local\Temp\priorart_scratch-optout-4440.txt (2934 chars)
+    |    peer.ps1 rc 0; archived as archive/peer/<date>-priorart-scratch-optout-4440.md
+    |    NO-RECIPE opt-out recorded in archive\peer\2026-09-18-priorart-scratch-optout-4440.md: this reviews a plan document; no recipe exists yet (self-test case 6)
+    |    STOP RECORD: NOT ARMED BY EXPLICIT OPT-OUT - verdicts already-failed block, and --no-recipe was given:
+    |      reason: this reviews a plan document; no recipe exists yet (self-test case 6)
+    |    If this review does become a recipe, plant the record by hand:
+    |      py tools/stop_record.py write --recipe <recipe> --review archive\peer\2026-09-18-priorart-scratch-optout-4440.md --verdict already-failed
+    |   PASS  C6a --no-recipe "<reason>" RUNS (rc 0)   rc 0
+    |   PASS  C6b the peer dispatch was attempted exactly once (stubbed)
+    |   PASS  C6c the reason is in the archived review, verbatim   467 chars appended
+    |   PASS  C6d the recorded block cannot be read as a release or a disposition
+    |   PASS  C6e the opt-out armed NOTHING (the REAL store is still untouched)
+    |   PASS  C6f a whitespace-only reason is NOT an opt-out   rc 2
+    |   PASS  C0 the scratch recipe was deleted in the same run
+    |   PASS  C0 the REAL store was never touched   ('absent', 'absent') -> ('absent', 'absent')
+    | === stop_record selftest: 29 pass, 0 fail ===
+  PASS  stop_record_selftest (all six cases)   === stop_record selftest: 29 pass, 0 fail ===
+
+[6] doc_lint (full text -> tools/bench/cycle18_arming_doc_lint.txt, not echoed - see docstring)
+    doc_lint summary line : DOC-LINT FAIL: 1 fail, 3 warn, 6 pass
+    doc_lint counts       : 6 pass / 3 warn / 1 fail   failing checks: L6
+  PASS  doc_lint's failing checks are the pre-existing L6 only   L6
+
+[7] doc_ingest --cycle 18 (sonnet; REPORTED, not gated - a peer outcome is not this build's pass)
+    |    4 file(s); cycle 18 window 2026-09-18 00:02:53 .. 2026-09-18 00:49:54 (start = archive/peer/2026-09-18-retrospective-cycle17.md stamp (the LAST retrospective written before this one; a plan mtime lags the work - see the docstring); end = now, at window computation (minutes before the dispatch itself; codex E4-1))
+    |    task written to C:\Users\KimLab\AppData\Local\Temp\docingest_ingest-2026-09-18.txt (1861 chars)
+    | OUTCOME: ANSWERED (143s)  model: sonnet (pinned by -Model/-Effort (role ingest))  archived: archive\ingest\2026-09-18-ingest-2026-09-18.md
+    | COST: $0.5909  in 6 / out 12994 / cache-create 107348 / cache-read 157921  (138s, 5 turn(s))
+    | --- ANSWER ---
+    | DOCUMENT INGEST — read all four files (CLAUDE.md, STATUS.md, docs/cycle15-plan.md, docs/cycle18-plan.md).
+    | 
+    | PAIR 1
+    |   A: CLAUDE.md:49  "| **조립 — assembled** | ❌ | ❌ | ✅ allowed |"
+    |   B: STATUS.md:34  "분해 = motors ✅ ASI ✅ camera ✅ · 조립 ← WE ARE HERE = camera ✅, motors/ASI ONLY through `tools/motor_gate.py` inside the envelope · 실험중 = ❌ ❌ ❌."
+    |   conflict: CLAUDE.md's rig-state table states motors and the ASI are flatly not allowed (❌) while the rig is 조립/assembled, but STATUS.md states motors/ASI access IS allowed while assembled, conditioned only on going through `motor_gate.py` and staying inside the envelope — both cannot be the standing rule at once.
+    | 
+    | CONTRADICTIONS: 1
+    |    peer.ps1 rc 0; archived as archive/ingest/2026-09-18-ingest-2026-09-18.md
+    | CONTRADICTIONS: 1
+  INGEST  rc=0  CONTRADICTIONS=1
+
+=== cycle18 arming driver: 15 pass, 0 fail ===
+BGRUN END rc=0 after 145s

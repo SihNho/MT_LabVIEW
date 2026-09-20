@@ -1,0 +1,212 @@
+BGRUN START 2026-09-17 17:27:53 limit 20.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Dual -Slug priorart-routeb-run3 -Kind fact -TimeoutSec 900 -TaskFile 'C:\Users\KimLab\AppData\Local\Temp/priorart_routeb-run3.txt'
+=== DUAL ARM 1/2: codex -> priorart-routeb-run3-codex ===
+OUTCOME: ANSWERED (332s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-17-priorart-routeb-run3-codex.md
+--- ANSWER ---
+## Part A — The direction
+
+### A1 — Not settled exactly
+
+No file decides the exact transport of `#1359` t1 and `#29874` t3. The general queue-only direction and paired-queue pattern are older, but applying them to these two shift-register reads is new.
+
+### A2 — Refuted already, fallback only
+
+The proposed bare-`Equal?` fallback is contrary to the recorded contract of `OpCreateEqual_v0`:
+
+- The op is specified to receive both `x` and `y` as terminal references obtained from named outputs; its only functional test supplied both operands. [docs/toolkit-capabilities.md:52](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/toolkit-capabilities.md:52>) [tools/recipes/build_opsentinel_ops.py:78](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_opsentinel_ops.py:78>) [tools/recipes/build_opsentinel_ops.py:96](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_opsentinel_ops.py:96>)
+- The earlier creator failure record says invalid terminal-refnum inputs caused error 1055 and a modal; the review explicitly required real internal terminal references. [docs/NAMES.md:468](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/NAMES.md:468>) [docs/NAMES.md:473](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/NAMES.md:473>) [archive/peer/2026-09-17-priorart-priorart-d1-sentinel-ops.md:277](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-17-priorart-priorart-d1-sentinel-ops.md:277>)
+- Run 3 instead passes an empty name list, producing empty `Names` and `Names 2`. [tools/recipes/build_d1_routeb_v0.py:739](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_d1_routeb_v0.py:739>) [tools/recipes/build_d1_routeb_v0.py:746](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_d1_routeb_v0.py:746>) [tools/recipes/build_opsentinel_ops.py:397](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_opsentinel_ops.py:397>)
+
+Scope: this refutes only the no-source bare-`Equal?` fallback, not branching an already-existing `Z/dZ` wire.
+
+### A3 — Contradicted
+
+The diagnostic’s required named type sources are already recorded as unnamed:
+
+- Right register 8 is written by `#1359` t2, whose terminal name is blank; right register 12 is written by `#29874` t5, also blank. [docs/frame-loop-wire-graph.md:417](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/frame-loop-wire-graph.md:417>) [docs/frame-loop-wire-graph.md:421](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/frame-loop-wire-graph.md:421>)
+- `diag_sr_transport.py` accepts that writer only when `term_name` is truthy. [tools/bench/diag_sr_transport.py:145](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_sr_transport.py:145>) [tools/bench/diag_sr_transport.py:160](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_sr_transport.py:160>)
+- `sr_queue` then refuses the row when that name is absent. [tools/recipes/build_d1_routeb_v0.py:793](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_d1_routeb_v0.py:793>)
+
+The claimed same-type measurement is also not implemented: P3 checks only that a named source exists; it reads no datatype. [tools/bench/diag_sr_transport.py:134](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_sr_transport.py:134>) [tools/bench/diag_sr_transport.py:160](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/diag_sr_transport.py:160>)
+
+Finally, the plan says every address is reread live, but `sr_queue` directly reuses the cached `(class, Traverse index)` from `sr_transport.json`. [tools/bench/plan_routeb_run3.md:41](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/plan_routeb_run3.md:41>) [tools/recipes/build_d1_routeb_v0.py:791](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_d1_routeb_v0.py:791>) [tools/recipes/build_d1_routeb_v0.py:803](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_d1_routeb_v0.py:803>)
+
+### A4 — Unread evidence
+
+Two obvious precedents were missed:
+
+- The measured shift-register table already supplies both register indices, writers, left-side wires, readers, and the fact that the writer outputs are unnamed. [docs/frame-loop-wire-graph.md:403](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/frame-loop-wire-graph.md:403>) [docs/frame-loop-wire-graph.md:426](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/frame-loop-wire-graph.md:426>)
+- The GPU-kernel builder already documents the temporary-sink → branch → delete-temporary topology. [archive/bench-2026-09-09-gpu-dropin-kernel/REPORT.md:68](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/bench-2026-09-09-gpu-dropin-kernel/REPORT.md:68>) [tools/recipes/build_gpu_kernel.py:151](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/bench-2026-09-09-gpu-dropin-kernel/build_gpu_kernel.py:151>)
+
+## Part B — The artifacts
+
+### B1 — Already built
+
+Two component shapes already exist:
+
+1. The paired producer/consumer queue topology exists with six lock-stepped queues, error-chained paired publication, FIFO alignment gates, and the 162/162 replay result. [docs/stage2-assembly-step-c.md:21](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/stage2-assembly-step-c.md:21>) [docs/stage2-assembly-step-c.md:39](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/stage2-assembly-step-c.md:39>) [docs/d1-build-plan.md:160](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/d1-build-plan.md:160>)
+
+   Scope: this does not mean `Q_sr1/Q_sr2` themselves exist; only their claimed queue topology does.
+
+2. Temporary sink → branch permanent sink → delete temporary → Remove Bad Wires was already implemented for the GPU-kernel outputs. The recipe explicitly says the permanent branch survives deletion and gates `ExecState == 1` before saving. [tools/recipes/build_gpu_kernel.py:151](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/bench-2026-09-09-gpu-dropin-kernel/build_gpu_kernel.py:151>) [tools/recipes/build_gpu_kernel.py:172](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/bench-2026-09-09-gpu-dropin-kernel/build_gpu_kernel.py:172>) [tools/recipes/build_gpu_kernel.py:177](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/bench-2026-09-09-gpu-dropin-kernel/build_gpu_kernel.py:177>)
+
+### B2 — No exact prior failure found
+
+I found no record of an attempted `Q_sr1/Q_sr2` build or this exact `Z/dZ → #2222 t0` build. The bare-`Equal?` issue above is a prior rejected mechanism, not an exact run of this artifact.
+
+### B3 — No missing helper finding
+
+The implementation already uses the relevant existing calls: `queue_node`, `shift_reg_left`, `OpConnectFromWire_v0`, indexed nested wiring, `delete_object`, and `remove_bad_wires_scripted`. The recorded alternative for removing only one sink is `Wire.Disconnect Terminal 6370C0D`, but deletion of a disposable sink node followed by Remove Bad Wires is also expressly recorded as valid. [docs/NAMES.md:896](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/NAMES.md:896>) [archive/peer/2026-09-15-opwiresource-fail3-branch-wire-is-one-object.md:28](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-15-opwiresource-fail3-branch-wire-is-one-object.md:28>)
+
+### B4 — Already measured
+
+Most of `diag_sr_transport.py` duplicates existing measurements:
+
+- Left registers `#9025` and `#29512`, indices 8 and 12, and inside wires `9097` and `28039` were already measured on 2026-09-14. [tools/bench/test_opshiftregs_v1.log:10](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/test_opshiftregs_v1.log:10>) [tools/bench/test_opshiftregs_v1.log:14](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/test_opshiftregs_v1.log:14>)
+- Their exact writers and readers are already tabulated. [docs/frame-loop-wire-graph.md:417](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/frame-loop-wire-graph.md:417>) [docs/frame-loop-wire-graph.md:440](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/frame-loop-wire-graph.md:440>) [docs/frame-loop-wire-graph.md:444](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/docs/frame-loop-wire-graph.md:444>)
+- `Z/dZ` is already recorded as control UID 47, source of wire 730. [tools/bench/main_vi_panel_wiring.json:185](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/main_vi_panel_wiring.json:185>)
+- `#2222` t0 is already recorded as an unnamed sink on that same wire, with the route classified `from-ctl`. [tools/bench/d1_rewire_sources.json:913](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/d1_rewire_sources.json:913>) [tools/bench/main_vi_nodeterms.json:11998](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/main_vi_nodeterms.json:11998>)
+
+The genuinely unmeasured item is datatype identity/coercion—but the new diagnostic does not measure it.
+
+PRIOR-ART: refuted-already
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-built
+PRIOR-ART: already-measured
+=== DUAL ARM 2/2: claude/hypothesis (opus, effort max, web) -> priorart-routeb-run3-opus ===
+OUTCOME: ANSWERED (619s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-17-priorart-routeb-run3-opus.md
+COST: $6.3419  in 68 / out 43146 / cache-create 251807 / cache-read 5395835  (617s, 57 turn(s))
+--- ANSWER ---
+Write is disabled in this session (correct for a read-only reviewer), so the review is below in full.
+
+---
+
+# PRIOR-ART REVIEW — Route B run 3 (`Q_sr1`/`Q_sr2` + `Z/dZ`)
+
+Read-only. No LabVIEW opened, no lock taken, nothing run. Every claim carries a file:line or a URL.
+
+**Verdict: NOT novel.** Two findings would change the build; five more are cheaper corrections.
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 · SETTLED ALREADY — this shape already has a decided mechanism, and it is not a queue
+
+The direction is stated as "two sibling loops cannot be wired directly, so the value crosses through a queue". But the thing crossing is not a value in flight — it is a **loop-carried register**, and this project decided how those are handled, twice:
+
+> `docs/frame-loop-wire-graph.md:397` (2026-09-14) — *"every row of kind shift register is state that crosses frame boundaries inside the frame loop today; in the rebuilt seven-loop design **each must live in exactly one loop (rule: one writer)**."*
+
+> `docs/d1-build-plan.md:446` (REV 4 §7.2) — *"**`#376 save trace.vi` moves into 1.7 with its two shift registers** (`#15/#51` total data array, `#24/#1108` error chain) and keeps producing exactly what it produces today."*
+
+`#376` is the identical shape: a node that both reads the left side and writes the right side of a `#637` register, moving into a new loop. The decided answer was *the register goes with the node*, and `docs/d1-route-b-plan.md:119` already budgets that mechanism — "8 shift registers (4 on 1.2, 2 on 1.5, 2 on 1.7)", built with `add_shift_reg` + `wire_sr`. `#1359`'s and `#29874`'s registers are not among them.
+
+**Scope of this finding:** it does not say a queue is forbidden. It says the plan proposes a *different* mechanism for a shape that already has a decided one, one section away in the same build plan, without saying why.
+
+### A2 · REFUTED ALREADY — "a queue standing in for a shift register" was dispatched, attacked, and abandoned
+
+> `archive/peer/2026-09-14-stage2-shiftreg-primitive.md:32` (the question asked) — *"Attack the declared fallback: three depth-1 queues standing in for three shift registers … Name a concrete way that deadlocks, reorders, or differs numerically from a shift register in LabVIEW dataflow/clumping — or say plainly that it cannot."*
+
+> `:91` — *"Under very strict assumptions — each queue is seeded exactly once, every iteration performs exactly one successful dequeue and one successful enqueue on each queue, operations have infinite timeouts, nobody else touches the queues, and all three operation chains are dataflow-ordered — the queues cannot reorder values."*
+> `:101` — *"Three separate queues also lack atomic tuple alignment … can become iteration-skewed."*
+> `:103` — *"in the fault-free strict case, the queue mechanism should not change the array values … But it differs in scheduling, allocation/reference lifetime, error behavior, shutdown behavior, and persistence semantics."*
+
+Disposition (`:126-129`): the queue fallback was dropped and replaced by the direct `Loop.Add Shift Register` **6361000**, built as `OpAddShiftReg_v0`.
+
+**Does it still apply?** Yes, and more strongly: that case was three queues inside **one** loop; run 3 is two queues **across two** loops, which weakens every assumption the peer listed. One item does *not* apply and I will not let it be used against the plan: the "uninitialised register persists between runs" difference is irrelevant here, because both registers **are** initialised — `#8953 Initialize Array` and `#28124 Initialize Array` (`docs/frame-loop-wire-graph.md:440,:444`).
+
+Second refutation, more recent and specifically about these two rows:
+
+> `archive/peer/2026-09-17-routeb-run1-noroute-codex.md:146` — *"'owned by a shift register' is insufficient evidence that a queue is required. You need the producer/consumer timing requirement."*
+> Its own disposition, `:186-189` — *"Point 3 accepted as a correction to my wording … the reason line now says 'a cross-loop TRANSPORT question', **with the timing claim removed**."*
+
+`tools/recipes/build_d1_routeb_v0.py:756-759` restores exactly that removed claim — *"enqueued in 1.1 each iteration with the frame and dequeued in 1.2 in the same iteration as `Q_work`"* — with no measurement added since the retraction.
+
+### A3 · CONTRADICTED — two, and the first one stops the run
+
+**(i) The run cannot pass its own new gate, and the file that says so is from 2026-09-14.**
+
+The queue's element TYPE is taken from "the node that WRITES the partner RIGHT register". Those nodes' terminals are `#1359` t2 and `#29874` t5, and **both are unnamed**:
+
+> `docs/frame-loop-wire-graph.md:417` — `| 8 | (unnamed) | 9018 | #1359 For Loop t2 `` (wire 9215) |`
+> `:421` — `| 12 | (unnamed) | 29505 | #29874 For Loop t5 `` (wire 29591) |`
+> `tools/bench/d1_rewire_sources.json:702` — `"name": ""` · `:1614` — `"name": ""`
+
+Against the new code:
+
+> `tools/bench/diag_sr_transport.py:160-162` gates on `bool(named and named.get("term_name"))` — `""` is falsy, so **P3 fails**.
+> `tools/recipes/build_d1_routeb_v0.py:794-799` turns a missing `term_name` into `noroute` — so **both rows return NO-ROUTE**.
+
+Run 3's stated target is "0 FAILED, 0 NO-ROUTE plus both SR queues built". On the evidence already on disk it reaches neither, and the ~550 s build is spent to learn something two lines of an existing document already state.
+
+**(ii) The source of the value is described two ways in our own files, and the difference is `index_mode`.**
+
+> `tools/bench/d1_rewire_sources.json:689-694` — `#1359` t1's source is `{"kind": "tunnel", "uid": 9087, "index_mode": 1}`
+> `:1566-1571` — `#29874` t3's source is `{"kind": "tunnel", "uid": 29911, "index_mode": 1}`
+
+versus the brief's *"the source terminal of `w9097`/`w28039` is owned by `LeftShiftRegister` #9025/#29512"*. Both are true of different hops — the register drives the wire, the wire lands on the For loop's own **auto-indexing** input tunnel — but the plan never mentions `index_mode 1`. The plan already treats index mode as a thing to re-assert after restructuring (`docs/d1-route-b-plan.md:333`, gate S3d, `IndexMode 0` on six *whole-array* tunnels); these two auto-indexed tunnels have no gate at all. If either comes back index-mode 0, the For loop's N changes and the per-bead maths changes with every structural gate green.
+
+### A4 · UNREAD EVIDENCE — `docs/frame-loop-wire-graph.md`'s state-carrier sections, and the consequence nobody has written down
+
+**The write-back has no route, and the build will not notice.** Chain of already-measured facts:
+
+| fact | citation |
+|---|---|
+| right register **9018** is fed **each frame** by `#1359` t2 (w9215); right **29505** by `#29874` t5 (w29591) | `docs/frame-loop-wire-graph.md:417`, `:421` |
+| both registers are in the **"stay 1.1"** column | `docs/d1-build-plan.md:365` |
+| both writers **move into 1.2** | `docs/d1-route-b-plan.md:126-127` |
+| both writes are classified `"action": "source-side"` with **`"sinks": []`** | `tools/bench/d1_rewire_sources.json:699-710`, `:1612-1622` |
+| the ledger **excludes** every `source-side` row | `tools/recipes/build_d1_routeb_v0.py:636-639`; rationale at `docs/d1-route-b-plan.md:169-170` (*"re-connected from its sink's side … need no call of their own"* — which is false when the sink is a shift-register terminal, not a node) |
+| no fresh register is created for either | `tools/recipes/build_d1_v0.py:282-287` (`SHIFT_REGS`: 1147/1142, 5796/5805, 119/2972, 7311/11001, 4256/4274, 4334/4344, 15/51, 24/1108 — neither pair present) |
+
+**Consequence:** after run 3, registers 9018 and 29505 have **no writer**. Their left side yields the `Initialize Array` seed on every frame forever, where the original re-writes it each frame. The queue transports the read faithfully and the accumulator it reads from is dead. Nothing in the ledger, the S-gates, or `ExecState` can see this — `ExecState` is explicitly not read until S5, and an unwritten register is not a broken wire.
+
+This is the one finding I would not release without a measurement. The `#376` precedent (A1) is the recorded remedy.
+
+---
+
+## PART B — THE ARTIFACT
+
+### B1 · ALREADY BUILT — three components, with their scope stated
+
+1. **Paired producer/consumer queues** — `docs/stage2-assembly-step-c.md:39-42`: *"The paired queues are FIFO and produced/consumed once per iteration by a single producer/consumer; their enqueues are **error-chained** (second `error in` ← first `error out`) so a failed first enqueue cannot publish a partial pair"*, plus the `META[n] == Frame Paths[n]` alignment gate. **Scope:** the topology exists; `Q_sr1`/`Q_sr2` do not. What the run-3 plan omits is the two things that make the pattern lock-stepped — the error chain and an alignment gate — while adding two more streams to the set.
+2. **Temporary sink → branch → delete the temporary** (decision 2's fallback) — `archive/bench-2026-09-09-gpu-dropin-kernel/build_gpu_kernel.py:14-15`: *"temporary indicator to create the wire, then `wire_indicators` branches the pane indicator onto it, then the temporary one is deleted"*; the same trick twice more in `docs/stage2-assembly-step-b.md:48-50` and `:63-67`.
+3. **The register alternative to decision 1** — `gscript.add_shift_reg` + `wire_sr` (`docs/toolkit-capabilities.md:41-42`), already called by this very recipe at `tools/recipes/build_d1_routeb_v0.py:615-619`. ⚠️ **Honest limit, so this is not read as a free fix:** `wire_sr`'s `LeftOutNode` variant reaches a *top-level* node via `VI.Block Diagram` (`toolkit-capabilities.md:42`), and the initialisers `#8953`/`#28124` sit on `Diagram#686`, which `docs/diagram-hierarchy.md:95-97` measures as a **FlatSequenceFrame** diagram, not the top level. The evidence does not settle which route is cheaper. It does settle that the write-back must exist either way.
+
+### B2 · ALREADY FAILED — no exact prior failure; **I am not firing this slug**
+
+There is no record of a `Q_sr1`/`Q_sr2` build or of this `Z/dZ → #2222` t0 build. The nearest record is the 1055-modal class (`docs/NAMES.md:473-475`: an invalid terminal refnum makes the creator call `Connect Wire` with an invalid reference → *"error 1055 dialog … that blocks the run"*; `:478-480`: an error-out indicator does **not** silence it) — which is a live hazard for the bare-`Equal?`, not a repeat of it. The contract mismatch itself is covered by A3: `OpCreateEqual_v0` fetches both operands inside the op from `Get Outputs` (`docs/toolkit-capabilities.md:52`), `tools/recipes/build_opsentinel_ops.py:397,400` passes `Names`/`Names 2` straight through, and `tools/recipes/build_d1_routeb_v0.py:747` calls it with `src_names=()`. The recipe's own docstring (`:742-744`) already admits this is unmeasured. A modal dialog is disqualifying under the unattended-run requirement, so this path should not be first-choice in a run nobody is watching.
+
+### B3 · HELPER EXISTS — two, both answering questions the plan asks
+
+- **`gscript.set_index_mode(target, tunnel_index, mode)`** — `tools/gscript.py:1798`, for A3(ii).
+- **`Wire.Disconnect Terminal` `6370C0D`** — `docs/NAMES.md:896`, established in `archive/peer/2026-09-15-opwiresource-fail3-branch-wire-is-one-object.md:28-35`. That file **answers question 4 outright**: `:24` — *"A branched net is represented by one `Wire` object … deleting the Wire GObject removes the complete net"*; `:32-35` and the disposition `:49-52` — deleting the disposable **sink node** and running Remove Bad Wires keeps the branch. So decision 2's delete step is safe **provided the temporary NODE is deleted, never the wire**. No new measurement needed. The recorded hazard for this trick is in `gscript.wire_indicators`' own docstring, `tools/gscript.py:1708-1713`: *"Each source terminal MUST ALREADY BE WIRED … An UNWIRED source makes it extend an unrelated wire instead → 'This wire connects more than one data source' and the target breaks."*
+
+### B4 · ALREADY MEASURED — the diagnostic re-measures what is on disk, and skips what is not
+
+- Register geometry: `docs/frame-loop-wire-graph.md:403-424` (right side: uid, per-frame writer, wire) and `:426-447` (left side: initialiser, per-frame reader, wire). Rows 8 and 12 at `:417`, `:421`, `:440`, `:444` carry every fact P1–P3 goes to LabVIEW for.
+- **Question 3 has a recorded answer, and it is "not structurally":** `docs/stage2-assembly-step-b.md:53` — *"the fleet cannot read type descriptors, so the gate is FUNCTIONAL instead."* So no `diag_*` can establish that the queue carries the register's type; only a run against the fixture can. This matters because LabVIEW queues are strictly typed and a near-miss surfaces as a **coercion dot**, not a break — i.e. silently, which is the rule-1a failure mode ([NI forum: keeping types straight](https://forums.ni.com/t5/LabVIEW/How-to-keep-types-straight-in-PPLS/td-p/3298363), [element data type of a queue](https://forums.ni.com/t5/LabVIEW/Is-it-possible-to-get-the-element-data-type-of-a-Queue-from/td-p/3055592)).
+
+---
+
+## On question 2, since the evidence separates its two halves
+
+**The VALUE is safe; the ORDERING is not measured.** A left shift-register terminal holds one fixed datum for the whole iteration — the right terminal's value transfers to the left at the end of an iteration and is what the body reads for all of the next one ([LabVIEW Wiki: Shift register](https://labviewwiki.org/wiki/Shift_register)) — so a branch off that wire is value-identical to what `#1359` t1 read, and there is no write/read race within the iteration. The reasoning in `build_d1_routeb_v0.py:760-764` is right on that point.
+
+What is *not* established is that the enqueue stays paired with `Q_work`: the enqueue has no dataflow dependency on the rest of 1.1's body, and `archive/peer/2026-09-14-stage2-shiftreg-primitive.md:101` names iteration skew as the failure mode. The project's own answer is the error chain at `docs/stage2-assembly-step-c.md:39-42`, which this plan does not adopt. Separately, `docs/NAMES.md:763-764` — *"**Never run a scripted VI with a `Dequeue(-1)`**: a producer that silently produces nothing … turns it into a COM hang"* — applies to two new queues that get no sentinel (only three are planned, `docs/d1-route-b-plan.md:337`).
+
+---
+
+```
+PRIOR-ART: settled-already
+PRIOR-ART: refuted-already
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-built
+PRIOR-ART: helper-exists
+PRIOR-ART: already-measured
+```
+
+**Sources:** [LabVIEW Wiki — Shift register](https://labviewwiki.org/wiki/Shift_register) · [NI forum — keeping types straight in PPLs](https://forums.ni.com/t5/LabVIEW/How-to-keep-types-straight-in-PPLS/td-p/3298363) · [NI forum — element data type of a queue](https://forums.ni.com/t5/LabVIEW/Is-it-possible-to-get-the-element-data-type-of-a-Queue-from/td-p/3055592)
+=== DUAL DONE: codex rc=0, opus rc=0  (archive\peer\2026-09-17-priorart-routeb-run3-codex.md, -priorart-routeb-run3-opus.md) ===
+BGRUN END rc=0 after 952s

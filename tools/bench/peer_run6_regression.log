@@ -1,0 +1,66 @@
+BGRUN START 2026-09-19 02:13:08 limit 18.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug routeb-run6-regression -TaskFile 'C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/fee43e75-2631-4a81-a8bb-ca14d4a6342f/scratchpad/task_run6_regression.md' -TimeoutSec 900
+OUTCOME: ANSWERED (680s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-19-routeb-run6-regression.md
+COST: $3.6636  in 28 / out 44997 / cache-create 171918 / cache-read 1500108  (678s, 24 turn(s))
+--- ANSWER ---
+**The claim is wrong in its premise: run 6's change set *did* touch the `Correction Factor` row — it wired into that row's own node, `#2222`, minutes earlier in the same pass.** Every row whose outcome changed between run 5 and run 6 is a terminal of `#2222`, and the ledger totals close on that and nothing else:
+
+| | run 5 | run 6 | delta |
+|---|---|---|---|
+| WIRED | 57 | 55 | −1 (`#2222 t5`) −2 (`#2222 t3`,`t4`) +1 (`#2222 t0` = Z/dZ) |
+| FAILED | 6 | 7 | +1 (`#2222 t5`) |
+| NO-ROUTE | 3 | 4 | −1 (Z/dZ) +2 (`#2222 t3`,`t4`) |
+
+`run5.log:338,385-387,402` vs `run6.log:362,408,418,425-426`. In run 5, `#2222 t3` and `t4` were **WIRED** (`run5.log:385-386`); in run 6 they read `'<no such terminal>'`. The six `report_all … error 2` rows are byte-identical in both runs (`run5.log:396-401` ≡ `run6.log:419-424`). So run 6 changed exactly one node's state and exactly that node's rows broke. "Without disturbing any other row" is refuted arithmetically.
+
+---
+
+## Q-A — the verification does not establish that `#2222 t0` is on the control's net
+
+**Strongest reason: the identity check bottoms out at the *diagram*, which every candidate shares.** `wire_source_owner(w29238)` reports the one source terminal's owner as `Diagram#567` (`run6.log:354`) — the same value the ControlTerminal census reports as *its* owner (`:353`). Terminals are owned by nodes; a source terminal reported as owned by a Diagram means either the helper hops one level too far, or the source is some top-level node on diagram 24. Either way the predicate satisfied is "the source is *something* in diagram 24", true of ~30 objects including the node the wire should *not* be on.
+
+Three supports, all from the machine:
+
+1. **A wire id is an allocation slot, not an identity.** NI's own documentation: *"if you delete an object, LabVIEW might assign the UID for that deleted object to a different object in the future"*, and it advises checking Class Name or Label **alongside** the UID "to detect this situation" ([LabVIEW Wiki, GObject UID property](https://labviewwiki.org/wiki/GObject_class/UID_property)). This VI demonstrably recycles: run 6's new objects got uids 1581, 2043, 3176, 5950, 10413 (`run6.log:404,412-416`) while its other new objects sit at 26 000–29 000. And wire **29238** was, one run earlier, the from-tunnel wire on `#2222 t3` (`run5.log:385`).
+2. **Everything probative was read while the temporary still existed.** Source, `Is Broken? False`, delta 0 are all at `:354-355`, before the delete. The only post-delete read is the id itself (`:356`) — the one quantity the doc above says is insufficient on its own.
+3. **The cited proof line contains an unread anomaly**: the wire's third terminal reads `owner_class '', owner_uid 0` (`:354`). Either the census cannot read that terminal — making its `i=0` reading equally suspect — or the wire carries a terminal attached to nothing. It was passed over as "1 of them sources".
+
+**A sufficient verification reads, after the delete:** the sink terminal's wire `W`; `wire_source_owner(W)` returning exactly one source whose **own uid is 403** (not its owner's), with that terminal's class printed; `ControlTerminal#403`'s own wire equal to `W`; the Wire-object count delta across create+delete equal to 0; and — per CLAUDE.md's "structural is not functional" — `ExecState` 1 at the end plus numbers through the path. The fleet already prints `uid → self 'ControlTerminal'#403` (`run6.log:352`), so the discriminating read exists and was not used here.
+
+## Q-B1 — mechanism: a destination-side fault, invariant under a source-side retry
+
+1. **Diagram 24's entire node index space is +1 in run 6.** Run 5 addressed N[1],3,5,7,13,15,17,19,21,25,27; run 6 addresses N[2],4,6,8,14,16,18,20,22,26,28,30 (`run5.log:362-392` vs `run6.log:386-417`). Not a local shift at `#2222` — a global one from slot 1 up, i.e. one extra object in the walk. `wmap` is cached per (target, diagram) and invalidated **only** by an explicit `fresh=True` (`build_d1_v0.py:364-372`), and the Z/dZ path changes diagram 24's node population twice: create `Equal? #10105` (`:350`), delete it (`:356`).
+2. `from-ctl` rows address the sink by **class index** but verify it by **node index** (`build_d1_routeb_v3.py:1748-1749`), so the recipe and the machine can disagree about which object `D[24].N[n]` names — which is what `'<no such terminal>'` on `t3`/`t4` looks like.
+3. `wire_control` **raised**, and the message prefix proves the branch: `branch=True` (`:1748`) disables the Wire-count guard at `gscript.py:1964`, and `count()` failures carry their own `count(Wire) on …` prefix — so the raise is `gscript.py:1957`, LabVIEW's own `error out` from `OpWireCtl_v0`.
+4. Therefore `after` never left its initialiser (`:1741`), and `tried.append((sd, str(e)[:70], 0))` (`:1753`) recorded a literal 0. **`sink wire 0 -> 0` is not a measurement** — `#2222 t5` was never read after the attempts. The wire may exist.
+5. The retry varies only `src_diagram_index` — the diagram `Get Controls` searches for the *control* (`gscript.py:1947-1949`). It never varies the destination. **A destination-side fault is invariant under this retry**, which is precisely why both attempts fail identically. "Failed on both indices" is the fingerprint of the fault being on the end the retry does not move, not evidence of a new cause.
+
+**Alternative explanation of the same evidence** (the measurement does not yet separate it from the above): the op *did* create the wire on attempt 1 and errored afterwards; the index-addressed readback at `:1749` then looked at the wrong node, returned 0, `if after: break` didn't fire, and attempt 2 re-entered on an already-wired control. Same `0 -> 0`, same two attempts, wire present on the diagram. Q-B3 separates them.
+
+**What would falsify my answer:** `#2222` sitting at live index 20 with its run-5 terminal census intact (7 terminals, `t3`/`t4`/`t5` present and named) on the preserved copy. Then the index space was not stale and the fault is inside `OpWireCtl_v0` for a CaseStructure destination.
+
+## Q-B2 — TWO faults
+
+`Class Operator:Traverse (Traverse Failed)` is a **separate, pre-existing** fault. It is at the same call site in runs 4, 5 and 6 (your own brief), and its six victim rows are identical strings in runs 5 and 6 (`run5.log:396-401` ≡ `run6.log:419-424`) — a run in which `Correction Factor` wired successfully. **A constant cannot explain a change.** Error 2 is LabVIEW's "Memory is full", and NI documents it specifically for *opening a new reference* ([NI KB: Error 2: Memory is Full when Opening a New Reference](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019KhWSAU)) — consistent with refnum pressure inside the op VIs, which `gscript.py:236-238` already states its counters cannot see.
+
+Two caveats on your "ruled out" list, because both bear on this: (a) `_REF_CLOSED` is incremented unconditionally in `vi_ref`'s `finally` (`gscript.py:251-259`), so `live: 0` is a tautology, not a measurement — and a `with vi_ref(t) as r:` binding outlives the block in the caller's frame, so `ref = None` is not "the only name that ever held it"; (b) the thing that makes Q-B2 answerable is not that reading but the run-to-run invariance above.
+
+**What would flip me to ONE fault:** `#10105` still present on the preserved copy (i.e. `temporary deleted=True` is false), or the recovered full `Correction Factor` error string turning out to be `error 2 … Traverse`.
+
+## Q-B3 — cheapest discriminating test (procedure, as written)
+
+Run 6 renamed its working copy aside instead of deleting it (`run6.log:437`). The failing state is **on disk**. Reuse the pattern already in `build_d1_routeb_v3.py:415-455` (`crash_copy_measure`): restart LabVIEW, read, save nothing, run nothing. No build, no rig, no gate.
+
+1. Print `md5`, size and **mtime** of `SCRATCH_routeb_013612_crash_020648.vi`, and compare mtime with the run's last `g.save(TARGET)` (`build_d1_routeb_v3.py:1899`). If the file predates S3w, **stop — the test is void**; go to step 6 instead.
+2. `g.count(CRASH,'LoopTunnel')` and `g.report_all(CRASH,'Diagram')` on the fresh instance. **Succeeds ⇒ error 2 is session state** (refnum/memory inside the op VIs), confirming Q-B2's "two faults". Fails identically ⇒ it is VI content, and the temp-node surgery becomes a suspect for both.
+3. Fresh walk of diagram 24 (`wmap(CRASH, 24, fresh=True)`): does `#10105` still exist, and is `#2222` at index **19 or 20**?
+4. `g.node_terms(CRASH, 24, idx(#2222))` — full census t0…t6: name, `is_source`, `wire`.
+5. For `t0`'s wire and `t5`'s wire, print **each terminal's own uid and class**, not its owner.
+
+Readings decide: `#2222` at 19 with 7 terminals ⇒ the recipe's index space was +1 stale (Q-B1 as stated). `t5` carrying a **non-zero** wire ⇒ the row was wired and `FAILED` is bookkeeping (the alternative). `t0`'s source uid **403** ⇒ half A holds; anything else ⇒ it is on another net.
+
+6. One-line fix regardless: `str(e)[:70]` truncates at exactly the colon before LabVIEW's error code — at eight sites (`build_d1_routeb_v3.py:1075, 1237, 1360, 1412, 1421, 1452, 1498, 1753`). Change #3 was added to stop throwing that remainder away (`gscript.py:438-441`); the callers still throw it away. That is the same `unread-evidence` finding recurring inside the run that was supposed to close it.
+
+Sources: [LabVIEW Wiki — GObject UID property](https://labviewwiki.org/wiki/GObject_class/UID_property) · [NI — Error 2: Memory is Full when Opening a New Reference](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019KhWSAU) · [NI — Block Diagram:Remove Bad Wires](https://www.ni.com/docs/en-US/bundle/labview/page/lvscript/vi_block_diagram058remove_bad_wires.html)
+
+*(I could not write the plan file — Write is disabled in this session, correctly for a read-only peer role — so the review above is the whole output.)*
+BGRUN END rc=0 after 680s

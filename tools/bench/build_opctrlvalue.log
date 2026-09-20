@@ -1,0 +1,20 @@
+BGRUN START 2026-09-12 22:01:11 limit 15.0 min: py -u tools/recipes/build_opctrlvalue.py
+
+== 1 donor inventory
+   predict: 4 Property nodes, 1 IndexArray, ExecState 1
+   observed: ({'Property': 4, 'IndexArray': 1, 'Node': 8, 'Wire': 9}, 1)
+
+== 2 locate the Control property node (the one reading Label + Indicator)
+   predict: one node whose terminals include 'Label' and 'Indicator'
+   observed: [(0, 43, ['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']), (1, 308, ['array', 'element', 'index']), (2, 369, ['error out', 'specific error cleared?', 'error in (no error)', 'specific error code to clear (0: all)']), (3, 370, ['error out', 'specific error cleared?', 'error in (no error)', 'specific error code to clear (0: all)']), (4, 112, ['reference', 'reference out', 'error in (no error)', 'error out', 'Panel']), (5, 113, ['reference', 'reference out', 'error in (no error)', 'error out', 'Controls[]']), (6, 114, ['reference', 'reference out', 'error in (no error)', 'error out', 'Label', 'Indicator']), (7, 115, ['reference', 'reference out', 'error in (no error)', 'error out', 'Text'])]
+   -> target node index 6, uid 114, terminals ['reference', 'reference out', 'error in (no error)', 'error out', 'Label', 'Indicator']
+
+== STOPPING HERE ON PURPOSE.
+   The next action edits a property node's selected property (Label -> Value). No op in the fleet does
+   that yet: build_property CREATES a node with given properties, it does not re-point an existing one.
+   So the real step is: delete the Label node, build a Value node in its place, and re-wire
+   IndexArray.element -> it. That is three known operations, but it is a BUILD, not a tweak - and this
+   script reports the inventory first so the build starts from measured facts rather than assumption.
+
+steps: [('1 donor inventory', True), ('2 locate the Control property node (the one reading Label + Indicator)', True)]
+BGRUN END rc=0 after 3s

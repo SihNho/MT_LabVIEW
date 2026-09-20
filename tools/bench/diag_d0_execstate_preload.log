@@ -1,0 +1,101 @@
+BGRUN START 2026-09-18 20:11:31 limit 60.0 min: py -u tools/bench/diag_d0_execstate_preload.py
+=== diag_d0_execstate_preload  2026-09-18 20:11:32
+  GATE PASS G0a ORIGINAL exists  | G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi
+  GATE PASS G0b D0 copy exists  | C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\Track_D0_copy_20260918.vi
+  FACT md5 ORIGINAL BEFORE   c39f36e0675339673b707c59f0784fee   Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi   471257 bytes
+  FACT md5 D0 COPY           c39f36e0675339673b707c59f0784fee   Track_D0_copy_20260918.vi   471257 bytes
+  GATE PASS G0c the D0 copy is byte-identical to the ORIGINAL  | copy c39f36e0675339673b707c59f0784fee vs original c39f36e0675339673b707c59f0784fee
+  FACT fresh scratch copy made in this run: SCRATCH_execstate_201132.vi  md5 c39f36e0675339673b707c59f0784fee
+
+=== C1a-COLD-D0COPY  preload=False  target=Track_D0_copy_20260918.vi
+  === CHILD C1a-COLD-D0COPY  preload=False  target=Track_D0_copy_20260918.vi
+    FACT lv_restart rc=0 'dialogs: 8,1346,762| / ENABLED|1114872|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)'
+    FACT handles after restart: 30652  (fresh baseline ~31,500)
+    FACT C1a-COLD-D0COPY ==> ExecState 0  (1 = idle/runnable, 0 = broken)   VI.Name 'Track_D0_copy_20260918.vi'
+    --- ExecState 0: MEASURE BEFORE CLOSING (cycle27 Pre-decided 14)
+    FACT SUBVI RESOLUTION: 7 calls over the first 8 of 170 diagrams; 4 with empty name/path or a path not on disk
+        UNRESOLVED Diagram[3] uid 30804 name='MOV.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\MOV.vi'
+        UNRESOLVED Diagram[4] uid 4620 name='GOH.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\Limits.llb\\GOH.vi'
+        UNRESOLVED Diagram[5] uid 5403 name='VEL.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\VEL.vi'
+        UNRESOLVED Diagram[5] uid 5497 name='POS?.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\POS?.vi'
+        subVI      Diagram[1] uid 26582 name='Simple Error Handler.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\vi.lib\\Utility\\error.llb\\Simple Error Handler.vi'
+        subVI      Diagram[3] uid 30804 name='MOV.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\MOV.vi'
+        subVI      Diagram[4] uid 4620 name='GOH.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\Limits.llb\\GOH.vi'
+        subVI      Diagram[5] uid 5403 name='VEL.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\VEL.vi'
+        subVI      Diagram[5] uid 5497 name='POS?.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\POS?.vi'
+    FACT BARE-TERMINAL CENSUS: 375 bare named input terminals over 170/170 diagrams (0 diagram reads raised), 39 s
+        BARE Diagram[1] Nodes[2].T[0] 'reference'
+        BARE Diagram[1] Nodes[2].T[2] 'error in (no error)'
+        BARE Diagram[1] Nodes[3].T[0] 'reference'
+        BARE Diagram[1] Nodes[3].T[2] 'error in (no error)'
+        BARE Diagram[1] Nodes[4].T[0] 'reference'
+        BARE Diagram[1] Nodes[4].T[2] 'error in (no error)'
+        BARE Diagram[1] Nodes[5].T[0] 'reference'
+        BARE Diagram[1] Nodes[5].T[2] 'error in (no error)'
+        BARE Diagram[1] Nodes[6].T[0] 'reference'
+        BARE Diagram[1] Nodes[6].T[2] 'error in (no error)'
+    FACT handles at end: 36478 (delta +5826)
+  GATE PASS C1a-COLD-D0COPY child completed  | rc=0 after 112 s
+
+=== C1b-PRELOAD-D0COPY  preload=True  target=Track_D0_copy_20260918.vi
+  === CHILD C1b-PRELOAD-D0COPY  preload=True  target=Track_D0_copy_20260918.vi
+    FACT lv_restart rc=0 'dialogs: 18,1346,762| / ENABLED|919982|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)'
+    FACT handles after restart: 30697  (fresh baseline ~31,500)
+    FACT ORIGINAL preloaded read-only: ExecState 1, VI.Name 'Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi'
+    FACT C1b-PRELOAD-D0COPY ==> ExecState 1  (1 = idle/runnable, 0 = broken)   VI.Name 'Track_D0_copy_20260918.vi'
+    FACT handles at end: 50948 (delta +20251)
+  GATE PASS C1b-PRELOAD-D0COPY child completed  | rc=0 after 68 s
+
+=== C2a-COLD-FRESHCOPY  preload=False  target=SCRATCH_execstate_201132.vi
+  === CHILD C2a-COLD-FRESHCOPY  preload=False  target=SCRATCH_execstate_201132.vi
+    FACT lv_restart rc=0 'dialogs: 18,1346,762| / ENABLED|985844|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)'
+    FACT handles after restart: 30688  (fresh baseline ~31,500)
+    FACT C2a-COLD-FRESHCOPY ==> ExecState 0  (1 = idle/runnable, 0 = broken)   VI.Name 'SCRATCH_execstate_201132.vi'
+    --- ExecState 0: MEASURE BEFORE CLOSING (cycle27 Pre-decided 14)
+    FACT SUBVI RESOLUTION: 7 calls over the first 8 of 170 diagrams; 4 with empty name/path or a path not on disk
+        UNRESOLVED Diagram[3] uid 30804 name='MOV.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\MOV.vi'
+        UNRESOLVED Diagram[4] uid 4620 name='GOH.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\Limits.llb\\GOH.vi'
+        UNRESOLVED Diagram[5] uid 5403 name='VEL.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\VEL.vi'
+        UNRESOLVED Diagram[5] uid 5497 name='POS?.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\POS?.vi'
+        subVI      Diagram[1] uid 26582 name='Simple Error Handler.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\vi.lib\\Utility\\error.llb\\Simple Error Handler.vi'
+        subVI      Diagram[3] uid 30804 name='MOV.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\MOV.vi'
+        subVI      Diagram[4] uid 4620 name='GOH.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\Limits.llb\\GOH.vi'
+        subVI      Diagram[5] uid 5403 name='VEL.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\VEL.vi'
+        subVI      Diagram[5] uid 5497 name='POS?.vi' path='C:\\Program Files\\National Instruments\\LabVIEW 2026\\instr.lib\\Mercury\\GCS_LabVIEW\\Low Level\\General command.llb\\POS?.vi'
+    FACT BARE-TERMINAL CENSUS: 375 bare named input terminals over 170/170 diagrams (0 diagram reads raised), 35 s
+        BARE Diagram[1] Nodes[2].T[0] 'reference'
+        BARE Diagram[1] Nodes[2].T[2] 'error in (no error)'
+        BARE Diagram[1] Nodes[3].T[0] 'reference'
+        BARE Diagram[1] Nodes[3].T[2] 'error in (no error)'
+        BARE Diagram[1] Nodes[4].T[0] 'reference'
+        BARE Diagram[1] Nodes[4].T[2] 'error in (no error)'
+        BARE Diagram[1] Nodes[5].T[0] 'reference'
+        BARE Diagram[1] Nodes[5].T[2] 'error in (no error)'
+        BARE Diagram[1] Nodes[6].T[0] 'reference'
+        BARE Diagram[1] Nodes[6].T[2] 'error in (no error)'
+    FACT handles at end: 36752 (delta +6064)
+  GATE PASS C2a-COLD-FRESHCOPY child completed  | rc=0 after 108 s
+
+=== C2b-PRELOAD-FRESHCOPY  preload=True  target=SCRATCH_execstate_201132.vi
+  === CHILD C2b-PRELOAD-FRESHCOPY  preload=True  target=SCRATCH_execstate_201132.vi
+    FACT lv_restart rc=0 'dialogs: 8,1346,762| / ENABLED|1313672|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)'
+    FACT handles after restart: 30691  (fresh baseline ~31,500)
+    FACT ORIGINAL preloaded read-only: ExecState 1, VI.Name 'Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi'
+    FACT C2b-PRELOAD-FRESHCOPY ==> ExecState 1  (1 = idle/runnable, 0 = broken)   VI.Name 'SCRATCH_execstate_201132.vi'
+    FACT handles at end: 50647 (delta +19956)
+  GATE PASS C2b-PRELOAD-FRESHCOPY child completed  | rc=0 after 68 s
+  GATE PASS G6b scratch copy deleted by the run that made it  | SCRATCH_execstate_201132.vi
+  FACT md5 ORIGINAL AFTER    c39f36e0675339673b707c59f0784fee
+  GATE PASS G6a ORIGINAL md5 UNCHANGED  | c39f36e0675339673b707c59f0784fee -> c39f36e0675339673b707c59f0784fee
+
+=== SUMMARY TABLE
+  C1a-COLD-D0COPY          preload=False ExecState=0          VI.Name='Track_D0_copy_20260918.vi'
+  C1b-PRELOAD-D0COPY       preload=True  ExecState=1          VI.Name='Track_D0_copy_20260918.vi'
+  C2a-COLD-FRESHCOPY       preload=False ExecState=0          VI.Name='SCRATCH_execstate_201132.vi'
+  C2b-PRELOAD-FRESHCOPY    preload=True  ExecState=1          VI.Name='SCRATCH_execstate_201132.vi'
+  FACT D0 copy    : cold 0 vs preloaded 1 -> DIFFERENT
+  FACT fresh copy : cold 0 vs preloaded 1 -> DIFFERENT
+  FACT C3(i) `Wire.Is Broken?` 6371004 NOT RUN - the only built readout fires after a `Terminal.Connect Wire` (a WRITE) and docs/NAMES.md:898-909 measured that it perturbs the target; a held-terminal reader is 'NOT BUILT' (docs/toolkit-capabilities.md:68). Not performable in a read-only dispatch.
+
+=== GATES 9 pass / 0 fail
+BGRUN END rc=0 after 365s

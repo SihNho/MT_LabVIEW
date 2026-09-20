@@ -1,0 +1,90 @@
+BGRUN START 2026-09-17 05:46:45 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/recipes/probe_move_ctlterm_v0.py --slug ctlterm-move --trigger new-op
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_ctlterm-move.txt (28223 chars)
+OUTCOME: ANSWERED (631s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-ctlterm-move.md
+COST: $5.9581  in 72 / out 44950 / cache-create 197896 / cache-read 5710105  (627s, 50 turn(s))
+--- ANSWER ---
+Write is disabled in this session, so the review is below in full. Read-only: no lock taken, nothing run, no project file touched.
+
+# PRIOR-ART REVIEW — `tools/recipes/probe_move_ctlterm_v0.py` (trigger: new-op)
+
+## PART A — THE DIRECTION
+
+### A1 SETTLED ALREADY — no. The central question is genuinely unmeasured.
+A `632A400` / `GObject.Move` sweep across `docs/`, `archive/` and `tools/bench/` finds no run, log or exchange that moves an object of class `ControlTerminal` to a different owner. The nearest measurements are `tools/bench/probe_move_into_v0.log` / `docs/d1-build-plan.md:205-223` (classes `Function` and `CaseStructure` only) and `docs/toolkit-capabilities.md:525` (a panel-less Move "did not move" — the `ensure_loaded` decline, which this file covers via `g.open_panel` and `move_in`'s `ensure_loaded`). **Not slugged.**
+
+### A2 REFUTED ALREADY — no.
+`docs/decisions.md:19` and `docs/restructure-plan-4.6.md:79-81` declare `GObject.Move` "not needed", but `tools/recipes/probe_relocate_route.py:10-15` scopes that to plain primitives and subVI calls built fresh in the destination, and `docs/d1-build-plan.md:40-44` already overturned it for structures on measurement. Nothing argues against relocating a terminal. **Not slugged.**
+
+### A3 CONTRADICTED — two, both quotable.
+
+**(i) "no Local creator" is not what the cited line says, and other files say otherwise.**
+The docstring ("WHAT ALREADY EXISTS") and `docs/d1-build-plan.md:155-156` dismiss route (ii) with *"no Local creator (`toolkit-capabilities.md:254`)"*. `docs/toolkit-capabilities.md:254` reads:
+
+> "creating front-panel objects from nothing | no op. `create_control` / `create_indicator` work **from a node terminal**; a free-standing control needs `New VI Object` with a control style from the ring, never built"
+
+That is about front-panel objects, not `Local` nodes. Against it, in our own files:
+- `docs/toolkit-capabilities.md:263` — `Local` is a **valid** Traverse class, 8 objects in this VI.
+- `docs/NAMES.md:246` — "`Local`: `Control` 6355403, **`Control Name` 6355400**"; `archive/peer/2026-09-14-implicit-property-node-linked-object.md:28-29` records `Control Name` as **read/write** — a Local's binding is re-pointable given a typed reference.
+- `docs/restructure-plan-4.6.md:242-243` — the recorded route for a node the fleet cannot create is **copy it from a donor** (same mechanism as `docs/toolkit-capabilities.md:122`).
+- `docs/restructure-plan-4.6.md:225-226` — *"adopted as an unconditional design rule for stage 1: inside the frame path, front-panel access uses **local variables**, never `Value` property nodes."*
+
+Route (ii) is **unmeasured, not impossible**, and the project's own design rule points at it. This does not touch the probe's measurement of route (i) — it is load-bearing only for the judgement the probe explicitly hands off (`docs/d1-build-plan.md:153-158`), which is exactly where a false "impossible" does damage. Disposal is one sentence.
+
+**(ii) Is every `ControlTerminal` a `panel_wiring` row? Two records disagree, and Q4 rests on the answer.**
+- `docs/toolkit-capabilities.md:511-512` (cited by the probe): "fp_labels returns 114 and `report("ControlTerminal")` returns 114 — every front-panel object has exactly one diagram terminal in this VI."
+- `archive/peer/2026-09-16-stop-condterm-panel-fail2.md:128-131`, an **accepted** disposition: "`panel_wiring` is NOT recursive … the unmatched second sink of wire 3457 is fully explained by an ordinary front-panel `ControlTerminal` belonging to a **tab-page-nested** control" — i.e. a ControlTerminal with no panel row.
+- `tools/gscript.py:640` — "Not recursive: tab pages / cluster elements are not rows"; `fp_labels` walks the same `Panel.Controls[]` (`tools/gscript.py:2233-2235`), so 114 = 114 is two **non-recursive** counts agreeing, not a proven bijection.
+- The newer resolution exists: `docs/d1-build-plan.md:259-263` — that second sink is **`#637`'s conditional terminal uid 648**, measured 2026-09-17 by `OpLoopEndRef_v0`. The tab-page explanation is superseded and the archive entry still reads as accepted.
+
+Q4's claim that the changed row "NAMES which object moved" and "is the proof that the object moved was a real panel terminal" holds only if the chosen terminal has a row. Cite the 2026-09-17 resolution, or report Q4 rather than gate on it.
+
+### A4 UNREAD EVIDENCE — `docs/stage2-plan.md:92-94` already names this exact route; only its first half is quoted.
+The probe and `docs/d1-build-plan.md:148-151` cite `stage2-plan.md:90-94` for the read-once rule. The same sentence continues:
+
+> "the stage-2 VI stops its loops from a Boolean read every iteration — **a local variable of `Stop` inside each loop, or the control's terminal moved into one loop and locals in the others**"
+
+So "move the terminal into the loop" is not a candidate invented at `d1-build-plan.md:153`; it is the project's own written mechanism, paired with locals precisely because one terminal serves only one loop. Citing it costs a line and changes the framing from "three unsettled candidates" to "the planned mechanism, never measured".
+
+## PART B — THE ARTIFACT
+
+### B1 ALREADY BUILT — no new op is created. Clean.
+`OpMoveIn_v0.vi` exists and is class-agnostic (uid → `UID to GObject Reference.vi` → `Move.reference`); `OpOwnerChain_v1`/`read_owner` is imported, not re-written; `ls tools/recipes | grep -i move` is `build_opmove` / `build_opmovebyindex` / `build_opmoveout` / `probe_move_into_v0`, none touching this class. `UID_LABEL = "UID 3"` matches STATUS OPEN 19b and `docs/d1-build-plan.md:216`.
+
+### B2 ALREADY FAILED — no.
+The sister probe's three deaths were all in the *build* of `OpMoveIn_v0` (`docs/d1-build-plan.md:190-194`), and this file does not rebuild it. The habit that killed run 3 — a fixed op path served from LabVIEW's memory (`STATUS.md` START-HERE 5) — applies to **editing** a VI at a fixed path; here the op is only run. Cleared.
+
+### B3 HELPER EXISTS — two, both hand-rolled.
+
+**(i) The 114-uid owner census re-derives what `report_all` returns in one run.** `report_all()` returns an `owner` field per object (`tools/gscript.py:291,:322`, from `report()`'s `Class Name 3` at `:281`), and the measured output shows it populated per ControlTerminal: `tools/bench/census_opwiresource_v5.log:24-43` — `class=ControlTerminal owner=TopLevelDiagram`. Terminals on the VI's top-level diagram report `TopLevelDiagram`; only rows whose owner class is `Diagram` can be inside a loop body. The probe fetches that field, prints it as a FACT, then still runs 114 op runs.
+
+Consequence, not just cost: every op run against a main-VI-sized target carries ~0.99 s of fixed overhead (`docs/toolkit-capabilities.md:313-325`, "one bare op run, the MAIN VI 960.8 ms"), and the census has a **420 s budget with a `break`**. If truncation lands before the first `Diagram#639`-owned terminal, `inside` is empty, Q1b fails, and the run `return 1`s **without ever asking Q3** — the failure mode the sister probe spent two rounds eliminating. The pre-filter is free.
+
+**(ii) `handles()` duplicates `tools/bench/bench_prep.py:64-71 labview_handles()`** byte for byte (same PowerShell string, same `int(... or 0)` fallback). This substitution was raised and accepted on the sister file (rev-4 finding B3, quoted in `tools/recipes/probe_move_into_v0.py`'s own `handles()` docstring; `archive/peer/2026-09-17-priorart-priorart-moveinto-rev6.md`), and the policy that reads the number sits beside it (`HANDLE_LIMIT` `:61`, restart `:74-79`). With STATUS OPEN 23 open at **51,530 handles**, the number this run reports should come from the reader the limit is stated against. One import line.
+
+### B4 ALREADY MEASURED — Q1 only, and the probe cites it. Not slugged.
+`ControlTerminal` 114: `tools/bench/probe_local_class.log:22` (2026-09-13) and `docs/toolkit-capabilities.md:511`. `panel_wiring` 114 rows: `tools/bench/diag_d1_step0.log:17` (G5). Two op runs on a fresh scratch copy is a legitimate re-assert. The **question** (Q3) is unmeasured.
+
+## Checked and cleared — so the next round does not re-derive it
+
+1. **The class is addressable and mutable by the generic op family, measured:** `tools/bench/diag_delete_matrix.log:115,:118` — `ControlTerminal open_panel=True 38 → 37 REMOVED ONE, err=(False,0,'')` — and `docs/toolkit-capabilities.md:531` says "Delete and Move behave identically" for the panel-open decline. Worth citing as the premise's support; it does not answer reparenting, so **not** a blocking slug.
+2. **No reader maps a panel object to its `ControlTerminal` uid — the claim is correct.** `panel_wiring` returns the control's uid and the wire's uid, never the terminal's (`tools/gscript.py:637-639,:665-668`); `OpWireSource_v5`'s `read_terminal` returns each terminal's **owner** class/uid, not its own (`tools/recipes/build_opwiresource_v5.py:167-171`). Identification by effect is the right shape.
+3. **`ControlTerminal` is a `Terminal`, not a `Node`** (`archive/peer/2026-09-14-dispI-controlterminal-route.md:22`), which is why the diagram tree and `net_map` cannot see it (`docs/toolkit-capabilities.md:494,:506-509`) and why an owner read is the right instrument.
+4. **`archive/peer/2026-08-28-copy-nodes-between-vis.md:160`** ("do not assume copying only the terminal gives predictable front-panel placement") is about **cross-VI copy with `Duplicate?`**, not within-VI reparenting. Adjacent, not a refutation.
+5. Invoke purge, `new_since`'s own index, identity echo, md5 before/after, scratch deleted in-run — all present in the shape the sister probe's rounds settled.
+
+## Residual, deliberately NOT slugged (plan merit, not prior art)
+
+`chosen = inside[0]` takes whatever the census finds first. If that terminal is **bare** (wire 0 before and after), Q4's `changed` list is empty and the run yields no identification while Q3 still passes — yet the docstring promises identification as the proof. `docs/d1-build-plan.md:139-145` already names six terminals known to be wired (`Auto-Reset` w9806, `Reset Tracking` w10312, `Z/dZ` w730, `Correction Factor` w6096, `min value` w17287, `Force … Extension` w10908); preferring an `inside` candidate whose panel row carries a wire costs nothing.
+
+```
+tools/recipes/probe_move_ctlterm_v0.py
+PRIOR-ART: contradicted    (A3-i — docs/toolkit-capabilities.md:254 vs :263, docs/NAMES.md:246, archive/peer/2026-09-14-implicit-property-node-linked-object.md:28-29, docs/restructure-plan-4.6.md:225-226,:242-243 — covers ONLY the "no Local creator" parenthetical and d1-build-plan §0d route (ii))
+PRIOR-ART: contradicted    (A3-ii — docs/toolkit-capabilities.md:511-512 vs archive/peer/2026-09-16-stop-condterm-panel-fail2.md:128-131 and tools/gscript.py:640, resolved by docs/d1-build-plan.md:259-263 — covers Q4's identification premise)
+PRIOR-ART: unread-evidence (A4 — docs/stage2-plan.md:92-94 names "the control's terminal moved into one loop and locals in the others"; only :90-91 is quoted)
+PRIOR-ART: helper-exists   (B3-i — tools/gscript.py:291,:322,:281 + tools/bench/census_opwiresource_v5.log:24-43: report_all already returns each ControlTerminal's OWNER CLASS in one run; the 114-run census under a 420 s break can end the run at Q1b without asking Q3)
+PRIOR-ART: helper-exists   (B3-ii — tools/bench/bench_prep.py:64-71,:61: handles() duplicates labview_handles(), the reader STATUS OPEN 23's 51,530 is stated against)
+```
+
+None of the five stops the *measurement* — Q3 as written still answers whether `GObject.Move` reparents a `ControlTerminal`. Four are one-line disposals (a citation, a filter, an import); A3-ii is the one that changes what Q4 may claim.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-ctlterm-move.md
+BGRUN END rc=0 after 631s

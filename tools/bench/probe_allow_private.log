@@ -1,0 +1,29 @@
+BGRUN START 2026-09-14 01:56:08 limit 12.0 min: py -u tools/recipes/probe_allow_private.py
+scratch ready, ExecState 1
+
+== Invoke.Set Method (Allow Private)   class=VI Server:Invoke id=6370003
+   predict: PUBLIC -> method-specific terminals appear; PRIVATE -> only the generic four
+   OBSERVED: node uid 324 created but not found by net_map
+
+== Property.Set Properties[] (Allow Private)   class=VI Server:Property id=636F406
+   predict: PUBLIC -> method-specific terminals appear; PRIVATE -> only the generic four
+   OBSERVED: node uid 1868 created but not found by net_map
+
+== Terminal.Create Indicator  (PUBLIC control)   class=VI Server:Terminal id=6349C02
+   predict: PUBLIC -> method-specific terminals appear; PRIVATE -> only the generic four
+   OBSERVED: node uid 3376 created but not found by net_map
+
+################ SUMMARY ################
+  Invoke.Set Method (Allow Private)              node not found                   
+  Property.Set Properties[] (Allow Private)      node not found                   
+  Terminal.Create Indicator  (PUBLIC control)    node not found                   
+
+VERDICT:
+  BRANCH B - the Allow-Private setters are themselves unattachable: circular.
+  The remaining scripted route is a donor node copied with `Create from Reference`, and
+  creating that donor needs one gated GUI action. NOT to be taken unattended.
+  (The third row is the control: if the PUBLIC method also shows NOT ATTACHED, the probe itself
+   is broken and neither verdict above means anything.)
+
+scratch deleted
+BGRUN END rc=0 after 26s

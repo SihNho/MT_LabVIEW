@@ -1,0 +1,25 @@
+BGRUN START 2026-09-14 00:15:17 limit 8.0 min: py -c 
+import sys,os,shutil,time; sys.path.insert(0,'tools')
+import gscript as g
+g._lv=None
+S=os.path.join(g.CLAUDEDEV,'SCRATCH_nodeinfo_probe.vi')
+if os.path.exists(S):
+    try: os.remove(S)
+    except OSError: pass
+shutil.copyfile(os.path.join(g.CLAUDEDEV,'OpReport_v3.vi'), S)
+g.open_panel(S); time.sleep(0.8)
+print('Does Node.Style name a SubVI? OpReport_v3 calls Traverse for GObjects.vi + Open VI Reference.')
+for row in g.node_info(S, max_n=12):
+    print('   ', row, flush=True)
+try:
+    g.close_panel(S); time.sleep(0.3); os.remove(S); print('scratch deleted')
+except Exception as e: print('cleanup', str(e)[:80])
+
+Does Node.Style name a SubVI? OpReport_v3 calls Traverse for GObjects.vi + Open VI Reference.
+    (0, 'Open VI Reference', 'Open VI Reference')
+    (1, 'Unknown', 'Traverse for GObjects.vi')
+    (2, 'Index Array', 'Index Array')
+    (3, 'Property Node', 'Property Node')
+    (4, 'Property Node', 'Property Node')
+scratch deleted
+BGRUN END rc=0 after 10s

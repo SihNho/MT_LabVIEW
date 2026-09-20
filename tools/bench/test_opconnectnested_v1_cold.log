@@ -1,0 +1,37 @@
+BGRUN START 2026-09-17 13:41:15 limit 20.0 min: powershell -NoProfile -Command py -u tools/bench/bench_prep.py --restart; py -u 'tools/bench/test_opconnectnested_v1_cold.py'
+{"restarted": true, "actions": ["restart: handle count 31301 > 12000", "opened BD"], "handles": 31301, "handles_after_restart": 33985, "bd_open": true, "exec_state": 1, "windows": ["GUIBENCH_v0.vi Block Diagram", "GUIBENCH_v0.vi Front Panel", "LabVIEW"]}
+  FACT  handles before: 31270
+  PASS  C5a original working-copy md5 before  2a78e17c449cacdaf5da389818526859
+  FACT  labels: {'route': 'A-cross-diagram', 'vi_path': 'vi path', 'class_name': 'Class Name', 'sink_diag': 'index', 'sink_node': 'index 2', 'sink_term': 'index 3', 'src_node': 'index 4', 'src_term': 'index 5', 'src_diag': 'index 6', 'seed': 'reference', 'method': '6349C03'}
+  PASS  C1 COLD: OpConnectNested_v1 opens at ExecState 1 with TWO casts and the `index 6` control  ExecState 1, TMSC [683, 1045], src_diag 'index 6' present=True
+  FACT  C1 file 14666 B; 21 nodes; controls ['vi path', 'Class Name', 'index', 'vi path 2', 'location (0, 0)', 'Class Name 2', 'Class Name 3', 'error in (no error)', 'index 2', 'index 3', 'error in', 'index 4', 'index 5', 'reference', 'index 6']
+  PASS  C2 two While loops, one subVI in each body  bodies #110/#186 at indices 2/1, subVIs #45/#46
+      op readback {'UID': 46, 'Name': 'error in (no error)', 'UID 2': 0, 'Is Broken?': False}
+  FACT  C3 op error ''; wire delta 3; LoopTunnel 0 -> 2; ExecState 0 -> 0
+  PASS  C3 CROSS-DIAGRAM sink wired (0 -> non-zero)  sink w268
+  PASS  C3b the cross-diagram wire SURVIVES Remove Bad Wires (it is a GOOD wire, not a broken one)  after RBW w268 (was w268)
+  FACT  C4 For loop #49 inside body A after move_in: True (body A now at Traverse index 2)
+  FACT  C4 For loop #49 Nodes[1] on diagram 2: unnamed input terminals [(0, 0)]
+      op readback {'UID': 49, 'Name': '', 'UID 2': 0, 'Is Broken?': False}
+      C4 try src t0 'error out': delta 3, ExecState 0, unnamed-terminal wire 414, err ''
+  PASS  C4 an UNNAMED terminal on one nested diagram is reached from a source on ANOTHER (wire 0 -> non-zero)  (0, 'error out', 3, 0, 414, '')
+  FACT  C4 ExecState after the unnamed-terminal wire: 0 (a type-incompatible pair makes a BROKEN wire - a LabVIEW type fact, not an op failure)
+  FACT  C5 junk Invokes purged: [267, 125, 47]
+  FACT  scratch deleted: SCRATCH_cnv1c_134218.vi
+  PASS  C5b original working-copy md5 after  2a78e17c449cacdaf5da389818526859
+  FACT  handles after: 31673
+
+--- FACTS ---
+  handles before: 31270
+  labels: {'route': 'A-cross-diagram', 'vi_path': 'vi path', 'class_name': 'Class Name', 'sink_diag': 'index', 'sink_node': 'index 2', 'sink_term': 'index 3', 'src_node': 'index 4', 'src_term': 'index 5', 'src_diag': 'index 6', 'seed': 'reference', 'method': '6349C03'}
+  C1 file 14666 B; 21 nodes; controls ['vi path', 'Class Name', 'index', 'vi path 2', 'location (0, 0)', 'Class Name 2', 'Class Name 3', 'error in (no error)', 'index 2', 'index 3', 'error in', 'index 4', 'index 5', 'reference', 'index 6']
+  C3 op error ''; wire delta 3; LoopTunnel 0 -> 2; ExecState 0 -> 0
+  C4 For loop #49 inside body A after move_in: True (body A now at Traverse index 2)
+  C4 For loop #49 Nodes[1] on diagram 2: unnamed input terminals [(0, 0)]
+  C4 ExecState after the unnamed-terminal wire: 0 (a type-incompatible pair makes a BROKEN wire - a LabVIEW type fact, not an op failure)
+  C5 junk Invokes purged: [267, 125, 47]
+  scratch deleted: SCRATCH_cnv1c_134218.vi
+  handles after: 31673
+
+=== test_opconnectnested_v1_cold: 7 pass, 0 fail  (15 s) ===
+BGRUN END rc=0 after 77s

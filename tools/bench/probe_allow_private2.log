@@ -1,0 +1,34 @@
+BGRUN START 2026-09-14 01:57:39 limit 12.0 min: py -u tools/recipes/probe_allow_private2.py
+scratch ready, ExecState 1
+diagrams: [(0, '')]
+
+== CONTROL - Terminal.Create Indicator (known good)
+   class=VI Server:Terminal id=6349C02
+   build_invoke returned: [(324, (585, 900))]
+   report_all sees 1 Invoke object(s); new: [(324, (585, 900), 'TopLevelDiagram')]
+   found on diagram 0; terminals = ['reference', 'reference out', 'error in (no error)', 'error out', 'Create Indicator', 'Create Indicator']
+   -> ATTACHED; method-specific: ['Create Indicator', 'Create Indicator']
+
+== Invoke.Set Method (Allow Private)
+   class=VI Server:Invoke id=6370003
+   build_invoke returned: [(2102, (601, 900))]
+   report_all sees 68 Invoke object(s); new: [(2102, (601, 900), 'TopLevelDiagram')]
+   uid 2102 exists per report_all but net_map found it on NO diagram (0..5)
+
+== Property.Set Properties[] (Allow Private)
+   class=VI Server:Property id=636F406
+   build_invoke returned: [(3844, (599, 900))]
+   report_all sees 135 Invoke object(s); new: [(3844, (599, 900), 'TopLevelDiagram')]
+   uid 3844 exists per report_all but net_map found it on NO diagram (0..5)
+
+################ SUMMARY ################
+  CONTROL - Terminal.Create Indicator (known good) ATTACHED                           Create Indicator, Create Indicator
+  Invoke.Set Method (Allow Private)                object exists, reader cannot see it 
+  Property.Set Properties[] (Allow Private)        object exists, reader cannot see it 
+
+VERDICT: BRANCH B - the Allow-Private setters do not attach either, so the route is circular and the only
+  remaining scripted option is a donor node copied with `Create from Reference`. Creating that donor
+  needs one gated GUI action - NOT to be taken unattended.
+
+scratch deleted
+BGRUN END rc=0 after 32s

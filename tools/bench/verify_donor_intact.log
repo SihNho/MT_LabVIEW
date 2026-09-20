@@ -1,0 +1,17 @@
+BGRUN START 2026-09-13 21:37:03 limit 10.0 min: py -u -c 
+import os,sys,hashlib,glob
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+P=os.path.join(g.CLAUDEDEV,'OpReport_v3.vi')
+print('OpReport_v3 ExecState:',g.exec_state(P),flush=True)
+print('counts:',{c:g.count(P,c) for c in ('Node','Property','IndexArray','Wire')},flush=True)
+print('report() still works:',len(g.report(os.path.join(g.CLAUDEDEV,'OpWire_v1.vi'),'Node')),'nodes',flush=True)
+bad=[os.path.basename(p) for p in sorted(glob.glob(os.path.join(g.CLAUDEDEV,'Op*.vi'))) if g.exec_state(p)!=1]
+print('ops not ExecState 1:',bad or 'none',flush=True)
+
+OpReport_v3 ExecState: 1
+counts: {'Node': 5, 'Property': 2, 'IndexArray': 1, 'Wire': 17}
+report() still works: 11 nodes
+ops not ExecState 1: none
+BGRUN END rc=0 after 3s

@@ -1,0 +1,73 @@
+BGRUN START 2026-09-19 22:10:19 limit 25.0 min: py -u tools/bench/s1_savedcopy_census.py
+ - printed before anything runs. Gates are PASS/FAIL; only the two md5 gates are FATAL,
+because this is a MEASUREMENT, not a build:
+  G0  (FATAL) the ORIGINAL's md5 is the pin `2a78e17c449cacdaf5da389818526859` BEFORE the run.
+  G1  the saved arm `D1_s1arm_savetest.vi` is on disk and reads md5 `e0112963cc1b9e3be29d2bb053ba9029`,
+      475,141 B - i.e. it is the file phase A left, not a later copy.
+  G2  both VIs return an integer for each of the nine classes Diagram / Node / Wire / LoopTunnel /
+      ControlTerminal / WhileLoop / Local / SubVI / Function.
+  G3  the ORIGINAL's census equals the pinned BEFORE dict (Diagram 170 - Node 626 - Wire 1902 - LoopTunnel 132 -
+      ControlTerminal 114 - WhileLoop 3 - Local 8 - SubVI 98 - Function 181), `build_d1_routeb_v7.py:427-428`.
+      A FAIL here means the PIN is stale, not that the original changed - its md5 is gated separately.
+  G4  the saved arm's census equals the ORIGINAL's, class by class. NO PREDICTION IS OFFERED for the outcome;
+      both a match and a difference are the finding the brief asked for, and neither is interpreted here.
+  G5  `ref_counts()['live'] == 0` at the end (reference hygiene).
+  G6  (FATAL) the ORIGINAL's md5 is still the pin AFTER the run.
+
+  py tools/bgrun.py --material --max-min 25 --log tools/bench/s1_savedcopy_census.log -- py -u tools/bench/s1_savedcopy_census.py
+
+s1_savedcopy_census: ORIGINAL G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+s1_savedcopy_census: ARM      C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1arm_savetest.vi
+  FACT  G0 ORIGINAL md5 BEFORE 2a78e17c449cacdaf5da389818526859, 473317 B
+  PASS  G0 the ORIGINAL's md5 is the pin BEFORE the run  2a78e17c449cacdaf5da389818526859
+  FACT  G1 ARM md5 e0112963cc1b9e3be29d2bb053ba9029, 475141 B
+  PASS  G1 the saved arm is on disk with phase A's md5 and size  e0112963cc1b9e3be29d2bb053ba9029 / 475141
+  FACT  handles at entry: 34119; refs {'opened': 0, 'closed': 0, 'live': 0, 'cached_op_vis': 0}
+  FACT  F0: lv_restart rc=0: ['dialogs: ,1346,762| / ENABLED|18810416|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  F0: LabVIEW handles after the restart: 30691 (fresh baseline ~31,500)
+  FACT  P0: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened on it, nothing saved
+
+  === CENSUS: the ORIGINAL (read-only, resident)
+    ORIG Diagram          170
+    ORIG Node             626
+    ORIG Wire             1902
+    ORIG LoopTunnel       132
+    ORIG ControlTerminal  114
+    ORIG WhileLoop        3
+    ORIG Local            8
+    ORIG SubVI            98
+    ORIG Function         181
+
+  === CENSUS: the SAVED ARM
+    ARM  Diagram          170
+    ARM  Node             626
+    ARM  Wire             1902
+    ARM  LoopTunnel       132
+    ARM  ControlTerminal  114
+    ARM  WhileLoop        3
+    ARM  Local            8
+    ARM  SubVI            98
+    ARM  Function         181
+  FACT  P0: preload references released; refs {'opened': 0, 'closed': 0, 'live': 0, 'cached_op_vis': 1}
+  PASS  G2 both VIs returned an integer for all nine classes  []
+
+  === SIDE BY SIDE  (delta = arm - original)
+    class              ORIGINAL  SAVED ARM    delta    pin
+    Diagram                 170        170        0    170
+    Node                    626        626        0    626
+    Wire                   1902       1902        0   1902
+    LoopTunnel              132        132        0    132
+    ControlTerminal         114        114        0    114
+    WhileLoop                 3          3        0      3
+    Local                     8          8        0      8
+    SubVI                    98         98        0     98
+    Function                181        181        0    181
+  PASS  G3 the ORIGINAL's census equals the pinned BEFORE dict  {} (empty = all match)
+  PASS  G4 the saved arm's census equals the ORIGINAL's, class by class  {} (empty = identical) - NO prediction was offered; this line is the FINDING either way
+  FACT  ref_counts {'opened': 0, 'closed': 0, 'live': 0, 'cached_op_vis': 1}; handles 40518
+  PASS  G5 no VI Server reference left live  {'opened': 0, 'closed': 0, 'live': 0, 'cached_op_vis': 1}
+  FACT  G6 ORIGINAL md5 AFTER 2a78e17c449cacdaf5da389818526859
+  PASS  G6 the ORIGINAL's md5 is still the pin AFTER the run  2a78e17c449cacdaf5da389818526859
+
+RESULT 7 PASS / 0 FAIL; artefact G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\s1_savedcopy_census.json
+BGRUN END rc=0 after 74s

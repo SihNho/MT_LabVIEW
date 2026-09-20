@@ -1,0 +1,188 @@
+BGRUN START 2026-09-09 01:28:56 limit 6.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools/bench/peer_clfn_create.ps1
+OUTCOME: ANSWERED (165s)  archived: archive\peer\2026-09-09-clfn-create-and-configure.md
+--- ANSWER ---
+The practical answer is: a CLFN can be created and configured through VI Scripting; copying a donor is not technically mandatory. However, `Parameter Info` is only partly documented, its numeric enum encodings appear undocumented, and the robust production solution is usually to copy a hand-configured donor CLFN and change only its simple properties.
+
+## 1. Creating the CLFN
+
+`New VI Object` accepts the specific VI Server class:
+
+```text
+Generic
+  GObject
+    Node
+      GrowableFunction
+        CallLibrary
+```
+
+The CallLibrary class ID is `16417`. It is a VI Scripting class and exposes the library, function, calling-convention, threading, and parameter properties. [LabVIEW Wiki: CallLibrary class](https://labviewwiki.org/wiki/CallLibrary_class)
+
+There is also evidence that the normal object-style name is exactly:
+
+```text
+Call Library Function Node
+```
+
+A public LabVIEW scripting project lists that string among the accepted `New VI Object` object names. [CalmyJane/labview_assistant on GitHub](https://github.com/CalmyJane/labview_assistant)
+
+More strongly, an old working scripting example explicitly says it created the CLFN with `New VI Object`, using a `Node ??GrowableFunction ??CallLibrary` class constant, and subsequently configured the node. Its author published `CLFN_per_Skript.zip` as a working LabVIEW 2010+ implementation. [LabVIEWForum.de example and discussion](https://www.labviewforum.de/Thread-Automatische-Konfiguration-eines-Knotens-zum-Aufruf-externer-Bibliothekn-CLF)
+
+NI also published a downloadable example named ?�Scripting a Call Library Function Node Using LabVIEW?? its description says it creates and configures a CLFN which calls a Windows API function. [NI Community code example](https://forums.ni.com/t5/Example-Code/Scripting-a-Call-Library-Function-Node-Using-LabVIEW/ta-p/3514624)
+
+Therefore:
+
+- **Verified:** direct creation is possible.
+- **Best candidate style string:** `Call Library Function Node`.
+- **Best class input:** `Node ??GrowableFunction ??CallLibrary`.
+- **Not verified externally:** the underlying numeric U32 value of that style-ring item in LabVIEW 2026.
+
+If direct dropping proves version-sensitive, copying from a donor is a standard scripting workaround. NI-community experts specifically recommend copying objects when a desired `New VI Object` style is missing or difficult to identify. [NI forum: New VI Object style discussion](https://forums.ni.com/t5/LabVIEW/VI-Scripting-Input-for-style-in-quot-New-VI-Object-quot-function/td-p/3267356)
+
+## 2. CLFN properties and `Parameter Info`
+
+The directly useful CallLibrary properties are:
+
+| Property | ID | Type | Verified value/meaning |
+|---|---:|---|---|
+| Library Path | `636D400` | Path | DLL/shared-library path |
+| Function Name | `636D401` | String | Exported function name |
+| Calling Convention | `636D402` | U32 | `0 = C`, `1 = stdcall (WINAPI)` |
+| Any Thread? | `636D403` | Boolean | `TRUE = Run in any thread` |
+| Parameter Info | `636D409` | Array of Common Cluster | Return value followed by arguments |
+
+These are listed in the [CallLibrary class reference](https://labviewwiki.org/wiki/CallLibrary_class). The specific property pages confirm [Library Path](https://labviewwiki.org/wiki/CallLibrary_class/Library_Path_property), [Function Name](https://labviewwiki.org/wiki/CallLibrary_class/Function_Name_property), [Calling Convention values](https://labviewwiki.org/wiki/CallLibrary_class/Calling_Convention_property), and the Boolean [Any Thread?](https://labviewwiki.org/wiki/CallLibrary_class/Any_Thread%3F_property).
+
+Thus the non-parameter configuration should be straightforward:
+
+```text
+Library Path       = <DLL path>
+Function Name      = <export name>
+Calling Convention = 0
+Any Thread?        = TRUE
+```
+
+NI?�s documentation says ?�Run in any thread??keeps the call in its current execution thread and must only be selected for thread-safe library code. [NI-derived CLFN configuration documentation](https://documentation.help/Call-Library-Function-Node/Configuring_the_CLF_Node.html)
+
+### `Parameter Info`
+
+The strongest public description confirms:
+
+- Property ID `636D409`.
+- Read/write.
+- Type: array of Common Clusters.
+- Each array element describes one function item.
+- **Element 0 is the return value.**
+- Elements 1?�N are the C parameters in order.
+- The returned cluster contains only fields relevant to that parameter type; for example, numeric parameters have `Param Passing`, whereas array-specific fields are omitted. [LabVIEW Wiki: Parameter Info](https://labviewwiki.org/wiki/CallLibrary_class/Parameter_Info_property)
+
+The available sources support a logical record containing fields equivalent to:
+
+```text
+Name
+Type
+Data Type
+Param Passing / Pass By
+Array Passing / Array Format
+Dimensions
+String Format
+Constant
+Minimum Size
+```
+
+But I could not verify a public authoritative table giving the exact LabVIEW 2026 cluster labels, element ordering, physical LabVIEW types, and numeric values for every enum. In particular, the names in the property description are `Param Passing` and `Array Passing`, which may differ from the labels seen in the configuration dialog.
+
+The documented symbolic choices are:
+
+- Parameter type: Numeric, Array, String, Waveform, Digital Waveform, Digital Data, ActiveX, Adapt to Type, and Instance Data Pointer. [LabVIEW external-code description](https://itasdi.uns.ac.rs/pluginfile.php/2260/mod_resource/content/1/LabVIEW_and_Open_Source_Solutions-1.pdf)
+- Numeric passing: Value or pointer-to-value. [Same external-code description](https://itasdi.uns.ac.rs/pluginfile.php/2260/mod_resource/content/1/LabVIEW_and_Open_Source_Solutions-1.pdf)
+- Array format: Array Data Pointer, Array Handle, Array Handle Pointer.
+- String format: C String Pointer, Pascal String Pointer, String Handle, String Handle Pointer.
+- Dimensions: integer count.
+- Minimum Size: fixed number or reference to a preceding integer parameter; it applies to Array Data Pointer and C String Pointer configurations. [CLFN configuration reference](https://documentation.help/Call-Library-Function-Node/Configuring_the_CLF_Node.html)
+
+For your prototype, the intended symbolic records are approximately:
+
+| Item | Type | Data type | Passing/configuration |
+|---|---|---|---|
+| `[0]` return | Numeric | Signed 32-bit Integer | Value |
+| I32 | Numeric | Signed 32-bit Integer | Value unless prototype says `int32_t *` |
+| raw pointer | Numeric | Unsigned 64-bit Integer | Value |
+| DBL array | Array | 8-byte Double | Dimensions `1`; Array Data Pointer or Array Handle |
+| U8 array | Array | Unsigned 8-bit Integer | Dimensions `1`; required array format |
+| C string | String | ??| C String Pointer |
+| constant argument | corresponding type | corresponding type | `Constant = TRUE`, if that is actually intended |
+
+For 64-bit LabVIEW, representing an opaque native address as U64 is consistent with community advice to represent opaque pointers as pointer-sized integers. [LAVA discussion by Rolf Kalbermatter](https://lavag.org/topic/16624-release-dll-not-working/)
+
+Important distinction: a U64 containing an address should normally be configured as a numeric U64 **passed by value**. Choosing pointer-to-value would pass the address of LabVIEW?�s U64 storage, producing a `uint64_t *`/pointer-to-pointer-like ABI mismatch.
+
+### Numeric enum values
+
+I found no trustworthy public source for the numeric encodings of:
+
+- Type
+- Data Type
+- Param Passing
+- Array Passing
+- String Format
+
+I would not hard-code guessed values. They may be legacy internal enums rather than the visible ring order.
+
+The cheapest reliable check for the manager is:
+
+1. Create one manually configured donor containing every required variant.
+2. Read `Parameter Info`.
+3. Feed its Common Cluster array to the existing reporter.
+4. Report each cluster field?�s name, LabVIEW type descriptor, numeric value, and ring strings.
+5. Change one GUI setting at a time and diff the reported cluster.
+
+That produces LabVIEW-2026-specific ground truth without probing undocumented enum ranges or executing the DLL.
+
+## 3. Import Shared Library wizard
+
+NI documents the wizard as a tool that accepts both a shared library and C/C++ header, parses the header, and generates an `.lvlib` containing wrapper VIs with configured CLFNs. [NI: Importing Functions from a Shared Library File](https://www.ni.com/docs/en-AS/bundle/labview/page/importing-functions-from-a-shared-library-file.html)
+
+NI?�s tutorial likewise confirms that the generated wrapper VIs contain preconfigured CLFNs and that the wizard exposes CLFN-like parameter settings. [NI Community tutorial](https://forums.ni.com/t5/Developer-Center-Resources/Tutorial-Creating-Wrapper-VIs-for-C-C-DLL-functions-using-the/ta-p/3522566)
+
+I could not verify from public sources where the LabVIEW 2026 implementation resides. Specifically, I found no reliable citation confirming either:
+
+```text
+vi.lib\Utility\...
+resource\importwizard\...
+```
+
+Nor did I find public evidence of a supported reusable VI named `Update CLFN from prototype` or an API accepting a single C prototype string.
+
+The public CallLibrary method named `Prototype` goes in the opposite direction: it **returns** the C prototype of an already configured node. The class also exposes `Create C File` and an undocumented `Type Only Param` method; none is documented as parsing a prototype into a CLFN. [LabVIEW Wiki: CallLibrary methods](https://labviewwiki.org/wiki/CallLibrary_class)
+
+Therefore:
+
+- **Verified:** the wizard parses header files and generates wrapper VIs.
+- **Not verified:** its LabVIEW 2026 installation directory.
+- **Not verified:** any supported, reusable prototype-to-CLFN API.
+- **Likely inference:** internal implementation VIs may exist but may be private, password-protected, or coupled to wizard state rather than being a stable API.
+
+A plain-text recursive filename listing of the LabVIEW 2026 `resource` and `vi.lib` trees?�not opening any VI?�would settle the location question safely.
+
+## 4. Recommended fallback: donor CLFN templates
+
+A donor VI is the safest route for these signatures:
+
+1. Manually configure one CLFN per distinct ABI/prototype.
+2. Copy that node into generated diagrams.
+3. Change only `Library Path`, `Function Name`, and, if necessary, `Any Thread?`.
+4. Leave `Parameter Info` untouched.
+5. Verify the copied node by reading its `Prototype` method and `Parameter Info`.
+
+Copying is explicitly recommended in the NI scripting discussion when construction by style is troublesome. [NI forum](https://forums.ni.com/t5/LabVIEW/VI-Scripting-Input-for-style-in-quot-New-VI-Object-quot-function/td-p/3267356)
+
+I found no documented limitation preventing a configured CLFN from being copied between VIs. The normal caveats are:
+
+- The copied CLFN remains platform- and ABI-dependent; NI says VIs containing CLFNs must reference the appropriate platform library. [NI LabVIEW Development Guidelines](https://download.ni.com/support/manuals/321393d.pdf)
+- Library path resolution still applies.
+- Pointer size must match LabVIEW/DLL bitness.
+- Array Data Pointer and Array Handle are different ABIs and cannot be interchanged merely because both appear as LabVIEW arrays. [CLFN configuration reference](https://documentation.help/Call-Library-Function-Node/Configuring_the_CLF_Node.html)
+- ?�Run in any thread??is safe only when the called function and everything it invokes are thread-safe. [CLFN threading guidance](https://documentation.help/Call-Library-Function-Node/Configuring_the_CLF_Node.html)
+
+My recommendation is therefore: **use direct creation only to establish that `Call Library Function Node` works in LabVIEW 2026, but use donor-node copying for production.** Treat fully synthesized `Parameter Info` as an optional later optimization after the manager captures the exact 2026 cluster schema and enum values from reporter output.
+BGRUN END rc=0 after 165s

@@ -1,0 +1,27 @@
+BGRUN START 2026-09-15 03:17:45 limit 8.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & '.\tools\peer.ps1' -Agent codex -Slug queue-fail1-errno22-move-target-loaded -TimeoutSec 240 -Task (Get-Content -Raw '.\tools\bench\peer_task_errno22.txt')
+OUTCOME: ANSWERED (43s)  archived: archive\peer\2026-09-15-queue-fail1-errno22-move-target-loaded.md
+--- ANSWER ---
+The diagnosis is probably wrong in mechanism, though the restart workaround remains sensible.
+
+1. **Python 3.10 does not use `CopyFile2` here.** On Windows, Python 3.10 `shutil.copyfile()` opens the destination with `open(dst, "wb")` and copies through a 1 MiB `memoryview` buffer. Python?�s own 3.10 documentation says Windows uses this buffered implementation; `CopyFile2` acceleration arrived later. [Python 3.10 shutil docs](https://docs.python.org/3.10/library/shutil.html#platform-dependent-efficient-copy-operations), [CPython issue tracking the later `CopyFile2` addition](https://github.com/python/cpython/issues/88745)
+
+2. **A restrictive LabVIEW file handle is not the natural explanation for `Errno 22`.** Windows reports an incompatible open handle as `ERROR_SHARING_VIOLATION` (32), whereas `ERROR_INVALID_PARAMETER` is 87. Python normally exposes the former as a sharing/permission error, not `EINVAL`. Directory destination, read-only attributes, malformed/overlong paths, and same-file copying likewise normally have distinguishable exceptions or Windows codes. [Microsoft system error codes](https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--0-499-)
+
+   NI documentation establishes that a VI can remain **in memory** after its panel closes, and that closing references may unload it asynchronously. It does **not** establish that LabVIEW continuously holds the `.vi` disk file open or memory-mapped while loaded. Thus ?�loaded in LabVIEW??and ?�Windows handle blocks overwrite??must not be treated as equivalent. [NI: Closing References in LabVIEW](https://www.ni.com/en/support/documentation/supplemental/13/closing-references-in-labview.html)
+
+3. **The failing call was almost certainly `target -> MOVE_DST`, not the restore.** The observed state is a transaction trace:
+
+   - `MOVE_SRC` equals the donor: donor ??source succeeded.
+   - `MOVE_DST` equals pristine 4300-byte content, with the new run timestamp: restore ??destination succeeded.
+   - The next operation naming `MOVE_DST` then failed before replacing that content.
+
+   That evidence actively weakens the ?�LabVIEW prevents overwriting this loaded destination??hypothesis: the same destination had just been overwritten successfully. Something specific to the third call?�especially its source path/object, source/destination aliasing, a malformed path-like value, or an error during buffered reading/writing?�deserves priority.
+
+4. **Protocol recommendation:** restart LabVIEW before a session as a conservative state reset, but do not describe it as a proven file-lock remedy. VI Server can unload a VI by closing every owning VI reference, provided nothing else?�caller, project/library, implicit reference, or leaked ActiveX reference?�keeps it resident. Disposal may be asynchronous; verify disappearance with `All VIs in Memory` before copying. [NI reference lifecycle](https://www.ni.com/en/support/documentation/supplemental/13/closing-references-in-labview.html), [NI example stating reference closure unloads a VI](https://knowledge.ni.com/KnowledgeArticleDetails?OpenDocument=&id=kA00Z0000019SItSAM)
+
+   A manual `open()/write` loop is **not a bypass**: that is effectively what Python 3.10 `copyfile()` already does, and it cannot bypass Windows sharing restrictions.
+
+5. **Cheapest discriminating test:** capture the complete exception fields at each individually labelled copy: `type`, `repr(src)`, `repr(dst)`, `errno`, `winerror`, `filename`, and `filename2`, plus sizes before/after. Also assert resolved source and destination are different. Separately, while LabVIEW retains the VI, use Microsoft Sysinternals Handle or Process Explorer to search for the exact destination pathname; this directly tests whether LabVIEW owns a disk handle without modifying anything. [Microsoft Sysinternals Handle](https://learn.microsoft.com/en-us/sysinternals/downloads/handle)
+
+Bottom line: retain ?�restart before fixture substitution??as defensive policy, but reject the claimed `CopyFile2 ??ERROR_INVALID_PARAMETER ??loaded-VI lock` chain. The supplied filesystem state instead points to the **third copy and its arguments**, while the actual `winerror` is the single most valuable missing datum.
+BGRUN END rc=0 after 43s

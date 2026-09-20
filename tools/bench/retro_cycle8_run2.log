@@ -1,0 +1,87 @@
+BGRUN START 2026-09-15 17:50:11 limit 20.0 min: py -u tools/retrospective.py --cycle 8 --since-hours 3.5
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_8.txt (3384 chars, 5 logs listed)
+OUTCOME: ANSWERED (262s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-15-retrospective-cycle8.md
+--- ANSWER ---
+1. **REPEATED FAILURE ??yes.**
+
+The clearest repeated class was the broken peer dispatcher. In verification run 1:
+
+- Dispatch **B** returned `rc=1`.
+- Dispatch **C** returned the same `rc=1`.
+- Task-building test **F** then failed for the same parser defect.
+
+The archived diagnosis explicitly says that ?�three dispatches died rc=1 in one second??because `peer.ps1` no longer parsed ([peerps1-bomless-cp949-parse.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-15-peerps1-bomless-cp949-parse.md:8>)); the raw log records all seven failed assertions and `BGRUN END rc=1` ([verify_review_layers.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/verify_review_layers.log:6>)).
+
+The approach should have changed at **attempt 2: test C**, the second dispatcher failure. At that point the runner should have aborted before F, parsed `peer.ps1` through the exact Windows PowerShell 5.1 loading path, and handed the diagnosis to a judgement step. Continuing to F exceeded the two-failure budget in substance, even though all three failures occurred inside one batch.
+
+There was a second recurrence at the end: retrospective attempt 1 timed out after 180 seconds and terminated ([retro_cycle8.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/retro_cycle8.log:1>)); **attempt 2** reran essentially the same retrospective command and never wrote `BGRUN END` or `TIMEOUT` ([retro_cycle8_run2.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/retro_cycle8_run2.log:1>)). After the first timeout, the task/evidence should have been reduced or the inner peer deadline changed?�not merely the outer bgrun allowance.
+
+2. **MISSING TOOL ??yes, but not a LabVIEW reader.**
+
+`VI.Get Errors`, `Wire.Is Broken?`, and `OpOwnerChain_v0` would not have answered any cycle-8 failure: there was no broken-VI failure in these five logs. Building them here would have been more tooling drift.
+
+The missing device was a **fail-fast, exact-host parser/encoding preflight for `peer.ps1`**. Before launching B, C, and F, it should have loaded and parsed the script using the same Windows PowerShell 5.1 path used by real dispatches. It would have answered all three `rc=1` failures immediately and prevented them from being counted as separate peer tests.
+
+It also should have preserved the two repair variables separately: BOM addition versus escaping the Korean literal. Instead, both were applied together. The review records that the repair was causally confounded and that the cheap parse-only discriminator was not run ([peerps1-bomless-cp949-parse.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-15-peerps1-bomless-cp949-parse.md:10>)).
+
+No new seam reader was needed either: the correct slice calculation was later obtained from existing wire-graph data.
+
+3. **UNMEASURED STEPS ??yes.**
+
+The most expensive example is the seam decision. `boundary_manifest.py 43` spent **827 seconds** walking all 75 nodes and then printed `HAZARD INSIDE - move the seam` ([boundary_manifest_frameloop.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/boundary_manifest_frameloop.log:1>)). But that invocation measured the entire frame-loop diagram, not the proposed acquisition/tracking slice, and its ??7??was merely `len(net)==1`, not 77 crossings.
+
+The later cheap, directly relevant measurement found a 22-node slice, 21 sibling crossings, 18 internal nets, and excluded both the ASI focus subVI and Event Structure. The correction is recorded in the seam review ([frameloop-seam-77-crossings.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-15-frameloop-seam-77-crossings.md:11>)) and in [STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:292>). The slice measurement should have preceded any strategic reading of the whole-diagram manifest.
+
+The encoding repair was also accepted without measuring which half of the combined repair mattered. Freezing further investigation was defensible after the outcome review, but applying the repair before isolating the cause was still inference over an available measurement.
+
+4. **RULE COMPLIANCE ??materially mixed.**
+
+Broken or evaded:
+
+- **Failure budget:** B and C were the first two instances of the same dispatcher failure, yet F was still attempted. A multi-test batch should have had a fail-fast boundary.
+- **Every unattended bgrun terminates:** `retro_cycle8_run2.log` has only `BGRUN START`. This directly violates the mechanical termination guarantee.
+- **Review disposition:** six reviews retain placeholder or blank ?�why asked/verdict/what was done??fields. The two cycle-8 plan reviews are concrete examples ([cycle8-plan-attack.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-15-cycle8-plan-attack.md:172>), [cycle8-plan-rule-audit.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/archive/peer/2026-09-15-cycle8-plan-rule-audit.md:134>)).
+- **Layered documentation:** `STATUS.md` is **346 lines**, despite CLAUDE.md setting an approximately 100-line threshold and requiring narrative to be moved down a layer ([CLAUDE.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/CLAUDE.md:254>)).
+- **One cycle per session:** the active lock still names the overnight session, while the same active status covers cycles 1?? and cycle-8/delivery work ([STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:14>)). This satisfies the ?�cycle??label administratively without creating the cold-start session boundary the rule requires.
+
+Complied with:
+
+- All five listed commands were launched through bgrun.
+- The main VI checksum and timestamp remained unchanged.
+- No cycle-8 GUI actions appear in `gui_actions.log`; its last entry predates the cycle.
+- The bad seam interpretation was peer-reviewed before construction and then measured.
+- Failed peer calls were not treated as successful reviews; run 2 eventually passed.
+
+What the audit does **not** cover:
+
+- It missed the explicit `**FAIL**`, `RESULT: FAILED`, and `BGRUN END rc=1` inside `verify_review_layers.log`; therefore C1?�s ?? failure markers??is false.
+- It does not classify repeated failure causes or enforce the two-failure budget.
+- It does not check STATUS length, session-per-cycle discipline, semantic correctness of a measurement, whether the cheapest separator was actually run, or whether accepted review findings reached active documents.
+- A6 only reports an all-time GUI-log count and says ?�n-a?? it does not itself prove that this cycle used no GUI.
+- A5 proves the main VI was not modified, not that every protected original remained untouched.
+
+5. **ORDERING ??not defensible in two places.**
+
+First, parser preflight should have come before the multi-agent verification batch. One parse failure was allowed to masquerade as three test failures.
+
+Second, the targeted acquisition/tracking cut-set calculation should have come before the 13.8-minute whole-diagram manifest. The existing wire-graph JSON already contained enough information for the later `slice_cutset_acq_track.py` calculation. The boundary manifest answered a broader, different question and invited an invalid strategic conclusion.
+
+The outcome review correctly came early enough to halt additional general-reader work. Consequently, building `OpOwnerChain_v0`, `VI.Get Errors`, or a case-polarity reader first would have made the order worse, not better.
+
+6. **WHAT WAS NOT REPORTED ??several facts were hidden or understated.**
+
+- `STATUS.md` says only ?�Verification 13/13??and points to run 2 ([STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md:100>)). It omits that run 1 failed seven assertions and exited `rc=1`.
+- The audit compounds that omission by reporting zero failing logs even though the raw verification log literally says `RESULT: FAILED`.
+- The retrospective did not merely ?�need a retry?? attempt 1 timed out, and attempt 2 lacks any terminal record.
+- The successful peer-dispatch repair does not establish its stated root cause. BOM and escaping were changed simultaneously, and the archived review partially refuted the specific CP949 explanation.
+- The 827-second seam log?�s successful `rc=0` hides that its strategic verdict was based on the wrong scope and an incorrectly interpreted metric.
+- The active summary incorporates conclusions from plan reviews whose archive metadata still says ?�unverified??or leaves ?�what was done??blank. The conclusion may be sound, but the traceability contract was not completed.
+
+VIOLATION: repeated-failure-class
+VIOLATION: tool-not-built
+VIOLATION: inference-over-measurement
+VIOLATION: rule-evaded
+VIOLATION: wrong-ordering
+VIOLATION: unreported-fact
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle8.md
+BGRUN END rc=0 after 262s

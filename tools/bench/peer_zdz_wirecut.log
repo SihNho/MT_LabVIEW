@@ -1,0 +1,152 @@
+BGRUN START 2026-09-17 18:03:16 limit 18.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Dual -Slug zdz-wirecut -TimeoutSec 780 -TaskFile 'tools/bench/peer_task_zdz.txt'
+=== DUAL ARM 1/2: codex -> zdz-wirecut-codex ===
+OUTCOME: ANSWERED (240s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-17-zdz-wirecut-codex.md
+--- ANSWER ---
+The explanation is wrong at its causal step: the build itself deliberately reparents the `Z/dZ` ControlTerminal, and this project has already measured that moving a ControlTerminal cuts its wire—even if it is moved back. The code says so explicitly at `tools/recipes/build_d1_routeb_v0.py:445-450`; the real run identifies `Z/dZ` as ControlTerminal `#403` and moves it into loop 1.2 at `tools/bench/build_d1_routeb_v0_run3.log:161-163`.
+
+1. Strongest attack on G1
+
+G1 blames loss of `Tunnel #2276` or Remove Bad Wires, but the chronology does not support that diagnosis:
+
+- After S1t’s cleanup and after loop creation, `#2222 t0` still carried `w730`; the S3 before/after census records it as `cut … was w730` at `tools/bench/build_d1_routeb_v0_run3.log:249`. Therefore S1t’s `remove_bad_wires_scripted` at `tools/recipes/build_d1_routeb_v0.py:319-337` did not delete it.
+- There is no Remove Bad Wires call between the S3 moves and the failed lookup. S3, S3c, and S3w execute consecutively at `tools/recipes/build_d1_routeb_v0.py:1379-1381`; the next unconditional cleanup is only in S5 at `:1278-1289`, after the ledger.
+- During S3, both possible endpoints are moved: the CaseStructure and ControlTerminal `#403`. The build already knows that the latter operation cuts its terminal wire (`:445-450`).
+
+Thus “the sink disappeared, so the net was deleted” is not established. An equally strong—and already independently observed—explanation is:
+
+> Reparenting ControlTerminal `#403` disconnected `Z/dZ` from `w730`; `panel_wiring` subsequently reported that local disconnection.
+
+Yes, `panel_wiring` can report `wire = 0` while a Wire object or the old sink-side segment still exists elsewhere. Its contract is specifically `Control.Terminal → Terminal.Connected Wire`; zero means that panel object’s diagram terminal is bare, not that no wire with UID 730 exists anywhere in the VI (`tools/bench/write_panel_wiring_section.py:4-8`, `:28-34`). Run 3 never checked global membership of UID 730 after the move.
+
+2. Observation that would falsify G1
+
+The clean falsifier is a ControlTerminal-only move:
+
+- Keep `#2222` and `Tunnel #2276` untouched.
+- Read `Z/dZ`, `#2222 t0`, and global wire UID 730.
+- Move only ControlTerminal `#403`.
+- Repeat the same reads.
+
+If moving only `#403` changes `Z/dZ` from 730 to 0, G1’s proposed prerequisite—loss of the sink/tunnel—is false. This is especially cheap because `resolve_ctlterms()` already performs exactly that destructive move on a throwaway pristine copy at `tools/recipes/build_d1_routeb_v0.py:462-486`; it currently records only which panel row changed, not the before/after wire topology (`:486-495`).
+
+Use the existing readers as follows:
+
+- `panel_wiring`: does `Z/dZ` change 730→0?
+- `node_terms`: does stationary `#2222 t0` remain on 730?
+- `report_all("Wire")`: does UID 730 still exist globally?
+- `wire_source_owner(730)`: which terminals, if any, remain attached?
+- `tunnels` or `report_all`: is tunnel UID 2276 still present?
+
+The current full-build census proves only that `#2222 t0` became bare after the combined moves (`build_d1_routeb_v0_run3.log:249`); it cannot identify which move caused it.
+
+3. Alternative route without a temporary object
+
+There is a plausible zero-temporary route using only the already-measured `OpConnectFromWire_v0`, but it depends on operation order:
+
+1. Create loop 1.2.
+2. Do not reparent `Z/dZ` ControlTerminal `#403`.
+3. Move `#2222` into 1.2.
+4. Immediately re-read `Z/dZ`.
+5. If it still carries `w730`, use `OpWireSource_v5` plus `OpConnectFromWire_v0` to connect that existing source net to moved `#2222 t0` by index.
+6. Leave `#403` on the original frame-body diagram.
+
+This is not a speculative new writer: run 3 successfully used `OpConnectFromWire_v0` for sixteen nested sinks with `Is Broken? FALSE`, including two other unnamed terminals on `#2222` (`tools/bench/build_d1_routeb_v0_run3.log:390-405`). The missing fact is only whether moving `#2222` alone preserves the control-side `w730`.
+
+The present order destroys that opportunity: all nodes are moved first at `tools/recipes/build_d1_routeb_v0.py:542-557`, then all six ControlTerminals at `:559-576`, and only much later does `from_ctl_unnamed()` inspect the control wire at `:942-961`.
+
+If moving `#2222` alone also makes `Z/dZ` bare, this zero-object route is falsified. But that has not been measured separately.
+
+4. G3 overstates the modal evidence
+
+The 1055 modal is real, but the cited evidence concerns a different creator and a different refnum input:
+
+- `docs/NAMES.md:463-475` documents `Create Case Structure.vi`, specifically its invalid `Selector` terminal refnum.
+- It does not test `Create Equal.vi`, empty `Names` arrays, or `Get Outputs` returning no terminal.
+- `OpCreateEqual_v0` deliberately obtains both terminal refnums inside the op, so no terminal refnum crosses COM (`docs/toolkit-capabilities.md:52`).
+- Its own functional test completed 23/0: one Comparison was created, its owner chain was correct, its Boolean drove the loop stop, and the scratch reached `ExecState 1` (`tools/bench/build_opsentinel_ops_run3.log:39-50`).
+
+That test used valid names—`["queue out", "element"]`—not `src_names=()` (`tools/recipes/build_opsentinel_ops.py:499-505`). Therefore it does not prove the empty-name call safe. But it does contradict transferring the Case-creator modal result wholesale to `OpCreateEqual_v0`.
+
+The defensible conclusion is: `src_names=()` is unmeasured and may fail; a 1055 modal from this particular call is not established. Keeping `TEMP_SINK_AUTHORISED=False` is conservative, but G3’s claimed op-specific evidence is too strong.
+
+5. This row is currently the wrong priority
+
+Even a perfect repair of `#2222 t0` cannot produce a runnable or savable VI:
+
+- `s1q` intentionally creates none of the eight queues because their type-source terminals are unspecified (`tools/recipes/build_d1_routeb_v0.py:1243-1258`).
+- S4 then skips all three sentinel `Equal?` objects, leaving the three new loops’ conditional terminals unwired (`:1261-1275`).
+- The recipe itself states that these omissions make `ExecState 1` impossible by construction (`:131-135`).
+- `STATUS.md:100-113` correctly ranks queue element types first and this `Z/dZ` row third.
+
+The right next measurement is the eight-row queue type-source table: for each of `Q_free`, `Q_work`, `Q_meta`, `Q_res`, `Q_good`, `Q_rmeta`, `Q_focus`, and `Q_focusback`, identify an existing, named output terminal of the correct payload type and record its diagram, class/index, terminal name, and current wire. Those eight queue definitions and bounds are at `tools/recipes/build_d1_v0.py:263-272`; `s1q` explains exactly why the missing named outputs block construction at `tools/recipes/build_d1_routeb_v0.py:1251-1257`. Building `VI.Get Errors` now would mostly rediscover the deliberately unwired loops.
+
+Cheapest discriminating test: add four read-only snapshots inside the existing `resolve_ctlterms()` throwaway probe—immediately before and after moving ControlTerminal `#403`—using `panel_wiring("Z/dZ")`, `node_terms(#2222)`, `report_all("Wire")` membership for UID 730, and `wire_source_owner(730)`. If `Z/dZ` becomes bare while `#2222/#2276` were never moved, G1 is falsified without another 540-second build.
+=== DUAL ARM 2/2: claude/hypothesis (opus, effort max, web) -> zdz-wirecut-opus ===
+OUTCOME: ANSWERED (540s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-17-zdz-wirecut-opus.md
+COST: $4.8500  in 38 / out 37482 / cache-create 267588 / cache-read 2390597  (536s, 30 turn(s))
+--- ANSWER ---
+**The single strongest reason G1 is wrong: the build destroyed `Z/dZ`'s wire itself, one step earlier, with an operation this project has already MEASURED to do exactly that — and G1 never mentions it.** `tools/bench/build_d1_routeb_v0_run3.log:163` records `PASS S3-ct ControlTerminal #403 ('Z/dZ') -> 1.2`. Moving a `ControlTerminal` to another diagram is measured to set its `panel_wiring` wire to 0: `tools/bench/probe_move_ctlterm_v0.log:134` reads `panel rows whose connected wire changed … [((7, 'stop (end)'), 6929, 0)]`, and `:136` says `ExecState now 0 (0 expected: wires were cut)`. Your own recipe states it as settled fact at `tools/recipes/build_d1_routeb_v0.py:39-41` — *"a move CUTS the wire and moving back does not restore it"* — and the whole S3-ct by-effect resolver **depends on that being true**. So `Z/dZ` carrying no wire is the predicted, already-recorded consequence of the build's own `move_in(#403)`, not evidence about `Tunnel #2276`, sink loss, or Remove Bad Wires.
+
+---
+
+## 1. Why G1 is wrong
+
+**(a) The Remove Bad Wires clause is excluded by the recipe's own call sites.** `remove_bad_wires_scripted` is called exactly three times: `build_d1_routeb_v0.py:331` (S1t — *before* S2 creates any loop and before any move), `:1004` (inside the un-authorised temp-sink branch, never reached in run 3), and `:1288` (S5 — *after* the S3w ledger). **There is no RBW call between the moves and the `from_ctl_unnamed` read.** G1's "…or by one of the build's `remove_bad_wires_scripted` calls" is not merely unproven, it is contradicted by the file.
+
+**(b) The "net lost its sink" mechanism is unnecessary.** w730 has exactly two live terminals — source `ControlTerminal #403`, sink `Tunnel #2276` (= `#2222` t0) — per `diag_sr_transport.log:21-23`. **Both endpoints move into loop 1.2's body** (`run3.log:124` for `#2222`, `:163` for `#403`). A wire cannot span two diagrams; whichever endpoint moves first kills it. G1 picks one endpoint, invents a deletion agent for it, and omits the other endpoint entirely — the one whose move is independently measured to zero the very reader that reported the failure.
+
+**(c) G2 is wrong in the way that matters.** "The control's own wire branch can never fire in this build" is true, but *not* because the structure moves destroyed the net. It is true because `docs/d1-route-b-plan.md:193-194` fixes the ordering — *"reparent the 8 control terminals BEFORE any `wire_control`"* (a fix for run 7's six 5001s from `Get Controls.vi`) — and that ordering rule guarantees the control is bare by the time `from_ctl_unnamed` looks at it. **That is a decision, not a property of the VI**, and decisions can be reordered. G1's framing makes the blockage look structural and forces you toward the temporary sink; the real framing makes it a scheduling question.
+
+**(d) Direct counter-example inside the same run.** `run3.log:369`:
+```
+WIRED #2222 t5 'Correction Factor' <- from-ctl 9289  wire_control … wire 0 -> 29307; reparented=True
+```
+`ControlTerminal #9306` was reparented at `:166` exactly like `#403`, its wire to `#2222` t5 was cut (`:254`, `cut #2222 t5 'Correction Factor' IN was w6096 [moved]`), **and a wire was then created from it anyway**. The difference between the WIRED row and the NO-ROUTE row is not the wire and not the move — it is that t5's sink carries a name and t0's does not. G1 diagnoses the wrong variable.
+
+## 2. Alternative explanations of the same evidence
+
+- **A1 (my primary): `move_in(#403)` cut it.** Measured mechanism, measured on this reader, applied to this object, logged at `run3.log:163`.
+- **A2: `move_in(#2222)` cut it first** (G1's cause, minus the RBW story — the move alone suffices). Runs at `run3.log:124`, i.e. **before** A1, since `s3()` moves nodes at `:543-557` and ControlTerminals at `:559-574`.
+- **A3 — the one that would make both A1 and G1 wrong: the read failed.** `panel_wiring` walks `Panel.Controls[] → Control[Terminal] → Terminal[Connected Wire]` (`gscript.py:772-781`) and returns `term_err` / `wire_err` per row (`:806-808`); a genuine bare terminal is documented to come back as `wire == 0` **with `wire_err == 1055` and `term_err == 0`**. `from_ctl_unnamed` reads **only** `row.get("wire")` (`build_d1_routeb_v0.py:955`) and discards both error columns. So run 3 cannot distinguish "the terminal is bare" from "`Control.Terminal` errored after the reparent and defaulted to 0". **The log sentence "MEASURED, reported, not guessed" overstates what was measured.**
+
+I can exclude one candidate: a label mismatch. `:951` looks the row up by `label == 'Z/dZ'`; had it missed, the code would have printed the `:953` message instead of the `:957` one. The row was found.
+
+**On your Q1 sub-question — would `panel_wiring` report 0 while a wire still exists?** On the evidence, no: `probe_move_ctlterm_v0.log:136` reports `ExecState 0` after the move with the comment *"wires were cut"*, so the 0 there was real. But that is a different VI state, and run 3 threw away the columns that would prove it here. Honest answer: **the run-3 measurement does not distinguish A1, A2 and A3.**
+
+## 3. What would falsify the claim
+
+G1 is falsified if **`Z/dZ` still carries a non-zero wire immediately after the 21 node moves and before the 6 ControlTerminal moves.** That observation kills A2 and G1 together and leaves A1. Conversely, `wire == 0` at that point with `wire_err == 1055` confirms A2 and refutes A1; `wire == 0` with any other error code, or `term_err != 0`, confirms A3 and refutes both.
+
+## 4. The cheapest discriminating test
+
+**One `g.panel_wiring(TARGET)` call inserted in `build_d1_routeb_v0.py` between line 557 (end of the node-move loop) and line 559 (`ct_before = g.count(...)`), printing the `Z/dZ` row in full — `wire`, `term_err`, `wire_err` — plus the same print immediately after the ControlTerminal loop at `:574`.** Cost ≈ 0.8 s each (`gscript.py:781`), no new op, no new build, read-only, and it separates A1 / A2 / A3 outright. Run 3 already called `panel_wiring` at `:638` and `:1384` and discarded the error columns both times — **the evidence was collected and thrown away**, so the marginal cost is a `print`.
+
+---
+
+## Your remaining questions
+
+**Q3 — an alternative route.** Two corrections first. There is no ordering that *preserves* w730: both endpoints must leave Diagram #639, and a wire cannot span diagrams. And `OpConnectNested_v1` cannot substitute — `docs/d1-route-b-plan.md:191` and `docs/main-vi-startup.md:66` both record that a `ControlTerminal` is a `Terminal`, not a `Node`, so `Diagram.Nodes[]` does not list it (externally confirmed: [ControlTerminal class](https://labviewwiki.org/wiki/ControlTerminal_class) inherits from [Terminal class](https://labviewwiki.org/wiki/Terminal_class), a sibling of Node under [GObject](https://labviewwiki.org/wiki/GObject_class)).
+
+What the evidence actually points at is one op, built the way `OpConnectFromWire_v0` was built: **`OpWireCtl_v0`'s source head + `OpConnectNested_v1`'s sink tail.** `OpWireCtl_v0` already turns a control *label* into a *terminal refnum* via `Get Controls.vi` (`gscript.py:1876-1877`) — that is precisely the ControlTerminal reference you cannot otherwise obtain. The only name-dependence is the sink half, `Wire Inputs.vi`. Replace that with the `Terminal.Connect Wire` 6349C03 invoke and the `Diagram → Nodes[] → Terms[]` ladder that `OpConnectNested_v1` already carries, and the row needs **no wire on the control, no temporary object, and no dependence on move order**. That is the same additive-donor technique recorded at `docs/toolkit-capabilities.md:58`, and it closes the whole R3 class, not one row. It is still a new op — say that plainly rather than calling it free.
+
+A no-new-op option exists but is worse: `wire_control` `Z/dZ` → any bare **named** input on 1.2's body (the build already enumerates them via `bare_named_sinks`, `build_d1_v0.py:482`), branch that wire onto `#2222` t0 with `OpConnectFromWire_v0`, then remove the temporary segment. It is the same temporary-sink shape with an existing node instead of a created one, and it inherits the same "does deleting the segment take the branch with it" hazard your `:997-999` comment already names.
+
+**Q4 — G3's modal-dialog risk: your citation is wrong, your caution is not.** `docs/NAMES.md:468` is the heading **"OpBuildCase_v0 (erdosmiller `Create Case Structure.vi`) — SUPERSEDED by v1"**; `:473-475` is about `SetControlValue` on that op's `Selector` **refnum control**, and `:478-480` about that specific error. It is not a statement about `OpCreateEqual_v0`. Worse, the row you cite as support says the opposite: `docs/toolkit-capabilities.md:52` describes `OpCreateEqual_v0` as *"both operands are fetched INSIDE the op, so no terminal refnum crosses COM (**the fix for `docs/NAMES.md:473-475`**, the 1055 modal that killed `OpBuildCase_v0`)"*. You cited the fix as evidence of the defect it fixes.
+
+That said, the hazard is not zero, and the mechanism is not the one you wrote. `create_equal` passes `src_names=()` (`build_d1_routeb_v0.py:779`), which `create_node` turns into `Names = []` and `Names 2 = []` (`build_opsentinel_ops.py:397,400`). `Get Outputs` then yields an empty array, `Index Array[0]` of an empty array returns a **default refnum with no error**, and `Create Equal.vi`'s `x`(5) and `y`(7) are refnum inputs (`build_opsentinel_ops.py:66-67`). So an invalid refnum reaches the creator from *inside* — the same end state, reached by a different path. Whether `Create Equal.vi` guards it or calls `Connect Wire` unguarded is **not recorded anywhere in this project**, and I could find no external source that documents erdosmiller's internals. `TEMP_SINK_AUTHORISED = False` is defensible; the sentence in the log justifying it is not, and should be rewritten before it is cited again as a measured fact.
+
+**Q5 — yes, this row is the wrong work, and your own files say so twice.**
+
+- **It does not unblock anything.** STATUS.md:103-107 states it directly: *"THE LEDGER GATE IS NOT WHAT BLOCKS THE SAVE"* — `s1q` (8 queues) and `s4b` (3 sentinels) are unexecuted, so 1.2/1.5/1.7 have unwired conditional terminals (`run3.log:417-419`, all `wire 0`) and `ExecState 0` by construction (`:426`). Wiring this row yields 64 WIRED / 2 NO-ROUTE, `ExecState 0`, nothing saved. Zero change in deliverable state for one new op or one unmeasured op call.
+- **The other two NO-ROUTE rows are worth more.** `#1359` t1 and `#29874` t3 block on a *computation* decision already made in principle (registers move with their nodes; `add_shift_reg` + `wire_sr`), and they sit on the critical path of the loop split. Two rows, and the decision is reusable.
+- **A gate outranks all three.** STATUS.md:69-70 and :115: OPEN 32, **two consecutive `OUTCOME-VIOLATION`s ⇒ the work stops for a re-plan with the user**, *"Not answerable by a device"*, *"still stands above all three."* CLAUDE.md's outcome-review rule says a repeat is answered by a delivery cycle or a re-plan — not by another route-B row and not by another op.
+
+**The right next measurement,** if any LabVIEW time is spent before that re-plan: the two-line `panel_wiring` probe of §4 (it costs seconds and settles this row's diagnosis permanently) folded into **one** read-only run whose real payload is STATUS NEXT #1 — **which named output terminal types each of the 8 queues**. That is the single undesigned item standing between this build and a saved `Track_v6_D1_GPU.vi`.
+
+---
+
+**Where I would change my mind:** if the mid-S3 `panel_wiring` read comes back with `Z/dZ` at `wire == 0`, `wire_err == 1055`, `term_err == 0` *before* `#403` moves, then A1 is dead, G1's cause is confirmed in substance (the structure move, though still not Remove Bad Wires — that clause stays refuted by the call sites), and the ordering route in Q3 is worthless. I do not think that is what you will see, but it is one read away and I am not willing to assert it without one.
+
+**Sources:** [ControlTerminal class — LabVIEW Wiki](https://labviewwiki.org/wiki/ControlTerminal_class) · [Terminal class — LabVIEW Wiki](https://labviewwiki.org/wiki/Terminal_class) · [GObject class — LabVIEW Wiki](https://labviewwiki.org/wiki/GObject_class) · [VI Server Class Hierarchy — NI](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/class-hierarchy.html) · [Block Diagram.Remove Bad Wires method — LabVIEW Wiki](https://labviewwiki.org/wiki/VI_class/Block_Diagram.Remove_Bad_Wires_method)
+=== DUAL DONE: codex rc=0, opus rc=0  (archive\peer\2026-09-17-zdz-wirecut-codex.md, -zdz-wirecut-opus.md) ===
+BGRUN END rc=0 after 781s

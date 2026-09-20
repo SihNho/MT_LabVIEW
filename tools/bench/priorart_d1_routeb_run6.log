@@ -1,0 +1,78 @@
+BGRUN START 2026-09-19 01:06:55 limit 20.0 min: py -u tools/prior_art_review.py --plan-file C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\fee43e75-2631-4a81-a8bb-ca14d4a6342f\scratchpad\priorart_run6_plan.md --slug d1-routeb-run6 --trigger new-op --no-recipe MEASURED DEADLOCK 2026-09-19, cycle-38 dispatch 2: the --recipe flag is mechanically unusable here. tools/stop_record.py refuses EVERY command string that names the recipe under review while a standing record for it is unreleased, and that refusal is checked before any exemption - so the command that would arm the record is itself refused by the record. The review is run without the flag and the record is armed directly through stop_record.write_stop_record, exactly as arm_stop_records would have done. This opt-out releases nothing and frees nothing.
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_d1-routeb-run6.txt (30234 chars)
+OUTCOME: ANSWERED (510s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-19-priorart-d1-routeb-run6.md
+COST: $5.4953  in 48 / out 34756 / cache-create 293256 / cache-read 3387160  (509s, 34 turn(s))
+--- ANSWER ---
+Write is disabled here, so the review is the reply.
+
+# PRIOR-ART REVIEW — the four cycle-38 patches to `build_d1_routeb_v2.py` (sha `5620e626a95d`), run 6
+
+**Verdict: not novel — four findings.** One is load-bearing *and time-critical*: P4 destroys evidence that is still on disk. I read the patch sites, both build logs, `gscript.py`, `docs/d1-route-b-plan.md` §11/§11a, `docs/NAMES.md`, `docs/toolkit-capabilities.md`, the three named archive exchanges, plus `tools/bench/handle_audit.{py,log}`, `diag_hierarchy_a3.log` and `probe_move_ctlterm_v0.log`.
+
+## Where I deliberately fire nothing (so judgement is not blocked on the route)
+
+- **P1 is the plan's own named fix, on file and dated.** `docs/d1-route-b-plan.md:597-602` — *"🔵 CANDIDATE FIX — NOT YET BUILT, next cycle's build. … The named fix is to route that branch through the same two-index retry."* P2 is the warning in the same paragraph (`:602-604`). `settled-already` here would be an over-broad match: these patches execute the decision, they do not re-take it.
+- **P1's mechanism has positive precedent inside the failing run** — the five sibling labels all landed on index 24 first try (`build_d1_routeb_v2_run5.log:367`).
+- **P4 is not new machinery.** The `_crash_` removal loop already ran in run 5 (`…run5.log:9`) and was already released (`archive/peer/2026-09-18-priorart-d1-routeb-run5.md:79-80`). My finding is about consequence.
+
+## F1 — `contradicted` (P4): the crash copy is the pending measurement's only fixture, it is still on disk, and P4 deletes it first
+
+**Side A** — `tools/recipes/build_d1_routeb_v2.py:438-439`: *"a crash RENAMES the working copy aside instead of deleting it, **so the state can be measured afterwards**."*
+**Side B** — the measurement was never taken, and the mandatory review names that exact file twice: `archive/peer/2026-09-19-zdz-wirecontrol-5001.md:142` (*"or on the kept crash copy, `…SCRATCH_routeb_235020_crash_001808.vi` — **use it before the next run's S0 deletes it**"*) and `:198` (the `error 2` discriminator: `g.count` loops on **(A)** a pristine copy and **(B)** that crash copy, logging handles *and* GDI).
+
+`…\claudeDev\SCRATCH_routeb_235020_crash_001808.vi` exists right now, and no log on this disk shows either test having run. P4 (`:416-424`) deletes every `SCRATCH_routeb_*_crash_*` in S0's first statement, before the md5 gate. Run 6 destroys, unmeasured, the fixture for the cheapest discriminating test of **both** run-5 failures — one of which is why the handle explanation was withdrawn.
+
+*Covers:* only that this file is the named fixture, the tests are unrun, and P4 removes it first. Not that preventing accumulation is wrong. *Release:* `shutil.copy2` it out of `claudeDev` (or run the two-call test) before S0, then `FIXED:`.
+
+## F2 — `unread-evidence` (P1): the review's zero-cost evidence recovery is not implemented, so run 6 cannot read its own negative result
+
+`…zdz-wirecontrol-5001.md:147`: *"log the **full `error out` source string**, because you are currently discarding the answer: `gscript.py:396` returns `src.splitlines()[0]` … Every 5001 in your logs ends at a bare `<ERR>` with nothing after it."* Its outcome table (`:149-153`) has three branches and **two are separable only by that string**. The line is unchanged — `tools/gscript.py:432-438` still returns `src.splitlines()[0]` (P3 edited this file and shifted the review's line number without touching `_err`).
+
+Why load-bearing: the negative branch is a **measured class here**, not a new unknown. `docs/NAMES.md:152-154` — *"`Track File Path` control is **NOT reachable by Get Controls from ANY of the VI's 170 diagrams** … for non-pane controls use the GUI branch of their wire."* And `Z/dZ` has never once been resolved by `Get Controls` in any log (`build_d1_v0_run7.log:309`, `…run9.log:324`, `build_d1_routeb_v0.log:386`, `…v0_run3.log:386`, `…v2_run5.log:402`) while its five siblings have — and it is the only one of the six containing `/` (the review's own second variant, `:126`).
+
+*Covers:* that the discriminating string is free and discarded, and that the "findable on no diagram" branch has a recorded precedent with a *different* recorded remedy. It does **not** claim `Z/dZ` is such a control — `panel_wiring` lists it as a top-level `Panel.Controls[]` object (`gscript.py:814-822`, `docs/main-vi-panel-map.md:300`), so the retry may well work. Run 6 must be able to tell. *Release:* carry the whole `src` in `_err`, then `FIXED:`.
+
+## F3 — `already-measured` (P2): "never measured with a ControlTerminal source" is false — it was measured twice, on two of this build's own six labels
+
+`build_d1_routeb_v2.py:1441-1443` asserts *"`wire_source_owner` HAS NEVER BEEN MEASURED WITH A ControlTerminal AS THE WIRE'S SOURCE."* It has, on 2026-09-16:
+
+- `tools/bench/diag_hierarchy_a3.log:106` — `wire 31059 Terms[0] source=True owner 'Diagram' uid 639 reciprocal wire 31059`; `:109` names the control on that wire: `Force\nsmoothing\nhalf-width`, uid 28148.
+- `:110`/`:114` — same for wire 31166: one `source=True` terminal, owner `Diagram` 639, reciprocal 31166, control `Extension\nmedian filter\nhalf-width`, uid 28996.
+
+Both sources are front-panel controls' diagram terminals, and both returned **exactly one** source terminal whose reciprocal is the wire asked about — precisely what the `len(srcs) != 1` guard at `:1470-1472` needs. Both labels are in this build's own six (`docs/d1-route-b-plan.md:179`). Written up at the time: `archive/2026-09-16-status-cycles-11-13-narrative.md:240-242`, matching the op's documented contract at `docs/toolkit-capabilities.md:60`. The trailing `error 1055` row P2's `try/except` guards is also on record (`diag_hierarchy_a3.log:108`, `:113`) and is filtered out by `recip == zw`. Secondary: `#403`'s own owner census is on disk — `tools/bench/probe_move_ctlterm_v0.log:53`, `uid 403 -> owner 'Diagram' uid 639`; the recipe cites `:47`, which is a **different** terminal (uid 642).
+
+*Covers:* the premise and the census columns. It does **not** say the guard must pass on the built copy — that wire is new, made after a reparent, and `…run5.log:404` shows a 0-source outcome is reachable. Keeping P2 as a logged control is fine. *Release:* cite `diag_hierarchy_a3.log:106,:110`, fix `:47`→`:53`, then `FIXED:`.
+
+## F4 — `helper-exists` (P3): the attribution device exists, already covered three of these six sites, and P3 counts the layer its own audit excludes
+
+CLAUDE.md §3 names `tools/bench/handle_audit.py` as the device that attributes handle growth to operation types. It has run: `tools/bench/handle_audit.log:6` — **`C 10x open_panel/revert/close_panel: 31558 -> 31565 delta +7`** (2026-09-06), a dedicated phase over three of P3's six converted sites (`gscript.py:1229`, `:1245`, `:1381`; the others `:1965`, `:2044`, `:2787` are equally phase-level, O(10) per run, not per row).
+
+P3's own audit concedes it cannot see the suspected mechanism — `gscript.py:219-222`: *"the `Traverse for GObjects` array lives and dies INSIDE the op VI … that hygiene question belongs to the op VI."* That array is the leading unexcluded mechanism (`…zdz-wirecontrol-5001.md:192`), and the missing measurement was named in the same answer (`:198`: pristine-vs-crash-copy, handles **and GDI**, which *"also supplies the '20 runs, handles flat ±100' measurement CLAUDE.md requires of `OpReport_v3` and which has never been taken on the dimensions that matter"*). Where the debt actually sits: `docs/REFERENCES.md:126` records `OpSubVI_v0.vi` shipping with `Close Reference` **removed**.
+
+*Covers:* that P3's question has a built device and an already-run phase, and that these counters cannot observe the open mechanism. Not that they are harmful — `live == 0` is cheap and `vi_ref`'s `finally` is a real improvement. *Release:* one sentence saying the counters are bookkeeping, not the `error 2` instrument, and pointing that question at `handle_audit.py`, then `FIXED:`.
+
+## Citation drift — not a finding, but it breaks the release mechanism
+
+The sibling two-index retry is actually at **`build_d1_routeb_v2.py:1650-1667`** (read and verified). The brief cites `:1600-1617`, which is the `from-const`/`from-sr` dispatch — a wrong range; `docs/d1-route-b-plan.md:599` cites `:1567-1584`; the peer cites `:1376-1377`/`:288`/`:1386-1389`; `gscript.py:396` is now `:432-438`. P1/P2/P3 shifted all of them. Quote current lines when releasing this record.
+
+## Still unanswered, twice raised
+
+`…zdz-wirecontrol-5001.md:181` (c)(iii): this is 1 of 66 rows in a VI that cannot reach `ExecState 1` while 8 queues and 3 sentinels are unbuilt — *"`archive/peer/2026-09-17-zdz-wirecut-opus.md:185-188` made this point and it was not answered."* Still unanswered. Not a slug; a retrospective note.
+
+```
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-measured
+PRIOR-ART: helper-exists
+```
+
+**The one sentence to carry forward:** `SCRATCH_routeb_235020_crash_001808.vi` is on disk, it is the named fixture for the cheapest discriminating test of *both* run-5 failures, neither test has run, and P4 deletes it in the first statement of S0 — while `gscript._err` still throws away the one string that would tell run 6 why its own retry failed.
+
+I took no lock, opened no VI, and changed nothing; `Write` is disabled in this session, so this text is the whole product. F1 is the one with a clock on it — the copy is deletable by any run of the recipe.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-d1-routeb-run6.md
+   NO-RECIPE opt-out recorded in archive\peer\2026-09-19-priorart-d1-routeb-run6.md: MEASURED DEADLOCK 2026-09-19, cycle-38 dispatch 2: the --recipe flag is mechanically unusable here. tools/stop_record.py refuses EVERY command string that names the recipe under review while a standing record for it is unreleased, and that refusal is checked before any exemption - so the command that would arm the record is itself refused by the record. The review is run without the flag and the record is armed directly through stop_record.write_stop_record, exactly as arm_stop_records would have done. This opt-out releases nothing and frees nothing.
+   STOP RECORD: NOT ARMED BY EXPLICIT OPT-OUT - verdicts contradicted, unread-evidence, already-measured, helper-exists block, and --no-recipe was given:
+     reason: MEASURED DEADLOCK 2026-09-19, cycle-38 dispatch 2: the --recipe flag is mechanically unusable here. tools/stop_record.py refuses EVERY command string that names the recipe under review while a standing record for it is unreleased, and that refusal is checked before any exemption - so the command that would arm the record is itself refused by the record. The review is run without the flag and the record is armed directly through stop_record.write_stop_record, exactly as arm_stop_records would have done. This opt-out releases nothing and frees nothing.
+   If this review does become a recipe, plant the record by hand:
+     py tools/stop_record.py write --recipe <recipe> --review archive\peer\2026-09-19-priorart-d1-routeb-run6.md --verdict contradicted unread-evidence already-measured helper-exists
+BGRUN END rc=0 after 511s

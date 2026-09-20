@@ -1,0 +1,40 @@
+BGRUN START 2026-09-12 18:09:53 limit 20.0 min: py -u -c 
+import os,sys,json
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+WORK=r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi'
+# diagrams 46 and 47 are the two owned by an EventStructure (property_node_map.json); the CycleSchedule case is there
+KEY=('cycle','schedule','force','mag','rot','speed','wait','numcol','col','row','array','index','time')
+out={}
+for d in (46,47):
+    try: nodes,_=g.net_map(WORK, diagram_index=d, max_nodes=80, max_terms=24)
+    except Exception as e: print('dia',d,'FAIL',str(e)[:90]); continue
+    print('=== diagram %d : %d nodes'%(d,len(nodes)))
+    rows=[]
+    for i,(uid,lbl,terms) in nodes.items():
+        names=[nm for _,nm,_ in terms if nm]
+        low=' | '.join(names).lower()
+        hit=sorted({k for k in KEY if k in low})
+        rows.append({'uid':uid,'terms':names,'hit':hit})
+        mark='   <== '+','.join(hit) if hit else ''
+        print('   node[%d] uid %-6s %s%s'%(i,uid,names[:14],mark))
+    out[str(d)]=rows
+json.dump(out,open('tools/bench/scheduler_diagrams.json','w',encoding='utf-8'),indent=1)
+print('written')
+
+=== diagram 46 : 3 nodes
+   node[0] uid 32083  ['input cluster', 'Source']
+   node[1] uid 32664  ['array', 'subarray', 'index', 'length', 'index', 'length']   <== array,index
+   node[2] uid 22858  ['reference', 'reference out', 'error in (no error)', 'error out', 'Value']
+=== diagram 47 : 8 nodes
+   node[0] uid 32194  ['input cluster', 'Source']
+   node[1] uid 4810   ['Value']
+   node[2] uid 50     ['array', 'subarray', 'index (row)', 'disabled index (col)']   <== array,col,index,row
+   node[3] uid 30783  ['reference', 'reference out', 'error in (no error)', 'error out', 'Value']
+   node[4] uid 31401  ['array', 'output array', 'new element/subarray', 'index (row)', 'disabled index (col)']   <== array,col,index,row
+   node[5] uid 3973   ['reference', 'reference out', 'error in (no error)', 'error out', 'Value']
+   node[6] uid 22347  ['reference', 'reference out', 'error in (no error)', 'error out', 'Value']
+   node[7] uid 23085  ['size(s)', 'array']   <== array
+written
+BGRUN END rc=0 after 89s

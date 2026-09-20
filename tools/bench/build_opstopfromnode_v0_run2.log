@@ -1,0 +1,66 @@
+BGRUN START 2026-09-17 08:14:53 limit 25.0 min: py -u tools/recipes/build_opstopfromnode_v0.py
+
+=== W0: the donor
+  PASS  W0a OpLoopEndRef_v0.vi on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpLoopEndRef_v0.vi
+  PASS  W0 donor ExecState 1  ExecState 1
+
+=== W1: the copy (additive build - nothing is ever deleted)
+  FACT  copy census: {'Node': 14, 'Property': 8, 'Wire': 25, 'ControlTerminal': 20, 'Invoke': 0, 'IndexArray': 1}, ExecState 1
+  PASS  W1 the copy matches the censused donor  {'Node': 14, 'Property': 8, 'Wire': 25, 'ControlTerminal': 20, 'Invoke': 0, 'IndexArray': 1}
+  PASS  W1b #683 present on the op's diagram
+  PASS  W1b #657 present on the op's diagram
+  PASS  W1b #124 present on the op's diagram
+  PASS  W1c #657's data terminal is the conditional-terminal reference  'LpEndRef' (want 'LpEndRef')
+
+=== W2..W6: the body-node chain, branched off the SAME typed reference
+      CENSUS VI Server:Loop 6361401 -> uid 1168, data terminal 'Diagram'
+  PASS  W2 PN Loop[Diagram] created  uid 1168
+      W2 'specific class reference' -> 'reference': wire 366 / 366 OK
+      CENSUS VI Server:AbstractDiagram 6375809 -> uid 1059, data terminal 'Nodes[]'
+      W3 'Diagram' -> 'reference': wire 1227 / 1227 OK
+      W4 'Nodes[]' -> 'array': wire 1245 / 1245 OK
+  FACT  node-index control is labelled 'index 3'
+      CENSUS VI Server:Node 6359000 -> uid 1181, data terminal 'Terms[]'
+      W5 'element' -> 'reference': wire 1285 / 1285 OK
+      W6 'Terms[]' -> 'array': wire 1304 / 1304 OK
+  FACT  term-index control is labelled 'index 4'
+  PASS  W6b the body-node chain leaves the op runnable  ExecState 1
+
+=== W7: Terminal.Connect Wire on the conditional terminal
+  PASS  W7 Invoke Terminal[Connect Wire] created  uid 1224
+      W7 sink 'LpEndRef' -> 'reference': wire 775 / 775 OK
+      W7 src 'element' -> 'Wire Source': wire 1354 / 1354 OK
+  FACT  connect-wire error indicator: 'error out 7'
+
+=== W8: ExecState and save
+  FACT  after build: {'Node': 20, 'Property': 11, 'Wire': 33, 'ControlTerminal': 23, 'Invoke': 1, 'IndexArray': 3} (was {'Node': 14, 'Property': 8, 'Wire': 25, 'ControlTerminal': 20, 'Invoke': 0, 'IndexArray': 1})
+  PASS  W8b the build was ADDITIVE - no class lost a member  {'Node': (14, 20), 'Property': (8, 11), 'Wire': (25, 33), 'ControlTerminal': (20, 23), 'Invoke': (0, 1), 'IndexArray': (1, 3)}
+  PASS  W8 ExecState 1 - the op is runnable  ExecState 1
+  FACT  saved C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpStopFromNode_v0.vi (16833 bytes); labels -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opstopfromnode_labels.json
+
+=== T: FUNCTIONAL test on a scratch VI
+  PASS  T0a EMPTY_v0.vi present  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\EMPTY_v0.vi
+  PASS  T0b the Boolean-output donor subVI exists  C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Utility\file.llb\Is Path and Not Empty.vi
+  PASS  T1 one While loop created  [{'i': 0, 'class': 'WhileLoop', 'uid': 43, 'pos': (200, 200), 'owner': 'TopLevelDiagram'}] [{'i': 1, 'class': 'Diagram', 'uid': 110, 'pos': (210, 222), 'owner': 'WhileLoop'}]
+  PASS  T2 the Boolean-output node is inside the loop body  [{'i': 0, 'class': 'SubVI', 'uid': 44, 'pos': (286, 286), 'owner': 'Diagram'}]
+  FACT  body node #44 (body Nodes[0]) outputs [(1, 'Is Path and Not Empty?')]; inputs [(4, 'path')]
+  PASS  T2b a Boolean output was found  outputs [(1, 'Is Path and Not Empty?')]
+  FACT  BEFORE: cond term 119, wire 0
+  FACT  OpStopFromNode_v0 error out: ''
+  FACT  AFTER : cond term 119, wire 147
+  PASS  T3 the conditional terminal is now WIRED  wire 147 (was 0)
+  PASS  T3b the SAME terminal, not a new one  119 -> 119
+  PASS  T4 the SAME wire uid on both ends (never a count)  body node output w147 vs conditional terminal w147
+  **FAIL**  T5 the scratch COMPILES with a Boolean on the conditional terminal (ExecState 1)  ExecState 0
+  FACT  scratch deleted: C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_stopfromnode_081454.vi
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_opstopfromnode_v0.py", line 535, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_opstopfromnode_v0.py", line 519, in main
+    test(labels)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_opstopfromnode_v0.py", line 484, in test
+    terms_on_wire = wire_source(SCRATCH, after["cond_wire_uid"])
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_opstopfromnode_v0.py", line 361, in wire_source
+    wi = wires.index(wire_uid)
+AttributeError: 'set' object has no attribute 'index'
+BGRUN END rc=1 after 46s

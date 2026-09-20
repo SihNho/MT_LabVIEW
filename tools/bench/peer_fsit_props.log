@@ -1,0 +1,75 @@
+BGRUN START 2026-09-18 01:32:36 limit 8.0 min: powershell -Command & 'tools/peer.ps1' -Agent codex -Kind fact -Slug fsit-class-properties -TaskFile 'tools/bench/peer_task_fsit_props.txt' -TimeoutSec 420
+OUTCOME: ANSWERED (240s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-18-fsit-class-properties.md
+--- ANSWER ---
+## 1. Class identity
+
+| Item | Documented answer | Source |
+|---|---|---|
+| Property Node `Class Name` string | **`VI Server:FlatSequenceInnerTunnel`**. This exact combined string is obtained from the documented rule “server class + colon + node class,” together with the documented node-class name `FlatSequenceInnerTunnel`. | [Property Node Class Name](https://labviewwiki.org/wiki/Property_class/Property_Node_Class_Name_property); [FlatSequenceInnerTunnel class](https://labviewwiki.org/wiki/FlatSequenceInnerTunnel_class) |
+| Class name | `FlatSequenceInnerTunnel` | [LabVIEW Wiki](https://labviewwiki.org/wiki/FlatSequenceInnerTunnel_class) |
+| Class ID | `16480` decimal | [LabVIEW Wiki](https://labviewwiki.org/wiki/FlatSequenceInnerTunnel_class) |
+| Scope | VI Scripting | [LabVIEW Wiki](https://labviewwiki.org/wiki/FlatSequenceInnerTunnel_class) |
+| Inheritance | `Generic > GObject > FlatSequenceInnerTunnel` | [LabVIEW Wiki](https://labviewwiki.org/wiki/FlatSequenceInnerTunnel_class); [class hierarchy](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy) |
+| Parent | `GObject`, **not `Tunnel`** | [Class hierarchy](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy) |
+
+The full Property Node class string is therefore confirmed as **`VI Server:FlatSequenceInnerTunnel`**. The combined string is a direct application of the documented naming rule; the class page itself displays only the node-class portion.
+
+## 2. Class-specific properties
+
+LabVIEW Wiki documents exactly four properties. It does not provide individual property-detail pages for these four, so the Short Name and exact LabVIEW data-type label are **UNDOCUMENTED**. This matters because Short Names are localized/version-sensitive and should not be reconstructed from Long Names. [All Supported Properties documentation](https://labviewwiki.org/wiki/Property_class/All_Supported_Properties_property)
+
+| Full/Long Name | Short Name | Unique ID | Data type | Access | Scope | Documented meaning | Source |
+|---|---|---:|---|---|---|---|---|
+| Left Terminal | **UNDOCUMENTED** | `1C3A9000` | **UNDOCUMENTED** | Read Only | VI Scripting | Returns a reference to the left terminal of the inner tunnel. | [LabVIEW Wiki](https://labviewwiki.org/wiki/FlatSequenceInnerTunnel_class) |
+| Right Terminal | **UNDOCUMENTED** | `1C3A9001` | **UNDOCUMENTED** | Read Only | VI Scripting | Returns a reference to the right terminal of the inner tunnel. | [LabVIEW Wiki](https://labviewwiki.org/wiki/FlatSequenceInnerTunnel_class) |
+| Left Frame | **UNDOCUMENTED** | `1C3A9002` | **UNDOCUMENTED** | Read Only | VI Scripting | Returns a reference to the frame on the tunnel’s left side. | [LabVIEW Wiki](https://labviewwiki.org/wiki/FlatSequenceInnerTunnel_class) |
+| Right Frame | **UNDOCUMENTED** | `1C3A9003` | **UNDOCUMENTED** | Read Only | VI Scripting | Returns a reference to the frame on the tunnel’s right side. | [LabVIEW Wiki](https://labviewwiki.org/wiki/FlatSequenceInnerTunnel_class) |
+
+Thus the previous dispatch was correct about:
+
+| Claim | Verdict | Source |
+|---|---|---|
+| `Left Terminal = 1C3A9000` | **Confirmed** | [LabVIEW Wiki](https://labviewwiki.org/wiki/FlatSequenceInnerTunnel_class) |
+| `Right Terminal = 1C3A9001` | **Confirmed** | [LabVIEW Wiki](https://labviewwiki.org/wiki/FlatSequenceInnerTunnel_class) |
+| Both return terminal references | **Confirmed semantically** by the property descriptions. The exact refnum data-type name/icon is **UNDOCUMENTED** on this class page. | [LabVIEW Wiki](https://labviewwiki.org/wiki/FlatSequenceInnerTunnel_class) |
+
+## 3. Class-specific methods
+
+| Full/Long Name | Short Name | Unique ID | Return/data type | Access | Scope | Source |
+|---|---|---|---|---|---|---|
+| **None** | N/A | N/A | N/A | N/A | N/A | The class page states that the class has no methods of its own; it inherits methods from `GObject`. [LabVIEW Wiki](https://labviewwiki.org/wiki/FlatSequenceInnerTunnel_class) |
+
+Because its chain includes `GObject > Generic`, references also support the inherited methods listed on the [GObject class](https://labviewwiki.org/wiki/GObject_class) and [Generic class](https://labviewwiki.org/wiki/Generic_class) pages. Those are inherited APIs, not `FlatSequenceInnerTunnel`-owned method IDs.
+
+## 4. No `Tunnel` inheritance
+
+| Question | Answer | Source |
+|---|---|---|
+| Does it inherit `Tunnel.Inside Terminals[]` (`6356000`)? | **No.** | [`Tunnel` hierarchy](https://labviewwiki.org/wiki/Tunnel_class); [`FlatSequenceInnerTunnel` hierarchy](https://labviewwiki.org/wiki/FlatSequenceInnerTunnel_class) |
+| Does it inherit `Tunnel.Outside Terminal` (`6356001`)? | **No.** | [`Tunnel` class](https://labviewwiki.org/wiki/Tunnel_class); [class hierarchy](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy) |
+| Why? | `Tunnel` and `FlatSequenceInnerTunnel` are separate sibling children of `GObject`. | [Class hierarchy](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy) |
+| Actual inherited API | All applicable `GObject` properties/methods, plus those inherited by `GObject` from `Generic`. | [GObject class](https://labviewwiki.org/wiki/GObject_class) |
+
+The documented inherited properties are:
+
+| Owner | Inherited property IDs and Long Names | Source |
+|---|---|---|
+| `Generic` | `6327800` Class ID; `6327801` Owner (Deprecated); `6327802` Owning VI; `6327803` Class Name; `6327804` Modified; `6327805` Is On Block Diagram?; `6327806` Owner | [Generic class](https://labviewwiki.org/wiki/Generic_class) |
+| `GObject` | `632A800` Position; `632A801` Position:Left; `632A802` Position:Top; `632A803` Bounds; `632A804` Bounds:Area Width; `632A805` Bounds:Area Height; `632A806` Grouped; `632A807` Locked; `632A808` Group Member Refs[]; `632A809` Selected; `632A80A` Total Bounds Rect; `632A80B` Master Bounds Rect; `632A80C` Basic Object Flags; `632A80D` Is Wizard Locked; `632A80F` Resize Info:Can Resize Horizontally; `632A810` Resize Info:Can Resize Vertically; `632A811` Resize Info:Name in Resize Dialog; `632A812` Resize Info:Include In Resize; `632A813` UID; `632A814` Dependencies:Missing Dependency Paths; `632A815` Dependencies:Missing Dependency Names; `632A816` Dependencies:Found Dependency Paths; `632A817` Dependencies:Found Dependency Names | [GObject class](https://labviewwiki.org/wiki/GObject_class) |
+
+## 5. Documented ways to obtain the reference
+
+| Route | Status | Details | Source |
+|---|---|---|---|
+| Terminal → `Generic.Owner` | Documented | Current `Owner` is `6327806` and returns a `Generic` reference to the owning object. A cast is required afterward. | [Generic.Owner](https://labviewwiki.org/wiki/Generic_class) |
+| Flat sequence → frames → inner tunnels | **Documented and preferable** | Use `FlatSequence.Frames[]` (`3578BC07`), then each `FlatSequenceFrame.Left Side Inner Tunnels[]` (`18E76803`) and/or `Right Side Inner Tunnels[]` (`18E76804`). | [FlatSequence class](https://labviewwiki.org/wiki/FlatSequence_class); [FlatSequenceFrame class](https://labviewwiki.org/wiki/FlatSequenceFrame_class) |
+| `FlatSequenceFrame` direct inner-tunnel properties | **Yes** | `Left Side Inner Tunnels[]` and `Right Side Inner Tunnels[]` explicitly return arrays of references to inner tunnels. | [FlatSequenceFrame class](https://labviewwiki.org/wiki/FlatSequenceFrame_class) |
+| A single `FlatSequence.Inner Tunnels[]` property | **No documented property** | The documented `FlatSequence` property list contains frames and terminals but no inner-tunnel array. | [FlatSequence class](https://labviewwiki.org/wiki/FlatSequence_class) |
+| `Traverse for GObjects.vi` with class name `FlatSequenceInnerTunnel` | **UNDOCUMENTED** | NI Community material documents traversal by class-name strings generally, including `GObject`, `SubVI`, `Constant`, and `Control`, but does not specifically confirm that hidden flat-sequence inner-tunnel objects are returned for `FlatSequenceInnerTunnel`. | [NI Community traversal discussion](https://forums.ni.com/t5/LabVIEW/Scripting-Reference-all-objects-traverse/td-p/3811133) |
+
+Bottom line: use the documented path
+
+`FlatSequence.Frames[] → FlatSequenceFrame.Left/Right Side Inner Tunnels[]`
+
+rather than a blind property-ID sweep or an unverified traversal assumption. The four class-specific IDs to attach are exactly `1C3A9000` through `1C3A9003`; their Short Names remain **UNDOCUMENTED**.
+BGRUN END rc=0 after 240s

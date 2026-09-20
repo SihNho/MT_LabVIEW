@@ -1,0 +1,143 @@
+BGRUN START 2026-09-20 05:59:10 limit 20.0 min: py tools/prior_art_review.py --plan-file C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\8468ebdf-2315-45cd-bea0-e9f4b706cec8\scratchpad\plan_d1_s3_focus.md --slug d1-s3-focus --trigger cycle-start --recipe tools/recipes/stage_d1_s3_focus.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_d1-s3-focus.txt (48942 chars)
+OUTCOME: ANSWERED (378s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-20-priorart-d1-s3-focus.md
+COST: $4.7788  in 48 / out 28237 / cache-create 218610 / cache-read 3772994  (374s, 31 turn(s))
+--- ANSWER ---
+I have read the recipe, the plan sections it cites, the measured JSON behind (X1), both prior route recipes, their ten run logs, and the three archived peer exchanges on this stage. Here is the review.
+
+---
+
+# PRIOR-ART REVIEW — `tools/recipes/stage_d1_s3_focus.py` @ sha256 `253212c5…`
+
+Nothing was built, edited, run or locked; no `.vi` was opened; no LabVIEW was touched.
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 — SETTLED ALREADY. The three "unwirable" rows are not a new conflict: the project decided in **code** that `cross-loop` rows are not wired by a move stage, and has said so in every run log since run 2
+
+`(X1)` presents its three rows as an arithmetic conflict discovered against the brief. The classification and its consequence were fixed long before:
+
+> `tools/recipes/build_d1_v0.py:943` — `REWIRE_ACTIONS = ("same-loop", "from-kernel", "from-const", "from-sr", "to-sr", "from-ctl", "from-tunnel")` — **`cross-loop` is absent by construction.**
+> `tools/recipes/build_d1_v0.py:976-977` — *"F1 rows to re-wire: {len(rows)} (the other … are source-side, from-stay or cross-loop - queue endpoints, **the stage after this one**)"*, repeated at `tools/recipes/build_d1_routeb_v5.py:1117-1118` and printed by every run, e.g. `tools/bench/build_d1_routeb_v0_run3.log:313` — *"S3w rows to connect: 66 (the other 43 are source-side, from-stay or cross-loop = queue endpoints)"*.
+
+And the *content* of (X1) — each of `#10407`'s non-internal inputs, by name, with its provenance — is `docs/d1-build-plan.md` §6, written before route B existed:
+
+> `docs/d1-build-plan.md:407-408` — *"The other inputs are NOT kernel-derived (`focus_other_inputs`, 9 rows): **t0 selector ← `#10686 And` (the schedule, evaluated in 1.2)**; **t1 `# slices in stack` ← LoopTunnel #9641, IndexMode 0, loop-invariant**"*; `:404-406` — t2 is the measured **1-DBL** `Q_focus` payload; `docs/d1-build-plan.md:554` names `Q_focus` as its carrier.
+
+**What this covers:** the claim that (X1) is a conflict between the brief and the measured files. It is not — it is the project's own decided split, and the consequence is that **gate `W-10407` ("the wired-terminal count returns to its pre-move value") was never a sound acceptance criterion for a move stage**, for the same reason route A's ledger counts 66 rows and not 109. The pass criterion to write is *the 4 internal rows return; the `cross-loop` rows are reported as queue endpoints*, which is what 37(g) should have said.
+
+**What this does NOT cover:** it does not say the *stage* is wrong, and it does not touch (X2) or (X3).
+
+### A2 — REFUTED ALREADY. The one prior review that authorised building loop 1.5 on its own made that conditional on the queues existing, and Pre-decided 36 removes the condition
+
+The atomic-1.5 boundary comes from `archive/peer/2026-09-20-d1-s2-boundary-recut.md`. Its answer 4 is the source of "loop 1.5 is buildable alone" — and it says why:
+
+> `archive/peer/2026-09-20-d1-s2-boundary-recut.md:118` — *"**On the dependency you flagged — it does not exist at build time.** **All eight Obtains sit at top level on `Diagram #686`** … So 1.5's Dequeue takes its refnum from an Obtain that exists whether or not 1.2 does … **Loop `#48` is fully buildable with `#5058`'s loop absent.**"*
+
+Against that, this cycle's own decision:
+
+> `docs/cycle27-plan.md:1059` (Pre-decided 36(d)) — the donor trial census *"is **not on the critical path — no queue stage is written before it, and it waits behind S3**."*
+
+So the premise the boundary rests on (the eight Obtains are already on `#686`) is false for S3: no Obtain exists, no Dequeue can be made, and the three rows (X1) names are precisely the endpoints that premise was about. The same review's own falsifier and cheapest test were run and came back the wrong way for this shape: `:133` predicted *"Step 4 → if still 1, the loop and its re-wiring are separable … if **0**, CLAIM B's bare-Required premise is confirmed empirically for `#48`"* — measured **0** (cycle 50, `docs/cycle27-plan.md:951`-area reading 2; cycle 52 `tools/bench/diag_movein_set.log:101`).
+
+Route A's recipe records what the transport choice buys, and it is exactly the three rows S3 defers:
+
+> `tools/recipes/build_d1_v0.py:155` — `TRANSPORT = "queue"`; `:424-425` — *"The choice settles **1.5's wake-up, the reverse crossing AND the stop read** in the three new loops **at once**, and it is JUDGEMENT."*
+
+**Still applies?** Yes. Nothing since 2026-09-20 has put an Obtain on `#686`.
+
+### A3 — CONTRADICTED (two, both with both sides quotable)
+
+**(a) 37(g)'s justification for making S3 atomic is that a part-moved set leaves no file — and this stage predicts it leaves no file.**
+
+> `docs/cycle27-plan.md:1120-1122` — *"(d) severs every wire whichever order is used, and **an intermediate at `ExecState` 0 cannot be saved — so a part-moved set leaves no file, which the split rule forbids outright.** The stage is atomic because the machine makes it so."*
+
+against the recipe's own contract:
+
+> `tools/recipes/stage_d1_s3_focus.py:149-151` — *"G15 `ExecState` == 1 immediately before the save … **PREDICTED 0**"* / *"G16 ONE `g.save()` … **PREDICTED REFUSED.**"*
+
+The premise (atomic ⇒ savable) and the conclusion (atomic, and unsavable) cannot both stand. And the rule they both cite is unambiguous: `CLAUDE.md:383` — *"**A step is not done until it has left a file.**"* The trigger is already armed, by the machine, in STATUS's own `owner_c52m2` key (*"RE-SPLIT TRIGGER FIRED … the next cycle's FIRST act is a DECOMPOSITION PLAN"*), and `CLAUDE.md:388-392` says that plan is the next cycle's first act and that *"a full-length retry under a new file name … is forbidden"*. A 954-line single-save stage whose contract predicts three FATAL failures is the shape that rule was written against.
+
+**(b) `#10407` t6 is not "internal". The measured file gives that wire a second end on a node this plan leaves behind.**
+
+> `tools/recipes/stage_d1_s3_focus.py:95` — *"Four are internal to the 1.5 set or its two shift registers (… t6 → SR `#4256`)."*
+
+against
+
+> `tools/bench/d1_rewire_sources.json:1892-1917` — row `uid 10407, i 6`, wire **9113**, `"other_ends": [{"kind":"node","diagram":"43","uid":12589,"i":1,…}]`, `action "to-sr"`.
+> `docs/d1-build-plan.md:307` — *"`12589` … **stays 1.1** (§11c) … t1 ← `#10407` t6 w9113 (**the reverse crossing**) … the crossing becomes `Q_focusback`"*; `:264` puts `#12589` on **stop path A** into `#11639` → `#637`'s conditional terminal.
+
+So wiring t6 into the new register restores one of that wire's two ends; the other end is a documented queue crossing on the original loop's **stop path**, and the stage severs it. That is a fourth unwirable row, an additional bare terminal on `#637` that (X2) does not count, and a rule-1a exposure on a path this stage does not otherwise touch.
+
+### A4 — UNREAD EVIDENCE. `docs/d1-build-plan.md` §6 and route B run 3's ledger
+
+The plan cites `docs/d1-build-plan.md:250, :305-306, :330-332, :359-360` — the *move table* rows — and never §6 `:396-421`, **the section that specifies row 1.5** and names every input (X1) re-derives, including `:402-403` (*"Both SR pairs are re-created on the new loop"*, which is what the recipe does) and `:418` (*"A refnum crossing a loop border auto-creates its tunnel"*, which bears directly on G13's un-predicted `LoopTunnel` delta).
+
+Second: `docs/d1-route-b-plan.md:79` / `tools/bench/build_d1_routeb_v0_run3.log:532` — **`S3w ledger: attempted 66, WIRED 63, FAILED 0, NO-ROUTE 3`**, measured on the real working copy, covering these rows. A stage whose new contribution is a re-wiring pass should state what that pass already measured.
+
+---
+
+## PART B — THE ARTEFACT
+
+### B1 — ALREADY BUILT (reported as a FINDING, **no slug**)
+
+The move of this exact set is not new: route B moved `#10407` + `#3529`/`#3560`/`#3447` into 1.5 (`docs/d1-route-b-plan.md:166-167`), and the landings passed in the real VI (`tools/bench/build_d1_routeb_v7_run10.log:116-176`, as verified at `archive/peer/2026-09-20-priorart-d1-s2-stage-r2.md:1195`). The recipe cites v7 and declines to import it, which `docs/cycle27-plan.md:936-939` (34(i)) requires. No slug: the reuse question is already disposed.
+
+### B2 — ALREADY FAILED. The last step of this stage is the step with a 3-for-3 failure record, and the plan predicts the same outcome without changing the cause
+
+- Cycle 50: one loop + `move_in #48` → `ExecState` 0, `g.save()` refused (`docs/cycle27-plan.md:951`-area; the diagnostic's own reading 2).
+- Cycle 52: `#3529` then `#48` moved → `ExecState` 0, save refused verbatim, **the scratch stayed byte-identical to S2** — `tools/bench/diag_movein_set.log:101` onward.
+- Run 10: the save itself diverted to `gui_save` and died — `docs/cycle27-plan.md:451-453` (*"The E3 save diverted to `gui_save` and died … so no restart, no reopen and no fresh-instance census ever happened"*).
+
+The new plan's answer to this is a SALVAGE `g.save()` after a FATAL gate (`tools/recipes/stage_d1_s3_focus.py:163-165`), which by `gscript.save`'s own predicate cannot succeed at `ExecState` 0 — i.e. it repeats the cause rather than addressing it. What would address it is not in this stage: the queue endpoints (A2), or a boundary that ends at a legal state.
+
+### B3 — HELPER EXISTS. `#10407` t1 is a `from-tunnel` row, and the built writer for that class wired 16 of them with a clean sink rule
+
+The plan reports t1 as unwirable (`tools/recipes/stage_d1_s3_focus.py:97`, `tools/bench/d1_rewire_sources.json:1789` `action "from-tunnel"`, `outer_wire 9649`). The project has a built, saved, ExecState-1 op for exactly that class, and it has already been used on the real VI:
+
+> `docs/toolkit-capabilities.md:70` — `OpConnectFromWire_v0.vi`, *"**the only writer whose SOURCE need not be a node** — what the 16 `FlatSequenceInnerTunnel` / `LeftShiftRegister` from-tunnel rows need"*; T1 measured *"branched an OUTER-diagram wire's source terminal into a node **inside a NEW While loop body** — op error `''`, sink wire 0 → 229, `Is Broken? FALSE`, `LoopTunnel 0 → 1`"*.
+> `docs/d1-route-b-plan.md:107-109` — run 3 *"used for **16 from-tunnel rows**, `SINK RULE 16 OK / 0 REFUSED / 0 BAD`, every wire `Is Broken? FALSE`"* (`tools/bench/build_d1_routeb_v0_run3.log:365,:367-368,:380,:532`).
+
+`from-tunnel` is also inside `REWIRE_ACTIONS` (`tools/recipes/build_d1_v0.py:943`), i.e. the project classifies it as re-wirable. The recipe's imported writers are `connect_nested_v1` and `wire_sr` only (`:36-42`); `OpConnectFromWire_v0` is neither used nor excluded on measured grounds. Its known defect (`T2c2`, `docs/toolkit-capabilities.md:70`) was diagnosed as a **stale terminal index**, not an op fault — and this recipe re-reads indices at every call site (`:349-351`, `:407`), which is the condition under which it worked in run 3.
+
+### B4 — ALREADY MEASURED (reported as a FINDING, **no slug**, same citation as A4)
+
+"Do the 1.5 rows re-wire in the real VI?" is measured: 63 WIRED / 0 FAILED / 3 NO-ROUTE, and none of the three NO-ROUTE rows is a 1.5 row (`docs/d1-route-b-plan.md:86`, `tools/bench/build_d1_routeb_v0_run3.log:532`). Route B's deaths were at `error 2` and at the save, not at these wires.
+
+---
+
+## What is genuinely NOT covered — say so plainly, so it is not hunted for
+
+- **(X3) is novel.** I found no file that notes the SubVI table key carries the diagram uid, and therefore none that notes a moved SubVI necessarily re-keys. `tools/recipes/stage_d1_s1.py:389` does key `(diagram_uid, node_uid)`; `:729` passes `{TIFF_SUBVI_KEY}` as the expected-missing set; and 29(g)/37(c) were both written for stages that moved **no** SubVI (S1 deleted one, S2 moved none), so the case never arose. A grep over `docs/`, `archive/` and `tools/` for `re-key|rekey|diagram_uid` returns only census generators. **The move-aware comparison at `:807-840` is the right fix and it is new work, not prior art.**
+- **The old `#637` shift-register pair being left bare** ((X2)'s second half) is also uncovered: `docs/d1-build-plan.md:402-403` says both pairs are *re-created* on the new loop, `docs/d1-route-b-plan.md:156` says registers are *"created fresh, never moved"*, and **no document names a deletion of the old pair**. Whether a bare inside terminal breaks the VI is unmeasured here; that is a hypothesis question, not a prior-art one.
+
+---
+
+## MACHINE-READABLE
+
+```
+PRIOR-ART: settled-already
+PRIOR-ART: refuted-already
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-failed
+PRIOR-ART: helper-exists
+```
+
+**Citations, one per finding, for the disposition:**
+
+- `settled-already` — `tools/recipes/build_d1_v0.py:943` + `:976-977` (and `build_d1_routeb_v5.py:1117-1118`, `tools/bench/build_d1_routeb_v0_run3.log:313`) vs `tools/recipes/stage_d1_s3_focus.py:93-106`; content already at `docs/d1-build-plan.md:404-410`
+- `refuted-already` — `archive/peer/2026-09-20-d1-s2-boundary-recut.md:118` (+ `:133`) vs `docs/cycle27-plan.md:1059`
+- `contradicted` (no-file) — `docs/cycle27-plan.md:1120-1122` vs `tools/recipes/stage_d1_s3_focus.py:149-151`, against `CLAUDE.md:383` and `:388-392`
+- `contradicted` (t6 is not internal) — `tools/recipes/stage_d1_s3_focus.py:95` vs `tools/bench/d1_rewire_sources.json:1892-1917` and `docs/d1-build-plan.md:307`, `:264`
+- `unread-evidence` — `docs/d1-build-plan.md:396-421` (§6) and `tools/bench/build_d1_routeb_v0_run3.log:532`
+- `already-failed` — `tools/bench/diag_movein_set.log:101` + `docs/cycle27-plan.md:451-453` vs `tools/recipes/stage_d1_s3_focus.py:163-165`
+- `helper-exists` — `docs/toolkit-capabilities.md:70` and `docs/d1-route-b-plan.md:107-109` vs `tools/recipes/stage_d1_s3_focus.py:36-42`, `:97`
+
+**The one sentence I would put to the judgement session:** the most consequential finding is not (X1) — it is that 37(g) made the stage atomic *because* an unsavable intermediate is forbidden, and this stage's own contract predicts an unsavable intermediate; on the project's own rule that makes S3-as-written a step that cannot be done, and the decomposition plan the machine already triggered is still owed.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-d1-s3-focus.md
+   STOP RECORD armed: tools/recipes/stage_d1_s3_focus.py sha 253212c547b9 verdict settled-already, refuted-already, contradicted, unread-evidence, already-failed, helper-exists -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 378s

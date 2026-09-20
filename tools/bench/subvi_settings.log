@@ -1,0 +1,34 @@
+BGRUN START 2026-09-13 17:19:06 limit 15.0 min: py -u -c 
+import os,sys
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+# the subVIs that actually sit on the frame path, plus two donors for comparison
+TARGETS=[
+ (r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Track N beads four-fold over-kernel-v3.vi','tracking kernel (frame path)'),
+ (r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\Madcity\ASI_adjust focus-subvi.vi','ASI focus (frame path)'),
+ (r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\SiHyeong Modified\Motor control v5_No Recording.vi','motor (motor loop)'),
+ (os.path.join(g.CLAUDEDEV,'PARALLEL_kernel_v3.vi'),'our CPU kernel'),
+ (os.path.join(g.CLAUDEDEV,'GPU_kernel_v1.vi'),'our GPU kernel'),
+]
+vi0=g.lv()
+for p,label in TARGETS:
+    if not os.path.exists(p):
+        print('%-28s MISSING'%label); continue
+    try:
+        vi=vi0.GetVIReference(p,'',False,0)
+        # ActiveX exposes some VI properties directly; try the documented ones
+        out={}
+        for prop in ('ReentrancyType','ExecutionPriority','ExecutionSystem','IsReentrant','InlineIsAllowed'):
+            try: out[prop]=getattr(vi,prop)
+            except Exception as e: out[prop]='(n/a)'
+        print('%-28s %s'%(label,out))
+    except Exception as e:
+        print('%-28s FAILED %s'%(label,str(e)[:110]))
+
+tracking kernel (frame path) MISSING
+ASI focus (frame path)       {'ReentrancyType': 1, 'ExecutionPriority': '(n/a)', 'ExecutionSystem': '(n/a)', 'IsReentrant': False, 'InlineIsAllowed': '(n/a)'}
+motor (motor loop)           {'ReentrancyType': 1, 'ExecutionPriority': '(n/a)', 'ExecutionSystem': '(n/a)', 'IsReentrant': True, 'InlineIsAllowed': '(n/a)'}
+our CPU kernel               {'ReentrancyType': 1, 'ExecutionPriority': '(n/a)', 'ExecutionSystem': '(n/a)', 'IsReentrant': True, 'InlineIsAllowed': '(n/a)'}
+our GPU kernel               {'ReentrancyType': 1, 'ExecutionPriority': '(n/a)', 'ExecutionSystem': '(n/a)', 'IsReentrant': True, 'InlineIsAllowed': '(n/a)'}
+BGRUN END rc=0 after 1s

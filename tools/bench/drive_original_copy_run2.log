@@ -1,0 +1,34 @@
+BGRUN START 2026-09-17 01:48:23 limit 20.0 min: py -u tools/bench/drive_original_copy.py
+[   0.0s] 0 md5(original) before             FILE     PASS 2a78e17c449cacdaf5da389818526859
+[   0.0s] 0 plain file copy                  FILE     PASS C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D0_MAINCOPY_20260917_014823.vi (473317 bytes)
+[  14.9s] 0b original resident (read-only)   COM      PASS original resident (ExecState=1)
+[  17.9s] 1 P1 copy loads, idle              COM      PASS ExecState=1; dialogs=VERDICT: clear (no modal dialog)
+[  17.9s] 1b baseline indicators             VISERVER PASS {"current image number": 0, "file progress": 0, "File Size": 3600, "Total Lost Frames": 0, "Cal File Path": "", "Track File Path": "", "Pos within cal image": []}
+[ 101.0s] stop: SetControlValue('stop (end)') raised COM set(('stop (end)',)) did not return in 15s - LabVIEW is blocked
+[ 116.0s] stop: SetControlValue('stop (end) 2') raised COM set(('stop (end) 2',)) did not return in 15s - LabVIEW is blocked
+[ 186.1s] stop: Abort raised COM abort(()) did not return in 20s - LabVIEW is blocked
+[ 243.1s] cleanup: CloseFrontPanel raised COM closepanel(()) did not return in 30s - LabVIEW is blocked
+[ 254.6s] cleanup: scratch copy deleted (D0_MAINCOPY_20260917_014823.vi)
+[ 254.6s] Z md5(original) after              FILE     PASS 2a78e17c449cacdaf5da389818526859
+
+| step | method | result | detail |
+|---|---|---|---|
+| 0 md5(original) before | FILE | PASS | 2a78e17c449cacdaf5da389818526859 |
+| 0 plain file copy | FILE | PASS | C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D0_MAINCOPY_20260917_014823.vi (473317 bytes) |
+| 0b original resident (read-only) | COM | PASS | original resident (ExecState=1) |
+| 1 P1 copy loads, idle | COM | PASS | ExecState=1; dialogs=VERDICT: clear (no modal dialog) |
+| 1b baseline indicators | VISERVER | PASS | {"current image number": 0, "file progress": 0, "File Size": 3600, "Total Lost Frames": 0, "Cal File Path": "", "Track File Path": "", "Pos within cal image": []} |
+| Z md5(original) after | FILE | PASS | 2a78e17c449cacdaf5da389818526859 |
+
+=== D0 drive_original_copy: 6 pass, 0 fail ===
+json: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\drive_original_copy.json
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\drive_original_copy.py", line 641, in <module>
+    good = main()
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\drive_original_copy.py", line 360, in main
+    com.call("runasync", timeout=60)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\drive_original_copy.py", line 237, in call
+    raise TimeoutError("COM %s(%s) did not return in %.0fs - LabVIEW is blocked"
+TimeoutError: COM runasync(()) did not return in 60s - LabVIEW is blocked
+[ 254.6s] !! driver exception                COM      FAIL TimeoutError('COM runasync(()) did not return in 60s - LabVIEW is blocked')
+BGRUN END rc=1 after 255s

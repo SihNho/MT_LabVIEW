@@ -1,0 +1,79 @@
+BGRUN START 2026-09-19 18:33:54 limit 12.0 min: py -u tools/bench/s0_body_census.py
+=== S0 BODY CENSUS (read-only)  2026-09-19 18:33:54 ===
+OpReportAll_v0.vi md5 BEFORE ffcec2c75e92dcad514299ba20e66054
+diagrams: [(0, 3, ''), (1, 272, 'ForLoop')]
+  PASS C0 exactly one ForLoop-owned Diagram [{'i': 1, 'class': 'Diagram', 'uid': 272, 'pos': (1410, 901), 'owner': 'ForLoop'}]
+
+-- TOP DIAGRAM (Diagram[0]) : 3 nodes
+   Nodes[0] #43 'Open VI Reference'
+        [ 0] 'error out'                        source=True  wire=590
+        [ 1] 'vi reference'                     source=True  wire=467
+        [ 2] 'password ("")'                    source=False wire=0
+        [ 3] 'type specifier VI Refnum (for type only)' source=False wire=0
+        [ 4] 'error in (no error)'              source=False wire=0
+        [ 5] 'options'                          source=False wire=0
+        [ 6] 'vi path'                          source=False wire=106
+        [ 7] 'application reference (local)'    source=False wire=0
+   Nodes[1] #124 'Traverse for GObjects.vi'
+        [ 0] 'error out'                        source=True  wire=425
+        [ 1] '# of Refs'                        source=True  wire=303
+        [ 2] 'References'                       source=True  wire=524
+        [ 3] 'dup VI Refnum'                    source=True  wire=0
+        [ 4] ''                                 source=False wire=0
+        [ 5] 'Other Refnum'                     source=False wire=0
+        [ 6] 'Traverse Generated Code (F)'      source=False wire=0
+        [ 7] 'Traverse Target'                  source=False wire=415
+        [ 8] 'error in (no error)'              source=False wire=590
+        [ 9] ''                                 source=False wire=0
+        [10] 'Class Name'                       source=False wire=373
+        [11] 'VI Refnum'                        source=False wire=467
+   Nodes[2] #113 'For Loop'
+        [ 0] ''                                 source=False wire=0
+        [ 1] 'References'                       source=False wire=524
+        [ 2] ''                                 source=True  wire=678
+        [ 3] ''                                 source=True  wire=711
+        [ 4] ''                                 source=True  wire=743
+        [ 5] ''                                 source=True  wire=775
+
+-- LOOP BODY (Diagram[1]) : 2 nodes
+   Nodes[0] #114 'Property Node'
+        [ 0] 'reference'                        source=False wire=421
+        [ 1] 'reference out'                    source=True  wire=0
+        [ 2] 'error in (no error)'              source=False wire=0
+        [ 3] 'error out'                        source=True  wire=0
+        [ 4] 'Position'                         source=True  wire=577
+        [ 5] 'UID'                              source=True  wire=586
+        [ 6] 'ClassName'                        source=True  wire=596
+        [ 7] 'Owner'                            source=True  wire=548
+   Nodes[1] #115 'Property Node'
+        [ 0] 'reference'                        source=False wire=548
+        [ 1] 'reference out'                    source=True  wire=0
+        [ 2] 'error in (no error)'              source=False wire=0
+        [ 3] 'error out'                        source=True  wire=0
+        [ 4] 'ClassName'                        source=True  wire=605
+  PASS C1 the body holds exactly two Property nodes [114, 115]
+  PASS C2 every body terminal printed above nodes [114, 115]
+
+-- WHO DRIVES EACH `reference` (OpWireSource_v5, UID-addressed, read-only)
+   wire 421: [{'i': 0, 'is_source': True, 'owner_class': 'LoopTunnel', 'owner_uid': 511, 'recip': 421}, {'i': 1, 'is_source': False, 'owner_class': 'Property', 'owner_uid': 114, 'recip': 421}, {'i': 2, 'is_source': False, 'owner_class': '', 'owner_uid': 0, 'recip': 0}]
+  PASS C3 wire 421 has exactly one SOURCE terminal [{'i': 0, 'is_source': True, 'owner_class': 'LoopTunnel', 'owner_uid': 511, 'recip': 421}, {'i': 1, 'is_source': False, 'owner_class': 'Property', 'owner_uid': 114, 'recip': 421}, {'i': 2, 'is_source': False, 'owner_class': '', 'owner_uid': 0, 'recip': 0}]
+   wire 548: [{'i': 0, 'is_source': True, 'owner_class': 'Property', 'owner_uid': 114, 'recip': 548}, {'i': 1, 'is_source': False, 'owner_class': 'Property', 'owner_uid': 115, 'recip': 548}, {'i': 2, 'is_source': False, 'owner_class': '', 'owner_uid': 0, 'recip': 0}]
+  PASS C3 wire 548 has exactly one SOURCE terminal [{'i': 0, 'is_source': True, 'owner_class': 'Property', 'owner_uid': 114, 'recip': 548}, {'i': 1, 'is_source': False, 'owner_class': 'Property', 'owner_uid': 115, 'recip': 548}, {'i': 2, 'is_source': False, 'owner_class': '', 'owner_uid': 0, 'recip': 0}]
+
+   *** DISCRIMINATOR: w548 source owner = Property#114 ***
+   reading R (review)  = owner 114, i.e. PN1.Owner -> PN2.reference : the body is a CHAIN and an Owner reference is MINTED per iteration and closed by nobody.
+   reading S (session) = owner is a LoopTunnel/other            : the body is PARALLEL.
+
+-- LOOP TUNNELS: 5
+   [0] uid 511  IndexMode 1  out 'References' is_source=False wire 524  in [''] wires [421]
+   [1] uid 566  IndexMode 1  out '' is_source=True wire 678  in ['Position'] wires [577]
+   [2] uid 569  IndexMode 1  out '' is_source=True wire 711  in ['UID'] wires [586]
+   [3] uid 573  IndexMode 1  out '' is_source=True wire 743  in ['ClassName'] wires [596]
+   [4] uid 582  IndexMode 1  out '' is_source=True wire 775  in ['ClassName'] wires [605]
+  PASS C4 every LoopTunnel printed with its IndexMode 5 tunnels
+  PASS C5 OpReportAll_v0.vi is byte-identical after this script ffcec2c75e92dcad514299ba20e66054 -> ffcec2c75e92dcad514299ba20e66054
+
+(0s)
+
+GATES: 7 PASS / 0 FAIL
+BGRUN END rc=0 after 1s

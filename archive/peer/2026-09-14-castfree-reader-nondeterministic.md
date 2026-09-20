@@ -1,0 +1,137 @@
+﻿---
+type: peer-review
+status: historical
+date: 2026-09-14
+tags: [peer-review]
+---
+
+# castfree-reader-nondeterministic
+
+- **agent:** codex
+- **date:** 2026-09-14
+- **outcome:** ANSWERED (65s)
+- **why asked:** the walker reported fresh nodes inconsistently across reads.
+- **verdict:** RESOLVED: fresh nodes sat behind the walker's own junk Invokes in Nodes[]; purge fixed it (net_map, 2026-09-14).
+
+## Question
+
+ATTACK this. LabVIEW 2026 VI Scripting over ActiveX. I create a Property node by script (erdosmiller Create Property Node wrapped in an op: class string + [(property ID, write?)] + location) and then IMMEDIATELY read the new node's terminal list through another op that walks AbstractDiagram.Nodes[] -> Node.Terminals[] -> Terminal.Name. Across two runs on fresh scratch copies of the same donor, with identical code: RUN 1: Control.Terminal (6332006) node found by the reader with a property terminal named 'Terminal'; RUN 2: the same creation, reader returns NOTHING for that uid (my code printed 'property terminals = []' which conflated 'uid not listed' with 'listed, no extra terminals' - a defect I will fix). In BOTH runs AbstractDiagram.SubVIs[] (6375802) came back with no property terminal, while the donor's pre-existing AbstractDiagram.Nodes[] (6375809) node shows 'Nodes[]' fine. The reader is the SAME op that reliably lists all 635 nodes of a 473 KB VI. QUESTIONS: (a) after a scripted node creation, is there a refresh/recompile/idle step required before Nodes[] or Terminals[] of the diagram reflects the new node and its property rows - e.g. does the diagram need a compile pass, or the VI reference re-opened, or a short delay for the edit to commit? Cite anything on VI Scripting edit visibility. (b) is it known that a property node created with an ID the creator cannot resolve ends up with ZERO property rows (so no property terminal) rather than an error - and does the ordinary Set Properties[] with AllowAlternateNames=FALSE silently drop unknown IDs? (c) what is the cheapest scripted way to ask a freshly created Property node what property it holds - Property.Property Node Class Name 636F804, and is there a per-row 'Property name/ID' read (PropertyItem class) I can do WITHOUT a class cast? (d) could reading Node.Terminals[] on a node that has no property rows return an EMPTY array while Nodes[] still lists the node - i.e. would my reader legitimately show 4 generic terminals vs 0 terminals, and which did LabVIEW do here? I need a DETERMINISTIC procedure to decide 'attached or not' before I can test whether Control.Terminal/SubVIs[] are usable.
+
+## Answer
+
+Your refresh hypothesis is weak. The stronger hypothesis is that creation succeeded but property selection failed?봮r that the second operation inspected a different/stale VI instance. Your current log cannot distinguish those cases.
+
+### (a) Refresh, compile, reopen, or delay?
+
+I found no documented requirement to compile, reopen, redraw, or sleep after a synchronous VI Scripting edit before reading `Diagram.Nodes[]` or the created object?셲 properties.
+
+The scripting API is explicitly intended to create, edit, and inspect LabVIEW objects programmatically, and properties such as `Node.Terminals[]` do not load the diagram or panel themselves. Nothing in their documented contract describes eventual consistency or an asynchronous commit. [NI VI Scripting overview](https://www.ni.com/en/support/downloads/tools-network/download.labview-vi-scripting.html), [Node.Terminals[] reference](https://www.labviewwiki.org/wiki/Node_class/Terminals%28%29_property)
+
+Therefore:
+
+- A delay is not a defensible correctness mechanism.
+- A forced compile is more likely to hide the real failure than fix it.
+- Reopening is useful only as a diagnostic for ?쐓ame in-memory VI reference versus another instance,??not as a required commit step.
+
+Do not rediscover the new object by UID as the first verification. The creation operation should return the new object reference, and the verification must query that exact reference before closing it. If the creator cannot return the reference, fix that interface first.
+
+Your two-run variation is more consistent with one of these:
+
+1. The creator?셲 `Set Properties[]` error or returned array was discarded.
+2. The reader opened a different in-memory VI instance or an unmodified disk copy.
+3. The UID was not actually present, but the reporting defect presented that as ?쐚ero property terminals.??4. The requested property ID is not valid for the node?셲 selected class.
+
+A cheap ordering/barrier test is to read `Property Node Class Name`, `Property Count`, and `Properties[]` through the new reference within the same dataflow as creation. A LabVIEW error wire between creation and verification is the synchronization primitive; a timer is not.
+
+### (b) Do unresolved IDs silently produce zero rows?
+
+I found evidence against assuming silent success.
+
+`Set Properties[]` takes ID strings and returns an array of `PropertyItem` references. Its documentation does not promise that input and output arrays have equal lengths, nor does it document silent dropping of invalid IDs. [Set Properties[] reference](https://labviewwiki.org/wiki/Property_class/Set_Properties%28%29_method)
+
+More importantly, a reported scripting case found that using a displayed nested-property ID which was not present in `All Supported Properties` caused error **1077** and the set operation did not work. That is close to your `Control.Terminal` situation because nested reference properties are specifically discussed. [NI Community: ?쏺I Scripting: Can?셳 get or set all available properties??(https://forums.ni.com/t5/LabVIEW/VI-Scripting-Can-t-get-or-set-all-available-properties/m-p/4030569)
+
+There is a separate documented representation for an invalid `PropertyItem`: reading its `Property` information returns empty Unique ID, data name, short name, and long name. That proves invalid items can exist, but it does not prove `Set Properties[]` silently removes bad IDs. [PropertyItem.Property reference](https://www.labviewwiki.org/wiki/PropertyItem_class/Property_property)
+
+So the answer is:
+
+- **Known zero-row-on-invalid behavior:** not established by the available documentation.
+- **Known error behavior:** yes, error 1077 has been observed when the ID cannot be selected for the current class.
+- **`Allow Alternate Names=FALSE` silently dropping IDs:** not documented; assume failure until you inspect both `error out` and the returned `PropertyItem[]`.
+
+For a single requested ID, require all of:
+
+```text
+error out == 0
+returned PropertyItem[].length == 1
+Property Count == 1
+Properties[].length == 1
+Properties[0].Unique ID == requested ID
+Properties[0].data/short/long name is nonempty
+```
+
+If any condition fails, classify it as **not attached**.
+
+### (c) Cheapest way to inspect the new node
+
+Query the returned Property-node reference directly:
+
+1. `Property Node Class Name` (`636F804`)  
+   Confirms the node?셲 current server/node class. It is read/write and does not load either diagram or panel. The required format is the full server class and node class, such as `VI Server:Generic`. [Property Node Class Name reference](https://labviewwiki.org/wiki/Property_class/Property_Node_Class_Name_property)
+
+2. `Property Count` (`636F803`).
+
+3. `Properties[]` (`636F80F`)  
+   This returns information about the properties actually selected in the node?봭ot merely the available choices. [Property class reference](https://labviewwiki.org/wiki/Property_class)
+
+4. Optionally, `Property Items[]` (`636F802`), or `Get Property Item(index)` (`636F400`). The latter returns a typed `PropertyItem` reference directly, so no class cast is required. [Get Property Item reference](https://labviewwiki.org/wiki/Property_class/Get_Property_Item_method)
+
+5. On each returned `PropertyItem`, read `Property` (`6DE8DC0B`). It returns the stable Unique ID plus data, short, and long names. No cast is needed because the reference is already a `PropertyItem` reference. [PropertyItem.Property reference](https://www.labviewwiki.org/wiki/PropertyItem_class/Property_property)
+
+There is also a numeric `Property ID` (`6DE8DC09`), but it is private. Avoid making that your verifier; the public scripting `Property` cluster?셲 Unique ID string is explicitly described as stable across LabVIEW versions and locales. [PropertyItem Property ID reference](https://labviewwiki.org/wiki/PropertyItem_class/Property_ID_property), [PropertyItem.Property reference](https://www.labviewwiki.org/wiki/PropertyItem_class/Property_property)
+
+For wiring, obtain the row terminal from `PropertyItem.Terminal` (`6DE8DC02`) instead of searching the parent node?셲 terminal array by the generic name `"Terminal"`. [PropertyItem.Terminal reference](https://www.labviewwiki.org/wiki/PropertyItem_class/Terminal_property)
+
+### (d) Could a zero-row Property node have zero `Node.Terminals[]`?
+
+Do not use `Node.Terminals[]` to count property rows.
+
+`Node.Terminals[]` is defined as all terminals belonging to the node; it is not documented as ?쐏roperty-row terminals only.??[Node.Terminals[] reference](https://www.labviewwiki.org/wiki/Node_class/Terminals%28%29_property) A Property node can have structural/reference/error terminals independently of its property-item rows, so an empty property list and an empty overall terminal list are different claims.
+
+Your evidence cannot establish whether LabVIEW returned:
+
+- four generic terminals,
+- zero terminals,
+- or no matching node at all,
+
+because your reporter collapsed ?쏹ID absent??and ?쏹ID present without a named property terminal.??That run is indeterminate.
+
+### Deterministic acceptance procedure
+
+Immediately after creation, on the exact returned object reference:
+
+```text
+A. Verify the object reference is valid.
+B. Read UID and confirm it equals the creation result?셲 UID.
+C. Read Property Node Class Name and compare with the requested class.
+D. Read Property Count; require the expected count.
+E. Read Properties[]; require the expected Unique ID at every row.
+F. Read Property Items[] or Get Property Item(i).
+G. From each PropertyItem:
+   - read Property and compare its Unique ID;
+   - read PropertyItem.Terminal and require a valid terminal reference.
+H. Record the complete error cluster after every scripting call.
+I. Only then optionally rediscover the node through Diagram.Nodes[] and compare UIDs.
+```
+
+For `AbstractDiagram.SubVIs[]`, your repeated failure while `AbstractDiagram.Nodes[]` works is presently evidence that the property did **not** attach?봭ot evidence that its terminal was delayed. First ask `All Supported Properties` (`636F80E`) on a node whose class is explicitly `AbstractDiagram`, and require the intended Unique ID to appear before attempting `Set Properties[]`. That API lists properties supported by the node?셲 current class. [All Supported Properties reference](https://labviewwiki.org/wiki/Property_class/All_Supported_Properties_property)
+
+Bottom line: remove timing from the experiment. Treat `Set Properties[]` as a transaction whose error, returned item count, selected-property metadata, and `PropertyItem.Terminal` must all be validated synchronously. Only that procedure can distinguish ?쐍ode exists,???쐒ow exists,??and ?쐒ow exposes a usable terminal.?
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+See the **verdict** line at the top of this file (filled 2026-09-14 14:2x; the day's outcomes are in STATUS.md and docs/).

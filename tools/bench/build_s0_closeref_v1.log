@@ -1,0 +1,143 @@
+BGRUN START 2026-09-19 18:06:32 limit 30.0 min: py -u tools/recipes/build_s0_closeref_v1.py
+=== D1 STAGE S0 v1 - Close Reference restored, For-Loop design  2026-09-19 18:06:32 ===
+   PASS G0 the route-B original is the pinned one 2a78e17c449cacdaf5da389818526859
+   PASS G0b source on disk: OpReport_v3.vi C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpReport_v3.vi
+   PASS G0b source on disk: OpWireSource_v5.vi C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpWireSource_v5.vi
+   PASS G0b source on disk: OpReportAll_v0.vi C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpReportAll_v0.vi
+   PASS G0b source on disk: KernelBuilder_v1.vi C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\KernelBuilder_v1.vi
+
+=== STAGE OpReport_v4: OpReport_v3.vi -> OpReport_v4.vi (new) ===
+  source md5 BEFORE 0743701a249b6ac20a5dab9ee676c09c
+   fresh(): killing LabVIEW pid 21476
+   COM preflight OK (pid 18620, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 18620
+   PASS G1a OpReport_v4: the copy is byte-identical 0743701a249b6ac20a5dab9ee676c09c
+   PASS G1 OpReport_v4: the copy is RUNNABLE before anything is changed ExecState 1
+   PASS G2c OpReport_v4: the donor holds Close Reference #157 [544, 1845, 1337, 2066, 906, 157]
+  donor Function index of #157 = 5; target nodes on diagram 0 before = 5
+   [OpReport_v4] FINISH: new nodes on diagram 0 = [324]
+   PASS G2 OpReport_v4: exactly ONE node added by the copy [324]
+   [OpReport_v4] Close Reference #324 terminals: [(0, 'error out', True), (1, 'error in (no error)', False), (2, 'reference', False)]
+   PASS G2b OpReport_v4: Close Reference carries 'reference' and 'error in (no error)' sinks {'i': 2, 'name': 'reference', 'is_source': False, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 324}/{'i': 1, 'name': 'error in (no error)', 'is_source': False, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 324}
+   PASS G3v OpReport_v4: the Traverse node is present on diagram 0 [(43, 'Open VI Reference'), (124, 'Traverse for GObjects.vi'), (167, 'Index Array'), (241, 'Property Node'), (482, 'Property Node'), (324, 'Close Reference')]
+   PASS G3r OpReport_v4: the Traverse has the 'References' SOURCE terminal (NAMES.md:230, measured) ['error out', '# of Refs', 'References', 'dup VI Refnum']
+   PASS G3w OpReport_v4: 'References' already drives a wire (the branch needs one) 188
+   . [OpReport_v4] References wire = 188
+   . [OpReport_v4] For Loop #331 created at (1079, 115) (found at (1079, 115))
+   PASS G3d OpReport_v4: exactly one ForLoop-owned Diagram [(1, 597, 'ForLoop')]
+   . [OpReport_v4] loop body Diagram[1] uid 597
+   PASS G3a OpReport_v4: Close Reference #324 is now on the loop body diagram [324, 332]
+   PASS G3f OpReport_v4: the reparented Close Reference still exposes 'reference' and 'error in (no error)' [(0, 'error out', True), (1, 'error in (no error)', False), (2, 'reference', False)]
+   PASS G3s OpReport_v4: the References wire has a SOURCE terminal owned by the Traverse {'i': 0, 'is_source': True, 'owner_class': 'SubVI', 'owner_uid': 124, 'recip': 188}
+   . [OpReport_v4] connect_from_wire(References) dw=1 ExecState=0 err='' sub={'err_uidvi': '', 'err_wirepn': '', 'UID 2': 636, 'Is Broken?': False, 'Name': 'reference'}
+   PASS G3 OpReport_v4: References branched INTO the loop - sink non-zero and a LoopTunnel appeared sink wire 636, new tunnels [642]
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_s0_closeref_v1.py", line 446, in stage
+    repair(src, dst_path, tag, kind)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_s0_closeref_v1.py", line 431, in repair
+    g.copy_by_index(DONOR, "Function", i_cr, dst_path, expect_uid=CLOSEREF_UID, finish=FINISH)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 1543, in copy_by_index
+    finish(MOVE_DST, added)                 # make the VI runnable here, on the loaded Target
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_s0_closeref_v1.py", line 270, in FINISH
+    _finish_new_loop(dst, tag, cr, w, ref_t, ein_t)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_s0_closeref_v1.py", line 386, in _finish_new_loop
+    settle_tunnel(dst, tag, new_tuns, 1, "References (auto-index: the array supplies N)")
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_s0_closeref_v1.py", line 239, in settle_tunnel
+    i = tun_index(dst, u)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_s0_closeref_v1.py", line 224, in tun_index
+    return g.uids(dst, "LoopTunnel").index(uid)
+AttributeError: 'set' object has no attribute 'index'
+  STAGE OpReport_v4 RAISED: 'set' object has no attribute 'index'
+  removed the unrepaired OpReport_v4.vi stub
+
+=== STAGE OpWireSource_v6: OpWireSource_v5.vi -> OpWireSource_v6.vi (new) ===
+  source md5 BEFORE 5dc45a04ea5d809f5ca57e9309ed59c5
+   fresh(): killing LabVIEW pid 18620
+   COM preflight OK (pid 17280, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 17280
+   PASS G1a OpWireSource_v6: the copy is byte-identical 5dc45a04ea5d809f5ca57e9309ed59c5
+   PASS G1 OpWireSource_v6: the copy is RUNNABLE before anything is changed ExecState 1
+   PASS G2c OpWireSource_v6: the donor holds Close Reference #157 [544, 1845, 1337, 2066, 906, 157]
+  donor Function index of #157 = 5; target nodes on diagram 0 before = 19
+   [OpWireSource_v6] FINISH: new nodes on diagram 0 = [1639]
+   PASS G2 OpWireSource_v6: exactly ONE node added by the copy [1639]
+   [OpWireSource_v6] Close Reference #1639 terminals: [(0, 'error out', True), (1, 'error in (no error)', False), (2, 'reference', False)]
+   PASS G2b OpWireSource_v6: Close Reference carries 'reference' and 'error in (no error)' sinks {'i': 2, 'name': 'reference', 'is_source': False, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 1639}/{'i': 1, 'name': 'error in (no error)', 'is_source': False, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 1639}
+   PASS G3v OpWireSource_v6: the Traverse node is present on diagram 0 [(43, 'Open VI Reference'), (124, 'Traverse for GObjects.vi'), (167, 'Index Array'), (241, 'Property Node'), (482, 'Property Node'), (145, 'Property Node'), (151, 'Index Array'), (157, 'Property Node'), (163, 'Property Node'), (990, 'UID to GObject Reference.vi'), (1044, 'To More Specific Class'), (307, 'Property Node'), (310, 'Property Node'), (1186, 'Property Node'), (1221, 'To More Specific Class'), (1319, 'Property Node'), (1326, 'Property Node'), (1329, 'Property Node'), (1554, 'Property Node'), (1639, 'Close Reference')]
+   PASS G3r OpWireSource_v6: the Traverse has the 'References' SOURCE terminal (NAMES.md:230, measured) ['error out', '# of Refs', 'References', 'dup VI Refnum']
+   PASS G3w OpWireSource_v6: 'References' already drives a wire (the branch needs one) 188
+   . [OpWireSource_v6] References wire = 188
+   . [OpWireSource_v6] For Loop #1647 created at (2920, 115) (found at (2920, 115))
+   PASS G3d OpWireSource_v6: exactly one ForLoop-owned Diagram [(1, 1740, 'ForLoop')]
+   . [OpWireSource_v6] loop body Diagram[1] uid 1740
+   PASS G3a OpWireSource_v6: Close Reference #1639 is now on the loop body diagram [1639, 1648]
+   PASS G3f OpWireSource_v6: the reparented Close Reference still exposes 'reference' and 'error in (no error)' [(0, 'error out', True), (1, 'error in (no error)', False), (2, 'reference', False)]
+   PASS G3s OpWireSource_v6: the References wire has a SOURCE terminal owned by the Traverse {'i': 0, 'is_source': True, 'owner_class': 'SubVI', 'owner_uid': 124, 'recip': 188}
+   . [OpWireSource_v6] connect_from_wire(References) dw=1 ExecState=0 err='' sub={'err_uidvi': '', 'err_wirepn': '', 'UID 2': 1779, 'Is Broken?': False, 'Name': 'reference'}
+   PASS G3 OpWireSource_v6: References branched INTO the loop - sink non-zero and a LoopTunnel appeared sink wire 1779, new tunnels [1785]
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_s0_closeref_v1.py", line 446, in stage
+    repair(src, dst_path, tag, kind)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_s0_closeref_v1.py", line 431, in repair
+    g.copy_by_index(DONOR, "Function", i_cr, dst_path, expect_uid=CLOSEREF_UID, finish=FINISH)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 1543, in copy_by_index
+    finish(MOVE_DST, added)                 # make the VI runnable here, on the loaded Target
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_s0_closeref_v1.py", line 270, in FINISH
+    _finish_new_loop(dst, tag, cr, w, ref_t, ein_t)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_s0_closeref_v1.py", line 386, in _finish_new_loop
+    settle_tunnel(dst, tag, new_tuns, 1, "References (auto-index: the array supplies N)")
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_s0_closeref_v1.py", line 239, in settle_tunnel
+    i = tun_index(dst, u)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\build_s0_closeref_v1.py", line 224, in tun_index
+    return g.uids(dst, "LoopTunnel").index(uid)
+AttributeError: 'set' object has no attribute 'index'
+  STAGE OpWireSource_v6 RAISED: 'set' object has no attribute 'index'
+  removed the unrepaired OpWireSource_v6.vi stub
+
+=== STAGE OpReportAll_v1: OpReportAll_v0.vi -> OpReportAll_v1.vi (loop) ===
+  source md5 BEFORE ffcec2c75e92dcad514299ba20e66054
+   fresh(): killing LabVIEW pid 17280
+   COM preflight OK (pid 17268, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 17268
+   PASS G1a OpReportAll_v1: the copy is byte-identical ffcec2c75e92dcad514299ba20e66054
+   PASS G1 OpReportAll_v1: the copy is RUNNABLE before anything is changed ExecState 1
+   PASS G2c OpReportAll_v1: the donor holds Close Reference #157 [544, 1845, 1337, 2066, 906, 157]
+  donor Function index of #157 = 5; target nodes on diagram 0 before = 3
+   [OpReportAll_v1] FINISH: new nodes on diagram 0 = [738]
+   PASS G2 OpReportAll_v1: exactly ONE node added by the copy [738]
+   [OpReportAll_v1] Close Reference #738 terminals: [(0, 'error out', True), (1, 'error in (no error)', False), (2, 'reference', False)]
+   PASS G2b OpReportAll_v1: Close Reference carries 'reference' and 'error in (no error)' sinks {'i': 2, 'name': 'reference', 'is_source': False, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 738}/{'i': 1, 'name': 'error in (no error)', 'is_source': False, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 738}
+   PASS G3d OpReportAll_v1: exactly one ForLoop-owned Diagram [(1, 272, 'ForLoop')]
+   . [OpReportAll_v1] loop body Diagram[1] uid 272
+   PASS G3a OpReportAll_v1: Close Reference #738 is now on the loop body diagram [114, 115, 738, 755]
+   PASS G3f OpReportAll_v1: the reparented Close Reference still exposes 'reference' [(0, 'error out', True), (1, 'error in (no error)', False), (2, 'reference', False)]
+   . [OpReportAll_v1] Property nodes in the body: [114, 115]
+   PASS G3b OpReportAll_v1: the body holds at least one Property node [114, 115]
+   . [OpReportAll_v1]   PN #114: reference in wire 421, reference out ('reference out', 0)
+   . [OpReportAll_v1]   PN #115: reference in wire 548, reference out ('reference out', 0)
+   FAIL G3c OpReportAll_v1: exactly ONE last Property node in the body's reference chain [114, 115]
+  STAGE OpReportAll_v1 STOPPED at gate: G3c OpReportAll_v1: exactly ONE last Property node in the body's reference chain
+  removed the unrepaired OpReportAll_v1.vi stub
+
+=== PROOF: equivalence, then 20 consecutive calls of each repaired op ===
+   fresh(): killing LabVIEW pid 17268
+   COM preflight OK (pid 9396, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 9396
+   PASS G7a scratch is byte-identical to the original SCRATCH_s0_180632.vi
+   v3: {'Diagram': 170, 'Node': 626, 'Wire': 1902}   row0 {'i': 0, 'class': 'TopLevelDiagram', 'uid': 536, 'pos': (-17474, 102), 'owner': ''}
+   . v4: OpReport_v4.vi not on disk - equivalence skipped
+   ra0: report_all(Diagram) -> 170 uids, first 6 [536, 3628, 3667, 3886, 4406, 5038]
+   . ra1: OpReportAll_v1.vi not on disk - equivalence skipped
+   equivalence wire uid for OpWireSource = 32594
+   v5: {'is_source': True, 'owner_class': 'SubVI', 'owner_uid': 30804, 'recip': 32594, 'err': ''}
+   . v6: OpWireSource_v6.vi not on disk - equivalence skipped
+
+=== VERDICT ===
+   FAIL G-A0 all three ops were repaired and saved []
+
+STOPPED at gate: G-A0 all three ops were repaired and saved
+ORIGINAL md5 AFTER: 2a78e17c449cacdaf5da389818526859 (pinned 2a78e17c449cacdaf5da389818526859)
+
+GATES: 41 PASS / 2 FAIL
+failing: G3c OpReportAll_v1: exactly ONE last Property node in the body's reference chain, G-A0 all three ops were repaired and saved
+BGRUN END rc=1 after 566s

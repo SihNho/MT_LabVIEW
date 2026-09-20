@@ -1,0 +1,98 @@
+BGRUN START 2026-09-15 05:41:26 limit 6.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & .\tools\peer.ps1 -Agent codex -Slug opconstvaluen-v1-recipe-wire-identity -Task 'PRE-BUILD REVIEW (read-only; LabVIEW 2026 VI Scripting over COM). Attack tools/recipes/build_opconstvaluen_v1.py. Context: OpConstValueN_v0 (run 2, log tools/bench/build_opconstvaluen_v0.log) reads a numeric constant value through a DigitalNumericConstant-typed property node (your review ...-opconstvaluen-run2-typed-node-carries-data). Goal now: find WHICH of the main VI 180 numeric constants feed the four reseed selector wires (uids 10850 Less?.y, 10312 Or.y, 9806 And.y, 10142 Equal?.y; docs/stage2-assembly-step-e.md) - constants are not in Diagram.Nodes[] so the earlier census left them unresolved. The recipe copies OpConstValueN_v0 to OpConstValueN_v1 and adds: TMSC output --branch--> Property(VI Server:DigitalNumericConstant).Terms[] (Node.Terminals[] 6359000 - gated: attaching proves the class exposes Node.Terminals[]) -> Index Array element 0 -> Property(VI Server:Terminal).Connected Wire 634A000 -> Property(VI Server:GObject).UID 632A813 -> indicator = the wire uid the constant feeds; error indicator on the Terminal node (1055 when unwired). Test: 2 numeric reads (identity, decode, TD code == Representation enum 1/3/6 -> 0x0A/0x03/0x07, wire uid > 0 or 1055), negative control StringConstant (1055/1057), MAIN md5 in finally. Then --scan reads all 180 (about 10 s each, ~30 min) or an --owner filter, prints (index, uid, wire, value, text, repr) and names the constants feeding the four wires. Attack: (1) does DigitalNumericConstant inherit Node (so Node.Terminals[] 6359000 attaches and returns exactly one terminal for a constant)? cite the hierarchy; if Constant is NOT a Node, name the property that returns a constant terminal. (2) Terminal.Connected Wire on an unwired terminal: error 1055 or a not-a-refnum with no error? (3) A constant feeding a wire that crosses a structure border: does the constant terminal see the wire uid INSIDE its own diagram (so 10850 etc., which the step-e census read INSIDE diagram 43, may be the tunnel INNER wire while the constant sits outside and feeds the OUTER wire with a different uid)? If so, the scan must compare against the tunnel OUTER wire uids (census_case5540_hop2.log lists tunnels 5569/5752 -> outer 5812/2731 for other inputs) - how should the recipe resolve inner->outer for these four? (4) Is a full 180-read scan defensible, or is there a cheaper filter (report() gives each constant an owner class name and a position only)? (5) anything that risks the original main VI (only read by reference; never saved)? Cite what you read.'
+OUTCOME: ANSWERED (74s)  archived: archive\peer\2026-09-15-opconstvaluen-v1-recipe-wire-identity.md
+--- ANSWER ---
+Verdict: reject the recipe as currently drawn. The `Node.Terminals[]` premise is wrong, the unwired behavior is underspecified, and matching only the constant-adjacent wire UID can miss constants across structure tunnels.
+
+1. `DigitalNumericConstant` is not a `Node`
+
+The VI Server hierarchy is:
+
+`Generic ??GObject ??Constant ??NumericConstant ??DigitalNumericConstant`
+
+`Node` is a separate child of `GObject`, not an ancestor of `Constant`. Therefore `Node.Terminals[]` (`6359000`) should not accept a `DigitalNumericConstant` reference. The fact that attaching would ?�prove??support is not a sound design premise; the published hierarchy disproves it. [NumericConstant hierarchy](https://labviewwiki.org/wiki/NumericConstant_class), [full VI Server hierarchy](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy)
+
+Use:
+
+`Property(VI Server:Constant).Terminal` ??property ID `634AC04`
+
+It directly returns the constant?�s single terminal; no array or `Index Array` is needed. [Constant.Terminal property](https://labviewwiki.org/wiki/Constant_class/Terminal_property)
+
+So the corrected chain is:
+
+`TMSC ??Property(Constant).Terminal ??Property(Terminal).Connected Wire ??Property(GObject).UID`
+
+Keep the `DigitalNumericConstant` cast/property path separately for value and representation.
+
+2. Do not specify ??055 at Connected Wire??without measuring it
+
+The documented contract for `Terminal.Connected Wire` says only that it returns a reference to the connected wire. It does not state that the property itself raises an error for an unwired terminal. [Terminal.Connected Wire](https://labviewwiki.org/wiki/Terminal_class/Connected_Wire_property)
+
+The most defensible expectation is:
+
+- `Connected Wire` returns an invalid/Not-A-Refnum wire reference for an unwired terminal.
+- The following `GObject.UID` access on that invalid reference produces error 1055.
+
+NI defines 1055 as ?�Object reference is invalid??and separately shows that an absent reference can appear as Not A Refnum. [NI error-1055 explanation](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019L75SAE&l=en-US)
+
+Therefore expose or record errors at both stages, or at least describe the expected failure as ?�invalid wire reference and/or downstream UID error 1055.??Do not require error 1055 specifically from the Terminal property until a negative-control run proves that location.
+
+A `StringConstant` is not a clean negative control for the terminal chain: it also inherits `Constant.Terminal`, so a wired string constant should succeed. It is a negative control only for the `DigitalNumericConstant` value/representation cast. Use an actually unwired numeric constant to test Connected-Wire behavior.
+
+3. The structure-border concern is real
+
+A tunnel has distinct inside and outside terminals. Consequently, the inside and outside wires are separate wire objects and may have different UIDs. Case structures can have one inner terminal per case plus one outer terminal. [NI Community tunnel-terminal explanation](https://forums.ni.com/t5/LabVIEW/LabvVIEW-Scripting-wiring-a-pass-through-tunnel-inside-a-case/m-p/3945608), [discussion of distinct inner/outer wires](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Hovering-over-a-tunnel-should-show-the-context-help-for-the-wire/idi-p/2369902)
+
+Thus a constant outside diagram 43 will report the outer wire UID, not the target inner UID `10850`, `10312`, `9806`, or `10142`.
+
+Do not solve this with a manually entered four-entry inner?�outer table. Traverse the graph:
+
+1. Start from each target inner wire.
+2. Read `Wire.Terminals[]`; its first terminal is the source when a valid source exists.
+3. Inspect `Terminal.Is Source?` rather than relying exclusively on array order.
+4. If the source belongs to a constant, match that terminal to `Constant.Terminal`.
+5. If it is an inner/outer tunnel terminal, obtain the associated tunnel and cross to its corresponding outside/inside terminal.
+6. Read that terminal?�s Connected Wire and repeat until reaching the true source constant.
+
+`Wire.Terminals[]` explicitly returns all connected terminals and documents that the first is the source when one exists. [Wire.Terminals[]](https://labviewwiki.org/wiki/Wire_class/Terminals%28%29_property) The established scripting traversal is to cross an outer terminal through its tunnel to the inner terminals and recurse. [LAVA wire-source traversal](https://lavag.org/topic/10734-traverse-wire-to-source/) The Tunnel class exposes an Outside Terminal property. [Tunnel class](https://labviewwiki.org/wiki/Tunnel_class)
+
+For a case structure, select the inner terminal whose `Terminal.Diagram` matches the target diagram/case, not merely element zero. `Terminal.Diagram` returns the owning diagram. [Terminal properties](https://labviewwiki.org/wiki/Terminal_class)
+
+4. A 180 × 10-second scan is not defensible as the primary method
+
+The reverse traversal above should identify four sources directly. It is both cheaper and more diagnostic than 180 independent helper executions.
+
+If changing the helper that far is undesirable, the next-best approach is a single bulk operation:
+
+- Obtain all 180 constants once.
+- Read each `Constant.Terminal`.
+- Compare terminal references against the four terminal paths reached by reverse traversal.
+- Read values only for matches.
+
+Owner class and position are useful only as coarse filters. Position cannot establish connectivity, especially across a structure border. A position-only filter risks excluding the correct outer-diagram constants.
+
+Retain `--scan` as a fallback/audit mode, not the normal path. If used, cache identity/report results and run all indices in one helper invocation rather than reopening/running the operation 180 times.
+
+5. Risk to the original main VI
+
+Read-only property access should not itself persist changes. The principal risks are procedural:
+
+- Accidentally invoking a write property or scripting method on the main reference.
+- Calling `Save`, `Save Instrument`, `Save As`, or closing with ?�Save changes.??- Supplying the original VI reference to an operation intended for the copied helper.
+- Allowing an error path to bypass reference cleanup or checksum verification.
+- Running the main VI instead of merely opening it by reference.
+- Resolving a same-named VI already in memory rather than the intended path.
+
+VI Server references can dynamically load VIs into memory. [NI: Calling a VI by Reference](https://www.ni.com/en/support/documentation/supplemental/06/calling-a-labview-vi-by-reference.html) Closing a VI reference invalidates it immediately, while references derived from it generally follow the lifetime of the VI reference. [NI: Closing References](https://www.ni.com/en/support/documentation/supplemental/13/closing-references-in-labview.html)
+
+Required safeguards:
+
+- Open the main by canonical absolute path and verify returned `VI.Path`.
+- Never invoke the main.
+- Place all main-reference cleanup and MD5 verification in an unconditional outer `finally`.
+- Treat any save prompt, dirty-state indication, path mismatch, or MD5 mismatch as a hard failure.
+- Explicitly close without saving.
+- Record pre- and post-run MD5, not only the final value.
+- Ensure every property on the main-derived object chain is read-only.
+
+Most important correction: replace `DigitalNumericConstant ??Node.Terminals[] ??Index Array` with `Constant.Terminal`, and reverse-traverse from the four known inner wires through tunnels. That turns this from a 30-minute census into four bounded graph walks.
+BGRUN END rc=0 after 74s

@@ -1,0 +1,148 @@
+BGRUN START 2026-09-16 18:00:03 limit 12.0 min: py -u tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/a1_plan.md --slug priorart-a1-ownerchain-v1 --trigger new-op --model opus --effort high
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-a1-ownerchain-v1.txt (22781 chars)
+OUTCOME: ANSWERED (600s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-16-priorart-priorart-a1-ownerchain-v1.md
+COST: $4.9719  in 48 / out 42809 / cache-create 210372 / cache-read 3595338  (595s, 43 turn(s))
+--- ANSWER ---
+**Verdict: 8 blocking findings. Two of them (the Remove-Bad-Wires placement and the `GObject` delete class) will break this build on its own evidence, and three more are prescriptions written in the reviews this plan is built on.** Three of the plan's five stated beliefs I release explicitly.
+
+---
+
+# PART A — THE DIRECTION
+
+## A1 · SETTLED ALREADY
+
+**Not a blocking finding, stated so it is on the record:** the direction is decided *in the plan's favour*. `STATUS.md` → "NEXT" → *"🔶 **RE-RUN A1 as `build_opownerchain_v1.py`**, and expect the `ensure_loaded` fix to carry most of it"*, and `docs/cycle11-plan.md:112-125` scopes Stage 3 as exactly this. Step 4 (delete `OpDelete_v1.vi`) is likewise already decided at `docs/cycle11-plan.md:65` and in STATUS's NEXT. No slug.
+
+**(1) The STRUCTURE half of the justification is already answered on disk, and the review that said so was never disposed.**
+
+The plan inherits `docs/diagram-hierarchy.md:71-80` — *"which diagram that structure itself lives on is not [known]"*. But:
+
+> `tools/bench/diagram_tree_main.json:370-397` — diagram **43** `"owner": "WhileLoop"`, `uids` list contains **1359** (:389) and **10407** (:397).
+
+`10407` appears in exactly one diagram's `uids` list (its other occurrence, `:2059`, is the `structures` → `CaseStructure` roster, not a second diagram). So for the five catalogued structure classes, *structure → home diagram* is a lookup in a file we already have. This was raised eleven months-of-cycles ago in your own prior-art layer:
+
+> `archive/peer/2026-09-15-priorart-ownerchain.md:125` — *"The reviewed belief says the opposite—that structure→home-diagram is already available. The JSON supports that only for catalogued nodes, such as 10407 on diagram 43 … Thus the claimed availability is partial, not general."*
+
+That review's "What was done with it" is still `(Claude fills in)` (`:137`), and `archive/peer/2026-09-16-priorart-priorart-cycle11-delete.md:477` records it as still unannotated.
+
+**Scope, precisely:** this does *not* kill the op. I grepped `diagram_tree_main.json` for `10114` and `10177` — **no hits**, so OPEN 1's LoopTunnels are outside the JSON, and `docs/diagram-hierarchy.md:66-69` puts every FlatSequence link under an explicit "unverified" banner. **Release path:** say in the recipe's docstring that the structure case is a JSON lookup and that the op exists for tunnels, FlatSequence and uncatalogued classes. Cheap.
+
+## A2 · REFUTED ALREADY
+
+**(2) `remove_bad_wires_scripted` sits between the deletes and the connects. That exact placement was refuted on 2026-09-15, on this donor lineage, and it ate these same node uids.**
+
+The plan: *"…each delete asserted by a before/after uid-set diff … Then `remove_bad_wires_scripted`. 2. CONNECT with `connect2`…"*
+
+> `archive/peer/2026-09-15-optunnelread-removebadwires-ate-the-chain.md:18` — *"**REPAIR: no Remove Bad Wires anywhere inside the transient window** — delete, rewire, and only then clean up"*, after *"the unwired-sink dump after the retarget shows the terminal-reader chain disconnected (the **Owner node 157** and two more property nodes had lost their reference)"*
+> `:26` (codex, confirming) — *"once the array input is removed, the element-output net can no longer resolve its … type; its downstream wires become broken and **eligible for removal**"* … *"the orphan set contains **Owner 157 and property nodes 1319/1326**"*
+> `:47` — *"delete obsolete connections/node, **rewire the Index Array input before any cleanup**, then clean once"*
+> `:55` — *"Run Remove Bad Wires **once, after the graph is complete**"*
+
+Nodes 157, 1319, 1326 are three of the seven this plan deletes. After the deletions, the surviving chain (163 → 1221 → 1186 → 482 → 1554) has unfed `reference` inputs — the identical transient state — and the plan calls Remove Bad Wires while it is in it. **Still applies; nothing since has narrowed it.** Release path: move the call to the very end, after the connects, and keep the topology gates (B2/B3) *before* it, per `:60`.
+
+## A3 · CONTRADICTED
+
+**(3) "`GObject` is the right Traverse class … `diag_delete_matrix.log` Part C swept the classes with open_panel" — Part C never swept `GObject`.**
+
+> plan: *"that `GObject` is the right Traverse class for deleting a mixed set of Property/Function/IndexArray/Wire objects by index (`tools/bench/diag_delete_matrix.log` Part C swept the classes with open_panel)"*
+> `tools/bench/diag_delete_matrix.py:65` — `CENSUS_CLASSES = ["Constant", "Property", "Invoke", "SubVI", "IndexArray", "Wire", "ControlTerminal"]`
+> `tools/bench/diag_delete_matrix.log:109-118` — the seven Part-C cells, one per class above. **No `GObject` row exists.**
+
+The cited measurement covers seven concrete classes and says nothing about the base class the plan actually chose. It also contradicts the recorded fix for this same gate: `docs/cycle11-plan.md:120` — *"| B4 | `#1044` typed as class `SubVI` | **class `Node`** |"*, and `archive/peer/2026-09-16-ownerchain-b2-b3-failed-prediction.md:176` — *"`#1044`'s class: it is a *To More Specific Class* primitive, **enumerated only under `Node`**, never `SubVI`"*, confirmed by measurement at `tools/bench/diag_ownerchain_state.log:19` (`uid 1044 classes: ['Node']`). The plan's own evidence for `Function` (`tools/bench/census_opwiresource_v5.log:21`) is a *reported class name*, not proof that Traverse class `GObject` enumerates or deletes that object.
+
+**(4) Citation defect, third repetition of the same one — release costs nothing.**
+
+> plan: *"deletes must come before connects because `connect2` into an already-wired sink re-routes and breaks the VI (`tools/gscript.py:2110-2111`)"*
+> `tools/gscript.py:2110-2111` — `if "modal dialog" not in str(e):` / `raise` — the exception handler inside **`move_object`**.
+> The sentence is at `tools/gscript.py:2206-2207` — *"an already-wired **SINK** is not safe (LabVIEW re-routes and the VI breaks) — wire only unwired sinks."*
+
+The claim itself is TRUE and I release it. But the pointer has now been wrong three times in a row: `:2084` (STATUS.md, `docs/cycle11-plan.md:136`) → "corrected" to `:2110-2111` (`archive/peer/2026-09-16-priorart-priorart-cycle11-delete.md:378, 476`) → actual `:2206-2207`. Fix the number in the recipe and in STATUS; no rework.
+
+## A4 · UNREAD EVIDENCE
+
+**(5) The b2b3 review prescribes a refresh of node 241 *between* R1 and R2. The plan's sweep policy does not have one.**
+
+> plan: *"v1 uses ONE `node_terms_uid(target,0,n)` sweep … and **re-sweeps only after deletes and after connects**"*
+> `archive/peer/2026-09-16-ownerchain-b2-b3-failed-prediction.md:99-108` — *"Therefore **refresh after R1**: `Property Items[]` … `Terminals[]` … terminal name … `Is Source?` … connected-wire UID. **Do not reuse a terminal index/reference captured before the reference class changed.**"*
+> and `:95` — *"changing the reference class can invalidate property items that the new class does not support"*
+
+R1 changes node 241's `reference` source from the `Wire.Terms[]` Index-Array element (class **Terminal**) to `UID to GObject Reference.vi`'s output (class **GObject** — `tools/bench/census_opwiresource_v5.log:191`, `t2 'GObject' wire 1081`). That is precisely the retype the reviewer warned about, and R2 then addresses the `Owner` terminal by an index resolved before it. Release path: re-sweep node 241 after R1 and resolve `Owner` from that sweep — or show in writing that the index is stable across the retype.
+
+**(6) Only wire 318 is deleted. Wires 751 and 1081 are left to Remove Bad Wires, which was measured this cycle not to clear a bad wire.**
+
+> `archive/peer/2026-09-15-opcaseframes-identify-before-delete.md:22` — *"NI documents that loose/broken wire branches **persist and require explicit removal** … searching for `Connected Wire == 0` after deletion is unreliable"*
+> `:24` — *"**Explicitly delete the cached wire first.** … delete that reader, **delete the cached wire via `Generic.Delete`**, then connect"*
+
+The plan deletes node 157 (source of wire **751**, whose three sinks are 163 / 1221 / 482 — `tools/bench/diag_ownerchain_state.log:57-59`) and node 1044 (sink of wire **1081** from 990 — `:60-61`), but names neither wire in its delete list. Its B3a gate ("all four sinks bare BEFORE connecting") then depends entirely on Remove Bad Wires clearing them, and this cycle already measured it failing to:
+
+> `docs/cycle11-plan.md:104-105` — *"lands as a **bad wire** — wire uid 467 present, `ExecState 0`, **`remove_bad_wires` will not clear it**"*
+
+Predicted outcome as written: B3a fails and the run stops with nothing built. Release path: add 751 and 1081 to the explicit delete list (both are single wire objects — 751's fan-out to three sinks is one object per `archive/peer/2026-09-16-ownerchain-b2-b3-failed-prediction.md:71`).
+
+**(7) The delete *selection* is a cross-op Traverse index, which this project measured to be non-transferable — and the one sweep that could have validated it only ever used index 0.**
+
+The plan resolves each delete index from `report_all(target,"GObject")` (op family `OpReportAll_v0`) and passes it to `delete_object`, which runs its **own** Traverse inside `OpDelete_v0`.
+
+> `archive/peer/2026-09-15-opwiresource-fail5-traverse-index-order-mismatch.md:28` — *"**Do not assume indices from `OpReportAll_v0` select the same objects in `OpReport_v3`-derived operations.**"*
+> `:29` — *"Do not assume a cached index remains stable across executions, reloads, **edits**, or sessions."* (this recipe edits between every resolution)
+> `:30` — *"If index selection remains anywhere, **retain the UID identity gate on every read**."*
+
+`diag_delete_matrix` did not close this: every cell hard-codes `vi.SetControlValue("index", 0)` (`tools/bench/diag_delete_matrix.py:177`), and its gate only checks class, not identity — `:237`, *"C1 no cell removed an object of a **DIFFERENT class** than asked for"*. So cross-op index agreement at non-zero indices is still unmeasured. The plan's `gone == {uid}` diff detects a wrong deletion only **after** it happens; `gscript.py:2036` is explicit that the argument is *"the `index`-th object of Traverse class `cls`"*, and `move_object`'s sibling docstring pins the order to a different reader — `gscript.py:2095`, *"(Traverse order, **same as `report()`**)"*, i.e. the per-object family, not `report_all`.
+
+---
+
+# PART B — THE ARTIFACT
+
+## B1 · ALREADY BUILT
+
+**Released:** no op returns an arbitrary object's owner UID. `report`/`report_all` carry the owner as a **class string** only (`tools/gscript.py:322`, `owner: cols["owner"][i]`; schema at `:302`), exactly as `archive/peer/2026-09-15-priorart-ownerchain.md:93-99` found, and nothing built since changes that. The plan's first belief survives.
+
+**(8) For the motivating case the plan cites — OPEN 1's LoopTunnels — an op already resolves a UID to a Diagram UID.**
+
+> `docs/toolkit-capabilities.md:49` — *"`OpTunnelRead_v0.vi` (`vi path`, **tunnel `UID`**, `term index` → inner wire, **frame diagram `UID`**, owner) | cast(`Tunnel`) → `Inside Terminals[]` 6356000 → Index Array → `Connected Wire`, **`Terminal.Diagram` 634A002 → `UID`** … row 43: both #5540 output tunnels, **24/24**"*
+> `:24` — *"`tunnels(target, index)` | `OpTunnels_v0` | the index-th `LoopTunnel`: tunnel UID, IndexMode, **outer terminal (name / source? / wire)**, inner terminals as arrays … 132 tunnels censused"*
+
+The plan justifies itself with *"the period crosses the frame loop through LoopTunnel #10114 / #10177, so the decision is assembled OUTSIDE diagram 43 and needs an owner chain"* — but two verified ops already address a tunnel by UID, give its diagram, and give its outer terminal and wire, and nothing in the plan says why they are insufficient. **Release path (likely available in one sentence):** state that `Terminal.Diagram` gives the *inner frame*, and that what OPEN 1 needs is the home diagram of the **node driving the outer terminal**, which no existing op reaches. Say it, and this releases.
+
+## B2 · ALREADY FAILED
+
+See findings (3) and (7): the v0 run's B4 failure (`tools/bench/build_opownerchain_v0.log:144`, *"delete #1044 (SubVI) raised: 1044 is not in list"*, final tally `:295, :299`) is being fixed with an untested base class rather than the class the record settled on (`docs/cycle11-plan.md:120`).
+
+## B3 · HELPER EXISTS
+
+Nothing over-broad to report. `connect2`, `delete_object`, `report_all`, `node_terms_uid`, `remove_bad_wires_scripted` and `save` are the right calls and the plan uses them. One prescription it does not use, recorded as the *safe* producer swap: per-sink `Wire.Disconnect Terminal` `6370C0D` (`archive/peer/2026-09-15-optunnelread-removebadwires-ate-the-chain.md:38-43`, registry entry `docs/NAMES.md:749`) — flagged there as needing functional verification first, so I do not treat it as an existing helper.
+
+## B4 · ALREADY MEASURED
+
+**(9) The plan's per-delete assertion `gone == {uid}` and `delete_object`'s own verify are incompatible with class `GObject`, and the collateral that breaks them is already measured.**
+
+> `tools/gscript.py:2085-2087` — `gone = before - uids(target, cls)` … `if len(gone) != 1: raise RuntimeError(f"delete_object({cls}[{index}]): expected 1 object gone, got {len(gone)}")`
+> `tools/bench/diag_delete_matrix.log:112` — deleting **one** SubVI removed *three* objects: `elsewhere={'SubVI': [990], 'Wire': [1068, 1208]}`
+> `:115` — the ControlTerminal cell likewise: `elsewhere={'Wire': [106], 'ControlTerminal': [96]}`
+
+Wires are GObjects, so under `cls="GObject"` those diffs are **visible** and `len(gone)` is 3, not 1 — the wrapper raises on the first such delete. Additional exposure the census never covered: `GObject` also enumerates Terminals — `tools/bench/probe_builder_artifact.log:6`, *"objects ADDED by net_map: {'Node': (8, 83), 'Invoke': (0, 75), 'Terminal': (60, 510), **'GObject': (85, 610)**}"* (610 ≈ 83 + 510 + the rest), corroborated by `docs/toolkit-capabilities.md:103` (*"`Terminal` 5763, `GObject` 10030"*). Deleting a node removes its terminals, and every one of them is in the `GObject` before-set. Release path: delete under a concrete class (`Node` for 1044, per the record), or change the assertion to `uid in gone` and state the expected collateral — but the wrapper's own `len(gone) != 1` raise must be dealt with either way.
+
+**Released — the B6 oracle is sound and is not a self-check.** Both pairs are measured by methods independent of the op under test:
+> `docs/keystone-op-spec.md:592-594` — *"**diagram 43 = the tracking WhileLoop 637's diagram** (**uid 639**; … the autofocus Case **10407**…)"*
+> `docs/diagram-hierarchy.md:46-47` — `CaseStructure#10407` and `ForLoop#1359` each *"lives on **diagram 43**"*, *"each … confirmed by **two independent measurements**: the position-matched hierarchy, and the wire-graph slice"* (`:41-42`)
+> `tools/bench/diagram_tree_main.json:389, 397` — both uids in diagram 43's list
+
+**Released — premise (a).** `connect2` does call `ensure_loaded` (`tools/gscript.py:2432`), so the silent-decline fix does reach the connects, and `ensure_loaded` (`:1072-1089`) keeps `open_panel`, the only route measured to work.
+
+---
+
+```
+PRIOR-ART: unread-evidence
+PRIOR-ART: refuted-already
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: unread-evidence
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-built
+PRIOR-ART: already-measured
+```
+
+**Cheapest release path:** findings (2), (6) and (9) are one edit each to the recipe's ordering and delete list — move Remove Bad Wires to the end, add wires 751 and 1081 to the explicit deletes, and drop class `GObject` for `Node`. Findings (1), (4) and (8) release in a sentence each of written argument. Finding (5) releases by adding one re-sweep; finding (7) releases only by a measurement or by moving the identity guard ahead of the delete.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-a1-ownerchain-v1.md
+BGRUN END rc=0 after 600s

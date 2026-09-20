@@ -1,0 +1,86 @@
+BGRUN START 2026-09-18 21:30:45 limit 15.0 min: py tools/outcome_review.py
+   cadence: 7 cycle retrospectives since 2026-09-18-outcome-review-20260918.md (every 5)
+   task written to C:\Users\KimLab\AppData\Local\Temp\outcome-review-20260918.txt (7224 chars)
+OUTCOME: ANSWERED (194s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-18-outcome-review-20260918.md
+COST: $2.8574  in 12 / out 12945 / cache-create 94883 / cache-read 312346  (193s, 13 turn(s))
+--- ANSWER ---
+I could not use Write/ExitPlanMode (neither tool is available in this session), and the task is explicitly read-only, so I am delivering the outcome review directly as text. All judgements below cite files I read.
+
+---
+
+# OUTCOME REVIEW — 2026-09-18 (evening; fourth in series, ~0.3 days after the third)
+
+## 1. DELIVERABLE
+
+**For the first time in four outcome reviews, there is a new runnable thing with run evidence.** At the last review (13:35, `archive/peer/2026-09-18-outcome-review-20260918.md`) the verdict was "zero new user-runnable deliverables." Since then, D0 was delivered at 18:08–18:13 (cycle 31): `tools/bench/drive_original_copy_v5.py` drove a byte-identical copy of the original VI unattended, twice, end to end — bead picks, the Done button, all three bandpass panels, the save dialog, the experiment loop running **frames 8326→10856 with 5 lost**, stop by the VI's own control in 1.0 s with no Abort, producing **`tra001-000` (285,369 B) and `cal001` (171,552 B)**, original md5 unchanged — 39 pass / 1 fail, and the one fail was a parser false red, since fixed (`archive/2026-09-18-status-cycle31-d0-delivered.md` §5). That is real: it ran and produced those numbers.
+
+Also since the last review: **N1 acceptance** — the GPU kernel wrapper proven numerically transparent, 0 exceedances over 50,201 valid bead-frames, DLL numbers reproduced exactly (`tools/bench/n1_gpuk_vi_fixture.log`, 7/7, cited in STATUS.md lock block). That is a gate cleared, not a deliverable.
+
+The honest limit: **D0 contains zero of this project's improvements.** It is the original code, unmodified (that is D0's definition, `docs/cycle27-plan.md` line 21: "a plain, unmodified copy"). What the user gained is proof the harness can drive the original unattended — a test rig for D1, not a faster experiment. The two "deliverable VIs" in the counted output (`Track_v6_CPU_core_v0.vi`, `Track_v6_CPU_queue_v0.vi`) are the same TIFF-replay artefacts as at the last three reviews (INDEX rows 40–41); no new experiment-capable project VI exists.
+
+On the flagged question in STATUS.md OPEN (line 49): **D0 answers the "runnable" half of "zero runnable experimental VIs" but not the "product" half.** It ends the streak of nothing-runs; it does not put one project improvement in the user's hands. OPEN 32 can be closed as to its letter, not as to its spirit — the spirit closes when D1 runs.
+
+## 2. GOAL ALIGNMENT
+
+Against `project-requirements/parallelization-requirement.md`:
+
+- **Req 1 (parallelize the radial-profile/.cal stage after 'Done Picking Beads?'): NOT MOVED — since the project began.** No plan schedules it; it was flagged as unscheduled in the last review (§4 of that file) and is still absent from STATUS.md's NEXT, `docs/cycle27-plan.md`, and `docs/d1-route-b-plan.md` (D1 covers the experiment loop only).
+- **Req 2.1 (motor control): no movement needed** — parallel in the original, per the user's own requirement text.
+- **Req 2.2 (motor reading — a named bottleneck): NOT MOVED into any runnable product.** Measured knowledge exists (INDEX row 19: one serial round trip = 2.56 ms = 43% of the 150 Hz budget) but nothing runnable embodies the fix.
+- **Req 2.3 (camera acquisition): NOT MOVED into a product.** The camera contract tool exists (row 44) and the ceiling was measured (row 19); no project VI acquires live frames.
+- **Req 2.4 (scheduler): NOT MOVED.** Deferred to D2 (`docs/cycle27-plan.md` line 27).
+- **Req 2.5 (merging and saving): NOT MOVED** beyond the replay sink loop in `Track_v6_CPU_queue_v0.vi`.
+- **Req 3 (split the functions and run them in parallel): NOT ACHIEVED in anything the user can run.** The queue replay VI proves the structure works on recorded frames (row 41, 0.7 ms/frame over 10,043 frames); D1, the step that puts that structure into the experiment copy, **has not had a single build dispatch since D0** — STATUS.md's own NEXT says so in red: "TWO CYCLES SINCE D0 HAVE NOT TOUCHED D1."
+
+What genuinely advanced: the kernel (N1 accepted), the delivery harness (D0), and motor safety (limits held through a real 0→30 mm move, `archive/2026-09-18-status-cycle31-d0-delivered.md` §5). The uncomfortable list is unchanged from the last review: radial-profile parallelization, integrated motor reading, scheduler, live saving, and a complete parallel experimental VI have not moved since 2026-08-24.
+
+## 3. COST vs PRODUCT
+
+Delta since the last review, 0.3 days ago: **+1 op VI (181→182), +1 recipe (139→140), +25 peer exchanges (376→401), +1 doc, +7 retrospectives, +0 benchmark rows, +0 deliverable VIs — plus D0 and N1.** The build-side restraint (+1/+1) is a real improvement over previous deltas (+6 op VIs, +64 peer exchanges last time). D0 and N1 justify roughly cycles 27–34.
+
+Cycles 35–36 do not. After D0 landed, the user watched and asked, verbatim in STATUS.md NEXT: *"상당히 고무적인데 지금은 뭘 하고있는거임?"* ("quite encouraging — but what are you doing right now?"). What those cycles bought: the `Count` control forensics (16 gates, `diag_count_indicator_run4.log`), the ExecState-preload archaeology (two diagnostic runs plus a $2.8794 opus/max review, `archive/peer/2026-09-18-execstate-linkage.md`), flag decisions, STATUS relocation, and retrospective-machinery litigation (OPEN 54's essay). Documented waste in the same window: **$5.88 re-asking peers that cycle 33 orphaned** (OPEN 54) and **$5.78 / 16 minutes** of cycle 35 re-buying reviews for faults whose repairs were already on file (retrospective-cycle35, cited in STATUS STEP 0). A competent engineer post-D0 would have skipped the Count investigation (Pre-decided 15's conclusion — "D1 must not gate on it" — could have been a one-line assumption tested by the D1 build itself), the ExecState review (STEP 1's one-line baseline read answers it cheaper), and all doc relocation, and dispatched the D1 build the same evening. The cumulative ratio — 401 peer exchanges and 182 op VIs against one driver script and two replay VIs — remains indefensible; only its first derivative improved.
+
+## 4. ORDERING AT PROJECT SCALE
+
+The standing order (STATUS.md NEXT) is **now right in its headline** — "the next cycle's FIRST ACT is a D1 BUILD dispatch… A cycle that ends without a D1 build log is a wrong-ordering cycle by definition" — but note it took the user's live intervention at 21:3x to make it say that. Two residual ordering faults:
+
+1. **The same NEXT section contradicts itself.** Lines 56–61 forbid machinery repairs before the D1 dispatch; STEP 0 (line 86) then front-loads two machinery repairs (`lv_stallcheck.ps1`, `bgrun.py`) before the run. The stallcheck fix has a colorable critical-path claim (`guard_peer` blocking builds); the `BGRUN_LOG` audit fix does not — it services OPEN 42, an audit problem, and belongs after the D1 log exists. STEP 1 (the baseline ExecState read) is legitimately first: one line, and it makes the build's own gate meaningful.
+2. **Requirement 1 is still scheduled nowhere** — not last, nowhere. The last review said it "must be placed explicitly in the work order"; `docs/cycle27-plan.md` and `docs/restructure-plan-4.6.md` still leave the radial-profile stage unparallelized and unplanned. It should be named as the slice after D1, or explicitly descoped with the user.
+
+## 5. STALE DECISIONS
+
+- **OPEN 53 (judgement half), waiting on the user and never asked as a question:** nothing readable proves the PI controller zero still equals the original physical zero, i.e. that the 0–39 fence guards the intended physical window (STATUS.md line 51). This gates trust in every future unattended motor-moving run — including D1's. It is a two-minute question at the rig ("re-reference and confirm zero") and should have been put to the user the day the limits were armed (09-18 15:37), before the 18:13 run moved the magnet 30 mm.
+- **OPEN 42, stale since cycle 20:** 39 undisposed reviews plus a self-referential audit. Blocked behind it: nothing on the delivery path — which is itself the argument for parking it, not fixing it now.
+- **OPEN 47 (cycle 20) and OPEN 54's named-but-unbuilt repair:** both machinery; both correctly not blocking D1; both accumulating prose faster than they accumulate consequence.
+- **Rotor zero** (raised 09-12, `docs/restructure-plan-4.6.md` per the last review's §5): a genuine user decision, still not visibly answered anywhere I read; it blocks D2's scheduler semantics, not D1.
+- Credit where due: the three "FOR THE USER" calls in STATUS.md are properly surfaced, and the flag questions (38/39) were closed by decision rather than left to rot.
+
+## 6. THE EXPERIMENT TEST
+
+**The user would run the original — and in the most literal sense, that is exactly what D0 is.** The copy is byte-identical (md5 `c39f36e0…` unchanged, D0 banner §5); its experiment loop lost 5 frames in ~2,500 exactly as the original would, because it *is* the original. Nothing this project produced would change next week's experiment: the replay VIs consume recorded TIFFs, the validated kernels sit outside any experiment program, and D1 has no build log. What the user *would* newly have is confidence and instrumentation — the gate-protected motor envelope and an unattended driver — which have value for testing, not for the experiment itself.
+
+## 7. TERMINATION
+
+The shortest path is already written down; the job is to not decorate it:
+
+1. STEP 1's one-line baseline `ExecState` read into `build_d1_routeb_v0.py` (STATUS NEXT, `build_d1_v0.py:461` has the reference implementation).
+2. Dispatch the route-B D1 build, foreground, same session (Pre-decided 1/6, `docs/d1-route-b-plan.md`), with the preloaded ExecState read (Pre-decided 14a/16).
+3. Gate it on the fixture: the D1 copy must reproduce the 10,018 pre-loss frames the way the queue core already did (INDEX row 41), then run live through the D0 harness (`drive_original_copy_v5.py`, retargeted), producing a `.tra` that reopens.
+4. Ask the user the OPEN 53 physical-zero question before the first D1 motor-moving run.
+
+Abandon or freeze to get there: the `lv_stallcheck` repair unless it demonstrably blocks the dispatch; the `BGRUN_LOG`/audit fix, OPEN 42's 39 dispositions, OPEN 47, and OPEN 54's repair until a D1 build log exists; any further Count or handle-count investigation (the 57,800-handle note in NEXT §(iii) is exactly the kind of measurement that has repeatedly displaced delivery); all STATUS relocation. Then either schedule requirement 1 (radial-profile parallelization) as the next slice after D1, or put its descoping to the user explicitly.
+
+The consequence clause applies with a changed sign: the last three reviews failed on "nothing runs"; this one finds delivery finally started (D0, user-accepted order D0→D1→D2) and then immediately stalled for two cycles of machinery — caught by the user, not by the process. The next cycle must produce a D1 build log or the re-plan-with-the-user rule fires again on a fourth repetition.
+
+---
+
+OUTCOME-VIOLATION: goal-requirement-not-advanced
+OUTCOME-VIOLATION: tooling-over-delivery
+OUTCOME-VIOLATION: ordering-stale
+OUTCOME-VIOLATION: decision-starved
+OUTCOME-VIOLATION: measurement-without-product
+
+(Not flagged this time: `product-not-runnable` — D0 ran end to end and produced real `.cal`/`.tra` files, so the literal condition is cleared, though the runnable thing carries no project improvement, which is covered by `goal-requirement-not-advanced`. `scope-inflation` — the build surface grew by only one op VI and one recipe since the last review, and the two route-B authorisation flags were closed permanently rather than expanded.)
+   peer.ps1 rc 0; archived as archive/peer/<date>-outcome-review-20260918.md
+   Now annotate it: 'why asked' and 'verdict', and act on the OUTCOME-VIOLATION lines.
+BGRUN END rc=0 after 195s

@@ -1,0 +1,19 @@
+BGRUN START 2026-09-13 19:45:16 limit 8.0 min: py -u -c 
+import os,sys
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+try:
+    rows=g.fp_labels(os.path.join(g.CLAUDEDEV,'OpReport_v3.vi'),max_n=20)
+    print('fp_labels WORKS:',len(rows),'objects')
+except Exception as e:
+    print('fp_labels STILL FAILING:',str(e)[:130])
+try:
+    n=g.count(os.path.join(g.CLAUDEDEV,'OpReport_v3.vi'),'Node')
+    print('count WORKS: Node =',n)
+except Exception as e:
+    print('count FAILED:',str(e)[:110])
+
+fp_labels STILL FAILING: (-2147023170, '���� ���ν����� ȣ������ ���߽��ϴ�.', None, None)
+count FAILED: (-2147023174, 'RPC ������ ����� �� �����ϴ�.', None, None)
+BGRUN END rc=0 after 15s

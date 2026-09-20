@@ -1,0 +1,51 @@
+BGRUN START 2026-09-17 10:00:30 limit 15.0 min: py tools/retrospective.py --cycle 15 --slug retrospective-cycle15-d1-build3
+   window 2026-09-17 07:10:02 .. 2026-09-17 08:04:04 (54 min); 9 build logs, 8 machinery logs, 10 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle15-d1-build3.txt (16093 chars)
+OUTCOME: ANSWERED (325s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-17-retrospective-cycle15-d1-build3.md
+--- ANSWER ---
+## Verdict
+
+The dominant structural fault was continuing the material session after its second failed D1 attempt. `CLAUDE.md:252-254` sets a session-wide failure budget of two, but the dispositions reinterpreted it as “1 of 2 for this class” (`archive/peer/2026-09-17-d1-s3-stale-traverse-index.md:98`, `archive/peer/2026-09-17-d1-s1-stale-in-memory-copy.md:79`). Attempt 3 therefore ran when the session should have handed the problem to judgement.
+
+Had the session stopped after attempt 2 at 07:16:43 and completed the already-required peer review at 07:20:30, the cycle could have closed around 07:21 rather than 08:04—about 43 minutes earlier. All three priced reviews occurred after that boundary: $5.0480, $4.7603, and $4.3335, totaling $14.1418 (`tools/bench/priorart_d1-op-exitwhile-node.log:4`, `tools/bench/priorart_d1-op-streamwrite.log:4`, `tools/bench/priorart_d1-op-stopfromnode.log:4`).
+
+A second, mechanically mandatory fault is that the failure-visibility device did not extend to the audit. `bgrun` correctly recorded failures as `rc=1`, but `audit_cycle.py:62` recognizes bare `FAIL`, not the fleet’s `**FAIL**` form or `BGRUN END rc=1`. Consequently C1/A3 falsely reported zero failing logs despite examples such as `build_d1_v0.log:14-18` and five failed gates in `build_d1_v0_run4.log:220-245`. This did not add measurable wall time in this window, because the raw logs were supplied separately, but it made the machine-generated compliance verdict materially false.
+
+## Findings
+
+1. **Repeated failure.** The immediate causes differed—wrong count in attempt 1 (`build_d1_v0.log:14`), stale Traverse addressing in attempt 2 (`build_d1_v0_run2.log:43`), stale resident VI in attempt 3 (`build_d1_v0_run3.log:14`)—so this was not one technical diagnosis repeated unchanged. Structurally, however, attempts 1 and 2 exhausted the material-session budget. The approach should have changed before attempt 3: stop material work, write the recovery packet, and hand the unresolved design/addressing question to judgement.
+
+2. **Missing tool.** A UID-addressed `OpMoveIn` variant was not built. The peer identified the remaining time-of-check/time-of-use gap and specified the missing operation: accept a destination UID, resolve and verify it inside the same invocation, and pass that reference directly to `Move` (`archive/peer/2026-09-17-d1-s3-stale-traverse-index.md:82-92`). It would have answered—and likely prevented—the stale-index failure in attempt 2. Its absence was real, but the cycle’s freeze on new general-purpose ops made escalation, rather than quietly building it, the correct response.
+
+3. **Unmeasured steps.** The UID-reuse explanation for gate S3b remained explicitly unmeasured. A cheap two-read discriminator was available: traverse after deletion but before the drop, then inspect the drop’s directly returned reference (`archive/peer/2026-09-17-d1-s3b-uid-reuse-after-delete.md:109-118`). Downgrading the claim to a hypothesis was correct; changing the gate before running that test left avoidable uncertainty.
+
+4. **Rule compliance.**
+
+   - Satisfied: original checksum remained unchanged (`build_d1_v0_run4.log:261`); working copies were uniquely named and deleted (`:259-260`); runs used `bgrun`; failed predictions received adversarial peer reviews; no GUI action occurred.
+   - Broken or formally evaded: the session-wide two-failure limit was counted separately for each micro-class; material sessions accepted findings and changed designs despite `CLAUDE.md:250-274` reserving those decisions for judgement.
+   - The audit does not cover semantic compliance with the failure budget, judgement/material separation, external-search quality, reference closure, or whether out-of-plan files were justified. A4 is also day-granular, and its “blank disposition” result is distorted by duplicate placeholder and completed disposition headings—for example `archive/peer/2026-09-17-d1-s1-diagram-count.md:55-66`.
+   - Most seriously, the audit’s failure regex omits both `**FAIL**` and nonzero `BGRUN END` records (`tools/audit_cycle.py:62`).
+
+5. **Ordering.** Attempts 1 and 2 were defensible recovery work. Attempt 3 should not have begun inside the same material session. After attempt 4, launching two new-op prior-art reviews from material compounded the ordering error: the exit-while review itself says it “CHANGED THE DESIGN” (`archive/peer/2026-09-17-priorart-d1-op-exitwhile-node.md:309-323`). That decision belonged in the judgement handoff.
+
+6. **What was not reported.** The audit hid every `**FAIL**` gate and all nonzero run endings. The narrative was more candid about the four attempts, but understated attempt 4 as “61 s” (`archive/2026-09-17-status-d1-rev4-narrative.md:52`) while the outer runner recorded 128 seconds (`tools/bench/build_d1_v0_run4.log:297-298`). Conversely, C4 correctly exposed the larger cost fact: reviews consumed 34:45 and $14.1418, versus only 2:49 of build wall time.
+
+7. **Judgement inside material.** Yes. The material session accepted a prior-art finding and replaced the proposed `OpExitWhile_v0` route with `OpStopFromNode_v0`; the archive explicitly says the review “CHANGED THE DESIGN” (`archive/peer/2026-09-17-priorart-d1-op-exitwhile-node.md:309-323`). The streaming review likewise accepted findings, stopped the proposed build, and selected the next measurement (`archive/peer/2026-09-17-priorart-d1-op-streamwrite.md:345-360`). These are judgement actions under `CLAUDE.md:250-274`, not merely collection of facts.
+
+## Device effect
+
+- **Runner failure propagation (`unreported-fact`): partially worked.** Each failed invocation ended `rc=1`, so the runner itself did not falsely pass (`build_d1_v0.log:18`; `build_d1_v0_run4.log:298`). The associated audit path nevertheless hid those failures because its regex differs (`tools/audit_cycle.py:62`).
+- **Confirm-bait refusal (`rule-evaded`): worked.** The diagnostic peer prompt contains the mandatory adversarial questions (`archive/peer/2026-09-17-d1-s1-diagram-count.md:31-37`).
+- **Prior-art review (`tool-not-built`): worked.** It found an existing direct terminal route and replaced the proposed side-effect route before construction (`archive/peer/2026-09-17-priorart-d1-op-exitwhile-node.md:311-323`); it also stopped the streaming build (`archive/peer/2026-09-17-priorart-d1-op-streamwrite.md:345-360`).
+- **Undisposed-review gate (`repeated-failure-class`): no demonstrated failure.** The later prior-art dispatch followed completed archives; A4’s blank list concerns ordinary hypothesis reviews and its day-granular/duplicate-heading parsing, not a demonstrated bypass of this same-kind prior-art gate.
+- **Build/review cost split (`unreported-fact`): worked.** All three cost lines were parsed; the underlying lines are at `priorart_d1-op-exitwhile-node.log:4`, `priorart_d1-op-streamwrite.log:4`, and `priorart_d1-op-stopfromnode.log:4`.
+- **Premature-build guard: worked.** After the 07:35 prior-art dispatches, only diagnostics ran; recipes did not run while those reviews were pending. Diagnostics are expressly exempt (`docs/violation-decisions.md:228-232`).
+- **Scope counter: worked.** It surfaced the three unplanned diagnostic files. They were directly related to D1, so this is a finding rather than scope creep; the governing freeze is `docs/cycle15-plan.md:101-104`.
+- **Cost-regex repair (`device-failed`, 2026-09-16): worked.** The audit reported three cost lines seen and three parsed, consistent with the three logs above.
+- **`bgrun` inner-failure scan (`device-failed`, 2026-09-17): worked at the runner layer but failed end-to-end at the audit layer.** `**FAIL**` produced `rc=1` (`tools/bench/diag_filewrite_donor.log:23-25,54`), yet the audit reported zero failures because its independent regex lacks that form (`tools/audit_cycle.py:62`).
+- **`OpLoopEndRef_v0` (`repeated-failure-class`): worked for its intended question.** The original loop’s terminal and source were measured directly (`tools/bench/build_d1_v0_run4.log:241-245`). The 1055 results on the three newly created, unwired terminals were a separate gate-specification issue, not a return to guessing how original loop #637 stops.
+
+VIOLATION: repeated-failure-class | loss_min=43 | loss_usd=14.1418 | evidence=tools/bench/build_d1_v0_run3.log:1
+VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=unreported-fact/bgrun-failure-visibility@tools/audit_cycle.py:62
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle15-d1-build3.md
+BGRUN END rc=0 after 326s

@@ -1,0 +1,113 @@
+BGRUN START 2026-09-17 03:48:18 limit 20.0 min: py -u tools/prior_art_review.py --plan-file tools/recipes/build_oploopendref_v0.py --trigger new-op --slug priorart-loopendref
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-loopendref.txt (35189 chars)
+OUTCOME: ANSWERED (532s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-priorart-loopendref.md
+COST: $4.5877  in 50 / out 37789 / cache-create 193021 / cache-read 3425002  (529s, 33 turn(s))
+--- ANSWER ---
+I could not write the plan file (the Write tool is disabled in this session), so the review is the reply — which matches the peer brief anyway ("your output is your answer, nothing else"). I took no lock, ran nothing, and opened no `.vi`.
+
+# PRIOR-ART REVIEW — `build_oploopendref_v0.py` / `OpLoopEndRef_v0.vi` (trigger: new-op)
+
+**Headline:** the *artifact* is genuinely novel — nothing in this project reads a While loop's conditional terminal, and I verified that rather than taking the plan's word for it. Every finding below is about **claims the plan makes and gates it sets**, each of which our own files already answer differently. Six of the seven are disposable by editing a docstring, one gate and one verdict string.
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 SETTLED ALREADY — *in favour*. **No slug emitted.**
+
+`docs/violation-decisions.md:281-290` (**2026-09-17 03:38**, round 5):
+
+> "7 occurrences. The cycle-14 instance is the stop CONDITIONAL TERMINAL of WhileLoop #637: diagnosed by inference twice (`diag_stop_condterm_panel`, `diag_stop_save_seam`), both refuted, because no reader exists … **DECISION: device** — build the reader `OpLoopEndRef_v0` (`WhileLoop.Loop End Ref` 0x06362C00 → the conditional terminal → its connected wire/source), functionally verified on the main VI's #637 (read-only) … It is also D1's S4 gate."
+
+The direction is decided, by name, by ID, with the same verification shape the recipe implements. A decision that *orders* this build is not prior art that should stop it, so I emit **no `settled-already` slug**. Recorded so the disposition can cite it.
+
+Ordering note, no slug: `STATUS.md:118-120` ("NEXT") makes Phase P (`probe_move_into_v0`) the next build while `docs/violation-decisions.md:288` makes this reader a due device, and CLAUDE.md's rule is that the device comes first. Two current documents, two different "next builds"; the device reading is the compliant one and STATUS's NEXT line is the stale half.
+
+### A2 REFUTED ALREADY — no. **No slug.**
+
+Nothing argues against building it. The two prior attempts were *inferences*, not builds (`archive/peer/2026-09-16-stop-condterm-failed-prediction.md`, `…-panel-fail2.md`, summarised at `docs/main-vi-stop-and-save.md:55-74`), and both peers pointed **at** this property as the conclusive route (`tools/bench/peer_stopterm.log:32-37`, `tools/bench/peer_stopterm2.log:49`).
+
+### A3-i CONTRADICTED — "the mandated step" is the **second** of two ordered steps
+
+Plan, `tools/recipes/build_oploopendref_v0.py:7`:
+> "STATUS OPEN 13 and `docs/main-vi-stop-and-save.md:74,:164-165` both already name this exact reader as the mandated step."
+
+`docs/main-vi-stop-and-save.md:72-74`:
+> "Cheapest remaining test, **in order**: (1) a **recursive** front-panel census — `Traverse for GObjects` over `ControlTerminal`, each terminal's `Connected Wire` vs 3457; (2) **only if that finds no second carrier**, a new reader for `WhileLoop.Loop End Ref` 0x06362C00 on uid 637."
+
+`STATUS.md:78-79`: "**guessed twice ⇒ build the READER** (recursive `ControlTerminal` census, **then** `WhileLoop.Loop End Ref` 0x06362C00)." Both peers said the same independently — `tools/bench/peer_stopterm.log:39`, `tools/bench/peer_stopterm2.log:58` ("**Only if** that returns no second carrier should you build the `Loop End Ref` reader").
+
+The later decision (A1) supersedes the ordering, and skipping step (1) is defensible — step (1) needs a new terminal-by-UID reader of its own, since `panel_wiring` is documented non-recursive (`tools/gscript.py:640`) and `OpWireSource_v5` returns a terminal's *owner*, not its own UID (`docs/toolkit-capabilities.md:48`). What is wrong is the **claim about what those two documents say**.
+
+### A3-ii CONTRADICTED + ALREADY MEASURED — the `Connected Wire == 0` branch is refuted before the run
+
+Plan, `build_oploopendref_v0.py:59-60` and the verdict it writes at `:357-360`:
+> "0 => the conditional terminal is UNWIRED, i.e. **#637 does not stop from a Boolean at all** …" / `"UNWIRED: WhileLoop#637's conditional terminal carries no wire, so the frame loop is not stopped by either stop Boolean through this terminal."`
+
+Measured functionally on a running copy — `tools/bench/drive_original_copy_v3.log:80-81`:
+> `STEP 10 R9 stop via the VI's own control VISERVER PASS SetControlValue -- idle after 2s, 1 re-arms`
+> `STEP 11 R10 trace file written FILE PASS … ['cal001 (171552 B)', 'tra001-000 (196282 B)']`
+
+and `archive/2026-09-17-status-d0-and-gpu-narrative.md:212-213` ("✅ **WORKS — idle after 2 s** … `tra001-000` … written by `save N xyz traces.vi` **because the VI stopped properly**").
+
+`save N xyz traces.vi` #6384 sits on diagram 19, **after** the frame loop (`docs/main-vi-stop-and-save.md:80`), so that file is evidence `WhileLoop#637` terminated normally from the stop Booleans, not by Abort. A zero therefore cannot mean "#637 does not stop from a Boolean"; it would mean the reader or the addressing is wrong. Rewrite the branch so zero reads as *inconclusive / reader suspect*. (`STATUS.md:105-108` disputes only the *restriction* "only in the frame loop" — R11 scored the restart; the R9/R10 result stands.)
+
+### A3-iii CONTRADICTED — the Abort citation points at superseded camera text
+
+Plan `:60` cites "`docs/frame-ownership-design.md:92-97`'s *the normal stop is LabVIEW's Abort*". Lines 92-97 are the **superseded** overload paragraph ("the camera free-runs into the driver's ring buffer … `Buffer Number Mode = Last` … no pool eviction, no `Lossy Enqueue Element`"). The Abort sentence is `docs/frame-ownership-design.md:105`. The wrong numbers were inherited from `docs/main-vi-stop-and-save.md:75`, which carries the same error — fix both. And :105 speaks about the **new design's** operator, which `docs/main-vi-stop-and-save.md:75-76` says the wiring measurement "does not contradict or confirm".
+
+### A4 UNREAD EVIDENCE — the cardinality bearing on the skipped step (1)
+
+`docs/toolkit-capabilities.md:510-511`:
+> "Also measured: `fp_labels` returns 114 objects and `report("ControlTerminal")` returns 114 — **every front-panel object has exactly one diagram terminal in this VI**."
+
+The question was ruled open because a **tab-page-nested** control terminal might be wire 3457's other carrier (`docs/main-vi-stop-and-save.md:68-71`). A whole-VI `ControlTerminal` traverse returning exactly the top-level 114 is direct evidence against a 115th control terminal existing. Not conclusive alone (it rests on Traverse being whole-hierarchy), but it is the cheapest thing bearing on the step being skipped, and neither the plan nor `main-vi-stop-and-save.md:72-74` mentions it.
+
+---
+
+## PART B — THE ARTIFACT
+
+### B1 ALREADY BUILT — **no. Genuinely novel.** No slug.
+
+Verified independently: `docs/toolkit-capabilities.md:27` — `loop_cast`/`OpWhileCast_v0` returns loop UID, the For-loop N wire and `Loop.Shift Registers[]`, nothing else; its label map is `{"Array": "ShiftRegUIDs", "UID": "LoopUID", "error out 2": "ShiftRegsErr", "reference": "seed"}` (`tools/bench/build_opwhilecast_v0.log:101`). The only `6362C00`/`LpEndRef` hits in the project are docs, peer logs, and an NI **example** VI's node seen during seeding (`tools/bench/probe_example_forloop.log:16`, `build_opwhilecast_v0.log:34`) — whose property nodes were deleted at `build_opwhilecast_v0.log:47-49`. And the loop node's own `Terminals[]` cannot reach it (`archive/bench-2026-09-14-stage2-toolkit/build_opexitwhile.py:4`; `docs/toolkit-capabilities.md:35`).
+
+### B2 ALREADY FAILED — not this build. **No slug**, but read before running
+
+`OpCaseFrames_v0` failed five times: `tools/bench/build_opcaseframes_v0.log:24, 49, 78, 108, 127`. Run 5 matters because it failed **additively** — `:120-126` show the property attaching with its census passing (`CENSUS VI Server:MultiFrameStructure 6363801 -> data terminal 'Frames[]'`), then `:127` `FAIL A runnable with the seed wired [… ('Frames[] node + seed (wired)', 0)]`. Same *shape* as gate L4. It is **not** the same construction (that recipe was mid-surgery on a retargeted donor; this one is additive), and the donor lineage already did TMSC-out → class property node three times cleanly (`build_opwhilecast_v0.log:64-78`, both `ExecState=1`). No slug: L4 is the right gate and stopping there without saving is the right response.
+
+### B3-i CONTRADICTED — L3's gate rests on a rule our files already refuted
+
+Plan `:45-46`: "the creator reports no error (**build_property raises on 1077**, so a class/ID LabVIEW rejects stops the build instead of producing a silent no-op node)."
+
+`docs/toolkit-capabilities.md:234-238`:
+> "⚠️ But **'no 1077' is NOT a verdict that a property attached** … the 1077 above came from a **deliberately bogus** id, while `Control.Value` **633200D** — a *valid* id on the wrong class — created a node with **no `Value` terminal and no error at all** … The robust check is the **data-terminal-name census** (`build_opcaseframes_v0.py:49-58`) … **Any 'does property X exist on class Y?' test must use that.**"
+
+This build *is* that test: `docs/NAMES.md:241-247` marks the whole Loop/ForLoop/WhileLoop ID block "**not yet verified on this machine**", only `ForLoop.Loop Count` and `Loop.Shift Registers[]` verified since (`:249-252`). The recipe half-covers it by accident — `data_term()` (`:143-151`) indexes `Terminals[4]` and would raise `StopIteration` on an unconfigured 4-terminal node. Assert the census, not the 1077.
+
+### B3-ii HELPER EXISTS — the census and the indicator check are already written
+
+- `tools/recipes/build_opcaseframes_v0.py:48-59` `prop_node()` — builds, asserts exactly one new Property, walks it, asserts **exactly one data SOURCE terminal**, prints `CENSUS … -> data terminal '<name>'`, returns `(uid, name)`. That is `pn()` + `data_term()` (`build_oploopendref_v0.py:217-220`, `:143-151`) done correctly, and it is the function `docs/toolkit-capabilities.md:237` names as required.
+- `tools/recipes/build_opcaseframes_v0.py:62-71` `add_indicator()` — asserts one new panel object, that it **is** an indicator, and that its label is **unique**. `make_indicator()` (`build_oploopendref_v0.py:153-160`) checks only "one new label", so a duplicate label would silently mis-key the label map L7/L8 then drive `SetControlValue` from.
+- Both ship with `must`/`walk`/`term` from `build_track_v6_core` (`build_opcaseframes_v0.py:33,37`).
+
+### B4 ALREADY MEASURED — one item, prose only, **no slug**
+
+`tools/bench/test_oploopcast.log:84` already records `WhileLoop[1] uid 637`. L7's three-index scan is cheap and a stronger gate, so re-measuring is fine — but state it as confirming `test_oploopcast.log:84`, not as a discovery. The substantive already-measured item is A3-ii.
+
+---
+
+## Verdicts
+
+```
+PRIOR-ART: contradicted      A3-i   "mandated step" vs docs/main-vi-stop-and-save.md:72-74, STATUS.md:78-79
+PRIOR-ART: contradicted      A3-ii  L8 zero-branch vs tools/bench/drive_original_copy_v3.log:80-81
+PRIOR-ART: already-measured  A3-ii  the frame loop's Boolean stop is already measured functionally
+PRIOR-ART: contradicted      A3-iii docs/frame-ownership-design.md:92-97 is not the Abort text (that is :105)
+PRIOR-ART: unread-evidence   A4     docs/toolkit-capabilities.md:510-511 (114 == 114 control terminals)
+PRIOR-ART: contradicted      B3-i   L3's 1077 gate vs docs/toolkit-capabilities.md:234-238
+PRIOR-ART: helper-exists     B3-ii  tools/recipes/build_opcaseframes_v0.py:48-59 and :62-71
+```
+
+No `novel` line. Nothing here asks for the build to be abandoned — B1 is real new work; the seven findings are the docstring's two miscitations, the L8 verdict text, the L3 gate, and two helpers that already exist in `build_opcaseframes_v0.py`.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-loopendref.md
+BGRUN END rc=0 after 533s

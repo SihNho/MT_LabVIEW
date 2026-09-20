@@ -1,0 +1,62 @@
+BGRUN START 2026-09-18 03:15:59 limit 25.0 min: py -u tools/bench/diag_uid_identity.py MATERIAL=1
+PREDICTION CONTRACT D0..D2 - see this file's docstring. READ-ONLY: no build, no op, no scratch VI.
+   material-session declaration present in the launch command: True
+   LabVIEW pid before anything: None
+
+-- md5 before --
+   c39f36e0675339673b707c59f0784fee  Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi
+   2a78e17c449cacdaf5da389818526859  Min_Track N beads V6_ParallelLoop.vi
+   5dc45a04ea5d809f5ca57e9309ed59c5  OpWireSource_v5.vi
+   fresh(): killing LabVIEW pid None
+   COM preflight attempt 1/15: pid None->15888, wires 16->16
+   COM preflight OK (pid 15888, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 15888
+  HANDLES after a fresh LabVIEW, before any work: 30325  (fresh baseline ~31,500)
+
+================ I1  WHICH VI DOES EACH UID BELONG TO ================
+
+   --- V6 working copy
+       G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+       Diagram                    n=  170   28343=False   43605=False   44036=False
+       LoopTunnel                 n=  132   28343=True   43605=False   44036=False
+       FlatSequenceOuterTunnel    n=   58   28343=False   43605=True   44036=False
+       FlatSequenceInnerTunnel    n=  518   28343=False   43605=False   44036=False
+       SubVI                      n=   98   28343=False   43605=False   44036=True
+       Wire                       n= 1902   28343=False   43605=False   44036=False
+
+   --- 3StateClamping ORIGINAL
+       G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi
+       Diagram                    n=  170   28343=False   43605=False   44036=False
+       LoopTunnel                 n=  132   28343=True   43605=False   44036=False
+       FlatSequenceOuterTunnel    n=   58   28343=False   43605=True   44036=False
+       FlatSequenceInnerTunnel    n=  518   28343=False   43605=False   44036=False
+       SubVI                      n=   97   28343=False   43605=False   44036=True
+       Wire                       n= 1898   28343=False   43605=False   44036=False
+
+   OFFLINE main_vi_nodeterms.json 'vi' = G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+   OFFLINE   uid 44036 appears there at (diagram, Nodes[]) [('10', 1)]
+   OFFLINE d1_step0_census.json md5 field = 2a78e17c449cacdaf5da389818526859
+   OFFLINE   its row for LoopTunnel 28343: {'index': 65, 'uid': 28343, 'index_mode': 0, 'out_name': 'Magnet position output', 'out_is_source': False, 'out_wire': 28392, 'out_conn_err': 0, 'out_wire_err': 0, 'in_names': ['Magnet position output'], 'in_is_source': [True], 'in_wires': [28338]}
+  PASS D1 the identity measurement ran on both VIs  | ['V6 working copy', '3StateClamping ORIGINAL', 'nodeterms_json_vi', 'census_md5']
+
+================ I2  the KNOWN-GOOD FIXTURE through the EXISTING ops ================
+   gscript.tunnels(target, 65) -> uid 28343 out_name 'Magnet position output' out_is_source False out_wire 28392 in_wires [28338]
+   -> resolving the OUTER wire 28392 with OpWireSource_v5
+         Terms[0] src=True owner 'SubVI' uid 27605 recip=28392 err='' 
+         Terms[1] src=False owner 'LoopTunnel' uid 28343 recip=28392 err='' 
+         Terms[2] src=False owner 'LoopTunnel' uid 28311 recip=28392 err='' 
+         Terms[3] src=False owner '' uid 0 recip=0 err='' error 1055: Property Node in OpWireSource_v5.vi error 1055: 
+   SOURCE of wire 28392: {'i': 0, 'is_source': True, 'owner_class': 'SubVI', 'owner_uid': 27605, 'uid_back': 28392, 'cls_back': 'Wire', 'recip_wire': 28392, 'err': '', 'errs': ''}
+   subVI census says: {'diagram': 19, 'name': 'Max Trans Pos.vi', 'path': 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\DY\\Background VIs\\Max Trans Pos.vi'}
+  PASS D2 LoopTunnel #28343 -> Max Trans Pos.vi - 'Magnet position output'  | out_name 'Magnet position output'; source {'i': 0, 'is_source': True, 'owner_class': 'SubVI', 'owner_uid': 27605, 'uid_back': 28392, 'cls_back': 'Wire', 'recip_wire': 28392, 'err': '', 'errs': ''}; lookup {'diagram': 19, 'name': 'Max Trans 
+  HANDLES after the run: 30541  (fresh baseline ~31,500)
+
+-- md5 after --
+   c39f36e0675339673b707c59f0784fee  Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi
+   2a78e17c449cacdaf5da389818526859  Min_Track N beads V6_ParallelLoop.vi
+   5dc45a04ea5d809f5ca57e9309ed59c5  OpWireSource_v5.vi
+  PASS D0 both originals and the donor op are byte-identical before and after  | []
+
+SUMMARY gates 3/3 pass; failing: []
+raw -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_uid_identity.json
+BGRUN END rc=0 after 54s

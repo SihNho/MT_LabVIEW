@@ -1,0 +1,114 @@
+BGRUN START 2026-09-19 23:51:58 limit 45.0 min: py -u tools/recipes/stage_d1_s1.py --phases CD
+stage_d1_s1: PHASES CD (of ABCD)
+stage_d1_s1: ORIGINAL G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+  FACT  S0 the ORIGINAL, read-only: Min_Track N beads V6_ParallelLoop.vi md5 2a78e17c449cacdaf5da389818526859 size 473317 B; version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  S0 original md5 BEFORE equals the pin  2a78e17c449cacdaf5da389818526859
+  FACT  S0 handles at entry: 0 (0 = LabVIEW not started yet); refs {'opened': 0, 'closed': 0, 'live': 0, 'cached_op_vis': 0}
+
+=== PHASE C: S1 PROPER ? cut the fixture TIFF writer from a fresh copy and SAVE it
+  FACT  C0: lv_restart rc=0: ['dialogs: ,1346,762| / ENABLED|10421910|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  C0: LabVIEW handles after the restart: 30682 (fresh-instance baseline ~31,500)
+  FACT  C1 the S1 working copy: D1_s1_copy.vi md5 2a78e17c449cacdaf5da389818526859 size 473317 B; version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  C1 the S1 working copy on disk is byte-identical to the ORIGINAL  2a78e17c449cacdaf5da389818526859
+  FACT  C2: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened on it, nothing saved
+  FACT  C3 BEFORE census: {'Diagram': 170, 'Node': 626, 'Wire': 1902, 'LoopTunnel': 132, 'ControlTerminal': 114, 'WhileLoop': 3, 'Local': 8, 'SubVI': 98, 'Function': 181}
+  PASS  C3 the copy matches the pinned BEFORE census  {} (empty = all match)
+  FACT  C4 frame body #639 reads Traverse index 43 ? re-read here, never cached (Pre-decided 21(d): the same uid read 43 and 56 inside ONE instance in run 10)
+  FACT  C4 bare named sinks on the frame body BEFORE the deletions: 28
+  PASS  C4 #22700 (IMAQ Write TIFF File 2) is present as SubVI before deletion  not among SubVI
+  FACT  C4 deleted #22700 (IMAQ Write TIFF File 2) at SubVI index 26
+  PASS  C4 #23020 (Build Path) is present as Function before deletion  not among Function
+  FACT  C4 deleted #23020 (Build Path) at Function index 39
+  FACT  C5 remove_bad_wires_scripted ran ONCE, as a pre-pass (v7 `:740`); this file has no row loop, and `gscript.net_map` is neither imported nor called (Pre-decided 17)
+  PASS  C4 #22700 (IMAQ Write TIFF File 2) is GONE after the deletions
+  PASS  C4 #23020 (Build Path) is GONE after the deletions
+  PASS  C6 counts moved exactly as ��11h predicts (SubVI 97 �� Function 180 �� Node 624 �� Wire 1899)  {'SubVI': 97, 'Function': 180, 'Node': 624, 'Wire': 1899}
+  PASS  C7 no STAYING node was left with a bare named input  newly bare []
+  FACT  C8 exec_state(target) with the ORIGINAL PRELOADED = 1 (the deletions are predicted harmless; C9 is the test that matters)
+  FACT  C9 g.save(target) took 1.08 s and returned 474202; exception = None
+  PASS  C9 g.save(target) returned without raising  None
+  FACT  C2: preload references released; refs {'opened': 7, 'closed': 7, 'live': 0, 'cached_op_vis': 6}
+  FACT  C9 THE STAGE ARTEFACT: D1_s1_copy.vi md5 2674b1ffeb5f97da832bd4c52263b1d9 size 474202 B; version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+  FACT  C refs at phase end: {'opened': 7, 'closed': 7, 'live': 0, 'cached_op_vis': 6}; handles 60091
+  PASS  MD5-C original md5 unchanged after phase C  2a78e17c449cacdaf5da389818526859
+
+=== PHASE D: VERIFY the saved artefact in a fresh instance, COLD and PRELOADED
+  FACT  D0: lv_restart rc=0: ['dialogs: ,1346,762| / ENABLED|12978686|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  D0: LabVIEW handles after the restart: 30689 (fresh-instance baseline ~31,500)
+  FACT  D0 the artefact as phase C left it: D1_s1_copy.vi md5 2674b1ffeb5f97da832bd4c52263b1d9 size 474202 B; version candidates [{'offset': 36, 'bytes': '26 00 80 00'}]
+  FACT  D1 COLD exec_state(D1_s1_copy.vi) = 1 ? labelled COLD and, by Pre-decided 14a, UNREAD as a verdict on legality
+  FACT  D2: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened on it, nothing saved
+  FACT  D2 PRELOADED exec_state(D1_s1_copy.vi) = 1
+  FACT  D2: preload references released; refs {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 0}
+  PASS  D2 the PRELOADED reading of the saved artefact is 1  cold 1, preloaded 1
+  FACT  D2b BOTH ExecState readings of D1_s1_copy.vi, labelled: COLD = 1 (RECORDED, not gated ? 14a: a cold read measures subVI linkage) �� PRELOADED = 1 (gated)
+
+=== D5: the SAVED ARTEFACT's COLD SubVI table against the ORIGINAL's COLD SubVI table
+
+=== D5a-S1COPY-COLD  target=C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi
+  === CHILD D5a-S1COPY-COLD  target=D1_s1_copy.vi
+    FACT lv_restart rc=0 'dialogs: ,1346,762| / ENABLED|25430492|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)'
+    FACT handles after restart: 30688  (fresh baseline ~31,500)
+    FACT 170 Diagram objects (pin 170), 2 s
+    ROW  d[1] uid 3628 : Simple Error Handler.vi#26582 -> C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Utility\error.llb\Simple Error Handler.vi
+    ROW  d[3] uid 3886 : MOV.vi#30804 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Mercury\GCS_LabVIEW\Low Level\General command.llb\MOV.vi
+    ROW  d[4] uid 4406 : GOH.vi#4620 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Mercury\GCS_LabVIEW\Low Level\Limits.llb\GOH.vi
+    ROW  d[5] uid 5038 : VEL.vi#5403 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Mercury\GCS_LabVIEW\Low Level\General command.llb\VEL.vi; POS?.vi#5497 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Mercury\GCS_LabVIEW\Low Level\General command.llb\POS?.vi
+    ROW  d[7] uid 27537 : prep cal image.vi#27633 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\prep cal image.vi; proc cal image-make bandpass.vi#27618 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\proc cal image-make bandpass.vi
+    ROW  d[10] uid 43928 : ASI TG-1000.lvlib:Move Axis to Position.vi#44036 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\ASI TG-1000\Public\Action\Move Axis to Position.vi; ASI TG-1000.lvlib:Initialize.vi#43997 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\ASI TG-1000\Public\Initialize.vi
+    ROW  d[12] uid 44169 : ASI TG-1000.lvlib:Get Current Position.vi#44196 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\ASI TG-1000\Public\Status\Get Current Position.vi
+    ROW  d[15] uid 5031 : Set Cursor (Icon Pict).vi#7774 -> C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Utility\cursorutil.llb\Set Cursor (Icon Pict).vi
+    ROW  d[16] uid 3121 : grayscale color table.vi#6216 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\grayscale color table.vi; check N bead pos v3-kimlab.vi#5987 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\check N bead pos v3-kimlab.vi
+    ROW  d[17] uid 1817 : Set Cursor (Icon Pict).vi#9944 -> C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Utility\cursorutil.llb\Set Cursor (Icon Pict).vi
+    ROW  d[18] uid 4866 : make both cosine bandpass.vi#4865 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\make both cosine bandpass.vi; exp-ref management.vi#6288 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\exp-ref management.vi
+    ROW  d[19] uid 686 : Max Trans Pos.vi#27605 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\DY\Background VIs\Max Trans Pos.vi; save N xyz traces.vi#6384 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\save N xyz traces.vi
+    ROW  d[20] uid 25392 : Motor control v5_No Recording.vi#30846 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\SiHyeong Modified\Motor control v5_No Recording.vi
+    ROW  d[24] uid 28036 : SetCommand.vi#28094 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Autonics Motor\SetCommand.vi
+    ROW  d[28] uid 27425 : SetCommand.vi#27466 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Autonics Motor\SetCommand.vi
+    ROW  d[32] uid 27076 : SetCommand.vi#27194 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Autonics Motor\SetCommand.vi; SetCommand.vi#27165 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Autonics Motor\SetCommand.vi
+    ROW  d[36] uid 26535 : MOV.vi#26739 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Mercury\GCS_LabVIEW\Low Level\General command.llb\MOV.vi
+    ROW  d[40] uid 25892 : MOV.vi#26085 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Mercury\GCS_LabVIEW\Low Level\General command.llb\MOV.vi
+    ROW  d[42] uid 28686 : Magnet2Force v3_for M270.vi#28490 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\DY\Background VIs\Magnet2Force v3_for M270.vi
+    ROW  d[43] uid 639 : WLC function sub.vi#1114 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\DY\Background VIs\WLC function sub.vi; ASI_adjust focus-subvi.vi#48 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\Madcity\ASI_adjust focus-subvi.vi; Track N beads four-fold over-kernel-v3.vi#5058 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\Track N beads four-fold over-kernel-v3.vi; save trace.vi#376 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\save trace.vi; get buff image-lost frames.vi#6810 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\get buff image-lost frames.vi
+    ROW  d[50] uid 29894 : NI_AALBase.lvlib:Median Filter.vi#30306 -> C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Analysis\3filter.llb\Median Filter.vi
+    ROW  d[69] uid 20774 : MOV.vi#1779 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Mercury\GCS_LabVIEW\Low Level\General command.llb\MOV.vi; VEL.vi#21046 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Mercury\GCS_LabVIEW\Low Level\General command.llb\VEL.vi
+    ROW  d[73] uid 10423 : ASI TG-1000.lvlib:Move Axis Relative.vi#26539 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\ASI TG-1000\Public\Action\Move Axis Relative.vi; ASI TG-1000.lvlib:Get Current Position.vi#19093 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\ASI TG-1000\Public\Status\Get Current Position.vi
+    ROW  d[74] uid 7911 : NI_AALBase.lvlib:Median Filter.vi#29009 -> C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Analysis\3filter.llb\Median Filter.vi; NI_AALBase.lvlib:FIR Filter (DBL).vi#28233 -> C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Analysis\3filter.llb\FIR Filter (DBL).vi; NI_AALBase.lvlib:Smoothing Filter Coefficients.vi#28180 -> C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Analysis\3filter.llb\Smoothing Filter Coefficients.vi; Magnet2Force v3_for M270.vi#28083 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\DY\Background VIs\Magnet2Force v3_for M270.vi
+    ROW  d[75] uid 2265 : N bead plot dZ.vi#5696 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\N bead plot dZ.vi
+    ROW  d[76] uid 2235 : N bead plot Z.vi#6085 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\N bead plot Z.vi
+    ROW  d[83] uid 759 : ASI TG-1000.lvlib:Close.vi#29815 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\ASI TG-1000\Public\Close.vi; Simple Error Handler.vi#3587 -> C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Utility\error.llb\Simple Error Handler.vi; IMAQ Dispose#2431 -> C:\Program Files\NI\LVAddons\nivisioncommon\1\vi.lib\vision\Basics.llb\IMAQ Dispose; NI_Vision_Acquisition_Software.lvlib:IMAQdx Close Camera.vi#2078 -> C:\Program Files\NI\LVAddons\niimaqdx\1\vi.lib\vision\driver\IMAQdx.llb\IMAQdx Close Camera.vi; NI_Vision_Acquisition_Software.lvlib:IMAQdx Stop Acquisition.vi#1839 -> C:\Program Files\NI\LVAddons\niimaqdx\1\vi.lib\vision\driver\IMAQdx.llb\IMAQdx Stop Acquisition.vi; Simple Error Handler.vi#560 -> C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Utility\error.llb\Simple Error Handler.vi
+    ROW  d[87] uid 13236 : NI_Vision_Acquisition_Software.lvlib:IMAQdx Open Camera.vi#33151 -> C:\Program Files\NI\LVAddons\niimaqdx\1\vi.lib\vision\driver\IMAQdx.llb\IMAQdx Open Camera.vi; Max Trans Pos.vi#29546 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\DY\Background VIs\Max Trans Pos.vi; NI_Vision_Acquisition_Software.lvlib:IMAQdx Configure Grab.vi#13962 -> C:\Program Files\NI\LVAddons\niimaqdx\1\vi.lib\vision\driver\IMAQdx.llb\IMAQdx Configure Grab.vi; IMAQ Create#13938 -> C:\Program Files\NI\LVAddons\nivisioncommon\1\vi.lib\vision\Basics.llb\IMAQ Create
+    ROW  d[88] uid 18402 : ASI TG-1000.lvlib:Move Axis to Position.vi#30697 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\ASI TG-1000\Public\Action\Move Axis to Position.vi; ASI TG-1000.lvlib:Initialize.vi#30828 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\ASI TG-1000\Public\Initialize.vi
+    ROW  d[90] uid 33688 : ASI TG-1000.lvlib:Get Current Position.vi#1675 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\ASI TG-1000\Public\Status\Get Current Position.vi
+    ROW  d[91] uid 14037 : TMN?.vi#31263 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Mercury\GCS_LabVIEW\Low Level\Limits.llb\TMN?.vi; TMX?.vi#31090 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Mercury\GCS_LabVIEW\Low Level\Limits.llb\TMX?.vi; GOH.vi#14331 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Mercury\GCS_LabVIEW\Low Level\Limits.llb\GOH.vi; Mercury_GCS_Configuration_Setup.vi#14268 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Mercury\GCS_LabVIEW\Mercury_GCS_Configuration_Setup.vi; VEL.vi#14196 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Mercury\GCS_LabVIEW\Low Level\General command.llb\VEL.vi
+    ROW  d[92] uid 14435 : Configure.vi#30064 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Autonics Motor\Configure.vi
+    ROW  d[97] uid 14840 : Set Cursor (Icon Pict).vi#14858 -> C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Utility\cursorutil.llb\Set Cursor (Icon Pict).vi
+    ROW  d[99] uid 15266 : NI_Vision_Acquisition_Software.lvlib:IMAQdx Grab.vi#15403 -> C:\Program Files\NI\LVAddons\niimaqdx\1\vi.lib\vision\driver\IMAQdx.llb\IMAQdx Grab.vi; ASI_adjust focus-subvi.vi#15921 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\Madcity\ASI_adjust focus-subvi.vi; IMAQ ImageToArray#15442 -> C:\Program Files\NI\LVAddons\nivisioncommon\1\vi.lib\vision\Basics.llb\IMAQ ImageToArray; Flatten Pixmap.vi#15472 -> C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\picture\pixmap.llb\Flatten Pixmap.vi; Draw Flattened Pixmap.vi#15511 -> C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\picture\picture.llb\Draw Flattened Pixmap.vi
+    ROW  d[103] uid 19033 : SetCommand.vi#1566 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Autonics Motor\SetCommand.vi
+    ROW  d[107] uid 18718 : SetCommand.vi#35648 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Autonics Motor\SetCommand.vi
+    ROW  d[111] uid 18317 : SetCommand.vi#33882 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Autonics Motor\SetCommand.vi; SetCommand.vi#33114 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Autonics Motor\SetCommand.vi
+    ROW  d[115] uid 28412 : SetCommand.vi#34890 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Autonics Motor\SetCommand.vi
+    ROW  d[117] uid 18096 : POS?.vi#18136 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Mercury\GCS_LabVIEW\Low Level\General command.llb\POS?.vi
+    ROW  d[121] uid 17772 : MOV.vi#16184 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Mercury\GCS_LabVIEW\Low Level\General command.llb\MOV.vi
+    ROW  d[125] uid 17471 : MOV.vi#31870 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Mercury\GCS_LabVIEW\Low Level\General command.llb\MOV.vi
+    ROW  d[129] uid 17020 : MOV.vi#30780 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Mercury\GCS_LabVIEW\Low Level\General command.llb\MOV.vi; VEL.vi#17164 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\Mercury\GCS_LabVIEW\Low Level\General command.llb\VEL.vi
+    ROW  d[132] uid 16013 : rect coord from center.vi#16031 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\rect coord from center.vi; Draw Grayed Out Rect.vi#16073 -> C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\picture\picture.llb\Draw Grayed Out Rect.vi
+    ROW  d[137] uid 16621 : Draw Text at Point.vi#16827 -> C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\picture\picture.llb\Draw Text at Point.vi; Draw Circle by Radius.vi#16788 -> C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\picture\pictutil.llb\Draw Circle by Radius.vi
+    ROW  d[145] uid 19687 : Set Cursor (Icon Pict).vi#19705 -> C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Utility\cursorutil.llb\Set Cursor (Icon Pict).vi
+    ROW  d[146] uid 19887 : ASI TG-1000.lvlib:Get Current Position.vi#13341 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\ASI TG-1000\Public\Status\Get Current Position.vi
+    ROW  d[147] uid 20261 : IMAQ Create#20436 -> C:\Program Files\NI\LVAddons\nivisioncommon\1\vi.lib\vision\Basics.llb\IMAQ Create; make both cosine bandpass.vi#20387 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\make both cosine bandpass.vi
+    ROW  d[148] uid 21134 : ASI TG-1000.lvlib:Get Current Position.vi#34148 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\ASI TG-1000\Public\Status\Get Current Position.vi
+    ROW  d[151] uid 22160 : ASI TG-1000.lvlib:Move Axis to Position.vi#34822 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\ASI TG-1000\Public\Action\Move Axis to Position.vi
+    ROW  d[157] uid 22650 : NI_Vision_Acquisition_Software.lvlib:IMAQdx Get Image.vi#22692 -> C:\Program Files\NI\LVAddons\niimaqdx\1\vi.lib\vision\driver\IMAQdx.llb\IMAQdx Get Image.vi
+    ROW  d[160] uid 23729 : calibration- generate 1 I of r, reentrant.vi#23812 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\calibration- generate 1 I of r, reentrant.vi
+    ROW  d[161] uid 24013 : calibration- generate 2 I of r, reentrant.vi#24170 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\calibration- generate 2 I of r, reentrant.vi
+    ROW  d[162] uid 24449 : calibration- generate 1 I of r, reentrant.vi#24815 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\calibration- generate 1 I of r, reentrant.vi; calibration- generate 2 I of r, reentrant.vi#24656 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\calibration- generate 2 I of r, reentrant.vi
+    ROW  d[163] uid 22847 : calibration- generate 2 I of r, reentrant.vi#23278 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\calibration- generate 2 I of r, reentrant.vi; calibration- generate 2 I of r, reentrant.vi#23119 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\calibration- generate 2 I of r, reentrant.vi
+    ROW  d[167] uid 25769 : ASI TG-1000.lvlib:Move Axis to Position.vi#35532 -> C:\Program Files\National Instruments\LabVIEW 2026\instr.lib\ASI TG-1000\Public\Action\Move Axis to Position.vi
+    ROW  d[168] uid 25890 : build cal image.vi#25950 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\build cal image.vi; choose bandpass v2.vi#25968 -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\choose bandpass v2.vi
+    FACT D5a-S1COPY-COLD: 97 subVI call rows over 170 diagrams, 0 diagram errors, 188 s, status COMPLETED
+    FACT ref_counts {'opened': 0, 'closed': 0, 'live': 0, 'cached_op_vis': 0} ; handles at end: 34291 (delta +3603)
+  GATE PASS G3 D5a-S1COPY-COLD child completed  | rc=0 after 254 s
+  FACT  D5a-S1COPY-COLD: COLD SubVI census of D1_s1_copy.vi ? status 'COMPLETED' rc 0; 97 rows / 97 distinct keys over 170 diagrams, 0 diagram errors; into 'background VIs_COPY' 0; empty name-or-path 0; child refs {'opened': 0, 'closed': 0, 'live': 0, 'cached_op_vis': 0}; handles 30688 -> 34291; json tools/bench/s1_paths_D5a-S1COPY-COLD.json
+
+=== D5b-ORIG-COLD  target=G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi

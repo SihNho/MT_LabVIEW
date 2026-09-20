@@ -1,0 +1,56 @@
+BGRUN START 2026-09-15 12:27:54 limit 8.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & .\tools\peer.ps1 -Agent codex -Slug opwiresource-v3-owner-uid-constant-3628 -Task 'ATTACK THIS (LabVIEW 2026 VI Scripting, read-only). Following your algorithm in archive/peer/2026-09-15-constant-vs-wire-source-uid-contradiction.md I built OpWireSource_v3 (log tools/bench/build_opwiresource_v3.log) and walked every terminal of wire 10850 with Terminal.Is Source? 634A003 and the reciprocal Terminal.Connected Wire 634A000 -> GObject.UID. RESULT (the wire itself is fine - H5 rejected): Terms[0] Is Source? TRUE, owner class DigitalNumericConstant, reciprocal wire 10850; Terms[1] Is Source? FALSE, owner class Comparison (that is the Less? node), reciprocal wire 10850; Terms[2..5] error 1055 (past the end of the array). So exactly ONE source, one sink, both pointing back at wire 10850. BUT the owner UID readout is broken: it printed 3628 for EVERY index, including the out-of-range ones where the owner class came back empty with error 1055 - even though that indicator is poisoned to 0 before each run, so the value 3628 is being produced, not left over. The owner UID chain is: Index Array element -> Generic.Owner 6327806 -> To More Specific Class(target class = a GObject-typed control) -> GObject.UID 632A813 -> indicator. The owner CLASS chain hangs off the SAME Owner output (Generic.Class Name 6327803) and DOES vary per index (DigitalNumericConstant, Comparison, empty). MY HYPOTHESES: (H1) the TMSC in the UID chain is not actually fed by Generic.Owner but by something constant per run (the looked-up wire, or the diagram) - though my build gate compared wire uids on both ends of that connection and passed; (H2) 3628 is the UID of the wire OWNER (the diagram) because Generic.Owner on a TERMINAL returns the diagram in some cases - you told me earlier that ControlTerminal.Owner returns the containing diagram, and I measured exactly that for three control-fed wires (owner class Diagram); but here the class chain says DigitalNumericConstant for index 0; (H3) the two chains are fine but the property node that produces the UID executes on a cached/duplicated reference; (H4) a wiring mistake where the ClassName node reads one Owner node and the TMSC reads another. QUESTIONS: (1) rank these; (2) the cheapest discriminating measurement is, I think, to add Generic.Class Name on the TMSC OUTPUT itself (the very object whose UID is printed) and compare it with the owner class already reported - if it says Diagram for every index, H2/H1 are confirmed; is there a better one-node test? (3) is there any documented reason a To More Specific Class output would report a different object than its input reference (for instance when the cast FAILS - does it emit a default/invalid refnum whose UID reads as some fixed number rather than raising an error, which would explain a constant value across indices)? (4) if a cast fails silently like that, what is the correct gate - read the cast node error out (I do wire an error indicator on the chain, and it was empty for indices 0 and 1), or compare Class Name before and after the cast? Read-only; cite what you read.'
+OUTCOME: ANSWERED (95s)  archived: archive\peer\2026-09-15-opwiresource-v3-owner-uid-constant-3628.md
+--- ANSWER ---
+The evidence strongly favors a wiring/dataflow defect in the UID branch. It does not support `Generic.Owner` returning the diagram for both valid terminals.
+
+1. Ranking
+
+1. **H4 / H1 ??essentially tied, with H4 the concrete version.**  
+   The UID property node is probably not consuming the same `Owner` reference as the working Class Name node. The decisive observation is that UID remains `3628` even when `Index Array` is out of range and the Owner/Class Name branch reports error 1055. That makes the UID branch look independent of the indexed terminal reference.
+
+2. **H3 ??but only as stale/bypassed property-node output, not ?�cached reference substitution.??*  
+   A property node downstream of an incoming error may not execute. NI describes standard error behavior as ?�does not execute??when `error in` already contains an error. Therefore its data output must not be treated as valid. [NI standard error behavior](https://www.ni.com/docs/sq-MK/bundle/labview-nxg-ivi-compliance-package/page/ivifgen-property-node.html)  
+   There are also field reports of property nodes exposing a previous output when bypassed by an incoming error, although this is community evidence rather than an API guarantee. [NI Community example](https://forums.ni.com/t5/LabVIEW/Property-node-standard-error-in-functionality-odd-behavior/td-p/1966029)  
+   Poisoning the indicator does not necessarily poison any retained/bypassed output associated with the producing node.
+
+3. **H2 ??strongly contradicted.**  
+   If the exact same `Generic.Owner` output feeds both branches, it cannot simultaneously denote `DigitalNumericConstant` for Class Name and the diagram for UID. Class Name is specifically used to identify the runtime VI Server class represented by a reference. [NI training material](https://download.ni.com/evaluation/training/lvcore2_exercisemanual_english_sample.pdf)  
+   H2 survives only if the two branches are not actually reading the same reference?�or if there is a LabVIEW 2026 bug. Your measured valid classes make the former much cheaper to assume.
+
+4. **A silent failed-cast explanation ??very unlikely.**  
+   NI documents a bad VI Server cast as error **1057**, ?�Object cannot be cast to the specified type.??[NI error 1057 description](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019OwLSAU&l=en-US) An invalid reference subsequently presented to a property node produces error **1055**, not a legitimate fixed UID. [NI error 1055 description](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019L75SAE&l=en-US)
+
+2. Cheapest discriminating test
+
+Your proposed test??Generic.Class Name` on the **TMSC output**?�is the best single added node. Wire its error terminals into the UID chain.
+
+Expected interpretations:
+
+- `DigitalNumericConstant`, then `Comparison`: the cast receives the right object; the fault lies between the TMSC output and `GObject.UID`, most likely UID-node wiring/reference linkage.
+- `Diagram`, `Diagram`: TMSC is receiving a constant diagram reference; H1/H4 confirmed.
+- Empty plus 1057: the cast failed.
+- Correct class but UID `3628`: H2 and failed-cast theories are eliminated; inspect the UID property node?�s actual reference terminal.
+
+An even more direct identity test is `Equal?` between the Owner reference and TMSC output, because LabVIEW comparison functions can test whether two VI Server references denote the same object. The available documentation trail for that particular behavior is an NI-hosted community discussion rather than current API documentation, so I would prefer your Class Name test as the defensible build gate. [NI Community discussion](https://forums.ni.com/t5/LabVIEW/How-to-get-the-refnum-i-e-in-hex-of-a-reentrant-VI-for-calling/td-p/397281)
+
+3. Can TMSC legitimately change the referenced object?
+
+I found no documented mechanism by which `To More Specific Class` substitutes a different VI Server object. Its purpose is to refine the reference?�s wire type so class-specific properties become available; NI?�s usage example passes the resulting reference to a property node for the same array element. [NI TMSC reference example](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YH1ACAW&l=en-CA)
+
+When the runtime object is incompatible, the documented behavior is error 1057. The downstream reference is then unusable and ordinarily causes error 1055 when dereferenced. Nothing I found supports ?�failed cast returns a valid fixed object whose UID is readable.??Therefore `3628` should not be interpreted as a failed-cast sentinel.
+
+Also, because your target class is `GObject`, both `DigitalNumericConstant` and `Comparison` should already be compatible subclasses. A 1057 on either would itself indicate an unexpected target-class or input-wiring problem.
+
+4. Correct gate
+
+Use, in order:
+
+1. **TMSC `error out` must be no-error.**
+2. **Check the TMSC output with `Not A Refnum` / validity test.**
+3. Only then accept `GObject.UID`; wire the UID property node?�s error out and require no-error.
+4. Use before/after Class Name equality as a diagnostic assertion, not the primary validity gate.
+
+NI explicitly recommends checking that a property node?�s input wire does not contain `Not A Refnum`, and defines 1055 as an invalid-object reference. [NI error 1055 guidance](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019L75SAE&l=en-US)
+
+The strongest attack on the current interpretation is: **`3628` is not yet evidence about any terminal owner.** Its persistence through deliberately invalid indices shows that the UID value is not causally trustworthy until the TMSC-output Class Name and the UID-node error are captured from the exact same serialized error chain.
+BGRUN END rc=0 after 95s

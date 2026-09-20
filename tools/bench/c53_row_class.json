@@ -1,0 +1,1166 @@
+{
+ "generated": "cycle53 material task 3 / TEST A",
+ "inputs": [
+  "tools/bench/d1_rewire_sources.json",
+  "tools/bench/main_vi_netmap.json",
+  "tools/bench/main_vi_shiftregs_v1.json",
+  "tools/bench/diagram19.json",
+  "docs/d1-build-plan.md:396-421"
+ ],
+ "focus_set": [
+  10407,
+  48,
+  3529,
+  3560,
+  3447
+ ],
+ "sr_pairs": {
+  "visa": [
+   4334,
+   4344
+  ],
+  "position": [
+   4256,
+   4274
+  ]
+ },
+ "diagram_index_map": {
+  "43": {
+   "owner_class": "WhileLoop",
+   "identified_as": "Diagram #639 (WhileLoop #637 body) -- corroborated by tools/bench/diag_movein_set.json, cycle 52"
+  },
+  "19": {
+   "owner_class": "FlatSequenceFrame",
+   "identified_as": "Diagram #686 -- holds WhileLoop #637 as node idx 637"
+  }
+ },
+ "counts": {
+  "total_cut_rows": 17,
+  "by_action": {
+   "cross-loop:1.2->1.5": 2,
+   "from-tunnel": 1,
+   "same-loop": 5,
+   "to-sr": 2,
+   "from-sr": 2,
+   "source-side": 5
+  },
+  "cross_loop_rows": [
+   [
+    10407,
+    0,
+    1748
+   ],
+   [
+    10407,
+    2,
+    1793
+   ]
+  ],
+  "n_cross_loop": 2,
+  "n_source_is_node_on_639": 7,
+  "n_source_on_686": 0,
+  "n_far_end_planned_for_1_2": 2,
+  "n_sr_created_rows": 4,
+  "orphaned_counterpart_terminals": [
+   [
+    10686,
+    0,
+    "x .and. y?",
+    10799
+   ],
+   [
+    10757,
+    1,
+    "element",
+    10990
+   ],
+   [
+    12589,
+    1,
+    "position [internal units]",
+    9113
+   ]
+  ]
+ },
+ "predictions_on_the_record": {
+  "pre_decided_37g": 0,
+  "p6_review": {
+   "n": 3,
+   "lines": [
+    1748,
+    1793,
+    1892
+   ]
+  },
+  "prior_art_extra": "#10407 t6 -> #12589 t1"
+ },
+ "netmap_terminal_census_diagram43": {
+  "10407": {
+   "total": 6,
+   "wired": 6,
+   "terms": [
+    {
+     "i": 0,
+     "name": "# slices in stack",
+     "wire": 9635
+    },
+    {
+     "i": 1,
+     "name": "Index of closest\ncal image slice, bead 2",
+     "wire": 10990
+    },
+    {
+     "i": 2,
+     "name": "Outgoing Handle",
+     "wire": 11232
+    },
+    {
+     "i": 3,
+     "name": "VISA out",
+     "wire": 7337
+    },
+    {
+     "i": 4,
+     "name": "Out position",
+     "wire": 7388
+    },
+    {
+     "i": 5,
+     "name": "position [internal units]",
+     "wire": 9113
+    }
+   ]
+  },
+  "48": {
+   "total": 7,
+   "wired": 7,
+   "terms": [
+    {
+     "i": 0,
+     "name": "-Inc reference",
+     "wire": 4833
+    },
+    {
+     "i": 1,
+     "name": "+Inc reference",
+     "wire": 2819
+    },
+    {
+     "i": 2,
+     "name": "Focus inc reference",
+     "wire": 1893
+    },
+    {
+     "i": 3,
+     "name": "VISA resource name",
+     "wire": 1731
+    },
+    {
+     "i": 4,
+     "name": "In position",
+     "wire": 3947
+    },
+    {
+     "i": 5,
+     "name": "Out position",
+     "wire": 7388
+    },
+    {
+     "i": 6,
+     "name": "Outgoing Handle",
+     "wire": 11232
+    }
+   ]
+  },
+  "3529": {
+   "total": 1,
+   "wired": 1,
+   "terms": [
+    {
+     "i": 0,
+     "name": "- Inc (PgDn)",
+     "wire": 4833
+    }
+   ]
+  },
+  "3560": {
+   "total": 1,
+   "wired": 1,
+   "terms": [
+    {
+     "i": 0,
+     "name": "+ Inc (PgUp)",
+     "wire": 2819
+    }
+   ]
+  },
+  "3447": {
+   "total": 1,
+   "wired": 1,
+   "terms": [
+    {
+     "i": 0,
+     "name": "Focus Step (F1)",
+     "wire": 1893
+    }
+   ]
+  }
+ },
+ "g2b_refutation": {
+  "review": "archive/peer/2026-09-20-c53-g2b-caseselector.md (claude/hypothesis, opus max, ANSWERED, $3.2538, 497 s)",
+  "my_refuted_explanation": "the netmap `terms` array omits the CaseStructure SELECTOR",
+  "measured_mechanism": "tools/bench/sweep_netmap_main.py:63-64 writes `\"terms\": [[t, w] for _ti, t, w in terms if t]` -- an UNNAMED-terminal filter on every node of every class, which also discards the real terminal index _ti",
+  "peer_falsifier_on_disk": "WhileLoop #637 t37 is unnamed AND wired (main_vi_nodeterms.json:6868-6872) -- not a CaseStructure",
+  "discriminating_test": {
+   "checked": 626,
+   "shortfall_eq_unnamed": 574,
+   "named_subset_matches": 574,
+   "violations_shortfall": [
+    {
+     "diagram": "3",
+     "uid": 30804,
+     "shortfall": 15,
+     "unnamed": 14
+    },
+    {
+     "diagram": "4",
+     "uid": 4620,
+     "shortfall": 15,
+     "unnamed": 14
+    },
+    {
+     "diagram": "5",
+     "uid": 5403,
+     "shortfall": 14,
+     "unnamed": 12
+    },
+    {
+     "diagram": "5",
+     "uid": 5497,
+     "shortfall": 15,
+     "unnamed": 13
+    },
+    {
+     "diagram": "10",
+     "uid": 44036,
+     "shortfall": 9,
+     "unnamed": 5
+    },
+    {
+     "diagram": "12",
+     "uid": 44196,
+     "shortfall": 9,
+     "unnamed": 6
+    },
+    {
+     "diagram": "15",
+     "uid": 7774,
+     "shortfall": 10,
+     "unnamed": 7
+    },
+    {
+     "diagram": "17",
+     "uid": 9944,
+     "shortfall": 10,
+     "unnamed": 7
+    },
+    {
+     "diagram": "19",
+     "uid": 637,
+     "shortfall": 31,
+     "unnamed": 18
+    },
+    {
+     "diagram": "19",
+     "uid": 6384,
+     "shortfall": 11,
+     "unnamed": 4
+    }
+   ],
+   "violations_named": [
+    {
+     "diagram": "3",
+     "uid": 30804,
+     "nodeterms_named": [
+      [
+       "System no.",
+       4375
+      ],
+      [
+       "Axes to move",
+       11058
+      ],
+      [
+       "Position values",
+       32086
+      ],
+      [
+       "No.of digits",
+       0
+      ],
+      [
+       "error in",
+       4360
+      ],
+      [
+       "error out",
+       32594
+      ]
+     ],
+     "netmap_terms": [
+      [
+       "System no.",
+       4375
+      ],
+      [
+       "Axes to move",
+       11058
+      ],
+      [
+       "Position values",
+       32086
+      ],
+      [
+       "No.of digits",
+       0
+      ],
+      [
+       "error in",
+       4360
+      ]
+     ]
+    },
+    {
+     "diagram": "4",
+     "uid": 4620,
+     "nodeterms_named": [
+      [
+       "System no.",
+       4775
+      ],
+      [
+       "GOH axes",
+       4746
+      ],
+      [
+       "All axes?",
+       10194
+      ],
+      [
+       "Axis identifier?",
+       0
+      ],
+      [
+       "error in",
+       30058
+      ],
+      [
+       "error out",
+       4786
+      ]
+     ],
+     "netmap_terms": [
+      [
+       "System no.",
+       4775
+      ],
+      [
+       "GOH axes",
+       4746
+      ],
+      [
+       "All axes?",
+       10194
+      ],
+      [
+       "Axis identifier?",
+       0
+      ],
+      [
+       "error in",
+       30058
+      ]
+     ]
+    },
+    {
+     "diagram": "5",
+     "uid": 5403,
+     "nodeterms_named": [
+      [
+       "System no.",
+       5860
+      ],
+      [
+       "Axes to set",
+       5832
+      ],
+      [
+       "Velocity values",
+       5873
+      ],
+      [
+       "No.of digits",
+       0
+      ],
+      [
+       "error in",
+       5869
+      ],
+      [
+       "Without axis ID?",
+       0
+      ]
+     ],
+     "netmap_terms": [
+      [
+       "System no.",
+       5860
+      ],
+      [
+       "Axes to set",
+       5832
+      ],
+      [
+       "Velocity values",
+       5873
+      ],
+      [
+       "No.of digits",
+       0
+      ],
+      [
+       "error in",
+       5869
+      ],
+      [
+       "Without axis ID?",
+       0
+      ]
+     ]
+    },
+    {
+     "diagram": "5",
+     "uid": 5497,
+     "nodeterms_named": [
+      [
+       "System no.",
+       5860
+      ],
+      [
+       "Axes to query",
+       5832
+      ],
+      [
+       "All axes?",
+       5893
+      ],
+      [
+       "Axis identifier?",
+       0
+      ],
+      [
+       "error in",
+       5864
+      ],
+      [
+       "Position",
+       3373
+      ]
+     ],
+     "netmap_terms": [
+      [
+       "System no.",
+       5860
+      ],
+      [
+       "Axes to query",
+       5832
+      ],
+      [
+       "All axes?",
+       5893
+      ],
+      [
+       "Axis identifier?",
+       0
+      ],
+      [
+       "error in",
+       5864
+      ]
+     ]
+    },
+    {
+     "diagram": "10",
+     "uid": 44036,
+     "nodeterms_named": [
+      [
+       "error out",
+       0
+      ],
+      [
+       "VISA out",
+       44101
+      ],
+      [
+       "error in (no error)",
+       0
+      ],
+      [
+       "Position [internal units]",
+       44089
+      ],
+      [
+       "Axis",
+       44104
+      ],
+      [
+       "VISA in",
+       44107
+      ]
+     ],
+     "netmap_terms": [
+      [
+       "error out",
+       0
+      ],
+      [
+       "VISA out",
+       44101
+      ]
+     ]
+    },
+    {
+     "diagram": "12",
+     "uid": 44196,
+     "nodeterms_named": [
+      [
+       "error out",
+       0
+      ],
+      [
+       "position [internal units]",
+       44235
+      ],
+      [
+       "VISA out",
+       44238
+      ],
+      [
+       "error in (no error)",
+       0
+      ],
+      [
+       "Axis",
+       44244
+      ],
+      [
+       "VISA in",
+       44241
+      ]
+     ],
+     "netmap_terms": [
+      [
+       "error out",
+       0
+      ],
+      [
+       "position [internal units]",
+       44235
+      ],
+      [
+       "VISA out",
+       44238
+      ]
+     ]
+    },
+    {
+     "diagram": "15",
+     "uid": 7774,
+     "nodeterms_named": [
+      [
+       "error out",
+       0
+      ],
+      [
+       "previous cursor ID",
+       0
+      ],
+      [
+       "error in (no error)",
+       0
+      ],
+      [
+       "VI reference (current VI)",
+       0
+      ],
+      [
+       "icon",
+       7834
+      ]
+     ],
+     "netmap_terms": [
+      [
+       "error out",
+       0
+      ],
+      [
+       "previous cursor ID",
+       0
+      ]
+     ]
+    },
+    {
+     "diagram": "17",
+     "uid": 9944,
+     "nodeterms_named": [
+      [
+       "error out",
+       0
+      ],
+      [
+       "previous cursor ID",
+       0
+      ],
+      [
+       "error in (no error)",
+       0
+      ],
+      [
+       "VI reference (current VI)",
+       0
+      ],
+      [
+       "icon",
+       10034
+      ]
+     ],
+     "netmap_terms": [
+      [
+       "error out",
+       0
+      ],
+      [
+       "previous cursor ID",
+       0
+      ]
+     ]
+    },
+    {
+     "diagram": "19",
+     "uid": 637,
+     "nodeterms_named": [
+      [
+       "error out",
+       697
+      ],
+      [
+       "error out",
+       925
+      ],
+      [
+       "x,y,z array out",
+       0
+      ],
+      [
+       "x,y,z array out",
+       2731
+      ],
+      [
+       "Value",
+       6910
+      ],
+      [
+       "Real-space cosine window",
+       5786
+      ]
+     ],
+     "netmap_terms": [
+      [
+       "error out",
+       697
+      ],
+      [
+       "error out",
+       925
+      ],
+      [
+       "x,y,z array out",
+       0
+      ],
+      [
+       "x,y,z array out",
+       2731
+      ],
+      [
+       "Value",
+       6910
+      ],
+      [
+       "Real-space cosine window",
+       5786
+      ]
+     ]
+    },
+    {
+     "diagram": "19",
+     "uid": 6384,
+     "nodeterms_named": [
+      [
+       "error out",
+       1920
+      ],
+      [
+       "desired # data points",
+       2362
+      ],
+      [
+       "cal cluster path",
+       21
+      ],
+      [
+       "actual # data points",
+       4337
+      ],
+      [
+       "error in",
+       1899
+      ],
+      [
+       "data array",
+       4564
+      ]
+     ],
+     "netmap_terms": [
+      [
+       "error out",
+       1920
+      ]
+     ]
+    }
+   ],
+   "nodes_with_shortfall": 130
+  },
+  "n_unnamed_and_wired_terminals": 156,
+  "consequence": "state counts as WIRED TERMINALS; the netmap `terms` array is NOT a terminal census and its indices are not terminal indices"
+ },
+ "gates": {
+  "pass": 19,
+  "fail": 2
+ },
+ "table": [
+  {
+   "owner_uid": 10407,
+   "terminal_index": 0,
+   "terminal_name": "",
+   "is_source": false,
+   "source_or_sink": "sink",
+   "action_verbatim": "cross-loop:1.2->1.5",
+   "wire": 10799,
+   "json_line": 1748,
+   "dest_row": "1.5",
+   "other_end": [
+    {
+     "kind": "node",
+     "uid": 10686,
+     "i": 0,
+     "name": "x .and. y?",
+     "sits_on": "#639 (diagram idx 43, owner class WhileLoop)",
+     "moves_with_1.5_set": false,
+     "planned_dest_row": "1.2"
+    }
+   ],
+   "required": "UNKNOWN (neither d1_rewire_sources.json nor d1-build-plan.md section 6 carries a LabVIEW Required flag)",
+   "construction_verb": "queue endpoint (Q_focus, d1-build-plan.md:424-429)"
+  },
+  {
+   "owner_uid": 10407,
+   "terminal_index": 1,
+   "terminal_name": "# slices in stack",
+   "is_source": false,
+   "source_or_sink": "sink",
+   "action_verbatim": "from-tunnel",
+   "wire": 9635,
+   "json_line": 1775,
+   "dest_row": "1.5",
+   "other_end": [
+    {
+     "kind": "tunnel",
+     "uid": 9641,
+     "index_mode": 0,
+     "out_name": "# slices in stack",
+     "outer_wire": 9649,
+     "outer_source": null,
+     "sits_on": "border of WhileLoop #637; outer terminal on #686 (diagram idx 19, owner class FlatSequenceFrame)"
+    }
+   ],
+   "required": "UNKNOWN (neither d1_rewire_sources.json nor d1-build-plan.md section 6 carries a LabVIEW Required flag)",
+   "construction_verb": "border tunnel (created on the new 1.5 loop)"
+  },
+  {
+   "owner_uid": 10407,
+   "terminal_index": 2,
+   "terminal_name": "Index of closest\ncal image slice, bead 2",
+   "is_source": false,
+   "source_or_sink": "sink",
+   "action_verbatim": "cross-loop:1.2->1.5",
+   "wire": 10990,
+   "json_line": 1793,
+   "dest_row": "1.5",
+   "other_end": [
+    {
+     "kind": "node",
+     "uid": 10757,
+     "i": 1,
+     "name": "element",
+     "sits_on": "#639 (diagram idx 43, owner class WhileLoop)",
+     "moves_with_1.5_set": false,
+     "planned_dest_row": "1.2"
+    }
+   ],
+   "required": "UNKNOWN (neither d1_rewire_sources.json nor d1-build-plan.md section 6 carries a LabVIEW Required flag)",
+   "construction_verb": "queue endpoint (Q_focus, d1-build-plan.md:424-429)"
+  },
+  {
+   "owner_uid": 10407,
+   "terminal_index": 3,
+   "terminal_name": "Outgoing Handle",
+   "is_source": false,
+   "source_or_sink": "sink",
+   "action_verbatim": "same-loop",
+   "wire": 11232,
+   "json_line": 1820,
+   "dest_row": "1.5",
+   "other_end": [
+    {
+     "kind": "node",
+     "uid": 48,
+     "i": 6,
+     "name": "Outgoing Handle",
+     "sits_on": "#639 (diagram idx 43, owner class WhileLoop)",
+     "moves_with_1.5_set": true,
+     "planned_dest_row": "1.5"
+    }
+   ],
+   "required": "UNKNOWN (neither d1_rewire_sources.json nor d1-build-plan.md section 6 carries a LabVIEW Required flag)",
+   "construction_verb": "move_in both ends, then re-wire INSIDE the new 1.5 loop"
+  },
+  {
+   "owner_uid": 10407,
+   "terminal_index": 4,
+   "terminal_name": "VISA out",
+   "is_source": true,
+   "source_or_sink": "source",
+   "action_verbatim": "to-sr",
+   "wire": 7337,
+   "json_line": 1847,
+   "dest_row": "1.5",
+   "other_end": [
+    {
+     "kind": "shift-register",
+     "right": 4334,
+     "left": 4344,
+     "row": "1.5",
+     "side": "right-in",
+     "sits_on": "to be CREATED on the new 1.5 loop (d1-build-plan.md:402)"
+    }
+   ],
+   "required": "UNKNOWN (neither d1_rewire_sources.json nor d1-build-plan.md section 6 carries a LabVIEW Required flag)",
+   "construction_verb": "add_shift_reg / wire_sr -- CREATED, not moved (d1-build-plan.md:402)"
+  },
+  {
+   "owner_uid": 10407,
+   "terminal_index": 5,
+   "terminal_name": "Out position",
+   "is_source": false,
+   "source_or_sink": "sink",
+   "action_verbatim": "same-loop",
+   "wire": 7388,
+   "json_line": 1865,
+   "dest_row": "1.5",
+   "other_end": [
+    {
+     "kind": "node",
+     "uid": 48,
+     "i": 5,
+     "name": "Out position",
+     "sits_on": "#639 (diagram idx 43, owner class WhileLoop)",
+     "moves_with_1.5_set": true,
+     "planned_dest_row": "1.5"
+    }
+   ],
+   "required": "UNKNOWN (neither d1_rewire_sources.json nor d1-build-plan.md section 6 carries a LabVIEW Required flag)",
+   "construction_verb": "move_in both ends, then re-wire INSIDE the new 1.5 loop"
+  },
+  {
+   "owner_uid": 10407,
+   "terminal_index": 6,
+   "terminal_name": "position [internal units]",
+   "is_source": true,
+   "source_or_sink": "source",
+   "action_verbatim": "to-sr",
+   "wire": 9113,
+   "json_line": 1892,
+   "dest_row": "1.5",
+   "other_end": [
+    {
+     "kind": "node",
+     "uid": 12589,
+     "i": 1,
+     "name": "position [internal units]",
+     "sits_on": "#639 (diagram idx 43, owner class WhileLoop)",
+     "moves_with_1.5_set": false,
+     "planned_dest_row": "UNKNOWN (no row of its own)"
+    },
+    {
+     "kind": "shift-register",
+     "right": 4256,
+     "left": 4274,
+     "row": "1.5",
+     "side": "right-in",
+     "sits_on": "to be CREATED on the new 1.5 loop (d1-build-plan.md:402)"
+    }
+   ],
+   "required": "UNKNOWN (neither d1_rewire_sources.json nor d1-build-plan.md section 6 carries a LabVIEW Required flag)",
+   "construction_verb": "add_shift_reg / wire_sr -- CREATED, not moved (d1-build-plan.md:402)"
+  },
+  {
+   "owner_uid": 48,
+   "terminal_index": 0,
+   "terminal_name": "-Inc reference",
+   "is_source": false,
+   "source_or_sink": "sink",
+   "action_verbatim": "same-loop",
+   "wire": 4833,
+   "json_line": 1919,
+   "dest_row": "1.5",
+   "other_end": [
+    {
+     "kind": "node",
+     "uid": 3529,
+     "i": 0,
+     "name": "- Inc (PgDn)",
+     "sits_on": "#639 (diagram idx 43, owner class WhileLoop)",
+     "moves_with_1.5_set": true,
+     "planned_dest_row": "1.5"
+    }
+   ],
+   "required": "UNKNOWN (neither d1_rewire_sources.json nor d1-build-plan.md section 6 carries a LabVIEW Required flag)",
+   "construction_verb": "move_in both ends, then re-wire INSIDE the new 1.5 loop"
+  },
+  {
+   "owner_uid": 48,
+   "terminal_index": 1,
+   "terminal_name": "+Inc reference",
+   "is_source": false,
+   "source_or_sink": "sink",
+   "action_verbatim": "same-loop",
+   "wire": 2819,
+   "json_line": 1946,
+   "dest_row": "1.5",
+   "other_end": [
+    {
+     "kind": "node",
+     "uid": 3560,
+     "i": 0,
+     "name": "+ Inc (PgUp)",
+     "sits_on": "#639 (diagram idx 43, owner class WhileLoop)",
+     "moves_with_1.5_set": true,
+     "planned_dest_row": "1.5"
+    }
+   ],
+   "required": "UNKNOWN (neither d1_rewire_sources.json nor d1-build-plan.md section 6 carries a LabVIEW Required flag)",
+   "construction_verb": "move_in both ends, then re-wire INSIDE the new 1.5 loop"
+  },
+  {
+   "owner_uid": 48,
+   "terminal_index": 2,
+   "terminal_name": "Focus inc reference",
+   "is_source": false,
+   "source_or_sink": "sink",
+   "action_verbatim": "same-loop",
+   "wire": 1893,
+   "json_line": 1973,
+   "dest_row": "1.5",
+   "other_end": [
+    {
+     "kind": "node",
+     "uid": 3447,
+     "i": 0,
+     "name": "Focus Step (F1)",
+     "sits_on": "#639 (diagram idx 43, owner class WhileLoop)",
+     "moves_with_1.5_set": true,
+     "planned_dest_row": "1.5"
+    }
+   ],
+   "required": "UNKNOWN (neither d1_rewire_sources.json nor d1-build-plan.md section 6 carries a LabVIEW Required flag)",
+   "construction_verb": "move_in both ends, then re-wire INSIDE the new 1.5 loop"
+  },
+  {
+   "owner_uid": 48,
+   "terminal_index": 3,
+   "terminal_name": "VISA resource name",
+   "is_source": false,
+   "source_or_sink": "sink",
+   "action_verbatim": "from-sr",
+   "wire": 1731,
+   "json_line": 2000,
+   "dest_row": "1.5",
+   "other_end": [
+    {
+     "kind": "shift-register",
+     "right": 4334,
+     "left": 4344,
+     "row": "1.5",
+     "side": "left-in",
+     "sits_on": "to be CREATED on the new 1.5 loop (d1-build-plan.md:402)"
+    }
+   ],
+   "required": "UNKNOWN (neither d1_rewire_sources.json nor d1-build-plan.md section 6 carries a LabVIEW Required flag)",
+   "construction_verb": "add_shift_reg / wire_sr -- CREATED, not moved (d1-build-plan.md:402)"
+  },
+  {
+   "owner_uid": 48,
+   "terminal_index": 4,
+   "terminal_name": "In position",
+   "is_source": false,
+   "source_or_sink": "sink",
+   "action_verbatim": "from-sr",
+   "wire": 3947,
+   "json_line": 2018,
+   "dest_row": "1.5",
+   "other_end": [
+    {
+     "kind": "shift-register",
+     "right": 4256,
+     "left": 4274,
+     "row": "1.5",
+     "side": "left-in",
+     "sits_on": "to be CREATED on the new 1.5 loop (d1-build-plan.md:402)"
+    }
+   ],
+   "required": "UNKNOWN (neither d1_rewire_sources.json nor d1-build-plan.md section 6 carries a LabVIEW Required flag)",
+   "construction_verb": "add_shift_reg / wire_sr -- CREATED, not moved (d1-build-plan.md:402)"
+  },
+  {
+   "owner_uid": 48,
+   "terminal_index": 5,
+   "terminal_name": "Out position",
+   "is_source": true,
+   "source_or_sink": "source",
+   "action_verbatim": "source-side",
+   "wire": 7388,
+   "json_line": 2036,
+   "dest_row": "1.5",
+   "other_end": [
+    {
+     "kind": "node",
+     "uid": 10407,
+     "i": 5,
+     "name": "Out position",
+     "sits_on": "#639 (diagram idx 43, owner class WhileLoop)",
+     "moves_with_1.5_set": true,
+     "planned_dest_row": "1.5"
+    }
+   ],
+   "required": "UNKNOWN (neither d1_rewire_sources.json nor d1-build-plan.md section 6 carries a LabVIEW Required flag)",
+   "construction_verb": "move_in both ends, then re-wire INSIDE the new 1.5 loop"
+  },
+  {
+   "owner_uid": 48,
+   "terminal_index": 6,
+   "terminal_name": "Outgoing Handle",
+   "is_source": true,
+   "source_or_sink": "source",
+   "action_verbatim": "source-side",
+   "wire": 11232,
+   "json_line": 2066,
+   "dest_row": "1.5",
+   "other_end": [
+    {
+     "kind": "node",
+     "uid": 10407,
+     "i": 3,
+     "name": "Outgoing Handle",
+     "sits_on": "#639 (diagram idx 43, owner class WhileLoop)",
+     "moves_with_1.5_set": true,
+     "planned_dest_row": "1.5"
+    }
+   ],
+   "required": "UNKNOWN (neither d1_rewire_sources.json nor d1-build-plan.md section 6 carries a LabVIEW Required flag)",
+   "construction_verb": "move_in both ends, then re-wire INSIDE the new 1.5 loop"
+  },
+  {
+   "owner_uid": 3529,
+   "terminal_index": 0,
+   "terminal_name": "- Inc (PgDn)",
+   "is_source": true,
+   "source_or_sink": "source",
+   "action_verbatim": "source-side",
+   "wire": 4833,
+   "json_line": 2096,
+   "dest_row": "1.5",
+   "other_end": [
+    {
+     "kind": "node",
+     "uid": 48,
+     "i": 0,
+     "name": "-Inc reference",
+     "sits_on": "#639 (diagram idx 43, owner class WhileLoop)",
+     "moves_with_1.5_set": true,
+     "planned_dest_row": "1.5"
+    }
+   ],
+   "required": "UNKNOWN (neither d1_rewire_sources.json nor d1-build-plan.md section 6 carries a LabVIEW Required flag)",
+   "construction_verb": "move_in both ends, then re-wire INSIDE the new 1.5 loop"
+  },
+  {
+   "owner_uid": 3560,
+   "terminal_index": 0,
+   "terminal_name": "+ Inc (PgUp)",
+   "is_source": true,
+   "source_or_sink": "source",
+   "action_verbatim": "source-side",
+   "wire": 2819,
+   "json_line": 2126,
+   "dest_row": "1.5",
+   "other_end": [
+    {
+     "kind": "node",
+     "uid": 48,
+     "i": 1,
+     "name": "+Inc reference",
+     "sits_on": "#639 (diagram idx 43, owner class WhileLoop)",
+     "moves_with_1.5_set": true,
+     "planned_dest_row": "1.5"
+    }
+   ],
+   "required": "UNKNOWN (neither d1_rewire_sources.json nor d1-build-plan.md section 6 carries a LabVIEW Required flag)",
+   "construction_verb": "move_in both ends, then re-wire INSIDE the new 1.5 loop"
+  },
+  {
+   "owner_uid": 3447,
+   "terminal_index": 0,
+   "terminal_name": "Focus Step (F1)",
+   "is_source": true,
+   "source_or_sink": "source",
+   "action_verbatim": "source-side",
+   "wire": 1893,
+   "json_line": 2156,
+   "dest_row": "1.5",
+   "other_end": [
+    {
+     "kind": "node",
+     "uid": 48,
+     "i": 2,
+     "name": "Focus inc reference",
+     "sits_on": "#639 (diagram idx 43, owner class WhileLoop)",
+     "moves_with_1.5_set": true,
+     "planned_dest_row": "1.5"
+    }
+   ],
+   "required": "UNKNOWN (neither d1_rewire_sources.json nor d1-build-plan.md section 6 carries a LabVIEW Required flag)",
+   "construction_verb": "move_in both ends, then re-wire INSIDE the new 1.5 loop"
+  }
+ ]
+}

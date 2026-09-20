@@ -1,0 +1,86 @@
+BGRUN START 2026-09-14 23:11:07 limit 9.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & '.\tools\peer.ps1' -Agent codex -Slug wiresr-test-fail1-watchdog-modal -TimeoutSec 300 -Task (Get-Content -Raw '.\tools\bench\peer_task_wiresr_modal.txt')
+OUTCOME: ANSWERED (73s)  archived: archive\peer\2026-09-14-wiresr-test-fail1-watchdog-modal.md
+--- ANSWER ---
+The current evidence favors a watchdog false positive, but it does not establish your specific mechanism (?�New VI Object disables the FP??. The strongest diagnosis is narrower: an ordinary VI editor window was the sole enabled candidate when sampled.
+
+1. Best fit and cheapest discriminator
+
+Ranking:
+
+1. **Window-state race / overbroad candidate rule (c)** ??best supported.
+2. **Long Vision load producing an unusual disabled/enabled editor state (b)** ??plausible contributor.
+3. **A real dialog (a)** ??possible, but poorly supported.
+
+Why this attacks the diagnosis:
+
+- `Get-DialogCandidates` does not detect dialogs. It accepts every visible, positive-size, enabled LabVIEW top-level window except seven exact palette titles: [tools/lv_gui.ps1](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/lv_gui.ps1:435).
+- Consequently, ?�one blocked window plus one enabled editor window??is sufficient for `VERDICT: BLOCKED`. The claim at line 495 that it ?�can never close a VI window??is contradicted by the implementation.
+- `_run` captures the screenshot before calling `dismiss`: [tools/gscript.py](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/gscript.py:180). Therefore, if the screenshot captured the relevant LabVIEW windows and contains no dialog, the watchdog itself did not close a real dialog before that screenshot. Explanation (a) requires an additional race?�such as the dialog disappearing independently during screenshot capture.
+- The roughly eight-second duration is not evidence for an eight-second LabVIEW blockage. The first classification can occur at the six-second poll, followed by screenshot/dismiss overhead, while `_run` raises solely because `hits` is nonempty even though COM returned normally.
+- The earlier successful identical drop is a counterexample to a deterministic claim that dropping `IMAQ Copy` necessarily raises a load/find dialog. It does not exclude cold-load behavior.
+
+The cheapest decisive test is one instrumented repeat that records, without interpretation:
+
+- timestamp;
+- every raw `WinStates` row;
+- the exact row selected as `$cand`;
+- HWND, title, class name, owner HWND, process/thread ID;
+- the same data immediately before `WM_CLOSE`;
+- COM-return timestamp.
+
+At the triggering sample:
+
+- Candidate title `??Block Diagram` proves this incident was a false positive.
+- Candidate title resembling a load/find/error prompt, with an owner, supports (a).
+- A multi-sample trace showing FP disabled for seconds while BD stays enabled, correlated with first Vision load, supports (b).
+- A one-sample transition around BD creation supports (c).
+
+Log at roughly 100??50 ms for this test; the current six-second sampling cannot distinguish a transient race from a sustained load state. Critically, do not dismiss anything unless the candidate passes the hardened dialog test.
+
+2. Does LabVIEW disable the FP during scripting or BD opening?
+
+I found no NI documentation saying that opening a block diagram or applying `New VI Object` disables its front panel. NI documents that the front panel and block diagram are separate editor views and that opening a VI normally opens its FP, with the BD shown separately; it does not document modal exclusion between them. [NI: LabVIEW Block Diagram Explained](https://www.ni.com/en/support/documentation/supplemental/08/labview-block-diagram-explained.html)
+
+Windows??enabled flag only means that the window currently accepts keyboard/mouse input; it does not identify why the application disabled it or prove that a modal dialog exists. [Microsoft: EnableWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-enablewindow)
+
+Therefore the FP-disable mechanism is presently **unproven**. The successful earlier drop also argues against treating it as an invariant of `New VI Object`. Only the proposed raw state trace?�or a controlled reporter supplied by the manager?�can settle whether LabVIEW 2026 transiently disables the FP here.
+
+3. Is `WM_CLOSE` on the BD harmless?
+
+Not safely harmless.
+
+`PostMessage(WM_CLOSE)` requests that the target window close. The application may destroy the window, ignore the request, or prompt for confirmation; Windows does not guarantee application-specific semantics. [Microsoft: WM_CLOSE](https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-close)
+
+Closing a BD window probably does not unload a VI whose reference remains open, but that is weaker than ?�harmless??
+
+- It changes editor/UI state during an active scripting operation.
+- It could invoke LabVIEW close/save handling.
+- It can invalidate assumptions about which FP/BD windows are open.
+- It introduces a race with the operation currently mutating that diagram.
+
+I found no NI source guaranteeing that externally posting `WM_CLOSE` to a BD during VI Scripting preserves the scripting transaction. Treat it as unsafe even if the observed VI reference survives.
+
+4. Hardening
+
+The minimum necessary fix is:
+
+- Never classify titles ending in `Block Diagram` or `Front Panel` as dismissible.
+- Never send `WM_CLOSE` unless the candidate is independently identified as a dialog/popup.
+- Log the candidate row and revalidate the same HWND immediately before closing it.
+
+A stronger rule should require all of:
+
+1. enabled, visible, positive-size;
+2. not an FP, BD, palette, project, probe, or other known editor window;
+3. dialog-like class or popup/dialog window style;
+4. preferably a non-null owner belonging to LabVIEW;
+5. at least one disabled LabVIEW editor window associated with that owner/application;
+6. same HWND/class/title still qualifying on a second sample;
+7. exact HWND revalidated immediately before dismissal.
+
+Windows supplies `GW_OWNER` specifically to retrieve a top-level window?�s owner, and `GW_ENABLEDPOPUP` can find an enabled popup owned by another window. [Microsoft: GetWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindow) `GetClassName` supplies the candidate?�s registered window class. [Microsoft: GetClassNameW](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getclassnamew)
+
+Do not rely exclusively on `#32770`: LabVIEW may use custom dialog classes. Use class/owner/style/title as evidence, with an explicit denylist for VI editor titles. If no qualifying dialog remains, report `ambiguous` and let the COM hard timeout handle it?�never close the sole enabled ordinary LabVIEW window.
+
+Files read: `STATUS.md`, `tools/lv_gui.ps1`, and `tools/gscript.py`. I did not open any VI, project, library, archive, recipe, or benchmark file.
+BGRUN END rc=0 after 73s

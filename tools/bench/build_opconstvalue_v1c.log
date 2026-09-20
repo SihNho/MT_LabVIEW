@@ -1,0 +1,70 @@
+BGRUN START 2026-09-15 05:06:07 limit 15.0 min: py -u tools/recipes/build_opconstvalue_v1c.py
+   PASS S the v1b op (Flatten labels) and the creator/donor VIs exist 
+   LabVIEW pid before: 21912
+   COM preflight OK (pid 21912, two round-trips agree: 16 wires)
+   PASS A Flatten.'data string' is wired (v1b indicator) 637
+   PASS A exactly one new SubVI (hex VI) [632]
+   PASS A exactly one new control (U8[] seed) on hexVI.'bytes' ['bytes']
+   PASS A the U8[] control survives, unwired 
+   PASS B exactly one new Unflatten From String [638]
+   PASS B Flatten.'data string' -> Unflatten.'binary string' (branch) shares the wire uid on both ends 637/637/637
+   PASS C U8[] control -> Unflatten.'type' on both ends 
+   PASS C exactly one new Boolean control on 'data includes array or string size?' ['data includes array or string size? (T)']
+   PASS D Unflatten.'value' -> hexVI.'bytes' on both ends 751/751
+   PASS D indicator on 'hex string' ['hex string']
+   PASS D indicator on 'value' ['value']
+   PASS D indicator on 'rest of the binary string' ['rest of the binary string']
+   PASS E op runnable before the save 1
+   labels {'seed': 'reference', 'value': 'Value', 'data': 'data string', 'type': 'type string (7.x only)', 'u8type': 'bytes', 'size': 'data includes array or string size? (T)', 'hex': 'hex string', 'u8': 'value', 'rest': 'rest of the binary string'}
+   PASS T index 7 in range for StringConstant 22
+   PASS T size control reads back False before the run 
+   StringConstant[7] uid=22950 cls2='StringConstant' n=22 hex='260080000000000100164030ffffffff0d666f726d6 u8=53B rest='' same=True -> code=48 val=None v0x26008000 tds=[48] body=19B/65540 attrs=0 
+   PASS T StringConstant[7] identity (UID, class, # of Refs) matches the reporter, no error 
+   PASS T strict lowercase hex == U8 SAFEARRAY bytes, remainder empty 
+   PASS T the bytes contain b'img%05d.tif' (framing-independent) 260080000000000100164030ffffffff0d666f726d617420737472696e67000100000000000b696d
+   FAIL T HYPOTHESIS-A framing decodes StringConstant[7] exactly (TD 0x30) 48 None
+   PASS T(finally) the main VI file is byte-identical and untouched after the reads
+
+STOP at gate: T HYPOTHESIS-A framing decodes StringConstant[7] exactly (TD 0x30)
+BGRUN END rc=1 after 121s
+BGRUN START 2026-09-15 05:11:31 limit 15.0 min: py -u tools/recipes/build_opconstvalue_v1c.py --test-only
+   PASS S the v1b op (Flatten labels) and the creator/donor VIs exist 
+   LabVIEW pid before: 21912
+   COM preflight OK (pid 21912, two round-trips agree: 16 wires)
+   PASS S the byte-route labels exist from a passed build {'seed': 'reference', 'value': 'Value', 'data': 'data string', 'type': 'type string (7.x only)', 'u8type': 'bytes', 'size': 'data includes array or string size? (T)', 'hex': 'hex string', 'u8': 'value', 'rest': 'rest of the binary string'}
+   PASS T index 7 in range for StringConstant 22
+   PASS T size control reads back False before the run 
+   StringConstant[7] uid=22950 cls2='StringConstant' n=22 hex='260080000000000100164030ffffffff0d666f726d6 u8=53B rest='' same=True -> code=48 val='img%05d.tif' v0x26008000 tds=[48] body=15B/15 attrs=0 
+   PASS T StringConstant[7] identity (UID, class, # of Refs) matches the reporter, no error 
+   PASS T strict lowercase hex == U8 SAFEARRAY bytes, remainder empty 
+   PASS T the bytes contain b'img%05d.tif' (framing-independent) 260080000000000100164030ffffffff0d666f726d617420737472696e67000100000000000b696d
+   PASS T HYPOTHESIS-A framing decodes StringConstant[7] exactly (TD 0x30) 48 'img%05d.tif'
+   PASS T index 0 in range for DigitalNumericConstant 180
+   PASS T size control reads back False before the run 
+   DigitalNumericConstant[0] uid=3683 cls2='DigitalNumericConstant' n=180 hex='2600800000000001000400000001000000000000' u8=20B rest='' same=True -> code=0 val=None v0x26008000 tds=[0] unhandled body= attrs=0 
+   PASS T DigitalNumericConstant[0] identity, no error, hex == u8 bytes, remainder empty 
+   PASS T index 1 in range for DigitalNumericConstant 180
+   PASS T size control reads back False before the run 
+   DigitalNumericConstant[1] uid=3130 cls2='DigitalNumericConstant' n=180 hex='2600800000000001000400000001000000000000' u8=20B rest='' same=True -> code=0 val=None v0x26008000 tds=[0] unhandled body= attrs=0 
+   PASS T DigitalNumericConstant[1] identity, no error, hex == u8 bytes, remainder empty 
+   PASS T index 2 in range for DigitalNumericConstant 180
+   PASS T size control reads back False before the run 
+   DigitalNumericConstant[2] uid=3575 cls2='DigitalNumericConstant' n=180 hex='2600800000000001000400000001000000000000' u8=20B rest='' same=True -> code=0 val=None v0x26008000 tds=[0] unhandled body= attrs=0 
+   PASS T DigitalNumericConstant[2] identity, no error, hex == u8 bytes, remainder empty 
+   PASS T index 3 in range for DigitalNumericConstant 180
+   PASS T size control reads back False before the run 
+   DigitalNumericConstant[3] uid=10631 cls2='DigitalNumericConstant' n=180 hex='2600800000000001000400000001000000000000' u8=20B rest='' same=True -> code=0 val=None v0x26008000 tds=[0] unhandled body= attrs=0 
+   PASS T DigitalNumericConstant[3] identity, no error, hex == u8 bytes, remainder empty 
+   PASS T index 4 in range for DigitalNumericConstant 180
+   PASS T size control reads back False before the run 
+   DigitalNumericConstant[4] uid=27549 cls2='DigitalNumericConstant' n=180 hex='2600800000000001000400000001000000000000' u8=20B rest='' same=True -> code=0 val=None v0x26008000 tds=[0] unhandled body= attrs=0 
+   PASS T DigitalNumericConstant[4] identity, no error, hex == u8 bytes, remainder empty 
+   PASS T index 5 in range for DigitalNumericConstant 180
+   PASS T size control reads back False before the run 
+   DigitalNumericConstant[5] uid=27561 cls2='DigitalNumericConstant' n=180 hex='2600800000000001000400000001000000000000' u8=20B rest='' same=True -> code=0 val=None v0x26008000 tds=[0] unhandled body= attrs=0 
+   PASS T DigitalNumericConstant[5] identity, no error, hex == u8 bytes, remainder empty 
+   FAIL T all 6 numeric constants decode from a numeric TD (consumed exactly, finite), not all identical []
+   PASS T(finally) the main VI file is byte-identical and untouched after the reads
+
+STOP at gate: T all 6 numeric constants decode from a numeric TD (consumed exactly, finite), not all identical
+BGRUN END rc=1 after 219s

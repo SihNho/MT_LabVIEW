@@ -1,0 +1,162 @@
+BGRUN START 2026-09-15 00:34:00 limit 9.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & '.\tools\peer.ps1' -Agent codex -Slug stage2-cycle4-replay-core-recipe -TimeoutSec 300 -Task (Get-Content -Raw '.\tools\bench\peer_task_core.txt')
+OUTCOME: ANSWERED (161s)  archived: archive\peer\2026-09-15-stage2-cycle4-replay-core-recipe.md
+--- ANSWER ---
+Verdict: do not run this recipe unchanged. The construction route is plausible, but the recipe does not implement its claimed ?�first miss stops??contract, does not prove H3?�s exact types, assumes two undocumented enumeration orders in Phase R, and compares only one of the kernel?�s three state outputs.
+
+## Blocking findings
+
+1. `check()` does not stop the build.
+
+Every failed prediction merely appends `False` and execution continues. The VI can undergo many subsequent mutations after the first failure; only the final save is suppressed. This directly contradicts the recipe header and makes every risky intermediate phase harder to diagnose. See [`check()` and `build()`](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/recipes/build_track_v6_core.py:72).
+
+Make structural checks fatal immediately, particularly after H3, L3, every register connection, output-tunnel selection, and before the fixture run. Also avoid expressions such as `new_t[0]` and `xyz_t[0]` before their cardinalities have been asserted.
+
+2. Phase T validates only `x,y,z array out`.
+
+The reference recorder preserved and compared all three outputs: XYZ, good flags, and calibration positions. The new recipe reads only `XYZ`. A wrong Boolean/I32 register connection or a changed `pos in cal image` sequence could escape until it eventually changes XYZ. Compare all three output histories per iteration, not merely XYZ. See [run_fixture_compare.py](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/bench/run_fixture_compare.py:82) versus [build_track_v6_core.py](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/recipes/build_track_v6_core.py:248).
+
+## Answers to the six attacks
+
+### 1. H3 temporary kernel controls
+
+Creating a control from a terminal should create an independent front-panel control and diagram terminal of that terminal?�s current datatype. Deleting the SubVI should not delete those controls. ?�Remove Broken Wires??removes broken wires, not controls, although NI explicitly warns that it can remove wires which are merely incomplete during editing. [NI: Using Wires to Link Block Diagram Objects](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+The present gate is nevertheless insufficient:
+
+- It proves labels and `wire == 0`.
+- It does not prove DBL[] / Boolean[] / I32[] / I32 / I32.
+- It does not prove the five control UIDs survived; it rediscovers objects by label.
+- It does not census other objects before and after deletion, so accidental collateral deletion is not detected.
+- It does not verify that only the temporary SubVI and its five wires disappeared.
+
+Cheapest safe test:
+
+- Snapshot each newly created control?�s UID, terminal UID, datatype descriptor/type string, rank, and indicator/control direction before deleting the kernel.
+- Delete the temporary SubVI.
+- Run scripted Remove Bad Wires.
+- Re-read those same control and terminal UIDs and exact types.
+- Assert the complete object delta: `SubVI ??`, the expected temporary wires removed, controls unchanged, all five terminal wires zero, no unrelated UID lost.
+
+If the fleet cannot read terminal types, use a disposable scratch VI and connect each control to the corresponding terminal of a second kernel instance. `ExecState == 1` proves compatibility, but a descriptor/type readback is stronger because coercible numeric types could compile with a coercion.
+
+### 2. L3 array?�scalar broken wire followed by `IndexMode = 1`
+
+NI documents the semantic result: an auto-indexed For-loop input presents one array element per iteration and changing a tunnel between indexed and non-indexed modes changes the inside/outside datatype relationship. It does not publicly guarantee that changing `IndexMode` will preserve and heal an already-broken scripted wire. [NI: Auto-Indexing Tunnels](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000PAghSAG)
+
+Therefore the proposed healing is an experiment, not a safe assembly assumption.
+
+The current discriminators are weak:
+
+- `IndexMode == 1`
+- `StrToPath.string` has a nonzero wire UID
+
+A broken wire also has a UID. The discriminating readback is:
+
+- inner tunnel terminal wire UID equals the `StrToPath.string` wire UID;
+- wire `Broken? == false`, or equivalent wire/connection error status;
+- tunnel outer side remains connected to `Frame Paths`;
+- inner terminal datatype is scalar String;
+- `ExecState` changes to the expected state immediately after this operation.
+
+`tunnels()` already exposes outside connection/wire errors and inner wire UIDs, but the recipe does not inspect them.
+
+The safer order is to create the indexed tunnel first and only then wire its scalar inner terminal. Cycle 3 already proved `for_loop(..., tunnels=[Frame Paths], indexing=[1])` with a String[] control. However, the current fleet still needs an operation that connects the existing tunnel?�s inside terminal to `StrToPath.string`; calling `wire_control` again may create a second tunnel rather than reuse the first. So the choices are:
+
+- First run a tiny scratch discriminator for the current mutate-after-wire route; or
+- Add a narrow `Loop.Tunnels[] ??Inside Terminals[0] ??Terminal.Connect Wire` operation, then use indexed-tunnel-first ordering.
+
+Do not let `Remove Bad Wires` be the recovery mechanism?�it will delete exactly the desired broken connection. NI warns that bulk removal can discard wires that are broken only because construction is incomplete. [NI wiring warning](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+### 3. Shift-register and panel enumeration order
+
+I found no NI guarantee that `Loop.Shift Registers[]` is creation-ordered. The project?�s measured API says `reg_index` addresses that array, but the recipe ignores the UID returned by each `add_shift_reg()` and assumes indices 0, 1, 2 correspond to creation order.
+
+That assumption must be measured before assembly:
+
+- After each `add_shift_reg`, read the complete `Shift Registers[]`.
+- Locate the returned right-register UID.
+- Record its actual array index and paired left-register UID.
+- Pass those recorded indices to `wire_sr`.
+- After wiring, prove each register?�s three far-end wire UIDs and exact type.
+
+The final `ExecState` gate probably detects a cross-pair here because DBL[], Boolean[], and I32[] are distinct. It is not a sufficient identity gate: it says only that some type-consistent construction compiled. Future same-type registers would defeat it, and it gives poor localization.
+
+The `LeftOutCtl` assumption is similarly unproven. `fp_labels()` describes its enumeration as tabbing order, while `LeftOutCtl` indexes `Panel.Controls[]`; the code assumes they are identical. See [gscript.py](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/gscript.py:505) and [gscript.py](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/gscript.py:2071).
+
+Creation/deletion makes relying on a cached position especially unattractive. Cheapest discriminator: for every current `Panel.Controls[i]`, return `{i, control UID, terminal UID, label}` in the same operation used by `LeftOutCtl`; select by UID/label there, not through a separately assumed enumeration.
+
+### 4. Branching kernel XYZ into an indexed tunnel and a shift register
+
+Semantically this is valid. One scalar value from the current iteration can branch both to:
+
+- the right shift-register input for the next iteration; and
+- an auto-indexed output tunnel that accumulates one value per iteration.
+
+NI describes shift registers as passing the right-side value to the next iteration, while an indexed output tunnel collects a value from every iteration. Those consumers impose no inherent conflict. [NI: Using Shift Registers](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YKYuCAO&l=en-US), [NI: Auto-Indexing Tunnels](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000PAghSAG)
+
+The uncertainty is the scripting operation, not LabVIEW dataflow. The project measured branching from an already-wired source on Index Array, but not this exact `SubVI output ??existing tunnel wire + RightShiftRegister sink` path.
+
+Cheapest scratch test:
+
+- Scalar generator inside a For loop.
+- Wire it first to an indexed output tunnel.
+- Invoke the exact `RightIn` op on the same already-wired source.
+- Assert the source, tunnel inner terminal, and right-register terminal share one logical wire UID.
+- Assert `Broken? == false`, `ExecState == 1`, and run 3?? iterations to verify both accumulated output and feedback.
+
+Also make the branch intent explicit in the op or its gate. A wire-count delta is not useful because adding a branch may not create another Wire object.
+
+### 5. Numerical equivalence
+
+Within the same LabVIEW kernel and datatype, moving DBL state feedback from Python/COM between runs to a shift register does not itself perform arithmetic, so no extra DBL rounding should occur. The shift register simply carries the previous iteration?�s value. [NI: Using Shift Registers](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YKYuCAO&l=en-US)
+
+Still, exact equality can fail without a kernel-computation change because the surrounding execution is not identical:
+
+- The reference ran `HARNESS_compare.vi` once per frame; the new VI keeps the loader, calibration arrays, windows, IMAQ image reference, and kernel call live throughout one multi-iteration run.
+- Any hidden state in the kernel or callees resets per COM run in the reference but persists across loop iterations now.
+- Automatic error handling is disabled and no IMAQ error chain/output is checked. A failed `String To Path` or `IMAQ ReadFile` could reuse/stale the working image rather than produce a cleanly diagnosed failure.
+- The fixture TIFFs, calibration directory, harness, kernel, or callees may have changed since the 2026-09-07 reference. The JSONL contains outputs, not hashes of all executable and input dependencies.
+- `make_default()` modifies `HARNESS_loadcal.vi`; the build relies on its saved default while the driver later sets the same path explicitly. The textual path matches, but current calibration-file contents still need hashes.
+- The pack inputs are recomputed as `nb//4` and `nb%4` in both scripts, so they appear equivalent.
+- `pos in cal image` feedback is equivalent only if the right register is correctly paired and the kernel/callees have no per-run initialization behavior.
+- Recomputing the cosine windows once for the whole run rather than once per frame should produce the same values only if the window VI is pure and sees identical inputs. The exact-equality gate cannot distinguish a window-state/default difference from kernel math.
+- Reusing a single IMAQ image object rather than recreating/resetting the harness per frame is another environmental difference.
+- The new gate compares against `ff`, but the new node is `PARALLEL_kernel_v3clean`; record hashes and dependency identity to establish that ?�clean??did not alter executable logic.
+
+The correct fixture manifest should include hashes/timestamps for all TIFFs used, calibration contents, kernel and all callees, `StrToPath`, loader, and window VI; LabVIEW version/build; bead count, cross size, both pack values, and initial three state arrays.
+
+### 6. Other ungated breakage
+
+Most important additional gaps:
+
+- No true fail-fast behavior.
+- H3 exact types ungated.
+- Register UIDs returned by `add_shift_reg()` are discarded.
+- `Panel.Controls[]` versus `fp_labels()` ordering is assumed.
+- L3 accepts a nonzero broken-wire UID as success.
+- The kernel output-to-register branches are checked only as ?�kernel terminal wire nonzero,??not against the right-register wire UID.
+- LeftOut and LeftIn are not checked against their far ends at all.
+- Output-tunnel discovery selects every tunnel whose outside terminal is a source, then assumes exactly one indexed tunnel. It indexes `xyz_t[0]` before asserting cardinality.
+- `XYZ` is accepted under whatever auto-generated label LabVIEW chooses; its exact type/rank/dimensions are not structurally checked.
+- No error output is collected from `StrToPath`, `IMAQ ReadFile`, loader, window creation, or kernel.
+- Only XYZ is tested; Boolean and I32 state outputs are omitted.
+- The ?�first lost bead??is inferred from any XYZ value exactly equal to `-1.0`. Preserve the reference recorder?�s full three-state logic and explicitly record the cutoff rather than rediscovering it from one output.
+- An empty `Frame Paths` array causes a For loop to execute zero iterations; NI documents that auto-indexed arrays determine the For-loop iteration count. The recipe has no nonempty-input gate. [NI: Auto-Indexing Tunnels](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000PAghSAG)
+- No connector-pane/output exposure is created for the core. COM can read the panel indicator, but a later caller cannot use this VI as a proper subVI until its pane is assigned.
+- `os.remove(OP)` destroys any existing previous build before the first gate. That may be intentional regeneration, but it contradicts the stronger reading of ?�nothing saved on a miss??and removes the last known artifact before success.
+
+## Cheapest preflight sequence
+
+Before the full build:
+
+1. Scratch-test L3 alone and require mode, shared inner wire UID, scalar String type, `Broken? == false`, and immediate `ExecState`.
+2. Scratch-test the exact already-wired-source ??RightIn branch.
+3. Add three registers and map returned UIDs to actual `Shift Registers[]` indices.
+4. Return `Panel.Controls[]` UID/label/index from the same accessor used by `LeftOutCtl`.
+5. Make `check()` raise immediately.
+6. Add exact type/rank gates for all five H3 controls and XYZ.
+7. Compare XYZ, good flags, and calibration positions for every iteration.
+8. Hash the reference inputs and executable dependency set before treating an exact mismatch as a computation regression.
+
+With those changes, the overall assembly design is defensible. Without them, a failure could be misattributed, and several wrong constructions can survive until the final `ExecState` or numerical comparison.
+BGRUN END rc=0 after 161s

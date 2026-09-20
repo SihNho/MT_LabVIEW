@@ -1,0 +1,42 @@
+BGRUN START 2026-09-17 11:57:42 limit 12.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & 'tools/peer.ps1' -Agent codex -Slug connectnested-stall -TimeoutSec 420 -Task (Get-Content -Raw 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\97b1695e-68c2-4985-8cac-1ca3097b3b15\scratchpad\peer_stall_task.txt')
+OUTCOME: ANSWERED (139s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-17-connectnested-stall.md
+--- ANSWER ---
+1. **Strongest reason the claim is wrong:** the log does not locate the stall at `GObject.Move`. It proves only that the outer COM `Run` call for `OpMoveIn_v0.vi` had not returned after 120 seconds.
+
+`move_in()` calls `g._run(vi)` without any instrumentation inside the Op VI ([build_d1_v0.py](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_d1_v0.py:299>)). Therefore, `Move` could have completed and execution could have stalled later in that VI. Run 7 also successfully moved a `ForLoop` and 22 other objects through this same path ([build_d1_v0_run7.log](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_d1_v0_run7.log:76>)), so “moving a For loop into a While body wedges LabVIEW” is contradicted by the project’s own recent result.
+
+2. **Different explanation:** the 28-minute silence most likely came from the first *unguarded* COM call after `_run()` abandoned its timed-out worker.
+
+The sequence is:
+
+- `_run()` waits 120 seconds, notices that its daemon worker is still alive, takes a screenshot, and raises an exception ([gscript.py](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/gscript.py:226>)).
+- The logged `T3 move_in failed (... Screenshot: ...)` proves that screenshot recovery returned and the exception reached the caller ([build_opconnectnested_v0.log](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_opconnectnested_v0.log:130>)). Therefore, the recovery path was not where the remaining 28 minutes disappeared.
+- The next statement is `wb3 = walk(...)` ([build_opconnectnested_v0.py](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_opconnectnested_v0.py:459>)).
+- `walk()` enters `node_labels()`, but before reaching its guarded `_run()`, it performs cached-reference acquisition and several direct `SetControlValue` calls. `op()` itself also uses a direct, unguarded `GetVIReference` on a cache miss ([gscript.py](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/gscript.py:73>)).
+
+The timed-out worker was not cancelled or aborted; it remained alive in its COM `Invoke("Run")`. Python daemon threads continue running until they finish or the process exits; marking one daemon does not cancel its current operation. [Python documents that daemon threads are only abruptly stopped at process shutdown](https://docs.python.org/3/library/threading.html). A later direct COM call can consequently wait behind the unresolved call. COM serializes calls to single-threaded-apartment objects through their message queue, which makes that mechanism technically plausible. [Microsoft COM apartment documentation](https://learn.microsoft.com/en-us/windows/win32/com/processes--threads--and-apartments).
+
+So, ranked:
+
+- **Most likely:** main thread blocked in the first unguarded `GetVIReference`/`SetControlValue` during `walk()`, while the abandoned Run remained outstanding.
+- **Very unlikely:** screenshot/dialog recovery hung—the post-recovery fact line proves it returned.
+- **Effectively excluded:** up to 40 later calls each silently consumed 120 seconds. `node_labels()` is the first walk operation; a timeout in its guarded `_run()` would raise an uncaught exception and terminate the recipe, not remain silent until `bgrun`. Also, 28 minutes permits roughly fourteen 120-second waits, not forty, and there are no handlers there to suppress them.
+
+3. **Observation that would falsify the original claim:** after the timeout, show that the moved For loop is already owned by the While-body diagram while the original `Run` worker is still blocked. That would directly falsify “`GObject.Move` never returned/completed” and place the stall later in the Op VI or its return path.
+
+For discriminating the three silence hypotheses, one Python all-thread dump is even stronger:
+
+- main thread in `_lv_gui`/`subprocess.run` → recovery hung;
+- main thread in `GetVIReference` or `SetControlValue`, plus worker in `disp.Invoke(...Run...)` → abandoned Run poisoned subsequent COM;
+- main thread in `_run()` at `worker.join()` → a later guarded call is consuming another timeout.
+
+Python’s standard `faulthandler.dump_traceback_later()` emits all thread stacks after a chosen delay and is available on Windows. [Python `faulthandler` documentation](https://docs.python.org/3.12/library/faulthandler.html).
+
+4. **Do not simply “drop `move_in`” as the corrective action.** It is reasonable to remove it as an unrelated dependency from the `OpConnectNested` functional test if an existing nested structure already exposes the required unnamed terminal. But call that test isolation, not resolution.
+
+The real D1 build depends on 23 `move_in` calls, and run 7 completed all 23 within the overall 118-second recipe ([build_d1_v0_run7.log](</G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_d1_v0_run7.log:400>)). The defect likely to recur there is the timeout design: `_run()` reports failure while leaving the COM call alive, then permits unguarded COM access. Microsoft explicitly warns that cancelling or abandoning pending COM work can leave orphaned operations and resource loss. [Microsoft COM call-cancellation guidance](https://learn.microsoft.com/en-us/windows/win32/com/canceling-method-calls).
+
+I therefore do **not** believe the claim holds as written. The saved op is separate and was runnable before the failure, but its functional test did not finish; meanwhile, the evidence does not identify `GObject.Move` as the wedged instruction.
+
+**Cheapest discriminating test:** on the next isolated scratch run, arm `faulthandler.dump_traceback_later(150, repeat=True)` immediately before `move_in`. One automatic thread dump will distinguish recovery, the next unguarded COM call, and repeated `_run()` waits without touching LabVIEW or adding another COM client.
+BGRUN END rc=0 after 139s

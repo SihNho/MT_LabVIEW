@@ -1,0 +1,31 @@
+BGRUN START 2026-09-13 00:31:52 limit 12.0 min: py -u -c 
+import os,sys
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+WORK=r'G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi'
+cands=['Local','LocalVariable','Variable','GlobalVariable','Global','ControlTerminal','Terminal','SubVI','PropertyNode','Property','Constant','SharedVariable','FeedbackNode','SequenceLocal']
+for c in cands:
+    try:
+        n=g.count(WORK,c)
+        print('  OK   %-18s %d'%(c,n))
+    except Exception as e:
+        msg=str(e)
+        code='109' if '109' in msg else msg[:60]
+        print('  FAIL %-18s %s'%(c,code))
+
+  OK   Local              8
+  FAIL LocalVariable      109
+  FAIL Variable           109
+  FAIL GlobalVariable     109
+  OK   Global             7
+  OK   ControlTerminal    114
+  OK   Terminal           5763
+  OK   SubVI              98
+  FAIL PropertyNode       109
+  OK   Property           106
+  OK   Constant           301
+  FAIL SharedVariable     109
+  OK   FeedbackNode       0
+  OK   SequenceLocal      7
+BGRUN END rc=0 after 14s

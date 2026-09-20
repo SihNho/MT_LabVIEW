@@ -1,0 +1,11 @@
+BGRUN START 2026-09-18 12:11:27 limit 20.0 min: py tools\prior_art_review.py --plan-file tools\bench\priorart_fstunnel_v2_plan.md --slug fstunnel-v2-preclean --trigger new-op --recipe tools/recipes/build_opfstunnelterm_v2.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_fstunnel-v2-preclean.txt (18713 chars)
+OUTCOME: ANSWERED (424s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-18-priorart-fstunnel-v2-preclean.md
+COST: $4.7805  in 36 / out 27004 / cache-create 281747 / cache-read 2575428  (422s, 28 turn(s))
+--- ANSWER ---
+Write is disabled this session, as in the 2026-09-17 and 2026-09-18 prior-art dispatches — so the review above is the deliverable in full, which is what `peer.ps1` archives.
+
+**Summary for the judgement session:** 4 findings, 0 `novel`, so the launch gate arms against `tools/recipes/build_opfstunnelterm_v2.py`. The load-bearing one is A1 — gate A0b asks for a value `docs/NAMES.md:908-911` already records as having *no measured route* for an orphan wire, and the recipe's own `sink_terms_of`/`orphan_is_broken` reach the same dead end in code, so the build aborts before its RBW call on every run. A3 is the same gate seen from inside the file: A0g refuses the `Is Broken?` reader on the success path and A0b puts it there. B4 asks whether the clean belongs at the front at all, since the copy already reads `ExecState 1` with both orphans present and the only measured 0 → 1 is the end-of-build RBW that A0f forbids. B4b is the citation layer: the "END NONE" evidence is a two-wire read taken at the B4 state, and the line anchors used for it in the recipe, `docs/toolkit-capabilities.md:591,594` and `docs/NAMES.md:911` point at other lines.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-fstunnel-v2-preclean.md
+   STOP RECORD: none - 2026-09-18-priorart-fstunnel-v2-preclean.md carries no blocking verdict
+BGRUN END rc=0 after 424s

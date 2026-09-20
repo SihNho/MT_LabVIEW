@@ -1,0 +1,21 @@
+BGRUN START 2026-09-14 22:33:45 limit 6.0 min: py -u tools/bench/diag_addsr_fail1.py
+TMSC uid 683; Invoke uid 675
+
+TMSC 'specific class reference' (source) wire = 366
+
+Invoke terminals (index | name | is_source | wire):
+     0 | 'reference'                  | src=False | wire=366
+     1 | 'reference out'              | src=True  | wire=0
+     2 | 'error in (no error)'        | src=False | wire=0
+     3 | 'error out'                  | src=True  | wire=0
+     4 | 'Add Shift Register'         | src=False | wire=0
+     5 | 'Add Shift Register'         | src=True  | wire=0
+     6 | 'Y Position'                 | src=False | wire=0
+     7 | 'Y Position'                 | src=True  | wire=0
+
+Invoke 'reference' (sink) wire = 366
+VERDICT: H1 - the BRANCH LANDED (same wire uid on both ends). The Loop-class invoke accepted the WhileLoop reference; ExecState 0 must be explained by an unwired required input, not by the wire.
+
+'Y Position' terminals: [(6, False, 0), (7, True, 0)] (a sink AND a source of the same name = the duplicate-name trap this project hit twice before)
+ExecState now: 0
+BGRUN END rc=0 after 0s

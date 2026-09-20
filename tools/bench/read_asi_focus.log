@@ -1,0 +1,40 @@
+BGRUN START 2026-09-12 14:18:19 limit 20.0 min: py -u tools/bench/read_asi_focus.py
+ASI_adjust focus-subvi.vi -> copy in claudeDev; 9 diagrams
+
+=== diagram 0  owner ''  5 nodes  <== UNCONDITIONAL (top-level diagram)
+   primitive/other  uid 46     ['reference', 'reference out', 'error in (no error)', 'error out', 'Value']   [UI-thread Value, control reference]
+   primitive/other  uid 108    ['reference', 'reference out', 'error in (no error)', 'error out', 'Value']   [UI-thread Value, control reference]
+   primitive/other  uid 272    ['result', 'value', 'value']   [UI-thread Value]
+   CaseStructure    uid 587    ['Value', '-Inc reference', '+Inc reference', 'VISA resource name', 'VISA out', 'In position', 'position [internal units]']   [UI-thread Value, VISA / serial, control reference, position]
+   primitive/other  uid 443    ['reference', 'reference out']   [control reference]
+=== diagram 1  owner 'CaseStructure'  0 nodes
+=== diagram 2  owner 'CaseStructure'  0 nodes
+=== diagram 3  owner 'FlatSequenceFrame'  0 nodes
+=== diagram 4  owner 'FlatSequenceFrame'  5 nodes
+   primitive/other  uid 48     ['reference', 'reference out', 'error in (no error)', 'error out', 'Value']   [UI-thread Value, control reference]
+   CaseStructure    uid 792    ['Value', 'Value']   [UI-thread Value]
+   primitive/other  uid 47     ['x+y', 'y', 'x']
+   SubVI            uid 663    ['error out', 'VISA out']   [VISA / serial]
+   SubVI            uid 929    ['error out', 'position [internal units]', 'VISA out']   [VISA / serial, position]
+=== diagram 5  owner 'CaseStructure'  2 nodes
+   primitive/other  uid 817    ['-x', 'x']
+   primitive/other  uid 443    ['reference', 'error out']   [control reference]
+=== diagram 6  owner 'CaseStructure'  0 nodes
+=== diagram 7  owner 'FlatSequenceFrame'  2 nodes
+   primitive/other  uid 1132   ['reference', 'reference out', 'error in (no error)', 'error out', 'Value']   [UI-thread Value, control reference]
+   primitive/other  uid 1753   ['reference', 'reference out', 'error in (no error)', 'error out', 'Value']   [UI-thread Value, control reference]
+=== diagram 8  owner 'FlatSequenceFrame'  1 nodes
+   primitive/other  uid 1179   ['millisecond timer value', 'milliseconds to wait']   [UI-thread Value, fixed Wait]
+
+==============================================================================
+VERDICT INPUTS
+   diagram 0 (owner '', UNCONDITIONAL): 1 VISA node(s), 0 fixed Wait(s)
+   diagram 4 (owner 'FlatSequenceFrame', inside a structure): 2 VISA node(s), 0 fixed Wait(s)
+   diagram 8 (owner 'FlatSequenceFrame', inside a structure): 0 VISA node(s), 1 fixed Wait(s)
+
+   A VISA node on the TOP-LEVEL diagram means the frame loop transacts every iteration -> 2.56 ms of a
+   6.00 ms budget, and 150 Hz is out of reach without moving it. A VISA node only inside a CaseStructure
+   frame means the cost is intermittent and 150 Hz stays reachable.
+
+written to G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\asi_focus_anatomy.json
+BGRUN END rc=0 after 32s

@@ -1,0 +1,43 @@
+BGRUN START 2026-09-17 04:45:35 limit 20.0 min: py -u tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/plan_rev6.txt --trigger new-op --slug priorart-moveinto-rev6
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-moveinto-rev6.txt (55092 chars)
+OUTCOME: ANSWERED (557s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-priorart-moveinto-rev6.md
+COST: $4.6594  in 52 / out 39563 / cache-create 173528 / cache-read 3869572  (553s, 35 turn(s))
+--- ANSWER ---
+Write is disabled in this session, so the review is below in full.
+
+# PRIOR-ART REVIEW — `tools/recipes/probe_move_into_v0.py` REV 6 (round 5, trigger: new-op)
+
+Scope honoured: only a defect that would make **run 2** give a WRONG or NO answer about whether `GObject.Move` with a wired `owner` reparents a node — and a structure with its contents — into another diagram of the same VI. Nothing run, no lock taken, no project file touched.
+
+## PART A — THE DIRECTION
+
+**Nothing blocks.** A1/A2/A3/A4 are unchanged from round 4's clearance and I re-checked the three that could have moved: `docs/d1-build-plan.md:56` still lists the six structures as the open unknown; `tools/recipes/probe_relocate_route.py:10-15` still excludes `GObject.Move` with an owner deliberately; the `632A400` / `GObject.Move` sweep across `docs/`, `archive/` and `tools/bench/` turns up no exchange or log beyond the ones this file already cites.
+
+## PART B — THE ARTIFACT
+
+**No slug.** Round 4's B2/B3 is discharged, and discharged the documented way rather than by an invented shape:
+
+- The snapshot-after-`open_panel` + purge-before-the-count + assert-none-left sequence is literally the rule at `docs/NAMES.md:312-313` and the protocol at `docs/keystone-op-spec.md:567-573` §33.
+- The four lines are the shape already in `tools/recipes/build_opownerchain_v1.py:231-243` and `tools/recipes/fix_v3_starting_xy.py:17-26`. Re-reading `g.report(SCRATCH,"Invoke")` inside the loop makes index-shift-after-delete moot (`gscript.subvis(..., purge=True)` at `tools/gscript.py:368-380` solves it the other way, by reverse order — either is correct).
+- `verify=False` is used the only way its own docstring permits, *"only with a snapshot around the batch"* (`tools/gscript.py:2042-2048`); **P4a is that snapshot**.
+- `new_since` compares uids (`tools/gscript.py:838`) against a uid set (`:827`), so the main VI's one pre-existing Invoke (`docs/NAMES.md:320`, census row `Invoke 1`) and anything inside `#12589` cannot be purged by mistake.
+
+## Checked and cleared — so round 6 does not re-derive it
+
+1. **Phase 1 (`OPIN`) does not need the same purge.** `docs/NAMES.md:309-310` names `OpCreateControl` as a creator-carrier, which would break P1's `ExecState == 1`. Functionally refuted by a later build: `tools/recipes/build_track_v6_core.py:148,:211,:222` calls `create_control` with **no Invoke snapshot in the file**, and that build is the 69/69 `Track_v6_CPU_core_v0.vi`. `create_control` now drives `OpCreateControl_v1.vi` (`tools/gscript.py:2143`); `walk`/`node_terms` are explicitly 0-junk (`tools/gscript.py:683`). REV 4's removal of `net_map` cost the purge only on the phase-2 target — the one REV 6 fixed.
+2. **`sib_i` is a legitimate Traverse index.** `diag_index` reads `report_all`, whose rows are Traverse order and verified identical to `report()` (`tools/gscript.py:824-827`). The three burned runs at `docs/NAMES.md:511-518` were `count-1` and **set iteration order**, neither used here. `#686` being FlatSequence-owned does not remove it from the list — `docs/diagram-hierarchy.md:114-115` counts all 57 `FlatSequenceFrame` rows inside the 170; what is unresolved for them is their **owner uid**, not their index (`:135`), and the probe never reads `#686`'s owner.
+3. **P4's `n_before + 1` is the right arithmetic.** `loop_in` with `src_names=()` makes no tunnels (`tools/gscript.py:979-983`), and no loop-terminal class appears in the `report_all(main,"Node")` census (`docs/NAMES.md:317-320`) despite 3 WhileLoops and 17 ForLoops.
+4. **The Move Invoke is insulated from the donor's ladder.** `tools/bench/probe_move_into_v0.log:44` shows node[13]'s `error in (no error)` at `w0`, so the empty `Nodes[]`/IndexArray chain on a freshly created (empty) destination cannot skip the move and fake a FAIL.
+
+## Residual, deliberately NOT slugged
+
+Nothing gates the *arrival* of the new loop on `Diagram#686` — round 4 raised it, round 5 released it, and item 2 shows the index derivation is sound. `owner_of(SCRATCH, loop_uid) == SIBLING_DIAG_UID` would close the one exotic case (a loop created inside `#12589`'s own subtree, which would make P3 fail for a non-capability reason); nice-to-have, out of scope.
+
+```
+tools/recipes/probe_move_into_v0.py REV 6
+PRIOR-ART: novel
+```
+
+There is no in-scope defect: REV 6 is the round-4 fix and nothing else, and the fix is correct — run it.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-moveinto-rev6.md
+BGRUN END rc=0 after 557s

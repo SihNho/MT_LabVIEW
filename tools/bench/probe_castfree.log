@@ -1,0 +1,29 @@
+BGRUN START 2026-09-14 09:38:08 limit 15.0 min: py -u tools/recipes/probe_castfree_ladders.py
+
+######## LADDER 1: Block Diagram -> SubVIs[] -> SubVI.VI Name / VI Path ########
+   CONTROL: donor chain ExecState = 1 (must be 1)
+   -> PASS: donor ExecState 1
+   the VI.Block Diagram property node is uid 112
+   predict: an AbstractDiagram-class node accepts the Diagram ref; ExecState stays 1
+   SubVIs[] node uid 2392, output terminal read back = None
+   EXC wire Diagram->reference: wire count 9->9 with 0 new tunnel(s), expected 10 (if the source is already wired this may be a successful BRANCH - re-call with branch=True)
+
+######## LADDER 2: Panel.Controls[] -> Control.Terminal -> Terminal.Is Source? / Connected Wire ########
+   CONTROL: donor chain ExecState = 1 (must be 1)
+   -> PASS: donor ExecState 1
+   Index Arrays in donor: [308]
+   predict: a Control-class node accepts IA.element (Controls[] is Control-typed); ExecState 1
+   Control.Terminal node uid 306, output read back = 'Terminal'
+   -> FAIL: ExecState 0, out 'Terminal'
+   predict: a Terminal-class node accepts Control.Terminal's output without a cast; ExecState 1
+   Terminal node uid 2620, outputs read back = None
+   -> FAIL: ExecState 0 - refused
+
+################ SUMMARY ################
+  PASS  L1 control                                                 donor ExecState 1
+  FAIL  ladder_subvis                                              exception wire Diagram->reference: wire count 9->9 with 0 new tunnel(s), expected 10 (if the source is already wired this may be a
+  PASS  L2 control                                                 donor ExecState 1
+  FAIL  L2 Control.Terminal attaches                               ExecState 0, out 'Terminal'
+  FAIL  L2 Terminal.Is Source?/Connected Wire on Control.Terminal (NO cast) ExecState 0 - refused
+scratch deleted
+BGRUN END rc=3 after 12s

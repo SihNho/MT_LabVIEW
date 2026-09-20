@@ -1,0 +1,31 @@
+BGRUN START 2026-09-15 15:20:44 limit 30.0 min: py -u C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/1c79eb01-7150-4a78-9689-e6d4f34f7800/scratchpad/verify_review_layers.py
+=== A: confirm-bait must be refused ===
+  PASS  A refused  rc=1
+  PASS  A no archive written
+=== B: an honest review question gets the adversarial suffix ===
+  **FAIL**  B answered  rc=1
+  **FAIL**  B suffix appended
+  **FAIL**  B peer actually refuted
+=== C: the claude peer, as rule/consistency auditor ===
+  **FAIL**  C answered  rc=1
+  **FAIL**  C header records agent+kind
+  **FAIL**  C audited against the file
+=== D: guard_peer.review_quality ===
+  PASS  D ANSWERED+codex -> True
+  PASS  D TIMEOUT+codex -> False  outcome TIMEOUT - the call told you nothing
+  PASS  D QUOTA+gemini -> False  outcome QUOTA - the call told you nothing
+  PASS  D ANSWERED+claude -> False  agent claude is not a framing adversary (needs codex or gemini)
+  PASS  D legacy, no outcome line -> True
+=== E/F: outcome_review ===
+  PASS  E due  DUE: no outcome review has ever been archived
+  **FAIL**  F task builds
+  PASS  F counts are real
+=== G: guard_cycle now gates on the outcome review ===
+  PASS  G blocks  rc=2
+  PASS  G names the outcome review
+=== cleanup ===
+  peer archive count: 216
+
+=== RESULT: FAILED: B answered, B suffix appended, B peer actually refuted, C answered, C header records agent+kind, C audited against the file, F task builds ===
+Outcome review NOT dispatched - fix the failures first.
+BGRUN END rc=1 after 1s

@@ -1,0 +1,25 @@
+BGRUN START 2026-09-16 17:15:54 limit 5.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent codex -Kind prose -Slug reporter-selftest -TaskFile tools/bench/prose/reporter-selftest.in.md
+OUTCOME: ANSWERED (19s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\prose\2026-09-16-reporter-selftest.md
+--- ANSWER ---
+## tools/peer.ps1 `-Kind prose` 변경
+
+대상 파일은 `tools/peer.ps1`이며, 이 파일 한 곳만 수정했습니다. LabVIEW는 건드리지 않았습니다.
+
+`tools/peer.ps1:32`의 사용 예시 주석에서 옛 문구 "proofread, archives to archive\prose\"를 새 문구 "codex AUTHORS the report from a fact list"로 바꾸고, 인자 예시도 `-TaskFile block.md`에서 `-TaskFile fact-list.md`로 변경했습니다.
+
+`tools/peer.ps1:72-78`의 `$Kind` 파라미터 주석도 새 의도에 맞게 변경했습니다. 옛 의도는 `prose` = PROOFREADING이었으며, 새 의도는 `prose` = REPORT AUTHORING입니다. 입력은 FACT LIST이고 codex가 보고서를 작성합니다. 근거로 사용자 2026-09-16 "그냥 클로드와 코덱스는 문체가 달라"를 인용하고, `.claude/agents/reporter.md` 참조를 추가했습니다.
+
+`tools/peer.ps1:192-212`의 실제 프롬프트 프리앰블에서는 옛 첫 문장 "You are a PROOFREADER. Rewrite the text below"를 새 첫 문장 "You are the REPORT WRITER."로 바꾸고, 마지막 구분선 `--- TEXT TO REWRITE ---`를 `--- FACT LIST ---`로 변경했습니다.
+
+새 프리앰블에는 규칙 7개를 넣었습니다. 이 실험실을 운영하는 사람을 위한 자연스러운 한국어로 작성하되 사실이 영어면 영어로 작성하고, 숫자·파일 경로·코드·인용문·기술 용어는 글자 그대로 유지합니다. 사실을 추가하거나 누락하지 않으며, 완충 표현·칭찬·서두를 쓰지 않습니다. 호출자의 섹션 순서와 제목을 유지하고, 사용자에게 묻는 질문이 있으면 그 질문으로 끝내며, 보고서만 출력합니다.
+
+이름 `prose`, 보관 경로 `archive\prose\`, UTF-8 처리(`Get-Content -Encoding UTF8`, `[Console]::OutputEncoding`), 기본 타임아웃 180 s는 그대로 유지했습니다. `prose`에서는 adversarial 접미사와 confirm-bait 검사 모두 OFF인 것도 유지했습니다.
+
+프리앰블 본문은 ASCII로 유지했습니다. 이유는 파일 자체 주석에 있으며, 한국어 리터럴이 PowerShell 5.1 파서를 깨뜨린 적이 있습니다(2026-09-15, 측정됨).
+
+검증 결과 `[System.Management.Automation.PSParser]::Tokenize`는 `PARSE OK`였고, 파일 앞 3바이트는 `ef bb bf`(UTF-8 BOM) 그대로입니다.
+
+참고로 `.claude/agents/prose-review.md`는 이미 삭제되었고 `.claude/agents/reporter.md`가 그 역할을 대신합니다.
+
+이대로 두면 될까요?
+BGRUN END rc=0 after 19s

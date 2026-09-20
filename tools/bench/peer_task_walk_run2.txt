@@ -1,0 +1,53 @@
+ATTACK THIS CLAIM. It is the conclusion a measurement run produced, and it will shape how a motor-safety
+wiring check ("check A") is built, so a wrong reading here is expensive.
+
+THE RUN. `tools/bench/probe_flatseq_walk.py`, log `tools/bench/probe_flatseq_walk_run2.log`, 9 of 9 gates pass,
+read-only, nothing saved, both originals' md5 unchanged. LabVIEW 2026 VI Scripting over COM.
+
+WHAT IT MEASURED (all first-hand, all in that log)
+  A. `report_all(V6_working_copy, "FlatSequenceInnerTunnel")` returns **518 objects** (log:39). So Traverse for
+     GObjects DOES enumerate that class.
+  B. On a scratch VI, a Property Node whose class string is `VI Server:FlatSequenceInnerTunnel` accepts
+     1C3A9000 -> data terminal short name `LeftTerm`, 1C3A9001 -> `RightTerm`, 1C3A9002 -> `LeftFrame`,
+     1C3A9003 -> `RightFrame` (log:49-52). 1C3A9004, 1C3A9005, and the Tunnel-class ids 6356000 / 6356001 are
+     each REFUSED with error 1077 from `Create Property Node.vi` (log:53-56).
+  C. All 14 known FlatSequenceInnerTunnel uids resolve through `UID to GObject Reference.vi`: self-echo class
+     `FlatSequenceInnerTunnel`, owner `FlatSequence` uid 681, cast class `FlatSequence`, NO error (log:60-73).
+  D. A backward wire walk from block diagram 10, Nodes[1] (uid 44036 = the ASI `Move Axis to Position.vi`
+     startup call site), reading `Wire.Terminals[]` + `Terminal.Is Source?`:
+       - terminal 8 `Position [internal units]`, wire 44089: ONE hop, Terms[0] is the source, err '',
+         reciprocal wire 44089, owner = **`FlatSequenceOuterTunnel` uid 43605** (log:79-83).
+       - terminal 9 `Axis`, wire 44104: one hop to `EnumConstant` uid 43955 (log:86-90).
+       - terminal 10 `VISA in`, wire 44107: TWO hops - `SubVI` uid 43997 (`Initialize.vi`), then wire 44110 to
+         `VISAResourceNameConstant` uid 43937 (log:93-102).
+     In every case the walk stopped with the message "owner uid N of class C is NOT a node on any of the 170
+     cached diagrams - the walk cannot address it as Diagram[d].Nodes[n]".
+
+THE CLAIM UNDER ATTACK (three parts - attack whichever is weakest)
+  1. "The backward walk CAN cross a flat-sequence frame boundary. LabVIEW returned the boundary object cleanly
+     (`FlatSequenceOuterTunnel` uid 43605, no error); the only thing that stopped the walk is OUR OWN
+     addressing scheme, which indexes objects as Diagram[d].Nodes[n] and therefore cannot name an object that
+     is not in a diagram's Nodes[] array. Switching the walk to UID-addressed references removes the stop."
+  2. "Because the four class-specific property ids attach to the class and all 14 instances resolve by UID, a
+     one-op reader (UID -> To More Specific Class(FlatSequenceInnerTunnel) -> LeftTerm/RightTerm) would let the
+     walk continue THROUGH a flat-sequence tunnel to the wire on the other side."
+  3. "For a motor-safety check that must trace every value arriving at a motion call site back to its origin,
+     the flat sequence is therefore not a hard barrier - it is a missing reader."
+
+WHAT IS ALREADY RULED OUT (do not re-raise without a new reason)
+  - Not a path or load problem: an open control `count(V6,'Diagram')` returned 170 in the same run (log:37),
+    and the V6 copy's md5 was verified equal to the one the cached census was taken from (log:28).
+  - Not an instrumentation default: the previous run's ambiguous "NO terminals at all" line was fixed - every
+    `Wire.Terminals[]` iteration now prints its own error clusters, and the hops above printed err='' stage={}.
+  - Not a stale uid: the seed wires come from a cached census of the same file, md5 verified equal.
+
+WHAT I WANT FROM YOU
+  1. The single strongest reason claim 1 is WRONG - in particular, whether `FlatSequenceOuterTunnel` uid 43605
+     being the SOURCE of wire 44089 is even the right reading, and whether an OUTER tunnel of a flat sequence
+     can be followed to the value that feeds it from the enclosing diagram at all.
+  2. An alternative explanation for what was observed, and specifically: is there a documented relationship
+     between `FlatSequenceOuterTunnel` and `FlatSequenceInnerTunnel` (ids, properties, short names) that the
+     walk would need, given that B measured only the INNER tunnel class? Name the property ids if they exist.
+  3. Name what would FALSIFY claim 2 - i.e. an observation showing that reading `LeftTerm`/`RightTerm` on a
+     real instance does NOT yield a usable Terminal reference, even though the ids attach to the class.
+  4. The CHEAPEST discriminating test, given that building a new scripting op costs a whole cycle here.

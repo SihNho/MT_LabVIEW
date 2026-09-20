@@ -1,0 +1,145 @@
+BGRUN START 2026-09-17 14:49:29 limit 20.0 min: powershell -NoProfile -Command py -u tools/prior_art_review.py --plan-file 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\97b1695e-68c2-4985-8cac-1ca3097b3b15\scratchpad\plan_cfw_recipe.md' --slug priorart-cfw-recipe --trigger new-op --model opus --effort high
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-cfw-recipe.txt (24210 chars)
+OUTCOME: ANSWERED (565s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-priorart-cfw-recipe.md
+COST: $4.5999  in 26 / out 40255 / cache-create 262589 / cache-read 1935060  (561s, 24 turn(s))
+--- ANSWER ---
+## PRIOR-ART REVIEW — round 2 (the CODE)
+
+**5 findings, 0 `novel`.** Four of the five are about steps this project has already built or already measured; the fifth is a method fix written into `docs/d1-build-plan.md` **earlier in this same session** that the recipe's T2 does not implement. I did not re-raise round 1's six.
+
+I checked every gate value you asked about; most are right, and I say which below so they are not re-derived.
+
+---
+
+# PART A — THE DIRECTION
+
+## A1 `already-built` — the "SECOND op" the docstring declines to build is **already inside the VI this build copies**
+
+`build_opconnectfromwire_v0.py:48-50` and its log line `:546-548` say:
+
+> *"The instrument that finding really prescribes is `Wire.Is Broken?` **6371004** + `Wire.Terminals[]` 6371003 from a HELD terminal reference. That is a SECOND op; a material session may not authorise one (CLAUDE.md §3), so it is NOT built."*
+
+That is wrong about `OpConnectNested_v1`, measured this session by your own diagnostic:
+
+- `tools/bench/diag_connectfromwire_facts.log:16` — `N[10] #241 Property IN [(0,'reference',**572**)] OUT [(4,'Name',609),(5,'**Wire**',620)]`. w572 is the **same wire** that feeds the Invoke's `reference` (`:23`, `#757 IN (0,'reference',572)`) — i.e. the **held sink-terminal reference**, not a re-indexed one.
+- `tools/bench/diag_connectfromwire_facts.log:17` — `N[11] #242 Property IN [(0,'reference',620)] OUT [(4,'UID',660),(5,'**Broken?**',676)]`, published as panel `UID 2` (13) and `Is Broken?` (14) (`:27`, and `tools/bench/opconnectnested_v1_labels.json:80-88`).
+- The chain's provenance: `docs/keystone-op-spec.md:539` — *"Terminals[]→IA[index 3]→Terminal[Name, Connected Wire]→Wire[UID→'UID 2', Is Broken?]→Clear Errors"* (OpNetInfo_v1), and the short name is verified, not guessed: `docs/NAMES.md:357` — *"`Wire.Is Broken?` 6371004 → **`Broken?`**"*.
+
+So `Wire.Is Broken?` from a held terminal reference is **built, saved and copied forward**. What is actually missing is **dataflow ordering**, and that is stated in one place only — the donor recipe's wrapper comment, `tools/recipes/build_opconnectnested_v1.py:444-446`: *"their dataflow order relative to the Connect Wire invoke is not fixed (both take the same terminal reference), so they may pre-date the wire."* Run 9 shows exactly that: `tools/bench/build_d1_v0_run9.log:260-267`, **eight** readbacks, every one `'UID 2': 0` — including rows that ended WIRED (`:273`, `:277`, `:286`).
+
+Ordering the read after the Invoke is **one `connect(..., branch=True)`** from `#757`'s `error out` (w1027, `diag_connectfromwire_facts.log:23`) into `#241`'s `error in (no error)`, which the same line measures **unwired** (`:16`, `IN (2,'error in (no error)',0)`). That is one call inside the additive build already being written — not a second op, and not a CLAUDE.md §3 authorisation.
+
+`docs/d1-build-plan.md:1158-1160` and `docs/d1-route-b-plan.md:286-288` carry the same "not built / second op / judgement call" sentence and are wrong the same way; they are where the docstring got it.
+
+*Release is cheap if I am wrong:* open `diag_connectfromwire_facts.log:16-17` and show `#241`/`#242` are fed from something other than the Invoke's own `reference` wire, or show that branching an error chain into `#241` cannot order it.
+
+## A2 `contradicted` — the dead-ladder safety argument reads our own recorded rule **backwards**
+
+`build_opconnectfromwire_v0.py:32-34`:
+
+> *"`#744`/`#751`'s `error out` terminals are MEASURED unwired (`diag_connectfromwire_facts.log` N[13], N[15]), so the dead ladder cannot propagate an error into the Invoke."*
+
+The measurement is correct — `diag_connectfromwire_facts.log:19` (`#744 … OUT [(3,'error out',0)]`) and `:21` (`#751`, same). The inference is the wrong half of the rule. `tools/gscript.py:1292-1293`:
+
+> *"Unwired error INPUTS are harmless — only an **unwired error OUT that receives an error raises a dialog**."*
+
+So "unwired" is the hazardous state, not the safe one, and the hazard is not propagation into the Invoke — it is a **modal dialog inside a COM run**, which this project has already lost a run to: `tools/bench/build_keystone.log:880` (*"`copy_into(FPTARGET_v0, error out 2)` EXC run blocked behind a modal dialog"*), and which the recipe itself expects at `:364` (`"modal dialog (dismissed)" if "modal dialog" in str(e)`).
+
+The one defence against it is `set_auto_error_handling(OP, False)` — and in this recipe it is **non-fatal**, `:312-315` (`except Exception … fact("set_auto_error_handling failed")`), after which W12 saves anyway. The donor recipe called it **twice**, once inside `finish` and once at the end (`build_opconnectnested_v1.py:361`, `:394`). This build calls it once, in the branch that is allowed to fail silently.
+
+I am **not** claiming the dead ladder will error at `index 4/5/6 = 0`; with `Class Name = "Diagram"` (`:342`) `References[0]` is a Diagram and the cast plausibly succeeds. The finding is that the safety argument as written does not establish what it claims, and the cheap fix is to make W12's AEH-off gate fatal (or wire the two dead `error out`s to the indicators W7 already knows how to make).
+
+## A3 `contradicted` — the headline count "18" disagrees with the three files it rests on
+
+`build_opconnectfromwire_v0.py:8-10`: *"**18** of the D1 re-wire rows have a source that is owned by `FlatSequenceInnerTunnel` (14), `LeftShiftRegister` (2) or a `LoopTunnel`"*, citing `build_d1_v0_run9.log:321-338`. Those are the 18 NO-ROUTE lines, and they are not 18 of that kind:
+
+- 14 `FlatSequenceInnerTunnel` + 2 `LeftShiftRegister` + 1 `LoopTunnel` = **17** (`run9.log:321-323, :325-338`).
+- The 18th is **`from-ctl`**, not a tunnel at all: `run9.log:324` — *"NO-ROUTE `#2222` t0 '' ← from-ctl 47 control 'Z/dZ' / sink name '' — wire_control is name-addressed on BOTH ends"*. Nothing in the JSON or the plan says this op addresses a panel-control source; `docs/d1-route-b-plan.md:290-291` (R3) keeps it as its own unsolved row.
+- The `LoopTunnel` row is the one that **does not need this op**: `tools/bench/d1_tunnel_sources.json:188-211` — `"why": "tunnel 2213 outer wire 2187 does not advance the hop"`, and its `census_outer_source` is `{'kind':'node','diagram':'19','uid':637,'i':37,'is_source':True}`, i.e. an index-addressable node terminal that `OpConnectNested_v1` can already name.
+- Our other two files say **16**: `docs/d1-route-b-plan.md:255-262` (*"candidates (i) and (ii) are REFUTED for 14 of the 16 rows … `FlatSequenceInnerTunnel` (14 rows) or `LeftShiftRegister` … (2 rows)"*) and `STATUS.md` OPEN 36 (*"16 `from-tunnel` … 14 … 2 … 1 is `SubVI #27605` (wired in run 9), 1 does not advance"*).
+
+The op's real target set is **16**. T1's docstring (`:73`) inherits the error (*"the exact shape route B's 18 rows need"*). This changes no code, but the build log and the next plan revision will report reach as `n/18` against a denominator our own measurement says is 16.
+
+---
+
+# PART B — THE ARTIFACT
+
+## B1 `already-failed` — W1 drops the node-count assertion its donor had, on a **fixed** op path, and that is the recorded stale-in-memory failure
+
+`build_opconnectfromwire_v0.py:176-177`:
+
+```python
+gate("W1 the copy is runnable with exactly TWO To More Specific Class nodes",
+     es == 1 and len(tmscs) == 2, f"ExecState {es}, TMSC {tmscs}, {len(w)} nodes", fatal=True)
+```
+
+`len(w)` is **printed, not asserted**, although the docstring's W1 (`:54`) promises "21 nodes". The donor recipe asserted it: `tools/recipes/build_opconnectnested_v1.py:261` — `es == 1 and len(tmscs) == 1 and **len(w) == 19**`.
+
+That assertion is not decoration; it is the remedy this project adopted after the failure it is the guard for. `archive/peer/2026-09-17-priorart-d1-build-rev3.md:131`:
+
+> *"The 'fresh donor copy' was **the previous run's artefact**: the same LabVIEW process still held `OpMoveIn_v0.vi` in memory with run 2's unsaved edits, so `GetVIReference(path)` served the cached object and the disk overwrite was invisible. Remedy: a **uniquely named working copy per run** plus gate **P1z**, which proves the copy is the donor (ExecState 1, 15 nodes, **no `UID to GObject Reference.vi`**) before anything is edited."*
+
+Same gate spelled out at `archive/peer/2026-09-17-moveinto-stale-in-memory-vi.md:132`; `STATUS.md` START HERE item 3 states the mechanism (*"a fixed op PATH is served from LabVIEW's MEMORY — unique scratch name/run"*). This recipe uses a **fixed** path (`:102`, `OP = …/OpConnectFromWire_v0.vi`, `shutil.copyfile` at `:168`) and both discriminators P1z names are exactly the ones it drops: the node count, and the absence of `UID to GObject Reference.vi`.
+
+Concretely: a re-run after a failure at or past W5 meets a cached OP with 22+ nodes, still two TMSCs, still ExecState 1 → **W1 passes**, W2's "exactly one new SubVI" passes (`new_since` sees only the newly dropped one), and the op ends with **two** `UID to GObject Reference.vi` nodes. Adding `len(w) == 21` and "no `UID to GObject Reference.vi` on the fresh copy" to W1 costs one line each.
+
+## B2 `unread-evidence` — T2's bare-the-sink step ignores the method fix written into the plan **this session**, and the log it cites measured that step failing
+
+`docs/d1-build-plan.md:1187-1188` (§11u.2, written from `archive/peer/2026-09-17-wireinputs-forloop-tunnel-name.md`, codex, ANSWERED):
+
+> *"**Method fix carried forward: a 'bare the sink' step must assert the terminal reads wire 0 and stop if it does not.**"*
+
+and the measurement behind it, in the very log this recipe cites for its own facts — `tools/bench/diag_connectfromwire_facts.log:70`: *"`#1359` t7 … wire **31059 → 31166** after baring"*, i.e. the bare step did not bare.
+
+`build_opconnectfromwire_v0.py:485-500` prints the outcome and continues:
+
+```python
+bare = next((r["wire"] for r in rows if r["i"] == T2_SINK_T), 0)
+fact(f"T2 sink … wire {cur} -> {bare} after baring")      # :493  printed, never gated
+dw, es, err, sub = connect_from_wire(...)                  # :494
+gate("T2c the sink terminal carries a wire that it did not before", bool(after) and after != bare, …)
+```
+
+`T2c` is satisfied by *"some other wire is here now"*, which is true both for a clean create on a bare terminal and for a replacement on an occupied one. T1 does gate this (`:442-443`, `t_c["wire"] == 0`, fatal); T2, the row that actually matters, does not.
+
+Second half of the same finding: T2 reads the source **before** the destructive step and re-uses the pre-delete uid afterwards. `:474` `wire_source_owner(WORK, T2_WIRE)` → `:489` `delete_object(WORK,"Wire",…)` + `:490` `remove_bad_wires_scripted` → `:494` `connect_from_wire(WORK, **T2_WIRE**, src_i, …)`. w5812 is the **outer** wire feeding LoopTunnel `#5569` (`run9.log:321`), and deleting the tunnel's inner segment then running RBW is precisely the class of edit `docs/d1-build-plan.md:1147-1149` records as unmeasured: *"LabVIEW creates/removes border tunnels as wires cross structures … so `T[4]` after the edits need not denote `T[4]` before them."* Re-reading w5812's source terminal after the bare step (one more `wire_source_owner` call — the function is already there) makes T2's premise checked rather than assumed.
+
+## B3 — gate VALUES: checked, and these are **right**. No slug.
+
+So they are not re-derived next session:
+
+| gate | value | verified against |
+|---|---|---|
+| `EX_TMSC_UID, EX_TMSC_FN_INDEX = 99, 6` | ✅ | `build_opconnectnested_v1.py:113` (same donor, same pair, run 2 31/1) |
+| `T2_WIRE/T2_OWNER/T2_SINK_UID/T2_SINK_T = 5812/5818/5540/1` | ✅ | `tools/bench/d1_tunnel_sources.json:8-15` (row 1) and `build_d1_v0_run9.log:321` |
+| `T2_DIAG_UID = 639`, used as a **uid** then converted (`:481`) | ✅ | `diag_connectfromwire_facts.log:64` (*"Diagram #639 is Traverse('Diagram') index 43"*); `#5540` is a frame-loop body node (`docs/frame-loop-wire-graph.md:71,:253-254`) |
+| `"dead_src_node":"index 4"`, `"dead_src_term":"index 5"`, `"dead_src_diag":"index 6"` (`:320-321`) | ✅ | `tools/bench/opconnectnested_v1_labels.json:8-10` — the donor recipe already wrote this map (`build_opconnectnested_v1.py:400-406`); consider loading it instead of retyping it |
+| W1 "exactly TWO TMSC" / W5b `outs == ["Terms[]"]` | ✅ | `diag_connectfromwire_facts.log:28-29` (`TMSC [683, 1045]`) and `:42,:59` (`#145` data output `Terms[]`) |
+| `#744`/`#751` `error out` unwired | ✅ | `diag_connectfromwire_facts.log:19,:21` — the fact is right; see A2 for what it does and does not license |
+
+## B4 — your Q2, answered item by item. **No slug** — none of these has a recorded failure.
+
+- **`drop_subvi` of a `vi.lib` VI into an op** — precedented with the *same* VI and the same resulting uid: `tools/bench/build_opwiresource_v1.log:9,23,49,82` (*"PASS A exactly one new SubVI (UID to GObject Reference.vi) [990]"*).
+- **`build_property` with `"VI Server:Wire"`** — precedented: `tools/recipes/build_opnetinfo.py:151` builds a Wire-class node with `632A813` + `6371004` (OpNetInfo_v1, `docs/keystone-op-spec.md:535`). `6371003`'s short name `Terms[]` is measured on the machine (`diag_connectfromwire_facts.log:42`), not guessed.
+- **`create_control` on a property node's `reference` to make a typed seed** — this is the *documented* seed recipe, `docs/toolkit-capabilities.md:71-79`, and the donor build used it (`build_opconnectnested_v1.py:294`, gate V3).
+- **A THIRD `To More Specific Class` in one op** — a second is established twice (`build_opconstvalue_v1.py:165-199`; `build_opconnectnested_v1.py` V5, cold-verified 7/0). I found **no record of a third**, and none against it. Genuinely untried, not refuted.
+- **`create_indicator` on a subVI's `error out`** — routine: `build_opbuildpn_v1.py:121`, `build_opconnectctl_v0.py:155`, `build_opaddshiftreg_v0.py:249`, ~20 more.
+
+**Two prose notes, no slug, because neither is a defect today:**
+
+1. **W2/W3/W4/W9 repeat `tools/recipes/build_opwiresource_v1.py:112-174` step for step** — drop the lookup VI, census its terminals, branch `Open VI Reference` → `Owning VI`, `create_control` on `UID`, copy a TMSC from the NI example in a `finish` hook, seed `target class`, wire `GObject` → `reference`. Nothing there is importable (it is a builder body, not helpers), so this is not redundancy you can remove — but it is where the lessons live. One of them is not carried: `:124-130` requires the census to match **name AND direction** and to see **exactly one** of each, because the VI also exposes unnamed connector-pane slots and a `dup Owning VI` flow-through source. W2b (`:194-197`) keys a plain dict by name and checks direction only for `GObject`. Measured, it does not bite — `diag_connectfromwire_facts.log:46` shows `#990` with exactly one `UID` sink, one `Owning VI` sink, one `GObject` source and five `''` slots — so this is a weaker gate, not a broken one.
+2. **`connect_from_wire` drops two things its donor's wrapper had**: `g.ensure_loaded(target)` (`build_opconnectnested_v1.py:421`; the panels are opened explicitly at `:411`/`:470`, so the mechanism `gscript.py:1276-1281` cares about is satisfied — but the call is idempotent and free), and the `UID`/`Name`/`UID 2`/`Is Broken?` readback loop (`build_opconnectnested_v1.py:446-452`). The second is the same instrument as A1: the new op inherits those indicators and never reads them.
+
+---
+
+```
+PRIOR-ART: already-built     (A1 — tools/bench/diag_connectfromwire_facts.log:16-17,:23,:27 + tools/bench/opconnectnested_v1_labels.json:80-88 + docs/keystone-op-spec.md:539 + docs/NAMES.md:357 + tools/recipes/build_opconnectnested_v1.py:444-452 + tools/bench/build_d1_v0_run9.log:260-267 — covers the claim at build_opconnectfromwire_v0.py:48-50 and :546-548 that `Wire.Is Broken?` 6371004 from a HELD terminal reference is "a SECOND op … NOT BUILT": it is node #242 of the VI this build copies, fed from the Invoke's own `reference` wire w572, already on the panel as `Is Broken?`/`UID 2`. Does NOT claim the readout is usable as-is — it is UNORDERED (every run-9 readback reads `UID 2: 0`); the missing piece is one branch of #757's `error out` into #241's unwired `error in (no error)`, not an op)
+PRIOR-ART: contradicted      (A2 — tools/gscript.py:1292-1293 vs build_opconnectfromwire_v0.py:32-34; plus tools/bench/build_keystone.log:880 and build_opconnectfromwire_v0.py:312-315 vs build_opconnectnested_v1.py:361,:394 — covers the dead-ladder safety argument: "error out unwired ⇒ cannot propagate" is the safe reading of a rule whose recorded point is that an unwired error OUT receiving an error is what raises a modal dialog, and the only defence in this recipe is a non-fatal set_auto_error_handling. Does NOT assert the dead ladder WILL error at index 4/5/6 = 0)
+PRIOR-ART: contradicted      (A3 — build_opconnectfromwire_v0.py:8-10,:73 vs tools/bench/build_d1_v0_run9.log:321-338 (esp. :324, a from-ctl row) + tools/bench/d1_tunnel_sources.json:188-211 + docs/d1-route-b-plan.md:255-262 + STATUS.md OPEN 36 — covers the "18 rows" denominator: the classes named total 17, one of the 18 NO-ROUTE rows is a panel-control source this op does not address, and the LoopTunnel row's own census names an index-addressable node terminal on #637. The measured target set is 16. Does NOT touch the op's necessity for those 16)
+PRIOR-ART: already-failed    (B1 — build_opconnectfromwire_v0.py:102,:168,:176-177 vs tools/recipes/build_opconnectnested_v1.py:261 + archive/peer/2026-09-17-priorart-d1-build-rev3.md:131 + archive/peer/2026-09-17-moveinto-stale-in-memory-vi.md:132 + STATUS.md START HERE item 3 — covers W1 asserting only ExecState and the TMSC count on a FIXED op path, while the recorded stale-in-memory failure's remedy (gate P1z) is precisely the node count plus the absence of `UID to GObject Reference.vi`. Does NOT claim the first run will fail — it is the re-run after a mid-build failure that passes W1 on a dirty cached VI)
+PRIOR-ART: unread-evidence   (B2 — docs/d1-build-plan.md:1183-1188 and :1147-1149 vs build_opconnectfromwire_v0.py:485-500 + tools/bench/diag_connectfromwire_facts.log:70 + tools/bench/build_d1_v0_run9.log:321 — covers T2's bare-the-sink step, which prints rather than asserts wire 0 (the method fix written into the plan this session, from a measurement in the log this recipe cites) and re-uses the pre-delete uid w5812 after a delete + Remove Bad Wires without re-reading it. T1 already gates this correctly at :442-443; does NOT apply to T1)
+```
+
+**What I would change before the run, one line each:** branch `#757 error out` → `#241 error in (no error)` and read `UID 2`/`Is Broken?` back in `connect_from_wire`, then delete the "SECOND op / NOT BUILT" paragraph and its log print; make W12's `set_auto_error_handling` gate **fatal**; add `len(w) == 21` and "no `UID to GObject Reference.vi`" to W1; make T2's bare step assert `bare == 0` and stop, and re-read w5812's source terminal after it; and write the denominator as **16**, citing `d1_tunnel_sources.json`.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-cfw-recipe.md
+BGRUN END rc=0 after 566s

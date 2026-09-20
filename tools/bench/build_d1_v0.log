@@ -1,0 +1,18 @@
+BGRUN START 2026-09-17 07:13:14 limit 40.0 min: py -u tools/recipes/build_d1_v0.py
+PHASE = 'relocate'  (structural relocation only; --full is not implemented)
+
+=== S0: preconditions
+  PASS  S0a original md5 BEFORE  2a78e17c449cacdaf5da389818526859
+  PASS  S0b OpMoveIn_v0.vi present  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpMoveIn_v0.vi
+  PASS  S0c GPU_kernel_v1.vi present  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\GPU_kernel_v1.vi
+  FACT  LabVIEW handles before: 33962 (fresh-instance baseline ~31,500)
+  PASS  S0d the chosen TRANSPORT 'queue' has a creator BUILT in the fleet today  OpQueueObtain/Enqueue/Dequeue/Release_v0 - EXERCISED, core 162/162
+  FACT  TRANSPORT = 'queue' via gscript.queue_node - OpQueueObtain/Enqueue/Dequeue/Release_v0 - EXERCISED, core 162/162
+
+=== S1: the D1 target
+  FACT  BEFORE census: {'Diagram': 170, 'Node': 626, 'Wire': 1902, 'LoopTunnel': 132, 'ControlTerminal': 114, 'WhileLoop': 3, 'Local': 8, 'SubVI': 98}
+  **FAIL**  S1 the copy matches the BEFORE census  {'Diagram': (171, 170)} (empty = all match)
+  FACT  ExecState of the fresh copy: 0 (0 is EXPECTED headlessly - plan s2b; not gated)
+  PASS  S6b original md5 AFTER  2a78e17c449cacdaf5da389818526859
+  FACT  LabVIEW handles after: 54448 (before 33962)
+BGRUN END rc=1 after 5s

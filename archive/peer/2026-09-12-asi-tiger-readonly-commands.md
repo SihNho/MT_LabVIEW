@@ -1,0 +1,110 @@
+---
+type: peer-review
+status: historical
+date: 2026-09-12
+tags: [peer-review]
+disposition: legacy
+---
+
+# asi-tiger-readonly-commands
+
+- **agent:** codex
+- **date:** 2026-09-12
+- **outcome:** ANSWERED (71s)
+- **why asked:** (Claude fills in)
+- **verdict:** unverified
+
+## Question
+
+I need the READ-ONLY serial command set for an ASI (Applied Scientific Instrumentation) TG-1000 "Tiger" controller, so I can measure one serial round-trip latency WITHOUT actuating anything. It drives a microscope stage on a magnetic-tweezers rig; a command that moves an axis could damage hardware, so I will blacklist everything not explicitly confirmed as query-only.
+
+Answer precisely and cite ASI documentation URLs.
+
+1. Which TG-1000 / Tiger serial commands are strictly QUERY-ONLY - no motion, no settings change, no save-to-flash? I suspect WHERE (W), BUILD (BU), STATUS (/), VERSION (V) and RDSBYTE qualify. Confirm each individually, and call out any that look harmless but are not.
+2. Which commands must I never send? List the motion, homing, zeroing, halt and save-settings commands explicitly.
+3. Default serial settings (baud, data bits, parity, stop bits) and the command TERMINATOR for transmit and for receive.
+4. Does merely opening the serial port, or asserting DTR/RTS, cause a TG-1000 to reset, home, or move?
+5. Is there any query whose reply LENGTH varies in a way that would break a read-by-byte-count? The LabVIEW driver on this rig reads by byte count rather than by termination character, so a short reply would block until the VISA timeout.
+
+Short and concrete. If you cannot confirm a command is read-only, say so rather than guessing - I will treat unconfirmed as forbidden.
+
+
+## Answer
+
+1. Confirmed query-only commands
+
+Use only these exact forms:
+
+| Command | Query-only? | Notes |
+|---|---:|---|
+| `WHERE X` / `W X` | Yes | Returns the current position; it does not command motion. Substitute only an axis you intend to inspect. [ASI WHERE documentation](https://docs.asiimaging.com/commands/where) |
+| `BUILD` / `BU` | Yes, bare form only | Returns the firmware build name. `BU X` is also a configuration-report query. However, the wider `BU` family contains write operations, so do not whitelist arbitrary `BU ??. [ASI BUILD documentation](https://docs.asiimaging.com/commands/build) |
+| `STATUS` / `/` | Yes | Returns `B` if anything addressed is busy or `N` otherwise. This is the safest latency probe because its data portion has a fixed one-character length. [ASI STATUS documentation](https://docs.asiimaging.com/commands/status) |
+| `[address]VERSION` / `[address]V` | Yes | Returns the addressed card?셲 firmware version. The address is important because VERSION is card-addressed on Tiger. [ASI VERSION documentation](https://asiimaging.com/docs/commands/version) |
+| `RDSBYTE axis` / `RB axis` | Yes | Returns the axis status byte without changing state. Its response is a raw byte, not ordinary ASCII. [ASI RDSBYTE documentation](https://docs.asiimaging.com/commands/rdsbyte) |
+
+Important qualifications:
+
+- Whitelist `BU` and optionally `BU X` exactly?봭ot the whole BUILD command. `BU Y=#`, `BU Y-`, `BU Z=#`, `BU Z+`, and `BU Z-` modify data; `BU Y` data can subsequently be saved to flash. [ASI BUILD documentation](https://docs.asiimaging.com/commands/build)
+- Many parameter commands appear harmless when sent without `=` or with `?`, but ASI does not consistently define every bare form as a pure query. Treat them as forbidden unless individually validated.
+- `INFO`, `WHO`, `CDATE`, and `RDSTAT` appear informational in ASI?셲 command reference, but they are unnecessary for this test. Your conservative blacklist policy should leave them forbidden.
+
+For one latency measurement, I recommend exactly `/` followed by `<CR>`.
+
+2. Explicitly forbidden commands
+
+At minimum, never send:
+
+- Motion: `MOVE`/`M`, `MOVREL`/`R`, `SPIN`/`@`, `MULTIMV`/`MM`, `VECTOR`/`VE`, `SCAN`/`SN`, `SCANR`/`NR`, `SCANV`/`NV`.
+- Homing: `HOME`/`!`; it first halts and then drives the selected axes toward their HOME locations, potentially as far as a limit switch. [ASI HOME description](https://docs.asiimaging.com/products/serial_commands)
+- Coordinate changes: `ZERO`/`Z`, `HERE`/`H`, `SETHOME`/`HM`, `AZERO`/`AZ`.
+- Halt: `HALT`/`\`; it stops active motors and other actuators, so it changes controller/rig state even though it does not initiate travel. [ASI HALT documentation](https://asiimaging.com/docs/commands/halt)
+- Flash or position saving: `SAVESET`/`SS`, and `SAVEPOS`/`SP`. Bare `SAVEPOS` halts axes, saves positions to flash, and leaves the controller non-responsive until power-cycled. [ASI SAVEPOS documentation](https://docs.asiimaging.com/commands/savepos)
+- Reset: `RESET`/`~`.
+- Motor enabling or disabling: `MOTCTRL`/`MC`.
+- Any autofocus, array, ring-buffer, TTL, joystick/button, piezo, shutter, filter-wheel, lock/unlock, or calibration command.
+
+ASI?셲 command summary explicitly identifies MOVE/MOVREL/SPIN as motion commands, HOME as limit-seeking motion, ZERO as an origin change, HALT as actuator stopping, and RESET as a controller reset. [TG-1000 manual](https://www.asiimaging.com/downloads/manuals/TG-1000%20System%20Full.pdf)
+
+3. Serial framing and terminators
+
+- 115200 baud
+- 8 data bits
+- No parity
+- 1 stop bit
+- No flow control
+
+Transmit commands terminated with `<CR>` (`0x0D`). Normal textual replies terminate with `<CR><LF>` (`0x0D 0x0A`). [ASI RS-232 technical note](https://docs.asiimaging.com/tech_note_rs232_comm), [ASI serial-command syntax](https://docs.asiimaging.com/products/serial_commands)
+
+Do not confuse Tiger controller commands with the TGFW filter-wheel protocol; filter-wheel cards have special/different termination behavior. [ASI TGFW documentation](https://docs.asiimaging.com/fw_1000)
+
+4. Opening the port and DTR/RTS
+
+ASI documents the USB connection as a CP210x virtual COM port and specifies ?쐍o flow control,??but I found no ASI documentation explicitly guaranteeing that opening the port or toggling DTR/RTS cannot reset, home, or move the Tiger controller. [ASI RS-232 technical note](https://docs.asiimaging.com/tech_note_rs232_comm)
+
+Therefore:
+
+- Merely opening the port is not documented as a motion or reset operation.
+- DTR/RTS behavior is unconfirmed; do not deliberately pulse them.
+- Configure VISA for no hardware flow control and avoid any ?쐔oggle DTR on open??or ?쐏ulse RTS??feature.
+- If an absolute hardware-safety guarantee is required, obtain it from ASI for the exact TGCOM/TG232 hardware revision.
+
+5. Variable-length replies
+
+Yes. Byte-count-only reading is unsafe in general:
+
+- `WHERE` length changes with sign, magnitude, decimal formatting, number of axes, and configured reporting precision. [ASI WHERE documentation](https://docs.asiimaging.com/commands/where)
+- `BUILD` and `BUILD X` vary with firmware build, installed cards, axes, and modules. [ASI BUILD documentation](https://docs.asiimaging.com/commands/build)
+- `VERSION` varies with firmware version and reply syntax. [ASI VERSION documentation](https://asiimaging.com/docs/commands/version)
+- `RDSBYTE` returns one raw status byte, whose value may itself be `0x0A` (`LF`); it must not be treated as a normal text line. [ASI RDSBYTE documentation](https://docs.asiimaging.com/commands/rdsbyte)
+- Tiger has configurable reply syntax, which changes textual reply structure and length. [ASI reply-syntax documentation](https://docs.asiimaging.com/products/serial_commands)
+
+For a fixed byte-count latency test, use `/`. Its reply data is exactly one byte, `B` or `N`; normal serial framing then adds `<CR><LF>`, so expect three bytes total. Flush stale receive bytes before sending. Do not use `WHERE`, `BUILD`, or `VERSION` with a fixed byte count.
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+(Claude fills in)

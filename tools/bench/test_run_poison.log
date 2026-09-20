@@ -1,0 +1,78 @@
+BGRUN START 2026-09-17 12:20:39 limit 15.0 min: py -u tools/bench/test_run_poison.py
+
+=== ARM A: the poison mechanism, with a FAKE blocking callable (no COM at all)
+POISONED: FAKE blocking call did not return within 0.500s and was abandoned alive; the next COM call will raise COMPoisoned instead of blocking behind it.
+  PASS  A1 _deadline_call returns False on expiry  returned False after 0.51s
+  PASS  A2 the module is POISONED and the record names the call  FAKE blocking call
+  PASS  A3 op() raises COMPoisoned instead of reaching COM  0.0 ms: FAKE blocking call timed out 0s ago (cap 0.500s) and is STILL OUTSTAND
+  PASS  A3b lv() and _err() are guarded too  lv()=COMPoisoned, _err()=COMPoisoned
+  PASS  A4 clear_poison() clears, and a call that FINISHES never poisons  cleared=True, fast-call-clean=True
+POISONED: SHORT fake call did not return within 0.200s and was abandoned alive; the next COM call will raise COMPoisoned instead of blocking behind it.
+poison cleared: the abandoned SHORT fake call returned after 1s; apartment drained.
+  PASS  A5 AUTO-HEAL once the abandoned callable has finished  poisoned=True, worker_alive=False, healed=True
+
+=== ARM B: one REAL sub-millisecond timeout on a scratch op
+  FACT  LabVIEW handles before: 31276
+  FACT  md5 before: OpReport_v3=0743701a249b6ac20a5dab9ee676c09c  OpWire_v1=e7dfb9e0366130481931e34042880770  ORIGINAL=2a78e17c449cacdaf5da389818526859
+  PASS  B0 LabVIEW answers COM  version 26.3.1f1
+  FACT  scratch op: C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCHPOISON_122039.vi (copy of OpReport_v3.vi)
+POISONED: COM Run did not return within 0.001s and was abandoned alive; the next COM call will raise COMPoisoned instead of blocking behind it.
+  PASS  B1 a real 1 ms cap raises AND poisons the module  0.56s, poisoned=True, RuntimeError: COM Run did not return within 0s and no modal dialog was found - L
+poison cleared: the abandoned COM Run returned after 1s; apartment drained.
+  FACT  B2 N/A - the abandoned Run had already finished before the next call (next call: returned (no raise) after 9 ms); see B3
+  FACT  the abandoned COM Run finished on its own after ~0.0s (alive=False)
+  PASS  B3 after the drain the next call SUCCEEDS (self-cleared poison)  # of Refs=11 in 0.02s
+  PASS  B4 scratch deleted; op VIs and the ORIGINAL unchanged  scratch_gone=True, ORIGINAL=2a78e17c449cacdaf5da389818526859
+  FACT  LabVIEW handles after: 31361 (before 31276)
+
+--- FACTS ---
+  LabVIEW handles before: 31276
+  md5 before: OpReport_v3=0743701a249b6ac20a5dab9ee676c09c  OpWire_v1=e7dfb9e0366130481931e34042880770  ORIGINAL=2a78e17c449cacdaf5da389818526859
+  scratch op: C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCHPOISON_122039.vi (copy of OpReport_v3.vi)
+  B2 N/A - the abandoned Run had already finished before the next call (next call: returned (no raise) after 9 ms); see B3
+  the abandoned COM Run finished on its own after ~0.0s (alive=False)
+  LabVIEW handles after: 31361 (before 31276)
+
+=== test_run_poison: 10 pass, 0 fail ===
+BGRUN END rc=0 after 3s
+BGRUN START 2026-09-17 12:21:37 limit 15.0 min: py -u tools/bench/test_run_poison.py
+
+=== ARM A: the poison mechanism, with a FAKE blocking callable (no COM at all)
+POISONED: FAKE blocking call did not return within 0.500s and was abandoned alive; the next COM call will raise COMPoisoned instead of blocking behind it.
+  PASS  A1 _deadline_call returns False on expiry  returned False after 0.51s
+  PASS  A2 the module is POISONED and the record names the call  FAKE blocking call
+  PASS  A3 op() raises COMPoisoned instead of reaching COM  0.0 ms: FAKE blocking call timed out 0s ago (cap 0.500s) and is STILL OUTSTAND
+  PASS  A3b lv() and _err() are guarded too  lv()=COMPoisoned, _err()=COMPoisoned
+  PASS  A4 clear_poison() clears, and a call that FINISHES never poisons  cleared=True, fast-call-clean=True
+POISONED: SHORT fake call did not return within 0.200s and was abandoned alive; the next COM call will raise COMPoisoned instead of blocking behind it.
+poison cleared: the abandoned SHORT fake call returned after 1s; apartment drained.
+  PASS  A5 AUTO-HEAL once the abandoned callable has finished  poisoned=True, worker_alive=False, healed=True
+
+=== ARM B: one REAL sub-millisecond timeout on a scratch op
+  FACT  LabVIEW handles before: 31309
+  FACT  md5 before: OpReport_v3=0743701a249b6ac20a5dab9ee676c09c  OpWire_v1=e7dfb9e0366130481931e34042880770  ORIGINAL=2a78e17c449cacdaf5da389818526859
+  PASS  B0 LabVIEW answers COM  version 26.3.1f1
+  FACT  scratch op: C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCHPOISON_122138.vi (copy of OpReport_v3.vi)
+POISONED: COM Run did not return within 0.001s and was abandoned alive; the next COM call will raise COMPoisoned instead of blocking behind it.
+  PASS  B1 a real 1 ms cap raises AND poisons the module  0.55s, poisoned=True, RuntimeError: COM Run did not return within 0s and no modal dialog was found - L
+poison cleared: the abandoned COM Run returned after 1s; apartment drained.
+  FACT  B2 N/A - the abandoned Run had already finished before the next call (next call: returned (no raise) after 9 ms); see B3
+  FACT  the abandoned COM Run finished on its own after ~0.0s (alive=False)
+  PASS  B3 after the drain the next call SUCCEEDS (self-cleared poison)  # of Refs=11 in 0.02s
+POISONED: COM OpenFrontPanel did not return within 0.001s and was abandoned alive; the next COM call will raise COMPoisoned instead of blocking behind it.
+  PASS  B5 with a REAL outstanding COM call, the next op() raises COMPoisoned in < 2 s  COMPoisoned after 0 ms (abandoned: OpenFrontPanel, RuntimeError: COM OpenFrontPanel did not)
+  FACT  B5 the abandoned OpenFrontPanel drained after ~0.5s
+  PASS  B4 scratch deleted; op VIs and the ORIGINAL unchanged  scratch_gone=True, ORIGINAL=2a78e17c449cacdaf5da389818526859
+  FACT  LabVIEW handles after: 31381 (before 31309)
+
+--- FACTS ---
+  LabVIEW handles before: 31309
+  md5 before: OpReport_v3=0743701a249b6ac20a5dab9ee676c09c  OpWire_v1=e7dfb9e0366130481931e34042880770  ORIGINAL=2a78e17c449cacdaf5da389818526859
+  scratch op: C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCHPOISON_122138.vi (copy of OpReport_v3.vi)
+  B2 N/A - the abandoned Run had already finished before the next call (next call: returned (no raise) after 9 ms); see B3
+  the abandoned COM Run finished on its own after ~0.0s (alive=False)
+  B5 the abandoned OpenFrontPanel drained after ~0.5s
+  LabVIEW handles after: 31381 (before 31309)
+
+=== test_run_poison: 11 pass, 0 fail ===
+BGRUN END rc=0 after 3s

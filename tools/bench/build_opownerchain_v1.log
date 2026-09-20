@@ -1,0 +1,60 @@
+BGRUN START 2026-09-16 18:52:50 limit 25.0 min: py -u tools/recipes/build_opownerchain_v1.py
+MAIN md5 before: 2a78e17c449cacdaf5da389818526859
+copied donor -> OpOwnerChain_v1.vi   ExecState 1
+  PASS  B1 the copy starts legal  1
+  swept 19 nodes: [43, 124, 145, 151, 157, 163, 167, 241, 307, 310, 482, 990, 1044, 1186, 1221, 1319, 1326, 1329, 1554]
+  node 241.reference wire 318 (expect 318) | node 990.GObject wire 1081 | consumers {163: 751, 1221: 751, 482: 751} (census says 163/1221 on 751)
+  PASS  B0 every node the plan names is on the diagram  []
+  Wire: report_all 42 uids, report 42 uids, same order = True
+  Node: report_all 19 uids, report 19 uids, same order = True
+  PASS  B4b the two Traverse families enumerate these classes in the SAME order  {'Wire': (42, True), 'Node': (19, True)}
+  delete plan (class, uid): [('Wire', 318), ('Wire', 751), ('Node', 1044), ('Node', 145), ('Node', 151), ('Node', 157), ('Node', 1319), ('Node', 1326), ('Node', 1329)]
+  PASS  B4a every delete target is reachable under its class  missing []
+  deleted Wire[34] -> gone [318] (wanted 318)
+  deleted Wire[22] -> gone [751] (wanted 751)
+  deleted Node[8] -> gone [1044] (wanted 1044)
+  deleted Node[12] -> gone [145] (wanted 145)
+  deleted Node[11] -> gone [151] (wanted 151)
+  deleted Node[10] -> gone [157] (wanted 157)
+  deleted Node[3] -> gone [1319] (wanted 1319)
+  deleted Node[2] -> gone [1326] (wanted 1326)
+  deleted Node[1] -> gone [1329] (wanted 1329)
+  PASS  B4 all nine Wire-only objects are gone  still present []; deleted [145, 151, 157, 318, 751, 1044, 1319, 1326, 1329]
+  after deletes: sinks {241: 0, 163: 0, 1221: 0, 482: 0} | node 990.GObject wire 1081
+  PASS  B3a every sink to be wired is bare  {241: 0, 163: 0, 1221: 0, 482: 0}
+  wires removed by the delete batch: [318, 751] (expected exactly [318, 751] plus branches of deleted nodes); wire 1081 endpoints now {990: 1081, 307: 1081, 310: 1081}
+  PASS  B3c the UID-to-GObject wire survived the deletes and still feeds kept nodes 307/310  {990: 1081, 307: 1081, 310: 1081} vs 1081
+  terminal indices by name: {(241, 'reference'): 0, (241, 'Owner'): 7, (990, 'GObject'): 2, (163, 'reference'): 0, (1221, 'reference'): 3, (482, 'reference'): 0}
+  Invoke nodes before the connects: 0
+  R1 connect2 241.reference <- 990.GObject -> (wire delta, ExecState) (0, 0)
+  PASS  B2 node 241 `reference` carries the UID-addressed object  1081 vs 1081
+  R2 connect2 163.reference <- 241.Owner -> (wire delta, ExecState) (1, 0)
+  R2 connect2 1221.reference <- 241.Owner -> (wire delta, ExecState) (0, 0)
+  R2 connect2 482.reference <- 241.Owner -> (wire delta, ExecState) (0, 0)
+  PASS  B3 `Owner` is wired and ALL THREE consumers read it  owner wire 672, consumers {163: 672, 1221: 672, 482: 672}
+  PASS  B4c the four connect2 calls left no junk Invoke behind  purged [154, 151, 148, 145]
+  remove_bad_wires (once, at the end) -> 29 wires, ExecState 1; delete notes []
+  PASS  B3b Remove Bad Wires did not eat the new chain  {241: (1081, 672), 163: 672, 1221: 672, 482: 672}
+  PASS  B5a ExecState == 1 before saving  1
+  saved 17151 bytes (LabVIEW pid 3516); now killing LabVIEW to read it back cold
+   fresh(): killing LabVIEW pid 3516
+   COM preflight attempt 1/15: pid None->15352, wires 16->16
+   COM preflight OK (pid 15352, two round-trips agree: 16 wires)
+   fresh(): new LabVIEW pid 15352
+  after a FRESH LabVIEW: ExecState 1; {241: (1081, 672), 'consumers': {163: 672, 1221: 672, 482: 672}, 'nodes': [43, 124, 163, 167, 241, 307, 310, 482, 990, 1186, 1221, 1554]}
+  PASS  B5 the SAVED op is still legal in a fresh LabVIEW  1
+  PASS  B5b the edits SURVIVED the save (deleted nodes absent, chain intact on disk)  {241: (1081, 672), 'consumers': {163: 672, 1221: 672, 482: 672}, 'nodes': [43, 124, 163, 167, 241, 307, 310, 482, 990, 1186, 1221, 1554]}
+  OBSERVED uid 10407 -> owner 'Diagram' uid 639 | self 'CaseStructure'#10407 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  B6a uid 10407 was resolved (self-read echoes the uid asked for)  uid_back 10407, class 'CaseStructure'
+  PASS  B6 uid 10407 -> owner Diagram#639  got 'Diagram'#639
+  OBSERVED uid 1359 -> owner 'Diagram' uid 639 | self 'ForLoop'#1359 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  B6a uid 1359 was resolved (self-read echoes the uid asked for)  uid_back 1359, class 'ForLoop'
+  PASS  B6 uid 1359 -> owner Diagram#639  got 'Diagram'#639
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  RECORDED diagram 639 -> owner 'WhileLoop'#637 (docs/diagram-hierarchy.md:36 expects WhileLoop#637)
+  PASS  B7 OpDelete_v1.vi is gone from claudeDev
+  PASS  B8 the main VI is byte-identical  2a78e17c449cacdaf5da389818526859 -> 2a78e17c449cacdaf5da389818526859
+
+=== OpOwnerChain_v1 build: 20 pass, 0 fail ===
+BGRUN INNER FAILURE: the command exited 0 but its output reported 1 failure(s); first: === OpOwnerChain_v1 build: 20 pass, 0 fail ===
+BGRUN END rc=1 after 90s (inner failure; the process itself said 0)

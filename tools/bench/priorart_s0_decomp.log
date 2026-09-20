@@ -1,0 +1,140 @@
+BGRUN START 2026-09-19 19:28:49 limit 20.0 min: py -u tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/60fa4788-77d9-4c0d-9bd1-e72e1c46255f/scratchpad/priorart_s0_decomp_plan.md --slug s0-decomp --trigger direction-change --no-recipe no sub-step script for S0-a..S0-e exists yet; this review gates whether any of them may be cut - CLAUDE.md 3 split-big-work rule 3
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_s0-decomp.txt (41741 chars)
+OUTCOME: ANSWERED (409s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-19-priorart-s0-decomp.md
+COST: $4.1329  in 40 / out 28374 / cache-create 195030 / cache-read 2946159  (405s, 29 turn(s))
+--- ANSWER ---
+I read the plan against the project's files (`docs/`, `archive/peer/`, `archive/WORKLOG.md`, `tools/bench/*.log`, `tools/recipes/`, `tools/gscript.py`). Findings below; every one carries a file and line.
+
+---
+
+# PRIOR-ART REVIEW — S0 decomposition (`docs/cycle27-plan.md` Pre-decided 25)
+
+**The DIRECTION survives.** Decomposing a twice-failed stage into saved sub-steps is mandated, not prior-arted: CLAUDE.md §3 rule 3, `docs/cycle27-plan.md:391` (Pre-decided 23), and the cycle-43 retrospective's own verdict — *"Pre-decided 23 correctly forced a decomposition plan"* (`archive/peer/2026-09-19-retrospective-cycle43.md:212`). Nothing in these files has tried and abandoned a staged, save-per-step S0. What is already on file is **four of the five sub-steps' content**, and the plan's central mechanism has a failure record.
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 — `already-measured`: S0-a's cold reading has been taken SEVEN times, and it is **1**, not 0
+
+S0-a exists to detect a "cold-0 / preloaded-1 pair" (`docs/cycle27-plan.md:405`). Its condition (i) — *a byte copy of `OpReport_v3.vi`, read COLD in a fresh LabVIEW instance, before any edit* — is exactly what both failed runs already did, immediately after killing and restarting LabVIEW:
+
+> `tools/bench/build_s0_closeref_v3.log:10-12` — `fresh(): killing LabVIEW pid 9396` … `fresh(): new LabVIEW pid 20240`
+> `:13-14` — `PASS A1 ARM: the scratch is a byte copy of OpReport_v3` … **`PASS A2 ARM: the scratch is RUNNABLE before anything is changed ExecState 1`**
+
+The same pre-edit reading, each in its own freshly restarted instance: `:60` (`OpReport_v4`), `:109` (`OpWireSource_v6`), and `:168` (`OpReportAll_v1`, quoted in `archive/peer/2026-09-19-s0v3-execstate0.md:54`). Run 1 has three more: `tools/bench/build_s0_closeref_v1.log:15`, `:59`, `:103`. An unrelated op reads the same way — `tools/bench/build_opconnectfromwire_v0.log:49` `PASS W8 ExecState 1 before the copy`.
+
+So the pair S0-a is armed to find **cannot occur**: the cold reading is 1, and the 0 appears after the edit *inside the same instance*. Pre-decided 14a's artefact (`docs/cycle27-plan.md:148-156`, `tools/bench/diag_d0_execstate_preload.log`) was measured on the 473 KB original and its 98 subVI call sites; these op stubs are 5-node VIs that link cold. Binding note (i)'s embargo — *"No S0-c script may be cut before S0-a's two readings are on file"* (`:413-414`) — is already discharged for the half that carries the verdict.
+
+**To release this:** show that the `PASS G1/A2 … ExecState 1` lines above were *not* cold or *not* in a fresh instance. The `fresh(): new LabVIEW pid …` line immediately preceding each is what you must defeat.
+
+### A2 — `contradicted`: S0-c's stop rule halts the chain on a state three files call NORMAL — including the plan's own note (ii)
+
+> **Plan**, `docs/cycle27-plan.md:407` — "c1 = For Loop only … **The first sub-step whose ExecState drops STOPS the chain**"
+> **`archive/WORKLOG.md:86-87`** — "**A bare For Loop makes its target show BROKEN afterwards — that is correct, not a defect**, since nothing has wired `N` or its tunnels yet."
+> **`docs/toolkit-capabilities.md:412-413`** — "**ExecState was already 0 immediately after `for_loop`**, because an empty For Loop has no `N`. A broken VI mid-assembly is the *expected* state, not a failure."
+> **`docs/toolkit-capabilities.md:417`** — "1. create the empty For Loop — **ExecState drops to 0, which is normal**"
+
+The plan cites the first of these itself, two rows below the criterion it contradicts: note (ii), `docs/cycle27-plan.md:415-417`, "`archive/WORKLOG.md:86-87` (a bare For Loop breaks the VI)". As written, c1 reads 0, the chain stops, and c2/c3/c4 never execute — which also puts the probe `archive/peer/2026-09-19-retrospective-cycle43.md:192` calls *"exactly the discriminating test"* (`remove_bad_wires_scripted`-then-recheck) behind a gate that cannot be reached.
+
+**To release this:** show the c1 criterion is not "ExecState must not drop" — e.g. by rewriting it as a *predicted* 0 with the pass condition on the artefact and the count, not on ExecState.
+
+### A3 — `contradicted`: S0-d drops one of the three gates the cycle-43 disposition adopted, and Pre-decided 22 still states the superseded one
+
+> **S0-d**, `docs/cycle27-plan.md:408` — "handles flat ±100 counted from call 1 **AND** private-byte drift ≤ 5 MB"
+> **cycle-43 disposition**, `archive/peer/2026-09-19-priorart-s0-closeref.md:701-704` — "replaced by the three gates v1 carries: **G-A no `error 2` in 20 consecutive calls** of each repaired op · G-B handles flat ±100 from call 1 · G-C private bytes |drift| ≤ 5 MB. **All three must pass.**"
+> **STATUS.md NEXT** — "S0 gates are now **G-A no error 2** / G-B handles flat from call 1 / G-C private bytes ≤5 MB drift (cycle-43 judgement)"
+
+G-A is the gate that the released `FIXED: already-measured` line was written against (`…priorart-s0-closeref.md:719`). Separately, the same plan file still carries the criterion that disposition replaced: `docs/cycle27-plan.md:385` — S0's pass criterion "20 consecutive calls ⇒ LabVIEW handle count flat (±100)" — unamended, so the file now states three different S0 acceptance criteria at `:385`, `:408` and `:701-704` of the review it released.
+
+**To release this:** restore G-A to S0-d, or show in writing why a repaired op that raises `error 2` in 20 calls should still be accepted.
+
+### A4 — `unread-evidence`: `docs/toolkit-capabilities.md:400-443` and `tools/recipes/build_opreportall_v1.py` are the record of this exact construction, and S0-c consults neither
+
+They appear in item 25 only as a file to *update* at S0-e (`:409`). They contain the answer S0-c is built to obtain (see B4), and one thing S0-c cannot get without them: a **positive control** — the same For-Loop-over-`References` construction, on this same op family, measured returning to `ExecState 1`.
+
+Also unapplied, from a review the plan cites as its own record: the falsifier at `archive/peer/2026-09-19-s0v3-execstate0.md:140-142` (re-read `Wire.Is Broken?` *after* the `ExecState` read, which forces the compile — "two property reads", never taken) and the full-diagram wire census at `:130`, `:148`. S0-c's per-step instrumentation is `ExecState` alone, which is the instrumentation the same review closes by calling insufficient: *"this run's instrumentation could not see the failure it was measuring"* (`:164`).
+
+---
+
+## PART B — THE ARTIFACT
+
+### B1 — `already-failed`: every S0-c step must SAVE a VI whose ExecState is 0, and that save path has failed repeatedly, most recently 12 hours ago
+
+This is the finding that hits the decomposition's core promise — *"each ending with a saved artefact and its md5"*, *"The first FAIL stops the chain and leaves the file that shows the failure on disk"* (`docs/cycle27-plan.md:400-401`).
+
+> `tools/gscript.py:2065-2068` — `if exec_state(target) == 0: if allow_broken: return gui_save(target)` / `raise RuntimeError("refusing to save a BROKEN VI - SaveInstrument blocks forever on one")`
+
+c1's artefact is a bare For Loop, i.e. ExecState 0 by A2 above. So `g.save()` either refuses it or diverts to the keystroke save — whose failure record is long and current:
+
+> `tools/bench/build_d1_routeb_v7_run10.log:367` — "`gui_save(SCRATCH_routeb_065508.vi): file mtime did not move after Ctrl+S on every candidate window`" (run 10, 2026-09-19 ~07:2x — the failure that killed E3)
+> and the same error at `tools/bench/build_keystone.log:903`, `tools/bench/cycle3b_toolkit.log:78`, `tools/bench/extract_chain.log:10`, `tools/bench/gpukernel_chain.log:227`, `tools/bench/keystone_discovery.log:29`, `tools/bench/label_copy_clfn.log:16`
+
+It is intermittent, not dead (`tools/bench/gpukernel_chain.log:320` "checkpoint saved"), which is worse for a chain whose contract is that a file always lands. Note the history: this was raised as F4 `already-failed` on run 10's prior art, **refuted by cycle 42, and the refutation was wrong** — corrected at `archive/peer/2026-09-19-priorart-d1-routeb-run10.md:499`, with the callee rule written into `docs/cycle27-plan.md:350-356` (Pre-decided 21(f)) precisely so this is quoted from the callee next time. Refuting it a second time would be the third pass over the same ground.
+
+**To release this:** name, per S0-c sub-step, which save path persists an ExecState-0 file and what its evidence of success is — or re-order S0-c so every saved artefact is runnable.
+
+### B2 — `helper-exists`: S0-b's profiler is built, and its traverse half is already measured
+
+S0-b asks for "≥20 calls, kernel handles from call 1 AND private bytes per call" on the unrepaired ops, output to a new `tools/bench/s0b_refleak_profile.json`. That script exists:
+
+> `tools/bench/s0_hygiene_probe.py:80-91` `mem()` → `(handles, private_bytes)`; `:161-171` the 20-call loop printing `call {i}: nodes={n} handles={h} private={pb/1e6} MB`; `:185-193` the same for `report_all(Diagram)`; run on a scratch copy of the route-B original, original md5 gated (`:151`, `:211`).
+
+Its per-call series is already on disk — `tools/bench/s0_hygiene_probe_run2.log:75-97` (`count(Node)`) and `:101-123` (`report_all(Diagram)`, handles **+9**, private **−0.1 MB**, no `error 2`) — which is where the plan's own "call 0 is the 473 KB VI load" citation comes from. So the traverse-only half of S0-b needs no run; only the **"interleaved with mutations, S3w-like"** part is new, and even that has a precedent harness: `tools/bench/handle_audit.py:69-70` phase D, "10x drop_subvi + revert (a mutating erdosmiller op)", logged at `tools/bench/handle_audit.log:7`.
+
+**To release this:** state that S0-b extends `s0_hygiene_probe.py` (adding the mutation interleave and the JSON dump) rather than writing a new profiler, and that the pure-traverse series is read from `run2.log` instead of re-run.
+
+### B3 — `already-measured`: the per-step ExecState table S0-c would produce was produced on 2026-09-13, with its numbers
+
+> `docs/toolkit-capabilities.md:400-402`
+> ```
+> empty for_loop              ForLoop=1 LoopTunnel=0 Wire=17 Property=2 ExecState=0
+> build_property INSIDE loop  ForLoop=1 LoopTunnel=0 Wire=17 Property=3 ExecState=0
+> wire() across the boundary  ForLoop=1 LoopTunnel=1 Wire=18 Property=3 ExecState=1
+> ```
+> `:409` — "the tunnel also **restored ExecState 1** | the auto-indexed array supplies `N`, which is why the loop was broken until then"
+> `:432-438` — the full 1→7 build with `ExecState` per step, ending "7 wire References across the boundary LoopTunnel 0->1, **ExecState 0->1** <- the array supplies N"
+
+That is c1 → c2 → c3 measured, on the same `References` array and the same op family, and it is the **positive control** the failing runs lack. The instrumentation is a recipe, not a one-off: `tools/recipes/build_opreportall_v1.py:87-90` (`snap()` prints every count plus `ExecState`), `:135-136` ("3 empty For Loop — predict: ForLoop 0->1; **ExecState 0 is EXPECTED** - an empty loop has no N"), `:158-160` ("predict: LoopTunnel 0->1, Wire +2 …, and **ExecState 0->1 because the array supplies N**"), `:41` ("Saves only when ExecState == 1").
+
+The live question this makes visible — and which S0-c as written will not answer — is why the identical construction read `ExecState 1` at `toolkit-capabilities.md:438` and reads **0** at `tools/bench/build_s0_closeref_v3.log:87` after the branch landed with `LoopTunnel #642 IndexMode AS READ 1`. A c1→c4 chain with no reference to the passing instance measures the failing side twice.
+
+**To release this:** show that the 2026-09-13 sequence differs from S0-c in a way that makes its numbers inapplicable — and if it does, that difference is the experiment, not c1.
+
+### B4 — `already-failed`: S0-c preserves run 2's edit ORDER, which is the order the project's own recipe warns against
+
+> `tools/recipes/build_opreportall_v1.py:28-29` — "**BUILD ORDER - tunnels before nodes. Nodes-first leaves the VI broken across more steps, which is what made an earlier probe misdiagnose itself.**"
+> `docs/toolkit-capabilities.md:415-418` — "Build order (**the user corrected this — tunnels before nodes**): 1. create the empty For Loop … **2. wire the array into the loop** — the tunnel appears and `N` is resolved 3. build the Property nodes inside the body"
+
+S0-c is c1 loop → c2 node inside it → **c3** the array branch: nodes before the tunnel. That is precisely run 2's sequence — `tools/bench/build_s0_closeref_v3.log:74` (loop created), `:77` (`Close Reference #324` reparented into the body), `:80` (the `References` branch) — split across four saves. Splitting a sequence does not change it; nothing in item 25 changes the order that failed twice.
+
+I state the limit of this finding plainly: the executed 2026-09-13 sequence *also* placed its node inside the body before the boundary wire (`:437` step 6 → `:438` step 7) and still returned `ExecState 1`, so "nodes-first" is not itself proven fatal. What is unaddressed is that the plan keeps run 2's order while both the prose rule and the cycle-43 disposition (`archive/peer/2026-09-19-priorart-s0-closeref.md:694-699`) point at the built route.
+
+**To release this:** show the order is deliberate and why, or reorder c2/c3 so the tunnel exists before the node is reparented.
+
+---
+
+## Not a finding, recorded so it is not rediscovered
+
+- **S0-e's `docs/REFERENCES.md` half is already written**: `docs/REFERENCES.md:144` — "## 4a. `Close Reference` in the traverse ops — WHY IT IS ABSENT, and what was measured about it (2026-09-19)", with the measured op census at `:151-159` and the WORKLOG/VI_SCRIPTING_GUIDE citations at `:163-165`. S0-e should amend §4a, not author it.
+- **c4's instrument has a recorded limit**: `tools/gscript.py:1293-1295` records a bad wire into a `reference` sink that "**`remove_bad_wires` does not clear**". A c4 that ends at ExecState 0 does not by itself exonerate the wires.
+
+---
+
+```
+PRIOR-ART: already-measured
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-failed
+PRIOR-ART: helper-exists
+PRIOR-ART: already-measured
+PRIOR-ART: already-failed
+```
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-s0-decomp.md
+   NO-RECIPE opt-out recorded in archive\peer\2026-09-19-priorart-s0-decomp.md: no sub-step script for S0-a..S0-e exists yet; this review gates whether any of them may be cut - CLAUDE.md 3 split-big-work rule 3
+   STOP RECORD: NOT ARMED BY EXPLICIT OPT-OUT - verdicts already-measured, contradicted, unread-evidence, already-failed, helper-exists block, and --no-recipe was given:
+     reason: no sub-step script for S0-a..S0-e exists yet; this review gates whether any of them may be cut - CLAUDE.md 3 split-big-work rule 3
+   If this review does become a recipe, plant the record by hand:
+     py tools/stop_record.py write --recipe <recipe> --review archive\peer\2026-09-19-priorart-s0-decomp.md --verdict already-measured contradicted unread-evidence already-failed helper-exists
+BGRUN END rc=0 after 410s

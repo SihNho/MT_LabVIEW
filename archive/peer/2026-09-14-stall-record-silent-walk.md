@@ -1,0 +1,38 @@
+﻿---
+type: peer-review
+status: historical
+date: 2026-09-14
+tags: [peer-review]
+---
+
+# stall-record-silent-walk
+
+- **agent:** codex
+- **date:** 2026-09-14
+- **outcome:** ANSWERED (23s)
+- **why asked:** mandatory stall-record review: stall_pid6164_121247.log flagged the healthy globals_direction_main.py client during a 167-s silent net_map walk of main-VI diagram 19 (log stale > 90 s).
+- **verdict:** explanation accepted; fix accepted (per-node progress line = real progress; purge loop now prints every 20 deletions; 90-s window kept fixed). Remaining silent phases listed by the peer (bulk create/copy/wire loops, save/close) are instrumented as they appear.
+
+## Question
+
+STALL RECORD review (mandatory by project rule; be brief). Record tools/bench/stall_pid6164_121247.log: 'STALL: 12:16:16 pid 6164 alive 210s, CPU 0.36s lifetime' - pid 6164 = python -u tools/bench/globals_direction_main.py under bgrun (log tools/bench/globals_direction_main.log). FACT: the job completed normally (BGRUN END rc=0 after 385 s, 7 results all consistent). At 12:16 it was inside gscript.net_map on main-VI diagram 19 - 21 nodes, 167 s, ~170 op runs of ~1 s each with NO log line until the walk ends ('net_map: 21 nodes walked in 167.4 s'), so the bgrun log had been silent > 90 s and the new log-freshness rule in tools/lv_stallcheck.ps1 (skip a leaf whose bgrun log was written < 90 s ago) correctly saw a stale log; the lifetime-CPU rule (< 5 s) then fired. This is exactly the 'legitimately silent long phase' case you flagged in archive/peer/2026-09-14-stall-record-sweep-false-positive.md. MY FIX (implementing): net_map prints one progress line per node ('net_map: node k/N uid U ...') so the log advances every ~8 s on the main VI - a REAL progress signal, not a heartbeat from a side thread (the COM call itself must return for the line to print). Plus the leaf's own stdout goes through bgrun.out() which flushes per line. ATTACK: (1) is a per-node line a faithful progress signal, or can it print while the NEXT COM call hangs (yes, but then no further line appears and the 90 s window catches it after the last line - acceptable?); (2) should the window scale with the target (main VI op run ~1 s x up to 24 terminals per node = 24 s per node worst case, well under 90 s) - any phase left that is still silent > 90 s (report_all on the main VI ~1 s; delete purge on the main VI: 170 junk x ~1 s silent!) - name them; (3) is there any risk the record for pid 6164 masks a real stall elsewhere? One paragraph + a list of silent phases to instrument.
+
+## Answer
+
+This record is a confirmed false positive, not evidence of a LabVIEW or COM stall: PID 6164 was making serialized progress inside `net_map`, then exited normally with seven consistent results. A per-node line is faithful because it is emitted only after the preceding COM operation returns; if the next call hangs, logging stops and the 90-second rule catches it?봞cceptable given the stated ??4-second expected node time. Keep the fixed 90-second window unless measured legitimate per-node latency approaches it; target-specific scaling could accidentally weaken detection. This record does not mask a different stall: it explains only PID 6164 at 12:16, and the eventual `rc=0` strongly closes that incident, while separate PIDs/timestamps still require independent classification.
+
+Silent phases to instrument:
+
+- `net_map` node walk ??covered by the new per-node progress line.
+- Delete/purge loop over diagram junk ??mandatory; emit progress after each successful deletion, or every small batch, since ~170 one-second operations can remain silent for minutes.
+- Any bulk cleanup loop for wires, nodes, terminals, tunnels, or structures ??instrument if implemented separately from purge.
+- Any bulk create/copy/wire loop whose only log line is emitted after the entire collection completes.
+- Save/compile/close operations only if measurements show a single call can legitimately exceed 90 seconds; these need before/after phase markers, though an in-call hang cannot provide intermediate progress.
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+See the **verdict** line at the top of this file (filled 2026-09-14 14:2x; the day's outcomes are in STATUS.md and docs/).

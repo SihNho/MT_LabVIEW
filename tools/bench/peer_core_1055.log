@@ -1,0 +1,24 @@
+BGRUN START 2026-09-15 00:54:23 limit 7.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & '.\tools\peer.ps1' -Agent codex -Slug core-fail3-wrapper-used-while-seed -TimeoutSec 200 -Task (Get-Content -Raw '.\tools\bench\peer_task_core_1055.txt')
+OUTCOME: ANSWERED (56s)  archived: archive\peer\2026-09-15-core-fail3-wrapper-used-while-seed.md
+--- ANSWER ---
+The diagnosis is strong, but ?�exact signature??overstates the evidence.
+
+1. Error 1055 means only that the Invoke Node received an invalid object reference; naming `Invoke Node` identifies where the invalid reference was consumed, not where it became invalid. Theoretically, traversal could return no object, the target reference could be invalidated, or TMSC could emit an invalid reference. [NI?�s description](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019L75SAE&l=en-US) supports that narrower interpretation. Also, the earlier T3 logged 1055 at downstream **Property Nodes**, whereas this failure names an **Invoke Node**, so it is the same invalid-ref mechanism, not literally the same signature. Still, the 37 preceding gates plus the deterministic class/op mismatch make the wrapper defect overwhelmingly likelier.
+
+2. `loop_cast(OP, 0, "ForLoop")` is compatible. It selects `OpLoopCast_v1` for `ForLoop` when available and otherwise `OpLoopCast_v0`; it does not use the WhileLoop op ([gscript.py](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/gscript.py:422>), especially lines 444??52). Thus its TMSC seed has the correct ForLoop lineage. The recipe uses it correctly after creation ([build_track_v6_core.py](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_track_v6_core.py:253>)).
+
+3. Yes: the minimal readback is:
+   ```python
+   uid = add_shift_reg(...)
+   regs = loop_cast(..., "ForLoop")["shift_reg_uids"]
+   assert uid in regs
+   ```
+   That is exactly the existing gate at recipe lines 253??56. For protection against a stale retained UID or non-clean rerun, the stronger proof is `after_set == before_set | {uid}`, not membership alone.
+
+The current file already implements the proposed fix:
+
+- `add_shift_reg`: selects the F labels and `OpAddShiftRegF_v0` at [gscript.py lines 484??03](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/gscript.py:484>).
+- `wire_sr`: selects the F label map and `OpWireSRF_*` family at [gscript.py lines 520??42](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/gscript.py:520>).
+
+Verdict: accept the wrapper diagnosis, but describe 1055 as corroborating invalid-reference evidence?�not proof by itself that TMSC was the originating node.
+BGRUN END rc=0 after 56s

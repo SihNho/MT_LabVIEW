@@ -1,0 +1,47 @@
+BGRUN START 2026-09-16 21:22:39 limit 20.0 min: py -u tools/doc_ingest.py --from 2026-09-16 00:00 --model sonnet
+   36 file(s); explicit window 2026-09-16 00:00:00 .. 2026-09-16 21:22:39
+   task written to C:\Users\KimLab\AppData\Local\Temp\docingest_ingest-2026-09-16.txt (2536 chars)
+OUTCOME: ANSWERED (369s)  model: sonnet (pinned by -Model/-Effort (role ingest))  archived: archive\ingest\2026-09-16-ingest-2026-09-16.md
+COST: $2.3300  in 22 / out 37190 / cache-create 377307 / cache-read 2244260  (365s, 38 turn(s))
+--- ANSWER ---
+I've read all 36 files in the specified set. Here is the contradiction report.
+
+PAIR 1
+  A: STATUS.md:85  "🟢 **A2 DONE** — owner semantics for all six structure classes (54/54)."
+  B: pre-rig-master-plan.md:68  "**`OpOwnerChain_v0`** — the missing link is structure → the diagram it sits on... The recipe exists, corrected, **never run**"
+  conflict: STATUS.md asserts the A2 owner-semantics measurement (which the master plan's own dependency table lists as needing A1/OpOwnerChain) is already done, while the master plan's Phase A table still lists the OpOwnerChain reader as never having been run.
+
+PAIR 2
+  A: diagram-hierarchy.md:73  "`tools/bench/diag_owner_semantics.log` (... **54 gates pass / 0 fail**), `OpOwnerChain_v1.vi` unchanged, main VI md5 ... before and after."
+  B: diagram-hierarchy.md:182-186  "**`OpOwnerChain_v0`** — a UID in, its owner's UID and class out. ... With it, every chain walks to its While loop in one pass and this document's open half closes."
+  conflict: the document's own closing section describes the owner-chain reader as not yet built and as the thing that would still close the diagram-hierarchy question, while an earlier section of the same file reports `OpOwnerChain_v1` already built and used successfully (54/54, later 112/112) to do exactly that.
+
+PAIR 3
+  A: STATUS.md:61-63  "`Track_v6_CPU_core_v0.vi` 69/69 PASS · `Track_v6_CPU_queue_v0.vi` 162/162 PASS. **Say it exactly:** bit-identical to the reference for the **first 10,018 frames only** (before the first bead loss)"
+  B: stage2-plan.md:133  "Fixture: 10,043 frames, x/y/z **bit-identical** to the reference produced by the original kernel path ..., 0 flips."
+  conflict: STATUS.md states bit-identity holds only for the first 10,018 of 10,043 frames, while stage2-plan.md's stated acceptance criterion asserts bit-identity across all 10,043 frames with 0 flips.
+
+PAIR 4
+  A: pre-rig-master-plan.md:90  "the schedule's rotor row calls `SetCommand.vi` exactly as the existing `Send to Rot` path does ... The signed variant stays a separate, hardware-verified artefact, not something this phase adopts."
+  B: questions-for-user-2026-09-14.md:37-38  "`SetCommand.vi`의 unsigned 파싱을 signed로 고친 **사본**(`claudeDev\SetCommand_signed.vi`)을 새 VI에서만 사용."
+  conflict: pre-rig-master-plan.md requires the new VI to call the original (unsigned) `SetCommand.vi` unchanged and explicitly excludes the signed variant, while questions-for-user-2026-09-14.md records a decision to use the signed copy (`SetCommand_signed.vi`) in the new VI.
+
+PAIR 5
+  A: STATUS.md:17  "Current cycle plan: `docs/cycle14-plan.md`."
+  B: cycle13-plan.md:3  "status: current"
+  conflict: STATUS.md names cycle14's plan as the sole current cycle plan while cycle13-plan.md's own frontmatter (like cycle11-plan.md:3 and cycle12-plan.md:3) still declares itself "status: current", so more than one document in the same plan family claims current status simultaneously.
+
+PAIR 6
+  A: restructure-plan-4.6.md:396-398  "a reference-safe `IMAQ Copy` of a 1280×1024 U8 frame costs **≤ 0.4 ms** cold ... and **≈ 0.05 ms** in steady state"
+  B: frame-ownership-design.md:34-35  "The pool costs one copy per frame, and that copy is already measured at **0.12 ms** — 2 % of the 6.00 ms budget at 150 Hz."
+  conflict: two different measured values (0.05 ms steady-state vs 0.12 ms) are each presented as the measured cost of the same one-copy-per-frame image-pool copy.
+
+PAIR 7
+  A: pre-rig-master-plan.md:68  "The recipe exists, corrected, **never run**"
+  B: toolkit-capabilities.md:49  "Built 2026-09-16 by `tools/recipes/build_opownerchain_v1.py` (20 gates pass...) ... FUNCTIONAL on the main VI, read-only: `10407 → Diagram#639`, `1359 → Diagram#639`, `639 → WhileLoop#637`"
+  conflict: pre-rig-master-plan.md states the owner-chain reader has never been run, while toolkit-capabilities.md records it built and functionally run on the main VI the same day.
+
+CONTRADICTIONS: 7
+   peer.ps1 rc 0; archived as archive/ingest/2026-09-16-ingest-2026-09-16.md
+CONTRADICTIONS: 7
+BGRUN END rc=0 after 370s

@@ -1,0 +1,76 @@
+BGRUN START 2026-09-15 00:59:50 limit 8.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & '.\tools\peer.ps1' -Agent codex -Slug core-fail4-assembled-but-broken -TimeoutSec 240 -Task (Get-Content -Raw '.\tools\bench\peer_task_core_es0.txt')
+OUTCOME: ANSWERED (104s)  archived: archive\peer\2026-09-15-core-fail4-assembled-but-broken.md
+--- ANSWER ---
+The leading fault is almost certainly an unwired required input on `IMAQ Create`?�specifically `Image Name`. The recipe wires only `New Image`; it never supplies `Image Name`. Earlier successful builders explicitly exposed both `Image Name` and `File Path` (`tools/bench/timing_chain5.log`, `tools/bench/track_check.log`). NI describes the image name as identifying the allocated image buffer and requiring uniqueness, consistent with it being essential to image creation. [NI: Image Display Shows Incorrect Image](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000PAovSAG&l=en-US)
+
+### 1. Ranking
+
+1. **(a), specifically `IMAQ Create.Image Name` ??very high**
+   - This is the only obvious difference from the earlier runnable image-read harnesses.
+   - `IMAQ ReadFile.Image`, `File Path`, and the listed kernel inputs are wired.
+   - `error in` is not the likely omission.
+   - NI says an unwired required terminal makes the VI broken. [NI: Using Wires to Link Block Diagram Objects](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+2. **(b) wrong control/register association ??moderate, but lower than proposed**
+   - The general risk is real: an untyped shift register adopts the first connected type.
+   - However, `fp_labels()` and `wire_sr(LeftOutCtl)` both traverse `Panel.Controls[]`; [gscript.py](G:/Codes/LabVIEW_Codes/MinLab/zz_LabView%20VI/AAA_UNIST/2.%20Tracking/V6_ParallelLoop/tools/gscript.py) explicitly documents that common index space. This is not a `fp_labels`-versus-`Panel.Controls[]` mismatch unless one implementation has diverged from its documented construction.
+   - Still verify by UID, because the present gate only proves that each named control became wired.
+
+3. **(d) wrong shift-register side ??low-to-moderate**
+   - Possible indexing/reader defect, but the For-loop register fleet passed the 1024-iteration functional test.
+   - It should be checked by endpoint identity rather than inferred from ?�control terminal wired.??
+4. **(c) damaged wire after the auto-index flip ??low**
+   - The standalone discriminator proved the String[] flip route runnable.
+   - For all three array borders, the post-flip reader found `IndexMode == 0`, preserved inner wire UIDs, clean tunnel errors, and the expected sink wire.
+   - Tunnels can change array/scalar type across a loop boundary, so this was a reasonable concern, but current evidence is against it. [NI: Auto-Indexing Tunnels](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000PAghSAG)
+
+5. **(e) output tunnel/indicator mismatch ??very low**
+   - The indicators were created from the already typed tunnels, and each kernel output was paired one-to-one with a distinct auto-indexed tunnel.
+   - Scripted `Connect Wire` can create a broken wire, so this is not impossible, but the construction path strongly constrains the type. [NI Community: Scripting Create Array Indicator](https://forums.ni.com/t5/LabVIEW/scripting-create-array-indicator/m-p/3282674/highlight/true)
+
+6. **(f) loader default ??essentially excluded**
+   - A default-value issue can cause wrong runtime behavior, but it does not normally explain a compile-time broken VI.
+   - The loader itself is a runnable subVI; its `file (use dialog)` value is not a required terminal of the caller.
+
+### 2. Cheapest localizer
+
+Before building a more elaborate localizer, wire an `Image Name` string constant/control to `IMAQ Create.Image Name` and check the final `ExecState`. I expect that alone to change `0 ??1`.
+
+The proposed `Remove Bad Wires` differential is useful, but its result must be interpreted narrowly:
+
+- A disappeared wire was broken or incomplete at the time of removal.
+- It does **not** prove a datatype conflict specifically.
+- It can remove a wire that is merely unfinished; NI explicitly cautions that Remove Broken Wires can remove wires that appear broken because construction is incomplete. [NI: Using Wires to Link Block Diagram Objects](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+- One `Wire` object may contain multiple branches. Its disappearance identifies the affected wire tree, not necessarily the exact bad segment.
+- An empty disappeared set does **not** clear the VI: an unwired required terminal or broken node leaves `ExecState == 0` without any bad wire to remove. That is likely what you have.
+
+So the snapshot ??method 410 ??UID difference is a good two-way classifier:
+
+- `gone != ??: investigate those endpoint sets.
+- `gone == ??&& ExecState == 0`: prioritize required unwired inputs or broken nodes.
+
+A better nondestructive wire test is `Wire.Broken?`?�the project registry records exact property name `Broken?`, ID `6371004` in `docs/NAMES.md`. The generic fleet knows the property identity, but I did not find a ready wrapper that enumerates it for every wire. `node_terms`, `panel_wiring`, and `tunnels` report connection/wire fields; they do not expose a node-level `Broken?` verdict.
+
+`VI.Get Errors` is not the cheap route here. `docs/toolkit-capabilities.md` records two failed attempts with method `452`: only reference/error terminals appeared, not error details. The method is private/hidden rather than a standard selectable VI method, and the community workaround depends on copying a prepared Invoke Node or enabling private scripting tokens. [NI Community: Error List in VI Scripting](https://forums.ni.com/t5/LabVIEW/Error-list-in-VI-scripting/td-p/2263216/highlight/true)
+
+### 3. Minimal staged discriminator
+
+I would not implement the proposed full temporary-tunnel sequence first. Use this smaller sequence:
+
+1. Build exactly through L4, including all ordinary kernel inputs.
+2. Add an `Image Name` string control/constant and wire it to `IMAQ Create.Image Name`.
+3. Temporarily wire the three state controls straight through three non-indexed input tunnels to the kernel state inputs.
+4. Check `ExecState` immediately.
+   - Expected: `1`.
+   - If still `0`, run the bad-wire differential. If it removes nothing, inspect required terminals on `IMAQ Create`, `IMAQ ReadFile`, and the kernel.
+5. Delete the three temporary state wire trees/tunnels and run method 410.
+6. Add all three registers.
+7. For each register, verify structural identity:
+   - initializer control?�s panel wire UID reaches that register?�s left outside terminal;
+   - left inside terminal?�s wire UID equals the intended typed kernel input wire UID;
+   - right inside terminal is a sink on the intended kernel output?�s existing wire UID.
+8. Check `ExecState` after each register is fully completed. It will normally remain `0` after registers 1 and 2 because other required state inputs are still absent; the meaningful transition is after register 3, which should return it to `1`.
+9. Add output tunnels and indicators only after that `ExecState == 1` checkpoint; verify it remains `1` after each output.
+
+If you need register-by-register type localization rather than simply locating the phase, use three tiny independent scratch builds: one tested register plus two temporary direct state tunnels. That produces an unambiguous `ExecState == 1` expectation for every individual register, but it is unnecessary unless the `Image Name` fix does not solve run 5.
+BGRUN END rc=0 after 105s

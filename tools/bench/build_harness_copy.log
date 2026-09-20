@@ -1,0 +1,71 @@
+BGRUN START 2026-09-14 13:34:12 limit 15.0 min: py -u tools/recipes/build_harness_copy.py
+base cleared:  SubVI=0 Wire=0 CtlTerm=0 ExecState=1
+
+== 1 drop IMAQ Create (A)
+   predict: +1
+   dropped IMAQ Create uid 6 Nodes[] 0: ['New Image', 'Border Size', 'Image Name', 'error out', 'Image Type', 'error in (no error)']
+   result : 6  (0.1 s)
+
+== 2 drop IMAQ ReadFile
+   predict: +1
+   dropped IMAQ ReadFile uid 8 Nodes[] 1: ['error out', 'File Data Type out', 'File Type out', 'Image Out', 'Color Palette out', 'File Path', 'error in (no error)', 'File Options', 'Load Color Palette? (No)', 'Image']
+   result : 8  (0.2 s)
+
+== 3 drop IMAQ Create (B)
+   predict: +1
+   dropped IMAQ Create uid 9 Nodes[] 2: ['New Image', 'Border Size', 'Image Name', 'error out', 'Image Type', 'error in (no error)']
+   result : 9  (0.2 s)
+
+== 4 drop IMAQ Copy
+   predict: +1
+   OBSERVED: EXC run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gscript_dialog_1789360461.png
+STOP: a drop failed.
+BGRUN END rc=3 after 10s
+BGRUN START 2026-09-14 13:37:54 limit 15.0 min: py -u tools/recipes/build_harness_copy.py
+base cleared:  SubVI=0 Wire=0 CtlTerm=0 ExecState=1
+
+== 1 drop IMAQ Create (A)
+   predict: +1
+   dropped IMAQ Create uid 6 Nodes[] 0: ['New Image', 'Border Size', 'Image Name', 'error out', 'Image Type', 'error in (no error)']
+   result : 6  (0.2 s)
+
+== 2 drop IMAQ ReadFile
+   predict: +1
+   dropped IMAQ ReadFile uid 8 Nodes[] 1: ['error out', 'File Data Type out', 'File Type out', 'Image Out', 'Color Palette out', 'File Path', 'error in (no error)', 'File Options', 'Load Color Palette? (No)', 'Image']
+   result : 8  (0.2 s)
+
+== 3 drop IMAQ Create (B)
+   predict: +1
+   dropped IMAQ Create uid 9 Nodes[] 2: ['New Image', 'Border Size', 'Image Name', 'error out', 'Image Type', 'error in (no error)']
+   result : 9  (0.3 s)
+
+== 4 drop IMAQ Copy
+   predict: +1
+   dropped IMAQ Copy uid 11 Nodes[] 3: ['error in (no error)', 'Image Dst', 'error out', 'Image Src', 'Image Dst Out']
+   result : 11  (0.5 s)
+
+== 5 wires: A.New Image -> R.Image; R.Image Out -> Copy.Image Src; B.New Image -> Copy.Image Dst; error chain
+   predict: Wire +5..6
+   result : after SubVI=4 Wire=6 CtlTerm=0 ExecState=0  (0.5 s)
+
+== 6 control Image Name (A)
+   predict: wired
+   control on 'Image Name' (node 0 t2) -> ['Image Name'] wired=True ExecState 0
+   result : Image Name  (16.7 s)
+
+== 7 control Image Name (B)
+   predict: wired
+   control on 'Image Name' (node 2 t2) -> ['Image Name 2'] wired=True ExecState 0
+   result : Image Name 2  (16.7 s)
+
+== 8 control File Path
+   predict: wired
+   control on 'File Path' (node 1 t7) -> ['File Path'] wired=True ExecState 1
+   result : File Path  (16.8 s)
+
+copy1 assembled: SubVI=4 Wire=9 CtlTerm=3 ExecState=1 labels {'Image Name': 'Image Name', 'Image Name B': 'Image Name 2', 'File Path': 'File Path'}
+   copy0: SubVI=3 Wire=6 ExecState=1
+steps: [('1 drop IMAQ Create (A)', 'ok'), ('2 drop IMAQ ReadFile', 'ok'), ('3 drop IMAQ Create (B)', 'ok'), ('4 drop IMAQ Copy', 'ok'), ('5 wires: A.New Image -> R.Image; R.Image Out -> Copy.Image Src; B.New Image -> Copy.Image Dst; error chain', 'ok'), ('6 control Image Name (A)', 'ok'), ('7 control Image Name (B)', 'ok'), ('8 control File Path', 'ok')]
+
+VERDICT: HARNESS_copy1/copy0 built (structural) - run tools/bench/run_copy_bench.py next
+BGRUN END rc=0 after 55s

@@ -1,0 +1,35 @@
+BGRUN START 2026-09-17 05:02:42 limit 12.0 min: py -u tools/bench/diag_movein_p1_break.py
+  PASS  D0a original md5 before  2a78e17c449cacdaf5da389818526859
+
+=== H2: Invoke and SubVI census, OpMoveOut_v0 (donor) vs OpMoveIn_v0 (probe run 2's artefact)
+  FACT  donor: ExecState 1, Node 15, Wire 29, Invoke [741]
+  FACT  donor subVIs: [(399, 'Clear Errors.vi'), (243, 'LV-Scripting.lvlib:Create Invoke Node.vi'), (124, 'VI Scripting - Traverse.lvlib:Traverse for GObjects.vi')]
+  FACT  opmovein: ExecState 0, Node 15, Wire 29, Invoke [741]
+  FACT  opmovein subVIs: [(148, 'UID to GObject Reference.vi'), (399, 'Clear Errors.vi'), (243, 'LV-Scripting.lvlib:Create Invoke Node.vi'), (124, 'VI Scripting - Traverse.lvlib:Traverse for GObjects.vi')]
+  FACT  H2 EXTRA Invoke nodes on OpMoveIn_v0 that the donor does not have: []
+  PASS  H2 verdict recorded (A is live iff an extra Invoke has a BARE required `reference`)  0 extra Invoke node(s)
+
+=== H1: every terminal on wire 464 in an UNTOUCHED copy of the donor
+  OBSERVED wire 464 Terms[0] source=True owner 'IndexArray' uid 236 reciprocal 464 |  
+  OBSERVED wire 464 Terms[1] source=False owner 'Property' uid 237 reciprocal 464 |  
+  OBSERVED wire 464 Terms[2] source=False owner 'Property' uid 240 reciprocal 464 |  
+  OBSERVED wire 464 Terms[3] source=False owner 'Invoke' uid 741 reciprocal 464 |  
+  OBSERVED wire 464 Terms[4] source=False owner '' uid 0 reciprocal 0 |  error 1055: Property Node in OpWireSource_v5.vi er
+  (index 4 is past the end of Terms[] - stopping)
+  scratch deleted
+  FACT  H1 wire 464: 4 terminals; SOURCE [('IndexArray', 236)]; SINKS [('Property', 237), ('Property', 240), ('Invoke', 741)]
+  FACT  H1 VERDICT: **C IS LIVE** - deleting wire 464 removed 3 sinks, not one. The collateral sinks are [('Property', 237), ('Property', 240), ('Invoke', 741)]; any that is a REQUIRED input is now bare and alone explains ExecState 0 with no broken wire for Remove Bad Wires to find.
+  PASS  H1 wire 464's net was read  4 terminals
+  PASS  D0b original md5 after  2a78e17c449cacdaf5da389818526859
+
+--- FACTS ---
+  donor: ExecState 1, Node 15, Wire 29, Invoke [741]
+  donor subVIs: [(399, 'Clear Errors.vi'), (243, 'LV-Scripting.lvlib:Create Invoke Node.vi'), (124, 'VI Scripting - Traverse.lvlib:Traverse for GObjects.vi')]
+  opmovein: ExecState 0, Node 15, Wire 29, Invoke [741]
+  opmovein subVIs: [(148, 'UID to GObject Reference.vi'), (399, 'Clear Errors.vi'), (243, 'LV-Scripting.lvlib:Create Invoke Node.vi'), (124, 'VI Scripting - Traverse.lvlib:Traverse for GObjects.vi')]
+  H2 EXTRA Invoke nodes on OpMoveIn_v0 that the donor does not have: []
+  H1 wire 464: 4 terminals; SOURCE [('IndexArray', 236)]; SINKS [('Property', 237), ('Property', 240), ('Invoke', 741)]
+  H1 VERDICT: **C IS LIVE** - deleting wire 464 removed 3 sinks, not one. The collateral sinks are [('Property', 237), ('Property', 240), ('Invoke', 741)]; any that is a REQUIRED input is now bare and alone explains ExecState 0 with no broken wire for Remove Bad Wires to find.
+
+=== diag_movein_p1_break: 4 pass, 0 fail ===
+BGRUN END rc=0 after 2s

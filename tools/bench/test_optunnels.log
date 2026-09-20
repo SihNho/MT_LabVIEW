@@ -1,0 +1,31 @@
+BGRUN START 2026-09-14 13:02:29 limit 20.0 min: py -u tools/bench/test_optunnels.py
+T1 scratch: 5 tunnels (report_all says 5)
+    {'index': 0, 'uid': 511, 'index_mode': 1, 'out_name': 'References', 'out_is_source': False, 'out_wire': 524, 'out_conn_err': 0, 'out_wire_err': 0, 'in_names': [''], 'in_is_source': [True], 'in_wires': [421], 'seconds': 0.04}
+    {'index': 1, 'uid': 566, 'index_mode': 1, 'out_name': '', 'out_is_source': True, 'out_wire': 678, 'out_conn_err': 0, 'out_wire_err': 0, 'in_names': ['Position'], 'in_is_source': [False], 'in_wires': [577], 'seconds': 0.04}
+    {'index': 2, 'uid': 569, 'index_mode': 1, 'out_name': '', 'out_is_source': True, 'out_wire': 711, 'out_conn_err': 0, 'out_wire_err': 0, 'in_names': ['UID'], 'in_is_source': [False], 'in_wires': [586], 'seconds': 0.04}
+    {'index': 3, 'uid': 573, 'index_mode': 1, 'out_name': '', 'out_is_source': True, 'out_wire': 743, 'out_conn_err': 0, 'out_wire_err': 0, 'in_names': ['ClassName'], 'in_is_source': [False], 'in_wires': [596], 'seconds': 0.04}
+    {'index': 4, 'uid': 582, 'index_mode': 1, 'out_name': '', 'out_is_source': True, 'out_wire': 775, 'out_conn_err': 0, 'out_wire_err': 0, 'in_names': ['ClassName'], 'in_is_source': [False], 'in_wires': [605], 'seconds': 0.04}
+   -> PASS: T1 tunnel count == report_all LoopTunnel: 5 vs 5
+   -> PASS: T1 every tunnel has exactly one inner terminal: [1, 1, 1, 1, 1]
+   -> PASS: T1 outer wires are top-diagram wires, inner wires are body wires: outer [524, 678, 711, 743, 775] in top [106, 303, 373, 415, 425, 467, 524, 590, 678, 711, 743, 775]...; inner [[421], [577], [586], [596], [605]]
+   -> PASS: T1 direction: outer and inner terminals of a tunnel are opposite (input: outer sink/inner source; output: reverse): [(False, [True]), (True, [False]), (True, [False]), (True, [False]), (True, [False])]
+   -> PASS: T1 IndexMode 1 on all (the build set them): [1, 1, 1, 1, 1]
+   -> PASS: T1 one input tunnel, four output tunnels: inputs 1, outputs 4
+T2 main VI: report_all says 132 LoopTunnels
+   census 132 tunnels in 140 s
+   -> PASS: T2 main census count == report_all: 132 vs 132
+   -> PASS: T2 frame-loop half-edges explained by a LoopTunnel wire (informational): 36 of 83 resolved; 47 remain (shift registers / loop terminals / other)
+   -> PASS: T3 handles over 20 runs on main VI: samples [(0, 33696), (10, 33703), (20, 33713)]; post-idle 33713 (+17); 26 s
+
+################ SUMMARY ################
+  PASS  T1 tunnel count == report_all LoopTunnel                               5 vs 5
+  PASS  T1 every tunnel has exactly one inner terminal                         [1, 1, 1, 1, 1]
+  PASS  T1 outer wires are top-diagram wires, inner wires are body wires       outer [524, 678, 711, 743, 775] in top [106, 303, 373, 415, 425, 467, 524, 590, 678, 711, 743, 775]...; inner [[421], [577], [586], [596], [605]]
+  PASS  T1 direction: outer and inner terminals of a tunnel are opposite (input: outer sink/inner source; output: reverse) [(False, [True]), (True, [False]), (True, [False]), (True, [False]), (True, [False])]
+  PASS  T1 IndexMode 1 on all (the build set them)                             [1, 1, 1, 1, 1]
+  PASS  T1 one input tunnel, four output tunnels                               inputs 1, outputs 4
+  PASS  T2 main census count == report_all                                     132 vs 132
+  PASS  T2 frame-loop half-edges explained by a LoopTunnel wire (informational) 36 of 83 resolved; 47 remain (shift registers / loop terminals / other)
+  PASS  T3 handles over 20 runs on main VI                                     samples [(0, 33696), (10, 33703), (20, 33713)]; post-idle 33713 (+17); 26 s
+scratch deleted
+BGRUN END rc=0 after 173s

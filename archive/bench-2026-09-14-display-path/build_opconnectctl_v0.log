@@ -1,0 +1,68 @@
+BGRUN START 2026-09-14 14:06:19 limit 20.0 min: py -u tools/recipes/build_opconnectctl_v0.py
+start: Property=4 Invoke=0 IndexArray=1 Wire=9 ExecState=1
+   node uid 43 n 0: ['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+   node uid 308 n 1: ['array', 'element', 'index']
+   node uid 369 n 2: ['error out', 'specific error cleared?', 'error in (no error)', 'specific error code to clear (0: all)']
+   node uid 370 n 3: ['error out', 'specific error cleared?', 'error in (no error)', 'specific error code to clear (0: all)']
+   node uid 112 n 4: ['reference', 'reference out', 'error in (no error)', 'error out', 'Panel']
+   node uid 113 n 5: ['reference', 'reference out', 'error in (no error)', 'error out', 'Controls[]']
+   node uid 114 n 6: ['reference', 'reference out', 'error in (no error)', 'error out', 'Label', 'Indicator']
+   node uid 115 n 7: ['reference', 'reference out', 'error in (no error)', 'error out', 'Text']
+   Open VI Reference 43; Control[Label, Indicator] node 114
+
+== A1 PN_CT Control[Terminal]
+   predict: Property +1
+   result : 306  (0.1 s)
+
+== A2 Control node 'reference out' -> PN_CT.reference
+   predict: Wire +1, ExecState 1
+   result : after Property=5 Invoke=0 IndexArray=1 Wire=10 ExecState=1  (0.2 s)
+
+== B1 PN_BD VI.Block Diagram
+   predict: Property +1
+   result : 307  (0.1 s)
+
+== B2 Open VI Reference 'vi reference' -> PN_BD.reference (branch)
+   predict: ExecState 1
+   result : after Property=6 Invoke=0 IndexArray=1 Wire=10 ExecState=1  (0.1 s)
+
+== B3 PN_N AbstractDiagram.Nodes[]
+   predict: Property +1
+   result : 309  (0.1 s)
+
+== B4 IA_n
+   predict: IndexArray +1
+   result : 310  (0.1 s)
+
+== B5 PN_T Node.Terminals[]
+   predict: Property +1
+   result : 311  (0.1 s)
+
+== B6 IA_t
+   predict: IndexArray +1
+   result : 312  (0.1 s)
+
+== B7 chain wires: BD.Diagram -> N.ref; N.Nodes[] -> IA_n.array; IA_n.element -> T.ref; T.Terms[] -> IA_t.array
+   predict: Wire +4, ExecState 1
+   result : after Property=8 Invoke=0 IndexArray=3 Wire=14 ExecState=1  (0.4 s)
+
+== C1 Invoke Terminal.Connect Wire
+   predict: Invoke +1
+   result : 313  (0.1 s)
+
+== C2 PN_CT.Terminal -> Invoke.reference (sink); IA_t.element -> 'Wire Source'
+   predict: Wire +2
+   result : after Property=8 Invoke=1 IndexArray=3 Wire=16 ExecState=1  (0.2 s)
+   control on IA(uid 310).index -> ['index 3']
+   control on IA(uid 312).index -> ['index 4']
+   indicator on Invoke.error out -> ['error out 2']
+
+== E auto error handling OFF
+   predict: silent
+   result : None  (0.0 s)
+
+assembled: Property=8 Invoke=1 IndexArray=3 Wire=19 ExecState=1 labels {'index_node': 'index 3', 'index_terminal': 'index 4', 'error': 'error out 2'} steps [('A1 PN_CT Control[Terminal]', 'ok'), ("A2 Control node 'reference out' -> PN_CT.reference", 'ok'), ('B1 PN_BD VI.Block Diagram', 'ok'), ("B2 Open VI Reference 'vi reference' -> PN_BD.reference (branch)", 'ok'), ('B3 PN_N AbstractDiagram.Nodes[]', 'ok'), ('B4 IA_n', 'ok'), ('B5 PN_T Node.Terminals[]', 'ok'), ('B6 IA_t', 'ok'), ('B7 chain wires: BD.Diagram -> N.ref; N.Nodes[] -> IA_n.array; IA_n.element -> T.ref; T.Terms[] -> IA_t.array', 'ok'), ('C1 Invoke Terminal.Connect Wire', 'ok'), ("C2 PN_CT.Terminal -> Invoke.reference (sink); IA_t.element -> 'Wire Source'", 'ok'), ('E auto error handling OFF', 'ok')]
+donor md5 unchanged: True
+
+VERDICT: OpConnectCtl_v0 BUILT and SAVED (structural) - functional test = tools/recipes/build_harness_dispI.py step 8
+BGRUN END rc=0 after 57s

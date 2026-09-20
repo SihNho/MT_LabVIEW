@@ -1,0 +1,43 @@
+BGRUN START 2026-09-13 22:52:57 limit 15.0 min: py -u tools/recipes/build_optunnelind.py
+start: Property=1 Invoke=0 Wire=12 ExecState=1
+
+== 1 delete the donor's IndexMode property node
+   predict: Property 1->0, then ExecState 0 until the replacement is wired (broken is EXPECTED here)
+   OBSERVED: after Property=0 Invoke=0 Wire=9 ExecState=1
+
+== 2 Property(Tunnel.Outside Terminal) READ
+   predict: Property 0->1
+   OBSERVED: [{'i': 0, 'class': 'Property', 'uid': 118, 'pos': (733, 250), 'owner': 'TopLevelDiagram'}]
+
+== 3 wire To More Specific Class -> the property node's `reference`
+   predict: Wire +1
+   OBSERVED: 10
+
+== 4 Invoke(Terminal.Create Indicator)
+   predict: Invoke 0->1
+   OBSERVED: [{'i': 0, 'class': 'Invoke', 'uid': 119, 'pos': (885, 250), 'owner': 'TopLevelDiagram'}]
+   Invoke count now 1 (expected 1). net_map node list follows if this looks sprayed.
+
+== 5 wire the property's `Outer Term` -> the Invoke's `reference`
+   predict: Wire +1; a wrong terminal NAME is declined SILENTLY, so the wire count is the check
+   OBSERVED: 11
+
+== 5a wire the property's `error out` -> the Invoke's `error in (no error)`
+   predict: Wire +1 - keeps the two nodes ordered and carries the error forward
+   OBSERVED: 12
+
+== 5b silence automatic error handling on THIS op
+   predict: the Invoke's unwired `error out` can no longer raise a modal dialog per call
+   OBSERVED: auto error handling off
+
+assembled: Property=1 Invoke=1 Wire=12 ExecState=1
+steps: [("1 delete the donor's IndexMode property node", 'ok'), ('2 Property(Tunnel.Outside Terminal) READ', 'ok'), ("3 wire To More Specific Class -> the property node's `reference`", 'ok'), ('4 Invoke(Terminal.Create Indicator)', 'ok'), ("5 wire the property's `Outer Term` -> the Invoke's `reference`", 'ok'), ("5a wire the property's `error out` -> the Invoke's `error in (no error)`", 'ok'), ('5b silence automatic error handling on THIS op', 'ok')]
+
+== 6 COM save
+   predict: the op is written to disk
+   OBSERVED: 10646
+
+VERDICT: OpTunnelInd_v0 assembled and runnable (STRUCTURAL only - it has not been CALLED yet).
+Next: call it against a scratch VI that has a real auto-indexed output tunnel, and read the new
+indicator's VALUE over COM - an empty tuple () proves an ARRAY, a 2-tuple proves it stayed scalar.
+BGRUN END rc=0 after 2s

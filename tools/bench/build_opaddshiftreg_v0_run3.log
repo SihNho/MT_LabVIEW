@@ -1,0 +1,78 @@
+BGRUN START 2026-09-14 22:40:40 limit 18.0 min: py -u tools/recipes/build_opaddshiftreg_v0.py
+   COM preflight OK (pid 4232, two round-trips agree: 16 wires)
+
+== A0 (diagnostic, read-only) OpExitWhile_v0's 'Shift Registers' feeder
+   Get Outputs 216: 'Node in' wire 744; 'Outputs' -> (107, 'Outputs')
+   Get Outputs 348: 'Node in' wire 347; 'Outputs' -> (107, 'Shift Registers')
+start: Property=3 Invoke=0 Wire=16 ExecState=1
+   node 43 (n=0) 'Open VI Reference': ['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+   node 124 (n=1) 'Traverse for GObjects.vi': ['error out', '# of Refs', 'References', 'dup VI Refnum', 'Other Refnum', 'Traverse Generated Code (F)', 'Traverse Target', 'error in (no error)', 'Class Name', 'VI Refnum']
+   node 308 (n=2) 'Index Array': ['array', 'element', 'index']
+   node 683 (n=3) 'To More Specific Class': ['specific class reference', 'error out', 'target class', 'reference', 'error in']
+   node 316 (n=4) 'Open VI Reference': ['error out', 'vi reference', 'password ("")', 'type specifier VI Refnum (for type only)', 'error in (no error)', 'options', 'vi path', 'application reference (local)']
+   node 230 (n=5) 'Property Node': ['reference', 'reference out', 'error in (no error)', 'error out', 'UID']
+   node 238 (n=6) 'Property Node': ['reference', 'reference out', 'error in (no error)', 'error out', 'ShiftRegs[]']
+   node 313 (n=7) 'For Loop': ['ShiftRegs[]']
+   TMSC node: 683
+
+== A1 Invoke Loop.Add Shift Register (6361000)
+   predict: Invoke +1
+   result : 675  (0.1 s)
+   Invoke terminals: ['reference', 'reference out', 'error in (no error)', 'error out', 'Add Shift Register', 'Add Shift Register', 'Y Position', 'Y Position']
+   PASS A1 the method attached (non-generic terminals present) ['Add Shift Register', 'Add Shift Register', 'Y Position', 'Y Position']
+   PASS A1 'Y Position' input present ['Add Shift Register', 'Add Shift Register', 'Y Position', 'Y Position']
+
+== A1b TMSC 'specific class reference' -> Invoke.reference (branch)
+   predict: same wire uid on both ends
+   result : after Property=3 Invoke=1 Wire=16 ExecState=0  (0.1 s)
+   PASS A1b the branch landed (Invoke.reference wire == TMSC output wire) src=366 ref=366
+   'Y Position' sink terminal index: 6
+   control on 'Y Position' -> ['Y Position']
+   return SOURCE terminal index: 5 ([(4, 'Add Shift Register', False), (5, 'Add Shift Register', True), (6, 'Y Position', False), (7, 'Y Position', True)])
+
+== B1 PN GObject[UID] on the returned reference
+   predict: Property +1
+   result : 678  (0.1 s)
+
+== B2 Invoke return -> PN.reference BY INDEX (never by the duplicated name)
+   predict: wire on both ends
+   result : (1, 1)  (0.0 s)
+   indicator on UID -> ['UID 2']
+   indicator on Invoke.error out -> ['error out 3']
+
+== C auto error handling OFF
+   predict: silent
+   result : None  (0.0 s)
+
+assembled: Property=4 Invoke=1 Wire=20 ExecState=1 labels {'y_position': 'Y Position', 'uid': 'UID 2', 'error': 'error out 3'}
+   saved; labels -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opaddshiftreg_labels.json
+
+== A2 (functional) add a shift register to a scratch While loop
+   predict: shift_reg_uids 0 -> 1, element == the op's reported UID, one LeftShiftRegister, both sides unwired
+   scratch after exit_while: ExecState 1
+   before: {'loop_uid': 388, 'n_wire_uid': None, 'shift_reg_uids': [], 'errors': {}}
+   add_shift_reg -> uid 503, error None
+   after : {'loop_uid': 388, 'n_wire_uid': None, 'shift_reg_uids': [503], 'errors': {}}
+   PASS A2 no error from the invoke None
+   PASS A2 shift_reg_uids 0 -> 1 [] -> [503]
+   PASS A2 the created register is the one the op reported 503 vs [503]
+   right: {'uid': 503, 'class': 'RightShiftRegister', 'out': {'name': '', 'is_source': True, 'wire': 0}, 'inside': [{'name': '', 'is_source': False, 'wire': 0}], 'errors': {}}
+   left : {'uid': 503, 'class': 'RightShiftRegister', 'out': {'name': '', 'is_source': True, 'wire': 0}, 'inside': [{'name': '', 'is_source': False, 'wire': 0}], 'left_uids': [509], 'left': {'uid': 509, 'class': 'LeftShiftRegister', 'out': {'name': '', 'is_source': False, 'wire': 0}, 'inside': [{'name': '', 'is_source': True, 'wire': 0}]}, 'errors': {}}
+   PASS A2 right register class RightShiftRegister
+   PASS A2 one LeftShiftRegister, both sides unwired class='LeftShiftRegister' lefts=[509] out={'name': '', 'is_source': False, 'wire': 0} inside=[{'name': '', 'is_source': True, 'wire': 0}]
+   PASS A2 no junk Invoke on the scratch 
+   scratch ExecState after the register: 0 (0 is expected and correct: an unwired shift register breaks the VI until both sides are wired)
+
+donor md5 unchanged: True
+
+SUMMARY 9/9 PASS   steps [('A1 Invoke Loop.Add Shift Register (6361000)', 'ok'), ("A1b TMSC 'specific class reference' -> Invoke.reference (branch)", 'ok'), ('B1 PN GObject[UID] on the returned reference', 'ok'), ('B2 Invoke return -> PN.reference BY INDEX (never by the duplicated name)', 'ok'), ('C auto error handling OFF', 'ok')]
+   PASS A1 the method attached (non-generic terminals present)
+   PASS A1 'Y Position' input present
+   PASS A1b the branch landed (Invoke.reference wire == TMSC output wire)
+   PASS A2 no error from the invoke
+   PASS A2 shift_reg_uids 0 -> 1
+   PASS A2 the created register is the one the op reported
+   PASS A2 right register class
+   PASS A2 one LeftShiftRegister, both sides unwired
+   PASS A2 no junk Invoke on the scratch
+BGRUN END rc=0 after 66s

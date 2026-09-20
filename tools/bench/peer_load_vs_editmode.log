@@ -1,0 +1,93 @@
+BGRUN START 2026-09-16 17:29:34 limit 9.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent codex -Slug load-vs-editmode-23c -Task ATTACK two claims from tools/bench/diag_load_vs_editmode.log (script tools/bench/diag_load_vs_editmode.py, LabVIEW 2026, VI Scripting over ActiveX). Do not agree first.
+
+CONTEXT. You previously refuted my inference that OpenFrontPanel proves diagram load state is what makes Generic.Delete work, and you named the VI 'Block Diagram' property (23C, 'Loads the block diagram into memory: Yes') as the documented load primitive with Metrics:Block Diagram Loaded (291 front panel / 292 block diagram) as the check. I ran your discriminating test. MEASURED, each arm a FRESH copy of a small op VI (4 Property objects), identical raw Traverse->Index Array->Generic.Delete op, index 0, same process:
+  A0 nothing done first                                            4 -> 4  NOTHING deleted
+  A2 read VI.Block Diagram 23C first (no window), then delete      4 -> 4  NOTHING deleted
+  A3 OpenFrontPanel(activate=False) first, then delete             4 -> 3  deleted uid 115
+  A4 same 23C-loaded, panel-less copy, GObject.Move instead of Delete: position (853,300) -> (853,300), DID NOT MOVE
+  window census (Win32 EnumWindows) confirms A2 opened no window and A3 opened exactly one.
+The 23C read was performed by running an EXISTING op VI of mine whose dataflow is: Open VI Reference(path) -> Property Node VI.Block Diagram (23C) -> AbstractDiagram.Nodes[] -> Index Array -> node property reads -> the op returns and its references go out of scope / are closed.
+
+CLAIM 1 (attack it): because a documented diagram LOAD was performed and BOTH a delete and a move were still silently declined, while OpenFrontPanel makes both work, diagram residency is not the variable - the variable is the panel/edit-mode/UI context, so my ensure_loaded() helper must keep calling OpenFrontPanel. The obvious hole I want you to attack hardest: I could NOT read Metrics:Block Diagram Loaded in this run (see claim 2), so I have not proved the diagram was actually loaded, and it may have been unloaded again the moment the op VI finished and its refnums closed. Is a block diagram loaded via the 23C property guaranteed to STAY in memory after the refnum that loaded it is closed and the loading VI stops running? Cite NI or labviewwiki. If it does not stay, what mechanism holds it - keeping the diagram refnum open for the duration, VI.Block Diagram Window:Open (237), an Open VI Reference option flag, or something else - and how would I hold it open across a SEPARATE op VI run when the loading op has already returned?
+
+CLAIM 2 (attack it): my attempt to build the flag reader failed for an identifiable reason. I copied an existing op (Open VI Reference -> Traverse -> For loop), created a Property Node of class 'VI Server:VI' with items 291 and 292 (they attached: the node came back with terminals named PanelLoaded and DiagramLoaded), then wired its 'reference' input by BRANCHING the Open VI Reference node's 'vi reference' output with Terminal.Connect Wire. Result: wire count delta 0 and the VI went to ExecState 0 (broken), so save() refused it. My explanation is either (a) the branch silently did not happen so the PN's reference stayed bare (a Property Node with a bare reference is a broken node), or (b) the node was created at (60,900) which may be inside the donor's For Loop while owned by the top-level diagram. What else breaks a VI in exactly this shape? Specifically: does a VI-class Property Node reject a reference coming from Open VI Reference without a type specifier, do properties 291/292 (Run-Time Engine scope, read-only) have a requirement I am missing, and is a wire-count delta of 0 actually consistent with a successful branch in LabVIEW scripting or does a branch always add a Wire object?
+
+ALREADY RULED OUT: wrong method ID (6327400 confirmed by you); the op being broken (ExecState 1); the target running or reserved (idle fresh copy); error reporting (Generic.Delete has no semantic return value, error cluster reads (False,0,'') in every arm including the successful A3).
+OUTCOME: ANSWERED (7s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-16-load-vs-editmode-23c.md
+--- ANSWER ---
+codex.cmd : OpenAI Codex v0.150.1
+위치 줄:12 문자:36
++     Get-Content $promptFile -Raw | & $exe @exeArgs 2>&1 | Out-String
++                                    ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (OpenAI Codex v0.150.1:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+--------
+workdir: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop
+model: gpt-5.6-sol
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a0a955-f18c-7ec2-a007-f9785fad5698
+--------
+user
+You are a read-only research assistant. Never run or modify anything. Cite a URL for every external claim. ATTACK two c
+laims from tools/bench/diag_load_vs_editmode.log (script tools/bench/diag_load_vs_editmode.py, LabVIEW 2026, VI Scripti
+ng over ActiveX). Do not agree first.
+
+CONTEXT. You previously refuted my inference that OpenFrontPanel proves diagram load state is what makes Generic.Delete
+ work, and you named the VI 'Block Diagram' property (23C, 'Loads the block diagram into memory: Yes') as the documente
+d load primitive with Metrics:Block Diagram Loaded (291 front panel / 292 block diagram) as the check. I ran your discr
+iminating test. MEASURED, each arm a FRESH copy of a small op VI (4 Property objects), identical raw Traverse->Index Ar
+ray->Generic.Delete op, index 0, same process:
+  A0 nothing done first                                            4 -> 4  NOTHING deleted
+  A2 read VI.Block Diagram 23C first (no window), then delete      4 -> 4  NOTHING deleted
+  A3 OpenFrontPanel(activate=False) first, then delete             4 -> 3  deleted uid 115
+  A4 same 23C-loaded, panel-less copy, GObject.Move instead of Delete: position (853,300) -> (853,300), DID NOT MOVE
+  window census (Win32 EnumWindows) confirms A2 opened no window and A3 opened exactly one.
+The 23C read was performed by running an EXISTING op VI of mine whose dataflow is: Open VI Reference(path) -> Property 
+Node VI.Block Diagram (23C) -> AbstractDiagram.Nodes[] -> Index Array -> node property reads -> the op returns and its 
+references go out of scope / are closed.
+
+CLAIM 1 (attack it): because a documented diagram LOAD was performed and BOTH a delete and a move were still silently d
+eclined, while OpenFrontPanel makes both work, diagram residency is not the variable - the variable is the panel/edit-m
+ode/UI context, so my ensure_loaded() helper must keep calling OpenFrontPanel. The obvious hole I want you to attack ha
+rdest: I could NOT read Metrics:Block Diagram Loaded in this run (see claim 2), so I have not proved the diagram was ac
+tually loaded, and it may have been unloaded again the moment the op VI finished and its refnums closed. Is a block dia
+gram loaded via the 23C property guaranteed to STAY in memory after the refnum that loaded it is closed and the loading
+ VI stops running? Cite NI or labviewwiki. If it does not stay, what mechanism holds it - keeping the diagram refnum op
+en for the duration, VI.Block Diagram Window:Open (237), an Open VI Reference option flag, or something else - and how 
+would I hold it open across a SEPARATE op VI run when the loading op has already returned?
+
+CLAIM 2 (attack it): my attempt to build the flag reader failed for an identifiable reason. I copied an existing op (Op
+en VI Reference -> Traverse -> For loop), created a Property Node of class 'VI Server:VI' with items 291 and 292 (they 
+attached: the node came back with terminals named PanelLoaded and DiagramLoaded), then wired its 'reference' input by B
+RANCHING the Open VI Reference node's 'vi reference' output with Terminal.Connect Wire. Result: wire count delta 0 and 
+the VI went to ExecState 0 (broken), so save() refused it. My explanation is either (a) the branch silently did not hap
+pen so the PN's reference stayed bare (a Property Node with a bare reference is a broken node), or (b) the node was cre
+ated at (60,900) which may be inside the donor's For Loop while owned by the top-level diagram. What else breaks a VI i
+n exactly this shape? Specifically: does a VI-class Property Node reject a reference coming from Open VI Reference with
+out a type specifier, do properties 291/292 (Run-Time Engine scope, read-only) have a requirement I am missing, and is 
+a wire-count delta of 0 actually consistent with a successful branch in LabVIEW scripting or does a branch always add a
+ Wire object?
+
+ALREADY RULED OUT: wrong method ID (6327400 confirmed by you); the op being broken (ExecState 1); the target running or
+ reserved (idle fresh copy); error reporting (Generic.Delete has no semantic return value, error cluster reads (False,0
+,'') in every arm including the successful A3).
+
+--- HOW TO ANSWER (mandatory, from the dispatcher) ---
+Your job is to REFUTE the claim above, not to confirm it. Do not open with agreement.
+1. Name the single strongest reason the claim is WRONG.
+2. Name at least one ALTERNATIVE explanation of the same evidence.
+3. Name the observation that would FALSIFY the claim.
+4. End with the CHEAPEST discriminating test that separates the claim from your alternative.
+If you still believe the claim holds after all four, say so explicitly and state what would change your mind.
+
+
+ERROR: Selected model is at capacity. Please try a different model.
+ERROR: Selected model is at capacity. Please try a different model.
+
+
+BGRUN END rc=0 after 7s

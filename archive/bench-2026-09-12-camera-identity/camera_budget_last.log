@@ -1,0 +1,23 @@
+BGRUN START 2026-09-12 13:16:46 limit 15.0 min: py -u tools/bench/camera_budget_sweep.py
+cam1: 1280 x 1024, binning 2x2, payload 1310720 B, camera set to 90.00 Hz, 10 ring buffers, 4 s per point
+
+
+=== camera set to 149.99 Hz (asked 150); frame period 6.67 ms
+    delay |  acquired | processed |  missed | frames
+   ------ + --------- + --------- + ------- + ------
+       0  |     149.7 |   23795.5 |       0 | 95182
+       2  |     149.7 |     477.2 |       0 | 1909
+       4  |     149.7 |     243.0 |       0 | 972
+       6  |     149.5 |     163.2 |       0 | 653
+       8  |     149.5 |     123.0 |     107 | 492   <== losing frames
+      10  |     149.4 |      98.7 |     204 | 395   <== losing frames
+
+======================================================================
+PER-FRAME BUDGET (10 ring buffers, 1280x1024)
+       rate |   period |   budget | headroom the tracking loop has
+      150 Hz |  6.67 ms |     6 ms |
+
+restored: 1280 x 1024 at 90.00 Hz
+
+closed the camera session; results -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\camera_budget_sweep_last.json
+BGRUN END rc=0 after 35s

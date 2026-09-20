@@ -1,0 +1,87 @@
+BGRUN START 2026-09-15 21:57:53 limit 25.0 min: py -u tools/prior_art_review.py --slug testrun4-sharded-clean --trigger direction-change --model opus --effort high --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/1c79eb01-7150-4a78-9689-e6d4f34f7800/scratchpad/priorart_test_plan.txt
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_testrun4-sharded-clean.txt (54021 chars)
+OUTCOME: ANSWERED (253s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-15-priorart-testrun4-sharded-clean.md
+COST: $2.7616  in 24 / out 19502 / cache-create 155409 / cache-read 1439644  (249s, 24 turn(s))
+--- ANSWER ---
+Write is disabled here, so the review is delivered inline. Every citation below is from a file I opened.
+
+# PRIOR-ART REVIEW ? the 5-step in-copy restructure plan
+
+**4 of the 5 steps are already settled, refuted, built, or failed in this project's own files.** Nothing comes back `novel`.
+
+---
+
+## PART A ? THE DIRECTION
+
+### A1 SETTLED ALREADY ? step 2, "can VI Scripting relocate a node to a different diagram?"
+
+Closed **twice today, hours before this plan**, yet the plan proposes to establish it "before anything else is built":
+
+- `STATUS.md:269` ? *"0a ANSWERED, 2026-09-15 18:27 ? the in-copy migration route WORKS (attempt 4, 3/3, `tools/recipes/probe_migrate_v2.py`)"*
+- `STATUS.md:283` ? *"SETTLED by attempt 5 (`probe_migrate_v3.py`, 5/5, 18:30) ? the migrated state COMPILES"*, gate **M5 `ExecState == 1`**
+- `STATUS.md:297` ? *"the in-copy restructure method is proven end to end�� `GObject.Move` is not needed"*
+- `docs/toolkit-capabilities.md:367` ? *"RESOLVED the same day ? the build route is clear, and **'move a node' was never needed**"*; the measured ladder at `:372-375`; `:381` ? *"`wire()` across a loop boundary AUTO-CREATES the tunnel"*
+
+What **is** still open, and the plan does not ask it: `STATUS.md:299` ? *"What remains untested is SCALE (75 nodes, 21 sibling couplings) and RUNTIME behaviour, **not feasibility**."*
+
+### A2 REFUTED ALREADY ? step 1, ASI-first on the ~2.5 ms argument
+
+- `archive/peer/2026-09-15-restructure-in-copy-plan.md:11-15` ? *"The 5.06 ms 'kernel + one serial round trip' is **not** the ordinary-frame cost�� So 'move ASI out to win ~2.5 ms per frame' is void, and **ASI-first ordering has no performance support**."* `:23` ? *"ADOPTED in place of my ordering: measure the unconditional per-frame path."*
+- `STATUS.md:124` ? *"the **ORDERING was refuted** by the plan review and is replaced"*; `STATUS.md:133` is the replacement first step (p50 **and** p99).
+
+Still applies? To the plan's stated reason, yes. `docs/camera-acquisition-facts.md:142-152` revives an ASI loop on **p99 / focus-active** grounds ? a *different* argument ? and `:151-152` records that the frequency and the true `WHERE` latency are **still unmeasured and need the rig**. An ASI-owns-VISA loop survives; "ASI first because it returns ~2.5 ms / 150��200 Hz" does not.
+
+### A3 CONTRADICTED ? two cited facts
+
+**(a) The 2.5 ms figure contradicts its own file, 55 lines earlier.**
+
+| plan's citation | same file, earlier |
+|---|---|
+| `docs/camera-acquisition-facts.md:195-198` ? *"5.06 ms of the 6.00 ms�� returns ~2.5 ms, the difference between 150 Hz and 200 Hz"* | `:140` ? *"**the frame loop does NOT transact serial every iteration**"*; `:169` ? *"**serial does not block 150 Hz.** It is paid only while a focus key is held"*; `:177` ? *"What IS paid every frame is two `Value` property nodes"* |
+
+Second occurrence of this exact miss ? `STATUS.md:126` records the first.
+
+**(b) "Those are the two consumers of wire 751" is false.** The donor's own census shows three consumers plus the source:
+
+- `tools/bench/census_opwiresource_v5.log:181` ? uid **157** `'Owner'` �� 751 *(source)*
+- `:161` ? uid **482** `'reference'` �� 751 �� **omitted by the plan**
+- `:183` ? uid **163**; `:221` ? uid **1221**
+
+### A4 UNREAD EVIDENCE ? a prior-art review of step 4 already ran today at 18:54
+
+`tools/bench/priorart_ownerchain.log:3` (`OUTCOME: ANSWERED`, archived as `archive/peer/2026-09-15-priorart-ownerchain.md`), verdicts `:43-45` = `already-measured` �� `already-failed` �� `contradicted`. It made the wire-751 finding explicitly ? `:29-31`: *"neither deletes nor re-feeds node 482. **It therefore repeats the recorded failure cause.**"* The plan restates the refuted claim verbatim. Also unread: `archive/peer/2026-09-15-outcome-review-20260915.md:221`, which freezes `VI.Get Errors` by name, and `:227` ? *"Its next problem is not missing tooling."*
+
+---
+
+## PART B ? THE ARTIFACTS
+
+**B1 ALREADY BUILT.** Both "new" artifacts exist as recipes: `tools/recipes/build_opownerchain_v0.py` (docstring `:3-27`, `DELETE_UIDS` `:57-62`, the 163/1221 rewire `:130-143`) and `tools/recipes/build_opgeterrors.py`.
+
+**B2 ALREADY FAILED ? twice each, cause on record, unaddressed.**
+- `VI.Get Errors` 452: `tools/bench/build_opgeterrors.log:1-9` (2026-09-09, rc=5) and `:10-18` (2026-09-14, rc=5), both *"assembled: ExecState 0 outputs ['reference out', 'error out 2'] / STOP: not saved"*; `docs/toolkit-capabilities.md:244` ? *"FAILED 2026-09-09 ? Invoke node created with only reference/error terminals, **with and without the private ini tokens**"*. The record names the missing piece: `:232-234`, *"an `OpBuildInvoke_v1` with the same exposure is needed for the Invoke case"*. The plan doesn't mention it.
+- The rewire: `tools/bench/build_opwiresource_v5.log:35` lists `(482, 'Property Node', 'reference')` among unwired sinks **after** the rewire; `:37` re-fed it; `:38` shows ExecState `1 �� 0 �� 0 �� 1`, runnable only after that re-feed. Deleting the Wire-specific front section removes node 157 ? 751's source ? orphaning 482 again.
+
+**B3 HELPER EXISTS.** `docs/NAMES.md:515` ? `count("Diagram") - 1` is precisely what failed attempts 1 and 2 (*"the subVI landed on a pre-existing diagram, silently"*); `:521-522` ? *"**there is no rule about where a new diagram lands, and looking for one is the error.**"* Use `gscript.new_since` (`:526-528`), `gscript.loop_diagram` (`:529-531`), verify with `subvis(target, index)` (`:532`). Also `STATUS.md:322,329`.
+
+**B4 ALREADY MEASURED.** Step 1's premise: `docs/camera-acquisition-facts.md:154-167` (five unconditional nodes; both serial VIs inside case 587). Step 4's oracle: `priorart_ownerchain.log:19-21` �� `docs/diagram-hierarchy.md:46`, `tools/bench/diagram_tree_main.json:370`.
+
+---
+
+```
+PRIOR-ART: settled-already    # step 2 ? STATUS.md:269,283,297 �� docs/toolkit-capabilities.md:367
+PRIOR-ART: refuted-already    # step 1 ? archive/peer/2026-09-15-restructure-in-copy-plan.md:11-23 �� STATUS.md:124-133
+PRIOR-ART: contradicted       # step 1 ? camera-acquisition-facts.md:195-198 vs :140,:169,:177
+PRIOR-ART: contradicted       # step 4 ? census_opwiresource_v5.log:161,181,183,221
+PRIOR-ART: unread-evidence    # priorart_ownerchain.log:43-45
+PRIOR-ART: already-built      # step 4 ? build_opownerchain_v0.py:57-62,130-143
+PRIOR-ART: already-failed     # step 3 ? build_opgeterrors.log:1-18 �� toolkit-capabilities.md:244
+PRIOR-ART: already-failed     # step 4 ? build_opwiresource_v5.log:35-38
+PRIOR-ART: helper-exists      # step 5 ? docs/NAMES.md:515-532
+PRIOR-ART: already-measured   # camera-acquisition-facts.md:154-167 �� priorart_ownerchain.log:19-21
+```
+
+**Narrowest release path** (each is a written refutation of one citation above, which is the only thing that lifts these): re-scope step 2 from feasibility to scale/runtime per `STATUS.md:299`; re-justify step 1 on the p99 ground of `camera-acquisition-facts.md:142-152` and sequence it after `STATUS.md:133`'s measurement; amend step 4 to re-feed or delete node 482 before the front-section deletion; drop step 3 per the outcome review, or precede it with the `OpBuildInvoke_v1` exposure `toolkit-capabilities.md:232-234` names; replace step 5's arithmetic with `new_since` / `loop_diagram`.
+
+I took no lock, built nothing, and ran nothing.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-testrun4-sharded-clean.md
+BGRUN END rc=0 after 254s

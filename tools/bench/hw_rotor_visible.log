@@ -1,0 +1,20 @@
+BGRUN START 2026-09-14 20:28:25 limit 5.0 min: py -u tools/bench/hw_rotor_visible.py
+   start: 00000000 = 0.0 deg
+   SEND 'PIC -1500' at t=0.1 s
+      after -3 turns: FFFFFFFC = -2.9 deg  t=0.1 s
+      after -3 turns: FFFFFDD5 = -399.6 deg  t=0.7 s
+      after -3 turns: FFFFFBB9 = -788.4 deg  t=1.2 s
+      after -3 turns: FFFFFA24 = -1080.0 deg  t=1.7 s
+   after -3 turns: stable FFFFFA24 = -1080.0 deg after 2.2 s (5 polls)
+   motion took about 2.2 s (incl. polling); expected -1080 deg -> got -1080.0 deg (FFFFFA24)
+   waiting 5 s ...
+   SEND 'PAB 0' at t=7.3 s
+      after PAB 0: FFFFFA28 = -1077.1 deg  t=7.3 s
+      after PAB 0: FFFFFC50 = -679.7 deg  t=7.9 s
+      after PAB 0: FFFFFE7E = -277.9 deg  t=8.4 s
+      after PAB 0: 00000000 = 0.0 deg  t=9.0 s
+   after PAB 0: stable 00000000 = 0.0 deg after 2.2 s (5 polls)
+   return took about 2.2 s; final 00000000 = 0.0 deg
+
+SUMMARY: -3 turns read -1080.0 deg (PASS); origin return PASS
+BGRUN END rc=0 after 10s

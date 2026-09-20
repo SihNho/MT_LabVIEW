@@ -1,0 +1,157 @@
+﻿---
+type: peer-review
+status: historical
+date: 2026-09-14
+tags: [peer-review, main-vi, plan]
+---
+
+# oppanelwiring-v0-plan
+
+- **agent:** codex
+- **date:** 2026-09-14
+- **outcome:** ANSWERED (175s)
+- **why asked:** plan review before building OpPanelWiring_v0 (work cycle step 1) — the op that fills the empty "wiring" column of docs/main-vi-panel-map.md (live vs orphaned panel objects).
+- **verdict:** ACTED ON. Taken: (s2) `Control.Terminal` moved to its OWN property node (PN1b) fed from PN1's `reference out`, so a failing Terminal row cannot default Indicator/UID on the metadata node; (s1) the two risky nodes' `error out` tunnelled out as explicit error columns (optional step; the test reads them when present) and the "wire UID 0 == unwired" semantics are DECIDED by a constructed orphan (test T2: create_control on a terminal, delete its wire, expect exactly one zero row and N+1 rows) rather than assumed; (s4) `Is Source?` is a consistency check (== not Indicator), not independent evidence; the global read/write direction route (Node.Terminals[] → Is Source? per terminal, one known read + one known write global as the test) is recorded for the next op. Accepted as a stated contract, not fixed: (s3) Panel.Controls[] is top-level only (tab pages / cluster elements are not rows; the 114-object oracle came from the same route and cluster elements have no terminals of their own). (s5) deleted-terminal behaviour: in LabVIEW deleting a terminal deletes its control, so the case does not arise; left as a note.
+
+## Question
+
+ATTACK this build plan (refute, do not confirm). GOAL: OpPanelWiring_v0.vi - one op run returns, for EVERY top-level front-panel object of a target VI, arrays: label text, is-indicator flag, control UID, terminal Is Source?, connected-wire UID (0 = the terminal is NOT wired on the diagram = orphaned panel object). It fills the missing 'wiring' column of docs/main-vi-panel-map.md (114 objects, 60 CTL / 54 IND, main VI) and supplies read/write direction. PROVEN TODAY (tools/bench/probe_castfree5.log): Control.Terminal 6332006 -> Terminal-class node [Is Source? 634A003, Connected Wire 634A000] compiles cast-free, terminal names 'Terminal','IsSource','Wire'; and the whole array-op pattern (For loop fed by a typed ref array, exit_loop tunnels, tunnel_indicator) just shipped as OpSubVIs_v1 (tools/bench/test_opsubvis_v1.log 14/14). DONOR: OpFPLabels_v0.vi (tools/recipes/build_opfplabels.py): Open VI Reference -> VI.Front Panel 23D -> Panel.Controls[] 6348801 -> Index Array(index) -> Control[Label 6332005, Indicator 6332007] -> Text.Text 632D800 -> indicators. RECIPE tools/recipes/build_oppanelwiring_v0.py: (1) copy donor, open_panel, md5; (2) net_map diagram 0: Controls[]-node (terminal 'Controls[]'), the Index Array, the Control[Label,Indicator] node, the Text node; (3) delete downstream-first: Text node, Control node, Index Array + Remove Bad Wires (frees the Controls[] output; the old 'Text'/'Indicator' indicators stay unwired) -> ExecState 1 expected; (4) for_loop, body diagram; (5) inside body PN1 class Control [Label, Terminal, Indicator, UID 632A813] (superclass UID on a Control-class node - the same trick that worked on the SubVI node today), check its terminals by net_map; (6) wire Controls[]-node 'Controls[]' -> PN1 'reference' (auto-indexed input tunnel, N from the array); (7) inside body: PN2 Text[Text] <- PN1 'Label'; PN3 Terminal[IsSource, ConnectedWire] <- PN1 'Terminal'; PN4 GObject[UID] <- PN3 'Wire'; (8) exit_loop PN2['Text'], PN1['Indicator','UID'], PN3['IsSource'], PN4['UID'] -> 5 output tunnels, set_index_mode 1, tunnel_indicator each, labels by fp_labels diff; (9) set_auto_error_handling(False), save iff ExecState 1. SEMANTICS I RELY ON: for an UNWIRED terminal Connected Wire returns Not-A-Refnum, PN4 (UID) then errors 1055 inside that iteration with its error out unwired and auto error handling off, and its auto-indexed output gets the DEFAULT 0 for that iteration - so wire UID 0 == unwired. FUNCTIONAL TEST: scratch copy of OpNodeInfo_v0 (every panel object is wired in an op): label set == gscript.fp_labels(scratch) labels, indicator flags == fp_labels is_ind, all wire UIDs non-zero, control UIDs unique; main VI: 114 rows, orphan list (wire UID 0) printed and cross-checked against tools/bench/controlterminal_map.json / the 2026-09-13 ControlTerminal census; a control that is known wired (e.g. 'Number of Buffers' or the camera name) must show a non-zero wire UID; 20-run handle audit. ATTACK: (a) does a For loop iteration whose property node errors really leave the auto-indexed output at the type default (0) rather than skipping/shortening the array or stopping the loop? (b) Panel.Controls[] - does it include objects inside tab controls/clusters (nested) or only top level; does it include decorations; does hidden/scrollbar objects matter? (c) Is Source? on a CONTROL terminal is always TRUE and on an indicator terminal FALSE - is it therefore redundant with Control.Indicator, and what is the correct cast-free signal for a GLOBAL VARIABLE node's read/write direction on the DIAGRAM (Nodes[] -> Node.Terminals[] -> Terminal.Is Source?, no Global cast)? (d) Connected Wire on a terminal of a control that lives on the panel but whose terminal was DELETED/never placed on the diagram - error, Not-A-Refnum, or a stale ref? (e) any reason a Control-class property node should refuse GObject.UID; any reason 'Label' returns a Text ref that Text.Text cannot read (e.g. label hidden). Concrete failure scenario + cheapest discriminating test for each; cite NI docs where they exist.
+
+## Answer
+
+Verdict: reject the plan as written. The happy-path ladder is proven, but the orphan path?봳he feature that matters?봧s not. Worse, `Terminal` shares PN1 with later `Indicator` and `UID` fields, so one missing-terminal error can corrupt multiple columns.
+
+1. Error ??zero wire UID
+
+The array probably will not shorten merely because PN4 raises 1055. NI states that a normal auto-indexed For-loop output receives one element per executed iteration; shortening requires fewer executed iterations or conditional indexing. [NI: Auto-Indexing Tunnels](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000PAghSAG)
+
+But NI does not document that a failed `GObject.UID` read produces numeric zero at that iteration. Error 1055 means only ?쐎bject reference is invalid?? NI shows that invalid references become Not-A-Refnum, not what every downstream property output returns. [NI: Error 1055](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019L75SAE&l=en-US)
+
+Concrete failure: the loop returns 114 elements, but a failed UID property retains an implementation-dependent/default output that your test mistakes for a wire UID. The all-wired `OpNodeInfo_v0` test never exercises this path.
+
+Cheapest discriminator: feed PN4 exactly three GObject references:
+
+- valid wire A
+- explicit Not-A-Refnum
+- valid wire B
+
+Return `i`, UID, and PN4 error status/code through auto-indexed tunnels. Require:
+
+- lengths exactly 3
+- UIDs `[A, 0, B]`
+- statuses `[false, true, false]`
+- middle error 1055
+
+Do not publish `wire UID == 0` until that passes. Better still, return `terminal exists?`, `wire valid?`, and error code explicitly instead of encoding three states into one U32.
+
+2. PN1 can poison `Indicator` and control `UID`
+
+Property-node elements execute top-to-bottom. If one element errors, later elements can fail unless ?쏧gnore Errors Inside Node??is enabled. [NI training manual](https://www.ni.com/pdf/training/us/lvcore2-course-2009-sample.pdf), [NI Community discussion](https://forums.ni.com/t5/LabVIEW/guidelines-for-order-of-property-node-elements/td-p/3215744)
+
+Your proposed order is:
+
+`Label ??Terminal ??Indicator ??UID`
+
+Concrete failure: an orphan whose `Control.Terminal` produces 1055 gets:
+
+- correct label
+- invalid terminal
+- default `Indicator = FALSE`
+- default control UID `0`
+
+That misclassifies an orphaned indicator as a control and breaks UID uniqueness. Disabling automatic error handling does not make later rows execute; it only suppresses the unhandled-error dialog.
+
+Cheapest fix/test: put non-failing metadata before the risky property:
+
+`Label ??Indicator ??UID ??Terminal`
+
+Safer: separate `Terminal` onto its own Control-class property node so its error cannot contaminate metadata. Test with two deliberately orphaned objects, one control and one indicator, and require their flags and control UIDs to remain correct.
+
+3. `Panel.Controls[]` is not recursive
+
+The recipe can support ?쐔op-level controls and indicators,??not ?쐃very panel object.??
+Controls inside tab pages require traversing the tab control?셲 `Pages[]` and each page?셲 `Controls[]`; NI explicitly documents that the top-level `Controls[]` returns the tab itself and that page contents require another traversal. [NI: accessing objects within a Tab Control](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019O8LSAU)
+
+Cluster elements similarly require the cluster?셲 own `Controls[]` property. [NI: accessing controls within a cluster](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YHhtCAG&l=en-US)
+
+Decorations are a separate `Decorations[]` collection, so they are not part of this typed Control-ref pipeline. [NI: modifying decorations](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YIfeCAG&l=en-US)
+
+Invisible controls are still returned by pane `Controls[]`; visibility is merely a property used for filtering. [NI Community: Panel control references](https://forums.ni.com/t5/LabVIEW/Panel-control-references/m-p/4250485)
+
+Concrete failure: the existing 114-row map may match because it was produced by the same non-recursive API, while nested controls remain absent from both the implementation and the oracle.
+
+Cheapest discriminator:
+
+- Compare the returned label/UID set against an independently obtained top-level census, not `fp_labels()` if that wrapper uses the same `Panel.Controls[]` route.
+- Make a tiny fixture containing one ordinary control, one hidden control, one cluster with two elements, and one tab with controls on two pages.
+- Define the contract explicitly:
+  - top-level only: expect ordinary, hidden, cluster shell, and tab shell;
+  - recursive: additionally expect cluster elements and page controls.
+- Decorations and pane/window scrollbars should be tested separately and excluded from ?쐏anel controls.??
+4. `Is Source?` is redundant for panel terminals
+
+For ordinary front-panel terminals, `Control.Indicator` already gives the same direction classification at the object level: controls supply data to the diagram, while indicators receive diagram data. [NI: Front Panel Explained](https://www.ni.com/en/support/documentation/supplemental/08/labview-front-panel-explained.html) NI?셲 terminal drawings likewise distinguish controls from indicators by arrow direction. [LabVIEW User Manual](https://download.ni.com/support/manuals/320999e.pdf)
+
+Therefore `Terminal.Is Source?` should be treated as a consistency check:
+
+- control: expected `Is Source? = TRUE`
+- indicator: expected `Is Source? = FALSE`
+
+Do not call the two outputs independent evidence.
+
+For a diagram global-variable node, the cast-free direction signal is indeed:
+
+`Node.Terminals[] ??each Terminal.Is Source?`
+
+Interpretation:
+
+- `TRUE`: data leaves the variable node ??global read
+- `FALSE`: data enters the variable node ??global write
+
+NI documents that read globals resemble controls and write globals resemble indicators. [LabVIEW User Manual, Local and Global Variables](https://download.ni.com/support/manuals/320999e.pdf)
+
+Concrete failure: assuming terminal index 0 or a single terminal on every Global node could misclassify an expanded/multifield global. `Terminals[]` order is not an identity contract; inspect every data terminal, filter out non-data terminals if present, and use `Is Source?` per terminal. NI recommends terminal direction and datatype when names or indexes are insufficient. [NI Community: Scripting Terminal Information](https://forums.ni.com/t5/LabVIEW/Scripting-Terminal-Information/td-p/4303374)
+
+Cheapest test: one known read global and one known write global referencing the same field. Require exactly one relevant data terminal on each and opposite `Is Source?` values. Direction can be obtained without a Global cast; field identity still cannot.
+
+5. Deleted or never-created diagram terminal
+
+This is the largest unresolved API behavior. NI says front-panel controls and indicators normally acquire block-diagram terminals automatically. [NI: Front Panel Explained](https://www.ni.com/en/support/documentation/supplemental/08/labview-front-panel-explained.html) I found no NI documentation specifying what `Control.Terminal` returns after that terminal is manually deleted.
+
+The possible outcomes remain:
+
+- valid terminal ref, but `Connected Wire` is Not-A-Refnum;
+- `Control.Terminal` returns Not-A-Refnum;
+- `Control.Terminal` raises 1055;
+- stale reference until save/reload.
+
+Concrete failure: if `Control.Terminal` itself fails, the recipe never reaches `Connected Wire`; without separate error outputs, ?쐔erminal absent??and ?쐔erminal exists but is unwired??collapse accidentally rather than deliberately.
+
+Cheapest discriminator: a four-object fixture, saved and reopened before testing:
+
+- wired control
+- present-but-unwired control terminal
+- deleted-terminal control
+- deleted-terminal indicator
+
+Return error status/code after `Control.Terminal`, reference validity, error status/code after `Connected Wire`, and wire UID. This also tests the PN1 poisoning issue.
+
+6. `GObject.UID` and hidden labels
+
+A Control is a GObject subclass, so an inherited GObject property is conceptually valid; your successful superclass-property-on-SubVI result further lowers this risk. Still, that is machine/version evidence, not a guarantee that this property-builder accepts every superclass UID/class combination.
+
+Concrete failure: the property attaches but the typed node silently declines or returns UID zero for some control subclass. Cheapest test: compare PN1 UID against UIDs from the independent panel census across several subclasses?봲calar, array, cluster, tab, graph?봞nd require all nonzero and unique.
+
+A hidden label is not the same as a nonexistent label. NI documents hiding a control label as a visibility operation, and separately documents reading/writing label text. [NI Getting Started manual](https://download.ni.com/support/manuals/321527e.pdf), [NI label-property article](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019KbOSAU&l=de-DE) The creation caveat applies to captions, not ordinary labels.
+
+Concrete failure is therefore more likely with captions or non-Control decorations than with hidden labels. Cheapest test: hide one control label, save/reopen, and require `Label ??Text.Text` to return the unchanged label string. Also include a control with a visible caption and hidden label to ensure the recipe records the canonical label, not displayed caption text.
+
+Minimum change before building: split risky properties from metadata, return explicit per-row validity/error fields, and add a synthetic orphan fixture. The proposed all-wired scratch test cannot validate the only behavior on which `wire UID 0 == orphan` depends.
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+See the **verdict** line at the top of this file (filled 2026-09-14 14:2x; the day's outcomes are in STATUS.md and docs/).

@@ -1,0 +1,29 @@
+BGRUN START 2026-09-13 19:44:27 limit 10.0 min: py -u -c 
+import os,sys,time,hashlib
+sys.path.insert(0,os.path.abspath('tools'))
+import gscript as g
+g._lv=None
+P=os.path.join(g.CLAUDEDEV,'OpFPLabels_v0.vi')
+h=hashlib.md5(open(P,'rb').read()).hexdigest()
+print('on-disk md5 before:',h,flush=True)
+print('ExecState:',g.exec_state(P),flush=True)
+# clear the cached reference first - gscript caches op refs, and a stuck one keeps the VI reserved
+g._lv=None
+try:
+    g.revert(P); print('reverted',flush=True)
+except Exception as e: print('revert:',str(e)[:110],flush=True)
+print('ExecState after revert:',g.exec_state(P),flush=True)
+print('md5 unchanged:',hashlib.md5(open(P,'rb').read()).hexdigest()==h,flush=True)
+try:
+    rows=g.fp_labels(os.path.join(g.CLAUDEDEV,'OpReport_v3.vi'),max_n=20)
+    print('fp_labels WORKS again:',len(rows),'objects',flush=True)
+except Exception as e:
+    print('fp_labels still failing:',str(e)[:130],flush=True)
+
+on-disk md5 before: 5f2da97f2d016abf9ad211706d4ab3f6
+ExecState: 1
+revert: (-2147352567, '���ܰ� �߻��߽��ϴ�.', (6573, 'LabVIEW', 'LabVIEW: (Hex 0x431) This property is writable only when the V
+ExecState after revert: 1
+md5 unchanged: True
+fp_labels still failing: (-2147352567, '���ܰ� �߻��߽��ϴ�.', (6500, 'LabVIEW', 'LabVIEW: (Hex 0x3E8) The VI is not in a state compatible with this operation.', No
+BGRUN END rc=0 after 1s

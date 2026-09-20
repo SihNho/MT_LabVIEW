@@ -1,0 +1,106 @@
+BGRUN START 2026-09-20 03:33:04 limit 20.0 min: py tools\prior_art_review.py --plan-file C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\09c7484d-e3ad-4225-b37f-d25d531a572c\scratchpad\plan_d1_s2_loops.md --slug d1-s2-loops --trigger cycle-start --recipe tools/recipes/stage_d1_s2_loops.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_d1-s2-loops.txt (26592 chars)
+OUTCOME: ANSWERED (530s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-20-priorart-d1-s2-loops.md
+COST: $4.7775  in 46 / out 36535 / cache-create 220574 / cache-read 3316240  (526s, 29 turn(s))
+--- ANSWER ---
+No LabVIEW was touched: no `.vi` opened, no COM call, no lock, nothing built, edited or run. I read `docs/`, `archive/` (peer exchanges included), `tools/recipes/`, `tools/bench/` logs and JSON.
+
+---
+
+# PRIOR-ART REVIEW — `tools/recipes/stage_d1_s2_loops.py` (D1 stage S2, cycle 51), sha256 `7eb482beab05…`
+
+## PART A — THE DIRECTION
+
+### A1 — SETTLED ALREADY? **No slug.** The direction *is* the settlement, and it is dated and measured
+
+`docs/cycle27-plan.md:868-887` (Pre-decided **34(a)/(b)**, 2026-09-20) decides exactly this shape — "THREE EMPTY WHILE LOOPS, EACH SCAFFOLDED BY `OpCreateEqual_v0` → `OpStopFromNode_v0`, SAVED — NO `move_in`, NO QUEUES, NO RE-WIRING" — and `:948-969` (**34(l)**) records the measurement that falsified the rival ("S2 cannot end legal"). The readings are on file at `tools/bench/diag_s2_scaffold.json:453-476` (`1_loop_scaffolded_no_move: 1`, save 475,422 B, `S2DIAG-COLD 1 / S2DIAG-PRELOAD 1`). Citing this as `settled-already` would be over-broad: it settles the direction *in favour of* the build.
+
+### A2 — REFUTED ALREADY? **No slug — and I am saying so explicitly so it is not re-raised**
+
+Round 1 of this stage's prior art killed a state with almost the same name: `archive/peer/2026-09-20-priorart-d1-s2-stage.md:1019-1021` — "**B2 ALREADY FAILED — 'three empty While loops' is a state already measured at `ExecState 0`**", resting on `docs/toolkit-capabilities.md:67` ("a fresh While loop's **unwired** conditional terminal is a broken VI by itself"), and its accepted disposition at `:1067` says the fix was that "the unsaveable 'three empty While loops' path no longer exists".
+
+**That finding does not cover this plan.** Its whole force is the word *unwired*; the same capability file at `:64` records `OpCreateEqual_v0` 23/0 with "Operands may sit on an outer diagram: LabVIEW makes the tunnels", and `:63` records `OpStopFromNode_v0`'s T5 closed by measurement (conditional terminal `wire 0 → 387`, scratch then `ExecState 1`). 34(l) then measured the composite on a copy of the actual S1 artefact. A future reviewer re-raising round-1 B2 against these bytes would be citing the unwired case against a wired one.
+
+### A3 — CONTRADICTED. 🔴 **The conditional-terminal readback — the plan's headline gate — is taken from a reader whose error columns the imported code throws away, against Pre-decided 14**
+
+Side one, the plan's contract: "all three conditional terminals re-read BY UID at the end still carrying the wire the driving Comparison sources".
+
+Side two, the project's own rule, `docs/cycle27-plan.md:147-150` (Pre-decided 14):
+
+> "**A value returned beside an error has measured nothing**: run 3's three conditional terminals read `wire 0` *with* `error 1055: Property Node in **OpLoopEndRef_v0.vi**` attached (`…run3.log:416-418`), so that 0 is UNREAD, not zero, and must be reported as UNREAD."
+
+The reader this stage uses is that same op, and it returns the error columns precisely so this rule can be applied:
+
+- `tools/recipes/build_d1_v0.py:848-853` — `loop_end_ref` poisons every output, then returns `…, err=err, errs=errs` from the four per-property error columns; its docstring `:823-824` says they are read "because 'no error out' is not a verdict that a property resolved".
+- `tools/recipes/build_opstopfromnode_v0.py:340-344` — the wrapper the recipe imports as `LOOP_END_REF`: "…returns the four per-property error columns in `errs`, which this file's earlier hand-rolled copy dropped. **T3/T3b/T4 are scored on `errs` being empty, so a silently unresolved property can no longer read as 'not wired yet'.**"
+
+And the imported code drops them anyway: `tools/bench/diag_s2_scaffold.py:270-274` and `:312-316` keep only `cond_term_uid` / `cond_wire_uid`; `:322-327` computes `att["ok"]` from those alone; `err`/`errs` appear nowhere in the file. The diagnostic's own fact line — "conditional terminal BEFORE = #23080 wire 0 (**0 is EXPECTED**)" (`tools/bench/diag_s2_scaffold.json:745`) — is character-for-character the run-3 shape Pre-decided 14 forbids reporting as a zero.
+
+Scope, stated fairly: `att["ok"]` cross-checks the wire uid against the Comparison's own `terms_of` read, so a poisoned value fails closed rather than passing. The exposure is therefore a **false FAIL reported as a real one** — on three loops the op is driven 6–9 times instead of once, and a single 1055 turns a legal artefact into `BGRUN END rc≠0`, which under CLAUDE.md §5 buys a mandatory peer review and, under §3, counts toward the firefighter ladder. The fix is two lines inside the imported helper's caller: read `err`/`errs`, and when non-empty classify the row **UNREAD**, never FAIL.
+
+**Refutation path, if you disagree:** show in writing that `OpLoopEndRef_v0`'s four error columns cannot be non-empty on this call shape, or that the `terms_of` cross-check alone discharges Pre-decided 14's "must be reported as UNREAD".
+
+### A4 — UNREAD EVIDENCE. 🔴 **The stage saves an artefact but drops the acceptance gate the previous stage carried — 29(g)'s SubVI *table*, reduced here to a class *count***
+
+The plan's contract for subVIs is one number: "SubVI 97 → 97 unchanged". The document the plan's own count line descends from says that is not the acceptance reference:
+
+- `docs/cycle27-plan.md:629-641` (Pre-decided **29(g)**): "🔴 **THE ACCEPTANCE REFERENCE FOR A STAGE ARTEFACT IS THE ORIGINAL'S SUBVI TABLE, NEVER A BYTE COPY** … the COM-SAVED copy matches the ORIGINAL on **all 98 SubVI calls, name and path, byte for byte**, with **zero** rows into `claudeDev\background VIs_COPY\`, while the PRISTINE BYTE COPY re-binds **22** calls … **So `shutil.copy2(ORIGINAL, claudeDev\…)` produces a SILENTLY RE-BOUND VI**, and every stage gate compares against the ORIGINAL, never against a copy."
+- `docs/cycle27-plan.md:790` — the very line that fixes the counts this plan quotes: "Every comparison is against the ORIGINAL, never against a copy (29(g))."
+
+And the instrument is built, was FATAL one stage ago, and passed:
+
+- `tools/recipes/stage_d1_s1.py:182-188` — gate **D5**, "**THE ARTEFACT'S SubVI TABLE AGAINST THE ORIGINAL'S, BOTH COLD, ONE CONDITION PER CHILD PROCESS AND PER LabVIEW INSTANCE** (Pre-decided 29(g)) … **FATAL**".
+- `tools/recipes/stage_d1_s1.py:377-400` `cold_subvi_table()` — "Nothing is read here: this CALLS the BUILT `tools/bench/s1_subvi_paths.py` `run_condition()`"; `:408` `compare_subvi_tables(got, reference, expect_missing)` already takes the "this stage legitimately removed a row" argument, and `:243-247` pins `PIN_SUBVI_ROWS = 98` with `TIFF_SUBVI_KEY` as the one expected absence.
+- STATUS records that gate as part of the delivery: the `owner_c48s1cd` lock key, relocated verbatim to `archive/2026-09-20-status-cycle49-relocate.md` §1 — "20 pass / 0 fail … **D5 FATAL PASS**".
+
+This stage does `shutil.copy2` of a claudeDev VI and then a COM save under `Preload`, i.e. the two operations 29(g) and 29(c) were written about, and its 14 gate groups contain no path-level check of the result. `expect_missing` makes the reference straightforward: the ORIGINAL's 98-row table minus `TIFF_SUBVI_KEY`, which is exactly the S1 artefact's 97.
+
+**Refutation path:** cite the measurement that makes the path table redundant for a *re-save of an already-verified artefact* (a candidate is `tools/bench/s1_subvi_paths.log` 15/0 plus `docs/cycle27-plan.md:613-616`, which permits preload-then-save for claudeDev stage artefacts), and show in writing that a COLD `ExecState 1` reading covers what a 97-row name+path diff would have covered.
+
+---
+
+## PART B — THE ARTEFACT
+
+### B1 — ALREADY BUILT, and correctly reused. **No slug** (following round 2's own precedent)
+
+The three-loop creation is not new and is not claimed to be: `tools/recipes/build_d1_routeb_v7.py:788-805` creates the loops on `Diagram #686` at **the identical coordinates** `(2600,2600) / (2600,3400) / (2600,4200)` with the identical gates, and it passed in the real VI — `tools/bench/build_d1_routeb_v7_run10.log:70-76`, ending "PASS S2 WhileLoop 3 -> 6 and Diagram 170 -> 173  WhileLoop 6, Diagram 173". Round 2 met this same reuse and declined to slug it (`archive/peer/2026-09-20-priorart-d1-s2-stage-r2.md:1195`, "ALREADY BUILT, and correctly reused. No slug"); the genuinely new part is still the stage boundary plus the scaffold-then-save. Worth adding to the plan's citation list beside the diagnostic, since v7's version of these four lines is the one with a real-VI pass behind it.
+
+### B2 — ALREADY FAILED? **No slug.** The ten v3→v7 deaths are at the re-wiring pass this stage excludes by construction
+
+`docs/cycle27-plan.md:927-935` (34(h)) names address invalidation across self-mutation as the strongest rival for those deaths, and the recipe re-resolves `diag_index`, the WhileLoop index and the operand class index inside each iteration. The one failure that *has* landed on this exact call is the `OpLoopEndRef_v0` 1055 of run 3 — folded into **A3** rather than double-counted here.
+
+### B3 — HELPER EXISTS? **No slug.** Two notes for the record
+
+The recipe imports rather than hand-rolls (`gscript.loop_in` `tools/gscript.py:1155`; `WALK`/`cls_of`/`idx`/`loop_end_ref` from `build_opstopfromnode_v0.py:129/147/158/340`; `move_in`/`diag_index`/`terms_of` from `build_d1_v0.py`). Importing a `tools/bench/` module from a recipe is established practice, not a prohibition: `build_d1_routeb_v0.py:157-160` through `v7.py:372-375` all do `sys.path.insert(… "tools","bench")` + `from bench_prep import labview_handles`, and the diagnostic's own header ban (`tools/bench/diag_s2_scaffold.py:3-4`) is about *moving* the file under `tools/recipes/`, not about importing it.
+
+Two small overlaps, neither worth stopping a build:
+1. `file_facts`/`md5` (`diag_s2_scaffold.py:127-152`) hashes in-process while `docs/cycle27-plan.md:970-973` (34(k)) says `tools/hash_probe.py` is the probe to "use for every artefact md5 a stage must record". Pick one per artefact so the log has a single provenance.
+2. The imported `census_686`/`try_candidate`/`read_state`/`try_save` write their results into the **diagnostic module's** globals (`R`, `facts`, `passes`, `fails` — `diag_s2_scaffold.py:102-106`, `:345`, `:362`), not the recipe's. The printed FACT lines still reach the log, but a recipe that dumps its own JSON will find `readings`/`saves` empty unless it reads them out of `diag_s2_scaffold.R`.
+
+### B4 — ALREADY MEASURED? **No slug.** One loop is measured; three is not
+
+`tools/bench/diag_s2_scaffold.json` holds the single-loop case only (`loop:` `:601-608`, one entry in `attempts` `:401-451`). The plan's own description — "that measured shape times three" — is accurate, and the 3-loop save has no reading on file. The re-read gates it does repeat (S1 md5/size, the 170/3/97/14 census) are boundary gates, not re-measurements.
+
+---
+
+## Not slugged, but on the record
+
+- **The scaffold is not free structure.** `docs/toolkit-capabilities.md:64` measured `LoopTunnel 0 → 2` for an outer-diagram operand, and the real VI measured `LoopTunnel 132 → 133` plus `Wire 1899 → 1901` (`tools/bench/diag_s2_scaffold.json:503-507`, `:711-718`). So each scaffold **branches the original's `x+1` net through a new border tunnel**, and no document on file yet names the stage that removes the three `Equal?`s and their tunnels once the real sentinels arrive — 34(e) `docs/cycle27-plan.md:896-903` covers move+re-wire only. That is a later stage's contract, not a defect in this one, but it should be written down before it is inherited.
+- **uid reuse after deletion is already on file** (`.claude/skills/labview-automation/references/vi-scripting.md:601`; `archive/peer/2026-09-17-d1-s3b-uid-reuse-after-delete.md`; and visibly in `build_d1_routeb_v7_run10.log:71`, where the new WhileLoop took uid **#48** after v7 had deleted the subVI of that uid). It does not touch this stage, which deletes nothing — but the 34(e) chain addresses `#48` by uid, so keep the no-delete property of S2 in view when that stage is written.
+
+---
+
+## MACHINE-READABLE
+
+```
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+```
+
+**Citations, one per finding, for the disposition:**
+
+- `contradicted` — `docs/cycle27-plan.md:147-150` (Pre-decided 14) and `tools/recipes/build_d1_v0.py:848-853` + `tools/recipes/build_opstopfromnode_v0.py:340-344` (the `err`/`errs` contract) **vs** `tools/bench/diag_s2_scaffold.py:270-274`, `:312-316`, `:322-327` (error columns discarded) and `tools/bench/diag_s2_scaffold.json:745` ("wire 0 (0 is EXPECTED)").
+- `unread-evidence` — `docs/cycle27-plan.md:629-641` (29(g)) and `:790` (31(h)) **vs** the plan's SubVI-count-only contract; the built, already-FATAL instrument at `tools/recipes/stage_d1_s1.py:182-188`, `:377-400`, `:408`, `:243-247`, whose pass is recorded in `archive/2026-09-20-status-cycle49-relocate.md` §1.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-d1-s2-loops.md
+   STOP RECORD armed: tools/recipes/stage_d1_s2_loops.py sha 7eb482beab05 verdict contradicted, unread-evidence -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 531s

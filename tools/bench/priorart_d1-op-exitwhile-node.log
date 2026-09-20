@@ -1,0 +1,101 @@
+BGRUN START 2026-09-17 07:35:13 limit 25.0 min: py -u tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/97b1695e-68c2-4985-8cac-1ca3097b3b15/scratchpad/pa_stopop.md --slug d1-op-exitwhile-node --trigger new-op
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_d1-op-exitwhile-node.txt (14266 chars)
+OUTCOME: ANSWERED (522s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-17-priorart-d1-op-exitwhile-node.md
+COST: $5.0480  in 42 / out 37132 / cache-create 276723 / cache-read 2704572  (518s, 34 turn(s))
+--- ANSWER ---
+Prior-art review complete — read-only: no lock, no build, no edit, no `.vi` opened. **5 findings, zero `novel`.** The artifact itself is not built anywhere (I checked five places), but three of its stated premises and two of its construction steps are already answered in our own current files.
+
+---
+
+# PART A — THE DIRECTION
+
+## A1 — cleared, stated so the next round does not re-litigate it
+
+The *direction* (sentinel-driven stops for 1.2/1.5/1.7) is settled **in favour**, and the op is authorised:
+- `docs/d1-build-plan.md:658-662` (§11c) and `:246`, `:379` — the three new loops stop on end-of-stream sentinels; nothing reads `stop (end)` but `#11639`.
+- `docs/d1-build-plan.md:636` (§11e.2) — "the cycle-15 op freeze is lifted **narrowly**: only ops this plan names as D1 parts — **the stop front-half swap on `OpExitWhile_v0`** (rev4c B1) … each an **additive** build on a proven template."
+
+So rev4c's A2 (`settled-already`, the freeze) **does not block this**. That authorisation is the source of finding A3.
+
+## A2 — no refutation found, with one precedent that bears on the *route*, not the direction
+
+Nothing in `archive/peer/`, the retrospectives or a superseded plan section argues against driving a conditional terminal from a body node. The one adjacent, disposed precedent is cited under B1 — the last time a plan routed a **loop-structure mutation** through erdosmiller `Exit While Loop.vi`, the review refused it.
+
+## A3 `contradicted` — the build calls itself "additive, nothing deleted from the template" and then deletes two nodes; the authorisation it inherits was granted for an additive build
+
+Both sides:
+
+> **The proposal:** "PLANNED BUILD (**additive, nothing deleted from the template**): … **delete** the `Get Controls` + `Index Array`(control-name) front half".
+
+- `docs/d1-build-plan.md:636` — the freeze is lifted for builds that are "**each an additive build on a proven template**". The lift's own wording is the condition.
+- `tools/recipes/build_oploopendref_v0.py:26-27` — this project's operative definition: "IT IS THE DONOR, and the build below is **purely ADDITIVE — nothing in it is deleted, so the donor's measured behaviour cannot regress**." Same phrasing in `docs/toolkit-capabilities.md:50` ("Additive build on OpWhileCast_v0 (nothing deleted)").
+- The failure class deletion carries here, measured this cycle: `docs/d1-build-plan.md:176` and `:443` — "**wire 464 is ONE net** whose collateral sinks `#237`/`#240` were **bared** by the delete, **pinning ExecState at 0**", with `:444-446`'s note that it produced "**no broken wire and nothing for Remove Bad Wires** — a silent bare terminal". `ExecState 0 → 1` is exactly the gate that shape defeats, and it is the only structural gate the proposal names.
+
+**Honest scope, so this does not cost more work than it should.** Front-half *removal* has succeeded here: `docs/toolkit-capabilities.md:49` — `OpOwnerChain_v1` is "`OpWireSource_v5` with the `Wire` cast and the whole `Wire.Terms[]` front section **removed**", 20 gates pass (`tools/bench/build_opownerchain_v1.log`). So the finding is **not** "deletion is unsafe". It covers (a) the word *additive* and the authorisation at `:636` that rests on it, and (b) the absence of a bared-terminal gate where the precedent carried 20. The cheap repair is available and smaller than the plan's: in `OpExitWhile_v0` the only wire that must change is `IndexArray.element → Exit While Loop.'Stop Condition'` (`archive/bench-2026-09-14-stage2-toolkit/build_opexitwhile.py:136`) — delete **that one wire**, leave `Get Controls` and `Index Array` in place with unwired outputs, and the build is additive in this project's own sense. It does **not** say the op is unnecessary or the direction wrong.
+
+## A4 `unread-evidence` — `docs/stage2-plan.md` item 7 is the document that governs exactly this, and it records that the 5/5 "runs and stops" is a ONE-ITERATION stop
+
+The proposal's whole evidence base for the back half is `docs/toolkit-capabilities.md:31` ("`test_opexitwhile.log` 5/5: ExecState 0 → 1, **the VI runs and stops**"), and its functional test repeats that sentence ("ExecState 0 → 1, the VI runs and stops").
+
+- `docs/stage2-plan.md:90-94` — item 7, uncited by the proposal: "**Stop conditions are evaluated INSIDE the loop.** A front-panel Boolean's terminal wired into a While loop from the top level becomes an input tunnel **read once** before the loop runs (NI: the infinite-loop mistake) … (`OpExitWhile_v0`'s by-name `Stop Condition` is the wiring primitive; **the test uses a control already TRUE, so it terminates after one iteration by design**)."
+- The test confirms it: `tools/bench/test_opexitwhile.py:8` ("run the scratch over COM **with the control TRUE**"), `:50` and `:56` (`SetControlValue(STOP, True)` before `g._run`).
+- And the recorded provenance of item 7: `archive/peer/2026-09-14-opexitwhile-fail1-duplicate-terminal-names.md:37` — "**if the Boolean terminal remains outside the While Loop, its value is read before loop execution** … The terminal must be inside the loop", disposition at `:47` ("The 'terminal must be inside the loop' warning went into `docs/stage2-plan.md` item 7").
+
+**Consequence for the test, which is why this is a finding and not a footnote:** a scratch VI whose body comparison is constant will stop after one iteration whether or not the terminal is evaluated per-iteration — the same non-discriminating result the 5/5 already has. The test must make the body comparison **change value across iterations** (e.g. the loop's own `Loop Counter` 6361400 compared to a constant — the route `archive/peer/2026-09-14-stage2-step-b-replay-core-plan.md:210` already records as proven) and assert the iteration count, not merely that `_run` returned. **Scope:** covers the proposal's evidence base and its stated acceptance test. It does not question `OpExitWhile_v0`'s 5/5 for what that test actually measured.
+
+---
+
+# PART B — THE ARTIFACT
+
+## B1 `helper-exists` — the DIRECT route writes a conditional terminal with no library VI and nothing deleted: both halves are built and machine-verified, and the plan considers neither
+
+- `docs/NAMES.md:246-249` — "`WhileLoop`: `Loop End Ref` **6362C00 — ✅ VERIFIED ON THE MACHINE 2026-09-17**, data-terminal short name **`LpEndRef`**, **returns a `Terminal` reference** that `Terminal.Is Source?` 634A003 and `Terminal.Connected Wire` 634A000 **accept without a cast**." The conditional terminal is an ordinary `Terminal` object in hand, not an opaque loop property.
+- The write method on exactly that class is this fleet's wiring primitive, built four times: `tools/gscript.py:529` — "**`Terminal.Connect Wire` is invoked on the SINK**"; `tools/recipes/build_opwiresr_v0.py:4` — "`Terminal.Connect Wire` 6349C03 (invoked on the SINK, 'Wire Source' = the source)"; `tools/recipes/build_opconnect2.py:5-6` — "Connect Wire **crosses borders**" when the sink is inside a structure. Direction independently sourced: `archive/peer/2026-09-14-stage2-shiftreg-primitive.md:62-67` (labviewwiki, `6349C03`).
+- External corroboration already in our files, on this exact operation: `archive/peer/2026-09-14-opexitwhile-fail1-duplicate-terminal-names.md:35` — "VI Scripting connects terminal objects using the terminal `Connect Wire` method", citing the NI thread *"Wiring the conditional terminal of a while loop created by [scripting]"*.
+- **The disposed precedent that makes this a prior-art finding rather than a preference.** `archive/peer/2026-09-14-stage2-shiftreg-primitive.md:13-19` — asked because "the plan proposed to use erdosmiller `Exit While Loop.vi`'s never-exercised `Shift Registers` input"; verdict "**ACCEPTED and acted on. The reviewer refused the plan and named a documented creation API**"; `:85` — going through the library VI is using it "as an **undocumented side-effect generator**", and the direct invoke on the typed reference "is the answer"; disposition `:126-129` — the doc was rewritten around the direct method and "**the `Exit While Loop` side-effect route was not touched**". `tools/gscript.py:486-487` carries that history in the code.
+
+**Scope, tightly.** This covers the proposal's premise that the erdosmiller `Stop Condition` input is *the* route (a premise that dates from `archive/bench-2026-09-14-stage2-toolkit/build_opexitwhile.py:4-5`, "the loop node's `Terminals[]` is empty … **so the library's Stop Condition is the route**" — written **before** `Loop End Ref` was verified on this machine, three days later). It does **not** claim any op already writes a conditional terminal — none does, and `docs/toolkit-capabilities.md:50` is right that `OpLoopEndRef_v0` only reads. It does **not** decide which route is cheaper: the erdosmiller route is proven end-to-end, the direct route has an unmeasured step (`Connect Wire` onto a conditional-terminal sink). It says the alternative is **built, measured and unpriced in the plan**, and that the last comparable choice went the other way.
+
+## B2 `helper-exists` — the op already holds the loop body's diagram reference, and `Diagram → Nodes[] → Terminals[]` is already built; the `OpWhileCast_v0` + `Loop.Diagram` hop is a third addressing space for something the op has in hand
+
+- `OpExitWhile_v0` already takes the body diagram by Traverse index and casts it: `archive/bench-2026-09-14-stage2-toolkit/build_opexitwhile.py:8` — "`Diagram in` ← TMSC 788 (**`Class Name 2` / `index 2` = the loop body**)"; the wrapper sets it at `tools/gscript.py:913` (`"Class Name 2", "Diagram"`; `"index 2", diagram_index`). `Exit While Loop.vi`'s `Diagram in` is terminal 0 and required (`docs/NAMES.md:751-752`), so that reference **cannot be removed** — the new front half would run beside it.
+- The node/terminal walk from a **Diagram** reference is already an op: `docs/toolkit-capabilities.md:23` — `OpNodeTerms_v0` / `node_terms(target, diagram, node)`, "every terminal of ONE node … and the node's own UID", `test_opnodeterms.log` all PASS; and `tools/gscript.py:2202-2208` / `tools/recipes/build_opconnect2.py:2` — `OpConnect_v0`/`OpConnect2` address `Nodes[node].Terminals[term]` "**on any diagram of the target (top level or a loop's), by indices**".
+- Branching an existing reference into a new chain is this op's own idiom: `archive/bench-2026-09-14-stage2-toolkit/build_opexitwhile.py:119` (`branch=True` off `Open VI Reference.'vi reference'`).
+- The proposal's own input list (`vi path`, `index`, `node index`, `term index`) has **no diagram input**, while the node it keeps requires one — so the WhileLoop-typed seed is not replacing `Class Name 2`/`index 2`, it is a second path to the same diagram. Note also `docs/NAMES.md:241-244`: the `Loop` class ids, `Diagram` 6361401 included, are catalogued as "**not yet verified on this machine**" (the chain *is* exercised inside `OpWireSR_*`, `docs/toolkit-capabilities.md:42` — so this is a redundancy point, not an impossibility one).
+
+**Scope:** covers importing an `OpWhileCast_v0` seed and a `Loop.Diagram` hop into this op, and the proposal's stated input list. It does **not** cover the body-node `Nodes[]→Terminals[]` addressing itself, which the proposal is right to reuse.
+
+## B3 `already-measured` — the acceptance instrument and the three target terminals are already measured, and the gate is already written
+
+The proposal's verification is "ExecState 0 → 1, the VI runs and stops". The stronger, already-built readback is in the same plan:
+
+- `docs/d1-build-plan.md:572` — gate **S4**: "each of the three NEW loops' conditional terminals is **written and driven by its own sentinel test**, **read back by `OpLoopEndRef_v0`**: a non-zero `CondWireUID` on each of 1.2 / 1.5 / 1.7", plus `#637` unchanged at "terminal **648 ← wire 3457 ← `#11639`**".
+- The three terminals are **already identified**: `tools/bench/build_d1_v0_run4.log:243-245` — "term **1183** … wire 0", "term **1204** … wire 0", "term **1225** … wire 0" for 1.2 / 1.5 / 1.7. So the new op's functional test has a named before/after oracle without discovering anything.
+- And the gate's known trap is already corrected: `docs/d1-build-plan.md:621` (§11e.4) — "an unwired conditional terminal **legitimately reports 1055** on its wire read; the gate compares the terminal uid and `wire == 0`, **not an empty error column**" (this is what made run 4's S4b×3 report FAIL while succeeding as a measurement).
+
+**Scope:** covers the op's acceptance criterion — the readback exists, is 16/0 (`tools/bench/build_oploopendref_v0.log`), and its gate wording is settled. It does **not** claim the op's own behaviour has been measured, and it does not replace A4's per-iteration requirement (a non-zero `CondWireUID` proves the wire, not the dynamics).
+
+---
+
+## Checked and cleared — so the next round does not re-derive it
+
+1. **No `OpExitWhileNode`-equivalent exists under any name.** Project-wide greps for `OpExitWhile*`, `Stop Condition`, `conditional terminal`, `ExitWhileNode` return: the built op + its wrapper (`tools/gscript.py:889`), the reader (`OpLoopEndRef_v0`), the creators, and prose. `archive/benchmarks/INDEX.md` row 33 is the by-name op only. **The artifact is genuinely unbuilt.**
+2. **`OpExitWhile_v0`'s recorded failure is addressed by inheritance, not repeated.** Run 1 died on name-keyed terminals collapsing the duplicate `Outputs`/`Shift Registers` pairs and on wire `0` matching as a connection (`archive/peer/2026-09-14-opexitwhile-fail1-duplicate-terminal-names.md:24-29`); the fix is inside the saved op (`archive/bench-2026-09-14-stage2-toolkit/build_opexitwhile.py:90-94`). Copying the fixed op inherits it. **No `already-failed` slug.**
+3. **The sentinel encoding, the literals route and the Case are not reopened** — `docs/d1-build-plan.md:540-554`, and rev4c's B2/B3 (`gscript.py:2616`, `opconstvaluen_scan.json`) already disposed of them.
+4. **One recorded design rule the new op's property/invoke chain is subject to, not a finding:** `docs/toolkit-capabilities.md:50,:53-55` — one property per node with its own error chain, census the data terminal, "never gated on 'no error 1077'"; `tools/recipes/build_oploopendref_v0.py:60` records `OpCaseFrames_v0`'s five failures in exactly the shape that skips it.
+
+---
+
+```
+PRIOR-ART: contradicted     (A3 — docs/d1-build-plan.md:636 + tools/recipes/build_oploopendref_v0.py:26-27 + docs/toolkit-capabilities.md:50 + docs/d1-build-plan.md:176,:443-446 vs the proposal's "additive, nothing deleted" / "delete the Get Controls + Index Array front half" — covers the word "additive", the authorisation resting on it, and the missing bared-terminal gate; does NOT say front-half deletion is unsafe, cf. toolkit-capabilities.md:49)
+PRIOR-ART: unread-evidence  (A4 — docs/stage2-plan.md:90-94 + tools/bench/test_opexitwhile.py:8,:50,:56 + archive/peer/2026-09-14-opexitwhile-fail1-duplicate-terminal-names.md:37,:47 vs the proposal's citation of docs/toolkit-capabilities.md:31 and its "the VI runs and stops" test — covers the evidence base and the acceptance test's shape, not OpExitWhile_v0's 5/5)
+PRIOR-ART: helper-exists    (B1 — docs/NAMES.md:246-249 + tools/gscript.py:529 + tools/recipes/build_opwiresr_v0.py:4 + tools/recipes/build_opconnect2.py:5-6 + archive/peer/2026-09-14-stage2-shiftreg-primitive.md:13-19,:85,:126-129 vs archive/bench-2026-09-14-stage2-toolkit/build_opexitwhile.py:4-5 — covers the premise that the erdosmiller Stop Condition is THE route and the unpriced direct route; does NOT claim any op writes a conditional terminal today, and takes no position on which route is cheaper)
+PRIOR-ART: helper-exists    (B2 — archive/bench-2026-09-14-stage2-toolkit/build_opexitwhile.py:8,:119 + tools/gscript.py:913 + docs/toolkit-capabilities.md:23 + tools/gscript.py:2202-2208 + tools/recipes/build_opconnect2.py:2 vs the proposal's OpWhileCast_v0 -> Loop.Diagram chain and its four-input list — covers importing a seed and a Loop.Diagram hop for a diagram the op already holds; does NOT cover the body-node Nodes[]->Terminals[] addressing itself)
+PRIOR-ART: already-measured (B3 — docs/d1-build-plan.md:572,:621 + tools/bench/build_d1_v0_run4.log:243-245 + tools/bench/build_oploopendref_v0.log — covers the op's acceptance instrument and the three target terminal uids; does NOT claim the new op's behaviour has been measured, and does not discharge A4)
+```
+
+**The two that change what happens next.** **A3** — the build is authorised as *additive*; make it additive by deleting only the one wire into `Stop Condition` (`build_opexitwhile.py:136`), or drop the word and carry a bared-terminal census the way `OpOwnerChain_v1` carried 20 gates. **B1** — before writing the recipe, price the direct route: `WhileLoop.Loop End Ref` 6362C00 already hands back a `Terminal` (`docs/NAMES.md:247-248`) and `Terminal.Connect Wire` on a sink is built four times over; the last time this project chose between a library-VI side effect and a direct typed-reference method, the review refused the library VI and the direct method is what shipped.
+
+Two mechanics notes for the dispatching session: this review exists only in this reply — it needs archiving under `archive/peer/` to be gate-visible; and `ExitPlanMode` is not in this session's tool set (nothing to implement in any case — the brief is read-only).
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-d1-op-exitwhile-node.md
+BGRUN END rc=0 after 522s

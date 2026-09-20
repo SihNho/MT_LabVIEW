@@ -1,0 +1,68 @@
+BGRUN START 2026-09-10 19:20:45 limit 25.0 min: py -u tools/bench/conpane_chain.py
+LabVIEW up after 14 s, version 26.3.1f1
+dialogs: 8,1346,762| / ENABLED|1640146|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)
+lv_restart rc 0
+copy of OpFPLabels_v0: nodes 8 properties [(115, (853, 300)), (114, (704, 300)), (113, (523, 300)), (112, (426, 300))] wires 9 ExecState 1
+fp: ['vi path', 'Class Name', 'Class Name 2', 'Names', 'Names 2', 'index', 'index 2', 'error out', 'Text', 'Indicator']
+   head Property nodes to replace: [112, 113]
+
+== 1 delete the Front Panel / Panel.Controls[] head
+   predict: Property 4 -> 2, ExecState 0
+   observed: (2, 5, 0)
+
+== 2 PN VI.Connector Pane:Reference (23E)
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 112, 'pos': (417, 300), 'owner': 'TopLevelDiagram'}]
+
+== 2b Open VI Reference.'vi reference' -> PN1.reference
+   predict: accepted
+   observed: 6
+
+== 3 PN ConnectorPane [Controls[], Number of Connection Terminals]
+   predict: +1 Property
+   observed: [{'i': 0, 'class': 'Property', 'uid': 113, 'pos': (509, 300), 'owner': 'TopLevelDiagram'}]
+
+== 3b PN1 output -> PN2.reference
+   predict: one candidate name accepted
+   observed: ('ConPane', 7)
+
+== 4 PN2.'Controls[]' -> IA308.array
+   predict: accepted
+   'Controls[]': wire Controls[]->array: error 5001: LV-Scripting.lvlib:Get Outputs.vi<ERR>
+   observed: ('Ctrls[]', 8)
+   ExecState after the data wires: 0 wires 8
+
+== 4c IA308.'element' -> PN3 (Control).reference
+   predict: Wire +1
+   observed: 9
+   ExecState after re-wiring element: 1 wires 9
+
+== 4b indicator on PN2's 'Number of Connection Terminals'
+   predict: a readable indicator
+   observed: Number of Connection Terminals
+
+assembled: nodes 8 wires 10 ExecState 1 
+fp: ['vi path', 'Class Name', 'Class Name 2', 'Names', 'Names 2', 'index', 'index 2', 'error out', 'Text', 'Indicator', 'Number of Connection Terminals'] 
+steps failed: []
+saved 9744
+
+=== connector pane of TRACK_kernel_v1 ===
+   terminals on the pane: 16
+   terminal[ 0] = 'Bead is good? array in'
+   terminal[ 1] = 'Image In'
+   terminal[ 2] = 'cross size'
+   terminal[ 3] = 'Bead is good? array out'
+   terminal[ 4] = 'x,y,z array out'
+   terminal[ 5] = '(FREE / error: run blocked behind a modal dialog (dismissed by watchdog aft)'
+   terminal[ 6] = '(FREE / error: run blocked behind a modal dialog (dismissed by watchdog aft)'
+   terminal[ 7] = 'x,y,z array'
+   terminal[ 8] = 'pos in cal image out'
+   terminal[ 9] = '# of bead 4 packs'
+   terminal[10] = '(FREE / error: run blocked behind a modal dialog (dismissed by watchdog aft)'
+   terminal[11] = '4 pack remainder'
+   terminal[12] = 'Array of cal clusters'
+   terminal[13] = 'pos in cal image in'
+   terminal[14] = 'Real-space cosine window'
+   terminal[15] = 'Cosine bandpass\nfor Hilbert '
+build_conpane rc 0
+BGRUN END rc=0 after 223s

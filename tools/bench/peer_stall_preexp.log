@@ -1,0 +1,154 @@
+BGRUN START 2026-09-17 19:52:55 limit 24.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & 'tools/peer.ps1' -Dual -Slug stall-preexperiment-sleep -TaskFile 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\97b1695e-68c2-4985-8cac-1ca3097b3b15\scratchpad\stalltask.md' -TimeoutSec 840
+=== DUAL ARM 1/2: codex -> stall-preexperiment-sleep-codex ===
+OUTCOME: ANSWERED (170s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-17-stall-preexperiment-sleep-codex.md
+--- ANSWER ---
+## 1. Strongest reason the claim may be wrong
+
+The completion log does **not prove that PID 25164 completed**.
+
+`BGRUN DETACH pid=26324` identifies the detached runner, not its eventual child (`tools/bench/preexperiment_guard.log:1`; `tools/bgrun.py:63-78`). The runner subsequently creates the child at `Popen(...)`, but neither `BGRUN START` nor `BGRUN END` records `p.pid` (`tools/bgrun.py:111-113,177-184`). Conversely, the stall record identifies PID 25164 but contains no parent PID or run identifier (`tools/bench/stall_pid25164_181319.log:1-3`).
+
+Therefore, “the same run completed normally” is an unproved identity join based only on matching command line and timing. Eventual `rc=0` proves that *the child owned by runner 26324* completed; it does not, from these logs alone, prove that this child was PID 25164.
+
+There is a second real defect: the 50-minute deadline provides only eight nominal minutes beyond a 42-minute sleep (`tools/bench/preexperiment_guard.py:7,24-38`). Python explicitly permits `time.sleep()` to return later than requested because of scheduling, so that margin is not a guaranteed execution budget ([Python documentation](https://docs.python.org/3.12/library/time.html#time.sleep)). This run happened to finish after 2520 seconds, but the design can still time out a correctly functioning guard before its safety check.
+
+## 2. Alternative explanation of the evidence
+
+A concurrent or orphaned second process could have had the identical command line:
+
+- PID 25164 was the unobserved duplicate and legitimately triggered the stall detector.
+- Runner 26324 owned another child, which wrote `sleeping 42.0 min`, completed normally, and produced the later `rc=0`.
+- Both processes would present the same command line shown in the record and log (`tools/bench/stall_pid25164_181319.log:3`; `tools/bench/preexperiment_guard.log:2-7`).
+
+Even if there was only one process, the record can report a genuine **progress-contract defect**, rather than a hung computation. Project policy says unattended silence exceeding the expected interval is something to diagnose (`CLAUDE.md:210-224`). The guard emits one line and then becomes externally indistinguishable from a hung sleeper for 42 minutes (`tools/bench/preexperiment_guard.py:23-27`). Later success does not make that loss of observability imaginary.
+
+## 3. Observation that would falsify the claim
+
+Any of these would falsify “PID 25164 was merely the successfully completing intentional sleeper”:
+
+- Process-creation evidence shows that PID 25164’s parent was not detached runner PID 26324.
+- It shows two simultaneous children with this command line, only one descended from PID 26324.
+- PID 25164 remained alive after the logged child’s `BGRUN END`.
+- An identity-correlated run records PID 25164 ending differently from `rc=0`.
+
+Windows Security event 4688, if process-creation auditing was enabled, contains both the new PID and creator PID; these are hexadecimal and can be correlated after conversion ([Microsoft documentation](https://learn.microsoft.com/en-us/previous-versions/windows/it-pro/windows-10/security/threat-protection/auditing/event-4688)). Here the relevant values are `25164 = 0x624C` and `26324 = 0x66D4`.
+
+If event 4688 proves PID 25164 was the sole direct child of PID 26324, then I would accept the narrow conclusion that this particular stall classification was false. The current files do not establish that fact.
+
+## 4. Structural criticism
+
+The generic liveness design is wrong, not merely missing one sleep-script exemption.
+
+The watchdog applies a COM-stall hypothesis to every leaf `python.exe`/`py.exe`, without first establishing that it is a LabVIEW client (`tools/lv_stallcheck.ps1:63-77`). It defines a stall as stale log plus low CPU (`tools/lv_stallcheck.ps1:91-112`), labels the result “STALLED LabVIEW client,” and turns that heuristic into a mandatory build-blocking failure (`tools/lv_stallcheck.ps1:139-162`; `tools/hooks/guard_peer.py:63-74,249-277`). A sleeping timer gives false positives; a busy loop or a hung process that keeps logging gives false negatives. Command-name exceptions will merely create a sixth class.
+
+The cheapest sound replacement is an explicit per-job progress contract:
+
+- `bgrun` records a run ID and child PID immediately after `Popen`.
+- Jobs emit monotonic checkpoints such as `phase=WAIT until=<timestamp>`, `phase=COM_CALL deadline=<timestamp>`, and `phase=VERIFY`.
+- The watchdog checks whether the declared phase deadline has expired.
+- `bgrun` retains the independent hard deadline already enforced at `tools/bgrun.py:155-176`.
+
+This measures conformance to declared progress, not guessed progress from CPU consumption.
+
+## 5. Cheapest discriminating test
+
+Without starting LabVIEW or touching an instrument, query existing Security event 4688 records around 18:13:19 for new PID `0x624C`, then inspect its creator PID. **Creator PID `0x66D4` with no duplicate supports the false-positive explanation; any other creator or a second identical process supports the alternative.**
+=== DUAL ARM 2/2: claude/hypothesis (opus, effort max, web) -> stall-preexperiment-sleep-opus ===
+OUTCOME: ANSWERED (452s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-17-stall-preexperiment-sleep-opus.md
+COST: $3.2598  in 18 / out 32596 / cache-create 199499 / cache-read 758708  (448s, 26 turn(s))
+--- ANSWER ---
+Write is disabled (correct — this is a read-only peer session per AGENTS.md rule 2), so the review is the answer itself.
+
+---
+
+# The claim is half right and its conclusion is wrong
+
+I concede the guard did not hang — `tools/bench/preexperiment_guard.log:7` settles that. But **"false positive", the count of five, and the proposed remedy are each refuted by this project's own records.**
+
+## 1. Strongest reason the claim is WRONG
+
+**The predicate that fired has a confirmed TRUE POSITIVE from the same day, 6½ hours earlier — and the claim counts it as one of the five false ones.**
+
+The five records split into two predicates, visible in their own text:
+
+| record | text | predicate |
+|---|---|---|
+| `tools/bench/stall_pid9272_105613.log:1` | `CPU 0.41s lifetime` | old |
+| `tools/bench/stall_pid6164_121247.log:1` | `CPU 0.36s lifetime` | old |
+| `tools/bench/stall_pid1720_141314.log:1` | `CPU 0.41s lifetime` | old |
+| `tools/bench/stall_pid2832_112502.log:1` | `log stale, CPU +0.00s in the last 655s` | **current** |
+| `tools/bench/stall_pid25164_181319.log:1` | `log stale, CPU +0.00s in the last 105s` | **current** |
+
+All four archived reviews you cite are dated `2026-09-14` and attack the **old lifetime-CPU** predicate — which was deleted for exactly that reason (`tools/lv_stallcheck.ps1:103-106`). None of them touches the predicate that wrote record 5.
+
+Record 4 — the *only* other firing of the current predicate — was a **real hang**:
+
+- `tools/bench/build_opconnectnested_v0.log:67` — `BGRUN START 2026-09-17 11:25:02 limit 30.0 min`
+- `tools/bench/stall_pid2832_112502.log:1` — `STALL: … 11:46:49 … alive 1,307s … CPU +0.00s in the last 655s`
+- `tools/bench/build_opconnectnested_v0.log:130` — `COM Run did not return within 120s …`
+- `tools/bench/build_opconnectnested_v0.log:134` — `BGRUN TIMEOUT killed after 1801s`
+- expected runtime, same recipe: `tools/bench/build_opconnectnested_v0_run1.log:66` — `BGRUN END rc=1 after 22s`
+
+A 22-second recipe sat 30 minutes and was tree-killed. **The watchdog named it at 11:46:49; bgrun's deadline caught it at 11:55:03 — the watchdog was 8 min 14 s earlier.** Its review (`archive/peer/2026-09-17-connectnested-stall.md:3,8` — codex, `ANSWERED`) records no false-positive finding.
+
+The current predicate is therefore **1 true / 1 disputed, not 0/5.** "Fifth false-positive class" is a factual error, and it is the premise your whole structural argument rests on.
+
+**Second reason:** "false positive" misstates what the alert asserts. Per its own header (`tools/lv_stallcheck.ps1:13-18`) it reports *"this looks blocked — diagnose it"*, not *"this will never finish"*. At 18:17:39, pid 25164 was from outside **bit-identical to record 4's genuine hang**. You are refuting an 18:17 decision with 18:55 evidence. And `tools/bgrun.py:7-10` states the contract the job broke: *"silence can never mean 'still running' for longer than the limit."* A 42-minute `time.sleep` under a 50-minute limit (`tools/bench/preexperiment_guard.py:7,25-26`) makes silence mean "still running" for 84 % of the budget — on a **safety backstop for a real experiment whose failure mode is silent**. Had it died at 18:20, that stall record was the only artefact in the system that would have noticed.
+
+## 2. Alternative explanations
+
+**A (primary).** No watchdog defect at all. Facts 1–2 are *the job's* doing: `preexperiment_guard.py:25-26` prints once then emits nothing for 42 min, so the log-freshness skip at `lv_stallcheck.ps1:91-97` had nothing to work with. Fact 3 did not exist at decision time. The record correctly reports a deliberately unobservable window in a safety-critical backstop.
+
+**B (secondary, real).** `log stale` at `lv_stallcheck.ps1:112` is a **literal inside the format string**, not conditioned on the ancestor walk having found or read a log. Any leaf with no bgrun ancestor in 6 hops — not run under bgrun, a recycled parent PID, a walk broken by the `--detach` re-exec (`bgrun.py:36-81`) — is reported as "log stale" when no log was consulted. Here the walk probably worked (last write 18:13:19, checked 18:17:39 → 260 s > `$LogFreshSeconds`=90), but **the record cannot prove it**, and that wording is what makes record 5 look like a log-freshness failure.
+
+## 3. What falsifies the claim
+
+Your claim needs the signature to lack discriminating power. **Falsifier: the same signature on a job that did not complete.** It already exists — `stall_pid2832_112502.log:1` + `build_opconnectnested_v0.log:134`. Found without running anything.
+
+**Falsifier for MY position:** if a job that *does* heartbeat is still flagged, the fix cannot live in the job and the watchdog has a genuine accounting defect.
+
+## 4. Cheapest discriminating test — ~6 min, pure python, no LabVIEW, no instrument
+
+```
+py tools/bgrun.py --detach --max-min 6 --log tools/bench/probe_hb_silent.log -- py -u -c "import time; time.sleep(300)"
+py tools/bgrun.py --detach --max-min 6 --log tools/bench/probe_hb_beat.log   -- py -u -c "import time
+for i in range(10): print('hb',i,flush=True); time.sleep(30)"
+```
+
+Then invoke `tools/lv_stallcheck.ps1` at T+0, 70, 140, 210, 280 s — it needs a baseline sample ≥ `$DeltaWindowSeconds`=60 (`:32,:106`) and `$StallSeconds`=150 of age (`:25`).
+
+| outcome | reading |
+|---|---|
+| silent flagged, heartbeat **not** | log-freshness works → defect is in the job; fix = 3 lines in `preexperiment_guard.py`; your remedy is unnecessary **(my prediction)** |
+| **both** flagged | ancestor walk inert for `--detach`ed jobs → alternative B, a real watchdog defect |
+| neither | predicate doesn't fire on detached jobs at all → re-open the diagnosis of record 5 |
+
+Honest cost: the silent probe writes a `stall_pid*.log` that arms `guard_peer.py:67`. Run it inside one bgrun that moves any record it creates into `archive/` naming this probe — don't hide it.
+
+## 5. Structural criticism
+
+**Salvageable, but the architecture is inverted — and your remedy is the worst option available.**
+
+*It adds exemption #6.* Five exist: `BENCH_CELL` (`:43`), `matrix_run` by name (`:73`), non-leaf (`:77`), log-fresh<90 s (`:91-97`), lifetime-CPU dropped (`:103-113`). #2 is a permanent blind spot — a genuinely hung matrix driver is now undetectable forever. "Teach it about intentionally-sleeping jobs" asks the observer to see *intent*; every implementation is an allowlist, an opt-out env var, or a declared-duration file, all of which move trust into the job while leaving detection in the observer.
+
+*The mechanism already exists, unused.* `lv_stallcheck.ps1:80` already says **"Progress, not CPU, is the signal"** and `:91-97` already skips any job whose bgrun log is fresh. One `print(..., flush=True)` per minute in the sleep loop and record 5 never happens — **with no watchdog change at all.**
+
+*Two defects worth fixing regardless:*
+- **CPU delta cannot do its assigned job.** Windows CPU accounting is quantized (~15.6 ms) and a thread blocked in a COM/RPC call accrues *zero* CPU by definition — so it cannot distinguish "blocked" from "sleeping", the exact discrimination asked of it.
+- **Its sampling rate is the session's tool-call rate.** It is a PostToolUse hook (`.claude/settings.json:38-47`), and because `continue` at `:95` precedes the sampling at `:101`, flagging needs two invocations spanning ≥60 s of continuous silence. **During an unattended overnight run with no Bash calls it never executes** — structurally blind exactly where CLAUDE.md §1c' requires unattended operation.
+
+*The correct design — liveness asserted, not inferred.* systemd settled this: `WatchdogSec` requires the process to send `sd_notify("WATCHDOG=1")`, because a process can be running and wholly unresponsive and the supervisor cannot infer liveness from observing that it exists. Cheapest version here, since `bgrun` already owns the process, the deadline and the log:
+
+1. `bgrun` sets `BGRUN_HEARTBEAT=<log>.hb`; `tools/heartbeat.py:tick()` is 3 lines that touch it.
+2. COM clients tick around every `Run`/`Invoke` (one central call site already exists); long sleepers tick in their sleep loop — `preexperiment_guard.py` becomes `for _ in range(int(minutes)): time.sleep(60); tick()`.
+3. `lv_stallcheck.ps1` tests **only** that file's mtime. Drop CPU delta. A job with no `.hb` is *unmonitorable* — a configuration finding, different record, no `guard_peer` arm.
+
+Test of whether that design is right: **record 4 still fires** (last tick precedes the COM call that never returned, `build_opconnectnested_v0.log:130`) and **record 5 does not.** One change, both cases correct, zero exemptions.
+
+*The economics run the other way.* A false stall costs one review (~$1.86, CLAUDE.md's dual self-test cost line). The missed real stall of 2026-08-28/29 cost **7 hours** — which is why this file exists (`lv_stallcheck.ps1:4-9`). ~200 false positives buy one such loss. Tuning this detector toward silence is backwards; make the fleet observable instead.
+
+**What would change my mind:** the "both flagged" branch of the test in §4. If a heartbeating detached job is still flagged, alternative B is the explanation, the fix is in the watchdog, and my §5 ordering is wrong.
+
+Sources: [sd_notify](https://www.freedesktop.org/software/systemd/man/latest/sd_notify.html) · [sd_watchdog_enabled](https://www.freedesktop.org/software/systemd/man/latest/sd_watchdog_enabled.html) · [GetProcessTimes](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getprocesstimes) · [sdlogwatchdog](https://github.com/detecttechnologies/sdlogwatchdog)
+=== DUAL DONE: codex rc=0, opus rc=0  (archive\peer\2026-09-17-stall-preexperiment-sleep-codex.md, -stall-preexperiment-sleep-opus.md) ===
+BGRUN END rc=0 after 622s

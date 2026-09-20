@@ -1,0 +1,58 @@
+﻿---
+type: peer-review
+status: historical
+date: 2026-09-15
+tags: [peer-review, vi-scripting]
+---
+
+# opcaseframes-terminal-chain-must-go
+
+- **agent:** codex
+- **date:** 2026-09-15
+- **outcome:** ANSWERED (45s)
+- **why asked:** (Claude fills in)
+- **verdict:** unverified
+
+## Question
+
+BRIEF CONFIRM (LabVIEW 2026 VI Scripting). tools/bench/build_opcaseframes_v0.log: I derived OpCaseFrames_v0 from OpTunnelRead_v0 by retargeting the lookup cast to MultiFrameStructure and feeding the Index Array from Frames[] 6363801 (censused short name Frames[]) instead of Inside Terminals[]; CaseStructure.Frame Names 6365002 censused as short name FrameNames and attached to the same cast. All PROVENANCE gates passed, but ExecState stayed 0 and the orphan dump re-fed two property nodes from the Index Array element without helping. MY DIAGNOSIS: the donor op inherits a TERMINAL-reader chain hanging off that Index Array element - Terminal.Is Source? 634A003, Terminal.Connected Wire 634A000, Generic.Owner 6327806 (plus a cast and a UID node) and Terminal.Diagram 634A002 - but the element now carries DIAGRAM references, not Terminal references, so those nodes are class-incompatible; my orphan repair actually re-fed them with the wrong type. The correct edit is to DELETE the terminal readers and wire the Index Array element straight into the existing GObject.UID node (Diagram inherits GObject, so that is an upcast), leaving the frame-uid indicator meaningful and FrameNames read off the cast. QUESTIONS: (1) confirm that a property node built for class Terminal cannot accept a Diagram reference and that this leaves the VI broken even when the wire uids match at both ends; (2) when I delete those nodes, their front-panel indicators (is source, reciprocal wire, owner class...) stay behind unwired - is an unwired INDICATOR terminal harmless, unlike an unwired required node input; (3) is there any value in keeping Generic.Owner on a Diagram element - would it name the case structure that owns the frame, which would be a nice cross-check that each frame belongs to case 5540; (4) anything else in that inherited chain that must be removed rather than re-fed. Read-only; cite what you read.
+
+## Answer
+
+Your diagnosis is correct.
+
+1. A `Terminal`-typed property node cannot accept a `Diagram` reference. They are different branches of the VI Server hierarchy, so this produces a class-conflict/broken wire; matching wire UIDs only proves both endpoints reference the same wire object, not that the wire?셲 datatype is legal. NI explicitly says incompatible refnum classes and incompatible datatypes break wires and prevent execution. [NI: Wire Class Conflict](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019XS0SAM&l=en-US%29), [NI: Using Wires](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+2. Yes. Orphaned front-panel **indicator terminals are harmless** when unwired. Indicators are data sinks; LabVIEW?셲 ?쐌ust be wired??rule applies to required node/subVI inputs. Connector-pane outputs likewise cannot be designated required. [NI: Controls and Indicators](https://www.ni.com/en/support/documentation/supplemental/08/labview-block-diagram-explained.html), [NI: Required/Optional Terminals](https://www.ni.com/docs/ar-IQ/csh?context=lvcore_lvhowto_specifying_required_recomm)
+
+3. Keeping `Generic.Owner` on the **Diagram element** is useful. A frame diagram?셲 owner should be its containing CaseStructure, so `Diagram ??Owner ??GObject.UID` should return **5540** for both frames. That is a strong provenance cross-check. `Owner` alone does not give the frame name; continue using the matching index into `FrameNames`. This exact traversal?봮bject ??owning Diagram ??Diagram owner cast to CaseStructure ??Frames index ??FrameNames?봧s described here: [NI Community: identifying a case through VI Scripting](https://forums.ni.com/t5/LabVIEW/Access-name-of-case-from-indicator-inside-case-using-VI/m-p/2329972)
+
+4. Remove every inherited branch whose input contract or meaning is specifically `Terminal`:
+
+   - `Terminal.Is Source?`
+   - `Terminal.Connected Wire`
+   - `Terminal.Diagram`
+   - the terminal-owner/class/UID branch
+   - any cast whose sole purpose was interpreting the element as `Terminal`
+
+   Retain/rebuild only:
+
+   - `Frames[] ??Index Array element ??GObject.UID` for frame UID
+   - optionally `element ??Generic.Owner ??GObject.UID` for owner UID = 5540
+   - `cast ??FrameNames`, indexed with the same frame index
+
+The run log supports this precisely: the two re-fed property-node reference sinks are the remaining breakage after all provenance gates passed. See [build_opcaseframes_v0.log](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/bench/build_opcaseframes_v0.log>) and the current diagnosis in [STATUS.md](<G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/STATUS.md>).
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+(annotation below)
+
+Applied: with the Index Array now carrying Diagram references, the inherited TERMINAL readers (`Is Source?`,
+`Connected Wire`, `Terminal.Diagram`) were DELETED rather than re-fed — my first repair had re-fed them with the
+wrong type and made things worse. Confirmed useful and kept: `Generic.Owner` on a Diagram element, since a frame
+diagram's owner is the CaseStructure itself (a free provenance check that the frames belong to case 5540). Also
+recorded: an unwired INDICATOR terminal is harmless, unlike an unwired required input.

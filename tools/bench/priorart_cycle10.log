@@ -1,0 +1,84 @@
+BGRUN START 2026-09-16 12:06:39 limit 25.0 min: py tools/prior_art_review.py --plan-file docs/cycle10-plan.md
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_prior-art.txt (44125 chars)
+OUTCOME: ANSWERED (357s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-16-priorart-prior-art.md
+COST: $3.4739  in 26 / out 26904 / cache-create 193169 / cache-read 1739018  (356s, 22 turn(s))
+--- ANSWER ---
+# PRIOR-ART REVIEW ? cycle 10 plan (trigger: new-op)
+
+Nothing built, run, or locked. Every finding names a file and line.
+
+---
+
+## PART A ? THE DIRECTION
+
+### A1. SETTLED ALREADY ? H4 (rotor negative-angle) was already performed in hardware, with the user watching
+
+The plan's H4: *"`PIC -10` �� read back �� ?7.2��) ? the last open item on the rotor sign fix; needs the motor to move, which is now allowed."* That exact test is on record as executed and passed:
+
+- `archive/benchmarks/INDEX.md:52` (row 31): *"**Hardware acceptance PASSED 20:22; visible ?3-turn / `PAB 0` test PASSED 20:28 with the user watching** (?1080.0�� tracked live, back to 0.0��) �� `CLL X` zeroed the counter, **`PIC -10` moved ?7.2�� and the signed copy read ?7.2��** while the original read +3 092 376 445.92��; `PIC 10` returned to 0."*
+- `STATUS.md`, OPEN list: *"Rotor read sign ? **DECIDED and DONE**: `SetCommand_signed.vi` under claudeDev, verified in hardware 2026-09-13 (INDEX row 31)."*
+
+The plan's own STATUS says DONE while the plan says "last open item". **What this citation does not cover:** any edit to `SetCommand_signed.vi` after 2026-09-14. Show one in writing and H4 is released.
+
+### A2. REFUTED ALREADY ? step 2 generalises semantics measured for one structure class, and a peer already refused exactly that
+
+`archive/peer/2026-09-15-cycle8-plan-rule-audit.md:124`: *"`OpOwnerChain_v0` �� is donor-evidenced only for owner chains **inside a Case frame** (`docs/NAMES.md:823`), but item 2 plans to use it across all 170 diagrams' full nesting (While/For/Event/Sequence too) ? untested generalization �� **Test against one node under each structure type before running it project-wide.**"*
+
+The plan's step-1 acceptance is *"owner chain reproduced on a known case"*, and the recipe's gate B6 (`tools/recipes/build_opownerchain_v0.py:36-38`) uses `CaseStructure#10407` ? the one class the semantics were measured on. Step 2 then walks 170 diagrams whose unresolved population is dominated by FlatSequence (`docs/diagram-hierarchy.md:66-69`: several FlatSequence matches give a structure uid that *"appears on no diagram at all"*; *"treat every FlatSequence-owned link in the JSON as unverified"*). The acceptance set cannot detect the failure the reviewer named. Cheapest release: widen it to one node per structure class ? `tools/bench/which_loop_owns_motor.log:4-22` already lists candidates of each (CaseStructure#3826, Sequence#3593, FlatSequenceFrame#43914, ForLoop#28670, WhileLoop#637).
+
+*Not a blocking finding:* the outcome review's "further readers are tooling drift" (`archive/peer/2026-09-15-outcome-review-20260915.md:151,163,211,221`) is released in writing by the user's decision quoted at `docs/cycle10-plan.md:15`, and `archive/peer/2026-09-15-retrospective-cycle9.md:103` independently names the missing reader as a cost driver. That fork is properly closed.
+
+### A3. CONTRADICTED ? two, both load-bearing
+
+**(a) `docs/NAMES.md:823` does not say what three documents say it says.** The plan (`docs/cycle10-plan.md:43`), `STATUS.md:386` and `docs/diagram-hierarchy.md:76-77` all cite NAMES.md:823 for the owner-chain semantics. `docs/NAMES.md:816-828` is about `Constant.Value` 634AC00 returning a void variant for numeric constants ? nothing about owners. The real statement is `docs/NAMES.md:864-866`: *"**Owner chain inside a case frame:** a node's `Generic.Owner` is its frame **Diagram**; that Diagram's `Owner` is the **CaseStructure**."* Scoped to a case frame ? which is A2's problem. Fix the pointer in all three files, not just the plan.
+
+**(b) H2's premise conflicts with our own reading of the ASI focus VI.** The plan wants *"how often ASI focus actually fires during a quiet period with no commanded motion"*. Our files say it acts on operator input: `docs/camera-acquisition-facts.md:137-138` ? *"its `+Inc`/`-Inc`/`Focus inc` inputs are **control references**, which is the shape of a VI that acts only when a key or button says so"*; `:169` ? *"It is paid only while a focus key is held"*; `docs/frame-loop-anatomy.md:77-78` ? loop C *"already owns the focus keys and the same `Focus inc reference` terminals ? uid 15921 there is the same VI."* On a disassembled rig with no sample (`STATUS.md` RIG STATE: *"No bead measurement is possible"*) a key-driven VI fires zero times, and zero is not the user's "not trivial" rate. The discriminating read is offline and cheap: who drives uid 48's `Focus inc reference` on diagrams 43 and 99.
+
+### A4. UNREAD EVIDENCE
+
+- `docs/frame-loop-anatomy.md:40-55` ? the frame loop's six subVIs with identifying terminals, the 10 `Value` property nodes, and `:33` (*"uid 5058 sits directly on diagram 43's body, not inside a case frame, so it runs unconditionally on every iteration"*). Steps 4?5 restart this from zero; the real delta is the **nested** frames only, as STATUS itself concedes.
+- `tools/bench/which_loop_owns_motor.log:4-22` ? step 3's instrument already ran; its output *is* the call-site table, each row resolved to its owning structure and blocked at the same one missing link.
+- `archive/peer/2026-09-15-priorart-ownerchain.md` ? the prior-art review of this very build, still `verdict: unverified` / `(Claude fills in)` (`archive/peer/2026-09-15-retrospective-cycle9.md:122`). Its findings *were* acted on (see B1); the record doesn't say so.
+
+---
+
+## PART B ? THE ARTIFACT
+
+### B1. ALREADY BUILT ? the recipe exists, complete, with the last review's fixes already in it
+
+`tools/recipes/build_opownerchain_v0.py:1-42` is the entire build ? donor, both rewires, the deletions, and a six-gate contract ending in functional gate B6. It already absorbed the 2026-09-15 review: `:64-69` (*"wire 751 has THREE consumers, not two ? node 163, node 1221 AND **node 482** ? and `tools/bench/build_opwiresource_v5.log:35-39` records that the first v5 rewire failed for exactly this reason"*; `REWIRE_SINKS` now carries all three) and `:70-72` (the omitted seventh deletion, uid 1329). There is no `tools/bench/build_opownerchain_v0.log`, so **running** it is open; **writing** it is not. Likewise step 2's instrument (`tools/bench/build_diagram_hierarchy.py`, already run three times; its `:19` names `OpOwnerChain_v0` as its designed fallback) and step 3's (`tools/bench/which_loop_owns_motor.py`).
+
+### B2. ALREADY FAILED ? no record for this op; one adjacent trap sits on the wire it creates
+
+`docs/NAMES.md:773-775`: *"`Generic.Owner` (6327806) returns a **Generic** reference, and wiring it into a **GObject**-class property node �� is a downcast ? ExecState 1 �� 0."* The recipe routes `Owner` into `ClassName` (Generic-class, legal) and into the TMSC at uid 1221 (the documented remedy), so it does **not** repeat the fault ? but gate B5 is the only thing between this wire and that ExecState 0, and `docs/NAMES.md:771-772` warns a uid-equality gate cannot see a broken wire. Keep B5 before the save. No slug.
+
+### B3. HELPER EXISTS ? H1 needs a flag, not an instrument
+
+`tools/bench/serial_roundtrip_asi.ps1` already has the COM4 path, the read-only whitelist, the motion/flash blacklist and the `-IUnderstandTheRisk` gate (`:28`, `:32-34`, `:84-85`), and reports `median / min / p90 / max` per command (`:120-123`) with `-Count` (`:32`). p99 is `-Count 500` plus one percentile line at `:121`. PI side: `tools/bench/serial_roundtrip.ps1`.
+
+### B4. ALREADY MEASURED ? H1 in part, H3 in its dominant term
+
+**H1:** `docs/camera-acquisition-facts.md:110-126` ? COM4, 50 exchanges, 0 timeouts: *"median 1.128 ms min 0.960 p90 1.292 max 3.200"*, decomposed to a **measured 0.69 ms fixed overhead** + 86.8 ��s/byte �� *"a realistic `WHERE`-style query of ~16 bytes ? 2.1 ms"*; also `archive/benchmarks/INDEX.md:40`. The same file states what remains open at `:152`: *"What is still unmeasured is how often 'frequent' is, and **the true `WHERE` latency**."* Scope H1 to the real command at realistic length plus the tail.
+
+**H3:** `docs/motion-path-audit.md:90-98` ? `POS?` **2.56 ms** median (min 2.49, p95 2.63), *"1.2 ms fixed + 86.8 ��s per byte"*; `:58-62` ? *"one motor command costs a send plus an error query, i.e. **two** serial round trips"*; `:108-120` ? *"The serial read is not slow, and it cannot be made much faster"* (floor ?1.5 ms). And `docs/camera-acquisition-facts.md:187-188` ? *"The dedicated motor loop is already separate and correct: diagram 20."* H3's remaining content is *whether a motor read sits on the frame path* ? step 3's output, not a hardware run ? times a number we already have.
+
+---
+
+## MACHINE-READABLE VERDICTS
+
+```
+PRIOR-ART: settled-already   (A1 ? H4 already run: INDEX.md:52, STATUS.md OPEN list)
+PRIOR-ART: refuted-already   (A2 ? case-frame-only semantics generalised to 170 diagrams: cycle8-plan-rule-audit.md:124)
+PRIOR-ART: contradicted      (A3a ? NAMES.md:823 cited for a fact stated at NAMES.md:864-866, scoped to case frames)
+PRIOR-ART: contradicted      (A3b ? H2's autonomous-focus premise vs camera-acquisition-facts.md:137-138, :169)
+PRIOR-ART: unread-evidence   (A4 ? frame-loop-anatomy.md:40-55; which_loop_owns_motor.log:4-22; priorart-ownerchain.md)
+PRIOR-ART: already-built     (B1 ? build_opownerchain_v0.py:1-72; build_diagram_hierarchy.py; which_loop_owns_motor.py)
+PRIOR-ART: helper-exists     (B3 ? serial_roundtrip_asi.ps1:28, :32, :120-123)
+PRIOR-ART: already-measured  (B4 ? camera-acquisition-facts.md:110-126, :152; motion-path-audit.md:58-62, :90-98, :108-120)
+```
+
+**What survives as novel:** *running* the existing recipe (step 1); the owner-walk of the 41 unresolved diagrams and the FlatSequence links (step 2, once A2's acceptance set is widened); the nested-frame membership delta in step 5; and the true `WHERE`-length ASI latency with a real tail (H1, scoped). Steps 3 and 4 are re-runs of existing instruments over the new link; H3 is arithmetic over existing numbers plus step 3; H4 and the body-only half of step 5 are already done.
+
+Two process notes: the `Write` tool is disabled in this session, so this review exists only in this reply ? copy it to `archive/peer/` if it should be gate-visible. And no memory write was due this turn: the message set a task, it did not teach a durable preference.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-prior-art.md
+BGRUN END rc=0 after 358s

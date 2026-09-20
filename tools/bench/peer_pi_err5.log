@@ -1,0 +1,155 @@
+BGRUN START 2026-09-18 15:39:49 limit 16.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & 'tools/peer.ps1' -Dual -Slug pi-err5-unreferenced -TaskFile 'C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/b5d0cc76-fda8-4724-8899-5a019fc98595/scratchpad/peer_pi_err5.md' -TimeoutSec 780
+=== DUAL ARM 1/2: codex -> pi-err5-unreferenced-codex ===
+OUTCOME: ANSWERED (153s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-18-pi-err5-unreferenced-codex.md
+--- ANSWER ---
+The strongest flaw is the claim that `RON 1 0; POS 1 0` safely “restores” the original absolute coordinate system. It does not establish physical truth; it merely declares that the present mechanical location is coordinate 0. PI explicitly warns that `POS` does not move the axis, but also does not adjust `TMN/TMX`, and can therefore make controller-permitted positions physically unreachable—or place coordinate zero outside the physical travel range. The same manual says parameters `0x15/0x30` are relative to the current zero, not independent physical limits. [PI C-863 manual: POS](https://device.report/m/6166469034393f2ff298a2efbd5ebbbafaf59e98c22333169363c27049d60a4f#L7464), [PI C-863 manual: soft limits](https://device.report/m/6166469034393f2ff298a2efbd5ebbbafaf59e98c22333169363c27049d60a4f#L1394)
+
+### 1. Can `SPA 0x15/0x30` clear `FRF`?
+
+PI’s C-863 documentation does not document that behavior. It defines:
+
+- `0x15/0x30` strictly as positive/negative closed-loop soft limits.
+- A target outside them should produce error 7, “Position out of limits.”
+- `SPA` changes a parameter in volatile RAM immediately, but its documented side effects do not include invalidating the reference result. [PI C-863 manual: travel limits](https://device.report/m/6166469034393f2ff298a2efbd5ebbbafaf59e98c22333169363c27049d60a4f#L1331), [PI C-863 manual: SPA](https://device.report/m/6166469034393f2ff298a2efbd5ebbbafaf59e98c22333169363c27049d60a4f#L7924), [PI C-863 manual: errors 5 and 7](https://device.report/m/6166469034393f2ff298a2efbd5ebbbafaf59e98c22333169363c27049d60a4f#L8820)
+
+Therefore I find no documentary basis for claiming those two `SPA`s normally clear `FRF`. Your recorded `FRF?=0` before the 15:37 writes is also strong evidence that those writes did not cause that particular transition.
+
+But “not documented” is not proof of firmware behavior. An identical-value `SPA` experiment is the cheap way to settle it.
+
+### 2. What does error 5 actually mean?
+
+For this controller, PI names error 5 `PI_CNTR_MOVE_WITHOUT_REF_OR_NO_SERVO`: “Unallowable move attempted on unreferenced axis, or move attempted with servo off.” It is not PI’s generic code for macro, joystick, or motion-in-progress conflicts. [PI C-863 manual: error table](https://device.report/m/6166469034393f2ff298a2efbd5ebbbafaf59e98c22333169363c27049d60a4f#L8820)
+
+The competing conditions have distinct codes:
+
+- Joystick owns the axis: error 51.
+- `MOV!` still in progress: error 53.
+- Target beyond `TMN/TMX`: error 7. [PI C-863 manual: errors 51 and 53](https://device.report/m/6166469034393f2ff298a2efbd5ebbbafaf59e98c22333169363c27049d60a4f#L9028)
+- A running macro is not inherently an error, although PI warns that macro commands and externally received motion commands can overwrite each other. `RMC?` identifies a running macro. [PI C-863 manual: RMC?](https://device.report/m/6166469034393f2ff298a2efbd5ebbbafaf59e98c22333169363c27049d60a4f#L7534)
+
+Given `SVO?=1` and `FRF?=0`, lack of reference is the best-supported branch of error 5. `ONT?=1` does not contradict this: PI defines it only as the closed-loop on-target state, influenced by settling-window settings; it is not a reference-status test. [PI C-863 manual: ONT?](https://device.report/m/6166469034393f2ff298a2efbd5ebbbafaf59e98c22333169363c27049d60a4f#L7436)
+
+The claim would be falsified immediately by observing `SVO?=1` and `FRF?=1` immediately before an otherwise isolated `MOV`, followed by error 5.
+
+### 3. Alternative explanation for `FRF 1 → 0`
+
+The strongest alternative is an intervening reference-mode or controller-initialization action—not the soft-limit values themselves:
+
+- At 15:08 you left the controller in `RON=0`.
+- Some other client, startup sequence, or macro could have restored `RON=1`, rebooted/reinitialized the controller, or otherwise invalidated the manually established reference.
+- PI defines `RON=1` as requiring an actual `FRF/FNL/FPL` reference before closed-loop motion; `POS` is forbidden in that mode. [PI C-863 manual: RON](https://device.report/m/6166469034393f2ff298a2efbd5ebbbafaf59e98c22333169363c27049d60a4f#L7564)
+
+PI does not say that merely changing `RON` from 0 to 1 clears an existing `FRF` result, so that specific mechanism remains a hypothesis requiring measurement.
+
+A reboot or brownout is not excluded solely by `TMN/TMX=0/39` unless you know that the nonvolatile `SEP?` values were different. PI states that reboot loads nonvolatile parameter values into volatile RAM; consequently, identical volatile and nonvolatile limit values would survive as the same apparent `TMN/TMX` after a reset while reference knowledge is lost. [PI C-863 manual: volatile/nonvolatile loading](https://device.report/m/6166469034393f2ff298a2efbd5ebbbafaf59e98c22333169363c27049d60a4f#L10161)
+
+This alternative would be falsified by:
+
+- `RON?` remaining 0 throughout,
+- no reboot/reset,
+- no stage reinitialization or running macro,
+- and `FRF` dropping specifically on one of the two `SPA` commands.
+
+### 4. Safety of `RON 0; POS 0`
+
+`RON 1 0` itself selects manual position definition. `POS 1 0` causes no mechanical motion. [PI C-863 manual: POS](https://device.report/m/6166469034393f2ff298a2efbd5ebbbafaf59e98c22333169363c27049d60a4f#L7464)
+
+If `POS?` is exactly 0 immediately beforehand, assigning the same value should introduce no numerical coordinate offset. Nevertheless, it only preserves the current encoder-to-coordinate mapping; it does not prove that this location is the original physical zero. PI explicitly recommends manual position definition only when physical referencing is otherwise impossible because of possible soft-limit conflicts. [PI C-863 manual: manual-reference warning](https://device.report/m/6166469034393f2ff298a2efbd5ebbbafaf59e98c22333169363c27049d60a4f#L1608)
+
+Thus:
+
+- No, the command should not move the axis.
+- Setting `POS 0` when the reported position is already exactly 0 should not numerically slide the limits.
+- But no, it is not sufficient by itself to prove that 0…39 still corresponds to the intended physical envelope. That requires confidence that the stage has not physically moved relative to the encoder coordinate since the last valid reference.
+
+### Cheapest discriminating test
+
+With no commanded motion:
+
+1. Read `RON?`, `FRF?`, `SVO?`, `POS?`, `TMN?`, `TMX?`, both `SPA?` values, both corresponding `SEP?` values, `RMC?`, and joystick status.
+2. Let `p = POS?`; do not assume or round it to zero.
+3. Send `RON 1 0`, then `POS 1 p`; confirm `FRF?=1`.
+4. Send `RON 1 1`; query `FRF?`.
+5. Restore with `RON 1 0; POS 1 p`.
+6. Write parameter `0x15` back to its already-read identical value; query `FRF?`.
+7. Write parameter `0x30` back to its identical value; query `FRF?`.
+
+Interpretation:
+
+- `FRF` drops after `RON 1 1`: reference-mode transition is implicated.
+- `FRF` survives `RON 1 1` but drops after an identical-value `SPA`: your “SPA not implicated” claim is falsified.
+- `FRF` survives both: the loss came from some other intervening initialization/reset/write.
+
+After attacking it, I still believe the narrow diagnosis—error 5 was caused by `FRF=0`, not by the 40 mm limit check—is strongly supported. What does not survive is treating `POS 0` as proof that the original physical zero and therefore the physical 0…39 safety envelope have been restored.
+=== DUAL ARM 2/2: claude/hypothesis (opus, effort max, web) -> pi-err5-unreferenced-opus ===
+OUTCOME: ANSWERED (568s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-18-pi-err5-unreferenced-opus.md
+COST: $3.8839  in 26 / out 37198 / cache-create 206881 / cache-read 1243353  (567s, 26 turn(s))
+--- ANSWER ---
+Write is disabled for this role (correct — I'm read-only), so the review is the answer itself.
+
+---
+
+# Failed-prediction review — PI C-863.11 ERR 5, 2026-09-18 15:37
+
+**Verdict, split:** the *diagnosis* (error 5 = unreferenced axis) is probably right. The two things hanging off it — **"not our SPA writes"** and **"the fix is `RON 1 0` + `POS 1 <current>`"** — do not survive, and those are the parts that decide what happens to the safety gate.
+
+## 1. The strongest reason the claim is WRONG
+
+**The run never read `FRF?` before its own SPA writes. The measurement order destroyed the evidence that would have exonerated SPA.**
+
+- `tools/bench/motor_gate2_live.log:3-18` — L1 `--session start` writes `SPA 1 0x15` / `0x30` **first** (`ERR? after SPA = 0`, line 5). Its `before:` line (4) reads `POS? TMN? TMX? ERR?` — **no `FRF?`, no `RON?`**. Confirmed in code: the limits-set path in `tools/motor_send_pi.ps1:47-62` never queries them.
+- `motor_gate2_live.log:25` — the **first and only** `FRF?` of the run is inside L2 at 15:37:18, *after* those writes (`motor_send_pi.ps1:73` is the sole line that reads it).
+- The 14:50 corroboration is worse: `tools/bench/p2_pi_softlimit_test.log:14` shows its `BEFORE` reads came back as **help-text fragments** (`POS?=y status TMN?=ion>} Set Closed-Loop Acceleration …`), and line 13 says `HLP has SPA: False`. That channel was **desynchronised** — an `ERR?=5` read on it is not a reliable code for the `MOV` before it. Down-weight, don't discard.
+
+Both ERR-5 events happened after SPA writes; neither has a pre-SPA FRF reading. The one run that produced the expected ERR 7 (`p2_pi_softlimit_test2.log:6-10`, 15:08:41) is the one in that window that **wrote no SPA at all**. The brief treats SPA's innocence as established; the data are 2-for-2 the other way. And its exclusion clause — *"nobody ran a PI write **from this project**"* — excludes exactly the actor most likely responsible.
+
+## 2. Alternative explanations
+
+**(a) The reference was re-armed, not lost.** At 15:08:39 we deliberately left `RON?=0` (`p2_pi_ron_off.log:3`). The documented post-D0 signature is **`RON 1 / FRF 0`** (`docs/motor-limit-assurance-plan.md:141`) — *something sets RON back to 1*, which invalidates a POS-declared reference by construction, with no power cycle and no effect on TMN/TMX. Exactly your signature. The same line records the original VI's own mode as `RON 1 0` + `POS 1 <z>`, so its PI init manipulates RON. **You never read `RON?` at 15:37.**
+
+**(b) The servo was cycled.** delmic/odemis `pigcs.py` states in `_stopServo()` that **"Referencing is lost"** when the servo goes off. A VI shutdown, stop button, following error or MikroMove disconnect does it — again leaving RAM intact.
+
+**(c) Our SPA writes.** Still live, per §1. I found **no PI document asserting or denying** that SPA of 0x15/0x30 clears the reference; absence in what I could reach is not evidence of absence. Measure it, don't argue it.
+
+## 3. What would FALSIFY the claim
+
+**`RON?` reading 1 right now.** Our last write left it 0. If it reads 1, the axis was *actively re-armed* between 15:08:41 and 15:37 — the causal story is wrong even though the ERR-5 reading is right. Conversely, **`FRF?` dropping 1→0 across a no-op SPA write** falsifies the gate's exculpation outright.
+
+## 4. Cheapest discriminating test
+
+Two steps, inside your approved write set, **no motion, ~10 s.**
+
+**Step 1 (pure read).** One port open: `RON? 1 · FRF? 1 · SVO? 1 · POS? 1 · TMN? 1 · TMX? 1 · ERR?`
+`RON?=1` → alternative (a); SPA exonerated. `RON?=0` → nothing external touched reference mode, so **SPA/servo are the only candidates left** — the thing the brief assumed without testing.
+
+**Step 2 (only if SPA survives step 1).** Restore (`RON 1 0`, `POS 1 0`), verify `FRF?=1`, then write **the two values already in force** — `SPA 1 0x15 39`, `SPA 1 0x30 0`, a genuine no-op — and re-read `FRF?`. If it goes 1→0, the session-start hook **disarms the axis every time it arms the fence**. Read `ERR?` after *each* command so a desynchronised channel can't be mistaken for a result again.
+
+## Your five questions
+
+**Q1 — Can SPA clear FRF?** Unknown; **the evidence does not distinguish it**. No vendor doc I could reach settles it either way; odemis has no such comment (weak evidence). What I can say: your own points correlate ERR 5 with SPA 2-for-2, ERR 7 with no-SPA 1-for-1, and the breaking measurement was never taken.
+
+**Q2 — Is error 5 really "unreferenced"?** Documented text has exactly two branches: *"Unallowable move attempted on unreferenced axis, **or move attempted with servo off**"* (`PI_CNTR_MOVE_WITHOUT_REF_OR_NO_SERVO` = 5). `SVO?=1` favours the first. Caveats: `SVO?` was read ~1 s before the `MOV`, so a transient servo drop isn't excluded; I found no source giving this firmware a third meaning. One confirmation you didn't use: **L2's target was 5 mm, well inside 0–39, and was still refused with 5** (`motor_gate2_live.log:21,27`) — so the refusal is definitely not limit-related, and the reference check precedes the limit check.
+
+**Q3 — FRF 1→0 without a power cycle?** §2(a) RON re-armed, or §2(b) servo cycled. Both preserve TMN/TMX. Falsified by §3.
+
+**Q5 — Is `RON 1 0` + `POS 1 0` safe?** *Physically, right now,* yes — neither command moves the axis, and there's a clean custody chain (driven to 38.5 and back to 0 while referenced at 15:08:41, `p2_pi_softlimit_test2.log:8-9`; every `MOV` since refused). **But your stated reason is not a reason** — `POS?` reading 0 is the number under suspicion, not evidence for it. Three things follow that the brief doesn't say:
+
+1. **`POS` doesn't restore a reference, it fakes one.** odemis documents it exactly: setting position with RON disabled *"causes the axis to report as referenced (via FRF?) despite not being truly referenced."* Afterwards `FRF?=1` is a value you told the controller.
+2. **It is the operation your own gate refuses on principle.** `tools/motor_gate.py:68` — *"A zero shift MOVES THE FENCE"*; `motor_gate.py:86-88` lists `POS` as *"would SHIFT the coordinate zero under the absolute [limits] … do not change it"*; L7 refused ASI `HOME` for that very reason (`motor_gate2_live.log:89`). **The remedy is the PI equivalent of the ASI `HOME` the gate forbids.** `POS 1 <current>` can never *correct* a coordinate error — only **ratify** one, sliding the physical fence by exactly that error. It is safe this time by custody, and won't be the time it's needed: the next reference loss will follow a D0 run that *did* move the magnet.
+3. **The ERR-5 state is the fail-safe one.** `RON=1, FRF=0` refuses every absolute move. Setting `RON=0` trades that for convenience — thereafter a lost reference is silent. The fence itself still works in RON-0 (`p2_pi_ron_off.log:3` → `p2_pi_softlimit_test2.log:6-7` gave ERR 7); only its *zero* becomes yours to get wrong. Make restoring the reference an explicit logged operator step with position from an independent source, not something the session hook does by itself.
+
+## Three things in the record the framing walked past
+
+**D1 — the gate reports a REFUSED command as a successful move.** `tools/motor_send_pi.ps1:93` decides success on **position alone** (`|final-target| < 0.01 → exit 0`); `$err` is captured at line 76 and **never used in the verdict**. So L4's `MOV 1 0` — rejected, `ERR? = 5` — exited 0, printed *"RESULT: reached 0"*, scored **PASS**, and entered the audit log as `rc=0 … RESULT: reached 0` (`motor_gate2_live.log:55-60,130`). Any command whose target equals the current position passes without executing, writing a **false position belief** into a system whose every mechanism is denominated in position. Fail unless `ERR?` after send is 0.
+
+**D2 — the gate reads the datum that predicts refusal and transmits anyway.** `motor_send_pi.ps1:73` prints `FRF?`/`SVO?`, line 74 transmits unconditionally; only TMN/TMX gate the send (69-72). And the permission text asserts a mechanism it hadn't verified in the axis's actual state — *"a target outside them answers ERR 7 and does not move"* (`motor_gate2_live.log:21,35`) — while the axis was in a state that answers 5.
+
+**F1 — flagged, not alarming: the fence's UNIT is unverified.** You name the stage **M-126.PD1**, travel range **25 mm**. Yet `TMX?` natively reads **52** (`docs/motor-limit-assurance-plan.md:19-20`) and the axis *settled* at `POS=38.5` with `ERR?=0` (`p2_pi_softlimit_test2.log:8`) — 38.5 units of real encoder travel on a nominally 25 mm stage. At least one of {stage identity, `motor_gate.py:31`'s *"PI native unit = mm (M-126.PD1)"*, the 52 mm native range} is wrong. Probably benign operationally — 0–39 shares units with the panel's own 0…40.84 (`motor-limit-assurance-plan.md:130`), so the fence is strictly tighter — but it matters the moment anyone reasons about **physical** clearance from "39". `SPA? 1 0xE` plus the stage assignment would settle it.
+
+## What would change my mind
+
+If step 1 returns `RON?=0` **and** step 2 shows `FRF?` surviving a no-op SPA, the hypothesis is right on every count except its evidence, and (b) a servo cycle by the D0 VI is what's left. I'd still hold D1, D2 and the Q5 objection — none of them depend on the cause.
+
+Sources: [PI GCS error codes (`picontrollererrors.h`)](https://www.slac.stanford.edu/grp/lcls/controls/global/doc/epics-modules/R3.15.5-1.0/motor/R6.10.1-1.0.1/motorApp/PIGCS2Src/picontrollererrors.h) · [spec `pi_gcs` help — error 5 text, RON 0 + POS](https://certif.com/spec_help/pi_gcs.html) · [delmic/odemis `pigcs.py`](https://github.com/delmic/odemis/blob/master/src/odemis/driver/pigcs.py) · [C-863 manual MS205E](https://www.le.infn.it/~chiodini/allow_listing/pi/Manuals/C-863_UserManual_MS205E200.pdf) (text not extractable — certificate error; the SPA/reference question is **not** settled from vendor docs) · [PI M-126 datasheet](https://www.pi-usa.us/fileadmin/user_upload/pi_us/files/product_datasheets/M126_Precision_Positioning_Stage.pdf)
+=== DUAL DONE: codex rc=0, opus rc=0  (archive\peer\2026-09-18-pi-err5-unreferenced-codex.md, -pi-err5-unreferenced-opus.md) ===
+BGRUN END rc=0 after 722s

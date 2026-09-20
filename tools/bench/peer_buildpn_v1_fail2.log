@@ -1,0 +1,30 @@
+BGRUN START 2026-09-14 09:57:17 limit 7.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent codex -Slug opbuildpn-v1-fail2 -Task ATTACK this (LabVIEW 2026 VI Scripting, ActiveX-driven ops; you reviewed the plan as opbuildpn-v1-plan and the first failure as opbuildpn-v1-fail1). WHAT HAPPENED NOW, with the address bug fixed: target = a fresh file copy of our op OpBuildPN_v0, ExecState 1 at start. The erdosmiller 'Create Property Node.vi' call site is Nodes[4], uid 297, 16 terminals, names in order include 'Diagram in','Properties','location (0, 0)','Diagram out','reference','reference out','Inputs','Outputs','error in','error out','error in (no error)','Class Name','error out' (yes, TWO terminals named 'error out', at indices 10 and 12 - the second is presumably the subVI's own 'error out' while the first may be an inner cluster or a duplicate connector-pane slot). I invoked Terminal.Create Indicator (6349C02) on terminal 10 -> a new indicator labelled 'error out 2' appeared (LabVIEW auto-suffixed, so it is an error cluster), then on terminal 8 'Outputs' -> a new indicator 'Outputs' appeared. Both created AND (by their labels/types) wired. RESULT: ExecState 1 -> 0. Nothing else was touched. QUESTIONS: (a) why would Create Indicator on an erdosmiller creator's 'error out' or 'Outputs' break the caller - is 'Outputs' perhaps an array of a class-typed refnum (Terminal/PropertyItem) whose indicator type cannot be created for a generic/strict type, giving a broken wire? Or is terminal 10 (the FIRST 'error out') not a connector-pane output but an internal/unwirable terminal (e.g. of the subVI's error-cluster constant), so the created wire is illegal? (b) which of the two 'error out' terminals (10 vs 12) is the subVI's real connector-pane output, and how do I tell by script (Terminal.Is Source? 634A003? 'Connected'?)? (c) the cheapest discriminating test I can run without an error list: call 'Block Diagram:Remove Bad Wires' then re-read ExecState - if it returns to 1 and one of the two indicators lost its wire, that names the bad wire; is there a better test? (d) should I instead create the indicator on 'Outputs' via Array Size (you suggested I32) - does erdosmiller's Outputs terminal carry a refnum array whose CONTROL type Create Indicator cannot synthesize? Short, cited.
+OUTCOME: ANSWERED (60s)  archived: archive\peer\2026-09-14-opbuildpn-v1-fail2.md
+--- ANSWER ---
+**Attack verdict:** the ?�unsynthesizable class-refnum array??theory is weak. The stronger hypothesis is that terminal indices were inferred from names incorrectly and at least one selected terminal is a **sink**, despite its output-looking label.
+
+**(a)** `Nodes[4].Terminals[]` contains terminals belonging to that call-site node?�not internal terminals of constants inside the subVI. Thus ?�terminal 10 is an internal error-cluster terminal??is very unlikely. Terminal names are identifiers, not proof of direction; duplicate names make positional inference especially unsafe. `Create Indicator` creates an indicator for the terminal?�s datatype, so a genuine source terminal should normally work even for refnums or arrays. A sink-to-indicator connection has no valid data source and can break the caller. Check `Is Source?` before calling the method. [Terminal API](https://labviewwiki.org/wiki/Terminal_class), [NI forum on duplicate-name disambiguation](https://forums.ni.com/t5/LabVIEW/Scripting-Terminal-Information/td-p/4303374)
+
+**(b)** You cannot determine the real error output from the name alone.
+
+- Read property `634A003 Is Source?`.
+- The real `error out` must report `TRUE`.
+- Read `634A000 Connected Wire`; if valid, inspect that wire?�s `Terminals[]`. The source is identifiable through `Is Source?`; wire traversal is the robust identity check. [Terminal properties](https://labviewwiki.org/wiki/Terminal_class), [wire traversal discussion](https://lavag.org/topic/10734-traverse-wire-to-source/)
+
+If both 10 and 12 are sources, both may be genuine connector-pane outputs; then compare `Type Descriptor (Full)` (`634A007`) and connector/context-help index?�not labels?�to identify the conventional error cluster. I would not assume 12 merely because it occurs later.
+
+**(c)** `Remove Bad Wires ??ExecState` is an excellent cheap discriminator. NI documents that it deletes broken wires; if ExecState returns to 1, the newly created wiring was the cause. [NI Remove Bad Wires](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/vi/removebadwires.html)
+
+A better version:
+
+1. Before removal, record each candidate terminal?�s `Is Source?` and `Connected Wire` reference/UID.
+2. If available, read each connected wire?�s `Is Broken?`.
+3. Run Remove Bad Wires.
+4. Re-read connectivity for terminals 8 and 10 and the two new indicator terminals.
+
+That identifies the deleted branch without relying on indicator labels. Beware that Remove Bad Wires can delete every broken wire in scope, not solely your additions. [NI wiring documentation](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+**(d)** Yes: use `Outputs ??Array Size ??I32 indicator` as the safer observational path?�but only after confirming `Outputs.Is Source? = TRUE`. `Array Size` avoids placing a potentially awkward array-of-scripting-refnums front-panel indicator and proves that `Outputs` is array-compatible. However, the fact that `Create Indicator` returned a correctly labelled object does **not** prove its resulting wire compiled.
+
+My immediate test would be: query `Is Source?` for indices 8, 10, and 12 **before anything else**. If either modified terminal says `FALSE`, you likely already have the explanation.
+BGRUN END rc=0 after 60s

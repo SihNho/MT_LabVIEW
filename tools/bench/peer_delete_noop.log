@@ -1,0 +1,97 @@
+BGRUN START 2026-09-16 15:24:11 limit 12.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools/peer.ps1 -Agent codex -Kind review -Slug delete-object-noop-failed-prediction -TimeoutSec 480 -Task FAILED PREDICTION, LabVIEW 2026 VI Scripting via ActiveX/COM. Attack my reading before I change the tool.
+
+OBSERVED, in the cleanest possible setting (tools/bench/diag_save_persists.log): copy a working op VI to a scratch path, open it, confirm ExecState 1 and that class 'Property' has 12 objects including uid 1319, then delete ONE object and verify. Result:
+
+  RuntimeError: delete_object(Property[3]): expected 1 object gone, got 0
+
+The verification is a before/after set difference of Traverse uids for that class. The delete path is: a small op VI (OpDelete_v0) that takes a VI path, a Traverse class-name string and an integer index, does 'Traverse for GObjects' by class, Index Array, and Generic.Delete (method) on the resulting GObject reference. The op VI's Run returned with NO error raised. So the method ran and nothing disappeared.
+
+CONTEXT THAT MATTERS: the same helper was used to build ~168 op VIs over previous weeks and its deletes worked then. Today a larger build made six deletes with verification DISABLED, all six reported success, and a later read of the saved file showed all six objects still present - i.e. it is a silent no-op, not an error.
+
+ALREADY RULED OUT: the uid is present before the delete (measured); ExecState is 1, not broken; the index was computed from the same class enumeration used for verification, and a wrong index would have deleted a DIFFERENT object (set difference 1), not zero; the op VI file exists; the file is not read-only; a fresh LabVIEW instance is started for the run.
+
+MY HYPOTHESES:
+H1 LabVIEW refuses structural edits unless the VI reference was opened in an editable/reserved state, and Generic.Delete then fails silently rather than erroring.
+H2 Generic.Delete is not the right method for these object classes in this LabVIEW version, or it requires the owning diagram rather than the object.
+H3 Something in this LabVIEW session (a lock, a running/reserved VI, an open panel) makes the diagram read-only, and scripting methods no-op instead of raising.
+
+ANSWER:
+1. Under what conditions does LabVIEW VI Scripting's Generic/GObject Delete method return WITHOUT error and delete nothing? Name them concretely.
+2. Is there a VI or diagram property that must be read first to know an edit will be accepted (edit mode, reserved-for-execution, locked, read-only, VI in a locked library)? Which property, and what value means 'editable'?
+3. Does deleting an object that still has WIRES attached behave differently - refused, partial, or allowed leaving broken wires?
+4. Is there a documented difference in LabVIEW 2021+/2026 for deleting Property Nodes specifically versus other node classes?
+5. The cheapest test that discriminates my three hypotheses, using only property reads and one delete.
+6. The strongest reason all three hypotheses are wrong.
+OUTCOME: ANSWERED (263s)  model: gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))  archived: archive\peer\2026-09-16-delete-object-noop-failed-prediction.md
+--- ANSWER ---
+The strongest reason your reading is wrong is that ?�the helper VI?�s `Run` returned successfully??does **not** prove that `Generic.Delete` executed without a LabVIEW error. `Generic.Delete` is an Invoke Node with its own `error in/error out`; if `error in.status` is already true, LabVIEW does not execute the method and merely propagates the error. That internal error does not become an ActiveX exception merely because the helper was launched through `Run VI`. [NI Invoke Node reference](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/functions/invoke-node.html), [NI standard error-in behavior](https://www.ni.com/docs/en-US/bundle/labview/page/using-the-standard-functionality-for-error-in-parameters.html)
+
+Thus the leading alternative is: `Traverse`, `Index Array`/casting, or an earlier node produced an error?�or `Delete` itself returned an edit-state error?�but `OpDelete_v0` did not expose that final error cluster to COM. That exactly predicts ?�Run succeeded, zero objects disappeared, saved file unchanged??without any silent-delete behavior.
+
+The observation that falsifies your claim is either:
+
+- `Delete.error out` is nonzero, proving the failure was not silent; or
+- immediately after `Delete.error out.status = FALSE`, reading `UID` through the **same original GObject reference** fails because the reference is invalid. NI explicitly says all references become invalid after successful deletion. [NI Generic Delete](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/delete.html)
+
+### 1. When does `Generic.Delete` return no error yet delete nothing?
+
+I found **no documented such condition**. NI?�s current contract simply says that it deletes the object and invalidates all references; it also says the method is unavailable while the owning VI is running. It documents no Property-node exception and no ?�silently ignore if noneditable??behavior. [NI Generic Delete](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/delete.html)
+
+Concrete conditions that can produce the *appearance* of a zero-error no-op are:
+
+- **A pre-existing error reaches `error in`.** The Invoke Node is skipped and propagates the existing error. If the helper does not return that cluster, COM sees only a successful helper execution. [NI standard error-in behavior](https://www.ni.com/docs/en-US/bundle/labview/page/using-the-standard-functionality-for-error-in-parameters.html)
+- **`Delete` generates an internal error that is never retrieved.** Wiring an error output disables reliance on automatic error dialogs; LabVIEW errors are data that must be inspected or handled. [NI error-handling documentation](https://www.ni.com/docs/en-AS/bundle/labview-api-ref/page/dialog-boxes/execution-page-vi-properties-dialog-box.html)
+- **The individual object is locked.** NI says locked objects cannot be deleted, moved, or have properties modified. I found no NI documentation establishing whether scripted `Delete` reports an error or silently refuses this particular case, so this remains a plausible but unverified alternative. [NI object-lock behavior](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019SMvSAM)
+- **Verification is observing another in-memory target/application instance.** Multiple application instances have separate VI Server contexts, so this remains possible unless the delete and verification share the same VI and GObject references. [NI VI Server configuration](https://www.ni.com/docs/ar-SD/csh?context=lvcore_lvdialog_vi_server_config_options)
+
+Running/reserved state is not documented as silent: NI says editing a running or reserved VI raises error 1000, and a strictly typed VI reference reserves the VI until that reference is closed. [NI error-1000 explanation](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000P8c9SAC)
+
+### 2. Property indicating editability
+
+There is no documented single `Editable?` property.
+
+The minimum public checks are:
+
+- `Execution:State == Idle` (`1`). Idle means the VI is in memory and not running; `Running` also covers reservation by an active hierarchy. [NI Execution State](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA03q000000YIEJCA4)
+- `Lock State:Get == Not Locked` (`1`). The documented enumeration is `0 Invalid`, `1 Not Locked`, `2 Locked`, `3 Password-protected`. [Lock State:Get reference](https://documentation.help/NI-LabView-Local-Project-Settings/VI_Get_Lock_State.html)
+- If applicable, also check the owning library/class lock. Locked libraries can prevent editing of their contents in some contexts. [NI locked-library example](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000kFKSSA2), [NI class locking across application instances](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000P704SAC)
+
+`Edit Mode On Open` is not an editability test; it is a saved window-opening preference. A VI can also be manually placed in run mode without executing, so `Idle` is necessary but not a complete editability guarantee. [NI run/edit-mode explanation](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000kKQuSAM)
+
+Your measured `Execution:State == 1` strongly attacks H1 and the running/reserved part of H3?�provided it was read from the same in-memory VI instance that owns UID 1319.
+
+### 3. Attached wires
+
+Attached wires are not a documented reason to refuse deletion. `Generic.Delete` has no ?�must be unwired??precondition. Deleting a node may remove the relevant connection/branch and leave other required terminals unwired or loose/broken wiring, making the VI nonexecutable; LabVIEW explicitly supports temporarily broken diagrams while editing. [NI Generic Delete](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/delete.html), [NI wiring and broken-wire behavior](https://www.ni.com/docs/en-AS/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)
+
+Therefore wires predict ?�object deleted, diagram potentially broken,??not ?�zero objects deleted.??
+### 4. Property Nodes in 2021+/2026
+
+I found no documented 2021??026 special case for deleting Property Nodes. `Delete` belongs to the Generic superclass and its current 2026 documentation applies generically; NI?�s version-change documentation does not identify a Property-node deletion restriction or migration. [NI Generic Delete](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/delete.html), [NI LabVIEW changes](https://www.ni.com/docs/ar-LB/bundle/labview/page/labview-changes.html)
+
+That does not exclude an undocumented 2026 defect, but H2 presently has no documentary support. Your own history that this exact helper previously deleted these objects also argues against a permanent class/API mismatch.
+
+### 5. Cheapest discriminator
+
+Instrument one call as follows, all inside the same application context and using the same references:
+
+1. Read target `Execution:State`.
+2. Read target `Lock State:Get`; if owned, read library/class lock state too.
+3. Read target `Modifications:VI Modifications Bitset`.
+4. Read the selected GObject?�s `UID`.
+5. Wire an explicit clean error constant directly into `Generic.Delete`; expose its exact `error out` through the helper connector pane.
+6. Without retraversing, read `UID` again through that same GObject reference, then reread the modification bitset. A nonzero modification bitset means the VI changed since its last save. [NI modification-bitset property](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/vi/vimodificationbitset2.html)
+
+Interpretation:
+
+- Nonzero `Delete.error out`: all ?�silent no-op??hypotheses lose; diagnose that error.
+- Zero error + original reference invalid + modification bitset changed: deletion succeeded; traversal verification was observing stale/different context.
+- Zero error + reference still valid + bitset unchanged while `Idle` and unlocked: genuine undocumented no-op; H1 and ordinary H3 are eliminated, leaving object-level locking, H2, or a LabVIEW defect.
+- Zero error + reference invalid but traversal still finds the same UID: verification is not querying the same in-memory object graph.
+
+### 6. Strongest reason H1?�H3 may all be wrong
+
+One common error-plumbing failure explains all six deletions, whereas H1/H3 predict an edit-state error and H2 conflicts with the generic API contract and the helper?�s prior successful history. I therefore do **not** accept the silent structural-edit rejection claim yet. I would change my mind if the exact `Delete.error out` is clean, its `error in` is clean, the original object reference remains valid, the modification bitset does not change, and the target is confirmed `Idle` and unlocked in the same application instance.
+
+The cheapest discriminating test is therefore: **return the actual `Generic.Delete` error cluster and immediately probe the same pre-delete GObject reference once?�do not retraverse.**
+BGRUN END rc=0 after 263s

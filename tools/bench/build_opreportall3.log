@@ -1,0 +1,40 @@
+BGRUN START 2026-09-13 22:02:06 limit 12.0 min: py -u tools/recipes/build_opreportall.py
+start: ForLoop=0 LoopTunnel=0 Property=2 Wire=17 ExecState=1
+
+== 1 delete the OLD Index Array - frees Traverse.'References'
+   predict: IndexArray 1->0
+   observed: after: ForLoop=0 LoopTunnel=0 Property=2 Wire=17 ExecState=0
+
+== 2 remove the wires those deletions orphaned
+   predict: ONE call only - this is what hung the first attempt
+   observed: after: ForLoop=0 LoopTunnel=0 Property=2 Wire=14 ExecState=0
+
+== 3 delete the two OLD Property nodes (they read one element, not the array)
+   predict: Property 2->0
+   observed: after: ForLoop=0 LoopTunnel=0 Property=0 Wire=7 ExecState=1
+
+== 4 empty For Loop
+   predict: ForLoop 0->1, Diagram 1->2, ExecState 0 (an empty loop has no N - expected)
+   observed: after: ForLoop=1 LoopTunnel=0 Property=0 Wire=7 ExecState=0
+
+== 5 find the loop body diagram
+   predict: one diagram owned by a ForLoop
+   observed: [1]
+
+== 6 Property(GObject.Position) INSIDE the loop body
+   predict: Property 0->1, still ExecState 0
+   observed: after: ForLoop=1 LoopTunnel=0 Property=1 Wire=7 ExecState=0
+
+== 7 wire Traverse.'References' -> that node's `reference` (CROSSES the boundary)
+   predict: LoopTunnel 0->1, Wire +1, and ExecState 0->1 because the array now supplies N
+   observed: EXC wire References->reference: wire count 7->9, expected +1 (if the source is already wired this may be a successful BRANCH - re-call with branch=True)
+
+== 8 wire the node's `Position` OUT to the existing 'Position' indicator (tests OUTPUT tunnel creation)
+   predict: LoopTunnel 1->2 if wiring outward also auto-creates a tunnel
+   observed: EXC wire_indicators: error 5001: LV-Scripting.lvlib:Wire Indicators.vi<ERR>
+
+steps: [("1 delete the OLD Index Array - frees Traverse.'References'", True), ('2 remove the wires those deletions orphaned', True), ('3 delete the two OLD Property nodes (they read one element, not the array)', True), ('4 empty For Loop', True), ('5 find the loop body diagram', True), ('6 Property(GObject.Position) INSIDE the loop body', True), ("7 wire Traverse.'References' -> that node's `reference` (CROSSES the boundary)", False), ("8 wire the node's `Position` OUT to the existing 'Position' indicator (tests OUTPUT tunnel creation)", False)]
+final: ForLoop=1 LoopTunnel=1 Property=1 Wire=9 ExecState=1
+
+VERDICT: assembled and runnable
+BGRUN END rc=0 after 8s
