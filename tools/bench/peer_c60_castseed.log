@@ -1,0 +1,71 @@
+BGRUN START 2026-09-21 07:53:18 limit 16.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c60-cast-seed-execstate0 -TaskFile tools/bench/peer_c60_castseed_task.md
+OUTCOME: ANSWERED (643s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c60-cast-seed-execstate0.md
+COST: $4.8363  in 26 / out 49081 / cache-create 264904 / cache-read 1799250  (641s, 23 turn(s))
+--- ANSWER ---
+## The claim is REFUTED on its conclusion. Its key citation is a heading the cited file struck through.
+
+---
+
+### 1. The single strongest reason it is WRONG
+
+**`docs/toolkit-capabilities.md` does not call the class-specifier constant "the one missing seed". It calls it that with a strikethrough, under a heading that says SOLVED, and the text underneath states the opposite of the claim.**
+
+`docs/toolkit-capabilities.md:84-89`, verbatim:
+
+> `### ~~The one missing seed~~ SOLVED 2026-09-14 15:1x without GUI — the typed-control seed (INDEX row 28)`
+> "`To More Specific Class`'s `target class` accepts **any wire of the target type** (NI doc, confirmed by codex), not only a class-specifier constant. **A refnum CONTROL of the wanted class is made by `Terminal.Create Control` on the `reference` INPUT of a property node already configured to that class**…"
+
+That sentence describes S2_b3 verb for verb. And it is not a proposal — it shipped and was measured:
+
+- `docs/toolkit-capabilities.md:27` (INDEX row 28, `loop_cast`): *"**The first cast-free TYPED cast**: the TMSC's target class is a refnum CONTROL of that class"*, `test_oploopcast.log` **13/13**.
+- `tools/recipes/build_oploopcast_v0.py:19` — step 7 `wire_control([L] -> TMSC 'target class')`, **predict: `ExecState 1`**.
+- This run's own log confirms the artefacts exist: `OpLoopCast_v0.vi: True`, `OpWhileCast_v0.vi: True` (`diag_s3b_l0_localname_v2.log:73-74`).
+
+So the claim **inverts its own source**. `build_oploopcast_v0.py:4-8` invented the control route *because* the constant is unmakeable; "the donor used a constant" is therefore irrelevant to whether a control works. "Reproduced only in form, not in substance" is backwards — the run reproduced the documented mechanism in substance, down to the label `reference`.
+
+Two more supports collapse with it:
+
+- **The hierarchy permits the cast.** `Local` ← `Node` ← `GObject` ← `Generic` ([Local class](https://labviewwiki.org/wiki/Local_class), [Node class](https://labviewwiki.org/wiki/Node_class), [GObject class](https://labviewwiki.org/wiki/GObject_class)). `Traverse for GObjects.vi` emits a GObject-rooted refnum, so GObject → `Local` is the same descendant downcast shape as the donor's own GObject → `Diagram`.
+- **The seed control IS a legal `Local` refnum, and the log proves it.** At b3 that control drove the `VI Server:Local` property node reading `CtrlName` and the VI read **`ExecState` 1** (`log:88`). A non-`Local` refnum there would have invalidated `Control Name`.
+
+**Bonus factual error:** the 0 does *not* first appear at b4. It appears at **b1** (`log:83`, `ExecState [S2 after build_property] = 0`), recovers to **1** at b3 (`log:88`), falls to 0 at b4 (`log:95`). That clean 0→1→0 toggle supports the bare-reference half *better* than the claim states — and it is the same reading that kills the claim's conclusion.
+
+### 2. Alternative explanations of the same evidence
+
+**(A) There is no clean `ExecState 1` checkpoint after b4, so b5–b8 are each unmeasured.** Everything from b4 on was read on a VI already at 0. "Every later step left it at 0 simply because the graph was unfinished" is an assumption the run's ordering made untestable — any of b5–b8 could have added a second, masked breakage. The least-examined is **b7**, the vestigial-chain detach (delete 645, `create_control` on `#235.reference`), which touches neither `Local` nor the seed.
+
+**(B) "The wire landed" was never "the wire is good."** Gates b6/b8 pass on empty error column + non-zero wire uid. `tools/gscript.py:2415`: **"Type mismatches make a broken wire."** A broken wire has a uid and sits on the terminal row — so that evidence cannot distinguish a good seed from a bad one in either direction.
+
+**(C) `ExecState` is the wrong instrument for this question, by this project's own measurements.** `docs/cycle27-plan.md:1465-1468` (Pre-decided 42(c), cycle 55): **"`ExecState` IS NOT A TYPE DISCRIMINATOR AND MUST NEVER BE USED AS ONE"** — it fell 1→0 on the type-**matched** leg. `docs/NAMES.md:912-918`: an ExecState-1 scratch read 0 after an operation that broke nothing. `docs/cycle27-plan.md:151-155` (14a): byte-identical files read 0 cold, 1 warm. The claim converts one `ExecState 0` into a verdict about a *type* relationship — precisely the forbidden use.
+
+**(D) The one real difference from the validated recipe, which the claim did not name.** In `toolkit-capabilities.md:90-93` the seed is minted on a scratch copy, `copy_into`'d, and the minting node deleted. Here `#1025` is both the seed's birthplace and the cast's consumer (control → `target class` → TMSC → `#1025.reference`). Unexercised configuration — but that is a claim about construction order, not about controls.
+
+### 3. What would falsify the claim
+
+1. `OpLoopCast_v0.vi` at `ExecState` 1 with its TMSC `target class` wire carried by a **panel row**.
+2. The b7 detach, run alone on a fresh copy, reading `ExecState` **0**.
+3. An ordered `Is Broken?` pass at b9 showing wire **1085** broken while **1030** reads False.
+4. No broken wire anywhere at b9 — then the broken object is a node.
+
+### 4. Cheapest discriminating test
+
+**Three calls, throwaway byte copy of `OpNodeLabels_v0.vi`, no new op, no save, no `Local`, no property node, <20 s — isolate b7:**
+
+1. `exec_state(copy)` → expect **1** (also discharges 14a: the instance is warm).
+2. `delete_object(copy, "Wire", index_of(645))`; `create_control(copy, Nodes[i of #235], 0)`.
+3. `exec_state(copy)`.
+
+**Reads 0** → claim dead: the final 0 is explained before the cast is involved. **Reads 1** → claim survives; next single-variable probe is b5+b6 alone (delete 772, `create_control` on `target class`, read `ExecState`) — still no `Local`.
+
+**Free prior, read-only, ~10 s, same pass:** point the S1_a1–S1_a4 procedure already written in `diag_s3b_l0_localname_v2.py` at `claudeDev\OpLoopCast_v0.vi` and read which object carries its `target class` wire. A panel control there refutes the general form with zero edits.
+
+⚠️ Do **not** reach for `Wire.Is Broken?` first — `docs/cycle27-plan.md:144-146` records it cannot be run read-only, and `docs/NAMES.md:912-918` measured that read turning an ExecState-1 scratch into 0. If used, ordered second pass only (42(b)).
+
+### Where the evidence does not settle it
+
+Nothing in this run identifies **which object is broken**. Four candidates stay live: wire 1030, wire 1085 / node `#1025`, the b7 chain, and "no structural break at all". I can refute the cause the claim names; I cannot name the real one from this log — and neither can the claim. The measurement that would have settled it (an ordered broken-object read, or a single-variable ordering) was not taken.
+
+I could not write the plan file — `Write` is disabled in this session, which is correct for a read-only peer role. The review above is the whole deliverable.
+
+**Sources:** [Local class](https://labviewwiki.org/wiki/Local_class) · [Node class](https://labviewwiki.org/wiki/Node_class) · [GObject class](https://labviewwiki.org/wiki/GObject_class) · [VI Server Class Hierarchy](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy)
+BGRUN END rc=0 after 643s

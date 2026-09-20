@@ -2086,3 +2086,244 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
       gating research for the op — the external API fact — was dispatched and archived BEFORE one line of the op
       exists, so the review cannot be a receipt for a script already written. Cost `$1.3397`. The brief that
       builds L0 must still say in writing that the op will be revised on any review that gates it.
+
+## Pre-decided — ADDED 2026-09-21 (cycle 60): L0 RAN · the creator works · the binding has NO READER, so the reader is built
+
+50. **S3b-L0 IS MEASURED. `OpCreateLocal_v0.vi` CREATES LOCALS RELIABLY; WHAT DOES NOT EXIST IS ANY WAY TO READ
+    WHAT A LOCAL IS BOUND TO.** Judgement, cycle 60 (attempt 2), 2026-09-21, from
+    `tools/bench/diag_s3b_l0_createlocal.log` (`BGRUN END rc=1 after 106s`, **30 pass / 2 fail**) and
+    `archive/peer/2026-09-21-c60-l0-readback-none.md` (claude/hypothesis opus max, ANSWERED 504 s, `$4.3505`,
+    disposed in full in its own `## What was done with it`). 34–49 stand; this settles L0 and re-cuts 49(e)'s M1.
+    - (a) ⚠️ **CYCLE 60 ATTEMPT 1 WAS A USAGE-LIMIT NON-RESULT AT THE CYCLE LEVEL, BUT THE L0 RUN INSIDE IT IS A
+      RESULT AND IS NOT RE-RUN.** The runner recorded *"usage-limit attempt 1, non-result; sleeping 238 min
+      (renewal + 2 min) then RERUNNING this cycle"* (`tools/bench/cycle_runner_main_20260921a.log`, cycle 47 row,
+      02:38:44 → 03:03:39). CLAUDE.md's usage-limit rule 3 invalidates a benchmark or build **interrupted
+      mid-run**; L0 was not interrupted — it started 02:51:44 and ended on its own `BGRUN END` line 106 s later
+      with a complete gate table, ~10 min before the limit was hit. **DECISION: L0's readings stand as
+      measurements and no part of it is repeated.** What the limit cost was the cycle's remaining work and its
+      retrospective, nothing else.
+    - (b) 🎉 **THE CREATOR HALF OF 49(d) IS DELIVERED AND IS SOUND.** `claudeDev\OpCreateLocal_v0.vi`, md5
+      `58275b212dfa040685613e3edbf403f2`, 9,688 B, LV2026 `26 00 80 00`, `ExecState` 1. Invoking
+      `Create:Local Variable` **6331C02** on a live front-panel Control reference returned error cluster
+      `(False, 0, '')` and a new `Local` (uid 23507, owner `('TopLevelDiagram',536)` — the normal birthplace,
+      `docs/toolkit-capabilities.md:275`). **20 consecutive calls: 20/20 produced one new Local each, 0 errors,
+      1.6 s, handle count 51,418 → 51,418 (delta 0), refs 12 opened / 12 closed / 0 live** — reference hygiene is
+      met as a precondition, not an afterthought. The scratch was a copy of `D1_s3a_focus_ind.vi`, was never
+      saved, and was deleted in the same run (`exists=False`); all four md5 gates on the originals PASSED before
+      AND after. ⚠️ **AND 49(d)'s RIDER FIRED AS WRITTEN: the node has SIX terminals, not four** — `i=4`
+      `'Create Local'` (sink) and `i=5` `'Create Local'` (source), both left unwired. That is a MEASUREMENT the
+      run recorded, never a failure of the sub-step.
+    - (c) 🔴 **THE TWO FAILING GATES ARE AN ABSENT INSTRUMENT, NOT A FAILED BINDING — AND THAT DISTINCTION IS THE
+      WHOLE OF S3b.** `L0_b5` (`bound None`) and `L0_b6` (`None vs 'index'`) were read with `node_labels()`, which
+      returns `Node.Label` **6359001** → the node's OWN label (`tools/gscript.py:588-594`). All **eight** of the
+      main VI's pre-existing Locals return the VI's FILE NAME through that path
+      (`tools/bench/main_vi_node_labels.json`; the two Globals likewise return `"Global motor pos.vi"`), so it can
+      never answer "what is this Local bound to" for any Local, new or old. 🔴 **CORRECTED 2026-09-21 by the
+      cycle-60 judgement session, on its own prior-art review: the sentence that followed here — *"the fleet's
+      inability to read a binding is the blocker, so cycle 60's deliverable became the reader
+      `OpLocalName_v0`"* — was WRONG, and wrong against an active document.** `gscript.node_terms`
+      (`tools/gscript.py:870`) already reads it: a local-variable node's single terminal is **named after its
+      bound control**, `is_source` giving READ vs WRITTEN — `docs/main-vi-panel-map.md:405`, with all eight
+      bindings tabulated at `:401-416` since **2026-09-14** and re-verified in
+      `tools/bench/main_vi_nodeterms.json`. What `node_labels` cannot do, `node_terms` can, and the whole
+      `OpLocalName_v0` / `Local.Control Name` 6355400 build was unnecessary. The half of (c) that stands is the
+      half about the INSTRUMENT ACTUALLY USED: `node_labels` returns the node's own label — the VI's file name for
+      every Local and Global — so `L0_b5`/`L0_b6` did report an absent measurement, and the two FAILs were
+      correctly raised. **Disposition and citations: `archive/peer/2026-09-21-priorart-c60-localname-decomposition.md`
+      (`NOT novel`, 7 findings, all accepted).**
+    - (d) **READING `Control Name` IS NOT "ROUTE B", AND 49(d) NEVER FENCED IT.** 49(d) fences route B as a
+      *creation* mechanism — `New VI Object` style **2061** *plus a write* to `Local.Control Name`. A **read** of
+      that property, to verify what route A actually produced, is a different act. Run 1 measured
+      `Local.Control Name` **6355400 resolves = True, error `''`** (`tools/bench/diag_s3b_l0_createlocal.log:115`),
+      which is what makes the reader buildable today; style **2061** was **not probed at all** because no verb in
+      `tools/gscript.py` passes a style number (`:118-119`), so B remains unbuilt and unmeasured on its creation
+      half.
+    - (e) 🔴 **49(e)'s M1 FOLDS INTO M2 — the judgement call 49(e) reserved, made here on the measurement it asked
+      for.** 49(e) said in advance: *"MEASURE, DO NOT ASSUME, whether an unwired Local leaves the VI legal … if
+      `ExecState` is 0 there, M1 folds into M2, and that folding is the next judgement session's call."* L0
+      measured it on this very VI lineage: the scratch copy of `D1_s3a_focus_ind.vi` read `ExecState` **1 before
+      the call and 0 after it**, with one Local created and unwired. **DECISION: S3b-M1 and S3b-M2 become ONE
+      sub-step — create BOTH locals (`'index'`, `'Automatic Error Handling'`) AND wire them into `#10407` t0/t2
+      before the save.** Pass criteria are 49(e)'s M2 criteria plus `Local` census **8 → 10**: `ExecState` 1 at the
+      save, `Is Broken?` **False** on both new wires via the ordered second pass (42(b), after the save), `#10407`
+      wired-terminal count **+2**, `#637` terminal/wired counts **unchanged — no tunnel, no border object**
+      (37(e)). ⚠️ **This does NOT weaken the user's 2026-09-19 rule**: the folded step still ends in a saved file,
+      and it is the *first* point on this path where a legal save exists. M3 and M4 are unchanged, and **48(h)'s
+      re-split trigger for M3 stands**.
+    - (f) ⚠️ **ONE HALF OF THIS IS NOW SETTLED AND THE OTHER IS NOT.** Until the reader returns a string,
+      **nobody may state that the new Local is bound to `'index'`** — that it must be, because 6331C02 is an
+      instance method, is exactly the inference this cycle exists to replace. But the six-terminal question IS
+      answered; see (g).
+    - (g) 🎉 **THE SIX-TERMINAL QUESTION IS SETTLED BY MEASUREMENT, AND THE WIKI WAS RIGHT: 6331C02 TAKES NO INPUT
+      PARAMETERS.** The separator the cycle-60 hypothesis review named was run report-only against Invoke nodes
+      this fleet had already built with methods of KNOWN signature
+      (`tools/bench/diag_s3b_l0_localname_run2.log:70-78`): `OpMoveIn_v0.vi` #741 — **12** terminals, pairs
+      `(4,5) 'Move'`, `(6,7) 'position'`, `(8,9) 'owner'`, `(10,11) 'duplicate'`; `OpConPaneAssign_v0.vi` #99 —
+      **10** terminals, `(4,5) 'AssignCtrlToTerm'`, `(6,7) 'Control'`, `(8,9) 'TermIdx'`; `OpCreateLocal_v0.vi`
+      #306 — **6** terminals, `(4,5) 'Create Local'` **only**. The pattern is exact and it reads off two known
+      signatures: the METHOD row occupies one (sink, source) pair named after the method, and **each parameter
+      occupies one further pair**. `Create Local` has the method pair and nothing else. **DECISION: 49(d)'s rider
+      is discharged — the `i=4` sink is layout, not an omitted input, and the wiki's incomplete parameter table
+      happened to be right here.** Leaving both terminals unwired was correct, and no future run is scored against
+      a missing 6331C02 parameter. (All three op VIs byte-unchanged by the reading.)
+    - (h) **DECISION: THE READER IS BUILT WITH A `To More Specific Class` CAST SEEDED TO `Local`, FOLLOWING THE
+      DONOR'S OWN MECHANISM — not a new technique, and not a donor substitution.** Cycle 60's first reader attempt
+      measured the block to one cast: `build_property('VI Server:Local', [('6355400', False)])` **RESOLVES** on
+      this machine — error column `''`, Property census 7→8, short name **`CtrlName`**, terminal i=4 SOURCE
+      (`tools/bench/diag_s3b_l0_localname_run2.log:50-56`), the **first resolution of 6355400 here** — but wiring
+      its `reference` straight from `Traverse for GObjects.vi` → `Index Array .element` gives `ExecState` **0**
+      with the `CtrlName` row intact (no silent class re-adaptation, `:59-64`), because Traverse yields a
+      **GObject** and `Local` sits two classes below it. `OpNodeLabels_v0.vi` already carries the answer:
+      **`To More Specific Class` #683**, seeded by wire **772, produced by no node on its diagram** (`:29-45`).
+      The reader reproduces that seed with target class `Local`. ⚠️ **The seed's construction is to be READ off the
+      donor and reported verbatim — it has never been measured — and if it cannot be reproduced for class `Local`
+      that is a FACT with an `OPEN:` line, never a donor substitution and never the alternative Invoke-seeded
+      variant the review proposed.** Nothing on disk was lost to the first attempt: it saved no VI by design
+      (`ExecState` 0, `allow_broken` False, `gui_save` never called), deleted its scratch, and left all four md5
+      pins and both donors byte-unchanged.
+    - (j) 🔴 **THE READER STAGE HAS NOW ENDED TWICE WITH NO FILE, SO IT IS RE-SPLIT — THE TRIGGER IS THE USER'S,
+      NOT A FEELING.** Attempt 1 (`tools/bench/diag_s3b_l0_localname_run2.log`) and attempt 2
+      (`tools/bench/diag_s3b_l0_localname_v2.log`, `BGRUN END rc=1 after 101s`, 29 pass / **1 fail** —
+      `S2_b10 ExecState == 1 after the indicator`) both ended `ARTEFACTS ON DISK: []`. The user's 2026-09-19 rule
+      3: *"the same stage failing twice at the same place, or a stage that ends without a saved artefact ⇒ the
+      next cycle's FIRST act is a decomposition plan for that stage … A full-length retry under a new file name is
+      forbidden."* **DECISION: no third full-length build. The decomposition is 51, written here so the next
+      session executes instead of planning.** What the two attempts bought is real and is not lost: the property
+      resolves, the cast route is built end to end with every error column `''`, and the fault is narrowed to
+      three candidates — but **this cycle saved no VI, and that is its honest cost.**
+    - (k) 🎉 **THE SEED MECHANISM IS NOW THE PLAN'S, CITED: `docs/toolkit-capabilities.md:84-93`, the typed-control
+      seed, SOLVED 2026-09-14.** A refnum CONTROL created by `Terminal.Create Control` on a property node's
+      `reference` input IS the seed for a `To More Specific Class`. It was on disk the whole time and attempt 2
+      mis-cited its own file — the cycle-60 cast-seed review
+      (`archive/peer/2026-09-21-c60-cast-seed-execstate0.md`, claude/hypothesis opus max, ANSWERED 643 s,
+      `$4.8363`) refuted the diagnosis on exactly that ground, and it was right. It is CONFIRMED LIVE, not just
+      cited: on `claudeDev\OpLoopCast_v0.vi`, `ExecState` **1**, the TMSC's `target class` is wire **333**, carried
+      by a front-panel **control** `{'label':'reference','uid':297,'is_source':True}` with **0 node producers**
+      (`tools/bench/diag_c60_castseed_probe.log:50`). The donor `OpNodeLabels_v0`'s own seed (wire **772**, 0 node
+      producers, 0 of 19 `panel_wiring` rows — `diag_s3b_l0_localname_v2.log:46-69`) is the same shape read
+      through an instrument that cannot see it. ⚠️ **`gscript.loop_cast` (`tools/gscript.py:626`) CANNOT be used
+      here** — it dispatches only to `OpLoopCast_v0/v1` and `OpWhileCast_v0` and raises otherwise;
+      `OpLocalCast_v0.vi` does not exist, so the TMSC is hand-built.
+    - (l) **WHAT IS MEASURED OUT, so 51 does not re-test it.** The `ExecState` timeline was
+      `1 → 0 after build_property → 1 after the seed control → 0 after the birth-wire delete → 0 thereafter`
+      (`diag_s3b_l0_localname_v2.log:83-126`). The middle two transitions are the property node's `reference`
+      input going unwired → wired → unwired, which is ordinary. **Step b7 is EXONERATED by an isolated probe on a
+      throwaway donor copy: `ExecState` 1 → 0 (wire 645 deleted) → **1** again after `create_control` on
+      `#235.reference` (`tools/bench/diag_c60_castseed_probe.log:74-80`, 19 pass / 0 fail, 3 s).** So the residual
+      0 is one of exactly three things: **wire 1030** (the Local-typed seed into `target class`), **wire
+      1085/#1025** (the cast output into the `VI Server:Local` node), or **no structural break at all**.
+    - (i) ⚠️ **AND THE READER IS NOT OPTIONAL BOOKKEEPING — IT IS A RULE-1a INSTRUMENT.** S3b feeds `#10407`
+      t0/t2 from two Local Variables. If the creator's label walk ever matched the wrong control, loop 1.5 would
+      be fed from the wrong source with no wire broken and no gate failing — *"parameters must arrive by the same
+      route with the same values"* (CLAUDE.md 1a), and a same-type mis-binding is invisible to `Is Broken?`, which
+      checks TYPE. The panel carries many numerics, so type alone does not fence `'index'`. **DECISION: the folded
+      M1+M2 step does not run until the binding can be READ, and the readback of both locals' `Control Name` is a
+      GATE of that step, not a diagnostic afterthought.**
+
+## Pre-decided — ADDED 2026-09-21 (cycle 60): the DECOMPOSITION of the binding reader, four steps, four artefacts
+
+51. 🔴 **WRITTEN, PRIOR-ART-REVIEWED, AND THEN CUT DOWN TO ONE STEP BY THAT REVIEW — ALL IN THE SAME CYCLE. READ
+    (f) FIRST; (a)–(d) ARE THE RECORD OF WHAT WAS PLANNED, NOT INSTRUCTIONS.** The re-split 50(j) triggered and
+    `OpLocalName_v0` was cut into four sub-steps below, each with its own saved file and pass criterion, as the
+    user's 2026-09-19 rule 3 demands. That rule also says the decomposition is **prior-art-reviewed once, then
+    executed** — the review ran (`archive/peer/2026-09-21-priorart-c60-localname-decomposition.md`, `NOT novel`,
+    7 findings, `$8.6086`, all accepted and disposed) and found the instrument already built. **L1, L2 and L3 and
+    the whole `OpLocalName_v0` / TMSC / `Local.Control Name` route are WITHDRAWN before a line of them ran. Only
+    L4's question survives, and it is now a READ — see (f).** A full-length retry of the v2 cast build under any
+    new name remains FORBIDDEN.
+    - (a) **L1 — READ WHICH CONNECTION IS BROKEN. No build, no save, ~3 minutes of machine time.** On a throwaway
+      copy of `OpNodeLabels_v0.vi`, rebuild to the exact point attempt 2 reached (property `CtrlName` → seed
+      control from the `reference` SINK → birth wire deleted → seed wired into `target class` → cast output wired
+      into `reference`), then run the **ORDERED second pass** (42(b)) and read **`Is Broken?` on BOTH** the seed
+      wire and the cast-output wire, plus `#1025`'s full terminal table. ⚠️ **Resolve both wires by CONSTRUCTION
+      ORDER, never by the literal uids 1030 / 1085** — they will differ on a fresh build, and reusing a remembered
+      number is the mistake `diag_s3b_l0_createlocal.py:608` already made once. The `Is Broken?` read perturbs
+      `ExecState` (`docs/NAMES.md:912-918`); that costs nothing here because `ExecState` is already 0 and nothing
+      is being saved. **Pass: a True/False reading for BOTH wires.** A `False`/`False` pair is a legitimate and
+      informative outcome — it would mean 50(l)'s third candidate, *no structural break at all*, and the next
+      step becomes a save attempt rather than a repair. **Artefact: `tools/bench/diag_c60_l1_whichwire.{log,json}`.**
+    - (b) **L2 — REPAIR THE ONE CONNECTION L1 NAMES, AND SAVE.** Build the same chain with that one connection
+      made differently, and **save `claudeDev\OpLocalName_v0.vi` at `ExecState` 1**. **Pass: `ExecState` 1 at the
+      save AND on a COLD reopen in a freshly restarted LabVIEW.** **Artefact: the op VI + its md5.** If `ExecState`
+      is still 0 here, STOP — do not try a third construction; report which connection was changed and what the
+      reading was, and let judgement cut again (50(j) applies to this step in its own right).
+    - (c) **L3 — VALIDATE THE INSTRUMENT AGAINST GROUND TRUTH BEFORE ANYONE BELIEVES IT.** On a **SCRATCH copy**
+      of `claudeDev\D1_s3a_focus_ind.vi` (md5 `eef91c1d…`), never the artefact, read `Control Name` for **every**
+      pre-existing `Local` (census 8, `docs/toolkit-capabilities.md:284`) and report **every uid → string pair
+      verbatim**. **Pass: at least one non-empty string that is NOT a `.vi` file name** — that is the whole point,
+      since `node_labels` returns the file name for all eight (50(c)). **Artefact: the readings JSON.** A run of
+      eight `.vi` file names or eight empty strings means 6355400 is not the binding either, which is a result and
+      must be reported as one.
+    - (d) **L4 — ANSWER THE QUESTION THE WHOLE CYCLE WAS FOR.** On the same scratch, create a Local with
+      `OpCreateLocal_v0.vi` from the front-panel control whose owned label reads `'index'` (**read the label off
+      the machine, never retype it**), then read its `Control Name`. Report the string verbatim, the error
+      cluster, `Local` census 8 → 9, and `ExecState` before and after. Then 20 consecutive reader calls, **handles
+      flat ±100, refs opened == closed, 0 live**, scratch deleted with `exists=False`. **Pass: a string is
+      returned and the hygiene numbers hold** — whatever the string SAYS is the measurement, and a name other than
+      `'index'` is a finding, not a failure.
+    - (e) **THEN, AND ONLY THEN, S3b's FOLDED M1+M2 (50(e)) RUNS, WITH THE READBACK AS A GATE (50(i)).** If L3 or
+      L4 shows that the binding cannot be read at all, the folded step does **not** silently proceed on type
+      checking alone — that is a rule-1a call and it returns to judgement.
+    - (f) 🎉 **WHAT 51 ACTUALLY IS, AFTER THE REVIEW: ONE READ, NO BUILD — `node_terms`.** `gscript.node_terms`
+      (`tools/gscript.py:870`) and `node_terms_uid` (`:925`) read a Local's binding directly, because the node's
+      single terminal is **named after its bound control** and `is_source` gives READ vs WRITTEN
+      (`docs/main-vi-panel-map.md:405`; all eight bindings tabulated `:401-416`, re-verified in
+      `tools/bench/main_vi_nodeterms.json`; rule restated `docs/NAMES.md:335`). **N1** re-reads those eight live on
+      a scratch copy rather than trusting a table dated 2026-09-14; **N2/N3** create one Local each from the
+      controls labelled `'index'` and `'Automatic Error Handling'` with `OpCreateLocal_v0.vi` and read the new
+      nodes' terminal names — the one thing L0 never did, having made 21 Locals without once calling `node_terms`;
+      **N4** is hygiene (20 calls, handles flat ±100, refs 0 live, scratch deleted). Artefact:
+      `tools/bench/diag_c60_n4_localbinding.{log,json}`. **Nothing is built and no VI is saved.**
+    - (g) ⚠️ **THE FALLBACK, KEPT ALIVE DELIBERATELY, BECAUSE THE TERMINAL-NAME RULE IS AN OBSERVATION AND NOT AN
+      NI CONTRACT.** The review says so in as many words — n = 8 Locals + 7 Globals, 0 counterexamples — while
+      `Local.Control Name` **6355400** is the authoritative property and is now MEASURED to resolve here
+      (`tools/bench/diag_s3b_l0_localname_run2.log:50-56`, short name `CtrlName`, i=4 SOURCE). **If N2/N3 return a
+      terminal name that is not the control asked for, or an empty one, the 6355400 route returns as the
+      FALLBACK** — and then it is built **additively on a donor** (never spliced into an existing op, per (h)),
+      seeded by the ordered recipe `tools/recipes/build_oploopcast_v0.py:12-27`, and as its **own** cast op, never
+      by re-plumbing `OpNodeLabels_v0`'s `#683`, which that donor needs for its own `Diagram` cast
+      (`docs/toolkit-capabilities.md:93-94`: *"a seed casts exactly its class … one op per concrete class"*).
+    - (h2) 🎉 **51(f) RAN AND THE BINDING QUESTION IS ANSWERED — 27 gates pass / 0 fail, nothing built, nothing
+      saved** (`tools/bench/diag_c60_n4_localbinding.log`, `BGRUN END rc=0 after 93s`; readings
+      `…_n4_localbinding.json`).
+      **N1 — the instrument is validated LIVE, not trusted from a table.** `node_terms` on all eight pre-existing
+      `Local`s returned exactly ONE named terminal each, and the set is **IDENTICAL** to
+      `docs/main-vi-panel-map.md:409-416` — 8/8 agree, 0 differ (`:27-45`): #2991 `'Total Lost Frames'` ·
+      #4277 `'File # Saved'` · #11574 `'Focus Pos (Track)'` · #3160 `'Rot pos (deg)'` · #3097 `'Trans Pos (mm)'` ·
+      #2143 `'Total Lost Frames'` · #16942 `'Picture'` · #25805 `'Color table'`.
+      🎉 **N2/N3 — `OpCreateLocal_v0` BINDS TO THE CONTROL IT IS INVOKED ON, AND THAT IS NOW A MEASUREMENT.**
+      From `'index'` (`Panel.Controls[114]`, label read off the machine): new Local **#23574**, error cluster
+      `(False, 0, '')`, census 8 → 9, ONE terminal named **`'index'`** (hex `696e646578`). From
+      `'Automatic Error Handling'` (`[115]`): new Local **#23579**, ONE terminal named **`'Automatic Error
+      Handling'`**, census 9 → 10. `matches_the_label_asked_for: True` for both. **The instance-method inference
+      49(c) rested on is retired — S3b's rule-1a instrument exists and it says the walk matched correctly.**
+      **And L0's two FAILs are now fully explained by measurement:** the new Local's own `Node.Label` reads
+      `'SCRATCH_C60N4_20260921_082820.vi'` (`:121`) — the VI file name, exactly as 50(c) said of `node_labels`.
+      Hygiene: 20 consecutive `node_terms` calls in 1.1 s, handles 51,342 → 51,345 (delta **3**), refs 8/8/**0
+      live**, scratch deleted `exists=False`, four md5 pins PASS before and after, `ARTEFACTS ON DISK: []` by
+      design.
+    - (h3) 🔴 **THE ONE NEW BLOCKER, AND IT IS THE NEXT CYCLE'S FIRST QUESTION: A NEWLY CREATED LOCAL IS BORN IN
+      *WRITE* MODE, AND S3b NEEDS *READ*.** Both new Locals read **`is_source` False**, which
+      `docs/main-vi-panel-map.md:405` defines as **WRITTEN** (`is_source` True = READ), with `wire` 0 — a bare
+      sink. Of the eight pre-existing Locals, **3 are READ** (#3160, #3097, #25805) **and 5 are WRITE**, so both
+      modes exist on this VI and the mode is READABLE. **Flipping one is UNMEASURED.** S3b's folded M1+M2 feeds
+      `#10407` t0/t2 *from* the locals — a local that supplies a value must be in READ mode — so unless the
+      direction can be set, the locals cannot serve their purpose however correctly they are bound. ⚠️ **Two
+      things to establish before anything is built, in this order: (1) confirm the required direction against the
+      MEASURED row table (`docs/cycle27-plan.md:1182-1188`, cycle 54's 9/9 at `:1283-1290`) rather than from this
+      paragraph's reasoning; (2) measure whether the direction can be written at all.** The candidate property is
+      **6355401** (the prior-art review's B1 notes `is_source` supplies what 6355401 would have read) on class
+      `'VI Server:Local'`, which is measured to resolve here (`diag_s3b_l0_localname_run2.log:50-56`);
+      `build_property`'s per-ID tuple already carries a writable flag. **Any op that follows is built ADDITIVELY
+      ON A DONOR (h), never spliced, and it is one step with one saved artefact.**
+    - (h4) ⚠️ **ONE STALE COLUMN, REPORTED AND DELIBERATELY NOT REPAIRED.** `docs/main-vi-panel-map.md`'s DIAGRAM
+      indices no longer address this lineage — 73→76, 83→86, 99→102, 167→170 (1 and 17 unmoved); the **names and
+      directions are unmoved**, so the binding table stands. Diagram indices are resolved **by uid via
+      `diag_index`** everywhere anyway, which is why this cost nothing.
+    - (h) 🔴 **A STANDING LESSON THE NEXT BUILDER READS BEFORE TOUCHING AN OP: DO NOT SPLICE A PROPERTY CHAIN INTO
+      AN EXISTING OP — ADD TO A DONOR.** Counted by the prior-art review across the project's own logs: splicing
+      has failed **6 times and succeeded 0** (S0 ×4 — Pre-decided 25, `tools/bench/build_s0_closeref_v3.log` 87/5,
+      `…v1.log` 41/2; L0 ×2 — `tools/bench/diag_s3b_l0_localname_run2.log`, `…_v2.log`), while
+      additive-on-a-donor has shipped **five** saved ops (`docs/toolkit-capabilities.md:62,:63,:66,:68,:70`). Both
+      of cycle 60's dead builds are instances of the failing class. This is not a device and needs no gate — it is
+      the sentence to read before the next op is designed.

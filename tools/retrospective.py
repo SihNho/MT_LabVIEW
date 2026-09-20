@@ -62,6 +62,27 @@ DECISIONS = os.path.join(ROOT, "docs", "violation-decisions.md")
 sys.path.insert(0, HERE)
 import logclass  # noqa: E402  - ONE definition of build-vs-machinery; see tools/logclass.py
 
+
+def current_plan_rel():
+    """Project-relative path of the ONE cycle plan whose frontmatter says `status: current`, or None.
+
+    THE PLAN IS RESOLVED BY FRONTMATTER, NEVER BY THE CYCLE NUMBER (repaired 2026-09-21). This file used to build
+    `docs/cycle<N>-plan.md` from `--cycle N` in two places - the evidence-window fallback and, worse, the task text
+    handed to the reviewer, which for every cycle since 27 named a spelling that HAS NEVER EXISTED. The scheme moved
+    to ONE plan spanning cycles 27+ (STATUS.md OPEN 56); `audit_cycle.py`'s C7 hit the same defect and was repaired
+    on 2026-09-18 (cycle 35) by calling `doc_lint.current_plans()`. That is THE one predicate for "the plan" in this
+    project (doc_lint L4 enforces that exactly one plan carries it, and L8 reads the same list), so this reuses it
+    rather than keeping a third copy: a future rename of the scheme breaks one function, not several.
+    """
+    try:
+        import doc_lint as _dl                       # same import shape audit_cycle.py:389 uses
+        cur = _dl.current_plans()
+    except Exception:                                # pragma: no cover - the review must never die on the lint
+        return None
+    if not cur:
+        return None
+    return os.path.relpath(cur[0], ROOT).replace(os.sep, "/")
+
 # THE CONSOLE CODE PAGE IS NOT COSMETIC (measured here 2026-09-16, and it is the THIRD time this project has paid
 # for it: retro_cycle12.log:33-36 exited rc=1 on the same defect while the review it wrapped had completed, and
 # prior-art run 3 was voided by mojibake evidence). `--dry-run` prints a task full of `—` and Korean; on this
@@ -273,13 +294,15 @@ def cycle_window(cycle, slug=None):
 
       start = mtime of archive/peer/*retrospective-cycle<N-1>.md
       end   = cycle N's own retrospective DISPATCH time if it has one, else now
-      fallback: docs/cycle<N>-plan.md mtime, ONLY when no previous retrospective exists (cycles 1-6)
+      fallback: mtime of the `status: current` cycle plan, ONLY when no previous retrospective exists (cycles 1-6).
+                That fallback named `docs/cycle<N>-plan.md` until 2026-09-21; see current_plan_rel() for why the
+                cycle number no longer names any document here.
 
     Verified on cycle 11: start 2026-09-16 14:33:20 (cycle 10's retrospective), so build_opdelete_v1.log (16:27:59)
     and tools/gscript.py (17:38:29) are both inside, which is what the judgement session believed all along.
     """
     try:
-        n = int(cycle)
+        int(cycle)              # the cycle number LABELS the review and picks the window; it names no document
     except (TypeError, ValueError):
         return None, None, "cycle is not a number - no window"
 
@@ -290,11 +313,13 @@ def cycle_window(cycle, slug=None):
         sbasis = (f"archive/peer/{os.path.basename(prev[0])} stamp "
                   f"(the LAST retrospective written before this one; a plan mtime lags the work - see the docstring)")
     else:
-        cur = os.path.join(ROOT, "docs", f"cycle{n}-plan.md")
-        if not os.path.isfile(cur):
-            return None, None, (f"no earlier retrospective and no docs/cycle{n}-plan.md exists - no window")
+        prel = current_plan_rel()
+        cur = os.path.join(ROOT, prel) if prel else None
+        if not cur or not os.path.isfile(cur):
+            return None, None, ("no earlier retrospective and no docs/cycle*-plan.md is `status: current` "
+                                "- no window")
         start = os.path.getmtime(cur)
-        sbasis = f"docs/cycle{n}-plan.md mtime (FALLBACK: no earlier retrospective is archived)"
+        sbasis = f"{prel} mtime (FALLBACK: no earlier retrospective is archived)"
 
     # END IS ALWAYS NOW - this review is being dispatched now, so the cycle stopped producing work now.
     # It used to be `dispatch_time(retro_archive(n))`, and that is OPEN 31's defect, measured: a SECOND review of
@@ -367,6 +392,13 @@ def main():
         if start <= mt <= end:
             (logs if logclass.is_build_log(fp) else machinery).append((p, mt))
 
+    # WHICH PLAN THE REVIEWER IS POINTED AT. Never `docs/cycle{a.cycle}-plan.md`: that spelling has not existed
+    # since the scheme moved to one plan spanning cycles 27+, so every retrospective since has sent the reviewer to
+    # a missing file while claiming it was "this cycle's own plan". See current_plan_rel().
+    plan_rel = current_plan_rel()
+    plan_text = plan_rel or ("(NO cycle plan carries `status: current` - `py tools/doc_lint.py` L4 says which "
+                             "docs/cycle*-plan.md files exist)")
+
     devices = parse_devices(DECISIONS)
     dev_text = "\n".join(f"  - `{s}` (decided {d}): {one}" for s, d, one in devices) or "  (none on file)"
 
@@ -406,7 +438,7 @@ def main():
           f"output contract asks you to quote. Never read a reviewer's quoted sentence as a build failure.\n"
         + "\n".join(f"tools/bench/{n}  ({fmt(mt)})" for n, mt in machinery)
         + "\n\nThe rules are in CLAUDE.md at the project root; this cycle's own plan is "
-          f"docs/cycle{a.cycle}-plan.md and the hand-off document is STATUS.md; every hypothesis-level review of "
+          f"{plan_text} and the hand-off document is STATUS.md; every hypothesis-level review of "
           "this cycle is in archive/peer/.")
 
     slug = a.slug or f"retrospective-cycle{a.cycle}"
