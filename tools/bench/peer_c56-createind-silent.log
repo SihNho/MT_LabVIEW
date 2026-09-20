@@ -1,0 +1,85 @@
+BGRUN START 2026-09-20 21:15:19 limit 15.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c56-createind-silent -TaskFile tools/bench/peer_task_c56_createind.txt
+OUTCOME: ANSWERED (644s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-20-c56-createind-silent.md
+COST: $4.9446  in 32 / out 48117 / cache-create 265617 / cache-read 2021980  (642s, 28 turn(s))
+--- ANSWER ---
+I can't write files (Write is disabled, and AGENTS.md makes my output the whole deliverable), so here is the review.
+
+# The claim is refuted on its decisive premise
+
+**The run did not observe twenty silent declines. It observed twenty error dialogs, and the wrapper threw them away.**
+
+## 1. Strongest reason the claim is wrong — the op never reached a terminal
+
+`C:\Users\KimLab\AppData\Local\Temp\gscript_dialog_1789905146.png`, written by `_run`'s watchdog (`tools/gscript.py:377`), wall clock **20:52 on 2026-09-20** — inside this run's window (`BGRUN START … 20:49:15`, `tools/bench/diag_s3a_ind_transport.log:1`) — shows:
+
+> **Error 1055 occurred at Property Node in OpCreateIndicator_v0.vi**
+> LabVIEW: (Hex 0x41F) Object reference is invalid.
+
+The op's diagram is visible in the same frame and confirms the ladder: `vi path → VI.TopLvlDiag → Diagram.Nodes[] → IndexArray(index) → Node.Terms[] → IndexArray(index 2) → Terminal.Create Indicator`. Error 1055 **at a Property Node** puts the invalid reference at `TopLvlDiag`, `Nodes[]` or `Node.Terms[]` — all upstream of the terminal. `Terminal.Create Indicator` was never invoked with a live reference. **Zero of the twenty attempts tested wiring, eligibility or data type.**
+
+Not a one-off: **113 dialog screenshots span epochs 1789905090–1789906295+**, exactly this run (start ≈ 1789904955, kill at +1502 s), in a **repeating 36-second, three-dialog cycle** — `fp_labels` before, `create_indicator`, `fp_labels` after, ×36 attempts.
+
+**Why the log says `exception None`:** `_run` raises `RuntimeError("run blocked behind a modal dialog…")` (`tools/gscript.py:428-431`) and `create_indicator` catches exactly that string and swallows it (`tools/gscript.py:2396-2400`). That column is manufactured by the wrapper. This is the **same defect already diagnosed and fixed in `delete_object` on 2026-09-16** — `tools/gscript.py:2264-2272`: *"it caught exactly the one signal LabVIEW gives when a delete is refused, and continued as if the call had worked… a refused delete became a reported success."* The repair never reached `create_control` (`:2377-2379`) or `create_indicator` (`:2398-2400`).
+
+Three further strikes:
+
+- **The fleet's measured behaviour on ineligible terminals is not silence.** `tools/gscript.py:1890-1892` (measured 2026-09-13): *"a sweep of a For Loop's Terminals[0..13] produced **DANGLING indicators for 0-7**… and nothing beyond."* And `archive/bench-2026-09-13-array-reporter/REPORT.md:57`: *"`create_indicator` never fails loudly — it creates something either way."* A 0..7 sweep yielding **nothing** is the opposite of what "the terminals were wired" predicts.
+- **This project already refuted this inference in writing.** `docs/cycle11-plan.md:27`, under *"What rev1 got wrong"*: *"`create_indicator` declining proves the terminal is already wired"* → *"a decline on an **unwired** terminal is already on record; **a decline is not evidence about wiring**."*
+- **The "top-level Nodes[] only" half is not a finding of this run.** It was active documentation beforehand — `docs/NAMES.md:278-280` and `:474-475` — and the script's own header quotes it (`tools/bench/diag_s3a_ind_transport.py:33-34`). Twenty-five minutes and 36 op calls re-derived a documented fact.
+
+## 2. Alternative explanation
+
+**The ladder head was invalid on this target, so every `index` was out of range — including 0.**
+
+`index = 25` failing fits "wrong array". **`index = 0`, `1`, `2` failing identically does not** — the top-level diagram of a VI with 97 SubVIs and 6 While Loops (`…log:25`) certainly has a node at index 0. And 1055 at a *Property Node* rather than an *Invoke Node* rules out `index 2` as the out-of-range one. So `Diagram.Nodes[]` came back empty/unreachable: a VI-reference or diagram-load fault at the head, not an addressing fact about nested diagrams. The shape is already on file — `tools/gscript.py:1241-1247` and `docs/cycle11-plan.md:37-46` ("silently declined; count unchanged; no error" when the diagram is not fully in memory). One fault explains all twenty; the claim needs two and still leaves the dialog unexplained.
+
+I cannot settle *which* property node failed from files alone. What is settled is that it failed upstream of the terminal, which makes the wiring explanation unavailable.
+
+## 3. Your five questions
+
+**Q1.** Yes, entailed — `Nodes[]` returns only nodes directly on that diagram; nested access requires recursing through the structure's own subdiagram refs ([NI forum](https://forums.ni.com/t5/LabVIEW/VI-Scripting-Nested-Case-Structure/td-p/3712057)); the screenshot shows the short name `TopLvlDiag`. But that binds **this op's ladder head**, not the verb. The fleet already addresses nested diagrams — `node_terms(target, diagram_index, node_index)` (`tools/gscript.py:870-876`), `OpConnectNested_v1`, `drop_subvi(…, diagram_index=…)` (`docs/NAMES.md:490-491`) — and **`tunnel_indicator` (`tools/gscript.py:1882-1922`, `OpTunnelInd_v0`, already on disk) drives the very same method 6349C02 via `Tunnel.'Outer Term'` with no `Nodes[]` addressing at all.** So "cannot be created by this verb" is a non-sequitur; for tapping values leaving `WhileLoop #637`, an existing output tunnel's outer terminal needs no nested addressing. — *Silent decline looks like nothing here*: out-of-range gives an invalid refnum → 1055 + dialog (`docs/NAMES.md:279-280, :500-501`, now photographed); an ineligible terminal gives a dangling indicator (`:1890-1892`).
+
+**Q2.** The premise is false. There were dialogs — 113 — and at least one provably names `OpCreateIndicator_v0.vi`. The docstring's dialog prediction was right; the wrapper hid it.
+
+**Q3.** **No — this is the one part I do not attack.** Three independent readings agree: `ControlTerminal` 114 before and after (`…log:25,60`), an empty FP-label delta every attempt, and the op erroring before the creation verb. `report_all` is a whole-VI traverse (it returned 173 Diagrams, 135 LoopTunnels), so a new ControlTerminal on any diagram would have been counted. Detection is sound.
+
+**Q4.** It says the time went into dialog handling and the diagnostic's own instrumentation, not into LabVIEW judging a terminal. 113 dialogs / ~36 attempts ≈ 3 per attempt on a measured 36 s period (…905137 → 173 → 209 → 244 → 280 → …); the script calls `fp_labels` twice per attempt (`diag_s3a_ind_transport.py:333,340`) and each ends in its own documented 8 s out-of-range dialog (`gscript.py:2440`). A real silent decline costs **~0.15 s** (`gscript.py:2364`). 35 s is evidence **for** a dialog.
+
+## 4. What would falsify my alternative
+
+No further `OpCreateIndicator_v0.vi` frames among the run's other dialog screenshots, **and** `node_info` returning a healthy list of >25 top-level nodes, **and** a call on an in-range, unwired, source terminal returning with no exception and creating nothing. That restores the silent-decline story.
+
+## 5. Cheapest discriminating test
+
+**Step 0 — free, no LabVIEW, zero risk, do it first.** Read three more `%TEMP%\gscript_dialog_17899*.png` from three different triples (`…905181`, `…905217`, `…905253`) and count how many name `OpCreateIndicator_v0.vi`. That alone settles "no exception, no dialog". *(2,278 of these have accumulated since 2026-09-09; as far as I can see none has ever been read — the watchdog has been writing the diagnosis to disk for two weeks.)*
+
+**Step 1 — one run, ~2 min, existing ops only, no mutation, no new op.** `node_info` (`gscript.py:2459`, `OpNodeInfo_v0`) walks the *same* `VI → Block Diagram → Nodes[]` rungs and the *same* array `index` indexes:
+
+```python
+t = <fresh dated copy of D1_s2_loops.vi>;  g.open_panel(t)
+ni = g.node_info(t);  print(len(ni), ni[:30])
+```
+`len(ni) == 0` ⇒ the head is broken, every index out of range, the twenty nulls say nothing about nested diagrams or wiring (claim dead). `len(ni) == K > 0` ⇒ indices 0/1/2 *were* in range, so the 1055s were not out-of-range either (both halves dead) → step 2.
+
+**Step 2 — same run, swallow removed:**
+```python
+for n in range(min(12, len(ni))):
+    rows = g.node_terms(t, 0, n)                       # diagram_index 0 = TOP-LEVEL
+    cand = [r for r in rows if r["is_source"] and not r["wire"]]   # unwired SOURCE
+    if cand: break
+before = g.uids(t, "ControlTerminal")
+vi = g.op(g.OP_CREATE_INDICATOR)
+vi.SetControlValue("vi path", t)
+vi.SetControlValue("Names", []);      vi.SetControlValue("Names 2", [])
+vi.SetControlValue("Class Name", ""); vi.SetControlValue("Class Name 2", "")
+vi.SetControlValue("index", n);       vi.SetControlValue("index 2", cand[0]["i"])
+try: g._run(vi)                                        # DO NOT swallow
+except RuntimeError as e: print("VERBATIM:", e)
+print(g._err(vi), g.new_since(t, "ControlTerminal", before))
+```
+Indicator appears ⇒ the op works and eligibility is the binding constraint (first half survives as a scope limit, second half dead). Nothing + 1055 on an in-range unwired source ⇒ the op is broken on this target and neither half holds. Add ~30 s of contrast control by running the same three lines against `build_opcreateindicator.py`'s small acceptance target: works there + 1055 here ⇒ target-specific, not index-specific.
+
+**Repair first, one line each:** delete the modal-dialog swallow at `gscript.py:2377-2379` and `:2398-2400`, exactly as was done for `delete_object` (`:2264-2272`). While it stands, no experiment using these two verbs can distinguish "declined" from "errored" — which is the entire content of this failed prediction.
+
+**Sources:** [Error 1055 from a Property or Invoke Node — NI](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019L75SAE) · [Error 1055 at Property Node — NI Community](https://forums.ni.com/t5/LabVIEW/quot-Error-1055-at-Property-Node-Object-reference-is-invalid/td-p/3365922) · [VI Scripting — Nested Case Structure — NI Community](https://forums.ni.com/t5/LabVIEW/VI-Scripting-Nested-Case-Structure/td-p/3712057) · [Block Diagram — LabVIEW Wiki](https://labviewwiki.org/wiki/Block_Diagram)
+BGRUN END rc=0 after 644s

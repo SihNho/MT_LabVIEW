@@ -1,0 +1,33 @@
+API FACT QUESTION (no diagnosis, no project context needed). LabVIEW 2026 (26.3.1f1) on Windows, driven
+headlessly over the ActiveX/COM VI Server from Python, with VI Scripting enabled. We create diagram objects
+with the scripting method `New VI Object` and we enumerate them with `Traverse for GObjects` / class-name
+traverses.
+
+THE QUESTION: how is a LabVIEW **Local Variable** created on a block diagram and bound to a named front-panel
+control or indicator, BY VI SCRIPTING / the VI Server API? Specifically, and with citations:
+
+1. The exact **class-name string** that `New VI Object` (or `Diagram.Create Object` / `New VI Object` in the
+   scripting palette) takes to create a local variable. Our own measurements record:
+   - `"LocalVariable"` is INVALID for a class traverse on this install (error 109),
+   - `"Local"` IS the valid traverse class name for finding existing local variables.
+   Is `"Local"` also the correct string for CREATION, or is the creation style/class name different from the
+   traverse class name? Name the exact bytes.
+2. The **property or method that BINDS** a newly created local variable to a particular front-panel control or
+   indicator by name. (Candidates we have not verified: a `Terminal`/`Source` property, a `Refresh`/`Linked
+   Control` property, `Local.Control` / `Local.Terminal`, setting `Local`'s `Signal Name`, or wiring it through
+   `Control.Terminal`.) Give the property's exact name and its data type, and say whether the local variable is
+   created UNBOUND and then bound, or bound at creation time by passing the control's reference/name.
+3. Whether a local variable can be created **directly on a NESTED diagram** (inside a While loop's subdiagram,
+   or a Case structure frame) rather than on the top-level block diagram — i.e. whether the creation call takes
+   an arbitrary `Diagram` reference as its owner, and whether anything about nesting is special.
+4. Any **LabVIEW-version caveats**, deprecations or known bugs for this specific operation (LabVIEW 2019 through
+   2026), and any licensing/edition requirement beyond "VI Scripting enabled".
+5. Whether the read/write direction of a local variable (read vs write) is a property set after creation, and
+   its exact name.
+
+Cite NI documentation (ni.com help pages, the VI Scripting class/property/method help), the shipped scripting
+examples under `<LabVIEW>\examples\Application Control\VI Scripting\`, or `vi.lib` scripting VIs, by page title
+or file path. If you cannot find an authoritative statement for a sub-question, say so explicitly rather than
+inferring it from a similar class.
+
+DO NOT propose a design, a workaround, or a next experiment. Return the exact strings and the citations only.

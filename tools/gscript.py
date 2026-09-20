@@ -2372,11 +2372,14 @@ def create_control(target, node_index, terminal_index):
     vi.SetControlValue("Class Name", ""); vi.SetControlValue("Class Name 2", "")
     vi.SetControlValue("index", node_index)
     vi.SetControlValue("index 2", terminal_index)
-    try:
-        _run(vi)
-    except RuntimeError as e:
-        if "modal dialog" not in str(e):
-            raise
+    # DO NOT SWALLOW THE MODAL-DIALOG EXCEPTION (changed 2026-09-20, cycle 56, mirroring delete_object:2264-2272).
+    # This used to read `except RuntimeError as e: if "modal dialog" not in str(e): raise`, i.e. it caught exactly
+    # the one signal LabVIEW gives when the call is refused, and returned an EMPTY list instead. Measured
+    # (tools/bench/diag_s3a_ind_transport.log, 20 consecutive calls): the dialogs said "Error 1055 occurred at
+    # Property Node in OpCreate{Control,Indicator}_v0.vi - Object reference is invalid", and the caller saw
+    # `exception None` + no new ControlTerminal, so a REFUSAL read as a silent decline. The op has no error
+    # indicator to read (same as OpDelete_v0), so the dialog text is the only evidence there is.
+    _run(vi)
     new = new_since(target, "ControlTerminal", before)
     label = vi.GetControlValue("Text") if new else None      # v1 reports the label LabVIEW gave the control
     return new, label
@@ -2393,11 +2396,11 @@ def create_indicator(target, node_index, terminal_index):
     vi.SetControlValue("Class Name", ""); vi.SetControlValue("Class Name 2", "")
     vi.SetControlValue("index", node_index)
     vi.SetControlValue("index 2", terminal_index)
-    try:
-        _run(vi)
-    except RuntimeError as e:
-        if "modal dialog" not in str(e):
-            raise
+    # DO NOT SWALLOW THE MODAL-DIALOG EXCEPTION - see create_control just above (changed 2026-09-20, cycle 56;
+    # the same repair delete_object:2264-2272 already carries). The dialog carried "Error 1055 ... Object
+    # reference is invalid" on all 20 calls of tools/bench/diag_s3a_ind_transport.log and this wrapper discarded
+    # it, reporting an empty ControlTerminal list with `exception None`.
+    _run(vi)
     return new_since(target, "ControlTerminal", before)
 
 

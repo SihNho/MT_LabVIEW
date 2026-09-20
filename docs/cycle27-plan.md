@@ -1371,7 +1371,7 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
     - (c) 🔴 **DECISION — TYPE IS TESTED BY CONNECTION, AND LABVIEW IS THE TYPE CHECKER.** We cannot read a
       terminal's type (36(c)) and we cannot read a queue's element type (b). But a type MISMATCH is visible the
       moment two things are wired together, and the reader for that is **already built and already measured**:
-      `Wire.Is Broken?` **6371004** (`docs/NAMES.md:888-897`, built 2026-09-17; CLAUDE.md names it as the reader
+      `Wire.Is Broken?` **6371004** (`docs/NAMES.md:902-911`, built 2026-09-17; CLAUDE.md names it as the reader
       to use instead of inferring why a wire is bad). Wire a candidate queue to the consumer its data must
       actually reach and read `Is Broken?`. No new op, so Pre-decided 2 is respected; no inference, so 38(c)'s
       trap is avoided. The donor's type never has to be *named* — only matched.
@@ -1604,3 +1604,102 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
       first when a construction verb (a local variable placed by scripting, `#10407` t6) is unmeasured.
     - (g) **Open for the user, not a blocker**: t6 of `#10407` (§6 names no construction verb) is resolved by the
       same local-variable route if it is a value, by measurement if it is not.
+
+## Pre-decided — ADDED 2026-09-20 (cycle 56): the panel-object verb WORKS · 45(c)(iii) corrected · Pre-decided 2 mis-cited
+
+46. **THE TRANSPORT IS REACHABLE AND ITS FIRST HALF IS BUILT: A FREE-STANDING FRONT-PANEL INDICATOR CAN BE CREATED
+    BY SCRIPTING ON THIS VI, AND A SAVED FILE PROVES IT.** Judgement, cycle 56, 2026-09-20, from
+    `tools/bench/diag_s56_transport3.{py,log,json}` (21 pass / 7 fail), `…transport3b.*` (11/3),
+    `tools/bench/diag_s56_transport2.*` (13/5), `tools/bench/diag_s3a_ind_transport.*` (6/2, `BGRUN TIMEOUT`) and
+    `tools/bench/diag_c56_topdiagram_files.*` (7/0). 34–45 stand; this resolves 45(f)'s diagnostic-first clause,
+    corrects 45(c)(iii), and corrects a mis-citation of Pre-decided 2 that ran through all five of the cycle's briefs.
+    - (a) 🎉 **THE ROUTE THAT WORKS, measured end to end and SAVED.** `build_index_array` on the
+      `VI → Block Diagram` head places `IndexArray #23486` with `owner_of` = **`('TopLevelDiagram', 536)`**, error
+      `''`; `node_info(max_n=40)` goes **0 → 1** (`[(0,'Index Array','Index Array')]`);
+      `create_indicator(Nodes[0].Terminals[2])` produces `ControlTerminal` **#23541**, census **114 → 115**, error
+      `''`; `delete_object(IndexArray[0])` returns `ExecState` **1** (`remove_bad_wires` not needed). Artefact:
+      **`claudeDev\DIAG_s56_t3_p2_20260920_221901.vi`, md5 `cbe9ddd5690983fae2919b3027264d4b`, 476,182 B,
+      `26 00 80 00`**, saved legally (`allow_broken` False, `gui_save` never called). The route is
+      `docs/NAMES.md:476-478` + `docs/stage2-assembly-step-b.md:49-50`, never before tried on this VI.
+      **So the empty top-level `Nodes[]` was EMPTY, not DEAD** — of the three readings cycle 56 could not separate
+      from the files, the measurement picks the first.
+    - (b) **`Diagram #536` IS the top-level diagram, and `#686` is NOT.** Live: `Traverse Diagram[0]` =
+      `{'class':'TopLevelDiagram','uid':536,'owner':''}`, `diag_index(#536) = 0`. `#686` is a
+      **`FlatSequenceFrame`**, and the owner chain `#639 → WhileLoop #637 → Diagram #686 → FlatSequenceFrame #? →
+      STOP` dies in one hop — the frame's uid is unreadable (`error 1055` on the direct read, `error 1092` for
+      `FlatSequenceFrame` as a Traverse class), so `#536` is reached by elimination, never by a walk.
+      `diagram_tree_main.json`'s `"0"` row is **neither a diagram nor a placeholder but an index whose identity was
+      discarded** (`diagram_tree_main.py:51-52` keeps only `d["owner"]`); `net_map`'s *"0 = top level"*
+      (`tools/gscript.py:2505`) was a docstring assumption until this cycle corroborated it.
+    - (c) 🔴 **ALL 114 PRE-EXISTING `ControlTerminal`s ARE OWNED BY CLASS `Diagram`, NOT `TopLevelDiagram`**
+      (`tools/bench/diag_s56_transport3b.log:15`, `{'Diagram': 114}`) — the original's panel terminals all sit
+      inside structures, and the top-level diagram held **zero** of them until we made one. This is why
+      `wire_indicators` fails: three attempts, at the source's diagram and at `diagram_index=0`, all returned
+      `error 5001: LV-Scripting.lvlib:Wire Indicators.vi<ERR> | Control <label> not found` for an indicator the same
+      run had just read on the same VI. Target wire **0 → 0**, `#10686` t0 **3/3 wired** before and after, `#637`
+      **59 → 59 terminals / 48 → 48 wired**, no tunnel or border object appeared (37(e) grain throughout).
+    - (d) 🔴 **THE ONE REMAINING UNKNOWN FOR S3a IS NOW SINGLE: how to wire a `ControlTerminal` to a node terminal
+      on a NESTED diagram.** Candidates, in the order they are to be tried, cheapest first:
+      (1) **a pure READ — does a nested diagram's `Nodes[]` enumerate `ControlTerminal`s at all?**
+      `docs/d1-build-plan.md:1227,:1230-1231` records six `ControlTerminal`s on `#639` and `Get Controls.vi`
+      returning 5001 at index 0 but succeeding at 43, so the question is answerable from the files and the existing
+      censuses. If they ARE enumerated, `OpConnectNested_v1` can address the terminal by index and the connect is
+      an ordinary same-diagram one. (2) `move_in` of `ControlTerminal #23541` into `#639` — 37(d)'s severing cost
+      does **not** apply, because a freshly created terminal has no wires to cut — then wire same-diagram.
+      (3) `connect_ctl` (`gscript.py:983`, which has run clean before with a top-level `Nodes[]` source) now that a
+      node can demonstrably be placed at top level. 🔴 **Do not spend a fourth `wire_indicators` attempt before (1).**
+    - (e) 🔴 **45(c)(iii) IS CORRECTED: THERE IS NO COUNTER FEEDING `#10686`, AND `'current image number'` IS NOT A
+      PER-FRAME COUNTER.** `#3191` is a **`CaseStructure`** — no function name — and **all four** of its terminals
+      are `is_source=False`: t0 `''` w3050 (selector, from `#3057 'x = 0?'`), t1 `''` w3268, t2
+      `'current image number'` w3747, t3 `'LastBufferNumber'` w3356 (`main_vi_nodeterms.json` diagram 43). Wire
+      3747's only source in the whole census is **`#6810` t10 = `get buff image-lost frames.vi`**, the camera
+      acquisition subVI (`docs/NAMES.md:80-87`; panel row 103, `docs/main-vi-panel-map.md:383`, control 34200), so
+      that indicator carries the **camera buffer number, which jumps by more than 1 across lost frames** — an edge
+      on it does NOT fire once per acquired frame. The real frame counter is wire **3268**, which has **0 sources**
+      in the census (six sink endpoints: `#376` t7, `#1114` t0, `#2136` t3, `#3191` t1, `#10068` t3, `#29240` t3)
+      and arrives from a shift register or border object (`docs/frame-loop-wire-graph.md:161`). **Consequence for
+      45(d): the cadence edge is built either on the schedule boolean's own rising edge or on wire 3268 obtained at
+      its real source, and which of those is right is NOT decided here** — the third indicator of 45(c) is
+      WITHDRAWN, and S3a creates TWO.
+    - (f) **THE SWALLOW IS REPAIRED — ACCEPTED, and it was the cycle's most expensive lesson.** `gscript.py`'s
+      `create_control` and `create_indicator` classified LabVIEW's **error 1055** modal dialog as `"modal dialog"`
+      and returned an empty list with `exception None`. Twenty such calls cost **1502 s (a `BGRUN TIMEOUT`) and
+      $4.94** before a watchdog screenshot of the dialog explained it. Repaired at both sites in the shape
+      `delete_object:2264-2272` already carried, and PROVEN: the same call now raises
+      `RuntimeError: run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): …`.
+      **A wrapper that hides the machine's error is worse than no wrapper** — the sibling of "when a diagnosis is
+      guessed twice, build the reader".
+    - (g) 🔴 **AND THE FRAMING THAT COST THE MOST WAS MINE.** Dispatch 3's `L1`/`L2` FAILs made **zero calls to the
+      machine** — they restated a rule as if it were a reading — and I built the next peer question on top of them
+      ("the transport verbs are unreachable, so a new op VI is unavoidable").
+      `archive/peer/2026-09-20-c56-transport-verbs-unreachable.md` (claude/hypothesis opus max, ANSWERED, $4.1928)
+      refuted it at exactly that point — *"the claim is not supported by the run that produced it"* — and named
+      `build_index_array → create_indicator → delete_object`, `copy_by_index(cls='Local', duplicate=True)` and
+      `Control → Create:Local Variable` 6331C02. **DISPOSITION: ACCEPTED on the decisive point; the "unreachable"
+      framing is WITHDRAWN**, and (a) above is that review's own second test, run and passed.
+      🔴 **RULE for every later brief and every later gate: a gate that makes no call to the machine is not a
+      `FAIL`, it is a note, and it may never be listed among measured gates.** Same family as 41(c).
+    - (h) **`copy_by_index(cls='Local', duplicate=True)` IS NOT USABLE AS IT STANDS.** It cleared the
+      "nothing was copied" check and then raised `RuntimeError: copy_by_index: Target still broken after finish
+      (ExecState 0) - not saved` (`gscript.py:1548-1551`): the op works through the shipped
+      `NIScriptingExamples\Moving Objects\` fixtures, where ~94 of the main VI's subVI paths do not resolve, and it
+      has **no destination-diagram control**, so `move_in` to `#23058` was never reachable through it. Both fixtures
+      were left holding md5 `cbe9ddd5…`; the documented protocol restores them at the next copy's start. Recorded,
+      not repaired, not re-run.
+    - (i) **NO GENERIC PROPERTY READER EXISTS**, so the 8 existing `Local` objects' bindings cannot be read: every
+      reader in the fleet is purpose-built with a hard-wired ID, and `6355400` (`Local.Control Name`) appears **0
+      times** in `docs/vi-server-ids.json` and **0 times** in `tools/gscript.py`. The 8 uids are 2143, 2991, 3097,
+      3160, 4277, 11574, 16942, 25805, all owner `Diagram`, count 8 → 8 across the cycle.
+    - (j) ⚠️ **HANDLES — 44(e)'s unexplained growth measured a THIRD and FOURTH time:** 30,684 → 54,367 over 330 s
+      and 30,691 → **63,517** over 78 s, each after the run's own restart, with `ref_counts` reading 26/26/0 and
+      13/13/0 live. The client-side reference gate still cannot see it. LabVIEW was left UP (pid 8856) at cycle
+      close, so **the next batch restarts first, mechanically.**
+    - (k) 🔴🔴 **PRE-DECIDED 2 SAYS "NO FURTHER PROCESS DEVICE" — NOT "NO NEW OP VI" — AND I MIS-CITED IT IN ALL
+      FIVE OF THIS CYCLE'S BRIEFS.** `docs/cycle27-plan.md:31` reads *"**No further process device** (user, 08:53)
+      — still the standing order. A retrospective naming one is a finding."* A **process device** is gate and
+      retrospective machinery; an **op VI** is deliverable-construction tooling, and every stage of D1 so far was
+      built with them (+17 by the 5th outcome review's own count). So the order does not reach an op VI that places
+      a Local Variable, and **the S3b transport needs no decision from the user**: if `Control → Create:Local
+      Variable` 6331C02 through `build_invoke` is the route, it is simply built. The mis-citation is what turned
+      (g)'s two no-call gates into FAILs and what sent a $4.19 review out to attack a rule instead of a machine.
+      **Cite Pre-decided 2 by its words, never by its remembered shape.**

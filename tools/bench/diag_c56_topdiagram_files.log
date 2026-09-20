@@ -1,0 +1,48 @@
+BGRUN START 2026-09-20 22:03:30 limit 4.0 min: py -u tools/bench/diag_c56_topdiagram_files.py
+=== diagram_tree_main.json
+  FACT  top-level JSON keys: ['vi', 'diagrams', 'owners', 'subvis', 'structures']
+  FACT  vi: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+  FACT  n owners / n diagram rows: (170, 170)
+  FACT  owner-class census: {'': 1, 'FlatSequenceFrame': 57, 'Sequence': 11, 'CaseStructure': 76, 'ForLoop': 17, 'WhileLoop': 3, 'EventStructure': 5}
+  FACT  structures (class -> count): {'WhileLoop': 3, 'ForLoop': 17, 'CaseStructure': 37, 'Sequence': 4, 'EventStructure': 2}
+  PASS  J5 'FlatSequenceFrame' appears in the owner-class census  count=57
+
+=== (a) diagram rows with owner empty or absent
+    idx 0: owner='' n_uids=1 uids=[22963] real(minus junk 22963)=[]
+  FACT  (a) rows with empty/absent owner: [{'index': 0, 'owner': '', 'n_uids': 1, 'uids': [22963], 'n_real': 0, 'real_uids': []}]
+  PASS  J1 exactly one diagram row has an empty/absent owner  n=1
+  PASS  J2 that row's real-node count (junk 22963 removed) is 0  n_real=0
+  FACT  owner strings that look like the VI itself: []
+
+=== (e) what the sweep scripts decide
+  PASS  J3 diagram_tree_main.py stores NO per-diagram UID  stored fields are owner + uids(of the NODES on it) only
+  PASS  J4 diagram_tree_main.py contains no top-level identification  hits=[]
+  PASS  J6 diagram_tree_main.py discards each Diagram object's own CLASS  it keeps only d["owner"] (diagram_tree_main.py:52)
+  FACT  (e) the line that builds the index: ['if not st["owners"]:', 'dias = g.report(WORK, "Diagram")', 'st["owners"] = [d["owner"] for d in dias]', 'st["subvis"] = {str(o["uid"]): o["pos"] for o in g.report(WORK, "SubVI")}', 'st["structures"][cls] = [o["uid"] for o in g.report(WORK, cls)]', 'n = len(st["owners"])', 'st["diagrams"][str(k)] = {"owner": st["owners"][k], "uids": None, "error": str(e)[:200]}', 'st["diagrams"][str(k)] = {"owner": st["owners"][k], "uids": uids}']
+  FACT  (e) the line that reads each diagram's nodes: ['nodes, _ = g.net_map(WORK, diagram_index=k, max_nodes=120, max_terms=16)']
+  FACT  (e) sweep_nodeterms_main.py's diagram source: ['for k in sorted(TREE["diagrams"], key=int):', 'uids = TREE["diagrams"][k]["uids"]', 'out["diagrams"][k] = {"owner": TREE["diagrams"][k]["owner"], "nodes": drows}', 'print(f"diagram {k:>3} ({TREE[\'diagrams\'][k][\'owner\'] or \'top\'}): {len(drows)} nodes, "']
+
+=== (b)(c)(d) Traverse index 19 (= Diagram #686) and 46 (= Diagram #639)
+  FACT  tree idx 19 (Diagram #686): {'owner': 'FlatSequenceFrame', 'n_uids': 21, 'n_real': 21, 'first_real': [8486, 7201, 781, 250, 637, 6951, 6409, 2048, 7202, 194]}
+  FACT  tree idx 46 (Diagram #639): {'owner': 'EventStructure', 'n_uids': 3, 'n_real': 3, 'first_real': [32083, 32664, 22858]}
+
+=== main_vi_nodeterms.json
+  FACT  nodeterms stats: {'nodes': 626, 'terminals': 3328, 'checked_against_cache': 626, 'mismatches': 11, 'seconds': 662}
+  FACT  nodeterms idx 0: {'owner': '', 'n_nodes': 0, 'uids': []}
+  FACT  nodeterms idx 19: {'owner': 'FlatSequenceFrame', 'n_nodes': 21, 'uids': [8486, 7201, 781, 250, 637, 6951, 6409, 2048, 7202, 194, 1628, 6384]}
+  FACT  nodeterms idx 46: {'owner': 'EventStructure', 'n_nodes': 3, 'uids': [32083, 32664, 22858]}
+  PASS  J8 nodeterms row '0' holds 0 nodes  n=0
+  FACT  nodeterms class_Local: [2991, 4277, 11574, 3160, 3097, 2143, 16942, 25805]
+  FACT  nodeterms class_Global: [3125, 3242, 7202, 6951, 6409, 3115, 3166]
+  FACT  nodeterms class_Property: [12476, 10793, 10399, 7987, 29447, 31228, 8235, 8, 32823, 8498, 35869, 35917, 29139, 26946, 8184, 24144, 8603, 10894, 22, 25116, 6440, 28991, 28939, 28853, 28796, 28677, 28631, 28484, 27777, 27139, 27113, 27317, 27292, 26912, 26341, 250, 22542, 22560, 22858, 22347, 3973, 30783, 4580, 30117, 30146, 50177, 50244, 30617, 30549, 11611, 10824, 16367, 17780, 8718, 19200, 22261, 28073, 11139, 22213, 22168, 21936, 21793, 21770, 21676, 21892, 2320, 21986, 21023, 20859, 1469, 9879, 17289, 9907, 4401, 12284, 32191, 13078, 9775, 28344, 27926, 13366, 30471, 30445, 30422, 30118, 1565, 4276, 19243, 18934, 30933, 18622, 18593, 42899, 17995, 17680, 7462, 17330, 17358, 15332, 15697, 30688, 20054, 25524, 22351, 22388, 27951]
+  FACT  nodeterms class_Invoke: [10313]
+
+=== main_vi_netmap.json
+  FACT  netmap keys: ['source', 'started', 'diagram_owners', 'diagrams', 'finished', 'complete']
+  FACT  netmap idx 0: {'keys': ['owner', 'nodes', 'wires'], 'n_nodes': 0, 'node_uids': []}
+  FACT  netmap idx 19: {'keys': ['owner', 'nodes', 'wires'], 'n_nodes': 21, 'node_uids': ['8486', '7201', '781', '250', '637', '6951', '6409', '2048', '7202', '194', '1628', '6384']}
+  FACT  netmap idx 46: {'keys': ['owner', 'nodes', 'wires'], 'n_nodes': 3, 'node_uids': ['32083', '32664', '22858']}
+
+GATES 7 pass / 0 fail
+wrote G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c56_topdiagram_files.json
+BGRUN END rc=0 after 0s

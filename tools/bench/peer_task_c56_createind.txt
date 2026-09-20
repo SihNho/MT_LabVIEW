@@ -1,0 +1,60 @@
+ATTACK THIS CLAIM. It is the explanation a material session formed, under time pressure, for a failed
+prediction in `tools/bench/diag_s3a_ind_transport.log` (the run of `tools/bench/diag_s3a_ind_transport.py`).
+Your job is to find the strongest reason it is WRONG, name an alternative explanation, say what would falsify
+it, and name the cheapest discriminating test. Do not confirm it.
+
+THE FAILED PREDICTION, verbatim from the log:
+  FAIL  G2 [A-nomove] a ControlTerminal was created and its uid recorded  uid None by rule None
+The gate predicted that `gscript.create_indicator` would create at least one front-panel indicator on a scratch
+copy of `claudeDev\D1_s2_loops.vi` (a 173-diagram, ExecState-1 LabVIEW 2026 VI). It created NONE, on 20
+consecutive calls, in each case returning an EMPTY list of new `ControlTerminal` objects and raising NO
+exception. The same happened again on the second route before the run hit its 25-minute deadline.
+
+WHAT WAS MEASURED, and is not in dispute:
+- The target's `ExecState` was 1 before every call and the run touched nothing else first.
+- The calls were `create_indicator(target, n, t)` for (n, t) = (25, 0), (25, 1), (25, 2), then n = 0 with
+  t = 0..7, then n = 1 with t = 0..5. `n = 25` is the Nodes[] index of node `#10686` (an `And` primitive) on
+  `Diagram #639`, measured live: `owner_of(#10686) = ('Diagram', 639)`, that diagram's live walk returned 73
+  nodes and `#10686` sat at index 25 with t0 `'x .and. y?'` a SOURCE carrying wire 10799.
+- The wrapper is `tools/gscript.py:2385 create_indicator(target, node_index, terminal_index)`. It drives
+  `OpCreateIndicator_v0.vi` (Terminal.Create Indicator, method 6349C02). It sets only `vi path`, `index`
+  (= node_index) and `index 2` (= terminal_index), plus empty `Names`/`Names 2`/`Class Name`/`Class Name 2`.
+  It has NO diagram parameter.
+- Its sibling's docstring (`tools/gscript.py:2360-2367`, `create_control`) says the ladder is
+  "VI -> Block Diagram -> Nodes[] -> IA -> Terminals[] -> IA" and that "a wired terminal or an out-of-range
+  index yields no control (dialog for out-of-range Nodes[])".
+- `tools/recipes/build_opcreateindicator.py` built the op by copying `OpCreateControl_v0.vi` and swapping the
+  Invoke; its own acceptance test swept terminals 0..7 of node index 1 on a small scratch VI and required at
+  least one hit.
+- Prior art on the same two constructions: `tools/bench/case_out_probe.py` / `.log` (2026-09-10).
+
+THE CLAIM TO ATTACK, in one sentence:
+  "`create_indicator` created nothing because its `index` addresses the Nodes[] array of the VI's TOP-LEVEL
+  block diagram only - so a node index taken from a nested diagram's walk addresses either a different node or
+  nothing at all - and, compounding it, every terminal it did reach on this working VI is already wired, which
+  `gscript.py:2365` says yields no control; therefore the indicators Pre-decided 45 needs cannot be created by
+  this verb at the source's own diagram."
+
+Specific things to go after, and please answer each:
+1. Is "top-level Nodes[] only" actually entailed by that ladder, or could `Block Diagram` plus an `Index Array`
+   reach nested objects on this LabVIEW/VI-Server API? What would a silent decline look like in each case?
+2. The op returned NO exception and NO dialog on all 20 calls. Is that consistent with an OUT-OF-RANGE Nodes[]
+   index, given the docstring explicitly predicts a DIALOG for that case? If it is not consistent, what else
+   returns silently - a wired terminal, a terminal that is a SINK rather than a SOURCE (an indicator needs a
+   source), a `Terminal.Create Indicator` refusal for a specific data type, an edit-mode/loaded-state
+   precondition, or something in the wrapper's own control names?
+3. `new_since(target, "ControlTerminal", before)` is how the wrapper decides "nothing was created". Could an
+   indicator have been created and NOT appear in a `ControlTerminal` class traverse on a VI this large (the
+   census read 114 ControlTerminals before and after)? I.e. could the detection be the broken part rather than
+   the creation?
+4. The run also never saw the modal-dialog watchdog fire, and each call took roughly 35 seconds. Does that
+   timing tell you anything about where the call actually spent itself?
+5. The cheapest discriminating test, in ONE run of a few minutes, that separates "the op cannot address a
+   nested diagram" from "the op can, but every terminal offered was ineligible". Name the exact call sequence.
+   For context, the same VI's diagram 43 (= `Diagram #639`) has 33 terminals that a files-only census
+   (`tools/bench/main_vi_nodeterms.json`) reports as `is_source == True` with `wire == 0`, e.g. `#2136` t0
+   `'floor(x/y)'`, `#10969` t1 `'max value'`, `#6104` t1 `'subarray'` - none of which the failed sweep reached.
+
+Constraints on your answer: this project may not build a new op VI and may not run any VI under test. Answers
+must work with the ops already on disk. Cite files by `path:line` where you rely on them, and NI documentation
+where you rely on API behaviour.

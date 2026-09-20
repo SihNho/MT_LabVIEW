@@ -1,0 +1,87 @@
+BGRUN START 2026-09-20 21:44:54 limit 20.0 min: py -u tools/bench/diag_s56_transport2.py
+=== diag_s56_transport2  2026-09-20 21:44:54   (cycle 56 dispatch 3; TEST L + TEST I; NO VI IS RUN, 34(f); no new op, no new device, no GUI action; CHOOSES NO ROUTE)
+  FACT  LabVIEW handles BEFORE (dispatch 2 left the instance UP after a bgrun kill; fresh baseline ~31,500): 60122
+  FACT  T1 ORIGINAL (read-only probe, 34(k)): HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  T1 the ORIGINAL's md5 equals the pin  2a78e17c449cacdaf5da389818526859
+  FACT  T1b D1_s1_copy.vi: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  PASS  T1b D1_s1_copy.vi md5 == 3e3d23cefd3a334001aa9d6156bf1aee  3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  T2 the S2 artefact: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T2 D1_s2_loops.vi md5 == 6ff19497f2309e007a214660bb64b911  6ff19497f2309e007a214660bb64b911
+  FACT  T2b RESTART (mechanical pre-batch restart, 44(e); standing restart permission, CLAUDE.md 3): lv_restart rc=0 ['dialogs: 1346,762| / ENABLED|381290994|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  LabVIEW handles AFTER the restart: 30694
+  FACT  cleanup (ONE attempt, no retry): DIAG_s3aind_20260920_204915_A-nomove.vi existed=True removed=True error VERBATIM ''
+  FACT  cleanup (ONE attempt, no retry): DIAG_s3aind_20260920_204915_B-movedin.vi existed=True removed=True error VERBATIM ''
+  FACT  T3 L scratch at creation: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_s56_localvar_20260920_214454.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T3 the L scratch is byte-identical to the S2 artefact  6ff19497f2309e007a214660bb64b911
+
+=================== TEST L  (local-variable verb)  scratch DIAG_s56_localvar_20260920_214454.vi
+  FACT  P-L: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+  FACT  class census [before] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Local': 8, 'LoopTunnel': 135, 'Wire': 1905, 'ControlTerminal': 114, 'Function': 183}
+  FACT  ExecState [L BEFORE] = 1
+  FACT  L0 ControlTerminal uid 34200 reads label 'current image number' (VERBATIM, repr) - indicator=True, wire=3747
+  PASS  L0 the bind target's label is READ OFF THE MACHINE for ControlTerminal uid 34200  'current image number'
+  FACT  Traverse class `Local` on this scratch BEFORE: count 8, objects [{'i': 0, 'class': 'Local', 'uid': 2991, 'pos': (-3514, 1285), 'owner': 'Diagram'}, {'i': 1, 'class': 'Local', 'uid': 4277, 'pos': (523, 1083), 'owner': 'Diagram'}, {'i': 2, 'class': 'Local', 'uid': 11574, 'pos': (5166, 996), 'owner': 'Diagram'}, {'i': 3, 'class': 'Local', 'uid': 3160, 'pos': (9190, 919), 'owner': 'Diagram'}, {'i': 4, 'class': 'Local', 'uid': 3097, 'pos': (9231, 947), 'owner': 'Diagram'}, {'i': 5, 'class': 'Local', 'uid': 2143, 'pos': (9210, 1160), 'owner': 'Diagram'}, {'i': 6, 'class': 'Local', 'uid': 16942, 'pos': (-11563, 874), 'owner': 'Diagram'}, {'i': 7, 'class': 'Local', 'uid': 25805, 'pos': (-5068, 846), 'owner': 'Diagram'}]
+  FAIL  L1 a call implementing `New VI Object` + style 'Local Variable' is REACHABLE with the ops on disk  NO op VI on disk implements `New VI Object` with a settable style, and no gscript wrapper writes a `style` control: 108 Op*.vi files in claudeDev, 0 style setters in gscript.py. docs/stage2-assembly-step-b.md:34 measured why - 'a New VI Object op cannot be parameterised: style is a typed ring, unretargetable by scripting'; docs/toolkit-capabilities.md:274 says the same for front-panel objects. Building one is a NEW OP VI, which this brief forbids (Pre-decided 2). 0 calls were made.
+  FACT  L1 VERDICT: NO op VI on disk implements `New VI Object` with a settable style, and no gscript wrapper writes a `style` control: 108 Op*.vi files in claudeDev, 0 style setters in gscript.py. docs/stage2-assembly-step-b.md:34 measured why - 'a New VI Object op cannot be parameterised: style is a typed ring, unretargetable by scripting'; docs/toolkit-capabilities.md:274 says the same for front-panel objects. Building one is a NEW OP VI, which this brief forbids (Pre-decided 2). 0 calls were made.
+  FAIL  L2 a call implementing `Control` -> `Create:Local Variable` is REACHABLE with the ops on disk  NO op VI carries an Invoke node for `Control -> Create:Local Variable`, and Python cannot pass a LabVIEW Control reference into a method - that is why every verb here is a pre-built op VI. `build_invoke` WOULD build one, but the product is a NEW OP VI (Pre-decided 2 forbids it). The same holds for the binding write `Local.Control Name` 6355400 and `Local.Write?` 6355401: gscript has only special-purpose writers (_set_poison, set_index_mode, set_auto_error_handling, set_node_label) and no generic property WRITER. 0 calls were made.
+  FACT  L2 VERDICT: NO op VI carries an Invoke node for `Control -> Create:Local Variable`, and Python cannot pass a LabVIEW Control reference into a method - that is why every verb here is a pre-built op VI. `build_invoke` WOULD build one, but the product is a NEW OP VI (Pre-decided 2 forbids it). The same holds for the binding write `Local.Control Name` 6355400 and `Local.Write?` 6355401: gscript has only special-purpose writers (_set_poison, set_index_mode, set_auto_error_handling, set_node_label) and no generic property WRITER. 0 calls were made.
+  PASS  L3 `Local` count unchanged by Test L (nothing was created)  8 -> 8
+  FACT  ExecState [L AFTER] = 1
+  FACT  class census [after] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Local': 8, 'LoopTunnel': 135, 'Wire': 1905, 'ControlTerminal': 114, 'Function': 183}
+  FACT  ExecState [L immediately before the save attempt] = 1
+  FACT  L g.save() returned 475729; exception/reason VERBATIM None
+  FACT  L scratch after the save attempt: DIAG_s56_localvar_20260920_214454.vi md5 d41e17f34a7250c5fa4f493a0f49eafb size 475729 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+  FACT  P-L: preload references released; refs {'opened': 7, 'closed': 7, 'live': 0, 'cached_op_vis': 2}
+  FACT  T3 I scratch at creation: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_s56_wireind_20260920_214454.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T3 the I scratch is byte-identical to the S2 artefact  6ff19497f2309e007a214660bb64b911
+
+=================== TEST I  (indicator remedy)  scratch DIAG_s56_wireind_20260920_214454.vi
+  FACT  P-I: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+  FACT  class census [before] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Local': 8, 'LoopTunnel': 135, 'Wire': 1905, 'ControlTerminal': 114, 'Function': 183}
+  FACT  ExecState [I BEFORE] = 1
+  FACT  I0 TOP-LEVEL Nodes[] through create_indicator's own ladder (g.node_info, max_n=40): []
+  FAIL  I0 the TOP-LEVEL Nodes[] census is non-empty  0 entries
+  FACT  I0b Traverse Diagram index 0, Nodes[0..2] (node_uid 0 = index out of range): [{'node_index': 0, 'node_uid': 0, 'n_terms': 0}, {'node_index': 1, 'node_uid': 0, 'n_terms': 0}, {'node_index': 2, 'node_uid': 0, 'n_terms': 0}]
+  FACT  I1 candidate (Nodes[] index, terminal index) list, from the top-level census: [(0, 0)]
+  FACT  I1 create_indicator(Nodes[0].Terminals[0]) -> new None ; error VERBATIM 'RuntimeError: run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\\Users\\KimLab\\AppData\\Local\\Temp\\gscript_dialog_1789908387.png'
+  PASS  P1 the REPAIRED create_indicator surfaces a NON-EMPTY error string on a refused call  errors ['RuntimeError: run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\\Users\\KimLab\\AppData\\Local\\Temp\\gscript_dialog_1789908387.png']
+  FAIL  I1 create_indicator produced a ControlTerminal on a top-level node terminal  None
+  FACT  I2 Diagram #639 reads Traverse index 46; Diagram #686 reads 19 (re-resolved live, 38(e))
+  FACT  I2 #10686 sits at Traverse index 102 of class `Function` (183 members) - wire_indicators' `index`
+  FACT  I2 BEFORE #10686 (the source node): node uid readback 10686, 3 terminals, 3 WIRED
+  FACT  I2 BEFORE #637 (loop 1.1, the tunnel check): node uid readback 637, 59 terminals, 48 WIRED
+  PASS  I2a #10686 resolves live, is class `Function`, and its t0 'x .and. y?' carries wire 10799  {'i': 0, 'name': 'x .and. y?', 'is_source': True, 'wire': 10799}
+  FACT  I2 target indicator = 'File # Saved' (uid 6, wire 0) - chosen because the FIRST unwired (wire 0) indicator row read live; the files-first order in tools/bench/main_vi_panel_wiring.json is ['File # Saved', 'Image']
+  FACT  ExecState [I2 BEFORE the wiring] = 1
+  FACT  I2 wire_indicators(Function[102], ['x .and. y?'] -> ['File # Saved'], diagram_index=46) error VERBATIM 'RuntimeError: wire_indicators: error 5001: LV-Scripting.lvlib:Wire Indicators.vi<ERR> | Control File # Saved not found | <b>Complete call chain:</b> | LV-Scripting.lvlib:Wire Indicators.vi | OpWireInd_v0.vi'
+  FACT  ExecState [I2 IMMEDIATELY AFTER the wiring (before any Is Broken? read)] = 1
+  FACT  I2 target indicator AFTER: {'label': 'File # Saved', 'indicator': True, 'uid': 6, 'is_source': False, 'wire': 0, 'term_err': 0, 'wire_err': 1055}
+  FACT  I2 AFTER #10686 (the source node): node uid readback 10686, 3 terminals, 3 WIRED
+  FACT  I2 AFTER #637 (loop 1.1, the tunnel check): node uid readback 637, 59 terminals, 48 WIRED
+  FAIL  I2b wire_indicators gave the target indicator a wire (uid was 0 before)  before 0 -> after 0
+  PASS  I2d #637 terminal count unchanged - no new tunnel/border object (37(e))  59 -> 59 terminals, 48 -> 48 wired
+  FACT  I2 source node #10686 wired-terminal count 3 -> 3 (of 3 / 3 terminals)
+
+--- I2c PASS 2: the ORDERED `Is Broken?` reading, an IDEMPOTENT re-connect of the EXISTING #10686 t0 -> #10407 t0 connection on the same net (42(b); wire_delta must be 0)
+      [op stdout]       op readback {'UID': 10407, 'Name': '', 'UID 2': 10799, 'Is Broken?': False}
+  FACT  I2c ORDERED `Is Broken?` = False on wire uid 10799 (op error column '', wire_delta 0). A True here is a LEGITIMATE reading (type mismatch), not a failure to hide.
+  PASS  I2c the ORDERED second-pass `Is Broken?` read returned a boolean  False
+  FACT  ExecState [I2 after the Is Broken? read (SUSPECT, docs/NAMES.md:912-918)] = 0
+  FACT  class census [after] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Local': 8, 'LoopTunnel': 135, 'Wire': 1905, 'ControlTerminal': 114, 'Function': 183}
+  FACT  ExecState [I immediately before the save attempt] = 0
+  FACT  I g.save() returned None; exception/reason VERBATIM 'NOT ATTEMPTED: ExecState is 0 and the brief permits a save only at ExecState 1.'
+  FACT  I scratch after the save attempt: DIAG_s56_wireind_20260920_214454.vi md5 6ff19497f2309e007a214660bb64b911 size 475707 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+  FACT  P-I: preload references released; refs {'opened': 16, 'closed': 16, 'live': 0, 'cached_op_vis': 8}
+
+--- Z: the closing facts
+  FACT  refs {'opened': 16, 'closed': 16, 'live': 0, 'cached_op_vis': 8}
+  FACT  LabVIEW handles AFTER everything: 60179
+  FACT  Z1 ORIGINAL after everything: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  FACT  Z1b D1_s1_copy.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  FACT  Z1c D1_s2_loops.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  Z1 ORIGINAL / D1_s1_copy.vi / D1_s2_loops.vi md5 all unchanged  2a78e17c449cacdaf5da389818526859 / 3e3d23cefd3a334001aa9d6156bf1aee / 6ff19497f2309e007a214660bb64b911
+  PASS  Z2 refs opened == closed, 0 live  {'opened': 16, 'closed': 16, 'live': 0, 'cached_op_vis': 8}
+
+=== GATES 13 pass / 5 fail; failing: L1 a call implementing `New VI Object` + style 'Local Variable' is REACHABLE with the ops on disk, L2 a call implementing `Control` -> `Create:Local Variable` is REACHABLE with the ops on disk, I0 the TOP-LEVEL Nodes[] census is non-empty, I1 create_indicator produced a ControlTerminal on a top-level node terminal, I2b wire_indicators gave the target indicator a wire (uid was 0 before)
+=== readings -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_s56_transport2.json
+BGRUN END rc=1 after 102s

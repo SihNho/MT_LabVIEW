@@ -1,0 +1,98 @@
+BGRUN START 2026-09-20 20:49:15 limit 25.0 min: py -u tools/bench/diag_s3a_ind_transport.py
+=== diag_s3a_ind_transport  2026-09-20 20:49:15   (Pre-decided 45(c)/(f); NO VI IS RUN, 34(f); no new op, no new device; no GUI; INTERPRETS NOTHING and CHOOSES NO ROUTE)
+  FACT  LabVIEW handles BEFORE (44(e): ~30,000 are added per scripting run and ref_counts cannot see it; fresh-instance baseline ~31,500): 34163
+
+=================== M1  what `#3191` is - FILES ONLY
+  FACT  M1 #3191 sits on nodeterms diagram key '43' with 4 terminals; structures index says class ['CaseStructure'] (diagram_tree_main.json[structures]) - it is a STRUCTURE, so it has NO function name
+  FACT  M1   #3191 t0  name=''                       is_source=False wire=3050
+  FACT  M1   #3191 t1  name=''                       is_source=False wire=3268
+  FACT  M1   #3191 t2  name='current image number'   is_source=False wire=3747
+  FACT  M1   #3191 t3  name='LastBufferNumber'       is_source=False wire=3356
+  FACT  M1 wire 3747: 4 endpoints in the census, of which 1 are SOURCES -> [{'diagram_key': '43', 'node_uid': 6810, 'i': 10, 'name': 'current image number', 'is_source': True}]
+  FACT  M1 wire 3268: 6 endpoints in the census, of which 0 are SOURCES -> []
+  PASS  M1 the offline reading of #3191 is printed (class, all terminals, the producers of w3747/w3268)  t2 is_source=False; w3747 sources=[{'diagram_key': '43', 'node_uid': 6810, 'i': 10, 'name': 'current image number', 'is_source': True}]
+  FACT  T1 ORIGINAL (read-only probe, 34(k)): HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  T1 the ORIGINAL's md5 equals the pin  2a78e17c449cacdaf5da389818526859
+  FACT  T2 the S2 artefact: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T2 D1_s2_loops.vi md5 == 6ff19497f2309e007a214660bb64b911  6ff19497f2309e007a214660bb64b911
+  FACT  T2b RESTART before the batch - ORDERED by 44(e), ~30,000 handles per run are unexplained: lv_restart rc=0 ['dialogs: 80|0,0,0,0|LabVIEW / ENABLED|7670516|0,0,0,0| / VERDICT: clear (no modal dialog)']
+  FACT  LabVIEW handles AFTER the restart: 30971
+
+=================== ROUTE A-nomove  (move_in first = False)  scratch DIAG_s3aind_20260920_204915_A-nomove.vi
+  FACT  T3 the route-A-nomove scratch at creation: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_s3aind_20260920_204915_A-nomove.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T3 the route-A-nomove scratch is byte-identical to the S2 artefact  6ff19497f2309e007a214660bb64b911
+  FACT  P-route-A-nomove: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+  FACT  class census [before] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905, 'ControlTerminal': 114}
+  FACT  ExecState [route A-nomove BEFORE anything] = 1
+  OBSERVED uid 10686 -> owner 'Diagram' uid 639 | self 'Function'#10686 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#10686) the source node = ('Diagram', 639)
+  PASS  G0 [A-nomove] owner_of(#10686) reads a Diagram uid  ('Diagram', 639)
+  FACT  Diagram #639 (the source's owner) reads Traverse index 46 on this scratch
+  FACT  the walk of Diagram #639 returned 73 nodes
+  PASS  G1 [A-nomove] #10686 t? 'x .and. y?' is resolved live as a SOURCE carrying wire 10799  {'node_uid': 10686, 'node_index': 25, 'label': 'And', 'term_index': 0, 'term_name': 'x .and. y?', 'wire_before': 10799}
+  FACT  terminal read [#637 BEFORE] node_uid 637  n_terms 59  WIRED TERMINALS 48
+
+--- A-nomove: create_indicator, by the declared bounded rule
+  FACT  create_indicator(25, 0) [R1 brief literal] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(25, 1) [R2 same index t1] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(25, 2) [R2 same index t2] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(0, 0) [R3 sweep n0 t0] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(0, 1) [R3 sweep n0 t1] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(0, 2) [R3 sweep n0 t2] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(0, 3) [R3 sweep n0 t3] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(0, 4) [R3 sweep n0 t4] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(0, 5) [R3 sweep n0 t5] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(0, 6) [R3 sweep n0 t6] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(0, 7) [R3 sweep n0 t7] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(1, 0) [R3 sweep n1 t0] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(1, 1) [R3 sweep n1 t1] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(1, 2) [R3 sweep n1 t2] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(1, 3) [R3 sweep n1 t3] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(1, 4) [R3 sweep n1 t4] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(1, 5) [R3 sweep n1 t5] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(1, 6) [R3 sweep n1 t6] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(1, 7) [R3 sweep n1 t7] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(2, 0) [R3 sweep n2 t0] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  the indicator-creation sweep stopped at its declared bound of 20 attempts with no hit
+  FAIL  G2 [A-nomove] a ControlTerminal was created and its uid recorded  uid None by rule None
+  FAIL  G3 [A-nomove] the label LabVIEW gave the new indicator was read  None
+  FACT  route A-nomove: no ControlTerminal exists, so neither wire_indicators nor the move is attempted. That is the reading, reported as one.
+  FACT  class census [after] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905, 'ControlTerminal': 114}
+  FACT  P-route-A-nomove: preload references released; refs {'opened': 3, 'closed': 3, 'live': 0, 'cached_op_vis': 7}
+
+=================== ROUTE B-movedin  (move_in first = True)  scratch DIAG_s3aind_20260920_204915_B-movedin.vi
+  FACT  T3 the route-B-movedin scratch at creation: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\DIAG_s3aind_20260920_204915_B-movedin.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T3 the route-B-movedin scratch is byte-identical to the S2 artefact  6ff19497f2309e007a214660bb64b911
+  FACT  P-route-B-movedin: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+  FACT  class census [before] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Comparison': 17, 'LoopTunnel': 135, 'Wire': 1905, 'ControlTerminal': 114}
+  FACT  ExecState [route B-movedin BEFORE anything] = 1
+  OBSERVED uid 10686 -> owner 'Diagram' uid 639 | self 'Function'#10686 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  owner_of(#10686) the source node = ('Diagram', 639)
+  PASS  G0 [B-movedin] owner_of(#10686) reads a Diagram uid  ('Diagram', 639)
+  FACT  Diagram #639 (the source's owner) reads Traverse index 46 on this scratch
+  FACT  the walk of Diagram #639 returned 73 nodes
+  PASS  G1 [B-movedin] #10686 t? 'x .and. y?' is resolved live as a SOURCE carrying wire 10799  {'node_uid': 10686, 'node_index': 25, 'label': 'And', 'term_index': 0, 'term_name': 'x .and. y?', 'wire_before': 10799}
+  FACT  terminal read [#637 BEFORE] node_uid 637  n_terms 59  WIRED TERMINALS 48
+
+--- B-movedin: create_indicator, by the declared bounded rule
+  FACT  create_indicator(25, 0) [R1 brief literal] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(25, 1) [R2 same index t1] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(25, 2) [R2 same index t2] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(0, 0) [R3 sweep n0 t0] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(0, 1) [R3 sweep n0 t1] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(0, 2) [R3 sweep n0 t2] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(0, 3) [R3 sweep n0 t3] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(0, 4) [R3 sweep n0 t4] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(0, 5) [R3 sweep n0 t5] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(0, 6) [R3 sweep n0 t6] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(0, 7) [R3 sweep n0 t7] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(1, 0) [R3 sweep n1 t0] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(1, 1) [R3 sweep n1 t1] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(1, 2) [R3 sweep n1 t2] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(1, 3) [R3 sweep n1 t3] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(1, 4) [R3 sweep n1 t4] -> new ControlTerminals [], new FP labels [], exception None
+  FACT  create_indicator(1, 5) [R3 sweep n1 t5] -> new ControlTerminals [], new FP labels [], exception None
+BGRUN KILL taskkill rc=0 pid=9596 still_listed=False
+BGRUN KILL stdout: '성공: PID 10488인 프로세스(PID 9596인 자식 프로세스)가 종료되었습니다.\n성공: PID 332인 프로세스(PID 9596인 자식 프로세스)가 종료되었습니다.\n성공: PID 9596인 프로세스(PID 6420인 자식 프로세스)가 종료되었습니다.'
+BGRUN KILL stderr: ''
+BGRUN TIMEOUT killed after 1502s (limit 25.0 min)

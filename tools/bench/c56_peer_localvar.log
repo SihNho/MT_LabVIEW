@@ -1,0 +1,25 @@
+BGRUN START 2026-09-20 20:45:13 limit 16.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & 'tools/peer.ps1' -Kind fact -Slug c56-localvar-scripting -TaskFile 'tools/bench/peer_task_c56_localvar.txt' -TimeoutSec 780
+OUTCOME: ANSWERED (107s)  model: fable (effort low; peer.ps1 default for role fact)  archived: archive\peer\2026-09-20-c56-localvar-scripting.md
+COST: $1.5883  in 18 / out 4287 / cache-create 43925 / cache-read 304879  (106s, 15 turn(s))
+--- ANSWER ---
+**Findings (read-only research; no changes made):**
+
+**1. Creation class/style string.** `New VI Object` takes two things: a *VI Object Class* (class specifier constant) and a *style* string. The definitive style list for `New VI Object` (extracted from LabVIEW's own ring constant, posted on LAVA in the "New VI Object style list" thread) contains the entry **`Local Variable`** (style ID 2061; global is `Global Variable`, 2060). So the creation **style string is `"Local Variable"`**, while the VI Server class name — the one used for traverses and returned references — is **`Local`** (LabVIEW Wiki "Local class"). Your measurement is consistent: `"Local"` is the traverse class; the creation style name differs from it. Note also there is a second, simpler creation route that bypasses `New VI Object` entirely: the **Control class method `Create:Local Variable`** ("Creates a local variable for the control and returns a reference to it", returns a **Local Refnum**) — documented on LabVIEW Wiki as available in LabVIEW 2018+ (the wiki mirrors NI's per-class scripting help). I did not find an NI page that states in prose that `"Local"` is invalid as the New VI Object class-name input, so I can't authoritatively confirm the exact class-specifier byte string used alongside the `"Local Variable"` style — the LAVA list documents the style string only.
+
+**2. Binding.** The binding property is **`Local` class → `Control Name`** (property ID 6355400), **String**, read/write, "Name of the control to which the local variable refers" (LabVIEW Wiki, Local class/Control Name property). With `New VI Object` the local is created **unbound** and then bound by writing `Control Name` — the NI forum thread "create local variable using labview scripting" describes exactly this flow ("After you create the local variable, you can set the control it points to using the Control Name property"). With the `Control:Create:Local Variable` method the local is **bound at creation** to that control. There is also a read-only **`Control`** property (ID 6355403, returns a reference to the bound control) — read-only, so not usable for binding.
+
+**3. Nested diagrams.** Yes. From the same NI forum thread: *"You can create the local variable on the main block diagram or you can create it on the diagram of the case structure"* — you must pass the specific **frame's Diagram reference** as owner, not the structure node itself, and note that *"Move commands are always relative to the main block diagram."* Nothing else special about nesting is documented.
+
+**4. Version/licensing caveats.** The wiki documents `Create:Local Variable`, `Control Name`, and `Write?` as "LabVIEW 2018 and later" scope "VI Scripting"; not available in the Run-Time Engine, cannot be executed while the VI runs. I found **no documented deprecations or known bugs** for this operation in LabVIEW 2019–2026, and no licensing requirement beyond enabling VI Scripting — no authoritative statement either way, so treat that as "nothing found," not "nothing exists."
+
+**5. Read/write direction.** Yes, a post-creation settable property: **`Local` class → `Write?`** (property ID 6355401), **Boolean**, read/write — "If TRUE, the variable is a write local. If FALSE, the variable is a read local" (LabVIEW Wiki, Local class).
+
+Sources:
+- [Control class/Create.Local Variable method — LabVIEW Wiki](https://labviewwiki.org/wiki/Control_class/Create.Local_Variable_method)
+- [Local class — LabVIEW Wiki](https://labviewwiki.org/wiki/Local_class)
+- [Local class/Control Name property — LabVIEW Wiki](https://labviewwiki.org/wiki/Local_class/Control_Name_property)
+- [create local variable using labview scripting — NI Community](https://forums.ni.com/t5/LabVIEW/create-local-variable-using-labview-scripting/td-p/2616645)
+- ["New VI Object" style list — LAVA](https://lavag.org/topic/14519-new-vi-object-style-list/)
+- [Tutorial: Adding an Object to a VI Using VI Scripting — NI](https://www.ni.com/docs/en-US/bundle/labview/page/tutorial-adding-an-object-to-a-vi-using-vi-scripting.html)
+- [VI Scripting - Input for style in "New VI Object" — NI Community](https://forums.ni.com/t5/LabVIEW/VI-Scripting-Input-for-style-in-quot-New-VI-Object-quot-function/td-p/3267356)
+BGRUN END rc=0 after 108s

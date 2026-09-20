@@ -471,8 +471,8 @@ loaded subVI does NOT reach its calls (backend 1 ran the CPU frame). VI method `
   the pane indicator = **+2** in the first frame (tunnel + inner wire; ExecState 0 until the other frame is wired — an output
   tunnel unwired in one case breaks the VI, so its ExecState raise is expected there) and **+1** in the second frame
   (tunnel reused), ExecState back to 1. Do the two frames back-to-back per output.
-- **`create_indicator` / `create_control` cannot reach nodes inside frames** — their ladder walks the TOP-LEVEL `Nodes[]`
-  (index 1+ is out of range → an 8 s dialog per try). Use the wire_* ops by name instead.
+- **`create_indicator`/`create_control` reach the TOP-LEVEL `Nodes[]` ONLY, and on the main VI that list is EMPTY** (cycle 56, 2026-09-20: `node_info(max_n=40)` = `[]`; all 114 pre-existing `ControlTerminal`s read owner class `Diagram`, not `TopLevelDiagram`) — an index inside a frame or loop body draws the 8-s dialog and does nothing. ✅ **Not a dead end: put a node there first** — `build_index_array` → `owner_of` `('TopLevelDiagram', 536)`, `node_info` 0→1 → `create_indicator(Nodes[0].Terminals[2])` → ControlTerminal 114→115 → `delete_object(IA)` → `ExecState` 1, saved `claudeDev\DIAG_s56_t3_p2_20260920_221901.vi` md5 `cbe9ddd5…`, log `tools/bench/diag_s56_transport3.log`.
+  ⚠️ Wiring that new terminal to a source on a NESTED diagram is STILL UNMEASURED: `wire_indicators` returned `error 5001 … Control <label> not found` on 3 attempts (the source's diagram, and `diagram_index=0`). Since the 2026-09-20 repair of the two create wrappers these calls RAISE the dialog text instead of returning `[]` with `exception None`.
 - **A new selector control without a node to hang it on:** `build_index_array` (unwired IA) → `create_control` on its
   `index` terminal (label `index`, I32) → delete the IA → the control stays on the pane, unwired, VI runnable.
   It is NOT on the connector pane (no conpane op yet); the backend is chosen through its saved DEFAULT value.

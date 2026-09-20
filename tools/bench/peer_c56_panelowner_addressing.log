@@ -1,0 +1,53 @@
+BGRUN START 2026-09-20 22:28:34 limit 16.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c56-panelowner-addressing -TaskFile 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\fb3cd924-2b4f-46e9-8c03-5da150c521ea\scratchpad\c56m5_task.md' -TimeoutSec 780
+OUTCOME: ANSWERED (520s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-20-c56-panelowner-addressing.md
+COST: $3.4378  in 20 / out 40441 / cache-create 186008 / cache-read 1078610  (519s, 22 turn(s))
+--- ANSWER ---
+**The claim is wrong where it is actionable.** Parts (1) and (4) are factually right and inert; part (3)'s mechanism is probably right; part (2) — the only part that changes what gets run next — is circular, and this project has already *measured* the opposite on this same VI. The vendor record settles nothing: the public repo ships no per-VI documentation at all, only VIPM examples ([erdosmiller/lv-scripting](https://github.com/erdosmiller/lv-scripting)), so "the lookup is scoped to `Diagram in`" rests entirely on a Context-Help sentence paraphrased in our own file (`com-driving.md:162-163`).
+
+## 1. The single strongest reason the claim is wrong
+
+**Part (2) proves "front-panel terminals live on the TopLevelDiagram" from a terminal that phase 2 had just placed on the TopLevelDiagram.** "Every ControlTerminal created in phase 2" is exactly one — #23541 (`log:75`) — created by a call that was *told* to work on Traverse Diagram 0 (`log:74`). The sample was manufactured by the hypothesis.
+
+The premise is also false in general and false here:
+
+- LabVIEW does not require FP terminals on the top-level diagram. The stock Stop-button-inside-a-While-loop is a control terminal owned by a structure diagram.
+- **On a working copy of this very VI, six ControlTerminals were measured on frame `Diagram #639`** (`docs/d1-build-plan.md:1227`), and `Get Controls.vi` — the same library, the same name-lookup pattern — **raised 5001 at `src_diagram_index=0` and succeeded at 43 = #639** (`:1230-1231`).
+- This VI's top-level diagram holds **zero nodes** (`log:67`, `transport2.log:42-44`). The author never used it.
+
+So the claim prescribes the one value already measured to produce 5001 on this VI, and rejects the family already measured to work.
+
+Part (3) then **refutes part (2) rather than supporting it.** `Wire Indicators.vi` *branches the indicator onto the wire already attached to the source* (`gscript.py:1765-1770`). Source wire 10799 lives inside #639 (`diag_s3a_ind_transport.log:28-32`). An indicator found on the top-level diagram cannot join a wire inside a case frame without a border object — and the failing run created none (#637 stayed 59/48, `log:47`). Under its own premise the corrected call is self-contradictory. Confirming this: the fleet's **only** measured WI success with an explicit index is `build_setcommand_signed.py:122` with `READ_DIAGRAM = 1` (`:32`) — a **case-frame diagram, not the top level** — wiring `'read buffer 2'`, whose terminal sat on the net deleted inside that frame (`:111-112`). Every WI success here passed the diagram owning *both* the source wire and the indicator terminal.
+
+Two smaller faults: part (1)'s "NO resolvable value as written" is one hop short, not impossible — `Control[Terminal] → GObject.Owner` is a ladder `OpPanelWiring_v0` already half-walks (`gscript.py:831-834`); turning "our op doesn't return it" into "it has no meaning" is what licensed the guess. And part (3) cites `gscript.py:1787-1788` for a data path those lines don't show (they set `Class Name 2`/`index 2` on the op); the actual evidence is `archive/2026-08-29-status-sweep-opexitloop-opwireind.md:69-70`.
+
+Part (4) is right about the empty `Nodes[]` (`gscript.py:2399-2402` records 1055 on all 20 s3a calls) and irrelevant in the direction it implies: **`create_indicator` addresses top-level `Nodes[]` only** — this project's own recipe says so (`build_setcommand_signed.py:113-115`) — and every source this work needs is inside a structure. Phase 2 confirmed a scope limit; it did not open a route.
+
+## 2. Alternative explanation of the same 5001
+
+**`'File # Saved'`s terminal is on neither #639 nor the top-level diagram — it is inside one of the six While loops or another frame.** Dispatch 3's 5001 then carries exactly one bit, "not on #639", and `diagram_index=0` reproduces it verbatim. Nothing in the ruled-out list touches this: the control exists, the bytes match, the source is wired, the indices are live — and none of that locates the *terminal*.
+
+Weaker but live, and the one that would make part (2) a fantasy: 5001 may be a **connection** failure, not a lookup failure. This project corrected itself on precisely that point once (`docs/d1-build-plan.md:1241-1243`: "the library may raise it for a *connection* failure as readily as a *lookup* failure"). The message text argues against it here, but with no vendor documentation the measurement does not distinguish the two cleanly.
+
+## 3. What would falsify the claim
+
+- A `ControlTerminal` census showing terminals owned by class `Diagram` rather than `TopLevelDiagram` — that kills premise (2) before any verb call.
+- The same `5001 Control File # Saved not found` at `diagram_index=0`.
+
+**What a success at `diagram_index=0` would still leave unproven:** that the branch joined the intended net (a branch creates no Wire object — `gscript.py:1771-1772`); that the border was crossed legally (no tunnel was created in the failing run, and a cross-diagram branch must create one); that the VI survives — both recorded cross-border WI attempts in this fleet ended ExecState 0 (`case_out_probe.log:32,39`; `build_track_kernel_v1.log:59-63`, "wires 31->33 ExecState 0"); that the state is durable (ExecState went 1 → 0 after the `Is Broken?` read in *both* dispatches, `log:58`, `transport2.log:69`); and anything functional — no VI may be run, so the indicator is never shown to carry a value.
+
+## 4. Cheapest discriminating test
+
+**Step 1 costs zero verb calls and may end the question:** `report_all(scratch, 'ControlTerminal')` — 114 rows, each carrying the owner-class column that already printed `TopLevelDiagram` at `log:68,75`. Group by owner. Claim predicts 114/114 `TopLevelDiagram`; the alternative predicts a large share owned by `Diagram`.
+
+**Step 2, only if step 1 leaves it open — one verb call:** dispatch 3's exact call with `diagram_index=0` and the name **`'File # Saved'`**, reading ExecState and #637's terminal count in the same pass, plus `connect_nested_v1`'s `Wire.Is Broken?` on 10799 on any success.
+
+⚠️ **Never probe with `'Image'`.** A2's plan (`log:37,40`) targeted uid 31543 = `PlugInControl` = the IMAQ Image Display, which two local records say this library cannot address at all (`build_opconnectctl_v0.py:3` "5001 twice"; `build_harness_dispI.py:162`). Had `diagram_index` resolved, that attempt returns 5001 under *every* hypothesis — and would most likely have been read as refuting the diagram theory.
+
+## Is the corrected call even the right question? No.
+
+Under the claim's own mechanism the only diagram that can carry a legal branch is the source's own #639 — so the question is not "which index" but **"can the indicator's terminal be moved into #639"**, which is exactly `diag_s3a_ind_transport`'s route B (`move_in`), never executed because route A produced no terminal. And the single unknown the whole dispatch turned on — the owner diagram of uid 6's *terminal* — is one property read off a reference an existing op already holds. The cycle's "no new op" pre-decision is what forced a guess in its place; two dispatches of guessing against one op VI is a trade worth putting to the user rather than absorbing silently.
+
+I hold parts (1), (3)-mechanism and (4); I reject the prescription. What would change my mind: a ControlTerminal census showing all 114 owned by the TopLevelDiagram.
+
+Sources: [erdosmiller/lv-scripting](https://github.com/erdosmiller/lv-scripting) (examples only — no per-VI API docs), [LabVIEW Scripting Tools (VIPM)](https://www.vipm.io/package/lava_lib_labview_api_scripting_tools/), [Programmatically Scripting VIs in LabVIEW](https://rajsite.github.io/unofficial-lvdocs/lvconcepts/scripting_property_method.html).
+BGRUN END rc=0 after 521s
