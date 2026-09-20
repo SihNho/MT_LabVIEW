@@ -1568,3 +1568,39 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
       "20 runs leave the handle count flat (±100)" acceptance is not measuring what it believes. Recorded as a
       FINDING, not a build (no-new-device order). Until it is explained, **restart LabVIEW before every batch**,
       mechanically.
+
+45. **THE USER ANSWERED THE STOP (2026-09-20 ~09:40): CONTINUE — and 1.5 FOCUS crosses from 1.2 by LOCAL VARIABLES,
+    NOT by wires; 1.5 is NOT merged into 1.2.** Interactive chat judgement on the user's words: *"1.5 루프는 사실
+    데이터에 전혀 남지 않는 부분이라 local variable 사용해도 문제가 없을 것 같은데 — 1.2와 합치는게 좋을지, 아니면
+    wiring이 아닌 local variable 사용이 좋을지 판단해서 진행하도록."* The user also had `git init` run (local only,
+    no remote) — the folder is a repository from this commit on.
+    - (a) **NOT merged.** 1.5 carries the ASI serial call (`#48`, VISA). Putting it inside 1.2 (tracking) puts a
+      VISA call on the per-frame tracking path — the exact shape rule 1c disqualifies (*"a mechanism that CAN stall
+      the frame loop is disqualified even if it usually does not"*). Separate loop stands.
+    - (b) **Local variables ARE the project's recorded latest-value transport for this class of channel** —
+      `docs/decisions.md:28` (scheduler → motor: *"local variables, as agreed with the user"*),
+      `restructure-plan-4.6.md:55`. Prior art exists; this is not a new device. Focus output never enters the
+      saved traces (user's domain statement), so a lost or repeated read changes no number the experiment keeps.
+    - (c) **What crosses.** 1.5's two open rows are `#10407` t0 ← `#10686 'x .and. y?'` (the every-25-frames
+      schedule, BOOLEAN) and `#10407` t2 ← `#10757 .element` (index of closest cal-image slice, bead 2 — the focus
+      PAYLOAD). Construction: on the S2 artefact, create two INDICATORS on the copy's panel, wired at the sources
+      **where they are today** (both still in loop 1.1 `#637`, since 1.2 does not exist yet); in loop 1.5
+      (`#23032`, 37(h)) read them as LOCAL VARIABLES into t0 / t2. When 1.2 is built later the indicator terminals
+      move with their source nodes (one node per `move_in`, 37(d)); the local variables in 1.5 need no change.
+      **This makes S3 = 1.5 alone CLOSED UNDER ITS SOURCES — no 1.2 needed first.** 44(d)'s "1.2 together with
+      1.5" is superseded.
+    - (d) **Cadence is preserved by an edge, not by luck.** A free-running 1.5 could read the schedule boolean
+      twice (double autofocus) or zero times (missed) per 25-frame window. So 1.5 also reads a third local
+      variable — the frame counter that already drives `#10686` — and acts when `schedule == TRUE AND counter !=
+      last-handled counter` (one shift register). Rule 1a reading: the per-bead maths and the ASI command are
+      untouched; only WHEN the existing command fires is now decided in another loop, and the user has declared
+      that channel data-free. A `Wait (ms)` of 1 ms in 1.5 so it does not spin.
+    - (e) **Still forbidden**: the 38(g) tunnel construction (autofocus once after acquisition). Local variables
+      are not that: they are read every iteration of a loop that runs concurrently with acquisition.
+    - (f) **Stage plan (split rule): S3a** = indicators created and wired at the sources + saved
+      (`claudeDev\D1_s3a_focus_ind.vi`, ExecState 1 preloaded, md5 logged) · **S3b** = the five 1.5 nodes moved into
+      `#23032`, internal 7 rows re-wired, t0/t2/t6 fed from local variables / the counter shift register, saved
+      (`claudeDev\D1_s3_loop15.vi`). Prior-art review once per stage script; diagnostics under `tools/bench/`
+      first when a construction verb (a local variable placed by scripting, `#10407` t6) is unmeasured.
+    - (g) **Open for the user, not a blocker**: t6 of `#10407` (§6 names no construction verb) is resolved by the
+      same local-variable route if it is a value, by measurement if it is not.
