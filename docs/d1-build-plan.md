@@ -292,7 +292,7 @@ asserts before and after. Labels are the census's own.
 | **10950** | Less? | → 1.2 | x ← `#17289`; y ← `DigitalNumericConstant #10739` |
 | **17289** | `min value` (implicit Property) | → 1.2 | **no wired input at all** — it reads the indicator `#10969` writes, so it must run in the same loop, **after** `#10969` |
 | **10969** | Array Max & Min | → 1.2 | t0 ← kernel w121 (`pos in cal image out`); t3 writes indicator `min value` uid 17257 |
-| **10757** | Index Array | → 1.2 | t0 ← kernel w121; its `element` (w10990) is the 1.5 payload (§6) |
+| **10757** | Index Array | → 1.2 | t0 ← kernel w121; its `element` (w10990) is the 1.5 payload (§6). ⚠️ **this move SEVERS the S3a NUMERIC indicator's wire — re-wire row, §5a-ter** |
 | **1359** | For Loop | → 1.2 | forward slice |
 | **2222** | Case Structure | → 1.2 | forward slice; t2 ← kernel w505; reads panel `Z/dZ` uid 47 and `Correction Factor` uid 9289 |
 | **2626** | Build Array | → 1.2 | t4 ← kernel w505 |
@@ -301,7 +301,7 @@ asserts before and after. Labels are the census's own.
 | **9833** | Index Array | → 1.2 | forward slice |
 | **11261** | Build Array | → 1.2 | forward slice; writes indicator `Force (pN) vs Extension (nm) ` uid 8038 |
 | **29874** | For Loop | → 1.2 | forward slice |
-| **10686** | And | → 1.2 | the every-25-frames schedule; §6 evaluates the cadence where the frame counter is |
+| **10686** | And | → 1.2 | the every-25-frames schedule; §6 evaluates the cadence where the frame counter is. ⚠️ **this move SEVERS the S3a BOOLEAN indicator's wire — re-wire row, §5a-ter** |
 | **10407** | Case Structure (autofocus) | → **1.5** | spec decision 1 |
 | **48** | `ASI_adjust focus-subvi.vi` | → **1.5** | with #10407; its `VISA resource name` comes off SR `#4344` |
 | **12589** | Case Structure | **stays 1.1** (§11c, §11.3 RESOLVED) | t1 ← `#10407` t6 w9113 (**the reverse crossing**, §0b). Keeping it on 1.1 keeps w12070 → `#11639` uncut; the crossing becomes `Q_focusback`, a **1-element queue** written by 1.5 and polled by 1.1 with timeout 0 |
@@ -340,6 +340,27 @@ So `Local` stays **8** after the move (S1q/S4s unchanged), and no panel object i
 under 1.2 minus `#5058`, which is **deleted**, not moved), **5 → 1.5** (`#10407`, `#48`, `#3529`, `#3560`,
 `#3447`; `#12589` **stays** per §11c), **1 → 1.7** ⇒ **23 moves + 1 delete + 1 drop**. **27 of the 47 census
 nodes stay.** (Rev 4 before §11c said 21 / 3 / 26; rev 4 + §11c said 20.)
+
+### 5a-ter. The two RE-WIRE rows the 1.2 move owes the S3a indicators — added 2026-09-21 (cycle 58)
+
+**BOTH S3a INDICATORS GO BARE ACROSS THE 1.2 MOVE, AND THESE TWO ROWS BELONG TO 1.2, NOT TO S3a.** `move_in`
+**takes one node per call and severs every wire on it, in either order** (`docs/cycle27-plan.md:1093`, 37(d);
+`:843`, 33(a): *"the relocated node lands in the new body unwired"*), and each S3a indicator is a **BRANCH of its
+source node's own net** — no `Wire` object of its own (whole-VI `Wire` delta **0** on both wirings,
+`tools/bench/diag_s57_typepair.log:195` and `tools/bench/diag_s58_boolwire.log:153`). So severing the source's
+wires takes the indicator's only feed with it, and until these rows land loop 1.5 reads an indicator nothing
+writes.
+
+| after this row moves | re-make this wire | source terminal | how |
+|---|---|---|---|
+| **#10757** (§5a → 1.2) | **w10990** — the S3a **NUMERIC** indicator | `#10757` t1 `'element'` (SOURCE) | `wire_indicators(<#10757's live node index>, ['element'], [<the indicator's machine-read label>], diagram_index = the LIVE index of the diagram the INDICATOR's terminal then lives on, node_class='Function')` — 47(b), `tools/gscript.py:1787-1789` |
+| **#10686** (§5a → 1.2) | **w10799** — the S3a **BOOLEAN** indicator | `#10686` t0 `'x .and. y?'` (SOURCE) | same call shape, same `diagram_index` rule |
+
+⚠️ The indicators' `ControlTerminal`s must be moved into 1.2's body too, or re-wiring them re-creates the 38(g)
+loop-border tunnel S3a exists to avoid (`docs/cycle27-plan.md` 47(c)). Order per indicator: move the source node →
+move the `ControlTerminal` → `wire_indicators` → save at `ExecState` 1 → ordered second pass (42(b)) for
+`Is Broken?`. **This section corrects 45(c)** (`docs/cycle27-plan.md:1588-1589`), which asserted the indicator
+terminals move with their source nodes and cited 37(d) for it; 37(d) says the opposite.
 
 ### 5b. Diagram 19 — outside the frame loop (5 nodes, none moves)
 

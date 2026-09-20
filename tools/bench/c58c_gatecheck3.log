@@ -1,0 +1,64 @@
+BGRUN START 2026-09-21 01:26:19 limit 5.0 min: py -u tools/bench/c58c_gatecheck.py
+=== c58c_gatecheck  DRY RUN, changes nothing
+recipe exists : True
+recipe bytes  : 102232
+recipe sha256 : 1986626fb6f16cd08b68053339f1d040b170af4310be754c0e7fa32f783f5770
+launch command: py tools/bgrun.py --material --max-min 30 --log tools/bench/stage_d1_s3a_focus_ind.log -- py -u tools/recipes/stage_d1_s3a_focus_ind.py
+
+--- GATE 1  tools/stop_record.py check_command(...)
+ALLOW = True
+MESSAGE VERBATIM:
+(empty - the gate permits)
+
+--- GATE 1b  the standing stop records
+  tools/motor_wiring_check.py                        sha (none)  STOPPED
+  tools/recipes/build_opfstunnelterm_v0.py           sha de04c05f5f65e972  RELEASED
+  tools/recipes/build_opfstunnelterm_v1.py           sha 82d159e5e9bb1daa  RELEASED
+  tools/recipes/build_d0_harness_v0.py               sha (none)  STOPPED
+  tools/recipes/build_d1_routeb_v1.py                sha 9ff90ded8f01637f  RELEASED
+  tools/recipes/build_d1_routeb_v2.py                sha e4fc5bb197efcffa  RELEASED
+  tools/recipes/build_d1_routeb_v2.py                sha 5620e626a95d2fed  STOPPED
+  tools/recipes/build_d1_routeb_v3.py                sha ec1e9aca72f41cb5  RELEASED
+  tools/recipes/build_d1_routeb_v4.py                sha daabef844078291c  RELEASED
+  tools/recipes/build_d1_routeb_v5.py                sha a33c53a650cfc84c  RELEASED
+  tools/recipes/build_d1_routeb_v6.py                sha 07c6b5d6a37e0fee  RELEASED
+  tools/recipes/build_d1_routeb_v7.py                sha d808e10ce4c152cb  RELEASED
+  tools/recipes/build_d1_routeb_v7.py                sha 960452920708eda0  RELEASED
+  tools/recipes/build_s0_closeref_v0.py              sha 843e9c0c93a3d998  STOPPED
+  tools/recipes/build_s0_closeref_v1.py              sha e5d801e1745d9546  RELEASED
+  tools/recipes/build_s0_closeref_v2.py              sha c3c78f2801dc687b  RELEASED
+  tools/recipes/build_s0_closeref_v3.py              sha 7a4381a71a739760  RELEASED
+  tools/recipes/build_s0_gamma1.py                   sha 63a02ebad9b6f209  RELEASED
+  tools/recipes/stage_d1_s1.py                       sha 1c442a17ffe8e2d5  RELEASED
+  tools/recipes/stage_d1_s1.py                       sha c003d8547b503462  RELEASED
+  tools/recipes/stage_d1_s2.py                       sha 3e90255961871307  RELEASED
+  tools/recipes/stage_d1_s2.py                       sha 71f12e121f95ed64  STOPPED
+  tools/recipes/stage_d1_s2_loops.py                 sha 7eb482beab051629  RELEASED
+  tools/recipes/stage_d1_s3_focus.py                 sha 253212c547b94b77  STOPPED
+  tools/recipes/stage_d1_s3a_focus_ind.py            sha (none)  RELEASED
+
+--- GATE 2  tools/hooks/guard_cycle.py, fed the real PreToolUse payload on stdin
+exit code = 2
+STDOUT VERBATIM:
+(empty)
+STDERR VERBATIM:
+BLOCKED by tools/hooks/guard_cycle.py: this RECIPE HAS NO PRIOR-ART REVIEW NEWER THAN ITSELF.
+  recipe        : tools/recipes/stage_d1_s3a_focus_ind.py  (last changed 2026-09-21 01:19)
+  newest priorart review : archive\peer\2026-09-20-priorart-d1-s3a-focus-ind.md (2026-09-20 23:00)
+
+Device for the `premature-build` slug. Either no prior-art review has run for this build, or the
+recipe was edited AFTER the review that saw it AND it has never run under that review.
+(A recipe that HAS already run once under the newest prior-art review is exempt - a repair after a
+failed prediction is guard_peer.py's gate, not this one. 2026-09-17.)
+Dispatch it and let it finish (the CURRENT command form - `--recipe` became mandatory on
+2026-09-18, and without it the dispatcher REFUSES rather than leaving the launch gate inert):
+  py tools/bgrun.py --max-min 20 --log tools/bench/priorart_<slug>.log -- \
+     py tools/prior_art_review.py --plan-file <plan> --slug <slug> --trigger cycle-start \
+        --recipe tools/recipes/stage_d1_s3a_focus_ind.py
+  (launch it from PowerShell; the Bash tool returns rc 127 for this one today. A review that
+   genuinely has no recipe - a plan document - takes --no-recipe "<reason>" instead, and the
+   reason is written into the archived review.)
+
+
+=== VERDICT: REFUSED - see above
+BGRUN END rc=0 after 0s

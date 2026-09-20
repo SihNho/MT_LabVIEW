@@ -241,4 +241,64 @@ VIOLATION: device-failed | loss_min=10 | loss_usd=? | evidence=tools/bench/retro
 
 ## What was done with it
 
-(Claude fills in)
+Disposed by the cycle-58 judgement session, 2026-09-21 01:5x. This is the most useful retrospective the project
+has had: it corrected the window, corrected the cost arithmetic against us in one direction and *for* us in the
+other, and caught a fault cycle 58 then repeated. Per finding:
+
+**1. Repeated failure — ACCEPTED, and it is exactly right.** Dispatch 3 gated on a wiring success the project's
+own record had already measured false, with the matched numeric pair pinned in the plan. Landed:
+`docs/cycle27-plan.md` 48(a)–(b), where the type question is settled by construction rather than by attempt —
+cycle 58's Boolean leg was built from a carrier terminal that is Boolean *by construction* (`build_property`),
+and the type was still verified afterwards by `Is Broken?`, never assumed.
+
+**2. Missing tool (a terminal/control data-type reader) — ACCEPTED as a finding, and it is NO LONGER GATING.**
+It remains absent (47(j)). But cycle 58 measured the route around it: `Terminal.Create Indicator` inherits the
+carrier terminal's type, so choosing a Boolean-by-construction carrier decides the type without reading it
+(`docs/cycle27-plan.md` 48(a)). The reader is now a convenience, not a blocker, which is why no op VI was built
+for it. Recorded, not built.
+
+**3. Unmeasured steps — ACCEPTED.** The remedy was already written as 47(g) ("before commissioning a read, grep
+the bench logs for the reading first") and cycle 58's first act opened with exactly that: a files-only census of
+every `build_*` verb before a single LabVIEW call. Landed: `docs/cycle27-plan.md` 48(a).
+
+**4. Rule compliance — ACCEPTED, including the sharp part.** "A NON-RESULT, NOT A BUDGET FAILURE" was a rule
+satisfied by re-labelling, and naming it that way is fair. Cycle 58 did not repeat it: `guard_peer` forced
+`archive/peer/2026-09-21-c58-boolwire-dangling.md`, it was dispatched, archived and disposed in full. Sub-finding
+(d) is now **FIXED in fact**: STATUS cited `tools/recipes/stage_d1_s3a_focus_ind.py` as if it existed while every
+run confirmed `exists=False`; that file now exists (1,699 lines, sha `1986626f…`), so the citation is no longer
+dangling — `py tools/doc_lint.py` L2 passes 1,430 cited paths with none dangling. Sub-findings (a)–(c) are
+accepted and recorded in `docs/violation-decisions.md` (2026-09-21 01:24, `device-failed`).
+
+**5. Ordering — ACCEPTED, AND (a) WAS REPEATED BY CYCLE 58, WHICH IS RECORDED HERE RATHER THAN SOFTENED.** (b) is
+already 47(e) and cycle 58 obeyed it at every step — save before wiring, three artefacts, and the Boolean half
+survived precisely because of it. (a) is the one that recurred: cycle 58's `diag_s58_boolwire.py` was likewise
+written in full **before** the review that gated it was dispatched, and unchanged afterwards, so a $4.32
+adversarial review was again structurally unable to change the build it gated. **New mandatory brief sentence,
+written into `docs/cycle27-plan.md` 48(m):** a review that GATES a build is dispatched before the script is
+written, or the brief states in writing that the script will be revised on the review's findings — a review that
+cannot change anything is a receipt, not a review.
+
+**6. What was not reported — ACCEPTED, all three.** (a) The cycle-56 retrospective's silent death is the
+`device-failed` slug and is disposed at `docs/violation-decisions.md` (2026-09-21 01:24) as `no-device` under the
+user's standing order of 2026-09-18 08:53, with the substantive finding recorded there: the fleet's gates are
+over-layered, and this cycle watched two of them refuse one launch for two unrelated reasons. (b) The concurrent
+duplicate launch is 47(k) and was carried into every cycle-58 brief as "stay in the turn until the log carries its
+final `BGRUN END`/`TIMEOUT` line"; no cycle-58 run was lost to it. (c) The $88.99 headline conflating a judgement
+session's own cost with review cost is a real defect in the cost device — **recorded, not repaired**, for the same
+standing-order reason. The correction is adopted: cycle 57 cost ≈ $50.9 for 64 minutes and delivered a stage half,
+which the review is right to call defensible.
+
+**7. Judgement inside a material session — the no-fault verdict is ACCEPTED; the "formal tension" is REFUTED.**
+`archive/peer/2026-09-21-retrospective-cycle57.md:217` calls "save IFF `ExecState` == 1" and "purge the junk
+`Invoke` if left" instances of the banned result-dependent action, which does not cover them, because the rule
+bans moving a **decision** into the session that must not make it — not stating a pass criterion or a safety
+invariant. A pass criterion is what makes a measurement checkable; without it the material session would have to
+judge whether its own output was good. Cycle 58 is the evidence that the real line held: the material session
+twice declined to act where judgement was owed (it refused to write the `violation-decisions` blocks and refused
+to spend the prior-art call on its own authority) and returned both as `OPEN:` lines. The review itself says
+moving them would be worse; this disposition simply declines to record a fault where there is none.
+
+**DEVICE EFFECT / VIOLATION lines** — both slugs were already at threshold and both are disposed today:
+`docs/violation-decisions.md` `## repeated-failure-class — 2026-09-21 01:24` and `## device-failed — 2026-09-21
+01:24`, each `DECISION: no-device` under the user's standing order of 2026-09-18 08:53, each carrying the
+substantive finding rather than a citation of the suspension alone.

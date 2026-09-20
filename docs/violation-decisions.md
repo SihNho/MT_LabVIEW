@@ -784,3 +784,54 @@ DECISION: **no-device — recorded as a FINDING only, with a brief-template fix.
 5. **Both premises are already withdrawn in the plan**, so the record and the design agree:
    `docs/cycle27-plan.md` Pre-decided **42(e)** (the sink rule) and **43(c)–(e)** (R14 and the withdrawn
    `tools/gscript.py:947-948` citation).
+
+## repeated-failure-class — 2026-09-21 01:24 (cycle 58, judgement)
+
+`py tools/violations.py` reads **18 occurrences** (threshold 3), newest
+`archive/peer/2026-09-21-retrospective-cycle57.md`, reported loss **318 min / $52.85 across 12 of the 18**.
+
+DECISION: **no-device — recorded as a FINDING only.**
+
+1. **The threshold is SUSPENDED** by the user's order of **2026-09-18 08:53** (*"장치는 더 민들지 말고 계속 진행"*),
+   so a slug at threshold is recorded here and the next cycle builds nothing. It resumes only when the user lifts it.
+2. **The mechanical device for this slug already exists and it is not a tool — it is the user's own re-split rule**
+   (CLAUDE.md, *"Big or blocked work is SPLIT into steps that each SAVE an intermediate artefact"*, 2026-09-19):
+   *the same stage failing twice at the same place, or a stage that ends without a saved artefact, ⇒ decomposition,
+   never a full-length retry under a new name.* `cycle_runner.py` already counts a renamed recipe as the same recipe.
+   Adding a counter on top of a rule that is already mechanical is the shape of device-building the user stopped.
+3. **What this cycle adds is the first evidence that the rule works WHEN APPLIED INSIDE THE CYCLE RATHER THAN
+   DEFERRED TO THE NEXT ONE.** Cycle 58's first act ran one script twice and failed at the identical 9 gates both
+   times, leaving **zero** artefacts — the trigger, firing exactly as written. Instead of closing the cycle on it,
+   the decomposition was written the same hour (`docs/cycle27-plan.md` Pre-decided **48(e)**: three sub-steps, three
+   named files, three pass criteria) and executed: **36 pass / 0 fail, three saved files, `Is Broken?` False**
+   (48(j)). Two runs producing nothing became one run producing the deliverable's Boolean half.
+4. **So the finding is about WHEN, not about WHETHER.** The rule was being read as "the NEXT cycle's first act is a
+   decomposition plan", which spends a whole cycle boundary before anything is re-cut. It is better read as: the
+   moment the trigger fires, the decomposition is the next act — and rule 2c ("run the cycle to the end") already
+   requires that. **No device; this paragraph is the correction.**
+
+## device-failed — 2026-09-21 01:24 (cycle 58, judgement)
+
+`py tools/violations.py` reads **14 occurrences** (threshold **1** — a device that let its own fault through is
+broken, not unlucky), newest `archive/peer/2026-09-21-retrospective-cycle57.md`, reported loss **200 min / $32.13
+across all 14**.
+
+DECISION: **no-device — recorded as a FINDING only.**
+
+1. **The threshold is SUSPENDED** by the same order of 2026-09-18 08:53, and this slug is the one where the
+   suspension matters most: the only device that answers "a device failed" is a device that watches devices.
+2. **This cycle measured both halves of the problem in one afternoon, and they point opposite ways.**
+   `guard_cycle` worked exactly as designed — it refused the recipe launch and named the reason in one line.
+   `tools/stop_record.py` refused the same launch one step earlier and for a reason unrelated to the question it
+   was asked: *"this recipe has a released stop record, but the file itself cannot be read"* (`docs/cycle27-plan.md`
+   **48(g)**), i.e. a stop record keyed to a recipe's BYTES cannot be evaluated until the recipe exists, so a
+   prior-art review of a **planned** recipe can never be matched to anything. The review's four `FIXED:` and one
+   `REFUTED:` lines were therefore never tested — they were simply unreachable. That is a real device fault, and
+   **it is closed by writing the recipe, which cycle 58 did** (1,699 lines, sha `1986626f…`); the gate then read
+   `ALLOW = True`.
+3. **The fault class is over-layering, not under-tooling.** Two gates in series refused one launch for two unrelated
+   reasons, and the first one's reason was an artefact of evaluation order. The cheap answer is not a third gate but
+   **a sequencing rule: a gate keyed to a file's bytes is dry-run only after the file exists**, which is now written
+   into the material-brief template used by this cycle's dispatch 3.
+4. **Recorded, not repaired**: `stop_record.py` was NOT patched this cycle, no date was rolled, and
+   `CYCLE_GUARD_OFF` was never set — the refusal was answered by producing the bytes it was asking about.

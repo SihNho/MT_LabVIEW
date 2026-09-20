@@ -1,0 +1,61 @@
+BGRUN START 2026-09-21 00:20:56 limit 15.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c58-delete-execstate0 -TaskFile 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\1df3c06b-81c4-4e8d-9bcf-9801067babca\scratchpad\c58_peer_task2.md' -TimeoutSec 780
+OUTCOME: ANSWERED (381s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c58-delete-execstate0.md
+COST: $3.6322  in 24 / out 29707 / cache-create 202637 / cache-read 1589576  (379s, 23 turn(s))
+--- ANSWER ---
+VERDICT: REFUTED — the "dangling wire" is not established by this log, and the one piece of evidence offered for it (`'wire': 0, 'wire_err': 1055`) is, by gscript's own docstring and by cycle 57's clean run, the signature of a **bare** terminal at `ExecState 1`, not a broken one. The remedy's nearest measured precedent on this machine is a **failure**, and the "not a design change" defence collapses against a measurement this project already made.
+
+---
+
+**1. The single strongest reason the claim is wrong**
+
+The claim's evidence says the opposite of what it is read to say. `tools/gscript.py:829-830` defines the reading verbatim:
+
+> "`wire` = the connected wire's UID, **0 when the terminal is bare (then wire_err == 1055 and term_err == 0: the terminal exists, nothing is wired to it)**."
+
+So `{'wire': 0, 'term_err': 0, 'wire_err': 1055}` is the documented signature of an **unwired** terminal. And cycle 57 — the 35/0 run held up as the clean contrast — produced *exactly that same row*: `diag_s57_typepair.log:116` and `:140` read `{'label': 'index', …, 'wire': 0, 'term_err': 0, 'wire_err': 1055}` while `ExecState` read **1** (`:112`, `:128`, `:135`, `:143`), the VI saved 476,209 bytes (`:146`) and cold-reopened at `ExecState 1` (`:153`). A reading that is identical in the broken run and the whole run cannot be the mechanism that distinguishes them. Calling it "MEASURED, not inferred" inverts it: what was measured is that the indicator terminal ended up with **no wire attached** — which is evidence *against* a stub hanging off it.
+
+Compounding this, the ExecState timeline has a hole exactly where the attribution is made. Run 1 reads `ExecState` at `A BEFORE` = 1 (`:39`) and then **not again until after the delete** = 0 (`:78`). Three mutations sit in that gap: `build_property` placed the node, `create_indicator` created and wired the indicator, `delete_object` removed the node. The log does not license attributing 1→0 to the third one. (Two citations in the claim also do not land in `_run1.log` — its `:71` is the newline line and `:97` is the B5 banner; the wire rows are `:72` and `:95`. Two similarly-named logs exist; the citation needs pinning to one file.)
+
+**2. Alternatives that survive the same evidence**
+
+- **Alt-A — `create_indicator` broke it, not the delete.** Nothing in run 1 excludes this. Prior art removes the third candidate: `tools/bench/diag_bdloaded_reader.log:10` reads `[after build_property] ExecState 1` with the *same* builder and the *same* 291/292 pair as C1, and `:11` records the gate "the VI is broken while the new PN's `reference` is bare (expected)" **FAILING** — the bare-reference node leaves the VI whole. So B1 is innocent and the break is pinned to B2 **or** B3, unseparated.
+- **Alt-B — the delete removed node *and* wire, and the VI is at 0 for a reason with no wire in it.** This project has that failure mode written down twice: `archive/2026-09-17-status-cycle15-narrative.md:88` — "**no broken wire, nothing for Remove Bad Wires, ExecState 0**" — and `docs/d1-build-plan.md:451`, "with *no broken wire and nothing for Remove Bad Wires* — a silent bare terminal". `remove_bad_wires` cannot touch either.
+- **Separating observable:** the whole-VI `Wire` count across B1→B2→B3. If it goes 1905 → 1906 → **1905**, the wire died with the node, there is no stub, and RBW is the wrong verb. If it stays 1906 with uid 23586 alive, the claim's mechanism is real. Run 1 took the census once, at `A before everything` (`:38`), and never again.
+
+**3. The "not a design change" defence — it does not hold**
+
+A docstring states what a verb does; it does not establish that applying it to a 1,905-wire derivative of the user's production VI is behaviour-preserving. The sentence quoted even says "if the VI must run" — a runnability hint, not a locality proof.
+
+The defence is contradicted by this project's own measurement: `archive/2026-09-17-status-d1-route-b-2.md:45` — "deleting t1's wire + **`remove_bad_wires_scripted` DELETES THE TUNNEL**, so every higher index drops by one and the map goes 7 → 6 terminals," closed by a 39/0 diagnostic. RBW has been measured here removing a **LoopTunnel** — a structural object, not a wire. Externally, NI documents method 410 as "Removes **all** the broken wires on the block diagram of the VI" with no scope caveat, and LabVIEW users report Ctrl+B "clears broken wires for all cases of a selected case structure" and warn that users "may not know that they just changed the function of their code." Under CLAUDE.md rule 1a that is a computation-change hazard, not a housekeeping call.
+
+**Is the before/after `Wire` count sufficient to detect over-removal? No, three ways.** (a) It counts, it does not name — 1906→1905 looks perfect whether the stub or a pre-existing wire went. (b) The known over-removal mode here deletes a **tunnel**, which a `Wire` count cannot see at all. (c) `docs/d1-build-plan.md:819` reported "3 of 8 wires deleted by Remove Bad Wires" and `:19` **withdraws** it — "the gate measured uid identity" — i.e. this project has already been burned once by the wrong detector. Sufficient detector: the **Wire uid set difference** (`set(g.uids(target,"Wire"))` before minus after, printed) **plus the full class census** including `LoopTunnel`, `ControlTerminal`, `Function`, `SubVI`, `Property`, `IndexArray`. Both helpers already exist in the script (`census()`, `g.uids`) — no new tooling.
+
+One more: `remove_bad_wires_scripted` swallows the modal-dialog exception (`tools/gscript.py:2494-2498`) — precisely the anti-pattern this project stripped out of `delete_object` (`:2264-2272`) and `create_indicator` (`:2399-2402`). A refused RBW returns normally. B3c's gate reads ExecState so the gate stays honest, but the log narrative "RBW ran" would not be.
+
+**4. The type-survival clause**
+
+Probably true, but it is stated as a known when it is a prediction, and the run cannot check it — 47(j): no reader in this fleet returns a terminal's data type. An FP indicator does own its datatype and RBW removes wires, so a Boolean indicator should stay Boolean once bare and once moved. Two caveats: "RBW only removes wires" is already false locally (the tunnel above), so "the indicator cannot be touched" is not guaranteed by the verb's description; and passing B3c tells you nothing about type — after a successful RBW the artefact is in *exactly* cycle 57's shape, a bare indicator, and cycle 57's bare indicator read `Is Broken? = True` when wired. Only B7 answers the run's question. The consequence sentence bundles a repair prediction with a type prediction and only the first is anything RBW could deliver.
+
+**5. What would falsify the claim, and the cheapest discriminating test**
+
+Falsifiers, any one of which kills it: `ExecState` reads 0 after B2, before any delete; or the `Wire` count returns to its pre-B2 value after the delete (no stub exists); or RBW runs and the count is unchanged with `ExecState` still 0. That third one is **already on disk in adjacent cases** — `diag_bdloaded_reader.log:15` `[after remove_bad_wires] ExecState 0`, `:26` "reader still broken (ExecState 0, reference wire 467)", summarised as settled at `docs/toolkit-capabilities.md:596-598` ("`remove_bad_wires` does not clear it"); and `tools/bench/broken_probe2.log:7` "after Remove Bad Wires: wires 16 -> 16 ExecState 0".
+
+**Cheapest discriminating test — three `g.exec_state()` calls and four `g.count(target,"Wire")` calls, plus one `set(g.uids(target,"Wire"))` snapshot. No mutation, no new op, seconds.** Read `(ExecState, Wire)` after B1, after B2, after B3. `ExecState` 0 at B1 ⇒ the node. 0 at B2 ⇒ `create_indicator`. Wire back to baseline at B3 ⇒ no stub, RBW is the wrong verb and run 2 would burn another 229 s reproducing three identical FAILs. Only if uid 23586 is still alive at B3 has the claim earned its mutation — and then RBW should run with the uid-set diff above, not a count. This is what "when a diagnosis is GUESSED twice, build the reader" asks for, and it is strictly cheaper and safer than the proposed whole-VI mutation.
+
+**6. Is `remove_bad_wires_scripted` the right verb at all?**
+
+No — the ordering is the defect, and your own logs show why. Cycle 57's delete was clean because its indicator was **never wired**: `diag_s57_typepair.log:108` created it on `Nodes[0].Terminals[2]`, the `index` **input**, and `:116` shows the row already bare at creation — two sinks cannot be wired together. Cycle 58 created on a SOURCE, so LabVIEW wired it (`:72`, wire 23586). That contrast is real, and it argues for changing the route, not for adding a whole-VI repair verb at the end of it.
+
+Two better routes, both judgement calls rather than mine to pick:
+
+- **Don't delete the carrier before the save.** Move and save with the carrier standing, wire the indicator to `#10686`, and delete the carrier last — the indicator is never sourceless, so no stub can exist. This also fixes the more expensive failure in run 1, which is not the ExecState reading at all: `:301` reads `ARTEFACTS ON DISK: []`. Under CLAUDE.md's "a step is not done until it has left a file", three candidates × zero files is the real cost of run 1, and moving the save earlier is the fix for it.
+- **Address the nested terminal directly.** `OpCreateConstOnTerm_v0` already reaches a nested diagram's node terminal (`Class Name`='WhileLoop'/`index` = the loop, `index 3` = body `Nodes[]` index, `index 4` = that node's `Terminals[]` index — `docs/toolkit-capabilities.md:66`). A Create-Indicator analogue on that donor pattern deletes the entire carrier → create → delete → move dance, and with it this whole failure class.
+
+If the B1/B2/B3 readings come back showing uid 23586 alive after the delete, I am wrong about the mechanism and the claim's cause stands — though its sufficiency would still be open, given `diag_bdloaded_reader.log:15`. Nothing short of those readings changes my mind, because run 1 simply does not contain the measurement the claim is built on.
+
+Sources:
+- [VI class/Block Diagram.Remove Bad Wires method — LabVIEW Wiki](https://labviewwiki.org/wiki/VI_class/Block_Diagram.Remove_Bad_Wires_method)
+- [Remove ONLY broken wires in visible cases/sequences/structures — NI Idea Exchange](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Remove-ONLY-broken-wires-in-visible-cases-sequences-structures/idi-p/1011653)
+- [hotkey to remove only broken wires with no connection — NI Idea Exchange](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/broken-wires-hotkey-to-remove-only-broken-wires-with-no/idi-p/951765)
+- [Create Indicator method — NI LabVIEW API Reference](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/terminal/createindicator.html)
+BGRUN END rc=0 after 381s

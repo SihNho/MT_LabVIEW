@@ -1,0 +1,111 @@
+BGRUN START 2026-09-21 01:27:49 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/cycle27-plan.md --slug d1-s3a-recipe --trigger cycle-start --recipe tools/recipes/stage_d1_s3a_focus_ind.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_d1-s3a-recipe.txt (309278 chars)
+OUTCOME: ANSWERED (537s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-21-priorart-d1-s3a-recipe.md
+COST: $8.0285  in 36 / out 38278 / cache-create 503584 / cache-read 4071094  (535s, 26 turn(s))
+--- ANSWER ---
+Write is disabled in this session (as it was for the 2026-09-20 prior-art cell), so the review is delivered here rather than to a file. Read-only throughout: no lock, no `.vi` opened, no COM call, nothing built or run.
+
+# PRIOR-ART REVIEW — `d1-s3a-recipe` (trigger: cycle-start)
+
+**Under review:** `tools/recipes/stage_d1_s3a_focus_ind.py` (1,699 lines, sha256 `1986626f…`) against `docs/cycle27-plan.md`. Dispatched `2026-09-21 01:27:49` (`tools/bench/priorart_d1_s3a_recipe.log:1`).
+
+**Verdict: NOT novel. 4 findings.** The recipe is sound and unusually well cited — every `gscript` line number in its docstring checks out (`create_indicator :2388`, `wire_indicators :1756`, `delete_object :2240`, `save :2062`, `build_property :2194`, `build_index_array :2322`). What the record already covers is **which file it starts from**, **the one risk it calls untested**, **one fact the plan cites**, and **two capability documents it leaves saying the opposite of what it does**.
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 — SETTLED ALREADY? **No slug.**
+Decided, not settled-elsewhere: `docs/cycle27-plan.md:1600-1604` (45(f)) defines S3a, `STATUS.md:74` orders it as the second act. Citing a plan's own decision back at it would block every planned build — the reasoning the cycle-57 review used and the judgement session accepted.
+
+### A2 — REFUTED ALREADY? **No slug.**
+The one standing refutation — 38(g) semantics, a top-level indicator wired out of `#637` making a loop-border tunnel — was disposed `FIXED: refuted-already` (`archive/peer/2026-09-20-priorart-d1-s3a-focus-ind.md:362`) and then measured away twice: `#637` **59→59 terminals, 48→48 wired, no tunnel, no border object** (`tools/bench/diag_s57_ctmove_wire.log:64`; `tools/bench/diag_s58_boolwire.log:159-160`). The recipe inherits `move_in`-into-`#639` as mandatory. Nothing else argues against this build.
+
+### A3 — CONTRADICTED → `contradicted`
+**45(c) asserts the S3a wiring survives the 1.2 move, and cites for it the item that measured the opposite.**
+
+> `docs/cycle27-plan.md:1588-1589` — *"When 1.2 is built later the indicator terminals move with their source nodes (one node per `move_in`, **37(d)**); the local variables in 1.5 need no change."*
+
+against
+
+> `docs/cycle27-plan.md:1093` (37(d)) — *"`move_in` **TAKES ONE NODE PER CALL AND SEVERS EVERY WIRE ON IT, IN EITHER ORDER** — there is no 'move the set and keep its internal wires'."*
+> `docs/cycle27-plan.md:843` (33(a)) — *"A move severs the node's wires; the relocated node lands in the new body **unwired**."*
+
+Both S3a sources are booked for that move: `docs/d1-build-plan.md:295` — **`10757 … → 1.2`**; `:304` — **`10686 … → 1.2`**. Each indicator is a **branch of its source's own net** (numeric 10990, boolean 10799, whole-VI `Wire` delta 0 — `tools/bench/diag_s58_boolwire.log:153`), so severing the source takes the indicator's only feed with it.
+
+**This changes no line of the recipe.** What is false is the durability clause: when 1.2 is built both indicators go bare, the 1.2 stage owes two re-wire rows no document lists, and until they land loop 1.5 reads an indicator nothing writes. Disposition is one sentence in 45(c).
+
+### A4 — UNREAD EVIDENCE → `unread-evidence`
+**The two documents this project designates for exactly this still say the recipe's central verbs do not work.** CLAUDE.md names `docs/NAMES.md` as the file to *"Check before every wiring call"*.
+
+> `docs/NAMES.md:475` — *"⚠️ Wiring that new terminal to a source on a NESTED diagram is **STILL UNMEASURED**: `wire_indicators` returned `error 5001 … Control <label> not found` on 3 attempts."*
+
+Measured false twice since — `tools/bench/diag_s57_ctmove_wire.log:83` and `tools/bench/diag_s58_boolwire.log:151-154` (error column `''`, wire 0 → 10799, `Is Broken?` False). The cause was the argument, not the verb (`tools/gscript.py:1787-1789`).
+
+> `docs/toolkit-capabilities.md:274` — *"creating front-panel objects from nothing | **no op** … a free-standing control needs `New VI Object` … **never built**"*
+
+— against the route the whole recipe rests on, already written up one file over at `docs/NAMES.md:474`. The recipe's "WHAT ALREADY EXISTED" block (`tools/recipes/stage_d1_s3a_focus_ind.py:9-24`) consults `gscript.py` and the two diagnostics, not the capability table that would have told it — wrongly — that the stage is impossible. Two one-line edits; they also give judgement a `FIXED:` path whose mtime postdates this review.
+
+---
+
+## PART B — THE ARTEFACT
+
+### B1 — ALREADY BUILT → `already-built`
+**Three of the six sub-steps have already run, passed their gates and left saved files — and the recipe starts upstream of all three and does them again.**
+
+`tools/recipes/stage_d1_s3a_focus_ind.py:835` — `shutil.copy2(S2_ARTEFACT, target)` — makes `claudeDev\D1_s2_loops.vi` the parent, and `:56-66` replays B1/B2/B3. Those are on disk, each saved legally at `ExecState` 1, from six hours ago:
+
+> `tools/bench/diag_s58_boolwire.log:189-191` — *"B1 … saved 476241 bytes → `7237b2c1…`"* · *"B2 … saved 476245 bytes → `14805014…`"* · *"B3 `Is Broken?` = False ; indicator wire 0 → 10799 ; saved 476169 bytes → `dc14dd00…`"*
+
+and the plan's rule for what comes next:
+
+> `docs/cycle27-plan.md:380-382` (Pre-decided 22) — *"The D1 build is a **CHAIN** of stage scripts, **each starting from the previous stage's SAVED file** in a FRESH LabVIEW instance."*
+> `:691` (30(c)) — the S2 recipe's one substantive change was that its copy *"becomes a copy **from the S1 artefact**."*
+
+`D1_s3a_boolcarrier_b3_20260921_010034.vi` already carries the boolean indicator on `Diagram #639`, wired, `Is Broken?` False. Chaining the numeric leg onto **that** file is **two sub-steps plus Z0 instead of six** — three fewer restarts, three fewer mutations, one lineage instead of a replay that discards a delivered link.
+
+**Why STATUS says otherwise, and why that is not a refutation:** `STATUS.md:74` does say *"from `claudeDev\D1_s2_loops.vi`"* — written at cycle-57 close, **before** b1/b2/b3 existed. 48(e) (`docs/cycle27-plan.md:1869-1877`) named S2 as B1's parent for the same reason. Both predate the files.
+
+**The honest counter, so a `REFUTED:` release is cheap:** S1 and S2 were each delivered by a `tools/recipes/` script; b1/b2/b3 came from a `tools/bench/` diagnostic. Against that — 48(e) specified those three files *as the stage's sub-steps with pass criteria*, and STATUS's banner calls the boolean half **DELIVERED**. One real gap either way: b3 was saved but **never re-read cold** (`tools/bench/diag_s58_boolwire.log:174` is in-memory after the `Is Broken?` perturbation; the log goes straight to Z1 at `:182`), so a chained run's first act is one cold `ExecState` read of it.
+
+### B2 — ALREADY FAILED? **Reported, cause addressed, no slug.**
+`diag_s3a_ind_transport.py` (TIMEOUT 1502 s, 20 empty `create_indicator` returns) — both causes repaired, 46(a)/46(f). `diag_s58_boolcarrier` runs 1–2 (carrier delete → `ExecState` 0) — addressed by 48(d), measured working at `tools/bench/diag_s58_boolwire.log:63`, `:189`.
+
+### B3 — HELPER EXISTS? **No slug.**
+Raised and disposed 2026-09-20 (`archive/peer/2026-09-20-priorart-d1-s3a-focus-ind.md:363`): `tunnel_indicator` is the banned 38(g) shape, `connect_ctl`'s source end is top-level only. The recipe hand-rolls nothing new — its junk-`Invoke` purge cites `build_d1_routeb_v0.py:1279-1287`, and the uid→index resolution is forced by `delete_object` having no by-uid form (`tools/gscript.py:2240`).
+
+### B4 — ALREADY MEASURED → `already-measured`
+**The one thing the recipe names as genuinely untested is measured.**
+
+> `tools/recipes/stage_d1_s3a_focus_ind.py:147-150` — *"the SECOND leg runs on a file that already carries the first leg's indicator, **which the first two replays never did**."*
+
+> `tools/bench/diag_queue_donor2.log:41-55` — **two** free-standing `ControlTerminal`s created and relocated in one run on this VI: `#23124` (`'index'`, scalar) and `#23493` (error cluster), each *"is BORN owned by `'TopLevelDiagram'` #536"* (`:44`, `:51`), each *"`move_in(…)`: returned 8486, **error None**; owner AFTER `'Diagram'` #686"* (`:46`, `:53`).
+
+**Scope, stated so this is not read wider than it is:** donor2 used `create_control` into `#686` and **never wired** either terminal — it covers the *coexistence and relocation* half of risk (iv), not two `wire_indicators` calls on one file. The same lines were already put to the project at the cycle-57 review's B4 (`archive/peer/2026-09-20-priorart-d1-s3a-focus-ind.md:262-265`), accepted in full.
+
+---
+
+## MACHINE-READABLE
+
+```
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-built
+PRIOR-ART: already-measured
+```
+
+**Citations, one per finding, for the disposition:**
+- `contradicted` — `docs/cycle27-plan.md:1588-1589` against `:1093` and `:843`, with `docs/d1-build-plan.md:295`, `:304`, `tools/bench/diag_s58_boolwire.log:153`
+- `unread-evidence` — `docs/NAMES.md:475`, `docs/toolkit-capabilities.md:274`, against `tools/bench/diag_s57_ctmove_wire.log:83`, `tools/bench/diag_s58_boolwire.log:151-154`, `docs/NAMES.md:474`
+- `already-built` — `tools/bench/diag_s58_boolwire.log:189-191`, `:166`, against `tools/recipes/stage_d1_s3a_focus_ind.py:835`, `:56-66`, under `docs/cycle27-plan.md:380-382`, `:691`
+- `already-measured` — `tools/bench/diag_queue_donor2.log:41-55` against `tools/recipes/stage_d1_s3a_focus_ind.py:147-150`
+
+## What is genuinely NOT covered — so it is not hunted for
+- **Both legs on one file has never been done.** No artefact carries two wired indicators; `Z0_d`'s `ControlTerminal` census of **116** is a number nothing on disk has produced (the b1/b2 cold reopens read **115** — `tools/bench/diag_s58_boolwire.log:106`). The deliverable is real new work.
+- **Two `wire_indicators` calls against one VI selecting by two distinct labels** is unmeasured; the labels differ and `N1_b4`/`B1_b4` are the right guard.
+- **Z0 — the deliverable reopened cold with both terminals on `('Diagram', 639)`** — a genuine first.
+
+**The one sentence for the judgement session:** the recipe is right about *what* to build and right about *how* — what the record already answers is *where it starts*: three of its six sub-steps are finished, gated and on disk as `D1_s3a_boolcarrier_b1/b2/b3`, so the chain rule points the numeric leg at `b3` and turns a six-step replay into a two-step stage; everything else here is a sentence in 45(c) and two stale lines in the files this project tells itself to read before wiring.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-d1-s3a-recipe.md
+   STOP RECORD armed: tools/recipes/stage_d1_s3a_focus_ind.py sha 1986626fb6f1 verdict contradicted, unread-evidence, already-built, already-measured -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 537s

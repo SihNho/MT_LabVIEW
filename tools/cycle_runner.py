@@ -273,6 +273,23 @@ def failed_recipes(bench, t_start, t_end):
         except OSError:
             continue
         if re.search(r"^VIOLATION:\s*repeated-failure-class\b", read(p), re.M):
+            # ONCE PER FILE, EVER (2026-09-21 01:5x): the creation-time fix was beaten when the next session
+            # RE-CREATED retrospective-cycle57.md (relocation/annotation by rewrite gives a new creation time),
+            # so the same slug was counted in two consecutive cycles and fired a second false firefighter. A
+            # retrospective's verdict is counted exactly once, by filename, persisted across runner restarts.
+            seen_path = os.path.join(bench, "cycle_runner_retro_seen.json")
+            try:
+                seen = json.loads(read(seen_path) or "[]")
+            except ValueError:
+                seen = []
+            if fn in seen:
+                continue
+            seen.append(fn)
+            try:
+                with open(seen_path, "w", encoding="utf-8") as f:
+                    json.dump(seen, f, indent=0)
+            except OSError:
+                pass
             out.add("retro:repeated-failure-class")
     return out
 

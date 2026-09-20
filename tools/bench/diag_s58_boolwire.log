@@ -1,0 +1,196 @@
+BGRUN START 2026-09-21 01:00:34 limit 25.0 min: py -u tools/bench/diag_s58_boolwire.py
+=== diag_s58_boolwire  2026-09-21 01:00:34   (cycle 58 material #2; Pre-decided 48(e); DIAGNOSTIC, never a recipe; NO VI IS RUN, 34(f); no new op, no new device, no GUI action; CHOOSES AND RECOMMENDS NOTHING)
+  FACT  the stop-recorded S3a recipe under tools/recipes/: exists=False mtime=None - REPORTED, NOT TOUCHED
+  FACT  THE ONE CHANGED VERB CALL: delete the wire create_indicator makes on a SOURCE terminal, BY UID, BEFORE deleting the carrier (48(b)+48(d)).  |  signature used: delete_object(target, cls, index, verify=True)  # tools/gscript.py:2240  |  addressing: there is no by-uid delete in the fleet; `Wire` IS a live Traverse class, so idx = [o['uid'] for o in g.report_all(target,'Wire')].index(uid) and verify=True returns the uid SET that disappeared (raises unless exactly 1)
+  FACT  REFUSED: REFUSED by 48(d) (measured over-removal, archive/2026-09-17-status-d1-route-b-2.md:45 'DELETES THE TUNNEL' - a rule-1a hazard). Not imported, not called. The GUI menu form (gscript.py:1629) is not called either.
+  FACT  CARRIER OF RECORD: C2 build_property('VI Server:VI', [('242', False)]) - Pre-decided 48(c): C2 is the carrier of record - one property, ExecState 1 throughout its placement, indicator label non-duplicate and newline-free. C3 withdrawn (ExecState 0 at placement); C1 is the alternate and is not attempted here.
+  FACT  LabVIEW handles BEFORE (dispatch 1 left the instance at 60,292; fresh baseline ~31,500): 30977
+  FACT  T1 ORIGINAL (read-only probe): HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  T1 the ORIGINAL's md5 equals the pin  2a78e17c449cacdaf5da389818526859
+  FACT  T1b D1_s1_copy.vi: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  PASS  T1b D1_s1_copy.vi md5 == 3e3d23cefd3a334001aa9d6156bf1aee  3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  T2 the S2 artefact: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T2 D1_s2_loops.vi md5 == 6ff19497f2309e007a214660bb64b911  6ff19497f2309e007a214660bb64b911
+  FACT  T2c the NUMERIC half already delivered (read-only, untouched): HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3a_num_ind_20260920_234341.vi | exists=1 | size=476146 | md5=fceaa0a1d068622596842435b830bffe | sha256=68cecc5eb3ae542e0c53ee134610dfd2d04a36c50156151a9cceed82f12629b7
+  FACT  T2b RESTART (pre-batch, 44(e)): lv_restart rc=0 ['dialogs: 1346,762| / ENABLED|382077426|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  LabVIEW handles AFTER the pre-batch restart: 30690
+
+===================================================================
+=== S3a-B1   from D1_s2_loops.vi ; D1_s3a_boolcarrier_b1_20260921_010034.vi
+=== carrier of record: C2  VI.Automatic Error Handling (242), Boolean R/W
+===================================================================
+  FACT  B1_T3 the working file at creation (copied from D1_s2_loops.vi): HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3a_boolcarrier_b1_20260921_010034.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  B1_T3 the B1 working file is byte-identical to D1_s2_loops.vi at creation  6ff19497f2309e007a214660bb64b911 (expected 6ff19497f2309e007a214660bb64b911)
+  FACT  B1: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+
+--------- B1 A  (resolve LIVE; assume nothing, 34(h))
+  FACT  class census [B1 before everything] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Invoke': 1, 'Property': 106, 'IndexArray': 47, 'LoopTunnel': 135, 'Wire': 1905, 'ControlTerminal': 114, 'Function': 183}
+  FACT  B1 A diag_index(#639) = 46 ; error VERBATIM ''
+  FACT  B1 A diag_index(#536) = 0 ; error VERBATIM ''
+  FACT  B1 A diag_index(#686) = 19 ; error VERBATIM ''
+  PASS  B1_A1 diag_index(#639) resolves to an int  46 (the historical 43 / 46 are NOT reused)
+  PASS  B1_A2 diag_index(#536) resolves to 0  0
+  OBSERVED uid 10686 -> owner 'Diagram' uid 639 | self 'Function'#10686 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  B1_A3 owner of the BOOLEAN sink #10686: owner_of(#10686) = ('Diagram', 639) [strict=True] error VERBATIM ''
+  PASS  B1_A3 owner_of(#10686) answers ('Diagram', 639)  ('Diagram', 639)
+  FACT  B1_A4 the BOOLEAN sink #10686: node #10686 at Nodes[25] (pin 25 survived its uid echo), 3 terminals, 3 WIRED
+  FACT  B1_A4 #10686's FULL terminal list: [{'i': 0, 'name': 'x .and. y?', 'is_source': True, 'wire': 10799}, {'i': 1, 'name': 'y', 'is_source': False, 'wire': 9105}, {'i': 2, 'name': 'x', 'is_source': False, 'wire': 3050}]
+  FACT  B1_A4 terminal 0 READ off the machine: {'i': 0, 'name': 'x .and. y?', 'is_source': True, 'wire': 10799} (utf-8 hex '78202e616e642e20793f'); the 47(d) wire PIN is 10799
+  PASS  B1_A4 #10686 carries terminal 0, a SOURCE, whose name and wire uid were read off the machine  {'i': 0, 'name': 'x .and. y?', 'is_source': True, 'wire': 10799}
+
+--------- B1a  (place C2 at the `VI -> Block Diagram` head)
+  FACT  ExecState [B1 BASELINE, before any mutation] = 1
+  FACT  whole-VI Wire uid SET [B1 BASELINE]: 1905 uids (error VERBATIM '')
+  FACT  B1a BEFORE: panel_wiring rows 114, fp_labels 114, ControlTerminal census 114, Wire count 1905
+  FACT  B1a node_info(max_n=40) BEFORE: 0 entries -> [] ; error VERBATIM ''
+  FACT  B1a build_property(target, 'VI Server:VI', [('242', False)], (6200, 5200), diagram_index=0) -> new [{'i': 0, 'class': 'Property', 'uid': 23486, 'pos': (6182, 5200), 'owner': 'TopLevelDiagram'}] ; error VERBATIM ''
+  OBSERVED uid 23486 -> owner 'TopLevelDiagram' uid 536 | self 'Property'#23486 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  B1a the new carrier's owner: owner_of(#23486) = ('TopLevelDiagram', 536) [strict=True] error VERBATIM ''
+  PASS  B1_a build_property put 1 new Property on the target, owner ('TopLevelDiagram', 536)  new [{'i': 0, 'class': 'Property', 'uid': 23486, 'pos': (6182, 5200), 'owner': 'TopLevelDiagram'}], owner ('TopLevelDiagram', 536), error ''
+  FACT  B1a node_info(max_n=40) AFTER: 1 entries -> [(0, 'Property Node', 'Property Node')] ; error VERBATIM ''
+  PASS  B1_a2 node_info goes 0 entries -> 1 entry  0 -> 1
+  FACT  B1a THE CARRIER'S FULL TERMINAL TABLE [(index, label, is_source, wire)], READ OFF THE MACHINE: [{'i': 0, 'name': 'reference', 'is_source': False, 'wire': 0}, {'i': 1, 'name': 'reference out', 'is_source': True, 'wire': 0}, {'i': 2, 'name': 'error in (no error)', 'is_source': False, 'wire': 0}, {'i': 3, 'name': 'error out', 'is_source': True, 'wire': 0}, {'i': 4, 'name': 'Def Err Handling', 'is_source': True, 'wire': 0}] (uid echo 23486; error VERBATIM '')
+  FACT  ExecState [B1a after build_property placed the carrier] = 1
+  FACT  B1a the terminal create_indicator will be called on: {'i': 4, 'name': 'Def Err Handling', 'is_source': True, 'wire': 0}  (rule: first SOURCE terminal that is not ['reference out', 'error out']; the candidates were ['Def Err Handling'])
+  PASS  B1_a3 the terminal table holds a SOURCE terminal that is not reference out / error out  {'i': 4, 'name': 'Def Err Handling', 'is_source': True, 'wire': 0} (first SOURCE terminal that is not ['reference out', 'error out']; the candidates were ['Def Err Handling'])
+
+--------- B1b  (create_indicator on that SOURCE terminal; 6349C02 takes NO type argument, 47(d))
+  FACT  B1b create_indicator(Nodes[0].Terminals[4] = 'Def Err Handling') -> new [{'i': 114, 'class': 'ControlTerminal', 'uid': 23555, 'pos': (6290, 5207), 'owner': 'TopLevelDiagram'}] ; error VERBATIM ''
+  PASS  B1_b create_indicator returned a ControlTerminal and the census went 114 -> 115  new uid 23555, census 114 -> 115, error ''
+  FACT  ExecState [B1b after create_indicator] = 1
+  FACT  whole-VI Wire uid SET [B1b after create_indicator]: 1906 uids (error VERBATIM '')
+  FACT  B1b whole-VI Wire count 1905 -> 1905 -> 1906 ; the wire uid(s) create_indicator ADDED: [23576]  (48(b): on a SOURCE terminal the indicator is born WIRED to the carrier)
+  PASS  B1_b3 create_indicator added EXACTLY ONE whole-VI Wire object  added [23576] (count 1905 -> 1906)
+  FACT  B1b THE LABEL, VERBATIM: 'Automatic Error Handling'  (utf-8 hex '4175746f6d61746963204572726f722048616e646c696e67', source: panel_wiring diff (the machine's own Control.Label text))
+  FACT  B1b contains a NEWLINE: False ; is a DUPLICATE of an existing panel label: False ; equals dispatch 1's machine-read 'Automatic Error Handling': True
+  PASS  B1_b2 exactly ONE new front-panel row appeared and its label was READ off the machine  1 new panel row(s), 1 new fp_labels entr(y/ies), label 'Automatic Error Handling'
+
+--------- B1c  (DELETE THE CREATED WIRE BY UID - 48(b)+48(d); remove_bad_wires_scripted is REFUSED)
+  FACT  B1c remove_bad_wires_scripted - REFUSED by 48(d): measured over-removal on this VI (archive/2026-09-17-status-d1-route-b-2.md:45 'DELETES THE TUNNEL'), a rule-1a hazard. Not imported, not called; the GUI menu form (gscript.py:1629) not called.
+  FACT  B1c the created wire: delete_object(target, 'Wire', 1664, verify=True) on uid #23576 (of 1906 members) -> gone [23576] ; error VERBATIM ''
+  PASS  B1_c delete_object removed exactly 1 Wire  gone [23576] ; error ''
+  FACT  whole-VI Wire uid SET [B1c after the wire delete]: 1905 uids (error VERBATIM '')
+  FACT  ExecState [B1c after the wire delete] = 1
+  FACT  B1c the uid SET that disappeared: [23576] (the wire create_indicator added was 23576); PRE-EXISTING wire uids that disappeared: [] ; whole-VI Wire count 1906 -> 1905 ; ControlTerminal 115 -> 115
+  PASS  B1_c2 the set that disappeared IS EXACTLY the wire create_indicator added  [23576] vs [23576]
+  PASS  B1_c3 NO pre-existing wire uid disappeared (rule-1a narrowness)  []
+  PASS  B1_c4 the ControlTerminal census is unchanged across the wire delete  115 -> 115
+
+--------- B1d  (delete the carrier node, AFTER the wire)
+  FACT  B1d the carrier: delete_object(target, 'Property', 0, verify=True) on uid #23486 (of 107 members) -> gone [23486] ; error VERBATIM ''
+  PASS  B1_d delete_object removed exactly 1 Property (the carrier)  gone [23486] ; error ''
+  FACT  whole-VI Wire uid SET [B1d after the carrier delete]: 1905 uids (error VERBATIM '')
+  FACT  ExecState [B1d after the carrier delete] = 1
+  FACT  B1d whole-VI Wire count 1905 -> 1905 ; node_info(max_n=40) now [] ; wire uids lost versus the BASELINE over the whole of B1: []
+  FACT  B1 ExecState TIMELINE: 1 (baseline) -> 1 (after build_property) -> 1 (after create_indicator) -> 1 (after the WIRE delete) -> 1 (after the CARRIER delete)
+  FACT  class census [B1 after both deletes] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Invoke': 1, 'Property': 106, 'IndexArray': 47, 'LoopTunnel': 135, 'Wire': 1905, 'ControlTerminal': 115, 'Function': 183}
+  PASS  B1_PASS *** THE B1 PASS CRITERION: ExecState == 1 after both deletes ***  ExecState 1
+
+--------- B1 SAVE  (only at ExecState 1; allow_broken False, gui_save never called)
+  FACT  B1 g.save() returned 476241 ; exception/reason VERBATIM None
+  FACT  B1 the artefact after the save attempt: D1_s3a_boolcarrier_b1_20260921_010034.vi md5 7237b2c1e150ebeaf0f32940b07abcfb size 476241 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  B1_S g.save() returned a byte count and the version bytes read 26 00 80 00 (LV2026)  bytes 476241, version [{'offset': 36, 'bytes': '26 00 80 00'}], reason None
+  FACT  B1: preload references released; refs {'opened': 10, 'closed': 10, 'live': 0, 'cached_op_vis': 10}
+
+===================================================================
+=== S3a-B2   from the B1 FILE, cold, in a FRESH LabVIEW ; D1_s3a_boolcarrier_b2_20260921_010034.vi
+=== 47(e): THIS is the save point that must exist even if B3 fails
+===================================================================
+  FACT  B2 RESTART (so the B1 file loads COLD, from disk, with nothing preloaded): lv_restart rc=0 ['dialogs: ,1346,762| / ENABLED|44894180|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  B2 LabVIEW handles across the restart: 60278 -> 30699
+  FACT  B2 the working file at creation (byte copy of the B1 artefact; gscript has no save-as, :2062): HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3a_boolcarrier_b2_20260921_010034.vi | exists=1 | size=476241 | md5=7237b2c1e150ebeaf0f32940b07abcfb | sha256=ad56c0527c99cff49b671c6a495a0839ff667dafc28cc1392c2d24eddae855f2
+  FACT  B2 the working file is byte-identical to the B1 artefact: True
+  FACT  B2: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+  FACT  ExecState [B2 COLD reopen of the B1 file (fresh instance)] = 1
+  PASS  B2_C the COLD reopen of the B1 file reads ExecState 1  1
+  FACT  class census [B2 on the cold reopen] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Invoke': 1, 'Property': 106, 'IndexArray': 47, 'LoopTunnel': 135, 'Wire': 1905, 'ControlTerminal': 115, 'Function': 183}
+  FACT  B2 diag_index(#639) LIVE on this file = 46 ; error VERBATIM ''
+  FACT  B2 diag_index(#686) LIVE on this file = 19 ; error VERBATIM ''
+  OBSERVED uid 23555 -> owner 'TopLevelDiagram' uid 536 | self 'ControlTerminal'#23555 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  B2 the ControlTerminal's owner BEFORE the move: owner_of(#23555) = ('TopLevelDiagram', 536) [strict=True] error VERBATIM ''
+  FACT  B2 the indicator row re-read on this file: {'label': 'Automatic Error Handling', 'indicator': True, 'uid': 23535, 'is_source': False, 'wire': 0, 'term_err': 0, 'wire_err': 1055} (label VERBATIM 'Automatic Error Handling', utf-8 hex '4175746f6d61746963204572726f722048616e646c696e67')
+  FACT  ExecState [B2 BEFORE the move] = 1
+  FACT  B2 move_in(#23555 -> Diagram #639 at LIVE Traverse index 46, position (120, 4000)) returned 3447 ; error VERBATIM ''
+  PASS  B2_m move_in returned without raising  returned 3447, error ''
+  FACT  B2 move_in left 1 junk `Invoke`(s): [23490] (PREDICTED RISK (i))
+  FACT  B2 junk Invoke purge: delete_object(target, 'Invoke', 1, verify=True) on uid #23490 (of 2 members) -> gone [23490] ; error VERBATIM ''
+  OBSERVED uid 23555 -> owner 'Diagram' uid 639 | self 'ControlTerminal'#23555 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  B2 the ControlTerminal's owner AFTER the move: owner_of(#23555) = ('Diagram', 639) [strict=True] error VERBATIM ''
+  FACT  ExecState [B2 AFTER the move (and the junk purge)] = 1
+  FACT  B2 panel rows 115 -> 115 ; the target indicator's row now: {'label': 'Automatic Error Handling', 'indicator': True, 'uid': 23535, 'is_source': False, 'wire': 0, 'term_err': 0, 'wire_err': 1055}
+  PASS  B2_c the ControlTerminal census is unchanged across the move  115 -> 115
+  PASS  B2_PASS *** THE B2 PASS CRITERION: owner_of == ('Diagram',639) AND ExecState == 1 ***  owner ('TopLevelDiagram', 536) -> ('Diagram', 639), ExecState 1 -> 1
+  FACT  class census [B2 after the move] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Invoke': 1, 'Property': 106, 'IndexArray': 47, 'LoopTunnel': 135, 'Wire': 1905, 'ControlTerminal': 115, 'Function': 183}
+
+--------- B2 SAVE  (47(e)'s save point - BEFORE any wiring)
+  FACT  B2 g.save() returned 476245 ; exception/reason VERBATIM None
+  FACT  B2 the artefact after the save attempt: D1_s3a_boolcarrier_b2_20260921_010034.vi md5 148050141085bc00ffc1e94e9977ea24 size 476245 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  B2_S g.save() returned a byte count and the version bytes read 26 00 80 00 (LV2026)  bytes 476245, version [{'offset': 36, 'bytes': '26 00 80 00'}], reason None
+  FACT  B2: preload references released; refs {'opened': 18, 'closed': 18, 'live': 0, 'cached_op_vis': 6}
+
+===================================================================
+=== S3a-B3   from the B2 FILE, cold, in a FRESH LabVIEW ; D1_s3a_boolcarrier_b3_20260921_010034.vi
+===================================================================
+  FACT  B3 RESTART (so the B2 file loads COLD, from disk, with nothing preloaded): lv_restart rc=0 ['dialogs: 1346,762| / ENABLED|117245588|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  B3 LabVIEW handles across the restart: 47917 -> 30689
+  FACT  B3 the working file at creation (byte copy of the B2 artefact): HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3a_boolcarrier_b3_20260921_010034.vi | exists=1 | size=476245 | md5=148050141085bc00ffc1e94e9977ea24 | sha256=9cee63d963dbbf72a4dd35cde8c2aa29cf80c3622ededed7fdfc479a0076499d
+  FACT  B3 the working file is byte-identical to the B2 artefact: True
+  FACT  B3: ORIGINAL resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+  FACT  ExecState [B3 COLD reopen of the B2 file (fresh instance)] = 1
+  PASS  B3_C the COLD reopen of the B2 file reads ExecState 1  1
+  OBSERVED uid 23555 -> owner 'Diagram' uid 639 | self 'ControlTerminal'#23555 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  B3 the moved ControlTerminal's owner on the COLD open: owner_of(#23555) = ('Diagram', 639) [strict=True] error VERBATIM ''
+  FACT  B3 diag_index(#639) LIVE on this file = 46 ; error VERBATIM ''
+  FACT  B3 diag_index(#686) LIVE on this file = 19 ; error VERBATIM ''
+  FACT  B3 LIVE: diag_index(#639) = 46, #10686 class membership [{'class': 'Function', 'index': 102, 'members': 183}], addressing it as {'class': 'Function', 'index': 102, 'members': 183}
+  FACT  B3 BEFORE #10686 (the BOOLEAN sink node): node #10686 at Nodes[25] (pin 25 survived its uid echo), 3 terminals, 3 WIRED
+  FACT  B3 #10686 terminal 0 re-read on this file: {'i': 0, 'name': 'x .and. y?', 'is_source': True, 'wire': 10799} (the 47(d) wire PIN is 10799)
+  FACT  B3 BEFORE #637 (loop 1.1, the tunnel/border witness): node #637 at Nodes[4] (pin 4 survived its uid echo), 59 terminals, 48 WIRED
+  FACT  B3 the indicator row re-read on this file: {'label': 'Automatic Error Handling', 'indicator': True, 'uid': 23535, 'is_source': False, 'wire': 0, 'term_err': 0, 'wire_err': 1055} (label VERBATIM 'Automatic Error Handling', utf-8 hex '4175746f6d61746963204572726f722048616e646c696e67')
+  FACT  ExecState [B3 BEFORE wire_indicators] = 1
+  FACT  B3 wire_indicators(Function[102], ['x .and. y?'] -> ['Automatic Error Handling'], diagram_index=46) error VERBATIM ''
+  PASS  B3_w wire_indicators returned an EMPTY error column  '' (PREDICTED RISK (iii): a raise is a LEGITIMATE reading)
+  FACT  B3 the indicator's wire uid 0 -> 10799 ; whole-VI Wire count 1905 -> 1905 (delta 0; a BRANCH adds NO Wire object, tools/gscript.py:1771-1772). The sink terminal's own wire reads 10799 (47(d) pin 10799)
+  PASS  B3_w2 the new indicator's wire uid changed from 0  0 -> 10799
+  FACT  ExecState [B3 AFTER wire_indicators] = 1
+  FACT  B3 AFTER #10686 (the BOOLEAN sink node): node #10686 at Nodes[25] (pin 25 survived its uid echo), 3 terminals, 3 WIRED
+  FACT  B3 AFTER #637 (loop 1.1, the tunnel/border witness): node #637 at Nodes[4] (pin 4 survived its uid echo), 59 terminals, 48 WIRED
+  PASS  B3_w3 #10686's wired-terminal count is unchanged across the wiring (37(e))  3 -> 3 wired of 3 -> 3 terminals
+  PASS  B3_w4 #637's terminal count unchanged - NO tunnel or border object appeared (37(e))  59 -> 59 terminals, 48 -> 48 wired
+  FACT  B3_w4 EXPLICIT (37(e) grain): #637 terminals 59 -> 59, wired 48 -> 48; a tunnel or border object would show as a terminal-count INCREASE. Increase observed: 0
+  FACT  class census [B3 after the wiring attempt] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Invoke': 1, 'Property': 106, 'IndexArray': 47, 'LoopTunnel': 135, 'Wire': 1905, 'ControlTerminal': 115, 'Function': 183}
+
+--------- B3 SAVE  (IFF ExecState == 1; the B2 artefact stands either way)
+  FACT  ExecState [B3 immediately before the save attempt] = 1
+  FACT  B3 g.save() returned 476169 ; exception/reason VERBATIM None
+  FACT  B3 the artefact after the save attempt: D1_s3a_boolcarrier_b3_20260921_010034.vi md5 dc14dd000dfe90c0426b30fa6b69cbc2 size 476169 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  B3_S ExecState == 1 at the save point and g.save() returned a byte count  ExecState 1, bytes 476169, version [{'offset': 36, 'bytes': '26 00 80 00'}], reason None
+
+--------- B3 ORDERED SECOND PASS (42(b)): `Is Broken?` AFTER the save - THE ANSWER
+  FACT  B3 the ordered pass will re-connect: source {'uid': 10686, 'node_index': 25, 'index_resolution': 'pin 25 survived its uid echo', 'term_index': 0, 'term_name': 'x .and. y?', 'wire': 10799} -> sink {'node_uid': 10407, 'node_index': 24, 'term_index': 0, 'term_name': '', 'wire': 10799}
+      [op stdout]       op readback {'UID': 10407, 'Name': '', 'UID 2': 10799, 'Is Broken?': False}
+  FACT  B3 ORDERED `Is Broken?` = False on wire uid 10799 (op error column '', wire_delta 0 - expected 0). EITHER value is a LEGITIMATE reading: it IS the run's answer.
+  PASS  B3_PASS *** THE B3 PASS CRITERION: the ORDERED `Is Broken?` reads False ***  Is Broken? = False on wire 10799 ; wire_delta 0 ; op error ''
+  FACT  ExecState [B3 after the Is Broken? read (SUSPECT, docs/NAMES.md:912-918; the save already happened)] = 0
+  FACT  B3: preload references released; refs {'opened': 30, 'closed': 30, 'live': 0, 'cached_op_vis': 7}
+
+--- Z: the closing facts
+  FACT  refs {'opened': 30, 'closed': 30, 'live': 0, 'cached_op_vis': 7}
+  FACT  LabVIEW handles AFTER everything: 63523
+  FACT  the stop-recorded S3a recipe at the END: exists=False (it must still be False)
+  PASS  Z3 no recipe was created under tools/recipes/ for this stage  False
+  FACT  Z1 ORIGINAL after everything: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  FACT  Z1b D1_s1_copy.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  FACT  Z1c D1_s2_loops.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  Z1 ORIGINAL / D1_s1_copy.vi / D1_s2_loops.vi md5 all unchanged  2a78e17c449cacdaf5da389818526859 / 3e3d23cefd3a334001aa9d6156bf1aee / 6ff19497f2309e007a214660bb64b911
+  PASS  Z2 refs opened == closed, 0 live  {'opened': 30, 'closed': 30, 'live': 0, 'cached_op_vis': 7}
+
+--- THE ANSWER TABLE (readings, not a recommendation)
+  FACT  B1  ExecState after both deletes = 1 ; created wire 23576 deleted by uid -> gone [23576] ; saved 476241 bytes -> '7237b2c1e150ebeaf0f32940b07abcfb'
+  FACT  B2  owner_of/ExecState = {'owner_of': ('Diagram', 639), 'exec_state': 1} ; saved 476245 bytes -> '148050141085bc00ffc1e94e9977ea24'
+  FACT  B3  Is Broken? = False ; indicator wire 0 -> 10799 ; saved 476169 bytes -> 'dc14dd000dfe90c0426b30fa6b69cbc2'
+  FACT  ARTEFACTS ON DISK: [{'step': 'B1', 'path': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_boolcarrier_b1_20260921_010034.vi', 'md5': '7237b2c1e150ebeaf0f32940b07abcfb', 'size': 476241, 'version': [{'offset': 36, 'bytes': '26 00 80 00'}]}, {'step': 'B2', 'path': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_boolcarrier_b2_20260921_010034.vi', 'md5': '148050141085bc00ffc1e94e9977ea24', 'size': 476245, 'version': [{'offset': 36, 'bytes': '26 00 80 00'}]}, {'step': 'B3', 'path': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_boolcarrier_b3_20260921_010034.vi', 'md5': 'dc14dd000dfe90c0426b30fa6b69cbc2', 'size': 476169, 'version': [{'offset': 36, 'bytes': '26 00 80 00'}]}]
+
+=== GATES 36 pass / 0 fail
+=== readings -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_s58_boolwire.json
+BGRUN END rc=0 after 306s

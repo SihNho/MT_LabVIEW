@@ -1,0 +1,1646 @@
+{
+ "script": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\diag_s58_boolcarrier.py",
+ "stamp": "20260921_001448",
+ "question": "cycle 58 material #1 (47(i) route 1): which EXISTING gscript builder places a node at the TOP-LEVEL diagram whose OUTPUT terminal is BOOLEAN, such that an indicator created from it, moved into Diagram #639 and wired to #10686 t0 'x .and. y?', reads Is Broken? = False?",
+ "chooses_no_route": true,
+ "recommends_no_route": true,
+ "interprets_nothing": true,
+ "no_vi_was_run": true,
+ "no_new_op": true,
+ "no_new_device": true,
+ "no_gui_action": true,
+ "no_recipe": true,
+ "edits_no_plan_document": true,
+ "edits_no_date": true,
+ "cycle_guard_off_never_set": true,
+ "rig_state": "\uc870\ub9bd / ASSEMBLED (motors + ASI forbidden; camera not needed and not touched)",
+ "recipe_file_reported_not_touched": {
+  "path": "tools/recipes/stage_d1_s3a_focus_ind.py",
+  "exists_at_start": false,
+  "exists_at_end": false,
+  "mtime": null,
+  "note": "stop-recorded by archive/peer/2026-09-20-priorart-d1-s3a-focus-ind.md. REPORTED ONLY - not written, not launched, and phase C only DRY-RUNS the gate against it."
+ },
+ "phaseA_census": {
+  "rule": "every node-placing verb in tools/gscript.py that accepts a `diagram_index`, read off the file; ranked by whether it has an output terminal that is Boolean BY CONSTRUCTION. 47(j): no reader in this fleet returns a terminal's data type, so this ranking PREDICTS and phase B MEASURES.",
+  "verbs": [
+   {
+    "verb": "build_property",
+    "site": "tools/gscript.py:2194",
+    "signature": "build_property(target, cls, props, location, diagram_index=0)",
+    "places": "Property Node",
+    "boolean_output_by_construction": "YES when the property READ is Boolean-valued - a read item's terminal is a SOURCE of that property's type",
+    "rank": 1
+   },
+   {
+    "verb": "build_invoke",
+    "site": "tools/gscript.py:2159",
+    "signature": "build_invoke(target, cls, method_id, location, diagram_index=0)",
+    "places": "Invoke Node",
+    "boolean_output_by_construction": "NO Boolean-returning method is nameable from docs/vi-server-ids.json's `methods` block (all void or object-returning)",
+    "rank": 4
+   },
+   {
+    "verb": "drop_subvi",
+    "site": "tools/gscript.py:1225",
+    "signature": "drop_subvi(target, subvi_path, diagram_index, location)",
+    "places": "a subVI node",
+    "boolean_output_by_construction": "ONLY if a donor VI with a Boolean output is chosen and its connector pane read first; it also adds a subVI DEPENDENCY to the deliverable (29(g) makes the SubVI table an acceptance reference). NOT A CANDIDATE this run.",
+    "rank": 5
+   },
+   {
+    "verb": "queue_node",
+    "site": "tools/gscript.py:1122",
+    "signature": "queue_node(kind, target, src_cls, src_index, src_name, diagram_index, location, ...)",
+    "places": "queue primitives",
+    "boolean_output_by_construction": "NO - outputs are a queue REFNUM and an ERROR CLUSTER",
+    "rank": 6
+   },
+   {
+    "verb": "loop_in",
+    "site": "tools/gscript.py:1155",
+    "signature": "loop_in(kind, target, diagram_index, location, ...)",
+    "places": "a While/For loop",
+    "boolean_output_by_construction": "NO - the conditional terminal IS Boolean but it is a SINK, and create_indicator needs a SOURCE",
+    "rank": 7
+   },
+   {
+    "verb": "exit_while",
+    "site": "tools/gscript.py:1083",
+    "signature": "exit_while(target, stop_control, diagram_index, node_index=0, output_names=(), ...)",
+    "places": "loop-exit scaffolding",
+    "boolean_output_by_construction": "NO (same reason)",
+    "rank": 8
+   },
+   {
+    "verb": "exit_loop",
+    "site": "tools/gscript.py:1721",
+    "signature": "exit_loop(target, node_index, output_names, diagram_index, node_class='SubVI')",
+    "places": "loop-exit scaffolding",
+    "boolean_output_by_construction": "NO (same reason)",
+    "rank": 9
+   }
+  ],
+  "top_level_only_verbs_no_diagram_index": [
+   "build_index_array :2322 (the NUMERIC carrier used so far)",
+   "build_case :2824",
+   "build_clfn :2699",
+   "while_loop :1191",
+   "for_loop :1210",
+   "loop_kernel :1804",
+   "build_kernel :2082"
+  ],
+  "candidates": [
+   {
+    "cid": "C1",
+    "verb": "build_property",
+    "cls": "VI Server:VI",
+    "props": [
+     [
+      "291",
+      false
+     ],
+     [
+      "292",
+      false
+     ]
+    ],
+    "node_class": "Property",
+    "what": "VI.Metrics:Front Panel Loaded (291) + Block Diagram Loaded (292), read-only Boolean",
+    "predicted_bool_term_name": "PanelLoaded",
+    "citation": "docs/vi-server-ids.json `_metrics_291_292_VERIFIED_2026-09-16` (VERIFIED ON THIS MACHINE); tools/bench/diag_load_vs_editmode.log:11 (the terminal table read off the machine) and :13-14 (create_indicator succeeded on BOTH Boolean terminals)"
+   },
+   {
+    "cid": "C2",
+    "verb": "build_property",
+    "cls": "VI Server:VI",
+    "props": [
+     [
+      "242",
+      false
+     ]
+    ],
+    "node_class": "Property",
+    "what": "VI.Automatic Error Handling (242), Boolean R/W",
+    "predicted_bool_term_name": null,
+    "citation": "docs/vi-server-ids.json \"VI.Automatic Error Handling\": \"242\"; the fleet already WRITES it through OpSetAutoErr_v0 (tools/gscript.py:2617-2630), so the id resolves for this class. Its READ terminal's short name is on no file here and is read off the machine."
+   },
+   {
+    "cid": "C3",
+    "verb": "build_property",
+    "cls": "VI Server:Wire",
+    "props": [
+     [
+      "6371004",
+      false
+     ]
+    ],
+    "node_class": "Property",
+    "what": "Wire.Is Broken? (6371004), \"VI Scripting, read-only bool\"",
+    "predicted_bool_term_name": null,
+    "citation": "docs/vi-server-ids.json block \"Wire.Is Broken? (UNVERIFIED)\" (class \"VI Server:Wire\"). The PROPERTY is exercised daily inside OpConnectNested_v0/v1 and OpConnectFromWire_v0 (docs/d1-route-b-plan.md:342-345); the CLASS STRING has never been passed to build_property."
+   }
+  ],
+  "boolean_terminal_selection_rule": "of the new node's terminals READ OFF THE MACHINE, take the SOURCE terminals, drop any named 'reference out' or 'error out', take the FIRST that remains; for C1 additionally assert its name equals the one the 2026-09-16 log recorded. NO TYPE IS ASSUMED.",
+  "prior_art_grep_note": "47(g): the Boolean property pair was FOUND already on disk (docs/vi-server-ids.json + tools/bench/diag_load_vs_editmode.log) rather than commissioned as a new read."
+ },
+ "citations": {
+  "create_route": "Pre-decided 46(a) / 47(a)",
+  "carrier_type_is_inherited": "Pre-decided 47(d) - Terminal.Create Indicator 6349C02 takes no type argument",
+  "no_type_reader_exists": "Pre-decided 47(j)",
+  "wire_indicators_scopes_the_indicator": "Pre-decided 47(b); tools/gscript.py:1787-1789",
+  "save_before_wiring": "Pre-decided 47(e)",
+  "move_in_owner_of_diag_index": "tools/recipes/build_d1_v0.py:318,:338,:357",
+  "junk_invoke_purge": "tools/recipes/build_d1_routeb_v0.py:1279-1287",
+  "is_broken": "docs/NAMES.md:902-911",
+  "ordered_second_pass": "Pre-decided 42(b)",
+  "index_shift_after_mutation": "34(h)",
+  "branch_adds_no_wire_object": "tools/gscript.py:1771-1772",
+  "wire_indicators_raises_on_break": "tools/gscript.py:1794-1797",
+  "build_property_creator_error": "tools/gscript.py:2221-2223",
+  "no_save_as_verb": "tools/gscript.py:2062 (save persists to the target's OWN path)",
+  "gate_must_make_a_call": "Pre-decided 46(g)",
+  "guard_cycle_stdin_contract": "tools/hooks/guard_cycle.py:534-541"
+ },
+ "original": {
+  "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\Min_Track N beads V6_ParallelLoop.vi",
+  "md5_pin": "2a78e17c449cacdaf5da389818526859"
+ },
+ "s1_artefact": {
+  "path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi",
+  "md5_pin": "3e3d23cefd3a334001aa9d6156bf1aee"
+ },
+ "s2_artefact": {
+  "path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s2_loops.vi",
+  "md5_pin": "6ff19497f2309e007a214660bb64b911"
+ },
+ "handles": {
+  "before": 34198,
+  "after_restart": 30683,
+  "after": 60289
+ },
+ "hash_probe": [
+  {
+   "tag": "T1 ORIGINAL (read-only probe)",
+   "line": "HASH G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb"
+  },
+  {
+   "tag": "T1b D1_s1_copy.vi",
+   "line": "HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7"
+  },
+  {
+   "tag": "T2 the S2 artefact",
+   "line": "HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5"
+  },
+  {
+   "tag": "C1 T3 the scratch at creation (copied from D1_s2_loops.vi)",
+   "line": "HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C1_placed_20260921_001448.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5"
+  },
+  {
+   "tag": "C2 T3 the scratch at creation (copied from D1_s2_loops.vi)",
+   "line": "HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C2_placed_20260921_001448.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5"
+  },
+  {
+   "tag": "C3 T3 the scratch at creation (copied from D1_s2_loops.vi)",
+   "line": "HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C3_placed_20260921_001448.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5"
+  },
+  {
+   "tag": "Z1 ORIGINAL after everything",
+   "line": "HASH G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb"
+  },
+  {
+   "tag": "Z1b D1_s1_copy.vi after everything",
+   "line": "HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7"
+  },
+  {
+   "tag": "Z1c D1_s2_loops.vi after everything",
+   "line": "HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5"
+  }
+ ],
+ "candidates": {
+  "C1": {
+   "cid": "C1",
+   "spec": {
+    "cid": "C1",
+    "verb": "build_property",
+    "cls": "VI Server:VI",
+    "props": [
+     [
+      "291",
+      false
+     ],
+     [
+      "292",
+      false
+     ]
+    ],
+    "node_class": "Property",
+    "what": "VI.Metrics:Front Panel Loaded (291) + Block Diagram Loaded (292), read-only Boolean",
+    "predicted_bool_term_name": "PanelLoaded",
+    "citation": "docs/vi-server-ids.json `_metrics_291_292_VERIFIED_2026-09-16` (VERIFIED ON THIS MACHINE); tools/bench/diag_load_vs_editmode.log:11 (the terminal table read off the machine) and :13-14 (create_indicator succeeded on BOTH Boolean terminals)"
+   },
+   "artefact_placed": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C1_placed_20260921_001448.vi",
+   "artefact_wired": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C1_wired_20260921_001448.vi",
+   "scratch_at_creation": {
+    "exists": "1",
+    "size": "475707",
+    "md5": "6ff19497f2309e007a214660bb64b911",
+    "sha256": "d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5"
+   },
+   "censuses": {
+    "A before everything": {
+     "Diagram": 173,
+     "WhileLoop": 6,
+     "SubVI": 97,
+     "Invoke": 1,
+     "Property": 106,
+     "IndexArray": 47,
+     "LoopTunnel": 135,
+     "Wire": 1905,
+     "ControlTerminal": 114,
+     "Function": 183
+    }
+   },
+   "exec_state_timeline": [
+    {
+     "tag": "A BEFORE",
+     "value": 1
+    },
+    {
+     "tag": "C1 B3 after delete_object",
+     "value": 0
+    },
+    {
+     "tag": "C1 B4 BEFORE the move",
+     "value": 0
+    },
+    {
+     "tag": "C1 B4 AFTER the move (and the junk purge)",
+     "value": 0
+    },
+    {
+     "tag": "C1 B5 immediately before the save attempt",
+     "value": 0
+    }
+   ],
+   "A": {
+    "diag_index_639": 46,
+    "diag_index_639_error_verbatim": "",
+    "diag_index_536": 0,
+    "diag_index_536_error_verbatim": "",
+    "diag_index_686": 19,
+    "diag_index_686_error_verbatim": "",
+    "owner_of_10686": {
+     "tag": "C1 A3 owner of the BOOLEAN sink #10686",
+     "uid": 10686,
+     "strict": true,
+     "owner_class": "Diagram",
+     "owner_uid": 639,
+     "error_verbatim": ""
+    },
+    "class_membership_10686": [
+     {
+      "class": "Function",
+      "index": 102,
+      "members": 183
+     }
+    ],
+    "class_scan_errors_verbatim": {},
+    "bool_source_terminals": {
+     "tag": "C1 A4 the BOOLEAN sink #10686",
+     "diagram_index": 46,
+     "uid_expect": 10686,
+     "node_index": 25,
+     "index_resolution": "pin 25 survived its uid echo",
+     "node_uid_readback": 10686,
+     "n_terms": 3,
+     "n_wired": 3,
+     "terms": [
+      {
+       "i": 0,
+       "name": "x .and. y?",
+       "is_source": true,
+       "wire": 10799
+      },
+      {
+       "i": 1,
+       "name": "y",
+       "is_source": false,
+       "wire": 9105
+      },
+      {
+       "i": 2,
+       "name": "x",
+       "is_source": false,
+       "wire": 3050
+      }
+     ]
+    },
+    "bool_terminal": {
+     "i": 0,
+     "name": "x .and. y?",
+     "is_source": true,
+     "wire": 10799
+    }
+   },
+   "owner_reads": [
+    {
+     "tag": "C1 A3 owner of the BOOLEAN sink #10686",
+     "uid": 10686,
+     "strict": true,
+     "owner_class": "Diagram",
+     "owner_uid": 639,
+     "error_verbatim": ""
+    },
+    {
+     "tag": "C1 B1 the new carrier's owner",
+     "uid": 23486,
+     "strict": true,
+     "owner_class": "TopLevelDiagram",
+     "owner_uid": 536,
+     "error_verbatim": ""
+    },
+    {
+     "tag": "C1 B4 the ControlTerminal's owner BEFORE the move",
+     "uid": 23564,
+     "strict": true,
+     "owner_class": "TopLevelDiagram",
+     "owner_uid": 536,
+     "error_verbatim": ""
+    },
+    {
+     "tag": "C1 B4 the ControlTerminal's owner AFTER the move",
+     "uid": 23564,
+     "strict": true,
+     "owner_class": "Diagram",
+     "owner_uid": 639,
+     "error_verbatim": ""
+    }
+   ],
+   "wired_counts": [
+    {
+     "tag": "C1 A4 the BOOLEAN sink #10686",
+     "diagram_index": 46,
+     "uid_expect": 10686,
+     "node_index": 25,
+     "index_resolution": "pin 25 survived its uid echo",
+     "node_uid_readback": 10686,
+     "n_terms": 3,
+     "n_wired": 3,
+     "terms": [
+      {
+       "i": 0,
+       "name": "x .and. y?",
+       "is_source": true,
+       "wire": 10799
+      },
+      {
+       "i": 1,
+       "name": "y",
+       "is_source": false,
+       "wire": 9105
+      },
+      {
+       "i": 2,
+       "name": "x",
+       "is_source": false,
+       "wire": 3050
+      }
+     ]
+    }
+   ],
+   "B1": {
+    "panel_rows_before": 114,
+    "fp_labels_before": 114,
+    "control_terminal_before": 114,
+    "node_info_before_error_verbatim": "",
+    "node_info_before": [],
+    "carrier_class_uids_before": 106,
+    "call": "build_property(target, 'VI Server:VI', [('291', False), ('292', False)], (6200, 5200), diagram_index=0)",
+    "new": [
+     {
+      "i": 0,
+      "class": "Property",
+      "uid": 23486,
+      "pos": [
+       6185,
+       5200
+      ],
+      "owner": "TopLevelDiagram"
+     }
+    ],
+    "error_verbatim": "",
+    "carrier_owner": {
+     "tag": "C1 B1 the new carrier's owner",
+     "uid": 23486,
+     "strict": true,
+     "owner_class": "TopLevelDiagram",
+     "owner_uid": 536,
+     "error_verbatim": ""
+    },
+    "node_info_after_error_verbatim": "",
+    "node_info_after": [
+     [
+      0,
+      "Property Node",
+      "Property Node"
+     ]
+    ],
+    "node_index": 0,
+    "node_uid_echo": 23486,
+    "terminal_table": [
+     {
+      "i": 0,
+      "name": "reference",
+      "is_source": false,
+      "wire": 0
+     },
+     {
+      "i": 1,
+      "name": "reference out",
+      "is_source": true,
+      "wire": 0
+     },
+     {
+      "i": 2,
+      "name": "error in (no error)",
+      "is_source": false,
+      "wire": 0
+     },
+     {
+      "i": 3,
+      "name": "error out",
+      "is_source": true,
+      "wire": 0
+     },
+     {
+      "i": 4,
+      "name": "PanelLoaded",
+      "is_source": true,
+      "wire": 0
+     },
+     {
+      "i": 5,
+      "name": "DiagramLoaded",
+      "is_source": true,
+      "wire": 0
+     }
+    ],
+    "terminal_table_error_verbatim": "",
+    "chosen_terminal": {
+     "i": 4,
+     "name": "PanelLoaded",
+     "is_source": true,
+     "wire": 0
+    },
+    "chosen_rule": "first SOURCE terminal that is not ['reference out', 'error out']; the candidates were ['PanelLoaded', 'DiagramLoaded']; the 2026-09-16 log predicted 'PanelLoaded' and the machine read 'PanelLoaded' -> MATCH"
+   },
+   "B2": {
+    "node_index": 0,
+    "terminal_index": 4,
+    "terminal_name": "PanelLoaded",
+    "new": [
+     {
+      "i": 114,
+      "class": "ControlTerminal",
+      "uid": 23564,
+      "pos": [
+       6287,
+       5207
+      ],
+      "owner": "TopLevelDiagram"
+     }
+    ],
+    "new_ct_uid": 23564,
+    "error_verbatim": "",
+    "control_terminal_before": 114,
+    "control_terminal_after": 115,
+    "new_panel_rows": [
+     {
+      "label": "Metrics:Front Panel Loaded",
+      "indicator": true,
+      "uid": 23535,
+      "is_source": false,
+      "wire": 23586,
+      "term_err": 0,
+      "wire_err": 0
+     }
+    ],
+    "new_fp_labels": [
+     [
+      114,
+      "Metrics:Front Panel Loaded",
+      true
+     ]
+    ],
+    "label_repr": "'Metrics:Front Panel Loaded'",
+    "label_utf8_hex": "4d6574726963733a46726f6e742050616e656c204c6f61646564",
+    "label_source": "panel_wiring diff (the machine's own Control.Label text)",
+    "label_contains_newline": false,
+    "label_is_duplicate_of_an_existing_panel_label": false
+   },
+   "B3": {
+    "carrier_traverse_index_at_delete": 0,
+    "gone": [
+     23486
+    ],
+    "error_verbatim": "",
+    "exec_state_after_delete": 0
+   },
+   "B4": {
+    "dest_diagram_uid": 639,
+    "dest_diagram_index_live": 46,
+    "position": [
+     120,
+     4000
+    ],
+    "owner_before": {
+     "tag": "C1 B4 the ControlTerminal's owner BEFORE the move",
+     "uid": 23564,
+     "strict": true,
+     "owner_class": "TopLevelDiagram",
+     "owner_uid": 536,
+     "error_verbatim": ""
+    },
+    "move_in": {
+     "returned": 3447,
+     "error_verbatim": ""
+    },
+    "junk_invoke_uids_added_by_move_in": [
+     23486
+    ],
+    "junk_purge": [
+     {
+      "uid": 23486,
+      "gone": [
+       23486
+      ],
+      "error_verbatim": ""
+     }
+    ],
+    "owner_after": {
+     "tag": "C1 B4 the ControlTerminal's owner AFTER the move",
+     "uid": 23564,
+     "strict": true,
+     "owner_class": "Diagram",
+     "owner_uid": 639,
+     "error_verbatim": ""
+    },
+    "control_terminal_census": {
+     "before": 115,
+     "after": 115
+    },
+    "panel_row_count": {
+     "before": 115,
+     "after": 115
+    },
+    "exec_state": {
+     "before": 0,
+     "after": 0
+    }
+   },
+   "B5": {
+    "exec_state_before_save": 0,
+    "returned_bytes": null,
+    "exception_or_reason_verbatim": "NOT ATTEMPTED: ExecState is 0 and only ExecState 1 may be saved. Under 47(e) that stops this candidate here, and it is a LEGITIMATE outcome, not a failure to work around.",
+    "allow_broken": false,
+    "gui_save": false,
+    "file_after": {
+     "path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C1_placed_20260921_001448.vi",
+     "exists": true,
+     "md5": "6ff19497f2309e007a214660bb64b911",
+     "size": 475707,
+     "version_candidates": [
+      {
+       "offset": 36,
+       "bytes": "26 00 80 00"
+      }
+     ]
+    }
+   },
+   "stopped_at": "C1: ExecState was 0 at the save point, so nothing was saved and this candidate stops here exactly as 47(e) orders."
+  },
+  "C2": {
+   "cid": "C2",
+   "spec": {
+    "cid": "C2",
+    "verb": "build_property",
+    "cls": "VI Server:VI",
+    "props": [
+     [
+      "242",
+      false
+     ]
+    ],
+    "node_class": "Property",
+    "what": "VI.Automatic Error Handling (242), Boolean R/W",
+    "predicted_bool_term_name": null,
+    "citation": "docs/vi-server-ids.json \"VI.Automatic Error Handling\": \"242\"; the fleet already WRITES it through OpSetAutoErr_v0 (tools/gscript.py:2617-2630), so the id resolves for this class. Its READ terminal's short name is on no file here and is read off the machine."
+   },
+   "artefact_placed": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C2_placed_20260921_001448.vi",
+   "artefact_wired": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C2_wired_20260921_001448.vi",
+   "scratch_at_creation": {
+    "exists": "1",
+    "size": "475707",
+    "md5": "6ff19497f2309e007a214660bb64b911",
+    "sha256": "d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5"
+   },
+   "censuses": {
+    "A before everything": {
+     "Diagram": 173,
+     "WhileLoop": 6,
+     "SubVI": 97,
+     "Invoke": 1,
+     "Property": 106,
+     "IndexArray": 47,
+     "LoopTunnel": 135,
+     "Wire": 1905,
+     "ControlTerminal": 114,
+     "Function": 183
+    }
+   },
+   "exec_state_timeline": [
+    {
+     "tag": "A BEFORE",
+     "value": 1
+    },
+    {
+     "tag": "C2 B3 after delete_object",
+     "value": 0
+    },
+    {
+     "tag": "C2 B4 BEFORE the move",
+     "value": 0
+    },
+    {
+     "tag": "C2 B4 AFTER the move (and the junk purge)",
+     "value": 0
+    },
+    {
+     "tag": "C2 B5 immediately before the save attempt",
+     "value": 0
+    }
+   ],
+   "A": {
+    "diag_index_639": 46,
+    "diag_index_639_error_verbatim": "",
+    "diag_index_536": 0,
+    "diag_index_536_error_verbatim": "",
+    "diag_index_686": 19,
+    "diag_index_686_error_verbatim": "",
+    "owner_of_10686": {
+     "tag": "C2 A3 owner of the BOOLEAN sink #10686",
+     "uid": 10686,
+     "strict": true,
+     "owner_class": "Diagram",
+     "owner_uid": 639,
+     "error_verbatim": ""
+    },
+    "class_membership_10686": [
+     {
+      "class": "Function",
+      "index": 102,
+      "members": 183
+     }
+    ],
+    "class_scan_errors_verbatim": {},
+    "bool_source_terminals": {
+     "tag": "C2 A4 the BOOLEAN sink #10686",
+     "diagram_index": 46,
+     "uid_expect": 10686,
+     "node_index": 25,
+     "index_resolution": "pin 25 survived its uid echo",
+     "node_uid_readback": 10686,
+     "n_terms": 3,
+     "n_wired": 3,
+     "terms": [
+      {
+       "i": 0,
+       "name": "x .and. y?",
+       "is_source": true,
+       "wire": 10799
+      },
+      {
+       "i": 1,
+       "name": "y",
+       "is_source": false,
+       "wire": 9105
+      },
+      {
+       "i": 2,
+       "name": "x",
+       "is_source": false,
+       "wire": 3050
+      }
+     ]
+    },
+    "bool_terminal": {
+     "i": 0,
+     "name": "x .and. y?",
+     "is_source": true,
+     "wire": 10799
+    }
+   },
+   "owner_reads": [
+    {
+     "tag": "C2 A3 owner of the BOOLEAN sink #10686",
+     "uid": 10686,
+     "strict": true,
+     "owner_class": "Diagram",
+     "owner_uid": 639,
+     "error_verbatim": ""
+    },
+    {
+     "tag": "C2 B1 the new carrier's owner",
+     "uid": 23486,
+     "strict": true,
+     "owner_class": "TopLevelDiagram",
+     "owner_uid": 536,
+     "error_verbatim": ""
+    },
+    {
+     "tag": "C2 B4 the ControlTerminal's owner BEFORE the move",
+     "uid": 23555,
+     "strict": true,
+     "owner_class": "TopLevelDiagram",
+     "owner_uid": 536,
+     "error_verbatim": ""
+    },
+    {
+     "tag": "C2 B4 the ControlTerminal's owner AFTER the move",
+     "uid": 23555,
+     "strict": true,
+     "owner_class": "Diagram",
+     "owner_uid": 639,
+     "error_verbatim": ""
+    }
+   ],
+   "wired_counts": [
+    {
+     "tag": "C2 A4 the BOOLEAN sink #10686",
+     "diagram_index": 46,
+     "uid_expect": 10686,
+     "node_index": 25,
+     "index_resolution": "pin 25 survived its uid echo",
+     "node_uid_readback": 10686,
+     "n_terms": 3,
+     "n_wired": 3,
+     "terms": [
+      {
+       "i": 0,
+       "name": "x .and. y?",
+       "is_source": true,
+       "wire": 10799
+      },
+      {
+       "i": 1,
+       "name": "y",
+       "is_source": false,
+       "wire": 9105
+      },
+      {
+       "i": 2,
+       "name": "x",
+       "is_source": false,
+       "wire": 3050
+      }
+     ]
+    }
+   ],
+   "B1": {
+    "panel_rows_before": 114,
+    "fp_labels_before": 114,
+    "control_terminal_before": 114,
+    "node_info_before_error_verbatim": "",
+    "node_info_before": [],
+    "carrier_class_uids_before": 106,
+    "call": "build_property(target, 'VI Server:VI', [('242', False)], (6200, 5200), diagram_index=0)",
+    "new": [
+     {
+      "i": 0,
+      "class": "Property",
+      "uid": 23486,
+      "pos": [
+       6182,
+       5200
+      ],
+      "owner": "TopLevelDiagram"
+     }
+    ],
+    "error_verbatim": "",
+    "carrier_owner": {
+     "tag": "C2 B1 the new carrier's owner",
+     "uid": 23486,
+     "strict": true,
+     "owner_class": "TopLevelDiagram",
+     "owner_uid": 536,
+     "error_verbatim": ""
+    },
+    "node_info_after_error_verbatim": "",
+    "node_info_after": [
+     [
+      0,
+      "Property Node",
+      "Property Node"
+     ]
+    ],
+    "node_index": 0,
+    "node_uid_echo": 23486,
+    "terminal_table": [
+     {
+      "i": 0,
+      "name": "reference",
+      "is_source": false,
+      "wire": 0
+     },
+     {
+      "i": 1,
+      "name": "reference out",
+      "is_source": true,
+      "wire": 0
+     },
+     {
+      "i": 2,
+      "name": "error in (no error)",
+      "is_source": false,
+      "wire": 0
+     },
+     {
+      "i": 3,
+      "name": "error out",
+      "is_source": true,
+      "wire": 0
+     },
+     {
+      "i": 4,
+      "name": "Def Err Handling",
+      "is_source": true,
+      "wire": 0
+     }
+    ],
+    "terminal_table_error_verbatim": "",
+    "chosen_terminal": {
+     "i": 4,
+     "name": "Def Err Handling",
+     "is_source": true,
+     "wire": 0
+    },
+    "chosen_rule": "first SOURCE terminal that is not ['reference out', 'error out']; the candidates were ['Def Err Handling']"
+   },
+   "B2": {
+    "node_index": 0,
+    "terminal_index": 4,
+    "terminal_name": "Def Err Handling",
+    "new": [
+     {
+      "i": 114,
+      "class": "ControlTerminal",
+      "uid": 23555,
+      "pos": [
+       6290,
+       5207
+      ],
+      "owner": "TopLevelDiagram"
+     }
+    ],
+    "new_ct_uid": 23555,
+    "error_verbatim": "",
+    "control_terminal_before": 114,
+    "control_terminal_after": 115,
+    "new_panel_rows": [
+     {
+      "label": "Automatic Error Handling",
+      "indicator": true,
+      "uid": 23535,
+      "is_source": false,
+      "wire": 23576,
+      "term_err": 0,
+      "wire_err": 0
+     }
+    ],
+    "new_fp_labels": [
+     [
+      114,
+      "Automatic Error Handling",
+      true
+     ]
+    ],
+    "label_repr": "'Automatic Error Handling'",
+    "label_utf8_hex": "4175746f6d61746963204572726f722048616e646c696e67",
+    "label_source": "panel_wiring diff (the machine's own Control.Label text)",
+    "label_contains_newline": false,
+    "label_is_duplicate_of_an_existing_panel_label": false
+   },
+   "B3": {
+    "carrier_traverse_index_at_delete": 0,
+    "gone": [
+     23486
+    ],
+    "error_verbatim": "",
+    "exec_state_after_delete": 0
+   },
+   "B4": {
+    "dest_diagram_uid": 639,
+    "dest_diagram_index_live": 46,
+    "position": [
+     120,
+     4000
+    ],
+    "owner_before": {
+     "tag": "C2 B4 the ControlTerminal's owner BEFORE the move",
+     "uid": 23555,
+     "strict": true,
+     "owner_class": "TopLevelDiagram",
+     "owner_uid": 536,
+     "error_verbatim": ""
+    },
+    "move_in": {
+     "returned": 3447,
+     "error_verbatim": ""
+    },
+    "junk_invoke_uids_added_by_move_in": [
+     23486
+    ],
+    "junk_purge": [
+     {
+      "uid": 23486,
+      "gone": [
+       23486
+      ],
+      "error_verbatim": ""
+     }
+    ],
+    "owner_after": {
+     "tag": "C2 B4 the ControlTerminal's owner AFTER the move",
+     "uid": 23555,
+     "strict": true,
+     "owner_class": "Diagram",
+     "owner_uid": 639,
+     "error_verbatim": ""
+    },
+    "control_terminal_census": {
+     "before": 115,
+     "after": 115
+    },
+    "panel_row_count": {
+     "before": 115,
+     "after": 115
+    },
+    "exec_state": {
+     "before": 0,
+     "after": 0
+    }
+   },
+   "B5": {
+    "exec_state_before_save": 0,
+    "returned_bytes": null,
+    "exception_or_reason_verbatim": "NOT ATTEMPTED: ExecState is 0 and only ExecState 1 may be saved. Under 47(e) that stops this candidate here, and it is a LEGITIMATE outcome, not a failure to work around.",
+    "allow_broken": false,
+    "gui_save": false,
+    "file_after": {
+     "path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C2_placed_20260921_001448.vi",
+     "exists": true,
+     "md5": "6ff19497f2309e007a214660bb64b911",
+     "size": 475707,
+     "version_candidates": [
+      {
+       "offset": 36,
+       "bytes": "26 00 80 00"
+      }
+     ]
+    }
+   },
+   "stopped_at": "C2: ExecState was 0 at the save point, so nothing was saved and this candidate stops here exactly as 47(e) orders."
+  },
+  "C3": {
+   "cid": "C3",
+   "spec": {
+    "cid": "C3",
+    "verb": "build_property",
+    "cls": "VI Server:Wire",
+    "props": [
+     [
+      "6371004",
+      false
+     ]
+    ],
+    "node_class": "Property",
+    "what": "Wire.Is Broken? (6371004), \"VI Scripting, read-only bool\"",
+    "predicted_bool_term_name": null,
+    "citation": "docs/vi-server-ids.json block \"Wire.Is Broken? (UNVERIFIED)\" (class \"VI Server:Wire\"). The PROPERTY is exercised daily inside OpConnectNested_v0/v1 and OpConnectFromWire_v0 (docs/d1-route-b-plan.md:342-345); the CLASS STRING has never been passed to build_property."
+   },
+   "artefact_placed": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C3_placed_20260921_001448.vi",
+   "artefact_wired": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C3_wired_20260921_001448.vi",
+   "scratch_at_creation": {
+    "exists": "1",
+    "size": "475707",
+    "md5": "6ff19497f2309e007a214660bb64b911",
+    "sha256": "d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5"
+   },
+   "censuses": {
+    "A before everything": {
+     "Diagram": 173,
+     "WhileLoop": 6,
+     "SubVI": 97,
+     "Invoke": 1,
+     "Property": 106,
+     "IndexArray": 47,
+     "LoopTunnel": 135,
+     "Wire": 1905,
+     "ControlTerminal": 114,
+     "Function": 183
+    }
+   },
+   "exec_state_timeline": [
+    {
+     "tag": "A BEFORE",
+     "value": 1
+    },
+    {
+     "tag": "C3 B3 after delete_object",
+     "value": 0
+    },
+    {
+     "tag": "C3 B4 BEFORE the move",
+     "value": 0
+    },
+    {
+     "tag": "C3 B4 AFTER the move (and the junk purge)",
+     "value": 0
+    },
+    {
+     "tag": "C3 B5 immediately before the save attempt",
+     "value": 0
+    }
+   ],
+   "A": {
+    "diag_index_639": 46,
+    "diag_index_639_error_verbatim": "",
+    "diag_index_536": 0,
+    "diag_index_536_error_verbatim": "",
+    "diag_index_686": 19,
+    "diag_index_686_error_verbatim": "",
+    "owner_of_10686": {
+     "tag": "C3 A3 owner of the BOOLEAN sink #10686",
+     "uid": 10686,
+     "strict": true,
+     "owner_class": "Diagram",
+     "owner_uid": 639,
+     "error_verbatim": ""
+    },
+    "class_membership_10686": [
+     {
+      "class": "Function",
+      "index": 102,
+      "members": 183
+     }
+    ],
+    "class_scan_errors_verbatim": {},
+    "bool_source_terminals": {
+     "tag": "C3 A4 the BOOLEAN sink #10686",
+     "diagram_index": 46,
+     "uid_expect": 10686,
+     "node_index": 25,
+     "index_resolution": "pin 25 survived its uid echo",
+     "node_uid_readback": 10686,
+     "n_terms": 3,
+     "n_wired": 3,
+     "terms": [
+      {
+       "i": 0,
+       "name": "x .and. y?",
+       "is_source": true,
+       "wire": 10799
+      },
+      {
+       "i": 1,
+       "name": "y",
+       "is_source": false,
+       "wire": 9105
+      },
+      {
+       "i": 2,
+       "name": "x",
+       "is_source": false,
+       "wire": 3050
+      }
+     ]
+    },
+    "bool_terminal": {
+     "i": 0,
+     "name": "x .and. y?",
+     "is_source": true,
+     "wire": 10799
+    }
+   },
+   "owner_reads": [
+    {
+     "tag": "C3 A3 owner of the BOOLEAN sink #10686",
+     "uid": 10686,
+     "strict": true,
+     "owner_class": "Diagram",
+     "owner_uid": 639,
+     "error_verbatim": ""
+    },
+    {
+     "tag": "C3 B1 the new carrier's owner",
+     "uid": 23486,
+     "strict": true,
+     "owner_class": "TopLevelDiagram",
+     "owner_uid": 536,
+     "error_verbatim": ""
+    },
+    {
+     "tag": "C3 B4 the ControlTerminal's owner BEFORE the move",
+     "uid": 23555,
+     "strict": true,
+     "owner_class": "TopLevelDiagram",
+     "owner_uid": 536,
+     "error_verbatim": ""
+    },
+    {
+     "tag": "C3 B4 the ControlTerminal's owner AFTER the move",
+     "uid": 23555,
+     "strict": true,
+     "owner_class": "Diagram",
+     "owner_uid": 639,
+     "error_verbatim": ""
+    }
+   ],
+   "wired_counts": [
+    {
+     "tag": "C3 A4 the BOOLEAN sink #10686",
+     "diagram_index": 46,
+     "uid_expect": 10686,
+     "node_index": 25,
+     "index_resolution": "pin 25 survived its uid echo",
+     "node_uid_readback": 10686,
+     "n_terms": 3,
+     "n_wired": 3,
+     "terms": [
+      {
+       "i": 0,
+       "name": "x .and. y?",
+       "is_source": true,
+       "wire": 10799
+      },
+      {
+       "i": 1,
+       "name": "y",
+       "is_source": false,
+       "wire": 9105
+      },
+      {
+       "i": 2,
+       "name": "x",
+       "is_source": false,
+       "wire": 3050
+      }
+     ]
+    }
+   ],
+   "B1": {
+    "panel_rows_before": 114,
+    "fp_labels_before": 114,
+    "control_terminal_before": 114,
+    "node_info_before_error_verbatim": "",
+    "node_info_before": [],
+    "carrier_class_uids_before": 106,
+    "call": "build_property(target, 'VI Server:Wire', [('6371004', False)], (6200, 5200), diagram_index=0)",
+    "new": [
+     {
+      "i": 0,
+      "class": "Property",
+      "uid": 23486,
+      "pos": [
+       6199,
+       5200
+      ],
+      "owner": "TopLevelDiagram"
+     }
+    ],
+    "error_verbatim": "",
+    "carrier_owner": {
+     "tag": "C3 B1 the new carrier's owner",
+     "uid": 23486,
+     "strict": true,
+     "owner_class": "TopLevelDiagram",
+     "owner_uid": 536,
+     "error_verbatim": ""
+    },
+    "node_info_after_error_verbatim": "",
+    "node_info_after": [
+     [
+      0,
+      "Property Node",
+      "Property Node"
+     ]
+    ],
+    "node_index": 0,
+    "node_uid_echo": 23486,
+    "terminal_table": [
+     {
+      "i": 0,
+      "name": "reference",
+      "is_source": false,
+      "wire": 0
+     },
+     {
+      "i": 1,
+      "name": "reference out",
+      "is_source": true,
+      "wire": 0
+     },
+     {
+      "i": 2,
+      "name": "error in (no error)",
+      "is_source": false,
+      "wire": 0
+     },
+     {
+      "i": 3,
+      "name": "error out",
+      "is_source": true,
+      "wire": 0
+     },
+     {
+      "i": 4,
+      "name": "Broken?",
+      "is_source": true,
+      "wire": 0
+     }
+    ],
+    "terminal_table_error_verbatim": "",
+    "chosen_terminal": {
+     "i": 4,
+     "name": "Broken?",
+     "is_source": true,
+     "wire": 0
+    },
+    "chosen_rule": "first SOURCE terminal that is not ['reference out', 'error out']; the candidates were ['Broken?']"
+   },
+   "B2": {
+    "node_index": 0,
+    "terminal_index": 4,
+    "terminal_name": "Broken?",
+    "new": [
+     {
+      "i": 114,
+      "class": "ControlTerminal",
+      "uid": 23555,
+      "pos": [
+       6273,
+       5207
+      ],
+      "owner": "TopLevelDiagram"
+     }
+    ],
+    "new_ct_uid": 23555,
+    "error_verbatim": "",
+    "control_terminal_before": 114,
+    "control_terminal_after": 115,
+    "new_panel_rows": [
+     {
+      "label": "Is Broken?",
+      "indicator": true,
+      "uid": 23535,
+      "is_source": false,
+      "wire": 23576,
+      "term_err": 0,
+      "wire_err": 0
+     }
+    ],
+    "new_fp_labels": [
+     [
+      114,
+      "Is Broken?",
+      true
+     ]
+    ],
+    "label_repr": "'Is Broken?'",
+    "label_utf8_hex": "49732042726f6b656e3f",
+    "label_source": "panel_wiring diff (the machine's own Control.Label text)",
+    "label_contains_newline": false,
+    "label_is_duplicate_of_an_existing_panel_label": false
+   },
+   "B3": {
+    "carrier_traverse_index_at_delete": 0,
+    "gone": [
+     23486
+    ],
+    "error_verbatim": "",
+    "exec_state_after_delete": 0
+   },
+   "B4": {
+    "dest_diagram_uid": 639,
+    "dest_diagram_index_live": 46,
+    "position": [
+     120,
+     4000
+    ],
+    "owner_before": {
+     "tag": "C3 B4 the ControlTerminal's owner BEFORE the move",
+     "uid": 23555,
+     "strict": true,
+     "owner_class": "TopLevelDiagram",
+     "owner_uid": 536,
+     "error_verbatim": ""
+    },
+    "move_in": {
+     "returned": 3447,
+     "error_verbatim": ""
+    },
+    "junk_invoke_uids_added_by_move_in": [
+     23486
+    ],
+    "junk_purge": [
+     {
+      "uid": 23486,
+      "gone": [
+       23486
+      ],
+      "error_verbatim": ""
+     }
+    ],
+    "owner_after": {
+     "tag": "C3 B4 the ControlTerminal's owner AFTER the move",
+     "uid": 23555,
+     "strict": true,
+     "owner_class": "Diagram",
+     "owner_uid": 639,
+     "error_verbatim": ""
+    },
+    "control_terminal_census": {
+     "before": 115,
+     "after": 115
+    },
+    "panel_row_count": {
+     "before": 115,
+     "after": 115
+    },
+    "exec_state": {
+     "before": 0,
+     "after": 0
+    }
+   },
+   "B5": {
+    "exec_state_before_save": 0,
+    "returned_bytes": null,
+    "exception_or_reason_verbatim": "NOT ATTEMPTED: ExecState is 0 and only ExecState 1 may be saved. Under 47(e) that stops this candidate here, and it is a LEGITIMATE outcome, not a failure to work around.",
+    "allow_broken": false,
+    "gui_save": false,
+    "file_after": {
+     "path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C3_placed_20260921_001448.vi",
+     "exists": true,
+     "md5": "6ff19497f2309e007a214660bb64b911",
+     "size": 475707,
+     "version_candidates": [
+      {
+       "offset": 36,
+       "bytes": "26 00 80 00"
+      }
+     ]
+    }
+   },
+   "stopped_at": "C3: ExecState was 0 at the save point, so nothing was saved and this candidate stops here exactly as 47(e) orders."
+  }
+ },
+ "phaseC": {
+  "hypothetical_command": "py -u tools/recipes/stage_d1_s3a_focus_ind.py",
+  "hook": "tools/hooks/guard_cycle.py",
+  "payload_contract": "tools/hooks/guard_cycle.py:534-541 reads json on stdin and takes tool_input.command",
+  "returncode": 2,
+  "stdout_verbatim": "",
+  "stderr_verbatim": "BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe has a released stop record, but the file itself cannot be read, so the release cannot be matched to any bytes.\n  recipe      : tools/recipes/stage_d1_s3a_focus_ind.py\n  review      : archive/peer/2026-09-20-priorart-d1-s3a-focus-ind.md\n  verdict     : refuted-already, contradicted, unread-evidence, helper-exists, already-measured\n  reviewed sha: (none)\n  unreadable: tools/recipes/stage_d1_s3a_focus_ind.py\n\nA prior-art verdict other than `novel` stops the work, and cycle 18 exists because stopping the\nBUILD was not enough: on route-B run 3 the recipe LAUNCHED six seconds after the review that said it\ncould not pass. The only releases are the two that already exist, written into the review file\nitself and paid for with a citation:\n  REFUTED: <slug> - <file>:<line> says X, which does not cover Y because ...\n  FIXED:   <slug> - <path>:<line> - <one sentence saying what changed>\n(`FIXED:` releases only if the cited path exists, changed AFTER the review, and the line sits under\n'## What was done with it'.) An assertion is not a refutation and a promise is not a fix.\nCYCLE_GUARD_OFF is not a release and does not reach this gate.\n",
+  "verdict": "REFUSES (exit 2)",
+  "note": "REPORTED, NOT ACTED ON. No date was rolled forward, CYCLE_GUARD_OFF was never set, the gate was not patched, and tools/recipes/stage_d1_s3a_focus_ind.py was not created."
+ },
+ "artefacts": [
+  {
+   "candidate": "C1",
+   "role": "placed (unwired)",
+   "path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C1_placed_20260921_001448.vi",
+   "saved": false,
+   "file": {
+    "path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C1_placed_20260921_001448.vi",
+    "exists": true,
+    "md5": "6ff19497f2309e007a214660bb64b911",
+    "size": 475707,
+    "version_candidates": [
+     {
+      "offset": 36,
+      "bytes": "26 00 80 00"
+     }
+    ]
+   }
+  },
+  {
+   "candidate": "C2",
+   "role": "placed (unwired)",
+   "path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C2_placed_20260921_001448.vi",
+   "saved": false,
+   "file": {
+    "path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C2_placed_20260921_001448.vi",
+    "exists": true,
+    "md5": "6ff19497f2309e007a214660bb64b911",
+    "size": 475707,
+    "version_candidates": [
+     {
+      "offset": 36,
+      "bytes": "26 00 80 00"
+     }
+    ]
+   }
+  },
+  {
+   "candidate": "C3",
+   "role": "placed (unwired)",
+   "path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C3_placed_20260921_001448.vi",
+   "saved": false,
+   "file": {
+    "path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C3_placed_20260921_001448.vi",
+    "exists": true,
+    "md5": "6ff19497f2309e007a214660bb64b911",
+    "size": 475707,
+    "version_candidates": [
+     {
+      "offset": 36,
+      "bytes": "26 00 80 00"
+     }
+    ]
+   }
+  }
+ ],
+ "gates": {
+  "pass": 51,
+  "fail": 9,
+  "failing": [
+   "C1 B3b ExecState after the delete == 1",
+   "C1 B4d ExecState after the move (and the junk purge) == 1",
+   "C1 B5 ExecState == 1 at the save point and g.save() returned a byte count",
+   "C2 B3b ExecState after the delete == 1",
+   "C2 B4d ExecState after the move (and the junk purge) == 1",
+   "C2 B5 ExecState == 1 at the save point and g.save() returned a byte count",
+   "C3 B3b ExecState after the delete == 1",
+   "C3 B4d ExecState after the move (and the junk purge) == 1",
+   "C3 B5 ExecState == 1 at the save point and g.save() returned a byte count"
+  ]
+ },
+ "facts": [
+  "tools/recipes/stage_d1_s3a_focus_ind.py: exists=False mtime=None - REPORTED, NOT TOUCHED",
+  "A rank 1  build_property   tools/gscript.py:2194  -> places Property Node ; Boolean output by construction: YES when the property READ is Boolean-valued - a read item's terminal is a SOURCE of that property's type",
+  "A rank 4  build_invoke     tools/gscript.py:2159  -> places Invoke Node ; Boolean output by construction: NO Boolean-returning method is nameable from docs/vi-server-ids.json's `methods` block (all void or object-returning)",
+  "A rank 5  drop_subvi       tools/gscript.py:1225  -> places a subVI node ; Boolean output by construction: ONLY if a donor VI with a Boolean output is chosen and its connector pane read first; it also adds a subVI DEPENDENCY to the deliverable (29(g) makes the SubVI table an acceptance reference). NOT A CANDIDATE this run.",
+  "A rank 6  queue_node       tools/gscript.py:1122  -> places queue primitives ; Boolean output by construction: NO - outputs are a queue REFNUM and an ERROR CLUSTER",
+  "A rank 7  loop_in          tools/gscript.py:1155  -> places a While/For loop ; Boolean output by construction: NO - the conditional terminal IS Boolean but it is a SINK, and create_indicator needs a SOURCE",
+  "A rank 8  exit_while       tools/gscript.py:1083  -> places loop-exit scaffolding ; Boolean output by construction: NO (same reason)",
+  "A rank 9  exit_loop        tools/gscript.py:1721  -> places loop-exit scaffolding ; Boolean output by construction: NO (same reason)",
+  "A top-level-only node placers (no diagram_index): ['build_index_array :2322 (the NUMERIC carrier used so far)', 'build_case :2824', 'build_clfn :2699', 'while_loop :1191', 'for_loop :1210', 'loop_kernel :1804', 'build_kernel :2082']",
+  "A CANDIDATE C1  build_property('VI Server:VI', [('291', False), ('292', False)])  -> VI.Metrics:Front Panel Loaded (291) + Block Diagram Loaded (292), read-only Boolean ; predicted Boolean terminal 'PanelLoaded' ; citation: docs/vi-server-ids.json `_metrics_291_292_VERIFIED_2026-09-16` (VERIFIED ON THIS MACHINE); tools/bench/diag_load_vs_editmode.log:11 (the terminal table read off the machine) and :13-14 (create_indicator succeeded on BOTH Boolean terminals)",
+  "A CANDIDATE C2  build_property('VI Server:VI', [('242', False)])  -> VI.Automatic Error Handling (242), Boolean R/W ; predicted Boolean terminal None ; citation: docs/vi-server-ids.json \"VI.Automatic Error Handling\": \"242\"; the fleet already WRITES it through OpSetAutoErr_v0 (tools/gscript.py:2617-2630), so the id resolves for this class. Its READ terminal's short name is on no file here and is read off the machine.",
+  "A CANDIDATE C3  build_property('VI Server:Wire', [('6371004', False)])  -> Wire.Is Broken? (6371004), \"VI Scripting, read-only bool\" ; predicted Boolean terminal None ; citation: docs/vi-server-ids.json block \"Wire.Is Broken? (UNVERIFIED)\" (class \"VI Server:Wire\"). The PROPERTY is exercised daily inside OpConnectNested_v0/v1 and OpConnectFromWire_v0 (docs/d1-route-b-plan.md:342-345); the CLASS STRING has never been passed to build_property.",
+  "A the Boolean-terminal SELECTION RULE: of the new node's terminals READ OFF THE MACHINE, take the SOURCE terminals, drop any named 'reference out' or 'error out', take the FIRST that remains; for C1 additionally assert its name equals the one the 2026-09-16 log recorded. NO TYPE IS ASSUMED.",
+  "A 47(j): no reader in this fleet returns a terminal's DATA TYPE, so phase A PREDICTS and phase B's `Is Broken?` MEASURES. 47(g): 47(g): the Boolean property pair was FOUND already on disk (docs/vi-server-ids.json + tools/bench/diag_load_vs_editmode.log) rather than commissioned as a new read.",
+  "LabVIEW handles BEFORE (cycle 57 close left the instance at 63,533; fresh baseline ~31,500): 34198",
+  "T1 ORIGINAL (read-only probe): HASH G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb",
+  "T1b D1_s1_copy.vi: HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7",
+  "T2 the S2 artefact: HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5",
+  "LabVIEW handles AFTER the pre-batch restart: 30683",
+  "C1 T3 the scratch at creation (copied from D1_s2_loops.vi): HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C1_placed_20260921_001448.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5",
+  "class census [A before everything] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Invoke': 1, 'Property': 106, 'IndexArray': 47, 'LoopTunnel': 135, 'Wire': 1905, 'ControlTerminal': 114, 'Function': 183}",
+  "ExecState [A BEFORE] = 1",
+  "C1 A diag_index(#639) = 46 ; error VERBATIM ''",
+  "C1 A diag_index(#536) = 0 ; error VERBATIM ''",
+  "C1 A diag_index(#686) = 19 ; error VERBATIM ''",
+  "C1 A3 owner of the BOOLEAN sink #10686: owner_of(#10686) = ('Diagram', 639) [strict=True] error VERBATIM ''",
+  "C1 A #10686's LIVE Traverse class membership: [{'class': 'Function', 'index': 102, 'members': 183}] (classes that RAISED: {})",
+  "C1 A4 the BOOLEAN sink #10686: node #10686 at Nodes[25] (pin 25 survived its uid echo), 3 terminals, 3 WIRED",
+  "C1 A4 #10686's FULL terminal list: [{'i': 0, 'name': 'x .and. y?', 'is_source': True, 'wire': 10799}, {'i': 1, 'name': 'y', 'is_source': False, 'wire': 9105}, {'i': 2, 'name': 'x', 'is_source': False, 'wire': 3050}]",
+  "C1 A4 terminal 0 READ off the machine: {'i': 0, 'name': 'x .and. y?', 'is_source': True, 'wire': 10799} (utf-8 hex '78202e616e642e20793f'); the 47(d) wire PIN is 10799",
+  "C1 B1 BEFORE: panel_wiring rows 114, fp_labels 114, ControlTerminal census 114",
+  "C1 B1 node_info(max_n=40) BEFORE: 0 entries -> [] ; error VERBATIM ''",
+  "C1 B1 build_property(target, 'VI Server:VI', [('291', False), ('292', False)], (6200, 5200), diagram_index=0) -> new [{'i': 0, 'class': 'Property', 'uid': 23486, 'pos': (6185, 5200), 'owner': 'TopLevelDiagram'}] ; error VERBATIM ''",
+  "C1 B1 the new carrier's owner: owner_of(#23486) = ('TopLevelDiagram', 536) [strict=True] error VERBATIM ''",
+  "C1 B1 node_info(max_n=40) AFTER (create_indicator's OWN ladder): 1 entries -> [(0, 'Property Node', 'Property Node')] ; error VERBATIM ''",
+  "C1 B1 THE CARRIER'S TERMINAL TABLE [(index, label, is_source, wire)], READ OFF THE MACHINE: [{'i': 0, 'name': 'reference', 'is_source': False, 'wire': 0}, {'i': 1, 'name': 'reference out', 'is_source': True, 'wire': 0}, {'i': 2, 'name': 'error in (no error)', 'is_source': False, 'wire': 0}, {'i': 3, 'name': 'error out', 'is_source': True, 'wire': 0}, {'i': 4, 'name': 'PanelLoaded', 'is_source': True, 'wire': 0}, {'i': 5, 'name': 'DiagramLoaded', 'is_source': True, 'wire': 0}] (uid echo 23486; error VERBATIM '')",
+  "C1 B1 the terminal create_indicator will be called on: {'i': 4, 'name': 'PanelLoaded', 'is_source': True, 'wire': 0}  (rule: first SOURCE terminal that is not ['reference out', 'error out']; the candidates were ['PanelLoaded', 'DiagramLoaded']; the 2026-09-16 log predicted 'PanelLoaded' and the machine read 'PanelLoaded' -> MATCH)",
+  "C1 B2 create_indicator(Nodes[0].Terminals[4] = 'PanelLoaded') -> new [{'i': 114, 'class': 'ControlTerminal', 'uid': 23564, 'pos': (6287, 5207), 'owner': 'TopLevelDiagram'}] ; error VERBATIM ''",
+  "C1 B2 THE LABEL, VERBATIM: 'Metrics:Front Panel Loaded'  (utf-8 hex '4d6574726963733a46726f6e742050616e656c204c6f61646564', source: panel_wiring diff (the machine's own Control.Label text))",
+  "C1 B2 contains a NEWLINE: False ; is a DUPLICATE of an existing panel label: False",
+  "C1 B2 panel_wiring rows 114 -> 115, fp_labels 114 -> 115 ; the NEW row(s) [{'label': 'Metrics:Front Panel Loaded', 'indicator': True, 'uid': 23535, 'is_source': False, 'wire': 23586, 'term_err': 0, 'wire_err': 0}]",
+  "C1 B3 delete_object(Property[0]) -> gone [23486] ; error VERBATIM ''",
+  "ExecState [C1 B3 after delete_object] = 0",
+  "C1 B4 the ControlTerminal's owner BEFORE the move: owner_of(#23564) = ('TopLevelDiagram', 536) [strict=True] error VERBATIM ''",
+  "ExecState [C1 B4 BEFORE the move] = 0",
+  "C1 B4 move_in(#23564 -> Diagram #639 at Traverse index 46, position (120, 4000)) returned 3447 ; error VERBATIM ''",
+  "C1 B4 move_in left 1 junk `Invoke`(s): [23486] (PREDICTED RISK (i))",
+  "C1 B4 purged junk Invoke #23486 -> gone [23486] ; error VERBATIM ''",
+  "C1 B4 the ControlTerminal's owner AFTER the move: owner_of(#23564) = ('Diagram', 639) [strict=True] error VERBATIM ''",
+  "ExecState [C1 B4 AFTER the move (and the junk purge)] = 0",
+  "C1 B4 panel rows 115 -> 115 ; the target indicator's row now: {'label': 'Metrics:Front Panel Loaded', 'indicator': True, 'uid': 23535, 'is_source': False, 'wire': 0, 'term_err': 0, 'wire_err': 1055}",
+  "ExecState [C1 B5 immediately before the save attempt] = 0",
+  "C1 B5 g.save() returned None ; exception/reason VERBATIM 'NOT ATTEMPTED: ExecState is 0 and only ExecState 1 may be saved. Under 47(e) that stops this candidate here, and it is a LEGITIMATE outcome, not a failure to work around.'",
+  "C1 STOPPED at a step precondition: C1: ExecState was 0 at the save point, so nothing was saved and this candidate stops here exactly as 47(e) orders.",
+  "C1 B6..B8 NOT ATTEMPTED: B5 did not save (ExecState 0), and 47(e) orders the candidate to stop there.",
+  "C1 cleanup: the unsaved scratch D1_s3a_bool_C1_placed_20260921_001448.vi was removed (byte-identical to S2, nothing of its own)",
+  "C2 T3 the scratch at creation (copied from D1_s2_loops.vi): HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C2_placed_20260921_001448.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5",
+  "class census [A before everything] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Invoke': 1, 'Property': 106, 'IndexArray': 47, 'LoopTunnel': 135, 'Wire': 1905, 'ControlTerminal': 114, 'Function': 183}",
+  "ExecState [A BEFORE] = 1",
+  "C2 A diag_index(#639) = 46 ; error VERBATIM ''",
+  "C2 A diag_index(#536) = 0 ; error VERBATIM ''",
+  "C2 A diag_index(#686) = 19 ; error VERBATIM ''",
+  "C2 A3 owner of the BOOLEAN sink #10686: owner_of(#10686) = ('Diagram', 639) [strict=True] error VERBATIM ''",
+  "C2 A #10686's LIVE Traverse class membership: [{'class': 'Function', 'index': 102, 'members': 183}] (classes that RAISED: {})",
+  "C2 A4 the BOOLEAN sink #10686: node #10686 at Nodes[25] (pin 25 survived its uid echo), 3 terminals, 3 WIRED",
+  "C2 A4 #10686's FULL terminal list: [{'i': 0, 'name': 'x .and. y?', 'is_source': True, 'wire': 10799}, {'i': 1, 'name': 'y', 'is_source': False, 'wire': 9105}, {'i': 2, 'name': 'x', 'is_source': False, 'wire': 3050}]",
+  "C2 A4 terminal 0 READ off the machine: {'i': 0, 'name': 'x .and. y?', 'is_source': True, 'wire': 10799} (utf-8 hex '78202e616e642e20793f'); the 47(d) wire PIN is 10799",
+  "C2 B1 BEFORE: panel_wiring rows 114, fp_labels 114, ControlTerminal census 114",
+  "C2 B1 node_info(max_n=40) BEFORE: 0 entries -> [] ; error VERBATIM ''",
+  "C2 B1 build_property(target, 'VI Server:VI', [('242', False)], (6200, 5200), diagram_index=0) -> new [{'i': 0, 'class': 'Property', 'uid': 23486, 'pos': (6182, 5200), 'owner': 'TopLevelDiagram'}] ; error VERBATIM ''",
+  "C2 B1 the new carrier's owner: owner_of(#23486) = ('TopLevelDiagram', 536) [strict=True] error VERBATIM ''",
+  "C2 B1 node_info(max_n=40) AFTER (create_indicator's OWN ladder): 1 entries -> [(0, 'Property Node', 'Property Node')] ; error VERBATIM ''",
+  "C2 B1 THE CARRIER'S TERMINAL TABLE [(index, label, is_source, wire)], READ OFF THE MACHINE: [{'i': 0, 'name': 'reference', 'is_source': False, 'wire': 0}, {'i': 1, 'name': 'reference out', 'is_source': True, 'wire': 0}, {'i': 2, 'name': 'error in (no error)', 'is_source': False, 'wire': 0}, {'i': 3, 'name': 'error out', 'is_source': True, 'wire': 0}, {'i': 4, 'name': 'Def Err Handling', 'is_source': True, 'wire': 0}] (uid echo 23486; error VERBATIM '')",
+  "C2 B1 the terminal create_indicator will be called on: {'i': 4, 'name': 'Def Err Handling', 'is_source': True, 'wire': 0}  (rule: first SOURCE terminal that is not ['reference out', 'error out']; the candidates were ['Def Err Handling'])",
+  "C2 B2 create_indicator(Nodes[0].Terminals[4] = 'Def Err Handling') -> new [{'i': 114, 'class': 'ControlTerminal', 'uid': 23555, 'pos': (6290, 5207), 'owner': 'TopLevelDiagram'}] ; error VERBATIM ''",
+  "C2 B2 THE LABEL, VERBATIM: 'Automatic Error Handling'  (utf-8 hex '4175746f6d61746963204572726f722048616e646c696e67', source: panel_wiring diff (the machine's own Control.Label text))",
+  "C2 B2 contains a NEWLINE: False ; is a DUPLICATE of an existing panel label: False",
+  "C2 B2 panel_wiring rows 114 -> 115, fp_labels 114 -> 115 ; the NEW row(s) [{'label': 'Automatic Error Handling', 'indicator': True, 'uid': 23535, 'is_source': False, 'wire': 23576, 'term_err': 0, 'wire_err': 0}]",
+  "C2 B3 delete_object(Property[0]) -> gone [23486] ; error VERBATIM ''",
+  "ExecState [C2 B3 after delete_object] = 0",
+  "C2 B4 the ControlTerminal's owner BEFORE the move: owner_of(#23555) = ('TopLevelDiagram', 536) [strict=True] error VERBATIM ''",
+  "ExecState [C2 B4 BEFORE the move] = 0",
+  "C2 B4 move_in(#23555 -> Diagram #639 at Traverse index 46, position (120, 4000)) returned 3447 ; error VERBATIM ''",
+  "C2 B4 move_in left 1 junk `Invoke`(s): [23486] (PREDICTED RISK (i))",
+  "C2 B4 purged junk Invoke #23486 -> gone [23486] ; error VERBATIM ''",
+  "C2 B4 the ControlTerminal's owner AFTER the move: owner_of(#23555) = ('Diagram', 639) [strict=True] error VERBATIM ''",
+  "ExecState [C2 B4 AFTER the move (and the junk purge)] = 0",
+  "C2 B4 panel rows 115 -> 115 ; the target indicator's row now: {'label': 'Automatic Error Handling', 'indicator': True, 'uid': 23535, 'is_source': False, 'wire': 0, 'term_err': 0, 'wire_err': 1055}",
+  "ExecState [C2 B5 immediately before the save attempt] = 0",
+  "C2 B5 g.save() returned None ; exception/reason VERBATIM 'NOT ATTEMPTED: ExecState is 0 and only ExecState 1 may be saved. Under 47(e) that stops this candidate here, and it is a LEGITIMATE outcome, not a failure to work around.'",
+  "C2 STOPPED at a step precondition: C2: ExecState was 0 at the save point, so nothing was saved and this candidate stops here exactly as 47(e) orders.",
+  "C2 B6..B8 NOT ATTEMPTED: B5 did not save (ExecState 0), and 47(e) orders the candidate to stop there.",
+  "C2 cleanup: the unsaved scratch D1_s3a_bool_C2_placed_20260921_001448.vi was removed (byte-identical to S2, nothing of its own)",
+  "C3 T3 the scratch at creation (copied from D1_s2_loops.vi): HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3a_bool_C3_placed_20260921_001448.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5",
+  "class census [A before everything] {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Invoke': 1, 'Property': 106, 'IndexArray': 47, 'LoopTunnel': 135, 'Wire': 1905, 'ControlTerminal': 114, 'Function': 183}",
+  "ExecState [A BEFORE] = 1",
+  "C3 A diag_index(#639) = 46 ; error VERBATIM ''",
+  "C3 A diag_index(#536) = 0 ; error VERBATIM ''",
+  "C3 A diag_index(#686) = 19 ; error VERBATIM ''",
+  "C3 A3 owner of the BOOLEAN sink #10686: owner_of(#10686) = ('Diagram', 639) [strict=True] error VERBATIM ''",
+  "C3 A #10686's LIVE Traverse class membership: [{'class': 'Function', 'index': 102, 'members': 183}] (classes that RAISED: {})",
+  "C3 A4 the BOOLEAN sink #10686: node #10686 at Nodes[25] (pin 25 survived its uid echo), 3 terminals, 3 WIRED",
+  "C3 A4 #10686's FULL terminal list: [{'i': 0, 'name': 'x .and. y?', 'is_source': True, 'wire': 10799}, {'i': 1, 'name': 'y', 'is_source': False, 'wire': 9105}, {'i': 2, 'name': 'x', 'is_source': False, 'wire': 3050}]",
+  "C3 A4 terminal 0 READ off the machine: {'i': 0, 'name': 'x .and. y?', 'is_source': True, 'wire': 10799} (utf-8 hex '78202e616e642e20793f'); the 47(d) wire PIN is 10799",
+  "C3 B1 BEFORE: panel_wiring rows 114, fp_labels 114, ControlTerminal census 114",
+  "C3 B1 node_info(max_n=40) BEFORE: 0 entries -> [] ; error VERBATIM ''",
+  "C3 B1 build_property(target, 'VI Server:Wire', [('6371004', False)], (6200, 5200), diagram_index=0) -> new [{'i': 0, 'class': 'Property', 'uid': 23486, 'pos': (6199, 5200), 'owner': 'TopLevelDiagram'}] ; error VERBATIM ''",
+  "C3 B1 the new carrier's owner: owner_of(#23486) = ('TopLevelDiagram', 536) [strict=True] error VERBATIM ''",
+  "C3 B1 node_info(max_n=40) AFTER (create_indicator's OWN ladder): 1 entries -> [(0, 'Property Node', 'Property Node')] ; error VERBATIM ''",
+  "C3 B1 THE CARRIER'S TERMINAL TABLE [(index, label, is_source, wire)], READ OFF THE MACHINE: [{'i': 0, 'name': 'reference', 'is_source': False, 'wire': 0}, {'i': 1, 'name': 'reference out', 'is_source': True, 'wire': 0}, {'i': 2, 'name': 'error in (no error)', 'is_source': False, 'wire': 0}, {'i': 3, 'name': 'error out', 'is_source': True, 'wire': 0}, {'i': 4, 'name': 'Broken?', 'is_source': True, 'wire': 0}] (uid echo 23486; error VERBATIM '')",
+  "C3 B1 the terminal create_indicator will be called on: {'i': 4, 'name': 'Broken?', 'is_source': True, 'wire': 0}  (rule: first SOURCE terminal that is not ['reference out', 'error out']; the candidates were ['Broken?'])",
+  "C3 B2 create_indicator(Nodes[0].Terminals[4] = 'Broken?') -> new [{'i': 114, 'class': 'ControlTerminal', 'uid': 23555, 'pos': (6273, 5207), 'owner': 'TopLevelDiagram'}] ; error VERBATIM ''",
+  "C3 B2 THE LABEL, VERBATIM: 'Is Broken?'  (utf-8 hex '49732042726f6b656e3f', source: panel_wiring diff (the machine's own Control.Label text))",
+  "C3 B2 contains a NEWLINE: False ; is a DUPLICATE of an existing panel label: False",
+  "C3 B2 panel_wiring rows 114 -> 115, fp_labels 114 -> 115 ; the NEW row(s) [{'label': 'Is Broken?', 'indicator': True, 'uid': 23535, 'is_source': False, 'wire': 23576, 'term_err': 0, 'wire_err': 0}]",
+  "C3 B3 delete_object(Property[0]) -> gone [23486] ; error VERBATIM ''",
+  "ExecState [C3 B3 after delete_object] = 0",
+  "C3 B4 the ControlTerminal's owner BEFORE the move: owner_of(#23555) = ('TopLevelDiagram', 536) [strict=True] error VERBATIM ''",
+  "ExecState [C3 B4 BEFORE the move] = 0",
+  "C3 B4 move_in(#23555 -> Diagram #639 at Traverse index 46, position (120, 4000)) returned 3447 ; error VERBATIM ''",
+  "C3 B4 move_in left 1 junk `Invoke`(s): [23486] (PREDICTED RISK (i))",
+  "C3 B4 purged junk Invoke #23486 -> gone [23486] ; error VERBATIM ''",
+  "C3 B4 the ControlTerminal's owner AFTER the move: owner_of(#23555) = ('Diagram', 639) [strict=True] error VERBATIM ''",
+  "ExecState [C3 B4 AFTER the move (and the junk purge)] = 0",
+  "C3 B4 panel rows 115 -> 115 ; the target indicator's row now: {'label': 'Is Broken?', 'indicator': True, 'uid': 23535, 'is_source': False, 'wire': 0, 'term_err': 0, 'wire_err': 1055}",
+  "ExecState [C3 B5 immediately before the save attempt] = 0",
+  "C3 B5 g.save() returned None ; exception/reason VERBATIM 'NOT ATTEMPTED: ExecState is 0 and only ExecState 1 may be saved. Under 47(e) that stops this candidate here, and it is a LEGITIMATE outcome, not a failure to work around.'",
+  "C3 STOPPED at a step precondition: C3: ExecState was 0 at the save point, so nothing was saved and this candidate stops here exactly as 47(e) orders.",
+  "C3 B6..B8 NOT ATTEMPTED: B5 did not save (ExecState 0), and 47(e) orders the candidate to stop there.",
+  "C3 cleanup: the unsaved scratch D1_s3a_bool_C3_placed_20260921_001448.vi was removed (byte-identical to S2, nothing of its own)",
+  "C guard_cycle dry run on 'py -u tools/recipes/stage_d1_s3a_focus_ind.py' -> exit 2 = REFUSES (exit 2)",
+  "C REPORTED, NOT ACTED ON. No date was rolled forward, CYCLE_GUARD_OFF was never set, the gate was not patched, and tools/recipes/stage_d1_s3a_focus_ind.py was not created.",
+  "refs {'opened': 24, 'closed': 24, 'live': 0, 'cached_op_vis': 11}",
+  "LabVIEW handles AFTER everything: 60289",
+  "tools/recipes/stage_d1_s3a_focus_ind.py at the END: exists=False (it must still be False)",
+  "Z1 ORIGINAL after everything: HASH G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb",
+  "Z1b D1_s1_copy.vi after everything: HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7",
+  "Z1c D1_s2_loops.vi after everything: HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5",
+  "ANSWER C1  carrier='VI.Metrics:Front Panel Loaded (291) + Block Diagram Loaded (292), read-only Boolean' terminal='PanelLoaded' label=\"'Metrics:Front Panel Loaded'\"  wire None -> None  ExecState None -> None  Is Broken?=None  artefacts placed=None wired=None  stopped='C1: ExecState was 0 at the save point, so nothing was saved and this candidate stops here exactly as 47(e) orders.'",
+  "ANSWER C2  carrier='VI.Automatic Error Handling (242), Boolean R/W' terminal='Def Err Handling' label=\"'Automatic Error Handling'\"  wire None -> None  ExecState None -> None  Is Broken?=None  artefacts placed=None wired=None  stopped='C2: ExecState was 0 at the save point, so nothing was saved and this candidate stops here exactly as 47(e) orders.'",
+  "ANSWER C3  carrier='Wire.Is Broken? (6371004), \"VI Scripting, read-only bool\"' terminal='Broken?' label=\"'Is Broken?'\"  wire None -> None  ExecState None -> None  Is Broken?=None  artefacts placed=None wired=None  stopped='C3: ExecState was 0 at the save point, so nothing was saved and this candidate stops here exactly as 47(e) orders.'",
+  "ARTEFACTS ON DISK: []"
+ ],
+ "elapsed_s": 228.7,
+ "candidate_order": [
+  "C1",
+  "C2",
+  "C3"
+ ],
+ "deadline_guard_s": 960,
+ "ref_counts": {
+  "opened": 24,
+  "closed": 24,
+  "live": 0,
+  "cached_op_vis": 11
+ }
+}
