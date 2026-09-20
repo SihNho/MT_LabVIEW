@@ -1,0 +1,106 @@
+BGRUN START 2026-09-20 22:51:57 limit 20.0 min: py -u tools\prior_art_review.py --plan-file C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\25d2cb97-f297-4331-8821-a27dce28c632\scratchpad\plan_s3a_focus_ind.md --slug d1-s3a-focus-ind --trigger cycle-start --recipe tools\recipes\stage_d1_s3a_focus_ind.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_d1-s3a-focus-ind.txt (71706 chars)
+OUTCOME: ANSWERED (537s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-20-priorart-d1-s3a-focus-ind.md
+COST: $7.2933  in 62 / out 44273 / cache-create 347827 / cache-read 5415855  (535s, 47 turn(s))
+--- ANSWER ---
+Prior-art review complete — read-only throughout: no lock taken, no `.vi` opened, no COM call, nothing built or run. (`Write` is disabled in this session, so the review is delivered here rather than to a file.)
+
+**Verdict: NOT novel.** The *creation* half (46(a) route, twice) survives as new work. The *wiring* half — "the one verb that is NOT yet chosen" — is where the record already speaks.
+
+---
+
+# PART A — THE DIRECTION
+
+## A1 — SETTLED ALREADY? **No slug.**
+
+The direction is *decided*, not settled-elsewhere: `docs/cycle27-plan.md:1600-1604` (45(f)) defines S3a, `:1610-1625` (46(a)) supplies the creation route. Citing a plan's own decision back at it would block every planned build. Its premises check out: `#10757` "sits_on `#639` (diagram idx 43, owner class WhileLoop)" — `tools/bench/c53_row_class.json:816`. ⚠️ The route-B logs showing `#10757` owned by `Diagram #567` (`tools/bench/build_d1_routeb_v0_run2.log:117`) are POST-MOVE readings on a restructured copy and do **not** contradict the plan.
+
+## A2 — REFUTED ALREADY → `refuted-already`. The construction's *semantics* are challenged on the record, and the challenge was never disposed
+
+> `archive/peer/2026-09-20-c56-transport-verbs-unreachable.md:123` — *"if that uid is the top-level diagram the construction implies a loop tunnel and is **disqualified by 38(g) on semantics, not on capability**"*
+
+against
+
+> `docs/cycle27-plan.md:1244-1248` (38(g)) — *"A CONSTRUCTION THAT IS BANNED BY NAME, because it passes every gate we have … It restores every wired-terminal count, it compiles to `ExecState` 1, and it changes the computation."*
+
+S3a wires a **top-level** `ControlTerminal` to a source **inside `WhileLoop #637`**. `docs/NAMES.md:470-473` measures the cost of that shape: **+2 wires — "tunnel + inner wire"**, i.e. LabVIEW makes a loop-border tunnel. And the VI's own practice is the counter-evidence: **all 114 pre-existing `ControlTerminal`s read owner class `Diagram`, not `TopLevelDiagram`** (`tools/bench/diag_s56_transport3b.log:15`, `{'Diagram': 114}`) — every indicator terminal in the original sits *inside* a structure.
+
+Neither 45(c) (`:1584-1591`) nor Pre-decided 46 answers this; 45(e) (`:1598-1599`) argues only that *local variables* are not 38(g) and says nothing about the indicator's own border tunnel. **If the objection holds, S3a produces a legally saved file whose value 1.5 cannot read until `#637` ends** — legal, and useless. This is what decides whether candidate (2) (`move_in` into `#639`, matching the 114/114 practice) is the *only* acceptable route rather than the fallback.
+
+## A3 — CONTRADICTED → `contradicted`. Two of the three candidate verbs are ruled out by documented tool scope
+
+**Candidate 3, `connect_ctl`** — offered as the verb carrying a wire "from a TOP-LEVEL-created `ControlTerminal` to a terminal on the nested `Diagram #639`". It cannot:
+
+> `tools/gscript.py:983-985` — *"Wire **Nodes[node_index].Terminals[terminal_index]** (a SOURCE) into the terminal of front-panel object `Panel.Controls[panel_index]`"*; the call sets only `index`/`index_node`/`index_terminal` (`:997-1000`) — **no diagram argument**.
+> `docs/NAMES.md:278-280` — *"Tool scope: `connect_terminals`, **`connect_ctl`**, `create_control`, `create_indicator` address the **TOP-LEVEL** diagram's `Nodes[]` only."*
+
+The panel end is fine (`Panel.Controls[]`, cast-free). The **source** end is out of scope — `#10686`/`#10757` are on `#639`. The plan's justification ("has run clean before with a top-level `Nodes[]` source") names the constraint and then treats it as satisfied.
+
+**Candidate 2's second half, "a same-diagram connect"** — the only built same-diagram connect verb addresses **both** ends through `Nodes[]`:
+
+> `tools/recipes/build_opconnectnested_v1.py:419-420` — *"Wire `Diagram[src_diag].Nodes[src_node].Terminals[src_term]` (SOURCE) into `Diagram[sink_diag].Nodes[sink_node].Terminals[sink_term]` (SINK)."*
+
+So it inherits B4: a `ControlTerminal` is not in `Nodes[]`, whatever diagram it sits on. Candidate 2 needs a verb the plan has not named.
+
+## A4 — UNREAD EVIDENCE → `unread-evidence`. The `wire_indicators` exclusion repeats a caller bug this project already measured and CLOSED, and the discriminating test is written down and unrun
+
+1. **The argument means the opposite of what the attempts assumed.** `archive/2026-08-29-status-sweep-opexitloop-opwireind.md:33-35`, Context Help off the machine: *"…the indicators selected with `Indicator Names` **on Diagram in**."* `tools/gscript.py:1787-1789` feeds `Diagram in` from `diagram_index` — it scopes the **indicator** lookup, never the source. Same contract in code for the sibling wrapper: `tools/gscript.py:1947-1948`. ⚠️ `docs/NAMES.md:280-282` reads as if `diagram_index=frame` reaches *inside a structure*; `archive/peer/2026-09-20-c56-transport-verbs-unreachable.md:113` names that line as **the trap**.
+2. **All three attempts used PRE-EXISTING indicators, two at an index the same run measured wrong.** `tools/bench/diag_s56_transport3b.log:26` (plan: `'File # Saved'`, `'Image'`, both `diagram_index: 0`), `:29`, `:33` (the two 5001s) — against that run's own gate E0 at `:15-16`, `{'Diagram': 114}`: **no** pre-existing indicator terminal is at top level, so `0` could not match either. The third attempt passed `46` = `#639`, the **source's** diagram.
+3. **The freshly created indicator was never passed to it.** `#23541` is born on `TopLevelDiagram #536` (`tools/bench/diag_s56_transport3.log:75`) — `diag_index` **0**, the one indicator for which `0` is provably right — and `:40` records the only other attempt as *"NOT ATTEMPTED: function index 102 / diagram_index None unresolved"*.
+4. **This exact fault class was measured and closed once, in the same op family.** `docs/d1-build-plan.md:1230-1231`: `'Auto-Reset'` at `src_diagram_index=0` → **5001 from `Get Controls.vi`**; the same label at `43` → **WIRED, sink wire 0 → 1231, no error**. `:1251` — *"Fault 1 — 3 rows, **CLOSED by measurement**: wrong `src_diagram_index`. One-line caller fix."*
+5. **The cheap test exists and was not run** — `archive/peer/2026-09-20-c56-transport-verbs-unreachable.md:123`, `:185-186` (≈3 calls). Its one execution failure is already diagnosed: `tools/bench/diag_s56_transport3b.log:21-22`, `owner_of(#6) = ('Panel', 3)` because uid 6 is the **panel control's** uid, not its terminal's (`tools/gscript.py:849,:859`).
+
+The exclusion is not supported by the three attempts it rests on. A fourth attempt is not the repeat; **excluding the verb without ever giving it a correct argument is.**
+
+---
+
+# PART B — THE ARTEFACT
+
+**B1 — ALREADY BUILT? No slug.** No `stage_d1_s3a*` under `tools/recipes/`; only the cycle-56 diagnostics. Genuinely unwritten.
+
+**B2 — ALREADY FAILED — reported, cause addressed, no slug.** `tools/bench/diag_s3a_ind_transport.py` attempted this transport for `#10686` and died (`BGRUN TIMEOUT` 1502 s, 20 empty `create_indicator` returns). Both causes are repaired on disk and the plan builds on the repairs — addressing by 46(a) (`docs/NAMES.md:474`), the swallow by 46(f) (`docs/cycle27-plan.md:1664-1671`). Visible, not blocking.
+
+## B3 — HELPER EXISTS → `helper-exists`
+
+1. **A built verb already creates an ALREADY-WIRED indicator in one call, effect-verified.** `tools/gscript.py:1882-1903` `tunnel_indicator(target, tunnel_index)` — `Tunnel.'Outer Term' (6356001) → Terminal.'Create Indicator' (6349C02)`; `:1902-1903` *"a real success adds BOTH a `ControlTerminal` and a Wire"*, with the dangling-indicator failure mode named at `:1916-1921`. The plan hand-rolls create-then-wire as two unproven steps. (Applicability turns on A2 — this is the loop-border shape — so it is a helper to **cost**, not to adopt blindly.)
+2. **`connect_ctl` is the project's *measured* answer to a `wire_indicators` 5001 — head-to-head, one run, one indicator.** `tools/bench/build_harness_dispI.log:70` — `wire_indicators … 'Image'` → *"EXC … error 5001"*; `:111` — same target, `connect_ctl -> err=None; Image terminal wire = 259 … ExecState 1`. Written up at `docs/toolkit-capabilities.md:25`. Also uncosted: `:450-451` — *"`wire_indicators` raised error 5001 because it wants **connector-pane** names"* — and conpane writers exist (`conpane`, `conpane_assign`, `:145`), which makes `docs/NAMES.md:478`'s *"no conpane op yet"* stale.
+
+## B4 — ALREADY MEASURED → `already-measured`. The FIRST ACT is already answered, twice, on this VI
+
+> `tools/bench/diag_queue_donor2.log:48` — *"C1 `ControlTerminal #23124` (label `'index'`) appears in Diagram #686's `AbstractDiagram.Nodes[]`: **False**; named SOURCE terminals (`out_name`) **[]**"*
+> `:55` — identical reading for `ControlTerminal #23493` (non-scalar, error cluster).
+
+Both were created at top level and `move_in`-relocated into nested `Diagram #686` in that same run (`:44-46`, `:51-53`) — **candidate (2) has already been executed once and its post-conditions measured.** Corroborated offline from the original's own census: the two `from-ctl` `ControlTerminal` uids `28148`/`28996` (`docs/d1-route-b-plan.md:175-176`) appear **nowhere** in `tools/bench/main_vi_nodeterms.json` (626 nodes, 170 diagrams). Contrast, same census, relevant to S3b: `Local` uid `2991` **is** enumerated on a nested diagram (`tools/bench/main_vi_nodeterms.json:8-28`) — Locals are `Nodes[]` members, `ControlTerminal`s are not.
+
+So candidate (1) is dead and candidate (2) needs a verb that does not address the indicator end through `Nodes[]`. The cited `docs/d1-build-plan.md:1227,:1230-1231` are about `Get Controls.vi` and `src_diagram_index` — a different question — so the first act as written would re-measure the wrong thing.
+
+---
+
+# MACHINE-READABLE
+
+```
+PRIOR-ART: refuted-already
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: helper-exists
+PRIOR-ART: already-measured
+```
+
+**Citations, one per finding, for the disposition:**
+
+- `refuted-already` — `archive/peer/2026-09-20-c56-transport-verbs-unreachable.md:123` + `docs/cycle27-plan.md:1244-1248` + `docs/NAMES.md:470-473` + `tools/bench/diag_s56_transport3b.log:15`, against `docs/cycle27-plan.md:1584-1591`
+- `contradicted` — `tools/gscript.py:983-985`/`:997-1000` + `docs/NAMES.md:278-280`; `tools/recipes/build_opconnectnested_v1.py:419-420`
+- `unread-evidence` — `archive/2026-08-29-status-sweep-opexitloop-opwireind.md:33-35` + `tools/gscript.py:1787-1789` + `tools/bench/diag_s56_transport3b.log:15-16,:26,:29,:33` + `tools/bench/diag_s56_transport3.log:40,:75` + `docs/d1-build-plan.md:1230-1231,:1251` + `archive/peer/2026-09-20-c56-transport-verbs-unreachable.md:113,:123,:185-186`
+- `helper-exists` — `tools/gscript.py:1882-1903`; `tools/bench/build_harness_dispI.log:70` vs `:111`; `docs/toolkit-capabilities.md:25`, `:145`, `:450-451`
+- `already-measured` — `tools/bench/diag_queue_donor2.log:48`, `:55` (and `:44-46`, `:51-53`); corroborated by the absence of uids 28148/28996 from `tools/bench/main_vi_nodeterms.json`
+
+## What is genuinely NOT covered — so it is not hunted for
+
+- **46(a)'s creation route is novel and stands.** The `build_index_array → create_indicator(Nodes[0].Terminals[2]) → delete_object(IA)` route had never been run on this VI before cycle 56 and `docs/NAMES.md:474-475` records it as new. Nothing in the archive refutes it; doing it twice, in one recipe, is new work.
+- **Where a pre-existing indicator's `ControlTerminal` lives is still unread** — named unsettled at `archive/peer/2026-09-20-c56-transport-verbs-unreachable.md:129`. One read.
+- **The new indicator's LABEL was never read back** — `tools/bench/diag_s56_transport3.log:75` prints uid, class, position, owner, no label; `wire_indicators` selects by label. `fp_labels`/`panel_wiring` answer it.
+
+**The one sentence for the judgement session:** the creation half is sound and new, but the wiring half is where the cycle will be lost — two of the three candidate verbs are already ruled out by measured tool scope, the excluded fourth has never once been given a correct `diagram_index`, and an ANSWERED review's objection that a top-level indicator wired out of `#637` is a 38(g) *semantics* problem is still undisposed, which is what decides whether `move_in`-into-`#639` is the fallback or the only acceptable route.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-d1-s3a-focus-ind.md
+   STOP RECORD armed: tools/recipes/stage_d1_s3a_focus_ind.py sha  verdict refuted-already, contradicted, unread-evidence, helper-exists, already-measured -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 537s

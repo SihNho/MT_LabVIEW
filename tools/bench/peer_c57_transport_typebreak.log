@@ -1,0 +1,71 @@
+BGRUN START 2026-09-20 23:19:41 limit 16.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c57-transport-typebreak -TaskFile 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\25d2cb97-f297-4331-8821-a27dce28c632\scratchpad\c57m3b_task.md' -TimeoutSec 780
+OUTCOME: ANSWERED (568s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-20-c57-transport-typebreak.md
+COST: $3.7974  in 16 / out 44946 / cache-create 227327 / cache-read 708732  (567s, 18 turn(s))
+--- ANSWER ---
+Write is disabled for this session, so the review is here rather than in a file — which matches the brief's "your output is your answer, nothing else."
+
+---
+
+# REFUTED on the load-bearing half
+
+The TYPE diagnosis is probably correct. That is the problem: it was knowable before the run, and it is not what the run was for. **"The transport route is SOUND" is not supported by this run, and "the 5001 story is closed" does not follow at all.**
+
+## 1. The single strongest reason the claim is WRONG
+
+**The run held a saveable artefact at `diag_s57_ctmove_wire.log:70` and spent it on a connection it could have predicted would break the VI — so the one measurement that proves transport soundness was never taken.**
+
+| line | state |
+|---|---|
+| `:70` | `ExecState AFTER the move (and the junk purge) = 1` — **reparented, legal, saveable** |
+| `:82` | `ExecState BEFORE wire_indicators = 1` — still saveable |
+| `:87` | `ExecState = 0` |
+| `:96-97` | `g.save()` **NOT ATTEMPTED** |
+| `:111`,`:117` | `saved: False`, `bytes: None`, md5 `6ff19497…` — **byte-identical to the input at `:10`** |
+
+"Sound", for a scripted structural edit, means *it survives serialisation and reload*. `owner_of(#23541) = ('Diagram', 639)` at `:69` is an **in-memory** read of the live object graph taken seconds after the Move. Prior art says the save has **never** been reached after a `move_in` — `docs/cycle27-plan.md:1099-1100`: *"`ExecState` 0 afterwards; the save was refused."*
+
+This is the exact signature the standing rule exists to stop (CLAUDE.md, *"A step is not done until it has left a file"*, written 2026-09-19 after ten attempts left copies byte-identical to the original). `:117` md5 == `:10` md5. The claim reads that as success.
+
+**Subsidiary:** the corroborating evidence is this project's own documented non-evidence. `docs/cycle27-plan.md:1101-1105`, in red, on this same VI and this same number: *"**A WIRE COUNT CAN NEVER DETECT A CUT** … the census stayed **1905 → 1905 → 1905** … Any stage gated on a Wire delta would have reported all green with its wires cut."* `1905 → 1905` is compatible with a branch, a cut, and nothing happening. It should not be in the argument.
+
+## 2. An alternative explanation that is not a type mismatch
+
+**2a — the instrument cannot separate them, and its only archived positive calibration is the structural case.** `docs/NAMES.md:908-909`: `Is Broken?` measured **`False` on a good wire** and **`True` on a two-source wire**. Cycle 55 added a type calibration. It fires for both — sensitivity, never specificity. The claim uses a one-bit detector documented to respond to the competing hypothesis as evidence for its own. And the structural break it was calibrated on is exactly what `wire_indicators` predicts, `tools/gscript.py:1766-1768`: *"…extend an unrelated wire instead → **'This wire connects more than one data source'** and the target breaks."*
+
+**2b — a concrete non-type mechanism.** Wire 10799 is not an ordinary wire: `docs/camera-acquisition-facts.md:178` shows it is **`CaseStructure #10407`'s t0 selector wire**, terminating on a *structure border sink*. `tools/gscript.py:2415`: *"an already-wired **SINK is not safe (LabVIEW re-routes and the VI breaks)**."* If WI's branch re-`Connect Wire`s over that net, the re-route breaks it structurally — and the fingerprint is identical: target `.Wire` = 10799, count unchanged, ExecState 0, `Is Broken?` True. **This run does not distinguish the two.**
+
+**2c — your specific question: can a same-diagram branch inside a While loop break structurally?** On the measured facts, **no**, and the run's own gate is why: `#637` reads 59 terminals / 48 wired before and after (`:81`,`:89`,`:92`) — no tunnel, no border object. Both endpoints owned by `Diagram #639`. A control terminal inside a While loop is legal LabVIEW. I will not invent a rule that forbids it. Two things are left *open* rather than excluded: the terminal was placed at **(120, 4000)** and the run never read `#637`'s bounds or the terminal's post-move position (an object owned by a diagram but drawn outside its frame is an inconsistent state, and I found no NI source saying `Move` clips or auto-grows); and **`#10407`'s wired-terminal count was never taken** — the one node at the far end of the wire under test, and wired-terminal counts are the only cut detector `docs/cycle27-plan.md:1101` accepts.
+
+**2d — `wire_err: 1055` at `:51`: no, it does not matter.** `tools/gscript.py:829-830` documents it: *"0 when the terminal is bare (then `wire_err == 1055` and `term_err == 0`)"*. It is LabVIEW's generic *"Object reference is invalid"* from reading `Connected Wire` off a bare terminal. Row `:74` still shows it after the move, correctly. Drop it. ⚠️ Do not conflate it with the *other* 1055 in this op family — `tools/gscript.py:2378-2380` records 20 `OpCreate{Control,Indicator}_v0.vi` calls whose dialogs said 1055 while the wrapper reported success. Different thing.
+
+**2e — I am not disputing the type mismatch.** `docs/camera-acquisition-facts.md:189-191` traces `#10686 'x .and. y?'` to `#3057 'x = 0?'`, so the source is Boolean — established **independently of this run**. (The run never measured it; LabVIEW's And is polymorphic and goes bitwise on integers, so the terminal name alone proves nothing.) The mismatch is real *and was in the docs before the script ran*. It is not a finding of this run; it is a design fault of this run, and calling it "the only thing that failed" inverts that.
+
+## 3. What would falsify the claim
+
+1. Repeat create → `move_in` → **stop**; `g.save()` fails at ExecState 1, **or** the saved file reloads with `owner_of(#23541) != ('Diagram', 639)`, or at ExecState 0.
+2. Identical route, branch onto a **type-matched** sink, and ExecState still goes 0.
+3. `#10407`'s wired-terminal count changes across `wire_indicators`, or wire 10799 ends with a terminal set other than `{#10686 t0, #10407 t0, #23541}`.
+4. Re-run `wire_indicators` with a deliberately **wrong** `diagram_index` and `'index'` still resolves.
+
+## 4. Cheapest discriminating test — and the type answer
+
+**Can any existing verb make an indicator of a chosen type? No.** `create_indicator` is `Terminal.Create Indicator` 6349C02 (`tools/gscript.py:2388-2390`) — type comes from the donor terminal, no type argument. The **only** node-creation verb is `build_index_array` (`:2322`), one class only. And `node_info`/`create_indicator` address **top-level** `Nodes[]` only (`:2467`, *"Sub-diagram nodes are not listed"*) — which is why 46(a) exists. So reachable types today = an Index Array's terminals: `index` (numeric). Boolean is reachable only by wiring the Index Array's `array` input first with `connect_terminals` (`:2326-2328`) to retype `element` — which needs a Boolean-array source on the **top-level** diagram that nobody has shown exists. **So "just create one of the RIGHT TYPE" is not free, and "no new op VI is needed" is unestablished.**
+
+**Arm A — the test that matters. Same script, delete PHASE 5, add the save.** create → `create_indicator` → delete IA → `move_in` (position chosen from `#637`'s *measured* bounds) → purge junk Invoke → ExecState → **`g.save()`** → close LabVIEW → reopen → re-read `owner_of`, ExecState, census, panel row. Strictly *shorter* than the run being reviewed, and the only version that can leave the artefact the standing rule demands. Add two free reads: `#637` bounds, and `#10407` wired-terminal count before/after.
+
+**Arm B — only if A passes.** On the *reloaded* file, branch onto a type-matched sink. Note `docs/NAMES.md:912-921`: the `Is Broken?` read itself perturbs the target and the mechanism is **OPEN** — treat any post-read ExecState as suspect, never put it on a success path.
+
+**Arm C — 30 seconds, answers §5.** Re-run `wire_indicators` for `'index'` with `diagram_index=0` while the terminal sits on Diagram 639. If it still resolves, `index 2` never scoped the lookup and "found it at the nested diagram's live index" means something other than what the claim says.
+
+## 5. Is the 5001 story closed? **No — three independent reasons**
+
+1. **Different failure stage.** 5001 here is a *name-lookup* failure and it is **swallowed** — `tools/gscript.py:1773`, *"a swallowed 5001 (bad name) is still a silent no-op."* Cycle 56's 5001s were WI failing to **resolve** `'File # Saved'` and `'Image'`. This run failed at the **post-condition** check (`:1794-1797`) on a label that resolved fine and was verified unique the same run (`:55`,`:57`). The 5001 path was never exercised.
+2. **Different population.** `'File # Saved'` (uid 6) and `'Image'` are **pre-existing, already-wired** panel objects. `create_indicator` cannot produce them; relocating them means `move_in` on a *wired* terminal — and `docs/cycle27-plan.md:1093-1100` is red-flagged: **`move_in` severs every wire on the moved node** (`#3529` 1→0 wired, `#48` 7→0, w4833 left with zero terminals). `#23541` had **zero** wires, so this run exercised the one case where that hazard cannot appear.
+3. **The fleet is blind to the rest of the dependency.** `tools/gscript.py:830`: *"locals and Value property nodes are not seen here."* Replacing uid 6 changes its identity while nothing in this fleet can observe whether a local or property node still reads it.
+
+## If I am wrong
+
+Show me a **saved and reloaded** VI in which a top-level-created `ControlTerminal` `move_in`-ed to a nested diagram survives with `owner_of == ('Diagram', 639)` and ExecState 1. I found none in `docs/`, `tools/bench/` or the plans, and `docs/cycle27-plan.md:1099-1100` says the save has always been refused. Produce that file and the transport route is sound — §4's type finding and §5's three reasons still stand independently.
+
+**Sources:** [NI — Error 1055 from a Property or Invoke Node](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019L75SAE) · [NI — Manipulating Data Bitwise](https://www.ni.com/en/support/documentation/supplemental/06/manipulating-data-bitwise.html) · [NI — Polymorphic Functions](https://www.physik.uzh.ch/local/teaching/SPI301/LV-2015-Help/lvconcepts.chm/Polymorphic_Functions.html)
+BGRUN END rc=0 after 568s

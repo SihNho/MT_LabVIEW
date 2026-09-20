@@ -1,0 +1,69 @@
+BGRUN START 2026-09-20 23:06:15 limit 16.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c57-ctowner-5001 -TaskFile 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\25d2cb97-f297-4331-8821-a27dce28c632\scratchpad\c57m3_task.md' -TimeoutSec 780
+OUTCOME: ANSWERED (546s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-20-c57-ctowner-5001.md
+COST: $3.8922  in 34 / out 43804 / cache-create 178995 / cache-read 1871575  (545s, 32 turn(s))
+--- ANSWER ---
+Write is disabled for this session, so the review is below rather than in a plan file.
+
+---
+
+# REFUTED — the census is sound, the bridge from it to the 5001 is not
+
+**First, the part of my own attack the machine killed.** I opened on the premise that the owner read cannot *say* `TopLevelDiagram`, so `{'Diagram': 114}` would be a constant, not a measurement. That is wrong: the census is `g.report_all(target,"ControlTerminal")` histogrammed on `r["owner"]` (`tools/bench/diag_s56_transport3b.py:219-230`), and that same path printed `'owner': 'TopLevelDiagram'` for the freshly created `ControlTerminal #23541` (`tools/bench/diag_s56_transport3.log:75`). The read discriminates. **Do not spend a run re-checking the census.** The 114-terminals-are-nested fact is very probably true — and it is also inert.
+
+## 1. The single strongest reason the claim is WRONG
+
+**The 5001 under test comes from `Wire Indicators.vi`; the "diagram index scopes the label lookup" mechanism was measured on a *different* library VI (`Get Controls.vi`) reached by a *different* verb (`wire_control`).** The claim transplants a mechanism across verbs without evidence.
+
+- Failing call chain, verbatim: `LV-Scripting.lvlib:Wire Indicators.vi | OpWireInd_v0.vi` (`diag_s56_transport3b.log:29,:33`). `Get Controls.vi` is **not in it**.
+- The 0-vs-43 pair is `g.wire_control(...)` (`docs/d1-build-plan.md:1228`) and its 5001 is explicitly attributed to **`Get Controls.vi`** (`:1230`, `:1232`).
+- Our own record of `Wire Indicators.vi`'s inputs is `Outputs` + `Indicator Names` — **no diagram** (`docs/NAMES.md:53`) — and `gscript.py:1763-1764` states the contract as "the indicators must ALREADY EXIST on the target's **front panel**; they are selected by label".
+
+And the blamed variable was already varied with **zero effect**: same label `'File # Saved'`, `diagram_index=46` → 5001 (`diag_s56_transport2.log:56`); `diagram_index=0` → **byte-identical** 5001 (`diag_s56_transport3b.log:29`). Two different diagrams cannot yield the same string if `index 2` scoped the lookup. This fleet has a documented precedent for a vestigial class/index pair: `tools/recipes/build_opownerchain_v1.py:256-259` — "Class/index are otherwise unused by the owner path."
+
+Worst of all, the project retracted this exact inference three days earlier: *"5001 is in LabVIEW's user-defined range (5000–9999) and the library may raise it for a connection failure as readily as a lookup failure, so that row proves nothing about names"* (`d1-build-plan.md:1241-1243`, after an ANSWERED codex review). Pre-decided 46(c) re-commits the withdrawn reading — a repeated failure class, not a new finding.
+
+## 2. Alternative explanation — panel-scope, not diagram-scope
+
+`Wire Indicators.vi` enumerates the **front panel** and refuses a target it cannot handle. Two sub-causes, neither excluded by any run:
+
+- **A class it cannot see.** `docs/toolkit-capabilities.md:25` records `connect_ctl` working "on a Vision IMAQ Image Display, **which erdosmiller's Wire Indicators cannot see**". Attempt 2's target was `'Image'` #31543 (`main-vi-panel-map.md:272`) — the live image display (`d1-build-plan.md:686`), reached elsewhere only by control reference (`main-vi-panel-map.md:547,:618`). **That 5001 already has a recorded, diagram-independent cause in our own docs**, and 46(c) sweeps it into the census story.
+- **Suitability/type refusal, reported as "not found".** The source is `'x .and. y?'` — the **And** primitive's Boolean output (`diag_s56_transport3b.json:127-129`). Neither target is Boolean: `'Image'` is an image display; `'File # Saved'` is grouped with `File Size`/`file progress` (`main-vi-panel-map.md:192`) and written by a Local (`:410`). **Its representation was never read** — an unexamined confound in both attempts.
+
+**`d1-build-plan.md:1231` needs no reconciling — it is not evidence about this verb.** `Get Controls.vi` genuinely *is* diagram-scoped; that is what 0→fail / 43→wire measured, for `wire_control`. Two library VIs with two lookup scopes explains every row at once, *including* the 0-vs-46 invariance the claim cannot explain.
+
+## 3. What would falsify the claim
+
+- **A.** 5001 `Control <label> not found` when `diagram_index` IS the live index of the diagram `owner_of` says owns that indicator's terminal.
+- **B.** `wire_indicators` **succeeds** at `diagram_index=0` for an indicator the census places on a nested diagram.
+- **C.** Two calls differing only in `diagram_index` return byte-identical errors — **already observed** (`diag_s56_transport2.log:56` vs `3b.log:29`) and never weighed.
+
+Note the consequence: under the claim's own mechanism the right index is the *indicator terminal's* diagram, which was never determined for #6 or #31543. The three attempts used 0, 0 and 46 (the **source node's** diagram). **No run so far has tested the hypothesis it is said to confirm.**
+
+## 4. Cheapest discriminating test — one call, existing verbs, no `move_in`
+
+**Wire the terminal the machine has already placed on the top-level diagram.**
+
+1. `build_index_array` → `create_indicator(Nodes[0].Terminals[2])` → `delete_object` — the 46(a) route, already measured to yield `ControlTerminal #23541`, `owner ('TopLevelDiagram', 536)` (`diag_s56_transport3.log:68-80`).
+2. Read the new panel row's label off the machine (`panel_wiring` diff). Do not retype it.
+3. `wire_indicators(node_index=<live Traverse('Function') index of #10686>, src_terms=['x .and. y?'], indicator_names=[that label], **diagram_index=0**, node_class='Function')`.
+
+**Claim predicts SUCCESS** — this is the exact configuration 46(c) says must work. **A 5001 here refutes 46(c) in one call**, with no move, no nested index, no dependence on #639's live index.
+
+Second arm only if step 3 succeeds (still no `move_in`): repeat at the live index of nested `#639`, which does **not** own that terminal. Claim → 5001; panel-scope alternative → same result as step 3. That contrast settles the scope question outright.
+
+Two free extras in the same run: read the new indicator's representation (is the Boolean source even type-compatible?), and histogram `report_all("ControlTerminal")` on the owner **uid** rather than the class — the per-diagram distribution, including where #6's terminal actually lives, falls out of a call already being paid for. That histogram is what E0 should have printed; the uid was in hand and discarded (`diag_s56_transport3b.json:85-87`).
+
+## 5. Is the planned `move_in` run a test of the claim? — No
+
+`tools/bench/diag_s57_ctmove_wire.py` changes three things at once versus every failed call (new panel object of different class/label/type · a move to a nested diagram · a different `diagram_index`) and drops the original targets entirely, so its result cannot explain why #6 and #31543 failed. It has **no control arm**: under the panel-scope alternative it passes for an unrelated reason — a plain numeric indicator the library can see, index irrelevant — and would be archived as confirming a mechanism that never operated. It can also fail for reasons unrelated to the claim, three of which the script itself lists: TOP-LEVEL → NESTED `move_in` has never been tried (`:12`, gate `P4a`), `move_in` leaves junk `Invoke` nodes (`:70`), and `Wire Indicators` needs the source already wired (`gscript.py:1765-1770`).
+
+It is a fine **route-feasibility** test for S3a delivery. It is not a test of 46(c) — and the cheap diagnostic arm in §4 is precisely the phase it omits. Run §4 first, then the route.
+
+## 6. "The one remaining unknown is single" is false
+
+Four stand open, none measured: (i) `Wire Indicators.vi`'s lookup scope, panel vs diagram; (ii) whether it can see the target's control class at all (`toolkit-capabilities.md:25`); (iii) which name property it matches — Label vs Caption; the newline row at `d1-build-plan.md:1232-1233` is still unexplained; (iv) whether the indicator's terminal and #10686 can share a diagram at all, since `wire_indicators` creates no tunnel — the run's own gate E6 asserts none appears (`diag_s56_transport3b.log:40`).
+
+**What would change my mind:** the §4 step-3 call returning a wire. That would show the index does select the lookup scope and that a top-level terminal is findable there, and the census→5001 bridge would stand.
+
+Sources: [TopLevelDiagram class](https://labviewwiki.org/wiki/TopLevelDiagram_class) · [VI Server Class Hierarchy](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy) (TopLevelDiagram ⊂ Diagram ⊂ AbstractDiagram — so the census's distinction is real) · [erdosmiller/lv-scripting](https://github.com/erdosmiller/lv-scripting) (no public per-VI documentation exists; `Wire Indicators.vi`'s connector pane is undocumented online, `docs/NAMES.md:53` is the only record — treat that as unconfirmed externally) · [NI forum, error 5001 is in the user-defined range](https://forums.ni.com/t5/LabVIEW/Error-5001-Labview/td-p/3940643).
+BGRUN END rc=0 after 547s

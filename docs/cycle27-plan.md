@@ -1703,3 +1703,122 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
       Variable` 6331C02 through `build_invoke` is the route, it is simply built. The mis-citation is what turned
       (g)'s two no-call gates into FAILs and what sent a $4.19 review out to attack a rule instead of a machine.
       **Cite Pre-decided 2 by its words, never by its remembered shape.**
+
+## Pre-decided — ADDED 2026-09-20 (cycle 57): the transport is SOLVED for location and addressing · the blocker is TYPE
+
+47. **THE S3a TRANSPORT RAN END TO END FOR THE FIRST TIME. `move_in` TOP-LEVEL → NESTED WORKS, AND
+    `wire_indicators` GIVEN THE INDICATOR'S OWN DIAGRAM MAKES THE CONNECTION WITH NO 5001.** Judgement, cycle 57,
+    2026-09-20, from `tools/bench/diag_s57_ctmove_wire.{py,log,json}` (`BGRUN END rc=1 after 123s`, 27 pass /
+    2 fail), the files-only read behind it, and `archive/peer/2026-09-20-priorart-d1-s3a-focus-ind.md`
+    (claude/priorart, ANSWERED, $7.2933, verdict **NOT novel**, 5 slugs — all disposed in that file's
+    `## What was done with it`). 34–46 stand; this resolves 46(d), closes the three 5001s, and names the one
+    thing that actually blocks S3a.
+    - (a) 🎉 **THE ROUTE, measured step by step.** On a scratch of `D1_s2_loops.vi`: `build_index_array` on the
+      `VI → Block Diagram` head → `owner_of` `('TopLevelDiagram',536)`, `node_info` **0 → 1** →
+      `create_indicator(Nodes[0].Terminals[2])` → `ControlTerminal` **#23541**, census **114 → 115** →
+      `delete_object(IA)` → `ExecState` **1** (46(a) reproduced exactly, all error columns `''`) →
+      **`move_in(#23541, dest = the LIVE index of `#639`)` → `owner_of` `('TopLevelDiagram',536)` →
+      `('Diagram',639)`, census 115 → 115, panel rows 115 → 115, `ExecState` STILL 1.** Top-level → nested had
+      never been tried on any terminal, let alone a freshly created one. It leaves one junk `Invoke` uid (the uid
+      the deleted Index Array released); purge it in-run.
+    - (b) 🎉 **THE THREE 5001s ARE EXPLAINED AND CLOSED — IT WAS ALWAYS THE ARGUMENT, NEVER THE VERB.**
+      `tools/gscript.py:1787-1789` feeds `Diagram in` from `diagram_index`, which scopes the **INDICATOR**
+      lookup and never the source. All three cycle-56 attempts named pre-existing indicators whose terminals sit
+      on other nested diagrams, so no index passed could have matched. Given `diagram_index` = the diagram where
+      the indicator's terminal actually lives, `wire_indicators` **wired**: target wire **0 → 10799**, whole-VI
+      `Wire` delta **0** (a branch onto the existing net), `#10686` t0 `'x .and. y?'` **3/3 wired before and
+      after**, and **`#637` 59 → 59 terminals / 48 → 48 wired, NO tunnel and NO border object** (37(e) grain).
+      The identical fault class was closed once before by measurement — `docs/d1-build-plan.md:1231`,
+      `'Auto-Reset'` at `src_diagram_index=0` → 5001 from `Get Controls.vi`, the same label at 43 → wired,
+      `:1251` "CLOSED by measurement: wrong `src_diagram_index`". **Excluding a verb that has never been given a
+      correct argument is the repeat, not a fourth attempt.**
+    - (c) 🔴 **THE 38(g) SEMANTICS OBJECTION IS ACCEPTED, AND IT DECIDES THE ORDER OF THE BUILD.** A top-level
+      `ControlTerminal` wired to a source inside `WhileLoop #637` crosses the loop border as a tunnel, and a
+      while-loop output tunnel delivers ONE value when the loop ends — legal, `ExecState` 1, and useless to a
+      local-variable read in loop 1.5 that must see the value every iteration. **So `move_in` into `#639` is not
+      a fallback, it is the only acceptable route**, and it matches the VI's own practice: all 114 pre-existing
+      `ControlTerminal`s are owned by class `Diagram`. The shape is now measured rather than argued — (b)'s
+      59/59 · 48/48 · no border object. `tunnel_indicator` (`tools/gscript.py:1882-1903`) is **REJECTED for
+      S3a for the same reason**: it builds the indicator off a `Tunnel.'Outer Term'`, i.e. it IS the banned shape.
+    - (d) 🔴 **THE REMAINING BLOCKER IS TYPE, AND NOBODY HAD NAMED IT.** `Terminal.Create Indicator` **6349C02
+      takes no type argument**, so a created indicator inherits the type of the terminal it is created from. The
+      indicator built by (a) came off the carrier Index Array's `index` terminal — its label read back off the
+      machine as **`'index'`** (hex `696e646578`, no newline, no duplicate) — i.e. a NUMERIC. Wiring it to the
+      **BOOLEAN** `'x .and. y?'` left `ExecState` **1 → 0** and, on the ordered second pass (42(b), idempotent
+      re-connect, `wire_delta` 0, op error `''`), **`Is Broken? = True`** — the signature 42(a) validated for a
+      type mismatch. **Competing reading, RECORDED not dismissed** (`archive/peer/2026-09-20-c57-transport-typebreak.md`,
+      claude/hypothesis opus max, ANSWERED, $3.7974, 41(b)): that `Is Broken?` also reads True on a two-source
+      wire and that 10799 sinks at a structure border, so the break may be the shape rather than the type. The
+      two are separated by a control pair on ONE variable — same verbs, same diagram, same branch-onto-an-existing-net
+      shape, numeric source `#10757` t1 `'element'` (wire 10990) in place of the Boolean — which is 42(a)'s own
+      design and is what cycle 57's second build act ran. **🎉 IT RAN, 35 pass / 0 fail, AND THE TYPE READING WINS:**
+      `tools/bench/diag_s57_typepair.{py,log,json}` (`BGRUN END rc=0 after 242s`). Identical creation route,
+      identical label `'index'`, identical `move_in` into `#639` @46, identical `wire_indicators` call shape, and
+      the same branch onto an existing net feeding the same structure-border sink — **only the source's TYPE
+      differed**. Result: op error column **`''`**, indicator wire **0 → 10990**, whole-VI `Wire` **1905 → 1905**,
+      `#10757` **3/3 wired before and after**, `#637` **59 → 59 / 48 → 48, no tunnel, no border object**,
+      `ExecState` **1 → 1**, and on the ordered second pass (`wire_delta` 0, op error `''`)
+      **`Is Broken?` = False on wire 10990**. **The competing shape reading is REFUTED BY MEASUREMENT** — leg 2
+      carries that shape exactly and reads clean — so the Boolean→numeric mismatch is the cause, and
+      `Is Broken?`'s True/False split is again the instrument 42(a) validated.
+    - (h) 🎉 **S3a's NUMERIC HALF IS DELIVERED, AND THE SAVE-FIRST ORDER OF (e) IS WHAT MADE IT SURVIVE.** Two
+      openable artefacts, both saved legally (`ExecState` 1 at each save point, `allow_broken` False, `gui_save`
+      never called), both LV2026 `26 00 80 00`:
+      **`claudeDev\D1_s3a_ind_placed_20260920_234341.vi`** md5 `0b9a070289a08a22a8843e287b183398`, 476,209 B —
+      the indicator created and `move_in`-ed onto `Diagram #639`, **unwired**; and
+      **`claudeDev\D1_s3a_num_ind_20260920_234341.vi`** md5 `fceaa0a1d068622596842435b830bffe`, 476,146 B — the
+      same, wired to `#10757` t1 `'element'`, the payload source of 45(c). The placed artefact was **reopened
+      COLD in a freshly restarted LabVIEW and read `ExecState` 1 with `owner_of(#23541) = ('Diagram',639)`**, so
+      the move survives a save/reload and is not an in-memory artefact. Verification level: **STRUCTURAL**, never
+      functional — no VI was run (34(f)).
+    - (i) 🔴 **WHAT IS LEFT OF S3a IS EXACTLY ONE THING: A BOOLEAN-TYPED CARRIER.** Since 6349C02 takes no type
+      argument (d), the schedule indicator for `#10686` t0 `'x .and. y?'` must be created from a terminal that is
+      already Boolean. `#10757`'s own class was measured `IndexArray` (Traverse index 20 of 47) with terminals
+      `[(0,'array',sink,121),(1,'element',SOURCE,10990),(2,'index',sink,10947)]`, and the carrier used so far is
+      an unwired Index Array whose `index` terminal is numeric. Two routes, and the **cheap one is tried first**:
+      **(1) NO NEW TOOLING — find an existing builder that places a node with a BOOLEAN terminal at top level**
+      (`build_property` `tools/gscript.py:2194` and `build_invoke` `:2159` both already take a `diagram_index`,
+      and a Boolean-valued property yields a Boolean output terminal), then create → `move_in` → wire by the now
+      proven route. **(2) THE DURABLE FIX, permitted and named but NOT built this cycle — ONE new op VI** that
+      calls `Terminal.Create Indicator` on a **nested** diagram's `Nodes[n].Terminals[t]`: a splice of
+      `OpConnectNested_v1`'s ladder (`tools/recipes/build_opconnectnested_v1.py:419-420`) with
+      `OpCreateIndicator_v0`'s call. It would make the indicator **born correctly typed, correctly located and
+      already wired**, retiring `move_in` and `wire_indicators` from this path entirely, and it is allowed —
+      46(k): Pre-decided 2 forbids a further PROCESS DEVICE, not an op VI. Route (1) is first only because it
+      costs one diagnostic and no gate; if it fails, (2) is the answer and is not to be deferred again.
+    - (j) ⚠️ **NO READER IN THIS FLEET RETURNS A DATA TYPE.** Measured across 12 hits: the only representation
+      reader is `OpConstValueN_v1.vi` (`NumericConstant.Representation` 5DCFC00, `docs/toolkit-capabilities.md:59`,
+      `docs/NAMES.md:969`) and it reads a numeric CONSTANT. So a type mismatch is not predictable before wiring
+      and can only be read AFTER, through `Is Broken?` on an ordered second pass. **Until a type reader exists,
+      every new connection is type-checked by 42(b), never assumed** — and (d) is the first time that instrument
+      has paid for itself on a real build rather than on a calibration pair.
+    - (k) ⚠️ **OPERATIONAL, AND IT COST A RUN: a sub-agent that backgrounds its batch and ENDS ITS TURN kills the
+      batch.** Dispatch 4 returned "holding until it lands" and exited; a relaunch then restarted LabVIEW under
+      the still-live first run, which died in phase A (`com_error -2147023170 / -2147023174 RPC`) and was logged
+      as a **NON-RESULT**, not a budget failure. This is OPEN 54(b) firing exactly as written. **Every material
+      brief that backgrounds a run must say: stay in the turn until the log carries its final `BGRUN END`/
+      `TIMEOUT` line.** Handles across the two legs: 63,313 → 30,688 → 60,291 → 30,695 → **63,533**, with
+      `ref_counts` 22/22/0 live — 44(e)'s unexplained growth recurs a fifth and sixth time.
+    - (e) 🔴 **A FAULT IN MY OWN BRIEF, AND IT IS THE USER'S 2026-09-19 RULE: THE RUN HELD A LEGAL ARTEFACT AND
+      SPENT IT.** `ExecState` was **1** immediately after the `move_in` and the brief's phase order put the wire
+      before the save, so a run in which **every transport verb succeeded** ended at `ExecState` 0, saved
+      nothing, and left **no file to open**. *"A step is not done until it has left a file."* **RULE for every
+      later stage: the save goes at the last point the VI is measured legal, not at the end of the script**, and
+      a stage that reaches `ExecState 1` and proceeds past it without saving is a failed stage however well its
+      verbs ran. The corrected order is create → `move_in` → **save** → reopen COLD → wire → save again.
+    - (f) **THE PRIOR-ART REVIEW EARNED ITS $7.29 AND IS DISPOSED IN FULL** — `contradicted`, `unread-evidence`,
+      `refuted-already`, `helper-exists` ACCEPTED (two candidates withdrawn before a call was spent on them,
+      the winning verb identified, the 38(g) objection turned into the build order); `already-measured` ACCEPTED
+      on its cost and REFUTED on its citation, because the lines it called "a different question" are exactly the
+      prior art for the verb that worked. ⚠️ **The `FIXED:`/`REFUTED:` lines are written but their ACCEPTANCE BY
+      `guard_cycle` IS UNVERIFIED** — the review is stamped 2026-09-20 23:00:54 and `docs/cycle27-plan.md` carries
+      a day-granular frontmatter date, which cannot postdate it; the plan date was **deliberately not rolled
+      forward to satisfy a gate**. Check with a dry run before the recipe launch.
+    - (g) ⚠️ **CHARGED TO THIS CYCLE: the FIRST ACT re-measured something already on disk.** "Does a nested
+      diagram's `Nodes[]` enumerate `ControlTerminal`s?" was answered in four route-B run logs
+      (`build_d1_routeb_v*_run*.log:179-180`, `Nodes[None] with terminals []`) and, more strongly, at
+      `tools/bench/diag_queue_donor2.log:48,:55`, which measured it **after** a `move_in` into a nested diagram —
+      the exact post-condition that kills candidate (2)'s second half. What the act did add and was needed: the
+      verb-addressing table, `move_in`'s uid-addressing and its one prior `ControlTerminal` success
+      (`probe_move_ctlterm_v0.log:130-133`), and the `d1-build-plan.md:1231` prior art that produced the route.
+      **Before commissioning a read, grep the bench logs for the reading first.**
