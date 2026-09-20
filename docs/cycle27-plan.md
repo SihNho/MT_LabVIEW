@@ -1969,3 +1969,120 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
       same cycle.** That is why S3a's combined build is cycle 59's first act and not cycle 58's last: clearing it
       mid-cycle would have meant running the retrospective early, which is the exact trap OPEN 54(a) documents and
       which cost cycle 29 its entire cycle.
+
+## Pre-decided — ADDED 2026-09-21 (cycle 59): S3a IS DELIVERED as one file · S3b's transport DOES NOT EXIST and is built
+
+49. **S3a IS ACCEPTED AND CLOSED, AND THE NEXT STAGE'S TRANSPORT WAS MEASURED TO BE ABSENT FROM THE WHOLE FLEET.**
+    Judgement, cycle 59, 2026-09-21, from `tools/bench/cycle59_s3a_recipe.log` (`BGRUN END rc=0 after 596s`, **64
+    gates pass / 0 fail**), a files-only verb census, and `archive/peer/2026-09-21-s3b-local-variable-route.md`.
+    34–48 stand; this closes S3a and re-cuts S3b before any of it is built.
+    - (a) 🎉 **S3a IS DELIVERED AS ONE FILE, AT THE STRUCTURAL LEVEL, AND THE RECIPE WAS NOT TOUCHED TO GET THERE.**
+      `claudeDev\D1_s3a_focus_ind.vi`, md5 **`eef91c1d91f16b034707e4d1285ca8cb`**, 476,172 B, LV2026 `26 00 80 00`
+      (`tools/bench/cycle59_s3a_recipe.log:322`). `ExecState` **1** at the B3 save (`:304`) **and 1 on the Z0 COLD
+      reopen in a freshly restarted LabVIEW** (`:324`); **BOTH** ControlTerminals read `owner_of` `('Diagram',639)`
+      on that cold reopen — numeric #23541 `'index'`, Boolean #23576 `'Automatic Error Handling'` (`:328`); census
+      **116** (`:333`), i.e. 114 at the S2 baseline +1 per leg, which is the number the prior-art review said
+      nothing on disk had produced; both ORDERED `Is Broken?` readings **False** — wire 10990 (`:147`) and wire
+      10799 (`:311`). Six sub-step artefacts on disk, each saved at the last point the VI was measured legal
+      (`:347`). Refs **60 opened / 60 closed / 0 live** (`:344`); all three originals byte-unchanged before AND
+      after (`:340`). `tools/recipes/stage_d1_s3a_focus_ind.py` sha256 identical before and after —
+      `1986626FB6F16CD0…`, the bytes the prior-art review saw, so the stop record still matches. No hook refused
+      the launch, `CYCLE_GUARD_OFF` was never set, no gate was patched. **DECISION: S3a is CLOSED. Verification is
+      STRUCTURAL and is never called functional — no VI was run (34(f)).**
+    - (b) 🔴 **THE S3b TRANSPORT DOES NOT EXIST TODAY — MEASURED, NOT INFERRED, AND 45(f)'s ROUTE IS CLOSED AS
+      WRITTEN.** `local` occurs **once** in `tools/gscript.py`, in a comment (`:830`): **no verb creates a Local
+      Variable.** The only vehicle for `Control → Create:Local Variable` **6331C02** is `build_invoke`
+      (`tools/gscript.py:2159`), whose `reference` input is **deliberately left UNWIRED** (`:2164-2166`: a wired
+      reference makes the erdosmiller creator write the object's bare class name and fail silently). No `Op*.vi`
+      in `claudeDev` (108 files) carries `Local` in its name, and `vi.lib\Erdos Miller\LV-Scripting\Create*.vi`
+      is **50 files, none a local-variable creator**. `Local` is grep-absent from `docs/vi-server-ids.json`.
+      Neither `docs/NAMES.md` nor `docs/toolkit-capabilities.md` records a creator in any state; the only rows are
+      readers and the unverified wiki pair at `docs/NAMES.md:260`.
+    - (c) ⚠️ **AND THE METHOD'S OWN SHAPE IS WHY `build_invoke` CANNOT BE THE VEHICLE.** The external fact
+      dispatch (`archive/peer/2026-09-21-s3b-local-variable-route.md`, claude/fact fable-low thin +web, ANSWERED
+      79 s, `$1.3397`) returns, CITED to labviewwiki, that `Create:Local Variable` **6331C02 takes NO input
+      parameters** and returns only a Local refnum — so **the control instance the method is invoked on IS the
+      binding**. Two established halves (a method with no parameters; a wrapper that never wires the reference)
+      meet, and they do not meet in a place where anything can be addressed. Its further claims — that such a
+      call returns error 1055, and that `New VI Object` style **2061** + a write to `Local.Control Name`
+      **6355400** is the alternative — are the peer's own flagged INFERENCE, and its negative finding is that
+      **no NI reference page exists for 6331C02, style 2061, or 6355400/6355401/6355403 at all**; wiki, LAVA and
+      one 2013 forum thread are the only sources anywhere. **RECORDED, NEITHER ACCEPTED NOR REJECTED (41(b));
+      nothing in it is acted on except (d)'s choice of which route is probed FIRST.**
+    - (d) **DECISION: S3b GETS ONE NEW OP VI, AND THE AUTHORISATION IS 46(k), NOT A NEW USER DECISION.**
+      `docs/cycle27-plan.md:31` is *"no further **process device**"*; `:1697-1705` already settled that this does
+      not reach an op VI that places a Local Variable and that such an op *"is simply built"*. Shape, fixed here
+      so no material session designs it: **`OpCreateLocal_v0.vi`** — in: VI ref, the control's owned LABEL, the
+      destination diagram, a position; internals: `VI.Panel` → `Panel.Controls[]` **6348801**
+      (`docs/vi-server-ids.json:47`, already the measured route inside `OpFPLabels_v0`) → per control
+      `Control.Label` **6332005** (`docs/vi-server-ids.json:21`) → `Text.Text` → match the requested label → on
+      **that live Control reference** Invoke `Create:Local Variable` **6331C02** with no parameters → read back
+      the new object's uid, class and bound name; relocate afterwards only if the readback says it was not born
+      on the destination diagram. Out: uid, class, bound label, the error cluster. **It closes every reference it
+      opens** — reference hygiene is a precondition of a staged build, not an afterthought (CLAUDE.md), so the
+      op's self-test includes 20 consecutive calls with the handle count flat ±100. **Why route A first and not
+      the `New VI Object` 2061 route:** A is one call on a reference we already know how to obtain — it reuses
+      `OpFPLabels_v0`'s measured `Panel.Controls[]` → `Control.Label` walk and adds one Invoke — whereas B needs
+      TWO unverified IDs (a style constant from LAVA and a property write the wiki alone documents). B is the
+      fallback, and the self-test REPORTS whether 2061 and 6355400 resolve on this machine as a measurement,
+      never as a repair attempt. ⚠️ **AND THE SAME APPLIES TO ROUTE A's OWN PREMISE — added on the cycle-59
+      retrospective's finding 3:** *"6331C02 takes no parameters"* comes from a wiki page that **self-declares
+      its parameter table incomplete**, so if the method turns out to take parameters after all, that is a
+      **MEASUREMENT L0 RECORDS, not a failure of the sub-step.** L0 is never scored against an assumption the
+      sources never supported.
+    - (e) **THE DECOMPOSITION — five sub-steps, five artefacts, five pass criteria, each starting from the
+      previous FILE in a FRESH LabVIEW (the user's 2026-09-19 rule).** ⚠️ **The order INVERTS NEXT's sentence
+      order deliberately (see (f)).**
+      **S3b-L0** — build `OpCreateLocal_v0.vi` and self-test it on a **SCRATCH copy, never on
+      `D1_s3a_focus_ind.vi`**: create one local bound to a named control, read back uid/class/bound label, 20
+      consecutive calls, handles flat ±100. Pass: the local exists, bound to the label asked for, `ExecState` 1,
+      refs 0 live. Artefacts: the op VI + its self-test log.
+      **S3b-M1** from `claudeDev\D1_s3a_focus_ind.vi` (md5 `eef91c1d…`), cold — create the TWO locals, one per new
+      indicator (`'index'`, `'Automatic Error Handling'`), left UNWIRED → save
+      `claudeDev\D1_s3b_m1_locals_<stamp>.vi`. Pass: `Local` census **8 → 10**
+      (`docs/toolkit-capabilities.md:284` is the 8), both bound labels read off the machine, `ExecState` 1.
+      ⚠️ **MEASURE, DO NOT ASSUME, whether an unwired Local leaves the VI legal.** If `ExecState` is 0 with the
+      locals unwired there is no legal save point here, and M1 folds into M2 (create **and** wire in one step) —
+      that is a fact the sub-step REPORTS; the folding is judgement's call on the next brief, not a branch a
+      material session takes.
+      **S3b-M2** from M1, cold — wire the two locals into `#10407` t0/t2 → save `…_m2_fed_<stamp>.vi`. Pass:
+      `ExecState` 1, **`Is Broken?` False on both new wires** via the ordered second pass (42(b), after the save),
+      `#10407` wired-terminal count **+2**, and `#637` terminal/wired counts **unchanged — no tunnel, no border
+      object** (37(e)). **This is the step that closes the boundary cycle 54 died on.**
+      **S3b-M3** from M2, cold — move the five 1.5 nodes into `#23032`'s body `Diagram #23058`
+      (`docs/cycle27-plan.md:1127-1129`; ⚠️ `:1037`'s `Obtain Queue #23032` is a different object reusing the
+      uid), ONE `move_in` per node, junk purged in-run, then re-wire the rows from the MEASURED table
+      (`docs/cycle27-plan.md:1182-1188`, whose "sources on `#686` = 0" clause is STRUCK at `:1188`; cycle 54's
+      9/9 at `:1283-1290`) → save `claudeDev\D1_s3b_m3_moved_<stamp>.vi`. Pass: all five `owner_of` = `#23058`
+      AND `ExecState` 1.
+      **S3b-M4** from M3, cold — frame-counter edge shift register + `Wait (ms)` 1 → save
+      `claudeDev\D1_s3_loop15.vi`. Pass: `ExecState` 1 preloaded AND on a cold reopen. 38(g) stays banned.
+    - (f) **WHY THE LOCALS COME BEFORE THE MOVES — a judgement call, recorded as one.** NEXT's sentence orders
+      S3b as *move the five nodes, re-wire the rows, then feed `#10407` from locals*. Taken literally that puts
+      the one step that BREAKS the VI first and the two independently-savable steps last, and cycle 54 already
+      ran that order: 5/5 moves, 9/9 rows, **`ExecState` still 0**, no file (`:1283-1290`). Creating and wiring
+      the locals first is savable at `ExecState` 1 twice over while the diagram is still in its known-good S3a
+      shape, and it means M3 starts from a VI whose `#10407` inputs are ALREADY satisfied — which is precisely
+      the boundary defect cycle 54 diagnosed. A failure in M3 then still leaves two new files and a closed
+      boundary instead of nothing.
+    - (g) **DECISION: THE TWO INHERITED LABELS STAY, AND NO RENAMER IS BUILT — but the user is told, because it
+      is their panel.** The indicators carry `'index'` and `'Automatic Error Handling'`, the names LabVIEW derived
+      from the carriers. **No verb in this fleet can rename a front-panel control or indicator** (measured,
+      cycle 58: `set_node_label` writes `Node.Label` on `Diagram[d].Nodes[n]` and a `ControlTerminal` is not in
+      `Nodes[]`; every other label path is a reader), so a rename means a SECOND new op against
+      `Control.Label` 6332005. It buys nothing structural: a label is cosmetic, it changes no computation
+      (rule 1a untouched), and local variables bind by label, so both names WORK — each is measured
+      non-duplicate and newline-free. `'Automatic Error Handling'` on a tracking Boolean is nevertheless
+      misleading to a human reading the panel, and renaming two labels by hand in the editor is seconds for the
+      user against an op VI plus self-test for us. **Flagged in `## NEXT` as the user's to overturn; if they want
+      us to do it, the `Control.Label` writer is a one-cycle build.**
+    - (h) ⚠️ **THE RE-SPLIT TRIGGER FOR M3, STATED IN ADVANCE SO NOBODY HAS TO NOTICE IT.** If M3 ends at
+      `ExecState` 0 — i.e. leaves NO file — the next cycle's FIRST act is M3's own decomposition, cut
+      **node-with-its-rows** (each node moved and its severed rows re-wired before the next node is touched), and
+      the tunnel question becomes explicit at that point rather than implicit. A full-length retry of M3 under a
+      new file name is FORBIDDEN (the user's 2026-09-19 rule 3; `cycle_runner.py` counts renamed recipes as the
+      same recipe).
+    - (i) ⚠️ **48(m) IS SATISFIED BY CONSTRUCTION FOR L0, AND THAT IS THE POINT OF DOING IT THIS CYCLE.** The
+      gating research for the op — the external API fact — was dispatched and archived BEFORE one line of the op
+      exists, so the review cannot be a receipt for a script already written. Cost `$1.3397`. The brief that
+      builds L0 must still say in writing that the op will be revised on any review that gates it.

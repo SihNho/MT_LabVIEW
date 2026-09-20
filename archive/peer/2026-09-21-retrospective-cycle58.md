@@ -228,4 +228,56 @@ VIOLATION: device-failed | loss_min=30 | loss_usd=? | evidence=tools/bench/c58c_
 
 ## What was done with it
 
-(Claude fills in)
+Disposed by the cycle-59 judgement session, 2026-09-21 02:2x. The verdict is **SPLIT: refuted on its
+load-bearing generalisation, accepted on the narrow fact underneath it** — and the refutation is not an
+opinion, it is this cycle's own machine record.
+
+**VERDICT `device-failed` — REFUTED where it generalises.** The load-bearing sentence is *"no ordering, no
+repair, and no honesty can ever launch a recipe mid-cycle"*, and cycle 59 launched exactly that recipe as its
+FIRST act, with **no hook refusing it**, and it delivered: `tools/bench/cycle59_s3a_recipe.log`, `BGRUN END
+rc=0 after 596s`, **64 gates pass / 0 fail**, `claudeDev\D1_s3a_focus_ind.vi` md5
+`eef91c1d91f16b034707e4d1285ca8cb` at `ExecState` 1 on a cold reopen. The review's own counterfactual —
+*"S3a lands on disk by roughly 02:15"* — came true at ~02:11, one session boundary later, not one cycle of
+impossibility. The gate's condition became satisfied the moment cycle 58's retrospective (this file, stamped
+01:52:55) postdated cycle 58's newest build log (01:46:36), which is precisely the behaviour CLAUDE.md
+specifies. So the device did not fail: it deferred a launch by one session boundary and then permitted it on
+the first attempt. No device is built, none is repaired, and no `device-failed` remedy is owed.
+
+**ACCEPTED, the true half: the gate's stderr NAMES the wrong cycle.** Its condition is "a build log newer
+than the newest retrospective exists"; its sentence says "the *previous* cycle's execution has not been
+reviewed". At 01:43 the offending newer logs were cycle 58's OWN, including the dry run's own log naming
+itself (`tools/bench/c58c_gatecheck4.log:47`) — so the sentence was misleading while the condition was
+factually true. Already written down as `docs/cycle27-plan.md` Pre-decided 48(n); **carried forward here as
+the standing operational rule, and acted on in this cycle: a recipe build must be a cycle's FIRST act,
+before any other build log exists.** That is why cycle 59 opened with the launch and nothing else, and it is
+written into `STATUS.md`'s `## NEXT` for the next session.
+
+**FINDING 2(b), the whole-pipeline gate pre-flight — ACCEPTED as correct and DECLINED as a build.** The
+reviewer is right that a single dry run reporting every gate condition at once would have shown at 01:21
+that the launch was unreachable, before the $8.03 review was commissioned. But that is **process-gate
+machinery**, and the user's standing order of **2026-09-18 08:53** (*"장치는 더 만들지 말고 계속 진행"*)
+forbids building another one; 46(k)'s "an op VI is not a process device" reasoning does not reach it, because
+this would be one. Recorded as a FINDING in `docs/violation-decisions.md`, which is exactly what the
+suspended-threshold rule prescribes. Note also that the pre-flight would NOT have saved the $8.03: the
+prior-art review was independently required by the `premature-build` device, which the same reviewer
+credits as having earned its cost in the very next paragraph.
+
+**FINDING 2(a), the terminal data-type reader — still declined, and now measured as the right call.** The
+review concedes the earlier disposition is "measured true"; cycle 59 needed no type reader to deliver, and
+S3b's blocker turned out to be a missing *creator*, not a missing reader (Pre-decided 49(b)).
+
+**FINDING 1, the repeated 5(a) receipt-review — ACCEPTED, remedy already in force.** 48(m) is the rule, and
+cycle 59 complied by construction: the external fact dispatch that gates the next build
+(`archive/peer/2026-09-21-s3b-local-variable-route.md`, `$1.3397`) was sent **before a single line of
+`OpCreateLocal_v0.vi` exists** — see Pre-decided 49(i).
+
+**FINDINGS 3, 5, 7 — nothing to act on** (no inference-over-measurement; ordering defensible; no judgement
+taken inside a material session). **FINDING 4(a)** — the judgement session's own spend sitting outside every
+`C` line is the known blind spot already decided **no-device** on 2026-09-21 01:24. **FINDING 6(a)** — the
+permission-denied `retrospective.py --cycle 58` attempt is real and is the OPEN 54(a) trap working as
+documented; cycle 59 therefore ran its retrospective only as its last act. **FINDING 6(b)** — no aggregate
+cost line exists; not fixed, and fixing it would be audit machinery, i.e. the same declined device.
+
+**Nothing was bypassed to reach any of this:** `CYCLE_GUARD_OFF` was never set, no gate was patched, no
+frontmatter date was rolled, no log was deleted, and the recipe's sha256 is byte-identical before and after
+(`1986626FB6F16CD0…`).

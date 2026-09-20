@@ -835,3 +835,38 @@ DECISION: **no-device — recorded as a FINDING only.**
    into the material-brief template used by this cycle's dispatch 3.
 4. **Recorded, not repaired**: `stop_record.py` was NOT patched this cycle, no date was rolled, and
    `CYCLE_GUARD_OFF` was never set — the refusal was answered by producing the bytes it was asking about.
+
+## device-failed — 2026-09-21 02:34 (cycle 59, judgement)
+
+`py tools/violations.py` raises the slug again from `archive/peer/2026-09-21-retrospective-cycle58.md:223`
+(`VIOLATION: device-failed | loss_min=30 | loss_usd=? | evidence=tools/bench/c58c_gatecheck4.log:46`), which
+named `guard_cycle`'s **retrospective gate** as cycle 58's one structural fault, on the ground that *"no
+ordering, no repair, and no honesty can ever launch a recipe mid-cycle"*.
+
+DECISION: **no-device — and this occurrence is REFUTED on its load-bearing claim, by measurement.**
+
+1. **The claim was tested by the very next cycle and it is false.** Cycle 59 launched that recipe as its FIRST
+   act, **no hook refused it**, and it delivered: `tools/bench/cycle59_s3a_recipe.log`, `BGRUN END rc=0 after
+   596s`, **64 gates pass / 0 fail**, `claudeDev\D1_s3a_focus_ind.vi` md5 `eef91c1d…` at `ExecState` 1 on a
+   cold reopen. The reviewer's own counterfactual — *"S3a lands on disk by roughly 02:15"* — came true at
+   ~02:11, one session boundary later. A gate that defers a launch by one boundary and then permits it on the
+   first attempt is a gate doing its job, not one of the three failure modes the device question lists.
+2. **What IS true, and is kept: the gate's stderr names the wrong cycle.** Its condition is "a build log newer
+   than the newest retrospective exists"; its sentence says "the *previous* cycle's execution has not been
+   reviewed". At 01:43 the offending newer logs were cycle 58's OWN — including the dry run's own log naming
+   itself (`tools/bench/c58c_gatecheck4.log:47`). The sentence misleads; the condition was factually true.
+3. **The remedy is a sequencing rule already in force, not a device:** a recipe build is a cycle's FIRST act,
+   before any other build log exists (`docs/cycle27-plan.md` **48(n)**, applied by cycle 59 and written into
+   `STATUS.md`'s `## NEXT`). The threshold stays SUSPENDED under the user's order of **2026-09-18 08:53**, and
+   this slug remains the one where suspending matters most: the only device that answers "a device failed" is
+   a device that watches devices.
+4. **The reviewer's own best idea is accepted as correct and declined as a build.** A whole-pipeline gate
+   pre-flight (report every gate condition at once instead of exiting at the first refusal) would have shown at
+   01:21 that the launch was unreachable that cycle. It is process-gate machinery, so the standing order
+   forbids it; 46(k)'s "an op VI is not a process device" reasoning does not reach it. Recorded here as the
+   FINDING the suspension prescribes. It would also not have saved the $8.03 prior-art review, which the same
+   review credits as independently required and as having earned its cost.
+5. **Recorded, not repaired**: `guard_cycle.py` was NOT patched, no log was deleted, no frontmatter date was
+   rolled, `CYCLE_GUARD_OFF` was never set, and the recipe's sha256 is byte-identical before and after
+   (`1986626FB6F16CD0…`). Full per-finding disposition: `archive/peer/2026-09-21-retrospective-cycle58.md`
+   `## What was done with it`.
