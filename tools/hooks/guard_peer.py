@@ -50,6 +50,10 @@ PEER = os.path.join(ROOT, "archive", "peer")
 # Commands that RUN something (a recipe or a bench script). Reading a log is not running a build.
 RUNS_RE = re.compile(r"py[\w.]*\s+(?:-u\s+)?[^\s|;&]*tools[\\/](?:recipes|bench)[\\/][^\s|;&]*\.py|"
                      r"bgrun\.py", re.I)
+# The CYCLE RUNNER is not a build (2026-09-21 11:5x): `bgrun.py ... -- py tools/cycle_runner.py` only spawns the
+# judgement session that will itself dispatch the owed review; blocking the runner on a failing log left by a
+# session the 600-min cap killed mid-cycle deadlocks the loop (nobody is left to dispatch anything).
+RUNNER_RE = re.compile(r"tools[\\/]cycle_runner\.py", re.I)
 # The remedy itself, and pure inspection, must never be blocked.
 EXEMPT_RE = re.compile(r"peer\.ps1|guard_peer|--help|\b(cat|head|tail|sed|grep|less|type|wc|ls|dir)\b", re.I)
 
@@ -303,7 +307,7 @@ def main():
                 return 2
             break
 
-    if not RUNS_RE.search(cmd):
+    if not RUNS_RE.search(cmd) or RUNNER_RE.search(cmd):
         return 0
     # Peer-attacked 2026-09-14 (archive/peer/2026-09-14-stall-alert-wrappers-false-positive.md s3): the read-word
     # exemptions used to apply to the WHOLE command, so a build whose arguments contained `dir`/`type`/`head` was
