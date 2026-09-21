@@ -376,17 +376,31 @@ Terminal short names read off the machine (probe_castfree5.log), all compile WIT
 
 ### The TYPE read on a Terminal — 2026-09-21, cycle 66 (⚠️ status set by the Part C measurement below)
 
-- `Terminal.Coercion Dot?` **634A006** → short name **`Coerce Dot?`** ⚠️ **MEASURED, and NOT the `Coerced?` the peer
-  reported** — Boolean — True when LabVIEW draws a coercion dot on
+> 🟢 **CORRECTION, 2026-09-21 (cycle 67 material #2) — `Coerce Dot?` AND `Coerced?` ARE ONE PROPERTY, NOT TWO, AND NOT
+> A WRONG ID.** `634A006` is a single LabVIEW property that NI has spelled two ways across releases: `Coerced?` is the
+> OLDER spelling and `Coerce Dot?` is what LabVIEW 2026 puts on the terminal of a property node built from that ID on
+> THIS machine. So the peer that reported `Coerced?` named the right property under NI's earlier name; the paragraphs
+> below, written when the two spellings looked like a discrepancy, overstate it. **What actually happened is that the
+> `diag_c66c_coercion` R4 gate compared the machine's terminal string against a DOCUMENTATION string and failed on the
+> documentation, not on the machine** — `tools/bench/diag_c66c_coercion.log:46`, the run's single FAIL out of 44
+> pass / 1 fail. The ID, the property and the artefact were all correct. Source: `archive/peer/2026-09-21-c67-m3a-srrows.md`
+> (claude / hypothesis, opus / effort max, ANSWERED), disposed under its own `## What was done with it`.
+> ⚠️ Keep writing **`Coerce Dot?`** in code: it is what this LabVIEW answers with. `tools/bench/diag_c66c_coercion.py`
+> and its already-written log are NOT edited — a run's record is never rewritten after the fact.
+
+- `Terminal.Coercion Dot?` **634A006** → short name **`Coerce Dot?`** ⚠️ **MEASURED — and `Coerced?`, which a peer
+  reported, is the SAME property under NI's older spelling (see the 2026-09-21 cycle-67 correction above), not a
+  different property and not a wrong id** — Boolean — True when LabVIEW draws a coercion dot on
   that terminal, i.e. it converted the incoming value to a different representation. This is the read that catches a
   **legal** DBL→SGL / DBL→I32 coercion, which `Wire.Is Broken?` 6371004 does NOT: `Broken?` only catches a type-
   INCOMPATIBLE connection, so a coerced wire leaves `ExecState` 1 and every object count correct while changing the
   numbers — a rule-1a defect that no gate this fleet ran would have seen.
   ✅ **VERIFIED ON THIS MACHINE 2026-09-21** (`tools/bench/diag_c66c_coercion.log:37,:45,:46`, cycle 66 material #4):
   `build_property(<scratch>, "VI Server:Terminal", [("634A006", False)])` was ACCEPTED — LabVIEW created Property
-  node `#167` — and the node's one non-standard terminal reads **`Coerce Dot?`**. 🔴 **The peer's `Coerced?` is
-  WRONG by three characters**, which is exactly the class of error that cost this project a build run before
-  (`IsBroken` vs `Broken?`, line 375 above): use `Coerce Dot?`. ID source:
+  node `#167` — and the node's one non-standard terminal reads **`Coerce Dot?`**. ⚠️ **SOFTENED 2026-09-21 by the
+  cycle-67 correction above: the peer's `Coerced?` is NI's older spelling of this same property, not a wrong name and
+  not a wrong id** — the earlier reading of this line as an `IsBroken`-vs-`Broken?`-class error was itself the error.
+  Use `Coerce Dot?` in code because that is what this machine answers with. ID source:
   `archive/peer/2026-09-21-c66-m3-movelocals.md` (NI *Coercion Dot?* property page; NI *Coercion Dots*; NI Community
   *Finding coercion dots?*) — the ID was right, the short name was not.
 - `Terminal.Data Type` **634A008** → short name **`Data Type`**, the terminal's data type as a Variant; read-only,

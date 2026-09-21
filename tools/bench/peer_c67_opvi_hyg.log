@@ -1,0 +1,94 @@
+BGRUN START 2026-09-21 19:42:42 limit 19.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Kind review -Slug c67-opvi-hyg -TaskFile 'tools/bench/task_c67_opvi_hyg.md' -TimeoutSec 900
+OUTCOME: ANSWERED (408s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c67-opvi-hyg.md
+COST: $3.1967  in 16 / out 31843 / cache-create 192483 / cache-read 768814  (407s, 16 turn(s))
+--- ANSWER ---
+Write is disabled in this cell — correct for a read-only peer. The review is the deliverable, so here it is.
+
+---
+
+# The claim's arithmetic survives. Its conclusion is true but wrongly sourced. Its last sentence is wrong, and that is the sentence that ships.
+
+## 1. The single strongest reason the claim is wrong
+
+**"The fix is to compare the PARSED md5 and size fields instead of the raw line; nothing about the run's behaviour changes."** That is false, and the run's own record shows why.
+
+The repaired gate compares `[L0]` — taken at `tools/bench/diag_c67_opvi.log:22`, after the pre-batch restart, before the op VI is loaded — against `[Y]` at `log:258`, taken inside `finally` **while LabVIEW is still running, still holds the op VI loaded, and still holds eight op-VI references** (`log:263`: `cached_op_vis: 8`). So the gate's window is *process-start → process-still-running*. Every mechanism by which LabVIEW can actually write a `.vi` it has loaded — release of the last reference, unload, editor quit — lies **outside that window**. `op()` caches references and never releases them (`tools/gscript.py:210-215`); they die when the Python process dies, which is *after* the `[Y]` probe.
+
+Repair the string and this gate will print PASS for the rest of its life while being structurally incapable of detecting the rule-1 event it is named for. **A gate that cannot fail is worse than one that cannot pass, because it is believed.**
+
+The sharper form: **the two VIs that got the broken gate are the only two that needed a working one.** ORIGINAL, BED and S2 are checked against *constant* md5 pins declared at `diag_c67_opvi.py:164-166` — a cross-session tripwire. The two op VIs are the only files in the run checked against a baseline measured *inside the same run*. The claim fixes the comparison and leaves that asymmetry exactly where it does the most damage: on the two files this run loaded, ran four times, and dirtied.
+
+## 2. An alternative explanation of the same evidence
+
+Not a competing cause — a competing *licence*. The claim says the evidence that the files did not change "is printed on the failing lines themselves." Those lines cover L0→Y only. Under the alternative — **an earlier session already saved one of them** (the same day's `diag_c67_addsr` / `c67b` runs also ran this op VI) — `[L0]` records the already-modified file, `[Y]` matches it perfectly, the printed md5s are character-identical, and the repaired gate **passes**. The failing lines look the same under "never touched" and under "already modified before this run began."
+
+That alternative is refuted here — but by evidence the claim never cites: `[L0d]` mtime `2026-09-14 22:41:42` and `2026-09-14 23:49:26`, both MEAS **YES** (`log:23-24`, `log:55-56`). Those two lines, not the gate and not the md5s on the failing lines, are the only thing in this run establishing that rule 1 was not already broken — and they are classified as measurements that "can never fail this run" (`diag_c67_opvi.py:242-249`). The claim reaches a true conclusion by the weaker of the two arguments available to it, while the stronger one sits eight lines earlier in the same log.
+
+**Separately, and not in the "already ruled out" list: the fix is already on disk and has never been run.** `diag_c67_opvi.py:815-826` contains the repaired comparison, with a comment naming "the first run of this file (2026-09-21 19:38, rc=1)" — and the log under review is stamped `20260921_193826`. Glob finds exactly one log and one json for this diagnostic. Quoting the code that *ran* is the right thing to do, but a reviewer asked "does this fix work?" should be told the fix is written and unexecuted, because under this project's own rule — a build that has never been run is not verified — its status is **predicted, not measured**, and that changes what the cheapest next step is.
+
+## 3. What would falsify the claim
+
+- **Its string analysis** would fall to any `Y … is byte-unchanged` gate anywhere in this fleet's logs printing PASS with a `before` line present. This run cannot supply it: 14 gates total, 12 PASS + 2 FAIL (`log:9-268`), and these two are the only ones of that shape. I looked for this specifically and did not find it. Conceded.
+- **"Nothing about the run's behaviour changes"** is falsified by the repaired code printing PASS on a file whose mtime has moved off 2026-09-14 — the gate calling "unchanged" a file that was changed.
+- **My alternative** is falsified by both op VIs still reading their 2026-09-14 mtimes *now*, after refs were released and after any later restart. That would show the post-`[Y]` window carried no realised risk this time — though still not that the gate could see one.
+
+## 4. The cheapest discriminating test
+
+Two reads. No LabVIEW, no lock, seconds.
+
+**T1 — settles the string claim and the fix, with no new batch.** `tools/bench/diag_c67_opvi.json` already holds the full `hash_probe` array (`diag_c67_opvi.py:254`, `:259-264`). Replay *both* expressions — the quoted one and the one now at `:821-823` — against those recorded strings offline. Old → False, new → True, on identical bytes. This is the run-2 the fix has never had, for free.
+
+**T2 — the one that actually discriminates.** `os.stat().st_mtime` + md5 of both op VIs **right now**, against `2026-09-14 22:41:42` / `42841674…` and `2026-09-14 23:49:26` / `01e62ec5…`. mtime is strictly more sensitive than md5 — it catches an identical-content rewrite, which md5+size cannot — and costs a `stat` rather than a 13,864-byte read. This covers the entire post-`[Y]` window the gate is blind to.
+
+---
+
+## Answers to the four numbered questions
+
+**Q1 — byte-identical rewrite, or a change after the `after` probe?**
+
+*Byte-identical:* I found no documented mechanism, and one good reason against — recompiled object code is written **into** the VI on save ([NI](https://forums.ni.com/t5/LabVIEW-Development-Best/Why-does-LabVIEW-give-all-my-VIs-dirty-dots-when-I-only-changed/ba-p/3484087)), and a save by a newer LabVIEW re-serialises the format (CLAUDE.md rule 1's own `19 00 80 00` / `26 00 80 00` check). So a real save should always move md5. **Inferred, not measured** — I could not find NI stating the file is *always* byte-different after a redundant save. Honest position: md5 identity is strong evidence of no save; it is not proof of no *write*, because an identical-content write moves only mtime.
+
+*After the probe — yes, and this is the live one:*
+- Running a VI compiles it if needed; the recompiled object code marks it modified with no source edit ([NI forum](https://forums.ni.com/t5/LabVIEW-Development-Best/Why-does-LabVIEW-give-all-my-VIs-dirty-dots-when-I-only-changed/ba-p/3484087)). Unless separate-compiled-code is on, that dirt lives in the `.vi`.
+- Closing a VI Server reference to a modified VI is a documented save-**prompt** trigger; the thread's participants found no flag that suppresses it and fell back to the private `App.UnattendedMode` ([NI forum](https://forums.ni.com/t5/LabVIEW/LabVIEW-prompts-to-save-the-vi-when-closing-the-reference/td-p/980820)). In an unattended run, a modal save dialog is precisely what this project's dialog-dismissal machinery might answer.
+- When the last reference to a dynamically loaded VI closes, LabVIEW unloads it ([NI](https://www.ni.com/en/support/documentation/supplemental/13/closing-references-in-labview.html)) — which here happens after `[Y]`.
+
+*Ruled OUT, plainly:* **auto-save**. It writes to `…\LabVIEW Data\LVAutoSave\`, never over the original ([NI forum](https://forums.ni.com/t5/LabVIEW/Autosave-file-location/td-p/1445524)). Also inapplicable: the save-prompt thread's "saved in a previous version" cause — these were built 2026-09-14 in LV2026 and opened in LV2026.
+
+*A mitigation the claim could have cited and didn't:* `tools/lv_restart.py:13` force-kills LabVIEW (`Stop-Process -Name LabVIEW -Force`). A force-killed process cannot prompt and cannot save. So the quit-time hazard is mechanically closed **provided every teardown goes through that path**. The residual window is between this run's `[Y]` and the next `fresh()` kill, with LabVIEW alive holding a dirty, four-times-run op VI.
+
+**Q2 — is md5+size sufficient? does ignoring sha256 weaken it? should mtime be in the check?**
+
+Ignoring sha256 **does not** weaken the conclusion — md5 collisions need crafted input, LabVIEW is not an adversary, and size is compared too. But it is already computed (`tools/hash_probe.py:33`), so comparing the whole parsed dict costs one `==` and retires the question; there is no reason to compare a hand-picked subset.
+
+mtime **should** be in the AFTER check and is the more sensitive of the two: md5+size is blind to an identical-content rewrite, mtime is not, and it costs a `stat`. The run already reads it — at `[L0d]` only (`diag_c67_opvi.py:520-526`). Reading it again at `[Y]` and comparing both against the *2026-09-14 constants* rather than a within-run baseline is what turns this gate from a tautology into a tripwire, and puts the op VIs on the same footing as `PINS` at `:164-166`.
+
+**Q3 — does running the op VI over ActiveX put it in a state where LabVIEW may later write the file? Cheapest READ to detect it?**
+
+Yes, plausibly — but separate two things:
+- **Changed indicator values are not themselves at risk.** A `.vi` stores *defaults*, not current values, so `UID 2` going 0 → 23561 → 23693 → 23561 → 23498 does not by itself put bytes on disk.
+- **The recompile-on-run path is what dirties the file**, per the NI result above, independent of panel values.
+
+So: dirty-dot yes (documented); *write* only on an actual Save — prompted at reference release/unload (documented), or triggered by anything saving dependents. Whether LabVIEW 2026 raises that prompt for a VI loaded via ActiveX `GetVIReference` into the full IDE I have **not** measured, and the cited thread concerns `Open VI Reference` in application code. Treat as plausible, not established.
+
+Cheapest READ to detect such a write after the fact: **mtime, re-read at the start of the next batch against a pinned constant.** One `os.stat` per file, no LabVIEW, no lock, and it catches every write including a byte-identical one. Second cheapest, for a format question, is the 4-byte saved-version check rule 1 already specifies.
+
+## Where the evidence does not settle the question
+
+Whether the post-`[Y]` window has *ever* produced a write is unmeasured — nobody has re-read these mtimes since the run. T2 answers it in seconds. And I cannot tell from outside whether these op VIs have separate-compiled-code enabled; if they do, a recompile lands in the `.lvobjcache` and never touches the `.vi`, which would make the whole dirty-file hazard moot for them. That is checkable in one property read and is worth knowing before anyone hardens this gate.
+
+## Two facts nobody asked about
+
+- The gate **"Y refs opened == closed and 0 live" PASSED with 8 cached op-VI references still held** (`log:263`). `gscript.py:234-238`'s own docstring says `live` counts only the six per-call classes and cannot see the cache. The gate's name overstates what it checks — in the same `finally` block as the two gates under review, and it is those 8 references that keep the dirty op VI resident past `[Y]`.
+- Handles went **35,616 → 68,988, delta +33,372** (`log:264`) on a run whose docstring states there is no `GObject` census anywhere in it (`diag_c67_opvi.py:43`). That is far above the ~31,500 baseline CLAUDE.md sets, and no gate looks at handles at all.
+
+## Do I still believe the claim?
+
+Partly, and precisely: **its string analysis — conceded, I could not break it.** **Its conclusion that the files did not change — true, but carried by `[L0d]`, not by the argument given.** **Its final sentence — wrong.** What would change my mind on the last point is a measurement showing LabVIEW releases and unloads these op VIs *before* the `finally` block runs, so that L0→Y really does span the write risk. `cached_op_vis: 8` at `log:263` says the opposite.
+
+**Sources:**
+- [Why does LabVIEW give all my VIs 'dirty-dots'… — NI Community](https://forums.ni.com/t5/LabVIEW-Development-Best/Why-does-LabVIEW-give-all-my-VIs-dirty-dots-when-I-only-changed/ba-p/3484087)
+- [LabVIEW prompts to save the vi when closing the reference — NI Community](https://forums.ni.com/t5/LabVIEW/LabVIEW-prompts-to-save-the-vi-when-closing-the-reference/td-p/980820)
+- [Closing References in LabVIEW — NI](https://www.ni.com/en/support/documentation/supplemental/13/closing-references-in-labview.html)
+- [Autosave file location? — NI Community](https://forums.ni.com/t5/LabVIEW/Autosave-file-location/td-p/1445524)
+BGRUN END rc=0 after 409s

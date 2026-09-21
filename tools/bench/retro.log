@@ -945,3 +945,67 @@ No structural fault. This cycle delivered the stage deliverable in one clean run
 VIOLATION: none
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle59.md
 BGRUN END rc=0 after 230s
+BGRUN START 2026-09-21 20:14:02 limit 10.0 min: py tools/retrospective.py --cycle 53
+   window 2026-09-21 02:35:42 .. 2026-09-21 20:14:02 (1058 min); 72 build logs, 49 machinery logs, 11 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle53.txt (22545 chars)
+BGRUN START 2026-09-21 20:16:17 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 53
+   window 2026-09-21 02:35:42 .. 2026-09-21 20:16:17 (1061 min); 72 build logs, 49 machinery logs, 11 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle53.txt (22541 chars)
+OUTCOME: ANSWERED (361s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-21-retrospective-cycle53.md
+COST: $3.6461  in 10 / out 25418 / cache-create 100772 / cache-read 359707  (360s, 13 turn(s))
+--- ANSWER ---
+I have what I need. Verified: `tools/gscript.py:1284-1326` (`ensure_loaded`) has carried, since 2026-09-16, the measured fact that scripted edits are silently declined unless the target's front panel is opened first ("Discovered 2026-08-28 after three silent failures"; A/B in `tools/bench/diag_delete_matrix.log`), and `move_in` calls it while `add_shift_reg` does not (`diag_c67_opvi.log:90`). Here is the review.
+
+---
+
+## Scope correction first
+
+The stated window (02:35:42–20:16:17, 1061 min) contradicts its own basis. Five retrospectives landed **inside** it — `tools/bench/retro_cycle60.log` (08:33), `retro_cycle61.log` (09:26), `retro_cycle62.log` (11:37), `retro_cycle64.log` (14:42), `retro_cycle65.log` (16:16) — so the audit's C4 ($506.78, 1220 min of reviews) and C5 (1364 min) aggregate roughly seven cycles that have already been retrospected. The cycle this review can honestly judge is the last runner cycle: **17:57:57–20:16:17 (138 min)**, judgement session $63.0892 (`tools/bench/cycle_53.log:62-63`, `BGRUN END rc=0 after 8300s`), plus four peer dispatches totaling $16.84 (`peer_c67_m3a_srrows.log:3` $4.3387, `peer_c67_addsr_noop.log:3` $3.8464, `peer_c67_addsr_opvi.log:3` $5.4537, `peer_c67_opvi_hyg.log:3` $3.1967). I do not attribute the $506.78 to this cycle; doing so would repeat exactly the wrong-order-of-magnitude cost argument this project was burned by.
+
+## The one most costly structural fault
+
+**The cycle spent ~90 minutes and two hypothesis-grade reviews re-deriving a failure class its own tool file has carried since 2026-09-16.** Timeline:
+
+- 18:29–18:40 — `diag_c67_m3a.log:583` ends `rc=1 after 663s`: `add_shift_reg` on `#23032` returned uid 23561, error `''`, minted nothing, ExecState stayed 1. This is the *silent-decline-on-unloaded-target* class, recorded verbatim in `tools/gscript.py:1284-1326` ("Put target into the state in which scripting EDITS actually land, **before every edit**… Discovered 2026-08-28 after three silent failures"), with the confirming A/B (`diag_delete_matrix.log`, 2026-09-16) quoted in the docstring — and `add_shift_reg` is a wrapper that never calls `ensure_loaded`, while `move_in` does (`build_d1_v0.py:321`, cited at `diag_c67_opvi.log:90`).
+- 18:44 — instead of reading that record, the mandatory failed-prediction review was dispatched on a **wrong** mechanism ("silently does nothing when the loop is not on the top-level diagram" — `archive/peer/2026-09-21-c67-addsr-noop.md:54-58`, $3.8464); the reviewer rated the mechanism dead (`:14-17`).
+- 19:15 — a second 28-minute diagnostic still chasing it: `diag_c67_addsr.log:438`, `rc=1 after 1702s`, 38 pass / 13 fail.
+- 19:35, 19:49 — two more reviews ($5.4537, $3.1967) to design the third diagnostic.
+- 19:50–19:56 — `diag_c67_opvi` finally varies **load state** and gets the answer in 125 seconds (`diag_c67_opvi.log:644`): no-op cold (L1, L4), works after `move_in` (L2) or `open_panel` (L3) — precisely what `ensure_loaded`'s docstring already said. The fix direction (`selftest_c67_ensureloaded.log`, 20:08) landed at cycle end.
+
+Counterfactual, on the clock: had the session greped `gscript.py` for the silent-no-op record at attempt 1 (~18:40, immediately after `diag_c67_m3a` failed), the correct hypothesis was one file-read away, the confirming experiment costs 125 s (proven by the final run itself), and the selftest/audit would have landed by ~19:10 instead of 20:08 — the cycle could have spent its second half actually adding the four SR rows instead of ending with the deliverable unmoved. Loss ≈ 60 min of a 138-min cycle; the logs carry $9.30 for the two dispatches spent on the dead mechanism ($3.8464 + $5.4537). Slug: **repeated-failure-class** — this is the third recurrence of a recorded class (2026-08-28, 2026-09-16, now), and CLAUDE.md's own "when a diagnosis is guessed twice, read the machine's record" rule names this exact pattern.
+
+## Device effect — one device failed, the rest held
+
+- **`premature-build` gate (`tools/hooks/guard_cycle.py`) — FAILED, by never firing when its target fault occurred.** The gate forces prior-art review before RECIPE builds and leaves `tools/bench` diagnostics open by design. But in this window every deliverable-touching build ran from the exempt lane — `diag_c62_s3b_build.log`, `diag_c62_s3b_movein.log`, the saved `D1_s3b_row*` artifacts, and the c67 SR-row attempts — and exactly **one** prior-art review ran all window (`priorart_c60_localname_decomp.log`, 08:19). The fault the device exists to stop — building/running against a question already answered on file — occurred anyway at `diag_c67_m3a`/`diag_c67_addsr` (`diag_c67_addsr.log:438`): a prior-art pass over `add_shift_reg` would have surfaced `gscript.py:1284` and `diag_delete_matrix.log` before a single leg ran. The gate's design assumption (builds live in `tools/recipes/`) no longer matches where builds actually live, so it guards an empty lane. Same lost hour as the fault above — I count the loss once, on the first line.
+- `bgrun` inner-FAIL scan (device, 2026-09-17): **worked** — forced `rc=1` on `diag_c67_m3a.log:583`, `diag_c67_addsr.log:438`, and `diag_c67_opvi.log:321`.
+- Cost-regex repair (device, 2026-09-16 21:07): **worked** — audit C4b "cost lines seen 36 / parsed 36".
+- `guard_peer` empty-disposition refusal: **worked** — A4 37/37 annotated.
+- Confirm-bait refusal / adversarial append: **worked** — the c67 task briefs open with "ATTACK this claim" (`archive/peer/2026-09-21-c67-addsr-noop.md:21`).
+- C7 out-of-plan counter: fired (64 files listed); counter-by-design, verdict left here — the list is dominated by bench diagnostics consistent with the plan's measurement phase.
+- Stop record / launch gate: no recipe launch in window; nothing to check — note it shares the `premature-build` gate's blind spot (bench-lane builds never consult it).
+- Evidence-based-rc (`unreported-fact`) devices: the shell-runner side held, but see finding 6 — `prose_c66_stop.log` has **no** `BGRUN END|TIMEOUT` line at all.
+
+## FINDINGS
+
+**1. Repeated failure.** Yes — the silent no-op edit class, third recurrence (see above). The approach should have changed at **attempt 2**: after `diag_c67_m3a` ended rc=1 at 18:40, the next act should have been reading `tools/gscript.py:1284-1326`, not dispatching a review of an invented top-level-diagram mechanism and a second 28-minute diagnostic.
+
+**2. Missing tool.** A landed-edit guard inside the mutating op wrappers. The 2026-09-16 `unreported-fact` device made shell runners evidence-based, but nobody ported the idea to op-VI wrappers: `add_shift_reg` returned error `''` and a plausible uid while doing nothing (`diag_c67_m3a.log` per the review brief, `archive/peer/2026-09-21-c67-addsr-noop.md:34-38`). Either `ensure_loaded` in every mutator (as `move_in` has, `build_d1_v0.py:321`) or a post-call census delta check would have converted a 90-minute chase into an immediate loud failure. The cycle did build this at its end (`selftest_c67_ensureloaded.log`, `ensure_loaded_audit.md`) — the right tool, one attempt too late.
+
+**3. Unmeasured steps.** The "not on the top-level diagram ⇒ stale uid" claim was pure inference when a 2-minute measurement (the load-state leg matrix that `diag_c67_opvi` eventually ran in 125 s) and a zero-minute file read were both available. Also unmeasured-and-unacted: handle growth — `diag_c67_addsr.log:430` shows 34,602 → 91,288 handles in one run, and `diag_c67_opvi.log:264` shows 35,616 → 68,988; the 2026-09-06 rule judges growth relative to the ~31.5k baseline, and a +56k delta in one diagnostic went unremarked.
+
+**4. Rule compliance.** A1: three logs outside bgrun — two are pure-Python astchecks (`c67b_astcheck.log` is an AST parse, no LabVIEW), technically clean under the rule's LabVIEW scope, but the discipline is fraying at the edges. A2: `prose_c66_stop.log:1` shows a `-Kind prose` dispatch started 17:50:00 with a 6-min limit while cycle 52's session closed at 17:50:17 (git: "Cycle 52 close 2026-09-21 17:50") — the parent exit killed the child, repeating the exact reporter-kill failure CLAUDE.md:322-328 made the foreground rule for; the user's stop report was never written, and bgrun's "always writes a final END|TIMEOUT line" guarantee broke with it. A3: the unreviewed "failure" is the first of two runs inside `diag_c67_opvi.log` (rc=1 at :321 from a spurious FAIL — the byte-comparison at :259/:261 compares a full `HASH …` string against a bare md5 that is in fact identical); it was fixed and rerun to rc=0 twelve minutes later, but the failing run has no archived review and may deadlock cycle 54's first build, the exact 2026-09-21 failure mode CLAUDE.md:277 records. What the audit does NOT cover: builds executed from `tools/bench` are invisible to the recipe-lane gates (prior-art, stop-record), and the audit cannot see that its own window is over-wide (five retrospectives inside it).
+
+**5. Ordering.** Within cycle 53, defensible except for the record-read that should have come first (finding 1). The final ordering was actually good: hygiene review before each diagnostic, selftest before retrospective, retrospective last, NEXT gate satisfied (the next_gate device from the 1cea4ac commit did its job — no evidence of a NEXT-unwritten exit this cycle).
+
+**6. Not reported.** (a) The window aggregation itself: a summary quoting C5's "$506.78 / 1364 min" as this cycle's cost would overstate it ~6×; cycle 53 proper cost ~$80 and 138 min. (b) The two-runs-in-one-file structure of `diag_c67_opvi.log` (rc=1 at :321, rc=0 at :644) — "opvi passed" would hide a failed run and the comparison bug behind it. (c) The lost `prose_c66_stop` report — the user asked for a stop report that silently never existed. (d) Handle deltas in finding 3.
+
+**7. Judgement inside a material session.** No clear violation found. The closest call: `archive/peer/2026-09-21-c67-addsr-noop.md:16-17` records that "Cycle 67 material #2 implemented every mechanical reading it named and acted on none of its route changes" — the material session applied the reviewer's mechanical readings directly, but route decisions demonstrably stayed with the judgement session, and the opvi brief's pre-authorizations ("open_panel authorised for THIS LEG ONLY", `diag_c67_opvi.log:174`) state measurements, not result-dependent actions.
+
+---
+
+VIOLATION: repeated-failure-class | loss_min=60 | loss_usd=9.30 | evidence=tools/gscript.py:1284
+VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/bench/diag_c67_addsr.log:438
+
+(The second line names the `premature-build` gate in `tools/hooks/guard_cycle.py`: it never fired on the window's bench-lane builds, and the un-prior-arted build at the cited line is the fault it exists to stop. Its loss is the same hour counted on the first line, so I set loss_min=0 rather than double-count.)
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle53.md
+BGRUN END rc=0 after 364s

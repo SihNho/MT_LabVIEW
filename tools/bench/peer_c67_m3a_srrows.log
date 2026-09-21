@@ -1,0 +1,153 @@
+BGRUN START 2026-09-21 18:06:18 limit 16.0 min: powershell -NoProfile -File tools\peer.ps1 -Agent claude -Role hypothesis -Kind review -Slug c67-m3a-srrows -TaskFile tools\bench\peer_c67_m3a_srrows_task.md -TimeoutSec 780
+OUTCOME: ANSWERED (622s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c67-m3a-srrows.md
+COST: $4.3387  in 32 / out 48785 / cache-create 203415 / cache-read 1690181  (620s, 30 turn(s))
+--- ANSWER ---
+Write is disabled in this session, so the review is delivered here directly.
+
+---
+
+# REFUTATION — cycle 67, M3a "the four SR rows and nothing else"
+
+## 0. The R4 failure first: same property, two spellings — and the gate was wrong, not the peer
+
+**`Coerce Dot?` and `Coerced?` are the SAME property.** LabVIEW resolves the **ID**, not the string. The LabVIEW Wiki records `634A006` on the Terminal class as Short Name `Coerced?`, Long Name `Coercion Dot?`, Boolean, read-only, introduced LabVIEW 2018. The machine built a property node from that same ID on LabVIEW 2026 and its one non-standard terminal reads `Coerce Dot?` (`diag_c66c_coercion.log:44`). An ID cannot resolve to two different properties; what differs is the **display string NI ships for the property-node item**, re-spelled between the version the wiki's community dump captured and 26.3.1f1. The control case proves the route is sound: `634A008` resolved and its terminal read exactly `Data Type` (`:54-56`).
+
+**So LabVIEW 2026's name for a terminal's coercion-dot flag is `Coerce Dot?`**, and `docs/cycle27-plan.md:2690` already says so.
+
+**R4 gates on a third-party documentation string, not on the machine.** R3 — "exactly ONE non-standard terminal" — is the real assertion and it passed (`:45`). R4 should record the name as a FACT. As written it will fail again on any property NI has re-spelled, and it turned a 44-pass run into `rc=1`.
+
+**One correction to your framing.** You wrote that the coercion question "stayed UNMEASURED" *because* the name was wrong. The log says otherwise: coercion is unmeasured because **no wrapped column of the op fleet carries a coercion flag or a data type, and reading a VALUE needs a new saved op VI** (`:26-28`, `:186-188`). R4 blocks nothing. Conflating the two makes a name-string gate look like a measurement blocker, and would justify building a value-reading op to answer a question the same log calls irrelevant to a pure scheduling move.
+
+---
+
+## 1. Strongest reason the claim is WRONG — there are FIVE severed external rows, not four
+
+Your enumeration is short by one, and the arithmetic is **exact**, not "roughly 12".
+
+From `diag_c66b_s3b_m3.log`, the wired-terminal counts the M2 rows themselves printed:
+
+| node | terminals | wired after the 7 M2 rows | bare |
+|---|---|---|---|
+| `#3529` / `#3560` / `#3447` / `#23499` / `#23523` | 1 each | 1 each (`:304`, `:325`, `:346`, `:409`, `:430`) | — |
+| **`#48`** | 7 (5 sinks `:287`, 2 sources `:350`) | **5** (0→1→2→3→4→5) | **t3, t4** |
+| **`#10407`** | 7 (5 sinks `:350`, 2 sources) | **4** (0→1→2→3→4) | **t1, t4, t6** |
+
+**Five bare terminals at the decision point. You name four.** The bed *is* `D1_s3b_row2`, and its own table (`diag_c66c_coercion.log:97-104`) names the fifth:
+
+```
+t0  ''                          sink  w23502  <- Local #23499  (M2 row 6)
+t1  '# slices in stack'         sink  w9635   <- OUTSIDE the loop   *** BARE, UNCLAIMED ***
+t2  'index'                     sink  w23540  <- Local #23523  (M2 row 7)
+t3  'Outgoing Handle'           sink  w11232  <- #48 t6        (M2 row 4)
+t4  'VISA out'                  src   w7337   -> your row 3
+t5  'Out position'              sink  w7388   <- #48 t5        (M2 row 5)
+t6  'position [internal units]' src   w9113   -> your row 4
+```
+
+The 12 severances decompose exactly: 7 internal to the moved set (restored by M2) + 5 external. Four are your rows. **The fifth is `#10407` t1 `# slices in stack`.**
+
+This is not a new discovery — it is **your own known-hard row**:
+
+- `docs/d1-build-plan.md:429` — *"t1 `# slices in stack` ← **LoopTunnel #9641, IndexMode 0**, loop-invariant."* Its designed carrier is a **tunnel**. No shift register can carry it.
+- `docs/d1-route-b-plan.md:271` — *"`#10407` t1 `# slices in stack` ← LoopTunnel `#9641` is 🔴 **R1**."*
+- `tools/bench/task_run8_predictions.md:10` — *"The single NO-ROUTE (`:430`) is `#10407 t1 '# slices in stack' <- from-tunnel 9641, w9649 has 0 source terminals, not 1: []`."* The one row route B never wired.
+- `docs/frame-loop-wire-graph.md:465` lists **9635 among the frame-loop LoopTunnel inner-side wires** — so it runs from `#9641`'s inner side on `#637` to `#10407` t1. Moving `#10407` into `#23032` makes it cross a **new** border, and `LoopTunnel` held at **135** at all three census points (`:30`, `:284`, `:441`): **no tunnel was ever created on `#23032`.**
+
+The tunnel did not vanish with its wire — `Tunnel` held at 471 throughout. A case-structure input tunnel with no external source is an unwired/undirected tunnel, which LabVIEW does not tolerate.
+
+Even granting uncertainty about whether that one bare tunnel *alone* forces `ExecState` 0, your words are **"and nothing else"**. A fifth severed row exists, so the claim is false as stated either way. Note that `docs/cycle27-plan.md:2698` already hedges this — **the claim is stronger than the plan it cites.**
+
+---
+
+## 2. Your three questions
+
+### (a) Does an UNINITIALISED shift register compile? — YES. This half is correct.
+
+An uninitialised SR is a standard idiom: the left **outer** terminal is deliberately bare and the register yields the type's default on first call. Legal, executable, does not break the VI.
+
+The docstring tension resolves cleanly:
+
+- `tools/gscript.py:758` — *"an uninitialised register's outside terminal is legitimately unwired"* — **correct**.
+- `tools/gscript.py:683-687` — *"an unwired register breaks the VI… until they are wired"* — correct **about the INSIDE terminals**. The right register's inside terminal is a sink that must receive a value each iteration. The sentence is ambiguous, not wrong; it should read *"until the INSIDE terminals are wired; the left OUTER may stay bare."*
+
+Your rows wire both inside terminals of both registers, so **M3a-1 can legitimately reach `ExecState` 1 with initial values deferred.** That part survives.
+
+⚠️ **Forward warning:** a For Loop with parallelism enabled plus a shift register breaks the run arrow. `#23032` is a While Loop so M3a is unaffected — but the project's end goal is parallel instances, and these two registers sit on the autofocus row, which therefore must never become a parallel For Loop.
+
+### (b) Can `LeftIn`/`RightIn` address a moved node? — YES, and your docstring's word is wrong
+
+Measured, not inferred. `Diagram #23058`'s `Nodes[]` after each move (`:125`→`:275`):
+
+```
+[23035] → [23035,3529] → [...,3560] → [...,3447] → [...,48] → [...,10407] → [...,23499] → [...,23523]
+```
+
+Moved objects appear, appended **in move order** — 3447 → 48 is *descending* UID, so this is **not creation order**. `tools/gscript.py:721` ("creation-order `Nodes[]`") is a **misnomer**: it is insertion order, with the loop's resident node `#23035` at index 0.
+
+It agreed with `node_terms_uid` in practice — M2 addressed `#48` as node 4 and `#10407` as node 5 (`:287`, `:350`) and every row reported `same net True`. But that only held because each row re-read the diagram immediately before the call. Two live hazards: the census op creates a junk `Invoke` node **on the same body diagram** at `nodes_index: 8` (`:292`) and purges it; and `add_shift_reg` may change what `Nodes[]` contains. **Re-read the body diagram after creating the registers and before every `wire_sr`.**
+
+### (c) What else can hold it at 0
+
+**Ruled OUT positively, by measurement — don't spend the census on these:**
+
+- *While Loop conditional terminal:* the bed reads `ExecState 1` **COLD** with `#23032` already present (`:28-29`, `:106`). An unwired conditional terminal breaks a VI, so it was already wired.
+- *Case frames / output tunnels:* frames moved with the structure; `Tunnel` 471, `ConditionalTunnel` 146, `SelectorTunnel` 146 all unchanged (`:30`, `:63-66`, `:441`).
+- *The case selector:* `docs/d1-build-plan.md:428` identifies `#10407` t0 as the selector (←`#10686 And`); S3b re-routed it through Local `#23499` (`:95`) and M2 row 6 re-wired it (`:409`).
+- *Wires destroyed:* `Wire` 1907 → 1907 → 1914.
+
+**Still live, in order:**
+
+1. **`#10407` t1** — §1.
+2. **`#48` t3/t4 wired from an UNTYPED register.** `tools/gscript.py:722-723`: *"An UNTYPED register takes the type of its first wire, so wire the typed side first."* `add_shift_reg` creates untyped registers, and your row list puts both `LeftIn` rows **first** — presenting an untyped source to a typed sink. **Execute `RightIn` first** (`#10407` t4, t6 → right-inside), then `LeftIn`. This failure looks identical to the first one and would be misread as "the diagnosis was wrong".
+3. **`#10407` t6 feeds TWO sinks in the original** — SR `#4256` **and** `Q_focusback` (`docs/d1-route-b-plan.md:270`). Wiring only the register is a rule-1a computation change deferred, not solved — and it will pass silently, because a bare source is legal.
+
+---
+
+## 3. An ordering contradiction you should fix before dispatching
+
+`docs/cycle27-plan.md:2691-2696` specifies M3a as `add_shift_reg` ×2 → *"the four rows re-wired"* → *"**Then** the 7 node moves + 7 internal rows"*. Your claim says the rows come **after** the moves. **Only your order is executable** — `LeftIn` addresses `Loop.Diagram.Nodes[]`, and `#48`/`#10407` are not on that diagram until moved. A material session following the pre-decision text literally fails with an addressing error unrelated to the diagnosis.
+
+---
+
+## 4. The observation that falsifies the claim — in census terms
+
+**Predicted AFTER-census if I am right:** `#48` zero bare; `#3529`/`#3560`/`#3447`/`#23499`/`#23523` zero bare; **`#10407` exactly one bare terminal, t1 `# slices in stack`** — with `ExecState` still **0**. If instead `#10407` shows zero bare and `ExecState` reads 1, the claim stands.
+
+**Two wrong conclusions the census will invite:**
+
+1. **"Only one bare terminal — cosmetic."** It is the 🔴 R1 / NO-ROUTE row. It needs a **new LoopTunnel on `#23032`** (`docs/NAMES.md:536`: wiring into a frame auto-creates the tunnel) or a third S3b-style Local — and its source is itself a tunnel whose outer wire has *0 source terminals*, which is exactly why the fleet has never wired it.
+2. **"The census is clean, so the SR rows landed."** It cannot show that. **The new registers' terminals belong to `#23032`, not to any of the seven moved nodes** — a seven-node census is blind to a bare or mis-addressed register terminal, and a `wire_sr` row that landed on the wrong `node_index` would still make `#48` t3 look wired. **Add `shift_reg_left` for both registers** (left/right, outside/inside wire UIDs) and cross-check that each row shares ONE wire UID across both ends — the same `same net True` check M2 already used (`:304`).
+
+---
+
+## 5. Cheapest discriminating test — zero LabVIEW time
+
+**It is already in the log. Two greps, no build, no lock.**
+
+```
+rg -n "unique among 5 sink terminals|WIRED-TERMINAL counts" tools/bench/diag_c66b_s3b_m3.log
+rg -n "A2_ROW2_DIVIDED #10407"                              tools/bench/diag_c66c_coercion.log
+```
+
+`#10407` has **5 sink terminals** (`:350`); M2 raised its wired count 0→1→2→3→4 (`:367`, `:388`, `:409`, `:430`). **Four of five sinks wired.** Neither of your `#10407` rows can be the fifth — both are *sources*. `diag_c66c_coercion.log:99` names it: **t1 `# slices in stack`, wire 9635, from outside the loop.** If the claim were true, `#10407` would read 5 of 5.
+
+Run M3a anyway — it is cheap, staged, saves a file, and discharges `#48`'s two rows independently. But **predict `ExecState` 0**, carry the register census from §4, and have the `#10407` t1 tunnel row designed *before* the run.
+
+---
+
+## 6. Verdict
+
+- **First half — REFUTED.** Five severed rows, not four. The fifth is your own 🔴 R1 / NO-ROUTE row, needs a **loop tunnel** rather than a shift register, and appears in neither the claim, nor pre-decision 58, nor the M3a recipe.
+- **Second half — HOLDS.** An uninitialised SR (left outer bare, both inner terminals wired) is legal LabVIEW; deferring initial values to a second saved stage is sound. What would change my mind: NI documentation or a measurement on this install showing LabVIEW 2026 requires a wired left outer terminal. I found the opposite.
+- **R4 — not a failed prediction about LabVIEW.** `Coerce Dot?` *is* `634A006`; the wiki's short-name column is stale against 26.3.1f1. Demote R4 to a FACT line so a documentation string cannot fail a run.
+
+**Sources:**
+- [Terminal class/Coercion Dot? property — LabVIEW Wiki](https://labviewwiki.org/wiki/Terminal_class/Coercion_Dot%3F_property)
+- [Shift register — LabVIEW Wiki](https://labviewwiki.org/wiki/Shift_register)
+- [Uninitialized shift register — LabVIEW Wiki](https://labviewwiki.org/wiki/Uninitialized_shift_register)
+- [Failing to Wire a Tunnel in All Cases of a Structure — NI](https://www.ni.com/docs/en-US/bundle/labview/page/failing-to-wire-a-tunnel-in-all-cases-of-a-structure.html)
+- [Wire connected to an undirected tunnel — NI](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-connected-to-undirected-tunnel.html)
+- [Shift register: unwired from inside the loop — NI](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/shift-register-unwired-from-inside-loop.html)
+- [Parallelism with Shift Register — NI Community](https://forums.ni.com/t5/LabVIEW/Parallelism-with-Shift-Register/td-p/4469242)
+- [CaseStructure class — LabVIEW Wiki](https://labviewwiki.org/wiki/CaseStructure_class)
+BGRUN END rc=0 after 622s

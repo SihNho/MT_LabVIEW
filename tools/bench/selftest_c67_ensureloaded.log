@@ -1,0 +1,188 @@
+BGRUN START 2026-09-21 20:07:12 limit 25.0 min: py -u tools/bench/selftest_c67_ensureloaded.py
+=== selftest_c67_ensureloaded  20260921_200712  (bgrun --material --max-min 25)
+=== A SELF-TEST, NEVER A RECIPE. NOTHING IS BUILT. NO DELIVERABLE .vi IS EDITED OR SAVED. NO ROUTE IS CHOSEN OR RECOMMENDED.
+=== ONLY HYGIENE IS GATED. Cell outcomes print as `MEAS ...: YES|NO` and never fail this run.
+
+---------- [0] FILES ONLY, ZERO LabVIEW - the md5 pins BEFORE
+  FACT  LabVIEW handles BEFORE: 30946 (fresh-instance baseline ~31,500; the pre-batch restart below is MANDATORY - 44(e))
+  FACT  Y ORIGINAL BEFORE: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  Y ORIGINAL md5 == its pin 2a78e17c  '2a78e17c449cacdaf5da389818526859'
+  FACT  Y A2 THE BED BEFORE: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3b_row2_20260921_160311.vi | exists=1 | size=476759 | md5=26c54ff784cb5cea21edbd214d2cc3a0 | sha256=17b63cb1c83d5f4a50285ced08b1ecc5a65605979b17ee798b1228f7017d275d
+  PASS  Y A2 THE BED md5 == its pin 26c54ff7  '26c54ff784cb5cea21edbd214d2cc3a0'
+  FACT  Y S2 D1_s2_loops BEFORE: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  Y S2 D1_s2_loops md5 == its pin 6ff19497  '6ff19497f2309e007a214660bb64b911'
+  FACT  Y THE BED size: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3b_row2_20260921_160311.vi | exists=1 | size=476759 | md5=26c54ff784cb5cea21edbd214d2cc3a0 | sha256=17b63cb1c83d5f4a50285ced08b1ecc5a65605979b17ee798b1228f7017d275d
+  MEAS  Y the bed is 476759 B: YES  '476759'
+  FACT  [0] pre-batch LabVIEW restart (44(e)): lv_restart rc=0 ['dialogs: 1346,762| / ENABLED|122095252|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  LabVIEW handles AFTER the restart: 30680
+
+========== CELL 1 - `add_shift_reg`, NO PREPARATION, on the BED scratch, loop #23032
+  FACT  [C1] the fresh scratch for CELL 1 (from D1_s3b_row2_20260921_160311.vi): HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\WORK_C67SELF_C1_20260921_200712.vi | exists=1 | size=476759 | md5=26c54ff784cb5cea21edbd214d2cc3a0 | sha256=17b63cb1c83d5f4a50285ced08b1ecc5a65605979b17ee798b1228f7017d275d
+  MEAS  [C1] CELL 1's scratch is byte-identical to its bed: YES  '26c54ff784cb5cea21edbd214d2cc3a0' vs pin 26c54ff7
+  FACT  [C1] NONE - no open_panel, no move_in; the repaired wrapper must load the target itself
+  FACT  ExecState [01 [C1] the scratch, COLD before add_shift_reg] = 1
+  FACT  [C1] BEFORE counts: {'Node': 632, 'Wire': 1907, 'Tunnel': 471}
+  FACT  [C1] BEFORE report_all('RightShiftRegister'): 36 row(s)
+  FACT  [C1] BEFORE report_all('LeftShiftRegister'): 36 row(s)
+  FACT  [C1] before add_shift_reg A7 ECHO: report_all('WhileLoop')[2].uid == 23032 (want #23032; 6 row(s)) 
+  MEAS  [C1] before add_shift_reg the echoed uid at the index used IS #23032: YES  loop_index 2 echoed 23032
+  FACT  [C1] *** add_shift_reg(target, loop_index=2) -> uid 23561 ; wrapper error '' (1.91 s) ***
+  FACT  ExecState [02 [C1] immediately after add_shift_reg] = 0
+  FACT  [C1] AFTER counts: {'Node': 632, 'Wire': 1907, 'Tunnel': 473}
+  FACT  [C1] AFTER report_all('RightShiftRegister'): 37 row(s)
+  FACT  [C1] AFTER report_all('LeftShiftRegister'): 37 row(s)
+  FACT  [C1] RightShiftRegister: 36 -> 37 ; minted [23561] ; vanished []
+  FACT  [C1] LeftShiftRegister: 36 -> 37 ; minted [23574] ; vanished []
+  FACT  [C1] loop_cast(#23032): loop_uid echo 23032 ; shift_reg_uids [23561] ; errors {}
+  MEAS  [C1] a RightShiftRegister uid was MINTED: YES  [23561]
+  MEAS  [C1] Tunnel went +2 (a register is a Left AND a Right, both Tunnel subclasses): YES  delta 2 (before 471 / after 473)
+  MEAS  [C1] loop_cast(#23032).shift_reg_uids is non-empty: YES  [23561]
+  MEAS  [C1] ExecState went 1 -> 0 as tools/gscript.py predicts for an unwired register: YES  1 -> 0
+  MEAS  CELL 1 add_shift_reg LANDS with no preparation on the bed (dispatch #3's L1 was a no-op): YES  {'minted': True, 'tunnel_plus_2': True, 'shift_reg_uids_non_empty': True, 'exec_state_1_to_0': True}
+
+========== CELL 2 - the same on a DIFFERENT target: D1_s2_loops.vi (dispatch #3's L4)
+  FACT  [C2] the fresh scratch for CELL 2 (from D1_s2_loops.vi): HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\WORK_C67SELF_C2_20260921_200712.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  MEAS  [C2] CELL 2's scratch is byte-identical to its bed: YES  '6ff19497f2309e007a214660bb64b911' vs pin 6ff19497
+  FACT  [C2] report_all('WhileLoop') on D1_s2_loops.vi: 6 row(s) -> [(0, 23041), (1, 10170), (2, 23032), (3, 25380), (4, 637), (5, 15173)]
+  FACT  [C2] the loop chosen is report_all('WhileLoop')[0] = uid #23041 at [4587, 4312]
+  FACT  [C2] NONE - no open_panel, no move_in; the repaired wrapper must load the target itself
+  FACT  ExecState [03 [C2] the scratch, COLD before add_shift_reg] = 1
+  FACT  [C2] BEFORE counts: {'Node': 630, 'Wire': 1905, 'Tunnel': 471}
+  FACT  [C2] BEFORE report_all('RightShiftRegister'): 36 row(s)
+  FACT  [C2] BEFORE report_all('LeftShiftRegister'): 36 row(s)
+  FACT  [C2] before add_shift_reg A7 ECHO: report_all('WhileLoop')[0].uid == 23041 (want #23041; 6 row(s)) 
+  MEAS  [C2] before add_shift_reg the echoed uid at the index used IS #23041: YES  loop_index 0 echoed 23041
+  FACT  [C2] *** add_shift_reg(target, loop_index=0) -> uid 23498 ; wrapper error '' (0.41 s) ***
+  FACT  ExecState [04 [C2] immediately after add_shift_reg] = 0
+  FACT  [C2] AFTER counts: {'Node': 630, 'Wire': 1905, 'Tunnel': 473}
+  FACT  [C2] AFTER report_all('RightShiftRegister'): 37 row(s)
+  FACT  [C2] AFTER report_all('LeftShiftRegister'): 37 row(s)
+  FACT  [C2] RightShiftRegister: 36 -> 37 ; minted [23498] ; vanished []
+  FACT  [C2] LeftShiftRegister: 36 -> 37 ; minted [23504] ; vanished []
+  FACT  [C2] loop_cast(#23041): loop_uid echo 23041 ; shift_reg_uids [23498] ; errors {}
+  MEAS  [C2] a RightShiftRegister uid was MINTED: YES  [23498]
+  MEAS  [C2] Tunnel went +2 (a register is a Left AND a Right, both Tunnel subclasses): YES  delta 2 (before 471 / after 473)
+  MEAS  [C2] loop_cast(#23041).shift_reg_uids is non-empty: YES  [23498]
+  MEAS  [C2] ExecState went 1 -> 0 as tools/gscript.py predicts for an unwired register: YES  1 -> 0
+  MEAS  CELL 2 add_shift_reg LANDS with no preparation on D1_s2_loops.vi (dispatch #3's L4 was a no-op): YES  {'minted': True, 'tunnel_plus_2': True, 'shift_reg_uids_non_empty': True, 'exec_state_1_to_0': True}
+
+========== CELL 3 - `wire_sr`, NO PREPARATION, on a fresh BED scratch, loop #637
+  FACT  [C3] the fresh scratch for CELL 3 (from D1_s3b_row2_20260921_160311.vi): HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\WORK_C67SELF_C3_20260921_200712.vi | exists=1 | size=476759 | md5=26c54ff784cb5cea21edbd214d2cc3a0 | sha256=17b63cb1c83d5f4a50285ced08b1ecc5a65605979b17ee798b1228f7017d275d
+  MEAS  [C3] CELL 3's scratch is byte-identical to its bed: YES  '26c54ff784cb5cea21edbd214d2cc3a0' vs pin 26c54ff7
+  FACT  [C3] NONE - no open_panel, no move_in; the repaired wrapper must load the target itself
+  FACT  ExecState [05 [C3] the scratch, COLD before add_shift_reg] = 1
+  FACT  [C3] BEFORE counts: {'Node': 632, 'Wire': 1907, 'Tunnel': 471}
+  FACT  [C3] BEFORE report_all('RightShiftRegister'): 36 row(s)
+  FACT  [C3] BEFORE report_all('LeftShiftRegister'): 36 row(s)
+  FACT  [C3] before add_shift_reg A7 ECHO: report_all('WhileLoop')[4].uid == 637 (want #637; 6 row(s)) 
+  MEAS  [C3] before add_shift_reg the echoed uid at the index used IS #637: YES  loop_index 4 echoed 637
+  FACT  [C3] *** add_shift_reg(target, loop_index=4) -> uid 23561 ; wrapper error '' (0.31 s) ***
+  FACT  ExecState [06 [C3] immediately after add_shift_reg] = 0
+  FACT  [C3] AFTER counts: {'Node': 632, 'Wire': 1907, 'Tunnel': 473}
+  FACT  [C3] AFTER report_all('RightShiftRegister'): 37 row(s)
+  FACT  [C3] AFTER report_all('LeftShiftRegister'): 37 row(s)
+  FACT  [C3] RightShiftRegister: 36 -> 37 ; minted [23561] ; vanished []
+  FACT  [C3] LeftShiftRegister: 36 -> 37 ; minted [23574] ; vanished []
+  FACT  [C3] loop_cast(#637): loop_uid echo 637 ; shift_reg_uids [15, 24, 119, 580, 862, 1117, 1147, 4256, 4334, 5796, 7311, 9018, 15197, 23561, 29505] ; errors {}
+  MEAS  [C3] a RightShiftRegister uid was MINTED: YES  [23561]
+  MEAS  [C3] Tunnel went +2 (a register is a Left AND a Right, both Tunnel subclasses): YES  delta 2 (before 471 / after 473)
+  MEAS  [C3] loop_cast(#637).shift_reg_uids is non-empty: YES  [15, 24, 119, 580, 862, 1117, 1147, 4256, 4334, 5796, 7311, 9018, 15197, 23561, 29505]
+  MEAS  [C3] ExecState went 1 -> 0 as tools/gscript.py predicts for an unwired register: YES  1 -> 0
+  FACT  [C3] the minted register #23561 sits at Loop.Shift Registers[14] of 15
+  MEAS  [C3] the minted register uid is addressable as a reg_index: YES  minted 23561 in [1147, 4256, 4334, 15, 24, 1117, 119, 5796, 9018, 862, 7311, 15197, 29505, 580, 23561]
+  FACT  [C3] report_all('Diagram'): 173 row(s), 6 owned by a WhileLoop 
+  OBSERVED uid 23405 -> owner 'WhileLoop' uid 23041 | self 'Diagram'#23405 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  FACT  [C3] Diagram #23405 [traverse 20] owner_of -> 'WhileLoop' #23041 
+  OBSERVED uid 23166 -> owner 'WhileLoop' uid 10170 | self 'Diagram'#23166 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  FACT  [C3] Diagram #23166 [traverse 21] owner_of -> 'WhileLoop' #10170 
+  OBSERVED uid 23058 -> owner 'WhileLoop' uid 23032 | self 'Diagram'#23058 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  FACT  [C3] Diagram #23058 [traverse 22] owner_of -> 'WhileLoop' #23032 
+  OBSERVED uid 25392 -> owner 'WhileLoop' uid 25380 | self 'Diagram'#25392 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  FACT  [C3] Diagram #25392 [traverse 23] owner_of -> 'WhileLoop' #25380 
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  FACT  [C3] Diagram #639 [traverse 46] owner_of -> 'WhileLoop' #637 
+  FACT  [C3] the body diagram carries 75 node(s) 
+  FACT  [C3] Nodes[4] (#2136) offers BARE SOURCE terminal t0 'floor(x/y)' (of 4 terminals)
+  FACT  [C3] BEFORE wire_sr counts: {'Wire': 1907}
+  FACT  [C3] *** wire_sr('RightIn', target, loop_index=4, reg_index=14, node_index=4, term_index=0) -> error '' (0.07 s) ***
+  FACT  [C3] AFTER wire_sr counts: {'Wire': 1908}
+  FACT  [C3] shift_reg_left(reg 14) inside terminals: [('', False, 23582)]
+  FACT  [C3] the body source terminal t0 'floor(x/y)' now carries wire 23582
+  MEAS  [C3] exactly ONE new Wire object: YES  delta 1
+  MEAS  [C3] the SAME non-zero wire uid at BOTH ends (register inside terminal and body terminal): YES  terminal wire 23582 ; register inside wires [23582]
+  MEAS  CELL 3 wire_sr LANDS with no preparation (one new wire, same uid at both ends): YES  wire_delta 1 ; terminal wire 23582 ; register wires [23582]
+
+========== CELL 4 - REGRESSION: one move_in and one connect_nested_v1, unchanged from diag_c66b_s3b_m3.py
+  FACT  [C4] the fresh scratch for CELL 4 (from D1_s3b_row2_20260921_160311.vi): HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\WORK_C67SELF_C4_20260921_200712.vi | exists=1 | size=476759 | md5=26c54ff784cb5cea21edbd214d2cc3a0 | sha256=17b63cb1c83d5f4a50285ced08b1ecc5a65605979b17ee798b1228f7017d275d
+  MEAS  [C4] CELL 4's scratch is byte-identical to its bed: YES  '26c54ff784cb5cea21edbd214d2cc3a0' vs pin 26c54ff7
+  FACT  ExecState [07 [C4] the scratch, COLD] = 1
+  FACT  [C4] DESTINDEX: Diagram #23058 -> traverse index 22 
+  FACT  [C4] MOVE #3529 '- Inc (PgDn)' -> Diagram #23058 [traverse 22]; the op echoed uid 23035 (37(d): the echo is NOT the moved object) ; error ''
+  OBSERVED uid 3529 -> owner 'Diagram' uid 23058 | self 'ControlReferenceConstant'#3529 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  [C4] owner_of(#3529) reads 'Diagram' #23058 (want the destination diagram #23058)
+  MEAS  [C4] the moved object's owner IS the destination diagram: YES  'Diagram' #23058
+  FACT  ExecState [08 [C4] after the one move_in (37(d): a move SEVERS every wire on the object)] = 0
+  OBSERVED uid 48 -> owner 'Diagram' uid 639 | self 'SubVI'#48 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  [C4] the row: sink #48 = Diagram[46].Nodes[10].Terminals[0]  <-  source #3529 = Diagram[22].Nodes[1].Terminals[0]
+  FACT  [C4] BEFORE connect_nested_v1 counts: {'Wire': 1907}
+      op readback {'UID': 48, 'Name': '-Inc reference', 'UID 2': 4833, 'Is Broken?': True}
+  FACT  [C4] *** connect_nested_v1 -> (2, 0, '') ; exception '' ***
+  FACT  [C4] AFTER connect_nested_v1 counts: {'Wire': 1909}
+  FACT  [C4] whole-VI Wire delta across the connect: 2
+  MEAS  [C4] connect_nested_v1 returned its triple without raising: YES  (2, 0, '') ; exception ''
+  MEAS  CELL 4 the move_in / connect_nested_v1 regression - both verbs still behave as before Part A: YES  move_owner #23058 ; connect (2, 0, '')
+
+---------- [Y] HYGIENE: SCRATCHES, THE md5 PINS AFTER, THE REFS AND THE HANDLES
+  PASS  Y CELL 1's scratch WORK_C67SELF_C1_20260921_200712.vi is gone (exists=False)
+  PASS  Y CELL 2's scratch WORK_C67SELF_C2_20260921_200712.vi is gone (exists=False)
+  PASS  Y CELL 3's scratch WORK_C67SELF_C3_20260921_200712.vi is gone (exists=False)
+  PASS  Y CELL 4's scratch WORK_C67SELF_C4_20260921_200712.vi is gone (exists=False)
+  FACT  Y ORIGINAL AFTER: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  Y ORIGINAL md5 is STILL its pin 2a78e17c  '2a78e17c449cacdaf5da389818526859'
+  FACT  Y A2 THE BED AFTER: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3b_row2_20260921_160311.vi | exists=1 | size=476759 | md5=26c54ff784cb5cea21edbd214d2cc3a0 | sha256=17b63cb1c83d5f4a50285ced08b1ecc5a65605979b17ee798b1228f7017d275d
+  PASS  Y A2 THE BED md5 is STILL its pin 26c54ff7  '26c54ff784cb5cea21edbd214d2cc3a0'
+  FACT  Y S2 D1_s2_loops AFTER: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  Y S2 D1_s2_loops md5 is STILL its pin 6ff19497  '6ff19497f2309e007a214660bb64b911'
+  FACT  refs: {'opened': 17, 'closed': 17, 'live': 0, 'cached_op_vis': 11}
+  PASS  Y refs opened == closed and 0 live  {'opened': 17, 'closed': 17, 'live': 0, 'cached_op_vis': 11}
+  FACT  LabVIEW handles AFTER: 34830 (before 30946, delta 3884) - NO GObject census was run anywhere in this file
+
+THE FILES THIS RUN LEFT ON DISK: []
+  FACT  THE FILES THIS RUN LEFT ON DISK: []
+  PASS  Y this run left NO file on disk  []
+
+=== MEASUREMENTS: 29 YES / 0 NO  (these NEVER fail the run)
+    YES  Y the bed is 476759 B  '476759'
+    YES  [C1] CELL 1's scratch is byte-identical to its bed  '26c54ff784cb5cea21edbd214d2cc3a0' vs pin 26c54ff7
+    YES  [C1] before add_shift_reg the echoed uid at the index used IS #23032  loop_index 2 echoed 23032
+    YES  [C1] a RightShiftRegister uid was MINTED  [23561]
+    YES  [C1] Tunnel went +2 (a register is a Left AND a Right, both Tunnel subclasses)  delta 2 (before 471 / after 473)
+    YES  [C1] loop_cast(#23032).shift_reg_uids is non-empty  [23561]
+    YES  [C1] ExecState went 1 -> 0 as tools/gscript.py predicts for an unwired register  1 -> 0
+    YES  CELL 1 add_shift_reg LANDS with no preparation on the bed (dispatch #3's L1 was a no-op)  {'minted': True, 'tunnel_plus_2': True, 'shift_reg_uids_non_empty': True, 'exec_state_1_to_0': True}
+    YES  [C2] CELL 2's scratch is byte-identical to its bed  '6ff19497f2309e007a214660bb64b911' vs pin 6ff19497
+    YES  [C2] before add_shift_reg the echoed uid at the index used IS #23041  loop_index 0 echoed 23041
+    YES  [C2] a RightShiftRegister uid was MINTED  [23498]
+    YES  [C2] Tunnel went +2 (a register is a Left AND a Right, both Tunnel subclasses)  delta 2 (before 471 / after 473)
+    YES  [C2] loop_cast(#23041).shift_reg_uids is non-empty  [23498]
+    YES  [C2] ExecState went 1 -> 0 as tools/gscript.py predicts for an unwired register  1 -> 0
+    YES  CELL 2 add_shift_reg LANDS with no preparation on D1_s2_loops.vi (dispatch #3's L4 was a no-op)  {'minted': True, 'tunnel_plus_2': True, 'shift_reg_uids_non_empty': True, 'exec_state_1_to_0': True}
+    YES  [C3] CELL 3's scratch is byte-identical to its bed  '26c54ff784cb5cea21edbd214d2cc3a0' vs pin 26c54ff7
+    YES  [C3] before add_shift_reg the echoed uid at the index used IS #637  loop_index 4 echoed 637
+    YES  [C3] a RightShiftRegister uid was MINTED  [23561]
+    YES  [C3] Tunnel went +2 (a register is a Left AND a Right, both Tunnel subclasses)  delta 2 (before 471 / after 473)
+    YES  [C3] loop_cast(#637).shift_reg_uids is non-empty  [15, 24, 119, 580, 862, 1117, 1147, 4256, 4334, 5796, 7311, 9018, 15197, 23561, 29505]
+    YES  [C3] ExecState went 1 -> 0 as tools/gscript.py predicts for an unwired register  1 -> 0
+    YES  [C3] the minted register uid is addressable as a reg_index  minted 23561 in [1147, 4256, 4334, 15, 24, 1117, 119, 5796, 9018, 862, 7311, 15197, 29505, 580, 23561]
+    YES  [C3] exactly ONE new Wire object  delta 1
+    YES  [C3] the SAME non-zero wire uid at BOTH ends (register inside terminal and body terminal)  terminal wire 23582 ; register inside wires [23582]
+    YES  CELL 3 wire_sr LANDS with no preparation (one new wire, same uid at both ends)  wire_delta 1 ; terminal wire 23582 ; register wires [23582]
+    YES  [C4] CELL 4's scratch is byte-identical to its bed  '26c54ff784cb5cea21edbd214d2cc3a0' vs pin 26c54ff7
+    YES  [C4] the moved object's owner IS the destination diagram  'Diagram' #23058
+    YES  [C4] connect_nested_v1 returned its triple without raising  (2, 0, '') ; exception ''
+    YES  CELL 4 the move_in / connect_nested_v1 regression - both verbs still behave as before Part A  move_owner #23058 ; connect (2, 0, '')
+
+=== SELFTEST 4/4 cells
+=== HYGIENE GATES: 12 pass / 0 fail
+=== JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_c67_ensureloaded.json
+BGRUN END rc=0 after 88s

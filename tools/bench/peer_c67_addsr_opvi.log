@@ -1,0 +1,104 @@
+BGRUN START 2026-09-21 19:22:46 limit 19.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Kind review -Slug c67-addsr-opvi -TaskFile 'tools/bench/task_c67_addsr_opvi.md' -TimeoutSec 900
+OUTCOME: ANSWERED (767s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c67-addsr-opvi.md
+COST: $5.4537  in 38 / out 55934 / cache-create 261462 / cache-read 2419604  (765s, 34 turn(s))
+--- ANSWER ---
+I will not confirm the claim. Here is the review.
+
+---
+
+# The claim is not supported by its own evidence — and one line in your own build log contradicts its central premise
+
+## 1. The single strongest reason the claim is WRONG
+
+**`UID 2`'s saved default is almost certainly `0`, not `23561`, because the op VI was saved *before it had ever been run*.**
+
+`tools/bench/build_opaddshiftreg_v0_run3.log:47-48`:
+
+```
+assembled: Property=4 Invoke=1 Wire=20 ExecState=1 labels {'y_position': 'Y Position', 'uid': 'UID 2', 'error': 'error out 3'}
+   saved; labels -> ...\opaddshiftreg_labels.json
+```
+
+and only *then*, at `:51-57`, the first functional run:
+
+```
+   predict: shift_reg_uids 0 -> 1, element == the op's reported UID ...
+   after : {'loop_uid': 388, ..., 'shift_reg_uids': [503], 'errors': {}}
+   PASS A2 shift_reg_uids 0 -> 1 [] -> [503]
+```
+
+Assembly is done *to* the op VI by other op VIs (`build_invoke`, `build_property`, `create_indicator`), so `UID 2` had never been written at the moment of the save. A U32 indicator that has never been written carries the type default. The claim's whole load-bearing step — "the wrapper reads its `uid` indicator's SAVED DEFAULT" — is an **assumption about a value nobody has ever read**. And it is cheap to read: two COM calls, no Run.
+
+Note also the first successful register in that acceptance test took uid **503**, not 23561 — so 23561 is not a leftover from the build either, unless the op was re-saved afterwards by a session nobody has checked for.
+
+**Second reason, from the machine rather than from documentation:** the claim requires `Run` to have returned *success while doing nothing*. Every documented way LabVIEW's VI Server declines to run a VI is loud, not silent — a broken VI returns **error 1003 "The VI is not executable"** ([labview.help topic 66547](http://www.labview.help/topic/66547)), and `Run VI` "cannot run a VI already reserved for execution by another VI", which also errors ([LabVIEW Wiki, Run VI method](https://labviewwiki.org/wiki/VI_class/Run_VI_method)). `gscript.py:426-427` raises on *any* COM exception, and `diag_c67_addsr.py:543` wraps the call in `safe()`, which would have logged the raise verbatim. Instead the log shows a returned value.
+
+And `_run` is a **shared path**. In the same process and the same minutes it executed `report_all`, `count`, `loop_cast`, `shift_reg` hundreds of times with correctly varying output; in the earlier run on the same bed it executed `move_in`, which **minted a real object in the target** — junk Invoke **#23522** (`tools/bench/diag_c67_m3a.log:114`), found by a later census (`:115`) and purged (`:124`). "Never executes at all" would have to be a property of one VI, produced silently by an API whose failure modes are all errors.
+
+**Third: two of your three "already ruled out" items do not hold.**
+
+- *Item 3 (top-level diagram), "REFUTED by leg 4"* — this only refutes the hypothesis if **#637 is on the top-level diagram**, and that was never measured. `diag_c67_m3a.log:55` records the measurement for #23032 ("the owning diagram's traverse index is 19 … reads False") and nothing for #637. In the original main VI, loops of this kind sit inside case and sequence structures. Leg 4 may be a second nested loop, i.e. not a control at all. One `diag_index(#637)` call closes this.
+- *"Three separate runs"* — legs 1, 2 and 4 share **one** cached op-VI reference (`gscript.py:210-215`) in one Python process against one LabVIEW instance. An indicator is sticky across runs of the same loaded VI, so legs 2 and 4 carry **zero** independent information about the returned uid. You have exactly two independent observations: `diag_c67_m3a.log:61` and `diag_c67_addsr.log:69`. Both were first-call-in-a-fresh-process **against byte-identical copies of the same 476,759-byte bed** — so a deterministic *write* of a next-uid and a constant *default* predict the identical result. The observation is not discriminating in either direction.
+
+What the evidence *does* support, and what I accept: **nothing was created in the scratch, and 23561 is not a uid in that VI.** `move_in` minted #23522 *after* two calls each claiming 23561 (`m3a.log:61,:72` then `:114`); if either had minted 23561 the counter could not then hand out 23522. (Inference, not measurement — the purge at `:124` frees a uid, and I could not source whether LabVIEW reuses freed uids.) What the evidence does **not** support is the jump from "the indicator was not written / nothing was created" to "the diagram never ran."
+
+## 2. Alternative explanations of the same four observations, with the op fully executing
+
+**A — the Invoke ran and errored, and the error was never seen.** Your recipe wires the UID property node's *reference* from the Invoke's return and creates the error indicator on the **Invoke's** `error out` (`tools/recipes/build_opaddshiftreg_v0.py:236-259`); the property node's own `error in` is left unwired. If the traverse/TMSC chain handed the Invoke an invalid reference, the Invoke errors (typically **1055**, [NI KB on 1055 from a Property or Invoke Node](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019L75SAE)) and the property node, error-in unwired, then runs on that same bad reference and errors too — its own error going nowhere. The wrapper sees `''` because `_err` **returns `None` on any exception from `GetControlValue`** (`gscript.py:443-446`) and `:704-706` cannot distinguish "no error" from "could not read the error". Note the indicator numbering — `UID 2`, `error out 3` — means the panel already carried a `UID` and at least two `error out` indicators; your own NAMES.md calls duplicate names "the third duplicate-name incident of the day" (`docs/NAMES.md:843`). Under A, `UID 2` is left at its loaded value exactly as observed.
+
+**B — the Invoke ran and *succeeded*, on a VI that is not the scratch.** The op carries **two** `Open VI Reference` nodes (`build_opaddshiftreg_v0_run3.log:8` and `:12`) and the wrapper sets one control named `"vi path"` (`gscript.py:700`). If the Invoke's reference chain descends from the other one, every call edits one fixed file, reloaded fresh each time, and returns that file's next-uid — the same number forever, with a genuinely empty error and nothing in the scratch. (Weaker than A: the 2026-09-14 acceptance test shows `"vi path"` did reach the Invoke chain then. But the target has changed from a tiny scratch with a top-level loop to a 10,028-object VI whose loop sits on nested diagram #686.)
+
+Both leave `UID 2` unwritten-or-written-elsewhere, `error out 3` empty, nothing minted in the scratch, and `ExecState` 1 — all four observations, with the op executing normally.
+
+One alternative I checked and **discarded**: "the edit landed and was discarded when the target unloaded." `m3a.log:114-124` shows a `move_in` creation on this same bed surviving across op boundaries and being visible to a later census. The record kills it.
+
+## 3. Reads that separate "never ran" from "ran and declined", cheapest first
+
+| # | read | cost | what it settles |
+|---|---|---|---|
+| **R1** | In a fresh process: `v = g.op(g.OP_ADD_SHIFT_REG)`, then `v.GetControlValue("UID 2")` and `v.GetControlValue("error out 3")` **before any `_run`** | **2 COM calls, zero VI runs** | The loaded default. ≠ 23561 ⇒ the claim is dead |
+| **R2** | `g.exec_state(g.OP_ADD_SHIFT_REG)` | 1 call | 0 ⇒ broken ⇒ `Run` would have raised 1003; 1 ⇒ runnable |
+| **R3** | md5 + mtime of `OpAddShiftReg_v0.vi` | no LabVIEW at all | Whether it was re-saved after 2026-09-14 — the only way its default could have become 23561 |
+| **R4** | `g.fp_labels(g.OP_ADD_SHIFT_REG)` | ~N op runs, one-off | Whether `UID 2` / `error out 3` exist, are indicators, and what their siblings are named. The label file has been trusted since build time and never re-checked |
+| **R5** | Full panel snapshot (every label from R4) before vs after **one** call, same loaded instance | the one call | **Any** changed value proves the diagram executed |
+| **R6** | Marshal `Run` to a thread as `_run` already does (`gscript.py:397-403`) and poll `g.exec_state(op VI)` from the main thread | one call + a few reads | The only *direct* proof of execution, independent of any output value. Caveat: op VIs "finish in well under a second" (`gscript.py:355`), so the sample can miss — on this 476 KB target the traverse is slow enough to catch |
+| **R7** | `diag_index(#637)` / `find_node(#637)` | 1 read | Closes the hole in "already ruled out" item 3 |
+
+**On your specific question — is there a read that proves a block diagram executed?** Over the ActiveX `VirtualInstrument` surface, no. There is no run counter, no last-run timestamp, no post-hoc "has executed" property. `Call Chain` is the *currently executing* VI's context and is read from inside a running VI; by the time you can call `GetControlValue` the op has finished and there is no chain to read. **The only proof is a front-panel value that differs from the value the same loaded instance held before the Run** — R5 — and the baseline must be the *loaded* value, not the saved default and not a value left by a previous call in the same process. R6 is the one exception, and it is a timing race rather than a fact.
+
+Two things that look like proofs and are not: `_run` returning without raising (it proves `Run` did not error, not that dataflow reached the Invoke), and `_err` returning `''` (it conflates three states). And **do not** use `Make Current Values Default` as a comparison — it is a write, it dirties the op VI, and it destroys the baseline you are trying to measure. If R1's baseline has already been contaminated by a run in the same process, `g.revert(op VI)` reads the on-disk default without saving.
+
+## 4. What makes `Run` return silently on a VI that did nothing
+
+Not the VI's run-state — that is always loud. What *is* silent is the **diagram short-circuiting**, and all four mechanisms you asked about are real:
+
+- **Error-in already set at a Property or Invoke node**: the node "does not perform anything inside", passes the error through, and outputs **default data** ([NI forum: Property Node error clusters](https://forums.ni.com/t5/LabVIEW/Property-Node-error-clusters-to-wire-or-not-to-wire/td-p/3331954)). This is the single most likely mechanism here.
+- **`Index Array` out of range returns the default element with no error at all** — it has no error terminal ([LabVIEW Wiki, Index Array](https://labviewwiki.org/wiki/Index_Array_function)). For a refnum array that default is `0`, and the downstream Invoke then errors 1055. A traverse whose ordering differs from `report_all`'s makes `index=2` address nothing, silently.
+- **Case structure on an error cluster, or a Diagram Disable structure** — the frame simply never runs.
+- **`SetControlValue` on a name that does not exist**: *not settled*. NI documents it as returning an error, which over ActiveX surfaces as a COM exception pywin32 raises; I found no source saying it fails silently. But this project has never measured it, and the whole fleet depends on it raising. It is one line in a scratch process: `vi.SetControlValue("no such control", 0)`.
+
+Also worth recording, since it is a live trap in this code: `gscript.py:403` invokes `Run` with **no arguments** — the `1` is pythoncom's `bResultWanted`, not a parameter. `Wait Until Done` defaults to **TRUE** ([LabVIEW Wiki](https://labviewwiki.org/wiki/VI_class/Run_VI_method)), so the call is synchronous and a read-before-finish race is **ruled out**. Explicit `DISPATCH_METHOD` also avoids the pywin32 trap where `vi.Run(1)` needs `_FlagAsMethod` ([NI forum](https://forums.ni.com/t5/LabVIEW/Trouble-running-a-VI-asynchronously-when-called-from-Python-via/td-p/4103346)).
+
+## 5. Falsifier, and the cheapest discriminating test
+
+**Falsifier of the claim:** `UID 2` reading anything other than `23561` on a freshly-loaded `OpAddShiftReg_v0.vi` before any Run. That single value was written by an execution, and "the op never executes at all" is finished.
+
+**Cheapest discriminating test — R1 + R3, roughly four seconds of work:**
+
+```
+# fresh process, fresh LabVIEW, ZERO VI runs, nothing edited, nothing saved
+md5 + mtime of OpAddShiftReg_v0.vi            # was it re-saved after 2026-09-14?
+v = g.op(g.OP_ADD_SHIFT_REG)
+before_uid = v.GetControlValue("UID 2")
+before_err = v.GetControlValue("error out 3")   # let this RAISE if the name is wrong
+g.add_shift_reg(scratch, idx)                   # one call
+after_uid  = v.GetControlValue("UID 2")
+after_err  = v.GetControlValue("error out 3")
+```
+
+Read it as: `before_uid != 23561` ⇒ **claim dead, the diagram ran**, and the question becomes where the register went (→ B). `before_uid == 23561` and `after_uid == 23561` ⇒ the indicator was not written this call, which is consistent with A *and* with the claim — and R6 is then the next read, not another census. Either `GetControlValue` raising ⇒ the label file is wrong, `_err` has been blind since 2026-09-14, and **every** error this op ever returned was swallowed.
+
+**What would change my mind:** `before_uid == 23561` on a fresh load **and** R3 showing the op VI untouched since 2026-09-14 **and** R6 never observing ExecState 2/3 during a threaded Run. That combination would make "the VI does not execute" the best remaining explanation. Nothing measured so far gets near it — and note that the diagnostic that produced this claim spent 1702 s and 51 gates without ever taking the two-COM-call read that decides it.
+
+**Sources:** [Run VI method (LabVIEW Wiki)](https://labviewwiki.org/wiki/VI_class/Run_VI_method) · [Error 1003 / Bad Execution State over VI Server](http://www.labview.help/topic/66547) · [Error 1055 from a Property or Invoke Node (NI)](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019L75SAE) · [Property Node error clusters — to wire or not to wire (NI forum)](https://forums.ni.com/t5/LabVIEW/Property-Node-error-clusters-to-wire-or-not-to-wire/td-p/3331954) · [Index Array function (LabVIEW Wiki)](https://labviewwiki.org/wiki/Index_Array_function) · [Running a VI asynchronously from Python via ActiveX (NI forum)](https://forums.ni.com/t5/LabVIEW/Trouble-running-a-VI-asynchronously-when-called-from-Python-via/td-p/4103346)
+BGRUN END rc=0 after 767s

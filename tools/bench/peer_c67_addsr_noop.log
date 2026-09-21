@@ -1,0 +1,88 @@
+BGRUN START 2026-09-21 18:35:52 limit 19.0 min: powershell -NoProfile -Command & './tools/peer.ps1' -Agent claude -Role hypothesis -Kind review -Slug c67-addsr-noop -TaskFile 'tools/bench/peer_c67_addsr_noop_task.md' -TimeoutSec 900
+OUTCOME: ANSWERED (532s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c67-addsr-noop.md
+COST: $3.8464  in 18 / out 39330 / cache-create 217530 / cache-read 1199681  (530s, 18 turn(s))
+--- ANSWER ---
+Write is disabled for this role, which is correct — the review is the answer. Here it is.
+
+---
+
+**Correcting my opening line first, because it changes the analysis:** I said none of the censused classes would count a shift register. That is wrong. `docs/NAMES.md:263-264` records `LeftShiftRegister` 16442 and `RightShiftRegister` 16399 as **both deriving from `Tunnel`**, and the [LabVIEW Wiki](https://labviewwiki.org/wiki/RightShiftRegister_class) gives the ancestry as `Generic → GObject → Tunnel → RightShiftRegister`. Your traverse includes subclasses — your own log proves it, since a `Diagram` traverse returned a row whose class is `TopLevelDiagram` (`diag_c67_m3a.log:54`). So `Tunnel` 471 → 471 is a **real** negative. The observation half of your claim is stronger than you argued. The mechanism half is not.
+
+# 1. The single strongest reason the claim is WRONG
+
+**The claim's discriminating variable was never varied, and its premise rests on a reading that is self-evidently broken.**
+
+The claim is "silently does nothing *when the target loop is not on the top-level diagram*." To support that you need one loop that is on the top-level diagram where the call works, and one that is not where it doesn't. You have neither. `add_shift_reg` was called on exactly one loop in this run, `#23032`. `#637` — your stated control — was only ever **read** (`:44-46`), never written, and `#637` is not on the top-level diagram either: it owns nested `Diagram #639` at traverse index 46 (`:36`).
+
+Worse, the premise itself: `:54` says traverse index 0 is `TopLevelDiagram` uid 536 **with 0 nodes**, at position `(-17476, 102)`, in a VI with 632 Nodes and 173 Diagrams. A 632-node VI cannot have an empty top-level diagram — the outermost structure would itself be a top-level node. So the sentence "is `#23032` on the top-level diagram → False" is derived from a reader that returns False for *every object in the VI*. It is not a measurement of `#23032`; it is a broken reading being promoted to a causal mechanism. `find_node` even searched `hints = [di, TOP]` first and found nothing at index 0 before scanning on.
+
+A hypothesis whose distinguishing variable is constant across every observation, and whose premise comes from an instrument returning an impossible value, explains nothing.
+
+# 2. Alternative explanation of the same evidence
+
+**Rival #1 — the edit was silently declined because the target's diagram was not fully in memory. I rate this highest.** This is not new LabVIEW physics; it is your own documented failure mode, in your own words at `tools/gscript.py:1244-1246`:
+
+> "Wiring a target loaded only via GetVIReference is **silently declined (count unchanged, no error)**: the diagram is not fully in memory. OpenFrontPanel forces the full load. Discovered 2026-08-28 after three silent failures."
+
+"Count unchanged, no error" is the observed signature, verbatim. And `diag_c67_m3a.py:77` puts `no g.open_panel` in the forbidden list, so the run *guaranteed* that condition for step 2.
+
+The obvious objection — the seven `move_in`s and seven `connect_nested_v1`s *did* land (`Wire` 1907 → **1914** at `:554`) — actually sharpens this rather than killing it: those all ran **after** two `g.save(WORK)` calls, and a save forces a full load. The ordering is consistent with "not loaded during step 2, loaded from step 3 onward." That is a testable claim; the top-level-diagram claim is not.
+
+**Rival #2 — `UID 2` never named a created object, and you cannot tell from this run.** `op()` caches one reference per op VI and states "Op VIs are non-reentrant" (`gscript.py:211`). A non-reentrant VI's indicators retain their last written value. `opaddshiftreg_labels.json` maps `uid → "UID 2"` and `error → "error out 3"`, and `build_opaddshiftreg_v0.py:237,244,249` shows `UID 2` is fed by a `GObject.UID` Property Node wired to the Invoke's return terminal — but `:255-261` puts the read error indicator on **the Invoke's `error out`, not the Property Node's**. So the one channel that would say "I could not read a UID off that reference" is never read by `add_shift_reg`. Whether a declined call leaves `UID 2` at 0 or at its previous value is exactly what this run does not distinguish.
+
+Your own log also destroys the inference from the uid's value: uid **23522** was minted and deleted five times in a row (`:114, :139, :164, :189, :214`) before the next junk node became 23786. **This VI reuses freed uids.** So "23561 is stale" and "23561 was freshly minted and then freed" are not separable by the number 23561.
+
+**Rival #3 — `Y Position`.** Rated third, below both of the above, but alive. Judging your (i): the wiki page for [Loop.Add Shift Register](https://labviewwiki.org/wiki/Loop_class/Add_Shift_Register_method) lists `Y Position` (U32) as **required** and states no clamping and no declining behaviour — it says only "Adds a shift register at the specified location on the frame of the loop." U32 means you cannot express a negative y, and `#23032` lives on nested `Diagram #686` whose coordinate origin you never read. Note `build_opaddshiftreg_v0.py:324` used y=120 on a *scratch* loop and passed 9/9, so 120 is known-good somewhere, which tells you nothing about `#23032`'s frame. **Cheapest reading:** `GObject.Bounds`/`Position` on `#23032`, then repeat at its own vertical midpoint.
+
+# 3. Judging your rivals (ii) and (iii)
+
+**(ii) Traverse-order mismatch — effectively dead, and I'd stop chasing it.** If the op had created a register on some *other* While Loop, `Tunnel` would still have gone 471 → 473, because the count is whole-VI and both register classes descend from `Tunnel`. It reads 471 at `:105` and again at `:554`. No shift register was created **anywhere in the VI**, so "it landed on the wrong loop" is refuted by the census you already have. Your planned reader is largely designed to chase this dead rival.
+
+**(iii) The cast — least likely of the three.** `6361000` is owned by `Loop` 16405 and reached by inheritance (`docs/NAMES.md:256`; `archive/peer/2026-09-14-addshiftreg-fail1-branch-or-decline.md:158`). More to the point, you have *measured* what a wrong-class reference does through this exact op: it raises **loudly**. `archive/peer/2026-09-15-core-fail3-wrapper-used-while-seed.md:18` — a ForLoop reference into the WhileLoop seed gave "error 1055: Invoke Node in OpAddShiftReg_v0.vi". `#23032` came out of `report_all('WhileLoop')` and there was no error. Silent acceptance is not this failure's shape.
+
+# 4. What does the method return, and is `''` proof it ran?
+
+It returns a **`RightShiftRegister` refnum** ([wiki](https://labviewwiki.org/wiki/Loop_class/Add_Shift_Register_method)); `NAMES.md:841` records the Invoke's terminals as `reference`, `reference out`, `error in`, `error out`, plus `Add Shift Register` and `Y Position` **twice each**, with `build_opaddshiftreg_v0.py:218-219` measuring 4 = return sink / 5 = return source.
+
+**No — `''` is not proof the method ran.** It is proof of one narrower thing: the indicator named `error out 3`, wired to the **Invoke node's** error out, read no-error at the moment Python sampled it. That leaves three gaps: the UID Property Node's own error chain is unread; the op VI is non-reentrant so every indicator can carry a prior run's value; and `_err` returns `None` on a `GetControlValue` exception (`gscript.py:445-446`), which `add_shift_reg` treats as falsy — an unreadable error indicator is indistinguishable from no error.
+
+# 5. What would FALSIFY the claim
+
+Call `add_shift_reg` on a loop that genuinely **is** on the top-level diagram (established by a reader that does not report the top-level diagram as empty) and observe `Tunnel` unchanged with a uid returned and no error. Conversely the claim earns its first real support only if that same call takes `Tunnel` 471 → 473 while the identical call on `#23032` leaves it at 471. **This run did neither.**
+
+# 6. Cheapest discriminating test
+
+One scratch copy of the bed, four op runs, `Tunnel` read after each. ~2 minutes, no build, no new verb:
+
+| step | action | reading | meaning |
+|---|---|---|---|
+| a | `add_shift_reg(#23032, y=120)` | expect 471 | reproduce the failure |
+| b | `g.open_panel(WORK)`, repeat (a) | **473 ⇒ rival #1 wins, claim dead** | the one-line fix |
+| c | if still 471: read `#23032` bounds, repeat at its vertical midpoint | 473 ⇒ rival #3 | y was outside the frame |
+| d | if still 471: `add_shift_reg(#637, …)` | 473 ⇒ the difference is the loop, not the diagram level | claim still wrong |
+
+Only if a–d all stay 471 *and* a top-level loop succeeds does the claim survive. Step (b) alone is worth more than the entire five-leg census.
+
+# 7. What your planned reader will show — and the wrong conclusions to guard against
+
+It is a pure reader on five fresh duplicates of an unchanged bed. **It never calls `add_shift_reg`, so it cannot discriminate between any of the causes above.** Concretely:
+
+- `minted` and `vanished` will be **empty** on all five legs; the four class counts identical; `ExecState` 1 throughout. ⚠️ Do not read "five clean legs" as evidence about `Add Shift Register`. Five copies of the same number is one measurement, not five.
+- The per-loop register census will show `#637` answering at 3 slots and every other loop, `#23032` included, at 0. ⚠️ That is the bed's pre-existing state, not a finding. Concluding "confirmed: the register was never created" from it is circular — nothing in the run creates one.
+- **The one genuinely useful product:** it will establish that 1055-at-every-slot is simply what an *empty* `Shift Registers[]` looks like through `OpShiftRegs_v0`, on every register-free loop. Worth having, because the current run has **no out-of-range control** — `m3a2_left_sr_feed` broke out at reg_index 2 once both targets were found (`diag_c67_m3a.py:690`), so you have never seen what "index past the end" looks like on a loop you *know* has registers. Until you do, error 1055 does not distinguish "array empty" from "loop reference invalid" from "the op's downcast failed."
+- ⚠️ An empty uid-set diff will tempt "uids are stable." Your own log says otherwise (`:114–:214`, uid 23522 reused five times).
+
+# 8. Recorded, not acted on — the route change I'd make
+
+Give the reader **one write leg**: leg 5 = `open_panel(WORK)` → `add_shift_reg(#23032, y =` the loop's own measured vertical midpoint `)` → read `Tunnel` + the GObject uid set. One call converts an unfalsifiable census into a decisive experiment. As specified, the five-leg reader cannot come back wrong, which is the same as saying it cannot come back informative.
+
+# 9. Three facts in the record that the brief omitted
+
+1. **`:554` — `Wire` went 1907 → 1914.** This is the strongest single line in your log and it is not in the brief: it proves the census instrument sees real edits land *in this run*, which is what makes `Tunnel` 471 a trustworthy negative rather than a blind one. It argues *for* your observation; leaving it out weakened your own case.
+2. **`:577` — both saved artefacts are byte-identical (`8bc6500d…`).** So add #2 changed nothing in the file format. The brief reports "censuses unchanged" but not this, which is the cleaner evidence.
+3. **`:69` and `:80` — the gate "that file is NOT byte-identical to the bed (the in-memory edits LANDED)" PASSED, twice, for a step where nothing landed.** A re-save under a new filename changes bytes on its own. That gate is false, it is asserting the opposite of the truth here, and it appears to be reused across cycles. Retire it or validate it with a null control: copy the bed, `g.save` immediately with zero ops, compare. That is a 60-second check and I would run it before trusting any past "the edits LANDED" pass.
+
+**Where the evidence does not settle the question:** it does not distinguish "the Invoke never executed and `UID 2` is a retained value" from "the Invoke executed, returned a live object, and that object was discarded before the next census." Both fit every number in this log. Step (b) above separates them; the planned reader does not.
+
+Sources: [RightShiftRegister class](https://labviewwiki.org/wiki/RightShiftRegister_class) · [Loop.Add Shift Register method](https://labviewwiki.org/wiki/Loop_class/Add_Shift_Register_method) · [Traverse for GObjects VI (NI)](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/vi-lib/utility/traverseref-llb/traverse-for-gobjects-vi.html) · [Shift register: unwired from inside the loop (NI errors)](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/shift-register-unwired-from-inside-loop.html) — NI files this under `/errors/`, consistent with your `gscript.py:683-687` docstring, but the page body would not render for me, so treat "an unwired register breaks the VI" as **unconfirmed**. It does not matter here: the `Tunnel` count rules out creation regardless of what `ExecState` would have done.
+BGRUN END rc=0 after 532s

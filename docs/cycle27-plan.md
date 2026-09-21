@@ -2697,3 +2697,85 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
       junk purge, `ExecState` 1 ⇒ save `D1_s3b_m3_moved_<stamp>.vi`. **M3b** = M4 unchanged (edge SR + Wait).
     - If M3a still reads 0 after the four SR rows, the next bare terminal is found by the WIRED-TERMINAL census of
       the seven moved nodes (the only reader we own), never by inference.
+
+## Pre-decided — ADDED 2026-09-21 (cycle 53): the M3 hole is FIVE rows, MEASURED · `add_shift_reg` was a silent no-op and is REPAIRED
+
+59. **THE BARE-TERMINAL LIST IS READ OFF THE MACHINE NOW, AND IT IS FIVE ROWS, NOT FOUR.** Pre-decided 58
+    inferred four severed shift-register rows from an `ExecState` timeline. `tools/bench/diag_c67_m3a.log`
+    censused every terminal of all seven moved nodes twice (`:481-486`, `:544-549`) and both censuses agree:
+    `#48` t3 `'VISA resource name'` (sink) · `#48` t4 `'In position'` (sink) · `#10407` t4 `'VISA out'`
+    (source) · `#10407` t6 `'position [internal units]'` (source) · **and `#10407` t1 `'# slices in stack'`
+    (sink)**, the project's 🔴 R1 / NO-ROUTE row, which Pre-decided 58 did not contain. The `c67-m3a-srrows`
+    review predicted the fifth row before the census confirmed it. **58's four-row inventory is superseded;
+    its diagnosis — that the hole is severed external rows and not coercion — stands.**
+    - 58's ORDERING is corrected: `wire_sr` LeftIn/RightIn address `Nodes[n]` **inside the loop body**
+      (`tools/gscript.py:717-718`), so the SR rows are wired **after** the seven `move_in`s, never before.
+    - **RightIn is wired BEFORE LeftIn.** An untyped register takes the type of its first wire; `#10407` t4 /
+      t6 are SOURCES with a definite type, `#48` t3 / t4 are sinks. Taken from `c67-m3a-srrows`.
+    - **M3a splits in two, and the split point is measured, not chosen for convenience.** An uninitialised
+      shift register — outer-left bare, both inner terminals wired — is legal executable LabVIEW (same
+      review; `tools/gscript.py:758`). So **M3a-1** = moves + internal rows + both SR pairs + the four SR
+      rows + the t1 row ⇒ `ExecState` 1 ⇒ SAVE, and **M3a-2** = the initial values, a rule-1a matter and not
+      a compile matter. M3a-1's artefact is **NOT computation-equivalent** (its registers are uninitialised)
+      and is never run (34(f)); that must be said in its log and its lock note.
+
+60. **`g.add_shift_reg` AND `g.wire_sr` WERE SILENTLY DECLINING EVERY EDIT, AND THE CAUSE IS MEASURED.**
+    `add_shift_reg` ran, returned a uid, wrote no error and created nothing — on `#23032`, on `#23032` at a
+    y measured inside its own span, on `#637` (a loop already carrying 14 registers) and on a different
+    target VI (`tools/bench/diag_c67_addsr.log`). It is **not** geometry, **not** the loop's identity and
+    **not** the diagram's nesting. `tools/bench/diag_c67_opvi.log` isolated it: with `g.open_panel` first the
+    register is minted and `ExecState` goes 1 → 0 exactly as `tools/gscript.py:683-687` documents (L3), one
+    prior `move_in` has the same effect because its own body calls `ensure_loaded` (L2), and without either
+    the edit is declined in silence (L1, L4). `tools/gscript.py:1268-1322` already documented this class.
+    - **REPAIRED**: `ensure_loaded(target)` added at `tools/gscript.py:708` (`add_shift_reg`) and `:750`
+      (`wire_sr`), nothing else touched. `tools/bench/selftest_c67_ensureloaded.log` **4/4** — the two calls
+      that were no-ops now mint registers with no preparation, `wire_sr` wires with the same uid at both
+      ends, and `move_in` / `connect_nested_v1` are unchanged. This is a REPAIR OF AN EXISTING WRAPPER, so
+      the user's 2026-09-18 08:53 no-more-devices order does not cover it (same reading cycle 66 used for
+      `c60c_astcheck` gate 7).
+    - 🔴 **NINE OTHER MUTATORS STILL DO NOT REACH `ensure_loaded`** and can decline in the same silence:
+      `connect_ctl`:999 · `queue_node`:1138 · `loop_in`:1171 · `loop_kernel`:1820 · `copy_into`:1415 ·
+      `copy_by_index`:1495 · `move_by_label`:1577 · `delete_by_label`:1681 · `make_default`:2859
+      (`tools/bench/ensure_loaded_audit.md`). **RULE: a mutator on that list is repaired, with a
+      minted-object self-test cell, BEFORE it is next used** — not in bulk, and not after a run has already
+      trusted it. This mirrors the reference-hygiene precondition in the 2026-09-19 staged-build rule.
+    - The dispatch-#2 reading that "uid 23561 is a constant the wrapper reports" is **WITHDRAWN**: it is the
+      real minted register uid on this bed. The no-op was real; that explanation of it was not.
+
+61. **`#10407` IS A `CaseStructure`, so t1 `'# slices in stack'` is a structure TUNNEL, not a connector-pane
+    terminal** — Required/Recommended/Optional does not apply to it and no read was missed. Its value arrives
+    today as `FlatSequenceInnerTunnel #9655` → wire 9649 → `LoopTunnel #9641` on `#637`
+    (`tools/bench/diag_c67_addsr.log:390-392`). **The route for t1 is a new LoopTunnel on `#23032` fed from
+    that same net — a branch of the original's own mechanism, never a Local**, because a Local re-introduces
+    the 56(j) ordering gap for a value the original delivers by wire. Border auto-tunnelling is MEASURED for
+    `wire_control` / `wire_indicators` across a case-frame border and for `loop_kernel` across a loop border
+    (`docs/NAMES.md:522-528`, `:550-551`, `:891-892`); whether `connect_nested_v1` auto-tunnels is **recorded
+    nowhere and is the one thing M3a-1 must probe first**. If no addressable source exists on `#686` for that
+    net, the run reports it and stops — it does NOT substitute a Local (rule 1a).
+
+62. **`c60c_astcheck --route` declares the route the FILE TAKES, not the route the cycle wishes it took**:
+    `movein` when the script calls `move_in` even once, `owner` when it does not. Cycle 53's dispatch #4
+    brief said `owner` for a file whose regression cell mandates a `move_in`; the material session ran the
+    truthful `movein` and archived the `owner` run outside `tools/bench/`. That was right.
+
+63. **A MEASUREMENT-ONLY DIAGNOSTIC MUST NOT MARK ITSELF AS A FAILING LOG.** Cycle 53 paid three ~$4
+    adversarial reviews, one per diagnostic, because each exited rc=1 when a *measurement* came back negative
+    and so armed `guard_peer` against the next dispatch. From now on a diagnostic whose purpose is to measure
+    reports measurements as **FACT lines** and gates only on **hygiene** (md5 pins, scratches removed, refs
+    balanced, handles read), exiting 0 when those pass — as `diag_c67_opvi.py` and
+    `selftest_c67_ensureloaded.py` already do. A failing log should mean the machine refused, not that the
+    answer was "no". No new device; this is a convention the brief states and the gate list enforces.
+
+64. **`retrospective.py --cycle N` TAKES THE RETROSPECTIVE SERIES NUMBER, NOT THE RUNNER'S `CYCLE` COUNTER.**
+    They are two different sequences and they have drifted far apart: `tools/bench/cycle_runner.log`'s last
+    line on 2026-09-21 read `CYCLE 52`, while the newest archived retrospective was
+    `archive/peer/2026-09-21-retrospective-cycle59.md`. This cycle's judgement session read the runner's
+    counter and launched `--cycle 53`, so its retrospective is archived as
+    `archive/peer/2026-09-21-retrospective-cycle53.md` — a duplicate LABEL beside 2026-09-20's genuine
+    cycle-53 file. Nothing was overwritten and nothing was lost: the analysis window is derived from
+    timestamps, not from the number, so the run covers this cycle's work correctly, and `violations.py`
+    counts slugs from files rather than from labels. It was NOT re-run — a second `retrospective.py` in one
+    session is worse than a wrong label, because `guard_bash.py:226-227` has already marked the session
+    retro-done and `guard_cycle` is satisfied by recency, not by the number.
+    - **The next cycle runs `--cycle 60`.** Take the number from the highest `retrospective-cycle<N>.md` in
+      `archive/peer/`, plus one — never from `cycle_runner.log`.

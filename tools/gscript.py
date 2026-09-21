@@ -684,7 +684,12 @@ def add_shift_reg(target, loop_index, y_position=120, class_name="WhileLoop"):
     correct, not a failure. Read them with shift_reg / shift_reg_left; wire them with Terminal.Connect Wire (invoke on
     the SINK, `Wire Source` = the source): the LEFT register's OUTSIDE terminal is the sink of the initial value, its
     INSIDE terminal is the source into the body, and the RIGHT register's INSIDE terminal is the sink of the
-    iteration's result."""
+    iteration's result.
+
+    THE LOAD IS NOW FORCED: this wrapper calls ensure_loaded(target) before the run (2026-09-21), because without it
+    the op ran, returned a uid and a clean error, and CREATED NOTHING. The "both sides come back unwired ... breaks
+    the VI (ExecState 0)" behaviour above is what a CORRECTLY LOADED target does - the silent no-op was the bug, not
+    that documented breakage."""
     # 2026-09-15 01:1x (build_track_v6_core.log run 3, error 1055): the op is chosen by class_name - the WhileLoop
     # seed cannot cast a ForLoop reference (row 28); the ForLoop twin OpAddShiftRegF_v0 exists since cycle 3 (row 39)
     global _ADD_SHIFT_REG_LABELS
@@ -696,6 +701,11 @@ def add_shift_reg(target, loop_index, y_position=120, class_name="WhileLoop"):
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", fn), encoding="utf-8") as f:
             _ADD_SHIFT_REG_LABELS[class_name] = json.load(f)
     lab = _ADD_SHIFT_REG_LABELS[class_name]
+    # 2026-09-21 (cycle 67 material #3, tools/bench/diag_c67_opvi.log): with the target not fully loaded this op RUNS,
+    # returns a uid and writes NO error, and creates NOTHING (legs L1/L4); with the panel opened first it mints the
+    # register and takes ExecState 1 -> 0 exactly as the docstring predicts (L3). add_shift_reg was the one mutating
+    # wrapper in this family that never reached ensure_loaded, while move_in (build_d1_v0.py:321) always did.
+    ensure_loaded(target)   # edits are silently declined on a target that is not fully loaded
     vi = op(os.path.join(CLAUDEDEV, "OpAddShiftRegF_v0.vi") if class_name == "ForLoop" else OP_ADD_SHIFT_REG)
     vi.SetControlValue("vi path", target)
     vi.SetControlValue("Class Name", class_name); vi.SetControlValue("index", loop_index)
@@ -720,7 +730,10 @@ def wire_sr(variant, target, loop_index, reg_index, node_index=None, term_index=
       'LeftOutCtl'  : Panel.Controls[ctl_index]'s terminal -> left OUTSIDE (initial value from a control)
     Indices are creation-order Nodes[] / Terminals[] (read them with node_terms_uid on the right diagram just before
     the call) and Panel.Controls[] (= fp_labels order). An UNTYPED register takes the type of its first wire, so wire
-    the typed side first. Terminal.Connect Wire is invoked on the SINK; verify by wire uid on both ends (shift_reg_left)."""
+    the typed side first. Terminal.Connect Wire is invoked on the SINK; verify by wire uid on both ends (shift_reg_left).
+
+    THE LOAD IS NOW FORCED: this wrapper calls ensure_loaded(target) before the run (2026-09-21), for the same reason
+    add_shift_reg does - a not-fully-loaded target silently declines the edit while the op still returns cleanly."""
     # 2026-09-15 01:1x: op family chosen by class_name (ForLoop -> OpWireSRF_*, WhileLoop -> OpWireSR_*); the
     # WhileLoop seed errors 1055 on a ForLoop reference (row 28) - the same wrapper defect as add_shift_reg's
     global _WIRESR_LABELS
@@ -732,6 +745,9 @@ def wire_sr(variant, target, loop_index, reg_index, node_index=None, term_index=
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", fn), encoding="utf-8") as f:
             _WIRESR_LABELS[class_name] = json.load(f)
     lab = _WIRESR_LABELS[class_name][variant]
+    # 2026-09-21 (cycle 67 material #3, tools/bench/diag_c67_opvi.log): the measured cause of add_shift_reg's silent
+    # no-op was the missing load, and wire_sr is its sibling in the same op family with the same omission.
+    ensure_loaded(target)   # edits are silently declined on a target that is not fully loaded
     fam = "OpWireSRF" if class_name == "ForLoop" else "OpWireSR"
     vi = op(os.path.join(CLAUDEDEV, f"{fam}_{variant}_v0.vi"))
     vi.SetControlValue("vi path", target); vi.SetControlValue("Class Name", class_name); vi.SetControlValue("index", loop_index)
