@@ -2530,3 +2530,72 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
       (14/14/0-live, 12/12/0-live). Whole-VI reverse censuses are the suspected source. **Every following dispatch
       restarts LabVIEW before its batch (44(e)) and reports handles either side**; no device is built for it
       (user's standing order of 2026-09-18 08:53).
+
+## Pre-decided — ADDED 2026-09-21 (cycle 64): the `ExecState` signature is EXPLAINED, and S3b ROW 1 IS DELIVERED
+
+55. 🎉 **THE `ExecState` 1 → 0 SIGNATURE THAT HAS STOPPED FIVE CYCLES WAS NEVER A PERTURBED READING. THE OP LEAVES
+    A BROKEN ORPHAN `Invoke` NODE ON THE DIAGRAM IT WORKED ON, AND `ExecState` WAS TELLING THE TRUTH.** Judgement,
+    cycle 64, 2026-09-21. 34–53 stand except where corrected below. ⚠️ **Cycle 63 produced nothing**: it wrote
+    `tools/bench/diag_c63_connect_perturb.py`, its static gate failed on `allow_broken=True`, and at 11:56 the
+    cycle runner's own outer `bgrun` deadline (`BGRUN TIMEOUT killed after 36002s`) killed the whole process tree —
+    session, peer call and all. Its lock entry stayed ACQUIRED until this cycle released it.
+    - (a) **THE MEASUREMENT** (`tools/bench/diag_c64_junkpurge.log`, 34 pass / 0 fail, two independent beds — a
+      scratch of `claudeDev\OpReport_v0.vi` and a scratch of `claudeDev\D1_s3a_focus_ind.vi`): an idempotent
+      `connect_nested_v1` with `wire_delta` **0** and an unchanged wire census takes `ExecState` **1 → 0**, leaves
+      exactly ONE new node — an `Invoke` labelled `'Invoke Node'`, six terminals, **zero wired**, every row
+      `errs [0,0,0,1055]` — and **deleting that node by uid returns `ExecState` to 1**, stable across three
+      re-reads. On the real bed it lands on `Diagram #639`, the diagram the connect worked on, found by census
+      rather than by `owner_of` (53(d⁸)). It is the same junk `Invoke` cycle 62's `move_in` purged (#9317).
+    - (b) **THE SEPARATOR** (`tools/bench/diag_c64_readerfree.log`, 23 pass / 0 fail): `connect_terminals` →
+      `OpConnect_v0`, which carries neither the `Broken?` property node nor the junk behaviour, leaves `ExecState`
+      **1 → 1** on an idempotent pair, while `connect_nested_v1` on the same pair gives **1 → 0** and `Node` 2 → 3.
+      So "any scripting edit perturbs the reading" and "a stale compile state" are both **DEAD**. The op census was
+      re-taken **off the machine**: `OpConnect2_v0`, `OpSetLabel_v0` and `OpConnectNested_v1` each read `Broken?`
+      through Property `#242`; `OpConnect_v0` does not. A grep of builder scripts had produced a false positive,
+      which is why the census is now a measurement.
+    - (c) 🔴 **DECISION — THE FIX IS A PURGE STEP, NOT A NEW OP.** After every `OpNetInfo_v1`-descended call,
+      census-diff the target's nodes, confirm the new node is unwired from its `node_terms` table, and
+      `delete_object` it **by uid** before reading `ExecState` or saving. **`OpConnectNested_v2` is NOT built**, and
+      **53(d⁷)'s save-bypass branch is REJECTED** — it would have bought a `gui_save` GUI exception on every S3b row
+      for ever, and nothing needed bypassing. Written into `docs/NAMES.md` where the next builder will find it.
+    - (d) **52(f) AND `docs/NAMES.md:912-918` ARE CORRECTED IN MECHANISM, NOT IN ADVICE.** "Never read `Is Broken?`
+      above a save point" survives unchanged as practice, because the ops that read it are exactly the ops that
+      leave the orphan. What is withdrawn is the explanation. ⚠️ **What is still NOT established is that reading
+      `Broken?` is harmless**: every nested-capable op carries the reader and the junk behaviour together, so no
+      reader-without-junk exists to test. Also corrected: the ITEM terminal is **`Broken?`**; `Is Broken?` is only
+      the panel label.
+    - (e) 🎉 **S3b ROW 1 IS DELIVERED, IN TWO STAGED SAVES** (`tools/bench/diag_c64_s3b_row1.log`, 51 pass / 1 fail):
+      `claudeDev\D1_s3b_row1a_20260921_135932.vi` md5 `c7094f98324af3bb53755fef718f8e28`, 476,634 B (the step-7 save
+      point) and **`claudeDev\D1_s3b_row1_20260921_135932.vi` md5 `72f0d47d0b1cbd0834d50f1483e558c1`, 476,734 B**.
+      Neither is byte-equal to the bed, so the in-memory edits landed (cycle 62's `C_1` false pass does not recur).
+      **COLD `ExecState` 1 after a LabVIEW restart**; ordered `Is Broken?` **False** on the new wire 23502, read
+      LAST, after the cold reopen (42(b)); ONE wire uid at both ends; `#637` back at **59/48**, so 50(e)'s
+      no-tunnel criterion holds; `ControlTerminal` 116; `Local` 8 → 9; the rule-1a readback (50(i)) passes verbatim
+      — ONE terminal, name `'Automatic Error Handling'`, `is_source` **True = READ** — before and after `move_in`.
+      Verification is **STRUCTURAL, never functional** (34(f)).
+    - (f) **THE ONE FAILING GATE WAS A WRONG EXPECTATION, AND ITS OWN REVIEW PROVED IT.** `K2` wanted a cold wire
+      census of 1905 and read **1906**. `archive/peer/2026-09-21-c64-row1-wirecount-k2.md` refuted the session's
+      first explanation and measured the truth on the step-7 artefact: step 2's delete left the SOURCE bare, so
+      `wire_indicators` **minted** a wire instead of branching one. **1906 is the correct count** and the gate's
+      arithmetic is what was wrong. Row 2's gate must expect baseline − 1 + 2.
+    - (g) **`c60c_astcheck.py` GATE 7 FAILS BY CONSTRUCTION FOR ANY BUILD THAT LEGITIMATELY USES `move_in`**
+      (`move_in is neither imported nor called  called=True imported=True`; identical to `c62f_astcheck.log:11`).
+      **DECISION: no new gate file is written and no gate file is edited** (the user's standing order of
+      2026-09-18 08:53 — no more devices). The failure is reported **verbatim** in every run that provokes it, and
+      `CYCLE_GUARD_OFF` is never set. A peer recommended writing a `c60d`; that recommendation is declined here.
+    - (h) ⚠️ **A BUILD GATE IS LEFT STANDING AND THE NEXT CYCLE MUST CLEAR IT FIRST:** `guard_peer.py` refuses
+      every build while `tools/bench/diag_c64_row1_testa.log` — a read-only whole-VI net census that hit
+      `BGRUN TIMEOUT killed after 1321s` — is the newest failing log. It needs its own archived review before the
+      next build, and the census itself is unfinished (wire 23502 scanned over 103 of 173 diagrams; wire 23526
+      never scanned). Related trap, recorded: a *wait-loop* log whose command line quotes gate-failure tokens
+      becomes `guard_peer`'s "newest failing log" and blocks the batch it is waiting for
+      (`tools/bench/wait_peer_c64_openpanel.log`, a recorded non-result).
+    - (i) **ROW 2 PROCEEDS UNDER 53(d⁹)'s STANDING ASSUMPTION** — same VI, same substitution, an intermediate that
+      is never run — with the row-2 parameters of STATUS `## NEXT` and the corrected wire-census arithmetic of (f).
+      The FINAL D1's ordering guarantee is escalated to the user in `## NEXT`, not re-decided here.
+    - (j) **`open_panel` IS OFF THE BUILD PATH.** Dispatch #2 lost its budget to a call that never returned inside
+      gscript's 180 s `_invoke` cap and poisoned the module; its review
+      (`archive/peer/2026-09-21-c64-openpanel-cap.md`) withdrew the session's own timings as misread offsets — a
+      cold `exec_state` on that op costs 0.42 s — and named the live cause as **replacing a file under a path
+      LabVIEW has already loaded**. Nothing in a build needs `open_panel`; never overwrite a VI file LabVIEW may
+      hold open.

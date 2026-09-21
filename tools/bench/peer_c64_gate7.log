@@ -1,0 +1,89 @@
+BGRUN START 2026-09-21 13:50:31 limit 14.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c64-astcheck-gate7-movein -TaskFile tools/bench/peer_c64_gate7_task.md
+OUTCOME: ANSWERED (440s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c64-astcheck-gate7-movein.md
+COST: $4.0461  in 26 / out 33972 / cache-create 242518 / cache-read 1496094  (439s, 29 turn(s))
+--- ANSWER ---
+**The claim is half right and its operative half is wrong.** Part (i) — "check 7 is stale" — I cannot refute; the plan itself mandates the relocation at `docs/cycle27-plan.md:2480-2483` (Pre-decided 53(d⁗)), which postdates the cycle-60 brief and rests on a measurement, not on a story. Part (ii) — "the script is therefore safe to run as written, and the right action is to proceed" — does not survive. Four points as requested.
+
+---
+
+## 1. The strongest reason the claim is wrong: `c60c_astcheck.py` is **unsatisfiable** for this brief, so its eleven PASSes are worth nothing
+
+This is not "one stale check among eleven good ones". Gate 7 and **gate 9** have identical provenance — `c60c_astcheck.py:16-17` says gate 9 checks "the routes **the brief** FORBIDS", and that brief is cycle 60's, the same brief gate 7 serves (`c60b_astcheck.py:14`). Gate 9's forbidden list contains **`build_invoke`**.
+
+Now put the two together against step 4's actual requirement — *an object living on `Diagram #639`*:
+
+- gate 7 forbids `move_in` — relocating it there;
+- gate 9 forbids `build_invoke` — the one verb in this fleet that **creates on a chosen diagram**: `tools/gscript.py:2159` `def build_invoke(target, cls, method_id, location, diagram_index=0)`, and `:2194` `build_property` likewise. Your own plan already knows this: `docs/cycle27-plan.md:1780` — *"`build_property` … and `build_invoke` … both already take a `diagram_index`"*.
+
+**No correct script for this task can pass this gate.** A gate that no correct script can satisfy is not measuring scripts; it is measuring nothing. And the same staleness argument that excuses gate 7 voids gate 9's PASS — you cannot treat the FAIL as noise and the PASSes as assurance when they come out of the same 2026-09-21-obsolete contract.
+
+What actually remains of the eleven is gates 2/3/4/4b/5/6/8 — the fleet's *standing* prohibitions, which any well-formed script here passes. **Not one gate in `c60c_astcheck.py` tests anything this brief cares about**: not `g.open_panel`'s absence (your own headline prohibition, `diag_c64_s3b_row1.py:37`, from `archive/peer/2026-09-21-c64-openpanel-cap.md`), not `g.ensure_loaded`'s, not "row 2 absent", not "a save at every measured-legal point" (47(e), `cycle27-plan.md:1805-1808`), not "`move_in` called at most once". Those live in the script's **docstring** (`:36-47`) — prose assertions, which is exactly what a static gate exists to replace.
+
+So the correct conclusion from "the named gate is stale" is **"this script has not been statically gated"**, not "this script is safe to run as written". The claim's third ruled-out option forecloses the fix by mis-describing it: `c60c` *is itself* "the predecessor's gate with its checks KEPT, re-aimed at this cycle's diagnostic" (`c60c_astcheck.py:3-4`) — a `c60d` that keeps 1-6/8, re-aims 7 to **"`move_in` is called at most once"** (a gate shape this fleet has already written — `tools/bench/c57d4_astcheck.log:13` *"guard: move_in is called at most once"*) and re-aims 9 at *this* brief's forbidden routes is strictly **stronger**, not "the same file minus the failing check". Your ruled-out bullet only excludes a gate that *differs only by dropping* check 7.
+
+## 2. A different explanation you have not considered — and it is externally sourced
+
+The failure is neither a stale check nor a finding about the script. It is a finding about **53(d⁗)**, and gate 7 is the *live* objection to it.
+
+`docs/cycle27-plan.md:2473` states as **"A LAW OF THIS FLEET"**: *"WHAT SCRIPTING CREATES LANDS ON THE TOP-LEVEL DIAGRAM AND MUST BE MOVED IN."* That is false about LabVIEW and false about your own toolkit:
+
+- NI: **New VI Object takes an `owner refnum` input**, and *"if an object resides within a substructure such as a loop, a Case structure, a sequence structure… that substructure owns the object"* — you wire the substructure's reference into `owner refnum` and the object is **born there**. ([Tutorial: Adding an Object to a VI Using VI Scripting](https://www.ni.com/docs/en-US/bundle/labview/page/tutorial-adding-an-object-to-a-vi-using-vi-scripting.html), [Obtaining References to Objects in a Known Target VI](https://www.ni.com/docs/en-MY/bundle/labview/page/obtaining-references-to-objects-in-a-known-target-vi-using-vi-scripting.html))
+- Your fleet: `build_invoke`/`build_property` already expose `diagram_index` (`gscript.py:2159`, `:2194`).
+
+So the top-level landing is a property of **how `OpCreateLocalRead_v0` was wired**, not a law. Under this reading cycle 60's phrase "attempt 1's **pointless** relocation" is exactly right and still current: you relocate because the creator was told to create on the top level. Note what that costs — every `move_in` drags a junk `Invoke` (`cycle59_s3a_recipe.log:85,:249`; `diag_c62_s3b_movein.log:53`; `build_d1_v0_run7.log:352` purged 23; `run9.log:365` purged 31), and purging that junk is the entire subject of cycles 62-64.
+
+**Second alternative, cheaper to act on:** the failure is a defect in the *dispatch brief* (it names a gate that contradicts its own step 4), and this is the **second consecutive cycle** it has appeared — `c62f_astcheck.log:11` at 11:03 and `c64e_astcheck.log:11` at 13:49, the same normalised first-failing gate line. `tools/cycle_runner.py:253` builds its repeated-failure signature from exactly that ("first failing GATE line of the run, normalised, uids dropped, lower-cased, 60 chars"), and `tools/bench/cycle_runner.log:97` **already carries** `gate:fail 7 move_in is neither imported nor called called=true im` for the prior cycle. Under CLAUDE.md's firefighter rule, "report verbatim and proceed" a third time converts the next cycle to fable/low. (Caveat, stated plainly: `cycle_runner.py:243` excludes bookkeeping tools from the signal and I could not confirm from a grep whether `c60c_astcheck` is on that list — but `cycle_runner.log:97` is evidence that it is not.)
+
+## 3. What would falsify the claim
+
+Falsify **part (i)** (and vindicate gate 7 as a live finding): show that `OpCreateLocalRead_v0.vi` can bind its creation to a destination diagram — i.e. that its second navigation pair (`Class Name 2` / `index 2`, set to `""` / `0` at `diag_c64_s3b_row1.py:474-482`) is the creator's **owner**, the same pair `move_in` uses as its destination at `build_d1_v0.py:324-326`. If setting `Class Name 2 = "Diagram"`, `index 2 = <live index of #639>` produces a Local already on `#639`, then step 4 is the pointless relocation by name, 53(d⁗) is refuted, and gate 7 was never stale.
+
+Falsify **part (ii)** as I have argued it: exhibit any gate in `c60c_astcheck.py` that would distinguish a correct cycle-64 script from an incorrect one. I claim there is none.
+
+I would change my mind about the whole review if `OpCreateLocalRead_v0`'s second pair turns out not to be an owner and no op in the fleet can create on a nested diagram — then `move_in` is the only route, 53(d⁗) stands as an empirical law *about our tools*, and the action reduces to "write c60d, then run".
+
+## 4. The cheapest discriminating test — runnable, no LabVIEW, seconds
+
+```
+py -u tools/bench/c60c_astcheck.py diag_c62_s3b_build.py
+```
+
+`tools/bench/diag_c62_s3b_build.py` is on disk and is the script that **measurably built the wrong thing** — `wire_delta` 3, two different wire uids, a tunnelled cross-diagram path (`cycle27-plan.md:2474-2480`).
+
+- **Claim's prediction** (gate sound except for one stale check): a gate worth trusting separates the known-bad route from the known-good one.
+- **My prediction:** **12/12 PASS.** The gate hands a clean bill of health to the one script in this cycle's history measured to build the wrong artefact, and fails the two measured to build the right one. Gate 7's output is a pure function of `"move_in" in imported` and nothing else about the brief.
+
+If it returns 12/12, "eleven of twelve passed" is retired as evidence and the next act is `c60d`, not the run. Second test, one command, for §2's alternative: `-DryRun`-style read of the donor op's front panel — `g.fp_labels(OpCreateLocalRead_v0.vi)` (already called at `diag_c64_s3b_row1.py:453`) — and look for a second `Class Name`/`index` pair. That costs one COM read and decides whether `move_in` is needed at all.
+
+---
+
+## Separate question: is there a hazard in `move_in` itself?
+
+Not in the relocation, and not in the junk `Invoke` — **but there is one in the purge you wrote to handle it, and it is independent of the gate.**
+
+Clean: `move_in` severs every wire on the moved object (`cycle27-plan.md:1093-1103`, 33(a) at `:838`) — harmless here because the Local is created unwired (`diag_c62_s3b_movein.log:45,:56`, `wire 0` before and after). Destination index is re-resolved live at `:745`, per 37(e). The return value is junk — `3447` for `#23541`, `#23576` **and** `#23507` (`cycle59_s3a_recipe.log:83,:247`, `diag_c62_s3b_movein.log:51`) — and you correctly do not test it, though that makes gate `D0` near-vacuous: `move_in` has no channel to report failure.
+
+🔴 **The defect.** `diag_c64_s3b_row1.py:393-401`:
+
+```python
+loc, rows = node_view(path, n["uid"], hints, ...)
+wired = [t for t in rows if t.get("has_wire")]
+...
+if n["class"] == "Invoke" and not wired:
+    entry["delete"] = delete_by_uid(path, "Node", n["uid"], ...)
+```
+
+`node_view` returns `rows == []` whenever the locate fails — `find_node` hits its 240 s budget (`:291`), or `node_labels`/`node_terms_uid` raises and `safe()` swallows it (`:229-236`, `:321-324`). Then `wired == []`, `not wired` is True, and the node is **deleted on a terminal table that was never read**. Your docstring promises deletion only for "an `Invoke` with ZERO wired terminals (the shape dispatch #4 measured)" (`:377-380`); the code implements "zero wired terminals **or** the table could not be read". That is not hypothetical in this cycle: `owner_of` was measured returning a silent wrong answer (`cycle27-plan.md:2514-2515`) and handles ran 54,632–63,163 against a ~31,500 baseline (`:2528`). It is also the one branch that can destroy the artefact the dispatch exists to produce — the failure mode your own §"IMPLEMENTATION SAFETY NARROWING" (`:56-59`) was written to prevent.
+
+One-line fix, and it costs nothing:
+
+```python
+if n["class"] == "Invoke" and rows and not wired:
+```
+
+plus a `stop_report` when an `Invoke` new-node cannot be located at all. (`diag_c64_junkpurge.log:63,:120` shows both observed landings — `TopLevelDiagram` idx 0 and `Diagram #639` idx 46 — are covered by your hints, so this is a low-probability path; it is still the only path in the script that deletes something it has not inspected.)
+
+Worth saying in your favour, since I am attacking everything else: the junkpurge measurement is real — two legs, `1 → 0 → 1` with `Node 630→631→630` and `Wire 1905` flat (`diag_c64_junkpurge.log:84,:151`) — and it genuinely breaks 53(d⁷)'s circularity. The build is better than c62's. That is an argument for gating it properly, not for running it past a gate that cannot be satisfied.
+
+**Sources:** [NI — Adding an Object to a VI Using VI Scripting](https://www.ni.com/docs/en-US/bundle/labview/page/tutorial-adding-an-object-to-a-vi-using-vi-scripting.html) · [NI — Obtaining References to Objects in a Known Target VI](https://www.ni.com/docs/en-MY/bundle/labview/page/obtaining-references-to-objects-in-a-known-target-vi-using-vi-scripting.html) · [NI — Obtaining a VI Object Reference Using VI Scripting](https://www.ni.com/docs/en-US/bundle/labview/page/obtaining-a-vi-object-reference-using-vi-scripting.html)
+BGRUN END rc=0 after 440s

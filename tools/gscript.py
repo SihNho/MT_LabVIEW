@@ -2883,3 +2883,59 @@ def build_case(target, location, selector_name, input_names=(), frame_names=("0,
     if len(new) != 1 or any(e and e[0] for e in errs):
         raise RuntimeError(f"build_case: {len(new)} new CaseStructure; errors {errs}")
     return new[0]
+
+
+OP_CONNECT_NESTED_V2 = os.path.join(CLAUDEDEV, "OpConnectNested_v2.vi")
+_CONNECT_NESTED_V2_LABELS = None
+
+
+def connect_nested_v2(target, sink_diag, sink_node, sink_term, src_diag, src_node, src_term, labels=None):
+    """Wire Diagram[src_diag].Nodes[src_node].Terminals[src_term] (SOURCE) into
+    Diagram[sink_diag].Nodes[sink_node].Terminals[sink_term] (SINK) through OpConnectNested_v2.vi.
+    Returns (wire delta, ExecState after, op error string) - the SAME contract as
+    `connect_nested_v1` (tools/recipes/build_opconnectnested_v1.py:418), which this mirrors.
+
+    ADDED 2026-09-21 (cycle 64 material #2). ADDITIVE ONLY: no existing function here was modified.
+    The ONE difference from `connect_nested_v1` is that this wrapper reads NO `UID` / `Name` /
+    `UID 2` / `Is Broken?` indicator back, because OpConnectNested_v2.vi is the byte-copy of
+    OpConnectNested_v1.vi (donor rule 51(h), precedent OpCreateLocalRead_v0 on OpCreateLocal_v0)
+    with the embedded `Wire.Is Broken?` 6371004 readback property node(s) DELETED. docs/NAMES.md:912-929
+    records that reading `Is Broken?` perturbs the target, and that every op descended from
+    OpNetInfo_v1 carries that reader by inheritance (tools/recipes/build_opnetinfo.py:151).
+
+    `labels` defaults to tools/bench/opconnectnested_v2_labels.json - the same control-label map as
+    v1's, because v2 is a file copy of v1 and its front panel is unchanged (the `UID 2` /
+    `Is Broken?` indicators are left in place, unwired; deleting panel objects is an unproven verb).
+    """
+    global _CONNECT_NESTED_V2_LABELS
+    if labels is None:
+        if _CONNECT_NESTED_V2_LABELS is None:
+            import json
+            with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench",
+                                   "opconnectnested_v2_labels.json"), encoding="utf-8") as f:
+                _CONNECT_NESTED_V2_LABELS = json.load(f)
+        labels = _CONNECT_NESTED_V2_LABELS
+    ensure_loaded(target)
+    w0 = count(target, "Wire")
+    vi = op(OP_CONNECT_NESTED_V2)
+    vi.SetControlValue(labels["vi_path"], target)
+    vi.SetControlValue(labels["class_name"], "Diagram")
+    vi.SetControlValue(labels["sink_diag"], int(sink_diag))
+    vi.SetControlValue(labels["sink_node"], int(sink_node))
+    vi.SetControlValue(labels["sink_term"], int(sink_term))
+    vi.SetControlValue(labels["src_diag"], int(src_diag))
+    vi.SetControlValue(labels["src_node"], int(src_node))
+    vi.SetControlValue(labels["src_term"], int(src_term))
+    for k, v in (("error in (no error)", (False, 0, "")), ("error in", (True, 1, "neutralised creator")),
+                 ("Class Name 3", ""), ("Class Name 2", "")):
+        try:
+            vi.SetControlValue(k, v)
+        except Exception:
+            pass
+    err = ""
+    try:
+        _run(vi)
+        err = _err(vi, "error out") or ""
+    except RuntimeError as e:
+        err = "modal dialog (dismissed)" if "modal dialog" in str(e) else f"EXC {str(e)[:140]}"
+    return count(target, "Wire") - w0, exec_state(target), err

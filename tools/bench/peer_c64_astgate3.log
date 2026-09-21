@@ -1,0 +1,89 @@
+BGRUN START 2026-09-21 12:07:06 limit 15.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c64-astgate3 -TaskFile 'tools/bench/peer_c64_astgate3_task.md'
+OUTCOME: ANSWERED (453s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c64-astgate3.md
+COST: $3.6638  in 28 / out 33871 / cache-create 187987 / cache-read 1724441  (451s, 28 turn(s))
+--- ANSWER ---
+## 1. The single strongest reason the claim is WRONG
+
+The claim is two claims welded together. The first half ("gate 3 is moot, ASTCHECK will come back OK") **is correct** — I checked it gate by gate and will concede it below. The second half — "**and the remaining T1 + T3 legs still measure something that moves the open question**" — is false, and it is false for a structural reason that deleting T2 made worse, not better:
+
+**Every reading in legs (i)–(iv) is taken downstream of one welded call that does two different things at once, and no leg unwelds them.**
+
+`OpConnectNested_v1` does not perform a connect. It performs a connect **and then an ordered `Wire.Is Broken?` property read**, inside the same op VI:
+
+- `docs/NAMES.md:902-908` — "`OpConnectNested_v0/v1` and `OpConnectFromWire_v0` **all carry the reader already**… that node's `error in (no error)` ships UNWIRED… Branch the Invoke's own `error out` into it."
+- `tools/recipes/build_opconnectnested_v1.py:447` reads `("UID", "Name", "UID 2", "Is Broken?")`; `:67` records that the gate chains `error out → error in (no error)`, i.e. the read is *forced to run after* the Invoke.
+- `docs/cycle27-plan.md:2488` says it in your own words: "an `Is Broken?` read happens **inside `OpConnectNested_v1.vi`**".
+- And `docs/NAMES.md:912-919` is the standing warning: "**READING `Is Broken?` PERTURBS THE TARGET — an ExecState read taken AFTER a wire read is not evidence of brokenness**."
+
+So the cycle-62 reading (`diag_c62_negctrl.log:24-31`) is the joint effect of *(connect) ∧ (ordered property read)*. The c64 design calls **the same welded op once** (`diag_c64_perturb_t1t3.py:529-530`) and then takes twenty-odd readings *after* it. Twenty readings of one confounded event are one confounded event. Legs (i), (ii), (iii), (iv) and (v) all sample the state the weld produced; none of them varies the thing in dispute. **Whatever the run returns, it cannot attribute the 0 to either half.**
+
+### What each leg can actually license
+
+| leg | what it would take to be informative | what it will almost certainly return | what that licenses |
+|---|---|---|---|
+| (i) 8 bare re-reads, 14 s | ExecState decaying with wall-clock time | 0, eight times | nothing — **nothing in (i) triggers a recompile**, and LabVIEW does not recompile because seconds passed ([labviewwiki, VI Scripting](https://labviewwiki.org/wiki/VI_Scripting): "scripting requires recompiling the VI and may break it") |
+| (ii) 6 read-only calls | a read-only call changing state | 0 after each | weakly: "reads don't heal it". Both hypotheses predict this |
+| (iii) the benign edit | an edit that **lands** | **nothing at all** — see below | nothing |
+| (iv) fresh reference | ExecState living in the Python proxy | same value | kills a sub-hypothesis nobody proposed |
+| (v) second bed | session-level poisoning | 1 (cold) | **"necessary, never sufficient"** — your own rule, `cycle27-plan.md:186-187` |
+
+**Leg (iii) is the only leg with discriminating power, and the script's own prediction contract says it will not happen.** P_g at `diag_c64_perturb_t1t3.py:80-83` states that `create_control` addresses the **top-level** `Nodes[]` (`gscript.py:2395-2401` — the ladder is VI → Block Diagram → Nodes[]) and that this VI's top-level diagram is measured **empty**. You have written a leg whose contract predicts it is a no-op. That matters because your own prior art says a landed edit is exactly what moves this needle: `cycle27-plan.md:2210-2212` — "ExecState 1 → 0 (wire 645 deleted) → **1** again after `create_control` on `#235.reference`" (`diag_c60_castseed_probe.log:74-80`). The one experiment that has previously flipped a 0 back to 1 in this fleet is a *subsequent landing edit*, and this run's version of it is aimed at a diagram with nothing on it.
+
+**What the run IS evidence about**, honestly stated: (a) that the 0 does not decay over ~14 s of idling; (b) that it is not an artefact of this process's COM proxies; (c) whether the LabVIEW *session* is globally poisoned; (d) T3 is a **file census** — evidence about your codebase, not about LabVIEW, and not about the question at all. (a)–(c) are worth having. None of them separates "perturbs the reading" from "breaks the VI".
+
+## 2. Alternative explanations of the same evidence
+
+**(A) The one your own documents already name, which the claim's framing drops.** The brief says "Two explanations are open." `docs/NAMES.md:926-928` says three: *"…could be the connect itself, the property node's own execution, or **a stale/uncommitted compile state**; nothing here distinguishes them."* And `docs/cycle27-plan.md:1044-1045` carries it as live: *"the surviving alternative — a `Connect Wire`-family (1304) op run **perturbing compile state** — is **UNVERIFIED and OPEN**."* The claim has silently narrowed a three-way open question to two, and the dropped third is precisely the one no leg of T1 can reach, because **nothing in (i)–(v) forces a compile**. Externally: force-recompile (Ctrl+Run / Ctrl+Shift+Run) is the documented remedy for a VI that *appears* broken from stale compiled code ([NI forum](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Force-Recompile-option-in-Mass-Compile/idi-p/2659839)); "Bad" is ExecState **0** ([labviewwiki](https://labviewwiki.org/wiki/VI_class/Execution.State_property), [NI](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/vi/execstate.html)) and the property itself is documented only as "indicates the execution state" — NI does not say when it is re-derived, so "0 means a durable break" is an assumption, not a spec.
+
+**(B) A fourth candidate, also already on your record, that (iv) does not vary.** `cycle27-plan.md:188-189`: "Rivals not yet excluded: `GetVIReference` **options `0` vs the `0x10` search bit**; our own ops measured flipping 1 → 0 … load/compile settling." Every reference in this run — `vi_ref` (`gscript.py:253`) and `op()` (`:214`) alike — is opened at options `0`. Leg (iv) opens three references that differ in *nothing that has ever been implicated*.
+
+**(C) The op broke something it did not report on.** The op's readback covers exactly one wire (`{'UID': 10407, 'UID 2': 10799, 'Is Broken?': False}`). That is one object out of 1905 wires. Your censuses count `Node`/`Wire`/`Local`/`ControlTerminal` — **a present-but-broken object counts identically to a healthy one**, so "census unchanged ⇒ nothing changed" does not hold, and `wire_delta == 0` is not proof of idempotence at the object level either (a delete-and-recreate, or an added broken segment merged onto the same net, keeps the count). Under (C) the 0 is *honest* and the diagnostic has no instrument that can see the cause.
+
+## 3. Attacking legs (iv) and (v) specifically
+
+**(iv) is near-powerless, and you already found the reason.** `exec_state` is `with vi_ref(target) as r: return int(r.ExecState)` (`gscript.py:1977-1979`), and `vi_ref` opens and releases a counted reference per call (`:243-259`). Property reads over COM are not client-cached — each `r.ExecState` is a round trip into LabVIEW. So (iv a) vs (iv b) compares a fresh reference with a fresh reference. (iv c)'s `g.reset()` clears `_lv`, `_cache` and `_loaded` (`gscript.py:262-269`) — Python-side names only; LabVIEW still holds the VI because its front panel is open. Outcome licensing:
+
+- **same value (near-certain)**: licenses only "the value is not stale in this process". It does **not** license "the VI is really broken".
+- **different value**: this is the dangerous one, and the design cannot interpret it. A 1 after `reset()` would be ambiguous between "the reading was a proxy artefact" and "**the VI was unloaded and silently reloaded from the untouched disk file**" — nothing is saved, so a reload yields a pristine VI and a 1 that means nothing about the in-memory object you were measuring. The run records no identity check (dirty flag, panel-still-open check, uid of a post-connect object) that would tell those apart. As written, the one outcome that would look like a breakthrough is the one you could not interpret.
+
+**(v) can absolutely be contaminated, in both directions.** The two scratches carry different file names (`SCRATCH_C64T1_*` / `SCRATCH_C64T1B_*`, `:145-146`), so LabVIEW's by-name identity does not collide. But they are copies of the same bed, so **they share every subVI and typedef instance in that one session** — LabVIEW loads a dependency once per name per session. Therefore:
+
+- If the op broke a **shared dependency**, the second bed reads **0 cold** — and the natural reading of that line ("even an untouched bed is 0, so it's a session/reading artefact") would be **exactly backwards**: it would be the signature of a genuine break in a shared VI.
+- If it reads **1**, that licenses only "the session is not globally poisoned". Your own plan already wrote the rule that kills the stronger reading: *"A preload can also MASK a genuine break by supplying subVIs the saved VI would not resolve on its own, so a preloaded 1 is **necessary, never sufficient**"* (`cycle27-plan.md:186-187`). The second bed is opened into a session where the first bed's dependencies are already resident — it is a preloaded read by that definition.
+
+A two-line upgrade that makes (v) worth its wall-clock: read `g.exec_state()` on the **bed file itself** and on **`OpConnectNested_v1.vi`** before and after the connect. Both are named, already-resident, md5-pinned, read-only. If either flips, you have session-level damage *with a location*; if neither flips while the scratch is 0, the damage is confined to the scratch. Cost: four `exec_state` calls, no save, no new op.
+
+## 4. The observation that would FALSIFY the claim
+
+**The claim is falsified if the run ends with: (i) = 0×8, (ii) = 0×6, (iii) = NOT ATTEMPTED, (iv) = 0/0/0, (v) = 1.** That result set is predicted identically by "perturbs the reading", by "really breaks it", by "compile state", and by "broke something unreported" — so the run would have moved nothing and burned a 25-minute cycle. Read the script's own contract: P_d, P_e, P_f, P_g, P_h, P_i and P_j all assert no value (`:76-88`). A run in which **every** substantive gate is a no-assert recorder is a run that cannot fail, and a test that cannot fail cannot discriminate. Note also that this outcome is the *most likely* one a priori — which is why I judge the claim probably false as written, not merely unproven.
+
+Conversely, what would make me wrong: if (i) or (ii) returns a **1** at any point, the "durable break" hypothesis dies on the spot and the run has earned its keep. That is a real possibility and a good reason to keep legs (i)–(ii). It is not a reason to call the run *sufficient*.
+
+## 5. The cheapest discriminating test — no save, no new op, no edit to `gscript.py`
+
+**Run the same idempotent connect through the connect op that does NOT carry the reader, and read ExecState.**
+
+`tools/gscript.py:2671-2688` — `connect2(target, diagram_index, sink_node, sink_term, src_node, src_term)` → `OpConnect2_v0`, which "wire[s] … into Nodes[sink_node].Terminals[sink_term] of **ANY diagram** (Traverse "Diagram" index…)" and returns `(wire delta, exec_state)`. `OpConnect2_v0` is **not** in NAMES.md's list of ops carrying the embedded `Is Broken?` reader (`NAMES.md:902-905` names only `OpConnectNested_v0/v1` and `OpConnectFromWire_v0`). The sibling `connect_terminals`/`OpConnect_v0` (`gscript.py:2445-2469`) recorded the *opposite* sign on a comparable case: "an already-wired source is BRANCHED (wire count unchanged, **ExecState 0→1**)".
+
+On a fresh scratch of the same bed, call `g.connect2(scratch, 46, 24, 0, 25, 0)` — the same pair as `connect_nested_v1(46,24,0,46,25,0)` — with the same before/after `Wire` census and the same uid-echo resolution you already do:
+
+- **stays 1** ⇒ the connect is exonerated; the embedded `Is Broken?` read is the perturber. `NAMES.md:912-919` is upgraded from one measurement to a mechanism, and every `ExecState` gate downstream of a nested-connect in this project is retro-actively void.
+- **falls to 0** ⇒ the reader is exonerated; the rivals are now "the connect mutates" vs "compile state", which the **second arm** separates at the same cost: `g.set_node_label(scratch2, 46, <node>, "<same text>")` (`gscript.py:2694-2706`, reaches a nested diagram by index) — a scripting edit that touches **no wire at all**. If a label write alone drives 1 → 0, the mechanism is generic to scripting edits/compile state and "`OpConnectNested_v1` breaks the VI" is dead. (Caveat, stated because it is real: `set_node_label` "Leaves the op's junk Invoke on the target", so it is benign for computation but not object-count-neutral — record the census.)
+
+Three caveats before you run it, so a null result is not mistaken for an answer:
+1. `connect2`'s docstring says "top-level `Nodes[src_node]`" while its wiring sets one `Class Name`/`index` pair for the diagram (`:2678-2682`). That wording is ambiguous about where the **source** index is resolved. Verify by uid echo exactly as `node_on_639` does (`diag_c64_perturb_t1t3.py:230-267`) — if the echo does not come back `10407`/`10686`, the arm is a non-result, not a 0.
+2. Assert `wire_delta == 0` **and** that the sink terminal still carries wire uid **10799** afterwards, or the two arms are not the same experiment.
+3. Order it so T3 runs first (it already does, `:758-759`) and **let T3's table select the arm** — one `if` on `is_broken_internal == "NO"` picks the reader-free op mechanically instead of on my reading of NAMES.md. That turns T3 from a docs artefact into the run's instrument, which is the only thing in the current design that is earning its place.
+
+---
+
+**Conceded, explicitly:** the ASTCHECK half of the claim holds. Gate 3 is AST-based (`c60c_astcheck.py:71-74`: `ast.Call` keyword `allow_broken` with `Constant is True`), so the docstring mentions at `diag_c64_perturb_t1t3.py:12,14` cannot trip it; gate 2 is likewise AST-based on called/imported names (`:66-69`), and `gui_save`/`remove_bad_wires*` appear only as string values (`:162,165`). `g.vi_ref` is new to the verb list but `vi_ref` is a `def` at `gscript.py:244`, so gate 4 passes; gate 6's text rule (`:94-95`) does not fire on any line. One blind spot you should know about rather than fix: `import diag_s2_scaffold as D` is a plain `Import`, so gate 5 never checks `D.fresh`/`D.ORIGINAL`/`D.S1_MD5` — I verified those by hand (`diag_s2_scaffold.py:81,82,84,85,156`), they exist, the file will run.
+
+**What would change my mind:** a demonstration that `OpConnect2_v0` also carries an internal `Is Broken?` read (T3 will say), which would mean no reader-free connect exists in the fleet and the separation genuinely needs new construction. Short of that, the discriminator is one already-built verb away, and spending a 25-minute bounded run on five no-assert legs instead is the expensive choice.
+
+Sources:
+- [VI class/Execution.State property — LabVIEW Wiki](https://labviewwiki.org/wiki/VI_class/Execution.State_property) (enum: 0 = Bad, 1 = Idle, 2 = Run top level, 3 = Running)
+- [Execution:State — NI LabVIEW API Reference](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/vi/execstate.html)
+- [VI Scripting — LabVIEW Wiki](https://labviewwiki.org/wiki/VI_Scripting) ("Because scripting requires recompiling the VI and may break it…")
+- [Force Recompile option in Mass Compile — NI Community](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Force-Recompile-option-in-Mass-Compile/idi-p/2659839) (stale compiled code makes a VI appear broken; Ctrl+Run forces recompile)
+BGRUN END rc=0 after 453s

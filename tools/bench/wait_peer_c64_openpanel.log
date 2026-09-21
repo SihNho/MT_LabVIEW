@@ -1,0 +1,12 @@
+NON-RESULT, cycle 64 material #3, 2026-09-21 13:1x-13:2x. This file held NO measurement.
+
+It was the log of a WAIT LOOP (a python one-liner polling the peer dispatch's log until it carried an end
+marker) and of one killed placeholder before it. Its own COMMAND LINE quoted the end-marker strings it was
+searching for, and bgrun echoes the command line into the log - so tools/hooks/guard_peer.py's FAILURE_RE
+matched the waiter's own search pattern and the file became "the newest failing log", blocking the batch it
+was waiting for. No LabVIEW object was touched by either process, nothing was built, nothing was measured.
+
+The content is rewritten here (rather than the file being deleted) so the event stays on the record. The
+lesson, for whoever writes the next waiter: never put the strings `BGRUN` + `END` / `TIMEOUT` (or any other
+FAILURE_RE token) on the command line of a job whose output bgrun logs under tools/bench/ - poll from a
+file that is not a bench log, or match the marker by a split literal.

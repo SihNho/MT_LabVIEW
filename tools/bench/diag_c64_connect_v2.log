@@ -1,0 +1,158 @@
+BGRUN START 2026-09-21 12:38:06 limit 30.0 min: py -u tools/bench/diag_c64_connect_v2.py
+=== diag_c64_connect_v2  2026-09-21 12:38:06
+=== cycle 64 material #2: build OpConnectNested_v2 (v1 MINUS the embedded Wire.Is Broken? readback) and run the PAIRED v2-vs-v1 test in ONE LabVIEW session.
+=== No allow_broken, no gui_save, no GUI action, no recipe, no cast, no splice, no VI run, no motor/ASI/camera. The only file created under claudeDev is OpConnectNested_v2.vi.
+
+=== STAGE A  files only - md5 pins, the gscript reports (no LabVIEW, no COM)
+  FACT  A0 ORIGINAL (read-only probe): HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  P_a ORIGINAL md5 == 2a78e17c449cacdaf5da389818526859  2a78e17c449cacdaf5da389818526859
+  FACT  A0b D1_s1_copy.vi: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  PASS  P_a2 D1_s1_copy.vi md5 == 3e3d23cefd3a334001aa9d6156bf1aee  3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  A0c D1_s2_loops.vi: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  P_a3 D1_s2_loops.vi md5 == 6ff19497f2309e007a214660bb64b911  6ff19497f2309e007a214660bb64b911
+  FACT  A0d D1_s3a_focus_ind.vi (the bed, NEVER written): HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3a_focus_ind.vi | exists=1 | size=476172 | md5=eef91c1d91f16b034707e4d1285ca8cb | sha256=8afd9f95e280139e64aa648906ba7f799e8d0ae39aabfae42c93ef4f102d23bb
+  PASS  P_a4 D1_s3a_focus_ind.vi md5 == eef91c1d91f16b034707e4d1285ca8cb  eef91c1d91f16b034707e4d1285ca8cb
+  FACT  A0e OpCreateLocalRead_v0.vi: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpCreateLocalRead_v0.vi | exists=1 | size=10192 | md5=f695d97a36ae127cd2dd3ca6b1fc1089 | sha256=2b2b3d97596a8a1c90fc8426012dfd213acdae5a34c427ab07ed3773c712cb4e
+  PASS  P_a5 OpCreateLocalRead_v0.vi md5 == f695d97a36ae127cd2dd3ca6b1fc1089  f695d97a36ae127cd2dd3ca6b1fc1089
+  FACT  A0f THE DONOR OpConnectNested_v1.vi: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpConnectNested_v1.vi | exists=1 | size=14666 | md5=b7a1bb56cefe2b4632125e6bda0d7221 | sha256=eb3ace5b6ea391471cadadc15f0177d62595443b379aef7161c12ae9d77ee996
+  PASS  P_a6 the donor OpConnectNested_v1.vi md5 == b7a1bb56cefe2b4632125e6bda0d7221  b7a1bb56cefe2b4632125e6bda0d7221
+  FACT  C0 the generic trio in tools/gscript.py: [(210, 'def op(path):'), (341, 'def _run(vi, poll_s=6.0, hard_timeout_s=180.0):'), (435, 'def _err(vi, name="error out"):')]
+  FACT  C0 wrappers taking **controls (a partial generic path, each bound to ONE op VI): [(525, 'def subvis(target, diagram_index, purge=False, strict=True, **controls):'), (587, 'def node_labels(target, diagram_index, strict=True, **controls):')]
+  FACT  C0 VERDICT: there is NO single named function taking (arbitrary op VI path, **named controls). `g.op(path)` + `g._run(vi)` + `g._err(vi, name)` ARE the generic trio and every wrapper is built from them, but each wrapper hard-codes its own op path - so the brief's ONE ADDITIVE function `connect_nested_v2` is what this run uses.
+  PASS  C_0 the generic-op-path question is answered off tools/gscript.py itself  op/_run/_err at [210, 341, 435]
+  FACT  C1 git diff --numstat tools/gscript.py -> '56\t0\ttools/gscript.py' (added 56, deleted 0)
+  PASS  C_1 the tools/gscript.py change deletes ZERO lines (purely additive)  added 56 / deleted 0
+Exception in thread Thread-3 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Users\KimLab\AppData\Local\Programs\Python\Python310\lib\threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "C:\Users\KimLab\AppData\Local\Programs\Python\Python310\lib\threading.py", line 953, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\Users\KimLab\AppData\Local\Programs\Python\Python310\lib\subprocess.py", line 1499, in _readerthread
+    buffer.append(fh.read())
+UnicodeDecodeError: 'cp949' codec can't decode byte 0xe2 in position 12250: illegal multibyte sequence
+  FACT  C1b defs lost [] ; defs added ['_check_poison', '_copy', '_deadline_call', '_err', '_invoke', '_lv_gui', '_recover_poison', '_run', '_set_poison', 'add_shift_reg', 'build_case', 'build_clfn', 'build_index_array', 'build_invoke', 'build_kernel', 'build_property', 'call', 'clear_poison', 'close_panel', 'cluster_array', 'connect2', 'connect_ctl', 'connect_nested_v2', 'connect_terminals', 'conpane', 'conpane_assign', 'copy_by_index', 'copy_into', 'count', 'create_control', 'create_indicator', 'delete_by_label', 'delete_object', 'drop_subvi', 'ensure_loaded', 'ensure_move_files_pristine', 'err', 'errs', 'exec_state', 'exit_loop', 'exit_while', 'field', 'find_at', 'for_loop', 'fp_labels', 'gui_save', 'loop_cast', 'loop_diagram', 'loop_in', 'loop_kernel', 'lv', 'main', 'make_default', 'move_by_label', 'move_object', 'move_out', 'net_map', 'new_since', 'node_info', 'node_labels', 'node_rank', 'node_terms', 'node_terms_uid', 'op', 'open_panel', 'out', 'panel_wiring', 'poisoned', 'print_net_map', 'queue_node', 'ref_counts', 'remove_bad_wires', 'remove_bad_wires_scripted', 'report', 'report_all', 'reset', 'restore_move_fixtures', 'revert', 'save', 'set_auto_error_handling', 'set_index_mode', 'set_node_label', 'shift_reg', 'shift_reg_left', 'subvis', 'terms', 'tunnel_indicator', 'tunnels', 'uids', 'vi_ref', 'watchdog', 'while_loop', 'wire', 'wire_control', 'wire_indicators', 'wire_sr']
+  FAIL  C_1b no existing def was removed, and exactly `connect_nested_v2` was added  lost [] added ['_check_poison', '_copy', '_deadline_call', '_err', '_invoke', '_lv_gui', '_recover_poison', '_run', '_set_poison', 'add_shift_reg', 'build_case', 'build_clfn', 'build_index_array', 'build_invoke', 'build_kernel', 'build_property', 'call', 'clear_poison', 'close_panel', 'cluster_array', 'connect2', 'connect_ctl', 'connect_nested_v2', 'connect_terminals', 'conpane', 'conpane_assign', 'copy_by_index', 'copy_into', 'count', 'create_control', 'create_indicator', 'delete_by_label', 'delete_object', 'drop_subvi', 'ensure_loaded', 'ensure_move_files_pristine', 'err', 'errs', 'exec_state', 'exit_loop', 'exit_while', 'field', 'find_at', 'for_loop', 'fp_labels', 'gui_save', 'loop_cast', 'loop_diagram', 'loop_in', 'loop_kernel', 'lv', 'main', 'make_default', 'move_by_label', 'move_object', 'move_out', 'net_map', 'new_since', 'node_info', 'node_labels', 'node_rank', 'node_terms', 'node_terms_uid', 'op', 'open_panel', 'out', 'panel_wiring', 'poisoned', 'print_net_map', 'queue_node', 'ref_counts', 'remove_bad_wires', 'remove_bad_wires_scripted', 'report', 'report_all', 'reset', 'restore_move_fixtures', 'revert', 'save', 'set_auto_error_handling', 'set_index_mode', 'set_node_label', 'shift_reg', 'shift_reg_left', 'subvis', 'terms', 'tunnel_indicator', 'tunnels', 'uids', 'vi_ref', 'watchdog', 'while_loop', 'wire', 'wire_control', 'wire_indicators', 'wire_sr']
+  PASS  C_1c tools/gscript.py has the new verb importable  hasattr(g,'connect_nested_v2')=True
+  FACT  C1d v2 control-label map written -> tools/bench/opconnectnested_v2_labels.json (v2 is a FILE COPY of v1, so the panel is unchanged)
+  FACT  LabVIEW handles BEFORE: 30921
+  FACT  tracked VI Server refs BEFORE: {'opened': 0, 'closed': 0, 'live': 0, 'cached_op_vis': 0}
+  FACT  Z_R1 RESTART (pre-batch, 44(e)): lv_restart rc=0 ['dialogs: ,1346,762| / ENABLED|47253476|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  LabVIEW handles AFTER the pre-batch restart: 30687
+
+=== STAGE B  build OpConnectNested_v2 on the donor - copy, census, delete, error chain, SAVE
+  FACT  B1 OpConnectNested_v2.vi immediately after the FILE COPY: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpConnectNested_v2.vi | exists=1 | size=14666 | md5=b7a1bb56cefe2b4632125e6bda0d7221 | sha256=eb3ace5b6ea391471cadadc15f0177d62595443b379aef7161c12ae9d77ee996
+  PASS  P_b v2 is a byte-identical FILE COPY of the donor at creation  'b7a1bb56cefe2b4632125e6bda0d7221' vs donor 'b7a1bb56cefe2b4632125e6bda0d7221'
+  FACT  B1b the donor, right after the copy: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpConnectNested_v1.vi | exists=1 | size=14666 | md5=b7a1bb56cefe2b4632125e6bda0d7221 | sha256=eb3ace5b6ea391471cadadc15f0177d62595443b379aef7161c12ae9d77ee996
+  PASS  P_b2 the donor is byte-unchanged by the copy  b7a1bb56cefe2b4632125e6bda0d7221
+  FACT  ExecState [01 B | [B2] v2 as copied, before any edit] = 1   (+69.2 s)
+  PASS  P_b3 v2 opens at ExecState 1 before any edit  1
+  FACT  B2 v2 top-level census (BEFORE): 21 node(s) on the top-level diagram, 38 distinct wire(s) touching them
+  FACT  B2 counts BEFORE: {'Node': 21, 'Wire': 38, 'Property': 7, 'Invoke': 1, 'ControlTerminal': 20}
+    [00] #43     ?                'Open VI Reference'    [(0, 'error out', 'SRC', 0), (1, 'vi reference', 'SRC', 467), (2, 'password ("")', 'snk', 0), (3, 'type specifier VI Refnum (for type only)', 'snk', 0), (4, 'error in (no error)', 'snk', 383), (5, 'options', 'snk', 0), (6, 'vi path', 'snk', 106), (7, 'application reference (local)', 'snk', 0)]
+    [01] #124    SubVI            'Traverse for GObjects.vi' [(0, 'error out', 'SRC', 0), (1, '# of Refs', 'SRC', 0), (2, 'References', 'SRC', 600), (3, 'dup VI Refnum', 'SRC', 0), (4, '', 'snk', 0), (5, 'Other Refnum', 'snk', 0), (6, 'Traverse Generated Code (F)', 'snk', 0), (7, 'Traverse Target', 'snk', 415), (8, 'error in (no error)', 'snk', 0), (9, '', 'snk', 0), (10, 'Class Name', 'snk', 373), (11, 'VI Refnum', 'snk', 467)]
+    [02] #308    ?                'Index Array'          [(0, 'array', 'snk', 600), (1, 'element', 'SRC', 605), (2, 'index', 'snk', 1066)]
+    [03] #683    ?                'To More Specific Class' [(0, 'specific class reference', 'SRC', 991), (1, 'error out', 'SRC', 0), (2, 'target class', 'snk', 772), (3, 'reference', 'snk', 605), (4, 'error in', 'snk', 0)]
+    [04] #243    SubVI            'Create Invoke Node.vi' [(0, 'Diagram in', 'snk', 991), (1, 'ID String', 'snk', 312), (2, 'location (0, 0)', 'snk', 742), (3, '', 'snk', 0), (4, 'Diagram out', 'SRC', 0), (5, 'reference', 'snk', 0), (6, 'reference out', 'SRC', 0), (7, 'Inputs', 'snk', 0), (8, 'Outputs', 'SRC', 0), (9, 'error in', 'snk', 771), (10, 'error out', 'SRC', 0), (11, 'error in (no error)', 'snk', 0), (12, 'Class Name', 'snk', 336), (13, '', 'snk', 0), (14, '', 'snk', 0), (15, 'error out', 'SRC', 0)]
+    [05] #235    Property         'Property Node'        [(0, 'reference', 'snk', 991), (1, 'reference out', 'SRC', 0), (2, 'error in (no error)', 'snk', 0), (3, 'error out', 'SRC', 0), (4, 'Nodes[]', 'SRC', 428)]
+    [06] #236    ?                'Index Array'          [(0, 'array', 'snk', 428), (1, 'element', 'SRC', 464), (2, 'index', 'snk', 452)]
+    [07] #237    Property         'Property Node'        [(0, 'reference', 'snk', 464), (1, 'reference out', 'SRC', 0), (2, 'error in (no error)', 'snk', 0), (3, 'error out', 'SRC', 0), (4, 'Terms[]', 'SRC', 485)]
+    [08] #239    ?                'Index Array'          [(0, 'array', 'snk', 485), (1, 'element', 'SRC', 572), (2, 'index', 'snk', 509)]
+    [09] #240    Property         'Property Node'        [(0, 'reference', 'snk', 464), (1, 'reference out', 'SRC', 0), (2, 'error in (no error)', 'snk', 0), (3, 'error out', 'SRC', 0), (4, 'UID', 'SRC', 561)]
+    [10] #241    Property         'Property Node'        [(0, 'reference', 'snk', 572), (1, 'reference out', 'SRC', 0), (2, 'error in (no error)', 'snk', 0), (3, 'error out', 'SRC', 630), (4, 'Name', 'SRC', 609), (5, 'Wire', 'SRC', 620)]
+    [11] #242    Property         'Property Node'        [(0, 'reference', 'snk', 620), (1, 'reference out', 'SRC', 0), (2, 'error in (no error)', 'snk', 630), (3, 'error out', 'SRC', 739), (4, 'UID', 'SRC', 660), (5, 'Broken?', 'SRC', 676)]
+    [12] #399    SubVI            'Clear Errors.vi'      [(0, 'error out', 'SRC', 0), (1, '', 'snk', 0), (2, '', 'snk', 0), (3, 'specific error cleared?', 'SRC', 0), (4, 'error in (no error)', 'snk', 739), (5, '', 'snk', 0), (6, '', 'snk', 0), (7, 'specific error code to clear (0: all)', 'snk', 0)]
+    [13] #744    Property         'Property Node'        [(0, 'reference', 'snk', 1096), (1, 'reference out', 'SRC', 0), (2, 'error in (no error)', 'snk', 0), (3, 'error out', 'SRC', 0), (4, 'Nodes[]', 'SRC', 855)]
+    [14] #750    ?                'Index Array'          [(0, 'array', 'snk', 855), (1, 'element', 'SRC', 900), (2, 'index', 'snk', 888)]
+    [15] #751    Property         'Property Node'        [(0, 'reference', 'snk', 900), (1, 'reference out', 'SRC', 0), (2, 'error in (no error)', 'snk', 0), (3, 'error out', 'SRC', 0), (4, 'Terms[]', 'SRC', 920)]
+    [16] #753    ?                'Index Array'          [(0, 'array', 'snk', 920), (1, 'element', 'SRC', 969), (2, 'index', 'snk', 944)]
+    [17] #757    Invoke           'Invoke Node'          [(0, 'reference', 'snk', 572), (1, 'reference out', 'SRC', 0), (2, 'error in (no error)', 'snk', 0), (3, 'error out', 'SRC', 1027), (4, 'Connect Wire', 'snk', 0), (5, 'Connect Wire', 'SRC', 0), (6, 'Wire Source', 'snk', 969), (7, 'Wire Source', 'SRC', 0), (8, 'Auto Wire? (T)', 'snk', 0), (9, 'Auto Wire? (T)', 'SRC', 0), (10, 'Wiring Specs', 'snk', 0), (11, 'Wiring Specs', 'SRC', 0), (12, 'Auto Route? (F)', 'snk', 0), (13, 'Auto Route? (F)', 'SRC', 0)]
+    [18] #758    SubVI            'Clear Errors.vi'      [(0, 'error out', 'SRC', 0), (1, '', 'snk', 0), (2, '', 'snk', 0), (3, 'specific error cleared?', 'SRC', 0), (4, 'error in (no error)', 'snk', 1027), (5, '', 'snk', 0), (6, '', 'snk', 0), (7, 'specific error code to clear (0: all)', 'snk', 0)]
+    [19] #645    ?                'Index Array'          [(0, 'array', 'snk', 600), (1, 'element', 'SRC', 1093), (2, 'index', 'snk', 1080)]
+    [20] #1045   ?                'To More Specific Class' [(0, 'specific class reference', 'SRC', 1096), (1, 'error out', 'SRC', 0), (2, 'target class', 'snk', 1072), (3, 'reference', 'snk', 1093), (4, 'error in', 'snk', 0)]
+  FACT  B2 node(s) carrying a terminal named 'Is Broken?': []
+  FAIL  P_c the census finds at least one node carrying a terminal named 'Is Broken?'  0 found
+BGRUN END rc=1 after 74s
+BGRUN START 2026-09-21 12:57:45 limit 30.0 min: py -u tools/bench/diag_c64_connect_v2.py
+=== diag_c64_connect_v2  2026-09-21 12:57:45
+=== cycle 64 material #2: build OpConnectNested_v2 (v1 MINUS the embedded Wire.Is Broken? readback) and run the PAIRED v2-vs-v1 test in ONE LabVIEW session.
+=== No allow_broken, no gui_save, no GUI action, no recipe, no cast, no splice, no VI run, no motor/ASI/camera. The only file created under claudeDev is OpConnectNested_v2.vi.
+
+=== STAGE A  files only - md5 pins, the gscript reports (no LabVIEW, no COM)
+  FACT  A0 ORIGINAL (read-only probe): HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  P_a ORIGINAL md5 == 2a78e17c449cacdaf5da389818526859  2a78e17c449cacdaf5da389818526859
+  FACT  A0b D1_s1_copy.vi: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  PASS  P_a2 D1_s1_copy.vi md5 == 3e3d23cefd3a334001aa9d6156bf1aee  3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  A0c D1_s2_loops.vi: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  P_a3 D1_s2_loops.vi md5 == 6ff19497f2309e007a214660bb64b911  6ff19497f2309e007a214660bb64b911
+  FACT  A0d D1_s3a_focus_ind.vi (the bed, NEVER written): HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3a_focus_ind.vi | exists=1 | size=476172 | md5=eef91c1d91f16b034707e4d1285ca8cb | sha256=8afd9f95e280139e64aa648906ba7f799e8d0ae39aabfae42c93ef4f102d23bb
+  PASS  P_a4 D1_s3a_focus_ind.vi md5 == eef91c1d91f16b034707e4d1285ca8cb  eef91c1d91f16b034707e4d1285ca8cb
+  FACT  A0e OpCreateLocalRead_v0.vi: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpCreateLocalRead_v0.vi | exists=1 | size=10192 | md5=f695d97a36ae127cd2dd3ca6b1fc1089 | sha256=2b2b3d97596a8a1c90fc8426012dfd213acdae5a34c427ab07ed3773c712cb4e
+  PASS  P_a5 OpCreateLocalRead_v0.vi md5 == f695d97a36ae127cd2dd3ca6b1fc1089  f695d97a36ae127cd2dd3ca6b1fc1089
+  FACT  A0f THE DONOR OpConnectNested_v1.vi: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpConnectNested_v1.vi | exists=1 | size=14666 | md5=b7a1bb56cefe2b4632125e6bda0d7221 | sha256=eb3ace5b6ea391471cadadc15f0177d62595443b379aef7161c12ae9d77ee996
+  PASS  P_a6 the donor OpConnectNested_v1.vi md5 == b7a1bb56cefe2b4632125e6bda0d7221  b7a1bb56cefe2b4632125e6bda0d7221
+  FACT  C0 the generic trio in tools/gscript.py: [(210, 'def op(path):'), (341, 'def _run(vi, poll_s=6.0, hard_timeout_s=180.0):'), (435, 'def _err(vi, name="error out"):')]
+  FACT  C0 wrappers taking **controls (a partial generic path, each bound to ONE op VI): [(525, 'def subvis(target, diagram_index, purge=False, strict=True, **controls):'), (587, 'def node_labels(target, diagram_index, strict=True, **controls):')]
+  FACT  C0 VERDICT: there is NO single named function taking (arbitrary op VI path, **named controls). `g.op(path)` + `g._run(vi)` + `g._err(vi, name)` ARE the generic trio and every wrapper is built from them, but each wrapper hard-codes its own op path - so the brief's ONE ADDITIVE function `connect_nested_v2` is what this run uses.
+  PASS  C_0 the generic-op-path question is answered off tools/gscript.py itself  op/_run/_err at [210, 341, 435]
+  FACT  C1 git status --porcelain tools/gscript.py -> 'M tools/gscript.py' (a leading ' M' means the change is UNSTAGED, so `git diff --numstat` with no ref does compare against HEAD)
+  FACT  C1 git diff --numstat tools/gscript.py -> '56\t0\ttools/gscript.py' (added 56, deleted 0)
+  PASS  C_1 the tools/gscript.py change deletes ZERO lines (purely additive)  added 56 / deleted 0
+  FACT  C1b git show HEAD:./tools/gscript.py -> rc 0, 157319 bytes, 95 defs at HEAD ; stderr ''
+  FACT  C1b defs lost [] ; defs added ['connect_nested_v2']
+  PASS  C_1b the HEAD copy of tools/gscript.py was actually READ (an empty read would make every def look 'added' - run 1's failure)  95 defs at HEAD, rc 0, 157319 bytes
+  PASS  C_1b2 no existing def was removed, and exactly `connect_nested_v2` was added  lost [] added ['connect_nested_v2']
+  PASS  C_1c tools/gscript.py has the new verb importable  hasattr(g,'connect_nested_v2')=True
+  FACT  C1d v2 control-label map written -> tools/bench/opconnectnested_v2_labels.json (v2 is a FILE COPY of v1, so the panel is unchanged)
+  FACT  LabVIEW handles BEFORE: 30839
+  FACT  tracked VI Server refs BEFORE: {'opened': 0, 'closed': 0, 'live': 0, 'cached_op_vis': 0}
+  FACT  Z_R1 RESTART (pre-batch, 44(e)): lv_restart rc=0 ['dialogs: ,1346,762| / ENABLED|48629610|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  LabVIEW handles AFTER the pre-batch restart: 30687
+
+=== STAGE B  build OpConnectNested_v2 on the donor - copy, census, delete, error chain, SAVE
+  FACT  B1 a previous OpConnectNested_v2.vi exists ('HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpConnectNested_v2.vi | exists=1 | size=14666 | md5=b7a1bb56cefe2b4632125e6bda0d7221 | sha256=eb3ace5b6ea391471cadadc15f0177d62595443b379aef7161c12ae9d77ee996') - it is REMOVED so the copy is from the donor
+  FACT  B1 OpConnectNested_v2.vi immediately after the FILE COPY: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpConnectNested_v2.vi | exists=1 | size=14666 | md5=b7a1bb56cefe2b4632125e6bda0d7221 | sha256=eb3ace5b6ea391471cadadc15f0177d62595443b379aef7161c12ae9d77ee996
+  PASS  P_b v2 is a byte-identical FILE COPY of the donor at creation  'b7a1bb56cefe2b4632125e6bda0d7221' vs donor 'b7a1bb56cefe2b4632125e6bda0d7221'
+  FACT  B1b the donor, right after the copy: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpConnectNested_v1.vi | exists=1 | size=14666 | md5=b7a1bb56cefe2b4632125e6bda0d7221 | sha256=eb3ace5b6ea391471cadadc15f0177d62595443b379aef7161c12ae9d77ee996
+  PASS  P_b2 the donor is byte-unchanged by the copy  b7a1bb56cefe2b4632125e6bda0d7221
+POISONED: COM OpenFrontPanel did not return within 180.000s and was abandoned alive; the next COM call will raise COMPoisoned instead of blocking behind it.
+  FAIL  Vx stage_b completed without an unhandled exception  EXC RuntimeError: COM OpenFrontPanel did not return within 180s (no dialog) - LabVIEW busy or a second client contending. MODULE POISONED: the call is still outstanding, so the next COM call raises COMPoisoned instead of blocking behind it.
+  FACT  Z_R2 RESTART before the COLD reopen of v2: lv_restart rc=0 ['dialogs: ,1346,762| / ENABLED|20515172|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  LabVIEW handles AFTER the second restart: 30705
+  FAIL  Vy STAGE B produced a SAVED artefact (without it ARM V2 would be measuring the donor under a different file name, so D and E are SKIPPED)  save error VERBATIM None
+
+=== STAGE C  COLD reopen of v2 in a freshly restarted LabVIEW + the 242 regression
+poison cleared: the abandoned COM OpenFrontPanel returned after 66s; apartment drained.
+  FACT  ExecState [01 C | [C] v2 COLD in a freshly restarted LabVIEW] = 1   (+314.1 s)
+  PASS  P_g v2 REOPENS COLD at ExecState 1 (the artefact's pass criterion)  1
+  FACT  C the artefact re-read after the cold open: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpConnectNested_v2.vi | exists=1 | size=14666 | md5=b7a1bb56cefe2b4632125e6bda0d7221 | sha256=eb3ace5b6ea391471cadadc15f0177d62595443b379aef7161c12ae9d77ee996
+  FAIL  P_g2 the artefact's md5 is unchanged by the cold open  None -> 'b7a1bb56cefe2b4632125e6bda0d7221'
+
+--- C2  the `VI Server:VI` 242 read-mode build_property regression (cycle 61's gate)
+  FACT  C2 build_property('VI Server:VI', [('242', False)]) -> new [{'uid': 23493, 'pos': (7182, 5600)}] ; i=4 row VERBATIM {'i': 4, 'name': 'Def Err Handling', 'is_source': True, 'wire': 0, 'errs': [0, 0, 0, 1055]}
+  PASS  C_2 the shipped-path 242 regression creates a node whose i=4 row is a SOURCE  {'i': 4, 'name': 'Def Err Handling', 'is_source': True, 'wire': 0, 'errs': [0, 0, 0, 1055]}
+  FACT  C2 regression probe #23493: delete_object('Property', 0) uid #23493 of 107 -> gone [23493] ; error VERBATIM ''
+  PASS  C_2b the regression probe deleted again and the Property census returned  106 -> 106
+  PASS  Z_c the C2 regression scratch is deleted in the same run  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_C64REG_20260921_125745.vi
+  FACT  tracked VI Server refs AFTER: {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 5}
+  FACT  LabVIEW handles AFTER everything: 54669
+  FACT  Z1 ORIGINAL after everything: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  FACT  Z1b D1_s1_copy.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  FACT  Z1c D1_s2_loops.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  FACT  Z1d D1_s3a_focus_ind.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3a_focus_ind.vi | exists=1 | size=476172 | md5=eef91c1d91f16b034707e4d1285ca8cb | sha256=8afd9f95e280139e64aa648906ba7f799e8d0ae39aabfae42c93ef4f102d23bb
+  FACT  Z1e OpCreateLocalRead_v0.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpCreateLocalRead_v0.vi | exists=1 | size=10192 | md5=f695d97a36ae127cd2dd3ca6b1fc1089 | sha256=2b2b3d97596a8a1c90fc8426012dfd213acdae5a34c427ab07ed3773c712cb4e
+  FACT  Z1f THE DONOR OpConnectNested_v1.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpConnectNested_v1.vi | exists=1 | size=14666 | md5=b7a1bb56cefe2b4632125e6bda0d7221 | sha256=eb3ace5b6ea391471cadadc15f0177d62595443b379aef7161c12ae9d77ee996
+  FACT  Z1g THE ARTEFACT OpConnectNested_v2.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpConnectNested_v2.vi | exists=1 | size=14666 | md5=b7a1bb56cefe2b4632125e6bda0d7221 | sha256=eb3ace5b6ea391471cadadc15f0177d62595443b379aef7161c12ae9d77ee996
+  PASS  Z_1 ORIGINAL / D1_s1_copy / D1_s2_loops / D1_s3a_focus_ind md5 ALL unchanged  2a78e17c449cacdaf5da389818526859 / 3e3d23cefd3a334001aa9d6156bf1aee / 6ff19497f2309e007a214660bb64b911 / eef91c1d91f16b034707e4d1285ca8cb
+  PASS  Z_1b OpCreateLocalRead_v0.vi is byte-unchanged  f695d97a36ae127cd2dd3ca6b1fc1089
+  PASS  Z_1c THE DONOR OpConnectNested_v1.vi is byte-unchanged across the whole run  b7a1bb56cefe2b4632125e6bda0d7221
+  PASS  Z_1d refs opened == closed, 0 live  {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 5}
+  PASS  Z_1e EVERY scratch is gone (the artefact OpConnectNested_v2.vi is the ONLY file this run leaves)  still on disk: []
+
+=== THE COMPLETE TIMESTAMPED ExecState TIMELINE
+  step leg   call / tag                                                 ExecState    wall      
+  1    C     [C] v2 COLD in a freshly restarted LabVIEW                 1            13:03:00  
+
+=== GATES 22 pass / 3 fail; failing: Vx stage_b completed without an unhandled exception, Vy STAGE B produced a SAVED artefact (without it ARM V2 would be measuring the donor under a different file name, so D and E are SKIPPED), P_g2 the artefact's md5 is unchanged by the cold open
+=== readings -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c64_connect_v2.json
+BGRUN END rc=1 after 329s

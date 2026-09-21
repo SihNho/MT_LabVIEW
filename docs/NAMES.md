@@ -899,8 +899,16 @@ appears among the windows). gscript's watchdog reports it correctly as a modal (
 - **A wire whose SOURCE terminal reports owner class `Diagram` is a front-panel CONTROL TERMINAL** (a control
   terminal's `Owner` is the diagram, not the control) — measured 2026-09-15 12:06 and cross-checked against
   `panel_wiring`. Name it from the panel census, not from `Generic.Owner`.
-- ✅ **`Wire.Is Broken?` 6371004 IS BUILT AND MEASURED, 2026-09-17** — and it never needed a new op. Short name
-  **`Is Broken?`**. `OpConnectNested_v0/v1` and `OpConnectFromWire_v0` all carry the reader already: a property
+- ✅ **`Wire.Is Broken?` 6371004 IS BUILT AND MEASURED, 2026-09-17** — and it never needed a new op.
+  ⚠️ **TWO DIFFERENT STRINGS, corrected 2026-09-21 (cycle 64 material #2) after this line cost a run:** the
+  ITEM TERMINAL on the property node reads **`Broken?`**, while **`Is Broken?`** is only the PANEL
+  INDICATOR's label. Measured off the machine — `tools/bench/diag_c64_connect_v2.log:64` censuses
+  `OpConnectNested_v1`'s `#242 Property Node` as
+  `(0,'reference',snk,620) (3,'error out',SRC,739) (4,'UID',SRC,660) (5,'Broken?',SRC,676)`, while
+  `tools/bench/opconnectnested_v1_labels.json:84-88` carries panel object 14 `"Is Broken?"`. A census that
+  matched the panel label found **0 nodes** on a VI that demonstrably has one. Match `Broken?` when reading
+  terminals, `Is Broken?` when reading the panel.
+  `OpConnectNested_v0/v1` and `OpConnectFromWire_v0` all carry the reader already: a property
   node reads `Wire` off the SINK terminal reference, and a second reads that wire's `UID` + `Broken?`, surfaced on
   the panel as `UID 2` / `Is Broken?`. ⚠️ **The whole trick is ORDER**: that node's `error in (no error)` ships
   UNWIRED, so it may run BEFORE the `Connect Wire` and report the OLD wire — which is why every readback in
@@ -923,13 +931,32 @@ appears among the windows). gscript's watchdog reports it correctly as a modal (
   already said. `tools/bench/diag_c61_localdir_write.log` built a correct op, read `Is Broken?` (False) before
   finishing it, then read its save gate as `ExecState` **0** and threw the build away; the identical
   construction with the read moved below the save saved at **1** and reopened cold at **1**
-  (`tools/bench/diag_c61_localdir_write2.log`, `docs/cycle27-plan.md` Pre-decided 52(f)). **OPEN — the mechanism is not
-  settled**: an idempotent connect that leaves a legal VI illegal could be the connect itself, the property node's
-  own execution, or a stale/uncommitted compile state; nothing here distinguishes them, and one measurement on one
-  wire is not a rule. Two consequences that hold regardless: a reader of `Is Broken?` must not be placed on a
+  (`tools/bench/diag_c61_localdir_write2.log`, `docs/cycle27-plan.md` Pre-decided 52(f)). 🎉 **THE MECHANISM IS
+  SETTLED AS OF CYCLE 64 (2026-09-21), AND IT IS NOT THE READ: THE OP LEAVES A BROKEN ORPHAN `Invoke` NODE ON THE
+  DIAGRAM IT WORKED ON, SO `ExecState` WAS REPORTING A REAL BREAK ALL ALONG.** Measured on two independent beds
+  (`tools/bench/diag_c64_junkpurge.log`, 34 pass / 0 fail): an idempotent `connect_nested_v1` — `wire_delta` 0,
+  wire census unchanged — takes `ExecState` **1 → 0** and leaves exactly ONE extra node, an `Invoke` labelled
+  `'Invoke Node'` with six terminals and **zero wired**, every row `errs [0,0,0,1055]`; **deleting that node by uid
+  returns `ExecState` to 1**, stable across three re-reads. The separator was the reader-free control in
+  `tools/bench/diag_c64_readerfree.log` (23/0): `connect_terminals` → `OpConnect_v0`, which carries neither the
+  property node nor the junk behaviour, leaves `ExecState` **1 → 1** on the same idempotent pair, while
+  `connect_nested_v1` gives 1 → 0. It is the same junk `Invoke` cycle 62's `move_in` purged (#9317).
+  ⚠️ **What is NOT established is that reading `Broken?` is harmless.** Every op that can address a nested diagram
+  descends from `OpNetInfo_v1` and carries the reader **and** the junk-node behaviour together — `OpConnect2_v0`,
+  `OpSetLabel_v0` and `OpConnectNested_v1` each read it through Property `#242`, read off the machine rather than
+  grepped from a builder (that grep had a false positive) — so no reader-without-junk exists to test.
+  ⚠️ **The ITEM terminal is `Broken?`; `Is Broken?` is only the panel label** (cycle 64, after a selector matched
+  the label and found 0 items). Two consequences that hold regardless: a reader of `Is Broken?` must not be placed on a
   recipe's success path, and a wire **no node terminal carries** (an orphan) has no sink terminal at all, so this
   route cannot read its `Is Broken?` value — there is no measured route to that value today
   (`…rbwvictims.log:80,86` — "END NONE" for 894 and 1356).
+- 🔴 **PURGE THE ORPHAN AFTER EVERY `OpNetInfo_v1`-DESCENDED CALL — this is what unblocked S3b (cycle 64).** After
+  `connect_nested_v1`, `connect2`, `set_node_label` and any other op in that family, census the target's nodes,
+  identify the NEW node by diffing against the census taken before the call, confirm from its `node_terms` table
+  that it is unwired, and `delete_object` it **by uid** before reading `ExecState` or saving. With the purge in
+  place `gscript.save` accepts the VI normally: no `allow_broken`, no `gui_save`, no GUI exception, and no
+  `OpConnectNested_v2` — the route that five cycles treated as blocked was never blocked by the reader.
+  Evidence: `tools/bench/diag_c64_s3b_row1.log` (51/1) built and saved S3b row 1 this way, cold `ExecState` 1.
 - **Still not built (IDs recorded 2026-09-15):** VI-class method **`Get Errors` 452** (private; the compiler's
   error list) and `Wire.Get Error List` **6370C0A** (private, output `Error List`).
 - **Two terminals on one wire both reporting `Terminal.Is Source?` 634A003 TRUE = the wire is BROKEN** (two

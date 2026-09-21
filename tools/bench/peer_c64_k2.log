@@ -1,0 +1,65 @@
+BGRUN START 2026-09-21 14:06:18 limit 14.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c64-row1-wirecount-k2 -TaskFile tools/bench/peer_c64_k2_task.md
+OUTCOME: ANSWERED (438s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c64-row1-wirecount-k2.md
+COST: $3.3846  in 20 / out 33692 / cache-create 188810 / cache-read 1151470  (436s, 18 turn(s))
+--- ANSWER ---
+Write is disabled in this session, and the brief forbids editing anyway — so the review is the answer.
+
+---
+
+# The claim is wrong, and the docstring is not the thing to fix
+
+## 1. Strongest reason it is WRONG
+
+**"NO new Wire object is created" has already been measured TRUE on this exact source terminal, with this exact op, feeding this exact indicator.** `docs/cycle27-plan.md:1728-1730`, the S3a run:
+
+> `wire_indicators` **wired**: target wire **0 → 10799**, whole-VI `Wire` delta **0** (a branch onto the existing net), `#10686` t0 `'x .and. y?'` **3/3 wired before and after**
+
+Delta **0**. And this run's own baseline re-measures the object model independently: wire uid **10799 sits at three terminals at once** — source `#10686` t0 (`log:108`), sink `#10407` t0 (`log:99`), sink panel control 23555 (`log:115`). One Wire object, one source, two sinks — the branch, already in the bed this run started from. That matches the external model: [labviewwiki's Wire class](https://labviewwiki.org/wiki/Wire_class) gives Wire a single `Terminals[]` property ("References the terminals connected by this wire"), not a source/sink pair; NI: one data source, many readers ([Using Wires to Link Block Diagram Objects](https://www.ni.com/docs/en-TT/bundle/labview/page/using-wires-to-link-block-diagram-objects.html)). A net of 1 source + N sinks is **one** Wire object; it splits into more only across a structure boundary — which is why gate `E2` bothered to certify "no tunnel" (`log:200`).
+
+**So what happened is not a documentation error.** Step [2] of this very run **deleted wire 10799** (`log:120-121`) — the wire the branch was supposed to join — and nothing re-wired `#10686` t0 afterwards (the only new wire, 23502, has the Local and `#10407` as its two ends, `log:199-200`). When `wire_indicators` ran at step [8], the source terminal was **bare**, so the precondition at `gscript.py:1765-1767` ("Each source terminal MUST ALREADY BE WIRED") was **false — falsified four minutes earlier by this run's own step 2**.
+
+The expectation was written by **carrying a conditional's consequent across the run's own destruction of its antecedent**. Editing the docstring would delete a true sentence *and* the warning that explains the result.
+
+**On your specific question — is 1906 evidence of the "extend an unrelated wire" failure?** No, and the census is not what rules it out. Extending an unrelated wire adds **no** Wire object (the existing one gains terminals), so a pure extend predicts delta **0**. What +1 alone cannot exclude is a new wire resolving onto a foreign net — two data sources, VI breaks. That is excluded by **ExecState 1** (`log:448`, cold `log:395`), not by the census and not by gate I.
+
+Two gates are weaker than the run treats them:
+- `t3_separator` scans only diagram #639's nodes plus panel rows (`diag_c64_s3b_row1.py:533-552`) — **a second source on any other diagram is invisible to it.** Gate I would have PASSED on a two-source net.
+- The ordered `Is Broken?` ran on wire **23502** only (`log:421-422`). Wire **23526**, the one under dispute, was **never asked**.
+
+One of my own candidates is dead and I'll say so: the +1 is **not** a save/reload artefact — `log:377` shows `Wire: 1906` in memory immediately after the call, before any save.
+
+## 2. A different explanation of the same +1
+
+The +1 is the signature of a **topology change**, not of a helper misbehaving: one net (1 source, 2 sinks) destroyed and rebuilt as **two nets with two different sources**. The new second source changes *when* a value is read.
+
+- Before: Case `#10407`'s **selector** t0 ← `x .and. y?` directly, same wire as the indicator.
+- After: selector ← wire 23502 ← **Local read of `'Automatic Error Handling'`** (`log:402,411`), while the indicator is written by `x .and. y?` over 23526 (`log:306`).
+
+All three sit on **the same diagram #639** — And Nodes[25] (`log:304`), Case Nodes[24] (`log:400`), Local Nodes[73] (`log:409`) — and **no wire orders the local read against the indicator write.** The Local has no input dependency; the And node has two. Per NI, you have no control over which is serviced first, and a local read is generally among the *first* things executed regardless of position ([dataflow vs local variables](https://forums.ni.com/t5/LabVIEW/dataflow-vs-local-variables/td-p/1463660), [Race condition](https://labviewwiki.org/wiki/Race_condition)). So the selector plausibly reads the previous pass's value every pass, and the default on the first.
+
+`#10407` is the autofocus case fed by `10686 'x .and. y?'` (`docs/camera-acquisition-facts.md:189`, schedule `:272,:320`) and it **drives the ASI focus axis** (`:206`). The loop-split transport is a decision already taken (`cycle27-plan.md:1584-1594`) — but that decision was about crossing a **loop boundary**, and here the boundary does not exist yet: writer and reader are on one diagram, so the local buys nothing and costs the ordering. **"The file is sound" is the half of the claim nothing in this run can support** — its own banner says STRUCTURAL, NEVER FUNCTIONAL (`log:4,:62`).
+
+## 3. What would falsify the claim
+
+- *"The doc is wrong" half*: read `#10686` t0's wire **between step [2] and step [8]**. `0` ⇒ precondition violated, docstring stands. A **non-zero** wire there would mean WI branched *and* still added a Wire object — that is the only observation that rescues the claim.
+- *"The artefact is sound" half*: any evidence the selector's value or timing differs from the original — or simply confirmation that no dataflow path exists between the indicator write and the local read.
+
+## 4. Cheapest discriminating test
+
+**Test A (the discriminator).** Cold-open `claudeDev\D1_s3b_row1a_20260921_135932.vi` (md5 `c7094f98…`, `log:290-292`) — saved *after* delete+connect, *before* `wire_indicators` — and read `#10686`'s terminal table (diagram #639, Nodes[25]) plus the Wire census. Verbs already exist (`g.node_terms_uid` `gscript.py:925`, `g.count` `:1005`); no original touched; the file is already on disk because of the 2026-09-19 "every stage leaves a file" rule.
+
+| reading | verdict |
+|---|---|
+| `t0 wire == 0`, `Wire == 1905` | source was bare → docstring stands, `1906` is correct for what was built — **my explanation** |
+| `t0 wire != 0` | WI branched and still added a wire → docstring wrong — **your explanation** |
+
+**Test B (close the hole).** Ordered `Is Broken?` on wire **23526**, and list `Wire.Terminals[]` for 23502 and 23526 to confirm no object appears in both.
+
+## 5. Fix this, not the docstring
+
+K2's expected census came from a helper's docstring instead of from the net topology being built. The run already diffs the **Node** census after *every* op (`log:459-463`) but keeps only a whole-run Wire expectation (`diag_c64_s3b_row1.py:150`, used `:1115-1120`). Carrying **Wire** through the existing `census_and_purge` would have surfaced this at step [8] as "+1, as designed" instead of at K2 as a failure — no new tool.
+
+**Verdict: REFUTED as diagnosed, CONFIRMED as arithmetic.** 1906 is the right number; the reason given for it is wrong; and "the file is sound" is unsupported. What would change my mind is Test A returning a non-zero wire on `#10686` t0 in the step-7 artefact.
+
+Sources: [labviewwiki Wire class](https://labviewwiki.org/wiki/Wire_class) · [NI: Using Wires](https://www.ni.com/docs/en-TT/bundle/labview/page/using-wires-to-link-block-diagram-objects.html) · [NI: dataflow vs local variables](https://forums.ni.com/t5/LabVIEW/dataflow-vs-local-variables/td-p/1463660) · [labviewwiki Race condition](https://labviewwiki.org/wiki/Race_condition) · [NI: Scripting wire into existing wire](https://forums.ni.com/t5/LabVIEW/Scripting-Wire-object-into-existing-wire/td-p/4014923) (checked — does not address branch-vs-new-object; not used as evidence)
+BGRUN END rc=0 after 438s
