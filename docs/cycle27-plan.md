@@ -2599,3 +2599,71 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
       cold `exec_state` on that op costs 0.42 s — and named the live cause as **replacing a file under a path
       LabVIEW has already loaded**. Nothing in a build needs `open_panel`; never overwrite a VI file LabVIEW may
       hold open.
+
+## Pre-decided — ADDED 2026-09-21 (cycle 65): S3b IS DELIVERED, BOTH ROWS · the transport verb is CLASS-ADDRESSED
+
+56. 🎉 **S3b IS DELIVERED. BOTH ROWS ARE BUILT AND SAVED, AND ROW 2's FINAL FILE REOPENS COLD AT `ExecState` 1.**
+    Judgement, cycle 65, 2026-09-21. 34–55 stand except where corrected below.
+    - (a) **THE ARTEFACT**: `claudeDev\D1_s3b_row2_20260921_160311.vi`, md5 `26c54ff784cb5cea21edbd214d2cc3a0`,
+      476,759 B (`tools/bench/diag_c65_s3b_row2c.log`, 57 pass / 1 fail). COLD `ExecState` **1** after a LabVIEW
+      restart; cold `Wire` **1907** = the bed's 1906 + 1, i.e. 55(f)'s corrected baseline − 1 + 2 across the two
+      halves; `Node` 632, `ControlTerminal` **116**, `Local` **10**, `LoopTunnel` 135, `#637` back at **(59,48)**
+      so 50(e)'s no-tunnel criterion holds. Verification is **STRUCTURAL, never functional** (34(f)).
+    - (b) **THE STAGED SAVES, per the user's 2026-09-19 split rule.** Row 2's connect half saved first as
+      `claudeDev\D1_s3b_row2a_20260921_151221.vi` and `…_row2_20260921_151221.vi` (both md5
+      `7a11818387fe44a764c2ff169b1dd6f7`, byte-identical because the indicator half had not run); the finished row
+      is (a). Every intermediate is on disk and none was overwritten.
+    - (c) 🔴 **THE CYCLE'S REAL LESSON — `wire_indicators` IS CLASS-ADDRESSED, AND THE CLASS IS NOT `Function`.**
+      `#10757` is an **`IndexArray`** (`Diagram #639 Nodes[27]`, label `'Index Array'`); it appears in the
+      `IndexArray`, `GrowableFunction`, `Node` and `GObject` censuses and **not** in `Function`. Row 1's `#10686`
+      ('And') was a `Function`, which is why row 1's call worked and row 2's first attempt was never attempted at
+      all. The call that works is
+      `wire_indicators(node_index=<index of the uid in report_all(target,'<its class>')>, src_terms=[…],
+      indicator_names=[…], diagram_index=46, node_class='<its class>')` — 2.27 s, no raise, error `''`.
+      **Resolve the class off the machine before every such call; never assume `Function`.** The precedent was in
+      our own record the whole time (`cycle59_s3a_recipe.log:119`) and a peer found it, not us.
+    - (d) **A ROUTE IS MEASURED DEAD AND IS NOT TO BE RE-PROPOSED: a front-panel terminal cannot be reached by
+      `connect_nested_v1`.** The whole-VI `ControlTerminal` census (116 uids) ∩ `Diagram #639`'s `Nodes[]` (75
+      uids) = **0 uids** (`diag_c65_s3b_row2b.log:208`), and that verb addresses only
+      `Diagram[d].Nodes[n].Terminals[t]`. Panel objects are reached by `wire_indicators`, by label, through
+      `Diagram in` — not by node index.
+    - (e) **`wire_indicators` LEAVES NO JUNK NODE.** `Node` 632 → 632, zero new uids, so 55(c)'s purge fired zero
+      times. The purge belongs to `move_in` and to the `OpNetInfo_v1`-descended connects, and **a purge must never
+      be run speculatively after `wire_indicators`** — a node appearing there would be new behaviour and deleting
+      it would destroy the only evidence of it.
+    - (f) **THE LABEL-COLLISION HAZARD IS REAL AND IS GATED, NOT ASSUMED AWAY.** Four objects answered to `'index'`
+      before the call, including the new Local `#23523` on the same diagram. Exactly one panel row changed
+      (`{23525: 0 → 23556}`), the wire-uid set diff was `minted [23556] ; vanished []` (a mint, not an extension),
+      and the cold reverse census over 75 nodes + 116 panel rows found **one source `#10757` t1, one sink control
+      23525, and the Local NOT on the net**. Every future `wire_indicators` call on this VI carries that gate.
+    - (g) **AN ORDERED `Broken?` IS UNREACHABLE WHEN THE SINK IS A FRONT-PANEL TERMINAL**, because both ordered
+      readers address their sink as `Diagram[d].Nodes[n].Terminals[t]` — the same fact as (d). **DECISION: no new
+      reader op is built** (the user's standing no-more-devices order of 2026-09-18 08:53). The net census of (f)
+      is the stronger structural evidence, and `L` still ran clean on wire 23540. A peer asked for `Broken?` to be
+      read **before** `ExecState`; that is **REFUSED** on the standing rule (42(b), 52(f), `docs/NAMES.md:912-928`).
+    - (h) ⚠️ **`c60c_astcheck.py` GATE 7 IS NOT MERELY NOISY — IT IS A FALSE FIREFIGHTER SIGNAL, AND THAT IS
+      MEASURED.** Runner cycle 49 ∩ cycle 50 failing-gate lines = the **singleton** `gate:fail 7 move_in …`;
+      without gate 7 the intersection is **empty** (`tools/bench/cycle_runner.log:97,:100`). So a gate that fails
+      by construction on every legitimate `move_in` build is what would fire the runner's repeated-failure
+      firefighter. 55(g) declined to touch it as a "device"; that reasoning is **narrowed, not overturned** —
+      removing a false positive from an existing gate is repair, not a new device. **It is still not built this
+      cycle** (deliverable-first ordering), and it is the FIRST machinery item in `## NEXT`. The recommended shape,
+      from the peer, recorded verbatim and not acted on: parameterise with `--route movein|owner` so gate 7 reads
+      "on `owner`, absent; on `movein`, called at most once", with gate 9's `FORBIDDEN_ROUTES` flipping
+      symmetrically.
+    - (i) **THE ONE FAILING GATE, `A5`, IS ITS OWN PREMISE.** It assumed `report_all('ControlTerminal')` index ==
+      panel row index; row `i=114` returned uid **34982**, `owner_of` → `('Diagram', 26117)`, outside the 23xxx
+      band. The alignment is **false on this bed**, nothing depended on it, and **the indicator's ControlTerminal
+      uid remains unidentified** — a measurement gap, recorded, that blocks nothing.
+    - (j) 🔴 **THE RULE-1a ORDERING QUESTION IS NOW RAISED BY TWO INDEPENDENT PEERS AND GOES BACK TO THE USER.**
+      `archive/peer/2026-09-21-c64-row1-wirecount-k2.md` raised it about `#10407` and
+      `archive/peer/2026-09-21-c65-row2-wireind.md` §5 raises it again: after each S3b row, the source writes a
+      panel control and a Local reads it, both on `Diagram #639`, with **no data dependency between them**, so
+      LabVIEW guarantees no order and the Case structure may legally receive the previous iteration's value.
+      `ExecState`, wire counts, net membership and `Broken?` are all blind to it. **The cycle proceeded under
+      53(d⁹)'s standing assumption** — acceptable for an intermediate that is never run (34(f)) — **and the
+      runner is NOT stopped**, because the next stage M3 (49(e)) is a pure `move_in` scheduling change, which
+      rule 1a explicitly permits, and the user launched this runner an hour before the cycle began. ⚠️ **The
+      escalation was silently DROPPED from `## NEXT` in the 14:5x rewrite; it is restored as NEXT's first line and
+      must not be dropped again while it is unanswered.** 🔴 **A THIRD independent raising, or the start of any
+      stage that adds further source→indicator→Local substitutions, writes `STOP` and hands it to the user.**

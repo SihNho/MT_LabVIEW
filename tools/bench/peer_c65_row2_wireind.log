@@ -1,0 +1,77 @@
+BGRUN START 2026-09-21 15:48:40 limit 15.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c65-row2-wireind -TaskFile tools/bench/peer_c65_row2_wireind_task.md -TimeoutSec 780
+OUTCOME: ANSWERED (633s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c65-row2-wireind.md
+COST: $3.5881  in 18 / out 47002 / cache-create 185688 / cache-read 944615  (632s, 20 turn(s))
+--- ANSWER ---
+## 1. The single strongest reason the route is wrong
+
+**You are about to call a verb whose one working precedent for *this exact indicator* depended on a step you have explicitly ruled out — and you have never measured whether that step's effect is still present in this bed.**
+
+Cycle 59 did not simply call `wire_indicators` on `'index'`. It first **created** the indicator, saw its `ControlTerminal` land on the **top-level** diagram, and then **moved it into `Diagram #639`**, verifying the move both hot and cold:
+
+```
+cycle59_s3a_recipe.log:59   create_indicator(... 'index') -> {'uid': 23541, 'owner': 'TopLevelDiagram'}
+cycle59_s3a_recipe.log:80   N1d owner BEFORE the move: owner_of(#23541) = ('TopLevelDiagram', 536)
+cycle59_s3a_recipe.log:83   N1d move_in(#23541 -> Diagram #639 ... ) error VERBATIM ''
+cycle59_s3a_recipe.log:88   N1d owner AFTER  the move: owner_of(#23541) = ('Diagram', 639)
+cycle59_s3a_recipe.log:114  N2  owner on the COLD open : owner_of(#23541) = ('Diagram', 639)
+cycle59_s3a_recipe.log:126  N2  wire_indicators(...) error VERBATIM ''   <- only then
+```
+
+The same pattern repeats for the *other* indicator in the same cycle (`cycle59_s3a_recipe.log:189, 244, 252, 278`), which is almost certainly row 1's `'Automatic Error Handling'` (control 23555 ↔ ControlTerminal 23576; control uid < terminal uid in both pairs, and the ControlTerminal census index equals the panel row index in both: `i=114 → #23541`, `i=115 → #23576`). So **every recorded success of this verb in this project ran against a ControlTerminal that had been deliberately relocated onto `Diagram #639` first.** §4 of your brief retires `move_in` "by design" without ever reading the property that says whether the earlier `move_in` still holds in `D1_s3b_row2_20260921_151221.vi`.
+
+Worse, your §1 diagnostic wrote a line that asserts the opposite of the thing it measured:
+
+```
+diag_c65_s3b_row2b.log:207  === (iii) EVERY ControlTerminal ON Diagram #639 (0 of the 116 in the whole VI)
+diag_c65_s3b_row2b.log:212  *** THE INDICATOR'S TERMINAL IS NOT ADDRESSABLE BY A Nodes[] INDEX ON Diagram #639 ***
+```
+
+Line 212 is true and line 207's heading is not a measurement at all. By your own line 208, a `ControlTerminal` can *never* intersect a `Diagram.Nodes[]` list, so "0 of the 116 on #639" is an identity, not an observation — it would read 0 whether the terminal sits on #639 or on the top-level diagram. `docs/NAMES.md:899-901` states the actual semantics ("a control terminal's `Owner` is the diagram"), and `owner_of()` already exists (`tools/recipes/build_d1_v0.py:338-354`) and was used on this very uid in cycle 59. **The one property that decides the route is one call away, has been used before on this object, and is absent from your plan.**
+
+I am not predicting the route fails. The lineage is linear (ControlTerminal census 114 → 115 at `cycle59_s3a_recipe.log:60`, → 116 at `:190`, and row 1's baseline is 116 at `diag_c64_s3b_row1.log:28`), so #23541 is *probably* still owned by #639. "Probably" is the problem: the route's whole justification is a precedent, and the precedent's load-bearing precondition is unread.
+
+## 2. An alternative explanation for row 1 that does not generalise to row 2
+
+**Row 1 worked because `'Automatic Error Handling'` had essentially no competitors for the name; `'index'` has three, and two of them are already carrying data.**
+
+Row 1 *measured* label uniqueness before calling — `diag_c64_s3b_row1.log:116`: "EXACTLY ONE front-panel row carries its label ... rows [(115, 'Automatic Error Handling', True)]". Its only namesake was the Local at `Nodes[73]`. Row 2's neighbourhood, from your own bed readings:
+
+| object | where | terminal name | state |
+|---|---|---|---|
+| control 23525 | front panel row 114 | `'index'` | bare (`diag_c65_s3b_row2b.log:202`) |
+| `#10757` t2 | **the source node itself**, `#639` Nodes[27] | `'index'` | sink, wire 10947 (`:229`) |
+| `#10407` t2 | `#639` Nodes[24] | `'index'` | sink, **wire 23540** (`:219`) |
+| Local `#23523` | `#639` Nodes[74] | `'index'` | source, **wire 23540** (`:224`, §2.2) |
+
+Your §3 assumes the only rival is the Local. If `Wire Indicators.vi` resolves names over diagram terminals rather than over control terminals, row 1 had one wrong answer available and row 2 has three — one of them on the very node supplying the source, and two of them already sitting on the net you built in the first half. That difference is not visible in any precedent you cite, and it is the kind of difference that turns "worked once" into "worked once, for a reason that was about the name, not about the verb".
+
+Two corrections to your own framing while I am here. First, your §3 says row 1's indicator "was ALREADY WIRED at the start" and offers that as a difference; at the moment `wire_indicators` was *called* it was **bare**, because step [2] deleted wire 10799, which was the single net feeding both `#10686` t0 and control 23555 (`diag_c64_s3b_row1.log:108, 112, 115, 120`). Row 1 and row 2 are the same case — both ends bare — so that item is not a difference and your §3-vs-§3 wording only looked like a contradiction. Second, `error VERBATIM ''` proves nothing on this verb: a swallowed 5001 is a silent no-op (`tools/gscript.py:1773`), so `cycle59_s3a_recipe.log:127`'s gate is decoration; the wire uid is the evidence.
+
+## 3. What would falsify the route — stated as things the run can observe
+
+Falsified **before** the call if: `owner_of(<ControlTerminal of 23525>)` returns anything but `('Diagram', 639)`; or the live `diag_index(#639) ≠ 46`; or more than one front-panel row's label case-folds to `index`; or `report_all('IndexArray').index(10757)` disagrees with the value the op resolves (echo it back).
+
+Falsified **after** the call if any of: `#10757` t1's wire uid and control 23525's terminal wire uid are not the *same* non-zero uid; that uid already existed in the before-`Wire` census (⇒ it extended an existing net, the docstring's failure at `tools/gscript.py:1765-1770`); the net of that wire is not exactly `{#10757 t1 source, control 23525 sink}`; `Wire.Is Broken?` (terminal string **`Broken?`**, `docs/NAMES.md:902-917`) reads `True`; the `LoopTunnel` census moves (135 in `cycle59_s3a_recipe.log:115`) ⇒ a boundary was crossed and a tunnel was minted; wire 23540 acquires a second source; or the `Node` census changes at all — row 1 measured `631 -> 631 ; 0 new uid(s): []` for this verb (`diag_c64_s3b_row1.log:303`), so a new node here is a brand-new phenomenon, not a junk node to purge.
+
+## 4. The cheapest discriminating test
+
+Three reads, all inside the single script, no second session, no second file, ~1 s total:
+
+1. **`owner_of(23541)`** (and cross-check that the census row `report_all(target,'ControlTerminal')[114]` carries uid 23541 — that census **already carries an `owner` column** you are discarding, `tools/gscript.py:485, 516`; `cycle59_s3a_recipe.log:59` shows the column populated for this exact object). `('Diagram', 639)` ⇒ the c59/row-1 precondition holds and the precedent transfers; `('TopLevelDiagram', 536)` ⇒ stop, because the missing step is the `move_in` your §4 removed.
+2. **An `'index'` label census, before and after**: the four rows in the table above plus every panel row whose label case-folds to `index`, each with uid / is_source / wire. Re-read the identical set immediately after the call. Exactly one row may change, and it must be control 23525. Any other row moving names the failure *at the instant it happens* instead of three steps later — which is precisely what you asked for.
+3. **`Broken?` on whatever wire results**, before ExecState is consulted. It reads `True` on a two-source wire with a measured positive control (`docs/NAMES.md:916-917`), so it separates "extended an unrelated net" from "type conflict" from "something else in the VI broke" — none of which ExecState distinguishes, and none of which a junk purge repairs.
+
+On Hazard 2 specifically: catching the raise is fine, but **do not purge after this verb**. The junk `Invoke` is a `move_in` artefact (`diag_c64_s3b_row1.log:150`, `cycle59_s3a_recipe.log:85, 249`), never a `wire_indicators` artefact; if a node does appear, deleting it destroys the only evidence of a new behaviour. And note the two hazards are coupled: the reassuring answer to Hazard 1 ("a `Local` is class `Local`, so a control-terminal resolver can't bind it") is the same premise that makes the terminal's ownership of #639 mandatory. You cannot have both comforts.
+
+## 5. The gate that would pass while the build is semantically wrong
+
+Not one of your gates, and not one that can exist under "structural only": **nothing sequences the indicator write against the Local read.** After this row, `#10757`'s `element` writes control 23525 and Local `#23523` reads it, both on `Diagram #639`, with no data dependency between them. LabVIEW guarantees no order there, so the Case structure can legally receive the previous iteration's value — or the default on the first. `ExecState`, wire counts, net membership and `Broken?` are all blind to it, and the project never runs the VI (§0). CLAUDE.md §1a is explicit that "a change of decomposition can be a change of computation" and that a step which cannot be shown computation-preserving is a stop-and-ask. If some existing wire already forces `#10757` to execute before `#10407`, cite it in the plan; if none does, this row is a computation change wearing a refactor's clothes, and it will pass every gate you have.
+
+Smaller gaps, same spirit: gate on **uid 23525**, never on "panel row 114" (row order is a census artefact); re-read `diag_index(#639)` immediately before the call as row 1 did (`diag_c64_s3b_row1.log:296`) rather than trusting the literal `46`; take a **`Wire` uid set** diff, not just the count — `1906 → 1907` is satisfied by a tunnel-crossing build too; and echo back the uid the op actually resolved from `IndexArray[n]`, since an ordinal into a traversal the wrapper does not own is the one addressing scheme here that can produce a perfectly legal, ExecState-1, +1-wire build that is wired from the wrong node.
+
+**What I could not settle:** the external record does not document `Wire Indicators.vi`'s name-resolution scope — [erdosmiller/lv-scripting](https://github.com/erdosmiller/lv-scripting)'s README describes only "an open source LabVIEW library for code generation" and does not list the VI's contract, and NI's [Tutorial: Wiring Objects Using VI Scripting](https://www.ni.com/docs/en-US/bundle/labview/page/tutorial-wiring-objects-using-vi-scripting.html) returned navigation chrome rather than text on this fetch, so I have no authoritative statement of a same-diagram rule for `Connect Wire`. The nearest external support is circumstantial: NI forum practice is that `Connect Wire` is invoked on `Terminals[]` rather than nodes ([Connecting wires to build array through VI Scripting](https://forums.ni.com/t5/LabVIEW/Connecting-wires-to-build-array-through-VI-Scripting/td-p/3092615)), and that wiring across a Case boundary yields connection errors with tunnels auto-created from the inside ([LabVIEW Scripting: wiring a pass-through tunnel inside a case structure](https://forums.ni.com/t5/LabVIEW/LabvVIEW-Scripting-wiring-a-pass-through-tunnel-inside-a-case/td-p/3945608)). The machine is the only authority here, and `owner_of` is how you ask it.
+
+**Would this change my mind?** Yes, on one reading: `owner_of(23541) == ('Diagram', 639)` plus a unique `'index'` panel label would leave me with no argument against the route beyond the ordering finding in §5 — at which point I would say the route is sound and the remaining risk is the one your gates structurally cannot see.
+
+Sources: [erdosmiller/lv-scripting](https://github.com/erdosmiller/lv-scripting) · [Tutorial: Wiring Objects Using VI Scripting](https://www.ni.com/docs/en-US/bundle/labview/page/tutorial-wiring-objects-using-vi-scripting.html) · [Connecting wires to build array through VI Scripting](https://forums.ni.com/t5/LabVIEW/Connecting-wires-to-build-array-through-VI-Scripting/td-p/3092615) · [Wiring a pass-through tunnel inside a case structure](https://forums.ni.com/t5/LabVIEW/LabvVIEW-Scripting-wiring-a-pass-through-tunnel-inside-a-case/td-p/3945608)
+BGRUN END rc=0 after 634s

@@ -1,0 +1,139 @@
+BGRUN START 2026-09-21 14:49:35 limit 15.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c65-testa-timeout -TaskFile tools/bench/peer_c65_testa_timeout_task.md
+OUTCOME: ANSWERED (472s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c65-testa-timeout.md
+COST: $3.5805  in 30 / out 33979 / cache-create 183668 / cache-read 1651738  (471s, 26 turn(s))
+--- ANSWER ---
+## VERDICT: the claim is wrong on its central assertion, and this project measured the refutation eight days ago.
+
+The claim concedes the right *direction* (scope the work) but asserts three things that are false: that ~1.3 s per node is **inherent**, that **nothing is wrong with the tooling**, and that an exhaustive per-node census is **the way to trace a net**. All three fail.
+
+---
+
+## 1. The strongest reason the claim is WRONG
+
+**The cost is not per node and it is not inherent. It is a fixed per-OP-RUN cost that scales with the TARGET FILE, and this project measured it, named it, and built a tool against it on 2026-09-13.**
+
+`docs/toolkit-capabilities.md:335-372`, "THE bottleneck, measured 2026-09-13: every op run re-traverses the whole target":
+
+```
+one bare op run, SMALL target VI      10.4 ms
+one bare op run, the MAIN VI         960.8 ms   <- 92x
+SetControlValue                       0.069 ms
+class Local    (8 objects)            991 ms
+class Terminal (5763 objects)        1222 ms    <- 720x the objects, +23% time
+```
+
+> "**~990 ms of every call is FIXED** … The fixed part is opening the target: each op run does its own `Open VI Reference` on a 473 KB VI with 98 subVI call sites." (`:359-361`)
+
+So: reading a terminal table costs ~10 ms of actual work. The other ~99 % is re-opening a 476 KB VI. **Touching 720× more objects adds 23 %** — the traversal is not the cost, so "an exhaustive census is inherently expensive because it is exhaustive" is refuted at the premise.
+
+**Your denominator is wrong, and that is what makes the number look inherent.** `net_of` issues one `node_labels` run per diagram plus one `node_terms_uid` run per node (`diag_c64_row1_testa.py:245`, `:252`) — **103 + 450 + 1 = 554 op runs in 601.6 s = 1.086 s per run**, which lands on the measured 960.8 ms + ~13 % almost exactly. "1.34 s per node" is 601.6 ÷ 450: it silently charges 103 diagram runs to the nodes and hides the fact that the unit is the *run*, not the *node*.
+
+**And this is a repeat of a failure this project has already paid for once.** `gscript.py:491-494`:
+
+> "`report()` runs the op once per object … A 626-node sweep therefore paid that 626 times — **618 s measured**. This pays it once."
+
+618 s for 626 runs and 601.6 s for 554 runs are the same event. `report_all` exists *because of it*. TEST B re-committed it with a different verb. That is `repeated-failure-class`, not physics.
+
+**The mechanism is documented by the vendor**, so "nothing is wrong with the machine" is also too generous: a VI stays in memory only while a reference is open, its panel is open, or it is a subVI of something in memory — otherwise the next `Open VI Reference` must **load it from disk** ([NI, Building VI Server Applications](https://www.ni.com/docs/en-MY/bundle/labview/page/building-vi-server-applications.html); [NI forum: "Open VI reference is very slow if VI is not already loaded in memory"](https://forums.ni.com/t5/LabVIEW/Open-VI-reference-is-very-slow-if-VI-is-not-already-loaded-in/td-p/3337386) — 7 s cold vs 900 ms with the panel already open). Each op run opens, uses, and drops the last reference to a 476 KB VI with 98 subVI call sites; the load/unload churn is paid 554 times.
+
+---
+
+## Your direct question: **YES — Wire → terminals is one property read, and the op for it is already on disk**
+
+| what | id | evidence |
+|---|---|---|
+| **`Wire >> Terminals[]`** — *"References the terminals connected by this wire"* | **6371003** | [LabVIEW Wiki, Wire class](https://labviewwiki.org/wiki/Wire_class) (6371004 `Is Broken?` — the one you already built — is the adjacent ID in the same table) |
+| property-node output short name | **`Terms[]`** | `LEARNING.md:437`; `.claude/skills/labview-automation/references/vi-scripting.md:593-602` |
+| `Terminal.Is Source?` | 634A003 | `docs/d1-build-plan.md:780` |
+| `Generic.Owner` → owner class/uid | 6327806 | `docs/d1-build-plan.md:791` |
+
+**It is not a design sketch — it is built, wrapped, and has been run read-only on this VI family:**
+
+- `OpWireSource_v5.vi`, wrapper **`wire_source_owner(target, wire_uid, n=6)`** at `tools/recipes/build_opconnectfromwire_v0.py:423-447`. Docstring: *"`OpWireSource_v5` on `target`: the owner of the wire's single SOURCE terminal. **Read-only.**"* UID-addressed by wire; iterates terminal index with early exit.
+- Run on 18 rows, **read-only on the working copy, md5 `2a78e17c449c…` before *and* after** (`docs/d1-build-plan.md:801-810`; `tools/bench/diag_tunnelsource_onehop.log`; raw rows `tools/bench/d1_tunnel_sources.json`).
+- Cost: **2–3 op runs ≈ 3 s** for a 2-terminal wire. Against 601.6 s. For both wires: ~6 s against your extrapolated ~2000 s.
+
+Caveat, stated honestly because it is real: `Terms[]` returns **ControlTerminals too, and a ControlTerminal's `Owner` is the Diagram, not a node** — NI's own thread on this ([Vi Scripting: inconsistent behaviour of terms[] of a wire / owner](https://forums.ni.com/t5/LabVIEW/Vi-Scripting-inconsistent-behaviour-of-terms-of-a-wire-owner/td-p/3309055)), and your own `docs/NAMES.md:899-901` measured the same on 2026-09-15. So `wire_source_owner` gives you owner **class + uid**, not `Diagram[46].Nodes[24]`; the diagram/node indices come offline from `main_vi_nodeterms.json` / `d1_step0_census.json`, which is exactly how run 9 did it (`d1-build-plan.md:809-810`). Panel-side members stay a `panel_wiring` call — **one op run, ~2 s** (`docs/NAMES.md:898`).
+
+**Second, independent scoping error:** a wire is owned by exactly one diagram and its terminals are on that diagram. TEST A had already found both nodes on **diagram index 46, scanning 1 diagram of 173** (`diag_c64_row1_testa.log:21,:26,:35`). TEST B then searched 103 diagrams for terminals that could not have been anywhere else. "Trace only the diagrams that can carry the wire" is not a heuristic — it is **one** diagram, and the run already knew which.
+
+---
+
+## 2. Alternative explanations of the same timing
+
+**(a) VI load/unload churn, not "per node".** The dominant term. Predicts cost ∝ (diagrams + nodes) × *target size*, independent of terminal counts — identical for a VI with one terminal per node. Fits 1.086 s/run against 960.8 ms measured.
+
+**(b) Refnum/handle accumulation inside LabVIEW, making later runs progressively slower.** `gscript.py:539-540` records "handle count grows ~0.9 per Open VI Reference on the main VI"; the run opened at **34,168 handles** (`log:4`), already above the ~31,500 baseline CLAUDE.md names, and 554 opens add ~500 more. **Your measurement cannot distinguish (a) from (b)** — `net_of` records one total (`rec["scan_cost_s"]`, `:271`) and no per-diagram timestamps. Flat per-run cost ⇒ (a) alone; rising ⇒ (b) on top.
+
+**(c) Cross-apartment marshalling in `_run`.** Every call builds a fresh daemon thread, `CoMarshalInterThreadInterfaceInStream` → `CoInitialize` → `CoGetInterfaceAndReleaseStream` → `Invoke` (`gscript.py:390-410`), and the "COM is 0.07 ms" figure covers `SetControlValue`/`GetControlValue` on the main thread, **not** this path. I checked it and it is disfavoured by the same table: the identical path costs 10.4 ms against a small target, so marshalling is ≤10 ms of the ~1000 ms. Named and killed.
+
+**(d) The dialog watchdog. Ruled out by reading:** `_run(poll_s=6.0)` and runs finish in ~1.1 s, so `done.wait(6.0)` returns before the first `_lv_gui` PowerShell spawn (`gscript.py:370-373`). No per-run subprocess.
+
+**(e) Not a timing explanation but a fault the record hides:** the run's own budget arithmetic guaranteed the kill before the first COM call — 2 wires × 600 s soft budget + 2 × ~45 s restarts + TEST A > the 1320 s process deadline. The soft budget is fixed per wire (`:80`) instead of derived from remaining wall clock.
+
+---
+
+## 3. What would falsify each side
+
+**Falsifies the CLAIM** (any one of these):
+- `node_terms_uid` on a **small** VI returning in ~10–30 ms. Same call, same code path, same terminal-table read — if the cost were inherent to the read it could not move 90×.
+- `wire_source_owner(STEP9, 23502)` returning the same two members (owner uids 10407, 23499) in ≤ 5 s.
+- Per-run times that are flat at ~1.09 s regardless of how many terminals the node has (450 nodes, wildly different terminal counts, one uniform cost).
+
+**Falsifies MY account:**
+- Per-run cost that stays ~1.1 s **on a small target too** → the cost is in the op run irrespective of target, my reload story dies, and "fewer runs" stops being the fix.
+- Per-run cost climbing monotonically (≈0.5 s early → ≈2 s late) → the dominant term is accumulation (b), not the fixed open, and the fix is restart cadence, not array returns.
+
+---
+
+## 4. The cheapest discriminating test — read-only, no GUI, no save, ~45 s of LabVIEW time
+
+One file under `bgrun --max-min 8`. No `g.save`, no `open_panel`, no `ensure_loaded`, no edit. Print **every individual elapsed time**, never an average — the shape is the measurement.
+
+```python
+import time, os, sys
+import gscript as g
+sys.path.insert(0, os.path.join(ROOT, "tools", "recipes"))
+from build_opconnectfromwire_v0 import wire_source_owner   # :423, "Read-only"
+from hash_probe import probe as HASH
+from bench_prep import labview_handles
+
+BIG   = os.path.join(g.CLAUDEDEV, "D1_s3b_row1_20260921_135932.vi")   # 476 KB, TEST B's target
+SMALL = os.path.join(g.CLAUDEDEV, "<scratch copy of any small VI>")   # copy first: a copy is not running
+
+def timed(f, n=10):
+    out = []
+    for _ in range(n):
+        t = time.time(); f(); out.append(round(time.time() - t, 3))
+    return out
+
+h0 = labween := labview_handles();  m0 = HASH(BIG)
+A  = timed(lambda: g.node_terms_uid(BIG,   46, 24))      # same node, 10x, big target
+B  = timed(lambda: g.node_terms_uid(SMALL,  0,  0))      # same call, small target
+with g.vi_ref(BIG) as _keep:                             # hold the VI RESIDENT
+    C = timed(lambda: g.node_terms_uid(BIG, 46, 24))
+t = time.time(); W = wire_source_owner(BIG, 23502); dW = round(time.time() - t, 2)
+m1 = HASH(BIG);  h1 = labview_handles()                  # md5 before == after; handle delta
+```
+
+| reading | decides |
+|---|---|
+| **B ≈ A** | the claim stands: the per-call cost is inherent to the terminal read |
+| **B ≪ A** (prior: ~10–30 ms, `toolkit-capabilities.md:340`) | cost tracks **target size**, not node count — the claim is dead |
+| **C ≪ A** | mechanism is load/unload churn → fix = hold a reference, or one run returning arrays |
+| **C ≈ A** | the ~1 s is inside `Open VI Reference` even when resident → the *only* fix is fewer runs |
+| **A flat vs. A rising**, plus `h1 − h0` | separates fixed per-run cost (a) from handle accumulation (b) |
+| **W returns owner uids 10407 + 23499 in ~3 s** | the 601.6 s census was never necessary — the route existed and was already built |
+
+Two guards, both from your own record: probe md5 before **and** after, exactly as the read-only run 9 did (`d1-build-plan.md:801`); and **do not read `Is Broken?`** in this script — that readback perturbs the target because it must be ordered after a `Connect Wire` (`docs/NAMES.md:920-929`). `Terms[]` / `Is Source?` / `Owner` do not.
+
+---
+
+## One fact the record does not report, and should
+
+`tools/bench/diag_c64_row1_testa.json:211` reads **`"test_b": {}`**, with `"elapsed_s": 79.8` and `gates 7 pass / 0 fail` — the last `dump()` fired at the end of TEST A. The 601.6 s census survives as a single printed line and nothing else; the closing gates `Z_1` / `Z_1b` / `Z_1c` never ran, so **a run whose headline property is "READ-ONLY: nothing is edited" cannot prove from its own artefacts that it changed nothing**, and `test_b`'s per-member rows exist in no file. That is your own standing rule — *a step is not done until it has left a file* — broken by the same 22-minute overrun the claim treats as a mere under-estimate.
+
+**What would change my mind:** arm **B** coming back at ~1.3 s. If the identical `node_terms_uid` call is as slow against a small VI as against the 476 KB one, the fixed-open account collapses and the claim's "inherent" is right. Everything else I have said follows from the cost being a function of the target, which is what `toolkit-capabilities.md:340-361` already measured and what `report_all` already exploits.
+
+**Sources:** [Wire class — LabVIEW Wiki](https://labviewwiki.org/wiki/Wire_class) · [Vi Scripting: inconsistent behaviour of terms[] of a wire / owner — NI](https://forums.ni.com/t5/LabVIEW/Vi-Scripting-inconsistent-behaviour-of-terms-of-a-wire-owner/td-p/3309055) · [Building VI Server Applications — NI](https://www.ni.com/docs/en-MY/bundle/labview/page/building-vi-server-applications.html) · [Open VI reference is very slow if VI is not already loaded in memory — NI](https://forums.ni.com/t5/LabVIEW/Open-VI-reference-is-very-slow-if-VI-is-not-already-loaded-in/td-p/3337386) · [Closing References in LabVIEW — NI](https://www.ni.com/en/support/documentation/supplemental/13/closing-references-in-labview.html) · [Terminal class — LabVIEW Wiki](https://labviewwiki.org/wiki/Terminal_class)
+BGRUN END rc=0 after 473s

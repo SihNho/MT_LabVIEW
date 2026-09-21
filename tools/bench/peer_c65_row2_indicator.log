@@ -1,0 +1,54 @@
+BGRUN START 2026-09-21 15:27:52 limit 15.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c65-row2-indicator -TaskFile tools/bench/peer_c65_row2_indicator_task.md
+OUTCOME: ANSWERED (664s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c65-row2-indicator.md
+COST: $4.3470  in 26 / out 45302 / cache-create 227699 / cache-read 1749335  (662s, 24 turn(s))
+--- ANSWER ---
+Write is disabled in this session (correct for a read-only reviewer), so the review is here.
+
+# The route is refuted — and the row was already solved, six hours earlier, with the call you are abandoning
+
+## 1. The strongest reason it is WRONG: the sink is not addressable, and the thing that *is* addressable is the wrong object
+
+`connect_nested_v1` can address an endpoint only as `Diagram[d].Nodes[n].Terminals[t]` — that is its entire signature and it sets nothing else (`tools/recipes/build_opconnectnested_v1.py:418-431`). An indicator's block-diagram terminal is a `ControlTerminal`, and this project has already written down, twice and independently, that `Nodes[]` does not reach it:
+
+- `docs/d1-route-b-plan.md:239` — *"`Z/dZ` uid 47, a `ControlTerminal`, which `Diagram.Nodes[]` does not list (**R3**)"*
+- `tools/gscript.py:1342-1343` — *"Control/indicator terminals are class Terminal, not Node, and this cannot reach them"*
+- and the run's own net walk proves it operationally: three members of net 10990, found by **two** enumerations — the two nodes from the 74 scanned on `#639`, the indicator only from the 116 **panel** rows, reported as `'where': 'panel control uid 23525', 'terminal': None` (`tools/bench/diag_c65_s3b_row2.log:121`).
+
+So the honest outcome of the route is its own abort clause: a cycle spent rediscovering R3.
+
+**Now the part you asked for — how it could look sound while the data path is wrong.** The entry on `Diagram #639`'s `Nodes[]` whose terminal name reads `'index'` is not the indicator. It is the **Local `#23523` at `Nodes[74]`** (`…row2.log:496-498`) — the one step [5] already wired, at that exact index. And your three acceptance criteria — ExecState 1, one new wire, one uid at both ends — **never read the front panel**. They would pass identically for a wire into the Local, into a different type-compatible node, or into another indicator's terminal, while control 23525 stays bare. The op's own readback reports the sink's uid and name only, and its own comment warns the readbacks may pre-date the wire (`build_opconnectnested_v1.py:444-451`). The single measurement that separates "the indicator is fed" from "something called index is fed" is `panel_wiring()` row 114 `wire != 0` — a reader you already have and already used at step [1] (`…row2.log:126`), and which the route omits.
+
+## 2. A different explanation of the census miss — it is a class *name*, and your own machine logged it
+
+`#10757` is missing from the `'Function'` census because it is not a `Function`:
+
+- `tools/bench/cycle59_s3a_recipe.log:34` — `uid 10757 … self **'IndexArray'**#10757`
+- `…:119` — `#10757 class membership [{'class': '**IndexArray**', 'index': 20, 'members': 47}]`
+- `docs/NAMES.md:331` — `Function 161 · … · **IndexArray 47** · GrowableFunction 40 · CaseStructure 37`
+- `#10686` is an `And`, a fixed-size primitive, and was wired as `Function[102]` (`cycle59_s3a_recipe.log:290`)
+
+This matches NI's own account that array primitives are not plain `Function`s — DFGray (NI): *"Use GrowableFunction for the vi object class and Array Subset for the style. GrowableFunction covers a multitude of nodes"* ([NI forums](https://forums.ni.com/t5/LabVIEW/what-vi-object-class-for-Array-Subset/td-p/2765400)); on this COM path the machine's own name for it is `IndexArray`.
+
+**So the route is not addressing the wrong object — it is drawing the wrong conclusion from the right one.** The helper was never unusable; it was passed one wrong word. The plan propagated the error: `docs/d1-build-plan.md:356` literally prescribes `node_class='Function'` for `#10757`.
+
+## 3. The observation that falsifies the route's premise
+
+`report_all(target,'IndexArray')` contains uid 10757 — **already observed**, at index 20 of 47 members (`cycle59_s3a_recipe.log:119`), and followed immediately by `wire_indicators(IndexArray[20], ['element'] -> ['index'], diagram_index=46)` returning an empty error, taking that same indicator from wire `0 → 10990`, ExecState 1 either side, no tunnel on `#637` (`…:126-131`). That is this row's wiring, passing, on 2026-09-21.
+
+## 4. Cheapest discriminating test — one call on a scratch copy, no new verb
+
+`wire_indicators(copy, node_index=<10757 in report_all(copy,'IndexArray')>, ['element'], ['index'], diagram_index=46, node_class='IndexArray')`, then read `count(Wire)` and `panel_wiring()[114]['wire']`.
+
+- **Wire 1906 → 1907 and panel row 114 wire ≠ 0, ExecState 1** → the op is a plain Connect Wire, the "source must already be wired" clause is a false generalisation from one test where the source happened to be wired, and row 2 closes with the call the plan always specified — 1907 being exactly what gate 55(f) demanded.
+- **the VI breaks** → the docstring is right, and row 2 has *no built route*. That is a finding for the user, not a cue to improvise one.
+
+## The one thing genuinely open — and it is not what you think
+
+Whether `wire_indicators` works on a **bare** source has never been measured here. S3a branched onto a live net (Wire delta 0, `cycle59_s3a_recipe.log:128`); row 2 needs a wire created. Your own documents contradict each other on it: `gscript.py:1765-1770` says it cannot, while `docs/d1-build-plan.md:346-357` — written the same day — plans `wire_indicators` *precisely after* `move_in` has left `#10757` unwired. And gate 55(f) predicted **+1 wire**, i.e. a fresh connect, not a branch. Two minutes settles what has now cost a cycle.
+
+Do not look for a single-branch disconnect as an escape: there is no `Terminal.Disconnect` in `docs/vi-server-ids.json` (`tools/recipes/probe_move_into_v0.py:17-19`), and a temporary sink is permanently unauthorised (`docs/d1-route-b-plan.md:228`). Delete-and-rebuild is forced, which makes the bare-source behaviour of `wire_indicators` the critical path, not a side issue.
+
+**What the evidence does not settle:** whether `Traverse 'Function'` excludes `IndexArray` by inheritance or by exact-class matching. `docs/NAMES.md:641` records `Function → GrowableFunction`, which would imply exact matching, but `IndexArray`'s place in the hierarchy is recorded nowhere here and NI publishes no full hierarchy. Operationally irrelevant: `IndexArray` resolves the node, `Function` does not, both measured.
+
+**Two smaller things worth fixing regardless.** Gate `I` is meaningless — it walked "the net of wire 0", and 0 means *no wire*, so it collected eight unrelated bare terminals and called them sources (`…row2.log:332-335`). And step [7] was scheduled last, after the Local was committed, so the only step that could fail was placed where its failure leaves the deliverable open rather than where it would be caught first.
+BGRUN END rc=0 after 664s

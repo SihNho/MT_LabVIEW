@@ -203,6 +203,18 @@ and refused every further build command, that refusal was reported verbatim, and
 `CYCLE_GUARD_OFF` was never set to get past it. **The test is unrun and outstanding**; it costs seconds and
 touches no LabVIEW, so it belongs at the front of the next cycle.
 
+> ⚠️ **CORRECTION, 2026-09-21 15:1x, cycle 65 material #1 (evidence:
+> `archive/peer/2026-09-21-c65-astcheck-gate7.md` §0, confirmed off disk).** The sentence above is FALSE.
+> The test had ALREADY RUN, **3 h 16 min before this review was even dispatched**:
+> `tools/bench/c62e_astcheck.log:1` = `BGRUN START 2026-09-21 10:41:40 ... c60c_astcheck.py
+> diag_c62_s3b_build.py`, `:11 PASS 7 move_in is neither imported nor called called=False imported=False`,
+> `:15 === ASTCHECK OK`, `:16 BGRUN END rc=0 after 0s` — i.e. the reviewer's predicted **12/12 PASS on the
+> script measured to have built the WRONG artefact**. The §2 owner-pair question is likewise HALF answered
+> on disk: `tools/bench/diag_c64_s3b_row1.log:129` shows `OpCreateLocalRead_v0` DOES carry
+> `Class Name 2` / `index 2`; whether that pair is an OWNER is the part still unrun. Left in place, not
+> rewritten (rule 4), because the false sentence is itself the evidence for the retrieval failure the later
+> review diagnosed.
+
 **ALSO CARRIED FORWARD AS AN OPEN QUESTION, NOT SETTLED HERE.** The review's §2 alternative — that
 `OpCreateLocalRead_v0.vi`'s second navigation pair (`Class Name 2` / `index 2`, set to `""` / `0`) may be the
 creator's OWNER, in which case the Local could be created on `#639` directly and `move_in` would never be
