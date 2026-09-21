@@ -53,7 +53,7 @@ reg delete "HKCU\Environment" /v TYPESAFE_API_KEY /f
 | `.claude/settings.json`(프로젝트 내) | 훅·허용 목록. 개인정보 없음 | 그대로 |
 | `archive/peer/`, `archive/prose/` | 피어 대화 원문. 사용자 메일은 없고 경로만 있음 | 경로 치환만 |
 | 환경 변수 | `TYPESAFE_API_KEY` 등 | §2로 삭제 + 콘솔에서 폐기 |
-| **Codex(ChatGPT) CLI** | 로그인 토큰 `%USERPROFILE%\.codexuth.json`, 대화·상태 DB(`sessions\`, `thread_history_1.sqlite`, `memories_1.sqlite`, `logs_2.sqlite`, `state_5.sqlite`), `config.toml` | `codex logout`(또는 `auth.json` 삭제) → ChatGPT 계정 설정에서 연결된 기기/앱 해제 → 남은 기록이 필요 없으면 `%USERPROFILE%\.codex` 폴더 통째 삭제. 새 사용자는 `codex login` |
+| **Codex(ChatGPT) CLI** | 로그인 토큰 `%USERPROFILE%\.codex\auth.json`, 대화·상태 DB(`sessions\`, `thread_history_1.sqlite`, `memories_1.sqlite`, `logs_2.sqlite`, `state_5.sqlite`), `config.toml` | `codex logout`(또는 `auth.json` 삭제) → ChatGPT 계정 설정에서 연결된 기기/앱 해제 → 남은 기록이 필요 없으면 `%USERPROFILE%\.codex` 폴더 통째 삭제. 새 사용자는 `codex login` |
 | **Gemini CLI (`agy`)** | OAuth 자격 증명 `%USERPROFILE%\.gemini\oauth_creds.json` + 계정 목록 `google_accounts.json`, 또는 환경 변수 `GEMINI_API_KEY`/`GOOGLE_API_KEY`(2026-09-22 조사 시 사용자 변수에는 없음) | Google 계정 → 보안 → 서드파티 액세스에서 Gemini CLI 해제 → `%USERPROFILE%\.gemini` 삭제. 키를 쓴다면 §2 방식으로 삭제 + Google AI Studio에서 키 폐기 |
 | **TypeSafe (Jev)** | 사용자 환경 변수 `TYPESAFE_API_KEY`(2026-09-22 설정, 길이 108) | §2로 삭제 + 콘솔에서 키 폐기 |
 | **Claude Code** | 로그인 상태(`%USERPROFILE%\.claude`), 이 프로젝트의 메모리·세션 기록 | `/logout` 후 새 사용자가 로그인. 메모리는 위 행 참조 |
