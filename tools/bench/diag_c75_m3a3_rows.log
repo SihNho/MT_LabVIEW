@@ -1,0 +1,229 @@
+BGRUN START 2026-09-22 07:36:53 limit 20.0 min: py -u tools/bench/diag_c75_m3a3_rows.py
+====================================================================================================
+DIAGNOSTIC diag_c75_m3a3_rows - MEASUREMENT ONLY, hygiene gates only (Pre-decided 63)
+====================================================================================================
+
+---------- [0] FILES ONLY - the artefact's md5 BEFORE anything, and the four pins
+  PASS  H1 artefact md5 before == 3842f5e6f128226235dc78353f26ef44  got 3842f5e6f128226235dc78353f26ef44, 303823 bytes
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE THE BED          26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  hash_probe artefact: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3b_m3a2_20260922_023029.vi | exists=1 | size=303823 | md5=3842f5e6f128226235dc78353f26ef44 | sha256=40fd8b1eedcdf2812a3381bd68f1786849cf7f0b5ba15a485a71366426b6bd7f
+
+---------- [M5] VERB CAPABILITY CENSUS - read-only, no LabVIEW, every row cited to file:line
+  FACT  M5 connect_from_wire / OpConnectFromWire_v0  [tools/recipes/build_opconnectfromwire_v0.py:381-420]
+  FACT  M5     addressing: SOURCE = (WIRE uid, terminal index ON THAT WIRE); SINK = (sink_diag, sink_node, sink_term) = Diagram[].Nodes[].Terminals[]
+  FACT  M5     may its SOURCE be a BARE terminal? NO - the source is addressed THROUGH a wire object (`labels['wire_uid']` :391), so a BARE terminal carrying no wire cannot be named at all
+  FACT  M5     can it address a shift-register OUTER as SOURCE? NO - it needs a wire uid, and a bare RIGHT-register OUTER has wire 0
+  FACT  M5 connect_terminals / OpConnect_v0 (gscript)  [tools/gscript.py:2518-2542]
+  FACT  M5     addressing: SOURCE = (src_node, src_term) and SINK = (sink_node, sink_term), both Nodes[] indices on DIAGRAM 0 only (no diagram argument)
+  FACT  M5     may its SOURCE be a BARE terminal? YES - an unwired source terminal is legal; docstring warns only that an already-wired SINK is unsafe
+  FACT  M5     can it address a shift-register OUTER as SOURCE? NO - a shift register is not a Diagram.Nodes[] member, so no src_node index names it
+  FACT  M5 connect_nested_v1 / OpConnectNested_v1  [tools/recipes/build_opconnectnested_v1.py:418-453]
+  FACT  M5     addressing: SOURCE = (src_diag, src_node, src_term); SINK = (sink_diag, sink_node, sink_term) - both ends Diagram[].Nodes[].Terminals[]
+  FACT  M5     may its SOURCE be a BARE terminal? YES - nothing in the wrapper requires the source to carry a wire
+  FACT  M5     can it address a shift-register OUTER as SOURCE? NO - same reason: Nodes[]-indexed at both ends
+  FACT  M5 connect_nested_v2 / connect2 (gscript)  [tools/gscript.py:2965-2999 and :2744-2766]
+  FACT  M5     addressing: same (diagram index, node index, terminal index) pair as v1; v2 reads no UID/Name/Is Broken? properties
+  FACT  M5     may its SOURCE be a BARE terminal? YES
+  FACT  M5     can it address a shift-register OUTER as SOURCE? NO - Nodes[]-indexed at both ends
+  FACT  M5 wire_sr / OpWireSR_<variant>_v0  [tools/gscript.py:737-776 + tools/bench/opwiresr_labels.json (4 variants ONLY)]
+  FACT  M5     addressing: register side chosen by VARIANT: 'LeftIn' (left INSIDE -> body node term), 'RightIn' (body node term -> right INSIDE), 'LeftOutNode' (top-level node term -> LEFT OUTER), 'LeftOutCtl' (Panel.Controls[ctl] -> LEFT OUTER); loop by (class_name, loop_index), register by reg_index, the other end by (node_index, term_index) or ctl_index
+  FACT  M5     may its SOURCE be a BARE terminal? YES for the node end (Terminal.Connect Wire is invoked on the SINK)
+  FACT  M5     can it address a shift-register OUTER as SOURCE? NO - THERE IS NO 'RightOut' VARIANT. The four `OpWireSR_*_v0.vi` on disk are LeftIn, RightIn, LeftOutNode, LeftOutCtl (Glob of claudeDev, 2026-09-22); the RIGHT register's OUTER terminal is a SOURCE and no variant takes it
+  FACT  M5 wire_indicators / OpWireInd_v0  [tools/gscript.py:1786-1828]
+  FACT  M5     addressing: SOURCE = (node_index, src_terms BY NAME) on `diagram_index`, node_class default 'SubVI'; SINK = existing front-panel indicators BY LABEL
+  FACT  M5     may its SOURCE be a BARE terminal? NO - explicitly: 'Each source terminal MUST ALREADY BE WIRED ... an UNWIRED source makes it extend an unrelated wire' (:1795-1799)
+  FACT  M5     can it address a shift-register OUTER as SOURCE? NO - node-indexed source, and the sink can only be a front-panel indicator
+  FACT  M5 move_in / OpMoveIn (build_d1_v0)  [tools/recipes/build_d1_v0.py:318-335]
+  FACT  M5     addressing: NOT A WIRE VERB - it moves the object with `uid` into `dest_diagram_index` at `position` (GObject.Move with an owner). Creates no wire.
+  FACT  M5     may its SOURCE be a BARE terminal? n/a
+  FACT  M5     can it address a shift-register OUTER as SOURCE? n/a - it creates no wire
+  FACT  M5 delete_object / OpDelete_v0  [tools/gscript.py:2348-2401]
+  FACT  M5     addressing: NOT A WIRE VERB - deletes the `index`-th object of Traverse class `cls`. 'Wires attached to the object are left broken'. `Wire` IS a Traverse class, so a WIRE can be deleted by its census index (the shape `delete_by_uid`, build_d1_m3a1.py:583, uses).
+  FACT  M5     may its SOURCE be a BARE terminal? n/a
+  FACT  M5     can it address a shift-register OUTER as SOURCE? n/a - it creates no wire
+  FACT  M5 VERDICT: NO verb in tools/gscript.py or tools/recipes/ addresses a shift-register OUTER terminal as a SOURCE: the (diagram, node, terminal) family cannot name a non-Nodes[] object, wire_sr has no RightOut variant, and OpConnectFromWire_v0 needs a WIRE on the source side - which a bare RIGHT OUTER does not have.
+
+---------- [1] RESTART LabVIEW (STATUS: left running at 42,297 handles), then the scratch copy
+  FACT  M6 LabVIEW handle count BEFORE the restart: 42570 (baseline ~31,500)
+  FACT  M6 LabVIEW handle count AFTER the restart: 34322 (baseline ~31,500)
+  FACT  scratch C75SCRATCH_20260922_073653.vi md5 3842f5e6f128226235dc78353f26ef44 (copy of the artefact, 303823 bytes)
+  FACT  ensure_loaded(scratch) took 1.3 s
+  FACT  ExecState of the scratch (= the artefact) = 0 - RECORDED ONLY; the artefact is broken BY DESIGN and ExecState is NEVER a discriminator here (Pre-decided 95, 42(c))
+
+---------- [M1] THE PAIRING - every shift-register slot of the OLD loop #637
+  FACT  M1 A7 ECHO: report_all('WhileLoop')[4].uid == 637 (want #637 ; 6 WhileLoop row(s))
+  FACT  M1 ADDRESSING FACT: a shift register is not a Diagram.Nodes[] member, so it has no Terminals[] index. OpShiftRegs_v1 exposes exactly two terminal kinds per register: the OUTER one (the `Outside Terminal` property) and `Inside Terminals[k]`, printed below as INSIDE[k]. No index is carried from any census (Pre-decided 99 A4).
+  FACT  M1 loop#637 slot 0 RIGHT #1147 'RightShiftRegister' outer={'name': 'x,y,z array out', 'is_source': True, 'wire': 0} inside=[{'name': 'x,y,z array out', 'is_source': False, 'wire': 505}] | LEFT #1142 'LeftShiftRegister' outer={'name': 'x,y,z array out', 'is_source': False, 'wire': 2731} inside=[{'name': 'x,y,z array out', 'is_source': True, 'wire': 1681}]
+  FACT  M1 loop#637 slot 1 RIGHT #4256 'RightShiftRegister' outer={'name': 'position [internal units]', 'is_source': True, 'wire': 4859} inside=[{'name': 'position [internal units]', 'is_source': False, 'wire': 9113}] | LEFT #4274 'LeftShiftRegister' outer={'name': 'position [internal units]', 'is_source': False, 'wire': 3968} inside=[{'name': 'position [internal units]', 'is_source': True, 'wire': 3947}]
+  FACT  M1 loop#637 slot 2 RIGHT #4334 'RightShiftRegister' outer={'name': 'Outgoing Handle', 'is_source': True, 'wire': 7506} inside=[{'name': 'Outgoing Handle', 'is_source': False, 'wire': 7337}] | LEFT #4344 'LeftShiftRegister' outer={'name': 'Outgoing Handle', 'is_source': False, 'wire': 4185} inside=[{'name': 'Outgoing Handle', 'is_source': True, 'wire': 1731}]
+  FACT  M1 loop#637 slot 3 RIGHT #15 'RightShiftRegister' outer={'name': 'total data array out', 'is_source': True, 'wire': 3957} inside=[{'name': 'total data array out', 'is_source': False, 'wire': 464}] | LEFT #51 'LeftShiftRegister' outer={'name': 'total data array out', 'is_source': False, 'wire': 3543} inside=[{'name': 'total data array out', 'is_source': True, 'wire': 3497}]
+  FACT  M1 loop#637 slot 4 RIGHT #24 'RightShiftRegister' outer={'name': 'error out', 'is_source': True, 'wire': 1899} inside=[{'name': 'error out', 'is_source': False, 'wire': 541}] | LEFT #1108 'LeftShiftRegister' outer={'name': 'error out', 'is_source': False, 'wire': 4969} inside=[{'name': 'error out', 'is_source': True, 'wire': 4880}]
+  FACT  M1 loop#637 slot 5 RIGHT #1117 'RightShiftRegister' outer={'name': 'LastBufferNumber', 'is_source': True, 'wire': 0} inside=[{'name': 'LastBufferNumber', 'is_source': False, 'wire': 1109}] | LEFT #5351 'LeftShiftRegister' outer={'name': 'LastBufferNumber', 'is_source': False, 'wire': 1827} inside=[{'name': 'LastBufferNumber', 'is_source': True, 'wire': 5416}]
+  FACT  M1 loop#637 slot 6 RIGHT #119 'RightShiftRegister' outer={'name': 'pos in cal image out', 'is_source': True, 'wire': 0} inside=[{'name': 'pos in cal image out', 'is_source': False, 'wire': 121}] | LEFT #2972 'LeftShiftRegister' outer={'name': 'pos in cal image out', 'is_source': False, 'wire': 8590} inside=[{'name': 'pos in cal image out', 'is_source': True, 'wire': 7429}]
+  FACT  M1 loop#637 slot 7 RIGHT #5796 'RightShiftRegister' outer={'name': 'Bead is good? array out', 'is_source': True, 'wire': 0} inside=[{'name': 'Bead is good? array out', 'is_source': False, 'wire': 5859}] | LEFT #5805 'LeftShiftRegister' outer={'name': 'Bead is good? array out', 'is_source': False, 'wire': 5812} inside=[{'name': 'Bead is good? array out', 'is_source': True, 'wire': 6041}]
+  FACT  M1 loop#637 slot 8 RIGHT #9018 'RightShiftRegister' outer={'name': '', 'is_source': True, 'wire': 0} inside=[{'name': '', 'is_source': False, 'wire': 9215}] | LEFT #9025 'LeftShiftRegister' outer={'name': '', 'is_source': False, 'wire': 9051} inside=[{'name': '', 'is_source': True, 'wire': 9097}]
+  FACT  M1 loop#637 slot 9 RIGHT #862 'RightShiftRegister' outer={'name': 'F-x out', 'is_source': True, 'wire': 0} inside=[{'name': 'F-x out', 'is_source': False, 'wire': 8319}] | LEFT #2853 'LeftShiftRegister' outer={'name': 'F-x out', 'is_source': False, 'wire': 0} inside=[{'name': 'F-x out', 'is_source': True, 'wire': 8322}]
+  FACT  M1 loop#637 slot 10 RIGHT #7311 'RightShiftRegister' outer={'name': 'Value', 'is_source': True, 'wire': 0} inside=[{'name': 'Value', 'is_source': False, 'wire': 11389}] | LEFT #11001 'LeftShiftRegister' outer={'name': 'Value', 'is_source': False, 'wire': 11253} inside=[{'name': 'Value', 'is_source': True, 'wire': 10763}]
+  FACT  M1 loop#637 slot 11 RIGHT #15197 'RightShiftRegister' outer={'name': 'System no.', 'is_source': True, 'wire': 0} inside=[{'name': 'System no.', 'is_source': False, 'wire': 15277}] | LEFT #15204 'LeftShiftRegister' outer={'name': 'System no.', 'is_source': False, 'wire': 16421} inside=[{'name': 'System no.', 'is_source': True, 'wire': 11538}]
+  FACT  M1 loop#637 slot 12 RIGHT #29505 'RightShiftRegister' outer={'name': '', 'is_source': True, 'wire': 0} inside=[{'name': '', 'is_source': False, 'wire': 29591}] | LEFT #29512 'LeftShiftRegister' outer={'name': '', 'is_source': False, 'wire': 29122} inside=[{'name': '', 'is_source': True, 'wire': 28039}]
+  FACT  M1 loop#637 slot 13 RIGHT #580 'RightShiftRegister' outer={'name': 'Value', 'is_source': True, 'wire': 0} inside=[{'name': 'Value', 'is_source': False, 'wire': 9139}] | LEFT #1755 'LeftShiftRegister' outer={'name': 'Value', 'is_source': False, 'wire': 32344} inside=[{'name': 'Value', 'is_source': True, 'wire': 32324}]
+  FACT  M1 loop#637 reg slot 14 -> op errors {'OuterErr': 'error 1055: Property Node in OpShiftRegs_v1.vi', 'OutConnErr': 'error 1055: Property Node in OpShiftRegs_v1.vi', 'InsideErr': 'error 1055: Property Node in OpShiftRegs_v1.vi', 'LeftRegsErr': 'error 1055: Property Node in OpShiftRegs_v1.vi', 'LeftOuterErr': 'error 1055: Property Node in OpShiftRegs_v1.vi', 'LeftInsideErr': 'error 1055: Property Node in OpShiftRegs_v1.vi'} (past the end of Shift Registers[]); table ends here
+  FACT  M1 loop #637 carries 14 readable register slot(s); RIGHT uids [1147, 4256, 4334, 15, 24, 1117, 119, 5796, 9018, 862, 7311, 15197, 29505, 580] ; LEFT uids [1142, 4274, 4344, 51, 1108, 5351, 2972, 5805, 9025, 2853, 11001, 15204, 29512, 1755]
+  FACT  M1 TERM slot0 RIGHT #1147    RightShiftRegister  OUTER (Outside Terminal property) name='x,y,z array out'              is_source=True  wire=0 = BARE
+  FACT  M1 TERM slot0 RIGHT #1147    RightShiftRegister  INSIDE[0]                        name='x,y,z array out'              is_source=False wire=505
+  FACT  M1 TERM slot0 LEFT  #1142    LeftShiftRegister   OUTER (Outside Terminal property) name='x,y,z array out'              is_source=False wire=2731
+  FACT  M1 TERM slot0 LEFT  #1142    LeftShiftRegister   INSIDE[0]                        name='x,y,z array out'              is_source=True  wire=1681
+  FACT  M1 TERM slot1 RIGHT #4256    RightShiftRegister  OUTER (Outside Terminal property) name='position [internal units]'    is_source=True  wire=4859
+  FACT  M1 TERM slot1 RIGHT #4256    RightShiftRegister  INSIDE[0]                        name='position [internal units]'    is_source=False wire=9113
+  FACT  M1 TERM slot1 LEFT  #4274    LeftShiftRegister   OUTER (Outside Terminal property) name='position [internal units]'    is_source=False wire=3968
+  FACT  M1 TERM slot1 LEFT  #4274    LeftShiftRegister   INSIDE[0]                        name='position [internal units]'    is_source=True  wire=3947
+  FACT  M1 TERM slot2 RIGHT #4334    RightShiftRegister  OUTER (Outside Terminal property) name='Outgoing Handle'              is_source=True  wire=7506
+  FACT  M1 TERM slot2 RIGHT #4334    RightShiftRegister  INSIDE[0]                        name='Outgoing Handle'              is_source=False wire=7337
+  FACT  M1 TERM slot2 LEFT  #4344    LeftShiftRegister   OUTER (Outside Terminal property) name='Outgoing Handle'              is_source=False wire=4185
+  FACT  M1 TERM slot2 LEFT  #4344    LeftShiftRegister   INSIDE[0]                        name='Outgoing Handle'              is_source=True  wire=1731
+  FACT  M1 TERM slot3 RIGHT #15      RightShiftRegister  OUTER (Outside Terminal property) name='total data array out'         is_source=True  wire=3957
+  FACT  M1 TERM slot3 RIGHT #15      RightShiftRegister  INSIDE[0]                        name='total data array out'         is_source=False wire=464
+  FACT  M1 TERM slot3 LEFT  #51      LeftShiftRegister   OUTER (Outside Terminal property) name='total data array out'         is_source=False wire=3543
+  FACT  M1 TERM slot3 LEFT  #51      LeftShiftRegister   INSIDE[0]                        name='total data array out'         is_source=True  wire=3497
+  FACT  M1 TERM slot4 RIGHT #24      RightShiftRegister  OUTER (Outside Terminal property) name='error out'                    is_source=True  wire=1899
+  FACT  M1 TERM slot4 RIGHT #24      RightShiftRegister  INSIDE[0]                        name='error out'                    is_source=False wire=541
+  FACT  M1 TERM slot4 LEFT  #1108    LeftShiftRegister   OUTER (Outside Terminal property) name='error out'                    is_source=False wire=4969
+  FACT  M1 TERM slot4 LEFT  #1108    LeftShiftRegister   INSIDE[0]                        name='error out'                    is_source=True  wire=4880
+  FACT  M1 TERM slot5 RIGHT #1117    RightShiftRegister  OUTER (Outside Terminal property) name='LastBufferNumber'             is_source=True  wire=0 = BARE
+  FACT  M1 TERM slot5 RIGHT #1117    RightShiftRegister  INSIDE[0]                        name='LastBufferNumber'             is_source=False wire=1109
+  FACT  M1 TERM slot5 LEFT  #5351    LeftShiftRegister   OUTER (Outside Terminal property) name='LastBufferNumber'             is_source=False wire=1827
+  FACT  M1 TERM slot5 LEFT  #5351    LeftShiftRegister   INSIDE[0]                        name='LastBufferNumber'             is_source=True  wire=5416
+  FACT  M1 TERM slot6 RIGHT #119     RightShiftRegister  OUTER (Outside Terminal property) name='pos in cal image out'         is_source=True  wire=0 = BARE
+  FACT  M1 TERM slot6 RIGHT #119     RightShiftRegister  INSIDE[0]                        name='pos in cal image out'         is_source=False wire=121
+  FACT  M1 TERM slot6 LEFT  #2972    LeftShiftRegister   OUTER (Outside Terminal property) name='pos in cal image out'         is_source=False wire=8590
+  FACT  M1 TERM slot6 LEFT  #2972    LeftShiftRegister   INSIDE[0]                        name='pos in cal image out'         is_source=True  wire=7429
+  FACT  M1 TERM slot7 RIGHT #5796    RightShiftRegister  OUTER (Outside Terminal property) name='Bead is good? array out'      is_source=True  wire=0 = BARE
+  FACT  M1 TERM slot7 RIGHT #5796    RightShiftRegister  INSIDE[0]                        name='Bead is good? array out'      is_source=False wire=5859
+  FACT  M1 TERM slot7 LEFT  #5805    LeftShiftRegister   OUTER (Outside Terminal property) name='Bead is good? array out'      is_source=False wire=5812
+  FACT  M1 TERM slot7 LEFT  #5805    LeftShiftRegister   INSIDE[0]                        name='Bead is good? array out'      is_source=True  wire=6041
+  FACT  M1 TERM slot8 RIGHT #9018    RightShiftRegister  OUTER (Outside Terminal property) name=''                             is_source=True  wire=0 = BARE
+  FACT  M1 TERM slot8 RIGHT #9018    RightShiftRegister  INSIDE[0]                        name=''                             is_source=False wire=9215
+  FACT  M1 TERM slot8 LEFT  #9025    LeftShiftRegister   OUTER (Outside Terminal property) name=''                             is_source=False wire=9051
+  FACT  M1 TERM slot8 LEFT  #9025    LeftShiftRegister   INSIDE[0]                        name=''                             is_source=True  wire=9097
+  FACT  M1 TERM slot9 RIGHT #862     RightShiftRegister  OUTER (Outside Terminal property) name='F-x out'                      is_source=True  wire=0 = BARE
+  FACT  M1 TERM slot9 RIGHT #862     RightShiftRegister  INSIDE[0]                        name='F-x out'                      is_source=False wire=8319
+  FACT  M1 TERM slot9 LEFT  #2853    LeftShiftRegister   OUTER (Outside Terminal property) name='F-x out'                      is_source=False wire=0 = BARE
+  FACT  M1 TERM slot9 LEFT  #2853    LeftShiftRegister   INSIDE[0]                        name='F-x out'                      is_source=True  wire=8322
+  FACT  M1 TERM slot10 RIGHT #7311    RightShiftRegister  OUTER (Outside Terminal property) name='Value'                        is_source=True  wire=0 = BARE
+  FACT  M1 TERM slot10 RIGHT #7311    RightShiftRegister  INSIDE[0]                        name='Value'                        is_source=False wire=11389
+  FACT  M1 TERM slot10 LEFT  #11001   LeftShiftRegister   OUTER (Outside Terminal property) name='Value'                        is_source=False wire=11253
+  FACT  M1 TERM slot10 LEFT  #11001   LeftShiftRegister   INSIDE[0]                        name='Value'                        is_source=True  wire=10763
+  FACT  M1 TERM slot11 RIGHT #15197   RightShiftRegister  OUTER (Outside Terminal property) name='System no.'                   is_source=True  wire=0 = BARE
+  FACT  M1 TERM slot11 RIGHT #15197   RightShiftRegister  INSIDE[0]                        name='System no.'                   is_source=False wire=15277
+  FACT  M1 TERM slot11 LEFT  #15204   LeftShiftRegister   OUTER (Outside Terminal property) name='System no.'                   is_source=False wire=16421
+  FACT  M1 TERM slot11 LEFT  #15204   LeftShiftRegister   INSIDE[0]                        name='System no.'                   is_source=True  wire=11538
+  FACT  M1 TERM slot12 RIGHT #29505   RightShiftRegister  OUTER (Outside Terminal property) name=''                             is_source=True  wire=0 = BARE
+  FACT  M1 TERM slot12 RIGHT #29505   RightShiftRegister  INSIDE[0]                        name=''                             is_source=False wire=29591
+  FACT  M1 TERM slot12 LEFT  #29512   LeftShiftRegister   OUTER (Outside Terminal property) name=''                             is_source=False wire=29122
+  FACT  M1 TERM slot12 LEFT  #29512   LeftShiftRegister   INSIDE[0]                        name=''                             is_source=True  wire=28039
+  FACT  M1 TERM slot13 RIGHT #580     RightShiftRegister  OUTER (Outside Terminal property) name='Value'                        is_source=True  wire=0 = BARE
+  FACT  M1 TERM slot13 RIGHT #580     RightShiftRegister  INSIDE[0]                        name='Value'                        is_source=False wire=9139
+  FACT  M1 TERM slot13 LEFT  #1755    LeftShiftRegister   OUTER (Outside Terminal property) name='Value'                        is_source=False wire=32344
+  FACT  M1 TERM slot13 LEFT  #1755    LeftShiftRegister   INSIDE[0]                        name='Value'                        is_source=True  wire=32324
+  FACT  M1 PAIRING VISA (fed by wire 4185): LEFT #4344 sits in register SLOT 2, and the RIGHT register in that SAME slot is #4334 (class 'RightShiftRegister')
+  FACT  M1 PAIRING VISA (fed by wire 4185): that RIGHT register's OUTER terminal is name='Outgoing Handle' is_source=True wire=7506 ; the LEFT's OUTER is name='Outgoing Handle' is_source=False wire=4185
+  FACT  M1 PAIRING position (fed by wire 3968): LEFT #4274 sits in register SLOT 1, and the RIGHT register in that SAME slot is #4256 (class 'RightShiftRegister')
+  FACT  M1 PAIRING position (fed by wire 3968): that RIGHT register's OUTER terminal is name='position [internal units]' is_source=True wire=4859 ; the LEFT's OUTER is name='position [internal units]' is_source=False wire=3968
+  FACT  M1 RIGHT #4256: slot 1, partner LEFT #4274, OUTER wire 4859, INSIDE [('position [internal units]', 9113)]
+  FACT  M1 RIGHT #4334: slot 2, partner LEFT #4344, OUTER wire 7506, INSIDE [('Outgoing Handle', 7337)]
+
+---------- [M2] THE NEW SOURCES - every terminal of the two registers on loop #23032
+  FACT  M2 A7 ECHO: report_all('WhileLoop')[2].uid == 23032 (want #23032 ; 6 WhileLoop row(s))
+  FACT  M2 loop#23032 slot 0 RIGHT #23868 'RightShiftRegister' outer={'name': 'Outgoing Handle', 'is_source': True, 'wire': 0} inside=[{'name': 'Outgoing Handle', 'is_source': False, 'wire': 23952}] | LEFT #23880 'LeftShiftRegister' outer={'name': 'Outgoing Handle', 'is_source': False, 'wire': 4185} inside=[{'name': 'Outgoing Handle', 'is_source': True, 'wire': 23985}]
+  FACT  M2 loop#23032 slot 1 RIGHT #23895 'RightShiftRegister' outer={'name': 'Out position', 'is_source': True, 'wire': 0} inside=[{'name': 'Out position', 'is_source': False, 'wire': 24226}] | LEFT #23909 'LeftShiftRegister' outer={'name': 'Out position', 'is_source': False, 'wire': 3968} inside=[{'name': 'Out position', 'is_source': True, 'wire': 24002}]
+  FACT  M2 loop#23032 reg slot 2 -> op errors {'OuterErr': 'error 1055: Property Node in OpShiftRegs_v1.vi', 'OutConnErr': 'error 1055: Property Node in OpShiftRegs_v1.vi', 'InsideErr': 'error 1055: Property Node in OpShiftRegs_v1.vi', 'LeftRegsErr': 'error 1055: Property Node in OpShiftRegs_v1.vi', 'LeftOuterErr': 'error 1055: Property Node in OpShiftRegs_v1.vi', 'LeftInsideErr': 'error 1055: Property Node in OpShiftRegs_v1.vi'} (past the end of Shift Registers[]); table ends here
+  FACT  M2 loop #23032 carries 2 readable register slot(s); RIGHT uids [23868, 23895] ; LEFT uids [23880, 23909]
+  FACT  M2 TERM slot0 RIGHT #23868   RightShiftRegister  OUTER (Outside Terminal property) name='Outgoing Handle'              is_source=True  wire=0 = BARE
+  FACT  M2 TERM slot0 RIGHT #23868   RightShiftRegister  INSIDE[0]                        name='Outgoing Handle'              is_source=False wire=23952
+  FACT  M2 TERM slot0 LEFT  #23880   LeftShiftRegister   OUTER (Outside Terminal property) name='Outgoing Handle'              is_source=False wire=4185
+  FACT  M2 TERM slot0 LEFT  #23880   LeftShiftRegister   INSIDE[0]                        name='Outgoing Handle'              is_source=True  wire=23985
+  FACT  M2 TERM slot1 RIGHT #23895   RightShiftRegister  OUTER (Outside Terminal property) name='Out position'                 is_source=True  wire=0 = BARE
+  FACT  M2 TERM slot1 RIGHT #23895   RightShiftRegister  INSIDE[0]                        name='Out position'                 is_source=False wire=24226
+  FACT  M2 TERM slot1 LEFT  #23909   LeftShiftRegister   OUTER (Outside Terminal property) name='Out position'                 is_source=False wire=3968
+  FACT  M2 TERM slot1 LEFT  #23909   LeftShiftRegister   INSIDE[0]                        name='Out position'                 is_source=True  wire=24002
+  FACT  M2 reg0 VISA: slot 0 ; RIGHT #23868 ; LEFT #23880 (plan says #23880, equal True)
+  FACT  M2 reg0 VISA THE OUTER TERMINAL of RIGHT #23868 is the `Outside Terminal` property (there is NO Terminals[] index for a shift register): name='Outgoing Handle' is_source=True wire=0 -> STILL BARE
+  FACT  M2 reg0 VISA LEFT #23880 OUTER: wire 4185 (M3a-2's initial-value row) ; RIGHT INSIDE [('Outgoing Handle', 23952)] ; LEFT INSIDE [('Outgoing Handle', 23985)]
+  FACT  M2 reg1 position: slot 1 ; RIGHT #23895 ; LEFT #23909 (plan says #23909, equal True)
+  FACT  M2 reg1 position THE OUTER TERMINAL of RIGHT #23895 is the `Outside Terminal` property (there is NO Terminals[] index for a shift register): name='Out position' is_source=True wire=0 -> STILL BARE
+  FACT  M2 reg1 position LEFT #23909 OUTER: wire 3968 (M3a-2's initial-value row) ; RIGHT INSIDE [('Out position', 24226)] ; LEFT INSIDE [('Out position', 24002)]
+
+---------- [M4] DIAGRAM OWNERSHIP - owner_of under STRICT uid echo, plus the live Nodes[] index
+  FACT  M4 Diagram census: 173 row(s) ; Diagram #686 sits at traverse index 19
+  OBSERVED uid 7202 -> owner 'Diagram' uid 686 | self 'Global'#7202 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  M4 Global consumer                  #7202    owner = 'Diagram' #686 (Diagram traverse index 19) ; owner IS #686? True
+  OBSERVED uid 7468 -> owner 'FlatSequence' uid 681 | self 'FlatSequenceInnerTunnel'#7468 | 482 says 'FlatSequence' cast 'FlatSequence' |  
+  FACT  M4 diag_index(#681) raised ValueError: 681 is not in list
+  FACT  M4 FlatSequenceInnerTunnel consumer #7468    owner = 'FlatSequence' #681 (Diagram traverse index None) ; owner IS #686? False
+  OBSERVED uid 637 -> owner 'Diagram' uid 686 | self 'WhileLoop'#637 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  M4 WhileLoop OLD                    #637     owner = 'Diagram' #686 (Diagram traverse index 19) ; owner IS #686? True
+  OBSERVED uid 23032 -> owner 'Diagram' uid 686 | self 'WhileLoop'#23032 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  M4 WhileLoop NEW                    #23032   owner = 'Diagram' #686 (Diagram traverse index 19) ; owner IS #686? True
+  OBSERVED uid 4859 -> owner 'Diagram' uid 686 | self 'Wire'#4859 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  M4 wire 4859                        #4859    owner = 'Diagram' #686 (Diagram traverse index 19) ; owner IS #686? True
+  OBSERVED uid 7506 -> owner 'Diagram' uid 686 | self 'Wire'#7506 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  M4 wire 7506                        #7506    owner = 'Diagram' #686 (Diagram traverse index 19) ; owner IS #686? True
+  FACT  M4 Global #7202 LIVE LOOKUP: diagram #686 (traverse index 19), Nodes[8], label 'Global motor pos.vi', 1 diagram(s) scanned
+  FACT  M4 Global #7202 terminal table (uid echo 7202): 1 terminal(s)
+  FACT      M4 Global #7202 t0  name='Focus position'             is_source=False wire=4859    state=WIRED
+  FACT  M4 FlatSequenceInnerTunnel #7468 LIVE LOOKUP: diagram #None (traverse index None), Nodes[None], label None, 174 diagram(s) scanned
+  FACT  M4 FlatSequenceInnerTunnel #7468 is NOT a member of any scanned diagram's Nodes[] - no terminal table exists for it over this COM path (the same limit gscript.py:948 states)
+
+---------- [M3] THE NETS - full membership of wires 4859 and 7506 by TERMINAL-SIDE reverse census
+  FACT  M3 METHOD: TERMINAL-SIDE reverse census, the shape of tools/bench/diag_c62_branch.py:532-588: every Nodes[] terminal of the wires' OWN diagram (node_terms_uid), every front-panel terminal (panel_wiring), every shift-register terminal of both loops (already read in M1/M2), and a bounded LoopTunnel sweep (gscript.tunnels). A wire-side reader is run SEPARATELY and labelled; it is not the answer.
+  OBSERVED uid 4859 -> owner 'Diagram' uid 686 | self 'Wire'#4859 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  M3 wire 4859 is owned by 'Diagram' #686 (Diagram traverse index 19)
+  OBSERVED uid 7506 -> owner 'Diagram' uid 686 | self 'Wire'#7506 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  M3 wire 7506 is owned by 'Diagram' #686 (Diagram traverse index 19)
+  FACT  M3 Node class map: 634 entries
+  FACT  M3 scanning Diagram traverse index 19: 26 node(s), cap 26
+  FACT  M3 panel_wiring: 116 front-panel row(s)
+  FACT  M3 LoopTunnel sweep: 138 tunnel(s) read, truncated False
+  FACT  M3 NET of wire 4859: EXACTLY 3 terminal(s) found by the terminal-side census (2 source, 1 sink)
+  FACT      M3 net 4859 <- owner #637     'WhileLoop'                label='While Loop'                 Nodes[4] t8 name='position [internal units]' is_source=True via Nodes[] terminal census
+  FACT      M3 net 4859 <- owner #7202    'Global'                   label='Global motor pos.vi'        Nodes[8] t0 name='Focus position' is_source=False via Nodes[] terminal census
+  FACT      M3 net 4859 <- owner #4256    'RightShiftRegister'       label='M1 loop#637'                Nodes[None] tNone name='position [internal units]' is_source=True via shift-register census (OUTER (Outside Terminal property))
+  FACT  M3 NET 4859: sink(s) OTHER THAN the named consumer Global #7202 -> 0 : []
+  FACT  M3 NET of wire 7506: EXACTLY 2 terminal(s) found by the terminal-side census (2 source, 0 sink)
+  FACT      M3 net 7506 <- owner #637     'WhileLoop'                label='While Loop'                 Nodes[4] t10 name='Outgoing Handle' is_source=True via Nodes[] terminal census
+  FACT      M3 net 7506 <- owner #4334    'RightShiftRegister'       label='M1 loop#637'                Nodes[None] tNone name='Outgoing Handle' is_source=True via shift-register census (OUTER (Outside Terminal property))
+  FACT  M3 NET 7506: sink(s) OTHER THAN the named consumer FlatSequenceInnerTunnel #7468 -> 0 : []
+
+---------- [M3b] SECONDARY, labelled: the WIRE-SIDE reader on the same two wires (not the answer)
+  FACT      M3b w4859    t0  is_source=True  owner_class='RightShiftRegister'     owner_uid=4256    recip=4859
+  FACT      M3b w4859    t1  is_source=False owner_class='Global'                 owner_uid=7202    recip=4859
+  FACT      M3b w4859    t2  NO OWNER  'errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; er'
+  FACT  M3b wire 4859 WIRE-SIDE: 3 row(s), 2 with a REAL owner, 0 PD85 violation(s)
+  FACT  M3b wire 4859: terminal-side census 3 terminal(s) vs wire-side reader 2 real-owner row(s) - AGREE? False
+  FACT      M3b w7506    t0  is_source=True  owner_class='RightShiftRegister'     owner_uid=4334    recip=7506
+  FACT      M3b w7506    t1  is_source=False owner_class='FlatSequenceInnerTunnel' owner_uid=7468    recip=7506
+  FACT      M3b w7506    t2  NO OWNER  'errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; er'
+  FACT  M3b wire 7506 WIRE-SIDE: 3 row(s), 2 with a REAL owner, 0 PD85 violation(s)
+  FACT  M3b wire 7506: terminal-side census 2 terminal(s) vs wire-side reader 2 real-owner row(s) - AGREE? True
+
+---------- [6] HYGIENE - close the scratch, delete it, re-read every pin, handles at both ends
+  FACT  M6 gscript ref_counts (refs opened / closed / live): {'opened': 3, 'closed': 3, 'live': 0, 'cached_op_vis': 8}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 3, 'closed': 3, 'live': 0, 'cached_op_vis': 8}
+  PASS  H6 every OpWireSource_v5 row echoed recip == the queried wire uid (Pre-decided 85)  0 violation(s)
+  FACT  M6 LabVIEW handle count AFTER the reads: 35351 (after the restart it was 34322 ; baseline ~31,500)
+  PASS  H4 the scratch copy is deleted  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\C75SCRATCH_20260922_073653.vi
+  PASS  H2 artefact md5 UNCHANGED after the run  before 3842f5e6f128226235dc78353f26ef44 / after 3842f5e6f128226235dc78353f26ef44
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  THE BED          26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  PASS  H3 the four STATUS md5 pins all hold
+  FACT  M6 LabVIEW handle count at exit: 34001 (baseline ~31,500)
+
+====================================================================================================
+GATES: 6 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c75_m3a3_rows.json   elapsed 146.4 s
+BGRUN END rc=0 after 147s

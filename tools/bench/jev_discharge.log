@@ -1,0 +1,229 @@
+BGRUN START 2026-09-22 08:42:13 limit 25.0 min: py -u tools/bench/jev_run_all.py
+=== jev_run_all (docs/jev-integration-plan.md rows #1 and #6) ===
+NO LabVIEW, NO COM, NO motor, NO camera. Disk reads + HTTPS to api.typesafe.ai only.
+
+key: present, never printed
+
+################################################################################################
+### SELF-TEST: guard_peer JEV-DISCHARGE branches
+################################################################################################
+=== selftest_guard_peer_jev: the JEV-DISCHARGE branch of tools/hooks/guard_peer.py ===
+NO LabVIEW. Branch cases make NO API call (covers_failure is stubbed).
+
+  PASS  C0 the fake failing log is the one the gate sees  
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\jev_run_all.py", line 31, in run
+    rc = fn()
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_guard_peer_jev.py", line 132, in main
+    rc = run_main(cmd)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_guard_peer_jev.py", line 216, in run_main
+    rc = guard_peer.main()
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\hooks\guard_peer.py", line 370, in main
+    f"  latest failing log : {os.path.relpath(path, ROOT)}\n"
+  File "C:\Users\KimLab\AppData\Local\Programs\Python\Python310\lib\ntpath.py", line 744, in relpath
+    raise ValueError("path is on mount %r, start on mount %r" % (
+ValueError: path is on mount 'C:', start on mount 'G:'
+  FAIL  SELF-TEST: guard_peer JEV-DISCHARGE branches raised ValueError: path is on mount 'C:', start on mount 'G:'
+
+--- SELF-TEST: guard_peer JEV-DISCHARGE branches finished rc=99 in 1.1 s ---
+
+################################################################################################
+### TRIAL A: does an archived review already cover this failure? (row #1)
+################################################################################################
+=== jev_discharge_trial: does an archived review already cover a new failure? (plan row #1) ===
+NO LabVIEW is touched. Reads tools/bench/*.log + archive/peer/*.md, HTTPS to api.typesafe.ai.
+
+PAIRS: 40 over 24 distinct failing logs and 22 distinct reviews
+  SAME 17 (name rule) | READ 3 (labelled by reading) | NEAR 8 (near-miss DIFF) | DIFF 12
+  PASS  every pair has both summaries
+  PASS  P1 pair set written BEFORE any API call -> tools\bench\jev_discharge_set.json
+
+--- pairs labelled by READING, with their reasons ---
+  READ  build_d1_m3a3_run2.log           2026-09-22-c75-m3a3-run1-failpred.md     label=SAME
+      THE LIVE CASE. Run 2's first FAIL line is 'P0 ROW D's SINK RESOLVED - wire # appears EXACTLY ONCE on FlatSequence #'s terminal table ... FAILED PREDICTION', which is verbatim PREDICTION 1 of this review (dispatched for run 1). STATUS.md records Row D as deferred to M3a-3b on exactly that reviewed ground, so a second review would re-ask a disposed question.
+  READ  diag_s58_boolcarrier.log         2026-09-21-c58-delete-execstate0.md      label=SAME
+      run 0 and run 1 of diag_s58_boolcarrier.py are the same bytes (39,566 each) and stop at the identical gate C1 B3b, 'ExecState after the delete == 1 -> 0 (PREDICTED RISK (v))' - the review names run 1.
+  READ  diag_c62_s3b_build.log           2026-09-21-c62-row1-precond.md           label=SAME
+      rows and build are one route failing at one precondition - the source is addressable only on an inner diagram - the reading already recorded in tools/bench/jev_trial.py's HARD block for this pair of logs.
+  NEAR  c65_astcheck.log                 2026-09-21-c64-astgate3.md               label=DIFF
+      same checker c60c_astcheck.py, different gate: R12 attacks gate 3 (allow_broken never passed), c65 stops at gate 7 (move_in neither imported nor called) in a different recipe.
+  NEAR  c63_astcheck.log                 2026-09-21-c65-astcheck-gate7.md         label=DIFF
+      the mirror of the pair above: R15 is the gate-7 review, c63 is the gate-3 failure.
+  NEAR  c74_gate10_m3a2.log              2026-09-21-c65-astcheck-gate7.md         label=DIFF
+      same checker again: gate 10 is a %-format validity finding on one literal; R15 is gate 7's move_in rule.
+  NEAR  c62f_astcheck.log                2026-09-21-c64-astgate3.md               label=DIFF
+      c62f is in the gate-7 family that R15 names; R12 is the gate-3 review.
+  NEAR  diag_c65_s3b_row2b.log           2026-09-21-c65-row2-indicator.md         label=DIFF
+      R16 attacks row2's failure (a source uid that does not resolve to a live Traverse index); row2b fails because the ControlTerminal census and the diagram's Nodes[] list do not intersect at all.
+  NEAR  diag_c66_s3b_m3.log              2026-09-21-c66-m3-execstate0.md          label=DIFF
+      R18 is the ExecState-0 review of c66b, which got all seven objects moved; c66 failed earlier, on a node sitting at an unexpected position.
+  NEAR  diag_c66b_s3b_m3.log             2026-09-21-c66-m3-movelocals.md          label=DIFF
+      the mirror: R19 attacks c66's move set and abort clause; c66b's failure is the later ExecState 0.
+  NEAR  diag_c67_addsr.log               2026-09-21-c67-addsr-noop.md             label=DIFF
+      R21 is about diag_c67_m3a's no-op shift-register READ (OpShiftRegs_v0 property-node errors); addsr fails gate L1c because no whole-VI class count changed after add_shift_reg - the next question, not the same.
+
+  [ 1/40] SAME  diag_s58_boolcarrier_run2.log  2026-09-21-c58-boolwire-dangling.md    label=SAME p=0.840 ok (0.6s)
+  [ 2/40] SAME  diag_s58_boolcarrier_run1.log  2026-09-21-c58-delete-execstate0.md    label=SAME p=0.790 ok (0.6s)
+  [ 3/40] SAME  diag_s3b_l0_localname_v2.log   2026-09-21-c60-cast-seed-execstate0.md label=SAME p=0.790 ok (0.6s)
+  [ 4/40] SAME  diag_s3b_l0_localname.log      2026-09-21-c60-ia-count-gate.md        label=SAME p=0.890 ok (0.6s)
+  [ 5/40] SAME  diag_s3b_l0_createlocal.log    2026-09-21-c60-l0-readback-none.md     label=SAME p=0.900 ok (0.6s)
+  [ 6/40] SAME  diag_c61_localdir_write.log    2026-09-21-c61-localpn-execstate0.md   label=SAME p=0.920 ok (0.5s)
+  [ 7/40] SAME  c62f_astcheck.log              2026-09-21-c62-astcheck7.md            label=SAME p=0.780 ok (0.5s)
+  [ 8/40] SAME  diag_c62_branch.log            2026-09-21-c62-ctwire.md               label=SAME p=0.950 ok (0.6s)
+  [ 9/40] SAME  diag_c62_s3b_build.log         2026-09-21-c62-localplacement.md       label=SAME p=0.860 ok (0.6s)
+  [10/40] SAME  diag_c62_s3b_movein.log        2026-09-21-c62-movein-es0.md           label=SAME p=0.800 ok (0.5s)
+  [11/40] SAME  diag_c62_s3b_rows.log          2026-09-21-c62-row1-precond.md         label=SAME p=0.910 ok (0.5s)
+  [12/40] SAME  c63_astcheck.log               2026-09-21-c64-astgate3.md             label=SAME p=0.670 ok (0.6s)
+  [13/40] SAME  diag_c64_s3b_row1.log          2026-09-21-c64-row1-wirecount-k2.md    label=SAME p=0.830 ok (0.6s)
+  [14/40] SAME  c65_astcheck.log               2026-09-21-c65-astcheck-gate7.md       label=SAME p=0.760 ok (0.6s)
+  [15/40] SAME  diag_c66b_s3b_m3.log           2026-09-21-c66-m3-execstate0.md        label=SAME p=0.780 ok (0.5s)
+  [16/40] SAME  diag_c67_addsr.log             2026-09-21-c67-addsr-opvi.md           label=SAME p=0.690 ok (0.5s)
+  [17/40] SAME  build_d1_m3a3.log              2026-09-22-c75-m3a3-run1-failpred.md   label=SAME p=0.720 ok (0.5s)
+  [18/40] READ  build_d1_m3a3_run2.log         2026-09-22-c75-m3a3-run1-failpred.md   label=SAME p=0.620 ok (0.6s)
+  [19/40] READ  diag_s58_boolcarrier.log       2026-09-21-c58-delete-execstate0.md    label=SAME p=0.790 ok (0.6s)
+  [20/40] READ  diag_c62_s3b_build.log         2026-09-21-c62-row1-precond.md         label=SAME p=0.850 ok (0.6s)
+  [21/40] NEAR  c65_astcheck.log               2026-09-21-c64-astgate3.md             label=DIFF p=0.050 ok (0.5s)
+  [22/40] NEAR  c63_astcheck.log               2026-09-21-c65-astcheck-gate7.md       label=DIFF p=0.050 ok (0.6s)
+  [23/40] NEAR  c74_gate10_m3a2.log            2026-09-21-c65-astcheck-gate7.md       label=DIFF p=0.040 ok (0.6s)
+  [24/40] NEAR  c62f_astcheck.log              2026-09-21-c64-astgate3.md             label=DIFF p=0.060 ok (0.5s)
+  [25/40] NEAR  diag_c65_s3b_row2b.log         2026-09-21-c65-row2-indicator.md       label=DIFF p=0.550 XX (0.5s)
+  [26/40] NEAR  diag_c66_s3b_m3.log            2026-09-21-c66-m3-execstate0.md        label=DIFF p=0.290 ok (0.6s)
+  [27/40] NEAR  diag_c66b_s3b_m3.log           2026-09-21-c66-m3-movelocals.md        label=DIFF p=0.300 ok (0.5s)
+  [28/40] NEAR  diag_c67_addsr.log             2026-09-21-c67-addsr-noop.md           label=DIFF p=0.550 XX (0.6s)
+  [29/40] DIFF  diag_s58_boolcarrier_run2.log  2026-09-21-c61-localpn-execstate0.md   label=DIFF p=0.340 ok (0.5s)
+  [30/40] DIFF  diag_c61_localdir_write.log    2026-09-21-c58-boolwire-dangling.md    label=DIFF p=0.090 ok (0.6s)
+  [31/40] DIFF  diag_c62_branch.log            2026-09-21-c64-row1-wirecount-k2.md    label=DIFF p=0.080 ok (0.6s)
+  [32/40] DIFF  diag_c64_s3b_row1.log          2026-09-21-c62-ctwire.md               label=DIFF p=0.350 ok (0.5s)
+  [33/40] DIFF  c62f_astcheck.log              2026-09-21-c66-m3-execstate0.md        label=DIFF p=0.080 ok (0.6s)
+  [34/40] DIFF  diag_c66b_s3b_m3.log           2026-09-21-c62-astcheck7.md            label=DIFF p=0.050 ok (0.5s)
+  [35/40] DIFF  diag_s3b_l0_createlocal.log    2026-09-21-c67-addsr-opvi.md           label=DIFF p=0.050 ok (0.6s)
+  [36/40] DIFF  diag_c67_addsr.log             2026-09-21-c60-l0-readback-none.md     label=DIFF p=0.070 ok (0.6s)
+  [37/40] DIFF  diag_c64_row1_testa.log        2026-09-22-c74-gate10-arity.md         label=DIFF p=0.050 ok (0.5s)
+  [38/40] DIFF  c74_gate10_m3a2.log            2026-09-21-c65-testa-timeout.md        label=DIFF p=0.030 ok (0.6s)
+  [39/40] DIFF  build_d1_m3a3_run2.log         2026-09-21-c62-row1-precond.md         label=DIFF p=0.220 ok (0.5s)
+  [40/40] DIFF  diag_c66c_coercion.log         2026-09-21-c60-cast-seed-execstate0.md label=DIFF p=0.050 ok (0.6s)
+
+==============================================================================
+RESULTS - review-covers-failure  (40 scored, 0 error(s))
+==============================================================================
+block    n      accuracy at 0.50
+SAME     17     100.0% (17/17)
+READ     3      100.0% (3/3)
+NEAR     8       75.0% (6/8)
+DIFF     12     100.0% (12/12)
+ALL      40      95.0% (38/40)
+
+P5: the NEAR block (same tool / adjacent run / neighbouring row) is what separates a judge from a
+    filename match. The DIFF block is easy by construction and is reported only for balance.
+
+Brier: all 0.0501 ; READ+NEAR only 0.0909
+latency: mean 0.55s  min 0.49s  max 0.64s  over 40 calls
+
+--- THRESHOLD SWEEP (a gate that ALLOWS at p >= t; precision is what a wrong allow costs) ---
+t        allowed    true-allow precision  recall     accuracy
+0.70     17         17         1.000      0.850      0.925
+0.80     10         10         1.000      0.500      0.750
+0.85     7          7          1.000      0.350      0.675
+0.90     4          4          1.000      0.200      0.600
+
+--- DISAGREEMENTS WITH THE LABEL (at 0.50) ---
+  NEAR  diag_c65_s3b_row2b.log           2026-09-21-c65-row2-indicator.md         label=DIFF p=0.550
+  NEAR  diag_c67_addsr.log               2026-09-21-c67-addsr-noop.md             label=DIFF p=0.550
+
+--- WHAT THE WIRED GATE WOULD DO (allow at p >= 0.85) ---
+  reviews that would DISCHARGE a failure they do not cover: 0
+
+raw -> tools\bench\jev_discharge_set.json
+
+=== jev_discharge_trial: 40/40 scored, 0 error(s) ===
+
+--- TRIAL A: does an archived review already cover this failure? (row #1) finished rc=0 in 22.1 s ---
+
+################################################################################################
+### TRIAL B: is this step already prior-art reviewed? (row #6)
+################################################################################################
+=== jev_priorart_trial: is this step already prior-art reviewed? (plan row #6) ===
+NO LabVIEW is touched. Reads archive/peer/*priorart*.md; HTTPS to api.typesafe.ai.
+
+PAIRS: 30 over 10 steps and 11 reviews (SAME 9 | READ 4 | NEAR 6 | DIFF 11)
+  PASS  every review summarised
+  PASS  P1 set written BEFORE any API call -> tools\bench\jev_priorart_set.json
+
+  [ 1/30] SAME  B1    2026-09-19-priorart-s0-decomp.md         label=YES  p=0.330 XX (0.5s)
+  [ 2/30] SAME  B2    2026-09-20-priorart-d1-s2-loops.md       label=YES  p=0.550 ok (0.5s)
+  [ 3/30] SAME  B3    2026-09-20-priorart-d1-s2-stage.md       label=YES  p=0.440 XX (0.5s)
+  [ 4/30] READ  B3    2026-09-20-priorart-d1-s2-stage-r2.md    label=YES  p=0.690 ok (0.5s)
+  [ 5/30] SAME  B4    2026-09-20-priorart-d1-s3-focus.md       label=YES  p=0.500 ok (0.5s)
+  [ 6/30] SAME  B5    2026-09-20-priorart-d1-s3a-focus-ind.md  label=YES  p=0.710 ok (0.5s)
+  [ 7/30] SAME  B6    2026-09-21-priorart-c68-m3a1.md          label=YES  p=0.520 ok (0.6s)
+  [ 8/30] READ  B6b   2026-09-21-priorart-c71-m3a1.md          label=YES  p=0.260 XX (0.6s)
+  [ 9/30] SAME  B7    2026-09-22-priorart-priorart-c74-m3a2.md label=YES  p=0.500 ok (0.6s)
+  [10/30] SAME  B8    2026-09-22-priorart-c75-m3a3.md          label=YES  p=0.450 XX (0.5s)
+  [11/30] SAME  B10   2026-09-19-priorart-d1-routeb-run10.md   label=YES  p=0.300 XX (0.5s)
+  [12/30] NEAR  B4    2026-09-20-priorart-d1-s3a-focus-ind.md  label=NO   p=0.550 XX (0.6s)
+  [13/30] NEAR  B5    2026-09-20-priorart-d1-s3-focus.md       label=NO   p=0.600 XX (0.6s)
+  [14/30] READ  B6    2026-09-21-priorart-c71-m3a1.md          label=NO   p=0.450 ok (0.6s)
+  [15/30] READ  B6b   2026-09-21-priorart-c68-m3a1.md          label=NO   p=0.220 ok (0.5s)
+  [16/30] NEAR  B7    2026-09-22-priorart-c75-m3a3.md          label=NO   p=0.170 ok (0.6s)
+  [17/30] NEAR  B8    2026-09-22-priorart-priorart-c74-m3a2.md label=NO   p=0.260 ok (0.5s)
+  [18/30] NEAR  B7    2026-09-21-priorart-c68-m3a1.md          label=NO   p=0.170 ok (0.5s)
+  [19/30] NEAR  B8    2026-09-21-priorart-c68-m3a1.md          label=NO   p=0.220 ok (0.5s)
+  [20/30] DIFF  B1    2026-09-20-priorart-d1-s2-loops.md       label=NO   p=0.140 ok (0.6s)
+  [21/30] DIFF  B1    2026-09-22-priorart-c75-m3a3.md          label=NO   p=0.180 ok (0.5s)
+  [22/30] DIFF  B1    2026-09-20-priorart-d1-s3-focus.md       label=NO   p=0.150 ok (0.6s)
+  [23/30] DIFF  B2    2026-09-20-priorart-d1-s3-focus.md       label=NO   p=0.130 ok (0.6s)
+  [24/30] DIFF  B2    2026-09-20-priorart-d1-s3a-focus-ind.md  label=NO   p=0.150 ok (0.6s)
+  [25/30] DIFF  B4    2026-09-19-priorart-s0-decomp.md         label=NO   p=0.360 ok (0.6s)
+  [26/30] DIFF  B5    2026-09-22-priorart-priorart-c74-m3a2.md label=NO   p=0.440 ok (0.6s)
+  [27/30] DIFF  B6    2026-09-22-priorart-c75-m3a3.md          label=NO   p=0.190 ok (0.6s)
+  [28/30] DIFF  B10   2026-09-20-priorart-d1-s3a-focus-ind.md  label=NO   p=0.280 ok (0.5s)
+  [29/30] DIFF  B10   2026-09-22-priorart-c75-m3a3.md          label=NO   p=0.320 ok (0.5s)
+  [30/30] DIFF  B3    2026-09-19-priorart-d1-routeb-run10.md   label=NO   p=0.210 ok (0.6s)
+
+==============================================================================
+RESULTS - review-answers-step  (30 scored, 0 error(s))
+==============================================================================
+block    n      accuracy at 0.50
+SAME     9       55.6% (5/9)
+READ     4       75.0% (3/4)
+NEAR     6       66.7% (4/6)
+DIFF     11     100.0% (11/11)
+ALL      30      76.7% (23/30)
+
+Brier: all 0.1667 ; READ+NEAR only 0.1731
+latency: mean 0.54s  min 0.49s  max 0.63s over 30 calls
+
+--- THRESHOLD SWEEP (an advisory that FIRES at p >= t) ---
+t        fired      true-dup   precision  recall     accuracy
+0.70     1          1          1.000      0.091      0.667
+0.80     0          0          n/a        0.000      0.633
+0.85     0          0          n/a        0.000      0.633
+0.90     0          0          n/a        0.000      0.633
+
+--- DISAGREEMENTS WITH THE LABEL (at 0.50) ---
+  SAME  B1    2026-09-19-priorart-s0-decomp.md         label=YES  p=0.330  
+  SAME  B3    2026-09-20-priorart-d1-s2-stage.md       label=YES  p=0.440  
+  READ  B6b   2026-09-21-priorart-c71-m3a1.md          label=YES  p=0.260  c71-m3a1 states in its own first line that it reviews ONE EDIT ROUND on build_d1_m3a1.py p
+  SAME  B8    2026-09-22-priorart-c75-m3a3.md          label=YES  p=0.450  
+  SAME  B10   2026-09-19-priorart-d1-routeb-run10.md   label=YES  p=0.300  
+  NEAR  B4    2026-09-20-priorart-d1-s3a-focus-ind.md  label=NO   p=0.550  S3 moves the 1.5 FOCUS node set into a loop; S3a creates two free-standing indicators. Adj
+  NEAR  B5    2026-09-20-priorart-d1-s3-focus.md       label=NO   p=0.600  the mirror of the pair above.
+
+--- WHAT THE WIRED ADVISORY WOULD DO (fire at p >= 0.85; it BLOCKS NOTHING) ---
+  steps it would wrongly call a duplicate: 0
+
+raw -> tools\bench\jev_priorart_set.json
+
+=== jev_priorart_trial: 30/30 scored, 0 error(s) ===
+
+--- TRIAL B: is this step already prior-art reviewed? (row #6) finished rc=0 in 16.4 s ---
+
+================================================================================================
+SUMMARY
+================================================================================================
+  selftest_guard_peer_jev      rc=99  NON-ZERO
+  jev_discharge_trial          rc=0  ok
+  jev_priorart_trial           rc=0  ok
+  jev usage ledger: 149 line(s) total -> jev_usage.jsonl
+  jev_gate.log: 3 line(s); last: JEV-TRIAGE | c60_astcheck.log | script-bug p=0.99 | Traceback (most recent call last):
+BGRUN END rc=1 after 40s

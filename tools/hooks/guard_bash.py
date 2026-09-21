@@ -215,15 +215,58 @@ def next_md5(status_path):
 
 
 def next_gate():
-    """Refuse a retrospective launch while STATUS's `## NEXT` still hashes as it did when the cycle started."""
+    """Refuse a retrospective launch while STATUS's `## NEXT` still hashes as it did when the cycle started.
+
+    A NEXT that HAS been rewritten then gets one ADVISORY Jev reading (docs/jev-integration-plan.md #5,
+    measured in tools/bench/jev_next_trial.py on tools/bench/jev_next_set.json). It prints and it logs; it
+    NEVER blocks and it never changes this function's return value - the md5 check above is still the only
+    gate here. Any failure of the reading (no key, no network, no answer) is silence, by construction."""
     root = os.path.dirname(os.path.dirname(HERE))
     snap_path = os.path.join(root, "tools", "bench", "next_snapshot.md5")
+
+    def _jev_advisory():
+        """ADVISORY ONLY. Reads STATUS's NEXT, asks Jev whether a fresh session could start from it, and on a
+        low probability writes one `JEV-NEXT-POOR` line to stderr and to tools/bench/jev_gate.log."""
+        try:
+            for d in (os.path.join(root, "tools"), os.path.join(root, "tools", "bench")):
+                if d not in sys.path:
+                    sys.path.insert(0, d)
+            import jev
+            from jev_next_q import MISSING_Q, NEXT_Q
+            with open(os.path.join(root, "STATUS.md"), encoding="utf-8", errors="replace") as fh:
+                m = NEXT_SECTION_RE.search(fh.read())
+            text = (m.group(1).strip() if m else "")[:6000]
+            if not text:
+                return
+            resp, err = jev.ask({"next": text}, {"startable": NEXT_Q},
+                                purpose="next-gate", timeout=20, retries=0)
+            if err:
+                return
+            p = jev.noul(resp, "startable")
+            if p is None or p > jev.UNKNOWN_LO:      # 0.30: anything above it is not a complaint
+                return
+            missing = "?"
+            mresp, merr = jev.ask({"next": text}, {"missing": MISSING_Q},
+                                  purpose="next-gate-missing", timeout=20, retries=0)
+            if not merr:
+                missing = jev.choice(mresp, "missing")[0] or "?"
+            line = "JEV-NEXT-POOR p=%.2f: %s" % (p, missing)
+            sys.stderr.write(line + "  (advisory, nothing is blocked; docs/jev-integration-plan.md #5)\n")
+            try:
+                with open(os.path.join(root, "tools", "bench", "jev_gate.log"), "a", encoding="utf-8") as fh:
+                    fh.write("%s | %s | next_gate\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), line))
+            except OSError:
+                pass
+        except Exception:      # noqa: BLE001 - an advisory reading may never break the hook
+            return
+
     try:
         with open(snap_path, encoding="utf-8") as f:
             snap = f.read().strip()
     except OSError:
         return 0          # no runner snapshot (interactive chat, self-tests): nothing to compare against
     if not snap or next_md5(os.path.join(root, "STATUS.md")) != snap:
+        _jev_advisory()
         return 0
     sys.stderr.write(
         "BLOCKED by tools/hooks/guard_bash.py (NEXT before the retrospective; user 2026-09-21): STATUS.md's `## NEXT`\n"

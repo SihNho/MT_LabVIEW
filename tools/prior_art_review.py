@@ -187,6 +187,38 @@ def record_opt_out(review_path, reason):
     return True
 
 
+# --- JEV: HAS THIS STEP ALREADY BEEN PRIOR-ART REVIEWED? (2026-09-22, docs/jev-integration-plan.md row #6) ----
+# ADVISORY ONLY, BY THE USER'S OWN PROCEDURE for every Jev insertion: "보조 신호로 시작해 몇 사이클 일치를 본 뒤
+# 승격한다" - start as a side signal that overrides no existing rule, watch it for a few cycles, then promote.
+# So this NEVER refuses a dispatch and never changes what the reviewer is asked. It prints one line to stderr and
+# appends the same line to tools/bench/jev_gate.log when some recently archived prior-art review already answers
+# this step at p >= jev_gate.DUP_P, so the cycles of agreement can be counted from a file rather than remembered.
+# Promotion to a refusal is the USER's call, not this file's.
+def jev_advisory(slug, plan):
+    """One `JEV-PRIORART-DUP` line when an archived prior-art review already answers this step. Never raises,
+    never blocks, and is a complete no-op without TYPESAFE_API_KEY."""
+    try:
+        sys.path.insert(0, os.path.join(ROOT, "tools", "bench"))
+        import jev_gate
+        # The STEP, not the whole plan: the first non-empty, non-frontmatter, non-heading prose of what is under
+        # review, plus the slug. A whole plan document scores as "the whole plan", which is the useless answer.
+        lines, body = [], plan.split("---", 2)[-1] if plan.lstrip().startswith("---") else plan
+        for ln in body.splitlines():
+            s = ln.strip().lstrip("#*- ").strip()
+            if len(s) > 40 and not s.startswith("|"):
+                lines.append(s)
+            if len(" ".join(lines)) > 600:
+                break
+        step = ("prior-art slug %s. " % slug) + " ".join(lines)[:700]
+        line = jev_gate.jev_priorart_dup(step)
+        if line:
+            sys.stderr.write(line + "\n   ADVISORY ONLY - this dispatch is NOT blocked. Open that review before "
+                             "paying for another one (CLAUDE.md section 5: check archive/peer/ before re-asking).\n")
+            print("   " + line, flush=True)
+    except Exception:                    # noqa: BLE001 - an advisory must never break the dispatcher
+        pass
+
+
 def main():
     try:
         sys.stdout.reconfigure(errors="replace")
@@ -242,6 +274,7 @@ def main():
             f"=== WHAT IS UNDER REVIEW ===\n{plan}\n\n"
             f"=== STATUS.md IN FULL (the project's current decisions and state) ===\n{status}\n\n"
             f"{inventory(a.index)}")
+    jev_advisory(a.slug, plan)
     scratch = os.path.join(os.environ.get("TEMP", "."), f"priorart_{a.slug}.txt")
     with open(scratch, "w", encoding="utf-8") as f:
         f.write(task)

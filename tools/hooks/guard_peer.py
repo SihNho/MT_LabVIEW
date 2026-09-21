@@ -25,6 +25,12 @@ at 9 % of its weekly quota, and the user moved codex's roles onto claude sub-ses
 몇 번 돌려보자". So an ANSWERED `-Agent claude -Role hypothesis` exchange (opus, effort max, web search, run under
 codex's exact constraints) now discharges a failed prediction as well. Every other claude role still cannot.
 
+JEV DISCHARGE (2026-09-22, docs/jev-integration-plan.md row #1). On the path that was about to BLOCK, the newest
+accepted reviews are scored against this failure by tools/bench/jev_gate.py; at p >= 0.85 the build is allowed and
+the charge is written into that review's own disposition section as `JEV-DISCHARGE: <log> (<ts>, p=<p>)`. It can
+only ever cite an exchange that already passed review_quality() - so the adversary rule is untouched - and with no
+key, an API error or any exception the gate behaves exactly as it did before. See main() for the full note.
+
 DELIBERATE LIMITS, stated so nobody mistakes this for more than it is:
   * It gates the NEXT build, not the analysis in between - reading logs, writing docs and dispatching the peer
     itself all pass.
@@ -323,6 +329,38 @@ def main():
     hit, rejected = newest_bound_peer(mtime, names)
     if hit:
         return 0          # a peer exchange NAMING this failure was archived after it - the loop is closed
+
+    # --- JEV DISCHARGE (docs/jev-integration-plan.md row #1; user 2026-09-22) ------------------------------
+    # THE MECHANISATION OF AN EXISTING RULE, NOT A NEW EXEMPTION. CLAUDE.md section 5 already says: "check
+    # archive/peer/ for the same question before re-asking - re-asking wastes quota the session may need later."
+    # Nothing enforced it, and the gate's binding test is deliberately crude (creation time + a NAME appearing in
+    # the body), so a review that demonstrably attacks the very prediction a later run reports still leaves the
+    # gate armed when it was archived three minutes too early, or when the next run writes the same failure under
+    # a new log name. That is not a missing review; it is a missing citation.
+    #
+    # So, only on the path that was about to BLOCK, the newest accepted reviews are scored against this failure.
+    # At p >= jev_gate.DISCHARGE_P the build is allowed AND the charge is written into that review's own
+    # "## What was done with it" section, so the audit sees which failure was released against which review. In
+    # the unknown band the gate blocks exactly as before and only says so. No key, an API error, an old-format
+    # response or ANY exception => the old behaviour, unchanged.
+    #
+    # WHAT THIS CANNOT DO: it cannot invent a review. It only ever cites an exchange that already passed
+    # review_quality() above - ANSWERED, from codex, gemini or claude/hypothesis - so the adversary requirement
+    # and D3 are untouched. It writes no release line (`FIXED:` / `REFUTED:` / `PRIOR-ART:`) and does not move a
+    # review's creation time, so it cannot release a prior-art verdict or retro-bind an old review by a side
+    # effect. Measured before wiring: tools/bench/jev_discharge_trial.py over 40 labelled pairs.
+    allow, jev_line = False, None
+    try:
+        sys.path.insert(0, os.path.join(ROOT, "tools", "bench"))
+        import jev_gate
+        allow, jev_line = jev_gate.jev_discharge(path, text)
+    except Exception:                    # noqa: BLE001 - a gate must degrade to its old behaviour, never wedge
+        allow, jev_line = False, None
+    if allow:
+        return 0
+    if jev_line:
+        sys.stderr.write(jev_line + "\n"
+                         "  (advisory only: below the discharge threshold, so the block below stands.)\n\n")
 
     first = next((ln.strip() for ln in text.splitlines() if FAILURE_RE.search(ln)), "(see the log)")
     if rejected:

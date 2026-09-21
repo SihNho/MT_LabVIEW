@@ -956,3 +956,55 @@ classifies the failed M3a-2 run of 2026-09-22 01:58 as `device-failed`, **thresh
    the 08:53 order, so it is recorded here and left for the user to authorise or decline.
 4. **Recorded, not repaired around:** `guard_cycle.py` was NOT patched, no log was deleted or renamed, no
    frontmatter date was rolled, and `CYCLE_GUARD_OFF` was never set.
+
+## device-failed — 2026-09-22 08:00 (cycle 65, answering `archive/peer/2026-09-22-retrospective-cycle64.md:244`)
+
+DECISION: no-device
+
+Source, verbatim from the cycle-64 retrospective's own verdict line:
+`VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/bench/cycle_59.log:62`. The device named
+is **`audit_cycle.py`'s C3/C4 cost split**: C4 reported `$63.9903` with "reviews are 94 % of it" over four
+lines of which one — `$51.62`, 81 % of the total — is the JUDGEMENT SESSION (`tools/bench/cycle_59.log:62`),
+not a review. No wall-clock was lost (`loss_min=0`); the quantity that is corrupted is the measurement.
+
+**No device is built, and no existing device is patched in this cycle.** The threshold stays SUSPENDED under
+the user's standing order of **2026-09-18 08:53** (*"장치는 더 만들지 말고 계속 진행"*), so this block is the
+FINDING that suspension prescribes.
+
+1. **The fault is a MISCLASSIFICATION inside an existing reporter, not a missing mechanism.** `audit_cycle`'s
+   C4 already parses every cost line it needs (the same retrospective records C4b "cost lines seen 4 /
+   parsed 4"); what it gets wrong is which bucket a `claude -p` judgement session belongs in. That is a repair
+   to an existing device, which the standing order permits — but it is NOT this cycle's work: the cycle's
+   first act is the D1 deliverable stage (M3a-3), and STATUS OPEN item 42 already carries the `audit_cycle`
+   A2/A3/A4 defects as a live, unrepaired item. Recording it here keeps the count honest rather than paying
+   for it out of the delivery cycle.
+2. **Consequence while it stands, stated so nothing is argued on it:** every cost ratio produced by
+   `audit_cycle` C4 — including "reviews are 94 %" — is WRONG IN COMPOSITION and must not be cited as
+   evidence in a retrospective, an outcome review or a message to the user until the split is repaired. The
+   raw per-line costs in `tools/bench/cycle_*.log` are unaffected.
+3. **Recorded, not repaired around:** `guard_cycle.py` was NOT patched, no log was deleted or renamed, no
+   frontmatter date was rolled, and `CYCLE_GUARD_OFF` was never set.
+
+## tool-not-built — 2026-09-22 08:00 (cycle 65, answering `archive/peer/2026-09-22-retrospective-cycle64.md:243`)
+
+DECISION: no-device
+
+Source: `VIOLATION: tool-not-built | loss_min=32 | loss_usd=6.07 | evidence=tools/bench/build_d1_m3a2.log:59`
+— the executability gap in front of a LabVIEW launch: a never-executed 1,106-line recipe was cleared for a
+batch by a checker that only proves it parses, and died 71 s in on a five-specs-vs-four-arguments format
+string.
+
+**No new device.** The standing order of 2026-09-18 08:53 holds, and the answer this slug asks for was
+already paid inside an EXISTING checker in the cycle that raised it:
+
+1. **`c60c_astcheck` gate 10 EXISTS** (added 2026-09-22 as arity, widened the same day to validity after its
+   own hypothesis review, `archive/peer/2026-09-22-c74-gate10-arity.md`, disposed). It flagged exactly the
+   offending line on its first run in under a second, and it ran on THIS cycle's recipe BEFORE the build:
+   `tools/bench/c75_astcheck_m3a3.log` — 11 gates pass / 0 fail, "94 VERIFIED, 0 MISMATCH, 0 INVALID".
+2. **The stronger remedy stays UNBUILT and is the user's to authorise** — importing a recipe with `g` stubbed
+   and calling `main()` would catch the call-signature class no `%`-format gate can see. It is a NEW device
+   under the 08:53 order and is already an OPEN item in STATUS's "FOR THE USER" list. The class was MEASURED
+   as non-endemic (`build_d1_m3a2.py` 0 mismatches after repair, `build_d1_m3a1.py` 0,
+   `build_d1_routeb_v0.py` no `%` sites), so declining remains defensible.
+3. **Recorded, not repaired around:** no gate was patched to pass, no log deleted, no date rolled, and
+   `CYCLE_GUARD_OFF` was never set.

@@ -1,7 +1,7 @@
 ---
 type: plan
 status: current
-date: 2026-09-21
+date: 2026-09-22
 cycle: 27
 kind: build
 supersedes: [docs/cycle21-plan.md]
@@ -3250,10 +3250,77 @@ every `OpWireSource_v5` row satisfied Pre-decided 85's precondition (**0 violati
       not explained by our refs, and gating on an unexplained quantity would be the third instrument aimed at the
       wrong thing.
 
-91. **USER, 2026-09-22 02:4x: "저장 허용함." — the broken-intermediate GUI save (Pre-decided 88's route) is APPROVED as a standing
+101. **(renumbered 2026-09-22 cycle 65; was 91, a duplicate of :3097)** **USER, 2026-09-22 02:4x: "저장 허용함." — the broken-intermediate GUI save (Pre-decided 88's route) is APPROVED as a standing
     exception for `claudeDev` stage artefacts that are broken by design; CLAUDE.md §3 split-rule item 6. Evidence string for
     `gui_actions.log`: "user 2026-09-22 broken-intermediate save". Originals and the final deliverable are excluded.
 
-92. **JEV WIRED IN (user 2026-09-22 "Jev 구조 갱신한 상태에서 러너 시작"): `tools/jev.py` is the single client (key from the user env var only, ledger `tools/bench/jev_usage.jsonl`); `cycle_runner.py` asks Jev whether the two consecutive failing runs behind a firefighter trigger are the same failure class and VETOES the firefighter at p≤0.30 (`JEV-VETO`), logs `JEV-SAME`/`JEV-SKIP` otherwise. Plan #1 (review discharge) and #2 (log triage) are next, each measured first. Also on the table, user's idea: a stage-script LIBRARY (`tools/stagekit.py`) so sessions fill in rows and gates instead of re-writing 300–2,000-line diagnostics — a new device needing the user's go; not built yet.
+102. **(renumbered 2026-09-22 cycle 65; was 92, a duplicate of :3109)** **JEV WIRED IN (user 2026-09-22 "Jev 구조 갱신한 상태에서 러너 시작"): `tools/jev.py` is the single client (key from the user env var only, ledger `tools/bench/jev_usage.jsonl`); `cycle_runner.py` asks Jev whether the two consecutive failing runs behind a firefighter trigger are the same failure class and VETOES the firefighter at p≤0.30 (`JEV-VETO`), logs `JEV-SAME`/`JEV-SKIP` otherwise. Plan #1 (review discharge) and #2 (log triage) are next, each measured first. Also on the table, user's idea: a stage-script LIBRARY (`tools/stagekit.py`) so sessions fill in rows and gates instead of re-writing 300–2,000-line diagnostics — a new device needing the user's go; not built yet.
 
-93. **STAGE-SCRIPT LIBRARY `tools/stagekit.py` — USER-APPROVED 2026-09-22 ("템플릿을 만들어두고 … 아예 라이브러리 작성해서 인풋만 넣어주도록 … 좋아. 다음 사이클에 추가하도록").** Why: every cycle re-writes a 300–2,000-line diagnostic whose ~80 % is the same skeleton, which costs tokens/time and re-introduces defects (2026-09-22's `%`-format TypeError). What: one module holding the verified skeleton (md5 pin, work copy, fresh instance, Preload, censuses, gate/FACT format, ExecState timeline, refs check, junk purge, save route incl. the approved broken-intermediate gui_save, cleanup) + a self-test; a stage file declares input file, rows and criteria only. Acceptance: re-cut one existing diagnostic on the kit, identical gate outcomes, fewer lines. Order: after M3a-3. Exception to the no-new-device order for this device only.
+103. **(renumbered 2026-09-22 cycle 65; was 93, a duplicate of :3122)** **STAGE-SCRIPT LIBRARY `tools/stagekit.py` — USER-APPROVED 2026-09-22 ("템플릿을 만들어두고 … 아예 라이브러리 작성해서 인풋만 넣어주도록 … 좋아. 다음 사이클에 추가하도록").** Why: every cycle re-writes a 300–2,000-line diagnostic whose ~80 % is the same skeleton, which costs tokens/time and re-introduces defects (2026-09-22's `%`-format TypeError). What: one module holding the verified skeleton (md5 pin, work copy, fresh instance, Preload, censuses, gate/FACT format, ExecState timeline, refs check, junk purge, save route incl. the approved broken-intermediate gui_save, cleanup) + a self-test; a stage file declares input file, rows and criteria only. Acceptance: re-cut one existing diagnostic on the kit, identical gate outcomes, fewer lines. Order: after M3a-3. Exception to the no-new-device order for this device only.
+
+## Pre-decided — ADDED 2026-09-22 (cycle 65): M3a-3's row table is CORRECTED — the pairing in STATUS NEXT was transposed
+
+Source: `archive/peer/2026-09-22-priorart-c75-m3a3.md` (claude/`-Role priorart`, opus high, ANSWERED, $5.4824,
+verdict NOT `novel`, five findings). **ALL FIVE ACCEPTED, NONE REFUTED.** None argues against running M3a-3;
+one (A3) stops it from writing the wrong wire.
+
+104. **THE CORRECTED ROW TABLE — this table, not STATUS NEXT's sentence, is what M3a-3 is asserted against.**
+     The pairing written in STATUS's `## NEXT` ("… onto the NEW RIGHT registers `#23868` (VISA) and `#23895`
+     (position)", read against the consumers in the order written) is **TRANSPOSED**. What the machine measured:
+     `tools/bench/diag_c73_m3a2_rows.log:43` — `reg_index=1 RIGHT #4256 … outer={'name': 'position [internal
+     units]', 'is_source': True, 'wire': 4859}`; `:44` — `reg_index=2 RIGHT #4334 … outer={'name': 'Outgoing
+     Handle', 'is_source': True, 'wire': 7506}`. So wire **4859** (the Global's feed) carries **position** and
+     wire **7506** (`#7468`'s feed) carries the **VISA session**, while `:3098-3099` above fixes the new side as
+     reg0 RIGHT `#23868` = `'VISA out'`, reg1 RIGHT `#23895` = `'position [internal units]'`.
+
+     | row | delete wire | SINK (already wired) | NEW SOURCE — the register OUTER | carried value |
+     |---|---|---|---|---|
+     | **C — POSITION** | **4859** | `Global #7202 'Global motor pos.vi'` t0 `'Focus position'`, `(19, Nodes[8], t0)` on `Diagram #686` | **`#23895`** RIGHT OUTER = `(19, Nodes[21] = loop #23032, t3 'Out position', is_source True, bare)` | position [internal units] |
+     | **D — HANDLE/VISA** | **7506** | `FlatSequenceInnerTunnel #7468` (owner `FlatSequence #681`), address resolved in phase 0 from a TERMINAL TABLE | **`#23868`** RIGHT OUTER = `(19, Nodes[21] = loop #23032, t1 'Outgoing Handle', is_source True, bare)` | VISA session |
+
+     Executed as STATUS wrote it, this would feed the motor-position global with a VISA refnum and the VISA
+     consumer with a position — and it would **pass** a "the sink has exactly one source and it is the predicted
+     one" gate, because the prediction would itself be the transposed one.
+
+105. **THE 8-DAY-OLD EVIDENCE THAT CARRIED THE SAME PAIRING, CITED AS THE REVIEW'S FINDING A4 REQUIRES.**
+     `archive/bench-2026-09-14-shift-registers/frame-loop-wire-graph-after.md:410-411` — a measured table of
+     `Loop.Shift Registers[]` for `#637` with a column headed *"final value consumed by (diagram 19, wire)"*:
+     `:410` — `| 1 | 'position [internal units]' | 4256 | … | #7202 Global motor pos.vi t0 'Focus position'
+     (wire 4859) |`; `:411` — `| 2 | 'VISA out' | 4334 | … | — (wire 7506) |`. It names this stage's two rows
+     with uids and wire uids and would have caught the transpose on sight; it is cited nowhere in `:3091-3128`,
+     in STATUS's NEXT, or in `tools/bench/diag_c75_m3a3_endpoints.py`. Its closing line (`:424`) also states the
+     inventory fact this stage depends on: *"Final values that leave the loop: **4 of 14**."*
+
+106. **`LANDED` IS ASSERTED AS SOURCE IDENTITY — never as "the sink is still wired", and never as a wired-count
+     delta** (review finding B2, accepted). `connect_from_wire` into an **already-wired sink** is a measured
+     **silent no-op** on this very VI: `tools/bench/build_d1_m3a1.log:1174`, `:1875`, `:2593`, `:3311` all read
+     *"sink terminal t1 of CaseStructure #12589 carries wire 9113 ; CaseStructure WIRED-terminal count 3 -> 3 ;
+     `Wire.Is Broken?` False ; LANDED False"* — the sink kept its OLD wire, the write changed nothing and raised
+     nothing. Run 5's A4 gate nevertheless **PASSED** (`:1957`) because it had been re-anchored at the consumer
+     and the consumer is still wired — to the old source — so a dead row sits inside the `22 pass / 0 fail` of
+     `:3434`. The cause is already written down: `tools/gscript.py:2522-2523` — *"an already-wired source is
+     BRANCHED … an already-wired SINK is not safe (LabVIEW re-routes and the VI breaks) — wire only unwired
+     sinks"*. Therefore, in M3a-3: **the delete precedes every row** (mandatory, measured, older than cycle 62's
+     re-cut), and acceptance is that the wire now carried by the sink terminal has **exactly ONE** source
+     terminal of **any** owner class (Pre-decided 77) and that terminal is the NEW register OUTER named in 104 —
+     asserted on an ordered SECOND, idempotent re-connect (`wire_delta 0`, Pre-decided 94), never in the pass
+     that makes the connection. Hop count is an output, never a criterion (Pre-decided 90).
+
+107. **`#7468`'s ADDRESS IS RESOLVED FROM A TERMINAL TABLE, NEVER BY AN OWNER WALK** (review finding B3, the
+     hazard half, accepted). An owner chain **terminates SILENTLY at a `FlatSequenceFrame`** — `error 1055`,
+     `owner_uid 0`, empty cast echo, slug `ownerchain-flatseqframe-1055`, measured at
+     `docs/toolkit-capabilities.md:61` and stated at `:2872-2876` above. `#7468` is a `FlatSequenceInnerTunnel`
+     owned by `FlatSequence #681`, so that is **exactly** its path, and `tools/bench/diag_c73_m3a2_rows.log:101-104`
+     only proves the chain resolves for its siblings `#3974`/`#4194`. Its terminal is therefore found by reading
+     the owning `FlatSequence #681` NODE's own terminal table on `Diagram #686` (traverse idx 19) and taking the
+     entry whose connected wire uid is **7506** — the same route `diag_c75b_loopterms.log` used to resolve the
+     shift-register OUTER on the owning LOOP node. If that entry is absent, or appears more than once, **that is
+     a FAILED PREDICTION**: Row C runs alone, the artefact is saved, and Row D is deferred to M3a-3b. No
+     improvised address, no GUI fallback, and wire 7506 is not deleted at all in that branch.
+
+108. **THE HELPERS ARE REUSED, NOT REWRITTEN** (review finding B3, the helper half) and **WHAT IS ALREADY
+     MEASURED IS CITED, NOT RE-MEASURED** (finding B4): `delete_by_uid` (`tools/recipes/build_d1_m3a1.py:583`),
+     `pd85_violations` (`:811`), `identity_gate` (`:857`), `wire_walk` (`:844`), `print_walk` (`:823`), and
+     `step_6_sixth_row` (`:1530`) for tunnel-sink resolution; both consumer nets, the Global's sink terminal
+     index and both owning diagrams stand measured at `tools/bench/diag_c73_m3a2_rows.log:67-71`, `:82-87`,
+     `:91-100` and at `tools/bench/diag_c75_m3a3_rows.log` / `tools/bench/diag_c75b_loopterms.log`.

@@ -2979,6 +2979,37 @@ def connect_nested_v2(target, sink_diag, sink_node, sink_term, src_diag, src_nod
     `labels` defaults to tools/bench/opconnectnested_v2_labels.json - the same control-label map as
     v1's, because v2 is a file copy of v1 and its front panel is unchanged (the `UID 2` /
     `Is Broken?` indicators are left in place, unwired; deleting panel objects is an unproven verb).
+
+    !! 2026-09-22 (cycle 65 repair): **OpConnectNested_v2.vi WAS NEVER BUILT.** It is the only one of
+    the 51 OP_* constants in this file whose VI is absent from claudeDev (docs/cycle27-plan.md:2558
+    already recorded it as not built; `tools/bench/diag_c64_connect_v2.py` is the diagnostic that was
+    meant to create it and did not). Until 2026-09-22 this wrapper failed LATE, as
+    `com_error 5507 File not found` raised from inside GetVIReference by `op()` - which in
+    `build_d1_m3a3.py` run 1 happened AFTER a wire had already been deleted, leaving a dropped
+    consumer on disk. It now raises at ENTRY, before touching LabVIEW, so a caller can never mutate a
+    VI and then die on this. Use `connect_nested_v1`
+    (tools/recipes/build_opconnectnested_v1.py:418, op VI claudeDev\\OpConnectNested_v1.vi, SHIPPED)
+    instead. The public name is kept deliberately - deleting an API silently is worse than refusing it.
+    """
+    raise RuntimeError(
+        "gscript.connect_nested_v2 IS A DANGLING WRAPPER - ITS OP VI WAS NEVER BUILT.\n"
+        "  missing op VI : %s\n"
+        "  use instead   : connect_nested_v1(target, sink_diag, sink_node, sink_term, "
+        "src_diag, src_node, src_term, labels)\n"
+        "                  from tools/recipes/build_opconnectnested_v1.py:418 "
+        "(op VI OpConnectNested_v1.vi, SHIPPED)\n"
+        "  why this raises at entry: this call used to fail LATE as com_error 5507 inside "
+        "GetVIReference; in build_d1_m3a3.py run 1 that happened AFTER a wire delete, so the VI on "
+        "disk was left with a dropped consumer. Nothing has been touched by this call.\n"
+        "  evidence: docs/cycle27-plan.md:2558 (recorded not built); "
+        "tools/bench/diag_c64_connect_v2.py (the build diagnostic that did not produce it)"
+        % OP_CONNECT_NESTED_V2)
+
+
+def _connect_nested_v2_body_UNREACHABLE(target, sink_diag, sink_node, sink_term,
+                                        src_diag, src_node, src_term, labels=None):
+    """The original body of `connect_nested_v2`, kept VERBATIM and unreachable so that the wrapper can
+    be restored in one edit the day OpConnectNested_v2.vi is actually built. Never call this.
     """
     global _CONNECT_NESTED_V2_LABELS
     if labels is None:

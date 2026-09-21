@@ -1,0 +1,111 @@
+BGRUN START 2026-09-22 07:31:01 limit 25.0 min: py -u tools\prior_art_review.py --plan-file tools\bench\priorart_task_c75_m3a3.md --slug c75-m3a3 --trigger cycle-start --no-recipe no recipe exists for stage M3a-3 yet; this review runs at cycle start before the build script is written, so no launch gate could be armed against a filename that does not exist - the judgement session plants the record by hand with tools/stop_record.py write once the recipe is named
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c75-m3a3.txt (23280 chars)
+OUTCOME: ANSWERED (427s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-22-priorart-c75-m3a3.md
+COST: $5.4824  in 50 / out 35219 / cache-create 248918 / cache-read 4224903  (423s, 30 turn(s))
+--- ANSWER ---
+# PRIOR-ART REVIEW — stage M3a-3 (cycle 65, slug `c75-m3a3`)
+
+**Verdict: NOT `novel`.** Five findings, each cited to a line of this project's own files. The one that would waste the run is **B2**: the exact write M3a-3 needs — re-sourcing an already-wired consumer terminal with `connect_from_wire` — was attempted on this same VI **five times** in M3a-1 and **LANDED False every time**, and the run STATUS records as `22 pass / 0 fail` is one of them. The one that would corrupt the artefact is **A3**: STATUS's own `## NEXT` pairs the two consumers with the two new registers **in the wrong order**.
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 — SETTLED ALREADY, and settled **the way this stage proposes** (reported, no slug)
+
+- `docs/cycle27-plan.md:3105-3107` (Pre-decided 91, **2026-09-22**): *"Re-sourcing those two consumers from `#23868`/`#23895` is **M3a-3**; 69's rule (\"no sink that was wired on the bed may be left bare\") is discharged by NAMING them now, with their uids, not by wiring them into this stage."*
+- `docs/cycle27-plan.md:2826-2833` (Pre-decided 69) makes the dropped-consumer case a **rule-1a change of computation**, so doing it as its own saved stage is the compliant route, not a convenience.
+- That leaving the OLD right registers bare afterwards is legal is measured, not argued: `tools/bench/diag_c73_m3a2_rows.log:42` shows the ORIGINAL already carries a bare right OUTER (`reg_index=0 RIGHT #1147 … outer={… 'wire': 0}`).
+
+No slug. Recorded so the next reviewer does not re-spend it.
+
+### A3 — CONTRADICTED: the two consumers are paired with the **wrong** registers, and the plan item the brief tells you to read is **numbered twice**
+
+**(i) The pairing is swapped — the finding that would silently change the computation.**
+
+- **Side 1 — the plan under review and `STATUS.md`.** `STATUS.md` `## NEXT`: *"re-source `Global #7202 …` t0 `'Focus position'` (today on wire **4859** from the OLD `#4256` OUTER) and `FlatSequenceInnerTunnel #7468` (today on wire **7506** from the OLD `#4334` OUTER) onto the NEW RIGHT registers **`#23868`** (VISA) and **`#23895`** (position)."* Read in the order written that gives `#7202 ← #23868` (VISA) and `#7468 ← #23895` (position). The brief under review repeats the same ordered sentence.
+- **Side 2 — what the machine measured.** `tools/bench/diag_c73_m3a2_rows.log:43` — `reg_index=1 RIGHT #4256 … outer={'name': 'position [internal units]', 'is_source': True, 'wire': 4859}`; `:44` — `reg_index=2 RIGHT #4334 … outer={'name': 'Outgoing Handle', 'is_source': True, 'wire': 7506}`. So wire **4859** (the Global's feed) carries **position** and wire **7506** (`#7468`'s feed) carries the **VISA session**. `docs/cycle27-plan.md:3098-3099` fixes the new side: reg0 RIGHT **`#23868`** is `'VISA out'`, reg1 RIGHT **`#23895`** is `'position [internal units]'`.
+
+The correct rows are **`Global #7202` t0 ← `#23895`** and **`FlatSequenceInnerTunnel #7468` ← `#23868`** — the transpose of what is written down. Executed as written this feeds the motor-position global with a VISA refnum and the VISA consumer with a position, and it **passes** a "the sink has exactly one source and it is the predicted one" gate, because the prediction is itself the transposed one.
+
+**(ii) `Pre-decided 91`, `92` and `93` each name TWO different items.** The brief says *"The stage is named in `docs/cycle27-plan.md` Pre-decided 91 (read 91→100…)"*, but `:3097` is *"M3a-2 IS TWO ROWS…"* while `:3253` is *"USER, 2026-09-22 02:4x: '저장 허용함.'"*; `:3109` vs `:3257` (Jev) and `:3122` vs `:3259` (stagekit) collide the same way — and STATUS's NEXT cites "Pre-decided 93" meaning `:3259` while this brief's mechanism argument rests on "Pre-decided 93" meaning `:3122`. A citation resolving to two items cannot be opened and checked, which is this gate's whole currency.
+
+**To release:** (i) quote a measured line showing `#4256` OUTER carries the VISA session and `#4334` the position, or write the row table transposed and say so; (ii) renumber the second 91/92/93 block, or cite those three by line number everywhere.
+
+### A4 — UNREAD EVIDENCE: this project measured the register→consumer table eight days ago and nothing in the plan cites it
+
+`archive/bench-2026-09-14-shift-registers/frame-loop-wire-graph-after.md:407-411`, a measured table of `Loop.Shift Registers[]` for `#637` with a column headed *"final value consumed by (diagram 19, wire)"*:
+
+- `:410` — `| 1 | 'position [internal units]' | 4256 | … | #7202 Global motor pos.vi t0 'Focus position' (wire 4859) |`
+- `:411` — `| 2 | 'VISA out' | 4334 | … | — (wire 7506) |`
+
+It names this stage's two rows with uids and wire uids, and it is the document that would have caught A3(i) on sight. Neither `docs/cycle27-plan.md:3091-3128`, nor STATUS's NEXT, nor `tools/bench/diag_c75_m3a3_endpoints.py`'s "PRIOR ART, CHECKED BEFORE A LINE WAS WRITTEN" block (`:9-22`) mentions it. Its closing line (`:424`) also states the inventory fact this stage depends on: *"Final values that leave the loop: **4 of 14**."*
+
+**To release:** one citation line in the stage's row table.
+
+---
+
+## PART B — THE ARTEFACT
+
+### B2 — ALREADY FAILED: `connect_from_wire` into an **already-wired** sink is a measured silent no-op on this VI, five runs running
+
+- **The attempt.** `tools/recipes/build_d1_m3a1.py:1530` `step_6_sixth_row` resolves a structure tunnel's sink terminal through Pre-decided 72/74's route and writes it with `connect_from_wire`. It **is** addressable: `tools/bench/build_d1_m3a1.log:1145` / `:2561` — *"PASS A5 the sixth row is ADDRESSABLE … CaseStructure #12589, Diagram idx 48 Nodes[47], t1"*.
+- **The result, verbatim, in every run.** `tools/bench/build_d1_m3a1.log:1174`, `:1875`, `:2593`, `:3311`: *"THE SIXTH ROW: sink terminal t1 of CaseStructure #12589 **carries wire 9113** ; CaseStructure WIRED-terminal count **3 -> 3** ; `Wire.Is Broken?` False ; **LANDED False**."* The sink kept its OLD wire; the write changed nothing and raised nothing.
+- **And the gate stopped catching it.** Run 1's A4 FAILED on exactly this (`:552`, `:1240`). Run 5's A4 was re-anchored at the consumer and **PASSED** (`:1957`) because the consumer is *still wired* — to the old source (`:2653-2655`: wire 9113's source is `LoopTunnel 24018`, sinks `#12673` and `#4256`). `:3434` is the `GATES: 22 pass / 0 fail` STATUS quotes. A no-op write sits inside that 22/0.
+- **Why it is a no-op is already written down.** `tools/gscript.py:2522-2523`: *"an already-wired source is BRANCHED … an already-wired **SINK** is not safe (LabVIEW re-routes and the VI breaks) — wire only unwired sinks"*; `docs/d1-route-b-plan.md:300-302`: *"(§11k's proven create → delete → re-wire shape; MEASURED that Connect Wire on an **already-wired** sink re-routes and breaks, `gscript.py:2206-2207`, so **the delete is mandatory**)"*; same sentence at `.claude/skills/labview-automation/references/vi-scripting.md:603` and `:627`; regression record `archive/2026-09-16-status-gate-a1-delete-regression.md:93-97` (*"the recipe wired **four** already-wired sinks"*).
+
+**The brief's delete-and-rebuild is the right answer to this** — not disputed. What the record adds and the brief does not carry: (a) the delete is mandatory for a measured reason older than cycle 62's re-cut, and (b) **`LANDED` must be asserted as the identity of the NEW source on the sink's net**, never as "the sink is still wired" — the exact re-definition that let a dead row through run 5. The brief's acceptance wording is correct; it must be *the* gate, and A3(i)'s transposed prediction must be fixed first or the gate certifies the wrong source.
+
+**To release:** show a log line where `connect_from_wire` replaced a wire on an already-wired sink on this VI, or state in the plan that the delete precedes every row and that `LANDED` is source-identity.
+
+### B3 — HELPER EXISTS: the delete, the tunnel-sink resolution, the PD85 precondition and the PD70 identity test are all already coded
+
+`build_d1_m3a2.py:35` already imports from this module; nothing here needs hand-rolling.
+
+| what M3a-3 needs | the call that exists |
+|---|---|
+| delete a wire by uid | `delete_by_uid(path, "Wire", uid, tag)` — `tools/recipes/build_d1_m3a1.py:583` (*"report_all(cls) -> .index(uid) -> delete_object(cls, idx). The shape cycle 58 used; no new verb."*; there is no by-uid delete in the fleet — `tools/recipes/stage_d1_s3a_focus_ind.py:485-488`) |
+| reach a tunnel's terminal | `step_6_sixth_row` — `tools/recipes/build_d1_m3a1.py:1530`, implementing Pre-decided 72/74 (`docs/cycle27-plan.md:2866-2876`, `:2893-2907`): owner chain → the owning **structure node's** `Terms[]` → the entry that **exposes the tunnel's uid**, never a carried index (that is what broke T2c2) |
+| the reader precondition | `pd85_violations(wire_uid, walk)` — `:811` |
+| the acceptance test | `identity_gate(...)` — `:857` (Pre-decided 70, `docs/cycle27-plan.md:2843-2853`) |
+| the net walk + FACT lines | `wire_walk` `:844` / `print_walk` `:823` over `OpWireSource_v5` (`docs/toolkit-capabilities.md:60`) |
+
+Two hazards that come with that route, both measured, neither in the brief: `docs/cycle27-plan.md:2872-2876` — *"an owner chain terminates silently at a `FlatSequenceFrame`"*, measured at `docs/toolkit-capabilities.md:61` (`owner_uid 0`, `error 1055`, empty cast echo, slug `ownerchain-flatseqframe-1055`) — and the documented fallback `Tunnel.Outside Terminal` (`Inside Terminals[]` 6356000 is built, the writer side is not). `#7468` is a `FlatSequenceInnerTunnel`, so this is its path, and `tools/bench/diag_c73_m3a2_rows.log:101-104` only proves the chain resolves for its siblings `#3974`/`#4194` (→ `FlatSequence #681`), never for `#7468`.
+
+### B4 — ALREADY MEASURED: both consumer nets, the Global's sink terminal index, both owning diagrams, and `#7468`'s `Nodes[]` status are on file
+
+`tools/bench/diag_c75_m3a3_endpoints.py`'s M2/M3/M5 re-ask what `tools/bench/diag_c73_m3a2_rows.log` answered terminal by terminal:
+
+- **M2, wire 4859:** `:67-71` — `t0 is_source=True RightShiftRegister #4256`, `t1 is_source=False Global #7202`, *"3 row(s), 2 with a REAL owner, **0 PD85 violation(s)**"*, *"SINK terminal(s) … [('Global', 7202)]"*.
+- **M2, wire 7506:** `:82-86` — `t0 … RightShiftRegister #4334`, `t1 … FlatSequenceInnerTunnel #7468`, same counts, 0 violations.
+- **M5(c):** `:72` — *"owner #7202 (Global) label 'Global motor pos.vi' on Diagram #686: terminal(s) carrying w4859 -> **[(0, 'Focus position', False)]**"*.
+- **M5(d), the question the diagnostic frames as open:** `:87` — *"owner **#7468** (FlatSequenceInnerTunnel): **not found in any scanned diagram's Nodes[]** (173 scanned)"*. Answered already — and Pre-decided 72 (`docs/cycle27-plan.md:2866-2867`) states the law: *"A tunnel is not a `Nodes[]` entry, but its terminal IS an entry in its owning structure node's `Terminals[]`."* So M5's `Diagram(idx).Nodes[n].Terminals[t]` framing measures a route already known not to exist for this endpoint, while the route that does exist goes unmeasured.
+- **M3:** `:95-100` — wires 4859 and 7506 both owned by `Diagram #686`; `:91-92` — both loop borders on `#686` (`#637` Nodes[4], `#23032` Nodes[21]).
+- **M1:** `:42-57` — the OLD loop's register table with machine-read labels.
+
+**Scope, precisely, so the release is cheap:** `diag_c73` was read on the **M3a-1** artefact (md5 `6b3c1f3c…`) and the bed is now **M3a-2** (`3842f5e6…`), so a re-read is defensible in principle — but `tools/bench/build_d1_m3a2.log` records M3a-2 as two rows into the **LEFT OUTER** terminals of `#23880` / `#23909` only, originals left on their nets; nothing it touched can have changed `#637` or either consumer net. **M6 (`#7468`'s owner object) is genuinely unmeasured** and is worth the call.
+
+### B1 — NO FINDING
+
+No recipe, op or VI under any name already performs the M3a-3 rows: `tools/recipes/` carries no `*m3a3*` file, and the only artefact named for this stage is the measurement-only `tools/bench/diag_c75_m3a3_endpoints.py`, which declares `"no_new_op": True … "no_recipe_written": True` (`:107-108`). One route worth **not** re-deriving: there is no `wire_sr` variant taking a RIGHT register's OUTER terminal as a SOURCE — `tools/gscript.py:741-744` lists exactly `LeftIn`, `RightIn`, `LeftOutNode`, `LeftOutCtl` — so the register side of both rows must be addressed through border node `#23032`'s own `Terminals[]`, as M3a-2 did, or as a wire uid once the register is on a net.
+
+---
+
+```
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-failed
+PRIOR-ART: helper-exists
+PRIOR-ART: already-measured
+```
+
+**Cheapest order to dispose of this.** A3(i) and A4 are one file-open each (`diag_c73_m3a2_rows.log:43-44`, `frame-loop-wire-graph-after.md:410-411`) and cost one corrected row table — do them first, because every later gate is asserted against that table. B2 is one grep of `build_d1_m3a1.log` for `LANDED` and costs a sentence fixing the delete order and the meaning of `LANDED`. B3 and B4 are citation lines and deletions from the diagnostic. **None of the five requires a build to resolve, and none argues against running M3a-3** — four shrink the work and one (A3) stops it from writing the wrong wire.
+
+*(Note for the dispatcher: the `Write` tool is disabled in this session, so this review exists only as this message — nothing was written to disk, no lock taken, nothing built or run.)*
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c75-m3a3.md
+   NO-RECIPE opt-out recorded in archive\peer\2026-09-22-priorart-c75-m3a3.md: no recipe exists for stage M3a-3 yet; this review runs at cycle start before the build script is written, so no launch gate could be armed against a filename that does not exist - the judgement session plants the record by hand with tools/stop_record.py write once the recipe is named
+   STOP RECORD: NOT ARMED BY EXPLICIT OPT-OUT - verdicts contradicted, unread-evidence, already-failed, helper-exists, already-measured block, and --no-recipe was given:
+     reason: no recipe exists for stage M3a-3 yet; this review runs at cycle start before the build script is written, so no launch gate could be armed against a filename that does not exist - the judgement session plants the record by hand with tools/stop_record.py write once the recipe is named
+   If this review does become a recipe, plant the record by hand:
+     py tools/stop_record.py write --recipe <recipe> --review archive\peer\2026-09-22-priorart-c75-m3a3.md --verdict contradicted unread-evidence already-failed helper-exists already-measured
+BGRUN END rc=0 after 428s
