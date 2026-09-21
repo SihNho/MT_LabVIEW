@@ -20,8 +20,8 @@ and new tools/bench/jev_*.py files; jev.py is the shared transport and is left b
 both trials import THIS file, so the questions, the thresholds and the log format exist once.
 
 THRESHOLDS (docs/jev-integration-plan.md "공통 원칙": 0.3-0.7 is "unknown" -> the old path decides).
-  discharge  p >= DISCHARGE_P (0.85)  -> the gate allows and CITES the review it relied on
-             ADVISORY_LO < p < 0.85   -> the gate blocks exactly as before, plus one JEV-ADVISORY line
+  discharge  p >= DISCHARGE_P (0.80)  -> the gate allows and CITES the review it relied on
+             ADVISORY_LO < p < 0.80   -> the gate blocks exactly as before, plus one JEV-ADVISORY line
              p <= 0.30 / no key / err -> the gate blocks exactly as before, silently
   prior-art  p >= DUP_P (0.85)        -> ADVISORY ONLY. One JEV-PRIORART-DUP line; nothing is blocked.
 """
@@ -41,7 +41,7 @@ if TOOLS not in sys.path:
     sys.path.insert(0, TOOLS)
 import jev  # noqa: E402
 
-DISCHARGE_P = 0.85
+DISCHARGE_P = 0.80   # user 2026-09-22: start at 0.80 (sweep: 0.70 and 0.85 both precision 1.0 on the 40-pair set), re-tune after 3 cycles
 DUP_P = 0.85
 ADVISORY_LO = 0.30
 N_RECENT_REVIEWS = 5

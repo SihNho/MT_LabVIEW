@@ -360,7 +360,7 @@ summary:
    08:53** by the user's standing order (*"장치는 더 민들지 말고 계속 진행"*, **user, 2026-09-18 08:53** — cited by
    DATE, never by a STATUS line number, which every relocation moves): while it
    stands, a slug reaching 3 is recorded as a FINDING in `docs/violation-decisions.md` and the next cycle builds
-   NO device; the threshold resumes the moment the user lifts the order. **EXCEPTION (user, 2026-09-22: "Jev 건은 예외로 추가하도록 하고"): devices that put TypeSafe's Jev (a typed-decision model, `docs/jev-integration-plan.md`) behind an EXISTING decision point — the firefighter trigger, the failed-prediction review gate, log classification, plan checks — are allowed under the no-new-device order, each one MEASURED on a labelled set before it is switched on and introduced as an ADVISORY signal first.** **Second exception (user, 2026-09-22 "좋아. 다음 사이클에 추가하도록"): the stage-script library `tools/stagekit.py` (Pre-decided 93) — the repeated skeleton of stage/diagnostic scripts as one verified module, so a stage file is inputs only.** Resolved 2026-09-18 by the cycle-26
+   NO device; the threshold resumes the moment the user lifts the order. **EXCEPTION (user, 2026-09-22: "Jev 건은 예외로 추가하도록 하고"): devices that put TypeSafe's Jev (a typed-decision model, `docs/jev-integration-plan.md`) behind an EXISTING decision point — the firefighter trigger, the failed-prediction review gate, log classification, plan checks — are allowed under the no-new-device order, each one MEASURED on a labelled set before it is switched on and introduced as an ADVISORY signal first.** Jev scripts (`tools/jev*.py`, `tools/bench/jev_*.py`) are EXEMPT from the failed-prediction and material gates (user, 2026-09-22 "Jev는 면제") — they touch no LabVIEW. Thresholds in force: review discharge p≥0.80 (active), firefighter veto p≤0.30 (active), triage/NEXT/prior-art advisory only. **Second exception (user, 2026-09-22 "좋아. 다음 사이클에 추가하도록"): the stage-script library `tools/stagekit.py` (Pre-decided 93) — the repeated skeleton of stage/diagnostic scripts as one verified module, so a stage file is inputs only.** Resolved 2026-09-18 by the cycle-26
    judgement session after `doc_ingest` reported this line contradicting STATUS — the later user statement wins.
 4. `tools/hooks/guard_cycle.py` refuses the next RECIPE build while the previous cycle's logs have no newer
    retrospective, or while a slug is at threshold. Diagnostics, docs, peers and the retrospective itself pass.
@@ -577,7 +577,7 @@ summary.
 | | reads files | reads the web | model |
 |---|---|---|---|
 | **codex** | ✅ project dir, read-only sandbox | ✅ | `gpt-5.6-sol` / medium, pinned in peer.ps1 (user, 2026-09-15). **Still selectable, no longer any default — weekly quota 9 % on 2026-09-18** |
-| **agy (gemini)** | ❌ | ✅ | agy's own default; `agy models` lists what `-Model` can pin. Unchanged fallback |
+| **agy (gemini)** | ❌ | ✅ | RETIRED from every default/fallback 2026-09-22 (user: roles delegated to claude; headless permission auto-deny). Explicit `-Agent gemini` only |
 | **claude** | ✅ project dir (the thin roles: only what they choose to read), plan mode + acting tools denied | per role | **`-Role` decides**: `audit` sonnet · `ingest` sonnet · `priorart` opus/high · `hypothesis` opus/max +web · `fact` **fable/low +web, thin** · `outcome` **fable/medium +web, thin** · `prose` **fable/low, thin** |
 
 The claude peer was added 2026-09-15 on the user's direction ("claude 하위 세션도 peer review에 참여
@@ -588,7 +588,7 @@ cost. Web is now per role, not banned outright — `hypothesis`, `fact` and `out
 `audit`, `ingest`, `priorart` and `prose` still have none.
 
 One peer per question (the others only to cross-check an answer about to drive expensive construction).
-Fallback order from 2026-09-18: **claude → gemini → Claude's own research session**, with codex reachable by an
+Fallback order from 2026-09-22 (user: "Gemini 역할도 claude에게 위임" — agy auto-denies its `command` permission headless, so it is dead in unattended runs): **claude → Claude's own research session**; gemini stays selectable by an explicit `-Agent gemini` only, with codex reachable by an
 explicit `-Agent codex` while its quota lasts. If every peer is exhausted, Claude still runs the external research
 itself — "no peer available" never means going straight to experimenting. Waiting for a quota to renew is never
 the right move.

@@ -26,7 +26,7 @@ at 9 % of its weekly quota, and the user moved codex's roles onto claude sub-ses
 codex's exact constraints) now discharges a failed prediction as well. Every other claude role still cannot.
 
 JEV DISCHARGE (2026-09-22, docs/jev-integration-plan.md row #1). On the path that was about to BLOCK, the newest
-accepted reviews are scored against this failure by tools/bench/jev_gate.py; at p >= 0.85 the build is allowed and
+accepted reviews are scored against this failure by tools/bench/jev_gate.py; at p >= 0.80 (user 2026-09-22) the build is allowed and
 the charge is written into that review's own disposition section as `JEV-DISCHARGE: <log> (<ts>, p=<p>)`. It can
 only ever cite an exchange that already passed review_quality() - so the adversary rule is untouched - and with no
 key, an API error or any exception the gate behaves exactly as it did before. See main() for the full note.
@@ -59,7 +59,7 @@ RUNS_RE = re.compile(r"py[\w.]*\s+(?:-u\s+)?[^\s|;&]*tools[\\/](?:recipes|bench)
 # The CYCLE RUNNER is not a build (2026-09-21 11:5x): `bgrun.py ... -- py tools/cycle_runner.py` only spawns the
 # judgement session that will itself dispatch the owed review; blocking the runner on a failing log left by a
 # session the 600-min cap killed mid-cycle deadlocks the loop (nobody is left to dispatch anything).
-RUNNER_RE = re.compile(r"tools[\\/]cycle_runner\.py", re.I)
+RUNNER_RE = re.compile(r"tools[\\/]cycle_runner\.py|tools[\\/](?:bench[\\/])?jev_?[\w]*\.py", re.I)   # + Jev scripts: user 2026-09-22 "Jev는 면제" (no LabVIEW)
 # The remedy itself, and pure inspection, must never be blocked.
 EXEMPT_RE = re.compile(r"peer\.ps1|guard_peer|--help|\b(cat|head|tail|sed|grep|less|type|wc|ls|dir)\b", re.I)
 

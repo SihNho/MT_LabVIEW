@@ -62,7 +62,7 @@ MARKER_RE = re.compile(r"(?:^|\s)MATERIAL=1(?=\s|$)|\$env:MATERIAL\s*=\s*['\"]?1
 # judgement session is SUPPOSED to work, so they must never be caught by the gate that pushes work to material.
 MATERIAL_EXEMPT_RE = re.compile(
     r"peer\.ps1|retrospective\.py|violations\.py|audit_cycle\.py|outcome_review\.py|prior_art_review\.py|"
-    r"guard_|--help|"
+    r"guard_|--help|jev_?[\w]*\.py|"          # Jev scripts exempt (user 2026-09-22 "Jev는 면제"; they touch no LabVIEW)
     r"\b(cat|head|tail|sed|grep|less|type|wc|ls|dir)\b", re.I)
 
 
