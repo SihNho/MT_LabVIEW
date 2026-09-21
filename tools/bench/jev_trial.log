@@ -1,0 +1,161 @@
+BGRUN START 2026-09-22 07:08:43 limit 20.0 min: py -u tools/bench/jev_trial.py
+=== jev_trial: does Jev judge 'same failure class' better than the runner's regex? ===
+NO LabVIEW is touched by this run. Reads tools/bench/*.log + HTTPS to api.typesafe.ai.
+
+PAIRS: 40 (POS 15 / NEG 15 / HARD 10) over 57 distinct failing build logs
+PASS P1 pair set written BEFORE any API call -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\jev_trial.json
+
+--- HARD pair labels (set by reading; these are the only pairs that can separate the two judges) ---
+  HARD | c63_astcheck.log  vs  c65_astcheck.log
+      label=DIFF regex=SAME :: Same script (c60c_astcheck.py, our static recipe checker) but gate 3 (allow_broken=True never passed) and gate 7 (move_in neither imported nor called) are two unrelated defects in two different recipes it was pointed at, so fixing one changes nothing about the other - the regex's recipe-name test says SAME here because it identifies the CHECKER rather than the thing checked.
+  HARD | c63_astcheck.log  vs  c74_gate10_m3a2.log
+      label=DIFF regex=SAME :: Same checker script again, but gate 3 is a missing allow_broken argument while gate 10 is a %-format arity mismatch on one literal in a different recipe; unrelated defects sharing only the tool that found them.
+  HARD | build_s0_closeref_v1.log  vs  build_s0_closeref_v3.log
+      label=DIFF regex=SAME :: Same recipe family after the _vN strip, and both roll up to the same summary gate G-A0, but v1 never got past G3c (its model of OpReportAll_v1's property-node chain was wrong) while v3 got past that and produced ops that do not compile (G5, ExecState 0) - a fix for the census expectation does not make the op runnable.
+  HARD | build_opfstunnelterm_v1_run1.log  vs  diag_fstunnel_preclean_twins.log
+      label=SAME regex=SAME :: Different script names (a build recipe vs a diagnostic) but the identical first gate B4 with identical ExecState readings - the diagnostic was written to reproduce the build's failure, so it is the same defect.
+  HARD | build_opfstunnelterm_v0.log  vs  build_opfstunnelterm_v1_run1.log
+      label=DIFF regex=SAME :: Same recipe after the _vN strip, but v0 died at gate Z on a wire-count/branch mismatch (40->40, no new tunnel) while v1 got a built op and died at B4 on the typed chain's legality - v1 exists because v0's defect was already fixed, so they are consecutive different failures of one effort, not one failure.
+  HARD | diag_s2_scaffold.log  vs  wait_diag_s2.log
+      label=SAME regex=SAME :: Different script names (diag_s2_scaffold.py vs wait_bgrun_end.py) but wait_bgrun_end is a WAITER that tails the other log and re-prints its result, so the two logs report literally the same G12 failure of the same run.
+  HARD | diag_c66_s3b_m3.log  vs  diag_c66b_s3b_m3.log
+      label=DIFF regex=DIFF :: Consecutive probes of the same M3 stage whose names differ only by the 'b' (so the _vN strip does NOT merge them), but c66 fails on a node sitting at an unexpected POSITION plus a watched wire on a structure terminal, while c66b gets all seven objects moved and fails on ExecState 0 - the second is the next question, not the same.
+  HARD | diag_c65_s3b_row2.log  vs  diag_c65_s3b_row2b.log
+      label=DIFF regex=DIFF :: Same stage and adjacent names, but row2 fails because a source uid does not resolve to a live Traverse index while row2b fails because the ControlTerminal census and the diagram's Nodes[] list do not intersect at all - the second is a deeper, different fact about addressability that would not be fixed by repairing the first.
+  HARD | diag_c62_s3b_rows.log  vs  diag_c62_s3b_build.log
+      label=SAME regex=DIFF :: Different script names and different first gates (B1_c 'no top-level Nodes[] index for the source' vs B1_g 'the new wire's far end is the LOCAL'), but both are the same route failing at the same precondition - the source is addressable only on an inner diagram - and both then skip B2 for want of a saved file.
+  HARD | build_d1_routeb_v0_run3.log  vs  build_d1_routeb_v3_run6.log
+      label=DIFF regex=SAME :: Same recipe key after the _vN strip, so the regex calls them one failure, but v0 ran to its own summary (84 pass/3 fail, S3w NO-ROUTE by the route's own gate) while v3 died on an unhandled RuntimeError when g.count(LoopTunnel) hit 'Traverse Failed' - a clean gate verdict and a crashed traverse are not one class.
+
+key: present (length 108), read from HKCU Environment. Never printed or logged.
+
+  [ 1/40] POS     label=SAME regex=SAME jev=0.710  Jok Rok  (0.5s)
+  [ 2/40] POS     label=SAME regex=SAME jev=0.920  Jok Rok  (0.5s)
+  [ 3/40] POS     label=SAME regex=SAME jev=0.910  Jok Rok  (0.5s)
+  [ 4/40] POS     label=SAME regex=SAME jev=0.390  JXX Rok  (0.6s)
+  [ 5/40] POS     label=SAME regex=SAME jev=0.290  JXX Rok  (0.6s)
+  [ 6/40] POS     label=SAME regex=SAME jev=0.730  Jok Rok  (0.5s)
+  [ 7/40] POS     label=SAME regex=SAME jev=0.730  Jok Rok  (0.6s)
+  [ 8/40] POS     label=SAME regex=SAME jev=0.970  Jok Rok  (0.5s)
+  [ 9/40] POS     label=SAME regex=SAME jev=0.970  Jok Rok  (0.5s)
+  [10/40] POS     label=SAME regex=SAME jev=0.870  Jok Rok  (0.5s)
+  [11/40] POS     label=SAME regex=SAME jev=0.140  JXX Rok  (0.6s)
+  [12/40] POS     label=SAME regex=SAME jev=0.150  JXX Rok  (0.5s)
+  [13/40] POS     label=SAME regex=SAME jev=0.120  JXX Rok  (0.5s)
+  [14/40] POS     label=SAME regex=SAME jev=0.930  Jok Rok  (0.5s)
+  [15/40] POS     label=SAME regex=SAME jev=0.970  Jok Rok  (0.5s)
+  [16/40] NEG     label=DIFF regex=DIFF jev=0.120  Jok Rok  (0.5s)
+  [17/40] NEG     label=DIFF regex=DIFF jev=0.120  Jok Rok  (0.5s)
+  [18/40] NEG     label=DIFF regex=DIFF jev=0.140  Jok Rok  (0.5s)
+  [19/40] NEG     label=DIFF regex=DIFF jev=0.230  Jok Rok  (0.5s)
+  [20/40] NEG     label=DIFF regex=DIFF jev=0.150  Jok Rok  (0.5s)
+  [21/40] NEG     label=DIFF regex=DIFF jev=0.080  Jok Rok  (0.6s)
+  [22/40] NEG     label=DIFF regex=DIFF jev=0.100  Jok Rok  (0.5s)
+  [23/40] NEG     label=DIFF regex=DIFF jev=0.090  Jok Rok  (0.5s)
+  [24/40] NEG     label=DIFF regex=DIFF jev=0.090  Jok Rok  (0.5s)
+  [25/40] NEG     label=DIFF regex=DIFF jev=0.090  Jok Rok  (0.5s)
+  [26/40] NEG     label=DIFF regex=DIFF jev=0.090  Jok Rok  (0.5s)
+  [27/40] NEG     label=DIFF regex=DIFF jev=0.040  Jok Rok  (0.5s)
+  [28/40] NEG     label=DIFF regex=DIFF jev=0.170  Jok Rok  (0.5s)
+  [29/40] NEG     label=DIFF regex=DIFF jev=0.180  Jok Rok  (0.5s)
+  [30/40] NEG     label=DIFF regex=DIFF jev=0.140  Jok Rok  (0.5s)
+  [31/40] HARD    label=DIFF regex=SAME jev=0.080  Jok RXX  (0.5s)
+  [32/40] HARD    label=DIFF regex=SAME jev=0.060  Jok RXX  (0.5s)
+  [33/40] HARD    label=DIFF regex=SAME jev=0.190  Jok RXX  (0.5s)
+  [34/40] HARD    label=SAME regex=SAME jev=0.810  Jok Rok  (0.6s)
+  [35/40] HARD    label=DIFF regex=SAME jev=0.210  Jok RXX  (0.5s)
+  [36/40] HARD    label=SAME regex=SAME jev=0.940  Jok Rok  (0.5s)
+  [37/40] HARD    label=DIFF regex=DIFF jev=0.160  Jok Rok  (0.5s)
+  [38/40] HARD    label=DIFF regex=DIFF jev=0.300  Jok Rok  (0.6s)
+  [39/40] HARD    label=SAME regex=DIFF jev=0.210  JXX RXX  (0.5s)
+  [40/40] HARD    label=DIFF regex=SAME jev=0.140  Jok RXX  (0.5s)
+
+==============================================================================
+RESULTS  (threshold 0.50 ; 40 scored, 0 errored)
+==============================================================================
+block  regex accuracy             jev accuracy              
+POS    100.0% (15/15)              66.7% (10/15)            
+NEG    100.0% (15/15)             100.0% (15/15)            
+HARD    40.0% (4/10)               90.0% (9/10)             
+ALL     85.0% (34/40)              85.0% (34/40)            
+
+P4 REMINDER: the POS block's labels ARE the regex's own rule, so its 100% there is arithmetic, not
+             evidence. The ORDERED READING is the HARD block, labelled by reading the logs.
+
+Brier (Jev, all scored): 0.1131   (HARD only): 0.0889   (regex as 0/1, all scored): 0.1500
+latency: mean 0.52s, min 0.47s, max 0.59s over 40 calls
+usage totals reported by the API: {"input_tokens": 75773, "output_tokens": 880}
+
+--- DISAGREEMENTS WITH THE LABEL ---
+  POS   build_d1_routeb_v6_run9.log        build_d1_routeb_v7_run10.log       label=SAME regex=SAME jev=0.390  JEV-WRONG
+  POS   build_d1_routeb_v3_run6.log        build_d1_routeb_v7_run10.log       label=SAME regex=SAME jev=0.290  JEV-WRONG
+  POS   build_opconnectnested_v1.log       build_opconnectnested_v1_run2.log  label=SAME regex=SAME jev=0.140  JEV-WRONG
+  POS   build_opconnectfromwire_v0.log     build_opconnectfromwire_v0_run2.lo label=SAME regex=SAME jev=0.150  JEV-WRONG
+  POS   diag_count_indicator.log           diag_count_indicator_run2.log      label=SAME regex=SAME jev=0.120  JEV-WRONG
+  HARD  c63_astcheck.log                   c65_astcheck.log                   label=DIFF regex=SAME jev=0.080  REGEX-WRONG
+  HARD  c63_astcheck.log                   c74_gate10_m3a2.log                label=DIFF regex=SAME jev=0.060  REGEX-WRONG
+  HARD  build_s0_closeref_v1.log           build_s0_closeref_v3.log           label=DIFF regex=SAME jev=0.190  REGEX-WRONG
+  HARD  build_opfstunnelterm_v0.log        build_opfstunnelterm_v1_run1.log   label=DIFF regex=SAME jev=0.210  REGEX-WRONG
+  HARD  diag_c62_s3b_rows.log              diag_c62_s3b_build.log             label=SAME regex=DIFF jev=0.210  JEV-WRONG+REGEX-WRONG
+  HARD  build_d1_routeb_v0_run3.log        build_d1_routeb_v3_run6.log        label=DIFF regex=SAME jev=0.140  REGEX-WRONG
+
+--- WHERE THE TWO JUDGES DISAGREE WITH EACH OTHER ---
+  POS   build_d1_routeb_v6_run9.log        build_d1_routeb_v7_run10.log       regex=SAME jev=0.390 -> label=SAME (regex right)
+  POS   build_d1_routeb_v3_run6.log        build_d1_routeb_v7_run10.log       regex=SAME jev=0.290 -> label=SAME (regex right)
+  POS   build_opconnectnested_v1.log       build_opconnectnested_v1_run2.log  regex=SAME jev=0.140 -> label=SAME (regex right)
+  POS   build_opconnectfromwire_v0.log     build_opconnectfromwire_v0_run2.lo regex=SAME jev=0.150 -> label=SAME (regex right)
+  POS   diag_count_indicator.log           diag_count_indicator_run2.log      regex=SAME jev=0.120 -> label=SAME (regex right)
+  HARD  c63_astcheck.log                   c65_astcheck.log                   regex=SAME jev=0.080 -> label=DIFF (jev right)
+  HARD  c63_astcheck.log                   c74_gate10_m3a2.log                regex=SAME jev=0.060 -> label=DIFF (jev right)
+  HARD  build_s0_closeref_v1.log           build_s0_closeref_v3.log           regex=SAME jev=0.190 -> label=DIFF (jev right)
+  HARD  build_opfstunnelterm_v0.log        build_opfstunnelterm_v1_run1.log   regex=SAME jev=0.210 -> label=DIFF (jev right)
+  HARD  build_d1_routeb_v0_run3.log        build_d1_routeb_v3_run6.log        regex=SAME jev=0.140 -> label=DIFF (jev right)
+
+raw -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\jev_trial.json
+
+=== jev_trial: 40/40 pairs scored, 0 error(s) ===
+BGRUN END rc=0 after 21s
+BGRUN START 2026-09-22 07:11:29 limit 5.0 min: py -u tools/bench/jev_trial.py --rescore
+=== jev_trial --rescore: corrected labels, NO API call (p values are the ones already on disk) ===
+
+  CORRECTED build_opconnectnested_v1.log vs build_opconnectnested_v1_run2.log : SAME -> DIFF
+      run 1 died at gate Vx on a Python bug (EXC unhashable type: 'dict'), 15 pass/1 fail; run 2 is the repaired script reaching 31 pass/1 fail and failing T3 'the For loop is on the expected diagram' - fixing the dict bug does not put the For loop on the expected diagram.
+  CORRECTED build_opconnectfromwire_v0.log vs build_opconnectfromwire_v0_run2.log : SAME -> DIFF
+      run 1 stopped at T2a2 because a PRECONDITION was false (the sink terminal was not bare, wire 5979); run 2 gets past that and fails T2c2, where the op's own `Wire.Is Broken?` reads True on the wire it created - a precondition bug and a broken-wire bug are two defects.
+  CORRECTED diag_count_indicator.log vs diag_count_indicator_run2.log : SAME -> DIFF
+      run 1 failed G3/G4a and then crashed with FileNotFoundError on a doubled path ('tools\tools\bench\...'); run 2 is the repaired script, ending 12 pass/1 fail at G6 'every terminal of w# resolved to an owner' (3 of 4) - the path bug and the unresolved owner are unrelated.
+
+  3 correction(s) applied.
+
+==============================================================================
+CORRECTED RESULTS (threshold 0.50, 40 scored)
+==============================================================================
+block            regex accuracy           jev accuracy            
+POS              100.0% (12/12)            83.3% (10/12)          
+NEG              100.0% (15/15)           100.0% (15/15)          
+HARD              40.0% (4/10)             90.0% (9/10)           
+HARD-corrected     0.0% (0/3)             100.0% (3/3)            
+ALL               77.5% (31/40)            92.5% (37/40)          
+
+ORDERED READING - every pair whose label was set by READING the logs (13 pairs):
+   regex  30.8% (4/13)   |   jev  92.3% (12/13)
+
+Brier under corrected labels: jev 0.0586 | regex-as-0/1 0.2250
+
+--- REMAINING DISAGREEMENTS WITH THE CORRECTED LABEL ---
+  POS             build_d1_routeb_v6_run9.log       build_d1_routeb_v7_run10.log      label=SAME regex=SAME jev=0.390  JEV-WRONG
+  POS             build_d1_routeb_v3_run6.log       build_d1_routeb_v7_run10.log      label=SAME regex=SAME jev=0.290  JEV-WRONG
+  HARD-corrected  build_opconnectnested_v1.log      build_opconnectnested_v1_run2.log label=DIFF regex=SAME jev=0.140  REGEX-WRONG
+  HARD-corrected  build_opconnectfromwire_v0.log    build_opconnectfromwire_v0_run2.l label=DIFF regex=SAME jev=0.150  REGEX-WRONG
+  HARD-corrected  diag_count_indicator.log          diag_count_indicator_run2.log     label=DIFF regex=SAME jev=0.120  REGEX-WRONG
+  HARD            c63_astcheck.log                  c65_astcheck.log                  label=DIFF regex=SAME jev=0.080  REGEX-WRONG
+  HARD            c63_astcheck.log                  c74_gate10_m3a2.log               label=DIFF regex=SAME jev=0.060  REGEX-WRONG
+  HARD            build_s0_closeref_v1.log          build_s0_closeref_v3.log          label=DIFF regex=SAME jev=0.190  REGEX-WRONG
+  HARD            build_opfstunnelterm_v0.log       build_opfstunnelterm_v1_run1.log  label=DIFF regex=SAME jev=0.210  REGEX-WRONG
+  HARD            diag_c62_s3b_rows.log             diag_c62_s3b_build.log            label=SAME regex=DIFF jev=0.210  JEV-WRONG+REGEX-WRONG
+  HARD            build_d1_routeb_v0_run3.log       build_d1_routeb_v3_run6.log       label=DIFF regex=SAME jev=0.140  REGEX-WRONG
+
+raw -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\jev_trial.json
+
+=== jev_trial --rescore: 40 pairs re-scored, 3 label(s) corrected, 0 API calls ===
+BGRUN END rc=0 after 0s
