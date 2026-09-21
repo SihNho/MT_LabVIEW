@@ -1,0 +1,86 @@
+BGRUN START 2026-09-22 01:42:56 limit 25.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/priorart_task_c74_m3a2.md --slug priorart-c74-m3a2 --trigger cycle-start --recipe tools/recipes/build_d1_m3a2.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c74-m3a2.txt (27228 chars)
+OUTCOME: ANSWERED (506s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-22-priorart-priorart-c74-m3a2.md
+COST: $6.3017  in 56 / out 37357 / cache-create 271229 / cache-read 5310501  (502s, 41 turn(s))
+--- ANSWER ---
+No prior-art blocker kills this run outright, but **this is not `novel`** — four findings, each cited to a line of our own files. The one that matters most is B2: the save-capture rider this recipe claims to satisfy was **measured to produce nothing** in the very run that made the artefact it starts from.
+
+---
+
+# PRIOR-ART REVIEW — stage M3a-2, `tools/recipes/build_d1_m3a2.py`
+
+## PART A — THE DIRECTION
+
+### A1 — SETTLED ALREADY, and settled **the way this plan proposes** (reported, no slug)
+
+The central question — *may the initial values be a second saved stage?* — is already answered, twice, and both answers back the plan:
+
+- `docs/cycle27-plan.md:3097-3107` (Pre-decided 91, **2026-09-22**): loop `#23032` carries exactly two registers, the four bare terminals are the whole bare list, **M3a-2 = the two LEFT ones**, and the two RIGHT ones are named as M3a-3.
+- `archive/peer/2026-09-21-c67-m3a-srrows.md:254`: *"**Second half — HOLDS.** An uninitialised SR (left outer bare, both inner terminals wired) is legal LabVIEW; deferring initial values to a second saved stage is sound."* — a peer that searched NI's own documentation for the opposite and did not find it (`:179`, `:186`).
+
+I raise no slug on A1. Naming it matters only because the same review's **first half was REFUTED** — "five severed rows, not four" (`:253`), the fifth being `#10407` t1 `# slices in stack`, which needed a LoopTunnel and appeared in no plan item. That row is now **closed**: `tools/bench/diag_c73_m3a2_rows.log:113` reads `node #10407 … 7 terminal(s), 0 BARE`. M3a-2 does not inherit it.
+
+### A3 — CONTRADICTED: Pre-decided 95's named candidate is already excluded by the very log the plan cites, and the census as coded cannot see the class it is aimed at
+
+- **Side 1 — what the plan and the recipe say.** `docs/cycle27-plan.md:3139-3141`: *"`#4256`/`#4334`'s INSIDE sink terminals are **candidates for 'shift-register terminal unwired'**, a broken class that produces no broken wire."* Repeated verbatim at `tools/recipes/build_d1_m3a2.py:87-89` and `:514-516`.
+- **Side 2 — what the log it is built on measured.** `tools/bench/diag_c73_m3a2_rows.log:43` — `#4256 … inside=[{… 'wire': 9113}]`; `:44` — `#4334 … inside=[{… 'wire': 7337}]`. Both INSIDE sink terminals **carry a wire uid**. And `tools/bench/build_d1_m3a1.log:1151-1155` gives 9113 a live single source, `LoopTunnel 24018`.
+
+Two consequences, both mechanical:
+
+1. The recipe's census marks a terminal bare **only** when `wire == 0` (`build_d1_m3a2.py:364-366`, `bare_terminals_of`: *"`wire` 0 = bare"*). On a terminal that carries wire 9113 it will print WIRED and move on. So the instrument **cannot report the class it was aimed at** — the same "pointed at the wrong quantity" fault Pre-decided 85 was written to stop (`docs/cycle27-plan.md:3032-3033`).
+2. The candidates were already excluded before the recipe was written, by the measurement it cites as its source.
+
+**To release:** show that `diag_c73_m3a2_rows.log:43-44` reports wire 0 on those two terminals, or re-state 95's candidate as something a wire-uid census can actually distinguish.
+
+### A4 — UNREAD EVIDENCE: this project has already enumerated exactly this sink, on exactly this diagram, and neither the plan nor the recipe cites it
+
+The recipe's whole sink resolution (`build_d1_m3a2.py:582-591`) rests on an unstated premise: *a While loop node's `Terminals[]` table carries its shift registers' terminals, by name, with the uninitialised one bare and at a readable index.* That premise is **measured, in our own files, on `Diagram #686`**:
+
+- `tools/bench/build_d1_routeb_v0_run2.log:303-304` — *"1.5: shift register **#25814** for `'position [internal units]'` … **#25840** for `'VISA out …'`"* on `WhileLoop #338` (`:57`).
+- `tools/bench/build_d1_routeb_v0_run2.log:467-468` — `BARE  diagram 19 #686 Diagram[19] **Nodes[22].T[1]** 'position [internal units]'` and `**Nodes[22].T[3]** 'VISA out'`; and `:463-466`, four bare rows for 1.2's four registers.
+
+It **confirms** the route, which is why releasing it costs one citation line. It also carries the detail the recipe should keep: the register rows are **interleaved and odd-indexed** (T[1], T[3], T[5], T[7]) — an index that must be read, never computed. Nothing in `docs/cycle27-plan.md:3091-3128` or the recipe's header mentions this run.
+
+Related and worth writing down while disposing of this: reading that row is measured; **writing** to it is not. No file in this corpus records a `Terminal.Connect Wire` whose SINK is a shift-register OUTER terminal reached through a loop node's `Terminals[]` — the built op for that sink (`wire_sr('LeftOutNode')`, `tools/gscript.py:743`) reaches it through `Loop.Shift Registers[]` instead, and is rejected here on its SOURCE side only (Pre-decided 93). I am **not** slugging that — there is no citation saying it fails, and the recipe's stop-before-write discipline (`:591`, `:788`) turns the bad case into a clean gate failure with the file still saved.
+
+## PART B — THE ARTEFACT
+
+### B2 — ALREADY FAILED: the save captures were measured to produce **no file** in run 5, and this recipe copies the call verbatim
+
+This is the finding that costs something on every future run and cost the last one silently.
+
+- **The claim.** `build_d1_m3a2.py:111-115`: *"this file adds the capture BEFORE and AFTER"* — the discharge of Pre-decided 88's rider 1 and of USER RULE 17:5x. Coded at `:931` and `:937` as `g._lv_gui("-Action", "shot", "-Out", "'%s'" % shot_b)` — the path **pre-quoted by the caller**.
+- **The measurement.** `tools/bench/build_d1_m3a1.log:3402` (run 5, stamp `20260922_005732` — the run that produced `D1_s3b_m3a_BROKEN_20260922_005732.vi`): *"capture->act->capture: before 'm3a1_save_before_20260922_005732.png' (**exists False**), after '…' (**exists False**)"*. No such files are on disk. The two earlier runs, `:1966` (23:42) and `:2684` (00:22), both read `exists True` and both PNGs are on disk.
+- **The mechanism, and the date that fixes it.** `tools/gscript.py:281-287`: `q()` treats an argument as pre-quoted **only when it starts and ends with a DOUBLE quote**, and otherwise re-wraps anything containing a space — so a caller's `'<path>'` becomes `'''<path>'''` and lv_gui receives a path with literal quotes. That repair landed with `archive/peer/2026-09-22-c72-guisave-foreground-r2.md` (**dated 2026-09-22 00:54:45**), i.e. **between run 4 and run 5** — exactly where the captures stopped landing. `build_d1_m3a1.py:680/686` carries the same pre-quoted form.
+
+So M3a-2 will print a `capture -> act -> capture` FACT line with `exists False, exists False` and claim the rider is met. That is the shape this project keeps writing down as a fault: a log line that asserts a guard the run did not have.
+
+**To release:** show a `m3a2_save_*.png` route that lands, or drop the `'%s'` wrapper at `:931`/`:937` and let `_lv_gui` quote (a one-character change per line, no new tool, no gate touched).
+
+### B4 — ALREADY MEASURED: the **BEFORE** half of Pre-decided 95's 14-register census is already on file, terminal by terminal, for a byte-identical artefact
+
+`tools/bench/diag_c73_m3a2_rows.log:42-56` prints all fifteen slots of `#637` — every register's uid, class, OUTER and INSIDE terminal with its wire uid — and `:57` sums it: *"loop #637 carries 15 shift register(s)"*. It was read on a scratch copy of the same input (`:17`, md5 `6b3c1f3c…`, the recipe's `INPUT_MD5`), with the four pins holding at both ends.
+
+`build_d1_m3a2.py:989` re-runs that as `phase_1_census("BEFORE")` — sixteen `shift_reg_left` calls at ~1 s each (`docs/toolkit-capabilities.md:29`) plus a `report_all('WhileLoop')` echo, inside a 45-minute budget that reserves `ROW_MIN_S = 240` per row (`:198`). It is a FACT step that cannot gate (`:513`), on a file byte-identical to the one already censused.
+
+**Scope, precisely:** this covers the **BEFORE** census only. `phase_1_census("AFTER")` (`:1000`) is novel and is the half that could show something. **To release:** show that the target at `[95 BEFORE]` differs from the artefact `diag_c73` read, or keep the BEFORE census as a cheap re-echo rather than a full sixteen-slot walk.
+
+### B1 / B3 — NO FINDING
+
+Checked and clean, stated so the next reviewer does not re-spend it. The writer (`connect_from_wire` / `OpConnectFromWire_v0`, `docs/toolkit-capabilities.md:70`), the reader (`OpWireSource_v5`, `:60`), the register reader (`shift_reg_left` / `OpShiftRegs_v1`, `:29`), the save route (`tools/gscript.py:2087-2089`) and the diagram resolver (`diag_index`) all exist and are all cited by the recipe; the helpers are **imported** from `build_d1_m3a1` rather than rewritten (`build_d1_m3a2.py:138`), and the one re-stated body, `purge_junk` (`:415-419`), says why. `tools/bench/c74_astcheck_m3a2.log:6` confirms every `g.<verb>` and `_lv_gui` exists, and `:4` that `allow_broken` sits at one `.save()` site. Nothing here is hand-rolled over a toolkit call.
+
+One mechanical note in the same spirit: the `is_source is False` filter at `:628` is safe — `tools/gscript.py:934` coerces to real Python bools (`src = [bool(x) for x in …]`), so the strict identity test cannot silently yield zero candidates.
+
+---
+
+```
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-failed
+PRIOR-ART: already-measured
+```
+
+**Cheapest order to dispose of this:** B2 is decided by one `dir tools\bench\m3a1_save_*20260922_005732*` (no LabVIEW, no build) and fixed by deleting two pairs of quotes; A3 and B4 are decided by opening `diag_c73_m3a2_rows.log:42-57`, one file, one read. A4 is one citation line added to Pre-decided 92. None of the four requires a build to resolve, and none of them argues against running M3a-2.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c74-m3a2.md
+   STOP RECORD armed: tools/recipes/build_d1_m3a2.py sha 3b45a12d0dde verdict contradicted, unread-evidence, already-failed, already-measured -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 507s

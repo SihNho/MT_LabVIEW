@@ -1,0 +1,19 @@
+BGRUN START 2026-09-22 02:15:26 limit 5.0 min: py -u tools/bench/c60c_astcheck.py G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop/tools/recipes/build_d1_m3a2.py --route owner
+  PASS  1 the diagnostic parses  1150 lines, 17 gate sites
+  PASS  2 remove_bad_wires_scripted / remove_bad_wires / gui_save neither imported nor called  []
+  PASS  3 allow_broken at MOST ONE site, not literal False, and only on a .save(...) call (Pre-decided 88 + 98(5))  1 site(s) ['allow_broken=Constant(value=True)'], all .save(): True
+  NOTE  0 non-literal **splat call site(s); `allow_broken` inside one is not statically visible (reported, not gated)
+  PASS  4 every g.<verb> called already exists as a def in tools/gscript.py  verbs used: ['close_panel', 'count', 'ensure_loaded', 'exec_state', 'ref_counts', 'report_all', 'save', 'shift_reg_left'] ; private helpers used: ['_lv_gui'] ; MISSING: []
+  PASS  4b the private gscript helpers used also exist  []
+  PASS  5 bench_prep exports labview_handles  MISSING []
+  PASS  5 build_d1_v0 exports diag_index  MISSING []
+  PASS  5 hash_probe exports probe  MISSING []
+  PASS  6 nothing under tools/recipes/ is opened for writing or removed  []
+  PASS  7[owner] move_in is neither imported nor called  route=owner called=False imported=False
+  PASS  8 no owner comparison tests the literal 'Diagram' alone  []
+  PASS  9 the forbidden routes (Invoke-seeded variant, donor switch) are absent as calls  []
+  NOTE  10 MISMATCH   build_d1_m3a2.py:354  'ExecState [%02d %s] = %r   (+%.1f s, read cost %.2f s) - N' wants 5 arg(s), the tuple supplies 4
+  FAIL  10 every literal `%`-format site's spec count matches its argument count (Pre-decided 100 SS4)  145 checked OK, 1 MISMATCH ["build_d1_m3a2.py:354  'ExecState [%02d %s] = %r   (+%.1f s, read cost %.2f s) - N' wants 5 arg(s), the tuple supplies 4"], 0 unresolved (printed above, never silently passed)
+
+=== ASTCHECK FAILED; failing: 10 every literal `%`-format site's spec count matches its argument count (Pre-decided 100 SS4)
+BGRUN END rc=1 after 0s

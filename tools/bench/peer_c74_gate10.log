@@ -1,0 +1,77 @@
+BGRUN START 2026-09-22 02:18:08 limit 16.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -TimeoutSec 840 -Slug c74-gate10-arity -TaskFile 'tools/bench/peer_task_c74_gate10.md'
+OUTCOME: ANSWERED (549s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-22-c74-gate10-arity.md
+COST: $3.3771  in 34 / out 40119 / cache-create 126679 / cache-read 1952233  (545s, 31 turn(s))
+--- ANSWER ---
+**The claim is wrong in its load-bearing half: "145 checked OK" is not 145 checks, and gate 10 cannot support "the file carries no further `%` defect" — a statement that has, in any case, no run behind it.** (I concede the small true part: `%02d %s %r %.1f %.2f` = 5 against a 4-tuple is a genuine defect and the gate did name it. That is the easy half.)
+
+Level of verification, stated up front per CLAUDE.md: **structural only.** The brief forbids me from running anything, so every trace below is read out of the regex and CPython's documented grammar. That is exactly why this ends in a 1-minute test.
+
+---
+
+## 1. Strongest reason the claim is WRONG
+
+**`c60c_astcheck.py:185-186` files a site under `n_ok` that it has not checked, and the gate's own contract says it does not do that.**
+
+```python
+elif want == 1:
+    n_ok += 1    # one spec, one non-tuple expression: correct whatever its type
+```
+
+The comment is a false statement about Python. The docs: *"If format requires a single argument, values may be a single **non-tuple** object. Otherwise, values must be a tuple with the correct number of items for the format string, or a single mapping object."* ([docs.python.org/3.13, printf-style String Formatting](https://docs.python.org/3.13/library/stdtypes.html#printf-style-string-formatting)) So `"%s" % x` raises `TypeError: not all arguments converted during string formatting` for **every** tuple `x` whose length ≠ 1 — the sibling of the exception that killed the run. The gate cannot see the type of `x`; it guesses, and files the guess as a verified pass.
+
+The asymmetry is the tell. The **identical** unknown with `want >= 2` is filed UNRESOLVED and printed (`:190-194`, "A bare name/call on the right MAY be a tuple of the right length at run time. Unknowable statically"). Same unknowability, opposite verdict — and the branch that inflates confidence is the silent one. Meanwhile `:44-48` and `STATUS.md:26` both assert **"a site it cannot resolve statically … is PRINTED under UNRESOLVED, never silently passed."** That assertion is false as written, in two documents.
+
+This is not a corner. In the file under test the single-operand shape is dominant: a line grep of `build_d1_m3a2.py` finds **117** lines where a string literal is followed by `% <identifier>` against **63** followed by `% (`. And the hazard is live, not theoretical — `M.node_census(...)` and `safe(...)` both return 2-tuples and are interpolated all around these sites (`build_d1_m3a2.py:369`, `:475`). So "the 145 it passed are really correct" is not what the log says. The log says *145 sites landed in a bucket labelled OK*.
+
+**Second, independent reason, since the brief asked for a concrete wrong shape — the counter is blind to the exact accident that caused the defect it is celebrating for catching:**
+
+| source text | gate 10 | CPython |
+|---|---|---|
+| `"%d%" % (n,)` | want 1, got 1 → **PASS** | `ValueError: incomplete format` |
+| `"50% (of rows): %s" % (x,)` | want 1 (only `%s`), got 1 → **PASS** | `ValueError: unsupported format character '('` |
+| `b"%b" % (data,)` | want 0, got 1 → **FAIL** | correct code, runs fine |
+
+Trace of row 2, since it is the least obvious: after `%` comes a space, so `SPEC_RE`'s key group is skipped, the space is eaten by `[-+ #0]*`, and `(` matches no width/precision/length/conversion — the regex fails at that `%` and `re.search` silently steps over it to `%s`. CPython follows the same component order (`%` → mapping key → flags → width → precision → length → **type**), so it too reaches `(` — but as the *conversion type*, which does not exist, and raises. Row 1: CPython raises `ValueError: incomplete format` on a format string ending in a lone `%`; the regex just finds no match and stops. That is not an invented risk — it is [CPython issue #85461](https://github.com/python/cpython/issues/85461), "`'%'` character in `help=` causes `ValueError: incomplete format`", i.e. prose containing a bare `%` inside a format string. **Which is precisely the edit that broke `:354`: prose was hand-appended to a format string.** The gate hardened the one mutation that shows up as arity and left the two that show up as validity wide open — and `ValueError` kills phase 1 exactly as `TypeError` did.
+
+Row 3 is the other direction, a false FAIL that would block a *correct* recipe: for `bytes`, `b` is a supported conversion type (and `s` is a synonym for it) — [PEP 461](https://peps.python.org/pep-0461/) — but `b` is absent from `SPEC_RE`'s class `[diouxXeEfFgGcrsa%]`. That is the same defect shape this very file warns about at `:24` and again at `:47-48` (gate 7's old `move_in` count, the false positive that nearly fired the firefighter). The gate repeats, in a new place, the mistake its own docstring is a monument to.
+
+And a third class the walk never reaches at all: **`:166-167` drops every non-literal format string with `continue` and no note** — contradicting `:44-46` explicitly. In this fleet that class is occupied: `tools/cycle_runner.py:423` (`FF_PROMPT % ff_recipe`), `tools/bench/handle_audit.py:58` and `:77` (`CHILD % (dirname, T, 20)` — a **3-argument** template, invisible), `tools/bench/selftest_guard_cycle_fixed.py:67` (`REVIEW % (...)`). So the third clause of the claim, *fit to stand as the fleet's pre-launch arity check*, fails on the fleet even if you grant everything about this one file.
+
+## 2. Alternative explanation of the same evidence
+
+The log's "145 checked OK, 0 unresolved" is fully explained without any of the 145 being verified. **`n_ok` is one counter over three populations:** (a) literal-tuple sites genuinely compared; (b) `want == 1` non-tuple sites *assumed*; (c) — for other targets — sites never visited, because the left operand is not a `Constant`. "0 unresolved" then means "the unresolvable class is invisible to this classifier", not "everything resolved". The run is equally consistent with "the gate works" and with "the gate mostly counted sites it declined to check", and the printed output cannot distinguish them, because the split is never printed.
+
+A second, smaller alternative for why the one MISMATCH looks so clean: it is the only site in the file where a **five**-spec format meets a literal tuple. A detector that fires once on the one case you already knew about, in a file you wrote, is weak evidence of a detector.
+
+## 3. What would falsify the claim (and what would falsify me)
+
+- **Falsifies the claim:** gate 10 returns PASS on a file containing `X = "%d%" % (1,)` while CPython raises on that same line; or gate 10 reports `0 unresolved` on `tools/bench/handle_audit.py`, which contains two `CHILD % (3-tuple)` sites; or its `n_ok` split shows that most of the 145 came from the `want == 1` non-tuple branch.
+- **Falsifies me:** if those sites come back as UNRESOLVED or MISMATCH, or if the split shows ≈0 assumed-single sites in `build_d1_m3a2.py`, findings 1 and 2 collapse and only the validity gap (row 1/2/3 above) stands.
+- **Already settled without any test:** the claim's final clause — *"after that one site is repaired the file carries no further `%`-arity defect."* `tools/bench/c74_gate10_m3a2.log` (02:15:26, rc=1) is the **only** gate-10 log on disk (`glob tools/bench/*gate10*`), and it is the **pre**-repair run; the repair landed afterwards (`build_d1_m3a2.py:354-359`). The claim asserts a post-repair state that was never measured. That is inference standing in for a 2-second re-run.
+
+## 4. Cheapest discriminating test — no LabVIEW, no new device, no fixture
+
+```
+py tools/bench/c60c_astcheck.py "<abs>/tools/bench/handle_audit.py" --route movein
+```
+
+Read only gate 10's row and its NOTE lines; ignore every other gate. **My prediction: `… checked OK, 0 MISMATCH, 0 unresolved`**, while `handle_audit.py:58` and `:77` each apply a 3-argument template. The documented contract predicts **≥ 2 unresolved**. One command, ~1 minute, and it separates "0 unresolved means resolved" from "0 unresolved means invisible" with no file written.
+
+Then, for the validity half, three lines written to the scratchpad and run through the checker — following `tools/bench/selftest_c60c_route.py:44-61`, which already writes fixtures and reads a gate row out of stdout, so this is coverage of an existing tool rather than a new device:
+
+```python
+A = "%d%" % (1,)                      # gate: PASS   CPython: ValueError incomplete format
+B = "50% (of rows): %s" % ("x",)      # gate: PASS   CPython: ValueError unsupported format character '('
+C = b"%b" % (b"x",)                   # gate: FAIL   CPython: fine
+```
+
+Three rows, three predicted disagreements, ~4 minutes total.
+
+**The repair these imply is four small edits inside the checker you already own** — split `n_ok` into `verified_tuple` / `assumed_single` and print the second beside UNRESOLVED; add the missing `else:` so a non-`Constant` left operand is appended to `unresolved`; after `_spec_count`, report any `%` in the literal that is not the start of a matched span (one check that subsumes incomplete format, unsupported conversion character **and** `%b`-in-str, without reimplementing CPython); and put `b` in the conversion class when the literal is `bytes`.
+
+One factual correction for whatever retrospective prices this: the lost run was `BGRUN END rc=1 after 71s` (`tools/bench/build_d1_m3a2.log:59`) — 45 minutes was the bgrun *budget*, not the spend. The defensible `loss_min` is ~1 minute of LabVIEW plus one MATERIAL dispatch plus the mandated $2.69 review, not 45 minutes. `c60c_astcheck.py:40-42` and the brief both invite the larger number.
+
+I did not open the archive, and I did not run, edit or build anything. Nothing here required the lock.
+
+Sources: [docs.python.org — printf-style String Formatting](https://docs.python.org/3.13/library/stdtypes.html#printf-style-string-formatting) · [python/cpython issue #85461 — `%` in `help=` causes `ValueError: incomplete format`](https://github.com/python/cpython/issues/85461) · [PEP 461 — Adding % formatting to bytes and bytearray](https://peps.python.org/pep-0461/) · [Python 2.5 library reference, same sentence, showing the rule predates Python 3](https://docs.python.org/2.5/lib/typesseq-strings.html) · [TechOverflow — `unsupported format character` from an unescaped `%`](https://techoverflow.net/2021/03/05/how-to-fix-python-valueerror-unsupported-format-character-0x20-at-index-3/)
+BGRUN END rc=0 after 549s

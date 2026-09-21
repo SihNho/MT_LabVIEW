@@ -3087,3 +3087,169 @@ of our own `tools/bench/build_d1_m3a1.log` rather than argued. Disposition is in
     one is still needed, follows only **unique** source terminals, **fails on ambiguity**, stops at the first
     non-tunnel terminal, and asserts that terminal's `(owner uid, name)` against a value predicted **before** the
     run; **hop count is an output, never a criterion.**
+
+## Pre-decided — ADDED 2026-09-22 (cycle 64): M3a-2 is TWO rows, measured · the sources are tunnels and are still addressable
+
+Source: `tools/bench/diag_c73_m3a2_rows.{py,log,json}` (`BGRUN END rc=0 after 144s`, 5 hygiene gates pass / 0 fail,
+measurement-only, nothing mutated, artefact md5 `6b3c1f3c…` re-read unchanged). Every uid below is uid-echoed and
+every `OpWireSource_v5` row satisfied Pre-decided 85's precondition (**0 violations** on all four walks).
+
+91. **M3a-2 IS TWO ROWS, NOT FOUR — AND THE OTHER TWO ARE NAMED HERE AS M3a-3.** Loop `#23032` carries exactly
+    two registers: reg0 RIGHT `#23868` / LEFT `#23880`, both named `'VISA out'`; reg1 RIGHT `#23895` / LEFT
+    `#23909`, both `'position [internal units]'`. Each has two terminals, INSIDE[0] wired and **OUTER bare** —
+    those four bare terminals are the whole of the bare list. The LEFT OUTER is the initial-value SINK and the
+    RIGHT OUTER is the post-loop SOURCE, so **M3a-2 = the two LEFT ones**, which is exactly what `:2718` defines
+    M3a-2 to be. Leaving the two RIGHT ones bare **drops nothing**: the downstream consumers are still wired, to
+    the OLD loop's registers — `#4256` OUTER → wire **4859** → `Global #7202 'Global motor pos.vi'` t0
+    `'Focus position'` on `Diagram #686`, and `#4334` OUTER → wire **7506** → `FlatSequenceInnerTunnel #7468`. A
+    bare SOURCE is legal LabVIEW (Pre-decided 69). Re-sourcing those two consumers from `#23868`/`#23895` is
+    **M3a-3**; 69's rule ("no sink that was wired on the bed may be left bare") is discharged by NAMING them
+    now, with their uids, not by wiring them into this stage.
+
+92. **THE ROW TABLE, WITH THE PREDICTION EACH ROW IS ASSERTED AGAINST, WRITTEN BEFORE THE RUN.**
+    - **Row A — VISA session.** Source = the ONE source terminal of wire **4185**, `FlatSequenceInnerTunnel`
+      **#4194**. Sink = LEFT register **#23880** OUTER. (4185 is the wire feeding the original's `#4344` OUTER.)
+    - **Row B — position.** Source = the ONE source terminal of wire **3968**, `FlatSequenceInnerTunnel`
+      **#3974**. Sink = LEFT register **#23909** OUTER. (3968 feeds the original's `#4274` OUTER.)
+    - Both are **SAME-DIAGRAM rows on `Diagram #686`** — both loop borders (`#637` at Nodes[4], `#23032` at
+      Nodes[21]) and all four wires are owned by `#686` under strict uid echo. So this is **not** a border
+      crossing, Pre-decided 66's border exemption does **not** apply, and the ordinary one-net test does.
+    - **Acceptance, per row:** the wire carried by the new sink terminal has **exactly ONE** source terminal of
+      **any** owner class (Pre-decided 77 — count everything before filtering by class), and that terminal is
+      **#4194** / **#3974**; and the ORIGINAL sink is **still** on that net (`#4344` OUTER on A, `#4274` OUTER on
+      B). Hop count is an output, never a criterion (Pre-decided 90).
+
+93. **THE `Nodes[]` OBJECTION IS ANSWERED BY THE OP WE ALREADY USE — NO NEW OP.** Both sources are
+    `FlatSequenceInnerTunnel`s owned by `FlatSequence #681` and are not `Nodes[]` members, so
+    `wire_sr('LeftOutNode'/'LeftOutCtl')` cannot address them. But `wire_sr` is the wrong verb: an initial value
+    is an ordinary connection into a terminal on `#686`. **`OpConnectFromWire_v0` takes its SOURCE as (WIRE uid,
+    terminal index on that wire)** and is the op that already wrote the t1 row and the sixth row — Pre-decided 68
+    withdrew the "source must be a node" premise for exactly this shape. The user's 2026-09-18 08:53 order holds:
+    nothing new is built.
+
+94. **THE TYPE CHECK OBEYS 42(b) EXACTLY, AND THIS IS THE SHAPE 42 VALIDATED.** `Wire.Is Broken?` is **never read
+    in the pass that makes the connection**; each row is read on an ordered second, idempotent re-connect
+    (`wire_delta 0`). Both rows are **branches of an existing net, read in a separate ordered pass** — 42(d)'s
+    binding scope limit, met exactly, so the instrument is used where it was validated and not where it was not.
+    `ExecState` is never a type discriminator (42(c)) and never substituted for the identity test (70).
+
+95. **WHY THE VI IS BROKEN IS MEASURED THIS RUN, FROM WHAT THE MOVES LEFT BEHIND — NOT INFERRED A FOURTH TIME.**
+    The census has now read **0 bare / 0 unread** on all seven moved nodes while `ExecState` stays **0**. The one
+    place never censused is the old loop: `#637` carries **14** registers, and the four rows M3a-1 re-created on
+    `#23032` were severed from `#48`/`#10407` when those nodes moved out — so `#4256`/`#4334`'s INSIDE sink
+    terminals are candidates for "shift-register terminal unwired", a broken class that produces **no broken
+    wire** and that Pre-decided 89 says `Is Broken?` cannot see. **FACT step, never a gate** (Pre-decided 63):
+    census the bare terminals of all 14 registers on `#637`, before and after the writes. **M3a-2 is not required
+    to reach `ExecState 1` and is not judged on it.**
+
+96. **THE STAGE ALWAYS LEAVES A FILE.** `gscript.save(target, allow_broken=True)` (Pre-decided 88): `ExecState 1`
+    ⇒ ordinary save, otherwise the `gui_save` route with USER RULE 17:5x in full — locate in a capture taken just
+    before, act, and confirm after. For a save the AFTER-confirmation is the file itself: size and md5 read back
+    off disk and required to differ from the input, with the saved path verified to be the `claudeDev` target and
+    all four md5 pins re-read. This route is believable for the first time only as of 2026-09-22, because
+    `gscript._lv_gui` did not quote its arguments until then and every `-Evidence`-carrying GUI action was a
+    PowerShell parse error that never dispatched.
+
+97. **THE ARTEFACT REMAINS NOT COMPUTATION-EQUIVALENT AND IS NEVER RUN** (34(f)). After M3a-2 both loops exist and
+    the old one still feeds the two downstream consumers. Equivalence is claimed at the end of the M3 chain, never
+    at a stage boundary.
+
+98. **DISPOSITION OF `archive/peer/2026-09-21-c71-astgate.md`** (claude/hypothesis, opus max, ANSWERED, $2.2054),
+    owed since last cycle. **Findings 1, 2, 3 and 5 ACCEPTED; 4 is moot.**
+    - (1) gate 3 was not stale — it flipped because the recipe changed (1964→1997 lines). Accepted, measured.
+    - (2) the amended gate encodes neither of Pre-decided 88's riders. Accepted **as of its date**, and rider 1 is
+      now MET by two repairs made since: `gui_save` clickprobe-verifies the measured foreground before Ctrl+E /
+      Ctrl+S and raises with the observed per-candidate record, and 96 above makes the after-confirmation the
+      file's own md5 — a stronger confirmation for a save than a screenshot.
+    - (3) the repeating class is "the astcheck invocation is hand-typed and unpinned". Accepted. **THE PINNED
+      INVOCATION, from now on the only one:** `py tools/bench/c60c_astcheck.py <recipe> --route movein` when the
+      recipe calls `move_in` even once, `--route owner` when it does not (Pre-decided 62), run under `bgrun` with
+      both paths quoted. It is pinned here and repeated in each recipe's header comment.
+    - (4) "the c71 recipe never passed any astcheck" — moot: `build_d1_m3a1.py` is finished (run 5, rc=0) and is
+      never re-run. The rule survives for its successor: **`build_d1_m3a2.py` passes the pinned astcheck before
+      the build, not after.**
+    - (5) three tooling defects. **Only the load-bearing one is repaired**, because this cycle's recipe depends on
+      it: the amendment matches only `ast.Constant True`, so `allow_broken=1` / `=flag` / `**{...}` pass unseen —
+      widen it to any non-`False` argument. The stale comments (`:10` vs `:107`, `:24`'s "five `move_in`" where
+      there are seven) are corrected while the file is open. `c57d4_astcheck.py:18` and `c58b_astcheck.py:43-45`
+      still encode the withdrawn ban and are **left alone**: finding 3's pin makes `c60c_astcheck` the route, so
+      they are unreachable rather than wrong. Repairing an existing checker is a repair, not a new device — the
+      same reading used for `ensure_loaded` (Pre-decided 60) and c60c gate 7.
+
+99. **DISPOSITION OF `archive/peer/2026-09-22-priorart-priorart-c74-m3a2.md`** (claude/`-Role priorart`, opus
+    high, ANSWERED, $6.3017, verdict **"Not novel"**). **ALL FOUR FINDINGS ACCEPTED, NONE REFUTED**; every one is
+    cited to a line of our own logs rather than argued. None of them argues against running M3a-2 — three shrink
+    the recipe and one repairs a real defect — so the stage proceeds, released by `FIXED:` lines.
+    - **B2 `already-failed` — ACCEPTED, and it is the one that matters.** The GUI-save captures in M3a-1 run 5
+      produced **no file** (`tools/bench/build_d1_m3a1.log:3402`, `exists False, exists False`) because the caller
+      pre-quotes `'%s'` and `gscript.py:281-287`'s `q()` then quotes it again; `build_d1_m3a2.py:931/937` copies
+      the same form. Fix: the caller stops pre-quoting, and the capture is **asserted to exist** rather than
+      hoped for. ⚠️ **Recorded honestly: M3a-1's save therefore ran without its before/after captures landing**,
+      so USER RULE 17:5x was formally unmet on that one act even though the file-level confirmation (md5 present,
+      bytes differ from the bed) held. That is the second quoting defect found in two cycles on the same path —
+      last cycle `_lv_gui` did not quote at all, this cycle the caller quotes twice.
+    - **A3 `contradicted` — ACCEPTED, and Pre-decided 95's NAMED CANDIDATE IS WITHDRAWN.** The severed-inside
+      hypothesis is refuted by the measurement it was built on: `tools/bench/diag_c73_m3a2_rows.log:43-44` show
+      `#4256` inside on wire **9113** and `#4334` inside on wire **7337** — not bare. And a wire-uid census cannot
+      see "shift-register terminal unwired" in any case, which is Pre-decided 89's point reappearing. **`ExecState`
+      0's cause stays OPEN and is not answerable with the readers this fleet owns** (`VI.Get Errors` 452 is absent
+      from the exported ActiveX interface). 95's surviving half stands and is the operative one: **M3a-2 is not
+      required to reach `ExecState 1` and is not judged on it.**
+    - **B4 `already-measured` — ACCEPTED.** The BEFORE half of the register census is already on file for a
+      byte-identical artefact (`diag_c73_m3a2_rows.log:42-57`), which also corrects 91/95: the loop reads **15**
+      slots, not 14. Together with A3 the whole census step is **deleted from the recipe** and replaced by a
+      citation — a step that is already measured and cannot answer its question is pure cost.
+    - **A4 `unread-evidence` — ACCEPTED.** `tools/bench/build_d1_routeb_v0_run2.log:467-468` already measured bare
+      register terminals on `Diagram #686` with **registers interleaved at ODD indices**, and it is cited nowhere.
+      Cite it, and make the sink resolution explicit: the sink terminal is resolved **live, by register uid**, and
+      the index found is logged as a FACT line beside the odd-index expectation — never carried from a census,
+      which is what broke T2c2.
+    - **The release is `FIXED:`, and editing the recipe is what `FIXED:` is FOR.** Its three conditions
+      (path exists · changed *after* the review · the line sits under `## What was done with it`) require the file
+      to have changed, so the sha-rebinding warning in Pre-decided 73 — written for a recipe edited in a later
+      cycle with no release line — does not apply. If `guard_cycle` refuses anyway, that is reported as a fact and
+      decided by judgement; `CYCLE_GUARD_OFF` is never the answer.
+
+100. **DISPOSITION OF `archive/peer/2026-09-22-c74-m3a2-fmt.md`** (claude/`-Role hypothesis`, opus max, ANSWERED,
+    $2.6899), this cycle's mandatory failed-prediction review. **§1, §2, §3 and §7 ACCEPTED; §4 SPLIT.** The build
+    died in phase 1 at `tools/recipes/build_d1_m3a2.py:317` — a logging helper whose format string carries five
+    `%` specs and four arguments — before either row was attempted, so **no row of Pre-decided 92 was tested and
+    the stage has no artefact**. The input artefact and all four md5 pins are unchanged.
+    - **§2 IS THE LOAD-BEARING FINDING AND IS FIXED FIRST, BEFORE ANY REBUILD.** `H8` reported a **falsehood**:
+      *"no mutator call was REFUSED BY THE MACHINE … 1 here `['main']`"* when no mutator was called and LabVIEW
+      refused nothing — `main()`'s bare handler (`:1050-1054`) routes **any** Python exception into `refusal()`,
+      whose own docstring (`:269`) calls it "a mutator call the machine refused". **A bug in our script must never
+      be reported as a refusal by the machine.** It is worse than a mislabel: `cycle_runner.py:197-198`/`:257-258`
+      truncates the H8 line to 60 characters, cutting off `1 here ['main']`, so this signature can fire a
+      FIREFIGHTER cycle at a failure that never happened — the runner deciding on a misnamed fact, which is the one
+      thing the firefighter rule depends on not happening. Fix: the handler separates a Python exception (a defect
+      in our code) from a machine refusal (LabVIEW declined), and H8 counts only the latter. `cycle_runner.py` is
+      **not** edited — the truncation is harmless once the label is truthful, and the runner is the live process
+      that spawned this session.
+    - **§1 ACCEPTED: the missing argument is the trigger, not the defect.** The same helper stands correct at
+      `build_d1_m3a1.py:463-464` with five arguments; the copy desynchronised when rule-citation prose was
+      hand-appended. The file carries **71** `%`-format sites, ≥9 with editable prose, **none ever executed** —
+      1,062 lines written by hand and launched at LabVIEW without one cheap static read.
+    - **§4 IS SPLIT, AND THE NO-DEVICE ORDER DECIDES WHICH HALF.** The accepted remedy is the **`%`-arity gate
+      inside the EXISTING `c60c_astcheck` (gate 10)** — a repair of a checker we already own, the same reading
+      used for `ensure_loaded` (Pre-decided 60) and for 98(5) earlier in this cycle. The review's preferred
+      remedy, a stubbed-`g` `main()` dry run, would catch strictly more (every Python-level defect on the happy
+      path, with no LabVIEW and no handles) but it is a **NEW harness**, and the user's standing order of
+      2026-09-18 08:53 is "장치는 더 만들지 말고 계속 진행". It is therefore **recorded as an OPEN item for the
+      user**, not built. §5's first half is adopted as the discriminating test: run the new gate over
+      `build_d1_m3a2.py`, `build_d1_m3a1.py` and `build_d1_routeb_v0.py` — that measures whether this defect class
+      is endemic to our recipes or was one bad transcription.
+    - **§3 ACCEPTED as a FINDING, no device** (`device-failed`, threshold 1, two devices: `c60c_astcheck` gate 1
+      reading a parse verdict as a fitness verdict, and `refusal()`/H8 misnaming the cause). Recorded in
+      `docs/violation-decisions.md` under the 2026-09-18 08:53 suspension; the H8 half is repaired above because
+      it is a repair, not a device.
+    - **§7 ACCEPTED — the unreported fact it raised unasked.** Handles went **33,956 → 30,689 (restart) → 45,677**
+      in 71 s with only 3 refs opened and 3 closed, and both H6 and H7 passed over it. The 2026-09-19 staged-build
+      rule makes reference hygiene a **precondition**, so the next build reads handles at both ends and logs the
+      delta as a FACT beside the ~31,500 baseline. It is not yet a gate: 15,000 handles in 71 s with three refs is
+      not explained by our refs, and gating on an unexplained quantity would be the third instrument aimed at the
+      wrong thing.
+
+91. **USER, 2026-09-22 02:4x: "저장 허용함." — the broken-intermediate GUI save (Pre-decided 88's route) is APPROVED as a standing
+    exception for `claudeDev` stage artefacts that are broken by design; CLAUDE.md §3 split-rule item 6. Evidence string for
+    `gui_actions.log`: "user 2026-09-22 broken-intermediate save". Originals and the final deliverable are excluded.

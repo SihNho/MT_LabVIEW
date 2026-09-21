@@ -922,3 +922,37 @@ block is the FINDING that suspension prescribes.
    readers — is the part that was built.
 3. **Recorded, not repaired around:** `guard_cycle.py` was NOT patched, no log deleted, no date rolled,
    `CYCLE_GUARD_OFF` never set.
+
+## device-failed — 2026-09-22 02:5x (cycle 74, MATERIAL dispatch 5, disposing the c74-m3a2-fmt review)
+
+DECISION: no-device
+
+Source: `archive/peer/2026-09-22-c74-m3a2-fmt.md:179-190` §3 (claude / hypothesis, opus max, ANSWERED), which
+classifies the failed M3a-2 run of 2026-09-22 01:58 as `device-failed`, **threshold 1, and names TWO devices**:
+
+| device | what it is for | what it did |
+|---|---|---|
+| `tools/bench/c60c_astcheck.py` | clear a recipe for launch | printed `11 PASS / 0 FAIL` on a file that could not survive its own first diagnostic call — gate 1 is `ast.parse` plus a line/gate-site count, i.e. **a parse verdict read as a fitness verdict** |
+| `refusal()` / gate H8 in the recipe | say *why* a run failed | **said "the machine refused" when it did not** — a `TypeError` of OUR code was routed into `refusal()` and counted by H8 |
+
+**No device is built.** The threshold stays SUSPENDED under the user's standing order of **2026-09-18 08:53**
+(*"장치는 더 만들지 말고 계속 진행"*), so this block is the FINDING that suspension prescribes.
+
+1. **The H8 half was REPAIRED this cycle, and a repair is not a device.** `build_d1_m3a2.py`'s bare handler no
+   longer routes a Python exception of ours into `refusal()`: `defect()` records the exception TYPE and the
+   `file:line` it was raised at, and a new counter **H9** counts our-code defects while H8 keeps counting only
+   refusals that came from the machine. That is a fix to an existing failure channel inside an existing recipe —
+   the same reading applied to the `wire_source_owner` repair on 2026-09-22 00:22 — not new process machinery.
+   The review itself asked for this ordering: *"fix the failure channel (§2) before building either gate."*
+2. **The `c60c_astcheck` half is also being answered inside the existing checker, not beside it.** Gate 10 was
+   added on 2026-09-22 (arity) and WIDENED TO VALIDITY by this dispatch (`tools/bench/c60c_astcheck.py`, the
+   review's finding 2): any `%` not covered by a matched conversion span is reported, and a finding fails only
+   for a `str` literal — a `bytes` literal is reported and never failed, because PEP 461 makes `b"%b"` legal
+   while `b` is outside `SPEC_RE`'s conversion class. The review's own words for this route: *"~20 lines added
+   there as gate 10 gives the same result with no new dependency and no new device."*
+3. **The part that WOULD be a new device is NOT built and is an OPEN item for the user.** The review's stronger
+   remedy — importing a recipe with `g` replaced by a stub and calling `main()` — would catch the call-signature
+   class (`read_es(tag, target)` → `read_es(tag)`) that no `%`-format gate can see. Building it is a device under
+   the 08:53 order, so it is recorded here and left for the user to authorise or decline.
+4. **Recorded, not repaired around:** `guard_cycle.py` was NOT patched, no log was deleted or renamed, no
+   frontmatter date was rolled, and `CYCLE_GUARD_OFF` was never set.

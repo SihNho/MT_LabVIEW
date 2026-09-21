@@ -1,0 +1,27 @@
+BGRUN START 2026-09-22 02:45:25 limit 3.0 min: py -u tools/bench/c74_gate10_report.py
+=== c74_gate10_report - the WIDENED gate 10 as a MEASUREMENT, not a launch clearance
+=== source of the check: tools/bench/c60c_astcheck.py percent_format_sites()
+  G10  build_d1_m3a2.py           1153 lines |  98 VERIFIED |  48 ASSUMED | 0 MISMATCH | 0 INVALID | 0 bytes-reported | 0 unresolved
+  G10  build_d1_m3a1.py           2127 lines | 209 VERIFIED | 114 ASSUMED | 0 MISMATCH | 0 INVALID | 0 bytes-reported | 0 unresolved
+  G10  build_d1_routeb_v0.py      1428 lines |   0 VERIFIED |   0 ASSUMED | 0 MISMATCH | 0 INVALID | 0 bytes-reported | 0 unresolved
+
+=== G10 REPORT DONE: 0 definite defect(s) across 3 file(s). This is a measurement; the launch clearance for any of these files is a separate c60c_astcheck run.
+BGRUN END rc=0 after 0s
+BGRUN START 2026-09-22 02:45:48 limit 3.0 min: py -u tools/bench/c74_gate10_report.py
+=== c74_gate10_report - the WIDENED gate 10 as a MEASUREMENT, not a launch clearance
+=== source of the check: tools/bench/c60c_astcheck.py percent_format_sites()
+
+--- FIXTURE: what the widened gate says about literals whose CPython behaviour is known
+  FIX  x = "%d%" % (1,)                             CPython: ValueError: incomplete format              -> INVALID,verified         (expected INVALID)
+  FIX  x = "50% (of rows): %s" % (n,)               CPython: ValueError: unsupported format character ' ' -> INVALID,verified         (expected INVALID)
+  FIX  x = "%d%% done" % (n,)                       CPython: legal - %% consumes nothing                -> verified                 (expected clean)
+  FIX  x = b"%b" % (blob,)                          CPython: legal under PEP 461                        -> bytes-reported           (expected bytes-reported, NEVER failed)
+  FIX  x = "%02d %s %r %.1f %.2f" % (a, b, c, d)    CPython: TypeError: not enough arguments            -> MISMATCH                 (expected MISMATCH)
+  FIX  x = "%s and %s" % (a, b)                     CPython: legal                                      -> verified                 (expected clean)
+
+  G10  build_d1_m3a2.py           1153 lines |  98 VERIFIED |  48 ASSUMED | 0 MISMATCH | 0 INVALID | 0 bytes-reported | 0 unresolved
+  G10  build_d1_m3a1.py           2127 lines | 209 VERIFIED | 114 ASSUMED | 0 MISMATCH | 0 INVALID | 0 bytes-reported | 0 unresolved
+  G10  build_d1_routeb_v0.py      1428 lines |   0 VERIFIED |   0 ASSUMED | 0 MISMATCH | 0 INVALID | 0 bytes-reported | 0 unresolved
+
+=== G10 REPORT DONE: 0 definite defect(s) across 3 file(s). This is a measurement; the launch clearance for any of these files is a separate c60c_astcheck run.
+BGRUN END rc=0 after 0s

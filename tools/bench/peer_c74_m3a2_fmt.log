@@ -1,0 +1,96 @@
+BGRUN START 2026-09-22 02:01:32 limit 20.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c74-m3a2-fmt -TaskFile 'tools/bench/peer_task_c74_m3a2_execstate.md' -TimeoutSec 900
+OUTCOME: ANSWERED (362s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-22-c74-m3a2-fmt.md
+COST: $2.6899  in 24 / out 27670 / cache-create 134596 / cache-read 1207513  (358s, 23 turn(s))
+--- ANSWER ---
+Write is disabled for this session — correct for a read-only reviewer. Here is the review.
+
+---
+
+# Failed-prediction review — M3a-2, 2026-09-22 01:58
+
+## 1. The single strongest reason the claim is WRONG
+
+**The framing says "a missing `%` argument in `read_es`." The parent recipe proves that is the trigger, not the defect.**
+
+`tools/recipes/build_d1_m3a1.py:463-464` contains the *same helper* with five placeholders and **five** arguments — `row["read_cost_s"]` is present — and it ran dozens of times last night (`tools/bench/build_d1_m3a1.log:25`). `build_d1_m3a2.py:307-320` is a hand-adapted transcription of it: the signature changed `read_es(tag, target)` → `read_es(tag)`, the `"target"` row key was dropped, rule-citation prose was appended to the format string (`"- NEVER a type discriminator (42(c)), NEVER substituted for the identity test (Pre-decided 70)"`), and the trailing argument went missing in that same edit while `%.2f` stayed.
+
+So the defect class is not *typing*. It is **per-cycle re-derivation of a 1100-line working program by hand**, and the defects it produces land preferentially in code the parent exercised but no gate executes. The exposed population in this one file: **71 `%`-format sites, at least 9 of which carry editable rule-citation prose inside the format string** — the exact habit that desynchronised placeholders from arguments here. One of them failed. Nothing measured the other seventy.
+
+"Fix line 319" is true and leaves the population untouched.
+
+## 2. The finding nobody has named — H8 reported a falsehood, and the runner reads it
+
+This is the load-bearing half, and it is worse than the crash.
+
+**No mutator was called. LabVIEW refused nothing.** Yet `tools/bench/build_d1_m3a2.log:32` reads `MACHINE REFUSAL at main: TypeError…`, because `main()`'s bare handler routes *any* Python exception into `refusal()` (`build_d1_m3a2.py:1050-1054`) — and `refusal()`'s own docstring at `:269` declares it *"A MUTATOR CALL THE MACHINE REFUSED - the one class of negative result that gates (Pre-decided 63)."*
+
+Pre-decided 63 (`docs/cycle27-plan.md:2765-2771`), written **the day before** after cycle 53 paid three ~$4 adversarial reviews, says verbatim:
+
+> *"A failing log should mean the machine refused, not that the answer was 'no'."*
+
+This run committed its mirror image: the failing log means *the script crashed*, wearing the machine's name. The author cited the rule in the docstring of the function that breaks it.
+
+**This is not cosmetic, because `cycle_runner.py` consumes these lines.** `GATE_FAIL_RE` (`:197-198`) takes the first `FAIL` line, strips `#\d+`/`\b\d{3,}\b`, lowercases, collapses whitespace and truncates to 60 chars (`:257-258`). H8's line truncates to:
+
+```
+fail h8 no mutator call was refused by the machine (this fil
+```
+
+The discriminating text — `1 here ['main']` versus a real op name — sits at roughly character 100, **past the cut**. The exclusion list at `:243-246` covers bookkeeping tools, not recipes. Consequences:
+
+- this run has already deposited that signature into the runner's fail set;
+- if the next cycle's recipe dies of an *unrelated* cause that reaches the same handler — a COM drop, a `KeyError`, or a genuine LabVIEW refusal — the runner sees "the same first failing gate line in two consecutive cycles" and fires a **fable/low firefighter at a phantom**;
+- symmetrically, a real repeated LabVIEW refusal is now indistinguishable from Python noise.
+
+## 3. Classification — and yes, this project has met it under another name
+
+**`device-failed`, threshold 1, two devices:**
+
+| device | what it is for | what it did |
+|---|---|---|
+| `c60c_astcheck.py` | clear a recipe for launch | printed `11 PASS / 0 FAIL` on a file that could not survive its own first diagnostic call. Gate 1 (`:121-126`) is `ast.parse` plus a line/gate-site count — **a parse verdict read as a fitness verdict** |
+| H8 / `refusal()` | say *why* a run failed | said "the machine refused" when it did not |
+
+The precedent is recorded in the checker's own docstring: `tools/bench/c60c_astcheck.py:22-28` — the `move_in` false positive was *"the SINGLETON intersection of runner cycles 49 n 50's failing gate lines … i.e. a gate defect was the thing about to fire the runner's repeated-failure firefighter."* **Same class: a failing gate line whose text does not mean what the runner takes it to mean.** `device-failed` already stands at rounds 4, 5, 6, cycle 39, cycle 43 (`docs/violation-decisions.md:260, :270, :292, :422-428, :447, :526`). The threshold is suspended by the user's standing order of 2026-09-18 08:53, so this is a **FINDING, not a build order** — and note the remedy below adds a gate *inside* an existing device rather than creating one.
+
+The prior-art review could not have caught it: its remit (`archive/peer/2026-09-22-priorart-priorart-c74-m3a2.md:17-18`) is explicitly *"has this already been done here? Do not review the plan's merits."* All four accepted findings concerned LabVIEW semantics and wasted measurement. None asks whether the Python executes.
+
+## 4. The mechanical check — two, and the weaker one is the one you'd reach for
+
+**(a) `%`-arity, statically.** Ruff `F507` / pyflakes' percent-format checker compares placeholder count to tuple arity. It fires here because CPython merges adjacent string literals into a **single `ast.Constant`** at parse time, so the checker sees all five placeholders against the four-element tuple. There is **no lint configuration anywhere in this repo** — a glob for `pyproject.toml`/`ruff.toml`/`.flake8`/`tox.ini`/`requirements*.txt` returned nothing — so nothing of this kind has ever run here. Cost: one command, under a second, zero LabVIEW. Better still, `c60c_astcheck.py` already walks the AST: **~20 lines added there as gate 10** gives the same result with no new dependency and no new device.
+
+⚠️ I could not execute it (read-only). Confirm with one command before trusting it.
+
+**(b) But (a) is the weaker answer, and I want to say so plainly.** F507 catches `%`-arity and nothing else. It would not catch a `KeyError` on `R[...]`, and **neither pyflakes nor ruff does call-signature checking** — so the `read_es(tag, target)` → `read_es(tag)` signature change that caused this would itself pass unseen at every call site. The check that matches the actual defect class is **executing the recipe with LabVIEW stubbed**: import the module with `g` replaced by a mock whose verbs return canned rows, call `main()`. Every line that does not need a real VI is exercised for free. The convention already exists (`tools/bench/selftest_*.py`, `docs/cycle27-plan.md:2731`); `tools/bench/diag_c73_import.log` shows the import-only version was run this cycle — on a *different* module, and it entered no function body.
+
+**Ordering matters: fix the failure channel (§2) before building either gate.** A corrupted failure signal is what decides whether those gates ever get built, and by whom.
+
+## 5. The cheapest discriminating test
+
+Zero LabVIEW, no lock, seconds:
+
+> Run `%`-arity over `build_d1_m3a2.py` **and its two predecessors** `build_d1_m3a1.py`, `build_d1_v0.py`; then run `main()` once against a stub `g`.
+
+- **Only `:317` flagged, and the stubbed `main()` reaches `phase_save()` with no second exception** ⇒ the obvious reading wins, a lint gate suffices, and I am over-claiming.
+- **`:317` flagged but the stubbed run raises a *different* exception class elsewhere** ⇒ my account wins: the population is adaptation defects and the gate must be the stub run, not the lint.
+- **Predecessors also flagged** ⇒ strongest: earlier runs were logging silently-wrong numbers rather than crashing.
+
+## 6. What would falsify my account
+
+- `c60c_astcheck.py` already containing a `%`-arity gate that `--route owner` disables — then this is a configuration error, not a missing capability.
+- The stubbed `main()` running clean end-to-end with nothing flagged in the predecessors — then "one careless edit" is the whole story.
+- `git log -p` showing `read_es` was correct in an earlier commit of `build_d1_m3a2.py` and broken by one of this session's four prior-art edits — but those were `:527, :589, :661, :948`, none of them `:317`, so this would surprise me. If true, the right gate is re-check-after-edit, which already exists and already ran (`c74_astcheck_m3a2_r2.log`).
+- For §2 specifically: showing the 60-char truncation *does* preserve the cause. I make the cut fall at `(this fil`, char ~59. If I mis-counted, that half weakens — though the identical prefix still collides.
+
+## 7. What the evidence does NOT settle, and one unreported fact
+
+**It does not settle that 45 minutes were lost.** The run died at 71 s with every md5 pin intact. The real cost is the **failure budget** (2 per dispatch), the mandatory review this dispatch triggered, and `guard_cycle.py` blocking the next recipe build. Calling it "45 minutes of wasted LabVIEW" overstates it.
+
+**Unreported:** handles went **30,689 → 45,677 in 71 seconds** (`build_d1_m3a2.log:24, :51`) — nearly +15,000 against the ~31,500 baseline — on a run that opened and closed 3 references, live 0, and did essentially nothing. H6 and H7 both PASS and neither says anything about it. No one asked.
+
+---
+
+**Do I still hold the claim after all four?** No — not as stated. The `%`-argument diagnosis is correct about the line and wrong about the failure. What would change my mind is the stub run coming back clean with nothing flagged in the predecessors; that would make §1 an over-reading. **§2 stands independently of that test** and does not depend on my being right about §1.
+
+**Sources:** [ruff F507 — percent-format-positional-count-mismatch](https://docs.astral.sh/ruff/rules/percent-format-positional-count-mismatch/) · [pyflakes PR #443, string formatting linting](https://github.com/PyCQA/pyflakes/pull/443) · [pyflakes #552, implicit concatenation folded to one Constant](https://github.com/PyCQA/pyflakes/issues/552)
+BGRUN END rc=0 after 363s

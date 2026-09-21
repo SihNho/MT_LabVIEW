@@ -394,6 +394,7 @@ at** (the "preserved" crash copies were byte-identical to the untouched original
    a new file name (`_v8`) is forbidden. `cycle_runner.py` counts renamed recipes as the same recipe.
 4. A new large stage (e.g. EMCCD sync) starts with its step list and saved-file list written into the plan; no build
    before that list exists.
+6. **A BROKEN INTERMEDIATE MAY BE SAVED BY GUI Ctrl+S (user, 2026-09-22: "저장 허용함.").** A `claudeDev` stage artefact that is broken BY DESIGN (its missing rows belong to the next stage, `ExecState` 0) is saved through `gui_save` (block-diagram window fronted and click-probed, Ctrl+S, mtime verified) with `-Exception Approved -Evidence "user 2026-09-22 broken-intermediate save"`, because COM `SaveInstrument` hangs on a broken VI — the scripted route is verified unreachable for this class. Such a file is NEVER run and never cold-loaded headless. Not for originals (rule 1) and not for the final deliverable, which must reach `ExecState` 1 and save by script.
 5. **Reference hygiene is a precondition, not an afterthought**: an op that traverses without `Close Reference` is
    repaired before it is used in a staged build (20 consecutive calls in one script, handle count flat ±100).
 

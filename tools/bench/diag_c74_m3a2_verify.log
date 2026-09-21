@@ -1,0 +1,103 @@
+BGRUN START 2026-09-22 02:43:51 limit 30.0 min: py -u tools/bench/diag_c74_m3a2_verify.py
+=== diag_c74_m3a2_verify  2026-09-22 02:43:51
+=== READ-ONLY verification of D1_s3b_m3a2_20260922_023029.vi
+
+---------- [0] FILES ONLY, ZERO LabVIEW - the md5 pins, then the pre-batch restart
+  FACT  LabVIEW handles BEFORE: 34621 (fresh-instance baseline ~31,500 - a FACT, never a gate)
+  FACT  H1 THE ARTEFACT BEFORE: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3b_m3a2_20260922_023029.vi | exists=1 | size=303823 | md5=3842f5e6f128226235dc78353f26ef44 | sha256=40fd8b1eedcdf2812a3381bd68f1786849cf7f0b5ba15a485a71366426b6bd7f
+  PASS  H1 the artefact reads its pinned md5 3842f5e6 BEFORE anything is opened  '3842f5e6f128226235dc78353f26ef44'
+  FACT  H2 ORIGINAL: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  H2 ORIGINAL md5 == its pin 2a78e17c  '2a78e17c449cacdaf5da389818526859'
+  FACT  H2 S1 D1_s1_copy: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  PASS  H2 S1 D1_s1_copy md5 == its pin 3e3d23ce  '3e3d23cefd3a334001aa9d6156bf1aee'
+  FACT  H2 S2 D1_s2_loops: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  H2 S2 D1_s2_loops md5 == its pin 6ff19497  '6ff19497f2309e007a214660bb64b911'
+  FACT  H2 THE BED: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3b_row2_20260921_160311.vi | exists=1 | size=476759 | md5=26c54ff784cb5cea21edbd214d2cc3a0 | sha256=17b63cb1c83d5f4a50285ced08b1ecc5a65605979b17ee798b1228f7017d275d
+  PASS  H2 THE BED md5 == its pin 26c54ff7  '26c54ff784cb5cea21edbd214d2cc3a0'
+  FACT  [0] pre-batch LabVIEW restart (44(e)): lv_restart rc=0 ['dialogs: ,1346,762| / ENABLED|33096990|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  LabVIEW handles AFTER the restart: 30647
+
+---------- [1] THE SCRATCH COPY - the artefact itself is never opened
+  FACT  [1] the scratch straight after the copy: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\C74VERIFY_20260922_024351.vi | exists=1 | size=303823 | md5=3842f5e6f128226235dc78353f26ef44 | sha256=40fd8b1eedcdf2812a3381bd68f1786849cf7f0b5ba15a485a71366426b6bd7f
+  PASS  H3 the scratch starts byte-identical to the artefact  '3842f5e6f128226235dc78353f26ef44' vs '3842f5e6f128226235dc78353f26ef44'
+  FACT  [1] ensure_loaded(scratch) took 2.7 s
+  FACT  [1] the scratch reads ExecState 0 - A FACT ONLY. This artefact is BROKEN BY DESIGN and is never run (34(f)); nothing here is gated on it or reasoned from it.
+  FACT  [1] narrow class counts on the scratch: {'Node': 634, 'Wire': 1920, 'LeftShiftRegister': 38, 'RightShiftRegister': 38}
+  FACT  [1] Diagram #686 -> traverse index 19
+
+---------- [2] THE LOOP AND ITS REGISTERS - read by uid, and the border node's FULL terminal table
+  FACT  [2] A7 ECHO: report_all('WhileLoop')[2].uid == 23032 (want #23032 ; 6 WhileLoop row(s))
+  FACT  [2] loop#23032 reg0  RIGHT #23868  'RightShiftRegister'  outer={'name': 'Outgoing Handle', 'is_source': True, 'wire': 0} | LEFT #23880  'LeftShiftRegister'   outer={'name': 'Outgoing Handle', 'is_source': False, 'wire': 4185} | errors={}
+  FACT  [2] loop#23032 reg1  RIGHT #23895  'RightShiftRegister'  outer={'name': 'Out position', 'is_source': True, 'wire': 0} | LEFT #23909  'LeftShiftRegister'   outer={'name': 'Out position', 'is_source': False, 'wire': 3968} | errors={}
+  FACT  [2] loop#23032 reg2  RIGHT #None   ''                    outer={'name': '', 'is_source': False, 'wire': 0} | LEFT #None   ''                    outer={'name': '', 'is_source': False, 'wire': 0} | errors={'OuterErr': 'error 1055: Property Node in OpShiftRegs_v1.vi', 'OutConnErr': 'error 1055: Property Node in OpShiftRegs_v1.vi', 'InsideErr': 'error 1055: Property Node in OpShiftRegs_v1.vi', 'LeftRegsErr': 'error 1055: Property Node in OpShiftRegs_v1.vi', 'LeftOuterErr': 'error 1055: Property Node in OpShiftRegs_v1.vi', 'LeftInsideErr': 'error 1055: Property Node in OpShiftRegs_v1.vi'}
+  FACT  [2] the live register table carries RIGHT uids [23868, 23895, None] and LEFT uids [23880, 23909, None]
+  FACT  [2] the loop border #23032 #23032 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 21, 'nodes_on_diagram': 26, 'label': 'While Loop'}  (1 diagram(s) scanned of 173, 2.5 s)
+  FACT  [2] the loop border #23032 terminal table of #23032 (Diagram idx 19, Nodes[21], echo 23032): 7 terminal(s)
+  FACT      [2] the loop border #23032 t0  ''                                 is_source=False wire=23519   errs=[0, 0, 0, 0]
+  FACT      [2] the loop border #23032 t1  'Outgoing Handle'                  is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      [2] the loop border #23032 t2  'Outgoing Handle'                  is_source=False wire=4185    errs=[0, 0, 0, 0]
+  FACT      [2] the loop border #23032 t3  'Out position'                     is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      [2] the loop border #23032 t4  'Out position'                     is_source=False wire=3968    errs=[0, 0, 0, 0]
+  FACT      [2] the loop border #23032 t5  '# slices in stack'                is_source=False wire=24077   errs=[0, 0, 0, 0]
+  FACT      [2] the loop border #23032 t6  'position [internal units]'        is_source=True  wire=24130   errs=[0, 0, 0, 0]
+  FACT  [2] the loop border #23032 sits on Diagram idx 19 (uid #686) at Nodes[21], uid echo 23032, with 7 terminal(s). The recipe's rows were reported as Nodes[21].
+
+---------- [3] V4 (FACT, NOT A GATE) - the Terminals[] index and NAME of each register's OUTER terminal
+  FACT  [3] EXPECTATION being tested, from the previously-cited evidence: tools/bench/build_d1_routeb_v0_run2.log:467-468 - BARE register terminals on Diagram[19] #686 sat at ODD Terminals[] indices (Nodes[22].T[1] 'position [internal units]', Nodes[22].T[3] 'VISA out')
+  FACT  [3] THE FULL BORDER TERMINAL TABLE, index by index:
+  FACT      [3] t0   name=''                                 is_source=False wire=23519    state=WIRED
+  FACT      [3] t1   name='Outgoing Handle'                  is_source=True  wire=0        state=BARE
+  FACT      [3] t2   name='Outgoing Handle'                  is_source=False wire=4185     state=WIRED
+  FACT      [3] t3   name='Out position'                     is_source=True  wire=0        state=BARE
+  FACT      [3] t4   name='Out position'                     is_source=False wire=3968     state=WIRED
+  FACT      [3] t5   name='# slices in stack'                is_source=False wire=24077    state=WIRED
+  FACT      [3] t6   name='position [internal units]'        is_source=True  wire=24130    state=WIRED
+  FACT  [3] V4 register #23880 (LEFT side): OUTER reads name='Outgoing Handle' is_source=False wire=4185 -> border Terminals index(es) [2], name(s) ['Outgoing Handle'], parity ['even'] ; resolved by WIRE UID 4185 (unique on the diagram)
+  FACT  [3] V4 register #23909 (LEFT side): OUTER reads name='Out position' is_source=False wire=3968 -> border Terminals index(es) [4], name(s) ['Out position'], parity ['even'] ; resolved by WIRE UID 3968 (unique on the diagram)
+  FACT  [3] V4 register #23868 (RIGHT side): OUTER reads name='Outgoing Handle' is_source=True wire=0 -> border Terminals index(es) [1], name(s) ['Outgoing Handle'], parity ['odd'] ; resolved BARE, so by (name 'Outgoing Handle', is_source True, no wire); direction expected True
+  FACT  [3] V4 register #23895 (RIGHT side): OUTER reads name='Out position' is_source=True wire=0 -> border Terminals index(es) [3], name(s) ['Out position'], parity ['odd'] ; resolved BARE, so by (name 'Out position', is_source True, no wire); direction expected True
+  FACT  [3] V4 vs THE RECIPE'S CLAIM for V1 A VISA: the recipe reported Nodes[21].Terminals[2] 'VISA out' ; measured here, anchored at register #23880, the OUTER terminal is at index(es) [2] with name(s) ['Outgoing Handle']
+  FACT  [3] V4 vs THE RECIPE'S CLAIM for V2 B POS: the recipe reported Nodes[21].Terminals[4] 'Out position' ; measured here, anchored at register #23909, the OUTER terminal is at index(es) [4] with name(s) ['Out position']
+
+---------- [4] V1 / V2 - each LEFT register's OUTER wire and the ONE source terminal on it
+  FACT  V1 A VISA LEFT register #23880 OUTER terminal reads name='Outgoing Handle' is_source=False wire=4185
+  PASS  V1 A VISA the LEFT register #23880 OUTER terminal carries a wire  wire 4185
+  FACT  V1 A VISA the OUTER net OpWireSource_v5(UID 2 = 4185): 4 row(s), 3 with a REAL owner
+  FACT      V1 A VISA the OUTER net   t0  is_source=True  owner_class='FlatSequenceInnerTunnel'  owner_uid=4194    recip=4185
+  FACT      V1 A VISA the OUTER net   t1  is_source=False owner_class='LeftShiftRegister'        owner_uid=4344    recip=4185
+  FACT      V1 A VISA the OUTER net   t2  is_source=False owner_class='LeftShiftRegister'        owner_uid=23880   recip=4185
+  FACT      V1 A VISA the OUTER net   t3  is_source=None  owner_class=None                       owner_uid=None    recip=None  READ ERROR errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; errG=error 1055: Property Node in OpWireSource_v5.vi; errS=error 1055: Property Node in OpWireSource_v5.vi; errWU=error 1055: Property Node in OpWireSource_v5.vi; errCO=error 1055: Property Node in OpWireSource_v5.vi
+  FACT  V1 A VISA the OUTER net PD85 PRECONDITION (plan item 85): 3 real-owner row(s), 0 violate recip==queried_uid
+  FACT  V1 A VISA the OUTER net (wire 4185): 1 source terminal(s) OF ANY CLASS [(0, 'FlatSequenceInnerTunnel', 4194)] ; every owner on the net [4194, 4344, 23880] ; the ORIGINAL sink #4344 still on it? True
+  PASS  V1 A VISA the OUTER wire has EXACTLY ONE source terminal of any owner class and its owner is #4194  sources 1 [(0, 'FlatSequenceInnerTunnel', 4194)] ; the one owner 4194 ; PD85 violations 0 (a non-zero count means the walk is not believed and this gate FAILS rather than drops the row)
+  FACT  V1 A VISA SOURCE-WIRE CROSS-CHECK (a fact, not a gate): stage M3a-2 branched wire 4185, whose source was #4194. The wire now on this register's OUTER terminal is 4185 - the SAME wire uid? True
+  FACT  V2 B POS LEFT register #23909 OUTER terminal reads name='Out position' is_source=False wire=3968
+  PASS  V2 B POS the LEFT register #23909 OUTER terminal carries a wire  wire 3968
+  FACT  V2 B POS the OUTER net OpWireSource_v5(UID 2 = 3968): 4 row(s), 3 with a REAL owner
+  FACT      V2 B POS the OUTER net   t0  is_source=True  owner_class='FlatSequenceInnerTunnel'  owner_uid=3974    recip=3968
+  FACT      V2 B POS the OUTER net   t1  is_source=False owner_class='LeftShiftRegister'        owner_uid=4274    recip=3968
+  FACT      V2 B POS the OUTER net   t2  is_source=False owner_class='LeftShiftRegister'        owner_uid=23909   recip=3968
+  FACT      V2 B POS the OUTER net   t3  is_source=None  owner_class=None                       owner_uid=None    recip=None  READ ERROR errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; errG=error 1055: Property Node in OpWireSource_v5.vi; errS=error 1055: Property Node in OpWireSource_v5.vi; errWU=error 1055: Property Node in OpWireSource_v5.vi; errCO=error 1055: Property Node in OpWireSource_v5.vi
+  FACT  V2 B POS the OUTER net PD85 PRECONDITION (plan item 85): 3 real-owner row(s), 0 violate recip==queried_uid
+  FACT  V2 B POS the OUTER net (wire 3968): 1 source terminal(s) OF ANY CLASS [(0, 'FlatSequenceInnerTunnel', 3974)] ; every owner on the net [3974, 4274, 23909] ; the ORIGINAL sink #4274 still on it? True
+  PASS  V2 B POS the OUTER wire has EXACTLY ONE source terminal of any owner class and its owner is #3974  sources 1 [(0, 'FlatSequenceInnerTunnel', 3974)] ; the one owner 3974 ; PD85 violations 0 (a non-zero count means the walk is not believed and this gate FAILS rather than drops the row)
+  FACT  V2 B POS SOURCE-WIRE CROSS-CHECK (a fact, not a gate): stage M3a-2 branched wire 3968, whose source was #3974. The wire now on this register's OUTER terminal is 3968 - the SAME wire uid? True
+
+---------- [5] V3 - the two RIGHT registers' OUTER terminals must still be BARE (plan item 91, M3a-3)
+  FACT  V3a RIGHT register #23868 OUTER reads name='Outgoing Handle' is_source=True wire=0 ; border row(s) [1] state(s) ['BARE'] (BARE, so by (name 'Outgoing Handle', is_source True, no wire); direction expected True)
+  PASS  V3a RIGHT register #23868's OUTER terminal is still BARE  side 'RIGHT', wire 0 - anything other than 0 means something was wired that this stage was not meant to wire
+  FACT  V3b RIGHT register #23895 OUTER reads name='Out position' is_source=True wire=0 ; border row(s) [3] state(s) ['BARE'] (BARE, so by (name 'Out position', is_source True, no wire); direction expected True)
+  PASS  V3b RIGHT register #23895's OUTER terminal is still BARE  side 'RIGHT', wire 0 - anything other than 0 means something was wired that this stage was not meant to wire
+
+---------- [6] HYGIENE - references closed, the scratch deleted, the artefact re-hashed
+  FACT  [6] VI Server reference counts: {'opened': 2, 'closed': 2, 'live': 0, 'cached_op_vis': 0}
+  PASS  H6 every reference this run opened is closed (live == 0)  {'opened': 2, 'closed': 2, 'live': 0, 'cached_op_vis': 0}
+  PASS  H4 the scratch is deleted  C74VERIFY_20260922_024351.vi
+  FACT  H5 THE ARTEFACT AFTER: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3b_m3a2_20260922_023029.vi | exists=1 | size=303823 | md5=3842f5e6f128226235dc78353f26ef44 | sha256=40fd8b1eedcdf2812a3381bd68f1786849cf7f0b5ba15a485a71366426b6bd7f
+  PASS  H5 the artefact still reads its pinned md5 3842f5e6 AFTER the run  '3842f5e6f128226235dc78353f26ef44'
+  FACT  [6] machine refusals recorded by the imported helper module: 0 []
+  FACT  [6] LabVIEW handles AFTER: 42297 (before 34621, after the restart 30647 ; baseline ~31,500 - a FACT, never a gate)
+
+=== GATES 15 pass / 0 fail
+=== JSON G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c74_m3a2_verify.json
+BGRUN END rc=0 after 96s
