@@ -1,0 +1,54 @@
+BGRUN START 2026-09-21 09:01:49 limit 18.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Kind review -Slug c61-localpn-execstate0 -TimeoutSec 900 -TaskFile tools/bench/peer_c61_localpn_task.md
+OUTCOME: ANSWERED (340s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c61-localpn-execstate0.md
+COST: $2.9786  in 10 / out 25926 / cache-create 209993 / cache-read 362055  (339s, 13 turn(s))
+--- ANSWER ---
+Write is disabled for this role, as the brief requires — so the review is the answer itself.
+
+---
+
+# The claim is REFUTED — by this project's own machine record, taken 45 minutes before the run under review
+
+## 1. Strongest reason the claim is wrong: a `Local`-class Property Node has already sat on a diagram here at `ExecState` 1
+
+Same day, same `build_property` verb, cycle 60 material #2:
+
+| step | reading |
+|---|---|
+| `build_property('VI Server:Local',[('6355400',False)])` | `ExecState` **0** — `tools/bench/diag_s3b_l0_localname_v2.log:83` |
+| `create_control` on that node's `reference` SINK | `ExecState` **1** — `:88-89` (the seed was born wired, wire 1086, `:91`) |
+| that birth wire deleted again | `ExecState` **0** — `:95` |
+
+`ExecState` followed **whether `reference` was fed**, not the node's class. "A `Local`-class Property Node makes the VI illegal the instant it is created" is false as stated, and the run under review never had to find that out — it is in a log the same fleet wrote this morning.
+
+## 2. The alternative explanation your four readings do not exclude
+
+**Every `Local` probe was created with `reference` unwired — by construction, not by accident.** `tools/gscript.py:2198`: *"Same rules as build_invoke: **reference unwired**, class by string, IDs not names."* A Property Node with an unsatisfied `reference` is broken for **every** class except the ones carrying an implicit reference — and the control you chose, `VI Server:VI` id 242 (`diag_c61_localdir_write.log:85-94`), is exactly that exception: *"If you do not wire a refnum to the reference input of the Property Node, LabVIEW gets or sets the property for the current VI"*, and implicit nodes exist only for the current application, the current VI, and controls in the same VI. **The control varied class and reference-requirement together, then attributed the result to class.**
+
+Ruled-out item 3 ("deleting the node restores 1, four times", `:38/:52/:66/:80`) is predicted equally well by the unwired-reference explanation — deleting an unsatisfied node removes the unsatisfied input. It discriminates nothing.
+
+**And the reading the FAIL gate fired on is inadmissible under your own rule.** `docs/NAMES.md:912-918`, measured cycle 23: reading `Wire.Is Broken?` **perturbs the target** — *"an ExecState read taken AFTER a wire read is not evidence of brokenness … treat any ExecState taken after it as SUSPECT, and re-establish legality from a VI the reader has not touched."* The ordered `Is Broken?` pass ran at `diag_c61_localdir_write.log:128-131`; the before/after-`create_control` readings and the save-point gate are `:137`, `:140`, `:142-143` — **all downstream of it**. Cycle 60's 0 → 1 recovery was taken before any such read. The two runs are not comparable at the one step that matters.
+
+## 3. What the evidence genuinely does not settle
+
+Two things changed together between the cycle-60 recovery and today's failure: **(a)** `6355400` READ vs `6355401` WRITE, and **(b)** the reference source — a `Terminal.Create Control` typed seed vs the Invoke's `Create Local` output wire. `Is Broken? False` on wire 390 does not exonerate (b): **a node can be broken while its wires are not.** `Write?` is documented read/write only on the LabVIEW Wiki, a source `docs/cycle27-plan.md:2029` already records as self-declaring incompleteness — so "the write mode of 6355401 is refused" remains live and is *not* the same finding as "the class is illegal".
+
+## 4. What would falsify my alternative
+
+`build_property('VI Server:Local', [('6355401', False)])` followed by `create_control` on the node's `reference` SINK, with no `Is Broken?` call in the run, leaving `ExecState` at **0**. Then the unwired-reference explanation is dead and the claim survives — and the next question becomes why cycle 60's node reached 1 and this one cannot.
+
+## 5. Cheapest discriminating test — one throwaway copy, two probes, nothing saved, **no `Wire.Is Broken?` anywhere in the run**
+
+| probe | steps | expected if I am right |
+|---|---|---|
+| **P1** | `build_property('VI Server:Local',[('6355401',False)])` → `create_control` on `reference` | 0 → **1** |
+| **P2** | same with `('6355401',True)` → `create_control` on `reference` → `create_control` on `Write?` | 0 → ? → ? |
+
+- **P1 → 1**: the class is legal, the claim is dead, cycle 60 reproduced on this bed.
+- **P1 → 1, P2 → 0**: the fault is the **write mode of `6355401`** — a precise, actionable result that decides the D1 direction question instead of closing a route.
+- **both → 1**: the fault was the Invoke's `Create Local` wire and/or the perturbing read; the route is open.
+- **P1 → 0**: I am falsified.
+
+Two node creations, two control creations, four `ExecState` reads, both probes deleted again. No save, no cast, no new verb, no donor substitution.
+
+**Sources:** [NI forums — VI self reference / implicit property node](https://forums.ni.com/t5/LabVIEW/vi-self-reference/td-p/404239) · [NI forums — implicit vs explicit property node](https://forums.ni.com/t5/LabVIEW/implicit-vs-explicit-property-node/td-p/654014) · [LabVIEW Wiki — Local class](https://labviewwiki.org/wiki/Local_class) (`Write?` 6355401 and `Control Name` 6355400 both listed Read/Write; the page says nothing about the `reference` input) · [LabVIEW Wiki — Control References](https://labviewwiki.org/wiki/Control_References)
+BGRUN END rc=0 after 341s

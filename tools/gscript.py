@@ -2225,12 +2225,47 @@ def build_property(target, cls, props, location, diagram_index=0):
         n_out = len(vi.GetControlValue("Outputs"))
     except Exception:
         n_out = None
-    if n_out is not None and n_out != len(props):
+    # MODE-AWARE POST-CONDITION (cycle 61, 2026-09-21). The creator's `Outputs` array carries the new node's
+    # OUTPUT terminals only, so a WRITE-mode item is an INPUT and can never appear in it. Until today this test
+    # read `n_out != len(props)` - it counted the wrong side and raised on EVERY is_write=True request while
+    # LabVIEW created the node correctly: measured in tools/bench/diag_c61_localdir.log, where 6355401 AND the
+    # known-good 6355400 both raised `Outputs count 0 != 1 requested` and both nodes were in fact present with a
+    # correct `Write?` / `CtrlName` SINK row. The assertion is NOT weakened: read-mode items are still asserted
+    # against Outputs exactly as before, and write-mode items are asserted against the node's own SINK terminals,
+    # read back off the machine (a write item that did not attach leaves no extra sink and still raises).
+    n_read = sum(1 for _pid, w in props if not bool(w))
+    n_write = len(props) - n_read
+    if n_out is not None and n_out != n_read:
         raise RuntimeError(f"build_property({cls}): creator error clean but Outputs count {n_out} != "
-                           f"{len(props)} requested - inconsistent, not trusted")
+                           f"{n_read} read-mode item(s) requested - inconsistent, not trusted")
     new = new_since(target, "Property", before)
     if len(new) != 1:
         raise RuntimeError(f"build_property: expected 1 new Property, got {len(new)}")
+    if n_write:
+        uid = new[0]["uid"]
+        standard = ("reference", "reference out", "error in (no error)", "error out")
+        cand = []
+        try:
+            cand = [i for i, r in enumerate(node_labels(target, diagram_index)) if r.get("uid") == uid]
+        except Exception:                                    # node_labels is a convenience, not the verdict
+            cand = []
+        rows = None
+        for i in cand + [j for j in range(80) if j not in cand]:
+            try:
+                nu, tr = node_terms_uid(target, diagram_index, i)
+            except Exception:
+                continue
+            if nu == uid:
+                rows = tr
+                break
+        if rows is None:
+            raise RuntimeError(f"build_property({cls}): {n_write} write-mode item(s) requested and the new node "
+                               f"#{uid} could not be read back on diagram {diagram_index} - not trusted")
+        sinks = [r for r in rows if not r.get("is_source") and r.get("name") not in standard]
+        if len(sinks) != n_write:
+            raise RuntimeError(f"build_property({cls}): creator error clean but the new node #{uid} carries "
+                               f"{len(sinks)} non-standard SINK terminal(s) {[r.get('name') for r in sinks]} != "
+                               f"{n_write} write-mode item(s) requested - inconsistent, not trusted")
     return new
 
 

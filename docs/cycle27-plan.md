@@ -2327,3 +2327,77 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
       additive-on-a-donor has shipped **five** saved ops (`docs/toolkit-capabilities.md:62,:63,:66,:68,:70`). Both
       of cycle 60's dead builds are instances of the failing class. This is not a device and needs no gate — it is
       the sentence to read before the next op is designed.
+
+## Pre-decided — ADDED 2026-09-21 (cycle 61): the direction is READ · the wrapper was the blocker · the op is SAVED
+
+52. 🎉 **S3b's DIRECTION QUESTION IS CLOSED, AND IT IS CLOSED BY A SAVED INSTRUMENT: `OpCreateLocalRead_v0.vi`
+    CREATES A LOCAL ALREADY IN THE RIGHT MODE.** Judgement, cycle 61, 2026-09-21, from
+    `tools/bench/diag_c61_localdir.log` (32/0), `tools/bench/diag_c61_localdir_write.log` (38/1) and
+    `tools/bench/diag_c61_localdir_write2.log` (38/0, `BGRUN END rc=0 after 169s`). 34–51 stand; this answers
+    51(h3) in both its parts and re-cuts 50(e)'s pass criteria — see (h).
+    - (a) **THE REQUIRED DIRECTION IS `READ`, TAKEN OFF THE MEASURED TABLES AS 51(h3) DEMANDED, NOT OFF PROSE.**
+      `#10407` **t0**: `is_source` **False** (SINK), c53 `source_or_sink` "sink", wire **10799**, action
+      `cross-loop:1.2->1.5`, far end `#10686` t0 `'x .and. y?'` `is_source` **True**. `#10407` **t2**: SINK,
+      wire **10990**, far end `#10757` t1 `'element'` **True**. `c53_row_class.json`, the rewire JSON and
+      `main_vi_nodeterms.json` agree on both rows, on the flags AND on the wires
+      (`tools/bench/diag_c61_localdir.log:8-18`). Both sinks are fed from sources ⇒ **a Local taking over either
+      feed must be a SOURCE at its own terminal = READ** (`docs/main-vi-panel-map.md:405`). No document
+      disagreed. A newly created Local is born WRITE (51(h3)), so the mode must be set.
+    - (b) **`Local.Write?` 6355401 EXISTS AND IS RESOLVED HERE FOR THE FIRST TIME** — class `'VI Server:Local'`,
+      short name **`Write?`**, Boolean, terminal i=4: a **SINK** when the item is created write-mode, a SOURCE
+      when read-mode (`diag_c61_localdir.log:84-101`). The ID had been carried as
+      *"peer, UNVERIFIED"* since `tools/bench/diag_s56_transport2.py:91`; it is now measured.
+    - (c) 🔴 **THE BLOCKER WAS OUR OWN WRAPPER, NOT LABVIEW — AND IT WOULD HAVE REFUSED EVERY WRITE THIS PROJECT
+      EVER ATTEMPTS.** `build_property` asserted `Outputs count == items requested`; a write-mode item is an
+      **input**, so it can never appear in Outputs, and the call raised
+      *"creator error clean but Outputs count 0 != 1 requested - inconsistent, not trusted"* **while LabVIEW
+      created the node correctly** — identically for the known-good 6355400, which is what proved the fault was
+      mode-blindness and not the ID. **REPAIRED, narrowly and mode-aware** (`tools/gscript.py`, `build_property`
+      only, +37/−2): read-mode items still assert against Outputs exactly as before; write-mode items assert
+      against the node's non-standard **SINKS**. Self-test 5/5 — write 6355401 and 6355400 both yield the SINK
+      row, read yields the SOURCE row, and the `VI Server:VI` 242 regression is unchanged
+      (`diag_c61_localdir_write.log:28-97`). No other function touched, no verb added.
+    - (d) 🎉 **NO `To More Specific Class` IS NEEDED ON THIS ROUTE — the cast that ended BOTH of cycle 60's builds
+      is out of the path.** `Create:Local Variable` **6331C02**'s `i=5 'Create Local'` **SOURCE** wires straight
+      into a `'VI Server:Local'` property node's `reference` SINK: error column `''`, and the ORDERED pass reads
+      **`Is Broken?` False** on that wire (`diag_c61_localdir_write2.log`, wire 390). **50(g) is amended**: for
+      `Create Local` the SOURCE half of the method pair carries the created object's reference, so the pair is not
+      always layout. The seed problem 50(k) solved stays solved but is not needed here.
+    - (e) 🎉 **THE ARTEFACT: `claudeDev\OpCreateLocalRead_v0.vi`, md5 `f695d97a36ae127cd2dd3ca6b1fc1089`,
+      10,192 B, LV2026 `26 00 80 00`.** Built **additively on donor `OpCreateLocal_v0.vi`** (md5 `58275b21…`,
+      byte-unchanged — 51(h)'s rule, and the first op to ship under it since it was written): property node #339
+      write-mode, `reference` from Invoke #306 i=5, `create_control` on the `Write?` SINK → ControlTerminal #434
+      labelled `'Write?'` (label read off the machine). `ExecState` **1 at the save and 1 COLD in a freshly
+      restarted LabVIEW**. **Exercised on a scratch of `D1_s3a_focus_ind.vi`:** `Write?`=False → new Local bound
+      to `'index'` (hex `696e646578`), `is_source` **True = READ**; `Write?`=True → `'index'`, **False = WRITE**;
+      both error clusters `(False, 0, '')`, census 8→9→10. **The Boolean steers the mode** — that is the whole
+      instrument S3b needed. Hygiene: 20 consecutive calls 0.9 s, handles +4, refs 26/26/**0 live**.
+    - (f) ⚠️ **WHY THE FIRST BUILD OF THE SAME CHAIN FAILED, AND THE STANDING RULE IT RESTATES.** The `ExecState`
+      1→0 after `build_property` is **transient and ordinary**: a write-mode property node with a bare `Write?`
+      SINK is broken, and feeding that sink restores 1 (measured either side in
+      `diag_c61_localdir_write2.log:23-63`). What made dispatch #2 stop was that it read `Is Broken?` **above**
+      its save point, and that read perturbs `ExecState` (`docs/NAMES.md:912-918`). **STANDING: no `Is Broken?`
+      is read above a save — the ordered pass runs AFTER the save, and preferably after a cold reopen**, which is
+      what 42(b) already said and what `tools/recipes/stage_d1_s3a_focus_ind.py` passed 64/0 doing. The forced
+      hypothesis review `archive/peer/2026-09-21-c61-localpn-execstate0.md` (claude/hypothesis opus max,
+      ANSWERED 340 s, `$2.9786`) is **disposed in full in its own `## What was done with it`**: accepted on its
+      central point and on the 242 confound, its perturbation sub-claim recorded as holding only for the later
+      readings, its P1/P2 probes deliberately not run.
+    - (g) **THE OPEN DISPATCH #3 RAISED IS ANSWERED AND NOTHING IS OWED.** The direction wire (ControlTerminal
+      #434 → the `Write?` SINK, wire 462) has no `Is Broken?` route in this fleet, because the reader addresses a
+      wire's source as a `Nodes[]` position and this source is a panel object. **DECISION: no reader is built and
+      none is needed.** `ExecState` **1 on a COLD reopen is a statement about every wire in the VI**, strictly
+      stronger than one wire's flag, and the op's two calls returned *different measured directions* — functional
+      evidence a wire check cannot give. The gap is recorded, not filled.
+    - (h) 🔴 **THE NEXT BLOCKER, SURFACED BY (a), NOT YET MEASURED, AND IT RE-CUTS 50(e): `#10407` t0/t2 ARE NOT
+      BARE.** 50(e)'s criterion *"`#10407` wired-terminal count **+2**"* presumes two empty sinks. The machine
+      says t0 carries wire **10799** and t2 wire **10990** — **the same two uids STATUS records for S3a's two
+      indicator wires**, which means S3a most likely BRANCHED the existing cross-loop wires rather than creating
+      new ones. ⚠️ **That last step is an INFERENCE from coinciding uids and it is the next cycle's FIRST
+      measurement, not a fact to build on.** It matters because S3b exists to *replace* those feeds: if one Wire
+      object carries both the indicator branch and the `#10407` sink, the sink must be freed without destroying
+      the indicator's feed, and no verb here is measured to remove a single **branch** —
+      `delete_object(target,'Wire',idx)` deletes the whole Wire object. **DECISION: 50(e)'s folded M1+M2 does NOT
+      run until that is measured**, and its pass criteria are re-cut by judgement on the reading. Everything else
+      in 50(e) stands (census 8→10, the `node_terms` readback as a rule-1a GATE per 50(i), `ExecState` 1 at the
+      save, ordered `Is Broken?` after it, `#637` counts unchanged).

@@ -1,0 +1,155 @@
+BGRUN START 2026-09-21 08:44:20 limit 25.0 min: py -u tools/bench/diag_c61_localdir.py
+=== diag_c61_localdir  2026-09-21 08:44:20
+=== A: the required DIRECTION off the machine tables | B: can the direction be WRITTEN (probe only) | C: prior-art census
+=== NOTHING IS BUILT, NOTHING IS SAVED, NO VI IS RUN, NO OP VI IS CREATED OR SPLICED
+
+========== PART A  the REQUIRED DIRECTION, off the machine-produced tables only
+  PASS  A_1 the three machine-produced JSONs are on disk and parse  {'c53_row_class': True, 'd1_rewire_sources': True, 'main_vi_nodeterms': True}
+  PASS  A_2 c53_row_class.json carries exactly the two rows #10407 t0 and t2  found 2; indices [0, 2]
+  FACT  A_2 c53_row_class.json  #10407 t0 name='' is_source=False (sink) wire=10799 action='cross-loop:1.2->1.5' dest_row='1.5' far_end=[{'kind': 'node', 'uid': 10686, 'i': 0, 'name': 'x .and. y?', 'sits_on': '#639 (diagram idx 43, owner class WhileLoop)', 'moves_with_1.5_set': False, 'planned_dest_row': '1.2'}] construction_verb='queue endpoint (Q_focus, d1-build-plan.md:424-429)'
+  FACT  A_2 c53_row_class.json  #10407 t2 name='Index of closest\ncal image slice, bead 2' is_source=False (sink) wire=10990 action='cross-loop:1.2->1.5' dest_row='1.5' far_end=[{'kind': 'node', 'uid': 10757, 'i': 1, 'name': 'element', 'sits_on': '#639 (diagram idx 43, owner class WhileLoop)', 'moves_with_1.5_set': False, 'planned_dest_row': '1.2'}] construction_verb='queue endpoint (Q_focus, d1-build-plan.md:424-429)'
+  PASS  A_2b d1_rewire_sources.json carries exactly the two rows #10407 t0 and t2  found 2; indices [0, 2]
+  FACT  A_3 d1_rewire_sources.json  #10407 t0 name='' is_source=False wire=10799 action='cross-loop:1.2->1.5' source={'kind': 'node', 'diagram': '43', 'uid': 10686, 'i': 0, 'name': 'x .and. y?', 'is_source': True}
+  FACT  A_3 d1_rewire_sources.json  #10407 t2 name='Index of closest\ncal image slice, bead 2' is_source=False wire=10990 action='cross-loop:1.2->1.5' source={'kind': 'node', 'diagram': '43', 'uid': 10757, 'i': 1, 'name': 'element', 'is_source': True}
+  PASS  A_3a main_vi_nodeterms.json carries #10407, #10686 and #10757  {10407: 7, 10686: 3, 10757: 3}
+  FACT  A_3b nodeterms  SINK #10407 t0 = {'i': 0, 'name': '', 'is_source': False, 'wire': 10799}   <-   FAR END #10686 t0 = {'i': 0, 'name': 'x .and. y?', 'is_source': True, 'wire': 10799}
+  FACT  A_3b nodeterms  SINK #10407 t2 = {'i': 2, 'name': 'Index of closest\ncal image slice, bead 2', 'is_source': False, 'wire': 10990}   <-   FAR END #10757 t1 = {'i': 1, 'name': 'element', 'is_source': True, 'wire': 10990}
+  FACT  A_3c AGREEMENT t0: is_source c53=False rewire=False nodeterms=False (agree=True) ; wire 10799/10799/10799 (agree=True) ; far end is_source per nodeterms=True
+  FACT  A_3c AGREEMENT t2: is_source c53=False rewire=False nodeterms=False (agree=True) ; wire 10990/10990/10990 (agree=True) ; far end is_source per nodeterms=True
+  PASS  A_3 the three censuses agree on both rows' is_source and wire  [(0, True, True), (2, True, True)]
+  PASS  A_4 the plan's prose at :1182-1188 and :1283-1290 was QUOTED into the JSON, not paraphrased  7 + 8 lines
+  FACT  A_4b FROM THE FLAGS ALONE  #10407 t0: is_source=False -> SINK ; far end #10686 'x .and. y?' is_source=True -> SOURCE ; the Local replacing that feed must be SOURCE (= READ, per docs/main-vi-panel-map.md:405 'Is Source? TRUE = the local is READ')
+  FACT  A_4b FROM THE FLAGS ALONE  #10407 t2: is_source=False -> SINK ; far end #10757 'element' is_source=True -> SOURCE ; the Local replacing that feed must be SOURCE (= READ, per docs/main-vi-panel-map.md:405 'Is Source? TRUE = the local is READ')
+
+========== PART C  prior-art census over our OWN files (no LabVIEW)
+  FACT  C1 docs/NAMES.md:55  | `Create Property Node.vi` | `Diagram in`, `Properties`(array of {`ID String`,`Is Write?`} ? COM needs `gscript.cluster_array`), `reference` (MUST be wired for class context, else 1077), `error in`[11]; `Class Name` NOT on pane |
+  PASS  C1 the Local-direction census over our own files ran and its hits are recorded verbatim  1 hit(s)
+  FACT  C1b claudeDev holds 220 .vi; those whose NAME matches local|dir|mode|write|name: ['OpCreateLocal_v0.vi', 'OpSetIndexMode_v0.vi', 'OpSetName_v0.vi']
+  FACT  C2 copy_into (tools/gscript.py:1399) -> OpMoveByLabel_v0.vi   """Copy the object labeled `label` from `donor` INTO `target`.
+  FACT  C2 set_index_mode (tools/gscript.py:1855) -> OpSetIndexMode_v0.vi   """Write a LoopTunnel's IndexMode in `target` (0 = regular/non-indexed, 1 = auto-indexed).
+  FACT  C2 tunnel_indicator (tools/gscript.py:1882) -> OpTunnelInd_v0.vi   """Create a front-panel INDICATOR wired to LoopTunnel[tunnel_index] of `target`, typed by LabVIEW.
+  FACT  C2 build_invoke (tools/gscript.py:2159) -> OpBuildInvoke_v0.vi   """Create an Invoke Node on `target`'s diagram: class `cls` ("VI Server:Terminal", "VI Server:VI",
+  FACT  C2 build_property (tools/gscript.py:2194) -> OpBuildPN_v1.vi   """Create a Property Node on `target`'s diagram: class `cls` ("VI Server:GObject", ...),
+  FACT  C2 print_net_map (tools/gscript.py:2609) -> OpSetAutoErr_v0.vi   
+  FACT  C2 set_auto_error_handling (tools/gscript.py:2620) -> OpSetAutoErr_v0.vi   """Write VI.'Automatic Error Handling' (242) of `target` ? OpSetAutoErr_v0 (2026-09-07). FALSE silences the
+  FACT  C2 connect2 (tools/gscript.py:2636) -> OpConnect2_v0.vi   """Wire top-level Nodes[src_node].Terminals[src_term] into Nodes[sink_node].Terminals[sink_term] of ANY diagram
+  FACT  C2 set_node_label (tools/gscript.py:2659) -> OpSetLabel_v0.vi   """Write the label of Nodes[node_index] of Traverse "Diagram"[diagram_index] on `target` (OpSetLabel_v0, built by
+  FACT  C2b of those, the ones whose body passes a CLASS + PROPERTY-ID pair generically: ['build_invoke', 'build_property', 'print_net_map', 'set_auto_error_handling', 'connect2', 'set_node_label'] (build_property is the generic CREATOR, tools/gscript.py:2194 - creating a node is not writing a property value)
+  PASS  C2 the property-writing ops are enumerated with their op VI  9 writer verb(s)
+  FACT  C3 archive/peer/ holds 478 files; FILENAMES matching local|direction|read-write|write-mode: ['2026-09-15-opwiresource-v4-wrong-owner-node-localised.md', '2026-09-20-c56-localvar-scripting.md', '2026-09-21-priorart-c60-localname-decomposition.md', '2026-09-21-s3b-local-variable-route.md'] (bodies NOT read)
+  PASS  C3 archive/peer was listed by filename only and no body was read  4 match(es)
+  FACT  LabVIEW handles BEFORE: 30913
+  FACT  T1 ORIGINAL (read-only probe): HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  T1 the ORIGINAL's md5 equals the pin  2a78e17c449cacdaf5da389818526859
+  FACT  T1b D1_s1_copy.vi: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  PASS  T1b D1_s1_copy.vi md5 == 3e3d23cefd3a334001aa9d6156bf1aee  3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  T2 the S2 artefact: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T2 D1_s2_loops.vi md5 == 6ff19497f2309e007a214660bb64b911  6ff19497f2309e007a214660bb64b911
+  FACT  T3 the S3a artefact (the bed's SOURCE, never the bed): HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3a_focus_ind.vi | exists=1 | size=476172 | md5=eef91c1d91f16b034707e4d1285ca8cb | sha256=8afd9f95e280139e64aa648906ba7f799e8d0ae39aabfae42c93ef4f102d23bb
+  PASS  T3 D1_s3a_focus_ind.vi md5 == eef91c1d91f16b034707e4d1285ca8cb  eef91c1d91f16b034707e4d1285ca8cb
+  FACT  T5 RESTART (pre-batch, 44(e)): lv_restart rc=0 ['dialogs: 1346,762| / ENABLED|241763990|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  LabVIEW handles AFTER the pre-batch restart: 30684
+  FACT  B_0b the scratch at creation: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_C61DIR_20260921_084420.vi | exists=1 | size=476172 | md5=eef91c1d91f16b034707e4d1285ca8cb | sha256=8afd9f95e280139e64aa648906ba7f799e8d0ae39aabfae42c93ef4f102d23bb
+  PASS  B_0b the scratch copy is byte-identical to D1_s3a_focus_ind.vi at creation  eef91c1d91f16b034707e4d1285ca8cb (expected eef91c1d91f16b034707e4d1285ca8cb)
+
+========== PART B  can a Local's direction be WRITTEN at all? PROBE ONLY, BUILD NOTHING
+  FACT  ExecState [the scratch, before any call] = 1
+  PASS  B_0 the scratch opens at ExecState 1  1
+
+---------- B4  node_terms on the 8 pre-existing Locals (51(h3)'s 3 READ / 5 WRITE, live)
+  FACT  B4 `Local` uids on the scratch: [2143, 2991, 3097, 3160, 4277, 11574, 16942, 25805] (census 8)
+  OBSERVED uid 2991 -> owner 'Diagram' uid 3628 | self 'Local'#2991 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  B4 Local #2991 -> 1 terminal(s); name 'Total Lost Frames', is_source False (doc says control 'Total Lost Frames', READ False) -> AGREE
+  OBSERVED uid 4277 -> owner 'Diagram' uid 1817 | self 'Local'#4277 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  B4 Local #4277 -> 1 terminal(s); name 'File # Saved', is_source False (doc says control 'File # Saved', READ False) -> AGREE
+  OBSERVED uid 11574 -> owner 'Diagram' uid 10423 | self 'Local'#11574 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  B4 Local #11574 -> 1 terminal(s); name 'Focus Pos (Track)', is_source False (doc says control 'Focus Pos (Track)', READ False) -> AGREE
+  OBSERVED uid 3160 -> owner 'Diagram' uid 759 | self 'Local'#3160 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  B4 Local #3160 -> 1 terminal(s); name 'Rot pos (deg)', is_source True (doc says control 'Rot pos (deg)', READ True) -> AGREE
+  OBSERVED uid 3097 -> owner 'Diagram' uid 759 | self 'Local'#3097 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  B4 Local #3097 -> 1 terminal(s); name 'Trans Pos (mm)', is_source True (doc says control 'Trans Pos (mm)', READ True) -> AGREE
+  OBSERVED uid 2143 -> owner 'Diagram' uid 759 | self 'Local'#2143 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  B4 Local #2143 -> 1 terminal(s); name 'Total Lost Frames', is_source False (doc says control 'Total Lost Frames', READ False) -> AGREE
+  OBSERVED uid 16942 -> owner 'Diagram' uid 15266 | self 'Local'#16942 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  B4 Local #16942 -> 1 terminal(s); name 'Picture', is_source False (doc says control 'Picture', READ False) -> AGREE
+  OBSERVED uid 25805 -> owner 'Diagram' uid 25769 | self 'Local'#25805 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  B4 Local #25805 -> 1 terminal(s); name 'Color table', is_source True (doc says control 'Color table', READ True) -> AGREE
+  FACT  B4 the live is_source split over the 8 pre-existing Locals: True(READ)=3 False(WRITE)=5
+  PASS  B_1 each of the 8 pre-existing Locals returns exactly ONE named terminal  [(2991, 1), (4277, 1), (11574, 1), (3160, 1), (3097, 1), (2143, 1), (16942, 1), (25805, 1)]
+  PASS  B_1b the live is_source split reads 3 READ / 5 WRITE, as 51(h3) states  True=3 False=5
+  PASS  B_1c every reading agrees with docs/main-vi-panel-map.md:409-416  []
+
+---------- B_2 6355401 write=True  build_property('VI Server:Local', [('6355401', True)]) at (6600, 5600)
+  FACT  ExecState [B_2 6355401 write=True before the probe] = 1
+  FACT  B_2 6355401 write=True resolves=False ; error column VERBATIM 'RuntimeError: build_property(VI Server:Local): creator error clean but Outputs count 0 != 1 requested - inconsistent, not trusted' ; new None ; Property census 106 -> 107
+  FACT  ExecState [B_2 6355401 write=True after the probe node was created] = 0
+  OBSERVED uid 23553 -> owner 'TopLevelDiagram' uid 536 | self 'Property'#23553 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  B_2 6355401 write=True Property #23553 at diagram 0 node 0 [node_labels position (verified by the node's own UID)] FULL TERMINAL TABLE: [{'i': 0, 'name': 'reference', 'name_hex': '7265666572656e6365', 'is_source': False, 'wire': 0, 'errs': [0, 0, 0, 1055]}, {'i': 1, 'name': 'reference out', 'name_hex': '7265666572656e6365206f7574', 'is_source': True, 'wire': 0, 'errs': [0, 0, 0, 1055]}, {'i': 2, 'name': 'error in (no error)', 'name_hex': '6572726f7220696e20286e6f206572726f7229', 'is_source': False, 'wire': 0, 'errs': [0, 0, 0, 1055]}, {'i': 3, 'name': 'error out', 'name_hex': '6572726f72206f7574', 'is_source': True, 'wire': 0, 'errs': [0, 0, 0, 1055]}, {'i': 4, 'name': 'Write?', 'name_hex': '57726974653f', 'is_source': False, 'wire': 0, 'errs': [0, 0, 0, 1055]}]
+  FACT  B_2 6355401 write=True rows BEYOND reference/reference out/error in/error out = [{'i': 4, 'name': 'Write?', 'name_hex': '57726974653f', 'is_source': False, 'wire': 0, 'errs': [0, 0, 0, 1055]}] ; resolved short name(s) ['Write?'] ; of those, SINK rows (a value could be written into one) = [{'i': 4, 'name': 'Write?', 'name_hex': '57726974653f', 'is_source': False, 'wire': 0, 'errs': [0, 0, 0, 1055]}]
+  FACT  B_2 6355401 write=True probe node #23553 DELETED again -> gone {23553}
+  FACT  ExecState [B_2 6355401 write=True after the probe node was deleted] = 1
+  FACT  B_2 6355401 write=True Property census after delete 106 (pre-probe 106) -> returned=True
+  PASS  B_2 6355401 write=True the probe was made and its error column / terminal table / ExecState are recorded  resolves=False error='RuntimeError: build_property(VI Server:Local): creator error clean but Outputs count 0 != 1 requested - inconsistent, no'
+  PASS  B_2 6355401 write=True every probe node created was DELETED again and the Property census returned  106 -> 107 -> 106
+
+---------- B_3 6355401 write=False  build_property('VI Server:Local', [('6355401', False)]) at (6600, 5750)
+  FACT  ExecState [B_3 6355401 write=False before the probe] = 1
+  FACT  B_3 6355401 write=False resolves=True ; error column VERBATIM '' ; new [{'uid': 23553, 'pos': (6604, 5750)}] ; Property census 106 -> 107
+  FACT  ExecState [B_3 6355401 write=False after the probe node was created] = 0
+  OBSERVED uid 23553 -> owner 'TopLevelDiagram' uid 536 | self 'Property'#23553 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  B_3 6355401 write=False Property #23553 at diagram 0 node 0 [node_labels position (verified by the node's own UID)] FULL TERMINAL TABLE: [{'i': 0, 'name': 'reference', 'name_hex': '7265666572656e6365', 'is_source': False, 'wire': 0, 'errs': [0, 0, 0, 1055]}, {'i': 1, 'name': 'reference out', 'name_hex': '7265666572656e6365206f7574', 'is_source': True, 'wire': 0, 'errs': [0, 0, 0, 1055]}, {'i': 2, 'name': 'error in (no error)', 'name_hex': '6572726f7220696e20286e6f206572726f7229', 'is_source': False, 'wire': 0, 'errs': [0, 0, 0, 1055]}, {'i': 3, 'name': 'error out', 'name_hex': '6572726f72206f7574', 'is_source': True, 'wire': 0, 'errs': [0, 0, 0, 1055]}, {'i': 4, 'name': 'Write?', 'name_hex': '57726974653f', 'is_source': True, 'wire': 0, 'errs': [0, 0, 0, 1055]}]
+  FACT  B_3 6355401 write=False rows BEYOND reference/reference out/error in/error out = [{'i': 4, 'name': 'Write?', 'name_hex': '57726974653f', 'is_source': True, 'wire': 0, 'errs': [0, 0, 0, 1055]}] ; resolved short name(s) ['Write?'] ; of those, SINK rows (a value could be written into one) = []
+  FACT  B_3 6355401 write=False probe node #23553 DELETED again -> gone {23553}
+  FACT  ExecState [B_3 6355401 write=False after the probe node was deleted] = 1
+  FACT  B_3 6355401 write=False Property census after delete 106 (pre-probe 106) -> returned=True
+  PASS  B_3 6355401 write=False the probe was made and its error column / terminal table / ExecState are recorded  resolves=True error=''
+  PASS  B_3 6355401 write=False every probe node created was DELETED again and the Property census returned  106 -> 107 -> 106
+
+---------- B_4a 6355400 write=True (the CONTROL)  build_property('VI Server:Local', [('6355400', True)]) at (6900, 5600)
+  FACT  ExecState [B_4a 6355400 write=True (the CONTROL) before the probe] = 1
+  FACT  B_4a 6355400 write=True (the CONTROL) resolves=False ; error column VERBATIM 'RuntimeError: build_property(VI Server:Local): creator error clean but Outputs count 0 != 1 requested - inconsistent, not trusted' ; new None ; Property census 106 -> 107
+  FACT  ExecState [B_4a 6355400 write=True (the CONTROL) after the probe node was created] = 0
+  OBSERVED uid 23553 -> owner 'TopLevelDiagram' uid 536 | self 'Property'#23553 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  B_4a 6355400 write=True (the CONTROL) Property #23553 at diagram 0 node 0 [node_labels position (verified by the node's own UID)] FULL TERMINAL TABLE: [{'i': 0, 'name': 'reference', 'name_hex': '7265666572656e6365', 'is_source': False, 'wire': 0, 'errs': [0, 0, 0, 1055]}, {'i': 1, 'name': 'reference out', 'name_hex': '7265666572656e6365206f7574', 'is_source': True, 'wire': 0, 'errs': [0, 0, 0, 1055]}, {'i': 2, 'name': 'error in (no error)', 'name_hex': '6572726f7220696e20286e6f206572726f7229', 'is_source': False, 'wire': 0, 'errs': [0, 0, 0, 1055]}, {'i': 3, 'name': 'error out', 'name_hex': '6572726f72206f7574', 'is_source': True, 'wire': 0, 'errs': [0, 0, 0, 1055]}, {'i': 4, 'name': 'CtrlName', 'name_hex': '4374726c4e616d65', 'is_source': False, 'wire': 0, 'errs': [0, 0, 0, 1055]}]
+  FACT  B_4a 6355400 write=True (the CONTROL) rows BEYOND reference/reference out/error in/error out = [{'i': 4, 'name': 'CtrlName', 'name_hex': '4374726c4e616d65', 'is_source': False, 'wire': 0, 'errs': [0, 0, 0, 1055]}] ; resolved short name(s) ['CtrlName'] ; of those, SINK rows (a value could be written into one) = [{'i': 4, 'name': 'CtrlName', 'name_hex': '4374726c4e616d65', 'is_source': False, 'wire': 0, 'errs': [0, 0, 0, 1055]}]
+  FACT  B_4a 6355400 write=True (the CONTROL) probe node #23553 DELETED again -> gone {23553}
+  FACT  ExecState [B_4a 6355400 write=True (the CONTROL) after the probe node was deleted] = 1
+  FACT  B_4a 6355400 write=True (the CONTROL) Property census after delete 106 (pre-probe 106) -> returned=True
+  PASS  B_4a 6355400 write=True (the CONTROL) the probe was made and its error column / terminal table / ExecState are recorded  resolves=False error='RuntimeError: build_property(VI Server:Local): creator error clean but Outputs count 0 != 1 requested - inconsistent, no'
+  PASS  B_4a 6355400 write=True (the CONTROL) every probe node created was DELETED again and the Property census returned  106 -> 107 -> 106
+
+---------- B_4b 6355400 write=False (the CONTROL)  build_property('VI Server:Local', [('6355400', False)]) at (6900, 5750)
+  FACT  ExecState [B_4b 6355400 write=False (the CONTROL) before the probe] = 1
+  FACT  B_4b 6355400 write=False (the CONTROL) resolves=True ; error column VERBATIM '' ; new [{'uid': 23553, 'pos': (6904, 5750)}] ; Property census 106 -> 107
+  FACT  ExecState [B_4b 6355400 write=False (the CONTROL) after the probe node was created] = 0
+  OBSERVED uid 23553 -> owner 'TopLevelDiagram' uid 536 | self 'Property'#23553 | 482 says 'TopLevelDiagram' cast 'TopLevelDiagram' |  
+  FACT  B_4b 6355400 write=False (the CONTROL) Property #23553 at diagram 0 node 0 [node_labels position (verified by the node's own UID)] FULL TERMINAL TABLE: [{'i': 0, 'name': 'reference', 'name_hex': '7265666572656e6365', 'is_source': False, 'wire': 0, 'errs': [0, 0, 0, 1055]}, {'i': 1, 'name': 'reference out', 'name_hex': '7265666572656e6365206f7574', 'is_source': True, 'wire': 0, 'errs': [0, 0, 0, 1055]}, {'i': 2, 'name': 'error in (no error)', 'name_hex': '6572726f7220696e20286e6f206572726f7229', 'is_source': False, 'wire': 0, 'errs': [0, 0, 0, 1055]}, {'i': 3, 'name': 'error out', 'name_hex': '6572726f72206f7574', 'is_source': True, 'wire': 0, 'errs': [0, 0, 0, 1055]}, {'i': 4, 'name': 'CtrlName', 'name_hex': '4374726c4e616d65', 'is_source': True, 'wire': 0, 'errs': [0, 0, 0, 1055]}]
+  FACT  B_4b 6355400 write=False (the CONTROL) rows BEYOND reference/reference out/error in/error out = [{'i': 4, 'name': 'CtrlName', 'name_hex': '4374726c4e616d65', 'is_source': True, 'wire': 0, 'errs': [0, 0, 0, 1055]}] ; resolved short name(s) ['CtrlName'] ; of those, SINK rows (a value could be written into one) = []
+  FACT  B_4b 6355400 write=False (the CONTROL) probe node #23553 DELETED again -> gone {23553}
+  FACT  ExecState [B_4b 6355400 write=False (the CONTROL) after the probe node was deleted] = 1
+  FACT  B_4b 6355400 write=False (the CONTROL) Property census after delete 106 (pre-probe 106) -> returned=True
+  PASS  B_4b 6355400 write=False (the CONTROL) the probe was made and its error column / terminal table / ExecState are recorded  resolves=True error=''
+  PASS  B_4b 6355400 write=False (the CONTROL) every probe node created was DELETED again and the Property census returned  106 -> 107 -> 106
+
+---------- H  20 consecutive node_terms calls (handles +-100, refs 0 live)
+  FACT  H 20 calls in 0.9 s; all echoed uid #2991: True ; handles 51413 -> 51413 ; refs {'opened': 15, 'closed': 15, 'live': 0, 'cached_op_vis': 7} -> {'opened': 15, 'closed': 15, 'live': 0, 'cached_op_vis': 7}
+  PASS  H_1 20 consecutive node_terms calls ran and all echoed the anchor uid  [2991, 2991, 2991, 2991, 2991]
+  PASS  H_1b the handle count is flat within +-100 across the 20 calls  51413 -> 51413
+  FACT  the scratch was NEVER SAVED (g.save is not called on it) and is deleted below.
+
+--- Z: the closing facts
+  PASS  Z_2 the scratch was DELETED in the same run  removed=True, exists=False
+  FACT  refs {'opened': 16, 'closed': 16, 'live': 0, 'cached_op_vis': 7}
+  FACT  LabVIEW handles AFTER everything: 54714
+  FACT  Z1 ORIGINAL after everything: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  FACT  Z1b D1_s1_copy.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  FACT  Z1c D1_s2_loops.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  FACT  Z1d D1_s3a_focus_ind.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3a_focus_ind.vi | exists=1 | size=476172 | md5=eef91c1d91f16b034707e4d1285ca8cb | sha256=8afd9f95e280139e64aa648906ba7f799e8d0ae39aabfae42c93ef4f102d23bb
+  PASS  Z_1 ORIGINAL / D1_s1_copy / D1_s2_loops / D1_s3a_focus_ind md5 ALL unchanged  2a78e17c449cacdaf5da389818526859 / 3e3d23cefd3a334001aa9d6156bf1aee / 6ff19497f2309e007a214660bb64b911 / eef91c1d91f16b034707e4d1285ca8cb
+  PASS  Z_1b refs opened == closed, 0 live  {'opened': 16, 'closed': 16, 'live': 0, 'cached_op_vis': 7}
+  PASS  Z_1c no file was created under tools/recipes/ by this run  this diagnostic writes only tools/bench/diag_c61_localdir.{log,json} and the scratch it deletes
+  FACT  ARTEFACTS ON DISK: [] (this run builds and saves nothing; every probe node and the scratch are deleted)
+
+=== GATES 32 pass / 0 fail
+=== readings -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c61_localdir.json
+BGRUN END rc=0 after 97s

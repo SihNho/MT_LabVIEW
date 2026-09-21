@@ -916,7 +916,14 @@ appears among the windows). gscript's watchdog reports it correctly as a modal (
   scratch whose `ExecState` was **1** immediately before: the read returned `UID 2 = 384`, `Is Broken? = False`,
   wire delta 0 — and `ExecState` afterwards read **0**
   (`tools/bench/diag_fstunnel_rbwvictims.log:169-170`). So: read the value, then treat any ExecState taken after
-  it as SUSPECT, and re-establish legality from a VI the reader has not touched. **OPEN — the mechanism is not
+  it as SUSPECT, and re-establish legality from a VI the reader has not touched.
+  🔴 **THE OPERATIONAL CONSEQUENCE, RE-LEARNED THE EXPENSIVE WAY IN CYCLE 61 (2026-09-21): NEVER READ
+  `Is Broken?` ABOVE A SAVE POINT.** The ordered pass belongs AFTER the save, and preferably after a COLD
+  reopen — the order `tools/recipes/stage_d1_s3a_focus_ind.py` passed 64/0 with, and what Pre-decided 42(b)
+  already said. `tools/bench/diag_c61_localdir_write.log` built a correct op, read `Is Broken?` (False) before
+  finishing it, then read its save gate as `ExecState` **0** and threw the build away; the identical
+  construction with the read moved below the save saved at **1** and reopened cold at **1**
+  (`tools/bench/diag_c61_localdir_write2.log`, `docs/cycle27-plan.md` Pre-decided 52(f)). **OPEN — the mechanism is not
   settled**: an idempotent connect that leaves a legal VI illegal could be the connect itself, the property node's
   own execution, or a stale/uncommitted compile state; nothing here distinguishes them, and one measurement on one
   wire is not a rule. Two consequences that hold regardless: a reader of `Is Broken?` must not be placed on a
@@ -1019,7 +1026,7 @@ Full readings in `tools/bench/count_indicator.json`.
 
 So `Count` is a **control used as a counter variable**: written by `Value` property nodes inside an
 `EventStructure`'s case, read back by an `Equal?` test and a case selector on the same diagram. `panel_wiring`
-alone could never have said this — it sees terminals only (`docs/toolkit-capabilities.md:775-780`), and the
+alone could never have said this — it sees terminals only (`docs/toolkit-capabilities.md:22`, the op's own row: label, indicator flag, control UID, terminal `Is Source?`, connected-wire UID), and the
 writers are property nodes. The reader that found them is `node_labels`, because an implicit property node's
 label IS its bound panel object's name (`docs/toolkit-capabilities.md:26`).
 

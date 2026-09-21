@@ -404,6 +404,9 @@ Source `tools/bench/main_vi_nodeterms.json` (626 nodes, 3328 terminals, 11 misma
 
 **Local variables.** A local-variable node's single terminal is NAMED after its control — an observed rule (it held on every local below and on all seven globals, whose terminal carries the field name), not an NI contract. `Is Source?` TRUE = the local is READ, FALSE = WRITTEN.
 
+✅ **RE-MEASURED LIVE 2026-09-21 (cycle 60), all eight rows below: IDENTICAL — 8/8 agree, 0 differ** (`tools/bench/diag_c60_n4_localbinding.log`). ⚠️ Only the **DIAGRAM** column has drifted on the D1 lineage (73→76, 83→86, 99→102, 167→170; 1 and 17 unmoved — the S2 loops shifting the Traverse order); names and directions are unmoved, and diagram indices are resolved by uid via `diag_index` everywhere anyway.
+🎉 **AND THE DIRECTION IS NOW WRITABLE, not merely readable (cycle 61, 2026-09-21).** A newly created Local is born **WRITE**; `Local.Write?` **6355401** on class `'VI Server:Local'` resolves here (short name `Write?`, Boolean), and `claudeDev\OpCreateLocalRead_v0.vi` (md5 `f695d97a…`) creates a Local **in the mode asked for** — measured both ways on a scratch: `Write?`=False → terminal `'index'`, `Is Source?` **True = READ**; `Write?`=True → `'index'`, **False = WRITE** (`tools/bench/diag_c61_localdir_write2.log`; `docs/cycle27-plan.md` Pre-decided 52, and the op's row in `docs/toolkit-capabilities.md`).
+
 | local uid | diagram | owner | control (terminal name) | direction | on panel map | terminal bare? |
 |---:|---:|---|---|---|---|---|
 | 2991 | 1 | FlatSequenceFrame | `Total Lost Frames` | WRITE | yes |  |
