@@ -2752,6 +2752,10 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
     (`docs/NAMES.md:522-528`, `:550-551`, `:891-892`); whether `connect_nested_v1` auto-tunnels is **recorded
     nowhere and is the one thing M3a-1 must probe first**. If no addressable source exists on `#686` for that
     net, the run reports it and stops — it does NOT substitute a Local (rule 1a).
+    - ⚠️ **SUPERSEDED IN PART by 66 and 67 (2026-09-21, the prior-art review).** The sentence "recorded
+      nowhere" is **WITHDRAWN** — it is recorded, twice — and the probe it justified is **deleted**. What
+      SURVIVES unchanged and is re-affirmed: t1 is a structure tunnel, its route is a branch of the
+      original's own net, and it is **NEVER a Local** (rule 1a). The history above is kept as written.
 
 62. **`c60c_astcheck --route` declares the route the FILE TAKES, not the route the cycle wishes it took**:
     `movein` when the script calls `move_in` even once, `owner` when it does not. Cycle 53's dispatch #4
@@ -2779,3 +2783,102 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
     retro-done and `guard_cycle` is satisfied by recency, not by the number.
     - **The next cycle runs `--cycle 60`.** Take the number from the highest `retrospective-cycle<N>.md` in
       `archive/peer/`, plus one — never from `cycle_runner.log`.
+
+## Pre-decided — ADDED 2026-09-21 (cycle 55): the prior-art review re-cut M3a-1 · t1 HAS a route
+
+Source: `archive/peer/2026-09-21-priorart-c68-m3a1.md`. All six findings ACCEPTED, none refuted.
+
+65. **t1 IS GIVEN A ROUTE THAT LANDS; THE STAGE BOUNDARY DOES NOT MOVE** (A2 `refuted-already`). Of the two
+    releases the review offered, the first is taken. With t1 wired the `ExecState 1 ⇒ save` branch is
+    reachable, so M3a-1 can leave a real artefact instead of the fifth bare terminal that ended cycle 67.
+    The `…_BROKEN_<stamp>.vi` attempt stays in step [7] as written, so the stage always tries to leave a
+    file (the 2026-09-19 split rule) — `tools/recipes/build_d1_m3a1.py` step [7], unchanged.
+
+66. **PRE-DECIDED 61's "RECORDED NOWHERE" IS WITHDRAWN** (A3 `contradicted`). Border auto-tunnelling IS on
+    file: `docs/toolkit-capabilities.md:68` and this document's own `docs/cycle27-plan.md:2477-2479`
+    (`wire_delta` **3**, op error `''`, **two different wire uids at the two ends**). The consequence is
+    adopted as the ACCEPTANCE TEST for every border row: **`wire_delta 3` + two DIFFERENT wire uids +
+    `Is Broken? False`**. The fleet's usual one-uid-at-both-ends check is NOT applied to a border row — it
+    would score a CORRECT wire as a failure. Same-diagram rows keep it unchanged.
+    - ⚠️ **THAT ACCEPTANCE TEST IS WITHDRAWN THE SAME DAY — SUPERSEDED BY PRE-DECIDED 70.** It ran once, on
+      the t1 row, and `archive/peer/2026-09-21-c69-border-wiredelta.md` showed it measures the SINK side only.
+      The withdrawal of 61's "recorded nowhere" (the first half of this item) STANDS; only the test is void.
+
+67. **THE ADDRESSABILITY PROBE IS DELETED, AND ITS UNMEASURED HALF IS FORBIDDEN** (B4 `already-measured`).
+    The probe's answer is already on file and negative — `tools/bench/diag_c67_addsr.log:393-403`, measured
+    on a scratch byte-identical to this bed. Its one genuinely unmeasured half, scanning `#686` for a
+    DIFFERENTLY-OWNED terminal NAMED `'# slices in stack'`, is deleted with it and **must not be re-added**:
+    a same-named source on another net is a different value, so wiring it would be the rule-1a substitution
+    Pre-decided 61 forbids exactly as it forbids a Local.
+
+68. **THE t1 ROW IS WRITTEN BY `OpConnectFromWire_v0.vi`, AND THE "SOURCE MUST BE A NODE" PREMISE IS
+    WITHDRAWN** (B3 `helper-exists` + B2 `already-failed`). The op is BUILT + SAVED 2026-09-17
+    (`docs/toolkit-capabilities.md:70`; T1 is this exact shape; 16 rows in service at
+    `docs/d1-route-b-plan.md:84`) and takes its SOURCE as (WIRE uid, terminal index on that wire), so wire
+    9649's `FlatSequenceInnerTunnel #9655` source IS addressable. Two precautions are mandatory and are in
+    the recipe: the source is **measured on the live target immediately before the write** (an empty walk
+    ⇒ FACT line and the step STOPS — nothing wired, nothing substituted; run 8's "0 source terminals" was
+    that reader's tunnel blind spot, not the wire's property), and the **sink index is re-read on the LIVE
+    post-move target**, never carried from a pre-move census — T2c2's recorded cause of failure. Re-running
+    `tools/bench/diag_c67_m3a.py`'s shape with this cause still open would have repeated cycle 67 exactly;
+    its other cause, `add_shift_reg` declining in silence, is already repaired (`tools/gscript.py:708`/`:750`).
+
+69. **NO SINK THAT WAS WIRED ON THE BED MAY BE LEFT BARE — A GATE, NOT A NOTE** (A4 `unread-evidence`, the
+    most dangerous of the six). `#10407` t6 has **TWO** sinks in the original, on net 9113: `RightShiftRegister
+    #4256` AND `Q_focusback` `SelectorTunnel #12673` (`tools/bench/diag_c67_addsr.log:389`). This build
+    re-created one. Dropping a downstream consumer is a **change of computation (rule 1a)** and would have
+    passed silently, because a bare source is legal LabVIEW. M3a-1 now censuses `#12673` by walking t6's net
+    and **FAILS the run** if it is not a terminal of it; either way its state is a FACT line, and if it is
+    bare the log names it as a **SIXTH ROW** for the next stage. This one non-hygiene gate outranks
+    Pre-decided 63: the run must not exit 0 with a silently dropped consumer.
+    - ✅ **IT FIRED ON ITS FIRST RUN.** `tools/bench/build_d1_m3a1.log:548-552`: `#12673` is **NOT** a terminal
+      of t6's net, the run failed 16 pass / 1 fail, and the sixth row is on file. The gate paid for itself.
+
+## Pre-decided — ADDED 2026-09-21 (cycle 55 close): M3a-1 RAN · t1 is WRITTEN BUT NOT VERIFIED · the sixth row HAS a route
+
+Source: `archive/peer/2026-09-21-c69-border-wiredelta.md` (claude / `-Role hypothesis`, opus max, ANSWERED,
+$3.36), dispatched on this cycle's one failed prediction. Its verdict against this cycle's own acceptance
+test is ACCEPTED IN FULL; the disposition is in that file under `## What was done with it`.
+
+70. **THE BORDER-ROW ACCEPTANCE TEST IS AN IDENTITY TEST, NOT A NUMBER** (supersedes 66's second half).
+    `wire_delta`, "two different wire uids" and `Is Broken? False` are all read on the SINK side of the new
+    border; the "SOURCE-side wire 9649" in `tools/bench/build_d1_m3a1.log:488` was the input argument, not an
+    observation. Re-tuning the expected delta from 3 to 1 would have been calibrating an instrument that is
+    not pointed at the thing being measured. **The test is now object identity, end to end:**
+    `OpWireSource_v5(UID 2 = <source wire>)` must show a NEW third terminal `is_source=False`,
+    `owner_class LoopTunnel`, owner uid **T**; `OpWireSource_v5(UID 2 = <new sink wire>)` must show exactly
+    one `is_source=True`, `owner_class LoopTunnel`, `owner_uid == T`. **Pass = the same LoopTunnel uid is a
+    SINK on the source wire and the SOURCE of the sink wire.** Both properties are already built
+    (`Wire.Terms[]` 6371003, `Is Source?` 634A003, `Connected Wire` 634A000, `Generic.Owner` 6327806,
+    `GObject.UID` 632A813) — no new op. ⚠️ `ExecState` is NEVER substituted for it (`:2501-2507`).
+
+71. **THE t1 ROW IS "WRITTEN", NOT "VERIFIED", AND A RECYCLED UID IS THE REASON.** The write returned
+    `op_error ''`, `Is Broken? False`, sink terminals 6 → 7, `LoopTunnel 135 → 136`
+    (`tools/bench/build_d1_m3a1.log:473`, `:488`, `:490`) — which is why run 8's NO-ROUTE verdict on this row
+    is retired. But the junk `Invoke` node the call minted carried uid **9649**, the uid of the wire it was
+    told to branch, while every other object created in the run took a monotonic uid in the 23,800–24,009
+    band (`:475`, `:498-526`). **Either wire 9649 ceased to exist during the call, or this fleet can mint an
+    object bearing a live object's uid — and in that case every uid-keyed census in the D1 rewire is unsafe.**
+    Our census accounting (632 → 633 → 632) is sound and was never the question. Until 70's test settles it,
+    no equivalence claim rests on this row, and the artefact stays NOT computation-equivalent for the separate
+    reason that its registers are uninitialised (M3a-2).
+
+72. **THE SIXTH ROW IS REACHABLE WITH NO NEW OP** — the tunnel-sink blocker is dissolved, not deferred. A
+    tunnel is not a `Nodes[]` entry, but its terminal IS an entry in its owning structure node's `Terminals[]`,
+    which this run demonstrates twice (`:521`, `:526`/`:549`). Route: `OpOwnerChain_v1(12673)` → its owning
+    Case Structure → walk that node's `Terms[]` → take the entry named `Q_focusback` **by NAME, never a
+    carried index** (carrying an index is exactly what broke T2c2) → `OpConnectFromWire_v0` with source = the
+    **LIVE** net **23963** (`:548`), NOT the original 9113 the row inventory names. Hazards to handle rather
+    than hope past: an owner chain terminates silently at a `FlatSequenceFrame`; if the walk does not expose
+    the terminal, the fallback is one unbuilt property — `Tunnel` descends from GObject, not Terminal, so a
+    Tunnel refnum can never receive `Connect Wire`, but it hands out Terminal refs via `Inside Terminals[]`
+    (built, 6356000) and **`Outside Terminal`**, and for an INPUT tunnel the sink is the OUTSIDE one. Read
+    that property's short name **off the machine** — the wiki's numeric does not reconcile with its decimal.
+
+73. **M3a-1 IS RE-RUN AS THE SAME RECIPE WITH THESE TWO CHANGES — NEVER AS A NEW `_v2` FILE.** The 2026-09-19
+    split rule forbids a full-length retry under a new name, and `cycle_runner.py` counts a renamed recipe as
+    the same recipe. The two changes are: 70's identity test as an in-run GATE immediately after each border
+    write, and 72's sixth row wired before the census. ⚠️ **Editing the recipe re-arms its prior-art stop
+    record**, which is bound to sha256 `9bfbd2fa…`: the release is for those bytes, so the next cycle's FIRST
+    act is a fresh prior-art review of the EDITED file, then `c60c_astcheck --route movein`, then the build.
+    That order is the machine's, not a preference — do not try to launch before it.

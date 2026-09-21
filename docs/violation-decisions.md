@@ -870,3 +870,31 @@ DECISION: **no-device — and this occurrence is REFUTED on its load-bearing cla
    rolled, `CYCLE_GUARD_OFF` was never set, and the recipe's sha256 is byte-identical before and after
    (`1986626FB6F16CD0…`). Full per-finding disposition: `archive/peer/2026-09-21-retrospective-cycle58.md`
    `## What was done with it`.
+
+## device-failed — 2026-09-21 21:5x (cycle 55 judgement, disposing retrospective-cycle53)
+
+Source: `archive/peer/2026-09-21-retrospective-cycle53.md:337` —
+`VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/bench/diag_c67_addsr.log:438`. The named
+device is the `premature-build` gate in `tools/hooks/guard_cycle.py`. **No device was built.** The threshold
+stays SUSPENDED under the user's standing order of **2026-09-18 08:53**, so this is the FINDING that
+suspension prescribes.
+
+1. **The finding is accepted as stated: the gate guards a lane the builds had left.** It forces prior-art
+   review before a `tools/recipes/` build and deliberately leaves `tools/bench/` diagnostics open, but in that
+   window every deliverable-touching build ran from the bench lane, so exactly one prior-art review ran all
+   window while the fault the gate exists to stop happened anyway.
+2. **This cycle is the counter-evidence that the gate itself works.** M3a-1 ran from the recipe lane, the gate
+   fired, and the review it forced (`archive/peer/2026-09-21-priorart-c68-m3a1.md`, six slugs, all accepted)
+   changed the build materially rather than merely delaying it: `helper-exists` produced a route for the
+   project's only 🔴 NO-ROUTE row — which then landed (`tools/bench/build_d1_m3a1.log:473`) — and
+   `unread-evidence` caught a dropped downstream consumer (`Q_focusback SelectorTunnel #12673`) that would
+   have passed every gate silently as a rule-1a computation change. A gate that buys those two findings for
+   one review is a gate earning its cost.
+3. **The remedy is where builds live, not another gate.** Deliverable-touching builds belong in
+   `tools/recipes/`, where every lane gate (prior-art, stop record, verdict, retrospective recency) can see
+   them; `tools/bench/` stays the diagnostics lane. That is a sequencing rule already in force and applied
+   this cycle, not new machinery.
+4. **Recorded, not repaired**: `guard_cycle.py` was NOT patched, no log was deleted or renamed to evade a
+   clause, no frontmatter date was rolled, and `CYCLE_GUARD_OFF` was never set. The stale
+   `tools/bench/priorart_c68_m3a1.log`, which the gate read as "a review still running", was cleared by
+   actually finishing that review into the same log — not by moving the file.

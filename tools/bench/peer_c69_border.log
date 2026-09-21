@@ -1,0 +1,59 @@
+BGRUN START 2026-09-21 21:27:41 limit 20.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c69-border-wiredelta -TaskFile 'C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/1b784c88-91fa-400a-b809-a18012f44ea7/scratchpad/c69_border_task.md' -TimeoutSec 900
+OUTCOME: ANSWERED (636s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c69-border-wiredelta.md
+COST: $3.3552  in 16 / out 49657 / cache-create 159231 / cache-read 833115  (632s, 16 turn(s))
+--- ANSWER ---
+Write is disabled in this session — correct for the read-only reviewer role — so the review is the answer itself.
+
+---
+
+# Verdict: the claim does not survive
+
+Not because "1" is the wrong number — it is probably the right number — but because **the acceptance test contains no post-write measurement of the source side at all**, and every alternative that would make this row *wrong* also produces `wire_delta 1`.
+
+## 1. Strongest reason the claim is wrong: the acceptance line quotes an input argument as if it were an observation
+
+`tools/bench/build_d1_m3a1.log:488`:
+> `BORDER-ROW ACCEPTANCE (A3): wire_delta 1 (expect 3) ; SOURCE-side wire 9649 vs SINK-side wire 24009 -> TWO DIFFERENT uids True ; Wire.Is Broken? False ; sink WIRED-terminal count 6 -> 7 ; LANDED True`
+
+"SOURCE-side wire 9649" was never read after the write — it is the argument passed in at `:473`. The last time the machine was asked anything about 9649 is `:468`, **before** the write. Four of the five items are measured on the sink side of the new border; the fifth is a memory. The row's actual question — *does the new tunnel's outside draw from 9649's net* — has zero evidence either way.
+
+So "1 vs 3" is a debate about calibrating an instrument that is not pointed at the thing being measured. And "1" is itself unmeasured here: the only recorded one-border from-wire connect, T1 at `docs/toolkit-capabilities.md:70`, records `sink wire 0 → 229`, `Is Broken? FALSE`, `LoopTunnel 0 → 1` — **and no wire delta**. The "3" came from a different op with a different source topology (unwired node terminal, two borders, `LoopTunnel 0 → 2`, `:68`). One unmeasured expectation was swapped for another and the difference was called a spec bug.
+
+**Direct answer to the sub-question: no.** The op reads `UID 2` from `Terminal.Connected Wire` on the **sink**, then `Wire.Is Broken?` on that uid (`:70`). `Is Broken?` is per-Wire ([LabVIEW Wiki](https://labviewwiki.org/wiki/Wire_class/Is_Broken%3F_property)); 24009 lives on diagram 22, and the outer segment is a different object on a different diagram the readback never touches. What `False` *does* buy, and it is worth keeping: it rules out the T2c2 two-source pathology and a type conflict on the inner segment — i.e. the sink was an input, not an output. Nothing about the border.
+
+## 2. Alternative explanations of the same evidence
+
+**(a) The outer wire was destroyed and re-created; uid 9649 was recycled.** Then Δwire = −1 + 1 + 1 = **+1**, identical arithmetic, and `Is Broken? False` equally expected. The evidence sits unexamined at `:475`:
+> `CENSUS DIFF: Node 632 -> 633 ; 1 new uid(s): [(9649, 'Invoke', (4593, 2718))]`
+
+**The junk node was minted carrying uid 9649 — the uid of the wire the call was told to branch.** Every other object created in this run took a monotonic uid in the 23 800–24 009 band (`:498–:526`; the new wire is 24009). A new object on 9649 is a recycled uid, and LabVIEW recycles only when the holder is gone. **This is not the ruled-out item**: what you ruled out is the census accounting (632 → 633 → 632), and that is genuinely sound — `:477–:485` show the junk node had 0 wired terminals, so the purge destroyed no wires, and `:556` confirms `Wire 1919`. What nobody examined is *which uid it was given*. Either wire 9649 ceased to exist during the call, or this fleet can mint an object bearing a live object's uid — in which case every uid-keyed census in the D1 rewire is unsafe. Both kill the premise that 9649 still means what `:468` said.
+
+**(b) The outer side was never wired** (+1 inner only). Not exotic here: the sink was itself a legal **unwired** case tunnel immediately before the write — `:470` *"it currently carries wire 0"* — and `ExecState` is 0 at every boundary anyway. Whether LabVIEW propagates "unwired tunnel" into the inner wire's `Is Broken?` is **not settled by your measurement and not settled by NI's docs**: the `Connect Wire` reference ([6349C03](https://labviewwiki.org/wiki/Terminal_class/Connect_Wire_method)) documents `Wire Source`, `Auto Wire?`, `Wiring Specs`, `Auto Route?` and says *nothing* about cross-diagram behaviour or auto-tunnels. "LabVIEW makes the tunnel itself, correctly" is your observation, not a documented contract.
+
+**(c) Wire-identity drift, already measured and never explained.** `docs/toolkit-capabilities.md:68`: of 8 wires made this way, *"at most 2 of 8 became null and 1 of 8 changed wire identity"* (`26189 → 26412`), plus the standing warning **"Do not cite RBW-survival as evidence a wire is good."**
+
+I am *not* claiming the junk node corrupted the counts (the log rules that out), nor that the "+1 for one border off an existing wire" arithmetic is wrong. It is probably right. It is just not evidence.
+
+## 3. What would falsify the claim
+
+Re-walk **9649's `Terms[]`**. At `:468` it held exactly two real terminals + terminator: `i0 source FlatSequenceInnerTunnel #9655`, `i1 sink LoopTunnel #9641`. A correct branch must now show a **third**, `is_source=False`, `owner_class LoopTunnel`, owner = the new tunnel on loop #23032 (the loop that went 5 → 6 at `:490`). Falsified if: 9649 still has two terminals; 9649 no longer resolves as a `Wire`; or that owner uid ≠ the LoopTunnel that sources 24009.
+
+## 4. Cheapest discriminating test — two calls, ~0.2 s each, nothing new built
+
+`OpWireSource_v5` is UID-addressed (`:60`) and already ran twice this session (`:468`, `:549`). This is just taking the "after" of a "before" you already have.
+
+1. `OpWireSource_v5(UID 2 = 9649)` → expect **3** real terminals; record the new one's `owner_uid` as **T**.
+2. `OpWireSource_v5(UID 2 = 24009)` → expect **exactly one** `is_source=True`, `owner_class LoopTunnel`, `owner_uid == T`.
+
+**Pass = the same LoopTunnel uid is a SINK on 9649 and the SOURCE of 24009** — the value path proven by object identity, end to end. It also re-tests the T2c2 two-source pathology and the uid-recycling alternative. Properties all built: `Wire.Terms[]` 6371003, `Is Source?` 634A003, `Connected Wire` 634A000, `Generic.Owner` 6327806, `GObject.UID` 632A813.
+
+⚠️ Do **not** substitute `ExecState`: `docs/cycle27-plan.md:2501-2507` measured `OpConnectNested_v1` driving `ExecState` 1 → 0 on an *unchanged* VI with `wire_delta 0`, and these ops perform a perturbing `Is Broken?` read internally.
+
+**What would change my mind:** step 1 returning that third terminal with `owner_uid == T`. Then the row is correct and `wire_delta 1` is vindicated — and the acceptance test should be rewritten to assert *that identity*, not re-tuned to a different integer. The number was never the instrument.
+
+## Q2 — **no new op and no new property are needed**
+
+The premise is true but does not bite: a tunnel is not a `Nodes[]` entry, yet **its terminal is an entry in its owning structure node's `Terminals[]`**, and this run proves it twice. The sink you just wrote, `#10407 Nodes[5].Terminals[1] '# slices in stack'` (`:521`), *is* a case tunnel; and at `:526`/`:549` the same node's `Terminals[6]` carries wire 23963 whose source terminal reads `owner_class SelectorTunnel, owner_uid 2017`. So structure-node terminals *are* tunnel terminals, with the Tunnel uid visible as owner. Route for #12673: `OpOwnerChain_v1(12673)` → its owning Case Structure → walk that node's `Terms[]` → take the entry named `Q_focusback` (name resolution as `:470` did, never a carried index — that is what broke T2c2) → feed the **existing** `OpConnectFromWire_v0`, source = wire **23963** (`:548`; the live net is 23963, *not* the original 9113 the inventory names). Hazard: owner chains terminate silently at a `FlatSequenceFrame` (`:61`). If that walk does not expose it, the fallback costs exactly one unbuilt property: `Tunnel` descends from **GObject, not Terminal** ([Tunnel class](https://labviewwiki.org/wiki/Tunnel_class)), so a Tunnel refnum can never receive `Connect Wire` — but it hands out Terminal refs via `Inside Terminals[]` (already built, 6356000, `:72`) and **`Outside Terminal`**, and for an *input* tunnel the sink is the **outside** one ([NI forum](https://forums.ni.com/t5/LabVIEW/LabvVIEW-Scripting-wiring-a-pass-through-tunnel-inside-a-case/td-p/3945608) warns the wrong choice wires the wrong side of the structure). Read that property's short name off the machine — the wiki returned a numeric that does not reconcile with its own decimal. And note `Connect Wire`'s `Wire Source` is typed **GObject**, not Terminal: the source side was never the constrained one.
+
+**Sources:** [Tunnel class](https://labviewwiki.org/wiki/Tunnel_class) · [Terminal/Connect Wire 6349C03](https://labviewwiki.org/wiki/Terminal_class/Connect_Wire_method) · [NI Connect Wire API ref](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/terminal/connectwire.html) · [Wire/Is Broken?](https://labviewwiki.org/wiki/Wire_class/Is_Broken%3F_property) · [NI forum: tunnels in case structures](https://forums.ni.com/t5/LabVIEW/LabvVIEW-Scripting-wiring-a-pass-through-tunnel-inside-a-case/td-p/3945608) · local: `build_d1_m3a1.log:468,470,473,475,477-485,488,490,521,526,548-552,556`; `toolkit-capabilities.md:60,61,68,70,72`; `cycle27-plan.md:2501-2507`
+BGRUN END rc=0 after 636s

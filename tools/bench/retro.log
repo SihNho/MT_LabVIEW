@@ -1009,3 +1009,61 @@ VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/bench/diag_c
 (The second line names the `premature-build` gate in `tools/hooks/guard_cycle.py`: it never fired on the window's bench-lane builds, and the un-prior-arted build at the cited line is the fault it exists to stop. Its loss is the same hour counted on the first line, so I set loss_min=0 rather than double-count.)
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle53.md
 BGRUN END rc=0 after 364s
+BGRUN START 2026-09-21 21:44:35 limit 12.0 min: py tools/retrospective.py --cycle 60
+   window 2026-09-21 20:22:20 .. 2026-09-21 21:44:35 (82 min); 4 build logs, 7 machinery logs, 11 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle60.txt (15689 chars)
+BGRUN START 2026-09-21 21:47:34 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 60
+   window 2026-09-21 20:22:20 .. 2026-09-21 21:47:34 (85 min); 4 build logs, 7 machinery logs, 11 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle60.txt (15724 chars)
+OUTCOME: ANSWERED (322s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-21-retrospective-cycle60.md
+COST: $3.3017  in 12 / out 21098 / cache-create 90823 / cache-read 430234  (320s, 17 turn(s))
+--- ANSWER ---
+All evidence is in hand. Here is the outcome review of cycle 60.
+
+---
+
+## VERDICT SUMMARY
+
+This cycle earned its cost. It produced the project's first genuine product in several cycles: the only NO-ROUTE row was actually written (`tools/bench/build_d1_m3a1.log:473` region, sink terminals 6→7, op error empty), the A4 bare-sink gate caught a silent rule-1a consumer drop on its first firing (`build_d1_m3a1.log:551-552`), and a hypothesis review correctly demolished the cycle's own acceptance test before anyone believed it (`archive/peer/2026-09-21-c69-border-wiredelta.md:70` — "the acceptance line quotes an input argument as if it were an observation"). One structural fault, named at the end: the known, deliberately-unrepaired dispatch-lifecycle failure class recurred and cost roughly 15 of the window's 85 minutes.
+
+Window caveat honored: `tools/bench/cycle_54.log` ($15.2384, line 62; END 20:46:19) is the *previous* judgement session's tail landing inside this window. Its cost belongs to the prior cycle and is not charged here, but its final act — a prior-art dispatch at 20:46:00 killed 19 seconds later by its own session exit — is charged here, because this cycle paid to redo it.
+
+## FINDINGS
+
+**1. Repeated failure — yes, one class, many instances: launching a guarded command in a form the guard refuses, and dispatching a child a dying turn then kills.** Instances inside the window: (a) `tools/bench/priorart_c68_m3a1.log:1` — BGRUN START 20:46:00 with no END or TIMEOUT line ever written; the parent session ended at 20:46:19 (`cycle_54.log:63`) and killed it, the *second* kill of this same review (commit 438b973 records the first); re-dispatched 20:54:39 (`priorart_c68_m3a1.log:3`). (b) Six launch attempts for the c68 astcheck, 20:36:12–20:37:22, using the dead `MATERIAL=1` prefix (`tools/hooks/material_marker.log:851-856`). (c) Eight more attempts of the *same wrong form* for the c69 astcheck, 21:13:00–21:17:29 (`material_marker.log:861-868`), succeeding only at 21:17:46 with `--material` (`:869`). The approach should have changed on **attempt 2 of the c68 round (20:36:43)**: the correct `--material` form had been used successfully by the same machinery 30 minutes earlier (`material_marker.log:848-850`), and `guard_bash.py:99-104` states the fix in its refusal. Instead the identical mistake was re-typed eight more times at 21:13.
+
+**2. Missing tool — yes: the OPEN 54(b) repair, "named, deliberately NOT BUILT" (STATUS.md:47).** A dispatch wrapper that survives the dispatching turn's end (or a hook that refuses a background dispatch as a session's final act) would have prevented both kills of the prior-art review and the hand-rolled `until grep BGRUN END; sleep 10` wait loops that were themselves denied (`cycle_55.log:62`, denial entries toolu_01KGfdnf, toolu_016XVWCb). The project has now paid for this absence at least three times and has twice written it down instead of building it.
+
+**3. Unmeasured steps — one, serious, and caught in-cycle.** The build's border acceptance test asserted "SOURCE-side wire 9649" without any post-write read of wire 9649 — the value was the input argument, last measured *before* the write (`c69-border-wiredelta.md:70`, quoting `build_d1_m3a1.log:488`). The discriminating measurement (`OpWireSource_v5` re-walk, ~0.2 s, already built) was available and not run. The reviewer also spotted an unexamined measurement sitting in the log: the junk node minted *carrying uid 9649* (`build_d1_m3a1.log:475` per the review at `c69-border-wiredelta.md:78-81`), which nobody looked at. Both are now Pre-decided 70/71. Inference-over-measurement occurred, but the cycle's own review layer caught it before acceptance — so it is a finding, not the top fault.
+
+**4. Rule compliance.** The audit passes and mostly deserves to. Broken or bent: the judgement session attempted material work 3 times and was refused (audit C6) — the delegation split held only because the hook held; a `python - <<'EOF'` multi-line heredoc was attempted (denial toolu_01AyvH5v in `cycle_55.log:62`; `material_marker.log:859` REFUSED) against the heredoc rule, read-only so borderline; and CLAUDE.md's "hold the turn open until BGRUN lands" was broken by the 20:46:00 dispatch. What the audit does NOT cover: **(a)** A2 says "every bgrun ended: all runs accounted for," yet `priorart_c68_m3a1.log:1` is a START with no terminal line — a parent-killed bgrun writes no END, and A2 either scopes review logs out or matched the second run's END to the first START; either way a killed run is invisible to it. **(b)** C4 books the judgement sessions themselves ($15.24 + $29.98 of the $52.7455) as "review" cost — actual peer reviews cost $7.5229 ($4.1677 + $3.3552) and ~17 min, so "reviews are 96% of wall-clock" is true only under an aggregation that lumps the orchestrator in with the reviewers. **(c)** Refused launch attempts cost turns on a $30 session and appear nowhere except C6's count of 3, which misses the ~14 material-side wrong-form attempts.
+
+**5. Ordering — defensible, and the required order was actually followed:** re-review of the edited recipe (answered 21:01:08) → disposal with FIXED releases (`2026-09-21-priorart-c68-m3a1.md:261-266`) → AST gate 21:17 → build 21:20 → hypothesis review of the result 21:38 → NEXT → retrospective last (21:47). One small inversion: the c68 astcheck at 20:37 was spent on a recipe version whose pending prior-art review then changed it (three FIXED lines cite recipe edits), forcing the c69 re-check — the first check bought nothing.
+
+**6. What the summary would hide.** The session's own closing summary (`cycle_55.log:62`, result field) says "both process faults that cost this cycle two blocked attempts are written down." The machine record says the launch-form fault alone produced **fourteen** wrong-form attempts across two rounds (`material_marker.log:851-856, 861-868`) plus ~20 permission denials in the session JSON, and the killed 20:46:00 dispatch is not mentioned at all. "Two blocked attempts" understates the churn by roughly a factor of seven. Also understated: the cycle's only build cost 3 min 36 s (audit C3) while the session that orchestrated it cost $29.98 and 61 minutes — the summary presents the milestone, not the overhead ratio.
+
+**7. Judgement inside a material session — none found.** The accept/reject decisions on all six prior-art findings, the withdrawal of Pre-decided 61, and the adoption of the identity-gate acceptance test were taken by the judgement session (its result text in `cycle_55.log:62` claims them in first person; Pre-decided 65/66/70-73 are plan edits). The recipe's step [6b] explicitly *refuses* to decide — "It is NOT attempted here and it is NOT worked around... reported to judgement" (`build_d1_m3a1.log:551`) — which is the split working as designed. The audit's 3 refused judgement-session attempts (C6) were attempts to do *material* work in judgement, the opposite direction, and the hook stopped them.
+
+## DEVICE EFFECT
+
+- **unreported-fact (rc truthfulness):** held — the build's inner FAIL forced `BGRUN END rc=1` (`build_d1_m3a1.log:552, 591`).
+- **rule-evaded (confirm-bait / adversarial append):** held — the c69 task carries the full adversarial set and the reviewer refuted rather than confirmed (`c69-border-wiredelta.md:47-53, 61`).
+- **tool-not-built (prior-art review):** held, and this cycle is its best result to date — six findings, all accepted, three of which changed the recipe itself (`2026-09-21-priorart-c68-m3a1.md:261-266`), one of which found the route that retired the NO-ROUTE verdict.
+- **repeated-failure-class (guard_peer empty-disposal refusal):** no failure observed; the review was disposed before release.
+- **unreported-fact (C3/C4 cost split):** fired and made the cost argument possible (C3 3 m 36 s vs C4 113 m 22 s), but see finding 4(b): its "review" bucket includes the orchestrator sessions, so it fires with a misleading denominator. Not one of the three failure modes; a defect worth fixing, recorded here as a finding.
+- **premature-build (guard_cycle):** **held under real pressure** — a build launch was attempted at 20:37:31 (`material_marker.log:857`), 24 minutes *before* the fresh prior-art review answered, and it never ran: `build_d1_m3a1.log:1` shows exactly one BGRUN START, at 21:20:10, after disposal and release.
+- **scope-creep (C7 list):** fired correctly — 4 out-of-plan files listed, all bookkeeping/hook artefacts, none suspicious.
+- **device-failed (cost regex):** held — C4b "4 seen / 4 parsed".
+- **device-failed (bgrun FAIL scan):** held — the `FAIL` at `build_d1_m3a1.log:552` produced rc=1.
+- **repeated-failure-class (OpLoopEndRef_v0 reader):** not exercised in this window; no failure to report.
+- **device-failed (stop record + launch gate):** held — `tools/bench/stop_records.json` shows path-keyed records with hash-qualified releases, and the one launch of the recipe post-dates its release.
+
+No listed device failed inside the window, so no `device-failed` is emitted. The nearest miss is not a listed device: bgrun's "always writes a final END|TIMEOUT" guarantee is defeated by parent death (`priorart_c68_m3a1.log:1`), and audit A2 passed over it — that gap should reach `docs/violation-decisions.md` as the concrete defect behind the one fault named below.
+
+## THE ONE STRUCTURAL FAULT
+
+The dispatch-lifecycle failure class — a known fault, its repair explicitly "named, deliberately NOT BUILT" (STATUS.md:47) — recurred throughout the window and is the only thing that changed what this cycle cost: the killed 20:46:00 prior-art dispatch forced an 8.7-minute re-buy delay (20:46:00 → 20:54:39, `priorart_c68_m3a1.log:1,3`) and consumed two of the session's eight guarded dispatches, and the same class (wrong launch form, background-then-turn-end) burned fourteen refused attempts totaling ~6 more minutes (`material_marker.log:851-856, 861-868`). Counterfactual on the clock: had the 20:46:00 dispatch survived its parent, the review lands ~20:52 instead of 21:01:08; had the c69 astcheck used `--material` on attempt 1 at 21:13:00, the build launches ~21:06 instead of 21:20:10 — the cycle ends ~21:33 rather than 21:47:34. No log carries a dollar figure for the killed dispatch (it died before a COST line) or for the denial churn, so the dollar loss is honestly unknown.
+
+VIOLATION: repeated-failure-class | loss_min=15 | loss_usd=? | evidence=tools/bench/priorart_c68_m3a1.log:1
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle60.md
+BGRUN END rc=0 after 324s

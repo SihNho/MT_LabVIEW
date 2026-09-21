@@ -344,4 +344,41 @@ VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/bench/diag_c
 
 ## What was done with it
 
+Disposed by the cycle-55 judgement session (the next runner cycle after the one this reviews; the cycle
+between them ended without disposing it). **The scope correction is accepted first and without argument** —
+the window aggregated roughly seven already-retrospected cycles, C4's $506.78 / C5's 1364 min are NOT one
+cycle's cost, and nothing below quotes them as such.
+
+- **`VIOLATION: repeated-failure-class` — ACCEPTED, and it did not recur.** The silent-no-op-on-an-unloaded-
+  target class was fixed at that cycle's end (`ensure_loaded` in `add_shift_reg`/`wire_sr`,
+  `tools/gscript.py:708`/`:750`). This cycle exercised exactly those two verbs on the real bed and they minted
+  real registers on the first attempt (`tools/bench/build_d1_m3a1.log`, 16 pass / 1 fail, no silent decline,
+  `0 refusal(s)`). The standing guard is Pre-decided 60 — the nine remaining unrepaired mutators are repaired
+  **at the point of use, never in bulk**; this cycle's recipe calls none of them, confirmed mechanically by
+  `c60c_astcheck`'s verb census (`tools/bench/c69_astcheck.log`).
+- **`VIOLATION: device-failed` (the `premature-build` gate) — ACCEPTED as to the blind spot, and this cycle is
+  the counter-evidence for the gate itself.** The finding is that the gate guards `tools/recipes/` while the
+  builds that matter had migrated to `tools/bench/`. This cycle's deliverable build ran FROM the recipe lane,
+  the gate fired, and the prior-art review it forced (`archive/peer/2026-09-21-priorart-c68-m3a1.md`) returned
+  six findings, all accepted — two of which changed the build materially: `helper-exists` gave the project's
+  only NO-ROUTE row a route that then landed, and `unread-evidence` caught a dropped downstream consumer that
+  would have passed every gate silently as a rule-1a computation change. So the device is not broken; the
+  remedy is where builds live, not another gate. **Adopted without building anything** (the user's standing
+  2026-09-18 08:53 no-more-devices order): deliverable-touching builds live in `tools/recipes/`, as M3a-1 did,
+  and the finding is recorded in `docs/violation-decisions.md`.
+- **Finding 4 (A3) — ACCEPTED, and its prediction came true at full price.** It warned that a failing run with
+  no archived review "may deadlock cycle 54's first build". It did: session 68's build was refused, that
+  session then lost its own prior-art review by ending its turn 19 s after launching it, and **this cycle
+  spent its first two dispatches re-buying work that had already been paid for**. The lesson is now in
+  STATUS `## NEXT` as a standing warning rather than a hope, and it is the same class as OPEN item 54(b).
+- **Finding 2 (missing tool) — ACCEPTED, already built, one attempt too late.** Nothing further to build.
+- **Finding 3 (unmeasured: handle growth) — ACCEPTED and acted on.** This cycle's run ended at 38,289 handles
+  against the ~31,500 baseline; the number and an explicit restart instruction are now in STATUS `## NEXT`
+  instead of going unremarked.
+- **Finding 6 (not reported) — ACCEPTED in full**, (a)–(d). In particular (c), the killed `-Kind prose` stop
+  report, is the same parent-exit-kills-child fault that cost this cycle two dispatches.
+- **Finding 5 (ordering) and Finding 7 (judgement in a material session) — agreed, no violation, nothing owed.**
+
+Not accepted as owing anything further: nothing. No finding in this retrospective was refuted.
+
 (Claude fills in)
