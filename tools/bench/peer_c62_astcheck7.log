@@ -1,0 +1,71 @@
+BGRUN START 2026-09-21 11:04:57 limit 16.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c62-astcheck7 -TaskFile tools/bench/peer_c62_astcheck7_task.md
+OUTCOME: ANSWERED (449s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c62-astcheck7.md
+COST: $4.5023  in 54 / out 34740 / cache-create 197558 / cache-read 3198887  (447s, 43 turn(s))
+--- ANSWER ---
+**The claim SURVIVES IN PART.** The half that says check 7 encodes a cycle-60 brief-scope, not a safety fact, is correct and I could not break it. The half that says "therefore launching despite it is applying the plan rather than evading a gate" does not survive.
+
+---
+
+## 1. The single strongest reason it is wrong
+
+**The staleness argument is not check-7-specific — it dissolves the whole file — so "11 of 12 pass" is worth exactly as little as the one FAIL, and the claim only applies the argument where it loses.**
+
+`c60c_astcheck.py` is a cycle-60 contract with a `sys.argv[1]` target. Its check 9 is literally *"the routes **the brief** FORBIDS"* (`tools/bench/c60c_astcheck.py:16-17`) — cycle 60's brief, listing `build_invoke` / `copy_by_index` / `copy_into` / `move_by_label`, routes cycle 62 never proposed; its PASS is vacuous. Check 8's rationale in the parent file was *"(attempt 1's defect at :608)"* (`c60b_astcheck.py:101`) — again cycle-60 attempt 1. Check 2's BANNED list is the same vintage. If "encodes cycle 60's brief" makes 7 non-binding, it makes 9 non-informative and 8 non-diagnostic — yet the run is being reported as *11 pass / 1 fail* as though the 11 were a clean bill.
+
+That asymmetry is the evidence that distinguishes *stale* from *evaded*, and it is the answer to your line of attack 1. The distinguishing test is **not** "does the plan order `move_in`" — it does, and that is not in dispute. It is: **was the same staleness reasoning applied to the checks that agreed with the session?** It was not, in any of the nine c60c runs across cycles 60–62. A gate kept only where it is green is the selection artefact this project already caught and withdrew once — `docs/cycle27-plan.md:345-349`, the cycle-42 traverse census: *"A census whose instrument can only observe one outcome measures nothing."*
+
+Second, the authority cited is partly self-issued. `STATUS.md:28` reads *"the one FAIL is that gate's own check 7 … which encodes CYCLE 60's brief and is superseded by 53(d⁗)"* — but that sentence is in the **cycle-62 material session's own lock-acquire note**, written after `c62f_astcheck.log` (11:03:56). Pre-decided 53(d⁗) authorises `move_in`. Nothing authorises running with a red prediction contract; the session granted itself that.
+
+## 2. Your line of attack 2 — is there a safety reason? **No. This part of the claim holds, and it holds from the machine.**
+
+I went looking for one and there isn't one:
+
+- The rationale is written down verbatim and it is brief-scoped: `tools/bench/c60b_astcheck.py:14` — *"`move_in` is neither imported nor called **(the brief forbids reproducing attempt 1's pointless relocation)**"*. **Pointless**, not dangerous. `c60c_astcheck.py:14` silently dropped that parenthetical (as it dropped check 8's), leaving a bare prohibition with no recoverable reason. That deletion is the actual defect here.
+- `move_in` is the fleet's shipped `GObject.Move` wrapper (`tools/recipes/build_d1_v0.py:318-335`, via `OpMoveIn_v0.vi`) and is in accepted production work: `tools/recipes/build_d1_routeb_v0.py:481,:546,:564`; the S3a boolean carrier at `tools/bench/diag_s58_boolwire.py:889`, whose three artefacts are delivered (`STATUS.md:9`); two free-standing terminals relocated in one run (`docs/toolkit-capabilities.md:276`).
+- It has been *measured* to be conservative: `tools/recipes/build_d1_routeb_v0.py:48-55` and `:729-735` — five structures moved, `Wire 1902 → 1902`, `LoopTunnel 132 → 132`, every terminal name at its own index (`diag_moved_structure_terminals.log`, 39/0).
+- The junk-`Invoke` residue of your `diag_s58_boolwire.py` RISK (i) is not an argument for the gate: `diag_c62_s3b_movein.py:694-704` predicts it, diffs `uids('Invoke')` before/after and purges only the difference.
+- Externally: `GObject.Move` takes `position` (**relative to the owning object**), an optional `owner` and `Duplicate?`; the only documented copy hazard is cross-VI — *"If the owner you specify is located in a different VI, LabVIEW assumes Duplicate? is TRUE"* ([LabVIEW Wiki — GObject Move method](https://labviewwiki.org/wiki/GObject_class/Move_method); [NI — Move](https://www.ni.com/docs/en-NR/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/move.html), body JS-rendered and unverified). Same VI here, so it does not apply.
+
+## 3. Alternative explanation of the same FAIL
+
+**Not "a stale check inside a sound gate" — a *mis-targeted gate*, and the FAIL is the file announcing it has outlived its design.**
+
+Sixteen astcheck files exist (`c51m2 … c60c`); one per brief is this project's established practice. Cycles 61 and 62 are the only ones that re-aimed a predecessor unchanged — nine dispatches on one cycle-60 contract. On this reading the FAIL is not noise to be dispositioned, it is the bill for that shortcut, and it says the gate set is orthogonal to cycle 62's hazards **in both directions**. That is measured, not argued: `tools/bench/c62e_astcheck.log` gave `diag_c62_s3b_build.py` **12/12 ASTCHECK OK** — and that run ended `ARTEFACTS ON DISK: []` with an `Is Broken?` read above its save point *inside* `OpConnectNested_v1`, which its own gate `Z_1e` certified absent (`archive/peer/2026-09-21-c62-localplacement.md:125-135,:193-202`). **The gate passes the run that failed and fails the run that follows the plan.**
+
+A second alternative, weaker but live: 53(d⁗)'s stated cause is not measured. Its own successor 53(d⁵) records that Alt-A (poisoned `ExecState`) and Alt-B (the connect hung the Local on an existing output tunnel, `#637` staying 59/48) are **both still live and this run does not separate them** (`archive/peer/2026-09-21-c62-localplacement.md:167`, disposition (3) at `:204-210`). `diag_c62_s3b_movein.py:20-25` and 53(d⁗) nonetheless state *"The cause is PLACEMENT"* as fact — a third explanation asserted over an undecided measurement (`inference-over-measurement`). `move_in` still stands on its **other** leg, the 50(e) tunnel contract (`wire_delta` 3, two wire uids — measured), so the decision survives; its ExecState rationale does not.
+
+## 4. Your line of attack 4 — what the 11 PASSes do not cover
+
+None of c60c's checks touch anything cycle 62 can actually get wrong:
+
+1. **`d639` is cached across two mutations.** `diag_c62_s3b_movein.py:576` computes it at step [0]; the Wire delete (`:627`) and the Local creation (`:639`) follow; it is then used as `move_in`'s destination (`:683`), `connect_nested_v1`'s `sink_diag` (`:744`) and `wire_indicators`' `diagram_index` (`:828`). Pre-decided 53's own earlier item forbids exactly this — *"A traverse INDEX is not a stable key … must be re-read, never cached across a mutation"* (`docs/cycle27-plan.md:341-344`), restated as RISK (ii) in `diag_s58_boolwire.py:116-117`. The script's `ordered_pass` re-resolves it (`:888`); the build path does not. `B1_m` detects a wrong landing afterwards; it does not prevent one.
+2. **The rule-1a readback is gated only *before* the move.** `B1_e` asserts NAME + `is_source True` at `:663-667`; after `move_in` the script re-reads `lrows_m` but only updates `local_term_i` (`:728-729`) — no gate on the state that gets wired. And this project has measured that a move degrades precisely that reading: *"after a `GObject.Move` **every** terminal of a moved structure reads `is_source` FALSE, including its OUTPUT tunnels"* (`build_d1_routeb_v0.py:48-49`).
+3. **`move_in` on a `Local` is a first** (prior classes: structures/nodes, `ControlTerminal`). Nothing asserts the `Local` census is still 9 after the move, and `owner_of` is called with `strict=False` (`:249-251`), which turns a non-answer into a soft read the gate then interprets.
+4. Nothing covers the failure that actually cost dispatch #3 its artefact — an `Is Broken?` read inside an op above a save, still present in this run's `OpConnectNested_v1`.
+
+## 5. Your line of attack 3 — (a) / (b) / (c)
+
+**(b), and it is inside the brief.** The cycle-62 brief forbids a **recipe** (*"never a recipe (48(n))"*), a new op, a new gscript verb, and edits to `tools/gscript.py` (`STATUS.md:28`; `diag_c62_s3b_movein.py:17,:50-52`). A static astcheck under `tools/bench/` is none of those — it *"Touches NO LabVIEW, opens no COM, reads files only"* (`c60c_astcheck.py:5`) — and there are sixteen precedents. `c62g_astcheck.py` is a ~15-line diff: invert 7 to *"`move_in` is imported and called EXACTLY ONCE (Pre-decided 53(d⁗))"*, re-derive 2/8/9 against the cycle-62 brief, and add the two checks that matter — a `diagrams(`/`diag_index(` call between the donor call and the `move_in(` call, and a post-move `is_source` gate. (a) spends a LabVIEW run to discover §4.1 and §4.2; (c) throws away the plan's one authorised new step.
+
+## 6. What would falsify my position
+
+Produce one c60c run, in cycle 61 or 62, where the session applied *"this check encodes cycle 60's brief"* to a check that **passed** — i.e. re-derived 2/8/9 against the current brief instead of banking them. Then the reasoning is symmetric, the file is a live gate with one dead check, and "launch anyway" is bookkeeping rather than laundering. Or: point to a cycle-62 brief line, written **before** `c62f_astcheck.log`, naming `c60c_astcheck.py` as this dispatch's gate of record with check 7 explicitly excepted. `STATUS.md:28` is not that line.
+
+**What would falsify the "stale" half** (which I did not manage to break): any measurement showing `move_in` damages something it moves. `diag_moved_structure_terminals.log` (39/0) is the strongest evidence against that existing.
+
+## 7. Cheapest discriminating test
+
+Two commands, no LabVIEW, no COM, under five seconds, and it separates *"one stale check in a sound gate"* from *"mis-targeted gate"*:
+
+```
+py tools/bench/c60c_astcheck.py diag_s58_boolwire.py
+py tools/bench/c60c_astcheck.py diag_c60_n4_localbinding.py     # the cycle-60 target it was written for
+```
+
+- **Claim predicts:** the first FAILs only on 7 (vetoing `diag_s58_boolwire.py`, whose three artefacts this project has *accepted* — `STATUS.md:9`), and the second is 12/12. Read together: one dead check, the rest sound.
+- **My alternative predicts:** the first FAILs on 7 *and* its detail lines show 2/8/9 passing vacuously against a brief that never proposed those routes — the file discriminates nothing about cycle 62 in either direction. Combined with the already-recorded `c62e_astcheck.log` 12/12 on the dispatch that produced no artefact, that settles it: write the cycle-62 gate.
+
+The first command alone is near-certain in outcome (I can read `move_in` at `diag_s58_boolwire.py:162,:889`), so it is confirmation, not discrimination — the discriminating content is in the **detail columns of checks 2/8/9**, not in the pass/fail. Read those, not the summary line.
+
+**Sources:** [LabVIEW Wiki — GObject class/Move method](https://labviewwiki.org/wiki/GObject_class/Move_method) · [NI — GObject Move](https://www.ni.com/docs/en-NR/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/move.html) · [NI — Navigating a VI Using VI Scripting](https://www.ni.com/docs/en-US/bundle/labview/page/navigating-a-vi-using-vi-scripting.html) · [LabVIEW Wiki — VI Scripting](https://labviewwiki.org/wiki/VI_Scripting)
+BGRUN END rc=0 after 449s

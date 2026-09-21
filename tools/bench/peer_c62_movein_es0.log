@@ -1,0 +1,79 @@
+BGRUN START 2026-09-21 11:18:44 limit 16.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c62-movein-es0 -TaskFile tools/bench/peer_c62_movein_es0_task.md
+OUTCOME: ANSWERED (417s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c62-movein-es0.md
+COST: $4.0379  in 20 / out 30662 / cache-create 255000 / cache-read 1248516  (416s, 19 turn(s))
+--- ANSWER ---
+The claim is **REFUTED** — and it is refuted twice over by measurements this project already owns, one of which is written into the very plan section this dispatch was run under.
+
+---
+
+# Failed-prediction review — C62 S3b row 1, `move_in` arm
+
+## 1. The single strongest reason the claim is wrong
+
+**`ExecState` read at `diag_c62_s3b_movein.log:82` is not a verdict on the VI. It is a reading taken immediately after `OpConnectNested_v1.vi` executed its embedded `Wire.Is Broken?` property node — and this project has measured, on a VI it had just cold-verified as legal, that exactly that sequence drives `ExecState` 1 → 0.**
+
+The evidence is in three places and none of it is mine:
+
+- **The op fired the reader in this run.** `diag_c62_s3b_movein.log:69` — `op readback {'UID': 10407, 'Name': '', 'UID 2': 0, 'Is Broken?': False}`. The recipe even records it as a known condition (`:125`, "53(d5) RECORDED, NOT REPAIRED").
+- **The same op poisons `ExecState` on a VI known to be legal.** `tools/bench/diag_c61_localdir_write2.log:63` — cold, freshly restarted LabVIEW, `ExecState` **1**. `:101` — `ExecState` **1** immediately before the ordered pass. `:102` — the op's `Is Broken?` readback. `:105` — `ExecState` **0**. Legal VI in, 0 out, nothing structural changed. `docs/NAMES.md:912-919` records the same effect measured independently on a B4 scratch (`diag_fstunnel_rbwvictims.log:169-170`): `ExecState` 1 → idempotent connect, `wire_delta` 0, `Is Broken? False` → `ExecState` **0**.
+- **The plan already ruled this reading inadmissible, before this run.** `docs/cycle27-plan.md:2487-2492`, Pre-decided 53(d⁵): *"an `Is Broken?` read happens **inside `OpConnectNested_v1.vi`** … The standing consequence for every build from here: **save unconditionally and judge by the COLD reopen, never by a live `ExecState` that an op may have perturbed.**"* `diag_c62_s3b_movein.py:845` then gates step 6 on `es4 != 1` — that exact live reading. The recipe made the forbidden reading its control-flow gate.
+
+There is a **second, independent** kill, which does not depend on the perturbation story at all. `docs/cycle27-plan.md:1465-1468`, item 42(c), measured cycle 55 on a matched/mismatched control pair in one run:
+
+> 🔴 **`ExecState` IS NOT A TYPE DISCRIMINATOR AND MUST NEVER BE USED AS ONE. It fell 1 → 0 on the MATCHED leg too.**
+
+A connect that is *correct* already drops this instrument to 0. So "`ExecState` is 0 after the connect" licenses no inference about the construction — and certainly not one strong enough to posit a new LabVIEW brokenness rule.
+
+## 2. The claim's LabVIEW premise is also false on its own terms
+
+**A Local variable that READS an indicator with no writer is legal LabVIEW, not a broken-VI condition.** NI's own list of what breaks a VI is short: a broken wire (type mismatch or loose end), an unwired **required** block-diagram terminal, or a broken/re-connector-paned subVI ([NI — Correcting Broken VIs](https://www.ni.com/docs/en-US/bundle/labview/page/correcting-broken-vis.html), [NI — Debugging Techniques](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000001DbgJSAS)). A sourceless indicator is none of them — an unwired front-panel terminal is a **warning**, and warnings do not break a VI. The LabVIEW Wiki states the direction rule plainly: locals "read or write to one of the Controls or Indicators on the Front Panel", and reading an indicator is explicitly allowed; "One Write, Multiple Reads" is offered as a **style** rule, not a legality rule ([LabVIEW Wiki — Local Variable](https://labviewwiki.org/wiki/Local_Variable)).
+
+And the run contains its own counter-example, as the previous review already established and the plan already accepted (`archive/peer/2026-09-21-c62-localplacement.md:111-117`, disposed at `docs/cycle27-plan.md:2484-2487`): the bed opens at `ExecState` **1** (`:19`) carrying eleven bare terminals on `#637` alone (`:24-25`, all `'wire': 0, 'errs': [0,0,0,1055]`), indices 43/44 being both sides of one completely dead tunnel. The claim re-introduces, in a new costume, the mechanism that was refuted twelve hours ago.
+
+## 3. Your five break-attempts, answered
+
+1. **Legal?** Legal. Sources above. The claim dies here on the LabVIEW fact alone.
+2. **"That required input is now fed — what is left?"** On the evidence: *nothing structural is left*. Selector fed (wire 23508, all four error columns 0, same uid at both ends, `:75-76`); `#637` at the 59/48 baseline (`:79-80`); `ControlTerminal` 116 → 116 (`:81`); `Local` census 9 → 9 (`:62`). Two bare terminals remain, and bare is not broken. **The parsimonious reading is that the VI at step 4 was legal and the instrument was lying.**
+3. **Type incompatibility?** No, and the question is unaskable as posed. Wire 10799's source was `#10686` t0 `'x .and. y?'` (`:31`) — Boolean — so indicator 23555 and therefore the Local are Boolean, into a Boolean-fed Case selector. More importantly, `docs/cycle27-plan.md:1459-1464`, 42(b), is binding: `Is Broken?` read **in the writing pass** returned `False` on a genuinely type-mismatched leg, so the `:69` `False` is worthless either way; and 42(c) says `ExecState` is not a type discriminator. The one signal that *would* have been diagnostic — a `1 → 0` transition across the connect — was unobservable here, because the VI entered step 4 already at 0 (`:58`). This run had **no** type instrument pointed at it.
+4. **Stale/poisoned?** Yes, that is my alternative — but "stale" is the wrong word and it makes the question harder than it is. It is not a cache artefact to be flushed; it is a *measured side effect of the op you ran*, with an in-project counterfactual (`diag_c61_localdir_write2.log:63,101,105`). So the reading that settles it needs **no save and no GUI**: see §6. Your framing of the trap is correct, though, and worth stating in the plan — `gscript.save` refuses at `ExecState` 0 (`tools/gscript.py:2071-2074`) and `allow_broken=True` (`:2072-2073`) only diverts to `gui_save`, which is banned here and by 29(d). That makes the route **circular**: 53(d⁵) says judge by the cold reopen, the save gate says you may not reach a cold reopen while the live reading is 0, and the connect op is what makes the live reading 0. The cold arm in this run was not merely skipped — gate `C_1` **PASSED** at `:98` on a file explicitly recorded as `carries_the_in_memory_edits: False`, `bytes_equal_to_the_bed: True`. A gate that certifies an unedited byte copy is a false pass and should read NOT APPLICABLE.
+5. **`move_in` residue?** The junk-`Invoke` purge is sound — `junk = inv_after - inv_before` (`diag_c62_s3b_movein.py:716-724`) is a true set difference, so #9317 was created by the move despite its low uid, and the pre-existing `Invoke` was not touched. The `is_source` flip from `build_d1_routeb_v0.py:48-55` did not occur (`:60-61`). **But there is a residue you did not report**, at `:104-105`: `OBSERVED uid 23507 -> owner 'Diagram' uid 639 | self 'CaseStructure'#10407`. `owner_of` was asked about the Local and answered with the *previous query's* object, on a file where uid 23507 does not exist — a silent wrong answer from the reader the entire uid-addressed safety net rests on. It was caught here only because `node_labels` disagreed.
+
+## 4. The finding that outranks the whole `ExecState` question
+
+**This row replaces a dataflow-ordered wire with a race, and every gate in the recipe is blind to it.** Originally `#10686` (`And`) → `#10407` t0 (selector) is one wire: the Case *cannot* execute before the `And`. After 53(d′)'s sequence the final state is `And → indicator 23555` and `Local(reads 23555) → selector`, two nodes on the same diagram #639 with **no data dependency between them**. LabVIEW may run the Local read before the indicator write. That is a change of computation, not of scheduling — CLAUDE.md rule 1a — and `Is Broken?`, `ExecState`, the `#637` census and the T3 separator all pass happily on a racy diagram. If the intent is that `#10686` and `#10407` end up in different loops (53(d⁗):2480, "REMOVE a boundary-crossing wire"), the race is inherent to the split and needs a real synchronisation, not a Local. This needs a judgement call before another row is built; right now both nodes are still on #639, so the row removes no boundary and buys only the race.
+
+## 5. What would falsify my alternative
+
+- Run the negative control in §6 and find `ExecState` still **1**. Then `OpConnectNested_v1` does not poison this bed, the 0 at `:82` is a genuine verdict, and a structural cause must be hunted (at which point your claim becomes testable, and `wire_indicators` re-feeding the indicator should flip it to 1 — if it does, you were right).
+- Or: reach a cold reopen of a file that genuinely carries the step-4 edits and find **0**.
+
+**What would falsify the claim:** re-feed indicator 23555 with `wire_indicators` (step 6, gate removed) and read `ExecState`. If it stays 0, the claim is dead by its own stated terms. This is the weaker test, because it is read on a compromised instrument.
+
+## 6. Cheapest discriminating test — no save, no GUI, no new verb, ~30 s
+
+**Negative control on an untouched scratch copy of `D1_s3a_focus_ind.vi`: no delete, no Local, no move. Just one *idempotent* `connect_nested_v1` re-connecting a pair that is already wired — `#10686` t0 → `#10407` t0, the pair wire 10799 already joins — then `exec_state`.**
+
+```
+open the copy            -> exec_state  (expect 1; it is the bed)
+diag_index(#639)         -> 46          (re-read, never cached)
+connect_nested_v1(46, 24, 0, 46, 25, 0)   -> wire_delta MUST be 0
+exec_state
+```
+
+| reading | conclusion |
+|---|---|
+| `ExecState` **0**, `wire_delta` 0 | The op alone drives this VI 1 → 0. `B1_f` carries **zero** information, the claim is dead, and the `ExecState == 1` step-4 precondition must be deleted from the route — it measures the instrument, not the VI. |
+| `ExecState` **1**, `wire_delta` 0 | The op does not poison this bed. The 0 at `:82` is genuine; only now is a structural cause worth hunting, and your claim is next in line to be tested. |
+
+Four COM calls on a throwaway copy, no mutation of anything that matters, no save, no GUI action, no new op or verb — and it uses only what `diag_c62_s3b_movein.py` already imports. The identical control has already been run once on a different VI and returned 0 (`docs/NAMES.md:912-918`), so the prior is heavily on row 1; running it on **this** bed closes it.
+
+If that control returns 0, the correct repair is not another row attempt but removing the embedded reader from the connect op's success path — `docs/cycle27-plan.md:2490` already names it ("assert against the OP's readback, not the recipe's calls") and defers it to "a later cycle". Two cycles and roughly 280 s of dispatch have now been spent reading a gauge the plan had already declared broken; that deferral is the thing costing money.
+
+## 7. Where the evidence does not settle the question
+
+This run **cannot** distinguish "legal VI, poisoned reading" from "genuinely broken for a cause nobody has named", and I will not pretend otherwise — the `ExecState` was already 0 entering step 4, so the one clean signal (a `1 → 0` transition across the connect) was unavailable, and the cold arm was neutered by the save guard. What *is* settled is that the claim's mechanism is not a LabVIEW brokenness condition and is contradicted by the bed's own eleven bare terminals.
+
+One premise underneath all of this is **unverified and is the bottleneck**: *"`SaveInstrument` blocks forever on a BROKEN VI"* (`tools/gscript.py:2074`, `.claude/skills/labview-automation/references/com-driving.md:400`). I could find no NI documentation or forum report corroborating it, and no active doc in this project carries its original measurement — the only trace is narrative in `archive/2026-08-31-status-full-assembly-narrative.md:633-634,1320`. If that belief is wrong, the guard at `:2071` is the only thing standing between this route and the cold reopen it is supposed to be judged by, and re-measuring it on a scratch VI with `bgrun`'s own deadline as the safety net costs one run.
+
+**Sources:** [NI — Correcting Broken VIs](https://www.ni.com/docs/en-US/bundle/labview/page/correcting-broken-vis.html) · [NI — LabVIEW Debugging Techniques](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000001DbgJSAS) · [NI — No Errors Listed When Clicking the Broken Run Arrow](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000001DdHkSAK&l=en-US) · [LabVIEW Wiki — Local Variable](https://labviewwiki.org/wiki/Local_Variable) · [NI forum — Broken run arrow with no errors](https://forums.ni.com/t5/LabVIEW/Broken-run-arrow-with-no-errors/td-p/456652)
+BGRUN END rc=0 after 418s

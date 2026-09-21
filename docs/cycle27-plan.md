@@ -1,7 +1,7 @@
 ---
 type: plan
 status: current
-date: 2026-09-19
+date: 2026-09-21
 cycle: 27
 kind: build
 supersedes: [docs/cycle21-plan.md]
@@ -2401,3 +2401,132 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
       run until that is measured**, and its pass criteria are re-cut by judgement on the reading. Everything else
       in 50(e) stands (census 8→10, the `node_terms` readback as a rule-1a GATE per 50(i), `ExecState` 1 at the
       save, ordered `Is Broken?` after it, `#637` counts unchanged).
+
+## Pre-decided — ADDED 2026-09-21 (cycle 62): the branch is MEASURED · S3b's row operation is RE-CUT to delete-and-rebuild
+
+53. 🔴 **52(h)'s INFERENCE IS NOW A MEASUREMENT, AND IT KILLS 50(e)'s PREMISE: S3a BRANCHED THE EXISTING
+    CROSS-LOOP WIRES.** Judgement, cycle 62, 2026-09-21, from `tools/bench/diag_c62_branch.log` (27/1) and
+    `tools/bench/diag_c62_branch2.log` (24/0, `BGRUN END rc=0 after 95s`), both on scratch duplicates of
+    `D1_s3a_focus_ind.vi`; nothing was saved and nothing was built. 34–52 stand.
+    - (a) **EACH FEED IS ONE WIRE OBJECT = ONE NET OF EXACTLY THREE TERMINALS**, counted by a reverse census over
+      all 73 nodes and all 116 panel rows (`diag_c62_branch.log:101-102`). Wire **10799**: `#10407` **t0** (name
+      `''`, SINK) · `#10686` **t0** `'x .and. y?'` (SOURCE) · panel indicator **23555** `'Automatic Error
+      Handling'` (SINK). Wire **10990**: `#10407` **t2** (name `'Index of closest\ncal image slice, bead 2'`,
+      SINK) · `#10757` **t1** `'element'` (SOURCE) · panel indicator **23525** `'index'` (SINK). `#10407` is a
+      CaseStructure on `Diagram #639` (Traverse diagram 46, `Nodes[24]`).
+    - (b) **FREEING THE SINK DESTROYS THE INDICATOR FEED — MEASURED TWICE ON INDEPENDENT SCRATCHES.** Deleting
+      Wire 10799 bared all three of its terminals (`#10407` t0 → 0, `#10686` t0 → 0, indicator 23555 → 0) and took
+      `ExecState` **1 → 0**, Wire census 1905 → 1904, ControlTerminal census 116 → 116; Wire 10990 behaved
+      identically on a second, independent scratch (`diag_c62_branch2.log:43-49, 77-83`). **So 50(e)'s criterion
+      *"`#10407` +2 wired terminals"* is WITHDRAWN** — the sinks were never bare.
+    - (c) **NO VERB REMOVES ONE BRANCH — census of all 165 defs in `tools/gscript.py`, `NONE FOUND`**; the baseline
+      `delete_object(target,'Wire',idx)` (`tools/gscript.py:2275`) deletes the whole Wire object. Nothing in the
+      fleet reads the wire side at all (`Wire.Terminals[]` / 6371003 is unwrapped); the three-terminal counts above
+      were obtained from the TERMINAL side by reverse census, which is why they are trustworthy without it.
+    - (d) 🔴 **DECISION — S3b's PER-ROW OPERATION IS DELETE-AND-REBUILD, USING ONLY VERBS THAT HAVE SHIPPED:**
+      delete the whole Wire object → **`create_indicator` on the now-bare SOURCE terminal** (a NEW indicator;
+      S3a's own verb, 64/0) → **`OpCreateLocalRead_v0.vi` in READ mode** bound to that new indicator, its label
+      read off the machine → `connect_terminals(Local SOURCE → the freed `#10407` sink)`. The alternative —
+      reconnecting S3a's EXISTING ControlTerminal, one call instead of three — needs an addressing capability the
+      fleet is suspected to lack (a ControlTerminal is absent from `Diagram.Nodes[]`, the same limit that left
+      52(g)'s wire unreadable), so it is measured as a NON-GATING A-test on a scratch and never gates the artefact.
+    - (e) **THE TWO OLD S3a INDICATORS ARE LEFT IN PLACE, BARE AND UNWIRED** (23555/23576 and 23525/23541). An
+      unwired indicator is legal, and deleting panel objects is an unproven verb kept off the build path. The dead
+      panel objects are a recorded cleanup item for a later stage, not a defect.
+    - (f) **THE `ControlTerminal` uid ↔ panel-control uid LINK IS STILL UNMEASURED and is NOT needed.** The pairing
+      that matters was obtained keyed by WIRE uid, which is unambiguous. The forced review
+      `archive/peer/2026-09-21-c62-ctwire.md` (claude/hypothesis opus max, ANSWERED 465 s) is disposed in its own
+      `## What was done with it`: premise accepted (a ControlTerminal is a `Terminal`, owned by the diagram, absent
+      from `Nodes[]`), its proposed fix — adding a `GObject.UID` read to `OpPanelWiring_v0` — **DECLINED for now**,
+      exactly as 52(g) declined a reader it did not need. The gap is recorded, not filled.
+    - (d′) 🔴 **(d) AND (e) ARE RE-CUT THE SAME DAY BY DISPATCH #2's MEASUREMENTS — THE ROUTE I RANKED AS UNLIKELY
+      IS THE ONE THAT WORKS** (`tools/bench/diag_c62_s3b_rows.log` 15/5, `…_t3.log` 14/0). Both of (d)'s middle
+      steps are **OUT**: `create_indicator(target, node_index, terminal_index)` (`tools/gscript.py:2423-2439`)
+      addresses the **TOP-LEVEL** `Nodes[]`, and this VI's top-level block diagram is **EMPTY** — `node_labels(top=0)`
+      0 rows **and** `node_info(max_n=40)` 0 rows, two independent readers, whole-VI `count('Node')` 630, with the
+      real sources living on `Diagram #639` (traverse 46) — so it raised *"Error 1055 … at a Property Node in
+      OpCreateIndicator_v0.vi"*, a Null reference BEFORE method 6349C02 was ever reached, i.e. **not** a refusal by
+      `Terminal.Create Indicator`. `connect_ctl(panel_index, node_index, terminal_index)` is out too: error 1055 on
+      `Connect Wire`, no wire. ✅ **`wire_indicators` RE-CONNECTS S3a's EXISTING INDICATOR to a bared source and the
+      result is clean**: on row 1 it made wire **23499** joining `#10686` t0 `'x .and. y?'` (`is_source` True) to
+      panel control **23555** `'Automatic Error Handling'` (`is_source` False) — **exactly one source**, counted by
+      reverse census over all 73 nodes of `#639` and all 116 panel rows (`…_t3.log:33-36`). **DECISION: S3b's row
+      operation is `delete_object(Wire)` → `OpCreateLocalRead_v0` READ bound to the EXISTING indicator →
+      `connect_terminals(Local → the freed `#10407` sink)` → `wire_indicators` re-feeding that SAME existing
+      indicator.** So (e) is void: no new indicator is created, nothing is left bare, no panel object is added or
+      deleted, and the ControlTerminal census stays 116. The carrier + `move_in` route S3a used is not needed.
+    - (d″) ⚠️ **THE ORDER IS PART OF THE DECISION, BECAUSE ONE OF OUR WRAPPERS IS WRONG.** `wire_indicators` tests
+      `exec_state != 1` **absolutely** (`tools/gscript.py:1794-1797`) and so raises *"target BROKEN after wiring"*
+      on any mid-sequence row of a multi-step edit — it wired correctly and still advised reverting the target
+      (measured twice). **It is NOT patched this cycle**: the Local goes in FIRST and the indicator is re-fed LAST,
+      when `#10407`'s sink is already fed and the VI is legal again, so the check sees `ExecState` 1 and the defect
+      never sits on the critical path. Each legal point saves a file, so a wrong raise costs no artefact. The defect
+      is recorded here for the next builder, with the correct fix shape: compare against the state **before** the
+      call, as `build_property`'s mode-aware repair did in 52(c) — do not make it absolute again.
+    - (d‴) **UNVERIFIED LEAD, DELIBERATELY NOT BUILT AGAINST:** the mandatory external search
+      (`archive/peer/2026-09-21-c62-branch-disconnect.md`, claude/fact, ANSWERED 116 s) reports that LabVIEW
+      documents **`Wire.Disconnect Terminal`, method ID `6370C0D`** (Wire class 16439, LV2018+), with
+      `Terminal.Connected Wire` and `Wire.Terminals[]` read-only and no `Terminal`-class disconnect; the pre-2018
+      idiom is exactly our delete-and-rebuild. **Body text unverified** (JS-rendered NI pages) and nothing is built
+      against it. If it resolves over our COM path it would replace the whole row operation with one call — a
+      candidate for a later cycle, never a dependency of this one.
+    - (d⁗) 🔴 **THE THIRD RE-CUT, AND IT IS A LAW OF THIS FLEET, NOT A ROW DETAIL: WHAT SCRIPTING CREATES LANDS ON
+      THE TOP-LEVEL DIAGRAM AND MUST BE MOVED IN.** Dispatch #3 (`tools/bench/diag_c62_s3b_build.log`) ran row 1
+      clean to the connect and then stopped: `ExecState` **0** where 1 was required. The Local created by
+      `OpCreateLocalRead_v0` landed on **`TopLevelDiagram` #536, `Nodes[0]`** while `#10407` sits on `Diagram #639`
+      (traverse 46), so `connect_nested_v1(sink_diag=46, …, src_diag=0, …)` built a **cross-diagram, TUNNELLED**
+      path — `wire_delta` **3**, op error `''`, and **two different wire uids at the two ends** (`#10407` t0 →
+      23508, Local t0 → 23601). A tunnelled path is exactly what 50(e)'s *"`#637` counts unchanged, no tunnel, no
+      border object"* forbids, and it defeats S3b's purpose, which is to REMOVE a boundary-crossing wire. **DECISION:
+      the row sequence gains one step — `move_in` the new Local onto `Diagram #639` BEFORE connecting** — the same
+      verb S3a's recipe used after `create_indicator`, which is why S3a needed a carrier at all. Same-diagram wiring
+      is then expected to show ONE wire uid at both ends and leave `#637` at 59/48.
+    - (d⁵) **ACCEPTED FROM THE FORCED REVIEW** (`archive/peer/2026-09-21-c62-localplacement.md`, claude/hypothesis
+      opus max, ANSWERED 474 s, disposed in full): my step-3 prediction was wrong at its premise — **a bare terminal
+      does not break this VI** (it opens at `ExecState` 1 carrying eleven bare terminals on `#637` alone); what the
+      delete broke was an unwired **required input**, the Case **selector**. Also recorded, not repaired: an
+      `Is Broken?` read happens **inside `OpConnectNested_v1.vi`** (`diag_c62_s3b_build.log:51`), so a perturbing
+      read can occur above a save while gate `Z_1e` passes, because that gate only inspects the recipe's own call
+      list. **The right fix is to assert against the OP's readback, not the recipe's calls** — for a later cycle.
+      The standing consequence for every build from here: **save unconditionally and judge by the COLD reopen**,
+      never by a live `ExecState` that an op may have perturbed.
+    - (d⁶) 🎉 **`move_in` FIXED THE TUNNEL, ROW 1 IS STRUCTURALLY CORRECT — AND THE INSTRUMENT THAT JUDGES IT IS
+      MEASURED BROKEN** (`tools/bench/diag_c62_s3b_movein.log` 30/4, `tools/bench/diag_c62_negctrl.log` 14/0).
+      `move_in` moved the Local `TopLevelDiagram`#536 diag 0 `Nodes[0]` → **`Diagram`#639 diag 46 `Nodes[73]`**
+      (returned 3447, error `''`, one junk `Invoke` #9317 purged). The connect then became same-diagram: **`wire_delta`
+      1** (was 3), **ONE wire uid 23508 at BOTH ends**, errors `[0,0,0,0]` on both; **`#637` census immediately after
+      the connect = 59 terminals / 48 wired = the baseline**, so 50(e)'s no-tunnel criterion is SATISFIED;
+      `ControlTerminal` 116 throughout; `Local` census 8→9; and the rule-1a gate (50(i)) passes verbatim —
+      `ONE terminal, NAME 'Automatic Error Handling', is_source True (= READ)`, before AND after the move.
+    - (d⁷) 🔴 **THE NEGATIVE CONTROL IS THE CYCLE'S REAL RESULT: `OpConnectNested_v1` DRIVES `ExecState` 1 → 0 ON AN
+      UNCHANGED VI.** Untouched scratch, no delete, no Local, no move, no save; ONE idempotent
+      `connect_nested_v1(46,24,0,46,25,0)` — **`wire_delta` 0**, `Wire` census **1905 → 1905**, op error `''` — and
+      `ExecState` **1 → 0** (`diag_c62_negctrl.log:24-31`). **So every post-connect `ExecState` gate in this cycle
+      carried zero information**, and the same reading is what stopped dispatch #3 and cycle 61's dispatch #2. The
+      op performs its own `Is Broken?` readback internally (`diag_c62_s3b_movein.log`, both runs), which the
+      recipe-level "no `Is Broken?` above a save" gate cannot see — 53(d⁵)'s finding, now with a mechanism.
+      ⚠️ **AND THE ROUTE IS CIRCULAR:** `gscript.save` raises *"refusing to save a BROKEN VI - SaveInstrument blocks
+      forever on one"*, so "save unconditionally and judge by the cold reopen" cannot be executed while the op makes
+      the live reading 0. **NO BUILT ARTEFACT EXISTS FROM THIS CYCLE**: the file written as
+      `D1_s3b_row1a_20260921_111413.vi` is **byte-identical to the bed** (`carries_the_in_memory_edits: False`) and
+      its `C_1` gate is a FALSE PASS. Two explanations remain open and are separated by ONE cheap test, pre-written
+      into STATUS's `## NEXT`: the op perturbs only the READING, or it genuinely breaks the VI.
+    - (d⁸) **TWO MORE INSTRUMENT FAULTS, RECORDED NOT REPAIRED:** `owner_of` returned a **SILENT WRONG ANSWER** —
+      asked for Local #23507 it answered `CaseStructure#10407` (`diag_c62_s3b_movein.log:104-105`); and handle growth
+      hit **54,632** by the end of the two runs despite refs 7/7/0-live and a pre-batch restart before each. Neither
+      is fixed here (no device, user's standing order of 2026-09-18 08:53); both are named so the next builder does
+      not trust those readings.
+    - (d⁹) ⚠️ **A RULE-1a QUESTION THAT THIS SESSION DELIBERATELY DID NOT SETTLE ALONE, RAISED BY THE FORCED REVIEW
+      `archive/peer/2026-09-21-c62-movein-es0.md`.** 53(d′)'s row replaces ONE dataflow-ordered wire
+      (`#10686` `'x .and. y?'` → the Case **selector**) with TWO unordered halves: `And → indicator`, and
+      `Local(read) → selector`. Nothing orders them, so the selector can read a stale value — in the ORIGINAL the
+      wire guaranteed it could not. **Assumption this cycle proceeded under, stated so the user can overturn one
+      thing:** the intermediate artefact is never run (34(f), verification is structural), and asynchronous
+      cross-loop transport is the seven-loop architecture the project has been approved to build, so the
+      substitution is accepted **for the intermediate**. The ordering guarantee in the FINAL D1 is a real open
+      question and is flagged to the user in `STATUS.md`'s `## NEXT`, not buried here.
+    - (g) ⚠️ **HANDLE GROWTH IS A LIVE FINDING, NOT A PASS:** the two diagnostics ran 30,686 → **60,520** (108 s)
+      and 30,692 → **63,163** (95 s) — about twice the ~31,500 baseline — while tracked refs closed cleanly
+      (14/14/0-live, 12/12/0-live). Whole-VI reverse censuses are the suspected source. **Every following dispatch
+      restarts LabVIEW before its batch (44(e)) and reports handles either side**; no device is built for it
+      (user's standing order of 2026-09-18 08:53).

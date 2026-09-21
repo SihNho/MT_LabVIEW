@@ -1,0 +1,65 @@
+BGRUN START 2026-09-21 10:19:22 limit 18.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c62-row1-precond -TaskFile 'tools/bench/peer_c62_row1_precond_task.md' -TimeoutSec 900
+OUTCOME: ANSWERED (402s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c62-row1-precond.md
+COST: $3.2559  in 18 / out 31409 / cache-create 191701 / cache-read 1016928  (401s, 14 turn(s))
+--- ANSWER ---
+Write is disabled in this session (correct — I'm dispatched read-only), so the review is the answer itself.
+
+---
+
+# The claim does not survive. Here is why.
+
+## 1. Strongest reason the claim is WRONG
+
+**This project already executed 53(d)'s hard step, on this exact terminal, one cycle ago — and the failing stage never used that route.**
+
+`tools/recipes/stage_d1_s3a_focus_ind.py` (cycle 46, delivered `D1_s3a_focus_ind.vi` md5 `eef91c1d`, 64/0 — pinned *unchanged* at `diag_c62_s3b_rows.log:11-12`) does this in saved stages:
+
+| leg | what it does | cite |
+|---|---|---|
+| B1 | `build_property('VI Server:VI',[242])` **at the `VI → Block Diagram` head** — a carrier put on the TOP-LEVEL diagram on purpose — then `create_indicator` on its t4 `'Def Err Handling'`, a **boolean SOURCE**; the real wire that makes is deleted by uid, then the carrier | `:57-60`, rationale `:32-34` |
+| B2 | `move_in(ControlTerminal → Diagram #639 @ live index)` → SAVE | `:61-63` |
+| B3 | **`wire_indicators(→ #10686 t0 'x .and. y?')`** → SAVE → ordered `Is Broken?` → **False** | `:64-66` |
+
+`#10686 t0 'x .and. y?'` is the terminal the new log calls unaddressable. It was wired, saved and read back unbroken one cycle earlier.
+
+The claim conflates two things. True and already known: **our `create_indicator` wrapper has no diagram parameter** (`gscript.py:2423-2439` sets `Class Name=""`, `index`, `index 2` and nothing else; `connect_ctl` is the same shape, `:983-988`). Not shown by any observation here: that the **route** needs a top-level index for the nested source. S3a's answer is that it does not — you make the indicator on a carrier *you* put on the top level, `move_in` the ControlTerminal, then wire it with the diagram-scoped verb.
+
+Gate B1_c ("a TOP-LEVEL `Nodes[]` index exists for source #10686", `:102`) is a precondition on **our calling convention**, not on LabVIEW. The stage failed its own gate before touching the machine — `ExecState` at the stop was still 1 (`:106`).
+
+## 2. Alternative explanations
+
+**A/A2 — `Terminal.Create Indicator` was never invoked.** I opened the screenshot the watchdog saved and nobody read (`gscript_dialog_1789953467.png`):
+
+> **Error 1055 occurred at Property Node in OpCreateIndicator_v0.vi** — LabVIEW: (Hex 0x41F) Object reference is invalid.
+
+At a **Property Node**, not the Create Indicator invoke. The op died reading a property off a Null ref before method `6349C02` was reached. A/A2 measured that a Null refnum fails — not in dispute. And it is not news: `gscript.py:2434-2437` records this same dialog on **all 20 calls** of `diag_s3a_ind_transport.log`, whose sweep (`:36-55`) hit `(25,·)` **and** top-level `(0,·) (1,·) (2,·)`, all returning empty. Not nested-specific.
+
+**A/A1 — 1055 is the routine reading for an unwired terminal here.** `diag_c62_s3b_rows.log:93` shows `'wire': 0, 'errs': [0,0,0,1055]` on eight terminals of `#637` in a cold, unmodified VI at `ExecState` **1**. The error does not identify *which* input was Null; it does not distinguish "node_index 25 out of range" from "panel_index 115's ref was bad".
+
+**"Top-level lists 0 nodes" is uncorroborated and internally inconsistent.** A structure *is* a Node; if `#536` held zero, `Diagram #686` (owner of While Loop `#637`, `:92`) would be unreachable from it. `Diagram.Nodes[]` is indeed non-recursive, but nothing says a VI's top level reads empty. One reader produced this — `node_labels`, `Class Name="Diagram"` (`gscript.py:587-594`) — while cycle 46 read the same diagram with a different reader and got `('TopLevelDiagram', 536)` (`stage_d1_s3a_focus_ind.py:84`), a **distinct class** and a plausible place for a `Diagram`-scoped traverse to return nothing. Either way it does not block the route: if the top level is empty, you put a carrier on it, which is what gate `N1_b` measured working, census 114 → 115 (`:87`).
+
+**A/A3's raise is a broken post-condition — but the wire is not yet proven good.** `gscript.py:1794-1797` checks `exec_state != 1` **absolutely**; the timeline (`:124`) shows `ExecState` was already 0 at step 8, before the call. So that verb cannot pass as a mid-sequence step in *any* multi-step edit, and its advice ("revert the target") would have discarded real work. But its contract (`gscript.py:1765-1767`) says an **unwired source** makes it extend an unrelated wire → "connects more than one data source" → break. A/A3 called it in exactly that forbidden state. Two hypotheses survive, and **the log does not separate them**: 23499 is a proper source→indicator wire and the bare selector explains `ExecState` 0 (H_good), or it is a two-source wire — the condition `docs/NAMES.md:935-936` measured as `Is Broken? = True` (H_bad).
+
+## 3. What would falsify the claim
+
+A ControlTerminal made by `create_indicator` on a top-level carrier, `move_in`'d to `#639`, wired to `#10686 t0` by `wire_indicators(diagram_index=46)`, saved, reopened **cold at `ExecState` 1**. That artefact already exists on disk (`D1_s3a_focus_ind.vi`, gates B3/Z0, `stage_d1_s3a_focus_ind.py:64-68`).
+
+To make me *accept* the claim you would need the measurement nobody ran: take the terminal ref by the traverse path `wire_indicators` demonstrably uses (`Class Name 2="Diagram"`, `index 2=46`, `gscript.py:1787-1789`), invoke Create Indicator on **that** ref, and capture a refusal *at the Invoke node* with its dialog text.
+
+## 4. Cheapest discriminating tests
+
+- **T1 (free, no LabVIEW).** Read `diag_s3a_ind_transport.log` in full and `stage_d1_s3a_focus_ind.py:29-68`. Separates "the route is unexecutable" from "53(d) named the wrong verb".
+- **T2 (one read-only batch).** Compare `len(node_labels(t,0))` vs `node_info(t,max_n=40)` vs `count(t,'Node')` summed over diagrams, then `owner_of()` the structure owning Diagram `#686`. Separates a genuinely empty top level from a `node_labels`/`TopLevelDiagram` artefact.
+- **T3 — the answer to your question 4, one leg, no new op.** Reproduce A/A3 and, **before any save and without touching `Is Broken?`**, enumerate every terminal whose connected wire is 23499 and count how many report `Terminal.Is Source?` TRUE. The script already prints these tables (`:79`). Exactly one source ⇒ single driver ⇒ **H_bad dead**; two or more ⇒ H_bad confirmed, independently corroborated by `docs/NAMES.md:935-936`. Pure read, no `Connect Wire`, so it avoids the perturbation at `NAMES.md:912-919` and respects "never read `Is Broken?` above a save point" (`:920-926`).
+- **T4.** Same leg, re-wire the selector so no bare sink remains, **save**, reopen **cold**, read `ExecState`, *then* the ordered `Is Broken?` pass. Cold 1 settles it with no inference.
+
+**Separate defect worth a retrospective line:** `wire_indicators`' absolute `exec_state != 1` gate (`gscript.py:1794`) will report a false failure on every mid-sequence row for the rest of this build. Measure it as a **delta** (broken-before vs broken-after).
+
+## What the evidence does not settle
+
+Whether `Terminal.Create Indicator` works on a nested terminal — **nothing here touched it**; NI's page documents no diagram restriction but is JS-rendered and I could not extract its body, so that stays unverified. Whether 23499 is good (T3/T4 decide). `Wire.Disconnect Terminal` `6370C0D` remains unbuilt, correctly ruled out, and unneeded for T1–T4.
+
+One item outside your four questions, flagged because it is a rule-1a risk: 53(d) replaces a direct wire between `#10686` and `#10407` — **both currently on diagram `#639`** (`:22,24`) — with an indicator write and a Local read, which carry no dataflow dependency on each other. If the split leaves source and sink in the same loop, that is a determinism change rather than a scheduling change. Worth recording which loop each ends in.
+
+Sources: [NI — Terminal: Create Indicator](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/terminal/createindicator.html) · [NI forums — VI Scripting: Nested Case Structure (`Nodes[]` is not recursive)](https://forums.ni.com/t5/LabVIEW/VI-Scripting-Nested-Case-Structure/td-p/3712057) · [LabVIEW Wiki — VI Scripting](https://labviewwiki.org/wiki/VI_Scripting)
+BGRUN END rc=0 after 402s

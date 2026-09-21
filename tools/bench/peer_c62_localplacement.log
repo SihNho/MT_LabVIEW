@@ -1,0 +1,78 @@
+BGRUN START 2026-09-21 10:44:25 limit 16.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c62-localplacement -TaskFile tools/bench/peer_c62_localplacement_task.md -TimeoutSec 800
+OUTCOME: ANSWERED (474s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c62-localplacement.md
+COST: $3.0227  in 14 / out 36707 / cache-create 169426 / cache-read 635072  (472s, 12 turn(s))
+--- ANSWER ---
+Write is disabled for this role (read-only peer), so the review is delivered here directly.
+
+---
+
+# Failed-prediction review — C62 S3b row 1
+
+**Verdict: the claim is refuted at its premise.** Not "unlikely" — the cause it names cannot produce `ExecState 0` in this VI, and the run's own data proved that before the delete ever happened.
+
+## 1. The strongest reason the claim is wrong
+
+**The bed VI opens at `ExecState 1` with eleven bare terminals on the While loop alone.**
+
+`tools/bench/diag_c62_s3b_build.log:19` — cold open `ExecState = 1`. Six lines later, `:25` — `#637: 59 terminals, 48 WIRED`. The table at `:24` names the eleven: indices 2, 20, 24, 28, 40, 43, 44, 46, 48, 51, 57, every one `'wire': 0, 'errs': [0,0,0,1055]` — the *identical signature* the brief uses to call the And output and the indicator "bare". Ten of them are `is_source True`. Indices 43 and 44 are the two sides of the **same** border object, **both** unwired — a completely dead tunnel — in a VI reading 1.
+
+In this VI, on this reader, a bare terminal breaks nothing. The claim's mechanism is contradicted by evidence the run collected in its own first ten lines.
+
+That matches LabVIEW: an unwired front-panel terminal is a **warning**, whose error-list text is "The terminal for this Front Panel control or indicator is unwired" ([NI forum](https://forums.ni.com/t5/LabVIEW/Unwired-Front-Panel-Terminal-Warnings/td-p/334343), [NI debugging docs](https://www.ni.com/en/support/documentation/supplemental/12/debugging-techniques-in-labview.html)). An unwired primitive **output** is legal; only an unwired **required input** breaks a VI ([NI, Block Diagram Explained](https://www.ni.com/en/support/documentation/supplemental/08/labview-block-diagram-explained.html)). That asymmetry is the entire story of step 2 — the Case **selector** is a required input, which is why the delete broke the VI. The other two ends never mattered.
+
+Also: `1055` is *Object reference is invalid* — the reader failing to get a wire ref. The brief reads a reader's error code as a brokenness verdict.
+
+## 2. The "already ruled out" list contains a statement the log contradicts
+
+> *"Not a perturbing read: no `Is Broken?` call happened anywhere in this run before the reading."*
+
+**False.** `diag_c62_s3b_build.log:51`, inside step 3, above the save point:
+
+```
+[op stdout]       op readback {'UID': 10407, 'Name': '', 'UID 2': 0, 'Is Broken?': False}
+```
+
+`docs/NAMES.md:903-905`: "`OpConnectNested_v0/v1` and `OpConnectFromWire_v0` **all carry the reader already**." The recipe never called `Is Broken?`; the writer op it called *contains* it.
+
+`docs/NAMES.md:920-926` is a red-flagged rule from one cycle ago: **"NEVER READ `Is Broken?` ABOVE A SAVE POINT"** — cycle 61 built a correct op, read `Is Broken?` before finishing, read its save gate as `ExecState` **0**, threw the build away, and **the identical construction with the read moved below the save saved at 1 and reopened cold at 1**. Same signature, one cycle later, new recipe name.
+
+Gate `Z_1e` — "no `Wire.Is Broken?` was read above any save" — **PASSED** (`:88`). It checks the recipe's own calls and is blind to the op's embedded property node, so it certified the exact condition that was violated.
+
+## 3. Alternatives that fit all eight observations
+
+**Alt-A — the `ExecState 0` is a poisoned reading, not a verdict.** Everything above, plus `NAMES.md:926-929` saying the mechanism is unsettled ("the connect itself, the property node's own execution, or a stale/uncommitted compile state; nothing here distinguishes them"). Externally corroborated: VI Server reporting "bad" for a VI that is not ([NI forum](https://forums.ni.com/t5/LabVIEW/VI-state-indicates-VIis-broken-when-it-is-not/td-p/374104), [LAVA](https://lavag.org/topic/16660-how-to-get-actual-vi-execution-state/)); scripting forces a recompile ([LabVIEW Wiki](https://labviewwiki.org/wiki/VI_Scripting)).
+
+**Alt-B — the construction is genuinely defective, and the topology is deeper than the brief says.** `#637`'s owner is **Diagram #686** (`:23`), diagram index 19 — *not* the top level (#536 = index 0). Top-level → #639 crosses **two** structure borders, and `wire_delta` **3** (`:52`) is exactly three segments for two crossings. A legal result therefore needs **two new tunnels**, one on `#637` (59 → 60 terminals). If the connect instead hung the Local's source on an existing *output* tunnel's outside terminal — `#637` offers ten bare sources — the inner net gets two drivers, which `NAMES.md:935-939` measured as `Is Broken? True`, and `#637`'s count stays 59. Both ends would still report non-zero wires with zero error columns, exactly as at `:54` and `:56`. LabVIEW does auto-create the tunnel when `Connect Wire` crosses a border ([NI, Wiring Structures](https://www.ni.com/docs/en-US/bundle/labview/page/wiring-structures.html)); nothing guarantees it picked a *new* one.
+
+**Checked and eliminated, so I am not offering it:** an orphaned tunnel from the delete. Wire 10799 appears nowhere in `#637`'s 59-terminal table (`:24`), and a Wire object belongs to one diagram — which is why this crossing needed three. Both the And (`:31`, Nodes[25]) and the Case (`:28`, Nodes[24]) sit on Diagram #639, so all three ends of 10799 were on #639 and no border object was orphaned.
+
+## 4. What would falsify each
+
+- **The claim dies** if `wire_indicators` re-feeds the indicator and `ExecState` still reads 0. The recipe's own step 4 (`diag_c62_s3b_build.py:29-32`) would have tested it — the stop-on-0 at step 3 fired first.
+- **Alt-A dies** if a cold reopen of an unconditionally-saved copy reads 0.
+- **Alt-B dies** if the post-connect `#637` census reads 60/50.
+
+## 5. Cheapest discriminating test — one scratch run, existing verbs only
+
+The run deleted the working copy and kept no step-3 artefact (`:70`), so nothing on disk can be read. On a throwaway copy of `D1_s3a_focus_ind.vi`, repeat steps 1–3 verbatim, then:
+
+1. `node_terms_uid(#637)` — **this is the `<S>_k` gate that was written (`diag_c62_s3b_build.py:63`, "no tunnel, no border object") and never reached.** One read; it may settle everything.
+2. **Save unconditionally**, dropping the `ExecState == 1` precondition (`…py:28`).
+3. Restart LabVIEW, cold reopen, `exec_state`.
+
+| `#637` after connect | cold `ExecState` | conclusion |
+|---|---|---|
+| 60 / 50 | **1** | **Alt-A** — always legal, the reading was poisoned. Claim wrong |
+| 60 / 50 | 0 | genuinely bad wire despite tunnels; then `wire_indicators` + re-read — if *that* reaches 1, the claim was right |
+| 59 / 48 | either | **Alt-B** — three segments, two borders, no border object |
+
+## 6. Where the evidence does not decide
+
+Between Alt-A and Alt-B **this run does not distinguish**, and I won't pretend otherwise. Alt-A has a measured in-project counterfactual but is not deterministic — the same op wired 63 route-B rows with `Is Broken? FALSE` throughout (`docs/d1-route-b-plan.md:84`). Alt-B is arithmetically consistent with `wire_delta 3` but rests on a census nobody took. What *is* settled is that the claim's own mechanism is dead.
+
+## 7. The fix worth more than this row
+
+Gate `Z_1e` must assert against the **op's readback**, not the recipe's call list. As written it will keep passing every time `OpConnectNested_v1` reads `Is Broken?` above a save — the failure class cycle 61 already paid for, recurring here under a new recipe name.
+
+**Sources:** [NI — Unwired Front Panel Terminal Warnings](https://forums.ni.com/t5/LabVIEW/Unwired-Front-Panel-Terminal-Warnings/td-p/334343) · [NI — Debugging Techniques](https://www.ni.com/en/support/documentation/supplemental/12/debugging-techniques-in-labview.html) · [NI — Block Diagram Explained](https://www.ni.com/en/support/documentation/supplemental/08/labview-block-diagram-explained.html) · [NI — Wiring Structures](https://www.ni.com/docs/en-US/bundle/labview/page/wiring-structures.html) · [NI — VI state indicates VI is broken when it is not](https://forums.ni.com/t5/LabVIEW/VI-state-indicates-VIis-broken-when-it-is-not/td-p/374104) · [LAVA — How To Get Actual VI Execution State?](https://lavag.org/topic/16660-how-to-get-actual-vi-execution-state/) · [LabVIEW Wiki — VI Scripting](https://labviewwiki.org/wiki/VI_Scripting) · [NI — Broken run arrow with no errors](https://forums.ni.com/t5/LabVIEW/Broken-run-arrow-with-no-errors/td-p/456652?profile.language=en)
+BGRUN END rc=0 after 474s

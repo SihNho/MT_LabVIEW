@@ -1,0 +1,48 @@
+BGRUN START 2026-09-21 11:27:41 limit 12.0 min: py -u tools/bench/diag_c62_negctrl.py
+=== diag_c62_negctrl  2026-09-21 11:27:41
+=== THE NEGATIVE CONTROL: does OpConnectNested_v1 alone drive this bed 1 -> 0?
+  FACT  LabVIEW handles BEFORE: 34158
+  FACT  T1 ORIGINAL (read-only probe): HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  T1 the ORIGINAL's md5 equals the pin  2a78e17c449cacdaf5da389818526859
+  FACT  T1b D1_s1_copy.vi: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  PASS  T1b D1_s1_copy.vi md5 == 3e3d23cefd3a334001aa9d6156bf1aee  3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  T2 D1_s2_loops.vi: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T2 D1_s2_loops.vi md5 == 6ff19497f2309e007a214660bb64b911  6ff19497f2309e007a214660bb64b911
+  FACT  T3 D1_s3a_focus_ind.vi (the bed, never written): HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3a_focus_ind.vi | exists=1 | size=476172 | md5=eef91c1d91f16b034707e4d1285ca8cb | sha256=8afd9f95e280139e64aa648906ba7f799e8d0ae39aabfae42c93ef4f102d23bb
+  PASS  T3 D1_s3a_focus_ind.vi md5 == eef91c1d91f16b034707e4d1285ca8cb  eef91c1d91f16b034707e4d1285ca8cb
+  FACT  T4 the donor OpCreateLocalRead_v0.vi: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpCreateLocalRead_v0.vi | exists=1 | size=10192 | md5=f695d97a36ae127cd2dd3ca6b1fc1089 | sha256=2b2b3d97596a8a1c90fc8426012dfd213acdae5a34c427ab07ed3773c712cb4e
+  PASS  T4 OpCreateLocalRead_v0.vi md5 == f695d97a36ae127cd2dd3ca6b1fc1089  f695d97a36ae127cd2dd3ca6b1fc1089
+  FACT  T5 RESTART (pre-batch, 44(e)): lv_restart rc=0 ['dialogs: ,1346,762| / ENABLED|20187492|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  LabVIEW handles AFTER the pre-batch restart: 30685
+  FACT  ExecState [1 [0] the untouched scratch, cold] = 1
+  PASS  N_a the scratch opens COLD at ExecState 1  1
+  FACT  diag_index(#639) RE-READ off the machine = 46
+  FACT  SINK #10407 on Diagram #639: Nodes[24] label 'Case Structure' [node_labels position (verified by the node's own UID)] ; t0 {'i': 0, 'name': '', 'is_source': False, 'wire': 10799, 'errs': [0, 0, 0, 0]}
+  FACT  SOURCE #10686 on Diagram #639: Nodes[25] label 'And' [node_labels position (verified by the node's own UID)] ; t0 {'i': 0, 'name': 'x .and. y?', 'is_source': True, 'wire': 10799, 'errs': [0, 0, 0, 0]}
+  PASS  N_b both #10407 and #10686 resolve on Diagram #639 with their own uid echoed back  sink Nodes[24] echo 10407 ; source Nodes[25] echo 10686
+  PASS  N_c #10407 t0 and #10686 t0 BOTH already carry wire 10799  sink t0 {'i': 0, 'name': '', 'is_source': False, 'wire': 10799, 'errs': [0, 0, 0, 0]} ; source t0 {'i': 0, 'name': 'x .and. y?', 'is_source': True, 'wire': 10799, 'errs': [0, 0, 0, 0]}
+  FACT  ExecState [2 [1] immediately BEFORE the idempotent connect] = 1
+  FACT  THE ONE CALL: connect_nested_v1(target, 46, 24, 0, 46, 25, 0)   (IDEMPOTENT - this pair is already joined by wire 10799)
+      [op stdout]       op readback {'UID': 10407, 'Name': '', 'UID 2': 10799, 'Is Broken?': False}
+  FACT  connect result: {'wire_delta': 0, 'exec_state_returned': 0, 'error_verbatim': ''}
+  FACT  the op's OWN embedded `Is Broken?` readback line(s) in this run: ["op readback {'UID': 10407, 'Name': '', 'UID 2': 10799, 'Is Broken?': False}"]
+  PASS  N_d *** wire_delta == 0 (the connect added nothing; the Wire census is unchanged) ***  wire_delta 0 ; Wire census 1905 -> 1905
+  FACT  ExecState [3 [2] immediately AFTER the idempotent connect] = 0
+  PASS  N_e *** THE READING: ExecState 1 -> 0 across the idempotent connect ***  THE OP ALONE DRIVES THIS BED 1 -> 0: B1_f in diag_c62_s3b_movein.log carries ZERO information about the construction
+  FACT  VERDICT (a reading, not a decision): THE OP ALONE DRIVES THIS BED 1 -> 0: B1_f in diag_c62_s3b_movein.log carries ZERO information about the construction
+  PASS  Z_3 the scratch is deleted in the same run  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SCRATCH_C62NEG_20260921_112741.vi
+  FACT  refs {'opened': 7, 'closed': 7, 'live': 0, 'cached_op_vis': 5}
+  FACT  LabVIEW handles AFTER everything: 54632
+  FACT  Z1 ORIGINAL after everything: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  FACT  Z1b D1_s1_copy.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  FACT  Z1c D1_s2_loops.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  FACT  Z1d D1_s3a_focus_ind.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3a_focus_ind.vi | exists=1 | size=476172 | md5=eef91c1d91f16b034707e4d1285ca8cb | sha256=8afd9f95e280139e64aa648906ba7f799e8d0ae39aabfae42c93ef4f102d23bb
+  FACT  Z1e the donor OpCreateLocalRead_v0.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpCreateLocalRead_v0.vi | exists=1 | size=10192 | md5=f695d97a36ae127cd2dd3ca6b1fc1089 | sha256=2b2b3d97596a8a1c90fc8426012dfd213acdae5a34c427ab07ed3773c712cb4e
+  PASS  Z_1 ORIGINAL / D1_s1_copy / D1_s2_loops / D1_s3a_focus_ind md5 ALL unchanged  2a78e17c449cacdaf5da389818526859 / 3e3d23cefd3a334001aa9d6156bf1aee / 6ff19497f2309e007a214660bb64b911 / eef91c1d91f16b034707e4d1285ca8cb
+  PASS  Z_1b the donor OpCreateLocalRead_v0.vi is byte-unchanged  f695d97a36ae127cd2dd3ca6b1fc1089
+  PASS  Z_1c refs opened == closed, 0 live  {'opened': 7, 'closed': 7, 'live': 0, 'cached_op_vis': 5}
+  FACT  THE COMPLETE ExecState TIMELINE: [{'step': 1, 'tag': '[0] the untouched scratch, cold', 'value': 1}, {'step': 2, 'tag': '[1] immediately BEFORE the idempotent connect', 'value': 1}, {'step': 3, 'tag': '[2] immediately AFTER the idempotent connect', 'value': 0}]
+
+=== GATES 14 pass / 0 fail
+=== readings -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c62_negctrl.json
+BGRUN END rc=0 after 74s

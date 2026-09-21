@@ -1,0 +1,24 @@
+BGRUN START 2026-09-21 10:10:44 limit 16.0 min: powershell -Command & 'tools/peer.ps1' -Kind fact -Slug c62-branch-disconnect -TaskFile 'tools/bench/peer_c62_branchdisc_task.md' -TimeoutSec 780
+OUTCOME: ANSWERED (116s)  model: fable (effort low; peer.ps1 default for role fact)  archived: archive\peer\2026-09-21-c62-branch-disconnect.md
+COST: $1.8352  in 28 / out 4808 / cache-create 45101 / cache-read 514362  (115s, 17 turn(s))
+--- ANSWER ---
+**Answer: Yes — a documented method exists that our census apparently missed: `Wire.Disconnect Terminal` (VI Scripting, LabVIEW 2018+).** Point-by-point:
+
+1. **Method to disconnect one terminal**: The `Wire` class has a **Disconnect Terminal** method — Method ID **6370C0D**, on Wire class (Class ID 16439), one required parameter (a Terminal refnum), no return value, VI Scripting scope, available since LabVIEW 2018. Documented on the [LabVIEW Wiki Wire class page](https://labviewwiki.org/wiki/Wire_class) and in NI's current API reference at [Disconnect Terminal — NI docs](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/wire/disconnectterminal.html) (also [the labview bundle page](https://www.ni.com/docs/en-US/bundle/labview/page/lvscript/wire_disconnect_terminal.html)). **Caveat honestly stated**: the NI doc pages are JS-rendered and I could not extract their body text, and the wiki page lacks a behavioral description — so whether disconnecting sink B leaves A→C intact as the same `Wire` object, versus baring the wire, is **not settled by the evidence I could fetch**; it should be verified empirically. No `Terminal`-class disconnect exists — the [Terminal class](https://labviewwiki.org/wiki/Terminal_class) has only Create Constant/Control/Indicator, Connect Wire, Create Described Wire, Create Shared Variable Node.
+
+2. **Writable property**: none. `Terminal.Connected Wire` is **read-only**, and `Wire.Terminals[]` is **read-only** ([Terminal class](https://labviewwiki.org/wiki/Terminal_class), [Wire class](https://labviewwiki.org/wiki/Wire_class)). `Joints[]` is a geometry read used only for recreating wires (via Create Described Wire); `Delete Joint` removes a bend joint, not a logical branch.
+
+3. **`Terminal.Connect Wire` (ID 6349C03)** exists and "connects a wire to the terminal; the wire source can be either another terminal or a node" ([Terminal class](https://labviewwiki.org/wiki/Terminal_class), [NI Connect Wire doc](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/terminal/connectwire.html)) — so yes, it is the tool to re-wire a bared terminal. I found **no documentation stating** that connecting a new wire to an already-wired sink implicitly removes the old branch; the forum idiom always deletes first, which suggests no such implicit removal is relied on. Unsettled otherwise.
+
+4. **Standard idiom** (pre-2018, and still what NI staff recommend on the forums): capture refs to the source and the surviving sinks, **Delete the whole Wire**, then re-`Connect Wire` the pairs you want to keep — this is the accepted answer by Darren (NI) in [Disconnect wire through VI scripting](https://forums.ni.com/t5/LabVIEW/Disconnect-wire-through-VI-scripting/td-p/3046807) (2015, predating the 2018 method). To preserve routing, read `Joints[]` before deleting and rebuild with `Create Described Wire`.
+
+**Recommendation**: try `Wire.Disconnect Terminal` (6370C0D) with B's terminal ref on the {A,B,C} wire; keep the delete-and-reconnect idiom as the proven fallback.
+
+Sources:
+- [LabVIEW Wiki — Wire class](https://labviewwiki.org/wiki/Wire_class)
+- [LabVIEW Wiki — Wire class / Disconnect Terminal method](https://labviewwiki.org/wiki/Wire_class/Disconnect_Terminal_method)
+- [LabVIEW Wiki — Terminal class](https://labviewwiki.org/wiki/Terminal_class)
+- [NI docs — Wire Disconnect Terminal](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/wire/disconnectterminal.html)
+- [NI docs — Terminal Connect Wire](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/terminal/connectwire.html)
+- [NI forums — Disconnect wire through VI scripting](https://forums.ni.com/t5/LabVIEW/Disconnect-wire-through-VI-scripting/td-p/3046807)
+BGRUN END rc=0 after 116s

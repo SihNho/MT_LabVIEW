@@ -1,0 +1,53 @@
+BGRUN START 2026-09-21 10:28:19 limit 20.0 min: py -u tools/bench/diag_c62_s3b_rows_t3.py
+=== diag_c62_s3b_rows_t3  2026-09-21 10:28:19
+=== T3: how many SOURCES sit on the wire wire_indicators made from a BARE source?
+  FACT  LabVIEW handles BEFORE: 30936
+  FACT  T1 ORIGINAL: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  PASS  T1 the ORIGINAL's md5 equals the pin  2a78e17c449cacdaf5da389818526859
+  FACT  T1b D1_s1_copy.vi: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  PASS  T1b D1_s1_copy.vi md5 unchanged  3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  T2 D1_s2_loops.vi: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  PASS  T2 D1_s2_loops.vi md5 unchanged  6ff19497f2309e007a214660bb64b911
+  FACT  T3 D1_s3a_focus_ind.vi (the bed's SOURCE, never the bed): HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3a_focus_ind.vi | exists=1 | size=476172 | md5=eef91c1d91f16b034707e4d1285ca8cb | sha256=8afd9f95e280139e64aa648906ba7f799e8d0ae39aabfae42c93ef4f102d23bb
+  PASS  T3 D1_s3a_focus_ind.vi md5 unchanged  eef91c1d91f16b034707e4d1285ca8cb
+  FACT  T5 RESTART (pre-batch, 44(e)): lv_restart rc=0 ['dialogs: 1346,762| / ENABLED|385026546|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  LabVIEW handles AFTER the pre-batch restart: 30689
+  FACT  ExecState [1 cold open] = 1
+  PASS  P_1a the bed opens COLD at ExecState 1
+  FACT  live diagram indices: #639 -> 46, #536 (top level) -> 0
+  OBSERVED uid 686 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#686 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  FACT  T2 CROSS-CHECK of the TOP-LEVEL reading: node_labels(top=0) -> 0 rows ; node_info(max_n=40) -> 0 rows [] ; count('Node') whole VI -> 630 ; owner_of(#686) -> ('FlatSequenceFrame', 0)
+  PASS  P_2 the three top-level readers were all read and reported side by side  node_labels 0 / node_info 0 / count('Node') 630
+  OBSERVED uid 10686 -> owner 'Diagram' uid 639 | self 'Function'#10686 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  BEFORE source #10686: owner 'Diagram'#639 diagram 46 Nodes[25] label 'And' ; TABLE [{'i': 0, 'name': 'x .and. y?', 'is_source': True, 'wire': 10799, 'errs': [0, 0, 0, 0]}, {'i': 1, 'name': 'y', 'is_source': False, 'wire': 9105, 'errs': [0, 0, 0, 0]}, {'i': 2, 'name': 'x', 'is_source': False, 'wire': 3050, 'errs': [0, 0, 0, 0]}]
+  PASS  P_1b #10686 t0 carries wire 10799 before the delete  {'i': 0, 'name': 'x .and. y?', 'is_source': True, 'wire': 10799, 'errs': [0, 0, 0, 0]}
+  FACT  delete_object(Wire[715] = uid 10799) -> gone [10799]
+  PASS  P_3 the delete removed exactly wire 10799  [10799]
+  FACT  ExecState [2 after the delete (0 is EXPECTED)] = 0
+  FACT  CALL: g.wire_indicators(bed, node_index=102, src_terms=['x .and. y?'], indicator_names=['Automatic Error Handling'], diagram_index=46, node_class='Function')
+  FACT  wire_indicators returned None ; raised 'RuntimeError: wire_indicators: target BROKEN after wiring - a source terminal was probably unwired (WI then extends an unrelated wire; revert the target)'  (gscript.py:1794 tests exec_state ABSOLUTELY, and ExecState was already 0 before the call)
+  FACT  ExecState [3 after wire_indicators] = 0
+  OBSERVED uid 10686 -> owner 'Diagram' uid 639 | self 'Function'#10686 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  AFTER source #10686: owner 'Diagram'#639 diagram 46 Nodes[25] label 'And' ; TABLE [{'i': 0, 'name': 'x .and. y?', 'is_source': True, 'wire': 23499, 'errs': [0, 0, 0, 0]}, {'i': 1, 'name': 'y', 'is_source': False, 'wire': 9105, 'errs': [0, 0, 0, 0]}, {'i': 2, 'name': 'x', 'is_source': False, 'wire': 3050, 'errs': [0, 0, 0, 0]}]
+  PASS  P_4 wire_indicators left a NON-ZERO wire on #10686 t0  wire 23499
+  FACT  THE NET OF WIRE 23499, every terminal that carries it (73 nodes scanned on #639, 116 panel rows): [{'where': 'Diagram #639 Nodes[25] = #10686', 'node_uid': 10686, 'terminal': 0, 'name': 'x .and. y?', 'is_source': True}, {'where': 'panel control uid 23555', 'node_uid': 23555, 'terminal': None, 'name': 'Automatic Error Handling', 'is_source': False}]
+  FACT  SOURCES on that net: 1 -> [{'where': 'Diagram #639 Nodes[25] = #10686', 'node_uid': 10686, 'terminal': 0, 'name': 'x .and. y?', 'is_source': True}]
+  PASS  P_5 *** THE SEPARATOR: EXACTLY ONE terminal on wire 23499 reports is_source True (1 => H_bad 'two data sources' is DEAD; >=2 => H_bad confirmed) ***  1 source(s): [{'where': 'Diagram #639 Nodes[25] = #10686', 'node_uid': 10686, 'terminal': 0, 'name': 'x .and. y?', 'is_source': True}]
+  FACT  READING: EXACTLY ONE SOURCE - the two-source hypothesis is dead. ExecState after wire_indicators was 0, with #10407 t0 still BARE.
+  OBSERVED uid 10407 -> owner 'Diagram' uid 639 | self 'CaseStructure'#10407 | 482 says 'Diagram' cast 'Diagram' |  
+  FACT  AFTER #10407 #10407: owner 'Diagram'#639 diagram 46 Nodes[24] label 'Case Structure' ; TABLE [{'i': 0, 'name': '', 'is_source': False, 'wire': 0, 'errs': [0, 0, 0, 1055]}, {'i': 1, 'name': '# slices in stack', 'is_source': False, 'wire': 9635, 'errs': [0, 0, 0, 0]}, {'i': 2, 'name': 'Index of closest\ncal image slice, bead 2', 'is_source': False, 'wire': 10990, 'errs': [0, 0, 0, 0]}, {'i': 3, 'name': 'Outgoing Handle', 'is_source': False, 'wire': 11232, 'errs': [0, 0, 0, 0]}, {'i': 4, 'name': 'VISA out', 'is_source': True, 'wire': 7337, 'errs': [0, 0, 0, 0]}, {'i': 5, 'name': 'Out position', 'is_source': False, 'wire': 7388, 'errs': [0, 0, 0, 0]}, {'i': 6, 'name': 'position [internal units]', 'is_source': True, 'wire': 9113, 'errs': [0, 0, 0, 0]}]
+  PASS  Z_2 the scratch was DELETED in the same run  exists=False
+  FACT  refs {'opened': 7, 'closed': 7, 'live': 0, 'cached_op_vis': 9}
+  FACT  LabVIEW handles AFTER everything: 34696
+  FACT  Z1 ORIGINAL after everything: HASH G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb
+  FACT  Z1b D1_s1_copy.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7
+  FACT  Z1c D1_s2_loops.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5
+  FACT  Z1d D1_s3a_focus_ind.vi after everything: HASH C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s3a_focus_ind.vi | exists=1 | size=476172 | md5=eef91c1d91f16b034707e4d1285ca8cb | sha256=8afd9f95e280139e64aa648906ba7f799e8d0ae39aabfae42c93ef4f102d23bb
+  PASS  Z_1 ORIGINAL / D1_s1_copy / D1_s2_loops / D1_s3a_focus_ind md5 ALL unchanged  2a78e17c449cacdaf5da389818526859 / 3e3d23cefd3a334001aa9d6156bf1aee / 6ff19497f2309e007a214660bb64b911 / eef91c1d91f16b034707e4d1285ca8cb
+  PASS  Z_1c refs opened == closed, 0 live  {'opened': 7, 'closed': 7, 'live': 0, 'cached_op_vis': 9}
+  PASS  Z_1e no `Wire.Is Broken?` was read at any point  docs/NAMES.md:912-918
+  FACT  THE COMPLETE ExecState TIMELINE: [{'step': 1, 'tag': 'cold open', 'value': 1}, {'step': 2, 'tag': 'after the delete (0 is EXPECTED)', 'value': 0}, {'step': 3, 'tag': 'after wire_indicators', 'value': 0}]
+
+=== GATES 14 pass / 0 fail
+=== readings -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c62_s3b_rows_t3.json
+BGRUN END rc=0 after 92s
