@@ -1210,3 +1210,66 @@ BGRUN START 2026-09-22 02:49:21 limit 9.0 min: py tools/retrospective.py --cycle
 BGRUN START 2026-09-22 02:51:36 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 64
    window 2026-09-22 01:09:11 .. 2026-09-22 02:51:36 (102 min); 11 build logs, 8 machinery logs, 11 devices
    task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle64.txt (16815 chars)
+OUTCOME: ANSWERED (393s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-22-retrospective-cycle64.md
+COST: $4.6898  in 20 / out 26028 / cache-create 118674 / cache-read 1014737  (392s, 21 turn(s))
+--- ANSWER ---
+All evidence read. Here is the retrospective of cycle 64.
+
+---
+
+## SUMMARY OF THE CYCLE'S OUTCOME
+
+This cycle delivered what it set out to deliver: `D1_s3b_m3a2_20260922_023029.vi` (md5 `3842f5e6…`), 25/0 gates on the build (`tools/bench/build_d1_m3a2.log:321`), 15/0 on a separate read-only verification anchored at register UIDs (`tools/bench/diag_c74_m3a2_verify.log:101`), both predicted sources landed (#4194→#23880, #3974→#23909), originals byte-unchanged on every pin. After cycles 55–58 produced nothing at all on M3a-1, this is the first cycle in days whose outcome fully matches its plan item. The work was worth doing, and the review costs it paid ($12.37 across three reviews) each returned something the cycle then used — the B2 save-capture repair from the prior-art review is *measurably* discharged in run 2 (`build_d1_m3a2.log:286-288`, both PNGs on disk for the first time in the project's history).
+
+The blemish is a 32-minute, ~$6 detour caused by launching a 1,106-line, never-executed, hand-written recipe on the strength of a parse-only clearance.
+
+---
+
+## FINDINGS
+
+**1. Repeated failure.** No same-class recurrence *inside* the window: the `%`-format crash happened once (run 1, `build_d1_m3a2.log:31-32,59`, rc=1 after 71s) and run 2 passed 25/0. The response at attempt 1 was correct per the project's own rules — no patch-and-rerun in the same dispatch, mandatory review dispatched (`archive/peer/2026-09-22-c74-m3a2-fmt.md`). Across cycles, though, the class "defect in a hand-transcribed recipe that no gate ever executes" is the same one that ate cycles 55–58 on M3a-1; the approach should have changed **before run 1 of this recipe**, not after — the recipe "had never been executed before this run" (`archive/peer/2026-09-22-c74-m3a2-fmt.md:110`) and the pinned clearance is `ast.parse` plus counts (11 PASS on a file that died at its first `fact()` call, `tools/bench/c74_astcheck_m3a2_r2.log`, cited at `c74-m3a2-fmt.md:100-103`).
+
+**2. Missing tool.** The stubbed-`g` dry run — import the recipe with the LabVIEW gateway mocked, call `main()` — named explicitly by the fmt review (`2026-09-22-c74-m3a2-fmt.md:198`) and put to the user in STATUS.md:59. It would have caught the `read_es` arity/signature bug in seconds, and unlike gate 10 it also catches the `KeyError`/signature-drift class that %-arity linting cannot. It stayed unbuilt because of the user's 2026-09-18 08:53 no-new-devices order — a defensible refusal, and STATUS.md:59 honestly gives the counter-measurement (0 further mismatches in 3 files, so the class measured as non-endemic). Its absence is what the one structural fault below prices.
+
+**3. Unmeasured steps.** Mostly the opposite — this cycle measured things other cycles would have argued: the "45 minutes lost" framing was corrected to 71s from the log (`c74-gate10-arity.md`-adjacent, `peer_c74_gate10.log:72`); the gate-10 "no further defect after repair" claim, caught as unmeasured inference by the second peer (`peer_c74_gate10.log:50`), was then actually measured (`tools/bench/c74_gate10_report.log:15-24`, 6/6 fixture + 0 defects across 3 files). One measurement was available, cheap, and deferred: run 1's handle jump 30,689 → 45,677 in 71 seconds with 0 live refs (`build_d1_m3a2.log:24,51`) — H6/H7 both PASS and say nothing about it; the verify run repeated the pattern (+11,650, `diag_c74_m3a2_verify.log:99`) and it is now a "standing FACT, not yet a gate" (STATUS.md:55). `handle_audit.py` exists precisely to attribute handle growth (CLAUDE.md:196) and was not pointed at it.
+
+**4. Rule compliance.** Rule 1 held mechanically (all pins, every run). The failed-prediction protocol (CLAUDE.md §5) was followed to the letter. Two rules satisfied only formally: (a) the disposition rule — `archive/peer/2026-09-22-c74-m3a2-fmt.md:235-237` still reads "(Claude fills in)" although its findings were in fact acted on (H9 gate, gate 10 — STATUS.md:53), i.e. the substance was done and the annotation the machinery checks was not, the exact inverse of the token-edit evasion A4 was built against; (b) rule 4 layering — STATUS.md:56 *names* the relocation file for the ~8KB lock-purpose chain (`archive/2026-09-22-status-cycle64-locknotes.md`) but never created it, which is the audit's one dangling citation (L2). What the audit does NOT cover: cost *attribution* (see fault 2 below — C4's headline number is wrong in kind); multi-run logs (A3 flags `build_d1_m3a2.log` as unreviewed even though `c74-m3a2-fmt.md` reviews exactly its failure — run 2's append post-dates the review, so the day-granular matcher misses it); whether a passing clearance gate measures what its PASS implies; and the judgement session's own spend, which appears in no project document.
+
+**5. Ordering.** Defensible, and better than most cycles: measurement (`diag_c73_m3a2_rows`) → recipe → prior-art *before* build (enforced and honored: priorart END 01:51, build 01:58) → review before re-run → independent verify after. The one inversion is the subject of the violation: the executability check (gate 10, <1s once built) came after the launch instead of before it.
+
+**6. What was not reported.** The largest single number of the cycle appears nowhere in the session's own account: the judgement session cost **$51.62** (`tools/bench/cycle_59.log:62`, `total_cost_usd":51.62158950000003`) — 81% of the cycle's total dollar spend. STATUS.md itemizes $6.30, $2.69 and $3.38 and never mentions it. Second: run 1's +15,000 handle spike reached the record only because a peer reviewer flagged it unasked (`c74-m3a2-fmt.md:223`). Third: STATUS honestly reports M3a-1's save had *no* captures at all (STATUS.md:53) — credit where due, that one was volunteered.
+
+**7. Judgement inside a material session.** None found. The fmt review's brief states "DISPOSITION IS THE JUDGEMENT SESSION'S" and offers no diagnosis of its own (`2026-09-22-c74-m3a2-fmt.md:10`); the gate-10 widening was "accepted with the judgement session's scope limit" (STATUS.md:26 lock purpose); the stop-record release by `FIXED:` lines is recorded as the judgement session's call. C6 shows 3 judgement-session material attempts *refused* — the guard doing its job, at the cost of a few wasted turns.
+
+---
+
+## DEVICE EFFECT (each listed device, against this window)
+
+- **unreported-fact (rc/END guarantee)** — WORKED: run 1's crash produced `BGRUN END rc=1 after 71s` (`build_d1_m3a2.log:59`); nothing failed silently.
+- **rule-evaded (confirm-bait refusal)** — NOT TRIGGERED; both task files carry the adversarial instruction set (`peer_task_c74_m3a2_execstate.md:129-135`).
+- **tool-not-built (prior_art_review)** — WORKED, its best outing on record: 4 findings, all disposed, B2's fix verified by the machine in run 2 (`build_d1_m3a2.log:286-288`).
+- **repeated-failure-class (guard_peer blank-disposition refusal)** — did not fire, and by its own terms was not required to: the blank review (`c74-m3a2-fmt.md:237`) is kind `hypothesis`, the device guards only `priorart`/`retrospective` dispatches. A scope gap, not a failure — but note this retrospective was dispatched with that blank standing, which is the loop shape the device was built against.
+- **unreported-fact (C3/C4 cost split)** — **FAILED, on the wrong-thing axis.** C4 reports "REVIEWS … cost $63.9903 from 4 log(s)". The four lines are $6.3017 (`priorart_c74_m3a2.log:4`) + $2.6899 (`peer_c74_m3a2_fmt.log:3`) + $3.3771 (`peer_c74_gate10.log:3`) + **$51.6216, which is the judgement session itself** (`cycle_59.log:62`) — the sum matches to the cent. Likewise C4's "125 min 45 s review wall-clock": the three actual reviews total 1,419s (~24 min); the remaining ~102 min is the judgement session's bgrun. So the device built to "make the cost argument possible instead of rhetorical" states that reviews are 94% of the cycle when they are ~19% of wall and $12.37 of cost. This is precisely the failure mode the project records being burned by — a cost argument made against a figure that is wrong by nature, here 5.2× on the review side, and it feeds every retrospective including this one (the prompt instructed me to quote C4 as authoritative).
+- **premature-build (guard_cycle)** — WORKED: priorart ended 01:51:23 before the 01:58:42 launch; stop record armed (`priorart_c74_m3a2.log:85`), released by `FIXED:` lines, re-planted for the edited sha (STATUS.md:26).
+- **scope-creep (C7 out-of-plan list)** — WORKED as a counter; the 12 files are this cycle's own bench outputs and screenshots, all measurement artifacts. Verdict: the out-of-plan changes were right.
+- **device-failed (cost-regex repair)** — WORKED: C4b "cost lines seen 4 / parsed 4"; the parse is fine — the *classification* is what's broken (above).
+- **device-failed (bgrun FAIL scan)** — WORKED: run 1 forced rc=1.
+- **repeated-failure-class (OpLoopEndRef_v0)** — not exercised in this window (M3a-2 touches no conditional terminal); no evidence either way.
+- **device-failed (stop record + launch gate)** — WORKED end to end: armed on a non-novel verdict, refused launch, released by hash-qualified `FIXED:` lines, re-armed for the post-edit bytes.
+
+One device *outside* the extracted list also failed and should be said plainly: the pinned launch-clearance checker `c60c_astcheck.py` printed 11 PASS / 0 FAIL (`c74_astcheck_m3a2_r2.log`) on a file that could not survive its first diagnostic call — a parse verdict read as a fitness verdict, the same class its own docstring memorializes (`c60c_astcheck.py:22-28` per `c74-m3a2-fmt.md:185`). It is priced inside fault 1 rather than as a separate device line because it is not on the machine-extracted device list this section governs.
+
+---
+
+## THE STRUCTURAL FAULTS — ranked, two, both of magnitude
+
+**1. `tool-not-built` — the executability gap in front of a LabVIEW launch.** A never-executed 1,106-line hand-adapted recipe was cleared for a LabVIEW batch by a checker that only proves it parses. It crashed at 71s on a five-specs-vs-four-args format string (`build_d1_m3a2.log:31,59`), which triggered the mandated $2.69 review, the gate-10 build, its $3.38 adversarial review, and a widening pass. Counterfactual, on the clock: gate 10 took under a second once built and flagged exactly this line on its first run (`c74_gate10_m3a2.log`, 1 MISMATCH); had that check — or the stubbed-`g` run — existed at 01:57, run 1 at 01:58 would have been run 2, the artefact lands ~02:00 instead of 02:30:29, and the cycle closes roughly half an hour earlier without $6.07 of review spend. Loss: 32 min (launch 01:58:42 → relaunch 02:30:29), $6.07 carried by `peer_c74_m3a2_fmt.log:3` + `peer_c74_gate10.log:3`. Mitigation acknowledged: the detour was converted into two permanent gates and the class was then *measured* as non-endemic — this is the best possible way to pay for the fault, but the fault was still paid for.
+
+**2. `device-failed` — the C3/C4 cost-split device (audit_cycle) files the judgement session as review cost.** Threshold 1 per this contract, and the failure is inside this window: C4's $63.9903 and "reviews are 94% of it" are arithmetic over four lines of which one — $51.62, 81% of the total — is the judgement session (`cycle_59.log:62`), not a review. Every dollar argument downstream of C4, including the one this retrospective was told to rely on, is wrong in composition. No wall-clock was lost to it this cycle, hence loss_min=0; the corrupted quantity is the measurement itself.
+
+---
+
+VIOLATION: tool-not-built | loss_min=32 | loss_usd=6.07 | evidence=tools/bench/build_d1_m3a2.log:59
+VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/bench/cycle_59.log:62
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle64.md
+BGRUN END rc=0 after 395s
