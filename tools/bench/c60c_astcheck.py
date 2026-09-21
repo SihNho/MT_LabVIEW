@@ -11,19 +11,48 @@ PREDICTION CONTRACT
   4 every `g.<verb>(...)` call names a `def <verb>` that already exists in tools/gscript.py
   5 every name imported from build_d1_v0 / diag_s2_scaffold / hash_probe / bench_prep exists there
   6 nothing under tools/recipes/ is opened for writing and nothing there is removed
-  7 `move_in` is neither imported nor called
+  7 ROUTE CONFORMANCE for `move_in`, selected by `--route` (REPAIRED 2026-09-21, cycle 66)
+      --route owner  (DEFAULT) : `move_in` is NEITHER imported NOR called
+      --route movein           : `move_in` IS called at least once
+    WHY. This gate was written for cycle 60's `owner` route, which deliberately excludes `move_in`. It was
+    then reused as the fleet's generic static gate, so it FAILED BY CONSTRUCTION on every legitimate
+    `move_in` build (cycle 64 `tools/bench/c64e_astcheck.log` 11/12, cycle 65 `tools/bench/c65_astcheck.log`
+    11/12). That false positive is the SINGLETON intersection of runner cycles 49 n 50's failing gate lines
+    (`tools/bench/cycle_runner.log:97,:100`) - i.e. a gate defect was the thing about to fire the runner's
+    repeated-failure firefighter. The DEFAULT is `owner` so every existing invocation, which passes only a
+    positional target, keeps this gate's pre-repair verdict byte for byte.
+    NOT A COUNT, in either direction: stage M3 mandates FIVE `move_in` calls, so "called at most once" would
+    be a second defect of the same shape. The printed gate NAME carries the route, so the two routes emit
+    DIFFERENT failing lines and the runner's "same first failing gate line" matcher cannot conflate them.
   8 no owner comparison tests the literal 'Diagram' without also accepting 'TopLevelDiagram'
   9 the routes the brief FORBIDS are absent as calls: `build_invoke` (the peer's Invoke-seeded variant) and
     `copy_by_index` / `copy_into` / `move_by_label` (a donor switch)
 """
+import argparse
 import ast
 import os
 import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-TARGET = os.path.join(ROOT, "tools", "bench",
-                      sys.argv[1] if len(sys.argv) > 1 else "diag_s3b_l0_localname_v2.py")
+
+
+def _parse_args(argv=None):
+    """Added 2026-09-21 (cycle 66) for gate 7's route. The positional keeps the old `sys.argv[1]` contract
+    and `--route` DEFAULTS TO `owner`, so an invocation that passes no flag behaves exactly as before."""
+    ap = argparse.ArgumentParser(
+        description="static gate on a tools/bench diagnostic, run BEFORE the diagnostic is launched")
+    ap.add_argument("target", nargs="?", default="diag_s3b_l0_localname_v2.py",
+                    help="script under tools/bench/ (an ABSOLUTE path is honoured as given)")
+    ap.add_argument("--route", choices=("owner", "movein"), default="owner",
+                    help="which construction route the target claims; decides gate 7's DIRECTION")
+    return ap.parse_args(argv)
+
+
+ARGS = _parse_args()
+# os.path.join drops the prefix when the later part is absolute, so an absolute target passes through intact.
+TARGET = os.path.join(ROOT, "tools", "bench", ARGS.target)
+ROUTE = ARGS.route
 GSCRIPT = os.path.join(ROOT, "tools", "gscript.py")
 BANNED = ("remove_bad_wires_scripted", "remove_bad_wires", "gui_save")
 FORBIDDEN_ROUTES = ("build_invoke", "copy_by_index", "copy_into", "move_by_label")
@@ -96,9 +125,13 @@ def main():
     gate("6 nothing under tools/recipes/ is opened for writing or removed", not recipes_writes,
          "%r" % (recipes_writes[:3],))
 
-    gate("7 move_in is neither imported nor called",
-         "move_in" not in called and "move_in" not in imported, "called=%r imported=%r"
-         % ("move_in" in called, "move_in" in imported))
+    mi_called, mi_imported = "move_in" in called, "move_in" in imported
+    mi_detail = "route=%s called=%r imported=%r" % (ROUTE, mi_called, mi_imported)
+    if ROUTE == "owner":
+        gate("7[owner] move_in is neither imported nor called",
+             not mi_called and not mi_imported, mi_detail)
+    else:
+        gate("7[movein] move_in is called at least once", mi_called, mi_detail)
 
     lone = [ln.strip() for ln in src.splitlines()
             if re.search(r"==\s*[\"']Diagram[\"']", ln) and "TopLevelDiagram" not in ln]

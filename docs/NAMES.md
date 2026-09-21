@@ -374,6 +374,47 @@ Terminal short names read off the machine (probe_castfree5.log), all compile WIT
   when a walk has already printed a node's terminal names, the recipe must match THOSE strings — a guessed
   variant (`IsBroken`) cost one build run today.
 
+### The TYPE read on a Terminal — 2026-09-21, cycle 66 (⚠️ status set by the Part C measurement below)
+
+- `Terminal.Coercion Dot?` **634A006** → short name **`Coerce Dot?`** ⚠️ **MEASURED, and NOT the `Coerced?` the peer
+  reported** — Boolean — True when LabVIEW draws a coercion dot on
+  that terminal, i.e. it converted the incoming value to a different representation. This is the read that catches a
+  **legal** DBL→SGL / DBL→I32 coercion, which `Wire.Is Broken?` 6371004 does NOT: `Broken?` only catches a type-
+  INCOMPATIBLE connection, so a coerced wire leaves `ExecState` 1 and every object count correct while changing the
+  numbers — a rule-1a defect that no gate this fleet ran would have seen.
+  ✅ **VERIFIED ON THIS MACHINE 2026-09-21** (`tools/bench/diag_c66c_coercion.log:37,:45,:46`, cycle 66 material #4):
+  `build_property(<scratch>, "VI Server:Terminal", [("634A006", False)])` was ACCEPTED — LabVIEW created Property
+  node `#167` — and the node's one non-standard terminal reads **`Coerce Dot?`**. 🔴 **The peer's `Coerced?` is
+  WRONG by three characters**, which is exactly the class of error that cost this project a build run before
+  (`IsBroken` vs `Broken?`, line 375 above): use `Coerce Dot?`. ID source:
+  `archive/peer/2026-09-21-c66-m3-movelocals.md` (NI *Coercion Dot?* property page; NI *Coercion Dots*; NI Community
+  *Finding coercion dots?*) — the ID was right, the short name was not.
+- `Terminal.Data Type` **634A008** → short name **`Data Type`**, the terminal's data type as a Variant; read-only,
+  remote access allowed, does not load the diagram. Gate on `Coerced?` (a Boolean compares trivially over this COM
+  path), evidence with `Data Type`.
+  ✅ **VERIFIED ON THIS MACHINE 2026-09-21** (`tools/bench/diag_c66c_coercion.log:47,:55,:56`): the ID was ACCEPTED
+  — Property node `#170` — and its one non-standard terminal reads **`Data Type`**, exactly as reported.
+- `Terminal.Type Descriptor` 634A001 → `TypeDesc`, I16 array — **WRITE-ONLY and deprecated; NOT the read route.** Do
+  not reach for it. There is no wire-level type route at all: the type lives on the TERMINAL, never on the `Wire`.
+- 🔴 **THE VALUES ARE STILL UNREAD, AND THE REASON IS MECHANICAL, NOT A MISSING ID** (measured, cycle 66 material #4,
+  `tools/bench/diag_c66c_coercion.log:25-27`, verdict `VALUE READ NEEDS A NEW OP`). Creating the property node proves
+  the ID resolves; it does not read a value. Every terminal value this fleet reads comes back through
+  `OpNodeTerms_v0.vi`, whose property items are FIXED at build time — `tools/bench/opnodeterms_labels.json` holds
+  exactly 7 columns, `Name` · `IsSource` · `WireUID` + four error chains (`tools/gscript.py:870-922`), and none of
+  them carries a type or a coercion flag. Reading `Coerce Dot?` / `Data Type` for a real terminal therefore needs a
+  property node WIRED to a Terminal reference inside a SAVED op VI — **a new op**, which cycle 66's briefs forbid.
+  **So a coercion on the S3a/S3b divided focus path is UNMEASURED, which is NOT the same as absent.** The next cycle
+  can build the op; the ID risk and the short-name risk are both now retired.
+
+**CORRECTION, 2026-09-21 (cycle 66 material #4) — supersedes `tools/bench/diag_c66_s3b_m3.log:133` `TYPE READ
+UNREACHABLE`.** Cycle 66 dispatch #2 concluded the type read was unreachable after surveying **eight already-wrapped
+terminal-/wire-level properties** (`Terminal.Name` 634A004 · `Terminal.Is Source?` 634A003 · `Terminal.Connected Wire`
+634A000 · `Terminal.Diagram` 634A002 · `Tunnel.Outside Terminal` 6356001 · `Wire.Is Broken?` 6371004 · `Wire.Terms[]`
+6371003 · `GObject.UID` 632A813). That was **the wrong surface, not proof of absence**: it enumerated what this
+project had already wrapped, and absence from our own wrappers is not absence from LabVIEW's property surface (rule
+5, "absence in what you happen to be looking at is not evidence of absence"). The read route existed the whole time
+and is the two IDs above.
+
 ## One COM client at a time (2026-09-09)
 
 Two Python clients running OpFPLabels concurrently (one on NI Vision LLB VIs, one on the import-wizard library) crashed

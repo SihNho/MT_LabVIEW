@@ -1,0 +1,115 @@
+BGRUN START 2026-09-21 17:06:09 limit 16.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c66-m3-movelocals -TaskFile tools/bench/peer_c66_m3_movelocals_task.md -TimeoutSec 780
+OUTCOME: ANSWERED (628s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c66-m3-movelocals.md
+COST: $3.5921  in 16 / out 49041 / cache-create 178884 / cache-read 810467  (627s, 20 turn(s))
+--- ANSWER ---
+Write is disabled in this session (correctly — the brief says read-only), so the review is the output.
+
+---
+
+# Failed-prediction review — S3b-M3 move set, abort clause A2, and the type read
+
+**CLAIM 1 — REFUTED.** **CLAIM 2 — the mis-scoping half is correct; the evidence half is unsound and the replacement is weaker than what it replaces.** **FACTUAL QUESTION — the premise is false: the type read is reachable, and the identifier you need is `Terminal.Coercion Dot?` 634A006.**
+
+---
+
+## CLAIM 1 — the seven-object move set
+
+### 1. Strongest reason it is wrong
+
+The load-bearing sentence is *"a Local binds to its control by label, not by wire, so relocating one changes no data path."* Both halves are true; neither supports the conclusion. **A Local has no data path — that is the hazard.** A wired node's value is fixed by dataflow: the producer must finish before the consumer starts. A Local read returns whatever was last written *at the instant that node executes*, and its execution instant is decided by which diagram owns it. NI's own position is that locals break dataflow execution and the outcome then depends on the order in which events occur.
+
+So moving `#23499` and `#23523` from `Diagram #639` (body of `WhileLoop #637`) into `Diagram #23058` (body of a *different* `WhileLoop #23032`) changes at minimum:
+
+- **sampling rate** — once per `#637` iteration becomes once per `#23032` iteration;
+- **what they race against** — the reader now runs in a loop concurrent with the writer instead of sequenced in the same diagram, which is the restructure's entire purpose;
+- **the first-iteration value** — `#23032` can complete an iteration before the writer has ever written, so the first sample is the control's current contents, not this frame's value.
+
+None of that is visible to `ExecState`, a census, or `Wire.Is Broken?`. This is not "permitted by the behaviour-preserving-refactor rule"; it is the case CLAUDE.md §1a reserves: *"A change of decomposition can be a change of computation … Acceptance is numeric … When a step cannot be shown computation-preserving, stop and ask the user."*
+
+**Direct answer to "name any way a Local's diagram membership changes behaviour":** conditional execution (inside a Case / Event / Diagram-Disable / Conditional-Disable frame a Local executes only when that frame runs — an always-read becomes a sometimes-read); iteration count; race semantics and ordering; the start-up race. **Legality and binding are *not* affected** — within one VI a Local is legal on any diagram, binding follows the control reference, reentrancy gives each clone its own control instance regardless of diagram, and the compiler verdict is unchanged. I found no route by which `MoveObject`-style relocation silently rebinds, orphans or duplicates a Local. **That absence is not reassurance — it is the problem.** Every mechanism that could have made this visible is inert, which is exactly why structural-only acceptance cannot clear it.
+
+### 2. Alternative explanation of the same evidence
+
+**The set grew from five to seven to fit a verb's addressing limit, not because the design calls for it.** The claim says so itself — *"our `connect_nested_v1` verb addresses one nested diagram only."* Rows 1 and 2 are cross-diagram *by construction*: an indicator+Local pair exists precisely so a value can cross a loop boundary, so a Local on `#639` feeding a case structure in `#23058` is the pattern working as intended. The alternatives are to extend the verb, or to **drop a fresh Local inside `#23058` and delete the one on `#639`** — Locals are freely duplicable, so nothing forces a *move*. Under this reading "seven" is a tooling artefact; CLAUDE.md has the slug (`tool-not-built`).
+
+**Second alternative the run never excluded: `#10407` t0 or t2 may be the case SELECTOR.** Log:70 shows Local `#23499` ('Automatic Error Handling') feeding **t0**; log:71 shows `#23523` ('index') feeding **t2**. Log:78 gives t0's owner class as plain `Tunnel` #10429; log:76 gives t2's as **`SelectorTunnel`** #10978. LabVIEW's taxonomy ties `SelectorTunnel` to the selector — `ConditionalTunnel` carries a *Replace With Case Selector* method that "converts a tunnel on a Case structure to the case selector". If either row now feeds the selector through a Local, a stale sample changes **which case executes**, not a number. The run does not settle this and did not ask.
+
+### 3. What would falsify Claim 1
+
+Rule 1a's own criterion: identical inputs through the S3a path and the moved-Local path producing a different X/Y/Z sequence — or a different first-frame value. Structurally: any difference in `Terminal.Data Type` (634A008) or `Coercion Dot?` (634A006) at the same terminal between `D1_s3a_focus_ind.vi` and the bed falsifies it before any run.
+
+### 4. Cheapest discriminating test
+
+**Two property reads on a diagnostic that already holds both references.** `[P3]` already resolves `#10757` t1 and `#10407` t0/t2 on the bed (log:95-99) *and* on the untouched S3a artefact (log:114-128). Read `Coercion Dot?` **634A006** and `Data Type` **634A008** on those terminals in both files and compare — zero new references, one ID registration, and A1 stops being vacuous. Separately and just as cheaply: read `Terminal.Name` on `#10978` and `#10429` and find out which one LabVIEW calls the selector. One read decides whether Claim 1 is a scheduling change or a control-flow change.
+
+---
+
+## CLAIM 2 — the A2 re-scoping
+
+### Conceded first, because it is true
+
+**The clause as written is logically unsatisfiable for the rows it guards.** `diag_c66_s3b_m3.py:67` scopes A2 as "any tunnel terminal"; `:657`/`:670` implement it as *any* structure-node terminal plus a `"Tunnel" in owner_class` substring test. Rows 1 and 2 were built to terminate on `#10407`'s case tunnels. A gate that cannot pass when the work is correct is not a gate. Log:123 corroborates the row-2 target — on S3a, `#10407` t2 carried wire **10990**, the wire being replaced. That part stands.
+
+### 1. Strongest reason the rest is wrong
+
+**"Exactly one source and one sink" is not a sound branch test, and this run contains the proof.** `docs/NAMES.md:1020` defines the terminator: *"Walk `term index` 0,1,2… until error 1055 = past the end."* The script asks for twelve (`WIRE_TERMS(WORK, ww, n=12)`, `:663`) and gets three rows, the third being the terminator printed as a data row.
+
+**1055 is overloaded at least three ways inside this project:**
+
+1. past the end of `Terminals[]` (`NAMES.md:1020`);
+2. **a real terminal that is BARE** — `diag_c66_s3b_m3.py:348`: *"the one legitimate bare-terminal error pattern: wire 0 with conn_err/wire_err 1055 and name_err/src_err 0"*;
+3. a genuine invalid-reference failure on a real object — **this very run, log:88-90**, `owner_of(26117)` → `error 1055: Property Node in OpOwnerChain_v1.vi`.
+
+1055 is just "Object reference is invalid"; it carries no end-of-array meaning. And log:91 says outright that `owner_of` *"answered with the PREVIOUS query's object once, silently"* and these reads are *"evidence to read, not a verdict to act on."* **The run applies that caution to P2, then rests A2's exoneration on the same reader in P1c.**
+
+Worse: **the walker's branch detection has never been exercised.** `NAMES.md:1021-1022` records its only validation — *"wire 10850 → source `DigitalNumericConstant` 10739 / sink `Comparison` 10950"* — a two-endpoint wire. It has never been shown to report a third endpoint on a wire that has one.
+
+### 2. Alternative explanation of the same evidence
+
+**The re-scoping does not fix a mis-scope; it removes the check.** ">1 sink" is close to unfalsifiable right after a fresh single connect. The hazard A2 was written for — an accidental landing on an *existing* structure's tunnel — would in most realisations produce exactly **one** sink that is the wrong one, so the whole weight shifts to "a sink other than the terminal its row was built to feed". That anchor is a **terminal index**, and case-structure tunnel indices renumber when tunnels are added or deleted — which is what five-to-seven `move_in` calls are about to do. The anchor has already drifted once: log:123 names `#10407` t2 `'Index of closest\ncal image slice, bead 2'` on S3a; log:56 names the same index `'index'` on the bed.
+
+And it drops the **source** side entirely — at the stage that creates source-side branches. `NAMES.md:1031-1034`, measured here: *"Deleting a node leaves its wire behind as a loose stub … a later connection from that source then counts as a BRANCH, and a search for 'unwired sinks' will NOT find the orphaned consumer."*
+
+**Separately, already-ruled-out item 1 is not established.** Log:44-49 reports `Tunnel` 471, then 135 + 146 + 146 + 36 + 36 = **499**. Either those are a breakdown of 471 — in which case the classes **overlap by ≥ 28** and the `"Tunnel" in owner_class` substring test (`:668`) rests on a taxonomy that does not partition — or they are not a breakdown, in which case the tunnel population is ~970 and "that class is counted" is wrong the other way. The run does not say which, and A2's premise is "we can see tunnel attachments".
+
+### 3. What would falsify Claim 2
+
+Run `wire_source_owner` on a wire **known** to have one source and two sinks. Three resolved rows ⇒ the walker sees branches and the readings hold. Stops at the sentinel after two ⇒ every "no branch" conclusion this cycle is void, including the one being used to weaken A2.
+
+**On the empty owner class specifically:** `''` with `owner_uid: 0` and `recip: 0` is most plausibly an Index-Array-past-the-end default refnum, not a hidden endpoint — a live branch endpoint would have a valid reference and its reciprocal `Connected Wire` would echo the wire. I do **not** think a third endpoint is hiding there. But **the measurement does not distinguish "no third terminal" from "a third terminal whose reference failed to resolve"**, and P2 proves that failure mode is live on this path. Stop inferring array length from an error code.
+
+### 4. Cheapest discriminating test
+
+**A positive control on a scratch VI**: one wire, one source, two sinks, same `wire_source_owner(n=12)`, count resolved rows. One scratch VI, one op call, the bed never opened.
+
+Alongside it, the free independent detector the fleet has never used: **`Wire.Joints[]`**, which returns all joints of the wire "including intersections, bends, and end points". A branch **is** an intersection; a two-endpoint wire has only bends and end points. That is a branch test that does not depend on guessing an array's length from 1055.
+
+For the clause itself: replace it with an **expected-sinks whitelist written before the run** — per watched wire, the `{node uid, terminal NAME, owner class}` it may land on, failing on anything else, source side included. Strictly stronger than both the original and the proposal, costs nothing, and would have passed this run. CLAUDE.md already requires it: *"Recipes must state their prediction contracts … before execution so 'failed prediction' is machine-checkable."* Deciding the contract from the evidence that fired the alarm, in the session that wants to proceed, is the wrong order even when the conclusion is right.
+
+---
+
+## FACTUAL QUESTION — the type read is reachable
+
+**`TYPE READ UNREACHABLE` (log:132-133) is a conclusion about eight wrappers promoted to a conclusion about LabVIEW's property surface.** The `Terminal` class carries at least eleven properties; the eight tried are not the relevant ones.
+
+| identifier | ID (hex) | short name | returns |
+|---|---|---|---|
+| **`Terminal.Coercion Dot?`** | **634A006** | **`Coerced?`** | Boolean — True if a coercion dot is present on the terminal |
+| **`Terminal.Data Type`** | **634A008** | `Data Type` | the terminal's data type as a Variant; read-only, remote access allowed, does not load the diagram |
+| `Terminal.Type Descriptor` | 634A001 | `TypeDesc` | I16 array — **write-only and deprecated; not the read route** |
+| `Terminal.Create Constant` (method) | — | — | creates a constant of the terminal's type — the classic indirection, now unnecessary |
+
+**`Coercion Dot?` 634A006 is the exact answer to your stated need.** `Is Broken?` catches a type-*incompatible* connection but not a legal coercion; a coercion dot is the marker LabVIEW itself draws for precisely that event — NI: "LabVIEW converted the value passed into the node to a different representation … places a coercion dot on the border of the terminal where the conversion takes place." NI's own answer to "Finding coercion dots?" is the recipe, using machinery you already have: **Traverse for GObjects with class name `Terminal`, then read `Coercion Dot?`**.
+
+`Data Type` 634A008 is the ground truth for identity; `Coerced?` is the better *gate* — a Boolean is trivially comparable where two Variants carrying types are awkward over this COM path. Gate on `Coerced?`, evidence with `Data Type`.
+
+**Wire-level: there is genuinely no route.** The `Wire` class has `Terminals[]`, `Is Broken?`, `Joints[]`, `Wire Width`, `Value`, `Get Error List` — and no data-type or type-descriptor property. That matches NI's own "Scripting: Find wire class type" thread, whose accepted answer reaches the type **through the terminal**, not the wire. Terminal-level yes, wire-level no — read the type at the wire's source and sink terminals.
+
+**One caveat, because this project has been bitten by it.** `VI.Get Errors` (452) is absent from the exported `VirtualInstrument` ActiveX interface, so "the VI Server property exists" does not prove "reachable over our path". The one-call test: build a `VI Server:Terminal` property node with 634A006 and read the carrier's short name — `NAMES.md:369` shows that pattern already working for `Is Source?` 634A003 → `IsSource` and `Connected Wire` 634A000 → `Wire`. These are **cited IDs, not guesses**, so `toolkit-capabilities.md:256-260`'s objection does not apply.
+
+### Why this matters more than either claim
+
+A1 fires on *a MEASURED type MISMATCH*, and `TYPE READ UNREACHABLE` is explicitly declared "NOT a mismatch" (`diag_c66_s3b_m3.py:66`). So **A1 passed (log:134) because the measurement was declared impossible** — the run's only rule-1a safeguard was vacuous, and rows 1 and 2 were built and saved with nothing checking that a DBL did not become an I32. That is the most expensive thing in this log, and as of these two property IDs it costs one registration to fix.
+
+**Sources:** [NI — Coercion Dot? property](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/terminal/coerciondot.html) · [NI — Coercion Dots](https://www.ni.com/docs/en-US/bundle/labview/page/coercion-dots.html) · [NI Community — Finding coercion dots?](https://forums.ni.com/t5/LabVIEW/Finding-coercion-dots/td-p/3734995) · [NI Community — Scripting: Find wire class type](https://forums.ni.com/t5/LabVIEW/Scripting-Find-wire-class-type/td-p/3796825) · [NI — Error 1055](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019L75SAE) · [NI — Local/Global Variables Can Cause Race Conditions](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000P83YSAS) · [NI — Wire Joints property](https://zone.ni.com/reference/en-XX/help/371361R-01/lvscript/wire_joints091093) · [LabVIEW Wiki — Terminal class](https://labviewwiki.org/wiki/Terminal_class), [Data Type](https://labviewwiki.org/wiki/Terminal_class/Data_Type_property), [Coercion Dot?](https://labviewwiki.org/wiki/Terminal_class/Coercion_Dot%3F_property), [Type Descriptor](https://labviewwiki.org/wiki/Terminal_class/Type_Descriptor_property) · [LabVIEW Wiki — Wire class](https://labviewwiki.org/wiki/Wire_class), [Race condition](https://labviewwiki.org/wiki/Race_condition), [ConditionalTunnel/Replace With Case Selector](https://labviewwiki.org/wiki/ConditionalTunnel_class/Replace_With_Case_Selector_method)
+BGRUN END rc=0 after 628s

@@ -1,0 +1,62 @@
+BGRUN START 2026-09-21 17:33:51 limit 16.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Kind review -Slug c66-m3-execstate0 -TaskFile 'tools/bench/peer_c66_m3_execstate0_task.md' -TimeoutSec 780
+OUTCOME: ANSWERED (537s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c66-m3-execstate0.md
+COST: $4.9969  in 30 / out 38694 / cache-create 268603 / cache-read 2105398  (536s, 26 turn(s))
+--- ANSWER ---
+The claim is **not established by its own evidence, and its central fact is wrong on the run's own numbers**: the moves cut **12 wires and destroyed none of them**, so the VI is carrying loose-ended wire debris as well as missing rows — and the "four rows never attempted" inventory is an undercount.
+
+---
+
+## 1. The single strongest reason the claim is wrong
+
+**`Wire` did not move across the seven moves.** The bed reads `Wire 1907` cold (`tools/bench/diag_c66b_s3b_m3.log:30`); after all seven `move_in` calls it reads `Wire 1907` again (`:284`); only the seven rows take it to 1914 (`:441`).
+
+The pre-move terminal tables in the same log say what was cut: #3529/#3560/#3447 one wired terminal each (`:107,132,157`), **#48 seven terminals, 7 WIRED** (`:182`), **#10407 seven terminals, 7 WIRED** (`:207`, full table `:53-59`), both Locals one each (`:232,257`) — **19 wired endpoints across 12 distinct wires** (7 internal to the move set, 5 crossing to Diagram #639). Twelve wires were severed and **zero wire objects disappeared.**
+
+Those twelve objects are still on the diagram with at least one end attached to nothing. That is LabVIEW's *"Wire has loose ends"* condition, a wiring error in its own right ([NI error list](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-has-loose-ends.html) — page title only; the body did not render for me), and NI ships two separate methods to clear it: [`VI.Block Diagram:Remove Bad Wires`](https://www.ni.com/docs/en-US/bundle/labview/page/lvscript/vi_block_diagram058remove_bad_wires.html) and [`AbstractDiagram.Remove Wire Loose Ends` (6375409)](https://labviewwiki.org/wiki/AbstractDiagram_class/Remove_Wire_Loose_Ends_method), which "traverses the referenced diagram and removes all wire ends that are not connected to anything."
+
+So `ExecState` 0 has **at least two sufficient causes present simultaneously**, and the claim names only one. This project has already measured the same signature and read it the other way: `tools/recipes/build_d1_routeb_v0.py:64-66` — *"five structures moved with no intervening Remove Bad Wires left `Wire 1902 -> 1902` … so nothing died."* Nothing died is true; nothing was **cleaned up** is the other half, and it was never tested.
+
+**Second, the inventory is wrong.** #10407 t6 `'position [internal units]'`, `is_source=True`, wire 9113 (`log:59`) was wired before the move and is re-wired by nothing: it is not in `INTERNAL_JOBS` (`diag_c66b_s3b_m3.py:200-210`) and **not in `NOT_ATTEMPTED`** (`:213-223`, log `:434-437`). Five endpoints on the moved objects are un-re-wired (#48 t3, #48 t4, #10407 t1, #10407 t4, **#10407 t6**); the run names four. A claim whose form is "what is missing is exactly *these*" is falsified by one unlisted item.
+
+## 2. Alternative explanation of the same evidence
+
+**H2-debris:** the VI is broken because `move_in` leaves 12 loose-ended wires on Diagram #639 and 5 orphaned partner terminals there, *and* (possibly) because one of the seven new wires is itself bad. The unattempted rows would also break it — but they are not needed to explain the observation, so they explain nothing about it.
+
+The sub-case matters, because **every M2 gate is satisfied by a wrong wire.** This project measured that directly: `tools/bench/bool_wire_probe.py:4-6` — *"the wire is created, then Remove Bad Wires deletes it as a type mismatch, leaving a required argument unwired."* A type-mismatched scripted wire produces `wire_delta 1`, one shared uid, and WIRED counts rising at both ends — the run's entire M2 evidence, reproduced exactly by the failure mode it is supposed to exclude.
+
+And the one gate that could have caught it is **vacuous, by this project's own documentation**. `build_opconnectnested_v1.py:444-445`: *"the op's own readouts on the SINK terminal's wire; REPORTED, never gated — their dataflow order relative to the Connect Wire invoke is not fixed … so they may pre-date the wire."* In this run they demonstrably did: every one of the seven readbacks carries **`'UID 2': 0`** (`log:288,309,330,351,372,393,414`) — the wire uid read was zero, so `Is Broken?: False` is the broken-state of a terminal with no wire on it. The sibling op carries the identical warning (`build_opconnectfromwire_v0.py:51-55`).
+
+## 3. On the seams you named
+
+1. **Is the inference valid?** No — and this is the part you most need in writing: **`ExecState` saturated at the first move.** It reads 0 at step 02, after `move_in #3529` and before any row existed (`log:130`), and 0 at all fourteen subsequent reads through step 16 (`:440`). A one-bit signal already pinned cannot distinguish one fault from twenty. **No measurement in this run would have read differently if three of the seven rows were wrong.** Counts cannot separate "unfinished" from "wrong": a branch onto an existing net, a wire landing on a legal-but-wrong terminal, and a coerced connection all move the same counts by the same amounts.
+2. **Do the "passed" gates constrain anything?** A2 is a *pre-flight* check on three wires read **before** the first move (`log:84-100`) — it constrains nothing about the post-edit state, and the run says so itself (`:101`): `wire_source_owner`'s branch detection "has never been exercised on a wire known to have two sinks", and its terminator error 1055 cannot separate "no third endpoint" from "an endpoint that failed to resolve". So the pre-flight is weak *and* it is aimed at the wrong point in time.
+3. **`move_in` on a CaseStructure.** The measured prior (`build_d1_routeb_v0.py:47-52`, `diag_moved_structure_terminals.log`) says after a `GObject.Move` **every** terminal of a moved structure reads `is_source` FALSE, output tunnels included. This run contradicts it: #10407 is addressed post-move as "5 sink terminals / 2 source terminals" (`log:350,371`). One of those two measurements does not generalise, and neither was re-checked. That is unresolved, not settled.
+4. **Would `ExecState` 0 be what LabVIEW reports for the missing rows?** Yes — and equally for loose ends and for a type conflict. `ExecState` is one bit; the *reasons* live in the Error List, reachable only via `VI.Get Errors` (452), which your own record puts outside the exported ActiveX interface. There is no "specific error code" available to you on this path today. That is precisely why this question cannot be settled with the verbs used.
+5. **Ordering.** There is no ordering that rescues this stage: **no subset of the seven is wire-closed** (every candidate subset has at least one wire crossing to #639), so no boundary inside this stage can read `ExecState` 1. That is why `unit_boundary()` (`diag_c66b_s3b_m3.py:559-572`) never fired and the run left **no file at all** (`log:459-460, 480`) — the save condition is unreachable by construction, which collides head-on with the 2026-09-19 "every step leaves a file" rule. Ordering buys only *localisation*: moving one object and immediately writing every row whose both ends are now present lets a per-step wire-set diff name the culprit. Note `move_in` is not reversible — `build_d1_routeb_v0.py:39-40`: *"a move CUTS the wire and moving back does not restore it"* — so a `move_out` round-trip is **not** a usable control.
+
+## 4. What would falsify the claim
+
+Run `Remove Bad Wires` on the 14-edit state and find that it deletes **any** of the seven wires the rows created (23804, 23811, 23820, 23829, 23838, 23847, 23856). That row's wire was bad, every M2 gate passed it, and "the 14 edits are all correct" is dead. Equally falsifying: the set of wires destroyed by the seven moves turns out to be empty (debris confirmed) — which the aggregate count already implies and no one has checked by uid.
+
+## 5. THE CHEAPEST DISCRIMINATING TEST
+
+You own `remove_bad_wires_scripted` — `tools/gscript.py:2521`, VI method `Block Diagram:Remove Bad Wires` (410). **It is missing from your verb list and this run explicitly did not call it.** And `uids(vi, cls)` returns a *set* in one op run (`gscript.py:1017-1021`) — the run measured `count` (a scalar) where it owned the set.
+
+**T1 — the discriminator (~8–10 min, one bgrun, no new verb, no new op).** Fresh stamped copy of the bed:
+
+| step | call | what it decides |
+|---|---|---|
+| 1 | `exec_state` (expect 1); `W0 = uids(vi,'Wire')` | baseline, by uid |
+| 2 | the 7 `move_in` calls; `W1 = uids(vi,'Wire')` | **`W0 \ W1`** = wires LabVIEW actually destroyed. Empty ⇒ 12 loose-ended wires survive ⇒ "merely unfinished" is false |
+| 3 | the 7 rows; `W2 = uids(vi,'Wire')` | `W2 \ W1` must be exactly 7; **`W1 \ W2` must be empty** — a wire vanishing while rows were written means a row destroyed something |
+| 4 | `remove_bad_wires_scripted(vi)`; `W3 = uids(vi,'Wire')` | **THE SEPARATOR: is any of the seven new uids in `W2 \ W3`?** No ⇒ all seven rows are wires LabVIEW considers sound, the residue is absence, **H1 survives**. Yes ⇒ **H1 refuted and the culprit is named.** `\|W2 \ W3\|` also *counts* the debris the claim never measured |
+| 5 | `exec_state` | reported, never gated — under both hypotheses it is probably still 0, which is the whole point |
+
+**T2 — weaker, ~3 min, if wall-clock is short.** Steps 1–2 with **one** `move_in` (#3529: one terminal, one wire, partner #48 stays put). `W0 \ W1` empty settles the debris question on the simplest possible move. Says nothing about the rows.
+
+**The ONE verb worth adding** (not needed for T1, but it retires this whole class of question): **`wire_broken(vi, wire_uid)` — `Wire.Is Broken?` [6371004](https://labviewwiki.org/wiki/Wire_class/Is_Broken%3F_property), addressed BY WIRE UID.** `OpWireSource_v5` already obtains a Wire reference by uid to walk `Wire.Terms[]` 6371003 (`build_opconnectfromwire_v0.py:1-2`); this is one extra property read on a reference the fleet already holds — an added output, not a new op. It would read all 19 wires (12 severed + 7 new) with **no edit at all**, and it kills the pre-dating readback that makes the current `Is Broken?` vacuous. `AbstractDiagram.Remove Wire Loose Ends` (6375409) is the per-diagram surgical variant if whole-VI RBW is too blunt, but that is a second verb and T1 does not need it.
+
+**One thing I cannot settle for you:** whether #10407 t0 or t2 is the case selector. P1c reports t2's sink owner as `SelectorTunnel #10978` and t0's as plain `Tunnel #10429` (`log:79-82`), which *suggests* t2 — but I could not confirm from NI's or the wiki's published hierarchy that `SelectorTunnel` is the selector rather than "a tunnel on a selector structure" ([ConditionalTunnel.Replace With Case Selector](https://labviewwiki.org/wiki/ConditionalTunnel_class/Replace_With_Case_Selector_method) implies the selector is reached by *converting* a tunnel, i.e. a distinct thing). Against that, both connections existed in a bed that reads `ExecState` 1 cold (`log:28-29`), so re-creating them is the least suspicious part of this run. It is an open API fact, and the asymmetry it implies is one your A2 whitelist treated as interchangeable.
+
+**Sources:** [Block Diagram:Remove Bad Wires](https://www.ni.com/docs/en-US/bundle/labview/page/lvscript/vi_block_diagram058remove_bad_wires.html) · [AbstractDiagram.Remove Wire Loose Ends](https://labviewwiki.org/wiki/AbstractDiagram_class/Remove_Wire_Loose_Ends_method) · [Wire.Is Broken? property](https://labviewwiki.org/wiki/Wire_class/Is_Broken%3F_property) · [Wire has loose ends (error)](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-has-loose-ends.html) · [Wiring Errors](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wiring-errors.html) · [ConditionalTunnel.Replace With Case Selector](https://labviewwiki.org/wiki/ConditionalTunnel_class/Replace_With_Case_Selector_method) · [Node.Connect Wires](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/node/connectwires.html)
+BGRUN END rc=0 after 538s

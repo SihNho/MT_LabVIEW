@@ -1,0 +1,51 @@
+BGRUN START 2026-09-21 16:35:37 limit 20.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c66-row2c-a5b -TaskFile tools/bench/peer_c66_row2c_a5_task.md -TimeoutSec 1020
+OUTCOME: ANSWERED (280s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c66-row2c-a5b.md
+COST: $1.9846  in 8 / out 22053 / cache-create 128800 / cache-read 242420  (279s, 7 turn(s))
+--- ANSWER ---
+## 1. The strongest reason the claim is WRONG
+
+**The reverse census has a blind class, and it is exactly the class this net is most likely to have hit.**
+
+The census enumerated two things: `Diagram[639].Nodes[n].Terminals[t]` over 75 nodes, and the 116 panel rows. **A tunnel is neither a Node nor a panel row.** This project's own measured class table says every structure tunnel is class `Tunnel` or a subclass — `Tunnel` (`docs/NAMES.md:589`), `LoopTunnel` (`:68`), case data tunnel = `ConditionalTunnel` (`:891`), case selector = `Tunnel` (`:479`), `LeftShiftRegister`/`RightShiftRegister` derive from `Tunnel` (`:263`). And this project has **already recorded a real wire whose SINK is a `SelectorTunnel`** (`docs/NAMES.md:1049`) — so it is not hypothetical here.
+
+Concrete failure mode, object and property named: wire **#23556** is minted from `#10757:element` to the indicator's terminal **and also branches onto the existing outside terminal (`Tunnel.Outside Terminal`, property 6356001, `docs/NAMES.md:964`) of a structure already sitting on #639.** Why each listed gate is blind:
+
+- `Wire` 1907 = 1906+1 ✓ — a branch is the *same net*; no second Wire object.
+- uid diff `minted [23556]` ✓ — same reason.
+- `Node` 632 ✓ — tunnels are not Nodes.
+- `LoopTunnel` 135 ✓ — wiring into an **existing** tunnel mints nothing. Worse: `LoopTunnel` is one of ≥5 tunnel subclasses and the **parent class `Tunnel` was never counted at all** (`NAMES.md:589` puts it at 468 in a comparable census, against 135 LoopTunnels).
+- `ControlTerminal` 116, `Local` 10, position (59,48) ✓ — wrong classes entirely.
+- `ExecState` 1 ✓ — a type-compatible branch is legal LabVIEW.
+- the reverse census ✓ — it never addressed a tunnel.
+
+A wire that is present, counted, uid-unique, single-source — and wrong. This is the worst defect for **M3 specifically**, whose whole job is moving nodes across the boundary of `Diagram #23058`.
+
+## 2. An alternative explanation consistent with a BAD artefact
+
+`docs/NAMES.md:899-901` records, measured 2026-09-15 and cross-checked against `panel_wiring`: *"a control terminal's `Owner` is the diagram, not the control."* So A5's uid 34982 with `owner_of` = `('Diagram', 26117)` is **precisely what a genuine front-panel control terminal looks like.** The only thing separating it from "a real terminal of this VI" is the 23xxx band heuristic — which the claim's own uids refute (#639, #637, #10757 all sit outside it).
+
+Alternative: **26117 is this VI's root block diagram and #639 is a sub-diagram.** Control terminals live on the top-level diagram ([NI: dynamic FP terminals cannot be inside structures](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/dynamic-terminal-not-at-top-level.html); [a connector-pane terminal not on the top-level BD is inside a Case Structure](https://forums.ni.com/t5/LabVIEW/Control-terminals-on-connector-pane-not-on-top-level-block/td-p/3050747)). The claim's own arithmetic fits: **75 of 632 nodes = 12 %** — the size of one sub-diagram, not of a 632-node VI's root. On this reading "one sink = panel control 23525" is a cross-diagram assertion no single wire can satisfy, and the census covered 12 % of the VI.
+
+Second branch, equally bad: 34982 belongs to **another VI in memory**, i.e. `report_all` is not VI-scoped — then 1907 / 632 / 116 / 10 / 135 are counts over an unknown population and none of them are evidence of anything.
+
+## 3. What would falsify my alternative
+
+All four together: (a) `owner_of(639)` returns the VI's block diagram, not a structure node; (b) `owner_of(23556)` = `('Diagram', 639)`; (c) `owner_of(23525)` resolves inside this VI; (d) no tunnel-family object carries wire 23556.
+
+## 4. Cheapest discriminating test, in existing verbs
+
+1. **Four `owner_of` calls** — `owner_of(639)`, `owner_of(23556)`, `owner_of(23525)`, `owner_of(26117)`. Settles root-vs-subdiagram and VI-scope. Per `NAMES.md:899`, if `owner_of(23525)` returns `('Diagram', 639)` then 23525 *is* the diagram terminal — closing "already ruled out" item 2 for free.
+2. **`report_all('Tunnel')` uid-diff, bed → row 2** — same shape as the Wire diff already trusted. Proves no tunnel was *created*; it does not yet prove no branch.
+3. **`node_terms(uid)` on every structure node among the 75 on #639** — any terminal carrying wire 23556 is the defect. If `node_terms` on a structure returns no tunnel terminals, **that is itself the finding**: the census has a blind class.
+
+If 3 comes back blind, the smallest verb to build is `obj_wire(uid)` = `Tunnel.Outside Terminal` (6356001) → `Connected Wire` (634A000 → `UID`, `NAMES.md:1019`) — reuse of an already-measured chain, not new capability. Rank second: a **data-type reader**. Nothing in the gate set reads a type, so a legal coerced wire (DBL→SGL/I32) passes every gate listed and silently changes the numbers — a rule-1a defect, not a cosmetic one.
+
+## 5. What in "already ruled out" is itself wrong
+
+- **Item 1 is not a refutation.** The band argument is dead, and `NAMES.md:899-901` says owner-is-a-Diagram is the *signature* of a control terminal. A5's failure is undiagnosed — and it is **not independent of the artefact**: the panel census and the reverse census run on the same enumeration A5 just showed is not addressing what was assumed. "Nothing in the artefact depended on it" is the claim's weakest sentence.
+- **Item 3 overstates "unreachable."** Your own verb list gives `wire_err` per panel row and an error code per terminal in `node_terms`. Sink-side brokenness is readable from row 23525's `wire_err`; source-side from `node_terms(10757)` terminal 1. Ordered `Broken?` was never the only route — if those two fields were read and clean, say so; if they were not read, that is an omission, not an unreachability.
+
+**What survives:** single-source is near self-enforcing (two sources = broken = ExecState 0), and `ExecState` 1 does rule out a *type-broken* wire on an enabled diagram. **What remains unmeasured:** the owner of everything (wire, diagram, sink), every tunnel-family attachment, and every data type.
+
+Sources: [NI — dynamic terminal not at top level](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/dynamic-terminal-not-at-top-level.html) · [NI Community — control terminals not on top-level block diagram](https://forums.ni.com/t5/LabVIEW/Control-terminals-on-connector-pane-not-on-top-level-block/td-p/3050747) · [LabVIEW Wiki — Block Diagram](https://labviewwiki.org/wiki/Block_Diagram)
+BGRUN END rc=0 after 281s
