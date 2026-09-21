@@ -2667,3 +2667,14 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
       escalation was silently DROPPED from `## NEXT` in the 14:5x rewrite; it is restored as NEXT's first line and
       must not be dropped again while it is unanswered.** 🔴 **A THIRD independent raising, or the start of any
       stage that adds further source→indicator→Local substitutions, writes `STOP` and hands it to the user.**
+
+57. **THE 56(j) RULE-1a QUESTION — INTERACTIVE CHAT'S ASSESSMENT, 2026-09-21 16:2x, put to the user and NOT a blocker for M3.**
+    The two-piece transport (node → indicator, Local → Case) has no dataflow ordering, so the Case may read the
+    previous iteration's value or the control's default. That is the property the user accepted when choosing
+    Local variables (Pre-decided 45: focus never enters the saved data), and 45(d) already answers it for the
+    DELIVERABLE: once 1.5 is its own loop (M3) it reads the frame-counter Local too and acts only when
+    `schedule == TRUE AND counter != last-handled` (M4's edge shift register), so a default (counter 0, schedule
+    FALSE) does nothing and a stale value is never re-acted on. The exposure is real only in the INTERMEDIATE files
+    (rows 1–2, still same-loop, no edge), which are never run by rule (34(f)). Residual: the payload can reach the
+    ASI command one frame late — inherent to latest-value transport; at a 25-frame focus cadence judged
+    immaterial. **The user is asked to confirm that one point; M3/M4 proceed meanwhile.**
