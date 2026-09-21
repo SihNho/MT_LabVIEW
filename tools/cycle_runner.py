@@ -426,6 +426,15 @@ def main():
                                  "two previous cycles" % (time.strftime("%Y-%m-%d %H:%M:%S"), n, model, effort,
                                                           ff_rung + 1, len(FF_LADDER), ff_recipe))
         ff_active = bool(ff_recipe)
+        # NEXT snapshot for guard_bash.next_gate (user, 2026-09-21): the session may not launch its retrospective
+        # until `## NEXT` differs from this. Written right before the spawn, from the same status_text the
+        # session will read.
+        try:
+            import hashlib
+            with open(os.path.join(bench, "next_snapshot.md5"), "w", encoding="utf-8") as f:
+                f.write(hashlib.md5(next_section(status_text).encode("utf-8")).hexdigest())
+        except OSError:
+            pass
         cmd = ([sys.executable, BGRUN, "--max-min", str(a.max_min), "--log", cyc_log, "--"]
                + session_cmd(a, this_prompt, model, effort))
         for attempt in range(1, LIMIT_RETRIES + 1):

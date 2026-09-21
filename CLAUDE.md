@@ -275,6 +275,7 @@ background notification is a full turn over the whole conversation. Standing rul
    firefighter cycle. The user may also order one directly (`--firefighter <recipe>`, first cycle only, as on
    2026-09-18 12:59). Self-test: `tools/bench/selftest_cycle_runner_ff.py` (2/2).
    **A DEADLINE ENDS THE RUNNER BETWEEN CYCLES, NEVER MID-CYCLE (user, 2026-09-21: "그냥 셧다운 하지 말고 진행 작업들 마무리하고 종료하는 방향으로. 그래야 다음 싸이클에 정상적으로 작동하지").** `cycle_runner.py --budget-min` (default 480) is checked only between cycles; the cycle in progress always finishes (retrospective landed, NEXT written, git committed). The `bgrun --max-min` around the runner is the LAST RESORT and is set well above budget + the longest cycle (≈3 h), e.g. `--max-min 720`. A hard kill mid-cycle left a failing log with no review and deadlocked the next launch on 2026-09-21.
+   **`## NEXT` IS WRITTEN BEFORE THE RETROSPECTIVE IS LAUNCHED — MECHANICAL (user, 2026-09-21: "NEXT 작성하도록 훅에 강제할 필요성 있을듯").** The runner snapshots the NEXT section's md5 before spawning a session (`tools/bench/next_snapshot.md5`); `guard_bash.py next_gate()` refuses `retrospective.py` while NEXT still hashes the same. Sessions 58/64/65/66 exited waiting on their retrospective with NEXT unwritten, and the chat rewrote it four times.
 3. **Split sessions by JUDGEMENT vs MATERIAL — ADOPTED 2026-09-15** (user, after comparing token costs directly:
    *"정말 필수적으로 고차원적인 판단이 필요한 경우에만 Fable 사용하고 Fable이 판단할 재료들은 opus 혹은 하위 모델로
    세션을 잡는게 거의 필수처럼 보이는데?"* — Opus at high effort is far cheaper than Fable at low). Note this INVERTS

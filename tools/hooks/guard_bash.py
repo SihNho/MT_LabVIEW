@@ -200,6 +200,40 @@ LABVIEW_RE = re.compile(r"lv_gui\.ps1\s+-Action|py[\w.]*\s+(?:-u\s+)?[^\s|;&]*to
                         r"peer\.ps1\s+-Agent|import gscript", re.I | re.S)
 
 
+NEXT_SECTION_RE = re.compile(r"^##\s+NEXT\s*$(.*?)(?=^##\s|\Z)", re.M | re.S)
+
+
+def next_md5(status_path):
+    """md5 of STATUS.md's `## NEXT` section (stripped), or '' when the file/section is missing."""
+    import hashlib
+    try:
+        with open(status_path, encoding="utf-8", errors="replace") as f:
+            m = NEXT_SECTION_RE.search(f.read())
+    except OSError:
+        return ""
+    return hashlib.md5((m.group(1).strip() if m else "").encode("utf-8")).hexdigest()
+
+
+def next_gate():
+    """Refuse a retrospective launch while STATUS's `## NEXT` still hashes as it did when the cycle started."""
+    root = os.path.dirname(os.path.dirname(HERE))
+    snap_path = os.path.join(root, "tools", "bench", "next_snapshot.md5")
+    try:
+        with open(snap_path, encoding="utf-8") as f:
+            snap = f.read().strip()
+    except OSError:
+        return 0          # no runner snapshot (interactive chat, self-tests): nothing to compare against
+    if not snap or next_md5(os.path.join(root, "STATUS.md")) != snap:
+        return 0
+    sys.stderr.write(
+        "BLOCKED by tools/hooks/guard_bash.py (NEXT before the retrospective; user 2026-09-21): STATUS.md's `## NEXT`\n"
+        "is byte-identical to what this cycle started with. Write the hand-off FIRST - what the next session does\n"
+        "first, with the file and plan section to start from, and every saved artefact's md5 - then launch the\n"
+        "retrospective. Sessions 58/64/65/66 exited waiting on their retrospective with NEXT never written; the\n"
+        "chat rewrote it four times. Reading, diagnostics and every other command are not affected.\n")
+    return 2
+
+
 def main():
     try:
         data = json.load(sys.stdin)
@@ -222,6 +256,16 @@ def main():
     # LV_GUARD_OFF=1 in their environment. The main session never has it set.
     if os.environ.get("LV_GUARD_OFF") == "1":
         return 0
+    # NEXT BEFORE THE RETROSPECTIVE (user, 2026-09-21: "NEXT 작성하도록 훅에 강제할 필요성 있을듯"): four sessions
+    # (58, 64, 65, 66) launched their retrospective, waited on it, and exited without ever rewriting STATUS's
+    # `## NEXT`, so the next cycle started from a stale hand-off every time. The runner snapshots the NEXT
+    # section's md5 right before it spawns the session (tools/bench/next_snapshot.md5); a retrospective launch
+    # while NEXT still hashes the same is refused - and refused BEFORE the retro-done mark below, so the
+    # session can still write NEXT and launch again.
+    if not os.environ.get("BENCH_CELL") and RETRO_RE.search(cmd):
+        rc = next_gate()
+        if rc:
+            return rc
     # Observe-only, never a refusal: mark this session's cycle as reviewed. See RETRO_RE above.
     if not os.environ.get("BENCH_CELL") and RETRO_RE.search(cmd):
         guard_session.mark_retro_done(guard_session.session_id(data))
