@@ -343,6 +343,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--max-min", type=float, default=180.0, help="wall-clock cap for ONE cycle's session")
     ap.add_argument("--cycles", type=int, default=0, help="0 = until a stop condition fires")
+    ap.add_argument("--budget-min", type=float, default=480.0,
+                    help="GRACEFUL wall-clock budget for the whole run: once exceeded, no NEW cycle is started; the "
+                         "cycle in progress always finishes (user, 2026-09-21: never cut a cycle mid-way). Pair it with "
+                         "a bgrun cap >= budget + the longest cycle, so bgrun's kill is only the last resort.")
     ap.add_argument("--model", default="opus")
     ap.add_argument("--effort", default="max")
     ap.add_argument("--permission-mode", default="acceptEdits")
@@ -369,6 +373,7 @@ def main():
         return 4
 
     n = last_cycle_number(runner_log)
+    run_t0 = time.time()
     done = 0
     bad_streak = 0
     unchanged_streak = 0
@@ -384,6 +389,16 @@ def main():
         if a.cycles and done >= a.cycles:
             log_line(runner_log, "RUNNER STOP | %s | --cycles %d exhausted"
                      % (time.strftime("%Y-%m-%d %H:%M:%S"), a.cycles))
+            return 0
+        # GRACEFUL BUDGET (user, 2026-09-21 "강제 종료에 대한 규칙은 바꿔야겠는데? 그냥 셧다운 하지 말고 진행 작업들
+        # 마무리하고 종료하는 방향으로"): checked ONLY between cycles, so a cycle that has started always runs to its
+        # own end (retrospective landed, NEXT written) before the runner exits. bgrun's hard cap stays as the last
+        # resort and must be set well above this budget.
+        elapsed_min = (time.time() - run_t0) / 60.0
+        if a.budget_min and elapsed_min >= a.budget_min:
+            log_line(runner_log, "RUNNER STOP | %s | graceful: --budget-min %.0f exceeded (%.0f min elapsed); the last "
+                                 "cycle finished normally, no new cycle started - relaunch to continue"
+                     % (time.strftime("%Y-%m-%d %H:%M:%S"), a.budget_min, elapsed_min))
             return 0
 
         n += 1
