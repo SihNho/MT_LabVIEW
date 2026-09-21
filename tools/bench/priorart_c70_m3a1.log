@@ -1,0 +1,84 @@
+BGRUN START 2026-09-21 22:10:47 limit 20.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role priorart -Kind fact -Model opus -Effort high -TimeoutSec 900 -Slug priorart-c70-m3a1 -TaskFile 'C:\Users\KimLab\AppData\Local\Temp\priorart_c70-m3a1.txt'
+OUTCOME: ANSWERED (359s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-21-priorart-c70-m3a1.md
+COST: $4.3929  in 44 / out 27343 / cache-create 204457 / cache-read 3329151  (356s, 30 turn(s))
+--- ANSWER ---
+I read the edited recipe, the c69 review that prescribed both edits, the run log they react to, the measured terminal censuses, and the earlier from‑wire build logs. **Not novel.** Four findings, three of which would waste the build.
+
+---
+
+# PRIOR‑ART REVIEW — the two edits to `tools/recipes/build_d1_m3a1.py`
+
+## PART A — THE DIRECTION
+
+### A1 — SETTLED ALREADY (answered; **no slug**)
+
+Both edits are the disposition of `archive/peer/2026-09-21-c69-border-wiredelta.md` (`:139-152`), taken this cycle into `docs/cycle27-plan.md` Pre‑decided 70/71/72. That is the governing decision, not competing prior art, and I do not slug it. What follows is what the corpus says *about* those two edits.
+
+Also confirmed rather than challenged, so you do not need to re‑check them:
+
+- `OpWireSource_v5` does return the three fields the gate keys on, for a `LoopTunnel` owner specifically, on this very bed: `tools/bench/build_d1_m3a1.log:468` — `{'i': 1, 'is_source': False, 'owner_class': 'LoopTunnel', 'owner_uid': 9641, 'recip': 9649}`. The op is UID‑addressed and the recipe reaches it through `wire_source_owner(target, wire_uid)` (`tools/recipes/build_opconnectfromwire_v0.py:423-435`), which sets `vi path` from the caller — so the recorded caller trap at `docs/toolkit-capabilities.md:60` ("`build_opwiresource_v5.read_terminal` hard‑codes the ORIGINAL") does **not** apply to this route.
+- **No prior art says a border write leaves no third terminal on the source wire.** The two recorded from‑wire writes walked only the *sink* wire afterwards (`tools/bench/build_opconnectfromwire_v0_run2.log:91` T1h, `:104` T2); the source wire w226 was walked at `:83`, before the write, never after. The expectation is unmeasured in both directions, which is exactly why c69 named it as the falsifier.
+
+### A2 — REFUTED ALREADY: nothing. (**no slug**)
+
+No archived review, retrospective or superseded plan section argues against object‑identity verification or against reaching a tunnel sink through its owning structure node's `Terminals[]`. The opposite: `tools/bench/diag_c66b_s3b_m3.log:90` already wired a source into `#10407` t2 whose sink terminal is owned by `SelectorTunnel #10978`, and recorded it as "the INTENDED wiring, not an abort". Pre‑decided 72's route is sound.
+
+### A3 — CONTRADICTED (i): **there is no terminal named `Q_focusback`. The sixth row fails at its by‑name lookup, by construction.**
+
+This is the finding that costs the whole run if it is not acted on.
+
+- **Side 1 — the plan and the recipe.** `docs/cycle27-plan.md:2869`: *"walk that node's `Terms[]` → take the entry named `Q_focusback` **by NAME, never a carried index**"*; implemented at `tools/recipes/build_d1_m3a1.py:213` `T6_SIXTH_SINK_NAME = "Q_focusback"`, matched literally at `:1413` (`t.get("name") == T6_SIXTH_SINK_NAME`), and on no match the row is abandoned and gate A5 fails (`:1428-1438`).
+- **Side 2 — the measured census of that exact node.** `tools/bench/main_vi_nodeterms.json:14287-14313`: node `uid 12589`, `terms[1]` = `{"name": "position [internal units]", "is_source": false, "wire": 9113}`. Its three terminals are named `""`, `"position [internal units]"`, `""`. **No terminal on that node carries the string `Q_focusback`.**
+- **Why the name is wrong:** `Q_focusback` is the name of a *future* 1‑element queue in the D1 target design, not an object on the bed — `docs/d1-build-plan.md:576` (*"`Q_focusback` — the reverse crossing | 1 DBL, `#10407` t6's value | … written by 1.5, polled by 1.1"*) and `docs/d1-build-plan.md:307` (*"the crossing **becomes** `Q_focusback`, a 1‑element queue"*). The bed's object is `#12589` t1 fed by w9113 — `docs/d1-route-b-plan.md:376`: *"It bares … `#12589` t1 (w9113)"*. c69 lifted the nickname out of `docs/d1-route-b-plan.md:271`'s prose arrow ("→ `Q_focusback`") and the recipe made it a string comparison.
+- The same census gives the sink's true name and its node: the by‑name entry is **`"position [internal units]"`, `is_source False`, on CaseStructure `#12589`** — which is also the name of the source terminal `#10407` t6 (`main_vi_nodeterms.json:12883-12886`), so the two ends of w9113 share a label.
+
+**To release this one** you must show `#12589`'s `Terms[]` carries a terminal literally named `Q_focusback` on the current bed — the census above says it does not.
+
+### A3 — CONTRADICTED (ii): **A4, the "deciding gate", cannot pass after a successful sixth row — the edited file contradicts the border doctrine it adopts 100 lines earlier.**
+
+- **Side 1 — the recipe's own border doctrine.** `tools/recipes/build_d1_m3a1.py:1326-1329` and `tools/bench/build_d1_m3a1.log:489`: *"LabVIEW auto‑tunnels `#23032`'s border … so a CORRECT border wire reads TWO different uids"*; `docs/toolkit-capabilities.md:68`: *"the sink and source wire uids **differ** — a cross‑boundary wire is several segments."* The whole identity gate exists because of this.
+- **Side 2 — A4 as coded.** `tools/recipes/build_d1_m3a1.py:1563-1596`: it reads the ONE wire `#10407` t6 carries, walks that single wire's `Terms[]`, and passes only if `12673 in owners`. And `:1532-1537` calls it *"THE DECIDING GATE … WHICH RE‑READS `#10407` t6's NET AND LOOKS FOR `#12673` ON IT."*
+- `#10407` moves into body `Diagram #23058` (`tools/bench/build_d1_m3a1.log:156`) while `#12589` **stays** on `Diagram #639` (`docs/d1-route-b-plan.md:207`, and it is absent from the seven‑object move set at `:53-204`). So the sixth row is an outward border crossing: `#12673`'s terminal will sit on the *outer* segment, a different wire uid from t6's inner net — and A4 will report `#12673` absent and FAIL, exactly as it did at `tools/bench/build_d1_m3a1.log:552` (`t6 wire 23963 ; net owner uids [2017, 23895]`), even on a perfect write.
+
+This is the same defect c69 found in A3 — a one‑sided read — reproduced in the gate that replaced it. **To release:** show that no tunnel is created for this crossing (then one net holds both ends), or re‑specify A4 as the identity test across the two segments.
+
+### A4 — UNREAD EVIDENCE: Pre‑decided 71's "a minted object bearing a live wire's uid" has happened before, twice, and is on file unexamined.
+
+`docs/cycle27-plan.md:2855-2864` / `archive/peer/2026-09-21-c69-border-wiredelta.md:81` treat the junk `Invoke` node carrying uid **9649** as unprecedented — *"either wire 9649 ceased to exist … or every uid‑keyed census in the D1 rewire is unsafe."* Two earlier runs already recorded the same shape:
+
+- `tools/bench/build_d1_routeb_v0.log:415` — 42 purged junk `Invoke` uids, nearly all in the ORIGINAL VI's low band, including **10850**; `tools/bench/main_vi_nodeterms.json:13199` records `10850` as a live **wire** uid in that VI.
+- `tools/bench/build_d1_routeb_v0_run2.log:425` — 50 purged junk `Invoke` uids including **5812**; `tools/bench/build_opconnectfromwire_v0_run2.log:98` records w**5812** as a live wire (source `FlatSequenceInnerTunnel #5818`).
+
+Read together these point at the benign branch — minted `Invoke` nodes draw uids that collide with existing wire uids — rather than at "wire 9649 was destroyed". That does not make the in‑run read wrong; keep it. It means the alarm ("every uid‑keyed census in D1 is unsafe") should not be carried forward as an open hazard without first disposing of these two logs. **To refute:** show that wires 10850 / 5812 did not exist in those targets at the moment of minting.
+
+## PART B — THE ARTEFACT
+
+### B4 — ALREADY MEASURED: the identity gate's source filter lets the measured T2c2 pathology through.
+
+- **The claim carried into Pre‑decided 70:** `archive/peer/2026-09-21-c69-border-wiredelta.md:100` — *"It also re‑tests the T2c2 two‑source pathology."*
+- **What T2c2 actually measured:** `tools/bench/build_opconnectfromwire_v0_run2.log:104` — the broken wire w1231 has **two** `is_source=True` terminals of **different classes**: `SelectorTunnel #5680` and `LoopTunnel #2497` (and `:103` `Is Broken? True`).
+- **The gate as coded:** `tools/recipes/build_d1_m3a1.py:746-750` filters the sink wire's sources to `owner_class == "LoopTunnel"` and requires `len(sink_src) == 1`. On w1231 that filter yields exactly one — so the gate would have **passed** the recorded broken wire. The pathology is re‑tested only if you count *all* `is_source=True` terminals on the sink wire, not only the LoopTunnel‑owned ones.
+
+Cheap fix inside the existing read: keep `T` matching as it is, and additionally gate on the sink wire having exactly one source terminal of any class.
+
+### B1 / B2 / B3 — nothing owed (**no slug**)
+
+- No op, recipe or helper already performs the two‑sided identity read; `wire_source_owner` + `owner_of` are the right existing calls and the recipe uses them rather than building anything (`tools/recipes/build_d1_m3a1.py:144-145`, `:143`).
+- The owner‑chain hop loop's one recorded hazard is handled as written: `owner_of` terminating silently is measured on this project's own VI — `tools/bench/diag_c62_s3b_rows_t3.log:19`, `owner_of(#686) -> ('FlatSequenceFrame', 0)` — and `:1389-1407` breaks and fails the row instead of improvising. `OpTunnelRead_v0` (`docs/toolkit-capabilities.md:72`, measured on SelectorTunnels `#6016`/`#5680` at `tools/bench/build_optunnelread_v0.log:126-132`) returns *inside* terminals only, so it is **not** a substitute for the outside sink — I am deliberately not slugging it.
+- The reverse crossing (sink OUTSIDE, source wire INSIDE a loop) has no recorded precedent — T1 went outer→inner. That is an unmeasured direction, not prior art, so it carries no slug.
+
+## Direct answers to the five questions
+
+1. **Yes, the fields exist and are measured for a `LoopTunnel` owner** (`build_d1_m3a1.log:468`); the caller trap does not apply. **No** prior art says a border write leaves no third terminal — nobody has re‑walked a source wire after such a write.
+2. **Partly, and unread** — see A4: two earlier junk‑purge lists hold minted `Invoke` uids that collide with live wire uids.
+3. **The route is right, the name is not** — see A3(i). `OpOwnerChain_v1` on a `SelectorTunnel` is unmeasured; its only recorded failure mode (`FlatSequenceFrame`, uid 0) is handled.
+4. **23963 is correctly treated as stale** (`:1352-1354`, `:1449-1461` re‑measure live) — it is a uid this build mints. But `#12673` will **not** be on t6's net after the write; see A3(ii).
+5. **No duplication of an existing op** — but A4 and the gate's source filter contradict measurements already on file.
+
+```
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-measured
+```
+BGRUN END rc=0 after 360s

@@ -429,3 +429,95 @@ OUTCOME-VIOLATION: ordering-stale
    peer.ps1 rc 0; archived as archive/peer/<date>-outcome-review-20260919.md
    Now annotate it: 'why asked' and 'verdict', and act on the OUTCOME-VIOLATION lines.
 BGRUN END rc=0 after 149s
+BGRUN START 2026-09-21 22:32:04 limit 15.0 min: py tools/outcome_review.py
+   cadence: 5 cycle retrospectives since 2026-09-20-outcome-review-20260920.md (every 5)
+   task written to C:\Users\KimLab\AppData\Local\Temp\outcome-review-20260921.txt (5814 chars)
+OUTCOME: ANSWERED (172s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-21-outcome-review-20260921.md
+COST: $2.2998  in 16 / out 12083 / cache-create 63169 / cache-read 432125  (170s, 13 turn(s))
+--- ANSWER ---
+I have the full picture: requirements, STATUS, the benchmark INDEX (rows end 2026-09-16), the sixth outcome review (2026-09-20) with its disposition and the user's CONTINUE, and the interval's cycle-plan entries (Pre-decided 44–73). Here is the seventh outcome review.
+
+---
+
+# OUTCOME REVIEW — 2026-09-21 (seventh in series, 1.1 days after the sixth)
+
+## 1. DELIVERABLE
+
+**The user can RUN nothing today that they could not at the last outcome review — the fourth consecutive review in which the deliverable line is unchanged** (`Track_v6_CPU_core_v0.vi`, `Track_v6_CPU_queue_v0.vi`, both from 2026-09-15, INDEX rows 40–41). What the interval saved:
+
+- `claudeDev\D1_s3a_focus_ind.vi` (S3a, both halves — `docs/cycle27-plan.md:1979`, "DELIVERED AS ONE FILE, AT THE STRUCTURAL LEVEL") and `claudeDev\D1_s3b_row2_20260921_160311.vi` (S3b rows 1–2, STATUS.md:9). The plan itself states the verification level: *"STRUCTURAL, never functional — no VI was run (34(f))"* (`docs/cycle27-plan.md:1929`). These are forbidden-to-run intermediates by the project's own rule, same class as last review's S1/S2.
+- Cycle 55's M3a-1 build **ran and left NO FILE**: 16 pass / 1 fail, `ExecState` 0 at the decision point, the save refused, bed byte-unchanged (STATUS.md:9, :26; `tools/bench/build_d1_m3a1.log`, `BGRUN END rc=1`).
+
+Real knowledge did land — the project's only NO-ROUTE wire row was written by `OpConnectFromWire_v0` (`tools/bench/build_d1_m3a1.log:473`, STATUS.md:51), retiring the "a source must be a node in `Nodes[]`" premise — but it is explicitly *"WRITTEN, NOT VERIFIED"* and the cycle's own acceptance test was refused by review (`archive/peer/2026-09-21-c69-border-wiredelta.md`). Diagnosis and scaffolding, not deliverable: the same closing sentence as reviews five and six.
+
+## 2. GOAL ALIGNMENT
+
+Against `project-requirements/parallelization-requirement.md`:
+
+- **Req 1 (parallelize the radial-profile/.cal stage after 'Done Picking Beads?'): NOT MOVED since 2026-08-24 — fifth consecutive review.** It is worse than parked: it no longer appears anywhere. A grep of `docs/cycle27-plan.md` for "Done Picking", "radial", ".cal" returns nothing, and STATUS.md's for-the-user section (STATUS.md:60–61) no longer carries it. It fell out of the books entirely.
+- **Req 2.1 (motor control): already parallel in the original** — nothing owed.
+- **Req 2.2 (motor reading, the user's named bottleneck): NOT MOVED** into anything runnable. The 2.56 ms round-trip case (INDEX row 19) is still un-embodied.
+- **Req 2.3 (camera acquisition): NOT MOVED.** No project VI acquires a live frame; the camera contract remains a Python tool (INDEX row 44, dated 09-16 — the INDEX has gained **zero rows in five days**).
+- **Req 2.4 (scheduler) and 2.5 (merge/save): NOT MOVED** beyond the row-41 replay sink.
+- **Req 3 (split the loop into parallel loops): advanced structurally, not in product.** S3a is closed, S3b rows 1–2 are on disk, and the transport machinery (locals, `OpCreateLocalRead_v0`, the NO-ROUTE wire) now exists. But even the stage target says of itself: *"the artefact stays NOT computation-equivalent (uninitialised registers)"* (STATUS.md:52) — after M3a-2 and M4 land, `D1_s3_loop15.vi` will still not be a runnable experiment VI.
+
+The uncomfortable list, fifth time: **requirements 1, 2.2, 2.3, 2.4, 2.5 have produced nothing the user can run since the project began.**
+
+## 3. COST vs PRODUCT
+
+Delta over 1.1 days: **+23 op VIs (205→228), +2 recipes, +51 peer exchanges (457→508), +5 retrospectives, +0 benchmark rows, +0 runnable deliverables.** Fifty-one peer exchanges — roughly one every 30 waking minutes — bought two structural intermediates and one failed build. Known cash in the interval includes a **$4 prior-art review destroyed by ending a turn** (the background child was killed; STATUS.md:54, commit `438b973`) and immediately re-bought (`archive/peer/2026-09-21-priorart-c68-m3a1.md` vs the lost c68 dispatch), on top of the standing fact that `audit_cycle` C4 *understates* spend (STATUS.md:44).
+
+**Not defensible.** What a competent engineer would have skipped, by name:
+
+- **The lock-note relocation ritual, which survived `git init`.** The sixth review's item 5 was "git init and retire the relocation/sha256 ritual the same day"; the user ran git init — and cycle 67 then relocated **50 historical lock-block entries "VERBATIM (rule 4)"** into `archive/2026-09-21-status-cycle67-locknotes.md` §1 anyway (STATUS.md:28). Every one of those bytes is already in git history for free. The ritual's justification died on 09-20; the ritual did not.
+- **The review-per-edit tax at its current grain.** Pre-decided 73 / the stop-record mechanism means the next TWO-line recipe edit re-arms a stop record and requires buying a **fresh** prior-art review before the build (STATUS.md:52 item (2)). At one wire row per cycle, that prices each wire at a peer review plus a retrospective plus a disposal. The mechanism is a process device answering process findings; at this grain it is the dominant cost of delivery.
+- **Tunnel-addressability research beyond M3a-2's strict need** (STATUS.md:57) — re-testing sources "before calling them blocked" is fine once; the standing pattern of instrument forensics (`report_all` index-0 anomaly, `TopLevelDiagram` 0-nodes) is the same census-forensics class the sixth review named as skippable.
+- **Five retrospectives in 1.1 days**, each gated on disposing the previous one's review.
+
+Credit where due: the c68 prior-art review directly found the route that wired the project's only NO-ROUTE row (STATUS.md:51) — that single purchase earned its price — and the interval *was* pointed at the delivery lane (S3a/S3b/M-series), which is what the sixth review demanded.
+
+## 4. ORDERING AT PROJECT SCALE
+
+The standing NEXT (STATUS.md:52: edit `build_d1_m3a1.py` in place — two edits — re-review, gate, build; then M3a-2, then M4 → `D1_s3_loop15.vi`) is **delivery-directed and the route was reaffirmed by the user's CONTINUE and re-plan** (Pre-decided 45, disposition amendment in `archive/peer/2026-09-20-outcome-review-20260920.md:199`). Direction: right. Two ordering faults remain:
+
+1. **OPEN 46 (`SetCommand_signed.vi` on NO disk — STATUS.md:48) is still scheduled nowhere.** This is a **hardware-accepted fix the user personally watched pass** (INDEX row 31: −1080.0° tracked live, the original reading +3.09e9°). The sixth review called re-saving it "one cheap act that converts an already-verified result back into a possession"; the fifth said the same. It is one recipe run. It should be the first act of the next cycle, before another structural wire row — it is the only item in the entire project that converts to user value in minutes.
+2. **What comes after M4 is unwritten.** `docs/d1-route-b-plan.md` is "paused" (STATUS.md:14) and `D1_s3_loop15.vi` is declared non-computation-equivalent in advance. The order names no functional-acceptance step (the row-40/41 fixture bar) after M4. Without it, S3's completion produces a fifth unrunnable intermediate and an eighth identical review.
+
+`docs/restructure-plan-4.6.md` staying deferred remains correct — D1 is its bridge.
+
+## 5. STALE DECISIONS
+
+- **OPEN 53 (does the controller zero still equal the original physical zero?)** — open since 2026-09-18, called "a two-minute question at the rig" by the fifth review, still unasked while the rig sits assembled with limits armed (STATUS.md:46, :28). Fourth review in a row flagging it.
+- **OPEN 46 (SetCommand_signed re-save)** — flagged by reviews five and six; still on no disk (STATUS.md:48).
+- **Requirement 1 (schedule-or-descope)** — flagged by reviews three through six; now absent from every live document. Unasked for four weeks.
+- The sixth review's item 4 — "ask the user the three parked questions now, as one message" — **was not done.** The only question STATUS currently holds for the user is the narrow 56(j) rule-1a residual (STATUS.md:60). The mechanism of starvation is unchanged: items labelled "not a blocker" are never asked.
+- Positive: the `git init` recommendation **was** acted on (repo is now git; sixth review's disposition amendment confirms the user ran it).
+
+## 6. THE EXPERIMENT TEST
+
+**The original VI, `Min_Track N beads 4.5_KimLabMTroom_3StateClamping.vi` — the same verdict as all six previous reviews.** The project's two runnable VIs replay recorded TIFFs; the current bed is read-only and banned from running (STATUS.md:52, rule 34(f)); the declared endpoint of the current stage is non-computation-equivalent by design; the one hardware fix the user watched work is on no disk. Frame loss — the pain in `project-description.md` §6 — is exactly what it was on 2026-08-24. What the project would lend next week's experiment is peripheral: `tools/motor_gate.py` and `tools/bench/camera_contract.py`.
+
+## 7. TERMINATION
+
+Shortest path to something the user can use:
+
+1. **Re-save `SetCommand_signed.vi` first** — one recipe run, already hardware-accepted (INDEX row 31). The single fastest conversion of this project's work into user value; two reviews old.
+2. **Execute the standing NEXT as written** — the two recipe edits, one bought review, one build. M3a-1 already reached 16/1; this is close.
+3. **M3a-2 and M4, then STOP structural work and go functional**: register initialisation, then the row-40/41 acceptance bar (10,018 pre-loss frames bit-identical on the fixture) on `D1_s3_loop15.vi`, then a live drive through the D0 harness (`drive_original_copy_v5.py`). Write this acceptance step into `## NEXT` now so M4's completion cannot terminate in another unrunnable file.
+4. **Ask the user, in one message**: OPEN 53's physical zero; OPEN 46's authorization if any is needed; requirement 1 schedule-or-descope; the 56(j) confirmation STATUS already holds.
+5. **Abandon**: the lock-note relocation ritual (git holds the bytes — this was already conceded on 09-20); census/instrument forensics beyond what M3a-2 strictly requires; the 5-per-day retrospective cadence.
+
+**Consequence clause.** This is the fourth consecutive review with an unchanged deliverable line and the fifth with the same unmoved-requirements list. The repetition clause was already invoked once (cycle 55 STOP); the user answered CONTINUE and re-cut the plan, and the interval genuinely spent itself on the delivery lane — so a second unilateral stop is not warranted 1.1 days later. But the CONTINUE authorized a route to a *runnable* D1, not to an open-ended series of structural intermediates. If M4 closes and the functional-acceptance step of item 3 is not the immediate next act — or if the eighth review reads another unchanged deliverable line — the re-plan conversation is owed in full, this time including whether requirement 1 still exists.
+
+---
+
+OUTCOME-VIOLATION: goal-requirement-not-advanced
+OUTCOME-VIOLATION: product-not-runnable
+OUTCOME-VIOLATION: tooling-over-delivery
+OUTCOME-VIOLATION: decision-starved
+OUTCOME-VIOLATION: ordering-stale
+
+(Mapping notes: `goal-requirement-not-advanced` — requirements 1, 2.2–2.5 unmoved for the fifth review; requirement 1 has now vanished from all live planning documents. `product-not-runnable` — deliverable line unchanged since 2026-09-15; every interval file is a run-forbidden structural intermediate and the current stage's declared endpoint is non-computation-equivalent by design (STATUS.md:52). `tooling-over-delivery` — +51 peer exchanges, +23 op VIs, +5 retrospectives against zero runnable product; the relocation ritual continued after git init removed its justification (STATUS.md:28); the per-edit review tax now dominates delivery cost. `decision-starved` — OPEN 53, OPEN 46, and requirement 1 all flagged by multiple prior reviews, none yet put to the user; the sixth review's batch-question instruction was not executed. `ordering-stale` — the standing NEXT is fresh and delivery-directed, but the one minutes-to-value act (OPEN 46 re-save) is scheduled nowhere ahead of further structural rows, and no functional-acceptance step follows M4. Not flagged: `measurement-without-product` — the interval's instruments (`OpCreateLocalRead_v0`, the wire-delta identity gate) directly serve the build; `scope-inflation` — growth stayed inside the D1 lane.)
+   peer.ps1 rc 0; archived as archive/peer/<date>-outcome-review-20260921.md
+   Now annotate it: 'why asked' and 'verdict', and act on the OUTCOME-VIOLATION lines.
+BGRUN END rc=0 after 172s

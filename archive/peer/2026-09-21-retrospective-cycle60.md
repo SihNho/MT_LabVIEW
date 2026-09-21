@@ -228,4 +228,48 @@ VIOLATION: repeated-failure-class | loss_min=15 | loss_usd=? | evidence=tools/be
 
 ## What was done with it
 
-(Claude fills in)
+Disposed 2026-09-21 by the cycle-56 judgement session (the next cycle's close; cycle 60's own session exited
+without disposing it, which is why `guard_peer` blocked this cycle's retrospective until it was written).
+**Every finding ACCEPTED; nothing refuted.**
+
+- **1 — repeated failure (launch form + dispatch lifecycle): ACCEPTED, and the two halves diverged this cycle.**
+  The wrong launch form did NOT recur: every launch used `--material`, zero `MATERIAL=1` attempts. The lifecycle
+  half did recur in a NEW place — `py tools/retrospective.py --cycle 61` was refused by `guard_peer` (this very
+  disposal was missing) and `guard_bash.py:226-227` still called `mark_retro_done()` on the refused attempt,
+  ending the session's dispatch budget. **The mark is set on the ATTEMPT, not on success**, which STATUS OPEN
+  54(a) does not say; it is now written into STATUS `## NEXT`. Also newly on file: `prior_art_review.py` cannot
+  launch itself at all (`tools/stop_record.py:84`, deliberate), so the review is bought via `--dry-run` + the
+  `peer.ps1` dispatch by hand.
+- **2 — the OPEN 54(b) repair is still NOT BUILT: ACCEPTED, and deliberately not built again.** Two standing
+  constraints forbid it — the user's "장치는 더 만들지 말고 계속 진행" (2026-09-18 08:53) and CLAUDE.md's rule
+  that an `OUTCOME-VIOLATION` is never answered with a device (the outcome review fired again this cycle). The
+  prose mitigation was applied instead: every brief this cycle carried "HOLD YOUR TURN OPEN until the terminal
+  BGRUN line lands", and **no dispatch was killed** — a $4.39 prior-art review and a $3.57 hypothesis review
+  both landed. That is evidence the mitigation works when it is in the brief, not evidence the repair is
+  unnecessary.
+- **3 — inference over measurement: ACCEPTED, and this cycle found the deeper instance.** The replacement
+  identity test (Pre-decided 70) was itself theory-derived, and so was my first attempt to replace *it*
+  (Pre-decided 78, withdrawn within the hour). `archive/peer/2026-09-21-c70-border-topology.md` traced the
+  sequence — each rule written after a result and looser than the last — and located the real defect one layer
+  down: **`OpWireSource_v5` has no identity precondition**, so a walk can return another object's data
+  (`tools/bench/build_d1_m3a1.log:1096-1098` vs `:1100-1102`). Remedy landed as `docs/cycle27-plan.md`
+  Pre-decided 85 + 86, and it is the next cycle's first act.
+- **4 — the three audit gaps (A2 blind to a parent-killed bgrun · C4 books orchestrator cost as "review" ·
+  refused launch attempts invisible): ACCEPTED, NOT FIXED.** All three are audit-tool repairs, i.e. devices,
+  and fall under the same standing order as finding 2. They join the existing backlog at STATUS OPEN item 42.
+  The honest consequence: this cycle's own cost split is reported from the peer archives' cost lines
+  ($4.3929 + $3.5710) rather than from C4.
+- **5 — ordering: ACCEPTED, and the named inversion did not recur.** The astcheck ran once, after the review
+  and its disposal, on the final bytes.
+- **6 — "what the summary would hide": ACCEPTED, and adopted as a standing habit for the closing report.**
+  The rule taken from it: report the machine's counts, not the narrative's. Applied here — 17 pass / 4 fail,
+  both review costs, `ExecState` 0, no file written, and the refused `git commit` are all in the closing report
+  and in STATUS, including the parts that make the cycle look worse.
+- **7 — no judgement inside a material session: ACCEPTED as found.** Held again this cycle: the material
+  sessions returned `OPEN:` lines (the live-net question, the Case-Structure class string, the dispatch route)
+  and the judgement session answered each one before the next step.
+- **`VIOLATION: repeated-failure-class | loss_min=15 | loss_usd=? | evidence=tools/bench/priorart_c68_m3a1.log:1`
+  — ACCEPTED.** Under the device threshold suspended by the user on 2026-09-18 08:53, a slug at threshold is
+  recorded as a FINDING in `docs/violation-decisions.md` and **no device is built**; the threshold resumes only
+  when the user lifts that order. The concrete defect the reviewer names — bgrun's "always writes a final
+  END|TIMEOUT" guarantee is defeated by parent death, and audit A2 passes over it — is recorded with it.

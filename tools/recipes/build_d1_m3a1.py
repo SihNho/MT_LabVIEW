@@ -55,10 +55,29 @@ THE ORDER IS FIXED BY THE BRIEF (Pre-decided 59/60/61/62/63) AND IS NOT RE-ORDER
       (it cannot address tunnels), not a property of the wire, and this step PROVES which by measuring.
       (ii) The SINK's terminal index is RE-READ on the LIVE POST-MOVE target at that moment, NEVER carried
       from a pre-move census - T2c2's recorded cause of failure (`docs/toolkit-capabilities.md:70`).
-      ACCEPTANCE, BORDER ROW (A3): `wire_delta 3` with TWO **DIFFERENT** wire uids at the two ends, plus
-      `Is Broken? False`. LabVIEW auto-tunnels the loop border (`docs/toolkit-capabilities.md:68`,
-      `docs/cycle27-plan.md:2477-2479`), so the fleet's usual ONE-uid-at-both-ends check would score a
-      CORRECT wire as a failure; it is NOT applied to this row. Same-diagram rows keep it unchanged.
+      ACCEPTANCE, **RE-CUT 2026-09-21 BY PRE-DECIDED 70 (docs/cycle27-plan.md:2843-2853)**: the test is an
+      OBJECT-IDENTITY test, in run, immediately after EVERY border write and again after the junk purge -
+      `OpWireSource_v5(UID 2 = <source wire>)` must show a NEW terminal `is_source=False`,
+      `owner_class LoopTunnel`, owner uid **T**, and `OpWireSource_v5(UID 2 = <new sink wire>)` exactly one
+      `is_source=True LoopTunnel` with `owner_uid == T`. PASS = THE SAME T ON BOTH SIDES. `wire_delta 3`,
+      "two DIFFERENT wire uids" and `Is Broken? False` are **WITHDRAWN as acceptance** - all three read the
+      SINK side only - and survive as FACT lines. `ExecState` is NEVER substituted for the identity test.
+      The same read settles Pre-decided 71: the junk `Invoke` the call mints is FACT-logged with its uid,
+      because last run it carried **9649**, the uid of the live wire it was told to branch.
+  [5b] THE SIXTH ROW (Pre-decided 72, docs/cycle27-plan.md:2866-2876), WIRED **BEFORE** THE CENSUS so A4
+      judges the FINISHED stage - and the likely cause of `ExecState` 0 as well, since a SelectorTunnel
+      left unwired breaks the VI. Owner chain of `SelectorTunnel #12673` (row label `Q_focusback`) -> its
+      owning Case Structure -> that NODE's `Terms[]` -> **the entry that EXPOSES UID 12673** ->
+      `connect_from_wire` from `#10407` t6's **LIVE** net (recorded 23963, RE-MEASURED). If the chain does
+      not reach a Case Structure, or no entry exposes uid 12673, a FACT line names what the walk returned
+      and THE ROW FAILS: no fallback is improvised, and the UNBUILT `Outside Terminal` property is OUT OF
+      SCOPE for this run.
+      *** FIX 1, 2026-09-21: THE BY-NAME LOOKUP ON `Q_focusback` IS DELETED (c70 prior-art review A3(i),
+      `archive/peer/2026-09-21-priorart-c70-m3a1.md:222-231`): that string is a FUTURE QUEUE name
+      (`docs/d1-build-plan.md:576`), and the owning node's three terminals are measured as "",
+      "position [internal units]", "" (`tools/bench/main_vi_nodeterms.json:14287-14313`). The owner uid and
+      the resolved terminal NAME are FACT lines (compared against 12589 / "position [internal units]"),
+      never gates - the measurement governs. ***
   [6] THE FULL WIRED-TERMINAL CENSUS of all seven moved nodes plus both registers, same shape as
       `tools/bench/diag_c67_m3a.log:481-486`, PLUS THE BARE-SINK GATE (A4). `#10407` t6 has **TWO** sinks
       in the original - SR `#4256` AND `Q_focusback` `SelectorTunnel #12673` on net 9113
@@ -66,7 +85,8 @@ THE ORDER IS FIXED BY THE BRIEF (Pre-decided 59/60/61/62/63) AND IS NOT RE-ORDER
       consumer is a CHANGE OF COMPUTATION (rule 1a) that would pass SILENTLY, because a bare source is
       legal LabVIEW. `#12673`'s state is a FACT line either way; if this stage leaves it bare the run
       FAILS and the log names it as a SIXTH ROW for the next stage. Unconditional, whatever `ExecState`
-      says.
+      says. FROM 2026-09-21 THE SIXTH ROW IS WIRED AT [5b] BEFORE THIS GATE RUNS, so A4 now judges the
+      FINISHED stage instead of reporting a known hole; it is UNCHANGED in code and should now PASS.
   [7] `ExecState`. 1 => save `claudeDev\\D1_s3b_m3a_<stamp>.vi`, RESTART, COLD reopen, ordered `Broken?`
       read LAST (42(b)/52(f)). 0 => the brief asks for `claudeDev\\D1_s3b_m3a_BROKEN_<stamp>.vi`; the save is
       ATTEMPTED and whatever the machine answers is recorded VERBATIM. `tools/gscript.py:2087-2090` refuses a
@@ -83,10 +103,27 @@ GATING POLICY - Pre-decided 63: THIS RUN GATES ON **HYGIENE ONLY** and exits 0 w
      every scratch is `exists=False` at the end; refs opened == closed == 0 live; handles read either side;
      and NO mutator call was REFUSED BY THE MACHINE (a raised wrapper error is a refusal and IS a gate; a
      measurement that comes back negative is a FACT line and is NOT).
+  A3-ID THE BORDER IDENTITY GATE, ADDED 2026-09-21 (Pre-decided 70): after EVERY write that creates a
+     `LoopTunnel`, the SAME LoopTunnel uid T must be a NEW SINK terminal on the SOURCE wire and the ONE
+     SOURCE terminal of the NEW SINK wire. Anything else FAILS the row and the run. It is a gate and not a
+     FACT line because the previous run's acceptance test was pointed at the sink side only, so a row could
+     read "correct" without anything having been measured about the source side at all.
+  A5 THE SIXTH ROW IS ADDRESSABLE (Pre-decided 72, RE-CUT BY FIX 1): #12673's owner chain reaches a Case
+     Structure one of whose `Terms[]` entries EXPOSES UID 12673, and t6's live net hands out a source
+     terminal. If not, the row fails - NO fallback is improvised and NO name is guessed.
   A4 THE BARE-SINK GATE, ADDED 2026-09-21 BY THE PRIOR-ART REVIEW: no SINK that was wired on the bed may
-     be left bare by this stage. Concretely `Q_focusback` `SelectorTunnel #12673` on `#10407` t6's net.
+     be left bare by this stage. Concretely `SelectorTunnel #12673` on `#10407` t6's net.
      This ONE non-hygiene gate exists because rule 1a outranks Pre-decided 63: a silently dropped consumer
      is a computation change, and the run must not exit 0 with one.
+     *** FIX 2, 2026-09-21 - A4 IS NOW **TWO-SIDED** (c70 prior-art review A3(ii) `contradicted`,
+     `archive/peer/2026-09-21-priorart-c70-m3a1.md:233-239`): as coded it read ONE wire - t6's net - and so
+     would have FAILED even on a perfect sixth row, because the crossing is OUTWARD (`#10407` moves to body
+     `Diagram #23058`, `build_d1_m3a1.log:156`, while `#12589` stays on `Diagram #639`,
+     `docs/d1-route-b-plan.md:207`), which puts #12673 on the OUTER segment - a different wire uid. A4 now
+     PASSES if 12673 is a non-source terminal of t6's own net (the same-diagram case) OR if that net has a
+     `LoopTunnel` sink T whose OTHER-side wire carries 12673 as a non-source terminal (the border case), and
+     FAILS only when 12673 is on NEITHER side. Which branch passed, and T, are FACT lines. "It is a border
+     crossing" is NOT hard-coded: both sides are measured, every run. ***
   Everything else - moves, rows, registers, `ExecState`, the save - is reported as FACT lines.
 
 NO whole-VI `GObject` census anywhere (six of them took handles 34,602 -> 91,288); only the narrow classes
@@ -164,8 +201,55 @@ T1_LOOP_TUNNEL = 9641            # the LoopTunnel on #637 that carries the value
 T1_OUTER_WIRE = 9649             # its OUTER-side wire - THE SOURCE `connect_from_wire` IS GIVEN
 T1_OUTER_SOURCE = 9655           # that wire's source owner: a FlatSequenceInnerTunnel. NOT a Nodes[] entry
                                  # - and that no longer matters: OpConnectFromWire_v0 addresses the WIRE.
-T1_BORDER_WIRE_DELTA = 3         # A3: the loop border auto-tunnels, so a CORRECT border row adds 3 wires
+T1_BORDER_WIRE_DELTA = 3         # A3 (WITHDRAWN as an acceptance test by Pre-decided 70 - still REPORTED):
+                                 # the loop border auto-tunnels, so a border row was expected to add 3 wires
                                  # (docs/toolkit-capabilities.md:68, docs/cycle27-plan.md:2477-2479)
+
+# PRE-DECIDED 70 - THE BORDER-ROW ACCEPTANCE TEST IS AN OBJECT-IDENTITY TEST, NOT A NUMBER.
+# `wire_delta`, "two DIFFERENT wire uids" and `Is Broken? False` are all read on the SINK side of the new
+# border; the "SOURCE-side wire 9649" of tools/bench/build_d1_m3a1.log:488 was the INPUT ARGUMENT, not an
+# observation. Those three are kept as FACT lines and are NOT the acceptance test any more. The test is:
+#   OpWireSource_v5(UID 2 = <source wire>) shows a NEW terminal is_source=False owner_class LoopTunnel uid T
+#   OpWireSource_v5(UID 2 = <new sink wire>) shows EXACTLY ONE is_source=True LoopTunnel with owner_uid == T
+# PASS = the SAME LoopTunnel uid T is a SINK on the source wire and the SOURCE of the sink wire.
+# Properties already built - `Wire.Terms[]` 6371003, `Is Source?` 634A003, `Connected Wire` 634A000,
+# `Generic.Owner` 6327806, `GObject.UID` 632A813. NO NEW OP. `ExecState` is NEVER substituted for this test.
+T1_RECORDED_MINTED_UID = 9649    # PRE-DECIDED 71: last run the junk `Invoke` the call minted carried **the
+                                 # uid of the live source wire**, while every other new object took a
+                                 # monotonic uid in the 23,800-24,009 band (build_d1_m3a1.log:475, :498-526).
+T1_RECORDED_SINK_WIRE = 24009    # last run's `UID 2` readback - the wire the call created at the sink
+                                 # (build_d1_m3a1.log:473). RECORDED; RE-MEASURED live, never carried.
+
+# PRE-DECIDED 72 - THE SIXTH ROW. A tunnel is not a `Nodes[]` entry, but its terminal IS an entry in its
+# OWNING STRUCTURE NODE's `Terminals[]`. Route: owner chain of #12673 -> its owning Case Structure -> that
+# node's Terms[] -> the entry that EXPOSES UID 12673 -> `connect_from_wire` from t6's **LIVE** net.
+#
+# *** FIX 1, 2026-09-21 (c70 prior-art review A3(i) `contradicted`, archive/peer/2026-09-21-priorart-c70-
+#     m3a1.md:222-231): THE BY-NAME LOOKUP IS DELETED. `Q_focusback` IS NOT A TERMINAL NAME ON THIS BED -
+#     it is the name of a FUTURE 1-element QUEUE in the D1 target design (`docs/d1-build-plan.md:576`),
+#     and the measured census of the owning node says its three terminals are named "",
+#     "position [internal units]", "" (`tools/bench/main_vi_nodeterms.json:14287-14313`, node uid 12589).
+#     A by-name match on "Q_focusback" fails by construction. The string survives ONLY as a human-readable
+#     ROW LABEL in log text (T6_SIXTH_SINK_LABEL) and in comments; it is on NO lookup or comparison path.
+#     The selection is BY UID: the entry of the owner's Terms[] that exposes uid 12673. That is neither a
+#     carried index (Pre-decided 72 forbids one) nor a guessed name.
+#     HOW A UID IS READ OFF A Terms[] ENTRY, MEASURED, NOT ASSUMED: `node_terms` returns
+#     {i, name, is_source, wire, err..., node_uid} and NO per-terminal uid (tools/gscript.py:931-937;
+#     the recorded census carries the same four fields), and no reader this fleet owns returns one. The
+#     ONLY uid-bearing walks are `OpWireSource_v5` (a WIRE's Terms[] -> each terminal's OWNER class+uid,
+#     docs/toolkit-capabilities.md:60) and `OpOwnerChain_v1` (:61). So each entry's uid is resolved
+#     THROUGH THE WIRE IT CARRIES: walk `OpWireSource_v5(entry.wire)` and read the owner uids. An entry
+#     that carries NO wire exposes NO uid and therefore cannot be selected - and per (e) the ROW FAILS,
+#     with every entry of the walk in the FACT lines. NO fallback is improvised.
+T6_SIXTH_SINK_LABEL = "Q_focusback"   # LOG TEXT ONLY - see FIX 1 above. NEVER compared against a name.
+T6_OWNER_CASE_RECORDED = 12589        # main_vi_nodeterms.json:14287 - the owner uid the census recorded.
+                                      # FACT-logged and compared, NEVER a gate: the measurement governs.
+T6_OWNER_TERM_NAME_RECORDED = "position [internal units]"   # :14304 - same status: FACT, not a gate
+T6_LIVE_NET_RECORDED = 23963     # build_d1_m3a1.log:548 - the net t6 carried LAST RUN, NOT the 9113 the row
+                                 # inventory names. It is a uid this build MINTS, so it is RE-MEASURED on
+                                 # the live target and the recorded value is only ever compared, never used.
+T6_OWNER_HOPS = 3                # an owner chain can terminate silently at a FlatSequenceFrame (rule: FACT
+                                 # the hops VERBATIM and FAIL the row - never improvise a fallback)
 
 # A4, THE BARE-SINK GATE. #10407 t6's net 9113 carries ONE source and TWO sinks in the original
 # (tools/bench/diag_c67_addsr.log:389). This build re-creates the SR sink; the OTHER one is measured here.
@@ -653,6 +737,115 @@ def resolve_term(rows, want_name, want_i, want_source, tag):
     return None, "UNRESOLVED"
 
 
+# ============================= PRE-DECIDED 70: THE BORDER-ROW IDENTITY GATE (added 2026-09-21, cycle 70)
+def print_walk(tag, wire_uid, walk, err=""):
+    """One FACT line per terminal of `OpWireSource_v5(UID 2 = wire_uid)`: is_source / owner_class /
+    owner_uid / recip. This is the raw material of BOTH Pre-decided 70 (identity) and 71 (recycled uid)."""
+    real = [t for t in (walk or []) if t.get("owner_uid")]
+    fact("%s OpWireSource_v5(UID 2 = %r): %d row(s), %d with a REAL owner%s"
+         % (tag, wire_uid, len(walk or []), len(real), (" ; " + err) if err else ""))
+    for t in (walk or []):
+        fact("    %s   t%-2r is_source=%-5r owner_class=%-26r owner_uid=%-7r recip=%r%s"
+             % (tag, t.get("i"), t.get("is_source"), t.get("owner_class"), t.get("owner_uid"),
+                t.get("recip"), ("  READ ERROR " + str(t["err"])) if t.get("err") else ""))
+    return walk or []
+
+
+def wire_walk(tag, wire_uid):
+    """`OpWireSource_v5(UID 2 = wire_uid)` on the LIVE target, printed terminal by terminal."""
+    walk, err = safe("%s OpWireSource_v5(UID 2 = %r)" % (tag, wire_uid),
+                     lambda: WIRE_TERMS(WORK, int(wire_uid)) if wire_uid else [], [])
+    return print_walk(tag, wire_uid, walk, err), err
+
+
+def loop_tunnel_sinks(walk):
+    return sorted({int(t["owner_uid"]) for t in (walk or [])
+                   if t.get("owner_class") == "LoopTunnel" and not t.get("is_source")
+                   and t.get("owner_uid")})
+
+
+def identity_gate(tag, source_wire, src_before, src_after, sink_wire, sink_walk, mandatory):
+    """PRE-DECIDED 70, THE WHOLE TEST, READ OFF THE MACHINE AND NOTHING ELSE.
+
+    PASS = the SAME `LoopTunnel` uid T is (a) a NEW **SINK** terminal on the SOURCE wire and (b) the ONE
+    **SOURCE** terminal of the NEW SINK wire. `ExecState`, `wire_delta`, `Is Broken?` and "two different
+    wire uids" are NEVER substituted for it - the first says nothing about this wire and the other three
+    read the SINK side only (tools/bench/build_d1_m3a1.log:488; docs/cycle27-plan.md:2843-2853).
+    `mandatory` False records the same measurement as FACT lines when the write created no LoopTunnel at
+    all, i.e. when it was not a border write; the row's own gate then decides it.
+
+    *** FIX 4, 2026-09-21 - COUNT FIRST, FILTER NEVER (c70 prior-art review B4 `already-measured`,
+    `archive/peer/2026-09-21-priorart-c70-m3a1.md:252-258`). As first coded this gate filtered the sink
+    wire's source terminals to `owner_class == "LoopTunnel"` BEFORE counting them, so the ONE recorded
+    pathology it claimed to re-test would have PASSED: broken wire w1231 has TWO `is_source=True`
+    terminals - `SelectorTunnel #5680` AND `LoopTunnel #2497` - with `Wire.Is Broken? True`
+    (`tools/bench/build_opconnectfromwire_v0_run2.log:103-104`), and the LoopTunnel filter leaves exactly
+    one. The order is now reversed: **ALL** `is_source=True` terminals on the sink wire are counted, of
+    EVERY owner class, the total must be exactly **1**, and that one must be the LoopTunnel **T**. The
+    source-wire side gets the same discipline - the full walk is logged and sinks of every class are
+    counted before the LoopTunnel-owned subset is taken to define T. ***
+    """
+    before_t = loop_tunnel_sinks(src_before)
+    after_t = loop_tunnel_sinks(src_after)
+    new_t = [u for u in after_t if u not in before_t]
+    # ---- FIX 4: the SINK side. Count EVERYTHING that claims to be a source, THEN look at its class.
+    sink_all_src = [t for t in (sink_walk or []) if t.get("is_source")]
+    sink_all_classes = [(t.get("owner_class"), t.get("owner_uid")) for t in sink_all_src]
+    the_one = sink_all_src[0] if len(sink_all_src) == 1 else None
+    sink_src = [t for t in sink_all_src
+                if t.get("owner_class") == "LoopTunnel" and t.get("owner_uid")]
+    sink_t = sorted({int(t["owner_uid"]) for t in sink_src})
+    shared = [u for u in new_t if u in sink_t]
+    one_is_the_loop_tunnel = bool(
+        the_one is not None and the_one.get("owner_class") == "LoopTunnel" and the_one.get("owner_uid")
+        and int(the_one["owner_uid"]) in new_t)
+    ok = (bool(sink_wire) and len(sink_all_src) == 1 and one_is_the_loop_tunnel and len(shared) == 1)
+    # ---- FIX 4: the SOURCE side, same discipline - every sink terminal of every class, unfiltered.
+    src_all_sinks_before = [(t.get("owner_class"), t.get("owner_uid")) for t in (src_before or [])
+                            if t.get("is_source") is False]
+    src_all_sinks_after = [(t.get("owner_class"), t.get("owner_uid")) for t in (src_after or [])
+                           if t.get("is_source") is False]
+    src_all_sources_after = [(t.get("owner_class"), t.get("owner_uid")) for t in (src_after or [])
+                             if t.get("is_source")]
+    rec = {"tag": tag, "source_wire": source_wire, "sink_wire": sink_wire,
+           "source_side_loop_tunnel_sinks_before": before_t,
+           "source_side_loop_tunnel_sinks_after": after_t, "NEW_on_the_source_wire": new_t,
+           "source_side_ALL_sink_terminals_before": src_all_sinks_before,
+           "source_side_ALL_sink_terminals_after": src_all_sinks_after,
+           "source_side_ALL_source_terminals_after": src_all_sources_after,
+           "sink_wire_loop_tunnel_sources": sink_t,
+           "sink_wire_loop_tunnel_source_terminal_count": len(sink_src),
+           "sink_wire_ALL_source_terminal_count": len(sink_all_src),
+           "sink_wire_ALL_source_terminals": sink_all_classes,
+           "the_one_source_terminal_is_the_loop_tunnel_T": one_is_the_loop_tunnel,
+           "T": (shared[0] if (ok and len(shared) == 1) else None), "pass": ok,
+           "mandatory": bool(mandatory), "exec_state_is_never_substituted_for_this": True,
+           "fix4": "ALL is_source=True terminals are counted before any class filter "
+                   "(archive/peer/2026-09-21-priorart-c70-m3a1.md:252-258; the w1231 pathology at "
+                   "tools/bench/build_opconnectfromwire_v0_run2.log:103-104 would pass a filtered count)"}
+    fact("%s IDENTITY: source wire %r LoopTunnel SINK owners %r -> %r (NEW %r) ; ALL sink terminals on the "
+         "source wire %r -> %r ; ALL source terminals on it %r"
+         % (tag, source_wire, before_t, after_t, new_t, src_all_sinks_before, src_all_sinks_after,
+            src_all_sources_after))
+    fact("%s IDENTITY (FIX 4, COUNT BEFORE FILTER): sink wire %r has %d source terminal(s) OF ANY CLASS %r "
+         "(want EXACTLY 1) ; of those %d are LoopTunnel-owned %r ; the ONE is the new LoopTunnel T: %r ; "
+         "SAME uid T on both sides: %r"
+         % (tag, sink_wire, len(sink_all_src), sink_all_classes, len(sink_src), sink_t,
+            one_is_the_loop_tunnel, (shared[0] if len(shared) == 1 else None)))
+    label = ("A3-ID %s: the SAME LoopTunnel uid is a SINK on the source wire and the SOURCE of the sink "
+             "wire (Pre-decided 70)" % tag)
+    if mandatory:
+        gate(label, ok, "T=%r ; new-on-source %r ; sink-side LoopTunnel %r ; sink wire %r ; ALL source "
+                        "terminals on the sink wire %d %r (want exactly 1, and it must be T - FIX 4)"
+             % (rec["T"], new_t, sink_t, sink_wire, len(sink_all_src), sink_all_classes))
+    else:
+        fact("%s NOT GATED HERE - this write created no LoopTunnel, so it is not a border write; the "
+             "identity numbers above are FACT lines and the row's own gate decides it. Result would have "
+             "been %r." % (tag, ok))
+    K.setdefault("identity_gates", []).append(rec)
+    return rec
+
+
 # ======================================================================= [0] files only, zero LabVIEW
 def phase_0():
     print("\n---------- [0] FILES ONLY, ZERO LabVIEW - the md5 pins BEFORE, then the pre-batch restart",
@@ -1040,9 +1233,11 @@ def step_5_t1(nodes, hints):
          measurement is what decides, not that record.
     (ii) THE SINK INDEX IS RE-READ ON THE LIVE POST-MOVE TARGET here, never carried from the pre-move
          census - the recorded cause of T2c2's broken wire.
-    ACCEPTANCE (A3, border row): wire_delta == 3 with TWO DIFFERENT wire uids at the two ends, plus the
-    op's own ORDERED `Wire.Is Broken?` reading False. The fleet's ONE-uid-at-both-ends check is NOT applied
-    to this row: the loop border auto-tunnels, so it would score a CORRECT wire as a failure.
+    ACCEPTANCE, **REPLACED 2026-09-21 BY PRE-DECIDED 70**: the test is OBJECT IDENTITY, in run, immediately
+    after the write and again after the junk purge - the SAME `LoopTunnel` uid T must be a NEW SINK terminal
+    on the SOURCE wire and the ONE SOURCE terminal of the NEW SINK wire (`identity_gate`). `wire_delta == 3`,
+    "two DIFFERENT wire uids" and `Wire.Is Broken? False` are WITHDRAWN as acceptance - all three are read on
+    the SINK side only - and are kept as FACT lines. `ExecState` is NEVER substituted for the identity test.
     """
     print("\n---------- [5] THE FIFTH ROW: #%d t%d %r, VIA `connect_from_wire` OFF WIRE %d"
           % (CASE_UID, T1_TERM_INDEX, T1_TERM_NAME, T1_OUTER_WIRE), flush=True)
@@ -1063,6 +1258,10 @@ def step_5_t1(nodes, hints):
     rec["source_terminal"] = src
     fact("[5] (i) SOURCE MEASURED ON THE LIVE TARGET: wire %d Terms[] walk %r -> SOURCE endpoint %r%s"
          % (T1_OUTER_WIRE, walk, src, (" ; " + werr) if werr else ""))
+    # PRE-DECIDED 70/71: the SOURCE-wire read IMMEDIATELY BEFORE the border write, terminal by terminal.
+    src_before = print_walk("[5] (a) SOURCE WIRE %d IMMEDIATELY BEFORE THE t1 BORDER WRITE" % T1_OUTER_WIRE,
+                            T1_OUTER_WIRE, walk, werr)
+    rec["source_walk_before"] = src_before
     if not src:
         rec["result"] = ("STEP STOPPED - wire %d came back with NO source terminal on the live target. "
                          "Nothing is wired, nothing is substituted." % T1_OUTER_WIRE)
@@ -1121,7 +1320,44 @@ def step_5_t1(nodes, hints):
     rec["call_cost_s"] = round(time.time() - t0, 2)
     fact("[5] connect_from_wire(wire=%d, wire_term=%r, sink_diag=%r, sink_node=%r, sink_term=%r) -> %r "
          "(%.2f s)" % (T1_OUTER_WIRE, src_i, sd, sn, si, rec["connect"], rec["call_cost_s"]))
+
+    # ---- PRE-DECIDED 70/71: THE IDENTITY READ, IMMEDIATELY AFTER THE WRITE AND **BEFORE THE JUNK PURGE**
+    # (the purge deletes a node that last run carried the SOURCE WIRE'S OWN uid, so the state has to be
+    #  measured on either side of it - never only after).
+    lt_now, _lterr = safe("[5] count('LoopTunnel') immediately after the write",
+                          lambda: g.count(WORK, "LoopTunnel"))
+    rec["loop_tunnel_immediately_after_write"] = lt_now
+    lt_delta = (lt_now or 0) - (before.get("LoopTunnel") or 0)
+    rec["loop_tunnel_delta"] = lt_delta
+    fact("[5] (a) LoopTunnel %r -> %r (delta %r): this write %s a LoopTunnel"
+         % (before.get("LoopTunnel"), lt_now, lt_delta, "CREATED" if lt_delta > 0 else "did NOT create"))
+    src_after, _e1 = wire_walk("[5] (a) SOURCE WIRE %d IMMEDIATELY AFTER THE WRITE, BEFORE THE PURGE"
+                               % T1_OUTER_WIRE, T1_OUTER_WIRE)
+    rec["source_walk_immediately_after"] = src_after
+    _sl1, srows1 = node_view(WORK, CASE_UID, hints, "[5] sink #%d immediately after" % CASE_UID, quiet=True)
+    sink_now = next((t for t in srows1 if t["i"] == si), None)
+    sink_wire_now = (sink_now or {}).get("wire") or 0
+    rec["sink_wire_immediately_after"] = sink_wire_now
+    fact("[5] (a) the sink terminal #%d t%r carries wire %r immediately after the write (last run's `UID 2` "
+         "readback was %d - RECORDED, never carried)" % (CASE_UID, si, sink_wire_now, T1_RECORDED_SINK_WIRE))
+    sink_walk1, _e2 = wire_walk("[5] (a) SINK WIRE %r IMMEDIATELY AFTER THE WRITE" % sink_wire_now,
+                                sink_wire_now)
+    rec["sink_walk_immediately_after"] = sink_walk1
+    rec["identity_immediately_after"] = identity_gate(
+        "[5](a) the t1 border row, immediately after the write", T1_OUTER_WIRE, src_before, src_after,
+        sink_wire_now, sink_walk1, mandatory=True)
+
     nodes, _p = census_and_purge(WORK, nodes_before, "[5] after the t1 row", hints)
+    # ---- PRE-DECIDED 71: WAS A LIVE OBJECT'S uid RE-USED BY THE OBJECT THIS CALL MINTED?
+    rec["minted_uids"] = (_p or {}).get("new_uids")
+    minted = [int(u) for u, _c, _pos in ((_p or {}).get("new_uids") or [])]
+    rec["minted_uid_equals_the_live_source_wire_uid"] = (T1_OUTER_WIRE in minted)
+    fact("[5] *** PRE-DECIDED 71 MEASUREMENT: the call MINTED %r ; the op's own `UID 2` readback (the wire "
+         "it created at the sink) is %r ; MINTED UID == THE LIVE SOURCE WIRE UID %d : %r. Last run the junk "
+         "`Invoke` carried %d - the source wire's own uid - while every other object created took a "
+         "monotonic uid in the 23,800-24,009 band. This FACT never gates the run. ***"
+         % (rec["minted_uids"], ((rec.get("connect") or {}).get("op_readback") or {}).get("UID 2"),
+            T1_OUTER_WIRE, rec["minted_uid_equals_the_live_source_wire_uid"], T1_RECORDED_MINTED_UID))
 
     # ---- THE BORDER-ROW ACCEPTANCE (A3), READ OFF THE MACHINE
     _sl2, srows2 = node_view(WORK, CASE_UID, hints, "[5] sink #%d AFTER" % CASE_UID, quiet=True)
@@ -1141,13 +1377,22 @@ def step_5_t1(nodes, hints):
     rec["sink_wire_uid"] = sink_wire
     rec["source_side_wire_uid"] = src_side_wire
     rec["sink_wired_after"] = wired_count(srows2)
+    # ---- PRE-DECIDED 70 AGAIN, ON THE STATE THE ARTEFACT WOULD ACTUALLY KEEP: after the junk purge.
+    print_walk("[5] (b) SOURCE WIRE %d AFTER THE JUNK PURGE" % T1_OUTER_WIRE, T1_OUTER_WIRE, walk2, werr2)
+    sink_walk2, _e3 = wire_walk("[5] (b) SINK WIRE %r AFTER THE JUNK PURGE" % sink_wire, sink_wire)
+    rec["sink_walk_after_purge"] = sink_walk2
+    rec["identity_after_purge"] = identity_gate(
+        "[5](b) the t1 border row, after the junk purge", T1_OUTER_WIRE, src_before, walk2 or [],
+        sink_wire, sink_walk2, mandatory=True)
     dw = (rec.get("connect") or {}).get("wire_delta")
     is_broken = ((rec.get("connect") or {}).get("op_readback") or {}).get("Is Broken?")
     rec["wire_delta"] = dw
     rec["is_broken"] = is_broken
     rec["two_different_wire_uids"] = bool(sink_wire) and sink_wire != src_side_wire
     rec["landed"] = bool(sink_wire) and rec["sink_wired_after"] > rec["sink_wired_before"]
-    fact("[5] *** BORDER-ROW ACCEPTANCE (A3): wire_delta %r (expect %d) ; SOURCE-side wire %r vs SINK-side "
+    fact("[5] *** BORDER-ROW REPORT - A3 IS WITHDRAWN AS AN ACCEPTANCE TEST BY PRE-DECIDED 70 AND THESE "
+         "FOUR NUMBERS ARE NOW FACT LINES ONLY; the acceptance test is the A3-ID identity gate above: "
+         "wire_delta %r (the old expectation was %d) ; SOURCE-side wire %r vs SINK-side "
          "wire %r -> TWO DIFFERENT uids %r ; `Wire.Is Broken?` %r ; sink WIRED-terminal count %d -> %d ; "
          "LANDED %r ***"
          % (dw, T1_BORDER_WIRE_DELTA, src_side_wire, sink_wire, rec["two_different_wire_uids"], is_broken,
@@ -1164,6 +1409,249 @@ def step_5_t1(nodes, hints):
     return nodes, rec
 
 
+# ============================ [5b] THE SIXTH ROW - `Q_focusback` SelectorTunnel #12673 (Pre-decided 72)
+def step_6_sixth_row(nodes, hints):
+    """THE SIXTH ROW, WIRED **BEFORE** THE CENSUS SO THE A4 BARE-SINK GATE JUDGES THE FINISHED STAGE.
+
+    A4 fired on its first run (`tools/bench/build_d1_m3a1.log:548-552`): `#10407` t6's SECOND consumer,
+    `Q_focusback` `SelectorTunnel #12673`, was left bare - a dropped consumer, i.e. a rule-1a change of
+    computation. Pre-decided 72 dissolves the "no reader this fleet owns can address a tunnel" blocker: a
+    tunnel is not a `Nodes[]` entry, but its terminal IS an entry in its OWNING STRUCTURE NODE's Terms[].
+
+    THE ROUTE, EXACTLY, AND NOTHING ELSE:
+      (1) the OWNER CHAIN of #12673 (`OpOwnerChain_v1` through `owner_of(..., strict=True)`, whose identity
+          echo is what makes the reader trustworthy - 53(d^8)) up to its owning **Case Structure**;
+      (2) that NODE's `Terms[]`, and the entry that **EXPOSES UID 12673** - never a carried index (the
+          recorded cause of T2c2's broken wire) and never a guessed NAME (FIX 1: `Q_focusback` is a FUTURE
+          QUEUE name, `docs/d1-build-plan.md:576`, and the measured terminal names of the owning node are
+          "", "position [internal units]", "" - `tools/bench/main_vi_nodeterms.json:14287-14313`). Each
+          entry's uid comes from `OpWireSource_v5` on the wire that entry carries, the only uid-bearing
+          walk this fleet owns for a terminal; an entry with no wire exposes no uid and FAILS the row;
+      (3) `connect_from_wire` with SOURCE = t6's **LIVE** net, RE-MEASURED here. The recorded value is
+          23963 (build_d1_m3a1.log:548), NOT the 9113 the row inventory names - and even 23963 is a uid
+          THIS BUILD MINTS, so it is compared against the live read, never used in its place.
+    HAZARDS HANDLED RATHER THAN HOPED PAST: an owner chain terminates SILENTLY at a `FlatSequenceFrame`. If
+    the chain does not reach a Case Structure, or the by-name entry is not in its Terms[], a FACT line names
+    exactly what the walk returned and the ROW FAILS. **NO FALLBACK IS IMPROVISED.** `Outside Terminal` is
+    UNBUILT, its short name would have to be read off the machine, and it is OUT OF SCOPE for this run: an
+    unbuilt property added mid-build has not been through this cycle's prior-art review.
+    """
+    print("\n---------- [5b] THE SIXTH ROW: SelectorTunnel #%d (row label `%s`) <- #%d t%d %r, VIA "
+          "`connect_from_wire` OFF t6's LIVE NET"
+          % (T6_SECOND_SINK, T6_SIXTH_SINK_LABEL, CASE_UID, T6_TERM_INDEX, T6_TERM_NAME), flush=True)
+    rec = {"sink_uid": T6_SECOND_SINK, "sink_class_recorded": "SelectorTunnel",
+           "sink_row_label_LOG_TEXT_ONLY": T6_SIXTH_SINK_LABEL,
+           "source_node": CASE_UID, "source_term_name": T6_TERM_NAME,
+           "source_term_index_recorded": T6_TERM_INDEX, "live_net_recorded": T6_LIVE_NET_RECORDED,
+           "original_net": T6_ORIGINAL_NET, "addressed": False, "landed": False,
+           "no_fallback": "`Outside Terminal` is UNBUILT and OUT OF SCOPE for this run; no fallback is "
+                          "improvised and no Local is ever substituted (rule 1a).",
+           "evidence": "docs/cycle27-plan.md:2866-2876 (Pre-decided 72); "
+                       "tools/bench/build_d1_m3a1.log:548-552"}
+    K["sixth_row"] = rec
+    if left_s() < ROW_MIN_S:
+        rec["result"] = "NOT STARTED - only %.0f s left before the reserve" % left_s()
+        fact("[5b] %s" % rec["result"])
+        dump()
+        return nodes, rec
+
+    # ---- (1) THE OWNER CHAIN OF #12673, HOP BY HOP, EACH HOP ECHO-CHECKED (owner_of strict=True)
+    chain, cur, case_uid = [], T6_SECOND_SINK, None
+    for hop in range(T6_OWNER_HOPS):
+        own, oerr = safe("[5b] owner_of(#%d) hop %d" % (cur, hop + 1),
+                         lambda u=cur: owner_of(WORK, u, strict=True))
+        row = {"hop": hop + 1, "uid": cur, "owner_class": (own[0] if own else None),
+               "owner_uid": (own[1] if own else None), "error_verbatim": oerr}
+        chain.append(row)
+        fact("[5b] OWNER CHAIN hop %d: #%s -> owner_class %r owner_uid %r%s"
+             % (hop + 1, cur, row["owner_class"], row["owner_uid"], (" ; " + oerr) if oerr else ""))
+        if not own or not own[1]:
+            break
+        if str(own[0]) == "CaseStructure":
+            case_uid = int(own[1])
+            break
+        cur = int(own[1])
+    rec["owner_chain"] = chain
+    rec["case_structure_uid"] = case_uid
+    # ---- FIX 1 (b): THE MEASURED OWNER UID IS A **FACT**, COMPARED AGAINST THE CENSUS, NEVER A GATE.
+    rec["owner_uid_equals_the_recorded_12589"] = (case_uid == T6_OWNER_CASE_RECORDED)
+    fact("[5b] FIX 1(b) FACT, NOT A GATE: the MEASURED owning Case Structure uid is %r ; the recorded census "
+         "value is %d (tools/bench/main_vi_nodeterms.json:14287) ; EQUAL %r. THE MEASUREMENT GOVERNS - a "
+         "mismatch is reported and the walk below still decides the row."
+         % (case_uid, T6_OWNER_CASE_RECORDED, rec["owner_uid_equals_the_recorded_12589"]))
+    if case_uid is None:
+        rec["result"] = ("THE OWNER CHAIN OF #%d DID NOT REACH A CaseStructure IN %d HOP(S). WHAT THE WALK "
+                         "RETURNED, VERBATIM: %r. An owner chain terminates silently at a FlatSequenceFrame "
+                         "(docs/d1-build-plan.md:912), so this is a MEASURED outcome, not an error."
+                         % (T6_SECOND_SINK, T6_OWNER_HOPS, chain))
+        fact("[5b] *** %s NOTHING IS WIRED AND NO FALLBACK IS IMPROVISED. ***" % rec["result"])
+        gate("A5 the sixth row is ADDRESSABLE: #%d's owner chain reaches a Case Structure one of whose "
+             "Terms[] entries EXPOSES UID %d" % (T6_SECOND_SINK, T6_SECOND_SINK), False,
+             "owner chain %r" % (chain,))
+        dump()
+        return nodes, rec
+
+    # ---- (2) FIX 1 (c): THAT NODE'S Terms[], AND THE ENTRY THAT **EXPOSES UID 12673** - NOT A NAME, NOT
+    #      A CARRIED INDEX. Each entry's uid is resolved through the wire it carries, because `node_terms`
+    #      returns no per-terminal uid and no reader this fleet owns does (tools/gscript.py:931-937;
+    #      docs/toolkit-capabilities.md:60-61 - the only uid-bearing walks are OpWireSource_v5 on a WIRE
+    #      and OpOwnerChain_v1 on an object). An entry carrying NO wire exposes NO uid: per (e) that is a
+    #      MEASURED failure of the row, never an occasion to guess.
+    cloc, crows = node_view(WORK, case_uid, hints, "[5b] the owning CaseStructure #%d" % case_uid)
+    cd = (cloc.get("found") or {}).get("diagram_index")
+    cn = (cloc.get("found") or {}).get("nodes_index")
+    rec["case_structure_found"] = cloc.get("found")
+    rec["case_structure_n_terminals"] = len(crows)
+    exposure = []
+    for t in crows:
+        w = t.get("wire") or 0
+        walk, werr = (([], "") if not w else wire_walk(
+            "[5b] (2) Terms[t%r] of #%d carries wire %r" % (t.get("i"), case_uid, w), w))
+        owners = sorted({int(x["owner_uid"]) for x in (walk or []) if x.get("owner_uid")})
+        exposure.append({"i": t.get("i"), "name": t.get("name"), "is_source": t.get("is_source"),
+                         "wire": w, "exposed_owner_uids": owners, "walk_error": werr})
+        fact("[5b] (2) ENTRY t%-2r name %-30r is_source %-5r wire %-7r EXPOSES owner uid(s) %r%s"
+             % (t.get("i"), t.get("name"), t.get("is_source"), w, owners,
+                (" ; " + werr) if werr else ""))
+    rec["terms_exposure"] = exposure
+    matches = [e for e in exposure if T6_SECOND_SINK in (e["exposed_owner_uids"] or [])]
+    rec["uid_matches"] = matches
+    hit, how = None, ""
+    if len(matches) == 1:
+        hit = next((t for t in crows if t["i"] == matches[0]["i"]), None)
+        how = ("BY UID - Terms[t%r] of #%d is the ONE entry exposing uid %d (its wire %r carries a terminal "
+               "owned by #%d)" % (matches[0]["i"], case_uid, T6_SECOND_SINK, matches[0]["wire"],
+                                  T6_SECOND_SINK))
+    elif len(matches) > 1:
+        sinks = [e for e in matches if e["is_source"] is False]
+        if len(sinks) == 1:
+            hit = next((t for t in crows if t["i"] == sinks[0]["i"]), None)
+            how = ("BY UID - %d entries expose uid %d and exactly ONE of them is a SINK (t%r)"
+                   % (len(matches), T6_SECOND_SINK, sinks[0]["i"]))
+    if hit is None or None in (cd, cn):
+        rec["result"] = ("NO ENTRY OF CaseStructure #%s's Terms[] EXPOSES UID %d: %d terminal(s) read, %d "
+                         "uid match(es), node located at %r. WHAT THE WALK RETURNED, ENTRY BY ENTRY: %r"
+                         % (case_uid, T6_SECOND_SINK, len(crows), len(matches), cloc.get("found"),
+                            exposure))
+        fact("[5b] *** %s NOTHING IS WIRED AND NO FALLBACK IS IMPROVISED - `Outside Terminal` IS UNBUILT "
+             "AND OUT OF SCOPE FOR THIS RUN, AND THE DELETED BY-NAME LOOKUP IS NOT REINSTATED (FIX 1). ***"
+             % rec["result"])
+        gate("A5 the sixth row is ADDRESSABLE: #%d's owner chain reaches a Case Structure one of whose "
+             "Terms[] entries EXPOSES UID %d" % (T6_SECOND_SINK, T6_SECOND_SINK), False,
+             "CaseStructure #%r ; %d terminal(s) ; exposure %r" % (case_uid, len(crows), exposure))
+        dump()
+        return nodes, rec
+    rec["sink_addr"] = {"diagram_index": cd, "nodes_index": cn, "term_index": hit["i"]}
+    rec["sink_term_resolution"] = how
+    rec["sink_terminal_before"] = hit
+    rec["sink_wired_before"] = wired_count(crows)
+    # ---- FIX 1 (d): THE RESOLVED ENTRY'S **NAME** IS A FACT, COMPARED, NEVER A GATE.
+    rec["resolved_term_name"] = hit.get("name")
+    rec["resolved_term_name_equals_the_recorded_one"] = (hit.get("name") == T6_OWNER_TERM_NAME_RECORDED)
+    fact("[5b] FIX 1(d) FACT, NOT A GATE: the resolved entry's NAME is %r ; the recorded census value is %r "
+         "(tools/bench/main_vi_nodeterms.json:14304) ; EQUAL %r. The row label %r is a FUTURE QUEUE name "
+         "(docs/d1-build-plan.md:576) and is on NO lookup path (FIX 1)."
+         % (hit.get("name"), T6_OWNER_TERM_NAME_RECORDED,
+            rec["resolved_term_name_equals_the_recorded_one"], T6_SIXTH_SINK_LABEL))
+    fact("[5b] (2) SINK RESOLVED %s ; CaseStructure #%d at Diagram idx %r Nodes[%r], terminal t%d, "
+         "is_source %r, it currently carries wire %r (NEVER a carried index - T2c2)"
+         % (how, case_uid, cd, cn, hit["i"], hit.get("is_source"), hit.get("wire")))
+
+    # ---- (3) THE SOURCE: #10407 t6's **LIVE** net, RE-MEASURED HERE
+    sloc, srows = node_view(WORK, CASE_UID, hints, "[5b] source #%d" % CASE_UID, quiet=True)
+    ti, thow = resolve_term(srows, T6_TERM_NAME, T6_TERM_INDEX, True, "[5b] source #%d" % CASE_UID)
+    trow = next((t for t in srows if t["i"] == ti), None) if ti is not None else None
+    live_net = (trow or {}).get("wire") or 0
+    rec["source_term_index_used"] = ti
+    rec["source_term_resolution"] = thow
+    rec["live_net"] = live_net
+    rec["live_net_equals_the_recorded_one"] = (live_net == T6_LIVE_NET_RECORDED)
+    fact("[5b] (3) #%d t%r %r resolved %s ; ITS LIVE NET IS %r (last run's was %d ; equal %r). The LIVE "
+         "value is what is used - this uid is minted by THIS build, so the recorded one is only compared."
+         % (CASE_UID, ti, T6_TERM_NAME, thow, live_net, T6_LIVE_NET_RECORDED,
+            rec["live_net_equals_the_recorded_one"]))
+    src_before, swerr = wire_walk("[5b] (3) t6's LIVE net %r BEFORE the write" % live_net, live_net)
+    src = next((t for t in src_before
+                if t.get("is_source") and t.get("owner_uid") and t.get("recip") == live_net), None)
+    rec["source_walk_before"] = src_before
+    rec["source_terminal"] = src
+    if not live_net or not src:
+        rec["result"] = ("#%d t%r CARRIES NET %r AND ITS Terms[] WALK RETURNED NO SOURCE ENDPOINT: %r%s. "
+                         "Nothing is wired, nothing is substituted."
+                         % (CASE_UID, ti, live_net, src_before, (" ; " + swerr) if swerr else ""))
+        fact("[5b] *** %s ***" % rec["result"])
+        gate("A5 the sixth row is ADDRESSABLE: #%d's owner chain reaches a Case Structure one of whose "
+             "Terms[] entries EXPOSES UID %d" % (T6_SECOND_SINK, T6_SECOND_SINK), False,
+             "the SOURCE side did not resolve: live net %r, walk %r" % (live_net, src_before))
+        dump()
+        return nodes, rec
+    rec["addressed"] = True
+    gate("A5 the sixth row is ADDRESSABLE: #%d's owner chain reaches a Case Structure one of whose "
+         "Terms[] entries EXPOSES UID %d" % (T6_SECOND_SINK, T6_SECOND_SINK), True,
+         "CaseStructure #%d, Diagram idx %r Nodes[%r], t%d ; source net %r t%r"
+         % (case_uid, cd, cn, hit["i"], live_net, src["i"]))
+
+    # ---- THE WRITE
+    lt_before, _lb = safe("[5b] count('LoopTunnel') before", lambda: g.count(WORK, "LoopTunnel"))
+    rec["loop_tunnel_before"] = lt_before
+    nodes_before, _ = node_census(WORK, "[5b] before connect_from_wire")
+    t0 = time.time()
+    try:
+        dw, es, err, sub = CONNECT_FROM_WIRE(WORK, live_net, src["i"], cd, cn, hit["i"], CFW_LABELS)
+        rec["connect"] = {"wire_delta": dw, "exec_state": es, "op_error": str(err)[:250], "op_readback": sub}
+    except Exception as e:                                                         # noqa: BLE001
+        rec["connect"] = {"call_error": "%s: %s" % (type(e).__name__, str(e)[:250])}
+        refusal("[5b] connect_from_wire(wire %r t%r -> CaseStructure #%d t%d)"
+                % (live_net, src["i"], case_uid, hit["i"]), rec["connect"]["call_error"])
+    rec["call_cost_s"] = round(time.time() - t0, 2)
+    fact("[5b] connect_from_wire(wire=%r, wire_term=%r, sink_diag=%r, sink_node=%r, sink_term=%r) -> %r "
+         "(%.2f s)" % (live_net, src["i"], cd, cn, hit["i"], rec["connect"], rec["call_cost_s"]))
+
+    # ---- PRE-DECIDED 70's IDENTITY READ, IMMEDIATELY AFTER THE WRITE AND BEFORE THE JUNK PURGE
+    lt_after, _la = safe("[5b] count('LoopTunnel') immediately after the write",
+                         lambda: g.count(WORK, "LoopTunnel"))
+    rec["loop_tunnel_immediately_after_write"] = lt_after
+    lt_delta = (lt_after or 0) - (lt_before or 0)
+    rec["loop_tunnel_delta"] = lt_delta
+    fact("[5b] LoopTunnel %r -> %r (delta %r): this write %s a LoopTunnel, so Pre-decided 70's identity "
+         "gate %s to it"
+         % (lt_before, lt_after, lt_delta, "CREATED" if lt_delta > 0 else "did NOT create",
+            "APPLIES" if lt_delta > 0 else "does NOT apply - it is not a border write"))
+    src_after, _e1 = wire_walk("[5b] SOURCE net %r IMMEDIATELY AFTER THE WRITE, BEFORE THE PURGE"
+                               % live_net, live_net)
+    rec["source_walk_immediately_after"] = src_after
+    _c2, crows2 = node_view(WORK, case_uid, hints, "[5b] sink CaseStructure #%d AFTER" % case_uid,
+                            quiet=True)
+    sink_after = next((t for t in crows2 if t["i"] == hit["i"]), None)
+    sink_wire = (sink_after or {}).get("wire") or 0
+    rec["sink_terminal_after"] = sink_after
+    rec["sink_wire_uid"] = sink_wire
+    rec["sink_wired_after"] = wired_count(crows2)
+    sink_walk, _e2 = wire_walk("[5b] SINK WIRE %r IMMEDIATELY AFTER THE WRITE" % sink_wire, sink_wire)
+    rec["sink_walk"] = sink_walk
+    rec["identity"] = identity_gate("[5b] the sixth row", live_net, src_before, src_after, sink_wire,
+                                    sink_walk, mandatory=(lt_delta > 0))
+    nodes, _p = census_and_purge(WORK, nodes_before, "[5b] after the sixth row", hints)
+    rec["minted_uids"] = (_p or {}).get("new_uids")
+    minted = [int(u) for u, _c3, _p3 in ((_p or {}).get("new_uids") or [])]
+    rec["minted_uid_equals_the_live_source_wire_uid"] = (live_net in minted)
+    fact("[5b] PRE-DECIDED 71 MEASUREMENT: the call MINTED %r ; `UID 2` readback %r ; MINTED UID == THE "
+         "LIVE SOURCE NET %r : %r. This FACT never gates the run."
+         % (rec["minted_uids"], ((rec.get("connect") or {}).get("op_readback") or {}).get("UID 2"),
+            live_net, rec["minted_uid_equals_the_live_source_wire_uid"]))
+    rec["landed"] = bool(sink_wire) and rec["sink_wired_after"] > rec["sink_wired_before"]
+    fact("[5b] *** THE SIXTH ROW: sink terminal t%d of CaseStructure #%d carries wire %r ; CaseStructure "
+         "WIRED-terminal count %d -> %d ; `Wire.Is Broken?` %r ; LANDED %r. THE DECIDING GATE IS A4 BELOW, "
+         "WHICH RE-READS #%d t%d's NET AND LOOKS FOR #%d ON IT. ***"
+         % (hit["i"], case_uid, sink_wire, rec["sink_wired_before"], rec["sink_wired_after"],
+            ((rec.get("connect") or {}).get("op_readback") or {}).get("Is Broken?"), rec["landed"],
+            CASE_UID, T6_TERM_INDEX, T6_SECOND_SINK))
+    rec["exec_state_after"] = unit_boundary("after the sixth row SelectorTunnel #%d (row label `%s`)"
+                                            % (T6_SECOND_SINK, T6_SIXTH_SINK_LABEL))
+    dump()
+    return nodes, rec
+
+
 # ============================================= [6b] A4, THE BARE-SINK GATE (prior-art review, 2026-09-21)
 def bare_sink_gate(hints):
     """`#10407` t6 `'position [internal units]'` has TWO sinks in the original, on net 9113: the
@@ -1174,6 +1662,21 @@ def bare_sink_gate(hints):
     A SelectorTunnel is not a `Nodes[]` entry, so it cannot be read with `node_terms`; what IS readable is
     the NET - t6's wire on the live target, walked by uid with `wire_source_owner`. If #12673 is not a
     terminal of that net, this stage has left it bare: the run FAILS and the log names it as a SIXTH ROW.
+
+    *** FIX 2, 2026-09-21 - THE GATE IS NOW TWO-SIDED (c70 prior-art review A3(ii) `contradicted`,
+    `archive/peer/2026-09-21-priorart-c70-m3a1.md:233-239`). As first coded it walked ONE wire and would
+    have FAILED even a PERFECT sixth row: the crossing is OUTWARD - `#10407` moves into body
+    `Diagram #23058` (`tools/bench/build_d1_m3a1.log:156`) while `#12589` stays on `Diagram #639`
+    (`docs/d1-route-b-plan.md:207`) - so #12673 sits on the OUTER segment, which is a DIFFERENT wire uid,
+    exactly the one-sided defect this cycle's identity gate was built to end. Two branches now, and the
+    run FAILS only if #12673 is on NEITHER:
+      SAME-DIAGRAM branch : #12673 is a non-source terminal of t6's own net.
+      BORDER branch       : t6's net has a `LoopTunnel` SINK **T**; T's OTHER-side wires (its
+                            `Outside Terminal` wire and each inside wire that is not t6's net, read with
+                            the BUILT `gscript.tunnels` / `OpTunnels_v0`, uid-matched, never index-guessed)
+                            carry #12673 as a non-source terminal.
+    Which branch passed, and T, are FACT lines. Nothing here hard-codes "it is a border crossing": the
+    diagram uids above are the EXPECTATION, and both sides are measured on every run. ***
     """
     print("\n---------- [6b] A4 THE BARE-SINK GATE: is `Q_focusback` SelectorTunnel #%d still a sink of "
           "#%d t%d's net?" % (T6_SECOND_SINK, CASE_UID, T6_TERM_INDEX), flush=True)
@@ -1196,12 +1699,64 @@ def bare_sink_gate(hints):
     rec["net_walk_error"] = werr
     owners = [t.get("owner_uid") for t in (walk or []) if t.get("owner_uid")]
     rec["net_owner_uids"] = owners
-    present = T6_SECOND_SINK in owners
-    rec["second_sink_present"] = present
+    same_diagram = any(t.get("owner_uid") == T6_SECOND_SINK and t.get("is_source") is False
+                       for t in (walk or []))
+    rec["branch_same_diagram"] = same_diagram
     fact("[6b] t6's net %r Terms[] walk: %r ; owner uids %r%s"
          % (wire, walk, owners, (" ; " + werr) if werr else ""))
-    fact("[6b] *** #%d (`Q_focusback` SelectorTunnel) IS %sA TERMINAL OF #%d t%r's NET ***"
-         % (T6_SECOND_SINK, "" if present else "**NOT** ", CASE_UID, ti))
+    fact("[6b] BRANCH 1 (SAME-DIAGRAM): #%d is %sa NON-SOURCE terminal of #%d t%r's own net %r"
+         % (T6_SECOND_SINK, "" if same_diagram else "**NOT** ", CASE_UID, ti, wire))
+
+    # ---- FIX 2, BRANCH 2 (BORDER): t6's net -> its LoopTunnel SINK T -> T's OTHER-SIDE wires -> #12673
+    border, border_T, border_wire, border_detail = False, None, None, []
+    lt_sinks = sorted({int(t["owner_uid"]) for t in (walk or [])
+                       if t.get("owner_class") == "LoopTunnel" and t.get("is_source") is False
+                       and t.get("owner_uid")})
+    rec["t6_net_loop_tunnel_sinks"] = lt_sinks
+    fact("[6b] BRANCH 2 (BORDER): LoopTunnel SINK(s) on t6's net: %r" % (lt_sinks,))
+    n_lt, _nlterr = safe("[6b] count('LoopTunnel')", lambda: g.count(WORK, "LoopTunnel"))
+    for T in lt_sinks:
+        idx, trec = None, None
+        for i in range(int(n_lt or 0)):
+            cand, _cerr = safe("[6b] tunnels(index=%d)" % i, lambda ii=i: g.tunnels(WORK, ii))
+            if cand and int(cand.get("uid") or 0) == T:
+                idx, trec = i, cand
+                break
+        if trec is None:
+            fact("[6b] BRANCH 2: LoopTunnel #%d was NOT found in the %r-entry LoopTunnel traverse - its "
+                 "other side could not be read" % (T, n_lt))
+            border_detail.append({"T": T, "found": False})
+            continue
+        others = [w for w in ([trec.get("out_wire")] + list(trec.get("in_wires") or []))
+                  if w and int(w) != int(wire or 0)]
+        fact("[6b] BRANCH 2: LoopTunnel #%d = traverse index %r ; out_wire %r ; in_wires %r ; OTHER-side "
+             "wire(s) to walk %r" % (T, idx, trec.get("out_wire"), trec.get("in_wires"), others))
+        for w2 in others:
+            w2walk, w2err = safe("[6b] wire_source_owner(%r) - the other side of LoopTunnel #%d" % (w2, T),
+                                 lambda ww=w2: WIRE_TERMS(WORK, int(ww)), [])
+            w2owners = [t.get("owner_uid") for t in (w2walk or []) if t.get("owner_uid")]
+            hit2 = any(t.get("owner_uid") == T6_SECOND_SINK and t.get("is_source") is False
+                       for t in (w2walk or []))
+            fact("[6b] BRANCH 2: the other-side wire %r of LoopTunnel #%d has owner uids %r ; #%d present "
+                 "as a NON-SOURCE terminal: %r%s"
+                 % (w2, T, w2owners, T6_SECOND_SINK, hit2, (" ; " + w2err) if w2err else ""))
+            border_detail.append({"T": T, "tunnel_index": idx, "other_wire": w2, "owner_uids": w2owners,
+                                  "hit": hit2, "walk_error": w2err})
+            if hit2 and not border:
+                border, border_T, border_wire = True, T, w2
+    rec["branch_border"] = border
+    rec["border_tunnel_uid"] = border_T
+    rec["border_other_side_wire"] = border_wire
+    rec["border_detail"] = border_detail
+    present = bool(same_diagram or border)
+    rec["second_sink_present"] = present
+    rec["which_branch_passed"] = ("SAME-DIAGRAM" if same_diagram else
+                                  ("BORDER via LoopTunnel #%r on wire %r" % (border_T, border_wire)
+                                   if border else "NEITHER"))
+    fact("[6b] *** #%d (SelectorTunnel, row label `%s`) IS %sA NON-SOURCE TERMINAL OF #%d t%r's NET OR OF "
+         "THE OTHER SIDE OF ITS LOOP BORDER - branch that passed: %s (tunnel T=%r, other-side wire %r) ***"
+         % (T6_SECOND_SINK, T6_SIXTH_SINK_LABEL, "" if present else "**NOT** ", CASE_UID, ti,
+            rec["which_branch_passed"], border_T, border_wire))
     if not present:
         rec["sixth_row"] = {"sink_uid": T6_SECOND_SINK, "sink_class": "SelectorTunnel",
                             "sink_label": "Q_focusback",
@@ -1214,9 +1769,11 @@ def bare_sink_gate(hints):
              "inventory for this stage was FIVE rows; this makes SIX. It is NOT attempted here and it is "
              "NOT worked around. ***"
              % (T6_SECOND_SINK, CASE_UID, T6_TERM_INDEX, T6_TERM_NAME, T6_ORIGINAL_NET))
-    gate("A4 no SINK that was wired on the bed is left bare by this stage (`Q_focusback` SelectorTunnel "
-         "#%d on #%d t%r's net)" % (T6_SECOND_SINK, CASE_UID, T6_TERM_INDEX), present,
-         "t6 wire %r ; net owner uids %r" % (wire, owners))
+    gate("A4 no SINK that was wired on the bed is left bare by this stage (SelectorTunnel #%d on #%d "
+         "t%r's net, EITHER SIDE of the loop border - FIX 2)"
+         % (T6_SECOND_SINK, CASE_UID, T6_TERM_INDEX), present,
+         "branch %s ; t6 wire %r ; net owner uids %r ; LoopTunnel sinks %r ; border walk %r"
+         % (rec["which_branch_passed"], wire, owners, lt_sinks, border_detail))
     R["bare_sink_gate"] = rec
     dump()
     return rec
@@ -1351,7 +1908,8 @@ def main():
         made = step_3_registers()
         step_4_sr_rows(made, hints)
         nodes, _t1 = step_5_t1(nodes, hints)
-        census("CENSUS", hints, include_registers=True)
+        nodes, _t6 = step_6_sixth_row(nodes, hints)      # Pre-decided 72 - BEFORE the census, so A4 judges
+        census("CENSUS", hints, include_registers=True)  # the FINISHED stage
         step_7_save(hints)
     except Halt as e:
         fact("HALTED: %s" % e)
