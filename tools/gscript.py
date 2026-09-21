@@ -270,9 +270,23 @@ def reset():
 
 
 def _lv_gui(*args):
-    """Invoke lv_gui.ps1 (no COM - safe from any thread)."""
+    """Invoke lv_gui.ps1 (no COM - safe from any thread).
+
+    REPAIRED 2026-09-22 (`archive/peer/2026-09-22-c72-guisave-foreground-r2.md` §2, CONFIRMED by its
+    own discriminating test): args were joined UNQUOTED into the -Command string, so any argument
+    carrying spaces or parentheses - every `-Evidence` sentence, i.e. every state-changing action
+    this module ever requested - was a PowerShell PARSE ERROR ("The term 'skill' is not recognized")
+    and the action never dispatched; `tools/gui_actions.log` has no state-changing row from these
+    call sites. Each arg is now single-quoted for PowerShell unless the caller pre-quoted it."""
+    def q(a):
+        a = str(a)
+        if a.startswith('"') and a.endswith('"'):
+            return a                     # call sites pass titles pre-quoted: '"<name> Front Panel"'
+        if a and not any(c in a for c in " ()'\"`,;&|"):
+            return a
+        return "'" + a.replace("'", "''") + "'"
     cmd = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command",
-           "& '{}' {}".format(LV_GUI, " ".join(args))]
+           "& '{}' {}".format(LV_GUI, " ".join(q(a) for a in args))]
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
     return (r.stdout or "") + (r.stderr or "")
 
@@ -2022,30 +2036,72 @@ def gui_save(target):
     # 2026-09-15 00:19 (cycle3b run 2): the Target had ONLY a Front Panel window open, so the BD candidate never
     # focused and Ctrl+S on the FP saved nothing (the 2026-08-30 finding). If no BD window exists, open it from the
     # FP with Ctrl+E (the fleet's existing approved keystroke, bench_prep 'open GUIBENCH BD') and save there.
+    # REPAIRED per STATUS NEXT 2026-09-22 (archive/peer/2026-09-22-c71-run3.md Failure-2 §5) after run 4
+    # (tools/bench/m3a1_save_before_20260922_002234.png) showed WHY the save failed with no dialog up:
+    # after a fresh restart the Getting-Started home window (title exactly "LabVIEW") holds the FOREGROUND,
+    # `focus` prints "focused" without verifying foreground, and SendKeys lands wherever the foreground is -
+    # so Ctrl+E/Ctrl+S went to the home window and no keystroke ever reached the VI. Two adopted repairs:
+    # (a) FAIL LOUDLY with what was OBSERVED per candidate - never invent a "modal dialog" cause;
+    # (b) capture the window list at the moment of the save. Mechanism: the H5 blind `click` becomes a
+    # `clickprobe`, whose JSON reports the real foreground window after the click - Ctrl+S is sent ONLY
+    # when that foreground title contains the candidate's title, so "keystroke dispatched" is measured.
+    import json as _json
+    import re as _re
+    windows_at_entry = " / ".join(l.strip() for l in _lv_gui("-Action", "windows").splitlines() if l.strip())
+    attempts = []
+
+    def _fg_click(title):
+        """Title-bar clickprobe on `title`: activate by a REAL click, then report the measured
+        foreground. Returns (foreground_is_this_window, observed_foreground_title)."""
+        m = _re.search(r"left=(-?\d+) top=(-?\d+) right=(-?\d+)",
+                       _lv_gui("-Action", "rect", "-Title", '"%s"' % title))
+        if not m:
+            return False, "(no rect for %r)" % title
+        L, T, R = (int(x) for x in m.groups())
+        fg = "(no probe ran)"
+        for _try in (1, 2):
+            pj = _lv_gui("-Action", "clickprobe", "-Title", '"%s"' % title,
+                         "-X", str(min(L + 300, R - 120)), "-Y", str(T + 10),
+                         "-Exception", "Approved",
+                         "-Evidence", "gui_save: title-bar clickprobe, foreground MEASURED before Ctrl+S (save repair 2026-09-22)")
+            line = next((l for l in pj.splitlines() if l.lstrip().startswith('{"probe"')), "")
+            try:
+                pr = _json.loads(line)
+            except Exception:
+                pr = {}
+            fg = ((pr.get("fg_after_click") or {}).get("title")) or "(unreadable probe: %s)" % pj.strip()[:120]
+            if title in fg:
+                return True, fg
+            time.sleep(0.5)
+        return False, fg
+
+    # A VI usually has BOTH a Front Panel and a Block Diagram window. Ctrl+S on a Front Panel saves
+    # nothing (2026-08-30, 2026-09-15), so if no BD window exists, open it from the FP with Ctrl+E -
+    # but ONLY once the FP is the measured foreground, else Ctrl+E lands on the home window too.
     if "focused" not in _lv_gui("-Action", "focus", "-Title", '"%s Block Diagram"' % name):
-        if "focused" in _lv_gui("-Action", "focus", "-Title", '"%s Front Panel"' % name):
+        fp_title = "%s Front Panel" % name
+        if "focused" in _lv_gui("-Action", "focus", "-Title", '"%s"' % fp_title):
             time.sleep(0.8)
-            _lv_gui("-Action", "keys", "-Key", "^e", "-WaitMs", "1500", "-Exception", "Approved",
-                    "-Evidence", "gui_save: open the Block Diagram window - Ctrl+S on a Front Panel saves nothing (2026-08-30, 2026-09-15)")
-            time.sleep(0.8)
+            ok, fg = _fg_click(fp_title)
+            if ok:
+                _lv_gui("-Action", "keys", "-Key", "^e", "-WaitMs", "1500", "-Exception", "Approved",
+                        "-Evidence", "gui_save: open the Block Diagram window - Ctrl+S on a Front Panel saves nothing (2026-08-30, 2026-09-15)")
+                time.sleep(0.8)
+            else:
+                attempts.append("Ctrl+E to open the BD was NOT DISPATCHED - foreground stayed %r" % fg)
     for title in ('%s Block Diagram' % name, '%s Front Panel' % name, name):
         out = _lv_gui("-Action", "focus", "-Title", '"%s"' % title)
         if "focused" not in out:
+            attempts.append("%r: no such window (focus said %r)" % (title, out.strip()[:120]))
             continue
         time.sleep(0.8)
         # H5 (2026-09-05): after a programmatic activation + Alt-tap focus, LabVIEW's UI loop
         # ignores keys / blocks COM until a real mouse click lands. Click the window's TITLE BAR
-        # (never the panel: a panel click can toggle a control) before sending Ctrl+S.
-        try:
-            import re as _re
-            m = _re.search(r"left=(-?\d+) top=(-?\d+) right=(-?\d+)", _lv_gui("-Action", "rect", "-Title", '"%s"' % title))
-            if m:
-                L, T, R = (int(x) for x in m.groups())
-                _lv_gui("-Action", "click", "-X", str(min(L + 300, R - 120)), "-Y", str(T + 10),
-                        "-Exception", "Approved", "-Evidence", "gui_save: title-bar click to unstick the UI loop (H5)")
-                time.sleep(0.4)
-        except Exception:
-            pass
+        # (never the panel: a panel click can toggle a control) - and MEASURE the foreground.
+        ok, fg = _fg_click(title)
+        if not ok:
+            attempts.append("%r: NO Ctrl+S DISPATCHED - foreground after the activating click was %r" % (title, fg))
+            continue
         _lv_gui("-Action", "keys", "-Key", "^s", "-WaitMs", "2500", "-Exception", "Approved", "-Evidence", "gui_save: COM SaveInstrument hangs on broken VIs (skill com-driving.md)")
         # SendKeys '^s' leaves the File MENU ACTIVATED (it renders highlighted). While a
         # menu is active LabVIEW's UI is modal and EVERY subsequent COM call blocks until
@@ -2055,9 +2111,10 @@ def gui_save(target):
         time.sleep(0.4)
         if os.path.getmtime(target) > before:
             return os.path.getsize(target)
+        attempts.append("%r: Ctrl+S DISPATCHED (foreground %r) but the file mtime did not move" % (title, fg))
     raise RuntimeError(
-        f"gui_save({name}): file mtime did not move after Ctrl+S on every candidate window. "
-        f"Check 'lv_gui.ps1 -Action dialogs' - a modal dialog blocks the save.")
+        "gui_save(%s): saved nothing. OBSERVED per candidate: %s. Windows at entry: %s"
+        % (name, " | ".join(attempts) or "(no candidate reached)", windows_at_entry))
 
 
 # Files OUTSIDE claudeDev that the user explicitly authorized for direct modification.

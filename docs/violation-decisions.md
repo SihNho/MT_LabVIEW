@@ -898,3 +898,27 @@ suspension prescribes.
    clause, no frontmatter date was rolled, and `CYCLE_GUARD_OFF` was never set. The stale
    `tools/bench/priorart_c68_m3a1.log`, which the gate read as "a review still running", was cleared by
    actually finishing that review into the same log — not by moving the file.
+
+## inference-over-measurement — 2026-09-22 00:22
+
+DECISION: no-device
+
+Raised to threshold (13 occurrences) by `archive/peer/2026-09-22-retrospective-cycle62.md`, which found cycle
+57 reading identity conclusions through `wire_source_owner` — an instrument the same cycle proved unsound —
+i.e. measurement through a reader that was itself an inference. **No device is built:** the threshold stays
+SUSPENDED under the user's standing order of **2026-09-18 08:53** ("장치는 더 만들지 말고 계속 진행"), so this
+block is the FINDING that suspension prescribes.
+
+1. **The remedy the slug asks for already ran, this very cycle, and it is a reader repair, not a device.**
+   CLAUDE.md's "when a diagnosis is GUESSED twice, build the reader" rule covers exactly this slug's failure
+   shape, and the cycle-69 firefighter applied it: `wire_source_owner`
+   (`tools/recipes/build_opconnectfromwire_v0.py`) now scrubs its answer indicators before each run, reads all
+   eight of the op's `error out *` outputs, and accepts a row only when the op's own uid echo (`UID 3`) equals
+   the queried uid. Acceptance measured, not asserted: `tools/bench/diag_c68_echo_accept.log`, both ghost reads
+   null straight after live reads, 8 gates pass / 0 fail, `BGRUN END rc=0 after 78s`.
+2. **A fix to an existing op wrapper is inside the standing order** (STATUS NEXT 2026-09-22 said so
+   explicitly); a new counting hook for "did you infer instead of measure" would be process-gate machinery the
+   order forbids, and no mechanical gate can read intent anyway. The mechanical part that CAN be built — sound
+   readers — is the part that was built.
+3. **Recorded, not repaired around:** `guard_cycle.py` was NOT patched, no log deleted, no date rolled,
+   `CYCLE_GUARD_OFF` never set.

@@ -1,0 +1,85 @@
+BGRUN START 2026-09-22 00:45:31 limit 28.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 1560 -Slug c72-guisave-foreground-r2 -TaskFile tools/bench/peer_task_c72_guisave.md
+OUTCOME: ANSWERED (554s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-22-c72-guisave-foreground-r2.md
+COST: $3.6507  in 34 / out 43205 / cache-create 145216 / cache-read 2046814  (550s, 31 turn(s))
+--- ANSWER ---
+Write/Bash are denied to this role, so this answer *is* the output (AGENTS.md: "Your output is your answer, nothing else"). Nothing was run, opened or edited.
+
+---
+
+# The claim is refuted by this project's own audit log: **no keystroke was dispatched at all.**
+
+## 1. The single strongest reason the claim is wrong
+
+`tools/lv_gui.ps1:631-641` writes a row to `tools/gui_actions.log` for **every** state-changing action — `click`, `clickprobe`, `keys` — and it does so *before* the `switch ($Action)` at `:644`. No row, no action. It is the one place in this project where "a keystroke happened" is a machine record rather than an inference.
+
+`tools/gui_actions.log` holds 1800 rows and its **last row is `2026-09-18 18:12:14`** (`tools/gui_actions.log:1800`). There is nothing on 2026-09-21 or 2026-09-22. Run 4's save window is 2026-09-22 00:26 (stamp `00:22:34` + the `+230.0 s` at `build_d1_m3a1.log:2683`; both screenshots' taskbar clocks read 오전 12:26).
+
+So **no Ctrl+S, no Ctrl+E and no click was dispatched in run 3 or run 4** — not into the home window, not into anything. The claim is a detailed account of where a keystroke landed, for a keystroke that was never sent. Premises (2)–(4) describe an event with no record.
+
+The previous reviewer already named this exact falsifier — `archive/peer/2026-09-22-c71-run3.md:145-147`: *"A `keys … Key=^s` row in `tools\gui_actions.log` timestamped inside the run-3 save window … would put the failure back downstream of the keystroke."* The test was specified and not run; the new claim was built on top of the same unchecked assumption.
+
+## 2. Alternative explanation — the `-Evidence` argument is never quoted, so `lv_gui.ps1` is never invoked
+
+`tools/gscript.py:272-277`:
+
+```python
+cmd = ["powershell", ..., "-Command", "& '{}' {}".format(LV_GUI, " ".join(args))]   # no quoting
+```
+
+The sibling helper in the same fleet does it correctly — `tools/bench/bench_prep.py:26-31` quotes every non-alphanumeric argument — and bench_prep's calls are precisely the ones that *do* appear in the log (`gui_actions.log:1770-1775`, `bench prep: open GUIBENCH BD`).
+
+Every `gui_save` call that carries `-Evidence` therefore reaches PowerShell as bare tokens:
+
+| call site | what PowerShell gets |
+|---|---|
+| `gscript.py:2091` (`^s`) | `-Evidence gui_save: COM SaveInstrument hangs on broken VIs (skill com-driving.md)` |
+| `gscript.py:2073-2074` (`^e`) | `… saves nothing (2026-08-30, 2026-09-15)` |
+| `gscript.py:2052` (the **new** `clickprobe`) | `… before Ctrl+S (save repair 2026-09-22)` |
+
+`-Evidence` binds only `gui_save:`; the remainder become surplus positional arguments, and `(skill com-driving.md)` is parsed as a sub-expression PowerShell tries to run as the command `skill`. Either failure mode ends the same way: `lv_gui.ps1` never reaches its logging line — exactly what the log shows. And `_lv_gui`'s return value is **discarded** at both `keys` sites, so it fails silently.
+
+This fits every observation you have:
+
+- **mtime never moved on any of the three candidates** — nothing was ever sent.
+- **No modal dialog** — nothing reached LabVIEW to raise one.
+- **The home window vanished between the captures** — `key esc` (`gscript.py:2096`) is the *only* keystroke in `gui_save` with no `-Evidence` argument, and `lv_gui.ps1:633` exempts it from the gate. It has no multi-word argument, so it is the one call that runs. Esc was delivered, to the foreground, which was the home window. The disappearance is evidence for my account, not yours.
+- `focus`, `rect`, `windows`, `shot` carry no `-Evidence` and quote their `-Title`, so they worked — which is why "focused: …" was printed and both screenshots exist.
+
+**The applied repair therefore cannot run, and worse, it will look like it confirms you.** `_fg_click` will get unparseable output, set `fg = "(unreadable probe: …)"`, and raise *"NO Ctrl+S DISPATCHED — foreground after the activating click was …"* (`gscript.py:2089`). That message will be read next cycle as proof of the foreground theory.
+
+## 3. The two specific questions
+
+**Does clickprobe-verified foreground guarantee delivery? No, for four independent reasons.** (a) It cannot execute (§2). (b) Foreground is sampled *before* `SendWait` and can change in between. (c) `SendKeys` uses a journal hook with a SendInput fallback and both are subject to UIPI/UAC — input injected toward a higher-integrity process is dropped with no error returned ([Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.sendkeys.sendwait?view=windowsdesktop-10.0)). (d) The H5 mode is about LabVIEW's message pump, not about which window is foreground; a foreground reading does not measure a pump. Only the **effect** is a measurement.
+
+**"Ctrl+S on a Front Panel saves nothing" is false as stated.** Ctrl+S is the File»Save accelerator, and the File menu is on both windows — it is visible in the run's own before-capture. NI's Quick Reference Card lists Ctrl-S = Save with no window qualifier ([373353c.pdf](https://download.ni.com/support/manuals/373353c.pdf), [LabVIEW Wiki](https://labviewwiki.org/wiki/Keyboard_shortcut)). What this project actually measured is the narrower line at `docs/keystone-op-spec.md:229` — *"Ctrl+S is a no-op for scripted edits"* — which records an outcome, not a mechanism. The Ctrl+E step, and the "load-bearing loss" in your chain, exist only because those two were conflated.
+
+**Was the VI dirty? Nobody measured it, and the evidence does not settle it.** Scripting edits do set the indicator — NI: *"An asterisk (\*) appears by the VI title to indicate that changes have been made using VI Server"* ([NI forum](https://forums.ni.com/t5/LabVIEW/vi-thinks-it-needs-to-be-saved/td-p/415713?profile.language=en)) — and the state is readable over VI Server as `Modifications:VI Modifications Bitset` / `Modifications:Block Diagram Mods Bitset` ([NI forum](https://forums.ni.com/t5/LabVIEW/unsaved-changes/td-p/2661731)). Neither screenshot resolves a trailing asterisk at 1920×1080, so I will not claim it either way.
+
+Note also that the one measurement that would have closed this was thrown away: `tools/recipes/build_d1_m3a1.py:695-697` *asserts* the scratch is byte-identical to the bed without hashing it, and gate H then deletes the file (`build_d1_m3a1.log:2690`).
+
+## 4. What falsifies each
+
+- **The claim** is falsified by the absence above; it would be revived by a `keys …Key=^s` row in `tools/gui_actions.log` inside 2026-09-22 00:24–00:27.
+- **My alternative** is falsified if `lv_gui.ps1` runs normally when handed `_lv_gui`'s exact unquoted string and a new log row appears. Then the keystroke really was sent and eaten, and the foreground story is back in play.
+
+## 5. Cheapest discriminating test — about two seconds, no LabVIEW state touched
+
+Replay `_lv_gui`'s exact string construction against the **read-only** `windows` action:
+
+```
+py -c "import subprocess;a=['-Action','windows','-Exception','Approved','-Evidence','gui_save: COM SaveInstrument hangs on broken VIs (skill com-driving.md)'];r=subprocess.run(['powershell','-NoProfile','-ExecutionPolicy','Bypass','-Command',\"& 'tools\\lv_gui.ps1' \"+' '.join(a)],capture_output=True,text=True);print('OUT',r.stdout);print('ERR',r.stderr)"
+```
+
+A window list ⇒ my alternative is dead and the foreground theory survives. A PowerShell error (`The term 'skill' is not recognized`, or a positional-parameter binding failure) ⇒ confirmed, and no `gui_save` keystroke has ever left Python. It sends no input and changes nothing.
+
+## 6. What the next build should be, if the test comes back my way
+
+1. **Quote in `_lv_gui`** (`gscript.py:272-277`) with `bench_prep.py:26-31`'s idiom — the correct version already exists in this repo.
+2. **Make the silence impossible**: `_lv_gui` raises on a non-zero exit or on `REFUSED`, and `gui_save` asserts a *fresh* `gui_actions.log` row before believing a keystroke was sent. That gate, not a screenshot, is the delivery proof.
+3. **Build the dirty-bit reader** (`Modifications:*Bitset`) before the next Ctrl+S attempt — CLAUDE.md's own rule: the second time a failure class is explained by inference rather than read from the machine, the next build is the reader. It separates "keystroke never arrived" from "nothing to save" from "saved after the mtime check".
+4. **Stop deleting the scratch on the failure path** — hash it instead.
+
+I do not believe the claim holds. What would change my mind is the test in §5 returning a normal window list together with a `keys` row appearing in `tools/gui_actions.log`.
+
+**Sources:** [SendKeys.SendWait — Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.sendkeys.sendwait?view=windowsdesktop-10.0) · [SendKeys class](https://learn.microsoft.com/en-us/dotnet/api/system.windows.forms.sendkeys?view=windowsdesktop-8.0) · [LabVIEW Quick Reference Card](https://download.ni.com/support/manuals/373353c.pdf) · [LabVIEW Wiki — Keyboard shortcut](https://labviewwiki.org/wiki/Keyboard_shortcut) · [NI forum — VI thinks it needs to be saved](https://forums.ni.com/t5/LabVIEW/vi-thinks-it-needs-to-be-saved/td-p/415713?profile.language=en) · [NI forum — unsaved changes / Modifications bitsets](https://forums.ni.com/t5/LabVIEW/unsaved-changes/td-p/2661731)
+BGRUN END rc=0 after 554s

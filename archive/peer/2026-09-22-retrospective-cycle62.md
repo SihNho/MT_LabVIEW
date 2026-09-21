@@ -214,4 +214,30 @@ VIOLATION: inference-over-measurement | loss_min=25 | loss_usd=7.75 | evidence=t
 
 ## What was done with it
 
-(Claude fills in)
+Disposed 2026-09-22 01:1x by the cycle-63 firefighter session, per finding:
+
+- **The named fault + VIOLATION (inference-over-measurement, threshold reached):** answered in
+  `docs/violation-decisions.md` (`## inference-over-measurement — 2026-09-22 00:22`, DECISION: no-device
+  under the user's 2026-09-18 08:53 suspension). The remedy it prescribes ran FIRST this cycle: the
+  75-second discriminating ordering (`diag_c68_quote_echo.py`) was the cycle's first batch, before any
+  build.
+- **F1/F2 (repeated failure; missing reader):** FIXED — `wire_source_owner`
+  (`tools/recipes/build_opconnectfromwire_v0.py`) now scrubs indicators per call, reads all 8 op error
+  outs, and requires the op's uid echo == queried uid; acceptance `tools/bench/diag_c68_echo_accept.log`
+  (ghost reads null after live reads, both orderings, 8/0, rc=0). F2's secondary (`gui_save` fabricated
+  cause): FIXED — it now raises the OBSERVED per-candidate record; and the ROOT cause of "no keystroke ever
+  dispatched" was found one layer deeper by `archive/peer/2026-09-22-c72-guisave-foreground-r2.md`
+  (ANSWERED, disposed): `gscript._lv_gui` joined args UNQUOTED into `powershell -Command`, so every
+  `-Evidence`-carrying action was a parse error. `_lv_gui` now quotes; re-test DISPATCHED OK; M3a-1 run 5
+  then saved its artefact (`build_d1_m3a1.log`, 22/0, rc=0, `D1_s3b_m3a_BROKEN_20260922_005732.vi`).
+- **F3(b)/F4 (astcheck invocation unpinned; astgate review undisposed):** NOT done this cycle — carried
+  honestly: the `2026-09-21-c71-astgate.md` disposal and the astcheck invocation pin are owed by the next
+  cycle's bookkeeping. Recorded here rather than silently dropped.
+- **F5 (ordering):** accepted and applied — reader acceptance ran before the build this cycle.
+- **F6 (A4 exempted without argument; stale outcome-A citation):** the objection is MOOT for run 5 — its
+  A3-ID and A4 gates were read through the REPAIRED reader and passed 22/0, which is the earned version of
+  the claim STATUS previously asserted. The stale comment at `build_d1_m3a1.py:148` remains in the file
+  (the recipe was deliberately not edited this cycle); Pre-decided 71's closure by measurement is recorded
+  in STATUS NEXT.
+- **F7 (the firefighter was the judgement session):** recorded; unchanged — the user's `STOP` line in
+  STATUS remains the overturn mechanism, restated in this cycle's NEXT.

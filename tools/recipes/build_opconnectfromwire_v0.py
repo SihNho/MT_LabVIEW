@@ -423,17 +423,53 @@ def connect_from_wire(target, wire_uid, term_index, sink_diag, sink_node, sink_t
 def wire_source_owner(target, wire_uid, n=6):
     """`OpWireSource_v5` on `target`: the owner of the wire's single SOURCE terminal. Read-only.
     NOTE the caller bug this project recorded twice: the op is UID-addressed, so `UID 2` MUST be set
-    (docs/toolkit-capabilities.md:48, :51)."""
+    (docs/toolkit-capabilities.md:48, :51).
+
+    REPAIRED (STATUS NEXT 2026-09-22; `archive/peer/2026-09-22-c71-run3.md` §2; measured unsound by
+    `tools/bench/diag_c68_quote_echo.log` [E]): the wrapper used to read four answer indicators and NO
+    error output, so on an unresolvable uid it returned the PREVIOUS call's rows (history-determined).
+    Now, per call: (1) the answer indicators are SCRUBBED to sentinels before the run, so a run that
+    dies early cannot leave last call's answer readable; (2) every mapped `error out *` is read after
+    the run; (3) the op's own uid echo (`uid_back`, "UID 3") must equal the queried uid — a mismatch,
+    or any op error, yields an explicit `unresolved`/`err` row carrying NO owner fields, never a stale
+    answer. Acceptance test: `tools/bench/diag_c68_quote_echo.py` [E] ghost reads must return null."""
     with open(V5_MAP, encoding="utf-8") as f:
         lab = json.load(f)
     vi = g.op(V5)
+    err_keys = [k for k in ("errT", "errO", "errU", "errL", "errG", "errS", "errWU", "errCO")
+                if lab.get(k)]
     out = []
     for i in range(n):
+        # (1) scrub the answer indicators — a failed run must not leave the previous answer readable
+        for k, v in ((lab["uid_back"], 0), (lab["owner_uid"], 0), (lab["recip_wire"], 0),
+                     (lab["is_source"], False), (lab["ownercls"], "")):
+            try:
+                vi.SetControlValue(k, v)
+            except Exception:
+                pass
         try:
             vi.SetControlValue("vi path", target)
             vi.SetControlValue(lab["uid_in"], int(wire_uid))
             vi.SetControlValue(lab["term_index"], i)
             g._run(vi)
+            # (2) the op's error outputs — the review's §2: no error was ever read here
+            errs = "; ".join("%s=%s" % (k, e) for k in err_keys
+                             for e in (g._err(vi, lab[k]),) if e)
+            # (3) the uid echo — the op says which uid it actually matched
+            uid_back = None
+            try:
+                uid_back = int(vi.GetControlValue(lab["uid_back"]))
+            except Exception:
+                pass
+            if uid_back != int(wire_uid):
+                out.append(dict(i=i, unresolved=True, uid_back=uid_back,
+                                err=errs or "uid echo %r != queried %r" % (uid_back, wire_uid)))
+                break
+            if errs:
+                # uid resolved but the op errored (e.g. term index out of range): the answer
+                # indicators may hold the PREVIOUS iteration's row — report the error, no owner fields
+                out.append(dict(i=i, err=errs))
+                break
             r = dict(i=i, is_source=bool(vi.GetControlValue(lab["is_source"])),
                      owner_class=vi.GetControlValue(lab["ownercls"]),
                      owner_uid=int(vi.GetControlValue(lab["owner_uid"])),
