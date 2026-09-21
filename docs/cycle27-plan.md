@@ -2678,3 +2678,22 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
     (rows 1–2, still same-loop, no edge), which are never run by rule (34(f)). Residual: the payload can reach the
     ASI command one frame late — inherent to latest-value transport; at a 25-frame focus cadence judged
     immaterial. **The user is asked to confirm that one point; M3/M4 proceed meanwhile.**
+
+58. **M3's `ExecState` 0 IS THE FOUR SHIFT-REGISTER ROWS, NOT COERCION — interactive chat's reading of
+    `tools/bench/diag_c66b_s3b_m3.log`, 2026-09-21 17:5x, while the runner is paused by the user.** The timeline
+    reads 1 COLD, then **0 from the very first `move_in` (#3529) and 0 after every one of the 7 internal re-wires**
+    — nothing ever brought it back, so the hole is a row the script never re-wires. Those rows are known and named
+    in the plan already: `#48` t3 `VISA resource name` ← SR `#4344` and `#48` t4 `In position` ← SR `#4274`, plus
+    the right-side returns `#10407` t4 → `#4334` and `#10407` t6 → `#4256` (`docs/d1-build-plan.md:380-381, :423`:
+    *"Both SR pairs are re-created on the new loop"*). `move_in` severed them (37(d)); the moved set has no shift
+    registers on `#23032`, so `#48`'s Required inputs are bare ⇒ 0. The coercion line (c66c) measured nothing
+    (`Coerce Dot?` is the real short name, and no wrapped column carries a type) and is not the cause.
+    - **M3 is re-cut as M3a + M3b, each saved:** **M3a** = from row 2's file, `add_shift_reg` ×2 on `#23032`
+      (`OpAddShiftReg_v0`, typed seed), the four rows re-wired with `wire_sr` LeftIn/RightIn exactly as
+      `docs/d1-route-b-plan.md:269` lists them, initial values = the SAME sources that feed `#4344`/`#4274`'s left
+      terminals today, brought to `#23032` by a **border tunnel from `#686`** (the VISA session and the initial
+      position are opened BEFORE the loops; this tunnel carries a one-time initial value, it is NOT the 38(g)
+      per-frame tunnel through 1.1's border). Then the 7 node moves + 7 internal rows as c66b already does them,
+      junk purge, `ExecState` 1 ⇒ save `D1_s3b_m3_moved_<stamp>.vi`. **M3b** = M4 unchanged (edge SR + Wait).
+    - If M3a still reads 0 after the four SR rows, the next bare terminal is found by the WIRED-TERMINAL census of
+      the seven moved nodes (the only reader we own), never by inference.
