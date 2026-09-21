@@ -1,0 +1,63 @@
+BGRUN START 2026-09-21 23:30:03 limit 14.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c71-astgate -TaskFile 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\0c7c871c-1dd5-441e-ac8f-ec009ed8d07b\scratchpad\peer_c71_astgate.txt'
+OUTCOME: ANSWERED (286s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-21-c71-astgate.md
+COST: $2.2054  in 24 / out 23418 / cache-create 101922 / cache-read 1154944  (283s, 20 turn(s))
+--- ANSWER ---
+Write is disabled in this session, which is correct for a read-only reviewer — so the review is the answer itself.
+
+---
+
+# The claim is HALF right, and the bundling is the defect
+
+Gate 7 is a launcher artefact — proved. Gate 3 is not: it is a working gate that correctly surfaced a real change to the recipe, and it was removed rather than answered.
+
+## 1. Strongest reason the claim is WRONG
+
+**Gate 3 was not stale. Its verdict flipped because the file under test changed.**
+
+| run | time | gate 3 | lines | gate sites | `g.<verb>` list |
+|---|---|---|---|---|---|
+| `tools/bench/c70_astcheck.log:12` | 22:37:40 | **PASS** `0 site(s)` | 1964 | 15 | includes `tunnels` |
+| `tools/bench/c71_astcheck.log:4` | 23:28:40 | **FAIL** `1 site(s)` | 1997 | 17 | no `tunnels` |
+
+Saying "0" when there are 0 and "1" when there is 1 is correct in both runs. *Stale* would mean the verdict was wrong about the file. It was not. The only open question was whether the newly-appeared flag is authorised — a judgement question, which the gate correctly escalated by refusing to pass silently.
+
+**And Pre-decided 88 is a CONDITIONAL withdrawal whose conditions the amendment drops.** `docs/cycle27-plan.md:3071-3073` ends 88 with two riders: `gui_save()` is a GUI act so capture → locate → act → capture → confirm *applies in full*, and the saved path must be verified as the `claudeDev` target with all four md5 pins re-read.
+
+The amended gate (`tools/bench/c60c_astcheck.py:100-108`) checks *count* and *receiver name*. It encodes **neither rider**. Before the amendment the blanket ban made them moot; after it, the flag is permitted and nothing mechanical checks the conditions the authorisation was granted under. That is falsifier **(c)**, realised.
+
+Rider 2 *is* satisfied — by the **recipe** (`build_d1_m3a1.py:640`, `:1959-1968`), not the gate. Rider 1 is satisfied by nothing: `gscript.gui_save` (`tools/gscript.py:2039-2049`) derives `(min(L+300, R-120), T+10)` from a window rect and clicks it **with no capture either side** — the exact pattern the standing rule forbids.
+
+*Honest limit:* `gui_save` confirms **effect** via `os.path.getmtime(target) > before` (`gscript.py:2056`), which for a save is stronger than a screenshot, and the click targets window chrome, not a control. **The evidence does not settle whether rider 1 is violated in substance.** It settles that nothing checks it — and gate 3 was the last place that check could have attached.
+
+**Aggravating:** `build_d1_m3a1.py:184-186` pins `c60c_astcheck.py`'s md5 as a TOOL PIN, commented *"the forbidden list untouched — measured rather than asserted"*, gated at `[H]` (`:1964-1968`); the manifest declares `"no_astcheck_gate_file_edited": true` (`build_d1_m3a1.json:21`). The fleet already treats this gate as immutable relative to the build it gates. The pin compares before-vs-after *within one run*, so a between-runs edit slips it — **a hole in the pin, not a licence.**
+
+## 2. Alternative explanations
+
+**(A) One artefact, whose true cause is unaddressed.** The launcher mis-invoked this checker **three times in 51 minutes**: `c70:1-8` relative path → `FileNotFoundError`; `c70:9` absolute **+ `--route movein`** → OK; `c71:1` absolute, flag dropped → FAIL 7. The repeating class is *"the astcheck invocation is hand-typed and unpinned."* The indicated fix is to **pin the route**, not touch gate 3 — which fixes nothing about what actually failed twice.
+
+**(B) The edit was not the one-flag change described.** +33 lines, +2 gate sites, and the `g.tunnels` verb disappeared. The claim says "adds exactly one `g.save(WORK, allow_broken=True)` call". At least three things changed — and since c71 failed, **the current 1997-line recipe has never passed any astcheck.** "Both failures are artefacts" is a prediction, not an observation.
+
+## 3. What would falsify the claim
+
+Any gate other than 3 and 7 changing verdict on a re-run ⇒ alternative (B). A diff showing changes beyond the one call ⇒ same. `gui_save` performing no capture on its title-bar click ⇒ rider 1 unchecked — **already observed** at `gscript.py:2039-2049`.
+
+Brief falsifiers **(a)**, **(b)** and **(d)** do **not** fire, and I say so plainly: 88 genuinely authorises the flag and `build_d1_routeb_v7.py:2276` is a real precedent; `move_in` is called (`:1013`) and `c70:19` shows `7[movein]` passing on this same recipe; there is exactly one keyword site (`:643` — `:641` is a dict assignment the gate does not count). **Claim half (2) survives intact. Half (1) does not.**
+
+## 4. Cheapest discriminating test
+
+```
+git diff -- tools/recipes/build_d1_m3a1.py tools/bench/c60c_astcheck.py
+```
+
+Both tracked-and-modified. No LabVIEW, no lock, seconds — it separates "exactly one added call" from "+33 lines, a dropped verb, two new gates" definitively. Then **one** re-run with `--route movein`: if only gates 3 and 7 differ from `c70`, the remedy is complete; **any other delta is unreviewed scope.**
+
+## 5. Three defects to fix regardless
+
+1. **`c60c_astcheck.py` now contradicts itself** — contract `:10` still says *"never passed anywhere"*, code `:107` permits one; `:24` still says *"FIVE `move_in` calls"* where the recipe makes seven.
+2. **Two other gates still encode the withdrawn ban** — `c57d4_astcheck.py:18`, `c58b_astcheck.py:43-45`. If the next launcher reaches for either, the identical failure returns under a new name — the runner's "same mistake under another name" trigger.
+3. **The amendment is weaker than it reads** — it matches only `ast.Constant` `True`, so `allow_broken=1`, `allow_broken=flag` and `**{...}` pass unseen: `1 is True` is `False` in CPython, since `bool` subclasses `int` but `True` is a distinct singleton ([pythontutorials.net](https://www.pythontutorials.net/blog/boolean-identity-true-vs-is-true/), [educative.io](https://www.educative.io/python/sub-type-of-int)).
+
+**If gate 3 stays amended, encode 88 *with* its riders** — require the single site to sit in a function that also asserts the `claudeDev` path and re-reads the four pins (which `build_d1_m3a1.py` already does, so it passes and the *next* recipe cannot skip them). Otherwise restore the ban and repair `gui_save`'s blind title-bar click first.
+
+Sources: [pythontutorials.net](https://www.pythontutorials.net/blog/boolean-identity-true-vs-is-true/), [educative.io](https://www.educative.io/python/sub-type-of-int)
+BGRUN END rc=0 after 287s

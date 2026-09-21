@@ -1,0 +1,108 @@
+{
+ "script": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\diag_c68_quote_echo.py",
+ "stamp": "20260922_000613",
+ "handles": {
+  "before": 34623,
+  "after_restart": 30692,
+  "after": 54456
+ },
+ "quote": {
+  "double_quote_out": "focused: LabVIEW\n",
+  "single_quote_out": "focused: LabVIEW\n",
+  "double_focused": true,
+  "single_focused": true
+ },
+ "echo": {
+  "[E1 LIVE 9649]": {
+   "uid": 9649,
+   "real_rows": [
+    [
+     0,
+     true,
+     "FlatSequenceInnerTunnel",
+     9655,
+     9649
+    ],
+    [
+     1,
+     false,
+     "LoopTunnel",
+     9641,
+     9649
+    ]
+   ],
+   "error": ""
+  },
+  "[E2 GHOST 2147483646 after a LIVE read]": {
+   "uid": 2147483646,
+   "real_rows": [
+    [
+     0,
+     true,
+     "FlatSequenceInnerTunnel",
+     9655,
+     9649
+    ],
+    [
+     1,
+     false,
+     "LoopTunnel",
+     9641,
+     9649
+    ]
+   ],
+   "error": ""
+  },
+  "[E3 LIVE 9113]": {
+   "uid": 9113,
+   "real_rows": [
+    [
+     0,
+     true,
+     "SelectorTunnel",
+     2017,
+     9113
+    ],
+    [
+     1,
+     false,
+     "RightShiftRegister",
+     4256,
+     9113
+    ],
+    [
+     2,
+     false,
+     "SelectorTunnel",
+     12673,
+     9113
+    ]
+   ],
+   "error": ""
+  },
+  "[E4 GHOST 2147483646 after the second LIVE read]": {
+   "uid": 2147483646,
+   "real_rows": [],
+   "error": ""
+  },
+  "verdict": "HISTORY-DETERMINED: ghost read(s) returned the previous live rows (E2==E1 True, E4==E3 False) - the reader echoes stale state; NO identity conclusion read through it is sound"
+ },
+ "gating_policy": "Pre-decided 63: HYGIENE ONLY",
+ "gates": {
+  "pass": 8,
+  "fail": 0,
+  "failing": []
+ },
+ "facts": [
+  "[Q] list2cmdline of the DOUBLE-quote form: 'powershell -NoProfile -ExecutionPolicy Bypass -File \"G:\\\\Codes\\\\LabVIEW_Codes\\\\MinLab\\\\zz_LabView VI\\\\AAA_UNIST\\\\2. Tracking\\\\V6_ParallelLoop\\\\tools\\\\lv_gui.ps1\" -Action focus -Title \\\\\"LabVIEW\\\\\"'",
+  "[Q] focus -Title \"LabVIEW\" (gui_save's form)  -> 'focused: LabVIEW'",
+  "[Q] focus -Title 'LabVIEW' (the working form) -> 'focused: LabVIEW'",
+  "*** [Q] VERDICT MATERIAL: double-quote focused=True, single-quote focused=True - different => the quoting IS the gui_save bug (fix gscript.py:2025-2041); both focused => quoting exonerated ***",
+  "[E] fresh LabVIEW restart so the op VI's indicators start from nothing",
+  "[E1 LIVE 9649] OpWireSource_v5(UID 2 = 9649): 3 row(s), 2 with a REAL owner -> [(0, True, 'FlatSequenceInnerTunnel', 9655, 9649), (1, False, 'LoopTunnel', 9641, 9649)]",
+  "[E2 GHOST 2147483646 after a LIVE read] OpWireSource_v5(UID 2 = 2147483646): 3 row(s), 2 with a REAL owner -> [(0, True, 'FlatSequenceInnerTunnel', 9655, 9649), (1, False, 'LoopTunnel', 9641, 9649)]",
+  "[E3 LIVE 9113] OpWireSource_v5(UID 2 = 9113): 4 row(s), 3 with a REAL owner -> [(0, True, 'SelectorTunnel', 2017, 9113), (1, False, 'RightShiftRegister', 4256, 9113), (2, False, 'SelectorTunnel', 12673, 9113)]",
+  "[E4 GHOST 2147483646 after the second LIVE read] OpWireSource_v5(UID 2 = 2147483646): 1 row(s), 0 with a REAL owner -> []",
+  "*** [E] HISTORY-DETERMINED: ghost read(s) returned the previous live rows (E2==E1 True, E4==E3 False) - the reader echoes stale state; NO identity conclusion read through it is sound ***"
+ ]
+}

@@ -1,0 +1,30 @@
+BGRUN START 2026-09-22 00:06:13 limit 12.0 min: py -u tools/bench/diag_c68_quote_echo.py
+=== diag_c68_quote_echo 20260922_000613
+  FACT  H ORIGINAL BEFORE: Min_Track N beads V6_ParallelLoop.vi md5 2a78e17c449cacdaf5da389818526859 size 473317 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  H ORIGINAL md5 == its pin 2a78e17c  '2a78e17c449cacdaf5da389818526859'
+  FACT  H THE BED BEFORE: D1_s3b_row2_20260921_160311.vi md5 26c54ff784cb5cea21edbd214d2cc3a0 size 476759 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  H THE BED md5 == its pin 26c54ff7  '26c54ff784cb5cea21edbd214d2cc3a0'
+  FACT  [Q] list2cmdline of the DOUBLE-quote form: 'powershell -NoProfile -ExecutionPolicy Bypass -File "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\lv_gui.ps1" -Action focus -Title \\"LabVIEW\\"'
+  FACT  [Q] focus -Title "LabVIEW" (gui_save's form)  -> 'focused: LabVIEW'
+  FACT  [Q] focus -Title 'LabVIEW' (the working form) -> 'focused: LabVIEW'
+  FACT  *** [Q] VERDICT MATERIAL: double-quote focused=True, single-quote focused=True - different => the quoting IS the gui_save bug (fix gscript.py:2025-2041); both focused => quoting exonerated ***
+  FACT  [E] fresh LabVIEW restart so the op VI's indicators start from nothing
+  FACT  [E] restart for the echo-order test: lv_restart rc=0 ['dialogs: ,1346,762| / ENABLED|30017414|0,0,0,0|LabVIEW / VERDICT: clear (no modal dialog)']
+  FACT  [E] scratch copy: QE_20260922_000613.vi md5 26c54ff784cb5cea21edbd214d2cc3a0 size 476759 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  H the scratch starts byte-identical to the bed  '26c54ff784cb5cea21edbd214d2cc3a0'
+  FACT  [E1 LIVE 9649] OpWireSource_v5(UID 2 = 9649): 3 row(s), 2 with a REAL owner -> [(0, True, 'FlatSequenceInnerTunnel', 9655, 9649), (1, False, 'LoopTunnel', 9641, 9649)]
+  FACT  [E2 GHOST 2147483646 after a LIVE read] OpWireSource_v5(UID 2 = 2147483646): 3 row(s), 2 with a REAL owner -> [(0, True, 'FlatSequenceInnerTunnel', 9655, 9649), (1, False, 'LoopTunnel', 9641, 9649)]
+  FACT  [E3 LIVE 9113] OpWireSource_v5(UID 2 = 9113): 4 row(s), 3 with a REAL owner -> [(0, True, 'SelectorTunnel', 2017, 9113), (1, False, 'RightShiftRegister', 4256, 9113), (2, False, 'SelectorTunnel', 12673, 9113)]
+  FACT  [E4 GHOST 2147483646 after the second LIVE read] OpWireSource_v5(UID 2 = 2147483646): 1 row(s), 0 with a REAL owner -> []
+  FACT  *** [E] HISTORY-DETERMINED: ghost read(s) returned the previous live rows (E2==E1 True, E4==E3 False) - the reader echoes stale state; NO identity conclusion read through it is sound ***
+  PASS  H scratch QE_20260922_000613.vi is gone
+  FACT  H ORIGINAL AFTER: Min_Track N beads V6_ParallelLoop.vi md5 2a78e17c449cacdaf5da389818526859 size 473317 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  H ORIGINAL md5 STILL its pin 2a78e17c  '2a78e17c449cacdaf5da389818526859'
+  FACT  H THE BED AFTER: D1_s3b_row2_20260921_160311.vi md5 26c54ff784cb5cea21edbd214d2cc3a0 size 476759 B; version bytes [{'offset': 36, 'bytes': '26 00 80 00'}]
+  PASS  H THE BED md5 STILL its pin 26c54ff7  '26c54ff784cb5cea21edbd214d2cc3a0'
+  PASS  H refs opened == closed and 0 live  {'opened': 1, 'closed': 1, 'live': 0, 'cached_op_vis': 1}
+  PASS  H handle count read at entry and exit  '34623 -> 54456'
+
+=== GATES: 8 pass / 0 fail
+=== JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c68_quote_echo.json
+BGRUN END rc=0 after 75s

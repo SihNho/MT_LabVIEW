@@ -88,11 +88,25 @@ THE ORDER IS FIXED BY THE BRIEF (Pre-decided 59/60/61/62/63) AND IS NOT RE-ORDER
       says. FROM 2026-09-21 THE SIXTH ROW IS WIRED AT [5b] BEFORE THIS GATE RUNS, so A4 now judges the
       FINISHED stage instead of reporting a known hole; it is UNCHANGED in code and should now PASS.
   [7] `ExecState`. 1 => save `claudeDev\\D1_s3b_m3a_<stamp>.vi`, RESTART, COLD reopen, ordered `Broken?`
-      read LAST (42(b)/52(f)). 0 => the brief asks for `claudeDev\\D1_s3b_m3a_BROKEN_<stamp>.vi`; the save is
-      ATTEMPTED and whatever the machine answers is recorded VERBATIM. `tools/gscript.py:2087-2090` refuses a
-      broken VI and its only bypasses (`allow_broken`, the GUI save) are FORBIDDEN by this brief, so if the
-      refusal comes back the file is NOT written and that is reported as the one open question. A broken
-      artefact, if one ever lands, is NOT a deliverable, is NEVER run (34(f)) and is NEVER used as a bed.
+      read LAST (42(b)/52(f)). 0 => save `claudeDev\\D1_s3b_m3a_BROKEN_<stamp>.vi` with
+      **`gscript.save(WORK, allow_broken=True)` - AUTHORISED BY PRE-DECIDED 88, 2026-09-21**
+      (docs/cycle27-plan.md:3063-3073): the `RuntimeError: refusing to save a BROKEN VI` that ended two
+      cycles with nothing on disk was OUR OWN GUARD'S DEFAULT, and `tools/gscript.py:2087-2089` routes a
+      broken VI to `gui_save()`. ⚠️ CITATION CORRECTED by the c71 prior-art review (A3(i)): the call
+      site `tools/recipes/build_d1_routeb_v7.py:2276` is a PRECEDENT OF THE SHAPE, NOT OF SUCCESS - its
+      run-10 invocation FAILED (`build_d1_routeb_v7_run10.log:367`, mtime did not move), so this save is
+      an ATTEMPT whose outcome is recorded verbatim, never assumed. A gui_save failure leaves exactly
+      the state cycles 55/56 ended in (no file, refusal recorded) - it cannot make anything worse.
+      `gui_save` is the ONE GUI act in this file and carries its own guards (claudeDev-only path, live
+      window-title locate, title-bar click, mtime-move confirm - tools/gscript.py:1998-2060); it CALLS
+      `open_panel()` internally (tools/gscript.py:2016 - the 246 s / module-poisoning risk measured in
+      `archive/peer/2026-09-21-c64-openpanel-cap.md:27-34` is accepted BECAUSE the save is the LAST
+      LabVIEW act before [H], and the [H] md5 pins are read by `hash_probe` - pure file I/O, no COM -
+      so a poisoned module cannot cost the pin audit). The recipe captures a screenshot BEFORE and
+      AFTER the save (`_lv_gui -Action shot`) per the capture rider. The saved path is verified to be
+      the claudeDev target, the artefact's bytes-differ-from-the-bed is a GATE (c71 review B3), and all
+      four md5 pins are re-read at [H]. A broken artefact is NOT a deliverable, is NEVER run (34(f))
+      and is NEVER used as a bed.
 
 *** THE M3a-1 ARTEFACT IS NOT COMPUTATION-EQUIVALENT TO THE ORIGINAL, EITHER WAY: ITS SHIFT REGISTERS ARE
     UNINITIALISED (initial values are stage M3a-2, a rule-1a matter). IT IS NEVER RUN (34(f)). ***
@@ -108,6 +122,11 @@ GATING POLICY - Pre-decided 63: THIS RUN GATES ON **HYGIENE ONLY** and exits 0 w
      SOURCE terminal of the NEW SINK wire. Anything else FAILS the row and the run. It is a gate and not a
      FACT line because the previous run's acceptance test was pointed at the sink side only, so a row could
      read "correct" without anything having been measured about the source side at all.
+     *** RE-CUT 2026-09-21 (PD86 outcome A, tools/bench/diag_c68_pd86.log; c71 review B2-second): when the
+     post-write walk of the queried source-wire uid is WHOLLY NULL, the write REPLACED that wire and the
+     same-T test is UNDECIDABLE ON THE OLD UID - cycle 56's three A3-ID FAILs were this, by construction.
+     The gate then decides on the SINK side alone (exactly ONE source of ANY class, a LoopTunnel,
+     PD85-clean); a readable old source wire keeps the full same-T test unchanged. ***
   A5 THE SIXTH ROW IS ADDRESSABLE (Pre-decided 72, RE-CUT BY FIX 1): #12673's owner chain reaches a Case
      Structure one of whose `Terms[]` entries EXPOSES UID 12673, and t6's live net hands out a source
      terminal. If not, the row fails - NO fallback is improvised and NO name is guessed.
@@ -115,21 +134,25 @@ GATING POLICY - Pre-decided 63: THIS RUN GATES ON **HYGIENE ONLY** and exits 0 w
      be left bare by this stage. Concretely `SelectorTunnel #12673` on `#10407` t6's net.
      This ONE non-hygiene gate exists because rule 1a outranks Pre-decided 63: a silently dropped consumer
      is a computation change, and the run must not exit 0 with one.
-     *** FIX 2, 2026-09-21 - A4 IS NOW **TWO-SIDED** (c70 prior-art review A3(ii) `contradicted`,
-     `archive/peer/2026-09-21-priorart-c70-m3a1.md:233-239`): as coded it read ONE wire - t6's net - and so
-     would have FAILED even on a perfect sixth row, because the crossing is OUTWARD (`#10407` moves to body
-     `Diagram #23058`, `build_d1_m3a1.log:156`, while `#12589` stays on `Diagram #639`,
-     `docs/d1-route-b-plan.md:207`), which puts #12673 on the OUTER segment - a different wire uid. A4 now
-     PASSES if 12673 is a non-source terminal of t6's own net (the same-diagram case) OR if that net has a
-     `LoopTunnel` sink T whose OTHER-side wire carries 12673 as a non-source terminal (the border case), and
-     FAILS only when 12673 is on NEITHER side. Which branch passed, and T, are FACT lines. "It is a border
-     crossing" is NOT hard-coded: both sides are measured, every run. ***
+     *** FIX 3, 2026-09-21 - A4 ANCHORS AT THE **CONSUMER** AND NEEDS **ZERO HOPS** (Pre-decided 90,
+     docs/cycle27-plan.md:3084-3089; it AMENDS FIX 2's two-branch outward walk, whose BORDER branch was an
+     unbounded search with no failure mode). #12673 was measured a sink of a wire whose single source is
+     the border LoopTunnel (`build_d1_m3a1.log:1151-1155`), so the gate re-reads the wire carried by the
+     CONSUMER's own Terms[] entry (the one [5b] resolved BY UID) and walks THAT ONE wire: PASS = #12673 a
+     non-source terminal on it with owner_class SelectorTunnel (the Pre-decided 85 class check), exactly
+     ONE `is_source=True` terminal of ANY class (FIX 4 discipline; its class/uid a FACT, not a criterion),
+     and zero PD85 recip violations. Hop count is an output, never a criterion. ***
+  PD85 THE READER PRECONDITION (Pre-decided 85, added 2026-09-21): every OpWireSource_v5 row with a REAL
+     owner must read `recip == queried_uid`; a violating walk is NOT BELIEVED and fails the gate built on
+     it. Null padding rows (owner_uid 0) are excluded - measured in tools/bench/diag_c68_pd86.log
+     (outcome A: the reader NULLS on an unresolvable uid; it does not echo; live reads are stable).
   Everything else - moves, rows, registers, `ExecState`, the save - is reported as FACT lines.
 
 NO whole-VI `GObject` census anywhere (six of them took handles 34,602 -> 91,288); only the narrow classes
 `Node` / `Wire` / `Tunnel` / `LoopTunnel` / `LeftShiftRegister` / `RightShiftRegister` / `ControlTerminal` /
-`Local` are counted. FORBIDDEN AND ABSENT: `remove_bad_wires*` (banned since cycle 58), the broken-VI save
-bypass, the GUI save, any GUI action, any new op or verb, any edit to `tools/gscript.py` or a `*_astcheck.py`,
+`Local` are counted. FORBIDDEN AND ABSENT: `remove_bad_wires*` (banned since cycle 58), any GUI action
+OTHER THAN the `gui_save()` that `save(allow_broken=True)` routes a broken VI to (Pre-decided 88;
+gui_save's own guards at tools/gscript.py:1998-2060), any new op or verb, any edit to `tools/gscript.py` or a `*_astcheck.py`,
 running any deliverable VI (34(f)), motor / ASI / camera (rig ASSEMBLED), any new process device,
 `retrospective.py` / `audit_cycle.py` / `violations.py` / `doc_ingest.py` / `prior_art_review.py` (54(a)),
 and any edit to `docs/cycle27-plan.md` or STATUS's `## NEXT`. `CYCLE_GUARD_OFF` is never set.
@@ -258,6 +281,14 @@ T6_TERM_INDEX = 6
 T6_ORIGINAL_NET = 9113
 T6_SINKS_ORIGINAL = (4256, 12673)   # RightShiftRegister #4256 ; Q_focusback SelectorTunnel #12673
 T6_SECOND_SINK = 12673
+T6_SOURCE_FACE_RECORDED = 2017      # the SelectorTunnel face that SOURCES t6's net - PREDICTED BEFORE
+                                    # THE RUN, as Pre-decided 90 requires: measured on the untouched bed
+                                    # (tools/bench/diag_c68_pd86.log Q5: wire 9113's one source is
+                                    # SelectorTunnel 2017) AND unchanged after cycle 56's write
+                                    # (tools/bench/build_d1_m3a1.log:1233: post-write net 24226's source
+                                    # is SelectorTunnel 2017). A4's provenance walk must terminate here.
+T6_PROV_HOP_CAP = 4                 # the walk's FAILURE MODE (c71 review A3(ii)/B4): more hops than the
+                                    # measured chain (2 tunnels) plus slack means something is wrong.
 
 BASE = {"Node": 632, "Wire": 1907, "ControlTerminal": 116, "Local": 10, "LoopTunnel": 135}
 BASE_TUNNEL = 471
@@ -337,9 +368,23 @@ R = {"script": os.path.abspath(__file__), "stamp": STAMP,
      "initial_values_out_of_scope":
          "wire_sr('LeftOutNode') and wire_sr('LeftOutCtl') are NOT called anywhere in this file",
      "no_new_verb": True, "no_new_op": True, "no_new_device": True,
-     "no_open_panel_call_in_this_file": True, "gscript_not_edited": True,
-     "no_astcheck_gate_file_edited": True, "no_gui_action": True,
-     "broken_save_bypass": "NEVER used - neither the allow_broken diversion nor the GUI save",
+     "no_open_panel_call_in_this_file":
+         "this FILE'S TEXT makes no open_panel call, BUT gscript.gui_save calls open_panel internally "
+         "(tools/gscript.py:2016) when the PD88 broken save runs - c71 review A4; the 246 s poisoning "
+         "risk (archive/peer/2026-09-21-c64-openpanel-cap.md:27-34) is accepted because the save is the "
+         "last LabVIEW act and the [H] md5 pins are hash_probe file I/O, not COM",
+     "gscript_not_edited": True,
+     "no_astcheck_gate_file_edited":
+         "THIS RUN edits no astcheck file; the cycle-57 FIREFIGHTER session amended c60c_astcheck.py "
+         "gate 3 BEFORE this run (blanket allow_broken ban -> 'at most one site, only on .save()'), "
+         "because the blanket ban encoded the WITHDRAWN Pre-decided 81 and contradicted Pre-decided 88 "
+         "(c71 review B2-mechanical; hypothesis review archive/peer/2026-09-21-c71-astgate*). The [H] "
+         "tool-pin gate still verifies the checker byte-identical ACROSS the run",
+     "gui_actions": "ONLY gscript.gui_save, reached through save(allow_broken=True) on a broken VI - "
+                    "Pre-decided 88 (docs/cycle27-plan.md:3063-3073); its guards: claudeDev-only path, "
+                    "live window-title locate, mtime-move confirm (tools/gscript.py:1998-2060)",
+     "broken_save_bypass": "AUTHORISED by Pre-decided 88: save(WORK, allow_broken=True) diverts a "
+                           "broken VI to gui_save; the saved path and all four md5 pins are re-verified",
      "remove_bad_wires_scripted": "not imported, not called (BANNED since cycle 58)",
      "no_whole_vi_gobject_census": True,
      "no_vi_run": "no D1 artefact and no main VI is run (34(f)); OP VIs are run, the fleet's mechanism",
@@ -621,17 +666,36 @@ def save_artefact(tag, dest, not_equal_to, not_equal_label):
            "NOT_COMPUTATION_EQUIVALENT": "THE M3a-1 ARTEFACT IS NOT COMPUTATION-EQUIVALENT TO THE ORIGINAL "
                                          "- ITS SHIFT REGISTERS ARE UNINITIALISED. It is never run."}
     rec["exec_state_at_save"] = read_es("%s immediately before the save" % tag, WORK)
+    # PRE-DECIDED 88 (2026-09-21, docs/cycle27-plan.md:3063-3073): allow_broken=True diverts a broken VI
+    # to gui_save() instead of raising - the refusal that ended cycles 55 and 56 with nothing on disk
+    # was our own guard's default. gui_save is a GUI act: its own guards are the claudeDev-only path
+    # check, the live window-title locate and the mtime-move confirm (tools/gscript.py:1998-2060); the
+    # saved path is WORK (inside claudeDev by construction) and the four md5 pins are re-read at [H].
+    rec["allow_broken"] = True
+    # The capture rider (Pre-decided 88 / docs/cycle27-plan.md:66-68): screenshot BEFORE and AFTER the
+    # save. gui_save's own locate is the window-title match and its confirm is the mtime move + the
+    # bytes-differ GATE below; the captures are the visual record either side of the one GUI act.
+    shot_b = os.path.join(BENCH, "m3a1_save_before_%s.png" % STAMP)
+    shot_a = os.path.join(BENCH, "m3a1_save_after_%s.png" % STAMP)
+    safe("%s capture BEFORE the save" % tag, lambda: g._lv_gui("-Action", "shot", "-Out", "'%s'" % shot_b))
     try:
-        rec["save_returned_size"] = g.save(WORK)
+        rec["save_returned_size"] = g.save(WORK, allow_broken=True)
     except Exception as e:                                                         # noqa: BLE001
         rec["save_returned_size"] = None
         rec["save_error_verbatim"] = "%s: %s" % (type(e).__name__, str(e)[:400])
+    safe("%s capture AFTER the save" % tag, lambda: g._lv_gui("-Action", "shot", "-Out", "'%s'" % shot_a))
+    rec["captures"] = {"before": shot_b, "before_exists": os.path.exists(shot_b),
+                       "after": shot_a, "after_exists": os.path.exists(shot_a)}
+    fact("%s capture->act->capture: before %r (exists %r), after %r (exists %r)"
+         % (tag, os.path.basename(shot_b), rec["captures"]["before_exists"],
+            os.path.basename(shot_a), rec["captures"]["after_exists"]))
     if rec["save_error_verbatim"]:
-        fact("%s THE SAVE WAS REFUSED, VERBATIM: %s" % (tag, rec["save_error_verbatim"]))
+        fact("%s THE SAVE WAS REFUSED EVEN WITH allow_broken=True, VERBATIM: %s"
+             % (tag, rec["save_error_verbatim"]))
         fact("%s NO FILE IS WRITTEN AT %s. Copying the working copy's DISK bytes would produce a file "
              "byte-identical to the bed - the in-memory edits would not be in it - so nothing is copied. "
-             "The two bypasses named in tools/gscript.py:2088-2090 are FORBIDDEN by this brief and are not "
-             "used." % (tag, os.path.basename(dest)))
+             "This is reported to judgement, not worked around." % (tag, os.path.basename(dest)))
+        refusal("%s g.save(WORK, allow_broken=True)" % tag, rec["save_error_verbatim"])
         rec.update({"exists": False, "md5": None, "size": None})
         R["artefacts_on_disk"].append(rec)
         dump()
@@ -646,6 +710,12 @@ def save_artefact(tag, dest, not_equal_to, not_equal_label):
                 "version_candidates": ff.get("version_candidates")})
     rec["compared_against"] = not_equal_label
     rec["bytes_equal_to_the_predecessor"] = (ff.get("md5") == not_equal_to)
+    # c71 prior-art review B3 (helper-exists): whether the in-memory edits reached the disk is the whole
+    # question, so bytes-differ is a GATE, not a FACT - the fleet's own precedent is
+    # tools/recipes/build_d1_routeb_v7.py:2280 ("the SAVED bytes are NOT the original's").
+    gate("%s the saved artefact's bytes DIFFER from %s - the in-memory edits reached the disk"
+         % (tag, not_equal_label), rec["exists"] and not rec["bytes_equal_to_the_predecessor"],
+         "artefact md5 %r vs %r" % (rec.get("md5"), not_equal_to))
     R["artefacts_on_disk"].append(rec)
     fact("%s FILE ON DISK: %s  md5 %r  size %r  (ExecState at the save %r ; bytes equal to %s %r)"
          % (tag, dest, rec["md5"], rec["size"], rec["exec_state_at_save"], not_equal_label,
@@ -738,6 +808,18 @@ def resolve_term(rows, want_name, want_i, want_source, tag):
 
 
 # ============================= PRE-DECIDED 70: THE BORDER-ROW IDENTITY GATE (added 2026-09-21, cycle 70)
+def pd85_violations(wire_uid, walk):
+    """PRE-DECIDED 85, THE READER PRECONDITION (docs/cycle27-plan.md:3031-3038): before any assertion
+    built on an `OpWireSource_v5` walk can be believed, EVERY row with a REAL owner must satisfy
+    `recip == queried_uid`. Rows with owner_uid 0 are the reader's NULL PADDING and are excluded -
+    MEASURED 2026-09-21 (tools/bench/diag_c68_pd86.log): an unresolvable uid returns exactly one
+    all-zero row (outcome A - the reader NULLS, it does not echo: the live read straight after the
+    two unresolvable ones returned the true rows, twice, 1 s apart, field-for-field identical),
+    and every LIVE walk carries one trailing all-zero padding row. A row with a real owner whose
+    recip differs is the `:1096-1098` artefact - one wire read under another's name."""
+    return [t for t in (walk or []) if t.get("owner_uid") and t.get("recip") != wire_uid]
+
+
 def print_walk(tag, wire_uid, walk, err=""):
     """One FACT line per terminal of `OpWireSource_v5(UID 2 = wire_uid)`: is_source / owner_class /
     owner_uid / recip. This is the raw material of BOTH Pre-decided 70 (identity) and 71 (recycled uid)."""
@@ -748,6 +830,14 @@ def print_walk(tag, wire_uid, walk, err=""):
         fact("    %s   t%-2r is_source=%-5r owner_class=%-26r owner_uid=%-7r recip=%r%s"
              % (tag, t.get("i"), t.get("is_source"), t.get("owner_class"), t.get("owner_uid"),
                 t.get("recip"), ("  READ ERROR " + str(t["err"])) if t.get("err") else ""))
+    bad = pd85_violations(wire_uid, walk)
+    fact("%s PD85 PRECONDITION: %d real-owner row(s), %d violate recip==queried_uid%s"
+         % (tag, len(real), len(bad),
+            (" -> %r - THIS WALK IS NOT BELIEVED (Pre-decided 85)"
+             % [(t.get("i"), t.get("owner_class"), t.get("owner_uid"), t.get("recip")) for t in bad])
+            if bad else ""))
+    K.setdefault("pd85_checks", []).append({"tag": tag, "wire_uid": wire_uid,
+                                            "real_rows": len(real), "violations": len(bad)})
     return walk or []
 
 
@@ -799,7 +889,30 @@ def identity_gate(tag, source_wire, src_before, src_after, sink_wire, sink_walk,
     one_is_the_loop_tunnel = bool(
         the_one is not None and the_one.get("owner_class") == "LoopTunnel" and the_one.get("owner_uid")
         and int(the_one["owner_uid"]) in new_t)
-    ok = (bool(sink_wire) and len(sink_all_src) == 1 and one_is_the_loop_tunnel and len(shared) == 1)
+    # ---- PRE-DECIDED 85 (added 2026-09-21, cycle 57): the reader precondition COMES FIRST. A walk with
+    #      a real-owner row whose recip is not the queried uid is the :1096-1098 artefact and is NOT
+    #      believed - the gate cannot PASS on it.
+    pd85_bad = (pd85_violations(source_wire, src_before) + pd85_violations(source_wire, src_after)
+                + pd85_violations(sink_wire, sink_walk))
+    # ---- PD86 OUTCOME A (measured, tools/bench/diag_c68_pd86.log; c71 review B2-second): a wholly
+    #      NULL post-write walk of the queried source-wire uid means the write REPLACED that wire (the
+    #      reader nulls on an unresolvable uid - it does not echo). The same-T test is then UNDECIDABLE
+    #      ON THE OLD UID - failing it there would fail correct work by construction (that is what the
+    #      three A3-ID FAILs of cycle 56 were). The gate then decides on the SINK side alone: exactly
+    #      ONE source terminal of ANY class, it is a LoopTunnel, and the walk is PD85-clean; the
+    #      LoopTunnel's uid is a FACT line. When the old source wire IS still readable, the full same-T
+    #      identity applies unchanged.
+    source_replaced = not [t for t in (src_after or []) if t.get("owner_uid")]
+    sink_ok = (bool(sink_wire) and len(sink_all_src) == 1 and the_one is not None
+               and the_one.get("owner_class") == "LoopTunnel" and bool(the_one.get("owner_uid"))
+               and not pd85_violations(sink_wire, sink_walk))
+    if source_replaced:
+        ok = sink_ok
+        fact("%s PD86 OUTCOME A: the post-write walk of source wire %r is WHOLLY NULL - the write "
+             "replaced that wire; same-T is undecidable on the old uid and the gate decides on the "
+             "SINK side alone (sink_ok %r)" % (tag, source_wire, sink_ok))
+    else:
+        ok = (sink_ok and one_is_the_loop_tunnel and len(shared) == 1 and not pd85_bad)
     # ---- FIX 4: the SOURCE side, same discipline - every sink terminal of every class, unfiltered.
     src_all_sinks_before = [(t.get("owner_class"), t.get("owner_uid")) for t in (src_before or [])
                             if t.get("is_source") is False]
@@ -818,6 +931,9 @@ def identity_gate(tag, source_wire, src_before, src_after, sink_wire, sink_walk,
            "sink_wire_ALL_source_terminal_count": len(sink_all_src),
            "sink_wire_ALL_source_terminals": sink_all_classes,
            "the_one_source_terminal_is_the_loop_tunnel_T": one_is_the_loop_tunnel,
+           "pd85_violations": [(t.get("i"), t.get("owner_class"), t.get("owner_uid"), t.get("recip"))
+                               for t in pd85_bad],
+           "source_wire_replaced_pd86_outcome_A": source_replaced, "sink_side_ok": sink_ok,
            "T": (shared[0] if (ok and len(shared) == 1) else None), "pass": ok,
            "mandatory": bool(mandatory), "exec_state_is_never_substituted_for_this": True,
            "fix4": "ALL is_source=True terminals are counted before any class filter "
@@ -836,8 +952,9 @@ def identity_gate(tag, source_wire, src_before, src_after, sink_wire, sink_walk,
              "wire (Pre-decided 70)" % tag)
     if mandatory:
         gate(label, ok, "T=%r ; new-on-source %r ; sink-side LoopTunnel %r ; sink wire %r ; ALL source "
-                        "terminals on the sink wire %d %r (want exactly 1, and it must be T - FIX 4)"
-             % (rec["T"], new_t, sink_t, sink_wire, len(sink_all_src), sink_all_classes))
+                        "terminals on the sink wire %d %r (want exactly 1, and it must be T - FIX 4) ; "
+                        "PD85 violations %d (want 0)"
+             % (rec["T"], new_t, sink_t, sink_wire, len(sink_all_src), sink_all_classes, len(pd85_bad)))
     else:
         fact("%s NOT GATED HERE - this write created no LoopTunnel, so it is not a border write; the "
              "identity numbers above are FACT lines and the row's own gate decides it. Result would have "
@@ -1659,121 +1776,167 @@ def bare_sink_gate(hints):
     (tools/bench/diag_c67_addsr.log:389). This build re-created ONE. Dropping a downstream consumer is a
     CHANGE OF COMPUTATION (rule 1a) and it would pass SILENTLY, because a bare source is legal LabVIEW.
 
-    A SelectorTunnel is not a `Nodes[]` entry, so it cannot be read with `node_terms`; what IS readable is
-    the NET - t6's wire on the live target, walked by uid with `wire_source_owner`. If #12673 is not a
-    terminal of that net, this stage has left it bare: the run FAILS and the log names it as a SIXTH ROW.
+    A SelectorTunnel is not a `Nodes[]` entry, so it cannot be read with `node_terms`; what IS readable
+    is the wire the CONSUMER's own Terms[] entry carries, walked by uid with `wire_source_owner`.
 
-    *** FIX 2, 2026-09-21 - THE GATE IS NOW TWO-SIDED (c70 prior-art review A3(ii) `contradicted`,
-    `archive/peer/2026-09-21-priorart-c70-m3a1.md:233-239`). As first coded it walked ONE wire and would
-    have FAILED even a PERFECT sixth row: the crossing is OUTWARD - `#10407` moves into body
-    `Diagram #23058` (`tools/bench/build_d1_m3a1.log:156`) while `#12589` stays on `Diagram #639`
-    (`docs/d1-route-b-plan.md:207`) - so #12673 sits on the OUTER segment, which is a DIFFERENT wire uid,
-    exactly the one-sided defect this cycle's identity gate was built to end. Two branches now, and the
-    run FAILS only if #12673 is on NEITHER:
-      SAME-DIAGRAM branch : #12673 is a non-source terminal of t6's own net.
-      BORDER branch       : t6's net has a `LoopTunnel` SINK **T**; T's OTHER-side wires (its
-                            `Outside Terminal` wire and each inside wire that is not t6's net, read with
-                            the BUILT `gscript.tunnels` / `OpTunnels_v0`, uid-matched, never index-guessed)
-                            carry #12673 as a non-source terminal.
-    Which branch passed, and T, are FACT lines. Nothing here hard-codes "it is a border crossing": the
-    diagram uids above are the EXPECTATION, and both sides are measured on every run. ***
+    *** FIX 3, 2026-09-21 - THE GATE ANCHORS AT THE CONSUMER AND NEEDS ZERO HOPS (Pre-decided 90,
+    docs/cycle27-plan.md:3084-3089; it AMENDS FIX 2's two-branch outward walk, whose BORDER branch was
+    an unbounded search with no failure mode - "which is how `wire_delta==3` died"). The failed-
+    prediction review measured that #12673 is already a SINK of a wire whose single source is the
+    border LoopTunnel (`build_d1_m3a1.log:1151-1155`) - so start FROM THE CONSUMER: [5b] resolved the
+    owner node (#12589's measured uid) and the Terms[] entry that EXPOSES uid 12673; A4 re-reads THAT
+    entry's wire live and walks ONE wire. PASS requires ALL of:
+      (i)   #12673 is a NON-SOURCE terminal of that wire, and its owner_class reads `SelectorTunnel`
+            (the class check Pre-decided 85 carries from NI's own advice);
+      (ii)  that wire has EXACTLY ONE `is_source=True` terminal counted over ALL owner classes (the
+            FIX 4 discipline) - its (class, uid) is a FACT line, never a criterion;
+      (iii) the walk satisfies the PD85 precondition (every real-owner row's recip == the queried uid).
+    Hop count is an output, never a criterion; there is no outward walk left in this gate. ***
     """
-    print("\n---------- [6b] A4 THE BARE-SINK GATE: is `Q_focusback` SelectorTunnel #%d still a sink of "
-          "#%d t%d's net?" % (T6_SECOND_SINK, CASE_UID, T6_TERM_INDEX), flush=True)
-    rec = {"node_uid": CASE_UID, "term_name": T6_TERM_NAME, "term_index_recorded": T6_TERM_INDEX,
-           "original_net": T6_ORIGINAL_NET, "original_sinks": list(T6_SINKS_ORIGINAL),
-           "second_sink": T6_SECOND_SINK,
+    print("\n---------- [6b] A4 THE BARE-SINK GATE (FIX 3, consumer-anchored): does the CONSUMER entry "
+          "that exposes SelectorTunnel #%d still carry a wire, and is #%d a sink on it?"
+          % (T6_SECOND_SINK, T6_SECOND_SINK), flush=True)
+    rec = {"second_sink": T6_SECOND_SINK, "original_net": T6_ORIGINAL_NET,
+           "original_sinks": list(T6_SINKS_ORIGINAL), "anchor": "THE CONSUMER (Pre-decided 90)",
            "why": "rule 1a: a dropped downstream consumer is a computation change, and a bare source is "
                   "legal LabVIEW, so nothing else in this run would catch it "
                   "(tools/bench/diag_c67_addsr.log:389)"}
-    loc, rows = node_view(WORK, CASE_UID, hints, "[6b] #%d" % CASE_UID, quiet=True)
-    ti, how = resolve_term(rows, T6_TERM_NAME, T6_TERM_INDEX, True, "[6b] #%d" % CASE_UID)
-    row = next((t for t in rows if t["i"] == ti), None) if ti is not None else None
+    sixth = K.get("sixth_row") or {}
+    case_uid = sixth.get("case_structure_uid")
+    addr = sixth.get("sink_addr") or {}
+    rec["consumer_case_uid_measured_at_5b"] = case_uid
+    rec["consumer_addr_measured_at_5b"] = addr
+    if not case_uid or addr.get("term_index") is None:
+        fact("[6b] THE CONSUMER WAS NEVER RESOLVED AT [5b] (case uid %r, addr %r) - A4 has no anchor "
+             "and FAILS; the [5b] FACT lines carry what the owner-chain walk returned." % (case_uid, addr))
+        gate("A4 no SINK that was wired on the bed is left bare by this stage (SelectorTunnel #%d, "
+             "consumer-anchored - FIX 3)" % T6_SECOND_SINK, False,
+             "no consumer anchor from [5b]: case uid %r, addr %r" % (case_uid, addr))
+        R["bare_sink_gate"] = rec
+        dump()
+        return rec
+    # ---- RE-MEASURED LIVE, never carried: the owner node's Terms[] entry at the [5b]-resolved index.
+    cloc, crows = node_view(WORK, case_uid, hints, "[6b] the CONSUMER's owner node #%d" % case_uid,
+                            quiet=True)
+    row = next((t for t in crows if t["i"] == addr.get("term_index")), None)
     wire = (row or {}).get("wire") or 0
-    rec.update({"found": loc.get("found"), "term_index_used": ti, "term_resolution": how,
-                "t6_terminal": row, "t6_wire_uid": wire})
-    fact("[6b] #%d t%r %r resolved %s ; it carries wire %r" % (CASE_UID, ti, T6_TERM_NAME, how, wire))
-    walk, werr = safe("[6b] wire_source_owner(%r)" % wire,
-                      lambda: WIRE_TERMS(WORK, wire) if wire else [], [])
+    rec.update({"consumer_found": cloc.get("found"), "consumer_terminal": row, "consumer_wire_uid": wire})
+    fact("[6b] the CONSUMER entry: #%d Terms[t%r] name %r re-read LIVE ; it carries wire %r"
+         % (case_uid, addr.get("term_index"), (row or {}).get("name"), wire))
+    if not wire:
+        fact("[6b] *** THE CONSUMER ENTRY CARRIES NO WIRE - #%d is left bare by this stage. ***"
+             % T6_SECOND_SINK)
+        gate("A4 no SINK that was wired on the bed is left bare by this stage (SelectorTunnel #%d, "
+             "consumer-anchored - FIX 3)" % T6_SECOND_SINK, False,
+             "the consumer entry t%r of #%d carries wire 0" % (addr.get("term_index"), case_uid))
+        R["bare_sink_gate"] = rec
+        dump()
+        return rec
+    walk, werr = wire_walk("[6b] the CONSUMER's wire %r" % wire, wire)
     rec["net_walk"] = walk
     rec["net_walk_error"] = werr
-    owners = [t.get("owner_uid") for t in (walk or []) if t.get("owner_uid")]
-    rec["net_owner_uids"] = owners
-    same_diagram = any(t.get("owner_uid") == T6_SECOND_SINK and t.get("is_source") is False
-                       for t in (walk or []))
-    rec["branch_same_diagram"] = same_diagram
-    fact("[6b] t6's net %r Terms[] walk: %r ; owner uids %r%s"
-         % (wire, walk, owners, (" ; " + werr) if werr else ""))
-    fact("[6b] BRANCH 1 (SAME-DIAGRAM): #%d is %sa NON-SOURCE terminal of #%d t%r's own net %r"
-         % (T6_SECOND_SINK, "" if same_diagram else "**NOT** ", CASE_UID, ti, wire))
-
-    # ---- FIX 2, BRANCH 2 (BORDER): t6's net -> its LoopTunnel SINK T -> T's OTHER-SIDE wires -> #12673
-    border, border_T, border_wire, border_detail = False, None, None, []
-    lt_sinks = sorted({int(t["owner_uid"]) for t in (walk or [])
-                       if t.get("owner_class") == "LoopTunnel" and t.get("is_source") is False
-                       and t.get("owner_uid")})
-    rec["t6_net_loop_tunnel_sinks"] = lt_sinks
-    fact("[6b] BRANCH 2 (BORDER): LoopTunnel SINK(s) on t6's net: %r" % (lt_sinks,))
-    n_lt, _nlterr = safe("[6b] count('LoopTunnel')", lambda: g.count(WORK, "LoopTunnel"))
-    for T in lt_sinks:
-        idx, trec = None, None
+    # (i) #12673 as a NON-SOURCE terminal, WITH the class check (Pre-decided 85 / NI's advice).
+    uid_rows = [t for t in (walk or []) if t.get("owner_uid") == T6_SECOND_SINK
+                and t.get("is_source") is False]
+    class_ok = any(t.get("owner_class") == "SelectorTunnel" for t in uid_rows)
+    if uid_rows and not class_ok:
+        fact("[6b] *** UID %d IS ON THE WIRE BUT ITS CLASS READS %r, NOT SelectorTunnel - a reassigned "
+             "uid (Pre-decided 85's class check exists for exactly this). NOT accepted. ***"
+             % (T6_SECOND_SINK, [t.get("owner_class") for t in uid_rows]))
+    present_12673 = bool(uid_rows) and class_ok
+    # (ii) EXACTLY ONE source terminal of ANY class (FIX 4: count first, filter never).
+    srcs = [t for t in (walk or []) if t.get("is_source") and t.get("owner_uid")]
+    rec["all_source_terminals"] = [(t.get("owner_class"), t.get("owner_uid")) for t in srcs]
+    single_source = (len(srcs) == 1)
+    fact("[6b] the CONSUMER's wire %r: source terminal(s) OF ANY CLASS %r (want EXACTLY 1) - the "
+         "source's (class, uid) is a FACT, never a criterion" % (wire, rec["all_source_terminals"]))
+    # (iii) the PD85 precondition on THIS walk.
+    bad = pd85_violations(wire, walk)
+    rec["pd85_violations"] = [(t.get("i"), t.get("owner_class"), t.get("owner_uid"), t.get("recip"))
+                              for t in bad]
+    # (iv) THE BOUNDED PROVENANCE WALK (Pre-decided 90's four constraints, restored by the c71 review
+    #      A3(ii)/B4: FIX 3 as first cut passed on "any single source", which cannot distinguish "fed
+    #      from #10407 t6" from "fed from anything" - the one distinction rule 1a turns on). From the
+    #      consumer's wire: follow ONLY unique source terminals, FAIL on ambiguity, hop through a
+    #      LoopTunnel to its unique other-side wire, STOP at the first non-LoopTunnel source, and assert
+    #      that terminal's (class, uid) against the value predicted BEFORE the run - (SelectorTunnel,
+    #      T6_SOURCE_FACE_RECORDED). Hop count is an OUTPUT; the failure modes are ambiguity, an
+    #      unlocatable tunnel, a PD85-dirty wire, and the hop cap.
+    prov = {"hops": [], "ok": False, "why": ""}
+    cur, seen = wire, set()
+    n_lt, _nlterr = safe("[6b] count('LoopTunnel') for the provenance walk",
+                         lambda: g.count(WORK, "LoopTunnel"))
+    for hop in range(T6_PROV_HOP_CAP + 1):
+        w_walk = walk if cur == wire else wire_walk("[6b] PROV hop %d wire %r" % (hop, cur), cur)[0]
+        if pd85_violations(cur, w_walk):
+            prov["why"] = "wire %r is PD85-dirty" % cur
+            break
+        srcs_h = [t for t in (w_walk or []) if t.get("is_source") and t.get("owner_uid")]
+        if len(srcs_h) != 1:
+            prov["why"] = "wire %r has %d source terminal(s) - ambiguity FAILS the walk" % (cur, len(srcs_h))
+            break
+        s = srcs_h[0]
+        prov["hops"].append({"wire": cur, "source_class": s.get("owner_class"),
+                             "source_uid": s.get("owner_uid")})
+        fact("[6b] PROV hop %d: wire %r <- source (%r, %r)"
+             % (hop, cur, s.get("owner_class"), s.get("owner_uid")))
+        if s.get("owner_class") != "LoopTunnel":
+            prov["ok"] = (s.get("owner_class") == "SelectorTunnel"
+                          and int(s.get("owner_uid") or 0) == T6_SOURCE_FACE_RECORDED)
+            prov["why"] = ("terminated at (%r, %r); predicted (SelectorTunnel, %d): %r"
+                           % (s.get("owner_class"), s.get("owner_uid"), T6_SOURCE_FACE_RECORDED,
+                              prov["ok"]))
+            break
+        T = int(s["owner_uid"])
+        if T in seen:
+            prov["why"] = "LoopTunnel #%d seen twice - a cycle FAILS the walk" % T
+            break
+        seen.add(T)
+        trec = None
         for i in range(int(n_lt or 0)):
-            cand, _cerr = safe("[6b] tunnels(index=%d)" % i, lambda ii=i: g.tunnels(WORK, ii))
+            cand, _ce = safe("[6b] PROV tunnels(index=%d)" % i, lambda ii=i: g.tunnels(WORK, ii))
             if cand and int(cand.get("uid") or 0) == T:
-                idx, trec = i, cand
+                trec = cand
                 break
         if trec is None:
-            fact("[6b] BRANCH 2: LoopTunnel #%d was NOT found in the %r-entry LoopTunnel traverse - its "
-                 "other side could not be read" % (T, n_lt))
-            border_detail.append({"T": T, "found": False})
-            continue
+            prov["why"] = "LoopTunnel #%d not found in the %r-entry traverse" % (T, n_lt)
+            break
         others = [w for w in ([trec.get("out_wire")] + list(trec.get("in_wires") or []))
-                  if w and int(w) != int(wire or 0)]
-        fact("[6b] BRANCH 2: LoopTunnel #%d = traverse index %r ; out_wire %r ; in_wires %r ; OTHER-side "
-             "wire(s) to walk %r" % (T, idx, trec.get("out_wire"), trec.get("in_wires"), others))
-        for w2 in others:
-            w2walk, w2err = safe("[6b] wire_source_owner(%r) - the other side of LoopTunnel #%d" % (w2, T),
-                                 lambda ww=w2: WIRE_TERMS(WORK, int(ww)), [])
-            w2owners = [t.get("owner_uid") for t in (w2walk or []) if t.get("owner_uid")]
-            hit2 = any(t.get("owner_uid") == T6_SECOND_SINK and t.get("is_source") is False
-                       for t in (w2walk or []))
-            fact("[6b] BRANCH 2: the other-side wire %r of LoopTunnel #%d has owner uids %r ; #%d present "
-                 "as a NON-SOURCE terminal: %r%s"
-                 % (w2, T, w2owners, T6_SECOND_SINK, hit2, (" ; " + w2err) if w2err else ""))
-            border_detail.append({"T": T, "tunnel_index": idx, "other_wire": w2, "owner_uids": w2owners,
-                                  "hit": hit2, "walk_error": w2err})
-            if hit2 and not border:
-                border, border_T, border_wire = True, T, w2
-    rec["branch_border"] = border
-    rec["border_tunnel_uid"] = border_T
-    rec["border_other_side_wire"] = border_wire
-    rec["border_detail"] = border_detail
-    present = bool(same_diagram or border)
+                  if w and int(w) != int(cur)]
+        if len(others) != 1:
+            prov["why"] = ("LoopTunnel #%d has %d other-side wire(s) %r - ambiguity FAILS the walk"
+                           % (T, len(others), others))
+            break
+        cur = int(others[0])
+    else:
+        prov["why"] = "hop cap %d reached" % T6_PROV_HOP_CAP
+    rec["provenance"] = prov
+    fact("[6b] PROVENANCE (Pre-decided 90): %s ; %d hop(s) %r ; ok %r"
+         % (prov["why"], len(prov["hops"]), prov["hops"], prov["ok"]))
+    present = bool(present_12673 and single_source and not bad and not werr and prov["ok"])
     rec["second_sink_present"] = present
-    rec["which_branch_passed"] = ("SAME-DIAGRAM" if same_diagram else
-                                  ("BORDER via LoopTunnel #%r on wire %r" % (border_T, border_wire)
-                                   if border else "NEITHER"))
-    fact("[6b] *** #%d (SelectorTunnel, row label `%s`) IS %sA NON-SOURCE TERMINAL OF #%d t%r's NET OR OF "
-         "THE OTHER SIDE OF ITS LOOP BORDER - branch that passed: %s (tunnel T=%r, other-side wire %r) ***"
-         % (T6_SECOND_SINK, T6_SIXTH_SINK_LABEL, "" if present else "**NOT** ", CASE_UID, ti,
-            rec["which_branch_passed"], border_T, border_wire))
+    fact("[6b] *** #%d (SelectorTunnel, row label `%s`) IS %sA NON-SOURCE TERMINAL OF THE CONSUMER'S "
+         "OWN WIRE %r (class check %r ; single-source %r ; PD85 violations %d ; walk error %r) ***"
+         % (T6_SECOND_SINK, T6_SIXTH_SINK_LABEL, "" if present else "**NOT** ", wire, class_ok,
+            single_source, len(bad), werr or ""))
     if not present:
         rec["sixth_row"] = {"sink_uid": T6_SECOND_SINK, "sink_class": "SelectorTunnel",
                             "sink_label": "Q_focusback",
                             "source": "#%d t%d %r" % (CASE_UID, T6_TERM_INDEX, T6_TERM_NAME),
                             "original_net": T6_ORIGINAL_NET,
                             "evidence": "tools/bench/diag_c67_addsr.log:389",
-                            "status": "LEFT BARE BY THIS STAGE - it is a SIXTH ROW for the next stage"}
+                            "status": "NOT PROVEN WIRED BY THIS STAGE - it stays a SIXTH ROW for the "
+                                      "next stage"}
         fact("[6b] *** SIXTH ROW, ON FILE AND NOT PASSED OVER: `Q_focusback` SelectorTunnel #%d must be "
-             "re-connected to #%d t%d %r (original net %d, tools/bench/diag_c67_addsr.log:389). The "
-             "inventory for this stage was FIVE rows; this makes SIX. It is NOT attempted here and it is "
-             "NOT worked around. ***"
+             "re-connected to #%d t%d %r (original net %d, tools/bench/diag_c67_addsr.log:389). It is "
+             "NOT worked around here. ***"
              % (T6_SECOND_SINK, CASE_UID, T6_TERM_INDEX, T6_TERM_NAME, T6_ORIGINAL_NET))
-    gate("A4 no SINK that was wired on the bed is left bare by this stage (SelectorTunnel #%d on #%d "
-         "t%r's net, EITHER SIDE of the loop border - FIX 2)"
-         % (T6_SECOND_SINK, CASE_UID, T6_TERM_INDEX), present,
-         "branch %s ; t6 wire %r ; net owner uids %r ; LoopTunnel sinks %r ; border walk %r"
-         % (rec["which_branch_passed"], wire, owners, lt_sinks, border_detail))
+    gate("A4 no SINK that was wired on the bed is left bare by this stage (SelectorTunnel #%d, "
+         "consumer-anchored + bounded provenance walk - FIX 3)" % T6_SECOND_SINK, present,
+         "consumer wire %r ; uid+class hit %r ; sources %r ; PD85 violations %d ; walk error %r ; "
+         "provenance ok %r (%s)"
+         % (wire, present_12673, rec["all_source_terminals"], len(bad), werr or "",
+            prov["ok"], prov["why"]))
     R["bare_sink_gate"] = rec
     dump()
     return rec
@@ -1876,8 +2039,8 @@ def step_7_save(hints):
              "ANY LATER STAGE. Its shift registers are uninitialised AND it does not compile. ***"
              % os.path.basename(BROKEN_PATH))
     else:
-        fact("[7] *** NO BROKEN ARTEFACT IS ON DISK: the save path refused it (verbatim above) and the two "
-             "bypasses at tools/gscript.py:2088-2090 are FORBIDDEN by this brief. NOTHING WAS WRITTEN "
+        fact("[7] *** NO BROKEN ARTEFACT IS ON DISK: even the Pre-decided 88 route "
+             "(save(allow_broken=True) -> gui_save) refused, verbatim above. NOTHING WAS WRITTEN "
              "UNDER %s. This is reported to judgement, not worked around. ***" % os.path.basename(
                  BROKEN_PATH))
     # A COLD REOPEN IS NOT ATTEMPTED ON A BROKEN ARTEFACT: the skill's own rule - never cold-load a

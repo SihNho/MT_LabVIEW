@@ -1,0 +1,119 @@
+BGRUN START 2026-09-21 23:28:22 limit 18.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & 'tools/peer.ps1' -Agent claude -Role priorart -Kind fact -Model opus -Effort high -TimeoutSec 900 -Slug priorart-c71-m3a1 -Task (Get-Content -Raw 'C:\Users\KimLab\AppData\Local\Temp\priorart_c71-m3a1.txt')
+OUTCOME: ANSWERED (440s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-21-priorart-c71-m3a1.md
+COST: $5.5413  in 56 / out 33100 / cache-create 229677 / cache-read 4833452  (436s, 35 turn(s))
+--- ANSWER ---
+Write is disabled in this session, so the review is delivered here directly.
+
+---
+
+# PRIOR-ART REVIEW — the EDITED `tools/recipes/build_d1_m3a1.py`
+
+**NOT novel.** Eight findings. Change **(a)** is clean and owes nothing. Change **(c)** contradicts the two plan items it cites as its authority. Change **(b)** — the one the brief names as the deliverable — is the most heavily refuted route in this project's files, and as coded it cannot reach a LabVIEW call at all.
+
+## PART A — THE DIRECTION
+
+### A1 — SETTLED ALREADY: `allow_broken=True` is BANNED in every stage script, and Pre-decided 88 withdraws no such item by name
+
+Pre-decided 88 (`docs/cycle27-plan.md:3063-3073`) establishes one true fact — the flag exists and the `RuntimeError` was our own default. It does not touch the three standing decisions that forbid using it:
+
+- `docs/cycle27-plan.md:617` (Pre-decided 29(d), cycle 46, 2026-09-19): *"**`allow_broken=True` is BANNED in every stage script** — it is the one flag that can reach `gui_save`."*
+- `docs/cycle27-plan.md:458-464` (finding B1, cycle 43): *"🔴 **NO STEP MAY SAVE A BROKEN VI** … `gui_save`, which has failed at seven logged sites"* — naming them, `build_d1_routeb_v7_run10.log:367`, `build_keystone.log:903`, `cycle3b_toolkit.log:78`, `extract_chain.log:10`, `gpukernel_chain.log:227`, `keystone_discovery.log:29`, `label_copy_clfn.log:16` — *"where a step necessarily ends illegal, **its saved artefact is a DATA file**"*. That is the recorded answer to "a step must leave a file", and this edit round does not mention it.
+- `docs/cycle27-plan.md:2559` (cycle 64, **2026-09-21**, the same day): *"**53(d⁷)'s save-bypass branch is REJECTED** — it would have bought a `gui_save` GUI exception on every S3b row for ever, and nothing needed bypassing."*
+- The adopted rule is also in the callee's own code: `tools/gscript.py:1504` — *"then it is COM-saved ONCE (no keystroke save of a broken intermediate)"*.
+
+Two of these were themselves prior-art dispositions. **To release**, show in writing that Pre-decided 88 withdraws 29(d) and 25-B1 — it cites neither.
+
+### A2 — REFUTED ALREADY: the keystroke save is a counted repeated-failure class, and the accepted disposition was to REMOVE the save
+
+`archive/peer/2026-09-19-retrospective-cycle42.md:243`: *"**Finding 1 (repeated failure, keystroke save, 3rd occurrence):** accepted. Run 11 removes the save entirely; `docs/cycle27-plan.md` Pre-decided 20 is marked SUPERSEDED so no future session re-cuts a save→restart build on its strength."*
+
+That is this project's own retrospective machinery naming this exact mechanism as a repeated failure and disposing of it by deletion, not by a flag. The cause it names — Ctrl+S on a broken target — is unchanged in `tools/gscript.py:2049`. **To release**, show what has changed in `gui_save` since 2026-09-19 that makes the 3rd occurrence not a 4th.
+
+### A3 — CONTRADICTED (i): Pre-decided 88's precedent citation is, verbatim, a refutation this project has already recorded as WRONG
+
+This is the finding that should stop the round.
+
+- **Side 1 — what the edit says.** `build_d1_m3a1.py:95`: *"`tools/gscript.py:2087-2089` routes a broken VI to `gui_save()` (already used at `tools/recipes/build_d1_routeb_v7.py:2276`)"*; Pre-decided 88 repeats it at `docs/cycle27-plan.md:3066`. The word "already used" is doing the work of a precedent.
+- **Side 2 — what that call site did.** `tools/bench/build_d1_routeb_v7_run10.log:367`: *"S3w/E3 THE FRESH-INSTANCE CENSUS WAS NOT REACHED - RuntimeError: gui_save(SCRATCH_routeb_065508.vi): file mtime did not move after Ctrl+S on every candidate window."* `:2276` is not a working precedent; it is the site that died.
+- **Side 3 — the same citation has been made before, and retracted.** `archive/peer/2026-09-19-priorart-d1-routeb-run10.md:496-497` are two `REFUTED:` lines built on `build_d1_routeb_v7.py:2276`. `:499` retracts them: *"the `REFUTED: already-failed` line above is WRONG and run 10 disproved it 30 minutes after it was written … `g.save(target, allow_broken=True)` DIVERTS to `gui_save` whenever `exec_state(target) == 0` … **The refutation was made from a call-site summary without reading the callee.**"* It is filed as a counted violation: `docs/violation-decisions.md:493` `VIOLATION: inference-over-measurement | loss_min=31`, and `:497-503` spells out the same citation chain.
+
+Related measurement, dated after every `gui_save` repair: `docs/cycle27-plan.md:605-607` — *"MEASURED, cycle 46: **no run in this project has ever saved a modified copy of the main VI**"*. `WORK` is a modified copy of the main VI.
+
+**To release**, produce a log line in which `gui_save` returned a size and the file's mtime moved. `:2276` is not that line.
+
+### A3 — CONTRADICTED (ii): A4 FIX 3 deletes the provenance the two items it cites require it to keep
+
+- **Side 1 — Pre-decided 85**, `docs/cycle27-plan.md:3031-3033`: *"The only thing worth asserting is **the sink receives the value from the intended source terminal**. Everything else has been an instrument pointed at the wrong quantity."*
+- **Side 1b — Pre-decided 90**, `docs/cycle27-plan.md:3086-3089`, the item FIX 3 names as its authority: it amends the walk, it does not delete it — *"The provenance walk, **where one is still needed**, follows only **unique** source terminals, **fails on ambiguity**, stops at the first non-tunnel terminal, and asserts that terminal's `(owner uid, name)` against a value predicted **before** the run; **hop count is an output, never a criterion.**"* Those are four constraints on a walk that survives.
+- **Side 2 — the gate as coded.** `build_d1_m3a1.py:1722-1723`: *"exactly ONE `is_source=True` terminal counted over ALL owner classes … **its (class, uid) is a FACT line, never a criterion**"*, printed as such at `:1782-1783`, and `:1725`: *"there is no outward walk left in this gate."*
+
+So A4 now passes whenever `#12673` has exactly one source of any kind. It cannot distinguish "fed from `#10407` t6" from "fed from anything at all" — which is the one distinction rule 1a turns on and the one Pre-decided 85 says is the only thing worth asserting. The measured chain is two tunnel hops (`build_d1_m3a1.log:1233` → `:1236-1237` → `:1151-1152`), i.e. exactly the bounded walk 90 describes: unique source each hop, stop at the first non-tunnel terminal.
+
+**To release**, show that Pre-decided 90 deletes the provenance walk rather than constraining it — `:3086-3089` says the opposite.
+
+### A4 — UNREAD EVIDENCE: `gui_save`'s first act is `open_panel`, measured at 246 s and module-POISONING, and the recipe's own contract says it never calls it
+
+- `tools/gscript.py:2016`: `gui_save` → `open_panel(target)`, before any keystroke.
+- `archive/peer/2026-09-21-c64-openpanel-cap.md:27-34`, dated **2026-09-21 13:19**, this same cycle-day: `g.open_panel()` on a **14,666 B plain copy of an op VI** *"did not return within the cap"* (180 s), *"The module was therefore POISONED … the abandoned call did come back, ~66 s later — roughly **246 s in total** for one `OpenFrontPanel`"*, while the identical call 19 minutes earlier returned in ~60 s.
+- `WORK` is a 476,759 B copy of the main VI at `ExecState` 0, against a 14.6 KB op. Nothing in the edit round, in Pre-decided 88, or in the recipe's header mentions this measurement.
+- And `build_d1_m3a1.py:348` still asserts `"no_open_panel_call_in_this_file": True`, two lines above `:350`'s `"gui_actions": "ONLY gscript.gui_save…"`. The claim is literally true of the file's text and false of the run — the same self-contradicting-summary shape the brief warns about.
+
+A poisoned module at `[7]` also loses `[H]`: the four md5 pins, the tool pins and the ref counts are read through the same COM path, so the rider at `docs/cycle27-plan.md:3072-3073` ("all four md5 pins re-read afterwards") is the first casualty of its own mechanism.
+
+Separately, Pre-decided 88's other rider (`:3071-3072`) says the **capture → locate → act → capture → confirm** rule *"applies to it in full"*. `gui_save` takes no capture at all: it locates by window-title substring and clicks a coordinate derived arithmetically from the window rect (`tools/gscript.py:2041-2045`). `docs/cycle27-plan.md:66-68` is explicit — *"**Derived or remembered coordinates are never clicked blind** … a window-rect comparison says nothing about control positions inside the panel"*. The edit adds no captures. (I am **not** slugging the older "`gui_save` bypasses `lv_gui.ps1`" OPEN item — `tools/gscript.py:272-277` shows it goes through `lv_gui.ps1` now, so that half is stale and should not block anything.)
+
+## PART B — THE ARTEFACT
+
+### B2 — ALREADY FAILED (mechanical): the ASTCHECK the brief orders next REFUSES this file, and a cycle has already been lost to that exact gate
+
+- `tools/bench/c60c_astcheck.py:100-103`, gate 3: `allow_broken=True is never passed` — it walks every `Call` for a keyword `allow_broken` with constant `True`. `build_d1_m3a1.py:643` is `g.save(WORK, allow_broken=True)`. The gate returns `1`, `=== ASTCHECK FAILED`.
+- The brief's order is PRIOR-ART → **ASTCHECK** → BUILD, and the recipe forbids the only workaround: `build_d1_m3a1.py:140` and `:349` — *"any edit to `tools/gscript.py` or a `*_astcheck.py`"* is FORBIDDEN / `"no_astcheck_gate_file_edited": True`.
+- Precedent, same plan: `docs/cycle27-plan.md:2539` — *"⚠️ **Cycle 63 produced nothing**: it wrote `tools/bench/diag_c63_connect_perturb.py`, **its static gate failed on `allow_broken=True`**."*
+
+So as the three changes stand, the build does not run; the cycle ends at the gate. **To release**, show a route from this file to a launched build that neither edits an astcheck file nor sets `CYCLE_GUARD_OFF`.
+
+### B2 — ALREADY FAILED (second): A3-ID at `[5b]` is untouched by all three changes and fails again by construction
+
+`identity_gate`'s pass condition is unchanged (`build_d1_m3a1.py:846`): it needs a NEW `LoopTunnel` sink on **the source wire uid it queried**. Last run measured what that read returns after the write:
+
+- `tools/bench/build_d1_m3a1.log:1149-1150` — *"SOURCE net 23955 IMMEDIATELY AFTER THE WRITE … `1 row(s), 0 with a REAL owner`"* — the null signature that the cycle-68 diagnostic's outcome A defines as *unresolvable uid*. So `before_t` `[]` → `after_t` `[]` → `new_t` `[]` → `ok False`, and `:1158` `FAIL A3-ID [5b] … T=None`.
+- The write does not extend wire 23955; it replaces it. `:1232-1233` shows `#10407` t6 carrying **24226**, a different uid, with the new `LoopTunnel 24154` on it.
+- PD85 does not change this: `pd85_violations` excludes `owner_uid 0` rows (`build_d1_m3a1.py:769`), so an all-null walk has **zero** violations and is silently believed as "no violation".
+
+Consequence worth stating plainly: with (b) in place a file may land, and the run still ends `rc=1` on A3-ID — the third consecutive failure of this recipe, which is the rung of `cycle_runner.py`'s ladder after fable/low. **To release**, show that querying 23955 after the write returns a real-owner row.
+
+### B4 — ALREADY MEASURED: the read FIX 3 deletes is the one that already measured the border chain
+
+The brief deletes FIX 2's outward walk as *"an unbounded search with no failure mode"*. It had a failure mode and it produced the measurement:
+
+- `tools/bench/build_d1_m3a1.log:1233` — t6's post-write net **24226**: source `SelectorTunnel 2017`, sinks `LoopTunnel 24154` and `RightShiftRegister 23868`, every `recip` 24226 (PD85-clean).
+- `:1236-1237` — `LoopTunnel #24154` → other-side wire **24130**, owner uids `[24154, **24018**]`.
+- `:1151-1152` — sink wire **9113**'s single source is `LoopTunnel **24018**`.
+
+Those three lines are a complete `t6 → 24226 → 24154 → 24130 → 24018 → 9113 → #12673` chain, each hop a unique source terminal, terminating at a non-tunnel terminal — precisely the walk Pre-decided 90 authorises. The gate failed at `:1238-1240` because it demanded `#12673` **on** one of those two wires, not because the walk found nothing. Deleting the read discards the evidence; re-cutting its criterion would have kept it. **To release**, show that `:1233`/`:1236-1237` do not carry that chain.
+
+### B3 — HELPER EXISTS: the saved-bytes-differ GATE already exists in the fleet's own save path and `save_artefact` downgrades it to a FACT
+
+`gui_save` saves in place and *"the file shrinks, because a broken VI carries no compiled code"* (`tools/gscript.py:2002-2004`), after which `save_artefact` copies `WORK` to the artefact path (`build_d1_m3a1.py:659`). Whether the in-memory edits reached disk is therefore the whole question — and the recipe's own docstring says so (`:630-631`) while recording the answer as `rec["bytes_equal_to_the_predecessor"]` (`:667`) and printing it inside a FACT line (`:669-671`). It never gates.
+
+The fleet already has the gate: `tools/recipes/build_d1_routeb_v7.py:2280` — *"the SAVED bytes are NOT the original's - the edits reached the disk"* — adopted as a disposition at `archive/peer/2026-09-19-priorart-d1-routeb-run10.md:491`. **To release**, show that a byte-identical artefact would fail some other gate in this file; under Pre-decided 63 (hygiene-only) it would not.
+
+### A1 (second, no slug) — change (a) is confirmed, and owes nothing
+
+`pd85_violations` / `print_walk` (`build_d1_m3a1.py:760-790`) implement Pre-decided 85 as written, nothing in the fleet already does it (no other `recip` comparison exists outside the logs), and it correctly catches the `:1096-1098` artefact (real owners, `recip` 24009 ≠ 9649). The class check on `#12673` matches the measured class (`tools/bench/diag_c67_addsr.log:389`, `SelectorTunnel`). One caveat, prose only, deliberately not slugged: the `owner_uid 0` exclusion means a **wholly null** walk scores zero violations, so "the wire no longer exists" and "the walk is believable" are the same PD85 verdict — see B2(second).
+
+---
+
+```
+PRIOR-ART: settled-already
+PRIOR-ART: refuted-already
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-failed
+PRIOR-ART: already-measured
+PRIOR-ART: helper-exists
+```
+
+**The cheapest order to act on this**: finding 6 is machine-checkable in one foreground run (`c60c_astcheck.py` on the edited file, no LabVIEW) and decides whether (b) can launch at all before anything else is argued; finding 3 is decided by opening `build_d1_routeb_v7_run10.log:367`. Neither costs a build.
+BGRUN END rc=0 after 440s

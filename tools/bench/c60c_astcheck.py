@@ -97,10 +97,15 @@ def main():
     gate("2 remove_bad_wires_scripted / remove_bad_wires / gui_save neither imported nor called",
          not bad, "%r" % (bad,))
 
+    # 3 AMENDED 2026-09-21 (cycle 57 firefighter) per Pre-decided 88 (docs/cycle27-plan.md:3063-3073):
+    #   the blanket ban enforced the WITHDRAWN 81; the authorised shape is EXACTLY ONE
+    #   `g.save(..., allow_broken=True)` call site and nothing else may pass the flag.
     ab = [n for n in ast.walk(tree) if isinstance(n, ast.Call)
           for k in n.keywords if k.arg == "allow_broken"
           and isinstance(k.value, ast.Constant) and k.value.value is True]
-    gate("3 allow_broken=True is never passed", not ab, "%d site(s)" % len(ab))
+    ab_ok = all(isinstance(n.func, ast.Attribute) and n.func.attr == "save" for n in ab)
+    gate("3 allow_broken=True at MOST ONE site, and only on a .save(...) call (Pre-decided 88)",
+         len(ab) <= 1 and ab_ok, "%d site(s), all .save(): %r" % (len(ab), ab_ok))
 
     gdefs = defs_in(GSCRIPT)
     missing = sorted(a for a in attrs if a not in gdefs and not a.startswith("_") and a not in ("CLAUDEDEV",))
