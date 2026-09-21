@@ -45,6 +45,11 @@ whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding t
   `tools/hooks/guard_session.py` refuses further material dispatches; that refusal is the end of your cycle, not a
   problem to route around. The same hook refuses the 9th material dispatch — if you reach it, the cycle was too
   big: write NEXT and exit so the runner starts a fresh session.
+- **ENDING YOUR TURN IS THE END OF THIS PROCESS — there is no next turn in `claude -p`, and every background job
+  you started is KILLED the moment you stop.** Session 68 (2026-09-21 20:46) wrote "the prior-art review is running,
+  meanwhile…" and stopped; the review died 19 s later with no END line and the cycle produced nothing. So: NEVER end
+  a message expecting to be resumed. While ANY bgrun you launched lacks its `BGRUN END`/`TIMEOUT` line, stay in the
+  turn — wait on it (Monitor on its log, or the tracked background task) — then act on its result, THEN write NEXT.
 
 ## The NEXT line is your whole output
 The runner reads STATUS.md's `## NEXT` section to decide whether to continue: **if it is byte-identical after two
