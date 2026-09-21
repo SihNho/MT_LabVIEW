@@ -213,9 +213,13 @@ FF_PROMPT = ("\n\n## FIREFIGHTER CYCLE (runner-triggered, model fable/low)\n"
              "written, retrospective run. If you cannot clear it, say so in NEXT in one paragraph for the user.\n")
 
 
+LAST_FAIL_LOGS = {}     # key -> log path of the run that produced it, for the most recent failed_recipes() call
+
+
 def failed_recipes(bench, t_start, t_end):
     """Recipe basenames whose bgrun log (mtime inside [t_start, t_end]) ended rc!=0 or TIMEOUT."""
     out = set()
+    LAST_FAIL_LOGS.clear()
     try:
         names = os.listdir(bench)
     except OSError:
@@ -249,6 +253,7 @@ def failed_recipes(bench, t_start, t_end):
             # user 2026-09-18: "동일 실수 반복" - a recipe saved as _v3, _v4 ... each cycle is the SAME recipe (5 cycles slipped
             # past this trigger overnight 2026-09-19 as v3..v7). Strip the version suffix before comparing.
             out.add("recipe:" + re.sub(r"_v\d+(?=\.py$)", "", r.group(1).lower()))
+            LAST_FAIL_LOGS["recipe:" + re.sub(r"_v\d+(?=\.py$)", "", r.group(1).lower())] = p
         # SAME MISTAKE, different file name (user, 2026-09-18: "동일 실수 반복하는 것도 판단 조건에 들어가야"): the
         # first failing GATE line of the run, normalised (uids/#numbers dropped, lower-cased, 60 chars) - a recipe
         # renamed v1 -> v2 that dies at the same gate keeps the same signature.
@@ -257,6 +262,7 @@ def failed_recipes(bench, t_start, t_end):
             sig = re.sub(r"#\d+|\b\d{3,}\b", "#", g.group(1) or g.group(2) or "").lower()
             sig = re.sub(r"\s+", " ", sig).strip()[:60]
             out.add("gate:" + sig)
+            LAST_FAIL_LOGS["gate:" + sig] = p
     # SAME MISTAKE named by the retrospective: a `VIOLATION: repeated-failure-class` line in a retrospective
     # archived during this cycle is the peer's own statement that the cycle repeated a known failure.
     for fn in os.listdir(os.path.join(ROOT, "archive", "peer")) if os.path.isdir(os.path.join(ROOT, "archive", "peer")) else []:
@@ -378,6 +384,7 @@ def main():
     bad_streak = 0
     unchanged_streak = 0
     fail_hist = []          # per cycle: the set of recipe basenames whose bgrun log failed inside that cycle
+    fail_logs_hist = []     # per cycle: key -> log path (for the Jev same-failure check)
     ff_active, ff_pending, ff_rung = False, None, 0
     while True:
         status_text = read(status_path)
@@ -416,8 +423,36 @@ def main():
             ff_recipe, ff_rung = ff_pending, ff_rung + 1
         elif len(fail_hist) >= 2 and not ff_active:
             common = fail_hist[-2] & fail_hist[-1]
-            if common:
-                ff_recipe, ff_rung = sorted(common)[0], 0
+            # JEV VETO (user 2026-09-22, docs/jev-integration-plan.md #3; measured 92.5 % / Brier 0.059 on 40
+            # labelled pairs): the regex says "same recipe / same gate" - ask Jev whether the two failing runs are
+            # really the same failure class. A confident NO (p <= 0.30) vetoes the firefighter for that key and
+            # is logged; anything else (yes, unknown band, no key, network error) leaves the old rule in force.
+            for key in sorted(common):
+                la = fail_logs_hist[-2].get(key) if len(fail_logs_hist) >= 2 else None
+                lb = fail_logs_hist[-1].get(key) if fail_logs_hist else None
+                p_same, jev_err = None, None
+                if la and lb and not key.startswith("retro:"):
+                    try:
+                        import jev
+                        p_same, jev_err = jev.same_failure_class(jev.summarise_failure(la), jev.summarise_failure(lb),
+                                                                 purpose="firefighter-trigger")
+                    except Exception as e:  # noqa: BLE001 - Jev must never break the runner
+                        jev_err = "%s: %s" % (type(e).__name__, str(e)[:120])
+                if p_same is not None and p_same <= 0.30:
+                    log_line(runner_log, "JEV-VETO | %s | `%s` failed in two consecutive cycles but Jev says the two "
+                                         "runs are DIFFERENT failures (p_same=%.2f; %s vs %s) - no firefighter for it"
+                             % (time.strftime("%Y-%m-%d %H:%M:%S"), key, p_same, os.path.basename(la),
+                                os.path.basename(lb)))
+                    continue
+                if p_same is not None:
+                    log_line(runner_log, "JEV-SAME | %s | `%s`: p_same=%.2f (%s vs %s)"
+                             % (time.strftime("%Y-%m-%d %H:%M:%S"), key, p_same, os.path.basename(la),
+                                os.path.basename(lb)))
+                elif la and lb and not key.startswith("retro:"):
+                    log_line(runner_log, "JEV-SKIP | %s | `%s`: no reading (%s) - old rule applies"
+                             % (time.strftime("%Y-%m-%d %H:%M:%S"), key, jev_err))
+                ff_recipe, ff_rung = key, 0
+                break
         ff_pending = None
         model, effort = (a.ff_model, FF_LADDER[ff_rung]) if ff_recipe else (a.model, a.effort)
         this_prompt = prompt + (FF_PROMPT % ff_recipe if ff_recipe else "")
@@ -468,6 +503,7 @@ def main():
         done += 1
         fails = failed_recipes(bench, t0, time.time())
         fail_hist.append(fails)
+        fail_logs_hist.append(dict(LAST_FAIL_LOGS))
         if fails:
             log_line(runner_log, "FAILED-RECIPES cycle %d: %s" % (n, ", ".join(sorted(fails))))
         if ff_active and ff_recipe in fails:

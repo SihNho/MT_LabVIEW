@@ -3253,3 +3253,5 @@ every `OpWireSource_v5` row satisfied Pre-decided 85's precondition (**0 violati
 91. **USER, 2026-09-22 02:4x: "저장 허용함." — the broken-intermediate GUI save (Pre-decided 88's route) is APPROVED as a standing
     exception for `claudeDev` stage artefacts that are broken by design; CLAUDE.md §3 split-rule item 6. Evidence string for
     `gui_actions.log`: "user 2026-09-22 broken-intermediate save". Originals and the final deliverable are excluded.
+
+92. **JEV WIRED IN (user 2026-09-22 "Jev 구조 갱신한 상태에서 러너 시작"): `tools/jev.py` is the single client (key from the user env var only, ledger `tools/bench/jev_usage.jsonl`); `cycle_runner.py` asks Jev whether the two consecutive failing runs behind a firefighter trigger are the same failure class and VETOES the firefighter at p≤0.30 (`JEV-VETO`), logs `JEV-SAME`/`JEV-SKIP` otherwise. Plan #1 (review discharge) and #2 (log triage) are next, each measured first. Also on the table, user's idea: a stage-script LIBRARY (`tools/stagekit.py`) so sessions fill in rows and gates instead of re-writing 300–2,000-line diagnostics — a new device needing the user's go; not built yet.
