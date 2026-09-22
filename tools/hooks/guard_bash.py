@@ -277,6 +277,61 @@ def next_gate():
     return 2
 
 
+# FIFTH AND SIXTH, added 2026-09-22 (user, "이거 다 적용해보자"): TWO ADVISORY READINGS, NEITHER OF WHICH BLOCKS.
+# docs/jev-integration-plan.md's second-wave table #4 (per-command drift) and #3 (stage-file pre-flight). They
+# are deliberately NOT gates: every path below returns None, main() discards the result, and a missing key, a
+# dead network or a raised exception is silence. The blocking gates above decide whether a command runs; these
+# two only write a line to stderr and to tools/bench/jev_gate.log.
+#
+# COST DISCIPLINE: the drift reading is rate-limited to one Jev call per 60 s per session (jev_drift._rate_ok,
+# a state file beside the gate log) and skips read-only commands; the pre-flight reading fires only when a
+# recipe or stage script is actually being launched, under its own 60 s limiter. Jev's own scripts are skipped
+# so a measurement run cannot ask about itself.
+_JEV_SELF_RE = re.compile(r"jev[\w]*\.py|jev_\w+", re.I)
+# The script a bgrun command is about to launch: after the `--` separator, or in plain command position.
+_LAUNCHED_RE = re.compile(
+    r"--\s+py(?:thon)?[\w.]*\s+(?:-\S+\s+)*\"?([^\"\s|;&]*tools[\\/](?:recipes|bench)[\\/][\w.\-]+\.py)\"?|"
+    r"\bpy(?:thon)?[\w.]*\s+(?:-\S+\s+)*\"?([^\"\s|;&]*tools[\\/](?:recipes|bench)[\\/][\w.\-]+\.py)\"?", re.I)
+
+
+def jev_advisories(cmd, data):
+    """ADVISORY ONLY. Returns the lines it printed (for the self-test); main() ignores them. Never raises."""
+    lines = []
+    if os.environ.get("BENCH_CELL") or os.environ.get("JEV_ADVISORY_OFF") == "1":
+        return lines
+    if not cmd or _JEV_SELF_RE.search(cmd):
+        return lines
+    try:
+        root = os.path.dirname(os.path.dirname(HERE))
+        for d in (os.path.join(root, "tools"), os.path.join(root, "tools", "bench")):
+            if d not in sys.path:
+                sys.path.insert(0, d)
+        sid = guard_session.session_id(data)
+    except Exception:      # noqa: BLE001
+        return lines
+    try:
+        import jev_drift
+        line = jev_drift.advisory(cmd, sid=sid)
+        if line:
+            lines.append(line)
+    except Exception:      # noqa: BLE001
+        pass
+    try:
+        m = _LAUNCHED_RE.search(cmd)
+        if m:
+            import jev_drift as _jd
+            import jev_preflight
+            script = m.group(1) or m.group(2)
+            path = script if os.path.isabs(script) else os.path.join(root, script)
+            if os.path.exists(path) and _jd._rate_ok(str(sid) + ":preflight"):
+                line = jev_preflight.advisory(path)
+                if line:
+                    lines.append(line)
+    except Exception:      # noqa: BLE001
+        pass
+    return lines
+
+
 def main():
     try:
         data = json.load(sys.stdin)
@@ -315,6 +370,9 @@ def main():
     rc = material_gate(cmd)
     if rc:
         return rc
+    # AFTER every blocking gate and before the foreground/background routing: the two advisory readings.
+    # Their value is discarded on purpose - see jev_advisories().
+    jev_advisories(cmd, data)
     if not LABVIEW_RE.search(cmd):
         return 0
     # A PROSE dispatch (`peer.ps1 -Kind prose`, the reporter agent writing a user-facing report through codex)

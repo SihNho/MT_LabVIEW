@@ -165,17 +165,19 @@ STEP_ANSWERED_Q = {
 }
 
 
-def covers_failure(failure_summary, review_summary, purpose="guard-peer-discharge"):
-    """Probability that `review_summary` already covers `failure_summary`. (p, None) or (None, error)."""
+def covers_failure(failure_summary, review_summary, purpose="guard-peer-discharge", n=None):
+    """Probability that `review_summary` already covers `failure_summary`. (p, None) or (None, error).
+
+    CONSENSUS since 2026-09-22 (2차 #6): the MEAN of `jev.samples()` asks, because DISCHARGE_P is 0.80 and this
+    very pair was measured reading 0.80 / 0.78 / 0.80 / 0.79 within twenty minutes - the flapping the decision
+    cache below was the first patch for. The cache stays: it makes a GRANTED discharge final, which consensus
+    does not do on its own."""
     if not failure_summary or not review_summary:
         return None, "empty summary"
-    resp, err = jev.ask({"failure": failure_summary, "review": review_summary},
-                        {"review_covers_failure": COVERS_Q}, purpose,
-                        timeout=CALL_TIMEOUT, retries=CALL_RETRIES)
-    if err:
-        return None, err
-    p = jev.noul(resp, "review_covers_failure")
-    return p, (None if p is not None else "no noul in response")
+    p, _spread, err = jev.ask_n({"failure": failure_summary, "review": review_summary},
+                                {"review_covers_failure": COVERS_Q}, n=n, purpose=purpose,
+                                timeout=CALL_TIMEOUT, retries=CALL_RETRIES)
+    return (p, None) if p is not None else (None, err or "no noul in response")
 
 
 def answers_step(step_sentence, review_summary, purpose="priorart-duplicate"):
@@ -285,6 +287,139 @@ def jev_discharge(log_path, failure_text, n=N_RECENT_REVIEWS, before=None, write
         return False, None
     except Exception:                       # noqa: BLE001 - a gate must degrade to its old behaviour, never wedge
         return False, None
+
+
+# --------------------------------------------------------------------------------------------- THE REVIEW LADDER
+# docs/jev-integration-plan.md 2차 #1, USER-APPROVED 2026-09-22 17:3x ("이거 다 적용해보자"). This is the one
+# insertion in the Jev plan that is a RULE CHANGE and not a mechanisation: CLAUDE.md section 5 says a failed
+# prediction owes an adversarial review, full stop. The ladder says that three kinds of "failed prediction" reach
+# this gate and only one of them is the kind the rule was written for:
+#
+#   our-script-bug        our own Python died, or every failing row is the GATE's own arithmetic being wrong.
+#                         Nothing about the LabVIEW machine is in dispute, so there is no framing for an
+#                         adversary to attack. Measured on today's own reviews before wiring.
+#   already-reviewed-class  a review of this very defect is already archived - the case CLAUDE.md section 5
+#                         already covers in prose ("check archive/peer/ for the same question before re-asking").
+#                         This branch does NOT trust the ladder: it runs the ORDINARY discharge, which can only
+#                         ever cite an exchange that passed review_quality(). A review that TIMED OUT is not
+#                         citable, so a class that "was reviewed" but never answered still blocks.
+#   new-problem           the rule applies unchanged: fall through to the old path, which blocks.
+#
+# ACTS ONLY AT p >= LADDER_P on the CONSENSUS mean of jev.samples() asks. No key, an error, an unknown band or
+# ANY exception => the old path, byte for byte.
+LADDER_P = 0.80
+LADDER_CLASSES = ["our-script-bug", "already-reviewed-class", "new-problem"]
+LADDER_ALLOWED = os.path.join(HERE, "jev_ladder_allowed.jsonl")
+LADDER_Q = {
+    "type": "choice",
+    "instructions": (
+        "A LabVIEW VI-scripting project blocks its next build whenever a run's stated prediction fails, until an "
+        "expensive adversarial peer review of THAT failure has been archived. `failure` is a compact extract of "
+        "the failing run: the script, how it ended, the first failing gate row with context. `gate_rows`, when "
+        "present, is a per-row verdict on EVERY failing row of the same run - `defect` (the artefact really is "
+        "wrong), `prediction-error` (the gate's expectation was wrong and the machine reading is fine) or "
+        "`reading-artefact` (a census or property read could not see the thing). `recent_reviews`, when present, "
+        "lists the questions the newest archived reviews were asked. Decide which ONE of three kinds this "
+        "failure is, so the project knows whether the review is worth buying."),
+    "criteria": {
+        "our-script-bug": (
+            "Nothing about the machine is in dispute. Our own Python raised (traceback, import, name, format or "
+            "path error), or a static checker of our own recipes refused them, or the run never reached LabVIEW "
+            "- OR every failing row is a `prediction-error`, i.e. the measured values are right and only the "
+            "expectation was mis-derived. Fixing our own file clears it; an adversary has no framing to attack."),
+        "already-reviewed-class": (
+            "The same underlying defect is one the listed recent reviews were already asked about - the same "
+            "gate failing the same way, a re-run of a script whose failure was reviewed, or a second "
+            "diagnostic that reproduces a reviewed defect. A new review would re-ask an answered question."),
+        "new-problem": (
+            "A defect or a blind reader that the listed reviews do not cover: a new gate, a new operation, a new "
+            "stage, or the NEXT failure of a script that was repaired after its review. Buy the review. Choose "
+            "this whenever the other two are not clearly true - it is the safe answer and the old behaviour."),
+    },
+}
+
+
+def ladder_classify(failure_summary, gate_rows="", recent="", purpose="guard-peer-ladder", n=None):
+    """(class, mean probability, spread) for ONE failing run. (None, None, None) when there is no answer."""
+    if not failure_summary:
+        return None, None, None
+    state = {"failure": failure_summary}
+    if gate_rows:
+        state["gate_rows"] = gate_rows
+    if recent:
+        state["recent_reviews"] = recent
+    mean, spread, err = jev.ask_n(state, {"kind": LADDER_Q}, n=n, purpose=purpose,
+                                  timeout=CALL_TIMEOUT, retries=CALL_RETRIES)
+    if err or not isinstance(mean, dict) or not mean:
+        return None, None, None
+    cls = max(mean, key=mean.get)
+    return cls, mean[cls], (spread.get("spread") if isinstance(spread, dict) else None)
+
+
+def ladder_allowed_line(log_name, cls, p, ts):
+    """One JSON line per ladder ALLOW, so tools/audit_cycle.py can count builds that ran with no new review."""
+    try:
+        with open(LADDER_ALLOWED, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps({"ts": ts, "log": log_name, "class": cls, "p": round(float(p), 4)}) + "\n")
+    except OSError:
+        pass
+
+
+def jev_ladder(log_path, failure_text, n=N_RECENT_REVIEWS, before=None, write=True, gate_rows=None):
+    """THE LADDER CALL (tools/hooks/guard_peer.py), run BEFORE the ordinary discharge.
+
+    Returns (allow, line):
+      allow True  -> release the build now (the line says on which class and probability).
+      allow False -> block now; the ordinary discharge has ALREADY been consulted and said no.
+      allow None  -> the ladder did not act; the caller runs the old path unchanged.
+
+    NEVER RAISES."""
+    try:
+        if not jev.get_key():
+            return None, None
+        fs = jev.summarise_failure(log_path) or jev.normalise(failure_text or "")[:3200]
+        if not fs:
+            return None, None
+        if gate_rows is None:
+            try:
+                sys.path.insert(0, TOOLS)
+                import jev_gaterow
+                gate_rows = jev_gaterow.verdicts_for(log_path)
+            except Exception:                   # noqa: BLE001 - an advisory input, never a precondition
+                gate_rows = ""
+        recent_paths = recent_adversary_reviews(n, before=before)
+        recent = "\n".join("- %s" % os.path.basename(p) for p in recent_paths)[:1200]
+        cls, p, spread = ladder_classify(fs, gate_rows or "", recent)
+        if cls is None or p is None:
+            return None, None
+        ts = time.strftime("%Y-%m-%d %H:%M:%S")
+        base = os.path.basename(log_path)
+        if p < LADDER_P:
+            if write:
+                gate_log("JEV-LADDER | %s | %s | %s p=%.3f | below %.2f: old path" % (
+                    ts, base, cls, p, LADDER_P))
+            return None, None
+        if cls == "our-script-bug":
+            line = "JEV-LADDER | %s | %s | our-script-bug p=%.3f | ALLOW (no machine claim to attack)" % (
+                ts, base, p)
+            if write:
+                gate_log(line)
+                ladder_allowed_line(base, cls, p, ts)
+            return True, line
+        if cls == "already-reviewed-class":
+            allow, dline = jev_discharge(log_path, failure_text, n=n, before=before, write=write)
+            line = "JEV-LADDER | %s | %s | already-reviewed-class p=%.3f | %s" % (
+                ts, base, p, "ALLOW via discharge" if allow else "BLOCK (no citable review)")
+            if write:
+                gate_log(line)
+            if allow:
+                return True, (dline or line)
+            return False, (dline or line)
+        if write:
+            gate_log("JEV-LADDER | %s | %s | new-problem p=%.3f | BLOCK (review owed)" % (ts, base, p))
+        return None, None                       # the old path runs, exactly as before
+    except Exception:                           # noqa: BLE001 - a gate must degrade to its old behaviour
+        return None, None
 
 
 def jev_priorart_dup(step_sentence, n=N_RECENT_REVIEWS, write=True):

@@ -46,23 +46,22 @@ def evidence_line(summary):
     return ""
 
 
-def triage(logpath):
-    """(class, probability_or_None, evidence_line). Never raises."""
-    summary = jev.summarise_failure(logpath)
+def triage(logpath, run_index=-1):
+    """(class, probability_or_None, evidence_line). Never raises.
+
+    CONSENSUS OF `jev.samples()` CALLS since 2026-09-22 (2차 #6): the class is the argmax of the MEAN
+    probabilities over n asks, and the probability reported is that option's mean. A single sample straddling
+    the 0.70 band made the same log read `unknown` on one command and a class on the next."""
+    summary = jev.summarise_failure(logpath, run_index=run_index)
     if not summary:
         return None, None, ""
     ev = evidence_line(summary)
-    resp, err = jev.ask({"log": summary}, {"kind": _question()}, purpose="triage")
-    if err:
+    mean, _spread, err = jev.ask_n({"log": summary}, {"kind": _question()}, purpose="triage")
+    if err or not isinstance(mean, dict) or not mean:
         return "unknown", None, ev
-    choice, probs = jev.choice(resp, "kind")
-    p = None
-    if isinstance(probs, dict) and choice in probs:
-        try:
-            p = float(probs[choice])
-        except (TypeError, ValueError):
-            p = None
-    if choice is None or p is None or p < THRESHOLD:
+    choice = max(mean, key=mean.get)
+    p = mean[choice]
+    if p < THRESHOLD:
         return "unknown", p, ev
     return choice, p, ev
 

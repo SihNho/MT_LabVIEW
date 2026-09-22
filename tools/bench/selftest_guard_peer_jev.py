@@ -123,6 +123,14 @@ def main():
 
     ob, op, ojp, ogl, ocf, okey, orr = (guard_peer.BENCH, guard_peer.PEER, jev_gate.PEER, jev_gate.GATE_LOG,
                                         jev_gate.covers_failure, jev.get_key, guard_peer.ROOT)
+    # THE LADDER IS SWITCHED OFF FOR THIS FILE (added 2026-09-22 with 2차 #1). guard_peer.main() now asks
+    # jev_gate.jev_ladder BEFORE the discharge, and this file stubs a FAKE key ("x"*40) - so the ladder's own
+    # classify and its gate-row pass went to the real API and came back 401 twenty times on one run (measured:
+    # tools/bench/jev_usage.jsonl, purpose `guard-peer-ladder`, 2026-09-22 20:20:33). The cases below are about
+    # the DISCHARGE branch; the ladder has its own file, tools/bench/selftest_guard_peer_ladder.py. Returning
+    # (None, None) is exactly "the ladder did not act", which is the state every case here assumes.
+    oladder = jev_gate.jev_ladder
+    jev_gate.jev_ladder = lambda *a, **k: (None, None)
     # ROOT moves with BENCH/PEER: guard_peer's block message does `os.path.relpath(path, ROOT)`, and on Windows
     # relpath RAISES ValueError across drives ("path is on mount 'C:', start on mount 'G:'"). The fixture lives in
     # the system TEMP (C:) and the project on G:, so leaving ROOT alone made the very branch under test crash
@@ -232,6 +240,7 @@ def main():
     finally:
         (guard_peer.BENCH, guard_peer.PEER, jev_gate.PEER, jev_gate.GATE_LOG,
          jev_gate.covers_failure, jev.get_key, guard_peer.ROOT) = ob, op, ojp, ogl, ocf, okey, orr
+        jev_gate.jev_ladder = oladder
         shutil.rmtree(tmp, ignore_errors=True)
 
     print("\n=== selftest_guard_peer_jev: %d pass / %d fail ===" % (NPASS, NFAIL))

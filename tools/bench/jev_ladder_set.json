@@ -1,0 +1,30 @@
+{
+ "what": "Hand-labelled REVIEW-LADDER set for docs/jev-integration-plan.md 2차 #1 - every failed-prediction peer review dispatched on 2026-09-22 from cycle 75 onwards, with the run that triggered it.",
+ "how": "archive/peer/2026-09-22-c7*.md and 2026-09-22-c8*.md, excluding priorart / retrospective / outcome files. The trigger log is the FIRST tools/bench/*.log named in the review's `## Question` section; the run inside that log is resolved mechanically as the last BGRUN run that STARTED before the review's `- **date:**` line, because logs are appended to and a reviewed failure is usually no longer the last run (diag_c83_connect2x2_kit.log's reviewed failure is run 0; its last two runs ended rc=0). Labelled by the material session of 2026-09-22 BEFORE any API call, from the review's own question, its outcome line and the triggering run.",
+ "classes": {
+  "our-script-bug": "no claim about the machine is in dispute - our own Python died or never reached LabVIEW, or every failing row is a prediction-error (the measured values are right, the expectation was mis-derived). The review was not worth buying.",
+  "already-reviewed-class": "the same underlying defect had already been asked about in an archived review at the time this one was dispatched, so the ladder should hand the decision to the ordinary discharge.",
+  "new-problem": "a defect or a blind reader that no archived review covered: the review was worth buying and the gate should block."
+ },
+ "note_on_safety": "`already-reviewed-class` is NOT by itself an allow. The ladder's branch for it runs the ordinary discharge, which can only cite an exchange that passed guard_peer.review_quality() - so c83-2x2-swap-1055 (outcome TIMEOUT) and c80-rowd-routeA-swapped (outcome TIMEOUT) cannot release anything even though their question text exists on disk. Two of the six already-reviewed labels are exactly that case, on purpose.",
+ "labelled_by": "material session, 2026-09-22",
+ "n": 16,
+ "items": [
+  {"review": "2026-09-22-c75-m3a3-run1-failpred.md", "label": "new-problem", "why": "First appearance of the unreadable FlatSequence terminal table on the M3a-3 run; nothing archived covered it."},
+  {"review": "2026-09-22-c76-m3a3-run2-failpred.md", "label": "already-reviewed-class", "why": "Run 2 of the same recipe repeats run 1's failing gate, and c75 (ANSWERED) attacked exactly that prediction."},
+  {"review": "2026-09-22-c76b-m3a3-run2-failpred.md", "label": "already-reviewed-class", "why": "Third review of the same run-2 failure; its own question says run 1's failure was already reviewed and disposed."},
+  {"review": "2026-09-22-c79-rowd-writer.md", "label": "new-problem", "why": "A different question entirely - whether any writer on disk takes a uid-addressed sink - asked before an expensive construction; no archived review covered it."},
+  {"review": "2026-09-22-c80-rowd-routeA-swapped.md", "label": "new-problem", "why": "First review of the swapped-roles Route A failure; the sink-terminal-BARE reading had not been attacked before."},
+  {"review": "2026-09-22-c80-rowd-routeA-swapped-r2.md", "label": "already-reviewed-class", "why": "Same log, same claim, re-dispatched after the first attempt TIMED OUT - so the class was reviewed but nothing citable exists, and the discharge must still block."},
+  {"review": "2026-09-22-c81-uidref-probe.md", "label": "already-reviewed-class", "why": "Triggered by the re-run c80_rowd_routeA_r2.log, whose five FAIL rows are c80's; the live gate itself discharged this log against c80-...-r2.md at p=0.800 (tools/bench/jev_gate.log)."},
+  {"review": "2026-09-22-c82-bare-source.md", "label": "new-problem", "why": "A different log and a different claim - whether Terminal.Connect Wire is a silent no-op when its source is bare - first time asked."},
+  {"review": "2026-09-22-c83-2x2-swap-1055.md", "label": "new-problem", "why": "First review of the 2x2 swap diagnostic; the 1055 finding is new. (Its own outcome was TIMEOUT.)"},
+  {"review": "2026-09-22-c83-2x2-swap-1055-r2.md", "label": "already-reviewed-class", "why": "Same log and same four claims as c83-2x2-swap-1055; that first dispatch TIMED OUT, so the ladder's branch must hand it to the discharge, which cannot cite a TIMEOUT and blocks."},
+  {"review": "2026-09-22-c84-replace-vs-branch.md", "label": "already-reviewed-class", "why": "Triggered by diag_c83_connect2x2_r2.log, whose fourteen FAIL rows are the same 1055 reading c83-...-r2.md (ANSWERED) had just attacked."},
+  {"review": "2026-09-22-c85-v1-handle-delta.md", "label": "new-problem", "why": "The G2 handle-delta failure of OpFsInnerTunnelConnect_v1 is a new class - reference hygiene, not addressing."},
+  {"review": "2026-09-22-c87-rowd-d7-termcount.md", "label": "our-script-bug", "why": "The run's ONLY failing row is D7, and 48 -> 47 wired terminals is the correct consequence of deleting the old shift-register wire: the gate's arithmetic was wrong, nothing about the machine was in dispute."},
+  {"review": "2026-09-22-c87-stagekit-k2.md", "label": "our-script-bug", "why": "tools/stagekit.py restated the ORIGINAL's path instead of importing it; the run ended in 1 s with zero VI Server references opened and never reached LabVIEW."},
+  {"review": "2026-09-22-c88-nodeside-zero.md", "label": "new-problem", "why": "The node-side walk returning nothing for wires the wire-side walk answered is a new reading, not the 1055 class already reviewed."},
+  {"review": "2026-09-22-c88-walk-1055.md", "label": "new-problem", "why": "The broken-wire walk yielding terminals for only 4 of 11 wires is a new measurement on a new artefact; no archived review covers it."}
+ ]
+}

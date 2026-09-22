@@ -1,0 +1,53 @@
+{
+ "what": "Labelled set for insertion #3 (PRE-FLIGHT) of docs/jev-integration-plan.md's second-wave table.",
+ "how": [
+  "The stage/diagnostic scripts written on 2026-09-21..22, labelled from the log each one actually produced",
+  "(tools/bench/*.log: the BGRUN end line and the first FAIL). The label is the defect that WOULD have been",
+  "worth catching before the launch, not whether the run's gates passed: a gate that fails on a genuine",
+  "measurement is a result, not a defect.",
+  "KNOWN GAP, stated rather than papered over: the class `wrong-input` has NO natural instance in this window -",
+  "no run of 2026-09-21..22 started from a superseded bed. Three SYNTHETIC controls are generated at trial time",
+  "by copying a real script and replacing its input VI with a superseded one, so the class is exercised; they",
+  "are scored and reported SEPARATELY from the 15 natural items and are never mixed into its accuracy.",
+  "Labelled by the material session of 2026-09-22."
+ ],
+ "items": [
+  {"path": "tools/bench/diag_c77_rowd_addr.py", "label": "ready",
+   "evidence": "diag_c77_rowd_addr.log BGRUN END rc=0, no FAIL line"},
+  {"path": "tools/bench/diag_c78_rowd_writer.py", "label": "ready",
+   "evidence": "c78_rowd_writer.log END rc=0, 0 FAIL"},
+  {"path": "tools/bench/diag_c81_uidref.py", "label": "ready",
+   "evidence": "diag_c81_uidref.log END rc=0, 0 FAIL; answered D-1"},
+  {"path": "tools/recipes/build_opfsinnertunnelconnect_v0.py", "label": "ready",
+   "evidence": "build_opfsinnertunnelconnect_v0.log END rc=1 on G4f 'the border terminal went BARE' - a measured property of LabVIEW, not a script defect"},
+  {"path": "tools/bench/diag_c83_connect2x2.py", "label": "ready",
+   "evidence": "diag_c83_connect2x2.log END rc=1 on S2b: the gate's PREDICTION was wrong (LabVIEW accepts the swapped copy)"},
+  {"path": "tools/bench/diag_c83_connect2x2_r2.py", "label": "ready",
+   "evidence": "diag_c83_connect2x2_r2.log END rc=1 on R0: again a prediction the machine refuted"},
+  {"path": "tools/bench/diag_c83_connect2x2_kit.py", "label": "ready",
+   "evidence": "diag_c83_connect2x2_kit.log END rc=0; re-cut on stagekit in 120 lines, matched the recorded run 13/13"},
+  {"path": "tools/bench/diag_c88_brokenwires.py", "label": "ready",
+   "evidence": "diag_c88_brokenwires.log END rc=1 on G3 4/11 - a reading of the machine, and the run left the artefact byte-unchanged"},
+  {"path": "tools/bench/diag_c88_nodeside.py", "label": "ready",
+   "evidence": "diag_c88_nodeside.log END rc=1 on N2 - same: a negative reading, not a defect"},
+  {"path": "tools/recipes/stage_d1_m3a3_rowD.py", "label": "ready",
+   "evidence": "build_d1_m3a3b_rowD_clean.log END rc=0, 0 FAIL (the file on disk is the purge-fixed one)"},
+  {"path": "tools/recipes/build_d1_m3a2.py", "label": "ready",
+   "evidence": "M3a-2 delivered, 25 gates / 0 fail, artefact md5 3842f5e6 (STATUS.md)"},
+  {"path": "tools/recipes/build_d1_m3a3b_d3.py", "label": "missing-guard",
+   "evidence": "build_d1_m3a3b_d3.log END rc=1, first FAIL G2 '20 consecutive calls leave the handle count flat +-100' - the reference-hygiene precondition CLAUDE.md requires BEFORE an op is used in a staged build"},
+  {"path": "tools/bench/diag_c86_norbw.py", "label": "oversized",
+   "evidence": "diag_c86_norbw.log has NO BGRUN END: truncated mid-cell-B, saved nothing, deleted its scratch; D5/D6/D7 never reached (STATUS.md)"},
+  {"path": "tools/recipes/build_d1_m3a1.py", "label": "oversized",
+   "evidence": "2127 lines; M3a-1 failed across cycles 55/56/57 (16/1, 17/4, 0) and needed two firefighter cycles"},
+  {"path": "tools/recipes/build_d1_m3a3.py", "label": "oversized",
+   "evidence": "1848 lines; ran twice at 21/3, row D deferred on a theory-derived address, plus the %-format and GetVIReference defects the H9 gate named"}
+ ],
+ "synthetic_controls": {
+  "label": "wrong-input",
+  "stale_vi": "D1_s3b_m3a2_20260922_023029.vi",
+  "from": ["tools/recipes/stage_d1_m3a3_rowD.py",
+           "tools/bench/diag_c88_brokenwires.py",
+           "tools/bench/diag_c88_nodeside.py"]
+ }
+}

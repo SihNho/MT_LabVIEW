@@ -98,6 +98,84 @@ def ask(state, questions, purpose="unspecified", timeout=60, retries=3):
     return None, last
 
 
+SAMPLES_DEFAULT = 5     # docs/jev-integration-plan.md 2차 #6, user-approved 2026-09-22 17:3x
+
+
+def samples(default=SAMPLES_DEFAULT):
+    """How many times one question is asked before its answer is used. `JEV_SAMPLES` overrides (1..25)."""
+    raw = os.environ.get("JEV_SAMPLES", "")
+    if not raw:
+        return default
+    try:
+        return max(1, min(25, int(raw)))
+    except ValueError:
+        return default
+
+
+def ask_n(state, questions, n=None, purpose="unspecified", timeout=60, retries=3):
+    """CONSENSUS: ask ONE question `n` times (sequentially, each with ask()'s own retries) and average.
+
+    Returns (mean, spread, error):
+      * noul question   -> mean is the MEAN yes-probability (float); spread is max-min of the n readings.
+      * choice question -> mean is a dict {option: mean probability}; spread is max-min of the readings for
+                           the option that WINS on the mean, so the spread describes the answer actually used.
+      * spread is a dict {'spread': float, 'n': asked, 'n_ok': answered, 'values': [...]} - the caller logs
+        the float and ignores the rest; `spread['n_ok'] < n` means some calls failed and were dropped.
+      * on no usable answer at all: (None, None, error string).
+
+    WHY. The same (log, review) pair read p = 0.80, 0.78, 0.80, 0.79 within twenty minutes on 2026-09-22, so a
+    0.80 threshold flapped allow/block on consecutive commands (the decision cache in tools/bench/jev_gate.py was
+    the first, narrower patch for that). One call is a sample, not a reading; the mean of five is what the
+    thresholds in this project are compared against from 2026-09-22.
+
+    NOT PARALLEL, deliberately: a PreToolUse hook must stay inside its own bounded time, and this project has one
+    measured cost figure per call, not per connection. Five sequential calls at the measured 0.56 s are ~3 s.
+    """
+    n = samples() if n is None else max(1, int(n))
+    try:
+        name = next(iter(questions))
+    except StopIteration:
+        return None, None, "no question"
+    q = questions[name]
+    kind = (q.get("type") if isinstance(q, dict) else None) or "noul"
+    vals, probs_acc, last_err, n_ok = [], {}, None, 0
+    for _ in range(n):
+        resp, err = ask(state, questions, purpose, timeout=timeout, retries=retries)
+        if err:
+            last_err = err
+            continue
+        if kind == "choice":
+            ch, pr = choice(resp, name)
+            if ch is None or not isinstance(pr, dict):
+                last_err = "no choice in response"
+                continue
+            for k, v in pr.items():
+                try:
+                    probs_acc.setdefault(k, []).append(float(v))
+                except (TypeError, ValueError):
+                    pass
+            n_ok += 1
+        else:
+            p = noul(resp, name)
+            if p is None:
+                last_err = "no noul in response"
+                continue
+            vals.append(p)
+            n_ok += 1
+    if not n_ok:
+        return None, None, (last_err or "no answer")
+    if kind == "choice":
+        mean = {k: sum(v) / len(v) for k, v in probs_acc.items() if v}
+        if not mean:
+            return None, None, (last_err or "no probabilities in any response")
+        winner = max(mean, key=mean.get)
+        vals = probs_acc.get(winner, [])
+    spread = (max(vals) - min(vals)) if vals else 0.0
+    if kind != "choice":
+        mean = sum(vals) / len(vals)
+    return mean, {"spread": spread, "n": n, "n_ok": n_ok, "values": [round(v, 4) for v in vals]}, None
+
+
 def noul(resp, name=None):
     """The yes-probability of a noul answer (by question name when given), or None."""
     if not isinstance(resp, dict):
@@ -156,9 +234,14 @@ def normalise(s):
     return s.replace(ROOT, "<root>")
 
 
-def summarise_failure(logpath):
+def summarise_failure(logpath, run_index=-1):
     """Compact failure summary of ONE bgrun log's LAST run: script, how it ended, first FAIL line + context (or
-    the final traceback / inner-failure line when there is no FAIL line), and the last lines. ≤3200 chars."""
+    the final traceback / inner-failure line when there is no FAIL line), and the last lines. ≤3200 chars.
+
+    `run_index` selects which `BGRUN START` block to summarise (-1 = the last, the only behaviour before
+    2026-09-22). A log is appended to, so a run that was reviewed hours ago is no longer the last one:
+    tools/bench/diag_c83_connect2x2_kit.log's reviewed failure is run 0 and its last two runs ended rc=0.
+    Only a measurement over a FIXED past run can be scored against what a reviewer actually saw."""
     try:
         with open(logpath, "r", encoding="utf-8", errors="replace") as fh:
             txt = fh.read()
@@ -167,8 +250,12 @@ def summarise_failure(logpath):
     starts = list(_BGRUN_START_RE.finditer(txt))
     if not starts:
         return None
-    m = starts[-1]
-    cmd, seg = m.group(1), txt[m.end():]
+    try:
+        m = starts[run_index]
+    except IndexError:
+        return None
+    end = starts[run_index + 1].start() if -1 < run_index < len(starts) - 1 else len(txt)
+    cmd, seg = m.group(1), txt[m.end():end]
     f = _BGRUN_FAIL_RE.search(seg)
     ended = "TIMEOUT" if (f and f.group(1) is None) else ("rc=" + f.group(1) if f else "?")
     sm = _SCRIPT_RE.search(cmd)
@@ -215,13 +302,15 @@ SAME_FAILURE_Q = {
 }
 
 
-def same_failure_class(summary_a, summary_b, purpose="same-failure-class"):
+def same_failure_class(summary_a, summary_b, purpose="same-failure-class", n=None):
     """Probability that two failure summaries are the same failure class (measured 92.5 % / Brier 0.059 on the
-    2026-09-22 40-pair set), or None with an error string."""
+    2026-09-22 40-pair set), or None with an error string.
+
+    CONSENSUS OF `samples()` CALLS since 2026-09-22 (2차 #6): the firefighter rule turns a cycle on p <= 0.30,
+    and a single sample of a probability near a threshold is the coin-flip this project already measured. The
+    signature is unchanged so tools/cycle_runner.py needs no edit."""
     if not summary_a or not summary_b:
         return None, "empty summary"
-    resp, err = ask({"log_a": summary_a, "log_b": summary_b}, {"same_failure_class": SAME_FAILURE_Q}, purpose)
-    if err:
-        return None, err
-    p = noul(resp, "same_failure_class")
-    return p, (None if p is not None else "no noul in response")
+    p, _spread, err = ask_n({"log_a": summary_a, "log_b": summary_b},
+                            {"same_failure_class": SAME_FAILURE_Q}, n=n, purpose=purpose)
+    return (p, None) if p is not None else (None, err or "no noul in response")

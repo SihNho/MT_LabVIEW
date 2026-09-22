@@ -31,6 +31,14 @@ the charge is written into that review's own disposition section as `JEV-DISCHAR
 only ever cite an exchange that already passed review_quality() - so the adversary rule is untouched - and with no
 key, an API error or any exception the gate behaves exactly as it did before. See main() for the full note.
 
+JEV REVIEW LADDER (2026-09-22, docs/jev-integration-plan.md 2차 #1, USER-APPROVED 17:3x). One rung above the
+discharge, and the only Jev insertion that CHANGES a rule rather than mechanising one: before asking "is this
+already reviewed?", the gate asks which of three kinds the failure is. `our-script-bug` (our own Python died, or
+every failing gate row is the gate's own expectation being wrong) releases the build and is recorded in
+tools/bench/jev_ladder_allowed.jsonl; `already-reviewed-class` hands the decision to the ordinary discharge, which
+can still only cite an exchange that passed review_quality(); `new-problem` changes nothing. It acts only at
+p >= 0.80 on the consensus mean of five asks. See main().
+
 DELIBERATE LIMITS, stated so nobody mistakes this for more than it is:
   * It gates the NEXT build, not the analysis in between - reading logs, writing docs and dispatching the peer
     itself all pass.
@@ -374,13 +382,40 @@ def main():
     # and D3 are untouched. It writes no release line (`FIXED:` / `REFUTED:` / `PRIOR-ART:`) and does not move a
     # review's creation time, so it cannot release a prior-art verdict or retro-bind an old review by a side
     # effect. Measured before wiring: tools/bench/jev_discharge_trial.py over 40 labelled pairs.
+    #
+    # --- THE REVIEW LADDER (2차 #1, USER-APPROVED 2026-09-22 17:3x), one rung ABOVE the discharge -------------
+    # The discharge below asks one question: "is this failure already reviewed?". The ladder asks first which
+    # KIND of failure this is, because two of the three kinds that reach this gate never needed an adversary:
+    #   our-script-bug         -> ALLOW. Our own Python died, or every failing row is the gate's own arithmetic
+    #                             being wrong (gate D7's "#637 terminals 48 -> 47", gate K2's "Wire 1905"). There
+    #                             is no claim about the machine for a peer to attack. Recorded in
+    #                             tools/bench/jev_ladder_allowed.jsonl so the audit can count these releases.
+    #   already-reviewed-class -> the ORDINARY discharge decides, unchanged. The ladder cannot invent a review:
+    #                             a citation still has to pass review_quality(), so a TIMEOUT exchange does not
+    #                             release anything. When the discharge says no, the block below stands and the
+    #                             discharge is NOT consulted twice.
+    #   new-problem            -> nothing happens here; the old path runs exactly as it did.
+    # It acts only at p >= 0.80 on the consensus mean of five asks. No key, an error or the unknown band means
+    # the old path, byte for byte. Measured before wiring on today's own 16 reviews and their triggering logs
+    # (tools/bench/jev_ladder_set.json, tools/bench/jev_wave2a.log).
     allow, jev_line = False, None
+    ladder_allow, ladder_line = None, None
     try:
         sys.path.insert(0, os.path.join(ROOT, "tools", "bench"))
         import jev_gate
-        allow, jev_line = jev_gate.jev_discharge(path, text)
+        ladder_allow, ladder_line = jev_gate.jev_ladder(path, text)
     except Exception:                    # noqa: BLE001 - a gate must degrade to its old behaviour, never wedge
-        allow, jev_line = False, None
+        ladder_allow, ladder_line = None, None
+    if ladder_allow is True:
+        return 0
+    if ladder_allow is False:
+        allow, jev_line = False, ladder_line          # the discharge already ran inside the ladder
+    else:
+        try:
+            import jev_gate
+            allow, jev_line = jev_gate.jev_discharge(path, text)
+        except Exception:                # noqa: BLE001
+            allow, jev_line = False, None
     if allow:
         return 0
     if jev_line:
