@@ -1429,6 +1429,15 @@ def phase_second_pass(row, hints, phase0, arm):
          "census %r -> %r ; op error %r ; `Wire.Is Broken?` readback %r"
          % (tag, rec["wire_delta"], wires_before, wires_after,
             rec["reconnect"].get("op_error_verbatim"), rec["is_broken_readback"]))
+    # 🔴 THIS GUARD IS WRONG FOR THE `OpConnect*` FAMILY, AND IT IS WHY THE ROW-C BED CARRIES A JUNK NODE.
+    # REVERSED 2026-09-22 16:1x (prior-art `archive/peer/2026-09-22-priorart-c87b-rowd-clean.md` B1,
+    # ACCEPTED). The stray `Invoke` is minted by the CALL, not by the wire delta - measured at 1.00 per call
+    # (`tools/stagekit.py:467-468`, the c82 measurement) - so an IDEMPOTENT second pass mints one too and
+    # this `if` skips the purge that would remove it. Consequence, on the machine: Row C's delivering run
+    # left `Node` 634 cold -> 635 saved (`tools/bench/build_d1_m3a3_run2.log:33` vs `:187`/`:195`),
+    # `Diagram #686` 26 -> 27 nodes, and that node is now INSIDE the bed `33ef524e...`. The replacement rule
+    # lives in `tools/recipes/stage_d1_m3a3_rowD.py`, which purges UNCONDITIONALLY after the ordered second
+    # pass. Nothing is changed here: this file is the delivered Row C's record and is not re-run (34(h)).
     if not rec["idempotent"]:
         fact("%s *** wire_delta is NOT 0, so this pass CHANGED the diagram instead of re-reading it. "
              "That is REPORTED; the junk census runs and the acceptance below is still measured on the "

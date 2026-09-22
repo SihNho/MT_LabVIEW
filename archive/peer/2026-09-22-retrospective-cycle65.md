@@ -267,4 +267,43 @@ VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/bench/cycle_
 
 ## What was done with it
 
-(Claude fills in)
+Disposed 2026-09-22 by the cycle-66 judgement session (the cycle that delivered M3a-3b Row D).
+
+**`VIOLATION: inference-over-measurement | loss_min=20` — ACCEPTED, and the remedy was applied in the very
+next cycle's build rather than promised.** The fault was reading the sink and the border only AFTER the delete,
+so run 1's "Route A is dead" was inference over destroyed evidence. Row D's stage file is now built the other
+way round and the ordering is a FATAL gate, not a convention: `tools/recipes/stage_d1_m3a3_rowD.py` reads
+`#637`'s full terminal table BEFORE anything (`D7 BEFORE`), deletes wire 7506, and then re-reads the FSIT as
+gate **D1** — "the FSIT still resolves and its LeftTerm `#7488` is BARE after the delete", `fatal=True` — before
+any connect is attempted. It passed on the bed's own bytes (`tools/bench/build_d1_m3a3b_rowD_clean.log:92`),
+which is also what settled plan entry 111a. The same discipline was carried into the cycle's other two runs: the
+11 broken wires were NAMED by set difference around LabVIEW's own Remove Bad Wires on a deleted scratch
+(`tools/bench/diag_c88_brokenwires.log:60-62`), not inferred from a count, and gate D7 was re-specified from a
+COUNT to a SET DIFFERENCE keyed on `(i, name, is_source, state)` after the c87 review pointed out that a count
+can cancel out — the free offline differ the review prescribed was then run and returned exactly the predicted
+single element, zero UNREAD.
+
+**`VIOLATION: device-failed | loss_min=0` (the C3/C4 cost split) — ACCEPTED, STILL NOT REPAIRED, and this cycle
+did not repair it either. Recorded plainly rather than re-promised.** The finding is correct on every point:
+C4 files judgement-session spend as review cost and its filename globs drop real review logs, so every
+retrospective's cost table — including this one's and the next one's — is wrong in both directions. It is a
+~20-minute fix to an existing counter that touches no LabVIEW, and it is **not** blocked by the user's
+2026-09-18 no-new-device order, which forbids new devices, not maintenance of a broken one. The reason it did
+not happen here is a choice, not an oversight: the fifth consecutive outcome review had just found zero
+runnable deliverables, so the cycle went to the deliverable (Row D landed, 23/0) and to reading `ExecState` 0
+out of the machine. It is carried into `## NEXT` alongside `SetCommand_signed.vi` as parallel-safe work.
+Per CLAUDE.md the suspended threshold means this is recorded as a finding and NO device is built for it.
+
+**Findings 1, 3 (second half), 4 — accepted, acted on.** Dead dispatches: the two hypothesis reviews this cycle
+were dispatched with real headroom and both ANSWERED (631 s and 533 s), so the "raise the timeout at attempt 1"
+lesson held. The `os.path.exists` lesson generalised — `stagekit` gates the op VI's presence before any mutation.
+**A4 (blank dispositions) is CLOSED**: `c74-m3a2-fmt.md` and `outcome-review-20260922.md`, the two this review
+names as still blank, were both disposed this cycle, along with `c83-2x2-swap-1055.md` (a TIMEOUT non-result)
+and both c88 reviews. The audited set was **3 undisposed, not the five STATUS claimed**.
+
+**Findings 2, 5, 6 — accepted as recorded, no separate action.** Finding 2's naming-tolerant classifier is the
+same C4c repair carried above. Finding 5's inversion is the same fault as violation 1. Finding 6's unrecorded
+costs are a property of killed sessions and blank cost fields, not of this cycle's conduct.
+
+**Finding 7 — no action needed** (`judgement-in-material`: none found, and the same held this cycle: all three
+material dispatches returned `OPEN:` lines and changed no gate or plan text on their own).

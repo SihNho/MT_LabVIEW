@@ -1,0 +1,65 @@
+BGRUN START 2026-09-22 15:40:08 limit 20.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Kind review -Slug c87-rowd-d7-termcount -TaskFile 'C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/0b0fdcde-77db-4c3d-b884-14e22d2c0769/scratchpad/c87_d7_task.md' -TimeoutSec 840
+OUTCOME: ANSWERED (632s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-22-c87-rowd-d7-termcount.md
+COST: $3.8559  in 34 / out 48434 / cache-create 146596 / cache-read 2172918  (629s, 26 turn(s))
+--- ANSWER ---
+Write is disabled in this cell (correct for a read-only peer role), so the review is here in full.
+
+---
+
+# Failed-prediction review — D7, M3a-3b Row-D landing run
+
+Read-only. No lock, no build, no edit, nothing run.
+
+**Verdict:** reading (1)'s *fact* survives every check I could make. Its *conclusion* and its *remedy* do not — and the discriminating test the session asks for in question 4 was already bought twice: once in cycle 80, once inside this run's own log.
+
+## 1. The single strongest reason reading (1) is WRONG
+
+Not the identification of t10 — that holds. The sentence that fails is *"its 'total' half (60 == 60) is what actually tests 'nothing downstream dropped'."*
+
+`OpWireSource_v5` walked net 7506 **before any mutation, on this same bed**, and reported exactly two real terminals — source `RightShiftRegister #4334`, sink `FlatSequenceInnerTunnel #7468`, *"2 real-owner row(s), 0 violate"* (`tools/bench/c80_rowd_routeA_r2.log:73-77`, repeated `:93-97`). There was nothing downstream to drop. And t10 is a shift-register **OUTER** terminal (`#4334 OUTER = 'Outgoing Handle' on wire 7506`, `c80_rowd_routeA_r2.log:26`, `:72`), which no wire deletion removes — unlike a loop tunnel, which LabVIEW does drop when its last wire goes ([NI Idea Exchange](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Automatically-Delete-Passthrough-Wires-when-a-Linked-Tunnel-is/idi-p/2421080); I could not verify this on an NI doc page — the docs pages return navigation chrome to a fetch — so treat the tunnel half as forum-grade).
+
+So on this row the *total* half was a constant that could not have moved, and the *wired* half carried the entire signal. Reading (1) proposes keeping the uninformative half and deleting the informative one, which makes D7 green by construction on every future row. Green is also what a total-only D7 would have been on this run's one real regression: `Node` 635 → 636 in the saved artefact (`build_d1_m3a3b_rowD.log:86` vs `:201`), which **no gate in the recipe reads**.
+
+Second, smaller but immediate: the session understates its own record. **Both complete 60-row tables are printed** (`:25-84`, `:139-198`) and differ in exactly one row. Reading (2) is dead on evidence already in hand — no new machine time needed.
+
+Framed correctly, D7 is not over-strict. It is **mis-specified**: `c80_rowd_routeA_r2.log:73-77` made the delta (−1, on t10, WIRED→BARE) predictable before the run, so "unchanged" was never a prediction anyone had grounds to write.
+
+## 2. Alternative explanations neither reading covers
+
+**(a) The −1 is not attributed — it is assumed.** `#637` was sampled once before everything (`:24-85`) and once after everything (`:138-199`). In between, four mutations: delete 7506 (`:89`), connect #1 (`:96`), the purge (`:108`), and connect #2 issued by gate D5 **against the artefact itself** (`:126`; `stagekit.py:588-591` re-issues against `self.work`). Nothing read `#637` in between. The competing story — the op clearing a still-attached endpoint rather than the delete baring it — yields an identical end state, and this op is measured to MERGE (`archive/peer/2026-09-22-priorart-c87-rowd-stagekit.md:261-268`; three source terminals once, `tools/bench/build_d1_m3a3b_d3.log:318`). **The measurement does not distinguish these two causes.**
+
+**(b) Identity is compared by numbers this run proves are recycled.** The junk Invoke node from connect #1 took **UID 7506 — the UID of the wire deleted seconds earlier** (`:89` vs `:98`), reproducibly the same UID at the same place in c80 (`c80_rowd_routeA_r2.log:127-128`). UIDs are unique within a VI, but *"if you delete an object, LabVIEW might assign the UID for that deleted object to a different object in the future"*, with Class Name / Label the documented cross-check ([GObject UID property](https://labviewwiki.org/wiki/GObject_class/UID_property)). The D7 rows carry no terminal UID and no owner (`tools/recipes/build_d1_m3a1.py:507-510`), and **no census in this run counts shift registers** — the classes are Wire/Node/LoopTunnel (`stage_d1_m3a3_rowD.py:41`, `:77`) while `#637` carries 14 registers (`docs/cycle27-plan.md:3287-3292`). Unlikely; unmeasured; one census class away from being measured.
+
+**(c) "Wired" is the weaker of two predicates this project already owns.** `has_wire = bool(wire_uid)` (`build_d1_m3a1.py:508`, `stagekit.py:360`) scores BARE and UNREAD alike, while the same module defines `term_state()` → WIRED / BARE / **UNREAD** and a `wired_count()` counting only WIRED (`build_d1_m3a1.py:524-538`). The gate used the weaker one. And the column `term_state` needs to detect UNREAD — `conn_err` — reads **0 on all 120 printed rows**, including every bare one, which `gscript.py:914` says should carry 1055; `gscript.py:947-949` silently substitutes zeros when a label is missing. One of the four error columns printed as evidence may not be a measurement.
+
+## 3. What would falsify reading (1) — read from the machine
+
+- **F1** `wired_terminals(#637)` sampled immediately after the delete, showing t10 still wired ⇒ the −1 belongs to a later step.
+- **F2** any row classifying UNREAD under `term_state()` ⇒ read artefact, not connectivity.
+- **F3** a `RightShiftRegister`+`LeftShiftRegister` census on the artefact differing from the bed's.
+- **F4** a pre-delete walk of net 7506 with a third real owner. **Already taken; it shows two** (`c80_rowd_routeA_r2.log:73-77`).
+
+## 4. Cheapest discriminating test
+
+**Free, offline, no LabVIEW, no lock:** re-classify the two tables already dumped in `tools/bench/D1_s3b_m3a3b_rowD.json` (`:234`) with `build_d1_m3a1.term_state()`, and diff them as sets keyed on `(i, name, is_source, state)`. Reading (1) predicts exactly one differing element — t10, WIRED → BARE — and zero UNREAD anywhere. That settles (1) vs (2) outright.
+
+The machine test (`stagekit.net_sources(7506)` on a scratch of the bed) needs no purchase: `c80_rowd_routeA_r2.log:73-77`. Worth naming the asymmetry — this run walked the NEW net twice (`:114-119`, `:130-135`) and the OLD net zero times.
+
+## 5. The unpurged Invoke node — defect, not cosmetic
+
+Repair before this file is used as a bed. It is predicted arithmetic, not an anomaly: the family mints *"1.00 stray `Invoke` per call"* (`stagekit.py:467-468`); two connects, one purge; 635 → 636 → 635 → 636 (`:86`, `:98`, `:110`, `:201`). Prior art named this hazard **before** the run — *"D5's second pass is a MUTATION of the stage target"* — and offered *"taking D5 on a scratch copy of the saved artefact"* as a release (`archive/peer/2026-09-22-priorart-c87-rowd-stagekit.md:261-263`, `:278`); the cycle took the other release (`:303`), which checks the net, not the node census.
+
+Why not cosmetic: it is a node on the target VI's own diagram, an unintended difference under rule 1a; an Invoke Node with an unwired required `reference` input is a broken node, so it pins `ExecState` 0 independently of the rows still to be wired — masked now by the by-design brokenness, still there when a later stage expects 1; and nothing in this recipe catches it (D6 counts wires, Remove Bad Wires does not delete nodes, the Node census is a FACT line, not a gate).
+
+**How to tell from the file, read-only:** Node census on the artefact — the bed is 635, the artefact reads 636 (`:201`); then `node_labels(diagram 19)` → 28 rows vs the bed's 27, extra row labelled `Invoke Node`. Identify it by shape (6 terminals, 0 wired, `:100-107`), the same precondition `junk_purge` uses — **never by UID**, which demonstrably recycled.
+
+## 6. Unasked, and open
+
+The op's `error out` reads the POISON sentinel on all three calls (`:96`, `:113`, `:126`) — it never wrote its error channel. Every "the op succeeded" here is inferred from a side effect, for an op simultaneously observed to mint a stray node per call.
+
+## Where I end up
+
+Reading (1) holds on the fact and I could not break it: t10 is `#4334`'s outer terminal, the net had exactly two ends, exactly one row changed. Reading (2) is refuted by the run's own tables. What is wrong is the remedy — D7 should assert the **predicted set difference** (`{t10}`, WIRED→BARE, nothing else), not be relaxed to a half that cannot fail. **What would change my mind on the causal half: F1**, a sample of `#637` between the delete and the second connect. Nothing in this run took one.
+
+Sources: [GObject UID property](https://labviewwiki.org/wiki/GObject_class/UID_property) · [Loop class Shift Registers()](https://labviewwiki.org/wiki/Loop_class/Shift_Registers()_property) · [NI Idea Exchange — tunnels and wire deletion](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Automatically-Delete-Passthrough-Wires-when-a-Linked-Tunnel-is/idi-p/2421080)
+BGRUN END rc=0 after 633s

@@ -1,0 +1,38 @@
+FAILED PREDICTION, cycle 88 (LabVIEW 2026 26.3.1f1, VI Scripting over ActiveX/COM). Attack the reading below.
+
+THE RUN: tools/bench/diag_c88_brokenwires.log (14 pass / 1 fail, BGRUN END rc=1 after 140s), read-only on
+dated scratch COPIES of claudeDev\D1_s3b_m3a3b_rowD_20260922_161040.vi (md5 0b845952..., 306,977 B, a
+broken-BY-DESIGN staged intermediate, ExecState 0, never run). JSON: tools/bench/diag_c88_brokenwires.json.
+
+WHAT WAS PREDICTED (gate G3, written into the script's docstring before execution):
+  "every broken wire yields at least one terminal row from the wire-addressed walk."
+
+WHAT WAS OBSERVED:
+  - The 11 broken wires were named by set difference around LabVIEW's own Remove Bad Wires on a scratch
+    (Wire objects 1920 -> 1909): uids [1731, 1893, 2819, 3947, 4833, 7337, 7388, 9635, 11232, 23502, 23540].
+  - `OpWireSource_v5` (wrapper build_opconnectfromwire_v0.wire_source_owner:423 - WIRE-addressed: it sets
+    UID 2 = the wire uid and index 2 = a terminal index, and reads is_source / owner class / owner uid /
+    reciprocal wire, with the op's own uid echo checked per call) answered for only 4 of the 11:
+       w1731  i=0 is_source True  owner LeftShiftRegister#4344  recip 1731
+       w3947  i=0 is_source True  owner LeftShiftRegister#4274
+       w9635  i=0 is_source True  owner LoopTunnel#9641
+       w7337  i=0 is_source False owner RightShiftRegister#4334
+    each followed at i=1 by: errO/errU/errG/errS/errWU/errCO = "error 1055: Property Node in OpWireSource_v5.vi".
+  - For the other 7 (1893, 2819, 4833, 7388, 11232, 23502, 23540) the SAME six error columns are 1055 at
+    i=0 itself, so NO terminal row at all.
+
+ALREADY RULED OUT (do not re-derive these):
+  1. Addressing / a dead uid: `owner_of` (a DIFFERENT op, OpOwnerChain, strict uid-echo) resolved ALL 11 wire
+     uids in the same pass, every error column empty, each to owner 'Diagram'#639, self-echo 'Wire'#<uid>.
+  2. Op legality or a stale client: the same op VI, in the same pass, on the same target, answered 4 of the 11.
+  3. A history echo: the wrapper scrubs its answer indicators before every call and refuses any row whose
+     uid echo differs from the queried uid, so a 1055 row can never carry the previous call's owner.
+
+THE READING UNDER ATTACK: "these 7 broken wires have no terminal reachable by this route, and 1055 at index 0
+is LabVIEW refusing an out-of-range Terms[] index, i.e. the wire has zero terminals (an orphan)."
+
+ANSWER: (a) the strongest reason that reading is wrong; (b) an alternative explanation of the same six-column
+1055 that does not require the wire to be terminal-less; (c) what observation would falsify (a)/(b); (d) the
+CHEAPEST discriminating test, preferring one that costs no LabVIEW mutation and no new op - say exactly which
+existing readout to take and what each outcome would mean. If the 1055 is a known LabVIEW scripting error for
+a property read on a class the reference does not actually have, say which property and which class.

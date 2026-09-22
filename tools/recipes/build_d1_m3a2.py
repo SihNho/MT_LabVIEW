@@ -958,6 +958,13 @@ def phase_type_check(hints):
              "census %r -> %r ; `Wire.Is Broken?` = %r ; the op's `UID 2` = %r ; `Name` = %r ; op error %r"
              % (tag, rec.get("wire_delta"), wires_before, wires_after, rec.get("is_broken"),
                 rec.get("uid_2"), rec.get("name"), rec.get("op_error")))
+        # 🔴 THIS GUARD IS WRONG FOR THE `OpConnect*` FAMILY - REVERSED 2026-09-22 16:1x (prior-art
+        # `archive/peer/2026-09-22-priorart-c87b-rowd-clean.md` B1, ACCEPTED; the identical pair sits at
+        # `tools/recipes/build_d1_m3a3.py:1432`, where the full reasoning and the measured consequence are
+        # written). In short: the stray `Invoke` is minted by the CALL, not by the wire delta (1.00 per
+        # call, `tools/stagekit.py:467-468`), so an IDEMPOTENT second pass mints one and this `if` skips
+        # the purge. `tools/recipes/stage_d1_m3a3_rowD.py` purges UNCONDITIONALLY instead. This file is a
+        # delivered stage's record and is not re-run, so the code is left exactly as it ran (34(h)).
         if not rec["idempotent"]:
             fact("%s *** wire_delta is NOT 0, so this pass CHANGED the diagram instead of re-reading it. "
                  "That is reported, and the junk census below runs. It does not retroactively alter the "

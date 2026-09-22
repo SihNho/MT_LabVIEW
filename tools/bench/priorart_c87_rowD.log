@@ -1,0 +1,94 @@
+BGRUN START 2026-09-22 15:27:52 limit 22.0 min: py -u tools\prior_art_review.py --plan-file tools/bench/c87_plan.md --slug c87-rowd-stagekit --trigger cycle-start --recipe tools/recipes/stage_d1_m3a3_rowD.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c87-rowd-stagekit.txt (55928 chars)
+OUTCOME: ANSWERED (266s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-22-priorart-c87-rowd-stagekit.md
+COST: $2.9299  in 28 / out 17475 / cache-create 152820 / cache-read 1929311  (262s, 21 turn(s))
+--- ANSWER ---
+# PRIOR-ART REVIEW — M3a-3b Row D on `tools/stagekit.py` (`tools/recipes/stage_d1_m3a3_rowD.py`)
+
+**The headline: the measurement this dispatch says it exists for was run 2026-09-22 14:46 and answered YES, on a byte-identical scratch of the same bed, with the same op, with Remove Bad Wires mechanically forbidden — and no document in this cycle cites it.**
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 SETTLED ALREADY — gate D1 (plan entry 111a) is measured, and so are D0, D2, D3 and D4
+
+`tools/bench/c87_plan.md:33-35` states the purpose of this dispatch:
+
+> *"So gate D1 is the whole point: after a delete with no Remove Bad Wires anywhere, does `#7468` still resolve and is `#7488` BARE?"*
+
+`tools/bench/diag_c86_norbw.py` ran exactly that sequence, on a byte-identical scratch copy of the same bed (`diag_c86_norbw.log:7-8` md5 `33ef524e…`, `:36`), with `remove_bad_wires_scripted` **and** its GUI form rebound to a raising guard and the rebind proved before the work (`:27-28`), using the same op `OpFsInnerTunnelConnect_v1.vi` md5 `5b4e5f0f…` (`:22`):
+
+| the plan's gate | c86's answer | citation |
+|---|---|---|
+| **D1** FSIT `#7468` still resolves, `#7488` BARE after `del_wire(7506)` with no RBW | **PASS** — `uid_back=7468`, `error out=''`, `term_a_uid=7488`, `wire_a=0`, and inner wire 7448 survives | `diag_c86_norbw.log:74`, `:75`, `:76`, `:77` |
+| **D0** the connect writes a wire onto `#7488` | **PASS** — new wire **25324** on `#7488` *and* on `#23906`, same uid, `wire_delta 1`, invoke `error out=''` | `:87`, `:96`, `:97` |
+| **D2** exactly ONE source terminal, owner `RightShiftRegister #23868` | **PASS** — `source-terminal owners [('RightShiftRegister', 23868)]` | `:105`, `:107` |
+| **D3** OLD `#4334` off the net | **PASS** — every owner `[('FlatSequenceInnerTunnel', 7468), ('RightShiftRegister', 23868)]` | `:108` |
+| **D4** PD85 violations 0 | **PASS** — `0: []` | `:109` |
+| `Wire.Is Broken?` on the new wire | **False**, and the op's `UID 2` **is** that wire | `:106`, `:110` |
+
+31 gates pass / 0 fail in the dumped record (`tools/bench/diag_c86_norbw.json:531-533`).
+
+**What my citation covers, precisely.** It covers the *question*, not the *artefact*: c86 saved nothing and deleted its scratch (`diag_c86_norbw.log:113`), so the landing run is still needed and B1 below is clean. What it does settle is that 111a is answered, that `c87_plan.md:80` ("A negative D1 is a FIRST-CLASS RESULT") is already resolved positive, and that this run is a **re-measurement under a new script**, not a discovery. Two caveats stated so nobody has to re-derive them: the log carries `BGRUN START` at `:1` and **no `BGRUN END`** — the run was truncated during cell B (it ends mid-`[B/M0]` at `:135`), so cell A is complete and cell B told us nothing; and the ordered second pass (D5), D6 and D7 were never reached.
+
+### A3 CONTRADICTED — two live documents assert the opposite of what is on disk
+
+1. `docs/cycle27-plan.md:3388` (entry **111a**, the plan clause this dispatch names as its reason to exist):
+   > *"No run has yet read `#7468` BETWEEN those two lines."*
+
+   Against it: `tools/bench/diag_c86_norbw.log:62-77` — the delete at `:63-67`, the read at `:70-77`, nothing between them. The `FIXED:` release here is to amend 111a with c86's result rather than to run past it, which is the same disposition c84's prior-art review's A1 required of 106/111 (`archive/peer/2026-09-22-priorart-c84-d3-rowd.md:332-336`).
+
+2. `STATUS.md` (DELIVERED banner) still gives the standing reason Row D is undelivered as:
+   > *"its W1 gate measures that NO writer on disk can address a `FlatSequenceInnerTunnel` terminal sink (`tools/bench/c78_rowd_writer.log`)"*
+
+   Against it: `tools/bench/build_d1_m3a3b_d3.log:28` (the op's `Wire Source` half **is** the FSIT `LeftTerm` property node) and `:58-60` (`term_uid=7488`, `uid_back=7468` on 20/20 calls), plus `diag_c86_norbw.log:97`. That sentence has been false since cycle 82 and sits in the same document this plan cites to ratify its INPUT (`c87_plan.md:12-14`).
+
+### A4 UNREAD EVIDENCE — `tools/bench/diag_c86_norbw.log`
+
+Cited nowhere in `tools/bench/c87_plan.md` and nowhere in `tools/recipes/stage_d1_m3a3_rowD.py`. The plan's "What is settled and is NOT re-tested" block (`c87_plan.md:58-66`) reaches for c81, c83, c84 and `build_harness_copyloop2.log` — every one of them a *proxy* (a trivial VI, a different polarity, a wire-alive cell) — while the one run that performed this exact sequence on this exact pair goes unmentioned. STATUS.md's lock block names the c86 dispatch as "🟠 **IN PROGRESS — CYCLE-86 MATERIAL**" and never records its outcome, which is how it went unread.
+
+### A2 REFUTED ALREADY — no finding
+
+Delete-then-connect was declared dead at `c80_rowd_routeA_r2.log:119`, but that was `OpConnectFromWire_v0`, whose source half *reads the deleted wire's `Terms[]`*; `OpFsInnerTunnelConnect_v1` does not, and c86 confirms the ordering works. The c84 review's §3 competing cause is upheld, not refuted.
+
+---
+
+## PART B — THE ARTEFACT
+
+### B1 ALREADY BUILT — **no.** No Row D artefact exists on disk; c86's scratch was deleted at `diag_c86_norbw.log:113`, and `STATUS.md` (*"M3a-3b (ROW D) IS NOT DELIVERED — NO FILE"*) still holds. The landing run is genuinely undone.
+
+### B2 ALREADY FAILED — **no.** The nearest predecessor, `tools/recipes/build_d1_m3a3b_d3b.py` (cycle 85, the same delete-with-no-RBW), **never ran** — no `tools/bench/build_d1_m3a3b_d3b.log` exists anywhere (glob over `tools/bench/*d3b*` returns only `priorart_c85_d3b.log`). No failure record, so no finding. Process note, not a slug: the new file is that recipe re-cut under a new name, and `CLAUDE.md`'s split rule counts renamed recipes as the same recipe — here the re-cut is a genuine decomposition onto `stagekit`, which is what the rule asks for.
+
+### B3 HELPER EXISTS — **no.** The recipe imports rather than hand-rolls: `stage_d1_m3a3_rowD.py:25-26`, and every verb it calls resolves in `tools/stagekit.py` (`delete_wire:479`, `fs_inner_tunnel_read:544`, `fs_inner_tunnel_connect:517`, `net_sources:364`, `junk_purge:466`, `expect_is_broken_false:582`, `save:617`, `broken_wire_count:389`, `wired_terminals:354`, `scratch:406`). `broken_wire_count` already carries c84's B3 disposition as a refusal (`tools/stagekit.py:395-397`), so D6's scratch discipline is enforced by the kit, not by the caller's good manners.
+
+### B4 ALREADY MEASURED — beyond A1: **D5's second pass is a MUTATION of the stage target whose one measurement on this op-and-sink is a MERGE, not a no-op**
+
+`stage_d1_m3a3_rowD.py:62` runs `expect_is_broken_false("D5", connect, wire_uid=wire)` **before** `s.save()` at `:68`, and `tools/stagekit.py:588-591` re-issues the connect against `self.work` — the artefact itself, not a scratch.
+
+The only measurements of `OpFsInnerTunnelConnect_v1` re-invoked on an already-wired `#7488` are:
+
+- `tools/bench/build_d1_m3a3b_d3.log:58-60` — 20/20 calls returned `is_broken=True`, `UID 2`=7506 (the OLD wire), **`wire_delta 0`**;
+- `:318` and `:321` — the net ended with **three** source terminals `[('FlatSequenceInnerTunnel', 7468), ('RightShiftRegister', 4334), ('RightShiftRegister', 23868)]`, `Is Broken? True`.
+
+So **`wire_delta 0` is not evidence that the second pass did nothing** — a merge produces delta 0 too (that is exactly what c84 measured), and Pre-decided 94's second pass was designed against an op family whose re-invocation was a no-op. What my citation does **not** cover: c86 never ran a second pass (cell A ends at `:110`), so the behaviour of a re-merge onto a net that *already* has `#23868` as its single source is genuinely unmeasured — it may well be inert. The actionable point is narrower than "D5 will fail": D5 as written mutates the file that is then saved, and its pass criterion is the op's own readback rather than a fresh `net_sources` walk, which is the one reading that would catch a duplicated source.
+
+---
+
+## What would release this
+
+- **A1 / A4 / already-measured** → `FIXED:` citing `tools/bench/diag_c86_norbw.log:74-77`, `:87`, `:105-110` in `tools/bench/c87_plan.md`'s §"The measurement this exists for" and in the recipe docstring, restating D1–D4 as **preconditions being re-asserted on the landing run** rather than as the open question, and saying what is actually new here (the save, D5, D6, D7).
+- **A3** → `FIXED:` amending `docs/cycle27-plan.md:3388` with c86's result, and correcting the `c78_rowd_writer.log` sentence in `STATUS.md`'s banner.
+- **B4** → `FIXED:` either taking D5 on a scratch copy of the saved artefact, or asserting it with a `net_sources` walk on the second pass, or recording in writing that a re-merge on a single-source net is accepted as inert with the reason.
+
+Nothing here says the run should not happen — the artefact does not exist and the landing is real work. What the citations block is running it while the plan asserts its central question is open.
+
+```
+PRIOR-ART: settled-already
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-measured
+```
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c87-rowd-stagekit.md
+   STOP RECORD armed: tools/recipes/stage_d1_m3a3_rowd.py sha 9400b3bd9789 verdict settled-already, contradicted, unread-evidence, already-measured -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 269s

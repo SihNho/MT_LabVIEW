@@ -1,0 +1,39 @@
+FAILED PREDICTION, cycle 88 part 2 (LabVIEW 2026 26.3.1f1, VI Scripting over ActiveX/COM). Attack the reading below.
+
+THE RUN: tools/bench/diag_c88_nodeside.log (11 pass / 1 fail, BGRUN END rc=1 after 119s), read-only on a dated
+scratch COPY of claudeDev\D1_s3b_m3a3b_rowD_20260922_161040.vi. JSON: tools/bench/diag_c88_nodeside.json. It is
+the verbatim execution of section (d) of archive/peer/2026-09-22-c88-walk-1055.md (ANSWERED).
+
+WHAT WAS PREDICTED:
+  N2 "all four wires that the WIRE-SIDE walk answered for (1731, 3947, 9635, 7337) are found on the NODE side."
+  N3 "none of the other seven (1893, 2819, 4833, 7388, 11232, 23502, 23540) is found."
+
+WHAT WAS OBSERVED:
+  - `Diagram #639` = traverse index 48, 68 nodes. `g.node_terms(work, 48, k)` ran for k = 0..67: 68 of 68 nodes
+    scanned, 0 read errors, 8 s total.
+  - `g.panel_wiring(work)`: 116 front-panel rows, error column ''.
+  - NOT ONE of the 11 broken wire uids appears as a `wire` value in ANY of those node terminal rows, and NOT ONE
+    appears in the 116 panel rows. answered-found 0/4, silent-found 0/7. N3 passed vacuously; N2 FAILED.
+  - Yet the wire-side reader `OpWireSource_v5` had, on a byte-identical copy in the previous run
+    (tools/bench/diag_c88_brokenwires.log:67-87), named real endpoint owners for four of them:
+      w1731 -> LeftShiftRegister#4344 (is_source True), w3947 -> LeftShiftRegister#4274 (True),
+      w9635 -> LoopTunnel#9641 (True), w7337 -> RightShiftRegister#4334 (is_source False).
+  - The 11 uids are LabVIEW's OWN verdict: they are the set difference of `report_all('Wire')` around
+    `remove_bad_wires_scripted` on a scratch (Wire objects 1920 -> 1909).
+  - `build_d1_v0.owner_of` (strict uid echo) put ALL 11 on 'Diagram'#639, every error column empty.
+
+ALREADY RULED OUT (do not re-derive):
+  1. Sweep truncation - 68/68 nodes scanned, 0 read errors, well inside a 600 s budget.
+  2. A junk-node or reader artefact - `gscript.node_terms` is documented and measured at 0 junk nodes per call.
+  3. A stale or wrong uid set - the uids come from LabVIEW's own Remove Bad Wires delete set, and a second,
+     independent op (`owner_of`) resolved every one of them on the unmutated copy.
+
+THE READING UNDER ATTACK: "these 11 wires are attached to nothing that `Diagram #639`'s `Nodes[]` sweep or the
+panel-wiring table can see, so both readers agree they have no node-side endpoint."
+
+ANSWER: (a) the strongest reason that reading is wrong; (b) an alternative that explains a wire whose
+`Wire.Terms[]` names `LeftShiftRegister#4344` while no node terminal on its own owning diagram carries it -
+in particular, whether a shift register's / a tunnel's terminals are reachable at all through
+`Diagram.Nodes[] -> Node.Terminals[]`, and if not, which class and property DOES reach them; (c) what would
+falsify (a)/(b); (d) the CHEAPEST discriminating test that needs no mutation and no new op, naming the exact
+existing readout and what each outcome would mean.

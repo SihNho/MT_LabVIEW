@@ -1,0 +1,55 @@
+BGRUN START 2026-09-22 16:23:39 limit 16.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c88-walk-1055 -TaskFile 'tools/bench/peer_task_c88_walk.txt' -TimeoutSec 840
+OUTCOME: ANSWERED (631s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-22-c88-walk-1055.md
+COST: $3.8797  in 36 / out 45979 / cache-create 148942 / cache-read 2257428  (627s, 31 turn(s))
+--- ANSWER ---
+**The reading is not established — 1055 is "Object reference is invalid", not an index error, and LabVIEW never "refuses" an out-of-range index.** Write is disabled in this session (read-only peer role), so the review is below.
+
+---
+
+# (a) The strongest reason the reading is wrong
+
+**The claim mis-states what the error code localises.** `Index Array` with an out-of-range index does not error — it silently returns the **type default**, i.e. `Not A Refnum` for a refnum array ([NI](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Make-the-default-element-value-of-arrays-more-useful/idi-p/2178852)). The 1055 is raised one link *later*, by the property node, and it is a statement **about the reference it was handed** — "Object reference is invalid", LabVIEW hex 0x41F ([NI KB](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019L75SAE), [LAVA](https://lavag.org/topic/21869-error-1055-occurred-at-property-node-in-nifpgagettargetclassfromtargetvi6910002-nifpgaden_executevi32001-testbench_basevi%C2%A0-%C2%A0-possible-reasons-labview-hex-0x41f-object-reference-is-invalid/)). So the measurement says *"the ref fed to the six terminal-side nodes was null"* and nothing about **why**. "Out of range" is one producer of that null; the reading reports it as the only one.
+
+This project has already measured a counter-example to that inference **in the same op family, with the same inherited indicator names**: `docs/diagram-hierarchy.md:158-175` — on `FlatSequenceFrame` diagram 113, `errO` clean, `errT/errL/errU/errS/errWU` clean, and `errG` + `errCO` both `error 1055`, produced by a silent `To More Specific Class` failure **on an object that unquestionably existed** (`archive/peer/2026-09-16-ownerchain-flatseqframe-1055-r2.md:74`). The cast is a 1055 producer in its own right ([NI forum: "Error 1055 occurred at To More Specific Class"](https://forums.ni.com/t5/LabVIEW/Error-1055-occurred-at-To-More-Specific-Class/td-p/2025860)).
+
+And the load-bearing step is an **unmeasured assumption**: the reading only works if `errT` ("error out 3") is the `Wire.Terms[]` property node, so that a clean `errT` proves the array read succeeded. That mapping is recorded **for a different op** — `diagram-hierarchy.md:166`, where `errT` is lumped into an unlabelled "rest of the upstream chain" — and the key names are inherited wholesale across this family (`tools/bench/opwiresource_v5_labels.json` and `build_opwiresource_v4.log:24` are the same 19-key map). `docs/NAMES.md:1071-1078` is this project's own record of the ancestor op silently reading the *wrong* property node of the same name.
+
+**Two specific errors of fact in the sentence under attack:** (i) if the property were "not supported by the class", you would get **1077/1092 at node-creation time**, not 1055 at read time — this project measured exactly that (`diagram-hierarchy.md:155-156`: `FlatSequence.Frames[]` → 1077; `SequenceTunnel` → 1092). So 1055 here is **not** the "property on the wrong class" code, and the diagnosis cannot be phrased that way. (ii) "LabVIEW refusing" is wrong in a way that matters: nothing refuses, so nothing is being told to you about the array.
+
+# (b) Alternatives that explain the same six columns without terminal-lessness
+
+- **B1 — the emptiness is caused by the brokenness, not by the topology.** NI documents `Terminals[]` only as *"References the terminals connected by this wire"* and **says nothing about broken wires** ([LabVIEW Wiki, Wire class](https://labviewwiki.org/wiki/Wire_class)). This project already records LabVIEW withholding wire-side information on bad wires (`docs/NAMES.md:1014-1016`). Under B1 the wires have real endpoints you would see on the diagram, and the accessor returns nothing.
+- **B2 — a cast, not the index.** v5's chain is `UID to GObject Reference.vi → cast(Wire) → Terms[] → Index Array → terminal reads`, with a second cast on the owner (`NAMES.md:1080-1086`). The v4 calibration **failed its own cast gate and stopped the build**: `build_opwiresource_v4.log:35` — `cast 'Diagram' vs owner 'DigitalNumericConstant'`, rc=1 — and v5 was built from v4. `errG` and `errCO` are precisely the cast-output readers.
+- **B3 — broken wires that have terminals.** A type conflict or a multi-source net is broken with ≥2 real terminals. Commit `510c7c4` records this very build line failing as **"D3 35/12 (two sources on the net)"**. Nothing in the evidence excludes such a wire from the 7.
+- **B4 — the delete-set is not a clean brokenness oracle.** `docs/d1-build-plan.md:1232-1239` (accepted codex refutation): RBW-survival "as IMPLEMENTED **is** uid equality, so that sentence is wrong about this implementation."
+
+# What genuinely supports the claim (stated honestly)
+
+`build_opwiresource_v4.log:25-30` is a real in-project calibration: on the **known-good** 2-terminal wire 10850, `Terms[2..5]` produce 1055 — so "1055 = past the end" is a measured signature, and `docs/NAMES.md:1084` already codifies it. The wrapper's uid echo also passed for all 7 (`build_opconnectfromwire_v0.py:464-467` — they returned `err` rows, not `unresolved`), so the uid→GObject step worked. **The measurement does not distinguish "empty array" from "null ref arriving at those nodes by another route"; both are live.** Note also that G3 predicted something the project's own record already contradicted — orphan wires with no readable terminal were recorded at `NAMES.md:1014-1016` (uids 894, 1356, "END NONE"). The run partly rediscovered a known category and attached a stronger claim to it.
+
+# (c) What would falsify
+
+- **Falsifies my alternatives / confirms the reading:** no node terminal *and* no control terminal on Diagram #639 references any of the 7 uids, while all 4 answering uids are referenced.
+- **Falsifies the reading:** any of the 7 appears as some terminal's connected-wire uid — or a terminal on the node side names one of the **4** that the wire-side walk did *not* report, which would prove the walk under-reports even when it answers.
+
+# (d) Cheapest discriminating test — no mutation, no new op
+
+Ask the **nodes** which wire they carry, instead of asking the wire for its terminals. This is also the project's own *definition* of an orphan (`NAMES.md:1014`: "a wire **no node terminal carries**"), so cycle 88 tested the wrong side of it.
+
+1. `idx = build_d1_v0.diag_index(work, 639)` then `g.node_labels(work, idx)` — both already called at `diag_c88_brokenwires.py:59-60`.
+2. Per node `k`: `g.node_terms(work, idx, k)` → rows carry `wire` = connected wire uid. `tools/gscript.py:917` says it adds **0 junk per call** and is preferred over `net_map` for exactly this (`net_map` leaves ~75 Invoke nodes, `gscript.py:2634` — scratch-only).
+3. Intersect against the 11. Scope it cheaply with the node census already in `diag_c88_brokenwires.json` (635 rows with `pos`): the 7 sit at x 2833–3088, y 940–1077.
+4. **Cover control terminals separately** with `g.panel_wiring(work)` (one op run, ~2 s, `NAMES.md:962`) — a node sweep structurally cannot see a `ControlTerminal` endpoint, whose `Owner` is the diagram, not a node (`NAMES.md:963`; [NI forum on `Terms[]`/owner](https://forums.ni.com/t5/LabVIEW/Vi-Scripting-inconsistent-behaviour-of-terms-of-a-wire-owner/td-p/3309055)). Skipping this would re-manufacture the same false "orphan" verdict.
+
+**Meaning of each outcome:** any of the 7 present ⇒ reading refuted, and `Wire.Terms[]` is not a trustworthy endpoint reader for broken wires, so D3's delete-then-connect must take endpoints from the node side. None of the 7, all 4 present ⇒ reading confirmed by an independent route and they are safe to delete without re-wiring. Mixed ⇒ the wire-side walk is unreliable and "zero rows" carries no topological meaning.
+
+**Free companion check** (costs one read of an op VI that is not the target, the way `diag_c64_connect_v2.log:64` censuses `#242`): census `OpWireSource_v5.vi`'s own diagram and record which property node owns each of "error out 3".."error out 10", and whether `UID 3` is read pre- or post-cast. That retires both assumptions permanently. If you ever want the *wire-side* answer directly, the property is `Wire.Joints[]` ("intersections, bends, and **end points**", [LabVIEW Wiki](https://labviewwiki.org/wiki/Wire_class)) or a `Terms[]` array-**size** readout — but both are a new op, so neither is the cheap test.
+
+**Sources:**
+- [Error 1055 from a Property or Invoke Node — NI](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019L75SAE)
+- [Error 1055 … hex 0x41F Object reference is invalid — LAVA](https://lavag.org/topic/21869-error-1055-occurred-at-property-node-in-nifpgagettargetclassfromtargetvi6910002-nifpgaden_executevi32001-testbench_basevi%C2%A0-%C2%A0-possible-reasons-labview-hex-0x41f-object-reference-is-invalid/)
+- [Error 1055 occurred at To More Specific Class — NI](https://forums.ni.com/t5/LabVIEW/Error-1055-occurred-at-To-More-Specific-Class/td-p/2025860)
+- [Index Array out-of-range returns the type default — NI](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Make-the-default-element-value-of-arrays-more-useful/idi-p/2178852)
+- [Wire class properties (Terminals[], Joints[], Is Broken?) — LabVIEW Wiki](https://labviewwiki.org/wiki/Wire_class)
+- [VI Scripting: inconsistent behaviour of terms[] of a wire / owner — NI](https://forums.ni.com/t5/LabVIEW/Vi-Scripting-inconsistent-behaviour-of-terms-of-a-wire-owner/td-p/3309055)
+BGRUN END rc=0 after 632s

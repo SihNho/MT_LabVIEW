@@ -1,0 +1,127 @@
+BGRUN START 2026-09-22 16:00:15 limit 22.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/c87b_plan.md --slug c87b-rowd-clean --trigger direction-change --no-recipe naming the recipe on this command line is itself refused by its own standing stop record; the record for the new bytes is planted by hand with tools/stop_record.py write before any launch
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c87b-rowd-clean.txt (59222 chars)
+OUTCOME: ANSWERED (394s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-22-priorart-c87b-rowd-clean.md
+COST: $4.0691  in 42 / out 27478 / cache-create 177224 / cache-read 3219367  (391s, 33 turn(s))
+--- ANSWER ---
+Read-only review complete — no lock taken, nothing built, run or edited. Findings below, every one citable.
+
+---
+
+# PRIOR-ART REVIEW — cycle 87 dispatch 2, Row D re-run (two edits)
+
+## PART A — THE DIRECTION
+
+### A1 SETTLED ALREADY — re-running a stage recipe on the same bed is settled **in favour**; what is settled *against* is leaving the superseded artefact under the clean stage name
+
+Precedent, same stage family, same bed lineage: `build_d1_m3a3.py` ran **twice** (run 1 → `D1_s3b_m3a3_20260922_075611.vi`, run 2 → the current bed), and run 2 is the DELIVERED Row C (`tools/bench/build_d1_m3a3_run2.log:195-198`). So "re-run the same recipe on the same bed" needs no new authority.
+
+The constraint that *is* on record is the disposal of the superseded file:
+
+> *"RUN 1's ARTEFACT `claudeDev\D1_s3b_m3a3_20260922_075611.vi` … IS REJECTED AND MUST NOT BE USED AS A BED … the rename to `_REJECTED_…` was refused by the permission layer, so it still carries the clean stage name"* (`STATUS.md:26`)
+
+`c87b_plan.md:18-19` re-creates exactly that configuration — two files whose names differ only by timestamp, the superseded one un-renameable — and says nothing about how a later session tells them apart. One line in STATUS naming the 15:36:12 md5 as SUPERSEDED discharges it.
+
+What my citation does **not** cover: `STATUS.md:43`'s *"do NOT re-run the recipe, run 1 is the record"* is scoped to the tunnel-ops recipe (functionally verified 38/38). It is not a general prohibition and does not reach this stage — do not over-apply it.
+
+Process note, not a slug: `stage_d1_m3a3_rowD.py` already ended `BGRUN END rc=1` in cycle 87 (`build_d1_m3a3b_rowD.log:229`-equivalent tail, `:214`+). `CLAUDE.md:267` fires a **firefighter** cycle when the same recipe ends `rc≠0` in two consecutive cycles, and `CLAUDE.md:394` counts renamed recipes as the same recipe. Any single failing gate returns rc=1, so this re-run is one gate-fail away from converting the next cycle to fable/low.
+
+### A3 CONTRADICTED (i) — "a spare node on that diagram shifts addresses" is refuted by the run's own readings
+
+`c87b_plan.md:16-18` and the recipe docstring (`tools/recipes/stage_d1_m3a3_rowD.py:29-32`):
+
+> *"Every remaining address on this build is an INDEX TRIPLE into `Diagram #686`.`Nodes[]`, so a spare node on that diagram is ADDRESS-CORRUPTING, not cosmetic."*
+
+Against it, from the 15:36:12 run:
+
+* the junk node is appended at the **tail** — `nodes_index 27` of 28 (`build_d1_m3a3b_rowD.log:99`), so indices 0…26 are untouched;
+* with 28 nodes on the diagram, `#637` still resolved at `nodes_index 4` with uid echo 637 (`:137-138`);
+* and on the bed, which already holds 27 nodes on that diagram (see A3(ii)), `Diagram[19].Nodes[21]` echoed `23032 → MATCH` (`:22`).
+
+The purge is still right — §5's *other* two reasons (an unwired-`reference` Invoke is a broken node that pins `ExecState` 0; an unintended object under rule 1a) survive untouched. But the stated *reason to re-run* does not, and it is the reason written into the recipe's own docstring.
+
+### A3 CONTRADICTED (ii) — "the re-run produces a clean bed" / D8's premise: **the bed already carries one unpurged second-pass `Invoke`**
+
+The arithmetic from Row C's delivering run, on the file this dispatch calls the bed:
+
+| reading | value | citation |
+|---|---|---|
+| cold count at entry | `Node 634` | `build_d1_m3a3_run2.log:33` |
+| `Diagram #686` before the write | **26** nodes | `:76`, `:82` |
+| junk minted, then purged | 634 → 635 → 634 | `:131`, `:141`, `:143` |
+| ordered second pass | `wire_delta 0`, **idempotent ⇒ no purge** (`build_d1_m3a3.py:1432-1437`) | `:174` |
+| final in-memory count, then SAVED | **`Node 635`** → `33ef524e…` | `:187`, `:195` |
+
+And the c87 run reading that same file back: `CENSUS BEFORE … 'Node': 635` (`build_d1_m3a3b_rowD.log:86`), `Diagram #686` `nodes_on_diagram` **27** (`:23`).
+
+So the bed is 634+1 and 26+1. The only mutation between Row C's purge and its save was the unpurged idempotent second pass, of the same op family measured at 1.00 stray `Invoke` per call (`tools/stagekit.py:467-468`). Consequences the plan does not account for:
+
+1. **D8 as written cannot see it.** It compares AFTER to BEFORE on the same run, and `junk_purge` only ever deletes nodes new since the last `node_mark` (`stagekit.py:460-474`). The re-run therefore yields an artefact that carries the inherited junk node *and* passes D8. "Clean bed" is not what D8 measures.
+2. The failed-prediction review's §5 takes 635 as the clean number (`archive/peer/2026-09-22-c87-rowd-d7-termcount.md:152`: *"the bed is 635, the artefact reads 636"*). On this evidence 635 is already 634+junk, so that sentence understates the defect by one.
+3. STATUS NEXT's SECOND ACT wants M4 to reach **COLD `ExecState` 1** — if §5's reasoning about an unwired-`reference` Invoke is right, the inherited node blocks that from inside the bed, not from inside this run's output.
+
+Confirmation is free and read-only, and the review already prescribed the method: `node_labels(diagram 19)` on the bed → 27 rows, one labelled `Invoke Node` with 6 terminals and 0 wired (the same precondition `junk_purge` uses), identified **by shape, never by UID**, which is demonstrably recycled (`archive/peer/2026-09-22-c87-rowd-d7-termcount.md:129`, `:152`).
+
+### A4 UNREAD EVIDENCE — no separate finding
+
+`build_d1_m3a3_run2.log` and `build_d1_m3a3.py:1432-1437` are the two unread documents, but both are charged above (A3(ii), B1); a third slug for the same two files would cost work without adding information.
+
+---
+
+## PART B — THE ARTEFACT
+
+### B1 ALREADY BUILT — (a) the post-second-pass purge exists, twice, and is **guarded off**
+
+EDIT 1 is not a new mechanism. It is already written into this stage's own parent recipe:
+
+* `tools/recipes/build_d1_m3a3.py:1436-1437` — `nodes_now = node_census(...)` ; `purge_junk(nodes_now, "%s re-connect" % tag, hints)`, inside `phase_second_pass`;
+* `tools/recipes/build_d1_m3a2.py:965-966` — the identical pair.
+
+Both sit under `if not rec["idempotent"]:` (`build_d1_m3a3.py:1432`, `build_d1_m3a2.py:961`), i.e. they fire only when `wire_delta != 0` — which the second pass is designed never to be. That guard is **why** the current bed carries a junk node, and the new unconditional `s.junk_purge("rowD SECOND PASS", …)` (`stage_d1_m3a3_rowD.py:85`) silently overturns it without saying so. The correction is sound (the node is minted by the *call*, not by the wire delta — `stagekit.py:467-468`), but it is a reversal of an existing written decision and should be recorded as one, in the two places that still hold the old rule.
+
+### B2 ALREADY FAILED — no finding
+
+The 15:36:12 run failed exactly one gate, D7, and both edits address that record rather than repeat it. Nothing here re-runs a build whose cause of failure is unaddressed.
+
+### B3 HELPER EXISTS — (c) the keyed-table comparison shape exists, and the two-line comprehension drops its value half
+
+`tools/recipes/stage_d1_s2.py:658-674` `compare_subvi_tables` (lifted verbatim from `stage_d1_s1.py:408-427`) plus `log_table_diff:677-694` is this project's existing answer to *"this table must equal the reference minus exactly the predicted delta"*: it keys rows and reports **missing / extra / changed**, where `changed` = same key, different VALUE.
+
+D7's `key = (i, name, is_source, term_state(t))` (`stage_d1_m3a3_rowD.py:92`) folds the value into the key and keeps no value at all, so a terminal that stays WIRED while the **wire identity** under it changes is invisible to the gate — precisely the class of silent substitution the c87 review's §2(a) says this run cannot attribute (`archive/peer/2026-09-22-c87-rowd-d7-termcount.md:127`). The rows carry `wire` (`build_d1_m3a1.py:507-510`, printed at `:519-520`); keeping it as the value, in `compare_subvi_tables`' shape, costs nothing and closes that hole.
+
+What my citation does **not** cover: `compare_subvi_tables` is a SubVI name/path comparator, not a terminal-table helper. It needs a key/value adaptation; I am not claiming a drop-in call exists. **(b) A set-difference terminal gate does not exist anywhere in the fleet** — the only occurrences of a symmetric difference are this recipe and its own plan (`stage_d1_m3a3_rowD.py:93`, `c87b_plan.md:35`).
+
+### B4 ALREADY MEASURED — the "ZERO `UNREAD`" half of the new D7 is green by construction on this table
+
+`term_state` returns `UNREAD` only when a wired row carries any error, or when `conn_err`/`wire_err` carry something **other than 1055** (`build_d1_m3a1.py:524-534`). On this node's table every bare row prints `errs=[0, 0, 0, 1055]` — `conn_err` **0** — e.g. `build_d1_m3a3b_rowD.log:27`, `:33`, and all six rows of the junk node at `:101-106`, while `gscript.py:914` documents bare as *"conn_err/wire_err carry 1055"*. The `ConnErr` label is present in `tools/bench/opnodeterms_labels.json:7`, so this is a real read of 0, not the missing-label default at `gscript.py:947-953`.
+
+This was measured and recorded **before** this plan was written, unacted: *"the column `term_state` needs to detect UNREAD — `conn_err` — reads 0 on all 120 printed rows, including every bare one … One of the four error columns printed as evidence may not be a measurement"* (`archive/peer/2026-09-22-c87-rowd-d7-termcount.md:131`, carried into the disposition at `:196-198`).
+
+So the plan's offline check (*"0 UNREAD on each side"*, `c87b_plan.md:40-41`) is not a prediction that could have come out otherwise on this table — it is the same *"green by construction"* objection the review raised against the old D7's `total` half, re-introduced as the new gate's second half. The **symmetric-difference half is genuinely new and is a real prediction**; only the UNREAD half is vacuous here.
+
+---
+
+## What would release this
+
+* **A1** → `FIXED:` one line in `STATUS.md` naming `D1_s3b_m3a3b_rowD_20260922_153612.vi` / `c9d38bb1…` as SUPERSEDED-not-a-bed, so the timestamp is not the only discriminator (the `_REJECTED_` rename is known to be refused).
+* **A3 (i)** → `REFUTED:` if you can show an address this build takes that is *not* tail-stable; otherwise `FIXED:` — restate the reason for EDIT 1 in `stage_d1_m3a3_rowD.py:29-32` and `c87b_plan.md:16-18` as §5's broken-node / rule-1a reasons, which stand, and drop "address-corrupting", which `build_d1_m3a3b_rowD.log:22`, `:99`, `:137-138` contradict.
+* **A3 (ii)** → `FIXED:` either read `node_labels(diagram 19)` on the bed first and say in writing what the 27th node is, or restate D8 as "this run adds none" rather than "the bed is clean" — and record that M4's COLD `ExecState` 1 target may be blocked by an inherited node the re-run does not remove.
+* **B1** → `FIXED:` a line at `build_d1_m3a3.py:1432` / `build_d1_m3a2.py:961` recording that the `if not idempotent` guard is wrong for this op family and why, so the reversal is written where the old rule lives.
+* **B3** → `FIXED:` key D7 on `(i, name, is_source)` with value `(term_state, wire)` in the `compare_subvi_tables` shape, or record in writing that a WIRED→WIRED wire-identity change on `#637` is accepted as out of scope, with the reason.
+* **B4** → `FIXED:` drop the UNREAD clause from D7's pass condition and keep it as a printed FACT, or fix the `conn_err` column first; either way say which, because as written it is a criterion that cannot fail on this table.
+
+Nothing here says the re-run should not happen. The edits are in the right direction and the artefact is real work; what the citations block is running it while the plan's stated reason (address shifting) is refuted by its own log and its stated outcome (a clean bed) is contradicted by the bed's own node census.
+
+```
+PRIOR-ART: settled-already
+PRIOR-ART: contradicted
+PRIOR-ART: already-built
+PRIOR-ART: helper-exists
+PRIOR-ART: already-measured
+```
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c87b-rowd-clean.md
+   NO-RECIPE opt-out recorded in archive\peer\2026-09-22-priorart-c87b-rowd-clean.md: naming the recipe on this command line is itself refused by its own standing stop record; the record for the new bytes is planted by hand with tools/stop_record.py write before any launch
+   STOP RECORD: NOT ARMED BY EXPLICIT OPT-OUT - verdicts settled-already, contradicted, already-built, helper-exists, already-measured block, and --no-recipe was given:
+     reason: naming the recipe on this command line is itself refused by its own standing stop record; the record for the new bytes is planted by hand with tools/stop_record.py write before any launch
+   If this review does become a recipe, plant the record by hand:
+     py tools/stop_record.py write --recipe <recipe> --review archive\peer\2026-09-22-priorart-c87b-rowd-clean.md --verdict settled-already contradicted already-built helper-exists already-measured
+BGRUN END rc=0 after 398s
