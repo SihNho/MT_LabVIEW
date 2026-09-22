@@ -170,3 +170,24 @@ the machine said:
    sweep), which is the dataset run 2 discarded.
 
 No route decision was taken here — what M3a-3b does with (4) is the judgement session's call.
+
+**JUDGEMENT DISPOSITION CLOSED 2026-09-22 (cycle 69 series) — CARRIED BY `docs/cycle27-plan.md` Pre-decided
+104–111.** The call left open at (4) was taken:
+
+- **The class explanation is ACCEPTED IN FULL and written into the project's capability record.** `FlatSequence`
+  is a direct child of `GObject`, never of `Node`, so it is in no `Nodes[]` and a `Nodes[]` miss on one is never
+  to be diagnosed as an ownership problem. Carried by **Pre-decided 110**; the same entry records that
+  `diag_index(#681)` raises `ValueError: 681 is not in list` and is therefore not a membership test.
+- **Pre-decided 107 is AMENDED, not withdrawn, by Pre-decided 109**: its prescribed route (#681's table on
+  `Diagram #686`) is void because #681 is owned by `TopLevelDiagram #536`; its prohibition half stands. The
+  replacement is the inner tunnel's OWN terminal table, read by uid with `OpFsInnerTunnelTerm_v0` — finding (4)
+  above, adopted.
+- **Row D's address pair built on (4) is Pre-decided 111**, and its acceptance is Pre-decided 106 unchanged
+  (source identity, ordered idempotent second pass, never a wire-count delta).
+- **What the review said was unsettled — whether a terminal-table route to #7468 can WRITE — was carried into a
+  separate failed-prediction review** (`archive/peer/2026-09-22-c79-rowd-writer.md`) rather than answered here;
+  its outcome is Pre-decided 115–118. The forum's indirect workarounds (drop a node in the frame and delete it;
+  swap to a Stacked Sequence and back) stay REFUSED under rule 1a, as this review itself judged.
+- **The process note is ACCEPTED and was acted on by the cycle-68 run** (the per-diagram `scanned` rows are kept,
+  0 `node_labels` errors on every sweep); the brief's 681-for-686 substitution is corrected in the plan's own
+  text at Pre-decided 109.

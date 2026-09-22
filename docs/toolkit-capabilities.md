@@ -546,6 +546,21 @@ the 14 nodes net_map found, which is the tell. So these object kinds are **invis
 | **Constants** (301 in the main VI) | `report("Constant")` etc. — placement only by POSITION, not by the tree |
 | **ControlTerminal** — a front-panel object's terminal on the diagram (114) | same; `where.get(uid)` returns `None` for every one of them |
 | Sequence locals (7) | all report `uid 0`; not placeable at all by current means |
+| **`FlatSequence` — the whole CLASS** (MEASURED 2026-09-22, `tools/bench/diag_c77_rowd_addr.log`) | `report_all(target, "FlatSequence")` (21 rows on the main VI, with an `owner` column); for its inner tunnels, `OpFsInnerTunnelTerm_v0` **by uid** (`Left Terminal` 1C3A9000 / `Right Terminal` 1C3A9001) |
+
+🔴 **`find_node` returns `found None` for a `FlatSequence`, and the miss tracks the CLASS — never the owner.**
+Measured on **all three** of the VI's addressed flat sequences: `#43914` (nested), `#12938` (top-level) and
+`#681` (top-level), each over 173/173 diagrams with 0 scan errors, in a sweep that **did** enumerate a
+`WhileLoop` on the same diagram — so the reader was working. Two consequences, both binding:
+
+1. **A FlatSequence is never to be addressed through `Nodes[]`**, and **a `Nodes[]` miss on one is never to be
+   diagnosed as an ownership problem** — that diagnosis was offered three times before it was measured.
+2. **`diag_index(#681)` raises `ValueError: 681 is not in list`, so that call is NOT a membership test** and
+   must not be used as one; the exception says the uid is absent from the Diagram census, which is true of every
+   node that is not a diagram.
+
+Carried by `docs/cycle27-plan.md` Pre-decided 110. The class reason (`FlatSequence` is a direct child of
+`GObject`, never of `Node`) and the dead-end property ids are in `docs/NAMES.md`.
 
 Three separate attempts this session tripped on it: the camera property node's wires appeared to touch nothing (their
 far ends were constants/terminals), and two scheduler hunts cross-referenced UIDs that the tree could never contain.

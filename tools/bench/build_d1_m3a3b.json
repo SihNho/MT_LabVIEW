@@ -1,0 +1,1727 @@
+{
+ "script": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\recipes\\build_d1_m3a3.py",
+ "stamp": "20260922_111619",
+ "target": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3b_m3a3b_20260922_111619.vi",
+ "input": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3b_m3a3_20260922_081056.vi",
+ "task": "STAGE M3a-3b = ROW D ALONE, ROUTE A (Pre-decided 115/116/117/118): delete wire 7506 and re-source the VISA consumer `FlatSequenceInnerTunnel #7468` LeftTerm #7488 from the NEW loop #23032's RIGHT register #23868 OUTER, using `OpConnectFromWire_v0` WITH THE ROLES SWAPPED. THREE ARMS: A1 delete-then-connect and A2 connect-then-delete, each on its own dated SCRATCH copy of the bed (deleted in this run); then, ONLY if one of them passed every gate, the same ordering on THE BED, saved as the stage artefact. NOTHING IS BUILT.",
+ "route_selection_rule": "Pre-decided 116-A: if A works, Row D proceeds on it in the SAME dispatch and nothing new is built. 116-B: if BOTH orderings fail, Route B (`OpConnectByUid`) is EXPENSIVE CONSTRUCTION and gets a FRESH CYCLE - it is NOT improvised at the end of this dispatch, and no op is built here.",
+ "pinned_astcheck": "py tools/bench/c60c_astcheck.py \"tools/recipes/build_d1_m3a3.py\" --route owner",
+ "verification_level": "STRUCTURAL, never functional (34(f))",
+ "gating_policy": "hygiene + PHASE 0 + the per-row acceptance gates + the save. A negative MEASUREMENT is a FACT line; a row that never happened is a FAIL.",
+ "row_table_source": "docs/cycle27-plan.md Pre-decided 104 (the CORRECTED table; STATUS NEXT's sentence was transposed - prior-art finding A3)",
+ "artefact_is_not_computation_equivalent": "AFTER M3a-3 THE ARTEFACT IS STILL NOT COMPUTATION-EQUIVALENT TO THE ORIGINAL (Pre-decided 97). It is BROKEN BY DESIGN and is NEVER RUN (34(f)).",
+ "execstate_policy": "ExecState is NEVER a criterion and NEVER a discriminator (Pre-decided 89/97); its cause is formally OPEN. It is logged as a timeline FACT only.",
+ "is_broken_policy": "`OpConnectFromWire_v0`'s own `Wire.Is Broken?` 6371004 readback IS ORDERED AFTER the write by its gate W7b (build_opconnectfromwire_v0.py:414), which is why Pre-decided 116's acceptance may use it - and only on the SEPARATE ordered pass, never as a type discriminator and never in place of source identity.",
+ "no_new_op": true,
+ "no_new_verb": true,
+ "no_new_device": true,
+ "no_new_checker": true,
+ "move_in_not_called": "this file calls move_in nowhere and imports it nowhere - hence --route owner",
+ "creates_no_object": true,
+ "remove_bad_wires_scripted": "not imported, not called (BANNED since cycle 58)",
+ "no_whole_vi_gobject_census": true,
+ "no_vi_run": "no D1 artefact and no main VI is run (34(f)); OP VIs are run - the fleet's mechanism",
+ "rig_state": "assembled - no motor, no ASI, no camera; tools/motor_gate.py is not called",
+ "edits_no_plan_document": true,
+ "edits_no_status_next": true,
+ "cycle_guard_off_never_set": true,
+ "handles": {
+  "before": 34160,
+  "after_restart": 30684,
+  "after": 31281
+ },
+ "hash_probe": [
+  {
+   "tag": "H INPUT THE BED (M3a-3 run 2's output, ROW C ALREADY IN IT) BEFORE",
+   "line": "HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3b_m3a3_20260922_081056.vi | exists=1 | size=306951 | md5=33ef524e0b6b193a158c9221474c68e3 | sha256=b0d95e400a8f66cb676549e3920144ebecba5d9784ae27d12d43aba737b3e27f"
+  },
+  {
+   "tag": "H ORIGINAL BEFORE",
+   "line": "HASH G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb"
+  },
+  {
+   "tag": "H S1 D1_s1_copy BEFORE",
+   "line": "HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7"
+  },
+  {
+   "tag": "H S2 D1_s2_loops BEFORE",
+   "line": "HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5"
+  },
+  {
+   "tag": "H THE BED BEFORE",
+   "line": "HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3b_row2_20260921_160311.vi | exists=1 | size=476759 | md5=26c54ff784cb5cea21edbd214d2cc3a0 | sha256=17b63cb1c83d5f4a50285ced08b1ecc5a65605979b17ee798b1228f7017d275d"
+  },
+  {
+   "tag": "H TOOL gscript.py BEFORE",
+   "line": "HASH G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\gscript.py | exists=1 | size=167896 | md5=e8aa741cd945dcfa48c6cfb864cf118e | sha256=c48d51b712634fb0e9a84bacad87540666681c1acefc09fca88c0365338e5c63"
+  },
+  {
+   "tag": "H TOOL c60c_astcheck.py BEFORE",
+   "line": "HASH G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\c60c_astcheck.py | exists=1 | size=22581 | md5=6bef719582cbaaf13dc6d7b81e780cb8 | sha256=ad683735761eb1ccb5a6f67561df683017ebd480540f1fcec959174f6ef2af7a"
+  },
+  {
+   "tag": "[A1/1] the arm target, straight after the copy",
+   "line": "HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\SCRATCH_rowdA1_20260922_111619.vi | exists=1 | size=306951 | md5=33ef524e0b6b193a158c9221474c68e3 | sha256=b0d95e400a8f66cb676549e3920144ebecba5d9784ae27d12d43aba737b3e27f"
+  },
+  {
+   "tag": "[A2/1] the arm target, straight after the copy",
+   "line": "HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\SCRATCH_rowdA2_20260922_111619.vi | exists=1 | size=306951 | md5=33ef524e0b6b193a158c9221474c68e3 | sha256=b0d95e400a8f66cb676549e3920144ebecba5d9784ae27d12d43aba737b3e27f"
+  },
+  {
+   "tag": "H INPUT THE BED AFTER",
+   "line": "HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3b_m3a3_20260922_081056.vi | exists=1 | size=306951 | md5=33ef524e0b6b193a158c9221474c68e3 | sha256=b0d95e400a8f66cb676549e3920144ebecba5d9784ae27d12d43aba737b3e27f"
+  },
+  {
+   "tag": "H ORIGINAL AFTER",
+   "line": "HASH G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb"
+  },
+  {
+   "tag": "H S1 D1_s1_copy AFTER",
+   "line": "HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7"
+  },
+  {
+   "tag": "H S2 D1_s2_loops AFTER",
+   "line": "HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5"
+  },
+  {
+   "tag": "H THE BED AFTER",
+   "line": "HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3b_row2_20260921_160311.vi | exists=1 | size=476759 | md5=26c54ff784cb5cea21edbd214d2cc3a0 | sha256=17b63cb1c83d5f4a50285ced08b1ecc5a65605979b17ee798b1228f7017d275d"
+  },
+  {
+   "tag": "H TOOL gscript.py AFTER",
+   "line": "HASH G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\gscript.py | exists=1 | size=167896 | md5=e8aa741cd945dcfa48c6cfb864cf118e | sha256=c48d51b712634fb0e9a84bacad87540666681c1acefc09fca88c0365338e5c63"
+  },
+  {
+   "tag": "H TOOL c60c_astcheck.py AFTER",
+   "line": "HASH G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\c60c_astcheck.py | exists=1 | size=22581 | md5=6bef719582cbaaf13dc6d7b81e780cb8 | sha256=ad683735761eb1ccb5a6f67561df683017ebd480540f1fcec959174f6ef2af7a"
+  }
+ ],
+ "exec_state_timeline": [
+  {
+   "step": 1,
+   "tag": "[A1/1] the arm target, COLD",
+   "exec_state": 0,
+   "wall_clock": "11:17:29",
+   "t_since_start_s": 68.6,
+   "read_cost_s": 1.13
+  },
+  {
+   "step": 2,
+   "tag": "[A2/1] the arm target, COLD",
+   "exec_state": 0,
+   "wall_clock": "11:17:50",
+   "t_since_start_s": 90.7,
+   "read_cost_s": 0.05
+  }
+ ],
+ "artefacts_on_disk": [],
+ "purges": [
+  {
+   "tag": "[A1 ROW D VISA] after the write",
+   "node_count_before": 635,
+   "node_count_after": 636,
+   "new_uids": [
+    [
+     7506,
+     "Invoke",
+     [
+      1985,
+      112
+     ]
+    ]
+   ],
+   "deleted": [
+    {
+     "uid": 7506,
+     "class": "Invoke",
+     "pos": [
+      1985,
+      112
+     ],
+     "label": "Invoke Node",
+     "diagram_uid": 686,
+     "terminals": [
+      {
+       "i": 0,
+       "name": "reference",
+       "is_source": false,
+       "wire": 0,
+       "has_wire": false,
+       "errs": [
+        0,
+        0,
+        0,
+        1055
+       ]
+      },
+      {
+       "i": 1,
+       "name": "reference out",
+       "is_source": true,
+       "wire": 0,
+       "has_wire": false,
+       "errs": [
+        0,
+        0,
+        0,
+        1055
+       ]
+      },
+      {
+       "i": 2,
+       "name": "error in (no error)",
+       "is_source": false,
+       "wire": 0,
+       "has_wire": false,
+       "errs": [
+        0,
+        0,
+        0,
+        1055
+       ]
+      },
+      {
+       "i": 3,
+       "name": "error out",
+       "is_source": true,
+       "wire": 0,
+       "has_wire": false,
+       "errs": [
+        0,
+        0,
+        0,
+        1055
+       ]
+      },
+      {
+       "i": 4,
+       "name": "Method",
+       "is_source": false,
+       "wire": 0,
+       "has_wire": false,
+       "errs": [
+        0,
+        0,
+        0,
+        1055
+       ]
+      },
+      {
+       "i": 5,
+       "name": "Method",
+       "is_source": true,
+       "wire": 0,
+       "has_wire": false,
+       "errs": [
+        0,
+        0,
+        0,
+        1055
+       ]
+      }
+     ],
+     "n_terminals": 6,
+     "n_wired": 0,
+     "delete": {
+      "class": "Node",
+      "uid": 7506,
+      "census_before": 636,
+      "census_error": "",
+      "index": 93,
+      "gone": [
+       7506
+      ],
+      "error_verbatim": "",
+      "call_cost_s": 1.49,
+      "census_after": 635,
+      "still_present": false
+     }
+    }
+   ],
+   "reported_not_deleted": [],
+   "node_count_after_purge": 635
+  },
+  {
+   "tag": "[A2 ROW D VISA] after the write",
+   "node_count_before": 635,
+   "node_count_after": 636,
+   "new_uids": [
+    [
+     25312,
+     "Invoke",
+     [
+      1985,
+      112
+     ]
+    ]
+   ],
+   "deleted": [
+    {
+     "uid": 25312,
+     "class": "Invoke",
+     "pos": [
+      1985,
+      112
+     ],
+     "label": "Invoke Node",
+     "diagram_uid": 686,
+     "terminals": [
+      {
+       "i": 0,
+       "name": "reference",
+       "is_source": false,
+       "wire": 0,
+       "has_wire": false,
+       "errs": [
+        0,
+        0,
+        0,
+        1055
+       ]
+      },
+      {
+       "i": 1,
+       "name": "reference out",
+       "is_source": true,
+       "wire": 0,
+       "has_wire": false,
+       "errs": [
+        0,
+        0,
+        0,
+        1055
+       ]
+      },
+      {
+       "i": 2,
+       "name": "error in (no error)",
+       "is_source": false,
+       "wire": 0,
+       "has_wire": false,
+       "errs": [
+        0,
+        0,
+        0,
+        1055
+       ]
+      },
+      {
+       "i": 3,
+       "name": "error out",
+       "is_source": true,
+       "wire": 0,
+       "has_wire": false,
+       "errs": [
+        0,
+        0,
+        0,
+        1055
+       ]
+      },
+      {
+       "i": 4,
+       "name": "Method",
+       "is_source": false,
+       "wire": 0,
+       "has_wire": false,
+       "errs": [
+        0,
+        0,
+        0,
+        1055
+       ]
+      },
+      {
+       "i": 5,
+       "name": "Method",
+       "is_source": true,
+       "wire": 0,
+       "has_wire": false,
+       "errs": [
+        0,
+        0,
+        0,
+        1055
+       ]
+      }
+     ],
+     "n_terminals": 6,
+     "n_wired": 0,
+     "delete": {
+      "class": "Node",
+      "uid": 25312,
+      "census_before": 636,
+      "census_error": "",
+      "index": 93,
+      "gone": [
+       25312
+      ],
+      "error_verbatim": "",
+      "call_cost_s": 1.58,
+      "census_after": 635,
+      "still_present": false
+     }
+    }
+   ],
+   "reported_not_deleted": [],
+   "node_count_after_purge": 635
+  }
+ ],
+ "rows": {
+  "A1/D VISA": {
+   "row": {
+    "tag": "D VISA",
+    "wire": 7506,
+    "old_source": 4334,
+    "new_reg": 23868,
+    "src_name": "Outgoing Handle",
+    "src_expect_term": 1,
+    "sink_kind": "tunnel_uid",
+    "sink_uid": 7468,
+    "sink_term_uid": 7488,
+    "sink_name": null,
+    "sink_expect_node": null,
+    "sink_expect_term": null,
+    "why": "wire 7506 carries the VISA SESSION out of the OLD loop #637 (t10 'Outgoing Handle') into `FlatSequenceInnerTunnel #7468` LeftTerm #7488. Its new source is the NEW loop's VISA register #23868 RIGHT OUTER, or the VISA path keeps reading a loop the restructure is replacing (rule 1a, Pre-decided 69)."
+   },
+   "arm": "A1",
+   "ordering": "DELETE-THEN-CONNECT",
+   "writer": "build_opconnectfromwire_v0.connect_from_wire (OpConnectFromWire_v0.vi, VERIFIED ON DISK by gate W0 and OPENED by W0b before the first mutation) WITH THE ROLES SWAPPED - Pre-decided 116-A",
+   "shape": "THE SWAPPED CALL: the uid-addressed half takes the FSIT TERMINAL (the true SINK) and the index triple takes the NEW loop's BARE border terminal (the true SOURCE), so the Invoke sits on the BARE terminal (gscript.py:2522-2523 is why the ordering of delete vs connect is the thing being measured)",
+   "never_a_local": "a Local is NEVER substituted for this row (rule 1a)",
+   "net_before": [
+    [
+     0,
+     true,
+     "RightShiftRegister",
+     4334
+    ],
+    [
+     1,
+     false,
+     "FlatSequenceInnerTunnel",
+     7468
+    ],
+    [
+     2,
+     null,
+     null,
+     null
+    ]
+   ],
+   "sink": {
+    "kind": "tunnel_uid",
+    "uid": 7468,
+    "read": {
+     "uid_in": 7468,
+     "kind": "IN",
+     "err": "",
+     "term_a_uid": 7488,
+     "term_b_uid": 7471,
+     "wire_b": 7448,
+     "uid_back": 7468,
+     "owner_uid": 7468,
+     "recip_wire": 7506,
+     "cls_back": "FlatSequenceInnerTunnel",
+     "ownercls": "FlatSequenceInnerTunnel",
+     "cast_class": "FlatSequenceInnerTunnel",
+     "is_source": false,
+     "err_a": "",
+     "err_b": "",
+     "err_bcw": "",
+     "wire_a": 7506,
+     "errs": ""
+    },
+    "sink_term_uid": 7488,
+    "sink_wire_before": 7506
+   },
+   "source": {
+    "new_reg": 23868,
+    "name": "Outgoing Handle",
+    "expected_term": 1,
+    "border": {
+     "uid": 23032,
+     "diagram_index": 19,
+     "diagram_uid": 686,
+     "nodes_index": 21,
+     "label": "While Loop",
+     "uid_echo": 23032,
+     "n_terminals": 7
+    },
+    "border_terminals": [
+     [
+      0,
+      "",
+      false,
+      23519,
+      "WIRED"
+     ],
+     [
+      1,
+      "Outgoing Handle",
+      true,
+      0,
+      "BARE"
+     ],
+     [
+      2,
+      "Outgoing Handle",
+      false,
+      4185,
+      "WIRED"
+     ],
+     [
+      3,
+      "Out position",
+      true,
+      25231,
+      "WIRED"
+     ],
+     [
+      4,
+      "Out position",
+      false,
+      3968,
+      "WIRED"
+     ],
+     [
+      5,
+      "# slices in stack",
+      false,
+      24077,
+      "WIRED"
+     ],
+     [
+      6,
+      "position [internal units]",
+      true,
+      24130,
+      "WIRED"
+     ]
+    ],
+    "candidates": [
+     [
+      1,
+      "Outgoing Handle",
+      true,
+      0,
+      "BARE"
+     ]
+    ],
+    "src_diag_index": 19,
+    "src_nodes_index": 21,
+    "src_term_index": 1,
+    "matches_expectation": true
+   },
+   "wire_terms_before": {
+    "when": "BEFORE ANY MUTATION",
+    "wire": 7506,
+    "want_owner": 7468,
+    "walk_error": "",
+    "rows": [
+     [
+      0,
+      true,
+      "RightShiftRegister",
+      4334,
+      7506
+     ],
+     [
+      1,
+      false,
+      "FlatSequenceInnerTunnel",
+      7468,
+      7506
+     ],
+     [
+      2,
+      null,
+      null,
+      null,
+      null
+     ]
+    ],
+    "pd85_violations": 0,
+    "non_source_rows": [
+     [
+      1,
+      "FlatSequenceInnerTunnel",
+      7468
+     ]
+    ],
+    "rows_owned_by_the_target": [
+     [
+      1,
+      "FlatSequenceInnerTunnel",
+      7468
+     ]
+    ],
+    "chosen_by": "the ONE non-source row whose owner IS #7468",
+    "index": 1,
+    "chosen_owner": [
+     "FlatSequenceInnerTunnel",
+     7468
+    ]
+   },
+   "counts_before": {
+    "Wire": 1920,
+    "LoopTunnel": 138,
+    "Tunnel": 478
+   },
+   "delete": {
+    "class": "Wire",
+    "uid": 7506,
+    "census_before": 1920,
+    "census_error": "",
+    "index": 821,
+    "gone": [
+     7506
+    ],
+    "error_verbatim": "",
+    "call_cost_s": 3.34,
+    "census_after": 1919,
+    "still_present": false
+   },
+   "delete_when": "FIRST - Pre-decided 106's ordering",
+   "sink_after_delete": {
+    "when": "AFTER THE DELETE (FIRST - Pre-decided 106's ordering)",
+    "stored_index": null,
+    "how": "BY THE TERMINAL UID #7488 on FlatSequenceInnerTunnel #7468 (Pre-decided 109/111)",
+    "term_index": 7488,
+    "name": "LeftTerm",
+    "wire": 0,
+    "state": "BARE",
+    "index_moved": false,
+    "uid_echo": 7468
+   },
+   "invoke_site_for_the_write": {
+    "src_diag_index": 19,
+    "src_nodes_index": 21,
+    "src_term_index": 1,
+    "matches_expectation": true,
+    "stop": null
+   },
+   "connect": {
+    "when": "AFTER THE DELETE (the dead-uid question)",
+    "wire_uid": 7506,
+    "wire_term_index": 1,
+    "invoke_triple_diag_node_term": [
+     19,
+     21,
+     1
+    ],
+    "roles": "wire_uid+term_index -> `Wire Source` (the FSIT terminal, the TRUE SINK) ; the index triple -> the Invoke's own terminal (the NEW loop border, the TRUE SOURCE)",
+    "wire_delta": 0,
+    "exec_state": 0,
+    "op_error_verbatim": "",
+    "sub_returns_verbatim": {
+     "err_uidvi": "''",
+     "err_wirepn": "'error 1055: Property Node in OpConnectFromWire_v0.vi'",
+     "UID 2": "0",
+     "Is Broken?": "False",
+     "Name": "''"
+    },
+    "err_uidvi_verbatim": "",
+    "err_wirepn_verbatim": "error 1055: Property Node in OpConnectFromWire_v0.vi",
+    "is_broken_readback": false,
+    "uid2_readback": 0,
+    "cost_s": 0.44,
+    "reported_success": false
+   },
+   "call_cost_s": 0.44,
+   "counts_after": {
+    "Wire": 1919,
+    "LoopTunnel": 138,
+    "Tunnel": 478
+   },
+   "sink_after_write": {
+    "when": "IMMEDIATELY AFTER THE WRITE",
+    "stored_index": null,
+    "how": "BY THE TERMINAL UID #7488 on FlatSequenceInnerTunnel #7468 (Pre-decided 109/111)",
+    "term_index": 7488,
+    "name": "LeftTerm",
+    "wire": 0,
+    "state": "BARE",
+    "index_moved": false,
+    "uid_echo": 7468
+   },
+   "measurement_after_write": {
+    "tag": "[A1 ROW D VISA]",
+    "when": "(a) IMMEDIATELY AFTER THE WRITE - MEASURED, NOT ASSERTED (Pre-decided 94)",
+    "sink_wire": 0,
+    "walk_error": "",
+    "ALL_source_terminals": [],
+    "ALL_source_terminal_count": 0,
+    "the_one_is_the_NEW_register": false,
+    "observed_one_owner": null,
+    "OLD_register_still_on_the_net": false,
+    "OLD_loop_still_on_the_net": false,
+    "new_loop_border_on_the_net_FACT_ONLY": false,
+    "every_owner_on_the_net": [],
+    "pd85_violations": 0,
+    "counted_before_filtering": "Pre-decided 77 - every owner class is counted before any filter",
+    "pass": false
+   },
+   "purge": {
+    "new_uids": [
+     [
+      7506,
+      "Invoke",
+      [
+       1985,
+       112
+      ]
+     ]
+    ],
+    "deleted": [
+     7506
+    ],
+    "reported_not_deleted": []
+   },
+   "sink_after_purge": {
+    "when": "AFTER THE JUNK PURGE",
+    "stored_index": null,
+    "how": "BY THE TERMINAL UID #7488 on FlatSequenceInnerTunnel #7468 (Pre-decided 109/111)",
+    "term_index": 7488,
+    "name": "LeftTerm",
+    "wire": 0,
+    "state": "BARE",
+    "index_moved": false,
+    "uid_echo": 7468
+   },
+   "measurement_after_purge": {
+    "tag": "[A1 ROW D VISA]",
+    "when": "(b) AFTER THE JUNK PURGE - MEASURED, NOT ASSERTED (Pre-decided 94)",
+    "sink_wire": 0,
+    "walk_error": "",
+    "ALL_source_terminals": [],
+    "ALL_source_terminal_count": 0,
+    "the_one_is_the_NEW_register": false,
+    "observed_one_owner": null,
+    "OLD_register_still_on_the_net": false,
+    "OLD_loop_still_on_the_net": false,
+    "new_loop_border_on_the_net_FACT_ONLY": false,
+    "every_owner_on_the_net": [],
+    "pd85_violations": 0,
+    "counted_before_filtering": "Pre-decided 77 - every owner class is counted before any filter",
+    "pass": false
+   },
+   "result": "WRITTEN"
+  },
+  "A2/D VISA": {
+   "row": {
+    "tag": "D VISA",
+    "wire": 7506,
+    "old_source": 4334,
+    "new_reg": 23868,
+    "src_name": "Outgoing Handle",
+    "src_expect_term": 1,
+    "sink_kind": "tunnel_uid",
+    "sink_uid": 7468,
+    "sink_term_uid": 7488,
+    "sink_name": null,
+    "sink_expect_node": null,
+    "sink_expect_term": null,
+    "why": "wire 7506 carries the VISA SESSION out of the OLD loop #637 (t10 'Outgoing Handle') into `FlatSequenceInnerTunnel #7468` LeftTerm #7488. Its new source is the NEW loop's VISA register #23868 RIGHT OUTER, or the VISA path keeps reading a loop the restructure is replacing (rule 1a, Pre-decided 69)."
+   },
+   "arm": "A2",
+   "ordering": "CONNECT-THEN-DELETE",
+   "writer": "build_opconnectfromwire_v0.connect_from_wire (OpConnectFromWire_v0.vi, VERIFIED ON DISK by gate W0 and OPENED by W0b before the first mutation) WITH THE ROLES SWAPPED - Pre-decided 116-A",
+   "shape": "THE SWAPPED CALL: the uid-addressed half takes the FSIT TERMINAL (the true SINK) and the index triple takes the NEW loop's BARE border terminal (the true SOURCE), so the Invoke sits on the BARE terminal (gscript.py:2522-2523 is why the ordering of delete vs connect is the thing being measured)",
+   "never_a_local": "a Local is NEVER substituted for this row (rule 1a)",
+   "net_before": [
+    [
+     0,
+     true,
+     "RightShiftRegister",
+     4334
+    ],
+    [
+     1,
+     false,
+     "FlatSequenceInnerTunnel",
+     7468
+    ],
+    [
+     2,
+     null,
+     null,
+     null
+    ]
+   ],
+   "sink": {
+    "kind": "tunnel_uid",
+    "uid": 7468,
+    "read": {
+     "uid_in": 7468,
+     "kind": "IN",
+     "err": "",
+     "term_a_uid": 7488,
+     "term_b_uid": 7471,
+     "wire_b": 7448,
+     "uid_back": 7468,
+     "owner_uid": 7468,
+     "recip_wire": 7506,
+     "cls_back": "FlatSequenceInnerTunnel",
+     "ownercls": "FlatSequenceInnerTunnel",
+     "cast_class": "FlatSequenceInnerTunnel",
+     "is_source": false,
+     "err_a": "",
+     "err_b": "",
+     "err_bcw": "",
+     "wire_a": 7506,
+     "errs": ""
+    },
+    "sink_term_uid": 7488,
+    "sink_wire_before": 7506
+   },
+   "source": {
+    "new_reg": 23868,
+    "name": "Outgoing Handle",
+    "expected_term": 1,
+    "border": {
+     "uid": 23032,
+     "diagram_index": 19,
+     "diagram_uid": 686,
+     "nodes_index": 21,
+     "label": "While Loop",
+     "uid_echo": 23032,
+     "n_terminals": 7
+    },
+    "border_terminals": [
+     [
+      0,
+      "",
+      false,
+      23519,
+      "WIRED"
+     ],
+     [
+      1,
+      "Outgoing Handle",
+      true,
+      0,
+      "BARE"
+     ],
+     [
+      2,
+      "Outgoing Handle",
+      false,
+      4185,
+      "WIRED"
+     ],
+     [
+      3,
+      "Out position",
+      true,
+      25231,
+      "WIRED"
+     ],
+     [
+      4,
+      "Out position",
+      false,
+      3968,
+      "WIRED"
+     ],
+     [
+      5,
+      "# slices in stack",
+      false,
+      24077,
+      "WIRED"
+     ],
+     [
+      6,
+      "position [internal units]",
+      true,
+      24130,
+      "WIRED"
+     ]
+    ],
+    "candidates": [
+     [
+      1,
+      "Outgoing Handle",
+      true,
+      0,
+      "BARE"
+     ]
+    ],
+    "src_diag_index": 19,
+    "src_nodes_index": 21,
+    "src_term_index": 1,
+    "matches_expectation": true
+   },
+   "wire_terms_before": {
+    "when": "BEFORE ANY MUTATION",
+    "wire": 7506,
+    "want_owner": 7468,
+    "walk_error": "",
+    "rows": [
+     [
+      0,
+      true,
+      "RightShiftRegister",
+      4334,
+      7506
+     ],
+     [
+      1,
+      false,
+      "FlatSequenceInnerTunnel",
+      7468,
+      7506
+     ],
+     [
+      2,
+      null,
+      null,
+      null,
+      null
+     ]
+    ],
+    "pd85_violations": 0,
+    "non_source_rows": [
+     [
+      1,
+      "FlatSequenceInnerTunnel",
+      7468
+     ]
+    ],
+    "rows_owned_by_the_target": [
+     [
+      1,
+      "FlatSequenceInnerTunnel",
+      7468
+     ]
+    ],
+    "chosen_by": "the ONE non-source row whose owner IS #7468",
+    "index": 1,
+    "chosen_owner": [
+     "FlatSequenceInnerTunnel",
+     7468
+    ]
+   },
+   "counts_before": {
+    "Wire": 1920,
+    "LoopTunnel": 138,
+    "Tunnel": 478
+   },
+   "invoke_site_for_the_write": {
+    "src_diag_index": 19,
+    "src_nodes_index": 21,
+    "src_term_index": 1,
+    "matches_expectation": true,
+    "stop": null
+   },
+   "connect": {
+    "when": "WHILE WIRE 7506 IS STILL ALIVE (the branch question)",
+    "wire_uid": 7506,
+    "wire_term_index": 1,
+    "invoke_triple_diag_node_term": [
+     19,
+     21,
+     1
+    ],
+    "roles": "wire_uid+term_index -> `Wire Source` (the FSIT terminal, the TRUE SINK) ; the index triple -> the Invoke's own terminal (the NEW loop border, the TRUE SOURCE)",
+    "wire_delta": 0,
+    "exec_state": 0,
+    "op_error_verbatim": "",
+    "sub_returns_verbatim": {
+     "err_uidvi": "''",
+     "err_wirepn": "''",
+     "UID 2": "7506",
+     "Is Broken?": "True",
+     "Name": "'Outgoing Handle'"
+    },
+    "err_uidvi_verbatim": "",
+    "err_wirepn_verbatim": "",
+    "is_broken_readback": true,
+    "uid2_readback": 7506,
+    "cost_s": 0.47,
+    "reported_success": true
+   },
+   "sink_after_connect_before_delete": {
+    "when": "AFTER THE CONNECT, BEFORE THE DELETE",
+    "stored_index": null,
+    "how": "BY THE TERMINAL UID #7488 on FlatSequenceInnerTunnel #7468 (Pre-decided 109/111)",
+    "term_index": 7488,
+    "name": "LeftTerm",
+    "wire": 7506,
+    "state": "WIRED",
+    "index_moved": false,
+    "uid_echo": 7468
+   },
+   "invoke_site_after_connect": {
+    "src_diag_index": 19,
+    "src_nodes_index": 21,
+    "src_term_index": 1,
+    "candidates": [
+     [
+      1,
+      "Outgoing Handle",
+      true,
+      7506,
+      "WIRED"
+     ]
+    ],
+    "stop": null
+   },
+   "acceptance_after_connect_before_delete": {
+    "tag": "[A2 ROW D VISA]",
+    "when": "(a0) AFTER THE CONNECT, BEFORE THE DELETE - MEASURED, NOT ASSERTED (Pre-decided 94). THIS is the only reading that names the OWNERS on the net the swapped call produced, so it is the only one that can answer Pre-decided 117's branch question for this ordering",
+    "sink_wire": 7506,
+    "walk_error": "",
+    "ALL_source_terminals": [
+     [
+      "RightShiftRegister",
+      23868
+     ],
+     [
+      "FlatSequenceInnerTunnel",
+      7468
+     ],
+     [
+      "RightShiftRegister",
+      4334
+     ]
+    ],
+    "ALL_source_terminal_count": 3,
+    "the_one_is_the_NEW_register": false,
+    "observed_one_owner": null,
+    "OLD_register_still_on_the_net": true,
+    "OLD_loop_still_on_the_net": false,
+    "new_loop_border_on_the_net_FACT_ONLY": false,
+    "every_owner_on_the_net": [
+     4334,
+     7468,
+     23868
+    ],
+    "pd85_violations": 0,
+    "counted_before_filtering": "Pre-decided 77 - every owner class is counted before any filter",
+    "pass": false
+   },
+   "discriminator_source_rows_after_the_connect": 3,
+   "delete": {
+    "class": "Wire",
+    "uid": 7506,
+    "census_before": 1920,
+    "census_error": "",
+    "index": 821,
+    "gone": [
+     7506
+    ],
+    "error_verbatim": "",
+    "call_cost_s": 3.45,
+    "census_after": 1919,
+    "still_present": false
+   },
+   "delete_when": "AFTER THE CONNECT - the connect reported success",
+   "sink_after_delete": {
+    "when": "AFTER THE DELETE (AFTER THE CONNECT - the connect reported success)",
+    "stored_index": null,
+    "how": "BY THE TERMINAL UID #7488 on FlatSequenceInnerTunnel #7468 (Pre-decided 109/111)",
+    "term_index": 7488,
+    "name": "LeftTerm",
+    "wire": 0,
+    "state": "BARE",
+    "index_moved": false,
+    "uid_echo": 7468
+   },
+   "call_cost_s": 0.47,
+   "counts_after": {
+    "Wire": 1919,
+    "LoopTunnel": 138,
+    "Tunnel": 478
+   },
+   "sink_after_write": {
+    "when": "IMMEDIATELY AFTER THE WRITE",
+    "stored_index": null,
+    "how": "BY THE TERMINAL UID #7488 on FlatSequenceInnerTunnel #7468 (Pre-decided 109/111)",
+    "term_index": 7488,
+    "name": "LeftTerm",
+    "wire": 0,
+    "state": "BARE",
+    "index_moved": false,
+    "uid_echo": 7468
+   },
+   "measurement_after_write": {
+    "tag": "[A2 ROW D VISA]",
+    "when": "(a) IMMEDIATELY AFTER THE WRITE - MEASURED, NOT ASSERTED (Pre-decided 94)",
+    "sink_wire": 0,
+    "walk_error": "",
+    "ALL_source_terminals": [],
+    "ALL_source_terminal_count": 0,
+    "the_one_is_the_NEW_register": false,
+    "observed_one_owner": null,
+    "OLD_register_still_on_the_net": false,
+    "OLD_loop_still_on_the_net": false,
+    "new_loop_border_on_the_net_FACT_ONLY": false,
+    "every_owner_on_the_net": [],
+    "pd85_violations": 0,
+    "counted_before_filtering": "Pre-decided 77 - every owner class is counted before any filter",
+    "pass": false
+   },
+   "purge": {
+    "new_uids": [
+     [
+      25312,
+      "Invoke",
+      [
+       1985,
+       112
+      ]
+     ]
+    ],
+    "deleted": [
+     25312
+    ],
+    "reported_not_deleted": []
+   },
+   "sink_after_purge": {
+    "when": "AFTER THE JUNK PURGE",
+    "stored_index": null,
+    "how": "BY THE TERMINAL UID #7488 on FlatSequenceInnerTunnel #7468 (Pre-decided 109/111)",
+    "term_index": 7488,
+    "name": "LeftTerm",
+    "wire": 0,
+    "state": "BARE",
+    "index_moved": false,
+    "uid_echo": 7468
+   },
+   "measurement_after_purge": {
+    "tag": "[A2 ROW D VISA]",
+    "when": "(b) AFTER THE JUNK PURGE - MEASURED, NOT ASSERTED (Pre-decided 94)",
+    "sink_wire": 0,
+    "walk_error": "",
+    "ALL_source_terminals": [],
+    "ALL_source_terminal_count": 0,
+    "the_one_is_the_NEW_register": false,
+    "observed_one_owner": null,
+    "OLD_register_still_on_the_net": false,
+    "OLD_loop_still_on_the_net": false,
+    "new_loop_border_on_the_net_FACT_ONLY": false,
+    "every_owner_on_the_net": [],
+    "pd85_violations": 0,
+    "counted_before_filtering": "Pre-decided 77 - every owner class is counted before any filter",
+    "pass": false
+   },
+   "result": "WRITTEN"
+  }
+ },
+ "phase0": {
+  "prediction": "OpFsInnerTunnelTerm_v0 on uid 7468 returns LeftTerm = terminal uid #7488 with an EMPTY error column, and that face carries wire 7506 - which IS Row D's sink address (Pre-decided 109/111)",
+  "no_owner_walk": "an owner chain terminates SILENTLY at a FlatSequenceFrame (error 1055, docs/toolkit-capabilities.md:61) - #7468's exact path, so the owner walk is NOT used (Pre-decided 107's prohibition, untouched by 109)",
+  "no_nodes_lookup": "a FlatSequence is a GObject, never a Node, so #681 is NEVER looked up in any Nodes[] (Pre-decided 110; measured diag_c77_rowd_addr.log, 173/173 diagrams, 635 nodes, 0 scan errors, found None for #43914/#12938/#681)",
+  "wire": 7506,
+  "expect_term_uid": 7488,
+  "op_vi": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpFsInnerTunnelTerm_v0.vi",
+  "labels": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\opfsinnertunnelterm_labels.json",
+  "read": {
+   "uid_in": 7468,
+   "kind": "IN",
+   "err": "",
+   "term_a_uid": 7488,
+   "term_b_uid": 7471,
+   "wire_b": 7448,
+   "uid_back": 7468,
+   "owner_uid": 7468,
+   "recip_wire": 7506,
+   "cls_back": "FlatSequenceInnerTunnel",
+   "ownercls": "FlatSequenceInnerTunnel",
+   "cast_class": "FlatSequenceInnerTunnel",
+   "is_source": false,
+   "err_a": "",
+   "err_b": "",
+   "err_bcw": "",
+   "wire_a": 7506,
+   "errs": ""
+  },
+  "read_error": "",
+  "faces": [
+   {
+    "key": "face_a",
+    "name": "LeftTerm",
+    "term_uid": 7488,
+    "wire": 7506,
+    "error_verbatim": ""
+   },
+   {
+    "key": "face_b",
+    "name": "RightTerm",
+    "term_uid": 7471,
+    "wire": 7448,
+    "error_verbatim": ""
+   }
+  ],
+  "faces_carrying_the_wire": [
+   [
+    "LeftTerm",
+    7488
+   ]
+  ],
+  "sink_term_uid": 7488,
+  "sink_face": "LeftTerm",
+  "matches_pre_decided_111": true,
+  "verdict": "HOLDS"
+ },
+ "arms": {
+  "A1": {
+   "arm": "A1",
+   "ordering": "DELETE-THEN-CONNECT",
+   "target": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\SCRATCH_rowdA1_20260922_111619.vi",
+   "scratch": true,
+   "why": "Pre-decided 106's MEASURED ordering: connect_from_wire into an ALREADY-WIRED sink is a silent no-op (gscript.py:2522-2523), so the delete precedes the connect. The tension this arm measures: the swapped call resolves terminal #7488 FROM wire 7506, and the delete destroys that wire, so `UID to GObject Reference.vi` may refuse the dead uid. A REFUSAL HERE IS A LEGITIMATE, EXPECTED OUTCOME and is recorded verbatim.",
+   "verdict": "FAIL",
+   "hints": [
+    19,
+    0
+   ],
+   "precondition_rowc": "HOLDS",
+   "rowc_owner_live": [
+    "RightShiftRegister",
+    23895
+   ],
+   "phase0_verdict": "HOLDS",
+   "phase0_sink_term_uid": 7488,
+   "row_result": "WRITTEN",
+   "connect_verbatim": {
+    "when": "AFTER THE DELETE (the dead-uid question)",
+    "wire_uid": 7506,
+    "wire_term_index": 1,
+    "invoke_triple_diag_node_term": [
+     19,
+     21,
+     1
+    ],
+    "roles": "wire_uid+term_index -> `Wire Source` (the FSIT terminal, the TRUE SINK) ; the index triple -> the Invoke's own terminal (the NEW loop border, the TRUE SOURCE)",
+    "wire_delta": 0,
+    "exec_state": 0,
+    "op_error_verbatim": "",
+    "sub_returns_verbatim": {
+     "err_uidvi": "''",
+     "err_wirepn": "'error 1055: Property Node in OpConnectFromWire_v0.vi'",
+     "UID 2": "0",
+     "Is Broken?": "False",
+     "Name": "''"
+    },
+    "err_uidvi_verbatim": "",
+    "err_wirepn_verbatim": "error 1055: Property Node in OpConnectFromWire_v0.vi",
+    "is_broken_readback": false,
+    "uid2_readback": 0,
+    "cost_s": 0.44,
+    "reported_success": false
+   },
+   "delete": {
+    "index": 821,
+    "gone": [
+     7506
+    ],
+    "error_verbatim": "",
+    "result": null,
+    "skipped": null
+   },
+   "delete_when": "FIRST - Pre-decided 106's ordering",
+   "second_pass": {
+    "wire_delta": null,
+    "idempotent": null,
+    "is_broken_readback": null,
+    "wire_the_sink_carries_now": 0,
+    "skipped": "the sink terminal #7488 is BARE, so there is no wire to re-connect FROM - the swapped call's source half has no uid"
+   },
+   "gates": {
+    "verdict": "FAIL",
+    "reason": "WRITTEN"
+   }
+  },
+  "A2": {
+   "arm": "A2",
+   "ordering": "CONNECT-THEN-DELETE",
+   "target": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\SCRATCH_rowdA2_20260922_111619.vi",
+   "scratch": true,
+   "why": "The other ordering: resolve #7488 and its Wire.Terms[] index while wire 7506 is ALIVE, make the swapped call, and delete wire 7506 ONLY IF the connect reported success. The hazard this arm measures is the one the c79 review named: an already-wired terminal handed to `Wire Source` is BRANCHED (gscript.py:2522-2523), which would leave the OLD source on the net - a rule-1a computation change that passes every count-shaped check (Pre-decided 117).",
+   "verdict": "FAIL",
+   "hints": [
+    19,
+    0
+   ],
+   "precondition_rowc": "HOLDS",
+   "rowc_owner_live": [
+    "RightShiftRegister",
+    23895
+   ],
+   "phase0_verdict": "HOLDS",
+   "phase0_sink_term_uid": 7488,
+   "row_result": "WRITTEN",
+   "connect_verbatim": {
+    "when": "WHILE WIRE 7506 IS STILL ALIVE (the branch question)",
+    "wire_uid": 7506,
+    "wire_term_index": 1,
+    "invoke_triple_diag_node_term": [
+     19,
+     21,
+     1
+    ],
+    "roles": "wire_uid+term_index -> `Wire Source` (the FSIT terminal, the TRUE SINK) ; the index triple -> the Invoke's own terminal (the NEW loop border, the TRUE SOURCE)",
+    "wire_delta": 0,
+    "exec_state": 0,
+    "op_error_verbatim": "",
+    "sub_returns_verbatim": {
+     "err_uidvi": "''",
+     "err_wirepn": "''",
+     "UID 2": "7506",
+     "Is Broken?": "True",
+     "Name": "'Outgoing Handle'"
+    },
+    "err_uidvi_verbatim": "",
+    "err_wirepn_verbatim": "",
+    "is_broken_readback": true,
+    "uid2_readback": 7506,
+    "cost_s": 0.47,
+    "reported_success": true
+   },
+   "delete": {
+    "index": 821,
+    "gone": [
+     7506
+    ],
+    "error_verbatim": "",
+    "result": null,
+    "skipped": null
+   },
+   "delete_when": "AFTER THE CONNECT - the connect reported success",
+   "second_pass": {
+    "wire_delta": null,
+    "idempotent": null,
+    "is_broken_readback": null,
+    "wire_the_sink_carries_now": 0,
+    "skipped": "the sink terminal #7488 is BARE, so there is no wire to re-connect FROM - the swapped call's source half has no uid"
+   },
+   "gates": {
+    "verdict": "FAIL",
+    "reason": "WRITTEN"
+   }
+  }
+ },
+ "route_selection": {
+  "rule": "Pre-decided 116-A / 116-B",
+  "arm_verdicts": {
+   "A1": "FAIL",
+   "A2": "FAIL"
+  },
+  "winner": null,
+  "winning_ordering": null
+ },
+ "build": {
+  "writer_table": {
+   "D VISA": {
+    "sink_kind": "tunnel_uid",
+    "op_vi": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpConnectFromWire_v0.vi",
+    "sink_addressing": "THE SWAPPED CALL: the TERMINAL UID #7488 is handed to the op's uid-addressed SOURCE half (wire_uid + Wire.Terms[] index) and the Invoke sits on the NEW loop's BARE border terminal, addressed as (diagram idx, Nodes[] idx, Terminals[] idx)",
+    "bound": true
+   }
+  },
+  "tool_pins_before": {
+   "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\gscript.py": "e8aa741cd945dcfa48c6cfb864cf118e",
+   "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\c60c_astcheck.py": "6bef719582cbaaf13dc6d7b81e780cb8"
+  },
+  "m3a1_refusals_at_entry": 0,
+  "writer_preflight": {
+   "D VISA": {
+    "op_vi": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpConnectFromWire_v0.vi",
+    "opened": true
+   }
+  },
+  "censuses": {
+   "[A1/1] COLD": {
+    "Node": 635,
+    "Wire": 1920,
+    "LoopTunnel": 138,
+    "Tunnel": 478,
+    "LeftShiftRegister": 38,
+    "RightShiftRegister": 38
+   },
+   "[A2/1] COLD": {
+    "Node": 635,
+    "Wire": 1920,
+    "LoopTunnel": 138,
+    "Tunnel": 478,
+    "LeftShiftRegister": 38,
+    "RightShiftRegister": 38
+   }
+  },
+  "d686_index": {
+   "A1": 19,
+   "A2": 19
+  },
+  "acceptance": [
+   {
+    "tag": "[A1 ROW D VISA]",
+    "when": "(a) IMMEDIATELY AFTER THE WRITE - MEASURED, NOT ASSERTED (Pre-decided 94)",
+    "sink_wire": 0,
+    "walk_error": "",
+    "ALL_source_terminals": [],
+    "ALL_source_terminal_count": 0,
+    "the_one_is_the_NEW_register": false,
+    "observed_one_owner": null,
+    "OLD_register_still_on_the_net": false,
+    "OLD_loop_still_on_the_net": false,
+    "new_loop_border_on_the_net_FACT_ONLY": false,
+    "every_owner_on_the_net": [],
+    "pd85_violations": 0,
+    "counted_before_filtering": "Pre-decided 77 - every owner class is counted before any filter",
+    "pass": false
+   },
+   {
+    "tag": "[A1 ROW D VISA]",
+    "when": "(b) AFTER THE JUNK PURGE - MEASURED, NOT ASSERTED (Pre-decided 94)",
+    "sink_wire": 0,
+    "walk_error": "",
+    "ALL_source_terminals": [],
+    "ALL_source_terminal_count": 0,
+    "the_one_is_the_NEW_register": false,
+    "observed_one_owner": null,
+    "OLD_register_still_on_the_net": false,
+    "OLD_loop_still_on_the_net": false,
+    "new_loop_border_on_the_net_FACT_ONLY": false,
+    "every_owner_on_the_net": [],
+    "pd85_violations": 0,
+    "counted_before_filtering": "Pre-decided 77 - every owner class is counted before any filter",
+    "pass": false
+   },
+   {
+    "tag": "[A2 ROW D VISA]",
+    "when": "(a0) AFTER THE CONNECT, BEFORE THE DELETE - MEASURED, NOT ASSERTED (Pre-decided 94). THIS is the only reading that names the OWNERS on the net the swapped call produced, so it is the only one that can answer Pre-decided 117's branch question for this ordering",
+    "sink_wire": 7506,
+    "walk_error": "",
+    "ALL_source_terminals": [
+     [
+      "RightShiftRegister",
+      23868
+     ],
+     [
+      "FlatSequenceInnerTunnel",
+      7468
+     ],
+     [
+      "RightShiftRegister",
+      4334
+     ]
+    ],
+    "ALL_source_terminal_count": 3,
+    "the_one_is_the_NEW_register": false,
+    "observed_one_owner": null,
+    "OLD_register_still_on_the_net": true,
+    "OLD_loop_still_on_the_net": false,
+    "new_loop_border_on_the_net_FACT_ONLY": false,
+    "every_owner_on_the_net": [
+     4334,
+     7468,
+     23868
+    ],
+    "pd85_violations": 0,
+    "counted_before_filtering": "Pre-decided 77 - every owner class is counted before any filter",
+    "pass": false
+   },
+   {
+    "tag": "[A2 ROW D VISA]",
+    "when": "(a) IMMEDIATELY AFTER THE WRITE - MEASURED, NOT ASSERTED (Pre-decided 94)",
+    "sink_wire": 0,
+    "walk_error": "",
+    "ALL_source_terminals": [],
+    "ALL_source_terminal_count": 0,
+    "the_one_is_the_NEW_register": false,
+    "observed_one_owner": null,
+    "OLD_register_still_on_the_net": false,
+    "OLD_loop_still_on_the_net": false,
+    "new_loop_border_on_the_net_FACT_ONLY": false,
+    "every_owner_on_the_net": [],
+    "pd85_violations": 0,
+    "counted_before_filtering": "Pre-decided 77 - every owner class is counted before any filter",
+    "pass": false
+   },
+   {
+    "tag": "[A2 ROW D VISA]",
+    "when": "(b) AFTER THE JUNK PURGE - MEASURED, NOT ASSERTED (Pre-decided 94)",
+    "sink_wire": 0,
+    "walk_error": "",
+    "ALL_source_terminals": [],
+    "ALL_source_terminal_count": 0,
+    "the_one_is_the_NEW_register": false,
+    "observed_one_owner": null,
+    "OLD_register_still_on_the_net": false,
+    "OLD_loop_still_on_the_net": false,
+    "new_loop_border_on_the_net_FACT_ONLY": false,
+    "every_owner_on_the_net": [],
+    "pd85_violations": 0,
+    "counted_before_filtering": "Pre-decided 77 - every owner class is counted before any filter",
+    "pass": false
+   }
+  ],
+  "second_pass": [
+   {
+    "row": "D VISA",
+    "arm": "A1",
+    "sink": {
+     "sink_term_uid": 7488,
+     "sink_wire_before": 0,
+     "stop": null
+    },
+    "invoke_site": {
+     "src_diag_index": 19,
+     "src_nodes_index": 21,
+     "src_term_index": 1,
+     "stop": null
+    },
+    "wire_the_sink_carries_now": 0,
+    "skipped": "the sink terminal #7488 is BARE, so there is no wire to re-connect FROM - the swapped call's source half has no uid"
+   },
+   {
+    "row": "D VISA",
+    "arm": "A2",
+    "sink": {
+     "sink_term_uid": 7488,
+     "sink_wire_before": 0,
+     "stop": null
+    },
+    "invoke_site": {
+     "src_diag_index": 19,
+     "src_nodes_index": 21,
+     "src_term_index": 1,
+     "stop": null
+    },
+    "wire_the_sink_carries_now": 0,
+    "skipped": "the sink terminal #7488 is BARE, so there is no wire to re-connect FROM - the swapped call's source half has no uid"
+   }
+  ]
+ },
+ "input_md5_before": "33ef524e0b6b193a158c9221474c68e3",
+ "input_size_before": "306951",
+ "gates": {
+  "pass": 49,
+  "fail": 5,
+  "failing": [
+   "[A1 94 D VISA] the sink terminal carries a wire after the write",
+   "[A1] ARM VERDICT PASS - every Row-D gate held on this ordering",
+   "[A2 94 D VISA] the sink terminal carries a wire after the write",
+   "[A2] ARM VERDICT PASS - every Row-D gate held on this ordering",
+   "R1 ROUTE A WORKS - at least one ordering of the SWAPPED call passed EVERY Row-D gate on a dated scratch copy of the bed (Pre-decided 116-A)"
+  ]
+ },
+ "facts": [
+  "[0] W1 row D VISA: sink kind 'tunnel_uid', sink addressed by THE SWAPPED CALL: the TERMINAL UID #7488 is handed to the op's uid-addressed SOURCE half (wire_uid + Wire.Terms[] index) and the Invoke sits on the NEW loop's BARE border terminal, addressed as (diagram idx, Nodes[] idx, Terminals[] idx) ; writer op 'OpConnectFromWire_v0.vi' ; BOUND True",
+  "LabVIEW handles BEFORE: 34160 (fresh-instance baseline ~31,500; STATUS records ~34,000 at the previous session's exit and the pre-batch restart below is MANDATORY - 44(e), Pre-decided 100 SS7)",
+  "H INPUT THE BED (M3a-3 run 2's output, ROW C ALREADY IN IT) BEFORE: HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3b_m3a3_20260922_081056.vi | exists=1 | size=306951 | md5=33ef524e0b6b193a158c9221474c68e3 | sha256=b0d95e400a8f66cb676549e3920144ebecba5d9784ae27d12d43aba737b3e27f",
+  "H ORIGINAL BEFORE: HASH G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb",
+  "H S1 D1_s1_copy BEFORE: HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7",
+  "H S2 D1_s2_loops BEFORE: HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5",
+  "H THE BED BEFORE: HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3b_row2_20260921_160311.vi | exists=1 | size=476759 | md5=26c54ff784cb5cea21edbd214d2cc3a0 | sha256=17b63cb1c83d5f4a50285ced08b1ecc5a65605979b17ee798b1228f7017d275d",
+  "H TOOL gscript.py BEFORE: HASH G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\gscript.py | exists=1 | size=167896 | md5=e8aa741cd945dcfa48c6cfb864cf118e | sha256=c48d51b712634fb0e9a84bacad87540666681c1acefc09fca88c0365338e5c63",
+  "H TOOL c60c_astcheck.py BEFORE: HASH G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\c60c_astcheck.py | exists=1 | size=22581 | md5=6bef719582cbaaf13dc6d7b81e780cb8 | sha256=ad683735761eb1ccb5a6f67561df683017ebd480540f1fcec959174f6ef2af7a",
+  "[0] CITED, NOT RE-MEASURED (Pre-decided 108 / prior-art B4): the OLD loop #637 register table and both consumer nets stand at `tools/bench/diag_c73_m3a2_rows.log:43-44,:67-71,:82-87` and `tools/bench/diag_c75_m3a3_rows.log` / `diag_c75b_loopterms.log`. #4256 OUTER = 'position [internal units]' on wire 4859 ; #4334 OUTER = 'Outgoing Handle' on wire 7506. THIS IS THE TRANSPOSE OF STATUS NEXT's SENTENCE and it is the machine's reading (Pre-decided 104).",
+  "LabVIEW handles AFTER the restart: 30684",
+  "[A1] WHY THIS ORDERING: Pre-decided 106's MEASURED ordering: connect_from_wire into an ALREADY-WIRED sink is a silent no-op (gscript.py:2522-2523), so the delete precedes the connect. The tension this arm measures: the swapped call resolves terminal #7488 FROM wire 7506, and the delete destroys that wire, so `UID to GObject Reference.vi` may refuse the dead uid. A REFUSAL HERE IS A LEGITIMATE, EXPECTED OUTCOME and is recorded verbatim.",
+  "[A1/1] the arm target, straight after the copy: HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\SCRATCH_rowdA1_20260922_111619.vi | exists=1 | size=306951 | md5=33ef524e0b6b193a158c9221474c68e3 | sha256=b0d95e400a8f66cb676549e3920144ebecba5d9784ae27d12d43aba737b3e27f",
+  "[A1/1] the arm target is SCRATCH_rowdA1_20260922_111619.vi (SCRATCH) - every edit in this arm is made on THIS file",
+  "[A1/1] ensure_loaded took 1.4 s (edits are SILENTLY DECLINED on a target that is not fully loaded - gscript.py:764)",
+  "ExecState [01 [A1/1] the arm target, COLD] = 0   (+68.6 s, read cost 1.13 s) - NEVER a criterion, NEVER a discriminator (Pre-decided 89/97)",
+  "[A1/1] COLD counts: {'Node': 635, 'Wire': 1920, 'LoopTunnel': 138, 'Tunnel': 478, 'LeftShiftRegister': 38, 'RightShiftRegister': 38}",
+  "[A1/1] Diagram #686 -> traverse index 19 (expected 19 - diag_c75b_loopterms.log)",
+  "[C0] Global #7202 #7202 LIVE: Diagram idx 19 (uid #686), Nodes[8], label 'Global motor pos.vi', uid echo 7202, 1 terminal(s)",
+  "[C0] Global #7202 terminal table: [(0, 'Focus position', False, 25231, 'WIRED')]",
+  "[C0] the Row-C sink net 25231 has 1 source terminal(s) of ANY class [('RightShiftRegister', 23895)] ; observed the-one ('RightShiftRegister', 23895) (want 'RightShiftRegister' #23895) ; PD85 violations 0",
+  "[P0] PREDICTION (written before the read): OpFsInnerTunnelTerm_v0 on uid 7468 returns LeftTerm = terminal uid #7488 with an EMPTY error column, and that face carries wire 7506 - which IS Row D's sink address (Pre-decided 109/111)",
+  "[P0] a FlatSequence is a GObject, never a Node, so #681 is NEVER looked up in any Nodes[] (Pre-decided 110; measured diag_c77_rowd_addr.log, 173/173 diagrams, 635 nodes, 0 scan errors, found None for #43914/#12938/#681)",
+  "[P0] RAW RETURN for #7468: {\"uid_in\": 7468, \"kind\": \"IN\", \"err\": \"\", \"term_a_uid\": 7488, \"term_b_uid\": 7471, \"wire_b\": 7448, \"uid_back\": 7468, \"owner_uid\": 7468, \"recip_wire\": 7506, \"cls_back\": \"FlatSequenceInnerTunnel\", \"ownercls\": \"FlatSequenceInnerTunnel\", \"cast_class\": \"FlatSequenceInnerTunnel\", \"is_source\": false, \"err_a\": \"\", \"err_b\": \"\", \"err_bcw\": \"\", \"wire_a\": 7506, \"errs\": \"\"}",
+  "[P0] #7468 self class echo 'FlatSequenceInnerTunnel' uid echo 7468 ; cast 'FlatSequenceInnerTunnel'",
+  "[P0] #7468 LeftTerm terminal #7488 wire #7506 ; RightTerm terminal #7471 wire #7448 ; owner 'FlatSequenceInnerTunnel'#7468",
+  "[P0] #7468 ERROR COLUMNS VERBATIM: err='' err_a='' err_b='' errs=''",
+  "[P0] which face of #7468 carries wire 7506: [('LeftTerm', 7488)]  (want EXACTLY ONE, and its terminal uid #7488)",
+  "[A1 ROW D VISA] WHY: wire 7506 carries the VISA SESSION out of the OLD loop #637 (t10 'Outgoing Handle') into `FlatSequenceInnerTunnel #7468` LeftTerm #7488. Its new source is the NEW loop's VISA register #23868 RIGHT OUTER, or the VISA path keeps reading a loop the restructure is replacing (rule 1a, Pre-decided 69).",
+  "[A1 ROW D VISA] SINK (tunnel_uid) RE-CONFIRMED BY UID: terminal #7488 of FlatSequenceInnerTunnel #7468 carries wire 7506 ; the other face {'7471': 7448}",
+  "[A1 ROW D VISA] SOURCE border #23032 #23032 LIVE: Diagram idx 19 (uid #686), Nodes[21], label 'While Loop', uid echo 23032, 7 terminal(s)",
+  "[A1 ROW D VISA] SOURCE the loop border #23032 terminal table: [(0, '', False, 23519, 'WIRED'), (1, 'Outgoing Handle', True, 0, 'BARE'), (2, 'Outgoing Handle', False, 4185, 'WIRED'), (3, 'Out position', True, 25231, 'WIRED'), (4, 'Out position', False, 3968, 'WIRED'), (5, '# slices in stack', False, 24077, 'WIRED'), (6, 'position [internal units]', True, 24130, 'WIRED')]",
+  "[A1 ROW D VISA] SOURCE RESOLVED LIVE: (Diagram idx 19, Nodes[21] = loop #23032, Terminals[1]) name 'Outgoing Handle' is_source True state BARE ; the EXPECTATION from diag_c75b_loopterms.log is t1, match True - an OUTPUT, never a criterion, and never carried from a census",
+  "[A1 ROW D VISA] the SOURCE HALF BEFORE ANY MUTATION: Wire.Terms[] index 1 chosen the ONE non-source row whose owner IS #7468 ; owner ('FlatSequenceInnerTunnel', 7468) ; all non-source rows [(1, 'FlatSequenceInnerTunnel', 7468)] ; PD85 violations 0",
+  "[A1 ROW D VISA] baselines before the mutation: {'Wire': 1920, 'LoopTunnel': 138, 'Tunnel': 478}",
+  "[A1 ROW D VISA] the sink terminal AFTER THE DELETE (FIRST - Pre-decided 106's ordering) (BY THE TERMINAL UID #7488 on FlatSequenceInnerTunnel #7468 (Pre-decided 109/111)): terminal #7488 carries wire 0, state 'BARE', uid echo 7468",
+  "[A1 ROW D VISA] the OLD source #4334's OUTER terminal is now a BARE SOURCE - legal LabVIEW (Pre-decided 69); the sink terminal reads wire 0, state 'BARE'",
+  "[A1 ROW D VISA] the INVOKE SITE, post-delete SOURCE border #23032 #23032 LIVE: Diagram idx 19 (uid #686), Nodes[21], label 'While Loop', uid echo 23032, 7 terminal(s)",
+  "[A1 ROW D VISA] the INVOKE SITE, post-delete SOURCE the loop border #23032 terminal table: [(0, '', False, 23519, 'WIRED'), (1, 'Outgoing Handle', True, 0, 'BARE'), (2, 'Outgoing Handle', False, 4185, 'WIRED'), (3, 'Out position', True, 25231, 'WIRED'), (4, 'Out position', False, 3968, 'WIRED'), (5, '# slices in stack', False, 24077, 'WIRED'), (6, 'position [internal units]', True, 24130, 'WIRED')]",
+  "[A1 ROW D VISA] the INVOKE SITE, post-delete SOURCE RESOLVED LIVE: (Diagram idx 19, Nodes[21] = loop #23032, Terminals[1]) name 'Outgoing Handle' is_source True state BARE ; the EXPECTATION from diag_c75b_loopterms.log is t1, match True - an OUTPUT, never a criterion, and never carried from a census",
+  "[A1 ROW D VISA] THE SWAPPED CALL AFTER THE DELETE (the dead-uid question) -> VERBATIM {\"when\": \"AFTER THE DELETE (the dead-uid question)\", \"wire_uid\": 7506, \"wire_term_index\": 1, \"invoke_triple_diag_node_term\": [19, 21, 1], \"roles\": \"wire_uid+term_index -> `Wire Source` (the FSIT terminal, the TRUE SINK) ; the index triple -> the Invoke's own terminal (the NEW loop border, the TRUE SOURCE)\", \"wire_delta\": 0, \"exec_state\": 0, \"op_error_verbatim\": \"\", \"sub_returns_verbatim\": {\"err_uidvi\": \"''\", \"err_wirepn\": \"'error 1055: Property Node in OpConnectFromWire_v0.vi'\", \"UID 2\": \"0\", \"Is Broken?\": \"False\", \"Name\": \"''\"}, \"err_uidvi_verbatim\": \"\", \"err_wirepn_verbatim\": \"error 1055: Property Node in OpConnectFromWire_v0.vi\", \"is_broken_readback\": false, \"uid2_readback\": 0, \"cost_s\": 0.44, \"reported_success\": false}",
+  "[A1 ROW D VISA] counts {'Wire': 1920, 'LoopTunnel': 138, 'Tunnel': 478} -> {'Wire': 1919, 'LoopTunnel': 138, 'Tunnel': 478} (wire_delta 0) - FACT lines, NEVER the acceptance test (Pre-decided 106: LANDED is SOURCE IDENTITY, never a wired-count delta)",
+  "[A1 ROW D VISA] the sink terminal IMMEDIATELY AFTER THE WRITE (BY THE TERMINAL UID #7488 on FlatSequenceInnerTunnel #7468 (Pre-decided 109/111)): terminal #7488 carries wire 0, state 'BARE', uid echo 7468",
+  "[A1 ROW D VISA] ACCEPTANCE (a) IMMEDIATELY AFTER THE WRITE - MEASURED, NOT ASSERTED (Pre-decided 94) - the SINK net 0 wire 0 - the terminal is BARE, there is no wire to walk",
+  "[A1 ROW D VISA] ACCEPTANCE (a) IMMEDIATELY AFTER THE WRITE - MEASURED, NOT ASSERTED (Pre-decided 94): sink net 0 has 0 source terminal(s) of ANY class [] (want exactly 1, owned by the NEW register #23868) ; observed the-one None ; OLD register #4334 still on the net False ; OLD loop #637 still on the net False ; the new loop border #23032 on the net (FACT ONLY) False ; every owner [] ; PD85 violations 0",
+  "[A1 ROW D VISA] after the write CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(7506, 'Invoke', (1985, 112))]",
+  "[A1 ROW D VISA] after the write the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS",
+  "[A1 ROW D VISA] after the write purge arithmetic: Node 635 -> 636 -> 635",
+  "[A1 ROW D VISA] the sink terminal AFTER THE JUNK PURGE (BY THE TERMINAL UID #7488 on FlatSequenceInnerTunnel #7468 (Pre-decided 109/111)): terminal #7488 carries wire 0, state 'BARE', uid echo 7468",
+  "[A1 ROW D VISA] ACCEPTANCE (b) AFTER THE JUNK PURGE - MEASURED, NOT ASSERTED (Pre-decided 94) - the SINK net 0 wire 0 - the terminal is BARE, there is no wire to walk",
+  "[A1 ROW D VISA] ACCEPTANCE (b) AFTER THE JUNK PURGE - MEASURED, NOT ASSERTED (Pre-decided 94): sink net 0 has 0 source terminal(s) of ANY class [] (want exactly 1, owned by the NEW register #23868) ; observed the-one None ; OLD register #4334 still on the net False ; OLD loop #637 still on the net False ; the new loop border #23032 on the net (FACT ONLY) False ; every owner [] ; PD85 violations 0",
+  "[A1 94 D VISA] re-resolve SINK (tunnel_uid) RE-CONFIRMED BY UID: terminal #7488 of FlatSequenceInnerTunnel #7468 carries wire 0 ; the other face {'7471': 7448}",
+  "[A1 94 D VISA] re-resolve the INVOKE SITE SOURCE border #23032 #23032 LIVE: Diagram idx 19 (uid #686), Nodes[21], label 'While Loop', uid echo 23032, 7 terminal(s)",
+  "[A1 94 D VISA] re-resolve the INVOKE SITE SOURCE the loop border #23032 terminal table: [(0, '', False, 23519, 'WIRED'), (1, 'Outgoing Handle', True, 0, 'BARE'), (2, 'Outgoing Handle', False, 4185, 'WIRED'), (3, 'Out position', True, 25231, 'WIRED'), (4, 'Out position', False, 3968, 'WIRED'), (5, '# slices in stack', False, 24077, 'WIRED'), (6, 'position [internal units]', True, 24130, 'WIRED')]",
+  "[A1 94 D VISA] re-resolve the INVOKE SITE SOURCE RESOLVED LIVE: (Diagram idx 19, Nodes[21] = loop #23032, Terminals[1]) name 'Outgoing Handle' is_source True state BARE ; the EXPECTATION from diag_c75b_loopterms.log is t1, match True - an OUTPUT, never a criterion, and never carried from a census",
+  "[A1 94 D VISA] SKIPPED - the sink terminal #7488 is BARE, so there is no wire to re-connect FROM - the swapped call's source half has no uid",
+  "[A2] WHY THIS ORDERING: The other ordering: resolve #7488 and its Wire.Terms[] index while wire 7506 is ALIVE, make the swapped call, and delete wire 7506 ONLY IF the connect reported success. The hazard this arm measures is the one the c79 review named: an already-wired terminal handed to `Wire Source` is BRANCHED (gscript.py:2522-2523), which would leave the OLD source on the net - a rule-1a computation change that passes every count-shaped check (Pre-decided 117).",
+  "[A2/1] the arm target, straight after the copy: HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\SCRATCH_rowdA2_20260922_111619.vi | exists=1 | size=306951 | md5=33ef524e0b6b193a158c9221474c68e3 | sha256=b0d95e400a8f66cb676549e3920144ebecba5d9784ae27d12d43aba737b3e27f",
+  "[A2/1] the arm target is SCRATCH_rowdA2_20260922_111619.vi (SCRATCH) - every edit in this arm is made on THIS file",
+  "[A2/1] ensure_loaded took 1.0 s (edits are SILENTLY DECLINED on a target that is not fully loaded - gscript.py:764)",
+  "ExecState [02 [A2/1] the arm target, COLD] = 0   (+90.7 s, read cost 0.05 s) - NEVER a criterion, NEVER a discriminator (Pre-decided 89/97)",
+  "[A2/1] COLD counts: {'Node': 635, 'Wire': 1920, 'LoopTunnel': 138, 'Tunnel': 478, 'LeftShiftRegister': 38, 'RightShiftRegister': 38}",
+  "[A2/1] Diagram #686 -> traverse index 19 (expected 19 - diag_c75b_loopterms.log)",
+  "[C0] Global #7202 #7202 LIVE: Diagram idx 19 (uid #686), Nodes[8], label 'Global motor pos.vi', uid echo 7202, 1 terminal(s)",
+  "[C0] Global #7202 terminal table: [(0, 'Focus position', False, 25231, 'WIRED')]",
+  "[C0] the Row-C sink net 25231 has 1 source terminal(s) of ANY class [('RightShiftRegister', 23895)] ; observed the-one ('RightShiftRegister', 23895) (want 'RightShiftRegister' #23895) ; PD85 violations 0",
+  "[P0] PREDICTION (written before the read): OpFsInnerTunnelTerm_v0 on uid 7468 returns LeftTerm = terminal uid #7488 with an EMPTY error column, and that face carries wire 7506 - which IS Row D's sink address (Pre-decided 109/111)",
+  "[P0] a FlatSequence is a GObject, never a Node, so #681 is NEVER looked up in any Nodes[] (Pre-decided 110; measured diag_c77_rowd_addr.log, 173/173 diagrams, 635 nodes, 0 scan errors, found None for #43914/#12938/#681)",
+  "[P0] RAW RETURN for #7468: {\"uid_in\": 7468, \"kind\": \"IN\", \"err\": \"\", \"term_a_uid\": 7488, \"term_b_uid\": 7471, \"wire_b\": 7448, \"uid_back\": 7468, \"owner_uid\": 7468, \"recip_wire\": 7506, \"cls_back\": \"FlatSequenceInnerTunnel\", \"ownercls\": \"FlatSequenceInnerTunnel\", \"cast_class\": \"FlatSequenceInnerTunnel\", \"is_source\": false, \"err_a\": \"\", \"err_b\": \"\", \"err_bcw\": \"\", \"wire_a\": 7506, \"errs\": \"\"}",
+  "[P0] #7468 self class echo 'FlatSequenceInnerTunnel' uid echo 7468 ; cast 'FlatSequenceInnerTunnel'",
+  "[P0] #7468 LeftTerm terminal #7488 wire #7506 ; RightTerm terminal #7471 wire #7448 ; owner 'FlatSequenceInnerTunnel'#7468",
+  "[P0] #7468 ERROR COLUMNS VERBATIM: err='' err_a='' err_b='' errs=''",
+  "[P0] which face of #7468 carries wire 7506: [('LeftTerm', 7488)]  (want EXACTLY ONE, and its terminal uid #7488)",
+  "[A2 ROW D VISA] WHY: wire 7506 carries the VISA SESSION out of the OLD loop #637 (t10 'Outgoing Handle') into `FlatSequenceInnerTunnel #7468` LeftTerm #7488. Its new source is the NEW loop's VISA register #23868 RIGHT OUTER, or the VISA path keeps reading a loop the restructure is replacing (rule 1a, Pre-decided 69).",
+  "[A2 ROW D VISA] SINK (tunnel_uid) RE-CONFIRMED BY UID: terminal #7488 of FlatSequenceInnerTunnel #7468 carries wire 7506 ; the other face {'7471': 7448}",
+  "[A2 ROW D VISA] SOURCE border #23032 #23032 LIVE: Diagram idx 19 (uid #686), Nodes[21], label 'While Loop', uid echo 23032, 7 terminal(s)",
+  "[A2 ROW D VISA] SOURCE the loop border #23032 terminal table: [(0, '', False, 23519, 'WIRED'), (1, 'Outgoing Handle', True, 0, 'BARE'), (2, 'Outgoing Handle', False, 4185, 'WIRED'), (3, 'Out position', True, 25231, 'WIRED'), (4, 'Out position', False, 3968, 'WIRED'), (5, '# slices in stack', False, 24077, 'WIRED'), (6, 'position [internal units]', True, 24130, 'WIRED')]",
+  "[A2 ROW D VISA] SOURCE RESOLVED LIVE: (Diagram idx 19, Nodes[21] = loop #23032, Terminals[1]) name 'Outgoing Handle' is_source True state BARE ; the EXPECTATION from diag_c75b_loopterms.log is t1, match True - an OUTPUT, never a criterion, and never carried from a census",
+  "[A2 ROW D VISA] the SOURCE HALF BEFORE ANY MUTATION: Wire.Terms[] index 1 chosen the ONE non-source row whose owner IS #7468 ; owner ('FlatSequenceInnerTunnel', 7468) ; all non-source rows [(1, 'FlatSequenceInnerTunnel', 7468)] ; PD85 violations 0",
+  "[A2 ROW D VISA] baselines before the mutation: {'Wire': 1920, 'LoopTunnel': 138, 'Tunnel': 478}",
+  "[A2 ROW D VISA] THE SWAPPED CALL WHILE WIRE 7506 IS STILL ALIVE (the branch question) -> VERBATIM {\"when\": \"WHILE WIRE 7506 IS STILL ALIVE (the branch question)\", \"wire_uid\": 7506, \"wire_term_index\": 1, \"invoke_triple_diag_node_term\": [19, 21, 1], \"roles\": \"wire_uid+term_index -> `Wire Source` (the FSIT terminal, the TRUE SINK) ; the index triple -> the Invoke's own terminal (the NEW loop border, the TRUE SOURCE)\", \"wire_delta\": 0, \"exec_state\": 0, \"op_error_verbatim\": \"\", \"sub_returns_verbatim\": {\"err_uidvi\": \"''\", \"err_wirepn\": \"''\", \"UID 2\": \"7506\", \"Is Broken?\": \"True\", \"Name\": \"'Outgoing Handle'\"}, \"err_uidvi_verbatim\": \"\", \"err_wirepn_verbatim\": \"\", \"is_broken_readback\": true, \"uid2_readback\": 7506, \"cost_s\": 0.47, \"reported_success\": true}",
+  "[A2 ROW D VISA] the sink terminal AFTER THE CONNECT, BEFORE THE DELETE (BY THE TERMINAL UID #7488 on FlatSequenceInnerTunnel #7468 (Pre-decided 109/111)): terminal #7488 carries wire 7506, state 'WIRED', uid echo 7468",
+  "[A2 ROW D VISA] the INVOKE SITE after the connect SOURCE border #23032 #23032 LIVE: Diagram idx 19 (uid #686), Nodes[21], label 'While Loop', uid echo 23032, 7 terminal(s)",
+  "[A2 ROW D VISA] the INVOKE SITE after the connect SOURCE the loop border #23032 terminal table: [(0, '', False, 23519, 'WIRED'), (1, 'Outgoing Handle', True, 7506, 'WIRED'), (2, 'Outgoing Handle', False, 4185, 'WIRED'), (3, 'Out position', True, 25231, 'WIRED'), (4, 'Out position', False, 3968, 'WIRED'), (5, '# slices in stack', False, 24077, 'WIRED'), (6, 'position [internal units]', True, 24130, 'WIRED')]",
+  "[A2 ROW D VISA] the INVOKE SITE after the connect SOURCE RESOLVED LIVE: (Diagram idx 19, Nodes[21] = loop #23032, Terminals[1]) name 'Outgoing Handle' is_source True state WIRED ; the EXPECTATION from diag_c75b_loopterms.log is t1, match True - an OUTPUT, never a criterion, and never carried from a census",
+  "[A2 ROW D VISA] ACCEPTANCE (a0) AFTER THE CONNECT, BEFORE THE DELETE - MEASURED, NOT ASSERTED (Pre-decided 94). THIS is the only reading that names the OWNERS on the net the swapped call produced, so it is the only one that can answer Pre-decided 117's branch question for this ordering: sink net 7506 has 3 source terminal(s) of ANY class [('RightShiftRegister', 23868), ('FlatSequenceInnerTunnel', 7468), ('RightShiftRegister', 4334)] (want exactly 1, owned by the NEW register #23868) ; observed the-one None ; OLD register #4334 still on the net True ; OLD loop #637 still on the net False ; the new loop border #23032 on the net (FACT ONLY) False ; every owner [4334, 7468, 23868] ; PD85 violations 0",
+  "[A2 ROW D VISA] THE c80-r2 REVIEW'S ONE INDICATOR (its step 2): immediately after the connect and BEFORE any delete, net 7506 has 3 source terminal(s) of ANY class, [('RightShiftRegister', 23868), ('FlatSequenceInnerTunnel', 7468), ('RightShiftRegister', 4334)]. >=2 => the swapped call DID join the NEW loop's border terminal to that net, Route A's verb works, and Row D reduces to REMOVING THE OLD SOURCE #4334 (a NEW step, judgement's). ==1 => nothing happened and the op's `UID 2` readback was an echo of the wire half, i.e. arm A2 is VOID. The border table printed just above is the same fact read from the terminal side (step 3).",
+  "[A2 ROW D VISA] the sink terminal AFTER THE DELETE (AFTER THE CONNECT - the connect reported success) (BY THE TERMINAL UID #7488 on FlatSequenceInnerTunnel #7468 (Pre-decided 109/111)): terminal #7488 carries wire 0, state 'BARE', uid echo 7468",
+  "[A2 ROW D VISA] the OLD source #4334's OUTER terminal is now a BARE SOURCE - legal LabVIEW (Pre-decided 69); the sink terminal reads wire 0, state 'BARE'",
+  "[A2 ROW D VISA] counts {'Wire': 1920, 'LoopTunnel': 138, 'Tunnel': 478} -> {'Wire': 1919, 'LoopTunnel': 138, 'Tunnel': 478} (wire_delta 0) - FACT lines, NEVER the acceptance test (Pre-decided 106: LANDED is SOURCE IDENTITY, never a wired-count delta)",
+  "[A2 ROW D VISA] the sink terminal IMMEDIATELY AFTER THE WRITE (BY THE TERMINAL UID #7488 on FlatSequenceInnerTunnel #7468 (Pre-decided 109/111)): terminal #7488 carries wire 0, state 'BARE', uid echo 7468",
+  "[A2 ROW D VISA] ACCEPTANCE (a) IMMEDIATELY AFTER THE WRITE - MEASURED, NOT ASSERTED (Pre-decided 94) - the SINK net 0 wire 0 - the terminal is BARE, there is no wire to walk",
+  "[A2 ROW D VISA] ACCEPTANCE (a) IMMEDIATELY AFTER THE WRITE - MEASURED, NOT ASSERTED (Pre-decided 94): sink net 0 has 0 source terminal(s) of ANY class [] (want exactly 1, owned by the NEW register #23868) ; observed the-one None ; OLD register #4334 still on the net False ; OLD loop #637 still on the net False ; the new loop border #23032 on the net (FACT ONLY) False ; every owner [] ; PD85 violations 0",
+  "[A2 ROW D VISA] after the write CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(25312, 'Invoke', (1985, 112))]",
+  "[A2 ROW D VISA] after the write the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS",
+  "[A2 ROW D VISA] after the write purge arithmetic: Node 635 -> 636 -> 635",
+  "[A2 ROW D VISA] the sink terminal AFTER THE JUNK PURGE (BY THE TERMINAL UID #7488 on FlatSequenceInnerTunnel #7468 (Pre-decided 109/111)): terminal #7488 carries wire 0, state 'BARE', uid echo 7468",
+  "[A2 ROW D VISA] ACCEPTANCE (b) AFTER THE JUNK PURGE - MEASURED, NOT ASSERTED (Pre-decided 94) - the SINK net 0 wire 0 - the terminal is BARE, there is no wire to walk",
+  "[A2 ROW D VISA] ACCEPTANCE (b) AFTER THE JUNK PURGE - MEASURED, NOT ASSERTED (Pre-decided 94): sink net 0 has 0 source terminal(s) of ANY class [] (want exactly 1, owned by the NEW register #23868) ; observed the-one None ; OLD register #4334 still on the net False ; OLD loop #637 still on the net False ; the new loop border #23032 on the net (FACT ONLY) False ; every owner [] ; PD85 violations 0",
+  "[A2 94 D VISA] re-resolve SINK (tunnel_uid) RE-CONFIRMED BY UID: terminal #7488 of FlatSequenceInnerTunnel #7468 carries wire 0 ; the other face {'7471': 7448}",
+  "[A2 94 D VISA] re-resolve the INVOKE SITE SOURCE border #23032 #23032 LIVE: Diagram idx 19 (uid #686), Nodes[21], label 'While Loop', uid echo 23032, 7 terminal(s)",
+  "[A2 94 D VISA] re-resolve the INVOKE SITE SOURCE the loop border #23032 terminal table: [(0, '', False, 23519, 'WIRED'), (1, 'Outgoing Handle', True, 0, 'BARE'), (2, 'Outgoing Handle', False, 4185, 'WIRED'), (3, 'Out position', True, 25231, 'WIRED'), (4, 'Out position', False, 3968, 'WIRED'), (5, '# slices in stack', False, 24077, 'WIRED'), (6, 'position [internal units]', True, 24130, 'WIRED')]",
+  "[A2 94 D VISA] re-resolve the INVOKE SITE SOURCE RESOLVED LIVE: (Diagram idx 19, Nodes[21] = loop #23032, Terminals[1]) name 'Outgoing Handle' is_source True state BARE ; the EXPECTATION from diag_c75b_loopterms.log is t1, match True - an OUTPUT, never a criterion, and never carried from a census",
+  "[A2 94 D VISA] SKIPPED - the sink terminal #7488 is BARE, so there is no wire to re-connect FROM - the swapped call's source half has no uid",
+  "[R] ROUTE SELECTION: arm verdicts {'A1': 'FAIL', 'A2': 'FAIL'} -> winner None (None)",
+  "HALTED: NEITHER ordering of the swapped call passed Row D's gates. THE BED IS UNTOUCHED (it was never opened), both scratch copies are deleted, and NO OP WAS BUILT. Route B (`OpConnectByUid`: uid -> `UID to GObject Reference.vi` -> TMSC on a Terminal seed -> the Invoke's `reference`, donor `OpConnectNested_v2`) is EXPENSIVE CONSTRUCTION and gets a FRESH CYCLE (Pre-decided 116-B); it is never improvised at the end of a dispatch. The step-4 probe above says whether its first gate - does a TERMINAL uid resolve - is clear.",
+  "close_panel(SCRATCH_rowdA1_20260922_111619.vi) raised com_error: (-2147352567, '\uc608\uc678\uac00 \ubc1c\uc0dd\ud588\uc2b5\ub2c8\ub2e4.', (5507, 'LabVIEW', 'LabVIEW: (Hex 0x7) File not found. The file might be in a different location or deleted. Use the command prompt or the file explorer to verify that the path is correct.', None, 0, 0), None)",
+  "close_panel(SCRATCH_rowdA2_20260922_111619.vi) raised com_error: (-2147352567, '\uc608\uc678\uac00 \ubc1c\uc0dd\ud588\uc2b5\ub2c8\ub2e4.', (5507, 'LabVIEW', 'LabVIEW: (Hex 0x7) File not found. The file might be in a different location or deleted. Use the command prompt or the file explorer to verify that the path is correct.', None, 0, 0), None)",
+  "close_panel(D1_s3b_m3a3b_20260922_111619.vi) raised com_error: (-2147352567, '\uc608\uc678\uac00 \ubc1c\uc0dd\ud588\uc2b5\ub2c8\ub2e4.', (5507, 'LabVIEW', 'LabVIEW: (Hex 0x7) File not found. The file might be in a different location or deleted. Use the command prompt or the file explorer to verify that the path is correct.', None, 0, 0), None)",
+  "H INPUT THE BED AFTER: HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3b_m3a3_20260922_081056.vi | exists=1 | size=306951 | md5=33ef524e0b6b193a158c9221474c68e3 | sha256=b0d95e400a8f66cb676549e3920144ebecba5d9784ae27d12d43aba737b3e27f",
+  "H ORIGINAL AFTER: HASH G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\Min_Track N beads V6_ParallelLoop.vi | exists=1 | size=473317 | md5=2a78e17c449cacdaf5da389818526859 | sha256=f827a67e91cc2a51284cdce0ada5d34ecf89cf865bca5f0bdfa870f0020df4bb",
+  "H S1 D1_s1_copy AFTER: HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi | exists=1 | size=474202 | md5=3e3d23cefd3a334001aa9d6156bf1aee | sha256=1ab3360021cb04f03e8fe4a503d1972aefa26a34ed5b8fd9393ec6899330e0f7",
+  "H S2 D1_s2_loops AFTER: HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s2_loops.vi | exists=1 | size=475707 | md5=6ff19497f2309e007a214660bb64b911 | sha256=d52e754e29a85e9cc3ddeb039f6c5e325c9094c5e1f8c944059d4a5f7b33c3f5",
+  "H THE BED AFTER: HASH C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3b_row2_20260921_160311.vi | exists=1 | size=476759 | md5=26c54ff784cb5cea21edbd214d2cc3a0 | sha256=17b63cb1c83d5f4a50285ced08b1ecc5a65605979b17ee798b1228f7017d275d",
+  "H TOOL gscript.py AFTER: HASH G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\gscript.py | exists=1 | size=167896 | md5=e8aa741cd945dcfa48c6cfb864cf118e | sha256=c48d51b712634fb0e9a84bacad87540666681c1acefc09fca88c0365338e5c63",
+  "H TOOL c60c_astcheck.py AFTER: HASH G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\c60c_astcheck.py | exists=1 | size=22581 | md5=6bef719582cbaaf13dc6d7b81e780cb8 | sha256=ad683735761eb1ccb5a6f67561df683017ebd480540f1fcec959174f6ef2af7a",
+  "refs: {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 8}",
+  "LabVIEW handles AFTER: 31281 (before 34160, after the restart 30684) - a FACT beside the ~31,500 baseline, NOT a gate (Pre-decided 100 SS7)",
+  "H8b THE MEASUREMENT ARMS (REPORTED, NEVER GATED - their negative outcome IS the measurement): 0 machine refusal(s) [] ; 0 our-code defect(s) []",
+  "THE FILES THIS RUN LEFT ON DISK: []"
+ ],
+ "machine_refusals": [],
+ "our_code_defects": [],
+ "elapsed_s": 110.0,
+ "targets_used": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\SCRATCH_rowdA1_20260922_111619.vi",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\SCRATCH_rowdA2_20260922_111619.vi"
+ ],
+ "precondition_rowc": [
+  {
+   "row": "C POS (PRECONDITION ONLY)",
+   "evidence_for_the_claim": "tools/bench/build_d1_m3a3_run2.log - sink net 25231 has exactly ONE source terminal of ANY class, RightShiftRegister #23895, PD85 violations 0, asserted on the ordered idempotent second pass (wire_delta 0); the OLD #4256 is OFF the net",
+   "target": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\SCRATCH_rowdA1_20260922_111619.vi",
+   "node": {
+    "uid": 7202,
+    "diagram_index": 19,
+    "diagram_uid": 686,
+    "nodes_index": 8,
+    "label": "Global motor pos.vi",
+    "uid_echo": 7202,
+    "n_terminals": 1
+   },
+   "terminals": [
+    [
+     0,
+     "Focus position",
+     false,
+     25231,
+     "WIRED"
+    ]
+   ],
+   "sink_wire": 25231,
+   "walk_error": "",
+   "ALL_source_terminals": [
+    [
+     "RightShiftRegister",
+     23895
+    ]
+   ],
+   "observed_one_owner": [
+    "RightShiftRegister",
+    23895
+   ],
+   "pd85_violations": 0,
+   "verdict": "HOLDS"
+  },
+  {
+   "row": "C POS (PRECONDITION ONLY)",
+   "evidence_for_the_claim": "tools/bench/build_d1_m3a3_run2.log - sink net 25231 has exactly ONE source terminal of ANY class, RightShiftRegister #23895, PD85 violations 0, asserted on the ordered idempotent second pass (wire_delta 0); the OLD #4256 is OFF the net",
+   "target": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\SCRATCH_rowdA2_20260922_111619.vi",
+   "node": {
+    "uid": 7202,
+    "diagram_index": 19,
+    "diagram_uid": 686,
+    "nodes_index": 8,
+    "label": "Global motor pos.vi",
+    "uid_echo": 7202,
+    "n_terminals": 1
+   },
+   "terminals": [
+    [
+     0,
+     "Focus position",
+     false,
+     25231,
+     "WIRED"
+    ]
+   ],
+   "sink_wire": 25231,
+   "walk_error": "",
+   "ALL_source_terminals": [
+    [
+     "RightShiftRegister",
+     23895
+    ]
+   ],
+   "observed_one_owner": [
+    "RightShiftRegister",
+    23895
+   ],
+   "pd85_violations": 0,
+   "verdict": "HOLDS"
+  }
+ ],
+ "ref_counts": {
+  "opened": 8,
+  "closed": 8,
+  "live": 0,
+  "cached_op_vis": 8
+ },
+ "imported_helper_refusals": [],
+ "measurement_arm_refusals_REPORTED_NOT_GATED": [],
+ "measurement_arm_defects_REPORTED_NOT_GATED": [],
+ "files_left_on_disk": []
+}

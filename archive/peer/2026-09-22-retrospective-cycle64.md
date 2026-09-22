@@ -249,4 +249,48 @@ VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/bench/cycle_
 
 ## What was done with it
 
-(Claude fills in)
+Disposed 2026-09-22 by the cycle-65 judgement session (the `guard_peer` blank-disposition gate refused the cycle-65
+retrospective dispatch until this section existed — the device firing correctly, see below).
+
+**VIOLATION 1 — `tool-not-built` (parse-only clearance read as a fitness verdict), loss 32 min / $6.07: ACCEPTED,
+and DISCHARGED BY MEASUREMENT RATHER THAN BY A NEW DEVICE.** The reviewer is right that `c60c_astcheck.py`'s 11
+PASS proved only that the file parses, and right that gate 10 flagged the exact defect in under a second once it
+existed. No stubbed-`g` dry-run device is built: the user's standing order of **2026-09-18 08:53** (*"장치는 더 만들지
+말고 계속 진행"*) forbids it, and the fault's own class has now measured non-endemic twice — 0 further `%`-arity
+mismatches across 3 files at the time, plus cycle 65's re-cut recipe passing a pinned 10-gate astcheck
+(`tools/bench/c80_astcheck_m3a3b_r3.log`, `ASTCHECK OK`, rc=0) and then running twice (112 s, 110 s) with no format
+or signature crash at all. What the fault bought is kept: gate 10 runs BEFORE the launch now, which is exactly the
+inversion finding 5 named.
+
+**VIOLATION 2 — `device-failed` (`audit_cycle` C3/C4 files the judgement session's own bgrun as REVIEW cost):
+ACCEPTED IN FULL, AND IT IS THE MORE IMPORTANT OF THE TWO.** The arithmetic is checked and the reviewer is exactly
+right: C4's `$63.9903` is $6.3017 + $2.6899 + $3.3771 + **$51.6216**, and the last is `tools/bench/cycle_59.log:62`,
+the judgement session itself — so "reviews are 94 % of wall-clock" is false by construction when the three real
+reviews are ~24 min of ~133. A device built to make the cost argument quantitative instead of rhetorical was
+corrupting the quantity, and this project has already been burned once by a cost argument made against a figure
+wrong in kind. **Ordered as a repair, not as a new device** — the precedent is this week's `logclass.py`
+`is_recipe_build_log` split (Pre-decided 112/113), a classifier repair to an existing gate, ratified: `audit_cycle`
+excludes `cycle_*.log` from the review-cost set and reports a separate **C4c judgement-session cost** line, with a
+self-test asserting the split on cycle 59's literal numbers. It is in STATUS `## NEXT`; it touches no LabVIEW, so it
+does not compete with the D-1/D-2/D-3 dispatches for the instance. This also discharges finding 6.
+
+**FINDINGS.** (1) Accepted — the cross-cycle class is answered by gate 10 being pinned pre-launch. (2) Accepted as a
+finding, REFUSED as a build, on the same 2026-09-18 order; the counter-measurement STATUS offered stands and cycle 65
+added two more clean runs to it. (3) Accepted: run 1's 30,689 → 45,677 jump with 0 live refs was never attributed
+and `handle_audit.py` exists for exactly that. It stays a standing FACT and not a gate, because cycle 65's own
+numbers are benign (34,160 → 30,684 after restart → 31,281, refs 8 opened / 8 closed / 0 live) — `handle_audit.py`
+is to be pointed at the next spike, not at a closed one. (4a) Accepted and still true: `archive/peer/2026-09-22-c74-m3a2-fmt.md`
+is blank as of this cycle's `doc_lint` L6; it is named in STATUS `## NEXT` with the other two outstanding
+placeholders so the next docs dispatch closes it. (4b) **FIXED since the review**:
+`archive/2026-09-22-status-cycle64-locknotes.md` now exists and `STATUS.md:56`'s citation resolves — today's only L2
+dangling citations are the `tools/stagekit.py` ones (approved, unbuilt). (5) Accepted, see violation 1. (6) Accepted,
+discharged by the C4c repair above. (7) Noted: no judgement-in-material found, and C6's 3 refusals are the guard
+working.
+
+**DEVICE EFFECT.** The scope gap the reviewer found in `guard_peer`'s blank-disposition refusal (it guards only
+`priorart`/`retrospective` dispatches, so a blank `hypothesis` review does not block) is **accepted as a finding and
+deliberately NOT closed.** Widening it to `hypothesis` reviews would let one unrelated blank disposition block the
+mandatory failed-prediction review that a cycle needs in order to proceed at all — a deadlock, and rule 5 is
+explicit that a review which told us nothing is worse than none. Within its own scope the device worked perfectly
+this cycle: it refused the cycle-65 retrospective, which is why this text exists. Every other device the reviewer
+checked is recorded as WORKED and no further action is taken on them.

@@ -847,6 +847,15 @@ wrong are settled by measurement (`tools/bench/build_opaddshiftreg_v0_run3.log`)
   (ExecState 0) until wired. Wiring rule (labviewwiki, adopted): `Terminal.Connect Wire` **6349C03 is invoked on the
   SINK**, `Wire Source` = the source. `LeftShiftRegister` 16442 derives from `Tunnel`, so `Outside Terminal` 6356001
   (the initial-value sink) and `Inside Terminals[]` 6356000 (the body-side source) apply to it.
+  ⚠️ **"invoked on the SINK" is an ADOPTED CONVENTION, NOT A MEASUREMENT** (2026-09-22,
+  `archive/peer/2026-09-22-c79-rowd-writer.md`, Pre-decided 115). The peer fetched the labviewwiki page and it
+  **does not say which end the method is invoked on**; our belief traces to a single donor lineage
+  (`OpConnect2_v0 → OpConnectNested_v0 → _v1 → _v2 → OpConnectFromWire_v0`) in which every op happened to be
+  written sink-first. The fleet census is not disputed — 4/4 maps declaring `"method": "6349C03"` take a
+  `(diagram, Nodes[], Terminals[])` SINK and 0 take a uid — but that proves *"no writer in the fleet takes a uid
+  sink"*, **not** *"the method requires the sink end"*. A convention adopted from a wiki is evidence of how WE
+  have written ops, never of what the method requires: the roles may be exchangeable (the source half supplied
+  from `Wire.Terms[]`, the Invoke sitting on the bare terminal), and that is a measurement nobody has made.
 - API: `gscript.add_shift_reg(target, loop_index, y_position, class_name='WhileLoop')` → the new register's UID.
 
 **Two COM/recipe traps recorded the same evening, both of which cost a batch:**
@@ -1117,3 +1126,28 @@ label IS its bound panel object's name (`docs/toolkit-capabilities.md:26`).
 that writer's enclosing structure above the frame is NOT established; and `report_all('GlobalVariable')` fails on
 this VI with `error 1092`, so a global-variable writer would not have been seen.
 ⚠️ Also measured, and NOT diagnosed: the claudeDev D0 copy reads **ExecState 0 (broken)** as it sits on disk.
+
+## 🔴 DEAD ENDS for a `FlatSequenceInnerTunnel` sink — recorded 2026-09-22 so they are not re-tried
+
+Provenance: **peer citation, not a local measurement** — `archive/peer/2026-09-22-c79-rowd-writer.md` (claude /
+`-Role hypothesis`, opus max, ANSWERED), accepted as `docs/cycle27-plan.md` Pre-decided 118. Each line below is
+sourced to labviewwiki / NI by that review; none of the four has been probed on this machine, and none needs to
+be — the class hierarchy is what refuses them.
+
+| tried / considered | id | verdict |
+|---|---|---|
+| `Tunnel.Inside Terminals[]` | **6356000** | ❌ **can never address `#7468`** — a `FlatSequenceInnerTunnel` is `Generic → GObject → FlatSequenceInnerTunnel`, **not** a `Tunnel`, so `OpTunnelRead_v0`'s cast (`docs/toolkit-capabilities.md:72`) cannot reach it |
+| `Tunnel.Outside Terminal` | **6356001** | ❌ same reason, same class boundary |
+| **`FlatSequenceInnerTunnel.Left Terminal`** | **1C3A9000** | ✅ the REAL property — this is what `OpFsInnerTunnelTerm_v0` already reads (`LeftTerm #7488` on uid 7468, every error column empty) |
+| **`FlatSequenceInnerTunnel.Right Terminal`** | **1C3A9001** | ✅ the REAL property, the other face (`RightTerm #7471`) |
+| `Node.Connect Wires` | — | ❌ **both ends must be `Node`s**; an FSIT is not a `Node`, so it is not addressable by this verb |
+| `Create Described Wire` | — | ❌ it is itself a **`Terminal` method**, so it needs the same terminal reference the caller was trying to avoid |
+
+**The general fact those rows add up to:** *no documented NI verb wires anything without a terminal reference at
+one end.* A route that hopes to reach a sink "by object" rather than by terminal does not exist in the public API,
+so the question is only ever WHICH terminal reference is obtainable — and for this class the answer is
+`1C3A9000` / `1C3A9001` by uid, never a `Tunnel` cast and never a `Nodes[]` index.
+
+⚠️ Do not extend the shift-register line above (`LeftShiftRegister` 16442 **does** derive from `Tunnel`, so
+6356000/6356001 apply to it) to flat-sequence tunnels: the two classes look alike in this file and do not share
+an ancestor here.

@@ -213,4 +213,27 @@ FOR JUDGEMENT, NOT DECIDED HERE: whether to repair or remove the dangling `conne
 recipe (this run's rename was done by hand, after the fact); and Row D's real address once the FlatSequence
 census is read.
 
-(Claude fills in)
+**JUDGEMENT DISPOSITION CLOSED 2026-09-22 (cycle 69 series) — CARRIED BY `docs/cycle27-plan.md` Pre-decided
+104–111.** Nothing above is withdrawn; what was left open is now answered by measurement rather than by
+argument:
+
+- **ACCEPTED and carried by Pre-decided 106**: `LANDED` is asserted as SOURCE IDENTITY, never as "the sink is
+  still wired" and never as a wired-count delta — the review's correction of the `gscript.py:2522-2523`
+  citation (it is `connect_terminals`, and an already-wired sink is UNSAFE rather than a silent no-op)
+  strengthens delete-first, which 106 makes mandatory for every row.
+- **ACCEPTED and carried by Pre-decided 104/105**: the row table in the plan, not STATUS NEXT's sentence, is
+  what M3a-3 is asserted against; the 8-day-old shift-register table is cited there as the review's finding A4
+  required.
+- **Prediction 1's live branch is CLOSED, and the review's own §4 test decided it: the miss tracks the CLASS,
+  not a reader defect and not #681.** `report_all('FlatSequence')` plus `find_node` on #43914 / #12938 / #681
+  all returned `found None` (`tools/bench/diag_c77_rowd_addr.log`), so the "reader defect with a findable
+  location" branch the review kept live is REFUTED — carried by **Pre-decided 110**, which also records that
+  `diag_index(#681)` raising `ValueError: 681 is not in list` is not a membership test.
+- **Pre-decided 107's prescribed route (read `#681`'s terminal table on `Diagram #686`) is VOID and was
+  AMENDED by Pre-decided 109**: `#681` is owned by `TopLevelDiagram #536` and is in no `Nodes[]`. Its
+  prohibition half (no owner walk, no improvised address, no GUI fallback) stands. Row D's sink is read
+  instead by `OpFsInnerTunnelTerm_v0` on uid 7468, and its address pair is **Pre-decided 111**.
+- **NOT accepted as work, recorded as debt**: the dangling `connect_nested_v2` wrapper and the mechanical
+  `_REJECTED` rename on a failed H9 were not built — the standing no-new-device order of 2026-09-18 covers the
+  second, and the first is a `gscript.py` repair no cycle has yet been given. Both remain live items here, not
+  in a Pre-decided line.

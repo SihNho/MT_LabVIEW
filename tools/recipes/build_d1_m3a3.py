@@ -37,43 +37,94 @@ address; no GUI fallback); only its prescribed ROUTE is replaced, by the reader 
 `RightTerm #7471 wire #7448` - and a control read on an unrelated FSIT #123 answers the same way, so the
 capability is of the CLASS, not of the target.
 
+RE-CUT AGAIN 2026-09-22 (cycle 69/80) TO **ROUTE A, THE SWAPPED CALL** - Pre-decided 115/116/117/118,
+from `archive/peer/2026-09-22-c79-rowd-writer.md` (claude/hypothesis, opus max, ANSWERED). THE PREVIOUS
+CUT HALTED AT ITS OWN GATE W1, and that halt is now known to rest on a CONVENTION, not a measurement:
+`docs/NAMES.md:847`'s "6349C03 is invoked on the SINK" is marked "labviewwiki, adopted" and the wiki
+page does not say it (Pre-decided 115). The W1 CENSUS is not disputed - 4/4 maps declaring method
+6349C03 take a (diagram, `Nodes[]`, `Terminals[]`) sink and 0 take a uid - but what it proves is "no
+writer in the FLEET takes a uid SINK", not "this wire cannot be written".
+
+THE ROUTE (Pre-decided 116-A, the review's own cheapest test, run BEFORE any construction):
+`OpConnectFromWire_v0` WITH THE ROLES EXCHANGED. Its SOURCE half is ALREADY uid-addressed (`wire_uid` +
+a `Wire.Terms[]` index, property 6371003), so it is handed the FSIT TERMINAL #7488 - the true SINK - and
+its (diagram, `Nodes[]`, `Terminals[]`) triple is handed the NEW loop's BARE `Outgoing Handle` - the
+true SOURCE, which IS index-addressable. The Invoke then sits on the BARE terminal and receives #7488 as
+`Wire Source`. NOTHING NEW IS BUILT.
+
+THE MEASUREMENT - THREE ARMS, IN THIS ORDER; the first two on DATED SCRATCH COPIES that are DELETED.
+ ARM A1  DELETE-THEN-CONNECT (Pre-decided 106's ordering). Delete wire 7506, THEN make the swapped call
+         with `wire_uid` 7506. The known tension: 106 requires the delete first (an already-wired sink
+         is a MEASURED silent no-op, `tools/gscript.py:2522-2523`), but the swapped call resolves #7488
+         FROM wire 7506, which the delete destroys. A DEAD WIRE UID FAILING IS A LEGITIMATE AND EXPECTED
+         OUTCOME - it is recorded VERBATIM, never worked around.
+ ARM A2  CONNECT-THEN-DELETE. Resolve #7488 and its `Wire.Terms[]` index while 7506 is ALIVE, make the
+         swapped call, and delete 7506 ONLY IF the connect reported success.
+ ARM 3   THE BED, and ONLY if A1 or A2 passed every gate on its scratch (Pre-decided 116-A: "If A works,
+         Row D proceeds on it in the same dispatch and NOTHING NEW IS BUILT"). If BOTH fail the run
+         STOPS: Route B (`OpConnectByUid`) is EXPENSIVE CONSTRUCTION and gets a FRESH CYCLE (Pre-decided
+         116-B). No op is built here, no address is improvised, and the bed is not touched.
+
 THE PREDICTION CONTRACT, WRITTEN BEFORE THE RUN.
- W1 (FILES ONLY, BEFORE LabVIEW IS TOUCHED AT ALL - the first gate in the run). `Terminal.Connect Wire`
-    **6349C03 is invoked ON THE SINK TERMINAL** (`docs/NAMES.md:245`, `:847`), so Row D needs a WRITER
-    that can hold a reference to a sink reached WITHOUT `Nodes[]`. PREDICTION: such a writer is on disk.
-      HOLDS -> the row runs.
-      FAILS -> the run HALTS IMMEDIATELY, before `ensure_loaded`, before the copy, before any delete.
-               Wire 7506 is NOT deleted, no address is improvised, there is no GUI fallback and no
-               substitute source (rule 1a). Run 1's lesson is exactly this ordering: its delete ran and
-               THEN the writer raised `com_error 5507 File not found` in `GetVIReference`, leaving
-               `Global #7202` t0 BARE - a dropped consumer and a rejected artefact.
+ W1 (FILES ONLY, BEFORE LabVIEW IS TOUCHED AT ALL - the first gate in the run). Every row has a WRITER
+    bound to its sink kind. Row D's sink kind `tunnel_uid` is bound to the SWAPPED call, whose op VI
+    `OpConnectFromWire_v0.vi` must be on disk (W0) and must OPEN over COM (W0b) BEFORE the first
+    mutation. Run 1's whole cost was this ordering being absent: its delete ran and THEN the writer
+    raised `com_error 5507 File not found` in `GetVIReference`, leaving `Global #7202` t0 BARE - a
+    dropped consumer and a rejected artefact.
     ⚠️ MEASURED 2026-09-22 09:2x, `tools/bench/c78_rowd_writer.log`: of the FOUR label maps declaring
-    method 6349C03 (`opconnectfromwire_v0`, `opconnectnested`, `opconnectnested_v1`, `opconnectnested_v2`)
-    **every one addresses its SINK as (`index`, `index 2`, `index 3`) = (diagram, `Nodes[]`,
-    `Terminals[]`)**, and the count of writers whose sink is addressed by a UID is **0**.
-    `opfsinnertunnelterm_labels.json` declares NO `method` key (`kind: IN`) - it is a READER. So W1 is
-    expected to FAIL on today's fleet, and that is a question for judgement, not a thing this file
-    decides or works around.
- C0 (PRECONDITION, read-only, asserted not rebuilt). The net carried by `Global #7202` t0 'Focus
-    position' still has EXACTLY ONE source terminal of ANY owner class and it is
+    method 6349C03 address their SINK as (`index`, `index 2`, `index 3`) = (diagram, `Nodes[]`,
+    `Terminals[]`), and the count of writers whose SINK is addressed by a UID is 0. That is WHY the
+    roles are EXCHANGED here rather than a uid-sink writer being built: the census says what the fleet's
+    writers take, not what the method requires (Pre-decided 115).
+ C0 (PRECONDITION, read-only, asserted not rebuilt, ONCE PER ARM). The net carried by `Global #7202` t0
+    'Focus position' still has EXACTLY ONE source terminal of ANY owner class and it is
     `RightShiftRegister #23895` (Row C, delivered in the bed). PD85 violations 0 on the walk. If C0
-    fails the bed is not what this stage was told it is: STOP, delete nothing.
+    fails the arm target is not what this stage was told it is: STOP, delete nothing. C0 IS ALSO THE
+    READER CALIBRATION for gate (ii) below - see P3b.
  P0 (ROW D's SINK). `OpFsInnerTunnelTerm_v0` on uid 7468 returns `LeftTerm` = a terminal uid with its
     error column empty, and that terminal carries wire 7506. Anything else - an error column, a missing
     uid, or a face carrying a different wire - is a FAILED PREDICTION: STOP, delete nothing, improvise
     nothing (Pre-decided 107's prohibition, which 109 leaves untouched).
  P1 The loop border `#23032` resolves live at Diagram idx 19, Nodes[21], t1 'Outgoing Handle',
-    is_source True and BARE (`diag_c75b_loopterms.log:76`, bare list `:82`).
- P3 THE ACCEPTANCE (Pre-decided 85 + 106 + 111, not relaxed): the wire the SINK terminal carries
-    afterwards has EXACTLY ONE source terminal of ANY owner class (counted before any class filter -
-    Pre-decided 77) and that terminal is `#23868`'s OUTER. Asserted on an ORDERED SECOND, IDEMPOTENT
-    re-connect (`wire_delta` 0), NEVER in the pass that makes the connection (Pre-decided 94). The OLD
-    `#637` t10 must be OFF the net. Hop count is an OUTPUT, never a criterion (Pre-decided 90). Every
-    `OpWireSource_v5` row must satisfy `recip == queried_uid`; violations reported per walk (PD 85).
+    is_source True and BARE (`diag_c75b_loopterms.log:76`, bare list `:82`). THIS IS THE INVOKE SITE.
+ P2 (THE SOURCE HALF OF THE SWAPPED CALL). `OpWireSource_v5` walks `Wire.Terms[]` BY INDEX, so the index
+    it reports for the NON-source row of wire 7506 IS the `Wire.Terms[]` index the swapped call needs.
+    PREDICTION: exactly one non-source row with a real owner, and that owner is
+    `FlatSequenceInnerTunnel #7468`. If it is not unique the arm STOPS - no index is guessed.
+ P3 THE ACCEPTANCE (Pre-decided 85 + 106 + 111 + 117, not relaxed), asserted on an ORDERED SECOND,
+    IDEMPOTENT pass (`wire_delta` 0), NEVER in the pass that makes the connection (Pre-decided 94):
+      (i)   the wire the SINK terminal #7488 carries afterwards has EXACTLY ONE source terminal of ANY
+            owner class (counted before any class filter - Pre-decided 77) and it is `#23868`'s OUTER;
+      (ii)  PRE-DECIDED 117, THE BRANCH GATE - that source terminal's OWNER is on the NEW side (P3b);
+      (iii) the OLD loop `#637` and the OLD register `#4334` are OFF the net entirely - a silent branch
+            of 7506 would leave one of them on it, which passes every count-shaped check and is a
+            rule-1a computation change;
+      (iv)  PD85 violations 0 on EVERY walk of the arm, or no walk in it is believed;
+      (v)   the op's OWN `Wire.Is Broken?` 6371004 readback is FALSE on the SEPARATE ordered pass.
+    Hop count is an OUTPUT, never a criterion (Pre-decided 90).
+ P3b (THE READER CALIBRATION, so gate (ii) is stated in the MACHINE's vocabulary and not in a guess).
+    Pre-decided 117 is written as "`OpWireSource_v5` must report that source terminal's OWNER ==
+    `WhileLoop #23032`", and the peer wrote the branch signature as `WhileLoop #637`. THE MACHINE HAS
+    ALREADY ANSWERED THIS, in the DELIVERED Row C of this very file: `build_d1_m3a3_run2.log:182` reads
+    the accepted sink net as `[('RightShiftRegister', 23895)]` for the ANALOGOUS terminal (the other
+    RIGHT register's OUTER on the SAME loop #23032), and `:72` reads the OLD side as
+    `('RightShiftRegister', 4256)`, not `WhileLoop #637`. This reader names the SHIFT REGISTER, never
+    the loop. So gate (ii) is evaluated as "the owner is #23868, the NEW register whose OUTER that
+    terminal is, and neither #4334 nor #637 appears anywhere on the net" - 117's SUBSTANCE in the
+    reader's own vocabulary - while 117's LITERAL form (`owner == 23032`) is ALSO evaluated and REPORTED
+    beside it, together with this arm's own live Row-C calibration reading from C0. Both numbers are
+    printed; nothing is quietly substituted, and the discrepancy is carried to the judgement session.
  P4 `LANDED` IS SOURCE IDENTITY (Pre-decided 106). Never "the sink is still wired", never a wired-count
     delta: `connect_from_wire` into an already-wired sink is a MEASURED SILENT NO-OP that passed a gate
     five runs running (`tools/bench/build_d1_m3a1.log:1174,:1875,:2593,:3311`; cause
-    `tools/gscript.py:2522-2523`). That is why THE DELETE PRECEDES THE CONNECT.
+    `tools/gscript.py:2522-2523`). ARM A1 IS THAT ORDERING; ARM A2 IS THE OTHER ONE, AND WHICH OF THEM
+    WORKS IS THE MEASUREMENT, NOT AN ASSUMPTION.
+ P5 DEAD ENDS, RECORDED SO THEY ARE NOT RE-TRIED (Pre-decided 118): `Tunnel.Inside Terminals[]` 6356000
+    and `Tunnel.Outside Terminal` 6356001 can NEVER address #7468 (a `FlatSequenceInnerTunnel` is not a
+    `Tunnel`; its real properties are `Left Terminal` 1C3A9000 / `Right Terminal` 1C3A9001);
+    `Node.Connect Wires` needs both ends to be `Node`s; `Create Described Wire` is itself a `Terminal`
+    method. None of them is called here.
 
 THE TWO DEFECTS THE c76 / c76b GATES NAMED, FIXED HERE.
   (1) `%`-FORMAT `TypeError`. Every FACT line now goes through `_f()`, which formats inside a try and,
@@ -159,8 +210,8 @@ from build_d1_v0 import diag_index                                              
 # terminates SILENTLY at a FlatSequenceFrame, error 1055) is enforced by this file owning no owner-walk
 # verb at all, rather than by remembering not to call one.
 from build_opconnectfromwire_v0 import wire_source_owner as WIRE_TERMS             # noqa: E402
-from build_opconnectnested_v1 import connect_nested_v1 as CONNECT_NESTED           # noqa: E402
-from build_opconnectnested_v1 import OP as OP_CONNECT_NESTED                       # noqa: E402
+from build_opconnectfromwire_v0 import connect_from_wire as CONNECT_FROM_WIRE      # noqa: E402
+from build_opconnectfromwire_v0 import OP as OP_CONNECT_FROM_WIRE                  # noqa: E402
 from build_opfstunnelterm_v2 import read_tunnel as READ_FSIT                       # noqa: E402
 from hash_probe import probe as HASH                                               # noqa: E402
 
@@ -187,16 +238,24 @@ INPUT_MD5 = "33ef524e0b6b193a158c9221474c68e3"
 INPUT_BYTES = 306951
 
 STAMP = time.strftime("%Y%m%d_%H%M%S")
-TARGET = os.path.join(g.CLAUDEDEV, "D1_s3b_m3a3b_%s.vi" % STAMP)
+BED_TARGET = os.path.join(g.CLAUDEDEV, "D1_s3b_m3a3b_%s.vi" % STAMP)
 TARGET_PREFIX = "D1_s3b_m3a3b_"
+# THE SCRATCH COPIES the two measurement arms run on. Dated, unique per run, DELETED in the same run
+# (CLAUDE.md: "Scratch VIs: unique name per run, created and deleted in the same run").
+SCRATCH_A1 = os.path.join(g.CLAUDEDEV, "SCRATCH_rowdA1_%s.vi" % STAMP)
+SCRATCH_A2 = os.path.join(g.CLAUDEDEV, "SCRATCH_rowdA2_%s.vi" % STAMP)
+# `TARGET` IS THE **CURRENT** TARGET and is re-pointed by `set_target()` at each arm. Every phase below
+# reads this module global at CALL time, so one assignment re-points the whole file at the arm's own
+# file; nothing carries a path in a closure.
+TARGET = BED_TARGET
 OUT = os.path.join(BENCH, "build_d1_m3a3b.json")
 # THE WRITER'S OWN OP VI, CHECKED ON DISK BEFORE ANY LabVIEW CALL (gate W0 in phase_files).
 # RUN 1 (2026-09-22 07:56) DIED HERE: `gscript.connect_nested_v2` EXISTS as a def - `c60c_astcheck` gate 4
 # verifies exactly that and PASSED it - but `OpConnectNested_v2.vi` IS NOT ON DISK in claudeDev, so the call
 # raised `com_error 5507 (Hex 0x7) File not found` inside `GetVIReference`, AFTER the row's wire had already
 # been deleted. A gscript verb existing is NOT its op VI existing; this file checks the file itself.
-CONNECT_NESTED_LABELS = json.load(open(os.path.join(BENCH, "opconnectnested_v1_labels.json"),
-                                       encoding="utf-8"))
+CFW_LABELS = json.load(open(os.path.join(BENCH, "opconnectfromwire_v0_labels.json"),
+                            encoding="utf-8"))
 
 # ---------------------------------------------------------------- the topology, all RE-MEASURED live
 TOP = 0
@@ -230,21 +289,46 @@ ROWS = [
 ]
 
 # ============================================================ THE WRITER TABLE - gate W1 reads THIS
-# A writer is bound to a SINK KIND, not to a row. `Terminal.Connect Wire` 6349C03 is invoked ON THE SINK
-# TERMINAL (docs/NAMES.md:245, :847), so a sink this fleet cannot hold a reference to has NO writer, and
-# a row with no writer is NOT ATTEMPTED - it is never approximated, never routed through a Local, never
-# clicked (rule 1a; Pre-decided 107's prohibition, left untouched by 109).
+# A writer is bound to a SINK KIND, not to a row. A row with no writer is NOT ATTEMPTED - it is never
+# approximated, never routed through a Local, never clicked (rule 1a; Pre-decided 107's prohibition,
+# left untouched by 109).
 #
-# MEASURED 2026-09-22 09:2x, tools/bench/c78_rowd_writer.log: the FOUR label maps declaring method
-# 6349C03 all address their sink as (index, index 2, index 3) = (diagram, Nodes[], Terminals[]); the
-# count of writers with a UID-addressed sink is 0; opfsinnertunnelterm_labels.json declares no method
-# at all (kind 'IN' - a reader). So `tunnel_uid` has no writer TODAY and W1 halts the run.
+# PRE-DECIDED 116-A: `tunnel_uid` is now bound to `OpConnectFromWire_v0` WITH THE ROLES EXCHANGED. The
+# op's SOURCE half is already uid-addressed (`wire_uid` + a `Wire.Terms[]` index, 6371003), so it takes
+# the FSIT TERMINAL #7488 - the true SINK - and its index triple takes the NEW loop's BARE border
+# terminal - the true SOURCE. The 6349C03 census (0 writers with a uid SINK) is NOT overturned; it is
+# side-stepped, because "the Invoke sits on the sink" was a CONVENTION of our one donor lineage and not
+# a property of the method (Pre-decided 115).
 WRITERS = {
     # sink kind -> (callable, the op VI that must be on disk, how the sink is addressed)
-    "node": (CONNECT_NESTED, OP_CONNECT_NESTED, "(diagram idx, Nodes[] idx, Terminals[] idx)"),
-    "tunnel_uid": (None, None, "a TERMINAL UID (#%d) - no Nodes[] membership exists for a "
-                               "FlatSequenceInnerTunnel" % TUNNEL_D_TERM),
+    "tunnel_uid": (CONNECT_FROM_WIRE, OP_CONNECT_FROM_WIRE,
+                   "THE SWAPPED CALL: the TERMINAL UID #%d is handed to the op's uid-addressed SOURCE "
+                   "half (wire_uid + Wire.Terms[] index) and the Invoke sits on the NEW loop's BARE "
+                   "border terminal, addressed as (diagram idx, Nodes[] idx, Terminals[] idx)"
+                   % TUNNEL_D_TERM),
 }
+
+# ============================================================ THE THREE ARMS (Pre-decided 116)
+# A1 first because it is Pre-decided 106's ordering; A2 second because it is the only other ordering the
+# swapped call admits. THE BED ARM IS NOT IN THIS TABLE - it is built in main() from the WINNER, and only
+# if there is one.
+DELETE_FIRST = "DELETE-THEN-CONNECT"
+CONNECT_FIRST = "CONNECT-THEN-DELETE"
+ARMS = [
+    {"name": "A1", "ordering": DELETE_FIRST, "target": SCRATCH_A1, "scratch": True,
+     "why": "Pre-decided 106's MEASURED ordering: connect_from_wire into an ALREADY-WIRED sink is a "
+            "silent no-op (gscript.py:2522-2523), so the delete precedes the connect. The tension this "
+            "arm measures: the swapped call resolves terminal #%d FROM wire %d, and the delete destroys "
+            "that wire, so `UID to GObject Reference.vi` may refuse the dead uid. A REFUSAL HERE IS A "
+            "LEGITIMATE, EXPECTED OUTCOME and is recorded verbatim." % (TUNNEL_D_TERM, ROWS[0]["wire"])},
+    {"name": "A2", "ordering": CONNECT_FIRST, "target": SCRATCH_A2, "scratch": True,
+     "why": "The other ordering: resolve #%d and its Wire.Terms[] index while wire %d is ALIVE, make the "
+            "swapped call, and delete wire %d ONLY IF the connect reported success. The hazard this arm "
+            "measures is the one the c79 review named: an already-wired terminal handed to `Wire Source` "
+            "is BRANCHED (gscript.py:2522-2523), which would leave the OLD source on the net - a "
+            "rule-1a computation change that passes every count-shaped check (Pre-decided 117)."
+            % (TUNNEL_D_TERM, ROWS[0]["wire"], ROWS[0]["wire"])},
+]
 
 RUN_DEADLINE_S = 45 * 60.0       # the `bgrun --max-min` this file is launched under
 RESERVE_S = 420.0                # held back for the save and the hygiene tail
@@ -255,10 +339,17 @@ passes, fails, facts, refusals = [], [], [], []
 # OUR-CODE DEFECTS - Python exceptions raised by THIS SCRIPT, kept SEPARATE from machine refusals
 # (Pre-decided 100 SS2): a bug of ours must never be reported as "a mutator call the machine refused".
 defects = []
-R = {"script": os.path.abspath(__file__), "stamp": STAMP, "target": TARGET, "input": INPUT,
-     "task": "STAGE M3a-3: re-source the TWO downstream consumers onto the NEW loop's RIGHT registers - "
-             "delete-and-rebuild rows, the CORRECTED (transposed) pairing of Pre-decided 104, acceptance "
-             "= the one-source identity of Pre-decided 85/106 on an ordered idempotent second pass.",
+R = {"script": os.path.abspath(__file__), "stamp": STAMP, "target": BED_TARGET, "input": INPUT,
+     "task": "STAGE M3a-3b = ROW D ALONE, ROUTE A (Pre-decided 115/116/117/118): delete wire 7506 and "
+             "re-source the VISA consumer `FlatSequenceInnerTunnel #7468` LeftTerm #7488 from the NEW "
+             "loop #23032's RIGHT register #23868 OUTER, using `OpConnectFromWire_v0` WITH THE ROLES "
+             "SWAPPED. THREE ARMS: A1 delete-then-connect and A2 connect-then-delete, each on its own "
+             "dated SCRATCH copy of the bed (deleted in this run); then, ONLY if one of them passed "
+             "every gate, the same ordering on THE BED, saved as the stage artefact. NOTHING IS BUILT.",
+     "route_selection_rule": "Pre-decided 116-A: if A works, Row D proceeds on it in the SAME dispatch "
+                             "and nothing new is built. 116-B: if BOTH orderings fail, Route B "
+                             "(`OpConnectByUid`) is EXPENSIVE CONSTRUCTION and gets a FRESH CYCLE - it "
+                             "is NOT improvised at the end of this dispatch, and no op is built here.",
      "pinned_astcheck": 'py tools/bench/c60c_astcheck.py "tools/recipes/build_d1_m3a3.py" --route owner',
      "verification_level": "STRUCTURAL, never functional (34(f))",
      "gating_policy": "hygiene + PHASE 0 + the per-row acceptance gates + the save. A negative "
@@ -270,13 +361,10 @@ R = {"script": os.path.abspath(__file__), "stamp": STAMP, "target": TARGET, "inp
          "It is BROKEN BY DESIGN and is NEVER RUN (34(f)).",
      "execstate_policy": "ExecState is NEVER a criterion and NEVER a discriminator (Pre-decided 89/97); "
                          "its cause is formally OPEN. It is logged as a timeline FACT only.",
-     "is_broken_policy": "`Wire.Is Broken?` is never a criterion and never a type discriminator here "
-                         "(Pre-decided 89/94). RUN 2 CHANGE: the writer is `connect_nested_v1` "
-                         "(OpConnectNested_v1.vi), because `OpConnectNested_v2.vi` - the byte-copy with "
-                         "the 6371004 readback deleted - IS NOT ON DISK, which is what killed run 1. v1 "
-                         "PRINTS its own `UID`/`Name`/`UID 2`/`Is Broken?` readback; that line is "
-                         "REPORTED and never gated, and its dataflow order relative to the Connect Wire "
-                         "invoke is not fixed (build_opconnectnested_v1.py:444-446).",
+     "is_broken_policy": "`OpConnectFromWire_v0`'s own `Wire.Is Broken?` 6371004 readback IS ORDERED "
+                         "AFTER the write by its gate W7b (build_opconnectfromwire_v0.py:414), which is "
+                         "why Pre-decided 116's acceptance may use it - and only on the SEPARATE ordered "
+                         "pass, never as a type discriminator and never in place of source identity.",
      "no_new_op": True, "no_new_verb": True, "no_new_device": True, "no_new_checker": True,
      "move_in_not_called": "this file calls move_in nowhere and imports it nowhere - hence --route owner",
      "creates_no_object": True,
@@ -286,7 +374,7 @@ R = {"script": os.path.abspath(__file__), "stamp": STAMP, "target": TARGET, "inp
      "rig_state": "assembled - no motor, no ASI, no camera; tools/motor_gate.py is not called",
      "edits_no_plan_document": True, "edits_no_status_next": True, "cycle_guard_off_never_set": True,
      "handles": {}, "hash_probe": [], "exec_state_timeline": [], "artefacts_on_disk": [],
-     "purges": [], "rows": {}, "phase0": {}, "build": {}}
+     "purges": [], "rows": {}, "phase0": {}, "arms": {}, "route_selection": {}, "build": {}}
 K = R["build"]
 
 
@@ -352,6 +440,15 @@ def defect(where, exc):
 
 def head(t):
     print("\n---------- %s" % t, flush=True)
+
+
+def set_target(path):
+    """Re-point the module global `TARGET` at THIS arm's own file. Every phase below reads `TARGET` at
+    CALL time, so one assignment re-points all of them; no path is captured in a closure, and the two
+    scratch arms therefore cannot touch the bed artefact's name."""
+    global TARGET
+    TARGET = path
+    R.setdefault("targets_used", []).append(path)
 
 
 def safe(label, fn, default=None):
@@ -534,22 +631,19 @@ def phase_files():
              bool(fn and op_vi))
     unbound = [r["tag"] for r in ROWS
                if not all(WRITERS.get(r["sink_kind"], (None, None, ""))[:2])]
-    gate("W1 EVERY ROW HAS A WRITER BOUND TO ITS SINK KIND - `Terminal.Connect Wire` 6349C03 is invoked ON "
-         "THE SINK TERMINAL (docs/NAMES.md:245), so a sink this fleet cannot hold a reference to has no "
-         "writer and the row is NOT ATTEMPTED (no improvised address, no Local, no GUI fallback)",
+    gate("W1 EVERY ROW HAS A WRITER BOUND TO ITS SINK KIND - Row D's `tunnel_uid` sink is bound to the "
+         "SWAPPED call (Pre-decided 116-A), so a row is NOT ATTEMPTED unless a writer on disk can reach "
+         "its sink (no improvised address, no Local, no GUI fallback)",
          not unbound,
-         "unbound row(s): %r ; measured inventory: tools/bench/c78_rowd_writer.log - all four 6349C03 "
-         "label maps address their sink as (diagram, Nodes[], Terminals[]), 0 writers take a UID-"
-         "addressed sink, and opfsinnertunnelterm_labels.json declares no method at all (a READER)"
-         % (unbound,))
+         "unbound row(s): %r ; the 6349C03 census stands (tools/bench/c78_rowd_writer.log: 4/4 label "
+         "maps take an index-triple SINK, 0 take a uid) and is SIDE-STEPPED, not overturned, by handing "
+         "the uid to the op's already-uid-addressed SOURCE half (Pre-decided 115)" % (unbound,))
     if unbound:
         raise Halt("no writer exists for the sink kind of row(s) %r. NOTHING WAS OPENED, NOTHING WAS "
                    "COPIED, NOTHING WAS DELETED - wire %d is untouched and the bed is byte-unchanged. "
                    "Row D's sink is a TERMINAL UID (#%d on FlatSequenceInnerTunnel #%d, Pre-decided "
-                   "109/111) and every Connect-Wire writer on disk addresses its sink by (diagram, "
-                   "Nodes[], Terminals[]); a FlatSequence is a GObject, never a Node, so no Nodes[] "
-                   "address for it exists or can exist. Building such a writer is a NEW OP and a design "
-                   "decision - the judgement session's, not this file's (CLAUDE.md section 3)."
+                   "109/111). Building a writer for it is a NEW OP and a design decision - the "
+                   "judgement session's, not this file's (CLAUDE.md section 3)."
                    % (unbound, ROWS[0]["wire"], TUNNEL_D_TERM, TUNNEL_D))
     for row in ROWS:
         op_vi = WRITERS[row["sink_kind"]][1]
@@ -604,30 +698,59 @@ def phase_files():
     dump()
 
 
-# ============================================== [1] the target copy and the pre-write FACT census
-def phase_copy():
-    head("[1] THE TARGET IS A COPY OF THE INPUT - the input is never opened, never edited, never run")
-    shutil.copy2(INPUT, TARGET)
+# ============================================== [1] the arm's own copy and the pre-write FACT census
+def arm_prepare(arm):
+    """ONE ARM, ONE FILE. The bed is copied to this arm's own path and THE BED IS NEVER OPENED. For the
+    two measurement arms that path is a dated SCRATCH deleted at the end of the arm; for the bed arm it
+    is the stage artefact's own name."""
+    name, dest = arm["name"], arm["target"]
+    head("[%s/1] THE ARM TARGET IS A COPY OF THE BED - the bed is never opened, never edited, never run"
+         % name)
+    set_target(dest)
+    for _ in range(4):
+        if not os.path.exists(dest):
+            break
+        try:
+            os.remove(dest)
+        except OSError:
+            time.sleep(1.0)
+    shutil.copy2(INPUT, dest)
     time.sleep(0.4)
-    pr = probe_hash("[1] the target, straight after the copy", TARGET)
-    gate("H4 the target starts byte-identical to the input artefact", pr.get("md5") == INPUT_MD5,
+    pr = probe_hash("[%s/1] the arm target, straight after the copy" % name, dest)
+    gate("[%s] X1 the arm target starts byte-identical to THE BED" % name, pr.get("md5") == INPUT_MD5,
          "%r vs %r" % (pr.get("md5"), INPUT_MD5))
-    fact("[1] the target is %s - the STAGE'S OWN OUTPUT NAME; every edit below is made on THIS file"
-         % os.path.basename(TARGET))
+    fact("[%s/1] the arm target is %s (%s) - every edit in this arm is made on THIS file"
+         % (name, os.path.basename(dest), "SCRATCH" if arm["scratch"] else "THE STAGE ARTEFACT"))
     t0 = time.time()
-    _, err = safe("[1] ensure_loaded(target)", lambda: g.ensure_loaded(TARGET))
-    fact("[1] ensure_loaded(target) took %.1f s%s (edits are SILENTLY DECLINED on a target that is not "
-         "fully loaded - gscript.py:764)" % (time.time() - t0, (" ERROR " + err) if err else ""))
-    read_es("[1] the target, COLD")
-    K["counts_before"] = counts("[1] COLD")
-    di, derr = safe("[1] diag_index(#%d)" % D686, lambda: diag_index(TARGET, D686))
-    K["d686_index"] = di
-    fact("[1] Diagram #%d -> traverse index %r%s (expected 19 - diag_c75b_loopterms.log)"
-         % (D686, di, (" ; " + derr) if derr else ""))
-    if di is None:
-        raise Halt("Diagram #%d does not resolve on the target" % D686)
+    _, err = safe("[%s/1] ensure_loaded(arm target)" % name, lambda: g.ensure_loaded(dest))
+    fact("[%s/1] ensure_loaded took %.1f s%s (edits are SILENTLY DECLINED on a target that is not fully "
+         "loaded - gscript.py:764)" % (name, time.time() - t0, (" ERROR " + err) if err else ""))
+    read_es("[%s/1] the arm target, COLD" % name)
+    counts("[%s/1] COLD" % name)
+    di, derr = safe("[%s/1] diag_index(#%d)" % (name, D686), lambda: diag_index(dest, D686))
+    K.setdefault("d686_index", {})[name] = di
+    fact("[%s/1] Diagram #%d -> traverse index %r%s (expected 19 - diag_c75b_loopterms.log)"
+         % (name, D686, di, (" ; " + derr) if derr else ""))
     dump()
+    if di is None:
+        return None
     return [di, TOP]
+
+
+def arm_cleanup(arm):
+    """A SCRATCH IS CREATED AND DELETED IN THE SAME RUN. The bed arm's file is deleted ONLY when it was
+    not saved - a byte-identical copy of the bed under a stage name is a DECOY bed, not an artefact."""
+    name, dest = arm["name"], arm["target"]
+    safe("[%s] close_panel" % name, lambda: g.close_panel(dest))
+    for _ in range(6):
+        try:
+            if os.path.exists(dest):
+                os.remove(dest)
+            break
+        except OSError:
+            time.sleep(1.0)
+    gate("[%s] X9 the arm's working file was deleted (%s)" % (name, os.path.basename(dest)),
+         not os.path.exists(dest), dest)
 
 
 # ================================================= [C0] ROW C's PRECONDITION - asserted, never rebuilt
@@ -644,8 +767,8 @@ def phase_precondition_rowc(hints):
     rather than patched)."""
     head("[C0] ROW C's PRECONDITION - Global #%d t0 %r must already read #%d (run 2), ASSERTED NOT REBUILT"
          % (ROWC["sink_uid"], ROWC["sink_name"], ROWC["expect_source_uid"]))
-    rec = {"row": ROWC["tag"], "evidence_for_the_claim": ROWC["evidence"]}
-    R["precondition_rowc"] = rec
+    rec = {"row": ROWC["tag"], "evidence_for_the_claim": ROWC["evidence"], "target": TARGET}
+    R.setdefault("precondition_rowc", []).append(rec)
     node, rows = node_table(ROWC["sink_uid"], hints, "[C0] Global #%d" % ROWC["sink_uid"])
     rec["node"] = node
     rec["terminals"] = [(t["i"], t["name"], t["is_source"], t["wire"], M.term_state(t)) for t in rows]
@@ -946,6 +1069,91 @@ def sink_wire_now(row, sink, hints, tag, when, phase0):
     return rec
 
 
+# ==================================================== THE SWAPPED CALL (Pre-decided 116-A) - two halves
+def wire_term_index(tag, wire_uid, want_owner, when):
+    """THE SOURCE HALF OF THE SWAPPED CALL, step 1 of the c79 review's own test.
+
+    `OpWireSource_v5` walks `Wire.Terms[]` BY INDEX (`docs/toolkit-capabilities.md:60` - it increments
+    `term index` until error 1055 and keeps the rows), and `OpConnectFromWire_v0` reads the SAME property
+    6371003 with the SAME index (`opconnectfromwire_v0_labels.json`: `wire_terms_prop` 6371003,
+    `wire_term_index` = 'index 7'). So the index the reader reports for the NON-source row IS the index
+    the writer needs. READ-ONLY; nothing is guessed - if the non-source row is not unique the caller
+    STOPS."""
+    walk, err = wire_walk("%s the SOURCE HALF %s - Wire.Terms[] of w%r" % (tag, when, wire_uid), wire_uid)
+    rec = {"when": when, "wire": wire_uid, "want_owner": want_owner, "walk_error": err,
+           "rows": [(t.get("i"), t.get("is_source"), t.get("owner_class"), t.get("owner_uid"),
+                     t.get("recip")) for t in walk],
+           "pd85_violations": len(pd85(wire_uid, walk))}
+    sinks = [t for t in walk if t.get("owner_uid") and t.get("is_source") is False]
+    owned = [t for t in sinks if t.get("owner_uid") == want_owner]
+    rec["non_source_rows"] = [(t.get("i"), t.get("owner_class"), t.get("owner_uid")) for t in sinks]
+    rec["rows_owned_by_the_target"] = [(t.get("i"), t.get("owner_class"), t.get("owner_uid"))
+                                       for t in owned]
+    if len(owned) == 1:
+        hit, rec["chosen_by"] = owned[0], "the ONE non-source row whose owner IS #%d" % want_owner
+    elif len(sinks) == 1:
+        hit, rec["chosen_by"] = sinks[0], ("the ONE non-source row on the wire (its owner is NOT #%d - "
+                                           "REPORTED, not corrected)" % want_owner)
+    else:
+        hit, rec["chosen_by"] = None, ("UNRESOLVED: %d non-source row(s), %d owned by #%d - no index is "
+                                       "guessed" % (len(sinks), len(owned), want_owner))
+    rec["index"] = None if hit is None else hit.get("i")
+    rec["chosen_owner"] = (None if hit is None
+                           else (hit.get("owner_class"), hit.get("owner_uid")))
+    fact("%s the SOURCE HALF %s: Wire.Terms[] index %r chosen %s ; owner %r ; all non-source rows %r ; "
+         "PD85 violations %d", tag, when, rec["index"], rec["chosen_by"], rec["chosen_owner"],
+         rec["non_source_rows"], rec["pd85_violations"])
+    return rec
+
+
+def swapped_connect(tag, when, wire_uid, term_index, inv):
+    """THE SWAPPED CALL ITSELF (Pre-decided 116-A). `connect_from_wire`'s uid-addressed half is handed the
+    FSIT TERMINAL - the true SINK - and its (diagram, `Nodes[]`, `Terminals[]`) triple is handed the NEW
+    loop's BARE border terminal - the true SOURCE - so the Invoke sits on the BARE terminal and receives
+    the FSIT terminal as `Wire Source`. EVERY return is recorded VERBATIM, including a refusal: a dead
+    wire uid failing is a legitimate outcome of the measurement, never something to work around."""
+    rec = {"when": when, "wire_uid": wire_uid, "wire_term_index": term_index,
+           "invoke_triple_diag_node_term": (inv.get("src_diag_index"), inv.get("src_nodes_index"),
+                                            inv.get("src_term_index")),
+           "roles": "wire_uid+term_index -> `Wire Source` (the FSIT terminal, the TRUE SINK) ; the index "
+                    "triple -> the Invoke's own terminal (the NEW loop border, the TRUE SOURCE)"}
+    t0 = time.time()
+    try:
+        dw, es, err, sub = CONNECT_FROM_WIRE(TARGET, int(wire_uid), int(term_index),
+                                             inv["src_diag_index"], inv["src_nodes_index"],
+                                             inv["src_term_index"], CFW_LABELS)
+        rec["wire_delta"] = dw
+        rec["exec_state"] = es
+        rec["op_error_verbatim"] = str(err or "")[:300]
+        rec["sub_returns_verbatim"] = dict((k, repr(v)[:200]) for k, v in (sub or {}).items())
+        rec["err_uidvi_verbatim"] = str((sub or {}).get("err_uidvi") or "")[:300]
+        rec["err_wirepn_verbatim"] = str((sub or {}).get("err_wirepn") or "")[:300]
+        rec["is_broken_readback"] = (sub or {}).get("Is Broken?")
+        rec["uid2_readback"] = (sub or {}).get("UID 2")
+        if rec["op_error_verbatim"]:
+            refusal("%s swapped connect_from_wire %s" % (tag, when), rec["op_error_verbatim"])
+    except Exception as e:                                                         # noqa: BLE001
+        rec["call_error"] = "%s: %s" % (type(e).__name__, str(e)[:300])
+        defect("%s swapped connect_from_wire %s (wire_uid=%r, term_index=%r, invoke triple %r)"
+               % (tag, when, wire_uid, term_index, rec["invoke_triple_diag_node_term"]), e)
+    rec["cost_s"] = round(time.time() - t0, 2)
+    rec["reported_success"] = bool(not rec.get("call_error") and not rec.get("op_error_verbatim")
+                                   and not rec.get("err_uidvi_verbatim")
+                                   and not rec.get("err_wirepn_verbatim"))
+    fact("%s THE SWAPPED CALL %s -> VERBATIM %s", tag, when, json.dumps(rec, default=str)[:1200])
+    return rec
+
+
+# NOTE, RECORDED SO IT IS NOT RE-TRIED: the c79 review's "step 4" probe - hand the op the TERMINAL uid
+# #7488 with the index triple out of range and read `err_uidvi` alone - WAS RUN ONCE
+# (`tools/bench/c80_rowd_routeA.log:289-290`) and is UNSOUND. `err_uidvi` came back EMPTY for a DELETED
+# wire uid as well (arm A1, `:119`), so empty does not mean "resolved"; and the c80-r2 review showed the
+# probe is uninformative BY CONSTRUCTION, since the deliberately out-of-range triple guarantees the only
+# downstream indicator fails whatever the uid resolved to. The sound reader is `OpOwnerChain_v1` with
+# `uid_in = 7488`, read on its SELF echo (`Class Name 3` / the self uid) - which needs a labels map that
+# is not on disk and a `read_owner()` whose target is hard-coded to the MAIN VI. Not done here.
+
+
 # ========================================================================= [3] the acceptance test
 def acceptance(row, tag, when, sink_wire, mandatory):
     """PRE-DECIDED 85 + 106, THE WHOLE TEST, READ OFF THE MACHINE AND NOTHING ELSE.
@@ -1001,22 +1209,22 @@ def acceptance(row, tag, when, sink_wire, mandatory):
 
 
 # ================================================================================ [4] ONE ROW
-def one_row(row, hints, phase0):
-    tag = "[ROW %s]" % row["tag"]
-    head("%s delete wire %d, then NEW register #%d OUTER -> %s"
-         % (tag, row["wire"], row["new_reg"],
-            ("FlatSequenceInnerTunnel #%d" % row["sink_uid"]) if row["sink_kind"] == "tunnel"
-            else ("#%d t%r %r" % (row["sink_uid"], row["sink_expect_term"], row["sink_name"]))))
+def one_row(row, hints, phase0, arm):
+    ordering = arm["ordering"]
+    tag = "[%s ROW %s]" % (arm["name"], row["tag"])
+    head("%s %s: wire %d , NEW register #%d OUTER -> FlatSequenceInnerTunnel #%d terminal #%d"
+         % (tag, ordering, row["wire"], row["new_reg"], row["sink_uid"], row["sink_term_uid"]))
     fact("%s WHY: %s" % (tag, row["why"]))
-    rec = {"row": row, "writer": "build_opconnectnested_v1.connect_nested_v1 (OpConnectNested_v1.vi, "
-                                 "VERIFIED ON DISK by gate W0 - run 1 called gscript.connect_nested_v2, "
-                                 "whose op VI does not exist, and died with com_error 5507 File not "
-                                 "found AFTER the delete)",
-           "shape": "DELETE-AND-REBUILD (cycle 62's re-cut): the sink is ALREADY WIRED, and "
-                    "connect_from_wire into an already-wired sink is a MEASURED SILENT NO-OP "
-                    "(build_d1_m3a1.log:1174,:1875,:2593,:3311 ; gscript.py:2522-2523)",
+    rec = {"row": row, "arm": arm["name"], "ordering": ordering,
+           "writer": "build_opconnectfromwire_v0.connect_from_wire (OpConnectFromWire_v0.vi, VERIFIED "
+                     "ON DISK by gate W0 and OPENED by W0b before the first mutation) WITH THE ROLES "
+                     "SWAPPED - Pre-decided 116-A",
+           "shape": "THE SWAPPED CALL: the uid-addressed half takes the FSIT TERMINAL (the true SINK) "
+                    "and the index triple takes the NEW loop's BARE border terminal (the true SOURCE), "
+                    "so the Invoke sits on the BARE terminal (gscript.py:2522-2523 is why the ordering "
+                    "of delete vs connect is the thing being measured)",
            "never_a_local": "a Local is NEVER substituted for this row (rule 1a)"}
-    R["rows"][row["tag"]] = rec
+    R["rows"]["%s/%s" % (arm["name"], row["tag"])] = rec
 
     # ---- (i) the state BEFORE anything is touched: the net that is about to be cut.
     before_walk, _ = wire_walk("%s BEFORE - the net about to be CUT (wire %d)" % (tag, row["wire"]),
@@ -1036,61 +1244,105 @@ def one_row(row, hints, phase0):
         dump()
         return rec
 
-    # ---- (ii) THE DELETE. Mandatory and first (Pre-decided 106).
-    nodes_before, _ = M.node_census(TARGET, "%s before the delete" % tag)
+    # ---- (ii) THE SOURCE HALF, read BEFORE any mutation (read-only; in ARM A1 the delete destroys the
+    #      wire this index is read from, so it can only be read here).
+    wt = wire_term_index(tag, row["wire"], TUNNEL_D, "BEFORE ANY MUTATION")
+    rec["wire_terms_before"] = wt
+    if wt.get("index") is None:
+        rec["result"] = ("ROW STOPPED BEFORE ANY MUTATION: the FSIT terminal is not a uniquely "
+                         "resolvable row of Wire.Terms[] - %s" % wt.get("chosen_by"))
+        fact("%s *** %s Nothing was deleted, nothing was wired, no index was guessed. ***"
+             % (tag, rec["result"]))
+        gate("%s ROW WRITTEN AT ALL" % tag, False, str(rec["result"])[:200])
+        dump()
+        return rec
+    nodes_before, _ = M.node_census(TARGET, "%s before the mutation" % tag)
     counts_b = {}
     for c in ("Wire", "LoopTunnel", "Tunnel"):
         counts_b[c], _ = safe("%s count(%r) before" % (tag, c), lambda cc=c: g.count(TARGET, cc))
     rec["counts_before"] = counts_b
-    fact("%s baselines before the delete: %r" % (tag, counts_b))
-    rec["delete"] = M.delete_by_uid(TARGET, "Wire", row["wire"], "%s cut" % tag)
-    gate("%s THE DELETE of wire %d was made by the machine" % (tag, row["wire"]),
-         not rec["delete"].get("error_verbatim") and rec["delete"].get("index") is not None,
-         "%r" % ({k: rec["delete"].get(k) for k in ("index", "gone", "error_verbatim", "result")},))
-    after_cut = sink_wire_now(row, sink, hints, tag, "AFTER THE DELETE, BEFORE THE REBUILD", phase0)
-    rec["sink_after_delete"] = after_cut
-    fact("%s the OLD source #%d's OUTER terminal is now a BARE SOURCE - legal LabVIEW (Pre-decided 69); "
-         "the sink terminal reads wire %r, state %r"
-         % (tag, row["old_source"], after_cut.get("wire"), after_cut.get("state")))
+    fact("%s baselines before the mutation: %r" % (tag, counts_b))
 
-    # ---- (iii) THE REBUILD. Indices RE-RESOLVED after the delete, never carried across the mutation.
-    sink2 = resolve_sink(row, hints, "%s post-delete" % tag, phase0)
-    src2 = resolve_source(row, hints, "%s post-delete" % tag, expect_bare=True)
-    rec["sink_resolved_for_write"] = sink2
-    rec["source_resolved_for_write"] = src2
-    stop2 = sink2.get("stop") or src2.get("stop")
-    if stop2:
-        rec["result"] = "ROW STOPPED AFTER THE DELETE, BEFORE THE WRITE: %s" % stop2
-        fact("%s *** %s *** The wire was cut and NOT rebuilt - reported, not hidden." % (tag, rec["result"]))
-        gate("%s ROW WRITTEN AT ALL" % tag, False, stop2)
-        dump()
-        return rec
-    t0 = time.time()
-    writer = WRITERS[row["sink_kind"]][0]
-    if writer is None:
-        # UNREACHABLE after gate W1 - kept so that a future edit which deletes W1 fails LOUDLY and
-        # BEFORE a second mutation, instead of improvising an address (rule 1a, Pre-decided 107).
-        raise Halt("no writer is bound to sink kind %r, and the wire has ALREADY BEEN CUT. This row is "
-                   "reported as CUT-NOT-REBUILT; nothing is improvised." % row["sink_kind"])
-    try:
-        dw, es, err = writer(TARGET, sink2["sink_diag_index"], sink2["sink_nodes_index"],
-                             sink2["sink_term_index"], src2["src_diag_index"],
-                             src2["src_nodes_index"], src2["src_term_index"],
-                             CONNECT_NESTED_LABELS)
-        rec["connect"] = {"wire_delta": dw, "exec_state": es, "op_error": str(err)[:250]}
-        if err:
-            refusal("%s connect_nested_v1" % tag, str(err)[:250])
-    except Exception as e:                                                         # noqa: BLE001
-        rec["connect"] = {"call_error": "%s: %s" % (type(e).__name__, str(e)[:250])}
-        defect("%s connect_nested_v1(sink D[%r].N[%r].T[%r] <- src D[%r].N[%r].T[%r])"
-               % (tag, sink2["sink_diag_index"], sink2["sink_nodes_index"], sink2["sink_term_index"],
-                  src2["src_diag_index"], src2["src_nodes_index"], src2["src_term_index"]), e)
-    rec["call_cost_s"] = round(time.time() - t0, 2)
-    fact("%s connect_nested_v1(sink_diag=%r, sink_node=%r, sink_term=%r, src_diag=%r, src_node=%r, "
-         "src_term=%r) -> %r (%.2f s)"
-         % (tag, sink2["sink_diag_index"], sink2["sink_nodes_index"], sink2["sink_term_index"],
-            src2["src_diag_index"], src2["src_nodes_index"], src2["src_term_index"], rec["connect"],
-            rec["call_cost_s"]))
+    # ---- (iii) THE TWO ORDERINGS. WHICH ONE WORKS IS THE MEASUREMENT (Pre-decided 116-A).
+    def do_delete(when):
+        d = M.delete_by_uid(TARGET, "Wire", row["wire"], "%s cut %s" % (tag, when))
+        rec["delete"] = d
+        rec["delete_when"] = when
+        gate("%s THE DELETE of wire %d was made by the machine (%s)" % (tag, row["wire"], when),
+             not d.get("error_verbatim") and d.get("index") is not None,
+             "%r" % ({k: d.get(k) for k in ("index", "gone", "error_verbatim", "result")},))
+        st = sink_wire_now(row, sink, hints, tag, "AFTER THE DELETE (%s)" % when, phase0)
+        rec["sink_after_delete"] = st
+        fact("%s the OLD source #%d's OUTER terminal is now a BARE SOURCE - legal LabVIEW (Pre-decided "
+             "69); the sink terminal reads wire %r, state %r"
+             % (tag, row["old_source"], st.get("wire"), st.get("state")))
+        return st
+
+    if ordering == DELETE_FIRST:
+        do_delete("FIRST - Pre-decided 106's ordering")
+        inv = resolve_source(row, hints, "%s the INVOKE SITE, post-delete" % tag, expect_bare=True)
+        rec["invoke_site_for_the_write"] = {k: inv.get(k) for k in
+                                           ("src_diag_index", "src_nodes_index", "src_term_index",
+                                            "matches_expectation", "stop")}
+        if inv.get("stop"):
+            rec["result"] = "ROW STOPPED AFTER THE DELETE, BEFORE THE WRITE: %s" % inv["stop"]
+            fact("%s *** %s *** The wire was cut and NOT rebuilt - reported, not hidden."
+                 % (tag, rec["result"]))
+            gate("%s ROW WRITTEN AT ALL" % tag, False, str(inv["stop"])[:200])
+            dump()
+            return rec
+        rec["connect"] = swapped_connect(tag, "AFTER THE DELETE (the dead-uid question)", row["wire"],
+                                         wt["index"], inv)
+    else:
+        inv = src
+        rec["invoke_site_for_the_write"] = {k: inv.get(k) for k in
+                                           ("src_diag_index", "src_nodes_index", "src_term_index",
+                                            "matches_expectation", "stop")}
+        rec["connect"] = swapped_connect(tag, "WHILE WIRE %d IS STILL ALIVE (the branch question)"
+                                         % row["wire"], row["wire"], wt["index"], inv)
+        if rec["connect"].get("reported_success"):
+            # THE READ THE FIRST RUN OF THIS ARM MISSED (`tools/bench/c80_rowd_routeA.log:237`): the op's
+            # OWN ordered readback came back `UID 2` = 7506 (the OLD wire, not a new one), `Name` =
+            # 'Outgoing Handle', `Is Broken?` = True - which is exactly the c79 review's SILENT-BRANCH
+            # signature. The op's readback does not name OWNERS, though, so Pre-decided 117's gate (ii)
+            # is UNANSWERABLE unless the net is walked while it still exists. This walk is read-only and
+            # changes no ordering of mutations: the delete still follows the connect.
+            s0 = sink_wire_now(row, sink, hints, tag, "AFTER THE CONNECT, BEFORE THE DELETE", phase0)
+            rec["sink_after_connect_before_delete"] = s0
+            inv0 = resolve_source(row, hints, "%s the INVOKE SITE after the connect" % tag,
+                                  expect_bare=False)
+            rec["invoke_site_after_connect"] = dict(
+                (k, inv0.get(k)) for k in ("src_diag_index", "src_nodes_index", "src_term_index",
+                                           "candidates", "stop"))
+            rec["acceptance_after_connect_before_delete"] = acceptance(
+                row, tag, "(a0) AFTER THE CONNECT, BEFORE THE DELETE - MEASURED, NOT ASSERTED "
+                          "(Pre-decided 94). THIS is the only reading that names the OWNERS on the net "
+                          "the swapped call produced, so it is the only one that can answer Pre-decided "
+                          "117's branch question for this ordering", s0["wire"], False)
+            a0 = rec["acceptance_after_connect_before_delete"]
+            n_src = a0.get("ALL_source_terminal_count")
+            rec["discriminator_source_rows_after_the_connect"] = n_src
+            fact("%s THE c80-r2 REVIEW'S ONE INDICATOR (its step 2): immediately after the connect and "
+                 "BEFORE any delete, net %r has %r source terminal(s) of ANY class, %r. >=2 => the "
+                 "swapped call DID join the NEW loop's border terminal to that net, Route A's verb works, "
+                 "and Row D reduces to REMOVING THE OLD SOURCE #%d (a NEW step, judgement's). ==1 => "
+                 "nothing happened and the op's `UID 2` readback was an echo of the wire half, i.e. arm "
+                 "A2 is VOID. The border table printed just above is the same fact read from the terminal "
+                 "side (step 3).", tag, a0.get("sink_wire"), n_src, a0.get("ALL_source_terminals"),
+                 row["old_source"])
+            gate("%s THE DISCRIMINATOR (c80-r2 review step 2): net %r has >=2 source terminals "
+                 "immediately after the connect, i.e. THE SWAPPED CALL CONNECTED. Gated only so it is "
+                 "unmissable - BOTH values are legitimate outcomes of a measurement"
+                 % (tag, a0.get("sink_wire")), (n_src or 0) >= 2,
+                 "%r source terminal(s) %r" % (n_src, a0.get("ALL_source_terminals")))
+            do_delete("AFTER THE CONNECT - the connect reported success")
+        else:
+            rec["delete"] = {"skipped": "the connect did NOT report success, so wire %d is NOT deleted - "
+                                        "nothing is improvised and the arm target keeps the OLD wiring"
+                                        % row["wire"]}
+            rec["delete_when"] = "NOT DONE"
+            fact("%s wire %d was NOT deleted: %s", tag, row["wire"], rec["delete"]["skipped"])
+    rec["call_cost_s"] = (rec.get("connect") or {}).get("cost_s")
     counts_a = {}
     for c in ("Wire", "LoopTunnel", "Tunnel"):
         counts_a[c], _ = safe("%s count(%r) after" % (tag, c), lambda cc=c: g.count(TARGET, cc))
@@ -1100,7 +1352,7 @@ def one_row(row, hints, phase0):
          % (tag, counts_b, counts_a, (rec["connect"] or {}).get("wire_delta")))
 
     # ---- (iv) the state the write left, measured but NOT yet asserted (Pre-decided 94).
-    s_a = sink_wire_now(row, sink2, hints, tag, "IMMEDIATELY AFTER THE WRITE", phase0)
+    s_a = sink_wire_now(row, sink, hints, tag, "IMMEDIATELY AFTER THE WRITE", phase0)
     rec["sink_after_write"] = s_a
     rec["measurement_after_write"] = acceptance(row, tag, "(a) IMMEDIATELY AFTER THE WRITE - MEASURED, "
                                                           "NOT ASSERTED (Pre-decided 94)", s_a["wire"],
@@ -1110,7 +1362,7 @@ def one_row(row, hints, phase0):
     _nodes, purge = purge_junk(nodes_before, "%s after the write" % tag, hints)
     rec["purge"] = {"new_uids": purge["new_uids"], "deleted": [d["uid"] for d in purge["deleted"]],
                     "reported_not_deleted": [d["uid"] for d in purge["reported_not_deleted"]]}
-    s_b = sink_wire_now(row, sink2, hints, tag, "AFTER THE JUNK PURGE", phase0)
+    s_b = sink_wire_now(row, sink, hints, tag, "AFTER THE JUNK PURGE", phase0)
     rec["sink_after_purge"] = s_b
     rec["measurement_after_purge"] = acceptance(row, tag, "(b) AFTER THE JUNK PURGE - MEASURED, NOT "
                                                           "ASSERTED (Pre-decided 94)", s_b["wire"], False)
@@ -1120,72 +1372,218 @@ def one_row(row, hints, phase0):
 
 
 # ==================================== [5] THE ORDERED SECOND PASS - where the row is ASSERTED
-def phase_second_pass(hints, phase0):
-    """PRE-DECIDED 94 + 106. Each written row is RE-CONNECTED idempotently in a SEPARATE ORDERED PASS -
-    `wire_delta` is expected to be 0 because the connection already exists - and THE ACCEPTANCE IS
-    ASSERTED HERE, never in the pass that made the connection. The writer's own `Is Broken?` readback is
-    PRINTED by the op wrapper and is REPORTED, never gated (see R['is_broken_policy'])."""
-    head("[94] THE ORDERED SECOND PASS - idempotent re-connect, and the ROW ACCEPTANCE IS ASSERTED HERE")
-    K["second_pass"] = []
-    for row in ROWS:
-        tag = "[94 %s]" % row["tag"]
-        st = R["rows"].get(row["tag"]) or {}
-        rec = {"row": row["tag"]}
-        if st.get("result") != "WRITTEN":
-            rec["skipped"] = "the row was not written, so there is nothing to re-connect"
-            fact("%s SKIPPED - %s" % (tag, rec["skipped"]))
-            gate("%s ROW ACCEPTANCE (Pre-decided 85/106) - the row was WRITTEN at all" % tag, False,
-                 str(st.get("result"))[:200])
-            K["second_pass"].append(rec)
-            continue
-        sink = resolve_sink(row, hints, "%s re-resolve" % tag, phase0)
-        src = resolve_source(row, hints, "%s re-resolve" % tag, expect_bare=False)
-        rec["sink"] = {k: sink.get(k) for k in ("sink_diag_index", "sink_nodes_index", "sink_term_index",
-                                                "sink_wire_before", "stop")}
-        rec["source"] = {k: src.get(k) for k in ("src_diag_index", "src_nodes_index", "src_term_index",
-                                                 "stop")}
-        if sink.get("stop") or src.get("stop"):
-            rec["skipped"] = "an endpoint no longer resolves: %s" % (sink.get("stop") or src.get("stop"))
-            fact("%s SKIPPED - %s" % (tag, rec["skipped"]))
-            gate("%s ROW ACCEPTANCE (Pre-decided 85/106) - the endpoints still resolve" % tag, False,
-                 rec["skipped"][:200])
-            K["second_pass"].append(rec)
-            continue
-        wires_before, _ = safe("%s count('Wire') before" % tag, lambda: g.count(TARGET, "Wire"))
-        writer = WRITERS[row["sink_kind"]][0]
-        try:
-            dw, es, err = writer(TARGET, sink["sink_diag_index"], sink["sink_nodes_index"],
-                                 sink["sink_term_index"], src["src_diag_index"],
-                                 src["src_nodes_index"], src["src_term_index"],
-                                 CONNECT_NESTED_LABELS)
-            rec.update({"wire_delta": dw, "exec_state": es, "op_error": str(err)[:250]})
-        except Exception as e:                                                     # noqa: BLE001
-            rec["call_error"] = "%s: %s" % (type(e).__name__, str(e)[:250])
-            defect("%s idempotent re-connect" % tag, e)
-            K["second_pass"].append(rec)
-            continue
-        wires_after, _ = safe("%s count('Wire') after" % tag, lambda: g.count(TARGET, "Wire"))
-        rec["wire_census"] = [wires_before, wires_after]
-        rec["idempotent"] = (rec.get("wire_delta") == 0)
-        fact("%s IDEMPOTENT RE-CONNECT: wire_delta %r (expected 0 - the connection already exists) ; "
-             "Wire census %r -> %r ; op error %r"
-             % (tag, rec.get("wire_delta"), wires_before, wires_after, rec.get("op_error")))
-        if not rec["idempotent"]:
-            fact("%s *** wire_delta is NOT 0, so this pass CHANGED the diagram instead of re-reading it. "
-                 "That is REPORTED; the junk census runs and the acceptance below is still measured on "
-                 "the state the artefact now holds. ***" % tag)
-            nodes_now, _ = M.node_census(TARGET, "%s after a non-idempotent re-connect" % tag)
-            purge_junk(nodes_now, "%s re-connect" % tag, hints)
-        now = sink_wire_now(row, sink, hints, tag, "AT THE ORDERED SECOND PASS", phase0)
-        rec["sink_now"] = now
-        acc = acceptance(row, tag, "(c) THE ORDERED SECOND PASS - THIS IS THE ASSERTION", now["wire"],
-                         True)
-        rec["acceptance"] = acc
-        gate("%s IDEMPOTENT (wire_delta 0 on the ordered second pass, Pre-decided 94)"
-             % tag, rec["idempotent"], "wire_delta %r" % rec.get("wire_delta"))
-        K["second_pass"].append(rec)
-        dump()
-    return K["second_pass"]
+def phase_second_pass(row, hints, phase0, arm):
+    """PRE-DECIDED 94 + 106. The row is RE-CONNECTED idempotently in a SEPARATE ORDERED PASS - `wire_delta`
+    is expected to be 0 because the connection already exists - and THE ACCEPTANCE IS ASSERTED HERE, never
+    in the pass that made the connection.
+
+    THE SWAPPED CALL's source half is addressed BY WIRE, so the second pass CANNOT reuse the first pass's
+    `wire_uid`: after a successful write the FSIT terminal carries a DIFFERENT wire. The current wire is
+    therefore re-read from the tunnel's own table by uid, and the FSIT terminal's index in THAT wire's
+    `Wire.Terms[]` is re-read too. Nothing is carried across the mutation (the T2c2 lesson)."""
+    tag = "[%s 94 %s]" % (arm["name"], row["tag"])
+    head("%s THE ORDERED SECOND PASS - idempotent re-connect, and THE ACCEPTANCE IS ASSERTED HERE" % tag)
+    st = R["rows"].get("%s/%s" % (arm["name"], row["tag"])) or {}
+    rec = {"row": row["tag"], "arm": arm["name"]}
+    K.setdefault("second_pass", []).append(rec)
+    if st.get("result") != "WRITTEN":
+        rec["skipped"] = "the row was not written, so there is nothing to re-connect"
+        fact("%s SKIPPED - %s" % (tag, rec["skipped"]))
+        gate("%s the row was WRITTEN at all" % tag, False, str(st.get("result"))[:200])
+        return rec
+    sink = resolve_sink(row, hints, "%s re-resolve" % tag, phase0)
+    inv = resolve_source(row, hints, "%s re-resolve the INVOKE SITE" % tag, expect_bare=False)
+    rec["sink"] = {k: sink.get(k) for k in ("sink_term_uid", "sink_wire_before", "stop")}
+    rec["invoke_site"] = {k: inv.get(k) for k in ("src_diag_index", "src_nodes_index", "src_term_index",
+                                                  "stop")}
+    if sink.get("stop") or inv.get("stop"):
+        rec["skipped"] = "an endpoint no longer resolves: %s" % (sink.get("stop") or inv.get("stop"))
+        fact("%s SKIPPED - %s" % (tag, rec["skipped"]))
+        gate("%s the endpoints still resolve" % tag, False, rec["skipped"][:200])
+        return rec
+    wire_now = sink.get("sink_wire_before") or 0
+    rec["wire_the_sink_carries_now"] = wire_now
+    if not wire_now:
+        rec["skipped"] = ("the sink terminal #%d is BARE, so there is no wire to re-connect FROM - the "
+                          "swapped call's source half has no uid" % row["sink_term_uid"])
+        fact("%s SKIPPED - %s" % (tag, rec["skipped"]))
+        gate("%s the sink terminal carries a wire after the write" % tag, False, rec["skipped"][:200])
+        return rec
+    wt = wire_term_index(tag, wire_now, TUNNEL_D, "AT THE ORDERED SECOND PASS")
+    rec["wire_terms"] = wt
+    if wt.get("index") is None:
+        rec["skipped"] = "the FSIT terminal is not a unique row of w%r's Wire.Terms[]" % wire_now
+        fact("%s SKIPPED - %s" % (tag, rec["skipped"]))
+        gate("%s the source half re-resolves on the ordered second pass" % tag, False,
+             rec["skipped"][:200])
+        return rec
+    wires_before, _ = safe("%s count('Wire') before" % tag, lambda: g.count(TARGET, "Wire"))
+    rec["reconnect"] = swapped_connect(tag, "THE ORDERED SECOND PASS (idempotent)", wire_now,
+                                       wt["index"], inv)
+    wires_after, _ = safe("%s count('Wire') after" % tag, lambda: g.count(TARGET, "Wire"))
+    rec["wire_census"] = [wires_before, wires_after]
+    rec["wire_delta"] = rec["reconnect"].get("wire_delta")
+    rec["idempotent"] = (rec["wire_delta"] == 0)
+    rec["is_broken_readback"] = rec["reconnect"].get("is_broken_readback")
+    fact("%s IDEMPOTENT RE-CONNECT: wire_delta %r (expected 0 - the connection already exists) ; Wire "
+         "census %r -> %r ; op error %r ; `Wire.Is Broken?` readback %r"
+         % (tag, rec["wire_delta"], wires_before, wires_after,
+            rec["reconnect"].get("op_error_verbatim"), rec["is_broken_readback"]))
+    if not rec["idempotent"]:
+        fact("%s *** wire_delta is NOT 0, so this pass CHANGED the diagram instead of re-reading it. "
+             "That is REPORTED; the junk census runs and the acceptance below is still measured on the "
+             "state the artefact now holds. ***" % tag)
+        nodes_now, _ = M.node_census(TARGET, "%s after a non-idempotent re-connect" % tag)
+        purge_junk(nodes_now, "%s re-connect" % tag, hints)
+    now = sink_wire_now(row, sink, hints, tag, "AT THE ORDERED SECOND PASS", phase0)
+    rec["sink_now"] = now
+    rec["acceptance"] = acceptance(row, tag, "(c) THE ORDERED SECOND PASS - THIS IS THE ASSERTION",
+                                   now["wire"], False)
+    dump()
+    return rec
+
+
+# ================================ [6] THE FIVE GATES OF PRE-DECIDED 116, ASSERTED ON THE SECOND PASS
+def arm_gates(row, arm, sp, pd85_before, rowc_owner):
+    """THE FIVE ACCEPTANCE GATES, one printed line each, asserted on the ORDERED SECOND PASS only.
+
+    Gate (ii) is Pre-decided 117's BRANCH gate. Its SUBSTANCE is "the source is on the NEW side, never
+    the OLD one"; its LITERAL wording names `WhileLoop #23032`, but this reader has already been measured
+    naming the SHIFT REGISTER for exactly this kind of terminal (`build_d1_m3a3_run2.log:182`, the
+    delivered Row C: `[('RightShiftRegister', 23895)]`, and `:72` for the OLD side:
+    `('RightShiftRegister', 4256)`). BOTH readings are evaluated and printed, and this arm's own live
+    Row-C calibration (`rowc_owner`, from C0) is printed beside them, so the discrepancy is visible
+    rather than resolved silently here."""
+    name = arm["name"]
+    acc = (sp.get("acceptance") or {})
+    src_all = acc.get("ALL_source_terminals") or []
+    the_one = acc.get("observed_one_owner")
+    owners = acc.get("every_owner_on_the_net") or []
+    pd_rows = (M.K.get("pd85_checks") or [])[pd85_before:]
+    pd_bad = sum(int(r.get("violations") or 0) for r in pd_rows)
+    g_i = (bool(acc.get("sink_wire")) and len(src_all) == 1)
+    g_ib = bool(the_one and the_one[1] == row["new_reg"])
+    g_ii_literal = bool(the_one and the_one[1] == LOOP_A)
+    g_ii_substance = bool(the_one and the_one[1] in (row["new_reg"], LOOP_A))
+    g_iii = not (row["old_source"] in owners or OLD_LOOP in owners)
+    g_iv = (pd_bad == 0)
+    g_v = (sp.get("is_broken_readback") is False)
+    g_vi = (sp.get("wire_delta") == 0)
+    rec = {"arm": name, "sink_wire": acc.get("sink_wire"),
+           "ALL_source_terminals": src_all, "the_one_owner": the_one,
+           "every_owner_on_the_net": owners, "pd85_walks": len(pd_rows), "pd85_violations": pd_bad,
+           "is_broken_readback": sp.get("is_broken_readback"), "wire_delta": sp.get("wire_delta"),
+           "rowc_calibration_owner_live": rowc_owner,
+           "gate_i": g_i, "gate_ib_new_register_23868": g_ib,
+           "gate_ii_substance": g_ii_substance, "gate_ii_literal_117": g_ii_literal,
+           "gate_iii": g_iii, "gate_iv": g_iv, "gate_v": g_v, "gate_vi": g_vi}
+    fact("[%s] PRE-DECIDED 117 READER CALIBRATION: this arm's OWN Row-C source owner (from C0) is %r ; "
+         "Row D's measured source owner is %r ; 117's literal target is WhileLoop #%d and the NEW "
+         "register is #%d. BOTH literal forms are evaluated as their own lines below and NOTHING is "
+         "substituted silently.", name, rowc_owner, the_one, LOOP_A, row["new_reg"])
+    gate("[%s] GATE (i) the wire the SINK terminal #%d carries has EXACTLY ONE source terminal of ANY "
+         "owner class, counted BEFORE any class filter (Pre-decided 77)" % (name, row["sink_term_uid"]),
+         g_i, "sink wire %r ; sources %r" % (acc.get("sink_wire"), src_all))
+    gate("[%s] GATE (i-b) that ONE source terminal's owner is the NEW register #%d - Pre-decided "
+         "106/111's literal form, and the form the DELIVERED Row C passed under "
+         "(build_d1_m3a3_run2.log:182)" % (name, row["new_reg"]), g_ib,
+         "MEASURED OWNER %r ; live Row-C calibration %r" % (the_one, rowc_owner))
+    gate("[%s] GATE (ii) PRE-DECIDED 117 BRANCH GATE, SUBSTANCE - the source terminal's OWNER is on the "
+         "NEW side (#%d the register, or #%d the loop), never the OLD one"
+         % (name, row["new_reg"], LOOP_A), g_ii_substance,
+         "MEASURED OWNER %r ; live Row-C calibration %r" % (the_one, rowc_owner))
+    gate("[%s] GATE (ii-literal) PRE-DECIDED 117 AS WRITTEN - the source terminal's OWNER == WhileLoop "
+         "#%d (REPORTED and COUNTED; the reader was measured naming the SHIFT REGISTER for this kind of "
+         "terminal in the delivered Row C, build_d1_m3a3_run2.log:182)" % (name, LOOP_A), g_ii_literal,
+         "MEASURED OWNER %r ; live Row-C calibration %r" % (the_one, rowc_owner))
+    gate("[%s] GATE (iii) the OLD register #%d and the OLD loop #%d are OFF the net entirely (a silent "
+         "branch of wire %d would leave one of them on it)"
+         % (name, row["old_source"], OLD_LOOP, row["wire"]), g_iii, "every owner %r" % (owners,))
+    gate("[%s] GATE (iv) PD85 violations 0 on EVERY walk of this arm (%d walk(s))" % (name, len(pd_rows)),
+         g_iv, "%d violation(s)" % pd_bad)
+    gate("[%s] GATE (v) `Wire.Is Broken?` 6371004 reads FALSE on the SEPARATE ORDERED pass" % name, g_v,
+         "readback %r" % (sp.get("is_broken_readback"),))
+    gate("[%s] GATE (vi) wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)" % name,
+         g_vi, "wire_delta %r" % (sp.get("wire_delta"),))
+    rec["verdict"] = "PASS" if (g_i and g_ii_substance and g_iii and g_iv and g_v and g_vi) else "FAIL"
+    rec["failing"] = [k for k in ("gate_i", "gate_ii_substance", "gate_iii", "gate_iv", "gate_v",
+                                  "gate_vi") if not rec[k]]
+    rec["verdict_composition"] = ("gate_i (one source of ANY class) AND gate_ii_substance (the owner is "
+                                  "on the NEW side) AND gate_iii (the OLD side is off the net) AND "
+                                  "gate_iv (PD85 0) AND gate_v (`Is Broken?` False) AND gate_vi "
+                                  "(wire_delta 0). gate_ib (owner == #%d) and gate_ii_literal_117 "
+                                  "(owner == #%d) are the TWO LITERAL FORMS of the same requirement and "
+                                  "cannot both hold - they are printed and counted, and which of them "
+                                  "the reader uses for this class of terminal is a MEASURED fact of this "
+                                  "run, carried to the judgement session."
+                                  % (row["new_reg"], LOOP_A))
+    fact("[%s] ARM VERDICT %s ; failing %r ; gate_ib (#%d) %r ; 117-literal (#%d) %r - the two literal "
+         "forms are reported, the SUBSTANCE is what the verdict uses (see the calibration line above)",
+         name, rec["verdict"], rec["failing"], row["new_reg"], g_ib, LOOP_A, g_ii_literal)
+    return rec
+
+
+# ======================================================================== ONE WHOLE ARM, END TO END
+def run_arm(arm):
+    """ONE ARM = one file, one ordering, one verdict. The two measurement arms run on dated SCRATCH
+    copies and are deleted; the bed arm runs on the stage artefact's own name."""
+    name = arm["name"]
+    row = ROWS[0]
+    rec = {"arm": name, "ordering": arm["ordering"], "target": arm["target"],
+           "scratch": arm["scratch"], "why": arm["why"], "verdict": "NOT REACHED"}
+    R["arms"][name] = rec
+    head("[ARM %s] %s on %s" % (name, arm["ordering"], os.path.basename(arm["target"])))
+    fact("[%s] WHY THIS ORDERING: %s" % (name, arm["why"]))
+    pd85_before = len(M.K.get("pd85_checks") or [])
+    hints = arm_prepare(arm)
+    if hints is None:
+        rec["verdict"] = "STOPPED - Diagram #%d does not resolve on the arm target" % D686
+        gate("[%s] ARM RAN AT ALL" % name, False, rec["verdict"])
+        return rec
+    rec["hints"] = hints
+    pre = phase_precondition_rowc(hints)
+    rec["precondition_rowc"] = pre.get("verdict")
+    rec["rowc_owner_live"] = pre.get("observed_one_owner")
+    if pre.get("verdict") != "HOLDS":
+        rec["verdict"] = "STOPPED at C0 - %s" % pre.get("verdict")
+        gate("[%s] ARM RAN AT ALL" % name, False, str(rec["verdict"])[:200])
+        return rec
+    phase0 = phase0_resolve_tunnel(hints)
+    rec["phase0_verdict"] = phase0.get("verdict")
+    rec["phase0_sink_term_uid"] = phase0.get("sink_term_uid")
+    if phase0.get("verdict") != "HOLDS":
+        rec["verdict"] = "STOPPED at P0 - %s" % phase0.get("verdict")
+        fact("[%s] *** ROW D NOT ATTEMPTED - a FAILED PREDICTION at PHASE 0. Wire %d is NOT deleted, no "
+             "address is improvised for #%d, and there is no GUI fallback. ***", name, row["wire"],
+             row["sink_uid"])
+        gate("[%s] ARM RAN AT ALL" % name, False, str(rec["verdict"])[:200])
+        return rec
+    if left_s() < ROW_MIN_S:
+        rec["verdict"] = "STOPPED - only %.0f s left before the reserve; an arm needs %.0f s" % (
+            left_s(), ROW_MIN_S)
+        gate("[%s] ARM RAN AT ALL" % name, False, str(rec["verdict"])[:200])
+        return rec
+    r = one_row(row, hints, phase0, arm)
+    rec["row_result"] = r.get("result")
+    rec["connect_verbatim"] = r.get("connect")
+    rec["delete"] = {k: (r.get("delete") or {}).get(k)
+                     for k in ("index", "gone", "error_verbatim", "result", "skipped")}
+    rec["delete_when"] = r.get("delete_when")
+    sp = phase_second_pass(row, hints, phase0, arm)
+    rec["second_pass"] = {k: sp.get(k) for k in ("wire_delta", "idempotent", "is_broken_readback",
+                                                 "wire_the_sink_carries_now", "skipped")}
+    if r.get("result") != "WRITTEN" or sp.get("skipped"):
+        rec["verdict"] = "FAIL"
+        rec["gates"] = {"verdict": "FAIL", "reason": r.get("result") or sp.get("skipped")}
+        gate("[%s] ARM VERDICT PASS - every Row-D gate held on this ordering" % name, False,
+             str(rec["gates"]["reason"])[:220])
+        return rec
+    rec["gates"] = arm_gates(row, arm, sp, pd85_before, rec.get("rowc_owner_live"))
+    rec["verdict"] = rec["gates"]["verdict"]
+    gate("[%s] ARM VERDICT PASS - every Row-D gate held on this ordering" % name,
+         rec["verdict"] == "PASS", "failing %r" % (rec["gates"].get("failing"),))
+    dump()
+    return rec
 
 
 # ==================================================================================== [S] THE SAVE
@@ -1264,52 +1662,84 @@ def phase_save():
 # ============================================================================================== main
 def main():
     print("=" * 100, flush=True)
-    print("=== build_d1_m3a3  %s  - STAGE **M3a-3b: ROW D ALONE** (Pre-decided 104-111). ROW C IS ALREADY "
-          "IN THE BED AND IS NOT REDONE - it is asserted read-only at [C0]." % STAMP, flush=True)
-    print("=== THE ARTEFACT THIS RUN SAVES IS **NOT COMPUTATION-EQUIVALENT TO THE ORIGINAL**, IS BROKEN "
-          "BY DESIGN AND IS NEVER RUN (34(f), Pre-decided 97).", flush=True)
+    print("=== build_d1_m3a3  %s  - STAGE **M3a-3b: ROW D ALONE, ROUTE A** (Pre-decided 104-118). ROW C "
+          "IS ALREADY IN THE BED AND IS NOT REDONE - it is asserted read-only at [C0] in every arm."
+          % STAMP, flush=True)
+    print("=== THREE ARMS: A1 delete-then-connect and A2 connect-then-delete on DATED SCRATCH copies "
+          "(deleted in this run), then - ONLY IF ONE PASSED EVERY GATE - the same ordering on THE BED.",
+          flush=True)
+    print("=== NOTHING IS BUILT. If both arms fail, Route B (`OpConnectByUid`) is EXPENSIVE CONSTRUCTION "
+          "and gets a FRESH CYCLE (Pre-decided 116-B) - it is not improvised here.", flush=True)
+    print("=== THE ARTEFACT THIS RUN MAY SAVE IS **NOT COMPUTATION-EQUIVALENT TO THE ORIGINAL**, IS "
+          "BROKEN BY DESIGN AND IS NEVER RUN (34(f), Pre-decided 97).", flush=True)
     print("=" * 100, flush=True)
-    hints = [TOP]
-    phase0 = {"verdict": "NOT REACHED"}
+    bed_arm = None
     try:
         phase_files()
-        hints = phase_copy()
-        pre = phase_precondition_rowc(hints)
-        if pre.get("verdict") != "HOLDS":
-            raise Halt("ROW C's PRECONDITION FAILED (%s). The bed is not the artefact this stage was "
-                       "told it is, so NOTHING is deleted and Row D is not attempted. A stage never "
-                       "repairs its own input." % pre.get("verdict"))
-        phase0 = phase0_resolve_tunnel(hints)
-        for row in ROWS:
-            if row["sink_kind"] == "tunnel_uid" and phase0.get("verdict") != "HOLDS":
-                R["rows"][row["tag"]] = {"result": "ROW D NOT ATTEMPTED - PHASE 0 did not resolve",
-                                         "reason": phase0.get("verdict"),
-                                         "wire_not_deleted": row["wire"]}
-                fact("*** ROW D NOT ATTEMPTED - a FAILED PREDICTION at PHASE 0. Wire %d is NOT deleted, "
-                     "no address is improvised for #%d, and there is no GUI fallback. ***",
-                     row["wire"], row["sink_uid"])
-                continue
-            if left_s() < ROW_MIN_S:
-                fact("HALTED before row %s: only %.0f s left before the reserve; a row needs %.0f s"
-                     % (row["tag"], left_s(), ROW_MIN_S))
-                R["rows"][row["tag"]] = {"result": "NOT RUN - no wall-clock left"}
-                gate("[ROW %s] ROW WRITTEN AT ALL" % row["tag"], False, "no wall-clock left")
-                break
-            one_row(row, hints, phase0)
-        phase_second_pass(hints, phase0)
+        # ---- THE TWO MEASUREMENT ARMS, on dated scratch copies, deleted in this same run.
+        # THE c79 REVIEW'S "STEP 4" PROBE IS NOT RUN, and the reason is measured, not stylistic: run 1
+        # (`tools/bench/c80_rowd_routeA.log:289-290`) showed it returns `err_uidvi ''` for BOTH a DELETED
+        # wire uid (arm A1) and the terminal uid 7488, so an empty `err_uidvi` establishes nothing; and
+        # the c80-r2 review showed the probe is uninformative BY CONSTRUCTION, because its index triple
+        # is deliberately out of range so the only downstream indicator was guaranteed to fail whatever
+        # the uid resolved to. Its sound replacement - `OpOwnerChain_v1` with `uid_in = 7488`, reading the
+        # SELF echo - needs a labels map that is NOT on disk and a `read_owner()` that hard-codes the MAIN
+        # VI as its target, i.e. tool work; and Route B is a FRESH CYCLE's decision anyway (116-B).
+        for arm in ARMS:
+            run_arm(arm)
+            arm_cleanup(arm)
+        # ---- THE ROUTE SELECTION. Mechanical: Pre-decided 116-A, A1 preferred because it is
+        #      Pre-decided 106's ordering.
+        winner = next((a for a in ARMS if (R["arms"].get(a["name"]) or {}).get("verdict") == "PASS"),
+                      None)
+        R["route_selection"].update({
+            "rule": "Pre-decided 116-A / 116-B",
+            "arm_verdicts": dict((a["name"], (R["arms"].get(a["name"]) or {}).get("verdict"))
+                                 for a in ARMS),
+            "winner": None if winner is None else winner["name"],
+            "winning_ordering": None if winner is None else winner["ordering"]})
+        fact("[R] ROUTE SELECTION: arm verdicts %r -> winner %r (%r)",
+             R["route_selection"]["arm_verdicts"], R["route_selection"]["winner"],
+             R["route_selection"]["winning_ordering"])
+        gate("R1 ROUTE A WORKS - at least one ordering of the SWAPPED call passed EVERY Row-D gate on a "
+             "dated scratch copy of the bed (Pre-decided 116-A)", winner is not None,
+             "arm verdicts %r" % (R["route_selection"]["arm_verdicts"],))
+        if winner is None:
+            raise Halt("NEITHER ordering of the swapped call passed Row D's gates. THE BED IS UNTOUCHED "
+                       "(it was never opened), both scratch copies are deleted, and NO OP WAS BUILT. "
+                       "Route B (`OpConnectByUid`: uid -> `UID to GObject Reference.vi` -> TMSC on a "
+                       "Terminal seed -> the Invoke's `reference`, donor `OpConnectNested_v2`) is "
+                       "EXPENSIVE CONSTRUCTION and gets a FRESH CYCLE (Pre-decided 116-B); it is never "
+                       "improvised at the end of a dispatch. The step-4 probe above says whether its "
+                       "first gate - does a TERMINAL uid resolve - is clear.")
+        # ---- ARM 3: THE BED, on the winning ordering. NOTHING NEW IS BUILT (Pre-decided 116-A).
+        bed_arm = {"name": "ARM3-BED", "ordering": winner["ordering"], "target": BED_TARGET,
+                   "scratch": False,
+                   "why": "Pre-decided 116-A: 'If A works, Row D proceeds on it in the same dispatch and "
+                          "NOTHING NEW IS BUILT.' The winning ordering is %s, from arm %s."
+                          % (winner["ordering"], winner["name"])}
+        K["refusals_before_the_bed_arm"] = len(refusals)
+        K["defects_before_the_bed_arm"] = len(defects)
+        K["m3a1_refusals_before_the_bed_arm"] = len(M.refusals)
+        run_arm(bed_arm)
         K["counts_final"] = counts("[F] final, in memory")
-        # THE STAGE ALWAYS LEAVES A FILE (Pre-decided 96) - but only when there is something IN it.
-        # A byte-identical copy of the bed under a new stage name is not an artefact, it is a decoy:
-        # it would pass "a file exists" and fail S1, and a later session could mistake it for a bed.
-        if any((R["rows"].get(r["tag"]) or {}).get("result") == "WRITTEN" for r in ROWS):
+        # THE STAGE ALWAYS LEAVES A FILE (Pre-decided 96) - but only when there is something IN it that
+        # PASSED. A byte-identical copy of the bed under a new stage name is not an artefact, it is a
+        # decoy; and an artefact whose Row D was cut but not rebuilt is run 1's REJECTED artefact.
+        if (R["arms"].get("ARM3-BED") or {}).get("verdict") == "PASS":
             phase_save()
         else:
-            fact("[S] NO ARTEFACT IS SAVED: no row was WRITTEN, so the in-memory copy is byte-identical "
-                 "to the bed. A copy under a new stage name would be a DECOY bed, not a stage output. "
-                 "The bed %s (md5 %s) remains the current bed.",
+            gate("S0 THE BED ARM PASSED EVERY GATE, so there is something worth saving",
+                 False, "ARM3-BED verdict %r ; gates %r"
+                        % ((R["arms"].get("ARM3-BED") or {}).get("verdict"),
+                           (R["arms"].get("ARM3-BED") or {}).get("gates")))
+            fact("[S] NO ARTEFACT IS SAVED: the bed arm did not pass, so the in-memory copy is NOT a "
+                 "stage output. Saving it would produce either a DECOY bed (byte-identical) or run 1's "
+                 "REJECTED shape (a cut-but-not-rebuilt consumer). The bed %s (md5 %s) remains the "
+                 "current bed and its file is deleted below.",
                  os.path.basename(INPUT), INPUT_MD5[:8])
-            gate("S0 A ROW WAS WRITTEN, so there is something to save", False,
-                 "rows: %r" % ({t: (v or {}).get("result") for t, v in R["rows"].items()},))
+            arm_cleanup(bed_arm)
+            bed_arm = None
     except Halt as e:
         fact("HALTED: %s" % e)
     except Exception as e:                                                         # noqa: BLE001
@@ -1319,7 +1749,21 @@ def main():
         defect("main", e)
     finally:
         head("[H] HYGIENE - panels closed, the md5 pins AFTER, the tool pins, the refs and the handles")
-        safe("close_panel(TARGET)", lambda: g.close_panel(TARGET))
+        for _p in (SCRATCH_A1, SCRATCH_A2, BED_TARGET):
+            safe("close_panel(%s)" % os.path.basename(_p), lambda pp=_p: g.close_panel(pp))
+        # A SCRATCH IS NEVER LEFT ON DISK, whatever the run did (CLAUDE.md: created and deleted in the
+        # same run). `arm_cleanup` already removed each one; this is the belt-and-braces pass for the
+        # case where an arm raised before reaching it.
+        for _p in (SCRATCH_A1, SCRATCH_A2):
+            for _ in range(4):
+                try:
+                    if os.path.exists(_p):
+                        os.remove(_p)
+                    break
+                except OSError:
+                    time.sleep(1.0)
+            gate("H0 no scratch copy is left on disk: %s" % os.path.basename(_p),
+                 not os.path.exists(_p), _p)
         pr = probe_hash("H INPUT THE BED AFTER", INPUT)
         gate("H2 the bed's md5 is UNCHANGED after the run", pr.get("md5") == INPUT_MD5,
              "before %r / after %r" % (R.get("input_md5_before"), pr.get("md5")))
@@ -1346,16 +1790,35 @@ def main():
              "%r -> %r" % (R["handles"].get("before"), R["handles"].get("after")))
         imported = M.refusals[K.get("m3a1_refusals_at_entry", 0):]
         R["imported_helper_refusals"] = imported
-        gate("H8 no mutator call was REFUSED BY THE MACHINE (this file's refusals and the imported "
-             "helpers'; a Python exception of OURS is NOT one - it is H9)", not refusals and not imported,
+        # H8 / H9 ARE SCOPED TO THE BED ARM, and this is not a softening - it is what the run IS. The two
+        # scratch arms are a DISCRIMINATING TEST whose negative outcome is the measurement: a dead wire
+        # uid being refused, or an already-wired terminal being branched, is exactly what they were run
+        # to find out. Counting those refusals against the deliverable would make every honest
+        # measurement look like a broken build. Everything is REPORTED either way, verbatim.
+        bed_refusals = refusals[K.get("refusals_before_the_bed_arm", 0):]
+        bed_defects = defects[K.get("defects_before_the_bed_arm", 0):]
+        bed_imported = M.refusals[K.get("m3a1_refusals_before_the_bed_arm",
+                                        K.get("m3a1_refusals_at_entry", 0)):]
+        arm_refusals = refusals[:K.get("refusals_before_the_bed_arm", len(refusals))]
+        arm_defects = defects[:K.get("defects_before_the_bed_arm", len(defects))]
+        R["measurement_arm_refusals_REPORTED_NOT_GATED"] = arm_refusals
+        R["measurement_arm_defects_REPORTED_NOT_GATED"] = arm_defects
+        fact("H8b THE MEASUREMENT ARMS (REPORTED, NEVER GATED - their negative outcome IS the "
+             "measurement): %d machine refusal(s) %r ; %d our-code defect(s) %r"
+             % (len(arm_refusals), [r["where"] for r in arm_refusals], len(arm_defects),
+                [("%s at %s: %s" % (d["exception_type"], d["source_line"], d["where"]))
+                 for d in arm_defects]))
+        gate("H8 no mutator call was REFUSED BY THE MACHINE IN THE BED ARM (this file's refusals and the "
+             "imported helpers'; a Python exception of OURS is NOT one - it is H9)",
+             not bed_refusals and not bed_imported,
              "%d machine refusal(s) here %r ; %d in the imported helpers %r"
-             % (len(refusals), [r["where"] for r in refusals], len(imported),
-                [r.get("where") for r in imported]))
-        gate("H9 NO DEFECT IN OUR OWN PYTHON CODE - no exception was raised by this script itself "
-             "(a bug of ours is NEVER a machine refusal)", not defects,
+             % (len(bed_refusals), [r["where"] for r in bed_refusals], len(bed_imported),
+                [r.get("where") for r in bed_imported]))
+        gate("H9 NO DEFECT IN OUR OWN PYTHON CODE IN THE BED ARM - no exception was raised by this script "
+             "itself there (a bug of ours is NEVER a machine refusal)", not bed_defects,
              "%d our-code defect(s): %r"
-             % (len(defects), [("%s at %s: %s" % (d["exception_type"], d["source_line"], d["where"]))
-                               for d in defects]))
+             % (len(bed_defects), [("%s at %s: %s" % (d["exception_type"], d["source_line"], d["where"]))
+                                   for d in bed_defects]))
         left = [(os.path.basename(a["dest"]), a.get("md5"), a.get("size"))
                 for a in R["artefacts_on_disk"] if a.get("exists")]
         R["files_left_on_disk"] = left

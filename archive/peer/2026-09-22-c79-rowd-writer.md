@@ -231,4 +231,38 @@ scratch through an op in a way the fleet has never used, and its outcome selects
 (existing-op route / `OpConnectByUid` / `OpFsInnerTunnelConnect_v0`) — a design decision, and the brief
 had already halted this session. It is carried as the OPEN line of the cycle-69 material report.
 
-(Claude fills in)
+**JUDGEMENT DISPOSITION CLOSED 2026-09-22 — ACCEPTED IN PART, CARRIED BY `docs/cycle27-plan.md` Pre-decided
+115–118.** Per candidate and per finding:
+
+- **ACCEPTED — Pre-decided 115**: the "invoked on the SINK" sentence is an ADOPTED CONVENTION, not a
+  measurement. `docs/NAMES.md` is annotated accordingly: the wiki page the line cites does not say which end
+  the method is invoked on, the belief traces to one donor lineage, and the W1 census proves *"no writer in the
+  fleet takes a uid sink"*, not *"this wire cannot be written"*. The W1 measurement itself is NOT disputed.
+- **ACCEPTED — Pre-decided 116, route A first**: `OpConnectFromWire_v0` with the roles swapped (`wire_uid =
+  7506` + the `Wire.Terms[]` index of #7488 as the SOURCE half; sink triple = the NEW loop's BARE
+  `Diagram[19]/Nodes[21]/Terminals[1]`) is tried FIRST, on a dated scratch copy, by the review's own ~2-minute
+  test, because it needs nothing built. If it passes, Row D proceeds on it in the same dispatch and NOTHING NEW
+  IS BUILT.
+- **ACCEPTED BUT DEFERRED — Pre-decided 116, route B**: `OpConnectByUid` (uid → `UID to GObject Reference.vi`
+  → TMSC on a **Terminal** seed → the Invoke's `reference`, donor `OpConnectNested_v2`, NOT `OpStopFromNode_v0`)
+  is agreed to be the smaller and more general shape, and its unmeasured assumption (whether that VI resolves a
+  TERMINAL uid) is its first gate. It is expensive construction: it stops for a FRESH CYCLE and is not
+  improvised at the end of a dispatch.
+- **REFUTED/WITHDRAWN — candidate C, `OpFsInnerTunnelConnect_v0`**: the shape this review was dispatched to
+  attack is withdrawn on the review's own reasoning (wrong donor, needlessly specific), and was never built.
+- **ACCEPTED — Pre-decided 117**: the branch hazard is gated on OWNER IDENTITY, never on a count. A swapped
+  connect could silently branch wire 7506 into a wire whose source is still owned by the OLD `WhileLoop #637`
+  — a rule-1a computation change that passes every count-shaped gate — so `OpWireSource_v5` must report the
+  source terminal's owner as `WhileLoop #23032` on the ordered idempotent second pass.
+- **ACCEPTED — Pre-decided 118**: the dead ends are recorded in `docs/NAMES.md` so they are not re-tried —
+  `Tunnel.Inside Terminals[]` 6356000 / `Tunnel.Outside Terminal` 6356001 can never address #7468 (a
+  `FlatSequenceInnerTunnel` is not a `Tunnel`; its real properties are `Left Terminal` 1C3A9000 / `Right
+  Terminal` 1C3A9001), `Node.Connect Wires` needs both ends to be `Node`s, and `Create Described Wire` is
+  itself a `Terminal` method.
+- **The review's ruled-out (a) SURVIVED its own attack** and is unchanged: `FlatSequence` is
+  `Generic → GObject → FlatSequence`, so no `Nodes[]` address for #7468/#7488 exists (the same fact as
+  Pre-decided 110).
+
+The peer's cheapest discriminating test remains the NEXT executable step and is still unrun as of this
+disposition; nothing in `tools/recipes/`, `tools/gscript.py` or any `.vi` was changed on the strength of this
+review.

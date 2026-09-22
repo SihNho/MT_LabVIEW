@@ -174,3 +174,30 @@ design calls below belong to a judgement session.
    Renaming a delivered artefact is a judgement call and was left alone; this note is the record.
 
 Nothing in `tools/recipes/`, `STATUS.md`, `cycle_runner.py` or any `.vi` was touched by this session.
+
+**JUDGEMENT DISPOSITION CLOSED 2026-09-22 (cycle 69 series) — CARRIED BY `docs/cycle27-plan.md` Pre-decided
+104–111.** Every numbered finding above was ACCEPTED; one of them is now decided against the machine rather
+than left open:
+
+- **Finding 1 (the tunnel HAS an address today) — ACCEPTED and EXECUTED.** `OpFsInnerTunnelTerm_v0` on uid
+  7468 answered with every error column empty (`LeftTerm #7488` wire 7506, `RightTerm #7471` wire 7448), and a
+  control read on an unrelated FSIT #123 answered the same way, so the capability is of the CLASS. Carried by
+  **Pre-decided 109**, which amends 107's route to this tunnel's OWN terminal table, and by **111**, which
+  states the resulting address pair.
+- **Finding 2 (the record's 681/686 substitution, and 1055 as the class-refusal signal) — ACCEPTED as a
+  correction of the record**, confirmed by `owner_of(#681) = TopLevelDiagram #536`
+  (`tools/bench/diag_c77_rowd_addr.log`).
+- **Finding 3 — the "one line a judgement session should read first" is now DECIDED, and against the reader
+  hypothesis.** The three candidate `find_node` defects (root diagram absent from the census · `node_labels`
+  omits it · hint index 0 is not the root) are all refuted: the census row 0 IS `TopLevelDiagram #536`, 173 of
+  173 diagrams were scanned with 0 errors, and `find_node` still misses all three FlatSequences. The miss
+  tracks the CLASS — **Pre-decided 110**. No reader repair is owed.
+- **Finding 4 (Row D's deferral is safe; the artefact is a half-stage under a clean stage name) — ACCEPTED,
+  and the rename was NOT done.** The bed is pinned by md5 (`claudeDev\D1_s3b_m3a3_20260922_081056.vi`
+  `33ef524e…`) and its half-stage state is recorded in the plan's row table instead, which is what Pre-decided
+  104 exists to be read against. The mechanical stamp remains an unbuilt remedy under the 2026-09-18 no-new-device
+  order.
+- **The narrower claim the review said nobody had made — "`#7468` is readable but not yet writable" — became
+  the next cycle's actual question** and was reviewed separately in `archive/peer/2026-09-22-c79-rowd-writer.md`;
+  its outcome is Pre-decided 115–118. This review's proposed additive FSIT-front op is NOT the shape that was
+  adopted.

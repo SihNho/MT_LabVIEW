@@ -3448,3 +3448,68 @@ the verb does not exist — a failed prediction. Verdict: *"NEW-OP-REQUIRED — 
      properties are `Left Terminal` **1C3A9000** and `Right Terminal` **1C3A9001**. Likewise `Node.Connect
      Wires` needs both ends to be `Node`s, and `Create Described Wire` is itself a `Terminal` method, so no NI
      verb wires anything without a terminal reference at one end. Put all of this in `docs/NAMES.md`.
+
+## Pre-decided — ADDED 2026-09-22 (cycle 65 close): Route A's VERB is PROVEN, Route A ALONE cannot land Row D, and 117's uid is CORRECTED
+
+Source: `tools/bench/c80_rowd_routeA.log` (`BGRUN END rc=1 after 112 s`, 47 pass / 5 fail) and
+`tools/bench/c80_rowd_routeA_r2.log` (`rc=1 after 110 s`, 49 pass / 5 fail), plus
+`archive/peer/2026-09-22-c80-rowd-routeA-swapped-r2.md` (claude / `-Role hypothesis`, opus max, **ANSWERED** 689 s,
+verdict `ROUTE-A-ALIVE`) — its first arm `…-swapped.md` **TIMEOUT 780 s** and is disposed as a NON-RESULT, which is
+what CLAUDE.md requires of a call that told us nothing. The bed `claudeDev\D1_s3b_m3a3_20260922_081056.vi`
+md5 `33ef524e…` is unchanged at entry AND exit, `THE FILES THIS RUN LEFT ON DISK: []`, both scratch copies deleted,
+refs 8 opened / 8 closed / 0 live, handles 34,160 → 30,684 (restart) → 31,281.
+
+119. **ROUTE A's VERB IS PROVEN AND NO NEW *WRITER* OP IS NEEDED FOR THE CONNECT — but Route A alone cannot land
+     Row D.** The swapped `OpConnectFromWire_v0` call DID attach the intended new source: loop `#23032`
+     `Nodes[21]` t1 `'Outgoing Handle'` went from BARE to wire **7506** (`c80_rowd_routeA_r2.log:244`), and a
+     PRE-delete walk of net 7506 reports **THREE** source terminals — `('RightShiftRegister', 23868)` (the intended
+     new one), `('FlatSequenceInnerTunnel', 7468)` and `('RightShiftRegister', 4334)` (the OLD one) — with PD85
+     violations 0 (`:253-261`). So `Terminal.Connect Wire` accepts the roles exchanged, and Pre-decided 115 is now
+     confirmed ON THE MACHINE rather than argued from a wiki. What the verb cannot do is **REPLACE**: the connect
+     BRANCHES (3 sources ⇒ `Wire.Is Broken?` True, `ExecState` 0, `:237`), and both orderings are closed —
+     arm A1, which is Pre-decided 106's mandated delete-first ordering, is refused at the `Wire.Terms[]` read with
+     **`error 1055: Property Node in OpConnectFromWire_v0.vi`**, `UID 2` **0**, sink still BARE (`:119`): a DEAD
+     wire uid cannot supply a terminal. Deleting 7506 leaves BOTH ends bare, measured twice (`:162`, `:286`).
+     **Therefore the ONE missing capability is now narrow and exactly stated: address a BARE terminal by UID at the
+     Invoke.** Nothing else about Row D is open, and Route A's own arms are not to be re-run.
+
+120. **PRE-DECIDED 117's LITERAL UID IS CORRECTED — the OUTER terminal's owner is the REGISTER, not the loop.**
+     117 required `OpWireSource_v5` to report the source terminal's owner as `WhileLoop #23032`. Measured, the
+     owner is **`RightShiftRegister #23868`**, and the DELIVERED Row C already set that precedent
+     (`tools/bench/build_d1_m3a3_run2.log:182` = `[('RightShiftRegister', 23895)]`): a loop's shift-register OUTER
+     terminal is owned by the register object, not by the loop that draws it. **117's PRINCIPLE is untouched and
+     still mandatory** — the branch hazard is gated on OWNER IDENTITY, never on a wire count and never on a wire
+     delta. Only the expected uid changes: Row D PASSES when that owner is `RightShiftRegister #23868` and FAILS
+     when it is `RightShiftRegister #4334`. The recipe already prints both literal forms.
+
+121. **THE c79 REVIEW's "STEP 4" PROBE IS UNSOUND AND IS REMOVED; ROUTE B's ONE UNMEASURED PRIMITIVE IS THE NEXT
+     CYCLE'S FIRST ACT, AS A READ-ONLY DIAGNOSTIC.** `err_uidvi` came back `''` for a *deleted* wire uid as well
+     (`:119`) and the probe's out-of-range triple makes it uninformative by construction — it cannot separate
+     "resolved" from "refused", so it is out of the recipe. What replaces it is one ~2-minute measurement taken
+     BEFORE any construction: does `UID to GObject Reference.vi` resolve a **TERMINAL** uid? (It is proven only on
+     tunnel and wire uids.) Call it on `#7488` — the `FlatSequenceInnerTunnel #7468` LeftTerm — and on the new
+     loop's t1 terminal uid, and report the returned class and whether a TMSC to `Terminal` succeeds. **That single
+     answer SELECTS the op**, and neither branch is improvised at the end of a dispatch (Pre-decided 116-B):
+     YES ⇒ **`OpConnectByUid`**, general, donor `OpConnectNested_v2`, serving every future uid-addressed sink;
+     NO ⇒ the **FSIT-head op** on `Left Terminal` **1C3A9000**, which reuses a reader path that is ALREADY MEASURED
+     (`OpFsInnerTunnelTerm_v0` answers on two different FSITs with every error column empty, Pre-decided 109) and
+     therefore has no unmeasured primitive at all. Candidate C of 116 stays withdrawn as a SHAPE; its reading half
+     is the fallback's donor.
+
+122. **M3a-3b IS DECOMPOSED INTO THREE STEPS, EACH LEAVING A FILE** (the user's 2026-09-19 rule; Row D has now been
+     attempted across four dispatches and stopped at the same place each time, which is that rule's trigger).
+     **D-1** = the 121 diagnostic; artefact `tools/bench/diag_c81_uidref.log`; read-only, on a dated scratch COPY,
+     scratch deleted; nothing is built in the same dispatch. **D-2** = build and SAVE the op D-1 selects;
+     acceptance is `ExecState` 1, **20 consecutive calls leaving the handle count flat ±100** (reference hygiene is
+     a precondition, not an afterthought), and a call on `#7488` returning its terminal reference. **D-3** = Row D
+     on the bed: delete 7506, connect `#23868`'s OUTER into `#7488`, save `claudeDev\D1_s3b_m3a3b_<stamp>.vi`
+     (script save at `ExecState` 1, else the approved broken-intermediate `gui_save`, saying which); acceptance is
+     Pre-decided 106 + 111 + **117 as corrected by 120**.
+
+123. **`Wire.Disconnect Terminal` 6370C0D IS OFF THE CRITICAL PATH, AND THE CONTRADICTION IT RAISES IS RESOLVED BY
+     MEASUREMENT, NEVER BY CITATION.** The c80-r2 review reports labviewwiki marking 6370C0D *"(Not Implemented)"*
+     and `Terminals[]` read-only, which contradicts `docs/NAMES.md:1035`. Row D needs no disconnect verb —
+     delete-then-connect is the route — so **no cycle is spent on this now**; it is recorded as a doc contradiction
+     whose resolution, when something actually needs it, is a probe on a scratch copy. Pre-decided 115 applies
+     SYMMETRICALLY: a wiki page is evidence of convention on both sides of a disagreement, so `docs/NAMES.md:1035`
+     is **not** to be edited on the strength of the citation alone.
