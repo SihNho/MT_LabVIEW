@@ -68,7 +68,8 @@ LIMIT_RETRIES = 3
 
 # Cycle-48 retrospective (disposed): `claude -p` kills a backgrounded child when the turn ends; the ceiling
 # of 0 removes that wait/kill. Closes the background-kill class standing at 17 cumulative occurrences.
-SPAWN_ENV_EXTRA = {"CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS": "0"}
+SPAWN_ENV_EXTRA = {"CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS": "0",
+                   "CYCLE_SESSION": "1"}  # tools/hooks/report_gate.py exempts runner cells (they are not the chat)
 
 
 def spawn_env():
