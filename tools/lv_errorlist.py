@@ -380,6 +380,28 @@ def _focus_vi_window(vi_path, acts):
     return None, " | ".join(tried)
 
 
+def ensure_foreground(wtitle, hwnd, acts, tag):
+    """The dialog must BE the foreground before any keystroke; SendKeys goes to whatever is.
+
+    Fronting is done with `lv_gui.ps1 -Action activate` (added 2026-09-23), which is `focus` minus
+    the Alt tap and minus the VK_ESCAPE that closes this dialog, and the result is CONFIRMED here
+    with a read-only `GetForegroundWindow()` rather than trusted from the call's return."""
+    import win32gui
+    fg = win32gui.GetForegroundWindow()
+    if fg == hwnd:
+        acts.append({"act": "foreground check", "tag": tag, "confirmed": True})
+        return True
+    out = g._lv_gui("-Action", "activate", "-Title", '"%s"' % wtitle,
+                    "-Exception", "Approved", "-Evidence", EVIDENCE)
+    time.sleep(0.3)
+    fg = win32gui.GetForegroundWindow()
+    ok = fg == hwnd
+    acts.append({"act": "activate", "tag": tag, "confirmed": ok,
+                 "fg_title": win32gui.GetWindowText(fg) if fg else None,
+                 "out": out.strip()[:140]})
+    return ok
+
+
 def send_keys(key, acts, tag, wait_ms=900):
     out = g._lv_gui("-Action", "keys", "-Key", key, "-WaitMs", str(wait_ms),
                     "-Exception", "Approved", "-Evidence", EVIDENCE)
@@ -623,15 +645,14 @@ def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None):
         return i, p, la, b, _sel_in(la, b)
 
     # --- make the dialog the MEASURED foreground before any keystroke (run 2's failure) ----------
-    # ⚠️ `lv_gui.ps1 -Action focus` MUST NOT be used on this dialog. `[LVGui]::Focus`
-    # (tools/lv_gui.ps1:236-246) taps Alt, activates, and then SENDS VK_ESCAPE to leave LabVIEW's
-    # menu mode - and Esc is exactly how the Error List closes. Run 3 measured the consequence: after
-    # one `focus` call BOTH `-Action rect` and `-Action shotwin` on 'Error list' found no such window
-    # ("(no rect for 'Error list')", no b0b capture on disk, errors=['no highlighted row in the
-    # errors band']). The title-bar `clickprobe` below activates with a REAL click and no Esc.
-    fg_ok, fg = _fg_click(wtitle, acts)
-    R["dialog_foreground"] = fg
-    log("  dialog foreground measured: {0!r} (ok={1})".format(fg, fg_ok))
+    # ⚠️ NEITHER `-Action focus` NOR `-Action clickprobe` MAY BE USED ON THIS DIALOG. `[LVGui]::Focus`
+    # and `[LVGui]::ClickProbe` both tap Alt, activate, then send VK_ESCAPE to leave LabVIEW's menu
+    # mode - and Esc is exactly how the Error List closes. Runs 3 and 4 measured it: after either
+    # call, `-Action rect` and `-Action shotwin` on 'Error list' report "No LabVIEW window whose
+    # title contains 'Error list'". `-Action activate` is that activation minus the Alt and the Esc.
+    fg_ok = ensure_foreground(wtitle, hwnd, acts, "before reading")
+    R["dialog_foreground"] = fg_ok
+    log("  dialog is the measured foreground: {0}".format(fg_ok))
 
     # --- decide the stepping mechanism BY MEASUREMENT: one {DOWN}, then look -----------------
     img, path, lay, eb, sel = grab("b0b")
@@ -639,6 +660,7 @@ def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None):
         R["errors"].append("no highlighted row in the errors band")
         return
     pitch = max(12, sel[1] - sel[0] + 1)
+    ensure_foreground(wtitle, hwnd, acts, "mechanism probe")
     send_keys("{DOWN}", acts, "mechanism probe", wait_ms=450)
     img2, path2, lay2, eb2, sel2 = grab("probe")
     mode = "keys" if (sel2 and sel2[0] != sel[0]) else "click"
@@ -649,12 +671,13 @@ def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None):
     if mode == "keys":
         img, path, lay, eb, sel = img2, path2, lay2, eb2, sel2
         # {DOWN} already consumed one row; go back up so row 0 is not skipped.
+        ensure_foreground(wtitle, hwnd, acts, "back to the first row")
         send_keys("{UP}", acts, "back to the first row", wait_ms=350)
         img, path, lay, eb, sel = grab("b0c")
         if sel is None:
             sel = sel2
 
-    wheel_dir, stall = -1, 0
+    wheel_dir, stall, row_ord = -1, 0, 0
     for step in range(max_steps):
         if img is None or sel is None:
             break
@@ -680,10 +703,16 @@ def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None):
         # indented ~40 px further. Measured on the capture: header x~18, items x~40 (crop-relative).
         is_header = min(xs) < 30
         obj, reason = _split(txt)
-        rec = {"index": len(R["items"]), "vi": R["vi_name"], "object": obj, "reason": reason,
+        # `row_index` counts EVERY row the walk selected, category headers included, so a later
+        # `Show Error` pass can address the same row without re-deriving it from the text (which
+        # repeats: "This wire is not connected to anything." occurs 8x on the bed).
+        rec = {"index": len(R["items"]), "row_index": row_ord, "vi": R["vi_name"],
+               "object": obj, "reason": reason,
                "raw": txt, "detail": detail, "detail_path": "capture+OCR",
                "selection_route": mode, "rect": [0, y0, img.width, y1], "offscreen": False,
-               "uia_path": None, "capture": path, "band_overlap_ok": overlap}
+               "uia_path": None, "capture": path, "band_overlap_ok": overlap,
+               "screen_rect": [org[0], org[1] + y0, org[0] + img.width, org[1] + y1]}
+        row_ord += 1
         if is_header:
             rec["index"] = None
             headers.append(rec)
@@ -717,6 +746,7 @@ def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None):
             if target + pitch - 1 > eb[1] - 2:
                 break
         if mode == "keys":
+            ensure_foreground(wtitle, hwnd, acts, "step %d" % step)
             send_keys("{DOWN}", acts, "step %d" % step, wait_ms=300)
         else:
             click_img(img.width // 6, target + pitch // 2, "step %d select the next row" % step, org)
@@ -850,6 +880,11 @@ def read(vi_path, out_json=None, maxdepth=14, dump_tree=True, log=print):
     acts.append({"act": "key esc", "tag": "close error list", "confirmed": gone})
     R["closed_with_esc"] = gone
     log("  Esc closed the Error List: {0}".format(gone))
+    # Offline, after the dialog is closed: no LabVIEW, no GUI - only the captures on disk.
+    try:
+        refine_rows(R, log)
+    except Exception as e:                                                         # noqa: BLE001
+        R["errors"].append("refine_rows: {0}: {1}".format(type(e).__name__, str(e)[:160]))
     return _finish(R, out_json, log)
 
 
@@ -1028,6 +1063,71 @@ def _detail(u, hwnd, maxdepth, exclude):
             if s and len(s) > len(best):
                 best, bpath = s, d["path"]
     return (best.strip() if best else None), bpath
+
+
+def refine_rows(R, log=print):
+    """Re-read each row from the capture in which it is NOT highlighted. OFFLINE - no LabVIEW.
+
+    RapidOCR reads a white-on-blue LabVIEW list row with its word spaces collapsed
+    ("Thiswireisnotconnectedtoanything"); the SAME row, one step later, is drawn unselected and
+    reads verbatim ("This wire is not connected to anything"). Every row except the last one is
+    therefore re-read from item i+1's capture, one pitch above that capture's highlight - which is
+    robust to the list having scrolled in between, because the walk always moves exactly one row.
+
+    A replacement is accepted ONLY when the two readings agree with whitespace removed, so a
+    mis-located row can never be substituted for the real one."""
+    from PIL import Image
+
+    def norm(s):
+        """Alphanumerics only. The two readings of one row differ in SPACES and in the trailing
+        period ('Thiswireisnotconnectedtoanything' vs 'This wire is not connected to anything.'),
+        so comparing on whitespace alone rejected 12 of 13 correct refinements."""
+        return re.sub(r"[^0-9a-z]", "", (s or "").lower())
+
+    def row_text(cap, want_y):
+        if not cap or not os.path.exists(cap):
+            return None
+        img = Image.open(cap).convert("RGB")
+        lay = layout(img)
+        eb = lay.get("errors_band")
+        if not eb:
+            return None
+        band = ocr_lines(img.crop((20, eb[0], img.width - 30, eb[1])), scale=3)
+        on = [t for t, _c, a, b, _x in band
+              if want_y - 5 <= eb[0] + (a + b) / 2.0 <= want_y + 21]
+        return " ".join(on).strip() or None
+
+    items = R.get("items") or []
+    fixed = 0
+    for i, it in enumerate(items):
+        old = it.get("raw") or ""
+        pitch = max(12, it["rect"][3] - it["rect"][1] + 1)
+        cands = []
+        if i + 1 < len(items):                    # the row, one step later, drawn UNSELECTED
+            nxt = items[i + 1]
+            cands.append((nxt.get("capture"), nxt["rect"][1] - pitch))
+        if i:                                     # and one step earlier, if the list did not scroll
+            prv = items[i - 1]
+            if prv["rect"][1] + pitch == it["rect"][1]:
+                cands.append((prv.get("capture"), it["rect"][1]))
+        for cap, y in cands:
+            cand = row_text(cap, y)
+            if cand and norm(cand) == norm(old):
+                if cand != old:
+                    it["raw_selected_ocr"] = old
+                    it["raw"] = cand
+                    it["object"], it["reason"] = _split(cand)
+                    it["refined_from"] = cap
+                    fixed += 1
+                it["raw_refined"] = True
+                break
+        else:
+            it["raw_refined"] = False
+    R["rows_refined"] = fixed
+    R["rows_unrefined"] = [it["index"] for it in items if not it.get("raw_refined")]
+    log("  refine_rows: {0} row(s) re-read unselected; not refined: {1!r}".format(
+        fixed, R["rows_unrefined"]))
+    return R
 
 
 def _finish(R, out_json, log):

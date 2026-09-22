@@ -95,7 +95,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('windows', 'dialogs', 'dismiss', 'focus', 'shot', 'shotwin', 'rect', 'ping', 'crop', 'click', 'clickprobe', 'rclick', 'dclick', 'move', 'movewin', 'hover', 'probe', 'wire', 'drag', 'wheel', 'key', 'keys', 'cursor', 'md5')]
+    [ValidateSet('windows', 'dialogs', 'dismiss', 'focus', 'activate', 'shot', 'shotwin', 'rect', 'ping', 'crop', 'click', 'clickprobe', 'rclick', 'dclick', 'move', 'movewin', 'hover', 'probe', 'wire', 'drag', 'wheel', 'key', 'keys', 'cursor', 'md5')]
     [string]$Action,
 
     [int]$X = 0,
@@ -160,6 +160,9 @@ public class LVGui {
     [DllImport("user32.dll")] public static extern bool GetCursorPos(out POINT p);
     [DllImport("user32.dll")] public static extern bool IsWindowEnabled(IntPtr h);
     [DllImport("user32.dll")] public static extern IntPtr PostMessage(IntPtr h, uint msg, IntPtr w, IntPtr l);
+    [DllImport("user32.dll")] public static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+    [DllImport("user32.dll")] public static extern bool BringWindowToTop(IntPtr h);
+    [DllImport("kernel32.dll")] public static extern uint GetCurrentThreadId();
 
     public delegate bool EnumWindowsProc(IntPtr h, IntPtr p);
     public struct RECT { public int Left, Top, Right, Bottom; }
@@ -233,6 +236,10 @@ public class LVGui {
     // but a bare Alt tap also puts LabVIEW's menu bar into keyboard-navigation mode, which eats
     // the next Ctrl-combo as a mnemonic and blocks COM while the menu loop is active
     // (2026-09-01/04). So: tap Alt, focus, then tap Esc to leave menu mode before returning.
+    // ⚠️ THAT ESC DISMISSES ANY DIALOG THAT CLOSES ON ESC. Measured 2026-09-23 on LabVIEW's Error
+    // List (Ctrl+L): one Focus() call and the window is GONE - `rect`/`shotwin` then report "No
+    // LabVIEW window whose title contains 'Error list'". `ClickProbe` below copies this activation
+    // and has the same effect. Use `-Action activate` (Activate(), no Alt, no Esc) on such windows.
     public static void Focus(IntPtr h) {
         keybd_event(VK_ALT, 0, 0, UIntPtr.Zero);
         keybd_event(VK_ALT, 0, 2, UIntPtr.Zero);
@@ -243,6 +250,35 @@ public class LVGui {
         System.Threading.Thread.Sleep(40);
         keybd_event(0x1B, 0, 2, UIntPtr.Zero);   // VK_ESCAPE up
         System.Threading.Thread.Sleep(150);
+    }
+
+    // Activate a window WITHOUT the Alt tap and WITHOUT the Esc tap, for dialogs that close on Esc
+    // (added 2026-09-23 after Focus()/ClickProbe() were measured dismissing LabVIEW's Error List).
+    // The foreground lock is defeated the documented way instead: attach this thread's input queue
+    // to the current foreground window's thread for the duration of the SetForegroundWindow call.
+    // Returns one JSON line so the caller can VERIFY rather than trust a void return.
+    public static string Activate(IntPtr h) {
+        uint dummy;
+        IntPtr fgBefore = GetForegroundWindow();
+        uint fgTid = (fgBefore == IntPtr.Zero) ? 0 : GetWindowThreadProcessId(fgBefore, out dummy);
+        uint myTid = GetCurrentThreadId();
+        bool attached = false;
+        if (fgTid != 0 && fgTid != myTid) attached = AttachThreadInput(myTid, fgTid, true);
+        ShowWindow(h, 9);                       // SW_RESTORE - never minimise, never hide
+        BringWindowToTop(h);
+        bool sfw = SetForegroundWindow(h);
+        int sfwErr = Marshal.GetLastWin32Error();
+        System.Threading.Thread.Sleep(250);
+        if (attached) AttachThreadInput(myTid, fgTid, false);
+        IntPtr fgAfter = GetForegroundWindow();
+        return "{\"activate\":" + WinJson(h)
+             + ",\"alive\":" + (IsWindow(h) ? "true" : "false")
+             + ",\"rect\":" + RectJson(h)
+             + ",\"attached\":" + (attached ? "true" : "false")
+             + ",\"sfw\":" + (sfw ? "true" : "false") + ",\"sfw_err\":" + sfwErr
+             + ",\"fg_before\":" + WinJson(fgBefore)
+             + ",\"fg_after\":" + WinJson(fgAfter)
+             + ",\"ok\":" + ((fgAfter == h) ? "true" : "false") + "}";
     }
 
     public static void Tap(byte vk) {
@@ -628,7 +664,9 @@ if ($WaitMs -gt 0) { Start-Sleep -Milliseconds $WaitMs }
 # --- authorization gate -------------------------------------------------------------------
 # 'clickprobe' IS state-changing - it really clicks - so it passes the SAME gate as 'click' and is
 # logged the same way. Being a diagnostic does not exempt it (2026-09-17).
-$stateChanging = @('click','clickprobe','rclick','dclick','drag','wire','keys','key')
+# 'activate' changes the z-order and the input focus, so it passes the same gate and is logged -
+# being the *gentler* way to front a window does not make it a diagnostic (added 2026-09-23).
+$stateChanging = @('click','clickprobe','rclick','dclick','drag','wire','keys','key','activate')
 if ($stateChanging -contains $Action) {
     $diagnosticKey = ($Action -eq 'key' -and $Key -in @('esc','escape'))
     if (-not $diagnosticKey) {
@@ -685,6 +723,16 @@ switch ($Action) {
         if ($h -eq [IntPtr]::Zero) { throw "No LabVIEW window whose title contains '$Title'." }
         [LVGui]::Focus($h)
         Write-Output "focused: $Title"
+    }
+
+    'activate' {
+        # Front a window WITHOUT the Alt tap and WITHOUT the Esc tap that 'focus' and 'clickprobe'
+        # both send - the only safe way to front a dialog that CLOSES ON ESC (LabVIEW's Error List).
+        # Prints one JSON line carrying the measured foreground, so the caller verifies by effect.
+        if (-not $Title) { throw "-Title is required for 'activate'." }
+        $h = [LVGui]::Find((Get-LVPid), $Title)
+        if ($h -eq [IntPtr]::Zero) { throw "No LabVIEW window whose title contains '$Title'." }
+        Write-Output ([LVGui]::Activate($h))
     }
 
     'shot' {
