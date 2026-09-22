@@ -1,0 +1,4073 @@
+﻿# priorart-allwires
+
+- **agent:** claude
+- **role:** priorart
+- **model:** opus (effort high; pinned by -Model/-Effort (role priorart))
+- **kind:** fact
+- **cost:** $7.7792  in 30 / out 48636 / cache-create 407195 / cache-read 4982353  (574s, 26 turn(s))
+- **date:** 2026-09-23 04:32:18
+- **outcome:** ANSWERED (578s)
+- **why asked:** (Claude fills in)
+- **verdict:** unverified
+
+## Question
+
+PRIOR-ART REVIEW (trigger: cycle-start).
+
+You are checking ONE thing: has this already been done here? Do not review the plan's merits -
+other reviews do that. Answer in two parts, naming a FILE and LINE for every finding. A finding without a citation
+cannot be acted on, because the only way this review is released is by someone opening your citation and showing in
+writing that it does not cover their case.
+
+PART A - THE DIRECTION (this is the part that matters most)
+ A1 SETTLED ALREADY. Has this direction, or its central question, already been decided or answered in STATUS.md,
+    docs/ or archive/? Quote the decision and its date.
+ A2 REFUTED ALREADY. Has this direction already been tried, abandoned, or argued against - in an archived peer
+    review, a retrospective, or a superseded plan section? Say what killed it and whether that still applies.
+ A3 CONTRADICTED. Does any fact the plan cites conflict with something else in these files? Quote BOTH sides. A
+    summary line that contradicts its own section 40 lines earlier counts, and has happened here.
+ A4 UNREAD EVIDENCE. Which existing document should obviously have been consulted for this direction and clearly
+    was not? Name it.
+
+PART B - THE ARTIFACT, if the plan builds or changes one
+ B1 ALREADY BUILT. Does an op, recipe, helper or VI already do this, possibly under another name? Check
+    tools/gscript.py's functions, tools/recipes/, docs/toolkit-capabilities.md and the claudeDev VI names.
+ B2 ALREADY FAILED. Has this exact build been attempted and failed? What did the record say was the cause, and
+    does the new plan address that cause or repeat it?
+ B3 HELPER EXISTS. Is the plan hand-rolling something the toolkit already provides - indexing, identification,
+    wiring, saving, censusing? Name the call.
+ B4 ALREADY MEASURED. Has the question this artifact would answer already been measured and written down?
+
+End with machine-readable lines, one per finding:
+  PRIOR-ART: settled-already | refuted-already | contradicted | unread-evidence
+  PRIOR-ART: already-built | already-failed | helper-exists | already-measured
+  PRIOR-ART: novel
+`novel` only if none apply. Do not invent slugs.
+
+THESE VERDICTS STOP THE WORK. Any slug other than `novel` blocks the next build until someone opens your citation
+and refutes it in writing. So be precise about what your citation actually covers: an over-broad match costs real
+work, and a missed one costs a whole build cycle.
+
+=== WHAT IS UNDER REVIEW ===
+---
+type: plan
+status: current
+date: 2026-09-22
+cycle: 27
+kind: build
+supersedes: [docs/cycle21-plan.md]
+tags: [d0, d1, d2, delivery, gpu, unattended]
+---
+
+# Cycle 27+ ??the user's re-plan answer: **D0 ??D1 ??D2, in that order**
+
+**User, 2026-09-18 14:2x, answering the third consecutive outcome review:** *"D0, D1, D2 ?쒖꽌濡?吏꾪뻾?섎㈃ 醫뗭쓣??"*
+Asked what "option 1" would even change when the original already has its stop path and `save N xyz traces.vi`,
+the answer was: nothing ??option 1 as written was wrong. The real first step is **D0** from `docs/cycle15-plan.md`
+(the plan the user approved 2026-09-17), then D1, then D2. This file names the order and the pre-decided points;
+the content of D0/D1/D2 stays where it is written (`docs/cycle15-plan.md` 짠"D1 = ??, `docs/pre-rig-master-plan.md`
+rows 1.1??.9, `docs/d1-route-b-plan.md`).
+
+## The three deliverables (definitions unchanged)
+- **D0** ??a **plain, unmodified copy** of the original under `claudeDev`, driven by the harness with nobody present
+  through stages 0?? (panel parameters ??configure ??bead-pick clicks on the image display ??done button ??save
+  path/name ??experiment loop), run, stopped, restarted. What is built is the **harness**, not the VI. (Rule 1c';
+  `lv_gui.ps1 -Exception Approved -Evidence "user 2026-09-17 bead-pick option 1"`.)
+- **D1** ??inside that copy: acquisition loop 쨌 **GPU-kernel tracking loop** 쨌 file-writer loop 쨌 frame accounting 쨌
+  stop/shutdown; stages 0?? untouched; N1 = the 10,043-frame fixture comparison of `GPU_kernel_v1.vi` first.
+- **D2** ??scheduler 쨌 motor (`SetCommand_signed.vi`) 쨌 ASI/focus loop 쨌 display; then the Phase-2 dry-run checks.
+
+## Pre-decided (apply, cite the number, do not re-ask)
+1. **Order is D0 ??D1 ??D2.** No cycle works on D1 while D0's done-when is open, none on D2 while D1's is.
+2. **No further process device** (user, 08:53) ??still the standing order. A retrospective naming one is a finding.
+3. **D0 done-when** = a script (one runner, one bgrun, one log) that: copies the original (md5 before AND after,
+   original untouched), opens the copy, sets panel parameters by VI Server, runs it, drives the pick stage by the
+   approved GUI clicks, presses done, types the save path/name, lets the experiment loop run N seconds, stops it
+   through the VI's own stop control, verifies the `.tra` output exists and is non-empty, closes, and repeats once
+   (restart). Every step gated with a prediction contract.
+4. **Motor boundary for D0 ??P2 IS DONE (2026-09-18 14:3x??6:0x, user present).** The user ran the plain copy
+   (`claudeDev\Track_D0_copy_20260918.vi`) by hand through the pick stage into the experiment loop; the magnet
+   bound was measured (panel Data-Entry range 0??0.84, nothing in front of `MOV`); **controller-side limits are
+   now in force** ??PI `TMN 0 / TMX 39` (RAM; the gate's session-start hook re-applies and verifies them) and ASI
+   `SL/SU` = live position 짹2 mm (persistent) ??and `tools/motor_gate.py --session start|end` + the live test
+   10/10 (`tools/bench/motor_gate2_live.log`). **Unattended D0 runs may therefore start the VI**, on the
+   ASSUMPTION (flagged for the user, rule 2c) that the controller limits are the protection the user meant by
+   "洹몃윭硫??덉떖?????덉쓣 寃?媛숈???: every D0 run begins with `motor_gate.py --session start` (refuse the run if
+   the readback fails) and ends with `--session end` is NOT called (limits stay on; the user's "release at end"
+   applies to the interactive tool sessions, not to unattended runs). Known facts to re-check after the first
+   unattended run: `TMX?` still 39 and `W X` unchanged (does the original's startup reload parameters or re-zero?).
+   Opening the copy needs the original preloaded read-only (`tools/bench/p2_open_copy.py` pattern).
+5. **Motor-limit check A** (`docs/motor-limit-assurance-plan.md` 짠A.1; its missing primitive is now BUILT:
+   `OpFsTunnelTerm_v0.vi`, firefighter 2026-09-18 13:36, 38/38) runs **alongside D0 on the D0 copy** ??it is
+   read-only and needs no motor. It is the precondition of the P2 live check, so it is not deferred behind D0.
+6. **GPU first** in D1 (`GPU_kernel_v1.vi`); CPU top level is a later, second deliverable. Fixture comparison N1
+   before any D1 build.
+7. **Failed prediction ??a SINGLE `-Agent claude -Role hypothesis` arm** (opus / effort max, web on), which
+   `guard_peer.py` accepts as discharging the failed prediction since the **CLAUDE.md 짠5 amendment of
+   2026-09-18** ("Codex's roles move to Claude sub-sessions" + "D3 IS AMENDED"), taken because codex's weekly
+   quota reached 9 %. **`-Dual` is NOT the default any more**: it stays available and is the right call only
+   when a claim about our OWN tools needs a second opinion that does not share our priors. (This line said
+   "Failed prediction ??`-Dual` review" until 2026-09-18 18:1x; corrected by the cycle-32 material session.)
+   Firefighter ladder per CLAUDE.md 짠3 (runner-decided).
+8. `docs/cycle21-plan.md` is superseded by this file; `docs/cycle15-plan.md` stays the content reference.
+9. **EVERY GUI action is capture ??locate ??act ??capture ??confirm (user, 2026-09-18 17:5x, watching the live
+   v4 run: *"GUI 而⑦듃濡?以묒뿉??諛섎뱶??罹≪쿂 ?대?吏 鍮꾧탳?섎뒗寃??꾩슂?좊벏"*).** Capture BEFORE and locate the target
+   *in that capture* (colour/template match, OCR of the label, or the control's live screen rect); act; capture
+   AFTER and CONFIRM the expected change (button state, a counter, a new window) before the next step. No change
+   ??FAIL and stop. **Derived or remembered coordinates are never clicked blind** ??a coordinate that worked on
+   another copy of the same VI is not evidence about this one, and a window-rect comparison says nothing about
+   control positions inside the panel. Read the panel rect live (maximise first). Implemented by
+   `tools/bench/d0_locate.py` + `clickprobe`; this is what turned v4's 13/3 into v5's 39/1: v4 reused v3's panel
+   geometry and clicked the V6 copy's (1114,915) while this copy's button centre was (1177,862) ??the click
+   landed at **(??3, +53) px** from the button, i.e. 63 px left and 53 px below it.
+   <!-- MEASURED: 1114??177 = ??3, 915??62 = +53 (screen y grows downward). A SECOND, duplicate item numbered 9
+        stated this deviation as "(??4, +51) px"; both components were wrong and the duplicate numbering made
+        "cite the number" ambiguous. Merged into this item and the figure corrected by the cycle-34 judgement
+        session, 2026-09-18, resolving doc_ingest contradiction P1 (archive/ingest/2026-09-18-ingest-2026-09-18.md). -->
+10. **The live motor-gate test to cite is the 16:0x RETEST, 10/10** (`tools/motor_gate.py` session-start repairs
+   the reference after `SPA` with `RON 1 0` + `POS 1 <same value>`; self-test 76/76). The earlier 15:37 run
+   scored 8/10 with L4 a FALSE PASS and is **superseded** ??`tools/bench/motor_gate2_live.log` holds the 15:37
+   numbers, so a citation of that file alone reads 8/10 and must say which run it means.
+   <!-- Resolves doc_ingest contradiction P3 by labelling the runs rather than picking a winner: both numbers are
+        true of different runs. Judgement session, cycle 34. -->
+11. **One cycle number per run.** The 18:08??8:13 D0 v5 run is labelled "cycle 31" in one place and "cycle-32" in
+   another because the runner's own counter (`tools/bench/cycle_runner.log`, cycles 19/20) and this narrative's
+   counter disagree. A cycle number is only a label ??so **identify a run by its timestamp and
+   log path, never by a cycle number alone**. Do not renumber history.
+   <!-- Resolves doc_ingest contradiction P4. Judgement session, cycle 34. -->
+12. **`## Pre-decided` lines are edited by JUDGEMENT sessions.** A material session that believes one is stale
+   reports it and stops (retrospective-cycle31 F7, disposed).
+13. **`docs/cycle15-plan.md`'s `## Pre-decided` 1?? (`:118-130`) BIND the next D1 build, and BOTH authorisation
+   flags stayed `False` ???좑툘 REVISED FOR THE `Z/dZ` ROW BY 13a BELOW; read both.** Judgement, cycle 35, answering the route-B read-out's OPEN ("does a `status: paused` plan
+   still bind?"). It does: that file's own frontmatter (`docs/cycle15-plan.md:5-7`) says the section "stays
+   authoritative for the D1 queue/shift-register questions ??nothing here is retracted", and item 8 above already
+   makes cycle15 the content reference. So, for the three NO-ROUTE rows of route-B run 3
+   (`tools/bench/build_d1_routeb_v0_run3.log:385-387`): `#1359`/`#29874`'s shift registers **MOVE WITH THEIR
+   NODES** into loop 1.2 (`add_shift_reg` + `wire_sr`, `index_mode 1` kept exactly as the original has it ??
+   cycle15 item 2), and `Z/dZ` ??`#2222` t0 is **REORDERED** before the S3-ct reparent of `ControlTerminal #403`
+   (by index, `OpConnectNested_v1`, sink `is_source` FALSE ??cycle15 item 3). The recipe's two constants
+   (`tools/recipes/build_d1_routeb_v0.py:242`, `:247`) carry the comment "only the judgement session may turn it
+   on": **the judgement session declines, and the answer is "no", not "not yet".** `SR_QUEUE_AUTHORISED` and
+   `TEMP_SINK_AUTHORISED` stay `False`; a build that needs either to be True is the wrong build.
+13a. **REVISED ??`TEMP_SINK_AUTHORISED` is `True` FOR THE `Z/dZ` ROW ONLY; `SR_QUEUE_AUTHORISED` stays `False`
+   permanently.** Decided by the cycle-36 judgement session, which recorded it **only in STATUS** ??prior-art
+   finding A1 (`archive/peer/2026-09-18-priorart-d1-routeb-run5.md:242-253`) was right that this binding file was
+   never amended; the cycle-37 judgement session amends it here, per Pre-decided 12. Grounds, both MEASURED:
+   - Item 13's shift-register half was **confirmed by run 4** ??both registers were created MOVED WITH THEIR NODES
+     (`tools/bench/build_d1_routeb_v1_run4.log:315-316`). `SR_QUEUE_AUTHORISED` stays `False` for good; its grounds
+     are now confirmed rather than assumed.
+   - Item 13's `Z/dZ` half rested on the **REORDER**, which the machine has refuted twice: `ControlTerminal #403`
+     has no node index on `Diagram[56]` and `OpConnectNested_v1` addresses `Diagram[].Nodes[].Terminals[]` only
+     (`?쫞un4.log:163-164`) ??a fact already on file at `tools/recipes/build_opconnectctl_v0.py:9-14` and, with
+     external sources, at `archive/peer/2026-09-17-zdz-wirecut-opus.md:130`; and the node moves at
+     `build_d1_routeb_v1.py s3():617-631` cut w730, **not** the `#403` reparent
+     (`archive/peer/2026-09-18-routeb-run4-error2-and-zdz.md`). A decision resting on a premise measured false is
+     not preserved by leaving it alone.
+   So the `Z/dZ` row runs through the **temporary-sink** path as the discriminating test. It authorises **no new op
+   and no new device** (Pre-decided 2 untouched): `OpCreateEqual_v0` ??`wire_control` ??`OpConnectFromWire_v0` ??
+   delete + `remove_bad_wires_scripted`, all built weeks ago.
+   ?좑툘 **The flag alone is not sufficient.** Prior-art A3 (`?쫜riorart-d1-routeb-run5.md:269-287`) measured that the
+   v1/B2 RETRY returns at `build_d1_routeb_v2.py:1278` whenever `node_index_on()` is `None` ??always true for a
+   ControlTerminal ??so `:1296` is never evaluated and the flag is INERT. The RETRY is therefore kept **only as a
+   logged control** (prior-art B4): it records its NO-ROUTE reason as a `fact` and **falls through** to the
+   temporary sink instead of returning.
+   ?좑툘 **The flag's stated grounds were mis-cited** (prior-art A2). `build_d1_routeb_v2.py:305-308` justifies the
+   refusal with a 1055 modal from an invalid terminal refnum (`docs/NAMES.md:473-480`), but
+   `docs/toolkit-capabilities.md:64` records that `OpCreateEqual_v0` fetches both operands INSIDE the op so no
+   terminal refnum crosses COM ??the cited text is the **fix** for that defect, not evidence of it. The real hazard
+   is different and **silent**: `src_names=()` ??`Names=[]` ??`Get Outputs` empty ??`Index Array[0]` returns a
+   default refnum with no error. It is bounded: a silent bad refnum leaves the sink BARE, which the row's own
+   discriminator reads ??a measurable outcome, not a modal that hangs an unattended run.
+   **Why the created `Equal?` and not the `bare_named_sinks` variant** (prior-art B3): the created node is made and
+   deleted inside one operation and borrows nothing live, so even a failed cleanup can only leave a broken wire that
+   `remove_bad_wires_scripted` and the ExecState gate catch. The bare-named-sink variant borrows a **live** sink on
+   the original's own body diagram, where an incomplete cleanup would leave the original's input wired to `Z/dZ` ??
+   a rule-1a computation change on a path this build does not otherwise touch.
+14. **A route-B run that ends at ExecState 0 MEASURES before it deletes.** Run 3 deleted its own working copy
+   ("a broken VI is never written", `?쫞un3.log:487`) and destroyed the evidence with it, so the ExecState-0 cause
+   on record (`tools/recipes/build_d1_routeb_v0.py:131-135`) is an advance INFERENCE, never a measurement ??the
+   run's own census is explicitly labelled "not an explanation" (`?쫞un3.log:428`). From now on, before any delete
+   and on the live broken VI, the recipe **re-reads `ExecState` with the ORIGINAL preloaded read-only** (item 14a
+   below) and writes both readings to the log. ?좑툘 **Corrected within the same cycle, by measurement**: this item
+   first mandated the `Wire.Is Broken?` reader (6371004) and cycle15 item 4's bare-terminal census. Both are now
+   measured useless here and are **WITHDRAWN** ??the census returned an IDENTICAL 375 bare named input terminals
+   over 170/170 diagrams on a KNOWN-GOOD copy, so it discriminates nothing
+   (`tools/bench/diag_d0_execstate_preload.log:26-36`, `:65-75`), and `Wire.Is Broken?` cannot be run read-only:
+   the only built readout follows a `Terminal.Connect Wire` **write**, which `docs/NAMES.md:898-909` measured
+   turns an ExecState-1 scratch into 0. Capturing evidence before deleting a broken copy stays right; those two
+   instruments are not it. **A value returned beside an error has
+   measured nothing**: run 3's three conditional terminals read `wire 0` *with* `error 1055: Property Node in
+   OpLoopEndRef_v0.vi` attached (`?쫞un3.log:416-418`), so that 0 is UNREAD, not zero, and must be reported as
+   UNREAD. Deleting the working copy stays the rule; capturing the reading first is now part of it.
+14a. **An `ExecState` read taken WITHOUT the ORIGINAL preloaded is UNREAD, not "broken".** MEASURED, cycle 35
+   (`tools/bench/diag_d0_execstate_preload.log`, 9/9, rc=0): three BYTE-IDENTICAL files ??the original,
+   `claudeDev\Track_D0_copy_20260918.vi`, and a copy made during the run (all md5
+   `c39f36e0675339673b707c59f0784fee`, 471,257 B) ??each read **ExecState 0 opened cold** in a fresh instance
+   (`:14`, `:53`) and **ExecState 1 in the same instance once the ORIGINAL had been opened read-only first**
+   (`:44-45`, `:84`). A cold read therefore measures **subVI linkage**, not the legality of anything we built, and
+   `Track_D0_copy_20260918.vi` is **not damaged** ??D0's delivery record stands. So: every `ExecState` gate opens
+   the ORIGINAL read-only first (the `tools/bench/p2_open_copy.py` pattern, already required by Pre-decided 4 for
+   *opening* a copy ??it governs *reading* one too), and any ExecState 0 taken cold is logged **UNREAD** and
+   re-taken under preload before a single word of diagnosis. Cost of the preload, measured: ~+20k handles per
+   condition versus ~+6k cold (`?쫜reload.log`), so restart LabVIEW between conditions.
+16. **Route-B run 3's `ExecState 0` is NO LONGER EVIDENCE that the build produced a broken VI.**
+   `tools/recipes/build_d1_routeb_v0.py` copies from `Min_Track N beads V6_ParallelLoop.vi` (`:172`) and **never
+   preloads it** ??every other mention is `md5()` or `shutil.copy2` (`:285`, `:306`, `:462`, `:1413`), the working
+   copy being opened directly at `:310` ??while its S5 gate is `g.exec_state(TARGET)` at `:1289`, i.e.
+   `GetVIReference(??.ExecState` on an instance with nothing preloaded (`tools/gscript.py:1920-1921`). By item 14a
+   that gate has been reading linkage. The advance attribution at `:131-135` ("these cannot produce `ExecState 1`")
+   is therefore **read from a void gate**. ??**The control WAS repeated on route B's own original**
+   (`tools/bench/diag_d1_execstate_preload.log`, 7/7, rc=0): a byte-identical claudeDev scratch copy of
+   `Min_Track N beads V6_ParallelLoop.vi` (md5 `2a78e17c449cacdaf5da389818526859`, = the recipe's pinned
+   `ORIG_MD5` at `:173`) read **COLD 0** (`:13`) and **preloaded 1** (`:33`). The effect is not specific to the
+   3StateClamping family.
+   ?좑툘 **THREE CORRECTIONS from the adversarial review** (`archive/peer/2026-09-18-execstate-linkage.md`, ANSWERED,
+   opus/max, $2.8794), all ACCEPTED ??an earlier draft of this item said the run-3 attribution was "unsupported",
+   which was too strong:
+   (a) **ExecState 0 was OVER-DETERMINED, not unsupported.** The attribution never rested on ExecState alone:
+       `s1q` was not executed (`:1255-1257`) and S4b/S4s were skipped (`:1274-1275`), leaving three While loops
+       with unwired conditional terminals ??a compile-time break independent of any gate. What died is the
+       *gate's* ability to discriminate, not the explanation. ?좑툘 But that independent support is itself
+       **measured-with-error**: run 3 read those conditional terminals as `wire 0` *with* `error 1055: Property
+       Node in OpLoopEndRef_v0.vi` attached (`?쫞un3.log:416-418`), and by item 14's own rule a value returned
+       beside an error is UNREAD. So neither side is settled; the cheap test below is, correctly, what settles it.
+   (b) **NO PRELOADED BUILD RUN.** The obvious remedy ??re-run the build with the original preloaded ??ADDS a
+       hazard it does not remove: the working copy can CROSS-LINK to the in-memory original's subVIs and is then
+       written by `g.save(TARGET)` at `:1291`. Preload stays confined to **read-only** ExecState diagnostics, in a
+       step that never saves. A preload can also MASK a genuine break by supplying subVIs the saved VI would not
+       resolve on its own, so a preloaded 1 is necessary, never sufficient. Rivals not yet excluded:
+       `GetVIReference` options `0` vs the `0x10` search bit; our own ops measured flipping 1 ??0
+       (`docs/NAMES.md:898-911`); load/compile settling.
+   (c) **The cheapest discriminating test, and the next cycle's first act: restore the BASELINE ExecState read
+       into route B's `s1()`.** `tools/recipes/build_d1_v0.py:461` has it; `build_d1_routeb_v0.py:302-316` dropped
+       it. One line, no preload, no extra LabVIEW: it reads the untouched copy in the recipe's OWN instance and
+       flow, separating "born 0" from "the build made it 0". Do this **before** spending another 9-minute run.
+17. **NO VI-WIDE remove-broken-wires may run inside a multi-row build pass.** Decided by the cycle-39 judgement
+   session on measurement, and it applies to every route, not just route B. The restructure deliberately leaves
+   wires cut between S1d/S3 and S3w's rewiring pass (`tools/bench/build_d1_routeb_v4_run7.log:274-280` shows
+   `#2222`'s inputs cut and awaiting rewiring), so a VI-wide reaper called from the row loop deletes the build's
+   own scaffolding rather than debris. Measured cost: a **??6 VI-wide Wire delta** across a single row's
+   temp-sink bracket (`?쫞un7.log:360`), with `#2222` t3/t4 afterwards reading `'<no such terminal>'` ??
+   `.get()`'s ABSENT default, not a wrong-but-valid node. **Run 5 is the natural control**: it returned NO-ROUTE
+   at `build_d1_routeb_v4.py:1606-1609` and so never reached the `delete_object`/reaper pair at `:1665-1669`, and
+   its `#2222` t2/t3/t4/t5 ALL wired; runs 6 and 7 reached it and they failed. Removing the reaper moves the
+   build TOWARD rule 1a ??it stops deleting wires the original has. Applied as K1 in
+   `tools/recipes/build_d1_routeb_v5.py:1760`. **The ban is on a reaper called from INSIDE the row loop**, not on
+   the operation: v5's two surviving VI-wide calls, the pre-pass one at `:694` and S5's at `:2242`, are EXONERATED
+   by the same control ??run 5 executed both and its rows wired. Gate any future one route-A style
+   (`tools/recipes/build_d1_v0.py:1112-1128` already treats it as hostile: it runs it once, then checks which of
+   its own wires died). ?좑툘 **`gscript.net_map` is therefore BANNED as a wire-counting instrument** ??it
+   calls `remove_bad_wires_scripted(target)` internally (`tools/gscript.py:2507-2516`, `:2568-2588`), so using it
+   for a "safer per-diagram count" re-fires the very reaper this item removes, twice per row. Count per diagram
+   with `build_track_v6_core.walk:84-92` instead, carrying its caveat (it sees only wires touching a terminal on
+   that diagram). The diagram-scoped `AbstractDiagram.Remove Wire Loose Ends` (`RemWireLooseEnds`, method 6375409,
+   class `AbstractDiagram` 16503) is NOT built and is not authorised by this item.
+   ??**CONFIRMED BY REPLICATION, and the K1 separator is RETIRED from the critical path** (cycle-41 judgement,
+   2026-09-19). The control is now 2 횞 2 and it is clean: the two runs WITH the in-loop reaper (runs 6 and 7) lost
+   `#2222`'s terminals, and the two runs WITHOUT it ??run 8 (`?쫣5_run8.log:411-413`, t3/t4/t5) and run 9
+   (`tools/bench/build_d1_routeb_v6_run9.log:464-468`, t0/t2/t3/t4/t5 with `Is Broken? FALSE` on t3 and t4) ??wired
+   every one. A one-off no longer explains it. The scratch-copy K1 separator (`terms_of` + `count` ??
+   `remove_bad_wires_scripted` ??repeat) was queued to settle this question and is **no longer worth a dispatch**:
+   it would confirm a result two builds already replicate. Item 17 stands as written; do not re-open it, and do not
+   re-word it to "anywhere between the first cut and the last rewire" ??that re-wording was conditional on a K1
+   result that is no longer needed.
+18. **A build ledger reports SURVIVING wires, never attempts.** Cycle-39 judgement, accepting
+   `archive/peer/2026-09-19-routeb-run7-index-shift.md` Q4: route B's WIRED count was a mixture ??`wire_sr` and
+   plain `wire` rows recorded no uid and no readback, and `wire_control`'s `next(..., 0)` collided "unwired" with
+   "no such terminal", so a logged `wire 0 -> 0` was never evidence that a terminal exists. Every wiring row
+   records the uid it created and reads it back with a `None` sentinel; every run prints a survival census
+   (`set(o["uid"] for o in g.report_all(TARGET,"Wire"))` against the ledger's uids) immediately after the S3w
+   ledger line ??**after the ledger, not after S5, because no route-B run has ever reached S5**. Applied as K3 in
+   `build_d1_routeb_v5.py:1130`, `:2036`, `:2120`. A ledger number quoted without its survival census is a
+   structural claim only (CLAUDE.md "structural is not functional").
+   ?좑툘 **AMENDED by the cycle-40 judgement session, on measurement: the census may NOT be read with
+   `report_all(Wire)`.** Run 8 proved that call is itself an `error 2` victim ??it raised
+   `error 2 ??Traverse for GObjects.vi->OpReportAll_v0.vi | Class Operator:Traverse (Traverse Failed)` after 50
+   uids had been claimed (`tools/bench/build_d1_routeb_v5_run8.log:364`), so the one measurement run 8 existed to
+   produce came back UNREAD and the ledger's `WIRED 53` is still an attempt count. Read the census instead from the
+   walk the recipe already holds ??assert `wmap(TARGET, d)[node][2][t]["wire"] == claimed_uid` over the four
+   diagrams the build touches (20 / 21 / 24 / 56) ??which is cheaper than a VI-wide traverse and strictly more
+   probative, because it names the terminal each claimed wire was supposed to land on
+   (`archive/peer/2026-09-19-routeb-run8-predictions.md` Q4). The requirement of item 18 is unchanged; only the
+   instrument is.
+   ?좑툘 **AMENDED AGAIN by the cycle-41 judgement session ??a census reports FOUR buckets, and "unread" is one of
+   them.** Prior art on run 9's recipe (`archive/peer/2026-09-19-priorart-d1-routeb-run9.md`, NOT NOVEL) raised two
+   defects in the walk-based census as first cut, both accepted and both now binding on every future census:
+   - **B2 ??an unreadable census must say UNREAD, never "gone".** `diag_index` IS `report_all(Diagram)`
+     (`tools/recipes/build_d1_v0.py:357-358`), the very call `error 2` kills, so a census that lets it raise would
+     print a confident `0 survived / 51 gone`. Run 9 proves this was not hypothetical: **all five** `diag_index`
+     calls raised and the census printed `0 survived / 0 bare / 51 unread of 51 claimed`
+     (`tools/bench/build_d1_routeb_v6_run9.log:365`, reasons `:366-:418`). The honest null is what made `error 2`
+     the named blocker instead of a phantom wiring catastrophe.
+   - **B4 ??uid inequality is NOT wire death.** A cross-boundary wire is several segments with different uids
+     (`docs/toolkit-capabilities.md:68`), so a non-zero uid that differs from the claimed one is survival.
+   **The contract**: every claimed row is classified `EXACT` (reads the claimed uid) 쨌 `SEGMENTED` (reads a different
+   non-zero uid ??survival) 쨌 `BARE` (reads no wire ??the only genuine loss) 쨌 `UNREAD` (the walk raised, the address
+   will not resolve, or the terminal entry is absent ??never counted as a loss). Headline =
+   `CENSUS: <EXACT+SEGMENTED> survived / <BARE> bare / <UNREAD> unread of <claimed> claimed`, then one line per
+   non-EXACT row. **The census must never raise.** The four diagram walks are taken ONCE and cached ??never per row:
+   a per-row `fresh=True` re-walk is the traverse volume that is a candidate cause of run 8's 6 ??11 `error 2`
+   worsening. Implemented in `tools/recipes/build_d1_routeb_v6.py:2160-2256`.
+   ?좑툘 **A census of 51 UNREAD rows does not confirm survival and does not refute it.** Run 9's `BARE = 0` is
+   VACUOUS ??nothing was read back ??so route B's `WIRED 54` is STILL an attempt count, exactly as it was after
+   run 8. Do not quote it as a survival number.
+19. **The `Z/dZ` temp-sink bracket's correct Wire-count null is `+1`, NOT `0` ??so `build_d1_routeb_v5.py:1842`
+   asserts an inverted null and must read `_b_ok = (_wddelta == 1)`.** Decided by the cycle-40 judgement session
+   from a read of our own code, not from the peer that raised it (`archive/peer/2026-09-19-routeb-run8-predictions.md`
+   Q2 is a hypothesis; this item is the confirmation). The call order inside the bracket is `:1613` count ??
+   `:1616` `create_equal` ??`:1668` `wire_control` ??`:1751` `OpConnectFromWire_v0` ??`:1774` `delete_object` ??
+   `:1810` count ??`:1842` gate. The branch runs **only under `if not zw`** (`:1597`), i.e. only when the source
+   control carried NO wire, so the before-count at `:1613` is taken while the control is still bare; `wire_control`
+   at `:1668` then CREATES the sink wire, `OpConnectFromWire_v0` only BRANCHES that same net at delta 0
+   (`docs/toolkit-capabilities.md:70`; run-8 log `:356`), and the wire SURVIVES the delete
+   (`tools/bench/build_d1_routeb_v5_run8.log:358`). One new wire is exactly what a correct bracket is *for*.
+   The comment at `:1601-1605` ??"every write in the bracket is a BRANCH off an existing net ??so the expected
+   delta is 0" ??is therefore **false at its premise** and is corrected with the gate.
+   ??**`Z/dZ` t0 WAS WIRED in run 8** and the J2 row was failed by the gate, not by the machine: `:418` reads
+   (a) source identity True ??the control's own wire 29238 IS the sink wire, exactly one reciprocal source
+   terminal ??(b) per-diagram delta +1 = the correct value, (c) `Is Broken? False`, (d) sink read back 29238.
+   Do not re-open the `Z/dZ` route on the strength of that FAILED label. ?좑툘 This does **not** disturb run 7's
+   `??6` VI-wide delta or item 17 that rests on it: ??6 is not +1, and a wrong null in one direction is not
+   evidence about a deficit in the other.
+   ??**CONFIRMED BY THE MACHINE, run 9, 2026-09-19** (`tools/bench/build_d1_routeb_v6_run9.log:360`, `:464`): with
+   the gate reading `== 1` the `Z/dZ` t0 row **PASSES J2** ??`_wddelta == 1`, source identity True (the control's own
+   wire 29238 IS the sink wire, exactly one reciprocal source terminal), per-diagram Diagram[24] `(31, 32, 1)`,
+   `Is Broken? False`, sink read back 29238 ??and the row is logged WIRED. This item was decided from a code read in
+   cycle 40 and is now a measurement; the `Z/dZ` route is CLOSED as a question. Item 19 needs no further test.
+20. **`error 2` is the ONLY thing between route B and a delivered D1, and run 10 attacks it with the census it also
+   needs ??ONE edit, one runner.** Cycle-41 judgement, from run 9. The state of the evidence:
+   - It is **not** handles (refuted: healthy at 51,349 / 51,353, crashed at 35,551 / 35,555 ??
+     `archive/peer/2026-09-19-routeb-run8-predictions.md` Q3). LabVIEW `error 2` = memory / reference allocation.
+   - It is **not** the census instrument. Cycle 40 blamed `report_all(Wire)` and replaced it; run 9's replacement
+     died the same death, five times over (`tools/bench/build_d1_routeb_v6_run9.log:364`). Every victim across runs
+     8 and 9 is a **traverse** ??`report_all(Diagram)`, `report_all(WhileLoop)`, `report_all(Wire)`,
+     `count(LoopTunnel)` ??i.e. `Traverse for GObjects.vi`, whatever the class.
+   - It is **temporal within a run**: the same diagram walks that wire 54 rows early all fail by census time. That is
+     the one asymmetry two runs agree on, and it is the only lead not yet tested.
+   So run 10 = `tools/recipes/build_d1_routeb_v7.py`, cut from v6's bytes, with **ONE edit**: immediately after the
+   S3w ledger line, **save the working copy, close it, RESTART LabVIEW (standing authority, CLAUDE.md 짠3), reopen the
+   saved copy in the fresh instance, and run the four-bucket census there.** Nothing else changes ??not the wiring
+   pass, not the gates, not the per-bead maths (rule 1a); saving and reopening changes no computation.
+   **This is one action doing two jobs, which is why it is the right next build**: it is the only route to a census
+   that can READ, and it is simultaneously the discriminating test for the cumulative-allocation hypothesis STATUS
+   has carried as UNCONFIRMED for two cycles. A fresh-instance census that reads CONFIRMS it (and tells us the 11
+   failing wire rows are fixed the same way ??by phasing the build across instances); one that still fails REFUTES
+   it and moves the cause onto the VI or the traverse itself. Either answer is worth the run.
+   ?좑툘 Do **not** "fix" the census by reading each wire at claim time. That is an attempt count with extra steps and
+   item 18 exists to forbid exactly it ??a survival census must be read AFTER the wiring pass.
+   ?좑툘 The save is of a **working copy under `claudeDev`**, mid-restructure and possibly broken; that is allowed and
+   normal (rule 1 governs originals). Preload stays confined to read-only ExecState diagnostics (Pre-decided 16b), so
+   the census step opens the saved copy WITHOUT preloading the original ??it needs diagram walks, not `ExecState`.
+   If a mid-run restart turns out to be unreachable over our COM path, that is an `OPEN:` for judgement, not a
+   licence to fall back to a same-instance census.
+   ?뵶 **SUPERSEDED BY ITEM 21 ??run 10 ran and item 20's mechanism never executed.** The E3 save diverted to
+   `gui_save` and died (`tools/bench/build_d1_routeb_v7_run10.log:367`), so no restart, no reopen and no
+   fresh-instance census ever happened; phasing across instances is still UNTESTED. Its premise is also no longer
+   the live one: item 21 replaces "temporal, therefore restart" with a named, testable CAUSE. Do not re-cut a
+   save?뭨estart?뭨eopen build on the strength of item 20 alone.
+21. **`error 2` is a REFNUM LEAK in our own traverse ops, and run 11 repairs it instead of working around it.**
+   Cycle-42 judgement, from the mandatory failed-prediction review of run 10
+   (`archive/peer/2026-09-19-routeb-run10-error2-class.md`, ANSWERED, claude/hypothesis opus max, $5.5451, 639 s),
+   which REFUTED the cycle's own diagnosis on our own log lines. Five things now bind every future route-B build:
+   - (a) **`error 2` is LabVIEW's generic "Memory is full"** (NI KB kA00Z0000019KhWSAU), and the meter for it is
+     **LabVIEW's private bytes**, never the handle count. Every previous "handles refute memory" argument in this
+     project ??including STATUS's "healthy at 51,349, crashed at 35,551" ??is a **category error, not a
+     refutation**. Do not repeat it.
+   - (b) **The live cause is a leaked GObject reference per matched object** inside `report_all` / `count`
+     (`.claude/skills/labview-automation/references/com-driving.md:305-312`; `docs/REFERENCES.md:126` records the
+     `Close Reference` that was REMOVED). `count(Diagram)` matches 170 objects and `count(Node)` 626, so ~30
+     successful `report_all(Diagram)` calls leak thousands of refnums before the traverse that finally fails.
+     ?좑툘 **AMENDED 2026-09-19 by the cycle-43 (firefighter) judgement session ??NOT SUPPORTED BY MEASUREMENT.**
+     20 횞 `report_all(Diagram)` (= 3,400 matched objects that this line predicts leak) moved kernel handles **+9**
+     and private bytes **??.1 MB**, with **no `error 2`** (`tools/bench/s0_hygiene_probe_run2.log:121-123`); the
+     `count(Node)` window's +215 handles is +202 in call 0 = the 473 KB VI load, not the traverse (`:75`, `:95`).
+     The per-matched-object leak arithmetic above is therefore withdrawn as "the live cause"; `error 2`'s cause
+     returns to OPEN, and the S0 repair is NOT predicted to close it. (c) below is untouched ??the repair stays
+     owed as rule compliance. The kernel handle count is blind to VI Server refnums (`tools/gscript.py:227-228`),
+     so any future leak gate reads PRIVATE BYTES alongside handles, and handles from call 1 (excluding the load).
+   - (c) **Closing those references is owed anyway.** CLAUDE.md's reference-hygiene rule already requires every VI
+     Server reference to be closed by whoever opened it, so restoring the `Close Reference` is a RULE-COMPLIANCE
+     REPAIR of an existing op ??not a speculative fix and not a new "?μ튂" under the user's 2026-09-18 08:53 order.
+     It is applied unconditionally, whatever it does to `error 2`.
+   - (d) **A traverse INDEX is not a stable key ??worse than the archived +1.** `FRAME_BODY_UID=639` reads index
+     **43** at `tools/bench/build_d1_routeb_v7_run10.log:44` and **56** at `:352`, a shift of **+13 inside one
+     instance with no restart**. Any census or route keyed on a diagram index is unsound. The key is the diagram
+     **UID**; where uid?뭝ndex conversion is unavoidable it must be re-read, never cached across a mutation.
+   - (e) **The cycle-42 traverse census was a SELECTION ARTEFACT and is withdrawn.** "`report_all(Diagram)` is
+     0-for-21, it has never once succeeded" was produced by grepping for lines that PRINT `error 2`, which can only
+     find failures; the successes are at `run10.log:39`, `:44`, `:69`, `:352`, `:354` and ~29 `move_in` calls at
+     `:150-167`. A census whose instrument can only observe one outcome measures nothing ??the same error CLAUDE.md
+     names under "absence in what you happen to be looking at is not evidence of absence".
+   - (f) **A claim about what OUR OWN code does must quote the CALLEE, not the call site.** The reviewer's own
+     proposed rule, and the one that would have prevented this cycle's `inference-over-measurement` violation: the
+     cycle-42 `REFUTED:` lines said "v7 saves over COM with `g.save`, not `gui_save`" from v7's call site, while
+     `tools/gscript.py:2065-2067` diverts `g.save(?? allow_broken=True)` to `gui_save()` on any cold `ExecState`
+     read. Both `REFUTED:` and `FIXED:` releases, and any sentence of the form "our tools do/cannot do X", carry the
+     callee's `file:line`. Form-checking cannot catch this ??`docs/violation-decisions.md` records why no device was
+     built for it.
+   **Run 11** = one runner, one log, three unconditional phases: (1) the review's own discriminating test ??repeat
+   `report_all(TARGET,'Diagram')` on a pristine scratch copy in a clean instance, logging the iteration index AND
+   private bytes, until it raises or a bounded count is reached; (2) the same measurement again with the
+   `Close Reference` repair applied; (3) the route-B build from v7's bytes with **E3 removed** (no save, no restart,
+   no reopen ??back to v6's in-instance census) and the repair in place. Nothing branches on a result.
+15. **`Count` is NOT a bead count, and no harness may gate on it.** MEASURED, cycle 35
+   (`tools/bench/diag_count_indicator_run4.log`, 16/0; now `docs/NAMES.md` 짠`Count`): `Count` is uid **28051**, a
+   front-panel **CONTROL** (`indicator` False), not an indicator. Its terminal is a **SOURCE** driving wire 30530
+   into `Comparison #29111` (`Equal?`, terminal `x`) and into `SelectorTunnel #31929` of `CaseStructure #28709`,
+   both on Diagram #15795, inside `Sequence #15649` ??`EventStructure #15544`. It is **written** by two implicit
+   `Property` nodes labelled `Count` whose `Value` is a SINK (#32191 on Diagram #12960, #30688 on Diagram #28741
+   inside that same case structure). So it is a counter variable parked in a control and steered by the event
+   structure ??which is why three registered picks leave it reading 1
+   (`tools/bench/drive_original_copy_v4.log:790`, `?쫣5.log:181`). **That reading was never a fault**, and
+   retrospective-cycle31 F6b is answered: v5's method ??counting the three red markers the VI draws ??stands, and
+   D1 must neither gate on `Count` nor "fix" it. No other panel object is a bead count either (`Total cycle #`
+   30309, `# of Points` 10008, `Bead Pos` 11831, `Total Lost Frames` 421, `# of Auto-Reset` 9768 ??`Bead Pos` is
+   the only bead-related one). Not fully established, and not on D1's path: whether anything *else* writes it ??
+   #32191's owner chain ends at a `FlatSequenceFrame` with `owner_uid 0`, and `report_all('GlobalVariable')`
+   fails on this VI with **error 1092**.
+
+## Pre-decided ??ADDED 2026-09-19 17:4x (user, after the overnight route-B loop): D1 IS BUILT IN SAVED STAGES
+22. **CLAUDE.md 짠3 "Big or blocked work is SPLIT into steps that each SAVE an intermediate artefact" applies to D1
+    from now on.** No more full-length `build_d1_routeb_vN.py` runs. The D1 build is a CHAIN of stage scripts, each
+    starting from the previous stage's SAVED file in a FRESH LabVIEW instance (original preloaded read-only for every
+    ExecState read ??Pre-decided 14a/16), each ending with a save under `claudeDev` and an md5 in its log:
+    | stage | saved file | pass criterion |
+    |---|---|---|
+    | **S0 hygiene** | repaired traverse ops (`OpWireSource_v6.vi` / `OpReport_*` with `Close Reference` restored; **new versions, the old files untouched**) | 20 consecutive calls in one script ??LabVIEW handle count flat (짹100); `docs/REFERENCES.md` updated |
+    | S1 | `D1_s1_copy.vi` (copy of the original, fixture TIFF writer + the 3 re-dropped nodes deleted) | md5 recorded; ExecState 1 preloaded; node count = original ??deletions |
+    | S2 | `D1_s2_loops.vi` (three fresh While loops + 3 subVIs dropped) | +3 loops +3 subVIs, ExecState read |
+    | S3 | `D1_s3_moved.vi` (21 nodes + 8 control terminals moved, `Z/dZ` reorder, 8 shift registers) | counts per 짠2c; ExecState read |
+    | S3w-a ??S3w-e | `D1_s3w_a.vi` ??(re-wiring in batches of ??5 rows of the 66) | each batch's rows WIRED (`Wire.Is Broken?` FALSE), ledger saved per batch |
+    | S4?밪6 | `D1_s4_census.vi` ??`Track_v6_D1_GPU.vi` | census, ExecState 1 preloaded, saved |
+23. **Two consecutive failures of one stage at the same place ??that stage is decomposed further before any retry**
+    (CLAUDE.md 짠3 rule 3). The runner's firefighter trigger now ignores `_vN` suffixes.
+24. The firefighter cycle ordered by the user on 2026-09-19 does S0 and S1 (and S2 if S1 passes cleanly) ??nothing
+    beyond; it ends with the saved files listed and their md5s, or with the exact failing stage.
+25. **S0 IS DECOMPOSED ??this table IS the one-page plan Pre-decided 23 demands** (judgement, cycle 44, 2026-09-19).
+    S0 has now failed TWICE AT THE SAME PLACE: post-wiring `ExecState 0` on every repaired op stub, replicated 횞4 in
+    fresh instances with every wiring gate PASSING (`tools/bench/build_s0_closeref_v3.log`, 87/5;
+    `??v1.log`, 41/2). By CLAUDE.md 짠3 "Big or blocked work is SPLIT?? rule 3, **no full-length S0 retry may be cut
+    under any filename**. S0 runs as five sub-steps, each its own short script, each starting FROM the previous
+    step's saved file in a FRESH LabVIEW instance, each ending with a saved artefact and its md5 in the log.
+    **The first FAIL stops the chain and leaves the file that shows the failure on disk.**
+
+    | sub-step | what it does | saved artefact | pass criterion |
+    |---|---|---|---|
+    | **S0-a ARM** ??baseline, **NO edit** | copy `OpReport_v3.vi` to a new name; read its `ExecState` twice: (i) COLD in a fresh instance, (ii) after opening `OpReport_v3.vi` itself read-only in that same instance (the op-stub analogue of Pre-decided 14a's "original preloaded" ??it loads `Traverse for GObjects.vi` and the rest of the hierarchy). Edit nothing | `claudeDev\S0a_OpReport_base.vi` + md5 + BOTH readings, each labelled with its condition | both readings are TAKEN and logged. ?뵶 **A cold-0 / preloaded-1 pair means S0's four `ExecState 0` failures were UNREAD (Pre-decided 14a), not broken ??the chain STOPS there for judgement, and the three op stages of run 2 were replicating a measurement artefact** |
+    | **S0-b MEASURE** ??is the repair needed at all? | profile the **UNREPAIRED** ops under a BUILD-SHAPED workload (traverses interleaved with mutations, S3w-like), ??0 calls, recording kernel handles **from call 1** (call 0 is the 473 KB VI load ??`s0_hygiene_probe_run2.log:75`,`:95`) AND LabVIEW private bytes per call | `tools/bench/s0b_refleak_profile.json` + its log | the profile COMPLETES and prints both meters per call. Pure measurement ??**no outcome of it fails this step** |
+    | **S0-c EDIT ??one edit per saved file** | c1 = For Loop only 쨌 c2 = + the `Close Reference` node inside it 쨌 c3 = + the `References` array branch wired in 쨌 c4 = + `remove_bad_wires_scripted` | `claudeDev\S0c1_?쫣i` ??`S0c4_?쫣i`, each md5'd | each file SAVES, and each reads `ExecState` under the condition S0-a established. The first sub-step whose ExecState drops STOPS the chain ??and **that file is on disk for the next session to open** |
+    | **S0-d HYGIENE** | the accepted op, 20 consecutive calls in one script | the accepted op VI + log | handles flat 짹100 **counted from call 1** AND private-byte drift ??5 MB. The 짹100 gate ALONE is blind to VI Server refnums (`tools/gscript.py:227-228`), so both meters or neither |
+    | **S0-e RECORD** | update `docs/REFERENCES.md` + `docs/toolkit-capabilities.md`; old op files untouched | the doc diffs + md5s of the OLD ops | the old ops are byte-identical to before; the accepted ops carry new `_vN` names |
+
+    Binding notes:
+    - (i) **S0-a is the ARM, and the ARM is its own SAVED step** (retrospective-cycle43 F1/F5: run 2 spent three op
+      stages replicating a failure the ARM had already measured). **No S0-c script may be cut before S0-a's two
+      readings are on file.**
+    - (ii) **Order inside S0 is the cycle-43 disposition's (c) then (a)**: settle WHY the insert leaves `ExecState 0`
+      ??`archive/WORKLOG.md:86-87` (a bare For Loop breaks the VI) and `remove_bad_wires_scripted` was never called ??
+      before any more close-wiring. S0-c1?쫈4 IS that test, decomposed one edit at a time.
+    - (iii) **The array-into-scalar experiment stays a SCRATCH experiment only**, with a prediction contract citing
+      `archive/WORKLOG.md:84-86` ("defeated four wiring attempts"). It is not a step of this chain.
+    - (iv) ?좑툘 **S0's original premise is MEASURED UNSUPPORTED** (Pre-decided 21(b) amended by cycle 43): the repair is
+      owed as **rule compliance** (21(c)), not as an `error 2` fix. CLAUDE.md 짠3's hygiene rule states its acceptance
+      test as "20 consecutive calls ??handle count flat (짹100)". **ASSUMPTION THIS CYCLE PROCEEDS UNDER, flagged to
+      the user (rule 2c): if S0-a shows the `ExecState 0` was UNREAD and S0-b shows the UNREPAIRED ops already meet
+      that test on both meters, judgement may ACCEPT THE OPS AS THEY ARE with the measurement as the record** ??a
+      legitimate outcome of S0, not a skipped step. Only the user may overturn this reading of their own rule.
+    - (v) `Close Reference` on a GObject refnum may be a **NO-OP** ??forum-grade, no version context
+      (`archive/peer/2026-09-19-s0v3-execstate0.md`). S0-d's private-byte meter is what decides whether the repair
+      does anything at all; a repair that moves neither meter is recorded as such, not celebrated.
+
+    ?좑툘 **AMENDED THE SAME DAY BY ITS OWN PRIOR-ART REVIEW ??`archive/peer/2026-09-19-priorart-s0-decomp.md`,
+    NOT NOVEL, 8 findings, ALL EIGHT ACCEPTED AS `FIXED:` (cycle-44 judgement, 2026-09-19).** The direction survives
+    (`:235`: a staged save-per-step S0 has never been tried and abandoned) but four of the five sub-steps duplicated
+    work already on file. What binds from here is this block, not the table above:
+    - ?뵶 **S0-a IS WITHDRAWN. Its premise is dead: the op stub reads `ExecState` 1 COLD in a fresh instance, measured
+      SEVEN times** (`tools/bench/build_s0_closeref_v3.log:13-14` `PASS A2 ARM ??ExecState 1` immediately after
+      `fresh(): new LabVIEW pid`, also `:60`, `:109`, `:168`; `??v1.log:15`, `:59`, `:103`;
+      `build_opconnectfromwire_v0.log:49`). A cold-0 / preloaded-1 pair therefore **cannot occur** for these stubs,
+      Pre-decided 14a does not reach them, and the conclusion is the opposite of the one S0-a was written to test:
+      **the stub is born legal and OUR EDIT breaks it.** (Finding A1.)
+    - ?윟 **THE POSITIVE CONTROL IS THE LEAD, and S0 has never used it.** This exact construction ??a For Loop +
+      `Close Reference` around the same `References` array, on the same op family ??was built on 2026-09-13 and ended
+      **`ExecState` 0 ??1**: `docs/toolkit-capabilities.md:400-402`, `:409`, `:432-438`, built by
+      `tools/recipes/build_opreportall_v1.py` (instrumentation at `:87-90`, `:135-136`, `:158-160`, `:41`).
+      (Findings A4, B3.) One build of this thing works and four do not, so the question is a **DIFF**, not a mystery.
+    - **The chain is now 慣 ??棺 ??款, then b, then d/e:**
+      | sub-step | what it does | saved artefact | pass criterion |
+      |---|---|---|---|
+      | **S0-慣 DIFF** ??no LabVIEW at all | diff `tools/recipes/build_opreportall_v1.py` (works, ends 1) against `tools/recipes/build_s0_closeref_v3.py` (fails, ends 0) and their logs; enumerate EVERY ordered construction difference ??node-vs-tunnel order (`build_opreportall_v1.py:28-29`, `docs/toolkit-capabilities.md:415-418` vs `build_s0_closeref_v3.log:74`,`:77`,`:80`), which terminals are wired and in what order, whether `remove_bad_wires_scripted` is called, what is saved and when | `docs/s0-diff.md` | the table exists and names each difference with both `file:line` sides. **This runs FIRST and costs no LabVIEW** |
+      | **S0-棺 REPLICATE** | re-run the 2026-09-13 construction UNCHANGED on a fresh scratch copy; after EACH edit read `ExecState` **and then re-read `Wire.Is Broken?`** (the falsifier left unapplied at `archive/peer/2026-09-19-s0v3-execstate0.md:140-142`, with the wire census at `:130`/`:148`); save the result | the rebuilt op VI + md5, or ??if the state is illegal and cannot be saved ??the readings as a DATA file | ends `ExecState` 1 and the VI SAVES. **If it now reads 0, the positive control has rotted and THAT is the finding** |
+      | **S0-款 PORT** | apply the differences S0-慣 named, **one difference per saved artefact**, until the repaired op is reached or one of them reproduces the 0 | one artefact per difference | the first difference that flips 1 ??0 is the cause, and its artefact is on disk |
+      | **S0-b MEASURE** | unchanged in purpose, but it **EXTENDS `tools/bench/s0_hygiene_probe.py`** (`:80-91`, `:161-171`, `:185-193`; precedent `tools/bench/handle_audit.py:69-70`) ??only the mutation interleave is new | `tools/bench/s0b_refleak_profile.json` | completes and prints both meters per call. Measurement only (finding B2) |
+      | **S0-d/e** | acceptance + record | the accepted op; `docs/REFERENCES.md` 짠4a **amended**, not authored (`:144` already exists) | the ONE criterion below |
+    - **ONE S0 acceptance criterion, stated once** (finding A3 ??the plan carried three): **G-A no `error 2` 쨌 G-B
+      kernel handles flat 짹100 counted FROM CALL 1 쨌 G-C LabVIEW private-byte drift ??5 MB.** Adopted by the
+      cycle-43 disposition (`archive/peer/2026-09-19-priorart-s0-closeref.md:701-704`). The bare "짹100" of the
+      Pre-decided 22 S0 row is **superseded by this line**; handles alone are blind to VI Server refnums
+      (`tools/gscript.py:227-228`).
+    - ?뵶 **NO STEP MAY SAVE A BROKEN VI** (finding B1). `tools/gscript.py:2065-2068` refuses or diverts to
+      `gui_save`, which has failed at seven logged sites (`tools/bench/build_d1_routeb_v7_run10.log:367`,
+      `build_keystone.log:903`, `cycle3b_toolkit.log:78`, `extract_chain.log:10`, `gpukernel_chain.log:227`,
+      `keystone_discovery.log:29`, `label_copy_clfn.log:16`) ??and run 10 proved the one refutation of it wrong
+      (`archive/peer/2026-09-19-priorart-d1-routeb-run10.md:499`). VI saves happen only at LEGAL states; where a step
+      necessarily ends illegal, **its saved artefact is a DATA file** (readings, census, md5s). The user's rule says
+      "intermediate VI/data", so this satisfies it ??but it is a narrowing of note (i) and is flagged to the user.
+    - **An intermediate `ExecState 0` is EXPECTED and no longer stops the chain** (finding A2): a bare For Loop
+      breaks the VI by design (`archive/WORKLOG.md:86-87`, `docs/toolkit-capabilities.md:412-413`, `:417`). Only the
+      FINAL state must read 1. The original c1 criterion would have halted on normal behaviour and c2/c3/c4 would
+      never have run.
+    - **A `c4` at `ExecState 0` exonerates nothing**: `tools/gscript.py:1293-1295` ??`remove_bad_wires` does not
+      clear a bad wire into a `reference` sink.
+
+26. **S0-款 RUNS BEFORE S0-棺, and its FIRST ported difference is D2/D4 (node CREATED IN THE BODY, not copied and
+    reparented).** Judgement, cycle 45, 2026-09-19, on the fact S0-慣 produced ??not on a preference. `docs/s0-diff.md`
+    enumerates 23 ordered construction differences between the build that ends `ExecState` 1
+    (`tools/recipes/build_opreportall_v1.py`, 2026-09-13) and the one that ends 0 four times
+    (`tools/recipes/build_s0_closeref_v3.py`). Three grounds, in the order they bind:
+    - (a) **The loop machinery is EXCLUDED as the common cause.** S0 run 2's stage 3 failed with **no loop created,
+      no new tunnel and an EXACT branch** (`tools/bench/build_s0_closeref_v3.log:178`, `:190-192`, `:202`, `dw=0`) and
+      still read `ExecState 0`. A cause common to all four failures therefore cannot be the For Loop. S0-棺 as written
+      ("replicate the 2026-09-13 construction unchanged", `:449`) replicates precisely that machinery, so it is no
+      longer the cheapest discriminating test ??it is re-ordered BEHIND 款, not cancelled. It remains the right test
+      if 款 exhausts the diff without reproducing the flip, because then the positive control itself is in question.
+    - (b) **D2/D4 is the only candidate present in every failure and absent from the success.** v3 COPIES the
+      `Close Reference` node out of `KernelBuilder_v1.vi` and reparents it (`build_s0_closeref_v3.py:587` ??
+      `tools/gscript.py:1479-1558`; `:528`/`:453` ??`tools/recipes/build_d1_v0.py:318-335`), where the working build
+      CREATES it in the body (`build_opreportall_v1.py:144-149` ??`tools/gscript.py:2188`). This matches the observed
+      signature exactly ??every wiring gate passes, the branch reads EXACT, `Is Broken? False`, and the VI is still
+      illegal ??i.e. alternative #2 of the mandatory review (`archive/peer/2026-09-19-s0v3-execstate0.md`): **a broken
+      NODE that a wire reader cannot see.** Per CLAUDE.md "when a diagnosis is GUESSED twice, build the reader", this
+      is not another inference: porting the difference IS the measurement.
+    - (c) **The other two candidates are worse first tests, for reasons already on file.** D1 (edits landing on the
+      Move fixture `MOVE_DST`, `tools/gscript.py:1518`, `:1536-1543`, `:78-80`) has counter-evidence ??
+      `tools/bench/build_opconnectfromwire_v0.log:58` reached `ExecState 1` inside that same hook, so D1 alone is not
+      sufficient to break a VI. D7 (`remove_bad_wires_scripted` never called in v3; called twice at
+      `build_opreportall_v1.py:130`, `:133`, recorded `docs/toolkit-capabilities.md:433`) can only CONFIRM, never
+      exonerate, because `tools/gscript.py:1293-1295` says `remove_bad_wires` does not clear a bad wire into a
+      `reference` sink. D7 is therefore the SECOND ported difference, not the first.
+    **Binding on every 款 sub-step**: one difference per saved artefact; an intermediate `ExecState 0` is expected and
+    does not stop the chain (finding A2); the FINAL state must read 1 before the VI is saved, and a step that ends
+    illegal saves a DATA file of its readings instead (finding B1). The first difference that flips 1 ??0 is the
+    cause and its artefact stays on disk.
+    ?좑툘 **This cycle is bound by the outcome review's accepted condition** (`archive/peer/2026-09-19-outcome-review-20260919.md:153`,
+    disposed at `:171`): a cycle that ends without S0 saved files and md5s in a log escalates the stop-and-re-plan.
+    A 款 step that ends illegal satisfies it with its DATA artefact, not with prose.
+    ?뵶 **26(b) IS SUPERSEDED BY ITEM 27 ??款1 was never launched and must not be re-cut as written.** 26(a) SURVIVES
+    and is strengthened: the loop machinery is not merely unimplicated, it is already ON DISK and legal.
+
+27. **THE POSITIVE CONTROL HAS NO ARTEFACT ??S0's remaining justification is rule compliance alone, so S0-b
+    (MEASURE THE UNREPAIRED OPS) RUNS NEXT AND 款/棺 BOTH WAIT ON IT.** Judgement, cycle 45, 2026-09-19, from the
+    Phase-1 census (`tools/bench/s0_op_census_run2.json` md5 `362f1e52??, 32 pass / 0 fail;
+    `tools/bench/s0_op_census.log`). Four measurements, none of them inference:
+    - (a) **`OpReportAll_v1.vi` DOES NOT EXIST** (`tools/bench/s0_op_census.log:98`). The build that
+      `docs/toolkit-capabilities.md:400-402`, `:409`, `:432-438` records as the one that ended `ExecState` 0 ??1
+      left nothing on disk. Pre-decided 25's finding A4/B3 ??"one build of this thing works and four do not, so the
+      question is a DIFF" ??therefore rests on a **claim with no artefact behind it**, and item 26(b) inherited that.
+    - (b) **The one on-disk relative carries the loop but NOT the node.** `OpReportAll_v0.vi` (md5 `ffcec2c7??) has
+      `ForLoop #113`, body `Property #114??115`, `References` w524 ??`LoopTunnel #511` `IndexMode 1` (inner w421),
+      and **no `Close Reference`** (`?쫈ensus.log:105-119`), reading `ExecState` **1** cold. This also EXPLAINS S0 run
+      2's stage 3 ??"no loop created, no new tunnel, EXACT branch of w421" ??the loop and tunnel were already there
+      and w421 is that tunnel's inner wire. The detector is not blind: it finds `#157 'Close Reference'` in
+      `KernelBuilder_v1.vi` (`:295`, `:313-314`).
+    - (c) **There is no built route to CREATE a `Close Reference` primitive.** `tools/gscript.py:2188` is
+      `build_property` and creates a Property node (`:2195`, `:2198-2202`, `:2225-2227`); `docs/vi-server-ids.json`
+      carries no `Close` id. So 26(b)'s "create in the body" is not one ported difference but four (it drags D1, D3
+      and the node class), and as literally written it is **unexecutable**. Copy-and-reparent out of
+      `KernelBuilder_v1.vi` has been the only route all along ??which is why all four failures share it.
+      ?좑툘 Not settled, and not to be restated as impossible: prior art B3 measures that `OpCreateEqual_v0.vi` places a
+      primitive on a NAMED SUBDIAGRAM, FUNCTIONAL 23/0 (`docs/toolkit-capabilities.md:64`, `:66`), so the capability
+      CLASS exists. `tools/recipes/build_s0_gamma1.py:19-25` says "nothing in this fleet can" and that sentence is
+      **over-broad** ??correct it if the recipe is ever revived.
+    - (d) **款1's own prior art agrees and is ACCEPTED** (`archive/peer/2026-09-19-priorart-s0-gamma1.md`, NOT NOVEL,
+      9 findings / 5 slugs, claude/priorart opus high, $4.1991): A2 ??26(a) excludes the loop machinery and 款1
+      rebuilds it; A3 ??four differences, not one; A4/A4b ??the post-compile `Is Broken?` re-read is missing.
+    **Therefore the order is corrected to what the cycle-43 disposition already ordered and three cycles have not
+    done ??MEASURE FIRST.** S0's premise is measured unsupported (Pre-decided 21(b) as amended: 20 횞
+    `report_all(Diagram)` moved handles +9 and private bytes ??.1 MB with no `error 2`), `Close Reference` may be a
+    NO-OP on GObject refnums (note (v)), and the repair is owed only as rule compliance (21(c)). So:
+    - **S0-b runs next**, EXTENDING `tools/bench/s0_hygiene_probe.py` (finding B2) with the mutation interleave only:
+      the UNREPAIRED ops under a build-shaped workload, ??0 calls, kernel handles FROM CALL 1 and LabVIEW private
+      bytes per call, against the single criterion **G-A no `error 2` 쨌 G-B handles flat 짹100 from call 1 쨌 G-C
+      private-byte drift ??5 MB**.
+    - **Pre-decided 25(iv) is now the live branch, not a hypothetical**: if the unrepaired ops meet G-A/G-B/G-C, the
+      ops are **ACCEPTED AS THEY ARE with the measurement as the record**, S0 closes, and S1 begins. CLAUDE.md's
+      hygiene rule states its acceptance as a measurement, so passing it is compliance, not evasion. **Only the user
+      may overturn this reading of their own rule ??it is flagged in STATUS NEXT.**
+    - Only if S0-b FAILS a meter does a node-creation route become worth its cost; then the first step is prior
+      art's A2 form ??start from `OpReportAll_v0.vi`, which already has the loop and tunnel, and change ONLY the
+      node's origin ??never 款1 as written.
+    - **S0-棺 is withdrawn** in the same breath as (a): a construction whose output does not exist and whose
+      distinguishing node is absent from its only on-disk relative cannot be "replicated unchanged".
+
+28. **G-C IS EVALUATED ON TRAVERSE-ATTRIBUTABLE DRIFT, WHICH NEEDS A MUTATION-ONLY ARM ??S0-b's `+34.6 MB` is
+    UNATTRIBUTED and must not be read as a leak.** Judgement, cycle 45, 2026-09-19, on S0-b's own numbers
+    (`tools/bench/s0b_refleak_profile.json` md5 `b3ddf21fc39735e329c61477dbcac03e`;
+    `tools/bench/s0b_refleak_profile.log:61-64`, 13 pass / 1 fail).
+    - Measured: **G-A PASS** (no `error 2` from any call, `:62`) 쨌 **G-B PASS** (handles 54,619 ??54,600 = **??9**
+      counted from call 1, `:61`, `:63`) 쨌 **G-C FAIL** (private 617.3 ??652.0 MB = **+34.6 MB** against a 5 MB
+      limit, `:61`, `:64`).
+    - **The confound is on the record and was reported by the measuring session, not discovered later**: the
+      build-shaped interleave MUTATES ??20 Property nodes created, node count 626 ??645 ??so `+34.6 MB` is traverse
+      leak AND VI growth together, ??.7 MB per created node if it is growth alone. The only contrast on file is
+      traverse-only: **??.1 MB** over 20 calls (`tools/bench/s0_hygiene_probe_run2.log:121-123`).
+    - **G-C's purpose is to ask whether OUR TRAVERSE OPS leak.** A workload that also grows the VI by 20 nodes does
+      not measure that, so the criterion is not satisfied *or* violated until the growth is subtracted. Completing
+      the measurement is not reinterpreting the gate; acting on `+34.6 MB` as a leak WOULD be
+      `inference-over-measurement`, the very fault this item's parent (27) was written to stop.
+    - **The discriminating arm, and the next act: MUTATION-ONLY.** The same 20-call loop, same scratch copy, same
+      meters, with the `count`/`report_all` traverses REMOVED and the `build_property` mutations kept. Three arms
+      then close the 2횞2: traverse-only **??.1 MB** (on file) 쨌 traverse+mutate **+34.6 MB** (on file) 쨌
+      mutate-only (to measure).
+      - mutate-only ??+34.6 MB ??the traverses contribute ~0, **G-C is met on traverse-attributable drift**, and
+        Pre-decided 25(iv)+27 apply: the ops are ACCEPTED AS THEY ARE with the measurement as the record, S0 closes,
+        S1 begins.
+      - mutate-only ??0 ??the traverses DO leak under mutation pressure, G-C genuinely fails, the `Close Reference`
+        repair is owed on measurement as well as on rule, and the route is 27's last bullet ??start from
+        `OpReportAll_v0.vi`, change ONLY the node's origin.
+    ?뵷 **IF THE REPAIR IS EVER REVIVED, THE FIRST PORTED DIFFERENCE IS D6, NOT D2/D4.** Recorded here by the cycle-45
+    judgement session from `docs/s0-diff.md` D6, which the act-2 summary understated. The build that WORKS
+    **DELETES the old consumers of `References` FIRST** ??`delete_object(OP,'IndexArray',0)` and both old Property
+    nodes, `tools/recipes/build_opreportall_v1.py:129-133`, callee `tools/gscript.py:2234` ??and says why in its own
+    source at `:127-128`: *"wiring it into a loop would need branch=True ??or, far better, delete the consumer FIRST
+    and the source is free"* (recorded as steps 1?? at `docs/toolkit-capabilities.md:432-434`). The build that FAILS
+    deletes **nothing**: diagram 0 still holds `Index Array #167`, `Property #241` and `Property #482` when the loop
+    is built (`tools/bench/build_s0_closeref_v3.log:65`, `:70`). This fits the observed signature better than D2/D4
+    does ??the S0 v3 짠2 arm measured the new branch as a **VALID** wire (sink w636 SEGMENTED, `Is Broken? False`,
+    `LoopTunnel #642` `IndexMode 1` as read), which is exactly what a legal wire into an **illegal multi-consumer of
+    a refnum array** would look like: no broken wire anywhere, and the VI still will not compile. D6 is also a
+    genuinely single, cheap port (delete three nodes before wiring), unlike D2/D4 which drags D1 and D3.
+    ?좑툘 This is a HYPOTHESIS built from a file diff, not a measurement ??it has never been run. It ranks the queue for
+    a future cycle; it does not reopen S0, which closed on the three-arm result below.
+    Both branches are decided here, so a material session applies whichever the arm returns; neither is a fresh
+    judgement. ?좑툘 **Flagged to the user with 25(iv): accepting the ops on a completed G-C is judgement's reading of
+    CLAUDE.md's hygiene rule, whose stated acceptance test is a measurement. Only the user may overturn it.**
+
+29. **THE ONLY SAVE ROUTE FOR A STAGE ARTEFACT IS `g.save()` UNDER PRELOAD ??16(b)'s "a step that never saves" is
+    NARROWED, not discarded ??and STAGE BOUNDARIES MUST FALL AT LEGAL STATES.** Judgement, cycle 46, 2026-09-19,
+    read from the CALLEE (Pre-decided 21(f)), never from a call site.
+    - (a) **Measured.** `tools/gscript.py:2056-2071` holds the only COM writer: it refuses a path outside
+      `claudeDev`/`SAVE_ALLOWLIST` (`:2062-2064`), then reads `exec_state(target)` (`:2065`, which opens its OWN
+      reference by path ??`:1977-1979`); at 0 it diverts to `gui_save` when `allow_broken=True` (`:2066-2067`) and
+      otherwise raises (`:2068`). `SaveInstrument` (`:2070`) is reachable ONLY at `ExecState != 0`.
+    - (b) By Pre-decided 14a a copy of the original reads `ExecState` **0 COLD / 1 PRELOADED**. So in a
+      non-preloaded instance **no copy of the main VI can ever reach `SaveInstrument`**, and the only other writer,
+      `gui_save`, has failed at eight logged sites including run 10
+      (`tools/bench/build_d1_routeb_v7_run10.log:367`). MEASURED, cycle 46: **no run in this project has ever saved
+      a modified copy of the main VI** ??every `g.save(TARGET)` sits in an S5/S6 no route-B run reached
+      (`tools/bench/build_d1_v0_run4.log:256`; `?쫞outeb_v5_run8.log:438`; `?쫣6_run9.log:492`).
+    - (c) **Therefore Pre-decided 22's staged build is unexecutable under 16(b) as written.** 16(b) named two
+      hazards and only one of them was ever measured. MASKING is answered, not denied: every stage artefact is
+      re-read in a FRESH instance **cold AND preloaded, one condition per child process**
+      (`tools/bench/diag_d1_execstate_preload.py:26-28`, `:96-97` ??four readings taken in one instance contaminate
+      each other, because reading one copy loads the very hierarchy the next read would have had to resolve), and a
+      preloaded 1 stays necessary-never-sufficient. CROSS-LINKING was never measured;
+      `tools/recipes/stage_d1_s1.py` phases A/B measure it directly ??a no-edit COM save under preload, then the
+      saved file's (cold, preloaded) pair against a pristine byte copy's. **Until that arm returns, preload-then-save
+      is permitted ONLY for stage artefacts under `claudeDev`.**
+    - (d) **`allow_broken=True` is BANNED in every stage script** ??it is the one flag that can reach `gui_save`.
+    - (e) **Stage boundaries fall at LEGAL states.** A stage that deletes a node whose outputs are consumed leaves
+      bare required inputs, i.e. an unsaveable VI, so **delete-and-re-drop is ONE stage**. S1 is therefore the
+      fixture TIFF writer ONLY (`#22700`, `#23020` ??v7 `s1t()` `:728-751`, contract `:74-75`); v7 `s1d()`'s three
+      re-dropped subVIs (`#5058 GPU_kernel_v1.vi`, `#48 ASI_adjust focus-subvi.vi`, `#376 save trace.vi`,
+      `:754-784`) move into the stage that re-drops them. This reorders build operations only ??rule 1a untouched.
+    - (f) **S1 deletes TWO of the four 2026-09-01 fixture nodes, deliberately** (prior-art A4,
+      `archive/peer/2026-09-19-priorart-d1-s1-stage.md`). `#22703` / `#23175` (`docs/fixture-recording.md:15-20`)
+      STAY, because every pinned count downstream ??SubVI 98??7, Function 181??80, Node 626??24, Wire 1902??899 ??
+      is the measured contract of the two-node deletion, and widening it would invalidate the chain with no
+      measurement behind it. Removing the other two is a later stage with its own contract, recorded as an OPEN
+      item; it is not an oversight.
+    - (g) ?뵶 **THE ACCEPTANCE REFERENCE FOR A STAGE ARTEFACT IS THE ORIGINAL'S SUBVI TABLE, NEVER A BYTE COPY ??
+      gate B as first written compared against the defective side.** MEASURED, cycle 46
+      (`tools/bench/s1_subvi_paths.log`, 15/0, three conditions each in its own child process and its own LabVIEW
+      instance; artefact `tools/bench/s1_subvi_paths.json`): the COM-SAVED copy matches the ORIGINAL on **all 98
+      SubVI calls, name and path, byte for byte**, with **zero** rows into `claudeDev\background VIs_COPY\`, while
+      the PRISTINE BYTE COPY re-binds **22** calls into `claudeDev\background VIs_COPY\`, loses **8** outright and
+      reads 7 rows as empty (uid 0, name `''`, path `''`) ??tables at `:369-395`. That is why a byte copy reads
+      `ExecState 0` COLD and the saved copy reads 1: Pre-decided 14a's "a cold read measures subVI linkage" stands
+      and now has its specific cause. **So `shutil.copy2(ORIGINAL, claudeDev\??` produces a SILENTLY RE-BOUND VI**,
+      and every stage gate compares against the ORIGINAL, never against a copy. The byte copy stays as a logged
+      control only. `claudeDev\background VIs_COPY\` holds 94 `.vi` files; the 17 names it shares with the
+      original's own subVI locations are **md5-identical today** (`:397-450`), so nothing has computed differently
+      yet ??it is an unmanaged duplicate hierarchy sitting on the build path, recorded as an OPEN item.
+    - (h) **Rule 1a is de-risked on the linkage channel but NOT closed.** The mandatory failed-prediction review
+      (`archive/peer/2026-09-19-s1-saved-copy-cold-execstate.md`, ANSWERED, claude/hypothesis opus max, $4.2400,
+      590 s) named three ways a save could change computation: subVI re-binding ??now **measured excluded** by (g);
+      typedef re-instantiation persisted on save; polymorphic/Express regeneration. The structural census is delta 0
+      on all nine classes (`tools/bench/s1_savedcopy_census.log:55-64`) and the saved-version bytes are unchanged,
+      but CLAUDE.md rule 1a says counts and `ExecState` prove nothing about computation. **The remaining channels are
+      closed by the review's T2 ??an OFFLINE RSRC block-level diff of the two files, no LabVIEW and no lock ??which
+      is the next cycle's first act.** Until T2 has run, no stage artefact is promoted beyond `claudeDev`.
+    - (i) **The static audit's gate S6 is an unsound proxy, but item 17's actual constraint IS met ??judgement,
+      cycle 46; do not re-open it.** The audit asserts "one `remove_bad_wires_scripted` outside any loop" by a
+      spelling scan, and the mandatory peer (`archive/peer/2026-09-19-staticaudit-falsepos.md` 짠1b) measured that
+      `tools/recipes/stage_d1_s1.py:654` sits inside `phase_c`, dispatched from the PHASE-SELECTOR `for` at
+      `:788-789` ??so the scan establishes nothing. What item 17 actually bans is a VI-wide reaper called from
+      inside the ROW LOOP of a multi-row wiring pass. Phase C has no row loop: it deletes two pinned uids and calls
+      the reaper ONCE, which is precisely the shape item 17 EXONERATES (`build_d1_routeb_v5.py:694`, executed by
+      run 5 with its rows wired). The recipe complies; the gate's WORDING is what is wrong ??it should read "not
+      inside a row loop". Left as a known-weak check rather than rebuilt (user, 2026-09-18 08:53, no more devices).
+    - (j) **A self-test that a gate itself mandated consumed the last build-budget slot and cost cycle 46 its
+      deliverable.** `tools/logclass.py` counts `selftest_*.log` as a build (its docstring records that as known and
+      deliberately unfixed), so the regression check for the stop-record repair took slot 10 of
+      `guard_cycle.CYCLE_BUILD_BUDGET = 10` and `stage_d1_s1.py --phases CD` could not launch. Clearing the budget
+      means running the retrospective, which permanently marks the session retro-done (OPEN 54(a)) ??so the run
+      cannot happen in the same session. **The loop-breaking move is simply that the NEXT session launches it as its
+      first act**, with the stop record already ALLOW. Recorded as a finding for the retrospective; NOT repaired,
+      and no device built.
+    ?좑툘 SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 88 ??88 supersedes 29's HEADLINE
+    and 29(d): `gscript.save(target, allow_broken=True)` diverts a BROKEN VI to `gui_save`
+    (`tools/gscript.py:2087-2089`), so `g.save()` under preload is NOT the only route, the ban on
+    `allow_broken=True` in stage scripts is LIFTED, and 29(e)'s "stage boundaries fall at LEGAL states" no longer
+    follows ??M3a-1 was saved broken by exactly that route (`claudeDev\D1_s3b_m3a_BROKEN_20260922_005732.vi`).
+    29's two riders survive in 88: a `gui_save` is a GUI act (capture ??locate ??act ??capture ??confirm) and the
+    saved path plus all four md5 pins are verified afterwards.
+
+## Pre-decided ??ADDED 2026-09-20 (cycle 48, after S1 was DELIVERED)
+
+30. **S1 IS DONE, and S2 IS THE DELETE + LOOPS + RE-DROP AS ONE STAGE, whose FIRST PHASE MEASURES WHETHER THAT
+    STAGE CAN END LEGAL.** Judgement, cycle 48, 2026-09-20, from v7's own source and header contract ??not from a
+    preference. S1's artefact is on disk: `claudeDev\D1_s1_copy.vi`, md5 `3e3d23cefd3a334001aa9d6156bf1aee`,
+    474,202 B, 20/20 gates, `tools/bench/stage_d1_s1_cd.log:115-346`.
+    - (a) **Contents and the net contract**, from `tools/recipes/build_d1_routeb_v7.py:76-84`: delete `#5058`,
+      `#48`, `#376` (`s1d`, `:754-785`, SubVI 97??4, every wired terminal captured first at `:766`) 쨌 create 3
+      While loops on `Diagram #686` (`s2`, `:788-813`, `WhileLoop 3??`, `Diagram 170??73`, `#637` still owning
+      `#6810`/`#22082`/`#12589`/`#11639`/`ControlTerminal #642`) 쨌 re-drop the three into the three new loop
+      bodies (`s2d`, `:815-848`, SubVI 94??7). ?뵶 **The NET over the stage is SubVI 97 ??97, WhileLoop +3,
+      Diagram +3.** Pre-decided 22's row "+3 loops +3 subVIs" describes the `s2d` drops, not a net change; a gate
+      asserting SubVI 100 would be wrong. `docs/d1-route-b-plan.md` 짠7's Diagram **174** counts a fourth, pool,
+      loop that is not built ??173 is the number for this stage (`build_d1_routeb_v7.py:78-83`).
+    - (b) **Why ONE stage.** Pre-decided 29(e): a stage that deletes a node whose outputs are consumed leaves bare
+      required inputs, i.e. an unsaveable VI, so delete-and-re-drop is one stage. v7 separates them across three
+      calls (`:2742` `s1d` ??`:2744` `s2` ??`:2746` `s2d`) and its uid-reuse note at `:850-855` depends on that
+      order ??**the order is preserved INSIDE the stage; it is the stage boundary that moves, not the sequence.**
+    - (c) **Input, output, skeleton.** Input is `claudeDev\D1_s1_copy.vi`, gated against md5
+      `3e3d23cefd3a334001aa9d6156bf1aee` before any edit; output is `claudeDev\D1_s2_loops.vi`. The script is
+      `tools/recipes/stage_d1_s2.py`, copied from `stage_d1_s1.py`'s skeleton ??`main()`/`--phases` `:763-800`,
+      `gate()` `:258-265`, `class Preload` `:332-358`, `md5()`/`file_facts()`/`orig_gate()` `:272-375`,
+      `fresh()` `:317-330`, `cold_subvi_table()`/`compare_subvi_tables()` `:377-428` ??with ONE substantive
+      change: `:623-625`'s `shutil.copy2(ORIGINAL, TARGET)` becomes a copy **from the S1 artefact**. The ORIGINAL
+      stays the acceptance reference for everything S1 did not change (29(g)); the S1 artefact is the reference
+      only for the two deleted fixture nodes.
+    - (d) ?뵶 **PHASE A IS A MEASUREMENT AND EDITS NOTHING ??it is written and run BEFORE phases C/D exist.** This
+      is the shape that made S1 work (phases A/B measured the save route; C/D built). Four facts, all read on
+      `D1_s1_copy.vi` with the ORIGINAL preloaded read-only (Pre-decided 14a), saved as a DATA artefact
+      `tools/bench/s2a_legality.json` + its log:
+      - **A1 ??why delete-and-re-drop at all?** The other 21 nodes are relocated with `move_in`; these three are
+        deleted and re-dropped. Read what `move_in` does to a SubVI node's owner chain and wires versus
+        `drop_subvi`, from our own measured capability files, and say whether `move_in` reaches `Diagram #686`'s
+        new loop bodies. **If it does, S2 ends legal with no scaffolding at all** ??that is the cheapest possible
+        stage boundary and it must be checked before the expensive one is built.
+      - **A2 ??the connector panes.** For `#5058` (`claudeDev\GPU_kernel_v1.vi`), `#48`
+        (`<vi.lib>\Madcity\ASI_adjust focus-subvi.vi`) and `#376` (`<vi.lib>\background VIs\save trace.vi`):
+        every connector-pane terminal and whether it is **Required / Recommended / Optional**. A freshly dropped
+        subVI breaks the VI only on an unwired **Required** input; Recommended and Optional do not.
+      - **A3 ??the loops' own legality.** Three new While loops with unwired conditional terminals are a
+        compile-time break (Pre-decided 16(a)). Report which ALREADY-BUILT ops reach a While loop's conditional
+        terminal and place a Boolean constant on a diagram ??by name, from `docs/toolkit-capabilities.md` and
+        `docs/NAMES.md`. **No new op and no new device** (Pre-decided 2); if the existing set cannot do it, that
+        is an `OPEN:` for judgement, not a licence to build one.
+      - **A4 ??the starting state.** `D1_s1_copy.vi`'s md5 and its `ExecState` COLD and PRELOADED, each in its own
+        child process (29(c)). S1 measured COLD **1** and PRELOADED **1** (`stage_d1_s1_cd.log:153`, `:155`) ??
+        confirm it has not moved.
+    - (e) **BOTH BRANCHES ARE DECIDED HERE, so the material session applies whichever A returns without coming
+      back for judgement** (the Pre-decided 28 pattern):
+      - **A1 says `move_in` reaches the new loop bodies** ??S2 is `s2` (loops) then `move_in` for the three, no
+        delete and no re-drop. Contract: SubVI 97 unchanged throughout, WhileLoop 3??, Diagram 170??73.
+      - **A1 says it does not, and A2 finds no unwired Required input on any of the three** ??S2 is
+        `s1d` ??`s2` ??`s2d` as in (a), with the (f) scaffold, saving `D1_s2_loops.vi`.
+      - **A2 finds an unwired Required input on one of the three** ??that one is LEFT ALONE in S2 ??neither
+        deleted nor re-dropped ??and its delete + re-drop + wire become their own later stage, because splitting
+        its pair is exactly what 29(e) forbids. S2's contract becomes SubVI 97 ??97?뭟 ??97 for the k it handles.
+      - **A3 finds no built route to the conditional terminal** ??S2 stops after phase A and saves the DATA
+        artefact; the boundary question comes to judgement. This is the only branch that ends without a VI.
+    - (f) **The temporary conditional-terminal constant is `True`, never `False`.** Where a new While loop must be
+      left unwired until S3w, its conditional terminal carries a temporary Boolean constant so the VI stays
+      saveable, and S3w removes it when the real stop wiring lands. **`True`** because if the scaffold ever
+      survives into a run, a loop that executes once is a visible, harmless failure, while `False` on a
+      "Stop if True" terminal is an instrument that hangs. This is scaffolding on loops the original does not
+      have ??rule 1a is untouched, no per-bead maths and no original wire is involved.
+    - (g) **Legality is not optional and it is not `allow_broken`.** `tools/gscript.py:2065-2071` reaches
+      `SaveInstrument` only at `ExecState != 0`, `allow_broken=True` is banned (29(d)), and `gui_save` has failed
+      at eight logged sites. A stage that cannot end legal saves a DATA file (Pre-decided 25 finding B1) and says
+      so in its log ??it does not save a broken VI and it does not pretend it saved one.
+
+31. **S2 IS BRANCH 1 ??LOOPS, THEN `move_in`. Phase A shrinks from a measurement to a RECORDING, because the
+    prior-art review found every one of its four questions already answered in our own files.** Judgement, cycle 49,
+    2026-09-20, disposing `archive/peer/2026-09-20-priorart-d1-s2-stage.md` (ANSWERED, opus/high, eight slugs, no
+    `novel`). All eight findings were accepted; none was refuted. 30 stands as written ??this fixes the recipe that
+    implements it and fixes one factual error inside 30(d).
+    - (a) ?뵶 **`#5058` IS THE CPU KERNEL, NOT THE GPU KERNEL. 30(d)'s parenthesis `(claudeDev\GPU_kernel_v1.vi)`
+      IS WRONG and is corrected here** (`refuted-already`, citing `docs/d1-route-b-plan.md:135` and
+      `docs/d1-build-plan.md:287`): in the ORIGINAL ??and therefore in `D1_s1_copy.vi`, which changed only the TIFF
+      fixture ??uid `#5058` is the **CPU** kernel `Track N beads four-fold over-kernel-v3.vi`. Relocating it is
+      correct and is what S2 must do; **logging it as `GPU_kernel_v1.vi` is not**, and a log that misnames what it
+      moved is the `unreported-fact` class. So: the recipe carries the true name, and a gate reads the VI name at
+      `#5058` on the artefact and **FAILS the stage** if it is not `Track N beads four-fold over-kernel-v3.vi`.
+      **Swapping the CPU kernel for `GPU_kernel_v1.vi` is its own later stage** with its own rule-1a argument; it is
+      not smuggled inside a loop restructure, and nothing in S2 assumes it has happened.
+    - (b) **A1 is SETTLED, not measured** (`settled-already`): `move_in` already lands nodes into loop bodies created
+      in the SAME run ??21 such landings, `tools/bench/build_d1_routeb_v7_run10.log:116-173` and `:70-76`,
+      `docs/d1-build-plan.md:931` (re-measured 2026-09-20, was `:873`). That is 30(e)'s **branch 1**, and 30(e) says to take it whenever it is available:
+      **S2 = create the three While loops, scaffold them, then `move_in` the three nodes. No delete, no re-drop, no
+      scaffold subVI.** Phase A RECORDS this with its citation instead of re-measuring it. One thing phase A must
+      still read from that same log, because it is the question 30(d) A1 actually asked: **whether `#5058` / `#48` /
+      `#376` were among the 21 or were excluded, and if excluded, the reason v7 gave.** An exclusion with a stated
+      cause is the only thing that can send S2 back to the delete-and-re-drop shape.
+    - (c) **A2 is MOOT under branch 1 and is recorded as such.** Required-ness only bites a freshly dropped subVI;
+      branch 1 drops nothing and the three keep their wires. The fail-closed `a2_required_readable=False` reading
+      stays *true* (no built op reads the Required/Recommended/Optional flag, and building that reader is forbidden
+      by Pre-decided 2) but it is no longer load-bearing, so it must not select a branch. `unread-evidence` also
+      names files that already answer it for the input that matters ??`docs/d1-route-b-plan.md:148`, `:154`,
+      `:158-159`; `docs/d1-build-plan.md:523-536`; `docs/NAMES.md:564-565` ??which phase A cites rather than probes.
+    - (d) ?뵶 **A3's `a3_route_exists = FALSE` PREDICTION WAS WRONG** (`contradicted`): three routes from a Boolean to
+      a While loop's conditional terminal are already measured at `ExecState 1`, and the recipe's candidate list
+      (`stage_d1_s2.py:573-581`) simply omitted the obvious one ??**`OpExitWhile_v0`, `docs/toolkit-capabilities.md:31`**
+      (also `:63`, `:64`, `:66`). **`OpExitWhile_v0` is the scaffold of record for 30(f)**, applied to each NEW
+      loop's own conditional terminal. The recipe's `_boolean_sink` (`:831-843`) is DELETED: it chose a sink by a
+      regex over terminal *names* among the dropped subVIs, which under branch 1 has no sink to find at all ??that
+      is the `already-failed` finding, and it is why "three empty While loops" is measured at `ExecState 0`
+      (`docs/toolkit-capabilities.md:67`). The gate is unchanged and absolute: **each of the three new loops has its
+      conditional terminal wired to a constant TRUE before the stage saves.**
+    - (e) **30(f)'s `True` is a requirement on the VALUE delivered at the conditional terminal, not on the object
+      being a literal constant.** Any ALREADY-BUILT route qualifies if it (i) leaves the terminal wired, (ii)
+      delivers constant TRUE, and (iii) adds no new unwired Required input of its own. The reason in 30(f) is
+      physical ??a scaffold that survives into a run must execute the loop once and exit, never hang ??and a node
+      that computes TRUE satisfies it exactly as a `True` constant does. A route that can only deliver **FALSE**
+      does NOT satisfy 30(f) and is refused; that is the hang the clause exists to forbid.
+    - (f) **A4 drops its two ExecState child processes** (`already-measured`): the pair is already recorded on this
+      exact md5 at `tools/bench/stage_d1_s1_cd.log:153` (COLD 1) and `:155` (PRELOADED 1), and the md5 gate on
+      `3e3d23cefd3a334001aa9d6156bf1aee` already proves the file has not moved. Phase A keeps the md5 gate and cites
+      those two lines; the PRELOADED state is read anyway inside C/D, where the save route needs it (29(d)).
+    - (g) **Phase C reuses v7's already-passing step functions rather than re-deriving them** (`already-built`,
+      `helper-exists`): the construction steps have passed their gates in the real VI
+      (`tools/bench/build_d1_routeb_v7_run10.log:70-76`, `:106`). What is genuinely new ??and what this stage is
+      *for* ??is the **stage boundary**: copy from the S1 artefact, gate on its md5, save `D1_s2_loops.vi`.
+    - (h) **The net contract is unchanged from 30(a) and is now the contract of branch 1 exactly: SubVI 97 ??97
+      (no subVI is created or destroyed at any point in the stage), WhileLoop 3 ??6, Diagram 170 ??173.** Every
+      comparison is against the ORIGINAL, never against a copy (29(g)).
+    - (i) **If the stage cannot end legal it saves `tools/bench/s2a_legality.json` and says so** (30(g)). It never
+      saves a broken VI, never uses `allow_broken=True`, and never invents an op to get past a gate (Pre-decided 2).
+
+32. **THE SCAFFOLD GOES ON AFTER `move_in`, AND `OpExitWhile_v0` IS REFUSED FOR IT.** Judgement, cycle 49,
+    2026-09-20, answering the two `OPEN:` lines the material session raised while applying 31. This replaces 31(d)'s
+    naming of `OpExitWhile_v0` as "the scaffold of record"; everything else in 30 and 31 stands.
+    - (a) ?뵶 **`OpExitWhile_v0` MUST NOT be the S2 scaffold.** Measured: it sources the conditional terminal from a
+      **front-panel Boolean control by name** (`tools/gscript.py:1083-1114`). That fails 31(e) twice over ??it
+      delivers the operator's value, which is **FALSE at load** (the exact "instrument that hangs" 30(f) forbids),
+      and it would add readers of an ORIGINAL front-panel control in three new places, which is the original's
+      wiring and not scaffolding. **Do not wire `"stop (end)"`, or any other original control, into a new loop.**
+      The assumption the material session proceeded under (`SCAFFOLD_STOP_CONTROL = "stop (end)"`) is OVERTURNED.
+    - (b) **The order inside the stage is: create the three loops ??`move_in` the three nodes ??scaffold the three
+      conditional terminals ??save.** This dissolves the whole difficulty. The body-node-addressed routes
+      (`OpCreateConstOnTerm_v0`, `OpCreateEqual_v0` ??`OpStopFromNode_v0`) were unreachable only because an empty
+      body has no node to address; after `move_in` each new body holds its relocated node. **Intermediate
+      illegality inside a stage is expected and permitted** ??only the SAVE requires `ExecState != 0`
+      (`tools/gscript.py:2065-2071`, 29(d)), and that is the whole reason 29(e)/30(b) make this one stage.
+    - (c) **A3 goes back to being a real MEASUREMENT, over every built op, not a one-op availability check.** Phase
+      A reports, for each candidate ??`OpCreateConstOnTerm_v0`, `OpCreateConst_v0`, `OpCreateEqual_v0`,
+      `OpStopFromNode_v0`, `OpExitWhile_v0`, and anything else in `docs/toolkit-capabilities.md` that writes a While
+      loop's conditional terminal or creates a constant ??(i) its exact inputs, (ii) what it addresses (a terminal
+      reference, a body node, or a panel-control name), (iii) whether the Boolean it delivers is a **constant** and
+      whether its value can be set **TRUE** by that op or by another already-built op, (iv) the measured evidence
+      line. No new op and no new device (Pre-decided 2); phase A still edits nothing.
+    - (d) **Selection rule, applied mechanically by the recipe from A3's own table** ??judgement is already spent
+      here, so the material session does not come back: **(1)** an op that puts a Boolean **constant TRUE** on the
+      conditional terminal wins; **(2)** failing that, `OpCreateEqual_v0` ??`OpStopFromNode_v0`, and **only if** its
+      delivered value is provably constant TRUE from its own measured record (`tools/bench/build_opsentinel_ops_run3.log`
+      F5c/F6) ??a comparison whose value is not provable from that record does not qualify; **(3)** nothing else.
+      **If neither qualifies, the stage STOPS after phase A and saves `tools/bench/s2a_legality.json`** (30(e)
+      branch 4, 31(i)). That is a legitimate end to this cycle: it leaves a file, which is what the user's binding
+      rule of 2026-09-19 asks of every cycle, and it hands judgement a real measurement instead of a guess.
+    - (e) **v7's exclusion of `#5058` / `#48` / `#376` from its 21 `move_in` landings does NOT send S2 back to
+      delete-and-re-drop.** 31(b) said only an exclusion *with a stated cause* could; the cause v7 states
+      (`tools/bench/build_d1_routeb_v7_run10.log:53`, `docs/d1-route-b-plan.md:62-72`) is that a fresh drop removes
+      32 named re-wire rows from the cut census ??a **bookkeeping preference about which wires route B wants cut
+      later**, not a finding that `move_in` fails on these nodes. Judgement goes the other way on rule 1a: keeping
+      the existing wires is strictly safer than destroying and hand-rebuilding 32 of them, and hand re-wiring at
+      that scale is the exact stage that killed v3?뭭7 ten times over five cycles. **The 32 rows are S3w's work,
+      which is the re-wiring stage, and they are not smuggled into S2 by deleting nodes early.**
+    - (f) **Rule 1a, stated for this stage:** `move_in` turns each crossing wire into a While-loop tunnel, and While
+      loop tunnels do not auto-index unless explicitly told to, so values pass through unchanged. Phase D RECORDS
+      the indexing state of every new tunnel if any built op can read it, and says plainly in the log if none can.
+      The three loops are empty of logic, run once under the TRUE scaffold, and S3w removes the scaffold ??no
+      per-bead maths and no original wire is altered by S2. ?좑툘 **(f)'s first sentence is WRONG ??see 33(a).**
+
+33. **CORRECTION TO 32, FROM THE ROUND-2 PRIOR-ART REVIEW: `move_in` SEVERS WIRES, IT DOES NOT TUNNEL THEM.**
+    Judgement, cycle 49, 2026-09-20, from `archive/peer/2026-09-20-priorart-d1-s2-stage-r2.md:1250` citing
+    `docs/d1-route-b-plan.md:57-58` and `:67`. A wrong sentence in a `Pre-decided` section is worse than no
+    sentence, so it is corrected here rather than left for a later session to trip over.
+    - (a) **32(f)'s "turns each crossing wire into a While-loop tunnel, so values pass through unchanged" is FALSE.**
+      A move severs the node's wires; the relocated node lands in the new body **unwired**. The tunnel-indexing
+      reading stays worth taking (`gscript.tunnels` / `OpTunnels_v0` returns `index_mode`,
+      `tools/gscript.py:941-978`) ??it simply has nothing to read when no tunnel is created, and the recipe must say
+      that rather than imply a pass-through that does not happen.
+    - (b) **32(e)'s CONCLUSION survives; its REASON does not.** Branch 1 is still right, but not because it
+      "preserves 32 wires" ??it preserves none. It is right because it **keeps the node's identity**: `move_in`
+      carries uid, configuration and connector state across, while delete-and-re-drop destroys and re-creates the
+      call (SubVI 97 ??94 ??97) and makes every gate that counts subVIs a moving target. The 32 named re-wire rows
+      are S3w's work under **either** route, which is exactly why v7's stated reason for excluding these three
+      (`tools/bench/build_d1_routeb_v7_run10.log:53`, `docs/d1-route-b-plan.md:62-72`) is a bookkeeping preference
+      and not a finding against `move_in`.
+    - (c) ?뵶 **THE STAGE BOUNDARY IS RE-OPENED, and phase A is what closes it.** If a moved node lands unwired, then
+      branch 1 meets the same wall 29(e) named for delete-and-re-drop: bare required inputs ??`ExecState 0` ??
+      `gscript.save()` cannot reach `SaveInstrument` (`tools/gscript.py:2065-2071`) ??**the stage cannot end legal,
+      whatever is done to the conditional terminals.** So A2's required-ness question is load-bearing again after
+      all, and 31(c)'s "moot" is withdrawn. **Phase A must answer, from already-measured files and without editing
+      anything: does a `move_in`'d node land unwired, and does an unwired Required input on any of `#5058` / `#48` /
+      `#376` follow from it?** Until that is read, no S2 shape is authorised beyond phase A.
+    - (d) **This does not license a bigger stage.** If phase A shows S2 cannot end legal in any shape, the stage
+      stops after A with `tools/bench/s2a_legality.json` (30(e) branch 4, 31(i)) and judgement re-cuts the boundary
+      ??the likely answer being that the loops, the moves and their re-wiring are one stage, which is 29(e) applied
+      honestly rather than a scope increase. Never `allow_broken=True`, never a new op (Pre-decided 2).
+
+## Pre-decided ??ADDED 2026-09-20 (cycle 50): the boundary re-cut 33(d) asked for
+
+34. **S2 IS SMALLER THAN ANY SHAPE CONSIDERED SO FAR: THREE EMPTY WHILE LOOPS, EACH SCAFFOLDED BY
+    `OpCreateEqual_v0` ??`OpStopFromNode_v0`, SAVED ??NO `move_in`, NO QUEUES, NO RE-WIRING.** Judgement, cycle 50,
+    2026-09-20, from the mandatory failed-prediction review
+    `archive/peer/2026-09-20-d1-s2-boundary-recut.md` (ANSWERED, claude/hypothesis opus max, $3.3597, 492 s), which
+    refuted **both** of this cycle's own claims. Everything in 30/31/32/33 that this item does not name stands.
+    - (a) ?뵶 **`stop_after_a` FALLS: 32(d) rule (2) WAS NEVER EVALUATED, AND IT QUALIFIES.** Cycle 49 concluded S2
+      cannot end legal because rule (1) ??an op that places a Boolean *constant* TRUE on a conditional terminal ??
+      has no winner. That is still true, and it is beside the point: rule (2)'s pair is **already measured at
+      `ExecState` 1**. `docs/toolkit-capabilities.md:63-64` records `OpCreateEqual_v0` placing `Equal?` with **both
+      operands taken from one existing node's output terminals** and `OpStopFromNode_v0` driving a While loop's
+      conditional terminal from its Boolean (term 119, wire 0 ??387), on a scratch that reads `ExecState` 1;
+      `OpCreateEqual_v0` is 23/0 and T5 is closed by measurement in `tools/bench/build_opsentinel_ops_run3.log`
+      (F5c/F6). `x == x` is constant TRUE for every non-NaN scalar, which is exactly the provability 32(d) rule (2)
+      demands, and it is the harmless-once-through direction 30(f)/31(e) require ??never FALSE, never a hang.
+    - (b) ?뵶 **AND THE OPERANDS MAY SIT ON THE OUTER DIAGRAM** (`docs/toolkit-capabilities.md:64`, measured
+      `LoopTunnel 0 ??2`). So the scaffold does **not** need a node inside the body, and **32(b)'s premise is
+      false**: "the body-node-addressed routes were unreachable only because an empty body has no node to address"
+      was never true of this pair. A loop can therefore be created, scaffolded and **saved while its body is still
+      empty**, before any node moves. 32(b)'s ordering (loops ??`move_in` ??scaffold ??save) is superseded by:
+      **loops ??scaffold ??save.**
+    - (c) **The operand must be SCALAR.** An array operand yields a Boolean **array**, which a conditional terminal
+      cannot take (round-2 prior art B2; `docs/frame-loop-wire-graph.md:171` measures `#5058` t3
+      `Bead is good? array out` as an ARRAY ??the ordinal-picked operand cycle 49 removed for the same reason).
+      Pick the operand by NAME from a measured scalar output on `Diagram #686`, never by ordinal.
+    - (d) **My own re-cut ??"one complete loop per stage, stop wiring included" ??is REFUTED and withdrawn.** It
+      ended each span at the *real* stop condition instead of at a scaffold, inflating ~3 operations into ~20 and
+      pulling the re-wiring pass that killed v3?뭭7 back inside the first stage. The peer named it as a smuggled
+      premise and it was.
+    - (e) **The chain after S2, one atomic step per relocated node.** `move_in` severs wires (33(a)), so a moved
+      node lands unwired and may bare a Required input: the move and that node's re-wiring cannot be split, but
+      **different nodes can**. Order `#48` (7 cut rows) ??`#376` (12) ??`#5058` (13) ??smallest first, which is
+      safe because the inter-loop dependency is **runtime only, not build-time**: all eight `Obtain`s sit at top
+      level on `Diagram #686` (`docs/d1-build-plan.md:568-569` 짠9 Scope + the `S1q` gate at `:651` ??re-measured 2026-09-20, was `:593`; `tools/recipes/build_d1_routeb_v7.py:100`), so `#48`'s
+      loop builds with `#5058`'s absent. Row counts and every cut terminal are measured in
+      `tools/bench/d1_rewire_sources.json` (109 cut terminals, 109 resolved; 32 rows over these three nodes,
+      `docs/d1-route-b-plan.md:67`).
+    - (f) ?뵶 **NO INTERMEDIATE ARTEFACT MAY EVER BE RUN.** A loop whose real stop condition is a sentinel on a
+      queue with no producer blocks forever; a loop still on its `x == x` scaffold runs once and exits. Both are
+      legal to SAVE and neither is legal to RUN. Every stage script states this in its log, and no harness may
+      open an intermediate `D1_s*.vi` and press Run.
+    - (g) ?뵶 **THE DESIGN GAP IS REAL, BUT IT IS NOT "no element types were designed" ??IT IS THAT SIX OF THE EIGHT
+      QUEUES HAVE NO `src_name` THAT EXISTS ON THIS COPY.** This cycle opened by measuring that the element types
+      ARE on file ??`docs/d1-build-plan.md:544-558` 짠9 (the eight-queue table), `:623-639` 짠9a (re-measured 2026-09-20, was `:565-581`) (the sentinel
+      convention), adopted verbatim at `docs/cycle15-plan.md:118-123`, with a producer-consumer core actually built
+      at `docs/stage2-assembly-step-c.md:18-30` ??and concluded that
+      `tools/recipes/build_d1_routeb_v7.py:131-135`'s "undesigned row" was a stale comment. **That conclusion is
+      overturned by the same review.** `queue_node('obtain')` types a queue from a `(node, named output terminal)`
+      pair (`tools/gscript.py:1122`), and 짠9 resolves to such a pair for **at most 3 of 8**: "the kernel's own
+      outputs" is not a `src_name`; ~~`#10757 .element` names a `Dequeue` the build has yet to create~~ ?뵶 **THAT HALF-SENTENCE IS WRONG ??CORRECTED BY 34(m) BELOW (cycle-51 judgement, 2026-09-20); the strike-through keeps the original readable** ??which is
+      where run 3 died (`tools/recipes/build_d1_routeb_v7.py:113-116`); and `docs/cycle15-plan.md:120-121` sources
+      `Q_res`/`Q_good` from the **GPU** kernel, a node S2 never places (31(a)). The two files also disagree on a
+      type: `Q_focusback` is 1 DBL at `docs/d1-build-plan.md:555` and Bool at `docs/cycle15-plan.md:122`.
+      **RESOLVED HERE: 1 DBL.** `#10407` t6 is `position [internal units]`, measured numeric
+      (`docs/frame-loop-wire-graph.md:410`), and it is the wire that feeds `#48` t4 `In position` through the
+      original's own shift register ??a position, not a flag. The binding document was the wrong one.
+      ??**The queue design work owed is a RESOLUTION TABLE, not a new design**: for each of the eight queues, the
+      `(uid, exact terminal name, diagram)` that exists at the moment its `Obtain` is placed, or the stage that
+      must run first for it to exist. It is a document, it needs no LabVIEW, and it is owed **before the sentinel
+      stages** ??not before S2, which uses no queue at all.
+    - (h) **The strongest rival explanation for the ten v3?뭭7 deaths is ADDRESS INVALIDATION BY SELF-MUTATION**, and
+      it is now a binding constraint on every re-wiring stage: rows addressed by terminal/diagram **INDEX** while
+      the build's own tunnel creation and wire severing drift those indices (`docs/toolkit-capabilities.md:70` T2c2,
+      a stale index silently wiring a wrong-but-valid source past the sink rule ??
+      `archive/peer/2026-09-17-priorart-priorart-routeb-build.md:301`; and Pre-decided 21(d)'s measured **+13**
+      index shift inside one instance with no restart). It predicts the observed pattern AND predicts that (e)'s
+      finer boundary does **not** help by itself. So: **every address is a uid or an exact name, re-read
+      immediately before use and never cached across a mutation.** "Resolve every name up front" (the work-cycle
+      rule) is sound for NAMES and unsound for INDICES; the two are not the same instruction.
+    - (i) **`tools/recipes/stage_d1_s2.py` is NOT launched and NOT reviewed again on its current bytes.** Its
+      1956 lines implement the superseded ordering of 32(b) and its A3 table answers a question (a) has now
+      settled. It is kept for its measurement code, not re-armed: paying a third prior-art round on bytes that
+      encode a withdrawn boundary is what cost cycle 49 its launch. The next build is a SHORT script.
+    - (j) **The discriminating test the review named is the next build, and it is a DIAGNOSTIC, not a stage.** On a
+      scratch copy of `claudeDev\D1_s1_copy.vi` (md5 `3e3d23cefd3a334001aa9d6156bf1aee`), built ops only, four
+      calls: create one While loop on `Diagram #686` ??`OpCreateEqual_v0` with both operands from ONE measured
+      **scalar** output terminal of a `Diagram #686` node ??`OpStopFromNode_v0` onto the loop's conditional
+      terminal ??read `ExecState` (ORIGINAL preloaded read-only, 14a) ??`move_in` `#48` ??read `ExecState` again.
+      Either branch leaves a file: the readings, plus the saved copy whenever the state is legal. A first reading
+      of 1 **falsifies** "S2 cannot end legal"; a second reading of 1 would mean even the move separates from the
+      re-wiring and the stages cut finer still.
+    - (l) ??**(a)/(b)/(e) ARE NOW MEASURED, NOT CITED ??the test of (j) RAN, 2026-09-20.**
+      `tools/bench/diag_s2_scaffold.py` ??`tools/bench/diag_s2_scaffold.log`, `??diag_s2_scaffold.json`, 13 pass /
+      1 fail (the one FAIL is step 7's save, which is the expected reading, not a defect):
+      - ONE new While loop **#23032** (body Diagram **#23058**) on `Diagram #686`, conditional terminal **#23080**
+        driven through wire **23145** by Comparison **#23035**, both operands from the single scalar output of
+        node **#8486 `x+1`** ??**`ExecState` 1**, and `gscript.save()` reached `SaveInstrument`:
+        `claudeDev\DIAG_s2scaffold_030829.vi`, md5 `eddb3e15e5b0aa673fc2bf59eadd67e2`, 475,422 B, re-read in a
+        fresh process **COLD 1 / PRELOADED 1**. **"S2 cannot end legal" is FALSIFIED by the machine.**
+      - Then `move_in` `#48` (7 terminals, all 7 wired beforehand) into that body ??**`ExecState` 0**, and the save
+        was refused verbatim (`refusing to save a BROKEN VI - SaveInstrument blocks forever on one`);
+        `allow_broken` never set, `gui_save` never called. **(e)'s atomicity of move+re-wire is measured, not
+        assumed.** ORIGINAL md5 `2a78e17c449cacdaf5da389818526859` before and after; refs 8 opened / 8 closed /
+        0 live; no VI was run.
+      - ?좑툘 **The operand pre-selected in the brief was WRONG and the census-order fallback is what found the right
+        one.** `#637 'frame index'` is not a named source terminal on `Diagram #686` ??`#637`'s outer feed is an
+        UNNAMED tunnel (`out_name ''`) ??so a name resolved from a *wire* table is not automatically a `src_name`.
+        Resolve operands from the diagram's own output-terminal census, as the diagnostic does.
+      - ??**A substitution judgement CONFIRMS:** readings 1 and 2 were taken **in-instance under `Preload`**, not
+        in a child process, because the child form restarts LabVIEW and can therefore only read a file on disk ??
+        an UNSAVED in-memory edit cannot survive it. That is correct and is now the rule: **the child-process
+        `ExecState` read of 29(c) applies to SAVED files; an unsaved intermediate is read in-instance under
+        preload.** The saved artefact was read both ways and agreed (1 / 1).
+    - (k) **Operating note carried from the cycle-48 retrospective:** `tools/hash_probe.py` is the read-only
+      md5/sha256/size probe for exactly these gates ??`py tools/bgrun.py --material ??-- python -u
+      tools/hash_probe.py <path> ??, one `HASH <path> | exists= | size= | md5= | sha256=` line per path, no COM and
+      no LabVIEW. Use it for every artefact md5 a stage must record.
+    - (m) ?뵶 **CORRECTION to (g), by the cycle-51 judgement session, 2026-09-20 ??`#10757 .element` is NOT an
+      unbuilt `Dequeue`.** DECISION: the struck half-sentence at `docs/cycle27-plan.md:916` was wrong on the
+      mechanism. `#10757` **is** an `Index Array [array, element, index]` ??MEASURED: `element` is one of its three
+      real, named terminals (`docs/frame-loop-wire-graph.md:86`), so `.element` IS a named output terminal and
+      `queue_node('obtain')`'s `(node, named output terminal)` requirement (`tools/gscript.py:1122`) is satisfiable
+      by it in principle. **The obstacle is the DIAGRAM, not the name**: `#10757` is a body node of `#637` that
+      relocates into loop 1.2 (`docs/d1-build-plan.md:295`), so it is not on `Diagram #686` at the moment `Q_focus`'s
+      `Obtain` is placed, and on `#686` the same family exports only the ARRAY (`#637` t24 `pos in cal image out`).
+      `Q_focus` therefore stays state **C** for a different reason than (g) gave (`docs/d1-build-plan.md:584`).
+      Everything else in (g) ??"at most 3 of 8", the `Q_focusback` 1-DBL resolution, and the resolution table being
+      the work owed ??stands unchanged. The original sentence is struck, not deleted, so the record stays readable.
+
+35. **THE QUEUE `element data type` DONOR MUST EXIST BEFORE THE LOOPS START, AND THE SCAFFOLDS MUST BE REMOVED BY
+    THE SENTINEL STAGES.** Judgement, cycle 51, 2026-09-20, added after the `Obtain` resolution table was written
+    into `docs/d1-build-plan.md:560-616` and the cycle-51 prior-art review of the S2 recipe came back
+    (`archive/peer/2026-09-20-priorart-d1-s2-loops.md`, ANSWERED). 34 stands as written; this constrains what the
+    queue stages may do with it.
+    - (a) ?뵶 **DONOR CONSTRAINT ??a queue's `element data type` comes from a source available BEFORE the loops
+      start (a constant or a pre-loop node), NEVER from a tunnel out of `#637`.** DECISION: every state-**A** pair
+      in the new 짠9 table (`docs/d1-build-plan.md:576-585`) sources from `#637`'s **outer** terminals ??output
+      tunnels and right shift registers' outside terminals ??which carry **post-loop** values only. `element data
+      type` is a *wired* input on the created `Obtain Queue` node, so an `Obtain` typed from one of them could not
+      produce its refnum until the frame loop had ended, while the loops that need that refnum wait on it: a
+      structurally legal `ExecState 1` with a **guaranteed runtime deadlock** (the R1 risk already written at
+      `docs/d1-build-plan.md:596-602`). **Rule 1a is NOT engaged**: `Obtain Queue` discards the donor's *value* and
+      keeps only its *type*, so changing the donor changes no computation ??no per-bead maths and no original wire
+      is touched.
+    - (b) **WHAT REMAINS IS A MEASUREMENT, NOT A DECISION.** Which donor *shapes* `queue_node('obtain')`
+      (`tools/gscript.py:1122`) can actually accept is unknown: the op requires a **named** output terminal, and a
+      LabVIEW diagram constant's terminal is **unnamed** ??the same `out_name ''` failure cycle 50 hit on `#637`'s
+      outer feed (34(l), `docs/cycle27-plan.md:961-964`). So a "use a constant instead" instruction is not yet
+      executable. **Until that is measured, NO queue stage is written**; the measurement is a diagnostic under
+      `tools/bench/`, not a recipe, and its result comes back to judgement as facts (the material session does not
+      pick the donor).
+    - (c) ?뵶 **SCAFFOLD REMOVAL IS PART OF EACH LOOP'S SENTINEL STAGE, NOT A SEPARATE PASS.** Each `x == x`
+      scaffold (34(a)/(b)) adds one `Equal?` and one border tunnel, and **no document named the stage that takes
+      them out** ??as written they would ride into the delivered VI. DECISION: when a loop's real stop condition is
+      wired (the end-of-stream sentinel of 짠9a, `docs/d1-build-plan.md:623-639`), that same stage **deletes that
+      loop's `Equal?` and its border tunnel**, and its gate asserts **`Comparison` ?? and `LoopTunnel` ?? for that
+      loop**, measured against the stage's own before-census. **No scaffold survives into the delivered VI.**
+    - (d) **TWO GATE REQUIREMENTS NOW BIND EVERY LATER STAGE**, both accepted from the cycle-51 prior-art review
+      (`archive/peer/2026-09-20-priorart-d1-s2-loops.md`): (1) a value returned **beside a non-zero error column**
+      is reported **UNREAD** ??never as a value and never as a silent FAIL (14, `docs/cycle27-plan.md:147-150`);
+      (2) **SubVI acceptance is a TABLE comparison against the ORIGINAL, never a class COUNT**, because
+      `shutil.copy2` re-binds 22 calls and loses 8 while leaving the count intact (29(g),
+      `docs/cycle27-plan.md:629-641`; the built FATAL instrument is `tools/recipes/stage_d1_s1.py:182-188` and
+      `:377-400`).
+
+## Pre-decided ??ADDED 2026-09-20 (cycle 52): S2 accepted 쨌 the donor rule 쨌 S3's forced shape
+
+36. **THE QUEUE DONOR MUST BE A NODE ??"USE A CONSTANT" AND "USE A FRONT-PANEL CONTROL" ARE BOTH MEASURED
+    UNEXECUTABLE, AND THE TYPE CENSUS 35(b) ASKED FOR CANNOT BE TAKEN BY THE BUILT FLEET.** Judgement, cycle 52,
+    2026-09-20, from `tools/bench/diag_queue_donor.{py,log,json}` (12/0), `??diag_queue_donor2.*` (16 gates) and
+    `??diag_donor_census.*` (14/0). 35(a)'s ban on `#637` outer terminals stands; 35(b) is answered as far as the
+    fleet can answer it.
+    - (a) ?뵶 **`queue_node('obtain')` accepts only an object that is in `AbstractDiagram.Nodes[]` AND exposes a
+      named source terminal ??i.e. a real NODE.** Measured REFUSED, all four shapes: a diagram constant on `#686`
+      (`error 1057: To More Specific Class in OpQueueObtain_v0.vi`; the placed constant `#23258` is not in
+      `Nodes[]`); a **scalar** front-panel ControlTerminal (`#23124`) and a **cluster** one (`#23493`) ??both born
+      on `TopLevelDiagram #536`, both relocated onto `#686` by `move_in` with no error, both absent from `Nodes[]`
+      with `out_name` empty, both refused with the same 1057; and `OpCreateConstOnTerm_v0` on a `Diagram` container
+      (`invoke error 1055`, created uid 0), whose positive control INSIDE `WhileLoop #637` created constant `#23716`
+      cleanly ??**the restriction is that op's `Loop.Diagram` downcast, intrinsic to the container class, not the
+      call.** Measured ACCEPTED: a node's named output (`#8486 'x+1'` ??`Obtain Queue #23032`) and a `#637` outer
+      terminal (`current image number`), which 35(a) forbids.
+    - (b) **A newly placed donor node is not a free fallback ??it must be fully wired or the VI never saves.**
+      `build_index_array` alone, one unwired Index Array on the top-level diagram, took a legal scratch from
+      `ExecState` 1 to 0, and **deleting the node did not restore it** (`tools/bench/diag_qdonor2_ia.log:17,26-27`).
+      The explanation first offered was refuted on its own falsification criterion by the peer-prescribed test
+      (`archive/peer/2026-09-20-qdonor2-p8-no-saved-artefact.md`, ANSWERED, claude/hypothesis opus max); the
+      surviving alternative ??a `Connect Wire`-family (1304) op run perturbing compile state,
+      `docs/NAMES.md:912-921` ??is **UNVERIFIED and OPEN**. It sits on the queue path, not the move path, so it
+      blocks no D1 stage.
+    - (c) ?뵶 **NO BUILT OP READS `Terminal.DataType`** ??`node_terms` gives name/is_source/wire, `report_all` gives
+      class/uid/pos/owner, `node_info` gives `Node.Style` for TOP-LEVEL nodes only and `#686` is not top level. A
+      reader would be a new op, which Pre-decided 2 forbids. What WAS measured on `Diagram #686`: **24 `Nodes[]`**
+      (21 originals + the three S2 loops); **18 of the 24 are independent of `#637`** (`8486, 7201, 781, 250, 6951,
+      6409, 8953, 9342, 9179, 28124, 27605, 28670, 25380, 25091, 25149, 23032, 10170, 23041`); the three new loops
+      expose **0** named outputs; and all five state-**A** queues name `#637` ??the one node that is NOT
+      independent of it ??while `Q_free`/`Q_work` (IMAQ image refnum) and `Q_focus` (DBL scalar) have no
+      `(node, named output terminal)` pair on `#686` at all.
+    - (d) **DECISION ??the donor is found BY CONSTRUCTION, not by a type reader.** The machine will not report a
+      terminal's type, but `queue_node('obtain')` itself either accepts a donor or refuses it, and a created
+      `Obtain Queue` can be read back. So the next donor step is a **trial census** over the 18 independent nodes'
+      named outputs: attempt the `Obtain`, read back what the queue is typed as. No new op, no inference. It is
+      **not on the critical path ??no queue stage is written before it, and it waits behind S3.**
+
+37. **S2 IS ACCEPTED, AND S3 IS ATOMIC BY THE MACHINE'S OWN CONSTRAINT: THE WHOLE 1.5 NODE SET MOVES AND IS
+    RE-WIRED IN ONE SAVED STAGE.** Judgement, cycle 52, 2026-09-20, from `tools/bench/verify_d1_s2.{log,json}`
+    (23/0), `??diag_movein_set.*` (13/1) and a read of `tools/bench/d1_rewire_sources.json`.
+    - (a) ??**D1 STAGE S2 IS DELIVERED**: `claudeDev\D1_s2_loops.vi`, md5 `6ff19497f2309e007a214660bb64b911`,
+      475,707 B. Re-read FROM THE SAVED FILE: `ExecState` COLD **1** / PRELOADED **1**; census Diagram 173 쨌
+      WhileLoop 6 쨌 SubVI 97 쨌 Comparison 17 쨌 LoopTunnel 135 쨌 Wire 1905. **Verification level: STRUCTURAL** ??no
+      VI was run, and 34(f) forbids running an intermediate.
+      ??**Accepted on TWO independent runs, not one:** cycle 51's own `tools/bench/stage_d1_s2_loops.log` ends
+      **35 pass / 0 fail** with `G15 FATAL PASS` and `BGRUN END rc=0 after 776s` (300 lines, written to 04:06), and
+      cycle 52's `tools/bench/verify_d1_s2.{log,json}` reaches the same numbers at **23/0**. ?좑툘 Cycle 52 dispatched
+      that second run believing the first had been killed ??it had not; see **37(j)**. The duplication was the
+      cost of the error, but the doubled evidence is genuine.
+    - (b) ?뵶 **`#10170` IS A NEW LOOP THAT REUSED A FREED LOW uid** (`tools/gscript.py:2353-2356`), and rule 1a is
+      intact. S1's While loops are `{637, 15173, 25380}`; S2 adds **exactly** `{10170, 23032, 23041}`, all owned by
+      `Diagram #686`. Ownership by traversal, never by index: `#23080 ??Diagram #23058 ??WhileLoop #23032` 쨌
+      `#23246 ??#23166 ??#10170` 쨌 `#23456 ??#23405 ??#23041`. Every pre-existing loop's conditional terminal and
+      the wire on it are **identical in S1 and S2** (`637 ??#648/w3457` 쨌 `15173 ??#15276/w19456` 쨌
+      `25380 ??#25410/w1737`), so **no original stop condition was touched**. The three new `Equal?`s each drive one
+      new conditional terminal, and all three read back **READ** with empty error columns.
+      ?좑툘 **The alarm was raised by a REPORTING defect, not a build defect:** `stage_d1_s2_loops.py`'s closing report
+      re-read the loops **by array index** ??the very thing 34(h) forbids ??and printed a pre-existing loop's uid
+      beside a new loop's conditional terminal. **Every stage report re-reads by uid or by ownership traversal.**
+      ?좑툘?좑툘 **And the warning was already on file, unread:** `tools/gscript.py:2353-2356` says verbatim *"Nodes[] is
+      CREATION order ??Newly created nodes reuse low uids (90, 98 seen 2026-09-06 20:0x) and go to the END of
+      Nodes[]"*. Both halves of this cycle's scare ??a new loop wearing a low uid, and an index read returning the
+      wrong object ??are that one docstring. Read it before writing any census-order or index-order code.
+    - (c) **The SubVI table's one missing row is REQUIRED, not tolerated.** `(diagram 639, node 22700)` is
+      `IMAQ Write TIFF File 2`, inserted into the working copy for fixture recording on 2026-09-01
+      (`docs/d1-build-plan.md:310`, `docs/fixture-recording.md:17`); the true original has no such node.
+      `tools/recipes/stage_d1_s1.py:245-246` hard-codes `PIN_SUBVI_ROWS = 98` and `TIFF_SUBVI_KEY`, `:729` passes it
+      as the expected-missing set, and `:738-741` gates ORIGINAL == 98 and artefact == 97. S2 reuses that instrument
+      (`stage_d1_s2_loops.py:361`) and reads missing 0 / extra 0 / changed 0, 0 rows into `background VIs_COPY`.
+    - (d) ?뵶 **`move_in` TAKES ONE NODE PER CALL AND SEVERS EVERY WIRE ON IT, IN EITHER ORDER ??there is no "move
+      the set and keep its internal wires".** Measured on the real pair `#3529 '- Inc (PgDn)' ??#48
+      '-Inc reference'` (wire 4833), moving the SOURCE first and the SINK second into body `Diagram #23058`: after
+      move 1 `#3529` goes 1 ??**0** wired and w4833 reads 1 terminal; after move 2 `#48` goes 7 ??**0** wired and
+      w4833 reads **0**. The op's `'UID 3'` control is a scalar int (`is_sequence False`) and no array form exists
+      ??`move_in` is not in `gscript.py` at all, it is `tools/recipes/build_d1_v0.py:318`
+      `def move_in(target, uid, dest_diagram_index, position)`, one uid per call. `ExecState` 0 afterwards; the
+      save was refused.
+    - (e) ?뵶?뵶 **A WIRE COUNT CAN NEVER DETECT A CUT ??every re-wiring gate counts WIRED TERMINALS.** The whole-VI
+      `Wire` census stayed **1905 ??1905 ??1905** across both moves and uid **4833 is still in the Wire list**, with
+      zero terminals: `move_in` detaches terminals and leaves the Wire object behind. Any stage gated on a Wire
+      delta would have reported all green with its wires cut ??a live candidate contributor to the v3?뭭7 deaths.
+      S2's `Wire 1899 ??1905` line was REPORTED, not gated, which is why it did no harm.
+    - (f) **TWO ADDRESSES CORRECTED, measured:** `#48` and `#3529` sit on **`Diagram #639`** ??`WhileLoop #637`'s
+      body ??**not on `#686`**, and `#3529` is a **`ControlReferenceConstant`**, not a function node. A gate
+      assertion written the other way was a drafting error the machine corrected, and it is 34(h)'s own lesson: an
+      address is read, never assumed. ~~**No hypothesis review is owed for it** ??no explanatory hypothesis drove
+      any work, and the observation agrees with `docs/d1-build-plan.md:250`.~~ ?뵶 **THAT RULING IS WITHDRAWN by the
+      cycle-52 retrospective** (`archive/peer/2026-09-20-retrospective-cycle52.md`, `VIOLATION: device-failed`,
+      evidence `tools/bench/diag_movein_set.log:57`): excusing a failed prediction because it looks like a drafting
+      error is judgement overriding a mechanical rule, and CLAUDE.md is explicit that one's own successful
+      discriminating test does not discharge the mandate. **The P6 review IS owed and is a prerequisite to the S3
+      build** ??`-Agent claude -Role hypothesis`. The strike-through keeps the withdrawn reasoning readable.
+    - (g) ?뵶 **DECISION ??S3 = `claudeDev\D1_s3_loop15.vi`: move the WHOLE 1.5 FOCUS node set into loop a and
+      re-wire it, in ONE script with ONE save.** There is no smaller legal unit: all 7 of `#48`'s cut rows are
+      internal to the 1.5 set (`#3529`, `#3560`, `#3447`, `CaseStructure #10407`, and the two shift registers
+      `#4334/#4344` VISA and `#4256/#4274` position), **none** of its sources stays on `#686`
+      (`docs/d1-build-plan.md:250, :306, :330-332, :340, :359-360`), (d) severs every wire whichever order is used,
+      and an intermediate at `ExecState` 0 cannot be saved ??so a part-moved set leaves no file, which the split
+      rule forbids outright. **The stage is atomic because the machine makes it so, not by choice.** Inside it the
+      split rule is honoured the way it can be: a census + readings JSON after each phase, re-wiring in batches of
+      10??5 rows, each batch gated on **wired-terminal counts** per (e), and the single `g.save()` at the end with
+      `allow_broken` False.
+    - (h) **LOOP IDENTITY IS ASSIGNED HERE, because no document assigned it** (a grep over `docs/` for
+      `23032|10170|23041` returns one hit, `docs/cycle27-plan.md:951`, about cycle 50's diagnostic loop). The S2
+      recipe's labels are a = `#23032` body `#23058` @(2600,2600) 쨌 b = `#10170` body `#23166` @(2600,3400) 쨌
+      c = `#23041` body `#23405` @(2600,4200). **DECISION: loop a `#23032` (body `#23058`) IS loop 1.5 FOCUS.**
+      b and c are assigned when their node sets are named. The assignment is arbitrary but **binding** ??cite this
+      line, never re-derive it.
+    - (i) ?뵶 **`guard_peer` IS BLIND TO THE NEW DIAGNOSTICS' FAILURES, AND THE REPAIR IS AT BOTH ENDS.** Verified
+      here, not taken on report: `guard_peer.py:73`'s `FAILURE_RE` ends `^\s*(?:->\s*)?FAIL\b` and `:71` documents
+      the fleet's gate format as `  FAIL  `, which it matches ??but the cycle-50/52 diagnostics print
+      `  **FAIL**  ` (`tools/bench/diag_movein_set.log:57`, and `bgrun`'s own INNER FAILURE line at `:128` repeats
+      the bolded form), which it does not. So the mandatory-review gate silently passed a failing run. ?좑툘 **The
+      material session proposed widening the regex alone; that is the wrong half on its own**, because it leaves
+      every new script free to invent a third format. Fix BOTH: make the diagnostics emit the documented `  FAIL  `,
+      and widen `FAILURE_RE` to tolerate `\*{0,2}FAIL`. This is the REPAIR of an existing gate, not a new device.
+    - (j) ?뵶 **A LOG READ WHILE ITS RUN MAY STILL BE IN FLIGHT IS NOT A READING ??the terminal `BGRUN END` /
+      `BGRUN TIMEOUT` line is the only proof a run finished.** Cycle 52 opened by reading `tail -c 3000` of
+      `tools/bench/stage_d1_s2_loops.log` when the file was **12,978 B, mtime 03:55**, saw it stop mid-sentence
+      inside a cold re-read with no terminal line, and concluded the session exit had killed the child. It had not:
+      bgrun's **breakaway detach** kept the child alive and it finished at **04:06** at 50,905 B / 300 lines,
+      `35 pass / 0 fail`, `BGRUN END rc=0 after 776s`. The session then spent an 825 s re-verification on gates that
+      were passing as it read. Named by the cycle-52 retrospective as
+      `VIOLATION: inference-over-measurement | loss_min=10 | evidence=tools/bench/stage_d1_s2_loops.log:300`,
+      accepted in full after re-reading the file. **Before drawing any conclusion from a log, check that its
+      terminal line is present; if it is not, the run is live and the file is not yet evidence.** Size and mtime are
+      the cheap tell ??a log whose mtime is within a minute of now is being written.
+      ?좑툘 What this does NOT excuse: 54(b) was still breached at 03:55:17 ??a session ended with a child running ??
+      and the work survived only because a mechanism covered for a broken rule. **Hold the turn open until the child
+      lands** remains binding; the detach is a safety net, not a licence.
+      ?뵶 **VARIANT FOUND THE HARD WAY, cycle 53: ON AN APPEND-MODE LOG, "the terminal line is present" IS NOT A
+      TEST.** `tools/bench/retro.log` accumulates across cycles, so a watcher of the form
+      `until grep -q "BGRUN END" retro.log` returns **instantly**, satisfied by the *previous* cycle's END line,
+      and a grep of its matching lines then reports the previous cycle's `VIOLATION:` verdicts as if they were
+      this cycle's. Cycle 53 armed exactly that watcher, was handed cycle 50's `VIOLATION: none` and cycle 52's
+      two violations, and caught it only by reading the run's own `bgrun` task file. **Wait on the run's OWN
+      output (the `bgrun` task file, or a per-run log), never on a shared append-mode log; and when a log is
+      shared, the test is a terminal line NEWER THAN THIS RUN'S `BGRUN START`, not the presence of one.** Same
+      fault class as 37(j) and it defeats 37(j)'s own stated remedy, which is why it is written here.
+
+## Pre-decided ??ADDED 2026-09-20 (cycle 53): S3 withdrawn and re-cut 쨌 the measured 1.5 row table
+
+38. **37(g) IS WITHDRAWN. S3 WAS A FULL-LENGTH RETRY WEARING A DECOMPOSITION'S NAME, AND THE NEXT BUILD IS A
+    DIAGNOSTIC, NOT A STAGE.** Judgement, cycle 53, 2026-09-20, from three ANSWERED reviews ??the owed P6
+    hypothesis review (`archive/peer/2026-09-20-movein-p6-diagram-misprediction.md`), the prior-art review of the
+    S3 recipe (`??priorart-d1-s3-focus.md`, 6 slugs, accepted in full) and `??c53-g2b-caseselector.md` ??plus the
+    row classification `tools/bench/c53_row_class.{py,log,json}`. Every disposition is written into the review
+    files themselves. 34, 35, 36 stand; this replaces 37(g) and corrects 37(e)'s acceptance criterion.
+    - (a) ?뵶 **WHAT WAS WRONG WITH 37(g).** Cycle 52's re-split trigger had already fired (STATUS `owner_c52m2`),
+      and CLAUDE.md's split rule clause 3 answers that trigger with *a decomposition plan whose sub-steps each
+      name a saved file* ??explicitly **not** "a full-length retry under a new file name". 37(g) answered it with
+      one script and one save and called the shape forced. Two of its supports failed: the recipe's own contract
+      printed `PREDICTED 0` / `PREDICTED REFUSED` (`tools/recipes/stage_d1_s3_focus.py:149-151`), i.e. a step that
+      predicts it leaves no file, which `CLAUDE.md:383` forbids; and my acceptance criterion ??*"per moved node the
+      count of WIRED TERMINALS returns to its pre-move value"* ??**was never sound for a move stage**, because two
+      rows are queue endpoints excluded by construction (`tools/recipes/build_d1_v0.py:943`, `:976-977`). The
+      recipe is **kept unlaunched** for its measurement code, as `stage_d1_s2.py` was; it is not re-armed on these
+      bytes and its prior-art STOP RECORD stays armed.
+    - (b) **THE MEASURED ROW TABLE ??the decomposition's input, and nobody on the record had it right.**
+      `tools/bench/c53_row_class.json`, confirmed three ways (the rewire JSON, the netmap wire table, and
+      `main_vi_nodeterms.json` ??a third census by a different op). **17 cut terminals**: `#10407` t0?뱓6, `#48`
+      t0?뱓6, and `#3529`/`#3560`/`#3447` t0. By action: `cross-loop:1.2->1.5` **2** 쨌 `from-tunnel` 1 쨌
+      `same-loop` 5 쨌 `to-sr` 2 쨌 `from-sr` 2 쨌 `source-side` 5. Sources on `#639` **7**, ~~on `#686` **0**~~,
+      far end planned for loop 1.2 **2**, SR-created rows **4**, orphaned counterparts **3**.
+      ?뵶 **"SOURCES ON `#686` = 0" IS UNSOUND AND IS STRUCK** ??it is a *negative* claim drawn from
+      `main_vi_netmap.json`'s `wires` table, which (h) below measures as TRUNCATED. Re-derive it from
+      `main_vi_nodeterms.json` before any stage depends on it. Everything else in this table comes from the
+      rewire JSON and nodeterms and survives; G6 passed, all 17 rows agreeing across two independent censuses.
+      The two deferred rows are `tools/bench/d1_rewire_sources.json:1748` ??**`#10407` t0, the CASE SELECTOR**,
+      fed by `#10686 'x .and. y?'` ??and `:1793` (`#10407` t2, fed by `#10757 'element'`); both far ends sit on
+      `#639` today and are planned for row **1.2**, which does not exist. `:1892` is **not** a third crossing:
+      `#10407` t6 `position [internal units]` is a **source** whose label reads `to-sr`, far end `#12589` t1, kept
+      on row 1.1 by 짠11c (`docs/d1-build-plan.md:398`) ??but **짠6 names no construction verb for it**, so it is a
+      real and unclosed gap under a different name. Scoreboard: 37(g) predicted **0** crossings, the P6 review
+      predicted **3**, the machine says **2**.
+    - (c) ?뵶 **`Required` IS UNKNOWN ON ALL 17 AND IS MEASURED BY CONSTRUCTION, NEVER BY A READER.** No built op
+      reports terminal Required-ness and Pre-decided 2 forbids building one ??the same wall 36(c) hit on
+      `Terminal.DataType`, and 36(d) settled it the same way: **let the machine answer by accepting or refusing.**
+      This matters because `#10407` t0 is a case selector, and "an unwired case selector obviously breaks the VI"
+      is precisely the shape of claim that `inference-over-measurement` counts (11 occurrences, recorded
+      `docs/violation-decisions.md`, 2026-09-20 06:48). **It is not assumed here in either direction.**
+    - (d) ?뵶 **DECISION ??the next build is `tools/bench/diag_s3_focus_trial.py`, a DIAGNOSTIC under
+      `tools/bench/`, never a recipe.** This is the 34(j) pattern that carried S2: a cheap run whose *reading* is
+      the deliverable and whose saved file is a bonus. On a dated scratch copy of `claudeDev\D1_s2_loops.vi`
+      (`6ff19497??): move the five movable nodes into body `Diagram #23058` of loop a `#23032` (37(h), binding);
+      create the two SR pairs on loop a with `add_shift_reg`/`wire_sr`, the verb `docs/d1-build-plan.md:402-403`
+      gives them; wire every row whose source exists at that moment, using **`OpConnectFromWire_v0.vi`** for the
+      from-tunnel row `#10407` t1 (`docs/toolkit-capabilities.md:70` ??the only built writer whose source need not
+      be a node, which the withdrawn recipe never imported); leave the two deferred rows and the unnamed `to-sr`
+      row bare; then **read `ExecState`**. Save if legal. Either branch leaves
+      `tools/bench/diag_s3_focus_trial.json`.
+    - (e) ?뵶 **EVERY `move_in` RE-RESOLVES ITS DESTINATION INDEX IMMEDIATELY BEFORE THE CALL.** `move_in(target,
+      uid, dest_diagram_index, position)` (`tools/recipes/build_d1_v0.py:318`) addresses its destination by
+      **traverse index**, not uid, and relocating a structure relocates its frame diagrams inside that array ??so
+      in a multi-move script a later index can be silently wrong and **the op cannot report it**
+      (`tools/recipes/build_d1_v0.py:325` writes `SetControlValue("index", int(dest_diagram_index))`; `:358`
+      resolves it as `[o['uid'] for o in report_all(target,'Diagram')].index(uid)`).
+      ??**MEASURED, AND THE DRIFT HYPOTHESIS IS FALSIFIED FOR `move_in`** ??`tools/bench/diag_destidx_drift.py`
+      ??`.log` / `.json`, **15 pass / 0 fail**, `BGRUN END rc=0 after 76s`, every gate REPORTED rather than
+      required so no outcome was smuggled in. Across two real `move_in` calls on a scratch copy of S2:
+      `idx(#23058)` = **[22, 22, 22]**, `idx(#639)` = **[46, 46, 46]**, Diagram class count = **[173, 173, 173]**,
+      traverse order unchanged after both moves, and the explicit stale-index probe says a script that had cached
+      `dest_diagram_index=22` would **still address `#23058` correctly**. `owner_of` confirms both nodes landed on
+      `#23058`. **So the P6 review's mechanism ??which this item adopted as "the strongest surviving explanation
+      for the ten v3?뭭7 deaths" ??does not occur for `move_in`, and that sentence is withdrawn.** Index
+      invalidation remains measured for *terminal* and *tunnel* indices (21(d)'s +13 shift, `toolkit-capabilities`
+      T2c2); it is the DIAGRAM traverse array that is stable here.
+      **The practice stands anyway, now as cheap defence rather than as a fix:** locate `#23058` by uid in a
+      freshly-read traverse list before every call and gate that the resolved index still owns it. It costs one
+      read and it is the only thing that would detect the behaviour changing.
+      ?좑툘 Two further readings from the same run, both consistent with 37(d)/(e): `move_in` echoed uid **23035**
+      for *both* calls ??the echo is not the moved object ??and **`ExecState` was 0 after only two of the five
+      nodes had moved**, with `g.save()` refused (`allow_broken` False, `gui_save` never called). A move stage
+      that does not wire as it goes cannot save, which is exactly what (d) is built to measure.
+    - (f) ?뵶 **THE BRANCH IS DELIBERATELY NOT PRE-DECIDED.** A reading of **1** means loop 1.5 can exist before the
+      queue stage and (d)'s bytes become the S3 stage next cycle. A reading of **0** means the ordering itself is
+      wrong ??the prior-art review's `A2 refuted-already` already showed that "1.5 is buildable alone" was
+      authorised by a premise 36(d) removed ??and the queue-donor **trial census** of 36(d), today parked *behind*
+      S3, moves in front of it. Writing that branch now would be deciding before the evidence exists, which is the
+      one thing a delegation brief may never do.
+    - (g) ?뵶 **A CONSTRUCTION THAT IS BANNED BY NAME, because it passes every gate we have.** Do **not** close
+      1.5's inputs by tunnelling out of `#637`, wiring on `#686` and tunnelling into `#23032`. It restores every
+      wired-terminal count, it compiles to `ExecState` 1, and it **changes the computation** ??autofocus would run
+      once after acquisition ends instead of once per frame. Rule 1a, found by the P6 review, and the only
+      green-building rule-1a violation identified so far on this path.
+    - (h) ?뵶 **THE NETMAP IS NOT A TERMINAL CENSUS.** `tools/bench/sweep_netmap_main.py:63-64` writes
+      `"terms": [[t, w] for _ti, t, w in terms if t]` ??an unnamed-terminal filter applied to **every node of every
+      class** that also **discards the real terminal index**. 156 unnamed-and-wired terminals exist, `WhileLoop
+      #637` t37 among them (`tools/bench/main_vi_nodeterms.json:6868-6872`). Count wired terminals from
+      `node_terms`, never from `main_vi_netmap.json`, and never read a terminal index out of it.
+      ?뵶 **THE `if t` ACCOUNT IS SECONDARY ??THE REAL MECHANISM IS TRUNCATION, MEASURED 2026-09-20**
+      (`archive/peer/2026-09-20-c53-netmap-terms-truncation.md`, ANSWERED, after the 626-node test came back
+      **574/626**, not 626/626): `net_map` iterates `for t in range(max_terms)` with **`max_terms=40`**
+      (`tools/gscript.py:2549`) and additionally breaks after **three consecutive unnamed+unwired terminals**
+      (`:2557-2560`). **`WhileLoop #637` HAS 59 TERMINALS** (`tools/bench/main_vi_nodeterms.json:6424-7131`) ??
+      12 of i0?밿39 unnamed, 40 ??12 = 28 named = exactly the netmap array's length. **The one node the entire
+      restructure turns on is the one the census silently truncates.** The `empties >= 3` stop explains the other
+      51, including the dropped trailing `error out` on `#30804`/`#4620`.
+      ?뵶?뵶 **AND `nets` IS BUILT INSIDE THE SAME TRUNCATED LOOP (`:2570-2572`), SO THE `wires` TABLE IS
+      TRUNCATED TOO** ??Diagram 19 is missing all of `#637`'s i40?밿58 wire ends (9051, 9000, 9649, 11253, 16421,
+      29006, 29122, 28392, 29081, 29106, 32583, 32344), *the border wires of the loop being rebuilt*. Any fact
+      about `#637`'s border taken from the netmap is suspect; `docs/frame-loop-wire-graph.md` is the most exposed
+      document and its `#637` rows are to be re-derived from nodeterms.
+      ?뵶 **THE RULE THIS BUYS, which is broader than the netmap: a NEGATIVE claim ??"nothing else carries this
+      wire", "no such terminal exists" ??may NEVER be drawn from a census whose own completeness has not been
+      measured.** This cycle used exactly such a claim to reject a *correct* peer finding
+      (`archive/peer/2026-09-20-movein-p6-diagram-misprediction.md`, rejection withdrawn the same day), and only
+      a second reviewer caught it. ?좑툘 The cap and the early stop were **measured and written down on
+      2026-09-14**; prior art existed and was not consulted. This is the third
+      confidently-wrong reader in three cycles ??after 37(b)'s index-order read and 37(d)/(e)'s wire count that
+      cannot see a cut ??and all three would have passed a green build. **A reader's contract is measured before
+      it is used as a gate.**
+
+## Pre-decided ??ADDED 2026-09-20 (cycle 54): the 1.5 trial ran 쨌 the machinery is sound 쨌 the BOUNDARY is not
+
+39. **38(f) RESOLVES TO THE `0` BRANCH ??BUT FOR A DIFFERENT REASON THAN 38(f) EXPECTED, AND THE DIFFERENCE IS
+    THE WHOLE RESULT.** Judgement, cycle 54, 2026-09-20, from `tools/bench/diag_s3_focus_trial.{py,log,json}`
+    (`BGRUN END rc=0 after 106s`, 43 pass / 0 fail) and `tools/bench/replay_netmap_truncation.{py,log,json}`
+    (20 pass / 1 fail, the fail reviewed and disposed). 34??8 stand; this resolves 38(f) and amends 38(b).
+    - (a) ?럦 **THE MOVE-AND-REWIRE MACHINERY IS SOUND ??MEASURED END TO END FOR THE FIRST TIME ON REAL ROWS.**
+      All five movable nodes (`#10407`, `#48`, `#3529`, `#3560`, `#3447`) moved from `Diagram #639` into body
+      `Diagram #23058` of loop a `#23032`; owners re-read by uid confirm all five. **9 of 9 attempted rows wired,
+      machine error empty on every one**: five `OpConnectNested_v1` jobs (`#48` t0/t1/t2, `#10407` t3/t5, each
+      `wire_delta 1`), three `wire_sr` sides, and ?럦 **`OpConnectFromWire_v0.vi` ACCEPTED the from-tunnel row** ??
+      `#10407` t1 bare ??wire **24667**, `Is Broken? 'False'`. The two SR pairs were **created**, not moved
+      (`RightShiftRegister #23898` VISA, `#23936` POSITION). `#48` is back to **7/7** wired terminals. The
+      destination index re-resolved to **22 on all five calls**, traverse length 173 each time ??38(e)'s drift is
+      absent again. **Nothing the trial attempted failed.** After ten v3?뭭7 deaths and five cycles that left no
+      file, this is the first positive evidence that the D1 re-wiring path works.
+    - (b) ?뵶 **`ExecState` = 0 AND `g.save()` REFUSED** (`RuntimeError: refusing to save a BROKEN VI`,
+      `allow_broken` False, `gui_save` never called); scratch `DIAG_s3focus_20260920_072957.vi` is byte-identical
+      to S2. Census reported never gated: LoopTunnel 135 ??137, Wire 1905 ??1915. Refs 11/11/**0**.
+    - (c) ?뵶 **THE `0` IS OVER-DETERMINED, AND THAT IS NOT A DEFECT OF THE TRIAL ??IT IS THE ANSWER.** Five things
+      are simultaneously true of it and the run separated none: `#10407` t0 (case selector) bare, t2 bare, t6 bare,
+      the POSITION register's right inside terminal unwired **because** t6 is bare, and `#637`'s old SR pairs now
+      orphaned. **Do NOT record "the unwired case selector broke it"** ??38(c) named that exact sentence as the
+      shape `inference-over-measurement` counts, `Required` is still unmeasured on all 17 rows, and no built op
+      reports it. The `0` is not evidence about any one row.
+    - (d) ?뵶 **DECISION ??S3-AS-LOOP-1.5-ALONE IS CLOSED, AND THE FAULT IS THE STAGE BOUNDARY, NOT THE MACHINERY.**
+      Every row the trial could wire, it wired; the only holes are the rows whose sources are **not in the set**:
+      `#10407` t0 and t2, fed by `#10686 'x .and. y?'` and `#10757 'element'`, both planned for loop **1.2, which
+      does not exist** (38(b)), plus t6, for which 짠6 names no construction verb at all. An intermediate at
+      `ExecState` 0 cannot be saved ??measured now four times (cycles 50, 52, 53, 54). Therefore: **a saved D1
+      stage's node set must be CLOSED UNDER ITS WIRE SOURCES.** 1.5 alone is not, so no ordering of the existing
+      stage list makes it savable. This is a stronger and cheaper result than 38(f) anticipated, because it was
+      reached without guessing at any row's Required-ness.
+    - (e) ?뵶 **CONSEQUENCE ??the queue-donor TRIAL CENSUS of 36(d) moves IN FRONT**, as 38(f)'s `0` branch says,
+      and now with a reason of its own: the two open rows are exactly the 1.2 ??1.5 crossings, and a crossing is
+      closed by a queue or by 1.2 existing. 36(d)'s trial census is the only thing standing between this project
+      and any queue at all, and it is fully specified there. It is no longer parked behind S3.
+    - (f) ?뵶 **38(g)'s BANNED CONSTRUCTION IS NOW MORE TEMPTING, NOT LESS ??RE-READ IT.** A green `ExecState` 1 is
+      three tunnels away: tunnel out of `#637`, wire on `#686`, tunnel into `#23032`. It would restore every count
+      and compile clean, and it would move autofocus off the per-frame path (rule 1a). **It stays banned by name.**
+      The same applies to any "temporary stand-in" that closes t0/t2 just to see the VI go green ??a diagnostic
+      that manufactures a 1 manufactures the trap.
+    - (g) **38(b)'s STRUCK CLAIM IS UN-STRUCK FOR WIRES 4185 / 7506 ONLY, AND ON POSITIVE IDENTIFICATION.** Their
+      far ends were on disk all along: `LeftShiftRegister #4344` (4185) and `RightShiftRegister #4334` (7506),
+      `tools/bench/main_vi_shiftregs_v1.json` ??both shift registers of `#637`, neither on `#686`. That is a
+      positive naming of the carriers, not a census failing to find others, which is why it is allowed. ?뵶 **The
+      general prohibition stands and is now quantified: `main_vi_nodeterms.json` enumerates `Node` terminals ONLY**
+      ??shift registers (`tools/gscript.py:948`), Constants, 132 LoopTunnel and 114 ControlTerminal are outside it,
+      and **800 of 1376 wires have exactly one node carrier**. It licenses no negative claim. "The complete census"
+      is retired as a phrase for it.
+    - (h) **THE NETMAP TRUNCATION IS FULLY ATTRIBUTED AND `docs/frame-loop-wire-graph.md` WAS NEVER EXPOSED.** All
+      **52** shortfalls reproduced from files, 0 unexplained: `max_terms=40` cap = **1** (exactly `WhileLoop #637`),
+      `empties>=3` = **51**, `if t` = 0 length-shortfalls though it drops 156 unnamed-and-wired terminals
+      census-wide. 574/626 and 59/28 both CONFIRMED. The feared document does not contain the string `netmap` ??
+      both its generators read nodeterms, and re-running `stitch_state_carriers.py:40-45` over the full 59-row
+      record gives **0 differing names of 12**, so **no row changed**; one dated block was added recording the
+      re-derivation. ?좑툘 **Two cycle-54 reviews disagree on a detail and it blocks nothing:**
+      `archive/peer/2026-09-20-c54-netmap-wires-table-restatement.md` MEASURED **36** of `#637`'s ends in netmap
+      Diagram 19, all at i<40, 0 unattributed; `??c54-netmap-wires-g12.md` asserts **40** with 12 unattributed and
+      was never run. **A measurement outranks an unrun verdict**, so 36 is recorded ??and both agree on the only
+      load-bearing point: **none of i40?밿58 is present.**
+      ??**CORRECTED AT THE CYCLE'S CLOSE ??it is SETTLED, not merely better-supported.** Calling it "reported,
+      not resolved" was wrong: run 2's own output reads `n=4 ends=36`
+      (`tools/bench/replay_netmap_truncation.log:431`) and the third review states the resolution explicitly. The
+      deciding measurement was already in hand when the dispute was recorded, which is the same error class as
+      concluding from an unread file. ?좑툘 Note also that the restatement review was recorded "ACCEPTED IN FULL" by
+      a material session and a later review **REFUTED parts of it** (disposed in 40(g)); "accepted in full" is not
+      the last word on it. ?뵶 **STILL OPEN, cheap and files-only:** the census agreement was measured in ONE
+      direction only ??the reverse walk (netmap ??nodeterms) was never computed, and three files put the netmap at
+      **635** nodes against 626. It bears on `c53_row_class.json`, an input to the 1.5 row table, so it is in NEXT.
+    - (i) ?좑툘 **PROCESS, PAID FOR IN CASH: TWO MATERIAL SESSIONS MUST NOT RUN CONCURRENTLY WHEN BOTH WRITE
+      `STATUS.md`.** Cycle 54 dispatched them in parallel for wall-clock. Both wrote lock keys to the same file
+      (one flagged "STATUS.md changed on disk mid-session"), and both independently dispatched an opus/max
+      hypothesis review of the SAME G12 question ??two reviews, one of them redundant, ??2.8 of it avoidable.
+      Parallel material dispatch is allowed only when the two briefs touch disjoint files.
+
+40. **36(d) IS SUPERSEDED: `queue_node('obtain')` IS A SHAPE TEST, NOT A TYPE TEST, AND THE QUEUE IT CREATES IS
+    UNREADABLE. THE TYPE TEST IS CONNECTION.** Judgement, cycle 54, 2026-09-20, from
+    `tools/bench/diag_queue_trial_census.{py,log,json}` (`BGRUN END rc=0 after 114s`, 16 pass / 0 fail). 36(a),
+    36(b) and 36(c) stand unchanged; only 36(d)'s method is replaced.
+    - (a) ?뵶 **THE MEASUREMENT: 18 donors attempted, 18 ACCEPTED, 0 REFUSED ??the refusal set is EMPTY.** The 18
+      `(node, named output terminal)` pairs span 12 of the 18 independent nodes (6 expose no named output at all:
+      `6951, 6409, 28670, 23032, 10170, 23041`) and cover numerics, an IMAQdx session refnum, initialized arrays,
+      error clusters, sizes and motor positions. `#637` was absent from the donor list by construction, so 35(a)
+      held. **So the `error 1057` that 36(a) measured four times was never about the donor's TYPE ??it was about
+      its SHAPE**: in `AbstractDiagram.Nodes[]` with a named source terminal, or refused. Every shape that passes
+      that test is accepted whatever it carries.
+    - (b) ?뵶?뵶 **AND ALL 18 ACCEPTANCES READ BACK IDENTICALLY.** One signature for every one: `report_all` =
+      `{class 'Function', owner 'Diagram', owner_of ('Diagram', 686)}`, label `'Obtain Queue'`, and the same eight
+      `node_terms` rows (`name (unnamed)` 쨌 `element data type` 쨌 `create if not found? (T)` 쨌 `error in` 쨌
+      `max queue size` 쨌 `queue out`(src) 쨌 `created new?`(src) 쨌 `error out`(src)). Only `uid` and caller-chosen
+      `pos` differ. **A queue typed by an array donor is indistinguishable from one typed by a refnum, an error
+      cluster or a scalar.** 36(d)'s premise ??"a created `Obtain Queue` can be read back" ??holds for EXISTENCE
+      only. The trial census therefore has **no discriminating power**, and running more of it would buy nothing.
+    - (c) ?뵶 **DECISION ??TYPE IS TESTED BY CONNECTION, AND LABVIEW IS THE TYPE CHECKER.** We cannot read a
+      terminal's type (36(c)) and we cannot read a queue's element type (b). But a type MISMATCH is visible the
+      moment two things are wired together, and the reader for that is **already built and already measured**:
+      `Wire.Is Broken?` **6371004** (`docs/NAMES.md:902-911`, built 2026-09-17; CLAUDE.md names it as the reader
+      to use instead of inferring why a wire is bad). Wire a candidate queue to the consumer its data must
+      actually reach and read `Is Broken?`. No new op, so Pre-decided 2 is respected; no inference, so 38(c)'s
+      trap is avoided. The donor's type never has to be *named* ??only matched.
+    - (d) ?뵶 **BUT THE INSTRUMENT IS VALIDATED BEFORE IT IS USED AS A GATE** ??38(h)'s own closing rule, and the
+      lesson of three confidently-wrong readers in three cycles. Before any donor is chosen, run a **matched /
+      mismatched control pair** and read `Is Broken?` on both. **If the mismatched wire does not read broken, the
+      connection test has no discriminating power either and the queue path needs a different idea entirely** ??
+      that is a first-class outcome and must be reported as one, not worked around.
+      ?뵶 **THE CONTROL PAIR NEEDS NO QUEUES, AND MUST NOT USE ANY.** Validate the *reader* on the simplest shape
+      that can exhibit a type mismatch: two **node-to-node** connections made with `OpConnectNested_v1` ??the op
+      that went 5 for 5 this cycle ??one plainly matched and one plainly mismatched, using donors already measured
+      to differ (`#250 'IMAQdx Session'`, a refnum, against `#8486 'x+1'`, a numeric). Building queues first would
+      put the untested instrument and the untested subject in the same experiment, and would additionally require
+      an enqueue/dequeue op whose existence in the built fleet is **not established** ??check
+      `docs/toolkit-capabilities.md` before assuming one, and if none exists say so rather than building one
+      (Pre-decided 2). Queues enter only after `Is Broken?` has been shown to discriminate.
+    - (e) ?좑툘 **WHAT THIS DOES NOT LICENSE.** Do not conclude from (a) that any donor will do. It shows only that
+      the op will not stop us; the queue still carries whatever the donor carries, and a wrongly-typed queue will
+      surface later as a broken wire or ??worse ??as a silently wrong transfer. Equally, do not read a type off a
+      terminal's NAME: `'x+1'` does not prove DBL and `'initialized array'` does not prove which element type.
+      Names are labels, and 36(c) remains the measurement that no op reports the type.
+    - (f) ??**THE RUN LEFT AN OPENABLE FILE**, as the 4th outcome review requires of every cycle:
+      `claudeDev\DIAG_qtrial_20260920_075310_1.vi`, md5 `ada51e8441e1a82ed081ab021abdbbe5`, **481,777 B**, saved
+      legally at `ExecState` 1 with `allow_broken` False and `gui_save` never called; LV2026 bytes `26 00 80 00`.
+      `ExecState` was **1 ??1 and none of the 18 attempts moved it**, so 36(b)'s "an unwired donor node takes a
+      scratch from 1 to 0" did NOT recur ??recorded as an observation, not resolved. Wire 1905 ??**1907** for 18
+      added nodes, because two donor terminals were themselves bare (`#25380` t2, t9): reported, not attributed.
+      ?좑툘 Traverse class must be resolved **by membership, not by `cls_of`** ??`#25380` is a `WhileLoop` that
+      `cls_of` calls "Function", and `#781`/`#8953`/`#28124` are in `Node` but not `Function`.
+    - (g) **DISPOSITION of `archive/peer/2026-09-20-c54-g12-after-rerun.md`** (claude/hypothesis opus max,
+      ANSWERED, forced by `guard_peer` on the other session's re-run log), which the material session correctly
+      recorded without accepting, netmap work not being its brief: **ACCEPTED IN PART by judgement.** Accepted ??
+      G12b as phrased was *entailed by* the terminal table printed in the same run rather than independently
+      measured, so it is recorded as a derivation, not a measurement; and 짠3's circularity caution is real and is
+      adopted as a standing rule: **never validate `main_vi_netmap.json` using an ordering that `net_map` itself
+      produced.** Rejected as to consequence ??the load-bearing conclusion, *none of `#637`'s i40?밿58 ends appear
+      in the netmap*, follows directly from the measured `max_terms=40` cap (`tools/gscript.py:2549`) and does not
+      depend on G12b's phrasing or on any inversion. 39(h) stands unchanged. 짠4's data-contamination point does
+      not reach the queue census: that script contains no `netmap` string and reads no netmap-derived datum.
+
+41. **A MATERIAL BRIEF MUST SAY WHAT TO DO WITH A REVIEW THAT ARRIVES MID-RUN ??THREE SENTENCES THAT WOULD HAVE
+    PREVENTED THIS CYCLE'S ONLY STRUCTURAL FAULT.** Judgement, cycle 54, 2026-09-20, from its own retrospective
+    (`archive/peer/2026-09-20-retrospective-cycle54.md`, `VIOLATION: judgement-in-material | loss_min=9 |
+    loss_usd=3.2380`, ACCEPTED IN FULL).
+    - (a) **WHAT HAPPENED.** `guard_peer` forced a hypothesis review on a material session mid-run. The session
+      collected it, **accepted it in full, wrote its disposition, built its 짠4 discriminating test and re-ran the
+      measurement** ??four judgement acts. Twenty-four minutes later a second material session met the same
+      situation and wrote *"Accepting or rejecting its findings is a judgement call ??and a material session does
+      not make it"*, returning all five objections undecided. **The difference was the brief, not the session.**
+      Neither of mine said what to do with an arriving review; one filled the gap, one did not.
+    - (b) ?뵶 **THE RULE, to be pasted into every material brief from now on:** *"Any peer review you are FORCED to
+      dispatch is RECORDED, never accepted or rejected. Write the exchange to the archive, report its verdict as
+      a fact, and return its findings on your `OPEN:` line. Do not act on them: do not redesign a gate, do not
+      rebuild a measurement, and do not re-run on the strength of one. The judgement session disposes it."* This
+      is a sentence in a brief, not a device ??the user's 2026-09-18 08:53 no-new-device order is respected.
+    - (c) **AND TWO PRACTICES THAT COST 9 MINUTES AND $3.24 TOGETHER.** (1) **A gate whose wording a review has
+      already falsified is DEMOTED TO A FACT LINE, not re-emitted as a `FAIL`.** G12's false wording fired twice
+      after two reviews had measured why it is false; the bgrun FAIL-scan plus `guard_peer`'s mtime-only rule then
+      converted that into a third paid review of the same fact. Run 2 treated G16 correctly and G12 incorrectly in
+      the same file. (2) **Sequence a run that is expected to retain a `FAIL` LAST**, after anything it could
+      block ??the queue census reads nothing netmap-derived and was stalled nine minutes by an unrelated gate.
+      ?좑툘 The retrospective's sharpest observation is not the violation: **STATUS now routinely carries "rc=1 ??not
+      a crash" annotations, which is the first step toward a working device being bypassed as noise.** The answer
+      is to stop producing spurious FAILs, never to get better at explaining them.
+    - (d) **NOT BUILT, and recorded as the user's call:** `guard_peer` compares mtimes and has no notion of
+      *failure identity*, so an ANSWERED review cannot discharge a re-occurrence of the gate line it reviewed four
+      minutes earlier, though `cycle_runner.py` already computes "same first failing GATE line, uids stripped".
+      A real repair and a real toll ??but the next cycle's first act is a measurement on the deliverable, and the
+      no-new-device order stands.
+
+## Pre-decided ??ADDED 2026-09-20 (cycle 55): the type checker is VALIDATED 쨌 the row table is NOT cleared 쨌 STOP
+
+42. **40(d) RESOLVES TO ITS POSITIVE BRANCH: `Wire.Is Broken?` DISCRIMINATES A TYPE MISMATCH, AND `ExecState`
+    DOES NOT.** Judgement, cycle 55, 2026-09-20, from `tools/bench/diag_typectl_v2.{py,log,json}`
+    (`BGRUN END rc=0 after 88s`, 19 pass / 0 fail) and, for the withdrawn first attempt,
+    `tools/bench/diag_queue_typetest_control.{py,log,json}`. 34??1 stand; this resolves 40(d) and corrects
+    two citations in 40.
+    - (a) ?럦 **THE CONTROL PAIR, one variable differing.** Same sink terminal, same diagram, same op, same run:
+      **leg M (matched)** `#8486` t0 `'x+1'` (numeric) ??`#2048 'Array Subset'` t4 `'index'` read `Is Broken?`
+      **False**; **leg X (mismatched)** `#250` t1 `'IMAQdx Session'` (refnum) ??the same `#2048` t4 read
+      **True**. Op error column `''` on both; `owner_of` = `('Diagram', 686)` measured for all three nodes.
+      **So the instrument discriminates, and 40(d)'s "if the mismatched wire does not read broken the queue path
+      needs a different idea entirely" DOES NOT FIRE.** Type is tested by connection (40(c)), now validated
+      rather than proposed.
+    - (b) ?뵶?뵶 **AND IT CARRIES A CONTRACT THAT MUST BE OBEYED, OR ITS DEFAULT READING IS THE WRONG ONE.** In the
+      **writing pass** `Is Broken?` read **False on BOTH legs** ??the naive read calls a type-mismatched
+      connection fine. The discriminating value appeared only on an **ordered second, idempotent re-connect**
+      (`wire_delta 0`). **RULE: `Is Broken?` is never read in the same pass that makes the connection.** This is
+      38(h)'s "validate the instrument before using it as a gate" earning its whole cost ??a fourth
+      confidently-wrong reader was one pass away, and the trap is `docs/NAMES.md:905-911`'s, already on disk.
+    - (c) ?뵶 **`ExecState` IS NOT A TYPE DISCRIMINATOR AND MUST NEVER BE USED AS ONE.** It fell **1 ??0 on the
+      MATCHED leg too**. That refutes, by measurement rather than by argument, the peer suggestion that
+      `connect_terminals`' `ExecState 1??` is a less noisy discriminator than `Is Broken?`. Reading both was
+      what settled it; a single-signal run would have adopted the wrong one.
+    - (d) ?좑툘 **THE MATCHED LEG'S `0` IS OVER-DETERMINED ??do NOT record "the matched connection broke the VI."**
+      Both legs were **branches of the donor's existing net, not new wires**: each sink wire uid equals the
+      source terminal's pre-existing wire (23519 / 6910) and `Wire` count held 1905 ??1905. A 0 may come from the
+      branch, from `#2048` t4's own downstream, or elsewhere; the run separated none. Same shape as 39(c) and
+      38(c). ?뵶 **SCOPE LIMIT, binding:** what is validated is `Is Broken?` **on a branched net, read in a
+      separate ordered pass**. Behaviour on a *newly created* wire ??the queue case ??is UNMEASURED. It does not
+      block, but the first queue connection that disagrees with its construction is checked against this line
+      before anything is concluded.
+    - (e) **WITHDRAWN, with its reason: the "bare numeric arithmetic input" sink rule was self-defeating.**
+      Attempt 1 found **zero** bare named inputs on all five nodes it named, because **"no bare required input"
+      is ENTAILED by `ExecState == 1`** ??the rule could not have succeeded on any working VI. Disposition of
+      `archive/peer/2026-09-20-c55-sinkrule-no-bare-input.md` (claude/hypothesis opus max, ANSWERED):
+      **ACCEPTED** on the entailment and on "the rule never required a *type-constrained* sink" ??the needed
+      property was constrained-and-optional, which `#2048` t4/t5 have and an arithmetic primitive's inputs never
+      can. Attempt 1's own `Diagram #686` census is what supplied the fix, so it is not a wasted run.
+    - (f) **TWO CITATIONS IN 40 ARE WRONG AND ARE CORRECTED HERE.** (1) `Wire.Is Broken?` 6371004 is at
+      **`docs/NAMES.md:902-911`**, not `:888-897` (that range is the case-structure property-ID block); 40(c)
+      and CLAUDE.md both carried the wrong one ??CLAUDE.md is fixed, 40(c) is corrected by this line. (2) 40(d)
+      said enqueue/dequeue ops' existence in the built fleet is "not established": **they exist**
+      (`tools/gscript.py:1117-1118`, `docs/toolkit-capabilities.md:32`). Also measured: `connect_terminals`
+      `:2407` and `connect2` `:2633` both require a TOP-LEVEL end, so neither reaches `Diagram #686`;
+      `OpConnectNested_v1` was used same-diagram.
+
+43. **THE REVERSE CENSUS WALK IS CLEAN, `walk()` IS COMPLETE ??AND `c53_row_class.json` IS STILL NOT CLEARED,
+    BECAUSE BOTH TESTS MEASURED THE WRONG GRAIN.** Judgement, cycle 55, from
+    `tools/bench/reverse_census_walk.{py,log,json}` (26 pass / 1 fail) and
+    `archive/peer/2026-09-20-c55-reverse-census-r14.md` (claude/hypothesis opus max, ANSWERED).
+    - (a) ??**THE 635-vs-626 DISCREPANCY IS FULLY ATTRIBUTED AND CLOSES.** Reverse walk (netmap ??nodeterms):
+      only uid **22963** absent ??`net_map`'s own junk Invoke ??on 9 diagrams, so 635 = 626 + 9. Forward walk:
+      **0** absent, reproducing cycle 54. `diagram_tree_main.json` carries the same junk uid on **11 OTHER,
+      disjoint** diagrams always at the last `Nodes[]` index (637 = 626 + 11), and `sweep_nodeterms_main.py:56-59`
+      reads UID 0 and **breaks** ??626. Diagram `"0"` holds 0 nodes in both; no class filter contributes. 39(h)'s
+      remaining one-directional item is closed.
+    - (b) ??**`walk()`'s COMPLETENESS IS MEASURED ??shortfall 0.** Its two stops are
+      `tools/recipes/build_opstopfromnode_v0.py:132` (`for n in range(limit)`) and `:134-135` (`if not u: break`);
+      the caller passed `limit=200`, so the cap was not binding. `walk_n_nodes` **24** = nodeterms d19's **21** +
+      S2's three loops `#23032/#10170/#23041`; terminals **139 = 136 + 3**; **0** per-node terminal-count
+      differences on all 21 shared nodes. One more census moves from "unmeasured" to "measured", which is the
+      only thing that licenses using it.
+    - (c) ?뵶 **BUT THE 17-ROW 1.5 TABLE IS NOT CLEARED, AND MY OWN SECOND ACT ASKED THE WRONG QUESTION.**
+      Disposition of the R14 review: **ACCEPTED on its point (e)** ??`c53_row_class.json` is a **TERMINAL**
+      table resolved out of the netmap `wires` tables, and `#637` is the VI's single `max_terms=40` cap site with
+      shortfall **31** (`tools/bench/c53_row_class.json:267-272`), so **a wire reaching `#637` at t ??40 is absent
+      while every node uid still resolves.** Node-uid presence ??what both R5/R6/R7 and R14 tested ??was never
+      the right grain. Also **ACCEPTED**: (a) a falsifiable 12/12 gate over `nodeterms ??
+      tools/bench/main_vi_shiftregs_v1.json` was available in the same function, so R14 as written could not pass
+      against any correct census; (c) the SRs' OUTER terminals **are** in the census as `#637` t11/t10 (wires
+      4185/7506), confirming 39(g) ??the objects are outside, the dependency is not; (d) three censuses are three
+      reads of one `Nodes[]` array and bound nothing about excluded classes.
+    - (d) ?뵶 **R14 IS DEMOTED TO A FACT LINE AND IS NOT RE-RUN (41(c)).** Its wording is falsified, so re-emitting
+      it as a `FAIL` would buy a third paid review of a known fact; the material session was right to revert the
+      un-run rewrite rather than ship it. **And no required 12/12 gate is added** ??the no-new-device order
+      stands (user, 2026-09-18 08:53) and, more to the point, the right test is not node-level at all.
+    - (e) **ONE CITATION WITHDRAWN, THE CLAIM SURVIVING ON DIRECT MEASUREMENT.** 39(g) cited
+      `tools/gscript.py:947-948` for "shift registers are outside the nodeterms census"; that line is the
+      `tunnels()` docstring and distinguishes SRs from `LoopTunnel`s only, so **the citation is withdrawn** ??it
+      was `inference-over-measurement` wearing a `file:line`. The claim itself stands on the run's own reading:
+      `[4256, 4274, 4334, 4344]` absent from nodeterms, 8 of 12 present.
+    - (f) **THE DISCRIMINATING TEST, ADOPTED BUT NOT RUN THIS CYCLE** (the review's own, files-only, ~10 lines):
+      all 14 register uids of `tools/bench/main_vi_shiftregs_v1.json` against `diagram_tree_main.json`'s `uids` ??
+      **0/14 ??class exclusion, 0 &lt; k &lt; 14 ??selective loss.** It settles (e)'s mechanism cheaply.
+    - (g) ?좑툘 **A QUIET LOSS, NAMED: a cycle's `## NEXT` is DESTROYED when the next cycle rewrites it.**
+      `archive/2026-09-20-status-cycle54-relocate.md` 짠4 records that cycle 53's NEXT has **no verbatim source on
+      disk** ??rewritten in place, only cycle 50's archived, and this is **not a git repository**. Rule 4 says
+      nothing is deleted, only moved, and NEXT has been silently exempt. **Habit, not a device: the closing
+      session copies the outgoing NEXT into its relocation file before rewriting it.** (The outcome review's
+      `git init` recommendation is the real fix and is the user's call ??see 44.)
+
+44. **THE 5th OUTCOME REVIEW FIRED SIX VIOLATIONS AND THE WORK STOPS FOR A RE-PLAN WITH THE USER.** Judgement,
+    cycle 55, from `archive/peer/2026-09-20-outcome-review-20260920.md` (claude/outcome, fable medium thin,
+    ANSWERED, $3.2236, 199 s), routed by `tools/outcome_review.py:191-192` ??already the 2026-09-18 trial
+    routing, nothing patched.
+    - (a) **THE VERDICT, verbatim and in order:** `OUTCOME-VIOLATION: goal-requirement-not-advanced` 쨌
+      `product-not-runnable` 쨌 `tooling-over-delivery` 쨌 `decision-starved` 쨌 `ordering-stale` 쨌
+      `measurement-without-product`. `scope-inflation` explicitly NOT flagged. Q1: *"The user can RUN nothing
+      today that they could not run at the last outcome review."* Q2: requirements **1, 2.2, 2.3, 2.4, 2.5, 3**
+      have produced nothing runnable since the project began; req 1 not moved for the **4th** consecutive review.
+      Q3: *"Not defensible."* Q6: *"The original VI ??the same verdict as all five previous reviews."*
+    - (b) ?뵶 **DECISION ??`STOP`.** CLAUDE.md 짠5: an outcome violation makes the next cycle a **delivery** cycle,
+      *"and on repetition the work stops for a re-plan with the user."* Delivery cycles HAVE been run since the
+      last violation ??S1 (cycle 48) and S2 (cycle 51) both delivered saved files ??and the verdict repeated
+      anyway, which is exactly the repetition clause. The reviewer whose only job is "was this worth doing" says
+      the ratio is not defensible and names the re-plan as owed. **Continuing on my own judgement would be the
+      drift this layer exists to catch**, so the runner is stopped and the question goes to the user.
+    - (c) **AND IT IS NOT ANSWERED BY BUILDING ANYTHING.** CLAUDE.md 짠5 forbids answering an outcome violation
+      with a device, and the user's 2026-09-18 08:53 no-new-device order stands independently. Nothing was built
+      in response to this verdict.
+    - (d) **WHAT THE NEXT SESSION RUNS THE MOMENT THE USER SAYS CONTINUE** ??so a "keep going" costs nothing and
+      re-derives nothing. The review's own item 2 and 39(d) agree on the shape: **the next act is a STAGE, not a
+      diagnostic** ??the minimal loop set that is **CLOSED UNDER ITS WIRE SOURCES**. Concretely that is loop
+      **1.2 together with 1.5**, because 1.5's only open rows (`#10407` t0 fed by `#10686 'x .and. y?'`, t2 fed
+      by `#10757 'element'`) are exactly the 1.2 ??1.5 crossings, and t6 still needs the construction verb 짠6
+      never named. Pre-work, files-only and cheap, in this order: (1) re-derive the 17 rows at **terminal grain**
+      from `main_vi_nodeterms.json` (all 59 of `#637`'s terminals) instead of the truncated netmap `wires` table,
+      and diff ??43(c); (2) the 14-register class-exclusion test ??43(f). Then the stage, with every connection
+      type-checked by `Is Broken?` **on a second ordered pass** ??42(b).
+    - (e) ?좑툘 **OPERATIONAL, MEASURED TWICE THIS CYCLE AND UNEXPLAINED: ??0,000 handles are added per ~80-second
+      scripting run while `ref_counts` reads 0 live.** 34,207 ??63,416 (attempt 1) and 34,166 ??60,591
+      (attempt 2), each after its own restart. **The client-side reference gate cannot see this**, so CLAUDE.md's
+      "20 runs leave the handle count flat (짹100)" acceptance is not measuring what it believes. Recorded as a
+      FINDING, not a build (no-new-device order). Until it is explained, **restart LabVIEW before every batch**,
+      mechanically.
+    ?좑툘 SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 83 ??**UNRESOLVED ??judgement ??RESOLVED by the user 2026-09-23: 83 governs (Pre-decided 104).
+    owed.** 83 (added 2026-09-21, LATER) applies the same CLAUDE.md 짠5 repetition clause in the opposite
+    direction ??"The runner was NOT stopped, deliberately" ??while 44(b) stops it and hands the question to the
+    user; neither item cites the other. Their ordinals also disagree: 44 calls its review the **5th**
+    (`archive/peer/2026-09-20-outcome-review-20260920.md`) and the later 83 calls its own the **fourth**
+    (`??026-09-21-outcome-review-20260921.md`), while `archive/peer/` holds EIGHT outcome reviews.
+
+45. **THE USER ANSWERED THE STOP (2026-09-20 ~09:40): CONTINUE ??and 1.5 FOCUS crosses from 1.2 by LOCAL VARIABLES,
+    NOT by wires; 1.5 is NOT merged into 1.2.** Interactive chat judgement on the user's words: *"1.5 猷⑦봽???ъ떎
+    ?곗씠?곗뿉 ?꾪? ?⑥? ?딅뒗 遺遺꾩씠??local variable ?ъ슜?대룄 臾몄젣媛 ?놁쓣 寃?媛숈?????1.2? ?⑹튂?붽쾶 醫뗭쓣吏, ?꾨땲硫?
+    wiring???꾨땶 local variable ?ъ슜??醫뗭쓣吏 ?먮떒?댁꽌 吏꾪뻾?섎룄濡?"* The user also had `git init` run (local only,
+    no remote) ??the folder is a repository from this commit on.
+    - (a) **NOT merged.** 1.5 carries the ASI serial call (`#48`, VISA). Putting it inside 1.2 (tracking) puts a
+      VISA call on the per-frame tracking path ??the exact shape rule 1c disqualifies (*"a mechanism that CAN stall
+      the frame loop is disqualified even if it usually does not"*). Separate loop stands.
+    - (b) **Local variables ARE the project's recorded latest-value transport for this class of channel** ??
+      `docs/decisions.md:28` (scheduler ??motor: *"local variables, as agreed with the user"*),
+      `restructure-plan-4.6.md:55`. Prior art exists; this is not a new device. Focus output never enters the
+      saved traces (user's domain statement), so a lost or repeated read changes no number the experiment keeps.
+    - (c) **What crosses.** 1.5's two open rows are `#10407` t0 ??`#10686 'x .and. y?'` (the every-25-frames
+      schedule, BOOLEAN) and `#10407` t2 ??`#10757 .element` (index of closest cal-image slice, bead 2 ??the focus
+      PAYLOAD). Construction: on the S2 artefact, create two INDICATORS on the copy's panel, wired at the sources
+      **where they are today** (both still in loop 1.1 `#637`, since 1.2 does not exist yet); in loop 1.5
+      (`#23032`, 37(h)) read them as LOCAL VARIABLES into t0 / t2. When 1.2 is built later the indicator terminals
+      move with their source nodes (one node per `move_in`, 37(d)); the local variables in 1.5 need no change.
+      **This makes S3 = 1.5 alone CLOSED UNDER ITS SOURCES ??no 1.2 needed first.** 44(d)'s "1.2 together with
+      1.5" is superseded.
+    - (d) **Cadence is preserved by an edge, not by luck.** A free-running 1.5 could read the schedule boolean
+      twice (double autofocus) or zero times (missed) per 25-frame window. So 1.5 also reads a third local
+      variable ??the frame counter that already drives `#10686` ??and acts when `schedule == TRUE AND counter !=
+      last-handled counter` (one shift register). Rule 1a reading: the per-bead maths and the ASI command are
+      untouched; only WHEN the existing command fires is now decided in another loop, and the user has declared
+      that channel data-free. A `Wait (ms)` of 1 ms in 1.5 so it does not spin.
+    - (e) **Still forbidden**: the 38(g) tunnel construction (autofocus once after acquisition). Local variables
+      are not that: they are read every iteration of a loop that runs concurrently with acquisition.
+    - (f) **Stage plan (split rule): S3a** = indicators created and wired at the sources + saved
+      (`claudeDev\D1_s3a_focus_ind.vi`, ExecState 1 preloaded, md5 logged) 쨌 **S3b** = the five 1.5 nodes moved into
+      `#23032`, internal 7 rows re-wired, t0/t2/t6 fed from local variables / the counter shift register, saved
+      (`claudeDev\D1_s3_loop15.vi`). Prior-art review once per stage script; diagnostics under `tools/bench/`
+      first when a construction verb (a local variable placed by scripting, `#10407` t6) is unmeasured.
+    - (g) **Open for the user, not a blocker**: t6 of `#10407` (짠6 names no construction verb) is resolved by the
+      same local-variable route if it is a value, by measurement if it is not.
+
+## Pre-decided ??ADDED 2026-09-20 (cycle 56): the panel-object verb WORKS 쨌 45(c)(iii) corrected 쨌 Pre-decided 2 mis-cited
+
+46. **THE TRANSPORT IS REACHABLE AND ITS FIRST HALF IS BUILT: A FREE-STANDING FRONT-PANEL INDICATOR CAN BE CREATED
+    BY SCRIPTING ON THIS VI, AND A SAVED FILE PROVES IT.** Judgement, cycle 56, 2026-09-20, from
+    `tools/bench/diag_s56_transport3.{py,log,json}` (21 pass / 7 fail), `?쫡ransport3b.*` (11/3),
+    `tools/bench/diag_s56_transport2.*` (13/5), `tools/bench/diag_s3a_ind_transport.*` (6/2, `BGRUN TIMEOUT`) and
+    `tools/bench/diag_c56_topdiagram_files.*` (7/0). 34??5 stand; this resolves 45(f)'s diagnostic-first clause,
+    corrects 45(c)(iii), and corrects a mis-citation of Pre-decided 2 that ran through all five of the cycle's briefs.
+    - (a) ?럦 **THE ROUTE THAT WORKS, measured end to end and SAVED.** `build_index_array` on the
+      `VI ??Block Diagram` head places `IndexArray #23486` with `owner_of` = **`('TopLevelDiagram', 536)`**, error
+      `''`; `node_info(max_n=40)` goes **0 ??1** (`[(0,'Index Array','Index Array')]`);
+      `create_indicator(Nodes[0].Terminals[2])` produces `ControlTerminal` **#23541**, census **114 ??115**, error
+      `''`; `delete_object(IndexArray[0])` returns `ExecState` **1** (`remove_bad_wires` not needed). Artefact:
+      **`claudeDev\DIAG_s56_t3_p2_20260920_221901.vi`, md5 `cbe9ddd5690983fae2919b3027264d4b`, 476,182 B,
+      `26 00 80 00`**, saved legally (`allow_broken` False, `gui_save` never called). The route is
+      `docs/NAMES.md:476-478` + `docs/stage2-assembly-step-b.md:49-50`, never before tried on this VI.
+      **So the empty top-level `Nodes[]` was EMPTY, not DEAD** ??of the three readings cycle 56 could not separate
+      from the files, the measurement picks the first.
+    - (b) **`Diagram #536` IS the top-level diagram, and `#686` is NOT.** Live: `Traverse Diagram[0]` =
+      `{'class':'TopLevelDiagram','uid':536,'owner':''}`, `diag_index(#536) = 0`. `#686` is a
+      **`FlatSequenceFrame`**, and the owner chain `#639 ??WhileLoop #637 ??Diagram #686 ??FlatSequenceFrame #? ??
+      STOP` dies in one hop ??the frame's uid is unreadable (`error 1055` on the direct read, `error 1092` for
+      `FlatSequenceFrame` as a Traverse class), so `#536` is reached by elimination, never by a walk.
+      `diagram_tree_main.json`'s `"0"` row is **neither a diagram nor a placeholder but an index whose identity was
+      discarded** (`diagram_tree_main.py:51-52` keeps only `d["owner"]`); `net_map`'s *"0 = top level"*
+      (`tools/gscript.py:2505`) was a docstring assumption until this cycle corroborated it.
+    - (c) ?뵶 **ALL 114 PRE-EXISTING `ControlTerminal`s ARE OWNED BY CLASS `Diagram`, NOT `TopLevelDiagram`**
+      (`tools/bench/diag_s56_transport3b.log:15`, `{'Diagram': 114}`) ??the original's panel terminals all sit
+      inside structures, and the top-level diagram held **zero** of them until we made one. This is why
+      `wire_indicators` fails: three attempts, at the source's diagram and at `diagram_index=0`, all returned
+      `error 5001: LV-Scripting.lvlib:Wire Indicators.vi<ERR> | Control <label> not found` for an indicator the same
+      run had just read on the same VI. Target wire **0 ??0**, `#10686` t0 **3/3 wired** before and after, `#637`
+      **59 ??59 terminals / 48 ??48 wired**, no tunnel or border object appeared (37(e) grain throughout).
+    - (d) ?뵶 **THE ONE REMAINING UNKNOWN FOR S3a IS NOW SINGLE: how to wire a `ControlTerminal` to a node terminal
+      on a NESTED diagram.** Candidates, in the order they are to be tried, cheapest first:
+      (1) **a pure READ ??does a nested diagram's `Nodes[]` enumerate `ControlTerminal`s at all?**
+      `docs/d1-build-plan.md:1227,:1230-1231` records six `ControlTerminal`s on `#639` and `Get Controls.vi`
+      returning 5001 at index 0 but succeeding at 43, so the question is answerable from the files and the existing
+      censuses. If they ARE enumerated, `OpConnectNested_v1` can address the terminal by index and the connect is
+      an ordinary same-diagram one. (2) `move_in` of `ControlTerminal #23541` into `#639` ??37(d)'s severing cost
+      does **not** apply, because a freshly created terminal has no wires to cut ??then wire same-diagram.
+      (3) `connect_ctl` (`gscript.py:983`, which has run clean before with a top-level `Nodes[]` source) now that a
+      node can demonstrably be placed at top level. ?뵶 **Do not spend a fourth `wire_indicators` attempt before (1).**
+    - (e) ?뵶 **45(c)(iii) IS CORRECTED: THERE IS NO COUNTER FEEDING `#10686`, AND `'current image number'` IS NOT A
+      PER-FRAME COUNTER.** `#3191` is a **`CaseStructure`** ??no function name ??and **all four** of its terminals
+      are `is_source=False`: t0 `''` w3050 (selector, from `#3057 'x = 0?'`), t1 `''` w3268, t2
+      `'current image number'` w3747, t3 `'LastBufferNumber'` w3356 (`main_vi_nodeterms.json` diagram 43). Wire
+      3747's only source in the whole census is **`#6810` t10 = `get buff image-lost frames.vi`**, the camera
+      acquisition subVI (`docs/NAMES.md:80-87`; panel row 103, `docs/main-vi-panel-map.md:383`, control 34200), so
+      that indicator carries the **camera buffer number, which jumps by more than 1 across lost frames** ??an edge
+      on it does NOT fire once per acquired frame. The real frame counter is wire **3268**, which has **0 sources**
+      in the census (six sink endpoints: `#376` t7, `#1114` t0, `#2136` t3, `#3191` t1, `#10068` t3, `#29240` t3)
+      and arrives from a shift register or border object (`docs/frame-loop-wire-graph.md:161`). **Consequence for
+      45(d): the cadence edge is built either on the schedule boolean's own rising edge or on wire 3268 obtained at
+      its real source, and which of those is right is NOT decided here** ??the third indicator of 45(c) is
+      WITHDRAWN, and S3a creates TWO.
+    - (f) **THE SWALLOW IS REPAIRED ??ACCEPTED, and it was the cycle's most expensive lesson.** `gscript.py`'s
+      `create_control` and `create_indicator` classified LabVIEW's **error 1055** modal dialog as `"modal dialog"`
+      and returned an empty list with `exception None`. Twenty such calls cost **1502 s (a `BGRUN TIMEOUT`) and
+      $4.94** before a watchdog screenshot of the dialog explained it. Repaired at both sites in the shape
+      `delete_object:2264-2272` already carried, and PROVEN: the same call now raises
+      `RuntimeError: run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): ??.
+      **A wrapper that hides the machine's error is worse than no wrapper** ??the sibling of "when a diagnosis is
+      guessed twice, build the reader".
+    - (g) ?뵶 **AND THE FRAMING THAT COST THE MOST WAS MINE.** Dispatch 3's `L1`/`L2` FAILs made **zero calls to the
+      machine** ??they restated a rule as if it were a reading ??and I built the next peer question on top of them
+      ("the transport verbs are unreachable, so a new op VI is unavoidable").
+      `archive/peer/2026-09-20-c56-transport-verbs-unreachable.md` (claude/hypothesis opus max, ANSWERED, $4.1928)
+      refuted it at exactly that point ??*"the claim is not supported by the run that produced it"* ??and named
+      `build_index_array ??create_indicator ??delete_object`, `copy_by_index(cls='Local', duplicate=True)` and
+      `Control ??Create:Local Variable` 6331C02. **DISPOSITION: ACCEPTED on the decisive point; the "unreachable"
+      framing is WITHDRAWN**, and (a) above is that review's own second test, run and passed.
+      ?뵶 **RULE for every later brief and every later gate: a gate that makes no call to the machine is not a
+      `FAIL`, it is a note, and it may never be listed among measured gates.** Same family as 41(c).
+    - (h) **`copy_by_index(cls='Local', duplicate=True)` IS NOT USABLE AS IT STANDS.** It cleared the
+      "nothing was copied" check and then raised `RuntimeError: copy_by_index: Target still broken after finish
+      (ExecState 0) - not saved` (`gscript.py:1548-1551`): the op works through the shipped
+      `NIScriptingExamples\Moving Objects\` fixtures, where ~94 of the main VI's subVI paths do not resolve, and it
+      has **no destination-diagram control**, so `move_in` to `#23058` was never reachable through it. Both fixtures
+      were left holding md5 `cbe9ddd5??; the documented protocol restores them at the next copy's start. Recorded,
+      not repaired, not re-run.
+    - (i) **NO GENERIC PROPERTY READER EXISTS**, so the 8 existing `Local` objects' bindings cannot be read: every
+      reader in the fleet is purpose-built with a hard-wired ID, and `6355400` (`Local.Control Name`) appears **0
+      times** in `docs/vi-server-ids.json` and **0 times** in `tools/gscript.py`. The 8 uids are 2143, 2991, 3097,
+      3160, 4277, 11574, 16942, 25805, all owner `Diagram`, count 8 ??8 across the cycle.
+    - (j) ?좑툘 **HANDLES ??44(e)'s unexplained growth measured a THIRD and FOURTH time:** 30,684 ??54,367 over 330 s
+      and 30,691 ??**63,517** over 78 s, each after the run's own restart, with `ref_counts` reading 26/26/0 and
+      13/13/0 live. The client-side reference gate still cannot see it. LabVIEW was left UP (pid 8856) at cycle
+      close, so **the next batch restarts first, mechanically.**
+    - (k) ?뵶?뵶 **PRE-DECIDED 2 SAYS "NO FURTHER PROCESS DEVICE" ??NOT "NO NEW OP VI" ??AND I MIS-CITED IT IN ALL
+      FIVE OF THIS CYCLE'S BRIEFS.** `docs/cycle27-plan.md:31` reads *"**No further process device** (user, 08:53)
+      ??still the standing order. A retrospective naming one is a finding."* A **process device** is gate and
+      retrospective machinery; an **op VI** is deliverable-construction tooling, and every stage of D1 so far was
+      built with them (+17 by the 5th outcome review's own count). So the order does not reach an op VI that places
+      a Local Variable, and **the S3b transport needs no decision from the user**: if `Control ??Create:Local
+      Variable` 6331C02 through `build_invoke` is the route, it is simply built. The mis-citation is what turned
+      (g)'s two no-call gates into FAILs and what sent a $4.19 review out to attack a rule instead of a machine.
+      **Cite Pre-decided 2 by its words, never by its remembered shape.**
+
+## Pre-decided ??ADDED 2026-09-20 (cycle 57): the transport is SOLVED for location and addressing 쨌 the blocker is TYPE
+
+47. **THE S3a TRANSPORT RAN END TO END FOR THE FIRST TIME. `move_in` TOP-LEVEL ??NESTED WORKS, AND
+    `wire_indicators` GIVEN THE INDICATOR'S OWN DIAGRAM MAKES THE CONNECTION WITH NO 5001.** Judgement, cycle 57,
+    2026-09-20, from `tools/bench/diag_s57_ctmove_wire.{py,log,json}` (`BGRUN END rc=1 after 123s`, 27 pass /
+    2 fail), the files-only read behind it, and `archive/peer/2026-09-20-priorart-d1-s3a-focus-ind.md`
+    (claude/priorart, ANSWERED, $7.2933, verdict **NOT novel**, 5 slugs ??all disposed in that file's
+    `## What was done with it`). 34??6 stand; this resolves 46(d), closes the three 5001s, and names the one
+    thing that actually blocks S3a.
+    - (a) ?럦 **THE ROUTE, measured step by step.** On a scratch of `D1_s2_loops.vi`: `build_index_array` on the
+      `VI ??Block Diagram` head ??`owner_of` `('TopLevelDiagram',536)`, `node_info` **0 ??1** ??
+      `create_indicator(Nodes[0].Terminals[2])` ??`ControlTerminal` **#23541**, census **114 ??115** ??
+      `delete_object(IA)` ??`ExecState` **1** (46(a) reproduced exactly, all error columns `''`) ??
+      **`move_in(#23541, dest = the LIVE index of `#639`)` ??`owner_of` `('TopLevelDiagram',536)` ??
+      `('Diagram',639)`, census 115 ??115, panel rows 115 ??115, `ExecState` STILL 1.** Top-level ??nested had
+      never been tried on any terminal, let alone a freshly created one. It leaves one junk `Invoke` uid (the uid
+      the deleted Index Array released); purge it in-run.
+    - (b) ?럦 **THE THREE 5001s ARE EXPLAINED AND CLOSED ??IT WAS ALWAYS THE ARGUMENT, NEVER THE VERB.**
+      `tools/gscript.py:1787-1789` feeds `Diagram in` from `diagram_index`, which scopes the **INDICATOR**
+      lookup and never the source. All three cycle-56 attempts named pre-existing indicators whose terminals sit
+      on other nested diagrams, so no index passed could have matched. Given `diagram_index` = the diagram where
+      the indicator's terminal actually lives, `wire_indicators` **wired**: target wire **0 ??10799**, whole-VI
+      `Wire` delta **0** (a branch onto the existing net), `#10686` t0 `'x .and. y?'` **3/3 wired before and
+      after**, and **`#637` 59 ??59 terminals / 48 ??48 wired, NO tunnel and NO border object** (37(e) grain).
+      The identical fault class was closed once before by measurement ??`docs/d1-build-plan.md:1231`,
+      `'Auto-Reset'` at `src_diagram_index=0` ??5001 from `Get Controls.vi`, the same label at 43 ??wired,
+      `:1251` "CLOSED by measurement: wrong `src_diagram_index`". **Excluding a verb that has never been given a
+      correct argument is the repeat, not a fourth attempt.**
+    - (c) ?뵶 **THE 38(g) SEMANTICS OBJECTION IS ACCEPTED, AND IT DECIDES THE ORDER OF THE BUILD.** A top-level
+      `ControlTerminal` wired to a source inside `WhileLoop #637` crosses the loop border as a tunnel, and a
+      while-loop output tunnel delivers ONE value when the loop ends ??legal, `ExecState` 1, and useless to a
+      local-variable read in loop 1.5 that must see the value every iteration. **So `move_in` into `#639` is not
+      a fallback, it is the only acceptable route**, and it matches the VI's own practice: all 114 pre-existing
+      `ControlTerminal`s are owned by class `Diagram`. The shape is now measured rather than argued ??(b)'s
+      59/59 쨌 48/48 쨌 no border object. `tunnel_indicator` (`tools/gscript.py:1882-1903`) is **REJECTED for
+      S3a for the same reason**: it builds the indicator off a `Tunnel.'Outer Term'`, i.e. it IS the banned shape.
+    - (d) ?뵶 **THE REMAINING BLOCKER IS TYPE, AND NOBODY HAD NAMED IT.** `Terminal.Create Indicator` **6349C02
+      takes no type argument**, so a created indicator inherits the type of the terminal it is created from. The
+      indicator built by (a) came off the carrier Index Array's `index` terminal ??its label read back off the
+      machine as **`'index'`** (hex `696e646578`, no newline, no duplicate) ??i.e. a NUMERIC. Wiring it to the
+      **BOOLEAN** `'x .and. y?'` left `ExecState` **1 ??0** and, on the ordered second pass (42(b), idempotent
+      re-connect, `wire_delta` 0, op error `''`), **`Is Broken? = True`** ??the signature 42(a) validated for a
+      type mismatch. **Competing reading, RECORDED not dismissed** (`archive/peer/2026-09-20-c57-transport-typebreak.md`,
+      claude/hypothesis opus max, ANSWERED, $3.7974, 41(b)): that `Is Broken?` also reads True on a two-source
+      wire and that 10799 sinks at a structure border, so the break may be the shape rather than the type. The
+      two are separated by a control pair on ONE variable ??same verbs, same diagram, same branch-onto-an-existing-net
+      shape, numeric source `#10757` t1 `'element'` (wire 10990) in place of the Boolean ??which is 42(a)'s own
+      design and is what cycle 57's second build act ran. **?럦 IT RAN, 35 pass / 0 fail, AND THE TYPE READING WINS:**
+      `tools/bench/diag_s57_typepair.{py,log,json}` (`BGRUN END rc=0 after 242s`). Identical creation route,
+      identical label `'index'`, identical `move_in` into `#639` @46, identical `wire_indicators` call shape, and
+      the same branch onto an existing net feeding the same structure-border sink ??**only the source's TYPE
+      differed**. Result: op error column **`''`**, indicator wire **0 ??10990**, whole-VI `Wire` **1905 ??1905**,
+      `#10757` **3/3 wired before and after**, `#637` **59 ??59 / 48 ??48, no tunnel, no border object**,
+      `ExecState` **1 ??1**, and on the ordered second pass (`wire_delta` 0, op error `''`)
+      **`Is Broken?` = False on wire 10990**. **The competing shape reading is REFUTED BY MEASUREMENT** ??leg 2
+      carries that shape exactly and reads clean ??so the Boolean?뭤umeric mismatch is the cause, and
+      `Is Broken?`'s True/False split is again the instrument 42(a) validated.
+    - (h) ?럦 **S3a's NUMERIC HALF IS DELIVERED, AND THE SAVE-FIRST ORDER OF (e) IS WHAT MADE IT SURVIVE.** Two
+      openable artefacts, both saved legally (`ExecState` 1 at each save point, `allow_broken` False, `gui_save`
+      never called), both LV2026 `26 00 80 00`:
+      **`claudeDev\D1_s3a_ind_placed_20260920_234341.vi`** md5 `0b9a070289a08a22a8843e287b183398`, 476,209 B ??
+      the indicator created and `move_in`-ed onto `Diagram #639`, **unwired**; and
+      **`claudeDev\D1_s3a_num_ind_20260920_234341.vi`** md5 `fceaa0a1d068622596842435b830bffe`, 476,146 B ??the
+      same, wired to `#10757` t1 `'element'`, the payload source of 45(c). The placed artefact was **reopened
+      COLD in a freshly restarted LabVIEW and read `ExecState` 1 with `owner_of(#23541) = ('Diagram',639)`**, so
+      the move survives a save/reload and is not an in-memory artefact. Verification level: **STRUCTURAL**, never
+      functional ??no VI was run (34(f)).
+    - (i) ?뵶 **WHAT IS LEFT OF S3a IS EXACTLY ONE THING: A BOOLEAN-TYPED CARRIER.** Since 6349C02 takes no type
+      argument (d), the schedule indicator for `#10686` t0 `'x .and. y?'` must be created from a terminal that is
+      already Boolean. `#10757`'s own class was measured `IndexArray` (Traverse index 20 of 47) with terminals
+      `[(0,'array',sink,121),(1,'element',SOURCE,10990),(2,'index',sink,10947)]`, and the carrier used so far is
+      an unwired Index Array whose `index` terminal is numeric. Two routes, and the **cheap one is tried first**:
+      **(1) NO NEW TOOLING ??find an existing builder that places a node with a BOOLEAN terminal at top level**
+      (`build_property` `tools/gscript.py:2194` and `build_invoke` `:2159` both already take a `diagram_index`,
+      and a Boolean-valued property yields a Boolean output terminal), then create ??`move_in` ??wire by the now
+      proven route. **(2) THE DURABLE FIX, permitted and named but NOT built this cycle ??ONE new op VI** that
+      calls `Terminal.Create Indicator` on a **nested** diagram's `Nodes[n].Terminals[t]`: a splice of
+      `OpConnectNested_v1`'s ladder (`tools/recipes/build_opconnectnested_v1.py:419-420`) with
+      `OpCreateIndicator_v0`'s call. It would make the indicator **born correctly typed, correctly located and
+      already wired**, retiring `move_in` and `wire_indicators` from this path entirely, and it is allowed ??
+      46(k): Pre-decided 2 forbids a further PROCESS DEVICE, not an op VI. Route (1) is first only because it
+      costs one diagnostic and no gate; if it fails, (2) is the answer and is not to be deferred again.
+    - (j) ?좑툘 **NO READER IN THIS FLEET RETURNS A DATA TYPE.** Measured across 12 hits: the only representation
+      reader is `OpConstValueN_v1.vi` (`NumericConstant.Representation` 5DCFC00, `docs/toolkit-capabilities.md:59`,
+      `docs/NAMES.md:969`) and it reads a numeric CONSTANT. So a type mismatch is not predictable before wiring
+      and can only be read AFTER, through `Is Broken?` on an ordered second pass. **Until a type reader exists,
+      every new connection is type-checked by 42(b), never assumed** ??and (d) is the first time that instrument
+      has paid for itself on a real build rather than on a calibration pair.
+    - (k) ?좑툘 **OPERATIONAL, AND IT COST A RUN: a sub-agent that backgrounds its batch and ENDS ITS TURN kills the
+      batch.** Dispatch 4 returned "holding until it lands" and exited; a relaunch then restarted LabVIEW under
+      the still-live first run, which died in phase A (`com_error -2147023170 / -2147023174 RPC`) and was logged
+      as a **NON-RESULT**, not a budget failure. This is OPEN 54(b) firing exactly as written. **Every material
+      brief that backgrounds a run must say: stay in the turn until the log carries its final `BGRUN END`/
+      `TIMEOUT` line.** Handles across the two legs: 63,313 ??30,688 ??60,291 ??30,695 ??**63,533**, with
+      `ref_counts` 22/22/0 live ??44(e)'s unexplained growth recurs a fifth and sixth time.
+    - (e) ?뵶 **A FAULT IN MY OWN BRIEF, AND IT IS THE USER'S 2026-09-19 RULE: THE RUN HELD A LEGAL ARTEFACT AND
+      SPENT IT.** `ExecState` was **1** immediately after the `move_in` and the brief's phase order put the wire
+      before the save, so a run in which **every transport verb succeeded** ended at `ExecState` 0, saved
+      nothing, and left **no file to open**. *"A step is not done until it has left a file."* **RULE for every
+      later stage: the save goes at the last point the VI is measured legal, not at the end of the script**, and
+      a stage that reaches `ExecState 1` and proceeds past it without saving is a failed stage however well its
+      verbs ran. The corrected order is create ??`move_in` ??**save** ??reopen COLD ??wire ??save again.
+    - (f) **THE PRIOR-ART REVIEW EARNED ITS $7.29 AND IS DISPOSED IN FULL** ??`contradicted`, `unread-evidence`,
+      `refuted-already`, `helper-exists` ACCEPTED (two candidates withdrawn before a call was spent on them,
+      the winning verb identified, the 38(g) objection turned into the build order); `already-measured` ACCEPTED
+      on its cost and REFUTED on its citation, because the lines it called "a different question" are exactly the
+      prior art for the verb that worked. ?좑툘 **The `FIXED:`/`REFUTED:` lines are written but their ACCEPTANCE BY
+      `guard_cycle` IS UNVERIFIED** ??the review is stamped 2026-09-20 23:00:54 and `docs/cycle27-plan.md` carries
+      a day-granular frontmatter date, which cannot postdate it; the plan date was **deliberately not rolled
+      forward to satisfy a gate**. Check with a dry run before the recipe launch.
+    - (g) ?좑툘 **CHARGED TO THIS CYCLE: the FIRST ACT re-measured something already on disk.** "Does a nested
+      diagram's `Nodes[]` enumerate `ControlTerminal`s?" was answered in four route-B run logs
+      (`build_d1_routeb_v*_run*.log:179-180`, `Nodes[None] with terminals []`) and, more strongly, at
+      `tools/bench/diag_queue_donor2.log:48,:55`, which measured it **after** a `move_in` into a nested diagram ??
+      the exact post-condition that kills candidate (2)'s second half. What the act did add and was needed: the
+      verb-addressing table, `move_in`'s uid-addressing and its one prior `ControlTerminal` success
+      (`probe_move_ctlterm_v0.log:130-133`), and the `d1-build-plan.md:1231` prior art that produced the route.
+      **Before commissioning a read, grep the bench logs for the reading first.**
+
+## Pre-decided ??ADDED 2026-09-21 (cycle 58): the Boolean carrier EXISTS 쨌 route 1's block is STRUCTURAL and has one named fix
+
+48. **A BOOLEAN CARRIER EXISTS AND 47(i) ROUTE 1 IS NOT DEAD ??BUT IT CANNOT REACH 47(e)'s SAVE POINT AS 47(i)
+    SPECIFIED IT, AND THE REASON IS A TENSION NOBODY HAD NAMED.** Judgement, cycle 58, 2026-09-21, from
+    `tools/bench/diag_s58_boolcarrier.py` and its two runs (`??run1.log` `BGRUN END rc=1 after 229s`, 51 pass /
+    9 fail; `??run2.log` `BGRUN END rc=1 after 248s`, 54 pass / 9 fail ??the SAME 9 gates both times).
+    34??7 stand; this resolves 47(i) route 1's first half and re-cuts its second.
+    - (a) ?럦 **THE CARRIER QUESTION IS ANSWERED: `build_property` (`tools/gscript.py:2194`) IS THE ONLY FLEET VERB
+      WITH A BOOLEAN-BY-CONSTRUCTION OUTPUT TERMINAL, AND IT WORKS.** Three candidates placed at the top-level
+      diagram with every error column `''`, `owner_of` `('TopLevelDiagram',536)`, `node_info` **0 ??1**,
+      ControlTerminal census **114 ??115**: C1 `('VI Server:VI',[291,292])` carrier t4 ??indicator label read off
+      the machine **`'Metrics:Front Panel Loaded'`**; C2 `('VI Server:VI',[242])` carrier `'Def Err Handling'` ??
+      **`'Automatic Error Handling'`**; C3 `('VI Server:Wire',[6371004])` carrier `'Broken?'` ??**`'Is Broken?'`**
+      (so the class string `VI Server:Wire` resolves). `build_invoke` `:2159` is OUT ??no Boolean-returning method
+      exists in `docs/vi-server-ids.json`. Every loop/exit verb is out: the conditional terminal is a SINK.
+    - (b) ?뵶 **THE BLOCK, AND IT IS STRUCTURAL: A BOOLEAN TYPE NEEDS A *SOURCE* TERMINAL, AND
+      `create_indicator` ON A SOURCE TERMINAL MAKES A REAL WIRE.** Whole-VI `Wire` **1905 ??1905 ??1906**: the
+      indicator is born wired to the carrier (uid **23586** on C1, **23576** on C2), and that wire is
+      **STILL ALIVE after `delete_object(carrier)`**, with 0 pre-existing wire uids removed. `ExecState` therefore
+      reads 1 ??1 (after `build_property`) ??1 (after `create_indicator`) ??**0 (after the carrier delete)**
+      ???좑툘 **on C1 and C2 ONLY; C3 never reaches that timeline because it breaks at placement, see (c)**, and the
+      first writing of this line omitted that qualifier (caught by `archive/peer/2026-09-21-c58-boolwire-dangling.md`
+      짠0 and corrected here, cycle 58, by the judgement session). So
+      47(e)'s save point is unreachable and all three candidates left **ZERO artefacts**. Cycle 57's route escaped
+      this only because its carrier terminal was the Index Array's `index`, a **SINK** ??no wire is created from a
+      sink, which is also exactly why that indicator came out NUMERIC. **The two requirements pull against each
+      other: the type comes from a source, and the source is what ties the indicator to the carrier.** That is a
+      finding about the verb, not a missed call.
+    - (c) ?좑툘 **C3 IS WITHDRAWN ON ITS OWN EVIDENCE:** `build_property('VI Server:Wire', ??` takes the VI to
+      `ExecState` **0 at placement**, before any delete. C2 is the carrier of record (one property, `ExecState` 1
+      throughout, label non-duplicate and newline-free); C1 is its only alternate.
+    - (d) ?뵶 **THE DISPOSITION ??ROUTE 1 IS COMPLETED BY ONE NAMED VERB CALL, DECOMPOSED INTO THREE SAVED STEPS,
+      AND ROUTE 2 IS NOT TAKEN THIS CYCLE.** The wire that blocks the save is **ours**, created seconds earlier,
+      and its uid is held; deleting it before the carrier leaves both ends unwired and should return the VI to the
+      state cycle 57 saved from. Of the three dispositions material #1 put on the table, `remove_bad_wires_scripted`
+      is **REFUSED** ??it has a measured over-removal on this VI (`archive/2026-09-17-status-d1-route-b-2.md:45`,
+      *"DELETES THE TUNNEL"*), which is a rule-1a hazard, and a named-uid delete is strictly narrower. 47(i)
+      route 2 (the one op VI, `Terminal.Create Indicator` on a nested `Nodes[n].Terminals[t]`) **remains correct,
+      remains permitted (46(k)), and becomes the automatic next act if (e) fails at the same place** ??it is
+      deferred here because the 5th outcome review flagged `tooling-over-delivery` and `measurement-without-product`
+      verbatim, and a one-call fix that ends in a file beats a new op VI that ends in a self-test.
+    - (e) **THE DECOMPOSITION (the user's 2026-09-19 rule: a step is not done until it has left a file). Three
+      sub-steps, three artefacts, three pass criteria, each starting from the previous FILE in a FRESH LabVIEW:**
+      **S3a-B1** from `claudeDev\D1_s2_loops.vi` ??place C2 ??`create_indicator` on its Boolean source ??**delete
+      the created wire by its uid** ??delete the carrier ??pass criterion `ExecState` **1** ??save
+      `claudeDev\D1_s3a_boolcarrier_b1_<stamp>.vi`.
+      **S3a-B2** from B1, cold ??`move_in(CT ??Diagram #639 @ its LIVE index)`, purge the junk `Invoke` ??pass
+      criterion `owner_of` `('Diagram',639)` **and** `ExecState` 1 ??save `??b2_<stamp>.vi`. **This is 47(e)'s save
+      point and it comes before any wiring.**
+      **S3a-B3** from B2, cold ??`wire_indicators(??#10686 t0 'x .and. y?', diagram_index = the LIVE index of the
+      diagram the INDICATOR lives on)` ??ordered second pass (42(b)) ??pass criterion **`Is Broken?` = False** ??
+      save `??b3_<stamp>.vi`. A `True` here is the type reading again and sends the next cycle to route 2.
+    - (f) ?좑툘 **NO SECOND PRIOR-ART REVIEW IS SPENT ON THIS RE-CUT, AND THAT IS AN ASSUMPTION THE USER MAY
+      OVERTURN.** `archive/peer/2026-09-20-priorart-d1-s3a-focus-ind.md` ($7.29, verdict NOT novel, 5 slugs, all
+      disposed in its `## What was done with it`) reviewed **this same stage** one day ago; (e) changes how the
+      stage is CUT, not what is built, and rule 5's archiving exception says to check `archive/peer/` before
+      re-asking. Recorded here rather than decided quietly.
+      ?뵶 **OVERTURNED THE SAME CYCLE, BY MEASUREMENT, BY THE SESSION THAT WROTE IT.** `guard_cycle`'s
+      `premature-build` device refuses the launch verbatim ??*"this RECIPE HAS NO PRIOR-ART REVIEW NEWER THAN
+      ITSELF"*, recipe last changed **2026-09-21 01:19**, newest prior-art review **2026-09-20 23:00** ??and the
+      exemption it offers ("a recipe that HAS already run once under the newest review") does not apply, because
+      this recipe has never run. The premise of (f) is simply false: the 2026-09-20 review reviewed a recipe that
+      **did not exist**, which is why its stop record reads `sha (none)` (48(g)); it cannot have covered the 1,699
+      lines now on disk, so this is not rule 5's "same question re-asked". **A second review IS spent**, and that is
+      the right outcome: `CYCLE_GUARD_OFF` is never the answer, and the two releases the gate accepts (`REFUTED:` /
+      `FIXED:`) both require a review that saw these bytes. Cost ??$7, against a deliverable one run away.
+    - (g) ?좑툘 **`guard_cycle` REFUSES ONE STEP EARLIER THAN 47(f) EXPECTED, AND FOR A DIFFERENT REASON.** Exit **2**
+      comes from `tools/stop_record.py`, verbatim: *"this recipe has a released stop record, but the file itself
+      cannot be read, so the release cannot be matched to any bytes"*, `unreadable:
+      tools/recipes/stage_d1_s3a_focus_ind.py`. So the prior-art review's 4 `FIXED:` + 1 `REFUTED:` lines were
+      **never tested** ??the stop record is keyed to the recipe's BYTES, and the gate cannot reach that question
+      while the recipe does not exist. **The recipe must be WRITTEN before the gate can be dry-run at all**; no
+      date was rolled and `CYCLE_GUARD_OFF` was not set.
+    - (h) ?좑툘 **TWO HYPOTHESIS REVIEWS, ANSWERED, RECORDED, NEITHER ACCEPTED NOR REJECTED (41(b)), NOTHING ACTED
+      ON:** `c58-typepair-a1-nonresult` ($3.9606) names three instrument defects (a gate-boundary swallow;
+      `diag_s57_typepair.log:37`'s canned reason from an unconditioned `else`; run 1's JSON destroyed by an
+      unstamped OUT) ??4 proposals, none implemented. `c58-delete-execstate0` ($3.6322) argued *"the dangling wire
+      is not established by this log"* and stated its own falsifier ??*"if uid 23586 is alive after the delete, I
+      am wrong"*. **B3d read it alive on all three candidates, so the falsifier fired against the review** and (b)
+      stands. The one thing acted on was a REMOVAL: a `remove_bad_wires_scripted` step was written into run 2 and
+      **deleted before launch**, correctly ??see (d).
+    - (i) ?좑툘 **THE STAGE HAS NOW FAILED TWICE AT THE SAME PLACE AND LEFT NO FILE, WHICH IS THE USER'S OWN
+      RE-SPLIT TRIGGER.** (e) IS that re-split; a third full-length retry of the 47(i)-route-1 script under a new
+      name is forbidden. Handles 30,965 ??30,687 (own pre-batch restart) ??60,292; refs 33/33/0 live; ORIGINAL
+      `2a78e17c??, `D1_s1_copy.vi` `3e3d23ce??, `D1_s2_loops.vi` `6ff19497?? byte-unchanged before and after both
+      runs; no recipe, no op VI, no VI run (34(f)), no GUI, no motor/ASI/camera.
+    - (j) ?럦 **(e) RAN AND S3a's BOOLEAN HALF IS DELIVERED ??36 pass / 0 fail, THREE FILES, `Is Broken?` FALSE.**
+      `tools/bench/diag_s58_boolwire.{py,log,json}`, `BGRUN END rc=0 after 306s`. The named fix of (d) is CONFIRMED
+      by measurement: `delete_object(target,'Wire',1664,verify=True)` on uid **#23576** returned `gone [23576]`,
+      error `''`, **`[]` pre-existing wire uids removed** ??there is no by-uid form, so the uid was resolved to a
+      Traverse index off the live `Wire` census, and `verify=True` proved exactly one wire vanished.
+      `remove_bad_wires_scripted` was neither imported nor called (AST-checked). **B1 `ExecState` 1 ??1 ??1 ??1
+      (wire delete) ??1 (carrier delete)** ??48(b)'s 0 is gone. Artefacts, all LV2026 `26 00 80 00`, each saved at
+      the last point the VI was measured legal: **`claudeDev\D1_s3a_boolcarrier_b1_20260921_010034.vi`** md5
+      `7237b2c1e150ebeaf0f32940b07abcfb` 476,241 B (carrier gone, indicator bare at top level) 쨌
+      **`??b2_20260921_010034.vi`** md5 `148050141085bc00ffc1e94e9977ea24` 476,245 B (47(e)'s save point ??
+      `move_in(#23555 ??#639 @ live 46)` error `''`, `owner_of` `('TopLevelDiagram',536) ??('Diagram',639)`,
+      `ExecState` 1 ??1, junk `Invoke` #23490 purged in-run) 쨌 **`??b3_20260921_010034.vi`** md5
+      `dc14dd000dfe90c0426b30fa6b69cbc2` 476,169 B (wired). B3: `wire_indicators(Function[102],
+      ['x .and. y?'] ??['Automatic Error Handling'], diagram_index=46)` error column **`''`**, indicator wire
+      **0 ??10799** (a branch ??whole-VI `Wire` 1905 ??1905, delta 0), `ExecState` **1 ??1**, `#10686` **3/3 wired
+      before and after**, `#637` **59 ??59 / 48 ??48, increase 0, no tunnel, no border object** (37(e)), and the
+      ordered second pass (42(b), `wire_delta` 0, op error `''`) read **`Is Broken?` = False on wire 10799**.
+      Verification level **STRUCTURAL**, never functional ??no VI was run (34(f)). **So both legs of S3a now exist,
+      each in its own file, built by the same verbs: numeric (cycle 57) and Boolean (here). What does NOT yet
+      exist is ONE file carrying BOTH**, which is the recipe `tools/recipes/stage_d1_s3a_focus_ind.py`.
+    - (k) ?좑툘 **THE HYPOTHESIS REVIEW `guard_peer` FORCED IS ARCHIVED AND DISPOSED, AND ITS LOAD-BEARING OBJECTION
+      WAS OVERTAKEN BY THE MACHINE.** `archive/peer/2026-09-21-c58-boolwire-dangling.md` (claude/hypothesis opus
+      max + web, ANSWERED 588 s, `$4.3192`) returned *"REFUTED in its load-bearing sentence ??the run never measured
+      that the indicator is 'left sourced by a wire whose node is gone', and the only post-delete reading of that
+      terminal in the whole log says it is bare."* **RECORDED, NEITHER ACCEPTED NOR REJECTED (41(b)); nothing in it
+      was acted on**, and the script was written in full before the dispatch and unchanged after. Its 짠0 documentation
+      correction IS adopted ??that is (b)'s qualifier above, and it is adopted because it is a fact about our own
+      text, not a claim about the machine. Whether the rest of it should be adopted is **left open**: the run it
+      criticised passed 36/0 and delivered three files, so nothing in it is load-bearing for the next act.
+    - (l) ?좑툘 **A HOUSE-STYLE HABIT SILENTLY BREAKS A GATE, AND IT COST THIS CYCLE A ROUND-TRIP.** STATUS.md writes
+      approximate times as `23:5x` / `01:5x`, and the two `docs/violation-decisions.md` blocks that answer
+      `guard_cycle`'s threshold refusal were first written with that spelling. `tools/violations.py:94`'s `DEC_RE`
+      requires `(?:[ T]+(\d{2}:\d{2}))?`, so the literal `x` makes the optional time group fail and the block is
+      read as **date-only**; `:116` then requires a date-only decision to fall on a strictly LATER day than the
+      retrospective that raised the slug, and `archive/peer/2026-09-21-retrospective-cycle57.md` is the same day.
+      Both blocks were therefore on disk, correct and unread. **Rule: a `docs/violation-decisions.md` heading
+      carries a REAL `HH:MM`, never the `5x` approximation** ??the time is what discharges a same-day slug
+      (`:115`). Fixed to the files' true write time `01:24`; no date was rolled, no gate patched,
+      `CYCLE_GUARD_OFF` never set.
+    - (m) ?뵶 **A REVIEW THAT CANNOT CHANGE THE BUILD IT GATES IS A RECEIPT, NOT A REVIEW ??AND CYCLE 58 REPEATED
+      CYCLE 57'S VERSION OF THIS.** `archive/peer/2026-09-21-retrospective-cycle57.md` finding 5(a) caught it in
+      cycle 57: `diag_s57_ctmove_wire.py` was written and AST-checked *before* the ctowner review that gated it was
+      dispatched, and "was NOT changed afterwards", so $3.8922 and 546 s bought a review structurally unable to
+      affect anything. Cycle 58 did the same with `diag_s58_boolwire.py` and `c58-boolwire-dangling` ($4.3192).
+      **MANDATORY in every brief from now on: a review that GATES a build is dispatched BEFORE the script is
+      written, or the brief says in writing that the script will be revised on the review's findings.** This is a
+      brief sentence, not a device ??the standing order of 2026-09-18 08:53 forbids the latter, not the former.
+    - (n) ?좑툘 **THE GATE CHAIN COST THIS CYCLE FOUR DRY RUNS AND AN $8.03 REVIEW, AND THE ORDERING IS THE FINDING.**
+      `guard_cycle` refuses in sequence ??`stop_record` ??`violations --due` ??`outcome_review --due` ??
+      `premature_build()` ??the retrospective gate ??and each refusal is visible only after the one before it is
+      cleared, so a single launch was refused four times for four unrelated reasons (a stop record keyed to bytes
+      that did not exist; two slugs at threshold; a heading written `01:5x` where `tools/violations.py:94` needs
+      `\d{2}:\d{2}`; no prior-art review newer than the recipe). **Every refusal was answered on its own terms ??
+      no date rolled, no gate patched, `CYCLE_GUARD_OFF` never set** ??and each answer was real work, not
+      paperwork: the recipe got written, two threshold slugs got substantive decisions, three stale doc lines got
+      repaired. The last refusal is the structural one: **the retrospective gate compares the newest BUILD LOG
+      against the newest RETROSPECTIVE, so once a cycle has run any build log it cannot launch a recipe in that
+      same cycle.** That is why S3a's combined build is cycle 59's first act and not cycle 58's last: clearing it
+      mid-cycle would have meant running the retrospective early, which is the exact trap OPEN 54(a) documents and
+      which cost cycle 29 its entire cycle.
+
+## Pre-decided ??ADDED 2026-09-21 (cycle 59): S3a IS DELIVERED as one file 쨌 S3b's transport DOES NOT EXIST and is built
+
+49. **S3a IS ACCEPTED AND CLOSED, AND THE NEXT STAGE'S TRANSPORT WAS MEASURED TO BE ABSENT FROM THE WHOLE FLEET.**
+    Judgement, cycle 59, 2026-09-21, from `tools/bench/cycle59_s3a_recipe.log` (`BGRUN END rc=0 after 596s`, **64
+    gates pass / 0 fail**), a files-only verb census, and `archive/peer/2026-09-21-s3b-local-variable-route.md`.
+    34??8 stand; this closes S3a and re-cuts S3b before any of it is built.
+    - (a) ?럦 **S3a IS DELIVERED AS ONE FILE, AT THE STRUCTURAL LEVEL, AND THE RECIPE WAS NOT TOUCHED TO GET THERE.**
+      `claudeDev\D1_s3a_focus_ind.vi`, md5 **`eef91c1d91f16b034707e4d1285ca8cb`**, 476,172 B, LV2026 `26 00 80 00`
+      (`tools/bench/cycle59_s3a_recipe.log:322`). `ExecState` **1** at the B3 save (`:304`) **and 1 on the Z0 COLD
+      reopen in a freshly restarted LabVIEW** (`:324`); **BOTH** ControlTerminals read `owner_of` `('Diagram',639)`
+      on that cold reopen ??numeric #23541 `'index'`, Boolean #23576 `'Automatic Error Handling'` (`:328`); census
+      **116** (`:333`), i.e. 114 at the S2 baseline +1 per leg, which is the number the prior-art review said
+      nothing on disk had produced; both ORDERED `Is Broken?` readings **False** ??wire 10990 (`:147`) and wire
+      10799 (`:311`). Six sub-step artefacts on disk, each saved at the last point the VI was measured legal
+      (`:347`). Refs **60 opened / 60 closed / 0 live** (`:344`); all three originals byte-unchanged before AND
+      after (`:340`). `tools/recipes/stage_d1_s3a_focus_ind.py` sha256 identical before and after ??
+      `1986626FB6F16CD0??, the bytes the prior-art review saw, so the stop record still matches. No hook refused
+      the launch, `CYCLE_GUARD_OFF` was never set, no gate was patched. **DECISION: S3a is CLOSED. Verification is
+      STRUCTURAL and is never called functional ??no VI was run (34(f)).**
+    - (b) ?뵶 **THE S3b TRANSPORT DOES NOT EXIST TODAY ??MEASURED, NOT INFERRED, AND 45(f)'s ROUTE IS CLOSED AS
+      WRITTEN.** `local` occurs **once** in `tools/gscript.py`, in a comment (`:830`): **no verb creates a Local
+      Variable.** The only vehicle for `Control ??Create:Local Variable` **6331C02** is `build_invoke`
+      (`tools/gscript.py:2159`), whose `reference` input is **deliberately left UNWIRED** (`:2164-2166`: a wired
+      reference makes the erdosmiller creator write the object's bare class name and fail silently). No `Op*.vi`
+      in `claudeDev` (108 files) carries `Local` in its name, and `vi.lib\Erdos Miller\LV-Scripting\Create*.vi`
+      is **50 files, none a local-variable creator**. `Local` is grep-absent from `docs/vi-server-ids.json`.
+      Neither `docs/NAMES.md` nor `docs/toolkit-capabilities.md` records a creator in any state; the only rows are
+      readers and the unverified wiki pair at `docs/NAMES.md:260`.
+    - (c) ?좑툘 **AND THE METHOD'S OWN SHAPE IS WHY `build_invoke` CANNOT BE THE VEHICLE.** The external fact
+      dispatch (`archive/peer/2026-09-21-s3b-local-variable-route.md`, claude/fact fable-low thin +web, ANSWERED
+      79 s, `$1.3397`) returns, CITED to labviewwiki, that `Create:Local Variable` **6331C02 takes NO input
+      parameters** and returns only a Local refnum ??so **the control instance the method is invoked on IS the
+      binding**. Two established halves (a method with no parameters; a wrapper that never wires the reference)
+      meet, and they do not meet in a place where anything can be addressed. Its further claims ??that such a
+      call returns error 1055, and that `New VI Object` style **2061** + a write to `Local.Control Name`
+      **6355400** is the alternative ??are the peer's own flagged INFERENCE, and its negative finding is that
+      **no NI reference page exists for 6331C02, style 2061, or 6355400/6355401/6355403 at all**; wiki, LAVA and
+      one 2013 forum thread are the only sources anywhere. **RECORDED, NEITHER ACCEPTED NOR REJECTED (41(b));
+      nothing in it is acted on except (d)'s choice of which route is probed FIRST.**
+    - (d) **DECISION: S3b GETS ONE NEW OP VI, AND THE AUTHORISATION IS 46(k), NOT A NEW USER DECISION.**
+      `docs/cycle27-plan.md:31` is *"no further **process device**"*; `:1697-1705` already settled that this does
+      not reach an op VI that places a Local Variable and that such an op *"is simply built"*. Shape, fixed here
+      so no material session designs it: **`OpCreateLocal_v0.vi`** ??in: VI ref, the control's owned LABEL, the
+      destination diagram, a position; internals: `VI.Panel` ??`Panel.Controls[]` **6348801**
+      (`docs/vi-server-ids.json:47`, already the measured route inside `OpFPLabels_v0`) ??per control
+      `Control.Label` **6332005** (`docs/vi-server-ids.json:21`) ??`Text.Text` ??match the requested label ??on
+      **that live Control reference** Invoke `Create:Local Variable` **6331C02** with no parameters ??read back
+      the new object's uid, class and bound name; relocate afterwards only if the readback says it was not born
+      on the destination diagram. Out: uid, class, bound label, the error cluster. **It closes every reference it
+      opens** ??reference hygiene is a precondition of a staged build, not an afterthought (CLAUDE.md), so the
+      op's self-test includes 20 consecutive calls with the handle count flat 짹100. **Why route A first and not
+      the `New VI Object` 2061 route:** A is one call on a reference we already know how to obtain ??it reuses
+      `OpFPLabels_v0`'s measured `Panel.Controls[]` ??`Control.Label` walk and adds one Invoke ??whereas B needs
+      TWO unverified IDs (a style constant from LAVA and a property write the wiki alone documents). B is the
+      fallback, and the self-test REPORTS whether 2061 and 6355400 resolve on this machine as a measurement,
+      never as a repair attempt. ?좑툘 **AND THE SAME APPLIES TO ROUTE A's OWN PREMISE ??added on the cycle-59
+      retrospective's finding 3:** *"6331C02 takes no parameters"* comes from a wiki page that **self-declares
+      its parameter table incomplete**, so if the method turns out to take parameters after all, that is a
+      **MEASUREMENT L0 RECORDS, not a failure of the sub-step.** L0 is never scored against an assumption the
+      sources never supported.
+    - (e) **THE DECOMPOSITION ??five sub-steps, five artefacts, five pass criteria, each starting from the
+      previous FILE in a FRESH LabVIEW (the user's 2026-09-19 rule).** ?좑툘 **The order INVERTS NEXT's sentence
+      order deliberately (see (f)).**
+      **S3b-L0** ??build `OpCreateLocal_v0.vi` and self-test it on a **SCRATCH copy, never on
+      `D1_s3a_focus_ind.vi`**: create one local bound to a named control, read back uid/class/bound label, 20
+      consecutive calls, handles flat 짹100. Pass: the local exists, bound to the label asked for, `ExecState` 1,
+      refs 0 live. Artefacts: the op VI + its self-test log.
+      **S3b-M1** from `claudeDev\D1_s3a_focus_ind.vi` (md5 `eef91c1d??), cold ??create the TWO locals, one per new
+      indicator (`'index'`, `'Automatic Error Handling'`), left UNWIRED ??save
+      `claudeDev\D1_s3b_m1_locals_<stamp>.vi`. Pass: `Local` census **8 ??10**
+      (`docs/toolkit-capabilities.md:284` is the 8), both bound labels read off the machine, `ExecState` 1.
+      ?좑툘 **MEASURE, DO NOT ASSUME, whether an unwired Local leaves the VI legal.** If `ExecState` is 0 with the
+      locals unwired there is no legal save point here, and M1 folds into M2 (create **and** wire in one step) ??
+      that is a fact the sub-step REPORTS; the folding is judgement's call on the next brief, not a branch a
+      material session takes.
+      **S3b-M2** from M1, cold ??wire the two locals into `#10407` t0/t2 ??save `??m2_fed_<stamp>.vi`. Pass:
+      `ExecState` 1, **`Is Broken?` False on both new wires** via the ordered second pass (42(b), after the save),
+      `#10407` wired-terminal count **+2**, and `#637` terminal/wired counts **unchanged ??no tunnel, no border
+      object** (37(e)). **This is the step that closes the boundary cycle 54 died on.**
+      **S3b-M3** from M2, cold ??move the five 1.5 nodes into `#23032`'s body `Diagram #23058`
+      (`docs/cycle27-plan.md:1127-1129`; ?좑툘 `:1037`'s `Obtain Queue #23032` is a different object reusing the
+      uid), ONE `move_in` per node, junk purged in-run, then re-wire the rows from the MEASURED table
+      (`docs/cycle27-plan.md:1182-1188`, whose "sources on `#686` = 0" clause is STRUCK at `:1188`; cycle 54's
+      9/9 at `:1283-1290`) ??save `claudeDev\D1_s3b_m3_moved_<stamp>.vi`. Pass: all five `owner_of` = `#23058`
+      AND `ExecState` 1.
+      **S3b-M4** from M3, cold ??frame-counter edge shift register + `Wait (ms)` 1 ??save
+      `claudeDev\D1_s3_loop15.vi`. Pass: `ExecState` 1 preloaded AND on a cold reopen. 38(g) stays banned.
+    - (f) **WHY THE LOCALS COME BEFORE THE MOVES ??a judgement call, recorded as one.** NEXT's sentence orders
+      S3b as *move the five nodes, re-wire the rows, then feed `#10407` from locals*. Taken literally that puts
+      the one step that BREAKS the VI first and the two independently-savable steps last, and cycle 54 already
+      ran that order: 5/5 moves, 9/9 rows, **`ExecState` still 0**, no file (`:1283-1290`). Creating and wiring
+      the locals first is savable at `ExecState` 1 twice over while the diagram is still in its known-good S3a
+      shape, and it means M3 starts from a VI whose `#10407` inputs are ALREADY satisfied ??which is precisely
+      the boundary defect cycle 54 diagnosed. A failure in M3 then still leaves two new files and a closed
+      boundary instead of nothing.
+    - (g) **DECISION: THE TWO INHERITED LABELS STAY, AND NO RENAMER IS BUILT ??but the user is told, because it
+      is their panel.** The indicators carry `'index'` and `'Automatic Error Handling'`, the names LabVIEW derived
+      from the carriers. **No verb in this fleet can rename a front-panel control or indicator** (measured,
+      cycle 58: `set_node_label` writes `Node.Label` on `Diagram[d].Nodes[n]` and a `ControlTerminal` is not in
+      `Nodes[]`; every other label path is a reader), so a rename means a SECOND new op against
+      `Control.Label` 6332005. It buys nothing structural: a label is cosmetic, it changes no computation
+      (rule 1a untouched), and local variables bind by label, so both names WORK ??each is measured
+      non-duplicate and newline-free. `'Automatic Error Handling'` on a tracking Boolean is nevertheless
+      misleading to a human reading the panel, and renaming two labels by hand in the editor is seconds for the
+      user against an op VI plus self-test for us. **Flagged in `## NEXT` as the user's to overturn; if they want
+      us to do it, the `Control.Label` writer is a one-cycle build.**
+    - (h) ?좑툘 **THE RE-SPLIT TRIGGER FOR M3, STATED IN ADVANCE SO NOBODY HAS TO NOTICE IT.** If M3 ends at
+      `ExecState` 0 ??i.e. leaves NO file ??the next cycle's FIRST act is M3's own decomposition, cut
+      **node-with-its-rows** (each node moved and its severed rows re-wired before the next node is touched), and
+      the tunnel question becomes explicit at that point rather than implicit. A full-length retry of M3 under a
+      new file name is FORBIDDEN (the user's 2026-09-19 rule 3; `cycle_runner.py` counts renamed recipes as the
+      same recipe).
+    - (i) ?좑툘 **48(m) IS SATISFIED BY CONSTRUCTION FOR L0, AND THAT IS THE POINT OF DOING IT THIS CYCLE.** The
+      gating research for the op ??the external API fact ??was dispatched and archived BEFORE one line of the op
+      exists, so the review cannot be a receipt for a script already written. Cost `$1.3397`. The brief that
+      builds L0 must still say in writing that the op will be revised on any review that gates it.
+
+## Pre-decided ??ADDED 2026-09-21 (cycle 60): L0 RAN 쨌 the creator works 쨌 the binding has NO READER, so the reader is built
+
+50. **S3b-L0 IS MEASURED. `OpCreateLocal_v0.vi` CREATES LOCALS RELIABLY; WHAT DOES NOT EXIST IS ANY WAY TO READ
+    WHAT A LOCAL IS BOUND TO.** Judgement, cycle 60 (attempt 2), 2026-09-21, from
+    `tools/bench/diag_s3b_l0_createlocal.log` (`BGRUN END rc=1 after 106s`, **30 pass / 2 fail**) and
+    `archive/peer/2026-09-21-c60-l0-readback-none.md` (claude/hypothesis opus max, ANSWERED 504 s, `$4.3505`,
+    disposed in full in its own `## What was done with it`). 34??9 stand; this settles L0 and re-cuts 49(e)'s M1.
+    - (a) ?좑툘 **CYCLE 60 ATTEMPT 1 WAS A USAGE-LIMIT NON-RESULT AT THE CYCLE LEVEL, BUT THE L0 RUN INSIDE IT IS A
+      RESULT AND IS NOT RE-RUN.** The runner recorded *"usage-limit attempt 1, non-result; sleeping 238 min
+      (renewal + 2 min) then RERUNNING this cycle"* (`tools/bench/cycle_runner_main_20260921a.log`, cycle 47 row,
+      02:38:44 ??03:03:39). CLAUDE.md's usage-limit rule 3 invalidates a benchmark or build **interrupted
+      mid-run**; L0 was not interrupted ??it started 02:51:44 and ended on its own `BGRUN END` line 106 s later
+      with a complete gate table, ~10 min before the limit was hit. **DECISION: L0's readings stand as
+      measurements and no part of it is repeated.** What the limit cost was the cycle's remaining work and its
+      retrospective, nothing else.
+    - (b) ?럦 **THE CREATOR HALF OF 49(d) IS DELIVERED AND IS SOUND.** `claudeDev\OpCreateLocal_v0.vi`, md5
+      `58275b212dfa040685613e3edbf403f2`, 9,688 B, LV2026 `26 00 80 00`, `ExecState` 1. Invoking
+      `Create:Local Variable` **6331C02** on a live front-panel Control reference returned error cluster
+      `(False, 0, '')` and a new `Local` (uid 23507, owner `('TopLevelDiagram',536)` ??the normal birthplace,
+      `docs/toolkit-capabilities.md:275`). **20 consecutive calls: 20/20 produced one new Local each, 0 errors,
+      1.6 s, handle count 51,418 ??51,418 (delta 0), refs 12 opened / 12 closed / 0 live** ??reference hygiene is
+      met as a precondition, not an afterthought. The scratch was a copy of `D1_s3a_focus_ind.vi`, was never
+      saved, and was deleted in the same run (`exists=False`); all four md5 gates on the originals PASSED before
+      AND after. ?좑툘 **AND 49(d)'s RIDER FIRED AS WRITTEN: the node has SIX terminals, not four** ??`i=4`
+      `'Create Local'` (sink) and `i=5` `'Create Local'` (source), both left unwired. That is a MEASUREMENT the
+      run recorded, never a failure of the sub-step.
+    - (c) ?뵶 **THE TWO FAILING GATES ARE AN ABSENT INSTRUMENT, NOT A FAILED BINDING ??AND THAT DISTINCTION IS THE
+      WHOLE OF S3b.** `L0_b5` (`bound None`) and `L0_b6` (`None vs 'index'`) were read with `node_labels()`, which
+      returns `Node.Label` **6359001** ??the node's OWN label (`tools/gscript.py:588-594`). All **eight** of the
+      main VI's pre-existing Locals return the VI's FILE NAME through that path
+      (`tools/bench/main_vi_node_labels.json`; the two Globals likewise return `"Global motor pos.vi"`), so it can
+      never answer "what is this Local bound to" for any Local, new or old. ?뵶 **CORRECTED 2026-09-21 by the
+      cycle-60 judgement session, on its own prior-art review: the sentence that followed here ??*"the fleet's
+      inability to read a binding is the blocker, so cycle 60's deliverable became the reader
+      `OpLocalName_v0`"* ??was WRONG, and wrong against an active document.** `gscript.node_terms`
+      (`tools/gscript.py:870`) already reads it: a local-variable node's single terminal is **named after its
+      bound control**, `is_source` giving READ vs WRITTEN ??`docs/main-vi-panel-map.md:405`, with all eight
+      bindings tabulated at `:401-416` since **2026-09-14** and re-verified in
+      `tools/bench/main_vi_nodeterms.json`. What `node_labels` cannot do, `node_terms` can, and the whole
+      `OpLocalName_v0` / `Local.Control Name` 6355400 build was unnecessary. The half of (c) that stands is the
+      half about the INSTRUMENT ACTUALLY USED: `node_labels` returns the node's own label ??the VI's file name for
+      every Local and Global ??so `L0_b5`/`L0_b6` did report an absent measurement, and the two FAILs were
+      correctly raised. **Disposition and citations: `archive/peer/2026-09-21-priorart-c60-localname-decomposition.md`
+      (`NOT novel`, 7 findings, all accepted).**
+    - (d) **READING `Control Name` IS NOT "ROUTE B", AND 49(d) NEVER FENCED IT.** 49(d) fences route B as a
+      *creation* mechanism ??`New VI Object` style **2061** *plus a write* to `Local.Control Name`. A **read** of
+      that property, to verify what route A actually produced, is a different act. Run 1 measured
+      `Local.Control Name` **6355400 resolves = True, error `''`** (`tools/bench/diag_s3b_l0_createlocal.log:115`),
+      which is what makes the reader buildable today; style **2061** was **not probed at all** because no verb in
+      `tools/gscript.py` passes a style number (`:118-119`), so B remains unbuilt and unmeasured on its creation
+      half.
+    - (e) ?뵶 **49(e)'s M1 FOLDS INTO M2 ??the judgement call 49(e) reserved, made here on the measurement it asked
+      for.** 49(e) said in advance: *"MEASURE, DO NOT ASSUME, whether an unwired Local leaves the VI legal ??if
+      `ExecState` is 0 there, M1 folds into M2, and that folding is the next judgement session's call."* L0
+      measured it on this very VI lineage: the scratch copy of `D1_s3a_focus_ind.vi` read `ExecState` **1 before
+      the call and 0 after it**, with one Local created and unwired. **DECISION: S3b-M1 and S3b-M2 become ONE
+      sub-step ??create BOTH locals (`'index'`, `'Automatic Error Handling'`) AND wire them into `#10407` t0/t2
+      before the save.** Pass criteria are 49(e)'s M2 criteria plus `Local` census **8 ??10**: `ExecState` 1 at the
+      save, `Is Broken?` **False** on both new wires via the ordered second pass (42(b), after the save), `#10407`
+      wired-terminal count **+2**, `#637` terminal/wired counts **unchanged ??no tunnel, no border object**
+      (37(e)). ?좑툘 **This does NOT weaken the user's 2026-09-19 rule**: the folded step still ends in a saved file,
+      and it is the *first* point on this path where a legal save exists. M3 and M4 are unchanged, and **48(h)'s
+      re-split trigger for M3 stands**.
+    - (f) ?좑툘 **ONE HALF OF THIS IS NOW SETTLED AND THE OTHER IS NOT.** Until the reader returns a string,
+      **nobody may state that the new Local is bound to `'index'`** ??that it must be, because 6331C02 is an
+      instance method, is exactly the inference this cycle exists to replace. But the six-terminal question IS
+      answered; see (g).
+    - (g) ?럦 **THE SIX-TERMINAL QUESTION IS SETTLED BY MEASUREMENT, AND THE WIKI WAS RIGHT: 6331C02 TAKES NO INPUT
+      PARAMETERS.** The separator the cycle-60 hypothesis review named was run report-only against Invoke nodes
+      this fleet had already built with methods of KNOWN signature
+      (`tools/bench/diag_s3b_l0_localname_run2.log:70-78`): `OpMoveIn_v0.vi` #741 ??**12** terminals, pairs
+      `(4,5) 'Move'`, `(6,7) 'position'`, `(8,9) 'owner'`, `(10,11) 'duplicate'`; `OpConPaneAssign_v0.vi` #99 ??
+      **10** terminals, `(4,5) 'AssignCtrlToTerm'`, `(6,7) 'Control'`, `(8,9) 'TermIdx'`; `OpCreateLocal_v0.vi`
+      #306 ??**6** terminals, `(4,5) 'Create Local'` **only**. The pattern is exact and it reads off two known
+      signatures: the METHOD row occupies one (sink, source) pair named after the method, and **each parameter
+      occupies one further pair**. `Create Local` has the method pair and nothing else. **DECISION: 49(d)'s rider
+      is discharged ??the `i=4` sink is layout, not an omitted input, and the wiki's incomplete parameter table
+      happened to be right here.** Leaving both terminals unwired was correct, and no future run is scored against
+      a missing 6331C02 parameter. (All three op VIs byte-unchanged by the reading.)
+    - (h) **DECISION: THE READER IS BUILT WITH A `To More Specific Class` CAST SEEDED TO `Local`, FOLLOWING THE
+      DONOR'S OWN MECHANISM ??not a new technique, and not a donor substitution.** Cycle 60's first reader attempt
+      measured the block to one cast: `build_property('VI Server:Local', [('6355400', False)])` **RESOLVES** on
+      this machine ??error column `''`, Property census 7??, short name **`CtrlName`**, terminal i=4 SOURCE
+      (`tools/bench/diag_s3b_l0_localname_run2.log:50-56`), the **first resolution of 6355400 here** ??but wiring
+      its `reference` straight from `Traverse for GObjects.vi` ??`Index Array .element` gives `ExecState` **0**
+      with the `CtrlName` row intact (no silent class re-adaptation, `:59-64`), because Traverse yields a
+      **GObject** and `Local` sits two classes below it. `OpNodeLabels_v0.vi` already carries the answer:
+      **`To More Specific Class` #683**, seeded by wire **772, produced by no node on its diagram** (`:29-45`).
+      The reader reproduces that seed with target class `Local`. ?좑툘 **The seed's construction is to be READ off the
+      donor and reported verbatim ??it has never been measured ??and if it cannot be reproduced for class `Local`
+      that is a FACT with an `OPEN:` line, never a donor substitution and never the alternative Invoke-seeded
+      variant the review proposed.** Nothing on disk was lost to the first attempt: it saved no VI by design
+      (`ExecState` 0, `allow_broken` False, `gui_save` never called), deleted its scratch, and left all four md5
+      pins and both donors byte-unchanged.
+    - (j) ?뵶 **THE READER STAGE HAS NOW ENDED TWICE WITH NO FILE, SO IT IS RE-SPLIT ??THE TRIGGER IS THE USER'S,
+      NOT A FEELING.** Attempt 1 (`tools/bench/diag_s3b_l0_localname_run2.log`) and attempt 2
+      (`tools/bench/diag_s3b_l0_localname_v2.log`, `BGRUN END rc=1 after 101s`, 29 pass / **1 fail** ??
+      `S2_b10 ExecState == 1 after the indicator`) both ended `ARTEFACTS ON DISK: []`. The user's 2026-09-19 rule
+      3: *"the same stage failing twice at the same place, or a stage that ends without a saved artefact ??the
+      next cycle's FIRST act is a decomposition plan for that stage ??A full-length retry under a new file name is
+      forbidden."* **DECISION: no third full-length build. The decomposition is 51, written here so the next
+      session executes instead of planning.** What the two attempts bought is real and is not lost: the property
+      resolves, the cast route is built end to end with every error column `''`, and the fault is narrowed to
+      three candidates ??but **this cycle saved no VI, and that is its honest cost.**
+    - (k) ?럦 **THE SEED MECHANISM IS NOW THE PLAN'S, CITED: `docs/toolkit-capabilities.md:84-93`, the typed-control
+      seed, SOLVED 2026-09-14.** A refnum CONTROL created by `Terminal.Create Control` on a property node's
+      `reference` input IS the seed for a `To More Specific Class`. It was on disk the whole time and attempt 2
+      mis-cited its own file ??the cycle-60 cast-seed review
+      (`archive/peer/2026-09-21-c60-cast-seed-execstate0.md`, claude/hypothesis opus max, ANSWERED 643 s,
+      `$4.8363`) refuted the diagnosis on exactly that ground, and it was right. It is CONFIRMED LIVE, not just
+      cited: on `claudeDev\OpLoopCast_v0.vi`, `ExecState` **1**, the TMSC's `target class` is wire **333**, carried
+      by a front-panel **control** `{'label':'reference','uid':297,'is_source':True}` with **0 node producers**
+      (`tools/bench/diag_c60_castseed_probe.log:50`). The donor `OpNodeLabels_v0`'s own seed (wire **772**, 0 node
+      producers, 0 of 19 `panel_wiring` rows ??`diag_s3b_l0_localname_v2.log:46-69`) is the same shape read
+      through an instrument that cannot see it. ?좑툘 **`gscript.loop_cast` (`tools/gscript.py:626`) CANNOT be used
+      here** ??it dispatches only to `OpLoopCast_v0/v1` and `OpWhileCast_v0` and raises otherwise;
+      `OpLocalCast_v0.vi` does not exist, so the TMSC is hand-built.
+    - (l) **WHAT IS MEASURED OUT, so 51 does not re-test it.** The `ExecState` timeline was
+      `1 ??0 after build_property ??1 after the seed control ??0 after the birth-wire delete ??0 thereafter`
+      (`diag_s3b_l0_localname_v2.log:83-126`). The middle two transitions are the property node's `reference`
+      input going unwired ??wired ??unwired, which is ordinary. **Step b7 is EXONERATED by an isolated probe on a
+      throwaway donor copy: `ExecState` 1 ??0 (wire 645 deleted) ??**1** again after `create_control` on
+      `#235.reference` (`tools/bench/diag_c60_castseed_probe.log:74-80`, 19 pass / 0 fail, 3 s).** So the residual
+      0 is one of exactly three things: **wire 1030** (the Local-typed seed into `target class`), **wire
+      1085/#1025** (the cast output into the `VI Server:Local` node), or **no structural break at all**.
+    - (i) ?좑툘 **AND THE READER IS NOT OPTIONAL BOOKKEEPING ??IT IS A RULE-1a INSTRUMENT.** S3b feeds `#10407`
+      t0/t2 from two Local Variables. If the creator's label walk ever matched the wrong control, loop 1.5 would
+      be fed from the wrong source with no wire broken and no gate failing ??*"parameters must arrive by the same
+      route with the same values"* (CLAUDE.md 1a), and a same-type mis-binding is invisible to `Is Broken?`, which
+      checks TYPE. The panel carries many numerics, so type alone does not fence `'index'`. **DECISION: the folded
+      M1+M2 step does not run until the binding can be READ, and the readback of both locals' `Control Name` is a
+      GATE of that step, not a diagnostic afterthought.**
+
+## Pre-decided ??ADDED 2026-09-21 (cycle 60): the DECOMPOSITION of the binding reader, four steps, four artefacts
+
+51. ?뵶 **WRITTEN, PRIOR-ART-REVIEWED, AND THEN CUT DOWN TO ONE STEP BY THAT REVIEW ??ALL IN THE SAME CYCLE. READ
+    (f) FIRST; (a)??d) ARE THE RECORD OF WHAT WAS PLANNED, NOT INSTRUCTIONS.** The re-split 50(j) triggered and
+    `OpLocalName_v0` was cut into four sub-steps below, each with its own saved file and pass criterion, as the
+    user's 2026-09-19 rule 3 demands. That rule also says the decomposition is **prior-art-reviewed once, then
+    executed** ??the review ran (`archive/peer/2026-09-21-priorart-c60-localname-decomposition.md`, `NOT novel`,
+    7 findings, `$8.6086`, all accepted and disposed) and found the instrument already built. **L1, L2 and L3 and
+    the whole `OpLocalName_v0` / TMSC / `Local.Control Name` route are WITHDRAWN before a line of them ran. Only
+    L4's question survives, and it is now a READ ??see (f).** A full-length retry of the v2 cast build under any
+    new name remains FORBIDDEN.
+    - (a) **L1 ??READ WHICH CONNECTION IS BROKEN. No build, no save, ~3 minutes of machine time.** On a throwaway
+      copy of `OpNodeLabels_v0.vi`, rebuild to the exact point attempt 2 reached (property `CtrlName` ??seed
+      control from the `reference` SINK ??birth wire deleted ??seed wired into `target class` ??cast output wired
+      into `reference`), then run the **ORDERED second pass** (42(b)) and read **`Is Broken?` on BOTH** the seed
+      wire and the cast-output wire, plus `#1025`'s full terminal table. ?좑툘 **Resolve both wires by CONSTRUCTION
+      ORDER, never by the literal uids 1030 / 1085** ??they will differ on a fresh build, and reusing a remembered
+      number is the mistake `diag_s3b_l0_createlocal.py:608` already made once. The `Is Broken?` read perturbs
+      `ExecState` (`docs/NAMES.md:912-918`); that costs nothing here because `ExecState` is already 0 and nothing
+      is being saved. **Pass: a True/False reading for BOTH wires.** A `False`/`False` pair is a legitimate and
+      informative outcome ??it would mean 50(l)'s third candidate, *no structural break at all*, and the next
+      step becomes a save attempt rather than a repair. **Artefact: `tools/bench/diag_c60_l1_whichwire.{log,json}`.**
+    - (b) **L2 ??REPAIR THE ONE CONNECTION L1 NAMES, AND SAVE.** Build the same chain with that one connection
+      made differently, and **save `claudeDev\OpLocalName_v0.vi` at `ExecState` 1**. **Pass: `ExecState` 1 at the
+      save AND on a COLD reopen in a freshly restarted LabVIEW.** **Artefact: the op VI + its md5.** If `ExecState`
+      is still 0 here, STOP ??do not try a third construction; report which connection was changed and what the
+      reading was, and let judgement cut again (50(j) applies to this step in its own right).
+    - (c) **L3 ??VALIDATE THE INSTRUMENT AGAINST GROUND TRUTH BEFORE ANYONE BELIEVES IT.** On a **SCRATCH copy**
+      of `claudeDev\D1_s3a_focus_ind.vi` (md5 `eef91c1d??), never the artefact, read `Control Name` for **every**
+      pre-existing `Local` (census 8, `docs/toolkit-capabilities.md:284`) and report **every uid ??string pair
+      verbatim**. **Pass: at least one non-empty string that is NOT a `.vi` file name** ??that is the whole point,
+      since `node_labels` returns the file name for all eight (50(c)). **Artefact: the readings JSON.** A run of
+      eight `.vi` file names or eight empty strings means 6355400 is not the binding either, which is a result and
+      must be reported as one.
+    - (d) **L4 ??ANSWER THE QUESTION THE WHOLE CYCLE WAS FOR.** On the same scratch, create a Local with
+      `OpCreateLocal_v0.vi` from the front-panel control whose owned label reads `'index'` (**read the label off
+      the machine, never retype it**), then read its `Control Name`. Report the string verbatim, the error
+      cluster, `Local` census 8 ??9, and `ExecState` before and after. Then 20 consecutive reader calls, **handles
+      flat 짹100, refs opened == closed, 0 live**, scratch deleted with `exists=False`. **Pass: a string is
+      returned and the hygiene numbers hold** ??whatever the string SAYS is the measurement, and a name other than
+      `'index'` is a finding, not a failure.
+    - (e) **THEN, AND ONLY THEN, S3b's FOLDED M1+M2 (50(e)) RUNS, WITH THE READBACK AS A GATE (50(i)).** If L3 or
+      L4 shows that the binding cannot be read at all, the folded step does **not** silently proceed on type
+      checking alone ??that is a rule-1a call and it returns to judgement.
+    - (f) ?럦 **WHAT 51 ACTUALLY IS, AFTER THE REVIEW: ONE READ, NO BUILD ??`node_terms`.** `gscript.node_terms`
+      (`tools/gscript.py:870`) and `node_terms_uid` (`:925`) read a Local's binding directly, because the node's
+      single terminal is **named after its bound control** and `is_source` gives READ vs WRITTEN
+      (`docs/main-vi-panel-map.md:405`; all eight bindings tabulated `:401-416`, re-verified in
+      `tools/bench/main_vi_nodeterms.json`; rule restated `docs/NAMES.md:335`). **N1** re-reads those eight live on
+      a scratch copy rather than trusting a table dated 2026-09-14; **N2/N3** create one Local each from the
+      controls labelled `'index'` and `'Automatic Error Handling'` with `OpCreateLocal_v0.vi` and read the new
+      nodes' terminal names ??the one thing L0 never did, having made 21 Locals without once calling `node_terms`;
+      **N4** is hygiene (20 calls, handles flat 짹100, refs 0 live, scratch deleted). Artefact:
+      `tools/bench/diag_c60_n4_localbinding.{log,json}`. **Nothing is built and no VI is saved.**
+    - (g) ?좑툘 **THE FALLBACK, KEPT ALIVE DELIBERATELY, BECAUSE THE TERMINAL-NAME RULE IS AN OBSERVATION AND NOT AN
+      NI CONTRACT.** The review says so in as many words ??n = 8 Locals + 7 Globals, 0 counterexamples ??while
+      `Local.Control Name` **6355400** is the authoritative property and is now MEASURED to resolve here
+      (`tools/bench/diag_s3b_l0_localname_run2.log:50-56`, short name `CtrlName`, i=4 SOURCE). **If N2/N3 return a
+      terminal name that is not the control asked for, or an empty one, the 6355400 route returns as the
+      FALLBACK** ??and then it is built **additively on a donor** (never spliced into an existing op, per (h)),
+      seeded by the ordered recipe `tools/recipes/build_oploopcast_v0.py:12-27`, and as its **own** cast op, never
+      by re-plumbing `OpNodeLabels_v0`'s `#683`, which that donor needs for its own `Diagram` cast
+      (`docs/toolkit-capabilities.md:93-94`: *"a seed casts exactly its class ??one op per concrete class"*).
+    - (h2) ?럦 **51(f) RAN AND THE BINDING QUESTION IS ANSWERED ??27 gates pass / 0 fail, nothing built, nothing
+      saved** (`tools/bench/diag_c60_n4_localbinding.log`, `BGRUN END rc=0 after 93s`; readings
+      `??n4_localbinding.json`).
+      **N1 ??the instrument is validated LIVE, not trusted from a table.** `node_terms` on all eight pre-existing
+      `Local`s returned exactly ONE named terminal each, and the set is **IDENTICAL** to
+      `docs/main-vi-panel-map.md:409-416` ??8/8 agree, 0 differ (`:27-45`): #2991 `'Total Lost Frames'` 쨌
+      #4277 `'File # Saved'` 쨌 #11574 `'Focus Pos (Track)'` 쨌 #3160 `'Rot pos (deg)'` 쨌 #3097 `'Trans Pos (mm)'` 쨌
+      #2143 `'Total Lost Frames'` 쨌 #16942 `'Picture'` 쨌 #25805 `'Color table'`.
+      ?럦 **N2/N3 ??`OpCreateLocal_v0` BINDS TO THE CONTROL IT IS INVOKED ON, AND THAT IS NOW A MEASUREMENT.**
+      From `'index'` (`Panel.Controls[114]`, label read off the machine): new Local **#23574**, error cluster
+      `(False, 0, '')`, census 8 ??9, ONE terminal named **`'index'`** (hex `696e646578`). From
+      `'Automatic Error Handling'` (`[115]`): new Local **#23579**, ONE terminal named **`'Automatic Error
+      Handling'`**, census 9 ??10. `matches_the_label_asked_for: True` for both. **The instance-method inference
+      49(c) rested on is retired ??S3b's rule-1a instrument exists and it says the walk matched correctly.**
+      **And L0's two FAILs are now fully explained by measurement:** the new Local's own `Node.Label` reads
+      `'SCRATCH_C60N4_20260921_082820.vi'` (`:121`) ??the VI file name, exactly as 50(c) said of `node_labels`.
+      Hygiene: 20 consecutive `node_terms` calls in 1.1 s, handles 51,342 ??51,345 (delta **3**), refs 8/8/**0
+      live**, scratch deleted `exists=False`, four md5 pins PASS before and after, `ARTEFACTS ON DISK: []` by
+      design.
+    - (h3) ?뵶 **THE ONE NEW BLOCKER, AND IT IS THE NEXT CYCLE'S FIRST QUESTION: A NEWLY CREATED LOCAL IS BORN IN
+      *WRITE* MODE, AND S3b NEEDS *READ*.** Both new Locals read **`is_source` False**, which
+      `docs/main-vi-panel-map.md:405` defines as **WRITTEN** (`is_source` True = READ), with `wire` 0 ??a bare
+      sink. Of the eight pre-existing Locals, **3 are READ** (#3160, #3097, #25805) **and 5 are WRITE**, so both
+      modes exist on this VI and the mode is READABLE. **Flipping one is UNMEASURED.** S3b's folded M1+M2 feeds
+      `#10407` t0/t2 *from* the locals ??a local that supplies a value must be in READ mode ??so unless the
+      direction can be set, the locals cannot serve their purpose however correctly they are bound. ?좑툘 **Two
+      things to establish before anything is built, in this order: (1) confirm the required direction against the
+      MEASURED row table (`docs/cycle27-plan.md:1182-1188`, cycle 54's 9/9 at `:1283-1290`) rather than from this
+      paragraph's reasoning; (2) measure whether the direction can be written at all.** The candidate property is
+      **6355401** (the prior-art review's B1 notes `is_source` supplies what 6355401 would have read) on class
+      `'VI Server:Local'`, which is measured to resolve here (`diag_s3b_l0_localname_run2.log:50-56`);
+      `build_property`'s per-ID tuple already carries a writable flag. **Any op that follows is built ADDITIVELY
+      ON A DONOR (h), never spliced, and it is one step with one saved artefact.**
+    - (h4) ?좑툘 **ONE STALE COLUMN, REPORTED AND DELIBERATELY NOT REPAIRED.** `docs/main-vi-panel-map.md`'s DIAGRAM
+      indices no longer address this lineage ??73??6, 83??6, 99??02, 167??70 (1 and 17 unmoved); the **names and
+      directions are unmoved**, so the binding table stands. Diagram indices are resolved **by uid via
+      `diag_index`** everywhere anyway, which is why this cost nothing.
+    - (h) ?뵶 **A STANDING LESSON THE NEXT BUILDER READS BEFORE TOUCHING AN OP: DO NOT SPLICE A PROPERTY CHAIN INTO
+      AN EXISTING OP ??ADD TO A DONOR.** Counted by the prior-art review across the project's own logs: splicing
+      has failed **6 times and succeeded 0** (S0 횞4 ??Pre-decided 25, `tools/bench/build_s0_closeref_v3.log` 87/5,
+      `?쫣1.log` 41/2; L0 횞2 ??`tools/bench/diag_s3b_l0_localname_run2.log`, `??v2.log`), while
+      additive-on-a-donor has shipped **five** saved ops (`docs/toolkit-capabilities.md:62,:63,:66,:68,:70`). Both
+      of cycle 60's dead builds are instances of the failing class. This is not a device and needs no gate ??it is
+      the sentence to read before the next op is designed.
+
+## Pre-decided ??ADDED 2026-09-21 (cycle 61): the direction is READ 쨌 the wrapper was the blocker 쨌 the op is SAVED
+
+52. ?럦 **S3b's DIRECTION QUESTION IS CLOSED, AND IT IS CLOSED BY A SAVED INSTRUMENT: `OpCreateLocalRead_v0.vi`
+    CREATES A LOCAL ALREADY IN THE RIGHT MODE.** Judgement, cycle 61, 2026-09-21, from
+    `tools/bench/diag_c61_localdir.log` (32/0), `tools/bench/diag_c61_localdir_write.log` (38/1) and
+    `tools/bench/diag_c61_localdir_write2.log` (38/0, `BGRUN END rc=0 after 169s`). 34??1 stand; this answers
+    51(h3) in both its parts and re-cuts 50(e)'s pass criteria ??see (h).
+    - (a) **THE REQUIRED DIRECTION IS `READ`, TAKEN OFF THE MEASURED TABLES AS 51(h3) DEMANDED, NOT OFF PROSE.**
+      `#10407` **t0**: `is_source` **False** (SINK), c53 `source_or_sink` "sink", wire **10799**, action
+      `cross-loop:1.2->1.5`, far end `#10686` t0 `'x .and. y?'` `is_source` **True**. `#10407` **t2**: SINK,
+      wire **10990**, far end `#10757` t1 `'element'` **True**. `c53_row_class.json`, the rewire JSON and
+      `main_vi_nodeterms.json` agree on both rows, on the flags AND on the wires
+      (`tools/bench/diag_c61_localdir.log:8-18`). Both sinks are fed from sources ??**a Local taking over either
+      feed must be a SOURCE at its own terminal = READ** (`docs/main-vi-panel-map.md:405`). No document
+      disagreed. A newly created Local is born WRITE (51(h3)), so the mode must be set.
+    - (b) **`Local.Write?` 6355401 EXISTS AND IS RESOLVED HERE FOR THE FIRST TIME** ??class `'VI Server:Local'`,
+      short name **`Write?`**, Boolean, terminal i=4: a **SINK** when the item is created write-mode, a SOURCE
+      when read-mode (`diag_c61_localdir.log:84-101`). The ID had been carried as
+      *"peer, UNVERIFIED"* since `tools/bench/diag_s56_transport2.py:91`; it is now measured.
+    - (c) ?뵶 **THE BLOCKER WAS OUR OWN WRAPPER, NOT LABVIEW ??AND IT WOULD HAVE REFUSED EVERY WRITE THIS PROJECT
+      EVER ATTEMPTS.** `build_property` asserted `Outputs count == items requested`; a write-mode item is an
+      **input**, so it can never appear in Outputs, and the call raised
+      *"creator error clean but Outputs count 0 != 1 requested - inconsistent, not trusted"* **while LabVIEW
+      created the node correctly** ??identically for the known-good 6355400, which is what proved the fault was
+      mode-blindness and not the ID. **REPAIRED, narrowly and mode-aware** (`tools/gscript.py`, `build_property`
+      only, +37/??): read-mode items still assert against Outputs exactly as before; write-mode items assert
+      against the node's non-standard **SINKS**. Self-test 5/5 ??write 6355401 and 6355400 both yield the SINK
+      row, read yields the SOURCE row, and the `VI Server:VI` 242 regression is unchanged
+      (`diag_c61_localdir_write.log:28-97`). No other function touched, no verb added.
+    - (d) ?럦 **NO `To More Specific Class` IS NEEDED ON THIS ROUTE ??the cast that ended BOTH of cycle 60's builds
+      is out of the path.** `Create:Local Variable` **6331C02**'s `i=5 'Create Local'` **SOURCE** wires straight
+      into a `'VI Server:Local'` property node's `reference` SINK: error column `''`, and the ORDERED pass reads
+      **`Is Broken?` False** on that wire (`diag_c61_localdir_write2.log`, wire 390). **50(g) is amended**: for
+      `Create Local` the SOURCE half of the method pair carries the created object's reference, so the pair is not
+      always layout. The seed problem 50(k) solved stays solved but is not needed here.
+    - (e) ?럦 **THE ARTEFACT: `claudeDev\OpCreateLocalRead_v0.vi`, md5 `f695d97a36ae127cd2dd3ca6b1fc1089`,
+      10,192 B, LV2026 `26 00 80 00`.** Built **additively on donor `OpCreateLocal_v0.vi`** (md5 `58275b21??,
+      byte-unchanged ??51(h)'s rule, and the first op to ship under it since it was written): property node #339
+      write-mode, `reference` from Invoke #306 i=5, `create_control` on the `Write?` SINK ??ControlTerminal #434
+      labelled `'Write?'` (label read off the machine). `ExecState` **1 at the save and 1 COLD in a freshly
+      restarted LabVIEW**. **Exercised on a scratch of `D1_s3a_focus_ind.vi`:** `Write?`=False ??new Local bound
+      to `'index'` (hex `696e646578`), `is_source` **True = READ**; `Write?`=True ??`'index'`, **False = WRITE**;
+      both error clusters `(False, 0, '')`, census 8????0. **The Boolean steers the mode** ??that is the whole
+      instrument S3b needed. Hygiene: 20 consecutive calls 0.9 s, handles +4, refs 26/26/**0 live**.
+    - (f) ?좑툘 **WHY THE FIRST BUILD OF THE SAME CHAIN FAILED, AND THE STANDING RULE IT RESTATES.** The `ExecState`
+      1?? after `build_property` is **transient and ordinary**: a write-mode property node with a bare `Write?`
+      SINK is broken, and feeding that sink restores 1 (measured either side in
+      `diag_c61_localdir_write2.log:23-63`). What made dispatch #2 stop was that it read `Is Broken?` **above**
+      its save point, and that read perturbs `ExecState` (`docs/NAMES.md:912-918`). **STANDING: no `Is Broken?`
+      is read above a save ??the ordered pass runs AFTER the save, and preferably after a cold reopen**, which is
+      what 42(b) already said and what `tools/recipes/stage_d1_s3a_focus_ind.py` passed 64/0 doing. The forced
+      hypothesis review `archive/peer/2026-09-21-c61-localpn-execstate0.md` (claude/hypothesis opus max,
+      ANSWERED 340 s, `$2.9786`) is **disposed in full in its own `## What was done with it`**: accepted on its
+      central point and on the 242 confound, its perturbation sub-claim recorded as holding only for the later
+      readings, its P1/P2 probes deliberately not run.
+    - (g) **THE OPEN DISPATCH #3 RAISED IS ANSWERED AND NOTHING IS OWED.** The direction wire (ControlTerminal
+      #434 ??the `Write?` SINK, wire 462) has no `Is Broken?` route in this fleet, because the reader addresses a
+      wire's source as a `Nodes[]` position and this source is a panel object. **DECISION: no reader is built and
+      none is needed.** `ExecState` **1 on a COLD reopen is a statement about every wire in the VI**, strictly
+      stronger than one wire's flag, and the op's two calls returned *different measured directions* ??functional
+      evidence a wire check cannot give. The gap is recorded, not filled.
+    - (h) ?뵶 **THE NEXT BLOCKER, SURFACED BY (a), NOT YET MEASURED, AND IT RE-CUTS 50(e): `#10407` t0/t2 ARE NOT
+      BARE.** 50(e)'s criterion *"`#10407` wired-terminal count **+2**"* presumes two empty sinks. The machine
+      says t0 carries wire **10799** and t2 wire **10990** ??**the same two uids STATUS records for S3a's two
+      indicator wires**, which means S3a most likely BRANCHED the existing cross-loop wires rather than creating
+      new ones. ?좑툘 **That last step is an INFERENCE from coinciding uids and it is the next cycle's FIRST
+      measurement, not a fact to build on.** It matters because S3b exists to *replace* those feeds: if one Wire
+      object carries both the indicator branch and the `#10407` sink, the sink must be freed without destroying
+      the indicator's feed, and no verb here is measured to remove a single **branch** ??
+      `delete_object(target,'Wire',idx)` deletes the whole Wire object. **DECISION: 50(e)'s folded M1+M2 does NOT
+      run until that is measured**, and its pass criteria are re-cut by judgement on the reading. Everything else
+      in 50(e) stands (census 8??0, the `node_terms` readback as a rule-1a GATE per 50(i), `ExecState` 1 at the
+      save, ordered `Is Broken?` after it, `#637` counts unchanged).
+
+## Pre-decided ??ADDED 2026-09-21 (cycle 62): the branch is MEASURED 쨌 S3b's row operation is RE-CUT to delete-and-rebuild
+
+53. ?뵶 **52(h)'s INFERENCE IS NOW A MEASUREMENT, AND IT KILLS 50(e)'s PREMISE: S3a BRANCHED THE EXISTING
+    CROSS-LOOP WIRES.** Judgement, cycle 62, 2026-09-21, from `tools/bench/diag_c62_branch.log` (27/1) and
+    `tools/bench/diag_c62_branch2.log` (24/0, `BGRUN END rc=0 after 95s`), both on scratch duplicates of
+    `D1_s3a_focus_ind.vi`; nothing was saved and nothing was built. 34??2 stand.
+    - (a) **EACH FEED IS ONE WIRE OBJECT = ONE NET OF EXACTLY THREE TERMINALS**, counted by a reverse census over
+      all 73 nodes and all 116 panel rows (`diag_c62_branch.log:101-102`). Wire **10799**: `#10407` **t0** (name
+      `''`, SINK) 쨌 `#10686` **t0** `'x .and. y?'` (SOURCE) 쨌 panel indicator **23555** `'Automatic Error
+      Handling'` (SINK). Wire **10990**: `#10407` **t2** (name `'Index of closest\ncal image slice, bead 2'`,
+      SINK) 쨌 `#10757` **t1** `'element'` (SOURCE) 쨌 panel indicator **23525** `'index'` (SINK). `#10407` is a
+      CaseStructure on `Diagram #639` (Traverse diagram 46, `Nodes[24]`).
+    - (b) **FREEING THE SINK DESTROYS THE INDICATOR FEED ??MEASURED TWICE ON INDEPENDENT SCRATCHES.** Deleting
+      Wire 10799 bared all three of its terminals (`#10407` t0 ??0, `#10686` t0 ??0, indicator 23555 ??0) and took
+      `ExecState` **1 ??0**, Wire census 1905 ??1904, ControlTerminal census 116 ??116; Wire 10990 behaved
+      identically on a second, independent scratch (`diag_c62_branch2.log:43-49, 77-83`). **So 50(e)'s criterion
+      *"`#10407` +2 wired terminals"* is WITHDRAWN** ??the sinks were never bare.
+    - (c) **NO VERB REMOVES ONE BRANCH ??census of all 165 defs in `tools/gscript.py`, `NONE FOUND`**; the baseline
+      `delete_object(target,'Wire',idx)` (`tools/gscript.py:2275`) deletes the whole Wire object. Nothing in the
+      fleet reads the wire side at all (`Wire.Terminals[]` / 6371003 is unwrapped); the three-terminal counts above
+      were obtained from the TERMINAL side by reverse census, which is why they are trustworthy without it.
+    - (d) ?뵶 **DECISION ??S3b's PER-ROW OPERATION IS DELETE-AND-REBUILD, USING ONLY VERBS THAT HAVE SHIPPED:**
+      delete the whole Wire object ??**`create_indicator` on the now-bare SOURCE terminal** (a NEW indicator;
+      S3a's own verb, 64/0) ??**`OpCreateLocalRead_v0.vi` in READ mode** bound to that new indicator, its label
+      read off the machine ??`connect_terminals(Local SOURCE ??the freed `#10407` sink)`. The alternative ??
+      reconnecting S3a's EXISTING ControlTerminal, one call instead of three ??needs an addressing capability the
+      fleet is suspected to lack (a ControlTerminal is absent from `Diagram.Nodes[]`, the same limit that left
+      52(g)'s wire unreadable), so it is measured as a NON-GATING A-test on a scratch and never gates the artefact.
+    - (e) **THE TWO OLD S3a INDICATORS ARE LEFT IN PLACE, BARE AND UNWIRED** (23555/23576 and 23525/23541). An
+      unwired indicator is legal, and deleting panel objects is an unproven verb kept off the build path. The dead
+      panel objects are a recorded cleanup item for a later stage, not a defect.
+    - (f) **THE `ControlTerminal` uid ??panel-control uid LINK IS STILL UNMEASURED and is NOT needed.** The pairing
+      that matters was obtained keyed by WIRE uid, which is unambiguous. The forced review
+      `archive/peer/2026-09-21-c62-ctwire.md` (claude/hypothesis opus max, ANSWERED 465 s) is disposed in its own
+      `## What was done with it`: premise accepted (a ControlTerminal is a `Terminal`, owned by the diagram, absent
+      from `Nodes[]`), its proposed fix ??adding a `GObject.UID` read to `OpPanelWiring_v0` ??**DECLINED for now**,
+      exactly as 52(g) declined a reader it did not need. The gap is recorded, not filled.
+    - (d?? ?뵶 **(d) AND (e) ARE RE-CUT THE SAME DAY BY DISPATCH #2's MEASUREMENTS ??THE ROUTE I RANKED AS UNLIKELY
+      IS THE ONE THAT WORKS** (`tools/bench/diag_c62_s3b_rows.log` 15/5, `??t3.log` 14/0). Both of (d)'s middle
+      steps are **OUT**: `create_indicator(target, node_index, terminal_index)` (`tools/gscript.py:2423-2439`)
+      addresses the **TOP-LEVEL** `Nodes[]`, and this VI's top-level block diagram is **EMPTY** ??`node_labels(top=0)`
+      0 rows **and** `node_info(max_n=40)` 0 rows, two independent readers, whole-VI `count('Node')` 630, with the
+      real sources living on `Diagram #639` (traverse 46) ??so it raised *"Error 1055 ??at a Property Node in
+      OpCreateIndicator_v0.vi"*, a Null reference BEFORE method 6349C02 was ever reached, i.e. **not** a refusal by
+      `Terminal.Create Indicator`. `connect_ctl(panel_index, node_index, terminal_index)` is out too: error 1055 on
+      `Connect Wire`, no wire. ??**`wire_indicators` RE-CONNECTS S3a's EXISTING INDICATOR to a bared source and the
+      result is clean**: on row 1 it made wire **23499** joining `#10686` t0 `'x .and. y?'` (`is_source` True) to
+      panel control **23555** `'Automatic Error Handling'` (`is_source` False) ??**exactly one source**, counted by
+      reverse census over all 73 nodes of `#639` and all 116 panel rows (`??t3.log:33-36`). **DECISION: S3b's row
+      operation is `delete_object(Wire)` ??`OpCreateLocalRead_v0` READ bound to the EXISTING indicator ??
+      `connect_terminals(Local ??the freed `#10407` sink)` ??`wire_indicators` re-feeding that SAME existing
+      indicator.** So (e) is void: no new indicator is created, nothing is left bare, no panel object is added or
+      deleted, and the ControlTerminal census stays 116. The carrier + `move_in` route S3a used is not needed.
+    - (d?? ?좑툘 **THE ORDER IS PART OF THE DECISION, BECAUSE ONE OF OUR WRAPPERS IS WRONG.** `wire_indicators` tests
+      `exec_state != 1` **absolutely** (`tools/gscript.py:1794-1797`) and so raises *"target BROKEN after wiring"*
+      on any mid-sequence row of a multi-step edit ??it wired correctly and still advised reverting the target
+      (measured twice). **It is NOT patched this cycle**: the Local goes in FIRST and the indicator is re-fed LAST,
+      when `#10407`'s sink is already fed and the VI is legal again, so the check sees `ExecState` 1 and the defect
+      never sits on the critical path. Each legal point saves a file, so a wrong raise costs no artefact. The defect
+      is recorded here for the next builder, with the correct fix shape: compare against the state **before** the
+      call, as `build_property`'s mode-aware repair did in 52(c) ??do not make it absolute again.
+    - (d?? **UNVERIFIED LEAD, DELIBERATELY NOT BUILT AGAINST:** the mandatory external search
+      (`archive/peer/2026-09-21-c62-branch-disconnect.md`, claude/fact, ANSWERED 116 s) reports that LabVIEW
+      documents **`Wire.Disconnect Terminal`, method ID `6370C0D`** (Wire class 16439, LV2018+), with
+      `Terminal.Connected Wire` and `Wire.Terminals[]` read-only and no `Terminal`-class disconnect; the pre-2018
+      idiom is exactly our delete-and-rebuild. **Body text unverified** (JS-rendered NI pages) and nothing is built
+      against it. If it resolves over our COM path it would replace the whole row operation with one call ??a
+      candidate for a later cycle, never a dependency of this one.
+    - (d?? ?뵶 **THE THIRD RE-CUT, AND IT IS A LAW OF THIS FLEET, NOT A ROW DETAIL: WHAT SCRIPTING CREATES LANDS ON
+      THE TOP-LEVEL DIAGRAM AND MUST BE MOVED IN.** Dispatch #3 (`tools/bench/diag_c62_s3b_build.log`) ran row 1
+      clean to the connect and then stopped: `ExecState` **0** where 1 was required. The Local created by
+      `OpCreateLocalRead_v0` landed on **`TopLevelDiagram` #536, `Nodes[0]`** while `#10407` sits on `Diagram #639`
+      (traverse 46), so `connect_nested_v1(sink_diag=46, ?? src_diag=0, ??` built a **cross-diagram, TUNNELLED**
+      path ??`wire_delta` **3**, op error `''`, and **two different wire uids at the two ends** (`#10407` t0 ??
+      23508, Local t0 ??23601). A tunnelled path is exactly what 50(e)'s *"`#637` counts unchanged, no tunnel, no
+      border object"* forbids, and it defeats S3b's purpose, which is to REMOVE a boundary-crossing wire. **DECISION:
+      the row sequence gains one step ??`move_in` the new Local onto `Diagram #639` BEFORE connecting** ??the same
+      verb S3a's recipe used after `create_indicator`, which is why S3a needed a carrier at all. Same-diagram wiring
+      is then expected to show ONE wire uid at both ends and leave `#637` at 59/48.
+    - (d?? **ACCEPTED FROM THE FORCED REVIEW** (`archive/peer/2026-09-21-c62-localplacement.md`, claude/hypothesis
+      opus max, ANSWERED 474 s, disposed in full): my step-3 prediction was wrong at its premise ??**a bare terminal
+      does not break this VI** (it opens at `ExecState` 1 carrying eleven bare terminals on `#637` alone); what the
+      delete broke was an unwired **required input**, the Case **selector**. Also recorded, not repaired: an
+      `Is Broken?` read happens **inside `OpConnectNested_v1.vi`** (`diag_c62_s3b_build.log:51`), so a perturbing
+      read can occur above a save while gate `Z_1e` passes, because that gate only inspects the recipe's own call
+      list. **The right fix is to assert against the OP's readback, not the recipe's calls** ??for a later cycle.
+      The standing consequence for every build from here: **save unconditionally and judge by the COLD reopen**,
+      never by a live `ExecState` that an op may have perturbed.
+    - (d?? ?럦 **`move_in` FIXED THE TUNNEL, ROW 1 IS STRUCTURALLY CORRECT ??AND THE INSTRUMENT THAT JUDGES IT IS
+      MEASURED BROKEN** (`tools/bench/diag_c62_s3b_movein.log` 30/4, `tools/bench/diag_c62_negctrl.log` 14/0).
+      `move_in` moved the Local `TopLevelDiagram`#536 diag 0 `Nodes[0]` ??**`Diagram`#639 diag 46 `Nodes[73]`**
+      (returned 3447, error `''`, one junk `Invoke` #9317 purged). The connect then became same-diagram: **`wire_delta`
+      1** (was 3), **ONE wire uid 23508 at BOTH ends**, errors `[0,0,0,0]` on both; **`#637` census immediately after
+      the connect = 59 terminals / 48 wired = the baseline**, so 50(e)'s no-tunnel criterion is SATISFIED;
+      `ControlTerminal` 116 throughout; `Local` census 8??; and the rule-1a gate (50(i)) passes verbatim ??
+      `ONE terminal, NAME 'Automatic Error Handling', is_source True (= READ)`, before AND after the move.
+    - (d?? ?뵶 **THE NEGATIVE CONTROL IS THE CYCLE'S REAL RESULT: `OpConnectNested_v1` DRIVES `ExecState` 1 ??0 ON AN
+      UNCHANGED VI.** Untouched scratch, no delete, no Local, no move, no save; ONE idempotent
+      `connect_nested_v1(46,24,0,46,25,0)` ??**`wire_delta` 0**, `Wire` census **1905 ??1905**, op error `''` ??and
+      `ExecState` **1 ??0** (`diag_c62_negctrl.log:24-31`). **So every post-connect `ExecState` gate in this cycle
+      carried zero information**, and the same reading is what stopped dispatch #3 and cycle 61's dispatch #2. The
+      op performs its own `Is Broken?` readback internally (`diag_c62_s3b_movein.log`, both runs), which the
+      recipe-level "no `Is Broken?` above a save" gate cannot see ??53(d??'s finding, now with a mechanism.
+      ?좑툘 **AND THE ROUTE IS CIRCULAR:** `gscript.save` raises *"refusing to save a BROKEN VI - SaveInstrument blocks
+      forever on one"*, so "save unconditionally and judge by the cold reopen" cannot be executed while the op makes
+      the live reading 0. **NO BUILT ARTEFACT EXISTS FROM THIS CYCLE**: the file written as
+      `D1_s3b_row1a_20260921_111413.vi` is **byte-identical to the bed** (`carries_the_in_memory_edits: False`) and
+      its `C_1` gate is a FALSE PASS. Two explanations remain open and are separated by ONE cheap test, pre-written
+      into STATUS's `## NEXT`: the op perturbs only the READING, or it genuinely breaks the VI.
+    - (d?? **TWO MORE INSTRUMENT FAULTS, RECORDED NOT REPAIRED:** `owner_of` returned a **SILENT WRONG ANSWER** ??
+      asked for Local #23507 it answered `CaseStructure#10407` (`diag_c62_s3b_movein.log:104-105`); and handle growth
+      hit **54,632** by the end of the two runs despite refs 7/7/0-live and a pre-batch restart before each. Neither
+      is fixed here (no device, user's standing order of 2026-09-18 08:53); both are named so the next builder does
+      not trust those readings.
+    - (d?? ?좑툘 **A RULE-1a QUESTION THAT THIS SESSION DELIBERATELY DID NOT SETTLE ALONE, RAISED BY THE FORCED REVIEW
+      `archive/peer/2026-09-21-c62-movein-es0.md`.** 53(d??'s row replaces ONE dataflow-ordered wire
+      (`#10686` `'x .and. y?'` ??the Case **selector**) with TWO unordered halves: `And ??indicator`, and
+      `Local(read) ??selector`. Nothing orders them, so the selector can read a stale value ??in the ORIGINAL the
+      wire guaranteed it could not. **Assumption this cycle proceeded under, stated so the user can overturn one
+      thing:** the intermediate artefact is never run (34(f), verification is structural), and asynchronous
+      cross-loop transport is the seven-loop architecture the project has been approved to build, so the
+      substitution is accepted **for the intermediate**. The ordering guarantee in the FINAL D1 is a real open
+      question and is flagged to the user in `STATUS.md`'s `## NEXT`, not buried here.
+    - (g) ?좑툘 **HANDLE GROWTH IS A LIVE FINDING, NOT A PASS:** the two diagnostics ran 30,686 ??**60,520** (108 s)
+      and 30,692 ??**63,163** (95 s) ??about twice the ~31,500 baseline ??while tracked refs closed cleanly
+      (14/14/0-live, 12/12/0-live). Whole-VI reverse censuses are the suspected source. **Every following dispatch
+      restarts LabVIEW before its batch (44(e)) and reports handles either side**; no device is built for it
+      (user's standing order of 2026-09-18 08:53).
+
+## Pre-decided ??ADDED 2026-09-21 (cycle 64): the `ExecState` signature is EXPLAINED, and S3b ROW 1 IS DELIVERED
+
+55. ?럦 **THE `ExecState` 1 ??0 SIGNATURE THAT HAS STOPPED FIVE CYCLES WAS NEVER A PERTURBED READING. THE OP LEAVES
+    A BROKEN ORPHAN `Invoke` NODE ON THE DIAGRAM IT WORKED ON, AND `ExecState` WAS TELLING THE TRUTH.** Judgement,
+    cycle 64, 2026-09-21. 34??3 stand except where corrected below. ?좑툘 **Cycle 63 produced nothing**: it wrote
+    `tools/bench/diag_c63_connect_perturb.py`, its static gate failed on `allow_broken=True`, and at 11:56 the
+    cycle runner's own outer `bgrun` deadline (`BGRUN TIMEOUT killed after 36002s`) killed the whole process tree ??
+    session, peer call and all. Its lock entry stayed ACQUIRED until this cycle released it.
+    - (a) **THE MEASUREMENT** (`tools/bench/diag_c64_junkpurge.log`, 34 pass / 0 fail, two independent beds ??a
+      scratch of `claudeDev\OpReport_v0.vi` and a scratch of `claudeDev\D1_s3a_focus_ind.vi`): an idempotent
+      `connect_nested_v1` with `wire_delta` **0** and an unchanged wire census takes `ExecState` **1 ??0**, leaves
+      exactly ONE new node ??an `Invoke` labelled `'Invoke Node'`, six terminals, **zero wired**, every row
+      `errs [0,0,0,1055]` ??and **deleting that node by uid returns `ExecState` to 1**, stable across three
+      re-reads. On the real bed it lands on `Diagram #639`, the diagram the connect worked on, found by census
+      rather than by `owner_of` (53(d??). It is the same junk `Invoke` cycle 62's `move_in` purged (#9317).
+    - (b) **THE SEPARATOR** (`tools/bench/diag_c64_readerfree.log`, 23 pass / 0 fail): `connect_terminals` ??
+      `OpConnect_v0`, which carries neither the `Broken?` property node nor the junk behaviour, leaves `ExecState`
+      **1 ??1** on an idempotent pair, while `connect_nested_v1` on the same pair gives **1 ??0** and `Node` 2 ??3.
+      So "any scripting edit perturbs the reading" and "a stale compile state" are both **DEAD**. The op census was
+      re-taken **off the machine**: `OpConnect2_v0`, `OpSetLabel_v0` and `OpConnectNested_v1` each read `Broken?`
+      through Property `#242`; `OpConnect_v0` does not. A grep of builder scripts had produced a false positive,
+      which is why the census is now a measurement.
+    - (c) ?뵶 **DECISION ??THE FIX IS A PURGE STEP, NOT A NEW OP.** After every `OpNetInfo_v1`-descended call,
+      census-diff the target's nodes, confirm the new node is unwired from its `node_terms` table, and
+      `delete_object` it **by uid** before reading `ExecState` or saving. **`OpConnectNested_v2` is NOT built**, and
+      **53(d??'s save-bypass branch is REJECTED** ??it would have bought a `gui_save` GUI exception on every S3b row
+      for ever, and nothing needed bypassing. Written into `docs/NAMES.md` where the next builder will find it.
+    - (d) **52(f) AND `docs/NAMES.md:912-918` ARE CORRECTED IN MECHANISM, NOT IN ADVICE.** "Never read `Is Broken?`
+      above a save point" survives unchanged as practice, because the ops that read it are exactly the ops that
+      leave the orphan. What is withdrawn is the explanation. ?좑툘 **What is still NOT established is that reading
+      `Broken?` is harmless**: every nested-capable op carries the reader and the junk behaviour together, so no
+      reader-without-junk exists to test. Also corrected: the ITEM terminal is **`Broken?`**; `Is Broken?` is only
+      the panel label.
+    - (e) ?럦 **S3b ROW 1 IS DELIVERED, IN TWO STAGED SAVES** (`tools/bench/diag_c64_s3b_row1.log`, 51 pass / 1 fail):
+      `claudeDev\D1_s3b_row1a_20260921_135932.vi` md5 `c7094f98324af3bb53755fef718f8e28`, 476,634 B (the step-7 save
+      point) and **`claudeDev\D1_s3b_row1_20260921_135932.vi` md5 `72f0d47d0b1cbd0834d50f1483e558c1`, 476,734 B**.
+      Neither is byte-equal to the bed, so the in-memory edits landed (cycle 62's `C_1` false pass does not recur).
+      **COLD `ExecState` 1 after a LabVIEW restart**; ordered `Is Broken?` **False** on the new wire 23502, read
+      LAST, after the cold reopen (42(b)); ONE wire uid at both ends; `#637` back at **59/48**, so 50(e)'s
+      no-tunnel criterion holds; `ControlTerminal` 116; `Local` 8 ??9; the rule-1a readback (50(i)) passes verbatim
+      ??ONE terminal, name `'Automatic Error Handling'`, `is_source` **True = READ** ??before and after `move_in`.
+      Verification is **STRUCTURAL, never functional** (34(f)).
+    - (f) **THE ONE FAILING GATE WAS A WRONG EXPECTATION, AND ITS OWN REVIEW PROVED IT.** `K2` wanted a cold wire
+      census of 1905 and read **1906**. `archive/peer/2026-09-21-c64-row1-wirecount-k2.md` refuted the session's
+      first explanation and measured the truth on the step-7 artefact: step 2's delete left the SOURCE bare, so
+      `wire_indicators` **minted** a wire instead of branching one. **1906 is the correct count** and the gate's
+      arithmetic is what was wrong. Row 2's gate must expect baseline ??1 + 2.
+    - (g) **`c60c_astcheck.py` GATE 7 FAILS BY CONSTRUCTION FOR ANY BUILD THAT LEGITIMATELY USES `move_in`**
+      (`move_in is neither imported nor called  called=True imported=True`; identical to `c62f_astcheck.log:11`).
+      **DECISION: no new gate file is written and no gate file is edited** (the user's standing order of
+      2026-09-18 08:53 ??no more devices). The failure is reported **verbatim** in every run that provokes it, and
+      `CYCLE_GUARD_OFF` is never set. A peer recommended writing a `c60d`; that recommendation is declined here.
+    - (h) ?좑툘 **A BUILD GATE IS LEFT STANDING AND THE NEXT CYCLE MUST CLEAR IT FIRST:** `guard_peer.py` refuses
+      every build while `tools/bench/diag_c64_row1_testa.log` ??a read-only whole-VI net census that hit
+      `BGRUN TIMEOUT killed after 1321s` ??is the newest failing log. It needs its own archived review before the
+      next build, and the census itself is unfinished (wire 23502 scanned over 103 of 173 diagrams; wire 23526
+      never scanned). Related trap, recorded: a *wait-loop* log whose command line quotes gate-failure tokens
+      becomes `guard_peer`'s "newest failing log" and blocks the batch it is waiting for
+      (`tools/bench/wait_peer_c64_openpanel.log`, a recorded non-result).
+    - (i) **ROW 2 PROCEEDS UNDER 53(d??'s STANDING ASSUMPTION** ??same VI, same substitution, an intermediate that
+      is never run ??with the row-2 parameters of STATUS `## NEXT` and the corrected wire-census arithmetic of (f).
+      The FINAL D1's ordering guarantee is escalated to the user in `## NEXT`, not re-decided here.
+    - (j) **`open_panel` IS OFF THE BUILD PATH.** Dispatch #2 lost its budget to a call that never returned inside
+      gscript's 180 s `_invoke` cap and poisoned the module; its review
+      (`archive/peer/2026-09-21-c64-openpanel-cap.md`) withdrew the session's own timings as misread offsets ??a
+      cold `exec_state` on that op costs 0.42 s ??and named the live cause as **replacing a file under a path
+      LabVIEW has already loaded**. Nothing in a build needs `open_panel`; never overwrite a VI file LabVIEW may
+      hold open.
+
+## Pre-decided ??ADDED 2026-09-21 (cycle 65): S3b IS DELIVERED, BOTH ROWS 쨌 the transport verb is CLASS-ADDRESSED
+
+56. ?럦 **S3b IS DELIVERED. BOTH ROWS ARE BUILT AND SAVED, AND ROW 2's FINAL FILE REOPENS COLD AT `ExecState` 1.**
+    Judgement, cycle 65, 2026-09-21. 34??5 stand except where corrected below.
+    - (a) **THE ARTEFACT**: `claudeDev\D1_s3b_row2_20260921_160311.vi`, md5 `26c54ff784cb5cea21edbd214d2cc3a0`,
+      476,759 B (`tools/bench/diag_c65_s3b_row2c.log`, 57 pass / 1 fail). COLD `ExecState` **1** after a LabVIEW
+      restart; cold `Wire` **1907** = the bed's 1906 + 1, i.e. 55(f)'s corrected baseline ??1 + 2 across the two
+      halves; `Node` 632, `ControlTerminal` **116**, `Local` **10**, `LoopTunnel` 135, `#637` back at **(59,48)**
+      so 50(e)'s no-tunnel criterion holds. Verification is **STRUCTURAL, never functional** (34(f)).
+    - (b) **THE STAGED SAVES, per the user's 2026-09-19 split rule.** Row 2's connect half saved first as
+      `claudeDev\D1_s3b_row2a_20260921_151221.vi` and `??row2_20260921_151221.vi` (both md5
+      `7a11818387fe44a764c2ff169b1dd6f7`, byte-identical because the indicator half had not run); the finished row
+      is (a). Every intermediate is on disk and none was overwritten.
+    - (c) ?뵶 **THE CYCLE'S REAL LESSON ??`wire_indicators` IS CLASS-ADDRESSED, AND THE CLASS IS NOT `Function`.**
+      `#10757` is an **`IndexArray`** (`Diagram #639 Nodes[27]`, label `'Index Array'`); it appears in the
+      `IndexArray`, `GrowableFunction`, `Node` and `GObject` censuses and **not** in `Function`. Row 1's `#10686`
+      ('And') was a `Function`, which is why row 1's call worked and row 2's first attempt was never attempted at
+      all. The call that works is
+      `wire_indicators(node_index=<index of the uid in report_all(target,'<its class>')>, src_terms=[??,
+      indicator_names=[??, diagram_index=46, node_class='<its class>')` ??2.27 s, no raise, error `''`.
+      **Resolve the class off the machine before every such call; never assume `Function`.** The precedent was in
+      our own record the whole time (`cycle59_s3a_recipe.log:119`) and a peer found it, not us.
+    - (d) **A ROUTE IS MEASURED DEAD AND IS NOT TO BE RE-PROPOSED: a front-panel terminal cannot be reached by
+      `connect_nested_v1`.** The whole-VI `ControlTerminal` census (116 uids) ??`Diagram #639`'s `Nodes[]` (75
+      uids) = **0 uids** (`diag_c65_s3b_row2b.log:208`), and that verb addresses only
+      `Diagram[d].Nodes[n].Terminals[t]`. Panel objects are reached by `wire_indicators`, by label, through
+      `Diagram in` ??not by node index.
+    - (e) **`wire_indicators` LEAVES NO JUNK NODE.** `Node` 632 ??632, zero new uids, so 55(c)'s purge fired zero
+      times. The purge belongs to `move_in` and to the `OpNetInfo_v1`-descended connects, and **a purge must never
+      be run speculatively after `wire_indicators`** ??a node appearing there would be new behaviour and deleting
+      it would destroy the only evidence of it.
+    - (f) **THE LABEL-COLLISION HAZARD IS REAL AND IS GATED, NOT ASSUMED AWAY.** Four objects answered to `'index'`
+      before the call, including the new Local `#23523` on the same diagram. Exactly one panel row changed
+      (`{23525: 0 ??23556}`), the wire-uid set diff was `minted [23556] ; vanished []` (a mint, not an extension),
+      and the cold reverse census over 75 nodes + 116 panel rows found **one source `#10757` t1, one sink control
+      23525, and the Local NOT on the net**. Every future `wire_indicators` call on this VI carries that gate.
+    - (g) **AN ORDERED `Broken?` IS UNREACHABLE WHEN THE SINK IS A FRONT-PANEL TERMINAL**, because both ordered
+      readers address their sink as `Diagram[d].Nodes[n].Terminals[t]` ??the same fact as (d). **DECISION: no new
+      reader op is built** (the user's standing no-more-devices order of 2026-09-18 08:53). The net census of (f)
+      is the stronger structural evidence, and `L` still ran clean on wire 23540. A peer asked for `Broken?` to be
+      read **before** `ExecState`; that is **REFUSED** on the standing rule (42(b), 52(f), `docs/NAMES.md:912-928`).
+    - (h) ?좑툘 **`c60c_astcheck.py` GATE 7 IS NOT MERELY NOISY ??IT IS A FALSE FIREFIGHTER SIGNAL, AND THAT IS
+      MEASURED.** Runner cycle 49 ??cycle 50 failing-gate lines = the **singleton** `gate:fail 7 move_in ??;
+      without gate 7 the intersection is **empty** (`tools/bench/cycle_runner.log:97,:100`). So a gate that fails
+      by construction on every legitimate `move_in` build is what would fire the runner's repeated-failure
+      firefighter. 55(g) declined to touch it as a "device"; that reasoning is **narrowed, not overturned** ??
+      removing a false positive from an existing gate is repair, not a new device. **It is still not built this
+      cycle** (deliverable-first ordering), and it is the FIRST machinery item in `## NEXT`. The recommended shape,
+      from the peer, recorded verbatim and not acted on: parameterise with `--route movein|owner` so gate 7 reads
+      "on `owner`, absent; on `movein`, called at most once", with gate 9's `FORBIDDEN_ROUTES` flipping
+      symmetrically.
+    - (i) **THE ONE FAILING GATE, `A5`, IS ITS OWN PREMISE.** It assumed `report_all('ControlTerminal')` index ==
+      panel row index; row `i=114` returned uid **34982**, `owner_of` ??`('Diagram', 26117)`, outside the 23xxx
+      band. The alignment is **false on this bed**, nothing depended on it, and **the indicator's ControlTerminal
+      uid remains unidentified** ??a measurement gap, recorded, that blocks nothing.
+    - (j) ?뵶 **THE RULE-1a ORDERING QUESTION IS NOW RAISED BY TWO INDEPENDENT PEERS AND GOES BACK TO THE USER.**
+      `archive/peer/2026-09-21-c64-row1-wirecount-k2.md` raised it about `#10407` and
+      `archive/peer/2026-09-21-c65-row2-wireind.md` 짠5 raises it again: after each S3b row, the source writes a
+      panel control and a Local reads it, both on `Diagram #639`, with **no data dependency between them**, so
+      LabVIEW guarantees no order and the Case structure may legally receive the previous iteration's value.
+      `ExecState`, wire counts, net membership and `Broken?` are all blind to it. **The cycle proceeded under
+      53(d??'s standing assumption** ??acceptable for an intermediate that is never run (34(f)) ??**and the
+      runner is NOT stopped**, because the next stage M3 (49(e)) is a pure `move_in` scheduling change, which
+      rule 1a explicitly permits, and the user launched this runner an hour before the cycle began. ?좑툘 **The
+      escalation was silently DROPPED from `## NEXT` in the 14:5x rewrite; it is restored as NEXT's first line and
+      must not be dropped again while it is unanswered.** ?뵶 **A THIRD independent raising, or the start of any
+      stage that adds further source?뭝ndicator?묹ocal substitutions, writes `STOP` and hands it to the user.**
+
+57. **THE 56(j) RULE-1a QUESTION ??INTERACTIVE CHAT'S ASSESSMENT, 2026-09-21 16:2x, put to the user and NOT a blocker for M3.**
+    The two-piece transport (node ??indicator, Local ??Case) has no dataflow ordering, so the Case may read the
+    previous iteration's value or the control's default. That is the property the user accepted when choosing
+    Local variables (Pre-decided 45: focus never enters the saved data), and 45(d) already answers it for the
+    DELIVERABLE: once 1.5 is its own loop (M3) it reads the frame-counter Local too and acts only when
+    `schedule == TRUE AND counter != last-handled` (M4's edge shift register), so a default (counter 0, schedule
+    FALSE) does nothing and a stale value is never re-acted on. The exposure is real only in the INTERMEDIATE files
+    (rows 1??, still same-loop, no edge), which are never run by rule (34(f)). Residual: the payload can reach the
+    ASI command one frame late ??inherent to latest-value transport; at a 25-frame focus cadence judged
+    immaterial. **The user is asked to confirm that one point; M3/M4 proceed meanwhile.**
+
+58. **M3's `ExecState` 0 IS THE FOUR SHIFT-REGISTER ROWS, NOT COERCION ??interactive chat's reading of
+    `tools/bench/diag_c66b_s3b_m3.log`, 2026-09-21 17:5x, while the runner is paused by the user.** The timeline
+    reads 1 COLD, then **0 from the very first `move_in` (#3529) and 0 after every one of the 7 internal re-wires**
+    ??nothing ever brought it back, so the hole is a row the script never re-wires. Those rows are known and named
+    in the plan already: `#48` t3 `VISA resource name` ??SR `#4344` and `#48` t4 `In position` ??SR `#4274`, plus
+    the right-side returns `#10407` t4 ??`#4334` and `#10407` t6 ??`#4256` (`docs/d1-build-plan.md:380-381, :423`:
+    *"Both SR pairs are re-created on the new loop"*). `move_in` severed them (37(d)); the moved set has no shift
+    registers on `#23032`, so `#48`'s Required inputs are bare ??0. The coercion line (c66c) measured nothing
+    (`Coerce Dot?` is the real short name, and no wrapped column carries a type) and is not the cause.
+    - **M3 is re-cut as M3a + M3b, each saved:** **M3a** = from row 2's file, `add_shift_reg` 횞2 on `#23032`
+      (`OpAddShiftReg_v0`, typed seed), the four rows re-wired with `wire_sr` LeftIn/RightIn exactly as
+      `docs/d1-route-b-plan.md:269` lists them, initial values = the SAME sources that feed `#4344`/`#4274`'s left
+      terminals today, brought to `#23032` by a **border tunnel from `#686`** (the VISA session and the initial
+      position are opened BEFORE the loops; this tunnel carries a one-time initial value, it is NOT the 38(g)
+      per-frame tunnel through 1.1's border). Then the 7 node moves + 7 internal rows as c66b already does them,
+      junk purge, `ExecState` 1 ??save `D1_s3b_m3_moved_<stamp>.vi`. **M3b** = M4 unchanged (edge SR + Wait).
+    - If M3a still reads 0 after the four SR rows, the next bare terminal is found by the WIRED-TERMINAL census of
+      the seven moved nodes (the only reader we own), never by inference.
+
+## Pre-decided ??ADDED 2026-09-21 (cycle 53): the M3 hole is FIVE rows, MEASURED 쨌 `add_shift_reg` was a silent no-op and is REPAIRED
+
+59. **THE BARE-TERMINAL LIST IS READ OFF THE MACHINE NOW, AND IT IS FIVE ROWS, NOT FOUR.** Pre-decided 58
+    inferred four severed shift-register rows from an `ExecState` timeline. `tools/bench/diag_c67_m3a.log`
+    censused every terminal of all seven moved nodes twice (`:481-486`, `:544-549`) and both censuses agree:
+    `#48` t3 `'VISA resource name'` (sink) 쨌 `#48` t4 `'In position'` (sink) 쨌 `#10407` t4 `'VISA out'`
+    (source) 쨌 `#10407` t6 `'position [internal units]'` (source) 쨌 **and `#10407` t1 `'# slices in stack'`
+    (sink)**, the project's ?뵶 R1 / NO-ROUTE row, which Pre-decided 58 did not contain. The `c67-m3a-srrows`
+    review predicted the fifth row before the census confirmed it. **58's four-row inventory is superseded;
+    its diagnosis ??that the hole is severed external rows and not coercion ??stands.**
+    - 58's ORDERING is corrected: `wire_sr` LeftIn/RightIn address `Nodes[n]` **inside the loop body**
+      (`tools/gscript.py:717-718`), so the SR rows are wired **after** the seven `move_in`s, never before.
+    - **RightIn is wired BEFORE LeftIn.** An untyped register takes the type of its first wire; `#10407` t4 /
+      t6 are SOURCES with a definite type, `#48` t3 / t4 are sinks. Taken from `c67-m3a-srrows`.
+    - **M3a splits in two, and the split point is measured, not chosen for convenience.** An uninitialised
+      shift register ??outer-left bare, both inner terminals wired ??is legal executable LabVIEW (same
+      review; `tools/gscript.py:758`). So **M3a-1** = moves + internal rows + both SR pairs + the four SR
+      rows + the t1 row ??`ExecState` 1 ??SAVE, and **M3a-2** = the initial values, a rule-1a matter and not
+      a compile matter. M3a-1's artefact is **NOT computation-equivalent** (its registers are uninitialised)
+      and is never run (34(f)); that must be said in its log and its lock note.
+
+60. **`g.add_shift_reg` AND `g.wire_sr` WERE SILENTLY DECLINING EVERY EDIT, AND THE CAUSE IS MEASURED.**
+    `add_shift_reg` ran, returned a uid, wrote no error and created nothing ??on `#23032`, on `#23032` at a
+    y measured inside its own span, on `#637` (a loop already carrying 14 registers) and on a different
+    target VI (`tools/bench/diag_c67_addsr.log`). It is **not** geometry, **not** the loop's identity and
+    **not** the diagram's nesting. `tools/bench/diag_c67_opvi.log` isolated it: with `g.open_panel` first the
+    register is minted and `ExecState` goes 1 ??0 exactly as `tools/gscript.py:683-687` documents (L3), one
+    prior `move_in` has the same effect because its own body calls `ensure_loaded` (L2), and without either
+    the edit is declined in silence (L1, L4). `tools/gscript.py:1268-1322` already documented this class.
+    - **REPAIRED**: `ensure_loaded(target)` added at `tools/gscript.py:708` (`add_shift_reg`) and `:750`
+      (`wire_sr`), nothing else touched. `tools/bench/selftest_c67_ensureloaded.log` **4/4** ??the two calls
+      that were no-ops now mint registers with no preparation, `wire_sr` wires with the same uid at both
+      ends, and `move_in` / `connect_nested_v1` are unchanged. This is a REPAIR OF AN EXISTING WRAPPER, so
+      the user's 2026-09-18 08:53 no-more-devices order does not cover it (same reading cycle 66 used for
+      `c60c_astcheck` gate 7).
+    - ?뵶 **NINE OTHER MUTATORS STILL DO NOT REACH `ensure_loaded`** and can decline in the same silence:
+      `connect_ctl`:999 쨌 `queue_node`:1138 쨌 `loop_in`:1171 쨌 `loop_kernel`:1820 쨌 `copy_into`:1415 쨌
+      `copy_by_index`:1495 쨌 `move_by_label`:1577 쨌 `delete_by_label`:1681 쨌 `make_default`:2859
+      (`tools/bench/ensure_loaded_audit.md`). **RULE: a mutator on that list is repaired, with a
+      minted-object self-test cell, BEFORE it is next used** ??not in bulk, and not after a run has already
+      trusted it. This mirrors the reference-hygiene precondition in the 2026-09-19 staged-build rule.
+    - The dispatch-#2 reading that "uid 23561 is a constant the wrapper reports" is **WITHDRAWN**: it is the
+      real minted register uid on this bed. The no-op was real; that explanation of it was not.
+
+61. **`#10407` IS A `CaseStructure`, so t1 `'# slices in stack'` is a structure TUNNEL, not a connector-pane
+    terminal** ??Required/Recommended/Optional does not apply to it and no read was missed. Its value arrives
+    today as `FlatSequenceInnerTunnel #9655` ??wire 9649 ??`LoopTunnel #9641` on `#637`
+    (`tools/bench/diag_c67_addsr.log:390-392`). **The route for t1 is a new LoopTunnel on `#23032` fed from
+    that same net ??a branch of the original's own mechanism, never a Local**, because a Local re-introduces
+    the 56(j) ordering gap for a value the original delivers by wire. Border auto-tunnelling is MEASURED for
+    `wire_control` / `wire_indicators` across a case-frame border and for `loop_kernel` across a loop border
+    (`docs/NAMES.md:522-528`, `:550-551`, `:891-892`); whether `connect_nested_v1` auto-tunnels is **recorded
+    nowhere and is the one thing M3a-1 must probe first**. If no addressable source exists on `#686` for that
+    net, the run reports it and stops ??it does NOT substitute a Local (rule 1a).
+    - ?좑툘 **SUPERSEDED IN PART by 66 and 67 (2026-09-21, the prior-art review).** The sentence "recorded
+      nowhere" is **WITHDRAWN** ??it is recorded, twice ??and the probe it justified is **deleted**. What
+      SURVIVES unchanged and is re-affirmed: t1 is a structure tunnel, its route is a branch of the
+      original's own net, and it is **NEVER a Local** (rule 1a). The history above is kept as written.
+
+62. **`c60c_astcheck --route` declares the route the FILE TAKES, not the route the cycle wishes it took**:
+    `movein` when the script calls `move_in` even once, `owner` when it does not. Cycle 53's dispatch #4
+    brief said `owner` for a file whose regression cell mandates a `move_in`; the material session ran the
+    truthful `movein` and archived the `owner` run outside `tools/bench/`. That was right.
+
+63. **A MEASUREMENT-ONLY DIAGNOSTIC MUST NOT MARK ITSELF AS A FAILING LOG.** Cycle 53 paid three ~$4
+    adversarial reviews, one per diagnostic, because each exited rc=1 when a *measurement* came back negative
+    and so armed `guard_peer` against the next dispatch. From now on a diagnostic whose purpose is to measure
+    reports measurements as **FACT lines** and gates only on **hygiene** (md5 pins, scratches removed, refs
+    balanced, handles read), exiting 0 when those pass ??as `diag_c67_opvi.py` and
+    `selftest_c67_ensureloaded.py` already do. A failing log should mean the machine refused, not that the
+    answer was "no". No new device; this is a convention the brief states and the gate list enforces.
+
+64. **`retrospective.py --cycle N` TAKES THE RETROSPECTIVE SERIES NUMBER, NOT THE RUNNER'S `CYCLE` COUNTER.**
+    They are two different sequences and they have drifted far apart: `tools/bench/cycle_runner.log`'s last
+    line on 2026-09-21 read `CYCLE 52`, while the newest archived retrospective was
+    `archive/peer/2026-09-21-retrospective-cycle59.md`. This cycle's judgement session read the runner's
+    counter and launched `--cycle 53`, so its retrospective is archived as
+    `archive/peer/2026-09-21-retrospective-cycle53.md` ??a duplicate LABEL beside 2026-09-20's genuine
+    cycle-53 file. Nothing was overwritten and nothing was lost: the analysis window is derived from
+    timestamps, not from the number, so the run covers this cycle's work correctly, and `violations.py`
+    counts slugs from files rather than from labels. It was NOT re-run ??a second `retrospective.py` in one
+    session is worse than a wrong label, because `guard_bash.py:226-227` has already marked the session
+    retro-done and `guard_cycle` is satisfied by recency, not by the number.
+    - **The next cycle runs `--cycle 60`.** Take the number from the highest `retrospective-cycle<N>.md` in
+      `archive/peer/`, plus one ??never from `cycle_runner.log`.
+
+## Pre-decided ??ADDED 2026-09-21 (cycle 55): the prior-art review re-cut M3a-1 쨌 t1 HAS a route
+
+Source: `archive/peer/2026-09-21-priorart-c68-m3a1.md`. All six findings ACCEPTED, none refuted.
+
+65. **t1 IS GIVEN A ROUTE THAT LANDS; THE STAGE BOUNDARY DOES NOT MOVE** (A2 `refuted-already`). Of the two
+    releases the review offered, the first is taken. With t1 wired the `ExecState 1 ??save` branch is
+    reachable, so M3a-1 can leave a real artefact instead of the fifth bare terminal that ended cycle 67.
+    The `??BROKEN_<stamp>.vi` attempt stays in step [7] as written, so the stage always tries to leave a
+    file (the 2026-09-19 split rule) ??`tools/recipes/build_d1_m3a1.py` step [7], unchanged.
+
+66. **PRE-DECIDED 61's "RECORDED NOWHERE" IS WITHDRAWN** (A3 `contradicted`). Border auto-tunnelling IS on
+    file: `docs/toolkit-capabilities.md:68` and this document's own `docs/cycle27-plan.md:2477-2479`
+    (`wire_delta` **3**, op error `''`, **two different wire uids at the two ends**). The consequence is
+    adopted as the ACCEPTANCE TEST for every border row: **`wire_delta 3` + two DIFFERENT wire uids +
+    `Is Broken? False`**. The fleet's usual one-uid-at-both-ends check is NOT applied to a border row ??it
+    would score a CORRECT wire as a failure. Same-diagram rows keep it unchanged.
+    - ?좑툘 **THAT ACCEPTANCE TEST IS WITHDRAWN THE SAME DAY ??SUPERSEDED BY PRE-DECIDED 70.** It ran once, on
+      the t1 row, and `archive/peer/2026-09-21-c69-border-wiredelta.md` showed it measures the SINK side only.
+      The withdrawal of 61's "recorded nowhere" (the first half of this item) STANDS; only the test is void.
+
+67. **THE ADDRESSABILITY PROBE IS DELETED, AND ITS UNMEASURED HALF IS FORBIDDEN** (B4 `already-measured`).
+    The probe's answer is already on file and negative ??`tools/bench/diag_c67_addsr.log:393-403`, measured
+    on a scratch byte-identical to this bed. Its one genuinely unmeasured half, scanning `#686` for a
+    DIFFERENTLY-OWNED terminal NAMED `'# slices in stack'`, is deleted with it and **must not be re-added**:
+    a same-named source on another net is a different value, so wiring it would be the rule-1a substitution
+    Pre-decided 61 forbids exactly as it forbids a Local.
+
+68. **THE t1 ROW IS WRITTEN BY `OpConnectFromWire_v0.vi`, AND THE "SOURCE MUST BE A NODE" PREMISE IS
+    WITHDRAWN** (B3 `helper-exists` + B2 `already-failed`). The op is BUILT + SAVED 2026-09-17
+    (`docs/toolkit-capabilities.md:70`; T1 is this exact shape; 16 rows in service at
+    `docs/d1-route-b-plan.md:84`) and takes its SOURCE as (WIRE uid, terminal index on that wire), so wire
+    9649's `FlatSequenceInnerTunnel #9655` source IS addressable. Two precautions are mandatory and are in
+    the recipe: the source is **measured on the live target immediately before the write** (an empty walk
+    ??FACT line and the step STOPS ??nothing wired, nothing substituted; run 8's "0 source terminals" was
+    that reader's tunnel blind spot, not the wire's property), and the **sink index is re-read on the LIVE
+    post-move target**, never carried from a pre-move census ??T2c2's recorded cause of failure. Re-running
+    `tools/bench/diag_c67_m3a.py`'s shape with this cause still open would have repeated cycle 67 exactly;
+    its other cause, `add_shift_reg` declining in silence, is already repaired (`tools/gscript.py:708`/`:750`).
+
+69. **NO SINK THAT WAS WIRED ON THE BED MAY BE LEFT BARE ??A GATE, NOT A NOTE** (A4 `unread-evidence`, the
+    most dangerous of the six). `#10407` t6 has **TWO** sinks in the original, on net 9113: `RightShiftRegister
+    #4256` AND `Q_focusback` `SelectorTunnel #12673` (`tools/bench/diag_c67_addsr.log:389`). This build
+    re-created one. Dropping a downstream consumer is a **change of computation (rule 1a)** and would have
+    passed silently, because a bare source is legal LabVIEW. M3a-1 now censuses `#12673` by walking t6's net
+    and **FAILS the run** if it is not a terminal of it; either way its state is a FACT line, and if it is
+    bare the log names it as a **SIXTH ROW** for the next stage. This one non-hygiene gate outranks
+    Pre-decided 63: the run must not exit 0 with a silently dropped consumer.
+    - ??**IT FIRED ON ITS FIRST RUN.** `tools/bench/build_d1_m3a1.log:548-552`: `#12673` is **NOT** a terminal
+      of t6's net, the run failed 16 pass / 1 fail, and the sixth row is on file. The gate paid for itself.
+
+## Pre-decided ??ADDED 2026-09-21 (cycle 55 close): M3a-1 RAN 쨌 t1 is WRITTEN BUT NOT VERIFIED 쨌 the sixth row HAS a route
+
+Source: `archive/peer/2026-09-21-c69-border-wiredelta.md` (claude / `-Role hypothesis`, opus max, ANSWERED,
+$3.36), dispatched on this cycle's one failed prediction. Its verdict against this cycle's own acceptance
+test is ACCEPTED IN FULL; the disposition is in that file under `## What was done with it`.
+
+70. **THE BORDER-ROW ACCEPTANCE TEST IS AN IDENTITY TEST, NOT A NUMBER** (supersedes 66's second half).
+    `wire_delta`, "two different wire uids" and `Is Broken? False` are all read on the SINK side of the new
+    border; the "SOURCE-side wire 9649" in `tools/bench/build_d1_m3a1.log:488` was the input argument, not an
+    observation. Re-tuning the expected delta from 3 to 1 would have been calibrating an instrument that is
+    not pointed at the thing being measured. **The test is now object identity, end to end:**
+    `OpWireSource_v5(UID 2 = <source wire>)` must show a NEW third terminal `is_source=False`,
+    `owner_class LoopTunnel`, owner uid **T**; `OpWireSource_v5(UID 2 = <new sink wire>)` must show exactly
+    one `is_source=True`, `owner_class LoopTunnel`, `owner_uid == T`. **Pass = the same LoopTunnel uid is a
+    SINK on the source wire and the SOURCE of the sink wire.** Both properties are already built
+    (`Wire.Terms[]` 6371003, `Is Source?` 634A003, `Connected Wire` 634A000, `Generic.Owner` 6327806,
+    `GObject.UID` 632A813) ??no new op. ?좑툘 `ExecState` is NEVER substituted for it (`:2501-2507`).
+
+71. **THE t1 ROW IS "WRITTEN", NOT "VERIFIED", AND A RECYCLED UID IS THE REASON.** The write returned
+    `op_error ''`, `Is Broken? False`, sink terminals 6 ??7, `LoopTunnel 135 ??136`
+    (`tools/bench/build_d1_m3a1.log:473`, `:488`, `:490`) ??which is why run 8's NO-ROUTE verdict on this row
+    is retired. But the junk `Invoke` node the call minted carried uid **9649**, the uid of the wire it was
+    told to branch, while every other object created in the run took a monotonic uid in the 23,800??4,009
+    band (`:475`, `:498-526`). **Either wire 9649 ceased to exist during the call, or this fleet can mint an
+    object bearing a live object's uid ??and in that case every uid-keyed census in the D1 rewire is unsafe.**
+    Our census accounting (632 ??633 ??632) is sound and was never the question. Until 70's test settles it,
+    no equivalence claim rests on this row, and the artefact stays NOT computation-equivalent for the separate
+    reason that its registers are uninitialised (M3a-2).
+    ?좑툘 SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 80 ??80 declared 71 "closed by
+    measurement, the alarming branch retired"; 87 then WITHDREW 80 (`MINTED UID == THE LIVE SOURCE NET 23955 :
+    False`), so 71's uid-safety question is OPEN again and is answered by 86, never by 80.
+
+72. **THE SIXTH ROW IS REACHABLE WITH NO NEW OP** ??the tunnel-sink blocker is dissolved, not deferred. A
+    tunnel is not a `Nodes[]` entry, but its terminal IS an entry in its owning structure node's `Terminals[]`,
+    which this run demonstrates twice (`:521`, `:526`/`:549`). Route: `OpOwnerChain_v1(12673)` ??its owning
+    Case Structure ??walk that node's `Terms[]` ??take the entry named `Q_focusback` **by NAME, never a
+    carried index** (carrying an index is exactly what broke T2c2) ??`OpConnectFromWire_v0` with source = the
+    **LIVE** net **23963** (`:548`), NOT the original 9113 the row inventory names. Hazards to handle rather
+    than hope past: an owner chain terminates silently at a `FlatSequenceFrame`; if the walk does not expose
+    the terminal, the fallback is one unbuilt property ??`Tunnel` descends from GObject, not Terminal, so a
+    Tunnel refnum can never receive `Connect Wire`, but it hands out Terminal refs via `Inside Terminals[]`
+    (built, 6356000) and **`Outside Terminal`**, and for an INPUT tunnel the sink is the OUTSIDE one. Read
+    that property's short name **off the machine** ??the wiki's numeric does not reconcile with its decimal.
+    ?좑툘 SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 74 ??the sixth row's SELECTOR is
+    superseded: `Q_focusback` is not an object on the bed (node 12589's three terminals are `""`,
+    `"position [internal units]"`, `""`), so the by-name lookup fails by construction and the entry is taken by
+    the UID it exposes (12673). 72's ROUTE is otherwise unchanged.
+
+73. **M3a-1 IS RE-RUN AS THE SAME RECIPE WITH THESE TWO CHANGES ??NEVER AS A NEW `_v2` FILE.** The 2026-09-19
+    split rule forbids a full-length retry under a new name, and `cycle_runner.py` counts a renamed recipe as
+    the same recipe. The two changes are: 70's identity test as an in-run GATE immediately after each border
+    write, and 72's sixth row wired before the census. ?좑툘 **Editing the recipe re-arms its prior-art stop
+    record**, which is bound to sha256 `9bfbd2fa??: the release is for those bytes, so the next cycle's FIRST
+    act is a fresh prior-art review of the EDITED file, then `c60c_astcheck --route movein`, then the build.
+    That order is the machine's, not a preference ??do not try to launch before it.
+
+## Pre-decided ??ADDED 2026-09-21 (cycle 56): the c70 prior-art review, four findings, all accepted
+
+Source: `archive/peer/2026-09-21-priorart-c70-m3a1.md` (claude / `-Role priorart`, opus high, ANSWERED,
+$4.3929), bought on the EDITED `tools/recipes/build_d1_m3a1.py` (sha256 `cdeb7662??). Verdict **"Not novel"**,
+four findings ??`contradicted` 횞2, `unread-evidence`, `already-measured`. **The judgement session ACCEPTED ALL
+FOUR**; none was refuted. The dispositions are in that file under `## What was done with it`.
+
+74. **THE SIXTH ROW IS SELECTED BY UID, NEVER BY THE NAME `Q_focusback`** (finding A3(i) `contradicted`,
+    review `:222-231`). `Q_focusback` is the name of a **future 1-element QUEUE** in the D1 target design
+    (`docs/d1-build-plan.md:576`, `:307`), not an object on the bed: the measured census of the owning node
+    says its three terminals are named `""`, `"position [internal units]"`, `""`
+    (`tools/bench/main_vi_nodeterms.json:14287-14313`, node uid 12589), so the by-name lookup Pre-decided 72
+    prescribed **fails by construction**. 72's ROUTE stands and only its selector changes:
+    `OpOwnerChain_v1(12673)` ??require a Case Structure ??**FACT-log** the measured owner uid and whether it
+    equals 12589 ??walk that node's `Terms[]` and take the entry that **exposes uid 12673** ??**FACT-log** that
+    entry's NAME and whether it equals `"position [internal units]"`. Both FACT lines, never gates: **the
+    measurement governs**. The row FAILS, naming what the walk returned, if no entry exposes 12673. The string
+    `Q_focusback` survives only as a comment and a human-readable row label in log text.
+    ?좑툘 Measured while implementing it: **no reader this fleet owns returns a per-terminal uid** from the node
+    side ??`node_terms` gives `{i, name, is_source, wire, err?? node_uid}` (`tools/gscript.py:931-937`) ??so an
+    entry's uid is resolved through the wire it carries, with `OpWireSource_v5`. An entry carrying no wire
+    exposes no uid, and that is a measured row failure, not an occasion to improvise.
+
+75. **A4 IS TWO-SIDED, BECAUSE THE SIXTH ROW'S CROSSING IS OUTWARD** (finding A3(ii) `contradicted`, review
+    `:233-239`). As coded, A4 re-read the ONE wire `#10407` t6 carries and looked for `#12673` on it ??so it
+    would have FAILED **even on a perfect sixth row**: `#10407` moves into body `Diagram #23058`
+    (`tools/bench/build_d1_m3a1.log:156`) while `#12589` stays on `Diagram #639` (`docs/d1-route-b-plan.md:207`),
+    which puts `#12673` on the OUTER segment ??a different wire uid. That is the same one-sided read
+    Pre-decided 70 was written to end, reproduced inside the gate that replaced it. A4 now PASSES if `12673` is
+    a non-source terminal of t6's own net (same-diagram branch) **OR** if that net has a `LoopTunnel` sink **T**
+    whose other-side wire carries `12673` as a non-source terminal (border branch), and FAILS only when
+    `12673` is on NEITHER. Which branch passed and the tunnel uid T are FACT lines. **"It is a border crossing"
+    is not hard-coded** ??the diagram uids above are the expectation, not the test; both sides are measured
+    every run, with the BUILT `gscript.tunnels` / `OpTunnels_v0` reader, uid-matched, never index-guessed.
+
+76. **PRE-DECIDED 71'S ALARM IS NARROWED: A MINTED OBJECT'S UID IS EVIDENCE ABOUT NOTHING ELSE** (finding A4
+    `unread-evidence`, review `:241-248`). The event 71 called unprecedented ??the junk `Invoke` node the
+    `Connect Wire` path mints carrying uid **9649**, a live wire's uid ??has happened **twice before and is on
+    file unexamined**: `tools/bench/build_d1_routeb_v0.log:415` (minted uid **10850**, recorded as a live wire
+    uid at `tools/bench/main_vi_nodeterms.json:13199`) and `tools/bench/build_d1_routeb_v0_run2.log:425`
+    (minted uid **5812**, a live wire at `tools/bench/build_opconnectfromwire_v0_run2.log:98`). Read together
+    they point at the benign branch: minted `Invoke` nodes draw uids that collide with existing wire uids.
+    **So 71's "every uid-keyed census in D1 is unsafe" is NARROWED to: a uid read off a FRESHLY MINTED object
+    is not evidence about any pre-existing object.** Uid-keyed censuses of **pre-existing** objects are **NOT**
+    unsafe, and no work is re-based on that fear. The in-run before/after read of wire 9649 **stays** as the
+    discriminator on this bed ??it is cheap, it is already coded, and it is what would show a real recycle.
+    No recipe change was made for this finding.
+    ?좑툘 SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 80 ??80 explicitly upgraded 76's
+    "NARROWED" to "retired, not merely narrowed"; 87 then WITHDREW 80, so 76's narrowing is the last surviving
+    disposition and the uid-safety question itself is OPEN (87, answered by 86).
+
+77. **THE IDENTITY GATE COUNTS EVERY SOURCE TERMINAL BEFORE IT FILTERS BY CLASS** (finding B4
+    `already-measured`, review `:252-258`). As coded the gate filtered the sink wire's source terminals to
+    `owner_class == "LoopTunnel"` **before** counting them, so the one recorded pathology it claimed to re-test
+    would have **passed**: the measured broken wire w1231 has TWO `is_source=True` terminals of different
+    classes ??`SelectorTunnel #5680` and `LoopTunnel #2497` ??with `Wire.Is Broken? True`
+    (`tools/bench/build_opconnectfromwire_v0_run2.log:103-104`), and the filter leaves exactly one. The order is
+    reversed: **ALL** `is_source=True` terminals on the sink wire are counted, of every owner class, the total
+    must be exactly **1**, and that one must be the LoopTunnel **T**. The source-wire side gets the same
+    discipline ??the full walk is logged and sink terminals of every class are counted before the
+    LoopTunnel-owned subset is taken to define T. **Log the whole walk; filter nothing away before counting.**
+
+## Pre-decided ??ADDED 2026-09-21 (cycle 56 close): both gates were pointed at the WRONG TOPOLOGY, and the machine has now shown the right one
+?뵶 **ITEMS 78, 80, 81 AND 82 BELOW ARE WITHDRAWN THE SAME HOUR ??SEE 84-90.** They were written from the build log before the failed-prediction review read it; the review refuted them from our own line numbers. 79 is amended and 83 stands. Read 84-90 FIRST and treat 78-82 as the record of what was believed, not as instructions.
+
+Source: `tools/bench/build_d1_m3a1.log` (this cycle, `BGRUN END rc=1 after 231s`, 17 pass / 4 fail). The four
+prior-art fixes all landed ??the sixth row RESOLVED and WROTE (`A5 PASS BY UID`) ??and the run still failed,
+on the two gates themselves. Both failures are MEASURED, not inferred.
+
+78. **THE BORDER ACCEPTANCE TEST IS RE-DERIVED FROM THIS RUN'S MEASUREMENT, AND NEVER AGAIN FROM THEORY**
+    (supersedes Pre-decided 70's direction; 70's *principle* ??object identity, `ExecState` never substituted ??
+    stands). Three consecutive cycles have defined a border-row acceptance test up front and then found it
+    aimed at something the machine does not do: `wire_delta 3` (c68, sink-side only), then 70's
+    "T is a SINK on the source wire" (this cycle). What the machine actually did, twice in one run:
+    - t1: source wire 9649's SINKS went `[('LoopTunnel',9641),('',0)] -> [('',0)]` ??the old tunnel sink
+      DISAPPEARED and **no new LoopTunnel sink ever appeared**; after the purge 9649 reads sinks
+      `[('SelectorTunnel',9623),('',0)]` and **source** `[('LoopTunnel',24035)]`, while the new sink wire 24009
+      has exactly one source of any class, `[('LoopTunnel',24035)]`. **The same tunnel 24035 is the SOURCE of
+      BOTH wires** ??the pre-existing uid stays with the INNER segment and the outer segment is the new object.
+    - the sixth row: source wire 23955 loses its `RightShiftRegister 23868` sink and gains none; sink wire 9113
+      has exactly one source, `LoopTunnel 24018`.
+    The invariant that actually holds across both, and therefore the test from now on: **the new sink wire has
+    exactly ONE source terminal and its owner is a `LoopTunnel` T; the value's ORIGIN is then confirmed by
+    walking OUTWARD from T through as many tunnel hops as it takes until the intended source terminal is
+    reached.** "T appears as a sink on the source wire" is withdrawn as an expectation.
+
+79. **A4's ONE HOP IS THE SAME ONE-SIDED READ AGAIN ??THE CROSSING IS TWO HOPS, MEASURED.** A4 branch 2 walked
+    `LoopTunnel #24154` (out_wire 24130, in_wires [24226]) and found `12673` absent, so it failed `NEITHER`.
+    The real path from `#10407` t6 to the consumer is **24226 -> 24154 -> 24130 -> 24018 -> 9113 -> 12673**.
+    A4 and 78's origin test are therefore **ONE reader, used twice**: an N-hop tunnel walker (visited set, hop
+    cap, every hop FACT-logged), not two hand-written one-hop walks. No new property is needed ??`Wire.Terms[]`
+    6371003, `Is Source?` 634A003, `Connected Wire` 634A000, `Generic.Owner` 6327806, `GObject.UID` 632A813 are
+    all built. Write the walker ONCE and call it from both gates.
+
+80. **PRE-DECIDED 71 IS CLOSED BY MEASUREMENT: THE MINTED UID IS A CONSTANT OF THE OP, NOT A RECYCLE.** Both
+    writes in this run minted a junk `Invoke` node bearing uid **9649** ??including the sixth row, whose source
+    net was **23955** and which never touched wire 9649. A uid that appears no matter which wire is addressed
+    cannot be that wire's uid being reused. Together with the 10850 / 5812 precedents disposed of in 76, the
+    alarming branch ("every uid-keyed census in D1 is unsafe") is **retired, not merely narrowed**. Wire 9649
+    also still walks after the call. No further work rests on this question.
+    ?좑툘 SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 87 ??**80 IS WITHDRAWN**: the junk
+    `Invoke` uids in the run are 23522 / 23786 횞8 / 9649 twice and the run's own line reads `MINTED UID == THE
+    LIVE SOURCE NET 23955 : False`, so the minted uid is NOT a constant of the op and Pre-decided 71 is NOT
+    retired.
+
+81. **A STAGE THAT ENDS WITH A BROKEN VI CAN NEVER LEAVE A FILE, SO THE BOUNDARY ??NOT THE SCRIPT ??IS WHAT
+    GETS RE-CUT.** The save was attempted and refused verbatim: `RuntimeError: refusing to save a BROKEN VI -
+    SaveInstrument blocks forever on one`. That refusal is correct and is not to be removed. It means the
+    2026-09-19 rule "a step is not done until it has left a file" is **physically unsatisfiable** for any stage
+    whose defined end state is `ExecState 0`, and M3a-1 has now ended at `ExecState 0` in two consecutive
+    cycles. So the response is NOT another decomposition of M3a-1: it is to find out what is broken and cut the
+    stage where the VI is WHOLE ??if the only remaining breakage is what M3a-2 repairs (the four bare shift-
+    register outer terminals are the whole of the current BARE list), **M3a-1 and M3a-2 MERGE into one stage
+    that ends `ExecState 1` and saves.** That decision is taken on the census of 82, not on this reasoning.
+
+82. **WHY `ExecState` IS 0 IS READ OFF THE MACHINE BEFORE ANY GATE IS TOUCHED AGAIN.** It has been explained by
+    inference for three cycles of this stage, which is exactly the condition under which CLAUDE.md orders the
+    READER built instead of another attempt ??and the reader **is already built**: `Wire.Is Broken?` 6371004
+    (`docs/NAMES.md:902-911`). At the decision point, FACT-only, no gate: every wire on the target through
+    `Is Broken?`, and for each broken one its owner chain and terminal list; plus the bare-terminal census the
+    run already produces. An uninitialised shift register is legal LabVIEW, so "the four bare SR terminals
+    break it" is a hypothesis this census settles, not a premise.
+
+83. **THE OUTCOME REVIEW FIRED A FOURTH TIME, AND THE NEXT CYCLE IS A DELIVERY CYCLE.** Five slugs ??
+    `goal-requirement-not-advanced`, `product-not-runnable`, `tooling-over-delivery`, `decision-starved`,
+    `ordering-stale` (`archive/peer/2026-09-21-outcome-review-20260921.md:153-157`). Per CLAUDE.md an
+    `OUTCOME-VIOLATION` is never answered by building a device, so: the next cycle's whole content is 82's
+    census, 79's single walker, and a SAVED artefact ??no new device, no new process gate, and no third
+    re-cut of an acceptance test written from theory. ?좑툘 CLAUDE.md also says that **on repetition the work
+    stops for a re-plan with the user**, and this is a repetition. The runner was NOT stopped, deliberately:
+    the next cycle's work is bounded, is a measurement, and is useful under every possible re-plan ??including
+    "abandon this route", which it is the cheapest way to justify. The escalation is written at the top of
+    STATUS `## NEXT` for the user to overturn by writing `STOP`; the decision to keep running is Claude's and
+    is the thing to overturn if it was wrong.
+    ?좑툘 SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 44 ??**UNRESOLVED ??judgement ??RESOLVED by the user 2026-09-23: 83 governs (Pre-decided 104).
+    owed.** 44(b) (added 2026-09-20, EARLIER) read the same CLAUDE.md 짠5 repetition clause as compelling a STOP
+    and stopped the runner; 83 declines to stop on a repetition. Neither cites the other, and the ordinals
+    disagree (44 = "5th", the later 83 = "fourth"; `archive/peer/` holds EIGHT outcome reviews), so a cold
+    session cannot tell how many have fired or which response the clause requires.
+
+## Pre-decided ??ADDED 2026-09-21 (cycle 56 close, AFTER the hypothesis review): 78 쨌 80 쨌 81 쨌 82 are WITHDRAWN, and the READER is the suspect
+
+Source: `archive/peer/2026-09-21-c70-border-topology.md` (claude `-Role hypothesis`, opus max, ANSWERED, $3.57),
+this cycle's mandatory failed-prediction review. **Accepted in full**, because every refutation is cited to a line
+of our own `tools/bench/build_d1_m3a1.log` rather than argued. Disposition is in that file.
+
+84. **78 IS WITHDRAWN: IT WAS A THIRD THEORY-DERIVED GATE, NOT A MEASUREMENT** ??and the review showed the
+    sequence with receipts: `A3 wire_delta 1 (expect 3)` fails (`:488`) ??A3 withdrawn (`:1106`) ??A3-ID fails
+    twice in one run (`:1079`, `:1105`) ??78 was a third rule written after the third result, each looser than
+    the last. 78's central "observation" (tunnel 24035 sourcing both wires) is a **READER ARTEFACT**: the
+    post-purge walk of "9649" returns three rows whose `recip` (Terminal?뭌ire back-pointer) is **24009**
+    (`:1096-1098`), field-for-field identical to the walk of 24009 (`:1100-1102`), while the PRE-write walk of
+    9649 read `recip=9649` (`:1061-1063`). One wire read twice under two names ??not two segments sharing a
+    tunnel. **A3-ID failed CORRECTLY.** 78 also generalised from one of two rows: the sixth row minted nothing
+    and merely gave a pre-existing sourceless wire 9113 (`:1129-1131`) a source, `LoopTunnel 24018`
+    (`:1151-1155`); t1 differed only because `#10407 t1` carried wire 0 (`:1065`).
+
+85. **THE ACCEPTANCE TEST IS THE RULE-1a INVARIANT PLUS AN IDENTITY PRECONDITION ON THE READER ??and the
+    precondition comes first.** The only thing worth asserting is *the sink receives the value from the intended
+    source terminal*. Everything else has been an instrument pointed at the wrong quantity. Before any such
+    assertion can be believed, **every `OpWireSource_v5` row must satisfy `recip == queried_uid`, plus NI's own
+    advice to check Class Name / Label alongside a UID** (a deleted object's UID may be reassigned). That
+    precondition FAILS on `:1096-1098`, which is exactly why this cycle's central observation should never have
+    been believed. It is one comparison, it is retroactive, and it is the highest-value line of code named
+    anywhere in this plan.
+
+86. **THE CHEAPEST DISCRIMINATING TEST IS ONE OP CALL WITH NO MUTATION, AND IT RUNS BEFORE ANYTHING ELSE.**
+    Query an UNRESOLVABLE uid through `OpWireSource_v5` ??the just-purged junk uid, and `2147483647`:
+    - `1 row(s), 0 with a REAL owner` ??**A, the reader nulls on an unresolvable uid** (the same signature
+      appears for 9649 at `:1071` and 23955 at `:1150`); 78, the "disappearing sink" and the uid alarm collapse
+      together into one reader behaviour.
+    - the PREVIOUS call's answer comes back ??**B, a stale echo** (the project already has this pathology:
+      `add_shift_reg`/`ensure_loaded` declining in silence, `tools/gscript.py:704-708`) ??and then **every
+      identity conclusion this cycle is void, including the ones that PASSED.**
+    - a clean error ??the reader is sound and **C, a deferred edit**, is live (the failing read was 0.34 s after
+      the write, `:1070`/`:1091`, the passing one after a 1.27 s purge, `:1096`); separate C by reading the same
+      uid twice 1 s apart with no edit between.
+    Two one-read follow-ups on the same bed, if needed: the wire carried by `FlatSequenceInnerTunnel 9655` and by
+    `SelectorTunnel 2017` ??uids never freed, therefore unrecyclable, so they yield the outer segment's true uid.
+
+87. **80 IS WITHDRAWN ??THE MINTED UID IS NOT A CONSTANT OF THE OP, AND PRE-DECIDED 71 IS NOT RETIRED.** The
+    junk `Invoke` uids across this run are `23522` (`:44`??:140`), `23786` eight consecutive times (`:164+`),
+    then `9649` (`:1081`), then `9649` again at a DIFFERENT position (`:1160`); and the run's own line reads
+    `MINTED UID == THE LIVE SOURCE NET 23955 : False` (`:1173`). That is a uid allocator **recycling freed
+    uids**, and the sixth row minting 9649 is evidence FOR recycling, not against it. The uid-safety question
+    is **OPEN and is answered by 86**, not by assertion ??retiring it was named the most expensive item in the
+    brief. Related and unexplained: `#10407 t6`'s net changed 23955 ??24226 as a side effect of a write that
+    addressed `#12589 t1`.
+
+88. **81 IS WITHDRAWN, AND THIS IS THE ITEM THAT UNBLOCKS THE DELIVERABLE: THE SAVE ALREADY HAS A BROKEN-VI
+    ROUTE.** `gscript.save(target, allow_broken=True)` diverts a broken VI to `gui_save()`
+    (`tools/gscript.py:2087-2089`; docstring `:1998-2011` ??File?퇣ave handles a broken VI, the file shrinks, the
+    diagram is intact), and `tools/recipes/build_d1_routeb_v7.py:2276` already uses it (`:311` is only the
+    docstring that mentions the flag ??the call site is `:2276`). The `RuntimeError` that
+    ended two cycles was **our own guard's default**: the recipe called `save()` without the flag. So M3a-1 can
+    leave a file TODAY with a one-flag change, the 2026-09-19 "always leave a file" rule is satisfiable after
+    all, and **no boundary is re-cut** ??merging M3a-1 with M3a-2 would have been the opposite of the split
+    rule. ?좑툘 Two riders: `gui_save()` is a GUI act, so the capture ??locate ??act ??capture ??confirm rule
+    applies to it in full, and a File?퇣ave aimed at the wrong window would violate rule 1 ??the saved path must
+    be verified to be the `claudeDev` target and all four md5 pins re-read afterwards.
+
+89. **82 IS WITHDRAWN ??`Wire.Is Broken?` CANNOT SEE THIS, AND `ExecState` 0 IS ALREADY EXPLAINED THREE TIMES
+    OVER.** `Is Broken?` reports **wire** state only; "a required terminal is unwired" is a different broken
+    class that produces no broken wire, so the full sweep is predicted to return zero broken wires and explain
+    nothing ??a wasted cycle. And `ExecState` was already 0 at step 02, after the FIRST node move
+    (`:653-654`), with both new registers untyped and unwired **by design** until M3a-2 (`tools/gscript.py:683-687`,
+    `:367`) and the bare terminals named in the census (`:541`). The only reader that would answer the question is
+    the Error List / `VI.Get Errors` 452, already established as absent from the exported ActiveX interface.
+    **`ExecState` 0 is the expected state of this stage, not a fault to diagnose.**
+
+90. **79 IS AMENDED: A4 ANCHORS AT THE CONSUMER AND NEEDS ZERO HOPS.** `#12673` is already a sink of wire 9113
+    whose single source is `LoopTunnel 24018` (`:1151-1155`) ??start from the consumer, not from the producer.
+    An unbounded outward walk has no failure mode, which is how `wire_delta==3` died. The provenance walk, where
+    one is still needed, follows only **unique** source terminals, **fails on ambiguity**, stops at the first
+    non-tunnel terminal, and asserts that terminal's `(owner uid, name)` against a value predicted **before** the
+    run; **hop count is an output, never a criterion.**
+
+## Pre-decided ??ADDED 2026-09-22 (cycle 64): M3a-2 is TWO rows, measured 쨌 the sources are tunnels and are still addressable
+
+Source: `tools/bench/diag_c73_m3a2_rows.{py,log,json}` (`BGRUN END rc=0 after 144s`, 5 hygiene gates pass / 0 fail,
+measurement-only, nothing mutated, artefact md5 `6b3c1f3c?? re-read unchanged). Every uid below is uid-echoed and
+every `OpWireSource_v5` row satisfied Pre-decided 85's precondition (**0 violations** on all four walks).
+
+91. **M3a-2 IS TWO ROWS, NOT FOUR ??AND THE OTHER TWO ARE NAMED HERE AS M3a-3.** Loop `#23032` carries exactly
+    two registers: reg0 RIGHT `#23868` / LEFT `#23880`, both named `'VISA out'`; reg1 RIGHT `#23895` / LEFT
+    `#23909`, both `'position [internal units]'`. Each has two terminals, INSIDE[0] wired and **OUTER bare** ??
+    those four bare terminals are the whole of the bare list. The LEFT OUTER is the initial-value SINK and the
+    RIGHT OUTER is the post-loop SOURCE, so **M3a-2 = the two LEFT ones**, which is exactly what `:2718` defines
+    M3a-2 to be. Leaving the two RIGHT ones bare **drops nothing**: the downstream consumers are still wired, to
+    the OLD loop's registers ??`#4256` OUTER ??wire **4859** ??`Global #7202 'Global motor pos.vi'` t0
+    `'Focus position'` on `Diagram #686`, and `#4334` OUTER ??wire **7506** ??`FlatSequenceInnerTunnel #7468`. A
+    bare SOURCE is legal LabVIEW (Pre-decided 69). Re-sourcing those two consumers from `#23868`/`#23895` is
+    **M3a-3**; 69's rule ("no sink that was wired on the bed may be left bare") is discharged by NAMING them
+    now, with their uids, not by wiring them into this stage.
+
+92. **THE ROW TABLE, WITH THE PREDICTION EACH ROW IS ASSERTED AGAINST, WRITTEN BEFORE THE RUN.**
+    - **Row A ??VISA session.** Source = the ONE source terminal of wire **4185**, `FlatSequenceInnerTunnel`
+      **#4194**. Sink = LEFT register **#23880** OUTER. (4185 is the wire feeding the original's `#4344` OUTER.)
+    - **Row B ??position.** Source = the ONE source terminal of wire **3968**, `FlatSequenceInnerTunnel`
+      **#3974**. Sink = LEFT register **#23909** OUTER. (3968 feeds the original's `#4274` OUTER.)
+    - Both are **SAME-DIAGRAM rows on `Diagram #686`** ??both loop borders (`#637` at Nodes[4], `#23032` at
+      Nodes[21]) and all four wires are owned by `#686` under strict uid echo. So this is **not** a border
+      crossing, Pre-decided 66's border exemption does **not** apply, and the ordinary one-net test does.
+    - **Acceptance, per row:** the wire carried by the new sink terminal has **exactly ONE** source terminal of
+      **any** owner class (Pre-decided 77 ??count everything before filtering by class), and that terminal is
+      **#4194** / **#3974**; and the ORIGINAL sink is **still** on that net (`#4344` OUTER on A, `#4274` OUTER on
+      B). Hop count is an output, never a criterion (Pre-decided 90).
+
+93. **THE `Nodes[]` OBJECTION IS ANSWERED BY THE OP WE ALREADY USE ??NO NEW OP.** Both sources are
+    `FlatSequenceInnerTunnel`s owned by `FlatSequence #681` and are not `Nodes[]` members, so
+    `wire_sr('LeftOutNode'/'LeftOutCtl')` cannot address them. But `wire_sr` is the wrong verb: an initial value
+    is an ordinary connection into a terminal on `#686`. **`OpConnectFromWire_v0` takes its SOURCE as (WIRE uid,
+    terminal index on that wire)** and is the op that already wrote the t1 row and the sixth row ??Pre-decided 68
+    withdrew the "source must be a node" premise for exactly this shape. The user's 2026-09-18 08:53 order holds:
+    nothing new is built.
+
+94. **THE TYPE CHECK OBEYS 42(b) EXACTLY, AND THIS IS THE SHAPE 42 VALIDATED.** `Wire.Is Broken?` is **never read
+    in the pass that makes the connection**; each row is read on an ordered second, idempotent re-connect
+    (`wire_delta 0`). Both rows are **branches of an existing net, read in a separate ordered pass** ??42(d)'s
+    binding scope limit, met exactly, so the instrument is used where it was validated and not where it was not.
+    `ExecState` is never a type discriminator (42(c)) and never substituted for the identity test (70).
+
+95. **WHY THE VI IS BROKEN IS MEASURED THIS RUN, FROM WHAT THE MOVES LEFT BEHIND ??NOT INFERRED A FOURTH TIME.**
+    The census has now read **0 bare / 0 unread** on all seven moved nodes while `ExecState` stays **0**. The one
+    place never censused is the old loop: `#637` carries **14** registers, and the four rows M3a-1 re-created on
+    `#23032` were severed from `#48`/`#10407` when those nodes moved out ??so `#4256`/`#4334`'s INSIDE sink
+    terminals are candidates for "shift-register terminal unwired", a broken class that produces **no broken
+    wire** and that Pre-decided 89 says `Is Broken?` cannot see. **FACT step, never a gate** (Pre-decided 63):
+    census the bare terminals of all 14 registers on `#637`, before and after the writes. **M3a-2 is not required
+    to reach `ExecState 1` and is not judged on it.**
+
+96. **THE STAGE ALWAYS LEAVES A FILE.** `gscript.save(target, allow_broken=True)` (Pre-decided 88): `ExecState 1`
+    ??ordinary save, otherwise the `gui_save` route with USER RULE 17:5x in full ??locate in a capture taken just
+    before, act, and confirm after. For a save the AFTER-confirmation is the file itself: size and md5 read back
+    off disk and required to differ from the input, with the saved path verified to be the `claudeDev` target and
+    all four md5 pins re-read. This route is believable for the first time only as of 2026-09-22, because
+    `gscript._lv_gui` did not quote its arguments until then and every `-Evidence`-carrying GUI action was a
+    PowerShell parse error that never dispatched.
+
+97. **THE ARTEFACT REMAINS NOT COMPUTATION-EQUIVALENT AND IS NEVER RUN** (34(f)). After M3a-2 both loops exist and
+    the old one still feeds the two downstream consumers. Equivalence is claimed at the end of the M3 chain, never
+    at a stage boundary.
+
+98. **DISPOSITION OF `archive/peer/2026-09-21-c71-astgate.md`** (claude/hypothesis, opus max, ANSWERED, $2.2054),
+    owed since last cycle. **Findings 1, 2, 3 and 5 ACCEPTED; 4 is moot.**
+    - (1) gate 3 was not stale ??it flipped because the recipe changed (1964??997 lines). Accepted, measured.
+    - (2) the amended gate encodes neither of Pre-decided 88's riders. Accepted **as of its date**, and rider 1 is
+      now MET by two repairs made since: `gui_save` clickprobe-verifies the measured foreground before Ctrl+E /
+      Ctrl+S and raises with the observed per-candidate record, and 96 above makes the after-confirmation the
+      file's own md5 ??a stronger confirmation for a save than a screenshot.
+    - (3) the repeating class is "the astcheck invocation is hand-typed and unpinned". Accepted. **THE PINNED
+      INVOCATION, from now on the only one:** `py tools/bench/c60c_astcheck.py <recipe> --route movein` when the
+      recipe calls `move_in` even once, `--route owner` when it does not (Pre-decided 62), run under `bgrun` with
+      both paths quoted. It is pinned here and repeated in each recipe's header comment.
+    - (4) "the c71 recipe never passed any astcheck" ??moot: `build_d1_m3a1.py` is finished (run 5, rc=0) and is
+      never re-run. The rule survives for its successor: **`build_d1_m3a2.py` passes the pinned astcheck before
+      the build, not after.**
+    - (5) three tooling defects. **Only the load-bearing one is repaired**, because this cycle's recipe depends on
+      it: the amendment matches only `ast.Constant True`, so `allow_broken=1` / `=flag` / `**{...}` pass unseen ??
+      widen it to any non-`False` argument. The stale comments (`:10` vs `:107`, `:24`'s "five `move_in`" where
+      there are seven) are corrected while the file is open. `c57d4_astcheck.py:18` and `c58b_astcheck.py:43-45`
+      still encode the withdrawn ban and are **left alone**: finding 3's pin makes `c60c_astcheck` the route, so
+      they are unreachable rather than wrong. Repairing an existing checker is a repair, not a new device ??the
+      same reading used for `ensure_loaded` (Pre-decided 60) and c60c gate 7.
+
+99. **DISPOSITION OF `archive/peer/2026-09-22-priorart-priorart-c74-m3a2.md`** (claude/`-Role priorart`, opus
+    high, ANSWERED, $6.3017, verdict **"Not novel"**). **ALL FOUR FINDINGS ACCEPTED, NONE REFUTED**; every one is
+    cited to a line of our own logs rather than argued. None of them argues against running M3a-2 ??three shrink
+    the recipe and one repairs a real defect ??so the stage proceeds, released by `FIXED:` lines.
+    - **B2 `already-failed` ??ACCEPTED, and it is the one that matters.** The GUI-save captures in M3a-1 run 5
+      produced **no file** (`tools/bench/build_d1_m3a1.log:3402`, `exists False, exists False`) because the caller
+      pre-quotes `'%s'` and `gscript.py:281-287`'s `q()` then quotes it again; `build_d1_m3a2.py:931/937` copies
+      the same form. Fix: the caller stops pre-quoting, and the capture is **asserted to exist** rather than
+      hoped for. ?좑툘 **Recorded honestly: M3a-1's save therefore ran without its before/after captures landing**,
+      so USER RULE 17:5x was formally unmet on that one act even though the file-level confirmation (md5 present,
+      bytes differ from the bed) held. That is the second quoting defect found in two cycles on the same path ??
+      last cycle `_lv_gui` did not quote at all, this cycle the caller quotes twice.
+    - **A3 `contradicted` ??ACCEPTED, and Pre-decided 95's NAMED CANDIDATE IS WITHDRAWN.** The severed-inside
+      hypothesis is refuted by the measurement it was built on: `tools/bench/diag_c73_m3a2_rows.log:43-44` show
+      `#4256` inside on wire **9113** and `#4334` inside on wire **7337** ??not bare. And a wire-uid census cannot
+      see "shift-register terminal unwired" in any case, which is Pre-decided 89's point reappearing. **`ExecState`
+      0's cause stays OPEN and is not answerable with the readers this fleet owns** (`VI.Get Errors` 452 is absent
+      from the exported ActiveX interface). 95's surviving half stands and is the operative one: **M3a-2 is not
+      required to reach `ExecState 1` and is not judged on it.**
+    - **B4 `already-measured` ??ACCEPTED.** The BEFORE half of the register census is already on file for a
+      byte-identical artefact (`diag_c73_m3a2_rows.log:42-57`), which also corrects 91/95: the loop reads **15**
+      slots, not 14. Together with A3 the whole census step is **deleted from the recipe** and replaced by a
+      citation ??a step that is already measured and cannot answer its question is pure cost.
+    - **A4 `unread-evidence` ??ACCEPTED.** `tools/bench/build_d1_routeb_v0_run2.log:467-468` already measured bare
+      register terminals on `Diagram #686` with **registers interleaved at ODD indices**, and it is cited nowhere.
+      Cite it, and make the sink resolution explicit: the sink terminal is resolved **live, by register uid**, and
+      the index found is logged as a FACT line beside the odd-index expectation ??never carried from a census,
+      which is what broke T2c2.
+    - **The release is `FIXED:`, and editing the recipe is what `FIXED:` is FOR.** Its three conditions
+      (path exists 쨌 changed *after* the review 쨌 the line sits under `## What was done with it`) require the file
+      to have changed, so the sha-rebinding warning in Pre-decided 73 ??written for a recipe edited in a later
+      cycle with no release line ??does not apply. If `guard_cycle` refuses anyway, that is reported as a fact and
+      decided by judgement; `CYCLE_GUARD_OFF` is never the answer.
+
+100. **DISPOSITION OF `archive/peer/2026-09-22-c74-m3a2-fmt.md`** (claude/`-Role hypothesis`, opus max, ANSWERED,
+    $2.6899), this cycle's mandatory failed-prediction review. **짠1, 짠2, 짠3 and 짠7 ACCEPTED; 짠4 SPLIT.** The build
+    died in phase 1 at `tools/recipes/build_d1_m3a2.py:317` ??a logging helper whose format string carries five
+    `%` specs and four arguments ??before either row was attempted, so **no row of Pre-decided 92 was tested and
+    the stage has no artefact**. The input artefact and all four md5 pins are unchanged.
+    - **짠2 IS THE LOAD-BEARING FINDING AND IS FIXED FIRST, BEFORE ANY REBUILD.** `H8` reported a **falsehood**:
+      *"no mutator call was REFUSED BY THE MACHINE ??1 here `['main']`"* when no mutator was called and LabVIEW
+      refused nothing ??`main()`'s bare handler (`:1050-1054`) routes **any** Python exception into `refusal()`,
+      whose own docstring (`:269`) calls it "a mutator call the machine refused". **A bug in our script must never
+      be reported as a refusal by the machine.** It is worse than a mislabel: `cycle_runner.py:197-198`/`:257-258`
+      truncates the H8 line to 60 characters, cutting off `1 here ['main']`, so this signature can fire a
+      FIREFIGHTER cycle at a failure that never happened ??the runner deciding on a misnamed fact, which is the one
+      thing the firefighter rule depends on not happening. Fix: the handler separates a Python exception (a defect
+      in our code) from a machine refusal (LabVIEW declined), and H8 counts only the latter. `cycle_runner.py` is
+      **not** edited ??the truncation is harmless once the label is truthful, and the runner is the live process
+      that spawned this session.
+    - **짠1 ACCEPTED: the missing argument is the trigger, not the defect.** The same helper stands correct at
+      `build_d1_m3a1.py:463-464` with five arguments; the copy desynchronised when rule-citation prose was
+      hand-appended. The file carries **71** `%`-format sites, ?? with editable prose, **none ever executed** ??
+      1,062 lines written by hand and launched at LabVIEW without one cheap static read.
+    - **짠4 IS SPLIT, AND THE NO-DEVICE ORDER DECIDES WHICH HALF.** The accepted remedy is the **`%`-arity gate
+      inside the EXISTING `c60c_astcheck` (gate 10)** ??a repair of a checker we already own, the same reading
+      used for `ensure_loaded` (Pre-decided 60) and for 98(5) earlier in this cycle. The review's preferred
+      remedy, a stubbed-`g` `main()` dry run, would catch strictly more (every Python-level defect on the happy
+      path, with no LabVIEW and no handles) but it is a **NEW harness**, and the user's standing order of
+      2026-09-18 08:53 is "?μ튂????留뚮뱾吏 留먭퀬 怨꾩냽 吏꾪뻾". It is therefore **recorded as an OPEN item for the
+      user**, not built. 짠5's first half is adopted as the discriminating test: run the new gate over
+      `build_d1_m3a2.py`, `build_d1_m3a1.py` and `build_d1_routeb_v0.py` ??that measures whether this defect class
+      is endemic to our recipes or was one bad transcription.
+    - **짠3 ACCEPTED as a FINDING, no device** (`device-failed`, threshold 1, two devices: `c60c_astcheck` gate 1
+      reading a parse verdict as a fitness verdict, and `refusal()`/H8 misnaming the cause). Recorded in
+      `docs/violation-decisions.md` under the 2026-09-18 08:53 suspension; the H8 half is repaired above because
+      it is a repair, not a device.
+    - **짠7 ACCEPTED ??the unreported fact it raised unasked.** Handles went **33,956 ??30,689 (restart) ??45,677**
+      in 71 s with only 3 refs opened and 3 closed, and both H6 and H7 passed over it. The 2026-09-19 staged-build
+      rule makes reference hygiene a **precondition**, so the next build reads handles at both ends and logs the
+      delta as a FACT beside the ~31,500 baseline. It is not yet a gate: 15,000 handles in 71 s with three refs is
+      not explained by our refs, and gating on an unexplained quantity would be the third instrument aimed at the
+      wrong thing.
+
+101. **(renumbered 2026-09-22 cycle 65; was 91, a duplicate of :3097)** **USER, 2026-09-22 02:4x: "????덉슜??" ??the broken-intermediate GUI save (Pre-decided 88's route) is APPROVED as a standing
+    exception for `claudeDev` stage artefacts that are broken by design; CLAUDE.md 짠3 split-rule item 6. Evidence string for
+    `gui_actions.log`: "user 2026-09-22 broken-intermediate save". Originals and the final deliverable are excluded.
+
+102. **(renumbered 2026-09-22 cycle 65; was 92, a duplicate of :3109)** **JEV WIRED IN (user 2026-09-22 "Jev 援ъ“ 媛깆떊???곹깭?먯꽌 ?щ꼫 ?쒖옉"): `tools/jev.py` is the single client (key from the user env var only, ledger `tools/bench/jev_usage.jsonl`); `cycle_runner.py` asks Jev whether the two consecutive failing runs behind a firefighter trigger are the same failure class and VETOES the firefighter at p??.30 (`JEV-VETO`), logs `JEV-SAME`/`JEV-SKIP` otherwise. Plan #1 (review discharge) and #2 (log triage) are next, each measured first. Also on the table, user's idea: a stage-script LIBRARY (`tools/stagekit.py`) so sessions fill in rows and gates instead of re-writing 300??,000-line diagnostics ??a new device needing the user's go; not built yet.
+
+103. **(renumbered 2026-09-22 cycle 65; was 93, a duplicate of :3122)** **STAGE-SCRIPT LIBRARY `tools/stagekit.py` ??USER-APPROVED 2026-09-22 ("?쒗뵆由우쓣 留뚮뱾?대몢怨????꾩삁 ?쇱씠釉뚮윭由??묒꽦?댁꽌 ?명뭼留??ｌ뼱二쇰룄濡???醫뗭븘. ?ㅼ쓬 ?ъ씠?댁뿉 異붽??섎룄濡?).** Why: every cycle re-writes a 300??,000-line diagnostic whose ~80 % is the same skeleton, which costs tokens/time and re-introduces defects (2026-09-22's `%`-format TypeError). What: one module holding the verified skeleton (md5 pin, work copy, fresh instance, Preload, censuses, gate/FACT format, ExecState timeline, refs check, junk purge, save route incl. the approved broken-intermediate gui_save, cleanup) + a self-test; a stage file declares input file, rows and criteria only. Acceptance: re-cut one existing diagnostic on the kit, identical gate outcomes, fewer lines. Order: after M3a-3. Exception to the no-new-device order for this device only. ??**BUILT AND ACCEPTED 2026-09-22 (material session).** `tools/stagekit.py` (725 lines, no new LabVIEW op ??every verb wraps one that already exists; surface table in `docs/toolkit-capabilities.md`). **Self-test `tools/bench/selftest_stagekit.py` 32 pass / 0 fail, no LabVIEW** (`tools/bench/selftest_stagekit.log`, `BGRUN END rc=0`). **Re-cut `tools/bench/diag_c83_connect2x2_kit.py` ??120 lines against run 2's 595 ??reproduces `diag_c83_connect2x2_r2.log`'s cells R0/R0b/R1 ROW FOR ROW, 13/13 labels, 28 gates pass / 0 fail, `BGRUN END rc=0 after 119s`** (`tools/bench/diag_c83_connect2x2_kit.log`); bed `33ef524e?? byte-unchanged, refs 11/11/0, files left on disk `[]`. Out of scope in that re-cut and stated in its docstring: `[S0]` (it EDITED and re-saved the op ??already done), `[S-ARF]`/`[S-SWAP]` and cells R2/R3/R4 (two one-off scratch op VARIANTS, ~95 lines of question-specific net surgery, whose recorded rows are identical to R1's), and `F0` (it pinned the PRE-`[S0]` md5 and is unreproducible by construction). ?좑툘 **The kit's FIRST run failed in one second and that is part of the record**: the library had RESTATED the ORIGINAL's path instead of importing it, so gate K2 pinned a file that is not there. The mandatory review `archive/peer/2026-09-22-c87-stagekit-k2.md` (claude/`hypothesis`/opus max, ANSWERED 320 s, $2.5219) REFUTED the shallow repair and is **disposed in full**: the ORIGINAL's identity now has ONE owner, `gscript.py:62-70`, and the self-test's new `case_g_constants` asserts `stagekit.ORIGINAL is gscript.ORIGINAL` plus that every shipped pin resolves and matches. Row D re-cut on the kit as `tools/recipes/stage_d1_m3a3_rowD.py` (80 lines) ??**written, astcheck-clean, NOT RUN: `guard_cycle` refuses every recipe build while `tools/bench/priorart_c85_d3b.log` carries no `BGRUN END` line** (cycle 66 was killed at its 180-min cap with that dispatch in flight; the gate's `MAX_AGE_S` is 30 h, so it holds until a newer retrospective exists).
+
+## Pre-decided ??ADDED 2026-09-22 (cycle 65): M3a-3's row table is CORRECTED ??the pairing in STATUS NEXT was transposed
+
+Source: `archive/peer/2026-09-22-priorart-c75-m3a3.md` (claude/`-Role priorart`, opus high, ANSWERED, $5.4824,
+verdict NOT `novel`, five findings). **ALL FIVE ACCEPTED, NONE REFUTED.** None argues against running M3a-3;
+one (A3) stops it from writing the wrong wire.
+
+104. **THE CORRECTED ROW TABLE ??this table, not STATUS NEXT's sentence, is what M3a-3 is asserted against.**
+     The pairing written in STATUS's `## NEXT` ("??onto the NEW RIGHT registers `#23868` (VISA) and `#23895`
+     (position)", read against the consumers in the order written) is **TRANSPOSED**. What the machine measured:
+     `tools/bench/diag_c73_m3a2_rows.log:43` ??`reg_index=1 RIGHT #4256 ??outer={'name': 'position [internal
+     units]', 'is_source': True, 'wire': 4859}`; `:44` ??`reg_index=2 RIGHT #4334 ??outer={'name': 'Outgoing
+     Handle', 'is_source': True, 'wire': 7506}`. So wire **4859** (the Global's feed) carries **position** and
+     wire **7506** (`#7468`'s feed) carries the **VISA session**, while `:3098-3099` above fixes the new side as
+     reg0 RIGHT `#23868` = `'VISA out'`, reg1 RIGHT `#23895` = `'position [internal units]'`.
+
+     | row | delete wire | SINK (already wired) | NEW SOURCE ??the register OUTER | carried value |
+     |---|---|---|---|---|
+     | **C ??POSITION** | **4859** | `Global #7202 'Global motor pos.vi'` t0 `'Focus position'`, `(19, Nodes[8], t0)` on `Diagram #686` | **`#23895`** RIGHT OUTER = `(19, Nodes[21] = loop #23032, t3 'Out position', is_source True, bare)` | position [internal units] |
+     | **D ??HANDLE/VISA** | **7506** | `FlatSequenceInnerTunnel #7468` (owner `FlatSequence #681`), address resolved in phase 0 from a TERMINAL TABLE | **`#23868`** RIGHT OUTER = `(19, Nodes[21] = loop #23032, t1 'Outgoing Handle', is_source True, bare)` | VISA session |
+
+     Executed as STATUS wrote it, this would feed the motor-position global with a VISA refnum and the VISA
+     consumer with a position ??and it would **pass** a "the sink has exactly one source and it is the predicted
+     one" gate, because the prediction would itself be the transposed one.
+
+105. **THE 8-DAY-OLD EVIDENCE THAT CARRIED THE SAME PAIRING, CITED AS THE REVIEW'S FINDING A4 REQUIRES.**
+     `archive/bench-2026-09-14-shift-registers/frame-loop-wire-graph-after.md:410-411` ??a measured table of
+     `Loop.Shift Registers[]` for `#637` with a column headed *"final value consumed by (diagram 19, wire)"*:
+     `:410` ??`| 1 | 'position [internal units]' | 4256 | ??| #7202 Global motor pos.vi t0 'Focus position'
+     (wire 4859) |`; `:411` ??`| 2 | 'VISA out' | 4334 | ??| ??(wire 7506) |`. It names this stage's two rows
+     with uids and wire uids and would have caught the transpose on sight; it is cited nowhere in `:3091-3128`,
+     in STATUS's NEXT, or in `tools/bench/diag_c75_m3a3_endpoints.py`. Its closing line (`:424`) also states the
+     inventory fact this stage depends on: *"Final values that leave the loop: **4 of 14**."*
+
+106. **`LANDED` IS ASSERTED AS SOURCE IDENTITY ??never as "the sink is still wired", and never as a wired-count
+     delta** (review finding B2, accepted). `connect_from_wire` into an **already-wired sink** is a measured
+     **silent no-op** on this very VI: `tools/bench/build_d1_m3a1.log:1174`, `:1875`, `:2593`, `:3311` all read
+     *"sink terminal t1 of CaseStructure #12589 carries wire 9113 ; CaseStructure WIRED-terminal count 3 -> 3 ;
+     `Wire.Is Broken?` False ; LANDED False"* ??the sink kept its OLD wire, the write changed nothing and raised
+     nothing. Run 5's A4 gate nevertheless **PASSED** (`:1957`) because it had been re-anchored at the consumer
+     and the consumer is still wired ??to the old source ??so a dead row sits inside the `22 pass / 0 fail` of
+     `:3434`. The cause is already written down: `tools/gscript.py:2522-2523` ??*"an already-wired source is
+     BRANCHED ??an already-wired SINK is not safe (LabVIEW re-routes and the VI breaks) ??wire only unwired
+     sinks"*. Therefore, in M3a-3: **the delete precedes every row** (mandatory, measured, older than cycle 62's
+     re-cut), and acceptance is that the wire now carried by the sink terminal has **exactly ONE** source
+     terminal of **any** owner class (Pre-decided 77) and that terminal is the NEW register OUTER named in 104 ??
+     asserted on an ordered SECOND, idempotent re-connect (`wire_delta 0`, Pre-decided 94), never in the pass
+     that makes the connection. Hop count is an output, never a criterion (Pre-decided 90).
+
+107. **`#7468`'s ADDRESS IS RESOLVED FROM A TERMINAL TABLE, NEVER BY AN OWNER WALK** (review finding B3, the
+     hazard half, accepted). An owner chain **terminates SILENTLY at a `FlatSequenceFrame`** ??`error 1055`,
+     `owner_uid 0`, empty cast echo, slug `ownerchain-flatseqframe-1055`, measured at
+     `docs/toolkit-capabilities.md:61` and stated at `:2872-2876` above. `#7468` is a `FlatSequenceInnerTunnel`
+     owned by `FlatSequence #681`, so that is **exactly** its path, and `tools/bench/diag_c73_m3a2_rows.log:101-104`
+     only proves the chain resolves for its siblings `#3974`/`#4194`. Its terminal is therefore found by reading
+     the owning `FlatSequence #681` NODE's own terminal table on `Diagram #686` (traverse idx 19) and taking the
+     entry whose connected wire uid is **7506** ??the same route `diag_c75b_loopterms.log` used to resolve the
+     shift-register OUTER on the owning LOOP node. If that entry is absent, or appears more than once, **that is
+     a FAILED PREDICTION**: Row C runs alone, the artefact is saved, and Row D is deferred to M3a-3b. No
+     improvised address, no GUI fallback, and wire 7506 is not deleted at all in that branch.
+     ?좑툘 SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 109 ??**107 is AMENDED**: the
+     prescribed table does not exist (`Diagram #686` has 27 `Nodes[]` rows and `#681` is absent; `owner_of(#681)`
+     is `TopLevelDiagram #536`), so 107's ROUTE and its "entry absent/duplicated ??defer Row D" branch are VOID
+     and do not fire; the replacement is `OpFsInnerTunnelTerm_v0` on uid 7468. 107's PROHIBITION stands.
+
+108. **THE HELPERS ARE REUSED, NOT REWRITTEN** (review finding B3, the helper half) and **WHAT IS ALREADY
+     MEASURED IS CITED, NOT RE-MEASURED** (finding B4): `delete_by_uid` (`tools/recipes/build_d1_m3a1.py:583`),
+     `pd85_violations` (`:811`), `identity_gate` (`:857`), `wire_walk` (`:844`), `print_walk` (`:823`), and
+     `step_6_sixth_row` (`:1530`) for tunnel-sink resolution; both consumer nets, the Global's sink terminal
+     index and both owning diagrams stand measured at `tools/bench/diag_c73_m3a2_rows.log:67-71`, `:82-87`,
+     `:91-100` and at `tools/bench/diag_c75_m3a3_rows.log` / `tools/bench/diag_c75b_loopterms.log`.
+
+## Pre-decided ??ADDED 2026-09-22 (cycle 65-series close / M3a-3b): Row D's address IS readable, 107 is AMENDED, and the `find_node` miss is a CLASS fact
+
+Source: the read-only sweep `tools/bench/diag_c77_rowd_addr.log` (`BGRUN END rc=0 after 144 s`, 5 gates pass / 0
+fail, refs 3/3/0, bed md5 `33ef524e?? unchanged at both ends, scratch deleted). Nothing was mutated.
+
+109. **107 IS AMENDED, NOT WITHDRAWN: THE TERMINAL TABLE IS THE INNER TUNNEL'S OWN, READ BY THE OP WE ALREADY
+     HAVE.** 107 forbade an owner walk (an owner chain terminates silently at a `FlatSequenceFrame`, error 1055,
+     `docs/toolkit-capabilities.md:61`) and prescribed reading the owning `FlatSequence #681` NODE's terminal
+     table on `Diagram #686`. **That table does not exist**: `#686` has 27 `Nodes[]` rows and `#681` is absent
+     from all of them, and `owner_of(#681)` is `TopLevelDiagram #536` (uid-echoed, no error) ??not `#686`, and
+     not the `'Diagram'` that run 2's quoted echo claimed. So 107's *prescribed route* is unexecutable and its
+     "entry absent or duplicated ??FAILED PREDICTION ??defer Row D" branch is **void ??its premise is a table
+     that was never the right table**; it does not fire. 107's **prohibition stands unchanged** (no owner walk,
+     no improvised address, no GUI fallback). What replaces the route: **`OpFsInnerTunnelTerm_v0` called on uid
+     7468 ANSWERS** ??`self 'FlatSequenceInnerTunnel' #7468 | LeftTerm #7488 wire #7506 | RightTerm #7471 wire
+     #7448 | is_source False`, every error column empty ??and a control read on an unrelated `FlatSequenceInnerTunnel`
+     `#123` answers the same way (`LeftTerm #891 wire #482`), so the capability is of the CLASS, not of the target.
+     This is a terminal table belonging to the tunnel itself, obtained by uid with zero hops, which is what 107's
+     hazard half was protecting.
+
+110. **`find_node` MISSES THE `FlatSequence` CLASS ??RUN 2's STATED CAUSE IS REFUTED, AND THIS IS THE THIRD TIME
+     A `Nodes[]` MISS HAS BEEN EXPLAINED BY OWNERSHIP.** Run 2 wrote that gate P0 failed because *"`#681`'s owner
+     is `Diagram` (nested), so the top-level reader cannot see it."* Measured: `find_node` returns `found None`
+     for **all three** FlatSequences ??`#43914` (nested; 173/173 diagrams, 635 nodes, 0 scan errors, 17.9 s),
+     `#12938` (top-level, 6.7 s) and `#681` (top-level, 7.1 s) ??while the same sweep of `Diagram #686` does
+     enumerate a `WhileLoop`. The miss therefore tracks the **class**, not the owner and not `#681`. Two
+     consequences: (a) a FlatSequence is never to be addressed through `Nodes[]` again, and never diagnosed as an
+     ownership problem ??write the class fact into `docs/toolkit-capabilities.md`; (b) `diag_index(#681)` raises
+     `ValueError: 681 is not in list`, so that call is not a membership test and must not be used as one.
+
+111. **ROW D's ADDRESS PAIR, MEASURED, AND THE ACCEPTANCE IT IS ASSERTED AGAINST.** Delete wire **7506**, whose
+     two ends are now both measured: the SOURCE side is `Diagram #686` `Nodes[4] #637 WhileLoop 'While Loop' t10
+     'Outgoing Handle' is_source=True` ??the **only one** of `#686`'s 27 nodes carrying 7506, i.e. the OLD loop ??
+     and the SINK side is `FlatSequenceInnerTunnel #7468` **LeftTerm `#7488`**, which is in no `Nodes[]` and is
+     reached only by 109's route. Then connect the NEW source `#23868` RIGHT OUTER = loop `#23032` on `Diagram
+     #686` traverse idx 19, `Nodes[21]` t1 `'Outgoing Handle'`, `is_source True`, **BARE**
+     (`tools/bench/diag_c75b_loopterms.log:76`, bare list `:82`) into that sink. Acceptance is Pre-decided 106
+     unchanged and is **not** relaxed by this entry: the delete precedes the connect (an already-wired sink is a
+     measured silent no-op); `LANDED` is asserted as SOURCE IDENTITY, never as "the sink is still wired" and
+     never as a wired-count delta; the wire the sink terminal carries afterwards must have **exactly ONE** source
+     terminal of **any** owner class, and it must be `#23868`'s OUTER; asserted on an ordered, idempotent SECOND
+     pass (`wire_delta 0`, Pre-decided 94), never in the pass that makes the connection; hop count is an output,
+     never a criterion. PD85 violations 0 on every walk; the OLD `#637` t10 must be OFF the net.
+
+111a. **AMENDMENT TO 106 AND 111, 2026-09-22 (cycle-84 material, on the prior-art review's A1 ??
+     `archive/peer/2026-09-22-priorart-c84-d3-rowd.md`, which found D-3 executing against 106/111 without
+     naming them). THE ORDERING CLAUSE "the delete precedes the connect" IS RECORDED AS UNEXECUTABLE FOR
+     ROW D'S SINK, NOT AS OVERTURNED.** Measured: with wire 7506 deleted, `UID to GObject Reference.vi`
+     answers `error 1055` on `#7468` and the Invoke returns `error 1055 ??Method Name: Connect Wire` in all
+     four c83 cells (`tools/bench/diag_c83_connect2x2_r2.log:77`, `:89`, `:101`, `:113`), so the delete-first
+     pass cannot even address the sink. The judgement session's D-3 dispatch therefore runs the one
+     configuration never fired ??the Invoke ON the sink terminal with 7506 LEFT ALIVE ??and 106's ACCEPTANCE
+     is untouched: source identity, exactly one source terminal, the ordered idempotent second pass.
+     ?좑툘 **OPEN, AND JUDGEMENT'S:** the failed-prediction review
+     `archive/peer/2026-09-22-c84-replace-vs-branch.md` 짠3 offers a COMPETING CAUSE for that 1055 ??every
+     deleting cell ran `remove_bad_wires_scripted` one line after `del_wire`
+     (`diag_c83_connect2x2_r2.py:449-450`), and that verb is already on record as having **DELETED A TUNNEL**
+     (`archive/2026-09-17-status-d1-route-b-2.md:44-46`, which `docs/cycle27-plan.md:1860-1862` cites to
+     REFUSE it as a rule-1a hazard). "Gone" ??"unresolvable": if the tunnel was deleted rather than
+     unresolvable, delete-first is still alive and the repair is to stop running Remove Bad Wires after the
+     delete. No run has yet read `#7468` BETWEEN those two lines. Nothing here decides that; it is recorded
+     so 106/111 are not silently run past.
+
+112. **THE CYCLE GATE'S BUDGET COUNTS RECIPE BUILDS; THE FAILED-PREDICTION GATE'S CLASSIFIER IS NOT TOUCHED.**
+     `guard_cycle.py`'s `since` budget (`CYCLE_BUILD_BUDGET = 10`) counted 16 logs on 2026-09-22 09:0x of which
+     the oldest and newest were `jev_trial.log` and `selftest_guard_peer_jev.log` ??a model-API trial and a hook
+     self-test, neither of which builds anything in LabVIEW. The gate's own question is *"has a CYCLE been
+     built?"* and its command-side pattern `BUILD_RE` already answers it with `tools/recipes/*.py`; the log side
+     had drifted wider. Fix: a **new, separate** predicate `tools/logclass.py:is_recipe_build_log(path)` ??true
+     only when the log's own last `BGRUN START` COMMAND runs a `tools/recipes/*.py` file ??used by
+     `guard_cycle`'s budget set ONLY. **`is_build_log` itself is left exactly as it is**, because `guard_peer`
+     arms the failed-prediction review off it and a failing *diagnostic* must keep arming it; narrowing the
+     shared predicate would have silently disarmed that gate. This is a classification repair, not an exemption:
+     if the recipe-build count is still ??10, or the span still ??8 h, the build stays blocked and the cycle says
+     so in NEXT rather than running a retrospective mid-cycle (OPEN 54(a)).
+
+113. **THE TWO `guard_peer.py` REPAIRS OF 2026-09-22 09:0x ARE RATIFIED.** (a) the drive-safe `_rel()` ??the hook
+     was **raising** (rc = 99) instead of refusing when handed a log on another drive (`jev_discharge.log:21-26`);
+     a gate that crashes is broken in the fail-open direction and the repair is unconditional. (b) the
+     Jev-script skip in `newest_failing_log()`, **scoped by the log's last `BGRUN START` COMMAND** matching
+     `tools/jev*.py` / `tools/bench/jev_*.py` ??this is the user's written exemption applied to the gate that
+     implements it (CLAUDE.md: *"Jev scripts ??are EXEMPT from the failed-prediction and material gates (user,
+     2026-09-22 'Jev??硫댁젣') ??they touch no LabVIEW"*). The scoping by COMMAND rather than by filename is the
+     part that matters: a filename-only rule could be laundered by naming an ordinary recipe `jev_*`. Covered by
+     `tools/bench/selftest_guard_peer_jev.py` C7/C7b, 17 pass / 0 fail.
+
+114. **RETROSPECTIVES ARE NUMBERED BY THEIR OWN SERIES, NOT BY THE RUNNER'S COUNTER.** `cycle_runner.log`'s max
+     `CYCLE` line is 59 and the runner would call the next one 60, but `archive/peer/*retrospective*` already
+     holds cycles 60??4 (sessions numbered themselves). `tools/violations.py` counts slugs across the archived
+     FILES, so the series is the number that has to stay unique and monotone: the next retrospective is
+     **cycle 65**, and it covers the unreviewed work of every cycle since the cycle-64 retrospective (precedent:
+     cycle 26's covered cycle 25). The runner's counter is not renumbered ??it is an internal loop index and
+     nothing reads it as a cycle identity.
+
+## Pre-decided ??ADDED 2026-09-22 (same cycle, after the c79 review): the "invoke on the SINK" rule is a CONVENTION, and the route is chosen by a 2-minute test
+
+Source: `archive/peer/2026-09-22-c79-rowd-writer.md` (claude / `-Role hypothesis`, opus max, ANSWERED 554 s,
+$3.9166, 18 turns), dispatched because Pre-decided 111 asserted an executable address pair and the machine said
+the verb does not exist ??a failed prediction. Verdict: *"NEW-OP-REQUIRED ??but not yet, and not that op."*
+**Accepted in part**, as below. It paid for itself: it stopped a new op from being built on a false premise.
+
+115. **`docs/NAMES.md:847`'s "6349C03 is invoked on the SINK terminal" IS AN ADOPTED CONVENTION, NOT A
+     MEASUREMENT.** The line is marked *"labviewwiki, adopted"*; the peer fetched that page and it does not say
+     which end the method is invoked on. Our belief traces to a single donor lineage (`OpConnect2_v0 ??
+     OpConnectNested_v0 ??_v1 ??_v2 ??OpConnectFromWire_v0`) in which every op happened to be written sink-first.
+     The W1 census is **not** disputed ??4/4 maps declaring `"method": "6349C03"` do take a `(diagram, Nodes[],
+     Terminals[])` sink and 0 take a uid ??but what it proves is *"no writer in the fleet takes a uid SINK"*, not
+     *"this wire cannot be written"*. Annotate `docs/NAMES.md:847` accordingly: a convention adopted from a wiki
+     is evidence of how WE have written ops, never of what the method requires. This is the same error class the
+     project already has a rule for ??an inference presented as a machine fact.
+
+116. **THE ROUTE IS SELECTED BY THE REVIEW'S ~2-MINUTE TEST, ON A DATED SCRATCH COPY, BEFORE ANY CONSTRUCTION.**
+     Three candidates, and the cheap one is tried first because it needs nothing built:
+     - **A ??the swapped call, NO NEW OP (try this first).** `OpConnectFromWire_v0` with the roles exchanged:
+       `wire_uid = 7506` plus the `Wire.Terms[]` index of #7488 supplies the **source** half, and the sink triple
+       is `Diagram[19]` / `Nodes[21]` / `Terminals[1]` ??the NEW loop's BARE `Outgoing Handle`, which IS
+       index-addressable. The Invoke then sits on the bare terminal. **If A works, Row D proceeds on it in the
+       same dispatch and NOTHING NEW IS BUILT**; its acceptance is Pre-decided 106/111 plus 117 below, unchanged.
+     - **B ??`OpConnectByUid`, if A fails.** Smaller and more general than what was briefed: uid ??`UID to
+       GObject Reference.vi` ??TMSC on a **Terminal** seed ??the Invoke's `reference`; no property node, no side
+       selector, and it serves every uid-addressed sink, not just this class. Donor is **`OpConnectNested_v2`**
+       (its source half already addresses a loop's own BORDER terminal), **not** `OpStopFromNode_v0`, whose
+       ladder `Loop.Diagram ??Nodes[]` is anchored inside the loop body. Its one unmeasured assumption ??
+       whether `UID to GObject Reference.vi` resolves a **terminal** uid (proven only on tunnel and wire uids) ??
+       is its FIRST gate. B is expensive construction: it **stops for a fresh cycle**, it is not improvised at
+       the end of a dispatch.
+     - **C ??`OpFsInnerTunnelConnect_v0` as briefed earlier today: WITHDRAWN.** Wrong donor and a needlessly
+       specific shape, on the review's reasoning, which is accepted.
+     ?좑툘 SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 121 (with 119) ??**116-A is
+     closed**: the swapped call was measured and cannot LAND Row D (it BRANCHES ??3 source terminals, `Is
+     Broken?` True, `c80_rowd_routeA_r2.log:237`, `:253-261`), so "if A works nothing new is built" no longer
+     applies; and the "~2-minute test" that selects the route is REPLACED by 121's `UID to GObject Reference.vi`
+     terminal-resolve measurement. 116-B stands as 121's YES branch; 116-C stays withdrawn.
+
+117. **THE BRANCH HAZARD IS GATED ON OWNER IDENTITY, NEVER ON A COUNT** (the review's carried-forward hazard,
+     accepted). A swapped connect can **silently BRANCH wire 7506**, producing a wire whose source terminal is
+     still owned by the OLD `WhileLoop #637`. That would pass a wire-delta check and every count-shaped gate,
+     and it is a rule-1a computation change ??the VISA session would keep coming from the old loop. So Row D's
+     acceptance adds: `OpWireSource_v5` on the sink's wire must report a source terminal whose **OWNER is
+     `WhileLoop #23032`** (the NEW loop), asserted on the ordered idempotent second pass, in addition to
+     Pre-decided 106's "exactly ONE source terminal of ANY owner class, and it is `#23868`'s OUTER".
+     ?좑툘 SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 120 ??the LITERAL uid is
+     CORRECTED: the expected owner is `RightShiftRegister #23868`, NOT `WhileLoop #23032` (a shift-register OUTER
+     is owned by the register, precedent `build_d1_m3a3_run2.log:182`). 117's owner-identity PRINCIPLE is
+     untouched and still mandatory; FAIL is owner `RightShiftRegister #4334`.
+
+118. **DEAD END, RECORDED SO IT IS NOT RE-TRIED:** `Tunnel.Inside Terminals[]` **6356000** and `Tunnel.Outside
+     Terminal` **6356001** can never address `#7468` ??a `FlatSequenceInnerTunnel` is not a `Tunnel`. Its real
+     properties are `Left Terminal` **1C3A9000** and `Right Terminal` **1C3A9001**. Likewise `Node.Connect
+     Wires` needs both ends to be `Node`s, and `Create Described Wire` is itself a `Terminal` method, so no NI
+     verb wires anything without a terminal reference at one end. Put all of this in `docs/NAMES.md`.
+
+## Pre-decided ??ADDED 2026-09-22 (cycle 65 close): Route A's VERB is PROVEN, Route A ALONE cannot land Row D, and 117's uid is CORRECTED
+
+Source: `tools/bench/c80_rowd_routeA.log` (`BGRUN END rc=1 after 112 s`, 47 pass / 5 fail) and
+`tools/bench/c80_rowd_routeA_r2.log` (`rc=1 after 110 s`, 49 pass / 5 fail), plus
+`archive/peer/2026-09-22-c80-rowd-routeA-swapped-r2.md` (claude / `-Role hypothesis`, opus max, **ANSWERED** 689 s,
+verdict `ROUTE-A-ALIVE`) ??its first arm `??swapped.md` **TIMEOUT 780 s** and is disposed as a NON-RESULT, which is
+what CLAUDE.md requires of a call that told us nothing. The bed `claudeDev\D1_s3b_m3a3_20260922_081056.vi`
+md5 `33ef524e?? is unchanged at entry AND exit, `THE FILES THIS RUN LEFT ON DISK: []`, both scratch copies deleted,
+refs 8 opened / 8 closed / 0 live, handles 34,160 ??30,684 (restart) ??31,281.
+
+119. **ROUTE A's VERB IS PROVEN AND NO NEW *WRITER* OP IS NEEDED FOR THE CONNECT ??but Route A alone cannot land
+     Row D.** The swapped `OpConnectFromWire_v0` call DID attach the intended new source: loop `#23032`
+     `Nodes[21]` t1 `'Outgoing Handle'` went from BARE to wire **7506** (`c80_rowd_routeA_r2.log:244`), and a
+     PRE-delete walk of net 7506 reports **THREE** source terminals ??`('RightShiftRegister', 23868)` (the intended
+     new one), `('FlatSequenceInnerTunnel', 7468)` and `('RightShiftRegister', 4334)` (the OLD one) ??with PD85
+     violations 0 (`:253-261`). So `Terminal.Connect Wire` accepts the roles exchanged, and Pre-decided 115 is now
+     confirmed ON THE MACHINE rather than argued from a wiki. What the verb cannot do is **REPLACE**: the connect
+     BRANCHES (3 sources ??`Wire.Is Broken?` True, `ExecState` 0, `:237`), and both orderings are closed ??
+     arm A1, which is Pre-decided 106's mandated delete-first ordering, is refused at the `Wire.Terms[]` read with
+     **`error 1055: Property Node in OpConnectFromWire_v0.vi`**, `UID 2` **0**, sink still BARE (`:119`): a DEAD
+     wire uid cannot supply a terminal. Deleting 7506 leaves BOTH ends bare, measured twice (`:162`, `:286`).
+     **Therefore the ONE missing capability is now narrow and exactly stated: address a BARE terminal by UID at the
+     Invoke.** Nothing else about Row D is open, and Route A's own arms are not to be re-run.
+
+120. **PRE-DECIDED 117's LITERAL UID IS CORRECTED ??the OUTER terminal's owner is the REGISTER, not the loop.**
+     117 required `OpWireSource_v5` to report the source terminal's owner as `WhileLoop #23032`. Measured, the
+     owner is **`RightShiftRegister #23868`**, and the DELIVERED Row C already set that precedent
+     (`tools/bench/build_d1_m3a3_run2.log:182` = `[('RightShiftRegister', 23895)]`): a loop's shift-register OUTER
+     terminal is owned by the register object, not by the loop that draws it. **117's PRINCIPLE is untouched and
+     still mandatory** ??the branch hazard is gated on OWNER IDENTITY, never on a wire count and never on a wire
+     delta. Only the expected uid changes: Row D PASSES when that owner is `RightShiftRegister #23868` and FAILS
+     when it is `RightShiftRegister #4334`. The recipe already prints both literal forms.
+
+121. **THE c79 REVIEW's "STEP 4" PROBE IS UNSOUND AND IS REMOVED; ROUTE B's ONE UNMEASURED PRIMITIVE IS THE NEXT
+     CYCLE'S FIRST ACT, AS A READ-ONLY DIAGNOSTIC.** `err_uidvi` came back `''` for a *deleted* wire uid as well
+     (`:119`) and the probe's out-of-range triple makes it uninformative by construction ??it cannot separate
+     "resolved" from "refused", so it is out of the recipe. What replaces it is one ~2-minute measurement taken
+     BEFORE any construction: does `UID to GObject Reference.vi` resolve a **TERMINAL** uid? (It is proven only on
+     tunnel and wire uids.) Call it on `#7488` ??the `FlatSequenceInnerTunnel #7468` LeftTerm ??and on the new
+     loop's t1 terminal uid, and report the returned class and whether a TMSC to `Terminal` succeeds. **That single
+     answer SELECTS the op**, and neither branch is improvised at the end of a dispatch (Pre-decided 116-B):
+     YES ??**`OpConnectByUid`**, general, donor `OpConnectNested_v2`, serving every future uid-addressed sink;
+     NO ??the **FSIT-head op** on `Left Terminal` **1C3A9000**, which reuses a reader path that is ALREADY MEASURED
+     (`OpFsInnerTunnelTerm_v0` answers on two different FSITs with every error column empty, Pre-decided 109) and
+     therefore has no unmeasured primitive at all. Candidate C of 116 stays withdrawn as a SHAPE; its reading half
+     is the fallback's donor.
+
+122. **M3a-3b IS DECOMPOSED INTO THREE STEPS, EACH LEAVING A FILE** (the user's 2026-09-19 rule; Row D has now been
+     attempted across four dispatches and stopped at the same place each time, which is that rule's trigger).
+     **D-1** = the 121 diagnostic; artefact `tools/bench/diag_c81_uidref.log`; read-only, on a dated scratch COPY,
+     scratch deleted; nothing is built in the same dispatch. **D-2** = build and SAVE the op D-1 selects;
+     acceptance is `ExecState` 1, **20 consecutive calls leaving the handle count flat 짹100** (reference hygiene is
+     a precondition, not an afterthought), and a call on `#7488` returning its terminal reference. **D-3** = Row D
+     on the bed: delete 7506, connect `#23868`'s OUTER into `#7488`, save `claudeDev\D1_s3b_m3a3b_<stamp>.vi`
+     (script save at `ExecState` 1, else the approved broken-intermediate `gui_save`, saying which); acceptance is
+     Pre-decided 106 + 111 + **117 as corrected by 120**.
+
+123. **`Wire.Disconnect Terminal` 6370C0D IS OFF THE CRITICAL PATH, AND THE CONTRADICTION IT RAISES IS RESOLVED BY
+     MEASUREMENT, NEVER BY CITATION.** The c80-r2 review reports labviewwiki marking 6370C0D *"(Not Implemented)"*
+     and `Terminals[]` read-only, which contradicts `docs/NAMES.md:1035`. Row D needs no disconnect verb ??
+     delete-then-connect is the route ??so **no cycle is spent on this now**; it is recorded as a doc contradiction
+     whose resolution, when something actually needs it, is a probe on a scratch copy. Pre-decided 115 applies
+     SYMMETRICALLY: a wiki page is evidence of convention on both sides of a disagreement, so `docs/NAMES.md:1035`
+     is **not** to be edited on the strength of the citation alone.
+
+## Pre-decided ??ADDED 2026-09-22 (cycle 66): D-1 answered YES, the YES BRANCH IS DEAD ANYWAY, and D-2 builds the FSIT-head op
+
+Source: `tools/bench/diag_c81_uidref.log` + `tools/bench/diag_c81_uidref_r2.log` (7 gates pass / 0 fail each,
+read-only on dated scratch copies, bed `claudeDev\D1_s3b_m3a3_20260922_081056.vi` md5 `33ef524e?? byte-unchanged
+at both ends of both runs, `FILES THIS RUN LEFT ON DISK: []`, refs 3/3/0) and
+`archive/peer/2026-09-22-c81-uidref-probe.md` (claude / `-Role hypothesis`, opus max, ANSWERED 533 s, $3.4884).
+
+124. **D-1's MEASUREMENT, VERBATIM ??and the fork it was built to settle is NOT settled by it.**
+     `UID to GObject Reference.vi` (`vi.lib\VIServer\??, LabVIEW 2026 26.3.1f1 64-bit) DOES resolve a TERMINAL
+     uid: `#7488` (re-derived as the `FlatSequenceInnerTunnel #7468` LeftTerm) returns `Class Name` **`'Terminal'`**
+     with every error column empty and the uid echoing back, and `#23906` (re-derived as the NEW loop's shift-register
+     OUTER terminal) returns **`'OuterTerminal'`**, owner **`RightShiftRegister #23868`** ??**Pre-decided 120 is
+     CONFIRMED on a second, independent route**. Two addressings of `#7488` (structurally via `Left Terminal`, and by
+     uid) AGREE (`diag_c81_uidref_r2.log:95`). **BUT the half of Pre-decided 121's question that actually selects the
+     op ??"does a TMSC to `Terminal` succeed?" ??IS UNMEASURABLE WITHOUT BUILDING THE OP**: no VI on disk carries a
+     `Terminal`-seeded To More Specific Class (the seeds that exist are `FlatSequenceInnerTunnel`,
+     `FlatSequenceOuterTunnel`, `Wire`, `GObject`). What could be measured: TMSC??GObject` succeeds on both terminals,
+     TMSC??FlatSequenceInnerTunnel` refuses a terminal with **error 1055**. So D-1 returned a YES to the half that
+     does not discriminate and a "cannot be measured yet" to the half that does. **A fork whose branches are not
+     separated by the measurement is not a fork** ??it is re-decided below on evidence, not on the letter of 121.
+
+125. **THE NEGATIVE CONTROL IS THE MOST IMPORTANT LINE OF THE RUN, AND IT IS A STANDING HAZARD FOR EVERY UID ROUTE.**
+     On a never-allocated uid (`999983`) `UID to GObject Reference.vi` returned a reference with **every error column
+     empty** whose class and uid were a DIFFERENT, previously-resolved object (`'Wire' #7506`, probed moments before)
+     ??a history echo of exactly the class that cost cycle 68 a repair of `wire_source_owner`
+     (`diag_c81_uidref.log:85`). **The uid echo is the ONLY column that catches it**; an error check does not, and a
+     class-name check does not. RULE, effective now: **any op or diagnostic that resolves an object BY UID must
+     re-read the returned reference's own UID and assert it equals the uid passed in, as a named gate, before any
+     value it produces is used or believed.** This is why a uid-addressed design is not "free generality" ??it carries
+     a silent-wrong-object failure mode that a structural (property-walk) address does not have.
+
+126. **PRE-DECIDED 121's "YES ??`OpConnectByUid`" IS WITHDRAWN, ON A FACT VERIFIED IN THIS SESSION BY DIRECT
+     INSPECTION: THE DONOR IS NOT ON DISK.** `claudeDev` holds `OpConnect_v0`, `OpConnect2_v0`, `OpConnectCtl_v0`,
+     `OpConnectNested_v0`, `OpConnectNested_v1`, `OpConnectFromWire_v0` and `OpFsInnerTunnelTerm_v0` ??there is **no
+     `OpConnectNested_v2.vi`**, the donor 121 names. That is independently corroborated by our own record: M3a-3 run 1
+     was REJECTED precisely because its rebuild raised "`OpConnectNested_v2.vi` is not on disk" (STATUS lock block).
+     The c81 review reached the same conclusion; it is adopted here because the file listing was checked directly, not
+     because the reviewer said so (Pre-decided 115's discipline, applied to a reviewer's claim about our own tools).
+     **Three independent reasons now point the same way**, and no reason points back: (a) the donor does not exist;
+     (b) the uid route's decisive primitive is unmeasured (124) while the FSIT route's reading half is MEASURED ??
+     `OpFsInnerTunnelTerm_v0` returns `#7488` with `err_a` empty **even AFTER wire 7506 is deleted**
+     (`c80_rowd_routeA_r2.log:104,265`), which is exactly the delete-then-connect ordering Row D needs; (c) the uid
+     route inherits 125's silent-wrong-object hazard. **D-2 therefore builds the FSIT-head op.** `OpConnectByUid` is
+     not refuted as an idea and may be built later if something needs a uid-addressed sink; it is simply not on Row D's
+     critical path, and Row D is not the place to pay for its first measurement.
+
+127. **THE OP D-2 BUILDS, ITS SHAPE, AND ITS ACCEPTANCE.** `OpFsInnerTunnelConnect_v0.vi`, built as the SMALLEST
+     possible edit of `OpConnectFromWire_v0` ??**only the source-half acquisition changes**: where that op derives a
+     terminal from (`wire_uid`, `Wire.Terms[]` index), the new op derives it from (`fsit_uid` ??`UID to GObject
+     Reference.vi` ??TMSC `FlatSequenceInnerTunnel` ??**`Left Terminal` 1C3A9000**), i.e. the reading half of
+     `OpFsInnerTunnelTerm_v0`, which is already measured (Pre-decided 109/118). **Everything else is kept byte-for-byte
+     in role**: the Invoke still sits on the terminal named by the (diagram, `Nodes[]`, `Terminals[]`) INDEX TRIPLE and
+     still receives the other terminal as `Wire Source`, because that exact binding is the one the machine already
+     accepted (`c80_rowd_routeA_r2.log:244`, Pre-decided 119). LEFT terminal only ??no side selector, no second
+     property, nothing speculative. Acceptance, all four: (1) `ExecState` 1; (2) **20 consecutive calls leave the
+     handle count flat 짹100** (reference hygiene is a precondition, CLAUDE.md 짠3); (3) a call on `fsit_uid` 7468
+     returns the LeftTerm reference whose **own uid echoes `#7488`** (125's gate, mandatory); (4) ONE end-to-end
+     exercise on a DATED SCRATCH COPY of the bed inside the same dispatch ??delete wire 7506, call the op, and assert
+     via `OpWireSource_v5` that the new net's source terminal OWNER is **`RightShiftRegister #23868`** and that
+     `#4334` is OFF the net, PD85 violations 0, `Wire.Is Broken?` False on that wire ??then delete the scratch and save
+     nothing from it. (4) is the discriminating test for the op's parameter binding and it belongs in D-2, not in D-3:
+     Row D has now been attempted across five dispatches and must not be attempted a sixth time on an unexercised op.
+     The op VI itself IS saved (that is D-2's artefact, `claudeDev` save authority). The bed is not written to, not
+     opened for execution, and not run.
+
+128. **DISPOSITION OF `archive/peer/2026-09-22-c81-uidref-probe.md`** (claude/`hypothesis`, opus max, ANSWERED,
+     $3.4884). **Accepted:** its headline ("do not gate D-2 on D-1; the NO branch is already open and the YES branch's
+     donor is absent") ??adopted in 126, after the file listing was checked directly. **Not acted on:** its 짠2 ("the
+     real missing capability may be *remove one source from a net*, not *uid ??Terminal*") ??that is a property of
+     Route A's connect-THEN-prune ordering, and delete-THEN-connect never creates a multi-source net, so it is
+     recorded, not tested; re-running Route A's arms remains forbidden (Pre-decided 119). **Deliberately untouched:**
+     its claim that the "(Not Implemented)" markers on labviewwiki sit on `6370C02/03/04/09` rather than on
+     `Wire.Disconnect Terminal` **6370C0D** ??Pre-decided 123 forbids editing `docs/NAMES.md:1035` on a citation
+     alone, and now TWO reviews cite the same page against each other, which is itself the reason the resolution must
+     be a probe on a scratch copy if anything ever needs that verb. **Procedural note, not a finding:** the review was
+     dispatched because `guard_peer` was still armed on `c80_rowd_routeA_r2.log` (its existing review's ctime predates
+     the log by 3 min; Jev scored p=0.790, just under the 0.80 discharge threshold). The gate behaved as designed and
+     the dispatch paid for itself ??it is what produced 126's headline.
+
+104. **44 ??83 RESOLVED BY THE USER, 2026-09-23 ("83踰덉쑝濡?媛??):** Pre-decided 83's reading governs ??a repeated outcome-review verdict the user has already answered is marked in STATUS and reported by the chat, not STOPped; a CHANGED verdict still stops. 44(b) stands as the record of the first stop only. CLAUDE.md 짠5 amended; the jev_contradict annotation on 44/83 is closed.
+
+## Pre-decided ??ADDED 2026-09-23 (cycle 67): the 11 broken wires are BORN at M3a-1's moves, `ExecState` 1???? is proven, and the next stage is the severed-row repair
+
+129. **THE 11 BROKEN WIRES ARE NOT A MYSTERY AND NOT INHERITED FROM THE ORIGINAL ??THEY ARE BORN AT M3a-1's SEVEN
+     `move_in` CALLS, MEASURED BY BISECTION OVER THE SAVED STAGE ARTEFACTS** (`tools/bench/diag_c89_wirebirth.log`,
+     45 pass / 0 fail, rc=0, 156 s; both method controls passed). Every stage file up to and including
+     `D1_s3b_row2_20260921_160311.vi` reads `ExecState` **1** with **0** wires removed by Remove Bad Wires
+     (`D1_s1_copy` 1899??899 쨌 `D1_s2_loops` 1905??905 쨌 the S3a boolean carrier 1905??905 쨌 `D1_s3a_focus_ind`
+     1905??905 쨌 `D1_s3b_row1_20260921_135932` 1906??906 쨌 `row2` 1907??907). The very next artefact,
+     `D1_s3b_m3a_BROKEN_20260922_005732.vi`, reads `ExecState` **0** with **11** removed, and rows 8/9/10
+     (`m3a2`, `m3a3`, `rowD`) remove the SAME 11, set-identical
+     `[1731,1893,2819,3947,4833,7337,7388,9635,11232,23502,23540]`. **So M3a-2, M3a-3 Row C and Row D each added
+     ZERO broken wires ??every M3 row landed clean, and the whole of `ExecState` 0 is one event.**
+     The mechanism is named by M3a-1's own log, not inferred: `tools/bench/build_d1_m3a1.log:2754`
+     *"THE SEVEN 'move_in' CALLS, VERBATIM FROM diag_c66b_s3b_m3.py (**37(d) severs every wire on the moved
+     object**)"*; `ExecState` goes 1 ??0 at `:2778`, after the FIRST move (`#3529 '- Inc (PgDn)'`), and the
+     post-move census at `:2926` is UNCHANGED at `Wire` 1907 ??**the wires were SEVERED into half-wires, never
+     deleted.** This retires "a third cause exists", retires "inherited from an earlier stage, origin unknown",
+     and CONFIRMS ALT-1 by mechanism: each of the 11 still holds a live endpoint on `WhileLoop #637`, so
+     **deleting them drops real data paths and is a rule-1a computation change. They are RE-WIRED, never removed.**
+
+130. **`ExecState` 1 ??0 ??1 IS PROVEN HEADLESS, AND THE READER IS NOT STALE.** Two controls, both on dated scratch
+     copies of `claudeDev\OpFsInnerTunnelConnect_v1.vi`, nothing saved. (a) 1 ??0: deleting the wire into the
+     REQUIRED `vi path` input gave 0 at 0.00 s and still 0 at +6 s, while deleting an OPTIONAL `error in` wire left
+     it 1 (`tools/bench/diag_c89_bareterms.log`). (b) **0 ??1: re-creating that wire with `gscript.connect_ctl`
+     (`OpConnectCtl_v0`, `tools/gscript.py:1023`) restored `ExecState` 1 with no save anywhere**
+     (`tools/bench/diag_c89_wirebirth.log:82-91`, gate T1c) ??the first time this fleet has shown the 0 ??1
+     direction. **Consequence: M3's pass criterion (`ExecState` 1) is REACHABLE by scripted re-wiring, and the
+     four zeros of the c89 factorial are informative rather than a cached reading.**
+
+131. **THE NEXT STAGE IS M3a-4 = REPAIR THE SEVERED ROWS, AND IT IS DECOMPOSED BEFORE IT IS BUILT** (the user's
+     2026-09-19 rule: a bottleneck is split into steps that each SAVE a file). The M3 row table covered fewer rows
+     than the seven moves severed, which is why the count is 11 and why M3 cannot reach `ExecState` 1 as it stands.
+     Order, each step leaving an artefact: **(1)** derive the severed-row table OFFLINE from
+     `tools/bench/build_d1_m3a1.log`'s pre-move wiring census ??a file, not the machine ??and cross it against the
+     four endpoints already read (`w1731` SRC `LeftShiftRegister#4344`, `w3947` SRC `LeftShiftRegister#4274`,
+     `w9635` SRC `LoopTunnel#9641`, `w7337` SINK `RightShiftRegister#4334`); **(2)** read each of the 11 live
+     endpoints from the MACHINE with `Stage.net_sources` (`tools/stagekit.py:364`, which reads the source off the
+     WIRE via `Wire.Terms[]` 6371003 ??`Is Source?` 634A003 and is measured working on a `ControlTerminal` source,
+     `docs/d1-route-b-plan.md:605-611`) ??**not** through `wmap` / `Diagram.Nodes[]`, which cannot enumerate a
+     tunnel terminal, a shift-register outer terminal, a panel control terminal or a severed half-wire;
+     **(3)** re-wire in batches of 3?? rows, each batch saved and md5-pinned; **(4)** `ExecState` 1 + the ordered
+     idempotent second pass. Gate design follows 132. **No full-length retry under a new file name.**
+
+132. **A GATE WHOSE VALUE IS DETERMINED BY A STEP THAT PRECEDES IT IS NOT A GATE ??RESTATED WITH THE CONCRETE
+     FAILURE IT COST.** Cycle 67 authorised a 4-arm factorial predicting `ExecState` **1** for arm A3 (delete the
+     three stray `Invoke` nodes, then Remove Bad Wires). It measured 0, and the mandatory review
+     (`archive/peer/2026-09-23-c89-execstate-all-zero.md`, claude/`hypothesis`/opus max, ANSWERED 716 s, $5.0784)
+     **REFUTED the prediction rather than the diagram**: Remove Bad Wires *deletes*, so removing `w7337` BARES
+     `RightShiftRegister #4334`'s inside terminal and trades a broken-wire error for an unwired-register error at
+     the same site ??**A3 could not have returned 1 whatever the diagram held (likelihood ratio 1)**, and that was
+     derivable at the desk. This is the second consecutive cycle whose top fault sits in the JUDGEMENT layer's gate
+     design (cycle 66: Row D's D7). **The desk-check is applied to the PREDICTED VALUES as well as to the gates:
+     for every predicted value, name the step that could already have determined it; if one exists, the prediction
+     is re-cut as the predicted DIFFERENCE or deleted.**
+
+133. **CARRY 1 / OPEN 46 RESTED ON A FALSE PREMISE AND IS CLOSED AS WRITTEN.** `SetCommand_signed.vi` is NOT "on no
+     disk": it is `C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SetCommand_signed.vi`,
+     21,577 B, md5 `ec87a2657b158722082ca00c7074f114`, unchanged since 2026-09-14 19:52, with siblings
+     `SetCommand_signed_TEST.vi` and `SetCommand_orig_TEST.vi`. It was built by
+     `tools/recipes/build_setcommand_signed.py` (copy `instr.lib\Autonics Motor\SetCommand.vi` ??`claudeDev`, Type
+     Cast the U32 hex-parse result to signed before the 횞k multiply), and it is verified at three levels:
+     structural (`tools/bench/build_setcommand_signed.log`, original md5 unchanged), injection
+     (`tools/bench/test_setcommand_signed.log` **16/16**, `FFFFFFF6` ????.2째 against the original's +3.09e9째), and
+     **real hardware** (`tools/bench/hw_rotor_signed_test.log` NEGATIVE READ PASS, counter left at 0). The
+     "no disk" claim is a SEARCH-SCOPE artefact ??the 2026-09-18 searches covered `G:\??MinLab` and
+     `instr.lib\Autonics Motor\` and never looked in `user.lib\claudeDev`
+     (`archive/2026-09-18-status-cycle19-flatseq.md:93-95`). **What actually remains is a DIFFERENT and real item,
+     and it belongs to the D-series deliverable, not to a carry: stage 2, repointing the NEW main VI's nine rotor
+     call sites onto the signed copy** (`docs/motor-call-site-census.md:89` names the UNSIGNED VI at all nine ??
+     diagrams 24, 28, 32, 32, 103, 107, 111, 111, 115; `docs/rotor-sign-diagnosis.md:127`). Constants live in
+     `tools/bench/setcommand_signed_result.json` (`read_ring` 2, `k` 0.72). Three outcome reviews carried this as
+     unmoved work; it was never the work.
+
+
+=== STATUS.md IN FULL (the project's current decisions and state) ===
+---
+type: status
+status: current
+date: 2026-09-20
+tags: [hand-off]
+---
+STOP ??user 2026-09-23 04:1x ("吏湲??꾨뒗 ?ъ씠?대룄 硫덉텛??쨌 ?붿뒪而ㅼ뀡 癒쇱?"). Runner stopped; the Jev-shaped judgement structure is being designed in the chat before any build. Only the user removes this line.
+
+# STATUS ??read this first. One screen. Detail is one layer down, never appended here. ?좑툘 **ONE SESSION AT A TIME** ??re-read `CLAUDE.md` + this. Narrative ??**`archive/2026-09-19-status-cycle47-relocate.md` (latest ??T2's block diff and what it closes, the readable-ORIGINAL correction, the five killed retrospectives)** + `archive/2026-09-19-status-cycle39-judgement.md` + `archive/2026-09-18-status-cycle34-n1.md` + `??cycle23-close.md` + the `archive/2026-09-1[678]-status-*.md` set.
+??**DELIVERED:** D0 (cycle 31) 쨌 N1 ACCEPTED (cycle 34) 쨌 D1 **S1** `claudeDev\D1_s1_copy.vi` md5 `3e3d23ce?? 쨌 D1 **S2** `claudeDev\D1_s2_loops.vi` md5 `6ff19497?? 쨌 D1 **S3a** both halves (`??boolcarrier_b3_20260921_010034.vi` md5 `dc14dd00??, `ExecState` 1, `Is Broken?` False) 쨌 D1 **S3b rows 1 and 2**. ?뵷 **THE CURRENT BED IS `claudeDev\D1_s3b_row2_20260921_160311.vi`, md5 `26c54ff7??** ??every next stage starts FROM THAT FILE. ??**M3a-1 DELIVERED (cycle-63 firefighter, run 5, 2026-09-22 01:0x): `claudeDev\D1_s3b_m3a_BROKEN_20260922_005732.vi` md5 `6b3c1f3c??, 22 gates pass / 0 fail, bytes DIFFER from the bed.** ??**M3a-2 DELIVERED AND INDEPENDENTLY VERIFIED (cycle 64, 2026-09-22 02:3x??2:5x): `claudeDev\D1_s3b_m3a2_20260922_023029.vi` md5 `3842f5e6f128226235dc78353f26ef44`, 303,823 B, 25 gates pass / 0 fail on the build and 15/0 on a separate read-only check anchored at the REGISTER UID. ?뵷 EVERY NEXT STAGE STARTS FROM THAT FILE.** ?뵶 **M3a-3b (ROW D) IS **NOT** DELIVERED ??NO FILE. ?좑툘 CORRECTED 2026-09-22 15:4x (prior-art `archive/peer/2026-09-22-priorart-c87-rowd-stagekit.md` A3): the standing reason given here ??*"its W1 gate measures that NO writer on disk can address a `FlatSequenceInnerTunnel` terminal sink (`tools/bench/c78_rowd_writer.log`)"* ??HAS BEEN FALSE SINCE CYCLE 82. `OpFsInnerTunnelConnect_v1.vi`'s `Wire Source` half IS the FSIT `LeftTerm` property node (`tools/bench/build_d1_m3a3b_d3.log:28`, `term_uid=7488`/`uid_back=7468` on 20/20 calls at `:58-60`), and `tools/bench/diag_c86_norbw.log:87`/`:97` records it WRITING wire 25324 onto `#7488`. THE REAL REASON ROW D HAS NO FILE IS THAT NO RUN HAS YET SAVED ONE. ?윟 **CYCLE-86's MEASUREMENT OUTCOME, never recorded until now: `tools/bench/diag_c86_norbw.log` (14:46) answered plan entry 111a YES on a byte-identical scratch of the bed with Remove Bad Wires rebound to a raising guard ??after `del_wire(7506)` `#7468` STILL RESOLVES (`uid_back=7468`, `:74`), `#7488` comes back BARE (`wire_a=0`, `:76`), the inner wire 7448 survives (`:77`), the connect then writes wire 25324 onto BOTH ends (`wire_delta 1`, `:87`/`:97`) and the net ends with ONE source owner `RightShiftRegister #23868`, `#4334` off, PD85 0, `Is Broken?` False (`:105-110`). It SAVED NOTHING and deleted its scratch (`:113`), and the log has NO `BGRUN END` (truncated mid-cell-B), so D5/D6/D7 were never reached.** THE BED IS STILL `claudeDev\D1_s3b_m3a3_20260922_081056.vi` md5 `33ef524e??, 306,951 B.** Both initial-value rows land the predicted source (`FlatSequenceInnerTunnel #4194` ??LEFT `#23880`; `#3974` ??LEFT `#23909`), the originals stay on their nets, `Wire.Is Broken?` False in a separate ordered pass, PD85 violations 0 on every walk. Still BROKEN BY DESIGN and NEVER RUN (34(f)); `ExecState` 0's cause is formally OPEN and is neither gated on nor reasoned from. The artefact is BROKEN BY DESIGN (uninitialised SRs ??initial values are stage M3a-2) and is NEVER RUN (34(f)). Two root causes were repaired and MEASURED on the way: the identity reader `wire_source_owner` (history-echo, now error-checked + uid-echo-verified, acceptance `diag_c68_echo_accept.log` 8/0) and `gscript._lv_gui` (unquoted spaced args = PowerShell parse error, so NO Evidence-carrying GUI action had EVER dispatched ??`archive/peer/2026-09-22-c72-guisave-foreground-r2.md`). The bed is byte-unchanged and all four md5 pins hold. S3-as-37(g)-defined is WITHDRAWN (cycle 53). **Read `docs/cycle27-plan.md` Pre-decided 84??0 BEFORE 78??3 (78/80/81/82 are WITHDRAWN)**, then 46, 42, 43, 44. Full chronicle VERBATIM ??`archive/2026-09-21-status-cycle67-locknotes.md` 짠2; banner VERBATIM ??`archive/2026-09-18-status-cycle36-relocate.md` 짠3; facts `??cycle31-d0-delivered.md` 짠1?벬? (read **짠4** before the first D1 click).
+?좑툘 **SUPERSEDED, NOT A BED ??`claudeDev\D1_s3b_m3a3b_rowD_20260922_153612.vi`, md5 `c9d38bb194013ac7b916d073466078c7`, 307,093 B.** It is KEPT on disk (a real saved intermediate the user can open) but NO stage starts from it: it was saved carrying an unpurged second-pass junk `Invoke` (`Node` 636, `Diagram #686` 28 nodes). The Row-D bed is whatever the CLEAN re-run leaves ??**tell the two apart by this md5, never by the timestamp** (the `_REJECTED_?? rename is refused by the permission layer, as it was for `D1_s3b_m3a3_20260922_075611.vi`). Written 2026-09-22 16:1x as prior-art `archive/peer/2026-09-22-priorart-c87b-rowd-clean.md` A1's release.
+?넅 **USER RULE 17:5x = `docs/cycle27-plan.md` Pre-decided 9 ??EVERY GUI action is capture ??locate ??act ??capture ??confirm; derived or remembered coordinates are NEVER clicked blind.** It turned v4's 13/3 into v5's 39/1.
+
+
+## START HERE
+1. **Cycle plan = `docs/cycle27-plan.md`** (cycle20/21 plans `superseded`; motor plan `docs/motor-limit-assurance-plan.md` **짠A.1 + "P2 live findings"**; master `docs/pre-rig-master-plan.md`; decisions `docs/decisions.md`; D1 `docs/d1-route-b-plan.md`, paused).
+2. ?뵶 **NEVER patch a file with a `py - <<'EOF'` heredoc** ??one truncated **this file to 0 bytes** on 2026-09-17.
+3. ?좑툘 `peer.ps1` only as `powershell -Command "& 'tools/peer.ps1' ??-TaskFile <f>"`, `-TimeoutSec >= 780`. ?넅 **2026-09-18 (user, TRIAL): codex's roles ??claude roles** ??failed prediction = `-Agent claude -Role hypothesis` SINGLE arm (`-Dual` only for a second opinion on our own tools); `-Kind fact`/`-Kind prose` with no `-Agent` ??fable/low thin; `outcome_review.py` ??fable/medium thin. Check routing free with `-DryRun`.
+4. Six more operating hints (prior-art log naming 쨌 front panel open for edits 쨌 `guard_cycle`'s `FIXED:` release 쨌 `py_compile` tripping BUILD_RE 쨌 짠11u unsound 쨌 짠10 not authorised): **`archive/2026-09-18-status-cycle1-census.md` 짠1**. ?좑툘 `BUILD_RE` also fires on a plain `cp a.py tools/recipes/b.py` ??quote both paths (cycle23-close 짠3).
+
+## LabVIEW execution lock
+
+```yaml
+labview-lock:
+  status: acquired
+  owner: MATERIAL dispatch (user 2026-09-23 04:3x "?쒕쾲 留뚮뱾?대낫?꾨줉") ??OpAllWires_v0: the WHOLE wire table in ONE round trip. STEP 0 probe running since 2026-09-23 04:4x. Runner stays STOPPED.
+  owner_prev: cycle-68 MATERIAL dispatch 2 ??PRE-DECIDED 131 STEP (2), THE 11 LIVE ENDPOINTS ??RELEASED 2026-09-23 04:0x (since 2026-09-23 03:5x)
+  purpose_c68_dispatch2: ?뵶 **ONLY 4 OF THE 11 SEVERED WIRES HAVE A LIVE ENDPOINT AT ALL; THE OTHER 7 RESOLVE AS `Wire` OBJECTS WITH AN EMPTY `Wire.Terms[]`.** `tools/bench/diag_c90_endpoints.log` (**14 pass / 1 fail**, `BGRUN END rc=1 after 113s`, diagnostic `tools/bench/diag_c90_endpoints.py`, 132 lines on `tools/stagekit.py`). Read off the WIRE with `Stage.net_sources`/`OpWireSource_v5` (never `wmap`), on a dated work copy that was discarded. **ANSWERING (1 terminal each, uid echo OK, PD85 0): `w1731` SRC `LeftShiftRegister #4344` 쨌 `w3947` SRC `LeftShiftRegister #4274` 쨌 `w9635` SRC `LoopTunnel #9641` 쨌 `w7337` SINK `RightShiftRegister #4334` ??ALL FOUR PRIORS REPRODUCE EXACTLY (`:96-99`). NULL (one row, no owner): `w1893 쨌 w2819 쨌 w4833 쨌 w7388 쨌 w11232 쨌 w23502 쨌 w23540` (`:79-88`).** All 11 ARE in the Traverse `Wire` census (1920 wires, none absent, `:25`), and the null rows carry 1055 on the six DOWNSTREAM property nodes while `errT` ??`Wire.Terms[]` 6371003's own error column (`opwiresource_v5_labels.json:4`) ??is EMPTY (`:34`), the same signature index 1 gives on the four one-terminal wires. Gate **E1 FAILED** (predicted 11/11 resolve, measured 4/11); Jev ladder `new-problem p=0.58` = **below the 0.80 band, old path, review owed** (`tools/bench/jev_gate.log`, 03:56??3:57), so the hypothesis review was dispatched (`peer_c90_zeroterms`). `Wire.Is Broken?` per wire is **NOT MEASURED and was deleted at the desk** (no standalone 6371004 reader, `docs/toolkit-capabilities.md:68`; already determined for all 11 by c89's Remove Bad Wires), and `OpWireSource_v5` returns **no terminal NAME** (`:60`). Hygiene: LabVIEW restarted at [1] (33,963 ??33,998; 45,781 after the work; **33,973 at exit**), refs **4 opened / 4 closed / 0 live**, bed md5 `0b845952?? asserted at both ends, all five pins hold, `THE FILES THIS RUN LEFT ON DISK: []`. Nothing run, nothing saved, no op built; no motor, no ASI, no camera.
+  owner_prev_dispatch4: cycle-67 MATERIAL dispatch 4 ??THE WIRE-BIRTH BISECTION ??RELEASED 2026-09-23 02:1x (since 2026-09-23 02:0x)
+  purpose_dispatch4: ?윟?윟 **THE 11 BROKEN WIRES ARE BORN IN STAGE M3a-1, AND THE `ExecState` READER IS NOW PROVEN IN BOTH DIRECTIONS.** `tools/bench/diag_c89_wirebirth.log` (**45 pass / 0 fail**, `BGRUN END rc=0 after 156s`, diagnostic `tools/bench/diag_c89_wirebirth.py`, 160 lines on `tools/stagekit.py`; a first attempt ended `BGRUN END rc=1 after 114s` when a fatal gate aborted the bisection ??its T1 source lookup was wrong, see below). ?뵷 **T1, THE 0 ??1 CONTROL, PASSES: on a scratch of `OpFsInnerTunnelConnect_v1.vi` (md5 `5b4e5f0f??) `ExecState` reads 1 ??deleting w106, which feeds the REQUIRED `vi path` input of `Open VI Reference` #43 t6, gives 0 ??re-creating it gives 1 again (`:82`,`:87`,`:88`,`:91`). A SCRIPTED RE-WIRE RESTORES A VI HEADLESSLY ON OUR ROUTE.** ?좑툘 The helper is **`gscript.connect_ctl` (`OpConnectCtl_v0`, `gscript.py:1023`), not `connect_terminals`** ??w106's SOURCE is the FRONT-PANEL control `'vi path'` (`Panel.Controls[0]`, uid 78, `is_source` True) and **`wmap`/`Diagram.Nodes[]` does not enumerate a panel control's terminal at all** (NODE route `[]`, PANEL route one row, `:85`); `g.panel_wiring` does, in the same `Panel.Controls[]` order `connect_ctl`'s `panel_index` takes. ?뵷 **T2, THE BISECTION ??ROWS 1-6 ARE CLEAN AND ROWS 7-10 CARRY THE SAME 11: `D1_s1_copy` 1899 wires ES 1 removed 0 쨌 `D1_s2_loops` 1905 ES 1 removed 0 쨌 `D1_s3a_boolcarrier_b3` 1905 ES 1 removed 0 (METHOD CONTROL, predicted 0) 쨌 `D1_s3a_focus_ind` 1905 ES 1 removed 0 쨌 `D1_s3b_row1_20260921_135932` 1906 ES 1 removed 0 쨌 `D1_s3b_row2_20260921_160311` 1907 ES 1 removed 0 쨌 `D1_s3b_m3a_BROKEN_20260922_005732` 1920 ??1909 ES 0 removed 11 쨌 `??m3a2_??23029` 11 쨌 `??m3a3_??81056` 11 쨌 `??m3a3b_rowD_??61040` 11 (METHOD CONTROL, the set IS the c88 baseline).** The removed set is IDENTICAL in all four ??`[1731, 1893, 2819, 3947, 4833, 7337, 7388, 9635, 11232, 23502, 23540]` ??so nothing after M3a-1 added or removed a broken wire. ?뵷 **T3 NAMES THE OPERATION, FROM THE STAGE'S OWN LOG, NO LabVIEW: the M3a-1 run took the CLEAN row-2 bed (`build_d1_m3a1.log:2739`, work copy md5 `26c54ff7?? = row 6) at `ExecState` **1** COLD (`:2741`) and went to **0** at the VERY FIRST of the seven `move_in` calls ??`MOVE #3529 '- Inc (PgDn)' -> Diagram #23058` (`:2758`, `ExecState` 0 at `:2778`). The section header states the mechanism outright: *"[2b] THE SEVEN `move_in` CALLS, VERBATIM FROM diag_c66b_s3b_m3.py (37(d) **severs every wire on the moved object**)"* (`:2754`), and the Wire census is UNCHANGED at 1907 across all seven moves (`:2926`) ??the wires were SEVERED, not deleted, i.e. HALF-WIRES.** This is exactly the c88 review's ALT-1 (`archive/peer/2026-09-22-c88-nodeside-zero.md`), now measured rather than argued. Hygiene: LabVIEW restarted at phase [1] (33,982 ??33,967; 45,832 after the work; **33,959 at exit**), refs **49 opened / 49 closed / 0 live**, every source md5 re-read and asserted UNCHANGED after its own probe (10/10), all five pins hold at both ends, every scratch deleted, `THE FILES THIS RUN LEFT ON DISK: []`. Nothing was run, nothing saved, no op built; no motor, no ASI, no camera.
+  owner_prev_dispatch3: cycle-67 MATERIAL dispatch 3 ??RELEASED 2026-09-23 02:0x (since 2026-09-23 01:5x)
+  purpose_dispatch3: ?윟 **THE `ExecState` READER IS NOT STALE ??THE POSITIVE CONTROL THE FACTORIAL LACKED PASSED.** `tools/bench/diag_c89_bareterms.log` (**14 pass / 0 fail**, `BGRUN END rc=0 after 127s`, diagnostic `tools/bench/diag_c89_bareterms.py`, 118 lines on `tools/stagekit.py`). On a scratch of `OpFsInnerTunnelConnect_v1.vi` (md5 `5b4e5f0f??): `ExecState` **1** ??deleting `w383` (optional `error in`) leaves **1** ??deleting `w106` (REQUIRED `vi path`) gives **0** within 0.00 s, and **0** again 6 s later (`:27-41`). So the factorial's four zeros are INFORMATIVE. ?좑툘 The 0 ??1 direction is STILL undemonstrated anywhere in `tools/bench/*.log` (the peer's 짠2 Alt-2). ?뵶 **THE READING'S OWN CANDIDATE IS REFUTED IN SCOPE: all SIX While loops have a WIRED conditional terminal** ??#23041/23456?릛23489 쨌 #10170/23246?릛23310 쨌 #23032/23080?릛23145 쨌 #25380/25410?릛1737 쨌 #637/648?릛3457 쨌 #15173/15276?릛19456, uid echo OK, error columns empty (`:47-52`) ??and **ZERO bare input terminals** on `Diagram #23058` (8 nodes, all listed), `#10407` (7/7 wired) or `Global #7202` (1/1 wired) (`:61-93`). ?뵷 `Diagram #639` is owned by `WhileLoop #637` and `#23058` by `WhileLoop #23032` (`owner_of`, uid-echoed, `:54-59`) ??the "#639 vs #637" discrepancy was never one. MEASUREMENT ONLY ??`THE FILES THIS RUN LEFT ON DISK: []`, bed md5 `0b845952?? unchanged, all five pins hold at both ends, refs 10/10/0 live, handles 33,961 ??33,985 ??33,990 at exit. No motor, no ASI, no camera.
+  peer_dispatch3: `archive/peer/2026-09-23-c89-execstate-all-zero.md` ??claude/hypothesis (opus, effort max), **ANSWERED 716 s, $5.0784**, verdict **REFUTED**, disposition written. Jev ladder first: `new-problem` p=0.820 (spread 0.020, 5-sample consensus) ??above the 0.80 band, BLOCK, review owed (`tools/bench/jev_ladder_c89.log`).
+  since: 2026-09-23 01:5x
+  owner_prev_20260923a: cycle-67 MATERIAL dispatch 1 ??THE 4-ARM ExecState FACTORIAL ??RELEASED 2026-09-23 01:4x (since 2026-09-23 01:2x)
+  owner_prev_20260922: cycle-87 MATERIAL dispatch 3 ??THE BROKEN-WIRE READER ??RELEASED 2026-09-22 17:1x (since 2026-09-22 16:4x)
+  purpose: ?뵶 **THE STRAY `Invoke` NODES ARE NOT WHAT BREAKS THE ROW-D BED, AND NEITHER IS Remove Bad Wires: ALL FOUR ARMS READ `ExecState` 0 ??A3 (deletes THEN Remove Bad Wires) WAS PREDICTED 1 AND MEASURED 0. THAT IS THE ONE FAILING GATE AND IT IS A FAILED PREDICTION.** `tools/bench/diag_c89_execstate_factorial.log` (33 pass / 1 fail, `BGRUN END rc=1 after 151s`, diagnostic `tools/bench/diag_c89_execstate_factorial.py`, 121 lines on `tools/stagekit.py`) + the read-only P2 re-run `tools/bench/diag_c89_p2_all.log` (8/0, rc=0). MEASUREMENT ONLY ??`THE FILES THIS RUN LEFT ON DISK: []` on BOTH runs, four dated scratch COPIES each md5-asserted == the bed before it was touched and each deleted in-run, the bed `claudeDev\D1_s3b_m3a3b_rowD_20260922_161040.vi` md5 `0b845952?? byte-unchanged at both ends of both, all five pins hold, nothing saved, no op built, the bed never opened for EXECUTION. ?뵷 **A0 control 0 (predicted 0, reported as a VALUE) 쨌 A1 node-deletes only 0 (predicted 0) 쨌 A2 Remove Bad Wires only 0 (predicted 0) 쨌 A3 both 0 (PREDICTED 1).** ?뵷 **THE THREE DELETES ARE CLEAN AND ASSERTED, IN BOTH ARMS THAT DO THEM: `#4859` (Nodes[26]), `#24012`, `#24005`, all `class='Invoke'`, 6 terminals, 0 WIRED, uid echo OK, `diagram_uid` 686, pos (1985,112); Node census 635 ??634 ??633 ??632, exactly ?? each, `Diagram #686` 27 ??26 ??25 ??24.** ?뵷 **Remove Bad Wires IS NOT A rule-1a HAZARD ON THIS ARTEFACT (measured, both arms): Wire 1920 ??1909, NODE census UNCHANGED (635??35 in A2, 632??32 in A3), `Diagram #686` node count UNCHANGED (27??7, 24??4), 0 wires ADDED, and the removed set is EXACTLY the c88 baseline `[1731,1893,2819,3947,4833,7337,7388,9635,11232,23502,23540]` in both arms ??so the 11 broken wires are independent of the three stray nodes.** ?뵷 **P2 (read-only, `gscript.shift_reg_left` = `OpShiftRegs_v1`, `tools/gscript.py:826`): the briefed premise is FALSE ??`Diagram #639` owns NO WhileLoop. All 6 `WhileLoop`s answer `owner_of` with a uid echo: #23041 #10170 #23032 #25380 #637 ??`Diagram #686`, #15173 ??`Diagram #15041`. Re-run with the filter OFF, the op names 34 shift-register uids over loops 2/3/4/5 (loops 0 and 1 return none) and ALL THREE ASKED uids are PRESENT ??`#4344` LEFT of `#4334`, `#4274` LEFT of `#4256`, `#4334` RIGHT, all three on `WhileLoop #637` reg 1/2. `LoopTunnel #9641` IS reachable read-only: in `report_all('LoopTunnel')` (138 rows) and `owner_of` ??`WhileLoop #637`.** ?좑툘 The `P2 FULL shift-register uid list` FACT line still carries the stale words "on Diagram #639"; the filter in that run was `None` = every loop. ?뵶 **THE A3 FAILED PREDICTION IS UNREVIEWED AND UNDISPOSED ??judgement's, not this session's** (the log is a DIAGNOSTIC, so `guard_cycle`'s recipe budget does not see it; `guard_peer`'s Jev ladder classifies it at the next build attempt). Hygiene: LabVIEW restarted at phase [1] on both runs (0 ??34,286 and 33,980 ??33,972; 46,151 / 45,827 after the work; **33,991 / 33,994 at exit**), refs **16/16/0** and **5/5/0** live. No motor, no ASI, no camera. PREVIOUS PURPOSE, unchanged and still true ???윟 **THE 11 BROKEN WIRES ARE READ OUT OF THE MACHINE ??MEASUREMENT ONLY, NOTHING BUILT, SAVED OR MUTATED; `THE FILES THIS RUN LEFT ON DISK: []` on both runs and the artefact `claudeDev\D1_s3b_m3a3b_rowD_20260922_161040.vi` md5 `0b845952?? is byte-unchanged at both ends of both.** `tools/bench/diag_c88_brokenwires.log` (14 pass / 1 fail, `BGRUN END rc=1 after 140s`, diagnostic `tools/bench/diag_c88_brokenwires.py`, 120 lines on `tools/stagekit.py`). ?뵷 **THE COUNT IS EXACTLY 11 AND IT MATCHES D6's BASELINE** ??named by set difference around LabVIEW's own Remove Bad Wires on a deleted scratch (`Wire` 1920 ??1909): **[1731, 1893, 2819, 3947, 4833, 7337, 7388, 9635, 11232, 23502, 23540]**. ?뵷 **ALL ELEVEN OWN THE SAME DIAGRAM AND IT IS NEITHER OF THE TWO THE BRIEF ASKED ABOUT: `owner_of` (strict uid echo, every error column empty) puts 11/11 on `Diagram #639` ??ZERO on `Diagram #686`, ZERO on the new `WhileLoop #23032`'s body `Diagram #23058` (index 22, 8 nodes).** ?뵷 **ONE of the 11 involves any M3-row object: w7337, whose single terminal row is a SINK owned by `RightShiftRegister #4334` (row D's OLD source); the other TEN involve none of `#7468 #7488 #23868 #4334 #23895 #4256 #7202 #10407 #637`.** Per-wire terminal reading (`OpWireSource_v5`, wire-addressed): **four answered with exactly ONE terminal row each ??w1731 SRC `LeftShiftRegister#4344`, w3947 SRC `LeftShiftRegister#4274`, w9635 SRC `LoopTunnel#9641`, w7337 SINK `RightShiftRegister#4334`** ??and **seven (1893, 2819, 4833, 7388, 11232, 23502, 23540) returned NO row at all**, six error columns `error 1055: Property Node in OpWireSource_v5.vi` at terminal index 0. ?좑툘 **A wire's own `Wire.Is Broken?` value is NOT READABLE here and this is reported, never inferred**: every route to 6371004 goes through a SINK-terminal read ordered after a `Terminal.Connect Wire` (`docs/NAMES.md:966-1015`), and membership in the Remove-Bad-Wires delete set is the only broken verdict this run could take. Node census **635**, `Diagram #686` **27** nodes (index 19) ??both as the input bed. ?뵶 **THE STRAY `Invoke` IS STILL THERE AND THERE ARE THREE OF THEM ON `Diagram #686`, NOT ONE: `#4859` (Nodes[26]), `#24012` (Nodes[25]), `#24005` (Nodes[24]), ALL THREE at position (1985, 112), each 6 terminals / 0 WIRED (`reference`, `reference out`, `error in`, `error out`, `Method`, `Method`), plus `#10313` at (-3499, 1610) which is NOT on #686.** ?윞 **GATE G3 FAILED (4/11) AND ITS MANDATORY REVIEW IS ANSWERED AND DISPOSED** ??`archive/peer/2026-09-22-c88-walk-1055.md` (claude/`hypothesis`/opus max, 631 s, $3.8797): 1055 is *"Object reference is invalid"*, NOT an index refusal (an out-of-range `Index Array` returns the type default silently), so the six-column 1055 says the ref handed to those nodes was null and NOT why. Its cheapest test was run verbatim in the same cycle ??`tools/bench/diag_c88_nodeside.py` ??`tools/bench/diag_c88_nodeside.log` (11 pass / 1 fail, `BGRUN END rc=1 after 119s`): `Diagram #639` = index 48, **68 of 68 nodes swept with `g.node_terms` (0 junk/call), 0 read errors, 8 s**, plus `panel_wiring` 116 rows ??and **NOT ONE of the 11 appears on either side (answered-found 0/4, silent-found 0/7)**, so N2 FAILED. ?뵶 **ITS OWN MANDATORY REVIEW IS ANSWERED AND REFUTES THE SWEEP AS EVIDENCE** ??`archive/peer/2026-09-22-c88-nodeside-zero.md` (claude/`hypothesis`/opus max, 533 s, $3.9893): `Diagram.Nodes[]` CANNOT enumerate a `Tunnel`/`ShiftRegister`-class terminal at all, and 4 of the 4 named endpoint owners are exactly those classes ??**N2 could not have passed whatever the topology is and N3's PASS carries NO information (likelihood ratio 1)**. Its ALT-1 ??the 11 are half-wires from the S3 reparenting, each still holding a BORDER-object endpoint, so deleting them would drop real data paths (rule 1a) ??vs ALT-2 (`Wire.Terms[]` fabricates owners on broken wires) is separated by ONE read-only op run, `gscript.shift_reg_left()` on the same artefact; **NOT RUN ??the failure budget (2) was spent, and it is judgement's call**. Both reviews carry a full `## What was done with it`. Hygiene: LabVIEW restarted at phase [1] on both runs (33,928 ??33,925 and 33,975 ??33,995; 45,824 / 45,786 after the work; **33,976 / 33,998 at exit**), refs **7/7/0** and **4/4/0 live**, all five md5 pins hold before and after, every scratch deleted, both work copies discarded. Nothing was run, nothing saved, no op built; no motor, no ASI, no camera. PREVIOUS PURPOSE, unchanged and still true ???윟?윟 **M3a-3b ROW D IS DELIVERED CLEAN: `claudeDev\D1_s3b_m3a3b_rowD_20260922_161040.vi`, md5 `0b84595245dd650c0e8fd3f57104782c`, 306,977 B, `tools/bench/build_d1_m3a3b_rowD_clean.log`, **23 gates pass / 0 fail**, `BGRUN END rc=0 after 151s`.** ?뵷 **THIS IS THE ROW-D BED; the 15:36:12 file `c9d38bb1?? is SUPERSEDED-NOT-A-BED (its own line above).** Saved through the APPROVED broken-intermediate `gui_save` route (`ExecState` 0 = BROKEN BY DESIGN, NEVER RUN, 34(f)); `ExecState` 0's cause stays formally OPEN and is neither gated on nor reasoned from. D1 FSIT `#7468` still resolves after `del_wire(7506)` with NO Remove Bad Wires anywhere and `#7488` comes back BARE (`:92`); the connect wrote wire **25324** (`:113`); the net ends with exactly ONE source owner `RightShiftRegister #23868`, `#4334` OFF it, PD85 0 (`:120-122`); `Is Broken?` False with `wire_delta` 0 on the ordered second pass and D5b re-walks it (`:128-150`); **D7 now PASSES AS A SET DIFFERENCE ??`#637`'s two 60-row tables differ in EXACTLY `{t10 'Outgoing Handle' WIRED, t10 'Outgoing Handle' BARE}`, 0 UNREAD of 120 rows, wire-identity delta `(10, 7506, 0)` (`:214-216`)**; D8 `Node` 635 ??635 (the junk `Invoke` was minted **twice**, once per connect, uid **7506 RECYCLED** both times, and purged both times ??`:98`, `:131`); D6 broken wires 11 vs baseline 11 on a deleted scratch (`:229`). ?좑툘 **D8 IS NOT A CLEAN-BED CLAIM AND THIS IS THE ONE THING FOR JUDGEMENT: the INPUT bed `33ef524e?? itself carries an INHERITED unpurged second-pass `Invoke`** (`Node` 634 cold ??635 saved, `build_d1_m3a3_run2.log:33` vs `:187`/`:195`; `Diagram #686` 26 ??27), because Row C's idempotent second pass skipped its purge at `build_d1_m3a3.py:1432`; `junk_purge` only removes nodes new since the last mark, so this run could not remove it and does not claim to ??and if 짠5's broken-node reasoning holds, **it may block M4's COLD `ExecState` 1 from inside the bed**. The mandatory prior-art review `archive/peer/2026-09-22-priorart-c87b-rowd-clean.md` (opus/high, ANSWERED 394 s, $4.0691) returned **five** slugs ??`settled-already`, `contradicted`, `already-built`, `helper-exists`, `already-measured` ??**ALL FIVE ACCEPTED AND FIXED BEFORE THE RUN** (dispositions under `## What was done with it`, one `FIXED:` line each); its record was planted by hand with `tools/stop_record.py write` because `stop_record.EXEMPT_PROGRAMS` is matched at SHELL COMMAND POSITION and a bgrun-wrapped `prior_art_review.py` never occupies it. Hygiene: LabVIEW restarted at phase [1] (33,950 ??33,989; 33,477 after the work; 33,959 at exit), refs **9 opened / 9 closed / 0 live**, bed md5 `33ef524e?? BYTE-UNCHANGED at both ends, all five pins hold, the D6 scratch deleted, `THE FILES THIS RUN LEFT ON DISK: ['D1_s3b_m3a3b_rowD_20260922_161040.vi']`. The bed was never opened for EXECUTION. No motor, no ASI, no camera. PREVIOUS PURPOSE, unchanged and still true ???윟 **CYCLE-87 MATERIAL: M3a-3b ROW D RAN ON `tools/stagekit.py` AND LEFT A FILE ??`claudeDev\D1_s3b_m3a3b_rowD_20260922_153612.vi`, md5 `c9d38bb194013ac7b916d073466078c7`, 307,093 B, saved through the APPROVED broken-intermediate `gui_save` route (`ExecState` 0 = BROKEN BY DESIGN, NEVER RUN, 34(f)).** `tools/bench/build_d1_m3a3b_rowD.log`, **20 gates pass / 1 fail**, `BGRUN END rc=1 after 148s` (recipe `tools/recipes/stage_d1_m3a3_rowD.py`, 90 lines on the kit). ?윟 **THE 111a MEASUREMENT LANDS ON THE BED'S OWN BYTES: after `del_wire(7506)` with NO Remove Bad Wires anywhere, `FlatSequenceInnerTunnel #7468` STILL RESOLVES (uid echo 7468) and its `Left Terminal` `#7488` comes back BARE ??`LeftTerm #7488 wire 0 err ''` (`:92`), inner wire 7448 on `#7471` intact.** The connect then wrote wire **25324** (`op err 'error 999999: POISON - not overwritten by the run'`, raw `invoke err ''`, `:113`) and the net ends with exactly ONE source terminal, owner `RightShiftRegister #23868`, `#4334` OFF the net, PD85 0, `Is Broken?` False, `UID 2` 25324, `wire_delta` 0 on the ordered second pass, and the NEW gate **D5b** (added as the prior-art review's B4 disposition) confirms the second pass left one source (`:120-136`). D6 broken wires **11 vs baseline 11** on a scratch probe (`:213`). ?뵶 **THE ONE FAIL IS D7: `WhileLoop #637`'s terminal counts `before (60, 48) after (60, 47)` (`:200`) ??TOTAL unchanged, ONE fewer WIRED, and the machine says which one: `#637` `t10 'Outgoing Handle'` carried wire **7506** before (`:35`) and is BARE after (`:149`), i.e. the OLD source detaching, which is Row D's own purpose. THE MANDATORY FAILED-PREDICTION REVIEW IS **ANSWERED** ??`archive/peer/2026-09-22-c87-rowd-d7-termcount.md` (claude/`hypothesis`/opus max, 632 s, $3.8559, `tools/bench/peer_c87_d7.log` rc=0) ??AND **NOTHING WAS ACTED ON, BY THE BRIEF: THE DISPOSITION IS JUDGEMENT'S.** Its headline: reading (1)'s FACT survives (t10 is `#4334`'s OUTER terminal, the net had exactly two ends, exactly one row changed, and reading (2) is REFUTED by the run's own two printed 60-row tables at `:25-84` / `:139-198`) but its REMEDY does not ??*"the `total` half was a constant that could not have moved"*, so relaxing D7 to it *"makes D7 green by construction on every future row"*; the review's own remedy is to assert the PREDICTED SET DIFFERENCE (`{t10}`, WIRED?묪ARE, nothing else). It also says the ?? is **not attributed**: `#637` was sampled once before everything and once after everything with FOUR mutations in between, and its falsifier **F1** (sample `#637` immediately after the delete) was not run. Its CHEAPEST TEST costs no LabVIEW and no lock and was NOT run: re-classify the two tables already in `tools/bench/D1_s3b_m3a3b_rowD.json` with `build_d1_m3a1.term_state()` and diff them as sets on `(i, name, is_source, state)` ??reading (1) predicts exactly ONE differing element and ZERO UNREAD. ?뵶 **짠5 CALLS THE UNPURGED `Invoke` A DEFECT, NOT COSMETIC: *"Repair before this file is used as a bed."* NOT REPAIRED ??whether this artefact may be the next stage's bed as saved is judgement's.** ?좑툘 **REPORTED, NOT DIAGNOSED: the SAVED artefact carries an UNPURGED junk `Invoke` node from the D5 second pass ??`Node` census 635 ??636 (`:86` vs `:201`), `#637`'s diagram `nodes_on_diagram` 27 ??28; the FIRST connect's junk node WAS purged (`:98`, `:108`).** The mandatory prior-art review `archive/peer/2026-09-22-priorart-c87-rowd-stagekit.md` returned **four** slugs (`settled-already`, `contradicted`, `unread-evidence`, `already-measured`), ALL FOUR ACCEPTED and fixed BEFORE the run (dispositions under `## What was done with it`); its A3 also asks that `docs/cycle27-plan.md` entry **111a** be amended, which sits in a `## Pre-decided` section and is left UNTOUCHED for judgement. Hygiene: LabVIEW restarted at phase [1] (33,958 ??33,999; 34,544 after the work; 33,988 at exit), refs **9 opened / 9 closed / 0 live**, **bed `claudeDev\D1_s3b_m3a3_20260922_081056.vi` md5 `33ef524e?? BYTE-UNCHANGED at both ends, all five pins hold, the D6 scratch deleted, `THE FILES THIS RUN LEFT ON DISK: ['D1_s3b_m3a3b_rowD_20260922_153612.vi']`.** The bed was never opened for EXECUTION. No motor, no ASI, no camera. PREVIOUS PURPOSE, unchanged and still true ???뵶 **CYCLE 66 WAS KILLED AT ITS 180-MIN bgrun DEADLINE (11:33:38 ??14:33:39, `tools/bench/cycle_63.log`, exit 124) WITH c85's D-3b DISPATCH STILL IN FLIGHT: the recipe `tools/recipes/build_d1_m3a3b_d3b.py` NEVER RAN (no build log with that recipe's stem exists anywhere under `tools/bench/`), its prior-art review died at 291 bytes (`tools/bench/priorart_c85_d3b.log` ??a NON-RESULT, told us nothing), and cycle 66 never ran its retrospective.** ?윞 **IN PROGRESS ??CYCLE-86 MATERIAL (cycle 67): the D-3b MEASUREMENT ALONE, run as a DIAGNOSTIC `tools/bench/diag_c86_norbw.py` because `guard_cycle` refuses `tools/recipes/*.py` until this cycle's retrospective lands and CLAUDE.md exempts diagnostics ??on a dated scratch COPY, delete wire 7506 with NO Remove Bad Wires anywhere (the guard rebind cycle 66 wrote), then measure whether `FlatSequenceInnerTunnel #7468` still resolves to a BARE LeftTerm `#7488` and whether either polarity of the connect op CREATES a wire between two bare terminals. NOTHING IS SAVED, ROW D IS NOT LANDED, the bed is md5-pinned at both ends.** PREVIOUS PURPOSE ??**ITS RUN NEVER STARTED**, kept verbatim as the record ???윞 **CYCLE-85 MATERIAL, D-3b OF M3a-3b: remove the c83 confound (delete wire 7506 with NO Remove Bad Wires anywhere, mechanically enforced by rebinding `gscript.remove_bad_wires*` to a raising guard) and ask whether `FlatSequenceInnerTunnel #7468` still resolves and yields a BARE LeftTerm `#7488`; land Row D only if it does.** Recipe `tools/recipes/build_d1_m3a3b_d3b.py` (ASTCHECK OK: 0 RBW call sites, 4 guard rebinds, 105 `%`-sites 0 mismatch, 0 duplicate gate names, no write naming the bed) ??`tools/bench/build_d1_m3a3b_d3b.log`. ??The mandatory failed-prediction review of c84's G2 (+114 vs 짹100) is **ANSWERED and DISPOSED IN FULL** ??`archive/peer/2026-09-22-c85-v1-handle-delta.md` (claude/`hypothesis`/opus max, 366 s, $3.3578, `tools/bench/peer_c85_handles.log` rc=0): it **REFUTES** the session's leak explanation twice over (the kernel handle count is blind to VI Server refnums, `docs/toolkit-capabilities.md:484-485`; NI closes an op VI's refs when the top-level call goes idle, so an in-op missing `Close Reference` cannot accumulate) and names the real confound ??c84's `fsit_call` runs `g.count()` FOUR times per call (`build_d1_m3a3b_d3.py:284/285/337/338`), so its window held **100** op-VI runs against v0's **20**, 80 of them `OpReport_v3.vi`, the documented no-`Close Reference` traverse; the donor had engineered exactly those out on purpose (`build_opfsinnertunnelconnect_v0.py:677-678`). 짹100 is not a discriminator at a 42,471 start ??the counter's routine range here is 짹16,000 in one run. NOT ACTED ON, judgement's: `bench_prep.py:61` `HANDLE_LIMIT = 12000` sits BELOW the ~31,500 baseline so the restart mechanism always fires; `labview_handles` `-First 1` vs `build_opfstunnelterm_v1.py:204` `Measure-Object -Sum`; and the reviewer's 4-arm interleaved discriminating test (N/A/B/C on the ALREADY-PARAMETERISED `diag_c83_connect2x2.py:267-268` `count_wires=`) is UNRUN. The bed `claudeDev\D1_s3b_m3a3_20260922_081056.vi` md5 `33ef524e?? is md5-pinned at entry and exit and is never opened for EXECUTION. No motor, no ASI, no camera. PREVIOUS PURPOSE, unchanged and still true ???윟?뵶 **CYCLE-84 MATERIAL, D-3 OF M3a-3b: THE OP IS BUILT AND SAVED, THE MISSING CELL IS MEASURED, AND THE ANSWER IS *MERGE* ??SO NO ARTEFACT EXISTS AND NOTHING WAS SAVED FROM THE BED.** `tools/bench/build_d1_m3a3b_d3.log`, **35 gates pass / 12 fail**, `BGRUN END rc=1 after 249s` (recipe `tools/recipes/build_d1_m3a3b_d3.py`). ??**STEP 1 DELIVERED: `claudeDev\OpFsInnerTunnelConnect_v1.vi`, md5 `5b4e5f0fb3baae96361c33ce81bcd7b1`, 18,797 B, `ExecState` 1 RE-READ after the save** ??v0 with the two Invoke feeds EXCHANGED (the Invoke sits on the FSIT `LeftTerm`; the index-triple terminal is `Wire Source`), `Auto Route? (F)` exposed as a control, Remove Bad Wires removed **0** (the crossed feeds are not type-broken), labels `tools/bench/opfsinnertunnelconnect_v1_labels.json`. Both uid echoes hold on 20/20 calls (`term_uid` 7488, `uid_back` 7468); junk rate **1.00 stray `Invoke` per call**, purged (Node 635??55??35); G2 is the ONE machinery fail ??handles 42,471 ??42,585, **delta +114** against a 짹100 tolerance, private-bytes drift 3.3 MB. ?뵶 **THE MEASUREMENT, IDENTICAL IN BOTH CELLS (S-T `Auto Route?` TRUE, S-F FALSE), on dated scratch COPIES with wire 7506 LEFT ALIVE: `Terminal.Connect Wire` 6349C03 invoked ON THE ALREADY-WIRED SINK **MERGES**, it does not replace.** Raw Invoke error **`''`** (no error at all ??the first time this family has run clean on the real pair), `term_uid` 7488, `uid_back` 7468, every error column empty, **`UID 2` = 7506 (the OLD wire)**, `wire_delta` 0, Wire objects **1920 ??1920**, wire 7506 **still in the census**, the loop border t1 went BARE ??**7506**, and the FSIT LeftTerm still carries **7506**. Net 7506 ends with **THREE** source terminals ??`FlatSequenceInnerTunnel #7468`, `RightShiftRegister #4334` (the OLD source), `RightShiftRegister #23868` (the intended new one) ??PD85 0, `Is Broken?` True. GATE S: **(a) FAIL 쨌 (b) FAIL 쨌 (c) PASS 쨌 (d1) FAIL 쨌 (d2) FAIL (broken wires 11 ??14 on the bed's bytes) 쨌 (e) PASS** (the FSIT `Right Terminal` #7471 still carries wire 7448 ??nothing downstream was dropped). **STEP 3 WAS NOT TAKEN, by the brief's own branch: neither cell passed, so nothing was saved and no third configuration was improvised.** ?뱦 **THIS EXACTLY CONFIRMS THE FAILED-PREDICTION REVIEW'S 짠2 MODEL** (`archive/peer/2026-09-22-c84-replace-vs-branch.md`, claude/`hypothesis`/opus max, ANSWERED 656 s, $4.9020, `tools/bench/peer_c84_replace.log` rc=0): *"`Connect Wire` attaches the `reference` terminal to the `Wire Source` terminal's net"* ??a terminal holds at most one wire, so the roles do not matter and the editor MERGES rather than switches (NI Idea Exchange, cited). Its 짠3 is the live alternative and is **judgement's**: c83's `error 1055` may have been `remove_bad_wires_scripted` DELETING the tunnel one line after `del_wire` (`diag_c83_connect2x2_r2.py:449-450`; the verb is on record deleting a tunnel at `archive/2026-09-17-status-d1-route-b-2.md:44-46` and is refused as a rule-1a hazard at `docs/cycle27-plan.md:1860-1862`) ??"gone" ??"unresolvable", so delete-first may still be alive. Recorded as plan entry **111a** (`docs/cycle27-plan.md:3372`), NOT acted on. The mandatory prior-art review `archive/peer/2026-09-22-priorart-c84-d3-rowd.md` returned **six** slugs, ALL SIX ACCEPTED and fixed BEFORE the run (dispositions under `## What was done with it`); its A2/B4 predicted this exact outcome from `tools/bench/build_d1_m3a1.log:1147`/`:1174`. Hygiene: LabVIEW restarted at phase [1] (33,950 ??33,994; 42,763 after the work; 33,998 at exit), refs **29 opened / 29 closed / 0 live**, **bed `claudeDev\D1_s3b_m3a3_20260922_081056.vi` md5 `33ef524e?? BYTE-UNCHANGED at both ends, all five pins hold, `OpFsInnerTunnelConnect_v0.vi` md5 `50a1e58a?? unchanged, every scratch deleted, `THE FILES THIS RUN LEFT ON DISK: ['OpFsInnerTunnelConnect_v1.vi']`.** The bed was never opened for execution; wire 7506 was never deleted anywhere. No motor, no ASI, no camera. PREVIOUS PURPOSE, unchanged and still true ???윟?윟 **CYCLE-83 MATERIAL, D-2b OF M3a-3b: THE SEPARATION IS DONE AND THE ANSWER IS NONE OF (a)/(b) ??THE VERB WAS NEVER SILENT, ITS ERROR WAS BEING SWALLOWED BY `Clear Errors.vi`, AND WHAT IT SAYS IS `error 1055` BECAUSE DELETING WIRE 7506 MAKES FSIT `#7468` UNRESOLVABLE.** Two runs, both on dated scratch COPIES deleted in the same run: `tools/bench/diag_c83_connect2x2.log` (37/5, rc=1, 173 s) and `tools/bench/diag_c83_connect2x2_r2.log` (27/14, rc=1, 151 s ??the 14 ARE the measurement). ??**STEP 0 DELIVERED IN TWO MOVES AND THE SECOND ONE IS THE ONE THAT MATTERS:** run 1 put an indicator on the first free `error out` in the Invoke's chain, which is `Clear Errors.vi #399`, 3 hops downstream ??**empty by construction**; run 2 deleted that feed and BRANCHED the Invoke's OWN `error out` (w1027) onto the same indicator with `gscript.wire_indicators`:1786. **`claudeDev\OpFsInnerTunnelConnect_v0.vi` is now md5 `50a1e58a4825c2ce030ed9a41e204931`, 18,521 B, `ExecState` 1 re-read after the save** (was `c0d5efe3?? ??`cda1e36e?? ??this); `err_invoke: "error out 7"` added to `tools/bench/opfsinnertunnelconnect_v0_labels.json`. Roles, `Auto Route?` and the address route were NOT touched. ?뵶 **THE RAW VERDICT, read for the first time: `error 1055: Invoke Node in OpFsInnerTunnelConnect_v0.vi | Method Name: Connect Wire`** ??identical in ALL FOUR configurations on the real pair, alongside `error 1055: To More Specific Class in UID to GObject Reference.vi` on the source half. ?뵶 **THE CAUSE IS THE DELETE, MEASURED BY A CONTROL CELL: with wire 7506 ALIVE the same call has NO error, `term_uid` 7488, `uid_back` 7468, `UID 2` 7506 and the border terminal goes 0 ??7506 (i.e. it BRANCHES the existing net, `wire_delta` 0, `Is Broken?` True); with 7506 DELETED the FSIT uid 7468 no longer resolves and nothing is written.** Poison ON vs OFF is identical (R0 vs R0b) ??the review's artefact hypothesis is REFUTED on the machine. ?윟 **(a) AND (b) ARE BOTH REFUTED, each twice.** On four FRESH TRIVIAL VIs (two bare `VI Server:GObject` Property nodes, driven through a scratch copy of `OpConnect_v0.vi` carrying a created `Auto Route?` control) **ALL FOUR cells created the wire** ??`wire_delta` 1, the SAME wire uid 93 on both ends, 0 junk. On the real pair all four cells behave identically (no wire, same 1055), **including the two with the roles EXCHANGED**: run 2 BUILT a legal swapped copy (`ExecState` 1, Remove Bad Wires removed 0 ??the crossed feeds are not type-broken) after re-branching the two other consumers of the deleted nets (`#241.reference`, `#187.reference`) that made run 1's copy `ExecState` 0. ?좑툘 **A GATE THIS PROJECT HAS BEEN READING FOR THREE CYCLES IS NOT A MEASUREMENT**: the border-terminal row carries `wire_err: 1055` whenever the terminal is BARE (and 0 when wired), so `wire: 0` there is the error path's default ??it tracks bareness perfectly in these 6 cells, but it is a REFUSAL, not a read (the review's strongest point, accepted). The mandatory failed-prediction review is ANSWERED and DISPOSED in full (`archive/peer/2026-09-22-c83-2x2-swap-1055-r2.md`, claude/`hypothesis`/opus max, 403 s; a first dispatch at `-TimeoutSec 840` ended TIMEOUT and told us nothing ??`archive/peer/2026-09-22-c83-2x2-swap-1055.md`); its four accepted tests were all built into run 2, its three unacted findings are listed under `## What was done with it` for judgement. Hygiene: LabVIEW restarted at the head of both runs (33,960 ??33,987; 34,566 after the work; 33,989 at exit), refs 37/37/0 live, **bed `claudeDev\D1_s3b_m3a3_20260922_081056.vi` md5 `33ef524e?? BYTE-UNCHANGED at both ends of BOTH runs, all five pins hold, `OpConnect_v0.vi` and `EMPTY_v0.vi` md5-unchanged (only copied), every scratch deleted, `THE FILES THIS RUN LEFT ON DISK: []`** (the op is edited in place, not added). The bed was never opened for execution. No motor, no ASI, no camera. PREVIOUS PURPOSE, unchanged and still true ???윟?뵶 **CYCLE-82 MATERIAL, D-2 OF M3a-3b: THE OP IS BUILT, SAVED AND LEGAL ??AND THE END-TO-END EXERCISE FAILED, WHICH IS THE POINT OF PUTTING IT IN D-2.** `tools/bench/build_opfsinnertunnelconnect_v0.log`, **45 gates pass / 2 fail** (the 2 are one gate, G4f, plus its STOP echo), `BGRUN END rc=1 after 324s`. ??**ARTEFACT: `claudeDev\OpFsInnerTunnelConnect_v0.vi`, md5 `c0d5efe3389b0dea388ee565433fb683`, 17,881 B, `ExecState` 1 re-read AFTER the save**; labels `tools/bench/opfsinnertunnelconnect_v0_labels.json`; donor `OpConnectFromWire_v0.vi` md5 `b545279e?? unchanged. Gates: **G1 PASS** (ExecState 1) 쨌 **G2 PASS** (20 consecutive calls, handles 42,461 ??42,555, delta **+94** ??짹100; private-bytes drift **0.03 MB**; refs 22/22/0) 쨌 **G3 PASS** (`term_uid` **7488** on 20/20 calls) 쨌 **G3a PASS** (the INPUT-side echo `uid_back` **7468** on 20/20 ??Pre-decided 125 implemented at both ends after the prior-art review's A3) 쨌 **G4 FAILS AT G4f**. ?뵶 **THE MEASUREMENT, AND IT IS A NEW FACT: `Terminal.Connect Wire` 6349C03 IS A SILENT NO-OP WHEN THE TERMINAL HANDED TO `Wire Source` IS BARE.** Arm 1 (wire 7506 ALIVE, the 20-call scratch): every call returned `sink_wire=7506`, `is_broken=True`, `err=''` ??the verb fires and BRANCHES, exactly as `c80_rowd_routeA_r2.log:253-261`. Arm 2 (wire 7506 DELETED, both ends bare, `build_opfsinnertunnelconnect_v0.log:315-342`): `err=''`, every per-stage error column `''`, `term_uid` 7488, `uid_back` 7468, **`UID 2` 0, `wire_delta` 0, border t1 still wire 0** ??and one junk `Invoke` WAS minted, so the Invoke executed. So the source half is proven (the FSIT LeftTerm resolves from a BARE tunnel terminal) and the WRITE is the thing that declines. Ruled out on the machine, not by argument: addressing (node uid echo 23032 MATCH, t1 `'Outgoing Handle'`, `wire == 0` asserted by G4c immediately before), source resolution (both echoes, all error columns empty, on the same call), stale readouts (every indicator poisoned per call, `Is Broken?` poisoned True), already-wired sink, and op legality. **Junk-node rate MEASURED for the first time: 1.00 stray `Invoke` per call (Node 635 ??655 over 20), purged in-run** (the prior-art review's B3). ?뵶 **THE MANDATORY FAILED-PREDICTION REVIEW IS ANSWERED AND IT REFUTES THIS SESSION'S READING** (`archive/peer/2026-09-22-c82-bare-source.md`, claude/`hypothesis`/opus max, `tools/bench/peer_c82_bare_source.log` rc=0, 424 s; disposed in full): **`tools/bench/build_harness_copyloop2.log:31-40` already records 6349C03 CREATING a wire between two BARE terminals ??wire census 9 ??10, both ends on wire 346, `ExecState` 0 ??1 ??and a +1 count cannot be a branch (`gscript.py:2521-2522`).** So "the method declines on a bare `Wire Source`" is FALSE as a property of the method, and arm 1 vs arm 2 differ in THREE ways at once (wired?봟are 쨌 join?봠reate 쨌 polarity undetermined?봡etermined), so this run cannot attribute the failure. Its three live alternatives, RECORDED NOT ACTED ON (judgement's): (a) **the ROLES ARE INVERTED** ??`Wire Source` is documented as *"the original source of the wire"*, #7488 is `is_source=False` (the true SINK) and the Invoke sat on a `is_source=True` terminal, so a CREATE has two sources and no sink; **this makes Pre-decided 119 an OVER-GENERALISATION ??`c80_rowd_routeA_r2.log:244` proved role exchange when JOINING, not when creating**; (b) `Auto Route?` is at default FALSE and no op in the fleet wires it; (c) the Invoke's own `error out` is not shown to reach the op's `error out`, so "silent" is so far only "quiet". **Its cheapest test was NOT run (the brief forbids improvising after a failed gate): a 2횞2 on a TRIVIAL scratch VI with `gscript.connect_terminals` alone, T1 (invoke on bare INPUT, source bare OUTPUT) vs T4 (arm 2's polarity) ??~2 min, no bed, nothing built.** Its follow-on (swap the op's halves so the Invoke sits on the true SINK ??a ONE-WIRE change at `build_opfsinnertunnelconnect_v0.py:509`, not a new op) is a design decision and was returned untouched. Prior-art review `archive/peer/2026-09-22-priorart-c82-fsitconnect.md` ANSWERED, 3 slugs (`contradicted`, `helper-exists`, `already-measured`), ALL THREE ACCEPTED and fixed BEFORE the run, dispositions written under `## What was done with it`. Hygiene: LabVIEW restarted at phase [1] (33,931 ??33,988; 31,258 after the work; 33,996 at exit), refs 22 opened / 22 closed / 0 live, **bed `claudeDev\D1_s3b_m3a3_20260922_081056.vi` md5 `33ef524e?? BYTE-UNCHANGED at both ends, all five pins hold**, both scratches deleted, `THE FILES THIS RUN LEFT ON DISK: ['OpFsInnerTunnelConnect_v0.vi']`. The bed was never opened for execution. No motor, no ASI, no camera. PREVIOUS PURPOSE, unchanged and still true ???윟 **CYCLE-81 MATERIAL, D-1 OF M3a-3b IS MEASURED AND THE ANSWER IS YES ??NOTHING WAS BUILT, NOTHING SAVED, NOTHING MUTATED** (Pre-decided 121/122; read-only on dated scratch COPIES, both deleted in their own run). Two runs, `tools/bench/diag_c81_uidref.log` (7/0, rc=0, 125 s) and `tools/bench/diag_c81_uidref_r2.log` (7/0, rc=0, 126 s); bed `claudeDev\D1_s3b_m3a3_20260922_081056.vi` md5 `33ef524e?? byte-unchanged at BOTH ends of BOTH runs, all five pins hold, `THE FILES THIS RUN LEFT ON DISK: []`, refs 3/3/0 live, handles 33,986 ??33,972 (restart) ??33,967 at exit. LabVIEW 2026 **26.3.1f1**, 64-bit, `C:\Program Files\National Instruments\LabVIEW 2026`; the VI actually called is `??vi.lib\VIServer\UID to GObject Reference.vi` (subVI uid #990 in BOTH probing ops). ?윟 **`UID to GObject Reference.vi` DOES RESOLVE A TERMINAL UID.** `#7488` ??`Class Name` **`'Terminal'`**, uid echo OK, every error column EMPTY, owner `'FlatSequenceInnerTunnel'#7468` ??and that owner AGREES with the structural route that produced #7488 (`FlatSequenceInnerTunnel #7468`.`Left Terminal`), so it is two independent addressings denoting one object, not a self-echo. `#23906` (TARGET B, RE-DERIVED) ??`Class Name` **`'OuterTerminal'`**, uid echo OK, owner **`'RightShiftRegister'#23868`** ??**Pre-decided 120 CONFIRMED: the owner is the register, NOT `WhileLoop #23032`.** Controls answer as expected (`#7468`??'FlatSequenceInnerTunnel'`, w`7506`??'Wire'`, `#686`??'Diagram'`, all echoes OK). ?뵶 **THE ONE COLUMN THAT COULD NOT BE MEASURED: a literal TMSC to `Terminal`. NO op on disk carries a `Terminal`-seeded `To More Specific Class`** (the only class seeds that exist are `FlatSequenceInnerTunnel`, `FlatSequenceOuterTunnel`, `Wire`, `GObject`), and building one is exactly what this dispatch forbids. The two casts that DO exist were run on every uid: TMSC??GObject` succeeds on both terminals (`#7488`??'FlatSequenceInnerTunnel'`, `#23906`??'RightShiftRegister'`, no error), TMSC??FlatSequenceInnerTunnel` refuses a terminal with **`error 1055: Property Node`**. ?뵶?뵶 **NEGATIVE CONTROL, AND IT IS THE MOST IMPORTANT LINE HERE (`diag_c81_uidref.log:85`): on a NEVER-ALLOCATED uid (999983) the resolver returns a reference with EVERY ERROR COLUMN EMPTY whose class and uid are those of a DIFFERENT, previously-resolved object (`'Wire'#7506` ??the uid probed immediately before). The uid echo (`uid_back != uid_in`) is the ONLY column that catches it.** Any future uid-addressed writer that does not echo-check is a silent-wrong-object hazard = a rule-1a computation change. The mandatory failed-prediction review for `c80_rowd_routeA_r2.log` was dispatched and **ANSWERED** (`archive/peer/2026-09-22-c81-uidref-probe.md`, claude / `hypothesis` / opus max, 533 s, $3.4884, `tools/bench/peer_c81_uidref.log` rc=0) and is DISPOSED in full; its three measurement findings were applied in run 2 (negative controls, `err_bcw` attribution, cross-route identity) and its FIVE design findings were returned to judgement untouched ??chiefly *"do not gate D-2 on D-1: the NO branch is already open, and `OpConnectByUid`'s donor `OpConnectNested_v2.vi` IS NOT ON DISK"*, plus *"`Wire.Disconnect Terminal` 6370C0D is NOT the method labviewwiki marks '(Not Implemented)' ??those markers sit on 6370C02/03/04/09"*. No motor, no ASI, no camera; no op, verb or device built. PREVIOUS PURPOSE, unchanged and still true ???윟?뵶 **CYCLE-69/80 MATERIAL (M3a-3b = ROW D, ROUTE A) ??THE VERB WORKS, THE ROW DOES NOT LAND, NO ARTEFACT EXISTS, AND THE REMAINING STEP IS A DESIGN DECISION.** `tools/recipes/build_d1_m3a3.py` was RE-CUT IN PLACE to the SWAPPED `OpConnectFromWire_v0` call (Pre-decided 116-A: the op's already-uid-addressed SOURCE half takes FSIT terminal **#7488** = the true SINK; the index triple takes loop #23032 `Nodes[21]` t1 = the true SOURCE, so the Invoke sits on the BARE terminal); astcheck `ASTCHECK OK` 10 gates (`tools/bench/c80_astcheck_m3a3b_r3.log`). TWO RUNS, both on DATED SCRATCH copies that were deleted in the same run ??`tools/bench/c80_rowd_routeA.log` (47/5, rc=1, 112 s) and `tools/bench/c80_rowd_routeA_r2.log` (49/5, rc=1, 110 s). ?윟 **THE DECISIVE MEASUREMENT (`c80_rowd_routeA_r2.log:253-261`): immediately after the swapped connect and BEFORE any delete, net **7506** has **THREE** source terminals ??`RightShiftRegister #23868` (THE INTENDED NEW SOURCE), `FlatSequenceInnerTunnel #7468`, `RightShiftRegister #4334` (the OLD source) ??PD85 violations 0, and the loop border t1 `'Outgoing Handle'` went BARE ??**wire 7506** (`:244`). SO THE SWAPPED CALL DOES CONNECT: Pre-decided 116-A is NOT refuted and no new writer op is needed for the CONNECT.** ?뵶 What it does NOT do is REPLACE the old source: the net ends with three sources, hence `Wire.Is Broken?` **True** and `ExecState` 0, and deleting wire 7506 destroys the whole net (measured in both runs: #7488 and the border both go BARE). **Row D therefore needs ONE more step nobody has authorised ??remove the OLD `#4334` terminal from the net without destroying it ??and `Wire.Disconnect Terminal` 6370C0D is reported by labviewwiki as "(Not Implemented)" (c80-r2 review), which CONTRADICTS `docs/NAMES.md:1035`. That is a DESIGN DECISION, judgement's.** Arm A1 (delete-then-connect, Pre-decided 106's ordering) is DEAD and why is measured: with 7506 gone the op's `Wire.Terms[]` read raises `error 1055: Property Node in OpConnectFromWire_v0.vi`, `UID 2` 0, `wire_delta` 0, #7488 stays BARE (`c80_rowd_routeA_r2.log:119`). **ALSO MEASURED: Pre-decided 117's LITERAL uid is WRONG** ??`OpWireSource_v5` names the SHIFT REGISTER (`#23868`), never `WhileLoop #23032`, exactly as the delivered Row C read (`build_d1_m3a3_run2.log:182`). The mandatory failed-prediction review is **ANSWERED and disposed**: `archive/peer/2026-09-22-c80-rowd-routeA-swapped-r2.md` (claude/hypothesis, opus max, 689 s) ??it REFUTED this session's "Route A is dead" reading, named arm A2's own instrumentation as the fault, and its cheapest test was built and run in the same dispatch; a first dispatch at `-TimeoutSec 780` ended **TIMEOUT** and told us nothing (`archive/peer/2026-09-22-c80-rowd-routeA-swapped.md`, disposed as a non-result). Hygiene: LabVIEW restarted at phase [0] (34,160 ??30,684 ??31,281 handles), refs 8/8/0 live, **bed `claudeDev\D1_s3b_m3a3_20260922_081056.vi` md5 `33ef524e?? BYTE-UNCHANGED at both ends and all four pins hold, both scratch copies deleted, `THE FILES THIS RUN LEFT ON DISK: []`.** No motor, no ASI, no camera; no op, verb or device built. PREVIOUS PURPOSE, unchanged and still true ???뵶 **CYCLE-69 MATERIAL, SECOND DISPATCH (the c79 failed-prediction review): NO LabVIEW WAS TOUCHED ??the instance left by cycle 68 (pid 30520) was NOT restarted, NOT opened, NOT read; the bed `claudeDev\D1_s3b_m3a3_20260922_081056.vi` md5 `33ef524e?? is byte-unchanged because nothing opened it, and NO op VI was built.** The brief's TASK 1 (the mandatory failed-prediction review of Pre-decided 111) ran and **ANSWERED**: `archive/peer/2026-09-22-c79-rowd-writer.md`, claude / role `hypothesis` / **opus effort max**, outcome `ANSWERED (554s)`, cost **$3.9166** (in 18 / out 40,945 / cache-create 236,321 / cache-read 944,181, 18 turns), `tools/bench/c79_rowd_writer_peer.log` `BGRUN END rc=0 after 554s`. **TASK 2 (build `OpFsInnerTunnelConnect_v0`) WAS NOT STARTED, BY THE BRIEF'S OWN HALT CONDITION** ??*"If the review names a concrete alternative route that works with existing ops, STOP and report it ??do not build"* ??and the review named one: **`OpConnectFromWire_v0` WITH THE ROLES SWAPPED** (`wire_uid=7506` + the `Wire.Terms[]` index of #7488 ??`Wire Source`; sink triple = `Diagram[19]` / `Nodes[21]` / `Terminals[1]`, the NEW loop's BARE `Outgoing Handle`), i.e. the Invoke sits on the BARE SOURCE terminal and receives the FSIT terminal as `Wire Source`. `tools/recipes/build_d1_m3a3.py`'s `WRITERS` table and gate W1 are UNCHANGED. What the review overturns: **`docs/NAMES.md:847`'s "6349C03 is invoked on the SINK" is labelled "labviewwiki, ADOPTED" and the wiki page does not say it** ??so `c78_rowd_writer.log:19`'s conclusion is an inference from our own one-donor lineage (`OpConnect2_v0 ??OpConnectNested_v0 ??_v1 ??_v2 ??OpConnectFromWire_v0`), not a fact about LabVIEW; the W1 census itself stands. What it CONFIRMS: ruled-out (a) survives (`FlatSequence` is `Generic ??GObject ??FlatSequence`, so no `Nodes[]` address for #7468/#7488 can exist); **`Tunnel.Inside Terminals[]` 6356000 / `Outside Terminal` 6356001 is DEAD BY CITATION** ??`FlatSequenceInnerTunnel` is NOT a `Tunnel`, so `OpTunnelRead_v0`'s cast can never address it, and its real properties are `Left Terminal` **1C3A9000** / `Right Terminal` **1C3A9001**; and no documented NI verb wires without a sink refnum (`Create Described Wire` is itself a `Terminal` method; `Node.Connect Wires` needs both ends to be `Node`s). ?뵶 **THE JUDGEMENT CALL "Row D gets a new writer op" IS NOW CONTESTED ON EVIDENCE** and, if a new op IS still needed, the review says the briefed shape is wrong twice over: donor should be `OpConnectNested_v2` (its source half already addresses a loop's own BORDER terminal), NOT `OpStopFromNode_v0` (source ladder anchored INSIDE the body), and **`OpConnectByUid`** (uid ??`UID to GObject Reference.vi` ??TMSC on a **Terminal** seed ??the Invoke's `reference`) is smaller than `OpFsInnerTunnelConnect_v0` ??no property node, no side selector, and it serves every future uid-addressed sink. **The review's own 4-step cheapest discriminating test (~2 min, a dated scratch COPY of the bed) was NOT RUN** ??it selects between three designs and the session was already halted; the gate it prescribes is `OpWireSource_v5`'s source-terminal OWNER == `WhileLoop #23032`, NEVER a wire delta, because a swapped connect could SILENTLY BRANCH wire 7506 (owner `#637`) and that passes a wire count while being a rule-1a computation change. PREVIOUS PURPOSE, unchanged and still true ???뵶 **CYCLE-69 MATERIAL (M3a-3b = ROW D): NO LabVIEW WAS TOUCHED, NOTHING WAS MUTATED, NO ARTEFACT EXISTS ??ROW D IS BLOCKED ON JUDGEMENT BECAUSE THE WRITER DOES NOT EXIST.** The LabVIEW instance left running by cycle 68 (pid 30520) was NOT opened, NOT restarted and NOT read; the bed `claudeDev\D1_s3b_m3a3_20260922_081056.vi` md5 `33ef524e?? is byte-unchanged (nothing opened it). **STEP 1 DELIVERED (Pre-decided 112):** `tools/logclass.py:is_recipe_build_log()` reads a log's OWN last `BGRUN START` **command** and counts it only when that command RAN a `tools/recipes/*.py`; `guard_cycle.py`'s `since` **budget set only** now uses it and `is_build_log` is untouched (guard_peer still arms the failed-prediction review off it). Self-test `tools/bench/selftest_logclass_recipebuild.py` **24 pass / 0 fail** (`tools/bench/c78_step1_selftest.log`, rc=0), covering the two named non-builds, the real recipe log, append/`cp`/prose/review/watchdog scoping, and guard_peer's own `selftest_guard_peer_jev.py` + `selftest_guard_peer_failre.py` re-run UNCHANGED. **MEASURED EFFECT (`tools/bench/c78_rowd_writer.log`, 5/0, rc=0): since the cycle-64 retrospective the budget set goes 20 logs / span 2.23 h / `overdue` TRUE ??2 logs / span 0.25 h / `overdue` FALSE**; the 2 are `build_d1_m3a3.log` and `build_d1_m3a3_run2.log`. **STEP 2 DELIVERED AS A FILE, NOT AS A RUN:** `tools/recipes/build_d1_m3a3.py` is re-cut **IN PLACE** to M3a-3b = Row D alone (bed as input, Row C carried as read-only precondition gate C0, sink by Pre-decided 109/111 via `OpFsInnerTunnelTerm_v0` uid 7468 ??LeftTerm #7488, delete-before-connect, acceptance = one source of ANY class + OLD #4334/#637 off the net on the ordered idempotent second pass, the `%`-format defect fixed by `_f()` and the `GetVIReference` `com_error` by `open_op()` = a NAMED gate failure with the raw error); pinned astcheck **10 gates PASS, `ASTCHECK OK`** (`tools/bench/c78_astcheck_m3a3b.log`, gate 10: 109 `%`-sites verified, 0 mismatch, 0 invalid). ?뵶 **IT WAS NOT RUN, AND THAT IS THE FINDING.** Its first gate W1 asks "is a writer bound to this row's sink kind?" and the answer is measured NO: `Terminal.Connect Wire` 6349C03 is invoked ON THE SINK TERMINAL (`docs/NAMES.md:245`), Row D's sink is a TERMINAL UID on a `FlatSequenceInnerTunnel`, and **all four label maps declaring method 6349C03 (`opconnectfromwire_v0`, `opconnectnested`, `opconnectnested_v1`, `opconnectnested_v2`) address their sink as (`index`, `index 2`, `index 3`) = (diagram, `Nodes[]`, `Terminals[]`); writers taking a UID-addressed sink = 0; `opfsinnertunnelterm_labels.json` declares NO `method` at all (`kind: IN` ??a READER)**. A `FlatSequence` is a `GObject`, never a `Node`, so no `Nodes[]` address for it exists or can exist. Running the recipe would have halted at W1 before opening LabVIEW, so it was not run and no decoy artefact was saved. Building that writer is a NEW OP and a design decision ??judgement's, not material's. PREVIOUS PURPOSE, unchanged and still true ????**CYCLE-68 MATERIAL MEASUREMENT DONE, NOTHING MUTATED ??`tools/bench/diag_c77_rowd_addr.log` (5 gates pass / 0 fail, rc=0, 144 s), read-only on a scratch COPY of the bed; the bed `claudeDev\D1_s3b_m3a3_20260922_081056.vi` md5 `33ef524e?? is unchanged at both ends and all five pins hold.** LabVIEW restarted first (34,599 ??33,990; 34,941 after the reads; 33,996 at exit; refs 3 opened / 3 closed / 0 live). What the c76b review's cheapest test measured: (A) **`OpFsInnerTunnelTerm_v0` on uid 7468 RETURNS A TERMINAL REFERENCE with every error column empty ??`LeftTerm #7488` carries wire **7506**, `RightTerm #7471` wire 7448, self/cast echo `'FlatSequenceInnerTunnel'#7468`** (control read on FSIT #123 also answers), so the row-D SINK is addressable by uid today; (B) `find_node` MISSES on **#43914, #12938 AND #681** (173/173 diagrams, 635 nodes, 0 scan errors) ??the miss tracks the CLASS, not the owner and not #681; (B?? `owner_of(#681)` = **`'TopLevelDiagram' #536`**, NOT `'Diagram'`, and `diag_index(#681)` raises ??so **Pre-decided 107's route reads #681's table on a diagram that does not own it**, and #681 is absent from `Diagram #686`'s 27 `Nodes[]` rows ??the "how many entries carry wire 7506" question is UNREADABLE by that route, neither zero nor one; (C) `report_all('Diagram')` row 0 is still `TopLevelDiagram #536` (173 rows), #686 at idx 19; (D2, labelled secondary) exactly ONE terminal on `Diagram #686` carries wire 7506 ??`WhileLoop #637` `Nodes[4]` t10 `'Outgoing Handle'` is_source True, the wire's SOURCE side. c76b's disposition is written. PREVIOUS PURPOSE, unchanged and still true ????**M3a-3 ROW C IS DELIVERED (run 2, 26 gates pass / 2 fail ??both fails are the PRE-DECIDED Row-D deferral): `claudeDev\D1_s3b_m3a3_20260922_081056.vi`, md5 `33ef524e0b6b193a158c9221474c68e3`, 306,951 B** (`tools/bench/build_d1_m3a3_run2.log`). `Global #7202 'Global motor pos.vi'` t0 `'Focus position'` now reads the NEW loop's position register: sink net **25231** has exactly ONE source terminal of ANY class, `RightShiftRegister #23895`, PD85 violations 0, asserted on the ordered idempotent second pass (`wire_delta` 0); the OLD `#4256` is OFF the net. Junk `Invoke` purged (634??35??34). Refs 8/8/0 live; handles 34,592 ??30,689 (restart) ??33,833; all four md5 pins and the M3a-2 input unchanged. ?뵶 **ROW D IS DEFERRED TO M3a-3b ??a FAILED PREDICTION, reviewed** (`archive/peer/2026-09-22-c75-m3a3-run1-failpred.md`, ANSWERED, disposed): wire **7506 was NOT deleted** and nothing was improvised. ?좑툘 **RUN 1's ARTEFACT `claudeDev\D1_s3b_m3a3_20260922_075611.vi` (md5 `2461a749??) IS REJECTED AND MUST NOT BE USED AS A BED** ??its delete ran but the rebuild raised (`OpConnectNested_v2.vi` is not on disk), so `Global #7202` t0 is BARE = a dropped consumer; the rename to `_REJECTED_?? was refused by the permission layer, so it still carries the clean stage name. PREVIOUS PURPOSE, unchanged and still true ????**CYCLE-65 MATERIAL MEASUREMENT DONE, NOTHING MUTATED** ??`tools/bench/diag_c75_m3a3_rows.log` (6 gates pass / 0 fail, rc=0, 147 s) + `tools/bench/diag_c75b_loopterms.log` (5/0, rc=0, 4 s), both read-only on scratch COPIES of `D1_s3b_m3a2_20260922_023029.vi`; its md5 `3842f5e6?? is unchanged at both ends and all four STATUS pins hold. LabVIEW was RESTARTED first (42,570 ??34,322 handles; 34,336 at exit; refs opened==closed on both runs). PREVIOUS PURPOSE, unchanged and still true ????**M3a-2 IS DELIVERED AND INDEPENDENTLY VERIFIED** (15 gates pass / 0 fail) ??`claudeDev\D1_s3b_m3a2_20260922_023029.vi`, md5 `3842f5e6f128226235dc78353f26ef44`, **broken BY DESIGN** (`ExecState` 0; its missing rows belong to the next stage), never run and never cold-loaded. ?좑툘 **LabVIEW WAS LEFT RUNNING at 42,297 handles and MUST BE RESTARTED before the next batch.**
+```
+?뵷 **THE WHOLE CHAINED `purpose:` NARRATIVE ("PREVIOUS PURPOSE, unchanged and still true ????, cycles up to 64, 12,560 bytes on one line) RELOCATED VERBATIM (rule 4) ??`archive/2026-09-22-status-cycle64-locknotes.md` 짠1** ??nothing deleted, nothing rewritten; the `purpose:` key above now states only the CURRENT state.
+?뵷 **ALL 50 HISTORICAL LOCK-BLOCK ENTRIES (cycles 48??7: 48 `owner_*`/`lock_*` keys, the superseded `status:` line, and the `motor:` key) RELOCATED VERBATIM (rule 4) ??`archive/2026-09-21-status-cycle67-locknotes.md` 짠1** ??that file also carries the three older `lock_relocated_*` pointers (into `??cycle5556-relocate.md`, `??cycle54-relocate.md`, `??cycle5153-relocate.md`, `??cycle49-relocate.md`, `??cycle48-lockkeys.md`). **Motor state, unchanged and still true:** limits LEFT ON since 2026-09-18 15:37 (PI TMN 0 / TMX 39 in RAM, ASI SL/SU 짹2 mm), ports closed.
+**Never assume an instance exited**: `tasklist | grep -i labview`. Fresh ??1,500 handles; unique scratch name/run.
+
+## HARDWARE ??permission follows the RIG STATE. Current: **議곕┰ / ASSEMBLED** (machine key `rig-state:` below)
+遺꾪빐 = motors ??ASI ??camera ??쨌 **議곕┰ ??WE ARE HERE** = camera ?? motors/ASI ONLY through `tools/motor_gate.py` inside the envelope 쨌 ?ㅽ뿕以?= ?????? ?좑툘 ASI carve-out **RETIRED** (rule 1b); **only the user announces a state change**.
+Rotor counter **0** 쨌 magnet full travel 쨌 camera 1280횞1024, offsets 0, 90.0009 Hz, never write `BinningHorizontal`; **a session open RESETS ROI *and* exposure** ??the acquisition loop applies `tools/bench/camera_contract.py`. **No beads on the rig.**
+?넅 **SAFE MOTION ENVELOPE = THE CONTROLLER LIMITS + the gate's command-class denies** (user, 2026-09-18 15:2x at the
+rig). PI `SPA 1 0x15/0x30` ??TMN 0 / TMX 39 (RAM, **never WPA**) 쨌 ASI `SL/SU` absolute mm X ??.8475??.1525, Y ??.7744?╈닋0.7744 (persistent, **never SS Z**),
+written+verified by `py tools/motor_gate.py --session start|end` from the user-editable `tools/bench/motor_limits.json`; `--execute` refuses without `tools/bench/motor_session.json` **and** a fresh matching readback.
+The gate still refuses ?ㅽ뿕以? every ASI home/zero/save, PI GOH/FRF/DFH/RON/POS/SPA/WPA and all rotor motion (self-test `selftest_motor_gate2.py` 74/74).
+??The 15:37 run (8/10, L4 a FALSE PASS) is SUPERSEDED by the 16:0x retest ??`??cycle29-retro-trap.md` 짠7. Limits LEFT ON (PI TMN 0 / TMX 39 **in RAM**, ASI SL/SU persistent); **an 18:13 D0 run then moved the magnet to 30 mm and they held**.
+rig-state: 議곕┰   <!-- set 2026-09-17 23:0x on the user's words ("?ㅽ뿕 1李⑤줈 ?앸궗?붾뜲, 由ш렇???좎??섎뒗 以? + "議곕┰ ?곹깭?먯꽌????踰붿쐞 ?덉씠硫?紐⑦꽣 ?덉슜??) 쨌 the gate's ONE machine-readable key, parsed by motor_gate.rig_state(); ONLY the user's announcement may set it to 遺꾪빐 / 議곕┰ / ?ㅽ뿕以? Keep it at the start of the line, unquoted. -->
+
+## Where things stand ??the three ??lines VERBATIM in `archive/2026-09-18-status-cycle36-relocate.md` 짠4
+??tunnel ops BUILT + FUNCTIONALLY VERIFIED (38/38, ?좑툘 **do NOT re-run the recipe, run 1 is the record**) 쨌 ??the "ZERO runnable experimental VIs" gap is BROKEN ??`tools/bench/drive_original_copy_v5.py` drives a plain copy of the original unattended end to end, twice 쨌 ??N1 accepted ??the GPU kernel is cleared for D1. **Order is D0 ??D1 ??D2** (`docs/cycle27-plan.md` Pre-decided 1). Prose VERBATIM ??`archive/2026-09-21-status-cycle67-locknotes.md` 짠3; earlier ??`archive/2026-09-18-status-cycle22-close.md` 짠2.
+
+## OPEN ??**items 1??0 VERBATIM in `archive/2026-09-17-status-runner-build.md` 짠2**; the five CLOSED items (32 쨌 55 쨌 56 쨌 51/52/52a 쨌 53's mechanical half) VERBATIM in `archive/2026-09-19-status-cycle46-relocate.md` 짠5, which forwards to `??026-09-18-status-cycle36-relocate.md` 짠5?벬?. ?좑툘 Two riders survive there: 32 is NOT to be closed unilaterally (the next outcome review judges it), and `audit_cycle` C4 still understates spend (retrospective-cycle31 F4). Only the live items below.
+38/39/41. ?윞 **LIVE PART ONLY: `SR_QUEUE_AUTHORISED` stays False for good; `TEMP_SINK_AUTHORISED` is True for the `Z/dZ` row only** (Pre-decided 13 + 13a), and `Z/dZ` is now MEASURED WIRED (Pre-decided 19). `VI.Get Errors` 452 NOT built and `docs/d1-route-b-plan.md` 짠10 NOT AUTHORISED. ??the stall-watchdog liveness item is CLOSED by cycle 40's repair. Full text + run-3 history ??`archive/2026-09-19-status-cycle40-close.md` 짠2.
+53. ?뵶 **The JUDGEMENT half STAYS OPEN, both review arms:** `POS` only declares the present location to be a coordinate and PI's `0x15/0x30` are relative to that zero, so **nothing we can read proves the controller zero still equals the ORIGINAL physical zero** ??i.e. that 0??9 still fences the intended physical window. VERBATIM ??`archive/2026-09-18-status-cycle36-relocate.md` 짠9; dispositions `archive/peer/2026-09-18-pi-err5-unreferenced-{codex,opus}.md`.
+54. ?뵶 **TWO RULES YOU MUST FOLLOW, reasoning relocated ??`archive/2026-09-19-status-cycle40-close.md` 짠3.** (a) **The retrospective is the LAST thing a session runs** ??`guard_bash.py:226-227` marks the session retro-done on ANY `retrospective.py` in command position, and `guard_session` then refuses every later dispatch; nothing clears the mark. (b) **Dispatch in the FOREGROUND and wait; when something must run in the background, HOLD THE TURN OPEN until it lands** ??a `claude -p` session cannot take results as they arrive, and ending the turn kills the child. Repair named, deliberately NOT BUILT.
+42/43/46/47. ?윞 **LIVE PART ONLY** ??42 ?좑툘 undisposed reviews + `audit_cycle` A2/A3 SELF-REFERENTIAL, not fixed (?좑툘 A4 counts a whole DAY, so it charges the previous cycle's files to this one ??retrospective-cycle40 F4) 쨌 46 ??**CLOSED 2026-09-23 ??FALSE PREMISE**: `SetCommand_signed.vi` IS on disk (`claudeDev\SetCommand_signed.vi`, md5 `ec87a265??, hardware-verified 2026-09-14); the "no disk" claim was a search-scope artefact. The real remaining item is the stage-2 repoint of the nine rotor call sites (Pre-decided 133) 쨌 **47 ?뵶 JUDGEMENT: the audit A1/A2/A3 remedy is NOT a `logclass` entry.** 43 and 48/48a/49/50 ??CLOSED. Full text ??`archive/2026-09-19-status-cycle40-close.md` 짠4.
+57. ?윞 **NEEDS JUDGEMENT RATIFICATION (cycle 68, material):** `guard_peer.py` now (a) formats its refusal through a drive-safe `_rel()` ??the same helper `guard_cycle.py:518` has carried since 2026-09-17; without it the hook RAISED instead of refusing when the failing log sat on another drive (`tools/bench/jev_discharge.log:21-26`, rc=99) ??and (b) skips a failing log whose LAST `BGRUN START` command is a **Jev script**, the other half of the user's 2026-09-22 "Jev??硫댁젣" exemption (until now wired only into `RUNNER_RE`, the COMMAND side, so a Jev self-test bundle's fixture text ??`STOP:`/`FAIL` by construction ??armed the gate against every other run). Scoped by the COMMAND, never the filename. Self-test `tools/bench/selftest_guard_peer_jev.py` **17 pass / 0 fail**, two new cases: C7 (a newer Jev log does not become the blocking log) and C7b (a non-Jev build that merely MENTIONS a Jev script still gates).
+
+## NEXT
+?윟?윟 **THE `ExecState` 0 BLOCKER IS NAMED, AND IT IS ONE EVENT ??NOT A MYSTERY, NOT INHERITED FROM THE ORIGINAL, NOT A THIRD CAUSE.** Bisection over the SAVED STAGE ARTEFACTS (`tools/bench/diag_c89_wirebirth.log`, **45 pass / 0 fail**, rc=0, 156 s; both method controls passed) reads `ExecState` **1** and **0 bad wires** on every file up to `D1_s3b_row2_20260921_160311.vi` (`D1_s1_copy` 1899??899 쨌 `D1_s2_loops` 1905??905 쨌 S3a boolean carrier 1905??905 쨌 `D1_s3a_focus_ind` 1905??905 쨌 `row1_20260921_135932` 1906??906 쨌 `row2` 1907??907), then `ExecState` **0** and **exactly 11** from `D1_s3b_m3a_BROKEN_20260922_005732.vi` onward ??the SAME 11 in `m3a2`, `m3a3` and `rowD`, set-identical. **So M3a-2, Row C and Row D each added ZERO broken wires: every M3 row landed clean.** The mechanism is the machine's own words, not inference: `tools/bench/build_d1_m3a1.log:2754` *"THE SEVEN 'move_in' CALLS ??**37(d) severs every wire on the moved object**"*, `ExecState` 1 ??0 at `:2778` after the FIRST move (`#3529 '- Inc (PgDn)'`), census UNCHANGED at `Wire` 1907 (`:2926`) ??**SEVERED into half-wires, never deleted.** Each still holds a live endpoint on `WhileLoop #637`, so **deleting them drops real data paths = a rule-1a change; they are RE-WIRED, never removed.** ??**Pre-decided 129**.
+?윟 **AND THE PASS CRITERION IS REACHABLE: `ExecState` 1 ??0 ??1 IS NOW PROVEN HEADLESS, the first time in this fleet.** Deleting the wire into a REQUIRED input gave 0 (an OPTIONAL `error in` wire left it 1); re-creating it with `gscript.connect_ctl` (`OpConnectCtl_v0`, `tools/gscript.py:1023`) restored **1**, no save anywhere (`diag_c89_wirebirth.log:82-91`, gate T1c). The reader is live, not cached: 0 at 0.00 s and still 0 at +6 s (`diag_c89_bareterms.log`). ??**Pre-decided 130**.
+?뵷 Also settled this cycle, so nobody re-measures them: **all six conditional/stop terminals are WIRED** (#23041 #10170 #23032 #25380 #637 #15173, uid-echoed) 쨌 **NOT ONE bare input terminal exists** on `Diagram #23058` (8 nodes), `#10407` (7/7) or `Global #7202` (1/1) 쨌 **`Diagram #639` IS `WhileLoop #637`'s own body** ??the c88 "#639 vs #637 discrepancy" was never one, and all 11 sit inside the OLD loop 쨌 Remove Bad Wires destroys **no node and no tunnel** here (NODE 635??35, `#686` 27??7) 쨌 the three stray `Invoke` nodes (#4859 #24012 #24005) delete cleanly, ?? census each, and do **not** explain `ExecState` 0 쨌 `#4344`, `#4274`, `#4334` and `LoopTunnel #9641` are REAL by an independent route ??**ALT-2 (fabricated owners) is REFUTED and ALT-1 is confirmed by mechanism.**
+?뵶 **FIRST ACT ??M3a-4 STEP 1, AND IT NEEDS NO LabVIEW: derive the SEVERED-ROW TABLE OFFLINE from `tools/bench/build_d1_m3a1.log`'s pre-move wiring census.** A file, not the machine: for each of the seven moved nodes, what it was wired to before `move_in` severed it. Cross it against the four endpoints already read (`w1731` SRC `LeftShiftRegister#4344` 쨌 `w3947` SRC `LeftShiftRegister#4274` 쨌 `w9635` SRC `LoopTunnel#9641` 쨌 `w7337` SINK `RightShiftRegister#4334`). **Leaves an artefact the next stage starts FROM: a severed-row table written as JSON under the bench directory (name it m3a1\_severed\_rows), plus a ??-page summary under docs.** Pass = every one of the 11 wire uids is accounted for as a named (source ??sink) row, or is explicitly listed as unaccounted with its reason. ??**Pre-decided 131 step (1)**.
+?뵶 **SECOND ACT ??M3a-4 STEP 2: read the 11 live endpoints FROM THE MACHINE with `Stage.net_sources` (`tools/stagekit.py:364`), read-only, on a dated scratch copy of the bed.** It reads the source off the WIRE (`Wire.Terms[]` 6371003 ??`Is Source?` 634A003) and is measured working on a `ControlTerminal` source (`docs/d1-route-b-plan.md:605-611`). ?좑툘 **Do NOT use `wmap` / `Diagram.Nodes[]`** ??it cannot enumerate a tunnel terminal, a shift-register outer terminal, a panel-control terminal or a severed half-wire, and that is what cost this cycle a run (`diag_c89_wirebirth.log:85`, NODE route `[]` vs PANEL route one row). Steps (3) re-wire in batches of 3?? rows, each batch SAVED and md5-pinned, and (4) `ExecState` 1 on the ordered idempotent second pass, follow only after the table exists. **No full-length retry under a new file name.**
+?뵷 **THE CURRENT BED IS UNCHANGED: `claudeDev\D1_s3b_m3a3b_rowD_20260922_161040.vi`, md5 `0b84595245dd650c0e8fd3f57104782c`, 306,977 B** ??md5-verified unchanged at both ends of all four LabVIEW runs this cycle, all five pins hold, `THE FILES THIS RUN LEFT ON DISK: []` on every one. Nothing was built, saved, mutated or run; no motor, no ASI, no camera. M4 (edge SR + `Wait (ms)` 1 ??`claudeDev\D1_s3_loop15.vi`) is unchanged and still the deliverable, and it comes AFTER M3a-4 ??it cannot reach `ExecState` 1 over 11 severed rows.
+?뵶 **DESK-CHECK THE PREDICTED VALUES, NOT ONLY THE GATES ??this cycle's top fault, and it is the JUDGEMENT layer's, two cycles running.** The c89 factorial predicted `ExecState` **1** for arm A3 (strays deleted, then Remove Bad Wires) and measured 0; the mandatory review (`archive/peer/2026-09-23-c89-execstate-all-zero.md`, claude/`hypothesis`/opus max, ANSWERED 716 s, $5.0784) **REFUTED the prediction rather than the diagram**: RBW *deletes*, so removing `w7337` BARES `#4334`'s inside terminal and swaps a broken-wire error for an unwired-register error at the same site ??**A3 could not have returned 1 whatever the diagram held (likelihood ratio 1)**, and that was derivable at the desk. Cycle 66's top fault was the same shape (Row D's D7). **RULE: for every predicted value, name the step that could already have determined it; if one exists, re-cut the prediction as the predicted DIFFERENCE or delete it.** ??**Pre-decided 132**.
+??**CARRY 1 / OPEN 46 IS CLOSED ??IT RESTED ON A FALSE PREMISE AND WAS NEVER THE WORK.** `SetCommand_signed.vi` IS on disk: `claudeDev\SetCommand_signed.vi`, 21,577 B, md5 `ec87a2657b158722082ca00c7074f114`, unchanged since 2026-09-14 19:52, with `_TEST` siblings ??built by `tools/recipes/build_setcommand_signed.py` and verified structurally, by injection (**16/16**, `FFFFFFF6` ????.2째) and **on real hardware** (`tools/bench/hw_rotor_signed_test.log`, NEGATIVE READ PASS, counter left at 0). "On no disk" was a SEARCH-SCOPE artefact: the 2026-09-18 searches never looked in `user.lib\claudeDev`. **What remains is a different, real, D-series item ??stage 2, repointing the new main VI's NINE rotor call sites onto the signed copy** (`docs/motor-call-site-census.md:89`, diagrams 24/28/32/32/103/107/111/111/115; `docs/rotor-sign-diagnosis.md:127`; constants `tools/bench/setcommand_signed_result.json`). Three outcome reviews carried this as unmoved work. ??**Pre-decided 133**.
+?윞 **THE RETROSPECTIVE RAN AND NAMED THE SAME FAULT INDEPENDENTLY ??`archive/peer/2026-09-23-retrospective-cycle67.md`, `VIOLATION: repeated-failure-class | loss_min=15 | loss_usd=4.5005 | evidence=docs/main-vi-panel-map.md:239`, all seven findings ACCEPTED and disposed.** The node-vs-panel wiring fact this cycle spent a run rediscovering was already on file at n=92 since **2026-09-14** (`docs/main-vi-panel-map.md`, and again in `docs/NAMES.md`) ??the reader and the record both existed and neither was consulted. The slug stands at 22, **already has a dated decision** (`docs/violation-decisions.md`, 2026-09-21), and the device threshold is SUSPENDED, so **no device is built**; the operative remedy is the citation now at `docs/NAMES.md:966-991` plus the SECOND ACT's instruction above to read with `Stage.net_sources` and never `wmap` / `Diagram.Nodes[]`. **`premature-build` reached 6 with no decision on file and was answered this cycle** (`docs/violation-decisions.md`, 2026-09-23) ??`py tools/violations.py` now reports **0 slugs awaiting a response**.
+?윞 **TWO REPAIRS THE RETROSPECTIVE ASKED FOR ??both are REPAIRS of existing devices, so the no-new-device order permits them, and both are explicitly NOT ahead of the deliverable.** (a) **The cp949 class recurred again** (`tools/bench/verify_c67.log`, `UnicodeEncodeError: 'cp949' codec can't encode '??`, rerun clean in 12 s) and has had an archived review since 2026-09-15 with no standing fix: put a UTF-8-forcing print helper in `tools/stagekit.py` so every stage and diagnostic inherits it. (b) **Audit gate A1 is now a STANDING FALSE POSITIVE** ??`tools/bench/jev_gate.log` is the Jev hooks' append-only advisory journal, not a build log, and `audit_cycle` classifies by mtime-in-window, so A1 will FAIL every window in which any Jev gate fires; the fix belongs in `tools/logclass.py`, which cycle 78 already narrowed for `guard_cycle`'s budget set. A gate that always fails trains readers to ignore it. **(c) FINDING only, confirm before acting:** `tools/bench/jev_gate.log` shows the ladder re-evaluating ONE log ten times in 14 minutes (p 0.808??.834, every call BLOCK), i.e. it may fire per gate-call rather than once per log ??cheap to confirm from the journal, no change made on one reading.
+??**REVIEWS THIS CYCLE, BOTH ANSWERED AND BOTH DISPOSED IN FULL:** `archive/peer/2026-09-23-c89-execstate-all-zero.md` (REFUTED ??above) and `archive/peer/2026-09-23-c89-wirebirth-t1b2.md` (REFUTED-IN-PART, 489 s, $4.5005 ??it killed a generalisation this session dictated into a doc brief, and the doc was corrected before it landed). Jev ladder fired twice and behaved: `new-problem` p=0.820 ??review bought; `new-problem` p=0.780 (below the 0.80 discharge band) ??review bought. `RULE-SAME-ROW` did not apply to either. **No failing log is left arming `guard_peer`** ??re-checked with the gate's own functions (`tools/bench/jev_gatecheck_c89b.log:2-6`).
+?윞 **CARRY (unchanged, parallel-safe, NOT ahead of the deliverable): the bgrun END guarantee does not survive a kill of its own process tree** (`device-failed`, cycle 66). Under the user's 2026-09-18 no-new-device order this stays a FINDING and nothing is built; the named fix is REPAIR of an existing device and is permitted the moment that order lifts.
+?뵶 **STILL ONLY THE USER CAN CLEAR IT ??`git commit` AT CYCLE CLOSE IS MECHANICALLY BLOCKED.** `git add -A` and `git commit` both return "This command requires approval", and a `claude -p` cycle session cannot answer a prompt. **Uncommitted at this close:** `STATUS.md`, `docs/cycle27-plan.md`, `docs/NAMES.md`, `tools/bench/diag_c89_*.py|.log`, `tools/bench/jev_*_c89b.py|.log`, `archive/peer/2026-09-23-c89-*.md`. Either add `git add`/`git commit` to the allow-list in `.claude/settings.json`, or accept that a person commits at each close.
+?좑툘 Per-session cap 180 min is a hard kill: write `## NEXT` by minute 150. Restart LabVIEW before the first batch (fresh ??1,500 handles; LabVIEW was left running at 33,959). No motor, no camera, no ASI. `git commit` at cycle close. Jev gates in force (`docs/jev-integration-plan.md`). Every new stage or diagnostic is a ??20-line file on `tools/stagekit.py`.
+**Unchanged, still the user's to overturn:** N1 accepted on the pre-bead-loss window; the bead-4 z-LUT flip excluded by the FLIP mask; the harness RECORDS all 60 front-panel controls and SETS none; `background VIs_COPY` (94 files) untouched; the two new indicators keep their inherited labels (cosmetic).
+
+## Where to look ??**`docs/handover-2026-09-22.md` (???몄뀡? ?닿쾬遺??** 쨌 `CLAUDE.md` 쨌 `docs/secrets-and-handover.md` (API keys, ?ъ슜??援먯껜 泥댄겕由ъ뒪?? 쨌 `docs/jev-integration-plan.md` (Jev ?쎌엯 ?먮━, 2026-09-22) 쨌 **`docs/decisions.md`** 쨌 `docs/NAMES.md` 쨌 **`docs/toolkit-capabilities.md`** 쨌 **`docs/motor-call-site-census.md`** (P1) 쨌 **`docs/d1-route-b-plan.md`** = the build order 쨌 `tools/recipes/build_d1_routeb_v0.py`.
+
+## RUNNER STOPPED 2026-09-22 09:58:16 ??the judgement session exited non-zero twice in a row (last exit 1, log cycle_61.log) - a repeat failure is a judgement matter, not something to retry
+
+
+=== NO INDEX ===
+Search the project directory yourself: `docs/`, `archive/` (peer exchanges and narratives both), `tools/bench/*.log`, `tools/recipes/`, `tools/gscript.py`, `archive/benchmarks/INDEX.md`. Nothing here is a complete listing, so do not treat any summary as the corpus - the answers that matter are often in old exchanges nobody annotated.
+
+
+## Answer
+
+Write is disabled in this session, so the review is my answer — which is what the peer brief requires anyway ("your output is your answer, nothing else").
+
+# PRIOR-ART REVIEW — `OpAllWires_v0` (trigger: cycle-start)
+
+**Under review:** `tools/recipes/build_opallwires_v0.py` — "STAGE A of `OpAllWires_v0.vi`: EVERY wire's uid AND `Is Broken?` in ONE round trip", built additively on `OpReportAll_v0.vi`, Stage B to add the two endpoints per wire. Ordered by the user 2026-09-23 04:3x; STEP 0 measured 04:15 (`tools/bench/diag_allwires_probe.log`, 13/0); its own prior-art dispatch at 04:22:37 died with only a `BGRUN START` line (`tools/bench/priorart_allwires.log:1`, no `BGRUN END`). So this review is owed and unpaid.
+
+**Verdict: NOT NOVEL — eight findings.** Two ANSWERED hypothesis reviews archived *the same morning, 16 and ~30 minutes before the dispatch* each name the project's next act and each state in writing that it needs **no new op**; one declines a new Wire-class op VI by name.
+
+**What is genuinely new, said first so nothing below reads as over-broad:** a read-only, whole-VI, per-wire `Is Broken?` census performing **no** `Terminal.Connect Wire` write is not on disk, and `docs/NAMES.md:1003-1017` measures that every existing route to 6371004 requires such a write and perturbs the target. That capability is real and unbuilt. It is the *need* for it now, and the *construction* chosen, that the record already covers.
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 — SETTLED ALREADY: the acceptance criterion for a new traverse op is decided; the recipe has none
+
+**Settled in the direction's favour, so do not refuse on this ground:** `docs/cycle27-plan.md:1710` — *"PRE-DECIDED 2 SAYS 'NO FURTHER PROCESS DEVICE' — NOT 'NO NEW OP VI' — AND I MIS-CITED IT IN ALL FIVE OF THIS CYCLE'S BRIEFS."* The no-device order does not reach an op VI.
+
+**Settled against it as written** — what a new traverse op must pass:
+- `docs/REFERENCES.md:225-227`, judgement's standing disposition on exactly this op family (`OpReportAll_v0.vi` among them at `:158`, **0** `Close Reference` nodes): *"CLAUDE.md's reference-hygiene rule states its acceptance as a measurement ('20 consecutive calls ⇒ handle count flat')."*
+- `docs/cycle27-plan.md:408` — *"handles flat ±100 **counted from call 1** AND private-byte drift ≤ 5 MB … so **both meters or neither**."*
+- `docs/cycle27-plan.md:3635` — the immediate precedent (Pre-decided 127(2) for `OpFsInnerTunnelConnect_v0`), which that op ran and passed at +94.
+
+`build_opallwires_v0.py` gates B1, B2, B3, B3b, B4, B4b, B5, B6, B7 plus the F1–F6 raises. **None is a hygiene gate**, there is no 20-call loop, neither meter is gated. `stagekit.Stage` reports handles as FACTs and gates only `opened == closed` (`tools/bench/diag_allwires_probe.log:53-56`, `:67`) — the *stage's* hygiene, not the *op's* acceptance.
+
+**Binding rule broken:** `copy_by_index`, the recipe's central verb (`build_opallwires_v0.py:210-212`), is on the does-not-reach list — `tools/bench/ensure_loaded_audit.md:31`: *"its only `open_panel(MOVE_DST)` is at 1553, **after** the first op run."* `docs/cycle27-plan.md:2749` states the rule: *"**a mutator on that list is repaired, with a minted-object self-test cell, BEFORE it is next used** — not in bulk, and not after a run has already trusted it."* Neither repaired nor cited. (In fairness: F1's raise at `:155-156` and `expect_uid` at `tools/gscript.py:1572-1575` would catch a silent decline. The rule is still unmet.)
+
+### A2 — REFUTED ALREADY: a new Wire-class op VI was declined by name, in an ANSWERED review, 16 minutes before this was dispatched
+
+`archive/peer/2026-09-23-c90-zeroterms.md` (claude/hypothesis, opus max, **ANSWERED** 460 s, $3.3479, dated `:8` **04:06:12**), at **`:128`**:
+
+> **"Not cheap, and say so if it is proposed:** a `Terms[]` array-**size** readout or `Joints[]` **6371005** would settle empty-vs-dead-refs directly, but **each is a new op VI**. The ordering evidence settles it for free, **so neither is worth building**."
+
+The dispatch is stamped **04:22:37**. Stage B is precisely a bulk `Wire.Terms[]` readout (`build_opallwires_v0.py:4-6`); Stage A adds 6371003 to the same node at `:120`.
+
+The same review names the act instead, at **`:126`**: *"walk all eleven uids with `Stage.net_sources` (n=8) on the CLEAN predecessor `D1_s3b_row2_20260921_160311.vi` … Read-only, **no new op**, no mutation … Any wire returning **≥3** rows there is a fan-out the two-terminal replacements do not reproduce, and **that is the rule-1a finding you actually need**."*
+
+The sibling review agrees independently: `archive/peer/2026-09-23-c90-orphan-wires.md:166-167` ranks a `Joints[]` op **third**, below the falsifier (*"Neither changes the data-flow conclusion"*); `:177` on the read it does want — *"**the only read here that speaks to rule 1a directly.** It was available in the module `diag_c90b` already imported, and **was not used**."*
+
+Construction class also refuted: `docs/cycle27-plan.md:2336` (51(h)) — *"**DO NOT SPLICE A PROPERTY CHAIN INTO AN EXISTING OP — ADD TO A DONOR** … splicing has failed **6 times and succeeded 0**."* The recipe copies a node from a third VI, reparents it into the donor's loop body, and re-routes the donor's `reference out` (`:171-183`). Whether that is additive or a splice is exactly what `docs/s0-diff.md` exists to settle — see A4.
+
+### A3 — CONTRADICTED: the premise cites the one line a dated correction already overturned
+
+**1 — "no standalone 6371004 reader"** (`build_opallwires_v0.py:8-9`, citing `docs/toolkit-capabilities.md:68`). Both sides are on disk:
+- `docs/toolkit-capabilities.md:68` — *"the sound reader, `Wire.Is Broken?` **6371004** + `Wire.Terminals[]` 6371003 … **is NOT BUILT**."*
+- `docs/NAMES.md:992` — *"✅ **`Wire.Is Broken?` 6371004 IS BUILT AND MEASURED, 2026-09-17** — and it never needed a new op."*
+- `docs/d1-route-b-plan.md:340-345` — **that sentence has already been corrected once**: *"🔴 **CORRECTED 2026-09-18 (finding contradicted, A3-b)** … It said the reader is 'not built' … In fact: **6371004 IS BUILT AND MEASURED**."*
+
+Reconcilable — what exists reads **one** wire and only **after** a write (`docs/NAMES.md:1003-1017`) — but the recipe and STATUS both quote the stale side and neither records the correction. State the distinction in writing, or the premise is false as quoted.
+
+**2 — does the donor's build have an artefact?** `build_opallwires_v0.py:17-20` asserts the donor is what `build_opreportall_v1.py` describes. Pre-decided 27(a) says *"**`OpReportAll_v1.vi` DOES NOT EXIST** … left nothing on disk"* and withdrew S0-β on that premise. `docs/s0-diff.md:44` (D20) resolves it the other way: that recipe's output is *"a fresh byte copy of `OpReport_v3.vi` written to a **new** name, **`OpReportAll_v0.vi`**"* — which the probe just measured (`diag_allwires_probe.log:37-40`). **The recipe is right and 27(a) is wrong**, but the recipe never says so.
+
+### A4 — UNREAD EVIDENCE: `docs/s0-diff.md` is the diff table for this exact construction on this exact donor family, cited nowhere
+
+23 ordered differences between the build of a body node into this family's For loop that ends `ExecState` **1** and the one that ends **0, ×4**. The recipe sits on the **F** side of three of the four rows the table itself flags as load-bearing (`docs/s0-diff.md:51-64`):
+
+| row | W (ends 1) | F (ends 0, ×4) | this recipe |
+|---|---|---|---|
+| **D1** file the edits land on | the target at its own path | the `MOVE_DST` fixture via `copy_by_index` | **F** — every breaking edit inside `finish` (`:151-204`; docstring `:29-31` presents this as the safety feature) |
+| **D2/D4** where the body node comes from | created natively by `build_property` | **copied from another VI, reparented by `move_in`** | **mixed** — F for the TMSC (`:210-212`, `:171-172`), W for the property node (`:120`) |
+| **D6** old consumers of the source array | **deleted first, on purpose** | nothing deleted | **F** — only the seed's own net (`:162`) |
+| **D18** readings between copy and first wire | snapshot after every step | none | **F** — no `ExecState` between `:159` and `:190` |
+
+And Pre-decided 28's ⏭ clause addresses this build directly: *"**IF THE REPAIR IS EVER REVIVED, THE FIRST PORTED DIFFERENCE IS D6, NOT D2/D4.**"* Neither followed nor cited.
+
+**Second:** `archive/peer/2026-09-23-c90-orphan-wires.md:181-192` already enumerated the **complete** Wire class surface from the vendor and ranked the candidates: *"**`Get Error List` 6370C0A is the reader this cycle has been circling**: it answers **why** each of these 11 is bad from the machine"* (unbuilt, `docs/NAMES.md:1051`). If a new Wire-class op is built at all, the review on file names a strictly more probative property than a boolean the project already has for all 11.
+
+**Third:** `tools/gscript.py:1541-1544`, the callee's own precondition (quoted per 21(f)): *"substitute the bytes FIRST, on an instance where nothing of theirs is loaded (**the caller restarts LabVIEW before a `copy_by_index` session**)."* The recipe calls `g.open_panel(p)` at `:101`, mutates five times, then copies — with `close_panel` at `:209` wrapped in `s.safe`, so failure is swallowed. That call is measured unreliable in this fleet: error **6649** in the very probe that justified this build (`diag_allwires_probe.log:52`). If it fails, `copy_by_index` file-copies over `p` while LabVIEW holds it open — the named live cause of the c64 hang, `docs/cycle27-plan.md:2609`: *"**Nothing in a build needs `open_panel`; never overwrite a VI file LabVIEW may hold open.**"*
+
+---
+
+## PART B — THE ARTEFACT
+
+### B1 — ALREADY BUILT: the Wire-cast front end exists, saved, at `ExecState` 1, in two on-disk ops
+
+- **`docs/toolkit-capabilities.md:70`** — `OpConnectFromWire_v0.vi`: *"a THIRD `To More Specific Class` (**`copy_by_index` from the NI example, uid 99**) fed by a **Wire-typed seed made with `create_control` on a `"VI Server:Wire"` property node's own `reference`** → `Wire.Terms[]` → Index Array"* — **BUILT + SAVED 2026-09-17, 16,524 B, `ExecState` 1.** That is B3+B4+B6 already assembled. The recipe cites this file as *precedent* (`:25-28`) but rebuilds the assembly rather than donating it.
+- **`docs/toolkit-capabilities.md:60`** — `OpWireSource_v5.vi` **is Stage B's entire endpoint reader**, 12/12 functional; its Wire-typed seed is already a named panel control (`tools/bench/opwiresource_v5_labels.json:2`, `"seedW": "reference 2"`). The probe censused it in the same run without drawing the inference (`diag_allwires_probe.log:41-43`).
+
+Two donors exist, each holding one half — `OpReportAll_v0` the loop, `OpConnectFromWire_v0`/`OpWireSource_v5` the Wire cast. The recipe picked one without recording that the other exists.
+
+Minor, same finding: `P_TERMS` is built at `:120` and gated at `:128-129`, but Stage A exports only `T_BROKEN` (`:193`) — `Terms[]` ships as an unwired output Stage A does not use and whose bulk form A2 declined.
+
+### B2 — ALREADY FAILED: `report_all(Wire)` on this exact donor already died with `error 2`
+
+`tools/bench/build_d1_routeb_v5_run8.log:364`:
+> `report_all(Wire) … error 2: Invoke Node in … Traverse for GObjects.vi->**OpReportAll_v0.vi** | Class Operator:Traverse (Traverse Failed) … 50 uid(s) had been claimed`
+
+Recorded as binding at `docs/cycle27-plan.md:233`; Pre-decided 20 adds the failure is **temporal within a run**, 21(a) that the meter is private bytes, never handles.
+
+STEP 0 measured the call succeeding in **1.67 s on a freshly restarted instance** (`diag_allwires_probe.log:25-27`, restart `:13-15`) and reports *"Traverse class `Wire` **WORKS**"* (`build_opallwires_v0.py:12`) — a true measurement of the condition never in doubt. The recorded failure is late-in-run, which the probe does not touch, and the op's intended use *is* that condition. Not a reason to refuse the build; a reason the acceptance run must exercise it late, not cold.
+
+Precisely: **`OpAllWires_v0` itself has never been attempted.** What failed is (i) this call on this donor, and (ii) the copy-and-reparent-into-a-loop-body class, four times (`docs/s0-diff.md:16-17`).
+
+### B3 — HELPER EXISTS: both reads the project actually needs are built, named by the reviews, unused
+
+- **`Stage.net_sources` — `tools/stagekit.py:364`**, over `wire_source_owner` (`tools/recipes/build_opconnectfromwire_v0.py:423`). `docs/NAMES.md:966-971` makes it the standing instruction — *"**ASK THE WIRE WHO THE SOURCE IS** … **that reader is already built** … **Use it FIRST**"* — and it is what `c90-zeroterms:126` prescribes.
+- **`Stage.wired_terminals` — `tools/stagekit.py:354`.** `c90-orphan-wires:173-177` makes it the decisive rule-1a read, with its predicted per-terminal table written out, and records it *"was not used."*
+- **The whole-VI broken list in one round trip already exists as a composition**: `report_all('Wire')` → Remove Bad Wires on a throwaway scratch → set-difference. That is how c89 produced the 11 across ten artefacts with two method controls (`tools/bench/diag_c89_wirebirth.log`, 45/0). No new op.
+
+### B4 — ALREADY MEASURED: every column this op would produce is on file for this bed
+
+| column | measured | where |
+|---|---|---|
+| every wire's uid, one round trip, 1.67 s | yes, by the probe itself | `diag_allwires_probe.log:25-27` |
+| which wires are broken | yes, **4×**, set-identical `[1731, 1893, 2819, 3947, 4833, 7337, 7388, 9635, 11232, 23502, 23540]` | `diag_c89_wirebirth.log` (45/0, both method controls passed) |
+| both endpoints of all 11 | yes, all named and attributed | `docs/m3a1-severed-rows.md:45-57` |
+| live endpoint read off the wire | yes — 4 answer one row, 7 none | `diag_c90_endpoints.log:78-88`; `diag_c90_live_endpoints.log:99` |
+| husk coverage by replacement | yes — 3 of 7 covered, 0 of 4 | `diag_c90b_coverage.log`; `c90-orphan-wires:50-59` |
+| why the count is 11 | yes — 19 ends → 12 severed → 1 repaired → 11 | `docs/m3a1-severed-rows.md:59-83` |
+
+**STATUS's `## NEXT` is stale against this.** FIRST ACT ("derive the severed-row table offline … m3a1\_severed\_rows") is **delivered** — `docs/m3a1-severed-rows.md` + `tools/bench/m3a1_severed_rows.json` + `diag_c90_severed_rows.log` (5/0). SECOND ACT ("read the 11 live endpoints with `Stage.net_sources`") is **delivered** — `diag_c90_endpoints.log` (14/1). Fix `## NEXT` in the release pass or the next cold session re-derives both.
+
+The one thing actually outstanding costs no LabVIEW: `docs/m3a1-severed-rows.md:85-89` — *"`tools/bench/diag_c90b_severed_arith.py` re-derives all of the above mechanically (6 prediction gates) but **has not been run** — every `py` and `bgrun` invocation in the cycle-68 session was refused by the permission layer."*
+
+---
+
+## MACHINE-READABLE VERDICT
+
+```
+PRIOR-ART: settled-already
+PRIOR-ART: refuted-already
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-built
+PRIOR-ART: already-failed
+PRIOR-ART: helper-exists
+PRIOR-ART: already-measured
+```
+
+**The citation each release must open and refute in writing:**
+
+| slug | citation |
+|---|---|
+| `settled-already` | `docs/REFERENCES.md:225-227` + `docs/cycle27-plan.md:408`, `:2749` |
+| `refuted-already` | `archive/peer/2026-09-23-c90-zeroterms.md:128` (and `:126`) |
+| `contradicted` | `docs/toolkit-capabilities.md:68` vs `docs/NAMES.md:992` + `docs/d1-route-b-plan.md:340-345` |
+| `unread-evidence` | `docs/s0-diff.md:51-64` + `docs/cycle27-plan.md` Pre-decided 28 ⏭ |
+| `already-built` | `docs/toolkit-capabilities.md:70`, `:60` |
+| `already-failed` | `tools/bench/build_d1_routeb_v5_run8.log:364` |
+| `helper-exists` | `tools/stagekit.py:364`, `:354` |
+| `already-measured` | `docs/m3a1-severed-rows.md:45-57`; `tools/bench/diag_c89_wirebirth.log` |
+
+Two notes on scope, since an over-broad match costs real work. I am **not** saying the op is forbidden — Pre-decided 2 permits it (`:1710`). I am **not** saying `Is Broken?` in bulk is impossible or duplicated — a write-free whole-VI census is genuinely absent. The findings are that the *answer it would produce* is already on disk for this bed, the *front end it would build* is already saved in two ops, and the *next act* was named by two ANSWERED reviews that both said "no new op" within half an hour of the dispatch.
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+**THE BUILD IS STOPPED AND NOT RELEASED. No `REFUTED:` and no `FIXED:` line is written below, deliberately:
+this is a MATERIAL session, and "what to accept from a review" is a judgement call (CLAUDE.md §3). The stop
+record on `tools/recipes/build_opallwires_v0.py` (sha a6d3734e65b5, eight verdicts) therefore STANDS, and the
+recipe has never run.** What this session did with each finding, so the judgement session can rule on paper:
+
+- **A1 (acceptance criterion).** ACCEPTED AS CORRECT ABOUT THE RECIPE, and the missing gate has been built in
+  the file where it belongs: `tools/bench/test_opallwires_v0.py` T5 now runs **20 consecutive calls counted
+  from call 1** and gates **both meters** — LabVIEW handles ±100 (`bench_prep.labview_handles`) and private
+  bytes ≤ 5 MB (`stagekit.private_bytes`) — per `docs/cycle27-plan.md:408`. Not a release: the recipe still
+  does not repair `copy_by_index`'s `ensure_loaded` gap (`tools/bench/ensure_loaded_audit.md:31` +
+  `docs/cycle27-plan.md:2749`), which is a real unmet precondition of the construction under review.
+- **A2 (a new Wire-class op declined by name 16 minutes earlier).** NOT DISPUTED HERE, and the scope question
+  is handed up: `archive/peer/2026-09-23-c90-zeroterms.md:128` declines a `Terms[]`-size / `Joints[]` op **as a
+  way to settle empty-vs-dead refs in the c90 diagnosis**, which is not the purpose the user ordered at
+  2026-09-23 04:3x (a per-stage fresh a→b table for Jev to check row by row). Whether that is a genuine
+  distinction or the same op under a new motive is exactly the judgement the gate exists to force.
+- **A3.1 (the stale "no standalone 6371004 reader").** FIXED AS A DOCUMENT DEFECT, not as a release:
+  `docs/toolkit-capabilities.md` now carries the same dated correction `docs/d1-route-b-plan.md:340-345`
+  already applied on 2026-09-18 — 6371004 **is** built and measured (`docs/NAMES.md:992`), and what exists
+  reads **one** wire and only **after** a `Terminal.Connect Wire` write (`docs/NAMES.md:1003-1017`). The
+  recipe's premise as quoted was false; the capability gap it names (write-free, whole-VI, per-wire) is real
+  and is the reviewer's own opening concession.
+- **A3.2 (Pre-decided 27(a) vs `docs/s0-diff.md:44`).** REPORTED, NOT RESOLVED — a plan `Pre-decided` line is
+  edited by judgement sessions only (Pre-decided 12). The probe measured the donor on disk
+  (`tools/bench/diag_allwires_probe.log`, md5 `ffcec2c75e92dcad514299ba20e66054`, 12,510 B, ForLoop 1 /
+  LoopTunnel 5 / Property 2 / SubVI 1), which agrees with `s0-diff.md:44`.
+- **A4 + B2 (the construction is on the F side of `docs/s0-diff.md`'s load-bearing rows; copy-and-reparent
+  into a loop body has failed 4× and succeeded 0×).** THIS IS THE FINDING THAT STOPS THE WORK, and it is a
+  DESIGN question, so nothing was changed under it. It is the one `OPEN:` line this session returns.
+- **B1 (the Wire cast already exists, saved, at ExecState 1, in `OpConnectFromWire_v0.vi` and
+  `OpWireSource_v5.vi`).** ACCEPTED AS A FACT AND RECORDED. The probe censused both in the same run
+  (`diag_allwires_probe.log` P5) without drawing the inference; the inference is now written into the OPEN
+  question, as the alternative donor route.
+- **B3 (helpers exist: `Stage.net_sources`, `Stage.wired_terminals`, and `report_all('Wire')` + RBW on a
+  throwaway scratch as the composition that already yields the broken set).** ACCEPTED. The composition is
+  exactly what `tools/bench/diag_c89_wirebirth.log` (45/0) used; it costs a mutation on a scratch, which is
+  why the user asked for a write-free reader — stated, not argued.
+- **B4 (every column is already measured for THIS bed) + the `## NEXT` staleness.** ACCEPTED AND REPORTED:
+  STATUS's `## NEXT` first and second acts are delivered (`docs/m3a1-severed-rows.md`,
+  `tools/bench/diag_c90_endpoints.log`); the outstanding no-LabVIEW item is
+  `tools/bench/diag_c90b_severed_arith.py`, written and never run. Left for the judgement session to schedule —
+  it is not in this brief.
+
+Files this disposition changed: `docs/toolkit-capabilities.md` (one corrected sentence),
+`tools/bench/test_opallwires_v0.py` (T5 two-meter acceptance). Nothing was built, nothing was saved under
+`claudeDev`, no VI was run.

@@ -1,0 +1,151 @@
+BGRUN START 2026-09-23 04:22:37 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/cycle27-plan.md --slug allwires --trigger cycle-start --recipe tools/recipes/build_opallwires_v0.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_allwires.txt (465703 chars)
+OUTCOME: ANSWERED (578s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-23-priorart-allwires.md
+COST: $7.7792  in 30 / out 48636 / cache-create 407195 / cache-read 4982353  (574s, 26 turn(s))
+--- ANSWER ---
+Write is disabled in this session, so the review is my answer — which is what the peer brief requires anyway ("your output is your answer, nothing else").
+
+# PRIOR-ART REVIEW — `OpAllWires_v0` (trigger: cycle-start)
+
+**Under review:** `tools/recipes/build_opallwires_v0.py` — "STAGE A of `OpAllWires_v0.vi`: EVERY wire's uid AND `Is Broken?` in ONE round trip", built additively on `OpReportAll_v0.vi`, Stage B to add the two endpoints per wire. Ordered by the user 2026-09-23 04:3x; STEP 0 measured 04:15 (`tools/bench/diag_allwires_probe.log`, 13/0); its own prior-art dispatch at 04:22:37 died with only a `BGRUN START` line (`tools/bench/priorart_allwires.log:1`, no `BGRUN END`). So this review is owed and unpaid.
+
+**Verdict: NOT NOVEL — eight findings.** Two ANSWERED hypothesis reviews archived *the same morning, 16 and ~30 minutes before the dispatch* each name the project's next act and each state in writing that it needs **no new op**; one declines a new Wire-class op VI by name.
+
+**What is genuinely new, said first so nothing below reads as over-broad:** a read-only, whole-VI, per-wire `Is Broken?` census performing **no** `Terminal.Connect Wire` write is not on disk, and `docs/NAMES.md:1003-1017` measures that every existing route to 6371004 requires such a write and perturbs the target. That capability is real and unbuilt. It is the *need* for it now, and the *construction* chosen, that the record already covers.
+
+---
+
+## PART A — THE DIRECTION
+
+### A1 — SETTLED ALREADY: the acceptance criterion for a new traverse op is decided; the recipe has none
+
+**Settled in the direction's favour, so do not refuse on this ground:** `docs/cycle27-plan.md:1710` — *"PRE-DECIDED 2 SAYS 'NO FURTHER PROCESS DEVICE' — NOT 'NO NEW OP VI' — AND I MIS-CITED IT IN ALL FIVE OF THIS CYCLE'S BRIEFS."* The no-device order does not reach an op VI.
+
+**Settled against it as written** — what a new traverse op must pass:
+- `docs/REFERENCES.md:225-227`, judgement's standing disposition on exactly this op family (`OpReportAll_v0.vi` among them at `:158`, **0** `Close Reference` nodes): *"CLAUDE.md's reference-hygiene rule states its acceptance as a measurement ('20 consecutive calls ⇒ handle count flat')."*
+- `docs/cycle27-plan.md:408` — *"handles flat ±100 **counted from call 1** AND private-byte drift ≤ 5 MB … so **both meters or neither**."*
+- `docs/cycle27-plan.md:3635` — the immediate precedent (Pre-decided 127(2) for `OpFsInnerTunnelConnect_v0`), which that op ran and passed at +94.
+
+`build_opallwires_v0.py` gates B1, B2, B3, B3b, B4, B4b, B5, B6, B7 plus the F1–F6 raises. **None is a hygiene gate**, there is no 20-call loop, neither meter is gated. `stagekit.Stage` reports handles as FACTs and gates only `opened == closed` (`tools/bench/diag_allwires_probe.log:53-56`, `:67`) — the *stage's* hygiene, not the *op's* acceptance.
+
+**Binding rule broken:** `copy_by_index`, the recipe's central verb (`build_opallwires_v0.py:210-212`), is on the does-not-reach list — `tools/bench/ensure_loaded_audit.md:31`: *"its only `open_panel(MOVE_DST)` is at 1553, **after** the first op run."* `docs/cycle27-plan.md:2749` states the rule: *"**a mutator on that list is repaired, with a minted-object self-test cell, BEFORE it is next used** — not in bulk, and not after a run has already trusted it."* Neither repaired nor cited. (In fairness: F1's raise at `:155-156` and `expect_uid` at `tools/gscript.py:1572-1575` would catch a silent decline. The rule is still unmet.)
+
+### A2 — REFUTED ALREADY: a new Wire-class op VI was declined by name, in an ANSWERED review, 16 minutes before this was dispatched
+
+`archive/peer/2026-09-23-c90-zeroterms.md` (claude/hypothesis, opus max, **ANSWERED** 460 s, $3.3479, dated `:8` **04:06:12**), at **`:128`**:
+
+> **"Not cheap, and say so if it is proposed:** a `Terms[]` array-**size** readout or `Joints[]` **6371005** would settle empty-vs-dead-refs directly, but **each is a new op VI**. The ordering evidence settles it for free, **so neither is worth building**."
+
+The dispatch is stamped **04:22:37**. Stage B is precisely a bulk `Wire.Terms[]` readout (`build_opallwires_v0.py:4-6`); Stage A adds 6371003 to the same node at `:120`.
+
+The same review names the act instead, at **`:126`**: *"walk all eleven uids with `Stage.net_sources` (n=8) on the CLEAN predecessor `D1_s3b_row2_20260921_160311.vi` … Read-only, **no new op**, no mutation … Any wire returning **≥3** rows there is a fan-out the two-terminal replacements do not reproduce, and **that is the rule-1a finding you actually need**."*
+
+The sibling review agrees independently: `archive/peer/2026-09-23-c90-orphan-wires.md:166-167` ranks a `Joints[]` op **third**, below the falsifier (*"Neither changes the data-flow conclusion"*); `:177` on the read it does want — *"**the only read here that speaks to rule 1a directly.** It was available in the module `diag_c90b` already imported, and **was not used**."*
+
+Construction class also refuted: `docs/cycle27-plan.md:2336` (51(h)) — *"**DO NOT SPLICE A PROPERTY CHAIN INTO AN EXISTING OP — ADD TO A DONOR** … splicing has failed **6 times and succeeded 0**."* The recipe copies a node from a third VI, reparents it into the donor's loop body, and re-routes the donor's `reference out` (`:171-183`). Whether that is additive or a splice is exactly what `docs/s0-diff.md` exists to settle — see A4.
+
+### A3 — CONTRADICTED: the premise cites the one line a dated correction already overturned
+
+**1 — "no standalone 6371004 reader"** (`build_opallwires_v0.py:8-9`, citing `docs/toolkit-capabilities.md:68`). Both sides are on disk:
+- `docs/toolkit-capabilities.md:68` — *"the sound reader, `Wire.Is Broken?` **6371004** + `Wire.Terminals[]` 6371003 … **is NOT BUILT**."*
+- `docs/NAMES.md:992` — *"✅ **`Wire.Is Broken?` 6371004 IS BUILT AND MEASURED, 2026-09-17** — and it never needed a new op."*
+- `docs/d1-route-b-plan.md:340-345` — **that sentence has already been corrected once**: *"🔴 **CORRECTED 2026-09-18 (finding contradicted, A3-b)** … It said the reader is 'not built' … In fact: **6371004 IS BUILT AND MEASURED**."*
+
+Reconcilable — what exists reads **one** wire and only **after** a write (`docs/NAMES.md:1003-1017`) — but the recipe and STATUS both quote the stale side and neither records the correction. State the distinction in writing, or the premise is false as quoted.
+
+**2 — does the donor's build have an artefact?** `build_opallwires_v0.py:17-20` asserts the donor is what `build_opreportall_v1.py` describes. Pre-decided 27(a) says *"**`OpReportAll_v1.vi` DOES NOT EXIST** … left nothing on disk"* and withdrew S0-β on that premise. `docs/s0-diff.md:44` (D20) resolves it the other way: that recipe's output is *"a fresh byte copy of `OpReport_v3.vi` written to a **new** name, **`OpReportAll_v0.vi`**"* — which the probe just measured (`diag_allwires_probe.log:37-40`). **The recipe is right and 27(a) is wrong**, but the recipe never says so.
+
+### A4 — UNREAD EVIDENCE: `docs/s0-diff.md` is the diff table for this exact construction on this exact donor family, cited nowhere
+
+23 ordered differences between the build of a body node into this family's For loop that ends `ExecState` **1** and the one that ends **0, ×4**. The recipe sits on the **F** side of three of the four rows the table itself flags as load-bearing (`docs/s0-diff.md:51-64`):
+
+| row | W (ends 1) | F (ends 0, ×4) | this recipe |
+|---|---|---|---|
+| **D1** file the edits land on | the target at its own path | the `MOVE_DST` fixture via `copy_by_index` | **F** — every breaking edit inside `finish` (`:151-204`; docstring `:29-31` presents this as the safety feature) |
+| **D2/D4** where the body node comes from | created natively by `build_property` | **copied from another VI, reparented by `move_in`** | **mixed** — F for the TMSC (`:210-212`, `:171-172`), W for the property node (`:120`) |
+| **D6** old consumers of the source array | **deleted first, on purpose** | nothing deleted | **F** — only the seed's own net (`:162`) |
+| **D18** readings between copy and first wire | snapshot after every step | none | **F** — no `ExecState` between `:159` and `:190` |
+
+And Pre-decided 28's ⏭ clause addresses this build directly: *"**IF THE REPAIR IS EVER REVIVED, THE FIRST PORTED DIFFERENCE IS D6, NOT D2/D4.**"* Neither followed nor cited.
+
+**Second:** `archive/peer/2026-09-23-c90-orphan-wires.md:181-192` already enumerated the **complete** Wire class surface from the vendor and ranked the candidates: *"**`Get Error List` 6370C0A is the reader this cycle has been circling**: it answers **why** each of these 11 is bad from the machine"* (unbuilt, `docs/NAMES.md:1051`). If a new Wire-class op is built at all, the review on file names a strictly more probative property than a boolean the project already has for all 11.
+
+**Third:** `tools/gscript.py:1541-1544`, the callee's own precondition (quoted per 21(f)): *"substitute the bytes FIRST, on an instance where nothing of theirs is loaded (**the caller restarts LabVIEW before a `copy_by_index` session**)."* The recipe calls `g.open_panel(p)` at `:101`, mutates five times, then copies — with `close_panel` at `:209` wrapped in `s.safe`, so failure is swallowed. That call is measured unreliable in this fleet: error **6649** in the very probe that justified this build (`diag_allwires_probe.log:52`). If it fails, `copy_by_index` file-copies over `p` while LabVIEW holds it open — the named live cause of the c64 hang, `docs/cycle27-plan.md:2609`: *"**Nothing in a build needs `open_panel`; never overwrite a VI file LabVIEW may hold open.**"*
+
+---
+
+## PART B — THE ARTEFACT
+
+### B1 — ALREADY BUILT: the Wire-cast front end exists, saved, at `ExecState` 1, in two on-disk ops
+
+- **`docs/toolkit-capabilities.md:70`** — `OpConnectFromWire_v0.vi`: *"a THIRD `To More Specific Class` (**`copy_by_index` from the NI example, uid 99**) fed by a **Wire-typed seed made with `create_control` on a `"VI Server:Wire"` property node's own `reference`** → `Wire.Terms[]` → Index Array"* — **BUILT + SAVED 2026-09-17, 16,524 B, `ExecState` 1.** That is B3+B4+B6 already assembled. The recipe cites this file as *precedent* (`:25-28`) but rebuilds the assembly rather than donating it.
+- **`docs/toolkit-capabilities.md:60`** — `OpWireSource_v5.vi` **is Stage B's entire endpoint reader**, 12/12 functional; its Wire-typed seed is already a named panel control (`tools/bench/opwiresource_v5_labels.json:2`, `"seedW": "reference 2"`). The probe censused it in the same run without drawing the inference (`diag_allwires_probe.log:41-43`).
+
+Two donors exist, each holding one half — `OpReportAll_v0` the loop, `OpConnectFromWire_v0`/`OpWireSource_v5` the Wire cast. The recipe picked one without recording that the other exists.
+
+Minor, same finding: `P_TERMS` is built at `:120` and gated at `:128-129`, but Stage A exports only `T_BROKEN` (`:193`) — `Terms[]` ships as an unwired output Stage A does not use and whose bulk form A2 declined.
+
+### B2 — ALREADY FAILED: `report_all(Wire)` on this exact donor already died with `error 2`
+
+`tools/bench/build_d1_routeb_v5_run8.log:364`:
+> `report_all(Wire) … error 2: Invoke Node in … Traverse for GObjects.vi->**OpReportAll_v0.vi** | Class Operator:Traverse (Traverse Failed) … 50 uid(s) had been claimed`
+
+Recorded as binding at `docs/cycle27-plan.md:233`; Pre-decided 20 adds the failure is **temporal within a run**, 21(a) that the meter is private bytes, never handles.
+
+STEP 0 measured the call succeeding in **1.67 s on a freshly restarted instance** (`diag_allwires_probe.log:25-27`, restart `:13-15`) and reports *"Traverse class `Wire` **WORKS**"* (`build_opallwires_v0.py:12`) — a true measurement of the condition never in doubt. The recorded failure is late-in-run, which the probe does not touch, and the op's intended use *is* that condition. Not a reason to refuse the build; a reason the acceptance run must exercise it late, not cold.
+
+Precisely: **`OpAllWires_v0` itself has never been attempted.** What failed is (i) this call on this donor, and (ii) the copy-and-reparent-into-a-loop-body class, four times (`docs/s0-diff.md:16-17`).
+
+### B3 — HELPER EXISTS: both reads the project actually needs are built, named by the reviews, unused
+
+- **`Stage.net_sources` — `tools/stagekit.py:364`**, over `wire_source_owner` (`tools/recipes/build_opconnectfromwire_v0.py:423`). `docs/NAMES.md:966-971` makes it the standing instruction — *"**ASK THE WIRE WHO THE SOURCE IS** … **that reader is already built** … **Use it FIRST**"* — and it is what `c90-zeroterms:126` prescribes.
+- **`Stage.wired_terminals` — `tools/stagekit.py:354`.** `c90-orphan-wires:173-177` makes it the decisive rule-1a read, with its predicted per-terminal table written out, and records it *"was not used."*
+- **The whole-VI broken list in one round trip already exists as a composition**: `report_all('Wire')` → Remove Bad Wires on a throwaway scratch → set-difference. That is how c89 produced the 11 across ten artefacts with two method controls (`tools/bench/diag_c89_wirebirth.log`, 45/0). No new op.
+
+### B4 — ALREADY MEASURED: every column this op would produce is on file for this bed
+
+| column | measured | where |
+|---|---|---|
+| every wire's uid, one round trip, 1.67 s | yes, by the probe itself | `diag_allwires_probe.log:25-27` |
+| which wires are broken | yes, **4×**, set-identical `[1731, 1893, 2819, 3947, 4833, 7337, 7388, 9635, 11232, 23502, 23540]` | `diag_c89_wirebirth.log` (45/0, both method controls passed) |
+| both endpoints of all 11 | yes, all named and attributed | `docs/m3a1-severed-rows.md:45-57` |
+| live endpoint read off the wire | yes — 4 answer one row, 7 none | `diag_c90_endpoints.log:78-88`; `diag_c90_live_endpoints.log:99` |
+| husk coverage by replacement | yes — 3 of 7 covered, 0 of 4 | `diag_c90b_coverage.log`; `c90-orphan-wires:50-59` |
+| why the count is 11 | yes — 19 ends → 12 severed → 1 repaired → 11 | `docs/m3a1-severed-rows.md:59-83` |
+
+**STATUS's `## NEXT` is stale against this.** FIRST ACT ("derive the severed-row table offline … m3a1\_severed\_rows") is **delivered** — `docs/m3a1-severed-rows.md` + `tools/bench/m3a1_severed_rows.json` + `diag_c90_severed_rows.log` (5/0). SECOND ACT ("read the 11 live endpoints with `Stage.net_sources`") is **delivered** — `diag_c90_endpoints.log` (14/1). Fix `## NEXT` in the release pass or the next cold session re-derives both.
+
+The one thing actually outstanding costs no LabVIEW: `docs/m3a1-severed-rows.md:85-89` — *"`tools/bench/diag_c90b_severed_arith.py` re-derives all of the above mechanically (6 prediction gates) but **has not been run** — every `py` and `bgrun` invocation in the cycle-68 session was refused by the permission layer."*
+
+---
+
+## MACHINE-READABLE VERDICT
+
+```
+PRIOR-ART: settled-already
+PRIOR-ART: refuted-already
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-built
+PRIOR-ART: already-failed
+PRIOR-ART: helper-exists
+PRIOR-ART: already-measured
+```
+
+**The citation each release must open and refute in writing:**
+
+| slug | citation |
+|---|---|
+| `settled-already` | `docs/REFERENCES.md:225-227` + `docs/cycle27-plan.md:408`, `:2749` |
+| `refuted-already` | `archive/peer/2026-09-23-c90-zeroterms.md:128` (and `:126`) |
+| `contradicted` | `docs/toolkit-capabilities.md:68` vs `docs/NAMES.md:992` + `docs/d1-route-b-plan.md:340-345` |
+| `unread-evidence` | `docs/s0-diff.md:51-64` + `docs/cycle27-plan.md` Pre-decided 28 ⏭ |
+| `already-built` | `docs/toolkit-capabilities.md:70`, `:60` |
+| `already-failed` | `tools/bench/build_d1_routeb_v5_run8.log:364` |
+| `helper-exists` | `tools/stagekit.py:364`, `:354` |
+| `already-measured` | `docs/m3a1-severed-rows.md:45-57`; `tools/bench/diag_c89_wirebirth.log` |
+
+Two notes on scope, since an over-broad match costs real work. I am **not** saying the op is forbidden — Pre-decided 2 permits it (`:1710`). I am **not** saying `Is Broken?` in bulk is impossible or duplicated — a write-free whole-VI census is genuinely absent. The findings are that the *answer it would produce* is already on disk for this bed, the *front end it would build* is already saved in two ops, and the *next act* was named by two ANSWERED reviews that both said "no new op" within half an hour of the dispatch.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-allwires.md
+   STOP RECORD armed: tools/recipes/build_opallwires_v0.py sha a6d3734e65b5 verdict settled-already, refuted-already, contradicted, unread-evidence, already-built, already-failed, helper-exists, already-measured -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 581s

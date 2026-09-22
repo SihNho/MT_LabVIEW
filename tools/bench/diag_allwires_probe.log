@@ -1,0 +1,72 @@
+BGRUN START 2026-09-23 04:15:58 limit 16.0 min: py -u tools/bench/diag_allwires_probe.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 238 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 0b84595245dd650c0e8fd3f57104782c  got 0b84595245dd650c0e8fd3f57104782c
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 33938
+  FACT  LabVIEW handle count AFTER the restart: 33999
+  FACT  PRELOAD: the ORIGINAL is resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  diag_allwires_probe_20260923_041559.vi
+  FACT  ExecState [after open] diag_allwires_probe_20260923_041559.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so diag_allwires_probe_20260923_041559.vi is deleted at close
+
+---------- [P1-P3] Traverse('Wire') on the bed - does it return the wires, how many, how fast?
+  FACT  P1a count(Wire) = Traverse only: 0.16 s ; err=''
+  FACT  P1b report_all(Wire) = Traverse + For loop + arrays: 1.67 s ; err=''
+  FACT  P1 rows=1920 ; count(Wire)=1920 ; first 5 uids=[32594, 4375, 11058, 32086, 4360] ; classes seen=['Wire']
+  PASS  P1 Traverse('Wire') returns 1909-1920 rows in ONE op run  rows=1920 err=''
+  PASS  P2 every wire uid distinct and > 0  distinct 1920 of 1920
+  PASS  P3 all 11 severed half-wires are IN the census (c90 control)  absent []
+
+---------- [P4] Traverse('Terminal') on the bed - the cost of the endpoint half of the table
+  FACT  P4 report_all(Terminal): 5.28 s ; err=''
+  FACT  P4 Terminal rows=5811 ; owner classes (first 8)=['ArrayConstant', 'ArrayToCluster', 'BooleanConstant', 'BuildArray', 'Bundler', 'ClusterConstant', 'ColorBoxConstant', 'Comparison']
+  PASS  P4 Traverse('Terminal') returns > 1000 rows  rows=5811 err=''
+
+---------- [P5] THE DONORS, as they are ON DISK (read-only; these are op VIs, never originals)
+  FACT  P5 OpReportAll_v0.vi: OpReportAll_v0.vi md5 ffcec2c75e92dcad514299ba20e66054 size 12510 B; version bytes [38, 128]
+  FACT  P5 OpReportAll_v0.vi census {'ForLoop': 1, 'WhileLoop': 0, 'LoopTunnel': 5, 'Property': 2, 'Invoke': 0, 'SubVI': 1, 'IndexArray': 0, 'Node': 5, 'Wire': 18, 'ControlTerminal': 14, 'Diagram': 2, 'Constant': 6}
+  FACT  P5 OpReportAll_v0.vi panel [(0, 'vi path', False), (1, 'Class Name', False), (2, '# of Refs', True), (3, 'error out', True), (4, 'index', False), (5, 'Position', True), (6, 'Class Name 2', True), (7, 'UID', True), (8, 'Class Name 3', True), (9, 'error out 2', True), (10, 'Array', True), (11, 'Array 2', True), (12, 'Array 3', True), (13, 'Array 4', True)]
+  PASS  P5 OpReportAll_v0 is the loop-and-arrays donor build_opreportall_v1.py describes (ForLoop 1, LoopTunnel >= 5, Property 2, SubVI 1)  census {'ForLoop': 1, 'WhileLoop': 0, 'LoopTunnel': 5, 'Property': 2, 'Invoke': 0, 'SubVI': 1, 'IndexArray': 0, 'Node': 5, 'Wire': 18, 'ControlTerminal': 14, 'Diagram': 2, 'Constant': 6}
+  FACT  P5 OpWireSource_v5.vi: OpWireSource_v5.vi md5 5dc45a04ea5d809f5ca57e9309ed59c5 size 18163 B; version bytes [38, 128]
+  FACT  P5 OpWireSource_v5.vi census {'ForLoop': 0, 'WhileLoop': 0, 'LoopTunnel': 0, 'Property': 12, 'Invoke': 0, 'SubVI': 2, 'IndexArray': 2, 'Node': 19, 'Wire': 42, 'ControlTerminal': 38, 'Diagram': 1, 'Constant': 1}
+  FACT  P5 OpWireSource_v5.vi panel [(0, 'vi path', False), (1, 'Class Name', False), (2, '# of Refs', True), (3, 'error out', True), (4, 'index', False), (5, 'Position', True), (6, 'Class Name 2', True), (7, 'UID', True), (8, 'Class Name 3', True), (9, 'error out 2', True), (10, 'reference', False), (11, 'Value', True), (12, 'data string', True), (13, 'type string (7.x only)', True), (14, 'bytes', False), (15, 'data includes array or string size? (T)', False), (16, 'hex string', True), (17, 'value', True), (18, 'rest of the binary string', True), (19, 'reference 2', False), (20, 'Class Name 4', True), (21, 'error out 3', True), (22, 'error out 4', True), (23, 'error out 5', True), (24, 'UID 2', False), (25, 'UID 3', True), (26, 'Class Name 5', True), (27, 'error out 6', True), (28, 'reference 3', False), (29, 'UID 4', True), (30, 'error out 7', True), (31, 'index 2', False), (32, 'Is Source?', True), (33, 'UID 5', True), (34, 'error out 8', True), (35, 'error out 9', True), (36, 'Class Name 6', True), (37, 'error out 10', True)]
+  FACT  P5 OpReport_v3.vi: OpReport_v3.vi md5 0743701a249b6ac20a5dab9ee676c09c size 10235 B; version bytes [38, 128]
+  FACT  P5 OpReport_v3.vi census {'ForLoop': 0, 'WhileLoop': 0, 'LoopTunnel': 0, 'Property': 2, 'Invoke': 0, 'SubVI': 1, 'IndexArray': 1, 'Node': 5, 'Wire': 17, 'ControlTerminal': 10, 'Diagram': 1, 'Constant': 1}
+  FACT  P5 OpReport_v3.vi panel [(0, 'vi path', False), (1, 'Class Name', False), (2, '# of Refs', True), (3, 'error out', True), (4, 'index', False), (5, 'Position', True), (6, 'Class Name 2', True), (7, 'UID', True), (8, 'Class Name 3', True), (9, 'error out 2', True)]
+
+---------- [COST] what a full fresh connectivity table costs today vs. in one round trip
+  FACT  COST today: node_terms ~0.8 s/node x 635 nodes ~ 508 s (docs/toolkit-capabilities.md:23). This probe: Traverse('Wire') 1.67 s, Traverse('Terminal') 5.28 s, both ONE op run.
+
+---------- [H] HYGIENE
+  FACT  close_panel(diag_allwires_probe_20260923_041559.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  PRELOAD references released; refs {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 3}
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 3}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 3}
+  FACT  LabVIEW handle count AFTER the work: 42451
+  PASS  H4 scratch deleted: diag_allwires_probe_20260923_041559.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\diag_allwires_probe_20260923_041559.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 0b84595245dd650c0e8fd3f57104782c / after 0b84595245dd650c0e8fd3f57104782c
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33994
+
+====================================================================================================
+=== GATES: 13 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_allwires_probe.json   elapsed 149.2 s
+BGRUN END rc=0 after 149s
