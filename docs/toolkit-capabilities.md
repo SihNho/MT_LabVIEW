@@ -685,6 +685,34 @@ and only after asserting the measured set. ✅ **RUN, and it passed:** run 1 on 
 **38/38 gates PASS, rc=0** (`tools/bench/build_opfstunnelterm_v2_run1.log`), building `OpFsTunnelTerm_v0.vi` and
 `OpFsInnerTunnelTerm_v0.vi` cold-legal in `user.lib\claudeDev`.
 
+## `tools/stagekit.py` — THE STAGE-SCRIPT SKELETON AS A LIBRARY (built 2026-09-22, Pre-decided 103)
+
+A stage file declares its INPUT, its ROWS and its CRITERIA; the skeleton is no longer retyped. **It builds no
+LabVIEW op VI** — every verb is a thin wrapper over one that already exists on disk, lifted from the scripts that
+passed (`build_opfsinnertunnelconnect_v0.py` · `diag_c83_connect2x2_r2.py` · `build_d1_m3a3b_d3.py` ·
+`stage_d1_s1.py` / `stage_d1_s2_loops.py` / `build_d1_m3a1.py` · `gscript.py`).
+
+| surface | what it is |
+|---|---|
+| `Stage(input_vi, md5, name, fresh=True, pins=…, deadline_min=…, preload=True)` + `.start()` | pins the ORIGINAL (`2a78e17c…`) and the INPUT **fatally**, takes the claudeDev listing FIRST, restarts LabVIEW, Preloads the ORIGINAL read-only, makes the dated WORK copy, opens it |
+| `.gate(label, ok, detail, fatal=)` · `.fact()` · `.row(label, observed, expected)` · `.summary()` | the documented rows `  PASS  ` / `  FAIL  ` / `  FACT  ` (never `**FAIL**`) and `=== GATES: n pass / m fail`. `.row()` is the NON-gate record: it prints an outcome without arming `guard_peer.FAILURE_RE`, which is how a re-cut reproduces a recorded FAIL without blocking the next build |
+| `.es(tag)` · `.census(classes=…)` · `.count()` · `.uid_index()` · `.wired_terminals(uid)` · `.net_sources(wire_uid)` · `.broken_wire_count(...)` | readings. `net_sources` is the owner-identity walk (`OpWireSource_v5`, WIRE-addressed); `broken_wire_count` **REFUSES the stage target** unless `allow_mutation=True` — it runs Remove Bad Wires, which deletes |
+| `.scratch(suffix)` · `.drop_scratch(p)` · `.discard_work()` | dated scratch copies, deleted in the same run; `discard_work()` marks a diagnostic's work copy as leaving no artefact |
+| `.delete_wire` · `.delete_object` · `.move_in` · `.connect` · `.connect_from_wire` · `.fs_inner_tunnel_connect` (v1) · `.fs_inner_tunnel_read` · `.wire_indicators` · `.add_shift_reg` · `.wire_sr` · `.create_local_read` · `.junk_purge()` | the verbs. Each records the op's error column into the JSON and marks a Node census so `junk_purge()` (the measured 1.00 stray `Invoke` per connect call) can diff against it |
+| `.expect_is_broken_false(label, reconnect, wire_uid=)` | **42(b)**: the acceptance is asserted on a SEPARATE idempotent re-connect — `wire_delta` 0 **and** `Wire.Is Broken?` 6371004 False — never in the pass that made the connection |
+| `.save(broken_ok=False)` | `save_route()` picks: ExecState 1 → scripted `SaveInstrument`; 0 + `broken_ok` → the APPROVED broken-intermediate `gui_save` (CLAUDE.md split-rule 6, evidence *"user 2026-09-22 broken-intermediate save"*); 0 without it → REFUSE. Records md5/size/version bytes; the COLD re-read runs only when ExecState was 1 |
+| `.close(expect_files=)` · `K.run(fn, stage)` | refs opened == closed, scratches deleted, the INPUT's md5 unchanged, every pin re-checked, files-left-on-disk, handles, JSON; `run()` guarantees the hygiene tail even on a `Stop` |
+
+**Acceptance, measured:** `tools/bench/selftest_stagekit.py` **32 pass / 0 fail** (no LabVIEW: row format, summary
+counting, the md5 pin's fatal refusal, the save-route table, the mutating-reader refusal, an AST check that no
+message is built with `%`, and `case_g_constants` — every shipped constant resolves and the ORIGINAL is one
+object). Re-cut: `tools/bench/diag_c83_connect2x2_kit.py` — **120 lines against run 2's 595** — reproduces
+`diag_c83_connect2x2_r2.log`'s cells R0/R0b/R1 **13 labels for 13**, 28 gates pass / 0 fail, `BGRUN END rc=0 after
+119s` (`tools/bench/diag_c83_connect2x2_kit.log`). ⚠️ **Its first run exposed a real library
+defect in one second**: `stagekit` had RESTATED the ORIGINAL's path instead of importing
+`diag_s2_scaffold.ORIGINAL` (`:81-82`) and restated it wrong, so gate K2 pinned a file that is not there. Fixed;
+the lesson is the one this file already encodes — an identity restated in a second place is an untested assumption.
+
 ## The rule this file encodes
 
 Before a plan depends on a capability, it must name **where that capability was last exercised**. If the answer is

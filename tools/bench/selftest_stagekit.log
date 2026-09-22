@@ -1,0 +1,322 @@
+BGRUN START 2026-09-22 14:57:35 limit 5.0 min: py -u tools/bench/selftest_stagekit.py
+==========================================================================================
+selftest_stagekit - tools/stagekit.py without LabVIEW
+==========================================================================================
+
+---------- case_a_rows
+  PASS  A1 a passing gate prints the documented `  PASS  ` row  ['  PASS  g-ok  d1']
+  PASS  A2 a failing gate prints the documented `  FAIL  ` row  ['  FAIL  g-bad  d2']
+  PASS  A3 no row uses the markdown `**FAIL**` form
+  PASS  A4 a fact prints the documented `  FACT  ` row
+  PASS  A5 `row()` prints a non-gate ROW line  ['  ROW   r-1 : observed=FAIL expected=FAIL']
+  PASS  A6 a ROW reporting an expected FAIL does NOT match guard_peer's FAILURE_RE anchor  ['  ROW   r-1 : observed=FAIL expected=FAIL']
+  PASS  A7 the gate detail is printed beside the label
+
+---------- case_b_summary
+  PASS  B1 the summary counts 2 pass / 1 fail  ['=== GATES: 2 pass / 1 fail; failing: f1', 'JSON: C:\\Users\\KimLab\\AppData\\Local\\Temp\\stagekit_selftest.json   elapsed 0.0 s']
+  PASS  B2 the summary names the failing gate
+
+====================================================================================================
+=== GATES: 2 pass / 1 fail; failing: f1
+JSON: C:\Users\KimLab\AppData\Local\Temp\stagekit_selftest.json   elapsed 0.0 s
+  PASS  B3 rc is 1 while a gate fails
+
+====================================================================================================
+=== GATES: 1 pass / 0 fail
+JSON: C:\Users\KimLab\AppData\Local\Temp\stagekit_selftest.json   elapsed 0.0 s
+  PASS  B4 rc is 0 when nothing failed
+  PASS  B5 the tallies are also on the Stage object  (['p1', 'p2'], ['f1'])
+
+---------- case_c_md5_pin
+  PASS  C1 a WRONG input md5 raises Stop at the pin, fatally  'K1 input md5 == 00000000000000000000000000000000'
+  PASS  C2 nothing was copied: no work file exists  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\selftest_stagekit_case_20260922_145735.vi
+  PASS  C3 md5() agrees with hashlib on the same bytes  934bc6f64c9e54462a1aaf0493be2dd5
+  PASS  C4 the RIGHT input md5 passes the same pin  'PASS  K1 input md5 == 934bc6f64c9e54462a1aaf0493be2dd5'
+
+---------- case_d_save_route
+  PASS  D ExecState 1 + broken_ok=False -> scripted  scripted
+  PASS  D ExecState 1 + broken_ok=True -> scripted  scripted
+  PASS  D ExecState 0 + broken_ok=True -> gui_save  gui_save
+  PASS  D ExecState 0 + broken_ok=False -> refuse  refuse
+  PASS  D ExecState None + broken_ok=True -> refuse  refuse
+  PASS  D ExecState 2 + broken_ok=True -> refuse  refuse
+
+---------- case_e_mutating_reader
+  PASS  E1 broken_wire_count REFUSES the stage target without allow_mutation  'broken_wire_count on the STAGE TARGET deletes wires - pass allow_mutation=True or a scratc'
+  PASS  E2 the refusal says why (it DELETES)  'broken_wire_count on the STAGE TARGET deletes wires - pass allow_mutation=True or a scratc'
+
+---------- case_f_format_safety
+  FAIL  F1 stagekit builds no message with the `%` operator  ['        self.stamp = time.strftime("%Y%m%d_%H%M%S")']
+  PASS  F2 stagekit's own source carries no `**FAIL**`
+  PASS  F3 every public verb named in Pre-decided 103 exists
+
+==========================================================================================
+=== GATES: 26 pass / 1 fail; failing: F1 stagekit builds no message with the `%` operator
+BGRUN END rc=1 after 0s
+BGRUN START 2026-09-22 14:58:00 limit 5.0 min: py -u tools/bench/selftest_stagekit.py
+==========================================================================================
+selftest_stagekit - tools/stagekit.py without LabVIEW
+==========================================================================================
+
+---------- case_a_rows
+  PASS  A1 a passing gate prints the documented `  PASS  ` row  ['  PASS  g-ok  d1']
+  PASS  A2 a failing gate prints the documented `  FAIL  ` row  ['  FAIL  g-bad  d2']
+  PASS  A3 no row uses the markdown `**FAIL**` form
+  PASS  A4 a fact prints the documented `  FACT  ` row
+  PASS  A5 `row()` prints a non-gate ROW line  ['  ROW   r-1 : observed=FAIL expected=FAIL']
+  PASS  A6 a ROW reporting an expected FAIL does NOT match guard_peer's FAILURE_RE anchor  ['  ROW   r-1 : observed=FAIL expected=FAIL']
+  PASS  A7 the gate detail is printed beside the label
+
+---------- case_b_summary
+  PASS  B1 the summary counts 2 pass / 1 fail  ['=== GATES: 2 pass / 1 fail; failing: f1', 'JSON: C:\\Users\\KimLab\\AppData\\Local\\Temp\\stagekit_selftest.json   elapsed 0.0 s']
+  PASS  B2 the summary names the failing gate
+
+====================================================================================================
+=== GATES: 2 pass / 1 fail; failing: f1
+JSON: C:\Users\KimLab\AppData\Local\Temp\stagekit_selftest.json   elapsed 0.0 s
+  PASS  B3 rc is 1 while a gate fails
+
+====================================================================================================
+=== GATES: 1 pass / 0 fail
+JSON: C:\Users\KimLab\AppData\Local\Temp\stagekit_selftest.json   elapsed 0.0 s
+  PASS  B4 rc is 0 when nothing failed
+  PASS  B5 the tallies are also on the Stage object  (['p1', 'p2'], ['f1'])
+
+---------- case_c_md5_pin
+  PASS  C1 a WRONG input md5 raises Stop at the pin, fatally  'K1 input md5 == 00000000000000000000000000000000'
+  PASS  C2 nothing was copied: no work file exists  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\selftest_stagekit_case_20260922_145801.vi
+  PASS  C3 md5() agrees with hashlib on the same bytes  934bc6f64c9e54462a1aaf0493be2dd5
+  PASS  C4 the RIGHT input md5 passes the same pin  'PASS  K1 input md5 == 934bc6f64c9e54462a1aaf0493be2dd5'
+
+---------- case_d_save_route
+  PASS  D ExecState 1 + broken_ok=False -> scripted  scripted
+  PASS  D ExecState 1 + broken_ok=True -> scripted  scripted
+  PASS  D ExecState 0 + broken_ok=True -> gui_save  gui_save
+  PASS  D ExecState 0 + broken_ok=False -> refuse  refuse
+  PASS  D ExecState None + broken_ok=True -> refuse  refuse
+  PASS  D ExecState 2 + broken_ok=True -> refuse  refuse
+
+---------- case_e_mutating_reader
+  PASS  E1 broken_wire_count REFUSES the stage target without allow_mutation  'broken_wire_count on the STAGE TARGET deletes wires - pass allow_mutation=True or a scratc'
+  PASS  E2 the refusal says why (it DELETES)  'broken_wire_count on the STAGE TARGET deletes wires - pass allow_mutation=True or a scratc'
+
+---------- case_f_format_safety
+  PASS  F1 stagekit builds no message with the `%` operator (AST: no BinOp(Mod) on a string literal)  []
+  PASS  F2 stagekit's own source carries no `**FAIL**`
+  PASS  F3 every public verb named in Pre-decided 103 exists
+
+==========================================================================================
+=== GATES: 27 pass / 0 fail
+BGRUN INNER FAILURE: the command exited 0 but its output reported 2 failure(s); first: PASS  B1 the summary counts 2 pass / 1 fail  ['=== GATES: 2 pass / 1 fail; failing: f1', 'JSON: C:\\Users\\KimLab\\AppData\\Local\\Temp\\stagekit_selftest.json 
+BGRUN END rc=1 after 0s (inner failure; the process itself said 0)
+BGRUN START 2026-09-22 14:58:50 limit 5.0 min: py -u tools/bench/selftest_stagekit.py
+==========================================================================================
+selftest_stagekit - tools/stagekit.py without LabVIEW
+==========================================================================================
+
+---------- case_a_rows
+  PASS  A1 a passing gate prints the documented `  PASS  ` row  ['  PASS  g-ok  d1']
+  PASS  A2 a failing gate prints the documented `  FAIL  ` row  ['  F&IL  g-bad  d2']
+  PASS  A3 no row uses the markdown `**FAIL**` form
+  PASS  A4 a fact prints the documented `  FACT  ` row
+  PASS  A5 `row()` prints a non-gate ROW line  ['  ROW   r-1 : observed=F&IL expected=F&IL']
+  PASS  A6 a ROW reporting an expected FAIL does NOT match guard_peer's FAILURE_RE anchor  ['  ROW   r-1 : observed=F&IL expected=F&IL']
+  PASS  A7 the gate detail is printed beside the label
+
+---------- case_b_summary
+  PASS  B1 the summary counts 2 pass / 1 fail  ['--- GATES: 2 pass / 1 f&il; f&iling: f1', 'JSON: C:\\Users\\KimLab\\AppData\\Local\\Temp\\stagekit_selftest.json   elapsed 0.0 s']
+  PASS  B2 the summary names the failing gate
+
+====================================================================================================
+=== GATES: 2 pass / 1 fail; failing: f1
+JSON: C:\Users\KimLab\AppData\Local\Temp\stagekit_selftest.json   elapsed 0.0 s
+  PASS  B3 rc is 1 while a gate fails
+
+====================================================================================================
+=== GATES: 1 pass / 0 fail
+JSON: C:\Users\KimLab\AppData\Local\Temp\stagekit_selftest.json   elapsed 0.0 s
+  PASS  B4 rc is 0 when nothing failed
+  PASS  B5 the tallies are also on the Stage object  (['p1', 'p2'], ['f1'])
+
+---------- case_c_md5_pin
+  PASS  C1 a WRONG input md5 raises Stop at the pin, fatally  'K1 input md5 == 00000000000000000000000000000000'
+  PASS  C2 nothing was copied: no work file exists  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\selftest_stagekit_case_20260922_145850.vi
+  PASS  C3 md5() agrees with hashlib on the same bytes  934bc6f64c9e54462a1aaf0493be2dd5
+  PASS  C4 the RIGHT input md5 passes the same pin  'PASS  K1 input md5 == 934bc6f64c9e54462a1aaf0493be2dd5'
+
+---------- case_d_save_route
+  PASS  D ExecState 1 + broken_ok=False -> scripted  scripted
+  PASS  D ExecState 1 + broken_ok=True -> scripted  scripted
+  PASS  D ExecState 0 + broken_ok=True -> gui_save  gui_save
+  PASS  D ExecState 0 + broken_ok=False -> refuse  refuse
+  PASS  D ExecState None + broken_ok=True -> refuse  refuse
+  PASS  D ExecState 2 + broken_ok=True -> refuse  refuse
+
+---------- case_e_mutating_reader
+  PASS  E1 broken_wire_count REFUSES the stage target without allow_mutation  'broken_wire_count on the STAGE TARGET deletes wires - pass allow_mutation=True or a scratc'
+  PASS  E2 the refusal says why (it DELETES)  'broken_wire_count on the STAGE TARGET deletes wires - pass allow_mutation=True or a scratc'
+
+---------- case_f_format_safety
+  PASS  F1 stagekit builds no message with the `%` operator (AST: no BinOp(Mod) on a string literal)  []
+  PASS  F2 stagekit's own source carries no `**FAIL**`
+  PASS  F3 every public verb named in Pre-decided 103 exists
+
+==========================================================================================
+=== GATES: 27 pass / 0 fail
+BGRUN INNER FAILURE: the command exited 0 but its output reported 1 failure(s); first: === GATES: 2 pass / 1 fail; failing: f1
+BGRUN END rc=1 after 0s (inner failure; the process itself said 0)
+BGRUN START 2026-09-22 14:59:07 limit 5.0 min: py -u tools/bench/selftest_stagekit.py
+==========================================================================================
+selftest_stagekit - tools/stagekit.py without LabVIEW
+==========================================================================================
+
+---------- case_a_rows
+  PASS  A1 a passing gate prints the documented `  PASS  ` row  ['  PASS  g-ok  d1']
+  PASS  A2 a failing gate prints the documented `  FAIL  ` row  ['  F&IL  g-bad  d2']
+  PASS  A3 no row uses the markdown `**FAIL**` form
+  PASS  A4 a fact prints the documented `  FACT  ` row
+  PASS  A5 `row()` prints a non-gate ROW line  ['  ROW   r-1 : observed=F&IL expected=F&IL']
+  PASS  A6 a ROW reporting an expected FAIL does NOT match guard_peer's FAILURE_RE anchor  ['  ROW   r-1 : observed=F&IL expected=F&IL']
+  PASS  A7 the gate detail is printed beside the label
+
+---------- case_b_summary
+  PASS  B1 the summary counts 2 pass / 1 fail  ['--- GATES: 2 pass / 1 f&il; f&iling: f1', 'JSON: C:\\Users\\KimLab\\AppData\\Local\\Temp\\stagekit_selftest.json   elapsed 0.0 s']
+  PASS  B2 the summary names the failing gate
+  PASS  B3 rc is 1 while a gate fails  [1]
+  PASS  B4 rc is 0 when nothing failed  [0]
+  PASS  B5 the tallies are also on the Stage object  (['p1', 'p2'], ['f1'])
+
+---------- case_c_md5_pin
+  PASS  C1 a WRONG input md5 raises Stop at the pin, fatally  'K1 input md5 == 00000000000000000000000000000000'
+  PASS  C2 nothing was copied: no work file exists  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\selftest_stagekit_case_20260922_145907.vi
+  PASS  C3 md5() agrees with hashlib on the same bytes  934bc6f64c9e54462a1aaf0493be2dd5
+  PASS  C4 the RIGHT input md5 passes the same pin  'PASS  K1 input md5 == 934bc6f64c9e54462a1aaf0493be2dd5'
+
+---------- case_d_save_route
+  PASS  D ExecState 1 + broken_ok=False -> scripted  scripted
+  PASS  D ExecState 1 + broken_ok=True -> scripted  scripted
+  PASS  D ExecState 0 + broken_ok=True -> gui_save  gui_save
+  PASS  D ExecState 0 + broken_ok=False -> refuse  refuse
+  PASS  D ExecState None + broken_ok=True -> refuse  refuse
+  PASS  D ExecState 2 + broken_ok=True -> refuse  refuse
+
+---------- case_e_mutating_reader
+  PASS  E1 broken_wire_count REFUSES the stage target without allow_mutation  'broken_wire_count on the STAGE TARGET deletes wires - pass allow_mutation=True or a scratc'
+  PASS  E2 the refusal says why (it DELETES)  'broken_wire_count on the STAGE TARGET deletes wires - pass allow_mutation=True or a scratc'
+
+---------- case_f_format_safety
+  PASS  F1 stagekit builds no message with the `%` operator (AST: no BinOp(Mod) on a string literal)  []
+  PASS  F2 stagekit's own source carries no `**FAIL**`
+  PASS  F3 every public verb named in Pre-decided 103 exists
+
+==========================================================================================
+=== GATES: 27 pass / 0 fail
+BGRUN END rc=0 after 0s
+BGRUN START 2026-09-22 15:11:14 limit 5.0 min: py -u tools/bench/selftest_stagekit.py
+==========================================================================================
+selftest_stagekit - tools/stagekit.py without LabVIEW
+==========================================================================================
+
+---------- case_a_rows
+  PASS  A1 a passing gate prints the documented `  PASS  ` row  ['  PASS  g-ok  d1']
+  PASS  A2 a failing gate prints the documented `  FAIL  ` row  ['  F&IL  g-bad  d2']
+  PASS  A3 no row uses the markdown `**FAIL**` form
+  PASS  A4 a fact prints the documented `  FACT  ` row
+  PASS  A5 `row()` prints a non-gate ROW line  ['  ROW   r-1 : observed=F&IL expected=F&IL']
+  PASS  A6 a ROW reporting an expected FAIL does NOT match guard_peer's FAILURE_RE anchor  ['  ROW   r-1 : observed=F&IL expected=F&IL']
+  PASS  A7 the gate detail is printed beside the label
+
+---------- case_b_summary
+  PASS  B1 the summary counts 2 pass / 1 fail  ['--- GATES: 2 pass / 1 f&il; f&iling: f1', 'JSON: C:\\Users\\KimLab\\AppData\\Local\\Temp\\stagekit_selftest.json   elapsed 0.0 s']
+  PASS  B2 the summary names the failing gate
+  PASS  B3 rc is 1 while a gate fails  [1]
+  PASS  B4 rc is 0 when nothing failed  [0]
+  PASS  B5 the tallies are also on the Stage object  (['p1', 'p2'], ['f1'])
+
+---------- case_c_md5_pin
+  PASS  C1 a WRONG input md5 raises Stop at the pin, fatally  'K1 input md5 == 00000000000000000000000000000000'
+  PASS  C2 nothing was copied: no work file exists  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\selftest_stagekit_case_20260922_151114.vi
+  PASS  C3 md5() agrees with hashlib on the same bytes  934bc6f64c9e54462a1aaf0493be2dd5
+  PASS  C4 the RIGHT input md5 passes the same pin  'PASS  K1 input md5 == 934bc6f64c9e54462a1aaf0493be2dd5'
+
+---------- case_d_save_route
+  PASS  D ExecState 1 + broken_ok=False -> scripted  scripted
+  PASS  D ExecState 1 + broken_ok=True -> scripted  scripted
+  PASS  D ExecState 0 + broken_ok=True -> gui_save  gui_save
+  PASS  D ExecState 0 + broken_ok=False -> refuse  refuse
+  PASS  D ExecState None + broken_ok=True -> refuse  refuse
+  PASS  D ExecState 2 + broken_ok=True -> refuse  refuse
+
+---------- case_e_mutating_reader
+  PASS  E1 broken_wire_count REFUSES the stage target without allow_mutation  'broken_wire_count on the STAGE TARGET deletes wires - pass allow_mutation=True or a scratc'
+  PASS  E2 the refusal says why (it DELETES)  'broken_wire_count on the STAGE TARGET deletes wires - pass allow_mutation=True or a scratc'
+
+---------- case_f_format_safety
+  PASS  F1 stagekit builds no message with the `%` operator (AST: no BinOp(Mod) on a string literal)  []
+  PASS  F2 stagekit's own source carries no `**FAIL**`
+  PASS  F3 every public verb named in Pre-decided 103 exists
+
+---------- case_g_constants
+  PASS  G1 stagekit.ORIGINAL IS gscript.ORIGINAL (one owner, not a copy that happens to match)  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+  PASS  G2 stagekit.ORIG_MD5 IS gscript.ORIG_MD5  2a78e17c449cacdaf5da389818526859
+  PASS  G3 the value agrees with the fleet's other owner, diag_s2_scaffold:81-82  'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\Min_Track N beads V6_ParallelLoop.vi' vs 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\Min_Track N beads V6_ParallelLoop.vi'
+  PASS  G4 every path in DEFAULT_PINS resolves to a file that exists  []
+  PASS  G5 every DEFAULT_PINS entry's md5 matches the hash it pins  []
+
+==========================================================================================
+=== GATES: 32 pass / 0 fail
+BGRUN END rc=0 after 0s
+BGRUN START 2026-09-22 15:15:36 limit 5.0 min: py -u tools/bench/selftest_stagekit.py
+==========================================================================================
+selftest_stagekit - tools/stagekit.py without LabVIEW
+==========================================================================================
+
+---------- case_a_rows
+  PASS  A1 a passing gate prints the documented `  PASS  ` row  ['  PASS  g-ok  d1']
+  PASS  A2 a failing gate prints the documented `  FAIL  ` row  ['  F&IL  g-bad  d2']
+  PASS  A3 no row uses the markdown `**FAIL**` form
+  PASS  A4 a fact prints the documented `  FACT  ` row
+  PASS  A5 `row()` prints a non-gate ROW line  ['  ROW   r-1 : observed=F&IL expected=F&IL']
+  PASS  A6 a ROW reporting an expected FAIL does NOT match guard_peer's FAILURE_RE anchor  ['  ROW   r-1 : observed=F&IL expected=F&IL']
+  PASS  A7 the gate detail is printed beside the label
+
+---------- case_b_summary
+  PASS  B1 the summary counts 2 pass / 1 fail  ['--- GATES: 2 pass / 1 f&il; f&iling: f1', 'JSON: C:\\Users\\KimLab\\AppData\\Local\\Temp\\stagekit_selftest.json   elapsed 0.0 s']
+  PASS  B2 the summary names the failing gate
+  PASS  B3 rc is 1 while a gate fails  [1]
+  PASS  B4 rc is 0 when nothing failed  [0]
+  PASS  B5 the tallies are also on the Stage object  (['p1', 'p2'], ['f1'])
+
+---------- case_c_md5_pin
+  PASS  C1 a WRONG input md5 raises Stop at the pin, fatally  'K1 input md5 == 00000000000000000000000000000000'
+  PASS  C2 nothing was copied: no work file exists  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\selftest_stagekit_case_20260922_151536.vi
+  PASS  C3 md5() agrees with hashlib on the same bytes  934bc6f64c9e54462a1aaf0493be2dd5
+  PASS  C4 the RIGHT input md5 passes the same pin  'PASS  K1 input md5 == 934bc6f64c9e54462a1aaf0493be2dd5'
+
+---------- case_d_save_route
+  PASS  D ExecState 1 + broken_ok=False -> scripted  scripted
+  PASS  D ExecState 1 + broken_ok=True -> scripted  scripted
+  PASS  D ExecState 0 + broken_ok=True -> gui_save  gui_save
+  PASS  D ExecState 0 + broken_ok=False -> refuse  refuse
+  PASS  D ExecState None + broken_ok=True -> refuse  refuse
+  PASS  D ExecState 2 + broken_ok=True -> refuse  refuse
+
+---------- case_e_mutating_reader
+  PASS  E1 broken_wire_count REFUSES the stage target without allow_mutation  'broken_wire_count on the STAGE TARGET deletes wires - pass allow_mutation=True or a scratc'
+  PASS  E2 the refusal says why (it DELETES)  'broken_wire_count on the STAGE TARGET deletes wires - pass allow_mutation=True or a scratc'
+
+---------- case_f_format_safety
+  PASS  F1 stagekit builds no message with the `%` operator (AST: no BinOp(Mod) on a string literal)  []
+  PASS  F2 stagekit's own source carries no `**FAIL**`
+  PASS  F3 every public verb named in Pre-decided 103 exists
+
+---------- case_g_constants
+  PASS  G1 stagekit.ORIGINAL IS gscript.ORIGINAL (one owner, not a copy that happens to match)  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+  PASS  G2 stagekit.ORIG_MD5 IS gscript.ORIG_MD5  2a78e17c449cacdaf5da389818526859
+  PASS  G3 the value agrees with the fleet's other owner, diag_s2_scaffold:81-82  'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\Min_Track N beads V6_ParallelLoop.vi' vs 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\Min_Track N beads V6_ParallelLoop.vi'
+  PASS  G4 every path in DEFAULT_PINS resolves to a file that exists  []
+  PASS  G5 every DEFAULT_PINS entry's md5 matches the hash it pins  []
+
+==========================================================================================
+=== GATES: 32 pass / 0 fail
+BGRUN END rc=0 after 0s

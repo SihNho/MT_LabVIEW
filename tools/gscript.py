@@ -59,6 +59,16 @@ SHOT_DIR = os.environ.get("TEMP", ".")
 CLAUDEDEV = r"C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev"
 BG_VIS = os.path.join(CLAUDEDEV, "background VIs_COPY")
 
+# THE ORIGINAL'S IDENTITY HAS ONE OWNER, AND IT IS THIS MODULE (2026-09-22, accepted from
+# `archive/peer/2026-09-22-c87-stagekit-k2.md` §1/§3: `tools/stagekit.py` RESTATED this path instead of
+# importing it, restated it WRONG, and its md5 pin then pinned a file that is not there -
+# `tools/bench/diag_c83_connect2x2_kit.log:10`). Every module that needs it should read it from here
+# rather than re-derive it; the value is `tools/bench/diag_s2_scaffold.py:81-82`'s, unchanged.
+# NOTE the two names in circulation: `…4.5_KimLabMTroom_3StateClamping.vi` (tools/callgraph.py:19,
+# tools/motor_census.py:92) is a DIFFERENT file from this one; neither sits inside the project folder.
+ORIGINAL = os.path.join(os.path.dirname(PROJECT), "Min_Track N beads V6_ParallelLoop.vi")
+ORIG_MD5 = "2a78e17c449cacdaf5da389818526859"
+
 OP_REPORT = os.path.join(CLAUDEDEV, "OpReport_v3.vi")
 OP_FORLOOP = os.path.join(CLAUDEDEV, "OpForLoop_v1.vi")   # v1 (2026-09-15, INDEX row 39): control tunnels + indexing actually wired; v0's never were
 OP_SUBVI = os.path.join(CLAUDEDEV, "OpSubVI_v1.vi")

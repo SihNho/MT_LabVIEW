@@ -1,0 +1,134 @@
+BGRUN START 2026-09-22 14:46:56 limit 25.0 min: py -u tools/bench/diag_c86_norbw.py
+====================================================================================================
+diag_c86_norbw - the D-3b MEASUREMENT: delete wire 7506 with NO Remove Bad Wires, then measure BOTH connect polarities on the two bare terminals. NOTHING IS SAVED.
+====================================================================================================
+
+---------- [0] FILES ONLY - the bed's md5 BEFORE anything, the pins, the five ops this run READS
+  BED MD5 AT ENTRY: 33ef524e0b6b193a158c9221474c68e3  (306951 bytes)
+  PASS  H1 bed md5 before == 33ef524e0b6b193a158c9221474c68e3 (306951 B)  got 33ef524e0b6b193a158c9221474c68e3, 306951 bytes
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  claudeDev holds 235 .vi file(s) BEFORE the run
+  PASS  F0 OpFsInnerTunnelConnect_v1.vi (CELL A's op - READ ONLY, never rebuilt) on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpFsInnerTunnelConnect_v1.vi
+  PASS  F0 OpFsInnerTunnelConnect_v0.vi (CELL B's op - READ ONLY, never rebuilt) on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpFsInnerTunnelConnect_v0.vi
+  PASS  F0 OpFsInnerTunnelTerm_v0.vi (the FSIT face reader) on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpFsInnerTunnelTerm_v0.vi
+  PASS  F0 OpWireSource_v5.vi (the identity reader) on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpWireSource_v5.vi
+  PASS  F0 OpOwnerChain_v1.vi (the uid identity probe) on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpOwnerChain_v1.vi
+  PASS  F0 the v1 label map on disk  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opfsinnertunnelconnect_v1_labels.json
+  PASS  F0 the v0 label map on disk  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opfsinnertunnelconnect_v0_labels.json
+  PASS  F0b cell A's op is the v1 cycle 84 saved (5b4e5f0fb3baae96361c33ce81bcd7b1)  got 5b4e5f0fb3baae96361c33ce81bcd7b1 (18797 bytes)
+  PASS  F0c cell B's op is the v0 cycle 83 saved (50a1e58a4825c2ce030ed9a41e204931)  got 50a1e58a4825c2ce030ed9a41e204931 (18521 bytes)
+
+---------- [RB] PROVE THE REMOVE-BAD-WIRES REBIND IS IN FORCE - the name is called once and must RAISE
+  FACT  RB the guard raised as designed: Remove Bad Wires is FORBIDDEN in this dispatch (it is the suspected cause of c83's error 1055 and a rule-1a hazard, docs/cycle27-plan.md:1860-1862). C
+  PASS  RB1 `gscript.remove_bad_wires_scripted` IS REBOUND to the raising guard (proof call)  guard is <function _rbw_guard at 0x000001E3853429E0>
+  PASS  RB2 `gscript.remove_bad_wires` (the GUI form) IS REBOUND to the raising guard  guard is <function _rbw_guard at 0x000001E3853429E0>
+  FACT  RB the two proof trips are cleared from the trip list; H7 counts only UNINTENDED trips
+
+---------- [1] RESTART LabVIEW (STATUS orders it before the first batch)
+  FACT  LabVIEW handle count BEFORE the restart: 33957 (baseline ~31,500)
+  FACT  LabVIEW handle count AFTER the restart: 33872
+
+---------- [A] CELL A - op OpFsInnerTunnelConnect_v1.vi, Auto Route? True, on its OWN dated scratch COPY of the bed
+  PASS  A0 the scratch is a byte-identical copy of the bed  SCRATCH_c86_A_20260922_144656.vi
+  FACT  A ensure_loaded took 3.2 s
+  FACT  A  Diagram census 173 row(s); Diagram #686 at traverse index 19
+  FACT  A  Diagram[19].Nodes[21] uid echo 23032 (want the NEW WhileLoop #23032 -> MATCH); t1 row {'i': 1, 'name': 'Outgoing Handle', 'is_source': True, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 23032}
+
+---------- [A/M0] BEFORE ANYTHING
+  FACT  A M0 WIRE CENSUS: 1920 Wire object(s) ; wire 7506 present True ; ExecState 0
+  PASS  AM0a wire 7506 is in the Wire census BEFORE the delete  1920 Wire objects
+   READ[IN] uid 7468 -> self 'FlatSequenceInnerTunnel'#7468 cast 'FlatSequenceInnerTunnel' | LeftTerm #7488 wire #7506 | RightTerm #7471 wire #7448 | is_source False | owner 'FlatSequenceInnerTunnel'#7468 | err '' A '' B '' | errs 
+  FACT  A M0 FSIT #7468: uid echo 7468 cls 'FlatSequenceInnerTunnel' | LeftTerm #7488 wire 7506 | RightTerm #7471 wire 7448 | err='' err_a='' err_b=''
+  FACT  A M0 FSIT #7468 RAW: uid_in=7468 uid_back=7468 cls_back='FlatSequenceInnerTunnel' cast='FlatSequenceInnerTunnel' | LeftTerm #7488 wire=7506 | RightTerm #7471 wire=7448 | is_source=False owner='FlatSequenceInnerTunnel'#7468
+  FACT  A M0 FSIT #7468 RAW ERROR COLUMNS: `error out`='' err_a='' err_b='' err_bcw='' others=''
+  PASS  AM0b THE UID ECHO (Pre-decided 125): the FSIT read's `uid_back` == 7468  uid_back=7468 cls_back='FlatSequenceInnerTunnel'
+  PASS  AM0c its LeftTerm is #7488 carrying wire 7506, its RightTerm #7471 carrying wire 7448  LeftTerm #7488 wire 7506 ; RightTerm #7471 wire 7448
+  FACT  A M0 BORDER Nodes[21] uid echo 23032 (want the NEW loop #23032 -> MATCH) ; t1 row = {'i': 1, 'name': 'Outgoing Handle', 'is_source': True, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 23032}
+  FACT      P[OwnerChain] uid 23906 -> self 'OuterTerminal'#23906 (echo OK) | TMSC(GObject) -> 'RightShiftRegister' | owner 'RightShiftRegister'#23868 | err '' | per-stage {}
+  FACT  A M0 TERMINAL #23906: self 'OuterTerminal'#23906 (echo OK) | owner 'RightShiftRegister'#23868 | err '' | the loop-border row t1 says name='Outgoing Handle' is_source=True wire=0
+  PASS  AM0d THE UID ECHO on #23906, and its owner is RightShiftRegister #23868 (Pre-decided 120/125)  echo_ok=True owner='RightShiftRegister'#23868
+  PASS  AM0e the loop-border terminal is BARE before the connect  border t1 wire=0
+  FACT  A M0 w7506 OpWireSource_v5(UID 2 = 7506): 3 row(s), 2 with a REAL owner
+  FACT      A M0 w7506   t0  is_source=True  owner_class='RightShiftRegister'       owner_uid=4334    recip=7506
+  FACT      A M0 w7506   t1  is_source=False owner_class='FlatSequenceInnerTunnel'  owner_uid=7468    recip=7506
+  FACT      A M0 w7506   t2  is_source=None  owner_class=None                       owner_uid=None    recip=None  READ ERROR errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; errG=error 1055: Property Node in OpWireSource_v5.vi; errS=error 1055: Property Node in OpWireSource_v5.vi; errWU=error 1055: Property Node in OpWireSource_v5.vi; errCO=error 1055: Property Node in OpWireSource_v5.vi
+  FACT  A M0 w7506 PD85 PRECONDITION: 2 real-owner row(s), 0 violate recip==queried_uid
+  FACT  A M0 `Wire.Is Broken?` ON WIRE 7506 IS **NOT MEASURED**: the only 6371004 route in this fleet is a WRITE verb (an idempotent re-connect, build_s0beta_replicate.py:184-212) and w7506's only SINK is the FSIT LeftTerm, which is not node-addressable - taking it would contaminate M1. THE READ-ONLY SUBSTITUTE (docs/NAMES.md:900, >=2 source terminals = broken): net 7506 has 1 source terminal(s) [('RightShiftRegister', 4334)] ; every owner on the net [('FlatSequenceInnerTunnel', 7468), ('RightShiftRegister', 4334)] -> read-only verdict 'not broken by the source count'
+
+---------- [A/M1] THE DELETE - `del_wire(7506)` AND NOTHING ELSE. No Remove Bad Wires, before or after.
+      A M1 deleted wire w7506
+  PASS  AM1a wire 7506 was deleted  returned True ; error ''
+  FACT  A M1 AFTER the delete WIRE CENSUS: 1919 Wire object(s) ; wire 7506 present False ; ExecState 0
+  FACT  A M1 CENSUS DIFF across the delete: lost [7506] ; gained [] ; count 1920 -> 1919 ; ExecState 0 -> 0
+  PASS  AM1b the delete removed EXACTLY wire 7506 and created nothing  lost [7506] gained []
+
+---------- [A/M2] THE c83 CONFOUND CONTROL: with NO Remove Bad Wires, does #7468 STILL resolve?
+   READ[IN] uid 7468 -> self 'FlatSequenceInnerTunnel'#7468 cast 'FlatSequenceInnerTunnel' | LeftTerm #7488 wire #0 | RightTerm #7471 wire #7448 | is_source False | owner 'FlatSequenceInnerTunnel'#7468 | err '' A '' B '' | errs error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi
+  FACT  A M2 FSIT #7468: uid echo 7468 cls 'FlatSequenceInnerTunnel' | LeftTerm #7488 wire 0 | RightTerm #7471 wire 7448 | err='' err_a='' err_b=''
+  FACT  A M2 FSIT #7468 RAW: uid_in=7468 uid_back=7468 cls_back='FlatSequenceInnerTunnel' cast='FlatSequenceInnerTunnel' | LeftTerm #7488 wire=0 | RightTerm #7471 wire=7448 | is_source=False owner='FlatSequenceInnerTunnel'#7468
+  FACT  A M2 FSIT #7468 RAW ERROR COLUMNS: `error out`='' err_a='' err_b='' err_bcw='' others='error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi'
+  PASS  AM2a *** #7468 STILL RESOLVES after the delete (uid echo `uid_back` == 7468 - never an empty error column)  uid_back=7468 cls_back='FlatSequenceInnerTunnel' ; raw `error out`=''
+  PASS  AM2b its `Left Terminal` still comes back as #7488  term_a_uid=7488 ; err_a=''
+  PASS  AM2c #7488 is now BARE (wire 0)  wire_a=0 (was 7506)
+  PASS  AM2d the inner wire 7448 on the `Right Terminal` #7471 SURVIVES the delete  term_b_uid=7471 wire_b=7448 ; err_b=''
+  FACT  A M2 BORDER Nodes[21] uid echo 23032 (want the NEW loop #23032 -> MATCH) ; t1 row = {'i': 1, 'name': 'Outgoing Handle', 'is_source': True, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 23032}
+  FACT      P[OwnerChain] uid 23906 -> self 'OuterTerminal'#23906 (echo OK) | TMSC(GObject) -> 'RightShiftRegister' | owner 'RightShiftRegister'#23868 | err '' | per-stage {}
+  PASS  AM2e #23906 is BARE after the delete too (the source end)  border t1 wire=0 ; #23906 echo 23906 owner 'RightShiftRegister'#23868
+
+---------- [A/M3] THE CALL - OpFsInnerTunnelConnect_v1.vi ONCE, Auto Route? True, on the two BARE terminals
+  FACT  A M3 BEFORE the call WIRE CENSUS: 1919 Wire object(s) ; wire 7506 present False ; ExecState 0
+  FACT  A M3 RAW INVOKE `error out` = ''
+  FACT  A M3 op-level `error out` = 'error 999999: POISON - not overwritten by the run'
+  FACT  A M3 PER-STAGE ERROR COLUMNS: err_uidvi='' err_fsit='' err_termuid='' err_uidback=''
+  FACT  A M3 ECHOES AND OUTPUTS: term_uid=7488 (want #7488) uid_back=7468 (want #7468) `UID 2`=25324 `Is Broken?`=False `Name`='Outgoing Handle' wire_delta=1 junk_Invoke_delta=1
+  PASS  AM3a THE UID ECHOES HOLD ON THE CALL (Pre-decided 125): `term_uid` == #7488 AND `uid_back` == #7468  term_uid=7488 uid_back=7468
+  FACT  A M3 AFTER the call WIRE CENSUS: 1920 Wire object(s) ; wire 7506 present False ; ExecState 0
+  FACT  A M3 CENSUS DIFF across the call: lost [] ; gained [25324] ; count 1919 -> 1920 (op's own wire_delta 1) ; ExecState 0 -> 0
+   READ[IN] uid 7468 -> self 'FlatSequenceInnerTunnel'#7468 cast 'FlatSequenceInnerTunnel' | LeftTerm #7488 wire #25324 | RightTerm #7471 wire #7448 | is_source False | owner 'FlatSequenceInnerTunnel'#7468 | err '' A '' B '' | errs 
+  FACT  A M3 AFTER FSIT #7468: uid echo 7468 cls 'FlatSequenceInnerTunnel' | LeftTerm #7488 wire 25324 | RightTerm #7471 wire 7448 | err='' err_a='' err_b=''
+  FACT  A M3 AFTER FSIT #7468 RAW: uid_in=7468 uid_back=7468 cls_back='FlatSequenceInnerTunnel' cast='FlatSequenceInnerTunnel' | LeftTerm #7488 wire=25324 | RightTerm #7471 wire=7448 | is_source=False owner='FlatSequenceInnerTunnel'#7468
+  FACT  A M3 AFTER FSIT #7468 RAW ERROR COLUMNS: `error out`='' err_a='' err_b='' err_bcw='' others=''
+  FACT  A M3 AFTER BORDER Nodes[21] uid echo 23032 (want the NEW loop #23032 -> MATCH) ; t1 row = {'i': 1, 'name': 'Outgoing Handle', 'is_source': True, 'wire': 25324, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 0, 'node_uid': 23032}
+  FACT  A M3 *** THE WIRE ON #7488 = 25324 ; THE WIRE ON #23906 (border t1) = 25324 ; SAME UID? True ***
+  PASS  AM3b a wire now joins the two terminals (the SAME uid on #7488 and on #23906)  #7488 carries 25324 ; #23906 carries 25324
+
+---------- [A/M4] `OpWireSource_v5` ON THE RESULTING NET
+  FACT  A M4 w25324 OpWireSource_v5(UID 2 = 25324): 3 row(s), 2 with a REAL owner
+  FACT      A M4 w25324   t0  is_source=True  owner_class='RightShiftRegister'       owner_uid=23868   recip=25324
+  FACT      A M4 w25324   t1  is_source=False owner_class='FlatSequenceInnerTunnel'  owner_uid=7468    recip=25324
+  FACT      A M4 w25324   t2  is_source=None  owner_class=None                       owner_uid=None    recip=None  READ ERROR errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; errG=error 1055: Property Node in OpWireSource_v5.vi; errS=error 1055: Property Node in OpWireSource_v5.vi; errWU=error 1055: Property Node in OpWireSource_v5.vi; errCO=error 1055: Property Node in OpWireSource_v5.vi
+  FACT  A M4 w25324 PD85 PRECONDITION: 2 real-owner row(s), 0 violate recip==queried_uid
+  FACT  A M4 NET w25324: SOURCE terminals [('RightShiftRegister', 23868)] ; every owner [('FlatSequenceInnerTunnel', 7468), ('RightShiftRegister', 23868)] ; PD85 violations 0 []
+  FACT  A M4 `Wire.Is Broken?` ON THAT WIRE = False (the op's OWN 6371004 readback, poisoned True before the run; its `UID 2` = 25324, the wire walked here = 25324, same True)
+  PASS  AM4a exactly ONE source terminal on the net and its OWNER is RightShiftRegister #23868 (Pre-decided 106/117-as-corrected-by-120)  source-terminal owners [('RightShiftRegister', 23868)]
+  PASS  AM4b the OLD source #4334 is OFF that net  every owner: [('FlatSequenceInnerTunnel', 7468), ('RightShiftRegister', 23868)]
+  PASS  AM4c PD85 violations 0 on the walk  0: []
+  PASS  AM4d `Wire.Is Broken?` False on that wire AND the op's `UID 2` IS that wire  Is Broken? False ; UID 2 25324 vs wire 25324
+
+---------- [A] DELETE THE SCRATCH - nothing from this cell is kept
+  FACT  A scratch deleted in the cell: True (hygiene retries after the restart if not)
+
+---------- [B] CELL B - op OpFsInnerTunnelConnect_v0.vi, Auto Route? None, on its OWN dated scratch COPY of the bed
+  PASS  B0 the scratch is a byte-identical copy of the bed  SCRATCH_c86_B_20260922_144656.vi
+  FACT  B ensure_loaded took 0.8 s
+  FACT  B  Diagram census 173 row(s); Diagram #686 at traverse index 19
+  FACT  B  Diagram[19].Nodes[21] uid echo 23032 (want the NEW WhileLoop #23032 -> MATCH); t1 row {'i': 1, 'name': 'Outgoing Handle', 'is_source': True, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 23032}
+
+---------- [B/M0] BEFORE ANYTHING
+  FACT  B M0 WIRE CENSUS: 1920 Wire object(s) ; wire 7506 present True ; ExecState 0
+  PASS  BM0a wire 7506 is in the Wire census BEFORE the delete  1920 Wire objects
+   READ[IN] uid 7468 -> self 'FlatSequenceInnerTunnel'#7468 cast 'FlatSequenceInnerTunnel' | LeftTerm #7488 wire #7506 | RightTerm #7471 wire #7448 | is_source False | owner 'FlatSequenceInnerTunnel'#7468 | err '' A '' B '' | errs 
+  FACT  B M0 FSIT #7468: uid echo 7468 cls 'FlatSequenceInnerTunnel' | LeftTerm #7488 wire 7506 | RightTerm #7471 wire 7448 | err='' err_a='' err_b=''
+  FACT  B M0 FSIT #7468 RAW: uid_in=7468 uid_back=7468 cls_back='FlatSequenceInnerTunnel' cast='FlatSequenceInnerTunnel' | LeftTerm #7488 wire=7506 | RightTerm #7471 wire=7448 | is_source=False owner='FlatSequenceInnerTunnel'#7468
+  FACT  B M0 FSIT #7468 RAW ERROR COLUMNS: `error out`='' err_a='' err_b='' err_bcw='' others=''
+  PASS  BM0b THE UID ECHO (Pre-decided 125): the FSIT read's `uid_back` == 7468  uid_back=7468 cls_back='FlatSequenceInnerTunnel'
+  PASS  BM0c its LeftTerm is #7488 carrying wire 7506, its RightTerm #7471 carrying wire 7448  LeftTerm #7488 wire 7506 ; RightTerm #7471 wire 7448
+  FACT  B M0 BORDER Nodes[21] uid echo 23032 (want the NEW loop #23032 -> MATCH) ; t1 row = {'i': 1, 'name': 'Outgoing Handle', 'is_source': True, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 23032}
+  FACT      P[OwnerChain] uid 23906 -> self 'OuterTerminal'#23906 (echo OK) | TMSC(GObject) -> 'RightShiftRegister' | owner 'RightShiftRegister'#23868 | err '' | per-stage {}
+  FACT  B M0 TERMINAL #23906: self 'OuterTerminal'#23906 (echo OK) | owner 'RightShiftRegister'#23868 | err '' | the loop-border row t1 says name='Outgoing Handle' is_source=True wire=0
+  PASS  BM0d THE UID ECHO on #23906, and its owner is RightShiftRegister #23868 (Pre-decided 120/125)  echo_ok=True owner='RightShiftRegister'#23868
+  PASS  BM0e the loop-border terminal is BARE before the connect  border t1 wire=0
