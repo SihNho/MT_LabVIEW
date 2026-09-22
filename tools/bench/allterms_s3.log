@@ -1,0 +1,283 @@
+BGRUN START 2026-09-23 06:55:11 limit 40.0 min: py -u tools/bench/allterms_s3.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 240 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 358c9dca27fa38d4748bc9d7170e4aab  got 358c9dca27fa38d4748bc9d7170e4aab
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 34439
+  FACT  LabVIEW handle count AFTER the restart: 33993
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  OpAllTerms_v0_s3.vi
+  FACT  ExecState [after open] OpAllTerms_v0_s3.vi = 0
+
+---------- [R1] read the body: the two GUI-placed casts and the donor's two property nodes
+  FACT  ExecState [s2 input, broken by design] OpAllTerms_v0_s3.vi = 0
+  FACT  census at entry {'Function': 3, 'Property': 2, 'LoopTunnel': 5, 'ControlTerminal': 14, 'Wire': 18}  ExecState 0
+  FACT  scan_body[R1]: 4 node(s) [114, 115, 587, 598]
+  FACT  TMSC #587: body Nodes[2] terminals [(0, 'specific class reference', True, 0), (1, 'error out', True, 0), (2, 'target class', False, 0), (3, 'reference', False, 0), (4, 'error in', False, 0)]
+  FACT  TMSC #598: body Nodes[3] terminals [(0, 'specific class reference', True, 0), (1, 'error out', True, 0), (2, 'target class', False, 0), (3, 'reference', False, 0), (4, 'error in', False, 0)]
+  PASS  R1 both TMSC resolve on body diagram 1 and carry `target class`  indices [2, 3]
+  PASS  R1b the cast's INPUT terminal name was read off the machine  name 'reference'
+  FACT  the cast's input terminal is 'reference'; its output is 'specific class reference'
+  PASS  R1c PN1 (GObject: UID/Owner/Position) and PN2 (Generic: ClassName) both found  PN1 114 PN2 115
+
+---------- [W1] the four new property nodes, ONE concern each (toolkit-capabilities.md:74)
+  FACT  build_property(A) node census: 7 rows
+  FACT  OP build_property(A) VI Server:Terminal on the body -> err '' (1.0 s)
+  PASS  W1A property node A created  uid 793 err ''
+  FACT  build_property(B) node census: 8 rows
+  FACT  OP build_property(B) VI Server:Terminal on the body -> err '' (0.3 s)
+  PASS  W1B property node B created  uid 639 err ''
+  FACT  build_property(W) node census: 9 rows
+  FACT  OP build_property(W) VI Server:GObject on the body -> err '' (0.5 s)
+  PASS  W1W property node W created  uid 221 err ''
+  FACT  build_property(OU) node census: 10 rows
+  FACT  OP build_property(OU) VI Server:GObject on the body -> err '' (0.9 s)
+  PASS  W1OU property node OU created  uid 641 err ''
+  FACT  new property nodes {'A': 793, 'B': 639, 'W': 221, 'OU': 641}
+
+---------- [W2] the two TYPED SEEDS - create_control on each cast's own sink node, birth wire cut
+  FACT  scan_body[W2A]: 8 node(s) [114, 115, 221, 587, 598, 639, 641, 793]
+  PASS  W2Aa the node's `reference` terminal was found  terminals ['reference', 'reference out', 'error in (no error)', 'error out', 'Name', 'IsSource']
+  FACT  create_control(A) raised RuntimeError: run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gscript_dialog_1790114177.png
+  FACT  scan_body[W2Ab]: 8 node(s) [114, 115, 221, 587, 598, 639, 641, 793]
+  FAIL  W2Ab one typed seed control was born, WIRED into `reference`  label None birth wire 0
+  FACT  wire_control(seed->target class) node census: 11 rows
+  FACT  wire_control(seed->target class) None -> TMSC #587 'target class' raised RuntimeError: wire_control [None] -> Function.['target class']: error 5001: LV-Scripting.lvlib:Get Controls.vi<ERR> | Control  not found | <b>Complete call chain:</b> | LV-Scripting.lvlib:Get Controls.vi | OpWireCtl_v0.vi
+  FACT  OP wire_control(seed->target class) None -> TMSC #587 'target class' -> err "RuntimeError: wire_control [None] -> Function.['target class']: error 5001: LV-Scripting.lvlib:Get Controls.vi<ERR> | Control  not found | <b>Complete call chain:</b> | LV-Scripting.lvlib:Get Controls.vi | OpWireCtl_v0.vi" (0.4 s)
+  FAIL  W2Ac the seed feeds the cast's `target class`  err "RuntimeError: wire_control [None] -> Function.['target class']: error 5001: LV-Scripting.lvlib:Get Controls.vi<ERR> | Control  not found | <b>Complete call chain:</b> | LV-Scripting.lvlib:Get Controls.vi | OpWireCtl_v0.vi"
+  FACT  scan_body[W2OU]: 8 node(s) [114, 115, 221, 587, 598, 639, 641, 793]
+  PASS  W2OUa the node's `reference` terminal was found  terminals ['reference', 'reference out', 'error in (no error)', 'error out', 'UID']
+  FACT  create_control(OU) raised RuntimeError: run blocked behind a modal dialog (dismissed by watchdog after 8s); screenshot(s): C:\Users\KimLab\AppData\Local\Temp\gscript_dialog_1790114189.png
+  FACT  scan_body[W2OUb]: 8 node(s) [114, 115, 221, 587, 598, 639, 641, 793]
+  FAIL  W2OUb one typed seed control was born, WIRED into `reference`  label None birth wire 0
+  FACT  wire_control(seed->target class) node census: 11 rows
+  FACT  wire_control(seed->target class) None -> TMSC #598 'target class' raised RuntimeError: wire_control [None] -> Function.['target class']: error 5001: LV-Scripting.lvlib:Get Controls.vi<ERR> | Control  not found | <b>Complete call chain:</b> | LV-Scripting.lvlib:Get Controls.vi | OpWireCtl_v0.vi
+  FACT  OP wire_control(seed->target class) None -> TMSC #598 'target class' -> err "RuntimeError: wire_control [None] -> Function.['target class']: error 5001: LV-Scripting.lvlib:Get Controls.vi<ERR> | Control  not found | <b>Complete call chain:</b> | LV-Scripting.lvlib:Get Controls.vi | OpWireCtl_v0.vi" (0.1 s)
+  FAIL  W2OUc the seed feeds the cast's `target class`  err "RuntimeError: wire_control [None] -> Function.['target class']: error 5001: LV-Scripting.lvlib:Get Controls.vi<ERR> | Control  not found | <b>Complete call chain:</b> | LV-Scripting.lvlib:Get Controls.vi | OpWireCtl_v0.vi"
+
+---------- [W3] the casts: input from the pre-cast node, output into the typed node
+  FACT  wire(TMSC1.in) node census: 11 rows
+  FACT  OP wire(TMSC1.in) TMSC1.in: Property#114.'reference out' -> Function#587.'reference' -> err '' (0.2 s)
+  PASS  W3 TMSC1.in: op error empty and Wire 18 -> 19  err ''
+  FACT  wire(TMSC1.out) node census: 11 rows
+  FACT  OP wire(TMSC1.out) TMSC1.out: Function#587.'specific class reference' -> Property#793.'reference' -> err '' (0.2 s)
+  PASS  W3 TMSC1.out: op error empty and Wire 19 -> 20  err ''
+  FACT  wire(TMSC2.in) node census: 11 rows
+  FACT  OP wire(TMSC2.in) TMSC2.in: Property#115.'reference out' -> Function#598.'reference' -> err '' (0.2 s)
+  PASS  W3 TMSC2.in: op error empty and Wire 20 -> 21  err ''
+  FACT  wire(TMSC2.out) node census: 11 rows
+  FACT  OP wire(TMSC2.out) TMSC2.out: Function#598.'specific class reference' -> Property#641.'reference' -> err '' (0.2 s)
+  PASS  W3 TMSC2.out: op error empty and Wire 21 -> 22  err ''
+  FACT  wire(A->B) node census: 11 rows
+  FACT  OP wire(A->B) A->B: Property#793.'reference out' -> Property#639.'reference' -> err '' (0.2 s)
+  PASS  W3 A->B: op error empty and Wire 22 -> 23  err ''
+  FACT  wire(B->W) node census: 11 rows
+  FACT  OP wire(B->W) B->W: Property#639.'Wire' -> Property#221.'reference' -> err '' (0.2 s)
+  PASS  W3 B->W: op error empty and Wire 23 -> 24  err ''
+
+---------- [O1] four auto-indexed OUTPUT tunnels and their typed indicators
+  FACT  exit_loop(A) node census: 11 rows
+  FACT  OP exit_loop(A) A -> ['Name', 'IsSource'] -> err '' (0.1 s)
+  PASS  O1 exit_loop(A) made its tunnels  err ''
+  FACT  exit_loop(W) node census: 11 rows
+  FACT  OP exit_loop(W) W -> ['UID'] -> err '' (0.1 s)
+  PASS  O1 exit_loop(W) made its tunnels  err ''
+  FACT  exit_loop(OU) node census: 11 rows
+  FACT  OP exit_loop(OU) OU -> ['UID'] -> err '' (0.1 s)
+  PASS  O1 exit_loop(OU) made its tunnels  err ''
+  PASS  O1b LoopTunnel 5 -> 9 (+4)
+  FACT  tunnel 5 -> indicator ['Array 5'] = 'term_name'
+  FACT  tunnel 6 -> indicator ['Array 6'] = 'is_source'
+  FACT  tunnel 7 -> indicator ['Array 7'] = 'wire_uid'
+  FACT  tunnel 8 -> indicator ['Array 8'] = 'owner_uid'
+  PASS  O1c every one of the six columns has a front-panel label  {'vi_path': 'vi path', 'class_name': 'Class Name', 'term_uid': 'Array 2', 'owner_class': 'Array 4', 'error': 'error out 2', 'term_name': 'Array 5', 'is_source': 'Array 6', 'wire_uid': 'Array 7', 'owner_uid': 'Array 8'}
+
+---------- [S1] Remove Bad Wires, ExecState, save
+  FACT  ExecState [after the whole S3 build] OpAllTerms_v0_s3.vi = 0
+  FACT  census at exit {'Function': 3, 'Property': 6, 'LoopTunnel': 9, 'ControlTerminal': 18, 'Wire': 31}
+
+---------- [SAVE] OpAllTerms_v0_s3.vi
+  FACT  ExecState [before the save] OpAllTerms_v0_s3.vi = 0
+  FACT  SAVE ROUTE = gui_save, the APPROVED broken-intermediate route (CLAUDE.md split-rule 6; evidence "user 2026-09-22 broken-intermediate save"). The artefact is BROKEN BY DESIGN and is NEVER RUN (34(f)).
+  PASS  S1 the save returned without raising (gui_save route)
+  FACT  SAVED ARTEFACT: OpAllTerms_v0_s3.vi md5 f1f5486faa86a1ced07264a3670549a4 size 13952 B; version bytes [38, 128]
+  PASS  S2 the artefact is on disk and non-empty  13952 B
+  FACT  S3 COLD re-open check SKIPPED BY RULE: ExecState was 0, and a broken-saved VI is never cold-loaded headless (recompile spin).
+  FAIL  S1 ExecState 1 - the reader is a RUNNABLE VI  ExecState 0
+  FACT  ExecState 0: the deliverable name is NOT written; the broken intermediate stays at OpAllTerms_v0_s3.vi and the Error List is the next read (tools/lv_errorlist.py).
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 0}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handle count AFTER the work: 31239
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 358c9dca27fa38d4748bc9d7170e4aab / after 358c9dca27fa38d4748bc9d7170e4aab
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['OpAllTerms_v0_s3.vi']  (removed: [])
+  PASS  H6 the files left on disk == ['OpAllTerms_v0_s3.vi'] and nothing was removed  added ['OpAllTerms_v0_s3.vi'] removed []
+  FACT  LabVIEW handle count at exit: 31239
+
+====================================================================================================
+=== GATES: 29 pass / 5 fail; failing: W2Ab one typed seed control was born, WIRED into `reference`, W2Ac the seed feeds the cast's `target class`, W2OUb one typed seed control was born, WIRED into `reference`, W2OUc the seed feeds the cast's `target class`, S1 ExecState 1 - the reader is a RUNNABLE VI
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\allterms_s3.json   elapsed 148.9 s
+BGRUN END rc=1 after 149s
+BGRUN START 2026-09-23 06:59:47 limit 40.0 min: py -u tools/bench/allterms_s3.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 241 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 358c9dca27fa38d4748bc9d7170e4aab  got 358c9dca27fa38d4748bc9d7170e4aab
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 31229
+  FACT  LabVIEW handle count AFTER the restart: 33996
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  OpAllTerms_v0_s3.vi
+  FACT  ExecState [after open] OpAllTerms_v0_s3.vi = 0
+
+---------- [R1] read the body: the two GUI-placed casts and the donor's two property nodes
+  FACT  ExecState [s2 input, broken by design] OpAllTerms_v0_s3.vi = 0
+  FACT  census at entry {'Function': 3, 'Property': 2, 'LoopTunnel': 5, 'ControlTerminal': 14, 'Wire': 18}  ExecState 0
+  FACT  scan[R1] diagram 1: 4 node(s) [114, 115, 587, 598]
+  FACT  TMSC #587: body Nodes[2] terminals [(0, 'specific class reference', True, 0), (1, 'error out', True, 0), (2, 'target class', False, 0), (3, 'reference', False, 0), (4, 'error in', False, 0)]
+  FACT  TMSC #598: body Nodes[3] terminals [(0, 'specific class reference', True, 0), (1, 'error out', True, 0), (2, 'target class', False, 0), (3, 'reference', False, 0), (4, 'error in', False, 0)]
+  PASS  R1 both TMSC resolve on body diagram 1 and carry `target class`  indices [2, 3]
+  PASS  R1b the cast's INPUT terminal name was read off the machine  name 'reference'
+  FACT  the cast's input terminal is 'reference'; its output is 'specific class reference'
+  PASS  R1c PN1 (GObject: UID/Owner/Position) and PN2 (Generic: ClassName) both found  PN1 114 PN2 115
+
+---------- [W1] the four new property nodes, ONE concern each (toolkit-capabilities.md:74)
+  FACT  build_property(A) node census: 7 rows
+  FACT  OP build_property(A) VI Server:Terminal on the body -> err '' (0.9 s)
+  PASS  W1A property node A created  uid 793 err ''
+  FACT  build_property(B) node census: 8 rows
+  FACT  OP build_property(B) VI Server:Terminal on the body -> err '' (0.5 s)
+  PASS  W1B property node B created  uid 639 err ''
+  FACT  build_property(W) node census: 9 rows
+  FACT  OP build_property(W) VI Server:GObject on the body -> err '' (0.8 s)
+  PASS  W1W property node W created  uid 630 err ''
+  FACT  build_property(OU) node census: 10 rows
+  FACT  OP build_property(OU) VI Server:GObject on the body -> err '' (0.6 s)
+  PASS  W1OU property node OU created  uid 641 err ''
+  FACT  new property nodes {'A': 793, 'B': 639, 'W': 630, 'OU': 641}
+
+---------- [W2] the two TYPED SEEDS - built on the ROOT diagram, because create_control cannot reach a node inside a loop body
+  FACT  build_property(root seed donor A) node census: 11 rows
+  FACT  OP build_property(root seed donor A) VI Server:Terminal on the ROOT, throwaway -> err '' (0.7 s)
+  PASS  W2Aa the throwaway seed donor exists on the root  uid 221 err ''
+  FACT  scan[W2A root] diagram 0: 4 node(s) [43, 113, 124, 221]
+  PASS  W2Ab the donor's `reference` terminal was found on the ROOT  Nodes[3] terminals ['reference', 'reference out', 'error in (no error)', 'error out', 'UID']
+  FACT  scan[W2A root after] diagram 0: 4 node(s) [43, 113, 124, 221]
+  PASS  W2Ac one typed seed control was born, WIRED into `reference`  label 'reference' birth wire 942
+  FACT  delete_wire node census: 12 rows
+      W2A seed birth wiredeleted wire w942
+  FACT  OP delete_wire w942 -> err '' (0.2 s)
+  PASS  W2Ad the throwaway donor is gone, the seed control remains  donor gone True seed 'reference'
+  FACT  wire_control(seed->target class) node census: 11 rows
+  FACT  OP wire_control(seed->target class) 'reference' -> TMSC #587 'target class' -> err '' (1.1 s)
+  PASS  W2Ae the seed feeds the cast's `target class`  err ''
+  FACT  build_property(root seed donor OU) node census: 11 rows
+  FACT  OP build_property(root seed donor OU) VI Server:GObject on the ROOT, throwaway -> err '' (0.2 s)
+  PASS  W2OUa the throwaway seed donor exists on the root  uid 221 err ''
+  FACT  scan[W2OU root] diagram 0: 4 node(s) [43, 113, 124, 221]
+  PASS  W2OUb the donor's `reference` terminal was found on the ROOT  Nodes[3] terminals ['reference', 'reference out', 'error in (no error)', 'error out', 'UID']
+  FACT  scan[W2OU root after] diagram 0: 4 node(s) [43, 113, 124, 221]
+  PASS  W2OUc one typed seed control was born, WIRED into `reference`  label 'reference 2' birth wire 965
+  FACT  delete_wire node census: 12 rows
+      W2OU seed birth wiredeleted wire w965
+  FACT  OP delete_wire w965 -> err '' (0.0 s)
+  PASS  W2OUd the throwaway donor is gone, the seed control remains  donor gone True seed 'reference 2'
+  FACT  wire_control(seed->target class) node census: 11 rows
+  FACT  OP wire_control(seed->target class) 'reference 2' -> TMSC #598 'target class' -> err '' (0.1 s)
+  PASS  W2OUe the seed feeds the cast's `target class`  err ''
+
+---------- [W3] the casts: input from the pre-cast node, output into the typed node
+  FACT  wire(TMSC1.in) node census: 11 rows
+  FACT  OP wire(TMSC1.in) TMSC1.in: Property#114.'reference out' -> Function#587.'reference' -> err '' (0.2 s)
+  PASS  W3 TMSC1.in: op error empty and Wire 22 -> 23  err ''
+  FACT  wire(TMSC1.out) node census: 11 rows
+  FACT  OP wire(TMSC1.out) TMSC1.out: Function#587.'specific class reference' -> Property#793.'reference' -> err '' (0.2 s)
+  PASS  W3 TMSC1.out: op error empty and Wire 23 -> 24  err ''
+  FACT  wire(TMSC2.in) node census: 11 rows
+  FACT  OP wire(TMSC2.in) TMSC2.in: Property#115.'reference out' -> Function#598.'reference' -> err '' (0.2 s)
+  PASS  W3 TMSC2.in: op error empty and Wire 24 -> 25  err ''
+  FACT  wire(TMSC2.out) node census: 11 rows
+  FACT  OP wire(TMSC2.out) TMSC2.out: Function#598.'specific class reference' -> Property#641.'reference' -> err '' (0.2 s)
+  PASS  W3 TMSC2.out: op error empty and Wire 25 -> 26  err ''
+  FACT  wire(A->B) node census: 11 rows
+  FACT  OP wire(A->B) A->B: Property#793.'reference out' -> Property#639.'reference' -> err '' (0.2 s)
+  PASS  W3 A->B: op error empty and Wire 26 -> 27  err ''
+  FACT  wire(B->W) node census: 11 rows
+  FACT  OP wire(B->W) B->W: Property#639.'Wire' -> Property#630.'reference' -> err '' (0.2 s)
+  PASS  W3 B->W: op error empty and Wire 27 -> 28  err ''
+
+---------- [O1] four auto-indexed OUTPUT tunnels and their typed indicators
+  FACT  exit_loop(A) node census: 11 rows
+  FACT  OP exit_loop(A) A -> ['Name', 'IsSource'] -> err '' (0.1 s)
+  PASS  O1 exit_loop(A) made its tunnels  err ''
+  FACT  exit_loop(W) node census: 11 rows
+  FACT  OP exit_loop(W) W -> ['UID'] -> err '' (0.1 s)
+  PASS  O1 exit_loop(W) made its tunnels  err ''
+  FACT  exit_loop(OU) node census: 11 rows
+  FACT  OP exit_loop(OU) OU -> ['UID'] -> err '' (0.1 s)
+  PASS  O1 exit_loop(OU) made its tunnels  err ''
+  PASS  O1b LoopTunnel 7 -> 11 (+4)
+  FACT  tunnel 7 -> indicator ['Array 5'] = 'term_name'
+  FACT  tunnel 8 -> indicator ['Array 6'] = 'is_source'
+  FACT  tunnel 9 -> indicator ['Array 7'] = 'wire_uid'
+  FACT  tunnel 10 -> indicator ['Array 8'] = 'owner_uid'
+  PASS  O1c every one of the six columns has a front-panel label  {'vi_path': 'vi path', 'class_name': 'Class Name', 'term_uid': 'Array 2', 'owner_class': 'Array 4', 'error': 'error out 2', 'term_name': 'Array 5', 'is_source': 'Array 6', 'wire_uid': 'Array 7', 'owner_uid': 'Array 8'}
+
+---------- [S1] Remove Bad Wires, ExecState, save
+  FACT  ExecState [after the whole S3 build] OpAllTerms_v0_s3.vi = 1
+  FACT  census at exit {'Function': 3, 'Property': 6, 'LoopTunnel': 11, 'ControlTerminal': 20, 'Wire': 36}
+
+---------- [SAVE] OpAllTerms_v0_s3.vi
+  FACT  ExecState [before the save] OpAllTerms_v0_s3.vi = 1
+  PASS  S1 the save returned without raising (scripted route)
+  FACT  SAVED ARTEFACT: OpAllTerms_v0_s3.vi md5 484853aad3a9c2819d7fd36028491a81 size 14600 B; version bytes [38, 128]
+  PASS  S2 the artefact is on disk and non-empty  14600 B
+  FACT  ExecState [re-read AFTER the save] OpAllTerms_v0_s3.vi = 1
+  PASS  S3 ExecState 1 re-read AFTER the save  ExecState 1
+  PASS  S1 ExecState 1 - the reader is a RUNNABLE VI  ExecState 1
+  PASS  S1b OpAllTerms_v0.vi written  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpAllTerms_v0.vi md5 484853aad3a9c2819d7fd36028491a81
+
+---------- [H] HYGIENE
+  FACT  close_panel(OpAllTerms_v0_s3.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 13, 'closed': 13, 'live': 0, 'cached_op_vis': 0}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 13, 'closed': 13, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handle count AFTER the work: 30851
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 358c9dca27fa38d4748bc9d7170e4aab / after 358c9dca27fa38d4748bc9d7170e4aab
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['OpAllTerms_v0.vi']  (removed: [])
+  FAIL  H6 the files left on disk == ['OpAllTerms_v0_s3.vi'] and nothing was removed  added ['OpAllTerms_v0.vi'] removed []
+  FACT  LabVIEW handle count at exit: 30851
+
+====================================================================================================
+=== GATES: 39 pass / 1 fail; failing: H6 the files left on disk == ['OpAllTerms_v0_s3.vi'] and nothing was removed
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\allterms_s3.json   elapsed 133.6 s
+BGRUN END rc=1 after 134s

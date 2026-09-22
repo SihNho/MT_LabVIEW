@@ -400,11 +400,28 @@ Terminal short names read off the machine (probe_castfree5.log), all compile WIT
   `z_after_crop.png`, `tools/bench/allterms_s2.log` run 2). ⚠️ **Two laws come with it.** (a) A real MOUSE
   CLICK must land before the next COM call: with only `-Action move` (a hover) the drop still happens but
   `report_all` hangs 180 s and poisons the module (`allterms_s2.log` run 1, rc=1 after 208 s) — the skill's H5
-  law; a title-bar `-Action click` removed the hang completely. (b) **The dropped node was still NOT in
-  `Traverse('Function')` right after the click, and that is NOT a class error:** a TMSC's Traverse class IS
-  `Function` — uid **683** of `OpLoopCast_v0.vi` is returned by `report`, by `report_all('Function')`, and by
-  `report_all('Node')` with `Class Name` `'Function'` (`tools/bench/allterms_tmscclass.log`, 4/0, read-only).
-  Why a freshly GUI-dropped node is invisible to VI Server is OPEN and owes a hypothesis review.
+  law; a title-bar `-Action click` removed the hang completely. (b) 🔴 **CORRECTED 2026-09-23 — THE SENTENCE
+  THIS PARAGRAPH ORIGINALLY CARRIED ("the node is placed") WAS WRONG, and so were both hypotheses built on it.**
+  `archive/peer/2026-09-23-allterms-qd-invisible.md` (claude/hypothesis, opus max, ANSWERED 631 s) refuted the
+  framing from NI's own documentation: **Quick Drop's Enter places NOTHING — it loads the item ONTO THE MOUSE
+  CURSOR, and a CLICK ON THE CANVAS places it** ([NI, *Boost LabVIEW Productivity with Quick Drop*]; LabVIEW
+  Wiki, *Quick Drop*). The icon in the capture was the pending object riding the cursor, and the title-bar
+  `unwedge` click — added to cure the hang — was the only real click after Enter, so it DISCARDED it. One
+  mechanism explains the 180 s hang AND the empty traverse; the two "uncommitted edit" / "stale reference"
+  hypotheses explain neither. **MEASURED TWICE** (`tools/bench/allterms_s2.log` runs 3 and 4): hover at
+  A=(600,620), Enter, placing click at B=(1300,620) → after Enter the pixels at A change; after the click **A is
+  blank again and B holds the icon**, and exactly ONE new node appears, Traverse class `Function`. ✅ **THE LAW:
+  `move → A · Ctrl+Space · type · Enter · move → B · REAL LEFT CLICK at B` places the node at B.** Use hover ==
+  click and the placement is hypothesis-free. (A TMSC's Traverse class really is `Function` —
+  `tools/bench/allterms_tmscclass.log`, 4/0 — that control stood, it just answered a question that was not the
+  problem.)
+- 🔴 **`create_control` REACHES THE ROOT DIAGRAM ONLY** (2026-09-23, `tools/bench/allterms_s3.log` run 1, gates
+  W2Ab/W2Ac). Its ladder is **`VI → Block Diagram → Nodes[] → Terminals[]`** (`tools/gscript.py:2478-2481`), so a
+  body-diagram `Nodes[]` index addresses a different node or none: it returns `label None`, creates nothing, and
+  the following `wire_control` dies with **5001 `Get Controls.vi … Control  not found`**. To seed a typed refnum
+  for a node INSIDE a loop body: build a THROWAWAY property node of the same class on the ROOT, `create_control`
+  on ITS `reference` (the seed is born WIRED — cut that wire), delete the throwaway, then `wire_control` the seed
+  across the loop border; LabVIEW makes the tunnel itself. Measured working, `allterms_s3.log` run 2, 39/1.
 - Same run: 26 of the op VIs under `claudeDev` carry both a `Function` node and a `ForLoop`, but that predicate does
   NOT identify a TMSC (every primitive is a `Function`) — the gate that used it is a defective gate, not a finding.
   A TMSC is identified by its terminal names `target class` / `specific class reference` (`:809`). The four bodies

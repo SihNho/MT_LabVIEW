@@ -52,6 +52,9 @@ def read_terms(target, op=OP_ALLTERMS):
     lab = _labels()
     vi = g.op(op)
     vi.SetControlValue(lab["vi_path"], target)
+    # The op inherits `OpReportAll_v0`'s CALL-TIME Traverse class control, so the class is set here
+    # rather than frozen into the VI - one op, any class, and `Terminal` is what this reader is for.
+    vi.SetControlValue(lab["class_name"], "Terminal")
     t0 = time.time()
     g._run(vi)
     dt = time.time() - t0

@@ -1,0 +1,122 @@
+BGRUN START 2026-09-23 07:04:22 limit 40.0 min: py -u tools/bench/allterms_s4.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 242 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 0b84595245dd650c0e8fd3f57104782c  got 0b84595245dd650c0e8fd3f57104782c
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 30762
+  FACT  LabVIEW handle count AFTER the restart: 33985
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  allterms_s4_20260923_070423.vi
+  FACT  ExecState [after open] allterms_s4_20260923_070423.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so allterms_s4_20260923_070423.vi is deleted at close
+
+---------- [T1] the op itself - identity and COLD ExecState in a freshly restarted LabVIEW
+  FACT  OP: OpAllTerms_v0.vi md5 484853aad3a9c2819d7fd36028491a81 size 14600 B; version bytes [38, 128]
+  PASS  T1a the op's md5 is the one S3 saved  484853aad3a9c2819d7fd36028491a81
+  FACT  ExecState [op, COLD] OpAllTerms_v0.vi = 1
+  PASS  T1 cold ExecState 1  ExecState 1
+
+---------- [T2/T3] ONE op run on a scratch of the bed -> the terminal table and the wire join
+  FACT  read_terms: 5811 rows in 24.22 s
+  PASS  T2a 5,811 terminal rows  5811 rows
+  FAIL  T2b <= 15 s in ONE op run  24.22 s
+  FAIL  T3 the wire join returns 1,920 wires  1913 wires
+
+---------- [T4] the severed half-wires
+  FAIL  T4 the severed set is exactly the 11 known uids  [1731, 3947, 7337, 9635]
+  FACT  severed w1731: n_src=1 n_sink=0 src LeftShiftRegister#4344 sink #0
+  FACT  severed w3947: n_src=1 n_sink=0 src LeftShiftRegister#4274 sink #0
+  FACT  severed w7337: n_src=0 n_sink=1 src #0 sink RightShiftRegister#4334
+  FACT  severed w9635: n_src=1 n_sink=0 src LoopTunnel#9641 sink #0
+  FACT  SEVERED PATTERN: {'no sink': 3, 'no source': 1}
+
+---------- [T5] the four known endpoints
+  ROW   endpoint w1731 src : observed=LeftShiftRegister#4344 expected=LeftShiftRegister#4344
+  ROW   endpoint w3947 src : observed=LeftShiftRegister#4274 expected=LeftShiftRegister#4274
+  ROW   endpoint w9635 src : observed=LoopTunnel#9641 expected=LoopTunnel#9641
+  ROW   endpoint w7337 sink : observed=RightShiftRegister#4334 expected=RightShiftRegister#4334
+  PASS  T5 all four known endpoints agree
+
+---------- [T6] 5 random wires against OpWireSource_v5 (the independent, UID-addressed reader)
+  FACT  w86583 OpWireSource_v5(UID 2 = 86583): 3 row(s), 2 with a REAL owner
+  FACT      w86583   t0  is_source=True  owner_class='FlatSequenceInnerTunnel'  owner_uid=6576    recip=86583
+  FACT      w86583   t1  is_source=False owner_class='FlatSequenceInnerTunnel'  owner_uid=6576    recip=86583
+  FACT      w86583   t2  is_source=None  owner_class=None                       owner_uid=None    recip=None  READ ERROR errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; errG=error 1055: Property Node in OpWireSource_v5.vi; errS=error 1055: Property Node in OpWireSource_v5.vi; errWU=error 1055: Property Node in OpWireSource_v5.vi; errCO=error 1055: Property Node in OpWireSource_v5.vi
+  FACT  w86583 PD85 PRECONDITION: 2 real-owner row(s), 0 violate recip==queried_uid
+  FACT  NET w86583: source-terminal owners [('FlatSequenceInnerTunnel', 6576)] ; every owner [('FlatSequenceInnerTunnel', 6576)] ; PD85 0
+  ROW   w86583 source owner : observed=FlatSequenceInnerTunnel#6576 expected=FlatSequenceInnerTunnel#6576
+  FACT  w28231 OpWireSource_v5(UID 2 = 28231): 3 row(s), 2 with a REAL owner
+  FACT      w28231   t0  is_source=True  owner_class='FlatSequenceInnerTunnel'  owner_uid=28236   recip=28231
+  FACT      w28231   t1  is_source=False owner_class='FlatSequenceInnerTunnel'  owner_uid=28212   recip=28231
+  FACT      w28231   t2  is_source=None  owner_class=None                       owner_uid=None    recip=None  READ ERROR errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; errG=error 1055: Property Node in OpWireSource_v5.vi; errS=error 1055: Property Node in OpWireSource_v5.vi; errWU=error 1055: Property Node in OpWireSource_v5.vi; errCO=error 1055: Property Node in OpWireSource_v5.vi
+  FACT  w28231 PD85 PRECONDITION: 2 real-owner row(s), 0 violate recip==queried_uid
+  FACT  NET w28231: source-terminal owners [('FlatSequenceInnerTunnel', 28236)] ; every owner [('FlatSequenceInnerTunnel', 28212), ('FlatSequenceInnerTunnel', 28236)] ; PD85 0
+  ROW   w28231 source owner : observed=FlatSequenceInnerTunnel#28236 expected=FlatSequenceInnerTunnel#28236
+  FACT  w14693 OpWireSource_v5(UID 2 = 14693): 3 row(s), 2 with a REAL owner
+  FACT      w14693   t0  is_source=True  owner_class='FlatSequenceInnerTunnel'  owner_uid=14031   recip=14693
+  FACT      w14693   t1  is_source=False owner_class='FlatSequenceInnerTunnel'  owner_uid=14031   recip=14693
+  FACT      w14693   t2  is_source=None  owner_class=None                       owner_uid=None    recip=None  READ ERROR errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; errG=error 1055: Property Node in OpWireSource_v5.vi; errS=error 1055: Property Node in OpWireSource_v5.vi; errWU=error 1055: Property Node in OpWireSource_v5.vi; errCO=error 1055: Property Node in OpWireSource_v5.vi
+  FACT  w14693 PD85 PRECONDITION: 2 real-owner row(s), 0 violate recip==queried_uid
+  FACT  NET w14693: source-terminal owners [('FlatSequenceInnerTunnel', 14031)] ; every owner [('FlatSequenceInnerTunnel', 14031)] ; PD85 0
+  ROW   w14693 source owner : observed=FlatSequenceInnerTunnel#14031 expected=FlatSequenceInnerTunnel#14031
+  FACT  w34401 OpWireSource_v5(UID 2 = 34401): 3 row(s), 2 with a REAL owner
+  FACT      w34401   t0  is_source=True  owner_class='Diagram'                  owner_uid=18317   recip=34401
+  FACT      w34401   t1  is_source=False owner_class='SubVI'                    owner_uid=33882   recip=34401
+  FACT      w34401   t2  is_source=None  owner_class=None                       owner_uid=None    recip=None  READ ERROR errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; errG=error 1055: Property Node in OpWireSource_v5.vi; errS=error 1055: Property Node in OpWireSource_v5.vi; errWU=error 1055: Property Node in OpWireSource_v5.vi; errCO=error 1055: Property Node in OpWireSource_v5.vi
+  FACT  w34401 PD85 PRECONDITION: 2 real-owner row(s), 0 violate recip==queried_uid
+  FACT  NET w34401: source-terminal owners [('Diagram', 18317)] ; every owner [('Diagram', 18317), ('SubVI', 33882)] ; PD85 0
+  ROW   w34401 source owner : observed=Diagram#18317 expected=Diagram#18317
+  FACT  w29368 OpWireSource_v5(UID 2 = 29368): 5 row(s), 4 with a REAL owner
+  FACT      w29368   t0  is_source=True  owner_class='Function'                 owner_uid=28393   recip=29368
+  FACT      w29368   t1  is_source=False owner_class='Function'                 owner_uid=31509   recip=29368
+  FACT      w29368   t2  is_source=False owner_class='Function'                 owner_uid=30233   recip=29368
+  FACT      w29368   t3  is_source=False owner_class='SelectorTunnel'           owner_uid=25032   recip=29368
+  FACT      w29368   t4  is_source=None  owner_class=None                       owner_uid=None    recip=None  READ ERROR errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; errG=error 1055: Property Node in OpWireSource_v5.vi; errS=error 1055: Property Node in OpWireSource_v5.vi; errWU=error 1055: Property Node in OpWireSource_v5.vi; errCO=error 1055: Property Node in OpWireSource_v5.vi
+  FACT  w29368 PD85 PRECONDITION: 4 real-owner row(s), 0 violate recip==queried_uid
+  FACT  NET w29368: source-terminal owners [('Function', 28393)] ; every owner [('Function', 28393), ('Function', 30233), ('Function', 31509), ('SelectorTunnel', 25032)] ; PD85 0
+  ROW   w29368 source owner : observed=Function#28393 expected=Function#28393
+  PASS  T6 5/5 random wires agree with OpWireSource_v5  5/5
+
+---------- [T7] 20 consecutive calls - handles flat, private bytes bounded
+  FACT  20-call seconds [11.9, 9.75, 9.73, 9.73, 9.74, 9.76, 9.74, 9.76, 9.75, 9.79, 9.77, 9.76, 9.77, 9.78, 9.78, 9.79, 9.8, 9.83, 9.77, 9.79]
+  FACT  handles [45751, 45751, 45748, 45748, 45747, 45740, 45739, 45739, 45740, 45739, 45738, 45739, 45740, 45740, 45741, 45740, 45741, 45741, 45739, 45739]
+  PASS  T7a handles within +-100 of call 1 over 20 calls  range 45738..45751 from 45751
+  FAIL  T7b private-bytes growth <= 5 MB  14.69 MB
+  FACT  seconds per call: min 9.73 max 11.9
+
+---------- [REPORTED] owner_uid 0 by class, and OPEN B - frame identity on inner terminals
+  FACT  rows with owner_uid 0: 0 of 5811; by class {}
+  FACT  OPEN B: 1036 row(s) whose owner class carries Inner/Frame; sample [(6121, 'error out', 'FlatSequenceInnerTunnel', 10673), (6235, 'Set Focus  (0->50)', 'FlatSequenceInnerTunnel', 10621), (6590, 'Numeric', 'FlatSequenceInnerTunnel', 10614), (7534, 'Current pos rot?', 'FlatSequenceInnerTunnel', 10581), (57277, 'input cluster', 'FlatSequenceInnerTunnel', 57256), (59083, 'refnum out', 'FlatSequenceInnerTunnel', 59069)]
+  FACT  OPEN B ANSWER: the row's six columns are term_uid/term_name/is_source/wire_uid/owner_uid/owner_class - NO frame column exists, and the owner uid is the TUNNEL, not a frame. Frame identity would have to come from `Terminal.Diagram` 634A002, which `OpTunnelRead_v0` already reads (docs/toolkit-capabilities.md, last row). This is a FACT for judgement, not a decision.
+  FACT  WROTE G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\allterms_bed_20260923.json and G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\allterms_bed_20260923_wires.json
+
+---------- [H] HYGIENE
+  FACT  close_panel(allterms_s4_20260923_070423.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 2}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 2}
+  FACT  LabVIEW handle count AFTER the work: 45740
+  PASS  H4 scratch deleted: allterms_s4_20260923_070423.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\allterms_s4_20260923_070423.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 0b84595245dd650c0e8fd3f57104782c / after 0b84595245dd650c0e8fd3f57104782c
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 34001
+
+====================================================================================================
+=== GATES: 14 pass / 4 fail; failing: T2b <= 15 s in ONE op run, T3 the wire join returns 1,920 wires, T4 the severed set is exactly the 11 known uids, T7b private-bytes growth <= 5 MB
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\allterms_s4.json   elapsed 354.4 s
+BGRUN END rc=1 after 355s
