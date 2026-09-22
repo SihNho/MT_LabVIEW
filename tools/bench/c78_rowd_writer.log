@@ -1,0 +1,41 @@
+BGRUN START 2026-09-22 09:25:12 limit 10.0 min: py -u tools/bench/diag_c78_rowd_writer.py
+====================================================================================================
+=== diag_c78_rowd_writer - [A] the cycle-gate budget under Pre-decided 112 ; [B] does Row D's writer exist? FILES ONLY, no LabVIEW, nothing mutated.
+====================================================================================================
+
+---------- [A] THE CYCLE GATE'S BUDGET, recounted through Pre-decided 112's predicate
+  PASS  A1 tools/hooks/guard_cycle.py imports  CYCLE_BUILD_BUDGET=10 CYCLE_HOURS=8.0
+  FACT  newest retrospective THAT ANSWERED: ['2026-09-22-retrospective-cycle64.md', '2026-09-22 02:58:11']
+  FACT  `since` under the OLD predicate (is_build_log): 20 log(s) -> ['build_d1_m3a3.log', 'build_d1_m3a3_run2.log', 'c75_astcheck.log', 'c75_astcheck_m3a3.log', 'c75_astcheck_m3a3_r2.log', 'c75_outcome_review.log', 'c75b_astcheck.log', 'c77_astcheck.log', 'c78_rowd_writer.log', 'c78_step1_selftest.log', 'diag_c75_m3a3_rows.log', 'diag_c75b_loopterms.log', 'diag_c77_rowd_addr.log', 'jev_discharge.log', 'jev_gate.log', 'jev_next.log', 'jev_triage.log', 'jev_trial.log', 'selftest_guard_peer_jev.log', 'selftest_next_gate_jev.log']
+  FACT  `since` under the NEW predicate (is_recipe_build_log): 2 log(s)
+  FACT    RECIPE BUILD  2026-09-22 07:58:13  build_d1_m3a3.log  cmd 'py -u tools/recipes/build_d1_m3a3.py'
+  FACT    RECIPE BUILD  2026-09-22 08:13:01  build_d1_m3a3_run2.log  cmd 'py -u tools/recipes/build_d1_m3a3.py'
+  FACT  OLD predicate: count 20 (budget 10) ; span 2.23 h (limit 8.0) ; OVERDUE True
+  FACT  NEW predicate: count 2 (budget 10) ; span 0.25 h (limit 8.0) ; OVERDUE False
+  PASS  A2 the recipe-build set is a STRICT SUBSET of the old set  2 of 20
+  FACT  newest_build_log() (still on `is_build_log`, deliberately untouched): 'c78_rowd_writer.log'
+
+---------- [B] ROW D's WRITER - every 6349C03 writer this fleet owns, and how it ADDRESSES ITS SINK
+  FACT  Terminal.Connect Wire 6349C03 is INVOKED ON THE SINK TERMINAL, `Wire Source` = the source terminal (docs/NAMES.md:245, :847). So a writer can only reach a sink it can hold a REFERENCE to.
+  FACT  Row D's sink is FlatSequenceInnerTunnel #7468 LeftTerm #7488 (Pre-decided 111), and a FlatSequence is a direct child of GObject, never a Node - so it is in no diagram's Nodes[] (measured: tools/bench/diag_c77_rowd_addr.log, 173/173 diagrams, 635 nodes, 0 scan errors).
+  PASS  B1 the label maps are on disk  66 file(s)
+  FACT  label maps declaring method 6349C03 (i.e. Connect Wire WRITERS): 4
+  FACT    WRITER opconnectfromwire_v0_labels.json   route 'wire-terminal-source' SINK {'sink_diag': 'index', 'sink_node': 'index 2', 'sink_term': 'index 3'}
+  FACT                                                            SOURCE {'dead_src_diag': 'index 6', 'dead_src_node': 'index 4', 'dead_src_term': 'index 5', 'wire_term_index': 'index 7', 'wire_terms_prop': '6371003', 'wire_uid': 'UID 3'}
+  FACT    WRITER opconnectnested_labels.json        route 'B'                    SINK {'sink_diag': 'index', 'sink_node': 'index 2', 'sink_term': 'index 3'}
+  FACT                                                            SOURCE {'src_diag': None, 'src_node': 'index 4', 'src_term': 'index 5'}
+  FACT    WRITER opconnectnested_v1_labels.json     route 'A-cross-diagram'      SINK {'sink_diag': 'index', 'sink_node': 'index 2', 'sink_term': 'index 3'}
+  FACT                                                            SOURCE {'src_diag': 'index 6', 'src_node': 'index 4', 'src_term': 'index 5'}
+  FACT    WRITER opconnectnested_v2_labels.json     route 'A-cross-diagram (v2: the Wire.Is Broken? readback deleted)' SINK {'sink_diag': 'index', 'sink_node': 'index 2', 'sink_term': 'index 3'}
+  FACT                                                            SOURCE {'src_diag': 'index 6', 'src_node': 'index 4', 'src_term': 'index 5'}
+  FACT    FlatSequenceInnerTunnel MAP opfsinnertunnelterm_labels.json kind 'IN' class 'VI Server:FlatSequenceInnerTunnel' declares method None ; outputs ['term_a_uid', 'term_b_uid', 'term_index', 'wire_b']
+  PASS  B2 opfsinnertunnelterm_labels.json declares NO `method` key - it is a READER, not a writer  [('opfsinnertunnelterm_labels.json', None)]
+  FACT  writers whose SINK is addressed by a UID rather than by (diagram, Nodes[], Terminals[]) indices: 0 -> []  <- THE MEASUREMENT Row D turns on; zero is a FACT, not a gate failure (Pre-decided 63)
+  PASS  B3 the claudeDev op inventory is readable  111 Op*.vi
+  FACT  connect/wire/stop ops on disk (25 of 111): ['OpConnect2_v0.vi', 'OpConnectCtl_v0.vi', 'OpConnectFromWire_v0.vi', 'OpConnectNested_v0.vi', 'OpConnectNested_v1.vi', 'OpConnect_v0.vi', 'OpStopFromNode_v0.vi', 'OpWireCtl_v0.vi', 'OpWireInd_v0.vi', 'OpWireSRF_LeftIn_v0.vi', 'OpWireSRF_LeftOutCtl_v0.vi', 'OpWireSRF_LeftOutNode_v0.vi', 'OpWireSRF_RightIn_v0.vi', 'OpWireSR_LeftIn_v0.vi', 'OpWireSR_LeftOutCtl_v0.vi', 'OpWireSR_LeftOutNode_v0.vi', 'OpWireSR_RightIn_v0.vi', 'OpWireSource_v0.vi', 'OpWireSource_v1.vi', 'OpWireSource_v2.vi', 'OpWireSource_v3.vi', 'OpWireSource_v4.vi', 'OpWireSource_v5.vi', 'OpWire_v0.vi', 'OpWire_v1.vi']
+  FACT  the two FlatSequence tunnel ops on disk: ['OpFsInnerTunnelTerm_v0.vi', 'OpFsTunnelTerm_v0.vi']
+
+====================================================================================================
+=== GATES: 5 pass / 0 fail
+=== JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c78_rowd_writer.json
+BGRUN END rc=0 after 0s

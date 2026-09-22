@@ -141,4 +141,32 @@ Sources: [NI Forums — scripting a Flat Sequence](https://forums.ni.com/t5/LabV
 
 ## What was done with it
 
-(Claude fills in)
+**ITS MEASUREMENT WAS RUN, EXACTLY AS NAMED, AND NOTHING WAS BUILT ON THE ANSWER** — cycle-68 MATERIAL session,
+read-only, on a scratch COPY of the bed (`tools/bench/diag_c77_rowd_addr.py` → `tools/bench/diag_c77_rowd_addr.log`,
+`…json`; bed `claudeDev\D1_s3b_m3a3_20260922_081056.vi` md5 `33ef524e…` unchanged at both ends). Per finding, what
+the machine said:
+
+1. **The review's own "cheapest discriminating measurement" — BOTH MISS, so the miss tracks the CLASS.**
+   `find_node` on **#43914** (nested) → `found None`, 173 of 173 diagrams, 635 nodes; on **#12938** (top-level) →
+   `found None`, same census; and on **#681** itself → `found None`. The `FlatSequence` census lists 21 rows, and
+   not one of those uids is in any diagram's `Nodes[]` (`diag_c77_rowd_addr.log`, the [B] block). This is the
+   branch the review predicted from `main_vi_nodeterms.json`.
+2. **Finding 1 (the brief substituted 681 for 686) is CONFIRMED, and the corrected read changes the answer**:
+   `owner_of(#681)` = **`'TopLevelDiagram' #536`**, uid-echoed, error column empty — not `'Diagram'`. So #681 is a
+   FlatSequence NODE owned by the TOP-LEVEL diagram, and Pre-decided 107's route ("read #681's table on
+   `Diagram #686`, traverse idx 19") addresses it on a diagram that does not own it. #686's `Nodes[]` has 27 rows
+   and #681 is absent from them.
+3. **The claim the review was asked to refute stays REFUTED**: #681 answers `'FlatSequence'` to its own class echo
+   (`diag_c75_m3a3_rows.log:163`) and `diag_index(#681)` raises `ValueError: 681 is not in list` again here.
+4. **What the review said was unsettled is now MEASURED, and it is the opposite of a dead end**:
+   `OpFsInnerTunnelTerm_v0` on **uid 7468** returns a terminal reference with EVERY error column empty —
+   `LeftTerm #7488 wire #7506`, `RightTerm #7471 wire #7448`, `is_source False`, self/cast echo
+   `'FlatSequenceInnerTunnel'#7468`. A control read on FSIT #123 of the same target also answers. So the row-D
+   SINK is addressable today by uid, without any `Nodes[]` membership and without touching the original's
+   structure.
+5. `report_all(TARGET,'Diagram')` row 0 is still `TopLevelDiagram #536` (173 rows), so "173 of 173 scanned"
+   provably included the top level — the companion check the review asked for.
+6. The process note is acted on: this run KEEPS the per-diagram `scanned` rows (0 `node_labels` errors on every
+   sweep), which is the dataset run 2 discarded.
+
+No route decision was taken here — what M3a-3b does with (4) is the judgement session's call.

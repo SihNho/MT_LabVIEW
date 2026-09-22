@@ -482,6 +482,11 @@ def main():
             rc = proc.returncode
             fresh = read(cyc_log)[before:] or (proc.stdout or "")
             wait = limit_wait_s(fresh)
+            # TRANSIENT API 5xx (2026-09-22 09:58: two sessions in a row died on "API Error: 500 Internal server
+            # error", the second after 5 s with 0 tokens, and the runner stopped on "non-zero twice"). A server-side
+            # 5xx is not a judgement matter: wait 5 min and RERUN the cycle, like the usage-limit path.
+            if wait is None and rc != 0 and re.search(r"API Error: 5\d\d", fresh):
+                wait = 300.0
             if wait is None or attempt == LIMIT_RETRIES:
                 break
             # RERUN, DON'T RESUME (CLAUDE.md's usage-limit protocol): the partial attempt is a non-result.

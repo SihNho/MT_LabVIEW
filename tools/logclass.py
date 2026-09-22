@@ -90,6 +90,55 @@ def is_build_log(path):
     return not (REVIEW_LOG_RE.match(b) or WATCHDOG_LOG_RE.match(b))
 
 
+# The command a bgrun log's own `BGRUN START` line invoked. bgrun writes exactly:
+#     BGRUN START 2026-09-22 08:10:56 limit 50.0 min: py -u tools/recipes/build_d1_m3a3.py
+# (tools/bgrun.py:172). Only the LAST run in the file counts - bgrun APPENDS, so a rerun under a different command
+# must not be judged by an earlier one. This is the same "read the command, not the filename" scoping guard_peer.py
+# uses for the Jev exemption (:177-181): a filename-only rule can be laundered by naming a file anything.
+_RECIPE_CMD_RE = re.compile(r"(?:^|[\s\"'=])(?:[\w./\\:-]*[\\/])?tools[\\/]recipes[\\/][\w.-]+\.py", re.I)
+_FLAG_RE = re.compile(r"^-")
+
+
+def last_bgrun_command(path):
+    """The command string of the log's LAST `BGRUN START` line, or "" when the file has none."""
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            text = f.read().lstrip("﻿")
+    except OSError:
+        return ""
+    if "BGRUN START" not in text:
+        return ""
+    head = (text.rsplit("BGRUN START", 1)[-1].splitlines() or [""])[0]
+    return head.split(" min: ", 1)[1].strip() if " min: " in head else ""
+
+
+def is_recipe_build_log(path):
+    """True only when this log's OWN last run INVOKED a `tools/recipes/*.py` file.
+
+    ADDED 2026-09-22 for `docs/cycle27-plan.md` Pre-decided 112, and used by `guard_cycle.py`'s retrospective
+    BUDGET SET ONLY. The gate's question is "has a CYCLE been built?", and its command-side pattern (`BUILD_RE`)
+    already answers it with `tools/recipes/*.py`; the LOG side had drifted wider and was counting a model-API
+    trial (`jev_trial.log`) and a hook self-test (`selftest_guard_peer_jev.log`) as cycle builds - 16 logs, of
+    which the oldest and the newest build nothing in LabVIEW at all.
+
+    `is_build_log` IS DELIBERATELY NOT TOUCHED. `guard_peer.py` arms the mandatory failed-prediction review off
+    it, and a failing DIAGNOSTIC must keep arming that; narrowing the shared predicate would have switched the
+    rule off silently - the exact quiet-capability-loss class this file's docstring was written about. Two
+    predicates, not one, for the same reason `is_review_log` and `is_build_log` are two.
+
+    A recipe named in a log's PROSE does not count: the test is the command in command position. `cp a.py
+    tools/recipes/b.py` (the shape that trips `BUILD_RE`, STATUS "Where to look" hint 4) is not a recipe run
+    either - the first non-flag `.py` token is what the interpreter executes, and here that is `cp`'s source.
+    """
+    if not is_build_log(path):
+        return False
+    cmd = last_bgrun_command(path)
+    if not cmd:
+        return False
+    script = next((t for t in cmd.split() if t.lower().endswith(".py") and not _FLAG_RE.match(t)), "")
+    return bool(script) and bool(_RECIPE_CMD_RE.search(" " + script))
+
+
 def split(paths):
     """(build_logs, machinery_logs) for cycle accounting - watchdog records group with the machinery."""
     builds, machinery = [], []

@@ -3324,3 +3324,127 @@ one (A3) stops it from writing the wrong wire.
      `step_6_sixth_row` (`:1530`) for tunnel-sink resolution; both consumer nets, the Global's sink terminal
      index and both owning diagrams stand measured at `tools/bench/diag_c73_m3a2_rows.log:67-71`, `:82-87`,
      `:91-100` and at `tools/bench/diag_c75_m3a3_rows.log` / `tools/bench/diag_c75b_loopterms.log`.
+
+## Pre-decided — ADDED 2026-09-22 (cycle 65-series close / M3a-3b): Row D's address IS readable, 107 is AMENDED, and the `find_node` miss is a CLASS fact
+
+Source: the read-only sweep `tools/bench/diag_c77_rowd_addr.log` (`BGRUN END rc=0 after 144 s`, 5 gates pass / 0
+fail, refs 3/3/0, bed md5 `33ef524e…` unchanged at both ends, scratch deleted). Nothing was mutated.
+
+109. **107 IS AMENDED, NOT WITHDRAWN: THE TERMINAL TABLE IS THE INNER TUNNEL'S OWN, READ BY THE OP WE ALREADY
+     HAVE.** 107 forbade an owner walk (an owner chain terminates silently at a `FlatSequenceFrame`, error 1055,
+     `docs/toolkit-capabilities.md:61`) and prescribed reading the owning `FlatSequence #681` NODE's terminal
+     table on `Diagram #686`. **That table does not exist**: `#686` has 27 `Nodes[]` rows and `#681` is absent
+     from all of them, and `owner_of(#681)` is `TopLevelDiagram #536` (uid-echoed, no error) — not `#686`, and
+     not the `'Diagram'` that run 2's quoted echo claimed. So 107's *prescribed route* is unexecutable and its
+     "entry absent or duplicated ⇒ FAILED PREDICTION ⇒ defer Row D" branch is **void — its premise is a table
+     that was never the right table**; it does not fire. 107's **prohibition stands unchanged** (no owner walk,
+     no improvised address, no GUI fallback). What replaces the route: **`OpFsInnerTunnelTerm_v0` called on uid
+     7468 ANSWERS** — `self 'FlatSequenceInnerTunnel' #7468 | LeftTerm #7488 wire #7506 | RightTerm #7471 wire
+     #7448 | is_source False`, every error column empty — and a control read on an unrelated `FlatSequenceInnerTunnel`
+     `#123` answers the same way (`LeftTerm #891 wire #482`), so the capability is of the CLASS, not of the target.
+     This is a terminal table belonging to the tunnel itself, obtained by uid with zero hops, which is what 107's
+     hazard half was protecting.
+
+110. **`find_node` MISSES THE `FlatSequence` CLASS — RUN 2's STATED CAUSE IS REFUTED, AND THIS IS THE THIRD TIME
+     A `Nodes[]` MISS HAS BEEN EXPLAINED BY OWNERSHIP.** Run 2 wrote that gate P0 failed because *"`#681`'s owner
+     is `Diagram` (nested), so the top-level reader cannot see it."* Measured: `find_node` returns `found None`
+     for **all three** FlatSequences — `#43914` (nested; 173/173 diagrams, 635 nodes, 0 scan errors, 17.9 s),
+     `#12938` (top-level, 6.7 s) and `#681` (top-level, 7.1 s) — while the same sweep of `Diagram #686` does
+     enumerate a `WhileLoop`. The miss therefore tracks the **class**, not the owner and not `#681`. Two
+     consequences: (a) a FlatSequence is never to be addressed through `Nodes[]` again, and never diagnosed as an
+     ownership problem — write the class fact into `docs/toolkit-capabilities.md`; (b) `diag_index(#681)` raises
+     `ValueError: 681 is not in list`, so that call is not a membership test and must not be used as one.
+
+111. **ROW D's ADDRESS PAIR, MEASURED, AND THE ACCEPTANCE IT IS ASSERTED AGAINST.** Delete wire **7506**, whose
+     two ends are now both measured: the SOURCE side is `Diagram #686` `Nodes[4] #637 WhileLoop 'While Loop' t10
+     'Outgoing Handle' is_source=True` — the **only one** of `#686`'s 27 nodes carrying 7506, i.e. the OLD loop —
+     and the SINK side is `FlatSequenceInnerTunnel #7468` **LeftTerm `#7488`**, which is in no `Nodes[]` and is
+     reached only by 109's route. Then connect the NEW source `#23868` RIGHT OUTER = loop `#23032` on `Diagram
+     #686` traverse idx 19, `Nodes[21]` t1 `'Outgoing Handle'`, `is_source True`, **BARE**
+     (`tools/bench/diag_c75b_loopterms.log:76`, bare list `:82`) into that sink. Acceptance is Pre-decided 106
+     unchanged and is **not** relaxed by this entry: the delete precedes the connect (an already-wired sink is a
+     measured silent no-op); `LANDED` is asserted as SOURCE IDENTITY, never as "the sink is still wired" and
+     never as a wired-count delta; the wire the sink terminal carries afterwards must have **exactly ONE** source
+     terminal of **any** owner class, and it must be `#23868`'s OUTER; asserted on an ordered, idempotent SECOND
+     pass (`wire_delta 0`, Pre-decided 94), never in the pass that makes the connection; hop count is an output,
+     never a criterion. PD85 violations 0 on every walk; the OLD `#637` t10 must be OFF the net.
+
+112. **THE CYCLE GATE'S BUDGET COUNTS RECIPE BUILDS; THE FAILED-PREDICTION GATE'S CLASSIFIER IS NOT TOUCHED.**
+     `guard_cycle.py`'s `since` budget (`CYCLE_BUILD_BUDGET = 10`) counted 16 logs on 2026-09-22 09:0x of which
+     the oldest and newest were `jev_trial.log` and `selftest_guard_peer_jev.log` — a model-API trial and a hook
+     self-test, neither of which builds anything in LabVIEW. The gate's own question is *"has a CYCLE been
+     built?"* and its command-side pattern `BUILD_RE` already answers it with `tools/recipes/*.py`; the log side
+     had drifted wider. Fix: a **new, separate** predicate `tools/logclass.py:is_recipe_build_log(path)` — true
+     only when the log's own last `BGRUN START` COMMAND runs a `tools/recipes/*.py` file — used by
+     `guard_cycle`'s budget set ONLY. **`is_build_log` itself is left exactly as it is**, because `guard_peer`
+     arms the failed-prediction review off it and a failing *diagnostic* must keep arming it; narrowing the
+     shared predicate would have silently disarmed that gate. This is a classification repair, not an exemption:
+     if the recipe-build count is still ≥ 10, or the span still ≥ 8 h, the build stays blocked and the cycle says
+     so in NEXT rather than running a retrospective mid-cycle (OPEN 54(a)).
+
+113. **THE TWO `guard_peer.py` REPAIRS OF 2026-09-22 09:0x ARE RATIFIED.** (a) the drive-safe `_rel()` — the hook
+     was **raising** (rc = 99) instead of refusing when handed a log on another drive (`jev_discharge.log:21-26`);
+     a gate that crashes is broken in the fail-open direction and the repair is unconditional. (b) the
+     Jev-script skip in `newest_failing_log()`, **scoped by the log's last `BGRUN START` COMMAND** matching
+     `tools/jev*.py` / `tools/bench/jev_*.py` — this is the user's written exemption applied to the gate that
+     implements it (CLAUDE.md: *"Jev scripts … are EXEMPT from the failed-prediction and material gates (user,
+     2026-09-22 'Jev는 면제') — they touch no LabVIEW"*). The scoping by COMMAND rather than by filename is the
+     part that matters: a filename-only rule could be laundered by naming an ordinary recipe `jev_*`. Covered by
+     `tools/bench/selftest_guard_peer_jev.py` C7/C7b, 17 pass / 0 fail.
+
+114. **RETROSPECTIVES ARE NUMBERED BY THEIR OWN SERIES, NOT BY THE RUNNER'S COUNTER.** `cycle_runner.log`'s max
+     `CYCLE` line is 59 and the runner would call the next one 60, but `archive/peer/*retrospective*` already
+     holds cycles 60–64 (sessions numbered themselves). `tools/violations.py` counts slugs across the archived
+     FILES, so the series is the number that has to stay unique and monotone: the next retrospective is
+     **cycle 65**, and it covers the unreviewed work of every cycle since the cycle-64 retrospective (precedent:
+     cycle 26's covered cycle 25). The runner's counter is not renumbered — it is an internal loop index and
+     nothing reads it as a cycle identity.
+
+## Pre-decided — ADDED 2026-09-22 (same cycle, after the c79 review): the "invoke on the SINK" rule is a CONVENTION, and the route is chosen by a 2-minute test
+
+Source: `archive/peer/2026-09-22-c79-rowd-writer.md` (claude / `-Role hypothesis`, opus max, ANSWERED 554 s,
+$3.9166, 18 turns), dispatched because Pre-decided 111 asserted an executable address pair and the machine said
+the verb does not exist — a failed prediction. Verdict: *"NEW-OP-REQUIRED — but not yet, and not that op."*
+**Accepted in part**, as below. It paid for itself: it stopped a new op from being built on a false premise.
+
+115. **`docs/NAMES.md:847`'s "6349C03 is invoked on the SINK terminal" IS AN ADOPTED CONVENTION, NOT A
+     MEASUREMENT.** The line is marked *"labviewwiki, adopted"*; the peer fetched that page and it does not say
+     which end the method is invoked on. Our belief traces to a single donor lineage (`OpConnect2_v0 →
+     OpConnectNested_v0 → _v1 → _v2 → OpConnectFromWire_v0`) in which every op happened to be written sink-first.
+     The W1 census is **not** disputed — 4/4 maps declaring `"method": "6349C03"` do take a `(diagram, Nodes[],
+     Terminals[])` sink and 0 take a uid — but what it proves is *"no writer in the fleet takes a uid SINK"*, not
+     *"this wire cannot be written"*. Annotate `docs/NAMES.md:847` accordingly: a convention adopted from a wiki
+     is evidence of how WE have written ops, never of what the method requires. This is the same error class the
+     project already has a rule for — an inference presented as a machine fact.
+
+116. **THE ROUTE IS SELECTED BY THE REVIEW'S ~2-MINUTE TEST, ON A DATED SCRATCH COPY, BEFORE ANY CONSTRUCTION.**
+     Three candidates, and the cheap one is tried first because it needs nothing built:
+     - **A — the swapped call, NO NEW OP (try this first).** `OpConnectFromWire_v0` with the roles exchanged:
+       `wire_uid = 7506` plus the `Wire.Terms[]` index of #7488 supplies the **source** half, and the sink triple
+       is `Diagram[19]` / `Nodes[21]` / `Terminals[1]` — the NEW loop's BARE `Outgoing Handle`, which IS
+       index-addressable. The Invoke then sits on the bare terminal. **If A works, Row D proceeds on it in the
+       same dispatch and NOTHING NEW IS BUILT**; its acceptance is Pre-decided 106/111 plus 117 below, unchanged.
+     - **B — `OpConnectByUid`, if A fails.** Smaller and more general than what was briefed: uid → `UID to
+       GObject Reference.vi` → TMSC on a **Terminal** seed → the Invoke's `reference`; no property node, no side
+       selector, and it serves every uid-addressed sink, not just this class. Donor is **`OpConnectNested_v2`**
+       (its source half already addresses a loop's own BORDER terminal), **not** `OpStopFromNode_v0`, whose
+       ladder `Loop.Diagram → Nodes[]` is anchored inside the loop body. Its one unmeasured assumption —
+       whether `UID to GObject Reference.vi` resolves a **terminal** uid (proven only on tunnel and wire uids) —
+       is its FIRST gate. B is expensive construction: it **stops for a fresh cycle**, it is not improvised at
+       the end of a dispatch.
+     - **C — `OpFsInnerTunnelConnect_v0` as briefed earlier today: WITHDRAWN.** Wrong donor and a needlessly
+       specific shape, on the review's reasoning, which is accepted.
+
+117. **THE BRANCH HAZARD IS GATED ON OWNER IDENTITY, NEVER ON A COUNT** (the review's carried-forward hazard,
+     accepted). A swapped connect can **silently BRANCH wire 7506**, producing a wire whose source terminal is
+     still owned by the OLD `WhileLoop #637`. That would pass a wire-delta check and every count-shaped gate,
+     and it is a rule-1a computation change — the VISA session would keep coming from the old loop. So Row D's
+     acceptance adds: `OpWireSource_v5` on the sink's wire must report a source terminal whose **OWNER is
+     `WhileLoop #23032`** (the NEW loop), asserted on the ordered idempotent second pass, in addition to
+     Pre-decided 106's "exactly ONE source terminal of ANY owner class, and it is `#23868`'s OUTER".
+
+118. **DEAD END, RECORDED SO IT IS NOT RE-TRIED:** `Tunnel.Inside Terminals[]` **6356000** and `Tunnel.Outside
+     Terminal` **6356001** can never address `#7468` — a `FlatSequenceInnerTunnel` is not a `Tunnel`. Its real
+     properties are `Left Terminal` **1C3A9000** and `Right Terminal` **1C3A9001**. Likewise `Node.Connect
+     Wires` needs both ends to be `Node`s, and `Create Described Wire` is itself a `Terminal` method, so no NI
+     verb wires anything without a terminal reference at one end. Put all of this in `docs/NAMES.md`.

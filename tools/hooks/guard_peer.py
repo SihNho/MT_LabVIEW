@@ -124,6 +124,19 @@ import logclass  # noqa: E402
 SELFTEST_LOG_RE = re.compile(r"^selftest_", re.I)
 
 
+def _rel(p):
+    """`os.path.relpath` that cannot raise - the SAME helper `tools/hooks/guard_cycle.py:518` has carried since
+    2026-09-17, copied here because this hook never got it (the project's own "a fix landed in one guard and not
+    its sibling" pattern, CLAUDE.md). On Windows `relpath` throws `ValueError: path is on mount 'C:', start on
+    mount 'G:'` for a path on another drive; this hook formats a BENCH path into its refusal message, so a
+    fixture log in a TEMP dir on C: made the hook itself raise instead of refusing -
+    `tools/bench/jev_discharge.log:21-26`, rc=99. A refusal message is not worth a traceback."""
+    try:
+        return os.path.relpath(p, ROOT)
+    except ValueError:
+        return p
+
+
 def newest_failing_log():
     best = None
     for p in glob.glob(os.path.join(BENCH, "*.log")):
@@ -154,6 +167,18 @@ def newest_failing_log():
         # must not re-close the loop (2026-09-14 11:1x: build_oppanelwiring_v0.log run 2 succeeded, the file's
         # mtime moved past the review, and the gate re-armed on run 1's STOP line).
         last = text.rsplit("BGRUN START", 1)[-1] if "BGRUN START" in text else text
+        # THE JEV EXEMPTION, THE OTHER HALF OF IT (user, 2026-09-22: "Jev는 면제"; CLAUDE.md, the Jev exception
+        # paragraph: "Jev scripts (tools/jev*.py, tools/bench/jev_*.py) are EXEMPT from the failed-prediction and
+        # material gates - they touch no LabVIEW"). That decision was wired into RUNNER_RE, which exempts a Jev
+        # script as a COMMAND, and nowhere else - so a Jev script's own log still ARMED this gate against every
+        # other run. It did, measurably: tools/bench/jev_discharge.log (a self-test bundle whose FIXTURE text
+        # quotes "STOP:" and "FAIL" lines by construction, the same "a gate armed by its own test" class
+        # SELFTEST_LOG_RE exists for) blocked cycle 68's read-only LabVIEW diagnostic at 09:0x.
+        # SCOPED BY THE COMMAND, NOT BY THE FILENAME: the exemption applies only when the log's LAST run was
+        # started on a Jev script, which is exactly what the user exempted. A build that merely mentions Jev in
+        # its output is untouched, and every non-Jev failure still gates.
+        if RUNNER_RE.search((last.splitlines() or [""])[0]):
+            continue
         if FAILURE_RE.search(last):
             best = (p, st.st_mtime, last)
     return best
@@ -303,7 +328,7 @@ def main():
                 path, why = hit
                 sys.stderr.write(
                     f"BLOCKED by tools/hooks/guard_peer.py: the previous {kind} review is UNDISPOSED.\n"
-                    f"  review : {os.path.relpath(path, ROOT)}\n"
+                    f"  review : {_rel(path)}\n"
                     f"  reason : {why}\n\n"
                     "Cycle 10 bought six reviews of a moving plan for $28.55 and never disposed them, so later\n"
                     "reviews kept returning findings that earlier ones had already returned and that nobody had\n"
@@ -367,7 +392,7 @@ def main():
         sys.stderr.write("NOT ACCEPTED as the review of this failure:\n  " + "\n  ".join(rejected) + "\n\n")
     sys.stderr.write(
         "BLOCKED by tools/hooks/guard_peer.py (CLAUDE.md: a FAILED PREDICTION triggers mandatory peer review).\n"
-        f"  latest failing log : {os.path.relpath(path, ROOT)}\n"
+        f"  latest failing log : {_rel(path)}\n"
         f"  first failure line : {first[:200]}\n"
         "\n"
         "Before the next build, dispatch a peer to ATTACK the explanation you formed for this failure:\n"

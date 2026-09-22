@@ -637,8 +637,16 @@ def main():
     # current cycle until it grows past a cycle's worth, at which point the review is genuinely overdue.
     log = newest_build_log()
     retro = newest_retrospective()
+    # THE BUDGET COUNTS RECIPE BUILDS, NOT EVERY LOG IN tools/bench (Pre-decided 112, 2026-09-22). On
+    # 2026-09-22 09:0x this set held 16 logs whose OLDEST and NEWEST were `jev_trial.log` (a model-API trial)
+    # and `selftest_guard_peer_jev.log` (a hook self-test) - neither builds anything in LabVIEW, and together
+    # they set BOTH the count and the span the gate then called an overdue cycle. `is_recipe_build_log` reads
+    # each log's own last `BGRUN START` COMMAND and counts it only when that command RAN a tools/recipes/*.py,
+    # which is the same question `BUILD_RE` asks on the command side. `newest_build_log()` above is deliberately
+    # left on `is_build_log`: it answers "is there unreviewed work at all", and guard_peer arms the
+    # failed-prediction review off the same predicate - narrowing that one would disarm a mandatory rule.
     since = [p for p in glob.glob(os.path.join(BENCH, "*.log"))
-             if logclass.is_build_log(p)
+             if logclass.is_recipe_build_log(p)
              and (retro is None or os.path.getmtime(p) > retro[1])
              and time.time() - os.path.getmtime(p) <= MAX_AGE_S]
     # THE CLOCK MEASURES BUILDING, NOT WAITING (user's instruction, 2026-09-16: "해당 조건은 개선할 것").

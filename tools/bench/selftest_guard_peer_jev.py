@@ -187,6 +187,35 @@ def main():
         gate(run_main(remedy) == 0, "C5 the REMEDY exemption still passes (peer.ps1 dispatch)")
         gate(run_main(runner) == 0, "C5b the cycle_runner exemption still passes")
 
+        # --- C7: THE OTHER HALF OF THE JEV EXEMPTION (user, 2026-09-22 "Jev는 면제"; added 2026-09-22 09:1x after
+        # tools/bench/jev_discharge.log - a Jev self-test bundle whose FIXTURE text quotes "STOP:"/"FAIL" by
+        # construction - armed this gate against a read-only LabVIEW diagnostic). A log whose LAST run was started
+        # on a Jev script is not a failed prediction this project owes a peer review; every other failing log is.
+        jevp = os.path.join(bench, "jev_bundle.log")
+        with open(jevp, "w", encoding="utf-8") as f:
+            f.write("BGRUN START 2026-09-22 09:10:00 limit 12.0 min: py -u tools/bench/jev_run_all.py\n"
+                    "  FAIL  SELF-TEST fixture line quoted by construction\n"
+                    "STOP: fixture text\nBGRUN END rc=1 after 39s\n")
+        time.sleep(1.1)
+        os.utime(jevp, None)
+        failing2 = guard_peer.newest_failing_log()
+        gate(failing2 is not None and os.path.basename(failing2[0]) == "fake_stage.log",
+             "C7 a NEWER Jev-script log does not become the failing log the gate blocks on",
+             "newest_failing_log() -> %r" % (os.path.basename(failing2[0]) if failing2 else None))
+        nonjev = os.path.join(bench, "jev_mentioning_build.log")
+        with open(nonjev, "w", encoding="utf-8") as f:
+            f.write("BGRUN START 2026-09-22 09:11:00 limit 12.0 min: py -u tools/recipes/build_x.py\n"
+                    "  FAIL  a real build failure that merely mentions tools/bench/jev_run_all.py\n"
+                    "BGRUN END rc=1 after 5s\n")
+        time.sleep(1.1)
+        os.utime(nonjev, None)
+        failing3 = guard_peer.newest_failing_log()
+        gate(failing3 is not None and os.path.basename(failing3[0]) == "jev_mentioning_build.log",
+             "C7b a NON-Jev build that merely MENTIONS a Jev script still gates (scoped by the command, not the "
+             "filename)", "newest_failing_log() -> %r" % (os.path.basename(failing3[0]) if failing3 else None))
+        os.remove(jevp)
+        os.remove(nonjev)
+
         # --- C6: OPTIONAL live call, only if the key is really there
         jev.get_key, jev_gate.covers_failure = okey, ocf
         if jev.get_key():
