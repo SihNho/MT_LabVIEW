@@ -220,7 +220,11 @@ def judge(cmd, act=None, recent=None, timeout=20, retries=0, purpose="drift", n=
     `act` is the STATE, and from 2026-09-22 that state is the whole NEXT section, not one bullet - the keyword
     is kept so the trial scripts that pass a state in keep working. `n` is the consensus width; None means
     jev.samples() (5 since 2026-09-22 17:3x, the project-wide answer to single-call flapping)."""
-    act = next_block() if act is None else act
+    # LIVE STATE = the FIRST ACT again (interactive chat, 2026-09-22 18:xx): the whole-NEXT state was measured on
+    # the same 31 commands and read WORSE at every threshold (77.4 % -> 54.8 %, off-task detection 11/13 -> 4/13,
+    # tools/bench/jev_wave3a.log:34-56). The wider question is kept behind JEV_DRIFT_STATE=next for re-trials.
+    if act is None:
+        act = next_block() if os.environ.get("JEV_DRIFT_STATE", "").lower() == "next" else first_act()
     if not act:
         return None, None, "no next section"
     recent = recent_commands() if recent is None else recent

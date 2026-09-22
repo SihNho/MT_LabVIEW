@@ -1,0 +1,487 @@
+{
+ "selftests": [
+  {
+   "file": "selftest_guard_peer_samerow.py",
+   "rc": 0,
+   "pass": 14,
+   "fail": 0,
+   "secs": 0.2
+  },
+  {
+   "file": "selftest_guard_peer_jev.py",
+   "rc": 0,
+   "pass": 17,
+   "fail": 0,
+   "secs": 6.5
+  },
+  {
+   "file": "selftest_guard_peer_ladder.py",
+   "rc": 0,
+   "pass": 21,
+   "fail": 0,
+   "secs": 1.3
+  },
+  {
+   "file": "selftest_guard_bash_jev.py",
+   "rc": 0,
+   "pass": 11,
+   "fail": 0,
+   "secs": 0.8
+  }
+ ],
+ "samerow": {
+  "n_reviews_window": 80,
+  "n_citable": 49,
+  "n_failing_logs": 40,
+  "released": [
+   {
+    "log": "diag_s3b_l0_localname_v2.log",
+    "stem": "diag_s3b_l0_localname",
+    "cited": "2026-09-21-c60-ia-count-gate.md",
+    "age_min": 16
+   },
+   {
+    "log": "c80_rowd_routeA.log",
+    "stem": "build_d1_m3a3",
+    "cited": "2026-09-22-c76b-m3a3-run2-failpred.md",
+    "age_min": 20
+   },
+   {
+    "log": "c80_rowd_routeA_r2.log",
+    "stem": "build_d1_m3a3",
+    "cited": "2026-09-22-c80-rowd-routeA-swapped-r2.md",
+    "age_min": 2
+   }
+  ],
+  "avoided": {
+   "2026-09-21-c60-cast-seed-execstate0.md": [
+    "diag_s3b_l0_localname_v2.log"
+   ],
+   "2026-09-22-c80-rowd-routeA-swapped-r2.md": [
+    "c80_rowd_routeA.log"
+   ],
+   "2026-09-22-c81-uidref-probe.md": [
+    "c80_rowd_routeA_r2.log"
+   ]
+  }
+ },
+ "drift": {
+  "n": 31,
+  "accuracy": 0.5483870967741935,
+  "accuracy_adj": 0.6774193548387096,
+  "brier": 0.2906166451612903,
+  "brier_adj": 0.224036,
+  "samples": 5,
+  "sequel_on": 2,
+  "sequel_n": 4,
+  "rows": [
+   {
+    "ts": "2026-09-22 09:08:45",
+    "window": "A",
+    "truth": "on",
+    "adj": "on",
+    "p": 0.648,
+    "pred": "on",
+    "what": null,
+    "ok": true,
+    "ok_adj": true,
+    "cmd": "py tools/bgrun.py --material --max-min 5 --log tools/bench/c77_astcheck.log -- py -u tools/bench/c60c_astcheck.py tools/bench/diag_c77_rowd_addr.py",
+    "why": "AST check of the row-D addressing diagnostic the first act asks for"
+   },
+   {
+    "ts": "2026-09-22 09:09:05",
+    "window": "A",
+    "truth": "on",
+    "adj": "on",
+    "p": 0.55,
+    "pred": "on",
+    "what": null,
+    "ok": true,
+    "ok_adj": true,
+    "cmd": "py tools/bgrun.py --material --max-min 28 --log tools/bench/diag_c77_rowd_addr.log -- py -u tools/bench/diag_c77_rowd_addr.py",
+    "why": "the row-D addressing sweep itself"
+   },
+   {
+    "ts": "2026-09-22 09:24:29",
+    "window": "A",
+    "truth": "off",
+    "adj": "off",
+    "p": 0.25,
+    "pred": "off",
+    "what": "repair",
+    "ok": true,
+    "ok_adj": true,
+    "cmd": "cd \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop\" && MATERIAL=1 py tools/bgrun.py --max-min 12 --log tools/bench/",
+    "why": "logclass self-test: machinery, not row D"
+   },
+   {
+    "ts": "2026-09-22 09:24:58",
+    "window": "A",
+    "truth": "off",
+    "adj": "off",
+    "p": 0.414,
+    "pred": "on",
+    "what": null,
+    "ok": false,
+    "ok_adj": false,
+    "cmd": "py tools/bgrun.py --material --max-min 12 --log tools/bench/c78_step1_selftest.log -- py -u tools/bench/selftest_logclass_recipebuild.py",
+    "why": "same self-test, re-run"
+   },
+   {
+    "ts": "2026-09-22 09:25:12",
+    "window": "A",
+    "truth": "on",
+    "adj": "on",
+    "p": 0.244,
+    "pred": "off",
+    "what": "diagnostic",
+    "ok": false,
+    "ok_adj": false,
+    "cmd": "py tools/bgrun.py --material --max-min 10 --log tools/bench/c78_rowd_writer.log -- py -u tools/bench/diag_c78_rowd_writer.py",
+    "why": "row-D writer census, part (1) of the first act"
+   },
+   {
+    "ts": "2026-09-22 09:33:29",
+    "window": "A",
+    "truth": "on",
+    "adj": "on",
+    "p": 0.442,
+    "pred": "on",
+    "what": null,
+    "ok": true,
+    "ok_adj": true,
+    "cmd": "py tools/bgrun.py --material --max-min 8 --log tools/bench/c78_astcheck_m3a3b.log -- py -u tools/bench/c60c_astcheck.py \"tools/recipes/build_d1_m3a3.p",
+    "why": "AST check of build_d1_m3a3.py, the recipe the first act re-cuts"
+   },
+   {
+    "ts": "2026-09-22 10:41:26",
+    "window": "A",
+    "truth": "on",
+    "adj": "on",
+    "p": 0.534,
+    "pred": "on",
+    "what": null,
+    "ok": true,
+    "ok_adj": true,
+    "cmd": "$env:MATERIAL='1'; py tools\\bench\\c60c_astcheck.py \"tools/recipes/build_d1_m3a3.py\" --route owner",
+    "why": "same check run directly"
+   },
+   {
+    "ts": "2026-09-22 10:43:59",
+    "window": "A",
+    "truth": "on",
+    "adj": "on",
+    "p": 0.636,
+    "pred": "on",
+    "what": null,
+    "ok": true,
+    "ok_adj": true,
+    "cmd": "cd \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop\" && py tools/bgrun.py --material --max-min 45 --log tools/bench/",
+    "why": "the re-cut row-D build (route A)"
+   },
+   {
+    "ts": "2026-09-22 10:47:23",
+    "window": "A",
+    "truth": "on",
+    "adj": "on",
+    "p": 0.296,
+    "pred": "off",
+    "what": "diagnostic",
+    "ok": false,
+    "ok_adj": false,
+    "cmd": "cd \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop\" && py tools/bgrun.py --material --max-min 4 --log tools/bench/c",
+    "why": "AST check before the re-run"
+   },
+   {
+    "ts": "2026-09-22 11:16:08",
+    "window": "A",
+    "truth": "on",
+    "adj": "on",
+    "p": 0.216,
+    "pred": "off",
+    "what": "diagnostic",
+    "ok": false,
+    "ok_adj": false,
+    "cmd": "cd \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop\" && py tools/bgrun.py --material --max-min 4 --log tools/bench/c",
+    "why": "AST check r3 of the same recipe"
+   },
+   {
+    "ts": "2026-09-22 11:16:19",
+    "window": "A",
+    "truth": "on",
+    "adj": "on",
+    "p": 0.714,
+    "pred": "on",
+    "what": null,
+    "ok": true,
+    "ok_adj": true,
+    "cmd": "cd \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop\" && py tools/bgrun.py --material --max-min 45 --log tools/bench/",
+    "why": "route-A row-D build, run 2"
+   },
+   {
+    "ts": "2026-09-22 11:43:39",
+    "window": "B",
+    "truth": "on",
+    "adj": "on",
+    "p": 0.894,
+    "pred": "on",
+    "what": null,
+    "ok": true,
+    "ok_adj": true,
+    "cmd": "cd \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop\" && MATERIAL=1 py tools/bgrun.py --max-min 25 --log tools/bench/",
+    "why": "diag_c81_uidref: exactly the D-1 measurement"
+   },
+   {
+    "ts": "2026-09-22 11:46:31",
+    "window": "B",
+    "truth": "off",
+    "adj": "on",
+    "p": 0.67,
+    "pred": "on",
+    "what": null,
+    "ok": false,
+    "ok_adj": true,
+    "cmd": "py tools\\bgrun.py --material --max-min 15 --log tools\\bench\\selftest_audit_c4c_split.log -- py -u tools\\bench\\selftest_audit_c4c_split.py",
+    "why": "audit C4c cost-split self-test: the NEXT's separate orange item, not the first act"
+   },
+   {
+    "ts": "2026-09-22 11:48:48",
+    "window": "B",
+    "truth": "off",
+    "adj": "on",
+    "p": 0.766,
+    "pred": "on",
+    "what": null,
+    "ok": false,
+    "ok_adj": true,
+    "cmd": "py tools\\bgrun.py --material --max-min 15 --log tools\\bench\\selftest_audit_c4c_split_r2.log -- py -u tools\\bench\\selftest_audit_c4c_split.py",
+    "why": "same self-test, re-run"
+   },
+   {
+    "ts": "2026-09-22 12:00:15",
+    "window": "B",
+    "truth": "on",
+    "adj": "on",
+    "p": 0.922,
+    "pred": "on",
+    "what": null,
+    "ok": true,
+    "ok_adj": true,
+    "cmd": "py tools/bgrun.py --material --max-min 25 --log tools/bench/diag_c81_uidref_r2.log -- py -u tools/bench/diag_c81_uidref.py",
+    "why": "D-1 re-run (r2 log)"
+   },
+   {
+    "ts": "2026-09-22 12:17:38",
+    "window": "B",
+    "truth": "off",
+    "adj": "on",
+    "p": 0.584,
+    "pred": "on",
+    "what": null,
+    "ok": false,
+    "ok_adj": true,
+    "cmd": "cd \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop\" && MATERIAL=1 py tools/bgrun.py --max-min 58 --log tools/bench/",
+    "why": "D-2 op build: the act the hand-off defers until D-1 has answered"
+   },
+   {
+    "ts": "2026-09-22 12:32:28",
+    "window": "B",
+    "truth": "off",
+    "adj": "on",
+    "p": 0.824,
+    "pred": "on",
+    "what": null,
+    "ok": false,
+    "ok_adj": true,
+    "cmd": "MATERIAL=1 py tools/bgrun.py --max-min 58 --log tools/bench/build_opfsinnertunnelconnect_v0.log -- py -u tools/recipes/build_opfsinnertunnelconnect_v0",
+    "why": "same D-2 build, retried"
+   },
+   {
+    "ts": "2026-09-22 13:01:33",
+    "window": "B",
+    "truth": "off",
+    "adj": "off",
+    "p": 0.604,
+    "pred": "on",
+    "what": null,
+    "ok": false,
+    "ok_adj": false,
+    "cmd": "cd \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop\" && py tools/bgrun.py --material --max-min 75 --log tools/bench/",
+    "why": "2x2 connect probe: a further exploration, not D-1"
+   },
+   {
+    "ts": "2026-09-22 13:35:23",
+    "window": "B",
+    "truth": "off",
+    "adj": "off",
+    "p": 0.55,
+    "pred": "on",
+    "what": null,
+    "ok": false,
+    "ok_adj": false,
+    "cmd": "cd \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop\" && py tools/bgrun.py --material --max-min 40 --log tools/bench/",
+    "why": "same probe, run 2"
+   },
+   {
+    "ts": "2026-09-22 13:51:11",
+    "window": "B",
+    "truth": "off",
+    "adj": "on",
+    "p": 0.874,
+    "pred": "on",
+    "what": null,
+    "ok": false,
+    "ok_adj": true,
+    "cmd": "MATERIAL=1 py tools/bgrun.py --max-min 75 --log tools/bench/build_d1_m3a3b_d3.log -- py -u tools/recipes/build_d1_m3a3b_d3.py",
+    "why": "D-3 row-D build, two acts past the first"
+   },
+   {
+    "ts": "2026-09-22 14:07:48",
+    "window": "B",
+    "truth": "off",
+    "adj": "on",
+    "p": 0.896,
+    "pred": "on",
+    "what": null,
+    "ok": false,
+    "ok_adj": true,
+    "cmd": "py tools\\bgrun.py --material --max-min 75 --log tools\\bench\\build_d1_m3a3b_d3.log -- py -u tools\\recipes\\build_d1_m3a3b_d3.py",
+    "why": "same D-3 build, retried"
+   },
+   {
+    "ts": "2026-09-22 14:46:56",
+    "window": "B",
+    "truth": "off",
+    "adj": "off",
+    "p": 0.102,
+    "pred": "off",
+    "what": "diagnostic",
+    "ok": true,
+    "ok_adj": true,
+    "cmd": "py tools/bgrun.py --material --max-min 25 --log tools/bench/diag_c86_norbw.log -- py -u tools/bench/diag_c86_norbw.py",
+    "why": "no-Remove-Bad-Wires probe: neither D-1 nor anything the first act names"
+   },
+   {
+    "ts": "2026-09-22 14:57:32",
+    "window": "B",
+    "truth": "off",
+    "adj": "on",
+    "p": 0.13,
+    "pred": "off",
+    "what": "repair",
+    "ok": true,
+    "ok_adj": false,
+    "cmd": "cd \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop\" && MATERIAL=1 py tools/bgrun.py --max-min 5 --material --log to",
+    "why": "stagekit self-test: the NEXT's yellow THEN item"
+   },
+   {
+    "ts": "2026-09-22 15:01:07",
+    "window": "B",
+    "truth": "off",
+    "adj": "on",
+    "p": 0.288,
+    "pred": "off",
+    "what": "diagnostic",
+    "ok": true,
+    "ok_adj": false,
+    "cmd": "cd \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop\" && MATERIAL=1 py tools/bgrun.py --max-min 35 --material --log t",
+    "why": "stagekit acceptance probe, same THEN item"
+   },
+   {
+    "ts": "2026-09-22 15:26:45",
+    "window": "C",
+    "truth": "on",
+    "adj": "on",
+    "p": 0.922,
+    "pred": "on",
+    "what": null,
+    "ok": true,
+    "ok_adj": true,
+    "cmd": "MATERIAL=1 py tools/bgrun.py --max-min 50 --log tools/bench/build_d1_m3a3b_rowD.log -- py -u tools/recipes/stage_d1_m3a3_rowD.py",
+    "why": "the first act verbatim: run row D on the kit"
+   },
+   {
+    "ts": "2026-09-22 15:35:43",
+    "window": "C",
+    "truth": "on",
+    "adj": "on",
+    "p": 0.918,
+    "pred": "on",
+    "what": null,
+    "ok": true,
+    "ok_adj": true,
+    "cmd": "MATERIAL=1 py tools/bgrun.py --max-min 50 --log tools/bench/build_d1_m3a3b_rowD.log -- py -u tools/recipes/stage_d1_m3a3_rowD.py",
+    "why": "same stage, re-run"
+   },
+   {
+    "ts": "2026-09-22 15:36:12",
+    "window": "C",
+    "truth": "on",
+    "adj": "on",
+    "p": 0.928,
+    "pred": "on",
+    "what": null,
+    "ok": true,
+    "ok_adj": true,
+    "cmd": "py tools/bgrun.py --material --max-min 50 --log tools/bench/build_d1_m3a3b_rowD.log -- py -u tools/recipes/stage_d1_m3a3_rowD.py",
+    "why": "same stage, re-run in the --material form"
+   },
+   {
+    "ts": "2026-09-22 15:57:11",
+    "window": "C",
+    "truth": "on",
+    "adj": "on",
+    "p": 0.818,
+    "pred": "on",
+    "what": null,
+    "ok": true,
+    "ok_adj": true,
+    "cmd": "STOPPED-RECIPE cd \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop\" && MATERIAL=1 py tools/bgrun.py --max-min 45 --l",
+    "why": "the clean row-D re-run (refused by the stop gate, still a step toward the act)"
+   },
+   {
+    "ts": "2026-09-22 16:10:39",
+    "window": "C",
+    "truth": "on",
+    "adj": "on",
+    "p": 0.874,
+    "pred": "on",
+    "what": null,
+    "ok": true,
+    "ok_adj": true,
+    "cmd": "cd \"G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_ParallelLoop\" && py tools/bgrun.py --material --max-min 45 --log \"tools/bench",
+    "why": "the clean row-D re-run that delivered the artefact"
+   },
+   {
+    "ts": "2026-09-22 16:19:58",
+    "window": "C",
+    "truth": "on",
+    "adj": "on",
+    "p": 0.152,
+    "pred": "off",
+    "what": "diagnostic",
+    "ok": false,
+    "ok_adj": false,
+    "cmd": "py tools/bgrun.py --material --max-min 25 --log tools/bench/diag_c88_brokenwires.log -- py -u tools/bench/diag_c88_brokenwires.py",
+    "why": "broken-wire reader: the first act's own acceptance gate (count <= 11)"
+   },
+   {
+    "ts": "2026-09-22 16:35:29",
+    "window": "C",
+    "truth": "on",
+    "adj": "on",
+    "p": 0.094,
+    "pred": "off",
+    "what": "diagnostic",
+    "ok": false,
+    "ok_adj": false,
+    "cmd": "py tools/bgrun.py --material --max-min 30 --log tools/bench/diag_c88_nodeside.log -- py -u tools/bench/diag_c88_nodeside.py",
+    "why": "node-side half of the same gate"
+   }
+  ]
+ },
+ "spend": {
+  "input_tokens": 354462,
+  "usd": 0.015135527400000001
+ }
+}

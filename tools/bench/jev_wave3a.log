@@ -1,0 +1,57 @@
+BGRUN START 2026-09-22 23:47:21 limit 20.0 min: py -u tools/bench/jev_wave3a_trials.py
+=== jev_wave3a_trials  2026-09-22 23:47:21
+=== key present: True ; consensus n=5 ; budget $0.05
+
+=== T1 SELF-TESTS ----------------------------------------------------------------------
+  PASS  T1 selftest_guard_peer_samerow.py ends rc=0  rc=0, 14 pass / 0 fail, 0 s
+  PASS  T1b selftest_guard_peer_samerow.py at its recorded size  got 14/0, expected >=13 pass / 0 fail
+  PASS  T1 selftest_guard_peer_jev.py ends rc=0  rc=0, 17 pass / 0 fail, 6 s
+  PASS  T1b selftest_guard_peer_jev.py at its recorded size  got 17/0, expected >=17 pass / 0 fail
+  PASS  T1 selftest_guard_peer_ladder.py ends rc=0  rc=0, 21 pass / 0 fail, 1 s
+  PASS  T1b selftest_guard_peer_ladder.py at its recorded size  got 21/0, expected >=21 pass / 0 fail
+  PASS  T1 selftest_guard_bash_jev.py ends rc=0  rc=0, 11 pass / 0 fail, 1 s
+  PASS  T1b selftest_guard_bash_jev.py at its recorded size  got 11/0, expected >=11 pass / 0 fail
+
+=== T2 ONE REVIEW PER ROW PER CYCLE: what it would have avoided -------------------------
+  80 reviews archived 2026-09-21..22 ; 49 of them citable (ANSWERED + adversary)
+  40 failing bench logs in the same window carry a readable script name
+  RELEASED WITHOUT A NEW REVIEW: 3 failing logs
+    diag_s3b_l0_localname_v2.log                 stem=diag_s3b_l0_localname        <- 2026-09-21-c60-ia-count-gate.md (16 min)
+    c80_rowd_routeA.log                          stem=build_d1_m3a3                <- 2026-09-22-c76b-m3a3-run2-failpred.md (20 min)
+    c80_rowd_routeA_r2.log                       stem=build_d1_m3a3                <- 2026-09-22-c80-rowd-routeA-swapped-r2.md (2 min)
+  REVIEWS THE RULE WOULD HAVE AVOIDED BUYING: 3
+    2026-09-21-c60-cast-seed-execstate0.md                     (charged to: diag_s3b_l0_localname_v2.log)
+    2026-09-22-c80-rowd-routeA-swapped-r2.md                   (charged to: c80_rowd_routeA.log)
+    2026-09-22-c81-uidref-probe.md                             (charged to: c80_rowd_routeA_r2.log)
+  PASS  T2 the avoided-review count was computed  3 reviews, 3 released logs
+
+=== T3-T5 PER-COMMAND DRIFT, against the WHOLE NEXT -------------------------------------
+  window A (bcaa88d): NEXT 3073 chars, 6 bullets | �� **RESUMED 2026-09-22 (user confirmed after the Jev review): Jev gates in force** \u2014 review dis
+  window B (5595ae5): NEXT 4000 chars, 6 bullets | �� **RESUMED 2026-09-22 (user confirmed after the Jev review): Jev gates in force** \u2014 review dis
+  window C (be2620a): NEXT 2181 chars, 4 bullets | \U0001f7e2 **`tools/stagekit.py` IS BUILT AND ACCEPTED (2026-09-22 16:0x, user-approved device, Pre-deci
+  PASS  T3a all three NEXT sections were recovered from git  A=3073, B=4000, C=2181
+  PASS  T3b every labelled command was found in the marker log  31/31
+  PASS  T3 every labelled command got a consensus probability back  31/31 at n=5
+  T4 ORIGINAL LABELS (comparable with the 77.4 % on record): 17/31 = 54.8 %  Brier 0.291
+     off-task caught 4/13 ; FALSE ALARMS on on-task 5/18   (was 5/18)
+  T4b ADJUSTED LABELS (acts the same hand-off names are on-task): 21/31 = 67.7 %  Brier 0.224
+      off-task caught 2/5 ; FALSE ALARMS on on-task 7/26
+      relabelled by ADJUST_PHRASES: 8 items
+  T5 `sequel` subset (a later act of the SAME hand-off): 2/4 now read ON-TASK   p=0.58 p=0.87 p=0.13 p=0.29
+  DISAGREEMENTS (against the adjusted labels):
+    2026-09-22 09:24:58 [A] truth=off adj=off p=0.41 what=None       py tools/bgrun.py --material --max-min 12 --log tools/bench/c78_step1_selftest.l
+    2026-09-22 09:25:12 [A] truth=on  adj=on  p=0.24 what=diagnostic py tools/bgrun.py --material --max-min 10 --log tools/bench/c78_rowd_writer.log 
+    2026-09-22 10:47:23 [A] truth=on  adj=on  p=0.30 what=diagnostic cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_Paralle
+    2026-09-22 11:16:08 [A] truth=on  adj=on  p=0.22 what=diagnostic cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_Paralle
+    2026-09-22 13:01:33 [B] truth=off adj=off p=0.60 what=None       cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_Paralle
+    2026-09-22 13:35:23 [B] truth=off adj=off p=0.55 what=None       cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_Paralle
+    2026-09-22 14:57:32 [B] truth=off adj=on  p=0.13 what=repair     cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_Paralle
+    2026-09-22 15:01:07 [B] truth=off adj=on  p=0.29 what=diagnostic cd "G:/Codes/LabVIEW_Codes/MinLab/zz_LabView VI/AAA_UNIST/2. Tracking/V6_Paralle
+    2026-09-22 16:19:58 [C] truth=on  adj=on  p=0.15 what=diagnostic py tools/bgrun.py --material --max-min 25 --log tools/bench/diag_c88_brokenwires
+    2026-09-22 16:35:29 [C] truth=on  adj=on  p=0.09 what=diagnostic py tools/bgrun.py --material --max-min 30 --log tools/bench/diag_c88_nodeside.lo
+
+=== SPEND: 354462 input tokens this run ~= $0.0151 at the measured $0.0427/Mtok
+  PASS  T6 total Jev spend under $0.05  $0.0151
+=== readings -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\jev_wave3a_trials.json
+=== 0 FAIL(s): - ; wall 35 s
+BGRUN END rc=0 after 35s
