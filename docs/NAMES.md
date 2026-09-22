@@ -836,6 +836,22 @@ Verified terminals of the nodes this project builds most:
 Note that a Property/Invoke node's `error in` is spelled `error in (no error)` while `To More Specific Class` uses
 the bare `error in` — the primitive-vs-subVI split already recorded in the skill, confirmed again here.
 
+- 🆕 **RE-TARGETING A `To More Specific Class` — THE FULL SEQUENCE, MEASURED 2026-09-23** (`tools/bench/diag_allterms_retarget2.log`,
+  12 pass / 1 fail; the sequence itself is gates U3/U4, both PASS). `create_control` on a property node's own
+  `reference` input returns the typed seed **ALREADY WIRED into that input** (label `'reference 2'`, birth wire
+  w362) — the behaviour `tools/recipes/build_opconnectfromwire_v0.py:69` (W6) records and run 1
+  (`tools/bench/diag_allterms_retarget.log:73,76`) lost 65 s to by not reading. So all three of these wires must be
+  **deleted before anything is connected**: the seed's birth wire, the TMSC's old `target class` wire, and the
+  TMSC's old `specific class reference` output wire. Then `wire_control(seed → TMSC 'target class')` and
+  `wire(TMSC 'specific class reference' → the new node's 'reference')` both land with op error `''`, Wire 8 → 9 → 10.
+  ⚠️ **A deleted wire's uid is REUSED**: the new `target class` wire came back as **w333**, the uid of the one just
+  deleted — never identify a wire across a delete/create by its uid (Pre-decided 137's "wire UIDs are transient",
+  now with a same-uid instance).
+- 🆕 **`OpLoopCast_v0.vi`'s root diagram, read off the machine 2026-09-23** (`diag_allterms_retarget2.json`
+  `root_nodes_final`): `Open VI Reference` **#43** → `Traverse for GObjects` **#124** → `Index Array` **#308** →
+  **TMSC #683** (`reference` ← the IA's `element`), plus a second `Open VI Reference` **#316** and the For loop
+  **#331** (a structure reports NO terminals in `net_map`, which is how to tell one from a node).
+
 - **`Create For Loop.vi` / `Create While Loop.vi` `Control Names` DO work — when `Get Controls.'Control Terminals'` is wired
   into the creator's `Inputs`** (2026-09-14 20:4x, `test_opwhileloop.log`: one tunnel per named control, outer wire on
   the control's terminal). OpForLoop_v0 never had that wire (probe_opforloop.log), hence the morning's "Control Names

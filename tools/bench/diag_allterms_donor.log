@@ -1,0 +1,160 @@
+BGRUN START 2026-09-23 05:31:54 limit 24.0 min: py -u tools/bench/diag_allterms_donor.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 238 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 0743701a249b6ac20a5dab9ee676c09c  got 0743701a249b6ac20a5dab9ee676c09c
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+  FACT  PRELOAD: the ORIGINAL is resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  diag_allterms_donor_20260923_053154.vi
+  FACT  ExecState [after open] diag_allterms_donor_20260923_053154.vi = 1
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so diag_allterms_donor_20260923_053154.vi is deleted at close
+
+---------- [A] SOURCE FACTS - what the fleet's copier and loop-creator can address
+  FACT  copy_by_index(donor, cls, index, target, expect_uid=None, finish=None)
+  FACT  loop_in(kind, target, diagram_index, location, src_cls=None, src_index=0, src_names=(), indexing=(), parallel=0)
+  PASS  A1 copy_by_index exposes NO destination-diagram parameter (route (c) needs a NEW op, gscript.py:1519-1598)  copy_by_index(donor, cls, index, target, expect_uid=None, finish=None)
+  PASS  A2 loop_in takes diagram_index but creates an EMPTY loop (route (b) cannot enclose)  loop_in(kind, target, diagram_index, location, src_cls=None, src_index=0, src_names=(), indexing=(), parallel=0)
+  PASS  A3 route (S) subVI-in-loop helpers all exist in gscript  {'drop_subvi': True, 'conpane': True, 'conpane_assign': True, 'create_control': True, 'build_property': True, 'wire': True}
+
+---------- [B] ONE VARIABLE - the same Traverse wire into a GObject-class node in a loop body
+  FACT  build_property node census: 3 rows
+  FACT  OP build_property VI Server:GObject UID in the loop body -> err '' (0.1 s)
+  FACT  ExecState [before the GObject wire] diag_allterms_donor_20260923_053154.vi = 0
+  FACT  wire node census: 4 rows
+  FACT  OP wire Traverse.'References' -> GObject PN .reference -> err '' (0.1 s)
+  FACT  ExecState [after the GObject wire] diag_allterms_donor_20260923_053154.vi = 1
+  PASS  B1 ExecState 1 with a GObject-class node on the SAME wire (diag_allterms_cast D1 read 0 with a Terminal-class node; the node's CLASS is the only difference)  ExecState 0 -> 1, LoopTunnel=1, wire err ''
+
+---------- [C] THE DECIDER - does any op VI carry a To More Specific Class INSIDE a loop body?
+  FACT  C 26 op VI(s) have >=1 Function AND >=1 loop: ['OP_test1.vi', 'OpAddShiftRegF_v0.vi', 'OpAddShiftReg_v0.vi', 'OpCreateConstOnTerm_v0.vi', 'OpLoopCast_v0.vi', 'OpLoopCast_v1.vi', 'OpLoopEndRef_v0.vi', 'OpNodeLabels_v0.vi', 'OpNodeTerms_v0.vi', 'OpPanelWiring_v0.vi', 'OpReportAll_v0.vi', 'OpShiftRegs_v0.vi', 'OpShiftRegs_v1.vi', 'OpStopFromNode_v0.vi', 'OpSubVIs_v0.vi', 'OpSubVIs_v1.vi', 'OpTunnels_v0.vi', 'OpWhileCast_v0.vi', 'OpWireSRF_LeftIn_v0.vi', 'OpWireSRF_LeftOutCtl_v0.vi', 'OpWireSRF_LeftOutNode_v0.vi', 'OpWireSRF_RightIn_v0.vi', 'OpWireSR_LeftIn_v0.vi', 'OpWireSR_LeftOutCtl_v0.vi', 'OpWireSR_LeftOutNode_v0.vi', 'OpWireSR_RightIn_v0.vi']
+net_map: node 0 uid 3300 (0 s)
+net_map: 1 nodes walked in 1.8 s; 0 junk Invoke(s) purged in 0.1 s
+net_map: node 0 uid 3309 (0 s)
+net_map: 1 nodes walked in 1.7 s; 0 junk Invoke(s) purged in 0.2 s
+net_map: node 0 uid 3314 (0 s)
+net_map: 1 nodes walked in 1.7 s; 0 junk Invoke(s) purged in 0.1 s
+net_map: node 0 uid 3449 (0 s)
+net_map: 1 nodes walked in 1.8 s; 0 junk Invoke(s) purged in 0.1 s
+net_map: node 0 uid 340 (0 s)
+net_map: node 1 uid 351 (1 s)
+net_map: node 2 uid 1306 (2 s)
+net_map: node 3 uid 1338 (3 s)
+net_map: node 4 uid 1177 (4 s)
+net_map: node 5 uid 1045 (5 s)
+net_map: node 6 uid 1191 (6 s)
+net_map: node 7 uid 249 (7 s)
+net_map: node 8 uid 118 (8 s)
+net_map: node 9 uid 363 (9 s)
+net_map: node 10 uid 1287 (10 s)
+net_map: node 11 uid 371 (11 s)
+net_map: node 12 uid 383 (12 s)
+net_map: node 13 uid 394 (13 s)
+net_map: node 14 uid 1195 (14 s)
+net_map: node 15 uid 853 (14 s)
+net_map: node 16 uid 236 (15 s)
+net_map: node 17 uid 867 (16 s)
+net_map: node 18 uid 845 (17 s)
+net_map: node 19 uid 1145 (18 s)
+net_map: node 20 uid 711 (19 s)
+net_map: node 21 uid 31 (20 s)
+net_map: node 22 uid 835 (21 s)
+net_map: node 23 uid 83 (22 s)
+net_map: node 24 uid 723 (22 s)
+net_map: node 25 uid 445 (23 s)
+net_map: node 26 uid 651 (24 s)
+net_map: node 27 uid 465 (25 s)
+net_map: node 28 uid 477 (26 s)
+net_map: node 29 uid 406 (27 s)
+net_map: node 30 uid 414 (28 s)
+net_map: node 31 uid 426 (29 s)
+net_map: node 32 uid 21 (29 s)
+net_map: node 33 uid 212 (31 s)
+net_map: node 34 uid 572 (33 s)
+net_map: node 35 uid 587 (34 s)
+net_map: node 36 uid 602 (35 s)
+net_map: node 37 uid 617 (36 s)
+net_map: node 38 uid 632 (37 s)
+net_map: node 39 uid 647 (38 s)
+net_map: 40 nodes walked in 39.3 s; 0 junk Invoke(s) purged in 0.2 s
+net_map: node 0 uid 365 (0 s)
+net_map: node 1 uid 1346 (0 s)
+net_map: 2 nodes walked in 0.6 s; 0 junk Invoke(s) purged in 0.0 s
+net_map: node 0 uid 323 (0 s)
+net_map: 1 nodes walked in 0.5 s; 0 junk Invoke(s) purged in 0.0 s
+net_map: node 0 uid 323 (0 s)
+net_map: 1 nodes walked in 0.5 s; 0 junk Invoke(s) purged in 0.0 s
+net_map: node 0 uid 365 (0 s)
+net_map: 1 nodes walked in 0.5 s; 0 junk Invoke(s) purged in 0.0 s
+net_map: node 0 uid 365 (0 s)
+net_map: 1 nodes walked in 0.5 s; 0 junk Invoke(s) purged in 0.0 s
+net_map: node 0 uid 323 (0 s)
+net_map: 1 nodes walked in 0.5 s; 0 junk Invoke(s) purged in 0.0 s
+net_map: node 0 uid 207 (0 s)
+net_map: node 1 uid 208 (0 s)
+net_map: 2 nodes walked in 0.8 s; 0 junk Invoke(s) purged in 0.0 s
+net_map: node 0 uid 145 (0 s)
+net_map: node 1 uid 148 (0 s)
+net_map: node 2 uid 151 (1 s)
+net_map: node 3 uid 154 (1 s)
+net_map: 4 nodes walked in 1.4 s; 0 junk Invoke(s) purged in 0.0 s
+net_map: node 0 uid 99 (0 s)
+net_map: node 1 uid 100 (0 s)
+net_map: node 2 uid 101 (1 s)
+net_map: node 3 uid 102 (1 s)
+net_map: node 4 uid 103 (1 s)
+net_map: 5 nodes walked in 1.8 s; 0 junk Invoke(s) purged in 0.0 s
+net_map: node 0 uid 114 (0 s)
+net_map: node 1 uid 115 (0 s)
+net_map: node 2 uid 738 (0 s)
+  FACT  C net_map OpReportAll_v0.vi d1 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpShiftRegs_v0.vi d1 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpShiftRegs_v0.vi d2 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpShiftRegs_v1.vi d1 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpShiftRegs_v1.vi d2 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpShiftRegs_v1.vi d3 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpShiftRegs_v1.vi d4 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpStopFromNode_v0.vi d1 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpSubVIs_v0.vi d1 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpSubVIs_v1.vi d1 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpTunnels_v0.vi d1 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpWhileCast_v0.vi d1 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpWireSRF_LeftIn_v0.vi d1 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpWireSRF_LeftOutCtl_v0.vi d1 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpWireSRF_LeftOutNode_v0.vi d1 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpWireSRF_RightIn_v0.vi d1 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpWireSR_LeftIn_v0.vi d1 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpWireSR_LeftOutCtl_v0.vi d1 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpWireSR_LeftOutNode_v0.vi d1 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C net_map OpWireSR_RightIn_v0.vi d1 raised com_error: (-2147352567, '??? ??????.', (6503, 'LabVIEW', 'LabVIEW: (Hex 0x3EB) The VI is not executable. This error may occur because the VI is either broken or contains a subVI that LabVIEW cannot locate. Select <b>File>>Open</b> to open the VI and verify tha
+  FACT  C scanned 34 loop-body diagram(s) across 26 op VI(s); 0 TMSC hit(s)
+  FAIL  C1 at least one op VI carries a To More Specific Class INSIDE a loop body (free prediction; a PASS makes route (a) the construction)  hits=[]
+
+---------- [H] HYGIENE
+  FACT  close_panel(diag_allterms_donor_20260923_053154.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  PRELOAD references released; refs {'opened': 7, 'closed': 7, 'live': 0, 'cached_op_vis': 8}
+  FACT  gscript ref_counts: {'opened': 7, 'closed': 7, 'live': 0, 'cached_op_vis': 8}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 7, 'closed': 7, 'live': 0, 'cached_op_vis': 8}
+  FACT  LabVIEW handle count AFTER the work: 32869
+  PASS  H4 scratch deleted: diag_allterms_donor_20260923_053154.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\diag_allterms_donor_20260923_053154.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 0743701a249b6ac20a5dab9ee676c09c / after 0743701a249b6ac20a5dab9ee676c09c
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33994
+
+====================================================================================================
+=== GATES: 12 pass / 1 fail; failing: C1 at least one op VI carries a To More Specific Class INSIDE a loop body (free prediction; a PASS makes route (a) the construction)
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_allterms_donor.json   elapsed 133.7 s
+BGRUN END rc=1 after 134s

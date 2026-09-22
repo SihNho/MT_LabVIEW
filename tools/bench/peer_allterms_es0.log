@@ -1,0 +1,76 @@
+BGRUN START 2026-09-23 05:46:48 limit 16.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Kind review -Slug allterms-retarget-es0 -TaskFile 'tools/bench/task_allterms_retarget_es0.md' -TimeoutSec 840
+OUTCOME: ANSWERED (702s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-23-allterms-retarget-es0.md
+COST: $4.4121  in 24 / out 54799 / cache-create 209055 / cache-read 1741541  (697s, 20 turn(s))
+--- ANSWER ---
+Write is disabled for this session (correct for a read-only peer role), so the review is below.
+
+---
+
+# Failed-prediction review — re-targeted TMSC → Terminal property node reads ExecState 0
+
+**H1 does not hold, and neither does the experiment.** The run carries one ExecState bit across ~10 mutations, and the single piece of evidence H1 offers for "the cast chain is sound" is the one class of evidence this project has already measured to be compatible with a broken wire.
+
+## 1. The strongest reason H1 is WRONG
+
+H1's load-bearing inference — *"the cast chain itself is sound — `#683.specific class reference` w348 does reach `#186.reference` w348"* — is inadmissible **by your own measurement**:
+
+- `docs/toolkit-capabilities.md:70`, `OpConnectFromWire_v0` T2: "op error `''`, sink **0 → 1231**" … "🔴 **T2c2 FAILED: that wire reads `Is Broken? TRUE`**". A wire that reached both terminals, +1 on the count, op error empty — and broken.
+- `tools/recipes/build_opconnectfromwire_v0.py:41-50` replaced the count/identity gate for exactly this reason. `docs/toolkit-capabilities.md:68`: **"Do not cite RBW-survival as evidence a wire is good."**
+- U4's gate is a wire **count** (`tools/bench/diag_allterms_retarget2.py:147-149`: `w1 == w0+1 and w2 == w1+1 and not err`).
+
+A created-but-broken wire is precisely what a bad GObject→Terminal cast looks like: LabVIEW draws the wire, marks it a class conflict, VI reads 0 ([NI: Wire Class Conflict and Broken Wires](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019XS0SAM&l=en-US)).
+
+**The decisive blade — you have run this before and the brief omits it.** The identical five-step construction ran 2026-09-21 for class `Local`, with the per-step ExecState recorded: `1 → 0 after build_property → 1 after the seed control → 0 after the birth-wire delete → 0 thereafter` (`docs/cycle27-plan.md:2220-2222`, citing `diag_s3b_l0_localname_v2.log:83-126`). **The VI returns to 1 in the middle of the sequence.** Leftover wreckage cannot hold a VI broken and then let it read 1. That run used a *different donor* with a *different* set of deletions and reached the same terminal 0 — so a donor-specific wreckage hypothesis cannot explain a failure that already occurred on another donor. It even records the same three-way ambiguity you are re-deriving from scratch (`:2226-2227`).
+
+**Both of H1's named culprits are LabVIEW-legal.** Node #316's unwired *outputs* never break a VI. Node #331 is a **pre-existing** For loop inside a VI that compiled at ExecState 1 (`diag_allterms_retarget2.log:16`), so its count terminal was already satisfied; emptying a loop does not unwire N. The cited precedent (`tools/recipes/build_opreportall_v1.py:134`) is about a *freshly created* loop that never had N — importing it here is a category error.
+
+## 2. Alternative explanation (H3) — neither H1 nor H2
+
+Deleting the birth wire takes ExecState to 0 by an ordinary, already-measured mechanism (an unwired Property-Node `reference` is a broken VI — that is the `Local` run's "0 after the birth-wire delete"), and **nothing was measured again until the end**. Two live sub-variants:
+
+- **H3a — the seed's class was never verified.** The gate checks only that one control appeared and got a label (`diag_allterms_retarget2.py:119-121`). Creating a control from a property node's own terminal is a documented source of class conflict ([NI forum](https://forums.ni.com/t5/LabVIEW/wire-conflict-when-connecting-a-control-to-a-property-node-value/td-p/3561234)).
+- **H3b — node #187.** An eighth root node appears in *every* walk from U3 onward (`diag_allterms_retarget2.log:55, 67, 86, 108`) and is **absent from the 7-row census the brief presented to me**. `build_property` asserts exactly one new Property (`tools/gscript.py:2324-2326`) and Function was unchanged 3→3, so #187 is neither. It was created in this run and never identified.
+
+**H2 as stated is not a type-system fact.** Terminal's parent *is* GObject, with four subclasses (ControlTerminal, InnerTerminal, OuterTerminal, ParameterTerminal) — [Terminal class](https://labviewwiki.org/wiki/Terminal_class), [GObject class](https://labviewwiki.org/wiki/GObject_class). GObject→Terminal is a legal downcast. If it fails, it fails for an implementation reason, and the seed is the likeliest.
+
+## 3. What would falsify H1
+
+Any ExecState reading of **1** taken after the donor was stripped — H1 says the stripping left it broken. Concretely: read ExecState immediately after `create_control` in U3, **before** the birth-wire delete. H1 predicts 0; the `Local` run read **1** at that exact point. One COM property read.
+
+## 4. Cheapest discriminating test
+
+Add five `s.es()` calls to `diag_allterms_retarget2.py` — after `build_property`, after `create_control`, after the birth-wire delete, after each of the two wires. The file already calls `s.es()` once (`:154`). No new op, no new VI, no restart; the run is 77 s.
+
+| reading | H1 (wreckage) | H3 (seed / cast) |
+|---|---|---|
+| after `build_property` | 0 | 0 (unwired `reference`) |
+| after `create_control` | **0** | **1** |
+| after birth-wire delete | 0 | 0 |
+| after cast → `reference` | 0 | 0 if bad, **1** if good |
+
+**One-variable follow-up if that is ambiguous:** re-run byte-identical with `build_property("VI Server:GObject", [632A813])` instead of the Terminal node. Same 0 ⇒ the fault is in the sequence; 1 ⇒ it is class-specific. That is exactly the control `diag_allterms_donor.log:26-33` used correctly and this run dropped.
+
+## 5. Attacking the subVI-in-loop construction itself
+
+Type-wise it is sound — a For loop auto-indexing a GObject array into a subVI with a GObject/Generic refnum on the connector pane is ordinary LabVIEW, and `conpane`/`conpane_assign`/`drop_subvi` exist (`diag_allterms_donor.log:24`). But:
+
+- **It moves the cast, it does not remove it.** The subVI still needs a GObject→Terminal TMSC seeded by the same unverified control. If H3a is the fault, the subVI inherits it exactly.
+- **Five properties on one node violates your own measured rule.** `docs/toolkit-capabilities.md:74`: *"one property per node with its own error chain (a failing row silently defaults the rows below it on the same node)"*. `TERM_PROPS` (`diag_allterms_retarget2.py:51-52`) is ordered Name, IsSource, **ConnectedWire**, UID, Owner — on any terminal with no wire, `Connected Wire` errors and **UID and Owner silently return 0**. Those are two of the six deliverable columns (`docs/connectivity-map-plan.md:48`), and unconnected terminals are the majority. That is a rule-1a-class silent corruption sitting in the code now.
+- **`owner_uid` has its own measured silent failure.** `Generic.Owner` returns a Generic ref, so the uid needs a second cast, and `docs/toolkit-capabilities.md:61` records the limit: when the owner is a `FlatSequenceFrame`, ClassName returns but **the UID does not** (`owner_uid 0`, `error 1055`, empty echo). The main VI is full of flat sequences.
+
+**And the route that needs no GObject→Terminal cast at all — already built, already permitted.** `OpWireSource_v5.vi` is one of the three donors Pre-decided 139 explicitly allows (`docs/connectivity-map-plan.md:69`), and it already runs: cast(**Wire**) → `Wire.Terms[]` 6371003 → Index Array → **`Is Source?` 634A003 / `Connected Wire` 634A000 / `Generic.Owner` 6327806 → ClassName + cast(GObject) → UID** (`docs/toolkit-capabilities.md:60`), ExecState 1, functional 12/12. `Wire.Terms[]` hands back **Terminal-class references with no cast** — which is why those Terminal properties read straight off it, and why `OpConnectFromWire_v0` reads `Name` off the same kind of reference (`:70`). The only cast on that path is **GObject→Wire**, already proven from a `create_control` Wire seed (built, saved, ExecState 1, cold-verified). With `Traverse('Wire')` already measured at 1,920 wires in 1.67 s (commit `1f9fdd4`), that is `OpAllWires_v0` — which your plan names in the same table cell as `OpAllTerms_v0`, and whose graph step is specified as "edges from wires" (`:51`) with pass criteria "wire join = 1,920" and "the 11 broken wires show a missing side" (`:48`). It omits only wire-less terminals, which contribute no edge. Decide whether any pass criterion actually needs them before buying another cycle of cast work.
+
+## Where the evidence does not settle the question
+
+- The measurement **does not distinguish** "the seed control is not Terminal-class" from "the seed is fine and something else on the diagram is broken". One bit, ten mutations.
+- The census uids are uninformative in both directions: LabVIEW recycles uids here — the new Property node took uid **186**, below pre-existing 308/316/331/683 — so w333 matching the wire deleted at `diag_allterms_retarget2.log:93` proves neither reuse nor survival.
+- `Wire.Is Broken?` would answer this directly, but the built reader is a post-write readback embedded in the connect ops and cannot be used read-only (`docs/toolkit-capabilities.md:68`, corrected 2026-09-23; `archive/peer/2026-09-23-priorart-allwires.md` A3 concedes a write-free per-wire census is genuinely unbuilt). So the ExecState bracket, not `Is Broken?`, is the cheap instrument here.
+
+## Process finding
+
+This stage has now ended **three times with no saved artefact and no per-step evidence** — `Local` 2026-09-21, `Terminal` 2026-09-23 ×2 — and the 2026-09-21 run already recorded the narrowing this one re-derives. Under the user's 2026-09-19 re-split rule and CLAUDE.md's "when a diagnosis is guessed twice, build the reader", the next act is a decomposition carrying per-step ExecState readings, not a third re-target.
+
+**I do not believe H1 holds.** What would change my mind: an ExecState of 0 read immediately after `create_control` in U3, before any wire was deleted — that would show the stripped donor was already broken and put the wreckage hypothesis back in play.
+
+Sources: [Terminal class](https://labviewwiki.org/wiki/Terminal_class) · [GObject class](https://labviewwiki.org/wiki/GObject_class) · [VI Server Class Hierarchy](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy) · [NI: Wire Class Conflict and Broken Wires](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019XS0SAM&l=en-US) · [NI: Class conflict error reference](https://www.physik.uzh.ch/local/teaching/SPI301/LV-2015-Help/lverror.chm/edClassConflict.html) · [NI: To More Specific Class target-class constraint](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/to-more-specific-class-must-cast-to-original-type-in-a-reference.html) · [NI forum: control-from-property-node class conflict](https://forums.ni.com/t5/LabVIEW/wire-conflict-when-connecting-a-control-to-a-property-node-value/td-p/3561234)
+BGRUN END rc=0 after 702s

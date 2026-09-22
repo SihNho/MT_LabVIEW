@@ -1,0 +1,137 @@
+BGRUN START 2026-09-23 05:43:58 limit 20.0 min: py -u tools/bench/diag_allterms_retarget2.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 238 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 89452a9a87b147bc23f5de34f1a22f4c  got 89452a9a87b147bc23f5de34f1a22f4c
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+  FACT  PRELOAD: the ORIGINAL is resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  diag_allterms_retarget2_20260923_054358.vi
+  FACT  ExecState [after open] diag_allterms_retarget2_20260923_054358.vi = 1
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so diag_allterms_retarget2_20260923_054358.vi is deleted at close
+
+---------- [U1] the donor's root diagram - locate the TMSC by its own terminal names
+net_map: node 0 uid 43 (0 s)
+net_map: node 1 uid 124 (0 s)
+net_map: node 2 uid 308 (1 s)
+net_map: node 3 uid 683 (1 s)
+net_map: node 4 uid 316 (2 s)
+net_map: node 5 uid 230 (2 s)
+net_map: node 6 uid 238 (3 s)
+net_map: node 7 uid 313 (3 s)
+net_map: node 8 uid 323 (3 s)
+net_map: node 9 uid 324 (4 s)
+net_map: node 10 uid 330 (4 s)
+net_map: node 11 uid 331 (4 s)
+net_map: node 12 uid 978 (5 s)
+net_map: purged 20/110 junk Invokes (1 s)
+net_map: purged 40/110 junk Invokes (1 s)
+net_map: purged 60/110 junk Invokes (2 s)
+net_map: purged 80/110 junk Invokes (2 s)
+net_map: purged 100/110 junk Invokes (2 s)
+net_map: 12 nodes walked in 5.0 s; 110 junk Invoke(s) purged in 2.7 s
+  FACT  U1 TMSC uid=683 at Nodes[3]; target class w333; output w366
+  PASS  U1 one TMSC on the root, its `target class` fed by a wire  uid=683 w333
+
+---------- [U2] free the TMSC's output and create the Terminal-class property node
+  FACT  build_property node census: 6 rows
+  FACT  OP build_property VI Server:Terminal x5 on the root -> err '' (0.1 s)
+  PASS  U2 Property 0 -> 1 (only the new Terminal node), Function unchanged, build err ''  Property=1 Function 3->3 err=''
+
+---------- [U3] the TYPED SEED - and the fact run 1 never checked: it arrives WIRED
+net_map: node 0 uid 43 (0 s)
+net_map: node 1 uid 124 (0 s)
+net_map: node 2 uid 308 (1 s)
+net_map: node 3 uid 683 (1 s)
+net_map: node 4 uid 316 (1 s)
+net_map: node 5 uid 331 (1 s)
+net_map: node 6 uid 186 (1 s)
+net_map: node 7 uid 187 (2 s)
+net_map: purged 20/71 junk Invokes (0 s)
+net_map: purged 40/71 junk Invokes (1 s)
+net_map: purged 60/71 junk Invokes (1 s)
+net_map: 7 nodes walked in 1.6 s; 71 junk Invoke(s) purged in 1.5 s
+net_map: node 0 uid 43 (0 s)
+net_map: node 1 uid 124 (0 s)
+net_map: node 2 uid 308 (1 s)
+net_map: node 3 uid 683 (1 s)
+net_map: node 4 uid 316 (1 s)
+net_map: node 5 uid 331 (1 s)
+net_map: node 6 uid 186 (1 s)
+net_map: node 7 uid 187 (2 s)
+net_map: purged 20/71 junk Invokes (0 s)
+net_map: purged 40/71 junk Invokes (1 s)
+net_map: purged 60/71 junk Invokes (1 s)
+net_map: 7 nodes walked in 1.6 s; 71 junk Invoke(s) purged in 1.5 s
+  FACT  U3 seed label='reference 2'; ControlTerminal 16->17; the PN's `reference` now reads w362
+  PASS  U3 one new control AND it arrives WIRED into `reference` (build_opconnectfromwire_v0.py:69)  label='reference 2' birth wire=362 err=''
+
+---------- [U4] W9's sequence - cut the birth wire and the old cast output, then wire both ends
+  FACT  delete_wire node census: 7 rows
+      U4 seed birth wiredeleted wire w362
+  FACT  OP delete_wire w362 -> err '' (0.0 s)
+net_map: node 0 uid 43 (0 s)
+net_map: node 1 uid 124 (0 s)
+net_map: node 2 uid 308 (1 s)
+net_map: node 3 uid 683 (1 s)
+net_map: node 4 uid 316 (1 s)
+net_map: node 5 uid 331 (1 s)
+net_map: node 6 uid 186 (1 s)
+net_map: node 7 uid 187 (2 s)
+net_map: purged 20/71 junk Invokes (0 s)
+net_map: purged 40/71 junk Invokes (1 s)
+net_map: purged 60/71 junk Invokes (1 s)
+net_map: 7 nodes walked in 1.6 s; 71 junk Invoke(s) purged in 1.5 s
+  FACT  delete_wire node census: 7 rows
+      U4 old seed -> target classdeleted wire w333
+  FACT  OP delete_wire w333 -> err '' (0.0 s)
+  FACT  wire_control node census: 7 rows
+  FACT  OP wire_control seed 'reference 2' -> TMSC 'target class' -> err '' (0.1 s)
+  FACT  wire node census: 7 rows
+  FACT  OP wire TMSC 'specific class reference' -> Terminal PN 'reference' -> err '' (0.1 s)
+  PASS  U4 both wires land: Wire 8 -> 9 -> 10, both op errors ''  seed err ''; cast err ''
+
+---------- [U5] THE DECIDER
+net_map: node 0 uid 43 (0 s)
+net_map: node 1 uid 124 (0 s)
+net_map: node 2 uid 308 (1 s)
+net_map: node 3 uid 683 (1 s)
+net_map: node 4 uid 316 (1 s)
+net_map: node 5 uid 331 (1 s)
+net_map: node 6 uid 186 (1 s)
+net_map: node 7 uid 187 (2 s)
+net_map: purged 20/71 junk Invokes (0 s)
+net_map: purged 40/71 junk Invokes (1 s)
+net_map: purged 60/71 junk Invokes (1 s)
+net_map: 7 nodes walked in 1.6 s; 71 junk Invoke(s) purged in 1.5 s
+  FACT  ExecState [after the retarget] diag_allterms_retarget2_20260923_054358.vi = 0
+  FAIL  U5 ExecState 1 - a re-targeted To More Specific Class feeds a Terminal-class node, so the subVI-in-loop construction is sound (0 closes the last route Pre-decided 139 permits)  ExecState=0
+
+---------- [H] HYGIENE
+  FACT  close_panel(diag_allterms_retarget2_20260923_054358.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  PRELOAD references released; refs {'opened': 12, 'closed': 12, 'live': 0, 'cached_op_vis': 9}
+  FACT  gscript ref_counts: {'opened': 12, 'closed': 12, 'live': 0, 'cached_op_vis': 9}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 12, 'closed': 12, 'live': 0, 'cached_op_vis': 9}
+  FACT  LabVIEW handle count AFTER the work: 36192
+  PASS  H4 scratch deleted: diag_allterms_retarget2_20260923_054358.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\diag_allterms_retarget2_20260923_054358.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 89452a9a87b147bc23f5de34f1a22f4c / after 89452a9a87b147bc23f5de34f1a22f4c
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 34003
+
+====================================================================================================
+=== GATES: 12 pass / 1 fail; failing: U5 ExecState 1 - a re-targeted To More Specific Class feeds a Terminal-class node, so the subVI-in-loop construction is sound (0 closes the last route Pre-decided 139 permits)
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_allterms_retarget2.json   elapsed 77.2 s
+BGRUN END rc=1 after 77s

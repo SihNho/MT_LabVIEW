@@ -1,0 +1,102 @@
+BGRUN START 2026-09-23 05:41:09 limit 20.0 min: py -u tools/bench/diag_allterms_retarget.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 238 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 89452a9a87b147bc23f5de34f1a22f4c  got 89452a9a87b147bc23f5de34f1a22f4c
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+  FACT  PRELOAD: the ORIGINAL is resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  diag_allterms_retarget_20260923_054109.vi
+  FACT  ExecState [after open] diag_allterms_retarget_20260923_054109.vi = 1
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so diag_allterms_retarget_20260923_054109.vi is deleted at close
+
+---------- [T1] the donor's root diagram, READ - where is the TMSC and what feeds its target class?
+net_map: node 0 uid 43 (0 s)
+net_map: node 1 uid 124 (0 s)
+net_map: node 2 uid 308 (1 s)
+net_map: node 3 uid 683 (1 s)
+net_map: node 4 uid 316 (1 s)
+net_map: node 5 uid 230 (1 s)
+net_map: node 6 uid 238 (1 s)
+net_map: node 7 uid 313 (2 s)
+net_map: node 8 uid 323 (2 s)
+net_map: node 9 uid 324 (2 s)
+net_map: node 10 uid 330 (2 s)
+net_map: node 11 uid 331 (2 s)
+net_map: node 12 uid 978 (3 s)
+net_map: purged 20/110 junk Invokes (1 s)
+net_map: purged 40/110 junk Invokes (1 s)
+net_map: purged 60/110 junk Invokes (2 s)
+net_map: purged 80/110 junk Invokes (2 s)
+net_map: purged 100/110 junk Invokes (2 s)
+net_map: 12 nodes walked in 2.7 s; 110 junk Invoke(s) purged in 2.6 s
+  FACT  T1 TMSC node index=3 uid=683 terminals=[(0, 'specific class reference', 366), (1, 'error out', 0), (2, 'target class', 333), (3, 'reference', 605), (4, 'error in', 0)]
+  PASS  T1 exactly one TMSC on the donor's ROOT diagram, its `target class` fed by a wire  uid=683 target class wire=333
+
+---------- [T2] free the TMSC's OUTPUT - delete the donor's ForLoop-class Property nodes
+  PASS  T2 Property -> 0 and the TMSC survives (Function unchanged)  Property=0 Function 3 -> 3
+
+---------- [T3] a VI Server:Terminal property node on the ROOT diagram
+  FACT  build_property node census: 6 rows
+  FACT  OP build_property VI Server:Terminal x5 on the root -> err '' (0.1 s)
+  PASS  T3 build_property('VI Server:Terminal', 5 items) resolves on the root  Property=1 err=''
+
+---------- [T4] the TYPED SEED - create_control on that node's own `reference`
+net_map: node 0 uid 43 (0 s)
+net_map: node 1 uid 124 (0 s)
+net_map: node 2 uid 308 (1 s)
+net_map: node 3 uid 683 (1 s)
+net_map: node 4 uid 316 (1 s)
+net_map: node 5 uid 331 (1 s)
+net_map: node 6 uid 186 (1 s)
+net_map: node 7 uid 187 (2 s)
+net_map: purged 20/71 junk Invokes (0 s)
+net_map: purged 40/71 junk Invokes (1 s)
+net_map: purged 60/71 junk Invokes (1 s)
+net_map: 7 nodes walked in 1.6 s; 71 junk Invoke(s) purged in 1.6 s
+  FACT  T4 Terminal PN node index=6, its `reference` terminal index=0
+  FACT  T4 create_control -> label 'reference 2', new [{'i': 16, 'class': 'ControlTerminal', 'uid': 343, 'pos': (1452, 912), 'owner': 'TopLevelDiagram'}]; ControlTerminal 16 -> 17
+  PASS  T4 a Terminal-class refnum CONTROL exists (ControlTerminal +1, LabVIEW names it)  16 -> 17, label 'reference 2', err ''
+
+---------- [T5] THE DECIDER - retarget the cast to Terminal and feed a Terminal-class node
+  FACT  delete_wire node census: 7 rows
+      T5 old seed wiredeleted wire w333
+  FACT  OP delete_wire w333 -> err '' (0.0 s)
+  FACT  T5 the TMSC is Function[1]; the new seed control label is 'reference 2'
+  FACT  wire_control node census: 7 rows
+  FACT  wire_control seed control -> TMSC 'target class' raised RuntimeError: wire_control ['reference 2'] -> Function.['target class']: Wire 9 -> 9, expected +1..+2 (if the control is already wired elsewhere this may be a successful BRANCH - re-call with branch=True)
+  FACT  OP wire_control seed control -> TMSC 'target class' -> err "RuntimeError: wire_control ['reference 2'] -> Function.['target class']: Wire 9 -> 9, expected +1..+2 (if the control is already wired elsewhere this may be a successful BRANCH - re-call with branch=True)" (0.1 s)
+  FACT  wire node census: 7 rows
+  FACT  wire TMSC 'specific class reference' -> Terminal PN 'reference' raised RuntimeError: wire specific class reference->reference: wire count 9->9 with 0 new tunnel(s), expected 10 (if the source is already wired this may be a successful BRANCH - re-call with branch=True)
+  FACT  OP wire TMSC 'specific class reference' -> Terminal PN 'reference' -> err 'RuntimeError: wire specific class reference->reference: wire count 9->9 with 0 new tunnel(s), expected 10 (if the source is already wired this may be a successful BRANCH - re-call with branch=True)' (0.1 s)
+  FACT  ExecState [after the retarget] diag_allterms_retarget_20260923_054109.vi = 0
+  FAIL  T5 ExecState 1 - a re-targeted TMSC feeds a Terminal-class node, so the subVI-in-loop construction is sound (0 closes the last route permitted by Pre-decided 139)  ExecState=0
+
+---------- [H] HYGIENE
+  FACT  close_panel(diag_allterms_retarget_20260923_054109.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  PRELOAD references released; refs {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 9}
+  FACT  gscript ref_counts: {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 9}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 9}
+  FACT  LabVIEW handle count AFTER the work: 36697
+  PASS  H4 scratch deleted: diag_allterms_retarget_20260923_054109.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\diag_allterms_retarget_20260923_054109.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 89452a9a87b147bc23f5de34f1a22f4c / after 89452a9a87b147bc23f5de34f1a22f4c
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33996
+
+====================================================================================================
+=== GATES: 12 pass / 1 fail; failing: T5 ExecState 1 - a re-targeted TMSC feeds a Terminal-class node, so the subVI-in-loop construction is sound (0 closes the last route permitted by Pre-decided 139)
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_allterms_retarget.json   elapsed 64.5 s
+BGRUN END rc=1 after 65s
