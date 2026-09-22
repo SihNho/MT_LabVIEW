@@ -294,9 +294,14 @@ runnable deliverables, so the cycle went to the deliverable (Row D landed, 23/0)
 out of the machine. It is carried into `## NEXT` alongside `SetCommand_signed.vi` as parallel-safe work.
 Per CLAUDE.md the suspended threshold means this is recorded as a finding and NO device is built for it.
 
-**Findings 1, 3 (second half), 4 — accepted, acted on.** Dead dispatches: the two hypothesis reviews this cycle
-were dispatched with real headroom and both ANSWERED (631 s and 533 s), so the "raise the timeout at attempt 1"
-lesson held. The `os.path.exists` lesson generalised — `stagekit` gates the op VI's presence before any mutation.
+**Findings 1, 3 (second half), 4 — accepted, acted on.** ⚠️ **CORRECTED the same day, by the cycle-66
+retrospective's finding 6(b): the sentence that first stood here — "the two hypothesis reviews this cycle were
+dispatched with real headroom and both ANSWERED (631 s and 533 s), so the lesson held" — was CHERRY-PICKING.**
+The same window's 13:11 c83 dispatch went out at `-TimeoutSec 840` for an opus/max role and TIMEOUTed at exactly
+840 s having produced nothing (`tools/bench/peer_c83_2x2.log:1-2`); the r2 at 1680 s answered in 403 s. So the
+"raise the timeout at attempt 1" lesson was BROKEN again at attempt 1 of the very next cycle and only held on
+the two later c88 dispatches. Counting only the dispatches that succeeded is the fault this disposition was
+supposed to be disposing. The `os.path.exists` lesson generalised — `stagekit` gates the op VI's presence before any mutation.
 **A4 (blank dispositions) is CLOSED**: `c74-m3a2-fmt.md` and `outcome-review-20260922.md`, the two this review
 names as still blank, were both disposed this cycle, along with `c83-2x2-swap-1055.md` (a TIMEOUT non-result)
 and both c88 reviews. The audited set was **3 undisposed, not the five STATUS claimed**.
