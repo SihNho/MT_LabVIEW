@@ -1,0 +1,39 @@
+BGRUN START 2026-09-23 07:22:49 limit 20.0 min: py -u tools/bench/diag_wiki_probe.py
+  FACT  copies pinned: 94; ORIGINAL md5 2a78e17c449cacdaf5da389818526859 (want 2a78e17c449cacdaf5da389818526859)
+  PASS  K1 ORIGINAL md5 unchanged  
+  FACT  LabVIEW handles at start: 33966
+  FACT  samples: [('rect coord from center.vi', 7318), ('build cal image.vi', 19131), ('Track N beads twelve-fold over-kernel-v4.vi', 226400)]
+
+---------- [P3 the join ruling on the D1 bed]
+  FACT  report_all('Wire') 1920 uids in 3.09 s
+  PASS  P3a all_wire_uids == 1920  1920
+  PASS  P3b 1913 termed + 7 termless  1913 termed / 7 termless
+  PASS  P3c severed == the 11 known uids  [1731, 1893, 2819, 3947, 4833, 7337, 7388, 9635, 11232, 23502, 23540]
+
+---------- [P1/P2/P5/P6 per-sample reads]
+  FACT  rect coord from center.vi: {"bytes": 7318, "gobject_rows": 35, "gobject_s": 0.04, "classes": {"ParameterTerminal": 8, "Wire": 8, "Terminal": 5, "Function": 4, "OverridableParameterTerminal": 4, "ControlTerminal": 4, "TopLevelDiagram": 1, "BuildArray": 1}, "term_rows": 21, "term_s": 0.03, "fp_terminals": 0, "fp_sample": [], "diagrams": 1, "subvis_d0": [], "subvis_s": 0.06}
+  PASS  P2 read_terms rows > 0 and < 25 s [rect coord from center.vi]  21 rows / 0.03 s
+  FACT  build cal image.vi: {"bytes": 19131, "gobject_rows": 128, "gobject_s": 0.15, "classes": {"Terminal": 30, "Wire": 22, "ParameterTerminal": 14, "OuterTerminal": 12, "InnerTerminal": 12, "LoopTunnel": 8, "Function": 7, "ControlTerminal": 5, "ForLoop": 4, "Diagram": 4, "Tunnel": 4, "PolymorphicSubVI": 2}, "term_rows": 73, "term_s": 0.14, "fp_terminals": 8, "fp_sample": [["", true], ["", true], ["", true], ["", true], ["", true], ["", true]]
+  PASS  P2 read_terms rows > 0 and < 25 s [build cal image.vi]  73 rows / 0.14 s
+  FACT  Track N beads twelve-fold over-kernel-v4.vi: {"bytes": 226400, "gobject_rows": 3926, "gobject_s": 3.58, "classes": {"Terminal": 2499, "Wire": 819, "InnerTerminal": 170, "SubVI": 156, "Function": 66, "OverridableParameterTerminal": 66, "ParameterTerminal": 66, "OuterTerminal": 27, "Diagram": 13, "ControlTerminal": 13, "SelectorTunnel": 12, "LoopTunnel": 5}, "term_rows": 2841, "term_s": 4.17, "fp_terminals": 2, "fp_sample": [["", true], ["", true]], "diagrams": 1
+  PASS  P2 read_terms rows > 0 and < 25 s [Track N beads twelve-fold ov]  2841 rows / 4.17 s
+  PASS  P1 report_all('GObject') works on every sample  {'rect coord from cent': 35, 'build cal image.vi': 128, 'Track N beads twelve': 3926}
+
+---------- [P4 connector-pane route: subVI call nodes on a scratch EMPTY_v0 copy]
+  FACT  drop_subvi seconds {'rect coord from center.vi': 0.06, 'build cal image.vi': 0.09, 'Track N beads twelve-fold over-kernel-v4.vi': 1.28}
+  FACT  subvis on scratch: [(45, 'Track N beads twelve-fold over-kernel-v4.vi'), (44, 'build cal image.vi'), (43, 'rect coord from center.vi')]
+  FACT  Track N beads twelve-fold over-kernel-v4.vi: 16 conpane terminals [{"label": "Bead is good? array in", "direction": "input"}, {"label": "Image In", "direction": "input"}, {"label": "cross size", "direction": "input"}, {"label": "Bead is good? array out", "direction": "output"}, {"label": "x,y,z array out", "direction": "outp
+  FACT  build cal image.vi: 5 conpane terminals [{"label": "1-sided cal image", "direction": "input"}, {"label": "color table", "direction": "input"}, {"label": "2-sided cal image", "direction": "output"}, {"label": "avg power spectrum of stack", "direction": "output"}, {"label": "pic of cal image", "direct
+  FACT  rect coord from center.vi: 4 conpane terminals [{"label": "rectangle coordinates", "direction": "output"}, {"label": "half-length of pixmap", "direction": "input"}, {"label": "y", "direction": "input"}, {"label": "x", "direction": "input"}]
+  PASS  P4 every dropped subVI node shows >= 1 terminal  3 nodes
+  PASS  H4 scratch deleted  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\wikiprobe_20260923_072303.vi
+
+---------- [H HYGIENE]
+  PASS  H1 all 94 copies byte-unchanged  []
+  PASS  H2 ORIGINAL md5 unchanged  
+  FACT  gscript ref_counts {'opened': 3, 'closed': 3, 'live': 0, 'cached_op_vis': 5}
+  FACT  LabVIEW handles at end: 34411 (delta 445)
+
+==========================================================================================
+=== GATES: 12 pass / 0 fail   elapsed 16.4s   JSON G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_wiki_probe.json
+BGRUN END rc=0 after 17s

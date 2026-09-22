@@ -10,8 +10,16 @@ r"""allterms - the whole-VI TERMINAL table and the WIRE table joined from it.
 
   join_wires(rows) PURE PYTHON, no LabVIEW: groups the rows by wire_uid and emits one row per wire -
                    wire_uid, src_uid/src_class/src_term, sink_uid/sink_class/sink_term, n_src, n_sink.
-                   A wire with n_src == 0 or n_sink == 0 is a SEVERED half-wire; the D1 bed has 11
-                   (uids [1731,1893,2819,3947,4833,7337,7388,9635,11232,23502,23540]).
+                   A wire with n_src == 0 or n_sink == 0 is a SEVERED half-wire.
+
+  all_wire_uids(vi) ONE `report_all(vi, 'Wire')` (1.67 s on the bed) -> every Wire object's uid,
+                   INCLUDING the wires that carry no terminal at all and are therefore invisible to a
+                   terminal-centric join. JUDGEMENT RULING, 2026-09-23 (cycle "connectivity map" step 3):
+                   the wire-join criterion is **1,913 termed wires + the termless wires by SET DIFFERENCE
+                   against report_all('Wire') = 1,920**, and the D1 bed's 11 broken wires are
+                   **4 one-sided + 7 termless** - uids [1731,1893,2819,3947,4833,7337,7388,9635,11232,
+                   23502,23540]. `join_wires(rows, wire_uids)` emits the termless ones as rows carrying
+                   `termless: True`, n_src == n_sink == 0, so `severed()` returns all 11.
 
 Record keys are **node UID + terminal name** (Pre-decided 137); wire UIDs are transient and are the
 join key only WITHIN one read. Nothing here mutates the target: it is a reader, it lives in `tools/`
@@ -72,8 +80,24 @@ def read_terms(target, op=OP_ALLTERMS):
     return rows, dt
 
 
-def join_wires(rows):
-    """One row per wire, joined from the terminal table by wire_uid. Pure; no LabVIEW."""
+def all_wire_uids(target):
+    """Every Wire object's uid on `target`'s diagram, in ONE `report_all` run. Returns (uids, seconds).
+
+    The second half of the 2026-09-23 join criterion: a wire with an EMPTY `Wire.Terms[]` has no terminal
+    row at all, so only a Wire-class traverse can see it (7 such on the D1 bed, measured
+    `tools/bench/diag_c90_endpoints.log`). Costs 1.67 s on the bed against read_terms' ~10 s.
+    """
+    t0 = time.time()
+    rows = g.report_all(target, "Wire")
+    return sorted({int(r["uid"]) for r in rows}), time.time() - t0
+
+
+def join_wires(rows, wire_uids=None):
+    """One row per wire, joined from the terminal table by wire_uid. Pure; no LabVIEW.
+
+    `wire_uids` (from all_wire_uids) adds the TERMLESS wires - present as Wire objects, carrying no
+    terminal - as rows with n_src == n_sink == 0 and `termless: True`.
+    """
     by_wire = collections.defaultdict(list)
     for r in rows:
         if r["wire_uid"]:
@@ -95,7 +119,15 @@ def join_wires(rows):
             "sink_term": last["term_name"] if last else "",
             "n_src": len(src),
             "n_sink": len(snk),
+            "termless": False,
         })
+    if wire_uids is not None:
+        seen = set(by_wire)
+        for wire_uid in sorted(set(int(u) for u in wire_uids) - seen):
+            out.append({"wire_uid": wire_uid, "src_uid": 0, "src_class": "", "src_term": "",
+                        "sink_uid": 0, "sink_class": "", "sink_term": "",
+                        "n_src": 0, "n_sink": 0, "termless": True})
+        out.sort(key=lambda w: w["wire_uid"])
     return out
 
 
@@ -112,12 +144,16 @@ def main(argv=None):
     a = ap.parse_args(argv)
 
     rows, dt = read_terms(a.vi, a.op)
-    wires = join_wires(rows)
+    uids, dt_w = all_wire_uids(a.vi)
+    wires = join_wires(rows, uids)
     bad = severed(wires)
     stem = a.out or os.path.join(HERE, "bench", "allterms_{0}_{1}.json".format(
         os.path.splitext(os.path.basename(a.vi))[0][:40], time.strftime("%Y%m%d")))
     wire_out = stem[:-5] + "_wires.json" if stem.endswith(".json") else stem + "_wires.json"
     meta = {"vi": a.vi, "op": a.op, "read_seconds": round(dt, 2), "n_terminals": len(rows),
+            "wire_traverse_seconds": round(dt_w, 2), "n_wire_objects": len(uids),
+            "n_wires_termed": len(wires) - sum(1 for w in wires if w["termless"]),
+            "n_termless": sum(1 for w in wires if w["termless"]),
             "n_wires": len(wires), "n_severed": len(bad),
             "severed_uids": [w["wire_uid"] for w in bad], "when": time.strftime("%Y-%m-%d %H:%M:%S")}
     for path, payload in ((stem, {"meta": meta, "terminals": rows}),
