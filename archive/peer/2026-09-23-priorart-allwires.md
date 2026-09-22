@@ -4071,3 +4071,46 @@ recipe has never run.** What this session did with each finding, so the judgemen
 Files this disposition changed: `docs/toolkit-capabilities.md` (one corrected sentence),
 `tools/bench/test_opallwires_v0.py` (T5 two-meter acceptance). Nothing was built, nothing was saved under
 `claudeDev`, no VI was run.
+
+### RELEASE PASS — 2026-09-23 05:5x (judgement D-C, executed by the material session AFTER the measurement it depends on)
+
+⚠️ **THE TWO `REFUTED:` LINES D-C SCRIPTED ARE NOT WRITTEN, BECAUSE THE MEASUREMENT THEY ASSUME CAME BACK THE
+OTHER WAY.** D-C directed a `REFUTED: <slug> - docs/s0-diff.md:51-64 says the F-side construction (copy +
+reparent) fails, which does not cover the W-side construction (create-in-body) this build uses`. That sentence
+would be an assertion this session has just measured to be false for the terminal-centric design, and *"an
+assertion is not a refutation"*. What was measured, in one run, on a dated copy of the op VI `OpReport_v3.vi`
+(`tools/bench/diag_allterms_cast.py` / `.log` / `.json`, **12 pass / 2 fail**, `BGRUN END rc=1 after 187s`):
+
+- **C1/C2 — the Terminal-class property node IS creatable in the body, create-in-body, no copy and no reparent.**
+  `build_property(work, "VI Server:Terminal", [Name 634A004, Is Source? 634A003, Connected Wire 634A000,
+  UID 632A813, Owner 6327806], diagram_index=body)` resolved, error column `''`, Property 0 → 1, and its data
+  terminals read off the machine are `['reference', 'reference out', 'error in (no error)', 'error out',
+  'Name', 'IsSource', 'Wire', 'UID', 'Owner']` — the five short names `docs/NAMES.md:369-371` predicted, now
+  confirmed on a **`VI Server:Terminal`** node carrying all five items at once.
+- **D1 — but the node cannot be FED create-in-body.** Wiring `Traverse for GObjects.'References'` into that
+  node's `reference` succeeded as an EDIT (op error `''`, `LoopTunnel 0 → 1`) and left `ExecState` **0 → 0**.
+  The control arm is the same step of the same recipe on the same donor with **one variable changed**, the
+  property node's class: `build_opreportall_v1.log:25-26`, `VI Server:GObject`, identical wire, `LoopTunnel
+  0 → 1`, `ExecState` **0 → 1**. Traverse yields **GObject**; `Terminal` is below it, so the feed is a
+  DOWNCAST and needs a `To More Specific Class` — exactly the shape `docs/NAMES.md:945` measured for
+  `Generic.Owner` → a GObject node and `docs/cycle27-plan.md:2185-2190` measured for `Local`.
+- A TMSC has **no scripted creator** (SKILL.md rule-0 exception #1; `docs/cycle14-plan.md:63` with its
+  2026-09-16 correction — only RETARGETING an existing TMSC is solved). `gscript.for_loop` creates an EMPTY
+  loop and cannot enclose existing objects (`tools/gscript.py:1250`). So a TMSC reaches a loop body only by
+  `move_in`, which is `docs/s0-diff.md` D4 — the F side. **The construction verdicts therefore still bind, and
+  the honest act is to report that to judgement, not to release them.**
+
+The two releases that ARE true and are paid for with a citation:
+
+FIXED: settled-already - tools/bench/test_opallwires_v0.py:114 - T5 now runs 20 consecutive op calls COUNTED FROM CALL 1 and gates BOTH meters (LabVIEW handles within +/-100 and private-byte drift <= 5 MB), which is the acceptance docs/REFERENCES.md:225-227 and docs/cycle27-plan.md:408 demand and which the reviewed recipe had no gate for.
+
+FIXED: contradicted - docs/toolkit-capabilities.md:68 - the stale sentence "the sound reader ... is NOT BUILT" now carries a dated 2026-09-23 correction saying 6371004 IS built and measured (docs/NAMES.md:992) and that what is genuinely absent is specifically a write-free, whole-VI, per-wire census.
+
+The six verdicts NOT released, one line each:
+
+- `refuted-already` (A2) — NOT RELEASED: it is a scope question (does "no new op" for the c90 diagnosis reach a per-stage a→b table?) and scope is judgement's, not a material session's.
+- `unread-evidence` (A4) — NOT RELEASED: this session's D1 measurement CONFIRMS its premise for the terminal-centric design too; the body node cannot be fed without a cast, so the F-side reparent is still on the path.
+- `already-failed` (B2) — NOT RELEASED: same reason; copy-and-reparent-into-a-loop-body remains the only route measured to reach a TMSC in a body, and it stands at 4 failures / 0 successes.
+- `already-built` (B1) — NOT RELEASED, and it is now STRONGER: `OpConnectFromWire_v0.vi` and `OpWireSource_v5.vi` already hold TMSCs, so they are the donors any cast-bearing build should start from rather than rebuild.
+- `helper-exists` (B3) — NOT RELEASED: `Stage.net_sources` / `Stage.wired_terminals` are untouched by this measurement and remain the cheaper reads for the 11 severed rows.
+- `already-measured` (B4) — NOT RELEASED: every column for THIS bed is still on file; nothing here makes the census newly necessary.

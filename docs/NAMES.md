@@ -374,6 +374,29 @@ Terminal short names read off the machine (probe_castfree5.log), all compile WIT
   when a walk has already printed a node's terminal names, the recipe must match THOSE strings — a guessed
   variant (`IsBroken`) cost one build run today.
 
+#### ✅ ONE `VI Server:Terminal` property node carries ALL FIVE items at once — and it CANNOT be fed from Traverse (2026-09-23, `tools/bench/diag_allterms_cast.log`, 12 pass / 2 fail)
+
+- **Creatable create-in-body, no donor, no copy, no reparent.** `build_property(<target>, "VI Server:Terminal",
+  [("634A004",False) Name, ("634A003",False) Is Source?, ("634A000",False) Connected Wire, ("632A813",False) UID,
+  ("6327806",False) Owner], <loc>, diagram_index=<For-loop body>)` resolved on the first try, error column `''`,
+  Property 0 → 1, 0.7 s. Its terminals, READ off the machine with `node_terms`, in order:
+  **`['reference', 'reference out', 'error in (no error)', 'error out', 'Name', 'IsSource', 'Wire', 'UID', 'Owner']`**
+  — Terminal inherits GObject inherits Generic, so `UID` and `Owner` ride on the same node as the Terminal items.
+- 🔴 **But `Traverse for GObjects.'References'` CANNOT feed it.** Wiring that array into the node's `reference`
+  across a For-loop border SUCCEEDS AS AN EDIT (op error `''`, `LoopTunnel 0 → 1`) and leaves **`ExecState` 0 → 0**.
+  The control arm is the SAME step, SAME donor (`OpReport_v3.vi`), SAME wire, with ONE variable changed — the
+  property node's class: `VI Server:GObject` gives `LoopTunnel 0 → 1`, **`ExecState` 0 → 1**
+  (`tools/bench/build_opreportall_v1.log:25-26`). Traverse yields **GObject**; `Terminal` is below it, so this is a
+  DOWNCAST and needs a `To More Specific Class`. Same shape as `:945` (`Generic.Owner` → a GObject node) and
+  `docs/cycle27-plan.md:2185-2190` (`Local`). **Consequence for any bulk terminal reader: the cast is mandatory
+  INSIDE the loop body, a TMSC has no scripted creator, and `gscript.for_loop` (`tools/gscript.py:1250`) creates an
+  EMPTY loop that cannot enclose one — so the only route to a TMSC in a body is `move_in`.**
+- Same run: 26 of the op VIs under `claudeDev` carry both a `Function` node and a `ForLoop`, but that predicate does
+  NOT identify a TMSC (every primitive is a `Function`) — the gate that used it is a defective gate, not a finding.
+  A TMSC is identified by its terminal names `target class` / `specific class reference` (`:809`). The four bodies
+  actually walked (`OP_test1`, `OpAddShiftRegF_v0`, `OpAddShiftReg_v0`, `OpCreateConstOnTerm_v0`) hold property
+  nodes only; **no op VI is yet known to carry a TMSC inside a loop body.**
+
 ### The TYPE read on a Terminal — 2026-09-21, cycle 66 (⚠️ status set by the Part C measurement below)
 
 > 🟢 **CORRECTION, 2026-09-21 (cycle 67 material #2) — `Coerce Dot?` AND `Coerced?` ARE ONE PROPERTY, NOT TWO, AND NOT
