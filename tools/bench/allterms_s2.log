@@ -1,0 +1,125 @@
+BGRUN START 2026-09-23 06:16:02 limit 25.0 min: py -u tools/bench/allterms_s2.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 239 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == ca44b62fbe428282719e4733e2cea785  got ca44b62fbe428282719e4733e2cea785
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  OpAllTerms_v0_s2.vi
+  FACT  ExecState [after open] OpAllTerms_v0_s2.vi = 1
+  FACT  Function count at entry: 1
+
+---------- [B1] move the loop into the visible canvas - measured, then re-read
+  FACT  ExecState [after the loop move] OpAllTerms_v0_s2.vi = 1
+  PASS  B1 the loop is at (120, 560) and ExecState is still 1  pos (120, 560) ExecState 1
+
+---------- [B1b] the block-diagram window, fronted without Esc and sized to a fixed rect
+  FACT  activate('OpAllTerms_v0_s2.vi Front Panel') -> {"activate":{"hwnd":27526400,"title":"OpAllTerms_v0_s2.vi Front Panel"},"alive":true,"rect":[0,4,1500,954],"attached":true,"sfw":true,"sfw_err":87,"fg_before":{"hwnd":262916,"title":"Claude"},"fg_after":{"hwnd":27526400,"title":"OpAllTerms_v0_s2.vi Front Panel
+  FACT  activate('OpAllTerms_v0_s2.vi Block Diagram') -> {"activate":{"hwnd":3868264,"title":"OpAllTerms_v0_s2.vi Block Diagram"},"alive":true,"rect":[0,0,1900,1030],"attached":true,"sfw":true,"sfw_err":87,"fg_before":{"hwnd":3868264,"title":"OpAllTerms_v0_s2.vi Block Diagram"},"fg_after":{"hwnd":3868264,"title":"Op
+  FACT  windows now: OpAllTerms_v0_s2.vi Block Diagram / OpAllTerms_v0_s2.vi Front Panel / OpFPLabels_v0.vi Block Diagram / OpFPLabels_v0.vi Front Panel / LabVIEW / 
+  PASS  B1b the Block Diagram window exists and is the measured foreground  title 'OpAllTerms_v0_s2.vi Block Diagram'
+
+---------- [B2] CALIBRATION - one probe drop whose position is READ BACK
+  FACT  activate('OpAllTerms_v0_s2.vi Block Diagram') -> {"activate":{"hwnd":3868264,"title":"OpAllTerms_v0_s2.vi Block Diagram"},"alive":true,"rect":[0,0,1900,1030],"attached":true,"sfw":true,"sfw_err":87,"fg_before":{"hwnd":3868264,"title":"OpAllTerms_v0_s2.vi Block Diagram"},"fg_after":{"hwnd":3868264,"title":"Op
+  PASS  QD[calib] the Block Diagram is the measured foreground at the keystroke  OpAllTerms_v0_s2.vi Block Diagram
+  PASS  QD[calib] the Quick Drop window OPENED after Ctrl+Space  windows: Quick Drop / OpAllTerms_v0_s2.vi Block Diagram / OpAllTerms_v0_s2.vi Front Panel / OpFPLabels_v0.vi Block Diagram / OpFPLabels_v0.vi Front Panel / LabVIEW / 
+POISONED: COM Run did not return within 180.000s and was abandoned alive; the next COM call will raise COMPoisoned instead of blocking behind it.
+
+OBSERVED EXC COM Run did not return within 180s and no modal dialog was found - LabVIEW is busy or another client is contending. MODULE POISONED: the Run is still outstanding, so the next COM call raises COMPoisoned instead of blocking behind it. Screenshot: C:\Users\KimLab\AppData\Local\Temp\gscript_hang_179011
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagekit.py", line 760, in run
+    fn(stage)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\allterms_s2.py", line 182, in main
+    u = quick_drop(s, probe_xy, "calib")
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\allterms_s2.py", line 109, in quick_drop
+    new = [u for u in g.uids(s.work, "Function") if u not in before]
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 1061, in uids
+    return {o["uid"] for o in report_all(target, cls)}
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 525, in report_all
+    _run(vi)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\gscript.py", line 445, in _run
+    raise RuntimeError(
+RuntimeError: COM Run did not return within 180s and no modal dialog was found - LabVIEW is busy or another client is contending. MODULE POISONED: the Run is still outstanding, so the next COM call raises COMPoisoned instead of blocking behind it. Screenshot: C:\Users\KimLab\AppData\Local\Temp\gscript_hang_1790111968.png
+
+  FAIL  the run completed without an unhandled exception  COM Run did not return within 180s and no modal dialog was found - LabVIEW is busy or another client is contending. MODULE POISONED: the Run is still outstandin
+
+---------- [H] HYGIENE
+  FACT  close_panel(OpAllTerms_v0_s2.vi) raised COMPoisoned: COM Run timed out 1s ago (cap 180.000s) and is STILL OUTSTANDING in LabVIEW's apartment; this call would block behind it. Restart LabVIEW (py tools/lv_restart.py) or set GSCRIPT_POISON_RECOVER=1.
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 3}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 3}
+  FACT  LabVIEW handle count AFTER the work: 31474
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before ca44b62fbe428282719e4733e2cea785 / after ca44b62fbe428282719e4733e2cea785
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['OpAllTerms_v0_s2.vi']  (removed: [])
+  PASS  H6 the files left on disk == ['OpAllTerms_v0_s2.vi'] and nothing was removed  added ['OpAllTerms_v0_s2.vi'] removed []
+  FACT  LabVIEW handle count at exit: 31474
+
+====================================================================================================
+=== GATES: 11 pass / 1 fail; failing: the run completed without an unhandled exception
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\allterms_s2.json   elapsed 207.5 s
+BGRUN END rc=1 after 208s
+BGRUN START 2026-09-23 06:22:25 limit 25.0 min: py -u tools/bench/allterms_s2.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 240 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == ca44b62fbe428282719e4733e2cea785  got ca44b62fbe428282719e4733e2cea785
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 31474
+  FACT  LabVIEW handle count AFTER the restart: 33998
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  OpAllTerms_v0_s2.vi
+  FACT  ExecState [after open] OpAllTerms_v0_s2.vi = 1
+  FACT  Function count at entry: 1
+
+---------- [B1b] the block-diagram window, fronted without Esc and sized to a fixed rect
+  FACT  activate('OpAllTerms_v0_s2.vi Front Panel') -> {"activate":{"hwnd":56296586,"title":"OpAllTerms_v0_s2.vi Front Panel"},"alive":true,"rect":[0,4,1500,954],"attached":true,"sfw":true,"sfw_err":87,"fg_before":{"hwnd":56296586,"title":"OpAllTerms_v0_s2.vi Front Panel"},"fg_after":{"hwnd":56296586,"title":"OpAl
+  FACT  activate('OpAllTerms_v0_s2.vi Block Diagram') -> {"activate":{"hwnd":4393026,"title":"OpAllTerms_v0_s2.vi Block Diagram"},"alive":true,"rect":[0,0,1900,1030],"attached":true,"sfw":true,"sfw_err":87,"fg_before":{"hwnd":4393026,"title":"OpAllTerms_v0_s2.vi Block Diagram"},"fg_after":{"hwnd":4393026,"title":"Op
+  FACT  windows now: OpAllTerms_v0_s2.vi Block Diagram / OpAllTerms_v0_s2.vi Front Panel / LabVIEW / 
+  PASS  B1b the Block Diagram window exists and is the measured foreground  title 'OpAllTerms_v0_s2.vi Block Diagram'
+
+---------- [B2] CALIBRATION - one probe drop whose position is READ BACK
+  FACT  activate('OpAllTerms_v0_s2.vi Block Diagram') -> {"activate":{"hwnd":4393026,"title":"OpAllTerms_v0_s2.vi Block Diagram"},"alive":true,"rect":[0,0,1900,1030],"attached":true,"sfw":true,"sfw_err":87,"fg_before":{"hwnd":4393026,"title":"OpAllTerms_v0_s2.vi Block Diagram"},"fg_after":{"hwnd":4393026,"title":"Op
+  PASS  QD[calib] the Block Diagram is the measured foreground at the keystroke  OpAllTerms_v0_s2.vi Block Diagram
+  PASS  QD[calib] the Quick Drop window OPENED after Ctrl+Space  windows: Quick Drop / OpAllTerms_v0_s2.vi Block Diagram / OpAllTerms_v0_s2.vi Front Panel / LabVIEW / 
+  FAIL  QD[calib] the Quick Drop window CLOSED and exactly ONE Function appeared  closed=True new=[]
+  FAIL  B2a the calibration probe exists  uid None
+  FAIL  STOP at gate: B2a the calibration probe exists
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 2}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 2}
+  FACT  LabVIEW handle count AFTER the work: 31244
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before ca44b62fbe428282719e4733e2cea785 / after ca44b62fbe428282719e4733e2cea785
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  FAIL  H6 the files left on disk == ['OpAllTerms_v0_s2.vi'] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 31244
+
+====================================================================================================
+=== GATES: 9 pass / 4 fail; failing: QD[calib] the Quick Drop window CLOSED and exactly ONE Function appeared, B2a the calibration probe exists, STOP at gate: B2a the calibration probe exists, H6 the files left on disk == ['OpAllTerms_v0_s2.vi'] and nothing was removed
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\allterms_s2.json   elapsed 85.5 s
+BGRUN END rc=1 after 86s

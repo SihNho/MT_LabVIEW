@@ -1,0 +1,63 @@
+BGRUN START 2026-09-23 06:09:09 limit 15.0 min: py -u tools/bench/allterms_s1.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 239 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == ffcec2c75e92dcad514299ba20e66054  got ffcec2c75e92dcad514299ba20e66054
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  OpAllTerms_v0_s1.vi
+  FACT  ExecState [after open] OpAllTerms_v0_s1.vi = 1
+
+---------- [A2] the scaffold census - the donor already IS the scaffold
+  FACT  census {'ForLoop': 1, 'LoopTunnel': 5, 'Property': 2, 'SubVI': 1, 'Wire': 18, 'ControlTerminal': 14, 'IndexArray': 0}
+  PASS  A2 ForLoop 1 / LoopTunnel 5 / Property 2 / SubVI 1  {'ForLoop': 1, 'LoopTunnel': 5, 'Property': 2, 'SubVI': 1, 'Wire': 18, 'ControlTerminal': 14, 'IndexArray': 0}
+
+---------- [A3] ExecState warm
+  FACT  ExecState [scaffold, warm] OpAllTerms_v0_s1.vi = 1
+  PASS  A3 ExecState 1 warm  ExecState 1
+
+---------- [A4] the body diagram, and the GEOMETRY S2's GUI drop needs
+  PASS  A4 exactly one Diagram owned by a ForLoop  indices [1]
+  FACT  body diagram index 1 uid 272; ForLoop {'uid': 113, 'pos': (1400, 900)}
+  FACT  body Property uid 115 pos (2851, 2051) owner 'Diagram'
+  FACT  body Property uid 114 pos (2845, 1851) owner 'Diagram'
+
+---------- [A5] the front panel - the call-time inputs and the four existing outputs
+  FACT  fp_labels [(0, 'vi path', False), (1, 'Class Name', False), (2, '# of Refs', True), (3, 'error out', True), (4, 'index', False), (5, 'Position', True), (6, 'Class Name 2', True), (7, 'UID', True), (8, 'Class Name 3', True), (9, 'error out 2', True), (10, 'Array', True), (11, 'Array 2', True), (12, 'Array 3', True), (13, 'Array 4', True)]
+  FAIL  A5 the 4 donor indicators and the `Class Name` control are present  indicators ['# of Refs', 'error out', 'Position', 'Class Name 2', 'UID', 'Class Name 3', 'error out 2', 'Array', 'Array 2', 'Array 3', 'Array 4'] controls ['vi path', 'Class Name', 'index']
+
+---------- [A6] SAVE the scaffold artefact
+
+---------- [SAVE] OpAllTerms_v0_s1.vi
+  FACT  ExecState [before the save] OpAllTerms_v0_s1.vi = 1
+  PASS  S1 the save returned without raising (scripted route)
+  FACT  SAVED ARTEFACT: OpAllTerms_v0_s1.vi md5 ca44b62fbe428282719e4733e2cea785 size 12512 B; version bytes [38, 128]
+  PASS  S2 the artefact is on disk and non-empty  12512 B
+  FACT  ExecState [re-read AFTER the save] OpAllTerms_v0_s1.vi = 1
+  PASS  S3 ExecState 1 re-read AFTER the save  ExecState 1
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 0}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handle count AFTER the work: 30763
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before ffcec2c75e92dcad514299ba20e66054 / after ffcec2c75e92dcad514299ba20e66054
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['OpAllTerms_v0_s1.vi']  (removed: [])
+  PASS  H6 the files left on disk == ['OpAllTerms_v0_s1.vi'] and nothing was removed  added ['OpAllTerms_v0_s1.vi'] removed []
+  FACT  LabVIEW handle count at exit: 30762
+
+====================================================================================================
+=== GATES: 13 pass / 1 fail; failing: A5 the 4 donor indicators and the `Class Name` control are present
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\allterms_s1.json   elapsed 14.8 s
+BGRUN END rc=1 after 15s

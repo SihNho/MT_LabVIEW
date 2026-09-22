@@ -391,6 +391,20 @@ Terminal short names read off the machine (probe_castfree5.log), all compile WIT
   `docs/cycle27-plan.md:2185-2190` (`Local`). **Consequence for any bulk terminal reader: the cast is mandatory
   INSIDE the loop body, a TMSC has no scripted creator, and `gscript.for_loop` (`tools/gscript.py:1250`) creates an
   EMPTY loop that cannot enclose one — so the only route to a TMSC in a body is `move_in`.**
+  🆕 **CORRECTED 2026-09-23: `move_in` is not the only route — GUI QUICK DROP IS MEASURED TO WORK, keyboard
+  only.** With the block-diagram window fronted by `lv_gui.ps1 -Action activate` (no Esc, no Alt) and the
+  mouse merely MOVED to the target point, `Ctrl+Space` opens a window titled exactly **`Quick Drop`** (visible
+  to `-Action windows`, so its open/close is machine-checkable), typing `To More Specific Class` and pressing
+  Enter closes it and **drops the node AT THE MOUSE POSITION**. Proven by the same 130×90 screen region
+  captured before and after — empty, then the TMSC icon (`tools/bench/allterms_shots/z_before_crop.png` /
+  `z_after_crop.png`, `tools/bench/allterms_s2.log` run 2). ⚠️ **Two laws come with it.** (a) A real MOUSE
+  CLICK must land before the next COM call: with only `-Action move` (a hover) the drop still happens but
+  `report_all` hangs 180 s and poisons the module (`allterms_s2.log` run 1, rc=1 after 208 s) — the skill's H5
+  law; a title-bar `-Action click` removed the hang completely. (b) **The dropped node was still NOT in
+  `Traverse('Function')` right after the click, and that is NOT a class error:** a TMSC's Traverse class IS
+  `Function` — uid **683** of `OpLoopCast_v0.vi` is returned by `report`, by `report_all('Function')`, and by
+  `report_all('Node')` with `Class Name` `'Function'` (`tools/bench/allterms_tmscclass.log`, 4/0, read-only).
+  Why a freshly GUI-dropped node is invisible to VI Server is OPEN and owes a hypothesis review.
 - Same run: 26 of the op VIs under `claudeDev` carry both a `Function` node and a `ForLoop`, but that predicate does
   NOT identify a TMSC (every primitive is a `Function`) — the gate that used it is a defective gate, not a finding.
   A TMSC is identified by its terminal names `target class` / `specific class reference` (`:809`). The four bodies
