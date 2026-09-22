@@ -494,7 +494,7 @@ user re-planned to DELIVERY-FIRST on 2026-09-16 ("A로 진행하자") — `docs/
 *"여기는 중간 과정일 뿐 결국에는 최종 스텝으로 나가야함"*: delivery is ordering, the seven-loop restructure is
 still the goal.** **An `OUTCOME-VIOLATION` is NOT answered by building a device** (that is the
 process rule, and answering goal drift with another tool is how the drift happened): the next cycle
-becomes a **delivery** cycle, and on repetition the work stops for a re-plan with the user. Keep the
+becomes a **delivery** cycle, and on repetition the work stops for a re-plan with the user. **AMENDED by the user 2026-09-23 ("83번으로 가자", resolving Pre-decided 44 vs 83): once the user has ANSWERED a repeated outcome verdict (as on 2026-09-20, "계속"), a further repetition of the SAME verdict does NOT stop the runner — the session marks the escalation in STATUS and the interactive chat reports it; the work stops only when the verdict's CONTENT changes (a new violation line, or a requirement moving backwards).** Keep the
 layer to one script, one dispatch and one gate line — the user's explicit budget for it.
 
 **The fourth layer — PRIOR ART ("has this already been done here?", `prior_art_review.py`, gated by the same

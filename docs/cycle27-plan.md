@@ -1575,7 +1575,7 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
       "20 runs leave the handle count flat (±100)" acceptance is not measuring what it believes. Recorded as a
       FINDING, not a build (no-new-device order). Until it is explained, **restart LabVIEW before every batch**,
       mechanically.
-    ⚠️ SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 83 — **UNRESOLVED — judgement
+    ⚠️ SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 83 — **UNRESOLVED — judgement → RESOLVED by the user 2026-09-23: 83 governs (Pre-decided 104).
     owed.** 83 (added 2026-09-21, LATER) applies the same CLAUDE.md §5 repetition clause in the opposite
     direction — "The runner was NOT stopped, deliberately" — while 44(b) stops it and hands the question to the
     user; neither item cites the other. Their ordinals also disagree: 44 calls its review the **5th**
@@ -3037,7 +3037,7 @@ on the two gates themselves. Both failures are MEASURED, not inferred.
     "abandon this route", which it is the cheapest way to justify. The escalation is written at the top of
     STATUS `## NEXT` for the user to overturn by writing `STOP`; the decision to keep running is Claude's and
     is the thing to overturn if it was wrong.
-    ⚠️ SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 44 — **UNRESOLVED — judgement
+    ⚠️ SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 44 — **UNRESOLVED — judgement → RESOLVED by the user 2026-09-23: 83 governs (Pre-decided 104).
     owed.** 44(b) (added 2026-09-20, EARLIER) read the same CLAUDE.md §5 repetition clause as compelling a STOP
     and stopped the runner; 83 declines to stop on a repetition. Neither cites the other, and the ordinals
     disagree (44 = "5th", the later 83 = "fourth"; `archive/peer/` holds EIGHT outcome reviews), so a cold
@@ -3656,3 +3656,5 @@ at both ends of both runs, `FILES THIS RUN LEFT ON DISK: []`, refs 3/3/0) and
      dispatched because `guard_peer` was still armed on `c80_rowd_routeA_r2.log` (its existing review's ctime predates
      the log by 3 min; Jev scored p=0.790, just under the 0.80 discharge threshold). The gate behaved as designed and
      the dispatch paid for itself — it is what produced 126's headline.
+
+104. **44 ↔ 83 RESOLVED BY THE USER, 2026-09-23 ("83번으로 가자"):** Pre-decided 83's reading governs — a repeated outcome-review verdict the user has already answered is marked in STATUS and reported by the chat, not STOPped; a CHANGED verdict still stops. 44(b) stands as the record of the first stop only. CLAUDE.md §5 amended; the jev_contradict annotation on 44/83 is closed.
