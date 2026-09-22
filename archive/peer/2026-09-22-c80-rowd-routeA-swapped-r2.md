@@ -226,3 +226,6 @@ What is ACCEPTED, and acted on:
 
 JEV-DISCHARGE: c80_rowd_routeA_r2.log (2026-09-22 11:24:45, p=0.800)
   This failing run was released without a NEW peer review: Jev judged, at the probability shown, that the failure above is the one this review already attacks (tools/bench/jev_gate.py, docs/jev-integration-plan.md row #1). The review itself is the evidence; this line only records which failure was charged to it.
+
+JEV-DISCHARGE: c80_rowd_routeA_r2.log (2026-09-22 11:43:40, p=0.800)
+  This failing run was released without a NEW peer review: Jev judged, at the probability shown, that the failure above is the one this review already attacks (tools/bench/jev_gate.py, docs/jev-integration-plan.md row #1). The review itself is the evidence; this line only records which failure was charged to it.

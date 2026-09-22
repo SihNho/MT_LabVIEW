@@ -39,6 +39,7 @@ Cost lines (no pass/fail, they are the numbers the retrospective needs):
   C1  builds run, failures, distinct failure logs
   C2  peer reviews dispatched
   C3  wall-clock inside bgrun, BUILDS only   C4 the same for REVIEWS, with cost   C5 the total
+  C4c the JUDGEMENT SESSION's own bgrun (cycle_runner's `claude -p`), reported separately - see cost_split()
 """
 import argparse
 import glob
@@ -126,6 +127,39 @@ def window_runs(body, cutoff, until):
         if cutoff <= t <= until:
             segs.append(body[m.start():stop])
     return segs
+
+
+def cost_split(machinery_logs, cutoff, until):
+    """Wall-clock and dollars of the MACHINERY logs, split into REVIEW spend and JUDGEMENT-SESSION spend.
+
+    THE DEVICE FOR `device-failed` (round 7; cycle-64 retrospective, 2026-09-22, threshold 1; accepted in full in
+    `archive/peer/2026-09-22-retrospective-cycle64.md`). `logclass.split` returns everything that is not a build as
+    "machinery", and C4 charged all of it to REVIEWS. But one of those files is the cycle's own judgement session
+    (`tools/bench/cycle_<n>.log`, `claude.exe -p` under bgrun), and it is by far the largest line: cycle 64's C4
+    read `$63.9903 from 4 log(s)` and `reviews are 94%` of the wall-clock, when the three real reviews were
+    $12.3687 (6.3017 + 2.6899 + 3.3771) and 1,490 s of 7,976 - the rest, $51.6216 and 6,055 s, was the session
+    (`tools/bench/cycle_59.log:62`). A cost line wrong by 5.2x in composition is the same fault this device was
+    built to prevent, for the third time (round 4 = the cost regex, round 6 = the window), so the repair keeps the
+    number and moves it: nothing is dropped, C4c prints it on its own line and C5's total is unchanged.
+
+    Classification is `logclass.is_judgement_session_log` - the log's own `BGRUN START` COMMAND, not its name.
+    Returns a dict: rsecs/rcost/rcosted/rseen (reviews), jsecs/jcost/jcosted/jseen/jlogs (judgement sessions).
+    """
+    out = dict(rsecs=0, rcost=0.0, rcosted=0, rseen=0, jsecs=0, jcost=0.0, jcosted=0, jseen=0, jlogs=[])
+    for p in machinery_logs:
+        pre = "j" if logclass.is_judgement_session_log(p) else "r"
+        priced = False
+        for body in window_runs(read(p), cutoff, until):
+            for m in re.finditer(r"BGRUN (?:END rc=\d+|TIMEOUT killed) after (\d+)s", body):
+                out[pre + "secs"] += int(m.group(1))
+            out[pre + "seen"] += len(COST_SEEN_RE.findall(body))
+            for m in COST_RE.finditer(body):
+                out[pre + "cost"] += float(m.group(1) or m.group(2))
+                out[pre + "costed"] += 1
+                priced = True
+        if pre == "j" and priced:
+            out["jlogs"].append(os.path.basename(p))
+    return out
 
 
 RESULT = []
@@ -318,15 +352,10 @@ def main():
     # logs before it could judge whether the cycle was worth its cost (retrospective-cycle10, section 6). Every
     # cost-versus-value argument the retrospective layer exists to have was being made against a figure an order
     # of magnitude too small. Reviews stay OUT of C3 - they are evidence, not builds - and get their own line.
-    rsecs, rcost, rcosted, rseen = 0, 0.0, 0, 0
-    for p in peer_logs:
-        for body in window_runs(read(p), cutoff, until):
-            for m in re.finditer(r"BGRUN (?:END rc=\d+|TIMEOUT killed) after (\d+)s", body):
-                rsecs += int(m.group(1))
-            rseen += len(COST_SEEN_RE.findall(body))
-            for m in COST_RE.finditer(body):
-                rcost += float(m.group(1) or m.group(2))
-                rcosted += 1
+    # THE JUDGEMENT SESSION'S OWN BGRUN IS NOT A REVIEW (round 7, 2026-09-22) - see cost_split().
+    cs = cost_split(peer_logs, cutoff, until)
+    rsecs, rcost, rcosted, rseen = cs["rsecs"], cs["rcost"], cs["rcosted"], cs["rseen"]
+    jsecs, jcost, jcosted, jlogs = cs["jsecs"], cs["jcost"], cs["jcosted"], cs["jlogs"]
 
     print(f"\n  C1 builds run {starts}, failure markers {fails}, logs carrying a failure {len(failing)}")
     print(f"  C2 peer reviews dispatched {len(peer_logs)}, archived {len(reviews)}")
@@ -340,8 +369,20 @@ def main():
     print(f"  C4b cost lines seen {rseen} / parsed {rcosted}"
           + ("" if rseen == rcosted else "   <- MISMATCH: a cost line in the logs is not being parsed; the C4 "
                                          "figure is an UNDERSTATEMENT, not a measurement"))
-    print(f"  C5 total wall-clock {(secs + rsecs) // 60} min {(secs + rsecs) % 60} s"
-          f"  (reviews are {100 * rsecs // max(1, secs + rsecs)}% of it)\n")
+    # C4c - THE JUDGEMENT SESSION'S OWN SPEND, on its own line so the repair MOVES the number instead of dropping
+    # it. This is usually the largest single figure in a cycle and it went unreported in the session's own account
+    # (retrospective-cycle64 finding 6: "$51.62 ... 81% of the cycle's total dollar spend ... STATUS.md itemizes
+    # $6.30, $2.69 and $3.38 and never mentions it"). It is NOT review traffic and NOT a build.
+    print(f"  C4c judgement session (cycle_runner's own `claude -p`), NOT a review: "
+          f"{jsecs // 60} min {jsecs % 60} s"
+          + (f"; cost ${jcost:.4f} from {jcosted} log(s) - {', '.join(jlogs)}" if jcosted
+             else "; no judgement-session cost line in this window")
+          + ("" if cs["jseen"] == jcosted else
+             f"   <- MISMATCH: {cs['jseen']} cost line(s) seen, {jcosted} parsed"))
+    total = secs + rsecs + jsecs
+    print(f"  C5 total wall-clock {total // 60} min {total % 60} s"
+          f"  (builds {100 * secs // max(1, total)}%, reviews {100 * rsecs // max(1, total)}%, "
+          f"judgement session {100 * jsecs // max(1, total)}%)\n")
 
     # C6 - THE JUDGEMENT/MATERIAL SPLIT, counted from the machine's record (2026-09-16). guard_bash.py refuses a
     # recipe/bench run that carries no `MATERIAL=1` marker and logs both the marked runs and the refusals; a

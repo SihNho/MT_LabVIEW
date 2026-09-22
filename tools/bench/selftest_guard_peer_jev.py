@@ -159,6 +159,7 @@ def main():
         gate(not any(ln.startswith(("FIXED:", "REFUTED:", "PRIOR-ART:")) for ln in rv.splitlines()),
              "C1d the citation writes NO release line (cannot free a prior-art verdict)")
 
+        _clear_cache()
         # --- C2: the unknown band -> BLOCK, plus one advisory line
         jev_gate.covers_failure = Stub(0.55)
         rc, err = run_main(cmd, capture=True)
@@ -168,11 +169,13 @@ def main():
         gate("BLOCKED by tools/hooks/guard_peer.py" in err,
              "C2c the original block message is still printed in full")
 
+        _clear_cache()
         # --- C3: clearly unrelated -> BLOCK, no advisory noise
         jev_gate.covers_failure = Stub(0.02)
         rc, err = run_main(cmd, capture=True)
         gate(rc == 2 and "JEV-ADVISORY" not in err, "C3 p=0.02 -> BLOCK with no advisory line", "rc=%s" % rc)
 
+        _clear_cache()
         # --- C4: the call raises -> the old behaviour, never a wedge
         jev_gate.covers_failure = Stub(raises=True)
         rc, err = run_main(cmd, capture=True)
@@ -241,6 +244,16 @@ def read(p):
             return f.read()
     except OSError:
         return ""
+
+
+
+def _clear_cache():
+    """The discharge cache (jev_gate, 2026-09-22) makes a granted discharge FINAL for a log; the cases below reuse one
+    fake log name, so each block case starts from an empty cache."""
+    try:
+        os.remove(os.path.join(os.path.dirname(jev_gate.GATE_LOG), "jev_discharge_cache.json"))
+    except OSError:
+        pass
 
 
 def run_main(cmd, capture=False):

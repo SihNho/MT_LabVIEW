@@ -1,0 +1,65 @@
+# REFUTE THIS: "The only thing still missing for Row D is `uid -> Terminal reference`, and the D-1 probe below measures it correctly"
+
+You are the failed-prediction reviewer. Attack the claim. Do not confirm it. Name the strongest reason it
+is wrong, an alternative explanation, what would falsify it, and the cheapest discriminating test.
+
+The failing log is `tools/bench/c80_rowd_routeA_r2.log`; the script is `tools/recipes/build_d1_m3a3.py`.
+Its first failing line is:
+
+    FAIL  [A1 94 D VISA] the sink terminal carries a wire after the write   the sink terminal #7488 is
+    BARE, so there is no wire to re-connect FROM - the swapped call's source half has no uid
+
+## The situation, in one paragraph
+
+A LabVIEW VI is being restructured by VI Scripting over COM (behaviour-preserving refactor: scheduling may
+change, computation may not). One wire ("Row D", uid **7506**) carries a VISA session handle out of the OLD
+`WhileLoop #637` / `RightShiftRegister #4334` and must instead come out of the NEW `WhileLoop #23032` /
+`RightShiftRegister #23868`. The SINK is `FlatSequenceInnerTunnel #7468`'s LEFT terminal, terminal uid
+**#7488**, which belongs to no `Nodes[]` (a `FlatSequence` is `Generic -> GObject -> FlatSequence`,
+measured). The SOURCE is the NEW loop's border terminal at `Diagram` traverse index 19, `Nodes[21]`,
+`Terminals[1]`, name `'Outgoing Handle'`, `Is Source?` True, currently BARE.
+
+## What was measured in the two runs of the recipe (facts, not opinion)
+
+* ARM A2 (connect first, delete after), `c80_rowd_routeA_r2.log:244,253-261`: the SWAPPED
+  `OpConnectFromWire_v0` call DOES attach the intended new source. The loop border terminal went BARE ->
+  wire 7506, and a pre-delete walk of net 7506 shows THREE source terminals - `RightShiftRegister #23868`
+  (the intended new one), `FlatSequenceInnerTunnel #7468`, and `RightShiftRegister #4334` (the old one) -
+  with 0 rule violations. So the connect BRANCHES; it does not REPLACE. `Wire.Is Broken?` True,
+  `ExecState` 0. Deleting wire 7506 afterwards leaves BOTH ends bare (measured twice).
+* ARM A1 (delete first, then connect), `c80_rowd_routeA_r2.log:119`: with 7506 already deleted, the op's
+  `Wire.Terms[]` read raises `error 1055: Property Node in OpConnectFromWire_v0.vi`, `UID 2` 0, wire delta
+  0, #7488 stays BARE. A dead wire uid cannot supply a terminal.
+
+## The claim you must attack
+
+"Every writer on disk addresses its terminals as (diagram index, `Nodes[]` index, `Terminals[]` index) or
+by taking a terminal out of a live `Wire.Terms[]`. Row D needs a terminal that is in no `Nodes[]` (#7488)
+and a terminal that is on no wire (the bare loop border terminal). Therefore the ONE missing capability is
+`uid -> Terminal reference`, and the correct next measurement is: does
+`vi.lib\VIServer\UID to GObject Reference.vi` resolve a TERMINAL uid (it is proven only on TUNNEL and WIRE
+uids), and can the resulting reference be downcast to `Terminal`? A YES selects a general `OpConnectByUid`
+(donor `OpConnectNested_v2`); a NO selects an op built on the `FlatSequenceInnerTunnel` property
+`Left Terminal` 1C3A9000."
+
+## Specific things to attack, with what we already ruled out
+
+1. **Is the probe even decisive?** `UID to GObject Reference.vi` returns a `GObject` refnum. Suppose it
+   resolves the terminal and `GObject.Class Name` reads `Terminal`. Does that actually license wiring an
+   Invoke node of class `Terminal`, method `Connect Wire` **6349C03**, to that reference over VI Scripting -
+   or is there a separate reason a terminal reference obtained this way cannot drive that Invoke?
+2. **Is there a cheaper route we have missed that needs NO new op?** Already ruled out and why:
+   (a) `Tunnel.Inside Terminals[]` 6356000 / `Outside Terminal` 6356001 cannot address #7488, because
+   `FlatSequenceInnerTunnel` is not a `Tunnel`; its own properties are `Left Terminal` 1C3A9000 /
+   `Right Terminal` 1C3A9001. (b) No `Nodes[]` address for a `FlatSequence` exists. (c)
+   `Node.Connect Wires` needs both ends to be `Node`s. (d) `Wire.Disconnect Terminal` 6370C0D is reported
+   by labviewwiki as "(Not Implemented)". Is any of (a)-(d) wrong, or is there an (e)?
+3. **The branch-vs-replace problem may be the real fault, not the addressing.** If the swapped connect
+   branches rather than replaces, would a uid-addressed Invoke behave any differently? If not, the whole
+   D-1 probe is measuring the wrong thing and the missing capability is "remove ONE source terminal from a
+   net without destroying the net". Argue this if you can support it.
+4. **Anti-history-echo.** Our uid readers have echoed stale values before. What would make a `Class Name`
+   of `Terminal` coming back from this probe UNSOUND evidence, and what extra column would close that hole?
+
+Answer with: the strongest reason the claim is wrong; an alternative explanation; what would falsify it;
+and the single cheapest discriminating test, expressed as reads we can run on a scratch copy.

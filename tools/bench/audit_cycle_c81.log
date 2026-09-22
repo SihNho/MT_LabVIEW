@@ -1,0 +1,47 @@
+BGRUN START 2026-09-22 11:45:53 limit 12.0 min: py -u tools\audit_cycle.py --from 2026-09-22 01:09:00 --to 2026-09-22 02:52:00
+
+== cycle audit, 2026-09-22 01:09 .. 2026-09-22 02:52 (103 min, an explicit cycle window): 11 build logs, 5 peer logs, 18 archived reviews
+   (A4 scopes reviews by the DATE in the filename, so it is day-granular even inside a tight window)
+
+  PASS  A1 every build log came from bgrun: 11/11 ok
+  PASS  A2 every bgrun ended (END or TIMEOUT): all runs accounted for
+  PASS  A3 every failing log is followed by an archived review: 2 logs recorded a failure; unreviewed: none
+  FAIL  A4 every archived review says what was done with it: 15/18 annotated; blank: ['2026-09-22-c74-m3a2-fmt.md', '2026-09-22-outcome-review-20260922.md', '2026-09-22-retrospective-cycle65.md']
+  PASS  A5 the main VI was not modified in this window: md5 2a78e17c449c…, mtime 2026-09-01 12:07
+  PASS  A7 no archive note wikilinks into the active set: archive links stay inside archive
+  n-a   A6 state-changing GUI actions are recorded: 1816 lines in gui_actions.log (all time); this cycle used no GUI if the retrospective agrees
+
+  C1 builds run 13, failure markers 4, logs carrying a failure 2
+  C2 peer reviews dispatched 5, archived 18
+  C3 wall-clock inside bgrun, BUILDS ONLY 7 min 11 s
+  C4 wall-clock inside bgrun, REVIEWS 24 min 50 s; cost $12.3687 from 3 log(s) that report one
+  C4b cost lines seen 3 / parsed 3
+  C4c judgement session (cycle_runner's own `claude -p`), NOT a review: 100 min 55 s; cost $51.6216 from 1 log(s) - cycle_59.log
+  C5 total wall-clock 132 min 56 s  (builds 5%, reviews 18%, judgement session 75%)
+
+  C6 material-marked recipe/bench runs 24, judgement-session attempts refused 3  <- delegate to the `material` agent instead
+
+  C7 files modified in the window but NOT named in docs/cycle27-plan.md [frontmatter `status: current`]: 8 - tools/bench/c74_gate10_report.py, tools/bench/diag_c73_m3a2_rows.py, tools/bench/diag_c74_m3a2_verify.py, tools/bench/m3a2_save_after_20260922_023029.png, tools/bench/m3a2_save_before_20260922_023029.png, tools/bench/peer_task_c74_gate10.md, tools/bench/peer_task_c74_m3a2_execstate.md, tools/bench/priorart_task_c74_m3a2.md
+
+
+== document lint (tools/doc_lint.py; CLAUDE.md section 4)
+
+  WARN  L1 frontmatter present and valid: 284/596 ok; 312 missing, 0 incomplete. Fix with `py tools/frontmatter.py`. first: ['archive/peer/2026-09-15-cycle8-plan-attack.md', 'archive/peer/2026-09-15-cycle8-plan-rule-audit.md', 'archive/peer/2026-09-15-frameloop-seam-77-crossings.md', 'archive/peer/2026-09-15-outcome-review-20260915.md', 'archive/peer/2026-09-15-peerps1-bomless-cp949-parse.md']
+  FAIL  L2 every cited project path exists: 4 DANGLING of 1605 citations checked:
+       STATUS.md:26 -> tools/bench/diag_c81_uidref.log
+       STATUS.md:55 -> tools/bench/diag_c81_uidref.log
+       STATUS.md:59 -> tools/stagekit.py
+       CLAUDE.md:363 -> tools/stagekit.py
+
+  WARN  L2c plan documents cite files that do not exist yet: 19 forward reference(s) in plan documents (expected while the cycle is open): ['docs/cycle14-plan.md:95 -> tools/recipes/build_opflatseqdiagrams_v0.py', 'docs/cycle14-plan.md:106 -> tools/bench/opflatseqdiagrams_labels.json', 'docs/cycle14-plan.md:168 -> tools/recipes/build_opflatseqdiagrams_v0.py', 'docs/cycle14-plan.md:169 -> tools/bench/build_opflatseqdiagrams_v0.log', 'docs/cycle14-plan.md:169 -> tools/bench/opflatseqdiagrams_labels.json', 'docs/cycle14-plan.md:170 -> tools/bench/diag_a3_complete.py']
+  PASS  L2b cited line numbers are in range: no citation points past a file's end
+  PASS  L3 STATUS.md stays one screen: 65 lines (limit 110)
+  PASS  L4 at most one current plan per family: ['docs/cycle27-plan.md'] current
+  PASS  L8 the current plan has a `## Pre-decided` section: docs/cycle27-plan.md ok
+  PASS  L5 superseded documents are not still current: no `supersedes:` target is still marked current
+  PASS  L6 archived reviews are disposed: skipped - audit_cycle A4 owns this condition
+  WARN  L7 decision/measurement sentences carry a mark: 416 unmarked line(s); a fact stated without `DECIDED:`/`MEASURED:`/`DECISION:` has to be inferred rather than extracted. first: ['docs/NAMES.md:391', 'docs/NAMES.md:530', 'docs/NAMES.md:652', 'docs/NAMES.md:851', 'docs/NAMES.md:934']
+
+AUDIT VIOLATIONS: A4 every archived review says what was done with it, L2 every cited project path exists
+
+BGRUN END rc=1 after 1s

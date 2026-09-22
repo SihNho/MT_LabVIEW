@@ -139,6 +139,56 @@ def is_recipe_build_log(path):
     return bool(script) and bool(_RECIPE_CMD_RE.search(" " + script))
 
 
+# A JUDGEMENT SESSION IS NOT A REVIEW. `tools/cycle_runner.py` spawns exactly one headless judgement session per
+# cycle - `claude.exe -p --model opus --effort max --output-format json ...` (cycle_runner.py:116) - under bgrun,
+# writing `tools/bench/cycle_<n>.log` (:413). `REVIEW_LOG_RE` already keeps that transcript out of the BUILD set,
+# which is right, but `audit_cycle` then summed its `total_cost_usd` into the REVIEW cost line. Cycle 64's audit
+# printed `C4 ... REVIEWS 125 min 45 s; cost $63.9903 from 4 log(s)`, of which $51.6216 and ~102 min were the
+# session itself (`tools/bench/cycle_59.log:62`); the three real reviews were $12.3687 and 1,490 s. So the device
+# built to make the cost argument factual reported reviews as 94% of a cycle that spent ~19% of its wall-clock on
+# them - `VIOLATION: device-failed` in `archive/peer/2026-09-22-retrospective-cycle64.md`, accepted in full.
+# The session's spend is real and stays VISIBLE (audit_cycle's C4c); it is simply not review traffic.
+_JUDGEMENT_PROGRAMS = ("claude", "claude.exe")
+# Filename fallback, used ONLY when the file carries no `BGRUN START` at all: `tools/bench/cycle_runner.log` is the
+# runner's own ledger, not a run. Same trailing underscore as REVIEW_LOG_RE, so `cycle3_toolkit.log` (a real 2026-09
+# build) is untouched; `cycle_runner.log` matches on the `cycle_` prefix.
+JUDGEMENT_LOG_RE = re.compile(r"^cycle_", re.I)
+
+
+def command_program(cmd):
+    """The PROGRAM a bgrun command line invokes - lower-cased basename, "" for an empty command.
+
+    `MATERIAL=1 py -u tools/recipes/x.py` -> `py`; `C:\\...\\python.exe ...` -> `python.exe`. Leading env
+    assignments are skipped because bgrun logs them in front of the program; a quoted program is unquoted.
+    """
+    for tok in cmd.split():
+        bare = tok.strip("\"'")
+        if "=" in os.path.basename(bare.replace("\\", "/")) and not bare.startswith("-"):
+            continue                      # MATERIAL=1 and friends sit in front of the program
+        return os.path.basename(bare.replace("\\", "/")).lower()
+    return ""
+
+
+def is_judgement_session_log(path):
+    """True when this log records a whole JUDGEMENT SESSION spawned by `tools/cycle_runner.py`.
+
+    Scoped the way `is_recipe_build_log` is - by the log's OWN last `BGRUN START` COMMAND, never by the filename
+    when a sounder signal exists. The command's program is `claude.exe`; a PEER dispatch is not this even though
+    it may dispatch the claude peer, because `peer.ps1` runs as `powershell -Command & 'tools/peer.ps1' -Agent
+    claude ...` and the program in command position is `powershell`. The filename is consulted only for a file
+    with no `BGRUN START` line at all (the runner's ledger).
+
+    A `cycle_<n>.log` whose own run was the runner's DRY stand-in (`python -c "print('dry')"`) is deliberately
+    False: it is not a judgement session and it spent nothing. This predicate reclassifies COST ONLY - it does not
+    touch `is_build_log` (guard_peer arms the mandatory failed-prediction review off that) or `is_review_log`
+    (a judgement transcript is still machinery, still excluded from builds and from failure scanning).
+    """
+    cmd = last_bgrun_command(path)
+    if cmd:
+        return command_program(cmd) in _JUDGEMENT_PROGRAMS
+    return bool(JUDGEMENT_LOG_RE.match(os.path.basename(path)))
+
+
 def split(paths):
     """(build_logs, machinery_logs) for cycle accounting - watchdog records group with the machinery."""
     builds, machinery = [], []

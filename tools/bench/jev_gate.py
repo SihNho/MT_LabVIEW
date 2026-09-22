@@ -26,6 +26,7 @@ THRESHOLDS (docs/jev-integration-plan.md "공통 원칙": 0.3-0.7 is "unknown" -
   prior-art  p >= DUP_P (0.85)        -> ADVISORY ONLY. One JEV-PRIORART-DUP line; nothing is blocked.
 """
 import glob
+import json
 import os
 import re
 import sys
@@ -235,6 +236,19 @@ def jev_discharge(log_path, failure_text, n=N_RECENT_REVIEWS, before=None, write
 
     NEVER RAISES and never blocks longer than the bounded calls: any exception means the old behaviour."""
     try:
+        # DECISION CACHE (2026-09-22 11:4x): the same (log, review) pair read p=0.80, 0.78, 0.80, 0.79 within
+        # twenty minutes, so the gate flapped allow/block on consecutive commands. A discharge, once granted and
+        # CITED in the review file, is final for that log - the citation is already on record.
+        cache_path = os.path.join(os.path.dirname(GATE_LOG), "jev_discharge_cache.json")   # beside the gate log, so a redirected GATE_LOG isolates the cache too
+        try:
+            with open(cache_path, encoding="utf-8") as f:
+                cache = json.load(f)
+        except Exception:
+            cache = {}
+        hit = cache.get(os.path.basename(log_path))
+        if isinstance(hit, dict) and hit.get("review"):
+            return True, "JEV-DISCHARGE | cached | %s covered by %s p=%.3f (granted %s)" % (
+                os.path.basename(log_path), hit["review"], float(hit.get("p", 0)), hit.get("ts", "?"))
         if not jev.get_key():
             return False, None
         fs = jev.summarise_failure(log_path) or jev.normalise(failure_text or "")[:3200]
@@ -254,6 +268,12 @@ def jev_discharge(log_path, failure_text, n=N_RECENT_REVIEWS, before=None, write
                 if write:
                     gate_log(line)
                     cite_in_review(rp, os.path.basename(log_path), p, ts)
+                    try:
+                        cache[os.path.basename(log_path)] = {"review": os.path.basename(rp), "p": p, "ts": ts}
+                        with open(cache_path, "w", encoding="utf-8") as f:
+                            json.dump(cache, f, indent=1)
+                    except Exception:
+                        pass
                 return True, line
         if best[0] is not None and best[0] > ADVISORY_LO:
             line = "JEV-ADVISORY | %s | %s closest review %s p=%.3f (< %.2f: blocking as before)" % (
