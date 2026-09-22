@@ -100,6 +100,7 @@ LOOP_TERM_IDX = 1        # 'Outgoing Handle' - row D's SOURCE, BARE on the bed
 RSR_EXPECT = 23868       # Pre-decided 120: the OWNER of that terminal is the register, not the loop
 D686 = 686
 D686_IDX = 19
+NEG_UID = 999983         # NEGATIVE CONTROL: a uid this VI has never allocated (census max is ~44k)
 TERMCENSUS_OWNERS_CAP = 60
 
 STAMP = time.strftime("%Y%m%d_%H%M%S")
@@ -342,14 +343,23 @@ def phase_b():
                 fact("B owner resolution stopped after %d candidate(s) (deadline reserve or no op ref)" % n)
                 break
             o = probe_ownerchain(vio, labs, SCRATCH, r["uid"], quiet=True)
-            if o.get("owner_uid") == RSR_EXPECT:
+            # RUN 1 MEASURED (`diag_c81_uidref.log:85`) that on a never-allocated uid this resolver returns a
+            # reference to a DIFFERENT, previously-resolved object with EVERY error column empty - the uid echo
+            # is the ONLY column that catches it. So a candidate is counted only when its echo holds.
+            if o.get("owner_uid") == RSR_EXPECT and o.get("uid_echo_ok"):
                 hits.append({"terminal_uid": r["uid"], "pos": r.get("pos"), "self_class": o.get("cls_back"),
-                             "owner_class": o.get("ownercls"), "owner_uid": o.get("owner_uid")})
+                             "owner_class": o.get("ownercls"), "owner_uid": o.get("owner_uid"),
+                             "uid_echo_ok": o.get("uid_echo_ok")})
     R["B"]["terminals_owned_by_expect"] = hits
-    fact("B terminal(s) whose OWNER resolves to #%d: %d -> %r" % (RSR_EXPECT, len(hits), hits))
-    R["B"]["target_b_uid"] = hits[0]["terminal_uid"] if len(hits) == 1 else None
-    fact("B *** TARGET B terminal uid = %r (exactly one owned by #%d => that one; 0 or >1 => NOT DETERMINED "
-         "and the probe below runs on whatever WAS determined) ***" % (R["B"]["target_b_uid"], RSR_EXPECT))
+    fact("B terminal(s) whose OWNER resolves to #%d with the uid echo intact: %d -> %r"
+         % (RSR_EXPECT, len(hits), hits))
+    outer = [h for h in hits if str(h.get("self_class")) == "OuterTerminal"]
+    R["B"]["outer_hits"] = outer
+    R["B"]["target_b_uid"] = outer[0]["terminal_uid"] if len(outer) == 1 else None
+    fact("B *** TARGET B terminal uid = %r -- the row-D SOURCE is the register's OUTER terminal, so the hit is "
+         "selected by the resolver's OWN class readout ('OuterTerminal'), not by list order; %d outer / %d "
+         "inner candidate(s) ***"
+         % (R["B"]["target_b_uid"], len(outer), len(hits) - len(outer)))
 
 
 # ================================================================== the two probe drives
@@ -413,7 +423,8 @@ def probe_fsit(vi, lab, target, uid):
            "owner_uid": rd.get("owner_uid"), "term_a_uid": rd.get("term_a_uid"),
            "term_b_uid": rd.get("term_b_uid")}
     out["errors"] = {k: (g._err(vi, lab[k]) or "") for k in
-                     ("errL", "errT", "errO", "errU", "errG", "errS", "errWU", "errCO", "err_a", "err_b")
+                     ("errL", "errT", "errO", "errU", "errG", "errS", "errWU", "errCO", "err_a", "err_b",
+                      "err_bcw")
                      if k in lab}
     out["uid_echo_ok"] = (out["uid_back"] == int(uid))
     fact("    P[FSIT]       uid %s -> self %r#%r (echo %s) | TMSC(FlatSequenceInnerTunnel) -> %r | "
@@ -440,6 +451,11 @@ def phase_p():
         fact("P TARGET B was not re-derived - it is NOT probed (no assumed uid is ever substituted)")
     targets.append(("CONTROL 1 FlatSequenceInnerTunnel #%d (proven tunnel uid)" % FSIT_UID, FSIT_UID))
     targets.append(("CONTROL 2 wire #%d (proven wire uid)" % WIRE_UID, WIRE_UID))
+    # NEGATIVE CONTROLS, added on the c81 review's section 6.1: without them nothing separates "the resolver
+    # resolved a terminal" from "the resolver returns something for anything". `c80_rowd_routeA_r2.log:119`
+    # already measured the uid-VI's error column EMPTY for a DELETED wire uid, so this hole is not theoretical.
+    targets.append(("NEG 1 never-allocated uid #%d (must NOT resolve)" % NEG_UID, NEG_UID))
+    targets.append(("NEG 2 known-OTHER-class uid: Diagram #%d (must resolve as 'Diagram')" % D686, D686))
     R["P"]["targets"] = [(lbl, u) for lbl, u in targets]
     labs_o = json.load(open(LAB_OWNER, encoding="utf-8")) if os.path.isfile(OP_OWNER) else None
     labs_f = json.load(open(LAB_FSIT, encoding="utf-8")) if os.path.isfile(OP_FSIT) else None
@@ -470,6 +486,28 @@ def phase_p():
         }
         fact("P SUMMARY %s: %s" % (label, json.dumps(row["summary"], default=str)))
         R["P"]["rows"].append(row)
+    # CROSS-ROUTE IDENTITY (c81 review section 6.3): a uid echoing itself proves the op ran, not that the uid
+    # still denotes what it denoted when captured - and uids ARE recycled in this VI
+    # (`c80_rowd_routeA_r2.log:127`: a new Invoke was handed uid 7506, the wire deleted seconds before). The
+    # sound check is AGREEMENT BETWEEN TWO INDEPENDENT ADDRESSINGS: TARGET A was reached STRUCTURALLY, through
+    # `FlatSequenceInnerTunnel #7468`.`Left Terminal`; its owner, read back through the UID route, must be that
+    # same tunnel.
+    head("[P-X] CROSS-ROUTE IDENTITY - does the UID route agree with the structural route about TARGET A?")
+    a_uid = R["A"].get("target_a_uid")
+    arow = next((r for r in R["P"]["rows"] if r.get("uid") == a_uid), None) if a_uid else None
+    if arow is None:
+        fact("P-X TARGET A was not probed, so the cross-route check does not apply")
+        R["P"]["crossroute"] = None
+        return
+    oc = arow.get("ownerchain") or {}
+    agree = (oc.get("ownercls") == "FlatSequenceInnerTunnel" and oc.get("owner_uid") == FSIT_UID)
+    R["P"]["crossroute"] = {"terminal_uid": a_uid, "owner_class_via_uid_route": oc.get("ownercls"),
+                            "owner_uid_via_uid_route": oc.get("owner_uid"),
+                            "structural_parent": "FlatSequenceInnerTunnel #%d" % FSIT_UID, "agree": agree}
+    fact("P-X *** #%r was reached STRUCTURALLY from FlatSequenceInnerTunnel #%d.Left Terminal ; the UID route "
+         "says its owner is %r#%r -> %s ***"
+         % (a_uid, FSIT_UID, oc.get("ownercls"), oc.get("owner_uid"),
+            "AGREE (two independent addressings denote one object)" if agree else "DISAGREE"))
 
 
 # ================================================================== [S] the seed census

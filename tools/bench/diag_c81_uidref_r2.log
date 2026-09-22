@@ -1,0 +1,126 @@
+BGRUN START 2026-09-22 12:00:15 limit 25.0 min: py -u tools/bench/diag_c81_uidref.py
+====================================================================================================
+DIAGNOSTIC diag_c81_uidref - D-1 of M3a-3b, MEASUREMENT ONLY, hygiene gates only (Pre-decided 63/121)
+====================================================================================================
+
+---------- [0] FILES ONLY - the bed's md5 BEFORE anything, the five pins, and the claudeDev file list
+  PASS  H1 bed md5 before == 33ef524e0b6b193a158c9221474c68e3  got 33ef524e0b6b193a158c9221474c68e3, 306951 bytes
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  claudeDev holds 233 .vi file(s) BEFORE the run
+
+---------- [1] RESTART LabVIEW (STATUS NEXT orders it - left at ~31,281 handles), then the scratch copy
+  FACT  LabVIEW handle count BEFORE the restart: 33986 (baseline ~31,500)
+  FACT  LabVIEW handle count AFTER the restart: 33972 (baseline ~31,500)
+  PASS  H0 the scratch is a byte-identical copy of the bed  33ef524e0b6b193a158c9221474c68e3 vs 33ef524e0b6b193a158c9221474c68e3
+  FACT  scratch C81SCRATCH_20260922_120015.vi md5 33ef524e0b6b193a158c9221474c68e3 (306951 bytes)
+  FACT  ensure_loaded(scratch) took 1.3 s
+  FACT  ExecState of the scratch (= the bed) = 0 - RECORDED ONLY, never a discriminator (Pre-decided 95)
+
+---------- [V] ATTRIBUTION - LabVIEW version/bitness and the ON-DISK PATH of the UID-to-GObject VI called
+  FACT  LabVIEW Application.Version              = '26.3.1f1'
+  FACT  LabVIEW Application.ApplicationDirectory = 'C:\\Program Files\\National Instruments\\LabVIEW 2026'
+  FACT  Application.Name raised AttributeError: LabVIEW.Application.Name
+  FACT  LabVIEW Application.Name                 = None ERROR AttributeError: LabVIEW.Application.Name
+  FACT  bitness read from the application directory: 64-bit (not under Program Files (x86))
+  FACT  this COM client: python 3.10.9 64-bit
+  FACT  V OpOwnerChain_v1 SubVIs[] on diagram 0: 2 row(s)
+  FACT      V OpOwnerChain_v1 CALLS 'UID to GObject Reference.vi'  uid #990  PATH 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\vi.lib\\VIServer\\UID to GObject Reference.vi'
+  FACT  V OpFsInnerTunnelTerm_v0 SubVIs[] on diagram 0: 2 row(s)
+  FACT      V OpFsInnerTunnelTerm_v0 CALLS 'UID to GObject Reference.vi'  uid #990  PATH 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\vi.lib\\VIServer\\UID to GObject Reference.vi'
+  FACT  V the documented location 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\vi.lib\\VIServer\\UID to GObject Reference.vi' exists on disk? True
+
+---------- [A] RE-DERIVE TARGET A - OpFsInnerTunnelTerm_v0 on FlatSequenceInnerTunnel #7468 -> its LEFT terminal uid
+   READ[IN] uid 7468 -> self 'FlatSequenceInnerTunnel'#7468 cast 'FlatSequenceInnerTunnel' | LeftTerm #7488 wire #7506 | RightTerm #7471 wire #7448 | is_source False | owner 'FlatSequenceInnerTunnel'#7468 | err '' A '' B '' | errs 
+  FACT  A RAW RETURN for #7468: {"uid_in": 7468, "kind": "IN", "err": "", "term_a_uid": 7488, "term_b_uid": 7471, "wire_b": 7448, "uid_back": 7468, "owner_uid": 7468, "recip_wire": 7506, "cls_back": "FlatSequenceInnerTunnel", "ownercls": "FlatSequenceInnerTunnel", "cast_class": "FlatSequenceInnerTunnel", "is_source": false, "err_a": "", "err_b": "", "err_bcw": "", "wire_a": 7506, "errs": ""}
+  FACT  A #7468 self echo 'FlatSequenceInnerTunnel'#7468 ; cast(FlatSequenceInnerTunnel) -> 'FlatSequenceInnerTunnel' ; owner 'FlatSequenceInnerTunnel'#7468
+  FACT  A #7468 LeftTerm terminal #7488 wire #7506 | RightTerm terminal #7471 wire #7448
+  FACT  A #7468 ERROR COLUMNS VERBATIM: err='' err_a='' err_b='' errs=''
+  FACT  A *** TARGET A (the FSIT #7468 LEFT terminal) RE-DERIVED AS #7488 ; STATUS said #7488 -> SAME ***
+
+---------- [B] RE-DERIVE TARGET B - WhileLoop #23032 Nodes[21] terminal 1, and its OWNER
+  FACT  B Diagram census: 173 row(s) ; Diagram #686 sits at traverse index 19 (planned 19)
+  FACT  B Nodes[21] of Diagram #686: node uid echo 23032 (expected the NEW WhileLoop #23032 -> MATCH), 7 terminal(s)
+  FACT      B #23032 t0  name=''                     is_source=False wire=23519   errs=[0, 0, 0, 0]
+  FACT      B #23032 t1  name='Outgoing Handle'      is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      B #23032 t2  name='Outgoing Handle'      is_source=False wire=4185    errs=[0, 0, 0, 0]
+  FACT      B #23032 t3  name='Out position'         is_source=True  wire=25231   errs=[0, 0, 0, 0]
+  FACT      B #23032 t4  name='Out position'         is_source=False wire=3968    errs=[0, 0, 0, 0]
+  FACT      B #23032 t5  name='# slices in stack'    is_source=False wire=24077   errs=[0, 0, 0, 0]
+  FACT      B #23032 t6  name='position [internal units]' is_source=True  wire=24130   errs=[0, 0, 0, 0]
+  FACT  B TARGET B's ROW: {'i': 1, 'name': 'Outgoing Handle', 'is_source': True, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 23032}
+  FACT  B RightShiftRegister census: 38 row(s) ; is #23868 among them? True
+  FACT  B Traverse census of class 'Terminal': 5811 row(s)  <- if 0/error, a BARE terminal's own uid has NO reader on disk and TARGET B's uid is NOT DERIVABLE without building
+  FACT  B of those, 152 row(s) report owner CLASS in (RightShiftRegister, LeftShiftRegister)
+  FACT  B terminal(s) whose OWNER resolves to #23868 with the uid echo intact: 2 -> [{'terminal_uid': 23906, 'pos': (5762, 2826), 'self_class': 'OuterTerminal', 'owner_class': 'RightShiftRegister', 'owner_uid': 23868, 'uid_echo_ok': True}, {'terminal_uid': 23889, 'pos': (5762, 2826), 'self_class': 'InnerTerminal', 'owner_class': 'RightShiftRegister', 'owner_uid': 23868, 'uid_echo_ok': True}]
+  FACT  B *** TARGET B terminal uid = 23906 -- the row-D SOURCE is the register's OUTER terminal, so the hit is selected by the resolver's OWN class readout ('OuterTerminal'), not by list order; 1 outer / 1 inner candidate(s) ***
+
+---------- [P] THE PROBE - does UID to GObject Reference.vi resolve a TERMINAL uid? Same columns for all four
+
+---------- [P] TARGET A  FSIT #7468 LEFT terminal  ->  uid #7488
+  FACT      P[OwnerChain] uid 7488 -> self 'Terminal'#7488 (echo OK) | TMSC(GObject) -> 'FlatSequenceInnerTunnel' | owner 'FlatSequenceInnerTunnel'#7468 | err '' | per-stage {}
+   READ[IN] uid 7488 -> self 'Terminal'#7488 cast '' | LeftTerm #0 wire #0 | RightTerm #0 wire #0 | is_source False | owner ''#0 | err '' A 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi' B 'error 1055: Property Node in OpFsInnerTu' | errs error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi error 1055: Property Node
+  FACT      P[FSIT]       uid 7488 -> self 'Terminal'#7488 (echo OK) | TMSC(FlatSequenceInnerTunnel) -> '' | err '' | per-stage {'errO': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errU': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errG': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errS': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errWU': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errCO': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'err_a': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'err_b': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'err_bcw': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi'}
+  FACT  P SUMMARY TARGET A  FSIT #7468 LEFT terminal: {"uid": 7488, "returned_class_name": "Terminal", "uid_echo_ok": true, "uidvi_error": "", "op_error": "", "tmsc_gobject_class": "FlatSequenceInnerTunnel", "tmsc_gobject_error": "", "tmsc_fsit_class": "", "tmsc_fsit_error": "error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi", "owner": "'FlatSequenceInnerTunnel'#7468"}
+
+---------- [P] TARGET B  loop #23032 Nodes[21] t1 terminal  ->  uid #23906
+  FACT      P[OwnerChain] uid 23906 -> self 'OuterTerminal'#23906 (echo OK) | TMSC(GObject) -> 'RightShiftRegister' | owner 'RightShiftRegister'#23868 | err '' | per-stage {}
+   READ[IN] uid 23906 -> self 'OuterTerminal'#23906 cast '' | LeftTerm #0 wire #0 | RightTerm #0 wire #0 | is_source False | owner ''#0 | err '' A 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi' B 'error 1055: Property Node in OpFsInnerTu' | errs error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi error 1055: Property Node
+  FACT      P[FSIT]       uid 23906 -> self 'OuterTerminal'#23906 (echo OK) | TMSC(FlatSequenceInnerTunnel) -> '' | err '' | per-stage {'errO': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errU': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errG': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errS': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errWU': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errCO': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'err_a': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'err_b': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'err_bcw': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi'}
+  FACT  P SUMMARY TARGET B  loop #23032 Nodes[21] t1 terminal: {"uid": 23906, "returned_class_name": "OuterTerminal", "uid_echo_ok": true, "uidvi_error": "", "op_error": "", "tmsc_gobject_class": "RightShiftRegister", "tmsc_gobject_error": "", "tmsc_fsit_class": "", "tmsc_fsit_error": "error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi", "owner": "'RightShiftRegister'#23868"}
+
+---------- [P] CONTROL 1 FlatSequenceInnerTunnel #7468 (proven tunnel uid)  ->  uid #7468
+  FACT      P[OwnerChain] uid 7468 -> self 'FlatSequenceInnerTunnel'#7468 (echo OK) | TMSC(GObject) -> 'FlatSequence' | owner 'FlatSequence'#681 | err '' | per-stage {}
+   READ[IN] uid 7468 -> self 'FlatSequenceInnerTunnel'#7468 cast 'FlatSequenceInnerTunnel' | LeftTerm #7488 wire #7506 | RightTerm #7471 wire #7448 | is_source False | owner 'FlatSequenceInnerTunnel'#7468 | err '' A '' B '' | errs 
+  FACT      P[FSIT]       uid 7468 -> self 'FlatSequenceInnerTunnel'#7468 (echo OK) | TMSC(FlatSequenceInnerTunnel) -> 'FlatSequenceInnerTunnel' | err '' | per-stage {}
+  FACT  P SUMMARY CONTROL 1 FlatSequenceInnerTunnel #7468 (proven tunnel uid): {"uid": 7468, "returned_class_name": "FlatSequenceInnerTunnel", "uid_echo_ok": true, "uidvi_error": "", "op_error": "", "tmsc_gobject_class": "FlatSequence", "tmsc_gobject_error": "", "tmsc_fsit_class": "FlatSequenceInnerTunnel", "tmsc_fsit_error": "", "owner": "'FlatSequence'#681"}
+
+---------- [P] CONTROL 2 wire #7506 (proven wire uid)  ->  uid #7506
+  FACT      P[OwnerChain] uid 7506 -> self 'Wire'#7506 (echo OK) | TMSC(GObject) -> 'Diagram' | owner 'Diagram'#686 | err '' | per-stage {}
+   READ[IN] uid 7506 -> self 'Wire'#7506 cast '' | LeftTerm #0 wire #0 | RightTerm #0 wire #0 | is_source False | owner ''#0 | err '' A 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi' B 'error 1055: Property Node in OpFsInnerTu' | errs error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi error 1055: Property Node
+  FACT      P[FSIT]       uid 7506 -> self 'Wire'#7506 (echo OK) | TMSC(FlatSequenceInnerTunnel) -> '' | err '' | per-stage {'errO': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errU': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errG': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errS': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errWU': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errCO': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'err_a': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'err_b': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'err_bcw': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi'}
+  FACT  P SUMMARY CONTROL 2 wire #7506 (proven wire uid): {"uid": 7506, "returned_class_name": "Wire", "uid_echo_ok": true, "uidvi_error": "", "op_error": "", "tmsc_gobject_class": "Diagram", "tmsc_gobject_error": "", "tmsc_fsit_class": "", "tmsc_fsit_error": "error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi", "owner": "'Diagram'#686"}
+
+---------- [P] NEG 1 never-allocated uid #999983 (must NOT resolve)  ->  uid #999983
+  FACT      P[OwnerChain] uid 999983 -> self 'Wire'#7506 (echo MISMATCH) | TMSC(GObject) -> 'Diagram' | owner 'Diagram'#686 | err '' | per-stage {}
+   READ[IN] uid 999983 -> self 'Wire'#7506 cast '' | LeftTerm #0 wire #0 | RightTerm #0 wire #0 | is_source False | owner ''#0 | err '' A 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi' B 'error 1055: Property Node in OpFsInnerTu' | errs error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi error 1055: Property Node
+  FACT      P[FSIT]       uid 999983 -> self 'Wire'#7506 (echo MISMATCH) | TMSC(FlatSequenceInnerTunnel) -> '' | err '' | per-stage {'errO': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errU': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errG': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errS': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errWU': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errCO': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'err_a': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'err_b': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'err_bcw': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi'}
+  FACT  P SUMMARY NEG 1 never-allocated uid #999983 (must NOT resolve): {"uid": 999983, "returned_class_name": "Wire", "uid_echo_ok": false, "uidvi_error": "", "op_error": "", "tmsc_gobject_class": "Diagram", "tmsc_gobject_error": "", "tmsc_fsit_class": "", "tmsc_fsit_error": "error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi", "owner": "'Diagram'#686"}
+
+---------- [P] NEG 2 known-OTHER-class uid: Diagram #686 (must resolve as 'Diagram')  ->  uid #686
+  FACT      P[OwnerChain] uid 686 -> self 'Diagram'#686 (echo OK) | TMSC(GObject) -> '' | owner 'FlatSequenceFrame'#0 | err '' | per-stage {'errG': 'error 1055: Property Node in OpOwnerChain_v1.vi'}
+   READ[IN] uid 686 -> self 'Diagram'#686 cast '' | LeftTerm #0 wire #0 | RightTerm #0 wire #0 | is_source False | owner ''#0 | err '' A 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi' B 'error 1055: Property Node in OpFsInnerTu' | errs error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi error 1055: Property Node
+  FACT      P[FSIT]       uid 686 -> self 'Diagram'#686 (echo OK) | TMSC(FlatSequenceInnerTunnel) -> '' | err '' | per-stage {'errO': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errU': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errG': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errS': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errWU': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'errCO': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'err_a': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'err_b': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi', 'err_bcw': 'error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi'}
+  FACT  P SUMMARY NEG 2 known-OTHER-class uid: Diagram #686 (must resolve as 'Diagram'): {"uid": 686, "returned_class_name": "Diagram", "uid_echo_ok": true, "uidvi_error": "", "op_error": "", "tmsc_gobject_class": "", "tmsc_gobject_error": "error 1055: Property Node in OpOwnerChain_v1.vi", "tmsc_fsit_class": "", "tmsc_fsit_error": "error 1055: Property Node in OpFsInnerTunnelTerm_v0.vi", "owner": "'FlatSequenceFrame'#0"}
+
+---------- [P-X] CROSS-ROUTE IDENTITY - does the UID route agree with the structural route about TARGET A?
+  FACT  P-X *** #7488 was reached STRUCTURALLY from FlatSequenceInnerTunnel #7468.Left Terminal ; the UID route says its owner is 'FlatSequenceInnerTunnel'#7468 -> AGREE (two independent addressings denote one object) ***
+
+---------- [S] WHY THE LITERAL 'TMSC -> Terminal' COLUMN IS NOT MEASURABLE IN THIS DISPATCH
+  FACT  S class-seeded TMSC label maps on disk: {'opfsinnertunnelterm_labels.json': 'VI Server:FlatSequenceInnerTunnel', 'opfstunnelterm_labels.json': 'VI Server:FlatSequenceOuterTunnel'}
+  FACT  S plus the two UNNAMED seeds inside opwiresource_v5: seedW = a Wire-typed refnum, seedG = a GObject-typed refnum (docs/toolkit-capabilities.md:60-61)
+  FACT  S NO op on disk carries a `Terminal`-seeded To More Specific Class, so the literal cast asked for cannot be run without BUILDING one - which this dispatch forbids (Pre-decided 122 D-1). The two casts that DO exist were run on every uid above and are reported as tmsc_gobject_* / tmsc_fsit_*.
+
+---------- [H] HYGIENE - close the scratch, delete it, re-read every pin, handles at both ends
+  FACT  gscript ref_counts (opened / closed / live / cached op VIs): {'opened': 3, 'closed': 3, 'live': 0, 'cached_op_vis': 5}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 3, 'closed': 3, 'live': 0, 'cached_op_vis': 5}
+  FACT  LabVIEW handle count AFTER the reads: 34921 (after the restart it was 33972 ; baseline ~31,500)
+  PASS  H4 the scratch copy is deleted  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\C81SCRATCH_20260922_120015.vi
+  PASS  H2 bed md5 UNCHANGED after the run  before 33ef524e0b6b193a158c9221474c68e3 / after 33ef524e0b6b193a158c9221474c68e3
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 the five md5 pins all hold
+  PASS  H6 THE FILES THIS RUN LEFT ON DISK: []  added [] removed []
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  FACT  LabVIEW handle count at exit: 33967 (baseline ~31,500)
+
+====================================================================================================
+GATES: 7 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c81_uidref.json   elapsed 125.8 s
+BGRUN END rc=0 after 126s

@@ -1,0 +1,88 @@
+BGRUN START 2026-09-22 12:39:52 limit 20.0 min: powershell -NoProfile -ExecutionPolicy Bypass -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c82-bare-source -TaskFile tools/bench/task_c82_bare_source.md -TimeoutSec 900
+OUTCOME: ANSWERED (423s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-22-c82-bare-source.md
+COST: $2.7640  in 22 / out 32090 / cache-create 120014 / cache-read 1205047  (420s, 25 turn(s))
+--- ANSWER ---
+## 1. The single strongest reason the claim is WRONG
+
+**This project has already recorded `Terminal.Connect Wire` 6349C03 creating a brand-new wire between two bare terminals.**
+
+`tools/bench/build_harness_copyloop2.log:31-40`:
+
+- `:33-34` a fresh empty For loop, its count terminal read `(0, '', False, 0)` — name `''`, `is_source=False`, **wire 0, BARE**.
+- The source, `IMAQ GetImageSize` 'Y Resolution', was an output of a node dropped two steps earlier (`:24`); the only terminal wired on it was 'Image' (`:27-29`), and that step left the wire census at **9**, unchanged — a branch.
+- `:37-40` `connect_terminals` (= `OpConnect_v0` = 6349C03, `tools/gscript.py:2518-2520`): **`Wire=9 → 10`**, `N check: loop terminal 0 wire 346, 'Y Resolution' wire 346`, `ExecState 0 → 1`.
+
+A wire-count **+1** is by itself proof this was a creation and not a join: `tools/gscript.py:2521-2522` records the measured branch semantics — "an already-wired source is BRANCHED (wire count unchanged)". Count +1 ⇒ not a branch ⇒ the source was bare ⇒ **the method created a wire from a bare `Wire Source`.** The same shape appears again at `tools/recipes/build_opqueue.py:127,137` (creator `error out` → subVI input, predicted and gated as wire delta 1).
+
+So "6349C03 silently declines when the `Wire Source` terminal carries no wire" is false as a property of the method. Whatever happened in arm 2 is specific to arm 2 — and the experiment cannot tell you what, because **arm 1 and arm 2 differ in three ways at once**, not one:
+
+| | arm 1 | arm 2 |
+|---|---|---|
+| source terminal | wired | bare |
+| operation required of LabVIEW | **join** an existing net | **create** a new wire |
+| must LabVIEW determine a source/sink polarity? | **no** | **yes** |
+
+The brief's hypothesis picks the first row. Rows two and three are equally consistent with the data, and row three is the one with independent evidence.
+
+## 2. The alternative explanation arm 1 does not refute
+
+**(a) Primary: the call asks for a wire that cannot legally exist — the roles are inverted.**
+
+Measured on the bed, before any mutation:
+
+- `Wire Source` = FSIT `LeftTerm` **#7488**, `is_source=**False**` — the true **SINK** of wire 7506 (`tools/bench/c80_rowd_routeA_r2.log:75`, `:95`, `:98`).
+- The Invoke's own terminal = loop `#23032` `Terminals[1]` 'Outgoing Handle', `is_source=**True**`, BARE (`:91`, `:92`).
+
+So the call says: *create a wire whose "original source" is this sink, and attach it to me, a source.* The method's required parameter is documented as **"Wire Source — The original source of the wire"** ([labviewwiki, Terminal class/Connect Wire method](https://labviewwiki.org/wiki/Terminal_class/Connect_Wire_method)). On a **create**, LabVIEW has to resolve a source; there isn't one — there are two sources and no sink. On a **join**, it never asks: it attaches the invoked terminal to the existing net, which is why arm 1 "worked" **and produced a broken 3-source net** — `[('RightShiftRegister', 23868), ('FlatSequenceInnerTunnel', 7468), ('RightShiftRegister', 4334)]`, `Is Broken? True`, `ExecState 0` (`c80_rowd_routeA_r2.log:259-261`, `:237`).
+
+Arm 1 therefore cannot refute this: arm 1 never exercised source determination. And note what follows for the plan — **Pre-decided 119 (`docs/cycle27-plan.md:3467`) over-generalises**: what `:244` proved is that the roles may be exchanged *when joining an existing wire*, which is a different operation from creating one. Pre-decided 115's own warning ("a convention adopted from a wiki is evidence of how WE have written ops") cuts both ways here.
+
+Critically, the copyloop2 counterexample is **polarity-correct** (node output → loop count input) — so it is evidence *for* this alternative, not just against the claim.
+
+**(b) Second alternative: `Auto Route?` defaults to FALSE and no op in the fleet wires it.** The parameter list is `Wire Source` (req), `Auto Wire?`, `Wiring Specs`, `Auto Route?` ([labviewwiki](https://labviewwiki.org/wiki/Terminal_class/Connect_Wire_method); your own `docs/keystone-op-spec.md:354` records `Auto Route? (F)`). A join needs a short stub; a fresh wire from a flat-sequence inner tunnel to a While-loop border terminal on a 1,920-wire diagram needs a path. `tools/recipes/build_opfsinnertunnelconnect_v0.py` never mentions `Auto Route` — it is at default FALSE.
+
+**(c) Third: "no error anywhere" may be unmeasured rather than measured.** The recipe wires indicators on the **three new** stages' `error out` (`build_opfsinnertunnelconnect_v0.py:542-552`) — the UID-to-GObject subVI, the FSIT property node, the LeftTerm node. Nothing in the log demonstrates that the **Invoke's own `error out`** reaches the op's `error out`, and auto error handling is OFF. This lineage has exactly this defect on record (`docs/NAMES.md:978`: an unwired `error in (no error)` that made a readback report the *old* wire). Until that one wire is shown to exist, "silent" is not established — only "quiet". Externally, the one NI-employee-answered thread on this exact situation reports the opposite behaviour: *"scripting `ConnectWire` on a loose terminal produces an error"* ([NI Forums 4195933](https://forums.ni.com/t5/LabVIEW/Script-connect-existing-loose-wires-to-case-tunnels/td-p/4195933)).
+
+Where the evidence does not settle the question: **the log cannot distinguish (a), (b) and (c)**, because bareness, join-vs-create and polarity all changed together and the error path is unverified.
+
+## 3. What would FALSIFY the claim — stated as an observation
+
+> On any VI, a 6349C03 call whose `Wire Source` terminal reads wire 0 ends with **wire census +1** and the **same new wire uid on both terminals**.
+
+That observation is already in your own bench directory (`build_harness_copyloop2.log:39-40`), so on the record the claim is falsified today; what is still open is the arm-2 cause.
+
+The falsifier for **my** alternative (a): a call where the `Wire Source` terminal reads `is_source=False` and both ends are bare, which nevertheless produces wire census +1.
+
+## 4. The cheapest discriminating test
+
+A 2×2 on a **trivial scratch VI**, no new op, no bed, ~2 minutes, using only `gscript.connect_terminals` (`tools/gscript.py:2518`) — the copyloop2 shape from `tools/recipes/build_harness_copyloop2.py:133-134`. Drop two subVI nodes with unwired terminals on one top-level diagram and run four calls, reading the wire census before/after each:
+
+| | invoke on | `Wire Source` | claim predicts | alternative (a) predicts |
+|---|---|---|---|---|
+| **T1** | bare **input** | bare **output** | 0 | **+1** |
+| **T2** | bare **output** | bare **output** | 0 | **0** |
+| **T3** | bare **input** | bare **input** | 0 | **0** |
+| **T4** | bare **output** | bare **input** (arm 2's exact polarity) | 0 | **0** |
+
+**T1 vs T4 is the whole experiment.** Same bareness on both, opposite polarity. If T1 creates a wire and T4 does not, the claim is dead and the cause is polarity — on a diagram with no FSIT, no shift register and no structure border, which also rules out (b). If T1 and T4 both fail, the claim survives and copyloop2 needs re-explaining. If both succeed, it is neither, and the FSIT/bed geometry is the suspect.
+
+Then the decisive bed test, on a dated scratch copy: **swap the op's halves back** — put the uid-resolved `#7488` reference on the Invoke's `reference` input and the index-addressed border terminal on `Wire Source`, i.e. invoke on the true sink. That is a one-wire change to `OpFsInnerTunnelConnect_v0` (`build_opfsinnertunnelconnect_v0.py:509`, the `LeftTerm → Wire Source` wire), not a new op — and it already satisfies Pre-decided 119's "ONE missing capability: address a BARE terminal by UID at the Invoke", because `:323` proves the resolver returns #7488 from a bare tunnel with every error column empty.
+
+## 5. Is there a documented NI verb for two bare terminals given one as a reference? — Yes, and your record of it is wrong
+
+**`Terminal.Create Described Wire`**: *"Connects a wire to the terminal. **The wire source can only be another terminal.**"* Parameters: `Wire Source` (GObject refnum, **required**), `Wire Description` (**required** — 1D array of points, vertical then horizontal), `Auto Route?` (optional) — [labviewwiki, Terminal class/Create Described Wire method](https://labviewwiki.org/wiki/Terminal_class/Create_Described_Wire_method).
+
+`docs/cycle27-plan.md:3448-3450` retires it with *"`Create Described Wire` is itself a `Terminal` method, so no NI verb wires anything without a terminal reference at one end."* That does not follow — **you have terminal references at both ends**: the border terminal is index-addressable (`c80_rowd_routeA_r2.log:92`) and #7488 is uid-resolvable (`build_opfsinnertunnelconnect_v0.log:323`). Being a Terminal method is the reason it fits, not the reason it doesn't.
+
+And it is NI's own prescription **for this exact case**. Darren (NI), on connecting loose wires to structure tunnels: *"You can read the `Joints[]` property of the broken wire to get the coordinates of all the bends, then you can delete the broken wire, and re-create it with those same bend coordinates with the `Create Described Wire` method"* — marked solved ([NI Forums 4195933](https://forums.ni.com/t5/LabVIEW/Script-connect-existing-loose-wires-to-case-tunnels/td-p/4195933); [Wire class/Joints() property](https://labviewwiki.org/wiki/Wire_class/Joints()_property)).
+
+⚠️ **Operational consequence, worth more than the rest of this review:** both runs deleted wire 7506 **without first reading its `Wire.Joints[]`** (`c80_rowd_routeA_r2.log:101-102`). Those coordinates are the required input to the documented route, and they die with the wire. On the next scratch copy, read `Joints[]` *before* the delete, unconditionally — it costs one property read and it is unrecoverable afterwards.
+
+Second correction: `docs/NAMES.md:1143` and Pre-decided 118 say `Node.Connect Wires` *"needs both ends to be `Node`s"*. The wiki says *"The wire source can be either another node or a terminal"* ([Node class/Connect Wires method](https://labviewwiki.org/wiki/Node_class/Connect_Wires_method)). It is the **invoked object** that must be a Node — the source may be a Terminal. `WhileLoop #23032` is a Node, so the verb is type-legal here. It is still awkward for Row D: `Wiring Specs` addresses terminals by **name**, and 'Outgoing Handle' appears at both t1 and t2 of #23032 (`c80_rowd_routeA_r2.log:91`), so a name-addressed spec is ambiguous. Awkward is a different verdict from impossible, and the file currently records the wrong reason.
+
+---
+
+**Do I still believe the claim after all four? No.** It is refuted by `build_harness_copyloop2.log:39-40` as a statement about the method. The narrower, still-live question is why *this* call did nothing, and the measurement you have cannot separate polarity from routing from an unobserved error. What would change my mind: T1 above returning wire delta 0.
+
+Sources: [Terminal class/Connect Wire method](https://labviewwiki.org/wiki/Terminal_class/Connect_Wire_method) · [Terminal class/Create Described Wire method](https://labviewwiki.org/wiki/Terminal_class/Create_Described_Wire_method) · [Node class/Connect Wires method](https://labviewwiki.org/wiki/Node_class/Connect_Wires_method) · [Wire class/Joints() property](https://labviewwiki.org/wiki/Wire_class/Joints()_property) · [NI Forums — Script connect existing loose wires to case tunnels](https://forums.ni.com/t5/LabVIEW/Script-connect-existing-loose-wires-to-case-tunnels/td-p/4195933) · [NI Forums — Connecting wires to build array through VI Scripting](https://forums.ni.com/t5/LabVIEW/Connecting-wires-to-build-array-through-VI-Scripting/td-p/3092615) · [NI — Connect Wire (API ref)](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/terminal/connectwire.html) (page returned only navigation shell to fetch — cited for completeness, not relied on)
+BGRUN END rc=0 after 424s

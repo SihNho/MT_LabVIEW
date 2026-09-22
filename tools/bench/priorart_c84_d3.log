@@ -1,0 +1,119 @@
+BGRUN START 2026-09-22 13:53:21 limit 20.0 min: py tools\prior_art_review.py --plan-file tools\bench\priorart_plan_c84_d3.md --slug c84-d3-rowd --trigger cycle-start --recipe tools/recipes/build_d1_m3a3b_d3.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c84-d3-rowd.txt (52774 chars)
+OUTCOME: ANSWERED (302s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-22-priorart-c84-d3-rowd.md
+COST: $4.2316  in 34 / out 23692 / cache-create 225643 / cache-read 2765416  (298s, 32 turn(s))
+--- ANSWER ---
+I read the recipe, the c83 logs, the plan's Pre-decided entries, the toolkit sources and the archive. Findings below; every one carries a file and line.
+
+---
+
+# PRIOR-ART REVIEW — D-3 of M3a-3b (`build_d1_m3a3b_d3.py`)
+
+## PART A — THE DIRECTION
+
+### A1 SETTLED ALREADY — the delete-before-connect ordering is a live Pre-decided entry that this recipe reverses without citing it
+
+`docs/cycle27-plan.md:3294-3307` (**Pre-decided 106**, ADDED 2026-09-22, cycle 65):
+
+> *"`connect_from_wire` into an **already-wired sink** is a measured **silent no-op** on this very VI … Therefore, in M3a-3: **the delete precedes every row** (mandatory, measured, older than cycle 62's re-cut)"*
+
+and `docs/cycle27-plan.md:3364-3366` (**Pre-decided 111**, Row D's own acceptance clause):
+
+> *"Acceptance is Pre-decided 106 unchanged and is **not** relaxed by this entry: the delete precedes the connect (an already-wired sink is a measured silent no-op)"*
+
+D-3 does the opposite — `tools/recipes/build_d1_m3a3b_d3.py:54` *"on dated scratch COPIES of the bed with wire 7506 LEFT ALIVE"*, and `:63` *"wire 7506 is never deleted anywhere"*. The recipe's docstring (`:6-11`) explains why delete-first is now impossible, but nowhere does it name 106 or 111, and the plan document still carries both as current. `STATUS.md`'s own `## NEXT` still reads *"THEN D-3: Row D on the bed — **delete 7506**, connect `#23868`'s OUTER into `#7488`"*.
+
+This is not an argument that D-3 is wrong. It is that D-3 is executing against a written decision that says the opposite, and the release path is to amend 106/111 in `docs/cycle27-plan.md` with c83's `error 1055` evidence — not to run past them silently.
+
+### A2 REFUTED ALREADY — "wiring onto a wired input replaces the wire" is contradicted by this project's own measurement of that act, twice, and neither outcome was a clean replacement
+
+The recipe's central premise, `tools/recipes/build_d1_m3a3b_d3.py:10-11`:
+
+> *"in LabVIEW's editor, wiring a new source onto an input that is already wired REPLACES the existing wire. That is what this file measures."*
+
+Against it:
+
+1. **`docs/keystone-op-spec.md:444-446`** — the original measurement of `Terminal.Connect Wire` 6349C03 through `OpConnect_v0` (§28, 2026-09-06): *"Earlier 'no wire, VI breaks' runs targeted IA534, whose array input is already wired in GUIBENCH_v0: **Connect Wire on a wired sink re-routes and breaks** — only wire unwired sinks."* That is a measured outcome on an already-wired sink, and it is break, not replace.
+
+2. **`archive/2026-09-16-status-gate-a1-delete-regression.md:94-97`** — a disposed peer review (`archive/peer/2026-09-16-ownerchain-b2-b3-failed-prediction.md`) verified against our own files, on a recipe that *"wired **four** already-wired sinks"*: *"a branch should PRESERVE the wire uid, so 1208 was an uncontrolled replacement, and 1444 is most likely a source-less fragment."* An uncontrolled replacement plus a source-less fragment — not the clean single-source net GATE S(a) expects.
+
+Does it still apply? Both were measured on index-addressed sinks through `OpConnect_v0` / the A1 recipe, not on a uid-addressed `FlatSequenceInnerTunnel` `LeftTerm`. Nothing on file claims the addressing route changes the *method's* behaviour once it holds a terminal reference — so refuting this costs showing, in writing, why a uid-resolved reference makes 6349C03 behave differently from an index-resolved one on the same class of already-wired sink.
+
+### A3 CONTRADICTED — the premise conflicts with the docstring of the wrapper family this recipe imports
+
+`tools/gscript.py:2522-2523`, in `connect_terminals`, the wrapper for the very method under test:
+
+> *"an already-wired source is BRANCHED (wire count unchanged, ExecState 0→1); an already-wired SINK is **not safe** (LabVIEW re-routes and the VI breaks) — wire only unwired sinks."*
+
+Same sentence, independently, in the skill: `.claude/skills/labview-automation/references/vi-scripting.md:603` and `:627`. The recipe imports `gscript` at `:119` and its "WHAT ALREADY EXISTS" audit (`:13-35`) walks six source files without reaching this line.
+
+Second contradiction, internal to the prior art: A2's two records disagree with **each other** — `docs/cycle27-plan.md:3295-3300` says the same act is a **silent no-op** (nothing happens), while `docs/keystone-op-spec.md:445` says it **re-routes and breaks**. Whichever is right, "REPLACES" is a third outcome that neither measurement produced. This matters concretely for GATE S(d2) (`build_d1_m3a3b_d3.py:579-581`): if the displaced wire survives as the source-less fragment of `…gate-a1-delete-regression.md:97`, the diagram-wide broken-wire count goes **up**, and (d2) is the gate that catches it — so the gate is well chosen, but the plan's expectation of it is not.
+
+### A4 UNREAD EVIDENCE
+
+- **`docs/keystone-op-spec.md:438-447`** — §28, where the already-wired-sink rule was actually *measured*, with the terminal-by-terminal outcomes. Cited nowhere in the recipe, nowhere in the review plan `tools/bench/priorart_plan_c84_d3.md`.
+- **`tools/bench/build_d1_m3a1.log:1174`** and its sibling call line `:1147` — the four on-this-VI measurements of the exact act (see B4). The recipe's audit block (`:13-35`) imports `build_d1_m3a1` for helpers (`:31-32`) but never reads its log.
+- **`archive/2026-09-16-status-gate-a1-delete-regression.md:94-97`** — the only record of what happened when four already-wired sinks were actually written.
+
+Process note, not a slug: the mandatory failed-prediction review of the c83 log is **still in flight** — `tools/bench/peer_c84_replace.log:1` shows `BGRUN START 2026-09-22 13:53:17 … -Slug c84-replace-vs-branch` with no `BGRUN END` line and no file in `archive/peer/`. Its task (`tools/bench/task_c84_replace_vs_branch.md:35-48`) asks precisely claim 3. `guard_peer.py` should refuse the build until it lands; if it TIMEOUTs it told you nothing and must be re-dispatched.
+
+---
+
+## PART B — THE ARTEFACT
+
+### B1 ALREADY BUILT — **no.** The op does not exist on disk
+
+`claudeDev` holds `OpFsInnerTunnelConnect_v0.vi` and no `_v1`; there is no `OpConnectNested_v2.vi` either (directory listing of `C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\Op*.vi`, 111 files). c83's swapped copy was a scratch and was deleted in-run — `tools/bench/diag_c83_connect2x2_r2.log:123` *"H4 scratch deleted: C83bSWAP_20260922_133523.vi"*. No Row D artefact exists (`STATUS.md`: *"M3a-3b (ROW D) IS NOT DELIVERED — NO FILE"*). **No finding.**
+
+### B2 ALREADY FAILED — the *construction* failed once, and the recipe already carries the fix
+
+`tools/bench/diag_c83_connect2x2_r2.log:35-46`: run 1's swapped copy read `ExecState` 0; run 2 fixed it by re-branching the two other consumers of the deleted nets (`#241.reference`, `#187.reference`) and reached `ExecState` 1 with Remove Bad Wires removing 0. `build_d1_m3a3b_d3.py:405-409` reproduces exactly that re-branch loop. **No finding** — the cause is addressed, not repeated.
+
+### B3 HELPER EXISTS — the "broken-wire count this project had no reader for" is already written, twice
+
+`build_d1_m3a3b_d3.py:66-68` claims the count is *"the one measurement this project had no reader for"*, and `:224-234` implements `bad_wire_count` as `count("Wire")` → `remove_bad_wires_scripted` → difference.
+
+That construction is already on disk: **`tools/bench/broken_probe2.py:12`** — `w0 = g.count(T, "Wire"); g.remove_bad_wires_scripted(T); print("… wires", w0, "->", g.count(T, "Wire"), "ExecState", g.exec_state(T))` — and is the stated method of **`tools/bench/bool_wire_probe.py:12`** (*"wire count and ExecState immediately after the wire, and again after remove_bad_wires"*).
+
+Scope, stated precisely so this costs nothing it shouldn't: neither is a reusable helper, and the recipe's mutate-on-a-throwaway-copy discipline (`:69-72`) is a genuine improvement over both. What is wrong is the novelty claim at `:66-68`, and the cheap release is to cite `broken_probe2.py:12` there. Related caution the recipe does honour: `docs/toolkit-capabilities.md:68` — *"Do not cite RBW-survival as evidence a wire is good"* — the recipe uses a count delta, not uid survival, so that one does not bite.
+
+### B4 ALREADY MEASURED — the cell the recipe calls "the measurement nobody has run" has been run four times on this VI
+
+`build_d1_m3a3b_d3.py:9-10`: *"THE CELL NEVER RUN IS: Invoke on the SINK terminal with the wire ALIVE."*
+
+`tools/bench/build_d1_m3a1.log:1174` (repeated at `:1875`, `:2593`, `:3311` — quoted as such in `docs/cycle27-plan.md:3296-3298`):
+
+> *"THE SIXTH ROW: sink terminal t1 of CaseStructure #12589 carries wire 9113 ; CaseStructure WIRED-terminal count 3 -> 3 ; `Wire.Is Broken?` False ; **LANDED False**"*
+
+and the call that produced it, `tools/bench/build_d1_m3a1.log:1147`:
+
+> *"connect_from_wire(wire=23955, wire_term=0, sink_diag=48, sink_node=47, sink_term=1) -> {'wire_delta': 1, … 'UID 2': 9113, 'Is Broken?': False, …}"*
+
+That is the same method (6349C03), the same op family (`OpConnectFromWire_v0`, whose sink is the index triple and therefore the Invoke's own object — `docs/toolkit-capabilities.md:70`), onto a sink that was **already wired**, with the source handed to `Wire Source` from a wire uid. The sink kept its OLD wire 9113, the readback echoed the old wire, and a stray wire appeared (`wire_delta 1`). Not a replacement.
+
+The differences from D-3's cell are real and worth naming, because they are what a refutation must turn on: the sink there was a `CaseStructure`/`SelectorTunnel` terminal addressed by **index triple**, here it is a `FlatSequenceInnerTunnel` `LeftTerm` addressed by **uid** through `UID to GObject Reference.vi` → TMSC → `Left Terminal` 1C3A9000. What is *not* different is the thing under test: 6349C03 invoked on an already-wired sink terminal.
+
+Note also `docs/toolkit-capabilities.md:70`, T2a/T2c2 — the one prior time this op wrote a wire whose source was owned by a `FlatSequenceInnerTunnel` (`#5818`, w5812), the created wire read **`Is Broken? TRUE`** with two terminals reporting `Is Source? TRUE`. GATE S(a)+(d1) is the right pair of gates for that failure mode; it is not an unobserved one.
+
+---
+
+## What would release this
+
+Nothing here says D-3 cannot work, and two of the six findings (B1, B2) came back clean. What the citations block is running it while the file asserts the cell is unmeasured and the premise settled. The cheapest releases:
+
+- **A1** → `FIXED:` amending `docs/cycle27-plan.md` Pre-decided 106/111 with c83's `error 1055` evidence that delete-first is unexecutable for this sink.
+- **A2 / A3** → `REFUTED:` showing in writing why a uid-resolved terminal reference changes 6349C03's behaviour on a wired sink, or `FIXED:` restating the premise as the hypothesis under test rather than as editor fact.
+- **B4** → `FIXED:` citing `build_d1_m3a1.log:1174` in the docstring and stating what makes this cell different (uid-addressed FSIT sink), which is a legitimate difference and the actual reason to run it.
+- **B3** → `FIXED:` one citation at `:66-68`.
+
+```
+PRIOR-ART: settled-already
+PRIOR-ART: refuted-already
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: helper-exists
+PRIOR-ART: already-measured
+```
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c84-d3-rowd.md
+   STOP RECORD armed: tools/recipes/build_d1_m3a3b_d3.py sha b12f4726fcf9 verdict settled-already, refuted-already, contradicted, unread-evidence, helper-exists, already-measured -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 305s

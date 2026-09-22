@@ -1,0 +1,109 @@
+BGRUN START 2026-09-22 13:53:17 limit 16.0 min: powershell -NoProfile -File tools\peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c84-replace-vs-branch -TaskFile tools\bench\task_c84_replace_vs_branch.md
+OUTCOME: ANSWERED (656s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-22-c84-replace-vs-branch.md
+COST: $4.9020  in 32 / out 47389 / cache-create 233869 / cache-read 2396660  (655s, 28 turn(s))
+--- ANSWER ---
+Write is disabled here (read-only review session), so the review is below rather than in a file.
+
+# Claim 3 is REFUTED — and claim 1, the premise it rests on, has a measured alternative cause this project already found and banned
+
+---
+
+## 1. The single strongest reason claim 3 is wrong
+
+**LabVIEW does not replace a wire on an already-wired terminal. It MERGES — not in scripting, and not in the editor either, which is the only argument claim 3 offers.**
+
+Claim 3's mechanism is *"in LabVIEW's editor wiring a new source onto an input that is already wired replaces the wire that was there."* That is false about the editor. NI's Idea Exchange carries a request to make it true, and the request exists precisely because it is not:
+
+> *"I have actually seen several LV programmers wire on top of another wire into a terminal, then being surprised that the wires **merged** instead of **switched**."* — Steen Schmidt, [NI Idea Exchange](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/When-wiring-to-an-already-wired-terminal-gt-replace-wire-gt/idc-p/2364136/highlight/true)
+
+The scripting API has no replace and no disconnect at all. NI's Darren, answering exactly this question:
+
+> *"Get a reference to the wire and call the Delete method. If the wire is connected to multiple sinks, you could get references to the source and (other sinks), delete the wire, then reconnect it…"* — [Disconnect wire through VI scripting](https://forums.ni.com/t5/LabVIEW/Disconnect-wire-through-VI-scripting/td-p/3046807)
+
+So **delete-then-connect is the documented workflow, not the dead end claim 1 declares.**
+
+And the configuration claim 3 calls "NEVER RUN" has been run **four times on this very VI by this op's own donor** — Invoke on an already-wired SINK, other terminal as `Wire Source`. Result, four times:
+
+- `tools/bench/build_d1_m3a1.log:1174` (also `:1875`, `:2593`, `:3311`; indexed at `docs/cycle27-plan.md:3295-3300`): *"sink terminal t1 of CaseStructure #12589 carries wire 9113 ; WIRED-terminal count 3 -> 3 ; `Wire.Is Broken?` False ; **LANDED False**"* — the sink kept its OLD wire, the write changed nothing and raised nothing.
+- The thinner, older datum behind `gscript.py:2522-2523` is `docs/keystone-op-spec.md:444-446`, on `IA534`: *"no wire, VI breaks"*.
+
+Two sinks, two sessions, five occurrences, **zero replacements.**
+
+## 2. An alternative explanation of R0/R0b that predicts NO replacement in the swapped cell
+
+Claim 2 says R0 branched *"because the Invoke was on the SOURCE terminal."* It was not. The Invoke sat on the index-triple terminal — the loop border terminal — which was **BARE** (`:54`, `wire=0`), and the already-wired #7488 was the one passed as `Wire Source` (`build_opfsinnertunnelconnect_v0.py:36-38`). Source-vs-sink is not the variable that moved.
+
+**Model that fits every measurement:** `Connect Wire` attaches the **reference** terminal to the `Wire Source` terminal's net. A terminal holds at most one wire (`Connected Wire` 634A000, *"Reference to the connected wire"*, [Terminal class](https://labviewwiki.org/wiki/Terminal_class)), so:
+
+| reference terminal | observed | citation |
+|---|---|---|
+| BARE | joins the source's existing net; `wire_delta 0`; `UID 2` = the **old** wire 7506 | `diag_c83_connect2x2_r2.log:56`, `:66` |
+| ALREADY WIRED | nothing happens; sink keeps its old wire; no error | `build_d1_m3a1.log:1174` ×4 |
+| ALREADY WIRED | "no wire, VI breaks" | `keystone-op-spec.md:444-446` |
+
+Claim 3's cell puts the Invoke on **#7488, already on net 7506** — the middle row. Prediction: **silent no-op**, `UID 2` = 7506, `wire_delta 0`, border still bare.
+
+Note R0 is a *merge*, not a benign branch: the border terminal is `is_source: True` (`:53`) and joined a net sourced by `#4334` — two sources, LabVIEW's classic broken wire, matching `is_broken=True` at `:56` and the IA534 "VI breaks" signature. Editor merge, API merge and R0 are one behaviour.
+
+## 3. Claim 1's premise: a measured, already-banned alternative cause
+
+Every deleting cell runs **two** mutations one line apart:
+
+```
+diag_c83_connect2x2_r2.py:449   C82.del_wire(scratch, ROWD_WIRE, ...)
+diag_c83_connect2x2_r2.py:450   g.remove_bad_wires_scripted(scratch)
+```
+
+and the second one's effect here is already on record:
+
+> *"deleting t1's wire + `remove_bad_wires_scripted` **DELETES THE TUNNEL**, so every higher index drops by one and the map goes 7 → 6 terminals."* — `archive/2026-09-17-status-d1-route-b-2.md:44-46`
+
+`docs/cycle27-plan.md:1860-1862` cites that line to **REFUSE** `remove_bad_wires_scripted` as a rule-1a hazard — and this script calls it anyway, in exactly the four cells that then could not resolve #7468. A deleted `FlatSequenceInnerTunnel` is a dead uid, and a dead uid is what `UID to GObject Reference.vi` reports as **1055, "Object reference is invalid"** (`:77`, `:89`, `:101`, `:113`); the Invoke's own 1055 is just the null refnum arriving downstream.
+
+Same symptom, opposite consequence: **gone** ≠ **unresolvable**. If it is gone, delete-first is alive and the repair is to stop running Remove Bad Wires after the delete, not to abandon the route.
+
+**Cannot tell from here** which line killed it — the run never re-read #7468 between them.
+
+## 4. Claim 4 is refuted by the log it cites
+
+`wire_err: 1055` on a bare terminal is not a refusal masking a measurement — **it is the measurement**, and it flips inside one cell: `:139` R0 — `border BEFORE wire=0 err={...'wire_err': 1055}` | `border AFTER wire=7506 err={...'wire_err': 0}`. `:142` repeats it for R0b. 1055 ⇔ bare, 0 ⇔ wired, 12/12 readings.
+
+So the gate written on the review's behalf — *"the border terminal's own `Wire` property read returned NO error"* — **can never pass on a terminal that is bare by design**, and it manufactured **6 of the 14 failures** (`:55`, `:65`, `:76`, `:88`, `:100`, `:112`). Honest predicate: `(wire == 0 and wire_err == 1055) or (wire != 0 and wire_err == 0)`. Real score: 27 pass / 8 fail, and those 8 are four cells failing twice for one upstream reason.
+
+## 5. What would FALSIFY claim 3
+
+| | claim 3 (replace) | this review (merge/no-op) |
+|---|---|---|
+| border terminal after | **new** wire uid ≠ 7506 | still 0 (`wire_err` 1055) |
+| op's `UID 2` | new uid | **7506** |
+| Wire census | 7506 **gone** | 7506 still present |
+| source owners on the sink's net | `[#23868]` only | `[#4334]` only |
+
+**Claim 3 dies the moment `UID 2` returns 7506, or 7506 is still in the census.**
+
+## 6. Cheapest discriminating test — the cell this run built and never fired
+
+The run created the swapped op and proved it legal (`:46`, ExecState 1), then only ever fired it with the wire deleted. `diag_c83_connect2x2_r2.py:109-111` crosses {roles} × {Auto Route} with **delete held TRUE across the whole swap arm** — the 2×2 the file is named after was never run. One row:
+
+```python
+("R5", "swap", False, None, False)      # swapped roles, 7506 ALIVE, poison OFF
+```
+
+Plus, in the same run: (a) read #7468 with `OpFsInnerTunnelTerm_v0` **between** `del_wire` and `remove_bad_wires_scripted` in one deleting cell, to separate §3's two causes; (b) drop the `if neww and do_del` guard at `:483` — the only cells that ever connected anything are the only cells whose net was never walked. No new op, no new method id, one script run.
+
+## 7. The specific questions
+
+**Replace / refuse / branch / break?** On this project's record: **merge, or nothing** — silent no-op ×4, "no wire, VI breaks" ×1, merge-onto-the-existing-net ×2. No replacement anywhere, local or documented. `Auto Route?` is a routing parameter and **this run measured nothing about it**: R1/R2 and R3/R4 differ only in that flag and all four died upstream of the method.
+
+**Does `gscript.py:2521-2523` refute claim 3 outright?** Not by itself — "re-routes" is a 2026-09-06 *interpretation* of "no wire, VI breaks" on one Index Array, thinner than it reads. Its conclusion is over-determined by the later four-fold CaseStructure measurement. Re-word the line to what was seen.
+
+**If it replaced, what happens to #4334's end?** Unmeasured; cannot tell from here. But the acceptance would not catch a stub: `G4g/G4i/G4j` (`build_opfsinnertunnelconnect_v0.py:808-833`) read `Wire.Is Broken?` and owner identity **on the new net only**. Add a diagram-wide Wire count and `ExecState` bracket before this touches the bed.
+
+**Is `is_source=False` the right sink test?** It is the right property (`Is Source?` 634A003) and topology corroborates it: a Wire object never spans two diagrams, and 7506's source is `Diagram #686 Nodes[4] #637 t10 is_source=True` (`docs/cycle27-plan.md:3358-3362`), so **#7488 is on #686 too** — same diagram as the border terminal, no boundary crossed, no tunnel needed for the new wire. The brief's "left terminal sits on the OUTER diagram" does not change which side is the sink. Caveat from our own files: after a structure is MOVED by our scripts, `Is Source?` has read FALSE on outputs as well (`archive/2026-09-17-status-d1-route-b-2.md:53`); #7468 was not moved, so it should hold here.
+
+## 8. What would change my mind
+
+R5 returning a `UID 2` that is **not** 7506, with 7506 absent from the Wire census. One reading — the one this run should have taken instead of four cells that all died at the same resolver.
+
+**Sources:** [NI Idea Exchange — wiring to an already wired terminal](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/When-wiring-to-an-already-wired-terminal-gt-replace-wire-gt/idc-p/2364136/highlight/true) · [Disconnect wire through VI scripting](https://forums.ni.com/t5/LabVIEW/Disconnect-wire-through-VI-scripting/td-p/3046807) · [Terminal class — LabVIEW Wiki](https://labviewwiki.org/wiki/Terminal_class) · [Scripting: Connect a Terminal to a Flat Sequence Structure](https://forums.ni.com/t5/LabVIEW/Scripting-Connect-a-Terminal-to-a-Flat-Sequence-Structure/td-p/2672239) · [Automatically delete wires that are not connected at either end](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Automatically-delete-wires-that-are-not-connected-at-either-end/idi-p/2266080)
+BGRUN END rc=0 after 657s

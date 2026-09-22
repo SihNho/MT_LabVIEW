@@ -1,0 +1,94 @@
+BGRUN START 2026-09-22 12:18:25 limit 20.0 min: py tools\prior_art_review.py --plan-file tools\bench\priorart_plan_c82_fsitconnect.md --slug c82-fsitconnect --trigger cycle-start --recipe tools/recipes/build_opfsinnertunnelconnect_v0.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c82-fsitconnect.txt (44483 chars)
+OUTCOME: ANSWERED (535s)  model: opus (effort high; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-22-priorart-c82-fsitconnect.md
+COST: $4.8719  in 44 / out 36606 / cache-create 219972 / cache-read 3513683  (532s, 34 turn(s))
+--- ANSWER ---
+Nothing was built, run, opened or locked; this is a read-only prior-art review. Findings below, each with a citation you can open.
+
+---
+
+# PRIOR-ART REVIEW — c82, `OpFsInnerTunnelConnect_v0` (D-2 of M3a-3b)
+
+## PART A — THE DIRECTION
+
+### A1 — SETTLED ALREADY, and settled **the way this dispatch proposes**. No slug.
+
+The choice is decided at `docs/cycle27-plan.md:3548-3562` (Pre-decided 126, 2026-09-22) and its shape at `:3563-3580` (127). The plan cites both.
+
+Worth recording because it is **older than every review the plan cites and is uncited**: this op's exact shape was designed on 2026-09-17. `archive/peer/2026-09-17-flatseq-tunnel-source-addressing-r3.md:68` — *"read `FlatSequenceInnerTunnel.Left Terminal` or `Right Terminal` once, then call the sink terminal's `Connect Wire` once with that returned reference"* — and its disposition `:94-97` says it was **deliberately not built** only because no op was authorised at the time: *"That is a new op (a fused `OpWireSource_v5` front half + `OpConnectNested_v1` back half) … so a material session may not take it."* The property ids the plan uses (`1C3A9000`/`1C3A9001`) come from that exchange (`:59-62`) and have since been measured (`docs/NAMES.md:1141`). So the direction is five days old, was blocked on authorisation rather than on evidence, and nothing in the record argues against it.
+
+### A2 — REFUTED ALREADY, and the refutation is answered in writing. No slug.
+
+`archive/peer/2026-09-22-c79-rowd-writer.md:251` — *"REFUTED/WITHDRAWN — candidate C, `OpFsInnerTunnelConnect_v0`"*, on two grounds: wrong donor (`OpStopFromNode_v0`) and a needlessly specific shape with a side selector (`:219-221`). Both are fixed in what is now proposed — donor is `OpConnectFromWire_v0`, LEFT terminal only, no selector — and the third ground (*"`OpConnectByUid` is smaller"*) is killed on direct inspection at `docs/cycle27-plan.md:3548-3554`: the donor `OpConnectNested_v2.vi` is not on disk. I checked that independently: no `opconnectnested_v2` op file exists, only `tools/bench/opconnectnested_v2_labels.json`. Nothing survives to block on.
+
+### A3 — `contradicted`: the uid echo the plan adds is on the **wrong end**, so Pre-decided 125's rule is cited but not implemented
+
+Both sides, quoted:
+
+- `docs/cycle27-plan.md:3543-3545` (Pre-decided 125): *"any op or diagnostic that resolves an object BY UID must **re-read the returned reference's own UID and assert it equals the uid passed in**, as a named gate, before any value it produces is used or believed."* And why an error check is not enough: *"an error check does not, and a class-name check does not"* — the negative control is `tools/bench/diag_c81_uidref.log:85`.
+- The recipe: `tools/recipes/build_opfsinnertunnelconnect_v0.py:425-439` branches `GObject.UID` **off `LeftTerm`**, and the gate compares it to a hard-coded literal — `:141` `LEFT_TERM_EXPECT = 7488`, asserted at `:585-586` and `:660-661`. The resolved object (`fsit_uid` → `UID to GObject Reference.vi`, input label `"UID 3"`, `:482`) is **never re-read**. The op's label map has no `uid_back`.
+
+For `fsit_uid = 7468` the literal masks it. For any other FSIT there is no expected LeftTerm uid to compare against, so the history-echo mode has no gate at all — and the `To More Specific Class` does not cover it, because a stale echo of *another* `FlatSequenceInnerTunnel` (there are 518 in this VI, `docs/vi-server-ids.json:141`) casts cleanly and yields a valid-looking LeftTerm. That is the silent-wrong-object hazard 125 was written for, i.e. a rule-1a computation change that passes every gate in the recipe.
+
+The correct shape is already on disk in the very VI whose reading half is being copied: `tools/bench/opfsinnertunnelterm_labels.json:7-9` — `"uid_in": "UID 2"`, `"uid_back": "UID 3"`, `"cls_back": "Class Name 5"` — and it is what `c80_rowd_routeA_r2.log:104` prints as `uid 7468 -> self 'FlatSequenceInnerTunnel'#7468`.
+
+**To release:** either add the input-side echo (one more `GObject.UID` node off the resolver's `GObject`/TMSC output plus an indicator, and gate `uid_back == fsit_uid`), or open `docs/cycle27-plan.md:3538-3546` and show in writing that a `FlatSequenceInnerTunnel`-seeded TMSC cannot return a different FSIT's `LeftTerm` for a stale uid.
+
+### A4 — UNREAD EVIDENCE: reported, no slug.
+
+`docs/toolkit-capabilities.md:70` is the donor's own capability row and carries the **first** measurement of this exact capability, uncited anywhere in the plan: *"T2a: on a copy of the real VI it ACCEPTED a source terminal owned by `FlatSequenceInnerTunnel` **#5818** (wire w5812) and created a wire, op error `''`, sink **0 → 1231** — the capability §11s.1 said did not exist."* The plan rests the binding on `c80_rowd_routeA_r2.log:244` alone; this is an independent, five-days-older confirmation on a *different* FSIT. It strengthens the direction rather than blocking it, which is why there is no slug — but the acceptance narrative should carry it.
+
+---
+
+## PART B — THE ARTEFACT
+
+### B1 — NO FINDING. Nothing on disk does this, and the two existing halves cannot be composed.
+
+No op reaches an FSIT terminal **and** writes a wire. Only four label maps declare `"method": "6349C03"` — `opconnectnested`, `opconnectnested_v1`, `opconnectnested_v2`, `opconnectfromwire_v0` — and all four address their sink by `(diagram, Nodes[], Terminals[])`; `opfsinnertunnelterm_labels.json` declares no method at all. No `Terminal`-seeded or `FlatSequenceInnerTunnel`-seeded connect exists (the only TMSC seeds in the fleet are `FlatSequenceInnerTunnel`, `FlatSequenceOuterTunnel`, `Wire`, `GObject` — `docs/cycle27-plan.md:3531-3533`).
+
+And the obvious "just call the reader, then the writer" composition is refuted in our own files: a refnum cannot cross COM between op calls — `docs/toolkit-capabilities.md:65`, *"its `Terminal` output is NOT returned to the caller (a refnum dies with the op's dataflow)"*. Fusing the halves into one VI is the only route, which is what this builds.
+
+### B2 — ALREADY FAILED once, and the recipe addresses the recorded cause. Reported, no slug.
+
+The donor has exactly one recorded failure at this operation: `docs/toolkit-capabilities.md:70` — *"T2c2 FAILED: that wire reads `Is Broken? TRUE`, and w1231 has TWO terminals reporting `Is Source? TRUE`"*, because *"terminal index 1 came from a census of the RESTRUCTURED copy and was applied to an UNRESTRUCTURED one"*. The cause was then partly withdrawn: `archive/peer/2026-09-17-cfw-t2c2-broken-wire.md:153-165` — *"the CONCLUSION survives, the CAUSE I gave does not"* — leaving the mechanism as **a sink that was already a source of another net**, the same multi-source shape that produced `Is Broken? True` again on 2026-09-22 (`tools/bench/c80_rowd_routeA_r2.log:259`, three sources).
+
+The recipe addresses both: the triple is resolved **live** with a node-uid echo that raises on mismatch (`build_opfsinnertunnelconnect_v0.py:598-616`), and `G4c` refuses to connect unless the border terminal reads wire 0 (`:649-650`) — which is what `tools/gscript.py:2522-2523` requires (*"an already-wired SINK is not safe … wire only unwired sinks"*). No slug.
+
+### B3 — `helper-exists`: the junk-`Invoke` census-and-purge is imported and not called
+
+Every member of this writer family mints a stray node in the **target** VI. Measured, in the run the plan cites for its binding: `tools/bench/c80_rowd_routeA_r2.log:275-276` — *"CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(25312, 'Invoke', …)]"*, landing on `Diagram idx 19, Nodes[27]`. The delivered Row C had to deal with it (STATUS: *"Junk `Invoke` purged (634→635→634)"*).
+
+The helper exists and is **already imported by this recipe**: `tools/recipes/build_d1_m3a1.py:614` `census_and_purge(path, nodes_before, tag, hints, keep_uids=())`, documented at `:615-616` as *"after EVERY move_in and EVERY connect_nested_v1, diff the `Node` census and purge the junk BY UID"* — imported as `M` at `build_opfsinnertunnelconnect_v0.py:107`, from which the recipe already takes `pd85_violations` and `print_walk` (`:676-677`). The sibling copy is `build_d1_m3a3.py:579` `purge_junk`, whose docstring names it *"The measured junk shape of the OpConnect\* family"*. It is a Pre-decided rule, not a nicety: `build_d1_m3a1.py:59` (55(c), *"after EVERY border write"*) and `:65` (71, *"the junk `Invoke` the call mints is FACT-logged with its uid"*).
+
+`grep -n 'purge\|census' tools/recipes/build_opfsinnertunnelconnect_v0.py` returns only the Diagram census inside `resolve_triple`. So gate (4) — the dispatch's own "discriminating test for the op's parameter binding", the one Pre-decided 127 put in D-2 precisely so *"Row D … must not be attempted a sixth time on an unexercised op"* — does not measure whether the new op mints the family's junk node, and gate (2)'s 20 consecutive calls would accumulate 20 of them unobserved. D-3 writes to the **bed**, where that node is saved into the artefact.
+
+**To release:** add the `M.census_and_purge` call (or a Node-count FACT line) around the G4 call and the G2 loop, or state in the plan that junk-node characterisation is deliberately deferred to D-3 and why that is safe there.
+
+### B4 — `already-measured`: acceptance (2) was measured on 2026-09-19, on three ops including this op's own front half
+
+Acceptance (2) — *"20 consecutive calls leave LabVIEW's handle count flat ±100"* — is treated as an open question. It is not. `docs/toolkit-capabilities.md:460-478`, **"⚖️ S0 CLOSED, 2026-09-19 — the traverse ops are ACCEPTED WITHOUT a `Close Reference`, on measurement"**, with the table at `:468-472`:
+
+| arm | 20 calls of | handles | private bytes | evidence |
+|---|---|---|---|---|
+| traverse-only | `report_all(Diagram)` | **+9** | −0.1 MB | `tools/bench/s0_hygiene_probe_run2.log:121-123` |
+| traverse + mutate | … → **`OpWireSource_v5`** → `build_property` | **−19** | +34.6 MB | `tools/bench/s0b_refleak_profile.log:61-64` |
+| mutate-only | same, traverse legs removed | **−12** | +34.5 MB | `tools/bench/s0b_mutonly_profile.log:61-65` |
+
+`OpWireSource_v5` carries the same `UID to GObject Reference.vi` → TMSC → property-node → Index Array front half this op is built from (`docs/toolkit-capabilities.md:60`), and `:474-475` attributes the +34.6 MB to the VI growing by 20 Property nodes, **not** to a reference leak. `:477` records that `docs/cycle27-plan.md` Pre-decided 25(iv)+27+28 accept ops without `Close Reference` on that measurement.
+
+Two things the plan should take from it rather than re-derive. First, the criterion is a **pair**: `:476` — *"G-A no `error 2` · G-B handles ±100 from call 1 · **G-C private drift ≤ 5 MB**"*; the plan keeps G-B and drops G-C. Second, and this is the part that matters: `:484-485` — *"'The ops do not leak measurably' is not 'the ops cannot exhaust anything': **the kernel handle count is blind to VI Server refnums** (`tools/gscript.py:227-228`), which is why G-C exists beside G-B."* So gate (2) alone cannot establish that the new op closes what it opens; and the hygiene repair itself has a recorded price — `tools/recipes/build_s0_closeref_v3.py:20`, *"`Close Reference` DEFEATED FOUR WIRING ATTEMPTS"* — across a three-version stage (`build_s0_closeref_v0.py` / `_v3.py`) that ended in no repair being built at all.
+
+**To release:** cite the S0 table as the prior measurement and either add G-C (private-bytes drift) beside G-B, or write in the plan that gate (2) is a regression check against that baseline, not a hygiene proof — and say what D-2 does if it fails, given that the recipe's own contract is *"A failed gate is the dispatch's result: no improvised second route."*
+
+---
+
+Nothing here argues against building the op. Two of the three shrink or correct a gate; A3 is the one that would otherwise ship a uid-addressed writer with the hazard Pre-decided 125 was written three hours earlier to prevent.
+
+```
+PRIOR-ART: contradicted      (A3 — docs/cycle27-plan.md:3543-3545 vs tools/recipes/build_opfsinnertunnelconnect_v0.py:141,:425-439,:585-586,:660-661 + tools/bench/opfsinnertunnelterm_labels.json:7-9 — covers ONLY the uid-echo gate's placement (output side, against a literal, instead of input side against fsit_uid); does NOT touch the op's donor, its shape, its binding or gate (4))
+PRIOR-ART: helper-exists     (B3 — tools/recipes/build_d1_m3a1.py:614,:59,:65 imported as M at tools/recipes/build_opfsinnertunnelconnect_v0.py:107, measured instance tools/bench/c80_rowd_routeA_r2.log:275-276 — covers the missing junk-Invoke census/purge in gates G2 and G4; does NOT claim the junk node breaks the acceptance the recipe already checks)
+PRIOR-ART: already-measured  (B4 — docs/toolkit-capabilities.md:460-478,:484-485 + tools/bench/s0_hygiene_probe_run2.log:121-123 + tools/bench/s0b_refleak_profile.log:61-64 + tools/recipes/build_s0_closeref_v3.py:20 — covers acceptance (2), its dropped companion criterion G-C, and the recorded blindness of the handle count to VI Server refnums; does NOT assert gate (2) will fail)
+```
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c82-fsitconnect.md
+   STOP RECORD armed: tools/recipes/build_opfsinnertunnelconnect_v0.py sha 751dbfabe5a1 verdict contradicted, helper-exists, already-measured -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 539s

@@ -1,0 +1,409 @@
+BGRUN START 2026-09-22 14:07:49 limit 75.0 min: py -u tools\recipes\build_d1_m3a3b_d3.py
+====================================================================================================
+build_d1_m3a3b_d3 - D-3 of M3a-3b: v1 (roles exchanged), the missing cell (wire 7506 ALIVE), and Row D if GATE S passes
+====================================================================================================
+
+---------- [0] FILES ONLY - the bed's md5 BEFORE anything, the pins, the ops this run needs
+  PASS  H1 bed md5 before == 33ef524e0b6b193a158c9221474c68e3 (306951 B)  got 33ef524e0b6b193a158c9221474c68e3, 306951 bytes
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  claudeDev holds 234 .vi file(s) BEFORE the run
+  PASS  F0 OpFsInnerTunnelConnect_v0.vi (THE DONOR - never written) on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpFsInnerTunnelConnect_v0.vi
+  PASS  F0 OpWireSource_v5.vi (the identity reader) on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpWireSource_v5.vi
+  PASS  F0 OpFsInnerTunnelTerm_v0.vi (the FSIT face reader) on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpFsInnerTunnelTerm_v0.vi
+  PASS  F0b the donor v0 is the one c83 left on disk (50a1e58a4825c2ce030ed9a41e204931)  got 50a1e58a4825c2ce030ed9a41e204931 (18521 bytes)
+
+---------- [1] RESTART LabVIEW (STATUS orders it before the first batch)
+  FACT  LabVIEW handle count BEFORE the restart: 33950 (baseline ~31,500)
+  FACT  LabVIEW handle count AFTER the restart: 33994
+
+---------- [B] STEP 1 - OpFsInnerTunnelConnect_v1.vi = v0 with the two Invoke feeds EXCHANGED (diag_c83_connect2x2_r2.make_swap, re-cut against the LIVE topology)
+  PASS  B1 the copy of v0 is at ExecState 1  ExecState 1
+  PASS  B1b the Invoke's `reference` AND `Wire Source` are both fed  reference {'i': 0, 'name': 'reference', 'is_source': False, 'wire': 572, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 0, 'node_uid': 757} ; Wire Source {'i': 6, 'name': 'Wire Source', 'is_source': False, 'wire': 1337, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 0, 'node_uid': 757}
+  FACT  B2 net w572 (feeds `reference` today - the INDEX-TRIPLE half): source #239.'element' ; sinks [(241, 'reference'), (757, 'reference')]
+  FACT  B2 net w1337 (feeds `Wire Source` today - the FSIT half): source #183.'LeftTerm' ; sinks [(757, 'Wire Source'), (187, 'reference')]
+  PASS  B2a the `Wire Source` half is the FSIT `LeftTerm` property node (the half that becomes the Invoke's OWN object)  source terminal name 'LeftTerm'
+      B2 deleted wire w572
+      B2 deleted wire w1337
+      B2 #239.'element' -> #757.'Wire Source': wire 1651 / 1651 OK
+      B2 #183.'LeftTerm' -> #757.'reference': wire 1661 / 1661 OK
+      B2 #239.'element' -> #241.'reference': wire 1651 / 1651 OK
+      B2 #183.'LeftTerm' -> #187.'reference': wire 1661 / 1661 OK
+  PASS  B2b every crossed feed and every re-branch was made and verified on BOTH ends  4 wiring step(s)
+
+---------- [B3] THE BROKEN-WIRE PROBE - a type mismatch would make Remove Bad Wires delete the crossed wires
+  PASS  B3 Remove Bad Wires removed 0 wires from v1 (the crossed feeds are NOT type-broken)  Wire 48 -> 48 (removed 0)
+
+---------- [B4] `Auto Route?` as a front-panel control
+  FACT  B4 `Auto Route? (F)` (t12 on Nodes[17] #757) now carries control 'Auto Route? (F)'
+  PASS  B4 `Auto Route?` carries a control  label 'Auto Route? (F)' (created)
+
+---------- [B5] auto error handling OFF, ExecState 1, SAVE, re-read
+  PASS  B5a auto error handling is OFF
+  PASS  B5b ExecState 1 - the swapped op is legal  ExecState 1
+  FACT  B5 SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpFsInnerTunnelConnect_v1.vi (18797 bytes) md5 5b4e5f0fb3baae96361c33ce81bcd7b1
+  PASS  B5c ExecState 1 RE-READ after the save  ExecState 1
+  PASS  B5d the donor v0 md5 is UNCHANGED  50a1e58a4825c2ce030ed9a41e204931
+  FACT  B5 labels -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opfsinnertunnelconnect_v1_labels.json
+
+---------- [G2/G3] 20 CONSECUTIVE CALLS of v1 on a dated scratch copy of the bed - handle count flat +-100, and BOTH uid echoes
+  PASS  G2a the handle-test scratch is a byte-identical copy of the bed  C84H_20260922_140749.vi
+  FACT  ensure_loaded(handle scratch) took 1.4 s
+  FACT  G2 Diagram census 173 row(s); Diagram #686 at traverse index 19
+  FACT  G2 Diagram[19].Nodes[21] uid echo 23032 (want the NEW WhileLoop #23032 -> MATCH); t1 row {'i': 1, 'name': 'Outgoing Handle', 'is_source': True, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 23032}
+  FACT  G2b BEFORE the 20 calls node census: 635 rows
+  FACT  G2 call  1: uid_back=7468 term_uid=7488 `UID 2`=7506 is_broken=True wire_delta=0 invoke_err='' op_err='error 999999: POISON - not overwritten by the run'
+  FACT  G2 call  2: uid_back=7468 term_uid=7488 `UID 2`=7506 is_broken=True wire_delta=0 invoke_err='' op_err='error 999999: POISON - not overwritten by the run'
+  FACT  G2 call 20: uid_back=7468 term_uid=7488 `UID 2`=7506 is_broken=True wire_delta=0 invoke_err='' op_err='error 999999: POISON - not overwritten by the run'
+  FACT  G2 COMPANION MEASUREMENT (docs/toolkit-capabilities.md:484-485 - the kernel handle count is BLIND to VI Server refnums): private bytes 555917312 -> 559374336, drift 3.3 MB over 20 calls
+  **FAIL**  G2 20 consecutive calls leave the handle count flat +-100 (a REGRESSION CHECK against the S0 baseline docs/toolkit-capabilities.md:460-478, not a hygiene proof)  before 42471 -> after 42585, delta 114 ; private-bytes drift 3.3 MB
+  FACT  G2b AFTER the 20 calls node census: 655 rows
+  FACT  G2b junk accumulation over 20 calls: Node 635 -> 655 = 1.00 new node(s) PER CALL
+  FACT  G2b AFTER node census: 655 rows
+  FACT  G2b CENSUS DIFF: Node 635 -> 655 ; 20 new uid(s): [(26942, 'Invoke', (1985, 112)), (26793, 'Invoke', (1985, 112)), (26525, 'Invoke', (1985, 112)), (26386, 'Invoke', (1985, 112)), (26198, 'Invoke', (1985, 112)), (26043, 'Invoke', (1985, 112)), (25843, 'Invoke', (1985, 112)), (25684, 'Invoke', (1985, 112)), (25612, 'Invoke', (1985, 112)), (25572, 'Invoke', (1985, 112)), (25520, 'Invoke', (1985, 112)), (25461, 'Invoke', (1985, 112)), (25394, 'Invoke', (1985, 112)), (25336, 'Invoke', (1985, 112)), (25333, 'Invoke', (1985, 112)), (25324, 'Invoke', (1985, 112)), (25318, 'Invoke', (1985, 112)), (25316, 'Invoke', (1985, 112)), (25315, 'Invoke', (1985, 112)), (25312, 'Invoke', (1985, 112))]
+  FACT  G2b new #26942 #26942 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 46, 'nodes_on_diagram': 47, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #26942 terminal table of #26942 (Diagram idx 19, Nodes[46], echo 26942): 6 terminal(s)
+  FACT      G2b new #26942 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26942 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26942 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26942 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26942 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26942 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #26942 at index 93: gone [26942], error '', census 655 -> 654, still present False (1.25 s)
+  FACT  G2b new #26793 #26793 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 45, 'nodes_on_diagram': 46, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #26793 terminal table of #26793 (Diagram idx 19, Nodes[45], echo 26793): 6 terminal(s)
+  FACT      G2b new #26793 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26793 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26793 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26793 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26793 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26793 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #26793 at index 93: gone [26793], error '', census 654 -> 653, still present False (1.25 s)
+  FACT  G2b new #26525 #26525 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 44, 'nodes_on_diagram': 45, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #26525 terminal table of #26525 (Diagram idx 19, Nodes[44], echo 26525): 6 terminal(s)
+  FACT      G2b new #26525 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26525 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26525 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26525 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26525 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26525 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #26525 at index 93: gone [26525], error '', census 653 -> 652, still present False (1.25 s)
+  FACT  G2b new #26386 #26386 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 43, 'nodes_on_diagram': 44, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #26386 terminal table of #26386 (Diagram idx 19, Nodes[43], echo 26386): 6 terminal(s)
+  FACT      G2b new #26386 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26386 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26386 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26386 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26386 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26386 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #26386 at index 93: gone [26386], error '', census 652 -> 651, still present False (1.27 s)
+  FACT  G2b new #26198 #26198 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 42, 'nodes_on_diagram': 43, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #26198 terminal table of #26198 (Diagram idx 19, Nodes[42], echo 26198): 6 terminal(s)
+  FACT      G2b new #26198 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26198 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26198 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26198 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26198 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26198 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #26198 at index 93: gone [26198], error '', census 651 -> 650, still present False (1.25 s)
+  FACT  G2b new #26043 #26043 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 41, 'nodes_on_diagram': 42, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #26043 terminal table of #26043 (Diagram idx 19, Nodes[41], echo 26043): 6 terminal(s)
+  FACT      G2b new #26043 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26043 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26043 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26043 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26043 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #26043 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #26043 at index 93: gone [26043], error '', census 650 -> 649, still present False (1.25 s)
+  FACT  G2b new #25843 #25843 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 40, 'nodes_on_diagram': 41, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #25843 terminal table of #25843 (Diagram idx 19, Nodes[40], echo 25843): 6 terminal(s)
+  FACT      G2b new #25843 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25843 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25843 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25843 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25843 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25843 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #25843 at index 93: gone [25843], error '', census 649 -> 648, still present False (1.25 s)
+  FACT  G2b new #25684 #25684 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 39, 'nodes_on_diagram': 40, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #25684 terminal table of #25684 (Diagram idx 19, Nodes[39], echo 25684): 6 terminal(s)
+  FACT      G2b new #25684 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25684 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25684 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25684 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25684 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25684 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #25684 at index 93: gone [25684], error '', census 648 -> 647, still present False (1.26 s)
+  FACT  G2b new #25612 #25612 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 38, 'nodes_on_diagram': 39, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #25612 terminal table of #25612 (Diagram idx 19, Nodes[38], echo 25612): 6 terminal(s)
+  FACT      G2b new #25612 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25612 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25612 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25612 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25612 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25612 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #25612 at index 93: gone [25612], error '', census 647 -> 646, still present False (1.25 s)
+  FACT  G2b new #25572 #25572 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 37, 'nodes_on_diagram': 38, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #25572 terminal table of #25572 (Diagram idx 19, Nodes[37], echo 25572): 6 terminal(s)
+  FACT      G2b new #25572 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25572 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25572 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25572 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25572 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25572 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #25572 at index 93: gone [25572], error '', census 646 -> 645, still present False (1.26 s)
+  FACT  G2b new #25520 #25520 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 36, 'nodes_on_diagram': 37, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #25520 terminal table of #25520 (Diagram idx 19, Nodes[36], echo 25520): 6 terminal(s)
+  FACT      G2b new #25520 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25520 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25520 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25520 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25520 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25520 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #25520 at index 93: gone [25520], error '', census 645 -> 644, still present False (1.27 s)
+  FACT  G2b new #25461 #25461 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 35, 'nodes_on_diagram': 36, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #25461 terminal table of #25461 (Diagram idx 19, Nodes[35], echo 25461): 6 terminal(s)
+  FACT      G2b new #25461 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25461 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25461 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25461 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25461 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25461 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #25461 at index 93: gone [25461], error '', census 644 -> 643, still present False (1.26 s)
+  FACT  G2b new #25394 #25394 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 34, 'nodes_on_diagram': 35, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #25394 terminal table of #25394 (Diagram idx 19, Nodes[34], echo 25394): 6 terminal(s)
+  FACT      G2b new #25394 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25394 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25394 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25394 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25394 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25394 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #25394 at index 93: gone [25394], error '', census 643 -> 642, still present False (1.28 s)
+  FACT  G2b new #25336 #25336 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 33, 'nodes_on_diagram': 34, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #25336 terminal table of #25336 (Diagram idx 19, Nodes[33], echo 25336): 6 terminal(s)
+  FACT      G2b new #25336 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25336 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25336 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25336 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25336 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25336 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #25336 at index 93: gone [25336], error '', census 642 -> 641, still present False (1.27 s)
+  FACT  G2b new #25333 #25333 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 32, 'nodes_on_diagram': 33, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #25333 terminal table of #25333 (Diagram idx 19, Nodes[32], echo 25333): 6 terminal(s)
+  FACT      G2b new #25333 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25333 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25333 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25333 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25333 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25333 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #25333 at index 93: gone [25333], error '', census 641 -> 640, still present False (1.27 s)
+  FACT  G2b new #25324 #25324 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 31, 'nodes_on_diagram': 32, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #25324 terminal table of #25324 (Diagram idx 19, Nodes[31], echo 25324): 6 terminal(s)
+  FACT      G2b new #25324 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25324 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25324 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25324 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25324 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25324 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #25324 at index 93: gone [25324], error '', census 640 -> 639, still present False (1.28 s)
+  FACT  G2b new #25318 #25318 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 30, 'nodes_on_diagram': 31, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #25318 terminal table of #25318 (Diagram idx 19, Nodes[30], echo 25318): 6 terminal(s)
+  FACT      G2b new #25318 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25318 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25318 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25318 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25318 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25318 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #25318 at index 93: gone [25318], error '', census 639 -> 638, still present False (1.29 s)
+  FACT  G2b new #25316 #25316 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 29, 'nodes_on_diagram': 30, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #25316 terminal table of #25316 (Diagram idx 19, Nodes[29], echo 25316): 6 terminal(s)
+  FACT      G2b new #25316 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25316 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25316 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25316 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25316 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25316 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #25316 at index 93: gone [25316], error '', census 638 -> 637, still present False (1.30 s)
+  FACT  G2b new #25315 #25315 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 28, 'nodes_on_diagram': 29, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #25315 terminal table of #25315 (Diagram idx 19, Nodes[28], echo 25315): 6 terminal(s)
+  FACT      G2b new #25315 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25315 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25315 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25315 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25315 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25315 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #25315 at index 93: gone [25315], error '', census 637 -> 636, still present False (1.30 s)
+  FACT  G2b new #25312 #25312 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 27, 'nodes_on_diagram': 28, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  G2b new #25312 terminal table of #25312 (Diagram idx 19, Nodes[27], echo 25312): 6 terminal(s)
+  FACT      G2b new #25312 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25312 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25312 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25312 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25312 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      G2b new #25312 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  G2b the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  G2b purge delete Node #25312 at index 93: gone [25312], error '', census 636 -> 635, still present False (1.29 s)
+  FACT  G2b AFTER THE PURGE node census: 635 rows
+  FACT  G2b purge arithmetic: Node 635 -> 655 -> 635
+  PASS  G3 the OUTPUT-side echo: every call returns the LeftTerm whose OWN uid is #7488  distinct `term_uid` across 20 calls: [7488] (want [7488])
+  PASS  G3a the INPUT-side echo (Pre-decided 125): `uid_back` == the uid passed IN (#7468) on every call  distinct `uid_back`: [7468] (want [7468])
+  FACT  G2/G3 FIRST CALL VERBATIM: {"err": "error 999999: POISON - not overwritten by the run", "op": "OpFsInnerTunnelConnect_v1.vi", "auto_route": true, "invoke_err": "", "err_uidvi": "", "err_fsit": "", "err_termuid": "", "err_uidback": "", "term_uid": 7488, "uid_back": 7468, "sink_wire_uid": 7506, "is_broken": true, "UID": 23032, "Name": "Outgoing Handle", "wire_delta": 0, "invoke_delta": 1, "call": 1}
+
+---------- [S0] THE BASELINE broken-wire count, on its OWN byte-identical control copy of the bed, which is then DISCARDED (Remove Bad Wires mutates, so it never runs on a copy whose state is still needed)
+  PASS  S0a the baseline copy is byte-identical to the bed  C84BASE_20260922_140749.vi
+  FACT  S0 ExecState of an untouched copy of the bed = 0 - RECORDED, NEVER a criterion (the bed is broken BY DESIGN, Pre-decided 89/97)
+  FACT  S0 baseline BROKEN-WIRE COUNT: Wire 1920 -> 1909 after Remove Bad Wires = 11 bad wire(s); ExecState after 0
+  FACT  S0 BASELINE broken-wire count on the bed's bytes = 11 (Wire 1920 -> 1909); ExecState 0 -> 0
+
+---------- [CELLS] STEP 2 - THE MISSING CELL: Invoke on the SINK terminal, wire 7506 LEFT ALIVE
+
+---------- [S-T] `Auto Route?` True - a FRESH copy of the bed, wire 7506 ALIVE
+  PASS  S-T the scratch is a byte-identical copy of the bed  C84BED_20260922_140749_ST.vi
+  FACT  S-T Diagram census 173 row(s); Diagram #686 at traverse index 19
+  FACT  S-T Diagram[19].Nodes[21] uid echo 23032 (want the NEW WhileLoop #23032 -> MATCH); t1 row {'i': 1, 'name': 'Outgoing Handle', 'is_source': True, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 23032}
+   READ[IN] uid 7468 -> self 'FlatSequenceInnerTunnel'#7468 cast 'FlatSequenceInnerTunnel' | LeftTerm #7488 wire #7506 | RightTerm #7471 wire #7448 | is_source False | owner 'FlatSequenceInnerTunnel'#7468 | err '' A '' B '' | errs 
+  FACT  S-T BEFORE FSIT #7468: uid echo 7468 cls 'FlatSequenceInnerTunnel' | LeftTerm #7488 wire 7506 | RightTerm #7471 wire 7448 | err='' err_a='' err_b=''
+  FACT  S-T border t1 BEFORE: name='Outgoing Handle' is_source=True wire=0 error columns {'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055}  (wire 7506 LEFT ALIVE)
+  FACT  S-T BEFORE the call node census: 635 rows
+  FACT  S-T NON-MUTATING BRACKET BEFORE: 1920 Wire object(s); wire 7506 present True ; ExecState 0
+  FACT  S-T RAW INVOKE ERROR = ''
+  FACT  S-T RESULT: op_err='error 999999: POISON - not overwritten by the run' | term_uid=7488 uid_back=7468 | err_uidvi='' err_fsit='' err_termuid='' err_uidback='' | `UID 2`=7506 is_broken=True wire_delta=0 junk_Invoke=1
+  FACT  S-T junk AFTER node census: 636 rows
+  FACT  S-T junk CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(25312, 'Invoke', (1985, 112))]
+  FACT  S-T junk new #25312 #25312 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 27, 'nodes_on_diagram': 28, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  S-T junk new #25312 terminal table of #25312 (Diagram idx 19, Nodes[27], echo 25312): 6 terminal(s)
+  FACT      S-T junk new #25312 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      S-T junk new #25312 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      S-T junk new #25312 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      S-T junk new #25312 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      S-T junk new #25312 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      S-T junk new #25312 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  S-T junk the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  S-T junk purge delete Node #25312 at index 93: gone [25312], error '', census 636 -> 635, still present False (1.22 s)
+  FACT  S-T junk AFTER THE PURGE node census: 635 rows
+  FACT  S-T junk purge arithmetic: Node 635 -> 636 -> 635
+  FACT  S-T border t1 AFTER: wire=7506 (was 0) ; that terminal's expected uid is #23906 (owner RightShiftRegister #23868)
+  FACT  S-T THE FALSIFICATION TABLE (archive/peer/2026-09-22-c84-replace-vs-branch.md ?5 - the claim dies the moment either column reads the OLD wire): op `UID 2` = 7506 (claim: a NEW uid != 7506 ; prior art: 7506) ; wire 7506 still in the Wire census: True (claim: GONE ; prior art: PRESENT) ; Wire objects 1920 -> 1920 ; ExecState 0 -> 0
+   READ[IN] uid 7468 -> self 'FlatSequenceInnerTunnel'#7468 cast 'FlatSequenceInnerTunnel' | LeftTerm #7488 wire #7506 | RightTerm #7471 wire #7448 | is_source True | owner 'FlatSequenceInnerTunnel'#7468 | err '' A '' B '' | errs 
+  FACT  S-T AFTER FSIT #7468: uid echo 7468 cls 'FlatSequenceInnerTunnel' | LeftTerm #7488 wire 7506 | RightTerm #7471 wire 7448 | err='' err_a='' err_b=''
+  FACT  S-T the FSIT LeftTerm #7488 carries wire 7506 AFTER the call (it carried 7506 before)
+  FACT  S-T OpWireSource_v5(UID 2 = 7506): 4 row(s), 3 with a REAL owner
+  FACT      S-T   t0  is_source=True  owner_class='RightShiftRegister'       owner_uid=23868   recip=7506
+  FACT      S-T   t1  is_source=True  owner_class='FlatSequenceInnerTunnel'  owner_uid=7468    recip=7506
+  FACT      S-T   t2  is_source=True  owner_class='RightShiftRegister'       owner_uid=4334    recip=7506
+  FACT      S-T   t3  is_source=None  owner_class=None                       owner_uid=None    recip=None  READ ERROR errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; errG=error 1055: Property Node in OpWireSource_v5.vi; errS=error 1055: Property Node in OpWireSource_v5.vi; errWU=error 1055: Property Node in OpWireSource_v5.vi; errCO=error 1055: Property Node in OpWireSource_v5.vi
+  FACT  S-T PD85 PRECONDITION: 3 real-owner row(s), 0 violate recip==queried_uid
+  FACT  S-T NET w7506: source-terminal owners [('FlatSequenceInnerTunnel', 7468), ('RightShiftRegister', 4334), ('RightShiftRegister', 23868)] ; every owner [('FlatSequenceInnerTunnel', 7468), ('RightShiftRegister', 4334), ('RightShiftRegister', 23868)] ; PD85 0
+  **FAIL**  S-T GATE S(a) the FSIT LeftTerm's net has EXACTLY ONE source terminal and its OWNER is RightShiftRegister #23868  source-terminal owners [('FlatSequenceInnerTunnel', 7468), ('RightShiftRegister', 4334), ('RightShiftRegister', 23868)] (want [('RightShiftRegister', 23868)])
+  **FAIL**  S-T GATE S(b) the OLD source #4334 is OFF that net  every owner on the net: [('FlatSequenceInnerTunnel', 7468), ('RightShiftRegister', 4334), ('RightShiftRegister', 23868)]
+  PASS  S-T GATE S(c) PD85 violations 0 on the walk  0 violation(s) []
+  **FAIL**  S-T GATE S(d1) `Wire.Is Broken?` False on THAT wire (the op's own 6371004 readback, poisoned True before the run; its `UID 2` must be the same wire)  Is Broken? True ; op `UID 2` 7506 vs LeftTerm wire 7506 (same wire True)
+  FACT  S-T (d2) BROKEN-WIRE COUNT: Wire 1920 -> 1906 after Remove Bad Wires = 14 bad wire(s); ExecState after 0
+  **FAIL**  S-T GATE S(d2) the diagram-wide broken-wire count is NOT HIGHER than the baseline on the same bytes before the call  after 14 vs baseline 11 (Wire 1920 -> 1906)
+  PASS  S-T GATE S(e) nothing downstream was dropped: the FSIT `Right Terminal` #7471 still carries its inner wire 7448  RightTerm #7471 wire 7448 (want #7471 / 7448)
+  FACT  S-T GATE S SUMMARY: {'a': False, 'b': False, 'c': True, 'd1': False, 'd2': False, 'e': True} -> FAIL
+  **FAIL**  S-T GATE S passed IN FULL  {'a': False, 'b': False, 'c': True, 'd1': False, 'd2': False, 'e': True}
+  PASS  S-T scratch deleted  C84BED_20260922_140749_ST.vi
+
+---------- [S-F] `Auto Route?` False - a FRESH copy of the bed, wire 7506 ALIVE
+  PASS  S-F the scratch is a byte-identical copy of the bed  C84BED_20260922_140749_SF.vi
+  FACT  S-F Diagram census 173 row(s); Diagram #686 at traverse index 19
+  FACT  S-F Diagram[19].Nodes[21] uid echo 23032 (want the NEW WhileLoop #23032 -> MATCH); t1 row {'i': 1, 'name': 'Outgoing Handle', 'is_source': True, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 23032}
+   READ[IN] uid 7468 -> self 'FlatSequenceInnerTunnel'#7468 cast 'FlatSequenceInnerTunnel' | LeftTerm #7488 wire #7506 | RightTerm #7471 wire #7448 | is_source False | owner 'FlatSequenceInnerTunnel'#7468 | err '' A '' B '' | errs 
+  FACT  S-F BEFORE FSIT #7468: uid echo 7468 cls 'FlatSequenceInnerTunnel' | LeftTerm #7488 wire 7506 | RightTerm #7471 wire 7448 | err='' err_a='' err_b=''
+  FACT  S-F border t1 BEFORE: name='Outgoing Handle' is_source=True wire=0 error columns {'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055}  (wire 7506 LEFT ALIVE)
+  FACT  S-F BEFORE the call node census: 635 rows
+  FACT  S-F NON-MUTATING BRACKET BEFORE: 1920 Wire object(s); wire 7506 present True ; ExecState 0
+  FACT  S-F RAW INVOKE ERROR = ''
+  FACT  S-F RESULT: op_err='error 999999: POISON - not overwritten by the run' | term_uid=7488 uid_back=7468 | err_uidvi='' err_fsit='' err_termuid='' err_uidback='' | `UID 2`=7506 is_broken=True wire_delta=0 junk_Invoke=1
+  FACT  S-F junk AFTER node census: 636 rows
+  FACT  S-F junk CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(25312, 'Invoke', (1985, 112))]
+  FACT  S-F junk new #25312 #25312 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 27, 'nodes_on_diagram': 28, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  S-F junk new #25312 terminal table of #25312 (Diagram idx 19, Nodes[27], echo 25312): 6 terminal(s)
+  FACT      S-F junk new #25312 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      S-F junk new #25312 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      S-F junk new #25312 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      S-F junk new #25312 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      S-F junk new #25312 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      S-F junk new #25312 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  S-F junk the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  S-F junk purge delete Node #25312 at index 93: gone [25312], error '', census 636 -> 635, still present False (1.21 s)
+  FACT  S-F junk AFTER THE PURGE node census: 635 rows
+  FACT  S-F junk purge arithmetic: Node 635 -> 636 -> 635
+  FACT  S-F border t1 AFTER: wire=7506 (was 0) ; that terminal's expected uid is #23906 (owner RightShiftRegister #23868)
+  FACT  S-F THE FALSIFICATION TABLE (archive/peer/2026-09-22-c84-replace-vs-branch.md ?5 - the claim dies the moment either column reads the OLD wire): op `UID 2` = 7506 (claim: a NEW uid != 7506 ; prior art: 7506) ; wire 7506 still in the Wire census: True (claim: GONE ; prior art: PRESENT) ; Wire objects 1920 -> 1920 ; ExecState 0 -> 0
+   READ[IN] uid 7468 -> self 'FlatSequenceInnerTunnel'#7468 cast 'FlatSequenceInnerTunnel' | LeftTerm #7488 wire #7506 | RightTerm #7471 wire #7448 | is_source True | owner 'FlatSequenceInnerTunnel'#7468 | err '' A '' B '' | errs 
+  FACT  S-F AFTER FSIT #7468: uid echo 7468 cls 'FlatSequenceInnerTunnel' | LeftTerm #7488 wire 7506 | RightTerm #7471 wire 7448 | err='' err_a='' err_b=''
+  FACT  S-F the FSIT LeftTerm #7488 carries wire 7506 AFTER the call (it carried 7506 before)
+  FACT  S-F OpWireSource_v5(UID 2 = 7506): 4 row(s), 3 with a REAL owner
+  FACT      S-F   t0  is_source=True  owner_class='RightShiftRegister'       owner_uid=23868   recip=7506
+  FACT      S-F   t1  is_source=True  owner_class='FlatSequenceInnerTunnel'  owner_uid=7468    recip=7506
+  FACT      S-F   t2  is_source=True  owner_class='RightShiftRegister'       owner_uid=4334    recip=7506
+  FACT      S-F   t3  is_source=None  owner_class=None                       owner_uid=None    recip=None  READ ERROR errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; errG=error 1055: Property Node in OpWireSource_v5.vi; errS=error 1055: Property Node in OpWireSource_v5.vi; errWU=error 1055: Property Node in OpWireSource_v5.vi; errCO=error 1055: Property Node in OpWireSource_v5.vi
+  FACT  S-F PD85 PRECONDITION: 3 real-owner row(s), 0 violate recip==queried_uid
+  FACT  S-F NET w7506: source-terminal owners [('FlatSequenceInnerTunnel', 7468), ('RightShiftRegister', 4334), ('RightShiftRegister', 23868)] ; every owner [('FlatSequenceInnerTunnel', 7468), ('RightShiftRegister', 4334), ('RightShiftRegister', 23868)] ; PD85 0
+  **FAIL**  S-F GATE S(a) the FSIT LeftTerm's net has EXACTLY ONE source terminal and its OWNER is RightShiftRegister #23868  source-terminal owners [('FlatSequenceInnerTunnel', 7468), ('RightShiftRegister', 4334), ('RightShiftRegister', 23868)] (want [('RightShiftRegister', 23868)])
+  **FAIL**  S-F GATE S(b) the OLD source #4334 is OFF that net  every owner on the net: [('FlatSequenceInnerTunnel', 7468), ('RightShiftRegister', 4334), ('RightShiftRegister', 23868)]
+  PASS  S-F GATE S(c) PD85 violations 0 on the walk  0 violation(s) []
+  **FAIL**  S-F GATE S(d1) `Wire.Is Broken?` False on THAT wire (the op's own 6371004 readback, poisoned True before the run; its `UID 2` must be the same wire)  Is Broken? True ; op `UID 2` 7506 vs LeftTerm wire 7506 (same wire True)
+  FACT  S-F (d2) BROKEN-WIRE COUNT: Wire 1920 -> 1906 after Remove Bad Wires = 14 bad wire(s); ExecState after 0
+  **FAIL**  S-F GATE S(d2) the diagram-wide broken-wire count is NOT HIGHER than the baseline on the same bytes before the call  after 14 vs baseline 11 (Wire 1920 -> 1906)
+  PASS  S-F GATE S(e) nothing downstream was dropped: the FSIT `Right Terminal` #7471 still carries its inner wire 7448  RightTerm #7471 wire 7448 (want #7471 / 7448)
+  FACT  S-F GATE S SUMMARY: {'a': False, 'b': False, 'c': True, 'd1': False, 'd2': False, 'e': True} -> FAIL
+  **FAIL**  S-F GATE S passed IN FULL  {'a': False, 'b': False, 'c': True, 'd1': False, 'd2': False, 'e': True}
+  PASS  S-F scratch deleted  C84BED_20260922_140749_SF.vi
+
+---------- [3] STEP 3 - the ONLY branch in this file
+  **FAIL**  STEP 3 at least one cell passed GATE S in full (the brief's only branch)  cells passed: {'S-T': False, 'S-F': False} - NOTHING IS SAVED, no third configuration is improvised
+  FACT  STEP 3 NOT TAKEN: neither cell passed GATE S. The raw values are above; the next move is judgement's. No file was written.
+
+---------- [H] HYGIENE - close panels, delete every scratch, re-read every pin, handles at both ends
+  FACT  close_panel(C84BASE_20260922_140749.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  close_panel(C84PROBE_20260922_140749.vi) raised com_error: (-2147352567, '??? ??????.', (5507, 'LabVIEW', 'LabVIEW: (Hex 0x7) File not found. The file might be in a different location or deleted. Use the command prompt or the file explorer to verify that the path is correct.', None, 0, 0), None)
+  FACT  close_panel(OpFsInnerTunnelConnect_v0.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  close_panel(OpFsInnerTunnelConnect_v1.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  close_panel(D1_s3b_m3a3b_20260922_140749.vi) raised com_error: (-2147352567, '??? ??????.', (5507, 'LabVIEW', 'LabVIEW: (Hex 0x7) File not found. The file might be in a different location or deleted. Use the command prompt or the file explorer to verify that the path is correct.', None, 0, 0), None)
+  FACT  gscript ref_counts (opened / closed / live / cached op VIs): {'opened': 29, 'closed': 29, 'live': 0, 'cached_op_vis': 10}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 29, 'closed': 29, 'live': 0, 'cached_op_vis': 10}
+  FACT  LabVIEW handle count AFTER the work: 42763
+  PASS  H4 scratch deleted: C84H_20260922_140749.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\C84H_20260922_140749.vi
+  PASS  H4 scratch deleted: C84BASE_20260922_140749.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\C84BASE_20260922_140749.vi
+  PASS  H4 scratch deleted: C84PROBE_20260922_140749.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\C84PROBE_20260922_140749.vi
+  PASS  H2 bed md5 UNCHANGED after the run  before 33ef524e0b6b193a158c9221474c68e3 / after 33ef524e0b6b193a158c9221474c68e3
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 the five md5 pins all hold
+  PASS  H3b OpFsInnerTunnelConnect_v0.vi md5 UNCHANGED (never modified, never deleted)  50a1e58a4825c2ce030ed9a41e204931
+  PASS  H6 nothing was REMOVED from claudeDev  removed []
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['OpFsInnerTunnelConnect_v1.vi']  (removed: [])
+  FACT  ON DISK C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpFsInnerTunnelConnect_v1.vi md5 5b4e5f0fb3baae96361c33ce81bcd7b1 (18797 bytes)
+  FACT  LabVIEW handle count at exit: 33998 (baseline ~31,500)
+
+====================================================================================================
+GATES: 35 pass / 12 fail  FAILING: G2 20 consecutive calls leave the handle count flat +-100 (a REGRESSION CHECK against the S0 baseline docs/toolkit-capabilities.md:460-478, not a hygiene proof), S-T GATE S(a) the FSIT LeftTerm's net has EXACTLY ONE source terminal and its OWNER is RightShiftRegister #23868, S-T GATE S(b) the OLD source #4334 is OFF that net, S-T GATE S(d1) `Wire.Is Broken?` False on THAT wire (the op's own 6371004 readback, poisoned True before the run; its `UID 2` must be the same wire), S-T GATE S(d2) the diagram-wide broken-wire count is NOT HIGHER than the baseline on the same bytes before the call, S-T GATE S passed IN FULL, S-F GATE S(a) the FSIT LeftTerm's net has EXACTLY ONE source terminal and its OWNER is RightShiftRegister #23868, S-F GATE S(b) the OLD source #4334 is OFF that net, S-F GATE S(d1) `Wire.Is Broken?` False on THAT wire (the op's own 6371004 readback, poisoned True before the run; its `UID 2` must be the same wire), S-F GATE S(d2) the diagram-wide broken-wire count is NOT HIGHER than the baseline on the same bytes before the call, S-F GATE S passed IN FULL, STEP 3 at least one cell passed GATE S in full (the brief's only branch)
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\build_d1_m3a3b_d3.json   elapsed 248.7 s
+BGRUN END rc=1 after 249s

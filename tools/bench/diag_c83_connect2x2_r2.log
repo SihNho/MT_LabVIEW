@@ -1,0 +1,160 @@
+BGRUN START 2026-09-22 13:35:23 limit 40.0 min: py -u tools/bench/diag_c83_connect2x2_r2.py
+====================================================================================================
+diag_c83_connect2x2_r2 - the raw-Invoke-error repair, the 1055 control, and the A cells
+====================================================================================================
+
+---------- [0] FILES ONLY - pins, the bed's md5, the op run 1 left on disk
+  PASS  H1 bed md5 before == 33ef524e0b6b193a158c9221474c68e3 (306951 B)  got 33ef524e0b6b193a158c9221474c68e3
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  the op on disk: OpFsInnerTunnelConnect_v0.vi md5 cda1e36ee394ccd6bf0f1c1108d76249 (18513 bytes)
+  PASS  F0 the op on disk is the one run 1's STEP 0 saved (cda1e36ee394ccd6bf0f1c1108d76249)  cda1e36ee394ccd6bf0f1c1108d76249
+
+---------- [1] RESTART LabVIEW
+  FACT  LabVIEW handle count BEFORE the restart: 33960
+  FACT  LabVIEW handle count AFTER the restart: 33987
+
+---------- [S0] HOLE 1 - move `error out 7` from AFTER Clear Errors to a BRANCH of the Invoke's RAW `error out`
+  FACT  S0 the Invoke #757 `error out` carries w1027
+  FACT  S0 Clear Errors node(s) on the op's diagram: [399, 758]
+      S0 deleted wire w1676
+  FACT  S0 deleted the Clear-Errors -> indicator net(s): [(399, 1676, True)]
+  FACT  S0 AFTER: the Invoke's `error out` carries w1027 (it was w1027); ExecState 1
+  PASS  S0a the raw-error branch was made  wire_indicators ok True
+  PASS  S0b ExecState 1 after the repair  ExecState 1
+  FACT  S0 SAVED OpFsInnerTunnelConnect_v0.vi (18521 bytes) md5 cda1e36ee394ccd6bf0f1c1108d76249 -> 50a1e58a4825c2ce030ed9a41e204931
+  PASS  S0c ExecState 1 re-read AFTER the save  ExecState 1
+
+---------- [S-ARF] scratch copy of the op + an `Auto Route?` control
+  FACT  S-ARF `Auto Route? (F)` (t12 on Nodes[17] #757) now carries control 'Auto Route? (F)'
+  PASS  S-ARF the AR copy is legal (ExecState 1)  ExecState 1 ; AR 'Auto Route? (F)'
+
+---------- [S-SWAP] scratch copy with the Invoke's `reference` and `Wire Source` feeds EXCHANGED - and EVERY OTHER CONSUMER of both nets re-branched (run 1's ExecState-0 cause)
+  FACT  S-SWAP net w572: source #239.'element' ; sinks [(241, 'reference'), (757, 'reference')]
+  FACT  S-SWAP net w1337: source #183.'LeftTerm' ; sinks [(757, 'Wire Source'), (187, 'reference')]
+      S-SWAP deleted wire w572
+      S-SWAP deleted wire w1337
+      S-SWAP #239.'element' -> #757.'Wire Source': wire 1651 / 1651 OK
+      S-SWAP #183.'LeftTerm' -> #757.'reference': wire 1661 / 1661 OK
+      S-SWAP #239.'element' -> #241.'reference': wire 1651 / 1651 OK
+      S-SWAP #183.'LeftTerm' -> #187.'reference': wire 1661 / 1661 OK
+  FACT  S-SWAP `Auto Route? (F)` (t12 on Nodes[17] #757) now carries control 'Auto Route? (F)'
+  FACT  S-SWAP BROKEN-WIRE PROBE (the review's claim-4 alternative): Remove Bad Wires took the Wire count 49 -> 49 (removed 0). 0 removed = the crossed wires are NOT type-broken.
+  PASS  S-SWAP the SWAPPED copy is legal (ExecState 1) - LabVIEW accepts the exchanged roles at EDIT time  ExecState 1 ; rewire ok True ; AR 'Auto Route? (F)'
+
+---------- [CELLS] each on its OWN dated scratch COPY of the bed
+
+---------- [R0] CONTROL - 7506 ALIVE, today's roles, POISON ON (cycle 82's arm 1)
+  PASS  R0 the scratch is a byte-identical copy of the bed  C83bBED_20260922_133523_R0.vi
+  FACT  R0 Diagram census 173 row(s); Diagram #686 at traverse index 19
+  FACT  R0 Diagram[19].Nodes[21] uid echo 23032 (want the NEW WhileLoop #23032 -> MATCH); t1 row {'i': 1, 'name': 'Outgoing Handle', 'is_source': True, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 23032}
+  FACT  R0 border t1 BEFORE the call: wire=0 ERROR CODES {'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055} (7506 deleted: False)
+  **FAIL**  R0 the border terminal's own `Wire` property read returned NO error (the review's strongest point: a 1055 there makes `wire 0` the error path's default, not a measurement)  wire_err 1055
+  FACT  R0 RESULT: RAW INVOKE ERROR='' | op_err='error 999999: POISON - not overwritten by the run' | term_uid=7488 uid_back=7468 | err_uidvi='' err_fsit='' | `UID 2`=7506 border_wire=7506 (was 0) wire_delta=0 junk_Invoke=1 is_broken=True
+  PASS  R0 the FSIT uid 7468 still resolves to LeftTerm #7488 (term_uid echo)  term_uid 7488 ; err_uidvi ''
+  PASS  R0 bed scratch deleted  C83bBED_20260922_133523_R0.vi
+
+---------- [R0b] CONTROL - 7506 ALIVE, today's roles, POISON OFF (the review's artefact test)
+  PASS  R0b the scratch is a byte-identical copy of the bed  C83bBED_20260922_133523_R0b.vi
+  FACT  R0b Diagram census 173 row(s); Diagram #686 at traverse index 19
+  FACT  R0b Diagram[19].Nodes[21] uid echo 23032 (want the NEW WhileLoop #23032 -> MATCH); t1 row {'i': 1, 'name': 'Outgoing Handle', 'is_source': True, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 23032}
+  FACT  R0b border t1 BEFORE the call: wire=0 ERROR CODES {'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055} (7506 deleted: False)
+  **FAIL**  R0b the border terminal's own `Wire` property read returned NO error (the review's strongest point: a 1055 there makes `wire 0` the error path's default, not a measurement)  wire_err 1055
+  FACT  R0b RESULT: RAW INVOKE ERROR='' | op_err='error 999999: POISON - not overwritten by the run' | term_uid=7488 uid_back=7468 | err_uidvi='' err_fsit='' | `UID 2`=7506 border_wire=7506 (was 0) wire_delta=0 junk_Invoke=1 is_broken=True
+  PASS  R0b the FSIT uid 7468 still resolves to LeftTerm #7488 (term_uid echo)  term_uid 7488 ; err_uidvi ''
+  PASS  R0b bed scratch deleted  C83bBED_20260922_133523_R0b.vi
+
+---------- [R1] B2 - today's roles, 7506 deleted, Auto Route default FALSE, poison OFF
+  PASS  R1 the scratch is a byte-identical copy of the bed  C83bBED_20260922_133523_R1.vi
+  FACT  R1 Diagram census 173 row(s); Diagram #686 at traverse index 19
+  FACT  R1 Diagram[19].Nodes[21] uid echo 23032 (want the NEW WhileLoop #23032 -> MATCH); t1 row {'i': 1, 'name': 'Outgoing Handle', 'is_source': True, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 23032}
+      R1 deleted wire w7506
+  FACT  R1 border t1 BEFORE the call: wire=0 ERROR CODES {'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055} (7506 deleted: True)
+  **FAIL**  R1 the border terminal's own `Wire` property read returned NO error (the review's strongest point: a 1055 there makes `wire 0` the error path's default, not a measurement)  wire_err 1055
+  FACT  R1 RESULT: RAW INVOKE ERROR='error 1055: Invoke Node in OpFsInnerTunnelConnect_v0.vi | <APPEND> | Method Name: <b>Connect Wire</b>' | op_err='error 999999: POISON - not overwritten by the run' | term_uid=0 uid_back=0 | err_uidvi='error 1055: To More Specific Class in UID to GObject Reference.vi->OpFsInnerTunnelConnect_v0.vi' err_fsit='error 1055: Property Node in OpFsInnerTunnelConnect_v0.vi' | `UID 2`=0 border_wire=0 (was 0) wire_delta=0 junk_Invoke=1 is_broken=False
+  **FAIL**  R1 the FSIT uid 7468 still resolves to LeftTerm #7488 (term_uid echo)  term_uid 0 ; err_uidvi 'error 1055: To More Specific Class in UID to GObject Reference.vi->OpFsInnerTunnelConnect_v0.vi'
+  **FAIL**  R1 the border terminal went BARE -> NON-ZERO  wire 0
+  PASS  R1 bed scratch deleted  C83bBED_20260922_133523_R1.vi
+
+---------- [R2] B1 - today's roles + Auto Route TRUE, poison OFF
+  PASS  R2 the scratch is a byte-identical copy of the bed  C83bBED_20260922_133523_R2.vi
+  FACT  R2 Diagram census 173 row(s); Diagram #686 at traverse index 19
+  FACT  R2 Diagram[19].Nodes[21] uid echo 23032 (want the NEW WhileLoop #23032 -> MATCH); t1 row {'i': 1, 'name': 'Outgoing Handle', 'is_source': True, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 23032}
+      R2 deleted wire w7506
+  FACT  R2 border t1 BEFORE the call: wire=0 ERROR CODES {'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055} (7506 deleted: True)
+  **FAIL**  R2 the border terminal's own `Wire` property read returned NO error (the review's strongest point: a 1055 there makes `wire 0` the error path's default, not a measurement)  wire_err 1055
+  FACT  R2 RESULT: RAW INVOKE ERROR='error 1055: Invoke Node in C83bARFSIT_20260922_133523.vi | <APPEND> | Method Name: <b>Connect Wire</b>' | op_err='' | term_uid=0 uid_back=0 | err_uidvi='error 1055: To More Specific Class in UID to GObject Reference.vi->C83bARFSIT_20260922_133523.vi' err_fsit='error 1055: Property Node in C83bARFSIT_20260922_133523.vi' | `UID 2`=0 border_wire=0 (was 0) wire_delta=0 junk_Invoke=1 is_broken=False
+  **FAIL**  R2 the FSIT uid 7468 still resolves to LeftTerm #7488 (term_uid echo)  term_uid 0 ; err_uidvi 'error 1055: To More Specific Class in UID to GObject Reference.vi->C83bARFSIT_20260922_133523.vi'
+  **FAIL**  R2 the border terminal went BARE -> NON-ZERO  wire 0
+  PASS  R2 bed scratch deleted  C83bBED_20260922_133523_R2.vi
+
+---------- [R3] A2 - roles EXCHANGED (Invoke on the FSIT terminal), Auto Route FALSE
+  PASS  R3 the scratch is a byte-identical copy of the bed  C83bBED_20260922_133523_R3.vi
+  FACT  R3 Diagram census 173 row(s); Diagram #686 at traverse index 19
+  FACT  R3 Diagram[19].Nodes[21] uid echo 23032 (want the NEW WhileLoop #23032 -> MATCH); t1 row {'i': 1, 'name': 'Outgoing Handle', 'is_source': True, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 23032}
+      R3 deleted wire w7506
+  FACT  R3 border t1 BEFORE the call: wire=0 ERROR CODES {'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055} (7506 deleted: True)
+  **FAIL**  R3 the border terminal's own `Wire` property read returned NO error (the review's strongest point: a 1055 there makes `wire 0` the error path's default, not a measurement)  wire_err 1055
+  FACT  R3 RESULT: RAW INVOKE ERROR='error 1055: Invoke Node in C83bSWAP_20260922_133523.vi' | op_err='' | term_uid=0 uid_back=0 | err_uidvi='error 1055: To More Specific Class in UID to GObject Reference.vi->C83bSWAP_20260922_133523.vi' err_fsit='error 1055: Property Node in C83bSWAP_20260922_133523.vi' | `UID 2`=0 border_wire=0 (was 0) wire_delta=0 junk_Invoke=1 is_broken=False
+  **FAIL**  R3 the FSIT uid 7468 still resolves to LeftTerm #7488 (term_uid echo)  term_uid 0 ; err_uidvi 'error 1055: To More Specific Class in UID to GObject Reference.vi->C83bSWAP_20260922_133523.vi'
+  **FAIL**  R3 the border terminal went BARE -> NON-ZERO  wire 0
+  PASS  R3 bed scratch deleted  C83bBED_20260922_133523_R3.vi
+
+---------- [R4] A1 - roles EXCHANGED, Auto Route TRUE
+  PASS  R4 the scratch is a byte-identical copy of the bed  C83bBED_20260922_133523_R4.vi
+  FACT  R4 Diagram census 173 row(s); Diagram #686 at traverse index 19
+  FACT  R4 Diagram[19].Nodes[21] uid echo 23032 (want the NEW WhileLoop #23032 -> MATCH); t1 row {'i': 1, 'name': 'Outgoing Handle', 'is_source': True, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 23032}
+      R4 deleted wire w7506
+  FACT  R4 border t1 BEFORE the call: wire=0 ERROR CODES {'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055} (7506 deleted: True)
+  **FAIL**  R4 the border terminal's own `Wire` property read returned NO error (the review's strongest point: a 1055 there makes `wire 0` the error path's default, not a measurement)  wire_err 1055
+  FACT  R4 RESULT: RAW INVOKE ERROR='error 1055: Invoke Node in C83bSWAP_20260922_133523.vi' | op_err='' | term_uid=0 uid_back=0 | err_uidvi='error 1055: To More Specific Class in UID to GObject Reference.vi->C83bSWAP_20260922_133523.vi' err_fsit='error 1055: Property Node in C83bSWAP_20260922_133523.vi' | `UID 2`=0 border_wire=0 (was 0) wire_delta=0 junk_Invoke=1 is_broken=False
+  **FAIL**  R4 the FSIT uid 7468 still resolves to LeftTerm #7488 (term_uid echo)  term_uid 0 ; err_uidvi 'error 1055: To More Specific Class in UID to GObject Reference.vi->C83bSWAP_20260922_133523.vi'
+  **FAIL**  R4 the border terminal went BARE -> NON-ZERO  wire 0
+  PASS  R4 bed scratch deleted  C83bBED_20260922_133523_R4.vi
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 37, 'closed': 37, 'live': 0, 'cached_op_vis': 8}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 37, 'closed': 37, 'live': 0, 'cached_op_vis': 8}
+  FACT  LabVIEW handle count AFTER the work: 34566
+  PASS  H4 scratch deleted: C83bARFSIT_20260922_133523.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\C83bARFSIT_20260922_133523.vi
+  PASS  H4 scratch deleted: C83bSWAP_20260922_133523.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\C83bSWAP_20260922_133523.vi
+  PASS  H2 bed md5 UNCHANGED after the run  before 33ef524e0b6b193a158c9221474c68e3 / after 33ef524e0b6b193a158c9221474c68e3
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 the five md5 pins all hold
+  PASS  H6 THE FILES THIS RUN LEFT ON DISK == [] and nothing was removed  added [] removed []
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  FACT  THE OP AT EXIT: OpFsInnerTunnelConnect_v0.vi md5 50a1e58a4825c2ce030ed9a41e204931 (18521 bytes)
+  FACT  LabVIEW handle count at exit: 33989
+
+---------- THE CELL TABLE (run 2)
+  cell note                                                 RAW Invoke error               term_uid  created?  UID 2     junk 
+  R0   CONTROL - 7506 ALIVE, today's roles, POISON ON (cycl (no error)                     7488      True      7506      1    
+        poison=True | border BEFORE wire=0 err={'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055} | border AFTER wire=7506 err={'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 0}
+        err_uidvi='' err_fsit='' err_termuid='' err_uidback=''
+  R0b  CONTROL - 7506 ALIVE, today's roles, POISON OFF (the (no error)                     7488      True      7506      1    
+        poison=False | border BEFORE wire=0 err={'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055} | border AFTER wire=7506 err={'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 0}
+        err_uidvi='' err_fsit='' err_termuid='' err_uidback=''
+  R1   B2 - today's roles, 7506 deleted, Auto Route default error 1055: Invoke Node in OpF 0         False     0         1    
+        poison=False | border BEFORE wire=0 err={'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055} | border AFTER wire=0 err={'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055}
+        err_uidvi='error 1055: To More Specific Class in UID to GObject Reference.vi->OpFsInnerTunnelConnect_v0.vi' err_fsit='error 1055: Property Node in OpFsInnerTunnelConnect_v0.vi' err_termuid='error 1055: Property Node in OpFsInnerTunnelConnect_v0.vi' err_uidback='error 1055: Property Node in OpFsInnerTunnelConnect_v0.vi'
+  R2   B1 - today's roles + Auto Route TRUE, poison OFF     error 1055: Invoke Node in C83 0         False     0         1    
+        poison=False | border BEFORE wire=0 err={'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055} | border AFTER wire=0 err={'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055}
+        err_uidvi='error 1055: To More Specific Class in UID to GObject Reference.vi->C83bARFSIT_20260922_133523.vi' err_fsit='error 1055: Property Node in C83bARFSIT_20260922_133523.vi' err_termuid='error 1055: Property Node in C83bARFSIT_20260922_133523.vi' err_uidback='error 1055: Property Node in C83bARFSIT_20260922_133523.vi'
+  R3   A2 - roles EXCHANGED (Invoke on the FSIT terminal),  error 1055: Invoke Node in C83 0         False     0         1    
+        poison=False | border BEFORE wire=0 err={'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055} | border AFTER wire=0 err={'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055}
+        err_uidvi='error 1055: To More Specific Class in UID to GObject Reference.vi->C83bSWAP_20260922_133523.vi' err_fsit='error 1055: Property Node in C83bSWAP_20260922_133523.vi' err_termuid='error 1055: Property Node in C83bSWAP_20260922_133523.vi' err_uidback='error 1055: Property Node in C83bSWAP_20260922_133523.vi'
+  R4   A1 - roles EXCHANGED, Auto Route TRUE                error 1055: Invoke Node in C83 0         False     0         1    
+        poison=False | border BEFORE wire=0 err={'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055} | border AFTER wire=0 err={'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055}
+        err_uidvi='error 1055: To More Specific Class in UID to GObject Reference.vi->C83bSWAP_20260922_133523.vi' err_fsit='error 1055: Property Node in C83bSWAP_20260922_133523.vi' err_termuid='error 1055: Property Node in C83bSWAP_20260922_133523.vi' err_uidback='error 1055: Property Node in C83bSWAP_20260922_133523.vi'
+
+====================================================================================================
+GATES: 27 pass / 14 fail  FAILING: R0 the border terminal's own `Wire` property read returned NO error (the review's strongest point: a 1055 there makes `wire 0` the error path's default, not a measurement), R0b the border terminal's own `Wire` property read returned NO error (the review's strongest point: a 1055 there makes `wire 0` the error path's default, not a measurement), R1 the border terminal's own `Wire` property read returned NO error (the review's strongest point: a 1055 there makes `wire 0` the error path's default, not a measurement), R1 the FSIT uid 7468 still resolves to LeftTerm #7488 (term_uid echo), R1 the border terminal went BARE -> NON-ZERO, R2 the border terminal's own `Wire` property read returned NO error (the review's strongest point: a 1055 there makes `wire 0` the error path's default, not a measurement), R2 the FSIT uid 7468 still resolves to LeftTerm #7488 (term_uid echo), R2 the border terminal went BARE -> NON-ZERO, R3 the border terminal's own `Wire` property read returned NO error (the review's strongest point: a 1055 there makes `wire 0` the error path's default, not a measurement), R3 the FSIT uid 7468 still resolves to LeftTerm #7488 (term_uid echo), R3 the border terminal went BARE -> NON-ZERO, R4 the border terminal's own `Wire` property read returned NO error (the review's strongest point: a 1055 there makes `wire 0` the error path's default, not a measurement), R4 the FSIT uid 7468 still resolves to LeftTerm #7488 (term_uid echo), R4 the border terminal went BARE -> NON-ZERO
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c83_connect2x2_r2.json   elapsed 150.8 s
+BGRUN END rc=1 after 151s

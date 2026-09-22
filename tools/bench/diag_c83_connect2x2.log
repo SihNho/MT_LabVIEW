@@ -1,0 +1,156 @@
+BGRUN START 2026-09-22 13:01:34 limit 75.0 min: py -u tools/bench/diag_c83_connect2x2.py
+====================================================================================================
+diag_c83_connect2x2 - D-2b of M3a-3b: STEP 0 error propagation + the 2x2 role/Auto-Route separation
+====================================================================================================
+
+---------- [0] FILES ONLY - the bed's md5 BEFORE anything, the five pins, the claudeDev listing
+  PASS  H1 bed md5 before == 33ef524e0b6b193a158c9221474c68e3 (306951 B)  got 33ef524e0b6b193a158c9221474c68e3, 306951 bytes
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  claudeDev holds 234 .vi file(s) BEFORE the run
+  PASS  F0 OpFsInnerTunnelConnect_v0.vi (STEP 0's subject) on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpFsInnerTunnelConnect_v0.vi
+  PASS  F0 OpConnect_v0.vi (the trivial cells' primitive) on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpConnect_v0.vi
+  PASS  F0 EMPTY_v0.vi (the trivial scratch's source) on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\EMPTY_v0.vi
+  PASS  F0 OpWireSource_v5.vi (the identity reader) on disk  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\OpWireSource_v5.vi
+  PASS  F0 the op's label map on disk  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opfsinnertunnelconnect_v0_labels.json
+  FACT  OpFsInnerTunnelConnect_v0.vi md5 BEFORE the repair: c0d5efe3389b0dea388ee565433fb683 (17881 bytes)
+  PASS  F0b the op's md5 is the one STATUS pins (c0d5efe3389b0dea388ee565433fb683)  c0d5efe3389b0dea388ee565433fb683
+
+---------- [1] RESTART LabVIEW (STATUS orders it; the instance was left at ~33,996 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 33958 (baseline ~31,500)
+  FACT  LabVIEW handle count AFTER the restart: 33989
+
+---------- [S0] REPAIR (c): make the Invoke's OWN error cluster reach the op's panel. NOTHING ELSE CHANGES
+  FACT  S0 the op's Invoke node: Nodes[17] #757 ; terminals [(0, 'reference', False, 572), (1, 'reference out', True, 0), (2, 'error in (no error)', False, 0), (3, 'error out', True, 1027), (4, 'Connect Wire', False, 0), (5, 'Connect Wire', True, 0), (6, 'Wire Source', False, 1337), (7, 'Wire Source', True, 0), (8, 'Auto Wire? (T)', False, 0), (9, 'Auto Wire? (T)', True, 0), (10, 'Wiring Specs', False, 0), (11, 'Wiring Specs', True, 0), (12, 'Auto Route? (F)', False, 0), (13, 'Auto Route? (F)', True, 0)]
+  PASS  S0a the op's Invoke carries an `Auto Route?` terminal and it is UNWIRED (explanation (b)'s premise, measured not assumed)  [('Auto Wire? (T)', 0), ('Auto Wire? (T)', 0), ('Auto Route? (F)', 0), ('Auto Route? (F)', 0)]
+  FACT  S0 the Invoke's `error out` CHAIN: [('Invoke', 17, 757, 1027), ('Property Node', 10, 241, 630, 'error in (no error)'), ('Property Node', 11, 242, 739, 'error in (no error)'), ('Clear Errors.vi', 12, 399, 0, 'error in (no error)')]
+  FACT  S0 NEW error indicator 'error out 7' on Nodes[12] #399 `error out` (t0)
+  PASS  S0b the Invoke's own error cluster now reaches a front-panel indicator  indicator 'error out 7' ; created on #399 (3 hop(s) from the Invoke)
+  PASS  S0c ExecState 1 after the edit (on this COM path ExecState 0 IS LabVIEW's 'broken' verdict)  ExecState 1
+  FACT  S0 SAVED OpFsInnerTunnelConnect_v0.vi (18513 bytes) md5 c0d5efe3389b0dea388ee565433fb683 -> cda1e36ee394ccd6bf0f1c1108d76249
+  PASS  S0d ExecState 1 re-read AFTER the save  ExecState 1
+  FACT  S0 label map updated with err_invoke='error out 7' -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opfsinnertunnelconnect_v0_labels.json
+
+---------- [S-AR] a SCRATCH copy of OpConnect_v0.vi with an `Auto Route?` control + an Invoke error indicator - the ONLY way to set `Auto Route?` (no op on disk exposes it)
+  FACT  S-AR OpConnect_v0's Invoke: Nodes[11] #99 ; terminals [(0, 'reference', False, 442), (1, 'reference out', True, 0), (2, 'error in (no error)', False, 0), (3, 'error out', True, 537), (4, 'Connect Wire', False, 0), (5, 'Connect Wire', True, 0), (6, 'Wire Source', False, 532), (7, 'Wire Source', True, 0), (8, 'Auto Wire? (T)', False, 0), (9, 'Auto Wire? (T)', True, 0), (10, 'Wiring Specs', False, 0), (11, 'Wiring Specs', True, 0), (12, 'Auto Route? (F)', False, 0), (13, 'Auto Route? (F)', True, 0)]
+  PASS  S1c NO op on disk exposes `Auto Route?`: on OpConnect_v0 it is present and UNWIRED  [('Auto Wire? (T)', 0), ('Auto Wire? (T)', 0), ('Auto Route? (F)', 0), ('Auto Route? (F)', 0)]
+  FACT  S-AR `Auto Route? (F)` (t12 on Nodes[11] #99) now carries control 'Auto Route? (F)'
+  FACT  S-AR the Invoke's `error out` CHAIN: [('Invoke', 11, 99, 537), ('Clear Errors.vi', 3, 369, 0, 'error in (no error)')]
+  FACT  S-AR NEW error indicator 'error out 2' on Nodes[3] #369 `error out` (t0)
+  PASS  S1d the scratch connect op is legal after the two additions (ExecState 1)  ExecState 1 ; AR control 'Auto Route? (F)' ; error indicator 'error out 2'
+
+---------- [S1] THE 2x2 ON A TRIVIAL SCRATCH VI - a FRESH VI per cell
+
+---------- [S1 A1] Invoke on the SINK terminal, Auto Route True
+  FACT  A1 trivial VI C83TRIV_20260922_130134_A1.vi : SOURCE = Nodes[0] #43 `reference out` t1 is_source=True wire=0 ; SINK = Nodes[1] #44 `reference` t0 is_source=False wire=0
+  FACT  S1 A1 RESULT: op_err='error 999999: POISON - not overwritten by the run' invoke_err='' wire_delta=1 junk_Invoke=0 source_wire=93 sink_wire=93 created=True ExecState=0
+  PASS  S1 A1: a wire now joins the two terminals (SAME wire uid on both ends)  source w93 / sink w93 ; wire_delta 1
+  PASS  S1 A1 trivial scratch deleted  C83TRIV_20260922_130134_A1.vi
+
+---------- [S1 A2] Invoke on the SINK terminal, Auto Route False
+  FACT  A2 trivial VI C83TRIV_20260922_130134_A2.vi : SOURCE = Nodes[0] #43 `reference out` t1 is_source=True wire=0 ; SINK = Nodes[1] #44 `reference` t0 is_source=False wire=0
+  FACT  S1 A2 RESULT: op_err='error 999999: POISON - not overwritten by the run' invoke_err='' wire_delta=1 junk_Invoke=0 source_wire=93 sink_wire=93 created=True ExecState=0
+  PASS  S1 A2: a wire now joins the two terminals (SAME wire uid on both ends)  source w93 / sink w93 ; wire_delta 1
+  PASS  S1 A2 trivial scratch deleted  C83TRIV_20260922_130134_A2.vi
+
+---------- [S1 B1] Invoke on the SOURCE terminal, Auto Route True
+  FACT  B1 trivial VI C83TRIV_20260922_130134_B1.vi : SOURCE = Nodes[0] #43 `reference out` t1 is_source=True wire=0 ; SINK = Nodes[1] #44 `reference` t0 is_source=False wire=0
+  FACT  S1 B1 RESULT: op_err='error 999999: POISON - not overwritten by the run' invoke_err='' wire_delta=1 junk_Invoke=0 source_wire=93 sink_wire=93 created=True ExecState=0
+  PASS  S1 B1: a wire now joins the two terminals (SAME wire uid on both ends)  source w93 / sink w93 ; wire_delta 1
+  PASS  S1 B1 trivial scratch deleted  C83TRIV_20260922_130134_B1.vi
+
+---------- [S1 B2] Invoke on the SOURCE terminal, Auto Route False
+  FACT  B2 trivial VI C83TRIV_20260922_130134_B2.vi : SOURCE = Nodes[0] #43 `reference out` t1 is_source=True wire=0 ; SINK = Nodes[1] #44 `reference` t0 is_source=False wire=0
+  FACT  S1 B2 RESULT: op_err='error 999999: POISON - not overwritten by the run' invoke_err='' wire_delta=1 junk_Invoke=0 source_wire=93 sink_wire=93 created=True ExecState=0
+  PASS  S1 B2: a wire now joins the two terminals (SAME wire uid on both ends)  source w93 / sink w93 ; wire_delta 1
+  PASS  S1 B2 trivial scratch deleted  C83TRIV_20260922_130134_B2.vi
+
+---------- [S-ARF] a SCRATCH copy of the PATCHED op with an `Auto Route?` control (STEP 2's B cells)
+  FACT  S-ARF `Auto Route? (F)` (t12 on Nodes[17] #757) now carries control 'Auto Route? (F)'
+  PASS  S2a the AR copy of the op is legal (ExecState 1)  ExecState 1 ; AR 'Auto Route? (F)'
+
+---------- [S-SWAP] a SCRATCH copy of the PATCHED op with the Invoke's `reference` and `Wire Source` feeds EXCHANGED - explanation (a)'s configuration on the REAL pair. NOT applied to the op on disk.
+  FACT  S-SWAP BEFORE: `reference` <- #239.'element' (w572) ; `Wire Source` <- #183.'LeftTerm' (w1337)
+      S-SWAP deleted wire w572
+      S-SWAP deleted wire w1337
+      S-SWAP #239.'element' -> #757.'Wire Source': wire 1660 / 1660 OK
+      S-SWAP #183.'LeftTerm' -> #757.'reference': wire 1664 / 1664 OK
+  FACT  S-SWAP `Auto Route? (F)` (t12 on Nodes[17] #757) now carries control 'Auto Route? (F)'
+  FACT  S-SWAP DIAGNOSTIC unwired non-error SINK terminals: [(43, 'password ("")'), (43, 'type specifier VI Refnum (for type only)'), (43, 'options'), (43, 'application reference (local)'), (124, ''), (124, 'Other Refnum'), (124, 'Traverse Generated Code (F)'), (124, ''), (243, ''), (243, 'reference'), (243, 'Inputs'), (243, ''), (243, ''), (241, 'reference'), (399, ''), (399, ''), (399, ''), (399, ''), (399, 'specific error code to clear (0: all)'), (757, 'Connect Wire'), (757, 'Auto Wire? (T)'), (757, 'Wiring Specs'), (758, ''), (758, ''), (758, ''), (758, ''), (758, 'specific error code to clear (0: all)'), (1088, ''), (1088, ''), (1088, ''), (1088, ''), (1088, ''), (1088, ''), (187, 'reference')]
+  **FAIL**  S2b the SWAPPED copy is legal (ExecState 1) - i.e. LabVIEW accepts the exchanged roles at EDIT time  ExecState 0 ; rewire ok True ; AR 'Auto Route? (F)'
+
+---------- [S2] THE SAME FOUR CELLS ON THE REAL PAIR - a dated scratch COPY of the bed per cell
+
+---------- [S2 A1] Invoke on the SINK terminal, Auto Route True
+  FACT  S2 A1 REFUSED BY CONSTRUCTION: C83SWAPFSIT (roles EXCHANGED) could not be built
+  **FAIL**  S2 A1 ran  REFUSED BY CONSTRUCTION: C83SWAPFSIT (roles EXCHANGED) could not be built
+
+---------- [S2 A2] Invoke on the SINK terminal, Auto Route False
+  FACT  S2 A2 REFUSED BY CONSTRUCTION: C83SWAPFSIT (roles EXCHANGED) could not be built
+  **FAIL**  S2 A2 ran  REFUSED BY CONSTRUCTION: C83SWAPFSIT (roles EXCHANGED) could not be built
+
+---------- [S2 B1] Invoke on the SOURCE terminal, Auto Route True
+  PASS  S2 B1 the scratch is a byte-identical copy of the bed  C83BED_20260922_130134_B1.vi
+  FACT  S2 B1 ensure_loaded took 1.3 s
+  FACT  S2 B1 Diagram census 173 row(s); Diagram #686 at traverse index 19
+  FACT  S2 B1 Diagram[19].Nodes[21] uid echo 23032 (want the NEW WhileLoop #23032 -> MATCH); t1 row {'i': 1, 'name': 'Outgoing Handle', 'is_source': True, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 23032}
+      S2 B1 deleted wire w7506
+  PASS  S2 B1 the border terminal is BARE before the connect  wire 0
+  FACT  S2 B1 RESULT: op_err='error 999999: POISON - not overwritten by the run' invoke_err='' `UID 2`=0 border_wire=0 wire_delta=0 junk_Invoke=1 term_uid=0 uid_back=0 is_broken=False
+  **FAIL**  S2 B1: the border terminal went BARE -> NON-ZERO  wire 0
+  PASS  S2 B1 bed scratch deleted  C83BED_20260922_130134_B1.vi
+
+---------- [S2 B2] Invoke on the SOURCE terminal, Auto Route False
+  PASS  S2 B2 the scratch is a byte-identical copy of the bed  C83BED_20260922_130134_B2.vi
+  FACT  S2 B2 ensure_loaded took 0.8 s
+  FACT  S2 B2 Diagram census 173 row(s); Diagram #686 at traverse index 19
+  FACT  S2 B2 Diagram[19].Nodes[21] uid echo 23032 (want the NEW WhileLoop #23032 -> MATCH); t1 row {'i': 1, 'name': 'Outgoing Handle', 'is_source': True, 'wire': 0, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 1055, 'node_uid': 23032}
+      S2 B2 deleted wire w7506
+  PASS  S2 B2 the border terminal is BARE before the connect  wire 0
+  FACT  S2 B2 RESULT: op_err='error 999999: POISON - not overwritten by the run' invoke_err='' `UID 2`=0 border_wire=0 wire_delta=0 junk_Invoke=1 term_uid=0 uid_back=0 is_broken=False
+  **FAIL**  S2 B2: the border terminal went BARE -> NON-ZERO  wire 0
+  PASS  S2 B2 bed scratch deleted  C83BED_20260922_130134_B2.vi
+
+---------- [H] HYGIENE - close panels, delete every scratch, re-read every pin, handles at both ends
+  FACT  close_panel(OpConnect_v0.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  close_panel(EMPTY_v0.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts (opened / closed / live / cached op VIs): {'opened': 40, 'closed': 40, 'live': 0, 'cached_op_vis': 10}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 40, 'closed': 40, 'live': 0, 'cached_op_vis': 10}
+  FACT  LabVIEW handle count AFTER the work: 31335
+  PASS  H4 scratch deleted: C83ARCONN_20260922_130134.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\C83ARCONN_20260922_130134.vi
+  PASS  H4 scratch deleted: C83ARFSIT_20260922_130134.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\C83ARFSIT_20260922_130134.vi
+  PASS  H4 scratch deleted: C83SWAPFSIT_20260922_130134.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\C83SWAPFSIT_20260922_130134.vi
+  PASS  H2 bed md5 UNCHANGED after the run  before 33ef524e0b6b193a158c9221474c68e3 / after 33ef524e0b6b193a158c9221474c68e3
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 the five md5 pins all hold
+  PASS  H3b OpConnect_v0.vi md5 unchanged (it was only COPIED)  cee0f70b926511d2457faa2800402cf3 -> cee0f70b926511d2457faa2800402cf3
+  PASS  H3b EMPTY_v0.vi md5 unchanged (it was only COPIED)  6544be40470e80763764089fd2767f2a -> 6544be40470e80763764089fd2767f2a
+  PASS  H6 THE FILES THIS RUN LEFT ON DISK == [] and nothing was removed (the op is EDITED IN PLACE)  added [] removed []
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  FACT  THE OP AFTER STEP 0: OpFsInnerTunnelConnect_v0.vi md5 cda1e36ee394ccd6bf0f1c1108d76249 (18513 bytes) - was c0d5efe3389b0dea388ee565433fb683
+  FACT  LabVIEW handle count at exit: 33996 (baseline ~31,500)
+
+---------- THE 8-CELL TABLE
+  cell where    AR     invoke error (raw)                             created?  UID 2     sink wire junk  
+  -- S1 trivial
+  A1   sink     True   error 999999: POISON - not overwritten by the  True      -         93        0     
+  A2   sink     False  error 999999: POISON - not overwritten by the  True      -         93        0     
+  B1   source   True   error 999999: POISON - not overwritten by the  True      -         93        0     
+  B2   source   False  error 999999: POISON - not overwritten by the  True      -         93        0     
+  -- S2 real pair
+  A1   sink     True   REFUSED: REFUSED BY CONSTRUCTION: C83SWAPFSIT (roles EXCHANGED) could not be built
+  A2   sink     False  REFUSED: REFUSED BY CONSTRUCTION: C83SWAPFSIT (roles EXCHANGED) could not be built
+  B1   source   True   error 999999: POISON - not overwritten by the  False     0         0         1     
+  B2   source   None   error 999999: POISON - not overwritten by the  False     0         0         1     
+
+====================================================================================================
+GATES: 37 pass / 5 fail  FAILING: S2b the SWAPPED copy is legal (ExecState 1) - i.e. LabVIEW accepts the exchanged roles at EDIT time, S2 A1 ran, S2 A2 ran, S2 B1: the border terminal went BARE -> NON-ZERO, S2 B2: the border terminal went BARE -> NON-ZERO
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c83_connect2x2.json   elapsed 172.7 s
+BGRUN END rc=1 after 173s

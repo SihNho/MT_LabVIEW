@@ -3369,6 +3369,25 @@ fail, refs 3/3/0, bed md5 `33ef524e…` unchanged at both ends, scratch deleted)
      pass (`wire_delta 0`, Pre-decided 94), never in the pass that makes the connection; hop count is an output,
      never a criterion. PD85 violations 0 on every walk; the OLD `#637` t10 must be OFF the net.
 
+111a. **AMENDMENT TO 106 AND 111, 2026-09-22 (cycle-84 material, on the prior-art review's A1 —
+     `archive/peer/2026-09-22-priorart-c84-d3-rowd.md`, which found D-3 executing against 106/111 without
+     naming them). THE ORDERING CLAUSE "the delete precedes the connect" IS RECORDED AS UNEXECUTABLE FOR
+     ROW D'S SINK, NOT AS OVERTURNED.** Measured: with wire 7506 deleted, `UID to GObject Reference.vi`
+     answers `error 1055` on `#7468` and the Invoke returns `error 1055 … Method Name: Connect Wire` in all
+     four c83 cells (`tools/bench/diag_c83_connect2x2_r2.log:77`, `:89`, `:101`, `:113`), so the delete-first
+     pass cannot even address the sink. The judgement session's D-3 dispatch therefore runs the one
+     configuration never fired — the Invoke ON the sink terminal with 7506 LEFT ALIVE — and 106's ACCEPTANCE
+     is untouched: source identity, exactly one source terminal, the ordered idempotent second pass.
+     ⚠️ **OPEN, AND JUDGEMENT'S:** the failed-prediction review
+     `archive/peer/2026-09-22-c84-replace-vs-branch.md` §3 offers a COMPETING CAUSE for that 1055 — every
+     deleting cell ran `remove_bad_wires_scripted` one line after `del_wire`
+     (`diag_c83_connect2x2_r2.py:449-450`), and that verb is already on record as having **DELETED A TUNNEL**
+     (`archive/2026-09-17-status-d1-route-b-2.md:44-46`, which `docs/cycle27-plan.md:1860-1862` cites to
+     REFUSE it as a rule-1a hazard). "Gone" ≠ "unresolvable": if the tunnel was deleted rather than
+     unresolvable, delete-first is still alive and the repair is to stop running Remove Bad Wires after the
+     delete. No run has yet read `#7468` BETWEEN those two lines. Nothing here decides that; it is recorded
+     so 106/111 are not silently run past.
+
 112. **THE CYCLE GATE'S BUDGET COUNTS RECIPE BUILDS; THE FAILED-PREDICTION GATE'S CLASSIFIER IS NOT TOUCHED.**
      `guard_cycle.py`'s `since` budget (`CYCLE_BUILD_BUDGET = 10`) counted 16 logs on 2026-09-22 09:0x of which
      the oldest and newest were `jev_trial.log` and `selftest_guard_peer_jev.log` — a model-API trial and a hook
@@ -3513,3 +3532,82 @@ refs 8 opened / 8 closed / 0 live, handles 34,160 → 30,684 (restart) → 31,28
      whose resolution, when something actually needs it, is a probe on a scratch copy. Pre-decided 115 applies
      SYMMETRICALLY: a wiki page is evidence of convention on both sides of a disagreement, so `docs/NAMES.md:1035`
      is **not** to be edited on the strength of the citation alone.
+
+## Pre-decided — ADDED 2026-09-22 (cycle 66): D-1 answered YES, the YES BRANCH IS DEAD ANYWAY, and D-2 builds the FSIT-head op
+
+Source: `tools/bench/diag_c81_uidref.log` + `tools/bench/diag_c81_uidref_r2.log` (7 gates pass / 0 fail each,
+read-only on dated scratch copies, bed `claudeDev\D1_s3b_m3a3_20260922_081056.vi` md5 `33ef524e…` byte-unchanged
+at both ends of both runs, `FILES THIS RUN LEFT ON DISK: []`, refs 3/3/0) and
+`archive/peer/2026-09-22-c81-uidref-probe.md` (claude / `-Role hypothesis`, opus max, ANSWERED 533 s, $3.4884).
+
+124. **D-1's MEASUREMENT, VERBATIM — and the fork it was built to settle is NOT settled by it.**
+     `UID to GObject Reference.vi` (`vi.lib\VIServer\…`, LabVIEW 2026 26.3.1f1 64-bit) DOES resolve a TERMINAL
+     uid: `#7488` (re-derived as the `FlatSequenceInnerTunnel #7468` LeftTerm) returns `Class Name` **`'Terminal'`**
+     with every error column empty and the uid echoing back, and `#23906` (re-derived as the NEW loop's shift-register
+     OUTER terminal) returns **`'OuterTerminal'`**, owner **`RightShiftRegister #23868`** — **Pre-decided 120 is
+     CONFIRMED on a second, independent route**. Two addressings of `#7488` (structurally via `Left Terminal`, and by
+     uid) AGREE (`diag_c81_uidref_r2.log:95`). **BUT the half of Pre-decided 121's question that actually selects the
+     op — "does a TMSC to `Terminal` succeed?" — IS UNMEASURABLE WITHOUT BUILDING THE OP**: no VI on disk carries a
+     `Terminal`-seeded To More Specific Class (the seeds that exist are `FlatSequenceInnerTunnel`,
+     `FlatSequenceOuterTunnel`, `Wire`, `GObject`). What could be measured: TMSC→`GObject` succeeds on both terminals,
+     TMSC→`FlatSequenceInnerTunnel` refuses a terminal with **error 1055**. So D-1 returned a YES to the half that
+     does not discriminate and a "cannot be measured yet" to the half that does. **A fork whose branches are not
+     separated by the measurement is not a fork** — it is re-decided below on evidence, not on the letter of 121.
+
+125. **THE NEGATIVE CONTROL IS THE MOST IMPORTANT LINE OF THE RUN, AND IT IS A STANDING HAZARD FOR EVERY UID ROUTE.**
+     On a never-allocated uid (`999983`) `UID to GObject Reference.vi` returned a reference with **every error column
+     empty** whose class and uid were a DIFFERENT, previously-resolved object (`'Wire' #7506`, probed moments before)
+     — a history echo of exactly the class that cost cycle 68 a repair of `wire_source_owner`
+     (`diag_c81_uidref.log:85`). **The uid echo is the ONLY column that catches it**; an error check does not, and a
+     class-name check does not. RULE, effective now: **any op or diagnostic that resolves an object BY UID must
+     re-read the returned reference's own UID and assert it equals the uid passed in, as a named gate, before any
+     value it produces is used or believed.** This is why a uid-addressed design is not "free generality" — it carries
+     a silent-wrong-object failure mode that a structural (property-walk) address does not have.
+
+126. **PRE-DECIDED 121's "YES ⇒ `OpConnectByUid`" IS WITHDRAWN, ON A FACT VERIFIED IN THIS SESSION BY DIRECT
+     INSPECTION: THE DONOR IS NOT ON DISK.** `claudeDev` holds `OpConnect_v0`, `OpConnect2_v0`, `OpConnectCtl_v0`,
+     `OpConnectNested_v0`, `OpConnectNested_v1`, `OpConnectFromWire_v0` and `OpFsInnerTunnelTerm_v0` — there is **no
+     `OpConnectNested_v2.vi`**, the donor 121 names. That is independently corroborated by our own record: M3a-3 run 1
+     was REJECTED precisely because its rebuild raised "`OpConnectNested_v2.vi` is not on disk" (STATUS lock block).
+     The c81 review reached the same conclusion; it is adopted here because the file listing was checked directly, not
+     because the reviewer said so (Pre-decided 115's discipline, applied to a reviewer's claim about our own tools).
+     **Three independent reasons now point the same way**, and no reason points back: (a) the donor does not exist;
+     (b) the uid route's decisive primitive is unmeasured (124) while the FSIT route's reading half is MEASURED —
+     `OpFsInnerTunnelTerm_v0` returns `#7488` with `err_a` empty **even AFTER wire 7506 is deleted**
+     (`c80_rowd_routeA_r2.log:104,265`), which is exactly the delete-then-connect ordering Row D needs; (c) the uid
+     route inherits 125's silent-wrong-object hazard. **D-2 therefore builds the FSIT-head op.** `OpConnectByUid` is
+     not refuted as an idea and may be built later if something needs a uid-addressed sink; it is simply not on Row D's
+     critical path, and Row D is not the place to pay for its first measurement.
+
+127. **THE OP D-2 BUILDS, ITS SHAPE, AND ITS ACCEPTANCE.** `OpFsInnerTunnelConnect_v0.vi`, built as the SMALLEST
+     possible edit of `OpConnectFromWire_v0` — **only the source-half acquisition changes**: where that op derives a
+     terminal from (`wire_uid`, `Wire.Terms[]` index), the new op derives it from (`fsit_uid` → `UID to GObject
+     Reference.vi` → TMSC `FlatSequenceInnerTunnel` → **`Left Terminal` 1C3A9000**), i.e. the reading half of
+     `OpFsInnerTunnelTerm_v0`, which is already measured (Pre-decided 109/118). **Everything else is kept byte-for-byte
+     in role**: the Invoke still sits on the terminal named by the (diagram, `Nodes[]`, `Terminals[]`) INDEX TRIPLE and
+     still receives the other terminal as `Wire Source`, because that exact binding is the one the machine already
+     accepted (`c80_rowd_routeA_r2.log:244`, Pre-decided 119). LEFT terminal only — no side selector, no second
+     property, nothing speculative. Acceptance, all four: (1) `ExecState` 1; (2) **20 consecutive calls leave the
+     handle count flat ±100** (reference hygiene is a precondition, CLAUDE.md §3); (3) a call on `fsit_uid` 7468
+     returns the LeftTerm reference whose **own uid echoes `#7488`** (125's gate, mandatory); (4) ONE end-to-end
+     exercise on a DATED SCRATCH COPY of the bed inside the same dispatch — delete wire 7506, call the op, and assert
+     via `OpWireSource_v5` that the new net's source terminal OWNER is **`RightShiftRegister #23868`** and that
+     `#4334` is OFF the net, PD85 violations 0, `Wire.Is Broken?` False on that wire — then delete the scratch and save
+     nothing from it. (4) is the discriminating test for the op's parameter binding and it belongs in D-2, not in D-3:
+     Row D has now been attempted across five dispatches and must not be attempted a sixth time on an unexercised op.
+     The op VI itself IS saved (that is D-2's artefact, `claudeDev` save authority). The bed is not written to, not
+     opened for execution, and not run.
+
+128. **DISPOSITION OF `archive/peer/2026-09-22-c81-uidref-probe.md`** (claude/`hypothesis`, opus max, ANSWERED,
+     $3.4884). **Accepted:** its headline ("do not gate D-2 on D-1; the NO branch is already open and the YES branch's
+     donor is absent") — adopted in 126, after the file listing was checked directly. **Not acted on:** its §2 ("the
+     real missing capability may be *remove one source from a net*, not *uid → Terminal*") — that is a property of
+     Route A's connect-THEN-prune ordering, and delete-THEN-connect never creates a multi-source net, so it is
+     recorded, not tested; re-running Route A's arms remains forbidden (Pre-decided 119). **Deliberately untouched:**
+     its claim that the "(Not Implemented)" markers on labviewwiki sit on `6370C02/03/04/09` rather than on
+     `Wire.Disconnect Terminal` **6370C0D** — Pre-decided 123 forbids editing `docs/NAMES.md:1035` on a citation
+     alone, and now TWO reviews cite the same page against each other, which is itself the reason the resolution must
+     be a probe on a scratch copy if anything ever needs that verb. **Procedural note, not a finding:** the review was
+     dispatched because `guard_peer` was still armed on `c80_rowd_routeA_r2.log` (its existing review's ctime predates
+     the log by 3 min; Jev scored p=0.790, just under the 0.80 discharge threshold). The gate behaved as designed and
+     the dispatch paid for itself — it is what produced 126's headline.

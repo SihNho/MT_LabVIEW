@@ -1,7 +1,94 @@
-BGRUN START 2026-09-22 11:45:39 limit 32.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 1680 -Slug c81-uidref-probe -TaskFile tools/bench/c81_uidref_task.txt
-OUTCOME: ANSWERED (533s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-22-c81-uidref-probe.md
-COST: $3.4884  in 22 / out 38726 / cache-create 170362 / cache-read 1467692  (529s, 22 turn(s))
---- ANSWER ---
+﻿# c81-uidref-probe
+
+- **agent:** claude
+- **role:** hypothesis
+- **model:** opus (effort max; peer.ps1 default for role hypothesis)
+- **kind:** review
+- **cost:** $3.4884  in 22 / out 38726 / cache-create 170362 / cache-read 1467692  (529s, 22 turn(s))
+- **date:** 2026-09-22 11:54:32
+- **outcome:** ANSWERED (533s)
+- **why asked:** (Claude fills in)
+- **verdict:** unverified
+
+## Question
+
+# REFUTE THIS: "The only thing still missing for Row D is `uid -> Terminal reference`, and the D-1 probe below measures it correctly"
+
+You are the failed-prediction reviewer. Attack the claim. Do not confirm it. Name the strongest reason it
+is wrong, an alternative explanation, what would falsify it, and the cheapest discriminating test.
+
+The failing log is `tools/bench/c80_rowd_routeA_r2.log`; the script is `tools/recipes/build_d1_m3a3.py`.
+Its first failing line is:
+
+    FAIL  [A1 94 D VISA] the sink terminal carries a wire after the write   the sink terminal #7488 is
+    BARE, so there is no wire to re-connect FROM - the swapped call's source half has no uid
+
+## The situation, in one paragraph
+
+A LabVIEW VI is being restructured by VI Scripting over COM (behaviour-preserving refactor: scheduling may
+change, computation may not). One wire ("Row D", uid **7506**) carries a VISA session handle out of the OLD
+`WhileLoop #637` / `RightShiftRegister #4334` and must instead come out of the NEW `WhileLoop #23032` /
+`RightShiftRegister #23868`. The SINK is `FlatSequenceInnerTunnel #7468`'s LEFT terminal, terminal uid
+**#7488**, which belongs to no `Nodes[]` (a `FlatSequence` is `Generic -> GObject -> FlatSequence`,
+measured). The SOURCE is the NEW loop's border terminal at `Diagram` traverse index 19, `Nodes[21]`,
+`Terminals[1]`, name `'Outgoing Handle'`, `Is Source?` True, currently BARE.
+
+## What was measured in the two runs of the recipe (facts, not opinion)
+
+* ARM A2 (connect first, delete after), `c80_rowd_routeA_r2.log:244,253-261`: the SWAPPED
+  `OpConnectFromWire_v0` call DOES attach the intended new source. The loop border terminal went BARE ->
+  wire 7506, and a pre-delete walk of net 7506 shows THREE source terminals - `RightShiftRegister #23868`
+  (the intended new one), `FlatSequenceInnerTunnel #7468`, and `RightShiftRegister #4334` (the old one) -
+  with 0 rule violations. So the connect BRANCHES; it does not REPLACE. `Wire.Is Broken?` True,
+  `ExecState` 0. Deleting wire 7506 afterwards leaves BOTH ends bare (measured twice).
+* ARM A1 (delete first, then connect), `c80_rowd_routeA_r2.log:119`: with 7506 already deleted, the op's
+  `Wire.Terms[]` read raises `error 1055: Property Node in OpConnectFromWire_v0.vi`, `UID 2` 0, wire delta
+  0, #7488 stays BARE. A dead wire uid cannot supply a terminal.
+
+## The claim you must attack
+
+"Every writer on disk addresses its terminals as (diagram index, `Nodes[]` index, `Terminals[]` index) or
+by taking a terminal out of a live `Wire.Terms[]`. Row D needs a terminal that is in no `Nodes[]` (#7488)
+and a terminal that is on no wire (the bare loop border terminal). Therefore the ONE missing capability is
+`uid -> Terminal reference`, and the correct next measurement is: does
+`vi.lib\VIServer\UID to GObject Reference.vi` resolve a TERMINAL uid (it is proven only on TUNNEL and WIRE
+uids), and can the resulting reference be downcast to `Terminal`? A YES selects a general `OpConnectByUid`
+(donor `OpConnectNested_v2`); a NO selects an op built on the `FlatSequenceInnerTunnel` property
+`Left Terminal` 1C3A9000."
+
+## Specific things to attack, with what we already ruled out
+
+1. **Is the probe even decisive?** `UID to GObject Reference.vi` returns a `GObject` refnum. Suppose it
+   resolves the terminal and `GObject.Class Name` reads `Terminal`. Does that actually license wiring an
+   Invoke node of class `Terminal`, method `Connect Wire` **6349C03**, to that reference over VI Scripting -
+   or is there a separate reason a terminal reference obtained this way cannot drive that Invoke?
+2. **Is there a cheaper route we have missed that needs NO new op?** Already ruled out and why:
+   (a) `Tunnel.Inside Terminals[]` 6356000 / `Outside Terminal` 6356001 cannot address #7488, because
+   `FlatSequenceInnerTunnel` is not a `Tunnel`; its own properties are `Left Terminal` 1C3A9000 /
+   `Right Terminal` 1C3A9001. (b) No `Nodes[]` address for a `FlatSequence` exists. (c)
+   `Node.Connect Wires` needs both ends to be `Node`s. (d) `Wire.Disconnect Terminal` 6370C0D is reported
+   by labviewwiki as "(Not Implemented)". Is any of (a)-(d) wrong, or is there an (e)?
+3. **The branch-vs-replace problem may be the real fault, not the addressing.** If the swapped connect
+   branches rather than replaces, would a uid-addressed Invoke behave any differently? If not, the whole
+   D-1 probe is measuring the wrong thing and the missing capability is "remove ONE source terminal from a
+   net without destroying the net". Argue this if you can support it.
+4. **Anti-history-echo.** Our uid readers have echoed stale values before. What would make a `Class Name`
+   of `Terminal` coming back from this probe UNSOUND evidence, and what extra column would close that hole?
+
+Answer with: the strongest reason the claim is wrong; an alternative explanation; what would falsify it;
+and the single cheapest discriminating test, expressed as reads we can run on a scratch copy.
+
+
+--- HOW TO ANSWER (mandatory, from the dispatcher) ---
+Your job is to REFUTE the claim above, not to confirm it. Do not open with agreement.
+1. Name the single strongest reason the claim is WRONG.
+2. Name at least one ALTERNATIVE explanation of the same evidence.
+3. Name the observation that would FALSIFY the claim.
+4. End with the CHEAPEST discriminating test that separates the claim from your alternative.
+If you still believe the claim holds after all four, say so explicitly and state what would change your mind.
+
+## Answer
+
 Write is disabled in this session, so the review is below rather than in a file.
 
 ---
@@ -83,4 +170,46 @@ For the part still genuinely open, three lines in the probe already written — 
 **Do not gate D-2 on D-1.** Run the probe with the two negative rows (it costs nothing), and schedule D-2 on the FSIT-head op regardless — sink from `Left Terminal` 1C3A9000, `Wire Source` from `Diagram[19].Nodes[21].Terminals[1]`, Invoke on the **sink**, delete-then-connect. Let D-1 decide only whether a *later* general `OpConnectByUid` is worth building — noting it cannot be built at all until `OpConnectNested_v2.vi` is recreated.
 
 **Sources** — local: `tools/bench/c80_rowd_routeA_r2.log:12,62-69,104,119,127,231,239,244,255,259,265` · `tools/gscript.py:698-699,747,2237-2239,2518-2523` · `docs/NAMES.md:1035,1141` · `docs/cycle27-plan.md:2558,3410-3418,3462-3474,3485-3497,3509-3515` · `tools/bench/diag_c81_uidref.py:26-31,441-442` · `archive/peer/2026-09-22-c75-m3a3-run1-failpred.md:142,199,201` · `archive/peer/2026-09-22-c80-rowd-routeA-swapped-r2.md:152` (checked per CLAUDE.md's "check `archive/peer/` for the same question before re-asking"). External: [NI Terminal.Connect Wire](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/terminal/connectwire.html) · [labviewwiki Terminal class](https://labviewwiki.org/wiki/Terminal_class) · [labviewwiki Connect Wire method](https://labviewwiki.org/wiki/Terminal_class/Connect_Wire_method) · [labviewwiki Wire class](https://labviewwiki.org/wiki/Wire_class) · [labviewwiki Wire.Disconnect Terminal](https://labviewwiki.org/wiki/Wire_class/Disconnect_Terminal_method) · [NI FlatSequenceInnerTunnel Left Terminal](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/flatsequenceinnertunnel/leftterminal.html)
-BGRUN END rc=0 after 533s
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+Dispositioned by the cycle-81 MATERIAL session (D-1 of M3a-3b), 2026-09-22. This session measures; it does
+not decide designs, so findings split into "applied here" (measurement quality) and "returned to judgement"
+(design). Nothing from the second group was acted on.
+
+**ACCEPTED AND APPLIED IN THIS DISPATCH — all three of section 6, all pure measurement, no design change:**
+
+1. §6.1 / §4.1 *no negative control* — ACCEPTED. `tools/bench/diag_c81_uidref.py` now probes two extra uids
+   with the identical columns: `NEG_UID = 999983` (never allocated) and `D686 = 686` (a known-OTHER-class
+   uid, a `Diagram`). Without them nothing separates "the resolver resolved a terminal" from "the resolver
+   returns something for anything", and `c80_rowd_routeA_r2.log:119` already measured the uid-VI's error
+   column EMPTY for a DELETED wire uid, so the hole is not theoretical.
+2. §6.2 *the aggregate `errs error 1055` is unattributed* — ACCEPTED. `err_bcw` is now read and reported as
+   its own column beside `err_a`/`err_b` in `probe_fsit()`, so the FSIT op's per-stage errors are
+   attributable instead of concatenated.
+3. §6.3 / §4.2 *the uid echo is circular* — ACCEPTED. A new `[P-X] CROSS-ROUTE IDENTITY` phase asserts that
+   TARGET A, reached STRUCTURALLY via `FlatSequenceInnerTunnel #7468`.`Left Terminal`, has that same tunnel
+   as its owner when read back through the UID route. Agreement between two independent addressings is the
+   soundness check; the self-echo is kept but is no longer the only one. The recycled-uid evidence the review
+   cites (`c80_rowd_routeA_r2.log:127`, a new Invoke handed uid 7506) is quoted in the code comment.
+
+**RETURNED TO THE JUDGEMENT SESSION, NOT ACTED ON — every one of these is a design decision (CLAUDE.md §3):**
+
+4. §1 + Recommendation: *"do not gate D-2 on D-1; schedule the FSIT-head op regardless, and note that
+   `OpConnectByUid`'s donor `OpConnectNested_v2.vi` is not on disk"*. This overturns Pre-decided 121's fork,
+   which is judgement's to overturn, not this session's. Reported in the return summary under `OPEN:`.
+5. §2: *the roles were inverted; invoke on the SINK #7488 with `Wire Source` = the loop border terminal*.
+   A change to the recipe's call shape = a design change. Not made.
+6. §3: *(d) is factually wrong — `Wire.Disconnect Terminal` 6370C0D is NOT marked "(Not Implemented)"; the
+   Not-Implemented markers sit on 6370C02/03/04/09*. This contradicts Pre-decided 123, and PD123 itself
+   forbids editing `docs/NAMES.md:1035` on a citation alone. No doc was edited; reported.
+7. §3(e): *`Terminal.Connect Wire` also takes `Auto Wire?` (default TRUE) / `Auto Route?`, never set by any
+   op in the fleet*. A new, unmeasured knob. Not touched.
+8. §7: the three-source reading at `c80_rowd_routeA_r2.log:259` may be degenerate. Recorded, not re-measured
+   — this dispatch is read-only on the bed and re-running arm A2 is explicitly forbidden by STATUS NEXT.
+
+**NOT ACCEPTED:** nothing. No finding was refuted.
