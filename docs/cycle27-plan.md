@@ -664,6 +664,13 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
       cannot happen in the same session. **The loop-breaking move is simply that the NEXT session launches it as its
       first act**, with the stop record already ALLOW. Recorded as a finding for the retrospective; NOT repaired,
       and no device built.
+    ⚠️ SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 88 — 88 supersedes 29's HEADLINE
+    and 29(d): `gscript.save(target, allow_broken=True)` diverts a BROKEN VI to `gui_save`
+    (`tools/gscript.py:2087-2089`), so `g.save()` under preload is NOT the only route, the ban on
+    `allow_broken=True` in stage scripts is LIFTED, and 29(e)'s "stage boundaries fall at LEGAL states" no longer
+    follows — M3a-1 was saved broken by exactly that route (`claudeDev\D1_s3b_m3a_BROKEN_20260922_005732.vi`).
+    29's two riders survive in 88: a `gui_save` is a GUI act (capture → locate → act → capture → confirm) and the
+    saved path plus all four md5 pins are verified afterwards.
 
 ## Pre-decided — ADDED 2026-09-20 (cycle 48, after S1 was DELIVERED)
 
@@ -1568,6 +1575,12 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
       "20 runs leave the handle count flat (±100)" acceptance is not measuring what it believes. Recorded as a
       FINDING, not a build (no-new-device order). Until it is explained, **restart LabVIEW before every batch**,
       mechanically.
+    ⚠️ SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 83 — **UNRESOLVED — judgement
+    owed.** 83 (added 2026-09-21, LATER) applies the same CLAUDE.md §5 repetition clause in the opposite
+    direction — "The runner was NOT stopped, deliberately" — while 44(b) stops it and hands the question to the
+    user; neither item cites the other. Their ordinals also disagree: 44 calls its review the **5th**
+    (`archive/peer/2026-09-20-outcome-review-20260920.md`) and the later 83 calls its own the **fourth**
+    (`…2026-09-21-outcome-review-20260921.md`), while `archive/peer/` holds EIGHT outcome reviews.
 
 45. **THE USER ANSWERED THE STOP (2026-09-20 ~09:40): CONTINUE — and 1.5 FOCUS crosses from 1.2 by LOCAL VARIABLES,
     NOT by wires; 1.5 is NOT merged into 1.2.** Interactive chat judgement on the user's words: *"1.5 루프는 사실
@@ -2862,6 +2875,9 @@ test is ACCEPTED IN FULL; the disposition is in that file under `## What was don
     Our census accounting (632 → 633 → 632) is sound and was never the question. Until 70's test settles it,
     no equivalence claim rests on this row, and the artefact stays NOT computation-equivalent for the separate
     reason that its registers are uninitialised (M3a-2).
+    ⚠️ SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 80 — 80 declared 71 "closed by
+    measurement, the alarming branch retired"; 87 then WITHDREW 80 (`MINTED UID == THE LIVE SOURCE NET 23955 :
+    False`), so 71's uid-safety question is OPEN again and is answered by 86, never by 80.
 
 72. **THE SIXTH ROW IS REACHABLE WITH NO NEW OP** — the tunnel-sink blocker is dissolved, not deferred. A
     tunnel is not a `Nodes[]` entry, but its terminal IS an entry in its owning structure node's `Terminals[]`,
@@ -2874,6 +2890,10 @@ test is ACCEPTED IN FULL; the disposition is in that file under `## What was don
     Tunnel refnum can never receive `Connect Wire`, but it hands out Terminal refs via `Inside Terminals[]`
     (built, 6356000) and **`Outside Terminal`**, and for an INPUT tunnel the sink is the OUTSIDE one. Read
     that property's short name **off the machine** — the wiki's numeric does not reconcile with its decimal.
+    ⚠️ SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 74 — the sixth row's SELECTOR is
+    superseded: `Q_focusback` is not an object on the bed (node 12589's three terminals are `""`,
+    `"position [internal units]"`, `""`), so the by-name lookup fails by construction and the entry is taken by
+    the UID it exposes (12673). 72's ROUTE is otherwise unchanged.
 
 73. **M3a-1 IS RE-RUN AS THE SAME RECIPE WITH THESE TWO CHANGES — NEVER AS A NEW `_v2` FILE.** The 2026-09-19
     split rule forbids a full-length retry under a new name, and `cycle_runner.py` counts a renamed recipe as
@@ -2930,6 +2950,9 @@ FOUR**; none was refuted. The dispositions are in that file under `## What was d
     unsafe, and no work is re-based on that fear. The in-run before/after read of wire 9649 **stays** as the
     discriminator on this bed — it is cheap, it is already coded, and it is what would show a real recycle.
     No recipe change was made for this finding.
+    ⚠️ SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 80 — 80 explicitly upgraded 76's
+    "NARROWED" to "retired, not merely narrowed"; 87 then WITHDREW 80, so 76's narrowing is the last surviving
+    disposition and the uid-safety question itself is OPEN (87, answered by 86).
 
 77. **THE IDENTITY GATE COUNTS EVERY SOURCE TERMINAL BEFORE IT FILTERS BY CLASS** (finding B4
     `already-measured`, review `:252-258`). As coded the gate filtered the sink wire's source terminals to
@@ -2980,6 +3003,10 @@ on the two gates themselves. Both failures are MEASURED, not inferred.
     cannot be that wire's uid being reused. Together with the 10850 / 5812 precedents disposed of in 76, the
     alarming branch ("every uid-keyed census in D1 is unsafe") is **retired, not merely narrowed**. Wire 9649
     also still walks after the call. No further work rests on this question.
+    ⚠️ SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 87 — **80 IS WITHDRAWN**: the junk
+    `Invoke` uids in the run are 23522 / 23786 ×8 / 9649 twice and the run's own line reads `MINTED UID == THE
+    LIVE SOURCE NET 23955 : False`, so the minted uid is NOT a constant of the op and Pre-decided 71 is NOT
+    retired.
 
 81. **A STAGE THAT ENDS WITH A BROKEN VI CAN NEVER LEAVE A FILE, SO THE BOUNDARY — NOT THE SCRIPT — IS WHAT
     GETS RE-CUT.** The save was attempted and refused verbatim: `RuntimeError: refusing to save a BROKEN VI -
@@ -3010,6 +3037,11 @@ on the two gates themselves. Both failures are MEASURED, not inferred.
     "abandon this route", which it is the cheapest way to justify. The escalation is written at the top of
     STATUS `## NEXT` for the user to overturn by writing `STOP`; the decision to keep running is Claude's and
     is the thing to overturn if it was wrong.
+    ⚠️ SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 44 — **UNRESOLVED — judgement
+    owed.** 44(b) (added 2026-09-20, EARLIER) read the same CLAUDE.md §5 repetition clause as compelling a STOP
+    and stopped the runner; 83 declines to stop on a repetition. Neither cites the other, and the ordinals
+    disagree (44 = "5th", the later 83 = "fourth"; `archive/peer/` holds EIGHT outcome reviews), so a cold
+    session cannot tell how many have fired or which response the clause requires.
 
 ## Pre-decided — ADDED 2026-09-21 (cycle 56 close, AFTER the hypothesis review): 78 · 80 · 81 · 82 are WITHDRAWN, and the READER is the suspect
 
@@ -3317,6 +3349,10 @@ one (A3) stops it from writing the wrong wire.
      shift-register OUTER on the owning LOOP node. If that entry is absent, or appears more than once, **that is
      a FAILED PREDICTION**: Row C runs alone, the artefact is saved, and Row D is deferred to M3a-3b. No
      improvised address, no GUI fallback, and wire 7506 is not deleted at all in that branch.
+     ⚠️ SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 109 — **107 is AMENDED**: the
+     prescribed table does not exist (`Diagram #686` has 27 `Nodes[]` rows and `#681` is absent; `owner_of(#681)`
+     is `TopLevelDiagram #536`), so 107's ROUTE and its "entry absent/duplicated ⇒ defer Row D" branch are VOID
+     and do not fire; the replacement is `OpFsInnerTunnelTerm_v0` on uid 7468. 107's PROHIBITION stands.
 
 108. **THE HELPERS ARE REUSED, NOT REWRITTEN** (review finding B3, the helper half) and **WHAT IS ALREADY
      MEASURED IS CITED, NOT RE-MEASURED** (finding B4): `delete_by_uid` (`tools/recipes/build_d1_m3a1.py:583`),
@@ -3453,6 +3489,11 @@ the verb does not exist — a failed prediction. Verdict: *"NEW-OP-REQUIRED — 
        the end of a dispatch.
      - **C — `OpFsInnerTunnelConnect_v0` as briefed earlier today: WITHDRAWN.** Wrong donor and a needlessly
        specific shape, on the review's reasoning, which is accepted.
+     ⚠️ SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 121 (with 119) — **116-A is
+     closed**: the swapped call was measured and cannot LAND Row D (it BRANCHES — 3 source terminals, `Is
+     Broken?` True, `c80_rowd_routeA_r2.log:237`, `:253-261`), so "if A works nothing new is built" no longer
+     applies; and the "~2-minute test" that selects the route is REPLACED by 121's `UID to GObject Reference.vi`
+     terminal-resolve measurement. 116-B stands as 121's YES branch; 116-C stays withdrawn.
 
 117. **THE BRANCH HAZARD IS GATED ON OWNER IDENTITY, NEVER ON A COUNT** (the review's carried-forward hazard,
      accepted). A swapped connect can **silently BRANCH wire 7506**, producing a wire whose source terminal is
@@ -3461,6 +3502,10 @@ the verb does not exist — a failed prediction. Verdict: *"NEW-OP-REQUIRED — 
      acceptance adds: `OpWireSource_v5` on the sink's wire must report a source terminal whose **OWNER is
      `WhileLoop #23032`** (the NEW loop), asserted on the ordered idempotent second pass, in addition to
      Pre-decided 106's "exactly ONE source terminal of ANY owner class, and it is `#23868`'s OUTER".
+     ⚠️ SUPERSEDED/CONFLICT CHECK 2026-09-22 (jev_contradict): see Pre-decided 120 — the LITERAL uid is
+     CORRECTED: the expected owner is `RightShiftRegister #23868`, NOT `WhileLoop #23032` (a shift-register OUTER
+     is owned by the register, precedent `build_d1_m3a3_run2.log:182`). 117's owner-identity PRINCIPLE is
+     untouched and still mandatory; FAIL is owner `RightShiftRegister #4334`.
 
 118. **DEAD END, RECORDED SO IT IS NOT RE-TRIED:** `Tunnel.Inside Terminals[]` **6356000** and `Tunnel.Outside
      Terminal` **6356001** can never address `#7468` — a `FlatSequenceInnerTunnel` is not a `Tunnel`. Its real

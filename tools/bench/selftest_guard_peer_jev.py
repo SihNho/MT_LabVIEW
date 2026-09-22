@@ -131,6 +131,13 @@ def main():
     # (None, None) is exactly "the ladder did not act", which is the state every case here assumes.
     oladder = jev_gate.jev_ladder
     jev_gate.jev_ladder = lambda *a, **k: (None, None)
+    # THE SAME-ROW RUNG IS SWITCHED OFF FOR THIS FILE TOO (added 2026-09-22 with "one review per row per
+    # cycle"). It sits ABOVE both Jev branches: this fixture's review names `fake_stage` in its `## Question`
+    # and is minutes old, so the rung would release every case here before the DISCHARGE branch under test ever
+    # ran - and it would be RIGHT to, which is the point. The rung has its own file,
+    # tools/bench/selftest_guard_peer_samerow.py. Returning None is exactly "no same-row review exists".
+    osr = guard_peer.same_row_review
+    guard_peer.same_row_review = lambda *a, **k: None
     # ROOT moves with BENCH/PEER: guard_peer's block message does `os.path.relpath(path, ROOT)`, and on Windows
     # relpath RAISES ValueError across drives ("path is on mount 'C:', start on mount 'G:'"). The fixture lives in
     # the system TEMP (C:) and the project on G:, so leaving ROOT alone made the very branch under test crash
@@ -241,6 +248,7 @@ def main():
         (guard_peer.BENCH, guard_peer.PEER, jev_gate.PEER, jev_gate.GATE_LOG,
          jev_gate.covers_failure, jev.get_key, guard_peer.ROOT) = ob, op, ojp, ogl, ocf, okey, orr
         jev_gate.jev_ladder = oladder
+        guard_peer.same_row_review = osr
         shutil.rmtree(tmp, ignore_errors=True)
 
     print("\n=== selftest_guard_peer_jev: %d pass / %d fail ===" % (NPASS, NFAIL))

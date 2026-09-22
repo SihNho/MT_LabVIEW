@@ -164,15 +164,19 @@ def main():
     gate("C7 a jev_* command triggers no reading", not CALLS and "JEV-" not in err,
          "rc=%s calls=%d" % (rc, len(CALLS)))
 
-    # C8 first_act() takes the bullet that says FIRST ACT, not merely the first red one
+    # C8 next_block() carries the WHOLE `## NEXT` section, in order, and stops at the next heading.
+    # CHANGED 2026-09-22 with the state widening (the live reading no longer asks about one bullet): the
+    # property under test is that nothing the hand-off says is dropped - the STATE bullet, the FIRST ACT
+    # bullet and the housekeeping line all reach the model, and the following section does not.
     txt = ("## NEXT\n"
            "\U0001F534 **STATE: the bed is unchanged and nothing was saved.**\n"
            "\U0001F534 **FIRST ACT - run tools/recipes/stage_x.py from bed Y and save Z.**\n"
            "⚠️ housekeeping\n\n## OTHER\nnot this\n")
-    act = jev_drift.first_act(text=txt)
-    gate("C8 first_act() picks the FIRST ACT bullet over an earlier red STATE bullet",
-         act.startswith("\U0001F534 **FIRST ACT"),
-         act[:60].encode("ascii", "backslashreplace").decode("ascii"))   # the console here is cp949
+    blk = jev_drift.next_block(text=txt)
+    gate("C8 next_block() carries the whole NEXT section in order and stops at the next heading",
+         blk.splitlines()[0].startswith("\U0001F534 **STATE")
+         and "FIRST ACT" in blk and "housekeeping" in blk and "not this" not in blk,
+         blk[:70].replace("\n", " | ").encode("ascii", "backslashreplace").decode("ascii"))  # cp949 console
 
     # C9 the static pre-flight checks run with no model at all
     res, findings = jev_preflight.static_checks(os.path.join(HERE, "diag_c88_brokenwires.py"))

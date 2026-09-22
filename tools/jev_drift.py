@@ -1,13 +1,21 @@
 r"""jev_drift.py - insertion #4 of the SECOND WAVE table in docs/jev-integration-plan.md: PER-COMMAND DRIFT.
 
-The question asked, once per command that RUNS something: "is this command a step toward STATUS.md's `## NEXT`
-FIRST ACT?" - the 🔴 bullet a fresh session is supposed to start from. A low probability prints ONE advisory
-line and logs it. IT NEVER BLOCKS ANYTHING, by construction: tools/hooks/guard_bash.py calls advisory() and
-discards its return value.
+The question asked, once per command that RUNS something: "is this command a step toward ANY act STATUS.md's
+`## NEXT` orders or permits?" A low probability prints ONE advisory line and logs it. IT NEVER BLOCKS
+ANYTHING, by construction: tools/hooks/guard_bash.py calls advisory() and discards its return value.
 
-WHY IT IS ONLY A WARNING: the state carries the FIRST act alone, so a command pursuing a later act that the
-same NEXT names ("THEN D-2 ...") reads as off-task. That is a property of the question, measured and reported
-in tools/bench/jev_wave2b_trials.py, not a defect to be patched by widening the gate's powers.
+⚠️ CHANGED 2026-09-22 (user: "전부 적용해보자"): THE STATE IS THE WHOLE `## NEXT` SECTION, NOT THE FIRST ACT.
+The first measurement of this reading (31 labelled commands x the NEXT in force, 77.4 %, Brier 0.181,
+tools/bench/jev_wave2b_trials.py) showed the cost of the narrow state in the numbers: 5 of 18 on-task commands
+were false alarms and the `sequel` subset - a later act that the SAME hand-off defers to the same cycle - read
+as off-task by construction, because the state simply did not contain those acts. That was a property of the
+QUESTION, so the question is what changed: `next_section` now carries the whole hand-off (🔴/🟢/⚠️ bullets in
+order, <= NEXT_MAX chars) and the criterion is "any act this NEXT orders or permits - the first act, a later
+act it defers to this cycle, or a repair it names". Everything else is unchanged: advisory only, one reading
+per session per RATE_SECONDS, read-only commands skipped without spending a call.
+
+`first_act()` IS KEPT, unused by the live path, because tools/bench/jev_wave2b_trials.py is the archived
+measurement of the OLD question and must keep running against the old state to stay comparable.
 
 PRIOR ART CHECKED before writing (CLAUDE.md, "check what already exists"):
   - tools/jev.py            - transport, key handling, ledger, unknown band. NOT re-implemented here.
@@ -37,6 +45,8 @@ GATE_LOG = os.path.join(BENCH, "jev_gate.log")
 RATE_STATE = os.path.join(BENCH, "jev_drift_state.json")
 RATE_SECONDS = 60.0            # at most one Jev call per 60 s per session
 FIRST_ACT_MAX = 1500
+NEXT_MAX = 4000                # the WHOLE `## NEXT` section (2026-09-22); the longest of 2026-09-22's three
+                               # hand-offs is ~1.7 k chars, so this truncates nothing seen so far
 DRIFT_LO = 0.30                # p <= this prints the advisory; the project's "no" band
 
 NEXT_SECTION_RE = re.compile(r"^##\s+NEXT\s*$(.*?)(?=^##\s|\Z)", re.M | re.S)
@@ -60,28 +70,31 @@ READ_OF_SCRIPT_RE = re.compile(r"(?:^|&&|;|\|)\s*(?:cat|head|tail|sed|grep|rg|le
 DRIFT_Q = {
     "type": "noul",
     "instructions": (
-        "A long-running LabVIEW VI-scripting project hands each work cycle a written first act: "
-        "`next_first_act` is the one bullet of STATUS.md's `## NEXT` that says what the session does FIRST - "
-        "the act, the file to start from, and how it will know it succeeded. `command` is a shell command the "
-        "session is about to run; `recent_commands` are the last few commands it ran, oldest first, for "
-        "context only. Decide whether `command` is a step toward carrying out that first act. Count as steps "
-        "toward it: running the named script or diagnostic, a syntax/AST check of it, re-running it after a "
-        "repair, and measuring something the first act's pass criterion needs. Do NOT count: work on the "
-        "project's own machinery (self-tests of tools, audit or bookkeeping scripts, gate repairs), a "
-        "different deliverable, or a later act that the hand-off defers until after this one."),
+        "A long-running LabVIEW VI-scripting project hands each work cycle a written hand-off. "
+        "`next_section` is that hand-off verbatim: the whole `## NEXT` section of STATUS.md, bullet by bullet "
+        "in order - the state the work is in, the act the session must do FIRST, any later acts the same "
+        "hand-off defers to this cycle ('THEN ...'), and any repairs, checks or bookkeeping it names. "
+        "`command` is a shell command the session is about to run; `recent_commands` are the last few commands "
+        "it ran, oldest first, for context only. Decide whether `command` is a step toward ANY act this "
+        "hand-off orders or permits. Count as steps toward it: running a script or diagnostic the hand-off "
+        "names, a syntax/AST check of one, re-running it after a repair, measuring something one of its pass "
+        "criteria needs, and carrying out a later act or a named repair the same hand-off lists. Do NOT count: "
+        "work the hand-off does not mention at all - a different deliverable, a tool self-test or gate repair "
+        "it never asked for, or bookkeeping outside it."),
     "criteria": {
-        "true": ("The command advances the first act as written - it runs, checks, or repairs the named script "
-                 "or diagnostic, or it measures exactly what the first act's criterion requires."),
-        "false": ("The command does something else: a tool self-test, an audit or documentation script, a "
-                  "different build, or an act the hand-off explicitly puts after the first one. The first act "
-                  "is not advanced by running it."),
+        "true": ("The command advances something this NEXT orders or permits - the first act, a later act the "
+                 "same hand-off defers to this cycle, or a repair, check or measurement it names."),
+        "false": ("The command does something this NEXT does not ask for at all: a different build or "
+                  "deliverable, a self-test or machinery repair the hand-off never names, or unrelated "
+                  "bookkeeping."),
     },
 }
 
 WHAT_Q = {
     "type": "choice",
     "instructions": (
-        "The command was judged not to advance the cycle's first act. Say what it is doing instead."),
+        "The command was judged not to advance anything the cycle's hand-off (`next_section`) orders or "
+        "permits. Say what it is doing instead."),
     "criteria": {
         "review": "A peer review, prior-art review, retrospective or other review dispatch.",
         "diagnostic": "A measurement or diagnostic run that is not what the first act asked for.",
@@ -91,8 +104,32 @@ WHAT_Q = {
 }
 
 
+def next_block(status_path=STATUS, maxchars=NEXT_MAX, text=None):
+    """THE WHOLE `## NEXT` section of STATUS.md, blank lines dropped, bullets kept IN ORDER, truncated to
+    `maxchars`. '' when there is no NEXT section (the reading then stays silent, as it always did).
+
+    This replaces first_act() in the live path on 2026-09-22. Nothing is selected, ranked or summarised here:
+    the point of the change is that the model sees the later acts and the named repairs too, so a command
+    pursuing one of them is not off-task by construction. Truncation is at the END (the tail of a hand-off is
+    housekeeping; the acts are at the top) and NEXT_MAX is above every hand-off written so far."""
+    if text is None:
+        try:
+            with open(status_path, encoding="utf-8", errors="replace") as fh:
+                text = fh.read()
+        except OSError:
+            return ""
+    m = NEXT_SECTION_RE.search(text)
+    if not m:
+        return ""
+    lines = [ln.strip() for ln in m.group(1).splitlines() if ln.strip()]
+    return "\n".join(lines)[:maxchars]
+
+
 def first_act(status_path=STATUS, maxchars=FIRST_ACT_MAX, text=None):
-    """The cycle's first act from STATUS.md's `## NEXT`, truncated. '' when there is no NEXT section.
+    """SUPERSEDED IN THE LIVE PATH 2026-09-22 by next_block(); KEPT because tools/bench/jev_wave2b_trials.py is
+    the archived measurement of the narrow question and has to keep asking it to stay comparable.
+
+    The cycle's first act from STATUS.md's `## NEXT`, truncated. '' when there is no NEXT section.
 
     ORDER, measured on the three hand-offs of 2026-09-22 (tools/bench/jev_drift_set.json): a 🔴 bullet that
     says FIRST ACT wins, because two of the three hand-offs open with a 🔴 STATE bullet and only name the act
@@ -175,20 +212,25 @@ def _rate_ok(sid, now=None, path=None, seconds=None, commit=True):
     return True
 
 
-def judge(cmd, act=None, recent=None, timeout=20, retries=0, purpose="drift"):
-    """(p, what, err). p is the probability the command advances the first act; `what` is the second-choice
-    answer, asked ONLY when p <= DRIFT_LO. Never raises."""
-    act = first_act() if act is None else act
+def judge(cmd, act=None, recent=None, timeout=20, retries=0, purpose="drift", n=None):
+    """(p, what, err). p is the CONSENSUS mean probability that the command advances something the cycle's
+    `## NEXT` orders or permits; `what` is the second-choice answer, asked ONLY when p <= DRIFT_LO.
+    Never raises on a Jev error (it returns it); the caller's try/except covers the rest.
+
+    `act` is the STATE, and from 2026-09-22 that state is the whole NEXT section, not one bullet - the keyword
+    is kept so the trial scripts that pass a state in keep working. `n` is the consensus width; None means
+    jev.samples() (5 since 2026-09-22 17:3x, the project-wide answer to single-call flapping)."""
+    act = next_block() if act is None else act
     if not act:
-        return None, None, "no first act"
+        return None, None, "no next section"
     recent = recent_commands() if recent is None else recent
-    state = {"next_first_act": act[:FIRST_ACT_MAX],
+    state = {"next_section": act[:NEXT_MAX],
              "command": (cmd or "")[:400],
              "recent_commands": "\n".join(recent)[:1200]}
-    resp, err = jev.ask(state, {"on_task": DRIFT_Q}, purpose=purpose, timeout=timeout, retries=retries)
+    p, _spread, err = jev.ask_n(state, {"on_task": DRIFT_Q}, n=n, purpose=purpose,
+                                timeout=timeout, retries=retries)
     if err:
         return None, None, err
-    p = jev.noul(resp, "on_task")
     if p is None:
         return None, None, "no noul in response"
     what = None
@@ -230,7 +272,7 @@ def advisory(cmd, sid="0", write_log=True):
 if __name__ == "__main__":
     c = " ".join(sys.argv[1:])
     print("run-command: %s" % is_run_command(c))
-    print("first act  : %s" % first_act()[:160])
+    print("next block : %s" % next_block()[:240].replace("\n", " | "))
     if is_run_command(c):
         pp, ww, ee = judge(c)
         print("p=%s what=%s err=%s" % (pp, ww, ee))

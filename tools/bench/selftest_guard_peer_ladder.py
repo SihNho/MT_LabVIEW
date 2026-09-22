@@ -156,7 +156,12 @@ def main():
 
     saved = (guard_peer.BENCH, guard_peer.PEER, guard_peer.ROOT, jev_gate.PEER, jev_gate.GATE_LOG,
              jev_gate.LADDER_ALLOWED, jev_gate.ladder_classify, jev_gate.covers_failure,
-             jev_gaterow.verdicts_for, jev.get_key)
+             jev_gaterow.verdicts_for, jev.get_key, guard_peer.same_row_review)
+    # THE SAME-ROW RUNG IS SWITCHED OFF FOR THIS FILE (added 2026-09-22 with "one review per row per cycle").
+    # It runs BEFORE the ladder and costs no model call, and this fixture's review names `fake_ladder_stage` in
+    # its `## Question` minutes before the log - so the rung would release every case here and the LADDER branch
+    # under test would never be reached. Its own file is tools/bench/selftest_guard_peer_samerow.py.
+    guard_peer.same_row_review = lambda *a, **k: None
     guard_peer.BENCH, guard_peer.PEER, guard_peer.ROOT = bench, peer, tmp
     jev_gate.PEER, jev_gate.GATE_LOG = peer, os.path.join(bench, "jev_gate.log")
     jev_gate.LADDER_ALLOWED = os.path.join(bench, "jev_ladder_allowed.jsonl")
@@ -265,7 +270,7 @@ def main():
     finally:
         (guard_peer.BENCH, guard_peer.PEER, guard_peer.ROOT, jev_gate.PEER, jev_gate.GATE_LOG,
          jev_gate.LADDER_ALLOWED, jev_gate.ladder_classify, jev_gate.covers_failure,
-         jev_gaterow.verdicts_for, jev.get_key) = saved
+         jev_gaterow.verdicts_for, jev.get_key, guard_peer.same_row_review) = saved
         shutil.rmtree(tmp, ignore_errors=True)
 
     print("\n=== selftest_guard_peer_ladder: %d pass / %d fail ===" % (NPASS, NFAIL))

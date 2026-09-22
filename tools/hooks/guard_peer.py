@@ -31,6 +31,13 @@ the charge is written into that review's own disposition section as `JEV-DISCHAR
 only ever cite an exchange that already passed review_quality() - so the adversary rule is untouched - and with no
 key, an API error or any exception the gate behaves exactly as it did before. See main() for the full note.
 
+ONE REVIEW PER ROW PER CYCLE (2026-09-22, user-approved "전부 적용해보자"). The FIRST rung, above both Jev
+insertions and costing no model call: on the path that was about to BLOCK, an accepted review younger than six
+hours that NAMES the failing log's own script (basename from the log's `BGRUN START` line, `_v\d+` stripped)
+discharges it. A staged build re-runs one row as v3, v5, v7 and each re-run used to buy its own review of the
+same row. Releases are recorded as `RULE-SAME-ROW` in tools/bench/jev_gate.log and as a `SAME-ROW:` citation in
+the cited review's own disposition section. See same_row_review() and main().
+
 JEV REVIEW LADDER (2026-09-22, docs/jev-integration-plan.md 2차 #1, USER-APPROVED 17:3x). One rung above the
 discharge, and the only Jev insertion that CHANGES a rule rather than mechanising one: before asking "is this
 already reviewed?", the gate asks which of three kinds the failure is. `our-script-bug` (our own Python died, or
@@ -318,6 +325,121 @@ def undisposed(kind):
     return None
 
 
+# --- ONE REVIEW PER ROW PER CYCLE (a RULE CHANGE; user-approved 2026-09-22 "전부 적용해보자") -----------
+# WHAT CHANGES. CLAUDE.md section 5 says a failed prediction owes an adversarial review, full stop, and this
+# hook has enforced it per FAILING LOG. A staged build re-runs the SAME row of the SAME stage many times in one
+# cycle - v3, v5, v7 of one recipe, each writing its own log - and each re-run bought its own review of what is,
+# in the project's own words, one row. So: the FIRST failure of a script buys the review, and every later
+# failure of the SAME script inside SIX HOURS cites it instead of buying another.
+#
+# WHAT IT CANNOT DO, deliberately, so this stays one rung and not a hole:
+#   * It only ever cites an exchange that ALREADY passed review_quality() - ANSWERED, from codex, gemini or
+#     `-Agent claude -Role hypothesis`. A TIMEOUT exchange releases nothing; a claude audit releases nothing.
+#   * SAME SCRIPT, by the name in the log's own last `BGRUN START` line, `_v\d+` stripped, and the review has
+#     to NAME that script in its `## Question` or its `- **task:**` / `- **slug:**` header lines. A review of a
+#     different row, or of the same row yesterday, does not match.
+#   * It spends NO Jev call and asks no model: this rung is mechanical, and it runs BEFORE the ladder so the
+#     cheapest branch is also the first one.
+#   * Every release is written twice - `RULE-SAME-ROW` in tools/bench/jev_gate.log AND a `SAME-ROW:` citation
+#     inside the review's own `## What was done with it` - so the audit can count what ran without a new review.
+#     The citation is NOT a release line (`FIXED:` / `REFUTED:` / `PRIOR-ART:`), so it cannot release a
+#     prior-art verdict, and it does not move the review's creation time.
+SAME_ROW_AGE_S = 6 * 3600
+SCRIPT_IN_CMD_RE = re.compile(r"tools[\\/](?:recipes|bench)[\\/]([\w.-]+)\.py", re.I)
+VSUFFIX_RE = re.compile(r"_v\d+$", re.I)
+QUESTION_SEC_RE = re.compile(r"^##\s+Question\s*$(.*?)(?=^##\s|\Z)", re.M | re.S)
+TASK_SLUG_RE = re.compile(r"^\-\s*\*\*(?:task|slug):\*\*.*$", re.M | re.I)
+
+
+def log_script(text):
+    """The script name a log's LAST run was started on, `_v\\d+` stripped - or None.
+
+    Reads the `BGRUN START` line only (bgrun writes the whole command there). The LAST match on that line is
+    taken, because the line reads `py tools/bgrun.py --log tools/bench/x.log -- py -u tools/recipes/stage.py`
+    and the thing that RAN is what follows the `--`; `bgrun.py` itself is not under recipes/ or bench/, so it
+    never matches. Accepts text that still carries the `BGRUN START` marker and text already split on it
+    (which is what newest_failing_log hands back)."""
+    seg = text.rsplit("BGRUN START", 1)[-1] if "BGRUN START" in text else text
+    first = (seg.splitlines() or [""])[0]
+    names = SCRIPT_IN_CMD_RE.findall(first)
+    if not names:
+        return None
+    return VSUFFIX_RE.sub("", names[-1])
+
+
+def review_names_script(body, stem):
+    """True when this archive NAMES that script where a dispatch names its subject: the `## Question` section
+    (what the peer was actually asked) or the `- **task:**` / `- **slug:**` header lines peer.ps1 writes.
+    Deliberately NOT the whole body - an answer that merely quotes a directory listing is not a review OF it."""
+    hay = []
+    m = QUESTION_SEC_RE.search(body)
+    if m:
+        hay.append(m.group(1))
+    hay.extend(TASK_SLUG_RE.findall(body))
+    if not hay:
+        return False
+    pat = re.compile(re.escape(stem) + r"(?:_v\d+)?", re.I)
+    return any(pat.search(h) for h in hay)
+
+
+def same_row_review(log_path, text, now=None):
+    """(review path, script stem, age in minutes) for the NEWEST accepted review of this failing log's own
+    script within SAME_ROW_AGE_S - or None. No model call, no network."""
+    stem = log_script(text)
+    if not stem:
+        return None
+    now = time.time() if now is None else now
+    best = None
+    for p in glob.glob(os.path.join(PEER, "*.md")):
+        try:
+            st = os.stat(p)
+            born = min(st.st_ctime, st.st_mtime) if os.name == "nt" else st.st_mtime
+            if now - born > SAME_ROW_AGE_S:
+                continue
+            with open(p, "r", encoding="utf-8", errors="replace") as f:
+                body = f.read()
+        except OSError:
+            continue
+        if not review_names_script(body, stem):
+            continue
+        ok, _why = review_quality(body)
+        if not ok:
+            continue
+        if best is None or born > best[1]:
+            best = (p, born)
+    if best is None:
+        return None
+    return best[0], stem, max(0.0, (now - best[1]) / 60.0)
+
+
+def _gate_log(line):
+    """One line to tools/bench/jev_gate.log, resolved at CALL time so a redirected BENCH isolates it."""
+    try:
+        with open(os.path.join(BENCH, "jev_gate.log"), "a", encoding="utf-8") as fh:
+            fh.write(line.rstrip("\n") + "\n")
+    except OSError:
+        pass
+
+
+def cite_same_row(review_path, log_name, ts):
+    """Write `SAME-ROW: <log> (<ts>)` into the review's disposition section, ONCE per log."""
+    line = "SAME-ROW: %s (%s)" % (log_name, ts)
+    try:
+        with open(review_path, "r", encoding="utf-8", errors="replace") as f:
+            body = f.read()
+        if ("SAME-ROW: " + log_name) in body:
+            return True                       # already charged to this review; one citation per log
+        with open(review_path, "a", encoding="utf-8") as f:
+            if DISPOSITION_H not in body:
+                f.write("\n\n" + DISPOSITION_H + "\n")
+            f.write("\n" + line + "\n  This later failure of the SAME script was released without buying a new "
+                    "peer review: one review per row per cycle (CLAUDE.md, user 2026-09-22). The review above "
+                    "is the evidence; this line records which re-run was charged to it.\n")
+        return True
+    except OSError:
+        return False
+
+
 def main():
     if os.environ.get("PEER_GUARD_OFF") == "1":
         return 0
@@ -362,6 +484,19 @@ def main():
     hit, rejected = newest_bound_peer(mtime, names)
     if hit:
         return 0          # a peer exchange NAMING this failure was archived after it - the loop is closed
+
+    # --- ONE REVIEW PER ROW PER CYCLE (the rule above; BEFORE the ladder, because it costs nothing) ---------
+    sr = same_row_review(path, text)
+    if sr:
+        rp, stem, age_min = sr
+        ts = time.strftime("%Y-%m-%d %H:%M:%S")
+        line = "RULE-SAME-ROW | %s | %s discharged by %s (same script %s, age %d min)" % (
+            ts, _rel(path), os.path.basename(rp), stem, int(round(age_min)))
+        sys.stderr.write(line + "\n  (one review per row per cycle - user 2026-09-22; no new review is owed "
+                         "for a later failure of the same script inside 6 h.)\n")
+        _gate_log(line)
+        cite_same_row(rp, os.path.basename(path), ts)
+        return 0
 
     # --- JEV DISCHARGE (docs/jev-integration-plan.md row #1; user 2026-09-22) ------------------------------
     # THE MECHANISATION OF AN EXISTING RULE, NOT A NEW EXEMPTION. CLAUDE.md section 5 already says: "check
