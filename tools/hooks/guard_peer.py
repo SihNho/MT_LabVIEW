@@ -421,6 +421,87 @@ def _gate_log(line):
         pass
 
 
+# --- GATE-ROW VERDICTS AS ADVISORY CONTEXT (docs/jev-integration-plan.md 2nd wave #2; user 2026-09-23) --------
+# On the path that is about to BLOCK, every FAIL row of the failing run gets one 3-way reading - `defect` /
+# `prediction-error` / `reading-artefact` - printed beside the ladder's line and appended to jev_gate.log. So the
+# reviewer being dispatched, and the judgement session reading this refusal, see whether a 12-FAIL run is twelve
+# defects or one blind reader WITHOUT anyone having to ask for it.
+#
+# IT IS NEVER A DISCHARGE BASIS. It does not touch `allow`, it is printed only when the block already stands, and
+# the measurement says why it may not be more: 68 rows, strict 36.8 %, 78.1 % on the p>=0.70 judgements alone,
+# and a clear bias - `ExecState` 0 rows read as `prediction-error`. A signal for a human, not a release.
+#
+# ONCE PER LOG FILE. tools/bench/jev_gaterow_state.json remembers (path, mtime, size), so a session that retries a
+# build ten times against the same failing log pays for the rows once. The state write is atomic because a cycle
+# cell may read it at any moment; a corrupt or missing file means "not yet asked", i.e. it fails toward spending
+# one reading, never toward wedging the hook.
+GATEROW_STATE = os.path.join(BENCH, "jev_gaterow_state.json")
+
+
+def _gaterow_seen(path, mark=True):
+    """True when this exact log revision has already been read. Never raises."""
+    try:
+        st = os.stat(path)
+        key = "%s|%d|%d" % (os.path.basename(path), int(st.st_mtime), st.st_size)
+    except OSError:
+        return True                       # unreadable: there is nothing to ask about
+    state = {}
+    try:
+        with open(GATEROW_STATE, encoding="utf-8") as fh:
+            state = json.load(fh)
+        if not isinstance(state, dict):
+            state = {}
+    except (OSError, ValueError):
+        state = {}
+    if key in (state.get("seen") or {}):
+        return True
+    if mark:
+        seen = state.get("seen") or {}
+        seen[key] = time.strftime("%Y-%m-%d %H:%M:%S")
+        if len(seen) > 64:                # keep the file small; drop the oldest by recorded time
+            for k in sorted(seen, key=lambda k: seen[k])[:len(seen) - 64]:
+                seen.pop(k, None)
+        try:
+            tmp = GATEROW_STATE + ".tmp"
+            with open(tmp, "w", encoding="utf-8") as fh:
+                json.dump({"seen": seen}, fh, ensure_ascii=False, indent=1)
+            os.replace(tmp, GATEROW_STATE)
+        except OSError:
+            pass
+    return False
+
+
+def gaterow_advisory(path):
+    """Print and log the per-row verdicts of the failing run. Returns the lines; the caller ignores them."""
+    lines = []
+    if os.environ.get("JEV_ADVISORY_OFF") == "1":
+        return lines
+    try:
+        if _gaterow_seen(path):
+            return lines
+        sys.path.insert(0, os.path.join(ROOT, "tools"))
+        sys.path.insert(0, os.path.join(ROOT, "tools", "bench"))
+        import jev_gaterow
+        block = jev_gaterow.verdicts_for(path)      # the cheap hook-side variant: <=5 rows x 2 samples, 25 s
+        if not block:
+            return lines
+        ts = time.strftime("%Y-%m-%d %H:%M:%S")
+        for row in block.splitlines():
+            if not row.strip():
+                continue
+            line = "JEV-GATEROW | %s | %s" % (os.path.basename(path), row)
+            lines.append(line)
+            _gate_log("%s | %s | gaterow-guard_peer" % (ts, line))
+        if lines:
+            sys.stderr.write(
+                "\n".join(lines) + "\n  (advisory context for the review below - per FAIL row: defect / "
+                "prediction-error / reading-artefact. NEVER a discharge basis; measured 78.1 % on the p>=0.70\n"
+                "   judgements only, and it under-reads `defect`. docs/jev-integration-plan.md 2nd wave #2)\n\n")
+    except Exception:                      # noqa: BLE001 - an advisory reading may never wedge a gate
+        return lines
+    return lines
+
+
 def cite_same_row(review_path, log_name, ts):
     """Write `SAME-ROW: <log> (<ts>)` into the review's disposition section, ONCE per log."""
     line = "SAME-ROW: %s (%s)" % (log_name, ts)
@@ -556,6 +637,9 @@ def main():
     if jev_line:
         sys.stderr.write(jev_line + "\n"
                          "  (advisory only: below the discharge threshold, so the block below stands.)\n\n")
+
+    # The block stands. Give the reviewer and the judgement session the per-row verdicts, unasked (2nd wave #2).
+    gaterow_advisory(path)
 
     first = next((ln.strip() for ln in text.splitlines() if FAILURE_RE.search(ln)), "(see the log)")
     if rejected:

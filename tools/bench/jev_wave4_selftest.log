@@ -1,0 +1,158 @@
+BGRUN START 2026-09-23 03:40:55 limit 10.0 min: py -u tools/bench/jev_wave4_selftest.py
+====================================================================================================
+jev_wave4_selftest - #5 rowcheck in stagekit, #7 contradict at audit close, #2 gaterow at the failed-prediction gate
+====================================================================================================
+
+---------- A  #5 jev_rowcheck: the two accepted schemas, the budget, the key-less path
+  PASS  A1 shape A normalises to itself  {'uid': 10429, 'i': 21, 'name': 'Tunnel', 'is_source': False, 'source': {'uid': 23868, 'name': 'output', 'is_source': True, 'i': 3}, 'wire': 1731, 'label': None}
+  PASS  A2 shape B (sub-dicts) folds into shape A  {'uid': 10429, 'name': 'Tunnel', 'is_source': None, 'i': 21, 'source': {'uid': 23868, 'name': 'output', 'is_source': None, 'i': 3}, 'wire': 1731, 'label': 'D'}
+  PASS  A3 shape B (flat keys) folds into shape A  {'uid': 10429, 'name': 'Tunnel', 'is_source': None, 'i': 21, 'source': {'uid': 23868, 'name': 'output', 'is_source': None, 'i': 3}, 'wire': None, 'label': 'E'}
+  PASS  A4 the two ends are not swapped
+  PASS  A5 a third shape is refused, not guessed at
+  PASS  A6 the row label is carried through
+  PASS  A7 three rows -> three results, all `ok` at p=0.93  [('0', 'ok', 0.93), ('D', 'ok', 0.93), ('E', 'ok', 0.93)]
+  PASS  A8 one model call per row  3
+  PASS  A9 a spent budget skips every row and spends NOTHING
+  PASS  A10 no key -> ONE line, no call  ['JEV-ROWCHECK | selftest_stage | - | skipped (no key) for 3 row(s)']
+  PASS  A11 line format `JEV-ROWCHECK | <stage> | <row> | <class> p=<p>` + a TOTAL  JEV-ROWCHECK | selftest_stage | 0 | ok p=0.93
+  PASS  A12 the unparseable row reads `unknown`, never `ok`  JEV-ROWCHECK | selftest_stage | 3 | unknown p=?  (row matches neither accepted schema)
+  PASS  A13 an API error is `unknown`, not an exception  HTTP 500 boom
+
+---------- B  #5 in stagekit: 3 fake rows, one firing, before the first mutating call
+  PASS  B1 `_op`'s FIRST statement is the row check (so it runs before any mutator)  self._rowcheck()          # ADVISORY, once, before the first
+  FACT  PLANNED RE-WIRING ROWS declared: 3  [selftest]
+  PASS  B2 plan_rows stores the rows without touching `self.rows`
+  PASS  B3 one JEV-ROWCHECK line per row (+ TOTAL), printed into the stage log  ['JEV-ROWCHECK | selftest_stage | R1 | unknown p=?  (neither uid appears in the measured tables)']
+  PASS  B4 the verdicts landed in the stage's JSON record
+  FAIL  B5 it fires ONCE - a second call is silent and costs nothing
+  PASS  B6 a stage that declared no rows spends nothing
+  JEV-ROWCHECK | broken | - | unavailable (ModuleNotFoundError)
+  PASS  B7 an unimportable checker is a line, never an exception
+
+---------- C  #7 Pre-decided contradictions at cycle close (audit_cycle C8)
+  PASS  C1 --no-jev spends nothing and prints nothing
+  C8 Pre-decided contradictions: first run - 3 item(s) recorded as the baseline, no pair asked (the full sweep is tools/bench/jev_contradict.json)
+
+  PASS  C2 a FIRST run records a baseline and asks NOTHING  3
+  JEV-CONTRADICT | 3↔1 p=0.93 | CORRECTION TO 1: the rotor sign is NOT followed; the unsigned command  || THE ROTOR SIGN is followed verbatim from the hardware count, sign incl
+  C8 Pre-decided contradictions: 1 new item(s) since the last run, 1 pair(s) asked, 1 suspect at p>=0.85  (advisory; docs/jev-integration-plan.md 2nd wave #7)
+
+  PASS  C3 only pairs involving the NEW item are asked  1
+  PASS  C4 the suspect prints as `JEV-CONTRADICT | <a>↔<b> p=<p>`    JEV-CONTRADICT | 3↔1 p=0.93 | CORRECTION TO 1: the rotor sign is NOT followed; the unsig
+  PASS  C5 the state file is rewritten and carries every id  1
+  C8 Pre-decided contradictions: 0 new item(s) since the last run, 0 pair(s) asked, 0 suspect at p>=0.85  (advisory; docs/jev-integration-plan.md 2nd wave #7)
+
+  PASS  C6 a second run in the same cycle asks nothing (no new item)
+  C8 Pre-decided contradictions: 1 new item(s), 1 candidate pair(s), no key - skipped
+  C8 Pre-decided contradictions: 1 new item(s) since the last run, 0 pair(s) asked, 0 suspect at p>=0.85  (advisory; docs/jev-integration-plan.md 2nd wave #7) - no candidate pair shared enough uncommon tokens
+
+  PASS  C7 no key -> one line, no call
+  C8 Pre-decided contradictions: first run - 4 item(s) recorded as the baseline, no pair asked (the full sweep is tools/bench/jev_contradict.json)
+
+  PASS  C8 an unwritable state file is survived, not raised
+  PASS  C9 audit_cycle.py exits the same with C8 off both ways  [1, 1]
+  PASS  C10 neither run raised
+  FAIL  C11 C8 is present in the audit output and reports itself
+  PASS  C12 C8 never appears in `AUDIT VIOLATIONS:`  ['AUDIT VIOLATIONS: A1 every build log came from bgrun, A3 every failing log is followed by an archived review, A4 every archived review says what was done with it', 'AUDIT VIOLATIONS: A1 every build log came from bgrun, A3 every failing log is followed by an archived review, A4 every archived review says what was done with it']
+
+---------- D  #2 gate-row verdicts beside the failed-prediction block (guard_peer)
+  PASS  D1 the two FAIL rows of a fake failing run are found  ['D7', 'W1']
+  PASS  D2 one JEV-GATEROW line per failing row, on stderr  JEV-GATEROW | fake_build.log | D7: prediction-error (p=0.88) | FAIL D7 #637 term
+  PASS  D3 the classes reach the line verbatim
+  PASS  D4 rate-limited to ONE reading per log revision  1
+  PASS  D5 the lines were appended to tools/bench/jev_gate.log  (15729, 15973)
+  PASS  D6 the state file names the log revision and is written atomically  fake_build.log|1790102458|297
+JEV-GATEROW | fake_build.log | D7: prediction-error (p=0.88) | FAIL D7 #637 terminals 48 -> 47
+JEV-GATEROW | fake_build.log | W1: defect (p=0.81) | FAIL W1
+  (advisory context for the review below - per FAIL row: defect / prediction-error / reading-artefact. NEVER a discharge basis; measured 78.1 % on the p>=0.70
+   judgements only, and it under-reads `defect`. docs/jev-integration-plan.md 2nd wave #2)
+
+  PASS  D7 a changed log is a new revision and is read again  2
+  PASS  D8 an exception inside the reading is swallowed
+  PASS  D9 JEV_ADVISORY_OFF=1 silences it
+  PASS  D10 it is called only AFTER the allow path has returned - never a discharge basis  (38880, 39192)
+  PASS  D11 `gaterow_advisory`'s value is discarded by the gate
+
+====================================================================================================
+=== GATES: 41 pass / 2 fail   (3 s)
+BGRUN END rc=1 after 3s
+BGRUN START 2026-09-23 03:41:48 limit 10.0 min: py -u tools/bench/jev_wave4_selftest.py
+====================================================================================================
+jev_wave4_selftest - #5 rowcheck in stagekit, #7 contradict at audit close, #2 gaterow at the failed-prediction gate
+====================================================================================================
+
+---------- A  #5 jev_rowcheck: the two accepted schemas, the budget, the key-less path
+  PASS  A1 shape A normalises to itself  {'uid': 10429, 'i': 21, 'name': 'Tunnel', 'is_source': False, 'source': {'uid': 23868, 'name': 'output', 'is_source': True, 'i': 3}, 'wire': 1731, 'label': None}
+  PASS  A2 shape B (sub-dicts) folds into shape A  {'uid': 10429, 'name': 'Tunnel', 'is_source': None, 'i': 21, 'source': {'uid': 23868, 'name': 'output', 'is_source': None, 'i': 3}, 'wire': 1731, 'label': 'D'}
+  PASS  A3 shape B (flat keys) folds into shape A  {'uid': 10429, 'name': 'Tunnel', 'is_source': None, 'i': 21, 'source': {'uid': 23868, 'name': 'output', 'is_source': None, 'i': 3}, 'wire': None, 'label': 'E'}
+  PASS  A4 the two ends are not swapped
+  PASS  A5 a third shape is refused, not guessed at
+  PASS  A6 the row label is carried through
+  PASS  A7 three rows -> three results, all `ok` at p=0.93  [('0', 'ok', 0.93), ('D', 'ok', 0.93), ('E', 'ok', 0.93)]
+  PASS  A8 one model call per row  3
+  PASS  A9 a spent budget skips every row and spends NOTHING
+  PASS  A10 no key -> ONE line, no call  ['JEV-ROWCHECK | selftest_stage | - | skipped (no key) for 3 row(s)']
+  PASS  A11 line format `JEV-ROWCHECK | <stage> | <row> | <class> p=<p>` + a TOTAL  JEV-ROWCHECK | selftest_stage | 0 | ok p=0.93
+  PASS  A12 the unparseable row reads `unknown`, never `ok`  JEV-ROWCHECK | selftest_stage | 3 | unknown p=?  (row matches neither accepted schema)
+  PASS  A13 an API error is `unknown`, not an exception  HTTP 500 boom
+
+---------- B  #5 in stagekit: 3 fake rows, one firing, before the first mutating call
+  PASS  B1 `_op`'s FIRST statement is the row check (so it runs before any mutator)  self._rowcheck()          # ADVISORY, once, before the first
+  FACT  PLANNED RE-WIRING ROWS declared: 3  [selftest]
+  PASS  B2 plan_rows stores the rows without touching `self.rows`
+  PASS  B3 one JEV-ROWCHECK line per row (+ TOTAL), printed into the stage log  ['JEV-ROWCHECK | selftest_stage | R1 | unknown p=?  (neither uid appears in the measured tables)']
+  PASS  B4 the verdicts landed in the stage's JSON record
+  PASS  B5 it fires ONCE - a second call is silent and costs nothing  ([], 0, 0)
+  PASS  B5b an unmeasured uid is `unknown` without a call
+  PASS  B6 a stage that declared no rows spends nothing
+  JEV-ROWCHECK | broken | - | unavailable (ModuleNotFoundError)
+  PASS  B7 an unimportable checker is a line, never an exception
+
+---------- C  #7 Pre-decided contradictions at cycle close (audit_cycle C8)
+  PASS  C1 --no-jev spends nothing and prints nothing
+  C8 Pre-decided contradictions: first run - 3 item(s) recorded as the baseline, no pair asked (the full sweep is tools/bench/jev_contradict.json)
+
+  PASS  C2 a FIRST run records a baseline and asks NOTHING  3
+  JEV-CONTRADICT | 3↔1 p=0.93 | CORRECTION TO 1: the rotor sign is NOT followed; the unsigned command  || THE ROTOR SIGN is followed verbatim from the hardware count, sign incl
+  C8 Pre-decided contradictions: 1 new item(s) since the last run, 1 pair(s) asked, 1 suspect at p>=0.85  (advisory; docs/jev-integration-plan.md 2nd wave #7)
+
+  PASS  C3 only pairs involving the NEW item are asked  1
+  PASS  C4 the suspect prints as `JEV-CONTRADICT | <a>↔<b> p=<p>`    JEV-CONTRADICT | 3↔1 p=0.93 | CORRECTION TO 1: the rotor sign is NOT followed; the unsig
+  PASS  C5 the state file is rewritten and carries every id  1
+  C8 Pre-decided contradictions: 0 new item(s) since the last run, 0 pair(s) asked, 0 suspect at p>=0.85  (advisory; docs/jev-integration-plan.md 2nd wave #7)
+
+  PASS  C6 a second run in the same cycle asks nothing (no new item)
+  C8 Pre-decided contradictions: 1 new item(s), 1 candidate pair(s), no key - skipped
+  C8 Pre-decided contradictions: 1 new item(s) since the last run, 0 pair(s) asked, 0 suspect at p>=0.85  (advisory; docs/jev-integration-plan.md 2nd wave #7) - no candidate pair shared enough uncommon tokens
+
+  PASS  C7 no key -> one line, no call
+  C8 Pre-decided contradictions: first run - 4 item(s) recorded as the baseline, no pair asked (the full sweep is tools/bench/jev_contradict.json)
+
+  PASS  C8 an unwritable state file is survived, not raised
+  PASS  C9 audit_cycle.py exits identically with C8 off, off, and LIVE  [1, 1, 1]
+  PASS  C10 no run raised
+  PASS  C11 silenced C8 prints nothing; the live run prints its own C8 line  ['C8 Pre-decided contradictions: first run - 136 item(s) recorded as the baseline, no pair asked (the full sweep is tools/bench/jev_contradict.json)']
+  PASS  C12 C8 never appears in `AUDIT VIOLATIONS:`  ['AUDIT VIOLATIONS: A1 every build log came from bgrun, A3 every failing log is followed by an archived review, A4 every archived review says what was done with it']
+  PASS  C13 the live run left a baseline state file  jev_contradict_state.json
+
+---------- D  #2 gate-row verdicts beside the failed-prediction block (guard_peer)
+  PASS  D1 the two FAIL rows of a fake failing run are found  ['D7', 'W1']
+  PASS  D2 one JEV-GATEROW line per failing row, on stderr  JEV-GATEROW | fake_build.log | D7: prediction-error (p=0.88) | FAIL D7 #637 term
+  PASS  D3 the classes reach the line verbatim
+  PASS  D4 rate-limited to ONE reading per log revision  1
+  PASS  D5 the lines were appended to tools/bench/jev_gate.log  (17010, 17254)
+  PASS  D6 the state file names the log revision and is written atomically  fake_build.log|1790102512|297
+JEV-GATEROW | fake_build.log | D7: prediction-error (p=0.88) | FAIL D7 #637 terminals 48 -> 47
+JEV-GATEROW | fake_build.log | W1: defect (p=0.81) | FAIL W1
+  (advisory context for the review below - per FAIL row: defect / prediction-error / reading-artefact. NEVER a discharge basis; measured 78.1 % on the p>=0.70
+   judgements only, and it under-reads `defect`. docs/jev-integration-plan.md 2nd wave #2)
+
+  PASS  D7 a changed log is a new revision and is read again  2
+  PASS  D8 an exception inside the reading is swallowed
+  PASS  D9 JEV_ADVISORY_OFF=1 silences it
+  PASS  D10 it is called only AFTER the allow path has returned - never a discharge basis  (38880, 39192)
+  PASS  D11 `gaterow_advisory`'s value is discarded by the gate
+
+====================================================================================================
+=== GATES: 45 pass / 0 fail   (4 s)
+BGRUN END rc=0 after 4s

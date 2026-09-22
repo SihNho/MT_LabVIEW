@@ -39,6 +39,7 @@ TYPICAL STAGE FILE
     import stagekit as K
     s = K.Stage(INPUT_VI, INPUT_MD5, "d1_m3a3_rowD", deadline_min=25)
     s.start()
+    s.plan_rows(ROWS)                  # optional: one advisory JEV-ROWCHECK line per planned re-wiring row
     s.delete_wire(7506)
     r = s.fs_inner_tunnel_connect(7468, d_idx, 21, 1)
     s.junk_purge("rowD")
@@ -167,6 +168,8 @@ class Stage(object):
         self.out_json = out_json or os.path.join(BENCH, "{0}.json".format(name))
         self.passes, self.fails, self.facts, self.rows = [], [], [], []
         self.scratches = []
+        self.planned_rows = []            # `plan_rows()`; NOT `self.rows`, which is the non-gate ROW record
+        self._rowcheck_done = False
         self._nodes = None
         self._preload = None
         self.started = False
@@ -444,9 +447,53 @@ class Stage(object):
             os.path.basename(self.work)))
         return self.work
 
+    # ------------------------------------------------------------------ planned rows (Jev row check, #5)
+    def plan_rows(self, rows, tag=""):
+        """DECLARE this stage's planned re-wiring rows: (source uid/terminal) -> (sink uid/terminal).
+
+        The rows are judged ONCE, by `tools/jev_rowcheck.py`, against this project's own measured terminal
+        tables, and the verdicts print as `JEV-ROWCHECK | <stage> | <row> | <class> p=<p>` - one line per row
+        here and in `tools/bench/jev_gate.log`. Two row schemas are accepted; `jev_rowcheck.normalise_row`'s
+        docstring is the contract, and a row matching neither reads `unknown`, never `ok`.
+
+        ADVISORY, BY CONSTRUCTION (docs/jev-integration-plan.md 2nd wave #5; measured 62.5 % on 40 labelled
+        rows, which is a signal, not a verdict): nothing here refuses a row, changes a gate, or raises. No key,
+        no network or a malformed row is a printed line and nothing else.
+
+        THE CALL IS LAZY - it fires from `_op`, immediately BEFORE the stage's first mutating verb, wherever in
+        the file the rows were declared. A stage that declares rows and then mutates nothing spends nothing."""
+        try:
+            self.planned_rows = list(rows or [])
+        except TypeError:
+            self.planned_rows = []
+        self._rowcheck_done = False
+        self.R["planned_rows"] = len(self.planned_rows)
+        self.fact("PLANNED RE-WIRING ROWS declared: {0}{1}".format(
+            len(self.planned_rows), ("  [" + str(tag) + "]") if tag else ""))
+        return self.planned_rows
+
+    def _rowcheck(self):
+        """Fire the planned-row advisory once. EVERYTHING is caught: this may never affect a build."""
+        if self._rowcheck_done or not self.planned_rows:
+            return []
+        self._rowcheck_done = True
+        try:
+            import jev_rowcheck
+            lines = jev_rowcheck.stage_lines(self.planned_rows, self.name,
+                                             budget_s=min(60.0, max(5.0, self.left_s())))
+        except Exception as e:                                                     # noqa: BLE001
+            print(_a("  JEV-ROWCHECK | {0} | - | unavailable ({1})".format(
+                self.name, type(e).__name__)), flush=True)
+            return []
+        for ln in lines:
+            print(_a("  " + ln), flush=True)
+        self.R["jev_rowcheck"] = lines
+        return lines
+
     # ------------------------------------------------------------------ edit verbs (thin wrappers)
     def _op(self, verb, fn, detail=""):
         """Run one mutator, record its error column, mark the node census for a later junk purge."""
+        self._rowcheck()          # ADVISORY, once, before the first mutation (docs/jev-integration-plan.md #5)
         self.node_mark(verb)
         t0 = time.time()
         res, err = self.safe("{0} {1}".format(verb, detail), fn)

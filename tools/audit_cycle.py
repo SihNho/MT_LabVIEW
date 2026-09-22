@@ -219,6 +219,107 @@ def parse_ts(s):
     raise SystemExit(f"cannot parse timestamp {s!r}; use epoch seconds or 'YYYY-MM-DD HH:MM:SS'")
 
 
+JEV_CONTRADICT_STATE = os.path.join(ROOT, "tools", "bench", "jev_contradict_state.json")
+JEV_CONTRADICT_MAX_PAIRS = 40          # a cycle's ceiling; the full 600-pair sweep is a measurement, not this
+JEV_CONTRADICT_P = 0.85                # the suspect threshold asked for; the CLI's own default is 0.80
+
+
+def _say_line(line):
+    """print(), but a cp949 console may not hold the plan's arrows or emoji - a lost glyph is not a failure."""
+    try:
+        print(line, flush=True)
+    except UnicodeEncodeError:
+        print(line.encode("ascii", "backslashreplace").decode("ascii"), flush=True)
+
+
+def _jev_contradict(a, plan_path=None):
+    """ADVISORY. Pair the Pre-decided items ADDED since the last run against earlier ones and print suspects.
+
+    Returns the list of printed suspect lines (for the self-test); main() ignores it. Never raises, never
+    appends to RESULT, never changes an exit code. `plan_path` overrides the document (the self-test's own
+    three-item plan); live callers pass nothing and get the plan whose frontmatter says `status: current`,
+    the SAME predicate C7 and doc_lint's L4/L8 use."""
+    lines = []
+    if os.environ.get("JEV_ADVISORY_OFF") == "1" or getattr(a, "no_jev", False):
+        return lines
+    try:
+        for d in (os.path.join(ROOT, "tools"), os.path.join(ROOT, "tools", "bench")):
+            if d not in sys.path:
+                sys.path.insert(0, d)
+        import jev
+        import jev_contradict as JC
+        plan = plan_path
+        if plan is None:
+            try:
+                import doc_lint as _dl
+                cur = _dl.current_plans()
+                plan = cur[0] if cur else None
+            except Exception:                                                  # noqa: BLE001
+                plan = None
+        plan = plan or JC.PLAN
+        items = JC.parse_items(plan)
+        if not items:
+            return lines
+        ids = [it["id"] for it in items]
+        state = {}
+        try:
+            with open(JEV_CONTRADICT_STATE, encoding="utf-8") as fh:
+                state = json.load(fh)
+            if not isinstance(state, dict):
+                state = {}
+        except (OSError, ValueError):
+            state = {}
+        seen = set(state.get("seen_ids") or [])
+        new_idx = {i for i, it in enumerate(items) if it["id"] not in seen}
+        first_run = not seen
+        if first_run:
+            # A FIRST RUN DOES NOT BACK-PAY FOR 130 ITEMS. The whole list has already been swept once
+            # (tools/bench/jev_contradict.json, 2026-09-22); this step exists for what is ADDED from now on.
+            _say_line("  C8 Pre-decided contradictions: first run - %d item(s) recorded as the baseline, "
+                      "no pair asked (the full sweep is tools/bench/jev_contradict.json)" % len(ids))
+            new_idx = set()
+        pairs = []
+        if new_idx:
+            for score, i, j in JC.build_pairs(items, cap=600):
+                if i in new_idx or j in new_idx:
+                    pairs.append((score, i, j))
+                if len(pairs) >= JEV_CONTRADICT_MAX_PAIRS:
+                    break
+        if pairs and not jev.get_key():
+            _say_line("  C8 Pre-decided contradictions: %d new item(s), %d candidate pair(s), no key - skipped"
+                      % (len(new_idx), len(pairs)))
+            pairs = []
+        hits = 0
+        for _score, i, j in pairs:
+            p, _ps, err = JC.ask_pair(items[i]["text"], items[j]["text"], samples=3)
+            if err or p is None or p < JEV_CONTRADICT_P:
+                continue
+            hits += 1
+            line = "  JEV-CONTRADICT | %s↔%s p=%.2f | %s || %s" % (
+                items[i]["id"], items[j]["id"], p, items[i]["title"][:70], items[j]["title"][:70])
+            lines.append(line)
+            _say_line(line)
+        if not first_run:
+            _say_line("  C8 Pre-decided contradictions: %d new item(s) since the last run, %d pair(s) asked, "
+                      "%d suspect at p>=%.2f  (advisory; docs/jev-integration-plan.md 2nd wave #7)%s"
+                      % (len(new_idx), len(pairs), hits, JEV_CONTRADICT_P,
+                         "" if pairs or not new_idx else " - no candidate pair shared enough uncommon tokens"))
+        state = {"plan": os.path.basename(plan), "seen_ids": ids, "n_items": len(ids),
+                 "last_run": time.strftime("%Y-%m-%d %H:%M:%S"), "last_pairs": len(pairs),
+                 "last_suspects": hits}
+        tmp = JEV_CONTRADICT_STATE + ".tmp"
+        try:                     # atomic: a cycle-runner cell may read this file at any moment
+            with open(tmp, "w", encoding="utf-8") as fh:
+                json.dump(state, fh, ensure_ascii=False, indent=1)
+            os.replace(tmp, JEV_CONTRADICT_STATE)
+        except OSError:
+            pass
+    except Exception as e:                                                     # noqa: BLE001
+        _say_line("  C8 Pre-decided contradictions: not run (%s)" % type(e).__name__)
+    print("", flush=True)
+    return lines
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--since-hours", type=float, default=24.0)
@@ -231,6 +332,8 @@ def main():
                          "derived from it - it is the plan whose frontmatter says `status: current` "
                          "(doc_lint.current_plans(); repaired 2026-09-18, STATUS.md OPEN 56)")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--no-jev", dest="no_jev", action="store_true",
+                    help="skip C8, the advisory Pre-decided contradiction reading (no network, no cost)")
     a = ap.parse_args()
     # SCOPE WARNING, from the first retrospective: --since-hours is a TIME WINDOW, not a cycle boundary. On
     # 2026-09-15 a 20-hour window swept 77 logs covering cycles 1-7 and earlier rotor work, and the cost lines were
@@ -468,6 +571,23 @@ def main():
         print(f"  C7 files modified in the window but NOT named in "
               f"{os.path.relpath(plan, ROOT).replace(os.sep, '/')} [{plan_basis}]: "
               f"{len(out_of_plan)}" + (f" - {shown}" if out_of_plan else " - none") + "\n")
+
+    # C8 - PRE-DECIDED CONTRADICTIONS (docs/jev-integration-plan.md 2nd wave #7; user 2026-09-23 "Jev 최대한
+    # 활용하는 방법으로 제시한게 위의 테이블이잖아"). The plan's `## Pre-decided` list is past 130 numbered items
+    # written over five days, and several exist only to withdraw or supersede an earlier one; nothing mechanical
+    # tells a material session that item 88 has already withdrawn item 81. This runs `tools/jev_contradict.py`
+    # over that list at cycle close and prints the suspect pairs into the audit output, which the retrospective
+    # attaches - so the pairs reach a judgement session without anyone having to ask for them.
+    #
+    # ADVISORY, NEVER A GATE: nothing below appends to RESULT, so `AUDIT VIOLATIONS:` can never name it, and
+    # every failure (no key, no network, an unparseable plan, any exception) is silence. Deciding WHICH of two
+    # decisions stands is the judgement call CLAUDE.md reserves, and the measurement says why it may not be more
+    # than a signal: 8 of 13 known withdrawals were found, and the pairing itself only nominated 7 of those 13.
+    #
+    # COST IS BOUNDED BY THE STATE FILE. The full run is 600 pairs x 3 samples = 265 s; that is a measurement,
+    # not a per-cycle cost. tools/bench/jev_contradict_state.json remembers which item ids have been paired, so
+    # a cycle only pays for pairs involving items ADDED since the last run - a few pairs, or none at all.
+    _jev_contradict(a)
 
     # L - THE DOCUMENT LINT (CLAUDE.md section 4, "Documents are LINTED by code and INGESTED by a model every
     # cycle"; cadence "every cycle close, run by audit_cycle"). It runs HERE rather than as a separate command so
