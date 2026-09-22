@@ -63,6 +63,10 @@ WIKI = os.path.join(ROOT, "docs", "wiki", "subvi")
 INDEX = os.path.join(ROOT, "docs", "wiki", "index.json")
 MAIN_SUBVIS = os.path.join(HERE, "bench", "main_vi_subvis.json")
 
+# The terminal reader, rebindable by --op. `read_terms`' default is bound at def time, so every call
+# site passes it explicitly.
+OPREADER = [A.OP_ALLTERMS]
+
 LOOPS = ("ForLoop", "WhileLoop", "TimedLoop")
 CASES = ("CaseStructure", "Case", "CaseSelector", "EventStructure")
 SEQS = ("FlatSequence", "StackedSequence", "Sequence", "FlatSequenceFrame")
@@ -149,7 +153,7 @@ def conpane_pass(paths, chunk=12):
                     owner_uids[p] = fresh
                 else:
                     failed[p] = "drop added no SubVI/PolymorphicSubVI node"
-            rows, _dt = A.read_terms(scratch)
+            rows, _dt = A.read_terms(scratch, op=OPREADER[0])
             by_owner = collections.defaultdict(list)
             for r in rows:
                 by_owner[r["owner_uid"]].append(r)
@@ -205,7 +209,7 @@ def read_one(path, conpane, calls, main_vi):
     leaf = dict((o["uid"], o["class"]) for o in objs)
     t_obj = time.time() - t0
 
-    rows, t_term = A.read_terms(path)
+    rows, t_term = A.read_terms(path, op=OPREADER[0])
     for r in rows:
         r["term_class"] = leaf.get(r["term_uid"], "")
     wire_uids = [o["uid"] for o in objs if o["class"] == "Wire"]
@@ -281,7 +285,13 @@ def main(argv=None):
     ap.add_argument("--force", action="store_true", help="re-read every VI, ignoring the md5 gate")
     ap.add_argument("--only", default=None, help="fnmatch on the file name")
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--op", default="v0", choices=("v0", "v1"),
+                    help="v1 = OpAllTerms_v1.vi, which adds the 7th column frame_diagram (the frame a "
+                         "terminal sits on). The delivered wiki was built on v0; switching costs a full "
+                         "re-read of every VI (~14 min for 96), so it is a deliberate flag, not a default.")
     a = ap.parse_args(argv)
+    OPREADER[0] = A.OP_ALLTERMS_V1 if a.op == "v1" else A.OP_ALLTERMS
+    fact("terminal reader: {0}".format(os.path.basename(OPREADER[0])))
 
     os.makedirs(WIKI, exist_ok=True)
     index = {}

@@ -40,24 +40,35 @@ if HERE not in sys.path:
 import gscript as g                                                                # noqa: E402
 
 OP_ALLTERMS = os.path.join(g.CLAUDEDEV, "OpAllTerms_v0.vi")
+OP_ALLTERMS_V1 = os.path.join(g.CLAUDEDEV, "OpAllTerms_v1.vi")   # + a 7th column, frame_diagram
 LABELS = os.path.join(HERE, "bench", "opallterms_labels.json")
 FIELDS = ("term_uid", "term_name", "is_source", "wire_uid", "owner_uid", "owner_class")
-_LABELS = None
+EXTRA_FIELDS = ("frame_diagram",)
+_LABELS = {}
 
 
-def _labels():
+def _labels(op=OP_ALLTERMS):
     """{field: front-panel indicator label} - WRITTEN BY THE BUILD RECIPE from what LabVIEW named the
-    indicators, never guessed here (the OpReportAll_v0 precedent, gscript.py:_REPORT_ALL_FIELDS)."""
-    global _LABELS
-    if _LABELS is None:
-        with open(LABELS, encoding="utf-8") as f:
-            _LABELS = json.load(f)
-    return _LABELS
+    indicators, never guessed here (the OpReportAll_v0 precedent, gscript.py:_REPORT_ALL_FIELDS).
+
+    The file is chosen by the OP's own name, so `OpAllTerms_v1.vi` reads
+    `opallterms_v1_labels.json` and gets its seventh column `frame_diagram` (`Terminal.Diagram`
+    634A002 -> UID) without anything here restating a label.
+    """
+    stem = os.path.splitext(os.path.basename(op))[0].lower()
+    path = os.path.join(HERE, "bench", stem.replace("opallterms_v0", "opallterms") + "_labels.json")
+    if not os.path.exists(path):
+        path = LABELS
+    if path not in _LABELS:
+        with open(path, encoding="utf-8") as f:
+            _LABELS[path] = json.load(f)
+    return _LABELS[path]
 
 
 def read_terms(target, op=OP_ALLTERMS):
     """Every terminal of `target`'s block diagram in ONE op run. Returns (rows, seconds)."""
-    lab = _labels()
+    lab = _labels(op)
+    fields = FIELDS + tuple(f for f in EXTRA_FIELDS if f in lab)
     vi = g.op(op)
     vi.SetControlValue(lab["vi_path"], target)
     # The op inherits `OpReportAll_v0`'s CALL-TIME Traverse class control, so the class is set here
@@ -69,13 +80,13 @@ def read_terms(target, op=OP_ALLTERMS):
     err = g._err(vi)
     if err:
         raise RuntimeError("read_terms({0}): {1}".format(os.path.basename(target), err))
-    cols = dict((f, list(vi.GetControlValue(lab[f]))) for f in FIELDS)
+    cols = dict((f, list(vi.GetControlValue(lab[f]))) for f in fields)
     n = min(len(v) for v in cols.values())
-    rows = [dict((f, cols[f][i]) for f in FIELDS) for i in range(n)]
+    rows = [dict((f, cols[f][i]) for f in fields) for i in range(n)]
     for r in rows:
-        r["term_uid"] = int(r["term_uid"])
-        r["wire_uid"] = int(r["wire_uid"])
-        r["owner_uid"] = int(r["owner_uid"])
+        for f in ("term_uid", "wire_uid", "owner_uid") + EXTRA_FIELDS:
+            if f in r:
+                r[f] = int(r[f])
         r["is_source"] = bool(r["is_source"])
     return rows, dt
 
