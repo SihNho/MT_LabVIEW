@@ -1046,3 +1046,22 @@ it is the user's to authorise, not this session's.
 **Recorded, not repaired around:** no gate was patched to pass, no log deleted, no date rolled, `CYCLE_GUARD_OFF`
 was never set, and the failed prediction bought its review through the Jev ladder (`new-problem`, p=0.820) rather
 than being discharged quietly.
+
+## repeated-failure-class — 2026-09-23 03:55 (interactive chat, answering `archive/peer/2026-09-23-retrospective-cycle67.md`)
+
+`guard_cycle.py` blocks the next recipe build: **repeated-failure-class at 22** (threshold 3), the newest
+occurrence the cycle-67 retrospective (loss_min=15, loss_usd=4.5005, `docs/main-vi-panel-map.md:239` — a
+prior-art miss on the NODE-route vs PANEL-route terminal read). The retrospective's own disposition already
+said no device is built for it; this is the dated block the gate requires.
+
+DECISION: no-device
+
+**Why no device.** The user's standing order of 2026-09-18 08:53 (*"장치는 더 만들지 말고 계속 진행"*) holds. The
+operative remedy is a citation already on file: `docs/NAMES.md:966-991` records the measurement (NODE route
+`[]` vs PANEL route one row, `ExecState` 1 → 0 → 1, `connect_ctl` not `connect_terminals`), and STATUS
+`## NEXT` instructs the next stage to read endpoints with `Stage.net_sources`, never `wmap`/`Diagram.Nodes[]`.
+The Jev insertions wired 2026-09-23 (#2 gate-row verdicts, #5 row check, #7 contradictions — advisory, commit
+`3fe04e8`) are the user's approved exception and are the closest thing to a device for this class; their effect
+is what the 2-cycle run restarted at 03:5x measures.
+
+**Recorded, not repaired around:** no log deleted, no date rolled, `CYCLE_GUARD_OFF` never set.
