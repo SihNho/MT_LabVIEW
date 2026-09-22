@@ -123,3 +123,190 @@ BGRUN START 2026-09-23 06:22:25 limit 25.0 min: py -u tools/bench/allterms_s2.py
 === GATES: 9 pass / 4 fail; failing: QD[calib] the Quick Drop window CLOSED and exactly ONE Function appeared, B2a the calibration probe exists, STOP at gate: B2a the calibration probe exists, H6 the files left on disk == ['OpAllTerms_v0_s2.vi'] and nothing was removed
 JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\allterms_s2.json   elapsed 85.5 s
 BGRUN END rc=1 after 86s
+BGRUN START 2026-09-23 06:45:19 limit 40.0 min: py -u tools/bench/allterms_s2.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 240 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == ca44b62fbe428282719e4733e2cea785  got ca44b62fbe428282719e4733e2cea785
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 34415
+  FACT  LabVIEW handle count AFTER the restart: 33983
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  OpAllTerms_v0_s2.vi
+  FACT  ExecState [after open] OpAllTerms_v0_s2.vi = 1
+  FACT  census[entry] 5 nodes: [(43, 'Function'), (113, 'ForLoop'), (114, 'Property'), (115, 'Property'), (124, 'SubVI')]
+
+---------- [B1] the loop is moved FIRST, before the window opens, so drop points land on canvas
+  FACT  ExecState [after the loop move] OpAllTerms_v0_s2.vi = 1
+  PASS  B1 the loop is at diagram (200, 200) and ExecState is still 1  pos (200, 200) ExecState 1
+
+---------- [B2] the Block Diagram window, fronted without Esc and sized to a fixed rect
+  FACT  activate('OpAllTerms_v0_s2.vi Front Panel') ok=True
+  FACT  activate('OpAllTerms_v0_s2.vi Block Diagram') ok=True
+  PASS  B2 the Block Diagram window is the measured foreground  OpAllTerms_v0_s2.vi Block Diagram
+
+---------- [B3/B4] THE DISCRIMINATOR - hover at A, Enter, then the PLACING CLICK at a different point B
+  FACT  point A candidate (600, 620): blank=True colours=1
+  FACT  point B candidate (1300, 620): blank=True colours=1
+  PASS  B3a two blank canvas points A and B were LOCATED IN THE CAPTURE, >=300 px apart  A (600, 620) B (1300, 620)
+  FACT  activate('OpAllTerms_v0_s2.vi Block Diagram') ok=True
+  PASS  QD[d1] foreground measured, Quick Drop opened and closed, placing click delivered at (1300, 620)  front=True closed=True
+  PASS  B3 drop 1 completed  hover (600, 620) click (1300, 620)
+  FACT  PIXELS: after Enter A changed=True; after the click at B, A changed=False B changed=True
+  FACT  census[after the placing click] 6 nodes: [(43, 'Function'), (113, 'ForLoop'), (114, 'Property'), (115, 'Property'), (124, 'SubVI'), (606, 'Function')]
+  FACT  NEW NODES after the placing click: [(606, 'Function')]
+  PASS  B4 THE DECIDER: a canvas click after Enter produces exactly ONE new node  verdict (c) CURSOR-LOADED - Enter loads the cursor, the CANVAS CLICK places it (NI doc); new [(606, 'Function')]
+  FACT  VERDICT: (c) CURSOR-LOADED - Enter loads the cursor, the CANVAS CLICK places it (NI doc)
+
+---------- [B5] the mapping D, measured from the node VI Server now reports
+  PASS  B5a the new node's Traverse class is `Function` (a TMSC)  class 'Function'
+  PASS  B5b its diagram position is readable  pos (2837, 1927)
+  FACT  CALIBRATION: the node sits at screen (1300, 620) = diagram (2837, 1927); D = (1537, 1307)
+  FACT  census[after deleting 606] 5 nodes: [(43, 'Function'), (113, 'ForLoop'), (114, 'Property'), (115, 'Property'), (124, 'SubVI')]
+  PASS  B5c the discriminator's stray root node is deleted  uid 606
+  FACT  census[after the discriminator] 5 nodes: [(43, 'Function'), (113, 'ForLoop'), (114, 'Property'), (115, 'Property'), (124, 'SubVI')]
+
+---------- [B5d] the real drops - hover AND click at the SAME body point, so the placement is hypothesis-independent
+  FACT  the loop's top-left is at screen (-1337, -1107)
+  FACT  candidate (160, 140) -> (-1177, -967) is off-canvas - skipped
+  FACT  candidate (420, 140) -> (-917, -967) is off-canvas - skipped
+  FACT  candidate (160, 300) -> (-1177, -807) is off-canvas - skipped
+  FACT  candidate (420, 300) -> (-917, -807) is off-canvas - skipped
+  FAIL  B6a exactly TWO To More Specific Class nodes are on the BODY diagram  kept []
+
+---------- [B6] SAVE the broken-by-design intermediate (user 2026-09-22 broken-intermediate save)
+
+---------- [SAVE] OpAllTerms_v0_s2.vi
+  FACT  ExecState [before the save] OpAllTerms_v0_s2.vi = 1
+  PASS  S1 the save returned without raising (scripted route)
+  FACT  SAVED ARTEFACT: OpAllTerms_v0_s2.vi md5 5d192efea0c026d8b2a9eb6939197764 size 12576 B; version bytes [38, 128]
+  PASS  S2 the artefact is on disk and non-empty  12576 B
+  FACT  S3 COLD re-open check SKIPPED BY RULE: ExecState was 1, and a broken-saved VI is never cold-loaded headless (recompile spin).
+  PASS  B6b the artefact's md5 has moved away from S1  md5 5d192efea0c026d8b2a9eb6939197764
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 0}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handle count AFTER the work: 31147
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before ca44b62fbe428282719e4733e2cea785 / after ca44b62fbe428282719e4733e2cea785
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  FAIL  H6 the files left on disk == ['OpAllTerms_v0_s2.vi'] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 31146
+
+====================================================================================================
+=== GATES: 18 pass / 2 fail; failing: B6a exactly TWO To More Specific Class nodes are on the BODY diagram, H6 the files left on disk == ['OpAllTerms_v0_s2.vi'] and nothing was removed
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\allterms_s2.json   elapsed 86.0 s
+BGRUN END rc=1 after 86s
+BGRUN START 2026-09-23 06:47:57 limit 40.0 min: py -u tools/bench/allterms_s2.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 240 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == ca44b62fbe428282719e4733e2cea785  got ca44b62fbe428282719e4733e2cea785
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 34423
+  FACT  LabVIEW handle count AFTER the restart: 33972
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  OpAllTerms_v0_s2.vi
+  FACT  ExecState [after open] OpAllTerms_v0_s2.vi = 1
+  FACT  census[entry] 5 nodes: [(43, 'Function'), (113, 'ForLoop'), (114, 'Property'), (115, 'Property'), (124, 'SubVI')]
+
+---------- [B1] the loop is moved FIRST, before the window opens, so drop points land on canvas
+  FACT  ExecState [after the loop move] OpAllTerms_v0_s2.vi = 1
+  PASS  B1 the loop is at diagram (200, 200) and ExecState is still 1  pos (200, 200) ExecState 1
+
+---------- [B2] the Block Diagram window, fronted without Esc and sized to a fixed rect
+  FACT  activate('OpAllTerms_v0_s2.vi Front Panel') ok=True
+  FACT  activate('OpAllTerms_v0_s2.vi Block Diagram') ok=True
+  PASS  B2 the Block Diagram window is the measured foreground  OpAllTerms_v0_s2.vi Block Diagram
+
+---------- [B3/B4] THE DISCRIMINATOR - hover at A, Enter, then the PLACING CLICK at a different point B
+  FACT  point A candidate (600, 620): blank=True colours=1
+  FACT  point B candidate (1300, 620): blank=True colours=1
+  PASS  B3a two blank canvas points A and B were LOCATED IN THE CAPTURE, >=300 px apart  A (600, 620) B (1300, 620)
+  FACT  activate('OpAllTerms_v0_s2.vi Block Diagram') ok=True
+  PASS  QD[d1] foreground measured, Quick Drop opened and closed, placing click delivered at (1300, 620)  front=True closed=True
+  PASS  B3 drop 1 completed  hover (600, 620) click (1300, 620)
+  FACT  PIXELS: after Enter A changed=True; after the click at B, A changed=False B changed=True
+  FACT  census[after the placing click] 6 nodes: [(43, 'Function'), (113, 'ForLoop'), (114, 'Property'), (115, 'Property'), (124, 'SubVI'), (598, 'Function')]
+  FACT  NEW NODES after the placing click: [(598, 'Function')]
+  PASS  B4 THE DECIDER: a canvas click after Enter produces exactly ONE new node  verdict (c) CURSOR-LOADED - Enter loads the cursor, the CANVAS CLICK places it (NI doc); new [(598, 'Function')]
+  FACT  VERDICT: (c) CURSOR-LOADED - Enter loads the cursor, the CANVAS CLICK places it (NI doc)
+
+---------- [B5] the mapping D, measured from the node VI Server now reports
+  PASS  B5a the new node's Traverse class is `Function` (a TMSC)  class 'Function'
+  PASS  B5b its diagram position is readable  pos (2837, 1927)
+  FACT  CALIBRATION: the node sits at screen (1300, 620) = diagram (2837, 1927); D = (1537, 1307)
+  FACT  census[after deleting 598] 5 nodes: [(43, 'Function'), (113, 'ForLoop'), (114, 'Property'), (115, 'Property'), (124, 'SubVI')]
+  PASS  B5c the discriminator's stray root node is deleted  uid 598
+  FACT  census[after the discriminator] 5 nodes: [(43, 'Function'), (113, 'ForLoop'), (114, 'Property'), (115, 'Property'), (124, 'SubVI')]
+
+---------- [B5c2] BRING THE LOOP TO THE MOUSE - run 3's only remaining defect was here
+  FACT  activate('OpAllTerms_v0_s2.vi Block Diagram') ok=True
+  PASS  B5c2 the loop is re-parked at diagram (1737, 1507) = screen (200, 200), and the canvas THERE changed  pos (1737, 1507)
+
+---------- [B5d] the real drops - hover AND click at the SAME body point, so the placement is hypothesis-independent
+  FACT  the loop's top-left is at screen (200, 200)
+  FACT  candidate c0 at screen (360, 340): blank=True colours=1
+  FACT  activate('OpAllTerms_v0_s2.vi Block Diagram') ok=True
+  PASS  QD[c0] foreground measured, Quick Drop opened and closed, placing click delivered at (360, 340)  front=True closed=True
+  FACT  census[after c0] 6 nodes: [(43, 'Function'), (113, 'ForLoop'), (114, 'Property'), (115, 'Property'), (124, 'SubVI'), (587, 'Function')]
+  FACT  c0: uid 587 class 'Function' at (1897, 1647) is ON THE BODY DIAGRAM
+  FACT  candidate c1 at screen (620, 340): blank=True colours=1
+  FACT  activate('OpAllTerms_v0_s2.vi Block Diagram') ok=True
+  PASS  QD[c1] foreground measured, Quick Drop opened and closed, placing click delivered at (620, 340)  front=True closed=True
+  FACT  census[after c1] 7 nodes: [(43, 'Function'), (113, 'ForLoop'), (114, 'Property'), (115, 'Property'), (124, 'SubVI'), (587, 'Function'), (598, 'Function')]
+  FACT  c1: uid 598 class 'Function' at (2157, 1647) is ON THE BODY DIAGRAM
+  PASS  B6a exactly TWO To More Specific Class nodes are on the BODY diagram  kept [587, 598]
+
+---------- [B6] SAVE the broken-by-design intermediate (user 2026-09-22 broken-intermediate save)
+
+---------- [SAVE] OpAllTerms_v0_s2.vi
+  FACT  ExecState [before the save] OpAllTerms_v0_s2.vi = 0
+  FACT  SAVE ROUTE = gui_save, the APPROVED broken-intermediate route (CLAUDE.md split-rule 6; evidence "user 2026-09-22 broken-intermediate save"). The artefact is BROKEN BY DESIGN and is NEVER RUN (34(f)).
+  PASS  S1 the save returned without raising (gui_save route)
+  FACT  SAVED ARTEFACT: OpAllTerms_v0_s2.vi md5 358c9dca27fa38d4748bc9d7170e4aab size 12852 B; version bytes [4, 38, 128]
+  PASS  S2 the artefact is on disk and non-empty  12852 B
+  FACT  S3 COLD re-open check SKIPPED BY RULE: ExecState was 0, and a broken-saved VI is never cold-loaded headless (recompile spin).
+  PASS  B6b the artefact's md5 has moved away from S1  md5 358c9dca27fa38d4748bc9d7170e4aab
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 0}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handle count AFTER the work: 31171
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before ca44b62fbe428282719e4733e2cea785 / after ca44b62fbe428282719e4733e2cea785
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  FAIL  H6 the files left on disk == ['OpAllTerms_v0_s2.vi'] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 31171
+
+====================================================================================================
+=== GATES: 22 pass / 1 fail; failing: H6 the files left on disk == ['OpAllTerms_v0_s2.vi'] and nothing was removed
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\allterms_s2.json   elapsed 135.2 s
+BGRUN END rc=1 after 136s
