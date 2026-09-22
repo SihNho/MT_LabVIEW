@@ -963,6 +963,32 @@ appears among the windows). gscript's watchdog reports it correctly as a modal (
 - **A wire whose SOURCE terminal reports owner class `Diagram` is a front-panel CONTROL TERMINAL** (a control
   terminal's `Owner` is the diagram, not the control) — measured 2026-09-15 12:06 and cross-checked against
   `panel_wiring`. Name it from the panel census, not from `Generic.Owner`.
+- 🔴 **ASK THE WIRE WHO THE SOURCE IS; ASK THE PANEL WHERE TO ADDRESS IT** (2026-09-23; the wording is the
+  hypothesis review's correction, `archive/peer/2026-09-23-c89-wirebirth-t1b2.md` §1). A wire's source is a
+  property of the WIRE — `Wire.Terms[]` 6371003 → `Is Source?` 634A003 → `Generic.Owner` — and **that reader is
+  already built**: `stagekit.Stage.net_sources(wire_uid)` (`tools/stagekit.py:364`) over `wire_source_owner`
+  (`tools/recipes/build_opconnectfromwire_v0.py:423`), measured on a `ControlTerminal` source in
+  `tools/bench/diag_hierarchy_a3.log:106`,`:110` (`docs/d1-route-b-plan.md:605-611`). Use it FIRST. ⚠️ **An empty
+  source list off the NODE route (`wmap` / `Diagram.Nodes[]`) does NOT mean "the source is a panel control"** —
+  a `ControlTerminal` is a Terminal, not a Node, so it never appears there (already measured at n=92 on
+  2026-09-14, `docs/main-vi-panel-map.md:237-240`; `docs/d1-route-b-plan.md:239`), but so do a tunnel terminal, a
+  shift-register outer, a node on another diagram, and a **severed half-wire with no source at all** produce an
+  empty node list. `gscript.panel_wiring` supplies only the WRITER's address when the source does turn out to be a
+  control: its `panel_index` is the `Panel.Controls[]` order `connect_ctl` takes (its `uid` column is the
+  `ControlUID`, `tools/gscript.py:889,899` — the front-panel object, not the terminal, so the two routes cannot be
+  cross-checked by uid). **Re-create such a wire with `gscript.connect_ctl` (`OpConnectCtl_v0`,
+  `tools/gscript.py:1023`), not `connect_terminals`.** Measured instance: on a scratch of
+  `OpFsInnerTunnelConnect_v1.vi`, w106 feeds the REQUIRED `vi path` of `Open VI Reference` #43 t6 — NODE route
+  `[]`, PANEL route one row `{'label': 'vi path', 'uid': 78, 'is_source': True, 'wire': 106}`
+  (`tools/bench/diag_c89_wirebirth.log:82-91`); predicting one source off the node route aborted a run
+  (`BGRUN END rc=1 after 114s`, `:30-31`).
+- 🟢 **The `ExecState` reader responds in the REPAIRING direction — measured 1 → 0 → 1** on that same scratch
+  (`tools/bench/diag_c89_wirebirth.log:82`, `:87`, `:88`, `:91`): untouched **1**, after deleting w106 **0**, after
+  the `connect_ctl` re-wire **1** again. First time the **0 → 1** direction has been shown in this fleet.
+  ⚠️ **Not "a scripted re-wire restores a broken VI"**: owner identity was never read back, the run saved nothing
+  (in-memory only, no cold reload), and w106's source has a panel index that SURVIVES the delete — the blocked
+  Row-D case has the opposite property (`error 1055`, a dead wire uid cannot supply a terminal,
+  `c80_rowd_routeA_r2.log:119`). Review: `archive/peer/2026-09-23-c89-wirebirth-t1b2.md` §3.
 - ✅ **`Wire.Is Broken?` 6371004 IS BUILT AND MEASURED, 2026-09-17** — and it never needed a new op.
   ⚠️ **TWO DIFFERENT STRINGS, corrected 2026-09-21 (cycle 64 material #2) after this line cost a run:** the
   ITEM TERMINAL on the property node reads **`Broken?`**, while **`Is Broken?`** is only the PANEL

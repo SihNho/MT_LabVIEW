@@ -1,0 +1,106 @@
+BGRUN START 2026-09-23 02:13:27 limit 18.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 900 -Slug c89-wirebirth-t1b2 -TaskFile C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/d2cc219b-b730-480d-9b45-7e1e6443a41f/scratchpad/c89_wirebirth_t1b2_task.md
+OUTCOME: ANSWERED (489s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-23-c89-wirebirth-t1b2.md
+COST: $4.5005  in 34 / out 37433 / cache-create 235431 / cache-read 2236144  (485s, 30 turn(s))
+--- ANSWER ---
+Write is disabled in this cell (correct for a read-only peer) — so the answer is the answer.
+
+---
+
+# ATTACK
+
+**The claim's narrow half is true, and that is the problem: it was already measured here nine days earlier, at n=92 instead of n=1, and the rule now being written down from it is the wrong rule.**
+
+`docs/main-vi-panel-map.md:237-240` (2026-09-14):
+
+> "A join of these 114 objects against the complete diagram sweep returned **92 'not found'**. That is a verdict on the method, not on the panel: the sweep walks `AbstractDiagram.Nodes[]`, and a front-panel object's terminal is a **`ControlTerminal` — a Terminal, not a Node** — so it never appears."
+
+Also `docs/d1-route-b-plan.md:239`: "`#2222` t0 ← control `Z/dZ` uid 47, a `ControlTerminal`, **which `Diagram.Nodes[]` does not list** (R3)." Externally confirmed — the hierarchy is `ControlTerminal → Terminal → GObject`, never under `Node` ([LabVIEW Wiki, ControlTerminal class](https://labviewwiki.org/wiki/ControlTerminal_class), [Terminal class](https://labviewwiki.org/wiki/Terminal_class)). So T1b2 did not discover anything; it re-derived a documented fact and charged a fatal gate, a second 156 s run and this review for it.
+
+## 1. The single strongest reason the claim is WRONG
+
+**(A) answers "which enumeration lists a panel terminal?" when the gate asked "what is w106's source?" — and this project already had the right reader, wired into the very module the diagnostic imports.**
+
+A wire's source is a property **of the wire**, not of any diagram's object list. NI's own page for `Wire.Terminals[]` (6371003) states the ordering rule: *the first reference in `Terminals[]` is the source if a source exists; if more than one source is on the list, the wire is broken* ([NI, Wire → Terminals[]](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/wire/terminals.html); property id and read-only status confirmed at [LabVIEW Wiki, Wire class](https://labviewwiki.org/wiki/Wire_class)). The property is class-agnostic — "the terminals connected by this wire" — so it does not care whether the owner is a `Function`, a `LoopTunnel`, a `RightShiftRegister` or a `ControlTerminal`.
+
+That reader is **built, repaired the day before this run, and already in `stagekit`**:
+
+- `tools/stagekit.py:364-367` — `Stage.net_sources(wire_uid)`: *"THE OWNER-IDENTITY READING … `OpWireSource_v5` is WIRE-addressed — **a terminal is named by the wire it carries** — and every row carries its own error columns."*
+- `tools/recipes/build_opconnectfromwire_v0.py:423-435` — `wire_source_owner(target, wire_uid, n=6)`, uid-echo-checked, indicators scrubbed per call, all eight error outs read; acceptance `tools/bench/diag_c68_echo_accept.log` 8/0.
+- It has **already been measured on a `ControlTerminal` source**: `docs/d1-route-b-plan.md:607-609` — *"`wire_source_owner` HAS been measured on a `ControlTerminal` source … `tools/bench/diag_hierarchy_a3.log:106` and `:110` (2026-09-16) each return exactly one reciprocal source terminal, `source=True owner 'Diagram' uid 639`."*
+
+`diag_c89_wirebirth.py` opens with `import stagekit as K` and calls itself *"its inputs only"* (`:5-6`). `s.net_sources(106, target=pc)` was one line on an object it already held, and it would have returned **exactly one source terminal** — which is literally what gate T1b2 demanded.
+
+So the generalisation now in `STATUS.md:27` — *"`wmap`/`Diagram.Nodes[]` does not enumerate a panel control's terminal at all … `g.panel_wiring` does"* — teaches the next session the inference **"NODE route empty ⇒ the source is a panel control."** That disjunction is false, and this project's own files list at least four other causes:
+
+| empty node-source list, cause | evidence |
+|---|---|
+| source is a **tunnel** terminal | 18 rows, `outer_source: null` — `docs/d1-route-b-plan.md:229`, `:290` |
+| source is a **shift-register OUTER** (owned by the register, not the loop) | PD120, `build_d1_m3a3_run2.log:182` |
+| source is a node on **another diagram** | 2 rows, R8 — `docs/d1-route-b-plan.md:236-238` |
+| the wire is a **severed half-wire** with no source at all | **this same run's T3**: the seven `move_in` calls *"sever every wire on the moved object"*, Wire census unchanged at 1907 — `STATUS.md:27` |
+
+The last one is the sharp edge: the same log that established (A) also established that half-wires — wires with a sink and no source — are the resident failure mode of this VI family. A session applying (A) to one of the 11 will conclude "panel control" and go looking in `panel_wiring` for a source that does not exist.
+
+**Answering your question 1 directly: yes, a route exists.** Route (i), wire-side — `Wire.Terms[]` 6371003 → `Is Source?` 634A003 → `Generic.Owner` 6327806 — is **built and measured**. Route (ii), diagram-side — `Traverse('ControlTerminal')` → `Terminal.Connected Wire` 634A000 (`docs/main-vi-panel-map.md:242`) — is documented but flagged there as blocked by the class-cast gap; I found no evidence it was ever built, so I do not claim it works.
+
+One honest limit on my own refutation: for a control-terminal source the wire route reports `owner 'Diagram' #<uid>`, because a ControlTerminal's owner *is* its diagram (`docs/d1-build-plan.md:866` — "use `ControlTerminal.Control` 6353000"). So the wire route **names** the source and its class fingerprint; it does **not** hand `connect_ctl` its `panel_index`. `panel_wiring` remains the right route for the **writer's address**. The correct sentence for the docs is therefore not "panel terminals need the panel route" but: **ask the WIRE who the source is; ask the PANEL where to address it** — and the run should have done both, which is what would have made the panel row a confirmation instead of a guess. (Note the two cannot currently be cross-checked: `panel_wiring`'s `uid` column is `ControlUID` — the front-panel object, `gscript.py:889,899` — uid 78, not the ControlTerminal's uid.)
+
+## 2. An alternative explanation of the same evidence
+
+**The `wmap` walk can return an empty source list for reasons that have nothing to do with panels, and this run's output cannot exclude them.**
+
+`build_track_v6_core.py:84-92` — the engine behind `build_d1_v0.wmap`:
+
+```python
+for n in range(80):
+    u, rows = g.node_terms_uid(target, diagram, n)
+    if not u:
+        break
+```
+
+Three silent failure modes: a hard cap of **80** nodes; a **break at the first index that returns a falsy uid**, hiding every node after it; and `diag_c89_wirebirth.py:65-66` filtering `r["is_source"]` **without consulting `r["src_err"]`**, so a terminal whose `Is Source?` read errored is indistinguishable from a genuine non-source (`node_terms` gives each property its own error chain precisely so this is detectable — `gscript.py:912-917`). Add a fourth: the walk covered **diagram 0 only** (`V.wmap(pc, 0, fresh=True)`).
+
+The log never printed the node count, and printed error columns for the **sink row only** (`:29`). So from the machine's record you cannot tell whether the walk saw 3 nodes or 30, or whether a row was dropped by an error. For *this* wire the panel/node distinction is almost certainly the operative cause — ControlTerminal is genuinely not a Node — but the run's own output does not distinguish "not enumerable" from "not enumerated", and the claim's universal quantifier (*"for ANY such wire … a property of the enumeration"*) rests entirely on n=1 plus a correct guess about the class hierarchy. **The measurement does not settle the general form of the claim; the external class hierarchy does, and that was available without the failed run.**
+
+## 3. Is (B) over-claimed? Yes.
+
+`STATUS.md:27` now reads *"A SCRIPTED RE-WIRE RESTORES A VI HEADLESSLY ON OUR ROUTE."* What was measured is narrower on four axes, each one the axis the blocked work actually turns on:
+
+- **Identity was never checked.** The run verified `ExecState` and a **net** wire census (49 → 49, `:89`). The project's own Pre-decided 117 says acceptance of a connect is *"gated on OWNER IDENTITY, never on a count"*, and `stagekit.net_sources` exists to do exactly that — it was not called after the re-wire either. `ExecState` 1 does rule out the 2-source branch that broke `c80_rowd_routeA_r2.log:237`, but it does **not** identify the source: `connect_ctl(pc, 0, …)` trusts that `panel_wiring` row 0 and `Panel.Controls[0]` are the same object, and a type-compatible wrong source would compile clean. That is a rule-1a hazard, and index-order mismatch is a class this project has already been bitten by (`Get Controls.vi` on the wrong diagram, six 5001s — `docs/d1-route-b-plan.md:245`).
+- **The midpoint was never counted.** `n0` is read before the delete and the census after the re-wire; the intermediate count is unmeasured, and the new wire's uid was never read. `w_new == 106` would mean something weaker than a delete-and-create happened.
+- **Nothing was saved.** The scratch was deleted (`:92`). Rows 7–10 of this very run are artefacts that carry their 11 broken wires **on disk**; an in-memory 0 → 1 says nothing about a repair surviving save + cold open.
+- **The easy case was chosen.** w106's source has a **stable address that survives the deletion** (a panel index). The blocked case has the opposite property, and it is already measured: after `del_wire(7506)` the source cannot be addressed through the wire — *"error 1055 … a DEAD wire uid cannot supply a terminal"*, `c80_rowd_routeA_r2.log:119`, Pre-decided 119. So T1 is not a control for Row D; presenting it as "a scripted re-wire restores a broken VI on this route" invites the next cycle to believe a blocker was cleared that was not.
+
+What (B) *does* support, and I would keep: **the `ExecState` reader responds in the repairing direction, not only the breaking one** — which is exactly the open item `STATUS.md:29` flagged (*"the 0 → 1 direction is STILL undemonstrated"*). That is a real result. It is a result about the **reader**, not about **repair**.
+
+## 4. The observation that would FALSIFY my position
+
+Run `wire_source_owner` / `net_sources` on **live** w106, before any edit, on a scratch of the same VI. If it comes back `unresolved`, error 1055, or with zero `is_source=True` rows, then no non-panel route names that source on our stack, `panel_wiring` really was necessary, and (A)'s practical form survives — I would withdraw the main attack and keep only the over-claim finding. Conversely, if it names exactly one source terminal, (A)'s written generalisation is dead on the spot.
+
+(Note that a weaker falsification is already on file and costs nothing: the 18 tunnel-source rows at `docs/d1-route-b-plan.md:229` are wires whose node-side source list is empty and whose source is **not** a panel control. That alone refutes the disjunction "NODE route empty ⇒ panel source" without running anything.)
+
+## 5. CHEAPEST DISCRIMINATING TEST
+
+**One read-only stage on a dated scratch of `OpFsInnerTunnelConnect_v1.vi` (md5 `5b4e5f0f…`), ~2 min, one `bgrun`, nothing saved, scratch deleted, no new op and no new gscript verb** (so it is clear of the no-new-device order). It is three added FACT lines inside the T1 body that already exists:
+
+1. **Before any edit:** `s.net_sources(106, target=pc)`; and FACT-log `len(wm)` **beside** `g.count(pc, "Node")`, plus every `wmap` row's `name_err`/`src_err`.
+2. **After the existing delete + `connect_ctl`:** read the sink's new wire uid, then `s.net_sources(w_new, target=pc)`.
+
+Predictions written before the run:
+
+| read | claim stands | claim refuted |
+|---|---|---|
+| `net_sources(106)` | `unresolved` / error on a LIVE wire | **≥1 row `is_source=True`, error columns empty** — predicted: exactly one, `owner_class 'Diagram'`, the control-terminal fingerprint of `d1-route-b-plan.md:609` |
+| `len(wm)` vs `count("Node")`, all `src_err` | equal, all 0 ⇒ "not enumerable" is sound | short, or any `src_err ≠ 0` ⇒ the empty list is partly a reader artefact |
+| `net_sources(w_new)`, `w_new != 106` | exactly ONE source terminal ⇒ a real repair | ≠ 1 source, or `w_new == 106` ⇒ (B) is weaker than stated |
+
+That is cheaper than the review it would have replaced, and it closes (A), the alternative, and (B)'s identity half in a single dispatch.
+
+---
+
+**VERDICT: `REFUTED-IN-PART`.** (A)'s narrow half is correct, was already in `docs/main-vi-panel-map.md:237-240` and `docs/d1-route-b-plan.md:239` at n=92, and should be recorded as a **prior-art miss / repeated-failure-class**, not as a finding. (A)'s written generalisation is **wrong** and should not enter `docs/NAMES.md` in its current form — replace it with *"a wire's source is asked of the WIRE (`Wire.Terms[]` 6371003 → `Is Source?` 634A003), and `stagekit.Stage.net_sources` already does it; `panel_wiring` supplies the writer's address when that source turns out to be a control terminal."* (B) should be narrowed in `STATUS.md:27` to *"the `ExecState` reader responds in the repairing direction"*, with the repair claim held back until an owner-identity check and a cold reload exist.
+
+**What would change my mind:** a `net_sources`/`wire_source_owner` call on live w106 returning no source row with clean error columns.
+
+Sources: [NI — Wire: Terminals[]](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/generic/gobject/wire/terminals.html) · [LabVIEW Wiki — Wire class](https://labviewwiki.org/wiki/Wire_class) · [LabVIEW Wiki — ControlTerminal class](https://labviewwiki.org/wiki/ControlTerminal_class) · [LabVIEW Wiki — Terminal class](https://labviewwiki.org/wiki/Terminal_class) · [NI — Tutorial: Wiring Objects Using VI Scripting](https://www.ni.com/docs/en-US/bundle/labview/page/tutorial-wiring-objects-using-vi-scripting.html)
+BGRUN END rc=0 after 490s

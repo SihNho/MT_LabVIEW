@@ -1,0 +1,129 @@
+BGRUN START 2026-09-23 02:46:19 limit 10.0 min: py -u tools/bench/diag_c90_severed_rows.py
+[A] build_d1_m3a1.log : 3436 lines, 5 BGRUN blocks, last block starts at :2717
+  PASS  P1a build_d1_m3a1.log holds 5 BGRUN blocks  got 5
+  PASS  P1b the last block holds exactly 7 move_in calls  [3529, 3560, 3447, 48, 10407, 23499, 23523]
+      MOVE #3529   - Inc (PgDn)                 ControlReferenceConstant   1 WIRED -> 0  (:2756 BEFORE, :2758 MOVE, :2777 AFTER)
+      MOVE #3560   + Inc (PgUp)                 ControlReferenceConstant   1 WIRED -> 0  (:2780 BEFORE, :2782 MOVE, :2801 AFTER)
+      MOVE #3447   Focus Step (F1)              ControlReferenceConstant   1 WIRED -> 0  (:2804 BEFORE, :2806 MOVE, :2825 AFTER)
+      MOVE #48     ASI_adjust focus-subvi.vi    SubVI                      7 WIRED -> 0  (:2828 BEFORE, :2830 MOVE, :2849 AFTER)
+      MOVE #10407  Case Structure               CaseStructure (autofocus   7 WIRED -> 0  (:2852 BEFORE, :2854 MOVE, :2873 AFTER)
+      MOVE #23499  Local (row 1 carrier)        Local                      1 WIRED -> 0  (:2876 BEFORE, :2878 MOVE, :2897 AFTER)
+      MOVE #23523  Local (row 2 carrier)        Local                      1 WIRED -> 0  (:2900 BEFORE, :2902 MOVE, :2921 AFTER)
+[A] wired terminals severed by the seven moves: 19 ; wired AFTER, summed: 0
+  PASS  P2 none of the 11 removed wire uids appears anywhere in build_d1_m3a1.log  total hits 0
+[B] the log DOES print wire uids on 216 lines - all POST-move ([4]/[5]/[6] censuses of the NEW wires)
+[C] c53_row_class.log: 12 distinct cut-wire uids, 9 of the 11
+[D] build_d1_m3a1.json: 7 planned rows carry a wire uid, 7 of the 11
+  PASS  P3 all 11 get a named (source -> sink) pair from other on-disk files  named 11/11
+  PASS  P4 all 11 attributed to one of the seven move calls  attributed 11/11
+  w1731   unaccounted  severed by MOVE #48 'ASI_adjust focus-subvi.vi' (:2830)
+           Node#48 t3 'VISA resource name' / Node#48 t3 'VISA resource name' / LeftShiftRegister#4344 tNone '' SRC
+  w1893   unaccounted  severed by MOVE #3447 'Focus Step (F1)' (:2806)
+           Node#48 t2 'Focus inc reference' / Node#3447 t0 'Focus Step (F1)' SRC / Node#48 t2 'Focus inc reference' / Node#3447 t0 'Focus Step (F1)' SRC / Node#3447 t0 'Focus Step (F1)' SRC / Node#48 t2 'Focus inc reference'
+  w2819   unaccounted  severed by MOVE #3560 '+ Inc (PgUp)' (:2782)
+           Node#48 t1 '+Inc reference' / Node#3560 t0 '+ Inc (PgUp)' SRC / Node#48 t1 '+Inc reference' / Node#3560 t0 '+ Inc (PgUp)' SRC / Node#3560 t0 '+ Inc (PgUp)' SRC / Node#48 t1 '+Inc reference'
+  w3947   unaccounted  severed by MOVE #48 'ASI_adjust focus-subvi.vi' (:2830)
+           Node#48 t4 'In position' / Node#48 t4 'In position' / LeftShiftRegister#4274 tNone '' SRC
+  w4833   unaccounted  severed by MOVE #3529 '- Inc (PgDn)' (:2758)
+           Node#48 t0 '-Inc reference' / Node#3529 t0 '- Inc (PgDn)' SRC / Node#48 t0 '-Inc reference' / Node#3529 t0 '- Inc (PgDn)' SRC / Node#3529 t0 '- Inc (PgDn)' SRC / Node#48 t0 '-Inc reference'
+  w7337   unaccounted  severed by MOVE #10407 'Case Structure' (:2854)
+           Node#10407 t4 'VISA out' SRC / Node#10407 t4 'VISA out' SRC / RightShiftRegister#4334 tNone ''
+  w7388   unaccounted  severed by MOVE #48 'ASI_adjust focus-subvi.vi' (:2830)
+           Node#10407 t5 'Out position' / Node#48 t5 'Out position' SRC / Node#10407 t5 'Out position' / Node#48 t5 'Out position' SRC / Node#48 t5 'Out position' SRC / Node#10407 t5 'Out position'
+  w9635   unaccounted  severed by MOVE #10407 'Case Structure' (:2854)
+           Node#10407 t1 '# slices in stack' / Node#10407 t1 '# slices in stack' / LoopTunnel#9641 tNone '' SRC
+  w11232  unaccounted  severed by MOVE #48 'ASI_adjust focus-subvi.vi' (:2830)
+           Node#10407 t3 'Outgoing Handle' / Node#48 t6 'Outgoing Handle' SRC / Node#10407 t3 'Outgoing Handle' / Node#48 t6 'Outgoing Handle' SRC / Node#48 t6 'Outgoing Handle' SRC / Node#10407 t3 'Outgoing Handle'
+  w23502  unaccounted  severed by MOVE #10407 'Case Structure' (:2854)
+           Node#23499 t0 '' SRC / Node#10407 t0 ''
+  w23540  unaccounted  severed by MOVE #10407 'Case Structure' (:2854)
+           Node#23523 t0 'index' SRC / Node#10407 t2 'index'
+[E] WROTE G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\m3a1_severed_rows.json (20400 B)
+GATE: 5 pass / 0 fail
+BGRUN END rc=0 after 0s
+BGRUN START 2026-09-23 02:46:38 limit 10.0 min: py -u tools/bench/diag_c90_severed_rows.py
+[A] build_d1_m3a1.log : 3436 lines, 5 BGRUN blocks, last block starts at :2717
+  PASS  P1a build_d1_m3a1.log holds 5 BGRUN blocks  got 5
+  PASS  P1b the last block holds exactly 7 move_in calls  [3529, 3560, 3447, 48, 10407, 23499, 23523]
+      MOVE #3529   - Inc (PgDn)                 ControlReferenceConstant   1 WIRED -> 0  (:2756 BEFORE, :2758 MOVE, :2777 AFTER)
+      MOVE #3560   + Inc (PgUp)                 ControlReferenceConstant   1 WIRED -> 0  (:2780 BEFORE, :2782 MOVE, :2801 AFTER)
+      MOVE #3447   Focus Step (F1)              ControlReferenceConstant   1 WIRED -> 0  (:2804 BEFORE, :2806 MOVE, :2825 AFTER)
+      MOVE #48     ASI_adjust focus-subvi.vi    SubVI                      7 WIRED -> 0  (:2828 BEFORE, :2830 MOVE, :2849 AFTER)
+      MOVE #10407  Case Structure               CaseStructure (autofocus   7 WIRED -> 0  (:2852 BEFORE, :2854 MOVE, :2873 AFTER)
+      MOVE #23499  Local (row 1 carrier)        Local                      1 WIRED -> 0  (:2876 BEFORE, :2878 MOVE, :2897 AFTER)
+      MOVE #23523  Local (row 2 carrier)        Local                      1 WIRED -> 0  (:2900 BEFORE, :2902 MOVE, :2921 AFTER)
+[A] wired terminals severed by the seven moves: 19 ; wired AFTER, summed: 0
+  PASS  P2 none of the 11 removed wire uids appears anywhere in build_d1_m3a1.log  total hits 0
+[B] the log DOES print wire uids on 216 lines - all POST-move ([4]/[5]/[6] censuses of the NEW wires)
+[C] c53_row_class.log: 12 distinct cut-wire uids, 9 of the 11
+[D] build_d1_m3a1.json: 7 planned rows carry a wire uid, 7 of the 11
+  PASS  P3 all 11 get a named (source -> sink) pair from other on-disk files  named 11/11
+  PASS  P4 all 11 attributed to one of the seven move calls  attributed 11/11
+  w1731   unaccounted  severed by MOVE #48 'ASI_adjust focus-subvi.vi' (:2830)
+           Node#48 t3 'VISA resource name' / LeftShiftRegister#4344 tNone '' SRC
+  w1893   unaccounted  severed by MOVE #3447 'Focus Step (F1)' (:2806)
+           Node#48 t2 'Focus inc reference' / Node#3447 t0 'Focus Step (F1)' SRC
+  w2819   unaccounted  severed by MOVE #3560 '+ Inc (PgUp)' (:2782)
+           Node#48 t1 '+Inc reference' / Node#3560 t0 '+ Inc (PgUp)' SRC
+  w3947   unaccounted  severed by MOVE #48 'ASI_adjust focus-subvi.vi' (:2830)
+           Node#48 t4 'In position' / LeftShiftRegister#4274 tNone '' SRC
+  w4833   unaccounted  severed by MOVE #3529 '- Inc (PgDn)' (:2758)
+           Node#48 t0 '-Inc reference' / Node#3529 t0 '- Inc (PgDn)' SRC
+  w7337   unaccounted  severed by MOVE #10407 'Case Structure' (:2854)
+           Node#10407 t4 'VISA out' SRC / RightShiftRegister#4334 tNone ''
+  w7388   unaccounted  severed by MOVE #48 'ASI_adjust focus-subvi.vi' (:2830)
+           Node#10407 t5 'Out position' / Node#48 t5 'Out position' SRC
+  w9635   unaccounted  severed by MOVE #10407 'Case Structure' (:2854)
+           Node#10407 t1 '# slices in stack' / LoopTunnel#9641 tNone '' SRC
+  w11232  unaccounted  severed by MOVE #48 'ASI_adjust focus-subvi.vi' (:2830)
+           Node#10407 t3 'Outgoing Handle' / Node#48 t6 'Outgoing Handle' SRC
+  w23502  unaccounted  severed by MOVE #10407 'Case Structure' (:2854)
+           Node#23499 t0 '' SRC / Node#10407 t0 ''
+  w23540  unaccounted  severed by MOVE #10407 'Case Structure' (:2854)
+           Node#23523 t0 'index' SRC / Node#10407 t2 'index'
+[E] WROTE G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\m3a1_severed_rows.json (15841 B)
+GATE: 5 pass / 0 fail
+BGRUN END rc=0 after 0s
+BGRUN START 2026-09-23 02:48:54 limit 10.0 min: py -u tools/bench/diag_c90_severed_rows.py
+[A] build_d1_m3a1.log : 3436 lines, 5 BGRUN blocks, last block starts at :2717
+  PASS  P1a build_d1_m3a1.log holds 5 BGRUN blocks  got 5
+  PASS  P1b the last block holds exactly 7 move_in calls  [3529, 3560, 3447, 48, 10407, 23499, 23523]
+      MOVE #3529   - Inc (PgDn)                 ControlReferenceConstant   1 WIRED -> 0  (:2756 BEFORE, :2758 MOVE, :2777 AFTER)
+      MOVE #3560   + Inc (PgUp)                 ControlReferenceConstant   1 WIRED -> 0  (:2780 BEFORE, :2782 MOVE, :2801 AFTER)
+      MOVE #3447   Focus Step (F1)              ControlReferenceConstant   1 WIRED -> 0  (:2804 BEFORE, :2806 MOVE, :2825 AFTER)
+      MOVE #48     ASI_adjust focus-subvi.vi    SubVI                      7 WIRED -> 0  (:2828 BEFORE, :2830 MOVE, :2849 AFTER)
+      MOVE #10407  Case Structure               CaseStructure (autofocus   7 WIRED -> 0  (:2852 BEFORE, :2854 MOVE, :2873 AFTER)
+      MOVE #23499  Local (row 1 carrier)        Local                      1 WIRED -> 0  (:2876 BEFORE, :2878 MOVE, :2897 AFTER)
+      MOVE #23523  Local (row 2 carrier)        Local                      1 WIRED -> 0  (:2900 BEFORE, :2902 MOVE, :2921 AFTER)
+[A] wired terminals severed by the seven moves: 19 ; wired AFTER, summed: 0
+  PASS  P2 none of the 11 removed wire uids appears anywhere in build_d1_m3a1.log  total hits 0
+[B] the log DOES print wire uids on 216 lines - all POST-move ([4]/[5]/[6] censuses of the NEW wires)
+[C] c53_row_class.log: 12 distinct cut-wire uids, 9 of the 11
+[D] build_d1_m3a1.json: 7 planned rows carry a wire uid, 7 of the 11
+  PASS  P3 all 11 get a named (source -> sink) pair from other on-disk files  named 11/11
+  PASS  P4 all 11 attributed to one of the seven move calls  attributed 11/11
+  w1731   unaccounted  severed by MOVE #48 'ASI_adjust focus-subvi.vi' (:2830)
+           Node#48 t3 'VISA resource name' / LeftShiftRegister#4344 tNone '' SRC
+  w1893   unaccounted  severed by MOVE #3447 'Focus Step (F1)' (:2806)
+           Node#48 t2 'Focus inc reference' / Node#3447 t0 'Focus Step (F1)' SRC
+  w2819   unaccounted  severed by MOVE #3560 '+ Inc (PgUp)' (:2782)
+           Node#48 t1 '+Inc reference' / Node#3560 t0 '+ Inc (PgUp)' SRC
+  w3947   unaccounted  severed by MOVE #48 'ASI_adjust focus-subvi.vi' (:2830)
+           Node#48 t4 'In position' / LeftShiftRegister#4274 tNone '' SRC
+  w4833   unaccounted  severed by MOVE #3529 '- Inc (PgDn)' (:2758)
+           Node#48 t0 '-Inc reference' / Node#3529 t0 '- Inc (PgDn)' SRC
+  w7337   unaccounted  severed by MOVE #10407 'Case Structure' (:2854)
+           Node#10407 t4 'VISA out' SRC / RightShiftRegister#4334 tNone ''
+  w7388   unaccounted  severed by MOVE #48 'ASI_adjust focus-subvi.vi' (:2830)
+           Node#10407 t5 'Out position' / Node#48 t5 'Out position' SRC
+  w9635   unaccounted  severed by MOVE #10407 'Case Structure' (:2854)
+           Node#10407 t1 '# slices in stack' / LoopTunnel#9641 tNone '' SRC
+  w11232  unaccounted  severed by MOVE #48 'ASI_adjust focus-subvi.vi' (:2830)
+           Node#10407 t3 'Outgoing Handle' / Node#48 t6 'Outgoing Handle' SRC
+  w23502  unaccounted  severed by MOVE #10407 'Case Structure' (:2854)
+           Node#23499 t0 '' SRC / Node#10407 t0 ''
+  w23540  unaccounted  severed by MOVE #10407 'Case Structure' (:2854)
+           Node#23523 t0 'index' SRC / Node#10407 t2 'index'
+[E] WROTE G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\m3a1_severed_rows.json (15841 B)
+GATE: 5 pass / 0 fail
+BGRUN END rc=0 after 0s

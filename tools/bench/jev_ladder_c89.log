@@ -1,0 +1,39 @@
+BGRUN START 2026-09-23 01:39:03 limit 10.0 min: py -u tools/bench/jev_ladder_c89.py
+=== JEV REVIEW LADDER on diag_c89_execstate_factorial.log ===
+exists=True size=18108
+P1 key_present=True  LADDER_P=0.80  samples=5
+failure_summary_len=2161
+---- failure summary (first 1200 chars) ----
+log: diag_c89_execstate_factorial.log
+script: diag_c89_execstate_factorial.py
+ended: rc=1
+extract: first FAIL line + context
+  FACT  A3 RBW REMOVED WIRE UIDS (11): [#, #, #, #, #, #, #, #, #, #, #] ; ADDED: [] ; baseline (11): [#, #, #, #, #, #, #, #, #, #, #] ; set-equal: True
+  PASS  A3 RBW deleted NO Node and NO node on Diagram # (rule-1a hazard: RBW is on record deleting a TUNNEL in this project)  Node #->#, # 24->24
+  FACT  ExecState [A3 final] diag_c89_execstate_20260923_012716_a3.vi = 0
+  ROW   A3 ExecState : observed=0 expected=1
+  FAIL  A3 ExecState == the PREDICTED 1  observed 0
+  PASS  H4 A3 scratch deleted: diag_c89_execstate_20260923_012716_a3.vi  C:\Program Files\National Instruments\LabVIEW #\user.lib\claudeDev\diag_c89_execstate_20260923_012716_a3.vi
+
+---------- [H] HYGIENE
+  FACT  close_panel(diag_c89_execstate_factorial_20260923_012716.vi) raised com_error: (-#, '??? ??????.', (#, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0),
+  FACT  PRELOAD references released; refs {'opened': 16, 'closed': 16, 'live': 0, 'cached_op_vis': 7}
+  FACT  
+---- end ----
+---- gate_rows (first 1200) ----
+A3: unknown (p=0.57) | FAIL A3 ExecState == the PREDICTED 1 observed 0
+---- end ----
+recent_adversary_reviews=5
+   2026-09-22-c88-nodeside-zero.md
+   2026-09-22-c88-walk-1055.md
+   2026-09-22-c74-m3a2-fmt.md
+   2026-09-22-c87-rowd-d7-termcount.md
+   2026-09-22-c87-stagekit-k2.md
+P3 CLASSIFY: class=new-problem p=0.8200 spread=0.020000000000000018
+            acts_at_p>=0.80 -> ACTS
+P2 LADDER: allow=None
+P2 LADDER line: None
+RESULT: LADDER DID NOT ACT - old path: review owed
+{"class": "new-problem", "p": 0.8200000000000001, "allow": null}
+BGRUN INNER FAILURE: the command exited 0 but its output reported 2 failure(s); first: ended: rc=1
+BGRUN END rc=1 after 7s (inner failure; the process itself said 0)

@@ -1,0 +1,50 @@
+BGRUN START 2026-09-23 02:30:00 limit 12.0 min: py -u tools/retrospective.py --cycle 67
+   window 2026-09-22 16:57:59 .. 2026-09-23 02:30:00 (572 min); 20 build logs, 10 machinery logs, 11 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle67.txt (17478 chars)
+OUTCOME: ANSWERED (269s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-23-retrospective-cycle67.md
+COST: $3.5254  in 16 / out 19268 / cache-create 100248 / cache-read 556912  (267s, 20 turn(s))
+--- ANSWER ---
+# Retrospective v2 — cycle 67 (window 2026-09-22 16:57:59 → 2026-09-23 02:30:00)
+
+## Verdict up front
+
+This cycle was one of the best-run in the record: 42 min 28 s of actual wall-clock inside a 572-min window (the rest was the user's STOP — the runner was only restarted at 01:18, `tools/bench/cycle_runner_main_20260923a.log:1`), and it ended with three real measurements delivered: the ExecState reader proven in both directions, the 11 broken wires bisected to stage M3a-1's first `move_in`, and the reading's own staleness hypothesis refuted (STATUS.md:27-29). I name exactly one structural fault, and it is mid-sized, not a disaster: the cycle's one failed prediction — and the $4.50 mandatory review it triggered — re-derived a fact the project had already measured and written into two active documents nine days earlier.
+
+**The fault.** `diag_c89_wirebirth.py` run 1 predicted "exactly ONE source terminal named for w106" off the `Diagram.Nodes[]` route and got the empty list — `FAIL T1b2` at `tools/bench/diag_c89_wirebirth.log:30`, fatal, `BGRUN END rc=1 after 114s` (`:55`). But the project already knew this route cannot work: `docs/main-vi-panel-map.md:238-239` (measured 2026-09-14, n=92) says verbatim that a front-panel object's terminal is "a `ControlTerminal` — a Terminal, not a Node — so it never appears" in the node sweep; `docs/NAMES.md:963-965` (measured 2026-09-15) says a source owned by the diagram is a control terminal, "name it from the panel census"; `docs/d1-route-b-plan.md:239` records a concrete instance ("a `ControlTerminal`, which `Diagram.Nodes[]` does not list"). CLAUDE.md's own closing table says NAMES.md is checked "before every wiring call." The $4.50, 489-s hypothesis review (`tools/bench/peer_c89_wirebirth_t1b2.log:2-3`) then quoted the project's own doc back at it (`:15` quotes the panel-map's n=92 sentence). This is the exact class the "when a diagnosis is guessed twice, build the reader" rule targets — except here the reader existed (`gscript.panel_wiring`, `connect_ctl`) and the record existed; neither was consulted.
+
+**Counterfactual, on the clock:** had run 1 (launched 02:01:14) used the panel route from the start, it would have ended like run 2 did — `BGRUN END rc=0 after 156s` (`diag_c89_wirebirth.log:193`) — at ~02:04 with no failed prediction, no ladder call (`jev_ladder_c89b.log`), and no review owed; the review answered at 02:21:37 and the cycle closed at 02:30, so the close moves to roughly 02:15. Loss ≈ 15 min on the critical path plus $4.5005 (the one dollar figure a log carries for it, `peer_c89_wirebirth_t1b2.log:3`).
+
+No second fault is of the same magnitude, so I name only one.
+
+## Findings
+
+**1. Repeated failure.** Two recurrences, neither slugged beyond the one above. (a) The node-route-blind-to-panel-controls failure is the structural fault; the approach should have changed at attempt 1 — before it, in fact, at script-writing time, by reading `docs/main-vi-panel-map.md:238-239`. (b) The cp949 encoding class recurred again: `tools/bench/verify_c67.log:6` (`UnicodeEncodeError: 'cp949' codec can't encode '\u2014'`, rc=1, fixed by rerun in 12 s). This class has an archived review from 2026-09-15 (`archive/peer/2026-09-15-peerps1-bomless-cp949-parse.md`); the fix that would end it — a UTF-8-forcing print helper in the shared skeleton — has never been made standing. Cost this time: seconds.
+
+**2. Missing tool.** None that mattered. The tools that would have prevented the fault (panel census, `connect_ctl`, `stagekit.Stage.net_sources`) all exist; the failure was not consulting them. If anything is missing it is a "consult first" mechanism, not a reader — see the device note below.
+
+**3. Unmeasured steps.** One, partially mitigated: `diag_c89_execstate_factorial.py` was designed without a positive control, so its four zeros could not distinguish "informative" from "stale reader" — a 127-s measurement (`diag_c89_bareterms.log`, 14/0) settled it. The mitigation: the material session ran bareterms concurrently with the mandatory $5.08 review (bareterms log 01:46:26, review answered 01:51:52, `peer_c89_execstate.log:2-3`), so little serial time was lost, and the review verdict REFUTED was genuinely acted on (`archive/peer/2026-09-23-c89-execstate-all-zero.md:182-190`, three claims measured the same hour).
+
+**4. Rule compliance.** Audit FAILs A1 and A3 are both real but small, and both say more about the audit than the cycle. A1's offender `jev_gate.log` is not a build log at all — it is the Jev hooks' own append-only advisory record (timestamped JEV-PREFLIGHT/LADDER/DRIFT lines, no command output); the audit classifies by mtime-in-window and cannot tell a hook journal from a bgrun log, so A1 will now FAIL every window in which any Jev gate fires — a standing false positive that trains readers to ignore A1. A3's offender `verify_c67.log` is the 12-second cp949 crash above, rerun clean and never reviewed; formally a failed prediction owed a review, materially noise. What the audit does not cover: it cannot see that a diagnostic's gate contradicted an active doc (the structural fault), and C4c reported the judgement session at 0 min/$0 — the judgement session's own cost is invisible in this window's record. C6 also records the guard refusing 4 judgement-session attempts to run bench scripts itself; the hook held and the work was delegated.
+
+**5. Ordering.** Defensible and in one place good: factorial → (review ∥ positive control) → wirebirth is a sensible ladder, and running the mandatory review concurrently with the discriminating measurement is exactly how the review cost should be absorbed. The one inversion is inside wirebirth: the panel-route lookup should have been first, and that is the named fault.
+
+**6. What was not reported.** Remarkably little — STATUS's dispatch-4 note reports its own first-attempt rc=1 and the wrong T1 lookup plainly (STATUS.md:27). Two small omissions: the verify_c67 cp949 crash appears nowhere in STATUS, and `jev_gate.log:84-95` shows the ladder re-evaluated the same factorial log ten times in 14 minutes (p oscillating 0.808–0.834, all BLOCK) — harmless in cost but unreported churn that suggests the ladder fires per gate-call rather than once per log.
+
+**7. Judgement inside a material session.** Borderline but sanctioned: material dispatch 4 formed the explanation for its own T1b2 failure, patched the script, and reran (02:04:49) before the mandatory review answered (02:21:37). Choosing "wrong route" over "broken VI" is a choice between explanations, but the rerun WAS the discriminating test, it was within the failure budget of 2, and CLAUDE.md's usage-discipline rule 1 explicitly permits preparing the fix in the review's shadow. I do not slug it; the review was dispatched, answered, and disposed (`archive/peer/2026-09-23-c89-wirebirth-t1b2.md`).
+
+## Device effect
+
+- **rc-masking / inner-failure scan (both `device-failed` repairs of 09-17/09-18): WORKED, caught its exact target class live.** `tools/bench/jev_ladder_c89b.log:42-43` — the process exited 0 while its output said `ended: rc=1`; bgrun printed `BGRUN INNER FAILURE` and forced rc=1. This is the defect the 2026-09-16 unreported-fact decision was written for, stopped in-window.
+- **Cost-line regex repair: WORKED** — C4b "cost lines seen 2 / parsed 2", C4 $9.5789, both review costs captured.
+- **C3/C4 build-vs-review cost split: WORKED** — it is what makes this review's dollar arguments possible (builds 22 m, reviews 20 m / $9.58).
+- **Confirm-bait refusal + adversarial append (`rule-evaded`): HELD** — both dispatches open with "ATTACK the explanation" (`archive/peer/2026-09-23-c89-wirebirth-t1b2.md:15-16`).
+- **Empty-"What was done with it" refusal (`repeated-failure-class`): HELD** — A4 35/35 annotated.
+- **Scope-creep C7 counter: FIRED as designed** — 29 out-of-plan files listed; it is a counter by design and the list is real (the Jev second wave was user-approved out-of-plan work).
+- **Prior-art gate, premature-build gate, stop-record gate: NOT EXERCISED** — no recipe build ran in this window (all 20 logs are diagnostics, Jev selftests, or cycle plumbing). One coverage note, not a failure: the cycle's only avoidable cost occurred in a *diagnostic*, which every one of these gates exempts by design. No device on file exists to stop "a diagnostic gate written against a fact already in the active docs," so nothing fired wrongly and nothing failed by its own spec — but the gap is now demonstrated at $4.50 per occurrence.
+- **OpLoopEndRef_v0 reader class: USED** — dispatch 3 read all six While-loop conditional terminals instead of inferring (STATUS.md:29).
+
+No device failed inside this window; I do not emit a device slug.
+
+VIOLATION: repeated-failure-class | loss_min=15 | loss_usd=4.5005 | evidence=docs/main-vi-panel-map.md:239
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle67.md
+BGRUN END rc=0 after 271s

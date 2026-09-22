@@ -3658,3 +3658,76 @@ at both ends of both runs, `FILES THIS RUN LEFT ON DISK: []`, refs 3/3/0) and
      the dispatch paid for itself — it is what produced 126's headline.
 
 104. **44 ↔ 83 RESOLVED BY THE USER, 2026-09-23 ("83번으로 가자"):** Pre-decided 83's reading governs — a repeated outcome-review verdict the user has already answered is marked in STATUS and reported by the chat, not STOPped; a CHANGED verdict still stops. 44(b) stands as the record of the first stop only. CLAUDE.md §5 amended; the jev_contradict annotation on 44/83 is closed.
+
+## Pre-decided — ADDED 2026-09-23 (cycle 67): the 11 broken wires are BORN at M3a-1's moves, `ExecState` 1→0→1 is proven, and the next stage is the severed-row repair
+
+129. **THE 11 BROKEN WIRES ARE NOT A MYSTERY AND NOT INHERITED FROM THE ORIGINAL — THEY ARE BORN AT M3a-1's SEVEN
+     `move_in` CALLS, MEASURED BY BISECTION OVER THE SAVED STAGE ARTEFACTS** (`tools/bench/diag_c89_wirebirth.log`,
+     45 pass / 0 fail, rc=0, 156 s; both method controls passed). Every stage file up to and including
+     `D1_s3b_row2_20260921_160311.vi` reads `ExecState` **1** with **0** wires removed by Remove Bad Wires
+     (`D1_s1_copy` 1899→1899 · `D1_s2_loops` 1905→1905 · the S3a boolean carrier 1905→1905 · `D1_s3a_focus_ind`
+     1905→1905 · `D1_s3b_row1_20260921_135932` 1906→1906 · `row2` 1907→1907). The very next artefact,
+     `D1_s3b_m3a_BROKEN_20260922_005732.vi`, reads `ExecState` **0** with **11** removed, and rows 8/9/10
+     (`m3a2`, `m3a3`, `rowD`) remove the SAME 11, set-identical
+     `[1731,1893,2819,3947,4833,7337,7388,9635,11232,23502,23540]`. **So M3a-2, M3a-3 Row C and Row D each added
+     ZERO broken wires — every M3 row landed clean, and the whole of `ExecState` 0 is one event.**
+     The mechanism is named by M3a-1's own log, not inferred: `tools/bench/build_d1_m3a1.log:2754`
+     *"THE SEVEN 'move_in' CALLS, VERBATIM FROM diag_c66b_s3b_m3.py (**37(d) severs every wire on the moved
+     object**)"*; `ExecState` goes 1 → 0 at `:2778`, after the FIRST move (`#3529 '- Inc (PgDn)'`), and the
+     post-move census at `:2926` is UNCHANGED at `Wire` 1907 — **the wires were SEVERED into half-wires, never
+     deleted.** This retires "a third cause exists", retires "inherited from an earlier stage, origin unknown",
+     and CONFIRMS ALT-1 by mechanism: each of the 11 still holds a live endpoint on `WhileLoop #637`, so
+     **deleting them drops real data paths and is a rule-1a computation change. They are RE-WIRED, never removed.**
+
+130. **`ExecState` 1 → 0 → 1 IS PROVEN HEADLESS, AND THE READER IS NOT STALE.** Two controls, both on dated scratch
+     copies of `claudeDev\OpFsInnerTunnelConnect_v1.vi`, nothing saved. (a) 1 → 0: deleting the wire into the
+     REQUIRED `vi path` input gave 0 at 0.00 s and still 0 at +6 s, while deleting an OPTIONAL `error in` wire left
+     it 1 (`tools/bench/diag_c89_bareterms.log`). (b) **0 → 1: re-creating that wire with `gscript.connect_ctl`
+     (`OpConnectCtl_v0`, `tools/gscript.py:1023`) restored `ExecState` 1 with no save anywhere**
+     (`tools/bench/diag_c89_wirebirth.log:82-91`, gate T1c) — the first time this fleet has shown the 0 → 1
+     direction. **Consequence: M3's pass criterion (`ExecState` 1) is REACHABLE by scripted re-wiring, and the
+     four zeros of the c89 factorial are informative rather than a cached reading.**
+
+131. **THE NEXT STAGE IS M3a-4 = REPAIR THE SEVERED ROWS, AND IT IS DECOMPOSED BEFORE IT IS BUILT** (the user's
+     2026-09-19 rule: a bottleneck is split into steps that each SAVE a file). The M3 row table covered fewer rows
+     than the seven moves severed, which is why the count is 11 and why M3 cannot reach `ExecState` 1 as it stands.
+     Order, each step leaving an artefact: **(1)** derive the severed-row table OFFLINE from
+     `tools/bench/build_d1_m3a1.log`'s pre-move wiring census — a file, not the machine — and cross it against the
+     four endpoints already read (`w1731` SRC `LeftShiftRegister#4344`, `w3947` SRC `LeftShiftRegister#4274`,
+     `w9635` SRC `LoopTunnel#9641`, `w7337` SINK `RightShiftRegister#4334`); **(2)** read each of the 11 live
+     endpoints from the MACHINE with `Stage.net_sources` (`tools/stagekit.py:364`, which reads the source off the
+     WIRE via `Wire.Terms[]` 6371003 → `Is Source?` 634A003 and is measured working on a `ControlTerminal` source,
+     `docs/d1-route-b-plan.md:605-611`) — **not** through `wmap` / `Diagram.Nodes[]`, which cannot enumerate a
+     tunnel terminal, a shift-register outer terminal, a panel control terminal or a severed half-wire;
+     **(3)** re-wire in batches of 3–4 rows, each batch saved and md5-pinned; **(4)** `ExecState` 1 + the ordered
+     idempotent second pass. Gate design follows 132. **No full-length retry under a new file name.**
+
+132. **A GATE WHOSE VALUE IS DETERMINED BY A STEP THAT PRECEDES IT IS NOT A GATE — RESTATED WITH THE CONCRETE
+     FAILURE IT COST.** Cycle 67 authorised a 4-arm factorial predicting `ExecState` **1** for arm A3 (delete the
+     three stray `Invoke` nodes, then Remove Bad Wires). It measured 0, and the mandatory review
+     (`archive/peer/2026-09-23-c89-execstate-all-zero.md`, claude/`hypothesis`/opus max, ANSWERED 716 s, $5.0784)
+     **REFUTED the prediction rather than the diagram**: Remove Bad Wires *deletes*, so removing `w7337` BARES
+     `RightShiftRegister #4334`'s inside terminal and trades a broken-wire error for an unwired-register error at
+     the same site — **A3 could not have returned 1 whatever the diagram held (likelihood ratio 1)**, and that was
+     derivable at the desk. This is the second consecutive cycle whose top fault sits in the JUDGEMENT layer's gate
+     design (cycle 66: Row D's D7). **The desk-check is applied to the PREDICTED VALUES as well as to the gates:
+     for every predicted value, name the step that could already have determined it; if one exists, the prediction
+     is re-cut as the predicted DIFFERENCE or deleted.**
+
+133. **CARRY 1 / OPEN 46 RESTED ON A FALSE PREMISE AND IS CLOSED AS WRITTEN.** `SetCommand_signed.vi` is NOT "on no
+     disk": it is `C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\SetCommand_signed.vi`,
+     21,577 B, md5 `ec87a2657b158722082ca00c7074f114`, unchanged since 2026-09-14 19:52, with siblings
+     `SetCommand_signed_TEST.vi` and `SetCommand_orig_TEST.vi`. It was built by
+     `tools/recipes/build_setcommand_signed.py` (copy `instr.lib\Autonics Motor\SetCommand.vi` → `claudeDev`, Type
+     Cast the U32 hex-parse result to signed before the ×k multiply), and it is verified at three levels:
+     structural (`tools/bench/build_setcommand_signed.log`, original md5 unchanged), injection
+     (`tools/bench/test_setcommand_signed.log` **16/16**, `FFFFFFF6` → −7.2° against the original's +3.09e9°), and
+     **real hardware** (`tools/bench/hw_rotor_signed_test.log` NEGATIVE READ PASS, counter left at 0). The
+     "no disk" claim is a SEARCH-SCOPE artefact — the 2026-09-18 searches covered `G:\…\MinLab` and
+     `instr.lib\Autonics Motor\` and never looked in `user.lib\claudeDev`
+     (`archive/2026-09-18-status-cycle19-flatseq.md:93-95`). **What actually remains is a DIFFERENT and real item,
+     and it belongs to the D-series deliverable, not to a carry: stage 2, repointing the NEW main VI's nine rotor
+     call sites onto the signed copy** (`docs/motor-call-site-census.md:89` names the UNSIGNED VI at all nine —
+     diagrams 24, 28, 32, 32, 103, 107, 111, 111, 115; `docs/rotor-sign-diagnosis.md:127`). Constants live in
+     `tools/bench/setcommand_signed_result.json` (`read_ring` 2, `k` 0.72). Three outcome reviews carried this as
+     unmoved work; it was never the work.

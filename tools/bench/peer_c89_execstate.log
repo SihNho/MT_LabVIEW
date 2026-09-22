@@ -1,0 +1,70 @@
+BGRUN START 2026-09-23 01:39:56 limit 18.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c89-execstate-all-zero -TaskFile 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\d2cc219b-b730-480d-9b45-7e1e6443a41f\scratchpad\c89_task.md' -TimeoutSec 900
+OUTCOME: ANSWERED (716s)  model: opus (effort max; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-23-c89-execstate-all-zero.md
+COST: $5.0784  in 48 / out 52069 / cache-create 193995 / cache-read 3295369  (712s, 38 turn(s))
+--- ANSWER ---
+**REFUTED.** Arm A3 could not have returned `ExecState` 1 even if the two candidate causes had been the whole story — so its failure is a property of the prediction, not evidence about the diagram, and no third cause is licensed. The reading's own candidate ("a required terminal left unwired") is not a discovery either: it is written in the cycle plan, before the run.
+
+---
+
+## 1. The strongest reason the reading is WRONG
+
+**Remove Bad Wires is a delete, not a repair — and on *this* artefact it provably swaps a broken-wire error for an unwired-terminal error at the same site.**
+
+- The method the fleet calls (`Block Diagram.Remove Bad Wires`, 410, `tools/gscript.py:2604-2617`) is documented as *"Removes all the broken wires on the block diagram of the VI"* — the scripting equivalent of Edit▸Remove Broken Wires. It deletes; it repairs nothing. ([LabVIEW Wiki](https://labviewwiki.org/wiki/VI_class/Block_Diagram.Remove_Bad_Wires_method))
+- The fleet says it in reverse: `tools/gscript.py:2361` — *"Wires attached to the object are left broken: call remove_bad_wires() afterwards if the VI must run."*
+- Where those 11 wires actually land, from the project's own independent pass (`tools/bench/diag_c88_brokenwires.log:66-87`): all 11 owned by `Diagram #639`, and four terminate on border objects of `WhileLoop #637` — `w1731 SRC LeftShiftRegister#4344` (:67), `w3947 SRC LeftShiftRegister#4274` (:73), **`w7337 SINK RightShiftRegister#4334`** (:77), `w9635 SRC LoopTunnel#9641` (:81).
+- `w7337` is decisive. `docs/cycle27-plan.md:3225` records `#4334`'s **INSIDE** terminal as sitting **on wire 7337** — and 7337 is in the RBW-deleted set. Delete it and that sink is bare, which is a named LabVIEW block-diagram error: *"Shift register: unwired from inside the loop"* ([NI](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/shift-register-unwired-from-inside-loop.html)) — the exact class `docs/cycle27-plan.md:3170-3173` already names for `#4256`/`#4334`.
+
+A required sink cannot be un-broken by deleting the wire that feeds it. So for any arm whose repair set is {delete 3 unwired nodes, delete broken wires}, `ExecState` 1 was unreachable a priori.
+
+Two smaller collapses inside the sentence:
+- *"each eliminated as the cause"* — causes are not exclusive. Removing two of three errors leaves a VI broken. The arms license only "not **jointly sufficient**".
+- *"therefore a THIRD cause exists"* — `docs/cycle27-plan.md:3107-3114`: *"`ExecState` 0 IS ALREADY EXPLAINED THREE TIMES OVER … was already 0 at step 02, after the FIRST node move … **`ExecState` 0 is the expected state of this stage, not a fault to diagnose**."* The named candidate is Pre-decided 89 + 96 verbatim.
+
+## 2. Alternative explanations the evidence does not exclude
+
+**Alt-1 (primary):** cause (ii) explains A2 and A3 completely — not by surviving, but by being *replaced*. One cause, two costumes.
+
+**Alt-2 (secondary):** the reader has never been shown to move 0 → 1 headlessly. The disclosure gets this half-wrong in both directions: 1 → 0 **is** demonstrated in-run through the same `g.exec_state` path (`diag_s58_boolcarrier_run1.log:39`=1 → `:78`=0 after `delete_object`; again `:118→:157`, `:197→:236`). But I found **no** log in `tools/bench/*.log` where a mutation moved it 0 → 1 — every `=1` is a VI that was already 1 and stayed 1 (`cycle59_s3a_recipe.log:44-324`, `diag_c60_castseed_probe.log:19-79`, `diag_c61_localdir.log:56-116`). Marking broken is cheap; clearing requires a successful recompile, and nothing here ever saves or runs the VI. A3 tested the only direction with zero demonstrated sensitivity.
+
+**Never in the candidate set at all:** NI lists three causes of a broken VI — a broken wire, a required terminal unwired, and **a broken subVI / connector pane edited after placement** ([Correcting Broken VIs](https://www.ni.com/docs/en-US/bundle/labview/page/correcting-broken-vis.html)). 97 SubVIs, third class unmeasured.
+
+## 3. Supporting claims the machine's record does not support
+
+- *"RBW destroyed no node and no tunnel."* The gate measured the `Node` census and `Diagram #686`'s node list only (`diag_c89_execstate_factorial.py:93-106`). `LoopTunnel` is a separate traverse class (A0: `'LoopTunnel': 138`, log `:26`) and was never re-censused — on the run whose own gate text warns "RBW is on record deleting a TUNNEL in this project". This also contradicts the brief's "already ruled out" item: tunnels cannot be both invisible to a node census and covered by one.
+- *"A node-side sweep has LR 1."* True of `Diagram.Nodes[]`, false of the fleet: `report_all("LoopTunnel")` gives 138 rows with `owner_of` (log `:42-43`), and `shift_reg_left` returns each register's OUTER/INSIDE terminals **with `wire` or `'bare'`** (`diag_c73_m3a2_rows.log:29-38`, `:117`). The reader for the reading's own hypothesis exists and was not used.
+- *"`Wire.Is Broken?` already reports False on the ordered pass."* One wire, not a pass: `build_d1_m3a3b_rowD_clean.log:127-129` reads it for wire **25324** only; on the 11 that matter it is `NOT READABLE` (`diag_c88_brokenwires.log:67-87`, gate G3 4/11 FAIL).
+- The register enumeration is capped at `range(8)` (`diag_c89_execstate_factorial.py:128`) and returned 8 pairs for `#637` (`diag_c89_p2_all.log:49-56`) while the plan records **14** (`docs/cycle27-plan.md:3170`).
+- A0 ran on a work copy whose panel was never open (6649 at log `:164`); A1–A3 ran on scratches put through `ensure_loaded` (`stagekit.py:417`). The control differs in a second variable.
+
+## 4. Uninformative, or merely weak?
+
+**A2 is redundant** (same bytes, same result already in `build_d1_m3a3b_d3.log:276-277` and `build_d1_m3a3b_rowD.log:212`; the script's docstring `:20-22` admits it). **A1 is weak but sound.** **A3 is uninformative, not weak** — its mutation cannot remove the class it targets, and its prediction points where the instrument has never moved. P(read=0 | any hypothesis) ≈ 1 ⇒ likelihood ratio 1. Four identical readings from an instrument with no demonstrated response in the tested direction license "nothing changed the reading", not "a third cause exists".
+
+## 5. What would falsify the reading
+
+- **F1** (kills "third cause"): `shift_reg_left(#637 reg1, reg2)` before/after RBW — `#4334` INSIDE `wire=7337 → 'bare'` (and `#4344`/`#4274`/`#9641` losing 1731/3947/9635) ⇒ A2/A3 explained by cause (ii) alone.
+- **F2** (kills Alt-2): on a known-good VI, delete a wire into a required input (expect 1→0), re-wire with `connect2`, read `exec_state` with no save. **1** ⇒ the reader clears headlessly; **0** ⇒ every "eliminated" inference this cycle is void.
+- **F3** (kills the reading's candidate): a full terminal census of `#639`/`#686`/`#23058` + all ~14 registers of `#637` showing **no** bare sink after deletes+RBW ⇒ the live class is a broken subVI / connector pane instead.
+
+## 6. Cheapest discriminating test — one run, two cells, nothing saved
+
+One `bgrun`, ≈5 min, two dated scratches, both deleted; no GUI, no save, no original touched; every function already exists.
+
+- **Cell A (~2 min) — the positive control in the direction that matters.** Scratch of a small VI known at `ExecState` 1 (`OpLoopCast_v0.vi`, `diag_c60_castseed_probe.log:19`): read (expect 1) → delete one wire into a required input → read (expect 0) → re-create it with `connect2` → read. **The third read is the whole test.**
+- **Cell B (~3 min) — the substitution test on the bed.** One md5-asserted scratch: census `shift_reg_left` over **all** registers of `#637` (`range(16)`, not 8) + `LoopTunnel #9641`, recording `wire`/`'bare'`; run `remove_bad_wires_scripted`; repeat the census plus a `report_all("LoopTunnel")` count. Alt-1 predicts ≥1 terminal flips wired → bare (`#4334` INSIDE first). The reading predicts none flips and the pre-RBW bare set already names the offending sink.
+
+Cell B's "before" pass **is** the direct search for the reading's own third cause — and it is the FACT step `docs/cycle27-plan.md:3173-3175` already ordered.
+
+**What would change my mind:** Cell A returning 1 *and* Cell B showing no wired→bare transition. Then the zeros would be real eliminations — though the "third cause" would still be Pre-decided 89's, not a new one.
+
+Sources:
+- [VI class/Block Diagram.Remove Bad Wires method — LabVIEW Wiki](https://labviewwiki.org/wiki/VI_class/Block_Diagram.Remove_Bad_Wires_method)
+- [Shift register: unwired from inside the loop — NI](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/shift-register-unwired-from-inside-loop.html)
+- [Correcting Broken VIs — NI](https://www.ni.com/docs/en-US/bundle/labview/page/correcting-broken-vis.html)
+- [VI class/Execution.State property — LabVIEW Wiki](https://labviewwiki.org/wiki/VI_class/Execution.State_property)
+- [Contains unwired or bad terminal — NI](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/unwired-or-bad-terminal.html)
+- [Troubleshooting Broken Wires — NI](https://www.ni.com/docs/en-US/bundle/labview-nxg-g-programming-api-overview/page/troubleshooting-broken-wires.html)
+
+*(Note: `Write` is disabled in this session, so the plan file could not be created — this answer is the deliverable. NI's `ni.com/docs` pages geo-redirect to a navigation shell for me; the "Correcting Broken VIs" wording above comes from the search index of that page, not from a body fetch, and the two error-page citations rest on their titles in NI's block-diagram error bundle.)*
+BGRUN END rc=0 after 717s

@@ -1008,3 +1008,41 @@ already paid inside an EXISTING checker in the cycle that raised it:
    `build_d1_routeb_v0.py` no `%` sites), so declining remains defensible.
 3. **Recorded, not repaired around:** no gate was patched to pass, no log deleted, no date rolled, and
    `CYCLE_GUARD_OFF` was never set.
+
+## premature-build — 2026-09-23 (cycle 67, judgement)
+
+`py tools/violations.py` shows **premature-build at 6**, flagged `<== DUE, no decision on file` — the count
+crossed the threshold at `archive/peer/2026-09-22-retrospective-cycle66.md` (Row D's D7 gate, loss_min=35,
+loss_usd=7.93) and nothing had been written back. This is that written answer.
+
+**No new device.** The user's standing order of 2026-09-18 08:53 (*"장치는 더 만들지 말고 계속 진행"*) holds,
+so a slug at threshold is recorded as a FINDING and the next cycle builds nothing for it.
+
+**What the two occurrences actually share, and it is not "building too early".** Both are GATE-DESIGN faults in
+the JUDGEMENT layer, two cycles running, and both were derivable at the desk before LabVIEW was opened:
+
+1. **Cycle 66 — Row D's D7.** The gate was written as "`WhileLoop #637`'s terminal counts unchanged" while the
+   recipe's own first mutating step deletes wire 7506 off `#637` t10. The count could not have stayed constant.
+2. **Cycle 67 — the c89 factorial's arm A3.** The *prediction* was `ExecState` 1 after deleting three stray
+   `Invoke` nodes and then running Remove Bad Wires. The mandatory review
+   (`archive/peer/2026-09-23-c89-execstate-all-zero.md`, claude/`hypothesis`/opus max, ANSWERED 716 s, $5.0784)
+   refuted the prediction rather than the diagram: Remove Bad Wires *deletes*, so removing `w7337` bares
+   `RightShiftRegister #4334`'s inside terminal and trades a broken-wire error for an unwired-register error at
+   the same site — **A3 could not have returned 1 whatever the diagram held (likelihood ratio 1).**
+
+So the remedy already on file — "desk-check every gate against the steps that precede it" (STATUS NEXT, cycle 66)
+— was FOLLOWED for the gates in cycle 67 and still missed this, because it was aimed at gates and the fault was in
+a **predicted value**. The rule is widened rather than re-tooled:
+
+**`docs/cycle27-plan.md` Pre-decided 132 (written this cycle): for every PREDICTED VALUE as well as every gate,
+name the step that could already have determined it; if one exists, the prediction is re-cut as the predicted
+DIFFERENCE or deleted. A prediction that cannot fail for the right reason is not a prediction.**
+
+**Why no device.** The check is a reading of a script against its own preceding steps, on values a static checker
+cannot evaluate (what Remove Bad Wires does to a particular terminal is semantic, not syntactic). `c60c_astcheck`
+already covers the syntactic half. Mechanising the semantic half would be a NEW device under the 08:53 order, and
+it is the user's to authorise, not this session's.
+
+**Recorded, not repaired around:** no gate was patched to pass, no log deleted, no date rolled, `CYCLE_GUARD_OFF`
+was never set, and the failed prediction bought its review through the Jev ladder (`new-problem`, p=0.820) rather
+than being discharged quietly.

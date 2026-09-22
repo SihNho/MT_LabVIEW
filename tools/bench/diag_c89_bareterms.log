@@ -1,0 +1,144 @@
+BGRUN START 2026-09-23 01:44:19 limit 20.0 min: py -u tools/bench/diag_c89_bareterms.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 238 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 0b84595245dd650c0e8fd3f57104782c  got 0b84595245dd650c0e8fd3f57104782c
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 33961
+  FACT  LabVIEW handle count AFTER the restart: 33985
+  FACT  PRELOAD: the ORIGINAL is resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  diag_c89_bareterms_20260923_014419.vi
+  FACT  ExecState [after open] diag_c89_bareterms_20260923_014419.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so diag_c89_bareterms_20260923_014419.vi is deleted at close
+
+---------- [C1] POSITIVE CONTROL - does `ExecState` respond to a scripted mutation IN THE SAME RUN?
+  FACT  C1 source: OpFsInnerTunnelConnect_v1.vi md5 5b4e5f0fb3baae96361c33ce81bcd7b1 size 18797 B; version bytes [38, 128]
+  PASS  C1a the positive-control source's md5 is 5b4e5f0fb3baae96361c33ce81bcd7b1  5b4e5f0fb3baae96361c33ce81bcd7b1
+  PASS  SC diag_c89_bareterms_20260923_014419_pc.vi is a byte-identical copy of OpFsInnerTunnelConnect_v1.vi  diag_c89_bareterms_20260923_014419_pc.vi
+  FACT  ExecState [C1 before any mutation] diag_c89_bareterms_20260923_014419_pc.vi = 1
+  PASS  C1b the untouched positive-control scratch reads ExecState 1  observed 1
+  FACT  C1 wired INPUT terminals on diagram 0 of the scratch: 47 ; first 8 [(43, 4, 'error in (no error)', 383), (43, 6, 'vi path', 106), (124, 7, 'Traverse Target', 415), (124, 10, 'Class Name', 373), (124, 11, 'VI Refnum', 467), (183, 0, 'reference', 1332), (185, 0, 'reference', 1329), (187, 0, 'reference', 1661)]
+  FACT  C1 DELETING the wire feeding #43 t4 ('error in (no error)'): wire 383
+      C1 deleted wire w383
+  FACT  ExecState [C1 after deleting w383] diag_c89_bareterms_20260923_014419_pc.vi = 1
+  FACT  C1 the ExecState read happened 0.00 s after the mutation returned (err '')
+  FACT  C1 DELETING the wire feeding #43 t6 ('vi path'): wire 106
+      C1 deleted wire w106
+  FACT  ExecState [C1 after deleting w106] diag_c89_bareterms_20260923_014419_pc.vi = 0
+  FACT  C1 the ExecState read happened 0.00 s after the mutation returned (err '')
+  FACT  ExecState [C1 SECOND read, ~6 s later] diag_c89_bareterms_20260923_014419_pc.vi = 0
+  ROW   C1 ExecState before / after / 6 s later : observed=[1, 0, 0] expected=[1, 0, 0]
+  PASS  C1c ExecState went 1 -> 0 on a scripted wire delete, read through the SAME code path the factorial used (if this FAILS the four zeros of diag_c89_execstate_factorial are UNINFORMATIVE)  before 1 after 0 second 0
+  PASS  C1d the second read agrees with the first (no lazy recompile between them)  0 vs 0
+  PASS  H4 C1 scratch deleted: diag_c89_bareterms_20260923_014419_pc.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\diag_c89_bareterms_20260923_014419_pc.vi
+
+---------- [C2] CONDITIONAL-TERMINAL CENSUS - every WhileLoop on the bed (VALUES, not gates)
+  FACT  C2 WhileLoop census from the machine (6): [(0, 23041), (1, 10170), (2, 23032), (3, 25380), (4, 637), (5, 15173)]
+  FACT  C2 the briefed list [23041, 10170, 23032, 25380, 637, 15173] vs the machine's: missing [], extra []
+  FACT  C2 WhileLoop #23041 (index 0): uid echo 23041 (ECHO OK) ; COND TERM #23456 ; is_source False ; COND WIRE 23489 -> WIRED ; err '' errs '' 
+  FACT  C2 WhileLoop #10170 (index 1): uid echo 10170 (ECHO OK) ; COND TERM #23246 ; is_source False ; COND WIRE 23310 -> WIRED ; err '' errs '' 
+  FACT  C2 WhileLoop #23032 (index 2): uid echo 23032 (ECHO OK) ; COND TERM #23080 ; is_source False ; COND WIRE 23145 -> WIRED ; err '' errs '' 
+  FACT  C2 WhileLoop #25380 (index 3): uid echo 25380 (ECHO OK) ; COND TERM #25410 ; is_source False ; COND WIRE 1737 -> WIRED ; err '' errs '' 
+  FACT  C2 WhileLoop #637 (index 4): uid echo 637 (ECHO OK) ; COND TERM #648 ; is_source False ; COND WIRE 3457 -> WIRED ; err '' errs '' 
+  FACT  C2 WhileLoop #15173 (index 5): uid echo 15173 (ECHO OK) ; COND TERM #15276 ; is_source False ; COND WIRE 19456 -> WIRED ; err '' errs '' 
+
+---------- [C5] WHO OWNS `Diagram #639`? (one read, uid-echoed)
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  FACT  C5 Diagram #639 owner -> 'WhileLoop' #637 ; err ''
+  OBSERVED uid 23058 -> owner 'WhileLoop' uid 23032 | self 'Diagram'#23058 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  FACT  C5 Diagram #23058 owner -> 'WhileLoop' #23032 ; err ''
+  FACT  C5 Diagram #639 in the Diagram census: True ; #23058: True ; 173 diagram(s) total
+
+---------- [C3] BARE-INPUT CENSUS on `WhileLoop #23032`'s body `Diagram #23058`
+  FACT  C3 Diagram #23058 is Traverse index 22 
+  FACT  C3 NODE #48 (Nodes[4]) label 'ASI_adjust focus-subvi.vi': 7 terminal(s)
+  FACT  C3   #48 t0   name='-Inc reference' is_source=False wire=23804
+  FACT  C3   #48 t1   name='+Inc reference' is_source=False wire=23811
+  FACT  C3   #48 t2   name='Focus inc reference' is_source=False wire=23820
+  FACT  C3   #48 t3   name='VISA resource name' is_source=False wire=23985
+  FACT  C3   #48 t4   name='In position' is_source=False wire=24002
+  FACT  C3   #48 t5   name='Out position' is_source=True wire=23838
+  FACT  C3   #48 t6   name='Outgoing Handle' is_source=True wire=23829
+  FACT  C3 NODE #3447 (Nodes[3]) label 'Focus Step (F1)': 1 terminal(s)
+  FACT  C3   #3447 t0   name='Focus Step (F1)' is_source=True wire=23820
+  FACT  C3 NODE #3529 (Nodes[1]) label '- Inc (PgDn)': 1 terminal(s)
+  FACT  C3   #3529 t0   name='- Inc (PgDn)' is_source=True wire=23804
+  FACT  C3 NODE #3560 (Nodes[2]) label '+ Inc (PgUp)': 1 terminal(s)
+  FACT  C3   #3560 t0   name='+ Inc (PgUp)' is_source=True wire=23811
+  FACT  C3 NODE #10407 (Nodes[5]) label 'Case Structure': 7 terminal(s)
+  FACT  C3   #10407 t0   name='' is_source=False wire=23847
+  FACT  C3   #10407 t1   name='# slices in stack' is_source=False wire=24009
+  FACT  C3   #10407 t2   name='index' is_source=False wire=23856
+  FACT  C3   #10407 t3   name='Outgoing Handle' is_source=False wire=23829
+  FACT  C3   #10407 t4   name='VISA out' is_source=True wire=23952
+  FACT  C3   #10407 t5   name='Out position' is_source=False wire=23838
+  FACT  C3   #10407 t6   name='position [internal units]' is_source=True wire=24226
+  FACT  C3 NODE #23035 (Nodes[0]) label 'Equal?': 3 terminal(s)
+  FACT  C3   #23035 t0   name='x = y?' is_source=True wire=23145
+  FACT  C3   #23035 t1   name='y' is_source=False wire=23047
+  FACT  C3   #23035 t2   name='x' is_source=False wire=23047
+  FACT  C3 NODE #23499 (Nodes[6]) label 'D1_s3b_m3a3b_rowD_20260922_161040.vi': 1 terminal(s)
+  FACT  C3   #23499 t0   name='Automatic Error Handling' is_source=True wire=23847
+  FACT  C3 NODE #23523 (Nodes[7]) label 'D1_s3b_m3a3b_rowD_20260922_161040.vi': 1 terminal(s)
+  FACT  C3   #23523 t0   name='index' is_source=True wire=23856
+  FACT  C3 BARE INPUT TERMINALS (0): []
+
+---------- [C4] THE NAMED NODES - #10407 and Global #7202, wherever they live
+  FACT  C4 #10407 #10407 lives at: {'diagram_index': 22, 'diagram_uid': 23058, 'diagram_class': 'Diagram', 'nodes_index': 5, 'nodes_on_diagram': 8, 'label': 'Case Structure'}  (23 diagram(s) scanned of 173, 3.1 s)
+  FACT  C4 #10407 terminal table of #10407 (Diagram idx 22, Nodes[5], echo 10407): 7 terminal(s)
+  FACT      C4 #10407 t0  ''                                 is_source=False wire=23847   errs=[0, 0, 0, 0]
+  FACT      C4 #10407 t1  '# slices in stack'                is_source=False wire=24009   errs=[0, 0, 0, 0]
+  FACT      C4 #10407 t2  'index'                            is_source=False wire=23856   errs=[0, 0, 0, 0]
+  FACT      C4 #10407 t3  'Outgoing Handle'                  is_source=False wire=23829   errs=[0, 0, 0, 0]
+  FACT      C4 #10407 t4  'VISA out'                         is_source=True  wire=23952   errs=[0, 0, 0, 0]
+  FACT      C4 #10407 t5  'Out position'                     is_source=False wire=23838   errs=[0, 0, 0, 0]
+  FACT      C4 #10407 t6  'position [internal units]'        is_source=True  wire=24226   errs=[0, 0, 0, 0]
+  FACT  #10407: 7 terminal(s), 7 WIRED
+  FACT  C4 #10407: uid echo 10407 ; diagram_uid 23058 ; Nodes[5]
+  FACT  C4   #10407 t0   name='' is_source=False wire=23847
+  FACT  C4   #10407 t1   name='# slices in stack' is_source=False wire=24009
+  FACT  C4   #10407 t2   name='index' is_source=False wire=23856
+  FACT  C4   #10407 t3   name='Outgoing Handle' is_source=False wire=23829
+  FACT  C4   #10407 t4   name='VISA out' is_source=True wire=23952
+  FACT  C4   #10407 t5   name='Out position' is_source=False wire=23838
+  FACT  C4   #10407 t6   name='position [internal units]' is_source=True wire=24226
+  FACT  C4 #10407 BARE INPUT TERMINALS (0): []
+  FACT  C4 #7202 #7202 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 8, 'nodes_on_diagram': 27, 'label': 'Global motor pos.vi'}  (20 diagram(s) scanned of 173, 1.1 s)
+  FACT  C4 #7202 terminal table of #7202 (Diagram idx 19, Nodes[8], echo 7202): 1 terminal(s)
+  FACT      C4 #7202 t0  'Focus position'                   is_source=False wire=25231   errs=[0, 0, 0, 0]
+  FACT  #7202: 1 terminal(s), 1 WIRED
+  FACT  C4 #7202: uid echo 7202 ; diagram_uid 686 ; Nodes[8]
+  FACT  C4   #7202 t0   name='Focus position' is_source=False wire=25231
+  FACT  C4 #7202 BARE INPUT TERMINALS (0): []
+
+---------- [H] HYGIENE
+  FACT  close_panel(diag_c89_bareterms_20260923_014419.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  PRELOAD references released; refs {'opened': 10, 'closed': 10, 'live': 0, 'cached_op_vis': 6}
+  FACT  gscript ref_counts: {'opened': 10, 'closed': 10, 'live': 0, 'cached_op_vis': 6}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 10, 'closed': 10, 'live': 0, 'cached_op_vis': 6}
+  FACT  LabVIEW handle count AFTER the work: 45854
+  PASS  H4 scratch deleted: diag_c89_bareterms_20260923_014419.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\diag_c89_bareterms_20260923_014419.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 0b84595245dd650c0e8fd3f57104782c / after 0b84595245dd650c0e8fd3f57104782c
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33990
+
+====================================================================================================
+=== GATES: 14 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c89_bareterms.json   elapsed 126.7 s
+BGRUN END rc=0 after 127s

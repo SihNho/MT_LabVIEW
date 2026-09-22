@@ -1,0 +1,43 @@
+BGRUN START 2026-09-23 02:12:26 limit 10.0 min: py -u tools/bench/jev_ladder_c89b.py
+=== JEV REVIEW LADDER on diag_c89_wirebirth.log run 0 ===
+exists=True size=21760
+P4 guard_peer.newest_failing_log -> tools\bench\diag_c89_execstate_factorial.log
+   first failure line: FAIL  A3 ExecState == the PREDICTED 1  observed 0
+P3 RULE-SAME-ROW: script stem=diag_c89_wirebirth -> NONE (no accepted review of this script inside 6 h)
+P1 key_present=True  LADDER_P=0.80  DISCHARGE_P=0.80  samples=5
+failure_summary_len=2283
+---- failure summary (first 1400 chars) ----
+log: diag_c89_wirebirth.log
+script: diag_c89_wirebirth.py
+ended: rc=1
+extract: first FAIL line + context
+  PASS  SC diag_c89_wirebirth_20260923_020114_pc.vi is a byte-identical copy of OpFsInnerTunnelConnect_v1.vi  diag_c89_wirebirth_20260923_020114_pc.vi
+  FACT  ExecState [T1 untouched] diag_c89_wirebirth_20260923_020114_pc.vi = 1
+  PASS  T1b node # resolves on diagram 0 (uid echo)  Nodes[0] label 'Open VI Reference'
+  FACT  T1 sink row # Nodes[0] t6: [{'i': 6, 'name': 'vi path', 'is_source': False, 'wire': #, 'name_err': 0, 'src_err': 0, 'conn_err': 0, 'wire_err': 0, 'node_uid': 43}]; the wire feeding it is w106
+  FAIL  T1b2 exactly ONE source terminal is named for w106  []
+  FAIL  STOP at gate: T1b2 exactly ONE source terminal is named for w106
+
+---------- [H] HYGIENE
+  FACT  close_panel(diag_c89_wirebirth_20260923_020114.vi) raised com_error: (-#, '??? ??????.', (#, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  PRELOAD references released; refs {'opened': 7, 'closed': 7, 'live': 0, 'cached_op_vis': 2}
+  FACT  gscript ref_counts: {'opened': 7, 'closed': 7, 'live': 0, 'cached_op_vis': 2}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 7, 'closed': 7, 'live': 0, 'cached_op_vis': 2}
+  FACT  LabVIEW handle c
+---- end ----
+---- gate_rows ----
+T1b2: unknown (p=0.35) | FAIL T1b2 exactly ONE source terminal is named for w106 []
+STOP: unknown (p=0.42) | FAIL STOP at gate: T1b2 exactly ONE source terminal is named for w106
+---- end ----
+recent_adversary_reviews=5
+   2026-09-23-c89-execstate-all-zero.md
+   2026-09-22-c88-nodeside-zero.md
+   2026-09-22-c88-walk-1055.md
+   2026-09-22-c74-m3a2-fmt.md
+   2026-09-22-c87-rowd-d7-termcount.md
+P2 CLASSIFY: class=new-problem p=0.7800 spread=0.050000000000000044
+            acts_at_p>=0.80 -> BELOW BAND: old path
+RESULT: BELOW BAND -> old path: review owed.
+{"class": "new-problem", "p": 0.78, "spread": 0.050000000000000044, "acts": false, "same_row": null, "gate_armed": true}
+BGRUN INNER FAILURE: the command exited 0 but its output reported 3 failure(s); first: ended: rc=1
+BGRUN END rc=1 after 5s (inner failure; the process itself said 0)
