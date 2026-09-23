@@ -54,6 +54,7 @@ PI_SENDER = os.path.join(HERE, "motor_send_pi.ps1")
 ASI_IO = os.path.join(HERE, "motor_asi_io.ps1")
 
 DEFAULT_TOL = 0.001
+REF_ATTEMPTS = 3   # user 2026-09-23: reference + verify at session start, retried; refuse only after all attempts
 
 PORTS = {"pi": ("COM3", 115200, "ASRL3::INSTR / alias PI"),
          "asi": ("COM4", 115200, "ASRL4::INSTR / alias ASI_Piezo"),
@@ -372,17 +373,28 @@ def session_start(limits, pi_call=None, asi_call=None, session_path=None, out=pr
     tol = float(limits.get("tolerance", DEFAULT_TOL))
     lo, hi = float(limits["pi"]["lo_mm"]), float(limits["pi"]["hi_mm"])
     sl, su = limits["asi"]["sl"], limits["asi"]["su"]
-    rc, text = pi_call("limits-set", lo, hi)
-    out(text.strip())
-    pi_rb = parse_pi_limits(text)
-    ok_pi, msg_pi = check_pi_readback(pi_rb, lo, hi, tol)
-    out("PI  : %s (sender code=%d)" % (msg_pi, rc))
-    # The axis must come out of the hook REFERENCED, or no MOV can ever be transmitted (ERR 5).
-    pi_ref = parse_pi_ref(text)
-    ok_ref = bool(pi_ref) and pi_ref["FRF"] == 1.0 and abs(pi_ref["POS"] - pi_ref["POS_BEFORE"]) <= tol
-    out("PI  : reference state %s -> %s" % (json.dumps(pi_ref, sort_keys=True) if pi_ref else "NOT REPORTED",
-                                            "REFERENCED, zero unchanged" if ok_ref else "NOT REFERENCED / zero moved"))
-    ok_pi = ok_pi and ok_ref
+    # PI: limits written, then a REAL reference move (FNL 1) and a commanded-vs-readback VERIFY, all inside the
+    # sender's limits-set mode (user 2026-09-23: "원점 복귀하여 복원 시키고 사이클 시작한다 … 여러 차례 복원 시도해도
+    # 문제가 생긴다면 그 때는 사이클 종료"). Up to REF_ATTEMPTS attempts; only when all fail is the session refused.
+    pi_rb, pi_ref, ok_pi, rc, text, attempt = None, None, False, 3, "", 0
+    for attempt in range(1, REF_ATTEMPTS + 1):
+        rc, text = pi_call("limits-set", lo, hi)
+        out(text.strip())
+        pi_rb = parse_pi_limits(text)
+        ok_lim, msg_pi = check_pi_readback(pi_rb, lo, hi, tol)
+        pi_ref = parse_pi_ref(text)
+        ok_ref = bool(pi_ref) and pi_ref["FRF"] == 1.0 and abs(pi_ref["POS"]) <= tol
+        ok_ver = "VERIFY-RESULT: OK" in (text or "")
+        out("PI  : %s (sender code=%d)" % (msg_pi, rc))
+        out("PI  : reference %s -> %s; verify %s (attempt %d/%d)"
+            % (json.dumps(pi_ref, sort_keys=True) if pi_ref else "NOT REPORTED",
+               "REFERENCED at 0" if ok_ref else "NOT REFERENCED", "OK" if ok_ver else "FAILED", attempt, REF_ATTEMPTS))
+        ok_pi = ok_lim and ok_ref and ok_ver and rc == 0
+        if ok_pi:
+            break
+        out("PI  : reference/verify attempt %d failed - retrying" % attempt if attempt < REF_ATTEMPTS
+            else "PI  : reference/verify failed %d times - giving up" % REF_ATTEMPTS)
+        time.sleep(2)
     rc2, text2 = asi_call("limits-set", sl, su)
     out(text2.strip())
     asi_rb = parse_asi_limits(text2)
@@ -392,7 +404,7 @@ def session_start(limits, pi_call=None, asi_call=None, session_path=None, out=pr
         out("SESSION START REFUSED - no session file written, --execute stays closed")
         return 3
     rec = {"started": time.strftime("%Y-%m-%d %H:%M:%S"),
-           "pi_reference": pi_ref,
+           "pi_reference": pi_ref, "pi_reference_attempts": attempt, "pi_verify": "OK",
            "limits_readback": {"pi": pi_rb, "asi": asi_rb},
            "limits_file": {"pi": {"lo_mm": lo, "hi_mm": hi}, "asi": {"sl": sl, "su": su}},
            "tolerance": tol}
@@ -519,6 +531,9 @@ def main(argv=None):
     p.add_argument("--execute", action="store_true", help="transmit (needs an open session and a matching readback)")
     p.add_argument("--limits", default=None, help="override the limits file path (tests)")
     p.add_argument("--status", default=None, help="override STATUS.md (tests)")
+    p.add_argument("--reference", default=None, metavar="USER_ORDER",
+                   help="USER-ORDERED PI reference move (FNL 1: 0 = negative limit switch). The value is the user's "
+                        "own words ordering it, logged verbatim. Never automatic; the session hooks never call it.")
     a = p.parse_args(argv)
 
     limits = load_limits(a.limits)
@@ -534,6 +549,21 @@ def main(argv=None):
                              % state)
             return 3
         return session_start(limits) if a.session == "start" else session_end(limits)
+    if a.reference:
+        # 2026-09-23: a power-cycled C-863 restarts with POS 0 at the stage's physical spot; the session-start hook
+        # then cemented that false zero (RON 1 0 + POS 1 <current>) and a MOV +30 ran into the hard limit (ERR 216).
+        # The only correct repair is a real reference move, which PI_HOME forbids on every other route.
+        if state != "assembled" and state != "disassembled":
+            sys.stderr.write("REFUSED: rig state %r - no reference move in this state\n" % state)
+            return 3
+        if len(a.reference.strip()) < 4:
+            sys.stderr.write("REFUSED: --reference needs the user's order text\n")
+            return 3
+        print("USER-ORDERED REFERENCE MOVE: %r" % a.reference)
+        rc, text = _run_ps(PI_SENDER, ["-Mode", "reference", "-SettleTimeoutS", "120"], timeout=180)
+        print(text.strip())
+        _append_log("PI-REFERENCE(user: %s)" % a.reference[:60], rc, text)
+        return rc
 
     if not a.device or not a.command:
         sys.stderr.write("usage: --session start|end, or --device <d> --command <c> [--execute]\n")

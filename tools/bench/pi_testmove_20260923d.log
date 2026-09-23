@@ -1,0 +1,30 @@
+BGRUN START 2026-09-23 13:28:39 limit 6.0 min: bash -c py tools/motor_gate.py --session start && echo '=== MOVE 0' && py tools/motor_gate.py --device pi --command 'MOV 1 0' --execute && sleep 5 && echo '=== MOVE 30' && py tools/motor_gate.py --device pi --command 'MOV 1 30' --execute && sleep 5 && echo '=== MOVE 0' && py tools/motor_gate.py --device pi --command 'MOV 1 0' --execute && sleep 3 && echo '=== SESSION END' && py tools/motor_gate.py --session end
+before: POS?=1=-0.00010 TMN?=1=0.00000 TMX?=1=52.00000 ERR?=0
+PRELIMITS TMN=0 TMX=52
+ERR? after SPA = 0
+LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+REFSTATE RON=0 FRF=1 POS=-0.0001 POS_BEFORE=-0.0001 ERR=0
+LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+RESULT: controller limits are TMN=0 TMX=39 (mode limits-set)
+PI  : PI controller limits match the file (TMN 0.0000 / TMX 39.0000, tol 0.001) (sender code=0)
+PI  : reference state {"FRF": 1.0, "POS": -0.0001, "POS_BEFORE": -0.0001, "RON": 0.0} -> REFERENCED, zero unchanged
+before SL: :A X=-500.000000 Y=-500.000000   SU: :A X=500.000000 Y=500.000000
+SL write -> :A
+SU write -> :A
+LIMITS SL X=-3.847494 Y=-4.774393 SU X=0.152497 Y=-0.774402
+position after (must be unchanged): X=-18605 Y=-27744
+RESULT: controller limits set (mode limits-set)
+ASI : ASI controller limits match the file (SL {'X': -3.8475, 'Y': -4.7744} / SU {'X': 0.1525, 'Y': -0.7744} mm, tol 0.001) (sender code=0)
+SESSION START OK -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\motor_session.json
+=== MOVE 0
+ALLOWED (pi): PI absolute move to [1.0, 0.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readback at transmit time; a target outside them answers ERR 7 and does not move)
+{"kind": "move", "relative": false, "state_note": "rig assembled: motion allowed by the user's 2026-09-17 ruling, bounded by the CONTROLLER limits this gate installs and re-verifies", "targets_mm": [1.0, 0.0]}
+session opened 2026-09-23 13:28:41
+LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+before: POS?=1=-0.00010  SVO?=1=0  FRF?=1  VEL?=1=15.00000  ERR?=0
+SENT: MOV 1 0
+ERR? right after send = 5
+after:  POS?=1=-0.00010  ONT?=1=0  ERR?=0  elapsed=2.1s
+RESULT: REJECTED BY THE CONTROLLER - ERR 5 right after send, POS=-0.0001 (target 0)
+GATE re-check of the sender's readback: PI controller limits match the file (TMN 0.0000 / TMX 39.0000, tol 0.001)
+BGRUN END rc=9 after 4s

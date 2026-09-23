@@ -13,7 +13,7 @@
 # an ALLOW decision and this script deletes it before opening the port), so running this file by hand sends nothing.
 # guard_bash.py also blocks it by name.
 param(
-    [ValidateSet('send', 'limits-set', 'limits-release')][string]$Mode = 'send',
+    [ValidateSet('send', 'limits-set', 'limits-release', 'reference')][string]$Mode = 'send',
     [string]$Command = '',
     [string]$TokenFile = '',
     [double]$ExpectLo = 0.0,
@@ -50,6 +50,29 @@ function ReadLimits() {
 }
 try {
     $sp.Open()
+    if ($Mode -eq 'reference') {
+        # USER-ORDERED REFERENCE MOVE (2026-09-23 "원점 다시 돌려"): after a controller power-cycle the C-863 restarts
+        # with POS 0 at whatever physical spot the stage was in, so "0" is no longer the negative end of travel. FNL 1
+        # drives the axis to the NEGATIVE LIMIT SWITCH and sets 0 there - the convention the file's limits (TMN 0)
+        # assume. Only reachable through `motor_gate.py --reference`, which the user must order; never automatic.
+        Write-Output ("before: POS?={0} FRF?={1} SVO?={2} ERR?={3}" -f (Ask 'POS?'), (Ask 'FRF?'), (Ask 'SVO?'), (Ask 'ERR?'))
+        $sp.WriteLine('SVO 1 1'); Start-Sleep -Milliseconds 300
+        $sp.WriteLine('RON 1 1'); Start-Sleep -Milliseconds 300
+        Write-Output ("prep: SVO?={0} RON?={1} ERR?={2}" -f (Ask 'SVO?'), (Ask 'RON?'), (Ask 'ERR?'))
+        $sp.WriteLine('FNL 1')
+        Write-Output 'SENT: FNL 1 (reference to the negative limit switch)'
+        $t0 = Get-Date; $done = $false
+        while (((Get-Date) - $t0).TotalSeconds -lt $SettleTimeoutS) {
+            Start-Sleep -Milliseconds 500
+            $frf = Num (Ask 'FRF?'); $p = Num (Ask 'POS?'); $ont = Num (Ask 'ONT?')
+            Write-Output ("poll: FRF?={0} POS?={1} ONT?={2}" -f $frf, $p, $ont)
+            if ($frf -eq 1 -and $ont -eq 1) { $done = $true; break }
+        }
+        $err = Ask 'ERR?'
+        Write-Output ("after: POS?={0} FRF?={1} ONT?={2} ERR?={3} elapsed={4:N1}s" -f (Ask 'POS?'), (Ask 'FRF?'), (Ask 'ONT?'), $err, (((Get-Date) - $t0).TotalSeconds))
+        if ($done) { Write-Output 'RESULT: REFERENCED - 0 is now the negative limit switch'; exit 0 }
+        Write-Output 'RESULT: reference move did NOT complete within the timeout'; exit 9
+    }
     if ($Mode -ne 'send') {
         # The four raw replies are captured ONCE, so the human-readable `before:` line and the
         # machine-readable `PRELIMITS` line below are built from the SAME strings - no extra serial
@@ -80,14 +103,45 @@ try {
             # So the session-start hook restores the reference the ONE way that moves nothing and shifts no zero:
             # RON 1 0 (referencing off - it already is) and POS 1 <the value POS? just returned>, i.e. the SAME
             # number. Never FRF/FNL/FPL/GOH (those MOVE the axis). Nothing else in the fleet may send POS.
+            # REPLACED 2026-09-23 (user: "반드시 싸이클 시작할 때는 PI 모터 원점 복귀 반드시 시킨 후에 실제 좌표와 아웃풋
+            # 좌표 비교하는거 반드시 만들어" · "훅으로 고정해"). The old restore (RON 1 0 + POS 1 <current>) DECLARED the
+            # current counter to be zero; after a controller power-cycle that counter is 0 wherever the stage sits,
+            # so it cemented a false zero and a MOV +30 ran into the hard limit (ERR 216, tools/bench/pi_testmove_20260923e.log).
+            # Now: a REAL reference move (FNL 1 -> 0 = negative limit switch), then a commanded-vs-readback check.
             $p0 = Num (Ask 'POS?')
-            if ($null -eq $p0) { Write-Output 'REF RESTORE FAILED: POS? gave no number'; exit 6 }
-            $sp.WriteLine('RON 1 0'); Start-Sleep -Milliseconds 200
-            $sp.WriteLine(("POS 1 {0:0.00000}" -f $p0)); Start-Sleep -Milliseconds 200
+            if ($null -eq $p0) { Write-Output 'REF FAILED: POS? gave no number'; exit 6 }
+            $sp.WriteLine('SVO 1 1'); Start-Sleep -Milliseconds 300
+            $sp.WriteLine('RON 1 1'); Start-Sleep -Milliseconds 300
+            $sp.WriteLine('FNL 1')
+            Write-Output ("REFERENCE: POS before={0} -> SENT FNL 1 (to the negative limit switch)" -f $p0)
+            $t0 = Get-Date; $refDone = $false
+            while (((Get-Date) - $t0).TotalSeconds -lt 120) {
+                Start-Sleep -Milliseconds 500
+                $frf = Num (Ask 'FRF?'); $ont = Num (Ask 'ONT?')
+                if ($frf -eq 1 -and $ont -eq 1) { $refDone = $true; break }
+            }
             $ron = Num (Ask 'RON?'); $frf = Num (Ask 'FRF?'); $p1 = Num (Ask 'POS?')
-            Write-Output ("REFSTATE RON={0} FRF={1} POS={2} POS_BEFORE={3} ERR={4}" -f $ron, $frf, $p1, $p0, (Ask 'ERR?'))
-            if ($frf -ne 1) { Write-Output 'RESULT: axis still UNREFERENCED after RON/POS - no move will be allowed'; exit 7 }
-            if ([math]::Abs($p1 - $p0) -gt $Tol) { Write-Output 'RESULT: POS CHANGED during the reference restore - zero may have shifted'; exit 7 }
+            Write-Output ("REFSTATE RON={0} FRF={1} POS={2} POS_BEFORE={3} ERR={4} travelled={5:0.000}" -f $ron, $frf, $p1, $p0, (Ask 'ERR?'), ($p0 - $p1))
+            if (-not $refDone -or $frf -ne 1) { Write-Output 'RESULT: REFERENCE MOVE DID NOT COMPLETE - no session'; exit 7 }
+            if ([math]::Abs($p1) -gt $Tol) { Write-Output ("RESULT: after FNL the counter reads {0}, not 0 - no session" -f $p1); exit 7 }
+            # VERIFY: commanded vs read-back on two small moves inside the envelope. Position must follow the
+            # command within $VerifyTol; ERR? must stay 0. A stage that does not follow is not trusted.
+            $VerifyTol = 0.05; $verifyOk = $true; $vlines = @()
+            foreach ($tgt in @(2, 0)) {
+                $sp.WriteLine(("MOV 1 {0}" -f $tgt)); $t1 = Get-Date; $pv = $null
+                while (((Get-Date) - $t1).TotalSeconds -lt 20) {
+                    Start-Sleep -Milliseconds 300
+                    if ((Num (Ask 'ONT?')) -eq 1) { break }
+                }
+                $pv = Num (Ask 'POS?'); $ev = Ask 'ERR?'
+                $d = if ($null -ne $pv) { [math]::Abs($pv - $tgt) } else { 999 }
+                $ok = ($d -le $VerifyTol) -and ($ev -match '(^|=)0$')
+                if (-not $ok) { $verifyOk = $false }
+                $vlines += ("VERIFY: commanded={0} readback={1} delta={2:0.0000} err={3} -> {4}" -f $tgt, $pv, $d, $ev, $(if ($ok) { 'OK' } else { 'MISMATCH' }))
+            }
+            $vlines | ForEach-Object { Write-Output $_ }
+            if (-not $verifyOk) { Write-Output 'RESULT: COMMANDED vs READBACK MISMATCH after referencing - no session'; exit 7 }
+            Write-Output 'VERIFY-RESULT: OK - reference move done and the stage follows commands'
             $L2 = ReadLimits
             if ($null -eq $L2) { Write-Output 'RESULT: limit re-readback failed after the reference restore'; exit 7 }
             Write-Output ("LIMITS TMN={0} TMX={1} SPA15={2} SPA30={3}" -f $L2.TMN, $L2.TMX, $L2.S15, $L2.S30)
@@ -112,6 +166,16 @@ try {
     if ($frf -ne 1) {
         Write-Output 'SEND REFUSED: the axis is NOT REFERENCED (FRF? 0) - every MOV would answer ERR 5 without ever reaching the soft limit. Run the session-start hook, which restores the reference with RON 1 0 + POS 1 <current>.'
         exit 7
+    }
+    # SERVO ON before a move (2026-09-23): after a controller power-cycle the C-863 comes up with SVO 0 and every MOV
+    # answers ERR 5 ("move attempted with servo off") without moving - the user saw it as "PI does not respond".
+    # 'SVO 1 1' enables the servo loop and moves nothing; it is re-read before the MOV is sent.
+    $svo = Num (Ask 'SVO?')
+    if ($svo -ne 1) {
+        $sp.WriteLine('SVO 1 1'); Start-Sleep -Milliseconds 300
+        $svo2 = Num (Ask 'SVO?'); $errSvo = Ask 'ERR?'
+        Write-Output ("SERVO: SVO? was {0} -> sent 'SVO 1 1' -> SVO? now {1}, ERR? {2}" -f $svo, $svo2, $errSvo)
+        if ($svo2 -ne 1) { Write-Output 'SEND REFUSED: servo could not be enabled (SVO? still 0) - the MOV would answer ERR 5'; exit 7 }
     }
     $sp.WriteLine($Command)
     Write-Output "SENT: $Command"

@@ -108,3 +108,17 @@
 2026-09-18 15:58:58	ASI	ALLOW	LIVE	cmd='M X=-18475'	ASI absolute move {'X': -18475.0} - the CONTROLLER's SL/SU limits bound it (verified by readback at transmit time)
 2026-09-18 15:59:00	ASI	SENT	rc=0	after: X=-18473 Y=-27744 status='N' elapsed=1.3s | RESULT: reached X=-18473 (target -18475)
 2026-09-18 15:59:00	ASI	REFUSE	LIVE	cmd='HOME X'	ASI home/origin/zero/save/reset class command 'HOME' (HOME) - NEVER permitted: the controller SL/SU limits are ABSOLUTE coordinates, so shifting the zero would move the fence
+2026-09-23 13:22:43	PI	ALLOW	DRY	cmd='MOV 1 0'	PI absolute move to [1.0, 0.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readback at transmit time; a target outside them answers ERR 7 and does not move)
+2026-09-23 13:28:41	PI	ALLOW	LIVE	cmd='MOV 1 0'	PI absolute move to [1.0, 0.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readback at transmit time; a target outside them answers ERR 7 and does not move)
+2026-09-23 13:28:43	PI	SENT	rc=9	after:  POS?=1=-0.00010  ONT?=1=0  ERR?=0  elapsed=2.1s | RESULT: REJECTED BY THE CONTROLLER - ERR 5 right after send, POS=-0.0001 (target 0)
+2026-09-23 13:29:33	PI	REFUSE	DRY	cmd='SVO 1 1'	PI command 'SVO' is not on the allow-list (default-deny)
+2026-09-23 13:30:28	PI	ALLOW	LIVE	cmd='MOV 1 0'	PI absolute move to [1.0, 0.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readback at transmit time; a target outside them answers ERR 7 and does not move)
+2026-09-23 13:30:31	PI	SENT	rc=0	after:  POS?=1=0.00005  ONT?=1=1  ERR?=0  elapsed=2.1s | RESULT: reached 5E-05 (target 0)
+2026-09-23 13:30:36	PI	ALLOW	LIVE	cmd='MOV 1 30'	PI absolute move to [1.0, 30.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readback at transmit time; a target outside them answers ERR 7 and does not move)
+2026-09-23 13:32:06	PI	SENT	rc=8	after:  POS?=1=22.19810  ONT?=1=0  ERR?=216  elapsed=90.1s | RESULT: NOT at target - final=22.17105 target=30  (ERR right after send was 0)
+2026-09-23 13:32:11	PI	ALLOW	LIVE	cmd='MOV 1 0'	PI absolute move to [1.0, 0.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readback at transmit time; a target outside them answers ERR 7 and does not move)
+2026-09-23 13:32:12	PI	ALLOW	LIVE	cmd='MOV 1 30'	PI absolute move to [1.0, 30.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readback at transmit time; a target outside them answers ERR 7 and does not move)
+2026-09-23 13:32:13	PI	SENT	rc=1	    + CategoryInfo          : NotSpecified: (:) [], ParentContainsErrorRecordException |     + FullyQualifiedErrorId : UnauthorizedAccessException
+2026-09-23 13:32:15	PI	SENT	rc=9	after:  POS?=1=0.00000  ONT?=1=1  ERR?=0  elapsed=3.6s | RESULT: REJECTED BY THE CONTROLLER - ERR 216 right after send, POS=0 (target 0)
+2026-09-23 13:32:38	PI	ALLOW	LIVE	cmd='MOV 1 0'	PI absolute move to [1.0, 0.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readback at transmit time; a target outside them answers ERR 7 and does not move)
+2026-09-23 13:36:32	PI-REFERENCE(user: user 2026-09-23 13:3x: 원점 다시 돌려)	SENT	rc=0	after: POS?=1=0.00000 FRF?=1=1 ONT?=1=1 ERR?=0 elapsed=7.2s | RESULT: REFERENCED - 0 is now the negative limit switch
