@@ -1,0 +1,83 @@
+BGRUN START 2026-09-23 16:41:45 limit 30.0 min: py -u tools/bench/jev_menus_step5.py
+=== STEP 5 jev menus (LIVE)
+  PASS  M0 bed wiki md5 | 0b84595245dd650c0e8fd3f57104782c
+  PASS  M0b jev key present | key presence only; value never read out
+  FACT  INTENT 1731: true #4344 InnerTerminal 'Outgoing Handle' -> #48 Terminal 'VISA resource name' (("renamed: 'VISA out' -> 'Outgoing Handle'", 'same key'))
+  FACT  INTENT 1893: true #3447 Terminal 'Focus Step (F1)' -> #48 Terminal 'Focus inc reference' (('same key', 'same key'))
+  FACT  INTENT 2819: true #3560 Terminal '+ Inc (PgUp)' -> #48 Terminal '+Inc reference' (('same key', 'same key'))
+  FACT  INTENT 3947: true #4274 InnerTerminal 'position [internal units]' -> #48 Terminal 'In position' (('same key', 'same key'))
+  FACT  INTENT 4833: true #3529 Terminal '- Inc (PgDn)' -> #48 Terminal '-Inc reference' (('same key', 'same key'))
+  FACT  INTENT 7337: true #11263 OuterTerminal 'VISA out' -> #4334 InnerTerminal 'Outgoing Handle' (('same key', "renamed: 'VISA out' -> 'Outgoing Handle'"))
+  FACT  INTENT 7388: true #48 Terminal 'Out position' -> #11348 OuterTerminal 'Out position' (('same key', 'same key'))
+  FACT  INTENT 9635: true #9641 InnerTerminal '# slices in stack' -> #9623 OuterTerminal '# slices in stack' (('same key', 'same key'))
+  FACT  INTENT 11232: true #48 Terminal 'Outgoing Handle' -> #11220 OuterTerminal 'Outgoing Handle' (('same key', 'same key'))
+  FACT  INTENT 23502: true #23499 Terminal 'Automatic Error Handling' -> #10429 OuterTerminal (unnamed) (bed edge (row created in S3b; S1 has none))
+  FACT  INTENT 23540: true #23523 Terminal 'index' -> #10978 OuterTerminal 'index' (bed edge (row created in S3b; S1 has none))
+  PASS  M1a pair set >= 20 items, >= 9 positives | 49 items, 11 pos
+  PASS  M1b op set >= 20 | 20 items (13 history, 7 rule)
+  PASS  M1c risk set == 28 (8 + 20) | 28 items, 8 pos
+  PASS  M1d chain set >= 10 positive links | 57 items, 13 pos
+  FACT  pair: 49 items in 36.8s
+  FACT  op: 20 items in 14.3s
+  FACT  risk: 28 items in 20.3s
+  FACT  chain: 57 items in 43.2s
+  PASS  M2 every labelled item answered | missing: [('pair', 0), ('op', 0), ('risk', 0), ('chain', 0)]
+  FACT  MENU pair: n=49 acc=0.898 brier=0.0745 act=0.7 acts=True | {"tp": 8, "fp": 2, "fn": 3, "tn": 36}
+  FACT  MENU op: n=20 acc=0.55 brier=0.6395 act=0.95 acts=False | {"wire_sr -> connect_from_wire": 4, "connect_from_wire -> connect_from_wire": 6, "fs_inner_tunnel_connect -> connect_from_wire": 1, "connect_nested -> connect_nested": 5, "wire_indicators -> connect_nested": 2, "fs_inner_tunnel_connect -> connect_nested": 2}
+  FACT  MENU risk: n=28 acc=0.5714 brier=0.3276 act=0.5 acts=False | {"tp": 8, "fp": 12, "fn": 0, "tn": 8}
+  FACT  MENU chain: n=57 acc=0.807 brier=0.1275 act=0.5 acts=True | {"tp": 2, "fp": 0, "fn": 11, "tn": 44}
+  FACT  op history-only acc 0.4615 (n=13)
+  FACT  PAIR MISS 1731: SOURCE #4344 LeftShiftRegister terminal 'Outgoing Handle' (InnerTerminal, diagram 639) -> SINK #48 SubVI terminal 'VISA resource name' (Terminal, diagram 23058) label=True p=0.446
+  FACT  PAIR MISS 1893: SOURCE #3447 ControlReferenceConstant terminal 'Focus Step (F1)' (Terminal, diagram 23058) -> SINK #48 SubVI terminal '+Inc reference' (Terminal, diagram 23058) label=False p=0.698
+  FACT  PAIR MISS 1893: SOURCE #3447 ControlReferenceConstant terminal 'Focus Step (F1)' (Terminal, diagram 23058) -> SINK #48 SubVI terminal '-Inc reference' (Terminal, diagram 23058) label=False p=0.636
+  FACT  PAIR MISS 23502: SOURCE #23499 Local terminal 'Automatic Error Handling' (Terminal, diagram 23058) -> SINK #10429 Tunnel terminal '' (OuterTerminal, diagram 23058); scope same label=True p=0.134
+  FACT  PAIR MISS 23540: SOURCE #23523 Local terminal 'index' (Terminal, diagram 23058) -> SINK #10978 SelectorTunnel terminal 'index' (OuterTerminal, diagram 23058); scope same label=True p=0.086
+  FACT  OP MISS wire_sr -> connect_from_wire (history) SOURCE #11263 SelectorTunnel terminal 'VISA out' (OuterTerminal, diagram 23058) -> SINK #23868 RightShiftRegister terminal 'Outgoing Handle'
+  FACT  OP MISS wire_sr -> connect_from_wire (history) SOURCE #2017 SelectorTunnel terminal 'position [internal units]' (OuterTerminal, diagram 23058) -> SINK #23895 RightShiftRegister terminal '
+  FACT  OP MISS wire_sr -> connect_from_wire (history) SOURCE #23880 LeftShiftRegister terminal 'Outgoing Handle' (InnerTerminal, diagram 23058) -> SINK #48 SubVI terminal 'VISA resource name' (T
+  FACT  OP MISS wire_sr -> connect_from_wire (history) SOURCE #23909 LeftShiftRegister terminal 'Out position' (InnerTerminal, diagram 23058) -> SINK #48 SubVI terminal 'In position' (Terminal, d
+  FACT  OP MISS fs_inner_tunnel_connect -> connect_from_wire (history) SOURCE #23868 RightShiftRegister terminal 'Outgoing Handle' (OuterTerminal, diagram 686) -> SINK #7468 FlatSequenceInnerTunnel terminal 'Out
+  FACT  OP MISS wire_indicators -> connect_nested (history) SOURCE #10686 Function terminal 'x .and. y?' (ParameterTerminal, diagram 639) -> SINK #23576 ControlTerminal terminal 'Automatic Error Handl
+  FACT  OP MISS wire_indicators -> connect_nested (history) SOURCE #10757 IndexArray terminal 'element' (Terminal, diagram 639) -> SINK #23541 ControlTerminal terminal 'index' (ControlTerminal, diagra
+  FACT  OP MISS fs_inner_tunnel_connect -> connect_nested (capability-rule) SOURCE #13341 SubVI terminal 'VISA out' (Terminal, diagram 19887) -> SINK #19881 FlatSequenceInnerTunnel terminal 'VISA out' (Terminal, diag
+  FACT  OP MISS fs_inner_tunnel_connect -> connect_nested (capability-rule) SOURCE #13341 SubVI terminal 'position [internal units]' (Terminal, diagram 19887) -> SINK #19873 FlatSequenceInnerTunnel terminal 'position
+  FACT  RISK MISS label=False p=0.828 sr edge #23868 InnerTerminal 'Outgoing Handle' -> #23880 InnerTerminal 'Outgoing Handle'
+  FACT  RISK MISS label=False p=0.846 sr edge #23895 InnerTerminal 'Out position' -> #23909 InnerTerminal 'Out position'
+  FACT  RISK MISS label=False p=0.874 sr edge #4334 InnerTerminal 'Outgoing Handle' -> #4344 InnerTerminal 'Outgoing Handle'
+  FACT  RISK MISS label=False p=0.812 wire edge #11263 OuterTerminal 'VISA out' -> #23868 InnerTerminal 'Outgoing Handle'
+  FACT  RISK MISS label=False p=0.860 wire edge #2017 OuterTerminal 'position [internal units]' -> #23895 InnerTerminal 'Out position'
+  FACT  RISK MISS label=False p=0.904 wire edge #2017 OuterTerminal 'position [internal units]' -> #24154 InnerTerminal 'position [internal units]'
+  FACT  RISK MISS label=False p=0.886 wire edge #23523 Terminal 'index' -> #10978 OuterTerminal 'index'
+  FACT  RISK MISS label=False p=0.850 wire edge #23868 OuterTerminal 'Outgoing Handle' -> #7468 Terminal 'Outgoing Handle' [2]
+  FACT  RISK MISS label=False p=0.866 wire edge #24154 OuterTerminal 'position [internal units]' -> #24018 OuterTerminal 'position [internal units]'
+  FACT  RISK MISS label=False p=0.874 wire edge #3974 Terminal 'Out position' -> #23909 OuterTerminal 'Out position'
+  FACT  RISK MISS label=False p=0.900 wire edge #4194 Terminal 'Outgoing Handle' -> #23880 OuterTerminal 'Outgoing Handle'
+  FACT  RISK MISS label=False p=0.902 wire edge #4194 Terminal 'Outgoing Handle' -> #4344 OuterTerminal 'Outgoing Handle'
+  FACT  CHAIN MISS 6810->376 x=376 (pos) p=0.340
+  FACT  CHAIN MISS 6810->376 x=5058 (pos) p=0.130
+  FACT  CHAIN MISS 6810->5696 x=5058 (pos) p=0.296
+  FACT  CHAIN MISS 5058->28233 x=5696 (pos) p=0.146
+  FACT  CHAIN MISS 5058->28233 x=6085 (pos) p=0.148
+  FACT  CHAIN MISS 5696->29009 x=29009 (pos) p=0.322
+  FACT  CHAIN MISS 19093->26539 x=48 (pos) p=0.120
+  FACT  CHAIN MISS 48->19093 x=26539 (pos) p=0.234
+  FACT  CHAIN MISS 28083->29009 x=29009 (pos) p=0.406
+  FACT  CHAIN MISS 6085->30306 x=30306 (pos) p=0.318
+  FACT  CHAIN MISS 5058->376 x=376 (pos) p=0.396
+  PASS  M3 results + thresholds written | {'pair/chain': 'act = smallest t whose yes-precision is 1.0 with >= 1 yes; acts iff acc@0.5 >= 0.80 and n >= 20', 'op': 'act = smallest t whose acted-accuracy is 1.0; acts iff acc >= 0.80 and n >= 20', 'risk': "act (proceed when p_risk <= t) = largest t below every positive's p; acts iff acc@0.5 >= 0.80 and n >= 20"}
+  FACT  M3a-4 1731: 0 pairs, action=skip by python, pair_p=None op=None op_p=None risk_p=None | no legal candidate (every sink of the dst is fed by a live source)
+  FACT  M3a-4 1893: 0 pairs, action=skip by python, pair_p=None op=None op_p=None risk_p=None | no legal candidate (every sink of the dst is fed by a live source)
+  FACT  M3a-4 2819: 0 pairs, action=skip by python, pair_p=None op=None op_p=None risk_p=None | no legal candidate (every sink of the dst is fed by a live source)
+  FACT  M3a-4 3947: 0 pairs, action=skip by python, pair_p=None op=None op_p=None risk_p=None | no legal candidate (every sink of the dst is fed by a live source)
+  FACT  M3a-4 4833: 0 pairs, action=skip by python, pair_p=None op=None op_p=None risk_p=None | no legal candidate (every sink of the dst is fed by a live source)
+  FACT  M3a-4 7337: 1 pairs, action=llm by jev, pair_p=0.546 op=connect_nested op_p=0.506 risk_p=0.092 | best p 0.546 < act threshold 0.7
+  FACT  M3a-4 7388: 0 pairs, action=skip by python, pair_p=None op=None op_p=None risk_p=None | no legal candidate (every sink of the dst is fed by a live source)
+  FACT  M3a-4 9635: 0 pairs, action=skip by python, pair_p=None op=None op_p=None risk_p=None | no legal candidate (every sink of the dst is fed by a live source)
+  FACT  M3a-4 11232: 0 pairs, action=skip by python, pair_p=None op=None op_p=None risk_p=None | no legal candidate (every sink of the dst is fed by a live source)
+  FACT  M3a-4 23502: 0 pairs, action=skip by python, pair_p=None op=None op_p=None risk_p=None | no legal candidate (every sink of the dst is fed by a live source)
+  FACT  M3a-4 23540: 0 pairs, action=skip by python, pair_p=None op=None op_p=None risk_p=None | no legal candidate (every sink of the dst is fed by a live source)
+  PASS  M4 decision_m3a4.json: 11 intents, one decision each, actions valid | {'skip': 10, 'llm': 1}
+  FACT  wrote decision_m3a4.json: actions {'skip': 10, 'llm': 1}, jev_calls 15, {'usd_est': 0.0012, 'basis': 'docs/jev-integration-plan.md:13', 'seconds': 8.5}
+  FACT  measurement seconds {'pair': 36.8, 'op': 14.3, 'risk': 20.3, 'chain': 43.2}; total 124s; ledger lines now 6322
+=== STEP 5: 9 pass / 0 fail
+BGRUN END rc=0 after 124s

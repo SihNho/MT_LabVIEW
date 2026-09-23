@@ -766,6 +766,15 @@ defect in one second**: `stagekit` had RESTATED the ORIGINAL's path instead of i
 `diag_s2_scaffold.ORIGINAL` (`:81-82`) and restated it wrong, so gate K2 pinned a file that is not there. Fixed;
 the lesson is the one this file already encodes — an identity restated in a second place is an untested assumption.
 
+## Connectivity-map STEP 5 — per-item Jev menus over the wiki graph (built 2026-09-23, no LabVIEW)
+
+| surface | what it is | measured |
+|---|---|---|
+| `tools/jev_candidates.py` `load(key)` · `candidates(G, intent)` · `scope()` · `map_key()` | PYTHON ONLY: every legal (source, sink) terminal pair for an intent `{src, dst, hints, replace}`; filters = direction, sink free (wire 0 or a no-source half-wire, or `replace`), not two frames of one case; columns = scope (same/nested/cousins/unknown + borders), type (wiki `type` is always "" → unknown), cycle (reach4 over-approx). Ends: uid, `{"structure": uid}` (HEURISTIC tunnel group), `{"subvi": name}`. Diagram tree from single-object tunnels (115 parent edges on the bed) | bed load 0.13 s; the 11 M3a-4 intents: 10 give 0 pairs with `replace=False`, w7337 gives 1 |
+| `tools/jev_pairs.py` `ask_pair` / `ask_op` / `ask_risk` / `decide()` / `write_record()` | PAIR noul per candidate, code takes the best (act ≥ threshold AND < 2 above 0.70, else `llm`); OP choice ≤ 3 from `OP_MENU` by row classes (CT sink → `wire_indicators`; FSIT sink → `fs_inner_tunnel_connect`; shift register end → `wire_sr`; always `connect_nested`, `connect_from_wire`); RISK noul over vigraph effective sources (proceed only at p ≤ threshold). Thresholds read from `tools/bench/jev_menu_thresholds.json` | PAIR 0.898 / Brier 0.075, acts ≥ 0.70 · OP 0.55 flag only · RISK 0.571 flag only (`tools/bench/jev_menus_step5.log`) |
+| `tools/jev_chain.py` `build_chain()` · `true_next()` · `direct_successors()` | layer 1: "is subVI X the next link after Y toward Z?" one candidate at a time over the subVIs of the Y diagram's scope; ground truth `true_next` from the graph (direct subVI successor that reaches Z) | CHAIN 0.807 / Brier 0.128, recall 2/13 |
+| `tools/bench/decision_<stage>.json` | the record step 6 reads: intents, every candidate (keys = node uid + terminal name), per row `pair_p, op, op_p, risk_p, action (wire/llm/skip), decided_by (jev/python), evidence`, `jev_calls`, cost | `decision_m3a4.json`: 10 skip / 1 llm / 0 wire, 15 calls, 8.5 s |
+
 ## The rule this file encodes
 
 Before a plan depends on a capability, it must name **where that capability was last exercised**. If the answer is
