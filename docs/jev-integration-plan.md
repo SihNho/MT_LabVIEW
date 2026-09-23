@@ -33,6 +33,7 @@ supersedes: []
 | 7 | **Pre-decided 충돌 검사** — doc_ingest 보조 | Sonnet ingest | "두 항목이 모순인가" (noul) | 항목 쌍 | ≥0.7 → ingest에 쌍 목록 전달 | ingest 정확도 | 항목 쌍 표본 40 | 나중 |
 | 8 | **회고 slug 검증** — `violations.py` | 파일 파싱 | "본문에 이 slug의 근거가 있나" (noul) | 회고 본문 + slug | ≤0.3 → 집계에서 제외하고 표시 | 근거 없는 slug로 인한 장치 요구 | 회고 30건 | 나중 |
 | 9 | 계획 단계 통과 기준의 검증 가능성 | 없음 | 3택: 기계 측정 / 파일 존재 / 모호 (choice) | 기준 문장 | "모호"는 계획으로 반송 | 나중에 드러나는 기준 누락 | 단계표 문장 40 | 나중 |
+| 10 | **장치 가치 조사** — `tools/jev_device_value.py` (사용자 2026-09-24 03:3x "만들도록 해") | 판단 세션이 장치 필요성을 서술로 판단 | 항목마다 3택: prevented / reduced / unrelated (choice, 5회 합의) | 장치 한 문장 + 회고 VIOLATION·FINDINGS 문단 + 실패 로그 첫 실패 줄 (604항목) | loss_min·loss_usd 합계(reduced는 ½) → 빌드 전 기대 절감 | 쓸모없는 장치 빌드 방지 | **완료** 38항목×2장치(`tools/bench/jev_device_value_labels.json`, 실 31 + 합성 7, Jev 호출 전 라벨): **(a) 0.816(실 0.806) · (b) 0.737(실 0.742)**; `reduced` 0/5·0/3 — 한 번도 맞히지 못함; 위험 방향(unrelated→prevented) a 2건 · b 5건 | **보조만**(0.85 미달) — 판정·합계는 참고치, 빌드 결정의 근거로 쓰지 않음 |
 
 ## 넣지 않는 곳
 
@@ -138,3 +139,30 @@ ladder **21/0**, guard_bash **11/0**. 이번 실행의 Jev 비용은 **$0.0151**
 어떤 실패도 침묵으로 처리). 자리: `stagekit.Stage.plan_rows`/`_op`(#5) · `audit_cycle` C8(#7) · `guard_peer.gaterow_advisory`(#2).
 비용은 셋 다 상한이 있다 — 행 검사 60초, 모순 검사 신규 항목 낀 쌍만(최대 40), 게이트 행 로그 개정본당 1회.
 자체시험 `tools/bench/jev_wave4_selftest.py` → `tools/bench/jev_wave4_selftest.log` **45/0, BGRUN END rc=0 after 4s**(망 미사용, 전부 stub).
+
+## Device value
+
+사용자 2026-09-24 03:3x: 같은 지적이 반복되는지만이 아니라 **장치가 얼마만큼의 성능을 낼지**를 확인하자. 도구: `tools/jev_device_value.py`
+(표 10번). 말뭉치 = 모든 회고의 `VIOLATION: … | loss_min= | loss_usd=` 줄(앞 700자 근거와 함께)과 `## Findings` 문단 + 마지막 실행이
+`rc≠0`/`TIMEOUT`인 bgrun 로그의 첫 실패 줄(`cycle_runner.py`의 정규식·장부 제외 규칙 그대로). 2026-09-24 기준 604항목(위반 58 · 발견
+308 · 로그 238). 항목당 손실: 위반 = 그 줄의 수치, 로그 = 실패한 실행 자체의 벽시계, 발견 = 없음.
+
+- **빌드 전 기대 절감** = prevented 항목의 loss 합 + reduced 항목의 ½. `--device "<문장>"` → `tools/bench/device_value_<slug>.json`.
+- **빌드 후 실현 절감** = 같은 메뉴를 빌드 날짜 이후 항목에만 돌린 결과(`--after <날짜>`)와 비교: 하루당 기대 손실(pre) − 하루당
+  기대 손실(post). 이전 json이 있으면 둘 다 찍는다.
+- **제안하는 결정 규칙(판단 세션이 채택할 때까지 제안일 뿐)**: 기대 절감(loss_min) ≥ 추정 빌드 시간이면 만든다; 회고는 실현 절감이
+  기대의 절반 미만인 장치를 지적한다.
+
+**첫 측정(2026-09-24, 6,420 호출 · 입력 4.28 M 토큰 ≈ $0.18, 2차 #3~#7 기록의 토큰당 단가로 환산):**
+
+| 장치 | prevented / reduced / unrelated | 기대 loss_min / loss_usd | p≥0.80만 | 로그 |
+|---|---|---|---|---|
+| (a) 패널 지시기/제어기 → 다이어그램 소유 단자(i·조건 단자) 배선 동사 | 8 / 0 / 596 | **34.4 분 / $3.80** (18일, 1.91 분/일) | 0건 | `tools/bench/device_value_a.log` |
+| (b) `Not Equal?`·`Select` 생성기 | 54 / 3 / 547 | **115.4 분 / $7.08** (6.41 분/일) | 8건, loss 0 | `tools/bench/device_value_b.log` |
+
+**이 수치를 그대로 믿으면 안 된다.** 라벨 세트에서 `reduced`를 한 번도 맞히지 못했고, (b)는 위험 방향(unrelated→prevented) 5/30이다.
+(b)의 prevented 중 손실 상위 14건과 p≥0.80인 8건을 눈으로 확인했더니 `Not Equal?`·`Select`와 관련된 것이 **한 건도 없었다**
+(`device-failed` 위반, 비용 파서, 모터 게이트, 정지 기록 게이트 등). 손실이 붙은 건은 p 0.41~0.67이다 —
+즉 (b)의 115분은 **과대계상**이다. (a)의 34분도 p<0.70인 8건의 합이다. 이 메뉴는 0.85 미달이므로 보조 신호에 머문다. 개선 후보(판단
+세션 결정): 상태에 장치가 "하지 않는 것"을 한 줄 추가, `p≥0.70`만 합산, `reduced` 기준을 "같은 원인의 일부"로 좁히기 — 셋 모두 질문
+변경이므로 새 라벨 세트로 다시 재야 한다(현 세트는 이 질문에 대해서만 held-out).
