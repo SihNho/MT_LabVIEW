@@ -301,6 +301,19 @@ def failed_recipes(bench, t_start, t_end):
     return out
 
 
+def git_commit_cycle(n, runner_log):
+    """Commit everything the cycle left in the tree (2026-09-24: cycles 68/69 ended with 129 uncommitted files;
+    neither the runner nor the session prompt ever committed, so the chat had to). Never fails the cycle."""
+    try:
+        subprocess.run(["git", "add", "-A"], cwd=ROOT, timeout=120, capture_output=True)
+        msg = "Cycle %d: session outputs (runner auto-commit)\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>" % n
+        r = subprocess.run(["git", "commit", "-q", "-m", msg], cwd=ROOT, timeout=120, capture_output=True, text=True)
+        log_line(runner_log, "GIT | %s | cycle %d | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), n,
+                                                          "committed" if r.returncode == 0 else "nothing to commit / rc=%d" % r.returncode))
+    except Exception as e:  # noqa
+        log_line(runner_log, "GIT | cycle %d | commit failed: %s" % (n, e))
+
+
 RETRO_START_RE = re.compile(r"^BGRUN START .*?retrospective\.py --cycle (\S+)", re.M)
 
 
@@ -555,6 +568,7 @@ def main():
 
         env = result_json(fresh)
         land_retrospective(bench, runner_log)
+        git_commit_cycle(n, runner_log)
         # MOTOR LIMITS OFF at cycle end, verified by readback (user 2026-09-23). Runs whatever the session's exit
         # was; a release that cannot be verified stops the runner and is written into STATUS, because limits left
         # ON silently are exactly what happened between 2026-09-18 and 2026-09-23.
