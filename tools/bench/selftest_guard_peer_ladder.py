@@ -259,11 +259,11 @@ def main():
 
         # --- L8 just below the threshold
         _clear_cache()
-        ls, cs = LadderStub("our-script-bug", 0.79), CoversStub(0.02)
+        ls, cs = LadderStub("our-script-bug", jev_gate.LADDER_P - 0.01), CoversStub(0.02)
         jev_gate.ladder_classify, jev_gate.covers_failure = ls, cs
         rc, err = run_main(cmd, capture=True)
-        gate(rc == 2, "L8 our-script-bug at p=0.79 is BELOW LADDER_P (0.80) -> no allow", "returned %s" % rc)
-        gate("below 0.80: old path" in read(jev_gate.GATE_LOG),
+        gate(rc == 2, "L8 our-script-bug at just below LADDER_P -> no allow", "returned %s" % rc)
+        gate("below %.2f: old path" % jev_gate.LADDER_P in read(jev_gate.GATE_LOG),
              "L8b and the abstention is still recorded in jev_gate.log")
 
         # --- L9 the exemptions are untouched

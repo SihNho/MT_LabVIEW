@@ -307,7 +307,7 @@ def jev_discharge(log_path, failure_text, n=N_RECENT_REVIEWS, before=None, write
 #
 # ACTS ONLY AT p >= LADDER_P on the CONSENSUS mean of jev.samples() asks. No key, an error, an unknown band or
 # ANY exception => the old path, byte for byte.
-LADDER_P = 0.80
+LADDER_P = 0.65  # judgement 2026-09-24 04:2x: 0.80/0.70 released 0 of 12 labelled script bugs; 0.65 releases 4/12 with 0 wrong releases, nearest true new-problem p=0.532 (tools/bench/jev_ladder_remeasure.log). Safety net = material failure budget 2. Was 0.80.
 LADDER_CLASSES = ["our-script-bug", "already-reviewed-class", "new-problem"]
 LADDER_ALLOWED = os.path.join(HERE, "jev_ladder_allowed.jsonl")
 LADDER_Q = {
