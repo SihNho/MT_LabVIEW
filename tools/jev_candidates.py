@@ -222,10 +222,15 @@ def _reaches(G, a_node, b_node):
 
 def term_row(G, key):
     r = G["rows"][key]
-    return {"key": key, "uid": r["node"], "term": r["term_name"], "term_uid": r["term_uid"],
-            "term_class": r["term_class"], "owner_class": G["cls"].get(r["node"]),
-            "diagram": int(r.get("frame_diagram") or 0), "wire_uid": r["wire_uid"],
-            "subvi": G["subvi_name"].get(r["node"])}
+    out = {"key": key, "uid": r["node"], "term": r["term_name"], "term_uid": r["term_uid"],
+           "term_class": r["term_class"], "owner_class": G["cls"].get(r["node"]),
+           "diagram": int(r.get("frame_diagram") or 0), "wire_uid": r["wire_uid"],
+           "subvi": G["subvi_name"].get(r["node"])}
+    if out["owner_class"] in TUNNEL_CLS:          # Pre-decided 146: the executor branches off the OUTER feed
+        ow = [G["rows"][k]["wire_uid"] for k in V.terminals(G, node=r["node"])
+              if G["rows"][k]["term_class"] == "OuterTerminal"]
+        out["outer_wire"] = int(ow[0] or 0) if ow else 0
+    return out
 
 
 def candidates(G, intent):

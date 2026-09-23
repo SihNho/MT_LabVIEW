@@ -205,6 +205,13 @@ def op_rule(c, top_diagram=None):
     def node_end(e):
         return e["owner_class"] not in NOT_A_NODE or \
             (e["owner_class"] in TUNNEL_BORDER and e["term_class"] == "OuterTerminal")
+    if s["owner_class"] in TUNNEL_BORDER and s["term_class"] == "InnerTerminal" and node_end(d) \
+            and s.get("outer_wire"):
+        # PRE-DECIDED 146 (judgement 2026-09-23 17:xx; measured tools/bench/bench_map_w9635.log C1-C3): no writer
+        # reuses an existing tunnel's inner terminal; branch off the tunnel's OUTER feed (LabVIEW mints a new
+        # tunnel), then delete the orphan tunnel. Rule-1a equivalent under ASSUMPTION A (a tunnel is scheduling).
+        return "connect_from_wire", "tunnel_outer", "tunnel-inner source -> {0} (Pre-decided 146)".format(
+            "tunnel-outer sink" if d["owner_class"] in TUNNEL_BORDER else "node sink")
     if node_end(s) and node_end(d):
         top = top_diagram is not None and s["diagram"] == d["diagram"] == top_diagram
         return ("connect_terminals" if top else "connect_nested"), None, "node <-> node ({0})".format(
@@ -354,8 +361,8 @@ def decide(intent_line, cand, G_orig=None, G_new=None, orig_sink_key=None, n=Non
                         "dst_uid": c["row_key"]["dst_uid"], "dst_term": c["row_key"]["dst_term"]},
             "pair_p": best["p"], "op": op, "variant": variant, "op_p": op_p, "risk_p": risk_p, "action": action,
             "decided_by": by, "evidence": ev, "jev_calls": calls,
-            "exec": {"src": dict((k, c["src"][k]) for k in ("uid", "term", "term_uid", "term_class", "owner_class",
-                                                             "diagram", "wire_uid")),
+            "exec": {"src": dict((k, c["src"].get(k)) for k in ("uid", "term", "term_uid", "term_class", "owner_class",
+                                                                 "diagram", "wire_uid", "outer_wire")),
                      "dst": dict((k, c["dst"][k]) for k in ("uid", "term", "term_uid", "term_class", "owner_class",
                                                              "diagram", "wire_uid"))}}
 

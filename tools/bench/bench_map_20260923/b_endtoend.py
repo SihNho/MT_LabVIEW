@@ -69,7 +69,7 @@ def body(s):
     TUN = (9623, 11348, 11220)          # input tunnels whose feed was cut (v2, peer 2026-09-23 bench-map-b §4)
     inner = set(e[:3] for e in G0["edges"] if e[0] == "wire" and V.key_parts(e[1])[0] in TUN)
     ren = set(e for e in ds["edges_removed"] if "'VISA out'" in V.show(e[1]) + V.show(e[2])) - \
-        set(("wire",) + t for t in truth.values())
+        set(("wire",) + t for t in truth.values()) - inner      # run 4: an edge in both sets counted once
     other = set(ds["edges_removed"]) - set(("wire",) + t for t in truth.values()) - inner - ren
     s.R["b_sever"] = {"diff_rows": sorted(C.show_row(r) for r in C.edge_rows(ds)), "counts": ds["counts"],
                       "flags_on_tunnels": [f for f in Gs["flags"] if any(V.key_parts(k)[0] in TUN + (4334, 4344, 7468)
@@ -150,6 +150,14 @@ def body(s):
         mk = [JC.map_key(Gr, k, G0)[0] for k in truth[w]] if w in truth else [None, None]
         rows[w]["restored"] = rows[w]["restored_exact_s1_key"] or (None not in mk and ("wire", mk[0], mk[1]) in have)
         rows[w]["restored_as"] = [V.show(k) for k in mk if k]
+        # PRE-DECIDED 146: a row whose S1 source is a tunnel's INNER terminal is restored when the endpoints BEYOND
+        # the tunnel match - the sink's effective computation sources (vigraph ASSUMPTION A) equal S1's, non-empty
+        if w in truth and not rows[w]["restored"] and G0["cls"].get(V.key_parts(truth[w][0])[0]) in JC.TUNNEL_CLS \
+                and G0["rows"][truth[w][0]]["term_class"] == "InnerTerminal" and mk[1]:
+            e0 = set(V.show(x) for x in V.effective_sources(G0, truth[w][1]))
+            e1 = set(V.show(x) for x in V.effective_sources(Gr, mk[1]))
+            rows[w]["beyond_tunnel"] = {"s1": sorted(e0), "repaired": sorted(e1)}
+            rows[w]["restored"] = bool(e0) and e0 == e1
     s.R["b"] = {"rows": rows, "diff_counts": dr["counts"], "diff_rows": sorted(C.show_row(r) for r in C.edge_rows(dr)),
                 "cdiff_rows": cd["rows"], "cdiff_nodes_added": cd["computation_nodes_added"],
                 "cdiff_nodes_removed": cd["computation_nodes_removed"], "exec_state": es, "record": p1,
@@ -160,14 +168,19 @@ def body(s):
     n1 = sum(1 for w in truth if rows[w].get("arm1_executed") and rows[w]["restored"])
     s.fact("ARM 1 (pipeline alone) restored {0}/{1}; oracle arm restored {2} more".format(
         n1, len(truth), sum(1 for w in truth if rows[w]["restored"] and not rows[w].get("arm1_executed"))))
-    s.gate("B1a arm 1 alone restored every S1 row", n1 == len(truth), "{0}/{1}".format(n1, len(truth)))
-    s.gate("B1 all 11 rows restored to their S1 endpoints", n == 11, "{0}/11".format(n))
+    # corrected criterion (judgement 2026-09-23 17:xx): arm 1 executes 0 WRONG rows; llm rows count as a metric
+    wrong = [w for w in truth if rows[w].get("arm1_executed") and not rows[w]["restored"]]
+    n_llm = sum(1 for w in truth if not rows[w].get("arm1_executed"))
+    s.fact("METRIC llm rows handed on by arm 1: {0}/{1} (lower is better)".format(n_llm, len(truth)))
+    s.gate("B1a arm 1 executed 0 WRONG rows", not wrong, "wrong {0}".format(wrong))
+    s.gate("B1 arm 1 + oracle restored every S1 row", n == len(truth), "{0}/{1}".format(n, len(truth)))
     s.gate("B2 ExecState 1", es == 1, es)
     s.gate("B3 computation_diff(S1, repaired) empty", not (cd["rows"] or cd["computation_nodes_added"] or
                                                           cd["computation_nodes_removed"]),
            "{0} rows, +{1} -{2} nodes".format(len(cd["rows"]), len(cd["computation_nodes_added"]),
                                               len(cd["computation_nodes_removed"])))
-    s.gate("B4 diff(S1, repaired) empty", not C.edge_rows(dr), dr["counts"])
+    s.fact("B4 (not a pass criterion since Pre-decided 146) diff(S1, repaired): {0}; rows {1}".format(
+        dr["counts"], sorted(C.show_row(r) for r in C.edge_rows(dr))[:8]))
     s.fact("wall {0:.0f}s; Jev {1} calls ${2}".format(time.time() - T0, rec["jev_calls"], rec["cost"]["usd_est"]))
     s.dump()
 

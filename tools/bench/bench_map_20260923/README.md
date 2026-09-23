@@ -34,7 +34,8 @@ This folder benchmarks steps 1–5 of `docs/connectivity-map-plan.md`: the whole
 | B run 1 (superseded) | same script before the review's fixes | `raw/bench_map_b_run1.log` | `raw/*_run1.json` | 6/9, because of a scorer fault (see B) |
 | **A5c** PAIR margin rule (continuation) | `a5c_margin.py` (offline) | `bench_map_a5c.log` | `a5c_margin.json` | **0 dangerous; PAIR acts** |
 | **w9635 writer probe** (continuation) | `w9635_writers.py` | `bench_map_w9635.log` | `raw/bench_map_w9635.json` | 0/3 cells reuse #9641; 14/3, 176 s |
-| **B run 3** (continuation, current) | `b_endtoend.py` | `bench_map_b3.log` | `raw/bench_map_b_run3.json`, `raw/decision_bench_map_b_run3.json` | **arm 1: 6/9 restored; oracle +2; ExecState 0**, 336 s |
+| **B run 4** (PD146 + corrected criterion, CURRENT) | `b_endtoend.py` | `bench_map_b4.log` | `raw/bench_map_b_run4.json`, `raw/decision_bench_map_b_run4.json` | **PASS 22/0: arm 1 7/9 (0 wrong), oracle +2, ExecState 1, cdiff ∅**, 349 s |
+| B run 3 (superseded) | `b_endtoend.py` | `bench_map_b3.log` | `raw/bench_map_b_run3.json`, `raw/decision_bench_map_b_run3.json` | **arm 1: 6/9 restored; oracle +2; ExecState 0**, 336 s |
 
 Shared inputs are in `common.py`. The tool changes this bench needed are listed at the end.
 
@@ -218,7 +219,45 @@ Time and cost: 336 s wall, 205 Jev calls, about $0.016, **0 LLM turns**.
 
 Compared with run 2, the verdict layer went from acting on 0 of 9 rows to acting on 7 of 9, with 0 wrong. The execution layer ran 6 of 6 correctly. The remaining failures are 1731 and 7337, where p is below 0.75 on the renamed VISA-carrier rows, and 9635, where the op layer has no writer.
 
+## B run 4 (current, 18:3x): Pre-decided 146 and the corrected pass criterion
+
+The judgement session made two decisions at 17:xx:
+1. **Pre-decided 146.** A tunnel-inner source is re-made with `OpConnectFromWire_v0` off the tunnel's OUTER feed; LabVIEW mints a new tunnel, and the orphan tunnel is then deleted. Rows of this class are judged BEYOND the tunnel: the sink's `vigraph.effective_sources` in S1 against the repaired VI.
+2. **Corrected B criterion.** Arm 1 must execute 0 WRONG rows. Arm 1 plus the oracle arm must restore 9/9. ExecState must be 1 and `computation_diff` empty. The number of rows handed to the LLM is a metric, not a failure.
+
+Before this run, the owed hypothesis review of `w9635_writers.py` was dispatched (`archive/peer/2026-09-23-bench-map-w9635-writers.md`, claude/hypothesis, ANSWERED in 570 s, $1.40, verdict *unverified*). The review found a route that could reuse #9641: `Tunnel.Inside Terminals[]` as the `Wire Source`. That route needs a NEW op, a seed swap on a `LeftOutNode` copy, so it was not built. The review's test 1 was folded into this run.
+
+| wire | p (margin) | arm 1 | op | oracle arm | restored |
+|---|---|---|---|---|---|
+| 1731 | 0.572 (0.434) | llm | wire_sr LeftIn | ok | yes (exact) |
+| 1893 | 0.940 (0.232) | wire | connect_nested | – | yes (exact) |
+| 2819 | 0.936 (0.550) | wire | connect_nested | – | yes (exact) |
+| 3947 | 0.950 (0.854) | wire | wire_sr LeftIn | – | yes (exact) |
+| 4833 | 0.948 (0.646) | wire | connect_nested | – | yes (exact) |
+| 7337 | 0.486 (0.486) | llm | wire_sr RightIn | ok | yes (exact) |
+| 7388 | 0.946 (0.606) | wire | connect_nested | – | yes (exact) |
+| 9635 | 0.940 (0.940) | **wire** | **connect_from_wire / tunnel_outer (rule, PD146)** | – | **yes, beyond the tunnel** |
+| 11232 | 0.940 (0.590) | wire | connect_nested | – | yes (exact) |
+
+**Gates: 22 pass / 0 fail.** B0 passes now that the double-count is fixed. B1a: arm 1 made 0 wrong rows. B1: 9/9 restored. **B2: ExecState 1. B3: `computation_diff` ∅.** The LLM-row metric is **2/9** (1731 and 7337, p < 0.75). Wall 349 s, 200 Jev calls ≈ $0.016, 0 LLM turns. Pins and hygiene (H2–H6) all held, and no files were left on disk.
+
+The diff still has 4 rows, which is expected under PD146: #9641 is replaced by the new LoopTunnel **#23006** on both of its edges. Review test 1, read in this run:
+- The new tunnel's IndexMode is 0, the same as #9641's.
+- Its outer net's source is `FlatSequenceInnerTunnel #9655`, the same source as before.
+- **w9649 no longer exists.** The connect re-segmented the feed net, so both tunnels now sit on wire **23273**. This confirms the review's alternative explanation §2 about re-segmentation. It changes no computation.
+- ExecState was 0 both before and after the orphan was deleted, because w11232 was still cut at that point. The final ExecState is 1, so deleting the tunnel left no broken loose end.
+
 ## Tool changes this bench made (additive; existing behaviour kept unless named)
+
+- **Run 4 (18:3x):**
+  - `jev_pairs.op_rule` has the PD146 entry. `decide()` now copies `outer_wire` into `exec.src`.
+  - `jev_candidates.term_row` has `outer_wire` for tunnel terminals.
+  - `stagekit._cfw_row` is the executor for `connect_from_wire` (generic, and `tunnel_outer` with the orphan delete and the new-tunnel read).
+  - `b_endtoend.py`:
+    - the beyond-tunnel restored check;
+    - the corrected B1a/B1 gates;
+    - B4 is now a FACT;
+    - the B0 double-count is fixed.
 
 - **Continuation (18:0x):**
   - `jev_candidates.cut_input_tunnel()` plus a new exclusion reason in `candidates()`. **This changes behaviour:** fewer sink candidates.

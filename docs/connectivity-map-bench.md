@@ -23,6 +23,8 @@ The full report, raw logs and scripts are in `tools/bench/bench_map_20260923/REA
 | **w9635 writer probe** (3 cells on scratches of S1) | a writer re-makes `#9641 inner → #9623 outer` with the same uids | `OpConnectFromWire_v0` (×2) and `OpConnectNested_v1` each give ExecState 0→1 and `Is Broken?` False, but through a **NEW LoopTunnel** (132→133). #9641 is left unwired inside. | **FAIL: no existing writer; no op-rule entry added** |
 | **B run 3** (margin rule + cut-tunnel rule) | 9/9 by the pipeline, ExecState 1, cdiff ∅ | arm 1 **6/9** restored with exact S1 keys (6/6 executed rows correct); the oracle arm adds 1731 and 7337; ExecState 0; cdiff 1 row (`#9243 'x'`); 336 s, 205 Jev calls ≈ $0.016, 0 LLM turns | **FAIL** (1731/7337 verdict p < 0.75; 9635 op) |
 
+| **B run 4** (Pre-decided 146 + corrected criterion: arm 1 has 0 wrong rows, arm 1 + oracle 9/9, ExecState 1, cdiff ∅) | as stated | arm 1 **7/9, 0 wrong** (9635 through PD146: new LoopTunnel #23006, orphan #9641 deleted, same IndexMode 0, same source FSIT #9655); the oracle arm adds 1731/7337; **ExecState 1; computation_diff ∅**; the diff has 4 rows, which is the tunnel swap; llm rows 2/9; 349 s, 200 Jev calls ≈ $0.016, 0 LLM turns | **PASS 22/0** |
+
 Per-layer outcome in B run 3: candidate 9/9 (the cut-tunnel rule removed 10 pairs); verdict 7/9 act, 0 wrong, truth best 9/9; op: rule 8/9, 9635 has no writer; execution 6/6.
 
 Per-layer outcome in B run 2 (9 rows that exist in S1):

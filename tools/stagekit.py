@@ -767,7 +767,59 @@ class Stage(object):
         if op == "fs_inner_tunnel_connect":
             (sd, sn, st), hs = self.address(s, True, objs)
             return {"how": [hs], "result": self.fs_inner_tunnel_connect(int(t["uid"]), sd, sn, st)}
+        if op == "connect_from_wire":
+            return self._cfw_row(d, objs)
         raise RuntimeError("op {0!r} has no executor in from_decision".format(op))
+
+    def _cfw_row(self, d, objs):
+        """`OpConnectFromWire_v0` rows. variant None: the source terminal is on live wire exec.src.wire_uid.
+        variant 'tunnel_outer' (PRE-DECIDED 146, docs/connectivity-map-plan.md; measured
+        tools/bench/bench_map_w9635.log C1): the source is a Selector/Loop tunnel's INNER terminal that no writer
+        can address; branch off the tunnel's OUTER feed wire, taking the terminal the tunnel itself owns on it
+        (index read live by `OpWireSource_v5`, owner uid echoed) - LabVIEW mints a NEW tunnel - then delete the
+        ORPHAN (the old tunnel, only when every inner wire reads 0 via `OpTunnels_v0`). ExecState is read before
+        and after the delete and REPORTED; nothing else is cleaned up."""
+        ex, variant = d["exec"], d.get("variant")
+        s, t = ex["src"], ex["dst"]
+        F = mod("build_opconnectfromwire_v0")
+        w = int(s.get("outer_wire") or 0) if variant == "tunnel_outer" else int(s.get("wire_uid") or 0)
+        want_src = variant != "tunnel_outer"
+        walk = F.wire_source_owner(self.work, w, n=8) if w else []
+        hit = [x for x in walk if x.get("owner_uid") == int(s["uid"]) and bool(x.get("is_source")) == want_src]
+        if len(hit) != 1:
+            raise RuntimeError("w{0}: {1} term(s) owned by #{2} (is_source {3})".format(w, len(hit), s["uid"], want_src))
+        (dd, dn, dt), hd = self.address(t, False, objs)
+        rec = self.connect_from_wire(dd, dn, dt, w, int(hit[0]["i"]))
+        how = [hd, "w{0}[{1}] owned by #{2}".format(w, hit[0]["i"], s["uid"])]
+        out = {"how": how, "result": rec}
+        if variant == "tunnel_outer" and s.get("owner_class") == "LoopTunnel":
+            self.junk_purge("cfw before orphan")      # the connect's stray Invoke, before delete re-marks the census
+            cls, uid = "LoopTunnel", int(s["uid"])
+            li = self.uid_index(cls, uid)
+            tun = g.tunnels(self.work, li) if li is not None else {}
+            # review 2026-09-23 bench-map-w9635-writers test 1: the NEW tunnel's IndexMode + outer net vs the old
+
+            def _new_tunnel():
+                res = rec.get("result")
+                sw = (res[3] or {}).get("UID 2") if isinstance(res, (list, tuple)) and len(res) > 3 else None
+                new = [x for x in (F.wire_source_owner(self.work, int(sw), n=4) if sw else []) if x.get("is_source")]
+                nu = int(new[0]["owner_uid"]) if new else None
+                ni = self.uid_index(cls, nu) if nu else None
+                nt = g.tunnels(self.work, ni) if ni is not None else {}
+                nnet = self.net_sources(nt.get("out_wire"), tag="new tunnel outer") if nt.get("out_wire") else {}
+                return {"uid": nu, "index_mode": nt.get("index_mode"), "out_wire": nt.get("out_wire"),
+                        "out_net_sources": nnet.get("source_owners"), "old_index_mode": tun.get("index_mode"),
+                        "old_out_wire": tun.get("out_wire"), "feed_wire_alive": w in g.uids(self.work, "Wire")}
+            out["new_tunnel"], _e = self.safe("PD146 new-tunnel read", _new_tunnel, {})
+            self.fact("PD146 new tunnel vs old: {0}".format(out["new_tunnel"]))
+            orphan = bool(tun) and tun.get("uid") == uid and not any(tun.get("in_wires") or [1])
+            es0 = self.es("before orphan delete #{0}".format(uid))
+            if orphan:
+                out["orphan_delete"] = self.delete_object(cls, uid, "orphan")
+            out["orphan"] = {"uid": uid, "in_wires": tun.get("in_wires"), "deleted": orphan, "es_before": es0,
+                             "es_after": self.es("after orphan delete #{0}".format(uid))}
+            self.fact("PD146 orphan #{0}: {1}".format(uid, out["orphan"]))
+        return out
 
     # ------------------------------------------------------------------ save
     def save_route(self, exec_state, broken_ok):

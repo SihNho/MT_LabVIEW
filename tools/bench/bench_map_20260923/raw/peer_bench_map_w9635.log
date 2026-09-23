@@ -1,0 +1,67 @@
+BGRUN START 2026-09-23 18:21:34 limit 20.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug bench-map-w9635-writers -TaskFile 'tools/bench/bench_map_20260923/peer_task_w9635.md' -TimeoutSec 900
+OUTCOME: ANSWERED (570s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-23-bench-map-w9635-writers.md
+COST: $1.4036  in 32 / out 13315 / cache-create 99079 / cache-read 1613405  (566s, 25 turn(s))
+--- ANSWER ---
+**Verdict: part (a) of the diagnosis holds for the three calls that ran. Parts (b) and (c) go further than the evidence, and (c) was never measured at all.**
+
+## 1. The strongest reason the claim is wrong
+
+**(b) generalises from the wrong source reference.** None of the three cells ever gave `Terminal.Connect Wire` a reference to #9641's *inner* terminal:
+- C1 used w9649's term [1], which is #9641's outer face.
+- C2 used #9655's source terminal.
+- C3 used the WhileLoop node's border terminal t45, which is again the outer face.
+
+All three sources are outside the loop, so a new tunnel at the border is the expected result. The run did not test "wire the existing inner terminal"; it tested "wire from outside" three times.
+
+The source reference that was never tried is already a known, working technique here:
+- `Tunnel.Inside Terminals[]` 6356000 returns Terminal references (`docs/cycle27-plan.md:2890-2891`, `docs/NAMES.md:1125`).
+- `OpWireSR_*` `LeftOutNode` already passes a Tunnel-subclass **inside** terminal as the `Wire Source` of `Connect Wire` into a body-node sink, measured at ExecState 0→1 (`docs/toolkit-capabilities.md:54`, `docs/stage2-assembly-step-a.md:44-47,84-85`). `LeftShiftRegister` derives from `Tunnel`, and so does `LoopTunnel`. The reach to #9641 by uid is the cast used in `OpTunnelRead_v0` (`docs/toolkit-capabilities.md:72`).
+
+So the honest version of (b) is: *no op on disk combines a LoopTunnel-by-uid seed with Connect Wire.* It is not "no route". The new op would be a seed swap on a writer already proven for this class of terminal. Note that the "dead end" in `docs/cycle27-plan.md:3510` applies only to `FlatSequenceInnerTunnel`, not to `LoopTunnel`.
+
+Forum evidence says the same thing: which terminal is the reference and which is the `Wire Source` changes where LabVIEW routes the wire and whether it re-uses or creates tunnels ([Script connect existing loose wires to case tunnels](https://forums.ni.com/t5/LabVIEW/Script-connect-existing-loose-wires-to-case-tunnels/td-p/4195933), [wiring a pass-through tunnel inside a case](https://forums.ni.com/t5/LabVIEW/LabvVIEW-Scripting-wiring-a-pass-through-tunnel-inside-a-case/td-p/3945608)). Tunnels appear automatically only when the two terminals sit on different diagrams ([Programmatically creating a tunnel](https://forums.ni.com/t5/LabVIEW/Programmatically-creating-a-tunnel-with-LV-scripting/td-p/1830745)). #9641's inner terminal and #9623's outer terminal are both on diagram 639, so no border needs crossing.
+
+**(c) is asserted, not read.** After the writes, the log reads only the inner net. `NET w22997` and `NET w23042` list two owners each: the new tunnel and #9623 (`bench_map_w9635.log:51,85,120`). Nothing after a write reads:
+- the new tunnel's outer face or its feed;
+- #9641 in any form (grep of the log: 9641 appears only at `:28` and `:62`, both before the writes);
+- `IndexMode` of either tunnel (the wiki has no index-mode field for #9641 either).
+
+So "same FSIT #9655 source" and "#9641 left in place with its inner terminal unwired" are inferences written as facts. `ExecState 1` together with `Is Broken? False` shows only that the new tunnel's outer face has *some* legal source.
+
+## 2. An alternative explanation of the same evidence
+
+The connect may have re-segmented the source-side net rather than just branching w9649. In C3 the junk Invoke node that appeared was given uid **9649**, the feed wire's own uid (`:102,112`). In C1 and C2 the junk node got 9205, and 9205 does not appear in the S1 wiki. If uids are unique across GObjects within a VI, 9649 being handed out means w9649 no longer existed under that uid after C3. The outer topology then changed (a new wire and new uids from #9655 to #9641 outer and #23058 outer, or something else) and was never observed.
+
+Two things follow:
+- **The rule-1a equivalence of C3 is unverified**, not merely "only the uid differs".
+- **"LabVIEW always mints a new tunnel" confounds two things**: the side the source reference was on, and LabVIEW's policy on re-using a tunnel. The run cannot separate them.
+
+On indexing: in a While Loop a tunnel created by wiring defaults to non-indexing, and indexing has no effect on a scalar anyway ([how to change tunnel mode using VI scripting](https://forums.ni.com/t5/LabVIEW/How-to-change-tunnel-mode-using-vi-scripting/td-p/3969392) shows the mode is a settable LoopTunnel property). This matters only if `# slices in stack` is an array, or if #9641 had been set to indexing. Neither was read. The lone leftover #9641 (outer wired, inner free) is not a second consumer and is probably harmless, but it is also unverified.
+
+## 3. What would falsify the claim
+
+- Falsifies (a)+(b): `Connect Wire` invoked on the sink terminal (D[43].N[24].t1) with `Wire Source` = `Tunnel(9641).Inside Terminals[0]` produces a wire whose source owner is `LoopTunnel #9641`, with the LoopTunnel count staying at 132.
+- Falsifies (c): after C1, C2 or C3, walking the new tunnel's outer net shows a source other than FSIT #9655, or the IndexMode of the new tunnel differs from #9641's, or #9641's outer is no longer on the #9655 net.
+
+## 4. Cheapest discriminating test
+
+**Test 1 (settles (c) with existing readers, no new op, about 3 minutes).** Re-run cell C1 only and add three reads after the write:
+- `OpTunnels_v0`-style read of LoopTunnel #23014 and #9641: outer wire uid and IndexMode, for each.
+- `OpWireSource_v5` / `net_sources` on the new tunnel's outer wire. Gate: `source_owners == [('FlatSequenceInnerTunnel', 9655)]`.
+- Existence of uid 9649 after the write.
+
+**Test 2 (settles (b), needs one small op).** Take a copy of an existing `OpWireSR_*` `LeftOutNode` writer. Swap its source seed from `Shift Registers[]→Left Registers[]` to the `OpTunnelRead_v0` cast `(uid→Tunnel)→Inside Terminals[0]`. Point it at #9641 with sink = #9623's outer via structure #10407, on a scratch copy. Gate: source owner #9641, 132 LoopTunnels, ExecState 1.
+
+- If test 2 passes, (a) and (b) are refuted and the op-rule entry is a single seed swap.
+- If LabVIEW still mints a new tunnel when given an inner-terminal reference on the same diagram, then (a) is genuinely true, and I would accept it.
+
+What would change my mind on (c): test 1 showing the #9655 source, a matching IndexMode, and w9649 intact.
+
+**Local evidence:** `tools/bench/bench_map_w9635.log:28,47-53,81-87,102-122`; `tools/bench/bench_map_20260923/w9635_writers.py:38-51`; `docs/toolkit-capabilities.md:54,72`; `docs/stage2-assembly-step-a.md:44-47`; `docs/cycle27-plan.md:2890,3510`; `docs/NAMES.md:1125`; `docs/wiki/subvi/D1_s1_copy.json:24844-24853`.
+
+Sources:
+- [Programmatically creating a tunnel with LV scripting – NI Community](https://forums.ni.com/t5/LabVIEW/Programmatically-creating-a-tunnel-with-LV-scripting/td-p/1830745)
+- [Script connect existing loose wires to case tunnels – NI Community](https://forums.ni.com/t5/LabVIEW/Script-connect-existing-loose-wires-to-case-tunnels/td-p/4195933)
+- [LabVIEW Scripting: wiring a pass-through tunnel inside a case structure – NI Community](https://forums.ni.com/t5/LabVIEW/LabvVIEW-Scripting-wiring-a-pass-through-tunnel-inside-a-case/td-p/3945608)
+- [How to change tunnel mode using VI scripting – NI Community](https://forums.ni.com/t5/LabVIEW/How-to-change-tunnel-mode-using-vi-scripting/td-p/3969392)
+BGRUN END rc=0 after 570s
