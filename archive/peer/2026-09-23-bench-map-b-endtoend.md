@@ -127,3 +127,6 @@ with EXACT S1 keys - after w1731 and w7337 were re-wired the carrier's terminals
 settled and the type question does not reach the final VI. Remaining: w9635 (op rule has no entry for a LoopTunnel inner
 source), diff 2 rows, computation_diff 1 row (#9243 'x'), ExecState 0. B0's run-2 gate failed on MY bookkeeping only
 (one edge, #11220 inner -> #11263 'VISA out', counted both as tunnel-inner and as renamed; 'unexplained removed' = []).
+
+JEV-DISCHARGE: bench_map_b3.log (2026-09-23 18:44:47, p=0.868)
+  This failing run was released without a NEW peer review: Jev judged, at the probability shown, that the failure above is the one this review already attacks (tools/bench/jev_gate.py, docs/jev-integration-plan.md row #1). The review itself is the evidence; this line only records which failure was charged to it.
