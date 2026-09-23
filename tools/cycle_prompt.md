@@ -25,6 +25,13 @@ whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding t
 - **A brief states the MEASUREMENT, never the result-dependent ACTION.** "If A removes 1, do X, else do Y" is
   not delegation; it moves the decision into the session that must not make it. Ask for the measurement, get the
   facts back, then decide.
+- **A failed gate is first routed by the Jev ladder, not by you** (user, 2026-09-24 03:5x: the verdict must drive
+  the next action — *advisory-only is not delegation*). The newest `JEV-LADDER` line for that log in
+  `tools/bench/jev_gate.log` ends `NEXT-ACTION:`; the `material` agent reads it first and acts on it
+  (`our-script-bug` → patch + rerun with no review and no judgement turn, failure budget 2 still counting;
+  `already-reviewed-class` → apply the cited review's disposition and rerun; otherwise → hypothesis review owed).
+  You receive it as one table row (log | class p | NEXT-ACTION | what was done | result), not as a log, and spend a
+  judgement turn only on `review owed` rows and on a failure budget that ran out.
 - **Answer from the plan first.** If the plan's `## Pre-decided` section already settles a question, apply it and
   say which line — do not re-open it, and do not ask the user.
 - **Decide** the things only judgement can decide: design, what to accept from a review, rule-1a equivalence,

@@ -119,10 +119,13 @@ def read(p):
 
 
 def _clear_cache():
-    try:
-        os.remove(os.path.join(os.path.dirname(jev_gate.GATE_LOG), "jev_discharge_cache.json"))
-    except OSError:
-        pass
+    # Both caches live beside GATE_LOG (the temp bench here). Every case reuses ONE fake log, so the ladder's
+    # once-per-(log, md5) cache (2026-09-24) must be cleared too, or case L2 would read L1's verdict.
+    for name in ("jev_discharge_cache.json", "jev_ladder_cache.jsonl"):
+        try:
+            os.remove(os.path.join(os.path.dirname(jev_gate.GATE_LOG), name))
+        except OSError:
+            pass
 
 
 def run_main(cmd, capture=False):

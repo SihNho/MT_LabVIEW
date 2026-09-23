@@ -55,6 +55,21 @@ If the same build or diagnostic fails twice, **stop**. Write the two logs' failu
 competing explanations into your summary and return. Do not grind a third attempt — that is the judgement
 session's call.
 
+## After ANY failed gate, read the Jev ladder's NEXT-ACTION first — and do it
+
+The review ladder's verdict drives the next step; it does not only lift the review gate (user, 2026-09-24 03:5x,
+on "스크립트 버그임이 Jev로 밝혀지면 판단세션에서는 그에 맞춰 동작을 바꾸는건지"; memory principle *advisory-only is
+not delegation*). Before diagnosing, read the NEWEST `JEV-LADDER` line for that log in `tools/bench/jev_gate.log`
+(`grep "JEV-LADDER | .* | <log name> |" tools/bench/jev_gate.log | tail -1`) and follow its `NEXT-ACTION:` —
+this is a user-decided rule, not a result-dependent action taken in your session:
+- `patch the script and rerun; no review, no judgement turn` → fix our own file and rerun; the failure budget of 2
+  still counts the reruns.
+- `apply the cited review's disposition (<path>) and rerun` → do what that review's `## What was done with it`
+  section says; no new diagnosis.
+- `hypothesis review owed (old path)` (or no ladder line) → the old path: dispatch the review, then report.
+Report it to the caller as ONE table row in FACTS — `log | ladder class p | NEXT-ACTION | what you did | result` —
+never as a log excerpt.
+
 ## If the brief contains result-dependent actions, do not take them
 
 If the brief or the plan's `## Pre-decided` section already answers a question, apply it and say which line;

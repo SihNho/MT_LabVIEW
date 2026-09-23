@@ -45,6 +45,10 @@ every failing gate row is the gate's own expectation being wrong) releases the b
 tools/bench/jev_ladder_allowed.jsonl; `already-reviewed-class` hands the decision to the ordinary discharge, which
 can still only cite an exchange that passed review_quality(); `new-problem` changes nothing. It acts only at
 p >= 0.80 on the consensus mean of five asks. See main().
+Since 2026-09-24 (user, 03:5x) the verdict DRIVES the next action: every JEV-LADDER line and every allow/refuse
+message ends `NEXT-ACTION: ...` (script bug -> patch and rerun, no review, no judgement turn; reviewed class ->
+apply the cited review's disposition; otherwise -> hypothesis review owed), and the verdict is computed once per
+(log path, log md5) - tools/bench/jev_ladder_cache.jsonl.
 
 DELIBERATE LIMITS, stated so nobody mistakes this for more than it is:
   * It gates the NEXT build, not the analysis in between - reading logs, writing docs and dispatching the peer
@@ -622,7 +626,13 @@ def main():
         ladder_allow, ladder_line = jev_gate.jev_ladder(path, text)
     except Exception:                    # noqa: BLE001 - a gate must degrade to its old behaviour, never wedge
         ladder_allow, ladder_line = None, None
+    # NEXT-ACTION (user 2026-09-24 03:5x): the verdict DRIVES the next step, it does not only lift the gate. Every
+    # ladder line ends `| NEXT-ACTION: ...`; the same text is written to stderr on allow AND on refuse, and the
+    # newest JEV-LADDER line for the log in tools/bench/jev_gate.log is the one sessions read first. Exit codes
+    # are unchanged.
     if ladder_allow is True:
+        if ladder_line:
+            sys.stderr.write(ladder_line + "\n")
         return 0
     if ladder_allow is False:
         allow, jev_line = False, ladder_line          # the discharge already ran inside the ladder
@@ -633,7 +643,13 @@ def main():
         except Exception:                # noqa: BLE001
             allow, jev_line = False, None
     if allow:
+        try:
+            sys.stderr.write(jev_gate.ladder_after_discharge(path, jev_line) + "\n")
+        except Exception:                # noqa: BLE001 - reporting only; the allow stands
+            pass
         return 0
+    if ladder_line and ladder_line != jev_line:
+        sys.stderr.write(ladder_line + "\n")
     if jev_line:
         sys.stderr.write(jev_line + "\n"
                          "  (advisory only: below the discharge threshold, so the block below stands.)\n\n")
@@ -662,7 +678,8 @@ def main():
         "A `-Agent claude` exchange in ANY OTHER role is this project's rule/consistency audit - dispatch it too if\n"
         "it helps, but it cannot discharge a failed prediction on its own (user's decision, 2026-09-15).\n"
         "Reading logs, writing docs and dispatching the peer are never blocked. Set PEER_GUARD_OFF=1 only inside\n"
-        "benchmark cells.\n")
+        "benchmark cells.\n"
+        "NEXT-ACTION: hypothesis review owed (old path)\n")
     return 2
 
 

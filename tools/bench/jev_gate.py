@@ -365,61 +365,210 @@ def ladder_allowed_line(log_name, cls, p, ts):
         pass
 
 
+# ------------------------------------------------------------------ THE VERDICT DRIVES THE NEXT ACTION (2026-09-24)
+# User, 2026-09-24 03:5x, answering "스크립트 버그임이 Jev로 밝혀지면 판단세션에서는 그에 맞춰 동작을 바꾸는건지" (until
+# then it did not: the verdict only lifted the review gate). Memory principle "advisory-only is not delegation":
+# every JEV-LADDER line and every guard_peer allow/refuse message now carries an explicit NEXT-ACTION, and
+# .claude/agents/material.md + tools/cycle_prompt.md tell sessions to read it FIRST after a failed gate.
+NEXT_ACTION_SCRIPT_BUG = "patch the script and rerun; no review, no judgement turn; failure budget 2 still counts"
+NEXT_ACTION_REVIEWED = "apply the cited review's disposition (%s) and rerun; no new diagnosis"
+NEXT_ACTION_REVIEW_OWED = "hypothesis review owed (old path)"
+_CITED_RE = re.compile(r"covered by (\S+?\.md)")
+
+
+def cited_review(discharge_line):
+    """archive/peer/<name>.md named by a JEV-DISCHARGE line (fresh or cached), or None."""
+    m = _CITED_RE.search(discharge_line or "")
+    return ("archive/peer/" + m.group(1)) if m else None
+
+
+def next_action(cls, allowed, discharge_line=None):
+    """The NEXT-ACTION text for one gate outcome. `allowed` is the gate's own decision, never the class alone:
+    an already-reviewed-class that no citable review covers still owes the review."""
+    if allowed and cls == "our-script-bug":
+        return NEXT_ACTION_SCRIPT_BUG
+    if allowed:
+        return NEXT_ACTION_REVIEWED % (cited_review(discharge_line) or "the review named in the JEV-DISCHARGE line")
+    return NEXT_ACTION_REVIEW_OWED
+
+
+def with_next(line, action):
+    return "%s | NEXT-ACTION: %s" % (line, action)
+
+
+# ------------------------------------------------------------------ ONCE PER (log, md5) - the ladder cache
+# jev_gate.log showed stage_d1_m4a.log evaluated 5x in 4 min (2026-09-24 00:31-00:34) and flipping between
+# our-script-bug 0.68-0.70 and new-problem 0.83 on the SAME bytes: every Bash call while a failing log is newest
+# re-asked Jev. A verdict is now computed once per (log path, log md5) and reused; a log that is appended to (a new
+# run) has a new md5 and is evaluated afresh. The cache lives BESIDE GATE_LOG, like the discharge cache, so a
+# measurement or self-test that redirects GATE_LOG never reads or writes the live one. Only write=True calls use it.
+LADDER_CACHE_NAME = "jev_ladder_cache.jsonl"
+
+
+def ladder_cache_path():
+    return os.path.join(os.path.dirname(GATE_LOG), LADDER_CACHE_NAME)
+
+
+def _log_key(log_path):
+    ap = os.path.abspath(log_path)
+    try:
+        rel = os.path.relpath(ap, ROOT)
+        if not rel.startswith(".."):
+            ap = rel
+    except ValueError:
+        pass
+    return ap.replace("\\", "/").lower()
+
+
+def _md5(path):
+    import hashlib
+    h = hashlib.md5()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def ladder_cache_get(key, md5):
+    """The stored verdict for (key, md5), newest wins; None when absent or unreadable."""
+    hit = None
+    try:
+        with open(ladder_cache_path(), "r", encoding="utf-8") as fh:
+            for ln in fh:
+                try:
+                    rec = json.loads(ln)
+                except ValueError:
+                    continue
+                if rec.get("key") == key and rec.get("md5") == md5:
+                    hit = rec
+    except OSError:
+        return None
+    return hit
+
+
+def ladder_cache_put(rec):
+    try:
+        with open(ladder_cache_path(), "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(rec) + "\n")
+    except OSError:
+        pass
+
+
+def newest_ladder_line(log_name):
+    """The newest JEV-LADDER line in GATE_LOG for this log basename (tail only), or None."""
+    try:
+        with open(GATE_LOG, "rb") as fh:
+            fh.seek(0, 2)
+            size = fh.tell()
+            fh.seek(max(0, size - 400000))
+            tail = fh.read().decode("utf-8", "replace")
+    except OSError:
+        return None
+    last = None
+    for ln in tail.splitlines():
+        if ln.startswith("JEV-LADDER |") and (" | %s | " % log_name) in ln:
+            last = ln
+    return last
+
+
+def ladder_after_discharge(log_path, discharge_line, write=True):
+    """guard_peer calls this when the ladder did NOT act and the OLD-PATH discharge then allowed: the newest
+    JEV-LADDER line for the log would otherwise still say 'review owed'. Appends one line (deduplicated against
+    the newest line for the same log, so a cached discharge does not add a line per Bash call); returns it."""
+    base = os.path.basename(log_path)
+    action = next_action("already-reviewed-class", True, discharge_line)
+    line = with_next("JEV-LADDER | %s | %s | old-path discharge | ALLOW via discharge" % (
+        time.strftime("%Y-%m-%d %H:%M:%S"), base), action)
+    if write:
+        prev = newest_ladder_line(base) or ""
+        if not (prev.endswith("NEXT-ACTION: " + action) and "old-path discharge" in prev):
+            gate_log(line)
+    return line
+
+
 def jev_ladder(log_path, failure_text, n=N_RECENT_REVIEWS, before=None, write=True, gate_rows=None):
     """THE LADDER CALL (tools/hooks/guard_peer.py), run BEFORE the ordinary discharge.
 
     Returns (allow, line):
       allow True  -> release the build now (the line says on which class and probability).
       allow False -> block now; the ordinary discharge has ALREADY been consulted and said no.
-      allow None  -> the ladder did not act; the caller runs the old path unchanged.
+      allow None  -> the ladder did not act; the caller runs the old path unchanged. `line` is then None (no
+                     verdict) or the logged JEV-LADDER line (below band / new-problem), which says
+                     `NEXT-ACTION: hypothesis review owed (old path)`.
+
+    Every returned line ends `| NEXT-ACTION: <what the session does next>` (user 2026-09-24).
+    With write=True the verdict is computed ONCE per (log path, log md5) and reused from
+    tools/bench/jev_ladder_cache.jsonl; a cache hit writes nothing to jev_gate.log or the allowed jsonl.
 
     NEVER RAISES."""
     try:
         if not jev.get_key():
             return None, None
-        fs = jev.summarise_failure(log_path) or jev.normalise(failure_text or "")[:3200]
-        if not fs:
-            return None, None
-        if gate_rows is None:
-            try:
-                sys.path.insert(0, TOOLS)
-                import jev_gaterow
-                gate_rows = jev_gaterow.verdicts_for(log_path)
-            except Exception:                   # noqa: BLE001 - an advisory input, never a precondition
-                gate_rows = ""
-        recent_paths = recent_adversary_reviews(n, before=before)
-        recent = "\n".join("- %s" % os.path.basename(p) for p in recent_paths)[:1200]
-        cls, p, spread = ladder_classify(fs, gate_rows or "", recent)
-        if cls is None or p is None:
-            return None, None
-        ts = time.strftime("%Y-%m-%d %H:%M:%S")
-        base = os.path.basename(log_path)
-        if p < LADDER_P:
-            if write:
-                gate_log("JEV-LADDER | %s | %s | %s p=%.3f | below %.2f: old path" % (
-                    ts, base, cls, p, LADDER_P))
-            return None, None
-        if cls == "our-script-bug":
-            line = "JEV-LADDER | %s | %s | our-script-bug p=%.3f | ALLOW (no machine claim to attack)" % (
-                ts, base, p)
-            if write:
-                gate_log(line)
-                ladder_allowed_line(base, cls, p, ts)
-            return True, line
-        if cls == "already-reviewed-class":
-            allow, dline = jev_discharge(log_path, failure_text, n=n, before=before, write=write)
-            line = "JEV-LADDER | %s | %s | already-reviewed-class p=%.3f | %s" % (
-                ts, base, p, "ALLOW via discharge" if allow else "BLOCK (no citable review)")
-            if write:
-                gate_log(line)
-            if allow:
-                return True, (dline or line)
-            return False, (dline or line)
+        key = md5 = None
         if write:
-            gate_log("JEV-LADDER | %s | %s | new-problem p=%.3f | BLOCK (review owed)" % (ts, base, p))
-        return None, None                       # the old path runs, exactly as before
+            try:
+                key, md5 = _log_key(log_path), _md5(log_path)
+                hit = ladder_cache_get(key, md5)
+            except Exception:                   # noqa: BLE001 - an unreadable cache means "evaluate", never wedge
+                hit = None
+            if hit is not None:
+                return hit.get("allow"), hit.get("line")
+        allow, line = _ladder_eval(log_path, failure_text, n=n, before=before, write=write, gate_rows=gate_rows)
+        if write and key and md5 and line is not None:
+            ladder_cache_put({"ts": time.strftime("%Y-%m-%d %H:%M:%S"), "key": key, "md5": md5,
+                              "allow": allow, "line": line})
+        return allow, line
     except Exception:                           # noqa: BLE001 - a gate must degrade to its old behaviour
         return None, None
+
+
+def _ladder_eval(log_path, failure_text, n=N_RECENT_REVIEWS, before=None, write=True, gate_rows=None):
+    """One real evaluation (Jev calls). Same return contract as jev_ladder; may raise (jev_ladder catches)."""
+    fs = jev.summarise_failure(log_path) or jev.normalise(failure_text or "")[:3200]
+    if not fs:
+        return None, None
+    if gate_rows is None:
+        try:
+            sys.path.insert(0, TOOLS)
+            import jev_gaterow
+            gate_rows = jev_gaterow.verdicts_for(log_path)
+        except Exception:                   # noqa: BLE001 - an advisory input, never a precondition
+            gate_rows = ""
+    recent_paths = recent_adversary_reviews(n, before=before)
+    recent = "\n".join("- %s" % os.path.basename(p) for p in recent_paths)[:1200]
+    cls, p, spread = ladder_classify(fs, gate_rows or "", recent)
+    if cls is None or p is None:
+        return None, None
+    ts = time.strftime("%Y-%m-%d %H:%M:%S")
+    base = os.path.basename(log_path)
+    if p < LADDER_P:
+        line = with_next("JEV-LADDER | %s | %s | %s p=%.3f | below %.2f: old path" % (
+            ts, base, cls, p, LADDER_P), NEXT_ACTION_REVIEW_OWED)
+        if write:
+            gate_log(line)
+        return None, line
+    if cls == "our-script-bug":
+        line = with_next("JEV-LADDER | %s | %s | our-script-bug p=%.3f | ALLOW (no machine claim to attack)" % (
+            ts, base, p), NEXT_ACTION_SCRIPT_BUG)
+        if write:
+            gate_log(line)
+            ladder_allowed_line(base, cls, p, ts)
+        return True, line
+    if cls == "already-reviewed-class":
+        allow, dline = jev_discharge(log_path, failure_text, n=n, before=before, write=write)
+        action = next_action(cls, bool(allow), dline)
+        line = with_next("JEV-LADDER | %s | %s | already-reviewed-class p=%.3f | %s" % (
+            ts, base, p, "ALLOW via discharge" if allow else "BLOCK (no citable review)"), action)
+        if write:
+            gate_log(line)
+        if allow:
+            return True, with_next(dline or line, action) if dline else line
+        return False, with_next(dline, action) if dline else line
+    line = with_next("JEV-LADDER | %s | %s | new-problem p=%.3f | BLOCK (review owed)" % (ts, base, p),
+                     NEXT_ACTION_REVIEW_OWED)
+    if write:
+        gate_log(line)
+    return None, line                           # the old path runs, exactly as before
 
 
 def jev_priorart_dup(step_sentence, n=N_RECENT_REVIEWS, write=True):
