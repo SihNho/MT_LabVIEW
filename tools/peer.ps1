@@ -430,7 +430,7 @@ if ($Agent -eq 'codex') {
     # hypothesis moves max -> xhigh (max = +4 index points at 3.3x cost, news.hada.io/topic?id=34142).
     if ($Role -eq 'priorart') {
         $usedModel = if ($Model) { $Model } else { 'claude-opus-5-5' }
-        $usedEffort = if ($Effort) { $Effort } else { 'high' }
+        $usedEffort = if ($Effort) { $Effort } else { 'medium' }
     } elseif ($Role -eq 'hypothesis') {
         # OPUS at effort MAX, not high (user, 2026-09-17). This role replaces codex on the one review layer where
         # being wrong costs a whole rebuild, so it gets the ceiling.

@@ -400,7 +400,7 @@ def main():
                          "cycle in progress always finishes (user, 2026-09-21: never cut a cycle mid-way). Pair it with "
                          "a bgrun cap >= budget + the longest cycle, so bgrun's kill is only the last resort.")
     ap.add_argument("--model", default="claude-opus-5-5")  # user 2026-09-23: Opus 5.5 pinned by id (alias 'opus' resolved to claude-opus-5)
-    ap.add_argument("--effort", default="high")  # user 2026-09-23: high (max = +4 pts at 3.3x cost, news.hada.io/topic?id=34142); was max since 2026-09-17
+    ap.add_argument("--effort", default="medium")  # user 2026-09-23 14:xx: medium on Opus 5.5 (its medium ~= Opus 5 max on the index); earlier today high (max = +4 pts at 3.3x cost, news.hada.io/topic?id=34142); was max since 2026-09-17
     ap.add_argument("--permission-mode", default="acceptEdits")
     ap.add_argument("--ff-model", default=FF_MODEL, help="firefighter cycle model (user 2026-09-18: fable)")
     ap.add_argument("--firefighter", default="", metavar="RECIPE",
