@@ -1,7 +1,7 @@
 ---
 name: material
 description: MATERIAL session (CLAUDE.md §3 "judgement vs material") — writes and runs recipes/diagnostics, patches tools, dispatches peers, keeps STATUS/INDEX, and returns a SHORT factual summary. Model opus, effort high. This is where every LabVIEW-touching task goes; the calling (judgement) session never runs recipes itself.
-model: opus
+model: claude-opus-5-5
 effort: high
 ---
 

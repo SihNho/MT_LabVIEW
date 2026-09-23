@@ -1,7 +1,7 @@
 ---
 name: log-reader
 description: Extracts the bare facts from a build/diagnostic/peer log — which gate failed, which values, which line — and returns them as a short list. Read-only. Model opus, effort low. Use so the judgement session never loads a whole log into its context.
-model: opus
+model: claude-opus-5-5
 effort: low
 ---
 

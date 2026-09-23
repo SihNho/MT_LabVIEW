@@ -426,14 +426,16 @@ if ($Agent -eq 'codex') {
     # `priorart`: OPUS at high effort (user, 2026-09-15). That job reads the logs, the code and 345 archive files
     # looking for what we already did; a shallow read misses exactly what it exists to catch, and one missed hit
     # costs a whole build cycle - the first run found four defects, one a repeat of a recorded failure.
+    # 2026-09-23 (user): Opus 5.5 pinned by id for priorart and hypothesis; the alias 'opus' resolved to claude-opus-5.
+    # hypothesis moves max -> xhigh (max = +4 index points at 3.3x cost, news.hada.io/topic?id=34142).
     if ($Role -eq 'priorart') {
-        $usedModel = if ($Model) { $Model } else { 'opus' }
+        $usedModel = if ($Model) { $Model } else { 'claude-opus-5-5' }
         $usedEffort = if ($Effort) { $Effort } else { 'high' }
     } elseif ($Role -eq 'hypothesis') {
         # OPUS at effort MAX, not high (user, 2026-09-17). This role replaces codex on the one review layer where
         # being wrong costs a whole rebuild, so it gets the ceiling.
-        $usedModel = if ($Model) { $Model } else { 'opus' }
-        $usedEffort = if ($Effort) { $Effort } else { 'max' }
+        $usedModel = if ($Model) { $Model } else { 'claude-opus-5-5' }
+        $usedEffort = if ($Effort) { $Effort } else { 'xhigh' }
     } elseif ($Role -eq 'fact' -or $Role -eq 'prose') {
         # FABLE at LOW (user, 2026-09-18). A pure fact lookup and a report written from a fact list are the two
         # jobs where the cell's own reasoning is cheapest to buy - the cost that mattered was the fixed context

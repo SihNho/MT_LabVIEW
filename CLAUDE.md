@@ -253,7 +253,7 @@ background notification is a full turn over the whole conversation. Standing rul
    exist for exactly this cold start; a fresh session beats compacting a long one).
    **ENFORCED BY A RUNNER — user decision 2026-09-17 ("2번으로 가자. Opus max"), after a 15-hour session:** cycles are
    not started by a person and not continued in a chat. `tools/cycle_runner.py` loops: spawn a fresh `claude -p`
-   judgement session (**Opus, effort max** — not Fable) that reads STATUS.md + the current plan only, runs ONE cycle
+   judgement session (**Opus, effort max** — not Fable; **AMENDED 2026-09-23 by the user: `claude-opus-5-5` pinned by id at effort HIGH** — the Artificial Analysis index shows high→max = +4 points at 3.3× cost (news.hada.io/topic?id=34142); hypothesis reviews move max→xhigh, priorart 5.5/high, material/log-reader agents 5.5; the alias `opus` resolved to `claude-opus-5` and is no longer used, so a later alias change cannot silently move the comparison baseline; needs Claude Code ≥ 2.1.280) that reads STATUS.md + the current plan only, runs ONE cycle
    (delegate → decide → retrospective → STATUS NEXT), exits; the runner checks the exit and NEXT and spawns the next.
    Runner stop conditions: a `STOP` marker in STATUS.md (written by the user), the same failure two cycles running,
    the usage-limit rule (renewal + 2 min). `tools/hooks/guard_session.py` (PreToolUse Agent) refuses material

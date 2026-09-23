@@ -231,7 +231,7 @@ def main():
     # The three moments this review fires (user's decision, 2026-09-15). `new-op` is the one a cycle-start-only
     # trigger would miss: OpOwnerChain_v0 was invented in the middle of a cycle.
     ap.add_argument("--trigger", choices=["cycle-start", "direction-change", "new-op"], default="new-op")
-    ap.add_argument("--model", default="opus")
+    ap.add_argument("--model", default="claude-opus-5-5")  # user 2026-09-23: Opus 5.5 pinned
     ap.add_argument("--effort", default="high", choices=["low", "medium", "high", "xhigh", "max"])
     ap.add_argument("--index", action="store_true",
                     help="re-run the losing experiment: attach a name listing. Default is NO index - see the "
