@@ -41,7 +41,7 @@ import tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PROJECT = os.path.dirname(os.path.dirname(HERE))
-BGRUN = os.path.join(PROJECT, "tools", "bgrun.py")
+BGRUN = os.environ.get("BGRUN_UNDER_TEST") or os.path.join(PROJECT, "tools", "bgrun.py")   # override: test a candidate copy
 
 # The literal lines of tools/bench/diag_stop_condterm_panel.log:15-19, byte for byte. Kept as a list of
 # repr-safe strings so this file never itself contains a bare gate-verdict line at column 0 (the outer

@@ -1,0 +1,55 @@
+BGRUN START 2026-09-24 05:31:28 limit 15.0 min: py -u tools/prior_art_review.py --plan-file docs/d1-loop12-17-split-plan.md --slug priorart-c71-l7-1b-r3 --trigger cycle-start --recipe tools/recipes/stage_d1_l7_1b.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c71-l7-1b-r3.txt (103972 chars)
+OUTCOME: ANSWERED (65s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-24-priorart-priorart-c71-l7-1b-r3.md
+COST: $1.2404  in 14 / out 5930 / cache-create 119611 / cache-read 824488  (61s, 14 turn(s))
+--- ANSWER ---
+I found no build of this plan's steps that has already failed. Nothing in the files decides or rules out the L7-1b rerun direction either. The one missing tool Pre-decided 173 calls for is already built, the launch-gate blocker named in STATUS is already fixed, and three files still describe both as open. Read-only review; nothing was run or edited.
+
+## PART A — the direction
+
+**A1 Settled already.** None. The L7-1a → L7-1b split, the wording of the intent lines, how each row is handled and the terminal-uid remedy are this cycle's own decisions (Pre-decided 169–173). No earlier file decides them differently.
+
+**A2 Refuted already.** None. The two L7-1 failures (runs 1 and 2) and the L7-1b failure at `stagekit.address` are already handled in 169, 171 and 173. None of them is repeated by the rerun.
+
+**A3 Contradicted (three findings).**
+
+1. **The launch-gate blocker in STATUS was fixed before it was written down.**
+   - `STATUS.md`, lock key `owner_c71l71b` says the rerun is "BLOCKED BY THE LAUNCH GATE: `stop_record` refuses the prior-art review of the edited recipe when wrapped in bgrun … Judgement call." STATUS `## NEXT` (first act, cycle 71) also still gives "`--recipe=<path>`" as the workaround.
+   - `docs/violation-decisions.md:1131-1133` still lists the `--recipe=` gap as an open finding.
+   - Against that: `tools/stop_record.py:111-121` (repair "2026-09-24 cycle 71") looks at the command after bgrun's `--`. `tools/stop_record.py:74-78` makes `--recipe=` and `--recipe ` split into the same path.
+   - `tools/bench/selftest_stoprecord_bgrun.log:3-8` passes both "bgrun + prior_art_review --recipe X allowed" (B1) and the `--recipe=X` form (B2). It still refuses "bgrun + py -u X" (B3).
+   - So neither the "judgement call" nor the workaround is needed.
+
+2. **Pre-decided 173 is written as work still to do, but it is done.**
+   - The plan (173 "Remedy") lists `stagekit.address` accepting a terminal uid, recording uids before wiring, and a new self-test case, all in the future tense.
+   - It is already built:
+     - `tools/stagekit.py:690-692` (`address` using `term_uid`) and `:793` (`cfw_second_pass`).
+     - `tools/stagekit.py:1113-1132` (`match_term_uid`).
+     - `tools/bench/selftest_stagekit.log:626-635`: case I1–I7 passes, 44 pass / 0 fail.
+     - `tools/recipes/stage_d1_l7_1b.py:44,72,96` already passes `term_uid`.
+   - The plan should record 173 as done, not schedule it again.
+
+3. **173 promises more than the built helper can do.**
+   - The plan says every later step (second pass, `Is Broken?`, "and the gates") addresses a row by its uid.
+   - `tools/stagekit.py:1120-1121` and `selftest_stagekit.log:630` (I5) show that uid addressing refuses a terminal with no wire on it ("uid addressing needs a wired terminal"). It never falls back to the name.
+   - Any gate that has to reach a terminal before its wire lands, or after a wire is removed, cannot use this path. For L7-R's retire rows that is exactly the case. The plan needs to say how those rows are addressed.
+
+**A4 Unread evidence.** `tools/bench/selftest_stoprecord_bgrun.log` and `tools/stop_record.py:111-121` should have been checked before the STATUS lock note called the rerun blocked.
+
+## PART B — the artefact (L7-1b rerun)
+
+- **B1 Already built:** the uid-addressing tool from 173 (see A3.2). Use it; do not rebuild it.
+- **B2 Already failed:** none. The earlier failure, a lookup by name after wiring (`stage_d1_l7_1b.log:274`), is the cause 173 fixes, and the recipe uses that fix.
+- **B3 Helper exists:** covered by B1.
+- **B4 Already measured:** none beyond what the plan cites (the Jev results in 170(a) and the L7-1a acceptance in 172).
+
+```
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+PRIOR-ART: already-built
+```
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c71-l7-1b-r3.md
+   STOP RECORD armed: tools/recipes/stage_d1_l7_1b.py sha f0ffee30ed30 verdict contradicted, unread-evidence, already-built -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 77s

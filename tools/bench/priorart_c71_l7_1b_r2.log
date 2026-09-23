@@ -1,0 +1,65 @@
+BGRUN START 2026-09-24 04:11:33 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/d1-loop12-17-split-plan.md --slug c71-l7-1b-r2 --trigger cycle-start --recipe=tools/recipes/stage_d1_l7_1b.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c71-l7-1b-r2.txt (100896 chars)
+OUTCOME: ANSWERED (109s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-24-priorart-c71-l7-1b-r2.md
+COST: $1.7182  in 26 / out 10021 / cache-create 143385 / cache-read 1853155  (105s, 17 turn(s))
+--- ANSWER ---
+**Verdict: not novel, because of one contradiction in the plan document.** The L7-1b recipe and its prediction contract are consistent with every decision, earlier failure and measurement on file. What doesn't match is a pass-criteria table in the plan: it still states the L7-1a gate that Pre-decided 172 replaced. I only read files. I did not open LabVIEW, build, edit or run anything.
+
+## PART A — the direction
+
+**A1 Already decided: yes, and the recipe carries the decisions out, so this is not `settled-already`.**
+- Scope comes from Pre-decided 169 (`docs/d1-loop12-17-split-plan.md`): L7-1b wires 9 rows, starting from the saved L7-1a file.
+- Intent lines, row modes and the fatal `computation_diff` gate come from Pre-decided 171.
+- Pre-decided 172 (`:321-336`) accepted L7-1a as `D1_l7_1a_20260924_035656.vi` md5 `34aaadf1…` and made its three edges part of L7-1b's baseline.
+- The recipe does all of this:
+  - it reads that file's path and md5 from `tools/bench/stage_d1_l7_1a.json:471-473`;
+  - it declares the three baseline edges as `BASE` (`tools/recipes/stage_d1_l7_1b.py:16`) and checks them in gate PC3 (`:111`);
+  - its contract states the same change, written before any run (`tools/bench/l7_1b_predict.log:17-19`).
+
+**A2 Already refuted: no.**
+- L7-1 runs 1 and 2 both died at gate P2a on a Jev probability (`stage_d1_l7_1.log:124-126`, `stage_d1_l7_1_r2.log:85-90`).
+- The offline measurement (`tools/bench/jev_l7_1_offline.log:40-49`) and Pre-decided 171 deal with that cause.
+- L7-1a's failure at gate PD3 was diagnosed as a contract defect, not a cut. The evidence is `archive/peer/2026-09-24-c71-l7-1a-pd3.md:65-68` and `tools/bench/diag_c71_l7_1a_tunnels.log`, and Pre-decided 172 accepted that diagnosis.
+
+**A3 Contradictions: one.**
+- Pre-decided 172 (`docs/d1-loop12-17-split-plan.md:329-332`) says: *"From now on a `diff` may remove an edge that does not touch the moved node ONLY if it is listed by edge in the prediction, AND its wire uid survives with every sink, AND its source is a tunnel whose only inside source was the moved node. For L7-1b and later stages these three edges are part of the BASELINE."*
+- The same document's §3 pass-criteria table was not updated:
+  - `:152` (L7-1a) still reads *"every removed uid-edge touches `#376`, no uid-edge added"*. That is the old PD3 contract, which Pre-decided 172 names as defective.
+  - `:155` (the "same" row, which covers L7-1b, K, L2-A1, A2, B1, B2) reads *"= owner changes of the moved uids + the batch's re-made edges + the new SR objects, nothing else"*. It has no tunnel exception and no baseline.
+- Why it matters: any later stage recipe written from §3 (K, L2-*) will reproduce PD3's failure whenever a moved node was the only inside source of a tunnel. The `repeated-failure-class` slug is already at 23.
+- It does **not** affect the L7-1b recipe itself, which already implements PC3.
+- `STATUS.md`'s NEXT item (2) repeats the old L7-1a gate text too, but that stage is finished.
+
+**A4 Evidence that should have been read and wasn't: none.**
+- One gap looks real: reopening a GUI-saved broken file in a fresh LabVIEW, against CLAUDE.md §3 rule 6's "never cold-loaded headless". It was already raised and covered by precedent in `archive/peer/2026-09-24-priorart-c71-l7-1a.md:545`.
+- The recipe opens with `preload=False` (`stage_d1_l7_1b.py:118`) and only records ExecState (`:99`).
+
+## PART B — the recipe
+
+**B1 Already built: no.** No `D1_l7_1_*` file has ever been saved: both L7-1 runs left none (`files left []`). The recipe is a declared copy of `stage_d1_l7_1.py`, with the changes listed at `:4`.
+
+**B2 Already failed: no.**
+- The first L7-1b review's only finding was a missing contract file. It was released by `FIXED:` (`archive/peer/2026-09-24-priorart-c71-l7-1b.md:592`), and the file exists (`tools/bench/l7_1b_predict.log:1`).
+- The edits made since that review (the `BASE` edges and gate PC3) follow Pre-decided 172 and open no new failure path. The PD3 review confirmed that PB and PC1/PC2 are unaffected (`c71-l7-1a-pd3.md:66-68`).
+
+**B3 Helper exists: the recipe already uses the helpers.**
+- Wiring and decisions: `JC.candidates`, `JP.decide`, `JP.ask_pair`, `JP.write_record` and `Stage.from_decision`.
+- Checks: `cfw_second_pass` / `expect_is_broken_false`, `junk_purge`, and `vigraph.computation_diff` / `diff`.
+- Reading and saving: `wiki_build.read_live`, `K.uid_edges` and `save(broken_ok=True)`.
+- Nothing is hand-written in their place.
+
+**B4 Already measured: in part.**
+- PB's 8 predicted rows (`tools/bench/l7_1_predict_r2.log:20-27`) are unchanged after L7-1a. The PD3 review showed that `effective_sources` returns empty for the #2048/#6384 sinks in either case (`c71-l7-1a-pd3.md:66`).
+- The Jev scores on the corrected intent lines were measured offline (`jev_l7_1_offline.log:40-49`).
+- The live wiring and the saved file have never been measured; producing them is this run's purpose.
+
+## Machine-readable
+
+```
+PRIOR-ART: contradicted   (docs/d1-loop12-17-split-plan.md:152 and :155 §3 gate table still state the old PD3 contract "every removed uid-edge touches #376" / "nothing else", vs Pre-decided 172 at :329-332 which admits the listed tunnel-orphan edges under three conditions and makes the three #1929/#5020 edges BASELINE for L7-1b and later; the L7-1b recipe already follows 172 at stage_d1_l7_1b.py:16,:111 — the table is stale, not the recipe)
+```
+
+**Release:** edit §3 `:152` and `:155` so they carry Pre-decided 172's three-condition exception and the baseline, then add a `FIXED:` line under "What was done with it" that cites the edited line. The recipe does not need to change.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c71-l7-1b-r2.md
+   STOP RECORD armed: tools/recipes/stage_d1_l7_1b.py sha 0aba4555de61 verdict contradicted -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 119s

@@ -52,7 +52,7 @@ except Exception:
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PROJECT = os.path.dirname(os.path.dirname(HERE))
-BGRUN = os.path.join(PROJECT, "tools", "bgrun.py")
+BGRUN = os.environ.get("BGRUN_UNDER_TEST") or os.path.join(PROJECT, "tools", "bgrun.py")   # override: test a candidate copy
 WAITER = os.path.join(PROJECT, "tools", "wait_logs.py")
 EMDASH = "—"
 

@@ -71,7 +71,11 @@ MARKER = os.path.join(HERE, "bench", "stop_records.marker")
 RECIPE_DIR_RE = re.compile(r"tools[\\/]recipes[\\/]", re.I)
 # A filesystem path token: anything carrying a separator, plus drive-letter paths. Deliberately NOT keyed on
 # `tools/recipes/` (brief item c) - the record index decides what is gated, not this regex.
-PATH_TOKEN_RE = re.compile(r"""[A-Za-z]:[\\/][^\s'"|;&<>]+|[^\s'"|;&<>]*[\\/][^\s'"|;&<>]+""")
+# `=` is excluded from the relative alternative's PREFIX (repair 2026-09-24, docs/violation-decisions.md
+# `## device-failed - 2026-09-24 03:53`): `--recipe=tools/recipes/x.py` used to yield the one token
+# `--recipe=tools/recipes/x.py`, which matched no record, so the `=` spelling slipped past a refusal the
+# space spelling got. Now both yield `tools/recipes/x.py`. Self-test: tools/bench/selftest_stoprecord_eqform.py.
+PATH_TOKEN_RE = re.compile(r"""[A-Za-z]:[\\/][^\s'"|;&<>]+|[^\s'"|;&<>=]*[\\/][^\s'"|;&<>]+""")
 
 
 # THE SECOND HALF OF THE CYCLE-44 DEADLOCK (cycle 46; `archive/peer/2026-09-19-stoprecord-release-deadlock-
@@ -104,7 +108,21 @@ def exempt_program(command_string):
     for e in EXEMPT_PROGRAMS:
         if prog & keys_for(e):
             return e
+    # THE BGRUN WRAPPER (repair 2026-09-24 cycle 71, docs/violation-decisions.md `## device-failed - 2026-09-24
+    # 03:53` family): guard_bash requires every prior-art review to run under bgrun, and bgrun is the program in
+    # command position, so the exemption above never saw `prior_art_review.py` and a recipe's review could not be
+    # launched at all. When the program is bgrun.py, judge the command after bgrun's `--` instead. A recipe
+    # launched under bgrun (`bgrun ... -- py -u <recipe>`) is still not exempt. Self-test:
+    # tools/bench/selftest_stoprecord_bgrun.py.
+    if prog & keys_for(BGRUN_PROGRAM):
+        parts = BGRUN_SEP_RE.split(command_string[m.end():], maxsplit=1)
+        if len(parts) == 2:
+            return exempt_program(parts[1])
     return ""
+
+
+BGRUN_PROGRAM = "tools/bgrun.py"
+BGRUN_SEP_RE = re.compile(r"\s--(?:\s+|$)")
 
 
 class StoreError(Exception):

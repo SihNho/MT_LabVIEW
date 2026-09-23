@@ -65,9 +65,25 @@ import json
 import os
 import re
 import sys
+import threading
 import time
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+# A HOOK THAT OUTLIVES ITS TIMEOUT IS AN ALLOW (repair 2026-09-24, cycle 71; docs/violation-decisions.md
+# `## repeated-failure-class - 2026-09-24 03:53`). `.claude/settings.json` gives this hook 15 s, and Claude Code
+# treats a PreToolUse hook that runs out its timeout as a NON-BLOCKING error - the tool call goes ahead. The Jev
+# rungs below are network calls with 25 s per-call timeouts and 5-sample consensus: the offline replay of the
+# cycle-70 launch that went through (tools/bench/replay_guard_peer_c70.py, tools/bench/replay_guard_peer_c70.log)
+# measured ladder 22 s + discharge 98 s + gate-row advisory 18 s = 139 s on a case whose verdict, run to the end,
+# was BLOCK. Live, the ladder line landed at 03:26:08 (13 s in) and the process was killed during the discharge, so
+# stage_d1_l7_1_r2 launched at 03:26:11 with run 1's failure unreviewed. So: the Jev rungs run under HOOK_BUDGET_S
+# of wall time counted from the start of main() (interpreter start-up is the remaining ~5 s margin), and when the budget runs out the gate FAILS CLOSED (blocks) and starts one detached
+# `--warm` process that finishes the same ladder/discharge in the background, so that its caches
+# (jev_ladder_cache.jsonl, jev_discharge_cache.json) answer the retry instantly. Self-test:
+# tools/bench/selftest_guard_peer_budget.py.
+HOOK_BUDGET_S = 10.0
+WARM_TTL_S = 600
+
+HERE =os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 BENCH = os.path.join(ROOT, "tools", "bench")
 PEER = os.path.join(ROOT, "archive", "peer")
@@ -525,7 +541,102 @@ def cite_same_row(review_path, log_name, ts):
         return False
 
 
+def _bounded(fn, seconds):
+    """(finished, value) - run fn() in a daemon thread for at most `seconds`. An exception counts as finished
+    with value None (every Jev rung already degrades to the old path on error). Never raises."""
+    box = {}
+
+    def run():
+        try:
+            box["v"] = fn()
+        except Exception:                 # noqa: BLE001
+            box["v"] = None
+    t = threading.Thread(target=run, daemon=True)
+    t.start()
+    t.join(max(0.0, seconds))
+    return (not t.is_alive()), box.get("v")
+
+
+def _jev_decide(path, text):
+    """The two Jev rungs exactly as main() ran them before the budget: ladder first, the ordinary discharge only
+    when the ladder did not act. Returns (ladder_allow, ladder_line, allow, jev_line)."""
+    sys.path.insert(0, os.path.join(ROOT, "tools", "bench"))
+    import jev_gate
+    try:
+        ladder_allow, ladder_line = jev_gate.jev_ladder(path, text)
+    except Exception:                    # noqa: BLE001 - a gate must degrade to its old behaviour, never wedge
+        ladder_allow, ladder_line = None, None
+    if ladder_allow is True:
+        return True, ladder_line, True, None
+    if ladder_allow is False:
+        return False, ladder_line, False, ladder_line   # the discharge already ran inside the ladder
+    try:
+        allow, jev_line = jev_gate.jev_discharge(path, text)
+    except Exception:                    # noqa: BLE001
+        allow, jev_line = False, None
+    return None, ladder_line, allow, jev_line
+
+
+WARM_STATE = os.path.join(BENCH, "jev_warm_state.json")
+
+
+def _spawn_warmer(path):
+    """Start ONE detached `guard_peer.py --warm <log>` per (log, size, mtime) per WARM_TTL_S. Returns a short
+    status word for the refusal message. Never raises."""
+    try:
+        st = os.stat(path)
+        key = "%s|%d|%d" % (os.path.basename(path), int(st.st_mtime), st.st_size)
+        try:
+            with open(WARM_STATE, encoding="utf-8") as fh:
+                state = json.load(fh)
+            if not isinstance(state, dict):
+                state = {}
+        except (OSError, ValueError):
+            state = {}
+        if time.time() - float(state.get(key, 0)) < WARM_TTL_S:
+            return "already warming"
+        import subprocess
+        base = 0x00000008 | getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0)     # DETACHED_PROCESS
+        argv = [sys.executable, os.path.abspath(__file__), "--warm", path]
+        for flags in (base | 0x01000000, base):                                     # + BREAKAWAY_FROM_JOB, then without
+            try:
+                subprocess.Popen(argv, cwd=ROOT, creationflags=flags, stdin=subprocess.DEVNULL,
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, close_fds=True)
+                break
+            except OSError:
+                continue
+        else:
+            return "warmer could not start"
+        state[key] = time.time()
+        if len(state) > 64:
+            for k in sorted(state, key=lambda k: state[k])[:len(state) - 64]:
+                state.pop(k, None)
+        tmp = WARM_STATE + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump(state, fh)
+        os.replace(tmp, WARM_STATE)
+        return "warmer started"
+    except Exception:                    # noqa: BLE001
+        return "warmer not started"
+
+
+def warm(path):
+    """`--warm <log>`: finish the Jev rungs for this log outside the hook, so their caches answer the retry."""
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            text = f.read().lstrip("﻿")
+    except OSError:
+        return 0
+    last = text.rsplit("BGRUN START", 1)[-1] if "BGRUN START" in text else text
+    try:
+        _jev_decide(path, last)
+    except Exception:                    # noqa: BLE001
+        pass
+    return 0
+
+
 def main():
+    t_main = time.time()
     if os.environ.get("PEER_GUARD_OFF") == "1":
         return 0
     try:
@@ -618,14 +729,19 @@ def main():
     # It acts only at p >= 0.80 on the consensus mean of five asks. No key, an error or the unknown band means
     # the old path, byte for byte. Measured before wiring on today's own 16 reviews and their triggering logs
     # (tools/bench/jev_ladder_set.json, tools/bench/jev_wave2a.log).
-    allow, jev_line = False, None
-    ladder_allow, ladder_line = None, None
-    try:
-        sys.path.insert(0, os.path.join(ROOT, "tools", "bench"))
-        import jev_gate
-        ladder_allow, ladder_line = jev_gate.jev_ladder(path, text)
-    except Exception:                    # noqa: BLE001 - a gate must degrade to its old behaviour, never wedge
-        ladder_allow, ladder_line = None, None
+    # BUDGETED (repair 2026-09-24, see HOOK_BUDGET_S): both Jev rungs run in one bounded call. Out of budget ->
+    # FAIL CLOSED: the block below stands, one detached warmer finishes the rungs so the retry is answered from cache.
+    finished, got = _bounded(lambda: _jev_decide(path, text), HOOK_BUDGET_S - (time.time() - t_main))
+    if not finished:
+        ts = time.strftime("%Y-%m-%d %H:%M:%S")
+        warm_status = _spawn_warmer(path)
+        line = ("JEV-BUDGET | %s | %s | ladder/discharge still running after %.1fs of the hook's %.0fs budget: "
+                "BLOCK stands (fail closed); %s - retry in a minute and the cached verdict answers at once" % (
+                    ts, os.path.basename(path), time.time() - t_main, HOOK_BUDGET_S, warm_status))
+        _gate_log(line)
+        sys.stderr.write(line + "\n")
+        got = None
+    ladder_allow, ladder_line, allow, jev_line = got if got else (None, None, False, None)
     # NEXT-ACTION (user 2026-09-24 03:5x): the verdict DRIVES the next step, it does not only lift the gate. Every
     # ladder line ends `| NEXT-ACTION: ...`; the same text is written to stderr on allow AND on refuse, and the
     # newest JEV-LADDER line for the log in tools/bench/jev_gate.log is the one sessions read first. Exit codes
@@ -634,16 +750,9 @@ def main():
         if ladder_line:
             sys.stderr.write(ladder_line + "\n")
         return 0
-    if ladder_allow is False:
-        allow, jev_line = False, ladder_line          # the discharge already ran inside the ladder
-    else:
-        try:
-            import jev_gate
-            allow, jev_line = jev_gate.jev_discharge(path, text)
-        except Exception:                # noqa: BLE001
-            allow, jev_line = False, None
     if allow:
         try:
+            import jev_gate
             sys.stderr.write(jev_gate.ladder_after_discharge(path, jev_line) + "\n")
         except Exception:                # noqa: BLE001 - reporting only; the allow stands
             pass
@@ -655,7 +764,10 @@ def main():
                          "  (advisory only: below the discharge threshold, so the block below stands.)\n\n")
 
     # The block stands. Give the reviewer and the judgement session the per-row verdicts, unasked (2nd wave #2).
-    gaterow_advisory(path)
+    # Advisory only, so it gets whatever budget is left and is simply skipped when none is (repair 2026-09-24).
+    left = HOOK_BUDGET_S - (time.time() - t_main)
+    if left > 1.0:
+        _bounded(lambda: gaterow_advisory(path), left)
 
     first = next((ln.strip() for ln in text.splitlines() if FAILURE_RE.search(ln)), "(see the log)")
     if rejected:
@@ -684,4 +796,14 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    if len(sys.argv) == 3 and sys.argv[1] == "--warm":
+        sys.exit(warm(sys.argv[2]))
+    _rc = main()
+    # os._exit, not sys.exit: a Jev thread cut off by the budget may still be inside a network call, and the
+    # verdict must reach Claude Code now, not after interpreter shutdown has waited on anything.
+    try:
+        sys.stderr.flush()
+        sys.stdout.flush()
+    except Exception:                    # noqa: BLE001
+        pass
+    os._exit(_rc)

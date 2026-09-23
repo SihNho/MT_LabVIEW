@@ -61,7 +61,9 @@ use — never a Traverse / node / diagram index (Pre-decided 158; `docs/d1-build
 |---|---|---|---|---:|---|
 | **P0** | read-only census of the bed: wiki + graph for md5 `1a11d92a`; re-derive every group's cut list, crossing list and new-carrier list; measure handles open→close (STATUS ACT 2); O1 node sets of `#10170`/`#23041`; ForLoop/WhileLoop left-SR TOP collisions (Pre-decided 159). **MEASURED — see the P0 facts line under this table** | `D1_s3_loop15.vi` | `docs/wiki/subvi/D1_s3_loop15.json`, `tools/bench/graph_s3_loop15_<date>.json`, `tools/bench/split_rows_l2l7.json` (data, no VI) | 0 | — |
 | **P1** | pure-Python resolver (no LabVIEW): the 33 structure rows → the TUNNEL uid that carries each (outer face on `#639`, + inner frame diagrams), by wire identity on the bed's terminal table, cross-checked against S1's; plus F3a (the 12 FlatSequenceFrame-cut ForLoop owner chains re-derived from the `frame_diagram` column). **MEASURED — see the P1 facts line under the P0 facts** | `split_rows_l2l7.json`, `graph_s3_loop15_20260924.json`, `D1_s1_copy.json` wiki, `build_d1_v0.json` `cut` | `tools/bench/split_rows_l2l7.json` (new fields `p1_tunnel`, `resolved_by_p1`, `p1_wire_on_bed`, top-level `p1`; data, no VI) | 0 | — |
-| **L7-1** | **REWRITTEN 2026-09-24 by Pre-decided 164** (was: "2 SR pairs move with their node; re-wire its 12 rows; w4517 made as a 1.1→1.7 crossing here"): move `#376` into body `#23405` of `#23041`; create 1.7's TWO NEW SR pairs replacing `#15/#51` and `#24/#1108` (the old pairs stay on `#637` until L7-R), each new LEFT initialised off the same source as the original (`#4910` w4969, `#781` w3543); wire the 4 rows inside 1.7 (`#376` ↔ new SRs) by Jev PAIR; the 2 SR-init rows are RULE-SINGLE-CANDIDATE rows (Pre-decided 165); i6/i9/i11 (`#3644`/`#2294`/`#5096`) are re-made as NEW tunnels on `#23041` off the same outer feed (Pre-decided 166, `tunnel_outer` rule rows). Of `#376`'s 12 rows: in-1.7 4 · top-level tunnel 3 (L7-1, 166) · cross-loop OPEN 3 (i5 w4517, i7 w3268, i8 w1397 — queues, never made here) · L7-R 1 (i4) · split 1 (i3). Prediction `tools/bench/l7_1_prediction.json` (`tools/bench/l7_1_predict_r2.log`) | `D1_s3_loop15.vi` | `D1_l7_1_<ts>.vi` (GUI save if broken, CLAUDE.md §3 rule 6) | 9 (4 body + 2 init + 3 tunnel) | 4 / 5 |
+| **L7-1a** | **SPLIT 2026-09-24 by Pre-decided 169**: move `#376` into body `#23405` of `#23041` + create the two new SR pairs; NO wiring; recipe `tools/recipes/stage_d1_l7_1a.py`, contract `tools/bench/l7_1a_predict.log` | `D1_s3_loop15.vi` | `D1_l7_1a_<ts>.vi` (GUI save, rule 6) | 0 | 0 / 0 |
+| **L7-1b** | **Pre-decided 169/171**: from the saved L7-1a file, fresh LabVIEW: the 9 rows of the L7-1 row below (4 S1-mapped per 168 + 2 single-candidate per 165 + 3 tunnels per 166), corrected intent lines (171(1)); PB `computation_diff` FATAL before save (170(c)); runs in the same material dispatch as L7-1a when L7-1a passes (171(4)); recipe `tools/recipes/stage_d1_l7_1b.py` | `D1_l7_1a_<ts>.vi` | `D1_l7_1_<ts>.vi` | 9 | 4 S1-mapped / 5 rule |
+| **L7-1** (superseded by the L7-1a/L7-1b rows above, kept for the row detail) | **REWRITTEN 2026-09-24 by Pre-decided 164** (was: "2 SR pairs move with their node; re-wire its 12 rows; w4517 made as a 1.1→1.7 crossing here"): move `#376` into body `#23405` of `#23041`; create 1.7's TWO NEW SR pairs replacing `#15/#51` and `#24/#1108` (the old pairs stay on `#637` until L7-R), each new LEFT initialised off the same source as the original (`#4910` w4969, `#781` w3543); wire the 4 rows inside 1.7 (`#376` ↔ new SRs) by Jev PAIR; the 2 SR-init rows are RULE-SINGLE-CANDIDATE rows (Pre-decided 165); i6/i9/i11 (`#3644`/`#2294`/`#5096`) are re-made as NEW tunnels on `#23041` off the same outer feed (Pre-decided 166, `tunnel_outer` rule rows). Of `#376`'s 12 rows: in-1.7 4 · top-level tunnel 3 (L7-1, 166) · cross-loop OPEN 3 (i5 w4517, i7 w3268, i8 w1397 — queues, never made here) · L7-R 1 (i4) · split 1 (i3). Prediction `tools/bench/l7_1_prediction.json` (`tools/bench/l7_1_predict_r2.log`) | `D1_s3_loop15.vi` | `D1_l7_1_<ts>.vi` (GUI save if broken, CLAUDE.md §3 rule 6) | 9 (4 body + 2 init + 3 tunnel) | 4 / 5 |
 | **L7-R** | retire `#15/#51`, `#24/#1108` on `#637` after live-consumer check; re-feed from 1.7's output tunnels. **CORRECTED 2026-09-24 (prior-art c70-l7-1-r2 A3.3; measured `tools/bench/l7_1_predict_r2.log:22-27`):** L7-1 leaves SIX consumers of `#376`'s outputs unsourced, not two — `#6384` `error in` / `file # to append` / `actual # data points`, `#2048` `array` / `length`, `#3453` `file progress` (an indicator on 1.1). Which stage owns `#2048` and `#3453`, and the third `#6384` input, is OPEN (judgement). RBW; save by script | `D1_l7_1_<ts>.vi` | **`D1_s4_loop17.vi`** | retire + 6 (ownership OPEN) | 0 / all |
 | **K** | move the CPU kernel `#5058` `Track N beads four-fold over-kernel-v3.vi` into the 1.2 body (Pre-decided 156; name-gated, `docs/cycle27-plan.md:754-755`); re-wire its 13 rows | `D1_s4_loop17.vi` | `D1_k_<ts>.vi` (GUI save if broken) | 13 | P0 recounts |
 | **L2-A1** | move group A (8) + the `Auto-Reset` / `Reset Tracking` control terminals into the 1.2 body; add 1.2's 4 SR pairs; re-wire batch 1 (incl. w10990 `#10757`→`#10407`, the only row left of old L2-C — Pre-decided 161) | `D1_k_<ts>.vi` | `D1_l2_a1_<ts>.vi` (broken by design → GUI Ctrl+S, CLAUDE.md §3 rule 6) | 13 | 3 / 10 |
@@ -147,9 +149,10 @@ has no entry) → `write_record` → `stagekit.Stage.from_decision` (`tools/stag
 | all | input md5 = the previous stage's output md5; pins unchanged | equal | hygiene, not evidence — kept |
 | P0 | bed md5 after the read | `1a11d92a…` | — kept |
 | P0 | re-derived cut rows vs `build_d1_v0.json` | per group 26/38/3/12 **minus/plus the rows M3a–M4 changed** (the S3a indicator branches on w10799 / w10990, the retired 1.5 carriers) | the v0 file determines the base ⇒ predict the DIFFERENCE, list it |
-| L7-1, K, L2-A1, A2, B1, B2 | `ExecState` | 0 (rows still open) | determined by the stage's own design ⇒ **NOT a gate**; broken intermediate saved by GUI (rule 6), never run |
+| L7-1a | `diff(bed,new)` (Pre-decided 169) | nodes_added = exactly the 4 new SR uids, nodes_removed = [], every removed uid-edge touches `#376` **except an edge admitted by Pre-decided 172** (listed by edge in the prediction, its wire uid survives with every sink, its source is a tunnel whose only inside source was the moved node — here `#1929:2043→#2048:3182`, `#1929:2043→#6384:6480`, `#5020:5050→#6384:6511`), no uid-edge added; bed md5 unchanged (`tools/bench/l7_1a_predict.log`) | not determined by an earlier step — the gate (no rows wired) |
+| L7-1a, L7-1b, K, L2-A1, A2, B1, B2 | `ExecState` | 0 (rows still open) | determined by the stage's own design ⇒ **NOT a gate**; broken intermediate saved by GUI (rule 6), never run |
 | same | `computation_diff(S1,new)` (MACHINE SR pairing, `tools/vigraph.py:333-388`) | = exactly the not-yet-re-wired ledger rows of this group | not determined — the gate. **L2-B1..B3 (ForLoop SRs of `#1359`/`#29874` move): only if P0 showed no two ForLoop left SRs in the affected loops share a TOP; otherwise the gate lists the TOP-collision rows as predicted artefacts (Pre-decided 159)** |
-| same | `diff(prev,new)` | = owner changes of the moved uids + the batch's re-made edges + the new SR objects, nothing else | op semantics predict the SHAPE, not the rows — gate on the row list |
+| same | `diff(prev,new)` | = owner changes of the moved uids + the batch's re-made edges + the new SR objects, nothing else, **plus removed edges admitted by Pre-decided 172's three conditions (listed by edge). From L7-1b on, the three `#1929`/`#5020` → `#2048`/`#6384` edges are BASELINE: absent in the input and must stay absent (L7-R rows; re-adding one fails the gate — `tools/bench/l7_1b_predict.log` PC3)** | op semantics predict the SHAPE, not the rows — gate on the row list |
 | same | `WhileLoop` 6, `Local` 8, `ControlTerminal` 114 | delta 0 | determined by S2 / move semantics ⇒ delta tripwire only, not evidence |
 | L2-A1 (was L2-C) | w10990 wired, `Is Broken?` False (ordered second pass, cycle27 42(b)); w10799 untouched | False | not determined — gate |
 | L2-R, L7-R | live consumers on each retired carrier (`sources_of`/`reach4`, completed graph) | 0 | not determined — gate, BEFORE the delete |
@@ -290,6 +293,89 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
      every L7-1b row are corrected per (a)'s finding before L7-1b runs. (c) In L7-1b gate PB (`computation_diff`,
      recipe `:102`) is made `fatal=True` and runs BEFORE the save; a stage never saves over a failed PB. If (e) scores
      ≥0.75, the Jev argmax check in 168 is recorded as guarding nothing and the S1-mapped rows rest on PB alone.
+     **MEASUREMENT for 170(a) (cycle 71 material, 2026-09-24 03:49, no LabVIEW; `tools/bench/jev_l7_1_offline.log:40-49`,
+     `tools/bench/jev_l7_1_offline.json`, 88 Jev calls ≈ $0.007; not a decision):** (a) `err_R` as-is n=12: mean 0.755,
+     min 0.71 / max 0.80, sd 0.026, top == S1-mapped 11/11, margin mean 0.575 (min 0.48) · (b) `acc_init` current line
+     n=10: 0.584, 0.55/0.62, sd 0.021 (1 candidate) · (c) `acc_init` CORRECTED line (exact text `:16`) n=10: **0.906**,
+     0.90/0.91, sd 0.005 · (d) `err_init` sink name blanked n=10: 0.803, 0.79/0.82, sd 0.008 (was 0.848 named) ·
+     (e) NEGATIVE `#4910 'error out'` → acc LEFT outer, corrected line, n=10: **0.098**, 0.09/0.11, sd 0.007.
+171. **(cycle 71 judgement, on the 170(a) measurement above) L7-1b INTENT LINES AND ROW MODE — decided.**
+     (1) **Every L7-1b intent line takes the CORRECTED form of case (c):** it names the sink by the terminal name
+     as it reads on the LIVE object in the L7-1a file, re-read from that file. It never uses the old object's
+     terminal name. For a register it says which node's output it carries (`#376`'s output for the accumulator,
+     the error chain for the error pair). The sink name is never blanked: (d) blanked 0.803 < named 0.848. Reason:
+     the current line to the corrected line took `acc_init` from 0.584 to 0.906 with sd 0.005, so the run-1 failure
+     was the question's wording, not the row.
+     (2) **The Jev argmax check in 168 is KEPT as a real guard**: the negative swap (e) scores 0.098, far below 0.75,
+     so the check does separate a wrong source. 170(c)'s fallback ("rests on PB alone") does NOT apply.
+     (3) **Row modes are unchanged from 165/166/168.**
+       - S1-mapped rows are wired when Jev's top == the mapped pair, whatever p is (err_R: 0.755 ± 0.026, top ==
+         mapped 11/11).
+       - Single-candidate rows are RULE rows. Jev runs on them as a logged check only: it does not gate, and it
+         stops the run only if it scores below 0.30.
+       - Tunnel rows (166) are rule rows.
+       - Gate PB (`computation_diff`) is FATAL and runs before the save (170(c)).
+     (4) **L7-1b follows L7-1a in the same material dispatch when L7-1a passes every predicted gate.** Its input is
+     the saved L7-1a file, opened in a fresh LabVIEW. Its prediction is `tools/bench/l7_1_predict_r2.log`, re-derived
+     for the L7-1a uids.
+172. **(cycle 71 judgement, on `tools/bench/stage_d1_l7_1a.log` PD3, `archive/peer/2026-09-24-c71-l7-1a-pd3.md` and
+     `tools/bench/diag_c71_l7_1a_tunnels.log` 9/0) L7-1a is ACCEPTED: `claudeDev\D1_l7_1a_20260924_035656.vi`, md5
+     `34aaadf14091ee156e0950725de48bdf`.** PD3's 3 extra removed edges are a defect in the CONTRACT, not a cut:
+     - The edges are `1929:2043→2048:3182`, `1929:2043→6384:6480` and `5020:5050→6384:6511`.
+     - Wires w4337 and w5073 keep their uids and all three sinks, and all 7 terminal rows survive, which excludes
+       (a) wire cut and (c) row dropped.
+     - The tunnels' outer terminals turned non-source because `#376`, their only inside source, left `#637`. This is
+       the documented undirected-tunnel behaviour, i.e. the review's (b).
+     **The contract is tightened, NOT loosened** (the review warned that "touches `#376` or its tunnels" would admit
+     real cuts). From now on a `diff` may remove an edge that does not touch the moved node ONLY if it is listed by
+     edge in the prediction, AND its wire uid survives with every sink, AND its source is a tunnel whose only inside
+     source was the moved node. For L7-1b and later stages these three edges are part of the BASELINE: they are
+     absent from the L7-1a graph, and re-driving `#1929`/`#5020` would ADD an edge, which the L7-1b PC2 gate must
+     catch. **`#1929`/`#5020` → `#2048`/`#6384` are L7-R rows**: L7-R feeds them from 1.7 or replaces the tunnels.
+     This is the same class as the "two re-feeds of `#6384`" in Pre-decided 164, and it is counted in L7-R's row list.
+     Side fact kept for L7-R: the old `#15`/`#51` pair's name reads '' after the move (`diag_c71_l7_1a_tunnels.log:71-72`).
+173. **(cycle 71 judgement, on `tools/bench/stage_d1_l7_1b.log:301-314`) Terminals are addressed by TERMINAL UID after
+     their first resolution, never by name again — a TOOL change in `tools/stagekit.py` (the user's 2026-09-24 tool
+     permission; this class recurs, since shift-register terminal names change on move and on wiring:
+     `diag_c71_l7_1a_tunnels.log:71-72`, `stage_d1_l7_1b.log:274`).**
+     - **What the run showed:** all 9 rows were wired as decided. Every S1-mapped row had Jev's top == the mapped
+       pair (p 0.884–0.928), and the second-pass `Is Broken?` read False on 3 rows. The run then died in OUR
+       verification: acc_init's second pass looked up `'total data array out'` by name, and after the wire landed
+       that terminal reads `''`. That is a script defect, not a diagram one.
+     - **Remedy:**
+       - `stagekit.address` (and `cfw_second_pass`) accept a terminal uid.
+       - A row records the sink and source terminal uids when it first resolves them, before wiring. Every later
+         step addresses the row by those uids: second pass, `Is Broken?`, and the gates.
+       - Name lookup stays the FIRST resolution only.
+       - Self-test: stagekit's existing self-test plus a case where a terminal's name changes after wiring and
+         the uid path still reaches it.
+     - **Gates:** unchanged (42(b) is kept, now addressed by uid). The L7-1b rerun starts from the same L7-1a file.
+     - **STATUS: BUILT (recorded 2026-09-24 05:3x, prior-art `archive/peer/2026-09-24-priorart-priorart-c71-l7-1b-r3.md`
+       A3.2):** `tools/stagekit.py:690-692` (`address` by `term_uid`), `:793` (`cfw_second_pass`), `:1113-1132`
+       (`match_term_uid`); `tools/bench/selftest_stagekit.log` I1-I7, 44/0; the recipe passes `term_uid` at
+       `tools/recipes/stage_d1_l7_1b.py:44,72,96`. Not to be scheduled again.
+     - **LIMIT (same review, A3.3):** uid addressing refuses a terminal with NO wire on it ("uid addressing needs a
+       wired terminal", `tools/stagekit.py:1120-1121`, self-test I5) and never falls back to the name. L7-1b is not
+       affected (every uid-addressed step there runs after its wire landed). Stages that must reach an UNWIRED
+       terminal - L7-R's retire rows, where a wire is removed - are NOT covered by 173; how they address it is an
+       OPEN item for that stage's plan.
+174. **(cycle 71 judgement, on `tools/bench/stage_d1_l7_1b_r2.log:41-45`) FIX (a): the uid branch applies only AFTER a
+     row's wire has landed.**
+     - **What happened:** run r2 took the uid path at FIRST wiring. The candidate ends already carried `term_uid`,
+       so `Stage.address` (`tools/stagekit.py:690-692`) switched to uid, and `match_term_uid` refused the still-unwired
+       terminals (#3934/#5683/#3954/#5782, "uid addressing needs a wired terminal"). That contradicts 173's own text:
+       "name lookup stays the FIRST resolution only". This is a script bug, not a design question. (b), "uid
+       addressing accepts unwired terminals", is REJECTED: `match_term_uid` maps uid → node terminal index THROUGH
+       the wire, so an unwired terminal has nothing to match on.
+     - **Remedy:**
+       - Stage the uids in a separate field (e.g. `verify_term_uid`) that only the second pass, `Is Broken?` and the
+         gates read. First wiring never sees `term_uid`.
+       - stagekit self-test: add a case where an end carrying `verify_term_uid` on an UNWIRED terminal is wired by
+         name first, then verified by uid.
+     - **Budget:** L7-1b has now failed twice at DIFFERENT stages of our own tooling (r1 name-after-wire, r2
+       uid-before-wire). Both are script defects with measured causes. So the "same stage failing twice at the same
+       place" re-split trigger (CLAUDE.md split-and-save 3) does NOT fire: the row set and the saved L7-1a input are
+       unchanged. The NEXT cycle starts a fresh failure budget for L7-1b run 3.
 
 ## OPEN (design choices — for judgement; not decided here)
 

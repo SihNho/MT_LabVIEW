@@ -33,7 +33,8 @@ for _p in (TOOLS, HERE, os.path.join(TOOLS, "hooks")):
         sys.path.insert(0, _p)
 import jev            # noqa: E402
 import jev_gate       # noqa: E402
-import guard_peer     # noqa: E402
+import importlib      # noqa: E402
+guard_peer = importlib.import_module(os.environ.get("GUARD_PEER_UNDER_TEST", "guard_peer"))  # override: a candidate copy
 
 NPASS = NFAIL = 0
 

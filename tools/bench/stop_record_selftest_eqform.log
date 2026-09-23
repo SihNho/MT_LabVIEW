@@ -1,0 +1,40 @@
+BGRUN START 2026-09-24 04:24:18 limit 6.0 min: py -u tools/bench/stop_record_selftest.py
+=== stop_record launch gate: self-test (cycle 18, plan Pre-decided 4) ===
+  PASS  C1a record written, keyed to path+hash   837e05e2617c
+  PASS  C1b launch REFUSED (spelling 1)   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdict that is
+  PASS  C1b launch REFUSED (spelling 2)   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdict that is
+  PASS  C1b launch REFUSED (spelling 3)   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdict that is
+  PASS  C1c an unrelated command is untouched
+  PASS  C1d a DIFFERENT recipe is untouched (refusal is per record, not per directory)
+  PASS  C2a launch PASSES after a valid FIXED: line
+  PASS  C2b the release is stamped with the CURRENT sha256   837e05e2617c
+  PASS  C2c a second launch of the same bytes still passes
+  PASS  C3a launch REFUSED again after the recipe changed   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe was RELEASED for different bytes than the
+  PASS  C3b the refusal names BOTH hashes
+  PASS  C3c the record was NOT cleared by the re-save
+  PASS  C4a corrupt store REFUSES a tools/recipes launch (fail closed)   BLOCKED by tools/stop_record.py (fail-closed): the prior-art stop-record store cannot be read, so no launch of a recipe can be shown to be released.
+  PASS  C4b corrupt store leaves an unrelated command alone
+  PASS  C4c a DELETED store is missing-but-expected, not a release   BLOCKED by tools/stop_record.py (fail-closed): the prior-art stop-record store cannot be read, so no launch of a recipe can be shown to be released.
+  PASS  C4d ... and still does not wedge a grep
+  PASS  C5a --recipe omitted with no opt-out -> NON-ZERO exit   rc 2
+  PASS  C5b the refusal names both the required flag and the opt-out   REFUSED by tools/prior_art_review.py: no --recipe, and no explicit opt-out.
+  PASS  C5c the refusal prints the current command form
+  PASS  C5d no peer was dispatched (no new archive/peer file)
+  PASS  C5e no stop record was written (the REAL store is untouched)
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_scratch-optout-16016.txt (2934 chars)
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-scratch-optout-16016.md
+   NO-RECIPE opt-out recorded in archive\peer\2026-09-24-priorart-scratch-optout-16016.md: this reviews a plan document; no recipe exists yet (self-test case 6)
+   STOP RECORD: NOT ARMED BY EXPLICIT OPT-OUT - verdicts already-failed block, and --no-recipe was given:
+     reason: this reviews a plan document; no recipe exists yet (self-test case 6)
+   If this review does become a recipe, plant the record by hand:
+     py tools/stop_record.py write --recipe <recipe> --review archive\peer\2026-09-24-priorart-scratch-optout-16016.md --verdict already-failed
+  PASS  C6a --no-recipe "<reason>" RUNS (rc 0)   rc 0
+  PASS  C6b the peer dispatch was attempted exactly once (stubbed)
+  PASS  C6c the reason is in the archived review, verbatim   467 chars appended
+  PASS  C6d the recorded block cannot be read as a release or a disposition
+  PASS  C6e the opt-out armed NOTHING (the REAL store is still untouched)
+  PASS  C6f a whitespace-only reason is NOT an opt-out   rc 2
+  PASS  C0 the scratch recipe was deleted in the same run
+  PASS  C0 the REAL store was never touched   ('274b83bc8492d7e4', '82d1ab1684db636c') -> ('274b83bc8492d7e4', '82d1ab1684db636c')
+=== stop_record selftest: 29 pass, 0 fail ===
+BGRUN END rc=0 after 27s

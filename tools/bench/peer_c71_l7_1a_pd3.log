@@ -1,0 +1,55 @@
+BGRUN START 2026-09-24 04:00:56 limit 25.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools\peer.ps1 -Agent claude -Role hypothesis -Kind review -Slug c71-l7-1a-pd3 -TaskFile tools\bench\peer_task_c71_l7_1a_pd3.txt
+OUTCOME: ANSWERED (160s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-24-c71-l7-1a-pd3.md
+COST: $1.4360  in 28 / out 14410 / cache-create 105214 / cache-read 1421074  (156s, 23 turn(s))
+--- ANSWER ---
+**Verdict: the hypothesis is not refuted, but it is not proven either. The mechanism it gives for the three missing edges is wrong. The contract change it proposes would also let through the very failure PD3 exists to catch.**
+
+**1. Strongest reason it is wrong**
+- **`vigraph.build4` has no rule that makes a tunnel's outer edges depend on its inside source.** Wire edges come only from each terminal's own `is_source` and `wire_uid`, read from LabVIEW (`tools/vigraph.py:283-296`). A wire gets edges only when it has exactly one source terminal.
+- So an edge such as `1929:2043 → 2048:3182` can only disappear because what LabVIEW reports about those terminals changed. There are three ways that can happen:
+  - **(a) The outer wire was cut.** Terminal 2043 or sink 3182 now reads `wire_uid` 0.
+  - **(b) The tunnel lost its direction.** Terminal 2043 no longer reads as a source, so the wire has no source. `build4` then lists it under `flags` and emits no edge.
+  - **(c) The terminal row was dropped.** The 2043/5050 rows failed to read or are missing. PD2 checks nodes only, so a missing terminal would not show.
+- (b) matches documented LabVIEW behaviour. A tunnel's direction comes from where its wire's source is, and with no source on either side it becomes undirected ([NI: Wire connected to an undirected tunnel](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-connected-to-undirected-tunnel.html), [NI forum: missing assignment to tunnel](https://forums.ni.com/t5/LabVIEW/missing-assignment-to-tunnel/td-p/112957)).
+- But (a) has local precedent. `move_in` "detaches terminals and leaves the Wire object behind"; wire 4833 was left with zero terminals (`docs/cycle27-plan.md:1109-1112`).
+- The unchanged wire count (1913 → 1913, `stage_d1_l7_1a.log:87`) does **not** rule out (a). That same note shows the count stays flat even when wires are cut.
+- The log cannot tell (a), (b) or (c) apart. The recipe never printed `diff()`'s `half_wires_only_in_b` or `terminals_removed`, and never printed the 2043/5050 terminal rows. The stage JSON holds none of the graph.
+
+**2. The proposed contract wording is too loose**
+- "Every removed edge touches #376 or a tunnel whose only inside source was #376" passes under (a) just as well as under (b).
+- A tighter contract would say:
+  - 2043 and 5050 keep their bed `wire_uid`s.
+  - Those wires still reach sinks 3182/6480 and 6511.
+  - Those wires appear in `half_wires_only_in_b` with no source.
+- (a) and (b) matter differently for the later L7-R re-feed:
+  - Under (b), the outer wires still exist. L7-R feeds #1929/#5020 from the inside again, or replaces the tunnels.
+  - Under (a), #2048 'array'/'length' and #6384's three inputs have lost their outer wires. L7-R must rebuild those wires, which the plan does not currently count.
+
+**3. Effect on L7-1b**
+- **PB: no effect either way.** `computation_diff` → `effective_sources` gives an empty set whether the sink has no incoming edge (the live case) or is reached only through a tunnel with nothing feeding it (the offline case) (`tools/vigraph.py:674-694`). `l7_1_predict_r2.log:22-27` already predicts `after []` for exactly these #2048/#6384 sinks.
+- **PC1/PC2: no effect.** They diff the L7-1a graph G1 against the new one (`stage_d1_l7_1b.py:104-110`). The three edges are already missing from G1, so they cannot appear in `rem`. `TUN_OK` already allows #1929/#5020 to disappear.
+- **One remaining risk.** If anything in L7-1b gave #1929 or #5020 a direction again, `2043→3182` would reappear as an *added* edge. PC2 would fail, because 1929 is neither a new register, a new tunnel, nor #376. No L7-1b row feeds them, so I do not expect this.
+
+**4. What would falsify the hypothesis, and the cheapest test**
+- **Falsified if** any of these holds:
+  - 2043 or 5050 reads `wire_uid` 0.
+  - Their wire has lost sink 3182, 6480 or 6511.
+  - The rows are missing (they appear in `terminals_removed`).
+  - Their wire still has exactly one source.
+- **Cheapest test (read-only, no new build):**
+  - L7-1b already opens the L7-1a file and reads G1 (`stage_d1_l7_1b.py:44`).
+  - Before any row runs, print from G1 the rows for terminals 1931, 2043, 3182, 6480, 5044, 5050 and 6511 (`is_source`, `wire_uid`, `term_class`).
+  - Also print `V.diff(bed graph, G1)["half_wires_only_in_b"]` and `["terminals_removed"]`.
+  - The hypothesis, in its (b) form, predicts:
+    - Same `wire_uid`s as the bed.
+    - 2043 and 5050 read `is_source=False`.
+    - Those two wires are flagged with no source and still carry their sinks.
+- **Alternative that avoids opening the broken saved file:** the project's rule forbids cold-loading a broken saved VI headless (`stage_d1_l7_1a.log:105`). If that rule should hold here too, run only the L7-1a `move_in` on a scratch copy of the working input `D1_s3_loop15.vi`, print the same rows, and save nothing.
+
+**What would change my mind:** those printed rows. Until then, the honest wording is "consistent with (b); (a) and (c) not excluded".
+
+Sources:
+- [NI – Wire connected to an undirected tunnel](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-connected-to-undirected-tunnel.html)
+- [NI Community – missing assignment to tunnel](https://forums.ni.com/t5/LabVIEW/missing-assignment-to-tunnel/td-p/112957)
+- [NI Community – Loop Tunnel: Wire connected to an undirected tunnel](https://forums.ni.com/t5/FIRST-Robotics-Competition/Loop-Tunnel-Wire-connected-to-an-undirected-tunnel/td-p/3885576)
+BGRUN END rc=0 after 160s

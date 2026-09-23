@@ -1,0 +1,69 @@
+BGRUN START 2026-09-24 03:57:01 limit 20.0 min: py tools\prior_art_review.py --plan-file docs\d1-loop12-17-split-plan.md --slug c71-l7-1b --trigger cycle-start --recipe=tools/recipes/stage_d1_l7_1b.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c71-l7-1b.txt (98293 chars)
+OUTCOME: ANSWERED (89s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-24-priorart-c71-l7-1b.md
+COST: $1.5401  in 14 / out 8164 / cache-create 148675 / cache-read 936832  (85s, 11 turn(s))
+--- ANSWER ---
+I checked the L7-1b recipe against the plan, the logs and the earlier L7-1a review. The verdict is **not novel, but only because of one small, easily fixed contradiction**: the recipe names a prediction file that does not exist. Nothing in the direction has already been decided otherwise, refuted or tried and failed. I did not build, edit or run anything, and did not touch LabVIEW. L7-1a was still running while I read (`tools/bench/stage_d1_l7_1a.log` ends at `:40`, P0 PASS), so `stage_d1_l7_1a.json`, which L7-1b reads at `tools/recipes/stage_d1_l7_1b.py:10`, does not exist yet. That is the expected order, not a finding.
+
+## PART A — the direction
+
+**A1 Already decided: yes, and the recipe carries the decision out.**
+- `docs/d1-loop12-17-split-plan.md` Pre-decided 169 (2026-09-24) sets L7-1b's scope: 9 rows from the L7-1a file.
+- Pre-decided 171(1)–(4) (cycle 71) sets how those rows are written and checked: intent lines that name the terminal as it reads on the live object, the Jev check kept, row modes unchanged, and L7-1b in the same dispatch as L7-1a.
+- The recipe matches all of this:
+  - corrected intent lines that read live terminal names (`stage_d1_l7_1b.py:50-55`, `:72-75`);
+  - the S1-mapped rule, which stops if Jev's top candidate differs (`:59-62`);
+  - the single-candidate rule, which stops if Jev scores below 0.30 (`:68-78`);
+  - the three tunnel rule rows with no Jev call (`:82-91`);
+  - the `computation_diff` gate made FATAL and run before the save (`:103`).
+- This is execution, not a re-opening, so I record no `settled-already`.
+
+**A2 Refuted already: no.**
+- Both earlier L7-1 runs died at gate P2a, on the Jev threshold:
+  - `stage_d1_l7_1.log:124-126`: `acc_init` scored 0.582;
+  - `stage_d1_l7_1_r2.log:85-90`: `err_R` scored 0.742.
+- The hypothesis review of those failures (`archive/peer/2026-09-24-c70-l7-1-jev-threshold.md`) was accepted in Pre-decided 170. The offline test it asked for is on record (`tools/bench/jev_l7_1_offline.log:40-49`):
+  - corrected `acc_init` line: 0.906, sd 0.005;
+  - wrong-source test case: 0.098.
+- Pre-decided 171 is built on those numbers, so the recipe deals with the recorded cause rather than repeating it.
+
+**A3 Contradictions: one.**
+- The recipe's docstring (`tools/recipes/stage_d1_l7_1b.py:4`) says `CONTRACT: l7_1b_predict.log`. That file does not exist: a glob of `tools/bench/*l7_1*` finds `l7_1_predict.log`, `l7_1_predict_r2.log` and `l7_1a_predict.log`, but no `l7_1b_predict.log`.
+- Pre-decided 171(4) says instead that L7-1b's prediction "is `tools/bench/l7_1_predict_r2.log`, re-derived for the L7-1a uids". No re-derived file exists either.
+- The code actually loads `l7_1_prediction.json` (`:13`, `:102`), which the r2 prediction run wrote at 03:19.
+- For the `computation_diff` gate, re-deriving would not change anything. The 8 predicted rows (`l7_1_predict_r2.log:20-27`) have their sinks on `#376`, `#2048`, `#3453` and `#6384`, and none of those is a shift-register uid that L7-1a assigns. So this is a missing or misnamed contract file, not a wrong prediction.
+- Why it matters: the project rule is that a recipe's prediction is on file before it runs. `stage_d1_l7_1a.log:10` records that for L7-1a; for L7-1b the cited file is missing.
+- To release it, either write `tools/bench/l7_1b_predict.log`, or change the docstring and the 171(4) line to name `l7_1_prediction.json` / `l7_1_predict_r2.log:20-35` and say that re-deriving leaves the gate's rows unchanged.
+
+One apparent contradiction I checked and dismissed:
+- The recipe's list of old tunnels allowed to disappear, `TUN_OK = {3644, 2294, 1929, 5020}` (`:15`), leaves out `#5096`, although `#5096` is one of the three tunnel rows (`:82`).
+- That is intentional and on file: `tools/bench/l7_1_predict.py:76` says "#5096 still feeds #23175". `#5096` still has another consumer, so it is not expected to disappear.
+
+**A4 Evidence that should have been read and wasn't: none.**
+- The one gap that looks real, opening a GUI-saved broken file in a fresh LabVIEW against CLAUDE.md §3 rule 6's "never cold-loaded headless", was already raised and covered by precedent in `archive/peer/2026-09-24-priorart-c71-l7-1a.md:545`, citing `build_d1_m3a3.log:9-27`.
+- The recipe opens with `preload=False` and records ExecState without gating on it (`:41`, `:98`).
+
+## PART B — the recipe
+
+**B1 Already built: no.**
+- The recipe states it is a copy of `tools/recipes/stage_d1_l7_1.py`, and the changes it lists match that file: input, shift registers read rather than created, intent lines, row modes, fatal `computation_diff` gate. The tunnel rows are the same, `stage_d1_l7_1.py:81` against `stage_d1_l7_1b.py:82`.
+- No `D1_l7_1_*` file has ever been saved (`stage_d1_l7_1_r2.log`: "files left []").
+
+**B2 Already failed: no.** The cause of both earlier failures (P2a) is dealt with as described in A2.
+
+**B3 Helper exists: the recipe already uses the helpers.** It calls `JC.candidates`, `JP.decide`, `JP.ask_pair`, `JP.write_record`, `stagekit.Stage.from_decision`, `cfw_second_pass` / `expect_is_broken_false`, `junk_purge`, `vigraph.computation_diff` / `diff`, `wiki_build.read_live` and `stagekit.save(broken_ok=True)`. Nothing is hand-written in their place.
+
+**B4 Already measured: in part.**
+- The Jev probabilities on the corrected intent lines were measured offline (`jev_l7_1_offline.log:40-49`).
+- The live wiring and the saved file have never been measured; producing them is this run's purpose.
+
+## Machine-readable
+
+```
+PRIOR-ART: contradicted   (tools/recipes/stage_d1_l7_1b.py:4 "CONTRACT: l7_1b_predict.log" - no such file in tools/bench/; docs/d1-loop12-17-split-plan.md Pre-decided 171(4) says the prediction is l7_1_predict_r2.log "re-derived for the L7-1a uids" - no re-derived file exists; the code loads tools/bench/l7_1_prediction.json at :13/:102)
+```
+
+The release is a `FIXED:` line pointing at either the new `tools/bench/l7_1b_predict.log` or the corrected docstring and 171(4) wording. The recipe's gate logic does not need to change.
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c71-l7-1b.md
+   STOP RECORD armed: tools/recipes/stage_d1_l7_1b.py sha 74e1cd7f7925 verdict contradicted -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 97s

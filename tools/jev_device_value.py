@@ -101,9 +101,10 @@ def main(argv=None):
     print("CORPUS %d items %s" % (len(items), {k: sum(i["kind"] == k for i in items) for k in ("violation", "finding", "log")}))
     if a.dry: return 0
     rows = json.load(open(out, encoding="utf-8"))["rows"] if a.reprint else classify(a.device, items); t = totals(rows)
-    for r in rows:   # item text is data: `rc=1`, `=== 1 fail ===` must not read as THIS run failing (bgrun inner scan)
+    for r in rows:   # item text is printed VERBATIM: bgrun exempts a Jev COMMAND from its inner-failure scan
+        # (docs/violation-decisions.md `## device-failed - 2026-09-24 03:53`), so no mangling is needed or allowed
         print("%-9s p=%-5s %-9s c%-4s lm=%-5s %s" % (r["answer"], r["p"], r["kind"], r["cycle"], r["loss_min"],
-                                                   r["text"].replace("\n", " | ").replace("=", ":")[:110]))
+                                                   r["text"].replace("\n", " | ")[:110]))
     if not a.reprint: json.dump({"device": a.device, "since": a.since, "after": a.after, "totals": t, "rows": rows,
                                  "created": datetime.datetime.now().isoformat(timespec="seconds")}, open(out, "w", encoding="utf-8"), indent=1)
     print("TOTALS %s -> %s" % (json.dumps(t), os.path.relpath(out, ROOT)))

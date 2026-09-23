@@ -1,0 +1,186 @@
+{
+ "stage": "l7_1b_rules",
+ "bed_md5": "34aaadf14091ee156e0950725de48bdf",
+ "intent": [
+  "err_init",
+  "acc_init",
+  "tun_cal",
+  "tun_size",
+  "tun_path"
+ ],
+ "candidates": [],
+ "decisions": [
+  {
+   "id": "err_init",
+   "action": "wire",
+   "op": "connect_from_wire",
+   "variant": null,
+   "decided_by": "RULE-SINGLE-CANDIDATE",
+   "exec": {
+    "src": {
+     "uid": 4910,
+     "term": "error out",
+     "term_uid": 4965,
+     "term_class": "Terminal",
+     "owner_class": "ClusterConstant",
+     "diagram": 686,
+     "wire_uid": 4969
+    },
+    "dst": {
+     "uid": 23041,
+     "term": "error out",
+     "diagram": 686,
+     "owner_class": "WhileLoop",
+     "term_class": "Terminal"
+    }
+   },
+   "nm": "error out"
+  },
+  {
+   "id": "acc_init",
+   "action": "wire",
+   "op": "connect_from_wire",
+   "variant": null,
+   "decided_by": "RULE-SINGLE-CANDIDATE",
+   "exec": {
+    "src": {
+     "uid": 781,
+     "term": "initialized array",
+     "term_uid": 1842,
+     "term_class": "Terminal",
+     "owner_class": "GrowableFunction",
+     "diagram": 686,
+     "wire_uid": 3543
+    },
+    "dst": {
+     "uid": 23041,
+     "term": "total data array out",
+     "diagram": 686,
+     "owner_class": "WhileLoop",
+     "term_class": "Terminal"
+    }
+   },
+   "nm": "total data array out"
+  },
+  {
+   "id": "tun_cal",
+   "action": "wire",
+   "op": "connect_from_wire",
+   "variant": "tunnel_outer",
+   "decided_by": "RULE-PD166",
+   "exec": {
+    "src": {
+     "uid": 3644,
+     "term": "",
+     "term_class": "InnerTerminal",
+     "owner_class": "LoopTunnel",
+     "diagram": 639,
+     "wire_uid": 0,
+     "outer_wire": 21
+    },
+    "dst": {
+     "uid": 376,
+     "term": "cal cluster path",
+     "diagram": 23405,
+     "owner_class": "SubVI",
+     "term_class": "Terminal"
+    }
+   }
+  },
+  {
+   "id": "tun_size",
+   "action": "wire",
+   "op": "connect_from_wire",
+   "variant": "tunnel_outer",
+   "decided_by": "RULE-PD166",
+   "exec": {
+    "src": {
+     "uid": 2294,
+     "term": "",
+     "term_class": "InnerTerminal",
+     "owner_class": "LoopTunnel",
+     "diagram": 639,
+     "wire_uid": 0,
+     "outer_wire": 2362
+    },
+    "dst": {
+     "uid": 376,
+     "term": "file size",
+     "diagram": 23405,
+     "owner_class": "SubVI",
+     "term_class": "Terminal"
+    }
+   }
+  },
+  {
+   "id": "tun_path",
+   "action": "wire",
+   "op": "connect_from_wire",
+   "variant": "tunnel_outer",
+   "decided_by": "RULE-PD166",
+   "exec": {
+    "src": {
+     "uid": 5096,
+     "term": "",
+     "term_class": "InnerTerminal",
+     "owner_class": "LoopTunnel",
+     "diagram": 639,
+     "wire_uid": 0,
+     "outer_wire": 5104
+    },
+    "dst": {
+     "uid": 376,
+     "term": "selected path",
+     "diagram": 23405,
+     "owner_class": "SubVI",
+     "term_class": "Terminal"
+    }
+   }
+  }
+ ],
+ "created": "2026-09-24 04:21:45",
+ "jev_calls": 0,
+ "cost": {
+  "usd_est": 0.0,
+  "basis": "docs/jev-integration-plan.md:13",
+  "seconds": 0.0
+ },
+ "thresholds": {
+  "measured": "2026-09-23 16:43:40",
+  "rules": {
+   "pair/chain": "act = smallest t whose yes-precision is 1.0 with >= 1 yes; acts iff acc@0.5 >= 0.80 and n >= 20",
+   "op": "act = smallest t whose acted-accuracy is 1.0; acts iff acc >= 0.80 and n >= 20",
+   "risk": "act (proceed when p_risk <= t) = largest t below every positive's p; acts iff acc@0.5 >= 0.80 and n >= 20"
+  },
+  "pair": {
+   "act": 0.75,
+   "margin": 0.15,
+   "rule": "judgement 2026-09-23 16:xx: act iff best p >= act AND best - runner-up (same intent) >= margin; else llm. Step-5 fitted act was 0.70.",
+   "acts": true,
+   "acc": 0.898,
+   "brier": 0.0745,
+   "n": 49
+  },
+  "chain": {
+   "act": 0.5,
+   "acts": true,
+   "acc": 0.807,
+   "brier": 0.1275,
+   "n": 57
+  },
+  "op": {
+   "act": 0.95,
+   "acts": false,
+   "acc": 0.55,
+   "brier": 0.6395,
+   "n": 20
+  },
+  "risk": {
+   "act": 0.5,
+   "acts": false,
+   "acc": 0.5714,
+   "brier": 0.3276,
+   "n": 28
+  }
+ }
+}

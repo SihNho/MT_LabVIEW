@@ -54,7 +54,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 sys.path.insert(0, os.path.join(ROOT, "tools", "hooks"))
-import stop_record  # noqa: E402
+import importlib  # noqa: E402
+stop_record = importlib.import_module(os.environ.get("STOP_RECORD_UNDER_TEST", "stop_record"))  # override: a candidate copy
 
 RESULTS = []
 

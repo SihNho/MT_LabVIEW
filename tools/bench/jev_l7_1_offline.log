@@ -1,0 +1,49 @@
+BGRUN START 2026-09-24 03:49:28 limit 20.0 min: py -u tools/bench/jev_l7_1_offline.py
+jev_l7_1_offline - cycle 71 (runner 70), Pre-decided 170(a): the review's OFFLINE Jev test (a)-(e)
+(archive/peer/2026-09-24-c70-l7-1-jev-threshold.md section 4). Pure Python + Jev, NO LabVIEW, no model decision.
+Rows are REBUILT from tools/bench/decision_l7_1_body.json / decision_l7_1_init.json (exec + row_key); the fields
+write_record did not keep (sink_state, scope, borders) are filled to match the logged candidate text: every
+case is same-diagram, borders 0, sink free. The bed-side term rows (#376 / #4910 / #781, incl. subVI name for the
+wiki line) come from the bed terminal table graph_s3_loop15_20260924.json exactly as l7_1_predict.py builds it;
+#376 is placed on body #23405 (post-move). New-SR ends are hand rows (class/term as logged, subvi None).
+Each case = jev_pairs.ask_pair(line, cand, n) -> per-sample values; for multi-candidate cases (a) every candidate
+is asked (the same 4 as run 1) so "top == S1-mapped pair" and the margin are measured per sample index.
+PRIOR ART: jev_pairs.ask_pair / pair_state, jev_candidates.from_parts / term_row, l7_1_predict.py graph build -
+all used unchanged; nothing new built.
+PREDICTION (from the review, recorded not gated): (a) mean ~0.75 +-0.05; (b) ~0.58; (c) >=0.8 if question defect;
+(d) drops well below 0.848 if name match inflated it; (e) low (<0.5) if Jev judges more than names.
+    MATERIAL=1 py tools/bgrun.py --max-min 20 --log tools/bench/jev_l7_1_offline.log -- py -u tools/bench/jev_l7_1_offline.py
+  FACT  corrected intent line (c)/(e), exact text: "Initialize Array #781 output 'initialized array' - the value that initialises the ORIGINAL accumulator register #51 - initialises the NEW accumulator LEFT shift register #24187 of loop 1.7 (WhileLoop #23041) through its OUTER terminal. That register carries save trace.vi #376's output 'total data array out' (#376 -> right register #24150 -> left register #24187), so its terminals now read 'total data array out'."
+---------- (a) err_R as-is  n=12  candidates=4
+  INTENT "save trace.vi #376 output 'error out' feeds the NEW error-chain RIGHT shift register (replaces #24) of loop 1.7"
+  CAND  [0] SOURCE node #376 SubVI terminal 'error out' (Terminal, diagram 23405)  ->  SINK node #24083 RightShiftRegister terminal '' (InnerTerminal, diagram 23405); sink is free; scope same, borders 0  p=0.755 values=[0.74, 0.76, 0.76, 0.77, 0.8, 0.73, 0.71, 0.76, 0.79, 0.77, 0.72, 0.75] err=None
+  CAND  [1] SOURCE node #376 SubVI terminal 'file number to append out' (Terminal, diagram 23405)  ->  SINK node #24083 RightShiftRegister terminal '' (InnerTerminal, diagram 23405); sink is free; scope same, borders 0  p=0.14916666666666664 values=[0.18, 0.15, 0.14, 0.18, 0.13, 0.15, 0.14, 0.13, 0.17, 0.16, 0.14, 0.12] err=None
+  CAND  [2] SOURCE node #376 SubVI terminal 'file progress' (Terminal, diagram 23405)  ->  SINK node #24083 RightShiftRegister terminal '' (InnerTerminal, diagram 23405); sink is free; scope same, borders 0  p=0.08636363636363636 values=[0.11, 0.08, 0.11, 0.08, 0.09, 0.07, 0.1, 0.06, 0.06, 0.13, 0.06] err=None
+  CAND  [3] SOURCE node #376 SubVI terminal 'total data array out' (Terminal, diagram 23405)  ->  SINK node #24083 RightShiftRegister terminal '' (InnerTerminal, diagram 23405); sink is free; scope same, borders 0  p=0.17416666666666666 values=[0.17, 0.15, 0.12, 0.23, 0.18, 0.2, 0.23, 0.15, 0.23, 0.15, 0.09, 0.19] err=None
+  ROW   {'case': 'a', 'label': 'err_R as-is', 'n': 12, 'mean': 0.755, 'min': 0.71, 'max': 0.8, 'sd': 0.026, 'top_is_s1': '11/11', 'margin_mean': 0.575, 'margin_min': 0.48}
+---------- (b) acc_init CURRENT line  n=10  candidates=1
+  INTENT 'Initialize Array #781 that initialises the original #51 initialises the NEW accumulator LEFT register (outer)'
+  CAND  [0] SOURCE node #781 GrowableFunction terminal 'initialized array' (Terminal, diagram 686)  ->  SINK node #24187 LeftShiftRegister terminal 'total data array out' (OuterTerminal, diagram 686); sink is free; scope same, borders 0  p=0.584 values=[0.58, 0.57, 0.6, 0.58, 0.56, 0.59, 0.58, 0.62, 0.61, 0.55] err=None
+  ROW   {'case': 'b', 'label': 'acc_init CURRENT line', 'n': 10, 'mean': 0.584, 'min': 0.55, 'max': 0.62, 'sd': 0.021, 'top_is_s1': 'n/a (1 cand)', 'margin_mean': 0.584, 'margin_min': None}
+---------- (c) acc_init CORRECTED line  n=10  candidates=1
+  INTENT "Initialize Array #781 output 'initialized array' - the value that initialises the ORIGINAL accumulator register #51 - initialises the NEW accumulator LEFT shift register #24187 of loop 1.7 (WhileLoop #23041) through its OUTER terminal. That register carries save trace.vi #376's output 'total data array out' (#376 -> right register #24150 -> left register #24187), so its terminals now read 'total data array out'."
+  CAND  [0] SOURCE node #781 GrowableFunction terminal 'initialized array' (Terminal, diagram 686)  ->  SINK node #24187 LeftShiftRegister terminal 'total data array out' (OuterTerminal, diagram 686); sink is free; scope same, borders 0  p=0.906 values=[0.91, 0.91, 0.9, 0.91, 0.9, 0.91, 0.91, 0.91, 0.9, 0.9] err=None
+  ROW   {'case': 'c', 'label': 'acc_init CORRECTED line', 'n': 10, 'mean': 0.906, 'min': 0.9, 'max': 0.91, 'sd': 0.005, 'top_is_s1': 'n/a (1 cand)', 'margin_mean': 0.906, 'margin_min': None}
+---------- (d) err_init sink name blanked  n=10  candidates=1
+  INTENT 'the error-cluster constant #4910 that initialises the original #1108 initialises the NEW error-chain LEFT register (outer)'
+  CAND  [0] SOURCE node #4910 ClusterConstant terminal 'error out' (Terminal, diagram 686)  ->  SINK node #24133 LeftShiftRegister terminal '' (OuterTerminal, diagram 686); sink is free; scope same, borders 0  p=0.8029999999999999 values=[0.81, 0.8, 0.81, 0.82, 0.8, 0.79, 0.8, 0.8, 0.8, 0.8] err=None
+  ROW   {'case': 'd', 'label': 'err_init sink name blanked', 'n': 10, 'mean': 0.803, 'min': 0.79, 'max': 0.82, 'sd': 0.008, 'top_is_s1': 'n/a (1 cand)', 'margin_mean': 0.803, 'margin_min': None}
+---------- (e) NEGATIVE #4910 'error out' -> acc LEFT outer (corrected acc line)  n=10  candidates=1
+  INTENT "Initialize Array #781 output 'initialized array' - the value that initialises the ORIGINAL accumulator register #51 - initialises the NEW accumulator LEFT shift register #24187 of loop 1.7 (WhileLoop #23041) through its OUTER terminal. That register carries save trace.vi #376's output 'total data array out' (#376 -> right register #24150 -> left register #24187), so its terminals now read 'total data array out'."
+  CAND  [0] SOURCE node #4910 ClusterConstant terminal 'error out' (Terminal, diagram 686)  ->  SINK node #24187 LeftShiftRegister terminal 'total data array out' (OuterTerminal, diagram 686); sink is free; scope same, borders 0  p=0.09799999999999999 values=[0.09, 0.1, 0.09, 0.09, 0.1, 0.11, 0.1, 0.11, 0.1, 0.09] err=None
+  ROW   {'case': 'e', 'label': "NEGATIVE #4910 'error out' -> acc LEFT outer (corrected acc line)", 'n': 10, 'mean': 0.098, 'min': 0.09, 'max': 0.11, 'sd': 0.007, 'top_is_s1': 'n/a (negative)', 'margin_mean': None, 'margin_min': None}
+---------- TABLE (Pre-decided 170(a) measurement)
+  case | label | n | mean p | min | max | sd | top==S1-mapped | margin mean (min)
+  (a) | err_R as-is | 12 | 0.755 | 0.71 | 0.8 | 0.026 | 11/11 | 0.575 (0.48)
+  (b) | acc_init CURRENT line | 10 | 0.584 | 0.55 | 0.62 | 0.021 | n/a (1 cand) | 0.584 (None)
+  (c) | acc_init CORRECTED line | 10 | 0.906 | 0.9 | 0.91 | 0.005 | n/a (1 cand) | 0.906 (None)
+  (d) | err_init sink name blanked | 10 | 0.803 | 0.79 | 0.82 | 0.008 | n/a (1 cand) | 0.803 (None)
+  (e) | NEGATIVE #4910 'error out' -> acc LEFT outer (corrected acc line) | 10 | 0.098 | 0.09 | 0.11 | 0.007 | n/a (negative) | None (None)
+  FACT  jev calls 88, est $0.0070
+=== GATES: 1 pass / 0 fail  (every case >= 10 answered samples)
+BGRUN END rc=0 after 147s

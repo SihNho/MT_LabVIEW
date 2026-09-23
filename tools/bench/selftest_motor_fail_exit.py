@@ -31,7 +31,7 @@ sys.path.insert(0, os.path.join(ROOT, "tools"))
 import audit_cycle  # noqa: E402
 import motor_gate as mg  # noqa: E402
 
-BGRUN = os.path.join(ROOT, "tools", "bgrun.py")
+BGRUN = os.environ.get("BGRUN_UNDER_TEST") or os.path.join(ROOT, "tools", "bgrun.py")   # override: test a candidate copy
 GATE = os.path.join(ROOT, "tools", "motor_gate.py")
 TMP = tempfile.mkdtemp(prefix="selftest_motor_fail_exit_")
 rows = []

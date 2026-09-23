@@ -241,4 +241,20 @@ VIOLATION: device-failed | loss_min=1 | loss_usd=? | evidence=bgrun-FAIL-scan@to
 
 ## What was done with it
 
-(Claude fills in)
+Disposed by the cycle-71 judgement session, 2026-09-24 03:53.
+
+- **The fault (repeated-failure-class): ACCEPTED.** The design answer is `docs/d1-loop12-17-split-plan.md`
+  Pre-decided 168–170 (S1-mapped verify, L7-1a/b split, offline re-score first). Cycle 71 ran the offline re-score
+  BEFORE any LabVIEW run (`tools/bench/jev_l7_1_offline.log`: acc_init 0.584 → 0.906 with the corrected intent line,
+  negative swap 0.098, err_R 0.755 ± 0.026). The gate that let run 2 through gets a measured repair:
+  `docs/violation-decisions.md`, "repeated-failure-class — 2026-09-24 03:53".
+- **device-failed (bgrun FAIL scan): ACCEPTED.** Repair = exempt Jev commands by command; revert the output
+  mangling. See `docs/violation-decisions.md`, "device-failed — 2026-09-24 03:53".
+- **F2 (missing save step, offline re-scorer):** both done in cycle 71. The L7-1a recipe saves the move+SR half
+  (`tools/recipes/stage_d1_l7_1a.py`), and the offline re-scorer is `tools/bench/jev_l7_1_offline.py`.
+- **F4 (the runner's cycle counter is one behind):** a naming quirk, not a defect. The runner's "cycle N" is project
+  cycle N+1. Recorded here only.
+- **F4 (C7 compares against a stale plan) / F6 (the review said "half right"):** accepted as FINDINGS. PD 170
+  already records "half right". C7's plan pointer is left for a later doc cycle.
+- **F7 (run 2 launched with a review owed, inside material):** accepted. The material brief for cycle 71 stated
+  measurement only, and the gate repair above makes the same launch refuse mechanically.

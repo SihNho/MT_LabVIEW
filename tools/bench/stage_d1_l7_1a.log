@@ -1,0 +1,127 @@
+BGRUN START 2026-09-24 03:56:56 limit 30.0 min: py -u tools/recipes/stage_d1_l7_1a.py
+stage_d1_l7_1a - cycle 71 (runner 70) L7-1a (docs/d1-loop12-17-split-plan.md Pre-decided 169; 163 = loop 1.7 is
+WhileLoop #23041, body #23405). FROM claudeDev\D1_s3_loop15.vi (1a11d92a), FRESH LabVIEW: move #376 into body #23405;
+add the two NEW SR pairs on #23041 (err replaces #24/#1108, acc replaces #15/#51); WIRE NOTHING; save
+claudeDev\D1_l7_1a_<ts>.vi (broken by design -> stagekit.save(broken_ok=True) = gui_save, CLAUDE.md split-rule 6,
+evidence "user 2026-09-22 broken-intermediate save"; shot before/after = capture -> act -> capture).
+PRIOR ART: the move + SR steps are copied UNCHANGED from tools/recipes/stage_d1_l7_1.py (lines 29-35, 46-56), which ran
+them clean twice (stage_d1_l7_1.log:80-90, stage_d1_l7_1_r2.log:71-81); stagekit / wiki_build.read_live / vigraph.diff /
+build_d1_v0.owner_of used unchanged. No op, no Jev, no wiring row.
+CONTRACT (written before the run to tools/bench/l7_1a_predict.log): P0 owners as S3; P1 #376 owned by #23405, 12
+terminals all bare; PD diff(bed,new): nodes_added == exactly the 4 new SR uids, nodes_removed == [], every removed
+uid-edge touches #376, no uid-edge added; P3 WhileLoop/Local/ControlTerminal/SubVI/LoopTunnel counts delta 0;
+PS saved, md5 != bed, bed md5 unchanged; H2/H3/H5 (bed unchanged, pins, refs opened == closed). ExecState RECORDED ONLY.
+    py tools/bgrun.py --material --max-min 30 --log tools/bench/stage_d1_l7_1a.log -- py -u tools/recipes/stage_d1_l7_1a.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 248 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 1a11d92aacabf7ec844d65b8af19f39f  got 1a11d92aacabf7ec844d65b8af19f39f
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN BEFORE S3 loop15 bed    1a11d92aacabf7ec844d65b8af19f39f  (want 1a11d92aacabf7ec844d65b8af19f39f) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 33952
+  FACT  LabVIEW handle count AFTER the restart: 33992
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_l7_1a_20260924_035656.vi
+  FACT  ExecState [after open] D1_l7_1a_20260924_035656.vi = 1
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so D1_l7_1a_20260924_035656.vi is deleted at close
+  FACT  HANDLES after opening the bed: 54404
+  FACT  ExecState [P0 bed on open] D1_l7_1a_20260924_035656.vi = 1
+  OBSERVED uid 23405 -> owner 'WhileLoop' uid 23041 | self 'Diagram'#23405 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 23041 -> owner 'Diagram' uid 686 | self 'WhileLoop'#23041 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 376 -> owner 'Diagram' uid 639 | self 'SubVI'#376 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  P0 #23405 owned by #23041, #23041 on #686, #376 on #639  [('WhileLoop', 23041), ('Diagram', 686), ('Diagram', 639)]
+  FACT  LIVE MAP [bed] {'gobject': 8.83, 'terminals': 25.38, 'fs': 0.0, 'total': 34.26}
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #376 -> Diagram[20] at (4760, 6765) -> err '' (0.2 s)
+  FACT  after move_in AFTER node census: 636 rows
+  FACT  after move_in CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(23981, 'Invoke', (4593, 6523))]
+  FACT  after move_in new #23981 #23981 lives at: {'diagram_index': 20, 'diagram_uid': 23405, 'diagram_class': 'Diagram', 'nodes_index': 2, 'nodes_on_diagram': 3, 'label': 'Invoke Node'}  (21 diagram(s) scanned of 173, 1.2 s)
+  FACT  after move_in new #23981 terminal table of #23981 (Diagram idx 20, Nodes[2], echo 23981): 6 terminal(s)
+  FACT      after move_in new #23981 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      after move_in new #23981 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      after move_in new #23981 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      after move_in new #23981 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      after move_in new #23981 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      after move_in new #23981 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  after move_in the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  after move_in purge delete Node #23981 at index 94: gone [23981], error '', census 636 -> 635, still present False (1.29 s)
+  FACT  after move_in AFTER THE PURGE node census: 635 rows
+  FACT  after move_in purge arithmetic: Node 635 -> 636 -> 635
+  FACT  P1 #376 after the move #376 lives at: {'diagram_index': 20, 'diagram_uid': 23405, 'diagram_class': 'Diagram', 'nodes_index': 1, 'nodes_on_diagram': 2, 'label': 'save trace.vi'}  (21 diagram(s) scanned of 173, 1.2 s)
+  FACT  P1 #376 after the move terminal table of #376 (Diagram idx 20, Nodes[1], echo 376): 12 terminal(s)
+  FACT      P1 #376 after the move t0  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      P1 #376 after the move t1  'total data array out'             is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      P1 #376 after the move t2  'error in'                         is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      P1 #376 after the move t3  'file progress'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      P1 #376 after the move t4  'file number to append out'        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      P1 #376 after the move t5  'current frame data array in'      is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      P1 #376 after the move t6  'cal cluster path'                 is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      P1 #376 after the move t7  'frame index'                      is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      P1 #376 after the move t8  'saved file refnum'                is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      P1 #376 after the move t9  'file size'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      P1 #376 after the move t10 'total data array in'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      P1 #376 after the move t11 'selected path'                    is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  #376: 12 terminal(s), 0 WIRED
+  OBSERVED uid 376 -> owner 'Diagram' uid 23405 | self 'SubVI'#376 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  P1 #376 owned by #23405, 12 terminals, every terminal bare  (('Diagram', 23405), 12, [])
+  FACT  add_shift_reg node census: 635 rows
+  FACT  OP add_shift_reg loop[0] y=120 -> err '' (0.1 s)
+  FACT  add_sr err AFTER node census: 635 rows
+  FACT  add_sr err CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  FACT  NEW SR [err] on #23041: {'right': 24083, 'left': 24133, 'rights': [24083]}
+  FACT  add_shift_reg node census: 635 rows
+  FACT  OP add_shift_reg loop[0] y=180 -> err '' (0.1 s)
+  FACT  add_sr acc AFTER node census: 635 rows
+  FACT  add_sr acc CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  FACT  NEW SR [acc] on #23041: {'right': 24150, 'left': 24187, 'rights': [24083, 24150]}
+  FACT  final AFTER node census: 635 rows
+  FACT  final CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  FACT  census before {'WhileLoop': 6, 'Local': 10, 'ControlTerminal': 116, 'SubVI': 97, 'LoopTunnel': 137, 'Wire': 1913} -> after {'WhileLoop': 6, 'Local': 10, 'ControlTerminal': 116, 'SubVI': 97, 'LoopTunnel': 137, 'Wire': 1913}
+  PASS  P3 WhileLoop/Local/ControlTerminal/SubVI/LoopTunnel delta 0  {'WhileLoop': 6, 'Local': 10, 'ControlTerminal': 116, 'SubVI': 97, 'LoopTunnel': 137, 'Wire': 1913} -> {'WhileLoop': 6, 'Local': 10, 'ControlTerminal': 116, 'SubVI': 97, 'LoopTunnel': 137, 'Wire': 1913}
+  FACT  ExecState [after move + SRs (RECORDED ONLY)] D1_l7_1a_20260924_035656.vi = 0
+  FACT  LIVE MAP [new] {'gobject': 8.41, 'terminals': 12.97, 'fs': 0.0, 'total': 21.41}
+  FACT  diff(bed,new) nodes_added [24083, 24133, 24150, 24187] removed []
+  FACT  diff(bed,new) uid-keyed wire/fs edges removed (16) [('wire', 51, 76, 376, 5782), ('wire', 376, 3934, 24, 1339), ('wire', 376, 3954, 15, 58), ('wire', 376, 5704, 1929, 1931), ('wire', 376, 5704, 3453, 3453), ('wire', 376, 5739, 5020, 5044), ('wire', 639, 644, 376, 5763), ('wire', 1108, 1700, 376, 5683), ('wire', 1929, 2043, 2048, 3182), ('wire', 1929, 2043, 6384, 6480), ('wire', 2294, 2313, 376, 5778), ('wire', 2626, 2813, 376, 5754), ('wire', 3052, 3060, 376, 5772), ('wire', 3644, 3651, 376, 5760), ('wire', 5020, 5050, 6384, 6511), ('wire', 5096, 5098, 376, 5787)]
+  FACT  diff(bed,new) uid-keyed wire/fs edges added (0) []
+  FACT  #376 terminal frame_diagram in the new graph: [23405]
+  PASS  PD1 nodes_added == exactly the 4 new SR uids [24083, 24133, 24150, 24187]  [24083, 24133, 24150, 24187]
+  PASS  PD2 nodes_removed == []
+  FAIL  PD3 every removed uid-edge touches #376; no uid-edge added  ([('wire', 1929, 2043, 2048, 3182), ('wire', 1929, 2043, 6384, 6480), ('wire', 5020, 5050, 6384, 6511)], [])
+
+---------- [SAVE] D1_l7_1a_20260924_035656.vi
+  FACT  ExecState [before the save] D1_l7_1a_20260924_035656.vi = 0
+  FACT  SAVE ROUTE = gui_save, the APPROVED broken-intermediate route (CLAUDE.md split-rule 6; evidence "user 2026-09-22 broken-intermediate save"). The artefact is BROKEN BY DESIGN and is NEVER RUN (34(f)).
+  PASS  S1 the save returned without raising (gui_save route)
+  FACT  SAVED ARTEFACT: D1_l7_1a_20260924_035656.vi md5 34aaadf14091ee156e0950725de48bdf size 306744 B; version bytes [0, 38]
+  PASS  S2 the artefact is on disk and non-empty  306744 B
+  FACT  S3 COLD re-open check SKIPPED BY RULE: ExecState was 0, and a broken-saved VI is never cold-loaded headless (recompile spin).
+  PASS  PS artefact saved, md5 differs from the bed; bed md5 unchanged  ('34aaadf14091ee156e0950725de48bdf', '1a11d92aacabf7ec844d65b8af19f39f')
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 0}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 0}
+  FACT  LabVIEW handle count AFTER the work: 34131
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 1a11d92aacabf7ec844d65b8af19f39f / after 1a11d92aacabf7ec844d65b8af19f39f
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN AFTER  S3 loop15 bed    1a11d92aacabf7ec844d65b8af19f39f  (want 1a11d92aacabf7ec844d65b8af19f39f) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['D1_l7_1a_20260924_035656.vi']  (removed: [])
+  PASS  H6 the files left on disk == ['D1_l7_1a_20260924_035656.vi'] and nothing was removed  added ['D1_l7_1a_20260924_035656.vi'] removed []
+  FACT  LabVIEW handle count at exit: 34131
+
+====================================================================================================
+=== GATES: 15 pass / 1 fail; failing: PD3 every removed uid-edge touches #376; no uid-edge added
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\stage_d1_l7_1a.json   elapsed 147.7 s
+BGRUN END rc=1 after 198s

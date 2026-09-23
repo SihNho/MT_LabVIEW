@@ -687,6 +687,9 @@ class Stage(object):
         echo, rows = g.node_terms_uid(t, didx, nidx)
         if echo != uid:
             raise RuntimeError("uid echo {0!r} != #{1}".format(echo, uid))
+        if end.get("term_uid"):                  # Pre-decided 173: after the first resolution, never by name again
+            ti, _a = match_term_uid(end["term_uid"], mod("allterms").read_terms(t)[0], rows, is_source)
+            return (didx, nidx, ti), "{0}; terminal by uid #{1} (wire {2})".format(how, end["term_uid"], _a["wire_uid"])
         hits = [r for r in rows if r["name"] == end["term"] and bool(r["is_source"]) == bool(is_source)]
         if len(hits) > 1:
             hits = [r for r in hits if not r["wire"]]
@@ -787,9 +790,10 @@ class Stage(object):
         is a Nodes[] terminal: the source is src_uid's terminal on the sink's CURRENT wire (read live), so the
         re-connect must add no wire and read back `Wire.Is Broken?`. Feed it to `expect_is_broken_false`."""
         F = mod("build_opconnectfromwire_v0")
-        (dd, dn, dt), _h = self.address(dst, False)
-        _l, rows = self.wired_terminals(dst["uid"], tag="2nd-pass sink")
-        w = int([r for r in rows if r["name"] == dst["term"] and not r["is_source"]][0]["wire"])
+        (dd, dn, dt), _h = self.address(dst, False)       # dst["term_uid"] set => by uid (Pre-decided 173)
+        self.fact("2nd-pass sink addressed: {0}".format(_h))
+        self.wired_terminals(dst["uid"], tag="2nd-pass sink")                     # the printed table, evidence only
+        w = int([r for r in g.node_terms(self.work, dd, dn) if int(r["i"]) == dt][0]["wire"])
         hit = [x for x in F.wire_source_owner(self.work, w, n=8)
                if x.get("owner_uid") == int(src_uid) and x.get("is_source")]
         self.node_mark("2nd pass")
@@ -1104,6 +1108,29 @@ def fixtures_check(bad_md5s=(), before_listing=None):
         print(_a("  {0}  FX the Moving-Objects *.vi listing is unchanged  {1}".format("PASS" if same else "FAIL",
                                                                                      now)), flush=True)
     return ok
+
+
+def match_term_uid(term_uid, all_rows, node_rows, is_source):
+    """Pre-decided 173 (cycle 71): a terminal addressed by its TERMINAL UID after its first resolution, because a
+    terminal's NAME changes on move and on wiring (`stage_d1_l7_1b.log:274`: a new left SR's outer terminal read
+    'total data array out' before its wire landed and '' after). Pure function, no LabVIEW.
+    `all_rows` = `allterms.read_terms` rows (term_uid, wire_uid, is_source, ...); `node_rows` = `gscript.node_terms`
+    rows of the node the connect op addresses (i, name, is_source, wire) - which may be the STRUCTURE carrying the
+    terminal (a shift register's outer terminal sits in the loop's Terminals[]). The uid is found in the whole-VI
+    table, and its WIRE uid (a unique object) picks the one node row of the same direction. An unwired terminal or
+    anything other than exactly one hit RAISES - never a fallback to the name. Returns (terminal index, all-row)."""
+    a = [r for r in all_rows if int(r["term_uid"]) == int(term_uid)]
+    if len(a) != 1:
+        raise RuntimeError("terminal uid #{0}: {1} row(s) in the whole-VI terminal table".format(term_uid, len(a)))
+    w = int(a[0]["wire_uid"] or 0)
+    if not w or bool(a[0]["is_source"]) != bool(is_source):
+        raise RuntimeError("terminal uid #{0}: wire {1}, is_source {2} - uid addressing needs a wired terminal of "
+                           "direction {3}".format(term_uid, w, a[0]["is_source"], bool(is_source)))
+    hits = [r for r in node_rows if int(r.get("wire") or 0) == w and bool(r["is_source"]) == bool(is_source)]
+    if len(hits) != 1:
+        raise RuntimeError("terminal uid #{0} (wire {1}): {2} matching row(s) on the addressed node".format(
+            term_uid, w, len(hits)))
+    return int(hits[0]["i"]), a[0]
 
 
 def uid_edges(G, kinds=("wire", "fs")):

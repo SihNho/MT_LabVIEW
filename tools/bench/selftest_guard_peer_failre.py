@@ -54,7 +54,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 BENCH = os.path.join(ROOT, "tools", "bench")
 PEER = os.path.join(ROOT, "archive", "peer")
-HOOK = os.path.join(ROOT, "tools", "hooks", "guard_peer.py")
+HOOK = os.path.join(ROOT, "tools", "hooks", os.environ.get("GUARD_PEER_UNDER_TEST", "guard_peer") + ".py")  # override: a candidate copy
 
 BOLD_LOG = os.path.join(BENCH, "diag_movein_set.log")      # cycle 52's failing diagnostic: `  **FAIL**  P6`
 PASS_LOG = os.path.join(BENCH, "verify_d1_s2.log")         # cycle 52's 23 pass / 0 fail verification

@@ -1,0 +1,21 @@
+l7_1b_predict - PREDICTION CONTRACT for tools/recipes/stage_d1_l7_1b.py (Pre-decided 171(4): tools/bench/l7_1_predict_r2.log re-derived for the L7-1a uids).
+Written 2026-09-24 04:0x, BEFORE any L7-1b run, from tools/bench/stage_d1_l7_1a.log (the L7-1a run) and tools/bench/l7_1_prediction.json.
+INPUT  claudeDev\D1_l7_1a_20260924_035656.vi md5 34aaadf14091ee156e0950725de48bdf, 306,744 B (stage_d1_l7_1a.log:103), fresh LabVIEW.
+UIDS   fake -> real: R1 9000001 -> err R 24083 ; L1 9000002 -> err L 24133 ; R2 9000003 -> acc R 24150 ; L2 9000004 -> acc L 24187 (stage_d1_l7_1a.log:79,84).
+P0     #376 owned by Diagram #23405 (L7-1a P1).
+P2a    body rows (S1-mapped, PD168): Jev top == mapped pair for err_R (#376 'error out' -> 24083), err_L (24133 -> #376 'error in'),
+       acc_R (#376 'total data array out' -> 24150), acc_L (24187 -> #376 'total data array in'); offline: err_R top==mapped 11/11 (jev_l7_1_offline.log:42).
+       init rows (PD165): 1 legal candidate each, source == S1 source (#4910 'error out' for #1108; #781 'initialized array' for #51); Jev logged p >= 0.30
+       (offline corrected line 0.906, blank-name err 0.803). tunnel rows (PD166): live outer-feed source uid == S1's for #3644 / #2294 / #5096.
+P2b    every row executes without error; second pass Is Broken? False on err_L, acc_L, err_init, acc_init.
+P3     WhileLoop/Local/ControlTerminal/SubVI counts delta 0.
+PB     computation_diff(S1,new) == exactly the 8 rows of l7_1_predict_r2.log:20-27 (sinks #376 'current frame data array in' / 'saved file refnum';
+       #2048 'array' / 'length'; #3453 'file progress'; #6384 'actual # data points' / 'error in' / 'file # to append'). Unchanged by re-derivation:
+       none of these sinks is an SR uid. FATAL, before save.
+PC1    diff(L7-1a,new).nodes_added == 3 new LoopTunnels; nodes_removed subset of {3644, 2294, 1929, 5020}.
+PC2    removed edges touch a removed tunnel; added edges touch a new SR / new tunnel / #376.
+PC3    AMENDED 2026-09-24 04:3x per Pre-decided 172 (BEFORE the run): BASELINE = the 3 edges ('wire',1929,2043,2048,3182),
+       ('wire',1929,2043,6384,6480), ('wire',5020,5050,6384,6511) are ABSENT in the L7-1a input graph and must stay absent in
+       the new graph (they are L7-R rows); re-driving #1929/#5020 would ADD one and also fail PC2. Nothing else loosened.
+ES     ExecState warm RECORDED (predicted 0: cross-loop rows i5/i7/i8 and L7-R rows still open) -> gui_save; cold not measured (rule).
+PS     saved claudeDev\D1_l7_1_<ts>.vi, md5 != input; input + S3 bed md5 unchanged. H2/H3/H5/H6 as L7-1a.

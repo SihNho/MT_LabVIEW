@@ -1,0 +1,98 @@
+BGRUN START 2026-09-24 04:04:27 limit 20.0 min: py -u tools/bench/diag_c71_l7_1a_tunnels.py
+diag_c71_l7_1a_tunnels - READ-ONLY discriminating test from archive/peer/2026-09-24-c71-l7-1a-pd3.md §4 (alternative form: never cold-load
+the broken saved L7-1a file). A scratch copy of claudeDev\D1_s3_loop15.vi (1a11d92a) in a FRESH LabVIEW; ONLY the L7-1a move_in of #376 into
+body #23405 (same call and position as tools/recipes/stage_d1_l7_1a.py:55); print, before and after, the terminal rows 1931, 2043, 3182, 6480,
+5044, 5050, 6511 (is_source, wire_uid, term_class, node) and vigraph.diff(bed, after) half_wires_only_in_b / terminals_removed. SAVES NOTHING.
+Hypothesis (b) predicts: same wire_uids as the bed; 2043 and 5050 read is_source False; their wires flagged with no source, sinks kept.
+(a) cut: 2043/5050 or sinks read wire_uid 0. (c) dropped: rows absent / in terminals_removed.
+PRIOR ART: stagekit.Stage (discard_work), wiki_build.read_live, jev_candidates.from_parts, vigraph.diff - unchanged; no op.
+    py tools/bgrun.py --material --max-min 20 --log tools/bench/diag_c71_l7_1a_tunnels.log -- py -u tools/bench/diag_c71_l7_1a_tunnels.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 249 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 1a11d92aacabf7ec844d65b8af19f39f  got 1a11d92aacabf7ec844d65b8af19f39f
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN BEFORE S3 loop15 bed    1a11d92aacabf7ec844d65b8af19f39f  (want 1a11d92aacabf7ec844d65b8af19f39f) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 33941
+  FACT  LabVIEW handle count AFTER the restart: 33989
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  diag_c71_tun_scratch.vi
+  FACT  ExecState [after open] diag_c71_tun_scratch.vi = 1
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so diag_c71_tun_scratch.vi is deleted at close
+  FACT  HANDLES after open: 54404
+  FACT  LIVE MAP [bed] {'gobject': 8.72, 'terminals': 24.83, 'fs': 0.0, 'total': 33.68}
+  FACT  TERM [bed] 1931: (1929, 'file progress', 'InnerTerminal', False, 5274)
+  FACT  TERM [bed] 2043: (1929, 'file progress', 'OuterTerminal', True, 4337)
+  FACT  TERM [bed] 3182: (2048, 'length', 'Terminal', False, 4337)
+  FACT  TERM [bed] 6480: (6384, 'actual # data points', 'Terminal', False, 4337)
+  FACT  TERM [bed] 5044: (5020, 'file number to append out', 'InnerTerminal', False, 5056)
+  FACT  TERM [bed] 5050: (5020, 'file number to append out', 'OuterTerminal', True, 5073)
+  FACT  TERM [bed] 6511: (6384, 'file # to append', 'Terminal', False, 5073)
+  FACT  FLAG [bed] w4337: []
+  FACT  FLAG [bed] w5073: []
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #376 -> Diagram[20] at (4760, 6765) -> err '' (0.2 s)
+  FACT  after move_in AFTER node census: 636 rows
+  FACT  after move_in CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(23981, 'Invoke', (4593, 6523))]
+  FACT  after move_in new #23981 #23981 lives at: {'diagram_index': 20, 'diagram_uid': 23405, 'diagram_class': 'Diagram', 'nodes_index': 2, 'nodes_on_diagram': 3, 'label': 'Invoke Node'}  (21 diagram(s) scanned of 173, 1.2 s)
+  FACT  after move_in new #23981 terminal table of #23981 (Diagram idx 20, Nodes[2], echo 23981): 6 terminal(s)
+  FACT      after move_in new #23981 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      after move_in new #23981 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      after move_in new #23981 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      after move_in new #23981 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      after move_in new #23981 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      after move_in new #23981 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  after move_in the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  after move_in purge delete Node #23981 at index 94: gone [23981], error '', census 636 -> 635, still present False (1.30 s)
+  FACT  after move_in AFTER THE PURGE node census: 635 rows
+  FACT  after move_in purge arithmetic: Node 635 -> 636 -> 635
+  OBSERVED uid 376 -> owner 'Diagram' uid 23405 | self 'SubVI'#376 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  D0 #376 now owned by #23405
+  FACT  LIVE MAP [after move] {'gobject': 8.49, 'terminals': 12.99, 'fs': 0.0, 'total': 21.52}
+  FACT  TERM [after] 1931: (1929, 'file progress', 'InnerTerminal', False, 5274)
+  FACT  TERM [after] 2043: (1929, 'file progress', 'OuterTerminal', False, 4337)
+  FACT  TERM [after] 3182: (2048, 'length', 'Terminal', False, 4337)
+  FACT  TERM [after] 6480: (6384, 'actual # data points', 'Terminal', False, 4337)
+  FACT  TERM [after] 5044: (5020, 'file number to append out', 'InnerTerminal', False, 5056)
+  FACT  TERM [after] 5050: (5020, 'file number to append out', 'OuterTerminal', False, 5073)
+  FACT  TERM [after] 6511: (6384, 'file # to append', 'Terminal', False, 5073)
+  FACT  FLAG [after] w4337: [{'wire_uid': 4337, 'n_src': 0, 'n_sink': 3, 'src': [], 'sink': ['6384|Terminal|actual # data points|0', '2048|Terminal|length|0', '1929|OuterTerminal|file progress|0']}]
+  FACT  FLAG [after] w5073: [{'wire_uid': 5073, 'n_src': 0, 'n_sink': 2, 'src': [], 'sink': ['6384|Terminal|file # to append|0', '5020|OuterTerminal|file number to append out|0']}]
+  FACT  diff keys ['changed_sinks', 'counts', 'edges_added', 'edges_removed', 'half_wires_only_in_a', 'half_wires_only_in_b', 'nodes_added', 'nodes_removed', 'terminals_added', 'terminals_removed']
+  FACT  diff half_wires_only_in_b (12): [464, 541, 1397, 1581, 3497, 3629, 4337, 4517, 4880, 5056, 5073, 5274]
+  FACT  diff terminals_removed (4): ['15|InnerTerminal|total data array out|0', '15|OuterTerminal|total data array out|0', '51|InnerTerminal|total data array out|0', '51|OuterTerminal|total data array out|0']
+  FACT  diff terminals_added (4): ['15|InnerTerminal||0', '15|OuterTerminal||0', '51|InnerTerminal||0', '51|OuterTerminal||0']
+  ROW   wire_uids of 2043/3182/6480/5050/6511 unchanged bed -> after (hypothesis b) : observed=True expected=True
+  ROW   2043 and 5050 is_source after : observed=[False, False] expected=[False, False]
+  ROW   rows present after : observed=[] expected=[]
+
+---------- [H] HYGIENE
+  FACT  close_panel(diag_c71_tun_scratch.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 7}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 7}
+  FACT  LabVIEW handle count AFTER the work: 54686
+  PASS  H4 scratch deleted: diag_c71_tun_scratch.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\diag_c71_tun_scratch.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 1a11d92aacabf7ec844d65b8af19f39f / after 1a11d92aacabf7ec844d65b8af19f39f
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN AFTER  S3 loop15 bed    1a11d92aacabf7ec844d65b8af19f39f  (want 1a11d92aacabf7ec844d65b8af19f39f) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33997
+
+====================================================================================================
+=== GATES: 9 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c71_l7_1a_tunnels.json   elapsed 172.9 s
+BGRUN END rc=0 after 223s

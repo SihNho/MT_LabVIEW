@@ -1,0 +1,63 @@
+BGRUN START 2026-09-24 03:54:12 limit 20.0 min: py tools\prior_art_review.py --plan-file docs\d1-loop12-17-split-plan.md --slug c71-l7-1a --trigger cycle-start --recipe=tools/recipes/stage_d1_l7_1a.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c71-l7-1a.txt (96988 chars)
+OUTCOME: ANSWERED (95s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-24-priorart-c71-l7-1a.md
+COST: $1.4836  in 20 / out 8768 / cache-create 131374 / cache-read 1285639  (92s, 16 turn(s))
+--- ANSWER ---
+**Verdict: not novel. There are two `contradicted` findings, and both are stale text that a doc edit can release. The L7-1a recipe itself repeats nothing that has already failed.** I did not build, run or edit anything, and I did not touch LabVIEW.
+
+## PART A — the direction
+
+**A1 Already decided: yes, and the recipe follows the decision.** On 2026-09-24 the cycle-70 judgement split L7-1 into two stages (`docs/d1-loop12-17-split-plan.md:279-284`, Pre-decided 169):
+- **L7-1a:** move `#376` into body `#23405` and create the two new shift-register pairs, with no wiring. Save the file by GUI.
+- **L7-1a gate:** `diff(bed,new)` shows only `#376`'s owner change plus the 4 new shift-register objects.
+- **Timing:** Pre-decided 171(4) at `:315-317` says L7-1b runs in the same dispatch once L7-1a passes.
+
+`tools/recipes/stage_d1_l7_1a.py` implements exactly that. This is the decision it carries out, not a re-opening of it, so I record no `settled-already`.
+
+**A2 Refuted already: no.** The two earlier failures, `stage_d1_l7_1.log:124-126` and `stage_d1_l7_1_r2.log:85-90`, both stopped at gate P2a, the Jev wiring gate. L7-1a has no wiring rows, so that cause is not in its path. Up to the P2a stop, the move and the shift-register steps passed in both runs (`stage_d1_l7_1_r2.log:34-81`: `#376` is bare with 12 terminals, and the new pairs came back as R24083/L24133 and R24150/L24187).
+
+**A3 Contradictions: two.**
+1. **The plan's own stage table (§2) was never updated for the split.**
+   - The §2 L7-1 row (`docs/d1-loop12-17-split-plan.md:64`) still describes one stage: from `D1_s3_loop15.vi` to `D1_l7_1_<ts>.vi`, with "9 (4 body + 2 init + 3 tunnel)" rows.
+   - Pre-decided 169 (`:279-284`) says that stage is split into L7-1a (no rows, saved `D1_l7_1a_<ts>.vi`) and L7-1b (9 rows, input = the L7-1a file).
+   - The §3 pass-criteria table (`:150`) has no row for L7-1a's `diff(bed,new)` gate. That gate exists only in Pre-decided 169 and in the recipe's PD1–PD3.
+   - This is the same kind of stale-row finding the last two rounds released with `FIXED:` (`archive/peer/2026-09-24-priorart-c70-l7-1-r2.md:526`).
+2. **STATUS `## NEXT` disagrees with Pre-decided 171(4) on when L7-1b runs.**
+   - `STATUS.md:81` (FIRST ACT): "The judgement session then reads (1) and decides the L7-1b intent lines (170b) before L7-1b". That reads as L7-1b in a separate dispatch, after a judgement turn.
+   - `docs/d1-loop12-17-split-plan.md:315`: "L7-1b follows L7-1a in the same material dispatch when L7-1a passes every predicted gate."
+   - The plan line is later (cycle-71 judgement), so it wins, and the lock block already says "L7-1a then L7-1b (PD 169/171)". The NEXT line is simply stale.
+
+   A third stale item, not a finding: the lock key `owner_c71l71a` in STATUS says `guard_cycle` refused the recipe because `docs/violation-decisions.md` had no decision. That decision now exists at `docs/violation-decisions.md:1094-1113` (03:53). The lock note is out of date, but it doesn't block anything.
+
+**A4 Evidence that should have been read and wasn't: none found.** One thing that looks like a gap is covered by precedent. CLAUDE.md §3 rule 6 says a broken, GUI-saved file is "never cold-loaded headless", while L7-1b must open the L7-1a file in a fresh LabVIEW. The project has done this before without trouble: `tools/bench/build_d1_m3a3.log:9-27,:138` took the broken M3a-2 file as its input and saved a new artefact from it, and `build_d1_m3a3b_rowD.log:20` recorded ExecState 0 on open. That is not a blocker.
+
+## PART B — the recipe (`stage_d1_l7_1a.py`)
+
+**B1 Already built: no.** The move and shift-register code is a stated copy of `tools/recipes/stage_d1_l7_1.py:29-35, 46-56`, which I checked line for line. It is reused, not duplicated. No `D1_l7_1a_*` file exists yet, and no earlier run saved an L7-1 file (`stage_d1_l7_1_r2.log:31`: "this stage saves nothing").
+
+**B2 Already failed: no.** See A2. The failing part (P2a) is left out by design.
+
+**B3 Helper exists: the recipe already uses it.**
+- Saving goes through `stagekit.save(broken_ok=True)`, which routes to `gui_save` (`tools/stagekit.py:983-1012`).
+- The same route has saved D1 intermediates before (`tools/recipes/stage_d1_m3a3_rowD.py:127`, which produced the rowD files named in STATUS).
+- The diff comes from `vigraph.diff`, and the owner checks from `build_d1_v0.owner_of`.
+
+Nothing is hand-rolled.
+
+**B4 Already measured: only in part, and that is the reason for the split.** The move result (P1: owner `#23405`, 12 terminals, all bare) was measured twice (`stage_d1_l7_1_r2.log:55-71`). The new things this run measures are the saved file and the `diff(bed,new)` gates PD1–PD3.
+
+## Machine-readable
+
+```
+PRIOR-ART: contradicted   (docs/d1-loop12-17-split-plan.md:64 §2 L7-1 row = one 9-row stage from the bed, and §3 :150 has no L7-1a gate, vs Pre-decided 169 :279-284 splitting it into L7-1a (0 rows, saved D1_l7_1a) + L7-1b)
+PRIOR-ART: contradicted   (STATUS.md:81 NEXT "judgement session then reads (1) and decides the L7-1b intent lines before L7-1b" vs docs/d1-loop12-17-split-plan.md:315 Pre-decided 171(4) "L7-1b follows L7-1a in the same material dispatch")
+```
+
+Both can be released with `FIXED:` lines:
+- **First finding:** add L7-1a and L7-1b rows to §2, and the `diff(bed,new)` gate to §3.
+- **Second finding:** rewrite STATUS `## NEXT` to match Pre-decided 171(4).
+
+Neither finding touches the recipe's code or its prediction contract (`tools/bench/l7_1a_predict.log`).
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c71-l7-1a.md
+   STOP RECORD armed: tools/recipes/stage_d1_l7_1a.py sha df7327a1b3d3 verdict contradicted -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 103s

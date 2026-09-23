@@ -1090,3 +1090,70 @@ DECISION: no-device
 verify, 3 attempts; CLAUDE.md 1b, `tools/motor_gate.py:553-554`), already in force and passed at the cycle-67 session
 start (`tools/bench/motor_session_start_cycle67.log`); a further device would be new construction under the user's
 2026-09-18 08:53 order. Recorded, not repaired around: no log deleted, no date rolled, `CYCLE_GUARD_OFF` never set.
+
+## repeated-failure-class — 2026-09-24 03:53 (cycle 71 judgement, after archive/peer/2026-09-24-retrospective-cycle70.md:235)
+
+`VIOLATION: repeated-failure-class | loss_min=15 | loss_usd=? | evidence=tools/bench/stage_d1_l7_1_r2.log:89`.
+L7-1 run 2 was launched at 03:25:55 while run 1's failed prediction still owed its review. The retrospective says
+`tools/bench/jev_gate.log:471,:473` shows the gate ARMED on run 1's log, yet the launch went through with no
+RULE-SAME-ROW or JEV-DISCHARGE line (retrospective finding 4).
+
+DECISION: device (repair of the existing device `tools/hooks/guard_peer.py`, measured before it is changed)
+
+The no-new-device order was lifted on 2026-09-24 03:1x (the user: "루프 판단에 따라 필요한 도구는 만드는 걸 허용할게").
+The device that already exists for this class is `guard_peer.py`, and on this occasion it let the retry through.
+The repair has two steps, in order:
+1. Replay the 03:25:55 launch against `guard_peer` with the same logs, offline, and record which code path returned 0.
+2. Fix that path. The self-test must include a case where a newer failing build log that owes a review and has no
+   discharge line blocks the next launch of the same recipe.
+
+The design side of this occurrence is already answered by `docs/d1-loop12-17-split-plan.md` Pre-decided 168–170:
+S1-mapped rows are verified rather than gated on p, L7-1 is split so its clean half is saved, and the offline
+re-score was run first (cycle 71, `tools/bench/jev_l7_1_offline.log`). The work is scheduled AFTER the L7-1a
+deliverable dispatch in cycle 71, following the deliverable-first ordering (2026-09-18).
+
+## device-failed — 2026-09-24 03:53 (cycle 71 judgement, after archive/peer/2026-09-24-retrospective-cycle70.md:236)
+
+`VIOLATION: device-failed | loss_min=1 | loss_usd=? | evidence=bgrun-FAIL-scan@tools/bench/device_value_a.log:1754`.
+`tools/bgrun.py`'s inner-failure scan read quoted failure strings in a Jev text survey as that run's own failure.
+The survey then mangled its output ("F-AIL", "rc:1", ":::") to get past the scan, which hides real failures from
+every later reader.
+
+DECISION: device (repair of `tools/bgrun.py`'s scan)
+
+The scan is to be scoped by COMMAND, as `guard_peer` was on 2026-09-24 (STATUS OPEN 57): a run whose command is a
+Jev script (`tools/jev*.py`, `tools/bench/jev_*.py`) is exempt, which is the other half of the user's 2026-09-22
+exemption ("Jev는 면제"). The exemption goes by the command, never by the filename. Required self-test:
+- a Jev survey that quotes `FAIL` ends rc=0;
+- a non-Jev build that prints `FAIL` still ends rc=1.
+
+Once the scan is fixed, the mangling in the survey script is reverted. Also open on the same device family, still
+only a FINDING (retrospective device-effect line 2): the stop record refuses
+`prior_art_review.py --recipe <path>` but accepts `--recipe=<path>`, a token-shape hole in its path match. Repair it
+in the same dispatch if it is one regex. Scheduled after the L7-1a deliverable dispatch.
+
+## repeated-failure-class — 2026-09-24 05:54 (cycle 71 judgement, after archive/peer/2026-09-24-retrospective-cycle71.md)
+
+`VIOLATION: repeated-failure-class | loss_min=57 | loss_usd=? | evidence=tools/hooks/material_marker.log:1265`.
+The judgement session resumed a material agent with `SendMessage`, which runs it in the BACKGROUND, and then polled
+build logs for 57 minutes after that agent had already stopped on a gate refusal. This is the fourth consecutive
+cycle in which a judgement session mishandled background work.
+
+DECISION: device
+
+Device: `tools/hooks/guard_session.py` refuses `SendMessage` to a `material` or `log-reader` agent inside a cycle
+session (`CYCLE_SESSION=1`), with the message "dispatch a NEW foreground Agent". Every re-dispatch then blocks until
+it returns. Self-test: the refusal fires under `CYCLE_SESSION=1`, and the interactive chat is untouched. Scheduled
+after L7-1b run 3 (deliverable first).
+
+## device-failed — 2026-09-24 05:54 (cycle 71 judgement, after archive/peer/2026-09-24-retrospective-cycle71.md)
+
+`VIOLATION: device-failed | loss_min=5 | loss_usd=? | evidence=stop_record@tools/hooks/material_marker.log:1264`.
+
+DECISION: device (repair of `tools/stop_record.py`)
+
+- The prior-art dispatch half is REPAIRED (05:31, bgrun `--` parsing, `selftest_stoprecord_bgrun.py` 6/0). This also
+  CLOSES the `--recipe=` gap named in the 03:53 block above.
+- Still to repair: the stop record also refuses READ-ONLY commands on a stopped recipe (`wc -l`, `sed -n`, an AST
+  parse; `material_marker.log:1256,1263,1274`). Refuse only commands that EXECUTE the recipe, and self-test both
+  directions.

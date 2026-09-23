@@ -1,0 +1,15 @@
+FAILED PREDICTION - attack the hypothesis below. Read-only.
+
+Facts:
+- tools/recipes/stage_d1_l7_1a.py (L7-1a, docs/d1-loop12-17-split-plan.md Pre-decided 169): move SubVI #376 into body #23405 of WhileLoop #23041 and add 2 shift-register pairs; wire nothing. Log tools/bench/stage_d1_l7_1a.log: 15 pass / 1 fail.
+- Contract tools/bench/l7_1a_predict.log line PD3: "every removed uid-keyed wire/fs edge touches #376; NO uid-keyed edge added".
+- Observed (log :92, :97): 16 removed edges; 13 touch #376; 3 do not: ('wire', 1929, 2043, 2048, 3182), ('wire', 1929, 2043, 6384, 6480), ('wire', 5020, 5050, 6384, 6511). #1929 and #5020 are LoopTunnels on loop #637 whose ONLY inside source was #376 ('file progress' 5704 -> 1929; 'file number to append out' 5739 -> 5020; also removed, log :92). 0 edges added. PD1 (nodes_added = the 4 SR uids 24083/24133/24150/24187) and PD2 (nodes_removed = []) PASS. P1: #376 on #23405, 12 terminals all bare. ExecState 0 (recorded, expected). Saved D1_l7_1a_20260924_035656.vi by gui_save, md5 34aaadf14091ee156e0950725de48bdf; bed md5 unchanged.
+- The earlier offline simulation tools/bench/l7_1_predict_r2.log ([c]) predicted removed node pairs including (376,1929) and (376,5020) but NOT (1929,2048)/(1929,6384)/(5020,6384); its computation_diff prediction ([b]) already lists #2048 'array'/'length', #6384 'error in'/'actual # data points'/'file # to append' as losing their source.
+
+Hypothesis under attack:
+"The PD3 failure is a defect in OUR contract, not in the VI: when #376 leaves loop #637, output tunnels #1929/#5020 lose their only inside source, so vigraph.build4 no longer emits the tunnel->consumer edges downstream of them (the edges are derived from a source-less tunnel), and those 3 removed edges are a direct consequence of the #376 owner change. The artefact is correct for L7-1a; the contract should have said 'every removed edge touches #376 or a tunnel whose only inside source was #376'."
+
+Answer:
+1. The strongest reason this is wrong - e.g. did the move actually DELETE the outer wires w? of #1929/#5020 (a real loss that L7-R's re-feed would then have to recreate), or did LabVIEW flip/break those tunnels in a way that changes what L7-1b / L7-R can do? Check tools/vigraph.py build4 / diff and tools/stagekit.uid_edges.
+2. Does this affect L7-1b's gate PB (computation_diff == the 8 rows of l7_1_predict_r2.log) or PC1/PC2 in tools/recipes/stage_d1_l7_1b.py?
+3. What would falsify the hypothesis, and the cheapest discriminating test (offline preferred; a read-only LabVIEW read of the saved file is acceptable).

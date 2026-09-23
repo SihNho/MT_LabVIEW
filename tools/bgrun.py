@@ -120,6 +120,15 @@ def relaunch_detached(logp):
     return 125
 
 
+JEV_SCRIPT_RE = re.compile(r"(?:^|[\\/])tools[\\/](?:jev\w*|bench[\\/]jev_\w*)\.py$", re.I)
+
+
+def is_jev_command(cmd):
+    """True when the script this command runs (its FIRST `.py` token) is a Jev script. Never the log name."""
+    script = next((t for t in cmd if t.lower().endswith(".py")), None)
+    return bool(script and JEV_SCRIPT_RE.search(script.strip("\"'")))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--max-min", type=float, required=True, help="hard deadline in minutes")
@@ -216,7 +225,15 @@ def main():
         # and any chain that drops it. Anchored: `RESULT:` at line start; ERR? only with a NON-ZERO number, so the
         # green logs' `ERR?=0` / `ERR? after SPA = 0` and the ALLOWED line's prose "answers ERR 7" do not match.
         # Self-test: tools/bench/selftest_motor_fail_exit.py. Keep identical to audit_cycle.FAILURE_RE's motor part.
-        scan_inner = not logclass.is_review_log(logp)
+        # JEV COMMANDS ARE EXEMPT FROM THE SCAN (device-failed repair, docs/violation-decisions.md
+        # `## device-failed - 2026-09-24 03:53`; the other half of the user's 2026-09-22 "Jev는 면제"). A Jev
+        # survey/classifier QUOTES failure lines by construction - its input is other runs' logs - and
+        # tools/bench/device_value_a.log:1754 ended rc=1 on such a quote; the survey then mangled its own output
+        # ("F-AIL", "rc:1") to get past the scan, hiding real failures from every later reader. SCOPED BY THE
+        # COMMAND, NEVER BY THE LOG NAME: the exemption applies only when the SCRIPT this run executes (the first
+        # `.py` token of the command) is `tools/jev*.py` or `tools/bench/jev_*.py`. The process's own exit code
+        # still decides rc. Self-test: tools/bench/selftest_bgrun_jev_exempt.py.
+        scan_inner = not logclass.is_review_log(logp) and not is_jev_command(cmd)
         inner = []
         inner_re = re.compile(r"\b(?:exit|rc)\s*=\s*([1-9]\d*)|^\s*\*\*FAIL\*\*|^\s*(?:->\s*)?FAIL\b"
                               r"|=== .*?\b[1-9]\d*\s+fail(?:ed|ure)?\b"

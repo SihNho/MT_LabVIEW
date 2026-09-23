@@ -238,12 +238,72 @@ def case_h_creator_rows():
     check("H5 ... unless the row carries op_override", s.rule_check(bad)[0] == "connect_from_wire")
 
 
+def case_i_term_uid():
+    """Pre-decided 173 (cycle 71): `Stage.address` by TERMINAL UID after the first resolution. The fixture is the
+    measured failure (`stage_d1_l7_1b.log:268-276`): WhileLoop #23041's Terminals[] after the init rows landed,
+    where the new acc left SR's outer terminal (t4, wire 3543) read 'total data array out' BEFORE wiring and ''
+    AFTER. LabVIEW is replaced by stubs of the four readers `address` calls; the real `address` code runs."""
+    loop_rows = [{"i": 0, "name": "", "is_source": False, "wire": 23519},
+                 {"i": 1, "name": "error out", "is_source": True, "wire": 0},
+                 {"i": 2, "name": "error out", "is_source": False, "wire": 4969},
+                 {"i": 3, "name": "", "is_source": True, "wire": 0},
+                 {"i": 4, "name": "", "is_source": False, "wire": 3543},
+                 {"i": 5, "name": "", "is_source": False, "wire": 25225}]
+    all_rows = [{"term_uid": 24190, "term_name": "", "is_source": False, "wire_uid": 3543, "owner_uid": 24187},
+                {"term_uid": 24140, "term_name": "error out", "is_source": False, "wire_uid": 4969, "owner_uid": 24133},
+                {"term_uid": 24191, "term_name": "", "is_source": True, "wire_uid": 0, "owner_uid": 24187},
+                {"term_uid": 30001, "term_name": "", "is_source": False, "wire_uid": 25225, "owner_uid": 9}]
+    saved = dict((k, getattr(K.g, k)) for k in ("report_all", "node_labels", "node_terms_uid"))
+    saved_mod = K.mod
+
+    class _AT(object):
+        @staticmethod
+        def read_terms(_t):
+            return all_rows, 0.0
+    try:
+        K.g.report_all = lambda _t, _c: [{"i": 19, "uid": 686}]
+        K.g.node_labels = lambda _t, _d: [{"uid": u} for u in (5, 23041)]
+        K.g.node_terms_uid = lambda _t, _d, _n: (23041, loop_rows)
+        K.mod = lambda name: _AT if name == "allterms" else saved_mod(name)
+        s = new_stage()
+        s.work = "stub.vi"
+        end = lambda **k: dict({"uid": 23041, "diagram": 686, "owner_class": "", "term_class": ""}, **k)  # noqa: E731
+
+        def raises(fn):
+            try:
+                fn()
+            except RuntimeError as e:
+                return str(e)
+            return None
+        e1 = raises(lambda: s.address(end(term="total data array out"), False))
+        check("I1 the PRE-WIRING name no longer resolves after wiring (the measured defect reproduced)",
+              e1 is not None and "0 matches" in e1, e1)
+        r2 = s.address(end(term="total data array out", term_uid=24190), False)
+        check("I2 the SAME row addressed by terminal uid #24190 reaches t4 on #23041 despite the name change",
+              r2[0] == (19, 1, 4) and "uid #24190" in r2[1], repr(r2))
+        r3 = s.address(end(term="", term_uid=24140), False)
+        check("I3 uid #24140 reaches t2 ('error out' sink), not the same-named source t1", r3[0] == (19, 1, 2), repr(r3))
+        e4 = raises(lambda: s.address(end(term="", term_uid=99999), False))
+        check("I4 an unknown terminal uid RAISES (no fallback to the name)", e4 is not None and "0 row" in e4, e4)
+        e5 = raises(lambda: s.address(end(term="", term_uid=24191), True))
+        check("I5 an UNWIRED terminal uid RAISES (uid addressing needs a wire)", e5 is not None and "wired" in e5, e5)
+        e6 = raises(lambda: s.address(end(term="", term_uid=24190), True))
+        check("I6 a direction mismatch RAISES", e6 is not None, e6)
+        e7 = raises(lambda: K.match_term_uid(24190, all_rows, loop_rows + [dict(loop_rows[4], i=6)], False))
+        check("I7 two node rows on the same wire and direction RAISE (ambiguous, never the first)",
+              e7 is not None and "2 matching" in e7, e7)
+    finally:
+        for k, v in saved.items():
+            setattr(K.g, k, v)
+        K.mod = saved_mod
+
+
 def main():
     print("=" * 90, flush=True)
     print("selftest_stagekit - tools/stagekit.py without LabVIEW", flush=True)
     print("=" * 90, flush=True)
     for fn in (case_a_rows, case_b_summary, case_c_md5_pin, case_d_save_route, case_e_mutating_reader,
-               case_f_format_safety, case_g_constants, case_h_creator_rows):
+               case_f_format_safety, case_g_constants, case_h_creator_rows, case_i_term_uid):
         print("\n---------- {0}".format(fn.__name__), flush=True)
         try:
             fn()
