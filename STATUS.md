@@ -61,14 +61,14 @@ labview-lock:
 **Never assume an instance exited**: `tasklist | grep -i labview`. Fresh ≈31,500 handles; unique scratch name/run.
 
 ## HARDWARE — permission follows the RIG STATE. Current: **조립 / ASSEMBLED** (machine key `rig-state:` below)
-분해 = motors ✅ ASI ✅ camera ✅ · **조립 ← WE ARE HERE** = camera ✅, motors/ASI ONLY through `tools/motor_gate.py` inside the envelope · 실험중 = ❌ ❌ ❌. ⚠️ ASI carve-out **RETIRED** (rule 1b); **only the user announces a state change**.
+분해 = motors ✅ ASI ✅ camera ✅ · 조립 = camera ✅, motors/ASI ONLY through `tools/motor_gate.py` inside the envelope · **실험중 ← WE ARE HERE (user 2026-09-23 12:3x)** = ❌ ❌ ❌ and no LabVIEW use. ⚠️ ASI carve-out **RETIRED** (rule 1b); **only the user announces a state change**.
 Rotor counter **0** · magnet full travel · camera 1280×1024, offsets 0, 90.0009 Hz, never write `BinningHorizontal`; **a session open RESETS ROI *and* exposure** → the acquisition loop applies `tools/bench/camera_contract.py`. **No beads on the rig.**
 🆕 **SAFE MOTION ENVELOPE = THE CONTROLLER LIMITS + the gate's command-class denies** (user, 2026-09-18 15:2x at the
 rig). PI `SPA 1 0x15/0x30` ⇒ TMN 0 / TMX 39 (RAM, **never WPA**) · ASI `SL/SU` absolute mm X −3.8475…0.1525, Y −4.7744…−0.7744 (persistent, **never SS Z**),
 written+verified by `py tools/motor_gate.py --session start|end` from the user-editable `tools/bench/motor_limits.json`; `--execute` refuses without `tools/bench/motor_session.json` **and** a fresh matching readback.
 The gate still refuses 실험중, every ASI home/zero/save, PI GOH/FRF/DFH/RON/POS/SPA/WPA and all rotor motion (self-test `selftest_motor_gate2.py` 74/74).
 ✅ The 15:37 run (8/10, L4 a FALSE PASS) is SUPERSEDED by the 16:0x retest — `…-cycle29-retro-trap.md` §7. Limits LEFT ON (PI TMN 0 / TMX 39 **in RAM**, ASI SL/SU persistent); **an 18:13 D0 run then moved the magnet to 30 mm and they held**.
-rig-state: 조립   <!-- set 2026-09-17 23:0x on the user's words ("실험 1차로 끝났는데, 리그는 유지되는 중" + "조립 상태에서도 이 범위 안이면 모터 허용함") · the gate's ONE machine-readable key, parsed by motor_gate.rig_state(); ONLY the user's announcement may set it to 분해 / 조립 / 실험중. Keep it at the start of the line, unquoted. -->
+rig-state: 실험중   <!-- set 2026-09-23 12:3x on the user's words ("내가 곧 실험을 시작하니 … LabVIEW 활용은 하지 말도록") — no motor, no ASI, no camera, and NO LabVIEW use at all until the user announces otherwise. Previous: 조립, set 2026-09-17 23:0x on the user's words ("실험 1차로 끝났는데, 리그는 유지되는 중" + "조립 상태에서도 이 범위 안이면 모터 허용함") · the gate's ONE machine-readable key, parsed by motor_gate.rig_state(); ONLY the user's announcement may set it to 분해 / 조립 / 실험중. Keep it at the start of the line, unquoted. -->
 
 ## Where things stand — the three ✅ lines VERBATIM in `archive/2026-09-18-status-cycle36-relocate.md` §4
 ✅ tunnel ops BUILT + FUNCTIONALLY VERIFIED (38/38, ⚠️ **do NOT re-run the recipe, run 1 is the record**) · ✅ the "ZERO runnable experimental VIs" gap is BROKEN — `tools/bench/drive_original_copy_v5.py` drives a plain copy of the original unattended end to end, twice · ✅ N1 accepted ⇒ the GPU kernel is cleared for D1. **Order is D0 → D1 → D2** (`docs/cycle27-plan.md` Pre-decided 1). Prose VERBATIM → `archive/2026-09-21-status-cycle67-locknotes.md` §3; earlier → `archive/2026-09-18-status-cycle22-close.md` §2.
