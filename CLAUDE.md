@@ -65,6 +65,7 @@ parameters that reach it, and the numbers that come out must be identical.
 - **Never give the ASI its own rule again.** The old carve-out ("the one instrument that can physically break the
   rig", the 2026-09-13 permission conditioned on the piezo being *detached*) is **retired**. Permission is decided
   by the rig's state, not by the instrument's identity — when the rig is apart there is nothing to collide with.
+- **CONTROLLER LIMITS ARE SET AT EVERY CYCLE START AND RELEASED AT EVERY CYCLE END, BY THE RUNNER, EACH VERIFIED BY READBACK** (user, 2026-09-23: "훅으로 묶어서 매 사이클마다 시작할때는 묶고, 종료시에는 풀고. 그 다음 각 싸이클 시작 및 종료 시점마다 제대로 리밋 셋팅 되어있는지 확인하도록"). `cycle_runner.py` `motor_limits_hook` runs `motor_gate.py --session start` before and `--session end` after every cycle; a start that does not verify stops the runner before the cycle, an end that does not verify stops it after and writes STATUS. In 실험중/unknown state nothing is sent and the skip is logged. Why: `--session start` was run once on 2026-09-18 and `--session end` never, so the limits sat on the controllers for five days and had to be released by hand before an experiment (`tools/bench/motor_session_end_20260923.log`).
 - **Only the user announces a state change**, and the announcement is the boundary. Never infer a transition from
   silence, from a quiet period, or from how long a session has run.
 - **Do not ask per incident** inside a state the user has already declared (*"Don't need to hastle around me

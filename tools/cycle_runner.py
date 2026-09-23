@@ -337,6 +337,51 @@ def land_retrospective(bench, runner_log):
     return note
 
 
+MOTOR_OK = {"start": "SESSION START OK", "end": "SESSION END OK"}
+MOTOR_VERIFY = ("PI controller limits match the file", "ASI controller limits match the file")
+
+
+def motor_limits_hook(phase, n, a, bench, runner_log, status_text):
+    """User, 2026-09-23 ("훅으로 묶어서 매 사이클마다 시작할때는 묶고, 종료시에는 풀고. 그 다음 각 싸이클 시작 및 종료
+    시점마다 제대로 리밋 셋팅 되어있는지 확인하도록 훅에 추가"): every cycle opens with `motor_gate.py --session start`
+    (controller limits WRITTEN and READ BACK) and closes with `--session end` (limits RELEASED and READ BACK).
+    Until this hook existed the limits set on 2026-09-18 stayed on for five days because `--session end` was a
+    command nobody called.
+
+    Returns (ok, reason). 'ok' means the gate ran, exited 0, printed its OK line AND both readback-verify lines.
+    Rig state 실험중 / unknown: the ports are the user's - nothing is sent, the skip is logged, ok=True.
+    Dry runs and --no-motor-hooks skip too (self-tests must not open serial ports)."""
+    stamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    if a.dry_run or a.dry_cmd or getattr(a, "no_motor_hooks", False):
+        log_line(runner_log, "MOTOR-LIMITS | %s | cycle %d %s | skipped (dry run / --no-motor-hooks)" % (stamp, n, phase))
+        return True, "skipped"
+    try:
+        sys.path.insert(0, HERE)
+        import motor_gate
+        state = motor_gate.rig_state(status_text)
+    except Exception as e:  # noqa: BLE001
+        state = "unknown (%s)" % e
+    if state not in ("assembled", "disassembled"):
+        log_line(runner_log, "MOTOR-LIMITS | %s | cycle %d %s | skipped: rig state %s (ports are the user's)"
+                 % (stamp, n, phase, state))
+        return True, "skipped: rig state %s" % state
+    log = os.path.join(bench, "motor_session_%s_cycle%d.log" % (phase, n))
+    cmd = [sys.executable, BGRUN, "--max-min", "5", "--log", log, "--",
+           sys.executable, os.path.join(HERE, "motor_gate.py"), "--session", phase]
+    proc = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    text = read(log) + (proc.stdout or "") + (proc.stderr or "")
+    ok = (proc.returncode == 0 and MOTOR_OK[phase] in text and all(v in text for v in MOTOR_VERIFY))
+    sess = os.path.join(bench, "motor_session.json")
+    if ok and phase == "start" and not os.path.exists(sess):
+        ok = False
+    if ok and phase == "end" and os.path.exists(sess):
+        ok = False
+    verdict = "OK (limits %s and read back on PI and ASI)" % ("SET" if phase == "start" else "RELEASED") if ok else \
+              "FAIL rc=%d - see %s" % (proc.returncode, os.path.basename(log))
+    log_line(runner_log, "MOTOR-LIMITS | %s | cycle %d %s | %s" % (stamp, n, phase, verdict))
+    return ok, verdict
+
+
 def note_in_status(status_path, reason):
     """APPEND a stop notice; never rewrite STATUS.md - it is the user's file and the next session's cold start."""
     try:
@@ -368,6 +413,7 @@ def main():
     # Whitespace-split, so it carries no path with a space in it. Self-test only; nothing in the real loop uses it.
     ap.add_argument("--dry-cmd", default="", help="self-test only: the exact command to run instead of a session")
     ap.add_argument("--no-sleep", action="store_true", help="self-test only: report a usage-limit wait, do not take it")
+    ap.add_argument("--no-motor-hooks", action="store_true", help="self-test only: skip motor_gate --session start/end (never for a real run)")
     a = ap.parse_args()
 
     status_path = os.path.abspath(a.status)
@@ -471,6 +517,15 @@ def main():
                 f.write(hashlib.md5(next_section(status_text).encode("utf-8")).hexdigest())
         except OSError:
             pass
+        # MOTOR LIMITS ON at cycle start, verified by readback (user 2026-09-23). A start that cannot be verified
+        # stops the runner: a cycle must never run with unknown controller limits.
+        ok, why = motor_limits_hook("start", n, a, bench, runner_log, status_text)
+        if not ok:
+            reason = "motor limits could not be SET and verified at the start of cycle %d (%s) - no cycle runs " \
+                     "with unverified controller limits" % (n, why)
+            log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
+            note_in_status(status_path, reason)
+            return 3
         cmd = ([sys.executable, BGRUN, "--max-min", str(a.max_min), "--log", cyc_log, "--"]
                + session_cmd(a, this_prompt, model, effort))
         for attempt in range(1, LIMIT_RETRIES + 1):
@@ -500,6 +555,16 @@ def main():
 
         env = result_json(fresh)
         land_retrospective(bench, runner_log)
+        # MOTOR LIMITS OFF at cycle end, verified by readback (user 2026-09-23). Runs whatever the session's exit
+        # was; a release that cannot be verified stops the runner and is written into STATUS, because limits left
+        # ON silently are exactly what happened between 2026-09-18 and 2026-09-23.
+        ok_end, why_end = motor_limits_hook("end", n, a, bench, runner_log, read(status_path))
+        if not ok_end:
+            reason = "motor limits could not be RELEASED and verified at the end of cycle %d (%s) - the " \
+                     "controllers may still carry the session limits; check them before any experiment" % (n, why_end)
+            log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
+            note_in_status(status_path, reason)
+            return 3
         cost =("$%.4f" % env["total_cost_usd"]) if isinstance(env, dict) and isinstance(
             env.get("total_cost_usd"), (int, float)) else "?"
         status_after = read(status_path)
