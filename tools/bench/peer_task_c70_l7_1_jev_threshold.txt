@@ -1,0 +1,18 @@
+FAILED PREDICTION — attack the hypothesis below. Read-only.
+
+Facts:
+- Two runs of tools/recipes/stage_d1_l7_1.py failed gate P2a.
+  - Run 1: tools/bench/stage_d1_l7_1.log lines 124-126 — acc_init row, single candidate, Jev p=0.582 (threshold 0.75).
+  - Run 2: tools/bench/stage_d1_l7_1_r2.log lines 85-90 — err_R row, 4 candidates, best p=0.742 (it was 0.756 in run 1); margin to the runner-up >= 0.57 both times.
+- Jev pair scoring: tools/jev_pairs.py. Gate/threshold: tools/recipes/stage_d1_l7_1.py.
+- Plan: docs/d1-loop12-17-split-plan.md, ## Pre-decided items 168 and 169.
+- Prior-art review r2: archive/peer/2026-09-24-priorart-c70-l7-1-r2.md (its remedy: "fix the intent line").
+
+Hypothesis under attack:
+"The failures are Jev score spread around a fixed 0.75 threshold on rows whose answer is already fixed by the original S1 edge; the remedy is Pre-decided 168 (S1-mapped rule rows, Jev only as an argmax check, stop on disagreement) and 169 (split into L7-1a save / L7-1b wire)."
+
+Answer:
+1. The strongest reason this hypothesis is wrong. In particular: does the low p signal a REAL mismatch — a wrong terminal name, wrong face/side, a defective intent line (cf. the r2 prior-art remedy), or a candidate table missing the true pair? Check the intent/candidate text in the logs and the recipe against the S1 edge.
+2. Is Pre-decided 168 a rule-1a risk (CLAUDE.md rule 1a: the original's computation must not change) or a disguised threshold lowering that would let a genuinely wrong wiring row through?
+3. What observation would falsify the hypothesis?
+4. The cheapest discriminating test runnable OFFLINE (no LabVIEW), e.g. re-scoring err_R and acc_init N times via tools/jev_pairs.py with the current vs a corrected intent line, and what result would separate "score spread" from "real mismatch".

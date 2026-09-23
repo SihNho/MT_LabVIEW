@@ -61,8 +61,8 @@ use — never a Traverse / node / diagram index (Pre-decided 158; `docs/d1-build
 |---|---|---|---|---:|---|
 | **P0** | read-only census of the bed: wiki + graph for md5 `1a11d92a`; re-derive every group's cut list, crossing list and new-carrier list; measure handles open→close (STATUS ACT 2); O1 node sets of `#10170`/`#23041`; ForLoop/WhileLoop left-SR TOP collisions (Pre-decided 159). **MEASURED — see the P0 facts line under this table** | `D1_s3_loop15.vi` | `docs/wiki/subvi/D1_s3_loop15.json`, `tools/bench/graph_s3_loop15_<date>.json`, `tools/bench/split_rows_l2l7.json` (data, no VI) | 0 | — |
 | **P1** | pure-Python resolver (no LabVIEW): the 33 structure rows → the TUNNEL uid that carries each (outer face on `#639`, + inner frame diagrams), by wire identity on the bed's terminal table, cross-checked against S1's; plus F3a (the 12 FlatSequenceFrame-cut ForLoop owner chains re-derived from the `frame_diagram` column). **MEASURED — see the P1 facts line under the P0 facts** | `split_rows_l2l7.json`, `graph_s3_loop15_20260924.json`, `D1_s1_copy.json` wiki, `build_d1_v0.json` `cut` | `tools/bench/split_rows_l2l7.json` (new fields `p1_tunnel`, `resolved_by_p1`, `p1_wire_on_bed`, top-level `p1`; data, no VI) | 0 | — |
-| **L7-1** | **REWRITTEN 2026-09-24 by Pre-decided 164** (was: "2 SR pairs move with their node; re-wire its 12 rows; w4517 made as a 1.1→1.7 crossing here"): move `#376` into body `#23405` of `#23041`; create 1.7's TWO NEW SR pairs replacing `#15/#51` and `#24/#1108` (the old pairs stay on `#637` until L7-R), each new LEFT initialised off the same source as the original (`#4910` w4969, `#781` w3543); wire the 4 rows inside 1.7 (`#376` ↔ new SRs). Of `#376`'s 12 rows: in-1.7 4 · cross-loop OPEN 3 (i5 w4517, i7 w3268, i8 w1397 — queues, never made here) · L7-R 1 (i4) · split 1 (i3) · top-level tunnel 3 (i6/i9/i11, unwired; no stage owns them yet — OPEN). Prediction `tools/bench/l7_1_prediction.json` | `D1_s3_loop15.vi` | `D1_l7_1_<ts>.vi` (GUI save if broken, CLAUDE.md §3 rule 6) | 4 + 2 init | 6 / 0 |
-| **L7-R** | retire `#15/#51`, `#24/#1108` on `#637` after live-consumer check; re-feed `#6384`'s two inputs from 1.7's output tunnels; RBW; save by script | `D1_l7_1_<ts>.vi` | **`D1_s4_loop17.vi`** | retire + 2 | 0 / all |
+| **L7-1** | **REWRITTEN 2026-09-24 by Pre-decided 164** (was: "2 SR pairs move with their node; re-wire its 12 rows; w4517 made as a 1.1→1.7 crossing here"): move `#376` into body `#23405` of `#23041`; create 1.7's TWO NEW SR pairs replacing `#15/#51` and `#24/#1108` (the old pairs stay on `#637` until L7-R), each new LEFT initialised off the same source as the original (`#4910` w4969, `#781` w3543); wire the 4 rows inside 1.7 (`#376` ↔ new SRs) by Jev PAIR; the 2 SR-init rows are RULE-SINGLE-CANDIDATE rows (Pre-decided 165); i6/i9/i11 (`#3644`/`#2294`/`#5096`) are re-made as NEW tunnels on `#23041` off the same outer feed (Pre-decided 166, `tunnel_outer` rule rows). Of `#376`'s 12 rows: in-1.7 4 · top-level tunnel 3 (L7-1, 166) · cross-loop OPEN 3 (i5 w4517, i7 w3268, i8 w1397 — queues, never made here) · L7-R 1 (i4) · split 1 (i3). Prediction `tools/bench/l7_1_prediction.json` (`tools/bench/l7_1_predict_r2.log`) | `D1_s3_loop15.vi` | `D1_l7_1_<ts>.vi` (GUI save if broken, CLAUDE.md §3 rule 6) | 9 (4 body + 2 init + 3 tunnel) | 4 / 5 |
+| **L7-R** | retire `#15/#51`, `#24/#1108` on `#637` after live-consumer check; re-feed from 1.7's output tunnels. **CORRECTED 2026-09-24 (prior-art c70-l7-1-r2 A3.3; measured `tools/bench/l7_1_predict_r2.log:22-27`):** L7-1 leaves SIX consumers of `#376`'s outputs unsourced, not two — `#6384` `error in` / `file # to append` / `actual # data points`, `#2048` `array` / `length`, `#3453` `file progress` (an indicator on 1.1). Which stage owns `#2048` and `#3453`, and the third `#6384` input, is OPEN (judgement). RBW; save by script | `D1_l7_1_<ts>.vi` | **`D1_s4_loop17.vi`** | retire + 6 (ownership OPEN) | 0 / all |
 | **K** | move the CPU kernel `#5058` `Track N beads four-fold over-kernel-v3.vi` into the 1.2 body (Pre-decided 156; name-gated, `docs/cycle27-plan.md:754-755`); re-wire its 13 rows | `D1_s4_loop17.vi` | `D1_k_<ts>.vi` (GUI save if broken) | 13 | P0 recounts |
 | **L2-A1** | move group A (8) + the `Auto-Reset` / `Reset Tracking` control terminals into the 1.2 body; add 1.2's 4 SR pairs; re-wire batch 1 (incl. w10990 `#10757`→`#10407`, the only row left of old L2-C — Pre-decided 161) | `D1_k_<ts>.vi` | `D1_l2_a1_<ts>.vi` (broken by design → GUI Ctrl+S, CLAUDE.md §3 rule 6) | 13 | 3 / 10 |
 | **L2-A2** | re-wire batch 2 of group A (`min value` #17257 is an INDICATOR fed by `#10969` — a sink row, not a moved control, Pre-decided 158) | `D1_l2_a1_<ts>.vi` | `D1_l2_a2_<ts>.vi` | 13 | 3 / 10 |
@@ -135,7 +135,9 @@ has no entry) → `write_record` → `stagekit.Stage.from_decision` (`tools/stag
   control, tunnel (`tunnel_outer`, Pre-decided 146; FSIT sink → `fs_inner_tunnel_connect`) and source-side rows,
   plus every `retire`/`delete` row.
 - **Jev PAIR rows** = one endpoint is a NEW carrier created in that stage (the new SR pairs; a new crossing carrier)
-  so its terminal is chosen among candidates. Counts above = the v0 run's `from-sr`/`to-sr` rows per group
+  so its terminal is chosen among candidates — **and the legal candidate set has ≥2 pairs (Pre-decided 165, 2026-09-24):
+  a new-carrier row with EXACTLY ONE legal pair whose source equals the S1 edge's source is a RULE row
+  (`RULE-SINGLE-CANDIDATE`)**. Counts above = the v0 run's `from-sr`/`to-sr` rows per group
   (A 3+3, B 2, W 2+2); P0 recomputes them on the bed.
 
 ## 3. Pass criteria per sub-stage (Pre-decided 132 applied: every predicted value names what already determines it)
@@ -244,6 +246,50 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
      the original pair (read on the live bed; top-level → loop is a tunnel/SR-init row, not a crossing); wire every row
      whose both ends are inside 1.7 after the move (`#376` ↔ its SRs). The two re-feeds of `#6384` from 1.7 output
      tunnels and the retirement of the old pairs stay in L7-R.
+165. **(cycle 70 judgement, after `tools/bench/stage_d1_l7_1.log:124-126`) SINGLE-CANDIDATE RULE.** A new-carrier row whose
+     legal candidate set has EXACTLY ONE pair, and whose source uid+terminal equals the source of the corresponding S1 edge
+     (acc_init: `#781 'initialized array'` via the original init wire w3543 → the new left SR's outer terminal; likewise
+     err_init: `#4910 'error out'` via w4969), is a RULE row: executed without a Jev PAIR decision, logged
+     `RULE-SINGLE-CANDIDATE`. Jev PAIR decides only when there are ≥2 legal candidates; the 0.75 threshold is NOT lowered.
+     Gate P2a becomes: every row with ≥2 candidates acts at threshold; every single-candidate row matches its S1 source.
+     Prior evidence of the same class (cited 2026-09-24 per prior-art c70-l7-1-r2 A4):
+     `archive/peer/2026-09-23-bench-map-b-endtoend.md:67,72` — w7337's ONLY candidate, the physically correct one, scored
+     p 0.464, likely because the intent line named a terminal that no longer exists on the live object (run 1's acc_init
+     destination read `'total data array out'` on the new left SR, `tools/bench/stage_d1_l7_1.log:124`).
+166. **(cycle 70 judgement) i6 (`#3644`), i9 (`#2294`), i11 (`#5096`) are OWNED BY L7-1**: values entering from top-level
+     frame `#686` through tunnels on `#637` are re-made as NEW tunnels on `#23041` (`tunnel_outer`, rule rows, Pre-decided
+     146) from the SAME outer source that feeds each original tunnel (re-read on the live file). Same class as SR-init:
+     top-level → loop, read at loop start, not a parallel crossing.
+167. **(cycle 70 judgement) Outcome review `archive/peer/2026-09-24-outcome-review-20260924.md` disposition**: same five
+     violations as 2026-09-21; the user answered the repeated verdict (2026-09-20 "계속") and by the 2026-09-23 amendment a
+     repetition of the same verdict does not stop the runner — escalation marked in STATUS. "ROT first": not adopted,
+     Pre-decided 160 keeps ROT after the splits; ROT's scratch measurement (`SubVI.Replace` 635E001 + whether
+     `computation_diff` sees callee identity, O6) is parallel-safe and scheduled right after L7-R. "Supervised run of
+     `D1_s3_loop15.vi`": needs the user present or rig 분해 (it drives motors outside `motor_gate`) — on record as STATUS
+     OPEN 58; not done unattended.
+168. **(cycle 70 judgement, after `tools/bench/stage_d1_l7_1_r2.log:85-90`) S1-MAPPED RULE — Jev VERIFIES, does not
+     gate on p.** A new-carrier row whose sink is determined by the stage's own old→new carrier mapping (old SR `#24` →
+     new R`#24083`/L`#24133`; `#15` → R`#24150`/L`#24187`) together with the S1 edge's source uid+terminal is a RULE row,
+     even with ≥2 legal candidates. Jev PAIR still runs on it as a CHECK: if Jev's top candidate == the S1-mapped pair
+     the row is wired (log `RULE-S1-MAPPED p=<p> margin=<m>`, whatever p is); if Jev's top candidate differs, the run
+     STOPS. Reason: `err_R` scored 0.756 (run 1) and 0.742 (run 2) with margin ≥0.57 both times — the threshold sits inside
+     run-to-run spread on a row whose answer is already fixed by the original. The 0.75/0.15 act threshold is unchanged
+     for rows with no S1 counterpart.
+169. **(cycle 70 judgement; CLAUDE.md "split and save" rule 3 — the same stage failed twice at the same gate P2a with no
+     saved artefact) L7-1 is SPLIT:** **L7-1a** = move `#376` into body `#23405` + create the two new SR pairs, NO wiring,
+     then SAVE `claudeDev\D1_l7_1a_<ts>.vi` (broken by design → GUI Ctrl+S, CLAUDE.md §3 rule 6); gate = `diff(bed,new)`
+     = `#376` owner change + 4 new SR objects only, bed md5 unchanged. **L7-1b** = open THAT file in a fresh LabVIEW, wire
+     the 9 rows (4 S1-mapped per 168 + 2 single-candidate per 165 + 3 top-level tunnels per 166), save
+     `claudeDev\D1_l7_1_<ts>.vi`; gate = `computation_diff(S1,new)` = exactly the 8 rows of `tools/bench/l7_1_predict_r2.log`.
+     Runs 1 and 2 did L7-1a cleanly twice (`stage_d1_l7_1.log:80-90`, `stage_d1_l7_1_r2.log:71-81`) and threw it away.
+170. **(cycle 70 judgement, on `archive/peer/2026-09-24-c70-l7-1-jev-threshold.md` — "half right") ACCEPTED, three
+     conditions on 168/169:** (a) BEFORE L7-1a, run the review's offline test (a)–(e) (`jev_pairs.ask_pair`, n=10–20, ≈60
+     calls, ≈$0.005) — `err_R` spread, `acc_init` current vs CORRECTED intent line (the line must name the sink
+     `#24187` 'total data array out' / the register as carrying `#376`'s output), `err_init` with the sink name blanked,
+     and the negative swap case `#4910 'error out'` → acc LEFT; record the five means/spreads. (b) The intent lines of
+     every L7-1b row are corrected per (a)'s finding before L7-1b runs. (c) In L7-1b gate PB (`computation_diff`,
+     recipe `:102`) is made `fatal=True` and runs BEFORE the save; a stage never saves over a failed PB. If (e) scores
+     ≥0.75, the Jev argmax check in 168 is recorded as guarding nothing and the S1-mapped rows rest on PB alone.
 
 ## OPEN (design choices — for judgement; not decided here)
 

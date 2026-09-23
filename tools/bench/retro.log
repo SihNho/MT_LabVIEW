@@ -1548,3 +1548,49 @@ No device let its own fault through inside the window.
 VIOLATION: none
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle69.md
 BGRUN END rc=0 after 355s
+BGRUN START 2026-09-24 03:37:21 limit 10.0 min: py tools/retrospective.py --cycle 70
+   window 2026-09-24 01:49:15 .. 2026-09-24 03:37:21 (108 min); 19 build logs, 10 machinery logs, 12 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle70.txt (18208 chars)
+BGRUN START 2026-09-24 03:37:31 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 70
+   window 2026-09-24 01:49:15 .. 2026-09-24 03:37:32 (108 min); 19 build logs, 10 machinery logs, 12 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle70.txt (18208 chars)
+OUTCOME: ANSWERED (546s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-24-retrospective-cycle70.md
+COST: $7.2216  in 290 / out 38215 / cache-create 243504 / cache-read 1751303  (544s, 56 turn(s))
+--- ANSWER ---
+**Cycle 70 verdict: one structural fault, plus one broken device.** The cycle spent $34.47 and 108 minutes and left no artefact. Run 2 of L7-1 was a foreseeable repeat of run 1's failure class, launched before the review that the rule requires, and the FAIL scanner in bgrun fired on quoted text and was bypassed by mangling the output.
+
+## The fault
+
+**Repeated failure at the same gate, with the retry ahead of the review.** L7-1 run 1 stopped at gate P2a because the Jev PAIR score fell under the act threshold (`tools/bench/stage_d1_l7_1.log:124-126`, acc_init p=0.582). The same log, line 94, already showed err_R at p=0.756 against a 0.75 threshold with a 5-sample spread of about 0.10. Run 2 stopped at the same gate on that row (`tools/bench/stage_d1_l7_1_r2.log:85-90`, p=0.742). The judgement's answer to run 1 was Pre-decided 165, which fixes only the single-candidate case; the answer that actually covers the class, Pre-decided 168 (S1-mapped rule, Jev verifies only) and 169 (save L7-1a before wiring), was written only after run 2 (`docs/d1-loop12-17-split-plan.md:270-284`). The hypothesis review, the mandatory response to a failed prediction, was bought after run 2 (`tools/bench/peer_c70_l7_1_jev_threshold.log:1`, 03:34:18) and said in its first paragraph that the two failures are different mechanisms (`:9, :25-29`). STATUS records the skipped review in its own words: "hypothesis review owed (old path) — NOT dispatched (budget spent; judgement's call)" (`STATUS.md:26`).
+
+Counterfactual: had the review been dispatched at 03:17 when run 1 landed, its answer (109 s) and PD 168-170 would have been on file by about 03:22, and run 2 (03:26:11 to 03:32:07, `stage_d1_l7_1_r2.log:113`) plus the second prior-art round (`priorart_c70_l7_1_r2.log:13`, $1.7879, 123 s) would not have happened. The cycle would have reached the same NEXT about 15 minutes earlier, or spent those minutes on the offline Jev test it deferred to cycle 71. The dollar loss is not carried by a log: the r2 prior-art figure might have been spent on 168/169 anyway, and the judgement session's log gives only a session total ($26.54, `tools/bench/cycle_69.log:67`), so the 15-minute share is an estimate, not a measurement.
+
+## Findings
+
+**1. Repeated failure.** Same class twice (Jev p below act on a row whose answer S1 already fixes); the approach should have changed at attempt 1 to review first and to a recipe that saves the clean move+SR half. Runs 1 and 2 executed the move and both SR pairs cleanly and discarded them both times (`stage_d1_l7_1.log:80-90`, `_r2.log:71-81`, and `:38` "this stage saves nothing").
+
+**2. Missing tool.** Not a reader. Two things were missing: a save step in the recipe (CLAUDE.md split-and-save rule 1, "a step is not done until it has left a file"), and an offline re-scorer over the saved decision JSONs. The review specified that test at about 60 calls and $0.005 with no LabVIEW (`peer_c70_l7_1_jev_threshold.log:44-55`). It was deferred to cycle 71 (`STATUS.md:77`) although the session ended at minute 60 of a 180-minute cap.
+
+**3. Unmeasured steps.** Run 2's err_R risk was a coin flip visible in run 1's log (`stage_d1_l7_1.log:94`) and was not re-scored before the second LabVIEW run. The prior-art r2 offered the intent-line cause for acc_init at 03:25 (`archive/peer/2026-09-24-priorart-c70-l7-1-r2.md:497`); the disposition records "Not adopted here (judgement's call)" (`:531`), and the hypothesis review confirmed that cause eleven minutes later (`peer_c70_l7_1_jev_threshold.log:15-21`).
+
+**4. Rule compliance.** Broken: the failed-prediction review before the retry (above). The gate was armed on run 1's log at 03:25:46 and 03:26:08 (`tools/bench/jev_gate.log:471, :473`, "old path"), yet the launch at 03:25:55 ran (`tools/hooks/material_marker.log:1251`, `stage_d1_l7_1_r2.log:1`) with no RULE-SAME-ROW or JEV-DISCHARGE line. The logs do not show which path in `tools/hooks/guard_peer.py` returned 0; that is worth one cheap check before the gate is trusted again. Attempted and stopped: the judgement session tried seven command shapes to dispatch the peer review itself and one scratch script (`cycle_69.log:67` permission_denials; `material_marker.log:1239`), and the devices held. Repeated from session 68: the session ended its turn saying "The retrospective is running in the background. I'm keeping the turn open" (`cycle_69.log:67`) while the retro START at 03:37:21 has no END (`tools/bench/retro.log:1551`); the runner's fallback re-ran it at 03:37:31 (`:1554`), so the loss was seconds, but the brief named this exact fault (`cycle_69.log:48-52`). What the audit does not cover: A1's two failures are journals, a standing false positive already noted (`STATUS.md:94`); C6 counts the two stop-record refusals of material launches as judgement attempts (`material_marker.log:1249-1250`); C7 compares against `docs/cycle27-plan.md` while the work follows `docs/d1-loop12-17-split-plan.md`, so its 19-file list is noise; A3's three unreviewed logs are interactive-chat work that landed inside the window (`tools/bench/device_value_a.log:1`, the ladder re-measure and threshold change 0.80 to 0.65 in commit 35163e0). The runner's cycle counter is one behind: `cycle_69.log` is cycle 70's session (`tools/bench/cycle_runner.log:167`).
+
+**5. Ordering.** P1 (92/92), F3a, prediction, prior-art, then build was the right order, and the premature-build gate held three launch attempts at 03:04 until the prior-art landed at 03:09:30 (`material_marker.log:1243-1246`, `priorart_c70_l7_1.log:48`). The wrong step is the one above: retry before review.
+
+**6. Not reported.** NEXT says the review was "ANSWERED and accepted" (`STATUS.md:78`) and omits that it found the hypothesis "only half right", so PD 165 is a workaround for a mis-worded question, not a diagnosis. The ladder re-evaluated run 1's log twelve times in nine minutes (`jev_gate.log:465-477`) before the once-per-log cache landed at 03:28:53, confirming cycle 67's finding (c). Zero artefact for $34.47 is stated nowhere in one place.
+
+**7. Judgement inside material.** The dispositions applied only the judgement's rulings and explicitly declined to decide (`priorart-c70-l7-1.md:490-491`, `-r2.md:531`). One decision did sit in material: launching run 2 with a review owed and noting it as "judgement's call" (`STATUS.md:26`) is a rule exception taken, or left untaken, outside the judgement session.
+
+## Device effect
+
+- **bgrun FAIL scan: FAILED.** It flagged nine quoted failure strings in a text survey as the run's own failures (`tools/bench/device_value_a.log:608-609`), and the workaround was to print "F-AIL", "rc:1" and ":::" instead (`:1045, :1214, :1754`). Fired on the wrong thing and bypassed by editing the output. A logclass entry is the fix; text mangling hides real failures from every later reader.
+- **Stop record: partly failed.** It held the recipe until FIXED lines (`material_marker.log:1249`) but also refused the prior-art dispatch itself and was bypassed with `--recipe=<path>` (`priorart-c70-l7-1-r2.md:523-525`), so its path match has a token-shape hole.
+- **Scope-creep counter C7:** fires against a stale plan every cycle and is routinely ignored.
+- **Prior-art review:** worked twice; the r2 unread-evidence finding was the right diagnosis (`-r2.md:497`).
+- **premature-build guard, rc/END truthfulness, COST regex (4/4), undisposed-review refusal (13/13):** worked or not exercised.
+- **motor_gate FAIL, OpLoopEndRef, confirm-bait refusal:** not exercised this window.
+
+VIOLATION: repeated-failure-class | loss_min=15 | loss_usd=? | evidence=tools/bench/stage_d1_l7_1_r2.log:89
+VIOLATION: device-failed | loss_min=1 | loss_usd=? | evidence=bgrun-FAIL-scan@tools/bench/device_value_a.log:1754
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle70.md
+BGRUN END rc=0 after 549s

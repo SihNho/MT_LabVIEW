@@ -28,8 +28,8 @@ R1, L1, R2, L2 = 9000001, 9000002, 9000003, 9000004
 SRS = ((R1, L1, "error out", 4969, 9200001, 9200002), (R2, L2, "total data array out", 3543, 9200003, 9200004))
 CLASS = {0: "in-1.7", 1: "in-1.7", 2: "in-1.7", 10: "in-1.7", 5: "cross-loop OPEN", 7: "cross-loop OPEN",
          8: "cross-loop OPEN", 4: "L7-R", 3: "cross-loop OPEN + L7-R (split net)",
-         6: "top-level tunnel (unwired, not in 164's DO list)", 9: "top-level tunnel (unwired, not in 164's DO list)",
-         11: "top-level tunnel (unwired, not in 164's DO list)"}
+         6: "top-level tunnel (L7-1 rule row, PD166)", 9: "top-level tunnel (L7-1 rule row, PD166)",
+         11: "top-level tunnel (L7-1 rule row, PD166)"}
 PASS = []
 
 
@@ -72,6 +72,21 @@ for i, (r, l, nm, init_w, w_in, w_out) in enumerate(SRS):
         terms.append({"term_uid": tu, "term_name": nm, "is_source": src, "wire_uid": w, "owner_uid": own,
                       "owner_class": cls, "frame_diagram": fd, "term_class": tc})
         tu += 1
+# Pre-decided 166 (rerun 2026-09-24): i6/i9/i11 re-made as NEW tunnels on #23041 off the SAME outer feed (tunnel_outer,
+# PD146); the old tunnel is deleted as an orphan when every inner wire reads 0 (#3644, #2294; #5096 still feeds #23175).
+TUN = ((9000011, 3644, "cal cluster path", 21, 9200011), (9000012, 2294, "file size", 2362, 9200012),
+       (9000013, 5096, "selected path", 5104, 9200013))
+for nt, old, sink, outer_w, w in TUN:
+    objs.append({"uid": nt, "class": "LoopTunnel", "pos": [4587, 6700], "owner": "WhileLoop"})
+    names[sink]["wire_uid"] = w
+    for tc, src, fd, ww in (("OuterTerminal", False, 686, outer_w), ("InnerTerminal", True, 23405, w)):
+        terms.append({"term_uid": tu, "term_name": "", "is_source": src, "wire_uid": ww, "owner_uid": nt,
+                      "owner_class": "LoopTunnel", "frame_diagram": fd, "term_class": tc})
+        tu += 1
+ORPH = set(o for _n, o, _s, _w, _x in TUN if not [t for t in terms if t["owner_uid"] == o and t["term_class"] == "InnerTerminal" and t["wire_uid"]])
+terms = [t for t in terms if t["owner_uid"] not in ORPH]
+objs = [o for o in objs if o["uid"] not in ORPH]
+print("  FACT  orphan tunnels deleted in the sim (PD146): {0}".format(sorted(ORPH)))
 for L in loops:
     if L["loop_uid"] == 23041:
         L["right_uids"], L["left_of"] = [R1, R2], {str(R1): [L1], str(R2): [L2]}
@@ -96,10 +111,12 @@ print("---------- [c] PREDICTED diff(bed, new)")
 print("  FACT  nodes_added {0} nodes_removed {1}".format(d["nodes_added"], d["nodes_removed"]))
 print("  FACT  edges_removed (node pairs) {0}".format(er))
 print("  FACT  edges_added (node pairs) {0}".format(ea))
-gate("C1 every removed edge touches #376", all(376 in e for e in er), [e for e in er if 376 not in e])
-gate("C2 every added edge touches a new SR", all(set(e) & {R1, L1, R2, L2} for e in ea), ea)
+NEW = {R1, L1, R2, L2} | set(t[0] for t in TUN)
+gate("C1 every removed edge touches #376 or an orphan tunnel", all(set(e) & ({376} | ORPH) for e in er), [e for e in er if not set(e) & ({376} | ORPH)])
+gate("C2 every added edge touches a new SR / new tunnel", all(set(e) & NEW for e in ea), ea)
 out = {"rows": [dict(i=r["i"], name=r["name"], wire=r["wire"], cls=CLASS[r["i"]]) for r in ROWS], "class_counts": cnt,
-       "cdiff_rows": pred, "fake_sr": {"R1": R1, "L1": L1, "R2": R2, "L2": L2},
+       "cdiff_rows": pred, "fake_sr": {"R1": R1, "L1": L1, "R2": R2, "L2": L2}, "orphans": sorted(ORPH),
+       "nodes_added": d["nodes_added"], "nodes_removed": d["nodes_removed"],
        "edges_removed_nodes": er, "edges_added_nodes": ea}
 json.dump(out, open(B("l7_1_prediction.json"), "w", encoding="utf-8"), indent=1)
 print("=== GATES: {0} pass / {1} fail".format(sum(PASS), len(PASS) - sum(PASS)))

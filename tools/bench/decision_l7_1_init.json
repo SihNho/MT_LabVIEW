@@ -1,0 +1,176 @@
+{
+ "stage": "l7_1_init",
+ "bed_md5": "1a11d92aacabf7ec844d65b8af19f39f",
+ "intent": [
+  "the error-cluster constant #4910 that initialises the original #1108 initialises the NEW error-chain LEFT register (outer)",
+  "Initialize Array #781 that initialises the original #51 initialises the NEW accumulator LEFT register (outer)"
+ ],
+ "candidates": [],
+ "decisions": [
+  {
+   "row_key": {
+    "src_uid": 4910,
+    "src_term": "error out",
+    "dst_uid": 24133,
+    "dst_term": "error out"
+   },
+   "pair_p": 0.8480000000000001,
+   "op": "connect_from_wire",
+   "variant": null,
+   "op_p": null,
+   "risk_p": null,
+   "action": "wire",
+   "decided_by": "jev",
+   "evidence": {
+    "pairs": [
+     {
+      "row_key": {
+       "src_uid": 4910,
+       "src_term": "error out",
+       "src_term_class": "Terminal",
+       "dst_uid": 24133,
+       "dst_term": "error out",
+       "dst_term_class": "OuterTerminal"
+      },
+      "p": 0.8480000000000001,
+      "spread": 0.020000000000000018,
+      "err": null
+     }
+    ],
+    "n_yes_above_0.70": 1,
+    "margin": 0.848,
+    "op_rule": "source terminal is on live wire w4969",
+    "op_options": null,
+    "op_probs": null,
+    "op_decided_by": "python-rule"
+   },
+   "jev_calls": 5,
+   "exec": {
+    "src": {
+     "uid": 4910,
+     "term": "error out",
+     "term_uid": 4965,
+     "term_class": "Terminal",
+     "owner_class": "ClusterConstant",
+     "diagram": 686,
+     "wire_uid": 4969,
+     "outer_wire": null
+    },
+    "dst": {
+     "uid": 23041,
+     "term": "error out",
+     "diagram": 686,
+     "owner_class": "WhileLoop",
+     "term_class": "Terminal"
+    }
+   },
+   "id": "err_init"
+  },
+  {
+   "row_key": {
+    "src_uid": 781,
+    "src_term": "initialized array",
+    "dst_uid": 24187,
+    "dst_term": "total data array out"
+   },
+   "pair_p": 0.5820000000000001,
+   "op": "connect_from_wire",
+   "variant": null,
+   "op_p": null,
+   "risk_p": null,
+   "action": "llm",
+   "decided_by": "jev",
+   "evidence": {
+    "pairs": [
+     {
+      "row_key": {
+       "src_uid": 781,
+       "src_term": "initialized array",
+       "src_term_class": "Terminal",
+       "dst_uid": 24187,
+       "dst_term": "total data array out",
+       "dst_term_class": "OuterTerminal"
+      },
+      "p": 0.5820000000000001,
+      "spread": 0.07999999999999996,
+      "err": null
+     }
+    ],
+    "n_yes_above_0.70": 0,
+    "margin": 0.582,
+    "reason": "best p 0.582 < act threshold 0.75",
+    "op_rule": "source terminal is on live wire w3543",
+    "op_options": null,
+    "op_probs": null,
+    "op_decided_by": "python-rule",
+    "failed_layer": "verdict"
+   },
+   "jev_calls": 5,
+   "exec": {
+    "src": {
+     "uid": 781,
+     "term": "initialized array",
+     "term_uid": 1842,
+     "term_class": "Terminal",
+     "owner_class": "GrowableFunction",
+     "diagram": 686,
+     "wire_uid": 3543,
+     "outer_wire": null
+    },
+    "dst": {
+     "uid": 23041,
+     "term": "total data array out",
+     "diagram": 686,
+     "owner_class": "WhileLoop",
+     "term_class": "Terminal"
+    }
+   },
+   "id": "acc_init"
+  }
+ ],
+ "created": "2026-09-24 03:15:06",
+ "jev_calls": 10,
+ "cost": {
+  "usd_est": 0.0008,
+  "basis": "docs/jev-integration-plan.md:13",
+  "seconds": 0.0
+ },
+ "thresholds": {
+  "measured": "2026-09-23 16:43:40",
+  "rules": {
+   "pair/chain": "act = smallest t whose yes-precision is 1.0 with >= 1 yes; acts iff acc@0.5 >= 0.80 and n >= 20",
+   "op": "act = smallest t whose acted-accuracy is 1.0; acts iff acc >= 0.80 and n >= 20",
+   "risk": "act (proceed when p_risk <= t) = largest t below every positive's p; acts iff acc@0.5 >= 0.80 and n >= 20"
+  },
+  "pair": {
+   "act": 0.75,
+   "margin": 0.15,
+   "rule": "judgement 2026-09-23 16:xx: act iff best p >= act AND best - runner-up (same intent) >= margin; else llm. Step-5 fitted act was 0.70.",
+   "acts": true,
+   "acc": 0.898,
+   "brier": 0.0745,
+   "n": 49
+  },
+  "chain": {
+   "act": 0.5,
+   "acts": true,
+   "acc": 0.807,
+   "brier": 0.1275,
+   "n": 57
+  },
+  "op": {
+   "act": 0.95,
+   "acts": false,
+   "acc": 0.55,
+   "brier": 0.6395,
+   "n": 20
+  },
+  "risk": {
+   "act": 0.5,
+   "acts": false,
+   "acc": 0.5714,
+   "brier": 0.3276,
+   "n": 28
+  }
+ }
+}

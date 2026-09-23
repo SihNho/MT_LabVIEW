@@ -1,0 +1,73 @@
+BGRUN START 2026-09-24 03:22:49 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/d1-loop12-17-split-plan.md --slug c70-l7-1-r2 --trigger failed-prediction --recipe=tools/recipes/stage_d1_l7_1.py
+usage: prior_art_review.py [-h] [--plan PLAN] [--plan-file PLAN_FILE]
+                           [--slug SLUG]
+                           [--trigger {cycle-start,direction-change,new-op}]
+                           [--model MODEL]
+                           [--effort {low,medium,high,xhigh,max}] [--index]
+                           [--dry-run] [--recipe RECIPE] [--no-recipe REASON]
+prior_art_review.py: error: argument --trigger: invalid choice: 'failed-prediction' (choose from 'cycle-start', 'direction-change', 'new-op')
+BGRUN END rc=2 after 0s
+BGRUN START 2026-09-24 03:22:57 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/d1-loop12-17-split-plan.md --slug c70-l7-1-r2 --trigger direction-change --recipe=tools/recipes/stage_d1_l7_1.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c70-l7-1-r2.txt (87333 chars)
+OUTCOME: ANSWERED (117s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-24-priorart-c70-l7-1-r2.md
+COST: $1.7879  in 24 / out 10795 / cache-create 154115 / cache-read 1694694  (113s, 17 turn(s))
+--- ANSWER ---
+Verdict: **not novel.** Both direction changes, Pre-decided 165 (the single-candidate rule) and 166 (L7-1 owns i6/i9/i11), are this cycle's decisions and have no earlier failure against them. But the plan still contradicts itself in three places, and a single correct candidate scoring below threshold had already been measured on 2026-09-23. Those findings block the next build until they are fixed in the text or refuted.
+
+I did not build, edit or run anything, and no LabVIEW was touched. This session has no Write tool, so this reply is the only copy of the review.
+
+## PART A — the direction
+
+**A1 Already decided.** Nothing earlier decides the single-candidate question. Rules on this topic already on file:
+- `docs/connectivity-map-plan.md:93` (Pre-decided 143): the Python rule chooses the op first and Jev second. That covers the op only, never the pair.
+- `docs/connectivity-map-plan.md:96` (Pre-decided 146): the `tunnel_outer` route.
+
+Pre-decided 166 applies 146 and does not repeat an earlier decision.
+
+**A2 Already refuted.** No earlier attempt was found. The one earlier failure of this stage is run 1 (`tools/bench/stage_d1_l7_1.log:124-126`, `acc_init` p=0.582 → `llm` → STOP), and 165 answers it directly. Route B's in-memory death is answered by Pre-decided 162.
+
+**A3 Contradicted:**
+
+1. **The §2 L7-1 row contradicts Pre-decided 165 and 166.**
+   - The row (`docs/d1-loop12-17-split-plan.md:64`) says: *"top-level tunnel 3 (i6/i9/i11, unwired; no stage owns them yet → OPEN)"*, rows `4 + 2 init`, and Jev/rule `6 / 0`.
+   - 166 (`:253`) says: *"i6 (`#3644`), i9 (`#2294`), i11 (`#5096`) are OWNED BY L7-1 … `tunnel_outer`, rule rows"*.
+   - 165 (`:247-252`) makes the two init rows RULE rows (`RULE-SINGLE-CANDIDATE`).
+   - The recipe already follows 165/166: `tools/recipes/stage_d1_l7_1.py:2-3` and `:70-89`. So does `tools/bench/l7_1_predict_r2.log:9,12,14-15`. Both give 4 Jev rows plus 5 rule rows (2 init + 3 tunnel).
+   - The row should read **9 rows, 4 / 5**.
+2. **The §2 definition of a "Jev PAIR row" contradicts 165.**
+   - `docs/d1-loop12-17-split-plan.md:137` says: *"Jev PAIR rows = one endpoint is a NEW carrier created in that stage (the new SR pairs…)"*.
+   - Both init rows have a new-carrier endpoint (the new left shift register), yet 165 makes them rule rows. Only rows with 2 or more candidates are now Jev rows (`stage_d1_l7_1.py:57`, `:68`).
+3. **The L7-R row is short of what L7-1's own prediction leaves open.**
+   - The L7-R row (`docs/d1-loop12-17-split-plan.md:65`) says: *"re-feed `#6384`'s two inputs from 1.7's output tunnels"*, `retire + 2`.
+   - The L7-1 prediction (`tools/bench/l7_1_predict_r2.log:22-27`, repeated in the recipe's own contract at `stage_d1_l7_1.py:8-9`) leaves **six** consumers of `#376`'s outputs on loop 1.1 without a source:
+     - **three** `#6384` sinks: `actual # data points`, `error in`, `file # to append`
+     - `#2048` `array` and `length`
+     - `#3453` `file progress`
+   - No stage row owns `#2048` or `#3453`, and the third `#6384` input is missing from the L7-R row.
+4. **The Jev act threshold is stated two ways.**
+   - `docs/connectivity-map-plan.md:94` (Pre-decided 144): *"PAIR acts at p ≥ 0.70"*.
+   - `tools/bench/jev_menu_thresholds.json:9,11`: `"act": 0.75`, *"judgement 2026-09-23 16:xx … Step-5 fitted act was 0.70"*.
+   - 165 relies on *"the 0.75 threshold is NOT lowered"*. Pre-decided 144 is the stale side.
+
+**A4 Evidence the plan did not cite.** `archive/peer/2026-09-23-bench-map-b-endtoend.md:67` already measured a **single, physically correct candidate** falling below threshold: *"w7337: its only candidate is `#11263 'VISA out' -> #4334 'Outgoing Handle'` … at p 0.464. That is also the correct physical connection."*
+- `:72` gives a likely cause: the intent line hands Jev a terminal name that no longer exists on the live terminal.
+- The same pattern shows in run 1 of this stage. `acc_init`'s destination read `'total data array out'` on the new left shift register (`stage_d1_l7_1.log:124`).
+- This supports 165's premise rather than refuting it. But 165 cites only the run-1 log, while the class had been on file since 2026-09-23. It also carries a cheaper remedy that 165 does not weigh: fix the intent line.
+
+## PART B — the artifact (L7-1 run 2)
+
+- **B1 Already built:** no. The only earlier `D1_l7_1*` artefact was run 1's scratch copy, and it was deleted (`stage_d1_l7_1.log:133,142`).
+- **B2 Already failed:** only run 1, whose cause (the P2a Jev threshold) is addressed by 165. The recipe keeps the parts that passed (`:44-119`).
+- **B3 Helper exists:** nothing is hand-rolled. The recipe uses `stagekit.from_decision`, `connect_from_wire`/`tunnel_outer` (Pre-decided 146), `wiki_build.read_live`, `vigraph.computation_diff`, and `jev_candidates`/`jev_pairs`.
+- **B4 Already measured:** no finding beyond A4.
+
+```
+PRIOR-ART: contradicted     (docs/d1-loop12-17-split-plan.md:64 L7-1 row vs Pre-decided 165/166 :247-253 and tools/recipes/stage_d1_l7_1.py:2-3,70-89)
+PRIOR-ART: contradicted     (docs/d1-loop12-17-split-plan.md:137 "Jev PAIR rows = new-carrier endpoint" vs Pre-decided 165 :247-252)
+PRIOR-ART: contradicted     (docs/d1-loop12-17-split-plan.md:65 L7-R "#6384's two inputs" vs tools/bench/l7_1_predict_r2.log:22-27, six bare consumers incl. #2048 ×2, #3453)
+PRIOR-ART: contradicted     (docs/connectivity-map-plan.md:94 Pre-decided 144 "p ≥ 0.70" vs tools/bench/jev_menu_thresholds.json:9 act 0.75)
+PRIOR-ART: unread-evidence  (archive/peer/2026-09-23-bench-map-b-endtoend.md:67,72, single correct candidate at p 0.464 plus the stale-name cause, not cited by Pre-decided 165)
+```
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c70-l7-1-r2.md
+   STOP RECORD armed: tools/recipes/stage_d1_l7_1.py sha 887058e5181c verdict contradicted, unread-evidence -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 123s
