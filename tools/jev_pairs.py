@@ -307,12 +307,19 @@ def decide(intent_line, cand, G_orig=None, G_new=None, orig_sink_key=None, n=Non
     best = ok[0]
     c = pairs[scored.index(best)]
     many = [s for s in ok if s["p"] >= jev.UNKNOWN_HI]
-    ev = {"pairs": scored, "n_yes_above_0.70": len(many)}
+    runner = ok[1]["p"] if len(ok) > 1 else 0.0
+    ev = {"pairs": scored, "n_yes_above_0.70": len(many), "margin": round(best["p"] - runner, 4)}
     action, by = "wire", "jev"
     if not th["pair"].get("acts"):
         action, ev["reason"] = "llm", "pair menu does not act (measured < 80 % or unmeasured)"
     elif best["p"] < th["pair"]["act"]:
         action, ev["reason"] = "llm", "best p {0:.3f} < act threshold {1}".format(best["p"], th["pair"]["act"])
+    elif "margin" in th["pair"]:
+        # judgement 2026-09-23 16:xx: act only when best - runner-up (same intent) >= margin; replaces the
+        # ">= 2 over 0.70" asymmetry rule (measured by tools/bench/bench_map_20260923/a5c_margin.py)
+        if best["p"] - runner < float(th["pair"]["margin"]):
+            action, ev["reason"] = "llm", "margin {0:.3f} < {1} over the runner-up".format(best["p"] - runner,
+                                                                                         th["pair"]["margin"])
     elif len(many) >= 2:
         action, ev["reason"] = "llm", "{0} candidates >= 0.70 (asymmetry)".format(len(many))
     variant, op_by = None, "jev"

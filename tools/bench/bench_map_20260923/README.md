@@ -32,6 +32,9 @@ This folder benchmarks steps 1–5 of `docs/connectivity-map-plan.md`: the whole
 | A5b follow-up from the review | `a5b_seeds.py` (offline) | `bench_map_a5b.log` | `a5b_seeds.json` | 503/1000 splits dangerous |
 | B end to end, run 2 (current) | `b_endtoend.py` | `bench_map_b.log` (2nd block) | `raw/bench_map_b.json`, `raw/decision_bench_map_b.json` | **arm 1: 0 executed (PAIR not acting); oracle arm: 8/9 restored, ExecState 0**, 367 s |
 | B run 1 (superseded) | same script before the review's fixes | `raw/bench_map_b_run1.log` | `raw/*_run1.json` | 6/9, because of a scorer fault (see B) |
+| **A5c** PAIR margin rule (continuation) | `a5c_margin.py` (offline) | `bench_map_a5c.log` | `a5c_margin.json` | **0 dangerous; PAIR acts** |
+| **w9635 writer probe** (continuation) | `w9635_writers.py` | `bench_map_w9635.log` | `raw/bench_map_w9635.json` | 0/3 cells reuse #9641; 14/3, 176 s |
+| **B run 3** (continuation, current) | `b_endtoend.py` | `bench_map_b3.log` | `raw/bench_map_b_run3.json`, `raw/decision_bench_map_b_run3.json` | **arm 1: 6/9 restored; oracle +2; ExecState 0**, 336 s |
 
 Shared inputs are in `common.py`. The tool changes this bench needed are listed at the end.
 
@@ -144,7 +147,84 @@ Timing and cost: 367 s wall. Of that, 151 s was intent → candidates → Jev �
 2. **Cutting both wires of the VISA shift-register carrier renames its terminals** from `'VISA out'` to `'Outgoing Handle'` (6 edges). **Re-wiring w1731 and w7337 renames them back.** After repair every restored row matches its exact S1 key, so the name change does not reach a repaired VI.
 3. The executor (`from_decision`, with `connect_nested_v1` and `wire_sr` LeftIn/RightIn, index triples read live with uid echo, and a structure-of-tunnel lookup by geometry) **executed 8 of 8 rows it was given, all correctly**.
 
+## Continuation, 2026-09-23 18:0x–18:2x: the judgement session's five decisions applied
+
+The judgement session (chat, 16:xx) decided five changes after run 2. They were applied as given and then measured.
+
+### A5c: PAIR with a margin rule
+
+The new rule: PAIR acts only when the best candidate has p ≥ 0.75 **and** beats the runner-up for the same intent by at least 0.15. Otherwise the row goes to the LLM. Both numbers are stored in `jev_menu_thresholds.json` (`pair.act`, `pair.margin`). They are fixed values, so nothing is fitted on half 1. The data are the same stored answers as A5: 49 items, 11 intents.
+
+| set | n | acc | Brier | acted (all correct) | dangerous |
+|---|---|---|---|---|---|
+| full set | 49 | 0.918 | 0.0745 | 7 of 11 positives | **0** |
+| half 1, seed 20260923 | 24 | 0.875 | 0.111 | 2 | 0 |
+| **half 2, seed 20260923** | 25 | **0.96** | **0.040** | 5 of 6 | **0** |
+| half 2, runner-up from the same half only | 25 | 0.96 | 0.040 | 5 | 0 |
+| **A5b: 1000 splits** | – | – | – | – | **0/1000** (0/1000 with the same-half runner-up too) |
+| leave one intent out | 11 intents | – | – | 7 | 0 |
+
+Acting intents: 1893 (0.916 over 0.698), 2819, 3947, 4833, 7388, 9635 and 11232. Going to the LLM: 1731 (0.446), 7337 (0.534), 23502 and 23540. **PAIR keeps acting** (`a5c_margin.json` `pair_keeps_acting: true`).
+
+Caveat: 0.75 and 0.15 were chosen after run 2's numbers had been seen. The 1893 negative at 0.698 lies just under 0.75. So the held-out result is not an independent test of the thresholds. It only shows that no labelled item breaks the rule.
+
+### The cut-input-tunnel rule in `jev_candidates`
+
+`cut_input_tunnel()` excludes the inner terminals of a Selector, Loop or plain tunnel whose outer terminal reads as a sink (`is_source` False) and has `wire_uid` 0. In B run 3 it removed **10 candidate pairs**: 4 on w7388, 2 on w9635 and 4 on w11232. After that, the truth was the best candidate on 9 of 9 rows. In run 2, a flipped inner terminal was ranked above the truth on 9635 and 11232.
+
+### w9635: can an existing writer make LoopTunnel #9641 inner → SelectorTunnel #9623 outer?
+
+The probe ran three cells, each on a fresh scratch of S1 with w9635 deleted. After the cut, every cell read ExecState 0 and 132 LoopTunnels. The sink in every cell was `D[43].N[24].t1`, the #9623 outer terminal, addressed through its structure #10407 by `stagekit.address`.
+
+| cell | writer | source | op error / `Is Broken?` | new wire's source owner | LoopTunnel count | ExecState | gate |
+|---|---|---|---|---|---|---|---|
+| C1 | `OpConnectFromWire_v0` | w9649 term 1 (#9641 OUTER) | '' / False | **new LoopTunnel #23014** | 132 → 133 | 1 | FAIL |
+| C2 | `OpConnectFromWire_v0` | w9649 term 0 (FSIT #9655, the feed's source) | '' / False | **new LoopTunnel #23014** | 132 → 133 | 1 | FAIL |
+| C3 | `OpConnectNested_v1` | `D[19].N[4].t45` = WhileLoop #637's terminal on w9649 | '' | **new LoopTunnel #23058** | 132 → 133 | 1 | FAIL |
+
+- Every writer produced a working VI: ExecState went from 0 to 1, and the new wire is not broken. In every case LabVIEW did this by making a **new** loop tunnel. #9641 stayed on the diagram, and its inner terminal stayed unwired.
+- None of them reproduces S1's endpoints. The gate required uid and name to match.
+- `OpFsInnerTunnelConnect_v1` was not tried. It casts the UID to `FlatSequenceInnerTunnel` (`tools/recipes/build_d1_m3a3b_d3.py:33`), and a LoopTunnel cannot pass that cast.
+- **No existing writer can address a LoopTunnel's inner terminal as a source, so no op-rule entry was added** for "tunnel-inner-source → tunnel-outer-sink" or for "tunnel-inner-source → node-sink". Building a new op is a judgement call.
+- The probe's docstring had predicted that C1 and C3 would give an op error or no wire. They made working wires through a new tunnel instead, so that sub-prediction failed.
+
+### B run 3: fresh scratch, the same 9 cuts, zero LLM turns
+
+The run used PAIR at act 0.75 with margin 0.15 (acting, per A5c), the cut-tunnel rule, and an unchanged op rule. The oracle arm then ran every row that arm 1 left undone.
+
+| wire | cands (cut-rule removed) | truth best? | p (margin) | arm 1 | op (by) | arm 1 result | oracle arm | restored (exact S1 key) | first failing layer |
+|---|---|---|---|---|---|---|---|---|---|
+| 1731 | 5 (0) | yes | 0.578 (0.446) | llm | wire_sr LeftIn (rule) | – | ok, echo #4334 | yes | verdict (p < 0.75) |
+| 1893 | 5 (0) | yes | 0.940 (0.220) | **wire** | connect_nested (rule) | ok | – | **yes** | – |
+| 2819 | 5 (0) | yes | 0.938 (0.558) | **wire** | connect_nested | ok | – | **yes** | – |
+| 3947 | 5 (0) | yes | 0.950 (0.854) | **wire** | wire_sr LeftIn | ok, echo #4256 | – | **yes** | – |
+| 4833 | 5 (0) | yes | 0.946 (0.650) | **wire** | connect_nested | ok | – | **yes** | – |
+| 7337 | 1 (0) | yes | 0.472 (0.472) | llm | wire_sr RightIn | – | ok | yes | verdict (p < 0.75) |
+| 7388 | 2 (4) | yes | 0.924 (0.576) | **wire** | connect_nested (structure #10407) | ok | – | **yes** | – |
+| 9635 | 1 (2) | yes | 0.940 (0.940) | llm | none (rule has no entry; Jev OP said connect_from_wire, does not act) | – | not executed | no | **op** |
+| 11232 | 2 (4) | yes | 0.934 (0.588) | **wire** | connect_nested (structure #10407) | ok | – | **yes** | – |
+
+| gate | result |
+|---|---|
+| B0a each delete removes exactly its uid | 9/9 PASS |
+| B0 damage explained | printed FAIL. This is the same bookkeeping fault as in run 2: one edge is counted as both tunnel-inner and renamed. The run found 0 unexplained removed edges. |
+| **B1a arm 1 alone restores 9/9** | **FAIL: 6/9**. All 6 rows that arm 1 executed came back with their exact S1 keys. |
+| B1 11/11 | FAIL: 8/11. That is 6 from arm 1 and 2 from the oracle arm; 23502 and 23540 are not in S1. |
+| B2 ExecState 1 | **FAIL: 0**, because w9635 is still cut |
+| B3 computation_diff ∅ | **FAIL: 1 row**. `#9243 'x'` has lost its source `#27462 '# slices in stack'`, downstream of w9635. No node was added or removed. |
+| B4 diff ∅ | FAIL: 2 rows, `- #9641 inner → #9623 outer` and `- #9623 inner [1] → #9243 'x'` |
+
+Time and cost: 336 s wall, 205 Jev calls, about $0.016, **0 LLM turns**.
+
+Compared with run 2, the verdict layer went from acting on 0 of 9 rows to acting on 7 of 9, with 0 wrong. The execution layer ran 6 of 6 correctly. The remaining failures are 1731 and 7337, where p is below 0.75 on the renamed VISA-carrier rows, and 9635, where the op layer has no writer.
+
 ## Tool changes this bench made (additive; existing behaviour kept unless named)
+
+- **Continuation (18:0x):**
+  - `jev_candidates.cut_input_tunnel()` plus a new exclusion reason in `candidates()`. **This changes behaviour:** fewer sink candidates.
+  - `jev_pairs.decide()` uses the margin rule whenever `th["pair"]` carries `margin`. When it does, the rule replaces the "≥ 2 over 0.70" check. The margin is recorded as `evidence.margin`.
+  - `jev_menu_thresholds.json` `pair`: act 0.70 → **0.75**, plus **margin 0.15**.
+  - `b_endtoend.py` reads `a5c_margin.json`. It gained the columns `cut_tunnel_excluded`, `margin` and `arm1_executed`, and the gate B1a.
 
 - `tools/jev_candidates.py`:
   - `load(key, fs=True)` now passes the wiki's `fs_tunnel_pairs` to `build4`. **This is a behaviour change**: before, it silently built the heuristic fs edges.

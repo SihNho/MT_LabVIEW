@@ -41,10 +41,13 @@ def body(s):
     s.start()
     s.discard_work()
     G0 = C.s1_graph()
-    a5 = json.load(open(os.path.join(C.HERE, "a5_heldout.json"), encoding="utf-8"))
+    # run 3 (2026-09-23 18:xx): PAIR = act 0.75 + margin 0.15 from jev_menu_thresholds.json; acts iff A5c found 0
+    # dangerous errors (a5c_margin.json). Run 2 read a5_heldout.json (the fitted-threshold rule) here.
+    a5 = json.load(open(os.path.join(C.HERE, "a5c_margin.json"), encoding="utf-8"))
     th = JP.thresholds()
-    th["pair"] = dict(th["pair"], act=a5["pair_act_threshold_for_B"] or th["pair"]["act"], acts=a5["pair_keeps_acting"])
-    s.fact("PAIR in B: acts={0} act={1} (A5 held-out)".format(th["pair"]["acts"], th["pair"]["act"]))
+    th["pair"] = dict(th["pair"], acts=a5["pair_keeps_acting"])
+    s.fact("PAIR in B: acts={0} act={1} margin={2} (A5c held-out)".format(th["pair"]["acts"], th["pair"]["act"],
+                                                                          th["pair"].get("margin")))
     s.head("[0] sever")
     truth, rows = {}, {}
     for w in C.SEVERED:
@@ -93,7 +96,10 @@ def body(s):
         keys = [(p["src"]["key"], p["dst"]["key"]) for p in c["pairs"]]
         (msk, hs), (mdk, hd) = JC.map_key(Gs, sk, G0), JC.map_key(Gs, dk, G0)   # v2: renamed terminals (137 caveat)
         tk = (msk, mdk)
-        rows[w].update({"n_candidates": len(keys), "truth_in_candidates": tk in keys, "truth_key_map": [hs, hd]})
+        rows[w].update({"n_candidates": len(keys), "truth_in_candidates": tk in keys, "truth_key_map": [hs, hd],
+                        "excluded": c["excluded"],
+                        "cut_tunnel_excluded": c["excluded"].get(
+                            "inner terminal of an input tunnel whose outer feed is cut", 0)})
         d = JP.decide(it["line"], c, G_orig=G0, G_new=Gs, orig_sink_key=dk, th=th, by_rule=True, risk_gates=False,
                       top_diagram=None)
         d["id"] = w
@@ -117,8 +123,12 @@ def body(s):
             if op == "wire_sr":
                 o["exec"]["sr"] = sr_info(G0, o)
             oracle.append(o)
-        s.row("w{0}".format(w), {k: rows[w].get(k) for k in ("truth_in_candidates", "n_candidates", "best_is_truth",
-                                                           "best_p", "action", "op", "layer")})
+        rows[w]["margin"] = d["evidence"].get("margin")
+        s.row("w{0}".format(w), {k: rows[w].get(k) for k in ("truth_in_candidates", "n_candidates", "cut_tunnel_excluded",
+                                                           "best_is_truth", "best_p", "margin", "action", "op",
+                                                           "layer")})
+    s.fact("CUT-TUNNEL RULE removed {0} candidate sink pair(s) over the 9 intents".format(
+        sum(rows[w].get("cut_tunnel_excluded", 0) for w in truth)))
     p1, rec = JP.write_record("bench_map_b", K.md5(C.S1), ints, cands, decs, t1, extra={"oracle_arm": oracle})
     s.fact("decision record {0}: {1} Jev calls, ${2}".format(p1, rec["jev_calls"], rec["cost"]["usd_est"]))
     s.head("[2] ARM 1 - the pipeline's own record")
@@ -126,6 +136,8 @@ def body(s):
     done = set(r["id"] for r in r1 if r["action"] == "wire" and not r.get("error"))
     s.head("[3] ARM 2 - ORACLE verdict, same op rule, same executor")
     r2 = s.from_decision({"decisions": [o for o in oracle if o["id"] not in done]}, "arm2")
+    for w in truth:
+        rows[w]["arm1_executed"] = w in done
     for r in r1 + r2:
         rows[r["id"]].setdefault("exec", []).append({k: r.get(k) for k in ("action", "op", "how", "error", "failed_layer")})
     es = s.es("after repair")
@@ -145,6 +157,10 @@ def body(s):
     for w in C.SEVERED:
         s.fact("ROW w{0}: {1}".format(w, json.dumps(rows[w], default=str)[:600]))
     n = sum(rows[w]["restored"] for w in C.SEVERED)
+    n1 = sum(1 for w in truth if rows[w].get("arm1_executed") and rows[w]["restored"])
+    s.fact("ARM 1 (pipeline alone) restored {0}/{1}; oracle arm restored {2} more".format(
+        n1, len(truth), sum(1 for w in truth if rows[w]["restored"] and not rows[w].get("arm1_executed"))))
+    s.gate("B1a arm 1 alone restored every S1 row", n1 == len(truth), "{0}/{1}".format(n1, len(truth)))
     s.gate("B1 all 11 rows restored to their S1 endpoints", n == 11, "{0}/11".format(n))
     s.gate("B2 ExecState 1", es == 1, es)
     s.gate("B3 computation_diff(S1, repaired) empty", not (cd["rows"] or cd["computation_nodes_added"] or

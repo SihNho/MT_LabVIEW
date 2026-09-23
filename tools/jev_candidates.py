@@ -200,6 +200,20 @@ def sink_state(G, r):
     return "occupied"
 
 
+TUNNEL_CLS = ("SelectorTunnel", "Tunnel", "LoopTunnel")
+
+
+def cut_input_tunnel(G, node):
+    """FACT RULE (judgement 2026-09-23 16:xx, measured by bench 5b B run 2): a Selector/Loop tunnel whose OUTER
+    terminal reads as a SINK (is_source False = an input tunnel) with wire_uid 0 has had its outer feed cut; its
+    INNER terminals then read as SINKS only because the damage removed their source - they are never a
+    restoration target, so they are excluded as sinks."""
+    if G["cls"].get(node) not in TUNNEL_CLS:
+        return False
+    outer = [G["rows"][k] for k in V.terminals(G, node=node) if G["rows"][k]["term_class"] == "OuterTerminal"]
+    return bool(outer) and all((not r["is_source"]) and not r["wire_uid"] for r in outer)
+
+
 def _reaches(G, a_node, b_node):
     if a_node not in G["_reach"]:
         G["_reach"][a_node] = set(V.key_parts(k)[0] for k in V.reach4(G, [a_node]))
@@ -229,6 +243,9 @@ def candidates(G, intent):
             d = term_row(G, dk)
             if s["uid"] == d["uid"]:
                 excluded["same node"] += 1
+                continue
+            if d["term_class"] == "InnerTerminal" and cut_input_tunnel(G, d["uid"]):
+                excluded["inner terminal of an input tunnel whose outer feed is cut"] += 1
                 continue
             st = sink_state(G, G["rows"][dk])
             if st == "occupied" and not replace:
