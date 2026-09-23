@@ -230,6 +230,32 @@ def read_fs_tunnels(path, objs, uids=None):
     return out
 
 
+def read_live(path, fs_pairs=None, fs_uids=None):
+    """STEP 5b: the graph INPUTS of a live (scratch) VI, without the wiki's subVI/conpane passes: the GObject
+    census + OpAllTerms_v1 terminals (term_class joined) + the Wire census + termless join. `fs_pairs` given ->
+    reused (a flat-sequence tunnel's two faces are TERMINAL uids, which a wire delete/create does not touch);
+    None -> read from the machine (`fs_uids` restricts which tunnels). Returns a dict + per-part seconds."""
+    t0 = time.time()
+    objs, seen = [], set()
+    for o in g.report_all(path, "GObject"):
+        u = int(o["uid"])
+        if u not in seen:
+            seen.add(u)
+            objs.append({"uid": u, "class": o["class"], "pos": tuple(o["pos"]), "owner": o["owner"]})
+    leaf = dict((o["uid"], o["class"]) for o in objs)
+    t_obj = time.time() - t0
+    rows, t_term = A.read_terms(path, op=A.OP_ALLTERMS_V1)
+    for r in rows:
+        r["term_class"] = leaf.get(r["term_uid"], "")
+    wires = A.join_wires(rows, [o["uid"] for o in objs if o["class"] == "Wire"])
+    t1 = time.time()
+    if fs_pairs is None:
+        fs_pairs = read_fs_tunnels(path, objs, fs_uids)
+    return {"terminals": rows, "objs": objs, "wires": wires, "fs_tunnel_pairs": fs_pairs,
+            "secs": {"gobject": round(t_obj, 2), "terminals": round(t_term, 2), "fs": round(time.time() - t1, 2),
+                     "total": round(time.time() - t0, 2)}}
+
+
 def read_one(path, conpane, calls, main_vi):
     """One VI -> the wiki record. Two op runs (GObject census, Terminal traverse) + one subvis per diagram."""
     t0 = time.time()

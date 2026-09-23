@@ -1,0 +1,119 @@
+﻿# bench-map-a5-pair-heldout
+
+- **agent:** claude
+- **role:** hypothesis
+- **model:** claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)
+- **kind:** review
+- **cost:** $1.1494  in 26 / out 9346 / cache-create 86832 / cache-read 1099531  (110s, 22 turn(s))
+- **date:** 2026-09-23 17:33:24
+- **outcome:** ANSWERED (115s)
+- **why asked:** failed prediction in step 5b A5 (PAIR held-out criterion)
+- **verdict:** claim holds (alternative refuted by a5b_seeds measurement)
+
+## Question
+
+FAILED PREDICTION (connectivity-map plan step 5b, bench A5). Attack the CLAIM below; find the strongest reason it is wrong.
+
+CONTEXT. `tools/jev_pairs.py` PAIR menu = a yes/no model question per candidate terminal pair ("does this source -> sink
+realise the intent?"). Step 5 measured it on 49 labelled items (`tools/bench/jev_menu_pair_result.json`, 11 positives):
+acc@0.5 0.898, Brier 0.075, and set the act threshold 0.70 = the smallest grid t whose yes-precision is 1.0 ON THE SAME 49
+items. The plan's criterion (docs/connectivity-map-plan.md row 5b, A5): on a HELD-OUT half, PAIR must reach accuracy >= 0.85
+with 0 dangerous-direction errors (a false "yes" at/above the threshold) to keep acting.
+
+MEASUREMENT (`tools/bench/bench_map_20260923/a5_heldout.py`, log `tools/bench/bench_map_a5.log`, JSON
+`tools/bench/bench_map_20260923/a5_heldout.json`): the 49 stored answers (no re-asking) split 50/50 by seed 20260923, item
+level. Threshold from half 1 by the same rule = 0.65. Half 2: accuracy 0.92, Brier 0.040, recall 0.83, dangerous errors = 1:
+the candidate for intent 1893 ("#3447 ControlReferenceConstant 'Focus Step (F1)' -> #48 SubVI 'Focus inc reference'") scored
+p = 0.698 but is labelled FALSE. CHAIN: t 0.25, acc 0.931, 0 dangerous. RISK: t 0.95, acc 1.0, 0 dangerous. OP: t 0.95,
+argmax acc 0.5, 1 acted row, 0 dangerous.
+
+CLAIM: "PAIR does not meet the held-out criterion, so it must NOT act; every PAIR verdict goes to the LLM until the menu is
+improved."
+
+ALREADY RULED OUT: the split is not a code bug (the 0.698 item is the same false positive step 5 recorded, fp at
+0.698/0.636); no answer was re-asked, so this is threshold over-fitting on a 24-item half, not sampling noise.
+
+QUESTIONS: (1) Is the 1893 item's FALSE label itself correct? Read the labelled set and tools/bench/jev_menus_step5.py
+`pair_set` (label = candidate keys == the S1 truth keys) and the S1 graph (docs/wiki/subvi/D1_s1_copy.json, wire 1893) -
+could the "wrong" candidate be the same physical terminal under a renamed key? (2) Is an item-level split of 49 items with
+11 positives a sound basis for "0 dangerous errors" at all - what would a grouped-by-intent split or a bootstrap say? (3)
+What is the cheapest discriminating test between "PAIR is unsafe" and "the criterion is unmeasurable at n=25"?
+
+
+--- HOW TO ANSWER (mandatory, from the dispatcher) ---
+Your job is to REFUTE the claim above, not to confirm it. Do not open with agreement.
+1. Name the single strongest reason the claim is WRONG.
+2. Name at least one ALTERNATIVE explanation of the same evidence.
+3. Name the observation that would FALSIFY the claim.
+4. End with the CHEAPEST discriminating test that separates the claim from your alternative.
+If you still believe the claim holds after all four, say so explicitly and state what would change your mind.
+
+## Answer
+
+**Verdict: the claim's conclusion is partly right, but its reasoning and its remedy are wrong.** PAIR does fail once on the held-out half. But the whole result comes down to one intent's two neighbouring pins on the same subVI. A deterministic name check fixes that case without sending every PAIR verdict to the LLM.
+
+**1. Strongest reason the claim is wrong: A5 measured one intent, not the menu.** Of the 38 negatives, only two score above 0.4. Both belong to intent 1893: 'Focus Step (F1)' wired to '+Inc reference' (p 0.698) and to '-Inc reference' (p 0.636) (`tools/bench/jev_menus_step5.log:31-32`). Every other negative sits well below every positive except 1731 (0.446) and 7337 (0.534) (`tools/bench/jev_menu_pair_result.json:214-422`). So the fitted threshold and the dangerous count depend only on which half those two items land in:
+- If 0.698 lands in half 1, t = 0.70 and half 2 is clean.
+- If only 0.636 lands in half 1, t = 0.65 and there is 1 dangerous error. That is what seed 20260923 produced.
+- If both land in half 2, t drops to about 0.45 and there are 2 dangerous errors.
+
+"Does not meet the held-out criterion" is really a coin flip on one confusion: pins with similar names on the same subVI. It is not a failure measured across the menu.
+
+**Your question 1: the FALSE label is correct.** It is not the same terminal under a different name. In S1, #48 has three separate reference inputs, each fed by its own constant (`docs/wiki/subvi/D1_s1_copy.json`):
+
+| S1 wire | line | source | #48 input |
+|---|---|---|---|
+| 1893 | 67607-67613 | #3447 'Focus Step (F1)' | 'Focus inc reference' |
+| 2819 | 67967-67973 | #3560 '+ Inc (PgUp)' | '+Inc reference' |
+| 4833 | 69203-69209 | #3529 '- Inc (PgDn)' | '-Inc reference' |
+
+The same three-way pattern appears in the other copies (lines 67139-67145 and 76667-76697). A 'yes' at 0.698 would wire the focus button's reference into the +Inc input, which is a real wrong wire. So the failure is real, and it is narrow.
+
+**2. Alternative explanation of the same evidence.**
+- **The miss is a model-reading error on sibling pins, not general unreliability.** The intent line gives the sink pin exactly ('Focus inc reference'), and `map_key` resolved it as 'same key' (`jev_menus_step5.log:6`). Jev still gave 0.698 to a pin with a different name. An exact-name filter in Python, applied before Jev when the intent names the pin, removes both 1893 false candidates. No other negative comes near any threshold.
+- **The candidate set is also stricter than production.** `pair_set` builds candidates with `replace=True` (`tools/bench/jev_menus_step5.py:102`). The production call uses `replace=False` (`:382`), and it gave 1893 zero pairs because every sink on #48 already has a live source (`jev_menus_step5.log:69`). The dangerous candidate only exists because the labelled set includes pins that are already connected. It can still occur in production if several sibling wires on one subVI are cut at once, so it is not harmless.
+
+**3. What would falsify the claim.** Across many seeds, or a split grouped by intent, every dangerous error comes from 1893's sibling pins. With an exact-name filter added, the dangerous count is 0 in every split. In that case "PAIR is unsafe, send everything to the LLM" is wrong: one class of candidate needs a Python rule.
+
+What would confirm the claim: a dangerous error from any other intent, or one that survives the name filter.
+
+**Your question 2: an item-level split of 49 items can't support "0 dangerous" either way.**
+- Half 2 has 19 negatives. Zero false "yes" in 19 still allows a true false-yes rate up to about 3/19 ≈ 16% at 95% confidence ([rule of three](https://en.wikipedia.org/wiki/Rule_of_three_(statistics)); [Statology](https://www.statology.org/a-concise-guide-to-the-statistical-rule-of-three/)). One error in 19 also doesn't prove the rate is high.
+- The item-level split leaks: 1893 contributes at least five candidates, which land in both halves. `a5_heldout.py:11-12` admits this. Grouped splits exist to stop exactly this ([scikit-learn GroupKFold](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GroupKFold.html); [cross-validation guide](https://scikit-learn.org/stable/modules/cross_validation.html)).
+- A split grouped by intent would still hinge on 1893 alone. Leave-one-intent-out is the honest form of this test, and at this n it still can't certify safety.
+
+**Part of the claim does stand.** At step 5's own threshold of 0.70, the false item sits at 0.698, and Jev's reported spread for it is 0.03 (`jev_menu_pair_result.json:224`). Re-asking could plausibly push it past 0.70. So "PAIR as currently configured is not shown safe" is right. The mistake is concluding "the menu is unsafe, so everything goes to the LLM" rather than "this one case needs a Python rule."
+
+**4. Cheapest test that separates the two readings.** It is offline, uses no Jev calls, and needs about 30 lines on the stored answers:
+1. Re-run the `a5_heldout.py` rule over 1,000 seeds, plus leave-one-intent-out. Record the dangerous count and which intents cause it.
+2. Repeat step 1 with the exact-name filter: when the intent names the sink pin and the candidate's sink key differs from `true_dst`'s name, Python answers no.
+
+If every dangerous error in step 1 is from 1893 and step 2 shows zero everywhere, the claim is refuted and PAIR can act behind the filter. If a dangerous error from another intent shows up in either step, the claim holds.
+
+An optional add-on costs about 10 Jev calls: re-ask the 1893 '+Inc' candidate 10 times to see how often it crosses 0.70. That decides whether 0.70 is safe even with the filter off.
+
+What would change my mind: any dangerous error that doesn't come from two pins of the same class on the same node.
+
+Sources:
+- [Rule of three (statistics), Wikipedia](https://en.wikipedia.org/wiki/Rule_of_three_(statistics))
+- [A Concise Guide to the Statistical Rule of Three, Statology](https://www.statology.org/a-concise-guide-to-the-statistical-rule-of-three/)
+- [GroupKFold, scikit-learn documentation](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GroupKFold.html)
+- [Cross-validation: evaluating estimator performance, scikit-learn documentation](https://scikit-learn.org/stable/modules/cross_validation.html)
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+MATERIAL session (step 5b bench), 2026-09-23 17:4x. Q1 accepted (the 1893 FALSE label is correct - three distinct
+reference pins on #48). The reviewer's cheapest discriminating test (§4 steps 1-2) was RUN as a measurement, offline, on
+the stored answers: `tools/bench/bench_map_20260923/a5b_seeds.py` -> `tools/bench/bench_map_a5b.log`,
+`tools/bench/bench_map_20260923/a5b_seeds.json`. Result: RAW, 503/1000 seeds carry >= 1 dangerous error on half 2, and
+the errors come from SIX intents (1893: 752, 2819: 116, 7388: 49, 4833: 16, 11232: 15, 23502: 2), not from 1893 alone;
+leave-one-intent-out: 2 dangerous. WITH the exact-name filter: 513/1000 seeds still dangerous (7388: 513, 11232: 268,
+23502: 116) - removing 1893's negatives lowers the half-1 threshold and exposes other intents' negatives; LOIO 1
+dangerous; the filter also drops 1 labelled-TRUE item (a renamed pin). By the reviewer's own falsifier ("a dangerous error
+from any other intent ... or one that survives the name filter") the claim HOLDS: PAIR is not shown safe to act on this
+set. Applied in B per the plan's criterion (5b A5): PAIR does not act. The name filter was NOT adopted (a design change -
+the judgement session's call). Verdict: claim holds; review's alternative refuted by measurement.

@@ -60,21 +60,34 @@ def _newest(pattern):
     return hits[-1] if hits else None
 
 
-def load(key):
-    """The step-4 graph of one wiki VI, built exactly as tools/bench/diag_vigraph_check.py builds it
-    (wiki terminals + the newest graph_objs/graph_loops census + main_vi_node_labels), plus the wiki record."""
-    rec = json.load(open(os.path.join(WIKI, key + ".json"), encoding="utf-8"))
-    tag = "s1" if key == S1_KEY else "bed"
-    objs_p, loops_p = _newest("graph_objs_{0}_*.json".format(tag)), _newest("graph_loops_{0}_*.json".format(tag))
-    objs = json.load(open(objs_p, encoding="utf-8"))["objects"] if objs_p else []
-    loops = json.load(open(loops_p, encoding="utf-8"))["loops"] if loops_p else None
+def node_labels_default():
     labels = {}
     p = os.path.join(BENCH, "main_vi_node_labels.json")
     if os.path.exists(p):
         for _d, rows in json.load(open(p, encoding="utf-8")).get("diagrams", {}).items():
             for x in rows:
                 labels[int(x["uid"])] = x.get("label", "")
-    G = V.build4(rec["terminals"], objs, loops, labels)
+    return labels
+
+
+def load(key, fs=True):
+    """The step-4 graph of one wiki VI, built exactly as tools/bench/diag_vigraph_check.py builds it
+    (wiki terminals + the newest graph_objs/graph_loops census + main_vi_node_labels), plus the wiki record.
+    fs=True (2026-09-23, step 5b): the wiki's STEP-4b `fs_tunnel_pairs` are passed to build4, so flat-sequence
+    edges are the EXACT machine faces; before this the loader silently built the step-4 HEURISTIC fs edges
+    (measured by tools/bench/bench_map_20260923/a4_units.py: R1/R2 sequence-crossing paths 0/2 without them)."""
+    rec = json.load(open(os.path.join(WIKI, key + ".json"), encoding="utf-8"))
+    tag = "s1" if key == S1_KEY else "bed"
+    objs_p, loops_p = _newest("graph_objs_{0}_*.json".format(tag)), _newest("graph_loops_{0}_*.json".format(tag))
+    objs = json.load(open(objs_p, encoding="utf-8"))["objects"] if objs_p else []
+    loops = json.load(open(loops_p, encoding="utf-8"))["loops"] if loops_p else None
+    return from_parts(rec, objs, loops, node_labels_default(), rec.get("fs_tunnel_pairs") if fs else None, key)
+
+
+def from_parts(rec, objs, loops, labels, fs_pairs, key):
+    """The same graph from parts already in memory (a LIVE read of a scratch VI: `rec` needs `terminals` and,
+    for the subVI-name map, `graph_summary.subvi_calls`)."""
+    G = V.build4(rec["terminals"], objs, loops, labels, fs_pairs)
     G["wiki"] = rec
     G["key"] = key
     G["objs"] = dict((int(o["uid"]), o) for o in objs)

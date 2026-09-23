@@ -174,6 +174,45 @@ def op_options(c):
     return base
 
 
+TUNNEL_BORDER = ("SelectorTunnel", "Tunnel", "LoopTunnel")
+NOT_A_NODE = TUNNEL_BORDER + SR_CLS + FS_CLS + ("ControlTerminal", "Diagram", "TopLevelDiagram")
+
+
+def op_rule(c, top_diagram=None):
+    """PRE-DECIDED 143 as code: the writer op chosen by the row's CLASSES; (op, variant, why) or (None, None, why)
+    when the rule has no entry (then, and only then, Jev's OP menu is asked). Order = the Pre-decided sentence:
+      ControlTerminal end            -> connect_ctl
+      source already on a live wire  -> connect_from_wire
+      FlatSequenceInnerTunnel sink   -> fs_inner_tunnel_connect
+      shift-register INSIDE terminal -> wire_sr (LeftIn: left inner source; RightIn: right inner sink)
+      node <-> node                  -> connect_terminals on the TOP-LEVEL diagram (it addresses VI.Block Diagram
+                                        Nodes[] only, gscript.py:2528), connect_nested on any nested diagram. A
+                                        Selector/Loop tunnel's OUTER terminal counts as a node end: it is addressed
+                                        as a terminal of its STRUCTURE node (OP_MENU connect_nested).
+    """
+    s, d = c["src"], c["dst"]
+    if "ControlTerminal" in (s["owner_class"], d["owner_class"], s["term_class"], d["term_class"]):
+        return "connect_ctl", None, "a ControlTerminal end"
+    if s.get("wire_uid"):
+        return "connect_from_wire", None, "source terminal is on live wire w{0}".format(s["wire_uid"])
+    if d["owner_class"] == "FlatSequenceInnerTunnel":
+        return "fs_inner_tunnel_connect", None, "FSIT sink"
+    if s["owner_class"] == "LeftShiftRegister" and s["term_class"] == "InnerTerminal":
+        return "wire_sr", "LeftIn", "left register inside -> body node"
+    if d["owner_class"] == "RightShiftRegister" and d["term_class"] == "InnerTerminal":
+        return "wire_sr", "RightIn", "body node -> right register inside"
+
+    def node_end(e):
+        return e["owner_class"] not in NOT_A_NODE or \
+            (e["owner_class"] in TUNNEL_BORDER and e["term_class"] == "OuterTerminal")
+    if node_end(s) and node_end(d):
+        top = top_diagram is not None and s["diagram"] == d["diagram"] == top_diagram
+        return ("connect_terminals" if top else "connect_nested"), None, "node <-> node ({0})".format(
+            "top-level" if top else "nested diagram {0}/{1}".format(s["diagram"], d["diagram"]))
+    return None, None, "no rule entry: {0} {1} -> {2} {3}".format(s["owner_class"], s["term_class"],
+                                                                  d["owner_class"], d["term_class"])
+
+
 def op_question(opts):
     return {"type": "choice",
             "instructions": (
@@ -240,15 +279,19 @@ def risk_evidence(G_orig, G_new, c, orig_sink_key=None):
 
 
 # ------------------------------------------------------------------------------------------------ one intent
-def decide(intent_line, cand, G_orig=None, G_new=None, orig_sink_key=None, n=None, th=None):
-    """Run PAIR over every candidate, then OP and RISK on the chosen one. Returns one decision dict."""
+def decide(intent_line, cand, G_orig=None, G_new=None, orig_sink_key=None, n=None, th=None, by_rule=False,
+           risk_gates=True, top_diagram=None):
+    """Run PAIR over every candidate, then OP and RISK on the chosen one. Returns one decision dict.
+    by_rule=True  -> Pre-decided 143: `op_rule` first, Jev's OP menu only when the rule has no entry.
+    risk_gates=False -> Pre-decided 144: RISK is asked and RECORDED, never changes `action`."""
     th = th or thresholds()
     pairs = cand["pairs"]
     calls = 0
     rk = {"src_uid": None, "src_term": None, "dst_uid": None, "dst_term": None}
     if not pairs:
         return {"row_key": rk, "pair_p": None, "op": None, "op_p": None, "risk_p": None, "action": "llm",
-                "decided_by": "python", "evidence": {"reason": "no legal candidate", "excluded": cand["excluded"]},
+                "decided_by": "python", "evidence": {"reason": "no legal candidate", "excluded": cand["excluded"],
+                                                     "failed_layer": "candidate"},
                 "jev_calls": 0}
     scored = []
     for c in pairs:
@@ -258,7 +301,7 @@ def decide(intent_line, cand, G_orig=None, G_new=None, orig_sink_key=None, n=Non
     ok = [s for s in scored if s["p"] is not None]
     if not ok:
         return {"row_key": rk, "pair_p": None, "op": None, "op_p": None, "risk_p": None, "action": "llm",
-                "decided_by": "python", "evidence": {"reason": "jev gave no answer", "pairs": scored},
+                "decided_by": "python", "evidence": {"reason": "jev gave no answer", "pairs": scored, "failed_layer": "verdict"},
                 "jev_calls": calls}
     ok.sort(key=lambda s: -s["p"])
     best = ok[0]
@@ -272,12 +315,21 @@ def decide(intent_line, cand, G_orig=None, G_new=None, orig_sink_key=None, n=Non
         action, ev["reason"] = "llm", "best p {0:.3f} < act threshold {1}".format(best["p"], th["pair"]["act"])
     elif len(many) >= 2:
         action, ev["reason"] = "llm", "{0} candidates >= 0.70 (asymmetry)".format(len(many))
-    op, probs, opts, _e = ask_op(c, n=n)
-    calls += jev.samples() if n is None else n
-    op_p = probs.get(op) if probs else None
-    ev["op_options"], ev["op_probs"] = opts, probs
-    if action == "wire" and (not th["op"].get("acts") or op_p is None or op_p < th["op"]["act"]):
-        action, ev["reason"] = "llm", "op menu does not act or op_p below threshold"
+    variant, op_by = None, "jev"
+    op = None
+    if by_rule:
+        op, variant, ev["op_rule"] = op_rule(c, top_diagram)
+        op_by = "python-rule" if op else "jev"
+    if op:
+        op_p, probs, opts = None, None, None
+    else:
+        op, probs, opts, _e = ask_op(c, n=n)
+        calls += jev.samples() if n is None else n
+        op_p = probs.get(op) if probs else None
+        if action == "wire" and (not th["op"].get("acts") or op_p is None or op_p < th["op"]["act"]):
+            action, ev["reason"] = "llm", "op menu does not act or op_p below threshold"
+            ev["failed_layer"] = "op"
+    ev["op_options"], ev["op_probs"], ev["op_decided_by"] = opts, probs, op_by
     risk_p = None
     if G_orig is not None and G_new is not None:
         rev = risk_evidence(G_orig, G_new, c, orig_sink_key)
@@ -285,12 +337,20 @@ def decide(intent_line, cand, G_orig=None, G_new=None, orig_sink_key=None, n=Non
         risk_p, _sp, _e = ask_risk(line, rev, n=n)
         calls += jev.samples() if n is None else n
         ev["risk_evidence"] = rev
-        if action == "wire" and (not th["risk"].get("acts") or risk_p is None or risk_p > th["risk"]["act"]):
+        if risk_gates and action == "wire" and (not th["risk"].get("acts") or risk_p is None or
+                                                 risk_p > th["risk"]["act"]):
             action, ev["reason"] = "llm", "risk menu does not act or p_risk above threshold"
+            ev["failed_layer"] = "risk"
+    if action == "llm" and "failed_layer" not in ev:
+        ev["failed_layer"] = "verdict"
     return {"row_key": {"src_uid": c["row_key"]["src_uid"], "src_term": c["row_key"]["src_term"],
                         "dst_uid": c["row_key"]["dst_uid"], "dst_term": c["row_key"]["dst_term"]},
-            "pair_p": best["p"], "op": op, "op_p": op_p, "risk_p": risk_p, "action": action, "decided_by": by,
-            "evidence": ev, "jev_calls": calls}
+            "pair_p": best["p"], "op": op, "variant": variant, "op_p": op_p, "risk_p": risk_p, "action": action,
+            "decided_by": by, "evidence": ev, "jev_calls": calls,
+            "exec": {"src": dict((k, c["src"][k]) for k in ("uid", "term", "term_uid", "term_class", "owner_class",
+                                                             "diagram", "wire_uid")),
+                     "dst": dict((k, c["dst"][k]) for k in ("uid", "term", "term_uid", "term_class", "owner_class",
+                                                             "diagram", "wire_uid"))}}
 
 
 def write_record(stage, bed_md5, intents, cands, decisions, t0, extra=None):

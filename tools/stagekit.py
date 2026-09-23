@@ -649,6 +649,126 @@ class Stage(object):
                           ib, r.get("sink_wire_uid"), wire_uid, same))
         return {"wire_delta": delta, "is_broken": ib, "pass": bool(a and b), "readout": r}
 
+    # ------------------------------------------------------------------ decision record -> edits (plan step 6)
+    STRUCTS = ("CaseStructure", "WhileLoop", "ForLoop", "TimedLoop", "EventStructure", "FlatSequence",
+               "StackedSequence")
+
+    def address(self, end, is_source, objs=None):
+        """A terminal named by (node uid, terminal name, frame diagram uid) -> the LIVE index triple
+        (Diagram idx, Nodes[] idx, Terminals[] idx), every index read off the machine just before use and the
+        node's uid ECHOED back. A Selector/Loop tunnel's OUTER terminal is addressed as a terminal of its
+        STRUCTURE node, found by GEOMETRY (a structure on the same diagram at the tunnel's left x, or the nearest
+        structure up-left of it) - a HEURISTIC, reported in the returned `how`, and made safe by requiring the
+        name to resolve to exactly one terminal of the right direction on that structure."""
+        t = self.work
+        uid, how = int(end["uid"]), "node"
+        diags = g.report_all(t, "Diagram")
+        didx = next((d["i"] for d in diags if int(d["uid"]) == int(end["diagram"])), None)
+        if didx is None:
+            raise RuntimeError("diagram #{0} not in report_all('Diagram')".format(end["diagram"]))
+        labels = g.node_labels(t, didx)
+        uids = [r["uid"] for r in labels]
+        if end["owner_class"] in ("SelectorTunnel", "Tunnel", "LoopTunnel") and end["term_class"] == "OuterTerminal":
+            pos = dict((o["uid"], (o["pos"], o["class"])) for o in (objs or []))
+            tp = pos[uid][0]
+            cands = [u for u in uids if pos.get(u, (None, ""))[1] in self.STRUCTS]
+            left = [u for u in cands if pos[u][0][0] == tp[0] and pos[u][0][1] <= tp[1]]
+            upl = sorted((u for u in cands if pos[u][0][0] <= tp[0] and pos[u][0][1] <= tp[1]),
+                         key=lambda u: (-pos[u][0][0], -pos[u][0][1]))
+            pick = left or upl[:1]
+            if not pick:
+                raise RuntimeError("no structure found for tunnel #{0}".format(uid))
+            uid, how = pick[0], "structure #{0} of tunnel #{1} (geometry: {2})".format(
+                pick[0], end["uid"], "left edge x" if left else "nearest up-left")
+        if uid not in uids:
+            raise RuntimeError("#{0} not in Diagram[{1}].Nodes[]".format(uid, didx))
+        nidx = uids.index(uid)
+        echo, rows = g.node_terms_uid(t, didx, nidx)
+        if echo != uid:
+            raise RuntimeError("uid echo {0!r} != #{1}".format(echo, uid))
+        hits = [r for r in rows if r["name"] == end["term"] and bool(r["is_source"]) == bool(is_source)]
+        if len(hits) > 1:
+            hits = [r for r in hits if not r["wire"]]
+        if len(hits) != 1:
+            raise RuntimeError("terminal {0!r} ({1}) on #{2}: {3} matches".format(
+                end["term"], "source" if is_source else "sink", uid, len(hits)))
+        return (didx, nidx, int(hits[0]["i"])), how
+
+    def from_decision(self, record, tag="fd"):
+        """PLAN STEP 6 / Pre-decided 142-143: execute a decision record (tools/jev_pairs.write_record shape).
+        action 'wire'   -> the row's `op` (connect_nested | connect_terminals | wire_sr | connect_from_wire |
+                           fs_inner_tunnel_connect) on the `exec` ends {uid, term, term_class, owner_class, diagram};
+                           wire_sr also needs exec.sr {loop_uid, loop_class, right_uid, right_uids}.
+        action 'delete' -> exec.wire_uid is deleted; 'retire' -> exec {class, uid} is deleted.
+        'llm' / 'skip' / anything else -> REPORTED, never executed. Every mutation goes through `_op`, so the node
+        census is marked and the measured junk `Invoke` is purged after it. Returns one dict per decision."""
+        objs = [dict(o, pos=tuple(o["pos"])) for o in g.report_all(self.work, "GObject")]
+        out = []
+        for i, d in enumerate(record.get("decisions", [])):
+            row = {"i": i, "row_key": d.get("row_key"), "action": d.get("action"), "op": d.get("op"),
+                   "variant": d.get("variant"), "id": d.get("id")}
+            act, ex = d.get("action"), d.get("exec") or {}
+            try:
+                if act == "delete":
+                    row["result"] = self.delete_wire(int(ex["wire_uid"]), tag)
+                elif act == "retire":
+                    row["result"] = self.delete_object(ex["class"], int(ex["uid"]), tag)
+                elif act == "wire":
+                    row.update(self._wire_row(d, objs))
+                    self.junk_purge("{0} row {1}".format(tag, i))
+                else:
+                    row["result"] = "NOT EXECUTED (action {0!r})".format(act)
+            except Exception as e:                                                 # noqa: BLE001
+                row["error"] = "{0}: {1}".format(type(e).__name__, str(e)[:240])
+            res = row.get("result") if isinstance(row.get("result"), dict) else {}
+            row["failed_layer"] = "execution" if row.get("error") or res.get("err") \
+                else (None if act in ("wire", "delete", "retire") else (d.get("evidence") or {}).get("failed_layer"))
+            self.row("from_decision row {0} {1}".format(i, row.get("id")), {k: row.get(k) for k in
+                     ("action", "op", "variant", "how", "result", "error", "failed_layer")})
+            out.append(row)
+        self.R["from_decision"] = out
+        self.dump()
+        return out
+
+    def _wire_row(self, d, objs):
+        ex, op = d["exec"], d["op"]
+        s, t = ex["src"], ex["dst"]
+        if op in ("connect_nested", "connect_terminals"):
+            (sd, sn, st), hs = self.address(s, True, objs)
+            (dd, dn, dt), hd = self.address(t, False, objs)
+            N = mod("build_opconnectnested_v1")
+            lab = json.load(open(N.MAP_OUT, encoding="utf-8"))
+            if op == "connect_terminals" and sd == dd == 0:
+                rec = self._op("connect_terminals", lambda: g.connect_terminals(self.work, dn, dt, sn, st),
+                               "N[{0}].t{1} <- N[{2}].t{3}".format(dn, dt, sn, st))
+            else:
+                rec = self._op("connect_nested_v1", lambda: N.connect_nested_v1(self.work, dd, dn, dt, sd, sn, st, lab),
+                               "D[{0}].N[{1}].t{2} <- D[{3}].N[{4}].t{5}".format(dd, dn, dt, sd, sn, st))
+            return {"how": [hs, hd], "result": rec}
+        if op == "wire_sr":
+            sr, variant = ex["sr"], d["variant"]
+            body, is_src = (t, False) if variant == "LeftIn" else (s, True)
+            reg_end = s if variant == "LeftIn" else t
+            if int(body["diagram"]) != int(reg_end["diagram"]):
+                raise RuntimeError("body end on diagram {0}, register inside on {1}".format(body["diagram"],
+                                                                                            reg_end["diagram"]))
+            (bd, bn, bt), hb = self.address(body, is_src, objs)
+            cls = sr.get("loop_class", "WhileLoop")
+            li = next((r["i"] for r in g.report_all(self.work, cls) if int(r["uid"]) == int(sr["loop_uid"])), None)
+            k = list(sr["right_uids"]).index(int(sr["right_uid"]))
+            echo = g.shift_reg(self.work, li, k, class_name=cls).get("uid")
+            if echo != int(sr["right_uid"]):
+                raise RuntimeError("shift_reg[{0}][{1}] echo {2!r} != #{3}".format(li, k, echo, sr["right_uid"]))
+            rec = self._op("wire_sr", lambda: g.wire_sr(variant, self.work, li, k, node_index=bn, term_index=bt,
+                                                        class_name=cls),
+                           "{0} loop[{1}] reg[{2}] node[{3}].t{4}".format(variant, li, k, bn, bt))
+            return {"how": [hb, "loop #{0} idx {1}, reg {2} echo #{3}".format(sr["loop_uid"], li, k, echo)],
+                    "result": rec}
+        if op == "fs_inner_tunnel_connect":
+            (sd, sn, st), hs = self.address(s, True, objs)
+            return {"how": [hs], "result": self.fs_inner_tunnel_connect(int(t["uid"]), sd, sn, st)}
+        raise RuntimeError("op {0!r} has no executor in from_decision".format(op))
+
     # ------------------------------------------------------------------ save
     def save_route(self, exec_state, broken_ok):
         """WHICH SAVE ROUTE, as a pure function so it is self-testable without LabVIEW.
