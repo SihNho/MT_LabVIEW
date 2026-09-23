@@ -1,0 +1,49 @@
+BGRUN START 2026-09-23 18:49:48 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/connectivity-map-plan.md --slug m3a4-step6 --trigger cycle-start --recipe tools/recipes/stage_d1_m3a4.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_m3a4-step6.txt (133566 chars)
+OUTCOME: ANSWERED (94s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-23-priorart-m3a4-step6.md
+COST: $1.5587  in 16 / out 9452 / cache-create 143762 / cache-read 1097460  (90s, 14 turn(s))
+--- ANSWER ---
+I found three verdicts for step 6 (the M3a-4 retirement), and one of them will stop the recipe at its first gate, before anything is changed. Nothing was run or edited. The plan file couldn't be saved because Write is disabled in this session, so the full review is below.
+
+## PART A — the direction
+
+**A3 CONTRADICTED (1): delete versus "never removed".**
+- `docs/cycle27-plan.md:3679-3680` (Pre-decided 129) says: *"each of the 11 still holds a live endpoint on `WhileLoop #637`, so **deleting them drops real data paths and is a rule-1a computation change. They are RE-WIRED, never removed.**"* STATUS `## NEXT` still cites 129 as in force.
+- `docs/connectivity-map-plan.md` Pre-decided 142 says the opposite: *"(a) delete the dangling half-wires w1731, w3947, w9635"*.
+- The recipe deletes 1731, 3947, 9635 and 7337 (`tools/recipes/stage_d1_m3a4.py:12`; `tools/bench/decision_m3a4_v2.json:418-442`).
+- 142 has the newer evidence: `tools/bench/m3a4_reverify.log:4,7,11` shows each deleted half-wire's live end is already fed by the new register or tunnel (`eff_eq=True`).
+- Nothing retracts 129 in writing, so a "never removed" rule still stands against a recipe that removes. Someone needs to write down that 142 supersedes 129, with the reason.
+
+**A3 CONTRADICTED (2): how many rows per saved file.**
+- Pre-decided 131 step (3), `docs/cycle27-plan.md:3702`, says: *"re-wire in batches of 3–4 rows, **each batch saved and md5-pinned**"*.
+- The recipe runs all 12 rows (4 deletes and 8 retires) plus Remove Bad Wires in one pass with one save (`stage_d1_m3a4.py:55,87`).
+- For the split: the user's 2026-09-19 rule to split big work and save each step. For one pass: this is a retirement, not a re-wiring. The plan doesn't say which applies.
+
+**A1 / A2:** Nothing earlier settled or refuted the retirement direction itself; it is new with Pre-decided 142.
+
+## PART B — the artifact
+
+**B4 ALREADY MEASURED: the carriers are not in the `Node` census, so the fatal gate P0c will stop the run.**
+- `snap()` counts only `g.uids(work, "Node")` (`stage_d1_m3a4.py:38,42`).
+- Gate P0c requires all 8 carriers to be in that census and is fatal (`:53`). The record predicts 635 → 627 (`m3a4_reverify.log:24`).
+- Five of the 8 are loop border objects: `#4256`, `#4274`, `#4334`, `#4344` (shift registers) and `#9641` (loop tunnel).
+- The bed's `Node` census is 635. The same bed holds 518 `FlatSequenceInnerTunnel` (plan step 4b, 518/518) and 138 `LoopTunnel`. 518 + 138 is more than 635, so tunnels cannot be in the `Node` census.
+- This is already on record. `archive/peer/2026-09-23-c89-execstate-all-zero.md:141` says `LoopTunnel` is a separate class (138) and *"tunnels cannot be both invisible to a node census and covered by one."* `archive/peer/2026-09-18-walk-run2-flatseq-crossing-opus.md:116` found the same gap (626 nodes against 518 FSIT).
+- What follows:
+  - P0c fails before any change is made.
+  - With P0c relaxed, P1a and the 627 prediction are still wrong. Only the three `Invoke`s leave the `Node` census, and c89 already measured 635 → 632 for those same three uids.
+  - P2b ("Node unchanged by RBW") has the blind spot c89 :141 flagged: a tunnel deleted by Remove Bad Wires would not show up.
+- The correct values could have been worked out at the desk (Pre-decided 132). Count `LoopTunnel`, `LeftShiftRegister` and `RightShiftRegister` separately from `Node`.
+
+**B1 / B3 (for information, no slug):** The recipe already reuses the right helpers: `Stage.from_decision` and `delete_object` (`tools/stagekit.py:532,697-725`). Deleting an orphan LoopTunnel with `delete_object` was measured in bench B run 4 and ended at ExecState 1 (`tools/bench/bench_map_20260923/README.md:248`). I found no hand-rolled duplicate.
+
+**B2:** No earlier run deleted a shift-register pair by uid. The only related records are Remove Bad Wires deleting a tunnel (`archive/2026-09-17-status-d1-route-b-2.md:45`). That is a reason to count tunnels, not an earlier failure of this build.
+
+## Machine-readable
+
+PRIOR-ART: contradicted — docs/cycle27-plan.md:3680 (PD129 "RE-WIRED, never removed") vs docs/connectivity-map-plan.md PD142 (delete half-wires); 129 never retracted, STATUS NEXT still cites it
+PRIOR-ART: contradicted — docs/cycle27-plan.md:3702 (PD131(3): batches of 3–4, each saved) vs tools/recipes/stage_d1_m3a4.py:55,87 (one pass, one save)
+PRIOR-ART: already-measured — archive/peer/2026-09-23-c89-execstate-all-zero.md:141 + plan step 4b (518 FSIT + 138 LoopTunnel > 635 Node): carriers #4256/#4274/#4334/#4344/#9641 are not in the Node census; gates P0c (fatal), P1a, P2b and node_after=627 at tools/recipes/stage_d1_m3a4.py:38,53,58,72 cannot hold
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-m3a4-step6.md
+   STOP RECORD armed: tools/recipes/stage_d1_m3a4.py sha 10ec48dbd52d verdict contradicted, already-measured -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 98s

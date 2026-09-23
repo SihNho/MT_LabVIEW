@@ -3731,3 +3731,12 @@ at both ends of both runs, `FILES THIS RUN LEFT ON DISK: []`, refs 3/3/0) and
      diagrams 24, 28, 32, 32, 103, 107, 111, 111, 115; `docs/rotor-sign-diagnosis.md:127`). Constants live in
      `tools/bench/setcommand_signed_result.json` (`read_ring` 2, `k` 0.72). Three outcome reviews carried this as
      unmoved work; it was never the work.
+
+## Status note — 2026-09-23 18:5x (connectivity-map step 6, material): M3a-4 DELIVERED · M4 is next
+
+M3a-4 ran as Pre-decided 142's RETIREMENT (not 131's re-wiring batches; see the disposition in
+`archive/peer/2026-09-23-priorart-m3a4-step6.md`): `claudeDev\D1_s3b_m3a4_20260923_185345.vi`, md5
+`fdd6d74ac8a5ba0c1a545ad89ff2996f`, `ExecState` 1 warm and cold, `computation_diff(S1,new)` 0 rows
+(`tools/bench/stage_d1_m3a4.log`, 30/0; `docs/connectivity-map-plan.md` row 6). **M4 (edge SR + `Wait (ms)` →
+`claudeDev\D1_s3_loop15.vi`) starts FROM THAT FILE.** Whether 129 ("RE-WIRED, never removed") and 131(3) get a written
+"superseded by 142 for M3a-4" mark is a judgement item (OPEN, not decided here).

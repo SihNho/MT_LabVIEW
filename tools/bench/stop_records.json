@@ -645,5 +645,20 @@
       "helper-exists",
       "already-measured"
     ]
+  },
+  {
+    "created_utc": "2026-09-23T09:51:26Z",
+    "recipe_path": "tools/recipes/stage_d1_m3a4.py",
+    "released": {
+      "line": "REFUTED: contradicted - docs/cycle27-plan.md:3679-3680 (Pre-decided 129) says the 11 wires \"still hold a live endpoint on WhileLoop #637, so deleting them drops real data paths\", which does not cover w1731/w3947/w9635 on the completed graph because that premise is measured false there: `tools/bench/m3a4_reverify.log` rows w1731/w3947/w9635 show each is a HALF-WIRE with no sink (bed_wire_state=half-wire), and the S1 sink it used to feed (#48 'VISA resource name', #48 'In position', #9623 '# slices in stack') is fed live in the bed by #23880/#23909/#24035 with effective sources EQUAL to S1's (eff_eq=True). Deleting a sinkless half-wire removes no data path; the later, specific Pre-decided 142 (`docs/connectivity-map-plan.md:92`, the brief's governing line) prescribes exactly this delete. The 131(3) \"batches of 3-4 rows, each saved\" clause (`docs/cycle27-plan.md:3702`) governs RE-WIRING batches; step 6 re-wires nothing (142: \"a RETIREMENT, not a re-wiring\") and 142(d) prescribes the single save `claudeDev\\D1_s3b_m3a4_<date>.vi`; the step's intermediate artefacts are `tools/bench/decision_m3a4_v2.json` (6.0) and that VI. Whether PD129/131(3) should carry a written \"superseded by 142 for M3a-4\" note is left to judgement (material OPEN).",
+      "sha256": "2e081b8661b4e21fbc3348ac45b4cf2749fa8afe3087a52c0676bb3bfb45c54e",
+      "when": "2026-09-23T09:53:34Z"
+    },
+    "review_file": "archive/peer/2026-09-23-priorart-m3a4-step6.md",
+    "reviewed_sha256": "10ec48dbd52d768a6153b1dbe06b9e9dab775925de4bae6c493821e889d6d018",
+    "verdict": [
+      "contradicted",
+      "already-measured"
+    ]
   }
 ]
