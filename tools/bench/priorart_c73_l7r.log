@@ -1,0 +1,71 @@
+BGRUN START 2026-09-24 06:49:29 limit 20.0 min: py tools/prior_art_review.py --recipe tools/recipes/stage_d1_l7_r.py
+need --plan or --plan-file
+BGRUN END rc=2 after 0s
+BGRUN START 2026-09-24 06:49:57 limit 20.0 min: py -u tools/prior_art_review.py --recipe tools/recipes/stage_d1_l7_r.py --slug c73-l7r --trigger new-op --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/dc6bfe56-c9cc-4114-bb4a-e0f2997911b6/scratchpad/plan_c73_l7r.md
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c73-l7r.txt (54134 chars)
+OUTCOME: ANSWERED (201s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-24-priorart-c73-l7r.md
+COST: $2.4275  in 52 / out 18429 / cache-create 160288 / cache-read 3882080  (198s, 38 turn(s))
+--- ANSWER ---
+Nothing in the files shows the L7-R direction was already decided differently, tried and abandoned, or already built. I found three prior-art items, and each can be released cheaply. Two are contradictions: the plan document still carries L7-R gates that Pre-decided 175 replaced. The third is the move-in probe, whose question an earlier run already answered.
+
+## PART A — the direction
+
+**A1 (settled already): nothing blocks.**
+- The re-feeds that take their values from loop 1.7's exit are the direction `docs/d1-build-plan.md:365-370` §5b already set ("off 1.7's output tunnels"), and Pre-decided 175 cites it (`docs/d1-loop12-17-split-plan.md:421`). The plan follows it.
+- The rule that `#1929`/`#5020` → `#2048`/`#6384` are L7-R rows is Pre-decided 172 (`docs/d1-loop12-17-split-plan.md:357-358`). The plan follows that too.
+
+**A2 (refuted already): nothing blocks.**
+- Several records agree with the plan's mechanism rather than kill it. `docs/connectivity-map-bench.md:23` measured that `OpConnectNested_v1` always makes a **new** LoopTunnel and never reuses an existing one, which is what `tunnel_row` expects.
+- `tools/bench/stage_d1_m3a4.log:44-58` shows that deleting a right shift register takes its left partner with it ("LeftShiftRegister #4344 already gone", `err ''`). `stagekit.delete_object` → `del_node` tolerates this, so the retire loop and gate R hold.
+- The 173 LIMIT is resolved as `:438-439` says: nothing unwired is addressed by uid.
+
+**A3 (contradicted): 2 findings.**
+
+1. **The plan's own §3 gate table still says the L7-R criteria are the ones Pre-decided 175 removed.**
+   - `docs/d1-loop12-17-split-plan.md:159` has "L2-R, L7-R | ExecState warm, then cold … | **1** | … gate".
+   - `:160` has "L2-R, L7-R | computation_diff(S1,new) | **0 rows** | … gate".
+   - Against that: `:443` says PB is "predicted = exactly the w4517 row", `:449-450` says "ExecState warm is MEASURED and recorded, NOT gated", and `:454` says "The cold ExecState 1 + cdiff 0 criterion of §3 for L7-R moves to the stage that makes the t5/t7 queues".
+   - STATUS.md's NEXT paragraph ("FIRST ACT (cycle 73)") also still says "Pass criterion for the finished L7: ExecState 1 warm+cold, `computation_diff(S1,new)` 0 rows".
+   - The plan under review (steps 9–10) follows 175, so the risk is a later reader or gate using the stale rows 159–160. Release by amending `:159-160` (and the STATUS line) to point at 175.
+
+2. **The handle gate measures a different interval from the one the plan's table defines.**
+   - `docs/d1-loop12-17-split-plan.md:161` defines it as "handles **open→close** vs **P0's measured post-load level** | ±100".
+   - The recipe takes `h0` right after open (`tools/recipes/stage_d1_l7_r.py:59`) and `h1` before the save, with the VI still open (`:111`).
+   - The recorded levels show why the interval matters. `tools/bench/c73_l7r_live.log:21` reads 45,631 after open, `:125` reads 42,604 after the work, and `:136` reads 33,996 at exit. `tools/bench/stage_d1_l7_1b_r3.log:28` reads 45,646 after open and `:364` reads 34,146 after the work.
+   - No earlier D1 stage log gates handles inside the run; the L7-1/L7-1b logs only record the level after open.
+   - State which interval is meant before the run. Otherwise a non-fatal PH FAIL will produce a failing log, and that triggers a review.
+
+**A4 (unread evidence):** covered under B4.
+
+## PART B — the artefact
+
+**B1 (already built): nothing blocks.** The recipe declares its reuse, and each piece exists and is used as the files say:
+- `stagekit.delete_wire` (`tools/stagekit.py:527`)
+- `move_in` (`tools/recipes/build_d1_v0.py:318`)
+- `connect_nested_v1` (`docs/toolkit-capabilities.md:68`)
+- `OpConnectFromWire` for the branch (`:70`)
+- `wire_indicators` with `diagram_index` = the indicator's own diagram (`docs/NAMES.md:584`, measured working at `diag_s57_typepair.log:195` and `diag_s58_boolwire.log:151-154`)
+
+No new op is introduced.
+
+**B2 (already failed):** this exact build has not been attempted before. The only earlier record is `tools/bench/priorart_c73_l7r.log`, an argument error (rc=2) in this review's own launch.
+
+**B3 (helper exists):** nothing is hand-rolled that the toolkit already provides.
+
+**B4 (already measured): 1 finding.**
+
+3. **The PMV probe's question has already been answered, and the plan cites weaker evidence than exists.**
+   - PMV asks whether `build_d1_v0.move_in` re-owns a pre-existing ControlTerminal from a nested diagram into a loop body. Pre-decided 175 (`:424-426`) orders it measured first, and the contract (`l7_r_predict.log:6`) predicts PASS from `docs/toolkit-capabilities.md:278`. That source only covers terminals that were *created* on the TopLevelDiagram (`diag_queue_donor2.log:41-55`).
+   - `tools/bench/build_d1_routeb_v0_run3.log:160-175` (also `build_d1_routeb_v0.log:161-176`) is the closer case. It moved **six pre-existing ControlTerminals** (`#5634`, `#403`, `#9306`, `#17487`, `#28170`, `#29091`), all owned by a nested `Diagram`, into a loop body using the **same** `build_d1_v0.move_in` (`tools/recipes/build_d1_routeb_v0.py:162,546,564`). The owner of each was verified: 6/6 PASS.
+   - Release by citing it. Keeping PMV as a cheap control in the same LabVIEW instance is defensible, but its predicted PASS should rest on this log.
+   - Related, and no slug: `docs/cycle27-plan.md:108-114` records that in route B the node moves cut a wire, not the ControlTerminal reparent. The plan deletes w5274 before the move anyway.
+
+**Also already measured and acknowledged in the plan, so no slug:** `computation_diff` does not report the unwired `#376 'frame index'` (w3268). `c73_l7r_live.log:109-116` lists 8 CDIFF rows and none for `frame index`. The contract (`l7_r_predict.log:16`) records this as a FACT, and step 9 only re-records it.
+
+---
+PRIOR-ART: contradicted
+PRIOR-ART: contradicted
+PRIOR-ART: already-measured
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c73-l7r.md
+   STOP RECORD armed: tools/recipes/stage_d1_l7_r.py sha ab8491de9076 verdict contradicted, already-measured -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 205s

@@ -1,0 +1,48 @@
+BGRUN START 2026-09-24 06:48:29 limit 5.0 min: py -u tools/bench/dryrun_l7_r_address.py
+  PASS  D1 first wiring BY NAME 686 #23041 '' (src) -> (19, 2, 3) (want Terminals[3])
+  PASS  D1 first wiring BY NAME 686 #23041 'error out' (src) -> (19, 2, 1) (want Terminals[1])
+  PASS  D1 first wiring BY NAME 686 #2048 'array' (sink) -> (19, 0, 0) (want Terminals[0])
+  PASS  D1 first wiring BY NAME 686 #6384 'error in' (sink) -> (19, 1, 8) (want Terminals[8])
+  PASS  D1 first wiring BY NAME 23405 #376 'file progress' (src) -> (20, 0, 3) (want Terminals[3])
+  PASS  A1 #2048 Terminals[3] is the unwired 'length' sink (name tie-break)  {'i': 3, 'name': 'length', 'is_source': False, 'wire': 0}
+  PASS  D1 first wiring BY NAME 686 #2048 'length' (sink) -> (19, 0, 3) (want Terminals[3])
+  PASS  D1 first wiring BY NAME 686 #6384 'actual # data points' (sink) -> (19, 1, 7) (want Terminals[7])
+  PASS  D1 first wiring BY NAME 23405 #376 'file number to append out' (src) -> (20, 0, 4) (want Terminals[4])
+  PASS  D1 first wiring BY NAME 686 #6384 'file # to append' (sink) -> (19, 1, 10) (want Terminals[10])
+  PASS  D1 first wiring BY NAME 23405 #3052 'File # Saved' (src) -> (20, 1, 0) (want Terminals[0])
+  PASS  D1 first wiring BY NAME 23405 #376 'saved file refnum' (sink) -> (20, 0, 8) (want Terminals[8])
+  PASS  D2 plain `address` RAISES on #2048's two unwired 'length' sinks (the tie-break is needed)
+  FAIL  A1 #2048 Terminals[3] is the unwired 'length' sink (name tie-break)  {'i': 3, 'name': 'length', 'is_source': False, 'wire': 4337}
+  PASS  D3 the tie-break REFUSES (Stop) while Terminals[3] still carries w4337
+  PASS  D4 verify end acc_out #2048 'array' by verify_term_uid #2316: raises unwired True; after the wire -> Terminals[0] 'node; terminal by uid #2316 (wire 900)'
+  PASS  D4 verify end err_out #6384 'error in' by verify_term_uid #6497: raises unwired True; after the wire -> Terminals[8] 'node; terminal by uid #6497 (wire 908)'
+  PASS  D4 verify end tun_fp #2048 'length' by verify_term_uid #3182: raises unwired True; after the wire -> Terminals[3] 'node; terminal by uid #3182 (wire 903)'
+  PASS  D4 verify end tun_fp_b #6384 'actual # data points' by verify_term_uid #6480: raises unwired True; after the wire -> Terminals[7] 'node; terminal by uid #6480 (wire 907)'
+  PASS  D4 verify end tun_fn #6384 'file # to append' by verify_term_uid #6511: raises unwired True; after the wire -> Terminals[10] 'node; terminal by uid #6511 (wire 910)'
+  PASS  D4 verify end ref_in #376 'saved file refnum' by verify_term_uid #5772: raises unwired True; after the wire -> Terminals[8] 'node; terminal by uid #5772 (wire 908)'
+=== GATES: 11 first-wiring ends + D2/D3 + 6 verify ends; overall PASS
+BGRUN INNER FAILURE: the command exited 0 but its output reported 1 failure(s); first: FAIL  A1 #2048 Terminals[3] is the unwired 'length' sink (name tie-break)  {'i': 3, 'name': 'length', 'is_source': False, 'wire': 4337}
+BGRUN END rc=1 after 0s (inner failure; the process itself said 0)
+BGRUN START 2026-09-24 06:56:15 limit 5.0 min: py -u tools/bench/dryrun_l7_r_address.py
+  PASS  D1 first wiring BY NAME 686 #23041 '' (src) -> (19, 2, 3) (want Terminals[3])
+  PASS  D1 first wiring BY NAME 686 #23041 'error out' (src) -> (19, 2, 1) (want Terminals[1])
+  PASS  D1 first wiring BY NAME 686 #2048 'array' (sink) -> (19, 0, 0) (want Terminals[0])
+  PASS  D1 first wiring BY NAME 686 #6384 'error in' (sink) -> (19, 1, 8) (want Terminals[8])
+  PASS  D1 first wiring BY NAME 23405 #376 'file progress' (src) -> (20, 0, 3) (want Terminals[3])
+  PASS  A1 #2048 Terminals[3] is the unwired 'length' sink (name tie-break)  {'i': 3, 'name': 'length', 'is_source': False, 'wire': 0}
+  PASS  D1 first wiring BY NAME 686 #2048 'length' (sink) -> (19, 0, 3) (want Terminals[3])
+  PASS  D1 first wiring BY NAME 686 #6384 'actual # data points' (sink) -> (19, 1, 7) (want Terminals[7])
+  PASS  D1 first wiring BY NAME 23405 #376 'file number to append out' (src) -> (20, 0, 4) (want Terminals[4])
+  PASS  D1 first wiring BY NAME 686 #6384 'file # to append' (sink) -> (19, 1, 10) (want Terminals[10])
+  PASS  D1 first wiring BY NAME 23405 #3052 'File # Saved' (src) -> (20, 1, 0) (want Terminals[0])
+  PASS  D1 first wiring BY NAME 23405 #376 'saved file refnum' (sink) -> (20, 0, 8) (want Terminals[8])
+  PASS  D2 plain `address` RAISES on #2048's two unwired 'length' sinks (the tie-break is needed)
+  PASS  D3 the tie-break REFUSES (Stop) while Terminals[3] still carries w4337; exactly one gate fired, detail [("A1 #2048 Terminals[3] is the unwired 'length' sink (name tie-break)", False, {'i': 3, 'name': 'length', 'is_source': False, 'wire': 0})]
+  PASS  D4 verify end acc_out #2048 'array' by verify_term_uid #2316: raises unwired True; after the wire -> Terminals[0] 'node; terminal by uid #2316 (wire 900)'
+  PASS  D4 verify end err_out #6384 'error in' by verify_term_uid #6497: raises unwired True; after the wire -> Terminals[8] 'node; terminal by uid #6497 (wire 908)'
+  PASS  D4 verify end tun_fp #2048 'length' by verify_term_uid #3182: raises unwired True; after the wire -> Terminals[3] 'node; terminal by uid #3182 (wire 903)'
+  PASS  D4 verify end tun_fp_b #6384 'actual # data points' by verify_term_uid #6480: raises unwired True; after the wire -> Terminals[7] 'node; terminal by uid #6480 (wire 907)'
+  PASS  D4 verify end tun_fn #6384 'file # to append' by verify_term_uid #6511: raises unwired True; after the wire -> Terminals[10] 'node; terminal by uid #6511 (wire 910)'
+  PASS  D4 verify end ref_in #376 'saved file refnum' by verify_term_uid #5772: raises unwired True; after the wire -> Terminals[8] 'node; terminal by uid #5772 (wire 908)'
+=== GATES: 11 first-wiring ends + D2/D3 + 6 verify ends; overall PASS
+BGRUN END rc=0 after 0s

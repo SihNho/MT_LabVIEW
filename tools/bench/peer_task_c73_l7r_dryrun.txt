@@ -1,0 +1,9 @@
+ATTACK this claim about a failed prediction in tools/bench/dryrun_l7_r_address.log (script tools/bench/dryrun_l7_r_address.py, an OFFLINE stub dry run, no LabVIEW, of the ends tools/recipes/stage_d1_l7_r.py hands to stagekit.Stage.address through the recipe's own `at()`).
+
+OBSERVED: the log's line 15 reads `FAIL  A1 #2048 Terminals[3] is the unwired 'length' sink (name tie-break) {... 'wire': 4337}`; line 16 `PASS D3 the tie-break REFUSES (Stop) while Terminals[3] still carries w4337`; line 23 `overall PASS`; bgrun then reported an INNER FAILURE because of line 15.
+
+CLAIM: line 15 is not a defect in the recipe or in stagekit. It is the dry run's own deliberate NEGATIVE test D3: the harness sets #2048's Terminals[3] wire back to 4337 and calls the recipe's `at()`, which must refuse; `at()` refuses through the recipe's real `s.gate(..., fatal=True)`, which prints the token `FAIL` before raising `stagekit.Stop`. The harness caught the Stop and scored D3 PASS. So the prediction ("the tie-break REFUSES while Terminals[3] is still wired") held; only the harness printed a FAIL token for an expected refusal. Fix applied: during D3 the Stage's `gate` is replaced by a silent stub that raises Stop without printing; the recipe is unchanged.
+
+Already ruled out: (1) the positive tie-break case (line 7-8, wire 0 -> Terminals[3]) passed; (2) plain address raises on two unwired 'length' sinks (line 14 PASS) so the tie-break is needed; (3) all 6 verify ends by verify_term_uid passed (lines 17-22).
+
+Questions: is there a reading under which line 15 reveals a real defect in `stage_d1_l7_r.py`'s `at()` (e.g. the tie-break accepting or refusing the wrong terminal in the LIVE run, where Terminals[] indices or the `wire` field could differ from the stubbed NODETERMS table parsed from tools/bench/c73_l7r_live.log)? Is replacing `s.gate` with a silent stub hiding anything the recipe needs? What is the cheapest discriminating test?

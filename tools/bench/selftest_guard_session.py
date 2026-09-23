@@ -3,7 +3,10 @@ r"""Self-test for tools/hooks/guard_session.py and guard_bash.py's retrospective
 Touches NO LabVIEW, spawns NO agents: it feeds synthetic PreToolUse JSON on stdin to the two hooks as
 subprocesses and asserts their exit codes (0 = allow, 2 = refuse), exactly as the harness would.
 
-PREDICTION CONTRACT (checked below, 14 gates):
+PREDICTION CONTRACT (checked below, 18 gates; G15-G18 added 2026-09-24 cycle 73):
+  G15-G16 under CYCLE_SESSION=1 a SendMessage to an agent id / `log-reader` is REFUSED (exit 2)
+  G17     without CYCLE_SESSION (the interactive chat) the same SendMessage is ALLOWED
+  G18     under CYCLE_SESSION=1 a SendMessage to `main` is ALLOWED
   G1-G8   dispatches 1..8 of `material` / `log-reader` are ALLOWED (exit 0) and the counter reaches 8
   G9      the 9th dispatch is REFUSED (exit 2) with "CYCLE DISPATCH CAP"
   G10     an uncounted subagent_type (`Explore`) is ALLOWED even at the cap, and does not move the counter
@@ -104,6 +107,25 @@ def main():
     stc = guard_session.load(guard_session.SAFE_RE.sub("_", SID_C))
     gate("G14 v1 and grep do not close the cycle", stc.get("retro_done") is False,
          "retro_done %s" % stc.get("retro_done"))
+
+    # G15-G18 : SendMessage resume refused in a cycle session only (violation-decisions 2026-09-24 05:54)
+    def send(to, cycle):
+        env = dict(os.environ)
+        env.pop("CYCLE_SESSION", None)
+        if cycle:
+            env["CYCLE_SESSION"] = "1"
+        p = subprocess.run([sys.executable, GUARD_SESSION], input=json.dumps(
+            {"session_id": SID_C, "tool_name": "SendMessage", "tool_input": {"to": to, "message": "go on"}}),
+            text=True, capture_output=True, encoding="utf-8", errors="replace", timeout=60, env=env)
+        return p.returncode, p.stderr or ""
+    rc, err = send("a1b2c3d4-material", True)
+    gate("G15 SendMessage to an agent refused in cycle", rc == 2 and "NEW foreground Agent" in err, "exit %d" % rc)
+    rc, err = send("log-reader", True)
+    gate("G16 SendMessage to log-reader refused in cycle", rc == 2, "exit %d" % rc)
+    rc, _ = send("a1b2c3d4-material", False)
+    gate("G17 interactive chat SendMessage untouched", rc == 0, "exit %d" % rc)
+    rc, _ = send("main", True)
+    gate("G18 SendMessage to main allowed in cycle", rc == 0, "exit %d" % rc)
 
     cleanup()
     good = sum(1 for _, ok in RESULTS if ok)

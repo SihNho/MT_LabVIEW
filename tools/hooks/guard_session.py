@@ -13,6 +13,7 @@ Prose cannot enforce "now stop" on the session that is enjoying itself. So two r
   (b) AFTER THE RETROSPECTIVE, THE CYCLE IS CLOSED. Once `tools/retrospective.py` has run in this session
       (recorded by `tools/hooks/guard_bash.py`, which sees the command), any further material dispatch is
       refused. A retrospective reviews a cycle; work done after it belongs to a cycle nobody reviewed.
+  (c) NO SendMessage RESUME in a cycle session (CYCLE_SESSION=1), 2026-09-24 - see send_message_refusal().
 
 STATE: `tools/bench/session_<session_id>.json` = {"dispatches": n, "retro_done": bool, ...}. A file, not a
 memory - CLAUDE.md: "a rule whose counter is my memory is not a rule at all". `.json`, so no log gate globs it.
@@ -89,6 +90,27 @@ def mark_retro_done(sid):
     return d
 
 
+def send_message_refusal(data):
+    """(c) NO RESUME BY SendMessage IN A CYCLE SESSION (docs/violation-decisions.md "repeated-failure-class -
+    2026-09-24 05:54"; cycle 71 lost 57 min: a judgement session resumed a material agent with SendMessage, which
+    runs it in the BACKGROUND, then polled build logs after that agent had already stopped on a gate refusal).
+
+    Scope: CYCLE_SESSION=1 only (the interactive chat is untouched). The target's subagent_type is NOT visible to a
+    PreToolUse hook - the Agent tool returns the agent id only after the spawn, and a cycle session's in-process
+    agents are the material/log-reader ones by construction - so every SendMessage in a cycle session is refused
+    except to "main" (a background agent reporting to its parent). Returns the refusal text or ''."""
+    if data.get("tool_name") != "SendMessage" or not os.environ.get("CYCLE_SESSION"):
+        return ""
+    to = str((data.get("tool_input") or {}).get("to") or "").strip()
+    if to.lower() == "main":
+        return ""
+    return ("BLOCKED by tools/hooks/guard_session.py: NO SendMessage RESUME IN A CYCLE SESSION (to=%r).\n\n"
+            "SendMessage resumes a material/log-reader agent in the BACKGROUND; cycle 71 then polled logs for 57 min\n"
+            "after that agent had stopped (docs/violation-decisions.md, repeated-failure-class 2026-09-24 05:54).\n"
+            "Dispatch a NEW foreground Agent (subagent_type material or log-reader) with the full brief instead;\n"
+            "it blocks until it returns.\n" % to)
+
+
 def main():
     if os.environ.get("BENCH_CELL"):
         return 0
@@ -96,6 +118,10 @@ def main():
         data = json.load(sys.stdin)
     except Exception:
         return 0
+    why = send_message_refusal(data)
+    if why:
+        sys.stderr.write(why)
+        return 2
     if data.get("tool_name") not in AGENT_TOOLS:
         return 0
     ti = data.get("tool_input") or {}

@@ -1,0 +1,57 @@
+r"""l7_r_predict - cycle 73 L7-R PREDICTION CONTRACT (Pre-decided 132: predicted DIFFERENCES, each value names what determines it).
+OFFLINE, no LabVIEW. Inputs: the S1 graph (JC.S1_KEY), the live census of the INPUT `tools/bench/c73_l7r_live.log` (read-only, 9/0,
+scratch deleted), Pre-decided 175 (docs/d1-loop12-17-split-plan.md). Writes tools/bench/l7_r_prediction.json, which the recipe
+tools/recipes/stage_d1_l7_r.py READS (rows, deletes, retires, predicted edge lists) - the recipe holds no row data of its own.
+    MATERIAL=1 py tools/bgrun.py --max-min 5 --log tools/bench/l7_r_predict.log -- py -u tools/bench/l7_r_predict.py"""
+import json, os, sys                                                               # noqa: E401
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import stagekit as K, vigraph as V, jev_candidates as JC                          # noqa: E401,E402
+S1 = JC.load(JC.S1_KEY)
+tu = lambda u, n: [S1["rows"][k]["term_uid"] for k in V.terminals(S1, node=u, name=n, is_source=True)]  # noqa: E731
+LIVE = open(os.path.join(K.BENCH, "c73_l7r_live.log"), encoding="utf-8", errors="replace").read()
+ok = all(x in LIVE for x in ("BGRUN END rc=0", "K1 input md5 == e5c7d68b", "TUNNEL #1929 idx 55: index_mode 0", "TUNNEL #5020 idx 54: index_mode 0",
+                             "CONSUMERS #3052 [S1] [\"#376 Terminal 'saved file refnum'\"]", "CONSUMERS #3052 [L7-1] []",
+                             "(3, 'length', False, 4337), (4, 'index', False, 0), (5, 'length', False, 0)", "(1, 'error out', True, 0)", "(3, '', True, 0)"))
+print("  {0}  C0 the live census facts this contract rests on are in c73_l7r_live.log".format("PASS" if ok else "FAIL"))
+i781, i4910 = tu(781, "initialized array"), tu(4910, "error out")
+print("  FACT  S1 source term uids: #781 'initialized array' {0}, #4910 'error out' {1}".format(i781, i4910))
+P = {
+ "del_w": [3957, 1899, 4337, 5073, 5274, 1397, 5056],
+ "retire": [["RightShiftRegister", 15], ["LeftShiftRegister", 51], ["RightShiftRegister", 24], ["LeftShiftRegister", 1108], ["LoopTunnel", 1929], ["LoopTunnel", 5020]],
+ "moves": [[3052, [4660, 6700]], [3453, [4900, 6700]]],
+ "tie": [[2048, "length", 3]],
+ "s1map": [
+  ["acc_out", {"src": 24150, "dst": 2048}, ["dst", 2048, "array"], "the NEW accumulator RIGHT shift register #24150 of loop 1.7 (WhileLoop #23041), OUTER terminal reading '' on the live object, carries save trace.vi #376's output 'total data array out' out of the loop and feeds Array Subset #2048 input 'array'."],
+  ["err_out", {"src": 24083, "dst": 6384}, ["dst", 6384, "error in"], "the NEW error-chain RIGHT shift register #24083 of loop 1.7 (WhileLoop #23041), OUTER terminal reading 'error out' on the live object, carries the error chain (save trace.vi #376 'error out') out of the loop and feeds save N xyz traces.vi #6384 input 'error in'."],
+  ["ref_in", {"src": 3052, "dst": 376}, ["dst", 376, "saved file refnum"], "the control reference constant #3052 'File # Saved', now inside loop 1.7's body, feeds save trace.vi #376 input 'saved file refnum'."],
+  ["fp_ind", {"src": 376, "dst": 3453}, ["src", 376, "file progress"], "save trace.vi #376 output 'file progress' feeds the front-panel indicator terminal #3453 'file progress', now inside loop 1.7's body."]],
+ "second": [["acc_out", [24150, 23041], 2048, "array", 2316], ["err_out", [24083, 23041], 6384, "error in", 6497], ["tun_fp", ["TFP"], 2048, "length", 3182],
+            ["tun_fp_b", ["TFP"], 6384, "actual # data points", 6480], ["tun_fn", ["TFN"], 6384, "file # to append", 6511], ["ref_in", [3052], 376, "saved file refnum", 5772]],
+ "removed": [["wire", 15, 71, 2048, 2316], ["wire", 24, 1662, 6384, 6497], ["wire", 781, i781[0], 51, 77], ["wire", 4910, i4910[0], 1108, 1703]],
+ "added": [["wire", 24150, 24280, 2048, 2316], ["wire", 24083, 24178, 6384, 6497], ["wire", 376, 5704, "TFP", "*"], ["wire", "TFP", "*", 2048, 3182],
+           ["wire", "TFP", "*", 6384, 6480], ["wire", 376, 5739, "TFN", "*"], ["wire", "TFN", "*", 6384, 6511], ["wire", 3052, 3060, 376, 5772], ["wire", 376, 5704, 3453, 3453]],
+ "cdiff": [[376, "current frame data array in"]]}
+json.dump(P, open(os.path.join(K.BENCH, "l7_r_prediction.json"), "w", encoding="utf-8"), indent=1)
+for line in (
+ "ROWS (Pre-decided 175; S1 wire uids): re-feed #2048 'array' <- new acc RIGHT SR #24150 outer (was #15, w3957) | #6384 'error in' <- new err RIGHT SR #24083 outer (was #24, w1899) | NEW output tunnel TFP on #23041 fed by #376 'file progress' -> #2048 'length' + #6384 'actual # data points' (was #1929, w4337) | NEW output tunnel TFN fed by #376 'file number to append out' -> #6384 'file # to append' (was #5020, w5073) | #3052 MOVES into #23405, w1397's row re-made #3052 'File # Saved' -> #376 'saved file refnum' | #3453 MOVES into #23405, re-wired from #376 'file progress' (w5274's row). OPEN (QRT): t5 w4517, t7 w3268. Determined by: 175 + the S1 wiki (c73_l7r_facts.log M1).",
+ "DELETES by WIRE UID, in this order, before any wiring: w3957, w1899 (175) ; w4337, w5073 (the S1 wires still occupying the sinks the new tunnels feed - determined by c73_l7r_live.log TERM #2048/#6384) ; w5274, w1397, w5056 (half-wires on the moved/retired objects with no source or no sink - c73_l7r_live.log TERM #3453/#3052/#5020; RBW would remove them, deleted by uid so the moves and the #3453 row start clean). Gate D1: all 7 gone.",
+ "PMV: move_in of ControlTerminal #3453 into Diagram #23405 on a dated SCRATCH copy in the same LabVIEW instance, before the work copy is edited: no error, owner == ('Diagram', 23405). Determined by: tools/bench/build_d1_routeb_v0_run3.log:160-175 (the SAME build_d1_v0.move_in moved SIX pre-existing ControlTerminals owned by a nested Diagram into a loop body, owner verified 6/6 - prior-art c73-l7r B4; docs/toolkit-capabilities.md:278 covers only freshly created ones) - predicted PASS; kept as the same-instance control Pre-decided 175 orders; refusal => STOP (gate).",
+ "A0 (review c73-l7r-dryrun-negtest test 2): BEFORE any edit, #2048 Terminals[3] carries w4337 AND terminal uid 3182 carries w4337, i.e. index 3 == uid 3182 on the live input. Determined by: c73_l7r_live.log TERM #2048 'length' tuid 3182 w4337 + NODETERMS #2048 (3,'length',False,4337). The tun_fp row runs FIRST so no #2048 edit but the deletes sits between A0 and the tie-break; PB + PC2 (edge TFP -> 2048:3182) + the uid-3182 second pass catch a shifted index after the edit, before any save.",
+ "P1 #376 'frame index' (tuid 5763) reads UNWIRED on the input and on the output. Determined by: c73_l7r_live.log TERM #376 'frame index' w0.",
+ "P2 #3052 consumers: S1 == [#376 'saved file refnum'], L7-1 == [] -> sole consumer; any other consumer => STOP. Determined by: c73_l7r_live.log CONSUMERS #3052.",
+ "INDEX MODE: #1929 = 0, #5020 = 0 (c73_l7r_live.log TUNNEL) -> each new tunnel must read 0 (a While Loop output tunnel is born 0 by LabVIEW's wiring default - predicted, then gated; set_index_mode only if it differs).",
+ "NAMES at first wiring (Pre-decided 174): #23041 source terminals on #686 = t1 'error out' (#24083 outer) and t3 '' (#24150 outer), both unique by name+direction; #2048 carries TWO unwired 'length' after w4337 is deleted -> tie-broken to Terminals[3], the index S1 w4337 used (NODETERMS #2048), gated A1. Verify ends by verify_term_uid: 2316, 6497, 3182, 6480, 6511, 5772.",
+ "P3 Jev argmax (168/171): top == the S1-mapped pair on acc_out, err_out, ref_in, fp_ind; tunnels + retires are rule rows (no Jev).",
+ "L live consumers (reach4 on the completed graph) of #15/#51/#24/#1108/#1929/#5020 == 0 BEFORE the deletes. Determined by: the deletes above + the re-feeds (not determined in advance - gate).",
+ "diff(L7-1,new) uid edges REMOVED == " + json.dumps(P["removed"]) + " (w3957, w1899, and the two S1 SR-init branches that end on the retired LEFT SRs' outer terminals).",
+ "diff(L7-1,new) uid edges ADDED == " + json.dumps(P["added"]) + " ; nodes removed == {15,51,24,1108,1929,5020}, added == {TFP,TFN}. PC3 of L7-1b (#1929/#5020 -> #2048/#6384 absent) holds trivially: both tunnels are retired.",
+ "RBW removes no live uid edge (edges after retire == after RBW). Determined by: every remaining broken wire is a half-wire (no edge) - gate.",
+ "PB computation_diff(S1,new) rows == exactly [(376,'current frame data array in')] (the w4517 row), FATAL before the save. The w3268 'frame index' row is predicted ABSENT - the L7-1 input already shows cdiff does not report it although it is unwired (c73_l7r_live.log CDIFF L7-1 rows: 8, none for 'frame index') -> recorded as a FACT (the diagram-terminal blind spot, a finding for FIN), not a gate.",
+ "ExecState warm: MEASURED and recorded, NOT gated (t5/t7 open; required-ness not in the wiki, Pre-decided 132). Save by script if 1, else GUI save (rule 6, evidence 'user 2026-09-22 broken-intermediate save'). Output claudeDev\\D1_s4_loop17.vi.",
+ "HANDLES: RECORDED, NOT GATED (revised after prior-art c73-l7r-r2 A3). Plan section 3 says 'open->close +-100', but the measurements say no editing stage can meet it: the read-only census of this input fell 45,631 -> 42,604 (c73_l7r_live.log), while RUN 1 of this recipe (tools/bench/stage_d1_l7_r.log, 06:56, ended by a Python TypeError at the diff step, NOTHING SAVED) rose 45,641 -> 46,120 after the work (+479), and m3a4/m4b reached ~54,400 after the work. The leak gate kept is H5 (VI-Server refs opened == closed, live 0). The interval/criterion question -> OPEN for judgement.",
+ "RUN 1 FACTS reused (tools/bench/stage_d1_l7_r.log): 55 gates held, then the exception gate - PMV PASS, A0 PASS, all deletes/moves/Jev checks/wiring rows/second passes PASS, the 'length' tie-break landed on uid 3182, ExecState 0 after the rows and 1 after Remove Bad Wires (7 wires removed), PB == exactly the w4517 row, CDIFF-DIAGTERM False. #1929 and #5020 were ALREADY GONE when step 8 tried to delete them ('already gone'): deleting their only wires (w4337/w5073 outer, w5274/w5056 inner) removed the tunnels, so their two L gates are vacuous; R and PC3 (nodes removed == the 6 carriers vs the INPUT graph) are the real checks for them. LabVIEW REUSED deleted uids (new tunnel outer wire = 4337, purged Invoke = 1397); no gate reads a wire uid after the deletes (D1 runs before any new wire; PC1/PC2 compare terminal uids).",
+ "PINS: ORIGINAL/S1/S2/ROW2/M3a-2/S3/L7-1a and the input md5 unchanged.",
+ "CENSUS tripwire: WhileLoop 6, Local unchanged, ControlTerminal 116, SubVI unchanged, LoopTunnel 140 (-2 +2), RightShiftRegister 39 -> 37, LeftShiftRegister 39 -> 37 (recorded)."):
+    print("  FACT  CONTRACT " + line, flush=True)
+print("=== GATES: {0} pass / {1} fail".format(int(ok), int(not ok)))
+sys.exit(0 if ok and len(i781) == 1 and len(i4910) == 1 else 1)

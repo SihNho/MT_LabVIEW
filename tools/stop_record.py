@@ -39,6 +39,8 @@ API:
     write_stop_record(recipe_path, review_file, verdict, root=None) -> dict
     load_records() -> list[dict]                     (raises StoreError)
     check_command(command_string)   -> (allow: bool, message: str)
+    DECISION_TABLE / record_state / segment_class   (cycle 73: the release logic as ONE table; self-test
+                                     tools/bench/selftest_stoprecord_table.py is generated from it)
 
 RECORD SHAPE (tools/bench/stop_records.json, a JSON list):
     {"recipe_path": "tools/recipes/x.py",            # project-relative, forward slashes, lower-cased
@@ -125,6 +127,132 @@ BGRUN_PROGRAM = "tools/bgrun.py"
 BGRUN_SEP_RE = re.compile(r"\s--(?:\s+|$)")
 
 
+# ==================================================================================================================
+# THE RELEASE TABLE (cycle 73, docs/violation-decisions.md "device-failed - 2026-09-24 06:2x": ONE repair, not a
+# fourth patch). Three holes in cycles 70/71/72 were each patched on their own code path; the logic is now written
+# ONCE as data, and tools/bench/selftest_stoprecord_table.py generates its cases from DECISION_TABLE.
+#
+#   record kind   : "blocking" (a non-novel verdict)  |  "novel" (write_novel_record, pre-released)
+#   verdict state : "undisposed"   - no valid FIXED:/REFUTED: line (a novel record whose review stopped saying novel)
+#                   "released"     - valid release, stamp absent (stamped now) or equal to the bytes on disk
+#                   "novel"        - novel record, review still purely novel, stamp equal to the bytes on disk
+#                   "sha-mismatch" - released/novel, stamp != bytes on disk, NO later record for the path
+#                   "superseded"   - released/novel, stamp != bytes on disk, a LATER record for the path decides
+#                   "unreadable"   - released, but the recipe file cannot be read (no bytes to match)
+#   command class : "build"    - the segment may EXECUTE the path (python on it, or any program not known to be
+#                                read-only - fail closed: `other_tool.py --recipe X` stays here)
+#                   "readonly" - a program that only READS the file (wc, sed -n, Get-Content, grep, py -c ast.parse)
+#                   "exempt"   - EXEMPT_PROGRAMS in command position (they can only ADD a record or a review)
+#   outcome       : "allow" | "refuse" | "skip" (this record does not decide; a later one does)
+#
+# Read-only and exempt ALLOW in every state: the gate exists to stop a LAUNCH, and it refused `wc -l`, `sed -n`
+# and an AST parse of a stopped recipe (material_marker.log 04:10:48, 04:29:40, 05:31:31), i.e. it refused the
+# reading needed to fix it. Only "build" consults the record.
+_STATES = ("undisposed", "released", "novel", "sha-mismatch", "superseded", "unreadable")
+_BUILD = {  # (kind, state) -> outcome for class "build"; a missing pair is unreachable
+    ("blocking", "undisposed"): "refuse", ("blocking", "released"): "allow",
+    ("blocking", "sha-mismatch"): "refuse", ("blocking", "superseded"): "skip",
+    ("blocking", "unreadable"): "refuse",
+    ("novel", "undisposed"): "refuse", ("novel", "novel"): "allow",
+    ("novel", "sha-mismatch"): "refuse", ("novel", "superseded"): "skip",
+}
+DECISION_TABLE = [(k, s, c, (_BUILD[(k, s)] if c == "build" else "allow"))
+                  for (k, s) in _BUILD for c in ("build", "readonly", "exempt")]
+DECISION = {(k, s, c): o for k, s, c, o in DECISION_TABLE}
+_CLASS_RANK = {"exempt": 0, "readonly": 1, "build": 2}
+
+# Programs that only read a file. Anything else naming a stopped path is "build" (fail closed).
+READONLY_PROGRAMS = {
+    "wc", "cat", "head", "tail", "grep", "egrep", "fgrep", "rg", "less", "more", "diff", "cmp", "md5sum",
+    "sha256sum", "sha1sum", "file", "stat", "ls", "dir", "type", "sed", "findstr", "fc",
+    "get-content", "gc", "select-string", "sls", "measure-object", "get-filehash", "get-item", "get-childitem",
+    "test-path", "format-hex"}
+GIT_READONLY = {"diff", "log", "show", "status", "blame", "grep", "ls-files", "cat-file", "hash-object"}
+PY_READONLY_MODULES = {"py_compile", "ast", "tokenize", "tabnanny"}
+# Inside `py -c "<code>"`: any of these could run the file, so the segment is "build".
+PY_EXEC_RE = re.compile(r"\bexec\b|\beval\b|runpy|subprocess|os\.system|os\.popen|popen|spawn|__import__|"
+                        r"import_module|importlib|run_path|run_module", re.I)
+# A whole command that feeds file content to an executor, or substitutes a command into an argument, gets no
+# read-only credit anywhere: `cat X | py -`, `wc -l $(py X)`, `Get-Content X | iex`.
+EXEC_PIPE_RE = re.compile(r"\|\s*(?:py|python\w*|sh|bash|pwsh|powershell|iex|invoke-expression|xargs)\b|"
+                          r"\$\(|`|<\(|\bxargs\b|invoke-expression|\biex\b", re.I)
+_PROG_RE = re.compile(r"^[\s(]*(?:\w+=[^\s]*\s+)*(\"[^\"]*\"|'[^']*'|[^\s'\"|;&()]+)(.*)$", re.S)
+_PY_RE = re.compile(r"^py(?:thon)?[\w.]*$", re.I)
+
+
+def split_segments(cmd):
+    """Shell segments split on && || ; | newline OUTSIDE quotes (so `py -c "a;b" X` stays one segment). Falls back
+    to the plain split when the quotes do not balance."""
+    out, cur, q, i, s = [], [], None, 0, cmd or ""
+    while i < len(s):
+        ch = s[i]
+        if q:
+            cur.append(ch)
+            if ch == q:
+                q = None
+            i += 1
+            continue
+        if ch in "\"'":
+            q = ch
+            cur.append(ch)
+            i += 1
+            continue
+        if s.startswith("&&", i) or s.startswith("||", i):
+            out.append("".join(cur)); cur = []; i += 2
+            continue
+        if ch in ";|\n":
+            out.append("".join(cur)); cur = []; i += 1
+            continue
+        cur.append(ch)
+        i += 1
+    if q:
+        return SEGMENT_SPLIT_RE.split(cmd or "")
+    out.append("".join(cur))
+    return out
+
+
+def segment_class(seg, whole_cmd=""):
+    """'exempt' | 'readonly' | 'build' for one segment - the command-class axis of DECISION_TABLE."""
+    if exempt_program(seg):
+        return "exempt"
+    if EXEC_PIPE_RE.search(whole_cmd or seg):
+        return "build"
+    m = _PROG_RE.match(seg or "")
+    if not m:
+        return "build"
+    prog = m.group(1).strip("'\"").replace("\\", "/").rsplit("/", 1)[-1].lower()
+    if prog.endswith(".exe"):
+        prog = prog[:-4]
+    rest = m.group(2)
+    if prog == "sed":
+        return "build" if re.search(r"(?:^|\s)(?:-i|--in-place)", rest) else "readonly"
+    if prog in READONLY_PROGRAMS:
+        return "readonly"
+    if prog == "git":
+        sub = (rest.split() or [""])[0].lower()
+        return "readonly" if sub in GIT_READONLY else "build"
+    if _PY_RE.match(prog):
+        mc = re.match(r"\s+(?:-[A-Za-z]+\s+)*?-c\s+(\"[^\"]*\"|'[^']*'|\S+)", rest)
+        if mc:
+            return "build" if PY_EXEC_RE.search(mc.group(1)) else "readonly"
+        mm = re.match(r"\s+(?:-[A-Za-z]+\s+)*?-m\s+([\w.]+)", rest)
+        if mm and mm.group(1).lower() in PY_READONLY_MODULES:
+            return "readonly"
+    return "build"
+
+
+def command_keys(command_string):
+    """{key: strictest command class} over every path token of the command."""
+    out = {}
+    for seg in split_segments(command_string):
+        cls = segment_class(seg, command_string)
+        for t in PATH_TOKEN_RE.findall(seg):
+            for k in keys_for(t):
+                if _CLASS_RANK[cls] > _CLASS_RANK.get(out.get(k), -1):
+                    out[k] = cls
+    return out
+
+
 class StoreError(Exception):
     """The record store exists in principle but cannot be trusted right now."""
 
@@ -137,7 +265,9 @@ def keys_for(path):
     """The match keys for one path token or record path: ('rel', <project-relative, posix, lower>) and
     ('abs', <normcase absolute>). Two keys, so a launch written as `tools/recipes/x.py`, `tools\\recipes\\x.py`
     or an absolute path all meet the same record."""
-    t = (path or "").strip().strip("'\"").rstrip(",;")
+    # `)` and backtick stripped too (cycle 73): `wc -l $(py X)` / `wc -l \`py X\`` tokenised as `X)` / `X\``,
+    # matched no record, and so EXECUTED a stopped recipe unrefused (selftest_stoprecord_table.py N0/N1).
+    t = (path or "").strip().strip("'\"").rstrip(",;)`").lstrip("(`")
     if not t:
         return set()
     out = set()
@@ -385,39 +515,57 @@ def _refusal(record, head, detail):
                (record.get("reviewed_sha256") or "(none)")[:12], detail))
 
 
+def record_state(records, i):
+    """(kind, state, line, why, cur_sha) of records[i] - the row key of DECISION_TABLE. `line` is the release line
+    to stamp for an unstamped release."""
+    record = records[i]
+    kind = "novel" if record.get("novel") else "blocking"
+    ok, line, why = _released(record)
+    if not ok:
+        return kind, "undisposed", "", why, None
+    cur = sha256_of(_abs(record.get("recipe_path")))
+    if cur is None:
+        return kind, "unreadable", line, "unreadable: %s" % record.get("recipe_path"), None
+    rel = record.get("released")
+    if rel is None or rel.get("sha256") == cur:
+        return kind, ("novel" if kind == "novel" else "released"), line, "", cur
+    # SUPERSESSION (cycle 44) - see _check's comment; the same test, kept in ONE place.
+    later = any(_rel(r.get("recipe_path")) == _rel(record.get("recipe_path")) for r in records[i + 1:])
+    return kind, ("superseded" if later else "sha-mismatch"), line, "", cur
+
+
 def _check(command_string):
     records = load_records()
     if not records:
         return True, ""
     cmd = command_string or ""
-    tokens = set()
-    for seg in SEGMENT_SPLIT_RE.split(cmd):
-        if exempt_program(seg):      # see EXEMPT_PROGRAMS above - the record must not refuse its own remedy
-            continue
-        for t in PATH_TOKEN_RE.findall(seg):
-            tokens |= keys_for(t)
-    if not tokens:
+    # Command class per path key (DECISION_TABLE's third axis). Exempt and read-only segments are still
+    # CLASSIFIED rather than dropped, so the table - not an early `continue` - decides what they may do.
+    classes = command_keys(cmd)
+    if not classes:
         return True, ""
     pending = []
     for i, record in enumerate(records):
-        if not (keys_for(record.get("recipe_path")) & tokens):
+        hit = keys_for(record.get("recipe_path")) & set(classes)
+        if not hit:
             continue
-        ok, line, why = _released(record)
-        if not ok:
+        cls = max((classes[k] for k in hit), key=lambda c: _CLASS_RANK[c])
+        if cls != "build":                  # DECISION_TABLE: read-only and exempt allow in every state
+            continue
+        kind, state, line, why, cur = record_state(records, i)
+        outcome = DECISION.get((kind, state, cls), "refuse")     # an unreachable row fails closed
+        if outcome == "allow":
+            if record.get("released") is None:
+                record["released"] = {"sha256": cur, "line": line, "when": _utc()}
+                pending.append(record)
+            continue
+        if state == "undisposed":
             return False, _refusal(record, "this recipe is STOPPED by a prior-art verdict that is neither "
                                            "refuted nor fixed.", why)
-        cur = sha256_of(_abs(record.get("recipe_path")))
-        if cur is None:
+        if state == "unreadable":
             return False, _refusal(record, "this recipe has a released stop record, but the file itself cannot "
-                                           "be read, so the release cannot be matched to any bytes.",
-                                   "unreadable: %s" % record.get("recipe_path"))
-        rel = record.get("released")
-        if rel is None:
-            record["released"] = {"sha256": cur, "line": line, "when": _utc()}
-            pending.append(record)
-            continue
-        if rel.get("sha256") == cur:
-            continue
+                                           "be read, so the release cannot be matched to any bytes.", why)
+        rel = record.get("released") or {}
         # SUPERSESSION (cycle 44; `archive/peer/2026-09-19-stoprecord-release-deadlock-codex.md:91-107`,
         # ACCEPTED AND APPLIED). An ALREADY-RELEASED record whose stamped bytes no longer exist is SKIPPED when a
         # LATER record stands for the same normalised path - because that later record is the review of the bytes
@@ -431,8 +579,7 @@ def _check(command_string):
         # refuses until its OWN findings carry valid `FIXED:`/`REFUTED:` lines - it is evaluated on this same
         # pass, by the same rules, and stamps only its own bytes. Acceptance:
         # `tools/bench/selftest_stoprecord_supersession.py` (case 1 releases; cases 2 and 3 must still refuse).
-        later_same_path = any(_rel(r.get("recipe_path")) == _rel(record.get("recipe_path"))
-                              for r in records[i + 1:])
+        later_same_path = (outcome == "skip")      # state "superseded", computed in record_state()
         if later_same_path:
             continue
         return False, _refusal(
@@ -457,7 +604,14 @@ def check_command(command_string):
     try:
         return _check(command_string)
     except StoreError as e:
-        if RECIPE_DIR_RE.search(command_string or ""):
+        # Narrowly, per DECISION_TABLE's command axis: only a BUILD-class segment naming tools/recipes/ is refused;
+        # reading a recipe while the store is broken is harmless (cycle 73).
+        try:
+            build_hit = any(segment_class(s, command_string) == "build" and RECIPE_DIR_RE.search(s)
+                            for s in split_segments(command_string))
+        except Exception:                            # noqa: BLE001 - classification failed: stay closed
+            build_hit = bool(RECIPE_DIR_RE.search(command_string or ""))
+        if build_hit:
             return False, ("BLOCKED by tools/stop_record.py (fail-closed): the prior-art stop-record store "
                            "cannot be read, so no launch of a recipe can be shown to be released.\n"
                            "  %s\n"

@@ -1,0 +1,50 @@
+BGRUN START 2026-09-24 07:08:40 limit 20.0 min: py -u tools/prior_art_review.py --recipe tools/recipes/stage_d1_l7_r.py --slug c73-l7r-r2 --trigger new-op --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/dc6bfe56-c9cc-4114-bb4a-e0f2997911b6/scratchpad/plan_c73_l7r.md
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c73-l7r-r2.txt (54347 chars)
+OUTCOME: ANSWERED (170s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-24-priorart-c73-l7r-r2.md
+COST: $2.0871  in 34 / out 16356 / cache-create 159471 / cache-read 2420472  (166s, 27 turn(s))
+--- ANSWER ---
+Partly, and two findings block the build. The L7-R design and every verb it uses already exist, and round 1 of this review cleared them (`archive/peer/2026-09-24-priorart-c73-l7r.md:198-238`). But the brief leaves out that **run 1 of this recipe has already been executed**: `tools/bench/stage_d1_l7_r.log`, started 06:56, 55 pass / 1 fail, rc=1. That run contradicts the new handle gate. I couldn't write the plan file because the Write tool is disabled in this session, so the review is here.
+
+## PART A — the direction
+- **A1 (settled already) and A2 (refuted already): nothing new.** Round 1's findings still hold (`archive/peer/2026-09-24-priorart-c73-l7r.md:198-205`). The design is Pre-decided 175 (`docs/d1-loop12-17-split-plan.md:412-454`).
+- **A3 (contradicted): the handle gate against run 1 of this same recipe.**
+  - The recipe gates "NO GROWTH: before-save level <= post-load baseline + 100" (`tools/recipes/stage_d1_l7_r.py:112`).
+  - Round 1 accepted this gate as fixed on the evidence of the read-only census, where handles fell from 45,631 to 42,604 (`archive/peer/2026-09-24-priorart-c73-l7r.md:265`).
+  - Run 1 is an editing run, and its handles went up: 45,641 after open (`stage_d1_l7_r.log:28`) and **46,120 after the work** (`:468`), which is **+479**.
+  - Earlier editing stages rose further: 54,456 after the work in `stage_d1_m3a4.log:118` and 54,360 in `stage_d1_m4b.log:117`.
+  - So the non-fatal handle gate is expected to fail, and a failing log triggers a peer review. Run 1 crashed at `:107` before reaching `:112`, so the gate itself has never run. The handle counts it would compare have been measured.
+- **A4 (unread evidence): `tools/bench/stage_d1_l7_r.log` (run 1) is not cited.** The brief describes the build as a first run ("Fresh LabVIEW"). Two facts in that log matter for the plan:
+  1. **Step 8 checks nothing for two of the six carriers.**
+     - Loop tunnels #1929 and #5020 were already gone before step 8 tried to delete them (`:439`, `:442`: "retire LoopTunnel #1929 already gone", and the same for #5020).
+     - Their "live consumers == 0" gates (`:424-425`) therefore ran on nodes that no longer existed, so they passed without testing anything.
+     - The tunnels apparently disappeared when step 3 deleted wires w4337 and w5073. The closest earlier record is `archive/peer/2026-09-24-priorart-c71-l7-1b.md:555`, the list of old tunnels allowed to disappear.
+  2. **LabVIEW reused deleted uids during the run.**
+     - The new tunnel's outer wire got uid **4337**, the uid of the wire deleted in step 3 (`:125`; `:232` shows #2048's 'length' input on wire 4337 again).
+     - The junk Invoke node that was purged three times got uid **1397**, the uid of deleted wire w1397 (`:64`, `:82`, `:208`).
+     - This behaviour is already documented (`.claude/skills/labview-automation/references/vi-scripting.md:601`, `archive/peer/2026-09-17-d1-s3b-uid-reuse-after-delete.md:109`).
+     - No current gate depends on a wire uid after the deletes: A0 runs before them, and the two edge-list gates (PC1/PC2) compare terminal uids. A future gate that looked up a wire by a deleted uid would be fooled.
+
+## PART B — the artefact
+- **B1 (already built) and B3 (helper exists): nothing new.** Round 1's findings stand (`archive/peer/2026-09-24-priorart-c73-l7r.md:227-238`), and the recipe adds no new op.
+- **B2 (already failed): yes, but the cause is fixed, so no slug.**
+  - Run 1 died at recipe `:107` with `TypeError: '<' not supported between instances of 'str' and 'int'` (`stage_d1_l7_r.log:454-462`, rc=1 at `:486`).
+  - The current recipe sorts the edges through `T4(..., key=repr)` (`:14`, used at `:107` and `:109`), which removes that cause. Every gate before `:107` passed in run 1.
+- **B4 (already measured): run 1 already measured most of what this run would measure. No slug, because this supports the rerun rather than blocking it.**
+  - #3052 and #3453 both ended up owned by Diagram #23405 after the move (`:77-78`, `:95`).
+  - The IndexMode of #1929/#5020 read 0/0, and both new tunnels matched (`:37`, `:128`, `:203`).
+  - The 'length' tie-break landed on Terminals[3], uid 3182, after the 'array' input was re-wired (`:232`). That settles the remaining doubt in `archive/peer/2026-09-24-c73-l7r-dryrun-negtest.md:69`.
+  - `wire_indicators` raised only its own absolute ExecState check (`:223`). That check is a known defect of the wrapper (`docs/cycle27-plan.md:2472-2479`). The indicator wire also survived Remove Bad Wires (`:448`), so this is not the type-mismatch case in `docs/NAMES.md:584`.
+  - ExecState was 0 after the rows (`:418`) and **1 after Remove Bad Wires** (`:446`). Remove Bad Wires took out 7 wires, the same count as `stage_d1_m3a4.log:86`.
+  - The computation diff against S1 returned exactly the w4517 row (`:451`). The diff did **not** report the unwired #376 'frame index' (`:450`, False).
+
+## How to release the two findings
+1. **contradicted (handle gate):** either reset the gate's prediction to the editing run (`:28` → `:468`, +479), as a recorded fact or as a growth bound derived from the m3a4/m4b stages; or refute it in writing by showing that `:468`, read during hygiene after the crash, is not the interval `:112` measures.
+2. **unread-evidence:** cite run 1 in the brief and the prediction contract. Note in step 8 that #1929/#5020 are expected to be gone after step 3, so their gates check nothing and the node-diff gate (PC3) is the real check.
+
+```
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+```
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c73-l7r-r2.md
+   STOP RECORD armed: tools/recipes/stage_d1_l7_r.py sha b7b17f9196d6 verdict contradicted, unread-evidence -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 173s

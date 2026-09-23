@@ -78,6 +78,10 @@ def main():
     tail = [ln.strip() for ln in (p.stdout or "").splitlines() if ln.strip()][-1:] or [""]
     gate(p.returncode == 0, "R1 selftest_stoprecord_supersession.py passes on %s" % MOD,
          "exit %d; last line: %s" % (p.returncode, tail[0][:140]))
+    if p.returncode != 0:   # cycle 73 (retrospective-cycle72 F3): name the inner failing case, never infer it
+        inner = [ln.strip() for ln in (p.stdout or "").splitlines() if "FAIL" in ln and "fail ===" not in ln]
+        for ln in inner[:10] or ["(no inner FAIL line; stderr tail: %s)" % (p.stderr or "").strip()[-300:]]:
+            print("      R1 inner: %s" % ln.replace("-> FAIL", "failed:")[:200], flush=True)
     print("\n=== selftest_stoprecord_eqform: %d pass, %d fail ===" % (len(passes), len(fails)), flush=True)
     return 0 if not fails else 1
 

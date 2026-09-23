@@ -64,14 +64,14 @@ use — never a Traverse / node / diagram index (Pre-decided 158; `docs/d1-build
 | **L7-1a** | **SPLIT 2026-09-24 by Pre-decided 169**: move `#376` into body `#23405` of `#23041` + create the two new SR pairs; NO wiring; recipe `tools/recipes/stage_d1_l7_1a.py`, contract `tools/bench/l7_1a_predict.log` | `D1_s3_loop15.vi` | `D1_l7_1a_<ts>.vi` (GUI save, rule 6) | 0 | 0 / 0 |
 | **L7-1b** | ✅ **DELIVERED 2026-09-24 06:1x (cycle 72 firefighter, run 3): `claudeDev\D1_l7_1_20260924_060431.vi` md5 `e5c7d68b56d018131f2ebf0df656fdd6`, `tools/bench/stage_d1_l7_1b_r3.log` 38/0, 761 s; all 9 rows wired, second pass by `verify_term_uid` Is Broken? False ×4, PB = exactly the 8 predicted rows, PC1–PC3 pass, ExecState 0 as predicted (L7-R rows open), input + bed md5 unchanged, refs 23/23, handles 34,146 at exit. r4's B4 is MEASURED: the new SR outer terminals kept their uids across the connect (#24205/#24291 resolved by uid after wiring).** Original brief: **Pre-decided 169/171**: from the saved L7-1a file, fresh LabVIEW: the 9 rows of the L7-1 row below (4 S1-mapped per 168 + 2 single-candidate per 165 + 3 tunnels per 166), corrected intent lines (171(1)); PB `computation_diff` FATAL before save (170(c)); runs in the same material dispatch as L7-1a when L7-1a passes (171(4)); recipe `tools/recipes/stage_d1_l7_1b.py` | `D1_l7_1a_<ts>.vi` | `D1_l7_1_<ts>.vi` | 9 | 4 S1-mapped / 5 rule |
 | **L7-1** (superseded by the L7-1a/L7-1b rows above, kept for the row detail) | **REWRITTEN 2026-09-24 by Pre-decided 164** (was: "2 SR pairs move with their node; re-wire its 12 rows; w4517 made as a 1.1→1.7 crossing here"): move `#376` into body `#23405` of `#23041`; create 1.7's TWO NEW SR pairs replacing `#15/#51` and `#24/#1108` (the old pairs stay on `#637` until L7-R), each new LEFT initialised off the same source as the original (`#4910` w4969, `#781` w3543); wire the 4 rows inside 1.7 (`#376` ↔ new SRs) by Jev PAIR; the 2 SR-init rows are RULE-SINGLE-CANDIDATE rows (Pre-decided 165); i6/i9/i11 (`#3644`/`#2294`/`#5096`) are re-made as NEW tunnels on `#23041` off the same outer feed (Pre-decided 166, `tunnel_outer` rule rows). Of `#376`'s 12 rows: in-1.7 4 · top-level tunnel 3 (L7-1, 166) · cross-loop OPEN 3 (i5 w4517, i7 w3268, i8 w1397 — queues, never made here) · L7-R 1 (i4) · split 1 (i3). Prediction `tools/bench/l7_1_prediction.json` (`tools/bench/l7_1_predict_r2.log`) | `D1_s3_loop15.vi` | `D1_l7_1_<ts>.vi` (GUI save if broken, CLAUDE.md §3 rule 6) | 9 (4 body + 2 init + 3 tunnel) | 4 / 5 |
-| **L7-R** | retire `#15/#51`, `#24/#1108` on `#637` after live-consumer check; re-feed from 1.7's output tunnels. **CORRECTED 2026-09-24 (prior-art c70-l7-1-r2 A3.3; measured `tools/bench/l7_1_predict_r2.log:22-27`):** L7-1 leaves SIX consumers of `#376`'s outputs unsourced, not two — `#6384` `error in` / `file # to append` / `actual # data points`, `#2048` `array` / `length`, `#3453` `file progress` (an indicator on 1.1). Which stage owns `#2048` and `#3453`, and the third `#6384` input, is OPEN (judgement). RBW; save by script | `D1_l7_1_<ts>.vi` | **`D1_s4_loop17.vi`** | retire + 6 (ownership OPEN) | 0 / all |
+| **L7-R** | ✅ **DELIVERED 2026-09-24 07:2x (cycle 73 material, run 2): `claudeDev\D1_s4_loop17.vi` md5 `4b621946492da3d2fbb96b6053e715ec`, 481,808 B, `tools/bench/stage_d1_l7_r_r2.log` 61/0, 459 s. Executed Pre-decided 175: PMV (move_in ControlTerminal on a scratch) PASS; A0 index 3 == uid 3182; 7 wires deleted by uid; #3052/#3453 moved into #23405; Jev top == S1-mapped on 4 rows (p 0.42/0.95/0.91/0.93); 2 re-feeds from the new RIGHT SRs; output tunnels #5204 (file progress → #2048 'length' + #6384 'actual # data points') and #10404 (→ #6384 'file # to append'), IndexMode 0 = #1929/#5020; 6 second passes Is Broken? False; retire 6 carriers (#1929/#5020 already gone with their wires); RBW 7 half-wires, no live edge. PB cdiff(S1,new) = exactly the w4517 row; PC1/PC2 = predicted; ExecState 1 warm, scripted save + re-read 1 (t5/t7 OPEN yet not required); cold not read (moves to QRT, 175). cdiff does NOT report the unwired 'frame index' (w3268) — FIN finding. Contract `tools/bench/l7_r_predict.log`, recipe `tools/recipes/stage_d1_l7_r.py`.** Original row: retire `#15/#51`, `#24/#1108` on `#637` after live-consumer check; re-feed from 1.7's output tunnels. **CORRECTED 2026-09-24 (prior-art c70-l7-1-r2 A3.3; measured `tools/bench/l7_1_predict_r2.log:22-27`):** L7-1 leaves SIX consumers of `#376`'s outputs unsourced, not two — `#6384` `error in` / `file # to append` / `actual # data points`, `#2048` `array` / `length`, `#3453` `file progress` (an indicator on 1.1). Which stage owns `#2048` and `#3453`, and the third `#6384` input, is OPEN (judgement). RBW; save by script | `D1_l7_1_<ts>.vi` | **`D1_s4_loop17.vi`** | retire + 6 (ownership OPEN) | 0 / all |
 | **K** | move the CPU kernel `#5058` `Track N beads four-fold over-kernel-v3.vi` into the 1.2 body (Pre-decided 156; name-gated, `docs/cycle27-plan.md:754-755`); re-wire its 13 rows | `D1_s4_loop17.vi` | `D1_k_<ts>.vi` (GUI save if broken) | 13 | P0 recounts |
 | **L2-A1** | move group A (8) + the `Auto-Reset` / `Reset Tracking` control terminals into the 1.2 body; add 1.2's 4 SR pairs; re-wire batch 1 (incl. w10990 `#10757`→`#10407`, the only row left of old L2-C — Pre-decided 161) | `D1_k_<ts>.vi` | `D1_l2_a1_<ts>.vi` (broken by design → GUI Ctrl+S, CLAUDE.md §3 rule 6) | 13 | 3 / 10 |
 | **L2-A2** | re-wire batch 2 of group A (`min value` #17257 is an INDICATOR fed by `#10969` — a sink row, not a moved control, Pre-decided 158) | `D1_l2_a1_<ts>.vi` | `D1_l2_a2_<ts>.vi` | 13 | 3 / 10 |
 | ~~**L2-C**~~ | **REMOVED by Pre-decided 161**: `#10686` stays on 1.1, so w10799 `#10686`→`#10407` stays as S3 left it; w10990 moved into L2-A1 | — | — | 0 | — |
 | **L2-B1..B3** | move group B (8, incl. ForLoops `#1359` / `#29874` with their own SRs) + the FOUR controls `Z/dZ` #47, `Correction Factor` #9289, `Force\nsmoothing\nhalf-width` #28148 (→ `#1359` t7), `Extension\nmedian filter\nhalf-width` #28996 (→ `#1359` t8 / `#29874` t6); `Force (pN) vs Extension (nm) ` #8038 is an INDICATOR fed by `#11261` (sink row); rows from `d1_rewire_sources.json` cross-checked against `build_d1_v0.json` (Pre-decided 158); gate per Pre-decided 159 | previous | `D1_l2_b1_<ts>.vi` → `…b2…` → `…b3…` | 13/13/12 + the two control rows | 2 / 36 over the three |
 | **L2-R** | retire the 4 old 1.2 carriers on `#637` after a live-consumer check (Pre-decided 142's pattern), junk purge, Remove Bad Wires, save by script | `D1_l2_b3_<ts>.vi` | **`D1_s5_loop12.vi`** | retire rows | 0 / all |
-| **QRT** | the queue RESOLUTION TABLE (`docs/cycle27-plan.md:930-933`, 34(g)): for each of the eight queues the `(uid, exact terminal name, diagram)` on `D1_s5_loop12.vi`, or the stage that must run first. A document, no LabVIEW write (Pre-decided 156) | `D1_s5_loop12.vi` → read only | the table (doc) | 0 | — |
+| **QRT** | (+ Pre-decided 175: the two OWED 1.7 input rows t5 w4517 `#2626`→`#376 'current frame data array in'` and t7 w3268 `#637` i→`#376 'frame index'` get a queue here — no planned queue carries them) the queue RESOLUTION TABLE (`docs/cycle27-plan.md:930-933`, 34(g)): for each of the eight queues the `(uid, exact terminal name, diagram)` on `D1_s5_loop12.vi`, or the stage that must run first. A document, no LabVIEW write (Pre-decided 156) | `D1_s5_loop12.vi` → read only | the table (doc) | 0 | — |
 | **STOP** | 1.2 / 1.7 conditional terminals driven by the stop design (build-plan S4/S4s, `:679-680`), inputs from QRT | `D1_s5_loop12.vi` | `D1_s6_stop.vi` | from QRT | — |
 | **ROT** | Pre-decided 133: repoint the 9 rotor call sites to `claudeDev\SetCommand_signed.vi` md5 `ec87a2657b158722082ca00c7074f114` by `SubVI.Replace` 635E001, measured first on a scratch copy together with the Baseline/Ring constants (Pre-decided 160) | `D1_s6_stop.vi` | `D1_s7_rotor.vi` | 9 (+ constants per the scratch measurement) | 0 / 9 |
 | **FIN** | census, ExecState 1 warm + cold, final save — the GPU top level is the default final file (Pre-decided 161) | `D1_s7_rotor.vi` | GPU top level (name after the GPU-swap stage, never "GPU" before it, `docs/cycle27-plan.md:756`) | 0 | — |
@@ -175,6 +175,29 @@ has no entry) → `write_record` → `stagekit.Stage.from_decision` (`tools/stag
 - The S3 actually built (S3a, S3b M3a-1 … M4) followed neither: it moved 1.5 only, carried 1.5's inputs by S3a
   indicators + a Local read (not queues), and retired carriers (Pre-decided 142) instead of batch re-wiring.
 - This plan uses new ids (P0, L2-*, L7-*, STOP, ROT, FIN) so it collides with neither label set.
+
+## L7-R facts (cycle 73, measured)
+
+Measured offline (no LabVIEW) by `tools/bench/c73_l7r_facts.py` -> `tools/bench/c73_l7r_facts.log` over the S1 wiki
+(`docs/wiki/subvi/D1_s1_copy.json`, md5 3e3d23ce…) and the S3 graph (`tools/bench/graph_s3_loop15_20260924.json`,
+md5 1a11d92a…). No L7-1 graph is on disk; L7-1 = S3 + the edits in `tools/bench/stage_d1_l7_1a.log:92` and
+`tools/bench/stage_d1_l7_1b_r3.log:346`. Diagram ids: 639 = `#637` body (1.1), 23405 = `#23041` body (1.7), 686 = the
+frame holding both loops. Facts only; no design choice is made here.
+
+| # | fact | source |
+|---|---|---|
+| M1 | 8 CDIFF rows, S1 wire / S1 source → sink: w4517 `#2626 BuildArray 'appended array'` (639) → `#376 'current frame data array in'`; w1397 `#3052 ControlReferenceConstant 'File # Saved'` (639) → `#376 'saved file refnum'`; w3957 `#15` outer → `#2048 'array'` (eff. `#376 'total data array out'`); w4337 `#1929` outer → `#2048 'length'` AND `#6384 'actual # data points'` (eff. `#376 'file progress'`); w5274 `#376 'file progress'` → `#3453` (and `#1929` inner); w1899 `#24` outer → `#6384 'error in'` (eff. `#376 'error out'`); w5073 `#5020` outer → `#6384 'file # to append'` (eff. `#376 'file number to append out'`) | `c73_l7r_facts.log` M1 block |
+| M1 | In L7-1: `#376` sits on 23405 (1.7); `#2048`, `#6384` on 686; `#3453`, `#2626`, `#3052` on 639 (1.1); tunnels `#15/#24/#1929/#5020` still on `#637`. Removed by L7-1a: w4517, w1397, w5274(→#3453), w3268, and `#1929/#5020` → `#2048/#6384` (PD172). w3957 and w1899 are NOT in the removed list (their `#15`/`#24` inner sides lost `#376`) | `stage_d1_l7_1a.log:92,97`; `stage_d1_l7_1b_r3.log:206,346` |
+| M2 | `#2048` GrowableFunction (Array Subset, `d1-build-plan.md:367`), 686 in S1/S3/L7-1; in: array←`#15`, index←`#2064 'index'` (w5314), length←`#1929`; out subarray w4564 → `#6384 'data array'` only | log M2 |
+| M2 | `#6384` SubVI `save N xyz traces.vi`, 686; in: actual # data points←`#1929`, base path←`#4693` (eff. `#29551 path`), cal cluster path←`#1748` (eff. `#3391`), data array←`#2048`, desired #←`#2484` (eff. `#1766`), error in←`#24`, file # to append←`#5020`; out error out w1920 → `#4774 'error out'` | log M2 |
+| M2 | `#3453` ControlTerminal `file progress`, owned by Diagram#639 (1.1); one input w5274 ← `#376 'file progress'`; no outputs | log M2; `d1-build-plan.md:220` |
+| M2 | `#1929` LoopTunnel on `#637`: inner ← `#376 'file progress'`, outer → `#2048 'length'`, `#6384 'actual # data points'`. `#5020` LoopTunnel on `#637`: inner ← `#376 'file number to append out'`, outer → `#6384 'file # to append'` | log M2 |
+| M2 | Planned node sets: `build_d1_v0.json` `moved` puts only `#376` in 1.7 plus SR rows `total data array out` (`#15/#51`) and `error out` (`#24/#1108`); `#2048`, `#6384`, `#3453` appear in no 1.7 set. `d1-build-plan.md:365-370` §5b: `#6384`, `#2048` stay on diagram 19 ("none moves"), fed "off 1.7's output tunnels instead" | `build_d1_v0.json:14,132,946-958`; `d1-build-plan.md:365-370,308` |
+| M3 | S1, `#376` outputs → `#376` inputs: reached `error in` via `error out` → `#24` → SR → `#1108` → `error in`, and `total data array in` via `#15` → SR → `#51`. With SR edges excluded: none. From `#2048`/`#6384`/`#3453` outputs: none | log M3 |
+| M4 | `#376` terminal order (S1 wiki): t0 OUT error out, t1 OUT total data array out, t2 IN error in (←`#1108`), t3 OUT file progress, t4 OUT file number to append out, t5 IN current frame data array in (w4517), t6 IN cal cluster path (←`#3644`), t7 IN frame index (w3268), t8 IN saved file refnum (w1397), t9 IN file size (←`#2294`), t10 IN total data array in (←`#51`), t11 IN selected path (←`#5096`) | log M4 |
+| M4 | t5 source `#2626` BuildArray on 639 (runs every `#637` iteration; `d1-build-plan.md:299` moves it → 1.2). t7 source = a terminal of diagram 639 itself (w3268: 2 source rows, 8 sinks incl. `#1114 'index i'`), a per-iteration value. t8 source `#3052` ControlReferenceConstant on 639 (a constant; `d1-build-plan.md:319` keeps it in 1.1). t3/t4 are OUTPUTS (consumers above) | log M4; `graph_s1_20260924.json` flags[0] |
+| M5 | Queues into 1.7: `Q_res` DBL[] / `Q_good` Bool[] / `Q_rmeta` DBL, "the kernel's own outputs", unbounded, lossless FIFO (`d1-build-plan.md:574`); sentinels written by 1.2, exited on by 1.7 (`:653-654`); resolution table: `Q_res` src `#637 'x,y,z array out'`, `Q_good` `#637 'Bead is good? array out'`, `Q_rmeta` `#637 'current image number'`, all state A on `#686` (`:602-604`). `docs/cycle27-plan.md:930-933` names no queue; it says the owed work is a resolution table per queue | as cited |
+| M6 | A delete-by-wire-uid verb exists: `stagekit.Stage.delete_wire(wire_uid)` (`tools/stagekit.py:527`) → `build_opfsinnertunnelconnect_v0.del_wire` (`tools/recipes/build_opfsinnertunnelconnect_v0.py:336`, Wire-traverse index then `g.delete_object(verify=False)`); the row executor maps action `delete_wire` to it (`stagekit.py:861`). Used with a uid-census gate in `tools/bench/bench_map_20260923/b_endtoend.py:60-63` | as cited |
 
 ## Pre-decided (continues `docs/connectivity-map-plan.md`; only facts measured from files)
 
@@ -385,6 +408,71 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        uid-before-wire). Both are script defects with measured causes. So the "same stage failing twice at the same
        place" re-split trigger (CLAUDE.md split-and-save 3) does NOT fire: the row set and the saved L7-1a input are
        unchanged. The NEXT cycle starts a fresh failure budget for L7-1b run 3.
+
+175. **(cycle 73 judgement, on "L7-R facts (cycle 73, measured)" above) L7-R DESIGN — decided.**
+     - **Loop-exit re-feeds, so rule 1a holds.** `#2048` (Array Subset) and `#6384` (`save N xyz traces.vi`) are on the top-level
+       frame `#686` and read `#637`'s EXIT values. They are re-fed from `#23041`'s exit values of the same `#376` outputs:
+       `#2048 'array'` ← the new acc RIGHT SR `#24150` outer (was `#15`, w3957) · `#6384 'error in'` ← the new err RIGHT SR
+       `#24083` outer (was `#24`, w1899) · `#2048 'length'` + `#6384 'actual # data points'` ← a NEW output tunnel on `#23041` fed
+       by `#376 'file progress'` (was `#1929`, w4337) · `#6384 'file # to append'` ← a NEW output tunnel fed by `#376 'file number
+       to append out'` (was `#5020`, w5073). Each new tunnel's indexing mode must EQUAL its original's (`#1929`/`#5020`, read on
+       the live file). The last iteration's value is the same value provided 1.7 runs `#376` on the same input sequence. That is
+       the queue's job (QRT), so equivalence is structural here and functional only after QRT.
+       `d1-build-plan.md:365-370` §5b already said "off 1.7's output tunnels".
+     - **`#3453` `file progress` (an indicator on 639)**: its ControlTerminal MOVES into body `#23405` and is re-wired from
+       `#376 'file progress'`. This is display-only, and the graph edge is unchanged. The route is `move_in` on a
+       ControlTerminal, the O5 class. The prediction run measures it FIRST, on a dated scratch copy in the same LabVIEW
+       instance, before the stage touches the work copy. If `move_in` refuses a ControlTerminal the run STOPS (a gate,
+       not a branch) and judgement picks the route.
+     - **`#3052` (`saved file refnum`, t8)** is a constant, not a per-frame crossing. It MOVES into `#23405`, and w1397's
+       row is re-made inside 1.7, but only if `#376` is its ONLY consumer. That is measured in the contract; any other
+       consumer ⇒ STOP.
+     - **t5 (w4517, `#2626` → `current frame data array in`) and t7 (w3268, `#637` i → `frame index`) stay OPEN.** Both
+       change every frame and cross parallel loops, so by 164 they are queues. No planned queue carries them (M5), and
+       `#2626`'s final home is 1.2 (group B). They are **added to the QRT row as owed rows**, and 1.7 becomes whole at QRT
+       + STOP, not at L7-R. L7-R does NOT build a queue.
+     - **Retire** (plan §3 rows, live-consumer check BEFORE each delete on the completed graph):
+       - First delete w3957 and w1899 BY WIRE UID (`stagekit.delete_wire`, `stagekit.py:527/:861`).
+       - Then wire the freed sinks by NAME (first resolution, 174) and verify them by `verify_term_uid`.
+       - Then delete `#15/#51`, `#24/#1108`, `#1929` and `#5020`, then run RBW.
+       - This resolves the **173 LIMIT: no retire row addresses an unwired terminal by uid.** Deletes go by wire/object
+         uid; new wiring goes by name.
+     - **Row modes (168/171 unchanged):** re-feeds with an S1 counterpart = RULE-S1-MAPPED with the Jev argmax check; single
+       candidate = RULE-SINGLE-CANDIDATE; tunnels and retires = rule. No row needs Jev to decide.
+     - **Gates:**
+       - PB `computation_diff(S1,new)` FATAL before the save, predicted = exactly the w4517 row.
+       - **Separately, `#376 'frame index'` is read as UNWIRED.** It is a diagram-terminal source, and the r3 CDIFF list
+         (`stage_d1_l7_1b_r3.log:338-345`) did not show w3268 although L7-1a removed it. So the contract first MEASURES
+         whether `computation_diff` sees diagram-terminal sources, and records the answer. If it does not, that blind
+         spot is a finding for FIN.
+       - `diff(prev,new)` is an edge list.
+       - ExecState warm is MEASURED and recorded, NOT gated, because t5/t7 are open and required-ness is not in the
+         wiki (Pre-decided 132).
+       - Save by script if ExecState 1, otherwise GUI save (rule 6).
+       - Output `claudeDev\D1_s4_loop17.vi`. The name is kept so K's input row does not change, with the note "1.7 whole
+         except the two QRT rows".
+     - The cold ExecState 1 + cdiff 0 criterion of §3 for L7-R moves to the stage that makes the t5/t7 queues.
+
+176. **(cycle 73 judgement, on `tools/bench/stage_d1_l7_r_r2.log` 61/0 → `claudeDev\D1_s4_loop17.vi` md5 `4b621946…`) L7-R ACCEPTED; four rulings.**
+     - **(a) Handles.** The ±100 criterion is the reference-hygiene test for REPEATED OP CALLS (CLAUDE.md, 20 calls flat).
+       It does not apply to an editing stage: a stage that creates objects holds more handles while the VI is open.
+       For editing stages the handle numbers are RECORDED, not gated (load / before-save / exit). A leak is judged
+       only by the 20-call test on the ops involved. §3's "handles open→close ±100" rows are superseded for L7/L2/K
+       stages.
+     - **(b)** The extra deletes by wire uid (w4337, w5073, w5274, w1397, w5056) that freed the re-fed sinks, and the
+       choice of `#2048` 'length' at `Terminals[3]`, are ACCEPTED as execution detail. PB returned exactly the
+       predicted row, and the edge diff was 4 removed / 9 added as predicted.
+     - **(c) BLIND SPOT, and a tool is necessary now** (user 2026-09-24 tool permission):
+       - `computation_diff` does not report an edge whose SOURCE is a diagram-owned terminal (loop `i`, w3268).
+         L7-1a removed w3268 and no CDIFF row showed it (r2.log:450; `c73_l7r_live.log`).
+       - Every later stage gates on cdiff, and loop terminals recur in every split (K and L2 move nodes fed by `#637`
+         i). So a "0 rows" can be false.
+       - Fix `tools/vigraph.py` so diagram-terminal sources are edges: from the wiki `Terminal` rows whose owner is a
+         Diagram, as w3268 was located in cycle 68 at `docs/wiki/subvi/D1_s1_copy.json:36385-36392`.
+       - Self-test: on the L7-R graph, the w3268 row must now appear as the ONE predicted-open row beside w4517.
+       - This is done BEFORE stage K. Offline, no LabVIEW.
+     - **(d)** §3's L7-R rows `:159-160` (cold ExecState 1, cdiff 0) are superseded by 175: that criterion moves to the
+       stage that builds the t5/t7 queues (QRT/STOP).
 
 ## OPEN (design choices — for judgement; not decided here)
 

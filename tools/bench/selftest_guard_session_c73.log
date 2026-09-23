@@ -1,0 +1,21 @@
+BGRUN START 2026-09-24 06:27:32 limit 10.0 min: py -u tools/bench/selftest_guard_session.py
+  ok   G1 dispatch 1 allowed                          exit 0
+  ok   G2 dispatch 2 allowed                          exit 0
+  ok   G3 dispatch 3 allowed                          exit 0
+  ok   G4 dispatch 4 allowed                          exit 0
+  ok   G5 dispatch 5 allowed                          exit 0
+  ok   G6 dispatch 6 allowed                          exit 0
+  ok   G7 dispatch 7 allowed                          exit 0
+  ok   G8 dispatch 8 allowed                          exit 0
+  ok   G9 ninth dispatch refused                      exit 2, counter 8
+  ok   G10 uncounted subagent_type allowed            exit 0, counter 8
+  ok   G11 non-Agent tool allowed                     exit 0
+  BAD  G12 retrospective allowed and recorded         exit 2, retro_done False
+  BAD  G13 dispatch after retrospective refused       exit 0
+  ok   G14 v1 and grep do not close the cycle         retro_done False
+  ok   G15 SendMessage to an agent refused in cycle   exit 2
+  ok   G16 SendMessage to log-reader refused in cycle exit 2
+  ok   G17 interactive chat SendMessage untouched     exit 0
+  ok   G18 SendMessage to main allowed in cycle       exit 0
+SUMMARY 16/18 gates pass
+BGRUN END rc=1 after 1s
