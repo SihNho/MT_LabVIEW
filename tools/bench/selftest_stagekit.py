@@ -199,12 +199,51 @@ def case_g_constants():
     check("G5 every DEFAULT_PINS entry's md5 matches the hash it pins", not wrong, repr(wrong[:3]))
 
 
+def case_h_creator_rows():
+    """Cycle 68 (M4a/M4b): the pure halves of the new from_decision actions - `$` symbol resolution and the
+    Pre-decided 143 op-rule check. The LabVIEW halves (copy_in / add_sr_row / const_row) are gated by the stage."""
+    s = new_stage()
+    s.sym = {"not": 111, "sr": {"right": 222, "left": 333, "right_uids": [9, 222]}}
+    r = s.resolve({"a": "$not", "b": ["$sr.right", "$sr.right_uids"], "c": 5, "d": "plain"})
+    check("H1 resolve maps $name, $name.key and leaves literals alone",
+          r == {"a": 111, "b": [222, [9, 222]], "c": 5, "d": "plain"}, repr(r))
+    raised = False
+    try:
+        s.resolve("$missing")
+    except KeyError:
+        raised = True
+    check("H2 resolve of an unknown symbol RAISES (never a silent default)", raised)
+    end = lambda uid, oc, tc, **k: dict({"uid": uid, "owner_class": oc, "term_class": tc, "diagram": 1}, **k)
+    ok_rows = [({"op": "wire_sr", "variant": "RightIn",
+                 "exec": {"src": end(1, "Local", "Terminal"), "dst": end(2, "RightShiftRegister", "InnerTerminal")}}),
+               ({"op": "wire_sr", "variant": "LeftIn",
+                 "exec": {"src": end(3, "LeftShiftRegister", "InnerTerminal"), "dst": end(4, "Function", "Terminal")}}),
+               ({"op": "connect_nested", "variant": None,
+                 "exec": {"src": end(4, "Function", "Terminal"), "dst": end(5, "CaseStructure", "Terminal")}}),
+               ({"op": "connect_from_wire", "variant": None,
+                 "exec": {"src": end(1, "Local", "Terminal", wire_uid=77), "dst": end(4, "Function", "Terminal")}})]
+    got = [s.rule_check(d)[:2] for d in ok_rows]
+    check("H3 rule_check accepts the four M4a row shapes",
+          got == [("wire_sr", "RightIn"), ("wire_sr", "LeftIn"), ("connect_nested", None),
+                  ("connect_from_wire", None)], repr(got))
+    bad = {"op": "connect_nested", "variant": None,
+           "exec": {"src": end(1, "Local", "Terminal", wire_uid=77), "dst": end(4, "Function", "Terminal")}}
+    raised = False
+    try:
+        s.rule_check(bad)
+    except RuntimeError:
+        raised = True
+    check("H4 rule_check REFUSES a row whose op disagrees with op_rule", raised)
+    bad["op_override"] = "reason"
+    check("H5 ... unless the row carries op_override", s.rule_check(bad)[0] == "connect_from_wire")
+
+
 def main():
     print("=" * 90, flush=True)
     print("selftest_stagekit - tools/stagekit.py without LabVIEW", flush=True)
     print("=" * 90, flush=True)
     for fn in (case_a_rows, case_b_summary, case_c_md5_pin, case_d_save_route, case_e_mutating_reader,
-               case_f_format_safety, case_g_constants):
+               case_f_format_safety, case_g_constants, case_h_creator_rows):
         print("\n---------- {0}".format(fn.__name__), flush=True)
         try:
             fn()

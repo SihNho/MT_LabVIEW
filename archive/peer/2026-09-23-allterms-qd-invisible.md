@@ -185,4 +185,9 @@ Read with `'Node'`, not `'Function'`, so a wrong-class drop (To More *Generic* C
 
 ## What was done with it
 
-(Claude fills in)
+Material session, cycle 69 act 2 (2026-09-24), bookkeeping for retrospective-cycle68 F4; the outcomes were already recorded in `STATUS.md:40-41` (`purpose_s2_delivered`) and `docs/connectivity-map-plan.md:48` (step 1 row).
+- §0/§3 (c) "Enter loads the cursor; the title-bar unwedge click discarded it" — ACCEPTED, confirmed by the review's own test in runs 3 and 4 of `tools/bench/allterms_s2.log` (icon at A gone after the click, node at B); S2 delivered `OpAllTerms_v0_s2.vi` `358c9dca…` (`STATUS.md:41`).
+- §1 (a) uncommitted-while-selected — REFUTED by the same runs (node appeared at B, not A).
+- §2 (b) stale VI reference — REFUTED by the same runs (node visible without save/close/reopen).
+- §4 class-filter control weaker than stated / two runs merged / unwedge law over-generalised — ACCEPTED as record corrections; STATUS withdrew "the node IS placed" (`STATUS.md:41`).
+- §5 discriminating run (hover A, click B, read `'Node'`) — ACCEPTED and executed as runs 3-4; run 3's geometry miss fixed in run 4 (`STATUS.md:41`).

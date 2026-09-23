@@ -1,0 +1,83 @@
+BGRUN START 2026-09-24 00:22:10 limit 16.0 min: py -u tools/bench/q_m4_copy_probe.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 245 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == fdd6d74ac8a5ba0c1a545ad89ff2996f  got fdd6d74ac8a5ba0c1a545ad89ff2996f
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN BEFORE M3a-4 bed        fdd6d74ac8a5ba0c1a545ad89ff2996f  (want fdd6d74ac8a5ba0c1a545ad89ff2996f) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 33957
+  FACT  LabVIEW handle count AFTER the restart: 33987
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  Test - Moving Objects Target.vi
+  FACT  ExecState [after open] Test - Moving Objects Target.vi = 1
+  FACT  ExecState [D1 bed opened FROM MOVE_DST, no preload] Test - Moving Objects Target.vi = 1
+  ROW   D1 ExecState at MOVE_DST (item (h) predicts 0) : observed=1 expected=recorded
+  PASS  K4 MOVE_SRC holds the bed's bytes  fdd6d74ac8a5ba0c1a545ad89ff2996f
+  FACT  copy_in node census: 632 rows
+  FACT  OP copy_in Function[97] #10382 -> err '' (0.5 s)
+  FACT  COPY #10382 -> new Function uid(s) [23459]
+  FACT  D2 after copy AFTER node census: 633 rows
+  FACT  D2 after copy CENSUS DIFF: Node 632 -> 633 ; 1 new uid(s): [(23459, 'Function', (0, 75))]
+  FACT  D2 after copy new #23459 #23459 lives at: {'diagram_index': 0, 'diagram_uid': 536, 'diagram_class': 'TopLevelDiagram', 'nodes_index': 0, 'nodes_on_diagram': 1, 'label': 'Not'}  (1 diagram(s) scanned of 173, 0.4 s)
+  FACT  D2 after copy new #23459 terminal table of #23459 (Diagram idx 0, Nodes[0], echo 23459): 2 terminal(s)
+  FACT      D2 after copy new #23459 t0  '.not. x?'                         is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      D2 after copy new #23459 t1  'x'                                is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  D2 after copy NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #23459 class 'Function' label 'Not', 2 terminal(s), 0 wired - REPORTED, left alone
+  FACT  move_in node census: 633 rows
+  FACT  OP move_in #23459 -> Diagram[22] at (4760, 2960) -> err '' (0.3 s)
+  FACT  D2 after move_in AFTER node census: 634 rows
+  FACT  D2 after move_in CENSUS DIFF: Node 633 -> 634 ; 1 new uid(s): [(23463, 'Invoke', (4593, 2718))]
+  FACT  D2 after move_in new #23463 #23463 lives at: {'diagram_index': 22, 'diagram_uid': 23058, 'diagram_class': 'Diagram', 'nodes_index': 9, 'nodes_on_diagram': 10, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.4 s)
+  FACT  D2 after move_in new #23463 terminal table of #23463 (Diagram idx 22, Nodes[9], echo 23463): 6 terminal(s)
+  FACT      D2 after move_in new #23463 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      D2 after move_in new #23463 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      D2 after move_in new #23463 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      D2 after move_in new #23463 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      D2 after move_in new #23463 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      D2 after move_in new #23463 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  D2 after move_in the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  D2 after move_in purge delete Node #23463 at index 98: gone [23463], error '', census 634 -> 633, still present False (1.42 s)
+  FACT  D2 after move_in AFTER THE PURGE node census: 633 rows
+  FACT  D2 after move_in purge arithmetic: Node 633 -> 634 -> 633
+  PASS  D2 copy_in -> one new Function (UID guard held)  new #23459; Function 183 -> 184
+  OBSERVED uid 23459 -> owner 'Diagram' uid 23058 | self 'Function'#23459 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  D3 after move_in the copy is owned by Diagram #23058  Diagram#23058
+  FACT  copied Not #23459 lives at: {'diagram_index': 22, 'diagram_uid': 23058, 'diagram_class': 'Diagram', 'nodes_index': 8, 'nodes_on_diagram': 9, 'label': 'Not'}  (23 diagram(s) scanned of 173, 2.9 s)
+  FACT  copied Not terminal table of #23459 (Diagram idx 22, Nodes[8], echo 23459): 2 terminal(s)
+  FACT      copied Not t0  '.not. x?'                         is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      copied Not t1  'x'                                is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  #23459: 2 terminal(s), 0 WIRED
+  FACT  copied Not terminals: [(0, '.not. x?', True, 0), (1, 'x', False, 0)]
+  FACT  ExecState [D4 after copy + move_in] Test - Moving Objects Target.vi = 0
+  ROW   D4 ExecState after copy+move (unwired Not) : observed=0 expected=recorded
+  PASS  D5 bed md5 unchanged  fdd6d74ac8a5ba0c1a545ad89ff2996f
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 8}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 8}
+  FACT  LabVIEW handle count AFTER the work: 63471
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before fdd6d74ac8a5ba0c1a545ad89ff2996f / after fdd6d74ac8a5ba0c1a545ad89ff2996f
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN AFTER  M3a-4 bed        fdd6d74ac8a5ba0c1a545ad89ff2996f  (want fdd6d74ac8a5ba0c1a545ad89ff2996f) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  FAIL  H6 the files left on disk == ['Test - Moving Objects Target.vi'] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 63471
+
+====================================================================================================
+=== GATES: 10 pass / 1 fail; failing: H6 the files left on disk == ['Test - Moving Objects Target.vi'] and nothing was removed
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\q_m4_copy_probe.json   elapsed 69.5 s
+  FACT  Moving-Objects fixtures restored after a restart
+BGRUN END rc=1 after 120s

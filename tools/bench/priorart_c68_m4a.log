@@ -1,0 +1,54 @@
+BGRUN START 2026-09-24 00:19:28 limit 25.0 min: py -u tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/af0f984b-ad91-4a16-b598-e0fac4c47002/scratchpad/plan_c68_m4a.md --slug c68-m4a --recipe tools/recipes/stage_d1_m4a.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c68-m4a.txt (114680 chars)
+OUTCOME: ANSWERED (92s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-24-priorart-c68-m4a.md
+COST: $1.7170  in 24 / out 8406 / cache-create 150094 / cache-read 1740209  (88s, 18 turn(s))
+--- ANSWER ---
+**Verdict: not novel.** The M4a route copies Not and And by duplicating them inside the bed, with the bed's bytes sitting in the NI Moving-Objects Target file, and then moves them into loop body #23058. That exact construction has already been tried on this VI's bytes, and it ended with ExecState 0. Nothing in the plan says what is different this time. The rest of the plan (new shift register, wiring rows, not building the FALSE constant) either has prior art behind it or is correctly cited.
+
+## PART A — the direction
+
+**A1 settled already: none that blocks.** The cadence-edge choice was left open on purpose at `docs/cycle27-plan.md:1674-1675`: *"the cadence edge is built either on the schedule boolean's own rising edge or on wire 3268 … which of those is right is NOT decided here"*. Choosing the rising edge in cycle 68 therefore contradicts no earlier decision.
+
+**A2 refuted already: copying a node and then moving it into a loop body.**
+- `docs/s0-diff.md:26-28` (rows D2 and D4) records the node being copied from another VI and then moved into the body diagram. `:51-57` names that pair as the most likely cause of a failure *"replicated ×4"*, with 0 successes.
+- `docs/connectivity-map-plan.md:69` (Pre-decided 139, 2026-09-23) says *"must not be copy_by_index + move_in into a loop body (D2+D4, failed 4×/0)"*.
+- Its wording covers only the step-1 op build. The M4a plan uses the same D1+D2+D4 combination:
+  - edits applied to the fixture file `MOVE_DST`;
+  - the node copied by `OpMoveByIndex_v0`;
+  - the node then moved in with `move_in`.
+- `docs/s0-diff.md:60-61` does record one counter-example: a different op reached ExecState 1 inside the same fixture (`build_opconnectfromwire_v0.log:58`).
+
+**A3 contradicted: none found.** The plan's constant-init claim matches the record:
+- `diag_queue_donor2.log:64` records error 1055 when `OpCreateConstOnTerm_v0` is aimed at `Diagram` #686.
+- `docs/cycle27-plan.md:1041-1043` gives the reason: *"the restriction is that op's `Loop.Diagram` downcast, intrinsic to the container class"*.
+- `:1037-1038` shows that a constant placed on #686 is not in `Nodes[]`.
+
+**A4 unread evidence:** the plan should have cited `tools/bench/diag_s56_transport3.log:93-109` and `docs/cycle27-plan.md:1695-1701` (item (h)). They are the only record of this copier running on the main VI's own bytes, and the plan cites neither (details in B2).
+
+## PART B — the artifact
+
+**B1 already built:** the shift-register step (`OpAddShiftReg_v0` on #23032) is proven; M3a-2 already added two registers to that same loop (STATUS, the M3a-2 deliverable line). That is reuse, so it is not a finding. `stagekit.copy_in` (`tools/stagekit.py:716-748`) is a new wrapper around the old op, not a new capability.
+
+**B2 already failed — this is the blocking finding.**
+- On 2026-09-20, `diag_s56_transport3.log:99-101` ran `copy_by_index(donor=target, 'Local'[0], duplicate=True, expect_uid=2991)`. That is an intra-VI copy on main-VI bytes loaded into `MOVE_DST`, the same setup the M4a plan uses.
+- Result: *"RuntimeError: copy_by_index: Target still broken after finish (ExecState 0) - not saved"*. Nothing was copied, so no `move_in` was ever tried (`:105-109`).
+- `docs/cycle27-plan.md:1695-1701` attributes this to the fixture location: *"~94 of the main VI's subVI paths do not resolve"* in `NIScriptingExamples\Moving Objects\`, and the op *"has no destination-diagram control"*. The item ends *"Recorded, not repaired, not re-run."*
+- The M4a gate "ExecState 1 after the rows" is read on that same `MOVE_DST` path (`stage_d1_m4a.py:110-111` sets `work_dir=dirname(g.MOVE_DST)`).
+- The plan says nothing about subVI path resolution at the fixture location. The stagekit self-test never exercises `copy_in` against LabVIEW: `selftest_stagekit.log` has no `copy_in` or `MOVE_DST` lines.
+- The review would be released by any of these:
+  - a reading showing the bed loads at ExecState 1 **from the `MOVE_DST` path** before any copy;
+  - a written refutation of item (h)'s subVI-path explanation;
+  - a different route for placing Not and And.
+
+**B3 helper exists: none.**
+- `archive/peer/2026-09-23-c68-m4-prims.md` and `docs/cycle27-plan.md:3757-3760` confirm that no creator exists for these primitives. Copying from a donor is the only route on file.
+- `:3760` also says the within-VI copy would need `OpMoveIn_v0`'s unwired `duplicate` input exposed. That is a separate route and it is not built.
+
+**B4 already measured:** the stray-Invoke purge rule rests on only one run. `archive/peer/2026-09-24-c68-p6d-stray-invoke.md:53-82` says run 2 does not prove the stray node is the cause. Its disposition at `:94-97` leaves the reverse arm and the neutral-edit read to judgement. The plan's rows `P6D-R1..R3` record readings, not gates. That is disclosed, so it is not a slug.
+
+PRIOR-ART: already-failed
+PRIOR-ART: refuted-already
+PRIOR-ART: unread-evidence
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c68-m4a.md
+   STOP RECORD armed: tools/recipes/stage_d1_m4a.py sha 3b303f5ef656 verdict already-failed, refuted-already, unread-evidence -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 96s

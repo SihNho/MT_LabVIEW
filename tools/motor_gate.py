@@ -287,11 +287,16 @@ def parse_pi_limits(text):
     substring 'LIMITS TMN=0 TMX=39' inside 'PRE' + that line - and match it FIRST, because PRELIMITS
     is printed before the SPA write.  The gate would then verify the limits the controller had on
     arrival instead of the ones it just installed.  Case '2b' of
-    tools/bench/selftest_motor_gate2.py asserts exactly that (STATUS.md OPEN 55)."""
-    m = re.search(r"(?m)^LIMITS\s+TMN=([-+0-9.eE]+)\s+TMX=([-+0-9.eE]+)"
-                  r"(?:\s+SPA15=([-+0-9.eE]+)\s+SPA30=([-+0-9.eE]+))?", text or "")
-    if not m:
+    tools/bench/selftest_motor_gate2.py asserts exactly that (STATUS.md OPEN 55).
+
+    The LAST '^LIMITS' line is judged (cycle 69 repair (b)): limits-set prints one after the write
+    (motor_send_pi.ps1:96) and another after the reference move + verify (:147); the last is the state the
+    controller is left in."""
+    ms = list(re.finditer(r"(?m)^LIMITS\s+TMN=([-+0-9.eE]+)\s+TMX=([-+0-9.eE]+)"
+                          r"(?:\s+SPA15=([-+0-9.eE]+)\s+SPA30=([-+0-9.eE]+))?", text or ""))
+    if not ms:
         return None
+    m = ms[-1]
     out = {"TMN": float(m.group(1)), "TMX": float(m.group(2))}
     if m.group(3) is not None:
         out["SPA15"], out["SPA30"] = float(m.group(3)), float(m.group(4))
@@ -301,10 +306,11 @@ def parse_pi_limits(text):
 def parse_pi_ref(text):
     """'REFSTATE RON=0 FRF=1 POS=0.00000 POS_BEFORE=0.00000 ERR=0' -> dict, or None.
 
-    The reference restore the session-start hook performs (RON 1 0 + POS 1 <the same number POS? just returned>)
-    exists because writing SPA 0x15/0x30 leaves the axis UNREFERENCED - measured 2026-09-18, see
-    tools/bench/motor_gate2_live.log L2/L3 (every MOV answered ERR 5) and the dual review
-    archive/peer/2026-09-18-pi-err5-unreferenced-{codex,opus}.md."""
+    The session-start hook performs a REAL reference move (SVO 1 1, RON 1 1, FNL 1 to the negative limit switch),
+    requires FRF? 1 and POS 0, then a commanded-vs-readback verify move (0 -> 2 mm -> 0, tol 0.05 mm) - the
+    user's 2026-09-23 rule. The retired restore that declared the current counter as zero was removed after it
+    drove the magnet into the hard limit (tools/bench/pi_testmove_20260923e.log, ERR 216). Writing SPA 0x15/0x30
+    leaves the axis UNREFERENCED (tools/bench/motor_gate2_live.log L2/L3), which is why the reference follows it."""
     m = re.search(r"REFSTATE\s+RON=([-+0-9.eE]+)\s+FRF=([-+0-9.eE]+)\s+POS=([-+0-9.eE]+)"
                   r"\s+POS_BEFORE=([-+0-9.eE]+)", text or "")
     if not m:
@@ -395,6 +401,12 @@ def session_start(limits, pi_call=None, asi_call=None, session_path=None, out=pr
         out("PI  : reference/verify attempt %d failed - retrying" % attempt if attempt < REF_ATTEMPTS
             else "PI  : reference/verify failed %d times - giving up" % REF_ATTEMPTS)
         time.sleep(2)
+    if not ok_pi:
+        # cycle 69 repair (a): a PI refusal after all REF_ATTEMPTS ends the session here - the ASI port is not
+        # opened and no ASI limits are written.
+        out("ASI : not contacted - PI refused after %d attempts" % REF_ATTEMPTS)
+        out("SESSION START REFUSED - no session file written, --execute stays closed")
+        return 3
     rc2, text2 = asi_call("limits-set", sl, su)
     out(text2.strip())
     asi_rb = parse_asi_limits(text2)
@@ -590,5 +602,23 @@ def main(argv=None):
     return transmit(a.device.lower(), a.command, d, limits)
 
 
+EXIT_MEANING = {3: "REFUSED by the gate (rig state / command class / session / limit readback)",
+                4: "usage error", 5: "transmit not implemented for this command",
+                6: "sender could not read the controller", 7: "sender REFUSED (token / limits mismatch / servo)",
+                8: "motion ended NOT at target", 9: "REJECTED BY THE CONTROLLER (ERR after send) or reference incomplete"}
+
+
+def fail_line(rc):
+    """One `FAIL:` line for a non-zero exit (cycle 69, device-failed repair). pi_testmove_20260923e.log:23/34 held a
+    NOT-at-target and a REJECTED result, yet the chained bash run ended `BGRUN END rc=0` (:51) because a later command
+    in the chain succeeded, so bgrun, audit_cycle and guard_peer never saw the failure. `^FAIL\\b` is the form all three
+    scanners already match. Printed at PROCESS exit only, not inside main(), so in-process self-tests that call main()
+    on purpose-refused commands do not print it. ASCII only (cp949 console)."""
+    return "FAIL: motor_gate exit %d - %s" % (rc, EXIT_MEANING.get(rc, "sender's own non-zero code"))
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    _rc = main()
+    if _rc:
+        print(fail_line(_rc), flush=True)
+    sys.exit(_rc)

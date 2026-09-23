@@ -660,5 +660,49 @@
       "contradicted",
       "already-measured"
     ]
+  },
+  {
+    "created_utc": "2026-09-23T15:21:04Z",
+    "recipe_path": "tools/recipes/stage_d1_m4a.py",
+    "released": {
+      "line": "REFUTED: already-failed - tools/bench/diag_s56_transport3.log:99 says copy_by_index raised \"Target still broken after finish (ExecState 0) - not saved\", which does not cover M4a because that raise is copy_by_index's own finish gate (`gscript.py` copy_by_index: `if es != 1: raise`) firing on a duplicated Local left unwired with no finish hook, not unresolved subVI paths: tools/bench/q_m4_copy_probe.log:21 reads the bed opened FROM the MOVE_DST path at ExecState 1 with no preload, and :50-52 show copy_in (OpMoveByIndex duplicate, UID guard #10382) + move_in placing exactly one Not (#23459) owned by Diagram #23058; M4a does not call copy_by_index and gates ExecState only after every row.",
+      "sha256": "2191f5b960185fa7e4281b90448a5c946469eb983e2be6895b4383ffc4b6ace2",
+      "when": "2026-09-23T15:26:46Z"
+    },
+    "review_file": "archive/peer/2026-09-24-priorart-c68-m4a.md",
+    "reviewed_sha256": "3b303f5ef656e5da6c36e260de9d7f68fba6c36468af549438a94b8b56ecc436",
+    "verdict": [
+      "already-failed",
+      "refuted-already",
+      "unread-evidence"
+    ]
+  },
+  {
+    "created_utc": "2026-09-23T15:30:31Z",
+    "recipe_path": "tools/recipes/stage_d1_m4b.py",
+    "released": {
+      "line": "FIXED: contradicted - tools/bench/stage_d1_m4a.log:284 - M4a's run completed after this review (log end 00:31; the json at stage_d1_m4a.json:1456 carries m4a.final/md5): M4a ran to its end (00:31) and recorded m4a.final = claudeDev\\D1_s3b_m4a_20260924_002708.vi (on disk, md5 bc519809937db449bc0c0ec2b6410c55, ExecState 1 warm before and after the scripted save, stage_d1_m4a.log:278-283); its log ends rc=1 on ONE failed gate (P6b, a name-keyed graph diff), whose review is archive/peer/2026-09-24-c68-m4a-p6b-rename.md.",
+      "sha256": "5a1847aae1592683fce96d63332dc2f03b59c69a6214af88b8fb235976bed6d7",
+      "when": "2026-09-23T15:39:01Z"
+    },
+    "review_file": "archive/peer/2026-09-24-priorart-c68-m4b.md",
+    "reviewed_sha256": "0ce4b4d094bf3e48e226f8a14ad6d160663c479c7ae4a659d9b8e0ce3414e080",
+    "verdict": [
+      "contradicted"
+    ]
+  },
+  {
+    "created_utc": "2026-09-23T15:41:20Z",
+    "recipe_path": "tools/recipes/stage_d1_m4b.py",
+    "released": {
+      "line": "FIXED: contradicted - docs/cycle27-plan.md:3773 - the plan now states that vigraph pairs registers by equal TOP only, that on M4a #23868/#23469 go unpaired, and that the `#48 'VISA resource name'` computation_diff row is that pairing artefact (citing p6b-rename.md:107), so M4b's verbatim CDIFF report is read against it.",
+      "sha256": "5a1847aae1592683fce96d63332dc2f03b59c69a6214af88b8fb235976bed6d7",
+      "when": "2026-09-23T15:42:09Z"
+    },
+    "review_file": "archive/peer/2026-09-24-priorart-c68-m4b-r2.md",
+    "reviewed_sha256": "5a1847aae1592683fce96d63332dc2f03b59c69a6214af88b8fb235976bed6d7",
+    "verdict": [
+      "contradicted"
+    ]
   }
 ]

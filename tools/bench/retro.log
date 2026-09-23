@@ -1388,3 +1388,163 @@ VIOLATION: premature-build | loss_min=35 | loss_usd=7.93 | evidence=tools/bench/
 VIOLATION: device-failed | loss_min=10 | loss_usd=? | evidence=tools/bench/diag_c86_norbw.log:125
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle66.md
 BGRUN END rc=0 after 406s
+BGRUN START 2026-09-24 01:05:57 limit 10.0 min: py tools/retrospective.py --cycle 68
+   window 2026-09-23 02:34:31 .. 2026-09-24 01:05:57 (1351 min); 86 build logs, 26 machinery logs, 11 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle68.txt (22720 chars)
+OUTCOME: ANSWERED (421s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-24-retrospective-cycle68.md
+COST: $6.9743  in 226 / out 31592 / cache-create 255532 / cache-read 1127301  (419s, 52 turn(s))
+--- ANSWER ---
+I have what I need. Writing the retrospective now.
+
+# Retrospective v2, cycle 68 (window 2026-09-23 02:34:31 to 2026-09-24 01:05:57)
+
+## What this window actually contains
+
+The window is not one cycle. It holds five separate blocks, and the runner's own cycle is the smallest of them:
+
+| block | clock | who ran it | what it did |
+|---|---|---|---|
+| runner cycle 66, killed twice | 02:38–04:02 | `claude -p` judgement | c90 severed-row diagnostics; killed by the user both times (`tools/bench/cycle_runner_main_20260923a.log:4-5`, `…b.log:2`) |
+| interactive tooling session | 04:12–08:26 | the chat, material dispatches | OpAllWires stopped by prior art, OpAllTerms v0/v1 built, wiki, vigraph (connectivity-map steps 0–4) |
+| motor session on the user's order | 13:10–13:42 | the chat | limits released, PI test moves, hard-limit collision, reference |
+| interactive tooling session | 16:33–19:0x | the chat, material dispatches | steps 4b, 5, 5b bench, 6 (M3a-4 delivered) |
+| runner cycle (labelled 67 in `cycle_67.log`, 68 here) | 23:33–01:05 | `claude -p` judgement, Opus 5.5 medium | M4a, M4b, `D1_s3_loop15.vi` delivered |
+
+The audit's C3 (216 min builds) and C4 ($37.29 reviews) are sums over all five. The runner cycle itself accounts for about 93 minutes of wall-clock and $11.75 of the reviews (prims $2.7455, p6d $1.0573, m4a prior-art $1.7170, h6 $0.8606, m4b $2.2634, p6b $1.1546, m4b-r2 $1.9544; `tools/bench/peer_c68_*.log:3`, `priorart_c68_*.log:4`). The four interactive blocks ran on the chat's own Fable context, which no log costs, so the audit's C4c "judgement session 0 min, no cost line" is true of the record and false of the money.
+
+## Verdict
+
+**One structural fault, and one device that let its own fault through.**
+
+**The fault: the PI stage was commanded to 30 mm on a zero the tool had inferred, not measured, and drove into the hard limit.** At 13:28:39 the session-start hook read `RON=0 FRF=1 POS=-0.0001` and declared the axis "REFERENCED, zero unchanged" (`tools/bench/pi_testmove_20260923d.log:6,10`). `FRF?=1` with reference-on-startup off says nothing about where the stage physically is, and the project already knew it: STATUS OPEN 53, on file since 2026-09-18, states verbatim that "nothing we can read proves the controller zero still equals the ORIGINAL physical zero" (`STATUS.md:65`). The 13:30 chain then sent `MOV 1 30`; the stage stopped at 22.198 mm with `ERR 216` after 90 s (`tools/bench/pi_testmove_20260923e.log:22-23`). The 13:36 user-ordered `FNL 1` then travelled −30.55 mm to the negative limit switch (`tools/bench/pi_reference_20260923.log:6-19`): the "zero" the gate had cemented sat about 30 mm from the real one, so the 0–39 mm envelope fenced nothing. The measurement that would have prevented it takes 8 seconds (the same log, `BGRUN END rc=0 after 8s`) and was the thing OPEN 53 asked for. The gate's own code now records the mechanism (`tools/motor_gate.py:553-554`) and rule 1b was rewritten the same afternoon (`CLAUDE.md:68`).
+
+Counterfactual, on the clock: had session start at 13:28:39 done the FNL reference and 2 mm verify that it does now, the 13:30 chain would have reached a real 30 mm and returned, ending about 13:32. Instead the block ran through the collision, two port-denied retries at 13:32, the 13:36 reference, the 13:39 re-verify, the 13:40 incomplete end and the 13:42 end. Loss on the clock: about 10 minutes. Loss in dollars: no log carries one; the session was interactive. The consequence that matters is not the minutes: it is the one hazard rule 1b exists for, and the slug is `inference-over-measurement` because a cheap measurement existed and an inference was used instead.
+
+**The device that failed: bgrun's inner-failure scan.** The run that hit the hard limit ended `BGRUN END rc=0 after 112s` (`tools/bench/pi_testmove_20260923e.log:51`). Its output says `NOT at target - final=22.17105 target=30` and `REJECTED BY THE CONTROLLER - ERR 216` (`:23`, `:34`). The scan matches only `FAIL`, `**FAIL**`, `rc=N`, `exit=N` and `=== … N fail` (`tools/bgrun.py:215-216`); the motor gate's failure vocabulary is `REJECTED` and `NOT at target`, and the chain was a `bash -c` of four `motor_gate.py` calls joined by `;`, so the process exit was the session-end's 0. Compare `tools/bench/motor_gate2_live.log:280`, where the same class of rejection was caught only because that log happened to print `rc=9`. This is failure mode one: it never fired when it should have. The audit inherits the blindness: `FAILURE_RE` (`tools/audit_cycle.py:77-78`) has the same forms, so the collision run is not among A3's 38 failing logs and no review was ever owed for it.
+
+No second structural fault is of the same magnitude. The dollar-costed arcs are below, with their numbers.
+
+## FINDINGS
+
+**1. Repeated failure.** Three recurrences, none of them slugged.
+- (a) The retarget-route wreckage explanation (interactive block 2). Two `ExecState 0` diagnostics (`diag_allterms_retarget.log:100`, `retarget2.log:135`, 65 s and 77 s) produced an explanation the mandatory review refuted "with OUR OWN record": `docs/cycle27-plan.md:2220-2222` had the identical five-step construction reading 1→0→1→0 on 2026-09-21 (`archive/peer/2026-09-23-allterms-retarget-es0.md`, $4.4121, 702 s). This is the same shape as cycle 67's named fault. The review prescribed five extra `s.es()` reads (77 s); no `retarget3` log exists, so the prescription was never run and the route was dropped for GUI placement. The approach should have changed before attempt 2: the plan entry was one grep away.
+- (b) `errorlist_test.log` ran five times in 31 minutes; runs 3 and 4 failed on the identical seven gates (`:349`, `:470`, both `18 pass / 7 fail`) with nothing changed between them. The material failure budget is 2 (`CLAUDE.md:291`). Cost small (89 s + 91 s), but it is a budget the rule says stops the session.
+- (c) The stray-Invoke purge. `q_m4_iterlocal.py` run 1 omitted the purge that `tools/stagekit.py:513-524` documents as "the fleet's documented stray Invoke each OpMoveIn/OpConnect call mints" (the review's own words, `archive/peer/2026-09-24-c68-p6d-stray-invoke.md:28-29`). One rerun (137 s) and one review ($1.0573) bought back a fact already in the shared skeleton.
+
+**2. Missing tool.** None whose absence drove the cost. The near-miss needed no new tool: `motor_gate.py --reference` now exists and is 30 lines. The pairing artefact (finding 3) needed a repair to `tools/vigraph.py:333-388`, delivered inside the cycle. What is still missing after this cycle is a creator for `Select` / `Not Equal?` (`archive/peer/2026-09-23-c68-m4-prims.md` Q3), and judgement correctly routed around it rather than building one.
+
+**3. Unmeasured steps.**
+- The named fault (controller zero declared, not referenced).
+- STATUS line 34, written 2026-09-23 17:0x, claimed shift-register pairing "is now EXACT and validated against `Loop.Shift Registers[]` (36/36, 38/38)". The check validated membership, not pairing (`archive/peer/2026-09-24-c68-m4a-p6b-rename.md:53-54`, `q_m4a_diffuid.log:94-99`). That overclaim is what made M4a's P6b fail (`stage_d1_m4a.log:317`), bought the p6b review ($1.1546), two `q_m4a_diffuid` runs (335 s), the m4b-r2 prior-art ($1.9544) and the 353 s `q_c68_srpair` run. About 15 minutes and $3.11 on the critical path of the runner cycle; had the 17:0x session tested pairing against the machine's `reg[i]` pairs, M4b would have started near 00:32 instead of 00:42.
+- Handle counts jumped 33,987 → 63,471 and 33,954 → 54,506 on read-only runs (`docs/cycle27-plan.md:3789-3790`), recorded as "not diagnosed" twice and then folded into a new baseline by Pre-decided 147(c) (`docs/connectivity-map-plan.md:111-112`) without a measurement of what the +20k is. Rule 3's reference-hygiene section calls handle growth the leak measure; a baseline was moved instead of measured.
+
+**4. Rule compliance.**
+- Rule 1b (hardware): the named fault. The moves were on the user's order, but the zero was the tool's inference.
+- CLAUDE.md "Failure budget = 2": broken by `errorlist_test` runs 3–4 (finding 1b).
+- Rule 5 archiving: `archive/peer/2026-09-23-allterms-qd-invisible.md:186-188` and `2026-09-23-c90-zeroterms.md:141-143` still carry the placeholder. The qd review's finding was acted on (STATUS.md:41 records it) but the disposition was never written, so the record says nobody used a $3.98 review that changed the S2 route. The c90-zeroterms review ANSWERED at 04:06:12 for $3.3479 (`archive/peer/2026-09-23-c90-zeroterms.md:7-9`) after its bgrun had been stamped killed at 04:02:02 (`tools/bench/peer_c90_zeroterms.log:2`): it is disposed nowhere and its cost is in no C4 sum.
+- Audit A4 flags `retrospective-cycle67.md` as blank, but its disposition is written at `:248-264`; the audit's parser stops at the `(Claude fills in)` placeholder left in place (`tools/audit_cycle.py:408`) while `guard_peer.py:305,322` strips it. Two parsers, two verdicts on one file: a false positive.
+- What the audit does not cover: the collision run (FAILURE_RE blind, above); the cost of every interactive block; the $3.35 orphaned review; C7 counts 301 out-of-plan files against `docs/cycle27-plan.md` while the work followed `docs/connectivity-map-plan.md`, so the scope counter now lists the wiki's JSON files as scope creep and says nothing.
+- A1 on `jev_gate.log` is the standing false positive named last cycle; still unrepaired; `motor_gate.log` now joins it.
+
+**5. Ordering.** The runner cycle's order was defensible: measure J1–J4 → decide → prior-art → build → prior-art → build → machine pairing → promote. One arc was spent on a route whose blocker was already on file at 23:39: `q_m4_offline.log:27-52` lists every donor label on the bed and shows no `Select` and no `Not Equal?`, yet the fact review ($2.7455, 50 turns on Fable low, "used as judgement material only; nothing was built from it", `archive/peer/2026-09-23-c68-m4-prims.md:87`), `q_m4_iter_indicator`, two `q_m4_iterlocal` runs and the p6d review followed on the counter route before judgement dropped it (Pre-decided 147(d)). About 25 minutes and $3.80. The brief asked for all four measurements, which is the rule's shape, so this is a finding about the brief, not a slug. In the interactive block, the prior-art gate stopping `build_opallwires_v0.py` at 04:22 ($7.7792, 578 s) was expensive but correctly ordered: it stopped a build on the failed class and the reader that replaced it now underpins every later stage.
+
+**6. What was not reported.**
+- STATUS's NEXT line for cycle 68 gives "≈ 75 min material wall-clock, 3 failed predictions, 2 hypothesis + 3 prior-art + 1 fact reviews" (`STATUS.md:73`) and no dollar figure; the runner cycle's reviews cost $11.75.
+- The hard-limit collision appears in STATUS only inside the rig-state comment (`STATUS.md:58`) as "PI test moves through the gate to diagnose"; the collision itself is recorded in CLAUDE.md and the gate's code, not in the hand-off.
+- `bench_map_b` ran four times (`bench_map_b.log:214,451`, `b3.log:232`, `b4.log:264`; 417 + 466 + 435 + 458 s) before passing, with the pass criterion corrected between runs; STATUS.md:30-31 reports "B RUN 4 PASS 22/0" and "B FAIL" for run 1 but not that runs 2 and 3 failed the same B0–B4 gates.
+- Jev ladder churn continues: `diag_c89_execstate_factorial.log` was re-scored ten times (`tools/bench/jev_gate.log:84-95`) and `diag_c90_endpoints.log` six times in six minutes (`:146-154`), all sub-threshold. Cost pennies, but the finding from last cycle was to confirm per-call firing, and it is now confirmed by the journal.
+
+**7. Judgement inside a material session.** Two borderline cases, neither slugged.
+- The material session disposing the m4a prior-art wrote two `REFUTED:` release lines itself (`archive/peer/2026-09-24-priorart-c68-m4a.md:250-251`). CLAUDE.md §3 says what to accept from a review is judgement's; the same day's allwires disposition explicitly declined to write release lines for that reason (`…priorart-allwires.md:4028-4030`). The refutations were backed by a measurement run first (`q_m4_copy_probe.log:21,50-52`), so they are measured, but the release was a material act.
+- The m4a-p6b disposition changed M4b's gate design ("P6 gate design … is now uid-keyed wire/fs in `tools/stagekit.py` `uid_edges()` and used by `stage_d1_m4b.py`", `…c68-m4a-p6b-rename.md:108-109`) before judgement saw it; the m4b-r2 prior-art then had to re-review the changed recipe ($1.9544). A gate-design change is a design change.
+
+## DEVICE EFFECT
+
+- **`unreported-fact` (rc masking) and `device-failed` 2026-09-17 (FAIL scan): FAILED.** `tools/bench/pi_testmove_20260923e.log:51` ends rc=0 over `:23` and `:34`. Named in the machine-readable line below.
+- **`unreported-fact` C3/C4 split: worked** (15/15 cost lines, sum checks against the logs to the cent), with the coverage gap that the orphaned $3.3479 review and every interactive block are outside it.
+- **`rule-evaded` confirm-bait refusal: held.** Every hypothesis dispatch carries the attack preamble (`…c68-m4a-p6b-rename.md:39-45`).
+- **`tool-not-built` prior-art: worked twice, once expensively.** allwires stopped a build ($7.78); m4a's `already-failed` was refuted by a measurement run before the build (`q_m4_copy_probe.log`), the correct use of the release.
+- **`repeated-failure-class` undisposed-review refusal: held** for its two kinds (priorart, retrospective). It does not cover hypothesis reviews, which is where the two blank dispositions sit.
+- **`premature-build` guard_cycle: held.** Every recipe run followed an archived prior-art newer than the recipe (m3a4 18:51→18:53, m4a 00:21→00:27, m4b-r2 00:41→00:42).
+- **`scope-creep` C7 counter: fired on the wrong thing.** 301 files, measured against a plan the work did not follow. Now noise.
+- **`device-failed` cost regex: held** (C4b 15/15).
+- **`repeated-failure-class` OpLoopEndRef_v0: not exercised.**
+- **`device-failed` stop record + launch gate: held** (`build_opallwires_v0.py` held on eight verdicts, never launched).
+
+VIOLATION: inference-over-measurement | loss_min=10 | loss_usd=? | evidence=tools/bench/pi_testmove_20260923e.log:22
+VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/bench/pi_testmove_20260923e.log:51
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle68.md
+BGRUN END rc=0 after 424s
+BGRUN START 2026-09-24 01:43:20 limit 10.0 min: py tools/retrospective.py --cycle 69
+   window 2026-09-24 01:13:01 .. 2026-09-24 01:43:20 (30 min); 9 build logs, 6 machinery logs, 11 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle69.txt (16909 chars)
+OUTCOME: ANSWERED (353s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-24-retrospective-cycle69.md
+COST: $5.8008  in 130 / out 27166 / cache-create 215914 / cache-read 491545  (351s, 33 turn(s))
+--- ANSWER ---
+# Retrospective v2, cycle 69 (window 2026-09-24 01:13:01 to 01:43:20)
+
+**What the window holds.** The first 47 seconds are cycle 68's close (the runner's CYCLE 67 line and motor-limits release at `tools/bench/cycle_runner.log:160-161`, stamped 01:13:48). The judgement session for this cycle was spawned at 01:13:55 (`tools/bench/cycle_68.log:1`). Everything after that is one cycle, and it did what STATUS NEXT ordered: act 1 (the decomposition plan, its prior-art review, and P0) and act 2 (the motor-gate FAIL repair).
+
+| clock | what | record |
+|---|---|---|
+| 01:14–01:22 | material writes `docs/d1-loop12-17-split-plan.md` from files, no LabVIEW | plan `:12-13` |
+| 01:15–01:17 | act 2: FAIL vocabulary in gate, bgrun, audit; self-test 10/10 | `selftest_motor_fail_exit.log:13-15` |
+| 01:17:50 | old motor-gate self-test crashes, rc=1 after 6 s | `selftest_motor_gate2.log:282-289` |
+| 01:22:30–01:26:31 | prior-art review, ANSWERED 237 s, $2.2059, 13 non-novel verdicts | `priorart_c69_split.log:1,3-4,63` |
+| 01:26–01:31 | judgement J1–J7 → Pre-decided 156–162; material writes 13 FIXED lines; checker OK 7 / BAD 0 | plan `:175-206`; `chk_fixed_c69.log:10-12` |
+| 01:29:57 | re-fixtured self-test 83/83 | `selftest_motor_gate2.log:388-390` |
+| 01:34:41–01:39:25 | P0 census on the bed, 10/0, rc=0 after 284 s, scratch deleted, md5 pins hold | `p0_c69_census.log:217-219` |
+| 01:42:11 | self-test 85/85 | `selftest_motor_gate2.log:491-493` |
+| 01:43:20 | retrospective dispatched | `retro.log:1478` |
+
+Audit C5 (9 min 16 s) is bgrun time only. The cycle's real wall-clock was about 29 minutes. Logged cost is $2.21 (one prior-art). The judgement session's own cost is not in any log yet.
+
+## Verdict
+
+**No structural fault.** Nothing in the window changed how the cycle ended, what it cost, or whether it produced anything. It produced a stage plan that survived a 13-finding prior-art review with every finding released by a checked citation, a measured P0 census (92 rows, 0 disagreements between the two row sources, `p0_c69_census.log:159-160`), and the repair the previous retrospective asked for, with its self-tests green. The two failing logs in the window were each fixed on the next attempt and cost 6 seconds and 0 seconds of bgrun time. Everything else I found is below, and none of it carries a counterfactual that moves the end of the cycle by more than a few minutes.
+
+## Findings
+
+**1. Repeated failure.** No class recurred inside the window. Two one-off failures, each fixed at attempt 2: the citation checker's own bug (`chk_fixed_c69.log:4-8`, TypeError, attempt 1 at 01:31:33; attempt 2 at 01:31:38 clean, `:9-12`) and the stale motor-gate self-test (`selftest_motor_gate2.log:282-289`, FileNotFoundError at 01:17:50; 83/83 at 01:29:57). The stale self-test is a fault of an earlier cycle worth naming: the gate was reworked on 2026-09-23 (FNL reference, verify, 3 attempts, CLAUDE.md `:68`) and its self-test was not run once between 2026-09-18 15:53 (`selftest_motor_gate2.log:186`, 76/76) and this cycle. The safety device that fences the magnet ran for a day with a self-test that could not execute. STATUS still says "self-test `selftest_motor_gate2.py` 74/74" at `STATUS.md:57` while NEXT at `:74` says 85/85. This cycle caught it; cycle 68's retrospective did not.
+
+**2. Missing tool.** One, and NEXT already names it: 33 of the 92 owed rows sit on five structures whose terminals live on tunnel uids, so the uid-plus-name resolver cannot address them (`p0_c69_census.log:161-194`). NEXT makes that resolver P1 (`STATUS.md:73`). Correct call, and it was not knowable before P0 ran. Nothing else was made more expensive by an absent reader.
+
+**3. Unmeasured steps.** Two, both small.
+- P0's owner-chain walk stops with error 1055 at every `FlatSequenceFrame` (`p0_c69_census.log:69-70, :73-74, :91-92, :101-102, :107-108, :127-128`), and 12 of the 17 ForLoop chains end at such a cut. The plan reports "no ForLoop is nested inside any plan node (owner chains of all 17 ForLoops, `:68-129`)" as measured (`docs/d1-loop12-17-split-plan.md:83-85`). For the cut chains that is inferred from the frame uids looking top-level, not read. The wiki's `frame_diagram` column would close it in seconds and should, since J4's clearance (Pre-decided 159) rests on it.
+- NEXT asks the next session to find the S2 record naming `#10170`/`#23041` as 1.2/1.7 (`STATUS.md:73`). That is a file grep the material session already had open; O1 could have closed this cycle.
+
+**4. Rule compliance.**
+- CLAUDE.md "a failed prediction triggers mandatory peer review" (`:538-556`) and the Jev ladder rule (`:364`): the two failing logs got neither a review nor a JEV-LADDER line. The window's `jev_gate.log:436-452` carries only PREFLIGHT and DRIFT entries. Both failures were script bugs fixed in minutes, which is exactly the ladder's `our-script-bug` branch, but the branch never ran. Satisfied in substance, skipped in form. Cost zero.
+- CLAUDE.md "every new stage or diagnostic is a ≤120-line file on stagekit" (`:364`): `chk_fixed_c69.py` (11 lines) and `q_c69_peek.py` are stagekit-free throwaways; `p0_c69_census.py` is 125 lines on stagekit (`jev_gate.log:446`). The motor-gate self-test grew 357→382 lines (`jev_gate.log:438,448`, "oversized p=0.86"), but it is a pre-existing self-test, not a new diagnostic.
+- Rule 1b: no motor, ASI or camera touched. The lock block records one read-only LabVIEW run (`STATUS.md:26`). Held.
+- What the audit does not cover: (a) the judgement session's cost. Cycle 67's was $35.78 (`cycle_runner.log:161`), three times its reviews, and that line sits inside this window yet C4c reports "no judgement-session cost line". The retrospective can never see the cost of the cycle it reviews, because the runner writes it after the session exits. (b) A1 and A3 on `jev_gate.log` and `motor_gate.log` are the standing false positives named in the last two retrospectives, still unrepaired in `tools/logclass.py`; this cycle's widened FAILURE_RE (`tools/audit_cycle.py:80-82`) makes `motor_gate.log` a permanent A3 failure whenever its mtime falls in a window, since it is an append-only journal carrying old `rc=8`/`rc=9` rejections. (c) A3's rule is "a review archived after the log" (`audit_cycle.py:394-402`), so any failing log later than the window's last review is "unreviewed" by construction. (d) C6's "judgement-session attempts refused 10": eight of the ten are self-test fixtures (`tools/hooks/material_marker.log:1210-1213, :1225-1228`, cases 18a–d run twice). The real count is two.
+
+**5. Ordering.** Defensible. Plan → prior-art → judgement → apply → P0 is the "split and save" rule's own order (CLAUDE.md `:391-395`), and P0 is the plan's first row, so it could not precede the plan. Act 2 was interleaved rather than sequenced and cost the deliverable nothing. One quibble: the prior-art's `contradicted` on the control-terminal set and the `already-measured` on 31 terminals were both answerable from files the material session had, before the review was bought; a plan that cited `build_d1_routeb_v7_run10.log:23-31` from the start would have had two fewer findings. Minor.
+
+**6. What was not reported.**
+- The self-tests write into the production gate journal. `selftest_motor_fail_exit.py:83-84` runs the gate as a subprocess with a STATUS override, and only the in-process case patches `LOG_PATH` (`:94`); `motor_gate.py:51` points at the real file. So `tools/bench/motor_gate.log:125` and `:132` now read "PI REFUSE LIVE MOV 1 5 … EXPERIMENT RUNNING" at 01:17:39 and 01:42:20, on a night the rig was 조립, and `:128-131, :133-134` carry the other fixture rows. A reader of the safety journal cannot tell these from real events. Nothing in STATUS or NEXT says so.
+- Two read-only greps were refused by hooks: `material_marker.log:1204` (motor gate on `grep … tools/motor_asi_io.ps1 | head`) and `:1206` (stop-record gate on `grep -il queue tools/recipes/stage_d1_*.py`). Both commands began with `cd "…";`, and the read-only exemption is anchored at line start (`tools/hooks/guard_bash.py:134-135`). Seconds lost, but the pattern is the kind that trains bypassing.
+- The citation checker was launched six times in 33 seconds under three shell syntaxes before one ran (`material_marker.log:1215-1220`). Trivial cost, and it will recur while the hooks accept both shells.
+- P0 recorded two `close_panel` COM errors (`p0_c69_census.log:198-199`) inside a 10/0 pass. Hygiene gate H5 still shows refs 5/5 (`:201`), so it is benign, but a 10/0 summary hides it.
+
+**7. Judgement inside a material session.** None that crosses the line. The plan states in its own header that design choices are not made there (`docs/d1-loop12-17-split-plan.md:12-13`), the J-decisions are attributed to judgement (`:177-178`), and the FIXED lines were written by material only after those decisions (`archive/peer/2026-09-24-priorart-c69-split-plan.md:381`). One borderline item: act 2's brief (`STATUS.md:76`) asked for a FAIL line, the regex, and a replay self-test; the material session also changed the gate's behaviour in two ways it was not asked to (PI refusal no longer opens the ASI port; the limits check reads the last LIMITS line, `selftest_motor_gate2.log:417-418`, NEXT `:74`). Both are repairs found while re-fixturing and both are safety-tightening, so I do not slug it, but they are design changes to the safety gate that judgement should ratify explicitly rather than inherit from NEXT prose.
+
+## Device effect
+
+- `unreported-fact` (rc masking): held. Both real failures ended rc=1 (`chk_fixed_c69.log:8`, `selftest_motor_gate2.log:289`).
+- `rule-evaded` (confirm-bait refusal): not exercised; no `-Kind review` dispatch in the window.
+- `tool-not-built` (prior-art): worked as designed. 13 verdicts, each released by a FIXED citation whose path and date the checker validated (`chk_fixed_c69.log:10-11`). The plan-level `--no-recipe` opt-out armed no stop record (`priorart_c69_split.log:59-62`), correctly, since no recipe exists.
+- `repeated-failure-class` (undisposed-review refusal): held. Cycle 68's retrospective carried its disposition before this one was dispatched (`archive/peer/2026-09-24-retrospective-cycle68.md:369-380`); A4 8/8.
+- `unreported-fact` (C3/C4 split): held, 1/1 cost line. Coverage gap as in finding 4.
+- `premature-build` (guard_cycle): not exercised; no recipe ran.
+- `scope-creep` (C7 counter): fired on the wrong plan again. All 11 listed files are act 1 or act 2 work. The list was still usable, so I do not call it failed, but its label has been wrong two cycles running.
+- `device-failed` (cost regex): held.
+- `device-failed` (bgrun FAIL scan): this is the device repaired in this cycle; the replay of `pi_testmove_20260923e.log` now returns rc=1 (`selftest_motor_fail_exit.log:2`). Held in the window.
+- `repeated-failure-class` (OpLoopEndRef_v0): not exercised.
+- `device-failed` (stop record + launch gate): fired once on a read-only grep (`material_marker.log:1206`), a misfire but a single one, worked around at no cost.
+
+No device let its own fault through inside the window.
+
+VIOLATION: none
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle69.md
+BGRUN END rc=0 after 355s

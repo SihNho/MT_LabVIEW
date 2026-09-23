@@ -104,6 +104,6 @@ try {
     Write-Output ("after: X={0} Y={1} status='{2}' elapsed={3:n1}s" -f $fx, $fy, $busy, ((Get-Date) - $t0).TotalSeconds)
     $final = if ($axis -eq 'X') { $fx } else { $fy }
     if ($null -ne $final -and [math]::Abs($final - $target) -le 5) { Write-Output "RESULT: reached $axis=$final (target $target)"; exit 0 }
-    Write-Output "RESULT: NOT at target - $axis=$final target=$target"; exit 8
+    Write-Output "RESULT: NOT at target - $axis=$final target=$target"; Write-Output "FAIL: ASI move NOT at target ($axis=$final target=$target)"; exit 8
 }
 finally { if ($sp.IsOpen) { $sp.Close() }; $sp.Dispose() }

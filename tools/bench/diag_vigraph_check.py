@@ -11,6 +11,7 @@ PASS ROWS (docs/connectivity-map-plan.md step 4, verbatim from the brief)
 
     py tools/bench/diag_vigraph_check.py            (offline; writes tools/bench/graph_*.json)
 """
+import glob
 import json
 import os
 import sys
@@ -43,13 +44,43 @@ def fact(line):
     print("  FACT  {0}".format(line), flush=True)
 
 
+def newest(pattern):
+    """The newest dated census (was: today's date only, which broke the check on every later day)."""
+    return sorted(glob.glob(os.path.join(HERE, pattern)))[-1]
+
+
+def g10_equal_top():
+    """G10 (cycle 68): two LEFT registers at EQUAL TOP in one loop body - the M4b shape (#23796 / #23880 both at
+    TOP 2826). Synthetic, no LabVIEW. Equal-TOP alone must leave both rights UNPAIRED; the machine table
+    `left_of` must pair them exactly as given, CROSSED against list order, so position cannot be what paired them."""
+    def reg(uid, cls, inner_src):
+        return [{"term_uid": uid + 1, "owner_uid": uid, "owner_class": cls, "term_class": "InnerTerminal",
+                 "term_name": "", "wire_uid": 0, "is_source": inner_src, "frame_diagram": 9},
+                {"term_uid": uid + 2, "owner_uid": uid, "owner_class": cls, "term_class": "OuterTerminal",
+                 "term_name": "", "wire_uid": 0, "is_source": not inner_src, "frame_diagram": 8}]
+    terms = reg(100, V.SR_R, False) + reg(200, V.SR_R, False) + reg(110, V.SR_L, True) + reg(210, V.SR_L, True)
+    objs = [{"uid": u, "class": c, "pos": [x, 50]} for u, c, x in
+            ((100, V.SR_R, 900), (200, V.SR_R, 900), (110, V.SR_L, 10), (210, V.SR_L, 10))]
+    base = [{"loop_uid": 1, "right_uids": [100, 200]}]
+    H = V.build4(terms, objs, base)
+    M = V.build4(terms, objs, [dict(base[0], left_of={"100": [210], "200": [110]})])
+    sr = lambda G: sorted((V.key_parts(a)[0], V.key_parts(b)[0]) for k, a, b, _i in G["edges"] if k == "sr")
+    gate("G10a equal TOP, no machine table: both rights UNPAIRED (heuristic refuses to guess)",
+         sr(H) == [] and len(H["method"]["sr"]["unpaired"]) == 2, (sr(H), H["method"]["sr"]["unpaired"]))
+    gate("G10b equal TOP + machine left_of: pairs exactly 100->210, 200->110 (crossed), paired_machine 2, top 0",
+         sr(M) == [(100, 210), (200, 110)] and M["method"]["sr"]["paired_machine"] == 2 and
+         M["method"]["sr"]["paired_top"] == 0 and not M["method"]["sr"]["unpaired"],
+         (sr(M), {k: M["method"]["sr"][k] for k in ("paired_machine", "paired_top", "unpaired")}))
+
+
 def load(key):
     rec = json.load(open(os.path.join(WIKI, key + ".json"), encoding="utf-8"))
     tag = "s1" if key == S1K else "bed"
-    objs = json.load(open(os.path.join(HERE, "graph_objs_{0}_{1}.json".format(tag, DATE)),
-                          encoding="utf-8"))["objects"]
-    loops = json.load(open(os.path.join(HERE, "graph_loops_{0}_{1}.json".format(tag, DATE)),
-                           encoding="utf-8"))["loops"]
+    objs = json.load(open(newest("graph_objs_{0}_*.json".format(tag)), encoding="utf-8"))["objects"]
+    lp = newest("graph_loops_{0}_*.json".format(tag))
+    loops = json.load(open(lp, encoding="utf-8"))["loops"]
+    fact("{0}: loop table {1} (machine left_of on {2} loop(s))".format(
+        tag, os.path.basename(lp), sum(1 for L in loops if L.get("left_of"))))
     # node labels (OpNodeLabels_v0, read off the main VI): {diagram index: [{uid, label}]}. ASSUMPTION A
     # needs them only to spot Wait/timing primitives, whose CLASS is the generic `Function`.
     labels = {}
@@ -109,8 +140,7 @@ def main():
     d = V.diff(A, B)
     t_diff = time.time() - t2
     gate("G1a diff(S1, S1) is empty", not any(self_d["counts"].values()), self_d["counts"])
-    orig = json.load(open(os.path.join(HERE, "graph_objs_s1_{0}.json".format(DATE)),
-                          encoding="utf-8"))
+    orig = json.load(open(newest("graph_objs_s1_*.json"), encoding="utf-8"))
     gate("G1b S1 wiki md5 == the census's md5 of the same file", rec_s1["md5"] == orig["md5"],
          rec_s1["md5"])
     dump("graph_diff_s1_bed", d)
@@ -223,6 +253,12 @@ def main():
              "path {0} hops: {1}".format(len(p), " -> ".join(V.show(x) for x in p)[:380]))
         fact("G9 {0}: heuristic graph wire+fs reaches it: {1}; heuristic graph with thru: {2}".format(
             label, any(x in old for x in snk), any(x in oldall for x in snk)))
+    for tag, G in (("S1", A), ("bed", B)):
+        m = G["method"]["sr"]
+        fact("G11 {0}: sr paired {1} (machine {2}, top {3}), unpaired {4}, machine mismatches {5}".format(
+            tag, m["paired"], m.get("paired_machine"), m.get("paired_top"), len(m["unpaired"]),
+            m.get("machine_mismatch")))
+    g10_equal_top()
     fact("total {0:.1f}s".format(time.time() - t0))
     print("=== STEP 4b: {0} pass / {1} fail".format(N["pass"], N["fail"]), flush=True)
     return 1 if N["fail"] else 0

@@ -1,0 +1,67 @@
+BGRUN START 2026-09-24 00:39:12 limit 25.0 min: py -u tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/af0f984b-ad91-4a16-b598-e0fac4c47002/scratchpad/plan_c68_m4b.md --slug c68-m4b-r2 --recipe tools/recipes/stage_d1_m4b.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c68-m4b-r2.txt (114619 chars)
+OUTCOME: ANSWERED (123s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-24-priorart-c68-m4b-r2.md
+COST: $1.9544  in 28 / out 11910 / cache-create 161730 / cache-read 2111181  (119s, 18 turn(s))
+--- ANSWER ---
+I found one narrow blocking finding (`contradicted`). The r1 blocker is released, and the direction itself is settled and has never been refuted. I took no lock and built, edited or ran nothing. Write is disabled in this session, so the review is here rather than in a plan file.
+
+## PART A: the direction
+
+**A1: already settled, in the plan's favour (no slug).**
+- `docs/cycle27-plan.md:1610` (Pre-decided 37(d)) says: *"A `Wait (ms)` of 1 ms in 1.5 so it does not spin."*
+- `docs/cycle27-plan.md:2071-2072` sets the pass rule: ExecState 1 both preloaded and on a cold reopen.
+- The r1 review recorded the same (`archive/peer/2026-09-24-priorart-c68-m4b.md:193-197`).
+
+**A2: refuted before: none.**
+- The one record against copy-then-move is `docs/s0-diff.md:51-57`. It was already answered in writing for this copier on this bed: `archive/peer/2026-09-24-priorart-c68-m4a.md:250-251`, backed by `q_m4_copy_probe.log:21,50-52`.
+- M4a then used the same route: copy, move_in and purge each came out at +1 in the node census (`tools/bench/stage_d1_m4a.log:27-80`).
+
+**A3: contradicted. The plan's new r2 fact conflicts with STATUS, and the conflict reaches M4b's rule-1a report.**
+- **STATUS, `step4_delivered` line of the lock block:** *"Shift-register pairing is now EXACT and validated against `Loop.Shift Registers[]` (36/36, 38/38)."*
+- **The plan:** "vigraph's equal-TOP register pairing is ambiguous after M4a's new register."
+- **The measurement:** on M4a the validation still reads `'equal': True` (37/37), but `paired` is 35. Registers #23868 and #23469 are unpaired, and both have the same two candidates, #23880 and #23796, at the same TOP 2826 (`tools/bench/q_m4a_diffuid.log:94-95`; pairing rule at `tools/vigraph.py:333-364`). So the "validation" only checks which registers exist, not how they pair. STATUS's "EXACT" is false for any bed with two registers at one TOP.
+- **Why it reaches M4b:**
+  - r2 drops `sr` edges only from the P6 gate (`tools/stagekit.py:1109-1120`).
+  - `vigraph.computation_diff` (`tools/vigraph.py:673-697`) still walks `effective_sources` over every edge kind, `sr` included (`:650-670`).
+  - On M4a this already produced a false row. `stage_d1_m4a.log:296` shows the CDIFF row on `#48 'VISA resource name'` falling from 3 sources to 1. `q_m4a_diffuid.log:92` vs `:96` shows the same drop: [798, 6062, 19123] → [6062].
+  - The M4a disposition names the cause: *"same missing sr edge (the VISA path runs through #23868->#23880), not a changed wire"* (`archive/peer/2026-09-24-c68-m4a-p6b-rename.md:107`).
+  - M4b's plan reports "computation_diff(S1,new) … verbatim". It will inherit this known false row, and the plan does not say so.
+- **Release, either of:**
+  - (a) `FIXED:` pair registers from the machine read. `OpShiftRegs_v1`/`loop_cast` already return the exact pairs: reg[0] #23868→#23880, reg[1] #23895→#23909, reg[2] #23469→#23796 (`q_m4a_diffuid.log:97-99`, U6).
+  - (b) `FIXED:` state in the plan and in STATUS that the #48 CDIFF row is a known pairing artefact, citing `p6b-rename.md:107`, and correct STATUS's word "EXACT".
+
+**A4: evidence the plan should cite (supports it, no slug).**
+- The plan cites `build_opcreateconstonterm_v0.log` for the constant-on-terminal op. That test used a loop on a scratch VI's top level.
+- The better evidence is `tools/bench/diag_queue_donor2.log:66`: a node in the body of WhileLoop #637, on the same `#686` parent as #23032. It was already accepted at `priorart-c68-m4b.md:254`, but the r2 plan still cites the weaker log.
+
+## PART B: the artifact
+
+**B1: already built: none.**
+- No Wait (ms) has ever been put into a new loop (r1 B1, `priorart-c68-m4b.md:221-224`).
+- `uid_edges` and `fixtures_check` are new this cycle (`tools/stagekit.py:1087-1120`).
+- No `stage_d1_m4b.log` exists.
+
+**B2: failed before: none.**
+- The name-keyed P6b failure (`stage_d1_m4a.log:295`) is exactly what r2 replaces.
+- The uid-keyed wire/fs diff was measured passing on M4a: U1/U2 PASS at `q_m4a_diffuid.log:87-88`, `BGRUN END rc=0` at `:125`.
+
+**B3: an existing helper was missed: none**, beyond the machine `sr` pairing raised under A3. There is no creator for Wait (ms), so copying donor #22343 is the only route (`docs/cycle27-plan.md:3757-3761`).
+
+**B4: already measured: partly, not blocking.**
+- Already measured:
+  - Donor #22343 is a 2-terminal `Function` (`q_m4_probe.log:196-200`).
+  - A copied node arrives unwired (`q_m4_copy_probe.log:55-57`).
+  - Constants are not counted in `Nodes[]` (`docs/frame-loop-wire-graph.md:470`).
+- **M4a has never been read cold:**
+  - Its own log has warm reads only (`stage_d1_m4a.log:278-283`).
+  - `q_m4a_diffuid.log:21` is the M3a-4 bed, not M4a. `:23` only copies M4a and reports no ExecState for it.
+  - The plan's opening citation, `q_m4_copy_probe.log:21`, is also the M3a-4 bed.
+- So the plan's gate "M4a ExecState 1 cold" is the first measurement of that fact, and the plan should say so rather than present it as known.
+
+## For judgement (no slug)
+- **The handle jump has happened again, and was not logged as a non-result.** In `q_m4a_diffuid.log:75,107` the count goes from 33,954 to 54,506 (+20.5k) in a read-only run with 6/6 references closed. `q_m4_copy_probe.log:15-16,66` had already recorded +29k. That is two runs on the same live-map path. CLAUDE.md's reference-hygiene item 3 says to log such a jump as a non-result, and the "diagnosis guessed twice" rule now applies.
+
+PRIOR-ART: contradicted
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c68-m4b-r2.md
+   STOP RECORD armed: tools/recipes/stage_d1_m4b.py sha 5a1847aae159 verdict contradicted -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 127s

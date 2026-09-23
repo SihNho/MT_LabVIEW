@@ -388,6 +388,7 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
     | S3 | `D1_s3_moved.vi` (21 nodes + 8 control terminals moved, `Z/dZ` reorder, 8 shift registers) | counts per §2c; ExecState read |
     | S3w-a … S3w-e | `D1_s3w_a.vi` … (re-wiring in batches of ≤15 rows of the 66) | each batch's rows WIRED (`Wire.Is Broken?` FALSE), ledger saved per batch |
     | S4–S6 | `D1_s4_census.vi` → `Track_v6_D1_GPU.vi` | census, ExecState 1 preloaded, saved |
+    ⚠️ **SUPERSEDED 2026-09-24 (cycle-69 judgement) as a stage table: rows S3w-a…e and S4–S6 above are replaced by `docs/d1-loop12-17-split-plan.md` §2 (Pre-decided 161).**
 23. **Two consecutive failures of one stage at the same place ⇒ that stage is decomposed further before any retry**
     (CLAUDE.md §3 rule 3). The runner's firefighter trigger now ignores `_vN` suffixes.
 24. The firefighter cycle ordered by the user on 2026-09-19 does S0 and S1 (and S2 if S1 passes cleanly) — nothing
@@ -3740,3 +3741,58 @@ M3a-4 ran as Pre-decided 142's RETIREMENT (not 131's re-wiring batches; see the 
 (`tools/bench/stage_d1_m3a4.log`, 30/0; `docs/connectivity-map-plan.md` row 6). **M4 (edge SR + `Wait (ms)` →
 `claudeDev\D1_s3_loop15.vi`) starts FROM THAT FILE.** Whether 129 ("RE-WIRED, never removed") and 131(3) get a written
 "superseded by 142 for M3a-4" mark is a judgement item (OPEN, not decided here).
+
+## Status note — 2026-09-23 23:5x (cycle 68, material): S3b-M4 BLOCKED BEFORE ANY BUILD — two missing ops
+
+No LabVIEW touched, no file made, bed `D1_s3b_m3a4_20260923_185345.vi` untouched. Facts, all from files:
+- **J1 counter source** = `Terminal` uid **#644**, owner `Diagram #639` (= `WhileLoop #637`'s body), `is_source`
+  True, the ONLY source of w3268 (`docs/wiki/subvi/D1_s1_copy.json:36385-36392`; same on the rowD bed graph,
+  `tools/bench/q_m4_offline.log`; M3a-4's `diff(bed,new)` touches none of w3268's terminals). The uid is not #648
+  (the conditional terminal, `docs/toolkit-capabilities.md:62`), so #644 is the iteration terminal `i`.
+- **M4a (J2) has no verb:** `create_indicator`/`create_control` address `VI→Block Diagram→Nodes[]` only
+  (`tools/gscript.py:2506-2522`); `connect_ctl` needs a `Nodes[]` source (`gscript.py:1023-1042`); `wire_indicators`
+  needs a node's named output (Pre-decided 58(c)); a panel terminal is not in any `Nodes[]` (58(d)), so
+  `connect_from_wire`'s sink cannot be it. `jev_pairs.op_rule` returns `connect_ctl` for this row, which cannot
+  address #644. External: `Loop.Loop Counter` 6361400 returns the terminal and `Terminal.Create Indicator` 6349C02
+  has no documented top-level restriction — neither is built (`archive/peer/2026-09-23-c68-m4-prims.md` Q3).
+- **M4b (J3) has no verb for two of its four primitives:** the bed holds `And` ×5 and `Wait (ms)` ×3 (donors) but
+  **no `Not Equal?` and no `Select`** (`tools/bench/q_m4_offline.log`); the fleet's creators are erdosmiller
+  wrappers (`Create Equal`/`Create Constant`), and erdosmiller ships no Not Equal/And/Select/Wait creator. The
+  intra-VI copier would need `OpMoveIn_v0`'s `duplicate` input (pair 10/11, unwired) exposed. Peer Q1: LV2009 style
+  IDs Not Equal? 1105 · And 1061 · Select 1516 · Wait (ms) 1302, unverified on LV2026; Q2: no Equal→Not Equal switch.
+
+## Status note — 2026-09-24 00:4x (cycle 68, material BUILD): M4a SAVED (one gate failed, explained) · M4b SAVED 25/0
+
+- **M4b** `claudeDev\D1_s3b_m4b_20260924_004214.vi`, md5 `1a11d92aacabf7ec844d65b8af19f39f`, 482,312 B, ExecState 1
+  warm and COLD (fresh LabVIEW), from M4a opened cold (ExecState 1): Wait (ms) #23844 (copied from #22343) + constant
+  #23874 (OpCreateConstOnTerm_v0, value 1.0 passed, typed by the sink; its VALUE NOT READ BACK) on 'milliseconds to
+  wait'; RBW 0; `Is Broken?` False; uid-keyed diff(M4a,new) = +1 wire const->Wait only (`tools/bench/stage_d1_m4b.log`
+  25/0, FX 3/3). **Not named `D1_s3_loop15.vi`** — the register's FALSE init is unbuilt (below); name is judgement's.
+
+- **M4a** `claudeDev\D1_s3b_m4a_20260924_002708.vi`, md5 `bc519809937db449bc0c0ec2b6410c55`, 481,072 B, ExecState 1
+  warm (before and after the scripted save), RBW removes 0, `Is Broken?` False on all 4 new wires (ordered second pass).
+  Built from `tools/bench/decision_m4a.json` by `stagekit.from_decision` (`tools/bench/stage_d1_m4a.log`, 31/1). New:
+  Not #23459, And #9996 (copied from #10382/#9647 via OpMoveByIndex duplicate on the Moving-Objects pair + move_in),
+  shift register right #23469 / left #23796 (reg[2] of #23032), w23847 deleted. **Row `init_false` NOT BUILT: no verb
+  wires a constant to a LEFT register's OUTER terminal on Diagram #686 (FlatSequenceFrame) — the register is
+  uninitialised.** The failed gate P6b was name-keyed: uid-keyed wire/fs diff passes (`tools/bench/q_m4a_diffuid.log`
+  U1/U2); the rest was renames plus vigraph's equal-TOP pairing going ambiguous.
+- **KNOWN READER ARTEFACT (prior-art c68-m4b-r2 A3, release (b)):** vigraph pairs shift registers by equal TOP only; the
+  `Loop.Shift Registers[]` check validates MEMBERSHIP, not pairing. On M4a #23868 and #23469 share TOP 2826 with lefts
+  #23880/#23796, so both lose their `sr` edge (`q_m4a_diffuid.log:94-95`); machine pairs are intact (`:97-99`). Hence
+  `computation_diff(S1, M4a or later)` shows a FALSE row at `#48 'VISA resource name'` (sources 3 -> 1,
+  `stage_d1_m4a.log:296`, `archive/peer/2026-09-24-c68-m4a-p6b-rename.md:107`) — every later CDIFF row on that net is
+  this artefact until the pairing reads the machine.
+- **#10686 'x .and. y?'** (frame loop body #639) = `(i mod 'Frame rate' == 0) AND NOT 'Fix to a Certain Pattern'`:
+  x = `Equal To 0?` #3057 of `Quotient & Remainder` #2136's remainder, whose x = iteration terminal #644 (w3268) and y =
+  the `Value` of implicit Property node #30146 labelled `Frame rate` (w31234); y = `Not` #10825 of the panel control
+  `Fix to a Certain Pattern` (#10244, w3362) (`tools/bench/q_m4_wires_offline.log`, `q_m4_probe.log:125-182`).
+- **Handle jumps (non-results, logged):** read-only live-map runs went 33,987 -> 63,471 (`q_m4_copy_probe.log`) and
+  33,954 -> 54,506 (`q_m4a_diffuid.log`), refs balanced; M4a 33,963 -> 40,541. Not diagnosed.
+
+## Status note — 2026-09-24 01:0x (cycle 68, judgement → material): S3b-M4 ACCEPTED · `D1_s3_loop15.vi` WRITTEN
+
+M4b is accepted as the S3b-M4 deliverable and promoted by byte copy: `claudeDev\D1_s3_loop15.vi` md5
+`1a11d92aacabf7ec844d65b8af19f39f` == source (`tools/bench/promote_d1_s3_loop15.log` 5/0); the source file is kept.
+The register init stays unbuilt (uninitialised, by decision); residuals are the user's (STATUS OPEN 58). Decision
+record: `docs/connectivity-map-plan.md` Pre-decided 147. Level: STRUCTURAL + graph-equivalent; NEVER RUN.

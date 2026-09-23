@@ -330,10 +330,31 @@ def build4(terms, objs=None, loops=None, labels=None, fs_pairs=None):
         by_body[body_diagram(u)][0].append(u)
     for u in lefts:
         by_body[body_diagram(u)][1].append(u)
+    # MACHINE PAIRS FIRST (cycle 68, 2026-09-24): `loops[i]["left_of"]` = {str(right uid): [left uid, ...]},
+    # each list the RightShiftRegister's own `Left Registers[]` (gscript.shift_reg_left, OpShiftRegs_v1).
+    # Keyed by uid, NOT parallel to `right_uids`, because stagekit.live_graph filters/appends right_uids.
+    # Equal-TOP alone MIS-paired M4b: the new left #23796 shares TOP 2826 with #23880
+    # (tools/bench/q_m4a_diffuid.log:94-99). TOP remains only for rights the machine table does not cover.
+    machine, sr_mismatch = {}, []
+    for L in (loops or []):
+        for r, ls in (L.get("left_of") or {}).items():
+            if not ls or int(r) not in cls:
+                continue                     # unread, or a right retired from this file (live_graph filtering)
+            ls = [ls] if isinstance(ls, int) else list(ls)
+            ok = [int(x) for x in ls if cls.get(int(x)) == SR_L]
+            if ok and len(ok) == len(ls):
+                machine[int(r)] = ok
+            else:
+                sr_mismatch.append({"right": int(r), "left_uids": ls})
     sr_pairs, sr_unpaired = [], []
+    for u, ls in sorted(machine.items()):
+        for v in ls:
+            sr_pairs.append((u, v))
+    n_machine = len(sr_pairs)
+    claimed = {v for ls in machine.values() for v in ls}
     for d, (rr, ll) in by_body.items():
-        free = list(ll)
-        for u in sorted(rr, key=lambda x: pos.get(x, (0, 0))[1]):
+        free = [v for v in ll if v not in claimed]
+        for u in sorted([x for x in rr if x not in machine], key=lambda x: pos.get(x, (0, 0))[1]):
             same_y = [v for v in free if pos.get(v, (1, 1))[1] == pos.get(u, (0, 0))[1]]
             if len(same_y) != 1:
                 sr_unpaired.append({"right": u, "body": d, "candidates": same_y})
@@ -360,8 +381,11 @@ def build4(terms, objs=None, loops=None, labels=None, fs_pairs=None):
                 "only_in_census": sorted(mine - want)[:6],
                 "loops_split_across_body_diagrams": split}
     method["sr"] = {"right": len(rights), "left": len(lefts), "paired": len(sr_pairs),
+                    "paired_machine": n_machine, "paired_top": len(sr_pairs) - n_machine,
+                    "machine_mismatch": sr_mismatch,
                     "unpaired": sr_unpaired, "shift_registers_property": prop,
-                    "rule": "same loop BODY DIAGRAM (frame_diagram of the inner terminal) + equal TOP"}
+                    "rule": "MACHINE (loops[].left_of = RightShiftRegister.Left Registers[]) where given; "
+                            "else same loop BODY DIAGRAM (frame_diagram of the inner terminal) + equal TOP"}
 
     # --- 4 FLAT-SEQUENCE TUNNELS, per FRAME --------------------------------------------------------
     # MEASURED 2026-09-23 on D1_s1_copy, and it is NOT what the step-3 note assumed:

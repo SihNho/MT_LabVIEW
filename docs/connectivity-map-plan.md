@@ -94,3 +94,22 @@ Order: 1 ∥ 2 → 3, 4 (need 1) → 5 → **4b → 5b(A) → 5b(B)** → 6 → 
 144. **CHAIN and RISK menus stay ADVISORY** (CHAIN recall 2/13; RISK flags 12/20 safe rows). PAIR acts at p ≥ 0.70. Thresholds live in `tools/bench/jev_menu_thresholds.json`.
 145. The wiki `type` column is empty on the call-node route; the candidate generator therefore cannot filter by data type. Acceptable for M3a-4 (retirement); a later step reads types via `Terminal.Data Type` if a re-wiring stage needs them.
 146. **A tunnel-INNER source is re-made through a NEW tunnel, then the orphan is deleted** (judgement 2026-09-23 17:xx). No existing writer can address an existing tunnel's inner terminal as a source. Measured in `tools/bench/bench_map_w9635.log` C1–C3: `OpConnectFromWire_v0` ×2 and `OpConnectNested_v1` each give ExecState 0→1 and `Is Broken?` False through a NEW LoopTunnel (132→133). This route is **accepted as rule-1a-equivalent under ASSUMPTION A**: a tunnel is scheduling, and the same source node terminal feeds the same sink node terminal. Op rule (`jev_pairs.op_rule`): a Selector/Loop tunnel InnerTerminal source → a node sink or a tunnel-outer sink = `connect_from_wire` variant `tunnel_outer`. It branches off the tunnel's OUTER feed wire, taking the terminal the old tunnel owns there (C1), then deletes the orphan LoopTunnel whose inner wires all read 0 (`stagekit._cfw_row`). **The gate for such a row is keyed on the endpoints BEYOND the tunnel** (the sink's `vigraph.effective_sources`, S1 vs repaired), not on the tunnel uid.
+
+## Pre-decided — ADDED 2026-09-24 01:xx (cycle 68 judgement): S3b-M4 ACCEPTED and promoted
+
+147. **S3b-M4 is ACCEPTED; `claudeDev\D1_s3_loop15.vi` is its byte copy.**
+   (a) `claudeDev\D1_s3b_m4b_20260924_004214.vi` md5 `1a11d92aacabf7ec844d65b8af19f39f` (482,312 B) is the S3b-M4
+   deliverable, promoted by a BYTE COPY to `claudeDev\D1_s3_loop15.vi`, copy md5 equal, source kept
+   (`tools/bench/promote_d1_s3_loop15.log` 5/0). Evidence: `tools/bench/stage_d1_m4b.log` 25/0 (ExecState 1 warm +
+   cold), `tools/bench/q_c68_srpair.log` 23/0 (`computation_diff(S1,M4b)` 0 rows with machine SR pairing; Wait constant
+   #23874 = 1 U32 → #23844). Level: STRUCTURAL + graph-equivalent under ASSUMPTION A; NEVER RUN.
+   (b) Cadence edge = rising edge of the schedule boolean `#10686` = `(i mod 'Frame rate' == 0) AND NOT 'Fix to a Certain
+   Pattern'`; the boolean shift register on `#23032` stays UNINITIALISED (no verb reaches a constant on FlatSequence
+   `#686`, error 1055). Residuals go to the user (STATUS OPEN 58): Frame rate = 1 ⇒ focus once not every frame; re-run
+   without reload may skip the first autofocus; loop 1.5 delayed > 1 frame (~11 ms) skips a scheduled autofocus — focus
+   is not saved data (`docs/cycle27-plan.md` Pre-decided 45(b)).
+   (c) Handle rule for this bed: judge growth against the post-load level (~54.4k after opening the VI,
+   `tools/bench/q_c68_srpair.log`), not the 31.5k fresh figure (recorded in `docs/REFERENCES.md` §4a-bis).
+   (d) **J1 REVISED:** the counter route (iteration terminal `#644` → indicator/local → loop 1.5) was DROPPED — no
+   indicator carries `i` and no `Select` / `Not Equal?` creator exists (`tools/bench/q_m4_iter_indicator.log`,
+   `archive/peer/2026-09-23-c68-m4-prims.md`); the edge detector on `#10686` replaces it.

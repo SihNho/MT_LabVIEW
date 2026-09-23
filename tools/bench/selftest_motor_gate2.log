@@ -279,3 +279,215 @@ PASS 19f grep of a blocked name             hook   grep -n SerialPort tools/moto
 76/76 PASS, 0 FAIL
 NO MOTION COMMAND WAS SENT AND NO PORT WAS OPENED BY THIS RUN.
 BGRUN END rc=0 after 1s
+BGRUN START 2026-09-24 01:17:50 limit 5.0 min: py -u tools/bench/selftest_motor_gate2.py
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_motor_gate2.py", line 289, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_motor_gate2.py", line 134, in main
+    os.remove(sess)
+FileNotFoundError: [WinError 2] ������ ������ ã�� �� �����ϴ�: 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\selftest_motor_gate2_lxhizxsp\\motor_session.json'
+BGRUN END rc=1 after 6s
+BGRUN START 2026-09-24 01:29:57 limit 5.0 min: py -u tools/bench/selftest_motor_gate2.py
+ALLOWED (pi): PI absolute move to [1.0, 5.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readback at transmit time; a target outside them answers ERR 7 and does not move)
+{"kind": "move", "relative": false, "state_note": "rig assembled: motion allowed by the user's 2026-09-17 ruling, bounded by the CONTROLLER limits this gate installs and re-verifies", "targets_mm": [1.0, 5.0]}
+REFUSED: no session file C:\Users\KimLab\AppData\Local\Temp\selftest_motor_gate2_4p377k6c\no_such_session.json - run `py tools/motor_gate.py --session start` first, which installs the CONTROLLER limits and verifies them
+LIMITS TMN=0 TMX=52 SPA15=52 SPA30=0
+SEND REFUSED: controller limits TMN=0 TMX=52 do not match the file (0..39) - run the session-start hook
+GATE re-check of the sender's readback: PI controller limits do not match tools/bench/motor_limits.json: TMX=52.0000 != 39.0000, SPA15=52.0000 != 39.0000
+LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+SENT: MOV 1 5
+ERR? right after send = 0
+RESULT: reached 5 (target 5)
+GATE re-check of the sender's readback: PI controller limits match the file (TMN 0.0000 / TMX 39.0000, tol 0.001)
+
+ok   case                                   dev    command                                                      got                    want                   reason
+PASS 1 start, faithful OK output            hook   --session start                                              code=0 file=True n=1   code=0 file=True n=1   {"asi": {"SL": {"X": -3.847494, "Y": -4.774393}, "SU": {"X": 0.152497, "Y": -0.774402}}, "pi": {"SPA
+PASS 2 start, sender MISMATCH TMX=52 (exit 7) hook   --session start                                              code=3 file=False n=3  code=3 file=False n=3  mismatched PI readback must refuse
+PASS 2a start, TMX=52 with rc 0 + VERIFY OK hook   --session start                                              code=3 file=False n=3  code=3 file=False      the gate's own readback check must refuse
+PASS 2b start, a PRELIMITS line must not be read hook   --session start                                              code=3 rb=52.0         code=3 rb.TMX=52       the PRE-write line is not the readback: parse_pi_limits is anchored at ^LIMITS
+PASS 3 start, ASI SL off by 0.01 mm         hook   --session start                                              code=3 file=False n=1  code=3 file=False      mismatched ASI readback must refuse
+PASS 3b start, FNL incomplete FRF 0 (exit 7) hook   --session start                                              code=3 file=False n=3  code=3 file=False n=3  an unreferenced axis must refuse
+PASS 3d start, FRF 0 with rc 0 + VERIFY OK  hook   --session start                                              code=3 file=False n=3  code=3 file=False      the gate's own FRF==1 check must refuse
+PASS 3e start, no REFSTATE line             hook   --session start                                              code=3 file=False n=3  code=3 file=False      no reference report => not referenced
+PASS 3c start, counter 1.5 after FNL        hook   --session start                                              code=3 file=False n=3  code=3 file=False      after FNL the counter must read 0 (|POS|<=tol)
+PASS 3f start, VERIFY fails on all 3 attempts hook   --session start                                              code=3 file=False n=3  code=3 file=False n=3  refuse only after REF_ATTEMPTS fail
+PASS 3g start, VERIFY fails once then OK    hook   --session start                                              code=0 file=True n=2 a code=0 file=True n=2 a a retry that succeeds is accepted on attempt 2
+PASS 3h start, no VERIFY-RESULT line        hook   --session start                                              code=3 file=False n=3  code=3 file=False      a truncated transcript is not a verify
+PASS 4 end releases and deletes             hook   --session end                                                code=0 file=False      code=0 file=False      release readback 0..52 / +-500
+PASS 5 execute without a session            cli    MOV 1 5 --execute                                            code=3 calls=0         code=3 calls=0         no session file => refuse before transmitting
+PASS 6 sender readback != file              cli    transmit MOV 1 5                                             code=7                 code!=0                the gate re-checks the sender's LIMITS line
+PASS 7 sender readback == file              cli    transmit MOV 1 5                                             code=0                 code=0                 matching readback passes the sender's rc through
+PASS 8 ASI zero/home/save '!'               asi    !                                                            REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command '!' (HOME) - NEVER permitted: the controller SL/SU lim
+PASS 8 ASI zero/home/save 'HOME X'          asi    HOME X                                                       REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'HOME' (HOME) - NEVER permitted: the controller SL/SU 
+PASS 8 ASI zero/home/save 'H X'             asi    H X                                                          REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'H' (HERE) - NEVER permitted: the controller SL/SU lim
+PASS 8 ASI zero/home/save 'HERE X'          asi    HERE X                                                       REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'HERE' (HERE) - NEVER permitted: the controller SL/SU 
+PASS 8 ASI zero/home/save 'Z'               asi    Z                                                            REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'Z' (ZERO) - NEVER permitted: the controller SL/SU lim
+PASS 8 ASI zero/home/save 'ZERO X'          asi    ZERO X                                                       REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'ZERO' (ZERO) - NEVER permitted: the controller SL/SU 
+PASS 8 ASI zero/home/save 'HM X'            asi    HM X                                                         REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'HM' (SETHOME) - NEVER permitted: the controller SL/SU
+PASS 8 ASI zero/home/save 'AZ X'            asi    AZ X                                                         REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'AZ' (AZERO) - NEVER permitted: the controller SL/SU l
+PASS 8 ASI zero/home/save 'SP'              asi    SP                                                           REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'SP' (SAVEPOS) - NEVER permitted: the controller SL/SU
+PASS 8 ASI zero/home/save 'SS Z'            asi    SS Z                                                         REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'SS' (SAVESET) - NEVER permitted: the controller SL/SU
+PASS 8 ASI zero/home/save '~'               asi    ~                                                            REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command '~' (RESET) - NEVER permitted: the controller SL/SU li
+PASS 8 ASI zero/home/save '\\'              asi    \                                                            REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command '\\' (HALT) - NEVER permitted: the controller SL/SU li
+PASS 8 ASI zero/home/save 'MC X'            asi    MC X                                                         REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'MC' (MOTCTRL) - NEVER permitted: the controller SL/SU
+PASS 8 ASI zero/home/save 'SL X=-9 Y=-9'    asi    SL X=-9 Y=-9                                                 REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'SL' (SETLOW limit) - NEVER permitted: the controller 
+PASS 8 ASI zero/home/save 'SU X=9 Y=9'      asi    SU X=9 Y=9                                                   REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'SU' (SETUP limit) - NEVER permitted: the controller S
+PASS 9 PI home/define 'GOH'                 pi     GOH                                                          REFUSE                 REFUSE                 PI 'GOH' (go to home) - never permitted through this gate
+PASS 9 PI home/define 'FRF 1'               pi     FRF 1                                                        REFUSE                 REFUSE                 PI 'FRF' (reference move) - never permitted through this gate
+PASS 9 PI home/define 'FNL 1'               pi     FNL 1                                                        REFUSE                 REFUSE                 PI 'FNL' (negative-limit move) - never permitted through this gate
+PASS 9 PI home/define 'FPL 1'               pi     FPL 1                                                        REFUSE                 REFUSE                 PI 'FPL' (positive-limit move) - never permitted through this gate
+PASS 9 PI home/define 'DFH 1'               pi     DFH 1                                                        REFUSE                 REFUSE                 PI 'DFH' (define home) - never permitted through this gate
+PASS 9 PI home/define 'RON 1 1'             pi     RON 1 1                                                      REFUSE                 REFUSE                 PI 'RON' (referencing mode) - never permitted through this gate
+PASS 9 PI home/define 'POS 1 0'             pi     POS 1 0                                                      REFUSE                 REFUSE                 PI 'POS' (define the current position - would SHIFT the coordinate zero under the absolute controlle
+PASS 9 PI home/define 'SPA 1 0x15 52'       pi     SPA 1 0x15 52                                                REFUSE                 REFUSE                 PI 'SPA' (set a stage parameter, incl. the soft limits themselves (session hook only)) - never permi
+PASS 9 PI home/define 'WPA 100 1 0x15'      pi     WPA 100 1 0x15                                               REFUSE                 REFUSE                 PI 'WPA' (write parameters to non-volatile memory - NEVER (the controller limits are RAM by design))
+PASS 10 PI 'MOV 1 5' passes to the controller pi     MOV 1 5                                                      ALLOW                  ALLOW                  PI absolute move to [1.0, 5.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readback
+PASS 10 PI 'MOV 1 40' passes to the controller pi     MOV 1 40                                                     ALLOW                  ALLOW                  PI absolute move to [1.0, 40.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readbac
+PASS 10 PI 'MOV 1 45' passes to the controller pi     MOV 1 45                                                     ALLOW                  ALLOW                  PI absolute move to [1.0, 45.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readbac
+PASS 11 ASI 'M X=-16475'                    asi    M X=-16475                                                   ALLOW                  ALLOW                  ASI absolute move {'X': -16475.0} - the CONTROLLER's SL/SU limits bound it (verified by readback at 
+PASS 11 ASI 'M Z=5000000'                   asi    M Z=5000000                                                  ALLOW                  ALLOW                  ASI absolute move {'Z': 5000000.0} - the CONTROLLER's SL/SU limits bound it (verified by readback at
+PASS 11 ASI 'R X=8000'                      asi    R X=8000                                                     ALLOW                  ALLOW                  ASI relative move {'X': 8000.0} - the CONTROLLER's SL/SU limits bound it (verified by readback at tr
+PASS 12 query pi 'POS?'                     pi     POS?                                                         ALLOW                  ALLOW                  PI read-only query 'POS?'
+PASS 12 query pi 'TMN?'                     pi     TMN?                                                         ALLOW                  ALLOW                  PI read-only query 'TMN?'
+PASS 12 query pi 'TMX?'                     pi     TMX?                                                         ALLOW                  ALLOW                  PI read-only query 'TMX?'
+PASS 12 query asi '/'                       asi    /                                                            ALLOW                  ALLOW                  ASI read-only query '/'
+PASS 12 query asi 'W X'                     asi    W X                                                          ALLOW                  ALLOW                  ASI read-only query 'W'
+PASS 12 query rotor 'POS'                   rotor  POS                                                          ALLOW                  ALLOW                  rotor read-only query 'POS'
+PASS 13 rotor 'MOVE 100'                    rotor  MOVE 100                                                     REFUSE                 REFUSE                 rotor command 'MOVE' refused: no envelope has ever been declared for the rotor and its controller ca
+PASS 13 rotor 'PIC -1500'                   rotor  PIC -1500                                                    REFUSE                 REFUSE                 rotor command 'PIC' refused: no envelope has ever been declared for the rotor and its controller car
+PASS 13 rotor 'HOME'                        rotor  HOME                                                         REFUSE                 REFUSE                 rotor command 'HOME' refused: no envelope has ever been declared for the rotor and its controller ca
+PASS 14a experiment refuses a move          pi     MOV 1 5                                                      REFUSE                 REFUSE                 STATUS.md says the rig state is EXPERIMENT RUNNING (experiment in progress) - no motor and no instru
+PASS 14b experiment refuses a query         pi     POS?                                                         REFUSE                 REFUSE                 STATUS.md says the rig state is EXPERIMENT RUNNING (experiment in progress) - no motor and no instru
+PASS 14c unknown state refuses              asi    M X=-16475                                                   REFUSE                 REFUSE                 STATUS.md carries no machine-readable `rig-state:` line - default-deny (only the user announces a st
+PASS 14d rig_state() reads ???              gate   rig-state: ???                                               experiment             experiment             
+PASS 14e live STATUS.md                     gate   rig-state:                                                   assembled              assembled              
+PASS 15a ASI 'BU Y=3' is a write            asi    BU Y=3                                                       REFUSE                 REFUSE                 ASI 'BU' with argument 'Y=3': an argument carrying '=', '+' or '-' is a WRITE, not a query (BU Y=#, 
+PASS 15b compound                           asi    M X=1 ; M Y=1                                                REFUSE                 REFUSE                 compound command 'M X=1 ; M Y=1' (contains ';' or an embedded terminator) - one command per decision
+PASS 15c unknown ASI command                asi    FOO                                                          REFUSE                 REFUSE                 ASI command 'FOO' is not on the allow-list (default-deny)
+PASS 15d unknown PI command                 pi     BAR                                                          REFUSE                 REFUSE                 PI command 'BAR' is not on the allow-list (default-deny)
+PASS 15e unknown device                     piezo  MOV 1 5                                                      REFUSE                 REFUSE                 unknown device 'piezo' (expected one of asi, pi, rotor)
+PASS 16a limits file missing                cli    --limits C:\Users\KimLab\AppData\Local\Temp\selftest_motor_g code=3                 code=3                 REFUSED: limits file C:\Users\KimLab\AppData\Local\Temp\selftest_motor_gate2_4p377k6c\no_s
+PASS 16b limits file incomplete             cli    --limits C:\Users\KimLab\AppData\Local\Temp\selftest_motor_g code=3                 code=3                 REFUSED: limits file C:\Users\KimLab\AppData\Local\Temp\selftest_motor_gate2_4p377k6c\brok
+PASS 16c a normal dry decision              cli    --device pi --command MOV 1 5                                code=0                 code=0                 
+PASS 16d a normal refusal                   cli    --device pi --command GOH                                    code=3                 code=3                 REFUSED (pi): PI 'GOH' (go to home) - never permitted through this gate
+PASS 17a no motor_anchor.json               gate   grep motor_anchor                                            False                  False                  
+PASS 17b no script-side numeric envelope    gate   grep ASI_XY_LIMIT_MM/PI_MAX_MM                               absent                 absent                 
+PASS 17c old self-test deleted              gate   tools/bench/selftest_motor_gate.py                           absent                 absent                 
+PASS 17d limits file exists                 gate   tools/bench/motor_limits.json                                present                present                
+PASS 18a raw serial one-liner               hook   powershell -c "$sp = New-Object System.IO.Ports.SerialPort C code=2                 code=2                 BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 18b motor_send_pi.ps1 by hand          hook   powershell -File tools/motor_send_pi.ps1 -Command "MOV 1 5"  code=2                 code=2                 BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 18c motor_asi_io.ps1 by hand           hook   powershell -File tools/motor_asi_io.ps1 -Mode send           code=2                 code=2                 BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 18d a raw MOV typed into a one-liner   hook   echo MOV 1 40 > COM3                                         code=2                 code=2                 BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 19a the gateway itself                 hook   py tools/motor_gate.py --device asi --command "M X=-16475" - code=0                 code=0                 
+PASS 19b the gateway's session hook         hook   py tools/motor_gate.py --session start                       code=0                 code=0                 
+PASS 19c this self-test                     hook   MATERIAL=1 py tools/bgrun.py --max-min 5 --log tools/bench/s code=0                 code=0                 JEV-DRIFT p=0.04: diagnostic  (advisory, nothing is blocked; docs/jev-integration-plan.md 
+PASS 19d p2 PI query script                 hook   powershell -NoProfile -ExecutionPolicy Bypass -File tools/be code=0                 code=0                 
+PASS 19e p2 ASI query script                hook   powershell -NoProfile -ExecutionPolicy Bypass -File tools/be code=0                 code=0                 
+PASS 19f grep of a blocked name             hook   grep -n SerialPort tools/motor_send_pi.ps1                   code=0                 code=0                 
+
+83/83 PASS, 0 FAIL
+NO MOTION COMMAND WAS SENT AND NO PORT WAS OPENED BY THIS RUN.
+BGRUN END rc=0 after 8s
+BGRUN START 2026-09-24 01:42:11 limit 5.0 min: py -u tools/bench/selftest_motor_gate2.py
+ALLOWED (pi): PI absolute move to [1.0, 5.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readback at transmit time; a target outside them answers ERR 7 and does not move)
+{"kind": "move", "relative": false, "state_note": "rig assembled: motion allowed by the user's 2026-09-17 ruling, bounded by the CONTROLLER limits this gate installs and re-verifies", "targets_mm": [1.0, 5.0]}
+REFUSED: no session file C:\Users\KimLab\AppData\Local\Temp\selftest_motor_gate2_ovmtrint\no_such_session.json - run `py tools/motor_gate.py --session start` first, which installs the CONTROLLER limits and verifies them
+LIMITS TMN=0 TMX=52 SPA15=52 SPA30=0
+SEND REFUSED: controller limits TMN=0 TMX=52 do not match the file (0..39) - run the session-start hook
+GATE re-check of the sender's readback: PI controller limits do not match tools/bench/motor_limits.json: TMX=52.0000 != 39.0000, SPA15=52.0000 != 39.0000
+LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0
+SENT: MOV 1 5
+ERR? right after send = 0
+RESULT: reached 5 (target 5)
+GATE re-check of the sender's readback: PI controller limits match the file (TMN 0.0000 / TMX 39.0000, tol 0.001)
+
+ok   case                                   dev    command                                                      got                    want                   reason
+PASS 1 start, faithful OK output            hook   --session start                                              code=0 file=True n=1   code=0 file=True n=1   {"asi": {"SL": {"X": -3.847494, "Y": -4.774393}, "SU": {"X": 0.152497, "Y": -0.774402}}, "pi": {"SPA
+PASS 2 start, sender MISMATCH TMX=52 (exit 7) hook   --session start                                              code=3 file=False n=3  code=3 file=False n=3  mismatched PI readback must refuse
+PASS 2a start, TMX=52 with rc 0 + VERIFY OK hook   --session start                                              code=3 file=False n=3  code=3 file=False      the gate's own readback check must refuse
+PASS 2b start, a PRELIMITS line must not be read hook   --session start                                              code=3 rb=52.0         code=3 rb.TMX=52       the PRE-write line is not the readback: parse_pi_limits is anchored at ^LIMITS
+PASS 3 start, ASI SL off by 0.01 mm         hook   --session start                                              code=3 file=False n=1  code=3 file=False      mismatched ASI readback must refuse
+PASS 3b start, FNL incomplete FRF 0 (exit 7) hook   --session start                                              code=3 file=False n=3  code=3 file=False n=3  an unreferenced axis must refuse
+PASS 3d start, FRF 0 with rc 0 + VERIFY OK  hook   --session start                                              code=3 file=False n=3  code=3 file=False      the gate's own FRF==1 check must refuse
+PASS 3e start, no REFSTATE line             hook   --session start                                              code=3 file=False n=3  code=3 file=False      no reference report => not referenced
+PASS 3c start, counter 1.5 after FNL        hook   --session start                                              code=3 file=False n=3  code=3 file=False      after FNL the counter must read 0 (|POS|<=tol)
+PASS 3f start, VERIFY fails on all 3 attempts hook   --session start                                              code=3 file=False n=3  code=3 file=False n=3  refuse only after REF_ATTEMPTS fail
+PASS 3g start, VERIFY fails once then OK    hook   --session start                                              code=0 file=True n=2 a code=0 file=True n=2 a a retry that succeeds is accepted on attempt 2
+PASS 3h start, no VERIFY-RESULT line        hook   --session start                                              code=3 file=False n=3  code=3 file=False      a truncated transcript is not a verify
+PASS 3i PI refused x3 -> ASI never contacted hook   --session start                                              code=3 n=3 asi=0       code=3 n=3 asi=0       a PI refusal returns before the ASI port is opened
+PASS 2c start, first LIMITS ok, LAST TMX=52 hook   --session start                                              code=3 rb.TMX=52.0     code=3 rb.TMX=52       parse_pi_limits judges the last ^LIMITS line (post-reference readback)
+PASS 4 end releases and deletes             hook   --session end                                                code=0 file=False      code=0 file=False      release readback 0..52 / +-500
+PASS 5 execute without a session            cli    MOV 1 5 --execute                                            code=3 calls=0         code=3 calls=0         no session file => refuse before transmitting
+PASS 6 sender readback != file              cli    transmit MOV 1 5                                             code=7                 code!=0                the gate re-checks the sender's LIMITS line
+PASS 7 sender readback == file              cli    transmit MOV 1 5                                             code=0                 code=0                 matching readback passes the sender's rc through
+PASS 8 ASI zero/home/save '!'               asi    !                                                            REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command '!' (HOME) - NEVER permitted: the controller SL/SU lim
+PASS 8 ASI zero/home/save 'HOME X'          asi    HOME X                                                       REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'HOME' (HOME) - NEVER permitted: the controller SL/SU 
+PASS 8 ASI zero/home/save 'H X'             asi    H X                                                          REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'H' (HERE) - NEVER permitted: the controller SL/SU lim
+PASS 8 ASI zero/home/save 'HERE X'          asi    HERE X                                                       REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'HERE' (HERE) - NEVER permitted: the controller SL/SU 
+PASS 8 ASI zero/home/save 'Z'               asi    Z                                                            REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'Z' (ZERO) - NEVER permitted: the controller SL/SU lim
+PASS 8 ASI zero/home/save 'ZERO X'          asi    ZERO X                                                       REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'ZERO' (ZERO) - NEVER permitted: the controller SL/SU 
+PASS 8 ASI zero/home/save 'HM X'            asi    HM X                                                         REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'HM' (SETHOME) - NEVER permitted: the controller SL/SU
+PASS 8 ASI zero/home/save 'AZ X'            asi    AZ X                                                         REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'AZ' (AZERO) - NEVER permitted: the controller SL/SU l
+PASS 8 ASI zero/home/save 'SP'              asi    SP                                                           REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'SP' (SAVEPOS) - NEVER permitted: the controller SL/SU
+PASS 8 ASI zero/home/save 'SS Z'            asi    SS Z                                                         REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'SS' (SAVESET) - NEVER permitted: the controller SL/SU
+PASS 8 ASI zero/home/save '~'               asi    ~                                                            REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command '~' (RESET) - NEVER permitted: the controller SL/SU li
+PASS 8 ASI zero/home/save '\\'              asi    \                                                            REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command '\\' (HALT) - NEVER permitted: the controller SL/SU li
+PASS 8 ASI zero/home/save 'MC X'            asi    MC X                                                         REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'MC' (MOTCTRL) - NEVER permitted: the controller SL/SU
+PASS 8 ASI zero/home/save 'SL X=-9 Y=-9'    asi    SL X=-9 Y=-9                                                 REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'SL' (SETLOW limit) - NEVER permitted: the controller 
+PASS 8 ASI zero/home/save 'SU X=9 Y=9'      asi    SU X=9 Y=9                                                   REFUSE                 REFUSE                 ASI home/origin/zero/save/reset class command 'SU' (SETUP limit) - NEVER permitted: the controller S
+PASS 9 PI home/define 'GOH'                 pi     GOH                                                          REFUSE                 REFUSE                 PI 'GOH' (go to home) - never permitted through this gate
+PASS 9 PI home/define 'FRF 1'               pi     FRF 1                                                        REFUSE                 REFUSE                 PI 'FRF' (reference move) - never permitted through this gate
+PASS 9 PI home/define 'FNL 1'               pi     FNL 1                                                        REFUSE                 REFUSE                 PI 'FNL' (negative-limit move) - never permitted through this gate
+PASS 9 PI home/define 'FPL 1'               pi     FPL 1                                                        REFUSE                 REFUSE                 PI 'FPL' (positive-limit move) - never permitted through this gate
+PASS 9 PI home/define 'DFH 1'               pi     DFH 1                                                        REFUSE                 REFUSE                 PI 'DFH' (define home) - never permitted through this gate
+PASS 9 PI home/define 'RON 1 1'             pi     RON 1 1                                                      REFUSE                 REFUSE                 PI 'RON' (referencing mode) - never permitted through this gate
+PASS 9 PI home/define 'POS 1 0'             pi     POS 1 0                                                      REFUSE                 REFUSE                 PI 'POS' (define the current position - would SHIFT the coordinate zero under the absolute controlle
+PASS 9 PI home/define 'SPA 1 0x15 52'       pi     SPA 1 0x15 52                                                REFUSE                 REFUSE                 PI 'SPA' (set a stage parameter, incl. the soft limits themselves (session hook only)) - never permi
+PASS 9 PI home/define 'WPA 100 1 0x15'      pi     WPA 100 1 0x15                                               REFUSE                 REFUSE                 PI 'WPA' (write parameters to non-volatile memory - NEVER (the controller limits are RAM by design))
+PASS 10 PI 'MOV 1 5' passes to the controller pi     MOV 1 5                                                      ALLOW                  ALLOW                  PI absolute move to [1.0, 5.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readback
+PASS 10 PI 'MOV 1 40' passes to the controller pi     MOV 1 40                                                     ALLOW                  ALLOW                  PI absolute move to [1.0, 40.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readbac
+PASS 10 PI 'MOV 1 45' passes to the controller pi     MOV 1 45                                                     ALLOW                  ALLOW                  PI absolute move to [1.0, 45.0] - the CONTROLLER's TMN/TMX soft limits bound it (verified by readbac
+PASS 11 ASI 'M X=-16475'                    asi    M X=-16475                                                   ALLOW                  ALLOW                  ASI absolute move {'X': -16475.0} - the CONTROLLER's SL/SU limits bound it (verified by readback at 
+PASS 11 ASI 'M Z=5000000'                   asi    M Z=5000000                                                  ALLOW                  ALLOW                  ASI absolute move {'Z': 5000000.0} - the CONTROLLER's SL/SU limits bound it (verified by readback at
+PASS 11 ASI 'R X=8000'                      asi    R X=8000                                                     ALLOW                  ALLOW                  ASI relative move {'X': 8000.0} - the CONTROLLER's SL/SU limits bound it (verified by readback at tr
+PASS 12 query pi 'POS?'                     pi     POS?                                                         ALLOW                  ALLOW                  PI read-only query 'POS?'
+PASS 12 query pi 'TMN?'                     pi     TMN?                                                         ALLOW                  ALLOW                  PI read-only query 'TMN?'
+PASS 12 query pi 'TMX?'                     pi     TMX?                                                         ALLOW                  ALLOW                  PI read-only query 'TMX?'
+PASS 12 query asi '/'                       asi    /                                                            ALLOW                  ALLOW                  ASI read-only query '/'
+PASS 12 query asi 'W X'                     asi    W X                                                          ALLOW                  ALLOW                  ASI read-only query 'W'
+PASS 12 query rotor 'POS'                   rotor  POS                                                          ALLOW                  ALLOW                  rotor read-only query 'POS'
+PASS 13 rotor 'MOVE 100'                    rotor  MOVE 100                                                     REFUSE                 REFUSE                 rotor command 'MOVE' refused: no envelope has ever been declared for the rotor and its controller ca
+PASS 13 rotor 'PIC -1500'                   rotor  PIC -1500                                                    REFUSE                 REFUSE                 rotor command 'PIC' refused: no envelope has ever been declared for the rotor and its controller car
+PASS 13 rotor 'HOME'                        rotor  HOME                                                         REFUSE                 REFUSE                 rotor command 'HOME' refused: no envelope has ever been declared for the rotor and its controller ca
+PASS 14a experiment refuses a move          pi     MOV 1 5                                                      REFUSE                 REFUSE                 STATUS.md says the rig state is EXPERIMENT RUNNING (experiment in progress) - no motor and no instru
+PASS 14b experiment refuses a query         pi     POS?                                                         REFUSE                 REFUSE                 STATUS.md says the rig state is EXPERIMENT RUNNING (experiment in progress) - no motor and no instru
+PASS 14c unknown state refuses              asi    M X=-16475                                                   REFUSE                 REFUSE                 STATUS.md carries no machine-readable `rig-state:` line - default-deny (only the user announces a st
+PASS 14d rig_state() reads ???              gate   rig-state: ???                                               experiment             experiment             
+PASS 14e live STATUS.md                     gate   rig-state:                                                   assembled              assembled              
+PASS 15a ASI 'BU Y=3' is a write            asi    BU Y=3                                                       REFUSE                 REFUSE                 ASI 'BU' with argument 'Y=3': an argument carrying '=', '+' or '-' is a WRITE, not a query (BU Y=#, 
+PASS 15b compound                           asi    M X=1 ; M Y=1                                                REFUSE                 REFUSE                 compound command 'M X=1 ; M Y=1' (contains ';' or an embedded terminator) - one command per decision
+PASS 15c unknown ASI command                asi    FOO                                                          REFUSE                 REFUSE                 ASI command 'FOO' is not on the allow-list (default-deny)
+PASS 15d unknown PI command                 pi     BAR                                                          REFUSE                 REFUSE                 PI command 'BAR' is not on the allow-list (default-deny)
+PASS 15e unknown device                     piezo  MOV 1 5                                                      REFUSE                 REFUSE                 unknown device 'piezo' (expected one of asi, pi, rotor)
+PASS 16a limits file missing                cli    --limits C:\Users\KimLab\AppData\Local\Temp\selftest_motor_g code=3                 code=3                 REFUSED: limits file C:\Users\KimLab\AppData\Local\Temp\selftest_motor_gate2_ovmtrint\no_s
+PASS 16b limits file incomplete             cli    --limits C:\Users\KimLab\AppData\Local\Temp\selftest_motor_g code=3                 code=3                 REFUSED: limits file C:\Users\KimLab\AppData\Local\Temp\selftest_motor_gate2_ovmtrint\brok
+PASS 16c a normal dry decision              cli    --device pi --command MOV 1 5                                code=0                 code=0                 
+PASS 16d a normal refusal                   cli    --device pi --command GOH                                    code=3                 code=3                 REFUSED (pi): PI 'GOH' (go to home) - never permitted through this gate
+PASS 17a no motor_anchor.json               gate   grep motor_anchor                                            False                  False                  
+PASS 17b no script-side numeric envelope    gate   grep ASI_XY_LIMIT_MM/PI_MAX_MM                               absent                 absent                 
+PASS 17c old self-test deleted              gate   tools/bench/selftest_motor_gate.py                           absent                 absent                 
+PASS 17d limits file exists                 gate   tools/bench/motor_limits.json                                present                present                
+PASS 18a raw serial one-liner               hook   powershell -c "$sp = New-Object System.IO.Ports.SerialPort C code=2                 code=2                 BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 18b motor_send_pi.ps1 by hand          hook   powershell -File tools/motor_send_pi.ps1 -Command "MOV 1 5"  code=2                 code=2                 BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 18c motor_asi_io.ps1 by hand           hook   powershell -File tools/motor_asi_io.ps1 -Mode send           code=2                 code=2                 BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 18d a raw MOV typed into a one-liner   hook   echo MOV 1 40 > COM3                                         code=2                 code=2                 BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a moto
+PASS 19a the gateway itself                 hook   py tools/motor_gate.py --device asi --command "M X=-16475" - code=0                 code=0                 
+PASS 19b the gateway's session hook         hook   py tools/motor_gate.py --session start                       code=0                 code=0                 
+PASS 19c this self-test                     hook   MATERIAL=1 py tools/bgrun.py --max-min 5 --log tools/bench/s code=0                 code=0                 JEV-DRIFT p=0.04: diagnostic  (advisory, nothing is blocked; docs/jev-integration-plan.md 
+PASS 19d p2 PI query script                 hook   powershell -NoProfile -ExecutionPolicy Bypass -File tools/be code=0                 code=0                 
+PASS 19e p2 ASI query script                hook   powershell -NoProfile -ExecutionPolicy Bypass -File tools/be code=0                 code=0                 
+PASS 19f grep of a blocked name             hook   grep -n SerialPort tools/motor_send_pi.ps1                   code=0                 code=0                 
+
+85/85 PASS, 0 FAIL
+NO MOTION COMMAND WAS SENT AND NO PORT WAS OPENED BY THIS RUN.
+BGRUN END rc=0 after 8s

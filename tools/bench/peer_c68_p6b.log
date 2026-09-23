@@ -1,0 +1,47 @@
+BGRUN START 2026-09-24 00:32:21 limit 20.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c68-m4a-p6b-rename -TaskFile 'tools/bench/peer_c68_p6b_task.md' -TimeoutSec 900
+OUTCOME: ANSWERED (133s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-24-c68-m4a-p6b-rename.md
+COST: $1.1546  in 26 / out 11031 / cache-create 82845 / cache-read 1126244  (129s, 20 turn(s))
+--- ANSWER ---
+**Verdict: not established.** The rename half is plausible but rests on inference. The "reader artefact" half is probably right, but `q_m4a_diffuid.py` as written cannot confirm it, because it runs the same pairing code that produced the artefact.
+
+## 1. Strongest reason the claim is wrong, or at least unproven: the uid re-diff cannot test the `sr` half
+
+- **How pairing works.** The reader pairs shift registers by position only: same loop body diagram, then the same top y (`tools/vigraph.py:334-342`). The `loops` / `Shift Registers[]` argument is used only as a set check (`vigraph.py:351-361`). It never decides which right register pairs with which left one.
+- **What that predicts.** Suppose the new left register #23796 landed at the same top y as #23880. Then #23868 finds 2 candidates and is dropped as unpaired, and #23469 finds 0. That is exactly the observation: both the old pair #23868→#23880 and the new pair #23469→#23796 lose their `sr` edge, while #23895→#23909 survives.
+- **Why the discriminating read doesn't discriminate.** `q_m4a_diffuid.py:40-41` builds both graphs through `stagekit.live_graph` (`tools/stagekit.py:802-816`), which ends in the same pairing code. Keying edges by terminal uid fixes names, not pairing.
+  - U3's expectation ("new 3") will come out lower for geometric reasons, whatever the VI actually contains.
+  - U1 will fail on the missing #23868→#23880 `sr` edge. That failure will also be meaningless.
+- **Consequence.** Calling it "a graph artefact" is itself a finding against the gate: for this loop, P6 cannot see shift-register membership.
+
+## 2. Alternative explanations of the same evidence
+
+- **(a) Unknown rename trigger.** The rename may not have been caused by adding the shift register. It could come from any recompile: the w23847 delete, the P4 second pass, or the save. Or the name-read order could be unstable. Here is what the log does show:
+  - Both names belong to real, different sources in the same net: bed `#4194 'Outgoing Handle'` and new `#11263 'VISA out'` (`stage_d1_m4a.log:293-294`).
+  - The rename also spread downstream to flat-sequence tunnel #7468, which is not part of loop #23032.
+  - So the name follows *whichever* source LabVIEW picks. What changed that pick is unmeasured.
+  - I found no NI or LabVIEW-wiki documentation of how a tunnel or shift-register terminal's `Name` is derived (searches below). "Name follows what is wired to it" is inference.
+- **(b) A real change hiding inside the name churn.** The only computation-diff row sits on exactly this net: sink `#48 'VISA resource name'`, sources `['19093…VISA out','48…Outgoing Handle','5987…']` → `['5987…']` (`stage_d1_m4a.log:296`). #48 is fed by the renamed register #23880.
+  - Either this row is a key-mismatch artefact of the rename, because the relay walk joins by name keys, or a source really left that sink.
+  - The explanation does not address it.
+  - `stage_d1_m3a4.log` contains no `VISA resource name` row. That run printed only diff counts (`:110`), so whether this row existed before M4a is unknown.
+
+## 3. What would falsify the claim
+
+- **The rename claim is falsified if:** under uid keying, any `wire` or `fs` edge (as terminal uid pairs) on #23868/#23880/#23895/#23909/#7468/#48 differs between bed and new, or #48's `VISA resource name` has a different set of incoming source terminal uids.
+- **The artefact claim is falsified if:** the new file's #23796 sits at a top y different from #23880's, and #23868 still comes out unpaired. That would mean the pairing failed for some reason other than a y collision.
+
+## 4. Cheapest discriminating test
+
+Add three `s.fact` lines to `q_m4a_diffuid.py`, so they come out of the same run (no extra LabVIEW batch):
+
+1. Print `Gn["method"]["sr"]["unpaired"]` and the top y (`pos`) of #23868, #23880, #23469 and #23796. This shows directly whether it is a y collision.
+2. Restrict U1 and U2 to kinds `wire` and `fs`, and report `sr` separately and ungated.
+3. Print the uid-keyed incoming source set of #48's `VISA resource name` terminal in both graphs.
+
+**What would change my mind:** if the wire and fs uid diff is empty apart from the #23499/#10429 edge and the new nodes, #48's source uid set is unchanged, and the unpaired list shows the y collision, then "pure rename plus pairing artefact" holds. Even then, "adding a shift register caused the rename" stays unproven. It doesn't matter for rule 1a, but it does mean name-keyed P6 gates will keep failing on harmless name churn along any edited net.
+
+Sources (both searches came back empty on how the name is derived):
+- [LabVIEW Wiki – Terminal class](https://labviewwiki.org/wiki/Terminal_class)
+- [NI forum – Scripting: Terminal Information](https://forums.ni.com/t5/LabVIEW/Scripting-Terminal-Information/td-p/4303374)
+- [NI Idea Exchange – wire label from control name](https://forums.ni.com/t5/LabVIEW-Idea-Exchange/Labelling-wires-can-be-made-easy-Take-the-control-Name-as/idi-p/3106299)
+BGRUN END rc=0 after 134s

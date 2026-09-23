@@ -164,7 +164,7 @@ try {
     $frf = Num (Ask 'FRF?')
     Write-Output ("before: POS?={0}  SVO?={1}  FRF?={2}  VEL?={3}  ERR?={4}" -f (Ask 'POS?'), (Ask 'SVO?'), $frf, (Ask 'VEL?'), (Ask 'ERR?'))
     if ($frf -ne 1) {
-        Write-Output 'SEND REFUSED: the axis is NOT REFERENCED (FRF? 0) - every MOV would answer ERR 5 without ever reaching the soft limit. Run the session-start hook, which restores the reference with RON 1 0 + POS 1 <current>.'
+        Write-Output 'SEND REFUSED: the axis is NOT REFERENCED (FRF? 0) - every MOV would answer ERR 5 without ever reaching the soft limit. Run the session-start hook (motor_gate.py --session start), which does a real reference move (FNL 1, negative limit switch), requires FRF? 1 and POS 0, then verifies commanded vs readback.'
         exit 7
     }
     # SERVO ON before a move (2026-09-23): after a controller power-cycle the C-863 comes up with SVO 0 and every MOV
@@ -200,8 +200,10 @@ try {
     # target. Position alone is not enough - `MOV 1 0` while already at 0 was REJECTED with ERR 5 on 2026-09-18
     # and still printed "reached 0" and exited 0, writing a false position belief into every downstream record
     # (both arms of archive/peer/2026-09-18-pi-err5-unreferenced-*.md, finding D1).
-    if ($err -ne '0') { Write-Output "RESULT: REJECTED BY THE CONTROLLER - ERR $err right after send, POS=$final (target $target)"; exit 9 }
+    # `FAIL:` lines (2026-09-24, cycle 69, device-failed repair): pi_testmove_20260923e.log:23/34 printed these two
+    # RESULT lines and the chained run still ended `BGRUN END rc=0`. A `FAIL:` line is what bgrun/audit_cycle scan for.
+    if ($err -ne '0') { Write-Output "RESULT: REJECTED BY THE CONTROLLER - ERR $err right after send, POS=$final (target $target)"; Write-Output "FAIL: PI MOV rejected by the controller (ERR $err, target $target, POS=$final)"; exit 9 }
     if ($null -ne $final -and [math]::Abs($final - $target) -lt 0.01) { Write-Output "RESULT: reached $final (target $target)"; exit 0 }
-    Write-Output "RESULT: NOT at target - final=$final target=$target  (ERR right after send was $err)"; exit 8
+    Write-Output "RESULT: NOT at target - final=$final target=$target  (ERR right after send was $err)"; Write-Output "FAIL: PI MOV NOT at target (final=$final target=$target)"; exit 8
 }
 finally { if ($sp.IsOpen) { $sp.Close() }; $sp.Dispose() }

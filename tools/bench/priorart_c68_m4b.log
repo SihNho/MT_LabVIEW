@@ -1,0 +1,64 @@
+BGRUN START 2026-09-24 00:27:26 limit 25.0 min: py -u tools/prior_art_review.py --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/af0f984b-ad91-4a16-b598-e0fac4c47002/scratchpad/plan_c68_m4b.md --slug c68-m4b --recipe tools/recipes/stage_d1_m4b.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c68-m4b.txt (114157 chars)
+OUTCOME: ANSWERED (181s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-24-priorart-c68-m4b.md
+COST: $2.2634  in 42 / out 17247 / cache-create 159549 / cache-read 3209334  (177s, 31 turn(s))
+--- ANSWER ---
+I found one blocking problem: M4b's input, the saved M4a file, does not exist yet. Nothing else found in the files was done before, failed before or contradicts the plan. I took no lock and built, edited or ran nothing. The plan file could not be written because Write is disabled in this session, so the review is here instead.
+
+## PART A: the direction
+
+**A1: already settled, in the plan's favour (no slug).**
+- `docs/cycle27-plan.md:1610` (Pre-decided 37(d)) already decided: *"A `Wait (ms)` of 1 ms in 1.5 so it does not spin."*
+- `docs/cycle27-plan.md:2071-2072` sets the pass rule: *"S3b-M4 … `Wait (ms)` 1 → save `claudeDev\D1_s3_loop15.vi`. Pass: `ExecState` 1 preloaded AND on a cold reopen."*
+- M4b does what was decided, and its gates include the cold reopen.
+- Which edge to detect is M4a's question, and M4a's review already covered it (`archive/peer/2026-09-24-priorart-c68-m4a.md:198`).
+
+**A2: refuted before: none.**
+- The only record against copying a node and then moving it into a loop body is `docs/s0-diff.md:51-57` plus `diag_s56_transport3.log:99`.
+- That record was already answered in writing for this same copier on this same bed: `archive/peer/2026-09-24-priorart-c68-m4a.md:250-251`, backed by `q_m4_copy_probe.log:21,50-52`.
+- M4b copies the same way: the M3a-4 bed is loaded as the copy source and the work copy sits at the Moving-Objects target path (`stage_d1_m4b.py:43,103-104`).
+
+**A3: contradicted: the M4a input does not exist yet (this is the blocking finding).**
+- **What the plan says:** the input is the M4a file, "recorded in `tools/bench/stage_d1_m4a.json`". The recipe's own description says *"M4a measured only warm"* (`tools/recipes/stage_d1_m4b.py:8`), and its code reads `json.load(...)["m4a"]` (`:31`).
+- **What the files show:**
+  - `tools/bench/stage_d1_m4a.log` stops at line 24, the node count taken before any edit. It has no `GATES:` line and no `BGRUN END`, and it never records the M4a file reading ExecState 1.
+  - `stage_d1_m4a.json` has no `"m4a"` key.
+  - That JSON records ExecState **0** right after the Not→And wire is made, and again 2 s later (`:26-37`).
+  - No `D1_s3b_m4a_*.vi` exists in `claudeDev`.
+- **Effect:** run now, the recipe would fail at `:31` with a `KeyError`. Its one stated fact about the input ("measured warm") is not on record anywhere.
+- **Release:** M4a's log ends `BGRUN END rc=0`, and `stage_d1_m4a.json` holds `m4a.final` and `m4a.md5` naming a file that exists on disk. The ExecState 0 inside M4a is M4a's failed prediction to deal with, not M4b's.
+
+**A4: evidence the plan should cite (supports the plan, no slug).**
+- The plan's evidence that `OpCreateConstOnTerm_v0` works inside a loop body is `build_opcreateconstonterm_v0.log:39,53`. That test used a loop on the **top level** of a scratch VI.
+- Stronger evidence exists: `tools/bench/diag_queue_donor2.log:66` ran the op on the main VI's own bytes, on a node in the body of `WhileLoop #637`. Result: no error, constant uid 23716 created, one more Constant.
+- That loop sits on the frame-owned `Diagram #686`, the same parent as `#23032`. So the error 1055 recorded one line earlier (`:64`) applies to nodes placed on `#686` itself, not to a loop body inside it.
+
+## PART B: the artifact
+
+**B1: already built: none.**
+- No recipe or log has ever put a `Wait (ms)` into a new loop. The only matches are `stage_d1_m4b.py` and the audit notes on the original's fixed Wait (`docs/motion-path-audit.md:37,43`).
+- `stagekit.const_row` (`tools/stagekit.py:770-783`) is only a wrapper around the existing op.
+- No bench log shows `const_row` ever running against LabVIEW. That is worth knowing but is not a slug.
+
+**B2: failed before: none.**
+- The copy route's recorded failure was answered for this bed (see A2).
+- The `OpCreateConstOnTerm_v0` error 1055 (`diag_queue_donor2.log:64`) is the case A4 explains. The Wait's new home, body `#23058`, is covered by `:66`.
+
+**B3: an existing helper was missed: none.**
+- The plan already reuses `copy_in`, `const_row`, `cfw_second_pass`, `broken_wire_count`, `live_graph`, `vigraph.diff/computation_diff` and `fixtures_check`.
+- There is no creator for Wait (ms) (`docs/cycle27-plan.md:3757-3761`, `archive/peer/2026-09-23-c68-m4-prims.md`). Copying one of the bed's donors is the only route (`q_m4_offline.log:47`: #44143, #32538, #22343).
+
+**B4: already measured: none that blocks.**
+- The donor #22343 is measured: a `Function` with 2 terminals, whose `milliseconds to wait` input is wired by w22379 (`q_m4_probe.log:196-200`).
+- A copied node arrives unwired (`q_m4_copy_probe.log:55-57`), which fits the plan's prediction of exactly one new wire.
+- The prediction of one more `Node` assumes constants are not counted as Nodes. The files agree:
+  - `build_opcreateconstonterm_v0.log:9` counts 20 Nodes, fewer than the 22 that Property, Invoke, IndexArray and Constant alone would add up to if constants were counted.
+  - `docs/frame-loop-wire-graph.md:470` says "constants are not Nodes[]".
+
+## For judgement (no slug)
+- **An unexplained jump in LabVIEW's handle count.** `q_m4_copy_probe.log:15-16,66` shows handles going from 33,987 to **63,471** (+29,484) in one 70 s run, with all 5 references opened and closed. CLAUDE.md's reference-hygiene rule (item 3) says a jump like this is logged as a non-result, and the log does not say that. M4b uses the same copier. Its restarts at start and before the cold reopen limit the effect, but do not explain it.
+
+PRIOR-ART: contradicted
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c68-m4b.md
+   STOP RECORD armed: tools/recipes/stage_d1_m4b.py sha 0ce4b4d094bf verdict contradicted -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 185s

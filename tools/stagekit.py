@@ -169,6 +169,7 @@ class Stage(object):
         self.passes, self.fails, self.facts, self.rows = [], [], [], []
         self.scratches = []
         self.planned_rows = []            # `plan_rows()`; NOT `self.rows`, which is the non-gate ROW record
+        self.sym = {}                     # from_decision symbols: "$name" -> what an earlier row created
         self._rowcheck_done = False
         self._nodes = None
         self._preload = None
@@ -694,35 +695,192 @@ class Stage(object):
                 end["term"], "source" if is_source else "sink", uid, len(hits)))
         return (didx, nidx, int(hits[0]["i"])), how
 
+    # ------------------------------------------------------------------ creator rows (cycle 68, M4a/M4b)
+    def resolve(self, v):
+        """`$name` / `$name.key` -> self.sym; `$wire_of:<uid>:<term i>` -> that terminal's LIVE wire uid (read now,
+        never carried). Lists and dicts are resolved recursively; anything else is returned unchanged."""
+        if isinstance(v, dict):
+            return dict((k, self.resolve(x)) for k, x in v.items())
+        if isinstance(v, list):
+            return [self.resolve(x) for x in v]
+        if not (isinstance(v, str) and v.startswith("$")):
+            return v
+        if v.startswith("$wire_of:"):
+            _w, uid, ti = v.split(":")
+            _loc, rows = self.wired_terminals(int(uid), tag="resolve {0}".format(v))
+            return int([r for r in rows if int(r["i"]) == int(ti)][0]["wire"])
+        name, _dot, key = v[1:].partition(".")
+        x = self.sym[name]
+        return x[key] if key else x
+
+    def copy_in(self, cls, uid, dest_diagram_uid, position, tag=""):
+        """COPY a primitive that already exists on the donor into Diagram #dest by `OpMoveByIndex_v0` (the op of
+        `gscript.copy_by_index`, duplicate=True, UID guard) + `move_in` + junk purge. PRECONDITION (the op is
+        hard-wired to the NI Moving-Objects pair): `self.work` IS `g.MOVE_DST` and `g.MOVE_SRC` holds the donor's
+        bytes - the stage file arranges both. copy_by_index itself is not called because it saves and file-copies
+        the Target, which a stage that has more rows to execute must not do. Returns the new node's uid."""
+        if os.path.normcase(self.work) != os.path.normcase(g.MOVE_DST):
+            raise Stop("copy_in needs work == gscript.MOVE_DST (got {0})".format(self.work))
+        order = [int(o["uid"]) for o in g.report_all(g.MOVE_SRC, cls)]
+        idx = order.index(int(uid))
+        before = set(int(o["uid"]) for o in g.report_all(self.work, cls))
+
+        def _copy():
+            lab = json.load(open(os.path.join(BENCH, "opmovebyindex_labels.json"), encoding="utf-8"))
+            vi = g.op(g.OP_MOVE_INDEX)
+            vi.SetControlValue(lab["class_name"], cls)
+            vi.SetControlValue(lab["index"], int(idx))
+            vi.SetControlValue(lab["duplicate"], True)
+            vi.SetControlValue(lab["traverse_target"], 1)
+            g._run(vi)
+            return int(vi.GetControlValue(lab["selected_uid"]))
+        rec = self._op("copy_in", _copy, "{0}[{1}] #{2}".format(cls, idx, uid))
+        if rec["result"] != int(uid):
+            raise Stop("copy_in UID guard: selected {0!r} != #{1}".format(rec["result"], uid))
+        new = sorted(set(int(o["uid"]) for o in g.report_all(self.work, cls)) - before)
+        self.fact("COPY #{0} -> new {1} uid(s) {2!r}".format(uid, cls, new))
+        if len(new) != 1:
+            raise Stop("copy_in: {0} new {1} object(s), expected 1: {2!r}".format(len(new), cls, new))
+        self.junk_purge("{0} after copy".format(tag))
+        di = [int(o["uid"]) for o in g.report_all(self.work, "Diagram")].index(int(dest_diagram_uid))
+        self.move_in(new[0], di, tuple(position))
+        self.junk_purge("{0} after move_in".format(tag), hints=[di, 0])
+        return new[0]
+
+    def add_sr_row(self, ex, tag=""):
+        """`add_shift_reg` on the loop named by uid, then the register PAIR read back by index: {right, left, k,
+        right_uids, loop_index}."""
+        cls = ex.get("loop_class", "WhileLoop")
+        li = self.uid_index(cls, int(ex["loop_uid"]))
+        rec = self.add_shift_reg(li, class_name=cls)
+        right = rec["result"]
+        rights = []
+        for k in range(12):
+            u = g.shift_reg(self.work, li, k, class_name=cls).get("uid")
+            if u is None:
+                break
+            rights.append(int(u))
+        k = rights.index(int(right))
+        left = g.shift_reg_left(self.work, li, k, class_name=cls)["left"]["uid"]
+        self.junk_purge("{0} after add_shift_reg".format(tag))
+        out = {"right": int(right), "left": int(left), "k": k, "right_uids": rights, "loop_index": li}
+        self.fact("SHIFT REGISTER on {0} #{1}: {2!r}".format(cls, ex["loop_uid"], out))
+        return out
+
+    def const_row(self, ex, tag=""):
+        """`OpCreateConstOnTerm_v0` (`build_opcreateconstonterm_v0.create_const_on_term`:364): a constant TYPED BY
+        THE SINK and already wired, on a node of a WhileLoop BODY. exec {loop_uid, body_diagram, node, term,
+        value}. Returns the op's {err, inv_err, created_uid}."""
+        C = mod("build_opcreateconstonterm_v0")
+        lab = json.load(open(os.path.join(BENCH, "opcreateconstonterm_labels.json"), encoding="utf-8"))
+        li = self.uid_index("WhileLoop", int(ex["loop_uid"]))
+        (_d, n, t), _how = self.address({"uid": ex["node"], "term": ex["term"], "diagram": ex["body_diagram"],
+                                         "owner_class": "", "term_class": ""}, False)
+        rec = self._op("create_const_on_term",
+                       lambda: C.create_const_on_term(self.work, li, n, t, lab, value=ex.get("value")),
+                       "loop[{0}] N[{1}].t{2} value {3!r}".format(li, n, t, ex.get("value")))
+        self.junk_purge("{0} after const".format(tag))
+        return rec
+
+    def cfw_second_pass(self, src_uid, dst):
+        """42(b)'s ordered idempotent second pass through `OpConnectFromWire_v0`, usable for ANY new wire whose sink
+        is a Nodes[] terminal: the source is src_uid's terminal on the sink's CURRENT wire (read live), so the
+        re-connect must add no wire and read back `Wire.Is Broken?`. Feed it to `expect_is_broken_false`."""
+        F = mod("build_opconnectfromwire_v0")
+        (dd, dn, dt), _h = self.address(dst, False)
+        _l, rows = self.wired_terminals(dst["uid"], tag="2nd-pass sink")
+        w = int([r for r in rows if r["name"] == dst["term"] and not r["is_source"]][0]["wire"])
+        hit = [x for x in F.wire_source_owner(self.work, w, n=8)
+               if x.get("owner_uid") == int(src_uid) and x.get("is_source")]
+        self.node_mark("2nd pass")
+        dw, es, err, sub = F.connect_from_wire(self.work, w, int(hit[0]["i"]), dd, dn, dt,
+                                               json.load(open(F.MAP_OUT, encoding="utf-8")))
+        self.junk_purge("2nd pass purge", hints=[dd, 0])
+        return {"is_broken": (sub or {}).get("Is Broken?"), "sink_wire_uid": (sub or {}).get("UID 2"), "err": err,
+                "wire": w, "wire_delta_op": dw}
+
+    def live_graph(self, path, retired_rights=(), extra_rights=None):
+        """The step-4 graph of a LIVE file (stage_d1_m3a4.py:104-110's recipe): wiki_build.read_live + the bed's
+        loop table with `retired_rights` dropped and `extra_rights` {loop_uid: [right uid, ...]} appended, flat-
+        sequence faces reused from the rowD wiki (a wire edit never touches them)."""
+        W, JC = mod("wiki_build"), mod("jev_candidates")
+        Gr = JC.load(JC.BED_KEY)
+        ex = extra_rights or {}
+        loops = [dict(l, right_uids=[u for u in l["right_uids"] if u not in set(retired_rights)] +
+                      list(ex.get(l["loop_uid"], [])))
+                 for l in json.load(open(JC._newest("graph_loops_bed_*.json"), encoding="utf-8"))["loops"]]
+        lv = W.read_live(path, fs_pairs=Gr["wiki"]["fs_tunnel_pairs"])
+        self.fact("LIVE MAP {0}: {1}".format(os.path.basename(path), lv["secs"]))
+        return JC.from_parts({"terminals": lv["terminals"], "graph_summary": Gr["wiki"]["graph_summary"]},
+                             lv["objs"], loops, JC.node_labels_default(), lv["fs_tunnel_pairs"],
+                             os.path.basename(path))
+
+    def rule_check(self, d):
+        """PRE-DECIDED 143: the op the row names must be the op `jev_pairs.op_rule` names for its classes, unless
+        the row carries `op_override` (a reason). Returns (rule_op, rule_variant, why)."""
+        import jev_pairs
+        ex = d["exec"]
+        c = {"src": dict(ex["src"]), "dst": dict(ex["dst"])}
+        op, var, why = jev_pairs.op_rule(c)
+        if (op, var) != (d.get("op"), d.get("variant")) and not d.get("op_override"):
+            raise RuntimeError("op_rule says {0}/{1} ({2}); row says {3}/{4}".format(op, var, why, d.get("op"),
+                                                                                  d.get("variant")))
+        return op, var, why
+
     def from_decision(self, record, tag="fd"):
         """PLAN STEP 6 / Pre-decided 142-143: execute a decision record (tools/jev_pairs.write_record shape).
         action 'wire'   -> the row's `op` (connect_nested | connect_terminals | wire_sr | connect_from_wire |
                            fs_inner_tunnel_connect) on the `exec` ends {uid, term, term_class, owner_class, diagram};
-                           wire_sr also needs exec.sr {loop_uid, loop_class, right_uid, right_uids}.
+                           wire_sr also needs exec.sr {loop_uid, loop_class, right_uid, right_uids}. The op is
+                           checked against `jev_pairs.op_rule` first (`rule_check`); `es_probe` reads ExecState
+                           right after the connect, after 2 s, and after the purge (review c68-p6d §4).
         action 'delete' -> exec.wire_uid is deleted; 'retire' -> exec {class, uid} is deleted.
+        action 'copy' -> `copy_in` (exec {cls, uid, dest_diagram, pos}); 'add_shift_reg' -> `add_sr_row`;
+        'create_const_on_term' -> `const_row`. A row with `as` stores its result in self.sym for later `$` refs.
         'llm' / 'skip' / anything else -> REPORTED, never executed. Every mutation goes through `_op`, so the node
         census is marked and the measured junk `Invoke` is purged after it. Returns one dict per decision."""
         objs = [dict(o, pos=tuple(o["pos"])) for o in g.report_all(self.work, "GObject")]
         out = []
-        for i, d in enumerate(record.get("decisions", [])):
-            row = {"i": i, "row_key": d.get("row_key"), "action": d.get("action"), "op": d.get("op"),
-                   "variant": d.get("variant"), "id": d.get("id")}
-            act, ex = d.get("action"), d.get("exec") or {}
+        for i, d0 in enumerate(record.get("decisions", [])):
+            row = {"i": i, "row_key": d0.get("row_key"), "action": d0.get("action"), "op": d0.get("op"),
+                   "variant": d0.get("variant"), "id": d0.get("id")}
+            act = d0.get("action")
             try:
+                d = self.resolve(d0) if act in ("wire", "delete", "retire", "copy", "add_shift_reg",
+                                                "create_const_on_term") else d0
+                ex = d.get("exec") or {}
                 if act == "delete":
                     row["result"] = self.delete_wire(int(ex["wire_uid"]), tag)
                 elif act == "retire":
                     row["result"] = self.delete_object(ex["class"], int(ex["uid"]), tag)
+                elif act == "copy":
+                    row["result"] = self.copy_in(ex["cls"], ex["uid"], ex["dest_diagram"], ex["pos"], d0.get("id"))
+                elif act == "add_shift_reg":
+                    row["result"] = self.add_sr_row(ex, d0.get("id") or tag)
+                elif act == "create_const_on_term":
+                    row["result"] = self.const_row(ex, d0.get("id") or tag)
                 elif act == "wire":
+                    row["op_rule"] = self.rule_check(d)
                     row.update(self._wire_row(d, objs))
+                    if d.get("es_probe"):
+                        row["es_probe"] = [self.es("{0} right after the connect".format(d0.get("id")))]
+                        time.sleep(2.0)
+                        row["es_probe"].append(self.es("{0} after 2 s".format(d0.get("id"))))
                     self.junk_purge("{0} row {1}".format(tag, i))
+                    if d.get("es_probe"):
+                        row["es_probe"].append(self.es("{0} after the purge".format(d0.get("id"))))
+                        self.row("P6D-probe {0} ES now/2s/purged".format(d0.get("id")), row["es_probe"],
+                                 "recorded")
                 else:
                     row["result"] = "NOT EXECUTED (action {0!r})".format(act)
+                if d0.get("as") and act in ("copy", "add_shift_reg", "create_const_on_term"):
+                    self.sym[d0["as"]] = row["result"]
             except Exception as e:                                                 # noqa: BLE001
                 row["error"] = "{0}: {1}".format(type(e).__name__, str(e)[:240])
             res = row.get("result") if isinstance(row.get("result"), dict) else {}
             row["failed_layer"] = "execution" if row.get("error") or res.get("err") \
-                else (None if act in ("wire", "delete", "retire") else (d.get("evidence") or {}).get("failed_layer"))
+                else (None if act in ("wire", "delete", "retire", "copy", "add_shift_reg", "create_const_on_term")
+                      else (d0.get("evidence") or {}).get("failed_layer"))
             self.row("from_decision row {0} {1}".format(i, row.get("id")), {k: row.get(k) for k in
                      ("action", "op", "variant", "how", "result", "error", "failed_layer")})
             out.append(row)
@@ -924,6 +1082,46 @@ class Stage(object):
         self.fact("LabVIEW handle count at exit: {0!r}".format(handles2))
         self.dump()
         return self.summary()
+
+
+def fixtures_check(bad_md5s=(), before_listing=None):
+    """REVIEW c68-h6 (archive/peer/2026-09-24-c68-h6-fixture-listing.md §1/§4, accepted): after a run that swapped
+    bytes into the NI Moving-Objects pair, PROVE the restore - each live file == its `.ORIG.bak`, no `.bak` holds a
+    run's bytes (`bad_md5s`, e.g. the bed), and the folder's *.vi listing is unchanged. Prints gate rows; returns ok."""
+    ok = True
+    for live in (g.MOVE_SRC, g.MOVE_DST):
+        bak = live + ".ORIG.bak"
+        a = md5(live) if os.path.exists(live) else "MISSING"
+        b = md5(bak) if os.path.exists(bak) else "MISSING"
+        good = a == b and b != "MISSING" and b not in set(bad_md5s)
+        ok = ok and good
+        print(_a("  {0}  FX {1} == its .ORIG.bak and the .bak is not a run's bytes  live {2} bak {3}".format(
+            "PASS" if good else "FAIL", os.path.basename(live), a, b)), flush=True)
+    now = sorted(os.path.basename(p) for p in glob.glob(os.path.join(os.path.dirname(g.MOVE_DST), "*.vi")))
+    if before_listing is not None:
+        same = now == sorted(before_listing)
+        ok = ok and same
+        print(_a("  {0}  FX the Moving-Objects *.vi listing is unchanged  {1}".format("PASS" if same else "FAIL",
+                                                                                     now)), flush=True)
+    return ok
+
+
+def uid_edges(G, kinds=("wire", "fs")):
+    """A graph's edges keyed by TERMINAL UID, not by name (review archive/peer/2026-09-24-c68-m4a-p6b-rename.md §4,
+    measured tools/bench/q_m4a_diffuid.log: a name-keyed diff reported 13/12 renamed-only edges on unchanged
+    uids). `sr` is excluded by default: vigraph pairs registers by equal TOP, and a new register added at an
+    occupied TOP makes the pairing ambiguous (same log, U3/U6) - report it, never gate on it."""
+    V = mod("vigraph")
+    out = set()
+    for k, a, b, _i in G["edges"]:
+        if k in kinds:
+            out.add((k, V.key_parts(a)[0], int((G["rows"].get(a) or {}).get("term_uid") or 0),
+                     V.key_parts(b)[0], int((G["rows"].get(b) or {}).get("term_uid") or 0)))
+    return out
+
+
+def fixture_listing():
+    return sorted(os.path.basename(p) for p in glob.glob(os.path.join(os.path.dirname(g.MOVE_DST), "*.vi")))
 
 
 def run(fn, stage):

@@ -1,0 +1,63 @@
+BGRUN START 2026-09-24 01:22:30 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/d1-loop12-17-split-plan.md --slug c69-split-plan --trigger direction-change --no-recipe decomposition plan page only; no recipe exists yet - each sub-stage recipe gets its own review
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c69-split-plan.txt (65905 chars)
+OUTCOME: ANSWERED (237s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-24-priorart-c69-split-plan.md
+COST: $2.2059  in 46 / out 19127 / cache-create 148264 / cache-read 3185324  (233s, 32 turn(s))
+--- ANSWER ---
+**This has been done here before, so the verdict is not `novel`.** The biggest overlap is that route B (v0–v7) already moved this same 1.2 / 1.7 node set and failed ten times. Several of the plan's OPEN items were also decided or measured earlier, and three facts the plan cites conflict with other files.
+
+## PART A — the direction
+
+**A1 settled-already (O2, the kernel).** `docs/cycle27-plan.md:749-757` (31(a), judgement cycle 49, 2026-09-20): *"`#5058` IS THE CPU KERNEL … Relocating it is correct and is what S2 must do … Swapping the CPU kernel for `GPU_kernel_v1.vi` is its own later stage."* `:903-908` (34(e)) then lists `#5058` (13 rows) in the post-S2 chain. So O2 asks again something that is already decided. The rule-1a doubt the plan raises (the reseed feedback crossing loops) is a reason to keep that decision, not to reopen it. The same item settles half of O7: the file name must not say GPU before the swap stage (`:756`).
+
+**A1 settled-already (O4, transport; shift registers).** `docs/cycle27-plan.md:94-100` (Pre-decided 13) and `:101-107` (13a): the 1.2 shift registers "MOVE WITH THEIR NODES … `SR_QUEUE_AUTHORISED` stays `False` permanently". For the crossings, `:930-933` (34(g)) names what is owed: *"a RESOLUTION TABLE, not a new design"*. That table gives, for each of the eight queues, the (uid, exact terminal name, diagram), and it is due "before the sentinel stages". The plan does not cite 34(g). The table is what STOP needs as its input.
+
+**A2 refuted-already (O5, one of its options).** O5 offers `connect_nested` as a verb for nested ControlTerminal rows. `docs/cycle27-plan.md:108-114` (13a) says the machine refuted that route twice: *"`ControlTerminal #403` has no node index … `OpConnectNested_v1` addresses `Diagram[].Nodes[].Terminals[]` only"* (`…run4.log:163-164`; `tools/recipes/build_opconnectctl_v0.py:9-14`). `:115-117` records the route that was chosen instead for `Z/dZ`: the temporary-sink path, `OpCreateEqual_v0 → wire_control → OpConnectFromWire_v0 → delete + remove_bad_wires_scripted`. Moving a control terminal into a loop body is also measured already: `docs/d1-build-plan.md:213` (§2c, `probe_move_ctlterm_v0.log`, 9/0).
+
+**A3 contradicted — the control-terminal set.** Plan §1 and Pre-decided 155 use `d1-build-plan.md:401-406`: Auto-Reset, Reset Tracking, `min value`, Z/dZ, Correction Factor, `Force (pN) vs Extension (nm) `. The other side is `tools/recipes/build_d1_routeb_v7.py:443-453`, corrected 2026-09-17 from `archive/peer/2026-09-17-priorart-priorart-routeb-build.md` A3(ii): the six `from-ctl` controls are Auto-Reset, Reset Tracking, Z/dZ, Correction Factor, **`Force\nsmoothing\nhalf-width` #28148 → `#1359` t7** and **`Extension\nmedian filter\nhalf-width` #28996 → `#1359` t8 / `#29874` t6**. `min value` and `Force vs Extension` are indicators, which are sinks. `tools/bench/build_d1_routeb_v7_run10.log:25-31` resolved exactly those six. The plan's L2-B has no rows for the two group-B controls. The terminal count is also off: `d1-build-plan.md:411-413` says *"The build must plan for 31 terminals on `Diagram#639`, not 6"*, and `v7_run10.log:23` measures 31.
+
+**A3 contradicted — the gate for the ForLoop stages.** Plan §3 gates L2-B1..B3 on `computation_diff(S1,new)` "(MACHINE SR pairing)". STATUS NEXT (cycle-68 line) says *"ForLoop SRs still TOP-paired — error 1055"*, and `tools/vigraph.py:336-337` says equal-TOP pairing mis-paired M4b and is still used wherever the machine table has no entry. Group B holds the two ForLoops `#1359` and `#29874`. Their registers move with them (`cycle27-plan.md:94-96`), but the plan's SR list (Pre-decided 149) names only `#637`'s registers. The predicted "exactly the not-yet-re-wired ledger rows" can therefore pick up extra rows that are pairing artefacts, as the `#48 VISA` row was.
+
+**A3 contradicted — the order of the moves.** Plan §2 ("Why L2 before L7") argues for L2 first because w4517 would otherwise be re-made twice. `docs/cycle27-plan.md:903-908` (34(e)) sets the order *"`#48` (7) → `#376` (12) → `#5058` (13) — smallest first … the inter-loop dependency is runtime only, not build-time"*. 34(e) also says a move and its re-wiring "cannot be split". That premise rested on an ExecState-0 file being unsaveable, which the 2026-09-22 broken-intermediate GUI save (CLAUDE.md §3 rule 6) removed. Judgement should supersede 34(e) explicitly rather than leave two orders standing.
+
+**A3 contradicted — the rotor repoint (ROT).** `docs/decisions.md:29` still reads: *"The signed variant is a separate hardware-verified artefact, **not** something the restructuring adopts."* Against it: CLAUDE.md 1b (user, 2026-09-16) and `docs/cycle27-plan.md:3728-3731` (Pre-decided 133). The same pair was flagged at `archive/peer/2026-09-16-priorart-priorart-cycle15-d1.md:302-310` and `decisions.md` was never amended. O6 calls 133 "user-directed" and does not mention this.
+
+**A4 unread-evidence.**
+- **ROT route.** `docs/vi-server-ids.json:117-120` holds `"SubVI.Replace (labviewwiki, 2026-09-09, UNVERIFIED)"`, method `635E001`. `archive/STATUS-2026-09-14-full-before-condense.md:594`, `:614-615` names it the edit-time route for swapping a call site and says *"Recommend building that"*. Pre-decided 154's "0 hits" searched only `toolkit-capabilities.md`, `NAMES.md` and `gscript.py`. The primitive is unbuilt, not unknown. The same file answers O6's other question: `SubVI.Replace` is the natural control for whether `computation_diff` sees callee identity.
+- **ROT's row count.** `docs/rotor-sign-diagnosis.md:124-126`: the counter is now kept at 0 while the original assumes Baseline 200. `cycle27-plan.md:3732` puts the signed copy's constants in `tools/bench/setcommand_signed_result.json` (`read_ring` 2, `k` 0.72). "Exactly 9 rows, callee identity only" has not been checked against the Baseline Startpoint / Ring inputs at those nine sites.
+- **Cut-row source.** `docs/cycle27-plan.md:1186` (38(a)): two rows are queue endpoints *"excluded by construction (`tools/recipes/build_d1_v0.py:943`, `:976-977`)"*. So `build_d1_v0.json` key `cut` is not a raw cut list. The independent census is `tools/bench/d1_rewire_sources.json` (109 cut, 109 resolved; `cycle27-plan.md:909-910`), and the plan does not cite it. P0's predicted differences should be taken against that file.
+
+## PART B — the artefact
+
+**B2 already-failed.** Route B v0–v7 already moved this set: `tools/bench/build_d1_routeb_v7_run10.log:53-76` creates loop 1.2 and gives `#5058` 13 rows and `#376` 12, and `:116-173` records 21 `move_in` landings. The ten runs over five cycles died at the re-wiring stage and left no file (CLAUDE.md "split and save"). The strongest rival cause on record is address invalidation by index (`docs/cycle27-plan.md:934-942`, 34(h): *"every address is a uid or an exact name, re-read immediately before use and never cached across a mutation"*).
+- The plan fixes the saving cause: one saved file per sub-stage.
+- It mostly fixes the addressing cause: uid + terminal-name keys (Pre-decided 137).
+- L2-C still uses `d1-build-plan.md:356`'s `wire_indicators(<#10757's live node index>, …, diagram_index = the LIVE index …)`. That is index addressing, so it must be re-read right before the call, as 34(h) requires.
+
+**B3 helper-exists.** Moving a control terminal into a loop body: `probe_move_ctlterm_v0.py:327-351`'s route, used by `build_d1_routeb_v7.py` `resolve_ctlterms` (`v7_run10.log:21-33`, refs 5/5). Wiring the `Z/dZ` row: the temporary-sink chain at `cycle27-plan.md:115-117`. O5's "new rule entry" should point at these, not at a new verb.
+
+**B4 already-measured.** The ControlTerminal count on `#639` is 31 (`v7_run10.log:23`). The six control uids are resolved on the original (`v7_run10.log:25-30`: `#5634 #403 #9306 #17487 #28170 #29091`). Pre-decided 153 already shows uids moving between S1 and rowD, so P0 must re-read these on the bed; they are a prediction, not addresses.
+
+What the files do not already cover: P0's census of the bed at md5 `1a11d92a…`, and the per-group L2/L7 file chain itself.
+
+```
+PRIOR-ART: settled-already      (O2 #5058 relocates — docs/cycle27-plan.md:749-757, :903-908)
+PRIOR-ART: settled-already      (O4 SR half + queue resolution table owed — docs/cycle27-plan.md:94-107, :930-933)
+PRIOR-ART: refuted-already      (O5 connect_nested for nested ControlTerminal — docs/cycle27-plan.md:108-114)
+PRIOR-ART: contradicted         (control-terminal set — build_d1_routeb_v7.py:443-453 vs d1-build-plan.md:401-406; 31 terminals d1-build-plan.md:411-413)
+PRIOR-ART: contradicted         (machine SR pairing vs ForLoop SRs TOP-paired — STATUS NEXT cycle-68 line, tools/vigraph.py:336-337, cycle27-plan.md:94-96)
+PRIOR-ART: contradicted         (move order — docs/cycle27-plan.md:903-908 34(e) vs plan §2)
+PRIOR-ART: contradicted         (rotor signed adoption — docs/decisions.md:29 vs cycle27-plan.md:3728-3731 / CLAUDE.md 1b)
+PRIOR-ART: unread-evidence      (SubVI.Replace 635E001 — docs/vi-server-ids.json:117; archive/STATUS-2026-09-14-full-before-condense.md:594,:614-615)
+PRIOR-ART: unread-evidence      (ROT baseline/ring constants — docs/rotor-sign-diagnosis.md:124-126; cycle27-plan.md:3732)
+PRIOR-ART: unread-evidence      (build_d1_v0 cut excludes queue endpoints — cycle27-plan.md:1186; d1_rewire_sources.json, cycle27-plan.md:909-910)
+PRIOR-ART: already-failed       (route B v0–v7 moved this set — tools/bench/build_d1_routeb_v7_run10.log:53-76; cause 34(h) cycle27-plan.md:934-942, L2-C still index-addressed via d1-build-plan.md:356)
+PRIOR-ART: helper-exists        (control-terminal reparent probe_move_ctlterm_v0.py:327-351 / v7 resolve_ctlterms; Z/dZ temp-sink chain cycle27-plan.md:115-117)
+PRIOR-ART: already-measured     (31 ControlTerminals on #639 and six control uids — build_d1_routeb_v7_run10.log:23-31)
+```
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c69-split-plan.md
+   NO-RECIPE opt-out recorded in archive\peer\2026-09-24-priorart-c69-split-plan.md: decomposition plan page only; no recipe exists yet - each sub-stage recipe gets its own review
+   STOP RECORD: NOT ARMED BY EXPLICIT OPT-OUT - verdicts settled-already, refuted-already, contradicted, unread-evidence, already-failed, helper-exists, already-measured block, and --no-recipe was given:
+     reason: decomposition plan page only; no recipe exists yet - each sub-stage recipe gets its own review
+   If this review does become a recipe, plant the record by hand:
+     py tools/stop_record.py write --recipe <recipe> --review archive\peer\2026-09-24-priorart-c69-split-plan.md --verdict settled-already refuted-already contradicted unread-evidence already-failed helper-exists already-measured
+BGRUN END rc=0 after 241s

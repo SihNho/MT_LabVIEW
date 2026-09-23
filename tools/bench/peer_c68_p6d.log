@@ -1,0 +1,35 @@
+BGRUN START 2026-09-24 00:05:11 limit 20.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c68-p6d-stray-invoke -TaskFile 'tools/bench/peer_c68_p6d_task.md' -TimeoutSec 900
+OUTCOME: ANSWERED (101s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-24-c68-p6d-stray-invoke.md
+COST: $1.0573  in 16 / out 7314 / cache-create 88036 / cache-read 702976  (98s, 14 turn(s))
+--- ANSWER ---
+**Verdict:** the claim is plausible, but the evidence does not settle it. Run 2 shows that ExecState changes when the stray Invoke is deleted. It does not show that the stray Invoke is what breaks the VI. Don't build the shift-register step on "ExecState only reflects the intended edit" until the test below has run. (Nothing was run or edited; the plan file could not be written because Write is disabled in this session.)
+
+### 1. Strongest reason the claim may be wrong
+The causal link rests on one observation: ExecState was 0 after connect (`q_m4_iterlocal_run2.log:92`), the stray was deleted (`:104`), and ExecState read 1 (`:107`). But the delete is itself a scripted edit, and it could trigger a recompile. So the ExecState read taken immediately after the connect op could have been stale, and any edit might have cleared it.
+- The earlier evidence doesn't separate these either. The 75-junk-Invoke measurement at `tools/gscript.py:2634-2636`, `2697` purged the strays **and** ran Remove Bad Wires, so it cannot say which of the two restored ExecState 1.
+- Outside sources say ExecState can report a VI as bad when it isn't, until it is recompiled ([NI forum](https://forums.ni.com/t5/LabVIEW/VI-state-indicates-VIis-broken-when-it-is-not/td-p/374104)), and that scripting edits force a recompile ([LabVIEW Wiki, VI Scripting](https://labviewwiki.org/wiki/VI_Scripting)).
+
+### 2. Alternative explanation
+The broken state is recomputed lazily, and the delete only happened to trigger that recomputation. One more detail makes me doubt that the op creates a genuinely new node each time:
+- The stray has **uid 23459 both times** (`run2.log:43`, `:94`).
+- That uid is **lower** than the Local created earlier in the same run (23475, `:30`).
+
+A reused or pre-allocated uid fits "a helper object the op reuses" at least as well as "one new junk node per call". The mechanism the claim states is also not quite right: a generic Invoke Node's `reference` input is not always required, since it defaults to the current VI for the Application and VI classes ([Invoke Node doc](https://rajsite.github.io/unofficial-lvdocs/glang/Invoke_Node.html)). If the stray does break the VI, the likelier reason is that it has no method selected ([NI forum](https://forums.ni.com/t5/LabVIEW/invoke-nodes-no-methods/td-p/484601)). The stray's two `Method` terminals fit that (`:101-102`).
+
+### 3. What would falsify the claim
+- With the stray still present, re-reading ExecState after a delay, or after a neutral edit, gives 1.
+- Or: deliberately leaving one unwired, unconfigured Invoke on a copy that reads ExecState 1 keeps ExecState at 1.
+
+### 4. Cheapest test that separates the two
+Use one scratch copy. Run connect_from_wire, leave the stray in place, then read ExecState four times:
+1. Immediately after the connect.
+2. After waiting 2 s.
+3. After a neutral edit: move an unrelated label by 1 px.
+4. After deleting the stray.
+
+If ExecState goes 0 → 0 → 0 → 1, the claim holds. If it turns 1 at step 2 or 3, the cause is a stale read.
+
+Reverse arm on a fresh copy that reads ExecState 1: `move_in` an **existing, already-wired** node, then read ExecState before and after purging that op's stray. If ExecState reads 0 while the stray is present, that confirms the stray breaks the VI.
+
+**What would change my mind:** 0 → 0 → 0 → 1 in the four-read test, plus ExecState 0 → 1 in the reverse arm. With both, I'd accept "purge after every move_in/connect" as the rule for the next build.
+BGRUN END rc=0 after 102s

@@ -681,6 +681,8 @@ sentinel travels the same queues the data travels — no second reader of `stop 
 | **S5** | junk Invokes purged (`new_since('Invoke')` empty), `remove_bad_wires_scripted`, **`ExecState 1` warm**, saved; file size recorded |
 | **S6** | **cold re-open** in a restarted LabVIEW: `ExecState 1`, `Diagram 173`, `WhileLoop 6`, `ControlTerminal 114`; original md5 unchanged **after** |
 
+⚠️ **SUPERSEDED 2026-09-24 (cycle-69 judgement) as a stage table: S4–S6 above are replaced by `docs/d1-loop12-17-split-plan.md` §2 (its Pre-decided 161).**
+
 `ExecState` means nothing between S2 and S4 — the moves cut wires (§2b). It is read at S5 and at S6 only.
 
 ### N1 — numeric, rule 1a

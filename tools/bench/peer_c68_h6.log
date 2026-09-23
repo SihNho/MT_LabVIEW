@@ -1,0 +1,37 @@
+BGRUN START 2026-09-24 00:24:36 limit 20.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c68-h6-fixture-listing -TaskFile 'tools/bench/peer_c68_h6_task.md' -TimeoutSec 900
+OUTCOME: ANSWERED (81s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-24-c68-h6-fixture-listing.md
+COST: $0.8606  in 16 / out 6640 / cache-create 74317 / cache-read 641059  (77s, 14 turn(s))
+--- ANSWER ---
+**The diagnosis is right, but "the machine did exactly what was intended" was never measured, and the proposed fix makes H6 pass without checking the folder the run actually wrote to.**
+
+The bug diagnosis stands. The listing only reads the claudeDev top folder: `glob(os.path.join(CLAUDEDEV, "*.vi"))` at `tools/stagekit.py:1067` and `:277`, and Python's glob does not look into subfolders unless you pass `recursive=True` with `**` (https://docs.python.org/3/library/glob.html). The work file sits in `claudeDev\NIScriptingExamples\Moving Objects\` (`tools/gscript.py:88-90`). The default expectation at `stagekit.py:1075-1076` adds `basename(self.work)` whenever that file exists, so it assumed the work copy was in the top folder. The probe's own plan also expected `[]`: "files left in claudeDev == []" (`q_m4_copy_probe.py:10`). The empty diff is real, not an empty listing: the BEFORE listing held 245 files (`q_m4_copy_probe.log:4`).
+
+**1. Strongest reason the claim is wrong.** Nobody measured that the run left nothing behind in the folder it actually wrote to. The run overwrote both files in the Moving-Objects folder with the bed's bytes:
+- the Target file, when `Stage.start` copied the input over it (`stagekit.py:296`);
+- the Source file, at `q_m4_copy_probe.py:29` (confirmed by gate K4, `log:23`).
+
+H6 cannot see that folder, and no gate checks it. The only evidence that the fixtures were restored is an unconditional print (`q_m4_copy_probe.py:54`, `log:82`) that runs after the gates, with no md5 comparison.
+
+Changing the expectation to `[]`, which `q_m4_copy_probe.py:49` already does, turns a false FAIL into a PASS that says nothing about that folder. H6 would still pass if the fixtures were left with the bed's bytes in them. That exact failure happened on 2026-08-28 (`gscript.py:91-93`).
+
+There is a second gap in the restore. `restore_move_fixtures` first copies live → `.ORIG.bak` whenever the `.bak` file is missing (`gscript.py:1514-1515`). If a `.bak` was ever missing, "restore" would save the bed's bytes as the new "pristine" copy, and the log still says "restored".
+
+**2. Alternative explanation for the same evidence.** `added [] removed []` fits both "nothing was left anywhere" and "the fixture folder was left in a bad state". The top-folder diff cannot tell the two apart. The claim treats the first as proven.
+
+**3. What would falsify the claim.** Either of these, measured after the final `restore_move_fixtures()`:
+- `md5(MOVE_DST) != md5(MOVE_DST_ORIG)` or `md5(MOVE_SRC) != md5(MOVE_SRC_ORIG)`;
+- a `*.vi` in `MOVE_DIR` that was not there before.
+
+**Also missing from "all other gates passed":** LabVIEW's handle count went from 33,987 to 63,471 during a 70-second run (`log:16`, `log:66`). That is +29.5k, although refs opened and closed matched 5/5. Loading a bed with 173 diagrams may explain it, but it was not reported. Rule 3's reference-hygiene section treats handle growth as the leak measure.
+
+**4. Cheapest test that separates the two (read-only, about 1 second, no LabVIEW):**
+- md5 `Test - Moving Objects Target.vi` against its `.ORIG.bak`, and the Source file against its `.ORIG.bak`;
+- confirm neither `.bak` has the bed's md5 `fdd6d74ac8a5ba0c1a545ad89ff2996f`;
+- list `MOVE_DIR\*.vi`.
+
+If all match and neither `.bak` is the bed, the claim holds in full.
+
+**Recommended fix:** keep `expect_files=[]` for the top folder. Then add a gate after the restore, not a print: both fixtures match their `.ORIG.bak`, neither `.bak` has the bed's md5, and the `MOVE_DIR` listing is unchanged. Also make `restore_move_fixtures` fail instead of silently creating a missing `.ORIG.bak` from the live file.
+
+**What would change my mind:** evidence that some other step already checks the fixtures' md5 after every run that swaps them in. I found none in `stagekit.close()` or the probe.
+BGRUN END rc=0 after 81s

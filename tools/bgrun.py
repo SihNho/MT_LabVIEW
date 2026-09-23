@@ -210,10 +210,18 @@ def main():
         # audit_cycle/guard_peer already match, so the three scanners now agree. Review logs stay excluded through
         # logclass.is_review_log (a reviewer quoting "-> FAIL" is evidence, never the thing under test).
         # Self-test: tools/bench/selftest_bgrun_fail_scan.py (the literal line above -> rc=1; a PASS-only log -> rc=0).
+        # MOTOR VOCABULARY (cycle 69, device-failed repair of retrospective-cycle68): pi_testmove_20260923e.log:23
+        # `RESULT: NOT at target`, :34 `RESULT: REJECTED BY THE CONTROLLER - ERR 216`, :22 `ERR?=216` - and the run
+        # ended `BGRUN END rc=0` (:51). The senders now also print `FAIL:`; these alternatives catch the old wording
+        # and any chain that drops it. Anchored: `RESULT:` at line start; ERR? only with a NON-ZERO number, so the
+        # green logs' `ERR?=0` / `ERR? after SPA = 0` and the ALLOWED line's prose "answers ERR 7" do not match.
+        # Self-test: tools/bench/selftest_motor_fail_exit.py. Keep identical to audit_cycle.FAILURE_RE's motor part.
         scan_inner = not logclass.is_review_log(logp)
         inner = []
         inner_re = re.compile(r"\b(?:exit|rc)\s*=\s*([1-9]\d*)|^\s*\*\*FAIL\*\*|^\s*(?:->\s*)?FAIL\b"
-                              r"|=== .*?\b[1-9]\d*\s+fail(?:ed|ure)?\b",
+                              r"|=== .*?\b[1-9]\d*\s+fail(?:ed|ure)?\b"
+                              r"|^RESULT:\s*(?:REJECTED\b|NOT at target\b)"
+                              r"|\bERR\?\s*(?:right after send\s*)?=\s*[1-9]\d*",
                               re.I | re.M)
 
         def pump():

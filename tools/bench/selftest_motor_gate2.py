@@ -10,16 +10,28 @@ and tools/bench/p2_asi_set_limits.ps1 (the measured controller-limit behaviour t
 under tools/ decides a motor command; that is why the gate exists.
 
 PREDICTION CONTRACT (each numbered line is one case; the run FAILS if any case's outcome differs):
-  SESSION HOOK, no port (injected sender output):
-   1  --session start, both readbacks match the file            rc 0, session file written with limits_readback
-   2  --session start, PI readback TMX=52 (mismatch)            rc 3, NO session file
+  SESSION HOOK, no port (injected sender output). REPAIRED cycle 69 (2026-09-24): the PI fixtures now reproduce,
+  line for line, what tools/motor_send_pi.ps1 prints in -Mode limits-set since the 2026-09-23 rework
+  (:81 before, :90 PRELIMITS, :93 ERR? after SPA, :96 LIMITS, :116 REFERENCE .. FNL 1, :124 REFSTATE, :140 VERIFY x2,
+  :144 VERIFY-RESULT: OK, :147 LIMITS again, :153 RESULT) and its exit codes (:98/:125/:126/:143 exit 7). The gate's
+  contract (motor_gate.py:380-397): per attempt, ok = LIMITS match AND REFSTATE FRF=1 with |POS|<=tol AND the text
+  holds 'VERIFY-RESULT: OK' AND sender rc 0; up to REF_ATTEMPTS=3 attempts; refuse only when all fail.
+   1  --session start, faithful OK output                       rc 0, file written, TMX 39, attempts 1, verify OK
+   2  --session start, sender MISMATCH (TMX=52, exit 7, :98)    rc 3, NO session file, 3 attempts
+   2a --session start, LIMITS TMX=52 but sender rc 0 + VERIFY OK rc 3 (the GATE's own readback check refuses)
    2b --session start, a PRE-write 'PRELIMITS TMN=0 TMX=39'     rc 3, NO session file, and
       line in front of a MISMATCHED 'LIMITS .. TMX=52'          parse_pi_limits still reads TMX=52
                                                                [2026-09-18, STATUS.md OPEN 55]
    3  --session start, ASI readback SL X off by 0.01 mm         rc 3, NO session file
-   3b --session start, the axis is still UNREFERENCED (FRF 0)   rc 3, NO session file  [added after the 15:37
-   3c --session start, POS changed during the RON/POS restore   rc 3, NO session file   live run: SPA leaves
-                                                                                        the axis unreferenced]
+   3b --session start, FNL did not complete (FRF 0, exit 7, :125) rc 3, NO session file, 3 attempts
+   3d --session start, FRF=0 but sender rc 0 + VERIFY OK         rc 3 (the GATE's own FRF check refuses)
+   3e --session start, no REFSTATE line at all, rc 0 + VERIFY OK rc 3
+   3c --session start, counter 1.5 after FNL, rc 0 + VERIFY OK   rc 3 (the GATE's own |POS|<=tol check)
+   3f --session start, VERIFY MISMATCH on all 3 attempts (:143) rc 3, NO session file, exactly 3 sender calls
+   3g --session start, VERIFY MISMATCH once, then OK            rc 0, file written, pi_reference_attempts == 2
+   3h --session start, VERIFY lines OK but no 'VERIFY-RESULT'   rc 3 (a truncated transcript is not a verify)
+   3i --session start, PI refused on all 3 attempts             rc 3, ASI sender called 0 times [cycle 69 (a)]
+   2c --session start, first LIMITS TMX=39, LAST TMX=52, rc 0   rc 3, parse reads TMX=52 [cycle 69 (b)]
    4  --session end, both releases read back                    rc 0, session file deleted
   EXECUTE PRECONDITIONS:
    5  --execute with no session file                            rc 3, transmit NEVER called
@@ -98,18 +110,56 @@ def cli_case(label, argv, expect_rc):
         (p.stderr.decode("utf-8", "replace").strip().splitlines() or [""])[0][:90])
 
 
-PI_REF = "REFSTATE RON=0 FRF=1 POS=0.00000 POS_BEFORE=0.00000 ERR=0\n"
-PI_OK = "LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0\n" + PI_REF + "RESULT: ok"
-PI_BAD = "LIMITS TMN=0 TMX=52 SPA15=52 SPA30=0\n" + PI_REF + "RESULT: ok"
-# the axis stayed UNREFERENCED after the restore (the 15:37 failure mode) / the restore SHIFTED the zero
-PI_NOREF = "LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0\nREFSTATE RON=0 FRF=0 POS=0.00000 POS_BEFORE=0.00000 ERR=5\nx"
-PI_ZEROMOVED = "LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0\nREFSTATE RON=0 FRF=1 POS=1.50000 POS_BEFORE=0.00000 ERR=0\nx"
-PI_REL = "LIMITS TMN=0 TMX=52 SPA15=52 SPA30=0\nRESULT: ok"
+# ---- PI -Mode limits-set, built from the Write-Output lines of tools/motor_send_pi.ps1 (line numbers above) ----
+PI_HEAD = ("before: POS?=30.00000 TMN?=0.00000 TMX?=52.00000 ERR?=0\n"            # :81
+           "PRELIMITS TMN=0 TMX=52\n"                                               # :90
+           "ERR? after SPA = 0\n")                                                  # :93
+PI_LIM39 = "LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0\n"                                 # :96 / :147
+PI_LIM52 = "LIMITS TMN=0 TMX=52 SPA15=52 SPA30=0\n"
+PI_FNL = "REFERENCE: POS before=30 -> SENT FNL 1 (to the negative limit switch)\n"  # :116
+PI_REFSTATE_OK = "REFSTATE RON=1 FRF=1 POS=0 POS_BEFORE=30 ERR=0 travelled=30.000\n"  # :124
+PI_VERIFY_OK = ("VERIFY: commanded=2 readback=2.0003 delta=0.0003 err=0 -> OK\n"   # :140
+                "VERIFY: commanded=0 readback=0.0001 delta=0.0001 err=0 -> OK\n")
+PI_VERIFY_BAD = ("VERIFY: commanded=2 readback=0.4100 delta=1.5900 err=0 -> MISMATCH\n"
+                 "VERIFY: commanded=0 readback=0.0001 delta=0.0001 err=0 -> OK\n")
+PI_VRESULT = "VERIFY-RESULT: OK - reference move done and the stage follows commands\n"  # :144
+PI_SET_RESULT = "RESULT: controller limits are TMN=0 TMX=39 (mode limits-set)"          # :153
+# (rc, text) pairs
+PI_OK = (0, PI_HEAD + PI_LIM39 + PI_FNL + PI_REFSTATE_OK + PI_VERIFY_OK + PI_VRESULT + PI_LIM39 + PI_SET_RESULT)
+# the sender's own mismatch exit (:98) - nothing after it is printed
+PI_HEAD39 = PI_HEAD.replace("52", "39")   # the controller already held 0..39 on arrival
+PI_BAD = (7, PI_HEAD39 + PI_LIM52 + "RESULT: MISMATCH - wanted TMN=0 TMX=39")
+# isolate the GATE's readback check: mismatched LIMITS, yet rc 0 and a VERIFY-RESULT line
+PI_BAD_RC0 = (0, PI_HEAD + PI_LIM52 + PI_FNL + PI_REFSTATE_OK + PI_VERIFY_OK + PI_VRESULT + PI_LIM52
+              + "RESULT: controller limits are TMN=0 TMX=52 (mode limits-set)")
+# FNL did not complete (:125) - faithful
+PI_NOREF = (7, PI_HEAD + PI_LIM39 + PI_FNL + "REFSTATE RON=1 FRF=0 POS=12.3 POS_BEFORE=30 ERR=0 travelled=17.700\n"
+            "RESULT: REFERENCE MOVE DID NOT COMPLETE - no session")
+# isolate the GATE's FRF check / missing REFSTATE / counter not 0 after FNL (sender says rc 0 regardless)
+PI_NOREF_RC0 = (0, PI_OK[1].replace(PI_REFSTATE_OK, "REFSTATE RON=1 FRF=0 POS=0 POS_BEFORE=30 ERR=0 travelled=30.000\n"))
+PI_NOREFLINE_RC0 = (0, PI_OK[1].replace(PI_REFSTATE_OK, ""))
+PI_ZEROMOVED = (0, PI_OK[1].replace(PI_REFSTATE_OK, "REFSTATE RON=1 FRF=1 POS=1.5 POS_BEFORE=30 ERR=0 travelled=28.500\n"))
+# VERIFY mismatch (:143) - faithful
+PI_VERIFY_FAIL = (7, PI_HEAD + PI_LIM39 + PI_FNL + PI_REFSTATE_OK + PI_VERIFY_BAD
+                  + "RESULT: COMMANDED vs READBACK MISMATCH after referencing - no session")
+# VERIFY lines present and OK but the VERIFY-RESULT line missing (a truncated transcript)
+PI_NO_VRESULT = (0, PI_OK[1].replace(PI_VRESULT, ""))
+PI_REL = (0, PI_HEAD39 + PI_LIM52
+          + "RESULT: controller limits are TMN=0 TMX=52 (mode limits-release)")
+# -Mode send (:159 LIMITS, :206 RESULT reached / :161 SEND REFUSED exit 7)
+PI_SEND_OK = PI_LIM39 + "SENT: MOV 1 5\nERR? right after send = 0\nRESULT: reached 5 (target 5)"
+PI_SEND_BAD = (PI_LIM52 + "SEND REFUSED: controller limits TMN=0 TMX=52 do not match the file (0..39) - run the "
+               "session-start hook")
 # 2026-09-18, STATUS.md OPEN 55: motor_send_pi.ps1:52 now also prints a PRE-write `PRELIMITS TMN=..
 # TMX=..` line.  It contains the substring "LIMITS TMN=0 TMX=39" and is printed FIRST, so an
 # unanchored parse_pi_limits() would verify the limits the controller had ON ARRIVAL instead of the
 # ones the hook just installed - and case 2 (PI_BAD, TMX=52) would flip from refuse to accept.
-PI_PRE_DECOY = "PRELIMITS TMN=0 TMX=39\n" + PI_BAD
+# Faithful form: the PRELIMITS line (TMX=39 on arrival) precedes a MISMATCHED post-write LIMITS (TMX=52); rc 0 and a
+# VERIFY-RESULT line are injected so that only the anchored parse stands between the decoy and a false accept.
+PI_PRE_DECOY = (0, PI_BAD_RC0[1].replace(PI_HEAD, PI_HEAD39))
+# cycle 69 (b): the post-write LIMITS (:96) is good, the post-reference LIMITS (:147) is TMX=52; rc 0 + VERIFY OK
+PI_LAST_BAD = (0, PI_HEAD + PI_LIM39 + PI_FNL + PI_REFSTATE_OK + PI_VERIFY_OK + PI_VRESULT + PI_LIM52
+               + "RESULT: controller limits are TMN=0 TMX=52 (mode limits-set)")
 ASI_OK = "LIMITS SL X=-3.847494 Y=-4.774393 SU X=0.152497 Y=-0.774402\nRESULT: ok"
 ASI_BAD = "LIMITS SL X=-3.837494 Y=-4.774393 SU X=0.152497 Y=-0.774402\nRESULT: ok"
 ASI_REL = "LIMITS SL X=-500 Y=-500 SU X=500 Y=500\nRESULT: ok"
@@ -124,49 +174,92 @@ def main():
     sess = os.path.join(tmpdir, "motor_session.json")
 
     # ---- 1-4 session hooks, injected sender output, no port ----
-    rc = mg.session_start(LIMITS, pi_call=lambda *a: (0, PI_OK), asi_call=lambda *a: (0, ASI_OK),
-                          session_path=sess, out=quiet)
-    wrote = os.path.exists(sess)
-    rec = json.load(open(sess, encoding="utf-8")) if wrote else {}
-    row(rc == 0 and wrote and rec.get("limits_readback", {}).get("pi", {}).get("TMX") == 39.0,
-        "1 start, both readbacks match", "hook", "--session start", "code=%d file=%s" % (rc, wrote), "code=0 file=True",
-        json.dumps(rec.get("limits_readback", {}), sort_keys=True))
-    os.remove(sess)
+    # session_start sleeps 2 s between failed attempts (motor_gate.py:397); no-op it here, restored below.
+    real_sleep = mg.time.sleep
+    mg.time.sleep = lambda *_a: None
+    asi_calls = []
 
-    rc = mg.session_start(LIMITS, pi_call=lambda *a: (0, PI_BAD), asi_call=lambda *a: (0, ASI_OK),
-                          session_path=sess, out=quiet)
-    row(rc == 3 and not os.path.exists(sess), "2 start, PI readback TMX=52", "hook", "--session start",
-        "code=%d file=%s" % (rc, os.path.exists(sess)), "code=3 file=False", "mismatched PI readback must refuse")
+    def start(pi_seq, asi=(0, ASI_OK)):
+        """Run session_start with a SEQUENCE of PI sender outputs (one per attempt; the last one repeats).
+        Returns (rc, file_written, sender_calls, session_record); ASI sender calls land in `asi_calls`."""
+        calls = []
+        del asi_calls[:]
 
-    rc = mg.session_start(LIMITS, pi_call=lambda *a: (0, PI_PRE_DECOY), asi_call=lambda *a: (0, ASI_OK),
-                          session_path=sess, out=quiet)
-    rb = mg.parse_pi_limits(PI_PRE_DECOY)
-    row(rc == 3 and not os.path.exists(sess) and rb == {"TMN": 0.0, "TMX": 52.0, "SPA15": 52.0, "SPA30": 0.0},
-        "2b start, a PRELIMITS line must not be read", "hook", "--session start",
-        "code=%d rb=%s" % (rc, rb and rb.get("TMX")), "code=3 rb.TMX=52",
-        "the PRE-write line is not the readback: parse_pi_limits is anchored at ^LIMITS")
+        def pi_call(*_a):
+            calls.append(_a)
+            return pi_seq[min(len(calls), len(pi_seq)) - 1]
+        def asi_call(*_a):
+            asi_calls.append(_a)
+            return asi
+        if os.path.exists(sess):
+            os.remove(sess)
+        rc_ = mg.session_start(LIMITS, pi_call=pi_call, asi_call=asi_call, session_path=sess, out=quiet)
+        wrote_ = os.path.exists(sess)
+        rec_ = json.load(open(sess, encoding="utf-8")) if wrote_ else {}
+        return rc_, wrote_, len(calls), rec_
 
-    rc = mg.session_start(LIMITS, pi_call=lambda *a: (0, PI_OK), asi_call=lambda *a: (0, ASI_BAD),
-                          session_path=sess, out=quiet)
-    row(rc == 3 and not os.path.exists(sess), "3 start, ASI SL off by 0.01 mm", "hook", "--session start",
-        "code=%d file=%s" % (rc, os.path.exists(sess)), "code=3 file=False", "mismatched ASI readback must refuse")
+    def refused(label, pi_seq, why, want_calls=None, asi=(0, ASI_OK)):
+        rc_, wrote_, n_, _ = start(pi_seq, asi)
+        ok = rc_ == 3 and not wrote_ and (want_calls is None or n_ == want_calls)
+        row(ok, label, "hook", "--session start", "code=%d file=%s n=%d" % (rc_, wrote_, n_),
+            "code=3 file=False" + ("" if want_calls is None else " n=%d" % want_calls), why)
 
-    rc = mg.session_start(LIMITS, pi_call=lambda *a: (0, PI_NOREF), asi_call=lambda *a: (0, ASI_OK),
-                          session_path=sess, out=quiet)
-    row(rc == 3 and not os.path.exists(sess), "3b start, axis still UNREFERENCED (FRF 0)", "hook",
-        "--session start", "code=%d file=%s" % (rc, os.path.exists(sess)), "code=3 file=False",
-        "a hook that leaves FRF=0 must refuse: every MOV would answer ERR 5")
+    try:
+        rc, wrote, n, rec = start([PI_OK])
+        row(rc == 0 and wrote and n == 1 and rec.get("limits_readback", {}).get("pi", {}).get("TMX") == 39.0
+            and rec.get("pi_verify") == "OK" and rec.get("pi_reference_attempts") == 1
+            and (rec.get("pi_reference") or {}).get("FRF") == 1.0,
+            "1 start, faithful OK output", "hook", "--session start", "code=%d file=%s n=%d" % (rc, wrote, n),
+            "code=0 file=True n=1", json.dumps(rec.get("limits_readback", {}), sort_keys=True))
 
-    rc = mg.session_start(LIMITS, pi_call=lambda *a: (0, PI_ZEROMOVED), asi_call=lambda *a: (0, ASI_OK),
-                          session_path=sess, out=quiet)
-    row(rc == 3 and not os.path.exists(sess), "3c start, POS moved during the restore", "hook", "--session start",
-        "code=%d file=%s" % (rc, os.path.exists(sess)), "code=3 file=False",
-        "the zero must not shift under the ABSOLUTE controller limits")
+        refused("2 start, sender MISMATCH TMX=52 (exit 7)", [PI_BAD], "mismatched PI readback must refuse",
+                want_calls=mg.REF_ATTEMPTS)
+        refused("2a start, TMX=52 with rc 0 + VERIFY OK", [PI_BAD_RC0], "the gate's own readback check must refuse")
 
-    mg.session_start(LIMITS, pi_call=lambda *a: (0, PI_OK), asi_call=lambda *a: (0, ASI_OK),
-                     session_path=sess, out=quiet)
-    rc = mg.session_end(LIMITS, pi_call=lambda *a: (0, PI_REL), asi_call=lambda *a: (0, ASI_REL),
-                        session_path=sess, out=quiet)
+        rc, wrote, n, _ = start([PI_PRE_DECOY])
+        rb = mg.parse_pi_limits(PI_PRE_DECOY[1])
+        row(rc == 3 and not wrote and rb == {"TMN": 0.0, "TMX": 52.0, "SPA15": 52.0, "SPA30": 0.0},
+            "2b start, a PRELIMITS line must not be read", "hook", "--session start",
+            "code=%d rb=%s" % (rc, rb and rb.get("TMX")), "code=3 rb.TMX=52",
+            "the PRE-write line is not the readback: parse_pi_limits is anchored at ^LIMITS")
+
+        refused("3 start, ASI SL off by 0.01 mm", [PI_OK], "mismatched ASI readback must refuse", asi=(0, ASI_BAD))
+        refused("3b start, FNL incomplete FRF 0 (exit 7)", [PI_NOREF], "an unreferenced axis must refuse",
+                want_calls=mg.REF_ATTEMPTS)
+        refused("3d start, FRF 0 with rc 0 + VERIFY OK", [PI_NOREF_RC0], "the gate's own FRF==1 check must refuse")
+        refused("3e start, no REFSTATE line", [PI_NOREFLINE_RC0], "no reference report => not referenced")
+        refused("3c start, counter 1.5 after FNL", [PI_ZEROMOVED], "after FNL the counter must read 0 (|POS|<=tol)")
+        refused("3f start, VERIFY fails on all 3 attempts", [PI_VERIFY_FAIL], "refuse only after REF_ATTEMPTS fail",
+                want_calls=3)
+
+        rc, wrote, n, rec = start([PI_VERIFY_FAIL, PI_OK])
+        row(rc == 0 and wrote and n == 2 and rec.get("pi_reference_attempts") == 2 and rec.get("pi_verify") == "OK",
+            "3g start, VERIFY fails once then OK", "hook", "--session start",
+            "code=%d file=%s n=%d att=%s" % (rc, wrote, n, rec.get("pi_reference_attempts")),
+            "code=0 file=True n=2 att=2", "a retry that succeeds is accepted on attempt 2")
+
+        refused("3h start, no VERIFY-RESULT line", [PI_NO_VRESULT], "a truncated transcript is not a verify")
+
+        # cycle 69 repair (a): PI refused x3 -> the ASI sender is never called
+        rc, wrote, n, _ = start([PI_VERIFY_FAIL])
+        row(rc == 3 and not wrote and n == mg.REF_ATTEMPTS and len(asi_calls) == 0,
+            "3i PI refused x3 -> ASI never contacted", "hook", "--session start",
+            "code=%d n=%d asi=%d" % (rc, n, len(asi_calls)), "code=3 n=3 asi=0",
+            "a PI refusal returns before the ASI port is opened")
+
+        # cycle 69 repair (b): first LIMITS good (:96), LAST (post-reference, :147) TMX=52 -> the gate refuses
+        rb = mg.parse_pi_limits(PI_LAST_BAD[1])
+        rc, wrote, n, _ = start([PI_LAST_BAD])
+        row(rc == 3 and not wrote and rb and rb.get("TMX") == 52.0,
+            "2c start, first LIMITS ok, LAST TMX=52", "hook", "--session start",
+            "code=%d rb.TMX=%s" % (rc, rb and rb.get("TMX")), "code=3 rb.TMX=52",
+            "parse_pi_limits judges the last ^LIMITS line (post-reference readback)")
+
+        start([PI_OK])
+        rc = mg.session_end(LIMITS, pi_call=lambda *a: PI_REL, asi_call=lambda *a: (0, ASI_REL),
+                            session_path=sess, out=quiet)
+    finally:
+        mg.time.sleep = real_sleep
     row(rc == 0 and not os.path.exists(sess), "4 end releases and deletes", "hook", "--session end",
         "code=%d file=%s" % (rc, os.path.exists(sess)), "code=0 file=False", "release readback 0..52 / +-500")
 
@@ -185,12 +278,12 @@ def main():
 
         # ---- 6/7 transmit()'s own readback re-check, injected sender output ----
         mg.transmit = real_transmit
-        mg._run_ps = lambda script, args, timeout=120: (7, PI_BAD + "\nSEND REFUSED: limits do not match the file")
+        mg._run_ps = lambda script, args, timeout=120: (7, PI_SEND_BAD)
         d = mg.decide("pi", "MOV 1 5", state="assembled")
         rc = mg.transmit("pi", "MOV 1 5", d, LIMITS)
         row(rc != 0, "6 sender readback != file", "cli", "transmit MOV 1 5", "code=%d" % rc, "code!=0",
             "the gate re-checks the sender's LIMITS line")
-        mg._run_ps = lambda script, args, timeout=120: (0, PI_OK + "\nRESULT: reached 5")
+        mg._run_ps = lambda script, args, timeout=120: (0, PI_SEND_OK)
         rc = mg.transmit("pi", "MOV 1 5", d, LIMITS)
         row(rc == 0, "7 sender readback == file", "cli", "transmit MOV 1 5", "code=%d" % rc, "code=0",
             "matching readback passes the sender's rc through")

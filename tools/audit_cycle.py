@@ -74,8 +74,13 @@ MAIN = r"G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_T
 # `build_d1_v0.log:14-18`. That is the fault this device exists to prevent, in the device itself, for the second
 # time (round 4 was the COST regex below, the same shape: a pattern written against a format nothing emits).
 # Three forms are matched now: the bare word, the fleet's bold form, and a nonzero bgrun exit.
+# MOTOR VOCABULARY (cycle 69, device-failed repair): pi_testmove_20260923e.log held `RESULT: NOT at target` (:23),
+# `RESULT: REJECTED BY THE CONTROLLER - ERR 216` (:34) and `ERR?=216` (:22) under `BGRUN END rc=0` (:51), and this
+# audit counted it green. Same alternatives as bgrun.inner_re; self-test tools/bench/selftest_motor_fail_exit.py.
 FAILURE_RE = re.compile(r"OBSERVED:?\s*EXC|VERDICT:\s*BROKEN|STOP at gate|BGRUN TIMEOUT|^STALL:"
-                        r"|^\s*(?:->\s*)?FAIL\b|\*\*FAIL\*\*|^BGRUN END rc=(?!0\b)\d+",
+                        r"|^\s*(?:->\s*)?FAIL\b|\*\*FAIL\*\*|^BGRUN END rc=(?!0\b)\d+"
+                        r"|^RESULT:\s*(?:REJECTED\b|NOT at target\b)"
+                        r"|\bERR\?\s*(?:right after send\s*)?=\s*[1-9]\d*",
                         re.I | re.M)
 
 # THE DEVICE FOR `device-failed` (docs/violation-decisions.md, 2026-09-16 21:07, round 4; threshold 1).

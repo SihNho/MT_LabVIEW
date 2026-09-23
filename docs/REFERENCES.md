@@ -228,6 +228,7 @@ passing it on both meters is compliance, not evasion — ⚠️ **flagged to the
 of their own rule.** The two "consequences for judgement" listed above §4a's repair paragraph are thereby settled for
 S0's purposes; §4a's "Status of the repair: NOT BUILT" stands and is now permanent rather than pending.
 **S0 IS CLOSED; S1 is next** (`docs/cycle27-plan.md` Pre-decided 22's stage table).
+- **Large-VI baseline (judgement, cycle 68, 2026-09-24; `docs/connectivity-map-plan.md` Pre-decided 147(c)):** opening the D1 bed (~480 KB, `D1_s3_loop15.vi` family) itself lifts LabVIEW to ~54.4k handles (+20.4k on open; `read_live` ×5 then flat ±100, `tools/bench/q_c68_srpair.log`). For that bed judge growth against the POST-LOAD level, not the ~31.5k fresh figure.
 
 ## 5. Attribution inside the artefacts
 
