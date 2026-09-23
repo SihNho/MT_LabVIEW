@@ -14,6 +14,8 @@ PREDICTION CONTRACT (all must hold; printed as PASS/FAIL rows, summary `N/N PASS
   C2 motor_gate CLI, assembled, `GOH` -> exit 3 and `^FAIL:`;  C3 dry-run allowed `MOV 1 5` -> exit 0, no FAIL line
   D  in-process mg.main() refusal prints no FAIL line (selftest_motor_gate2 stays green under bgrun)
   E  both senders carry the new `FAIL:` Write-Output lines (static check)
+  F  (cycle 70 F6a) C1-C3 journal into TMP via `--journal`; tools/bench/motor_gate.log byte size unchanged by the run
+     and the scratch journal holds exactly 4 rows (C1, C2, C3 via --journal; D via mg.LOG_PATH = the same TMP file)
 Output never echoes a matched line (it would itself trip bgrun's scan)."""
 import contextlib
 import io
@@ -57,12 +59,16 @@ def nested_bgrun_code(text, tag):
 
 
 def gate_cli(argv):
+    # cycle 70 F6a: every CLI case journals into TMP, never into the production tools/bench/motor_gate.log
+    argv = argv + ["--journal", os.path.join(TMP, "motor_gate.log")]
     p = subprocess.run([sys.executable, GATE] + argv, capture_output=True, text=True, encoding="utf-8",
                        errors="replace", cwd=ROOT)
     return p.returncode, bool(re.search(r"(?m)^FAIL:", p.stdout))
 
 
 def main():
+    prod = mg.LOG_PATH
+    prod_size = os.path.getsize(prod) if os.path.exists(prod) else -1
     bad = body("pi_testmove_20260923e.log")
     c = nested_bgrun_code(bad, "pi_testmove")
     row(c == 1, "A1 pi_testmove replay via bgrun", "code %d" % c, "code 1")
@@ -105,6 +111,11 @@ def main():
     asi = open(os.path.join(ROOT, "tools", "motor_asi_io.ps1"), encoding="utf-8", errors="replace").read()
     n = pi.count('Write-Output "FAIL: PI MOV') + asi.count('Write-Output "FAIL: ASI move')
     row(n == 3, "E sender FAIL lines present", "count %d" % n, "count 3")
+    scratch = os.path.join(TMP, "motor_gate.log")
+    ns = sum(1 for _ in open(scratch, encoding="utf-8")) if os.path.exists(scratch) else 0
+    now = os.path.getsize(prod) if os.path.exists(prod) else -1
+    row(now == prod_size and ns == 4, "F production journal untouched", "bytes %d->%d scratch rows %d" % (
+        prod_size, now, ns), "unchanged, scratch rows 4")
 
     for ok, label, got, want in rows:
         print("%-4s %-44s got %-26s want %s" % ("PASS" if ok else "FAIL", label, got, want), flush=True)

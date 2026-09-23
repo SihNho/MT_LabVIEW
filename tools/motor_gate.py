@@ -543,10 +543,15 @@ def main(argv=None):
     p.add_argument("--execute", action="store_true", help="transmit (needs an open session and a matching readback)")
     p.add_argument("--limits", default=None, help="override the limits file path (tests)")
     p.add_argument("--status", default=None, help="override STATUS.md (tests)")
+    p.add_argument("--journal", default=None, help="override the decision journal tools/bench/motor_gate.log (tests; "
+                                                   "cycle 70 F6a: self-test rows had landed in the production journal)")
     p.add_argument("--reference", default=None, metavar="USER_ORDER",
                    help="USER-ORDERED PI reference move (FNL 1: 0 = negative limit switch). The value is the user's "
                         "own words ordering it, logged verbatim. Never automatic; the session hooks never call it.")
     a = p.parse_args(argv)
+    if a.journal:
+        global LOG_PATH
+        LOG_PATH = a.journal
 
     limits = load_limits(a.limits)
     if limits is None:

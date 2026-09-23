@@ -357,7 +357,7 @@ summary:
    **across retrospectives, from the files**
    — because "add a device when it repeats" is worthless if Claude is the one counting (the user's question:
    *"회고가 반복해서 위반을 지적하는지는 어떻게 알아?"*). **At 3 of the same slug the next cycle must build the
-   mechanical device for it first.** Only the user may lower that threshold. ⚠️ **SUSPENDED since 2026-09-18
+   mechanical device for it first.** Only the user may lower that threshold. ✅ **THE 2026-09-18 NO-NEW-DEVICE ORDER IS LIFTED (user, 2026-09-24 03:1x: "새로운 도구 만드는 걸 내가 막아뒀는데, 보니까 계속 구멍이 생기는 것 같아. 루프 판단에 따라 필요한 도구는 만드는 걸 허용할게") — after cycle 68 lost ~25 min to two missing scripting verbs (wiring to a loop's `i` terminal; no creator for `Not Equal?`/`Select`) and routed around them. A cycle's JUDGEMENT session decides a tool is necessary (it unblocks the stage, or the same class of work will need it again) and a material session builds it in that cycle, under every existing rule (peer-reviewed plan, stagekit, handle-count hygiene, measured before it acts). Deliverable-first ordering still holds: the tool is built because the deliverable needs it. The threshold below resumes with the same words; the suspension text is kept for history.** ⚠️ **(HISTORY) SUSPENDED since 2026-09-18
    08:53** by the user's standing order (*"장치는 더 민들지 말고 계속 진행"*, **user, 2026-09-18 08:53** — cited by
    DATE, never by a STATUS line number, which every relocation moves): while it
    stands, a slug reaching 3 is recorded as a FINDING in `docs/violation-decisions.md` and the next cycle builds

@@ -60,7 +60,8 @@ use — never a Traverse / node / diagram index (Pre-decided 158; `docs/d1-build
 | id | does | input file | output file (under `claudeDev`) | rows | Jev PAIR / rule |
 |---|---|---|---|---:|---|
 | **P0** | read-only census of the bed: wiki + graph for md5 `1a11d92a`; re-derive every group's cut list, crossing list and new-carrier list; measure handles open→close (STATUS ACT 2); O1 node sets of `#10170`/`#23041`; ForLoop/WhileLoop left-SR TOP collisions (Pre-decided 159). **MEASURED — see the P0 facts line under this table** | `D1_s3_loop15.vi` | `docs/wiki/subvi/D1_s3_loop15.json`, `tools/bench/graph_s3_loop15_<date>.json`, `tools/bench/split_rows_l2l7.json` (data, no VI) | 0 | — |
-| **L7-1** | move `#376` into the 1.7 body; 2 new SR pairs (`#15/#51`, `#24/#1108` move with their node, Pre-decided 156); re-wire its 12 rows (one batch); w4517 `#2626`→`#376` is made as a 1.1→1.7 crossing here and re-made as 1.2→1.7 at L2-B (the cost of the smallest-first order, accepted by Pre-decided 157) | `D1_s3_loop15.vi` | `D1_l7_1_<ts>.vi` (GUI save if broken, CLAUDE.md §3 rule 6) | 12 | 4 / 8 |
+| **P1** | pure-Python resolver (no LabVIEW): the 33 structure rows → the TUNNEL uid that carries each (outer face on `#639`, + inner frame diagrams), by wire identity on the bed's terminal table, cross-checked against S1's; plus F3a (the 12 FlatSequenceFrame-cut ForLoop owner chains re-derived from the `frame_diagram` column). **MEASURED — see the P1 facts line under the P0 facts** | `split_rows_l2l7.json`, `graph_s3_loop15_20260924.json`, `D1_s1_copy.json` wiki, `build_d1_v0.json` `cut` | `tools/bench/split_rows_l2l7.json` (new fields `p1_tunnel`, `resolved_by_p1`, `p1_wire_on_bed`, top-level `p1`; data, no VI) | 0 | — |
+| **L7-1** | **REWRITTEN 2026-09-24 by Pre-decided 164** (was: "2 SR pairs move with their node; re-wire its 12 rows; w4517 made as a 1.1→1.7 crossing here"): move `#376` into body `#23405` of `#23041`; create 1.7's TWO NEW SR pairs replacing `#15/#51` and `#24/#1108` (the old pairs stay on `#637` until L7-R), each new LEFT initialised off the same source as the original (`#4910` w4969, `#781` w3543); wire the 4 rows inside 1.7 (`#376` ↔ new SRs). Of `#376`'s 12 rows: in-1.7 4 · cross-loop OPEN 3 (i5 w4517, i7 w3268, i8 w1397 — queues, never made here) · L7-R 1 (i4) · split 1 (i3) · top-level tunnel 3 (i6/i9/i11, unwired; no stage owns them yet — OPEN). Prediction `tools/bench/l7_1_prediction.json` | `D1_s3_loop15.vi` | `D1_l7_1_<ts>.vi` (GUI save if broken, CLAUDE.md §3 rule 6) | 4 + 2 init | 6 / 0 |
 | **L7-R** | retire `#15/#51`, `#24/#1108` on `#637` after live-consumer check; re-feed `#6384`'s two inputs from 1.7's output tunnels; RBW; save by script | `D1_l7_1_<ts>.vi` | **`D1_s4_loop17.vi`** | retire + 2 | 0 / all |
 | **K** | move the CPU kernel `#5058` `Track N beads four-fold over-kernel-v3.vi` into the 1.2 body (Pre-decided 156; name-gated, `docs/cycle27-plan.md:754-755`); re-wire its 13 rows | `D1_s4_loop17.vi` | `D1_k_<ts>.vi` (GUI save if broken) | 13 | P0 recounts |
 | **L2-A1** | move group A (8) + the `Auto-Reset` / `Reset Tracking` control terminals into the 1.2 body; add 1.2's 4 SR pairs; re-wire batch 1 (incl. w10990 `#10757`→`#10407`, the only row left of old L2-C — Pre-decided 161) | `D1_k_<ts>.vi` | `D1_l2_a1_<ts>.vi` (broken by design → GUI Ctrl+S, CLAUDE.md §3 rule 6) | 13 | 3 / 10 |
@@ -79,7 +80,7 @@ use — never a Traverse / node / diagram index (Pre-decided 158; `docs/d1-build
 - **(1) O1:** body `#23166` is owned by WhileLoop `#10170` and body `#23405` by `#23041` (`:23`, `:27`); each holds ONLY its
   scaffold — `#10171` Comparison + `#23417` LoopTunnel, and `#23042` Comparison + `#23501` LoopTunnel (`:24`, `:28`); **0 plan
   L2/L7 nodes in either** (`:25`, `:29`). All 19 plan nodes (L2's 18 incl. `#5058`, L7's `#376`) are owned by `Diagram #639`
-  (loop `#637`, 1.1) (`:31-67`). Nothing on the bed binds either loop to 1.2 or 1.7 — O1 stays a naming choice.
+  (loop `#637`, 1.1) (`:31-67`). Nothing on the bed binds either loop to 1.2 or 1.7 — O1 stays a naming choice. **(O1 CLOSED 2026-09-24 by Pre-decided 163: 1.2 = `#10170`, 1.7 = `#23041`.)**
 - **(2) SR TOPs:** ForLoops `#1359` and `#29874` hold **0 shift registers** (loop table + `:86-87`), and **no ForLoop is nested
   inside any plan node** (owner chains of all 17 ForLoops, `:68-129`). Touched loops: `#637` — 12 lefts, TOPs all distinct,
   **0 collisions** (`:140`); `#10170` / `#23041` — 0 SRs (`:131`, `:133`). **J4 row: no TOP collision in any touched loop**
@@ -93,6 +94,30 @@ use — never a Traverse / node / diagram index (Pre-decided 158; `docs/d1-build
   (`:162-194`): a structure owns no terminal rows of its own (they sit on its tunnel uids), so the uid+name resolver cannot
   address them — the structures themselves are present on `#639` (`:31`, `:37`, `:47`, `:49`, `:61`). Those 33 rows need
   tunnel-uid addressing before any stage uses them.
+
+**P1 facts (MEASURED 2026-09-24 02:43–02:46, pure Python, no LabVIEW; `tools/bench/p1_c70_resolve.py` →
+`tools/bench/p1_c70_resolve.log` run 2 `:51-100` 7 pass / 0 fail `BGRUN END rc=0` `:100`; `tools/bench/p1_c70_f3a.py` →
+`tools/bench/p1_c70_f3a.log` run 2 `:40-79` 5/0 `BGRUN END rc=0` `:79`):**
+- **(1) rows: 92/92 resolved, 0 ambiguous, 0 unresolved** (`p1_c70_resolve.log:97`; tally name 59 + tunnel 33). Each of
+  the 33 structure rows is the OUTER face (on `#639`) of exactly one tunnel; the bed tunnel uid equals S1's for all 33
+  (`:88`). Tunnels per structure (`:89-93`): `#5540` → `5603 5967 5680 5702 5725 5825 6016` (t0..t6; inner frames
+  `5582/5592`) · `#10445` → `10465 10584 10750 11336` (inner `10453/10459`) · `#1359` → `9087 9227 9503 10004 10177
+  11363 31051 31137 28370` (t1..t9; inner `7911`) · `#2222` → `2276 2451 2765 2992 3176 6132 7091` (t0..t6; inner
+  `2235/2265`) · `#29874` → `29172 29777 29911 30135 29616 30896` (t1..t6; inner `29894`). Five rows had TWO tunnel
+  candidates on their wire and were decided by the inner-frame match with the structure's other tunnels (bed and S1
+  agree): `#1359` t3 w30592 (→9503, not 20497), t4 w28847 (→10004) / `#29874` t4 w28847 (→30135), `#1359` t8 w31166
+  (→31137) / `#29874` t6 w31166 (→30896). Inner-frame sets are one per structure and pairwise disjoint (`:94-95`).
+  Two NAME-resolved rows have an S1 wire uid absent on the bed: `#10757` t1 w10990, `#10686` t0 w10799 (`:96`).
+  Run 1 (`:1-50`) failed its S1 gate only because the S1 check skipped the inner-frame pass (script defect, fixed).
+- **(2) F3a:** every one of the 17 P0 ForLoop chains reaches TopLevelDiagram `#536` (`p1_c70_f3a.log:61`); the cut
+  frames are frames of the two top-level flat sequences — `{686, 81548, 113, 124, 759, 1817, 3121, 3628, 4866, 5031}`
+  and `{13236, 15041, 21134, 25769, 12960, 14840, 19687, 19887, 20261, 26117}`, owner `#536` (`:44-60`; every
+  FlatSequenceInnerTunnel reports its sequence's owner diagram as a third frame, 238 of them `#536`, `:41`); 167
+  directed edges agree with the derived tree, 0 contradictions (`:42`). **No ForLoop is nested inside any L2/L7 plan
+  structure** (`:62`). Left SRs: `#637` body `#639` 12 lefts, TOPs all distinct; ForLoops nested below `#639` =
+  `1359 2457 4810 29617 29874`, their lefts `#2603` 1 · `#29629` 2 (TOPs 1675/1620) · `#7911` 0 · `#29894` 0, no TOP
+  collision; `#10170`/`#23041` bodies 0 lefts, nothing nested (`:63-77`). **J4: no two ForLoop left SRs in the
+  affected loops share a TOP.**
 
 **Why L2 before L7 — SUPERSEDED by Pre-decided 157** (kept for the record): `#376` t5 `current frame data array in` is fed by w4517 from
 `#2626` (group B) (`build_d1_v0.json` key `cut`, rows `[2626,0,…,4517]` and `[376,5,…,4517]`). If L7 ran first,
@@ -154,6 +179,7 @@ has no entry) → `write_record` → `stagekit.Stage.from_decision` (`tools/stag
      `#1147 #5796 #119 #7311 #15 #24` (rights), paired `#1142 #5805 #2972 #11001 #51 #1108`.
 150. **Loops b `#10170` (body `#23166`) and c `#23041` (body `#23405`) exist and are unassigned**
      (`docs/cycle27-plan.md:1081-1083`, `:1134-1138`: *"b and c are assigned when their node sets are named"*).
+     **SUPERSEDED 2026-09-24 by Pre-decided 163 (assigned: 1.2 = `#10170`, 1.7 = `#23041`).**
 151. **The kernel `#5058` is still on the frame loop** (`frame_diagram 639`, 16 terminals, 13 wired, rowD wiki);
      it is coupled to group A in BOTH directions: `#5540` t2/t6 → `#5058` (w5637, w5975) and `#5058` t8 → w121 →
      `#10969`, `#10757`; and to group B: `#5058` t4 → w505 → `#2222`, `#2626` (`build_d1_v0.json` key `cut`).
@@ -205,15 +231,29 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
      SAVES its file and the next sub-stage starts from that file, in a FRESH LabVIEW instance.** Stated per stage in
      §2's header line; a stage script that re-wires on an unsaved in-memory predecessor is the route-B failure again.
 
+163. **(cycle 70 judgement) O1 CLOSED: loop 1.2 = WhileLoop `#10170` (body `#23166`); loop 1.7 = WhileLoop `#23041`
+     (body `#23405`).** Evidence: S2's planned positions 1.2=(2600,2600) / 1.5=(2600,3400) / 1.7=(2600,4200)
+     (`tools/recipes/build_d1_routeb_v7.py:793`, `tools/recipes/stage_d1_s2.py:432`); `#23041` sits at (2600,4200)
+     (`tools/bench/stage_d1_s2_loops.log:75`); `docs/cycle27-plan.md:1137` already swapped 1.2↔1.5 by assigning
+     `#23032` to 1.5, so 1.2 takes the remaining `#10170`.
+164. **(cycle 70 judgement) L7-1 carrier scope.** Inputs to 1.7 that come from a PARALLEL loop (1.1 `#637`, or the
+     future 1.2) are carried by QUEUES per `docs/d1-build-plan.md:308` §11b.3 — never an indicator/Local (lossy for
+     saved data = rule 1a). L7-1 therefore does NOT wire those rows; it leaves them OPEN and lists them. L7-1 DOES:
+     move `#376` into body `#23405`; create 1.7's two new SR pairs replacing `#15/#51` (accumulator) and `#24/#1108`
+     (error chain) on `#23041`, each new LEFT SR's initial value wired from the SAME top-level source that initialises
+     the original pair (read on the live bed; top-level → loop is a tunnel/SR-init row, not a crossing); wire every row
+     whose both ends are inside 1.7 after the move (`#376` ↔ its SRs). The two re-feeds of `#6384` from 1.7 output
+     tunnels and the retirement of the old pairs stay in L7-R.
+
 ## OPEN (design choices — for judgement; not decided here)
 
 > 2026-09-24: O2, O3, O4 (SR half; the queue half is QRT), O6 (placement + route), O7, O8 are CLOSED by Pre-decided
-> 156–161. O1 awaits P0's node-set facts. O5 stays open (prior-art: `connect_nested` refuted,
+> 156–161. O1 is CLOSED by Pre-decided 163 (2026-09-24). O5 stays open (prior-art: `connect_nested` refuted,
 > `docs/cycle27-plan.md:108-114`; helpers = `probe_move_ctlterm_v0.py:327-351` route and the `Z/dZ` temp-sink chain
 > `docs/cycle27-plan.md:115-117`).
 
-- **O1 loop identity.** Which of `#10170` / `#23041` is 1.2 and which 1.7 (Pre-decided 150). Arbitrary but binding
-  once named (`docs/cycle27-plan.md:1137`).
+- ~~**O1 loop identity.** Which of `#10170` / `#23041` is 1.2 and which 1.7 (Pre-decided 150). Arbitrary but binding
+  once named (`docs/cycle27-plan.md:1137`).~~ **CLOSED by Pre-decided 163.**
 - **O2 the kernel.** `docs/cycle27-plan.md:752` says relocating `#5058` (CPU) *"is what S2 must do"*; S2 did not
   (Pre-decided 151); `build_d1_v0.json` moved 17 without it (route A deleted it for `GPU_kernel_v1.vi`,
   `docs/d1-build-plan.md:287`). If A and B go to 1.2 while `#5058` stays on 1.1, the reseed feedback

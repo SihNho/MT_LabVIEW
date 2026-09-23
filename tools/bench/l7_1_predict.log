@@ -1,0 +1,39 @@
+BGRUN START 2026-09-24 02:57:32 limit 5.0 min: py -u tools/bench/l7_1_predict.py
+---------- [a] #376's 12 rows, classified (split_rows_l2l7.json + graph_s3_loop15)
+  ROW  i0  'error out'                        w541   to-sr                  -> in-1.7
+  ROW  i1  'total data array out'             w464   to-sr                  -> in-1.7
+  ROW  i2  'error in'                         w4880  from-sr                -> in-1.7
+  ROW  i3  'file progress'                    w5274  source-side            -> cross-loop OPEN + L7-R (split net)
+  ROW  i4  'file number to append out'        w5056  source-side            -> L7-R
+  ROW  i5  'current frame data array in'      w4517  cross-loop:1.2->1.7    -> cross-loop OPEN
+  ROW  i6  'cal cluster path'                 w3629  from-tunnel            -> top-level tunnel (unwired, not in 164's DO list)
+  ROW  i7  'frame index'                      w3268  from-tunnel            -> cross-loop OPEN
+  ROW  i8  'saved file refnum'                w1397  from-stay:3052         -> cross-loop OPEN
+  ROW  i9  'file size'                        w1581  from-tunnel            -> top-level tunnel (unwired, not in 164's DO list)
+  ROW  i10 'total data array in'              w3497  from-sr                -> in-1.7
+  ROW  i11 'selected path'                    w5090  from-tunnel            -> top-level tunnel (unwired, not in 164's DO list)
+  FACT  class counts {'in-1.7': 4, 'cross-loop OPEN': 3, 'L7-R': 1, 'cross-loop OPEN + L7-R (split net)': 1, "top-level tunnel (unwired, not in 164's DO list)": 3}; plus 2 SR-init rows (#4910 -> new L1 outer via w4969, #781 -> new L2 outer via w3543)
+  PASS  A1 12 rows for #376, every one classified  12
+  PASS  B0 baseline computation_diff(S1, bed-as-built-here) == 0 rows  0
+---------- [b] PREDICTED computation_diff(S1, new) rows
+  ROW  #376 SubVI 'cal cluster path': before ["#3391 ParameterTerminal 'string'"] -> after []
+  ROW  #376 SubVI 'current frame data array in': before ["#2626 Terminal 'appended array'"] -> after []
+  ROW  #376 SubVI 'file size': before ["#1766 ParameterTerminal '32bit integer'"] -> after []
+  ROW  #376 SubVI 'saved file refnum': before ["#3052 Terminal 'File # Saved'"] -> after []
+  ROW  #376 SubVI 'selected path': before ["#29551 ParameterTerminal 'path'"] -> after []
+  ROW  #2048 GrowableFunction 'array': before ["#376 Terminal 'total data array out'"] -> after []
+  ROW  #2048 GrowableFunction 'length': before ["#376 Terminal 'file progress'"] -> after []
+  ROW  #3453 ControlTerminal 'file progress': before ["#376 Terminal 'file progress'"] -> after []
+  ROW  #6384 SubVI 'actual # data points': before ["#376 Terminal 'file progress'"] -> after []
+  ROW  #6384 SubVI 'error in': before ["#376 Terminal 'error out'"] -> after []
+  ROW  #6384 SubVI 'file # to append': before ["#376 Terminal 'file number to append out'"] -> after []
+  FACT  11 predicted CDIFF rows; computation nodes added [{'node': 9996, 'class': 'Function'}, {'node': 10171, 'class': 'Comparison'}, {'node': 23035, 'class': 'Comparison'}, {'node': 23042, 'class': 'Comparison'}, {'node': 23459, 'class': 'Function'}, {'node': 23541, 'class': 'ControlTerminal'}, {'node': 23576, 'class': 'ControlTerminal'}, {'node': 23844, 'class': 'Function'}, {'node': 23874, 'class': 'DigitalNumericConstant'}] removed []
+  PASS  B1 #376 'error in' / 'total data array in' are NOT CDIFF rows (the new SR pairs reproduce S1's sources)  []
+---------- [c] PREDICTED diff(bed, new)
+  FACT  nodes_added [9000001, 9000002, 9000003, 9000004] nodes_removed []
+  FACT  edges_removed (node pairs) [(51, 376), (376, 15), (376, 24), (376, 1929), (376, 3453), (376, 5020), (639, 376), (1108, 376), (2294, 376), (2626, 376), (3052, 376), (3644, 376), (5096, 376)]
+  FACT  edges_added (node pairs) [(376, 9000001), (376, 9000003), (781, 9000004), (4910, 9000002), (9000001, 9000002), (9000002, 376), (9000003, 9000004), (9000004, 376)]
+  PASS  C1 every removed edge touches #376  []
+  PASS  C2 every added edge touches a new SR  [(376, 9000001), (376, 9000003), (781, 9000004), (4910, 9000002), (9000001, 9000002), (9000002, 376), (9000003, 9000004), (9000004, 376)]
+=== GATES: 5 pass / 0 fail
+BGRUN END rc=0 after 2s

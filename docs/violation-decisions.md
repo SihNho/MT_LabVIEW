@@ -1065,3 +1065,28 @@ The Jev insertions wired 2026-09-23 (#2 gate-row verdicts, #5 row check, #7 cont
 is what the 2-cycle run restarted at 03:5x measures.
 
 **Recorded, not repaired around:** no log deleted, no date rolled, `CYCLE_GUARD_OFF` never set.
+
+## device-failed — 2026-09-24 03:20 (cycle 70 material, TRANSCRIBING the cycle-68 judgement disposition of `archive/peer/2026-09-24-retrospective-cycle68.md:363`)
+
+`guard_cycle.py` refused the cycle-70 L7-1 recipe launch because this dated block was missing. The decision itself
+was taken by the cycle-68 judgement session (`archive/peer/2026-09-24-retrospective-cycle68.md:373`, ACCEPTED as a
+REPAIR of an existing device) and executed by cycle 69 (`…:380` `FIXED:` line). This block only records it.
+
+DECISION: device (repair of the existing device, done 2026-09-24 by cycle 69)
+
+**What was built:** `tools/motor_gate.py:611` prints `FAIL: motor_gate exit N - <meaning>` on every non-zero exit, the
+PI/ASI senders print `FAIL:` on REJECTED / NOT-at-target, `tools/bgrun.py` + `tools/audit_cycle.py` FAILURE_RE match
+`^RESULT: REJECTED|NOT at target` and a non-zero `ERR?=`; `tools/bench/selftest_motor_fail_exit.py` 10/10.
+
+## inference-over-measurement — 2026-09-24 03:20 (cycle 70 material, TRANSCRIBING the cycle-68 judgement disposition of `archive/peer/2026-09-24-retrospective-cycle68.md:362`)
+
+Same refusal, same origin: the cycle-68 judgement session ACCEPTED the occurrence (PI zero declared from the counter
+instead of a reference move) and recorded it as already repaired before cycle 68 ran
+(`archive/peer/2026-09-24-retrospective-cycle68.md:372`). This block only records that decision.
+
+DECISION: no-device
+
+**Why no device.** The repair is the user-ordered session-start reference (`FNL 1` + 2 mm commanded-vs-readback
+verify, 3 attempts; CLAUDE.md 1b, `tools/motor_gate.py:553-554`), already in force and passed at the cycle-67 session
+start (`tools/bench/motor_session_start_cycle67.log`); a further device would be new construction under the user's
+2026-09-18 08:53 order. Recorded, not repaired around: no log deleted, no date rolled, `CYCLE_GUARD_OFF` never set.
