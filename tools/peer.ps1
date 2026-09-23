@@ -435,7 +435,7 @@ if ($Agent -eq 'codex') {
         # OPUS at effort MAX, not high (user, 2026-09-17). This role replaces codex on the one review layer where
         # being wrong costs a whole rebuild, so it gets the ceiling.
         $usedModel = if ($Model) { $Model } else { 'claude-opus-5-5' }
-        $usedEffort = if ($Effort) { $Effort } else { 'xhigh' }
+        $usedEffort = if ($Effort) { $Effort } else { 'high' }
     } elseif ($Role -eq 'fact' -or $Role -eq 'prose') {
         # FABLE at LOW (user, 2026-09-18). A pure fact lookup and a report written from a fact list are the two
         # jobs where the cell's own reasoning is cheapest to buy - the cost that mattered was the fixed context
