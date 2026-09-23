@@ -196,6 +196,40 @@ def conpane_pass(paths, chunk=12):
     return out, failed
 
 
+FS_KINDS = {"FlatSequenceOuterTunnel": "OUT", "FlatSequenceInnerTunnel": "IN"}
+
+
+def read_fs_tunnels(path, objs, uids=None):
+    """STEP 4b: every flat-sequence tunnel's two faces, READ from the machine, one op run per tunnel.
+
+    NOTHING NEW IS BUILT: the two uid-addressed readers exist since 2026-09-18
+    (`tools/recipes/build_opfstunnelterm_v2.py`, 38/38) - `OpFsTunnelTerm_v0` (FSOT: `OuterTerminal`
+    3195B800 / `InnerTerminal` 3195B801) and `OpFsInnerTunnelTerm_v0` (FSIT: `LeftTerm` 1C3A9000 /
+    `RightTerm` 1C3A9001) - and their poisoned caller `read_tunnel` is imported, never re-typed.
+    Returns [{uid, class, face_a, term_a, wire_a, face_b, term_b, wire_b, err, err_a, err_b, errs}]."""
+    rec_dir = os.path.join(HERE, "recipes")
+    if rec_dir not in sys.path:
+        sys.path.insert(0, rec_dir)
+    import importlib
+    T = importlib.import_module("build_opfstunnelterm_v2")
+    ops, out = {}, []
+    for o in objs:
+        k = FS_KINDS.get(o["class"])
+        if not k or (uids is not None and int(o["uid"]) not in uids):
+            continue
+        if k not in ops:
+            lab = json.load(open(T.LABELS_OUT if k == "OUT" else T.LABELS_IN, encoding="utf-8"))
+            ops[k] = (g.op(T.OP_OUT if k == "OUT" else T.OP_IN), lab)
+        vi, lab = ops[k]
+        r = T.read_tunnel(vi, lab, path, int(o["uid"]))
+        out.append({"uid": int(o["uid"]), "class": o["class"],
+                    "face_a": lab["face_a"], "term_a": r["term_a_uid"], "wire_a": r["wire_a"],
+                    "face_b": lab["face_b"], "term_b": r["term_b_uid"], "wire_b": r["wire_b"],
+                    "uid_back": r["uid_back"], "err": r["err"], "err_a": r["err_a"],
+                    "err_b": r["err_b"], "errs": r["errs"]})
+    return out
+
+
 def read_one(path, conpane, calls, main_vi):
     """One VI -> the wiki record. Two op runs (GObject census, Terminal traverse) + one subvis per diagram."""
     t0 = time.time()
@@ -208,6 +242,11 @@ def read_one(path, conpane, calls, main_vi):
         objs.append({"uid": u, "class": o["class"], "pos": tuple(o["pos"]), "owner": o["owner"]})
     leaf = dict((o["uid"], o["class"]) for o in objs)
     t_obj = time.time() - t0
+
+    # STEP 4b: the flat-sequence tunnels' faces, READ (tools/bench/diag_fstunnel_pairs.log, 14/0).
+    t0 = time.time()
+    fs_pairs = read_fs_tunnels(path, objs) if any(o["class"] in FS_KINDS for o in objs) else []
+    t_fs = time.time() - t0
 
     rows, t_term = A.read_terms(path, op=OPREADER[0])
     for r in rows:
@@ -248,7 +287,14 @@ def read_one(path, conpane, calls, main_vi):
         "md5": md5(path),
         "bytes": os.path.getsize(path),
         "read": {"gobject_s": round(t_obj, 2), "terminals_s": round(t_term, 2),
-                 "subvis_s": round(t_sub, 2), "when": time.strftime("%Y-%m-%d %H:%M:%S")},
+                 "subvis_s": round(t_sub, 2), "fs_tunnels_s": round(t_fs, 2),
+                 "when": time.strftime("%Y-%m-%d %H:%M:%S")},
+        # STEP 4b. One row per FlatSequence{Outer,Inner}Tunnel uid, both faces READ by uid:
+        # FSOT face_a OuterTerminal / face_b InnerTerminal; FSIT face_a LeftTerm / face_b RightTerm.
+        # MEASURED on S1: every physical inner tunnel is TWO FSIT uids reporting the same two faces
+        # (Left/Right swapped). vigraph.build4 turns each row into ONE exact `fs` edge, sink face ->
+        # source face, and falls back to the heuristic when this key is absent.
+        "fs_tunnel_pairs": fs_pairs,
         "connector_pane": pane,
         "connector_pane_source": source,
         "connector_pane_unassigned_slots": conpane.get(path + "\x00blank", 0),
@@ -289,6 +335,9 @@ def main(argv=None):
                     help="v1 = OpAllTerms_v1.vi, which adds the 7th column frame_diagram (the frame a "
                          "terminal sits on). The delivered wiki was built on v0; switching costs a full "
                          "re-read of every VI (~14 min for 96), so it is a deliberate flag, not a default.")
+    ap.add_argument("--refresh", action="append", default=[],
+                    help="fnmatch on the wiki KEY: force a re-read of just these entries, ignoring the md5 "
+                         "gate for them only (the others stay md5-gated). Repeatable.")
     a = ap.parse_args(argv)
     OPREADER[0] = A.OP_ALLTERMS_V1 if a.op == "v1" else A.OP_ALLTERMS
     fact("terminal reader: {0}".format(os.path.basename(OPREADER[0])))
@@ -310,7 +359,8 @@ def main(argv=None):
     todo, skipped = [], []
     for p in allp:
         k = key_of(p)
-        if not a.force and index.get(k, {}).get("md5") == md5(p) and \
+        forced = a.force or any(fnmatch.fnmatch(k, pat) for pat in a.refresh)
+        if not forced and index.get(k, {}).get("md5") == md5(p) and \
                 os.path.exists(os.path.join(WIKI, k + ".json")):
             skipped.append(k)
         else:
@@ -351,6 +401,19 @@ def main(argv=None):
             json.dump({"built": time.strftime("%Y-%m-%d %H:%M:%S"), "n": len(index), "vis": index},
                       f, indent=1)
         times[k] = round(time.time() - t0, 2)
+        if rec["fs_tunnel_pairs"]:
+            try:
+                import bench_prep
+                hnd = bench_prep.labview_handles()
+            except Exception as e:                                                 # noqa: BLE001
+                hnd = "unread: {0}".format(str(e)[:60])
+            fsr = rec["fs_tunnel_pairs"]
+            fact("{0}: fs_tunnel_pairs {1} rows ({2} FSOT / {3} FSIT), clean both faces {4}, {5}s; "
+                 "LabVIEW handles now {6}".format(
+                     k, len(fsr), sum(1 for x in fsr if x["class"].endswith("OuterTunnel")),
+                     sum(1 for x in fsr if x["class"].endswith("InnerTunnel")),
+                     sum(1 for x in fsr if x["term_a"] and x["term_b"] and not x["err_a"] and not x["err_b"]),
+                     rec["read"]["fs_tunnels_s"], hnd))
         print("  FACT  [{0}/{1}] {2}  {3}s  terms {4} wires {5} pane {6}/{7} subvis {8} io {9}".format(
             n, len(todo), k, times[k], gs["terminals"], gs["wires"], len(rec["connector_pane"]),
             rec["connector_pane_source"][:4], len(gs["subvi_calls"]), len(rec["io_paths"])), flush=True)

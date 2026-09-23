@@ -58,7 +58,20 @@ def load(key):
         for _d, rows in json.load(open(p, encoding="utf-8")).get("diagrams", {}).items():
             for x in rows:
                 labels[int(x["uid"])] = x.get("label", "")
-    return rec, V.build4(rec["terminals"], objs, loops, labels)
+    HEUR[key] = V.build4(rec["terminals"], objs, loops, labels)          # the fallback, for contrast
+    return rec, V.build4(rec["terminals"], objs, loops, labels, rec.get("fs_tunnel_pairs"))
+
+
+HEUR = {}
+# STEP 4b sequence-crossing cases, found in the S1 wiki + tools/bench/diag_fstunnel_pairs.json and checked
+# there by hand (face uids from the machine read, wire ends from the wiki's terminal rows):
+#   R1 `VISA out`: source of w34418 (outside) -> FSOT #34409 -> FSIT #13215 -> #14818 -> #15027 -> #19673
+#      -> the sinks of w20087 (4 frame crossings after the outer border)
+#   R2 `refnum out`: source of w59107 -> FSOT #59098 -> FSOT #59090 (a NESTED flat sequence) -> FSIT
+#      #59069 -> #59041 -> the sinks of w7255
+REACH_CASES = (("R1 VISA out, FSOT + 4 FSIT", 34418, 20087), ("R2 refnum out, 2 nested FSOT + 2 FSIT", 59107, 7255))
+# the step-4 diff counts this change must not move (tools/bench/vigraph_check.log, 2026-09-23 08:2x)
+DIFF_BEFORE = {"edges_removed": 15, "edges_added": 42, "changed_sinks": 9}
 
 
 def dump(name, payload):
@@ -165,6 +178,51 @@ def main():
                                              [V.show(x) for x in eff][:3]))
     gate("G6 build + diff under 5 s on the bed", (t_bed + t_diff) < 5.0,
          "build {0:.2f}s + diff {1:.2f}s".format(t_bed, t_diff))
+
+    # --- STEP 4b gates -----------------------------------------------------------------------------
+    for tag, G in (("S1", A), ("bed", B)):
+        m = G["method"]["fs_tunnel"]
+        gate("G7 {0}: every FSOT paired from the machine faces".format(tag),
+             m.get("outer_paired") == m.get("outer") and m.get("outer", 0) > 0 and "machine" in m["rule"],
+             json.dumps(m)[:300])
+        byrule = {}
+        for k, a, b, info in G["edges"]:
+            if k == "fs":
+                r = str(info).split(":")[0] if str(info).startswith("faces") else "heuristic"
+                byrule[r] = byrule.get(r, 0) + 1
+        fact("G7 {0}: fs edges by rule {1}; heuristic fallback would give {2}".format(
+            tag, byrule, json.dumps(HEUR[S1K if tag == "S1" else BEDK]["method"]["fs_tunnel"])[:200]))
+    # G8 - run 1 of 4b (17:06) read 16/43/9, i.e. +1/+1 against step 4, and FAILED the unchanged-count
+    # form of this gate. Row by row, the whole delta is ONE physical inner tunnel: FSIT #7468 - the Row D
+    # target (M3a-3b, the bed's own name) - whose faces are named 'VISA out' in S1 and 'Outgoing Handle'
+    # in the bed. Step 4 carried it only as a `thru` edge, which diff excludes; the exact `fs` edge is
+    # a diff kind, so the rename is now SEEN. The gate asserts exactly that and nothing else.
+    fsd = [("-",) + tuple(e) for e in d["edges_removed"] if e[0] == "fs"] + \
+          [("+",) + tuple(e) for e in d["edges_added"] if e[0] == "fs"]
+    rest = {"edges_removed": d["counts"]["edges_removed"] - sum(1 for x in fsd if x[0] == "-"),
+            "edges_added": d["counts"]["edges_added"] - sum(1 for x in fsd if x[0] == "+"),
+            "changed_sinks": d["counts"]["changed_sinks"]}
+    for x in fsd:
+        fact("G8 fs edge {0} {1} -> {2}".format(x[0], V.show(x[2]), V.show(x[3])))
+    gate("G8 diff(S1, bed) minus the fs edges == step 4's 15/42/9, and the fs delta is one -/+ pair on "
+         "FSIT #7468 (Row D)",
+         rest == DIFF_BEFORE and len(fsd) == 2 and {x[0] for x in fsd} == {"-", "+"} and
+         all(V.key_parts(x[2])[0] == 7468 and V.key_parts(x[3])[0] == 7468 for x in fsd),
+         "{0}; non-fs {1} vs step 4 {2}".format(d["counts"], rest, DIFF_BEFORE))
+    for label, w_src, w_snk in REACH_CASES:
+        src = [k for k in V.wire_terminals(A, w_src) if A["rows"][k]["is_source"]]
+        snk = [k for k in V.wire_terminals(A, w_snk) if not A["rows"][k]["is_source"]]
+        got = V.reach4(A, src, kinds=("wire", "fs")) if src else set()
+        H = HEUR[S1K]
+        old = V.reach4(H, src, kinds=("wire", "fs")) if src else set()
+        oldall = V.reach4(H, src) if src else set()
+        p = V.path(A, src[0], snk[0], kinds=("wire", "fs")) if src and snk else []
+        gate("G9 {0}: reach(wire+fs) from {1} hits {2}".format(label, [V.show(x) for x in src],
+                                                              [V.show(x) for x in snk][:2]),
+             bool(snk) and any(x in got for x in snk),
+             "path {0} hops: {1}".format(len(p), " -> ".join(V.show(x) for x in p)[:380]))
+        fact("G9 {0}: heuristic graph wire+fs reaches it: {1}; heuristic graph with thru: {2}".format(
+            label, any(x in old for x in snk), any(x in oldall for x in snk)))
     fact("total {0:.1f}s".format(time.time() - t0))
     print("=== STEP 4b: {0} pass / {1} fail".format(N["pass"], N["fail"]), flush=True)
     return 1 if N["fail"] else 0

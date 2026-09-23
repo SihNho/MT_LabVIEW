@@ -245,11 +245,13 @@ def show(key):
                                     "" if ordinal == 0 else " [{0}]".format(ordinal))
 
 
-def build4(terms, objs=None, loops=None, labels=None):
+def build4(terms, objs=None, loops=None, labels=None, fs_pairs=None):
     """The full terminal-level graph. `terms` = OpAllTerms_v1 rows (the 7th column `frame_diagram` is
     REQUIRED for frame-exact sequence tunnels), each tagged with `term_class` (leaf class, from
     `objs`). `objs` = the GObject census (positions). `loops` = [{loop_uid, right_uids}] read from
-    `Loop.Shift Registers[]` - the exact membership the pairing is VALIDATED against."""
+    `Loop.Shift Registers[]` - the exact membership the pairing is VALIDATED against.
+    `fs_pairs` = the wiki's `fs_tunnel_pairs` (STEP 4b: both faces of every flat-sequence tunnel READ by
+    uid). When given, FS edges come from it EXACTLY; when absent, the step-4 heuristic runs."""
     pos, leaf = {}, {}
     for o in (objs or []):
         pos[int(o["uid"])] = tuple(o["pos"])
@@ -298,6 +300,10 @@ def build4(terms, objs=None, loops=None, labels=None):
     for node, rs in by_node.items():
         if cls.get(node) in DIAGRAM_OWNER or cls.get(node) == FP_CLASS:
             continue                      # a diagram is not a data path; an FP terminal has one side
+        if fs_pairs and cls.get(node) == FS_IN:
+            continue                      # 4b: the traverse's OWNER for an FSIT row is wrong for half of
+            #                               them (4 rows under one uid of a physical pair, 2 of them not
+            #                               faces at all) - the exact `fs` edge below replaces `thru` here
         ins = [r for r in rs if not r["is_source"]]
         outs = [r for r in rs if r["is_source"]]
         for a in ins:
@@ -372,6 +378,50 @@ def build4(terms, objs=None, loops=None, labels=None):
 
     outers = [u for u, c in cls.items() if c == FS_OUT]
     inners = [u for u, c in cls.items() if c == FS_IN]
+    if fs_pairs:
+        # STEP 4b - EXACT, from the machine (tools/bench/diag_fstunnel_pairs.log, 14/0 on S1):
+        #   * FSOT: OuterTerminal + InnerTerminal == the two rows the traverse gives that FSOT (58/58);
+        #   * FSIT: Left + Right, on DIFFERENT frames (518/518); every PHYSICAL inner tunnel is TWO FSIT
+        #     uids reporting the same two faces swapped (259 pairs), and the traverse files all four
+        #     rows of the pair under ONE of the two uids - two faces plus two NON-face terminals
+        #     (frame_diagram mostly the TopLevelDiagram) joined only to each other by one wire.
+        # EDGE: one `fs` edge per physical tunnel, its SINK face -> its SOURCE face. info = "faces:<uid>"
+        # (the rule that made it; the heuristic's edges carry the frame uid instead).
+        by_term = dict((r["term_uid"], r) for r in rows)
+        done, fs_edges, unpaired, n_out, n_in = set(), 0, [], 0, 0
+        for p in fs_pairs:
+            a, b = by_term.get(p.get("term_a")), by_term.get(p.get("term_b"))
+            ok = bool(a and b and not p.get("err_a") and not p.get("err_b") and
+                      a["is_source"] != b["is_source"])
+            if not ok:
+                unpaired.append(p["uid"])
+                continue
+            if p["class"] == FS_OUT:
+                n_out += 1
+            else:
+                n_in += 1
+            phys = frozenset((a["term_uid"], b["term_uid"]))
+            if phys in done:
+                continue
+            done.add(phys)
+            src, snk = (a, b) if a["is_source"] else (b, a)
+            edges.append(("fs", snk["key"], src["key"], "faces:{0}".format(p["uid"])))
+            fs_edges += 1
+        faces = set()
+        for p in fs_pairs:
+            faces |= {p.get("term_a"), p.get("term_b")}
+        phantom = sum(1 for r in rows if r["owner_class"] == FS_IN and r["term_uid"] not in faces)
+        method["fs_tunnel"] = {"rule": "machine faces (wiki fs_tunnel_pairs: OuterTerminal/InnerTerminal, "
+                                       "LeftTerm/RightTerm read by uid); sink face -> source face",
+                               "outer": len(outers), "outer_paired": n_out,
+                               "inner_uids": len([p for p in fs_pairs if p["class"] == FS_IN]),
+                               "inner_paired_uids": n_in, "physical_tunnels": len(done),
+                               "edges": fs_edges, "unpaired_uids": unpaired[:20],
+                               "unpaired_outer": sum(1 for p in fs_pairs if p["class"] == FS_OUT
+                                                     and p["uid"] in unpaired),
+                               "fsit_nonface_rows_isolated": phantom,
+                               "fsit_thru_suppressed": True}
+        outers = []                       # the heuristic below is the FALLBACK only
     in_by_y = collections.defaultdict(list)
     for u in inners:
         in_by_y[round(pos.get(u, (0, -10 ** 9))[1])].append(u)
@@ -397,10 +447,11 @@ def build4(terms, objs=None, loops=None, labels=None):
                         fs_edges += 1
         if not hit:
             fs_unpaired.append(u)
-    method["fs_tunnel"] = {"outer": len(outers), "inner": len(inners), "pairs": len(fs_pairs),
-                           "edges": fs_edges, "unpaired_outer": len(fs_unpaired),
-                           "rule": "equal TOP + a COMMON frame (frame_diagram); source -> sink inside "
-                                   "that frame"}
+    if "fs_tunnel" not in method:         # the fallback's own record (the exact rule wrote its own)
+        method["fs_tunnel"] = {"outer": len(outers), "inner": len(inners), "pairs": len(fs_pairs),
+                               "edges": fs_edges, "unpaired_outer": len(fs_unpaired),
+                               "rule": "HEURISTIC fallback (no fs_tunnel_pairs): equal TOP + a COMMON frame "
+                                       "(frame_diagram); source -> sink inside that frame"}
 
     # --- 5 LOCAL / GLOBAL ---------------------------------------------------------------------------
     fp_by_label = collections.defaultdict(list)
