@@ -1,7 +1,7 @@
 r"""stage_d1_l7_1b - cycle 71 L7-1b (split plan PD 165/166/168-171). INPUT = the SAVED L7-1a file (tools/bench/stage_d1_l7_1a.json), FRESH
 LabVIEW. 9 rows: 4 S1-MAPPED body rows (PD168: wired iff Jev TOP == mapped pair, else STOP), 2 SR-init RULE rows (PD165; Jev logged, STOP if
 p<0.30), 3 tunnel RULE rows (PD166, no Jev). Corrected intent lines (PD171(1)). PB computation_diff FATAL before save (PD170(c)). PD172: the 3
-L7-R edges are BASELINE (gate PC3). PD173: second pass by TERMINAL UID (stagekit.address/match_term_uid). PRIOR ART: stage_d1_l7_1.py copied; changed: input, SRs read not created, lines, modes, PB fatal. CONTRACT: l7_1b_predict.log.
+L7-R edges are BASELINE (gate PC3). PD173/PD174: FIRST wiring resolves by NAME (candidate `term_uid` is ignored by stagekit.address); the second pass alone passes `verify_term_uid`. PRIOR ART: stage_d1_l7_1.py copied; changed: input, SRs read not created, lines, modes, PB fatal. CONTRACT: l7_1b_predict.log.
     py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_l7_1b.log -- py -u tools/recipes/stage_d1_l7_1b.py"""
 import copy, json, os, sys, time                                                   # noqa: E401
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -93,7 +93,7 @@ def body(s):
     execute(s, rules, "rules")
     for lab, src, u, t, dg in (("err_L", E["left"], 376, "error in", B17), ("acc_L", A["left"], 376, "total data array in", B17),
                                ("err_init", 4910, L17, rules[0]["nm"], F686), ("acc_init", 781, L17, rules[1]["nm"], F686)):
-        s.expect_is_broken_false(lab, lambda src=src, u=u, t=t, dg=dg, tu=TU[lab][0]: s.cfw_second_pass(src, {"uid": u, "term": t, "term_uid": tu, "diagram": dg, "owner_class": "", "term_class": ""}))
+        s.expect_is_broken_false(lab, lambda src=src, u=u, t=t, dg=dg, tu=TU[lab][0]: s.cfw_second_pass(src, {"uid": u, "term": t, "verify_term_uid": tu, "diagram": dg, "owner_class": "", "term_class": ""}))  # PD174: uid ONLY here
     s.junk_purge("final"); a = dict((c, s.count(c)) for c in CLS)  # noqa: E702
     s.gate("P3 WhileLoop/Local/ControlTerminal/SubVI delta 0", all(a[c] == b[c] for c in CLS[:4]), "{0} -> {1}".format(b, a)); s.es("after all rows (warm, RECORDED)")  # noqa: E702
     Gn = lg(s, "new"); cd = V.computation_diff(S1, Gn)  # noqa: E702

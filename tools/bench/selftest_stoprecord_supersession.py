@@ -243,6 +243,66 @@ def run_exemption_case():
     return out
 
 
+def run_novel_case():
+    """CASE 5 (cycle 72 firefighter). Old RELEASED record at s1; bytes edited to s2; a NOVEL review of s2 written
+    through `write_novel_record` -> the launch is ALLOWED (5a). Bytes edited AGAIN to s3 -> REFUSED (5b, the
+    original protection). The novel review file tampered to carry a blocking slug -> REFUSED (5c, no laundering).
+    A novel record cannot be written from a review whose answer is not purely novel (5d)."""
+    if not hasattr(stop_record, "write_novel_record"):
+        return None
+    tmp = tempfile.mkdtemp(prefix="novel_")
+    stem = "scratch_novel_%d_%d" % (os.getpid(), int(time.time()))
+    recipe_rel = "tools/recipes/%s.py" % stem
+    recipe_abs = os.path.join(ROOT, "tools", "recipes", "%s.py" % stem)
+    launch = "py tools/bgrun.py --material --max-min 5 --log tools/bench/%s.log -- py -u %s" % (stem, recipe_rel)
+    real_store, real_marker = stop_record.STORE, stop_record.MARKER
+    out = {}
+    try:
+        stop_record.STORE = os.path.join(tmp, "stop_records.json")
+        stop_record.MARKER = os.path.join(tmp, "stop_records.marker")
+        with open(recipe_abs, "w", encoding="utf-8") as f:
+            f.write("# scratch recipe for the novel-record self-test. Deleted by the same run.\nprint('scratch')\n")
+        rev_a = os.path.join(tmp, "review-old.md")
+        with open(rev_a, "w", encoding="utf-8") as f:
+            f.write(REVIEW.format(slug="priorart-old-5", date=time.strftime("%Y-%m-%d"), slug_verdict="already-failed")
+                    + DISPOSED.format(slug_verdict="already-failed"))
+        stop_record.write_stop_record(recipe_rel, rev_a, ["already-failed"])
+        out["pre"] = stop_record.check_command(launch)[0]
+        with open(recipe_abs, "a", encoding="utf-8") as f:
+            f.write("# the post-release bug fix\n")
+        out["edited_refused"] = not stop_record.check_command(launch)[0]
+        rev_n = os.path.join(tmp, "review-novel.md")
+        with open(rev_n, "w", encoding="utf-8") as f:
+            f.write(REVIEW.format(slug="priorart-novel-5", date=time.strftime("%Y-%m-%d"), slug_verdict="novel"))
+        stop_record.write_novel_record(recipe_rel, rev_n)
+        out["a"] = stop_record.check_command(launch)
+        with open(recipe_abs, "a", encoding="utf-8") as f:
+            f.write("# a SECOND edit after the novel review\n")
+        out["b"] = stop_record.check_command(launch)
+        with open(recipe_abs, "r", encoding="utf-8") as f:
+            body = f.read()
+        with open(recipe_abs, "w", encoding="utf-8") as f:
+            f.write(body.replace("# a SECOND edit after the novel review\n", ""))      # back to the reviewed bytes
+        out["a2"] = stop_record.check_command(launch)[0]
+        with open(rev_n, "a", encoding="utf-8") as f:
+            f.write("\nPRIOR-ART: already-built\n")                                    # tampered after the record
+        out["c"] = stop_record.check_command(launch)
+        try:
+            stop_record.write_novel_record(recipe_rel, rev_a)
+            out["d"] = False
+        except stop_record.StoreError:
+            out["d"] = True
+    finally:
+        stop_record.STORE, stop_record.MARKER = real_store, real_marker
+        try:
+            os.remove(recipe_abs)
+        except OSError:
+            pass
+        shutil.rmtree(tmp, ignore_errors=True)
+    out["recipe_gone"] = not os.path.exists(recipe_abs)
+    return out
+
+
 def main():
     mode = "PATCHED" if patched() else "UNPATCHED"
     print("=== stop_record._check supersession self-test - loaded module is %s ===" % mode, flush=True)
@@ -321,14 +381,29 @@ def main():
     gate("C4g %s: an exempt segment does NOT launder a build segment chained beside it" % emode,
          not res["chained"][0], first_line(res["chained"][1]))
 
+    # ---- CASE 5: a NOVEL review over edited bytes (cycle 72) -------------------------------------------------
+    r5 = run_novel_case()
+    if r5 is None:
+        print("--- case 5: loaded module has no write_novel_record (pre-cycle-72) - skipped ---", flush=True)
+        r5 = {"recipe_gone": True}
+    else:
+        gate("C5.0 precondition: old record released, edited bytes refused", r5["pre"] and r5["edited_refused"])
+        gate("C5a a NOVEL review of the edited bytes RELEASES the launch", r5["a"][0], first_line(r5["a"][1]))
+        gate("C5b a SECOND edit after the novel review is REFUSED (sha mismatch, no later record)",
+             not r5["b"][0] and "different bytes" in (r5["b"][1] or ""), first_line(r5["b"][1]))
+        gate("C5a2 restoring the reviewed bytes releases again", r5["a2"])
+        gate("C5c a novel review file TAMPERED to carry a blocking slug no longer releases",
+             not r5["c"][0], first_line(r5["c"][1]))
+        gate("C5d write_novel_record REFUSES a review whose answer is not purely novel", r5["d"])
+
     # ---- hygiene ------------------------------------------------------------------------------------------
     gate("C0a every scratch recipe was deleted in the same run",
-         all(r.get("recipe_gone") for r in (r1, r2, r3, r4)))
+         all(r.get("recipe_gone") for r in (r1, r2, r3, r4, r5)))
     after = (fingerprint(real_store), fingerprint(real_marker))
     gate("C0b the REAL store was never touched", before == after, "%s -> %s" % (before, after))
     gate("C0c no scratch recipe survives under tools/recipes/",
          not [p for p in os.listdir(os.path.join(ROOT, "tools", "recipes"))
-              if p.startswith("scratch_supersede_") or p.startswith("scratch_exempt_")])
+              if p.startswith(("scratch_supersede_", "scratch_exempt_", "scratch_novel_"))])
 
     # ---- the EXISTING device's own six cases, same run ------------------------------------------------------
     print("--- re-running tools/bench/stop_record_selftest.py (cycle-18 acceptance, %s) ---" % mode, flush=True)

@@ -1,0 +1,65 @@
+BGRUN START 2026-09-24 05:58:50 limit 20.0 min: py -u tools/prior_art_review.py --recipe tools/recipes/stage_d1_l7_1b.py --slug c72-l7-1b-r4 --trigger new-op
+need --plan or --plan-file
+BGRUN END rc=2 after 0s
+BGRUN START 2026-09-24 05:59:20 limit 20.0 min: py -u tools/prior_art_review.py --recipe tools/recipes/stage_d1_l7_1b.py --slug c72-l7-1b-r4 --trigger new-op --plan-file C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/6ce3d417-5eb4-4fc6-a5d5-ce0308fb746f/scratchpad/plan_c72_l7_1b_r4.md
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c72-l7-1b-r4.txt (68965 chars)
+OUTCOME: ANSWERED (89s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-24-priorart-c72-l7-1b-r4.md
+COST: $1.5075  in 26 / out 7719 / cache-create 128218 / cache-read 1636518  (86s, 19 turn(s))
+--- ANSWER ---
+**Verdict: novel.** Nothing on file says the `verify_term_uid` split has been tried or refuted. No other end that reaches `Stage.address` selects the uid path before its wire lands.
+
+## PART A — the direction
+
+**A1 Settled already.** No. The direction is Pre-decided 174 itself (`docs/d1-loop12-17-split-plan.md:362-387`), decided by the cycle-71 judgement session on 2026-09-24. Its "STATUS: BUILT" block (:375-383) describes exactly the change under review. It is the decision being carried out, not an earlier one that makes the build redundant.
+
+**A2 Refuted already.** No. Two things on file are close, and neither covers this change:
+- Prior-art r3 A3.3 (`archive/peer/2026-09-24-priorart-priorart-c71-l7-1b-r3.md:573-582`) warned that uid addressing refuses unwired terminals. That warning is what the change answers.
+- Retrospective-cycle71 F1/F3 (`archive/peer/2026-09-24-retrospective-cycle71.md:218,222`) says the bug was uid lookup at first wiring and asks for an offline dry run first. Its disposition (:255) accepts Pre-decided 174 as the fix, and the dry run (`dryrun_l7_1b_address.log`) has been done.
+
+Option (b), "accept unwired terminals", is the one rejected (plan :367-369), and this change does not use it.
+
+**A3 Contradicted.** One conflict, already resolved in writing:
+- Pre-decided 173's LIMIT note (`docs/d1-loop12-17-split-plan.md:357-359`) says "L7-1b is not affected (every uid-addressed step there runs after its wire landed)."
+- Pre-decided 174 (:382-383) says that sentence "was WRONG (r2 proved it) and is superseded by this entry."
+
+This is not blocking. The false line is still in the file, though, so marking it with strikethrough would stop a later reader acting on it.
+
+**A4 Unread evidence.** None missing. One file supports the change and could be cited for the init rows: `tools/bench/stage_d1_l7_1b.log:271-279`. It shows #23041's terminal table after r1 wired the rows:
+- wire 4969 lands on exactly one sink row (t2).
+- wire 3543 lands on exactly one sink row (t4).
+
+That is the one-hit condition `match_term_uid` needs (`tools/stagekit.py:1133-1136`) for the err_init and acc_init verify ends.
+
+## PART B — the artifact
+
+**B1 Already built.** No. `verify_term_uid` appears only in these places:
+- `tools/stagekit.py:694-696` and `:797`
+- `tools/recipes/stage_d1_l7_1b.py:96`
+- `tools/bench/selftest_stagekit.py` and `tools/bench/dryrun_l7_1b_address.py`
+
+No second mechanism does the same job under another name.
+
+**B2 Already failed.** Not this build.
+- r1 (`stage_d1_l7_1b.log`) failed on a name lookup after the wire landed.
+- r2 (`stage_d1_l7_1b_r2.log:41-45`) failed on a uid lookup at first wiring, because the `term_uid` field switched the branch.
+
+The change removes r2's cause: `address` no longer reads `term_uid` (`stagekit.py:690-694`). It keeps r1's fix: the second pass addresses by uid (`:797`, recipe :96).
+
+Other ends that reach `address` and still carry `term_uid`:
+- The rule rows' `src` dict (recipe :80) still copies `term_uid`, but `address` now ignores it.
+- The body-row candidate ends carry it too (`decision_l7_1b_body.json`, retrospective :218). They were fed through the new code in the dry run and resolved by name.
+- The other `address` callers (`stagekit.py:784, 903-904, 921, 934, 957`) never set `verify_term_uid`.
+- The only producer of `verify_term_uid` is recipe :96, which runs after `execute(s, rules)` at :93. So it runs after every row's wire has landed.
+
+**B3 Helper exists.** No hand-rolled duplicate. The second pass reuses `cfw_second_pass` (`stagekit.py:792-808`) and `match_term_uid` (`:1117-1137`), both unchanged.
+
+**B4 Already measured.** Partly, and not blocking. One thing is not measured anywhere: whether a new shift register's OUTER terminal keeps its uid after a connect. The init rows (recipe :72) depend on it.
+- The nearest measurement is on a different class. A `FlatSequenceInnerTunnel` terminal (#7488) keeps its uid across unwire and rewire (`tools/bench/diag_c86_norbw.log:74-76, :87`).
+- The self-test cases I9/I10 run on stubs, not in LabVIEW.
+
+If the uid changes on the wire, run 3 will fail at `match_term_uid`'s "0 row(s)" refusal (`stagekit.py:1127-1128`). That failure is loud, not silent. This is not an "already measured" finding: it names the one thing run 3 will measure for the first time.
+
+PRIOR-ART: novel
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c72-l7-1b-r4.md
+   STOP RECORD: none - 2026-09-24-priorart-c72-l7-1b-r4.md carries no blocking verdict
+BGRUN END rc=0 after 112s

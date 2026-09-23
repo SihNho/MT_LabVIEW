@@ -1638,3 +1638,50 @@ VIOLATION: repeated-failure-class | loss_min=57 | loss_usd=? | evidence=tools/ho
 VIOLATION: device-failed | loss_min=5 | loss_usd=? | evidence=stop_record@tools/hooks/material_marker.log:1264
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle71.md
 BGRUN END rc=0 after 391s
+BGRUN START 2026-09-24 06:18:39 limit 10.0 min: py tools/retrospective.py --cycle 72
+   window 2026-09-24 05:53:51 .. 2026-09-24 06:18:39 (25 min); 10 build logs, 6 machinery logs, 17 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle72.txt (19978 chars)
+OUTCOME: ANSWERED (225s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-24-retrospective-cycle72.md
+COST: $4.8982  in 98 / out 17807 / cache-create 196068 / cache-read 342100  (223s, 28 turn(s))
+--- ANSWER ---
+**Cycle 72 verdict: the cycle delivered, and one device failed.** In 25 minutes the firefighter session fixed the addressing bug offline, proved it on the recipe's real rows, got a novel prior-art verdict, ran L7-1b once and saved it: 38 gates pass, 0 fail, rc=0 after 761 s (`tools/bench/stage_d1_l7_1b_r3.log:379-381`). Build wall-clock was 14 min 29 s, reviews $1.51 (audit C3/C4). On structural faults alone the answer would be none. The stop-record launch gate, however, refused the reviewed recipe again, for the third cycle running, and the contract sets that device's threshold at one.
+
+## The fault
+
+**The stop record refused the launch of a recipe that had just been reviewed novel.** The prior-art review answered `PRIOR-ART: novel` at 06:01:12 (`tools/bench/priorart_c72_l7_1b_r4.log:62-65`). The run-3 launch was refused at 06:01:26 and again at 06:01:49 (`tools/hooks/material_marker.log:1279-1280`). The cause is a third hole in the same device: a novel verdict wrote no record, so the old released record, stamped for the previous bytes, kept refusing, and a FIXED line on the old review did not release it either (`docs/violation-decisions.md:1163-1168`). The session repaired it in-cycle with `write_novel_record`, three self-tests, and launched at 06:04:30 (`material_marker.log:1281-1284`).
+
+Loss: 3 min of wall-clock between the first refusal and the launch, plus about 1 min 40 s of self-test builds inside C3. No log prices the session's turns, and the session log has no END or cost line (`tools/bench/cycle_71.log`, audit C4c reads 0), so the dollar figure is unknown.
+
+Counterfactual: had the gate honoured the 06:01:12 verdict, the 761 s run launched at 06:01:26 would have ended at 06:14:07 instead of 06:17:12.
+
+Why this still matters at 3 minutes: the same device has now failed in three consecutive cycles, each time on a different code path (cycle 70 the prior-art dispatch, cycle 71 the dispatch under bgrun plus read-only commands, cycle 72 the post-novel launch), and each time was patched hole by hole. The read-only hole from the 05:54 decision is still open (`STATUS.md:84`).
+
+## Findings
+
+**1. Repeated failure.** No LabVIEW failure recurred in the window. Run 3 passed at the first attempt because the cause of runs 1 and 2 was fixed and measured offline first: self-test 47/0 (`tools/bench/selftest_stagekit.log:708`) and the dry run of the recipe's actual 15 ends (`tools/bench/dryrun_l7_1b_address.log:26`). The recurring class is the launch gate refusing legitimate work, above. The approach should change now, at hole three: specify the release logic once as a table of record kind, verdict and command class, and test from that table, instead of adding a fourth patch next cycle.
+
+**2. Missing tool.** None that cost this cycle. The offline dry-run built in cycle 71's disposition is what made this cycle short. Two small gaps: the eqform self-test runner prints only the inner tally line, so a failing case inside it cannot be named (`tools/bench/selftest_stoprecord_eqform_c72.log:7`), and until this cycle no self-test covered the review, release, edit, novel review, launch lifecycle end to end (case 5 now does, `selftest_stoprecord_supersession.log:41-46`).
+
+**3. Unmeasured steps.** One. The first eqform run failed R1 with the supersession self-test at 35 pass 1 fail (`selftest_stoprecord_eqform_c72.log:7`); the re-run 66 s later passed 36/0 (`selftest_stoprecord_eqform_c72b.log:7`). Which case failed is recorded nowhere. The timestamps give a cheap explanation: the standalone supersession run started 06:03:57 and takes 21 s, and eqform's R1 spawned a second instance at 06:04:13, while both write scratch recipes under `tools/recipes/` and gate C0c fails if any scratch file survives (`tools/bench/selftest_stoprecord_supersession.py:124-125, 404-406`). That is inference; the re-run was accepted as green without naming the case. Everything on the deliverable side was measured: PB matched the 8 predicted rows exactly (stage log:346), PC1-PC3 pass (:348-350), pins and input md5 unchanged (:365-373).
+
+**4. Rule compliance.** Followed: the firefighter brief's order, bgrun for every LabVIEW touch, the gui_save route under rule 6 with Evidence (`tools/gui_actions.log:1939-1942`), retrospective last (`jev_gate.log:633`), STATUS updated with numbers that match the log. Note for the audit's A6: this cycle DID use the GUI, four approved actions for the broken-intermediate save, so "no GUI" does not hold and the use was compliant. Formal or broken: (a) the prior-art review r4 is undisposed (`archive/peer/2026-09-24-priorart-c72-l7-1b-r4.md:290-292`); the undisposed-review device refuses the next prior-art dispatch, so cycle 73's L7-R review will be blocked unless someone disposes r4 first, and NEXT does not name this debt. (b) A1/A3 list `jev_gate.log`, a journal, the standing false positive STATUS itself named a cycle ago (`STATUS.md:130`), still unfixed. (c) C7 compares against `docs/cycle27-plan.md`, stale for the third cycle; the 9 files are the gate repair plus this cycle's work and the scope was right. What the audit does not cover: the session's own cost, the 3-minute gate stall between bgruns, the prior-art false start (`priorart_c72_l7_1b_r4.log:2-3`, rc=2 after 0 s), and the failure-marker count of 5 is inflated by the append-only `selftest_stagekit.log`, which still carries a 2026-09-22 FAIL at line 49.
+
+**5. Ordering.** Defensible and exactly the NEXT order: stagekit fix, self-test, dry run, prior-art, run. Two small inversions. The prior-art was dispatched without its required plan file and died in 0 s (`priorart_c72_l7_1b_r4.log:2-3`), 30 s lost. The run-3 launch at 06:04:30 went out 16 s before the eqform self-test reported its failure at 06:04:46; harmless, since the launch passing was the operative test of the repair.
+
+**6. Not reported.** The session's summary (`STATUS.md:26`) is accurate on every number I checked against the log. It understates three things: the eqform first run is described only as "green re-run the same minute" (also `violation-decisions.md:1178`) with the failing case unnamed; the prior-art false start and the 05:57:24 refusal of a bgrun without `--material` (`material_marker.log:1276`) are absent; and the FIXED-line workaround attempt at 06:01:49 appears in the decision text but not in STATUS. None changes the outcome.
+
+**7. Judgement inside material.** The firefighter brief suspends the split for this cycle (`tools/bench/cycle_71.log:68`), so the session was both. Its one design decision, repairing the gate with a novel-record rather than bypassing it, and the decision block it wrote (`violation-decisions.md:1161-1178`) belong to the cycle's judgement, which it was. The brief's "if a gate blocks the launch, clear it inside this cycle" is a pre-scripted if-then, but it is the standing firefighter rule, not a material brief.
+
+## Device effect
+
+- **Stop record + launch gate (2026-09-18, repaired 05:54 and 06:0x): FAILED.** Refused the reviewed recipe twice (`material_marker.log:1279-1280`). Third consecutive cycle it fired on the wrong thing. The 06:0x repair worked at 06:04:30; the read-only hole stays open.
+- **Undisposed-review refusal (guard_peer): worked** on the 06:18:39 retrospective dispatch. It will fire next cycle on r4, which is undisposed now.
+- **guard_peer RULE-SAME-ROW: fired on the wrong thing again**, discharging the r2 log against the L7-1a review nine times in the window (`jev_gate.log:617-632`), the same wrong-subject match cycle 71 named. Cost nothing because r2's cause was already fixed; not in the device list, so a finding.
+- **Prior-art review: worked.** r4's B4 named the one unmeasured thing, whether a new register's outer terminal keeps its uid after a connect, and run 3 measured it (stage log:236-238, 300-302).
+- **rc/END truthfulness and bgrun FAIL scan: worked.** The inner FAIL forced rc=1 (`selftest_stoprecord_eqform_c72.log:10`); the rc=2 false start propagated. No false positive on the obfuscated `F&IL` fixtures or on the supersession log's BLOCKED lines.
+- **COST regex: worked** (1 seen / 1 parsed). **motor_gate FAIL exit: worked**, session end and start both verified (`motor_session_end_cycle70.log:15`, `motor_session_start_cycle71.log:22`).
+- **premature-build guard, C7 counter (stale plan), confirm-bait refusal, OpLoopEndRef, Jev command exemption, guard_peer budget, guard_session SendMessage refusal (not yet built, `STATUS.md:84`): not exercised or worked.**
+
+VIOLATION: device-failed | loss_min=3 | loss_usd=? | evidence=stop_record@tools/hooks/material_marker.log:1279
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle72.md
+BGRUN END rc=0 after 227s

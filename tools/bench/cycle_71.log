@@ -1,0 +1,72 @@
+BGRUN START 2026-09-24 05:54:55 limit 180.0 min: claude.exe -p --model fable --effort low --output-format json --permission-mode acceptEdits You are the JUDGEMENT session for exactly ONE cycle of this project. You were spawned by
+`tools/cycle_runner.py`; when this cycle ends you exit and the runner spawns the next session fresh.
+Nobody is watching this session. Everything you need is on disk.
+
+## Read, in this order, and nothing else
+1. `CLAUDE.md` — the standing rules. They bind you; do not work from a summary of them.
+2. `STATUS.md` — the lock, the rig-state banner, where things stand, OPEN, and NEXT.
+3. The ONE plan document STATUS.md names as current (its frontmatter says `status: current`), including its
+   `## Pre-decided` section.
+Do not read `archive/` (CLAUDE.md rule 4), do not read whole logs, do not re-read what is already in context.
+
+## The rig state and LabVIEW permission are whatever STATUS.md's banner says — NEVER infer them
+STATUS.md's hardware banner is the only authority on the rig state (분해 / 조립 / 실험중) and therefore on what
+may be touched. Only the user announces a state change, and the announcement reaches you only as an edit to that
+banner. A quiet period, a released lock, an empty `tasklist`, the hour of the night, or the fact that the previous
+cycle ran something are NOT evidence that the state changed. If the banner says an experiment is running or
+imminent, no LabVIEW and no instrument is touched in this cycle — you do the work that needs neither, and if the
+whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding the experiment must be over.
+
+## What you do in this cycle
+- **Delegate every piece of material work** to the `material` agent (`.claude/agents/material.md`) with the
+  Agent tool: writing and running recipes or diagnostics, anything touching LabVIEW, log reading (`log-reader`),
+  peer dispatch, STATUS/INDEX bookkeeping. You never run `tools/recipes/*.py` or `tools/bench/*.py` yourself and
+  never read a whole log yourself — `tools/hooks/guard_bash.py` refuses it and it is the point of the split.
+- **A brief states the MEASUREMENT, never the result-dependent ACTION.** "If A removes 1, do X, else do Y" is
+  not delegation; it moves the decision into the session that must not make it. Ask for the measurement, get the
+  facts back, then decide.
+- **Answer from the plan first.** If the plan's `## Pre-decided` section already settles a question, apply it and
+  say which line — do not re-open it, and do not ask the user.
+- **Decide** the things only judgement can decide: design, what to accept from a review, rule-1a equivalence,
+  which discriminating experiment to run next.
+- **Close the cycle**: run `py tools/bgrun.py --max-min 10 --log tools/bench/retro.log -- py tools/retrospective.py
+  --cycle <N>`, annotate what it returns, then rewrite STATUS.md's `## NEXT` section so the next session can start
+  cold from it.
+  🔴 **THE RETROSPECTIVE IS THE LAST THING YOU RUN — never run one early, and never run one for another cycle.**
+  `tools/hooks/guard_bash.py:226-227` calls `mark_retro_done()` on ANY `retrospective.py` in command position,
+  whatever `--cycle` says, and `guard_session.py` then refuses every `material` / `log-reader` dispatch for the
+  rest of the session. Cycle 29 lost its whole cycle that way: it opened by paying cycle 28's unrun retrospective
+  to discharge `guard_cycle`, and was left unable to delegate anything. **If the previous cycle left its
+  retrospective unrun, that debt is NOT yours to pay up front** — do the cycle's work first and let your own
+  closing retrospective cover both cycles (precedent: cycle 26's covered cycle 25). If `guard_cycle` then refuses
+  the build because the previous cycle's logs have no newer retrospective, say so in NEXT — do not clear it by
+  running a retrospective mid-cycle.
+- **Then stop.** Do not start a second cycle. After the retrospective runs,
+  `tools/hooks/guard_session.py` refuses further material dispatches; that refusal is the end of your cycle, not a
+  problem to route around. The same hook refuses the 9th material dispatch — if you reach it, the cycle was too
+  big: write NEXT and exit so the runner starts a fresh session.
+- **ENDING YOUR TURN IS THE END OF THIS PROCESS — there is no next turn in `claude -p`, and every background job
+  you started is KILLED the moment you stop.** Session 68 (2026-09-21 20:46) wrote "the prior-art review is running,
+  meanwhile…" and stopped; the review died 19 s later with no END line and the cycle produced nothing. So: NEVER end
+  a message expecting to be resumed. While ANY bgrun you launched lacks its `BGRUN END`/`TIMEOUT` line, stay in the
+  turn — wait on it (Monitor on its log, or the tracked background task) — then act on its result, THEN write NEXT.
+
+## The NEXT line is your whole output
+The runner reads STATUS.md's `## NEXT` section to decide whether to continue: **if it is byte-identical after two
+consecutive cycles the runner stops**, because a cycle that changed nothing is a loop. So NEXT must say what the
+NEXT session should do first, concretely, with the file and the plan section to start from — never "continue the
+work". If you are blocked on something only the user can answer, write it as the first line of NEXT and put `STOP`
+at the start of a line near the top of STATUS.md; the runner exits and the user reads it.
+
+## Cost discipline
+One cycle, one context. Fewer, larger turns; chain a build and its bookkeeping into one runner; never dispatch a
+sub-agent for something already answered in the plan. You are the expensive model — your turns are reading
+STATUS + plan, deciding, and delegating.
+
+
+## FIREFIGHTER CYCLE (runner-triggered, model fable/low)
+The recipe `retro:repeated-failure-class` is the block (it failed in previous cycles, or the user ordered a firefighter on it - see STATUS.md). This cycle exists to clear THAT block and nothing else. You MAY read the failing logs and the recipe yourself and patch the recipe or the tool it calls directly (the material hand-off is suspended for this one cycle), you MAY run the recipe under bgrun with the --material flag (`py tools/bgrun.py --material --max-min N --log tools/bench/<name>.log -- py -u <script>`; the env-prefix MATERIAL=1 form is auto-denied by the permission layer under `claude -p`), and you must end with a measured result: either the recipe's gates pass, or a diagnosis with a discriminating test that was RUN. DO NOT EXIT before that result exists (2026-09-18 12:59: the first firefighter patched the recipe, backgrounded a retrospective and exited in 6 min without ever running it - that is not a result). Wait for your own background jobs (bgrun deadlines bound them); if a gate blocks the launch, clear it inside this cycle. Every other rule stands: no new process device, no motor move, no original touched, STATUS NEXT written, retrospective run. If you cannot clear it, say so in NEXT in one paragraph for the user.
+
+Warning: no stdin data received in 3s, proceeding without it. If piping from a slow command, redirect stdin explicitly: < /dev/null to skip, or wait longer.
+{"duration_api_ms":639556,"stop_reason":"end_turn","session_id":"6ce3d417-5eb4-4fc6-a5d5-ce0308fb746f","total_cost_usd":10.580291749999999,"usage":{"input_tokens":100,"cache_creation_input_tokens":9876,"cache_read_input_tokens":1277711,"output_tokens":4759,"output_tokens_details":{"thinking_tokens":297},"server_tool_use":{"web_search_requests":0,"web_fetch_requests":0},"service_tier":"standard","cache_creation":{"ephemeral_1h_input_tokens":9876,"ephemeral_5m_input_tokens":0},"inference_geo":"not_available","iterations":[{"input_tokens":32,"output_tokens":763,"cache_read_input_tokens":260736,"cache_creation_input_tokens":1096,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":1096},"type":"message"}],"speed":"standard"},"modelUsage":{"claude-fable-5-1":{"inputTokens":1664,"outputTokens":50157,"cacheReadInputTokens":13395847,"cacheCreationInputTokens":235342,"webSearchRequests":0,"costUSD":10.580291749999999,"contextWindow":1000000,"maxOutputTokens":64000,"thinkingTokens":8258,"canonicalModel":"claude-fable-5-1","provider":"firstParty","costBasis":"list"}},"permission_denials":[],"terminal_reason":"completed","fast_mode_state":"off","fast_mode_disabled_reason":"sdk_opt_in_required","origin":{"kind":"task-notification"},"subagent_stats":{"spawned":0,"requested":{"background":0,"foreground":0,"unset":0},"started_in_background":0,"max_depth":0,"spawned_by_subagents":0,"completed":0,"failed":0,"killed":{"parent":0,"user":0,"system":0},"refused":{"depth_limit":0,"concurrency_limit":0,"budget":0},"by_type":{}},"is_error":false,"num_turns":9,"subtype":"success","api_error_status":null,"result":"The firefighter block is cleared with a measured result. L7-1b is delivered.\n\n**What this cycle delivered**\n- `claudeDev\\D1_l7_1_20260924_060431.vi`, md5 `e5c7d68b56d018131f2ebf0df656fdd6`, 306,999 B. Run 3 log `tools/bench/stage_d1_l7_1b_r3.log`: 38 pass / 0 fail, 761 s. All nine rows wired, second pass Is Broken? False on all four checked rows, computation_diff exactly the 8 predicted rows, ExecState 0 as the contract predicted (L7-R rows still open). Input and bed md5s unchanged, references 23/23, no VI run, no motor or camera.\n- **Cause of runs 1 and 2 fixed offline first.** `stagekit.address` now takes the uid path only on a staged `verify_term_uid` field; the candidate `term_uid` no longer switches the branch at first wiring (Pre-decided 174). Self-test 47/0 with three new cases; a new dry-run script fed the recipe's actual decision rows through `address` before LabVIEW, 15 ends pass.\n- **Third stop_record hole found and repaired.** A `novel` prior-art review of edited bytes wrote no record, so the old released record refused the launch forever. `write_novel_record` plus self-test case 5, 36/0; the decision and the \"one table, not a fourth patch\" remedy are in `docs/violation-decisions.md`.\n\n**Reviews:** prior-art r4 novel ($1.51, disposed); retrospective cycle 72 named `device-failed` on that stop_record hole (3 min loss), disposed.\n\n**NEXT (cycle 73):** judgement designs L7-R first (the 8 CDIFF rows plus the two cross-loop inputs, addressing of unwired terminals per the 173 limit), then one material dispatch with contract, recipe, prior-art, offline dry run, run. Devices carried after the deliverable: guard_session SendMessage refusal, the stop_record release table, STATUS relocation, eqform reporting.\n\nNot done: `git commit` (blocked by the permission layer, the runner commits), and STATUS remains over 100 lines pending the relocation task in NEXT.","ttft_ms":2790,"type":"result","duration_ms":66327,"uuid":"20e4e658-d4b3-4f7f-834f-962ebccc47e0","ttft_stream_ms":1940,"time_to_request_ms":197,"first_content_frame_ms":1940,"queued_turn_count":0,"result_index":7}
+BGRUN END rc=0 after 1718s

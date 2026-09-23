@@ -1157,3 +1157,35 @@ DECISION: device (repair of `tools/stop_record.py`)
 - Still to repair: the stop record also refuses READ-ONLY commands on a stopped recipe (`wc -l`, `sed -n`, an AST
   parse; `material_marker.log:1256,1263,1274`). Refuse only commands that EXECUTE the recipe, and self-test both
   directions.
+
+## device-failed — 2026-09-24 06:0x (cycle 72 FIREFIGHTER, fable/low; measured in `tools/bench/priorart_c72_l7_1b_r4.log` + the two refused launches)
+
+A THIRD hole in the same device, found while clearing the L7-1b block: the edited recipe was re-reviewed
+(`archive/peer/2026-09-24-priorart-c72-l7-1b-r4.md`, verdict `novel`, $1.51) and the launch was STILL refused —
+"released for sha f0ffee30ed30, on disk now 9b9aee966611 … Get the edited recipe reviewed". A `novel` verdict wrote
+NO record, so the older RELEASED record (stamped for the previous bytes) kept refusing, and the gate's own remedy was
+unreachable. The cycle-44 supersession rule only reaches a LATER record, and only non-novel verdicts wrote one.
+A `FIXED:` line added to the OLD review did not release it either (the released stamp is a sha, not a line).
+
+DECISION: device (repair of `tools/stop_record.py` + `tools/prior_art_review.py`, done in this cycle)
+
+- `stop_record.write_novel_record(recipe, review)` appends a later same-path record pre-released for the reviewed
+  bytes; honoured only while the review file's ANSWER still reads purely `PRIOR-ART: novel` (`novel_in_answer`,
+  re-read at every check, so a hand-edited record or a tampered review does not launder). `prior_art_review.py`
+  writes it automatically on a novel verdict with `--recipe`; CLI `stop_record.py write --verdict novel`.
+- A further edit after the novel review re-arms the gate (sha mismatch, no later record) exactly as before.
+- Self-test `tools/bench/selftest_stoprecord_supersession.py` case 5 (C5.0/5a/5b/5a2/5c/5d): 36 pass / 0 fail
+  (`selftest_stoprecord_supersession.log`); bgrun 6/0, eqform green re-run the same minute.
+
+## device-failed — 2026-09-24 06:2x (cycle 72 firefighter, after archive/peer/2026-09-24-retrospective-cycle72.md)
+
+`VIOLATION: device-failed | loss_min=3 | loss_usd=? | evidence=stop_record@tools/hooks/material_marker.log:1279` —
+the same event as the 06:0x block above, named by the retrospective after the repair had landed.
+
+DECISION: device (ONE repair of `tools/stop_record.py`, scheduled in STATUS NEXT after the L7-R deliverable)
+
+Three holes in three consecutive cycles (70: the prior-art dispatch; 71: dispatch under bgrun + read-only commands;
+72: the launch after a novel review), each patched on its own code path. Next is not a fourth patch: the release
+logic is written once as a table — record kind (blocking / novel) × verdict state (undisposed / released / novel /
+sha-mismatch / superseded) × command class (build launch / read-only / exempt program) → allow or refuse — and the
+self-test is generated from that table. The read-only hole from the 05:54 decision closes inside it.

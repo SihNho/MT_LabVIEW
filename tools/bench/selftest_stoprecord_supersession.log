@@ -1,0 +1,54 @@
+BGRUN START 2026-09-24 06:03:57 limit 8.0 min: py -u tools/bench/selftest_stoprecord_supersession.py
+=== stop_record._check supersession self-test - loaded module is PATCHED ===
+    (expectations differ by mode; both halves of the prediction contract are measured, one run before the patch and one after)
+  PASS  C1.0 precondition: the OLD record is RELEASED and stamped at s1 0bc15f9a5d83
+  PASS  C1.1 the bytes changed (s1 != s2)   0bc15f9a5d83 -> 768db9eea500
+  PASS  C1.2 two records stand for the same path, the new one LAST   2 record(s)
+  [case 1 PATCHED] gate says: ALLOW
+  PASS  C1 PATCHED RELEASES (old released record superseded by the later disposed one)   (empty)
+  PASS  C1b the LATER record is stamped with the edited bytes s2   768db9eea500
+  PASS  C1c the OLD record still carries its OWN release (s1) - no history was rewritten
+  PASS  C2.0 precondition: the OLD record is RELEASED and stamped at s1 87dddad7440a
+  PASS  C2.1 the bytes changed (s1 != s2)   87dddad7440a -> a335d97098b1
+  PASS  C2.2 two records stand for the same path, the new one LAST   2 record(s)
+  [case 2 PATCHED] gate says: BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdi
+  PASS  C2 PATCHED MUST STILL REFUSE (later record's findings are NOT disposed)   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdi
+  PASS  C2b the refusal is the UNDISPOSED-verdict one, not the sha-mismatch one
+  PASS  C2c nothing was stamped for the edited bytes
+  PASS  C3.0 precondition: the OLD record is RELEASED and stamped at s1 d8281f093a71
+  PASS  C3.1 the bytes changed (s1 != s2)   d8281f093a71 -> 8ef5b26e633e
+  PASS  C3.2 exactly ONE record stands for this path
+  [case 3 PATCHED] gate says: BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe was RELEASED for different byte
+  PASS  C3 PATCHED MUST STILL REFUSE (no later record; the original protection)   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe was RELEASED for different byte
+  PASS  C3b the refusal is the sha-mismatch one, naming both hashes
+  PASS  C3c the single record still carries its original release stamp (s1)
+--- case 4: command-position exemption, loaded module is EXEMPT-PATCHED ---
+  [case 4 EXEMPT-PATCHED] plant       -> ALLOW
+  [case 4 EXEMPT-PATCHED] plant_flags -> ALLOW
+  [case 4 EXEMPT-PATCHED] priorart    -> ALLOW
+  [case 4 EXEMPT-PATCHED] cd_plant    -> ALLOW
+  [case 4 EXEMPT-PATCHED] build       -> BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdi
+  [case 4 EXEMPT-PATCHED] mention     -> BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdi
+  [case 4 EXEMPT-PATCHED] chained     -> BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdi
+  PASS  C4 PATCHED: `py tools/stop_record.py write --recipe <stopped path>` PASSES   (empty)
+  PASS  C4a PATCHED: the same with -u and backslashes PASSES   (empty)
+  PASS  C4b PATCHED: `python -u tools/prior_art_review.py --recipe <stopped path>` PASSES   (empty)
+  PASS  C4f PATCHED: the real shape `cd "<project>" && py tools/stop_record.py write ��` PASSES   (empty)
+  PASS  C4c EXEMPT-PATCHED: a BUILD LAUNCH naming the same path is STILL REFUSED   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdi
+  PASS  C4d EXEMPT-PATCHED: the refusal is the undisposed-verdict one
+  PASS  C4e EXEMPT-PATCHED: stop_record.py mentioned OUTSIDE command position does NOT exempt   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdi
+  PASS  C4g EXEMPT-PATCHED: an exempt segment does NOT launder a build segment chained beside it   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdi
+  PASS  C5.0 precondition: old record released, edited bytes refused
+  PASS  C5a a NOVEL review of the edited bytes RELEASES the launch   (empty)
+  PASS  C5b a SECOND edit after the novel review is REFUSED (sha mismatch, no later record)   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe was RELEASED for different byte
+  PASS  C5a2 restoring the reviewed bytes releases again
+  PASS  C5c a novel review file TAMPERED to carry a blocking slug no longer releases   BLOCKED by tools/stop_record.py (the prior-art LAUNCH GATE, docs/cycle18-plan.md Pre-decided 2): this recipe is STOPPED by a prior-art verdi
+  PASS  C5d write_novel_record REFUSES a review whose answer is not purely novel
+  PASS  C0a every scratch recipe was deleted in the same run
+  PASS  C0b the REAL store was never touched   ('67c5cceebb3ca411', '82d1ab1684db636c') -> ('67c5cceebb3ca411', '82d1ab1684db636c')
+  PASS  C0c no scratch recipe survives under tools/recipes/
+--- re-running tools/bench/stop_record_selftest.py (cycle-18 acceptance, PATCHED) ---
+    | === stop_record selftest: 29 pass, 0 fail ===
+  PASS  C9 the existing stop_record self-test still scores 0 fail (PATCHED)   === stop_record selftest: 29 pass, 0 fail ===
+=== supersession selftest (PATCHED): 36 pass, 0 fail ===
+BGRUN END rc=0 after 21s

@@ -288,6 +288,43 @@ def write_stop_record(recipe_path, review_file, verdict, root=None):
     return rec
 
 
+def novel_in_answer(body):
+    """True iff the review's ANSWER carries `PRIOR-ART: novel` and NO blocking slug (guard_cycle's own regex and
+    allowlist, imported). Read at CHECK time from the file, so a hand-edited record cannot launder a verdict."""
+    if HOOKS not in sys.path:
+        sys.path.insert(0, HOOKS)
+    import guard_cycle                                     # noqa: E402 - lazy, see _released
+    answer = body.split("\n## Answer", 1)[-1]
+    found = [s for s in guard_cycle.PRIOR_ART_RE.findall(answer) if s in guard_cycle.PRIOR_ART_SLUGS]
+    return bool(found) and all(s == "novel" for s in found)
+
+
+def write_novel_record(recipe_path, review_file):
+    """cycle 72 firefighter (2026-09-24): a `novel` verdict over EDITED bytes used to leave NO record, so the older
+    RELEASED record (stamped for the old bytes) refused the edited recipe forever - and the refusal's own remedy,
+    "get the edited recipe reviewed", had already been done (`priorart_c72_l7_1b_r4.log`: verdict novel, launch
+    still refused). A novel review now writes a LATER same-path record, pre-released for the bytes it reviewed, so
+    `_check`'s supersession rule reaches it; the record is honoured only while the review file still says novel
+    (`novel_in_answer`). Edit the recipe again and the stamp no longer matches: refused, as before."""
+    rp, rf = _rel(recipe_path), _rel(review_file)
+    sha = sha256_of(_abs(recipe_path))
+    with open(_abs(review_file), "r", encoding="utf-8", errors="replace") as f:
+        body = f.read()
+    if not novel_in_answer(body):
+        raise StoreError("%s does not carry a pure `PRIOR-ART: novel` answer; no novel record written" % rf)
+    rec = {"recipe_path": rp, "reviewed_sha256": sha, "review_file": rf, "verdict": [], "novel": True,
+           "created_utc": _utc(), "released": {"sha256": sha, "line": "PRIOR-ART: novel", "when": _utc()}}
+    try:
+        records = load_records()
+    except StoreError:
+        records, rec["note"] = [], "written over an unreadable store"
+    records = [r for r in records if not (_rel(r.get("recipe_path")) == rp and r.get("reviewed_sha256") == sha
+                                          and _rel(r.get("review_file")) == rf)]
+    records.append(rec)
+    save_records(records)
+    return rec
+
+
 def _released(record):
     """(released: bool, line: str, why: str) - is this record's review carrying a VALID release line?
 
@@ -302,6 +339,11 @@ def _released(record):
             body = f.read()
     except OSError as e:
         return False, "", "the review file %s is unreadable: %s" % (record.get("review_file"), e)
+    if record.get("novel"):                                # see write_novel_record - re-verified from the file
+        if novel_in_answer(body):
+            return True, "PRIOR-ART: novel (%s)" % record.get("review_file"), ""
+        return False, "", ("the novel record's review %s no longer carries a pure `PRIOR-ART: novel` answer"
+                           % record.get("review_file"))
     if HOOKS not in sys.path:
         sys.path.insert(0, HOOKS)
     import guard_cycle                                     # noqa: E402 - lazy on purpose, see the docstring
@@ -445,7 +487,10 @@ def _cli(argv):
     sub.add_parser("list", help="print the standing records")
     a = ap.parse_args(argv)
     if a.cmd == "write":
-        r = write_stop_record(a.recipe, a.review, a.verdict)
+        if [s.strip() for s in a.verdict] == ["novel"]:
+            r = write_novel_record(a.recipe, a.review)      # cycle 72: a novel review over edited bytes
+        else:
+            r = write_stop_record(a.recipe, a.review, a.verdict)
         print(json.dumps(r, indent=2))
         return 0
     if a.cmd == "check":

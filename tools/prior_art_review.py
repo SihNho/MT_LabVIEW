@@ -322,7 +322,19 @@ def arm_stop_records(slug, recipes, opt_out=""):
     found = list(dict.fromkeys(found))
     if not found:
         print(f"   STOP RECORD: none - {os.path.basename(path)} carries no blocking verdict", flush=True)
-        return []
+        # cycle 72 firefighter: a novel verdict over EDITED bytes must be recorded, or an OLDER released record
+        # (stamped for the previous bytes) keeps refusing the launch (stop_record.write_novel_record).
+        out = []
+        for rp in recipes:
+            try:
+                rec = stop_record.write_novel_record(rp, path)
+            except stop_record.StoreError as e:
+                print(f"   NOVEL RECORD not written for {rp}: {e}", flush=True)
+                continue
+            out.append(rec)
+            print(f"   NOVEL RECORD written: {rec['recipe_path']} sha {(rec['reviewed_sha256'] or '')[:12]} "
+                  f"-> these bytes are released by this review; editing them again re-arms the gate", flush=True)
+        return out
     if not recipes:
         # ONLY REACHABLE UNDER AN EXPLICIT OPT-OUT: main() refuses when neither --recipe nor --no-recipe is given
         # (2026-09-18). So this line no longer reports an omission - it reports a decision somebody made and

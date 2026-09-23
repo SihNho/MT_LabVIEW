@@ -278,20 +278,33 @@ def case_i_term_uid():
         e1 = raises(lambda: s.address(end(term="total data array out"), False))
         check("I1 the PRE-WIRING name no longer resolves after wiring (the measured defect reproduced)",
               e1 is not None and "0 matches" in e1, e1)
-        r2 = s.address(end(term="total data array out", term_uid=24190), False)
+        r2 = s.address(end(term="total data array out", verify_term_uid=24190), False)
         check("I2 the SAME row addressed by terminal uid #24190 reaches t4 on #23041 despite the name change",
               r2[0] == (19, 1, 4) and "uid #24190" in r2[1], repr(r2))
-        r3 = s.address(end(term="", term_uid=24140), False)
+        r3 = s.address(end(term="", verify_term_uid=24140), False)
         check("I3 uid #24140 reaches t2 ('error out' sink), not the same-named source t1", r3[0] == (19, 1, 2), repr(r3))
-        e4 = raises(lambda: s.address(end(term="", term_uid=99999), False))
+        e4 = raises(lambda: s.address(end(term="", verify_term_uid=99999), False))
         check("I4 an unknown terminal uid RAISES (no fallback to the name)", e4 is not None and "0 row" in e4, e4)
-        e5 = raises(lambda: s.address(end(term="", term_uid=24191), True))
+        e5 = raises(lambda: s.address(end(term="", verify_term_uid=24191), True))
         check("I5 an UNWIRED terminal uid RAISES (uid addressing needs a wire)", e5 is not None and "wired" in e5, e5)
-        e6 = raises(lambda: s.address(end(term="", term_uid=24190), True))
+        e6 = raises(lambda: s.address(end(term="", verify_term_uid=24190), True))
         check("I6 a direction mismatch RAISES", e6 is not None, e6)
         e7 = raises(lambda: K.match_term_uid(24190, all_rows, loop_rows + [dict(loop_rows[4], i=6)], False))
         check("I7 two node rows on the same wire and direction RAISE (ambiguous, never the first)",
               e7 is not None and "2 matching" in e7, e7)
+        # Pre-decided 174 (cycle 72 firefighter): the r2 defect - a candidate end carrying `term_uid` on a STILL-
+        # UNWIRED terminal (t3, uid 24191, wire 0) must resolve by NAME at first wiring, not take the uid branch.
+        r8 = s.address(end(term="", term_uid=24191), True)
+        check("I8 a candidate end with `term_uid` on an UNWIRED terminal is wired by NAME (r2's failure fixed)",
+              r8[0] == (19, 1, 3) and "uid" not in r8[1], repr(r8))
+        loop_rows[3]["wire"], all_rows[2]["wire_uid"] = 777, 777                  # the wire lands, name may change
+        loop_rows[3]["name"] = "renamed after wiring"
+        r9 = s.address(end(term="", verify_term_uid=24191), True)
+        check("I9 ... then verified by `verify_term_uid` after the wire landed, despite the rename",
+              r9[0] == (19, 1, 3) and "uid #24191" in r9[1], repr(r9))
+        e10 = raises(lambda: s.address(end(term="", term_uid=24191), True))
+        check("I10 after wiring, an end with only `term_uid` still resolves by NAME (uid never implicit)",
+              e10 is not None and "0 matches" in e10, e10)
     finally:
         for k, v in saved.items():
             setattr(K.g, k, v)

@@ -687,9 +687,13 @@ class Stage(object):
         echo, rows = g.node_terms_uid(t, didx, nidx)
         if echo != uid:
             raise RuntimeError("uid echo {0!r} != #{1}".format(echo, uid))
-        if end.get("term_uid"):                  # Pre-decided 173: after the first resolution, never by name again
-            ti, _a = match_term_uid(end["term_uid"], mod("allterms").read_terms(t)[0], rows, is_source)
-            return (didx, nidx, ti), "{0}; terminal by uid #{1} (wire {2})".format(how, end["term_uid"], _a["wire_uid"])
+        # Pre-decided 173 + 174 (cycle 72 firefighter): ONLY the staged field `verify_term_uid` selects the uid path.
+        # Candidate ends from jev_candidates carry `term_uid` at FIRST wiring, when the terminal is still unwired,
+        # and r2 (stage_d1_l7_1b_r2.log:41-45) died because that field switched the branch. `term_uid` is ignored
+        # here; the second pass / Is Broken? / gates set `verify_term_uid` after the wire has landed.
+        if end.get("verify_term_uid"):
+            ti, _a = match_term_uid(end["verify_term_uid"], mod("allterms").read_terms(t)[0], rows, is_source)
+            return (didx, nidx, ti), "{0}; terminal by uid #{1} (wire {2})".format(how, end["verify_term_uid"], _a["wire_uid"])
         hits = [r for r in rows if r["name"] == end["term"] and bool(r["is_source"]) == bool(is_source)]
         if len(hits) > 1:
             hits = [r for r in hits if not r["wire"]]
@@ -790,7 +794,7 @@ class Stage(object):
         is a Nodes[] terminal: the source is src_uid's terminal on the sink's CURRENT wire (read live), so the
         re-connect must add no wire and read back `Wire.Is Broken?`. Feed it to `expect_is_broken_false`."""
         F = mod("build_opconnectfromwire_v0")
-        (dd, dn, dt), _h = self.address(dst, False)       # dst["term_uid"] set => by uid (Pre-decided 173)
+        (dd, dn, dt), _h = self.address(dst, False)       # dst["verify_term_uid"] set => by uid (Pre-decided 173/174)
         self.fact("2nd-pass sink addressed: {0}".format(_h))
         self.wired_terminals(dst["uid"], tag="2nd-pass sink")                     # the printed table, evidence only
         w = int([r for r in g.node_terms(self.work, dd, dn) if int(r["i"]) == dt][0]["wire"])
