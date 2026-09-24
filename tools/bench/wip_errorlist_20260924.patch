@@ -1,0 +1,122 @@
+diff --git a/tools/cycle_runner.py b/tools/cycle_runner.py
+index 5ff7c34..58b6e42 100644
+--- a/tools/cycle_runner.py
++++ b/tools/cycle_runner.py
+@@ -395,6 +395,40 @@ def motor_limits_hook(phase, n, a, bench, runner_log, status_text):
+     return ok, verdict
+ 
+ 
++def errorlist_hook(n, a, bench, runner_log, status_text):
++    """User decision 5, 2026-09-24 ("사이클 시작하기 전에 LabVIEW 컴파일 에러 창은 반드시 확인해야할듯"): before every
++    cycle, `tools/errorlist_check.py` reads the current bed's Error List on a scratch copy (GUI, capture-confirmed),
++    double-clicks each item, and compares against the bed's expected-errors file.
++
++    Returns (verdict, json_path, reason); verdict OK | MISMATCH | FAIL | SKIP. FAIL stops the runner before the cycle;
++    MISMATCH starts the cycle with a prompt line telling it to deal with the unexpected errors first.
++    Skipped (logged) in rig state 실험중 (no LabVIEW use at all), under --dry-run/--dry-cmd and --no-errorlist-hook."""
++    stamp = time.strftime("%Y-%m-%d %H:%M:%S")
++    if a.dry_run or a.dry_cmd or getattr(a, "no_errorlist_hook", False):
++        log_line(runner_log, "ERRORLIST | %s | cycle %d | SKIP | dry run / --no-errorlist-hook" % (stamp, n))
++        return "SKIP", None, "skipped"
++    try:
++        sys.path.insert(0, HERE)
++        import motor_gate
++        state = motor_gate.rig_state(status_text)
++    except Exception as e:  # noqa: BLE001
++        state = "unknown (%s)" % e
++    if state == "experiment":
++        log_line(runner_log, "ERRORLIST | %s | cycle %d | SKIP | rig state 실험중 (no LabVIEW use)" % (stamp, n))
++        return "SKIP", None, "rig state experiment"
++    log = os.path.join(bench, "errorlist_check_cycle%d.log" % n)
++    cmd = [sys.executable, BGRUN, "--max-min", "10", "--log", log, "--",
++           sys.executable, "-u", os.path.join(HERE, "errorlist_check.py")]
++    proc = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace")
++    text = read(log) + (proc.stdout or "")
++    m = re.findall(r"ERRORLIST-VERDICT: (OK|MISMATCH|FAIL) (\S.*\.json)", text)
++    verdict, js = (m[-1][0], m[-1][1].strip()) if m else ("FAIL", None)
++    if "BGRUN END" not in text:
++        verdict = "FAIL"
++    log_line(runner_log, "ERRORLIST | %s | cycle %d | %s | %s" % (stamp, n, verdict, js or os.path.basename(log)))
++    return verdict, js, "see %s" % os.path.basename(log)
++
++
+ def note_in_status(status_path, reason):
+     """APPEND a stop notice; never rewrite STATUS.md - it is the user's file and the next session's cold start."""
+     try:
+@@ -427,6 +461,7 @@ def main():
+     ap.add_argument("--dry-cmd", default="", help="self-test only: the exact command to run instead of a session")
+     ap.add_argument("--no-sleep", action="store_true", help="self-test only: report a usage-limit wait, do not take it")
+     ap.add_argument("--no-motor-hooks", action="store_true", help="self-test only: skip motor_gate --session start/end (never for a real run)")
++    ap.add_argument("--no-errorlist-hook", action="store_true", help="self-test only: skip the cycle-start Error List check (never for a real run)")
+     a = ap.parse_args()
+ 
+     status_path = os.path.abspath(a.status)
+@@ -539,6 +574,23 @@ def main():
+             log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
+             note_in_status(status_path, reason)
+             return 3
++        # ERROR LIST at cycle start (user decision 5, 2026-09-24). FAIL to read = RUNNER STOP before the cycle
++        # (the motor limits just set are released first); MISMATCH = the cycle runs, told to fix those errors first.
++        el_verdict, el_json, el_why = errorlist_hook(n, a, bench, runner_log, status_text)
++        if el_verdict == "FAIL":
++            reason = "the cycle-start Error List check could not be completed for cycle %d (%s, %s) - no cycle runs " \
++                     "on an unread bed" % (n, el_why, el_json)
++            log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
++            motor_limits_hook("end", n, a, bench, runner_log, read(status_path))
++            note_in_status(status_path, reason)
++            return 3
++        if el_json:
++            os.environ["ERRORLIST_JSON"] = el_json
++            this_prompt += ("\n\nERRORLIST (cycle-start Error List check, user decision 5 2026-09-24): %s - %s\n"
++                            % (el_verdict, el_json))
++            if el_verdict == "MISMATCH":
++                this_prompt += ("The bed's Error List does NOT match its expected-errors file: deal with the "
++                                "unexpected/missing errors listed in that JSON FIRST, before any other work.\n")
+         cmd = ([sys.executable, BGRUN, "--max-min", str(a.max_min), "--log", cyc_log, "--"]
+                + session_cmd(a, this_prompt, model, effort))
+         for attempt in range(1, LIMIT_RETRIES + 1):
+diff --git a/tools/lv_errorlist.py b/tools/lv_errorlist.py
+index 596e2a8..b95c63e 100644
+--- a/tools/lv_errorlist.py
++++ b/tools/lv_errorlist.py
+@@ -578,7 +578,7 @@ def _sel_in(lay, eb):
+     return None
+ 
+ 
+-def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None):
++def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None, on_item=None):
+     """METHOD B. Walk the list one row at a time; each step: capture -> LOCATE the highlighted row by
+     COLOUR on that capture -> OCR that row and the Details pane -> act -> capture -> CONFIRM the
+     selection moved exactly one row.
+@@ -721,6 +721,13 @@ def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None):
+             R["items"].append(rec)
+             log("   item {0:>2}: object={1!r} reason={2!r} detail={3!r}".format(
+                 rec["index"], obj[:40], reason[:70], (detail or "")[:70]))
++            # 2026-09-24 (tools/errorlist_check.py, user decision 5): an optional per-item hook, called while
++            # the row is the highlighted one; the walk re-fronts the dialog itself before its next keystroke.
++            if on_item is not None:
++                try:
++                    on_item(rec, acts)
++                except Exception as e:                                             # noqa: BLE001
++                    rec["on_item_error"] = "{0}: {1}".format(type(e).__name__, str(e)[:160])
+         if n_want and len(R["items"]) >= n_want:
+             log("  reached the window's own count of {0} items".format(n_want))
+             break
+@@ -775,7 +782,7 @@ def _split(raw):
+     return (m.group(1).strip(), m.group(2).strip()) if m else ("", t)
+ 
+ 
+-def read(vi_path, out_json=None, maxdepth=14, dump_tree=True, log=print):
++def read(vi_path, out_json=None, maxdepth=14, dump_tree=True, log=print, on_item=None):
+     """Open the Error List for `vi_path` (already in memory), read every item, close it.
+ 
+     Returns the record; also written to `out_json`. The VI is never run and never saved."""
+@@ -846,7 +853,7 @@ def read(vi_path, out_json=None, maxdepth=14, dump_tree=True, log=print):
+     # --- method B: capture + OCR, used when no accessibility route exposed a row ---------------
+     if not R["items"]:
+         try:
+-            read_by_capture(R, wtitle, acts, log, hwnd=hwnd)
++            read_by_capture(R, wtitle, acts, log, hwnd=hwnd, on_item=on_item)
+         except Exception as e:                                                     # noqa: BLE001
+             R["errors"].append("capture+OCR: {0}: {1}".format(type(e).__name__, str(e)[:200]))
+             log("  capture+OCR RAISED {0}: {1}".format(type(e).__name__, str(e)[:200]))
