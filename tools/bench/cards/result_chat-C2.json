@@ -1,0 +1,27 @@
+{"schema": "result/1", "id": "chat-C2", "status": "FAIL",
+ "gates": {"pass": 5, "fail": 1},
+ "first_fail": "handles flat not measured: LabVIEW was not running when the check started, so handles_before=0 (errorlist_D1_l7_1_..._192431.json handles_after 31287)",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/errorlist_check.py", "md5": "83da488450f81410cbcfe724a839677c"},
+  {"path": "tools/lv_errorlist.py", "md5": "95cd2d8d13ffabede9c4327f075eaf32"},
+  {"path": "tools/cycle_runner.py", "md5": "b817904da81f59db2121840d5e84e254"},
+  {"path": "tools/bench/errorlist_D1_s4_loop17_20260924_191838.json", "md5": "9ca28f8b3d985f386a1336bd266789cb"},
+  {"path": "tools/bench/errorlist_D1_l7_1_20260924_060431_20260924_192431.json", "md5": "6c9b25159289eb6df05556479c089f4f"}],
+ "facts": [
+  "D1_l7_1: 15/15 items read against the window's '15 errors and warnings', 15 double-clicked, diagram fronted+changed 15/15, 234 s (errorlist_check_l7_1_r2.log)",
+  "D1_s4_loop17: ExecState 1, '0 errors and warnings', 0 items, verdict OK, 65 s (errorlist_check_s4_r2.log). The card's '15 on s4' came from D1_l7_1 being in memory",
+  "Cause of 2/15 at 18:07: after the double-click the block diagram sat over the list, so the next-row clicks hit the DIAGRAM (gui_actions.log 18:08:14/22). A stall also recorded item 0 twice",
+  "Fix lv_errorlist.py:733-784: the dialog is re-fronted before every click and wheel, a retry never re-records a row, and the wheel direction flips inside the step",
+  "uid not read: no op reads Selection List[] 6349400, COM VI has no diagram access, and a labview=read card cannot build an op (web search found no other route). Screenshot kept per item",
+  "Both runs: scratch byte-identical, then deleted. Bed md5 4b621946 and D1_l7_1 e5c7d68b unchanged, refs opened 3 = closed 3, no VI run or saved",
+  "cycle_runner.py:415 errorlist_hook runs BEFORE the motor start hook (:626). FAIL stops the runner; OK/MISMATCH go to the cycle/1 card. Skips on 실험중, --dry-run/--dry-cmd and --no-errorlist-hook",
+  "cycle/1 card with errorlist {path, verdict:MISMATCH} validates (protocol.validate_obj). selftest_cycle_runner_ff 3/3 PASS on the hook's skip path (selftest_cycle_runner_ff_c2.log)",
+  "D1_l7_1 verdict MISMATCH only because no errorlist_expected_D1_l7_1_*.json exists (all 15 items 'extra')",
+  "Jev ladder: no JEV-LADDER line for errorlist_check_s4_r1.log. Cause read from gui_actions.log (our script bug) and patched. Committed 52027a8"],
+ "open": [
+  "Handles-flat gate: should the check start LabVIEW and wait before reading handles_before, or should the runner guarantee LabVIEW is up? As it stands the delta is meaningless",
+  "The runner's FAIL/MISMATCH paths were not run live (self-test covers SKIP only). Is a live runner test with a broken bed wanted?",
+  "Uid of the double-clicked object needs a Selection List[] reader op (a build card)"],
+ "cost": {"usd": null, "minutes": 35, "labview_runs": 2},
+ "note": "Parked patch wip_errorlist_20260924b.patch re-applied after the forced stop. The uncommitted tools/jev_candidates.py change in the tree is not mine and was left alone. STATUS not edited (status_edit=false)."}
