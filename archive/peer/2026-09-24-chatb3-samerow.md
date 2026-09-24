@@ -105,7 +105,11 @@ VERDICT {"schema":"verdict/1","id":"chatb3-samerow","verdict":"supported","alter
 
 ## What was done with it
 
-(Claude fills in)
+ANSWERED / supported (judgement, chat 2026-09-24). `guard_peer.py.new` installed 19:02: skips `bgrun.py` tokens and
+judges the script after `--`; `selftest_guard_peer_samerow` 14/0 after. Reviewer's scope alternative: the installed
+rule stays; the one hole ADOPTED is a recipe/bench script run behind a utility prefix (any `tools/recipes|bench`
+script in command position after `--` is judged); `py -c` probes are not builds and stay out; `.ps1` motor scripts are
+guarded by `motor_gate` / guard_bash's motor rule. Implemented under card chat-B4.
 
 SAME-ROW: run_selftests_chat_b2.log (2026-09-24 19:04:42)
   This later failure of the SAME script was released without buying a new peer review: one review per row per cycle (CLAUDE.md, user 2026-09-22). The review above is the evidence; this line records which re-run was charged to it.
