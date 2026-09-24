@@ -117,6 +117,9 @@ for cp in ("L7-1a", "L7-1", "L7-R"):
         want = REC_CD[cp]
         gate("C6 {0}: simulated computation_diff rows == recorded ({1})".format(cp, want if isinstance(want, int) else want),
              (len(rows) == want) if isinstance(want, int) else rows == sorted(want), rows)
+rbw = json.load(open(R["steps"][-1]["file"]["path"], encoding="utf-8"))["effect"]
+gate("C8 remove_bad_wires clears only #376's real half-wires [1581, 3629, 4517] (review chat-s2-rbw; chat-S2b dedupe)",
+     rbw.get("removed_wires") == [1581, 3629, 4517], rbw)
 gate("C7 plan NOT final (1 row left open by design) and first divergent step == 1 (the move)",
      not R["final"] and (R["first_divergent"] or {}).get("n") == 1, (R["final"], R["first_divergent"]))
 fact("candidates (cut rows with >1 legal mechanism): {0}; model sources: {1}".format(R["n_candidates"], sorted(set(x.get("model_source") for x in R["steps"][1:]))))

@@ -1,0 +1,41 @@
+BGRUN START 2026-09-24 22:22:51 limit 10.0 min: py -u tools/bench/dedupe_check_s2b.py
+  PASS  D0 OLD has no dedupe_rows, NEW has it  
+  TABLE graph | edges old/new (list) | edge SET equal | flags old/new | dropped | nonidentical
+  TABLE S1 | 7541/7515 | False | 13/0 | 23 | []
+  FAIL  D1 S1: edge SET unchanged by the dedupe; no non-identical duplicate  {'dropped': 23, 'term_uids': [644, 648, 2632, 7921, 13410, 13712, 15273, 15276, 16364, 16636, 21586, 22538, 22853, 24670, 25296, 25351, 25406, 25410, 25896, 27543], 'nonidentical': []}
+  TABLE bed | 7611/7582 | False | 17/4 | 29 | []
+  FAIL  D1 bed: edge SET unchanged by the dedupe; no non-identical duplicate  {'dropped': 29, 'term_uids': [644, 648, 2632, 7921, 13410, 13712, 15273, 15276, 16364, 16636, 21586, 22538, 22853, 23073, 23080, 23225, 23246, 23444, 23456, 24670], 'nonidentical': []}
+  TABLE S3 | 7585/7556 | False | 13/0 | 29 | []
+  FAIL  D1 S3: edge SET unchanged by the dedupe; no non-identical duplicate  {'dropped': 29, 'term_uids': [644, 648, 2632, 7921, 13410, 13712, 15273, 15276, 16364, 16636, 21586, 22538, 22853, 23073, 23080, 23225, 23246, 23444, 23456, 24670], 'nonidentical': []}
+  PASS  D1b dropped rows == 23 / 29 / 29 (S1 / bed / S3, measured by the probe)  
+  TABLE cdiff(S1,S3) rows old 0 new 0
+  PASS  D2 cdiff(S1,S3) rows old == new == 0  ([], [])
+  TABLE cdiff(S1, chat-S2 sim end = the D1_s4 reference) rows old 1 new 1: ['376|Terminal|current frame data array in|0']
+  PASS  D3 cdiff(S1, D1_s4 reference) rows unchanged by the dedupe  (['376|Terminal|current frame data array in|0'], ['376|Terminal|current frame data array in|0'])
+  PASS  D4 A2: none of the 200 picked wires carries a duplicated row (so 200/200 cannot move)  []
+  PASS  D5 A3: no flat-sequence tunnel row is duplicated (so 58/58 cannot move)  []
+  PASS  D6 A1: the 9 expected mutation rows touch no duplicated terminal (and diff works on edge sets, D1)  []
+=== GATES: 7 pass / 3 fail; failing: D1 S1: edge SET unchanged by the dedupe; no non-identical duplicate
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":7,"fail":3},"first_fail":"D1 S1: edge SET unchanged by the dedupe; no non-identical duplicate","artefacts":[]}
+BGRUN END rc=1 after 4s (RESULT: status=FAIL gates 7/3 first_fail=D1 S1: edge SET unchanged by the dedupe; no non-identical duplicate; the process itself said 0)
+BGRUN START 2026-09-24 22:23:42 limit 10.0 min: py -u tools/bench/dedupe_check_s2b.py
+  PASS  D0 OLD has no dedupe_rows, NEW has it  
+  TABLE graph | edges old/new (list) | edge SET equal | flags old/new | dropped | nonidentical
+  TABLE S1 | 7541/7515 | True | 13/0 | 23 | [] | phantom name-keys under OLD 23 (all ordinal>0: True)
+  PASS  D1 S1: uid-edge SET unchanged by the dedupe; no non-identical duplicate; only '|n>0' phantom keys vanish  {'dropped': 23, 'term_uids': [644, 648, 2632, 7921, 13410, 13712, 15273, 15276, 16364, 16636, 21586, 22538, 22853, 24670, 25296, 25351, 25406, 25410, 25896, 27543], 'nonidentical': []}
+  TABLE bed | 7611/7582 | True | 17/4 | 29 | [] | phantom name-keys under OLD 29 (all ordinal>0: True)
+  PASS  D1 bed: uid-edge SET unchanged by the dedupe; no non-identical duplicate; only '|n>0' phantom keys vanish  {'dropped': 29, 'term_uids': [644, 648, 2632, 7921, 13410, 13712, 15273, 15276, 16364, 16636, 21586, 22538, 22853, 23073, 23080, 23225, 23246, 23444, 23456, 24670], 'nonidentical': []}
+  TABLE S3 | 7585/7556 | True | 13/0 | 29 | [] | phantom name-keys under OLD 29 (all ordinal>0: True)
+  PASS  D1 S3: uid-edge SET unchanged by the dedupe; no non-identical duplicate; only '|n>0' phantom keys vanish  {'dropped': 29, 'term_uids': [644, 648, 2632, 7921, 13410, 13712, 15273, 15276, 16364, 16636, 21586, 22538, 22853, 23073, 23080, 23225, 23246, 23444, 23456, 24670], 'nonidentical': []}
+  PASS  D1b dropped rows == 23 / 29 / 29 (S1 / bed / S3, measured by the probe)  
+  TABLE cdiff(S1,S3) rows old 0 new 0
+  PASS  D2 cdiff(S1,S3) rows old == new == 0  ([], [])
+  FACT  D3 regenerated chat-S2 end state: 5801 rows, rbw removed {'removed_wires': [1581, 3268, 3629, 4517, 13486, 16880, 19372, 23614, 25186, 25404, 25478, 26025, 28924, 31169, 31193, 34066]}
+  TABLE cdiff(S1, chat-S2 sim end = the D1_s4 reference) rows old 1 new 1: ['376|Terminal|current frame data array in|0']
+  PASS  D3 cdiff(S1, D1_s4 reference) rows unchanged by the dedupe  (['376|Terminal|current frame data array in|0'], ['376|Terminal|current frame data array in|0'])
+  PASS  D4 A2: none of the 200 picked wires carries a duplicated row (so 200/200 cannot move)  []
+  PASS  D5 A3: no flat-sequence tunnel row is duplicated (so 58/58 cannot move)  []
+  PASS  D6 A1: the 9 expected mutation rows touch no duplicated terminal (and diff works on edge sets, D1)  []
+=== GATES: 10 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 53s

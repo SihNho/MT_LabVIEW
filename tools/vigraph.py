@@ -245,6 +245,27 @@ def show(key):
                                     "" if ordinal == 0 else " [{0}]".format(ordinal))
 
 
+def dedupe_rows(terms):
+    """(rows, record): the terminal rows with a repeated `term_uid` dropped, FIRST occurrence wins.
+
+    MEASURED 2026-09-24 (card chat-S2b, review archive/peer/2026-09-24-chat-s2-rbw.md): OpAllTerms_v1 returns some
+    Diagram-owned terminals TWICE, byte-identical (S1 wiki 23 uids, bed wiki 29, graph_s3_loop15 29; 0 groups whose
+    rows differ). Counted raw, such a wire looks like it has two sources, so `flags` and any row-counting consumer
+    (stagesim remove_bad_wires) called 13 live wires on S3 broken. `record` = {"dropped", "term_uids"[:20],
+    "nonidentical"} - a duplicate whose rows DIFFER is still dropped (first wins) but LISTED in `nonidentical`."""
+    seen, out, dropped, odd = {}, [], [], []
+    for r in terms:
+        u = r["term_uid"]
+        if u in seen:
+            if r != seen[u]:
+                odd.append(u)
+            dropped.append(u)
+            continue
+        seen[u] = r
+        out.append(r)
+    return out, {"dropped": len(dropped), "term_uids": sorted(set(dropped))[:20], "nonidentical": sorted(set(odd))}
+
+
 def build4(terms, objs=None, loops=None, labels=None, fs_pairs=None):
     """The full terminal-level graph. `terms` = OpAllTerms_v1 rows (the 7th column `frame_diagram` is
     REQUIRED for frame-exact sequence tunnels), each tagged with `term_class` (leaf class, from
@@ -256,6 +277,7 @@ def build4(terms, objs=None, loops=None, labels=None, fs_pairs=None):
     for o in (objs or []):
         pos[int(o["uid"])] = tuple(o["pos"])
         leaf[int(o["uid"])] = o["class"]
+    terms, dedupe = dedupe_rows(terms)
     rows = []
     for r in terms:
         r = dict(r)
@@ -311,7 +333,7 @@ def build4(terms, objs=None, loops=None, labels=None, fs_pairs=None):
                 edges.append(("thru", a["key"], b["key"], 0))
                 n_thru += 1
 
-    method = {"wire_edges": sum(1 for e in edges if e[0] == "wire"), "thru_edges": n_thru,
+    method = {"wire_edges": sum(1 for e in edges if e[0] == "wire"), "thru_edges": n_thru, "dedupe": dedupe,
               "assumption_A": "scheduling = tunnels, shift registers, structures, diagrams, "
                               "Local/Global, Wait/timing labels (SCHED_OWNER)"}
 

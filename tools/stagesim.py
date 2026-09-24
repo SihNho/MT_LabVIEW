@@ -167,7 +167,9 @@ def model_for(op, models):
 # ------------------------------------------------------------------------------------------------ state
 def base_state(graph, context=None):
     ctx = context or {}
-    st = {"terminals": [dict(r) for r in graph["terminals"]], "objs": [dict(o) for o in graph.get("objs") or []],
+    # vigraph's load dedupe (card chat-S2b): the state holds what build4 sees, so row-counting ops agree with it
+    rows, dd = V.dedupe_rows(graph["terminals"])
+    st = {"terminals": [dict(r) for r in rows], "dedupe": dd, "objs": [dict(o) for o in graph.get("objs") or []],
           "loops": copy.deepcopy(graph.get("loops")), "fs_pairs": copy.deepcopy(graph.get("fs_tunnel_pairs")),
           "graph_summary": graph.get("graph_summary") or {}, "sym": {}, "diagrams": {}, "neg": 0,
           "removed_nodes": [], "vi": graph.get("vi"), "md5": graph.get("md5")}
