@@ -1,0 +1,70 @@
+{
+ "schema": "task/1",
+ "id": "78-3",
+ "kind": "build",
+ "goal": "M8(b) per m8 plan PD22(d): swap stage (S1 + S3 dated copies, #6810/#22692 -> replay VIs), then one replay run of each via drive_m8.py; compare X/Y/Z.",
+ "why": "Stand-ins accepted (PD22(b)(c)). This is the rule-1a numeric acceptance of the loop-1.5 split: same frames through S1 and S3 must give identical X/Y/Z.",
+ "inputs": [
+  {"path": "docs/m8-real-run-plan.md", "md5": "6ca364f54302507b4684d2dbcd799659"},
+  {"path": "tools/bench/cards/result_78-2.json"},
+  {"path": "tools/bench/cards/task_77-6.json"},
+  {"path": "tools/bench/drive_m8.py"},
+  {"path": "tools/bench/swap_verb_75.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3_loop15.vi", "md5": "1a11d92aacabf7ec844d65b8af19f39f"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image.vi", "md5": "842ecad9a6674a5060ebb3d5522751a9"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_image_cal.vi", "md5": "afce0d04346fc58234d28bcc0fc42e55"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_imaqdx_get_image_buf.vi", "md5": "a89dafc1db03feef7b528f0dd4fcc692"}
+ ],
+ "pass": [
+  "S1 stage: ≤120-line stage_replay_swap.py on stagekit; dry PASS, pre-run PASS, prior-art released before the LabVIEW run",
+  "S2 swap: 2 dated copies in claudeDev\\replay\\, ES 1 cold, callee diff == #6810,#22692 only, wire diff 0 after remap",
+  "S3 sources D1_s1_copy / D1_s3_loop15 / 3 replay VIs md5 unchanged after the stage",
+  "R1 replay run S1-copy then S3-copy, separate LabVIEW launches, same picks + durations; both reach experiment loop",
+  "R2 tra rows joined on iteration: row counts, common prefix length, count of rows with X/Y/Z not bit-identical, first diff",
+  "R3 result table tools/bench/m8b_replay_78.json + INDEX.md row; motor session checks held; LabVIEW gone after each"
+ ],
+ "outputs": [
+  "tools/recipes/stage_replay_swap.py",
+  "tools/bench/stage_replay_swap_78.log",
+  "tools/bench/m8b_replay_78.json",
+  "archive/benchmarks/INDEX.md"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "tools/recipes/stage_replay*",
+   "tools/bench/*replay*",
+   "tools/bench/m8b_*",
+   "tools/bench/drive_m8*",
+   "tools/bench/plans/**",
+   "tools/bench/stage_runs.jsonl",
+   "tools/stagekit.py",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\**",
+   "archive/benchmarks/**",
+   "docs/NAMES.md",
+   "tools/bench/jev_gate.log",
+   "tools/bench/cards/**",
+   "archive/peer/2026-09-25-*78*.md"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 100
+ },
+ "rules": [
+  "launch form PD22(a): Bash non-compound backgrounded bgrun --material; stage cap 2/cycle",
+  "rule 1a: in each copy ONLY #6810 and #22692 change; never write D1_s1_copy, D1_s3_loop15 or originals",
+  "drive_m8 GUI bead picks under user 2026-09-17 option 1 evidence; motors only via gate session checks",
+  "garbage tracking values are not a failure; X/Y/Z EQUALITY between the two runs is the measurement",
+  "full-frame pixel check (PD22(c)) only if no extra LabVIEW launch; failed prediction -> JEV-LADDER",
+  "return facts; review dispositions OPEN; hold turn until BGRUN END; LabVIEW verified gone"
+ ],
+ "advances": ["M8", "R5"]
+}

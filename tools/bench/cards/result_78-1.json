@@ -1,0 +1,16 @@
+{"schema":"result/1","id":"78-1","status":"BLOCKED","gates":{"pass":0,"fail":0},
+"first_fail":null,
+"blocked_by":{"device":"tools/hooks/guard_bash.py (RETRY CAP via tools/stage_prerun.py)","message":"stage_replay_standins.py already ran 2 time(s) in cycle 78 (cap 2). Both counted 'runs' are launches the permission layer refused AFTER the hook recorded them; no stage ever started."},
+"artefacts":[],
+"facts":[
+"launch 1 (PowerShell $env:MATERIAL='1'; py tools\\bgrun.py ...) refused by permission layer 'modifies environment variables', yet recorded: tools/bench/stage_runs.jsonl:6",
+"launch 2 (Bash, cd ... && MATERIAL=1 py tools/bgrun.py ...) refused by permission layer as compound - yet recorded, tools/bench/stage_runs.jsonl:7 (07:07:51)",
+"launch 3 (Bash, MATERIAL=1 py tools/bgrun.py --material --max-min 40 ..., non-compound) refused by guard_bash RETRY CAP 2/2 in cycle 78",
+"the PD21(d) launch form ($env:... in PowerShell) is itself refused by the permission layer; same recorder defect as cycle 77 (stage_runs.jsonl:3-4)",
+"no stage_replay_7*.log exists; no LabVIEW started; no replay VI built; PD18(a) and diag_replay_test77.py not run",
+"LabVIEW not running (tasklist: no LabVIEW.exe); STATUS.md:25 labview-lock status: released"],
+"open":[
+"Issue a RETRY_CARD (task/1 with retry_of: stage_replay_standins.py) and launch as the non-compound Bash form 'MATERIAL=1 py tools/bgrun.py --material ...' with RETRY_CARD=<path> prefixed?",
+"Fix stage_prerun.check_launch recorder to count only launches that actually execute (e.g. record from bgrun start), since permission-layer refusals happen after PreToolUse hooks?"],
+"cost":{"usd":null,"minutes":4,"labview_runs":0},
+"note":"Working launch shape is likely: RETRY_CARD=<card> MATERIAL=1 py tools/bgrun.py --material --max-min 40 --log tools/bench/stage_replay_78.log -- py -u tools/recipes/stage_replay_standins.py (Bash, no cd, no &&)."}

@@ -197,7 +197,7 @@ def prerun_gate(cmd):
     allow, why = stage_prerun.check_launch(cmd)
     if allow:
         if stage_prerun.launched_stage_scripts(cmd) or stage_prerun.launched_plan_runs(cmd):   # card chat-S3
-            _PENDING_STAGE[:] = [cmd]      # RETRY CAP: recorded by main() only if EVERY gate here passes
+            _PENDING_STAGE[:] = [cmd]      # kept for callers; RECORDING moved to tools/bgrun.py (card 78-2)
         return 0
     note(False, "PRERUN-GATE " + cmd)
     sys.stderr.write("BLOCKED by tools/hooks/guard_bash.py: " + why)
@@ -384,18 +384,12 @@ def jev_advisories(cmd, data):
 
 
 def main():
-    """RETRY CAP (user 2026-09-24, card chat-D): a stage launch is appended to tools/bench/stage_runs.jsonl only when
-    this whole hook allows it (rc 0) - a launch refused by a later gate here is not a run. Later PreToolUse hooks or
-    the permission layer can still refuse it; such a launch is over-counted (logged as a known limit)."""
+    """RETRY CAP (user 2026-09-24, card chat-D). This hook only CHECKS the cap (prerun_gate -> check_launch). It no
+    longer RECORDS: a PreToolUse hook runs before later hooks, guard_cycle and the permission layer, so a launch it
+    recorded could still be refused and never start (stage_runs.jsonl:3-7, docs/violation-decisions.md
+    "device-failed - 2026-09-25 07:05"). The run is recorded by tools/bgrun.py at CHILD START (card 78-2)."""
     _PENDING_STAGE.clear()
-    rc = _main()
-    if rc == 0 and _PENDING_STAGE:
-        try:
-            import stage_prerun
-            stage_prerun.check_launch(_PENDING_STAGE[0], record=True)
-        except Exception:                                                          # noqa: BLE001
-            pass
-    return rc
+    return _main()
 
 
 def _main():

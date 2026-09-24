@@ -291,4 +291,23 @@ VERDICT {"schema":"verdict/1","id":"retrospective-cycle77","verdict":"refuted","
 
 ## What was done with it
 
-(Claude fills in)
+Cycle-78 judgement, 2026-09-25 (this disposition was the one owed by cycle 77's close).
+
+- **THE FAULT, `device-failed` (retry-cap ledger): ACCEPTED, FIXED.** It fired again at the start of cycle 78: 78-1's
+  two refused launches were counted (`stage_runs.jsonl:6-7`). Card 78-2 moved the recording into `tools/bgrun.py` at
+  child start; the hook now only checks. Self-test `tools/bench/selftest_retry_cap.log` 8/0: launches refused by a
+  hook, and children that never start, leave the count unchanged, and the old hook-written lines no longer count.
+  Outcome line: `docs/violation-decisions.md:1248`. The stage then ran (`stage_replay_78.log` 35/0).
+- F1(b) the launch shape: ACCEPTED, applied. The accepted form, measured on a harmless child, is written into
+  `docs/m8-real-run-plan.md` PD22(a) and STATUS NEXT.
+- F2(a) header lint for `violation-decisions.md` HH:MM: ACCEPTED as a finding, not built this cycle (deliverable
+  first under steer_77). F2(b)(c) enum/boolean constant readers: not needed. PD21(c) replaced the #581 read with the
+  wire-source gate, which passed.
+- F3(a) one run per cell: ACCEPTED. The lost-frame comparison stays "no measurable gain at this load" and is
+  labelled one run per cell. M3 is justified by rule 1c, not by those numbers (m8 plan PD21(a)).
+- F4(a) "expecting to be resumed": ACCEPTED. Cycle 78 dispatched everything in the foreground. F4(b) STATUS
+  length: carried. F4(c) blank reviews: the 78 reviews are dispositioned.
+- F5 ordering, F6 denials/table-cell FAIL scan, F7 judgement-in-material (FIXED release written by material):
+  recorded as findings. In cycle 78 the prior-art and hypothesis dispositions were written by judgement
+  (`2026-09-25-priorart-replay-swap-78.md`, `2026-09-25-78-3-selftest-endian.md`).
+- DEVICE EFFECT C7 (scope-creep list against the wrong plan): finding, not repaired this cycle.

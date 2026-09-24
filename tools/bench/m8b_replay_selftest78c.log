@@ -1,0 +1,8 @@
+BGRUN START 2026-09-25 07:54:06 limit 3.0 min: py -u tools/bench/m8b_replay_compare.py tools/bench/m8_out/s1_20260925_063401 tools/bench/m8_out/s3_20260925_063702 --out tools/bench/m8b_replay_selftest78c.json
+GATE G1 both tra parse (dims, LE header length prefix, exponent byte at pos 7) PASS
+GATE G2 >= 1000 common rows                             PASS
+GATE G3 X/Y/Z bit-identical over the common rows        FAIL
+FACTS {"rows_s1": 3512, "rows_s3": 3516, "common": 3512, "identical_prefix": 0, "rows_xyz_not_bit_identical": 3512, "max_abs_diff_xyz": 34.01627837897195, "trans_rot_rows_differ": 128}
+CAL {"md5_s1": "0477390b427c2a71d1ffde7ff6225e85", "md5_s3": "cbc859e69d45de091db35c45ec7f80d8", "len": [171552, 171552], "first_diff_offset": 9}
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":2,"fail":1},"first_fail":"G3 X/Y/Z bit-identical over the common rows","artefacts":[{"path":"tools\\bench\\m8b_replay_selftest78c.json","md5":"7c3a58d420502d90ebddb197b7885a80"}]}
+BGRUN END rc=1 after 0s

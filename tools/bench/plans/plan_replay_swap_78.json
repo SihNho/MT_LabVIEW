@@ -1,0 +1,27 @@
+{
+ "schema": "stageplan-lite/1",
+ "stage": "stage_replay_swap (card 78-3; m8 plan PD13(d), PD14(c), PD15, PD17(b'), PD22(d))",
+ "input": {"vi": "claudeDev\\D1_s3_loop15.vi", "md5": "1a11d92aacabf7ec844d65b8af19f39f",
+           "graph": "tools/bench/graph_s3_loop15_20260924.json"},
+ "second_input": {"vi": "claudeDev\\D1_s1_copy.vi", "md5": "3e3d23cefd3a334001aa9d6156bf1aee",
+                  "graph": "tools/bench/graph_s1_20260924.json"},
+ "input_note": "S3 is the Stage input only because graph_s3_loop15_20260924.json is the one graph in the dry-run shape (terminals+objs); S1 is copied beside it and gets the identical treatment.",
+ "note": "No wiring rows: the stage only swaps two subVI callees in place with gscript.replace_object (PD15, measured 21/0 in swap_verb_75.json). Every check is taken after remapping the verb's returned new uid to the old uid (PD15).",
+ "swaps": [
+  {"uid": 6810, "old_callee": "get buff image-lost frames.vi", "new": "replay\\replay_get_buff_image.vi",
+   "new_md5": "842ecad9a6674a5060ebb3d5522751a9"},
+  {"uid": 22692, "old_callee": "IMAQdx Get Image.vi", "new": "replay\\replay_get_image_cal.vi",
+   "new_md5": "afce0d04346fc58234d28bcc0fc42e55"}
+ ],
+ "extra_pins": [["replay buf stand-in", "replay\\replay_imaqdx_get_image_buf.vi", "a89dafc1db03feef7b528f0dd4fcc692"]],
+ "copies": {"s1": "replay\\D1_s1_replay_{ts}.vi", "s3": "replay\\D1_s3_replay_{ts}.vi"},
+ "decisions": [
+  {"id": "R01", "action": "copy", "what": "dated byte copies of S1 and S3 into claudeDev\\replay\\ (md5 == source)"},
+  {"id": "R02", "action": "read", "what": "per copy BEFORE: callee census; #6810 -> get buff image-lost frames.vi, #22692 -> IMAQdx Get Image.vi; wire-edge set E0; ES 1"},
+  {"id": "R03", "action": "swap", "what": "per copy: replace_object #6810 -> replay_get_buff_image.vi"},
+  {"id": "R04", "action": "swap", "what": "per copy: replace_object #22692 -> replay_get_image_cal.vi"},
+  {"id": "R05", "action": "read", "what": "per copy AFTER: callee diff == exactly the two swaps (new callees), wire-edge diff 0 after new->old uid remap, ES 1"},
+  {"id": "R06", "action": "save", "what": "scripted save of each copy (ES 1 route)"},
+  {"id": "R07", "action": "read", "what": "COLD (fresh LabVIEW): ES 1 each, census == warm; sources and replay VIs md5 unchanged"}
+ ]
+}

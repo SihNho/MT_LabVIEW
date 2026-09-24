@@ -1,0 +1,76 @@
+{
+ "schema": "task/1",
+ "id": "78-2",
+ "kind": "build",
+ "goal": "Repair the retry-cap recorder (count at bgrun child start), find the launch form the permission layer accepts, then RUN stage_replay_standins.py + diag_replay_test77.py (card 78-1 pass list).",
+ "why": "78-1 BLOCKED: two launches refused by the permission layer were counted (stage_runs.jsonl:6-7), cap 2/2 before any run. The repair decided in docs/violation-decisions.md:1236-1246 now blocks the deliverable, so it goes first.",
+ "retry_of": "stage_replay_standins.py",
+ "inputs": [
+  {"path": "tools/bench/cards/task_78-1.json"},
+  {"path": "tools/bench/cards/result_78-1.json"},
+  {"path": "docs/violation-decisions.md"},
+  {"path": "tools/hooks/guard_bash.py"},
+  {"path": "tools/stage_prerun.py"},
+  {"path": "tools/bgrun.py"},
+  {"path": "tools/bench/stage_runs.jsonl"},
+  {"path": "tools/recipes/stage_replay_standins.py", "md5": "610a96a2e1126d698c0c7cb768f89be9"},
+  {"path": "tools/bench/diag_replay_test77.py", "md5": "330db8df63aff3896e2c3ae50244b09a"}
+ ],
+ "pass": [
+  "R1 recorder: stage run counted in tools/bgrun.py at child start (line carries cycle + card); PreToolUse hook only CHECKS the cap",
+  "R2 self-test: guard_cycle-refused launch and permission-refused launch leave count unchanged; started run +1; cap 2 refuses 3rd; RETRY_CARD authorises one",
+  "R3 old hook-written lines (stage_runs.jsonl:1-7) no longer count; nothing deleted from the file",
+  "R4 a launch form measured ACCEPTED by the permission layer on a harmless bgrun child (not a stage); the exact string reported",
+  "then 78-1's full pass list: stage run, 3 replay VIs cold-verified, PD18(a) pixel md5s + BN Out values, hygiene, LabVIEW gone"
+ ],
+ "outputs": [
+  "tools/bgrun.py",
+  "tools/stage_prerun.py",
+  "tools/hooks/guard_bash.py",
+  "tools/bench/selftest_retry_cap.py",
+  "tools/bench/selftest_retry_cap.log",
+  "tools/bench/stage_replay_78.log",
+  "tools/bench/replay_test78.log",
+  "tools/bench/replay_vis_78.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "tools/bgrun.py",
+   "tools/stage_prerun.py",
+   "tools/hooks/guard_bash.py",
+   "tools/bench/selftest_retry_cap*",
+   "tools/recipes/stage_replay*",
+   "tools/bench/*replay*",
+   "tools/bench/plans/**",
+   "tools/bench/stage_runs.jsonl",
+   "tools/stagekit.py",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\**",
+   "docs/violation-decisions.md",
+   "docs/NAMES.md",
+   "docs/toolkit-capabilities.md",
+   "tools/bench/jev_gate.log",
+   "tools/bench/cards/**",
+   "archive/peer/2026-09-25-*78*.md"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "rules": [
+  "this card is the RETRY_CARD for stage_replay_standins.py if the repaired cap still needs one",
+  "repair + self-test BEFORE any stage launch; never launch the stage to test the permission layer",
+  "no $env: in PowerShell, no cd/&& in Bash: measure the accepted form on a harmless child first",
+  "stage cap 2/cycle; failed prediction -> follow JEV-LADDER NEXT-ACTION; review owed -> hypothesis, OPEN",
+  "rule 1a: in get-buff copy ONLY #529 changes; run only replay VIs + harness; no main VI, motor, camera",
+  "append an outcome line under docs/violation-decisions.md:1236 entry; hold turn until BGRUN END; LabVIEW gone"
+ ],
+ "advances": ["M8", "R5"]
+}

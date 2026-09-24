@@ -292,6 +292,46 @@ Garbage tracking values in (a) are NOT a failure (no sample channel on the micro
         (`$env:RETRY_CARD=…; $env:MATERIAL='1'; py tools\bgrun.py --material …`); compound Bash launches are refused
         by the permission layer AFTER the retry-cap recorder has counted them.
 
+22. **Cycle-78 rulings on results 78-1 (BLOCKED) and 78-2 (FAIL 4/1).**
+    (a) **Retry-cap recorder REPAIRED** (`tools/bgrun.py` records at child start; `selftest_retry_cap.log` 8/0;
+        `docs/violation-decisions.md:1248`). Accepted launch form = Bash, non-compound, backgrounded:
+        `py tools/bgrun.py --material --max-min N --log <log> -- py -u <script>`; a judgement retry = `--retry-card <card>`.
+    (b) **Stand-ins ACCEPTED as built** (`stage_replay_78.log` 35/0; md5 buf `a89dafc1…`, cal `afce0d04…`,
+        get-buff `842ecad9…`): ES 1 cold, constants cold, callee diff `#529` only, wire diff 0; image number == b,
+        `Missed frames?` TRUE, cal `BN Out` 0,1,2 (`replay_test78b.log`).
+    (c) **PD18(a) pixel identity: ACCEPTED on INTERIM evidence** — the harness's COM `GetControlValue` on the 2-D U8
+        indicator returns only column 0, and that column's md5 == column 0 of source f0000k for k = 0,1,2 on BOTH
+        stand-in paths (`diag_replay_slice78.log:3-8`). This rules out empty/stale/wrong-index frames, which is what
+        the equivalence test needs. The FULL-frame check is still owed, NOT blocking: route = the harness writes the
+        returned image with `IMAQ Write File 2` (PNG, lossless) to a scratch file and Python md5s the DECODED U8 array
+        against the source's. Do it inside the next replay dispatch if it costs no extra LabVIEW launch, else later.
+    (d) **Next = PD13(d)/15/17(b'): the swap stage + two replay runs.** A `tools/recipes/stage_replay_swap.py` makes
+        dated copies of `D1_s1_copy.vi` and `D1_s3_loop15.vi` in `claudeDev\replay\`, replaces `#6810` with
+        `replay_get_buff_image.vi` and `#22692` with `replay_get_image_cal.vi` (`gscript.replace_object`, uid remap per
+        PD15), and gates: ES 1 cold, callee diff == exactly those two nodes, wire-edge diff 0 after the remap, sources
+        md5 unchanged. Then each copy runs in its OWN LabVIEW launch through `drive_m8.py` (same picks, same
+        durations; camera live only for the bead-pick display, motors under the grant with the session checks). Join the
+        tra rows on iteration index; PASS = X/Y/Z bit-identical over the common prefix, with the row counts and the
+        first differing row (if any) reported. An INDEX row in `archive/benchmarks/INDEX.md`.
+
+23. **Cycle-78 ruling on result 78-3 (PASS 6/0). M8(b) is DONE for `D1_s3_loop15.vi`, at the FUNCTIONAL level.**
+    (a) Swapped copies `claudeDev\replay\D1_s1_replay_20260925_075422.vi` (md5 `126f8497…`) and
+        `D1_s3_replay_20260925_075422.vi` (`5e48e197…`), ES 1 warm + cold, callee diff == {#6810, #22692}, wire diff 0.
+        Each ran in its own LabVIEW launch via `drive_m8.py --leg replay_s1|replay_s3` (8/0 each, lost 0/0). **All
+        10,310 common tra rows have X/Y/Z bit-identical (max |d| 0.0)**; row counts 10,310 vs 10,585 (run length).
+        trans/rot differ in 276 rows = motor READBACK, not computation. Table `tools/bench/m8b_replay_78.json`,
+        INDEX row 47. Negative control: the same comparer on the live pair (row 46) finds every row different.
+    (b) PD13(c) STANDS and is SATISFIED: the cal files differ only in the save-time string (3 bytes), so the bead xy
+        are equal.
+    (c) **The PD22(c) full-frame pixel check is DROPPED as a requirement.** Column 0 matched per frame on both
+        stand-in paths, and the tracking output, which reads the whole frame, is identical and non-vacuous.
+        Optional, never blocking.
+    (d) **Scope:** this certifies the loop-1.5 split (S1 → S3). The current bed `D1_s4_loop17.vi` writes no tra rows
+        by design (t5 w4517 and t7 w3268 are open until QRT, PD4/PD8), so its rule-1a numbers come from the SAME
+        replay harness once M3 closes those rows. The swap stage is reusable: rerun `stage_replay_swap.py` on the new
+        bed. **Goal map: M8 stays `active` — its done-when names the S4 bed, whose (b) needs M3's rows; evidence added
+        to `docs/goalmap.json`. The next deliverable work is M3 (stage K), which is also what completes M8(b) on the bed.**
+
 ## Stop conditions
 
 Any refusal from the motor gate, an Error List MISMATCH on the bed, a run that does not reach the experiment loop,

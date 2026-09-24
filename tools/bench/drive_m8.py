@@ -58,9 +58,12 @@ def main():
     d4, d0 = v5.d4, v5.d0
     src, smd5, name = {"bed": (BED, BED_MD5, "D1_s4_loop17_run_%s.vi"), "base": (ORIG, ORIG_MD5, "m8_orig_copy_%s.vi"),
                        "s3": (S3, S3_MD5, "D1_s3_loop15_run_%s.vi"),
-                       "s1": (S1, S1_MD5, "D1_s1_copy_run_%s.vi")}[LEG]
-    name = name % TS
-    copy = os.path.join(tempfile.gettempdir() if DRY else CD, name)
+                       "s1": (S1, S1_MD5, "D1_s1_copy_run_%s.vi")}.get(LEG, (None, None, None))
+    if LEG in ("replay_s1", "replay_s3"):                               # card 78-3 (PD22(d)): a swapped replay copy, --src <vi>
+        src = os.path.normpath(A[A.index("--src") + 1]); smd5 = md5(src)   # normpath: LabVIEW error 7 on '/' (78-3 run 1)         # its md5 is re-read after the run (M7)
+        name = os.path.splitext(os.path.basename(src))[0] + "_run_%s.vi"
+    name = name % TS                                          # rs legs run BESIDE the replay VIs (same folder)
+    copy = os.path.join(tempfile.gettempdir() if DRY else (os.path.dirname(src) if LEG.startswith("replay") else CD), name)
     shutil.copyfile(src, copy)
     G = {"M1 run copy md5 == source": md5(copy) == smd5 == md5(src)}
     run_dir = os.path.join(HERE, "m8_out", "%s_%s%s" % (LEG, TS, "_dry" if DRY else ""))
@@ -105,7 +108,7 @@ def main():
     while not DRY and lv_running() and time.time() - t0 < 60: time.sleep(5)
     G["M6 LabVIEW gone (tasklist)"] = DRY or not lv_running()
     G["M7 bed md5 unchanged"] = md5(BED) == BED_MD5 and md5(S3) == S3_MD5 and md5(ORIG) == ORIG_MD5 and \
-        md5(S1) == S1_MD5
+        md5(S1) == S1_MD5 and md5(src) == smd5
     try: os.remove(copy)
     except OSError as e: print("delete copy failed: %r" % e)
     G["M8 run copy deleted"] = not os.path.exists(copy)
@@ -129,5 +132,5 @@ def main():
 
 if __name__ == "__main__":
     if "--table" in A: table("--s3" in A); sys.exit(0)
-    assert LEG in ("bed", "base", "s3", "s1"), "--leg bed|base|s3|s1"
+    assert LEG in ("bed", "base", "s3", "s1", "replay_s1", "replay_s3"), "--leg bed|base|s3|s1|replay_s1|replay_s3 (replay_*: --src <swapped copy>)"
     ok = main(); sys.stdout.flush(); os._exit(0 if ok else 1)     # os._exit: v2's COM daemon threads

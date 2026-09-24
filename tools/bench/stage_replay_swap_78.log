@@ -1,0 +1,84 @@
+BGRUN START 2026-09-25 07:54:22 limit 45.0 min: py -u tools/recipes/stage_replay_swap.py
+BGRUN STAGE-RUN recorded stage_replay_swap.py cycle='cycle 78' card=None pid=20440 -> stage_runs.jsonl
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 256 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 1a11d92aacabf7ec844d65b8af19f39f  got 1a11d92aacabf7ec844d65b8af19f39f
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S3               1a11d92aacabf7ec844d65b8af19f39f  (want 1a11d92aacabf7ec844d65b8af19f39f) OK
+  FACT  PIN BEFORE S1               3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE replay_get_buff_image.vi 842ecad9a6674a5060ebb3d5522751a9  (want 842ecad9a6674a5060ebb3d5522751a9) OK
+  FACT  PIN BEFORE replay_get_image_cal.vi afce0d04346fc58234d28bcc0fc42e55  (want afce0d04346fc58234d28bcc0fc42e55) OK
+  FACT  PIN BEFORE replay buf stand-in a89dafc1db03feef7b528f0dd4fcc692  (want a89dafc1db03feef7b528f0dd4fcc692) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33988
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_s3_replay_20260925_075422.vi
+  FACT  ExecState [after open] D1_s3_replay_20260925_075422.vi = 1
+  PASS  A1 copies md5 == sources  {'s3': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\D1_s3_replay_20260925_075422.vi', 's1': 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\D1_s1_replay_20260925_075422.vi'}
+
+---------- [S3] D1_s3_replay_20260925_075422.vi
+  PASS  A2 s3 BEFORE: #6810 calls get buff image-lost frames.vi, #22692 calls IMAQdx Get Image.vi  {6810: 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\background VIs\\get buff image-lost frames.vi', 22692: 'C:\\Program Files\\NI\\LVAddons\\niimaqdx\\1\\vi.lib\\vision\\driver\\IMAQdx.llb\\IMAQdx Get Image.vi'}
+  FACT  ExecState [s3 before] D1_s3_replay_20260925_075422.vi = 1
+  PASS  A2 s3 ExecState 1 before the swap
+  FACT  s3 replace_object #6810 -> replay_get_buff_image.vi: {'new_uid': 24083, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  A3 s3 replace #6810: no error, new uid  {'new_uid': 24083, 'err_replace': '', 'err_uid': '', 'err': ''}
+  FACT  s3 replace_object #22692 -> replay_get_image_cal.vi: {'new_uid': 6829, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  A3 s3 replace #22692: no error, new uid  {'new_uid': 6829, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  A4 s3 callee diff == exactly the two swaps -> replay VIs  {24083: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image.vi'), 6810: ('G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\background VIs\\get buff image-lost frames.vi', None), 22692: ('C:\\Program Files\\NI\\LVAddons\\niimaqdx\\1\\vi.lib\\vision\\driver\\IMAQdx.llb\\IMAQdx Get Image.vi', None), 6829: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_image_cal.vi')}
+  PASS  A5 s3 wire-edge diff 0 after remap (2237 edges before, 2237 after)  ([], [])
+  FACT  ExecState [s3 after] D1_s3_replay_20260925_075422.vi = 1
+  PASS  A6 s3 ExecState 1 after the swaps
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\replay\D1_s3_replay_20260925_075422.vi md5 5e48e197b281d5808319aec9d8635f1b
+
+---------- [S1] D1_s1_replay_20260925_075422.vi
+  PASS  A2 s1 BEFORE: #6810 calls get buff image-lost frames.vi, #22692 calls IMAQdx Get Image.vi  {6810: 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\background VIs\\get buff image-lost frames.vi', 22692: 'C:\\Program Files\\NI\\LVAddons\\niimaqdx\\1\\vi.lib\\vision\\driver\\IMAQdx.llb\\IMAQdx Get Image.vi'}
+  FACT  ExecState [s1 before] D1_s1_replay_20260925_075422.vi = 1
+  PASS  A2 s1 ExecState 1 before the swap
+  FACT  s1 replace_object #6810 -> replay_get_buff_image.vi: {'new_uid': 23006, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  A3 s1 replace #6810: no error, new uid  {'new_uid': 23006, 'err_replace': '', 'err_uid': '', 'err': ''}
+  FACT  s1 replace_object #22692 -> replay_get_image_cal.vi: {'new_uid': 6829, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  A3 s1 replace #22692: no error, new uid  {'new_uid': 6829, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  A4 s1 callee diff == exactly the two swaps -> replay VIs  {6810: ('G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\background VIs\\get buff image-lost frames.vi', None), 22692: ('C:\\Program Files\\NI\\LVAddons\\niimaqdx\\1\\vi.lib\\vision\\driver\\IMAQdx.llb\\IMAQdx Get Image.vi', None), 6829: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_image_cal.vi'), 23006: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image.vi')}
+  PASS  A5 s1 wire-edge diff 0 after remap (2216 edges before, 2216 after)  ([], [])
+  FACT  ExecState [s1 after] D1_s1_replay_20260925_075422.vi = 1
+  PASS  A6 s1 ExecState 1 after the swaps
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\replay\D1_s1_replay_20260925_075422.vi md5 126f84975fca9f6124432a7e4decd0c8
+
+---------- [C] COLD: fresh LabVIEW
+  FACT  LabVIEW handle count BEFORE the restart: 63177
+  FACT  LabVIEW handle count AFTER the restart: 33996
+  PASS  C1 s3 ExecState 1 COLD
+  PASS  C2 s3 COLD callee census == warm
+  PASS  C3 s3 md5 unchanged by the cold load
+  PASS  C1 s1 ExecState 1 COLD
+  PASS  C2 s1 COLD callee census == warm
+  PASS  C3 s1 md5 unchanged by the cold load
+
+---------- [H] HYGIENE
+  FACT  close_panel(D1_s3_replay_20260925_075422.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 14, 'closed': 14, 'live': 0, 'cached_op_vis': 2}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 14, 'closed': 14, 'live': 0, 'cached_op_vis': 2}
+  FACT  LabVIEW handle count AFTER the work: 54812
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 1a11d92aacabf7ec844d65b8af19f39f / after 1a11d92aacabf7ec844d65b8af19f39f
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S3               1a11d92aacabf7ec844d65b8af19f39f  (want 1a11d92aacabf7ec844d65b8af19f39f) OK
+  FACT  PIN AFTER  S1               3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  replay_get_buff_image.vi 842ecad9a6674a5060ebb3d5522751a9  (want 842ecad9a6674a5060ebb3d5522751a9) OK
+  FACT  PIN AFTER  replay_get_image_cal.vi afce0d04346fc58234d28bcc0fc42e55  (want afce0d04346fc58234d28bcc0fc42e55) OK
+  FACT  PIN AFTER  replay buf stand-in a89dafc1db03feef7b528f0dd4fcc692  (want a89dafc1db03feef7b528f0dd4fcc692) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 54810
+  PASS  H9 LabVIEW gone
+
+====================================================================================================
+=== GATES: 29 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\stage_replay_swap_78.json   elapsed 632.4 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":29,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 633s

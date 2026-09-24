@@ -154,6 +154,10 @@ def main():
                          "rule never matches past an assignment of a non-known-safe variable, so the "
                          "prefixed command matches no rule and is auto-denied. As a flag it lands inside "
                          "the existing Bash(py tools/*) rule. See guard_bash.py MARKER_RE for the measurement.")
+    ap.add_argument("--retry-card", default=None,
+                    help="a task/1 JUDGEMENT card (retry_of = the stage) authorising ONE stage run past the per-cycle "
+                         "RETRY_CAP (tools/stage_prerun.py). Read by the PreToolUse check from this command line and "
+                         "recorded here at child start.")
     ap.add_argument("cmd", nargs=argparse.REMAINDER, help="-- then the command")
     a = ap.parse_args()
     cmd = a.cmd[1:] if a.cmd and a.cmd[0] == "--" else a.cmd
@@ -202,6 +206,18 @@ def main():
         child_env = dict(os.environ, BGRUN_LOG=logp)
         p = subprocess.Popen(cmd, cwd=PROJECT, env=child_env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                              text=True, encoding="utf-8", errors="replace", bufsize=1, creationflags=flags)
+        # RETRY-CAP RECORDER (card 78-2; docs/violation-decisions.md "device-failed - 2026-09-25 07:05"). A stage run
+        # is counted HERE, after Popen returned - the child exists - and never in the PreToolUse hook, which runs
+        # before guard_cycle and the permission layer and so counted launches that never started
+        # (stage_runs.jsonl:3-7). A failed record is ON THE LOG, never silent and never fatal to the run.
+        try:
+            import stage_prerun
+            cl = subprocess.list2cmdline(cmd) + (" --retry-card " + a.retry_card if a.retry_card else "")
+            for r in stage_prerun.record_started(cl, log=logp, pid=p.pid):
+                out(f"BGRUN STAGE-RUN recorded {r['stage']} cycle={r['cycle']!r} card={r['card']!r} "
+                    f"pid={p.pid} -> {os.path.basename(stage_prerun.STAGE_RUNS)}\n")
+        except Exception as e:                                                     # noqa: BLE001
+            out(f"BGRUN STAGE-RUN record FAILED: {type(e).__name__}: {str(e)[:200]}\n")
         done = threading.Event()
 
         # A RUNNER MUST NOT REPORT SUCCESS OVER AN INNER FAILURE (device for the `unreported-fact` slug,

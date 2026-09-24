@@ -1,0 +1,44 @@
+BGRUN START 2026-09-25 07:50:53 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug 78-3-selftest-endian -TaskFile tools/bench/cards/peer_78-3_selftest_task.md
+OUTCOME: ANSWERED (135s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-25-78-3-selftest-endian.md
+COST: $1.1317  in 24 / out 9511 / cache-create 79247 / cache-read 1019072  (131s, 18 turn(s))
+--- ANSWER ---
+**Verdict:** The dims are little-endian, and that part is proven: the bytes `B8 0D 00 00 0C 00 00 00` give 3512 × 12 only when read as `<ii`, and no offset shift makes them big-endian. The data block's byte order has not been measured. `<f8` was inferred from the dims, and the self-test cannot catch it if that inference is wrong. I found no known way for one write to produce little-endian dims with big-endian data, so the claim probably holds. It should still be checked from the file bytes before anything relies on it.
+
+**1. Strongest reason it could be wrong.** The fix changes two things, but the evidence covers only one. `"<ii"` is proven. `"<f8"` is borrowed from it, not measured. The comparison gate (G3 in `m8b_replay_compare.py:33`) compares raw bytes (`view("u8")`). That gives the same answer whichever byte order is used, so it would pass even with the wrong order. Two reported facts do depend on it: `nan_rows_s1` (line 40) and `max_abs_diff_xyz` (line 38). A big-endian NaN (`7F F8 00…`) read as `<f8` becomes a tiny finite number (about 3e-319). A run with no beads would then report `nan_rows = 0` without any error.
+
+Also, the self-test used the **same file** for both runs (`m8b_replay_selftest78.json:3` and `:11`), so G3 would pass trivially. The comparison has not been tested at all yet.
+
+**2. Alternative explanation of the same evidence.** The data block could be big-endian while the dims are little-endian. There are two ways this could happen:
+- **Forum folklore:** a search summary cited forum posts saying the "prepend size" bytes are always written big-endian, whatever byte order is chosen. Others say they follow the chosen order. The pages I fetched state neither, so this is unsourced. It would also predict the opposite split: big-endian dims with little-endian data. Your file shows little-endian dims.
+- **Two separate writes:** the size prefix and the data might come from different write calls.
+
+The project's own diagram dump argues against both:
+- `docs/wiki/subvi/save N xyz traces.json` shows the writer is **one** `Write to Binary File` node (uid 228, lines 1039-1043).
+- Its data input is **one cluster** from a Bundler (uid 525, lines 946-955). The cluster holds the header string from Format Into String (lines 729-737) and the `data array` (lines 933-944).
+- Byte order is set by **one explicitly wired constant** (EnumConstant 149, wire 274, lines 754-764).
+
+In a single cluster write, the string length, the array dims and the doubles are all serialised in one pass. A split would need a mechanism that nobody has shown.
+
+**3. What would prove the claim wrong.** Any of these:
+- In the 8-byte data words, the sign/exponent byte (typically `0x3F`–`0x41`, `0xBF`–`0xC1`, or `0x7F` for NaN) shows up at byte position 0 rather than position 7.
+- Under `<f8`, the time column is not monotonic, or its step is not plausible.
+- Under `<f8`, the translation column falls outside roughly 0–39 mm.
+
+**4. Cheapest test that separates the two** (read-only Python, no LabVIEW):
+- **(a) Check the header's length prefix.** The header region is 337593 − 337160 = 433 bytes. If the file is one cluster, the first 4 bytes are the string length, 429 (= 0x1AD). Little-endian gives `AD 01 00 00`; big-endian gives `00 00 01 AD`. This is a third size field, independent of the dims, written by the same node. It also confirms that `k+10` is the exact data offset.
+- **(b) Count byte values by position.** Split the 337160 − 8 data bytes into 8-byte words and count values at position 0 and at position 7. The position where `0x3F`–`0x41`/`0xBF`–`0xC1` cluster is the exponent byte. This needs no assumptions about the values.
+- **(c) Only then look at values:** time increasing with a steady step, and translation in the plausible range.
+
+Do **not** use "finite" as the test. Byte-swapped doubles are almost always finite, and all-zero columns look the same in either byte order.
+
+The authoritative cross-check would be the **value** of the byte-order constant in the lab's own `tra` reader (`load N bead trace-module.json:1752-1761`, EnumConstant 156) or in the writer (EnumConstant 149). The dump records that each is wired, but not what it is set to. Reading it would take a headless COM read of a copy, which costs more than (a) and (b).
+
+**What would change my mind:** (a) showing `00 00 01 AD`, or (b) finding the exponent byte at position 0.
+
+Sources:
+- [NI forum: Help/Guidance on writing to Binary Files to be read by other languages](https://forums.ni.com/t5/LabVIEW/Help-Guidance-on-writing-to-Binary-Files-to-be-read-by-other/td-p/4422937) (flattened array/string = I32 size + contents; says nothing about byte order of the size bytes)
+- [NI forum: Writing to binary file adds empty spaces with prepend size](https://forums.ni.com/t5/LabVIEW/Writing-to-binary-file-automatically-adds-s-empty-spaces-when/td-p/4315254) (no explicit byte-order statement)
+- [LabVIEW Wiki: Write Binary File function](https://labviewwiki.org/wiki/Write_Binary_File_function) (a stub, no byte-order detail)
+- [LAVA: Write to Binary File Cluster Size](https://lavag.org/topic/19255-write-to-binary-file-cluster-size-x-post-to-ni-forums/) (search result: sizes inside clusters are always written)
+- [comp.lang.labview: Is LabVIEW handling big endianness automatically?](https://comp.lang.labview.narkive.com/JjbvQkI5/is-labview-handling-automatically-big-endianness)
+BGRUN END rc=0 after 136s

@@ -90,3 +90,9 @@ Material session 77-4 (disposition proper is judgement's, returned as OPEN): the
 tools/bench/diag_replay_test77.py `__main__`: the leftover's md5 is printed and the file is deleted ONLY if it equals the
 input md5 65e999d9..., else kept and reported. diag_replay_test77.py pairs its close([]) override with discard_work().
 E1 is recorded as carrying no information about the #581 value (reader is numeric; repr 0 is ambiguous).
+
+SAME-ROW: replay_test78.log (2026-09-25 07:31:10)
+  This later failure of the SAME script was released without buying a new peer review: one review per row per cycle (CLAUDE.md, user 2026-09-22). The review above is the evidence; this line records which re-run was charged to it.
+
+SAME-ROW: replay_test78b.log (2026-09-25 07:41:41)
+  This later failure of the SAME script was released without buying a new peer review: one review per row per cycle (CLAUDE.md, user 2026-09-22). The review above is the evidence; this line records which re-run was charged to it.

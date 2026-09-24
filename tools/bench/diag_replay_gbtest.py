@@ -47,7 +47,14 @@ def call(s, H, lab, tag, b=None):
     if b is not None:
         vi.SetControlValue([v for (k, n), v in lab.items() if k == "v" and "uffer" in n and n in ("Buffer to extract", "Buffer Number In")][0], int(b))
     g._run(vi)
-    a = np.array(vi.GetControlValue(lab[("a", "Image Pixels (U8)")]), dtype=np.uint8)
+    v = vi.GetControlValue(lab[("a", "Image Pixels (U8)")])
+    # card 78-2: np.array(v, dtype=uint8) kept only COLUMN 0 of the 1024x1280 frame (replay_test78.log shape (1024,);
+    # diag_replay_slice78.log: that md5 == col0 of f0000k for k = 0,1,2). Each row arrives as its own COM array
+    # (bytes-like for U8), so every row is converted explicitly and the row type is on the FACT line.
+    rt = type(v[0]).__name__ if len(v) else None
+    a = np.array([np.frombuffer(bytes(r), dtype=np.uint8) if isinstance(r, (bytes, bytearray, memoryview))
+                  else np.asarray(r, dtype=np.uint8) for r in v]) if len(v) else np.array([], dtype=np.uint8)
+    s.fact("{0} pixel read: {1} rows of {2}, array {3}".format(tag, len(v), rt, a.shape))
     out = dict((n, vi.GetControlValue(v)) for (k, n), v in lab.items() if k == "v" and not n.startswith("Buffer to") and n != "Buffer Number In")
     out.update(("err " + k, str(vi.GetControlValue(v))[:120]) for (k, n), v in lab.items() if n.startswith("error"))
     r = {"shape": a.shape, "md5": h(a), "md5_T": h(a.T), "out": out}; s.fact("CALL {0} b={1}: {2}".format(tag, b, r)); return r

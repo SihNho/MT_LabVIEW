@@ -1,0 +1,35 @@
+BGRUN START 2026-09-25 07:50:54 limit 20.0 min: py tools\prior_art_review.py --plan-file tools\bench\plans\priorart_replay_swap_78.md --slug replay-swap-78 --trigger cycle-start --recipe tools\recipes\stage_replay_swap.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_replay-swap-78.txt (65602 chars)
+   review card tools\bench\cards\review_priorart-replay-swap-78.json
+OUTCOME: ANSWERED (68s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-25-priorart-replay-swap-78.md
+COST: $1.1432  in 14 / out 5804 / cache-create 109724 / cache-read 746361  (65s, 12 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-replay-swap-78 verdict=novel -> tools\bench\cards\verdict_priorart-replay-swap-78.json
+--- ANSWER ---
+**Verdict: novel.** Nobody has built, run or refuted this swap stage here before. The plan follows the decision already written in `docs/m8-real-run-plan.md` Pre-decided (PD) 22(d), and the recipe reuses the verified helpers instead of rebuilding them. I found one contradiction, but it is in the comparison step that runs after the recipe, not in the recipe.
+
+## PART A: the direction
+
+- **A1, already settled:** yes, but that is the source of this plan, not earlier work it repeats. `docs/m8-real-run-plan.md:308-315` (PD22(d), cycle 78, 2026-09-25) orders exactly this: "A `tools/recipes/stage_replay_swap.py` makes dated copies of `D1_s1_copy.vi` and `D1_s3_loop15.vi` in `claudeDev\replay\`, replaces `#6810` … and `#22692` …". Earlier versions of the same direction are PD13(b) at `:111-113` and PD15 at `:162-164`. Nothing says the swap has already been carried out. The only files that mention `D1_s[13]_replay` or `stage_replay_swap` are this cycle's plan, card, recipe and pre-run records.
+- **A2, refuted already:** no. The earlier obstacles have all been resolved, and each resolution is written down:
+  - The wrong connector pane and a prediction that could not fail were caught by `archive/peer/2026-09-25-priorart-m8b-pd13-replay-75.md:247-250` and released as FIXED at `:304`. The recipe's gates A4 (callee diff) and A5 (wire-edge diff after the uid remap) are the replacement checks from PD14(c) at `:140-145`.
+  - A byte copy of `IMAQdx Get Image.vi` stays owned by its library and loads with ExecState 0 (PD16, `:173`). This was replaced by an unowned stand-in with the same connector pane (PD16(c), `:183-191`), accepted in PD22(b) at `:299-301`.
+  - The old 2026-09-14 "replay core" work (`archive/peer/2026-09-14-stage2-step-b-replay-core-plan.md`) was a replay loop for the tracking kernel. It is a different thing.
+- **A3, contradicted (outside the recipe; judgement should rule on it):** PD13(c) at `:115-116` says "Bead xy are read back from each run's cal file and must be EQUAL between the two runs, or the numbers comparison is void." The plan text instead says "the cal files are compared byte-wise as a FACT". No later PD withdraws 13(c). PD22(d) (`:308-315`) simply does not restate it. This affects `m8b_replay_compare.py` and the pass/fail rule of the replay runs. It does not affect `stage_replay_swap.py`, which runs no VI and compares nothing. There is also a smaller inconsistency: PD15 at `:160-161` says the `#22692` swap "is that case" (a vi.lib VI replaced by a byte copy of itself), but PD16(c) changed the replacement to an unowned stand-in. So the plan is right to list `#22692` as a risk that has never been measured. Gates A3, A4 and A6 are fatal or checked, so that swap will be caught if it fails.
+- **A4, evidence not read:** none found. The plan cites PD15's measurement (`tools/bench/swap_verb_75.json`), PD22's acceptance of the stand-ins, and the uid-remap rule.
+
+## PART B: the recipe
+
+- **B1, already built:** no. There is no swap recipe or swapped copy on disk. `stage_replay_standins.py` builds the stand-ins, which is a different step.
+- **B2, already failed:** no attempt is recorded.
+- **B3, a helper already exists:** the recipe already uses the existing helpers: `gscript.replace_object` (PD15, `:151-158`), `diag_replay_lib` census/edges/tail, `wiki_build.read_live`, and stagekit `Stage`, `restart` and pins. Nothing is written from scratch.
+- **B4, already measured:** only the verb itself, measured for the `#6810` kind of swap on a scratch copy (`swap_verb_75.json`, 21/0). No one has measured a swap in dated copies of both S1 and S3, and no one has measured a `#22692`-to-stand-in swap.
+
+PRIOR-ART: novel
+
+(The A3 contradiction is for judgement on the comparison step. I did not use it as a blocking slug because the attachment under review, `stage_replay_swap.py`, does not do that comparison.)
+
+VERDICT {"schema":"verdict/1","id":"priorart-replay-swap-78","verdict":"novel","alternative":"The swap stage is the direction PD22(d) (m8-real-run-plan.md:308-315) ordered; nothing on disk shows it was built or run. It reuses gscript.replace_object (PD15) and diag_replay_lib/wiki_build readers.","discriminating_test":"The recipe's own gates: A4 callee diff == exactly {#6810,#22692} after the new->old remap, A5 wire-edge diff 0, A6/C1 ExecState 1 warm and cold; #22692 (unowned stand-in) is the untested kind and fails fatally at A3/A6 if the verb rejects it.","violations":[],"sources":["docs/m8-real-run-plan.md:308","docs/m8-real-run-plan.md:151","docs/m8-real-run-plan.md:183","docs/m8-real-run-plan.md:115","archive/peer/2026-09-25-priorart-m8b-pd13-replay-75.md:304"],"note":"Outside the recipe: PD13(c) m8-real-run-plan.md:115-116 says cal bead xy must be EQUAL or the numbers comparison is void; the plan calls the cal compare a FACT. Judgement should rule before m8b_replay_compare.py counts as PASS."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-replay-swap-78.md
+   STOP RECORD: none - 2026-09-25-priorart-replay-swap-78.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_replay_swap.py sha ea28a22cdf5e -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 72s

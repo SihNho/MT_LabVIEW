@@ -971,7 +971,14 @@ def last_failed_run_after(script, t_min):
 STAGE_RUNS = os.environ.get("STAGE_RUNS") or os.path.join(BENCH, "stage_runs.jsonl")
 RETRY_CAP = 2
 CYCLE_FRESH_S = 6 * 3600          # a cycle card older than this is not "the current cycle" (chat work since)
-RETRY_CARD_RE = re.compile(r"\bRETRY_CARD\s*=\s*['\"]?([^\s'\";|&]+)")
+RETRY_CARD_RE = re.compile(r"(?:\bRETRY_CARD\s*=\s*|(?:^|\s)--retry-card(?:\s+|=))['\"]?([^\s'\";|&]+)")
+# RECORDER REPAIR (card 78-2; docs/violation-decisions.md "device-failed - 2026-09-25 07:05"): a run is COUNTED only
+# from a line tools/bgrun.py writes at CHILD START (`"by": "bgrun"`). The PreToolUse hook used to write the line
+# before later gates and the permission layer decided, so refused launches were counted (stage_runs.jsonl:3-7).
+# Those old hook-written lines carry no `by` and are kept in the file but no longer count. The judgement card for a
+# run past the cap is `--retry-card <path>` on the bgrun command line (a flag, not an env prefix: the permission
+# layer refuses `$env:` / `X=1 cmd` forms under claude -p); `RETRY_CARD=<path>` is still read.
+COUNTED_BY = "bgrun"
 
 
 def stage_key(script):
@@ -1034,7 +1041,7 @@ def retry_card(cmd, key, used):
 def check_cap(cmd, s, runs, ck):
     """(allow, why, card id|None) for ONE stage script against RETRY_CAP in cycle `ck`."""
     key = stage_key(s)
-    mine = [r for r in runs if r.get("stage") == key and r.get("cycle") == ck]
+    mine = [r for r in runs if r.get("stage") == key and r.get("cycle") == ck and r.get("by") == COUNTED_BY]
     if len(mine) < RETRY_CAP:
         return True, "", None
     cid, why = retry_card(cmd, key, {r.get("card") for r in mine if r.get("card")})
@@ -1045,12 +1052,32 @@ def check_cap(cmd, s, runs, ck):
                    "RETRY_CARD=<card path> in the launch command ({4}).\n").format(key, len(mine), ck, RETRY_CAP, why), None
 
 
-def record_stage_run(s, ck, card_id, cmd):
+def record_stage_run(s, ck, card_id, cmd, by="check_launch", extra=None):
     rec = {"t": time.time(), "iso": time.strftime("%Y-%m-%d %H:%M:%S"), "cycle": ck, "stage": stage_key(s),
-           "script": rel(s), "sha256": sha256(s), "card": card_id, "cap": RETRY_CAP}
+           "script": rel(s), "sha256": sha256(s), "card": card_id, "cap": RETRY_CAP, "by": by}
+    rec.update(extra or {})
     with REAL_OPEN(STAGE_RUNS, "a", encoding="utf-8") as f:
         f.write(json.dumps(rec, ensure_ascii=True) + "\n")
     return rec
+
+
+def record_started(cmdline, log=None, pid=None):
+    """Called by tools/bgrun.py right after its child STARTED (Popen returned). Appends one COUNTED line per stage
+    script / stagexec plan the child runs; returns the records ([] for any other command). The card id is the
+    `--retry-card` judgement card when this run is past the cap (check_cap decides, as the hook did), else None;
+    `retry_card_path` records the flag whenever it was given."""
+    units = [(s, None) for s in launched_stage_scripts(cmdline)] + launched_plan_runs(cmdline)
+    if not units:
+        return []
+    runs, ck, out = read_stage_runs(), cycle_key(), []
+    m = RETRY_CARD_RE.search(cmdline or "")
+    for s, plan in units:
+        _ok, _why, cid = check_cap(cmdline, plan or s, runs, ck)
+        out.append(record_stage_run(plan or s, ck, cid, cmdline, by=COUNTED_BY,
+                                    extra={"log": rel(log) if log else None, "pid": pid,
+                                           "retry_card_path": m.group(1) if m else None}))
+        runs.append(out[-1])
+    return out
 
 
 def check_launch(cmd, record=False):

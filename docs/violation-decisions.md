@@ -1244,3 +1244,12 @@ DECISION: device (repair, threshold 1), scheduled AFTER cycle 78's deliverable r
 when it actually starts — record in `tools/bgrun.py` at child start (the line carries the card), not in the PreToolUse
 hook. Self-test: a launch refused by guard_cycle and one refused by the permission layer leave the count unchanged; a
 started run increments it.
+
+OUTCOME (2026-09-25 07:1x, card 78-2, moved ahead of the deliverable because it blocked it: result_78-1.json): BUILT.
+`tools/bgrun.py` records at child start (`BGRUN STAGE-RUN recorded ...`, line `"by": "bgrun"` + cycle + card + log +
+pid); `tools/hooks/guard_bash.py` main() only checks; `tools/stage_prerun.py` counts only `by == "bgrun"` lines
+(old hook-written lines 1-7 stay in the file, uncounted) and reads the judgement card from `--retry-card <path>` on
+the bgrun command as well as `RETRY_CARD=`. Self-test `tools/bench/selftest_retry_cap.py` 8/0
+(`tools/bench/selftest_retry_cap.log`). Accepted launch form, measured: Bash, non-compound, run_in_background,
+`py tools/bgrun.py --material --max-min N --log tools/bench/<x>.log -- py -u <script>`; the stage then ran 35/0
+(`tools/bench/stage_replay_78.log:2` shows the recorder line).
