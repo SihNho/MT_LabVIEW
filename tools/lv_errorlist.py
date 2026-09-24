@@ -578,7 +578,7 @@ def _sel_in(lay, eb):
     return None
 
 
-def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None):
+def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None, on_item=None):
     """METHOD B. Walk the list one row at a time; each step: capture -> LOCATE the highlighted row by
     COLOUR on that capture -> OCR that row and the Details pane -> act -> capture -> CONFIRM the
     selection moved exactly one row.
@@ -677,7 +677,7 @@ def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None):
         if sel is None:
             sel = sel2
 
-    wheel_dir, stall, row_ord = -1, 0, 0
+    wheel_dir, row_ord = -1, 0
     for step in range(max_steps):
         if img is None or sel is None:
             break
@@ -721,22 +721,37 @@ def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None):
             R["items"].append(rec)
             log("   item {0:>2}: object={1!r} reason={2!r} detail={3!r}".format(
                 rec["index"], obj[:40], reason[:70], (detail or "")[:70]))
+            # 2026-09-24 (tools/errorlist_check.py, user decision 5): an optional per-item hook, called while
+            # the row is the highlighted one; the walk re-fronts the dialog itself before its next keystroke.
+            if on_item is not None:
+                try:
+                    on_item(rec, acts)
+                except Exception as e:                                             # noqa: BLE001
+                    rec["on_item_error"] = "{0}: {1}".format(type(e).__name__, str(e)[:160])
         if n_want and len(R["items"]) >= n_want:
             log("  reached the window's own count of {0} items".format(n_want))
             break
 
         # --- advance exactly one row, and CONFIRM it moved -----------------------------------
+        # 2026-09-24 (card chat-C2): (a) the dialog is RE-FRONTED before every wheel and every click - an
+        # `on_item` double-click fronts the block diagram, which then sits over the list, and run
+        # errorlist_check_s4_r1 clicked the DIAGRAM twice (gui_actions.log 18:08:14/18:08:22) and stopped at
+        # 2 of 15; (b) a retry never re-records the row (that run recorded item 0 twice); (c) the wheel
+        # direction is flipped inside the step, not by `continue` (which re-recorded the row too).
         target = y0 + pitch
         if target + pitch - 1 > eb[1] - 2:            # no room: scroll first, measure the step
-            g._lv_gui("-Action", "wheel", "-X", str(org[0] + img.width // 2),
-                      "-Y", str(org[1] + (eb[0] + eb[1]) // 2), "-Notches", str(wheel_dir))
-            acts.append({"act": "wheel", "tag": "step %d scroll" % step, "notches": wheel_dir})
-            time.sleep(0.45)
-            img, path, lay, eb, s2 = grab("s{0}".format(step))
+            s2 = None
+            for _wtry in (1, 2):
+                ensure_foreground(wtitle, hwnd, acts, "step %d before wheel" % step)
+                g._lv_gui("-Action", "wheel", "-X", str(org[0] + img.width // 2),
+                          "-Y", str(org[1] + (eb[0] + eb[1]) // 2), "-Notches", str(wheel_dir))
+                acts.append({"act": "wheel", "tag": "step %d scroll" % step, "notches": wheel_dir})
+                time.sleep(0.45)
+                img, path, lay, eb, s2 = grab("s{0}_{1}".format(step, _wtry))
+                if s2 is not None and s2[0] != y0:
+                    break
+                wheel_dir = -wheel_dir                # direction measured, never assumed
             if s2 is None or s2[0] == y0:
-                if wheel_dir == -1:                   # direction measured, never assumed
-                    wheel_dir = 1
-                    continue
                 log("  the list will not scroll further - end of the list")
                 break
             acts.append({"act": "confirm", "tag": "step %d list scrolled" % step, "confirmed": True,
@@ -745,24 +760,23 @@ def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None):
             target = y0 + pitch
             if target + pitch - 1 > eb[1] - 2:
                 break
-        if mode == "keys":
-            ensure_foreground(wtitle, hwnd, acts, "step %d" % step)
-            send_keys("{DOWN}", acts, "step %d" % step, wait_ms=300)
-        else:
-            click_img(img.width // 6, target + pitch // 2, "step %d select the next row" % step, org)
-        img, path, lay, eb, s3 = grab("b{0}".format(step + 1))
-        moved = bool(s3 and s3[0] == target)
-        acts.append({"act": "confirm", "tag": "step %d highlight moved one row down" % step,
-                     "confirmed": moved, "want_y": target, "got_y": s3[0] if s3 else None})
-        if not moved:
-            stall += 1
-            if stall >= 2:
-                log("  the highlight stopped moving - end of the list")
+        moved, s3 = False, None
+        for _try in (1, 2):
+            ensure_foreground(wtitle, hwnd, acts, "step %d try %d" % (step, _try))
+            if mode == "keys":
+                send_keys("{DOWN}", acts, "step %d" % step, wait_ms=300)
+            else:
+                click_img(img.width // 6, target + pitch // 2, "step %d select the next row" % step, org)
+            img, path, lay, eb, s3 = grab("b{0}_{1}".format(step + 1, _try))
+            moved = bool(s3 and s3[0] == target)
+            acts.append({"act": "confirm", "tag": "step %d highlight moved one row down" % step,
+                         "confirmed": moved, "want_y": target, "got_y": s3[0] if s3 else None})
+            if moved:
                 break
-            if s3:
-                sel = s3
-            continue
-        stall, sel = 0, s3
+        if not moved:
+            log("  the highlight stopped moving - end of the list")
+            break
+        sel = s3
     R["categories"] = headers
 
 
@@ -775,7 +789,7 @@ def _split(raw):
     return (m.group(1).strip(), m.group(2).strip()) if m else ("", t)
 
 
-def read(vi_path, out_json=None, maxdepth=14, dump_tree=True, log=print):
+def read(vi_path, out_json=None, maxdepth=14, dump_tree=True, log=print, on_item=None):
     """Open the Error List for `vi_path` (already in memory), read every item, close it.
 
     Returns the record; also written to `out_json`. The VI is never run and never saved."""
@@ -846,7 +860,7 @@ def read(vi_path, out_json=None, maxdepth=14, dump_tree=True, log=print):
     # --- method B: capture + OCR, used when no accessibility route exposed a row ---------------
     if not R["items"]:
         try:
-            read_by_capture(R, wtitle, acts, log, hwnd=hwnd)
+            read_by_capture(R, wtitle, acts, log, hwnd=hwnd, on_item=on_item)
         except Exception as e:                                                     # noqa: BLE001
             R["errors"].append("capture+OCR: {0}: {1}".format(type(e).__name__, str(e)[:200]))
             log("  capture+OCR RAISED {0}: {1}".format(type(e).__name__, str(e)[:200]))

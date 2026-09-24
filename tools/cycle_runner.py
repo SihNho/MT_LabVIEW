@@ -412,9 +412,44 @@ def motor_limits_hook(phase, n, a, bench, runner_log, status_text):
     return ok, verdict
 
 
-def write_cycle_card(bench, n, status_text, model, effort, ff_recipe, motor_verdict, a):
+def errorlist_hook(n, a, bench, runner_log, status_text):
+    """User decision 5, 2026-09-24 ("사이클 시작하기 전에 LabVIEW 컴파일 에러 창은 반드시 확인해야할듯"): before every
+    cycle - and BEFORE the motor start hook (card chat-C2) - `tools/errorlist_check.py` reads the current bed's Error
+    List on a byte-identical scratch copy (GUI, capture-confirmed), double-clicks each item, and compares against the
+    bed's expected-errors file.
+
+    Returns (verdict, json_path, reason); verdict OK | MISMATCH | FAIL | SKIP. FAIL stops the runner before the cycle;
+    MISMATCH starts the cycle and the cycle/1 card carries the result. Skipped (logged) in rig state 실험중 (no
+    LabVIEW use at all), under --dry-run/--dry-cmd and --no-errorlist-hook (self-tests)."""
+    stamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    if a.dry_run or a.dry_cmd or getattr(a, "no_errorlist_hook", False):
+        log_line(runner_log, "ERRORLIST | %s | cycle %d | SKIP | dry run / --no-errorlist-hook" % (stamp, n))
+        return "SKIP", None, "skipped"
+    try:
+        import motor_gate
+        state = motor_gate.rig_state(status_text)
+    except Exception as e:  # noqa: BLE001
+        state = "unknown (%s)" % e
+    if state == "experiment":
+        log_line(runner_log, "ERRORLIST | %s | cycle %d | SKIP | rig state 실험중 (no LabVIEW use)" % (stamp, n))
+        return "SKIP", None, "rig state experiment"
+    log = os.path.join(bench, "errorlist_check_cycle%d.log" % n)
+    cmd = [sys.executable, BGRUN, "--max-min", "15", "--log", log, "--",
+           sys.executable, "-u", os.path.join(HERE, "errorlist_check.py")]
+    proc = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                          env=dict(os.environ, MATERIAL="1"))
+    text = read(log) + (proc.stdout or "")
+    m = re.findall(r"ERRORLIST-VERDICT: (OK|MISMATCH|FAIL) (\S.*\.json)", text)
+    verdict, js = (m[-1][0], m[-1][1].strip()) if m else ("FAIL", None)
+    if "BGRUN END" not in text:
+        verdict = "FAIL"
+    log_line(runner_log, "ERRORLIST | %s | cycle %d | %s | %s" % (stamp, n, verdict, js or os.path.basename(log)))
+    return verdict, js, "see %s" % os.path.basename(log)
+
+
+def write_cycle_card(bench, n, status_text, model, effort, ff_recipe, motor_verdict, a, errorlist=None):
     """C1: `<bench>/cards/cycle_<n>.json`, validated against docs/protocol/cycle.json. Returns (path, None) or
-    (None, reason). `errorlist` stays null until the parked error-list step resumes (task card chat-B); `bed` is read
+    (None, reason). `errorlist` is {path, verdict OK|MISMATCH} from errorlist_hook, null when skipped (card chat-C2); `bed` is read
     from the optional `<bench>/bed.json` ({path, md5}) and is null when there is none."""
     try:
         import motor_gate
@@ -430,7 +465,7 @@ def write_cycle_card(bench, n, status_text, model, effort, ff_recipe, motor_verd
         pass
     next_path = os.path.join(bench, "next.json")
     card = {"schema": "cycle/1", "cycle": n, "rig_state": rig, "model": model, "effort": effort,
-            "firefighter": ff_recipe or None, "bed": bed, "errorlist": None,
+            "firefighter": ff_recipe or None, "bed": bed, "errorlist": errorlist,
             "motor_session": (motor_verdict or None) and str(motor_verdict)[:120],
             "next": protocol._rel(next_path), "budget": {"minutes": float(a.max_min), "dispatches": 8},
             "rules": CYCLE_RULES}
@@ -482,6 +517,7 @@ def main():
     ap.add_argument("--dry-cmd", default="", help="self-test only: the exact command to run instead of a session")
     ap.add_argument("--no-sleep", action="store_true", help="self-test only: report a usage-limit wait, do not take it")
     ap.add_argument("--no-motor-hooks", action="store_true", help="self-test only: skip motor_gate --session start/end (never for a real run)")
+    ap.add_argument("--no-errorlist-hook", action="store_true", help="self-test only: skip the cycle-start Error List check (never for a real run)")
     a = ap.parse_args()
 
     status_path = os.path.abspath(a.status)
@@ -584,6 +620,25 @@ def main():
                 f.write(next_md5_before)
         except OSError:
             pass
+        # ERROR LIST at cycle start, BEFORE the motor start hook (user decision 5, 2026-09-24; card chat-C2). FAIL to
+        # read = RUNNER STOP before the cycle (no motor limits were set yet); MISMATCH = the cycle runs, its cycle/1
+        # card carries the result and the prompt says to deal with those errors first.
+        el_verdict, el_json, el_why = errorlist_hook(n, a, bench, runner_log, status_text)
+        if el_verdict == "FAIL":
+            reason = "the cycle-start Error List check could not be completed for cycle %d (%s, %s) - no cycle runs " \
+                     "on an unread bed" % (n, el_why, el_json)
+            log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
+            note_in_status(status_path, reason)
+            return 3
+        el_card = None
+        if el_json and el_verdict in ("OK", "MISMATCH"):
+            el_card = {"path": protocol._rel(el_json)[:400], "verdict": el_verdict}
+            os.environ["ERRORLIST_JSON"] = el_json
+            this_prompt += ("\n\nERRORLIST (cycle-start Error List check, user decision 5 2026-09-24): %s - %s\n"
+                            % (el_verdict, el_card["path"]))
+            if el_verdict == "MISMATCH":
+                this_prompt += ("The bed's Error List does NOT match its expected-errors file: deal with the "
+                                "unexpected/missing errors listed in that JSON FIRST, before any other work.\n")
         # MOTOR LIMITS ON at cycle start, verified by readback (user 2026-09-23). A start that cannot be verified
         # stops the runner: a cycle must never run with unknown controller limits.
         ok, why = motor_limits_hook("start", n, a, bench, runner_log, status_text)
@@ -594,7 +649,7 @@ def main():
             note_in_status(status_path, reason)
             return 3
         # C1: the cycle card. An invalid card is not dispatched (docs/session-protocol.md, common rule 5).
-        card_path, card_why = write_cycle_card(bench, n, status_text, model, effort, ff_recipe, why, a)
+        card_path, card_why = write_cycle_card(bench, n, status_text, model, effort, ff_recipe, why, a, el_card)
         if not card_path:
             reason = "the cycle/1 card for cycle %d did not validate (%s) - no cycle is dispatched without one" \
                      % (n, card_why)

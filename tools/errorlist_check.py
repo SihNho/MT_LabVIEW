@@ -33,6 +33,11 @@ from bench_prep import labview_handles                                          
 EVID = "user 2026-09-24 error-list check at cycle start"
 E.EVIDENCE = EVID
 BENCH = os.path.join(HERE, "bench")
+# 2026-09-24 card chat-C2: external search (WebSearch, "LabVIEW scripting read selected objects block diagram
+# Selection List") found no route other than a VI Server property node on TopLevelDiagram.Selection List[]; the
+# ActiveX VirtualInstrument interface has no diagram access (toolkit-capabilities.md:666), and building an op VI is
+# outside a labview=read card. So the uid is not read here; the after-capture of the diagram is the record.
+UID_ROUTE = "none: needs a Selection List[] 6349400 op (unbuilt; card labview=read) - screenshot recorded"
 COUNT_RE = re.compile(r"(\d+)\s*errors?\s*and\s*warnings?", re.I)
 
 
@@ -96,7 +101,7 @@ def make_on_item(scratch, R):
         rec["show_error"] = {"fg_after": fg, "bd_before": b_path, "bd_after": a_path,
                              "bd_changed": bool(a_md5 and a_md5 != b_md5), "diagram_fronted": bd in fg,
                              "error_list_still_open": still, "uid": None, "class": None,
-                             "uid_route": "none: Selection List[] 6349400 op not built"}
+                             "uid_route": UID_ROUTE, "screenshot": a_path}
         acts.append({"act": "confirm", "tag": "item %d diagram fronted + changed" % rec["index"],
                      "confirmed": bd in fg and rec["show_error"]["bd_changed"]})
         if not still:
@@ -191,10 +196,20 @@ def main():
         items = R.get("items") or []
         R["item_count"] = len(items)
         R["show_error_ok"] = sum(1 for i in items if (i.get("show_error") or {}).get("diagram_fronted"))
+        R["dclicked"] = sum(1 for i in items if i.get("show_error"))
         R["extra"], R["missing"] = compare(items, expected)
-        read_ok = (bool(R.get("window")) and R.get("n_reported") is not None and R["item_count"] == R["n_reported"]
-                   and R.get("closed_with_esc") and R["scratch_deleted"]
-                   and R["bed_md5_after"] == R["bed_md5_before"] and R.get("block_diagram_open"))
+        R["gates"] = {
+            "window_opened": bool(R.get("window")),
+            "count_read": R.get("n_reported") is not None,
+            "all_items_read": R.get("n_reported") is not None and R["item_count"] == R["n_reported"],
+            "every_item_dclicked": R["dclicked"] == R["item_count"],
+            "closed_with_esc": bool(R.get("closed_with_esc")),
+            "scratch_identical": bool(R.get("scratch_identical")),
+            "scratch_deleted": R["scratch_deleted"],
+            "bed_md5_unchanged": R["bed_md5_after"] == R["bed_md5_before"],
+            "block_diagram_open": bool(R.get("block_diagram_open")),
+            "refs_balanced": (R["ref_counts"] or {}).get("live", 0) == 0}
+        read_ok = all(R["gates"].values())
         verdict = ("OK" if not (R["extra"] or R["missing"]) else "MISMATCH") if read_ok else "FAIL"
     R["verdict"], R["seconds"] = verdict, round(time.time() - t0, 1)
     with open(out, "w", encoding="utf-8") as f:
@@ -205,6 +220,16 @@ def main():
                                              R.get("handles_before"), R.get("handles_after"),
                                              R.get("bed_md5_after") == R.get("bed_md5_before"), R["seconds"]),
           flush=True)
+    try:
+        import protocol
+        gates = R.get("gates") or {"bed_exists": False}
+        fails = [k for k, v in gates.items() if not v]
+        print(protocol.result_line(protocol.make_result(
+            len(gates) - len(fails), len(fails), fails[0] if fails else None,
+            [{"path": protocol._rel(out), "md5": md5(out)}],
+            status="PASS" if verdict in ("OK", "MISMATCH") else "FAIL")), flush=True)
+    except Exception as e:                                                         # noqa: BLE001
+        print("RESULT-LINE ERROR %s: %s" % (type(e).__name__, e), flush=True)
     print("ERRORLIST-VERDICT: %s %s" % (verdict, out), flush=True)
     return {"OK": 0, "MISMATCH": 1}.get(verdict, 2)
 
