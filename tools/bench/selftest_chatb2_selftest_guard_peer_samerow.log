@@ -1,0 +1,19 @@
+=== selftest_guard_peer_samerow: ONE REVIEW PER ROW PER CYCLE (tools/hooks/guard_peer.py) ===
+NO LabVIEW, NO API call (jev.get_key forced to None, so neither Jev insertion can act).
+
+  FAIL  S0 with no review the fixture is a log the gate BLOCKS on  rc=0
+  PASS  S1 same script, review 10 min old -> ALLOW  returned 0
+  FAIL  S1b the release says RULE-SAME-ROW on stderr  (none)
+  FAIL  S2 the same review 7 h old is outside the window -> BLOCK  returned 0
+  FAIL  S3 a review naming a different script does not release this row  returned 0
+  FAIL  S4 _v3 vs _v7 is the SAME row -> ALLOW  returned 0
+  FAIL  S5 a TIMEOUT exchange is not a citable review -> BLOCK  returned 0
+  FAIL  S6 two releases of the same log write exactly ONE SAME-ROW citation  rc 0/0, citations=0
+  FAIL  S6b the citation sits under the review's own disposition heading  
+  FAIL  S7 jev_gate.log records the release, the log and the script  (empty)
+  PASS  S7b the citation is NOT a release line (cannot release a prior-art verdict)  
+  FAIL  S8 a script mentioned only inside the ANSWER does not bind the review to it  returned 0
+  PASS  S9 log_script() takes the run script and strips _v12; None when there is no BGRUN START line  got 'stage_x' / None
+  PASS  S10 the REMEDY exemption still passes (peer.ps1 dispatch)  
+
+=== selftest_guard_peer_samerow: 4 pass / 10 fail ===

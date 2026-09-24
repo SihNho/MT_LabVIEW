@@ -1,0 +1,29 @@
+=== selftest_guard_peer_ladder: the REVIEW LADDER branch of tools/hooks/guard_peer.py ===
+NO LabVIEW, NO API call (ladder_classify / covers_failure / verdicts_for are stubbed).
+
+  PASS  L0 the fake failing log is the one the gate sees  
+  PASS  L1 our-script-bug p=0.95 -> the gate ALLOWS  returned 0
+  PASS  L1b a JEV-LADDER line records the release  JEV-LADDER | 2026-09-24 18:56:43 | fake_ladder_stage.log | our-script-bug p=0.950 | ALLOW (no machine claim to attack) |
+  PASS  L1c exactly one jev_ladder_allowed.jsonl line, naming the log and the class  [{'ts': '2026-09-24 18:56:43', 'log': 'fake_ladder_stage.log', 'class': 'our-script-bug', 'p': 0.95}]
+  PASS  L1d the ordinary discharge was NOT consulted (the ladder released it first)  covers_failure calls=0
+  PASS  L2 already-reviewed-class + a covering review -> ALLOW  returned 0
+  PASS  L2b the ordinary discharge decided it (it was consulted)  covers_failure calls=1
+  PASS  L2c the citation still lands in the review's own disposition section  
+  PASS  L2d a discharge-backed allow does NOT add a jsonl line (the citation is its record)  jsonl lines=1
+  PASS  L3 already-reviewed-class with no citable review -> BLOCK  returned 2
+  PASS  L3b the discharge ran exactly ONCE (not re-run by the old path)  covers_failure calls=1
+  PASS  L3c the original block message is printed in full  
+  PASS  L4 new-problem p=0.95 -> BLOCK exactly as before  returned 2
+  PASS  L4b the old path's discharge was still consulted (nothing was short-circuited)  covers_failure calls=1
+  PASS  L5 p=0.55 -> the ladder abstains and the OLD discharge decides (here: allow)  returned 0 covers_failure calls=1
+  PASS  L6 with no key the ladder never asks and the gate BLOCKS (old behaviour preserved)  returned 2 ladder=0 covers=0
+  PASS  L7 an exception inside the ladder degrades to the old block  returned 2
+  PASS  L7b and the old path's discharge still ran  covers_failure calls=1
+  PASS  L8 our-script-bug at just below LADDER_P -> no allow  returned 2
+  PASS  L8b and the abstention is still recorded in jev_gate.log  
+  PASS  L9 the REMEDY exemption still passes (peer.ps1 dispatch)  
+
+=== selftest_guard_peer_ladder: 21 pass / 0 fail ===
+JEV-LADDER | 2026-09-24 18:56:43 | fake_ladder_stage.log | our-script-bug p=0.950 | ALLOW (no machine claim to attack) | NEXT-ACTION: patch the script and rerun; no review, no judgement turn; failure budget 2 still counts
+JEV-DISCHARGE | 2026-09-24 18:56:43 | fake_ladder_stage.log covered by 2026-09-22-fake-ladder-review.md p=0.970 | NEXT-ACTION: apply the cited review's disposition (archive/peer/2026-09-22-fake-ladder-review.md) and rerun; no new diagnosis
+JEV-LADDER | 2026-09-24 18:56:43 | fake_ladder_stage.log | old-path discharge | ALLOW via discharge | NEXT-ACTION: apply the cited review's disposition (archive/peer/2026-09-22-fake-ladder-review.md) and rerun; no new diagnosis
