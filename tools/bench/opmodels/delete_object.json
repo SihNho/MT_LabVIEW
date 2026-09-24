@@ -1,0 +1,218 @@
+{
+ "schema": "opmodel/1",
+ "op": "delete_object",
+ "wrapper": "build_opfsinnertunnelconnect_v0.del_node (uid -> live index -> gscript.delete_object)",
+ "measured_on": "claudeDev\\D1_s4_loop17.vi 4b621946 (dated scratch copies)",
+ "n_samples": 2,
+ "verdict": "consistent; sub-rule AMBIGUOUS (see `ambiguous`)",
+ "uid_allocation": "new objects take FREE uids inside the existing range (never above the max); a uid freed by a deletion in the same edit is re-issued at once (w9415 -> the stray Invoke of connect_from_wire_1; w25200 -> tunnel_1's new wire). Model new ids SYMBOLICALLY.",
+ "stray_invoke": false,
+ "samples": [
+  {
+   "raw": "raw/delete_object_1.json",
+   "target": {
+    "cls": "Function",
+    "uid": 7201
+   },
+   "fits": true,
+   "checks": {
+    "pred_removed": [
+     [
+      4044,
+      7575
+     ],
+     [
+      7420,
+      4459
+     ],
+     [
+      8494,
+      7606
+     ]
+    ],
+    "obs_removed": [
+     [
+      4044,
+      7575
+     ],
+     [
+      7420,
+      4459
+     ],
+     [
+      8494,
+      7606
+     ]
+    ],
+    "pred_flips": [],
+    "obs_flips": [],
+    "dead_tunnels": [],
+    "sole_sink_wires": [
+     8385
+    ],
+    "sole_sink_wires_deleted": [
+     8385
+    ]
+   },
+   "common": {
+    "stray_invokes": [],
+    "new_wires": [],
+    "deleted_wires": [
+     8385
+    ],
+    "new_objs_by_class": {},
+    "direction_flips": [],
+    "edges_added": 0,
+    "edges_removed": 3,
+    "edges_rewired": 0,
+    "exec_state_after": 0,
+    "uid": {
+     "all_new_above_max": true,
+     "new": [],
+     "reissued_bed_uids": []
+    },
+    "wire_objs": [
+     1913,
+     1912
+    ]
+   },
+   "notes": [
+    "sole-sink wire(s) [8385]: deleted [8385]"
+   ]
+  },
+  {
+   "raw": "raw/delete_object_2.json",
+   "target": {
+    "cls": "SubVI",
+    "uid": 27605
+   },
+   "fits": true,
+   "checks": {
+    "pred_removed": [
+     [
+      24595,
+      27644
+     ],
+     [
+      27635,
+      28334
+     ],
+     [
+      27635,
+      28348
+     ],
+     [
+      28316,
+      28503
+     ],
+     [
+      28345,
+      28378
+     ],
+     [
+      28373,
+      28098
+     ]
+    ],
+    "obs_removed": [
+     [
+      24595,
+      27644
+     ],
+     [
+      27635,
+      28334
+     ],
+     [
+      27635,
+      28348
+     ],
+     [
+      28316,
+      28503
+     ],
+     [
+      28345,
+      28378
+     ],
+     [
+      28373,
+      28098
+     ]
+    ],
+    "pred_flips": [
+     28316,
+     28345,
+     28373
+    ],
+    "obs_flips": [
+     28316,
+     28345,
+     28373
+    ],
+    "dead_tunnels": [
+     28311,
+     28343,
+     28370
+    ],
+    "sole_sink_wires": [],
+    "sole_sink_wires_deleted": []
+   },
+   "common": {
+    "stray_invokes": [],
+    "new_wires": [],
+    "deleted_wires": [],
+    "new_objs_by_class": {},
+    "direction_flips": [
+     [
+      28316,
+      "LoopTunnel",
+      [
+       true,
+       false
+      ]
+     ],
+     [
+      28345,
+      "LoopTunnel",
+      [
+       true,
+       false
+      ]
+     ],
+     [
+      28373,
+      "LoopTunnel",
+      [
+       true,
+       false
+      ]
+     ]
+    ],
+    "edges_added": 0,
+    "edges_removed": 6,
+    "edges_rewired": 0,
+    "exec_state_after": 0,
+    "uid": {
+     "all_new_above_max": true,
+     "new": [],
+     "reissued_bed_uids": []
+    },
+    "wire_objs": [
+     1912,
+     1912
+    ]
+   },
+   "notes": []
+  }
+ ],
+ "preconditions": [
+  "uid in report_all(cls) (live)"
+ ],
+ "adds": [],
+ "removes_rule": "the node and its terminal rows; every edge touching it; a wire it SOURCED survives as a sink-side half-wire; a branched wire it sank keeps its other sinks; R2 with cascade (#27605: LoopTunnels #28311, #28343 and, downstream, #28370)",
+ "edges_added": "none",
+ "ambiguous": [
+  "a wire whose ONLY sink was the deleted node: deleted outright for w8385 (constant #1850 -> #7201) but kept as half-wires for w2160 and w2187 (delete #1628, remove_bad_wires_1 half_wires_before)"
+ ]
+}

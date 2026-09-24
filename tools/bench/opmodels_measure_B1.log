@@ -1,0 +1,241 @@
+BGRUN START 2026-09-24 22:21:09 limit 45.0 min: py -u tools/bench/opmodels_measure.py B1
+opmodels_measure - card chat-S1 step B (docs/stage-simulator-plan.md "Op effect models"). For each op: ONE dated scratch
+COPY of claudeDev\D1_s4_loop17.vi (4b621946...), >= 2 targets applied in order on it; per target READ BEFORE
+(allterms.read_terms + report_all GObject) -> op -> READ AFTER (before any junk purge, so stray Invokes are SEEN) ->
+opmodels_lib.diff -> tools/bench/opmodels/raw/<op>_<n>.json; then the measured junk purge (setup, not modelled) and the
+next target. Setup edits a target needs (a move before a tunnel connect, a delete before a const) run BEFORE the BEFORE read.
+Models (rules) are fitted OFFLINE from the raw files by opmodels_fit.py. argv[1] = group B1 | B2.
+TARGETS were chosen offline from tools/bench/opmodels/bed_s4_loop17.json + bed_s4_map.json (step A/A2, 12/0 + 13/0):
+  B1 move_in #194, #25091 -> body #23405 | delete_wire w2160 (1 sink), w9166 (2 sinks) | delete_object Function #7201,
+     SubVI #27605 | remove_bad_wires after delete_object #1628, after move_in #25149 | add_shift_reg WhileLoop #23041 y260,
+     #10170 y120 | primitive build_index_array top-level at (200,200), (400,200)
+  B2 tunnel (connect_nested_v1 across the #23405 border): IN #25091'x*y' -> moved #25149'x', OUT moved #194'x-y' -> #1628'x'
+     | connect_from_wire: moved #9342'array' <- w9415 (FSIT #9426 source), moved #7201'x' <- w23519 (#8486 source, branched)
+     | wire_sr RightIn: new SR on #23041 <- #23042'x = y?', new SR on #10170 <- #10171'x = y?'
+     | fs_inner_tunnel_connect after delete_wire: FSIT #25059 <- #24065'x*y' (w25092), FSIT #5183 <- #5426'x+y' (w5297)
+     | const create_const_on_term: #6440 'error in (no error)' (bare, loop #25380), #23844 'milliseconds to wait' after
+       delete_wire w24080 (loop #23032)
+PRIOR ART (checked first, nothing new built): stagekit.Stage/scratch/drop_scratch/close; allterms.read_terms;
+gscript.report_all/node_labels/node_terms_uid/add_shift_reg/shift_reg/wire_sr/remove_bad_wires_scripted/build_index_array;
+build_d1_v0.move_in/diag_index; build_opfsinnertunnelconnect_v0.del_wire/del_node/purge_junk; build_d1_m3a1.node_census;
+build_opconnectnested_v1.connect_nested_v1; build_opconnectfromwire_v0.connect_from_wire/wire_source_owner;
+build_d1_m3a3b_d3.fsit_call; build_opcreateconstonterm_v0.create_const_on_term. All used unchanged.
+PREDICTION CONTRACT (per target, gates): C1 the op returns without raising and without an error string; C2 the diff is
+non-empty (the op had an effect); per group: every scratch deleted, K1/H2 bed md5 unchanged, H5 refs opened == closed,
+H6 files left []; handles recorded per cell (flat = within +-300 of the cell start, RECORDED, gated only at H5).
+No VI run, no original opened (preload=False), nothing saved.
+    MATERIAL=1 py tools/bgrun.py --max-min 45 --log tools/bench/opmodels_measure_B1.log -- py -u tools/bench/opmodels_measure.py B1
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 251 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 4b621946492da3d2fbb96b6053e715ec  got 4b621946492da3d2fbb96b6053e715ec
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN BEFORE S4 loop17 bed    4b621946492da3d2fbb96b6053e715ec  (want 4b621946492da3d2fbb96b6053e715ec) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 33963
+  FACT  LabVIEW handle count AFTER the restart: 33986
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  opmodels_measure_B1_20260924_222109.vi
+  FACT  ExecState [after open] opmodels_measure_B1_20260924_222109.vi = 1
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so opmodels_measure_B1_20260924_222109.vi is deleted at close
+  FACT  HANDLES after open 54401
+
+---------- OP move_in
+  PASS  SC opmodels_measure_B_20260924_222109_move_in.vi is a byte-identical copy of D1_s4_loop17.vi  opmodels_measure_B_20260924_222109_move_in.vi
+  FACT  move_in_1 node census: 635 rows
+  FACT  ExecState [move_in_1 after op] opmodels_measure_B_20260924_222109_move_in.vi = 0
+  FACT  move_in_1 META {'node': 194, 'cls': 'Function', 'dest': 23405, 'pos': [4700, 6700]} RESULT '23042'
+  FACT  move_in_1 DIFF {'terms_added': 6, 'terms_removed': 0, 'terms_changed': 3, 'objs_added': 7, 'objs_removed': 0, 'edges_removed': 3, 'edges_added': 0, 'edges_rewired': 0} uid_alloc new=[23468, 23792, 23807, 23841, 23859, 23898, 24014] all_above_max=False
+  PASS  C1 move_in_1 op returned without raising and without an error string  ('', '')
+  PASS  C2 move_in_1 the op had an effect (diff non-empty)  {'terms_added': 6, 'terms_removed': 0, 'terms_changed': 3, 'objs_added': 7, 'objs_removed': 0, 'edges_removed': 3, 'edges_added': 0, 'edges_rewired': 0}
+  FACT  move_in_1 AFTER node census: 636 rows
+  FACT  move_in_1 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(23468, 'Invoke', (4593, 6523))]
+  FACT  move_in_1 new #23468 #23468 lives at: {'diagram_index': 20, 'diagram_uid': 23405, 'diagram_class': 'Diagram', 'nodes_index': 4, 'nodes_on_diagram': 5, 'label': 'Invoke Node'}  (21 diagram(s) scanned of 173, 0.9 s)
+  FACT  move_in_1 new #23468 terminal table of #23468 (Diagram idx 20, Nodes[4], echo 23468): 6 terminal(s)
+  FACT      move_in_1 new #23468 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in_1 new #23468 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in_1 new #23468 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in_1 new #23468 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in_1 new #23468 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in_1 new #23468 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in_1 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in_1 purge delete Node #23468 at index 94: gone [23468], error '', census 636 -> 635, still present False (1.27 s)
+  FACT  move_in_1 AFTER THE PURGE node census: 635 rows
+  FACT  move_in_1 purge arithmetic: Node 635 -> 636 -> 635
+  FACT  move_in_2 node census: 635 rows
+  FACT  ExecState [move_in_2 after op] opmodels_measure_B_20260924_222109_move_in.vi = 0
+  FACT  move_in_2 META {'node': 25091, 'cls': 'Function', 'dest': 23405, 'pos': [4800, 6760]} RESULT '23042'
+  FACT  move_in_2 DIFF {'terms_added': 6, 'terms_removed': 0, 'terms_changed': 3, 'objs_added': 7, 'objs_removed': 0, 'edges_removed': 3, 'edges_added': 0, 'edges_rewired': 0} uid_alloc new=[23468, 23792, 23807, 23841, 23859, 23898, 24014] all_above_max=False
+  PASS  C1 move_in_2 op returned without raising and without an error string  ('', '')
+  PASS  C2 move_in_2 the op had an effect (diff non-empty)  {'terms_added': 6, 'terms_removed': 0, 'terms_changed': 3, 'objs_added': 7, 'objs_removed': 0, 'edges_removed': 3, 'edges_added': 0, 'edges_rewired': 0}
+  FACT  move_in_2 AFTER node census: 636 rows
+  FACT  move_in_2 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(23468, 'Invoke', (4593, 6523))]
+  FACT  move_in_2 new #23468 #23468 lives at: {'diagram_index': 20, 'diagram_uid': 23405, 'diagram_class': 'Diagram', 'nodes_index': 5, 'nodes_on_diagram': 6, 'label': 'Invoke Node'}  (21 diagram(s) scanned of 173, 0.9 s)
+  FACT  move_in_2 new #23468 terminal table of #23468 (Diagram idx 20, Nodes[5], echo 23468): 6 terminal(s)
+  FACT      move_in_2 new #23468 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in_2 new #23468 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in_2 new #23468 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in_2 new #23468 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in_2 new #23468 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in_2 new #23468 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in_2 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in_2 purge delete Node #23468 at index 94: gone [23468], error '', census 636 -> 635, still present False (1.30 s)
+  FACT  move_in_2 AFTER THE PURGE node census: 635 rows
+  FACT  move_in_2 purge arithmetic: Node 635 -> 636 -> 635
+  FACT  HANDLES cell move_in: 63181 -> 63416 (delta 235)
+  PASS  H4 move_in scratch deleted: opmodels_measure_B_20260924_222109_move_in.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_measure_B_20260924_222109_move_in.vi
+
+---------- OP delete_wire
+  PASS  SC opmodels_measure_B_20260924_222109_delete_wir.vi is a byte-identical copy of D1_s4_loop17.vi  opmodels_measure_B_20260924_222109_delete_wir.vi
+  FACT  delete_wire_1 node census: 635 rows
+      deleted wire w2160
+  FACT  ExecState [delete_wire_1 after op] opmodels_measure_B_20260924_222109_delete_wir.vi = 0
+  FACT  delete_wire_1 META {'wire': 2160, 'sinks': 1} RESULT 'True'
+  FACT  delete_wire_1 DIFF {'terms_added': 0, 'terms_removed': 0, 'terms_changed': 2, 'objs_added': 0, 'objs_removed': 1, 'edges_removed': 1, 'edges_added': 0, 'edges_rewired': 0} uid_alloc new=[] all_above_max=True
+  PASS  C1 delete_wire_1 op returned without raising and without an error string  ('', '')
+  PASS  C2 delete_wire_1 the op had an effect (diff non-empty)  {'terms_added': 0, 'terms_removed': 0, 'terms_changed': 2, 'objs_added': 0, 'objs_removed': 1, 'edges_removed': 1, 'edges_added': 0, 'edges_rewired': 0}
+  FACT  delete_wire_1 AFTER node census: 635 rows
+  FACT  delete_wire_1 CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  FACT  delete_wire_2 node census: 635 rows
+      deleted wire w9166
+  FACT  ExecState [delete_wire_2 after op] opmodels_measure_B_20260924_222109_delete_wir.vi = 0
+  FACT  delete_wire_2 META {'wire': 9166, 'sinks': 2} RESULT 'True'
+  FACT  delete_wire_2 DIFF {'terms_added': 0, 'terms_removed': 0, 'terms_changed': 3, 'objs_added': 0, 'objs_removed': 1, 'edges_removed': 2, 'edges_added': 0, 'edges_rewired': 0} uid_alloc new=[] all_above_max=True
+  PASS  C1 delete_wire_2 op returned without raising and without an error string  ('', '')
+  PASS  C2 delete_wire_2 the op had an effect (diff non-empty)  {'terms_added': 0, 'terms_removed': 0, 'terms_changed': 3, 'objs_added': 0, 'objs_removed': 1, 'edges_removed': 2, 'edges_added': 0, 'edges_rewired': 0}
+  FACT  delete_wire_2 AFTER node census: 635 rows
+  FACT  delete_wire_2 CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  FACT  HANDLES cell delete_wire: 63415 -> 63412 (delta -3)
+  PASS  H4 delete_wire scratch deleted: opmodels_measure_B_20260924_222109_delete_wir.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_measure_B_20260924_222109_delete_wir.vi
+
+---------- OP delete_object
+  PASS  SC opmodels_measure_B_20260924_222109_delete_obj.vi is a byte-identical copy of D1_s4_loop17.vi  opmodels_measure_B_20260924_222109_delete_obj.vi
+  FACT  delete_object_1 node census: 635 rows
+      deleted Function #7201 -> gone [7201]
+  FACT  ExecState [delete_object_1 after op] opmodels_measure_B_20260924_222109_delete_obj.vi = 0
+  FACT  delete_object_1 META {'cls': 'Function', 'uid': 7201} RESULT 'True'
+  FACT  delete_object_1 DIFF {'terms_added': 0, 'terms_removed': 3, 'terms_changed': 1, 'objs_added': 0, 'objs_removed': 5, 'edges_removed': 3, 'edges_added': 0, 'edges_rewired': 0} uid_alloc new=[] all_above_max=True
+  PASS  C1 delete_object_1 op returned without raising and without an error string  ('', '')
+  PASS  C2 delete_object_1 the op had an effect (diff non-empty)  {'terms_added': 0, 'terms_removed': 3, 'terms_changed': 1, 'objs_added': 0, 'objs_removed': 5, 'edges_removed': 3, 'edges_added': 0, 'edges_rewired': 0}
+  FACT  delete_object_1 AFTER node census: 634 rows
+  FACT  delete_object_1 CENSUS DIFF: Node 635 -> 634 ; 0 new uid(s): []
+  FACT  delete_object_2 node census: 634 rows
+      deleted SubVI #27605 -> gone [27605]
+  FACT  ExecState [delete_object_2 after op] opmodels_measure_B_20260924_222109_delete_obj.vi = 0
+  FACT  delete_object_2 META {'cls': 'SubVI', 'uid': 27605} RESULT 'True'
+  FACT  delete_object_2 DIFF {'terms_added': 0, 'terms_removed': 2, 'terms_changed': 3, 'objs_added': 0, 'objs_removed': 3, 'edges_removed': 6, 'edges_added': 0, 'edges_rewired': 0} uid_alloc new=[] all_above_max=True
+  PASS  C1 delete_object_2 op returned without raising and without an error string  ('', '')
+  PASS  C2 delete_object_2 the op had an effect (diff non-empty)  {'terms_added': 0, 'terms_removed': 2, 'terms_changed': 3, 'objs_added': 0, 'objs_removed': 3, 'edges_removed': 6, 'edges_added': 0, 'edges_rewired': 0}
+  FACT  delete_object_2 AFTER node census: 633 rows
+  FACT  delete_object_2 CENSUS DIFF: Node 634 -> 633 ; 0 new uid(s): []
+  FACT  HANDLES cell delete_object: 63413 -> 63412 (delta -1)
+  PASS  H4 delete_object scratch deleted: opmodels_measure_B_20260924_222109_delete_obj.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_measure_B_20260924_222109_delete_obj.vi
+
+---------- OP remove_bad_wires
+  PASS  SC opmodels_measure_B_20260924_222109_remove_bad.vi is a byte-identical copy of D1_s4_loop17.vi  opmodels_measure_B_20260924_222109_remove_bad.vi
+      deleted Function #1628 -> gone [1628]
+  FACT  remove_bad_wires_1 SETUP del_node Function 1628 -> True err ''
+  FACT  remove_bad_wires_1 node census: 634 rows
+  FACT  ExecState [remove_bad_wires_1 after op] opmodels_measure_B_20260924_222109_remove_bad.vi = 0
+  FACT  remove_bad_wires_1 META {'after': 'delete_object Function #1628', 'setup': 'del_node Function 1628', 'setup_result': True, 'setup_err': ''} RESULT '(1908, 0)'
+  FACT  remove_bad_wires_1 DIFF {'terms_added': 0, 'terms_removed': 4, 'terms_changed': 4, 'objs_added': 0, 'objs_removed': 11, 'edges_removed': 0, 'edges_added': 0, 'edges_rewired': 0} uid_alloc new=[] all_above_max=True
+  PASS  C1 remove_bad_wires_1 op returned without raising and without an error string  ('', '')
+  PASS  C2 remove_bad_wires_1 the op had an effect (diff non-empty)  {'terms_added': 0, 'terms_removed': 4, 'terms_changed': 4, 'objs_added': 0, 'objs_removed': 11, 'edges_removed': 0, 'edges_added': 0, 'edges_rewired': 0}
+  FACT  remove_bad_wires_1 AFTER node census: 634 rows
+  FACT  remove_bad_wires_1 CENSUS DIFF: Node 634 -> 634 ; 0 new uid(s): []
+  FACT  remove_bad_wires_2 SETUP move_in 25149 -> 23042 err ''
+  FACT  remove_bad_wires_2 node census: 635 rows
+  FACT  ExecState [remove_bad_wires_2 after op] opmodels_measure_B_20260924_222109_remove_bad.vi = 0
+  FACT  remove_bad_wires_2 META {'after': 'move_in #25149 -> #23405', 'setup': 'move_in 25149', 'setup_result': 23042, 'setup_err': ''} RESULT '(1905, 0)'
+  FACT  remove_bad_wires_2 DIFF {'terms_added': 0, 'terms_removed': 0, 'terms_changed': 2, 'objs_added': 0, 'objs_removed': 2, 'edges_removed': 0, 'edges_added': 0, 'edges_rewired': 0} uid_alloc new=[] all_above_max=True
+  PASS  C1 remove_bad_wires_2 op returned without raising and without an error string  ('', '')
+  PASS  C2 remove_bad_wires_2 the op had an effect (diff non-empty)  {'terms_added': 0, 'terms_removed': 0, 'terms_changed': 2, 'objs_added': 0, 'objs_removed': 2, 'edges_removed': 0, 'edges_added': 0, 'edges_rewired': 0}
+  FACT  remove_bad_wires_2 AFTER node census: 635 rows
+  FACT  remove_bad_wires_2 CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  FACT  HANDLES cell remove_bad_wires: 63412 -> 63438 (delta 26)
+  PASS  H4 remove_bad_wires scratch deleted: opmodels_measure_B_20260924_222109_remove_bad.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_measure_B_20260924_222109_remove_bad.vi
+
+---------- OP add_shift_reg
+  PASS  SC opmodels_measure_B_20260924_222109_add_shift_.vi is a byte-identical copy of D1_s4_loop17.vi  opmodels_measure_B_20260924_222109_add_shift_.vi
+  FACT  add_shift_reg_1 node census: 635 rows
+  FACT  ExecState [add_shift_reg_1 after op] opmodels_measure_B_20260924_222109_add_shift_.vi = 0
+  FACT  add_shift_reg_1 META {'loop': 23041, 'y': 260} RESULT '23789'
+  FACT  add_shift_reg_1 DIFF {'terms_added': 4, 'terms_removed': 0, 'terms_changed': 0, 'objs_added': 6, 'objs_removed': 0, 'edges_removed': 0, 'edges_added': 0, 'edges_rewired': 0} uid_alloc new=[23789, 23798, 23814, 23853, 23862, 23871] all_above_max=False
+  PASS  C1 add_shift_reg_1 op returned without raising and without an error string  ('', '')
+  PASS  C2 add_shift_reg_1 the op had an effect (diff non-empty)  {'terms_added': 4, 'terms_removed': 0, 'terms_changed': 0, 'objs_added': 6, 'objs_removed': 0, 'edges_removed': 0, 'edges_added': 0, 'edges_rewired': 0}
+  FACT  add_shift_reg_1 AFTER node census: 635 rows
+  FACT  add_shift_reg_1 CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  FACT  add_shift_reg_2 node census: 635 rows
+  FACT  ExecState [add_shift_reg_2 after op] opmodels_measure_B_20260924_222109_add_shift_.vi = 0
+  FACT  add_shift_reg_2 META {'loop': 10170, 'y': 120} RESULT '23823'
+  FACT  add_shift_reg_2 DIFF {'terms_added': 4, 'terms_removed': 0, 'terms_changed': 0, 'objs_added': 6, 'objs_removed': 0, 'edges_removed': 0, 'edges_added': 0, 'edges_rewired': 0} uid_alloc new=[23823, 23859, 23955, 24030, 24069, 24078] all_above_max=False
+  PASS  C1 add_shift_reg_2 op returned without raising and without an error string  ('', '')
+  PASS  C2 add_shift_reg_2 the op had an effect (diff non-empty)  {'terms_added': 4, 'terms_removed': 0, 'terms_changed': 0, 'objs_added': 6, 'objs_removed': 0, 'edges_removed': 0, 'edges_added': 0, 'edges_rewired': 0}
+  FACT  add_shift_reg_2 AFTER node census: 635 rows
+  FACT  add_shift_reg_2 CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  FACT  HANDLES cell add_shift_reg: 63440 -> 63462 (delta 22)
+  PASS  H4 add_shift_reg scratch deleted: opmodels_measure_B_20260924_222109_add_shift_.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_measure_B_20260924_222109_add_shift_.vi
+
+---------- OP primitive
+  PASS  SC opmodels_measure_B_20260924_222109_primitive.vi is a byte-identical copy of D1_s4_loop17.vi  opmodels_measure_B_20260924_222109_primitive.vi
+  FACT  primitive_1 node census: 635 rows
+  FACT  ExecState [primitive_1 after op] opmodels_measure_B_20260924_222109_primitive.vi = 0
+  FACT  primitive_1 META {'prim': 'IndexArray', 'diagram': 'top', 'loc': [200, 200]} RESULT "[{'i': 0, 'class': 'IndexArray', 'uid': 23468, 'pos': (200, 200), 'owner': 'TopLevelDiagram'}]"
+  FACT  primitive_1 DIFF {'terms_added': 3, 'terms_removed': 0, 'terms_changed': 0, 'objs_added': 4, 'objs_removed': 0, 'edges_removed': 0, 'edges_added': 0, 'edges_rewired': 0} uid_alloc new=[23468, 23792, 23807, 23841] all_above_max=False
+  PASS  C1 primitive_1 op returned without raising and without an error string  ('', '')
+  PASS  C2 primitive_1 the op had an effect (diff non-empty)  {'terms_added': 3, 'terms_removed': 0, 'terms_changed': 0, 'objs_added': 4, 'objs_removed': 0, 'edges_removed': 0, 'edges_added': 0, 'edges_rewired': 0}
+  FACT  primitive_1 AFTER node census: 636 rows
+  FACT  primitive_1 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(23468, 'IndexArray', (200, 200))]
+  FACT  primitive_1 new #23468 #23468 lives at: {'diagram_index': 0, 'diagram_uid': 536, 'diagram_class': 'TopLevelDiagram', 'nodes_index': 0, 'nodes_on_diagram': 1, 'label': 'Index Array'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  primitive_1 new #23468 terminal table of #23468 (Diagram idx 0, Nodes[0], echo 23468): 3 terminal(s)
+  FACT      primitive_1 new #23468 t0  'array'                            is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      primitive_1 new #23468 t1  'element'                          is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      primitive_1 new #23468 t2  'index'                            is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  primitive_1 NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #23468 class 'IndexArray' label 'Index Array', 3 terminal(s), 0 wired - REPORTED, left alone
+  FACT  primitive_2 node census: 636 rows
+  FACT  ExecState [primitive_2 after op] opmodels_measure_B_20260924_222109_primitive.vi = 0
+  FACT  primitive_2 META {'prim': 'IndexArray', 'diagram': 'top', 'loc': [400, 200]} RESULT "[{'i': 0, 'class': 'IndexArray', 'uid': 23487, 'pos': (400, 200), 'owner': 'TopLevelDiagram'}]"
+  FACT  primitive_2 DIFF {'terms_added': 3, 'terms_removed': 0, 'terms_changed': 0, 'objs_added': 4, 'objs_removed': 0, 'edges_removed': 0, 'edges_added': 0, 'edges_rewired': 0} uid_alloc new=[23487, 23955, 24014, 24069] all_above_max=False
+  PASS  C1 primitive_2 op returned without raising and without an error string  ('', '')
+  PASS  C2 primitive_2 the op had an effect (diff non-empty)  {'terms_added': 3, 'terms_removed': 0, 'terms_changed': 0, 'objs_added': 4, 'objs_removed': 0, 'edges_removed': 0, 'edges_added': 0, 'edges_rewired': 0}
+  FACT  primitive_2 AFTER node census: 637 rows
+  FACT  primitive_2 CENSUS DIFF: Node 636 -> 637 ; 1 new uid(s): [(23487, 'IndexArray', (400, 200))]
+  FACT  primitive_2 new #23487 #23487 lives at: {'diagram_index': 0, 'diagram_uid': 536, 'diagram_class': 'TopLevelDiagram', 'nodes_index': 1, 'nodes_on_diagram': 2, 'label': 'Index Array'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  primitive_2 new #23487 terminal table of #23487 (Diagram idx 0, Nodes[1], echo 23487): 3 terminal(s)
+  FACT      primitive_2 new #23487 t0  'array'                            is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      primitive_2 new #23487 t1  'element'                          is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      primitive_2 new #23487 t2  'index'                            is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT  primitive_2 NEW NODE NOT DELETED (not the measured junk shape, or its table could not be read): #23487 class 'IndexArray' label 'Index Array', 3 terminal(s), 0 wired - REPORTED, left alone
+  FACT  HANDLES cell primitive: 63462 -> 63488 (delta 26)
+  PASS  H4 primitive scratch deleted: opmodels_measure_B_20260924_222109_primitive.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_measure_B_20260924_222109_primitive.vi
+
+---------- [H] HYGIENE
+  FACT  close_panel(opmodels_measure_B1_20260924_222109.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 30, 'closed': 30, 'live': 0, 'cached_op_vis': 10}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 30, 'closed': 30, 'live': 0, 'cached_op_vis': 10}
+  FACT  LabVIEW handle count AFTER the work: 54714
+  PASS  H4 scratch deleted: opmodels_measure_B1_20260924_222109.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_measure_B1_20260924_222109.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 4b621946492da3d2fbb96b6053e715ec / after 4b621946492da3d2fbb96b6053e715ec
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN AFTER  S4 loop17 bed    4b621946492da3d2fbb96b6053e715ec  (want 4b621946492da3d2fbb96b6053e715ec) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 34002
+
+====================================================================================================
+=== GATES: 44 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opmodels_measure_B1.json   elapsed 630.4 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":44,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 681s

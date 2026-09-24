@@ -1,0 +1,91 @@
+BGRUN START 2026-09-24 22:00:02 limit 25.0 min: py -u tools/bench/opmodels_read_map.py
+opmodels_read_map - card chat-S1 step A2. READ-ONLY, on dated scratch COPIES:
+ (a) the bed claudeDev\D1_s4_loop17.vi (4b621946...): node -> diagram map = gscript.node_labels on EVERY Traverse 'Diagram'
+     index (Nodes[] uids per diagram, in creation order = the index a writer op takes), plus build_d1_v0.owner_of for every
+     Diagram whose owner class is WhileLoop/ForLoop (loop uid -> body diagram uid) -> tools/bench/opmodels/bed_s4_map.json
+ (b) the saved L7-1a artefact claudeDev\D1_l7_1a_20260924_035656.vi (34aaadf1..., = S3 bed + move #376 + 2 SR pairs) :
+     allterms.read_terms + report_all GObject -> tools/bench/opmodels/bed_l7_1a.json, so the move model is checked against
+     the TERMINAL-level after-state, not only the uid-edge diff printed in stage_d1_l7_1a.log.
+Step B's targets are chosen offline from these files. No mutation, no VI run, no original opened.
+PRIOR ART: opmodels_read_bed.py (step A, 12/0), stagekit, gscript.node_labels, build_d1_v0.owner_of - unchanged.
+PREDICTION: 173 diagrams mapped, every one read without error; sum of Nodes[] over diagrams within 5 % of the non-terminal
+node count; 23 loop bodies resolved (6 While + 17 For); #23041 -> body #23405; L7-1a dump > 5000 terms; files left [].
+    MATERIAL=1 py tools/bgrun.py --max-min 25 --log tools/bench/opmodels_read_map.log -- py -u tools/bench/opmodels_read_map.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 251 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 4b621946492da3d2fbb96b6053e715ec  got 4b621946492da3d2fbb96b6053e715ec
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN BEFORE S4 loop17 bed    4b621946492da3d2fbb96b6053e715ec  (want 4b621946492da3d2fbb96b6053e715ec) OK
+  FACT  PIN BEFORE L7-1a file       34aaadf14091ee156e0950725de48bdf  (want 34aaadf14091ee156e0950725de48bdf) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 33981
+  FACT  LabVIEW handle count AFTER the restart: 34005
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  opmodels_read_map_20260924_220002.vi
+  FACT  ExecState [after open] opmodels_read_map_20260924_220002.vi = 1
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so opmodels_read_map_20260924_220002.vi is deleted at close
+  FACT  HANDLES after open 54420
+  FACT  NODE MAP: 173 diagrams, 635 Nodes[] rows, 17.3 s, errors []
+  PASS  M1 every diagram's Nodes[] read without error
+  OBSERVED uid 27537 -> owner 'ForLoop' uid 27489 | self 'Diagram'#27537 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 23405 -> owner 'WhileLoop' uid 23041 | self 'Diagram'#23405 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 23166 -> owner 'WhileLoop' uid 10170 | self 'Diagram'#23166 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 23058 -> owner 'WhileLoop' uid 23032 | self 'Diagram'#23058 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 25392 -> owner 'WhileLoop' uid 25380 | self 'Diagram'#25392 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 28686 -> owner 'ForLoop' uid 28670 | self 'Diagram'#28686 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 2603 -> owner 'ForLoop' uid 2457 | self 'Diagram'#2603 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 24642 -> owner 'ForLoop' uid 4810 | self 'Diagram'#24642 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 29629 -> owner 'ForLoop' uid 29617 | self 'Diagram'#29629 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 29894 -> owner 'ForLoop' uid 29874 | self 'Diagram'#29894 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 7911 -> owner 'ForLoop' uid 1359 | self 'Diagram'#7911 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 13706 -> owner 'ForLoop' uid 13683 | self 'Diagram'#13706 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 13404 -> owner 'ForLoop' uid 13390 | self 'Diagram'#13404 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 15266 -> owner 'WhileLoop' uid 15173 | self 'Diagram'#15266 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 16355 -> owner 'ForLoop' uid 16312 | self 'Diagram'#16355 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 16621 -> owner 'ForLoop' uid 16557 | self 'Diagram'#16621 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 21577 -> owner 'ForLoop' uid 21305 | self 'Diagram'#21577 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 22532 -> owner 'ForLoop' uid 22433 | self 'Diagram'#22532 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 22847 -> owner 'ForLoop' uid 22786 | self 'Diagram'#22847 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 25290 -> owner 'ForLoop' uid 25272 | self 'Diagram'#25290 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 25345 -> owner 'ForLoop' uid 25325 | self 'Diagram'#25345 | 482 says 'ForLoop' cast 'ForLoop' |  
+  OBSERVED uid 25890 -> owner 'ForLoop' uid 25850 | self 'Diagram'#25890 | 482 says 'ForLoop' cast 'ForLoop' |  
+  FACT  LOOP BODIES: {'27537': {'loop_class': 'ForLoop', 'owner': ('ForLoop', 27489)}, '23405': {'loop_class': 'WhileLoop', 'owner': ('WhileLoop', 23041)}, '23166': {'loop_class': 'WhileLoop', 'owner': ('WhileLoop', 10170)}, '23058': {'loop_class': 'WhileLoop', 'owner': ('WhileLoop', 23032)}, '25392': {'loop_class': 'WhileLoop', 'owner': ('WhileLoop', 25380)}, '28686': {'loop_class': 'ForLoop', 'owner': ('ForLoop', 28670)}, '639': {'loop_class': 'WhileLoop', 'owner': ('WhileLoop', 637)}, '2603': {'loop_class': 'ForLoop', 'owner': ('ForLoop', 2457)}, '24642': {'loop_class': 'ForLoop', 'owner': ('ForLoop', 4810)}, '29629': {'loop_class': 'ForLoop', 'owner': ('ForLoop', 29617)}, '29894': {'loop_class': 'ForLoop', 'owner': ('ForLoop', 29874)}, '7911': {'loop_class': 'ForLoop', 'owner': ('ForLoop', 1359)}, '13706': {'loop_class': 'ForLoop', 'owner': ('ForLoop', 13683)}, '13404': {'loop_class': 'ForLoop', 'owner': ('ForLoop', 13390)}, '15266': {'loop_class': 'WhileLoop', 'owner': ('WhileLoop', 15173)}, '16355': {'loop_class': 'ForLoop', 'owner': ('ForLoop', 16312)}, '16621': {'loop_class': 'ForLoop', 'owner': ('ForLoop', 16557)}, '21577': {'loop_class': 'ForLoop', 'owner': ('ForLoop', 21305)}, '22532': {'loop_class': 'ForLoop', 'owner': ('ForLoop', 22433)}, '22847': {'loop_class': 'ForLoop', 'owner': ('ForLoop', 22786)}, '25290': {'loop_class': 'ForLoop', 'owner': ('ForLoop', 25272)}, '25345': {'loop_class': 'ForLoop', 'owner': ('ForLoop', 25325)}, '25890': {'loop_class': 'ForLoop', 'owner': ('ForLoop', 25850)}}
+  PASS  M2 body #23405 is owned by WhileLoop #23041  {'loop_class': 'WhileLoop', 'owner': ('WhileLoop', 23041)}
+  PASS  SC opmodels_read_map_20260924_220002_l71a.vi is a byte-identical copy of D1_l7_1a_20260924_035656.vi  opmodels_read_map_20260924_220002_l71a.vi
+  PASS  M3 L7-1a dump: > 5000 terminal rows  (5803, 13.1)
+  PASS  H4 l71a scratch deleted: opmodels_read_map_20260924_220002_l71a.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_read_map_20260924_220002_l71a.vi
+  FACT  HANDLES end of work 54598 (open 54420)
+
+---------- [H] HYGIENE
+  FACT  close_panel(opmodels_read_map_20260924_220002.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 4}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 4}
+  FACT  LabVIEW handle count AFTER the work: 54593
+  PASS  H4 scratch deleted: opmodels_read_map_20260924_220002.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_read_map_20260924_220002.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 4b621946492da3d2fbb96b6053e715ec / after 4b621946492da3d2fbb96b6053e715ec
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN AFTER  S4 loop17 bed    4b621946492da3d2fbb96b6053e715ec  (want 4b621946492da3d2fbb96b6053e715ec) OK
+  FACT  PIN AFTER  L7-1a file       34aaadf14091ee156e0950725de48bdf  (want 34aaadf14091ee156e0950725de48bdf) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33998
+
+====================================================================================================
+=== GATES: 13 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opmodels_read_map.json   elapsed 152.8 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 203s

@@ -1,0 +1,66 @@
+BGRUN START 2026-09-24 21:53:39 limit 20.0 min: py -u tools/bench/opmodels_read_bed.py
+opmodels_read_bed - card chat-S1 step A (docs/stage-simulator-plan.md "Op effect models", build order 3).
+READ-ONLY dumps, on dated scratch COPIES, of (a) the current bed claudeDev\D1_s4_loop17.vi (4b621946...) and (b) the S3 bed
+claudeDev\D1_s3_loop15.vi (1a11d92a..., the input of L7-1a, for the move-model check against stage_d1_l7_1a.log). Per file:
+allterms.read_terms (every terminal), report_all('GObject'), report_all('Diagram'). Written to
+tools/bench/opmodels/bed_<tag>.json. The targets of step B are chosen OFFLINE from these files (split rule: every step leaves
+a file). No mutation, no VI run, no original opened (preload=False).
+PRIOR ART: stagekit.Stage (start/scratch/discard_work/close) + allterms.read_terms + gscript.report_all, unchanged. No new op.
+PREDICTION: K1/K3 pass; 2 JSON files written; each has > 5000 terminal rows and > 100 Diagram rows; S3 dump holds #376
+owned-terminals (12) and D4 bed holds #376 too; refs opened == closed; files left [] ; pins hold.
+    MATERIAL=1 py tools/bgrun.py --max-min 20 --log tools/bench/opmodels_read_bed.log -- py -u tools/bench/opmodels_read_bed.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 251 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 4b621946492da3d2fbb96b6053e715ec  got 4b621946492da3d2fbb96b6053e715ec
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN BEFORE S3 loop15 bed    1a11d92aacabf7ec844d65b8af19f39f  (want 1a11d92aacabf7ec844d65b8af19f39f) OK
+  FACT  PIN BEFORE S4 loop17 bed    4b621946492da3d2fbb96b6053e715ec  (want 4b621946492da3d2fbb96b6053e715ec) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 34215
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  opmodels_read_bed_20260924_215339.vi
+  FACT  ExecState [after open] opmodels_read_bed_20260924_215339.vi = 1
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so opmodels_read_bed_20260924_215339.vi is deleted at close
+  FACT  HANDLES after open 54624
+  FACT  ExecState [dump s4_loop17] opmodels_read_bed_20260924_215339.vi = 1
+  FACT  DUMP s4_loop17: 5801 terms, 10102 GObjects, 173 Diagrams, #376 terminals 12, 91.5 s -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opmodels\bed_s4_loop17.json
+  PASS  D s4_loop17 dump sizes plausible (terms > 5000, Diagram > 100, #376 has 12 terminals)  (5801, 173, 12)
+  PASS  SC opmodels_read_bed_20260924_215339_s3.vi is a byte-identical copy of D1_s3_loop15.vi  opmodels_read_bed_20260924_215339_s3.vi
+  FACT  ExecState [dump s3_loop15] opmodels_read_bed_20260924_215339_s3.vi = 1
+  FACT  DUMP s3_loop15: 5795 terms, 10093 GObjects, 173 Diagrams, #376 terminals 12, 30.3 s -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opmodels\bed_s3_loop15.json
+  PASS  D s3_loop15 dump sizes plausible (terms > 5000, Diagram > 100, #376 has 12 terminals)  (5795, 173, 12)
+  PASS  H4 s3 scratch deleted: opmodels_read_bed_20260924_215339_s3.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_read_bed_20260924_215339_s3.vi
+
+---------- [H] HYGIENE
+  FACT  close_panel(opmodels_read_bed_20260924_215339.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 2}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 8, 'closed': 8, 'live': 0, 'cached_op_vis': 2}
+  FACT  LabVIEW handle count AFTER the work: 54746
+  PASS  H4 scratch deleted: opmodels_read_bed_20260924_215339.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_read_bed_20260924_215339.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 4b621946492da3d2fbb96b6053e715ec / after 4b621946492da3d2fbb96b6053e715ec
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN AFTER  S3 loop15 bed    1a11d92aacabf7ec844d65b8af19f39f  (want 1a11d92aacabf7ec844d65b8af19f39f) OK
+  FACT  PIN AFTER  S4 loop17 bed    4b621946492da3d2fbb96b6053e715ec  (want 4b621946492da3d2fbb96b6053e715ec) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33991
+
+====================================================================================================
+=== GATES: 12 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opmodels_read_bed.json   elapsed 235.9 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 286s

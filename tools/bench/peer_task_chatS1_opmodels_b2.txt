@@ -1,0 +1,26 @@
+ATTACK this claim about the two failed gates in tools/bench/opmodels_measure_B2.log (script tools/bench/opmodels_measure.py,
+group B2): "C1 fs_inner_tunnel_connect_1 / _2 op returned without raising and without an error string".
+
+CLAIM: both failures are a bug in OUR gate, not a failed connect. The gate read the result dict's `err` key, which for
+OpFsInnerTunnelConnect_v1 is the POISON value that build_d1_m3a3b_d3.fsit_call pre-loads into every readout
+(build_d1_m3a3b_d3.py:281-296, Pre-decided 125) and that this op never overwrites: the same string
+"error 999999: POISON - not overwritten by the run" is on every ACCEPTED call of that op (build_d1_m3a3b_d3.log G2 calls
+1-20, diag_c86_norbw.log). The op's real error columns (invoke_err, err_uidvi, err_fsit, err_termuid, err_uidback) are all ''
+in both calls; term_uid/uid_back echo the addressed FSIT (25075/25059 and 5260/5183); `Is Broken?` False; wire_delta 1;
+and the independent terminal-level diff (allterms.read_terms before/after) shows 6 edges added per call. So the connect
+succeeded and the measured diff is valid data; the fix is to gate on invoke_err + err_* (already patched) and rerun B2.
+
+Already ruled out: a LabVIEW-side failure of the connect (the before/after terminal tables differ, and the readback columns
+echo the right uids); a stale readout from a previous call (the two calls address different FSITs and read back different
+uids, 25075 vs 5260).
+
+My reading of the extra edges (attack it too): each connect adds exactly ONE Wire object (23508 / 23487) from the source to
+the FSIT terminal; the other 5 "added" edges are RESTORED edges - the setup delete_wire had left a sourceless chain, the
+downstream FS inner/outer, Selector and Loop tunnels had lost their direction (their terminals now read is_source True again:
+terms_changed is_source False -> True on #24984, #25059, #43605 / #2992, #5129, #5183), and the half-wires 25003, 25045, 25066,
+25497, 44089 / 628, 3148, 3513, 5174, 5194 are whole again.
+
+Also look at the recorded diffs in tools/bench/opmodels/raw/fs_inner_tunnel_connect_1.json and _2.json: edges_added is 6
+per call and terms_added 6 / objs_added 8 including one Invoke - is that plausibly ONE connect plus the known stray Invoke
+(the OpConnect* family mints one zero-wired Invoke per call), or evidence that the op did something else (e.g. auto-routing
+through extra tunnels)? Name what would falsify the claim and the cheapest discriminating test.

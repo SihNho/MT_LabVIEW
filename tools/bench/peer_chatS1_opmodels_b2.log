@@ -1,0 +1,45 @@
+BGRUN START 2026-09-24 22:43:57 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug chatS1-opmodels-b2-fsit-c1 -TaskFile tools/bench/peer_task_chatS1_opmodels_b2.txt
+OUTCOME: ANSWERED (155s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-24-chatS1-opmodels-b2-fsit-c1.md
+COST: $1.3578  in 30 / out 13123 / cache-create 95755 / cache-read 1410645  (152s, 23 turn(s))
+--- ANSWER ---
+**Verdict: the claim holds for this run.** Both C1 failures came from our gate reading a column that never changes. But three parts of the argument are weaker than they are stated, and one check the claim depends on was never measured.
+
+**1. Strongest reason it could be wrong: the VI was still broken after each connect, and nothing shows that was only the stray Invoke.**
+- The bed opened with ExecState 1 (`opmodels_measure_B2.log:46`). Both connects ended at ExecState 0 (`:174`, `:196`).
+- The claim says the connect succeeded and the stray Invoke is harmless junk. But nobody read ExecState after the purge, so "the connect left a whole VI" is inferred, not measured.
+- The correlation does support the claim. ExecState is 0 after exactly the ops that create a stray Invoke (tunnel, connect_from_wire, fs_inner) and 1 after the ops that create none (wire_sr, const) (`:55-237`, census diffs at `:61-237`).
+- The web does not say whether an unconfigured Invoke breaks a VI. NI's docs only say an unwired `reference` falls back to the current VI or Application for those classes ([LabVIEW Wiki: Invoke Node](https://labviewwiki.org/wiki/Invoke_Node), [Invoke Node reference](https://rajsite.github.io/unofficial-lvdocs/glang/Invoke_Node.html)).
+
+**2. Alternative explanations of the same evidence.**
+- **(a) Errors are dropped with no trace.** The op runs with automatic error handling OFF (`build_d1_m3a3b_d3.log:45`). Any node in the op whose error output goes to no indicator loses its error without a dialog ([Automatic Error Handling](https://labviewwiki.org/wiki/Automatic_Error_Handling), [NI: Prevent Error Dialog](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019SFfSAM)). So a clean `invoke_err` plus `err_*` covers only the nodes wired to those indicators.
+- **(b) The `err_*` columns are not fresh evidence.** `fsit_call` pre-loads the poison value only into `error out 7` and `error out` (`build_d1_m3a3b_d3.py:293-298`). `err_uidvi`, `err_fsit`, `err_termuid` and `err_uidback` are never pre-loaded, so their `''` could be a default or left over from an earlier run.
+  - The fresh positive evidence is the poisoned columns: `term_uid`, `uid_back` and `sink_wire_uid` came back non-zero, `is_broken` came back False although it was pre-set True, and `invoke_err` came back `''` although it was pre-set to the poison error. The patched gate leans on the unpoisoned columns.
+- **(c) The cited precedent is weak.** The G2 calls cited as "accepted" had `wire_delta=0` and `is_broken=True`, which is the untouched poison value (`build_d1_m3a3b_d3.log:58-60`). Those calls did not connect anything.
+  - This supports "`err` is constant": it reads the poison string whether the op connects or not.
+  - It does not show that the op's `error out` indicator is unwired. That was never read from the op's own diagram. `keystone-op-spec.md:255` says so for a different op.
+
+**3. Your edge reading is confirmed by the raw files, and the auto-routing alternative is ruled out.** In both `fs_inner_tunnel_connect_1.json` and `_2.json`:
+- `objs_added` is 8: one Invoke (#1756), its 6 terminals, and one Wire (23508 or 23487). No tunnel or other structure object was added.
+- `wire_objs` goes from 1912 to 1913, one new wire.
+- The other 5 added edges reuse the exact wire uids listed in `half_wires_before`, and `half_wires` goes from 5 to 0.
+- The counts balance across the two calls on one scratch copy. After call 1 plus the purge (−1 Invoke, −6 terminals) and call 2's setup (−1 wire, −6 edges), call 2's before-counts equal call 1's exactly (5801 / 10101 / 2238 / 1912).
+
+**4. What would falsify the claim.**
+- ExecState stays 0 after the purge. That would mean the connect itself left something broken.
+- Or the after-op edge set differs from the untouched bed's edge set on the affected terminals, apart from the one renamed wire (25092→23508, 5297→23487). For example, a restored chain feeds a different sink, or an edge from the bed is missing.
+
+**5. Cheapest test that separates the claim from these alternatives.**
+- **Offline, no LabVIEW:** compare the `edges_added` rows in each raw file with the same terminals in `tools/bench/opmodels/bed_s4_loop17.json`. Every source/sink pair must match the bed, with only the one wire uid different.
+- **Next B2 rerun, one line:** read ExecState after each purge and require it to be 1.
+- **Tighten C1 for this op:** gate on the fresh values (`wire_delta==1`, `is_broken is False`, `uid_back==fsit`, `term_uid==fsit_term`). Pre-load the poison into `err_*` in the caller before `fsit_call`; it reuses the same VI object and does not reset those indicators.
+- **Optional:** LabVIEW 2025 Q3 added a "Log Unwired Errors" option that would record the dropped errors in (a) ([NI forum](https://forums.ni.com/t5/LabVIEW-Public-Beta-Program-in/2025-Q3-Feature-Log-Unwired-Errors/td-p/4434830)).
+
+**What would change my mind:** either falsifier in section 4. If ExecState is 1 after the purge and the edges match the bed, the claim holds and the B2 rerun with the patched gate is valid.
+
+Sources:
+- [LabVIEW Wiki – Invoke Node](https://labviewwiki.org/wiki/Invoke_Node)
+- [Invoke Node (unofficial LV docs)](https://rajsite.github.io/unofficial-lvdocs/glang/Invoke_Node.html)
+- [LabVIEW Wiki – Automatic Error Handling](https://labviewwiki.org/wiki/Automatic_Error_Handling)
+- [NI – Prevent LabVIEW Error Dialog Box](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019SFfSAM)
+- [NI – 2025 Q3 Feature: Log Unwired Errors](https://forums.ni.com/t5/LabVIEW-Public-Beta-Program-in/2025-Q3-Feature-Log-Unwired-Errors/td-p/4434830)
+BGRUN END rc=0 after 156s

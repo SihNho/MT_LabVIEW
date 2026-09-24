@@ -1,0 +1,46 @@
+BGRUN START 2026-09-24 22:21:40 limit 3.0 min: py -u tools/bench/opmodels_check_move.py
+opmodels_check_move - card chat-S1 pass line "a written check that the move model reproduces the cut set L7-1a actually
+observed". PURE PYTHON, no LabVIEW. Inputs: tools/bench/opmodels/bed_s3_loop15.json (the L7-1a INPUT, read on a scratch in
+opmodels_read_bed.log), tools/bench/opmodels/bed_l7_1a.json (the saved L7-1a ARTEFACT 34aaadf1, opmodels_read_map.log), and
+tools/bench/stage_d1_l7_1a.json (the uid-edge diff L7-1a printed itself, stage_d1_l7_1a.log:125 PD3).
+Model: opmodels_lib.apply_move (R1 cut every wire end of the moved node, wires survive as half-wires; R2 a LoopTunnel fed only
+by the moved node loses its direction). The 4 SR objects L7-1a ALSO added are excluded from the comparison (their own model is
+add_shift_reg's).
+PREDICTION: G1 predicted removed edges == observed (terminal dump) == the 16 of stage_d1_l7_1a.json, as (src_term, sink_term);
+G2 no edge added; G3 predicted half-wires == observed half-wires (12); G4 predicted direction flips == observed ({2043, 5050});
+G5 Wire object count unchanged (1913). Names are NOT compared (not modelled).
+    MATERIAL=1 py tools/bgrun.py --max-min 3 --log tools/bench/opmodels_check_move.log -- py -u tools/bench/opmodels_check_move.py
+  FACT  predicted removed [(76, 5782), (644, 5763), (1700, 5683), (2043, 3182), (2043, 6480), (2313, 5778), (2813, 5754), (3060, 5772), (3651, 5760), (3934, 1339), (3954, 58), (5050, 6511), (5098, 5787), (5704, 1931), (5704, 3453), (5739, 5044)]
+  FACT  observed  removed [(76, 5782), (644, 5763), (1700, 5683), (2043, 3182), (2043, 6480), (2313, 5778), (2813, 5754), (3060, 5772), (3651, 5760), (3934, 1339), (3954, 58), (5050, 6511), (5098, 5787), (5704, 1931), (5704, 3453), (5739, 5044)]
+  FACT  stage-log removed [(76, 5782), (644, 5763), (1700, 5683), (2043, 3182), (2043, 6480), (2313, 5778), (2813, 5754), (3060, 5772), (3651, 5760), (3934, 1339), (3954, 58), (5050, 6511), (5098, 5787), (5704, 1931), (5704, 3453), (5739, 5044)]
+  PASS  G1 predicted cut set == terminal-dump cut set == stage_d1_l7_1a's 16 (src_term, sink_term)  {'pred-obs': [], 'obs-stage': []}
+  PASS  G2 no edge added (predicted and observed)  ([], [])
+  PASS  G3 predicted half-wires == observed half-wires  {'pred': [464, 541, 1397, 1581, 3497, 3629, 4337, 4517, 4880, 5056, 5073, 5274], 'obs': [464, 541, 1397, 1581, 3497, 3629, 4337, 4517, 4880, 5056, 5073, 5274]}
+  PASS  G4 predicted direction flips == observed  {'pred': [2043, 5050], 'obs': [2043, 5050], 'dead_tunnels': [1929, 5020]}
+  PASS  G5 Wire object count unchanged by the move (wires survive as half-wires)  (1913, 1913)
+=== GATES: 5 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 0s
+BGRUN START 2026-09-24 22:58:25 limit 3.0 min: py -u tools/bench/opmodels_check_move.py
+opmodels_check_move - card chat-S1 pass line "a written check that the move model reproduces the cut set L7-1a actually
+observed". PURE PYTHON, no LabVIEW. Inputs: tools/bench/opmodels/bed_s3_loop15.json (the L7-1a INPUT, read on a scratch in
+opmodels_read_bed.log), tools/bench/opmodels/bed_l7_1a.json (the saved L7-1a ARTEFACT 34aaadf1, opmodels_read_map.log), and
+tools/bench/stage_d1_l7_1a.json (the uid-edge diff L7-1a printed itself, stage_d1_l7_1a.log:125 PD3).
+Model: opmodels_lib.apply_move (R1 cut every wire end of the moved node, wires survive as half-wires; R2 a LoopTunnel fed only
+by the moved node loses its direction). The 4 SR objects L7-1a ALSO added are excluded from the comparison (their own model is
+add_shift_reg's).
+PREDICTION: G1 predicted removed edges == observed (terminal dump) == the 16 of stage_d1_l7_1a.json, as (src_term, sink_term);
+G2 no edge added; G3 predicted half-wires == observed half-wires (12); G4 predicted direction flips == observed ({2043, 5050});
+G5 Wire object count unchanged (1913). Names are NOT compared (not modelled).
+    MATERIAL=1 py tools/bgrun.py --max-min 3 --log tools/bench/opmodels_check_move.log -- py -u tools/bench/opmodels_check_move.py
+  FACT  predicted removed [(76, 5782), (644, 5763), (1700, 5683), (2043, 3182), (2043, 6480), (2313, 5778), (2813, 5754), (3060, 5772), (3651, 5760), (3934, 1339), (3954, 58), (5050, 6511), (5098, 5787), (5704, 1931), (5704, 3453), (5739, 5044)]
+  FACT  observed  removed [(76, 5782), (644, 5763), (1700, 5683), (2043, 3182), (2043, 6480), (2313, 5778), (2813, 5754), (3060, 5772), (3651, 5760), (3934, 1339), (3954, 58), (5050, 6511), (5098, 5787), (5704, 1931), (5704, 3453), (5739, 5044)]
+  FACT  stage-log removed [(76, 5782), (644, 5763), (1700, 5683), (2043, 3182), (2043, 6480), (2313, 5778), (2813, 5754), (3060, 5772), (3651, 5760), (3934, 1339), (3954, 58), (5050, 6511), (5098, 5787), (5704, 1931), (5704, 3453), (5739, 5044)]
+  PASS  G1 predicted cut set == terminal-dump cut set == stage_d1_l7_1a's 16 (src_term, sink_term)  {'pred-obs': [], 'obs-stage': []}
+  PASS  G2 no edge added (predicted and observed)  ([], [])
+  PASS  G3 predicted half-wires == observed half-wires  {'pred': [464, 541, 1397, 1581, 3497, 3629, 4337, 4517, 4880, 5056, 5073, 5274], 'obs': [464, 541, 1397, 1581, 3497, 3629, 4337, 4517, 4880, 5056, 5073, 5274]}
+  PASS  G4 predicted direction flips == observed  {'pred': [2043, 5050], 'obs': [2043, 5050], 'dead_tunnels': [1929, 5020]}
+  PASS  G5 Wire object count unchanged by the move (wires survive as half-wires)  (1913, 1913)
+=== GATES: 5 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 0s

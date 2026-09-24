@@ -1,0 +1,55 @@
+BGRUN START 2026-09-24 22:57:52 limit 3.0 min: py -u tools/bench/opmodels_fit.py
+opmodels_fit - card chat-S1 step C. PURE PYTHON, no LabVIEW. Reads the measured diffs tools/bench/opmodels/raw/<op>_<n>.json
+(opmodels_measure.py B1/B2 on dated scratches of D1_s4_loop17.vi) plus the bed dumps (bed_s4_loop17.json, bed_s3_loop15.json,
+bed_l7_1a.json) and writes ONE model per op to tools/bench/opmodels/<op>.json: preconditions, what is added (symbolic), the
+removal RULE, the edges added, side effects, the uid allocation pattern, and per sample the machine check of the rule
+(`fits`). A rule that two samples do not both fit is written `verdict: ambiguous` with the disagreeing evidence.
+The rules were written AFTER reading the diffs (step B), and are checked here against every sample - including the L7-1a
+move (opmodels_check_move.py, 5/0).
+PREDICTION: 10 model files written; every sample fits its op's rule, except the two sub-rules already known to disagree
+(delete_object / move_in on a wire whose ONLY sink was the node), which are recorded as ambiguous, not failed.
+    MATERIAL=1 py tools/bgrun.py --max-min 3 --log tools/bench/opmodels_fit.log -- py -u tools/bench/opmodels_fit.py
+  PASS  M move_in: 3 sample(s), rule fits all (consistent)  []
+  PASS  M add_shift_reg: 2 sample(s), rule fits all (consistent)  []
+  PASS  M tunnel: 2 sample(s), rule fits all (consistent)  []
+  PASS  M connect_from_wire: 2 sample(s), rule fits all (consistent)  []
+  PASS  M wire_sr: 2 sample(s), rule fits all (consistent)  []
+  PASS  M fs_inner_tunnel_connect: 2 sample(s), rule fits all (consistent)  []
+  PASS  M delete_wire: 2 sample(s), rule fits all (consistent)  []
+  PASS  M delete_object: 2 sample(s), rule fits all (consistent)  []
+  PASS  M remove_bad_wires: 2 sample(s), rule fits all (consistent)  []
+  PASS  M const: 2 sample(s), rule fits all (consistent)  []
+  PASS  M primitive: 2 sample(s), rule fits all (consistent)  []
+=== GATES: 11 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":11,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 0s
+BGRUN START 2026-09-24 22:58:12 limit 3.0 min: py -u tools/bench/opmodels_fit.py
+opmodels_fit - card chat-S1 step C. PURE PYTHON, no LabVIEW. Reads the measured diffs tools/bench/opmodels/raw/<op>_<n>.json
+(opmodels_measure.py B1/B2 on dated scratches of D1_s4_loop17.vi) plus the bed dumps (bed_s4_loop17.json, bed_s3_loop15.json,
+bed_l7_1a.json) and writes ONE model per op to tools/bench/opmodels/<op>.json: preconditions, what is added (symbolic), the
+removal RULE, the edges added, side effects, the uid allocation pattern, and per sample the machine check of the rule
+(`fits`). A rule that two samples do not both fit is written `verdict: ambiguous` with the disagreeing evidence.
+The rules were written AFTER reading the diffs (step B), and are checked here against every sample - including the L7-1a
+move (opmodels_check_move.py, 5/0).
+PREDICTION: 10 model files written; every sample fits its op's rule, except the two sub-rules already known to disagree
+(delete_object / move_in on a wire whose ONLY sink was the node), which are recorded as ambiguous, not failed.
+    MATERIAL=1 py tools/bgrun.py --max-min 3 --log tools/bench/opmodels_fit.log -- py -u tools/bench/opmodels_fit.py
+  PASS  M move_in: 3 sample(s), rule fits all (consistent; sub-rule AMBIGUOUS (see `ambiguous`))  []
+  PASS  M add_shift_reg: 2 sample(s), rule fits all (consistent)  []
+  PASS  R tunnel: run 1 and run 2 have the same effect (edge pairs + object classes)  [(1, False), (2, False)]
+  PASS  M tunnel: 2 sample(s), rule fits all (consistent)  []
+  PASS  R connect_from_wire: run 1 and run 2 have the same effect (edge pairs + object classes)  [(1, True), (2, True)]
+  PASS  M connect_from_wire: 2 sample(s), rule fits all (consistent)  []
+  PASS  R wire_sr: run 1 and run 2 have the same effect (edge pairs + object classes)  [(1, True), (2, True)]
+  PASS  M wire_sr: 2 sample(s), rule fits all (consistent)  []
+  PASS  R fs_inner_tunnel_connect: run 1 and run 2 have the same effect (edge pairs + object classes)  [(1, True), (2, True)]
+  PASS  M fs_inner_tunnel_connect: 2 sample(s), rule fits all (consistent)  []
+  PASS  M delete_wire: 2 sample(s), rule fits all (consistent)  []
+  PASS  M delete_object: 2 sample(s), rule fits all (consistent; sub-rule AMBIGUOUS (see `ambiguous`))  []
+  PASS  M remove_bad_wires: 2 sample(s), rule fits all (consistent)  []
+  PASS  R const: run 1 and run 2 have the same effect (edge pairs + object classes)  [(1, True), (2, True)]
+  PASS  M const: 2 sample(s), rule fits all (consistent)  []
+  PASS  M primitive: 2 sample(s), rule fits all (consistent)  []
+=== GATES: 16 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":16,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 0s

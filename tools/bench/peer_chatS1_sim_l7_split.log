@@ -1,0 +1,51 @@
+BGRUN START 2026-09-24 22:18:45 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug chatS1-sim-l7-split -TaskFile tools/bench/peer_task_chatS1_sim_l7_split.txt
+OUTCOME: ANSWERED (110s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-24-chatS1-sim-l7-split.md
+COST: $1.3956  in 26 / out 9267 / cache-create 114900 / cache-read 1454809  (106s, 16 turn(s))
+--- ANSWER ---
+**The claim is wrong.** The 22 differences come from the simulator's own `remove_bad_wires` model reacting to duplicate terminal rows in the base graph. The reference and the base are not two different readings.
+
+**1. Strongest reason it is wrong: the reference was built from the simulator's own base graph.**
+- In `tools/bench/sim_l7_split.py:97-102`, every reference set starts from `E3 = S.uid_edges(G3)`. `G3` is `graph_s3_loop15_20260924.json`, the same graph the simulator starts from.
+- Only `PRED["removed"]` and `PRED["added"]` came from `stage_d1_l7_r.py`'s reader and loops table.
+- An `only_ref` edge with `only_sim` empty therefore means: the edge was in the base, the recorded run did not list it as removed, and the simulator deleted it.
+- The step list shows which step did it. The diff is 0 at L7-1 (step 18). Step 45 `remove_bad_wires` then removed 16 wires (`tools/bench/sim/l7_split/summary.json:5524-5540`):
+  - 4 are #376 half-wires: 1581, 3268, 3629, 4517.
+  - 12 are not: 13486, 16880, 19372, 23614, 25186, 25404, 25478, 26025, 28924, 31169, 31193, 34066.
+- The claim lists the op models as "move / wire / tunnel / delete". It leaves out `remove_bad_wires`, which is the op that did the deleting.
+
+**2. What actually happens.**
+- The S3 graph file stores each loop body's Diagram-owned source terminal twice. I checked four of the wires:
+
+  | wire | source terminal | its body Diagram |
+  |---|---|---|
+  | 13486 | 13410 | 13404 |
+  | 16880 | 16636 | 16621 |
+  | 19372 | 15273 | 15266 |
+  | 34066 | 25406 | 25392 |
+
+- `op_remove_bad_wires` (`tools/stagesim.py:565-577`) counts raw rows. It finds two sources on each of these wires (`n_src == 2`) and deletes the wire.
+- `uid_edges` collects edges into a set, so the duplicate is invisible everywhere else. That is why steps 1-44 agree.
+- The recorded LabVIEW run says its Remove Broken Wires "removed no live uid edge" (the model_evidence field cites `stage_d1_l7_r_r2.log`). So the model deletes 12 live wires that LabVIEW kept.
+- Side note: the log prints only the first 8 of the 22 edges. Wire 34066's source is body #25392, which is not among the seven bodies the claim lists. The pattern still holds.
+
+**3. The C6 PASS does not show that the computation is unchanged.** When a sink is fed by a loop-index style Diagram terminal, its effective sources come out as an empty list (`summary.json:327-328`: `frame index`, fed by 639, has `effective: []`). Losing such a wire therefore probably changes nothing in `computation_diff` (`tools/vigraph.py:697-718`). C6 looks blind to this class of wire, which makes it weak supporting evidence for the claim.
+
+**4. What would falsify my explanation:**
+- the 12 wires have exactly one source row each in the S3 graph file, or
+- running remove-bad-wires on deduplicated rows still leaves the diff at 22.
+
+**Why the proposed fixes would do harm:**
+- "Build reference and base with the same reader" changes nothing, because they already share `E3`.
+- "Exclude Diagram-owned source terminals from both sides" hides a real simulator defect. On any future plan, the simulator would delete every loop-index wire at the remove-bad-wires step, and C6 would not catch it.
+
+**Cheapest test that separates the two explanations (pure Python, read-only, no LabVIEW):**
+1. Count the rows per `term_uid` in the S3 graph file's `terminals`. For example, 13410 appears twice.
+2. Re-run the replay with `op_remove_bad_wires` counting sources over unique `term_uid`s.
+3. Compare the result:
+   - **The claim predicts** C5 at L7-R stays at 22.
+   - **My explanation predicts** C5 goes to 0, and `removed_wires` shrinks to 1581, 3268, 3629, 4517.
+
+The fix then belongs in the simulator (deduplicate rows in `base_state` or in the remove-bad-wires model), plus a look at why the reader emits Diagram-owned terminals twice. The comparison inputs don't need to change.
+
+I did not run anything, and I did no web search: every point here rests on this project's own files. Two things are unverified. I checked the duplicate rows for 4 of the 12 wires, not all 12. And the "no live edge" line in `stage_d1_l7_r_r2.log` is taken from the model_evidence field; I did not open the log itself. Plan mode also blocked writing the plan file, so this reply is the whole review.
+BGRUN END rc=0 after 110s

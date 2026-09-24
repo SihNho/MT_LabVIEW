@@ -1,0 +1,20 @@
+ATTACK this claim about the failure in tools/bench/sim_l7_split.log (script tools/bench/sim_l7_split.py, the pure-Python stage
+simulator replaying loop 1.7's split; gate "C5 L7-R: simulated uid-edges == recorded reference up to new-uid naming (diff count 22)").
+
+CLAIM: the 22 differences are NOT an error of the simulator's op models (move / wire / tunnel / delete). They are a
+REPRESENTATION mismatch between the two graphs being compared: every printed only_ref edge (only_sim is empty) has as its
+SOURCE node a loop BODY Diagram uid (13404, 15266, 16621, 21577, 22532, 22847, 25290 - bodies of ForLoops 13390/16557/21305/
+22433/22786/25272 and WhileLoop 15173, per tools/bench/opmodels/bed_s4_map.json "loops"), i.e. a Diagram-owned terminal
+(iteration / loop-count style terminals). None of them touches #376, loop 1.7 (#23041/#23405) or any node the plan edits.
+Steps up to L7-1 (step 18) compare with diff 0, and C6 (computation_diff rows) PASSES at L7-R. So the fault is in how the
+L7-R reference graph was built (a different reader / loops table - stage_d1_l7_r.py lg() uses graph_loops_m4b_20260924.json
+and wiki_build.read_live on the live file) versus the simulator's base graph, i.e. a bug in OUR comparison inputs, and the fix
+is to build reference and base with the same reader (or exclude Diagram-owned source terminals symmetrically), not to change
+an op model.
+
+Already ruled out: (1) the move model - C3/C4 pass and a separate terminal-level check of the L7-1a move against the saved
+artefact reproduces its 16-edge cut set; (2) new-uid naming - only_sim is empty, so it is not a renaming artefact.
+
+Read the log, the script and the reference files it loads. Say what would falsify the claim and name the cheapest
+discriminating test (e.g. whether those 22 edges exist in the S3 base graph the simulator started from, and whether the
+recorded L7-R reference was built with Diagram-owned terminals keyed differently).

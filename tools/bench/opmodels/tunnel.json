@@ -1,0 +1,265 @@
+{
+ "schema": "opmodel/1",
+ "op": "tunnel",
+ "wrapper": "connect_nested_v1 across a loop border (build_opconnectnested_v1; LabVIEW makes the tunnel)",
+ "measured_on": "claudeDev\\D1_s4_loop17.vi 4b621946 (dated scratch copies)",
+ "n_samples": 2,
+ "verdict": "consistent",
+ "uid_allocation": "new objects take FREE uids inside the existing range (never above the max); a uid freed by a deletion in the same edit is re-issued at once (w9415 -> the stray Invoke of connect_from_wire_1; w25200 -> tunnel_1's new wire). Model new ids SYMBOLICALLY.",
+ "stray_invoke": true,
+ "samples": [
+  {
+   "raw": "raw/tunnel_1.json",
+   "target": {
+    "dir": "in",
+    "src": [
+     686,
+     25091,
+     "x*y"
+    ],
+    "dst": [
+     23405,
+     25149,
+     "x"
+    ],
+    "setup": "move_in 25149",
+    "setup_result": 23042,
+    "setup_err": ""
+   },
+   "fits": true,
+   "checks": {
+    "new_tunnels": [
+     24309
+    ],
+    "edges_added": [
+     [
+      24324,
+      25166
+     ],
+     [
+      25100,
+      24348
+     ]
+    ],
+    "rewired": [],
+    "source_wire_replaced": [
+     {
+      "term_uid": 25100,
+      "owner_uid": 25091,
+      "owner_class": "Function",
+      "name": "x*y",
+      "changed": {
+       "wire_uid": [
+        25196,
+        25200
+       ]
+      }
+     }
+    ]
+   },
+   "common": {
+    "stray_invokes": [
+     10098
+    ],
+    "new_wires": [
+     24214,
+     25200
+    ],
+    "deleted_wires": [
+     25196
+    ],
+    "new_objs_by_class": {
+     "Invoke": 1,
+     "Terminal": 6,
+     "Wire": 2,
+     "LoopTunnel": 1,
+     "InnerTerminal": 1,
+     "OuterTerminal": 1
+    },
+    "direction_flips": [],
+    "edges_added": 2,
+    "edges_removed": 0,
+    "edges_rewired": 0,
+    "exec_state_after": 0,
+    "uid": {
+     "all_new_above_max": false,
+     "new": [
+      10098,
+      24162,
+      24214,
+      24306,
+      24309,
+      24324,
+      24348,
+      24354,
+      25200,
+      25237,
+      25246,
+      25280
+     ],
+     "reissued_bed_uids": [
+      25200
+     ]
+    },
+    "wire_objs": [
+     1912,
+     1913
+    ]
+   },
+   "notes": []
+  },
+  {
+   "raw": "raw/tunnel_2.json",
+   "target": {
+    "dir": "out",
+    "src": [
+     23405,
+     194,
+     "x-y"
+    ],
+    "dst": [
+     686,
+     1628,
+     "x"
+    ],
+    "setup": "move_in 194",
+    "setup_result": 23042,
+    "setup_err": ""
+   },
+   "fits": true,
+   "checks": {
+    "new_tunnels": [
+     25339
+    ],
+    "edges_added": [
+     [
+      283,
+      25343
+     ],
+     [
+      25348,
+      1715
+     ]
+    ],
+    "rewired": [],
+    "source_wire_replaced": []
+   },
+   "common": {
+    "stray_invokes": [
+     23468
+    ],
+    "new_wires": [
+     25358
+    ],
+    "deleted_wires": [],
+    "new_objs_by_class": {
+     "Invoke": 1,
+     "Terminal": 6,
+     "LoopTunnel": 1,
+     "InnerTerminal": 1,
+     "OuterTerminal": 1,
+     "Wire": 1
+    },
+    "direction_flips": [],
+    "edges_added": 2,
+    "edges_removed": 0,
+    "edges_rewired": 0,
+    "exec_state_after": 0,
+    "uid": {
+     "all_new_above_max": false,
+     "new": [
+      23468,
+      25316,
+      25336,
+      25339,
+      25343,
+      25347,
+      25348,
+      25355,
+      25358,
+      25371,
+      25383
+     ],
+     "reissued_bed_uids": []
+    },
+    "wire_objs": [
+     1913,
+     1914
+    ]
+   },
+   "notes": []
+  }
+ ],
+ "preconditions": [
+  "source and sink on different sides of a WhileLoop border; both addressed by (Diagram idx, Nodes[] idx, Terminals[] idx), read live"
+ ],
+ "adds": [
+  "1 LoopTunnel on the loop (+ InnerTerminal + OuterTerminal objects), 1 stray Invoke (6 unwired terminals)"
+ ],
+ "removes_rule": "no edge removed. A source-side HALF-wire is replaced (tunnel_1: w25196 deleted, new w25200); a sink-side half-wire is JOINED and keeps its uid (tunnel_2: the tunnel's outer terminal took w2160)",
+ "edges_added": "exactly 2: source -> tunnel -> sink",
+ "repeat_run": [
+  {
+   "n": 1,
+   "same_effect": true,
+   "new_uids_run1": [
+    10097,
+    23517,
+    24214,
+    24306,
+    24309,
+    24324,
+    24348,
+    24354,
+    25200,
+    25237,
+    25246,
+    25280
+   ],
+   "new_uids_run2": [
+    10098,
+    24162,
+    24214,
+    24306,
+    24309,
+    24324,
+    24348,
+    24354,
+    25200,
+    25237,
+    25246,
+    25280
+   ]
+  },
+  {
+   "n": 2,
+   "same_effect": true,
+   "new_uids_run1": [
+    10099,
+    25316,
+    25336,
+    25339,
+    25343,
+    25347,
+    25348,
+    25355,
+    25358,
+    25371,
+    25383
+   ],
+   "new_uids_run2": [
+    23468,
+    25316,
+    25336,
+    25339,
+    25343,
+    25347,
+    25348,
+    25355,
+    25358,
+    25371,
+    25383
+   ]
+  }
+ ]
+}

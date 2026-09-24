@@ -1,0 +1,206 @@
+{
+ "schema": "opmodel/1",
+ "op": "move_in",
+ "wrapper": "stagekit.Stage.move_in -> build_d1_v0.move_in (OpMoveIn by uid)",
+ "measured_on": "claudeDev\\D1_s4_loop17.vi 4b621946 (dated scratch copies)",
+ "n_samples": 3,
+ "verdict": "consistent; sub-rule AMBIGUOUS (see `ambiguous`)",
+ "uid_allocation": "new objects take FREE uids inside the existing range (never above the max); a uid freed by a deletion in the same edit is re-issued at once (w9415 -> the stray Invoke of connect_from_wire_1; w25200 -> tunnel_1's new wire). Model new ids SYMBOLICALLY.",
+ "stray_invoke": true,
+ "samples": [
+  {
+   "raw": "raw/move_in_1.json",
+   "target": {
+    "node": 194,
+    "cls": "Function",
+    "dest": 23405,
+    "pos": [
+     4700,
+     6700
+    ]
+   },
+   "fits": true,
+   "checks": {
+    "pred_removed": [
+     [
+      283,
+      1715
+     ],
+     [
+      1589,
+      331
+     ],
+     [
+      1615,
+      787
+     ]
+    ],
+    "obs_removed": [
+     [
+      283,
+      1715
+     ],
+     [
+      1589,
+      331
+     ],
+     [
+      1615,
+      787
+     ]
+    ],
+    "pred_new_half": [
+     1420,
+     2160
+    ],
+    "obs_new_half": [
+     1420,
+     2160
+    ],
+    "dead_tunnels": []
+   },
+   "common": {
+    "stray_invokes": [
+     23468
+    ],
+    "new_wires": [],
+    "deleted_wires": [],
+    "new_objs_by_class": {
+     "Invoke": 1,
+     "Terminal": 6
+    },
+    "direction_flips": [],
+    "edges_added": 0,
+    "edges_removed": 3,
+    "edges_rewired": 0,
+    "exec_state_after": 0,
+    "uid": {
+     "all_new_above_max": false,
+     "new": [
+      23468,
+      23792,
+      23807,
+      23841,
+      23859,
+      23898,
+      24014
+     ],
+     "reissued_bed_uids": []
+    },
+    "wire_objs": [
+     1913,
+     1913
+    ]
+   },
+   "notes": []
+  },
+  {
+   "raw": "raw/move_in_2.json",
+   "target": {
+    "node": 25091,
+    "cls": "Function",
+    "dest": 23405,
+    "pos": [
+     4800,
+     6760
+    ]
+   },
+   "fits": true,
+   "checks": {
+    "pred_removed": [
+     [
+      24595,
+      25109
+     ],
+     [
+      25100,
+      25166
+     ],
+     [
+      25122,
+      25104
+     ]
+    ],
+    "obs_removed": [
+     [
+      24595,
+      25109
+     ],
+     [
+      25100,
+      25166
+     ],
+     [
+      25122,
+      25104
+     ]
+    ],
+    "pred_new_half": [
+     25190,
+     25196
+    ],
+    "obs_new_half": [
+     25190,
+     25196
+    ],
+    "dead_tunnels": []
+   },
+   "common": {
+    "stray_invokes": [
+     23468
+    ],
+    "new_wires": [],
+    "deleted_wires": [],
+    "new_objs_by_class": {
+     "Invoke": 1,
+     "Terminal": 6
+    },
+    "direction_flips": [],
+    "edges_added": 0,
+    "edges_removed": 3,
+    "edges_rewired": 0,
+    "exec_state_after": 0,
+    "uid": {
+     "all_new_above_max": false,
+     "new": [
+      23468,
+      23792,
+      23807,
+      23841,
+      23859,
+      23898,
+      24014
+     ],
+     "reissued_bed_uids": []
+    },
+    "wire_objs": [
+     1913,
+     1913
+    ]
+   },
+   "notes": []
+  },
+  {
+   "raw": "bed_s3_loop15.json -> bed_l7_1a.json (L7-1a, move #376)",
+   "target": {
+    "node": 376
+   },
+   "fits": true,
+   "checks": "opmodels_check_move.log G1-G5 5/0: 16-edge cut set, 12 half-wires, flips {2043, 5050} (tunnels #1929, #5020)",
+   "common": {},
+   "notes": []
+  }
+ ],
+ "preconditions": [
+  "node uid exists; destination Diagram index resolved live (build_d1_v0.diag_index)",
+  "target fully loaded (move_in calls ensure_loaded)"
+ ],
+ "adds": [
+  "nothing structural; 1 stray Invoke (6 unwired Terminals) on the destination diagram - junk_purge deletes it"
+ ],
+ "removes_rule": "R1: every terminal of the moved node leaves its wire (wire_uid -> 0). The Wire OBJECT survives: a wire whose only source or only sink was the node becomes a half-wire; a branched net keeps its other sinks. R2: a tunnel whose sink terminal is now on a sourceless wire loses its direction (source terminals read is_source False), cascading down tunnel chains - all edges out of it vanish (L7-1a #1929, #5020). Removed edges = edges touching the node + edges out of R2 tunnels.",
+ "edges_added": "none",
+ "ambiguous": [
+  "a wire from a CONSTANT whose only sink was the moved node: kept as a half-wire for #25091/w25190 (move_in_2) but deleted outright for #25149/w25200 (setup of remove_bad_wires_2 and tunnel_1: Wire count 1908 -> 1907 over the setup; uid 25200 re-issued to a new wire by tunnel_1)"
+ ]
+}
