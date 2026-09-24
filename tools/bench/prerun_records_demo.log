@@ -1,0 +1,53 @@
+BGRUN START 2026-09-24 19:34:13 limit 3.0 min: py -u tools/stage_prerun.py --prerun tools/recipes/stage_d1_l7_1a.py
+stage_d1_l7_1a - cycle 71 (runner 70) L7-1a (docs/d1-loop12-17-split-plan.md Pre-decided 169; 163 = loop 1.7 is
+WhileLoop #23041, body #23405). FROM claudeDev\D1_s3_loop15.vi (1a11d92a), FRESH LabVIEW: move #376 into body #23405;
+add the two NEW SR pairs on #23041 (err replaces #24/#1108, acc replaces #15/#51); WIRE NOTHING; save
+claudeDev\D1_l7_1a_<ts>.vi (broken by design -> stagekit.save(broken_ok=True) = gui_save, CLAUDE.md split-rule 6,
+evidence "user 2026-09-22 broken-intermediate save"; shot before/after = capture -> act -> capture).
+PRIOR ART: the move + SR steps are copied UNCHANGED from tools/recipes/stage_d1_l7_1.py (lines 29-35, 46-56), which ran
+them clean twice (stage_d1_l7_1.log:80-90, stage_d1_l7_1_r2.log:71-81); stagekit / wiki_build.read_live / vigraph.diff /
+build_d1_v0.owner_of used unchanged. No op, no Jev, no wiring row.
+CONTRACT (written before the run to tools/bench/l7_1a_predict.log): P0 owners as S3; P1 #376 owned by #23405, 12
+terminals all bare; PD diff(bed,new): nodes_added == exactly the 4 new SR uids, nodes_removed == [], every removed
+uid-edge touches #376, no uid-edge added; P3 WhileLoop/Local/ControlTerminal/SubVI/LoopTunnel counts delta 0;
+PS saved, md5 != bed, bed md5 unchanged; H2/H3/H5 (bed unchanged, pins, refs opened == closed). ExecState RECORDED ONLY.
+    py tools/bgrun.py --material --max-min 30 --log tools/bench/stage_d1_l7_1a.log -- py -u tools/recipes/stage_d1_l7_1a.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 1a11d92aacabf7ec844d65b8af19f39f  got 1a11d92aacabf7ec844d65b8af19f39f
+  PASS  DRY graph JSON for input md5 1a11d92aacabf7ec844d65b8af19f39f  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_s3_loop15_20260924.json
+  FACT  HANDLES after opening the bed: <dry:bench_prep.labview_handles>
+  FACT  ExecState [P0 bed on open] D1_l7_1a_20260924_193413.vi = <dry:g.exec_state>
+  UNVERIFIED  P0 #23405 owned by #23041, #23041 on #686, #376 on #639  (dry: read stub data)
+  FACT  LIVE MAP [bed] {'gobject': 0.0, 'terminals': 0.0, 'fs': 0.0, 'total': 0.0}
+  FACT  OP move_in #376 -> Diagram[<dry:build_d1_v0.diag_index>] at (4760, 6765) -> err '' (0.0 s)
+  FACT  #376: 0 terminal(s), 0 WIRED
+  UNVERIFIED  P1 #376 owned by #23405, 12 terminals, every terminal bare  (dry: after mutation Stage._op move_in)
+  FACT  OP add_shift_reg loop[0] y=120 -> err '' (0.0 s)
+  FACT  NEW SR [err] on #23041: {'right': 0, 'left': 0, 'rights': [0]}
+  FACT  OP add_shift_reg loop[0] y=180 -> err '' (0.0 s)
+  FACT  NEW SR [acc] on #23041: {'right': 0, 'left': 0, 'rights': [0, 0]}
+  FACT  census before {'WhileLoop': 6, 'Local': 10, 'ControlTerminal': 116, 'SubVI': 92, 'LoopTunnel': 137, 'Wire': 1913} -> after {'WhileLoop': 6, 'Local': 10, 'ControlTerminal': 116, 'SubVI': 92, 'LoopTunnel': 137, 'Wire': 1913}
+  PASS  P3 WhileLoop/Local/ControlTerminal/SubVI/LoopTunnel delta 0  {'WhileLoop': 6, 'Local': 10, 'ControlTerminal': 116, 'SubVI': 92, 'LoopTunnel': 137, 'Wire': 1913} -> {'WhileLoop': 6, 'Local': 10, 'ControlTerminal': 116, 'SubVI': 92, 'LoopTunnel': 137, 'Wire': 1913}
+  FACT  ExecState [after move + SRs (RECORDED ONLY)] D1_l7_1a_20260924_193413.vi = <dry:g.exec_state>
+  FACT  LIVE MAP [new] {'gobject': 0.0, 'terminals': 0.0, 'fs': 0.0, 'total': 0.0}
+  FACT  diff(bed,new) nodes_added [] removed []
+  FACT  diff(bed,new) uid-keyed wire/fs edges removed (0) []
+  FACT  diff(bed,new) uid-keyed wire/fs edges added (0) []
+  FACT  #376 terminal frame_diagram in the new graph: [639]
+  UNVERIFIED  PD1 nodes_added == exactly the 4 new SR uids [0]  (dry: after mutation Stage._op move_in)
+  PASS  PD2 nodes_removed == []
+  PASS  PD3 every removed uid-edge touches #376; no uid-edge added  ([], [])
+  PASS  PS artefact saved, md5 differs from the bed; bed md5 unchanged  ('dry0dry0dry0dry0dry0dry0dry0dry0', '1a11d92aacabf7ec844d65b8af19f39f')
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  FAIL  X2 a finalized plan file (decisions rows) is named by the recipe  none among ['graph_loops_m4b_20260924.json']
+  FAIL  X3 every plan row decided  0 rows
+  PASS  X4 every end addressable offline (0 ends)  []
+  FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 0 vs plan wire rows 0
+  FAIL  X6 ast lint: no re-typed uid / terminal name  uids [(376, 47), (376, 50), (376, 51), (376, 65), (376, 69), (376, 70), (639, 48), (686, 21), (23041, 21), (23405, 21)]; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+
+=== DRY PASS: first_fail=None coverage 61/61 lines, first mutation Stage._op move_in, unverified 3, graph tools/bench/graph_s3_loop15_20260924.json
+=== PRERUN FAIL: 3 pass / 4 fail; first X2 a finalized plan file (decisions rows) is named by the recipe: none among ['graph_loops_m4b_20260924.json']
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":3,"fail":4},"first_fail":"X2 a finalized plan file (decisions rows) is named by the recipe: none among ['graph_loops_m4b_20260924.json']","artefacts":[]}
+BGRUN END rc=1 after 1s

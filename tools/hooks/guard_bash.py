@@ -180,6 +180,30 @@ def stop_gate(cmd):
     return 2
 
 
+def prerun_gate(cmd):
+    """0 = pass, 2 = refuse. The decision lives in tools/stage_prerun.py check_launch() (argv parsing + records).
+    Fails CLOSED only for a command that launches a stage script; anything else passes if the module is broken."""
+    try:
+        import stage_prerun
+    except Exception as e:                                                         # noqa: BLE001
+        if re.search(r"tools[\\/]recipes[\\/]stage_\w*\.py", cmd or ""):
+            sys.stderr.write("BLOCKED by tools/hooks/guard_bash.py: the stage launch gate cannot load "
+                             "tools/stage_prerun.py (%s); a stage script is not launched unchecked.\n" % e)
+            return 2
+        return 0
+    allow, why = stage_prerun.check_launch(cmd)
+    if allow:
+        return 0
+    note(False, "PRERUN-GATE " + cmd)
+    sys.stderr.write("BLOCKED by tools/hooks/guard_bash.py: " + why)
+    return 2
+
+
+def retro_closes(cmd, data):
+    """True when this retrospective launch really closes the session's cycle (see main)."""
+    return not re.search(r"(?:^|\s)--dry-run(?=\s|$)", cmd or "") and not (data or {}).get("agent_id")
+
+
 # Match INVOCATIONS of LabVIEW-driving tools, not any mention of their paths (cat/grep of a file
 # under tools/bench is not a LabVIEW action).
 # ANY python script under tools/ (recipes, bench, gscript, lvclick, verify_op, ...) counts — the
@@ -384,6 +408,12 @@ def main():
     rc = stop_gate(cmd)
     if rc:
         return rc
+    # FIFTH RULE (user 2026-09-24, CLAUDE.md §3 "Stages are SIMULATED and PRE-RUN OFFLINE", decisions 1/2/4): a
+    # stage script (`tools/recipes/stage_*.py` in COMMAND position - argv, never a substring) is launched only with a
+    # dry-run PASS and a pre-run PASS for its current sha256 + plan md5s, both newer than its last failing run.
+    rc = prerun_gate(cmd)
+    if rc:
+        return rc
     # Benchmark cells spawned by tools/bench/matrix_run.py inherit this hook via the project
     # settings; their GUI calls are short and sequential by construction, so the driver sets
     # LV_GUARD_OFF=1 in their environment. The main session never has it set.
@@ -400,7 +430,9 @@ def main():
         if rc:
             return rc
     # Observe-only, never a refusal: mark this session's cycle as reviewed. See RETRO_RE above.
-    if not os.environ.get("BENCH_CELL") and RETRO_RE.search(cmd):
+    # NOT by a `--dry-run` retrospective (it reviews nothing) and NOT by a call carrying `agent_id` (a sub-agent's
+    # command is not the judgement session closing its cycle) - the false close of 2026-09-24 (card chat-C1).
+    if not os.environ.get("BENCH_CELL") and RETRO_RE.search(cmd) and retro_closes(cmd, data):
         guard_session.mark_retro_done(guard_session.session_id(data))
     rc = material_gate(cmd)
     if rc:

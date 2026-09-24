@@ -1,0 +1,33 @@
+BGRUN START 2026-09-24 19:32:18 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_l7_1b.py --no-record --graph tools/bench/graph_s3_loop15_20260924.json
+stage_d1_l7_1b - cycle 71 L7-1b (split plan PD 165/166/168-171). INPUT = the SAVED L7-1a file (tools/bench/stage_d1_l7_1a.json), FRESH
+LabVIEW. 9 rows: 4 S1-MAPPED body rows (PD168: wired iff Jev TOP == mapped pair, else STOP), 2 SR-init RULE rows (PD165; Jev logged, STOP if
+p<0.30), 3 tunnel RULE rows (PD166, no Jev). Corrected intent lines (PD171(1)). PB computation_diff FATAL before save (PD170(c)). PD172: the 3
+L7-R edges are BASELINE (gate PC3). PD173/PD174: FIRST wiring resolves by NAME (candidate `term_uid` is ignored by stagekit.address); the second pass alone passes `verify_term_uid`. PRIOR ART: stage_d1_l7_1.py copied; changed: input, SRs read not created, lines, modes, PB fatal. CONTRACT: l7_1b_predict.log.
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_l7_1b.log -- py -u tools/recipes/stage_d1_l7_1b.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 34aaadf14091ee156e0950725de48bdf  got 34aaadf14091ee156e0950725de48bdf
+  PASS  DRY graph JSON for input md5 34aaadf14091ee156e0950725de48bdf  tools/bench/graph_s3_loop15_20260924.json
+  FACT  INPUT L7-1a C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_l7_1a_20260924_035656.vi md5 34aaadf14091ee156e0950725de48bdf; SR {'err': {'right': 24083, 'left': 24133, 'rights': [24083]}, 'acc': {'right': 24150, 'left': 24187, 'rights': [24083, 24150]}}; HANDLES after open <dry:bench_prep.labview_handles>
+  FACT  ExecState [P0 on open] D1_l7_1_20260924_193218.vi = <dry:g.exec_state>
+  UNVERIFIED  P0 #376 owned by #23405  (dry: read stub data)
+  FACT  LIVE MAP [L7-1a] {'gobject': 0.0, 'terminals': 0.0, 'fs': 0.0, 'total': 0.0}
+  FACT  ROWMODE err_R RULE-S1-MAPPED cands=0 p=<dry:jev_pairs.decide.pair_p> margin=<dry:jev_pairs.decide.evidence.get()> top==mapped False jev_action=<dry:jev_pairs.decide.action> line="save trace.vi #376 output 'error out' feeds the NEW error-chain RIGHT shift register #24083 of loop 1.7 (WhileLoop #23041) through its INNER terminal, which reads '<no such terminal>' on the live object; the register carries the error chain (save trace.vi #376 'error out' -> 'error in')."
+  UNVERIFIED  P2a err_R Jev top candidate == the S1-mapped pair  (dry: read stub data)
+  FACT  ROWMODE err_L RULE-S1-MAPPED cands=0 p=<dry:jev_pairs.decide.pair_p> margin=<dry:jev_pairs.decide.evidence.get()> top==mapped False jev_action=<dry:jev_pairs.decide.action> line="the NEW error-chain LEFT shift register #24133 of loop 1.7 (WhileLoop #23041), INNER terminal reading '<no such terminal>' on the live object, carries the error chain (save trace.vi #376 'error out' -> 'error in') and feeds save trace.vi #376 input 'error in'."
+  UNVERIFIED  P2a err_L Jev top candidate == the S1-mapped pair  (dry: read stub data)
+  FACT  ROWMODE acc_R RULE-S1-MAPPED cands=0 p=<dry:jev_pairs.decide.pair_p> margin=<dry:jev_pairs.decide.evidence.get()> top==mapped False jev_action=<dry:jev_pairs.decide.action> line="save trace.vi #376 output 'total data array out' feeds the NEW accumulator RIGHT shift register #24150 of loop 1.7 (WhileLoop #23041) through its INNER terminal, which reads '<no such terminal>' on the live object; the register carries save trace.vi #376's output 'total data array out'."
+  UNVERIFIED  P2a acc_R Jev top candidate == the S1-mapped pair  (dry: read stub data)
+  FACT  ROWMODE acc_L RULE-S1-MAPPED cands=0 p=<dry:jev_pairs.decide.pair_p> margin=<dry:jev_pairs.decide.evidence.get()> top==mapped False jev_action=<dry:jev_pairs.decide.action> line="the NEW accumulator LEFT shift register #24187 of loop 1.7 (WhileLoop #23041), INNER terminal reading '<no such terminal>' on the live object, carries save trace.vi #376's output 'total data array out' and feeds save trace.vi #376 input 'total data array in'."
+  UNVERIFIED  P2a acc_L Jev top candidate == the S1-mapped pair  (dry: read stub data)
+  ROW   from_decision row 0 err_R : observed={'action': 'wire', 'op': <dry:jev_pairs.decide.op>, 'variant': <dry:jev_pairs.decide.variant>, 'how': None, 'result': None, 'error': "KeyError: 'owner_class'", 'failed_layer': 'execution'} expected=None
+  ROW   from_decision row 1 err_L : observed={'action': 'wire', 'op': <dry:jev_pairs.decide.op>, 'variant': <dry:jev_pairs.decide.variant>, 'how': None, 'result': None, 'error': "KeyError: 'owner_class'", 'failed_layer': 'execution'} expected=None
+  ROW   from_decision row 2 acc_R : observed={'action': 'wire', 'op': <dry:jev_pairs.decide.op>, 'variant': <dry:jev_pairs.decide.variant>, 'how': None, 'result': None, 'error': "KeyError: 'owner_class'", 'failed_layer': 'execution'} expected=None
+  ROW   from_decision row 3 acc_L : observed={'action': 'wire', 'op': <dry:jev_pairs.decide.op>, 'variant': <dry:jev_pairs.decide.variant>, 'how': None, 'result': None, 'error': "KeyError: 'owner_class'", 'failed_layer': 'execution'} expected=None
+  UNVERIFIED  P2b body: every row executed without an error  (dry: read stub data)
+  FACT  LIVE MAP [after body rows] {'gobject': 0.0, 'terminals': 0.0, 'fs': 0.0, 'total': 0.0}
+  FAIL  P2a err_init RULE-SINGLE-CANDIDATE: 1 legal pair and source == S1 source of #1108 outer  (0, None, None, [(4910, 'error out')])
+
+=== DRY FAIL: first_fail=GATE P2a err_init RULE-SINGLE-CANDIDATE: 1 legal pair and source == S1 source of #1108 outer coverage 67/111 lines, first mutation None, unverified 6, graph tools/bench/graph_s3_loop15_20260924.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"GATE P2a err_init RULE-SINGLE-CANDIDATE: 1 legal pair and source == S1 source of #1108 outer","artefacts":[]}
+BGRUN END rc=1 after 1s

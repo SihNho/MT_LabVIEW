@@ -282,6 +282,90 @@ def map_key(G, key_other, G_other):
     return None, "no unique match ({0} hits)".format(len(hits))
 
 
+RULE_CHAIN_S1 = "RULE-CHAIN-S1"
+
+
+def s1_chains(S1, node_uid):
+    """RULE-CHAIN-S1 (CLAUDE.md §3 "Stages are SIMULATED", decision 3; docs/stage-simulator-plan.md "Decide per row"):
+    the iteration-carried chains of `node_uid` in S1, READ from the graph, never asked of Jev. A chain is
+        node output --wire--> RightShiftRegister R --sr--> LeftShiftRegister L --wire--> the SAME node's input
+    plus the wire that initialises L's OUTER terminal (the chain's initial value). Returns
+    [{"chain": "err"|"acc", "out", "in", "s1_right", "s1_left", "init": (uid, term) | None}] in S1 right-uid order.
+    `chain` is "err" when the carried terminal is an error cluster ('error' in its name), else "acc" - the same two
+    keys the stage files use for their new register pairs (tools/bench/stage_d1_l7_1a.json `l7_1a.sr`)."""
+    node_uid = int(node_uid)
+    out = []
+    for k, a, b, _w in S1["edges"]:
+        if k != "wire":
+            continue
+        na, _ca, ta, _oa = V.key_parts(a)
+        nb = V.key_parts(b)[0]
+        if na != node_uid or S1["cls"].get(nb) != "RightShiftRegister":
+            continue
+        for k2, lk, _i2 in S1["out"].get(b, ()):
+            if k2 != "sr":
+                continue
+            nl = V.key_parts(lk)[0]
+            for k3, sk, _i3 in S1["out"].get(lk, ()):
+                ns, _cs, ts, _os = V.key_parts(sk)
+                if k3 != "wire" or ns != node_uid:
+                    continue
+                init = None
+                for key in V.terminals(S1, node=nl, is_source=False):
+                    if S1["rows"][key]["term_class"] != "OuterTerminal":
+                        continue
+                    for k4, src, _i4 in S1["in"].get(key, ()):
+                        if k4 == "wire":
+                            ni, _ci, ti, _oi = V.key_parts(src)
+                            init = (ni, ti)
+                out.append({"chain": "err" if "error" in ta.lower() else "acc", "out": ta, "in": ts,
+                            "s1_right": nb, "s1_left": nl, "init": init})
+    uniq = dict(((c["s1_right"], c["out"], c["in"]), c) for c in out)
+    return [uniq[k] for k in sorted(uniq)]
+
+
+def chain_terminals(S1, node_uids):
+    """{(uid, term)} every terminal a RULE-CHAIN-S1 chain of these nodes owns - the node's out/in ends and the
+    chains' initial-value sources. The pre-run refuses a Jev row that touches one (decision 3)."""
+    ends = set()
+    for u in node_uids:
+        for c in s1_chains(S1, u):
+            ends.add((int(u), c["out"]))
+            ends.add((int(u), c["in"]))
+            if c["init"]:
+                ends.add(c["init"])
+    return ends
+
+
+def rule_chain_s1(S1, node_uid, new_sr):
+    """The chain rows for `node_uid` moved into a new loop whose new register pairs are `new_sr`
+    ({key: {"right": uid, "left": uid[, "s1_right": uid]}}, the shape of stage_d1_l7_1a.json `l7_1a.sr`). A pair
+    binds to the S1 chain whose `s1_right` it names, else to the chain of the same key ("err"/"acc"). Rows carry
+    `decided_by` = RULE-CHAIN-S1 and the same row_key shape jev_pairs prints, so the rows compare 1:1 with a Jev
+    ROWMODE line. The new registers' inner terminals are unnamed on the live object -> term ''."""
+    chains = s1_chains(S1, node_uid)
+    rows, used = [], set()
+    for key in sorted(new_sr):
+        p = new_sr[key]
+        c = [x for x in chains if x["s1_right"] == p.get("s1_right")] if p.get("s1_right") else \
+            [x for x in chains if x["chain"] == key and x["s1_right"] not in used]
+        if len(c) != 1:
+            raise RuntimeError("RULE-CHAIN-S1: new pair {0!r} binds to {1} S1 chains of #{2} ({3})".format(
+                key, len(c), node_uid, [(x["chain"], x["s1_right"]) for x in chains]))
+        c = c[0]
+        used.add(c["s1_right"])
+        base = {"decided_by": RULE_CHAIN_S1, "chain": key, "s1_right": c["s1_right"], "s1_left": c["s1_left"]}
+        rows.append(dict(base, id=key + "_R", row_key={"src_uid": int(node_uid), "src_term": c["out"],
+                                                       "dst_uid": int(p["right"]), "dst_term": ""}))
+        rows.append(dict(base, id=key + "_L", row_key={"src_uid": int(p["left"]), "src_term": "",
+                                                       "dst_uid": int(node_uid), "dst_term": c["in"]}))
+        if c["init"]:
+            rows.append(dict(base, id=key + "_init", side="outer",
+                             row_key={"src_uid": c["init"][0], "src_term": c["init"][1],
+                                      "dst_uid": int(p["left"]), "dst_term": ""}))
+    return rows
+
+
 if __name__ == "__main__":
     G = load(BED_KEY)
     for it in ({"src": 4344, "dst": 48, "replace": True}, {"src": 23499, "dst": {"structure": 10407}}):

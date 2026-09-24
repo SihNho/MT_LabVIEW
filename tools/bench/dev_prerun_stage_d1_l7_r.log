@@ -1,0 +1,59 @@
+BGRUN START 2026-09-24 19:32:19 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_l7_r.py --no-record --graph tools/bench/graph_s3_loop15_20260924.json
+stage_d1_l7_r - cycle 73 L7-R (Pre-decided 175, executed, not re-decided). INPUT D1_l7_1_20260924_060431.vi (e5c7d68b...), FRESH LabVIEW ->
+claudeDev\D1_s4_loop17.vi ("1.7 whole except the two QRT rows": t5 w4517, t7 w3268 OPEN). CONTRACT tools/bench/l7_r_predict.log; ALL row data READ from
+l7_r_prediction.json. PRIOR ART reused: stage_d1_l7_1b.py (lg, Jev S1-mapped argmax, 2nd pass), stage_d1_m3a4.py (retire + RBW), stagekit verbs,
+connect_nested_v1 (LabVIEW makes the border tunnel, toolkit-capabilities.md:68), gscript.tunnels/set_index_mode, census c73_l7r_live.log. No new op.
+    MATERIAL=1 py tools/bgrun.py --max-min 40 --log tools/bench/stage_d1_l7_r.log -- py -u tools/recipes/stage_d1_l7_r.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == e5c7d68b56d018131f2ebf0df656fdd6  got e5c7d68b56d018131f2ebf0df656fdd6
+  PASS  DRY graph JSON for input md5 e5c7d68b56d018131f2ebf0df656fdd6  tools/bench/graph_s3_loop15_20260924.json
+  FACT  HANDLES after open (baseline) <dry:bench_prep.labview_handles>
+  FACT  ExecState [P0 on open] D1_s4_loop17.vi = <dry:g.exec_state>
+  UNVERIFIED  PMV move_in of ControlTerminal #3453 on a dated scratch: no error, owner == Diagram #23405  (dry: after mutation build_d1_v0.move_in)
+  FACT  LIVE MAP [L7-1 input] {'gobject': 0.0, 'terminals': 0.0, 'fs': 0.0, 'total': 0.0}
+  UNVERIFIED  P1 #376 'frame index' is UNWIRED on the input (t7 stays OPEN)  (dry: after mutation build_d1_v0.move_in)
+  UNVERIFIED  P2 #3052 sole consumer: S1 == [#376 'saved file refnum'], L7-1 == [] (other consumer => STOP)  (dry: after mutation build_d1_v0.move_in)
+  FACT  ORIGINAL IndexMode {1929: <dry:g.tunnels.get()>, 5020: <dry:g.tunnels.get()>}
+  PASS  A0 #2048 Terminals[3] carries w4337 AND terminal uid 3182 carries w4337 (index 3 == uid 3182, BEFORE any edit)  ({'i': 3, 'name': 'length', 'is_source': False, 'wire': 4337, 'has_wire': True, 'node_uid': 2048, 'uid': 3182}, [4337])
+  FACT  OP delete_wire w3957 -> err '' (0.0 s)
+  FACT  OP delete_wire w1899 -> err '' (0.0 s)
+  FACT  OP delete_wire w4337 -> err '' (0.0 s)
+  FACT  OP delete_wire w5073 -> err '' (0.0 s)
+  FACT  OP delete_wire w5274 -> err '' (0.0 s)
+  FACT  OP delete_wire w1397 -> err '' (0.0 s)
+  FACT  OP delete_wire w5056 -> err '' (0.0 s)
+  UNVERIFIED  D1 the 7 wires are gone by uid  (dry: after mutation build_d1_v0.move_in)
+  FACT  OP move_in #3052 -> Diagram[<dry:build_d1_v0.diag_index>] at (4660, 6700) -> err '' (0.0 s)
+  UNVERIFIED  M #3052 owned by #23405 after move_in  (dry: after mutation build_d1_v0.move_in)
+  FACT  OP move_in #3453 -> Diagram[<dry:build_d1_v0.diag_index>] at (4900, 6700) -> err '' (0.0 s)
+  UNVERIFIED  M #3453 owned by #23405 after move_in  (dry: after mutation build_d1_v0.move_in)
+  FACT  LIVE MAP [after deletes + moves] {'gobject': 0.0, 'terminals': 0.0, 'fs': 0.0, 'total': 0.0}
+  FACT  ROWMODE acc_out RULE-S1-MAPPED cands=0 p=<dry:jev_pairs.decide.pair_p> margin=<dry:jev_pairs.decide.evidence.get()> top=<dry:jev_pairs.decide.row_key> line="the NEW accumulator RIGHT shift register #24150 of loop 1.7 (WhileLoop #23041), OUTER terminal reading '' on the live object, carries save trace.vi #376's output 'total data array out' out of the loop and feeds Array Subset #2048 input 'array'."
+  UNVERIFIED  P3 acc_out Jev top candidate == the S1-mapped pair  (dry: after mutation build_d1_v0.move_in)
+  FACT  ROWMODE err_out RULE-S1-MAPPED cands=0 p=<dry:jev_pairs.decide.pair_p> margin=<dry:jev_pairs.decide.evidence.get()> top=<dry:jev_pairs.decide.row_key> line="the NEW error-chain RIGHT shift register #24083 of loop 1.7 (WhileLoop #23041), OUTER terminal reading 'error out' on the live object, carries the error chain (save trace.vi #376 'error out') out of the loop and feeds save N xyz traces.vi #6384 input 'error in'."
+  UNVERIFIED  P3 err_out Jev top candidate == the S1-mapped pair  (dry: after mutation build_d1_v0.move_in)
+  FACT  ROWMODE ref_in RULE-S1-MAPPED cands=0 p=<dry:jev_pairs.decide.pair_p> margin=<dry:jev_pairs.decide.evidence.get()> top=<dry:jev_pairs.decide.row_key> line="the control reference constant #3052 'File # Saved', now inside loop 1.7's body, feeds save trace.vi #376 input 'saved file refnum'."
+  UNVERIFIED  P3 ref_in Jev top candidate == the S1-mapped pair  (dry: after mutation build_d1_v0.move_in)
+  FACT  ROWMODE fp_ind RULE-S1-MAPPED cands=0 p=<dry:jev_pairs.decide.pair_p> margin=<dry:jev_pairs.decide.evidence.get()> top=<dry:jev_pairs.decide.row_key> line="save trace.vi #376 output 'file progress' feeds the front-panel indicator terminal #3453 'file progress', now inside loop 1.7's body."
+  UNVERIFIED  P3 fp_ind Jev top candidate == the S1-mapped pair  (dry: after mutation build_d1_v0.move_in)
+  UNVERIFIED  address {'uid': 376, 'term': 'file progress', 'diagram': 23405, 'owner_class': '', 'term_class': ''} after mutation build_d1_v0.move_in: #376 not in Diagram[20].Nodes[]
+  UNVERIFIED  A1 #2048 Terminals[3] is the unwired 'length' sink (name tie-break)  (dry: after mutation build_d1_v0.move_in)
+  FACT  OP connect_nested_v1 tun_fp -> err '' (0.0 s)
+  UNVERIFIED  W tun_fp connect_nested_v1: no error, wire delta >= 1  (dry: after mutation build_d1_v0.move_in)
+  FACT  NEW TUNNEL tun_fp: [] {}
+  UNVERIFIED  T tun_fp exactly one new LoopTunnel, owned by #23041  (dry: after mutation build_d1_v0.move_in)
+  STUB-LIMIT  dry path stopped on stub data after build_d1_v0.move_in: IndexError: list index out of range
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 587, in run
+    fn(stage)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\stage_d1_l7_r.py", line 84, in body
+    TFP, wfp = tunnel_row(s, "tun_fp", "file progress", (F686, 2048, "length"), 1929, TM)  # FIRST: no #2048 edit between A0 and the tie-break but the deletes
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\stage_d1_l7_r.py", line 45, in tunnel_row
+    s._op("set_index_mode", lambda: g.set_index_mode(s.work, s.uid_index("LoopTunnel", new[0]), TM[old]), "#{0} -> {1}".format(new[0], TM[old]))
+IndexError: list index out of range
+
+
+=== DRY FAIL: first_fail=STUB-LIMIT: IndexError: list index out of range coverage 65/106 lines, first mutation build_d1_v0.move_in, unverified 14, graph tools/bench/graph_s3_loop15_20260924.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"STUB-LIMIT: IndexError: list index out of range","artefacts":[]}
+BGRUN END rc=1 after 1s

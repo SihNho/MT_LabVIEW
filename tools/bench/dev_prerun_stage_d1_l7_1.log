@@ -1,0 +1,55 @@
+BGRUN START 2026-09-24 19:32:17 limit 5.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_l7_1.py --no-record --graph tools/bench/graph_s3_loop15_20260924.json
+stage_d1_l7_1 run 2 - cycle 70 L7-1 (d1-loop12-17-split-plan.md PD 156-166) FROM claudeDev\D1_s3_loop15.vi (1a11d92a), FRESH LabVIEW: #376 ->
+body #23405 of 1.7 #23041; 2 new SR pairs; 4 body rows by Jev PAIR (>=2 cands); SR-init rows #4910 w4969 / #781 w3543 = RULE-SINGLE-CANDIDATE (165);
+i6/i9/i11 = NEW tunnels off the SAME outer feed as #3644/#2294/#5096 (166, tunnel_outer). i5/i7/i8 + L7-R rows OPEN (164). Run 1 stopped at
+P2a (stage_d1_l7_1.log:124-126, acc_init p=0.582). PRIOR ART: stagekit, build_d1_v0, wiki_build.read_live, vigraph, jev_*, build_d1_m3a2. No op.
+CONTRACT (offline l7_1_predict.py -> l7_1_predict_r2.log 5/0 -> l7_1_prediction.json; PD 132): P1 #376 in #23405, all terminals bare.
+ P2a body rows act at p>=0.75; init rows 1 candidate + source == S1's (uid+term); tunnel rows live outer-feed source uid == S1's. P2b no error;
+ LeftIn/init 2nd pass delta 0, Is Broken? False. P3 WhileLoop/Local/ControlTerminal/SubVI delta 0. ExecState RECORDED ONLY.
+ (b) computation_diff(S1,new) == 8 rows: #376 current frame data array in / saved file refnum; #2048 array / length; #3453; #6384 actual # data
+ points / error in / file # to append (NOT i6/i9/i11, NOT i7). (c) nodes_added == 4 SRs + 3 LoopTunnels; removed subset {3644,2294,1929,5020}.
+    py tools/bgrun.py --material --max-min 45 --log tools/bench/stage_d1_l7_1_r2.log -- py -u tools/recipes/stage_d1_l7_1.py
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 1a11d92aacabf7ec844d65b8af19f39f  got 1a11d92aacabf7ec844d65b8af19f39f
+  PASS  DRY graph JSON for input md5 1a11d92aacabf7ec844d65b8af19f39f  tools/bench/graph_s3_loop15_20260924.json
+  FACT  HANDLES after opening the bed: <dry:bench_prep.labview_handles>
+  FACT  ExecState [P0 bed on open] D1_l7_1_20260924_193217.vi = <dry:g.exec_state>
+  UNVERIFIED  P0 #23405 owned by #23041, #23041 on #686, #376 on #639  (dry: read stub data)
+  FACT  LIVE MAP [bed] {'gobject': 0.0, 'terminals': 0.0, 'fs': 0.0, 'total': 0.0}
+  FACT  OP move_in #376 -> Diagram[<dry:build_d1_v0.diag_index>] at (4760, 6765) -> err '' (0.0 s)
+  FACT  #376: 0 terminal(s), 0 WIRED
+  UNVERIFIED  P1 #376 owned by #23405, every terminal bare  (dry: after mutation Stage._op move_in)
+  FACT  OP add_shift_reg loop[0] y=120 -> err '' (0.0 s)
+  FACT  NEW SR [err] on #23041: {'right': 0, 'left': 0, 'rights': [0]}
+  FACT  OP add_shift_reg loop[0] y=180 -> err '' (0.0 s)
+  FACT  NEW SR [acc] on #23041: {'right': 0, 'left': 0, 'rights': [0, 0]}
+
+---------- [2] Jev PAIR rows (>=2 candidates, PD 165): #376 <-> the new registers, typed side first
+  FACT  LIVE MAP [after SRs] {'gobject': 0.0, 'terminals': 0.0, 'fs': 0.0, 'total': 0.0}
+  FACT  JEV err_R: 0 pairs, best p <dry:jev_pairs.decide.pair_p>, action <dry:jev_pairs.decide.action>, op <dry:jev_pairs.decide.op>/<dry:jev_pairs.decide.variant>, row <dry:jev_pairs.decide.row_key>, {'reason': <dry:jev_pairs.decide.evidence.get()>, 'margin': <dry:jev_pairs.decide.evidence.get()>}
+  FACT  JEV err_L: 0 pairs, best p <dry:jev_pairs.decide.pair_p>, action <dry:jev_pairs.decide.action>, op <dry:jev_pairs.decide.op>/<dry:jev_pairs.decide.variant>, row <dry:jev_pairs.decide.row_key>, {'reason': <dry:jev_pairs.decide.evidence.get()>, 'margin': <dry:jev_pairs.decide.evidence.get()>}
+  FACT  JEV acc_R: 0 pairs, best p <dry:jev_pairs.decide.pair_p>, action <dry:jev_pairs.decide.action>, op <dry:jev_pairs.decide.op>/<dry:jev_pairs.decide.variant>, row <dry:jev_pairs.decide.row_key>, {'reason': <dry:jev_pairs.decide.evidence.get()>, 'margin': <dry:jev_pairs.decide.evidence.get()>}
+  FACT  JEV acc_L: 0 pairs, best p <dry:jev_pairs.decide.pair_p>, action <dry:jev_pairs.decide.action>, op <dry:jev_pairs.decide.op>/<dry:jev_pairs.decide.variant>, row <dry:jev_pairs.decide.row_key>, {'reason': <dry:jev_pairs.decide.evidence.get()>, 'margin': <dry:jev_pairs.decide.evidence.get()>}
+  UNVERIFIED  P2a body: every >=2-candidate row acts at threshold  (dry: after mutation Stage._op move_in)
+  ROW   from_decision row 0 err_R : observed={'action': <dry:jev_pairs.decide.action>, 'op': <dry:jev_pairs.decide.op>, 'variant': <dry:jev_pairs.decide.variant>, 'how': None, 'result': 'NOT EXECUTED (action <dry:jev_pairs.decide.action>)', 'error': None, 'failed_layer': <dry:jev_pairs.decide.evidence.get()>} expected=None
+  ROW   from_decision row 1 err_L : observed={'action': <dry:jev_pairs.decide.action>, 'op': <dry:jev_pairs.decide.op>, 'variant': <dry:jev_pairs.decide.variant>, 'how': None, 'result': 'NOT EXECUTED (action <dry:jev_pairs.decide.action>)', 'error': None, 'failed_layer': <dry:jev_pairs.decide.evidence.get()>} expected=None
+  ROW   from_decision row 2 acc_R : observed={'action': <dry:jev_pairs.decide.action>, 'op': <dry:jev_pairs.decide.op>, 'variant': <dry:jev_pairs.decide.variant>, 'how': None, 'result': 'NOT EXECUTED (action <dry:jev_pairs.decide.action>)', 'error': None, 'failed_layer': <dry:jev_pairs.decide.evidence.get()>} expected=None
+  ROW   from_decision row 3 acc_L : observed={'action': <dry:jev_pairs.decide.action>, 'op': <dry:jev_pairs.decide.op>, 'variant': <dry:jev_pairs.decide.variant>, 'how': None, 'result': 'NOT EXECUTED (action <dry:jev_pairs.decide.action>)', 'error': None, 'failed_layer': <dry:jev_pairs.decide.evidence.get()>} expected=None
+  UNVERIFIED  P2b body: every row executed without an error  (dry: after mutation Stage._op move_in)
+
+---------- [3] RULE rows: SR init (PD 165 RULE-SINGLE-CANDIDATE) + top-level tunnels (PD 166 tunnel_outer)
+  FACT  LIVE MAP [after body rows] {'gobject': 0.0, 'terminals': 0.0, 'fs': 0.0, 'total': 0.0}
+  UNVERIFIED  P2a err_init RULE-SINGLE-CANDIDATE: 1 legal pair and source == S1 source of #1108 outer  (dry: after mutation Stage._op move_in)
+  STUB-LIMIT  dry path stopped on stub data after Stage._op move_in: IndexError: list index out of range
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 587, in run
+    fn(stage)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\stage_d1_l7_1.py", line 77, in body
+    nm = [G2["rows"][x]["term_name"] for x in V.terminals(G2, node=SR[k]["left"], is_source=False)][0]
+IndexError: list index out of range
+
+
+=== DRY FAIL: first_fail=STUB-LIMIT: IndexError: list index out of range coverage 66/105 lines, first mutation Stage._op move_in, unverified 5, graph tools/bench/graph_s3_loop15_20260924.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"STUB-LIMIT: IndexError: list index out of range","artefacts":[]}
+BGRUN END rc=1 after 1s

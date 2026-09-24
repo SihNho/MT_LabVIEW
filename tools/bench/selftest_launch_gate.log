@@ -1,0 +1,41 @@
+BGRUN START 2026-09-24 19:33:10 limit 3.0 min: py -u tools/bench/selftest_launch_gate.py
+---------- [L] check_launch (tools/stage_prerun.py)
+  PASS  L1 no records -> refused  LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_7404/tools/recipes/stage_lgtest.py has no dry + prerun PASS record for sha256 2a1d2e247f13... and plan md5s {}. Run first:
+  PASS  L2 dry only -> refused (prerun missing)  LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_7404/tools/recipes/stage_lgtest.py has no prerun PASS record for sha256 2a1d2e247f13... and plan md5s {}. Run first:
+  PASS  L3 dry + prerun PASS, current sha, no later failure -> allowed  
+  PASS  L4 a FAILED run newer than the records -> refused (decision 4)  LAUNCH GATE (decision 4): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_7404/tools/recipes/stage_lgtest.py FAILED after its pre-run records (stage_lgtest.log: BGRUN END rc=1); the records are invalid - pre-run it again.
+  PASS  L4b another script's failure does not invalidate these records  
+  PASS  L5 script edited after the records (sha256 changed) -> refused  LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_7404/tools/recipes/stage_lgtest.py has no dry + prerun PASS record for sha256 d4f1c2b3a606... and plan md5s {}. Run first:
+  PASS  L6 prerun FAIL record -> refused  LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_7404/tools/recipes/stage_lgtest.py has no prerun PASS record for sha256 d4f1c2b3a606... and plan md5s {}. Run first:
+  PASS  L7 reads / dry / prerun / diagnostics / non-stage recipes / git are never refused (7 commands)  []
+  PASS  L8 a direct (non-bgrun) stage launch is gated too  LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_7404/tools/recipes/stage_lgtest.py has no prerun PASS record for sha256 d4f1c2b3a606... and plan md5s {}. Run first:
+  PASS  L9 a stage launch inside a && / ; chain is found by argv  
+---------- [M/R] guard_bash.py.new main()
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\selftest_launch_gate.py", line 98, in <module>
+    spec = importlib.util.spec_from_file_location("guard_bash_new", NEW, loader=importlib.machinery.SourceFileLoader("guard_bash_new", NEW))
+AttributeError: module 'importlib' has no attribute 'machinery'
+BGRUN END rc=1 after 0s (NO RESULT LINE)
+BGRUN START 2026-09-24 19:33:42 limit 3.0 min: py -u tools/bench/selftest_launch_gate.py
+---------- [L] check_launch (tools/stage_prerun.py)
+  PASS  L1 no records -> refused  LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_19612/tools/recipes/stage_lgtest.py has no dry + prerun PASS record for sha256 2a1d2e247f13... and plan md5s {}. Run first:
+  PASS  L2 dry only -> refused (prerun missing)  LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_19612/tools/recipes/stage_lgtest.py has no prerun PASS record for sha256 2a1d2e247f13... and plan md5s {}. Run first:
+  PASS  L3 dry + prerun PASS, current sha, no later failure -> allowed  
+  PASS  L4 a FAILED run newer than the records -> refused (decision 4)  LAUNCH GATE (decision 4): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_19612/tools/recipes/stage_lgtest.py FAILED after its pre-run records (stage_lgtest.log: BGRUN END rc=1); the records are invalid - pre-run it again.
+  PASS  L4b another script's failure does not invalidate these records  
+  PASS  L5 script edited after the records (sha256 changed) -> refused  LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_19612/tools/recipes/stage_lgtest.py has no dry + prerun PASS record for sha256 d4f1c2b3a606... and plan md5s {}. Run first:
+  PASS  L6 prerun FAIL record -> refused  LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_19612/tools/recipes/stage_lgtest.py has no prerun PASS record for sha256 d4f1c2b3a606... and plan md5s {}. Run first:
+  PASS  L7 reads / dry / prerun / diagnostics / non-stage recipes / git are never refused (7 commands)  []
+  PASS  L8 a direct (non-bgrun) stage launch is gated too  LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_19612/tools/recipes/stage_lgtest.py has no prerun PASS record for sha256 d4f1c2b3a606... and plan md5s {}. Run first:
+  PASS  L9 a stage launch inside a && / ; chain is found by argv  
+---------- [M/R] guard_bash.py.new main()
+  PASS  M1 guard_bash.new refuses a bgrun stage launch with no records (rc 2, LAUNCH GATE text)  BLOCKED by tools/hooks/guard_bash.py: LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/lg_selftest_19612/too
+  PASS  M2 guard_bash.new passes a grep of the stage file  
+  PASS  M3 guard_bash.new passes the same launch once dry + prerun PASS exist  JEV-PREFLIGHT | stage_lgtest.py | missing-guard p=0.94 | P1 stagekit=False, 2 lines P2 VI literals -; named in today's STATUS NEXT: -; not named: -; present und
+  PASS  R1 a retrospective call carrying agent_id does NOT set retro_done  []
+  PASS  R2 a --dry-run retrospective does NOT set retro_done  []
+  PASS  R3 the main session's real retrospective still sets retro_done  ['selftest']
+=== GATES: 16 pass / 0 fail
+  FACT  INSTALL os.replace(guard_bash.py.new -> guard_bash.py): md5 9cd2f04da2069d1ab98e53230eed4382 -> d704d5bcb1f54ee34c59591c7387e022
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":16,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 4s
