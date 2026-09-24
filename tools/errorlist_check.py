@@ -53,9 +53,28 @@ def md5(p):
 # (fresh baseline ~31,500 per CLAUDE.md; ..._191838.json ended at 34,643, i.e. up to ~+3,100). 5,000 catches a
 # runaway leak without failing on a hierarchy load; tune it from the handles_delta values the JSONs now record.
 HANDLE_TOL = 5000
-LV_UP_S = 120.0
+LV_UP_S = 60.0
 SETTLE_BAND = 300
 SETTLE_S = 60.0
+VI_READY_S = 60.0
+# COM NOT READY (card chat-E1, 2026-09-25): the runner restart at 01:02 stopped in 22 s because LabVIEW answered
+# `Application.Version` (lv_up_s 21.5) and its handles settled, but the FIRST GetVIReference then raised
+# com_error -2147221231 "ClassFactory cannot supply requested class" (tools/bench/errorlist_check_cycle74.log;
+# errorlist_D1_s4_loop17_20260925_010221.json). The app object comes up before the VirtualInstrument class does, so
+# readiness is now proven with the call the check actually needs (vi_ready), retried until it answers.
+NOT_READY = ("-2147221231", "ClassFactory")
+# _APP_PIN (card chat-E1, run 2 errorlist_check_cold_20260925.log 01:05): with the vi_ready poll the ClassFactory
+# error cleared on try 2 (20.4 s, ExecState 1), but OpenFrontPanel right after it raised DISP_E_EXCEPTION
+# (scode 0x80010107) and LabVIEW was gone when the run ended. HYPOTHESIS (not yet measured beyond this run): a
+# LabVIEW started BY a COM Dispatch exits when its last Application pointer is released, and this file dropped that
+# pointer (`g._lv = None`) between Version and GetVIReference. So one Application pointer is now held for the whole
+# run and never reset after it answered; LabVIEW still closes when the process exits (the card's "closed after").
+_APP_PIN = None
+
+
+def not_ready(e):
+    t = repr(e)
+    return any(k in t for k in NOT_READY)
 
 
 def labview_up(R):
@@ -63,28 +82,58 @@ def labview_up(R):
     less than SETTLE_BAND. Records the steps in R; returns the settled handle count or None."""
     t0 = time.time()
     R["lv_was_running"] = labview_handles() > 0
+    tries = 0
     while True:
+        tries += 1
         try:
-            g._lv = None
-            R["lv_version"] = str(g.lv().Version)
+            global _APP_PIN
+            _APP_PIN = g.lv()                        # held for the whole run: see _APP_PIN below
+            R["lv_version"] = str(_APP_PIN.Version)
             break
         except Exception as e:                                                     # noqa: BLE001
+            g._lv = _APP_PIN = None
             if time.time() - t0 > LV_UP_S:
                 R["errors"].append("LabVIEW did not answer COM within %.0f s: %s" % (LV_UP_S, str(e)[:120]))
+                print("LV-UP: no Version answer after %d tries, %.1f s" % (tries, time.time() - t0), flush=True)
                 return None
             time.sleep(4)
+    R["lv_version_s"] = round(time.time() - t0, 1)
+    print("LV-UP: was_running=%s Version %s answered after %d tries, %.1f s" % (
+        R["lv_was_running"], R["lv_version"], tries, R["lv_version_s"]), flush=True)
     prev, t1 = labview_handles(), time.time()
     while True:
         time.sleep(5)
         cur = labview_handles()
         if prev > 0 and abs(cur - prev) < SETTLE_BAND:
             R["lv_up_s"] = round(time.time() - t0, 1)
+            print("LV-UP: handles settled %d -> %d at %.1f s" % (prev, cur, R["lv_up_s"]), flush=True)
             return cur
         if time.time() - t1 > SETTLE_S:
             R["errors"].append("LabVIEW handle count did not settle in %.0f s (%d -> %d)" % (SETTLE_S, prev, cur))
             R["lv_up_s"] = round(time.time() - t0, 1)
             return cur if cur > 0 else None
         prev = cur
+
+
+def vi_ready(target, R):
+    """Poll a counted GetVIReference (+ ExecState) on `target` until it answers, up to VI_READY_S; only the
+    COM-not-ready error (NOT_READY) is retried, anything else is raised. Returns the ExecState."""
+    t0, tries = time.time(), 0
+    while True:
+        tries += 1
+        try:
+            es = g.exec_state(target)
+            R["vi_ready_s"], R["vi_ready_tries"] = round(time.time() - t0, 1), tries
+            print("VI-READY: GetVIReference answered after %d tries, %.1f s (ExecState %s)" % (
+                tries, R["vi_ready_s"], es), flush=True)
+            return es
+        except Exception as e:                                                     # noqa: BLE001
+            if not not_ready(e) or time.time() - t0 > VI_READY_S:
+                R["vi_ready_s"], R["vi_ready_tries"] = round(time.time() - t0, 1), tries
+                print("VI-READY: gave up after %d tries, %.1f s: %s" % (tries, R["vi_ready_s"], str(e)[:120]),
+                      flush=True)
+                raise
+            time.sleep(4)
 
 
 def current_bed(status_path):
@@ -204,7 +253,7 @@ def main():
         print("bed %s md5 %s -> scratch %s identical=%s" % (bed, R["bed_md5_before"], scratch,
                                                               R["scratch_identical"]), flush=True)
         try:
-            g._lv = None
+            vi_ready(scratch, R)                     # COM-not-ready guard (card chat-E1)
             g.open_panel(scratch)
             time.sleep(1.0)
             R["exec_state"] = g.exec_state(scratch)

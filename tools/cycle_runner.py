@@ -53,6 +53,7 @@ except Exception:
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 BGRUN = os.path.join(HERE, "bgrun.py")
+ERRORLIST_RETRY_S = 20      # card chat-E1: one retry of a COM-not-ready Error List FAIL
 sys.path.insert(0, HERE)
 import protocol  # noqa: E402  - session protocol v1: C1 cycle card, C6 first_fail_signature, C7 next.json
 
@@ -524,16 +525,29 @@ def errorlist_hook(n, a, bench, runner_log, status_text):
     if state == "experiment":
         log_line(runner_log, "ERRORLIST | %s | cycle %d | SKIP | rig state 실험중 (no LabVIEW use)" % (stamp, n))
         return "SKIP", None, "rig state experiment"
+    def run_once(log):
+        cmd = [sys.executable, BGRUN, "--max-min", "15", "--log", log, "--",
+               sys.executable, "-u", os.path.join(HERE, "errorlist_check.py")]
+        proc = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                              env=dict(os.environ, MATERIAL="1"))
+        text = read(log) + (proc.stdout or "")
+        m = re.findall(r"ERRORLIST-VERDICT: (OK|MISMATCH|FAIL) (\S.*\.json)", text)
+        verdict, js = (m[-1][0], m[-1][1].strip()) if m else ("FAIL", None)
+        if "BGRUN END" not in text:
+            verdict = "FAIL"
+        return verdict, js, text
+
     log = os.path.join(bench, "errorlist_check_cycle%d.log" % n)
-    cmd = [sys.executable, BGRUN, "--max-min", "15", "--log", log, "--",
-           sys.executable, "-u", os.path.join(HERE, "errorlist_check.py")]
-    proc = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                          env=dict(os.environ, MATERIAL="1"))
-    text = read(log) + (proc.stdout or "")
-    m = re.findall(r"ERRORLIST-VERDICT: (OK|MISMATCH|FAIL) (\S.*\.json)", text)
-    verdict, js = (m[-1][0], m[-1][1].strip()) if m else ("FAIL", None)
-    if "BGRUN END" not in text:
-        verdict = "FAIL"
+    verdict, js, text = run_once(log)
+    # COM NOT READY (card chat-E1, 2026-09-25): the 01:02 restart stopped on com_error -2147221231 (ClassFactory)
+    # right after LabVIEW was launched. Such a FAIL is retried ONCE after ERRORLIST_RETRY_S; a second FAIL stops the
+    # runner exactly as before. Any other FAIL is not retried.
+    if verdict == "FAIL" and ("-2147221231" in text or "ClassFactory" in text):
+        log_line(runner_log, "ERRORLIST | %s | cycle %d | FAIL (COM not ready) - retry once in %d s | %s"
+                 % (stamp, n, ERRORLIST_RETRY_S, js or os.path.basename(log)))
+        time.sleep(ERRORLIST_RETRY_S)
+        log = os.path.join(bench, "errorlist_check_cycle%d_retry.log" % n)
+        verdict, js, text = run_once(log)
     log_line(runner_log, "ERRORLIST | %s | cycle %d | %s | %s" % (stamp, n, verdict, js or os.path.basename(log)))
     return verdict, js, "see %s" % os.path.basename(log)
 
