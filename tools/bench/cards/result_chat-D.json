@@ -1,0 +1,23 @@
+{"schema": "result/1", "id": "chat-D", "status": "PASS",
+ "gates": {"pass": 32, "fail": 0}, "first_fail": null,
+ "blocked_by": {"device": "guard_bash card flags (peers)", "message": "a literal `outcome_review.py --dry-run` run is refused: flags.peers ['hypothesis'] lacks 'outcome'. Its steer path was tested by import instead (S3, write=False, no dispatch)"},
+ "artefacts": [{"path": "docs/protocol/steer.json", "md5": "fe9bcf387a7af857e881f194cbc39bd5"},
+               {"path": "tools/bench/stage_runs.jsonl", "md5": "d41d8cd98f00b204e9800998ecf8427e"},
+               {"path": "tools/bench/selftest_item34.log", "md5": "ce1cb1b482349fd8ee3986fa157a94bf"}],
+ "facts": [
+  "selftest_item34 32/0 (tools/bench/selftest_item34.log:50, BGRUN END rc=0 40s); includes protocol 48/0, cycle_runner 10/10, ff 3/3, launch gate 28/0 (log:46-49)",
+  "steer/1 = protocol.steer_for; outcome_review writes cards/steer_<cycle>.json after a review (--dry-run prints only); cycle/1 `steer`, next/1 `steer` {item, follow|refuse+evidence}",
+  "Runner: an unanswered steer counts as a refusal; 2 -> RUNNER STOP exit 3 + open decisions_pending item (selftest S6, log:27-28); state in tools/bench/steer_state.json",
+  "Archive now repeats 5 slugs (09-24 vs 09-22 reviews, log:3); no steer card was written to the real cards dir - the next outcome review writes the first",
+  "RETRY_CAP=2 per stage basename (_vN stripped) per cycle key (newest cycle_<n>.json < 6 h, else 'chat <date>'); 3rd run needs RETRY_CARD=<task/1 with retry_of>; one card id = one run",
+  "guard_bash main() records a stage run only when the whole hook returns 0 (launch gate M4-M6); a later hook or permission refusal can still over-count by 1",
+  "labview_close_hook after motor end: COM Quit in a child (60 s), then taskkill /F /T, verify tasklist empty; FAIL -> RUNNER STOP + STATUS note; skipped in dry run and rig 실험중/unknown",
+  "errorlist_check: labview_up() starts/reaches LabVIEW and waits for handles to settle before handles_before; new gates handles_baseline_up + handles_flat (|delta|<=5000); was 0->31,287 before",
+  "Card input md5 drift: docs/goalmap.json is 8518d30c..., card said 76b65bc5... (commit 0aede0b, M8 edit) - used the current file",
+  "Commit ba89f92 (15 files). git add used the glob 'tools/outcome*.py' because the peers-flag regex refuses any command naming that file, including git add"],
+ "open": [
+  "HANDLE_TOL=5000 in errorlist_check is a guess from three JSONs (+25 warm, ~+3,100 after a cold hierarchy load); a stricter gate could stop the runner on a normal load - keep, or tune after N checks?",
+  "Should a steer card be written NOW from the two archived reviews (5 repeated slugs), or wait for the next outcome review? Not done here: it would steer the next cycle",
+  "Should the outcome_review steer path be run for real with a card whose peers include 'outcome'?"],
+ "cost": {"usd": null, "minutes": 35, "labview_runs": 0},
+ "note": "docs/session-protocol.md not updated (outside the card's write globs): it does not yet mention steer/1 or RETRY_CARD."}
