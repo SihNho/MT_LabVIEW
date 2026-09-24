@@ -95,4 +95,10 @@ Sources:
 
 ## What was done with it
 
-(Claude fills in)
+ANSWERED (judgement, chat 2026-09-25). Fix accepted and proven: register faces re-tracked by identity /
+(direction, wire) with the unique live name first; run 2 of the bench (`tools/bench/stagexec_l7_bench_r2.log`
+14/0) had 0 DISAGREES across 4 face addresses and reproduced the original stages' uids. Review tests 2-3 (register
+face order unmeasured) → judgement decision: a DISAGREES on any face address STOPS the run (structure over guess),
+and every op logs the loop's `Terminals[]` after its graph read; both go into the next stagexec change
+(card chat-S4 or the first M3 stage card). Only-sink fate stays `allow_either` until the wire-length hypothesis
+(`onlysink_samples.json` src_pos/node_pos) is measured.

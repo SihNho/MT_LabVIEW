@@ -1,8 +1,8 @@
 ---
 type: plan
 kind: stage-plan
-status: draft
-date: 2026-09-24
+status: current
+date: 2026-09-25
 tags: [simulator, stage, prerun, jev]
 ---
 
