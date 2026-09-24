@@ -1725,3 +1725,83 @@ VIOLATION: repeated-failure-class | loss_min=13 | loss_usd=2.09 | evidence=tools
 VIOLATION: device-failed | loss_min=8 | loss_usd=1.10 | evidence=bgrun-inner-failure-scan@tools/bench/dryrun_l7_r_address.log:24
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle73.md
 BGRUN END rc=0 after 381s
+BGRUN START 2026-09-25 02:28:04 limit 10.0 min: py tools/retrospective.py --cycle 74
+   window 2026-09-24 07:29:29 .. 2026-09-25 02:28:04 (1139 min); 96 build logs, 17 machinery logs, 18 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle74.txt (27845 chars)
+   review card tools\bench\cards\review_retrospective-cycle74.json
+BGRUN START 2026-09-25 02:28:52 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 74
+   window 2026-09-24 07:29:29 .. 2026-09-25 02:28:52 (1139 min); 96 build logs, 17 machinery logs, 18 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle74.txt (27844 chars)
+   review card tools\bench\cards\review_retrospective-cycle74.json
+OUTCOME: ANSWERED (355s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-25-retrospective-cycle74.md
+COST: $5.0033  in 130 / out 26751 / cache-create 177753 / cache-read 437539  (353s, 41 turn(s))
+VERDICT-CARD: NO-VERDICT: $.violations[0].loss_usd: expected number/null, got str
+--- ANSWER ---
+**Cycle 74 verdict: one structural fault (wrong ordering of the offline tool work against the LabVIEW deliverable, ~25 min of a 78-min session), plus one device that failed again (bgrun's END guarantee). Everything else is a finding. The cycle delivered what it set out to deliver.**
+
+## Scope note on the window
+
+The window is 1139 min, but the runner was stopped from 07:29:47 (`tools/bench/cycle_runner.log:192`) until 01:09:38 (`:195`). The judgement session for cycle 74 ran 01:10:45 to 02:28:52 (`tools/bench/cycle_74.log:1,120`: 4686 s, $22.9886, 5 material dispatches, 2 LabVIEW-running cards). The 17.5 hours before it were interactive chat sessions (simulator S1/S2b/S3, chat-b2 self-tests, chat-E1 errorlist fix, the full ingest) that the user was steering. Their cost is in no log. I charge the structural verdict to the 78-minute runner session; the chat work is reported under findings where it touches devices.
+
+## What the cycle produced
+
+- M8(a) on `D1_s4_loop17.vi`: PARTIAL, operation proven, header-only tra file (`tools/bench/cards/result_74-1.json:1`, `m8_run1.log:767-768` 8/0, 179 s). Baseline leg 8/0 (`m8_baseline.log:771-772`).
+- M8' on `D1_s3_loop15.vi`: PASS, 3,514 rows, 3 lost frames (`result_74-4.json:1`, `m8s3_run.log:767-768`).
+- cdiff blind spot closed: cdiff(S1,S4) = [w4517, w3268], (S1,S3) = 0 (`tools/bench/cdiff_blindspot_74.log:47-49`).
+- Two hypothesis reviews answered and dispositioned by judgement ($1.1754 + $0.9814; `archive/peer/2026-09-25-c74-vigraph-g8-keying.md:7,96-103`, `…-c74-g8-edges.md:7,88-96`).
+- next.json valid, NEXT rewritten, plan Pre-decided 8-12 written (`docs/m8-real-run-plan.md:71-96`).
+
+Not produced: the green `vigraph_check.log` that card 74-5 was to deliver (`result_74-5.json:2-3`: every python launch refused by the permission layer). It is now cycle 75's first act, a 1-second command.
+
+## THE FAULT: offline tool cards were run alongside the LabVIEW deliverable under a global failed-prediction gate, twice
+
+STATUS NEXT at cycle start placed the cdiff tool fix as the **SECOND ACT (after M8)** (`STATUS.md:85`). The judgement session dispatched it (card 74-2, `tools/bench/cards/task_74-2.json`) in parallel with M8 (card 74-1). At 01:17:33 74-2's diagnostic failed gate G8 (`tools/bench/vigraph_check.log:707,722-723`), the Jev ladder classed it new-problem p=0.764 and BLOCKED (`tools/bench/jev_gate.log:820`), and guard_peer, which gates every launch on the newest unreviewed failing log, refused the M8 launches. The M8 material agent recorded it plainly: "Launch blocked 20 min by guard_peer on 74-2's vigraph_check.log:707" (`result_74-1.json:1`). Timeline from the logs: m8 dry run at 01:17:17 (`m8_dry.log:1`), block from 01:17:45, review dispatched 01:29:45 (`peer_m8_vigraph_g8.log:1`), answered 01:32:05, next m8 dry run 01:40:12 (`m8_dry.log:130`), bed leg 01:47:14 (`m8_run1.log:1`). Roughly 23 minutes between a passing dry run and the next launch attempt, none of it M8's own problem.
+
+The same shape recurred at 02:14: card 74-3's `vigraph_g8_edges_74.log` failed, ladder BLOCK (`jev_gate.log:833-837`), and card 74-4's M8' launch waited "~2 min on a parallel session's vigraph_g8_edges_74.log" (`result_74-4.json:1`). After the first occurrence the approach should have changed: hold the offline tool cards until the LabVIEW legs are launched, or serialize them behind M8 as the plan said.
+
+Loss: about 25 min of the 78-min session. No log apportions dollars to the wait; the two reviews ($2.16) were owed regardless, so loss_usd is unknown.
+
+Counterfactual: had 74-2 been dispatched after the bed leg's launch at 01:17 (or after M8 completed at 02:03), the bed leg would have run at ~01:18 instead of 01:47, and the session would have closed at about 02:03 instead of 02:28, all else equal.
+
+Why this is a fault of ordering and not of the gate: the gate did what it was built to do (a failed prediction was reviewed before the next launch). The plan itself named the order. It is also the second card in the same cycle to be built on the reviewer's arithmetic rather than the log's number (see finding 3), which is what a serialized order would have absorbed for free.
+
+## DEVICE THAT FAILED: bgrun's END guarantee, again
+
+The judgement session ended its turn while its retrospective was running. Its own words: "The cycle-74 retrospective is still running, and the background task will notify me when it finishes. My waiting commands were refused by the permission layer" (`tools/bench/cycle_74.log:119`, with the three refused Monitor/PowerShell waits listed in `permission_denials`). That is the exact pattern its prompt forbids at `cycle_74.log:92-96`. The bgrun it launched has a START and no END (`tools/bench/retro.log:1728-1731`); the runner re-launched it at 02:28:52 (`retro.log:1732`), which is this review. `errorlist_check_l7_1_r1.log:1` is a second in-window START with no END (audit A2 caught that one; A2 does not scan `retro.log` because it is classed as machinery). This is the hole recorded at cycle 66 and carried as "repair permitted, not ahead of the deliverable" (`STATUS.md:115`). It cost about one minute here because the runner's RETRO-LANDED fallback exists, but it also means this retrospective's "What was done with it" cannot be written by the session that owed it. Threshold 1 says a device that let its fault through is broken; I report it, and note its magnitude is small.
+
+## FINDINGS
+
+**1. Repeated failure.** The permission-layer refusal of the `MATERIAL=1 py tools/bgrun.py …` launch form recurred all session: six phrasings in 50 s at 01:16:52–01:17:41 (`tools/hooks/material_marker.log:1354-1359`), seven at 02:13:57–02:14:46 (`:1365-1380`), four at 02:23:03–02:23:24 (`:1385-1388`). The working form `py tools/bgrun.py --material` was found at 01:17:17 (`:1358`) and used by cards 74-1 and 74-4, but card 74-5 never tried it and ended BLOCKED (`result_74-5.json:2`). The approach should have changed at the second card: put the proven launch line in every later brief. That alone would have made 74-5's G8 rerun a one-second success.
+
+**2. Missing tool.** None whose absence cost real time this cycle. The one reader that would have removed a diagnosis is a frame-counter read before the picks (see 3).
+
+**3. Unmeasured steps.** (a) Card 74-3 coded the reviewer's arithmetic "37 distinct added pairs" as gate P5b and failed on it; the measured value 39 was already in run 1's own log (`result_74-3.json:1`, `vigraph_g8_edges_74.log:166`). A number lifted from prose where the log carried it. (b) M8' rows 3,514 exceed the frame delta 3,073; the card says the counter was polled only after the save dialog and "not diagnosed" (`result_74-4.json:1`); Pre-decided 11 then ruled the count "comparable" (`docs/m8-real-run-plan.md:84-88`). Reading the counter before the picks is one COM get.
+
+**4. Rule compliance.** Broken: the turn-ending rule (`cycle_74.log:119`, above). STATUS is 127 lines against the ~100 limit (audit L3), and two cards declined the relocation because `archive/` was outside their write globs (`result_74-1.json:1`, `result_74-4.json:1`): formally compliant, effectively unfixed for another cycle. Satisfied: NEXT before retrospective (next.json valid; `cycle_runner_main_20260925b.log:4` snapshot), motor session start OK (`:3`), LabVIEW exited after each leg (`m8_run1.log`, `m8s3_run.log` facts in the cards), originals untouched (A5). What the audit does not cover: the chat sessions' turns and dollars (C4c counts only `cycle_74.log`); machinery logs' END lines (`retro.log:1728`); permission refusals per card; C7 compares against `docs/cycle27-plan.md` while the cycle's plan was `docs/m8-real-run-plan.md` (`next.json:2`), so its 273-file list measures nothing. A1's `jev_gate.log` entry is the standing false positive already recorded at `STATUS.md:114`.
+
+**5. Ordering.** The runner restart at 01:02 stopped on the errorlist COM race (`cycle_runner_main_20260925a.log:2-4`); the fix, its cold proof, and a hypothesis review were done in 7 minutes and the disposition is honest ("NOT CLAIMED as root cause", `archive/peer/2026-09-25-chat-E1r-pointer-release.md:94-101`). Defensible. The parallel dispatch of 74-2 is the ordering fault above.
+
+**6. Not reported.** (a) The retrospective kill and re-run. (b) The first m8 dry run ended rc=1 on a malformed RESULT line (`m8_dry.log:129`); bgrun forced the rc, the ladder classed it our-script-bug (`jev_gate.log:819`). Correct behaviour, absent from NEXT. (c) `drive_m8.py`, the cycle's only new LabVIEW-running script, went in with no prior-art review: it lives in `tools/bench`, so the prior-art gate and the stage launch gate never saw it, and Pre-decided 7 says so for RETRY_CAP (`docs/m8-real-run-plan.md:70`). The plan's "What already exists" section stood in for the review. (d) The Jev hook's 10-s budget failed closed four times in one minute (`jev_gate.log:821-825`), then cached; harmless, but it is the pattern noted at `STATUS.md:114(c)`.
+
+**7. Judgement inside a material session.** Card 74-2 was given `peers: []` (`task_74-2.json:33`), so its failed prediction was meant to come back BLOCKED for judgement. The 74-1 material agent instead wrote the review question, framed the (a)/(b) hypotheses, and bought the review under its own peers flag (`result_74-1.json:1`; `tools/bench/m8_review_vigraph_task.md`). The acceptance was later written by judgement (`…-c74-vigraph-g8-keying.md:98-103`), so the decision landed in the right place, but the choice to spend a review on another card's gate was made in material. No pre-scripted "if X then Y" found in the five briefs.
+
+## DEVICE EFFECT, per device
+
+- `unreported-fact` (rc/END, 2026-09-16 and the 09-17 FAIL scan): rc forcing WORKED (`m8_dry.log:129`). END guarantee FAILED twice (`retro.log:1728`, `errorlist_check_l7_1_r1.log:1`). Reported above.
+- `rule-evaded` (confirm-bait refusal + adversarial block): WORKED, all three in-window reviews carry it (`…-c74-g8-edges.md:34-40`).
+- `tool-not-built` (prior-art review): not tested by a recipe; bypassed by directory for `drive_m8.py` (finding 6c).
+- `repeated-failure-class` (refuse dispatch on empty "What was done with it"): not triggered; all 34 reviews annotated (A4).
+- C3/C4 cost lines and the regex repair: WORKED (C4b 9/9); C4c flagged its own 2-seen/1-parsed miss, which is what it was built to do.
+- `premature-build`, stop record, `write_novel_record`, DECISION_TABLE, OpLoopEndRef: no recipe launch in the window; untested.
+- `scope-creep` counter C7: fires against the wrong plan (finding 4); routinely ignorable, mode 3, no cost.
+- motor FAIL exit: session start/end OK lines; not exercised.
+- guard_peer / Jev exemption (2026-09-24 03:53): guard_peer blocked twice and released on ANSWERED reviews as designed; the blocks fell on an unrelated card's launch (the fault above), which is the design's breadth, not a defect in the code path.
+- `guard_session` SendMessage refusal (2026-09-24 05:54): still INERT (`STATUS.md:86-87`); five foreground material agents, no evidence of re-dispatch by message.
+- Jev scan scoped by command: not exercised.
+
+VIOLATION: wrong-ordering | loss_min=25 | loss_usd=? | evidence=tools/bench/cards/result_74-1.json:1
+VIOLATION: device-failed | loss_min=1 | loss_usd=? | evidence=tools/bench/retro.log:1728
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle74","verdict":"refuted","alternative":"The 25-min wait was guard_peer's designed breadth, not the session's ordering; under that reading the cycle has no structural fault and the gate should be scoped per card.","discriminating_test":"Diff the launch timestamps: m8_dry PASS 01:17:17 vs next attempt 01:40:12 (m8_dry.log:1,130) against jev_gate.log:820 BLOCK on vigraph_check.log; a per-card gate would have let 01:18 launch.","violations":[{"slug":"wrong-ordering","loss_min":25,"loss_usd":"?","evidence":"tools/bench/cards/result_74-1.json:1"},{"slug":"device-failed","loss_min":1,"loss_usd":"?","evidence":"tools/bench/retro.log:1728"}],"sources":["tools/bench/cards/result_74-1.json:1","tools/bench/jev_gate.log:820","tools/bench/m8_dry.log:1","tools/bench/m8_dry.log:130","tools/bench/cycle_74.log:119","tools/bench/retro.log:1728","tools/bench/cards/result_74-5.json:2","STATUS.md:85"],"note":"Deliverable landed (M8a PARTIAL by design on S4, PASS on S3, baseline, cdiff blind spot closed). Session 78 min $22.99; reviews in-session $2.16. END-guarantee failure is the cycle-66 carry, mitigated by RETRO-LANDED."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle74.md
+BGRUN END rc=0 after 358s

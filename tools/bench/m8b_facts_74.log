@@ -1,0 +1,41 @@
+m8b_facts_74 - card 74-5, OFFLINE facts (no LabVIEW). Written by the material session with Grep/Read only:
+python execution (py -c, py <script>, MATERIAL=1 py tools/bgrun.py ...) was refused by the permission layer
+("This command requires approval") in this non-interactive session, so no script produced this file.
+Graphs read: S1 = docs/wiki/subvi/D1_s1_copy.json (+ tools/bench/graph_s1_20260924.json, graph_objs_s1_20260923.json)
+             S3 = tools/bench/graph_s3_loop15_20260924.json (D1_s3_loop15)
+             S4 = tools/bench/opmodels/bed_s4_loop17.json (D1_s4_loop17, md5 4b621946...)
+
+F1  IMAQ Write TIFF File 2 #22700 / Build Path #23020
+  S1  ABSENT: uid 22700/23020 0 hits; 'TIFF'/'Build Path' 0 hits in subvi_calls (97 SubVI nodes, D1_s1_copy.json:89627)
+  S3  ABSENT: 0 hits for 22700|23020|TIFF|Build Path in graph_s3_loop15_20260924.json
+  S4  ABSENT: 0 hits for 22700|23020|TIFF|Build Path in opmodels/bed_s4_loop17.json
+  frame-loop image net in all three: #6810 get buff image-lost frames.vi term 6865 'Image Out' -> w3040 -> ONE sink
+      #5058 term 5089 'Image In' (S1 D1_s1_copy.json:35645-35650,35975-35978; same rows in S3 and S4), diagram 639
+  the 4 fixture nodes (#22700 #22703 #23020 #23175) exist only in the working copy
+      'Min_Track N beads V6_ParallelLoop.vi' (docs/fixture-recording.md:10-20); that file is the M8 BASE leg's source
+      (tools/bench/m8s3_run.json:97, md5 2a78e17c...); bed leg source D1_s4_loop17 (:8), s3 leg D1_s3_loop15 (:186)
+  base leg wrote 2949 .tif / 3,866,050,530 B, deleted at cleanup (tools/bench/m8_baseline.log:230,360);
+      s3 leg: 2 files, no .tif, tra 3514 rows (m8s3_run.json:270-293)
+
+F2  camera image nodes (S1 = S3, identical term rows)
+  #15403 IMAQdx Grab.vi (subvi_calls diagram idx 99, D1_s1_copy.json:90002); frame_diagram 15266 = WhileLoop#15173
+      (docs/diagram-hierarchy.md:83; owner WhileLoop graph_objs_s1_20260923.json:54067)
+      term 15412 'Image Out' -> w19462 -> sinks #15442 IMAQ ImageToArray term 15463 'Image' and LoopTunnel #15188 inner
+      term 15190 (D1_s1_copy.json:49195-49199,50815-50819,52145-52149); tunnel outer term on Diagram 15041 w19567 (:44676-44681)
+  #22692 IMAQdx Get Image.vi (diagram idx 157, D1_s1_copy.json:90152); frame_diagram 22650, owner class Sequence
+      (graph_objs_s1_20260923.json:73060-73066); term 22701 'Image Out' -> w22756 -> sink term 22656 'Image Out' owned by
+      Diagram 22650 (D1_s1_copy.json:57465-57469,57655-57659)
+  #6810 get buff image-lost frames.vi (frame loop, diagram 639 of WhileLoop#637): term 6865 'Image Out' -> w3040 ->
+      #5058 'Image In' only (see F1). Other IMAQdx nodes: Open #33151, Configure Grab #13962, Stop #1839, Close #2078
+  S3 graph: #6810/#15403/#22692 term rows and wires 3040/19462/22756 byte-identical in content to S1 (grep -o)
+
+F3  recorded frame sets usable for replay
+  G:\Data\SiHyeong\20260906 Kimlab - 50bp 16X WT 90Hz 1p2 Ramp_Newbatch\test : 10,044 imgNNNNN.tif 1280x1024 8-bit,
+      + cal002 (5 beads) + tra002-000 (10,043 rows x 18), recorded by the user 2026-09-06 with the working-copy main VI
+      (archive/bench-2026-09-07-fixture/REPORT.md:16-21); path used by tools/gpu/fixture.py:15 and
+      tools/bench/capture_harness_inputs.py:17; harness input = HARNESS_gpu.vi IMAQ ReadFile (docs/gpu-backend.md:122)
+      Live count/size/date NOT MEASURED this session: directory is outside the session's allowed dirs (ls refused).
+  no .tif anywhere under the project tree (Glob **/*.tif = 0); M8 base TIFFs (2949) were deleted (m8_baseline.log:360)
+
+G8 re-baseline: tools/bench/diag_vigraph_check.py DIFF_BEFORE -> 15/39/9 with comment (edited); RE-RUN NOT DONE (permission).
+RESULT {"schema":"result-line/1","status":"BLOCKED","gates":{"pass":3,"fail":0},"first_fail":"vigraph_check rerun refused: py execution requires approval","artefacts":["tools/bench/m8b_facts_74.log"]}

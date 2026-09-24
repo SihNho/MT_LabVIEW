@@ -1,0 +1,44 @@
+BGRUN START 2026-09-25 02:15:27 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c74-g8-edges -TaskFile C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/d7c00fe6-9e75-40c0-b72e-4bb56f84809d/scratchpad/review_g8_edges_74_task.md
+OUTCOME: ANSWERED (104s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-25-c74-g8-edges.md
+COST: $0.9814  in 12 / out 9450 / cache-create 86749 / cache-read 491600  (100s, 9 turn(s))
+--- ANSWER ---
+The claim mostly holds, and I couldn't refute it. One part is not yet measured: the script shows that `dedupe_rows` "alone explains" the drop only for the **added** set. It never compared the removed set or the changed-sinks set between the three variants.
+
+## 1. Strongest reason the claim could still be wrong
+Gate P4 (`vigraph_g8_edges_74.py:55`) compares **counts** only: 15 removed and 9 changed sinks in VA, VB and VC. The delta loop (`:78-102`) compares only `edges_added`.
+
+Keys are ordinal-ranked inside each (node, class, name) group (`vigraph.py:301-306`). A dedupe or a DIAG_TERM reclassification can therefore renumber sibling rows. When that happens, the same key string names a **different terminal**. That is not hypothetical here. In VA, `23166|Terminal||1` is the duplicate of the lower-uid row, almost certainly 23225. In VB, the same string is 23246, the stop-terminal sink (log:20 vs :44).
+
+`diff` matches on key strings, and so does `changed_sinks`: it only looks at keys present in both graphs (`vigraph.py:687`). So a removed/changed swap caused by aliasing would leave all three counts unchanged. That the counts are unchanged is not the same as nothing changing.
+
+## 2. Alternative explanation of the same evidence
+For these three wires, there is a stronger version of the claim than the one written. The 3 "gone" physical edges are **not gone at all**. In uid space, VA and VB contain the same three edges: w23310, w23145 and w23489, with the same src/sink term uids (log:19/43, 27/47, 35/51).
+
+The 42→39 drop is **multiplicity collapse**, not edge removal. Each sink row was duplicated, so `by_wire` produced two sink rows per wire and therefore two edges (`vigraph.py:317-330`).
+
+So even a P5 "stated per term-uid pair" would read **0 gone / 0 new**, not "3 gone". The corrected gate should assert that the uid-space edge set is equal and that the key-count delta is −(duplicate multiplicity − 1). It should not assert "3 edges gone".
+
+That part of the claim's wording is imprecise, but its conclusion is still right.
+
+The competing idea, that dedupe hid a real edge, is already falsified on disk. `dedupe_check_s2b.log:27` shows, for the bed: "uid-edge SET unchanged by the dedupe; nonidentical []; only '|n>0' phantom keys vanish". The duplicate rows are byte-identical, so dedupe cannot drop a distinct wire.
+
+## 3. What would falsify the claim
+Any of these three:
+- The removed set or the changed-sinks set differs between VA and VB, or between VB and VC, when compared as **(kind, src term_uid, sink term_uid)** tuples.
+- VC's reclassified rows 23073, 23225 and 23444 turn out to carry a `wire_uid`. The log shows no edge from them, and the ordinal shifts [2,3]→[1]→[0] imply they are unwired `i` terminals. If one is wired, the "pure rename, net 0" story for DIAG_TERM is incomplete, because a wired diag-source edge should have appeared in the VB→VC delta.
+- The uid-space added set differs between VA and VB.
+
+## 4. Cheapest discriminating test (pure Python, reusing `R` from the script as-is)
+1. For VA, VB and VC, map every key in `d["edges_removed"]`, `d["edges_added"]` and `d["changed_sinks"][*]["sink"/"before"/"after"]` to its term_uid, using the owning graph's `rows`.
+2. Assert that all three uid-space sets are equal across the variants. Expect 15 removed, 37 distinct added pairs and 9 changed sinks in every variant. That is 42 − 6 + 3 = 39 key-level edges, with the 3 wires counted once each.
+3. Print `R["VC"][2]["rows"]` for 23073, 23225 and 23444: `node`, `key`, `is_source`, `wire_uid`. Expect DIAG_TERM nodes with empty `wire_uid`.
+
+This takes under a second. If step 2 passes, the claim stands, and the 15/39/9 re-baseline is legitimate, attributed to `dedupe_rows`. If step 2 fails anywhere, the competing explanation is back on the table.
+
+## Side finding
+Separate from this failed prediction, a key in this project can mean a different terminal from one graph version to the next. Card 74's VB→VC delta showed a sink key being renamed because a *sibling* row was reclassified. That contradicts the comment at `vigraph.py:205-207`, which says keys are "stable while uids are".
+
+Saved graph JSONs keyed by the old ordinals will name the wrong terminal if they are compared with a new build: `graph_bed_20260923/24.json` and `graph_diff_s1_bed_*.json` contain `23166|Terminal|…` keys. The same applies to any finalized plan row that carries a key, not a uid.
+
+No external fact decides this, so I ran no web search. Every claim above is about this project's own code and logs, cited by file and line.
+BGRUN END rc=0 after 104s

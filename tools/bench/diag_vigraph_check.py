@@ -73,6 +73,36 @@ def g10_equal_top():
          (sr(M), {k: M["method"]["sr"][k] for k in ("paired_machine", "paired_top", "unpaired")}))
 
 
+def g12_diag_term(rec_s1, A):
+    """G12 (card 74-2, Pre-decided 176(c)): a Diagram-owned `Terminal` SOURCE (loop `i`) is its own computation node.
+    a) every such wired S1 wiki row is the source of a wire edge from node == its term_uid;
+    b) S1 #376 'frame index' (w3268) resolves to exactly term #644 (diagram #639's `i`);
+    c) synthetic: removing a diagram-terminal -> function wire makes computation_diff report that sink."""
+    rows = [r for r in rec_s1["terminals"] if r["owner_class"] in V.DIAGRAM_OWNER]
+    census = {}
+    for r in rows:
+        k = (r["owner_class"], r.get("term_class"), bool(r["is_source"]), bool(r["wire_uid"]))
+        census[k] = census.get(k, 0) + 1
+    fact("G12 S1 diagram-owned rows by (owner, term_class, source, wired): {0}".format(sorted(census.items())))
+    want = set(r["term_uid"] for r in rows if V._is_diag_source(r) and r["wire_uid"])
+    got = set(V.key_parts(a)[0] for k, a, _b, _i in A["edges"] if k == "wire" and A["cls"].get(V.key_parts(a)[0]) == V.DIAG_TERM)
+    gate("G12a every wired diagram-owned Terminal SOURCE row (S1: {0}) is a wire-edge source node".format(len(want)),
+         bool(want) and want == got, {"missing": sorted(want - got)[:10], "extra": sorted(got - want)[:10]})
+    ks = V.terminals(A, node=376, name="frame index", is_source=False)
+    eff = sorted(V.effective_sources(A, ks[0])) if ks else []
+    gate("G12b S1 #376 'frame index' effective source == term #644 (DiagramTerminal)",
+         [V.key_parts(x)[0] for x in eff] == [644] and A["cls"].get(644) == V.DIAG_TERM, [V.show(x) for x in eff])
+    t = [{"term_uid": 7, "owner_uid": 5, "owner_class": "Diagram", "term_class": "Terminal", "term_name": "",
+          "wire_uid": 90, "is_source": True, "frame_diagram": 5},
+         {"term_uid": 21, "owner_uid": 20, "owner_class": "Function", "term_class": "ParameterTerminal", "term_name": "x",
+          "wire_uid": 90, "is_source": False, "frame_diagram": 5}]
+    tb = [t[0], dict(t[1], wire_uid=0)]
+    cd = V.computation_diff(V.build4(t), V.build4(tb))
+    gate("G12c synthetic: dropping diagram-terminal #7 -> #20 'x' gives exactly one cdiff row (before [#7], after [])",
+         [(V.key_parts(r["sink"])[0], V.key_parts(r["sink"])[2], [V.key_parts(x)[0] for x in r["before"]], r["after"])
+          for r in cd["rows"]] == [(20, "x", [7], [])], cd["rows"])
+
+
 def load(key):
     rec = json.load(open(os.path.join(WIKI, key + ".json"), encoding="utf-8"))
     tag = "s1" if key == S1K else "bed"
@@ -102,10 +132,15 @@ HEUR = {}
 #      #59069 -> #59041 -> the sinks of w7255
 REACH_CASES = (("R1 VISA out, FSOT + 4 FSIT", 34418, 20087), ("R2 refnum out, 2 nested FSOT + 2 FSIT", 59107, 7255))
 # the step-4 diff counts this change must not move (tools/bench/vigraph_check.log, 2026-09-23 08:2x)
-DIFF_BEFORE = {"edges_removed": 15, "edges_added": 42, "changed_sinks": 9}
+# RE-BASELINED 2026-09-25 (card 74-5) 15/42/9 -> 15/39/9: vigraph.dedupe_rows (2026-09-24) collapsed 3
+# double-counted sink rows; measured VA/VB/VC in tools/bench/vigraph_g8_edges_74.log:95-98,162-165, accepted in
+# archive/peer/2026-09-25-c74-vigraph-g8-keying.md "What was done with it".
+DIFF_BEFORE = {"edges_removed": 15, "edges_added": 39, "changed_sinks": 9}
 
 
 def dump(name, payload):
+    if "--no-dump" in sys.argv:                  # card 74-2: offline gate re-run without writing graph_*.json
+        return
     p = os.path.join(HERE, "{0}_{1}.json".format(name, DATE))
     with open(p, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=1)
@@ -234,7 +269,7 @@ def main():
             "changed_sinks": d["counts"]["changed_sinks"]}
     for x in fsd:
         fact("G8 fs edge {0} {1} -> {2}".format(x[0], V.show(x[2]), V.show(x[3])))
-    gate("G8 diff(S1, bed) minus the fs edges == step 4's 15/42/9, and the fs delta is one -/+ pair on "
+    gate("G8 diff(S1, bed) minus the fs edges == 15/39/9 (step 4's 15/42/9 after dedupe_rows), and the fs delta is one -/+ pair on "
          "FSIT #7468 (Row D)",
          rest == DIFF_BEFORE and len(fsd) == 2 and {x[0] for x in fsd} == {"-", "+"} and
          all(V.key_parts(x[2])[0] == 7468 and V.key_parts(x[3])[0] == 7468 for x in fsd),
@@ -259,8 +294,11 @@ def main():
             tag, m["paired"], m.get("paired_machine"), m.get("paired_top"), len(m["unpaired"]),
             m.get("machine_mismatch")))
     g10_equal_top()
+    g12_diag_term(rec_s1, A)
     fact("total {0:.1f}s".format(time.time() - t0))
     print("=== STEP 4b: {0} pass / {1} fail".format(N["pass"], N["fail"]), flush=True)
+    import protocol as P                                                           # noqa: E402
+    print(P.result_line(P.make_result(N["pass"], N["fail"], None if not N["fail"] else "see FAIL lines")), flush=True)
     return 1 if N["fail"] else 0
 
 

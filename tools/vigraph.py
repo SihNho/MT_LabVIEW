@@ -227,6 +227,18 @@ STRUCT_OWNER = ("ForLoop", "WhileLoop", "TimedLoop", "CaseStructure", "FlatSeque
 # ASSUMPTION: the plan's OPEN A is still open and the user has not ruled on it.
 SCHED_OWNER = set(TUNNEL_OWNER) | set(DIAGRAM_OWNER) | set(STRUCT_OWNER) | {"Local", "Global"}
 WAIT_LABEL = ("wait", "tick count", "time delay", "millisecond", "timer")
+# DIAGRAM-TERMINAL SOURCES (card 74-2, Pre-decided 176(c), 2026-09-25). A `Terminal` row whose OWNER is a Diagram and
+# which is a SOURCE - a loop's iteration terminal `i`, e.g. S1 term #644 on diagram #639 feeding w3268
+# (docs/wiki/subvi/D1_s1_copy.json:36385-36392) - used to key on its owner diagram, a SCHEDULING node, so
+# `effective_sources` walked through it and found nothing: removing w3268 left the sink's source set {} on both sides
+# and `computation_diff` stayed silent (stage_d1_l7_r_r2.log:450). Such a row is now its OWN node (keyed on term_uid,
+# like a front-panel terminal) of class DIAG_TERM, which is NOT in SCHED_OWNER, so it is a computation SOURCE. Only
+# the missing SOURCE class is added: diagram-owned SINK rows (a loop's stop terminal) keep their old diagram node.
+DIAG_TERM = "DiagramTerminal"
+
+
+def _is_diag_source(r):
+    return r.get("owner_class") in DIAGRAM_OWNER and r.get("term_class") == "Terminal" and bool(r.get("is_source"))
 
 
 def _k(node, cls, name, ordinal):
@@ -283,7 +295,7 @@ def build4(terms, objs=None, loops=None, labels=None, fs_pairs=None):
         r = dict(r)
         if not r.get("term_class"):
             r["term_class"] = leaf.get(r["term_uid"], "")
-        r["node"] = node_of(r)
+        r["node"] = r["term_uid"] if _is_diag_source(r) else node_of(r)
         rows.append(r)
 
     groups = collections.defaultdict(list)
@@ -295,7 +307,7 @@ def build4(terms, objs=None, loops=None, labels=None, fs_pairs=None):
 
     cls, by_node, by_key = {}, collections.defaultdict(list), {}
     for r in rows:
-        cls.setdefault(r["node"], node_class(r))
+        cls.setdefault(r["node"], DIAG_TERM if _is_diag_source(r) else node_class(r))
         by_node[r["node"]].append(r)
         by_key[r["key"]] = r
 
@@ -334,6 +346,7 @@ def build4(terms, objs=None, loops=None, labels=None, fs_pairs=None):
                 n_thru += 1
 
     method = {"wire_edges": sum(1 for e in edges if e[0] == "wire"), "thru_edges": n_thru, "dedupe": dedupe,
+              "diag_term_sources": sum(1 for c in cls.values() if c == DIAG_TERM),
               "assumption_A": "scheduling = tunnels, shift registers, structures, diagrams, "
                               "Local/Global, Wait/timing labels (SCHED_OWNER)"}
 

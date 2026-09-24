@@ -1,0 +1,49 @@
+{
+ "schema": "task/1",
+ "id": "74-4",
+ "kind": "measure",
+ "goal": "M8': real run of claudeDev D1_s3_loop15.vi (dated byte copy) with tools/bench/drive_m8.py; compare to the cycle-74 baseline leg (m8_baseline.log)",
+ "why": "D1_s4_loop17 wrote 0 tracking rows by design (t5 open until QRT, m8 plan Pre-decided 8). D1_s3_loop15 is the last bed with a whole data path; plan Pre-decided 9.",
+ "inputs": [
+  {"path": "docs/m8-real-run-plan.md"},
+  {"path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_s3_loop15.vi", "md5": "1a11d92aacabf7ec844d65b8af19f39f"},
+  {"path": "tools/bench/drive_m8.py", "md5": "6c253ba1617051658d008f15a02a746d"},
+  {"path": "tools/bench/m8_baseline.log", "md5": "bd80fdbd012fdbb813afb25120d75d9b"},
+  {"path": "tools/bench/m8_run1.json", "md5": "ccbc5cf8d01cefbca76bc7fac41dc73c"}
+ ],
+ "pass": [
+  "same leg as 74-1's bed leg: picks -> done -> bandpass -> save dialog -> experiment loop >= 2000 frames -> own-control stop",
+  "tra*/cal* files: sizes, header 'actual data points', row count; TIFF count (then delete TIFFs as 74-1 did)",
+  "Total Lost Frames, frame count, stop latency; loop-1.5 autofocus activity if the log shows it",
+  "LabVIEW closed and verified gone; run copy deleted; D1_s3_loop15 md5 unchanged; originals unchanged",
+  "tools/bench/m8_run1.json gains a third column 's3_loop15' beside bed and base (or m8s3_run.json if safer)"
+ ],
+ "outputs": [
+  "tools/bench/m8s3_run.log (RESULT line)",
+  "tools/bench/m8_run1.json or tools/bench/m8s3_run.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": ["tools/bench/drive_m8.py", "tools/bench/m8*", "tools/bench/d0_*", "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_s3_loop15_run_*", "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/m8_*", "STATUS.md"],
+  "status_edit": true,
+  "git_commit": false,
+  "peers": ["hypothesis", "fact"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 50
+ },
+ "rules": [
+  "rule 1: never save D1_s3_loop15 or any original; run only a dated byte copy",
+  "rule 1c': bead picks by GUI, -Exception Approved -Evidence 'user 2026-09-17 bead-pick option 1'",
+  "every GUI click located in a live capture (cycle27 Pre-decided 9)",
+  "motor grant 2026-09-24: VI may drive motors; no motor_gate --execute; read TMX?/pos after LabVIEW exits",
+  "no new baseline leg (plan Pre-decided 9); garbage tracking values are not a failure",
+  "failed prediction -> Jev ladder / hypothesis review as usual; report the JEV-LADDER row",
+  "LabVIEW closed and verified gone at the end; report measurements only, do not decide M8"
+ ],
+ "advances": ["M8", "R5"]
+}

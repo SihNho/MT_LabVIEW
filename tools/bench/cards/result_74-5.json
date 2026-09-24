@@ -1,0 +1,18 @@
+{"schema":"result/1","id":"74-5","status":"BLOCKED","gates":{"pass":3,"fail":0},
+"first_fail":"G8 rerun not executed: every python invocation (MATERIAL=1 py tools/bgrun.py ..., py -c, py <scratch>) refused 'This command requires approval'",
+"blocked_by":{"device":"Claude Code permission layer (non-interactive)","message":"This command requires approval / Command modifies environment variables (PowerShell $env:MATERIAL)"},
+"artefacts":[{"path":"tools/bench/diag_vigraph_check.py","md5":"8f3916291c9a77e4c1fc6d5cd9b502e1"},{"path":"tools/bench/m8b_facts_74.log","md5":"5b80ade1ce33a886014dd076d8cda605"}],
+"facts":[
+"G8: DIFF_BEFORE set 15/39/9 + comment citing dedupe_rows, vigraph_g8_edges_74.log:95-98,162-165 and the review (diag_vigraph_check.py:134-138,275); vigraph_check.log still shows the OLD run (18/1)",
+"F1: #22700 and #23020 ABSENT in S1 wiki, graph_s3_loop15_20260924.json and opmodels/bed_s4_loop17.json (0 hits by uid and by name) - m8b_facts_74.log F1",
+"F1: in S1/S3/S4 #6810 'Image Out' t6865 -> w3040 -> only #5058 'Image In' t5089, diagram 639 (D1_s1_copy.json:35645-35650,35975-35978)",
+"F1: fixture TIFF nodes live only in 'Min_Track N beads V6_ParallelLoop.vi' (fixture-recording.md:10-20) = M8 base source (m8s3_run.json:97); base wrote 2949 tif, deleted (m8_baseline.log:230,360)",
+"F2: #15403 IMAQdx Grab, diag 15266 = WhileLoop#15173 (diagram-hierarchy.md:83); t15412 Image Out -> w19462 -> #15442 ImageToArray t15463 + LoopTunnel#15188 t15190 (D1_s1_copy.json:49195,50815,52145)",
+"F2: #22692 IMAQdx Get Image, diagram 22650 (owner Sequence, graph_objs_s1_20260923.json:73066); t22701 -> w22756 -> Diagram 22650 term 22656 'Image Out' (D1_s1_copy.json:57465,57655)",
+"F2: S3 carries identical term rows/wires for #6810, #15403, #22692 (graph_s3_loop15_20260924.json, grep -o)",
+"F3: G:\\Data\\SiHyeong\\20260906 Kimlab...\\test: 10,044 tif 1280x1024 8b + cal002 + tra002-000, user run 2026-09-06, working copy (archive/bench-2026-09-07-fixture/REPORT.md:16-21)",
+"F3: same dir is tools/gpu/fixture.py:15 DATA and capture_harness_inputs.py:17; harness = HARNESS_gpu.vi IMAQ ReadFile (gpu-backend.md:122); live ls NOT MEASURED (outside allowed dirs)",
+"F3: no .tif under the project tree (Glob **/*.tif = 0)"],
+"open":["The G8 rerun needs a session where 'MATERIAL=1 py tools/bgrun.py ... diag_vigraph_check.py --no-dump' is permitted (~1 s run); re-dispatch or allowlist it?"],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"m8b_facts_74.log was written by hand from Grep/Read (no script could run); its RESULT line says BLOCKED for the G8 part only"}

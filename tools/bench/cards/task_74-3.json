@@ -1,0 +1,44 @@
+{
+ "schema": "task/1",
+ "id": "74-3",
+ "kind": "measure",
+ "goal": "Resume 74-2: list by term uid the 3 edges that left diff(S1,rowD bed) 'added' (42->39) under the DIAG_TERM keying, then run cdiff_blindspot_74.py",
+ "why": "74-2 BLOCKED on G8. Hypothesis review archive/peer/2026-09-25-c74-vigraph-g8-keying.md is ANSWERED (cause likely dedupe_rows). Judgement decides re-baseline only from the listed edges.",
+ "inputs": [
+  {"path": "tools/vigraph.py", "md5": "35c6849945583f1cd1323c357744628d"},
+  {"path": "tools/bench/diag_vigraph_check.py", "md5": "a785dfd0a34c0e27d662086549dd7695"},
+  {"path": "tools/bench/cdiff_blindspot_74.py", "md5": "e35a10249b8b1911386359cd9a905353"},
+  {"path": "archive/peer/2026-09-25-c74-vigraph-g8-keying.md"},
+  {"path": "tools/bench/cards/result_74-2.json"}
+ ],
+ "pass": [
+  "for each of the 3 edges: old key, new key, S1 endpoints (term uid, owner uid/class, terminal name), bed endpoints, and whether an edge with identical endpoints exists in S1",
+  "the review's discriminating test (the one it names) run and its outcome stated",
+  "cdiff_blindspot_74.py run: rows of cdiff(S1,S1), (S1,S4 D1_s4_loop17), (S1,S3 D1_s3_loop15), each listed",
+  "D1_l7_1_20260924_060431 reported NOT MEASURED (no table on disk) - do not read it from LabVIEW"
+ ],
+ "outputs": [
+  "tools/bench/cdiff_blindspot_74.log (RESULT line)",
+  "tools/bench/vigraph_g8_edges_74.log (RESULT line)"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/bench/cdiff_blindspot_74*", "tools/bench/vigraph_g8_edges_74*", "tools/bench/diag_vigraph_check.py", "tools/vigraph.py"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 40
+ },
+ "rules": [
+  "do NOT change DIFF_BEFORE (15/42/9) - re-baselining is judgement's call from your edge list",
+  "vigraph.py may only be patched to fix a defect the review identifies, stated with before/after output",
+  "measurements only; no LabVIEW"
+ ],
+ "unblocks": "M3"
+}

@@ -1,0 +1,50 @@
+BGRUN START 2026-09-25 01:29:45 limit 16.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 840 -Slug c74-vigraph-g8-keying -TaskFile tools/bench/m8_review_vigraph_task.md
+OUTCOME: ANSWERED (140s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-25-c74-vigraph-g8-keying.md
+COST: $1.1754  in 18 / out 12031 / cache-create 96580 / cache-read 810294  (136s, 17 turn(s))
+--- ANSWER ---
+**Verdict: the claim is not supported, and its most likely mechanism is wrong.** The drop from 42 to 39 added edges is better explained by a different change: `dedupe_rows` (added 2026-09-24). G8 has not run since that change landed. The 74-2 keying patch is not the likely cause, and neither is (b), a collision. The re-baseline to 15/39/9 is probably the right number, but not for reason (a).
+
+### 1. Strongest reason (a) is wrong: two changes happened between the last pass and the failing run
+- The last G8 PASS was 2026-09-23 17:07 (`tools/bench/vigraph_check.log:598`). The next G8 run was the failing one, 2026-09-25 01:17 (`vigraph_check.log:606-707`). No G8 run sits in between.
+- The only diff counts saved in between agree with the old baseline and predate dedupe. `graph_diff_s1_bed_20260924.json:506-510` reads 16/43/9, and `graph_bed_20260924.json` has no `"dedupe"` key in its `method`, which it has carried since dedupe was added (`vigraph.py:348`).
+- `dedupe_rows` (`tools/vigraph.py:260-278`, called at `:292`) went in on 2026-09-24 22:23 (`tools/bench/dedupe_check_s2b.log:21-41`). So the failing run was the first G8 run with dedupe **and** the first with the DIAG_TERM patch. The claim credits all of the change to the patch without separating the two.
+
+### 2. Alternative explanation, with numbers already on disk
+`dedupe_check_s2b.log:24,26` measured this before and after dedupe:
+- **S1:** 23 duplicated rows dropped; edges went from 7541 to 7515, 26 fewer.
+- **Rowd bed:** 29 duplicated rows dropped; edges went from 7611 to 7582, 29 fewer.
+- Every dropped duplicate had been making an extra "phantom" key with ordinal above 0.
+
+The bed's duplicate list contains uids that S1's does not: 23073, 23080, 23225, 23246, 23444, 23456 (`:7` against `:5`). Those are almost certainly the bed's new diagram terminals, and their phantom edges exist only in the bed. Under the old code, `diff` (`vigraph.py:669-706`) therefore counted them as **added**. Removing them lowers "added" and leaves "removed" alone. That matches the observation: 15 removed and 9 changed sinks unchanged, 42 added down to 39. The bed lost 3 more edges than S1 (29 − 26 = 3), which is the size of the shortfall.
+
+Caveat: 29 − 26 counts every edge kind, `thru` included, and `diff` ignores `thru`. So the matching 3 is strong evidence, not proof.
+
+Why (a)'s mechanism fits worse:
+- A pure ordinal shift within an owner's group happens in both graphs. When it misaligns keys it normally creates removed/added *pairs*, so removed should have moved too, and it stayed at 15.
+- The patch only moves source rows owned by a diagram. Its fixed per-row key (`term_uid`, then `|0`) cannot merge two distinct source rows, so it cannot remove an added edge unless an old-key ordinal misalignment was pairing it with a removed one. Nothing in the evidence shows such a pair.
+
+Why (b) is weak: under the new key, the source is identified by `term_uid`. A bed edge can match an S1 edge only if the terminal uid **and** the sink key are identical, which makes it the same physical edge. Hiding a real difference would need LabVIEW to reuse a uid for a different object across the S1→bed copy. That is possible but nothing points to it. Of the two keyings, the old one (diagram / name / ordinal) is the one that can collide.
+
+Note: "bed gains 3 DiagramTerminal nodes" (`vigraph_check.log:677`) is also a 3. It is a node count, not an edge-set delta. It is a coincidence to rule out, not evidence for (a).
+
+### 3. What would falsify (a)
+Take `vigraph.py` at git HEAD, which should already contain dedupe but not DIAG_TERM, and run it on the same S1/rowD inputs.
+- If HEAD already gives non-fs 15/39/9, the patch contributed 0 to the shift and (a) is false.
+- (a) survives only if HEAD gives 15/42/9 and the working copy gives 15/39/9, and the 3 edges then turn out to be source-side edges owned by a diagram.
+- (b) is supported only if the new-key "added" set is missing an edge whose (source uid, sink uid) pair is **not** in S1's uid-space edge set.
+
+### 4. Cheapest test to tell them apart
+- **Step 0, no run needed:** confirm `dedupe_rows` is in HEAD's `vigraph.py`. If it is not, OLD vs NEW mixes both changes and needs a third arm with dedupe but no DIAG_TERM.
+- **Blocker:** `tools/bench/cdiff_blindspot_74.py` cannot run as written. Line 103 starts with `: no terminal table on disk ...")`, a broken line that is a SyntaxError. It needs fixing before section D, which computes DIFF OLD/NEW counts and DIFF-DELTA by terminal uid, is worth dispatching.
+- **Better still, run the smallest version of that test:** build S1 and the rowD bed with `diag_vigraph_check.load()`'s inputs under three variants:
+  1. HEAD minus dedupe (the 09-23 state)
+  2. HEAD (dedupe only)
+  3. the working copy (dedupe + DIAG_TERM)
+
+  Print `diff(...)["counts"]` minus fs edges for each, then list the added-set delta between each adjacent pair as (source uid, source owner class, name) → sink. This is pure Python and never touches LabVIEW.
+- **Prediction under my alternative:** variant 1 gives 42, variant 2 gives 39, variant 3 gives 39. The 3 edges between variants 1 and 2 have phantom keys (ordinal above 0) on bed-only duplicated uids from the 230xx range.
+
+The re-baseline is legitimate once that test gives the number its real cause. The gate comment should name dedupe, the patch, or both, with the uid list, not the ordinal-group story. If variant 2 still gives 42, I'm wrong and (a) becomes the leading explanation again.
+
+No outside source was needed; every claim above is about this project's own code and logs and is cited by file and line.
+BGRUN END rc=0 after 140s

@@ -1,0 +1,44 @@
+{
+ "schema": "task/1",
+ "id": "74-5",
+ "kind": "measure",
+ "goal": "Re-baseline G8 to 15/39/9 and re-run diag_vigraph_check green; then three offline facts for the M8(b) replay design and the TIFF question",
+ "why": "Judgement accepted reviews c74-vigraph-g8-keying + c74-g8-edges (dispositions written). M8' wrote 3,514 rows but 0 TIFFs where the base wrote 2,949; M8(b) needs a whole-VI replay route.",
+ "inputs": [
+  {"path": "tools/bench/diag_vigraph_check.py", "md5": "a785dfd0a34c0e27d662086549dd7695"},
+  {"path": "tools/vigraph.py", "md5": "35c6849945583f1cd1323c357744628d"},
+  {"path": "archive/peer/2026-09-25-c74-vigraph-g8-keying.md"},
+  {"path": "tools/bench/m8s3_run.json"},
+  {"path": "docs/m8-real-run-plan.md"}
+ ],
+ "pass": [
+  "G8 DIFF_BEFORE = 15/39/9 with a comment citing dedupe_rows + the review; vigraph_check.log RESULT PASS, all gates",
+  "F1: IMAQ Write TIFF File 2 (#22700) and Build Path (#23020): present in S1, D1_s3_loop15, D1_s4_loop17 graphs? owner loop/diagram, input sources (uid+terminal) in each",
+  "F2: camera grab node(s) in S1 and D1_s3_loop15: uid, class/VI name, owner diagram, image output terminal + its sinks",
+  "F3: recorded frame sets on disk usable for replay (path, count, size, date, which run made them); cite docs/gpu-backend.md:122 harness input"
+ ],
+ "outputs": [
+  "tools/bench/vigraph_check.log (RESULT line)",
+  "tools/bench/m8b_facts_74.log (RESULT line) with F1-F3"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/bench/diag_vigraph_check.py", "tools/bench/vigraph_check.log", "tools/bench/m8b_facts_74*"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 35
+ },
+ "rules": [
+  "offline only: wiki JSONs, bench graph/opmodel files; if a graph is missing say NOT MEASURED",
+  "use term/node uids, never saved ordinal keys (review c74-g8-edges side finding)",
+  "measurements only: do not design the replay harness and do not explain the TIFF absence beyond the graph facts"
+ ],
+ "advances": ["M8"]
+}

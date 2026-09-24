@@ -1,0 +1,171 @@
+BGRUN START 2026-09-25 02:14:40 limit 5.0 min: py -u tools/bench/vigraph_g8_edges_74.py
+  PASS  S0 HEAD has dedupe_rows and no DIAG_TERM; working copy has DIAG_TERM  
+  FACT  s1: loop table graph_loops_s1_20260924.json (machine left_of on 3 loop(s))
+  FACT  bed: loop table graph_loops_bed_20260924.json (machine left_of on 4 loop(s))
+  FACT  VA: diff counts {'edges_removed': 16, 'edges_added': 43, 'changed_sinks': 9}; non-fs {'edges_removed': 15, 'edges_added': 42, 'changed_sinks': 9}; dedupe S1 0 bed 0; edges S1 7541 bed 7611
+  FACT  s1: loop table graph_loops_s1_20260924.json (machine left_of on 3 loop(s))
+  FACT  bed: loop table graph_loops_bed_20260924.json (machine left_of on 4 loop(s))
+  FACT  VB: diff counts {'edges_removed': 16, 'edges_added': 40, 'changed_sinks': 9}; non-fs {'edges_removed': 15, 'edges_added': 39, 'changed_sinks': 9}; dedupe S1 23 bed 29; edges S1 7515 bed 7582
+  FACT  s1: loop table graph_loops_s1_20260924.json (machine left_of on 3 loop(s))
+  FACT  bed: loop table graph_loops_bed_20260924.json (machine left_of on 4 loop(s))
+  FACT  VC: diff counts {'edges_removed': 16, 'edges_added': 40, 'changed_sinks': 9}; non-fs {'edges_removed': 15, 'edges_added': 39, 'changed_sinks': 9}; dedupe S1 23 bed 29; edges S1 7515 bed 7582
+  PASS  P1 VA (no dedupe, no DIAG_TERM) non-fs added == 42  {'edges_removed': 15, 'edges_added': 42, 'changed_sinks': 9}
+  PASS  P2 VB (HEAD, dedupe only) non-fs added == 39  {'edges_removed': 15, 'edges_added': 39, 'changed_sinks': 9}
+  PASS  P3 VC (working, dedupe + DIAG_TERM) non-fs added == 39  {'edges_removed': 15, 'edges_added': 39, 'changed_sinks': 9}
+  PASS  P4 removed 15 and changed_sinks 9 in all three  [('VA', {'edges_removed': 15, 'edges_added': 42, 'changed_sinks': 9}), ('VB', {'edges_removed': 15, 'edges_added': 39, 'changed_sinks': 9}), ('VC', {'edges_removed': 15, 'edges_added': 39, 'changed_sinks': 9})]
+  FACT  duplicated term uids: bed 29, S1 23, bed-only [23073, 23080, 23225, 23246, 23444, 23456]
+  FACT  DELTA VA->VB: added edges gone 6, newly added 3
+  FACT    GONE [wire] #10171 ParameterTerminal 'x = y?' -> #23166 Terminal (unnamed) [2]
+  FACT       bed src {'key': '10171|ParameterTerminal|x = y?|0', 'term_uid': 23276, 'owner_uid': 10171, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23310} | bed sink {'key': '23166|Terminal||2', 'term_uid': 23246, 'owner_uid': 23166, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23310}
+  FACT       key in VB: [('wire', '10171|ParameterTerminal|x = y?|0', '23166|Terminal||1')]; in VB S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    GONE [wire] #10171 ParameterTerminal 'x = y?' -> #23166 Terminal (unnamed) [3]
+  FACT       bed src {'key': '10171|ParameterTerminal|x = y?|0', 'term_uid': 23276, 'owner_uid': 10171, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23310} | bed sink {'key': '23166|Terminal||3', 'term_uid': 23246, 'owner_uid': 23166, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23310}
+  FACT       key in VB: [('wire', '10171|ParameterTerminal|x = y?|0', '23166|Terminal||1')]; in VB S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    GONE [wire] #23035 ParameterTerminal 'x = y?' -> #23058 Terminal (unnamed) [2]
+  FACT       bed src {'key': '23035|ParameterTerminal|x = y?|0', 'term_uid': 23114, 'owner_uid': 23035, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23145} | bed sink {'key': '23058|Terminal||2', 'term_uid': 23080, 'owner_uid': 23058, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23145}
+  FACT       key in VB: [('wire', '23035|ParameterTerminal|x = y?|0', '23058|Terminal||1')]; in VB S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    GONE [wire] #23035 ParameterTerminal 'x = y?' -> #23058 Terminal (unnamed) [3]
+  FACT       bed src {'key': '23035|ParameterTerminal|x = y?|0', 'term_uid': 23114, 'owner_uid': 23035, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23145} | bed sink {'key': '23058|Terminal||3', 'term_uid': 23080, 'owner_uid': 23058, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23145}
+  FACT       key in VB: [('wire', '23035|ParameterTerminal|x = y?|0', '23058|Terminal||1')]; in VB S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    GONE [wire] #23042 ParameterTerminal 'x = y?' -> #23405 Terminal (unnamed) [2]
+  FACT       bed src {'key': '23042|ParameterTerminal|x = y?|0', 'term_uid': 23472, 'owner_uid': 23042, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23489} | bed sink {'key': '23405|Terminal||2', 'term_uid': 23456, 'owner_uid': 23405, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23489}
+  FACT       key in VB: [('wire', '23042|ParameterTerminal|x = y?|0', '23405|Terminal||1')]; in VB S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    GONE [wire] #23042 ParameterTerminal 'x = y?' -> #23405 Terminal (unnamed) [3]
+  FACT       bed src {'key': '23042|ParameterTerminal|x = y?|0', 'term_uid': 23472, 'owner_uid': 23042, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23489} | bed sink {'key': '23405|Terminal||3', 'term_uid': 23456, 'owner_uid': 23405, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23489}
+  FACT       key in VB: [('wire', '23042|ParameterTerminal|x = y?|0', '23405|Terminal||1')]; in VB S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    NEW [wire] #10171 ParameterTerminal 'x = y?' -> #23166 Terminal (unnamed) [1]
+  FACT       bed src {'key': '10171|ParameterTerminal|x = y?|0', 'term_uid': 23276, 'owner_uid': 10171, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23310} | bed sink {'key': '23166|Terminal||1', 'term_uid': 23246, 'owner_uid': 23166, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23310}
+  FACT       key in VA: [('wire', '10171|ParameterTerminal|x = y?|0', '23166|Terminal||2'), ('wire', '10171|ParameterTerminal|x = y?|0', '23166|Terminal||3')]; in VA S1 key-set: [False, False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    NEW [wire] #23035 ParameterTerminal 'x = y?' -> #23058 Terminal (unnamed) [1]
+  FACT       bed src {'key': '23035|ParameterTerminal|x = y?|0', 'term_uid': 23114, 'owner_uid': 23035, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23145} | bed sink {'key': '23058|Terminal||1', 'term_uid': 23080, 'owner_uid': 23058, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23145}
+  FACT       key in VA: [('wire', '23035|ParameterTerminal|x = y?|0', '23058|Terminal||2'), ('wire', '23035|ParameterTerminal|x = y?|0', '23058|Terminal||3')]; in VA S1 key-set: [False, False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    NEW [wire] #23042 ParameterTerminal 'x = y?' -> #23405 Terminal (unnamed) [1]
+  FACT       bed src {'key': '23042|ParameterTerminal|x = y?|0', 'term_uid': 23472, 'owner_uid': 23042, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23489} | bed sink {'key': '23405|Terminal||1', 'term_uid': 23456, 'owner_uid': 23405, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23489}
+  FACT       key in VA: [('wire', '23042|ParameterTerminal|x = y?|0', '23405|Terminal||2'), ('wire', '23042|ParameterTerminal|x = y?|0', '23405|Terminal||3')]; in VA S1 key-set: [False, False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FAIL  P5 VA->VB: exactly 3 added edges gone, 0 new  (6, 3)
+  FAIL  P6 each of the 3 has an ordinal>0 key end on a bed-duplicated term uid  [("#10171 ParameterTerminal 'x = y?'", '#23166 Terminal (unnamed) [2]'), ("#10171 ParameterTerminal 'x = y?'", '#23166 Terminal (unnamed) [3]'), ("#23035 ParameterTerminal 'x = y?'", '#23058 Terminal (unnamed) [2]'), ("#23035 ParameterTerminal 'x = y?'", '#23058 Terminal (unnamed) [3]'), ("#23042 ParameterTerminal 'x = y?'", '#23405 Terminal (unnamed) [2]'), ("#23042 ParameterTerminal 'x = y?'", '#23405 Terminal (unnamed) [3]')]
+  FACT  DELTA VB->VC: added edges gone 3, newly added 3
+  FACT    GONE [wire] #10171 ParameterTerminal 'x = y?' -> #23166 Terminal (unnamed) [1]
+  FACT       bed src {'key': '10171|ParameterTerminal|x = y?|0', 'term_uid': 23276, 'owner_uid': 10171, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23310} | bed sink {'key': '23166|Terminal||1', 'term_uid': 23246, 'owner_uid': 23166, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23310}
+  FACT       key in VC: [('wire', '10171|ParameterTerminal|x = y?|0', '23166|Terminal||0')]; in VC S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    GONE [wire] #23035 ParameterTerminal 'x = y?' -> #23058 Terminal (unnamed) [1]
+  FACT       bed src {'key': '23035|ParameterTerminal|x = y?|0', 'term_uid': 23114, 'owner_uid': 23035, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23145} | bed sink {'key': '23058|Terminal||1', 'term_uid': 23080, 'owner_uid': 23058, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23145}
+  FACT       key in VC: [('wire', '23035|ParameterTerminal|x = y?|0', '23058|Terminal||0')]; in VC S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    GONE [wire] #23042 ParameterTerminal 'x = y?' -> #23405 Terminal (unnamed) [1]
+  FACT       bed src {'key': '23042|ParameterTerminal|x = y?|0', 'term_uid': 23472, 'owner_uid': 23042, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23489} | bed sink {'key': '23405|Terminal||1', 'term_uid': 23456, 'owner_uid': 23405, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23489}
+  FACT       key in VC: [('wire', '23042|ParameterTerminal|x = y?|0', '23405|Terminal||0')]; in VC S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    NEW [wire] #10171 ParameterTerminal 'x = y?' -> #23166 Terminal (unnamed)
+  FACT       bed src {'key': '10171|ParameterTerminal|x = y?|0', 'term_uid': 23276, 'owner_uid': 10171, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23310} | bed sink {'key': '23166|Terminal||0', 'term_uid': 23246, 'owner_uid': 23166, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23310}
+  FACT       key in VB: [('wire', '10171|ParameterTerminal|x = y?|0', '23166|Terminal||1')]; in VB S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    NEW [wire] #23035 ParameterTerminal 'x = y?' -> #23058 Terminal (unnamed)
+  FACT       bed src {'key': '23035|ParameterTerminal|x = y?|0', 'term_uid': 23114, 'owner_uid': 23035, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23145} | bed sink {'key': '23058|Terminal||0', 'term_uid': 23080, 'owner_uid': 23058, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23145}
+  FACT       key in VB: [('wire', '23035|ParameterTerminal|x = y?|0', '23058|Terminal||1')]; in VB S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    NEW [wire] #23042 ParameterTerminal 'x = y?' -> #23405 Terminal (unnamed)
+  FACT       bed src {'key': '23042|ParameterTerminal|x = y?|0', 'term_uid': 23472, 'owner_uid': 23042, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23489} | bed sink {'key': '23405|Terminal||0', 'term_uid': 23456, 'owner_uid': 23405, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23489}
+  FACT       key in VB: [('wire', '23042|ParameterTerminal|x = y?|0', '23405|Terminal||1')]; in VB S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT  elapsed 0.9s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":5,"fail":2},"first_fail":"P5 VA->VB: exactly 3 added edges gone, 0 new","artefacts":[]}
+BGRUN END rc=1 after 1s
+BGRUN START 2026-09-25 02:17:45 limit 5.0 min: py -u tools/bench/vigraph_g8_edges_74.py
+  PASS  S0 HEAD has dedupe_rows and no DIAG_TERM; working copy has DIAG_TERM  
+  FACT  s1: loop table graph_loops_s1_20260924.json (machine left_of on 3 loop(s))
+  FACT  bed: loop table graph_loops_bed_20260924.json (machine left_of on 4 loop(s))
+  FACT  VA: diff counts {'edges_removed': 16, 'edges_added': 43, 'changed_sinks': 9}; non-fs {'edges_removed': 15, 'edges_added': 42, 'changed_sinks': 9}; dedupe S1 0 bed 0; edges S1 7541 bed 7611
+  FACT  s1: loop table graph_loops_s1_20260924.json (machine left_of on 3 loop(s))
+  FACT  bed: loop table graph_loops_bed_20260924.json (machine left_of on 4 loop(s))
+  FACT  VB: diff counts {'edges_removed': 16, 'edges_added': 40, 'changed_sinks': 9}; non-fs {'edges_removed': 15, 'edges_added': 39, 'changed_sinks': 9}; dedupe S1 23 bed 29; edges S1 7515 bed 7582
+  FACT  s1: loop table graph_loops_s1_20260924.json (machine left_of on 3 loop(s))
+  FACT  bed: loop table graph_loops_bed_20260924.json (machine left_of on 4 loop(s))
+  FACT  VC: diff counts {'edges_removed': 16, 'edges_added': 40, 'changed_sinks': 9}; non-fs {'edges_removed': 15, 'edges_added': 39, 'changed_sinks': 9}; dedupe S1 23 bed 29; edges S1 7515 bed 7582
+  PASS  P1 VA (no dedupe, no DIAG_TERM) non-fs added == 42  {'edges_removed': 15, 'edges_added': 42, 'changed_sinks': 9}
+  PASS  P2 VB (HEAD, dedupe only) non-fs added == 39  {'edges_removed': 15, 'edges_added': 39, 'changed_sinks': 9}
+  PASS  P3 VC (working, dedupe + DIAG_TERM) non-fs added == 39  {'edges_removed': 15, 'edges_added': 39, 'changed_sinks': 9}
+  PASS  P4 removed 15 and changed_sinks 9 in all three  [('VA', {'edges_removed': 15, 'edges_added': 42, 'changed_sinks': 9}), ('VB', {'edges_removed': 15, 'edges_added': 39, 'changed_sinks': 9}), ('VC', {'edges_removed': 15, 'edges_added': 39, 'changed_sinks': 9})]
+  FACT  duplicated term uids: bed 29, S1 23, bed-only [23073, 23080, 23225, 23246, 23444, 23456]
+  FACT  DELTA VA->VB: added edges gone 6, newly added 3
+  FACT    GONE [wire] #10171 ParameterTerminal 'x = y?' -> #23166 Terminal (unnamed) [2]
+  FACT       bed src {'key': '10171|ParameterTerminal|x = y?|0', 'term_uid': 23276, 'owner_uid': 10171, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23310} | bed sink {'key': '23166|Terminal||2', 'term_uid': 23246, 'owner_uid': 23166, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23310}
+  FACT       key in VB: [('wire', '10171|ParameterTerminal|x = y?|0', '23166|Terminal||1')]; in VB S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    GONE [wire] #10171 ParameterTerminal 'x = y?' -> #23166 Terminal (unnamed) [3]
+  FACT       bed src {'key': '10171|ParameterTerminal|x = y?|0', 'term_uid': 23276, 'owner_uid': 10171, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23310} | bed sink {'key': '23166|Terminal||3', 'term_uid': 23246, 'owner_uid': 23166, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23310}
+  FACT       key in VB: [('wire', '10171|ParameterTerminal|x = y?|0', '23166|Terminal||1')]; in VB S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    GONE [wire] #23035 ParameterTerminal 'x = y?' -> #23058 Terminal (unnamed) [2]
+  FACT       bed src {'key': '23035|ParameterTerminal|x = y?|0', 'term_uid': 23114, 'owner_uid': 23035, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23145} | bed sink {'key': '23058|Terminal||2', 'term_uid': 23080, 'owner_uid': 23058, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23145}
+  FACT       key in VB: [('wire', '23035|ParameterTerminal|x = y?|0', '23058|Terminal||1')]; in VB S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    GONE [wire] #23035 ParameterTerminal 'x = y?' -> #23058 Terminal (unnamed) [3]
+  FACT       bed src {'key': '23035|ParameterTerminal|x = y?|0', 'term_uid': 23114, 'owner_uid': 23035, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23145} | bed sink {'key': '23058|Terminal||3', 'term_uid': 23080, 'owner_uid': 23058, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23145}
+  FACT       key in VB: [('wire', '23035|ParameterTerminal|x = y?|0', '23058|Terminal||1')]; in VB S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    GONE [wire] #23042 ParameterTerminal 'x = y?' -> #23405 Terminal (unnamed) [2]
+  FACT       bed src {'key': '23042|ParameterTerminal|x = y?|0', 'term_uid': 23472, 'owner_uid': 23042, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23489} | bed sink {'key': '23405|Terminal||2', 'term_uid': 23456, 'owner_uid': 23405, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23489}
+  FACT       key in VB: [('wire', '23042|ParameterTerminal|x = y?|0', '23405|Terminal||1')]; in VB S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    GONE [wire] #23042 ParameterTerminal 'x = y?' -> #23405 Terminal (unnamed) [3]
+  FACT       bed src {'key': '23042|ParameterTerminal|x = y?|0', 'term_uid': 23472, 'owner_uid': 23042, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23489} | bed sink {'key': '23405|Terminal||3', 'term_uid': 23456, 'owner_uid': 23405, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23489}
+  FACT       key in VB: [('wire', '23042|ParameterTerminal|x = y?|0', '23405|Terminal||1')]; in VB S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    NEW [wire] #10171 ParameterTerminal 'x = y?' -> #23166 Terminal (unnamed) [1]
+  FACT       bed src {'key': '10171|ParameterTerminal|x = y?|0', 'term_uid': 23276, 'owner_uid': 10171, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23310} | bed sink {'key': '23166|Terminal||1', 'term_uid': 23246, 'owner_uid': 23166, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23310}
+  FACT       key in VA: [('wire', '10171|ParameterTerminal|x = y?|0', '23166|Terminal||2'), ('wire', '10171|ParameterTerminal|x = y?|0', '23166|Terminal||3')]; in VA S1 key-set: [False, False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    NEW [wire] #23035 ParameterTerminal 'x = y?' -> #23058 Terminal (unnamed) [1]
+  FACT       bed src {'key': '23035|ParameterTerminal|x = y?|0', 'term_uid': 23114, 'owner_uid': 23035, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23145} | bed sink {'key': '23058|Terminal||1', 'term_uid': 23080, 'owner_uid': 23058, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23145}
+  FACT       key in VA: [('wire', '23035|ParameterTerminal|x = y?|0', '23058|Terminal||2'), ('wire', '23035|ParameterTerminal|x = y?|0', '23058|Terminal||3')]; in VA S1 key-set: [False, False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    NEW [wire] #23042 ParameterTerminal 'x = y?' -> #23405 Terminal (unnamed) [1]
+  FACT       bed src {'key': '23042|ParameterTerminal|x = y?|0', 'term_uid': 23472, 'owner_uid': 23042, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23489} | bed sink {'key': '23405|Terminal||1', 'term_uid': 23456, 'owner_uid': 23405, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23489}
+  FACT       key in VA: [('wire', '23042|ParameterTerminal|x = y?|0', '23405|Terminal||2'), ('wire', '23042|ParameterTerminal|x = y?|0', '23405|Terminal||3')]; in VA S1 key-set: [False, False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT  DELTA VB->VC: added edges gone 3, newly added 3
+  FACT    GONE [wire] #10171 ParameterTerminal 'x = y?' -> #23166 Terminal (unnamed) [1]
+  FACT       bed src {'key': '10171|ParameterTerminal|x = y?|0', 'term_uid': 23276, 'owner_uid': 10171, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23310} | bed sink {'key': '23166|Terminal||1', 'term_uid': 23246, 'owner_uid': 23166, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23310}
+  FACT       key in VC: [('wire', '10171|ParameterTerminal|x = y?|0', '23166|Terminal||0')]; in VC S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    GONE [wire] #23035 ParameterTerminal 'x = y?' -> #23058 Terminal (unnamed) [1]
+  FACT       bed src {'key': '23035|ParameterTerminal|x = y?|0', 'term_uid': 23114, 'owner_uid': 23035, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23145} | bed sink {'key': '23058|Terminal||1', 'term_uid': 23080, 'owner_uid': 23058, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23145}
+  FACT       key in VC: [('wire', '23035|ParameterTerminal|x = y?|0', '23058|Terminal||0')]; in VC S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    GONE [wire] #23042 ParameterTerminal 'x = y?' -> #23405 Terminal (unnamed) [1]
+  FACT       bed src {'key': '23042|ParameterTerminal|x = y?|0', 'term_uid': 23472, 'owner_uid': 23042, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23489} | bed sink {'key': '23405|Terminal||1', 'term_uid': 23456, 'owner_uid': 23405, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23489}
+  FACT       key in VC: [('wire', '23042|ParameterTerminal|x = y?|0', '23405|Terminal||0')]; in VC S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    NEW [wire] #10171 ParameterTerminal 'x = y?' -> #23166 Terminal (unnamed)
+  FACT       bed src {'key': '10171|ParameterTerminal|x = y?|0', 'term_uid': 23276, 'owner_uid': 10171, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23310} | bed sink {'key': '23166|Terminal||0', 'term_uid': 23246, 'owner_uid': 23166, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23310}
+  FACT       key in VB: [('wire', '10171|ParameterTerminal|x = y?|0', '23166|Terminal||1')]; in VB S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    NEW [wire] #23035 ParameterTerminal 'x = y?' -> #23058 Terminal (unnamed)
+  FACT       bed src {'key': '23035|ParameterTerminal|x = y?|0', 'term_uid': 23114, 'owner_uid': 23035, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23145} | bed sink {'key': '23058|Terminal||0', 'term_uid': 23080, 'owner_uid': 23058, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23145}
+  FACT       key in VB: [('wire', '23035|ParameterTerminal|x = y?|0', '23058|Terminal||1')]; in VB S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT    NEW [wire] #23042 ParameterTerminal 'x = y?' -> #23405 Terminal (unnamed)
+  FACT       bed src {'key': '23042|ParameterTerminal|x = y?|0', 'term_uid': 23472, 'owner_uid': 23042, 'owner_class': 'Comparison', 'term_class': 'ParameterTerminal', 'term_name': 'x = y?', 'wire_uid': 23489} | bed sink {'key': '23405|Terminal||0', 'term_uid': 23456, 'owner_uid': 23405, 'owner_class': 'Diagram', 'term_class': 'Terminal', 'term_name': '', 'wire_uid': 23489}
+  FACT       key in VB: [('wire', '23042|ParameterTerminal|x = y?|0', '23405|Terminal||1')]; in VB S1 key-set: [False]
+  FACT       S1 edge with identical term-uid endpoints: False; S1 endpoints []; src/sink uid bed-duplicated: False/True
+  FACT  UID-SPACE VA: removed 15, added 39 distinct pairs, changed_sinks 9
+  FACT  UID-SPACE VB: removed 15, added 39 distinct pairs, changed_sinks 9
+  FACT  UID-SPACE VC: removed 15, added 39 distinct pairs, changed_sinks 9
+  PASS  P5 uid-space removed / added / changed_sinks sets are IDENTICAL in VA, VB, VC  []
+  FAIL  P5b uid-space counts 15 removed / 37 added / 9 changed (42 - 6 + 3 = 39 keys, 3 wires once each)  [15, 39, 9]
+  FACT  VC bed rows 23073/23225/23444 (node, key, is_source, wire_uid, class): {23444: (23444, '23444|Terminal||0', True, 0, 'DiagramTerminal'), 23225: (23225, '23225|Terminal||0', True, 0, 'DiagramTerminal'), 23073: (23073, '23073|Terminal||0', True, 0, 'DiagramTerminal')}
+  PASS  P6 VC rows 23073, 23225, 23444 are unwired DiagramTerminal source nodes  {23444: (23444, '23444|Terminal||0', True, 0, 'DiagramTerminal'), 23225: (23225, '23225|Terminal||0', True, 0, 'DiagramTerminal'), 23073: (23073, '23073|Terminal||0', True, 0, 'DiagramTerminal')}
+  FACT  elapsed 1.0s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":7,"fail":1},"first_fail":"P5b uid-space counts 15 removed / 37 added / 9 changed (42 - 6 + 3 = 39 keys, 3 wires once each)","artefacts":[]}
+BGRUN END rc=1 after 1s
