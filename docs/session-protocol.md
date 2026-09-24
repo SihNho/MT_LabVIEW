@@ -6,10 +6,10 @@ date: 2026-09-24
 tags: [protocol, sessions, flags, hooks]
 ---
 
-# Session protocol v1 — DRAFT for the user's review
+# Session protocol v1 — APPROVED 2026-09-24
 
 User, 2026-09-24: *"세션간의 통신 규약을 규격화하면 시간이나 에러를 크게 줄일 수 있지 않을까 싶은데. 플래그도 적극
-활용하고"* → scope **all channels**, format **JSON**. Nothing below is built until the user agrees to this draft.
+활용하고"* → scope **all channels**, format **JSON**. APPROVED the same day ("모든 영역에 JSON 적용"), with the goal map, `advances`/`unblocks` and the pending-decisions list added.
 
 ## Why
 
