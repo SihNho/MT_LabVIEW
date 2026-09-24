@@ -1,0 +1,45 @@
+{
+ "schema": "task/1",
+ "id": "74-2",
+ "kind": "build",
+ "goal": "Offline tool fix: tools/vigraph.py computation_diff must report edges whose SOURCE is a diagram-owned terminal (loop i); STATUS NEXT second act / Pre-decided 176(c)",
+ "why": "cdiff missed w3268 (loop-i frame index) removed in L7-1a (stage_d1_l7_r_r2.log:450). Stage K relies on cdiff as its FATAL gate, so the blind spot must close before K.",
+ "inputs": [
+  {"path": "tools/vigraph.py"},
+  {"path": "tools/bench/diag_vigraph_check.py"},
+  {"path": "docs/wiki/subvi/D1_s1_copy.json"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "pass": [
+  "wiki Terminal rows owned by a Diagram are edge sources in the graph",
+  "cdiff(S1,S1) is empty",
+  "cdiff(S1, D1_s4_loop17 graph) reports exactly two rows: w4517 and w3268",
+  "diag_vigraph_check.py stays green (was 9/0) plus a new case for the diagram-terminal source",
+  "cdiff(S1, D1_s3_loop15) and cdiff(S1, D1_l7_1_20260924_060431) re-run; every row listed (a newly visible row is a FACT, not something to patch)"
+ ],
+ "outputs": [
+  "patched tools/vigraph.py",
+  "tools/bench/vigraph_check.log (RESULT line)",
+  "tools/bench/cdiff_blindspot_74.log (RESULT line) with the three bed cdiff row lists"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/vigraph.py", "tools/bench/diag_vigraph_check.py", "tools/bench/vigraph_check.log", "tools/bench/cdiff_blindspot_74*", "tools/bench/selftest_vigraph*"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "no LabVIEW: existing wiki JSONs only; if a bed needs a fresh LabVIEW read, report BLOCKED naming the file",
+  "do not change cdiff's rule-1a definition (ASSUMPTION A) beyond adding the missing source class",
+  "report measurements only; a hidden row on a delivered bed is reported, not fixed"
+ ],
+ "unblocks": "M3"
+}

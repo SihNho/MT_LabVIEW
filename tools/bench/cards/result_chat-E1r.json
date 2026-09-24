@@ -1,0 +1,13 @@
+{"schema":"result/1","id":"chat-E1r","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/cards/review_chat-E1r.json","md5":"54c1c93df8c6aa5f4cbbf87f2c9e24f1"},{"path":"archive/peer/2026-09-25-chat-E1r-pointer-release.md","md5":"2150d2f2763df99da0f0d631aa17222d"},{"path":"tools/bench/peer_chat-E1r.log","md5":"99c498bf08520f3d0dbca6fc312d855a"}],
+"facts":["Review ANSWERED, claude/hypothesis, $1.46, 172 s, BGRUN END rc=0 (peer_chat-E1r.log); verdict = unverified (not refuted, not supported)",
+"verdict_chat-E1r.json NOT written: archive line 10 'NO-VERDICT: $.alternative: 325 chars > limit 300'; the VERDICT object is in the log's last lines",
+"Reviewer corrects my r1 reading: scode -2147418105 = 0x80010007, not 0x80010107; ref_counts opened=1 means open_panel's GetVIReference failed, not OpenFrontPanel",
+"Alternative: a SECOND Dispatch during startup hit a torn-down/second LabVIEW (try 2 took ~16 s = cold-launch time vs 1.3 s warm, r2.log:5); LabVIEW alive at r1 end (handles_after 37535)",
+"Both hypotheses predict _APP_PIN works; r2's single pass cannot separate them. No NI source says LabVIEW exits on last Application release (reviewer search)",
+"Discriminating test (~90 s COM only, no VI, needs LabVIEW lock): A release pointer, poll PID 30 s, re-Dispatch; B hold pointer + second Dispatch; log PIDs/StartTime/CommandLine",
+"No LabVIEW touched and errorlist_check.py / cycle_runner.py not edited in this step (coordinator instruction)"],
+"open":["Hypothesis UNVERIFIED (not refuted): run the 90 s A/B COM test when the runner releases LabVIEW, or accept _APP_PIN on r2 + the runner's own passes?",
+"chat-E1 FACT 2 and the _APP_PIN comment (errorlist_check.py:30-45) state OpenFrontPanel/0x80010107; the reviewer shows that was GetVIReference/0x80010007. Correct the comment in a later card?"],
+"cost":{"usd":1.46,"minutes":6,"labview_runs":0},
+"note":"Disposition: verdict unverified. Kept _APP_PIN (both explanations predict it works, and r2 passed 12/0). Not claimed as root cause. Its comment misstates the failing call/scode; not edited here per instruction. Owed: A/B PID test."}

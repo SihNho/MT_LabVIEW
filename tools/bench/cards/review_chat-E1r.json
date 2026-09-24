@@ -1,0 +1,35 @@
+{
+ "schema": "review/1",
+ "id": "chat-E1r",
+ "role": "hypothesis",
+ "claim": "r1 failed because errorlist_check released its ONLY LabVIEW.Application COM pointer (gscript._lv=None before each Dispatch) on a LabVIEW launched by that Dispatch, so LabVIEW exited before OpenFrontPanel; holding one pointer all run (_APP_PIN) fixes it.",
+ "predicted": "r1 (with a 60 s GetVIReference readiness poll, pointer still reset each try): cold start -> OK verdict, 0 items, ExecState 1",
+ "observed": "r1: ClassFactory on try 1, GetVIReference OK try 2 at 20.4 s, then OpenFrontPanel DISP_E_EXCEPTION scode 0x80010107 and close_panel DISP_E_UNKNOWNINTERFACE; LabVIEW gone at end. r2 (pointer held): Version 14.9 s, GetVIReference try 1 at 1.3 s, OK 12/0.",
+ "ruled_out": [
+  "bed defect: same bed read OK 0 items on 2026-09-24 and in r2 (errorlist_D1_s4_loop17_20260925_010723.json)",
+  "the original 01:02 failure (errorlist_check_cycle74.log) had the SAME shape: Version answered at 21.5 s, then ClassFactory on the first VI call, after the old code reset g._lv = None before it"
+ ],
+ "attachments": [
+  {
+   "path": "tools/bench/errorlist_check_cold_20260925.log",
+   "md5": "e1c6fee4abf0875e6237b14b29852680"
+  },
+  {
+   "path": "tools/bench/errorlist_check_cold_20260925_r2.log",
+   "md5": "67fe487a9ca8e8c0d3cd14dca776952e"
+  },
+  {
+   "path": "tools/bench/errorlist_check_cycle74.log",
+   "md5": "4671f722cd2e63f318b759150fca5eb8"
+  },
+  {
+   "path": "tools/errorlist_check.py",
+   "md5": "9064e9358b241d98f10ab611993d0326"
+  },
+  {
+   "path": "tools/gscript.py",
+   "md5": null
+  }
+ ],
+ "ask": "refute"
+}

@@ -1,0 +1,52 @@
+{
+ "schema": "task/1",
+ "id": "74-1",
+ "kind": "measure",
+ "goal": "M8 (a): first REAL RUN of the bed D1_s4_loop17.vi (dated byte copy) with the D0 driver, then the D0 baseline on an original copy; steps 1-3 of docs/m8-real-run-plan.md",
+ "why": "Goal-map M8: an assembled main VI's acceptance is a real run (user 2026-09-24). Plan Pre-decided 1-7 settle every design choice; apply them, do not re-open them.",
+ "inputs": [
+  {"path": "docs/m8-real-run-plan.md"},
+  {"path": "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_s4_loop17.vi", "md5": "4b621946492da3d2fbb96b6053e715ec"},
+  {"path": "tools/bench/drive_original_copy_v5.py"},
+  {"path": "tools/bench/d0_locate.py"}
+ ],
+ "pass": [
+  "P0: stage_prerun.py --dry (or the driver's own dry mode) on tools/bench/drive_m8.py ends PASS before any LabVIEW launch",
+  "bed leg: picks -> done -> bandpass -> save dialog -> experiment loop >= 2000 frames -> stop by the VI's own control (no Abort) -> tra*/cal* files written",
+  "baseline leg on a fresh original copy with the same driver, same measurements",
+  "after each leg: LabVIEW closed and verified gone (tasklist); bed md5 unchanged; run copy deleted",
+  "tools/bench/m8_run1.json holds the two-leg table: frames, Total Lost Frames, stop latency, files (names+sizes), what the t5/t7-fed outputs show"
+ ],
+ "outputs": [
+  "tools/bench/drive_m8.py",
+  "tools/bench/m8_run1.log (RESULT line)",
+  "tools/bench/m8_baseline.log (RESULT line)",
+  "tools/bench/m8_run1.json",
+  "FACT (read-only, no build): does a recorded-frame harness exist that drives the WHOLE main VI from saved frames (not only the tracking kernel)? file:line either way"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": ["tools/bench/drive_m8.py", "tools/bench/drive_original_copy_v5.py", "tools/bench/m8_*", "tools/bench/d0_*", "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_s4_loop17_run_*", "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/m8_*", "STATUS.md"],
+  "status_edit": true,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart", "fact"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 110
+ },
+ "rules": [
+  "rule 1: never save the bed or any original; run only dated byte copies",
+  "rule 1c': bead picks by GUI, -Exception Approved -Evidence 'user 2026-09-17 bead-pick option 1'",
+  "every GUI click located in a live capture (cycle27 Pre-decided 9)",
+  "motor grant 2026-09-24: VI may drive motors; no motor_gate --execute; read TMX?/pos after LabVIEW exits",
+  "garbage tracking values are not a failure (no sample channel)",
+  "failed prediction -> Jev ladder / hypothesis review as usual; report the JEV-LADDER row",
+  "LabVIEW closed and verified gone at the end (camera must not keep acquiring)",
+  "report measurements only; do not decide M8 done and do not start (b)"
+ ],
+ "advances": ["M8", "R5"]
+}
