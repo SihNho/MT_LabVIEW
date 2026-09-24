@@ -1,0 +1,52 @@
+BGRUN START 2026-09-24 21:25:19 limit 15.0 min: py -u tools/bench/selftest_item34.py
+---------- S1 steer/1 schema
+  PASS  S2a steer_for on the two newest archived reviews returns a card  repeated: ['decision-starved', 'goal-requirement-not-advanced', 'ordering-stale', 'product-not-runnable', 'tooling-over-delivery']
+  PASS  S1a a well-formed steer/1 validates (goal ids checked against docs/goalmap.json)  OK steer/1
+  PASS  S1b unknown verdict slug -> invalid  $.verdicts[0]: 'not-a-slug' not in ['goal-requirement-not-advanced', 'tooling-over-delivery', 'product-not-runnable', 'ordering-stale', 'decision-starved', 'scope-inflation', 'measurement-without-product']
+  PASS  S1c one evidence item -> invalid (needs both reviews)  $.evidence: fewer than 2 items
+  PASS  S1d a goal id not in the goal map -> invalid  $: goal-map id(s) ['M99'] not in docs/goalmap.json
+---------- S2 outcome slugs
+  PASS  S2b the question part does not count (no '## Answer' after it)  
+  PASS  S2c latest/previous slugs read, repeated set == card verdicts  2026-09-24-outcome-review-20260924.md | ['decision-starved', 'goal-requirement-not-advanced', 'ordering-stale', 'product-not-runnable', 'tooling-over-delivery'] | ['decision-starved', 'goal-requirement-not-advanced', 'ordering-stale', 'product-not-runnable', '
+  FACT  steer item outcome:decision-starved+goal-requirement-not-advanced+ordering-stale+product-not-runnable+tooling-over-delivery goal_ids ['M3', 'M8', 'R1', 'R2.2', 'R2.3', 'R2.4', 'R2.5', 'R3', 'R4', 'R5', 'R6', 'R7'] act: Every user question the work waits on goes to decisions_pending.json this cycle. The next act advances an open requirement (R1, R2.2, R2.3, R2.4, R2.5, R3, R4, R5, R6, R7) through an active milestone. Re-order against docs/goalmap.json: the next act advances an active milestone (M3, M8). The next act RUNS or produces a runnable deliverable for an active milestone (M3, M8). No tooling/device/doc work as the next act: it is a deliverable build or run.
+---------- S3 outcome_review.steer_after_review(write=False)
+  PASS  S3 write=False -> WOULD WRITE, no file  WOULD WRITE steer_0.json: repeated: ['decision-starved', 'goal-requirement-not-advanced', 'ordering-stale', 'product-not-runnable', 'tooling-over-delivery'] | item outcome:decision-starved+goal-requir
+  PASS  S3b write=True -> steer_<cycle>.json in the given cards dir, valid  C:\Users\KimLab\AppData\Local\Temp\item34_i2yghdnt\cards_s3\steer_0.json
+---------- S4 next/1 steer answer
+  PASS  S4a follow validates  
+  PASS  S4b refuse WITHOUT evidence is invalid  
+  PASS  S4c refuse with evidence validates  
+---------- S5 steer_after_cycle / active_steer / add_steer_decision
+  PASS  S5a a fresh steer card is active  C:\Users\KimLab\AppData\Local\Temp\item34_i2yghdnt\cards5\steer_5.json
+  PASS  S5b follow -> followed, then no active steer  cycle 6 follows outcome:decision-starved+goal-requirement-not-advanced+ordering-stale+product-not-runnable+tooling-over-delivery
+  PASS  S5c a NEWER card for the same item is active again  
+  PASS  S5d no answer -> refused 1/2; refuse -> stop 2/2  cycle 8: no steer answer in next.json (1/2) | cycle 9: refused with evidence ['x.md:1'] (2/2)
+  PASS  S5e add_steer_decision appends ONE open item, file validates  D-2026-09-24-03
+---------- S6 runner with a steer card (--dry-cmd, temp bench)
+  PASS  S6a cycle_1.json carries the steer path + md5  {'path': 'C:\\Users\\KimLab\\AppData\\Local\\Temp\\item34_i2yghdnt\\run6\\bench\\cards\\steer_1.json', 'md5': 'f50ac162698d287e6a670671e22444e6'}
+  PASS  S6b two unanswered cycles -> RUNNER STOP exit 3 naming the steer  rc 3 | RUNNER STOP | 2026-09-24 21:25:20 | the steering card C:\Users\KimLab\AppData\Local\Temp\item34_i2yghdnt\run6\bench\cards\steer_1.json (outcome:decision-starved+goal-requirement-not-advanced+ordering-
+  PASS  S6c decisions_pending (temp bench) got the open steer item  D-2026-09-24-03
+  PASS  S6d LABVIEW-CLOSE skipped under --dry-cmd (logged)  
+---------- S7 labview_close_hook with fake process primitives
+LABVIEW-CLOSE | 2026-09-24 21:25:20 | cycle 1 | skipped (dry run / --no-labview-close)
+  PASS  S7a dry run -> skipped  skipped
+LABVIEW-CLOSE | 2026-09-24 21:25:20 | cycle 1 | skipped: rig state experiment (LabVIEW is the user's)
+  PASS  S7b rig 실험중 -> skipped, nothing quit or killed  ('skipped: rig state experiment', [])
+LABVIEW-CLOSE | 2026-09-24 21:25:20 | cycle 1 | OK: no LabVIEW.exe was running
+  PASS  S7c none running -> OK  OK: no LabVIEW.exe was running
+LABVIEW-CLOSE | 2026-09-24 21:25:20 | cycle 1 | OK: closed gracefully (pids [123]; quit rc=0)
+  PASS  S7d graceful quit closes it -> OK, no kill  ('OK: closed gracefully (pids [123]; quit rc=0)', ['quit'])
+LABVIEW-CLOSE | 2026-09-24 21:25:20 | cycle 1 | OK: forced (pids [123]; quit rc=0; taskkill rc=0)
+  PASS  S7e quit fails, force works -> OK forced  ('OK: forced (pids [123]; quit rc=0; taskkill rc=0)', ['quit', 'kill'])
+LABVIEW-CLOSE | 2026-09-24 21:25:22 | cycle 1 | FAIL: LabVIEW.exe still running after quit + force (pids [123]; quit rc=0; taskkill rc=0)
+  PASS  S7f still running after quit + force -> FAIL  FAIL: LabVIEW.exe still running after quit + force (pids [123]; quit rc=0; taskkill rc=0)
+LABVIEW-CLOSE | 2026-09-24 21:25:26 | cycle 1 | FAIL: tasklist could not be read
+  PASS  S7g tasklist unreadable -> FAIL  FAIL: tasklist could not be read
+---------- S8 regression self-tests
+  PASS  S8 selftest_protocol.py rc 0    PASS  K4 a gate after summary() -> RESULT re-printed at exit  RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":1,"fail":1},"first_fail":"late","artefacts":[]} | === 48 pass / 0 fail | RESULT {"schema":"result-line/1","status":"PASS","gates":{
+  PASS  S8 selftest_cycle_runner.py rc 0    ok   G7 usage-limit waits parse (epoch / clock / bare / none) epoch 719s, clock 3689s, bare 2400s, none None | SUMMARY 10/10 gates pass | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  S8 selftest_cycle_runner_ff.py rc 0  PASS mode=samegate ff=True stop=True runner-exit 3 | 3/3 PASS | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":3,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  S8 selftest_launch_gate.py rc 0  === GATES: 28 pass / 0 fail |   FACT  tested the INSTALLED guard_bash.py (no .new staged) - nothing to install | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":28,"fail":0},"first_fail":null,"artefacts":[]}
+=== GATES: 32 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":32,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 40s

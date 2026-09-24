@@ -45,6 +45,48 @@ def md5(p):
     return hashlib.md5(open(p, "rb").read()).hexdigest()
 
 
+# HANDLE BASELINE (card chat-D, 2026-09-24): since the runner closes LabVIEW at every cycle end, this check usually
+# starts with NO LabVIEW, and `handles_before` read 0 (tools/bench/errorlist_D1_l7_1_20260924_060431_20260924_192431.json:
+# 0 -> 31,287; ..._191838.json: 0 -> 34,643) - a gate on that delta would be meaningless. So LabVIEW is started and
+# allowed to SETTLE first; `handles_before` is read only then. HANDLE_TOL: the one warm measurement is +25 over a
+# whole check (..._180737.json 42,764 -> 42,789), but a check on a freshly started LabVIEW LOADS the bed's hierarchy
+# (fresh baseline ~31,500 per CLAUDE.md; ..._191838.json ended at 34,643, i.e. up to ~+3,100). 5,000 catches a
+# runaway leak without failing on a hierarchy load; tune it from the handles_delta values the JSONs now record.
+HANDLE_TOL = 5000
+LV_UP_S = 120.0
+SETTLE_BAND = 300
+SETTLE_S = 60.0
+
+
+def labview_up(R):
+    """Start (COM Dispatch launches it) / reach LabVIEW, then wait until two handle readings 5 s apart differ by
+    less than SETTLE_BAND. Records the steps in R; returns the settled handle count or None."""
+    t0 = time.time()
+    R["lv_was_running"] = labview_handles() > 0
+    while True:
+        try:
+            g._lv = None
+            R["lv_version"] = str(g.lv().Version)
+            break
+        except Exception as e:                                                     # noqa: BLE001
+            if time.time() - t0 > LV_UP_S:
+                R["errors"].append("LabVIEW did not answer COM within %.0f s: %s" % (LV_UP_S, str(e)[:120]))
+                return None
+            time.sleep(4)
+    prev, t1 = labview_handles(), time.time()
+    while True:
+        time.sleep(5)
+        cur = labview_handles()
+        if prev > 0 and abs(cur - prev) < SETTLE_BAND:
+            R["lv_up_s"] = round(time.time() - t0, 1)
+            return cur
+        if time.time() - t1 > SETTLE_S:
+            R["errors"].append("LabVIEW handle count did not settle in %.0f s (%d -> %d)" % (SETTLE_S, prev, cur))
+            R["lv_up_s"] = round(time.time() - t0, 1)
+            return cur if cur > 0 else None
+        prev = cur
+
+
 def current_bed(status_path):
     """`current-bed: <file.vi>` in STATUS wins; else the NEWEST-on-disk claudeDev D1_*.vi that STATUS names."""
     txt = open(status_path, encoding="utf-8").read()
@@ -151,7 +193,7 @@ def main():
         R["errors"].append("no bed: %r" % bed)
     else:
         R["bed_md5_before"] = md5(bed)
-        R["handles_before"] = labview_handles()
+        R["handles_before"] = labview_up(R)          # LabVIEW started and settled FIRST, then the baseline
         exp_path = a.expected or os.path.join(BENCH, "errorlist_expected_%s.json" %
                                               os.path.splitext(os.path.basename(bed))[0])
         expected = json.load(open(exp_path, encoding="utf-8")).get("expected", []) if os.path.exists(exp_path) else []
@@ -208,7 +250,12 @@ def main():
             "scratch_deleted": R["scratch_deleted"],
             "bed_md5_unchanged": R["bed_md5_after"] == R["bed_md5_before"],
             "block_diagram_open": bool(R.get("block_diagram_open")),
-            "refs_balanced": (R["ref_counts"] or {}).get("live", 0) == 0}
+            "refs_balanced": (R["ref_counts"] or {}).get("live", 0) == 0,
+            "handles_baseline_up": bool(R.get("handles_before")),
+            "handles_flat": bool(R.get("handles_before")) and bool(R.get("handles_after"))
+                            and abs(R["handles_after"] - R["handles_before"]) <= HANDLE_TOL}
+        R["handles_delta"] = ((R["handles_after"] - R["handles_before"])
+                              if R.get("handles_before") and R.get("handles_after") else None)
         read_ok = all(R["gates"].values())
         verdict = ("OK" if not (R["extra"] or R["missing"]) else "MISMATCH") if read_ok else "FAIL"
     R["verdict"], R["seconds"] = verdict, round(time.time() - t0, 1)

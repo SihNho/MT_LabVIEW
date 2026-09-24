@@ -919,13 +919,106 @@ def last_failed_run_after(script, t_min):
     return worst
 
 
-def check_launch(cmd):
+# ---------------------------------------------------------------------------------------------- RETRY CAP
+# User 2026-09-24 ("재시도 상한도 동의함. 다만 숫자 … 데이터를 쌓아가면서 조정"; card chat-D): one stage script's LabVIEW
+# runs are capped PER CYCLE. Every launch this gate ALLOWS is appended to STAGE_RUNS (when the caller asks it to
+# record - guard_bash does, the --check-launch CLI does not), so the number is tuned from data. A run past the cap
+# needs a JUDGEMENT card: a task/1 card whose `retry_of` names the stage, carried in the command as
+# `RETRY_CARD=<path>`; one card id authorises one run.
+STAGE_RUNS = os.environ.get("STAGE_RUNS") or os.path.join(BENCH, "stage_runs.jsonl")
+RETRY_CAP = 2
+CYCLE_FRESH_S = 6 * 3600          # a cycle card older than this is not "the current cycle" (chat work since)
+RETRY_CARD_RE = re.compile(r"\bRETRY_CARD\s*=\s*['\"]?([^\s'\";|&]+)")
+
+
+def stage_key(script):
+    return re.sub(r"_v\d+(?=\.py$)", "", os.path.basename(script).lower())
+
+
+def cycle_key(now=None):
+    """'cycle <n>' from the newest tools/bench/cards/cycle_<n>.json written in the last CYCLE_FRESH_S, else
+    'chat <date>'. STAGE_RUNS_CYCLE overrides (self-tests)."""
+    if os.environ.get("STAGE_RUNS_CYCLE"):
+        return os.environ["STAGE_RUNS_CYCLE"]
+    now = now or time.time()
+    cards = os.environ.get("STAGE_RUNS_CARDS") or os.path.join(BENCH, "cards")
+    best = None
+    try:
+        for fn in os.listdir(cards):
+            m = re.match(r"^cycle_(\d+)\.json$", fn)
+            if m and (best is None or int(m.group(1)) > best[0]):
+                best = (int(m.group(1)), os.path.join(cards, fn))
+    except OSError:
+        pass
+    if best and now - os.path.getmtime(best[1]) <= CYCLE_FRESH_S:
+        return "cycle %d" % best[0]
+    return "chat " + time.strftime("%Y-%m-%d", time.localtime(now))
+
+
+def read_stage_runs():
+    out = []
+    try:
+        with open(STAGE_RUNS, encoding="utf-8") as f:
+            for ln in f:
+                try:
+                    out.append(json.loads(ln))
+                except ValueError:
+                    pass
+    except OSError:
+        pass
+    return out
+
+
+def retry_card(cmd, key, used):
+    """(card id, None) when the command carries a valid judgement card for ONE more run of `key`, else (None, why)."""
+    m = RETRY_CARD_RE.search(cmd or "")
+    if not m:
+        return None, "no RETRY_CARD=<task card path> in the command"
+    p = m.group(1)
+    p = p if os.path.isabs(p) else os.path.join(ROOT, p)
+    import protocol as P
+    try:
+        card = P.load_card(p, None)
+    except (OSError, ValueError) as e:
+        return None, "RETRY_CARD %s does not load: %s" % (rel(p), str(e)[:160])
+    if card.get("schema") != "task/1" or card.get("retry_of") != key:
+        return None, "RETRY_CARD %s is not a task/1 card with retry_of == %r (has %r)" % (rel(p), key, card.get("retry_of"))
+    if card["id"] in used:
+        return None, "RETRY_CARD id %r already authorised a run of %s this cycle - one card, one run" % (card["id"], key)
+    return card["id"], None
+
+
+def check_cap(cmd, s, runs, ck):
+    """(allow, why, card id|None) for ONE stage script against RETRY_CAP in cycle `ck`."""
+    key = stage_key(s)
+    mine = [r for r in runs if r.get("stage") == key and r.get("cycle") == ck]
+    if len(mine) < RETRY_CAP:
+        return True, "", None
+    cid, why = retry_card(cmd, key, {r.get("card") for r in mine if r.get("card")})
+    if cid:
+        return True, "", cid
+    return False, ("RETRY CAP (user 2026-09-24): {0} already ran {1} time(s) in {2} (cap {3}; tools/bench/stage_runs.jsonl). "
+                   "A further run is a JUDGEMENT decision: a task/1 card with \"retry_of\": \"{0}\", carried as "
+                   "RETRY_CARD=<card path> in the launch command ({4}).\n").format(key, len(mine), ck, RETRY_CAP, why), None
+
+
+def record_stage_run(s, ck, card_id, cmd):
+    rec = {"t": time.time(), "iso": time.strftime("%Y-%m-%d %H:%M:%S"), "cycle": ck, "stage": stage_key(s),
+           "script": rel(s), "sha256": sha256(s), "card": card_id, "cap": RETRY_CAP}
+    with REAL_OPEN(STAGE_RUNS, "a", encoding="utf-8") as f:
+        f.write(json.dumps(rec, ensure_ascii=True) + "\n")
+    return rec
+
+
+def check_launch(cmd, record=False):
     """(allow, why). Refuses a stage-recipe launch without a dry PASS and a prerun PASS for its CURRENT sha256 and
-    plan md5s, both newer than the newest failing run of it (decision 4)."""
+    plan md5s, both newer than the newest failing run of it (decision 4), and past RETRY_CAP runs in this cycle
+    without a judgement card. `record=True` (guard_bash) appends every ALLOWED launch to STAGE_RUNS."""
     scripts = launched_stage_scripts(cmd)
     if not scripts:
         return True, ""
     recs = read_records()
+    runs, ck, allowed = read_stage_runs(), cycle_key(), []
     for s in scripts:
         if not os.path.isfile(s):
             return False, "launch gate: {0} does not exist".format(rel(s))
@@ -945,6 +1038,13 @@ def check_launch(cmd):
         if bad:
             return False, ("LAUNCH GATE (decision 4): {0} FAILED after its pre-run records ({1}: {2}); the records are "
                            "invalid - pre-run it again.\n").format(rel(s), bad[0], bad[2])
+        ok_cap, why_cap, cid = check_cap(cmd, s, runs, ck)
+        if not ok_cap:
+            return False, why_cap
+        allowed.append((s, cid))
+    if record:
+        for s, cid in allowed:
+            record_stage_run(s, ck, cid, cmd)
     return True, ""
 
 

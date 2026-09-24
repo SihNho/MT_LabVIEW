@@ -23,6 +23,18 @@ Nobody is watching this session. Everything you need is on disk.
   `blocks` milestone ids, `"status": "open"`), then `py tools/protocol.py validate tools/bench/decisions_pending.json`.
   Never delete or re-word an existing item; the chat reports every open item at each cycle end.
 
+- **A STEERING CARD is obeyed or refused with evidence — never ignored** (user, 2026-09-24: "아웃컴 리뷰에 조향카드
+  부여하는 것 동의"). When the cycle card's `steer` is not null it names `tools/bench/cards/steer_<c>.json` (`steer/1`:
+  a verdict the outcome review REPEATED, its `required_act` and `goal_ids`). Your `next.json` must carry
+  `"steer": {"item": "<its item>", "response": "follow"}` — and the cycle's work and next act must actually do the
+  required act — or `"steer": {"item": ..., "response": "refuse", "evidence": ["file:line", ...]}` citing what shows the
+  required act is wrong now. No answer counts as a refusal; the SECOND refusal of the same item stops the runner and
+  puts the item on `decisions_pending.json` for the user.
+- **RETRY CAP** (user, 2026-09-24): one stage script (`tools/recipes/stage_*.py`, `_vN` stripped) is launched at most
+  `RETRY_CAP` = 2 times per cycle (`tools/stage_prerun.py`, counted in `tools/bench/stage_runs.jsonl`). A further run
+  is YOUR decision: write a `task/1` card with `"retry_of": "<stage basename>.py"` and have the launch command carry
+  `RETRY_CARD=<that card path>`; one card authorises one run.
+
 ## Read, in this order, and nothing else
 0. The cycle card named on the first line of this prompt.
 1. `CLAUDE.md` — the standing rules. They bind you; do not work from a summary of them.
@@ -86,7 +98,7 @@ The runner reads **`tools/bench/next.json`** (`next/1`) to decide whether to con
 retrospective until you have written a NEW, VALID one: `{"schema":"next/1","cycle":<N>,"act":"<the next session's
 first act>","task_kind":"build|measure|diagnose|doc|review-dispatch|read-log","plan":{"path":...,"md5":...},
 "pass":[...],"blocked_by":null,"stop_requested":false,"advances":["R.."/"M.."]}` — `advances` (goal-map ids) or
-`unblocks` (one milestone id) is REQUIRED. Check it with `py tools/protocol.py validate tools/bench/next.json`.
+`unblocks` (one milestone id) is REQUIRED; when the cycle card carries a `steer`, the `steer` answer is too. Check it with `py tools/protocol.py validate tools/bench/next.json`.
 **If next.json is absent, invalid or byte-identical after two consecutive cycles the runner stops**, because a cycle
 that changed nothing is a loop. Also rewrite STATUS.md's prose `## NEXT` for people, saying the same first act
 concretely, with the file and the plan section to start from — never "continue the work". If you are blocked on

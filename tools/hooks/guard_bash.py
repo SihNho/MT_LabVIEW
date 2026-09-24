@@ -180,6 +180,9 @@ def stop_gate(cmd):
     return 2
 
 
+_PENDING_STAGE = []     # the stage launch prerun_gate allowed in THIS hook call (card chat-D, retry cap)
+
+
 def prerun_gate(cmd):
     """0 = pass, 2 = refuse. The decision lives in tools/stage_prerun.py check_launch() (argv parsing + records).
     Fails CLOSED only for a command that launches a stage script; anything else passes if the module is broken."""
@@ -193,6 +196,8 @@ def prerun_gate(cmd):
         return 0
     allow, why = stage_prerun.check_launch(cmd)
     if allow:
+        if stage_prerun.launched_stage_scripts(cmd):
+            _PENDING_STAGE[:] = [cmd]      # RETRY CAP: recorded by main() only if EVERY gate here passes
         return 0
     note(False, "PRERUN-GATE " + cmd)
     sys.stderr.write("BLOCKED by tools/hooks/guard_bash.py: " + why)
@@ -379,6 +384,21 @@ def jev_advisories(cmd, data):
 
 
 def main():
+    """RETRY CAP (user 2026-09-24, card chat-D): a stage launch is appended to tools/bench/stage_runs.jsonl only when
+    this whole hook allows it (rc 0) - a launch refused by a later gate here is not a run. Later PreToolUse hooks or
+    the permission layer can still refuse it; such a launch is over-counted (logged as a known limit)."""
+    _PENDING_STAGE.clear()
+    rc = _main()
+    if rc == 0 and _PENDING_STAGE:
+        try:
+            import stage_prerun
+            stage_prerun.check_launch(_PENDING_STAGE[0], record=True)
+        except Exception:                                                          # noqa: BLE001
+            pass
+    return rc
+
+
+def _main():
     try:
         data = json.load(sys.stdin)
     except Exception:

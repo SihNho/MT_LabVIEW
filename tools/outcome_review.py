@@ -31,6 +31,9 @@ Codex remains one flag away: `-Agent codex -Kind fact`.
 
   py tools/outcome_review.py [--dry-run]        # --due prints whether one is overdue, and exits
                                                 # --dry-run also resolves the dispatch via peer.ps1 -DryRun
+
+STEERING CARD (user 2026-09-24, card chat-D): after the review lands, a verdict slug REPEATED from the previous
+review writes tools/bench/cards/steer_<cycle>.json (steer/1, protocol.steer_for); --dry-run only prints it.
 """
 import argparse
 import glob
@@ -145,6 +148,31 @@ def evidence():
           "docs/restructure-plan-4.6.md (the plan the work order defers to the end), CLAUDE.md (the rules).\n")
 
 
+def last_two_reviews():
+    """(latest, previous) archived outcome reviews by mtime, either None."""
+    outs = sorted(glob.glob(os.path.join(PEER, "*outcome-review*.md")), key=os.path.getmtime)
+    return (outs[-1] if outs else None), (outs[-2] if len(outs) > 1 else None)
+
+
+def steer_after_review(write=True, cards_dir=None):
+    """STEERING CARD (user 2026-09-24, "아웃컴 리뷰에 조향카드 부여하는 것 동의"): when the newest review repeats a verdict
+    slug of the previous one, write `tools/bench/cards/steer_<cycle>.json` (steer/1). The runner carries it in the next
+    cycle/1 card; the judgement session follows it or refuses it with evidence in next.json. Returns (path|None, why)."""
+    sys.path.insert(0, HERE)
+    import protocol
+    latest, prev = last_two_reviews()
+    if not (latest and prev):
+        return None, "fewer than two archived outcome reviews"
+    cards = cards_dir or protocol.CARDS_DIR
+    card, why = protocol.steer_for(latest, prev, protocol.current_cycle(cards))
+    if card is None:
+        return None, why
+    if not write:
+        return None, "WOULD WRITE steer_%d.json: %s | item %s | goal_ids %s | act: %s" % (
+            card["cycle"], why, card["item"], card["goal_ids"], card["required_act"])
+    return protocol.write_steer(card, cards), why
+
+
 def main():
     # The task embeds STATUS.md's OPEN section, which is partly Korean, and this console is cp949.
     # Without this, --dry-run dies in print() rather than in anything that matters.
@@ -189,10 +217,17 @@ def main():
         print(task)
         r = subprocess.run(["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command",
                             dispatch + " -DryRun"], cwd=ROOT, text=True, timeout=120)
+        sp, swhy = steer_after_review(write=False)
+        print(f"   STEER (dry run, from the two newest archived reviews, nothing written): {swhy}", flush=True)
         return r.returncode
     cmd = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", dispatch]
     r = subprocess.run(cmd, cwd=ROOT, text=True, timeout=900)
     print(f"   peer.ps1 rc {r.returncode}; archived as archive/peer/<date>-{slug}.md", flush=True)
+    try:
+        sp, swhy = steer_after_review(write=r.returncode == 0)
+        print(f"   STEER: {os.path.relpath(sp, ROOT) if sp else 'none'} ({swhy})", flush=True)
+    except Exception as e:  # noqa: BLE001 - the review itself already landed
+        print(f"   STEER ERROR {type(e).__name__}: {e}", flush=True)
     print("   Now annotate it: 'why asked' and 'verdict', and act on the OUTCOME-VIOLATION lines.", flush=True)
     return r.returncode
 

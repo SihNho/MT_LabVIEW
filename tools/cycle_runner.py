@@ -28,6 +28,8 @@ STOP CONDITIONS (all four, each written to the runner log, the last three also a
      that changed nothing is a loop, and a loop is cheaper to stop than to watch. Exit 3. (Until 2026-09-24 this
      compared STATUS.md's prose `## NEXT`.) `stop_requested: true` in next.json stops the runner with exit 0.
   4. `--cycles N` exhausted. Exit 0.
+  (2026-09-24, card chat-D) also: LabVIEW not verified gone at cycle end (labview_close_hook), and a steer/1 card
+  refused twice (protocol.steer_after_cycle -> a decisions_pending item). Exit 3.
 USAGE LIMIT (CLAUDE.md's protocol): a rate/usage-limit message in the session's output is NOT a failure - the
 runner sleeps until the renewal time + 2 min and RERUNS THE SAME CYCLE from the beginning ("rerun, don't resume";
 a cycle interrupted mid-run is void). The partial attempt is logged as a non-result.
@@ -412,6 +414,95 @@ def motor_limits_hook(phase, n, a, bench, runner_log, status_text):
     return ok, verdict
 
 
+LV_IMAGE = "LabVIEW.exe"
+LV_GRACE_S = 60.0       # COM Quit, then wait this long for the process to go before forcing it
+LV_FORCE_WAIT_S = 30.0
+LV_QUIT_SRC = ("import win32com.client as w\n"
+               "w.Dispatch('LabVIEW.Application').Quit()\n")
+
+
+def _lv_pids():
+    """PIDs of running LabVIEW.exe (tasklist, CSV). [] when none; None when tasklist itself failed."""
+    try:
+        r = subprocess.run(["tasklist", "/FI", "IMAGENAME eq %s" % LV_IMAGE, "/FO", "CSV", "/NH"],
+                           capture_output=True, text=True, timeout=30)
+    except Exception:  # noqa: BLE001
+        return None
+    if r.returncode != 0:
+        return None
+    return [int(x) for x in re.findall(r'^"%s","(\d+)"' % re.escape(LV_IMAGE), r.stdout or "", re.M | re.I)]
+
+
+def _lv_quit_graceful(timeout_s):
+    """Ask LabVIEW to quit over COM from a CHILD process (a hung COM call is killed with the child, never the
+    runner). A save prompt left open by the quit is not answered - the force step follows (rule 1: never Save)."""
+    try:
+        r = subprocess.run([sys.executable, "-c", LV_QUIT_SRC], capture_output=True, text=True, timeout=timeout_s)
+        return "quit rc=%d" % r.returncode
+    except subprocess.TimeoutExpired:
+        return "quit call timed out after %.0f s (child killed)" % timeout_s
+    except Exception as e:  # noqa: BLE001
+        return "quit call failed: %s" % e
+
+
+def _lv_kill():
+    try:
+        r = subprocess.run(["taskkill", "/F", "/T", "/IM", LV_IMAGE], capture_output=True, text=True, timeout=30)
+        return "taskkill rc=%d" % r.returncode
+    except Exception as e:  # noqa: BLE001
+        return "taskkill failed: %s" % e
+
+
+def _wait_gone(limit_s, poll_s=2.0):
+    t0 = time.time()
+    while True:
+        p = _lv_pids()
+        if p == []:
+            return True
+        if time.time() - t0 >= limit_s:
+            return False
+        time.sleep(poll_s)
+
+
+def labview_close_hook(n, a, bench, runner_log, status_text):
+    """User 2026-09-24 ("사이클 종료하고서는 제대로 LabVIEW 끄는것 잊지 말것, 특히 카메라가 계속 Acquisition 하면 기계에
+    좋지 않으니"; CLAUDE.md 1b MOTOR GRANT): after the motor end hook, every cycle ends with LabVIEW CLOSED and VERIFIED
+    GONE - COM Quit first (graceful), then taskkill /F (force; nothing is ever saved), then tasklist must show no
+    LabVIEW.exe. Returns (ok, reason). Skipped (logged, ok=True) under --dry-run/--dry-cmd/--no-labview-close and in
+    rig state 실험중/unknown (then LabVIEW is the user's experiment - it is never killed by the runner)."""
+    stamp = time.strftime("%Y-%m-%d %H:%M:%S")
+    if a.dry_run or a.dry_cmd or getattr(a, "no_labview_close", False):
+        log_line(runner_log, "LABVIEW-CLOSE | %s | cycle %d | skipped (dry run / --no-labview-close)" % (stamp, n))
+        return True, "skipped"
+    try:
+        import motor_gate
+        state = motor_gate.rig_state(status_text)
+    except Exception as e:  # noqa: BLE001
+        state = "unknown (%s)" % e
+    if state not in ("assembled", "disassembled"):
+        log_line(runner_log, "LABVIEW-CLOSE | %s | cycle %d | skipped: rig state %s (LabVIEW is the user's)"
+                 % (stamp, n, state))
+        return True, "skipped: rig state %s" % state
+    pids = _lv_pids()
+    if pids is None:
+        verdict, ok = "FAIL: tasklist could not be read", False
+    elif not pids:
+        verdict, ok = "OK: no LabVIEW.exe was running", True
+    else:
+        steps = [_lv_quit_graceful(LV_GRACE_S)]
+        if _wait_gone(LV_GRACE_S):
+            verdict, ok = "OK: closed gracefully (pids %s; %s)" % (pids, steps[0]), True
+        else:
+            steps.append(_lv_kill())
+            gone = _wait_gone(LV_FORCE_WAIT_S)
+            left = _lv_pids()
+            ok = bool(gone and left == [])
+            verdict = ("OK: forced (pids %s; %s)" % (pids, "; ".join(steps)) if ok else
+                       "FAIL: LabVIEW.exe still running after quit + force (pids %s; %s)" % (left, "; ".join(steps)))
+    log_line(runner_log, "LABVIEW-CLOSE | %s | cycle %d | %s" % (stamp, n, verdict))
+    return ok, verdict
+
+
 def errorlist_hook(n, a, bench, runner_log, status_text):
     """User decision 5, 2026-09-24 ("사이클 시작하기 전에 LabVIEW 컴파일 에러 창은 반드시 확인해야할듯"): before every
     cycle - and BEFORE the motor start hook (card chat-C2) - `tools/errorlist_check.py` reads the current bed's Error
@@ -447,7 +538,7 @@ def errorlist_hook(n, a, bench, runner_log, status_text):
     return verdict, js, "see %s" % os.path.basename(log)
 
 
-def write_cycle_card(bench, n, status_text, model, effort, ff_recipe, motor_verdict, a, errorlist=None):
+def write_cycle_card(bench, n, status_text, model, effort, ff_recipe, motor_verdict, a, errorlist=None, steer=None):
     """C1: `<bench>/cards/cycle_<n>.json`, validated against docs/protocol/cycle.json. Returns (path, None) or
     (None, reason). `errorlist` is {path, verdict OK|MISMATCH} from errorlist_hook, null when skipped (card chat-C2); `bed` is read
     from the optional `<bench>/bed.json` ({path, md5}) and is null when there is none."""
@@ -466,6 +557,7 @@ def write_cycle_card(bench, n, status_text, model, effort, ff_recipe, motor_verd
     next_path = os.path.join(bench, "next.json")
     card = {"schema": "cycle/1", "cycle": n, "rig_state": rig, "model": model, "effort": effort,
             "firefighter": ff_recipe or None, "bed": bed, "errorlist": errorlist,
+            "steer": ({"path": protocol._rel(steer)[:400], "md5": protocol._md5(steer)} if steer else None),
             "motor_session": (motor_verdict or None) and str(motor_verdict)[:120],
             "next": protocol._rel(next_path), "budget": {"minutes": float(a.max_min), "dispatches": 8},
             "rules": CYCLE_RULES}
@@ -518,6 +610,7 @@ def main():
     ap.add_argument("--no-sleep", action="store_true", help="self-test only: report a usage-limit wait, do not take it")
     ap.add_argument("--no-motor-hooks", action="store_true", help="self-test only: skip motor_gate --session start/end (never for a real run)")
     ap.add_argument("--no-errorlist-hook", action="store_true", help="self-test only: skip the cycle-start Error List check (never for a real run)")
+    ap.add_argument("--no-labview-close", action="store_true", help="self-test only: skip the cycle-end LabVIEW close (never for a real run)")
     a = ap.parse_args()
 
     status_path = os.path.abspath(a.status)
@@ -648,8 +741,21 @@ def main():
             log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
             note_in_status(status_path, reason)
             return 3
+        # STEER (user 2026-09-24, card chat-D): the newest open steer/1 from a repeated outcome verdict rides in the
+        # cycle card; the session follows it or refuses it with evidence in next.json `steer` (read after the cycle).
+        steer_path, steer_card = protocol.active_steer(os.path.join(bench, "cards"), os.path.join(bench, "steer_state.json"))
+        if steer_card:
+            log_line(runner_log, "STEER | %s | cycle %d carries %s (%s)" % (time.strftime("%Y-%m-%d %H:%M:%S"), n,
+                                                                          protocol._rel(steer_path), steer_card["item"]))
+            this_prompt += ("\n\nSTEER (outcome-review steering card, user 2026-09-24): %s - item `%s`.\nREQUIRED ACT: %s\n"
+                            "Goal ids: %s. Follow it (next.json `steer`: {\"item\": \"%s\", \"response\": \"follow\"}) or "
+                            "refuse it with evidence ({\"item\": ..., \"response\": \"refuse\", \"evidence\": [\"file:line\", "
+                            "...]}). No answer counts as a refusal; two refusals stop the runner and go to the user.\n"
+                            % (protocol._rel(steer_path), steer_card["item"], steer_card["required_act"],
+                               ", ".join(steer_card["goal_ids"]), steer_card["item"]))
         # C1: the cycle card. An invalid card is not dispatched (docs/session-protocol.md, common rule 5).
-        card_path, card_why = write_cycle_card(bench, n, status_text, model, effort, ff_recipe, why, a, el_card)
+        card_path, card_why = write_cycle_card(bench, n, status_text, model, effort, ff_recipe, why, a, el_card,
+                                               steer_path if steer_card else None)
         if not card_path:
             reason = "the cycle/1 card for cycle %d did not validate (%s) - no cycle is dispatched without one" \
                      % (n, card_why)
@@ -699,9 +805,18 @@ def main():
         # was; a release that cannot be verified stops the runner and is written into STATUS, because limits left
         # ON silently are exactly what happened between 2026-09-18 and 2026-09-23.
         ok_end, why_end = motor_limits_hook("end", n, a, bench, runner_log, read(status_path))
+        # LabVIEW CLOSED AND VERIFIED GONE at every cycle end, after the motor end hook and whatever it returned (the
+        # camera must not keep acquiring - user 2026-09-24). Its failure stops the runner below.
+        ok_lv, why_lv = labview_close_hook(n, a, bench, runner_log, read(status_path))
         if not ok_end:
             reason = "motor limits could not be RELEASED and verified at the end of cycle %d (%s) - the " \
                      "controllers may still carry the session limits; check them before any experiment" % (n, why_end)
+            log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
+            note_in_status(status_path, reason)
+            return 3
+        if not ok_lv:
+            reason = "LabVIEW could not be closed and verified gone at the end of cycle %d (%s) - the camera may " \
+                     "still be acquiring; close LabVIEW by hand" % (n, why_lv)
             log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
             note_in_status(status_path, reason)
             return 3
@@ -742,6 +857,22 @@ def main():
                 note_in_status(status_path, reason)
                 return 3
 
+        if steer_card:
+            s_act, s_detail = protocol.steer_after_cycle(steer_path, steer_card, next_card, n,
+                                                         os.path.join(bench, "steer_state.json"))
+            log_line(runner_log, "STEER | %s | cycle %d | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), n,
+                                                                      s_act.upper(), s_detail))
+            if s_act == "stop":
+                st = protocol._json_load(os.path.join(bench, "steer_state.json"), {}).get("items", {})
+                refusals = (st.get(steer_card["item"]) or {}).get("refusals", [])
+                did, derr = protocol.add_steer_decision(steer_card, n, refusals,
+                                                        os.path.join(bench, "decisions_pending.json"))
+                reason = ("the steering card %s (%s) was refused twice - the user's decision is requested (%s)"
+                          % (protocol._rel(steer_path), steer_card["item"],
+                             ("decisions_pending " + did) if did else ("decisions_pending NOT written: %s" % derr)))
+                log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
+                note_in_status(status_path, reason)
+                return 3
         if next_card is not None and next_card.get("stop_requested"):
             reason = "next.json (cycle %d) sets stop_requested: %s" % (n, next_card.get("note") or next_card["act"][:150])
             log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))

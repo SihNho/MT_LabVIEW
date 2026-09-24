@@ -65,7 +65,7 @@ BGRUN_END_RE = re.compile(r"^BGRUN END rc=(-?\d+)", re.M)
 BGRUN_TIMEOUT_RE = re.compile(r"^BGRUN TIMEOUT\b", re.M)
 STAGEKIT_GATES_RE = re.compile(r"^=== GATES: (\d+) pass / (\d+) fail(?:; failing: ([^\n]*))?$", re.M)
 
-KINDS = ("cycle", "task", "result", "review", "verdict", "result-line", "next", "goalmap", "decisions-pending")
+KINDS = ("cycle", "task", "result", "review", "verdict", "result-line", "next", "goalmap", "decisions-pending", "steer")
 
 
 # ---------------------------------------------------------------------------------------------------- schemas
@@ -191,7 +191,9 @@ def validate_obj(obj, goal_ids=None):
     if err:
         return False, err
     if goal_ids is not None:
-        cited = list(obj.get("advances") or []) + ([obj["unblocks"]] if obj.get("unblocks") else [])
+        cited = (list(obj.get("advances") or []) + ([obj["unblocks"]] if obj.get("unblocks") else [])
+                 + list(obj.get("goal_ids") or []))                                     # steer/1
+
         for it in obj.get("items") or []:
             if isinstance(it, dict):
                 cited += list(it.get("blocks") or [])
@@ -807,6 +809,177 @@ def open_decisions(path=DECISIONS):
     except (OSError, ValueError):
         return []
     return [it for it in d.get("items", []) if it.get("status") == "open"]
+
+
+# ------------------------------------------------------------------------------ steer/1 (outcome-review steering)
+# User 2026-09-24 ("아웃컴 리뷰에 조향카드 부여하는 것 동의"; decisions_pending D-2026-09-24-02 "yes as proposed: steering
+# card, two refusals stop the runner"). outcome_review.py writes the card when a verdict REPEATS; cycle_runner.py carries
+# the active one in cycle/1 `steer` and reads the judgement's answer from next/1 `steer` after the cycle.
+STEER_STATE = os.path.join(HERE, "bench", "steer_state.json")
+STEER_REFUSALS_STOP = 2
+OUTCOME_SLUGS = ("goal-requirement-not-advanced", "tooling-over-delivery", "product-not-runnable", "ordering-stale",
+                 "decision-starved", "scope-inflation", "measurement-without-product")
+OUTCOME_LINE_RE = re.compile(r"^\s*OUTCOME-VIOLATION:\s*([a-z][a-z-]*)\s*$", re.M)
+STEER_ACTS = {    # mechanical, one per slug; {active}/{open} are filled from docs/goalmap.json
+    "product-not-runnable": "The next act RUNS or produces a runnable deliverable for an active milestone ({active}).",
+    "goal-requirement-not-advanced": "The next act advances an open requirement ({open}) through an active milestone.",
+    "tooling-over-delivery": "No tooling/device/doc work as the next act: it is a deliverable build or run.",
+    "ordering-stale": "Re-order against docs/goalmap.json: the next act advances an active milestone ({active}).",
+    "decision-starved": "Every user question the work waits on goes to decisions_pending.json this cycle.",
+    "scope-inflation": "The next act is inside an active milestone's done_when ({active}); nothing outside it.",
+    "measurement-without-product": "The next act changes the product (a VI build or run), not only a measurement.",
+}
+
+
+def outcome_slugs(md_text):
+    """The OUTCOME-VIOLATION slugs of an archived outcome review's ANSWER (after `## Answer`, before `## What was
+    done with it`) - the question echo carries the template lines and must not count."""
+    t = md_text or ""
+    i = t.find("\n## Answer")
+    body = t[i:] if i >= 0 else t
+    j = body.find("\n## What was done with it")
+    body = body[:j] if j >= 0 else body
+    return sorted({s for s in OUTCOME_LINE_RE.findall(body) if s in OUTCOME_SLUGS})
+
+
+def current_cycle(cards_dir=CARDS_DIR):
+    """The highest n of `cycle_<n>.json` in the cards dir (0 when none)."""
+    n = 0
+    try:
+        for fn in os.listdir(cards_dir):
+            m = re.match(r"^cycle_(\d+)\.json$", fn)
+            if m:
+                n = max(n, int(m.group(1)))
+    except OSError:
+        pass
+    return n
+
+
+def steer_for(latest, previous, cycle, goalmap_path=GOALMAP):
+    """(steer/1 card | None, why). A card only when a slug appears in BOTH reviews (a REPEATED verdict)."""
+    def rd(p):
+        with open(p, encoding="utf-8", errors="replace") as f:
+            return f.read()
+    a, b = outcome_slugs(rd(latest)), outcome_slugs(rd(previous))
+    rep = sorted(set(a) & set(b))
+    if not rep:
+        return None, "no repeated verdict (latest %s, previous %s)" % (a or ["none"], b or ["none"])
+    try:
+        with open(goalmap_path, encoding="utf-8") as f:
+            gm = json.load(f)
+    except (OSError, ValueError):
+        gm = {}
+    active = [m["id"] for m in gm.get("milestones", []) if m.get("status") == "active"]
+    open_r = [r["id"] for r in gm.get("requirements", []) if r.get("status") in ("open", "moving")]
+    ids = list(active) + ([r for r in open_r] if "goal-requirement-not-advanced" in rep else [])
+    ids = ids or [m["id"] for m in gm.get("milestones", []) if m.get("status") != "done"][:1]
+    act = " ".join(STEER_ACTS[s].format(active=", ".join(active) or "-", open=", ".join(open_r) or "-") for s in rep)
+    card = {"schema": "steer/1", "cycle": int(cycle), "item": "outcome:" + "+".join(rep), "verdicts": rep,
+            "required_act": act[:600], "goal_ids": ids,
+            "evidence": [{"path": _rel(latest), "md5": _md5(latest)}, {"path": _rel(previous), "md5": _md5(previous)}],
+            "note": "repeated outcome verdict; follow it in next.json `steer`, or refuse it there with evidence"}
+    ok, why = validate_obj(card, {r.get("id") for r in gm.get("requirements", [])} |
+                           {m.get("id") for m in gm.get("milestones", [])} if gm else None)
+    return (card, "repeated: %s" % rep) if ok else (None, "steer card invalid: " + why)
+
+
+def write_steer(card, cards_dir=CARDS_DIR):
+    os.makedirs(cards_dir, exist_ok=True)
+    p = os.path.join(cards_dir, "steer_%d.json" % card["cycle"])
+    with open(p, "w", encoding="utf-8") as f:
+        json.dump(card, f, ensure_ascii=False, indent=1)
+    return p
+
+
+def _json_load(p, default):
+    try:
+        with open(p, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return default
+
+
+def _json_save(p, obj):
+    os.makedirs(os.path.dirname(os.path.abspath(p)), exist_ok=True)
+    tmp = p + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(obj, f, ensure_ascii=False, indent=1)
+    os.replace(tmp, p)
+
+
+def active_steer(cards_dir=CARDS_DIR, state_path=STEER_STATE):
+    """(path, card) of the newest VALID steer card that is not closed (followed / stopped) in the state file, or
+    (None, None). A newer card for an item re-opens it with a fresh refusal count."""
+    cands = []
+    try:
+        for fn in os.listdir(cards_dir):
+            m = re.match(r"^steer_(\d+)\.json$", fn)
+            if m:
+                cands.append((int(m.group(1)), os.path.join(cards_dir, fn)))
+    except OSError:
+        return None, None
+    st = _json_load(state_path, {}).get("items", {})
+    for _n, p in sorted(cands, reverse=True):
+        try:
+            card = load_card(p, None)
+        except (OSError, ValueError):
+            continue
+        rec = st.get(card["item"]) or {}
+        if _norm(rec.get("card", "")) == _norm(p) and rec.get("status") in ("followed", "stopped"):
+            return None, None          # the newest card was already answered; older ones are superseded
+        return p, card
+    return None, None
+
+
+def steer_after_cycle(steer_path, steer_card, next_card, n, state_path=STEER_STATE):
+    """Read the judgement's answer (next/1 `steer`) to the steer carried in cycle n. Returns (action, detail):
+    'followed' | 'refused' | 'stop'. No answer, or an answer for another item, counts as a refusal."""
+    item = steer_card["item"]
+    state = _json_load(state_path, {})
+    items = state.setdefault("items", {})
+    rec = items.get(item)
+    if not rec or _norm(rec.get("card", "")) != _norm(steer_path):
+        rec = {"card": _rel(steer_path), "status": "open", "refusals": []}
+    reply = (next_card or {}).get("steer") if isinstance(next_card, dict) else None
+    if reply and reply.get("item") == item and reply.get("response") == "follow":
+        rec.update(status="followed", followed_cycle=n)
+        items[item] = rec
+        _json_save(state_path, state)
+        return "followed", "cycle %d follows %s" % (n, item)
+    if reply and reply.get("item") == item:
+        why = "refused with evidence %s" % reply.get("evidence")
+    elif reply:
+        why = "answered another item %r" % reply.get("item")
+    else:
+        why = "no steer answer in next.json" if next_card is not None else "next.json absent/invalid"
+    rec["refusals"].append({"cycle": n, "why": why[:200]})
+    action = "stop" if len(rec["refusals"]) >= STEER_REFUSALS_STOP else "refused"
+    if action == "stop":
+        rec["status"] = "stopped"
+    items[item] = rec
+    _json_save(state_path, state)
+    return action, "cycle %d: %s (%d/%d)" % (n, why, len(rec["refusals"]), STEER_REFUSALS_STOP)
+
+
+def add_steer_decision(steer_card, n, refusals, path=DECISIONS):
+    """Append ONE open decisions-pending/1 item for a steer refused twice; validate the whole file before writing.
+    Returns (id, None) or (None, reason)."""
+    d = _json_load(path, {"schema": "decisions-pending/1", "items": []})
+    items = d.setdefault("items", [])
+    day = time.strftime("%Y-%m-%d")
+    seq = 1 + sum(1 for it in items if str(it.get("id", "")).startswith("D-%s-" % day))
+    did = "D-%s-%02d" % (day, seq)
+    q = ("Steering card %s (%s) was refused twice by the judgement sessions (%s). Follow it, or withdraw it?"
+         % (steer_card["item"], steer_card["required_act"][:90], "; ".join(r.get("why", "")[:40] for r in refusals)))
+    items.append({"id": did, "asked": time.strftime("%Y-%m-%dT%H:%M"), "by": "cycle %d" % n, "question": q[:300],
+                  "options": ["follow the steer", "withdraw the steer", "discuss"], "recommendation": None,
+                  "blocks": [g for g in steer_card.get("goal_ids", []) if g.startswith("M")], "status": "open",
+                  "answer": None, "answered_at": None})
+    ok, why = validate_obj(d)
+    if not ok:
+        return None, why
+    _json_save(path, d)
+    return did, None
 
 
 # ------------------------------------------------------------------------------------------------- skeletons + CLI

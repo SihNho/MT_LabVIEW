@@ -23,6 +23,8 @@ os.makedirs(os.path.join(SAND, "tools", "recipes"), exist_ok=True)
 os.makedirs(os.path.join(SAND, "logs"), exist_ok=True)
 os.environ["PRERUN_RECORDS"] = os.path.join(SAND, "records.jsonl")
 os.environ["PRERUN_LOG_DIR"] = os.path.join(SAND, "logs")
+os.environ["STAGE_RUNS"] = os.path.join(SAND, "stage_runs.jsonl")      # card chat-D: retry cap counts, sandboxed
+os.environ["STAGE_RUNS_CYCLE"] = "cycle 901"
 sys.path[:0] = [TOOLS, HOOKS]
 import stage_prerun as SP   # noqa: E402
 import protocol as P        # noqa: E402
@@ -94,8 +96,64 @@ gate("L8 a direct (non-bgrun) stage launch is gated too", not ok, why.splitlines
 ok, _w = SP.check_launch('cd x && py -u "{0}" ; echo done'.format(STG))
 gate("L9 a stage launch inside a && / ; chain is found by argv", not ok)
 
-print("---------- [M/R] guard_bash.py.new main()")
+print("---------- [C] RETRY CAP (card chat-D; RETRY_CAP={0})".format(SP.RETRY_CAP))
+RUNS = os.environ["STAGE_RUNS"]
+if os.path.exists(RUNS):
+    os.remove(RUNS)
+records(("dry", "PASS"), ("prerun", "PASS"), t=time.time() - 100)
+clear_logs()
+
+
+def nruns(cycle=None):
+    return len([r for r in SP.read_stage_runs() if cycle is None or r.get("cycle") == cycle])
+
+
+ok, _w = SP.check_launch(LAUNCH)
+gate("C0 record=False (the --check-launch CLI) records nothing", ok and nruns() == 0, nruns())
+r1 = SP.check_launch(LAUNCH, record=True)
+r2 = SP.check_launch(LAUNCH, record=True)
+gate("C1 runs 1 and 2 of a stage in one cycle are allowed and recorded", r1[0] and r2[0] and nruns() == 2, (r1, r2, nruns()))
+ok, why = SP.check_launch(LAUNCH, record=True)
+gate("C2 run 3 without a judgement card -> refused (RETRY CAP), not recorded", not ok and "RETRY CAP" in why and nruns() == 2,
+     why.splitlines()[0] if why else "")
+
+
+def task_card(cid, retry_of):
+    c = {"schema": "task/1", "id": cid, "kind": "build", "goal": "retry the stage", "flags": {
+        "labview": "build", "gui": False, "hardware": "none", "run_vi": False, "write": [], "status_edit": False,
+        "git_commit": False, "peers": []}, "budget": {"failures": 1, "minutes": 30}, "unblocks": "M3"}
+    if retry_of:
+        c["retry_of"] = retry_of
+    p = os.path.join(SAND, "task_{0}.json".format(cid))
+    json.dump(c, open(p, "w", encoding="utf-8"))
+    return p
+
+
+good = task_card("lg-retry-1", "stage_lgtest.py")
+ok, why = SP.check_launch("RETRY_CARD={0} ".format(good) + LAUNCH, record=True)
+gate("C3 run 3 WITH a task/1 card retry_of=stage_lgtest.py -> allowed, recorded with the card id",
+     ok and nruns() == 3 and SP.read_stage_runs()[-1].get("card") == "lg-retry-1", why)
+ok, why = SP.check_launch("RETRY_CARD={0} ".format(good) + LAUNCH, record=True)
+gate("C4 the SAME card again -> refused (one card, one run)", not ok and "one card, one run" in why, why.splitlines()[0] if why else "")
+wrong = task_card("lg-retry-2", "stage_other.py")
+ok, why = SP.check_launch("RETRY_CARD={0} ".format(wrong) + LAUNCH, record=True)
+gate("C5 a card whose retry_of names another stage -> refused", not ok and "retry_of" in why, why.splitlines()[0] if why else "")
+plain = task_card("lg-retry-3", None)
+ok, why = SP.check_launch("$env:RETRY_CARD='{0}'; ".format(plain) + LAUNCH, record=True)
+gate("C6 a task card without retry_of (PowerShell env form) -> refused", not ok and "retry_of" in why, why.splitlines()[0] if why else "")
+os.environ["STAGE_RUNS_CYCLE"] = "cycle 902"
+ok, why = SP.check_launch(LAUNCH, record=True)
+gate("C7 a new cycle starts a fresh count -> allowed", ok and nruns("cycle 902") == 1, why)
+os.environ["STAGE_RUNS_CYCLE"] = "cycle 901"
+gate("C8 stage key strips _vN (stage_x_v3.py == stage_x.py)", SP.stage_key("tools/recipes/stage_x_v3.py") == "stage_x.py")
+if os.path.exists(RUNS):
+    os.remove(RUNS)
+
+print("---------- [M/R] guard_bash main() (the .new when one is staged, else the installed hook)")
 NEW = os.path.join(HOOKS, "guard_bash.py.new")
+STAGED = os.path.exists(NEW)
+if not STAGED:
+    NEW = os.path.join(HOOKS, "guard_bash.py")
 spec = importlib.util.spec_from_file_location("guard_bash_new", NEW, loader=importlib.machinery.SourceFileLoader("guard_bash_new", NEW))
 GB = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(GB)
@@ -128,6 +186,14 @@ gate("M2 guard_bash.new passes a grep of the stage file", rc == 0, err[:160])
 records(("dry", "PASS"), ("prerun", "PASS"), t=time.time() - 100)
 rc, err = main_rc(LAUNCH, run_in_background=True)
 gate("M3 guard_bash.new passes the same launch once dry + prerun PASS exist", rc == 0, err[:160])
+gate("M4 that allowed launch is recorded ONCE in stage_runs.jsonl (main records only on rc 0)", nruns() == 1, nruns())
+records()
+rc, err = main_rc(LAUNCH, run_in_background=True)
+gate("M5 a refused launch (no records) is NOT recorded", rc == 2 and nruns() == 1, nruns())
+records(("dry", "PASS"), ("prerun", "PASS"), t=time.time() - 100)
+main_rc(LAUNCH, run_in_background=True)
+rc, err = main_rc(LAUNCH, run_in_background=True)
+gate("M6 guard_bash refuses the 3rd launch in the cycle with the RETRY CAP text", rc == 2 and "RETRY CAP" in err, err[:160])
 RETRO = "py tools/retrospective.py --cycle 99"
 closed.clear()
 main_rc(RETRO, {"agent_id": "a123", "agent_type": "material"})
@@ -141,7 +207,9 @@ gate("R3 the main session's real retrospective still sets retro_done", closed ==
 
 npass, nfail = sum(res), len(res) - sum(res)
 print("=== GATES: {0} pass / {1} fail".format(npass, nfail))
-if nfail == 0:
+if not STAGED:
+    print("  FACT  tested the INSTALLED guard_bash.py (no .new staged) - nothing to install")
+elif nfail == 0:
     old = os.path.join(HOOKS, "guard_bash.py")
     m0 = hashlib.md5(open(old, "rb").read()).hexdigest()
     os.replace(NEW, old)
