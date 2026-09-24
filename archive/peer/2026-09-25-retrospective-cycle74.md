@@ -375,4 +375,25 @@ VERDICT {"schema":"verdict/1","id":"retrospective-cycle74","verdict":"refuted","
 
 ## What was done with it
 
-(Claude fills in)
+Dispositioned by the cycle-75 judgement session (2026-09-25), which is the next session and so owes it (cycle 74 ended
+its turn before it could, per the DEVICE finding).
+
+- **VIOLATION wrong-ordering: ACCEPTED, applied.** Cycle 75 dispatched its four material cards (75-1 … 75-4) strictly
+  one after another in the FOREGROUND, so no offline card's failing log could gate another card's launch. The one
+  LabVIEW build (75-4) ran only after the offline measurements had landed (`tools/bench/cards/result_75-*.json`).
+  I am not re-scoping the gate per card; the reviewer's own VERDICT names that as an alternative, and it stays open.
+- **VIOLATION device-failed (bgrun END on a killed turn): ACCEPTED, NOT repaired this cycle.** The repair is still the
+  cycle-66 carry (STATUS). Cycle 75 mitigates it by holding its turn open until its own retrospective's BGRUN END
+  lands, instead of ending the turn.
+- **F1 (launch form): ACCEPTED.** The working form `py tools/bgrun.py --material` was used by every cycle-75 card that
+  launched (result 75-1 note).
+- **F3(a): ACCEPTED** as a card-writing lesson. Gates quote the log's number, not the reviewer's arithmetic.
+  **F3(b): ACCEPTED as an OPEN fact.** 3,514 rows > Δ3,073 frames is undiagnosed. `docs/m8-real-run-plan.md` PD13(d)
+  and PD14(a) join the S1 and S3 replay rows on the frame column measured from a real tra file, so the replay does not
+  depend on that count.
+- **F4 (STATUS > 100 lines; C7 compares against the wrong plan): ACCEPTED, carried.** Neither was fixed in cycle 75.
+- **F6(c) (`drive_m8.py` had no prior-art review): ACCEPTED.** The replay work goes through the stage pipeline
+  (PD14(b)/15: stage plan file → dry → pre-run → run), and its design already had a prior-art review
+  (`archive/peer/2026-09-25-priorart-m8b-pd13-replay-75.md`).
+- **F7 (review bought inside material): ACCEPTED.** Cycle-75 cards grant `peers` only to the card whose own gate can
+  fail (75-3 priorart/fact, 75-4 hypothesis/fact).

@@ -1,0 +1,44 @@
+{
+ "schema": "task/1",
+ "id": "75-2",
+ "kind": "measure",
+ "goal": "M8(b) prep 2, offline: trace the TRACKING frame source #6810 'get buff image-lost frames.vi' (t6865) and the CALIBRATION frame path, in S1 and S3, and state what the recorded fixture holds.",
+ "why": "75-1 showed Grab #15403 feeds only the pick display and #22692 feeds calibration; tra X/Y/Z come via #6810 on diagram 639. Judgement needs the true substitution points and fixture coverage to write replay PD13.",
+ "inputs": [
+  {"path": "tools/bench/m8b_grab_consumers_75.json", "md5": "6b90229bdf3ed7c420f57bbf6af939e8"},
+  {"path": "tools/bench/diag_m8b_grab_consumers.py", "md5": "b3012aa48817a6c1021215f72cb10296"},
+  {"path": "docs/m8-real-run-plan.md"},
+  {"path": "tools/gpu/fixture.py"},
+  {"path": "docs/gpu-backend.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3_loop15.vi", "md5": "1a11d92aacabf7ec844d65b8af19f39f"}
+ ],
+ "pass": [
+  "#6810 both VIs: every input terminal + its source; t6865 consumers followed to every pixel-reading node (tracking kernel, TIFF writer, display) with uid/terminal/diagram",
+  "#6810 internals from its wiki JSON: which IMAQdx call(s) it makes and on which session/buffer inputs (so a replay can replace it as ONE node)",
+  "Sequence #22541 locals: machine-read (not positional) mapping t22656 -> t22659; list every calibration node that reads pixels from #22692",
+  "fixture: which node/wire the 2026-09-06 TIFFs were written from (#22700 input source) and whether calibration frames or a .cal were recorded too (file:line)",
+  "all written to tools/bench/m8b_frame_source_75.json; S3 md5 unchanged; LabVIEW runs 0 unless a read-only read is unavoidable"
+ ],
+ "outputs": ["tools/bench/m8b_frame_source_75.json", "tools/bench/m8b_frame_source_75.log"],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/bench/m8b_frame_source_75*", "tools/bench/diag_m8b_*.py", "tools/bench/cards/result_75-2.json"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "CLAUDE.md 1: originals never written; 1d: read nested structures properly",
+  "measurement only: FACTS + an OPEN line; no replay-design decisions",
+  "new diagnostic = <=120-line file on tools/vigraph.py / tools/stagekit.py",
+  "if LabVIEW is opened read-only: close it and verify the process is gone"
+ ],
+ "advances": ["M8", "R5"]
+}

@@ -95,6 +95,77 @@ Garbage tracking values in (a) are NOT a failure (no sample channel on the micro
     run). The judgement session writes the stage's own Pre-decided (exact uids, whether `#22692 IMAQdx Get Image` in
     the Sequence #22650 must also be substituted) from a MEASUREMENT of where each grab's image is consumed first.
 
+13. **Cycle-75 ruling — PD12's substitution point is WITHDRAWN; the replay swaps SUBVI NODES, not wires**
+    (measured: `tools/bench/m8b_grab_consumers_75.json`, `tools/bench/m8b_frame_source_75.json`, results 75-1/75-2).
+    `#15403 IMAQdx Grab` feeds only the bead-pick display (Flatten/Draw Pixmap) and never reaches a tra row. The ONLY
+    pixel path into tra X/Y/Z is `#6810 'get buff image-lost frames.vi'` t6865 → `#5058` kernel t5089 on d639, and it
+    is identical in S1 and S3. The ONLY pixel path into calibration is `#22692 IMAQdx Get Image` t22701 → Seq #22541
+    local → the six `generate 1/2 I of r` nodes. The fixture holds tracking frames only (no calibration frames).
+    (a) **Two replay subVIs in `claudeDev\replay\`**, each with the EXACT connector pane of the node it replaces, so the
+        swap leaves every wire as it was: `replay_get_buff_image.vi` for #6810. It copies fixture frame
+        `(Buffer to extract) mod 10044` (`tools/gpu/fixture.py:15`) into the `Image In` ref, returns `Buffer Number Out`
+        = `Buffer to extract`, `Missed frames?` = False, and `current image number` = `Buffer to extract`. It passes
+        `Session In`/error through untouched. `replay_get_image_cal.vi` for #22692 returns fixture frame
+        k = its own call count since first call; frame k is the same in both VIs. Garbage calibration content is
+        acceptable: equivalence needs IDENTICAL inputs, not physical ones.
+    (b) The swap is made in dated COPIES of `D1_s1_copy.vi` and `D1_s3_loop15.vi` (never the beds; the copies are test
+        instruments, not deliverables). It goes through the simulator pipeline: stage plan file → dry → pre-run → run.
+        The per-copy prediction: `computation_diff(original, copy)` = exactly the two swapped nodes, and nothing else.
+    (c) Camera, pick display and motors stay live under the grant. Both runs use the same driver and the same located
+        clicks. Bead xy are read back from each run's cal file and must be EQUAL between the two runs, or the numbers
+        comparison is void.
+    (d) **Numbers pass**: join S1 and S3 tra rows on the frame/buffer number (frames skipped under load differ by run).
+        Need ≥ 1,000 common frames, and X/Y/Z must be bit-identical (the same CPU kernel on the same pixels). A
+        nonzero Δ is a failed prediction owing a review, not something to tune a tolerance for. Also diff the two cal
+        files' profile stacks. If they differ (e.g. piezo readback in the z axis), report the fact before judging Z.
+    (e) The seq-local link t22656→t22659 is off the substitution path (the swap sits upstream at #22692), so 75-2's
+        OPEN about it is moot for this stage.
+    (f) Build order: first MEASURE the connector panes of #6810's VI and of the #22692 instance (terminal names, types,
+        connector pattern), and whether an existing op can replace a subVI node's callee in place (`Replace` /
+        relink) with its wires intact, citing `docs/NAMES.md` / `docs/toolkit-capabilities.md`. Then prior-art-review
+        this entry, then build.
+
+14. **Cycle-75 ruling after the measurement and prior-art in PD13(f)** (`tools/bench/m8b_replay_prep_75.json`, result 75-3,
+    `archive/peer/2026-09-25-priorart-m8b-pd13-replay-75.md`). This amends PD13 and wins over it where they differ.
+    (a) **Pane corrected.** `#6810`'s callee has in: `Session In`, `Image In`, `Buffer to extract`, `error in`; and out:
+        `Session Out`, `Image Out`, `Missed frames?`, `current image number`, `error out`. It has NO `Buffer Number Out`.
+        The replay returns `current image number` = `Buffer to extract` and `Missed frames?` = False. The tra join key
+        is the frame/buffer column the tra file actually carries; it is measured from a real tra file before (d) is run.
+    (b) **Each replay VI is a byte COPY of its own callee, edited inside**, so its connector pane is identical by
+        construction and no typedef is re-created. `replay_get_buff_image.vi` = a copy of
+        `get buff image-lost frames.vi` (md5 `9aaaef21…`), with its inner `#529 IMAQdx Get Image` replaced by a fixture
+        read of frame `Buffer to extract mod 10044` into `Image In`. `replay_get_image_cal.vi` = a copy of
+        `IMAQdx.llb\IMAQdx Get Image.vi`, whose body returns fixture frame k (k = its own call count) and
+        `Buffer Number Out` = k. Both copies live in `claudeDev\replay\`; vi.lib and `background VIs` are never written.
+    (c) **Prediction re-cut (Pre-decided 132 desk-check).** `computation_diff` keys nodes without their callee
+        (`tools/vigraph.py:205`), so it cannot see a swap. The per-copy predictions are:
+        (i) wire-edge diff(original, copy) = ∅;
+        (ii) callee census diff = exactly `{#6810 → replay_get_buff_image.vi, #22692 → replay_get_image_cal.vi}`;
+        (iii) ExecState 1.
+        Each of the three can fail.
+    (d) **The swap route is a TOOL, built because the stage needs it and ROT will too (user 2026-09-24 tool grant).**
+        It is `GObject.Replace` 632A402 (public), with `SubVI.Replace` 635E001 as the fallback. It is measured first on
+        a dated scratch copy of `D1_s1_copy.vi`: swap `#6810` to a same-content copy of its callee under a new name,
+        then check (c)(i)–(iii), with handles flat over 20 calls. It is never run on a bed or an original.
+
+15. **Cycle-75 ruling on the swap verb (result 75-4, `tools/bench/swap_verb_75.json`, 21/0): ACCEPTED as the swap
+    route.** The verb is `gscript.replace_object` (`tools/gscript.py:2896`) on `claudeDev\OpReplaceGObj_v0.vi`
+    (md5 `a3723240…`, `GObject.Replace` 632A402, Path input only). It was measured on a scratch copy: callee read back
+    = the probe, ExecState 1, and handles range 38 over 20 swaps. **Replace gives the node a NEW uid** (6810 → 23006).
+    So every PD14(c) check is taken AFTER remapping new_uid → old uid, using the verb's returned uid, never a lookup.
+    After the remap, the wire-edge diff was ∅ over 2,216 edges; without it, a raw diff shows −16/+16 rows and cdiff
+    shows 9 rows. Both are the uid change, not a wiring change. From now on, "cdiff(original, copy) = 0 after the
+    remap" is the predicted value for every swap, and a remapped nonzero row is a failed prediction. This also
+    answers ROT's O6 (`docs/d1-loop12-17-split-plan.md:501-503`): the callee is invisible to cdiff, and the uid is
+    not kept. The verb is verified only for a subVI → subVI swap with an identical connector pane; `#22692` (a vi.lib
+    subVI → a byte copy of it) is that case.
+    **Next build = the two replay VIs (PD14(b))**, then the swap in dated copies of S1 and S3, through the simulator
+    pipeline (stage plan file → dry → pre-run → run). Each replay VI is its own saved artefact
+    (`claudeDev\replay\replay_get_buff_image.vi`, `claudeDev\replay\replay_get_image_cal.vi`). Its prediction is
+    ExecState 1, a connector pane identical to its source callee (terminal-list diff ∅), and a ≤120-line test that
+    calls it with `Buffer to extract` = 5 and 10049 and gets fixture frame 5 both times (pixel md5 == frame 5 read
+    independently in Python through `tools/gpu/fixture.py`'s own index → file mapping).
+
 ## Stop conditions
 
 Any refusal from the motor gate, an Error List MISMATCH on the bed, a run that does not reach the experiment loop,

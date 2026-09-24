@@ -1,0 +1,66 @@
+BGRUN START 2026-09-25 02:56:39 limit 15.0 min: py -u tools\bench\diag_m8b_replay_prep.py
+
+---------- [0] FILES ONLY
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_m8b_replay_prep.py", line 32, in <module>
+    m = {k: (K.md5(p) if os.path.exists(p) else "MISSING") for k, p in (("S1", S1), ("S3", S3), ("gb_orig", GB_ORIG),
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_m8b_replay_prep.py", line 32, in <dictcomp>
+    m = {k: (K.md5(p) if os.path.exists(p) else "MISSING") for k, p in (("S1", S1), ("S3", S3), ("gb_orig", GB_ORIG),
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagekit.py", line 163, in md5
+    with open(path, "rb") as f:
+PermissionError: [Errno 13] Permission denied: 'C:\\Program Files\\NI\\LVAddons\\niimaqdx\\1\\vi.lib\\vision\\driver\\IMAQdx.llb'
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"PermissionError: [Errno 13] Permission denied: 'C:\\\\Program Files\\\\NI\\\\LVAddons\\\\niimaqdx\\\\1\\\\vi.lib\\\\vision\\\\driver\\\\IMAQdx.llb'","artefacts":[]}
+BGRUN END rc=1 after 0s
+BGRUN START 2026-09-25 02:57:02 limit 15.0 min: py -u tools\bench\diag_m8b_replay_prep.py
+
+---------- [0] FILES ONLY
+  FACT  IMAQdx.llb (a folder) 'Get Image' files: ['IMAQdx Get Image Data.vi', 'IMAQdx Get Image.vi', 'IMAQdx Get Image2.vi']
+  PASS  P1a S1/S3 md5 pinned before  ('3e3d23cefd3a334001aa9d6156bf1aee', '1a11d92aacabf7ec844d65b8af19f39f')
+  PASS  P2 get-buff copy == original == wiki md5  ('9aaaef21e8426035f64a04ec816491d0', '9aaaef21e8426035f64a04ec816491d0', '9aaaef21e8426035f64a04ec816491d0')
+  FACT  gb_orig md5 9aaaef21e8426035f64a04ec816491d0 version bytes [31, 38, 128]
+  FACT  gb_copy md5 9aaaef21e8426035f64a04ec816491d0 version bytes [31, 38, 128]
+  FACT  imaqdx_llb md5 be7a516355ccb2c0fdbfe935c9146a07 version bytes [0, 35, 132]
+
+---------- [1] RESTART LabVIEW (fresh instance)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33957
+
+---------- [2] get buff image-lost frames.vi (claudeDev COPY; original never opened)
+  FACT  get_buff fp_labels (9): [(0, 'Missed frames?', True), (1, 'current image number', True), (2, 'Buffer to extract', False), (3, 'Image Out', True), (4, 'error out', True), (5, 'error in', False), (6, 'Session In', False), (7, 'Session Out', True), (8, 'Image In', False)]
+  FACT  get_buff conpane {0: 'Session In', 1: None, 2: None, 3: None, 4: 'Session Out', 5: 'Image In', 6: 'Image Out', 7: 'Buffer to extract', 8: 'Missed frames?', 9: None, 10: 'current image number', 11: 'error in', 12: None, 13: None, 14: None, 15: 'error out'}
+  FACT  get_buff 'Missed frames?' OUT type=bool default=False 
+  FACT  get_buff 'current image number' OUT type=int default=0 
+  FACT  get_buff 'Buffer to extract' IN type=int default=0 
+  FACT  get_buff 'Image Out' OUT type=tuple[2](str,int) default=('', 0) 
+  FACT  get_buff 'error out' OUT type=tuple[3](bool,int,str) default=(False, 0, '') 
+  FACT  get_buff 'error in' IN type=tuple[3](bool,int,str) default=(False, 0, '') 
+  FACT  get_buff 'Session In' IN type=tuple[2](str,int) default=('', 0) 
+  FACT  get_buff 'Session Out' OUT type=tuple[2](str,int) default=('', 0) 
+  FACT  get_buff 'Image In' IN type=tuple[2](str,int) default=('', 0) 
+  PASS  P3 conpane(copy) == wiki connector_pane  ({0: 'Session In', 4: 'Session Out', 5: 'Image In', 6: 'Image Out', 7: 'Buffer to extract', 8: 'Missed frames?', 10: 'current image number', 11: 'error in', 15: 'error out'}, {0: 'Session In', 4: 'Session Out', 5: 'Image In', 6: 'Image Out', 7: 'Buffer to extract', 8: 'Missed frames?', 10: 'current image number', 11: 'error in', 15: 'error out'})
+
+---------- [3] IMAQdx Get Image.vi (vi.lib, read only)
+  FACT  imaqdx_get_image fp_labels (9): [(0, 'Session In', False), (1, 'Session Out', True), (2, 'Image In', False), (3, 'Image Out', True), (4, 'Buffer Number In', False), (5, 'Buffer Number Out', True), (6, 'error in', False), (7, 'error out', True), (8, 'Buffer Number Mode (Next)', False)]
+  FACT  imaqdx_get_image conpane {0: 'error out', 1: 'Buffer Number Out', 2: 'Image Out', 3: 'Session Out', 4: None, 5: None, 6: None, 7: 'Buffer Number Mode (Next)', 8: 'error in', 9: 'Buffer Number In', 10: 'Image In', 11: 'Session In'}
+  FACT  imaqdx_get_image 'Session In' IN type=tuple[2](str,int) default=('', 0) 
+  FACT  imaqdx_get_image 'Session Out' OUT type=tuple[2](str,int) default=('', 0) 
+  FACT  imaqdx_get_image 'Image In' IN type=tuple[2](str,int) default=('', 0) 
+  FACT  imaqdx_get_image 'Image Out' OUT type=tuple[2](str,int) default=('', 0) 
+  FACT  imaqdx_get_image 'Buffer Number In' IN type=int default=0 
+  FACT  imaqdx_get_image 'Buffer Number Out' OUT type=int default=0 
+  FACT  imaqdx_get_image 'error in' IN type=tuple[3](bool,int,str) default=(False, 0, '') 
+  FACT  imaqdx_get_image 'error out' OUT type=tuple[3](bool,int,str) default=(False, 0, '') 
+  FACT  imaqdx_get_image 'Buffer Number Mode (Next)' IN type=int default=0 
+  PASS  P4a IMAQdx Get Image.vi has a readable front panel (=> not polymorphic)  9
+  PASS  P4b IMAQdx Get Image.vi conpane holds the node's 8 named terminals (+ a Buffer Number Mode)  ['Buffer Number In', 'Buffer Number Mode (Next)', 'Buffer Number Out', 'Image In', 'Image Out', 'Session In', 'Session Out', 'error in', 'error out']
+
+---------- [H] hygiene: refs, md5s, LabVIEW closed
+  FACT  ref_counts {'opened': 18, 'closed': 18, 'live': 0, 'cached_op_vis': 2}
+  PASS  P1b every md5 unchanged after
+  PASS  P5 LabVIEW process gone at exit  ??: ?? ?? ?? ? ??? ??? ???? ??? ????.
+
+====================================================================================================
+=== GATES: 7 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\m8b_replay_prep_75.json   elapsed 163.3 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":7,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 164s

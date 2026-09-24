@@ -1,0 +1,17 @@
+{"schema":"result/1","id":"75-1","status":"PASS","gates":{"pass":26,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/vigraph_check.log","md5":"dd323d97a2a2c9e32c6e839a77bece1a"},{"path":"tools/bench/m8b_grab_consumers_75.json","md5":"6b90229bdf3ed7c420f57bbf6af939e8"},{"path":"tools/bench/m8b_grab_consumers_75.log","md5":"0dd06ee559d04b5c5c8dedd6cc8519f5"},{"path":"tools/bench/diag_m8b_grab_consumers.py","md5":"b3012aa48817a6c1021215f72cb10296"}],
+"facts":[
+"(A) vigraph_check.log:840-841 RESULT PASS 19/0, rc=0; G8 non-fs 15/39/9 == baseline (:825); all G0-G12c PASS (:733-837)",
+"(B) no LabVIEW: S3 not in docs/wiki; graph_s3_loop15_20260924.json is a read of md5 1a11d92a (m8b_grab_consumers_75.log:69), md5 unchanged (:87)",
+"S1 and S3 give identical consumer sets for both sources (m8b_grab_consumers_75.log:71-77 vs :79-85)",
+"t15412 (WhileLoop #15173 d15266 in FS #12938 d15041) -> #15442 ImageToArray t15463 -> w19465 -> only Flatten Pixmap #15472 -> Draw Flattened Pixmap (log:71; wiki S1:50825-50951)",
+"t15412 also exits LoopTunnel #15188 -> FSIT #14946>#19598>#32955 -> #20436 IMAQ Create t20445 'Image Name' w32944, frame d20261 (m8b_grab_consumers_75.log:72)",
+"Grab #15403 'Image In' ref is made by #13938 IMAQ Create t13941; its only receiver is the Grab (m8b_grab_consumers_75.log:73)",
+"t22701 (Seq #22541 d22650 < For #22433 < Seq #21590 < For #21305 < FS #12938) -> w22756 -> Diagram-owned sink t22656 = stacked-seq local, dead end in vigraph (log:75)",
+"HEURISTIC pos/name match: t22659 'Image Out' d22780 -> 6 'calibration- generate 1/2 I of r, reentrant.vi' #24656 #24815 #24170 #23812 #23119 #23278 (m8b log:76)",
+"Get Image #22692 'Image In' ref = #20436 IMAQ Create t20439; receivers: Get Image + FP indicator #34982 'IMAQimage' d26117 (m8b_grab_consumers_75.log:77)",
+"Neither source feeds loop diagram 639: #6810 'get buff image-lost frames.vi' t6865 'Image Out' w3040 is there (wiki D1_s1_copy.json:35975-35981, :89810); not traced"],
+"open":["Replay stage: is the substitution point #15403/#22692, or #6810 'get buff image-lost frames.vi' (frame source on diagram 639) that feeds the tra X/Y/Z rows?",
+"Accept the positional stacked-seq-local match t22656->t22659 (heuristic), or require a machine read of Sequence #22541's locals before the PD is written?"],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"diag tools/bench/diag_m8b_grab_consumers.py (119 lines, reuses vigraph.build4 + jev_candidates). #20436 'Image Name' fed by an image ref is what rows say (w32944), not interpreted. MATERIAL=1 prefix refused by permission layer; bgrun --material used."}

@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"75-4","status":"PASS","gates":{"pass":21,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpReplaceGObj_v0.vi","md5":"a3723240e893dddcb6b69e329dfb157e"},
+ {"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\swapprobe_S1_20260925_031329.vi","md5":"7da9a1fbefd000ba4163c9b344309173"},
+ {"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\swapprobe_get_buff.vi","md5":"9aaaef21e8426035f64a04ec816491d0"},
+ {"path":"tools/gscript.py","md5":"d6a4d462d2a6231dd6ae14a9869a3048"},
+ {"path":"tools/bench/swap_verb_75.log","md5":"ba06033c9357b0fdeee714ac07dae4c0"},
+ {"path":"tools/bench/swap_verb_75.json","md5":"9526ad26b906647796e2e89e7ab50872"},
+ {"path":"tools/bench/swap_verb_75_build.log","md5":"e47efae160158a373aecf14e80ae7e64"},
+ {"path":"tools/bench/swap_verb_75_oplabels.json","md5":"95e7f7ae73e9a70dd112442a28053df4"},
+ {"path":"tools/bench/diag_swap_build.py","md5":"f33b2e0d6696d1c5332eb1fa980dfdb8"},
+ {"path":"tools/bench/diag_swap_measure.py","md5":"8a5c75fe0e6fcfead1a0cf6c15671b9a"}],
+"facts":[
+ "GObject.Replace 632A402 WORKED first try; SubVI.Replace 635E001 not needed, not tried. Verb gscript.replace_object (tools/gscript.py:2896); op closes the returned ref",
+ "Build 8/0: Replace node terms reference/Path/Style/PaletteString, return 'Replace'; labels Path, UID 6, error out 11/12; cold ExecState 1 (swap_verb_75_build.log)",
+ "Swap #6810 -> claudeDev\\replay\\swapprobe_get_buff.vi: no error; callee path read back == probe (swap_verb_75.log P4,P5)",
+ "NODE UID CHANGES on Replace: 6810 -> 23006. Consumers must take new_uid from the verb's return (swap_verb_75.log 'NODE UID CHANGED')",
+ "Wire-edge diff(before, after), swapped node remapped to 6810 = EMPTY (2216 edges); raw (term_uid,wire_uid) rows -16/+16 (new node's terminals) (P6)",
+ "Callee census diff on diagram 639 (Traverse idx 43) = exactly {6810 -> gone, 23006 -> probe}; ExecState 1 after the swap (P7,P8)",
+ "cdiff(S1wiki, swapped) = 9 rows, comp nodes +1/-1 = the uid change; cdiff(before-live, after) same 9. Rows incl #1839 'Session In'/'error in', #1924 'Missing Frames?' (log [2])",
+ "20 back-and-forth swaps (orig/probe): all clean; handles 54,500..54,562, range over calls 1-20 = 38 (criterion +-100) (P9); after them callee == probe, edges == before (P10)",
+ "Saved by script: claudeDev\\swapprobe_S1_20260925_031329.vi md5 7da9a1fb...; S1/S3/callee orig+copy md5 unchanged; LabVIEW killed and verified gone (P11,P1b,P12)",
+ "docs/toolkit-capabilities.md row added (after line 35). Offline lookup diag_swap_q1.py: first run rc=1 (own ValueError, wrong wiki key), rerun PASS - not a LabVIEW failure"],
+"open":[
+ "Replace renews the node uid (6810->23006), so cdiff(S1, swapped copy) is 9 rows, not 0: should PD14(c)/ROT O6 predictions key the swapped node by its new uid (remap before cdiff) rather than expect cdiff empty?",
+ "Style/PaletteString inputs left unwired on the op; Path alone selected the subVI route here. Verified only for a subVI->subVI swap with identical pane."],
+"cost":{"usd":null,"minutes":25,"labview_runs":2},
+"note":"No VI other than op VIs was run; no GUI; no hardware. STATUS.md not edited (status_edit=false). claudeDev\\replay\\swapprobe_get_buff.vi left in place (card output)."}

@@ -1,0 +1,46 @@
+BGRUN START 2026-09-25 03:07:40 limit 25.0 min: py -u tools/bench/diag_swap_build.py
+
+---------- [0] restart + donor copy
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33984
+  PASS  B1 donor copy ExecState 1
+  FACT  donor nodes [43, 124, 163, 167, 241, 307, 310, 482, 990, 1186, 1221, 1554]; U2G candidates [990]
+  PASS  B0 exactly one node with a `GObject` source (UID to GObject Reference)  [990]
+
+---------- [1] Invoke GObject.Replace 632A402
+  FACT  Replace node #1244 terminals [(0, 'reference', False), (1, 'reference out', True), (2, 'error in (no error)', False), (3, 'error out', True), (4, 'Replace', False), (5, 'Replace', True), (6, 'Style', False), (7, 'Style', True), (8, 'Path', False), (9, 'Path', True), (10, 'PaletteString', False), (11, 'PaletteString', True)]
+  PASS  B2 the Replace node has a Path sink
+  FACT  Replace: reference sink 0, path sink 8, return source Replace
+  PASS  B3 Replace.reference reads the #990 GObject wire  1081
+
+---------- [2] Path control, UID property on the returned ref, indicators
+  FACT  Path control label 'Path'
+  FACT  UID property #1246 terminals [(0, 'reference', False), (1, 'reference out', True), (2, 'error in (no error)', False), (3, 'error out', True), (4, 'UID', True)]
+  FACT  front-panel labels added [path, new uid, replace err, uid err] = ['Path', 'UID 6', 'error out 11', 'error out 12']
+  PASS  B4 one control + three indicators added  ['Path', 'UID 6', 'error out 11', 'error out 12']
+  PASS  B5 ExecState 1 before the save  1
+
+---------- [3] Close Reference from KernelBuilder_v1 #157 (copy_by_index), fed by UID property `reference out`
+  FACT  LabVIEW handle count BEFORE the restart: 31080
+  FACT  LabVIEW handle count AFTER the restart: 34002
+  FACT  KB #157 = Node[16]
+  FACT  LabVIEW handle count BEFORE the restart: 34049
+  FACT  LabVIEW handle count AFTER the restart: 33989
+  FACT  finish: new nodes on target [1691]
+  FACT  finish: close ref reference wire 1734, ES 1
+  PASS  B6 Close Reference copied into the op (uid guard 157)  (157, 4)
+
+---------- [4] cold re-read
+  FACT  LabVIEW handle count BEFORE the restart: 35630
+  FACT  LabVIEW handle count AFTER the restart: 33999
+  PASS  B7 ExecState 1 COLD in a fresh LabVIEW  1
+  FACT  final nodes [43, 124, 163, 167, 241, 307, 310, 482, 990, 1186, 1221, 1244, 1246, 1554, 1691]; fp [(0, 'vi path', False), (1, 'Class Name', False), (2, '# of Refs', True), (3, 'error out', True), (4, 'index', False), (5, 'Position', True), (6, 'Class Name 2', True), (7, 'UID', True), (8, 'Class Name 3', True), (9, 'error out 2', True), (10, 'reference', False), (11, 'Value', True), (12, 'data string', True), (13, 'type string (7.x only)', True), (14, 'bytes', False), (15, 'data includes array or string size? (T)', False), (16, 'hex string', True), (17, 'value', True), (18, 'rest of the binary string', True), (19, 'reference 2', False), (20, 'Class Name 4', True), (21, 'error out 3', True), (22, 'error out 4', True), (23, 'error out 5', True), (24, 'UID 2', False), (25, 'UID 3', True), (26, 'Class Name 5', True), (27, 'error out 6', True), (28, 'reference 3', False), (29, 'UID 4', True), (30, 'error out 7', True), (31, 'index 2', False), (32, 'Is Source?', True), (33, 'UID 5', True), (34, 'error out 8', True), (35, 'error out 9', True), (36, 'Class Name 6', True), (37, 'error out 10', True), (38, 'Path', False), (39, 'UID 6', True), (40, 'error out 11', True), (41, 'error out 12', True)]
+  FACT  labels {'vi_path': 'vi path', 'uid_in': 'UID 2', 'path': 'Path', 'new_uid': 'UID 6', 'err_replace': 'error out 11', 'err_uid': 'error out 12', 'class_name': 'Class Name', 'index': 'index', 'replace_node': 1244, 'uid_prop_node': 1246}
+  FACT  ref_counts {'opened': 18, 'closed': 18, 'live': 0, 'cached_op_vis': 2}
+  FACT  LabVIEW gone at exit: True
+
+====================================================================================================
+=== GATES: 8 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\swap_verb_75_build.json   elapsed 332.1 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 332s

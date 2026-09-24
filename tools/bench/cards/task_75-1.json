@@ -1,0 +1,43 @@
+{
+ "schema": "task/1",
+ "id": "75-1",
+ "kind": "measure",
+ "goal": "M8(b) prep, offline: (A) re-run diag_vigraph_check.py --no-dump to its RESULT; (B) map every downstream consumer of the camera image from Grab #15403 t15412 and Get Image #22692 t22701 in S1 and S3.",
+ "why": "Judgement writes the replay stage's Pre-decided (which uids a fixture-frame ReadFile replaces; is #22692 substituted too) from a measurement, not inference (docs/m8-real-run-plan.md PD12).",
+ "inputs": [
+  {"path": "docs/m8-real-run-plan.md"},
+  {"path": "tools/vigraph.py"},
+  {"path": "tools/bench/diag_vigraph_check.py"},
+  {"path": "docs/wiki/subvi/D1_s1_copy.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3_loop15.vi", "md5": "1a11d92aacabf7ec844d65b8af19f39f"}
+ ],
+ "pass": [
+  "(A) under bgrun --log tools/bench/vigraph_check.log: BGRUN END present, RESULT line quoted, each gate pass/fail listed (G8 baseline 15/39/9)",
+  "(B) per VI (D1_s1_copy, D1_s3_loop15): each consumer of t15412 and t22701 = sink uid, class, terminal uid+name, diagram uid, structure chain to top",
+  "(B) image refs followed through tunnels/SRs/sequence locals to the first PIXEL-READING node (ImageToArray, display, write); full chain listed",
+  "(B) creator of the IMAQ image ref each grab writes into (e.g. IMAQ Create) + every node receiving that ref, both VIs",
+  "written to tools/bench/m8b_grab_consumers_75.json; D1_s3_loop15 md5 unchanged at end; if S3 not in wiki, say so"
+ ],
+ "outputs": ["tools/bench/vigraph_check.log", "tools/bench/m8b_grab_consumers_75.json", "tools/bench/m8b_grab_consumers_75.log"],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/bench/m8b_grab_consumers_75*", "tools/bench/vigraph_check.log", "tools/bench/diag_m8b_*.py", "docs/wiki/**", "tools/bench/cards/result_75-1.json"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "CLAUDE.md 1: originals never written; 1d: read nested structures properly",
+  "measurement only: FACTS + an OPEN line; no replay-design decisions",
+  "new diagnostic = <=120-line file on tools/vigraph.py / tools/stagekit.py",
+  "LabVIEW only for one read-only wiki_build of D1_s3_loop15 if missing; then close LabVIEW, verify gone"
+ ],
+ "advances": ["M8", "R5"]
+}

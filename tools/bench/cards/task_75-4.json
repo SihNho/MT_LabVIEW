@@ -1,0 +1,45 @@
+{
+ "schema": "task/1",
+ "id": "75-4",
+ "kind": "build",
+ "goal": "Build + measure the subVI callee-swap verb (m8 plan PD14(d)): GObject.Replace 632A402 (fallback SubVI.Replace 635E001) on a SCRATCH copy of D1_s1_copy.vi: #6810 -> same-content renamed copy.",
+ "why": "The replay stage (PD14) swaps #6810/#22692 to replay VIs with wires intact; no measured swap op exists (75-3). Tool grant 2026-09-24: needed now and by ROT (O6).",
+ "inputs": [
+  {"path": "docs/m8-real-run-plan.md", "md5": "ed9ba6de69ee1d3ae24e475a9d4481e5"},
+  {"path": "tools/bench/m8b_replay_prep_75.json", "md5": "78da2625ef5d71a086b4767771b540c2"},
+  {"path": "archive/peer/2026-09-25-m8b-replay-prep-75-fact.md", "md5": "3f8ffc5e3d4ac74144b8ec81f22718bf"},
+  {"path": "docs/vi-server-ids.json"},
+  {"path": "tools/gscript.py"},
+  {"path": "tools/stagekit.py"},
+  {"path": "tools/vigraph.py"}
+ ],
+ "pass": [
+  "verb added to tools/gscript.py (or a claudeDev op VI) with Close Reference on every ref it opens; which of 632A402 / 635E001 worked, with error codes of any that failed",
+  "on the scratch: #6810 callee path read back == claudeDev\\replay\\swapprobe_get_buff.vi (byte copy of the callee, md5 9aaaef21 before rename)",
+  "measured and reported, not assumed: node uid kept or changed; wire-edge diff(S1, scratch) (predicted empty); callee census diff (predicted exactly #6810); ExecState (predicted 1)",
+  "cdiff(S1, scratch) row count recorded (answers ROT O6); 20 swap calls back and forth: handle count range reported (criterion +-100)",
+  "swapped scratch SAVED by script as claudeDev\\swapprobe_S1_<ts>.vi (md5 in result); D1_s1_copy, S3, callee originals md5 unchanged; LabVIEW closed, verified gone"
+ ],
+ "outputs": ["tools/bench/swap_verb_75.log", "tools/bench/swap_verb_75.json"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/gscript.py", "tools/bench/swap_verb_75*", "tools/bench/diag_swap_*.py", "tools/bench/selftest_*swap*", "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\**", "docs/NAMES.md", "docs/toolkit-capabilities.md", "tools/bench/cards/**"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "fact"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "rules": [
+  "CLAUDE.md 1: never write an original, a bed, vi.lib or background VIs; scratch + claudeDev only",
+  "diag = <=120-line file on tools/stagekit.py; reference hygiene per CLAUDE.md 3",
+  "failed prediction -> Jev ladder line first, then hypothesis review if owed",
+  "measurement: report FACTS + OPEN; do not start the replay VIs"
+ ],
+ "advances": ["M8", "R5"]
+}

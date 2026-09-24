@@ -721,3 +721,121 @@ BGRUN START 2026-09-25 01:17:32 limit 1.0 min: py -u tools/bench/diag_vigraph_ch
 === STEP 4b: 18 pass / 1 fail
 RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":18,"fail":1},"first_fail":"see FAIL lines","artefacts":[]}
 BGRUN END rc=1 after 1s
+BGRUN START 2026-09-25 02:37:50 limit 10.0 min: py -u tools/bench/diag_vigraph_check.py --no-dump
+  FACT  s1: loop table graph_loops_s1_20260924.json (machine left_of on 3 loop(s))
+  FACT  bed: loop table graph_loops_bed_20260924.json (machine left_of on 4 loop(s))
+  FACT  s1: 1760 nodes, 5725 terminals, 7515 edges (2222 wire, 4937 thru, 36 sr, 317 fs) in 0.11s
+  FACT  s1: sr {"right": 36, "left": 36, "paired": 36, "paired_machine": 21, "paired_top": 15, "machine_mismatch": [], "unpaired": [], "shift_registers_property": {"from_shift_registers_property": 36, "from_census": 36, "equal": true, "only_in_property": [], "only_in_census": [], "loops_split_across_body_diagrams"
+  FACT  s1: fs {"rule": "machine faces (wiki fs_tunnel_pairs: OuterTerminal/InnerTerminal, LeftTerm/RightTerm read by uid); sink face -> source face", "outer": 58, "outer_paired": 58, "inner_uids": 518, "inner_paired_uids": 518, "physical_tunnels": 317, "edges": 31
+  FACT  bed: 1786 nodes, 5782 terminals, 7582 edges (2242 wire, 4980 thru, 38 sr, 317 fs) in 0.13s
+  FACT  bed: sr {"right": 38, "left": 38, "paired": 38, "paired_machine": 23, "paired_top": 15, "machine_mismatch": [], "unpaired": [], "shift_registers_property": {"from_shift_registers_property": 38, "from_census": 38, "equal": true, "only_in_property": [], "only_in_census": [], "loops_split_across_body_diagrams"
+  FACT  bed: fs {"rule": "machine faces (wiki fs_tunnel_pairs: OuterTerminal/InnerTerminal, LeftTerm/RightTerm read by uid); sink face -> source face", "outer": 58, "outer_paired": 58, "inner_uids": 518, "inner_paired_uids": 518, "physical_tunnels": 317, "edges": 31
+  PASS  G0 both graphs carry the 7th column | frame_diagram present
+  PASS  G1a diff(S1, S1) is empty | {'edges_removed': 0, 'edges_added': 0, 'changed_sinks': 0}
+  PASS  G1b S1 wiki md5 == the census's md5 of the same file | 3e3d23cefd3a334001aa9d6156bf1aee
+  PASS  G2a the 11 severed wires are exactly the bed's new half/termless wires | bed-only half wires [1731, 3947, 7337, 9635]
+  FACT  G2b severed wires with no half-wire row in the bed (termless: no terminal at all): [1893, 2819, 4833, 7388, 11232, 23502, 23540]
+  FACT  G2c removed edges 16, added 40, changed sinks 9
+  FACT    REMOVED [fs] #7468 Terminal 'VISA out' [2] -> #7468 Terminal 'VISA out'
+  FACT    REMOVED [sr] #4334 InnerTerminal 'VISA out' -> #4344 InnerTerminal 'VISA out'
+  FACT    REMOVED [wire] #10686 ParameterTerminal 'x .and. y?' -> #10429 OuterTerminal (unnamed)
+  FACT    REMOVED [wire] #10757 Terminal 'element' -> #10978 OuterTerminal 'Index of closest\ncal image slice, bead 2'
+  FACT    REMOVED [wire] #10978 InnerTerminal 'Index of closest\ncal image slice, bead 2' [1] -> #9703 ParameterTerminal 'x'
+  FACT    REMOVED [wire] #11263 OuterTerminal 'VISA out' -> #4334 InnerTerminal 'VISA out'
+  FACT    REMOVED [wire] #2017 OuterTerminal 'position [internal units]' -> #12673 OuterTerminal 'position [internal units]'
+  FACT    REMOVED [wire] #2017 OuterTerminal 'position [internal units]' -> #4256 InnerTerminal 'position [internal units]'
+  FACT    REMOVED [wire] #4194 Terminal 'Outgoing Handle' -> #4344 OuterTerminal 'VISA out'
+  FACT    REMOVED [wire] #4256 OuterTerminal 'position [internal units]' -> #7202 Terminal 'Focus position'
+  FACT    REMOVED [wire] #4274 InnerTerminal 'position [internal units]' -> #48 Terminal 'In position'
+  FACT    REMOVED [wire] #4334 OuterTerminal 'VISA out' -> #7468 Terminal 'VISA out' [2]
+  FACT    REMOVED [wire] #4344 InnerTerminal 'VISA out' -> #48 Terminal 'VISA resource name'
+  FACT    REMOVED [wire] #7468 Terminal 'VISA out' -> #29815 Terminal 'VISA resource name'
+  FACT    REMOVED [wire] #7468 Terminal 'VISA out' [3] -> #7468 Terminal 'VISA out' [1]
+  FACT    REMOVED [wire] #9641 InnerTerminal '# slices in stack' -> #9623 OuterTerminal '# slices in stack'
+  FACT    ADDED [fs] #7468 Terminal 'Outgoing Handle' [2] -> #7468 Terminal 'Outgoing Handle'
+  FACT    ADDED [local] #23541 ControlTerminal 'index' -> #23523 Terminal 'index'
+  FACT    ADDED [local] #23576 ControlTerminal 'Automatic Error Handling' -> #23499 Terminal 'Automatic Error Handling'
+  FACT    ADDED [sr] #23868 InnerTerminal 'Outgoing Handle' -> #23880 InnerTerminal 'Outgoing Handle'
+  FACT    ADDED [sr] #23895 InnerTerminal 'Out position' -> #23909 InnerTerminal 'Out position'
+  FACT    ADDED [sr] #4334 InnerTerminal 'Outgoing Handle' -> #4344 InnerTerminal 'Outgoing Handle'
+  FACT    ADDED [wire] #10171 ParameterTerminal 'x = y?' -> #23166 Terminal (unnamed)
+  FACT    ADDED [wire] #10686 ParameterTerminal 'x .and. y?' -> #23576 ControlTerminal 'Automatic Error Handling'
+  FACT    ADDED [wire] #10757 Terminal 'element' -> #23541 ControlTerminal 'index'
+  FACT    ADDED [wire] #10978 InnerTerminal 'index' [1] -> #9703 ParameterTerminal 'x'
+  FACT    ADDED [wire] #11263 OuterTerminal 'VISA out' -> #23868 InnerTerminal 'Outgoing Handle'
+  FACT    ADDED [wire] #2017 OuterTerminal 'position [internal units]' -> #23895 InnerTerminal 'Out position'
+  FACT    ADDED [wire] #2017 OuterTerminal 'position [internal units]' -> #24154 InnerTerminal 'position [internal units]'
+  FACT    ADDED [wire] #23035 ParameterTerminal 'x = y?' -> #23058 Terminal (unnamed)
+  FACT    ADDED [wire] #23042 ParameterTerminal 'x = y?' -> #23405 Terminal (unnamed)
+  FACT    ADDED [wire] #23172 InnerTerminal (unnamed) -> #23035 ParameterTerminal 'x'
+  FACT    ADDED [wire] #23172 InnerTerminal (unnamed) -> #23035 ParameterTerminal 'y'
+  FACT    ADDED [wire] #23417 InnerTerminal (unnamed) -> #10171 ParameterTerminal 'x'
+  FACT    ADDED [wire] #23417 InnerTerminal (unnamed) -> #10171 ParameterTerminal 'y'
+  FACT    ADDED [wire] #23499 Terminal 'Automatic Error Handling' -> #10429 OuterTerminal (unnamed)
+  FACT    ADDED [wire] #23501 InnerTerminal (unnamed) -> #23042 ParameterTerminal 'x'
+  FACT    ADDED [wire] #23501 InnerTerminal (unnamed) -> #23042 ParameterTerminal 'y'
+  FACT    ADDED [wire] #23523 Terminal 'index' -> #10978 OuterTerminal 'index'
+  FACT    ADDED [wire] #23868 OuterTerminal 'Outgoing Handle' -> #7468 Terminal 'Outgoing Handle' [2]
+  FACT    ADDED [wire] #23880 InnerTerminal 'Outgoing Handle' -> #48 Terminal 'VISA resource name'
+  FACT    ADDED [wire] #23895 OuterTerminal 'Out position' -> #7202 Terminal 'Focus position'
+  FACT    ADDED [wire] #23909 InnerTerminal 'Out position' -> #48 Terminal 'In position'
+  FACT    ADDED [wire] #24018 InnerTerminal 'position [internal units]' -> #12673 OuterTerminal 'position [internal units]'
+  FACT    ADDED [wire] #24018 InnerTerminal 'position [internal units]' -> #4256 InnerTerminal 'position [internal units]'
+  FACT    ADDED [wire] #24035 InnerTerminal '# slices in stack' -> #9623 OuterTerminal '# slices in stack'
+  FACT    ADDED [wire] #24154 OuterTerminal 'position [internal units]' -> #24018 OuterTerminal 'position [internal units]'
+  FACT    ADDED [wire] #3974 Terminal 'Out position' -> #23909 OuterTerminal 'Out position'
+  FACT    ADDED [wire] #4194 Terminal 'Outgoing Handle' -> #23880 OuterTerminal 'Outgoing Handle'
+  FACT    ADDED [wire] #4194 Terminal 'Outgoing Handle' -> #4344 OuterTerminal 'Outgoing Handle'
+  FACT    ADDED [wire] #7468 Terminal 'Outgoing Handle' -> #29815 Terminal 'VISA resource name'
+  FACT    ADDED [wire] #7468 Terminal 'Outgoing Handle' [3] -> #7468 Terminal 'Outgoing Handle' [1]
+  FACT    ADDED [wire] #8486 OverridableParameterTerminal 'x+1' -> #23172 OuterTerminal (unnamed)
+  FACT    ADDED [wire] #8486 OverridableParameterTerminal 'x+1' -> #23417 OuterTerminal (unnamed)
+  FACT    ADDED [wire] #8486 OverridableParameterTerminal 'x+1' -> #23501 OuterTerminal (unnamed)
+  FACT    ADDED [wire] #9655 Terminal '# slices in stack' -> #24035 OuterTerminal '# slices in stack'
+  FACT  G2d nodes added by class [('Comparison', 3), ('ControlTerminal', 2), ('Diagram', 3), ('DiagramTerminal', 3), ('Invoke', 3), ('LeftShiftRegister', 2), ('Local', 2), ('LoopTunnel', 6), ('RightShiftRegister', 2)]; removed []
+  FACT  G2g w1731: S1 ["#4344 InnerTerminal 'VISA out'", "#48 Terminal 'VISA resource name'"] | bed ["#4344 InnerTerminal 'Outgoing Handle'"]
+  FACT  G2g w1893: S1 ["#3447 Terminal 'Focus Step (F1)'", "#48 Terminal 'Focus inc reference'"] | bed no terminal
+  FACT  G2g w2819: S1 ["#3560 Terminal '+ Inc (PgUp)'", "#48 Terminal '+Inc reference'"] | bed no terminal
+  FACT  G2g w3947: S1 ["#4274 InnerTerminal 'position [internal units]'", "#48 Terminal 'In position'"] | bed ["#4274 InnerTerminal 'position [internal units]'"]
+  FACT  G2g w4833: S1 ["#3529 Terminal '- Inc (PgDn)'", "#48 Terminal '-Inc reference'"] | bed no terminal
+  FACT  G2g w7337: S1 ["#11263 OuterTerminal 'VISA out'", "#4334 InnerTerminal 'VISA out'"] | bed ["#4334 InnerTerminal 'Outgoing Handle'"]
+  FACT  G2g w7388: S1 ["#11348 OuterTerminal 'Out position'", "#48 Terminal 'Out position'"] | bed no terminal
+  FACT  G2g w9635: S1 ["#9623 OuterTerminal '# slices in stack'", "#9641 InnerTerminal '# slices in stack'"] | bed ["#9641 InnerTerminal '# slices in stack'"]
+  FACT  G2g w11232: S1 ["#11220 OuterTerminal 'Outgoing Handle'", "#48 Terminal 'Outgoing Handle'"] | bed no terminal
+  FACT  G2g w23502: S1 no terminal | bed no terminal
+  FACT  G2g w23540: S1 no terminal | bed no terminal
+  FACT  G2f ASSUMPTION A: 7 node(s) called scheduling by LABEL only: [(44143, 'Wait (ms)'), (10972, 'Tick Count (ms)'), (21710, 'Tick Count (ms)'), (21887, 'Tick Count (ms)'), (12096, 'Tick Count (ms)'), (32538, 'Wait (ms)'), (22343, 'Wait (ms)')]
+  FACT  G3 w1731 src: ["#4344 InnerTerminal 'Outgoing Handle'"]
+  FACT  G3 w3947 src: ["#4274 InnerTerminal 'position [internal units]'"]
+  FACT  G3 w9635 src: ["#9641 InnerTerminal '# slices in stack'"]
+  FACT  G3 w7337 sink: ["#4334 InnerTerminal 'Outgoing Handle'"]
+  PASS  G3 all 4 known endpoints answered | 4/4
+  FACT  computation_diff in 0.61s
+  PASS  G4 computation_diff(S1, bed) under ASSUMPTION A | 0 rows, +11 / -0 computation nodes
+  PASS  G5a shift-register path: right #4334 -> left #4344 -> ASI subVI #48 (`VISA out` carrier) | #4334 InnerTerminal 'VISA out' -> #4344 InnerTerminal 'VISA out' -> #48 Terminal 'VISA resource name'
+  FACT  G5a direct source of #48 `VISA resource name`: ["#4344 InnerTerminal 'VISA out'"]
+  PASS  G5b loop-tunnel path: kernel #5058 `cross size` resolves past the loop border | direct ['#2580 InnerTerminal (unnamed)'] | effective ["#28147 OverridableParameterTerminal 'x+1'"]
+  PASS  G6 build + diff under 5 s on the bed | build 0.13s + diff 0.02s
+  PASS  G7 S1: every FSOT paired from the machine faces | {"rule": "machine faces (wiki fs_tunnel_pairs: OuterTerminal/InnerTerminal, LeftTerm/RightTerm read by uid); sink face -> source face", "outer": 58, "outer_paired": 58, "inner_uids": 518, "inner_paired_uids": 518, "physical_tunnels": 317, "edges": 317, "unpaired_uids": [], "unpaired_outer": 0, "fsit
+  FACT  G7 S1: fs edges by rule {'faces': 317}; heuristic fallback would give {"outer": 58, "inner": 259, "pairs": 23, "edges": 45, "unpaired_outer": 36, "rule": "HEURISTIC fallback (no fs_tunnel_pairs): equal TOP + a COMMON frame (frame_diagram); source -> sink inside that fra
+  PASS  G7 bed: every FSOT paired from the machine faces | {"rule": "machine faces (wiki fs_tunnel_pairs: OuterTerminal/InnerTerminal, LeftTerm/RightTerm read by uid); sink face -> source face", "outer": 58, "outer_paired": 58, "inner_uids": 518, "inner_paired_uids": 518, "physical_tunnels": 317, "edges": 317, "unpaired_uids": [], "unpaired_outer": 0, "fsit
+  FACT  G7 bed: fs edges by rule {'faces': 317}; heuristic fallback would give {"outer": 58, "inner": 259, "pairs": 23, "edges": 45, "unpaired_outer": 36, "rule": "HEURISTIC fallback (no fs_tunnel_pairs): equal TOP + a COMMON frame (frame_diagram); source -> sink inside that fra
+  FACT  G8 fs edge - #7468 Terminal 'VISA out' [2] -> #7468 Terminal 'VISA out'
+  FACT  G8 fs edge + #7468 Terminal 'Outgoing Handle' [2] -> #7468 Terminal 'Outgoing Handle'
+  PASS  G8 diff(S1, bed) minus the fs edges == 15/39/9 (step 4's 15/42/9 after dedupe_rows), and the fs delta is one -/+ pair on FSIT #7468 (Row D) | {'edges_removed': 16, 'edges_added': 40, 'changed_sinks': 9}; non-fs {'edges_removed': 15, 'edges_added': 39, 'changed_sinks': 9} vs step 4 {'edges_removed': 15, 'edges_added': 39, 'changed_sinks': 9}
+  PASS  G9 R1 VISA out, FSOT + 4 FSIT: reach(wire+fs) from ["#1675 Terminal 'VISA out'"] hits ["#13341 Terminal 'VISA in'"] | path 12 hops: #1675 Terminal 'VISA out' -> #34409 Terminal 'VISA out' -> #34409 Terminal 'VISA out' [1] -> #13215 Terminal 'VISA out' [1] -> #13215 Terminal 'VISA out' [2] -> #14818 Terminal 'VISA out' [1] -> #14818 Terminal 'VISA out' [2] -> #15027 Terminal 'VISA out' [1] -> #15027 Terminal 'VISA out' [2] -> #19673 Terminal 'VISA out' [1] -> #19673 Terminal 'VISA out' [2] -> #13341 Terminal
+  FACT  G9 R1 VISA out, FSOT + 4 FSIT: heuristic graph wire+fs reaches it: False; heuristic graph with thru: True
+  PASS  G9 R2 refnum out, 2 nested FSOT + 2 FSIT: reach(wire+fs) from ["#26615 ParameterTerminal 'refnum out'"] hits ["#16 ParameterTerminal 'refnum'"] | path 10 hops: #26615 ParameterTerminal 'refnum out' -> #59098 Terminal 'refnum out' -> #59098 Terminal 'refnum out' [1] -> #59090 Terminal 'refnum out' [1] -> #59090 Terminal 'refnum out' -> #59069 Terminal 'refnum out' [2] -> #59069 Terminal 'refnum out' -> #59041 Terminal 'refnum out' [2] -> #59041 Terminal 'refnum out' -> #16 ParameterTerminal 'refnum'
+  FACT  G9 R2 refnum out, 2 nested FSOT + 2 FSIT: heuristic graph wire+fs reaches it: False; heuristic graph with thru: True
+  FACT  G11 S1: sr paired 36 (machine 21, top 15), unpaired 0, machine mismatches []
+  FACT  G11 bed: sr paired 38 (machine 23, top 15), unpaired 0, machine mismatches []
+  PASS  G10a equal TOP, no machine table: both rights UNPAIRED (heuristic refuses to guess) | ([], [{'right': 100, 'body': 9, 'candidates': [110, 210]}, {'right': 200, 'body': 9, 'candidates': [110, 210]}])
+  PASS  G10b equal TOP + machine left_of: pairs exactly 100->210, 200->110 (crossed), paired_machine 2, top 0 | ([(100, 210), (200, 110)], {'paired_machine': 2, 'paired_top': 0, 'unpaired': []})
+  FACT  G12 S1 diagram-owned rows by (owner, term_class, source, wired): [(('Diagram', 'ControlTerminal', False, False), 2), (('Diagram', 'ControlTerminal', False, True), 52), (('Diagram', 'ControlTerminal', True, False), 8), (('Diagram', 'ControlTerminal', True, True), 52), (('Diagram', 'Terminal', False, False), 9), (('Diagram', 'Terminal', False, True), 13), (('Diagram', 'Terminal', True, False), 18), (('Diagram', 'Terminal', True, True), 32)]
+  PASS  G12a every wired diagram-owned Terminal SOURCE row (S1: 19) is a wire-edge source node | {'missing': [], 'extra': []}
+  PASS  G12b S1 #376 'frame index' effective source == term #644 (DiagramTerminal) | ['#644 Terminal (unnamed)']
+  PASS  G12c synthetic: dropping diagram-terminal #7 -> #20 'x' gives exactly one cdiff row (before [#7], after []) | [{'node': 20, 'class': 'Function', 'sink': '20|ParameterTerminal|x|0', 'before': ['7|Terminal||0'], 'after': []}]
+  FACT  total 0.9s
+=== STEP 4b: 19 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":19,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

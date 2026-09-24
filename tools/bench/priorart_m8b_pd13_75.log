@@ -1,0 +1,60 @@
+BGRUN START 2026-09-25 02:55:46 limit 25.0 min: py -u tools\prior_art_review.py --plan-file tools\bench\priorart_m8b_pd13_plan_75.md --slug m8b-pd13-replay-75 --trigger direction-change --no-recipe card 75-3 is measurement only; the replay build recipe does not exist yet
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_m8b-pd13-replay-75.txt (61870 chars)
+   review card tools\bench\cards\review_priorart-m8b-pd13-replay-75.json
+OUTCOME: ANSWERED (110s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-25-priorart-m8b-pd13-replay-75.md
+COST: $1.5532  in 24 / out 9800 / cache-create 131309 / cache-read 1533164  (106s, 19 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-m8b-pd13-replay-75 verdict=settled-already -> tools\bench\cards\verdict_priorart-m8b-pd13-replay-75.json
+--- ANSWER ---
+The review is done: PD13 is **not novel**. No replay stage like this has been built here before, and swapping subVI nodes is new for this project. But two findings block the build until someone releases them in writing:
+
+- **Contradicted:** PD13(a) says `#6810` has a `Buffer Number Out` output. It doesn't.
+- **Unread evidence:** PD13(b) predicts that `computation_diff` will show "exactly the two swapped nodes", but an open item in the split plan says nobody has measured whether `computation_diff` can see which VI a node calls at all.
+
+## PART A — the direction
+
+**A1 Already settled.** Replaying recorded frames through copies of both VIs was already chosen, in PD10 (`docs/m8-real-run-plan.md:81-83`) and PD12 (`:89-96`). PD13 only moves the substitution point, so this is a continuation, not a repeat. A harness that replays frames through the tracking kernel alone already exists: `run_fixture_compare.py`, which matched 10,043 of 10,043 frames bit-for-bit (`docs/keystone-op-spec.md:577-586`). PD10 says as much at `:81-82`. Nothing here blocks.
+
+**A2 Already refuted.** Nothing kills this direction. One line looks like it does: `docs/d1-build-plan.md:515-517` says replacing `#6810` "would change computation on the acquisition path for no gain". That ruling covers the D1 deliverable, not throwaway test copies, so it does not apply here. Nothing blocks.
+
+**A3 Contradicted (blocks).** The two sides:
+- PD13(a), `docs/m8-real-run-plan.md:106-107`, says the replay VI "returns `Buffer Number Out` = `Buffer to extract`".
+- The measured connector pane of `get buff image-lost frames.vi` (`docs/wiki/subvi/get buff image-lost frames.json:11-65`) has only Session In/Out, Image In/Out, Buffer to extract, Missed frames?, current image number and error in/out. There is no `Buffer Number Out`. That name belongs to the IMAQdx Get Image node *inside* the VI (`:133`, `:383`).
+
+The plan's replay VI would therefore have one terminal more than the node it replaces, so the "EXACT connector pane" wording cannot hold as written.
+
+A second, smaller gap on the same point: the wiki route records no data types (`"type": ""` at `:15` and on every row; STATUS step-3 says this route has no data-type property). So "exact connector pane" can't be checked from the wiki alone. Terminal types need their own measurement.
+
+**A4 Unread evidence (blocks).** `docs/d1-loop12-17-split-plan.md:501-503`, open item O6: *"whether `computation_diff` sees callee identity is unmeasured — a scratch control is owed before ROT's gate means anything"*. Pre-decided 167 (`:292-293`) repeats it and schedules the check as ROT's scratch measurement.
+
+`tools/vigraph.py:205` keys each terminal as `owner uid|leaf class|terminal name|ordinal`, with no field for the VI a node calls. So PD13(b)'s prediction has nothing behind it:
+- If `SubVI.Replace` keeps the node's uid and the terminal names match, `computation_diff` returns 0 rows, not two nodes.
+- If the uid changes, it reports every terminal row of both nodes.
+
+Either way the gate as written could not fail the way it's meant to. The prediction has to be re-cut after the O6 scratch measurement, which ROT also needs. One measurement answers both.
+
+## PART B — what gets built
+
+- **B1 Already built:** no. Nothing in `tools/gscript.py` swaps which VI a subVI node calls. `SubVI.Replace` 635E001 exists only as a private, unverified entry (`docs/vi-server-ids.json:117-124`).
+- **B2 Already failed:** no swap has ever been tried. Earlier prior-art rounds flagged 635E001 as unverified (`archive/peer/2026-09-16-priorart-priorart-cycle15-d1.md:383`; `archive/peer/2026-09-24-priorart-c69-split-plan.md:367,390`), and it has stayed unmeasured. PD13(f) measuring it first is correct. If `Replace` turns out not to work, the fallback of dropping a new node and re-wiring it is the pattern that failed ten times in route B (CLAUDE.md §3, "Big or blocked work", 2026-09-19). The stage plan should say what it does in that case.
+- **B3 Helper exists:** the numeric comparison can reuse existing code rather than new code:
+  - `tools/gpu/fixture.py:22` `read_cal` parses cal files (bead xy and the profile stack), which covers PD13(c)'s bead-xy check and PD13(d)'s cal-file diff.
+  - `fixture.py:4` documents the 18-column tra row layout.
+
+  This is a reuse note, not a block.
+- **B4 Already measured:**
+  - Frame numbering is already documented. `docs/fixture-recording.md:22-25`: the tra frame number is `current image number - first image number`. `docs/frame-loop-wire-graph.md:447`: `Buffer to extract` comes from the live `LastBufferNumber`. The PD13(d) join is consistent with both, so there is no conflict.
+  - "No calibration frames" is correct. `cal002` (`fixture.py:16`) holds calibration profiles, not images.
+
+## Verdict lines
+
+PRIOR-ART: contradicted
+PRIOR-ART: unread-evidence
+
+VERDICT {"schema":"verdict/1","id":"priorart-m8b-pd13-replay-75","verdict":"settled-already","alternative":"Blocking is contradicted + unread-evidence, not settled: PD13(a) names a Buffer Number Out that #6810 lacks; PD13(b)'s cdiff prediction ignores open item O6 (callee identity unmeasured; vigraph key has no callee). Direction itself (replay in copies, PD10/12) is fine.","discriminating_test":"On a scratch S1 copy: SubVI.Replace #6810 with a same-pane VI, re-read the graph, run cdiff(S1,copy). Record whether the uid survives and whether cdiff sees the swap (0 rows vs the node's rows). The same test answers ROT's O6.","violations":[],"sources":["docs/m8-real-run-plan.md:106-107","docs/wiki/subvi/get buff image-lost frames.json:11-65","docs/wiki/subvi/get buff image-lost frames.json:133","docs/d1-loop12-17-split-plan.md:501-503","docs/d1-loop12-17-split-plan.md:292-293","tools/vigraph.py:205","docs/vi-server-ids.json:117-124"],"note":"Enum offers only novel|settled-already; slugs above are the real findings. Release by fixing PD13(a) pane wording + re-cutting (b) after the O6 scratch control."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-m8b-pd13-replay-75.md
+   NO-RECIPE opt-out recorded in archive\peer\2026-09-25-priorart-m8b-pd13-replay-75.md: card 75-3 is measurement only; the replay build recipe does not exist yet
+   STOP RECORD: NOT ARMED BY EXPLICIT OPT-OUT - verdicts contradicted, unread-evidence block, and --no-recipe was given:
+     reason: card 75-3 is measurement only; the replay build recipe does not exist yet
+   If this review does become a recipe, plant the record by hand:
+     py tools/stop_record.py write --recipe <recipe> --review archive\peer\2026-09-25-priorart-m8b-pd13-replay-75.md --verdict contradicted unread-evidence
+BGRUN END rc=0 after 114s

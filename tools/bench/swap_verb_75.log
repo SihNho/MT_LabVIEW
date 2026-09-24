@@ -1,0 +1,51 @@
+BGRUN START 2026-09-25 03:13:29 limit 30.0 min: py -u tools/bench/diag_swap_measure.py
+
+---------- [0] files
+  FACT  PIN BEFORE S1               3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S3               1a11d92aacabf7ec844d65b8af19f39f  (want 1a11d92aacabf7ec844d65b8af19f39f) OK
+  FACT  PIN BEFORE gb_orig          9aaaef21e8426035f64a04ec816491d0  (want 9aaaef21e8426035f64a04ec816491d0) OK
+  FACT  PIN BEFORE gb_copy          9aaaef21e8426035f64a04ec816491d0  (want 9aaaef21e8426035f64a04ec816491d0) OK
+  PASS  P1a pins hold before
+  PASS  P2 probe is a byte copy of the callee  9aaaef21e8426035f64a04ec816491d0
+
+---------- [1] restart; BEFORE reads
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33965
+  FACT  scratch ExecState before 1
+  FACT  diagram 639 = Traverse index 43; callees {1114: 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\DY\\Background VIs\\WLC function sub.vi', 48: 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\Madcity\\ASI_adjust focus-subvi.vi', 5058: 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\background VIs\\Track N beads four-fold over-kernel-v3.vi', 376: 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\background VIs\\save trace.vi', 6810: 'G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\background VIs\\get buff image-lost frames.vi'}
+  PASS  P3 #6810 calls get buff image-lost frames.vi  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\background VIs\get buff image-lost frames.vi
+  FACT  before: 5748 terms, 2216 edges
+
+---------- [2] SWAP #6810 -> probe
+  FACT  replace_object -> {'new_uid': 23006, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  P4 replace_object: no error, a new-object uid  {'new_uid': 23006, 'err_replace': '', 'err_uid': '', 'err': ''}
+  FACT  NODE UID CHANGED: (6810, 23006)
+  PASS  P5 callee read back == probe  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\replay\swapprobe_get_buff.vi
+  PASS  P6 wire-edge diff(before, after) == empty (swapped node remapped)  {'removed': [], 'added': []}
+  FACT  raw (term_uid, wire_uid) rows: -16 +16
+  PASS  P7 callee census diff == exactly #6810  {6810: ('G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\background VIs\\get buff image-lost frames.vi', None), 23006: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\swapprobe_get_buff.vi')}
+  PASS  P8 ExecState 1 after the swap  1
+  FACT  CDIFF(S1wiki, after): 9 rows; comp nodes +1/-1; rows ["#194 ParameterTerminal 'x'", "#1839 Terminal 'Session In'", "#1839 Terminal 'error in'", "#1924 ControlTerminal 'Missing Frames?'", "#1978 ParameterTerminal 'x'", "#2347 ParameterTerminal 'x'"]
+  FACT  CDIFF(before-live, after): 9 rows; comp nodes +1/-1; rows ["#194 ParameterTerminal 'x'", "#1839 Terminal 'Session In'", "#1839 Terminal 'error in'", "#1924 ControlTerminal 'Missing Frames?'", "#1978 ParameterTerminal 'x'", "#2347 ParameterTerminal 'x'"]
+
+---------- [3] 20 swaps back and forth
+  FACT  handles over 20 swaps [54500, 54562, 54535, 54561, 54535, 54561, 54535, 54551, 54525, 54552, 54526, 54552, 54526, 54552, 54526, 54551, 54524, 54550, 54525, 54551, 54525]
+  PASS  P9 20 swaps clean, handle range within +-100  {'errs': [], 'range': 38}
+  PASS  P10 after the 20: callee == probe and edges == before  (23006, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\swapprobe_get_buff.vi')
+
+---------- [4] save
+  FACT  SAVED C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\swapprobe_S1_20260925_031329.vi md5 7da9a1fbefd000ba4163c9b344309173
+  PASS  P11 swapped scratch saved by script  1
+  FACT  ref_counts {'opened': 6, 'closed': 6, 'live': 0, 'cached_op_vis': 0}
+  FACT  PIN AFTER  S1               3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S3               1a11d92aacabf7ec844d65b8af19f39f  (want 1a11d92aacabf7ec844d65b8af19f39f) OK
+  FACT  PIN AFTER  gb_orig          9aaaef21e8426035f64a04ec816491d0  (want 9aaaef21e8426035f64a04ec816491d0) OK
+  FACT  PIN AFTER  gb_copy          9aaaef21e8426035f64a04ec816491d0  (want 9aaaef21e8426035f64a04ec816491d0) OK
+  PASS  P1b pins unchanged after
+  PASS  P12 LabVIEW gone at exit
+
+====================================================================================================
+=== GATES: 13 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\swap_verb_75.json   elapsed 144.0 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 144s

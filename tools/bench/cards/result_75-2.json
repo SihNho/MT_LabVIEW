@@ -1,0 +1,16 @@
+{"schema":"result/1","id":"75-2","status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/m8b_frame_source_75.json","md5":"5565e33479d82fbd885b3901d9b0f2c2"},{"path":"tools/bench/m8b_frame_source_75.log","md5":"d84ef71e6551dda8a572aa66085e3f87"},{"path":"tools/bench/diag_m8b_frame_source.py","md5":"2407d8c776c19e81e83f80a3f8433f22"}],
+"facts":[
+"S1=S3: #6810 on d639 (WhileLoop #637); Session In<-#250 Prop 'IMAQdx Session' t264, error in<-#250 t1584, Buffer to extract<-#1978 x+1 / #250 LastBufferNumber (log:17-20)",
+"#6810 'Image In' t6857 w1651 <- #35869 Property 'IMAQimage'.Value t35894 on d3121 (image buffer ref, not pixels) (m8b_frame_source_75.log:18)",
+"t6865 w3040 has ONE pixel reader in both VIs: #5058 'Track N beads four-fold over-kernel-v3.vi' t5089 'Image In' d639; #10757/#10969 are downstream of #5058 outputs, not pixels (log:29-32,45-48)",
+"No display and no TIFF writer reads t6865 in S1/S3 (walk found only #5058); TIFF writer #22700/#23020 exists only in the main working copy (docs/m8-real-run-plan.md:86, docs/d1-build-plan.md:310)",
+"#6810 = one call, #529 IMAQdx Get Image: Session/Image/error in from connector; Buffer Number In<-'Buffer to extract'; Mode<-Enum #581 (get buff image-lost frames.json:491-495)",
+"#6810 extra logic: Missed frames? = (Buffer to extract - Buffer Number Out)==0; current image number = Buffer Number Out (get buff image-lost frames.json:343-390)",
+"Seq #22541 local: 'Image Out' Diagram terminals in all its frames = exactly t22656 (sink, d22650) + t22659 (source, d22780), same pos too -> name-unique link, both VIs (log:33,49)",
+"Calibration pixel readers of #22692 via t22659: #24656,#24170,#23119,#23278 'generate 2 I of r' and #24815,#23812 'generate 1 I of r', term 'Image', d24449/24013/23729/22847 (log:34-39)",
+"Fixture TIFFs were written by #22700 'Image' <- branch of #6810 Image Out w3040, inside the experiment loop (docs/fixture-recording.md:17, docs/main-vi-stop-and-save.md:159)",
+"Fixture holds tracking frames img%05d.tif + cal002 (.cal RESULT: bead xy + profile stack) + tra002-000 (tools/gpu/fixture.py:2-5,15); no calibration-frame images; parent dir also has cal001/tra001-000"],
+"open":["Sequence-local link is name/position-unique over the graph file, not a LabVIEW SequenceLocal read (SequenceLocal uid 0, docs/toolkit-capabilities.md:601): accept, or order a LabVIEW read-op?"],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"Pure-Python read of graph files; S3 md5 1a11d92a unchanged; LabVIEW not opened. 75-1 walk functions exec'd verbatim from diag_m8b_grab_consumers.py."}

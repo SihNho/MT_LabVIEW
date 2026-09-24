@@ -2889,6 +2889,36 @@ def conpane(target, max_terminals=32):
     return out
 
 
+OP_REPLACE_GOBJ = os.path.join(CLAUDEDEV, "OpReplaceGObj_v0.vi")
+_REPLACE_LABELS = None
+
+
+def replace_object(target, uid, new_path):
+    """Swap the object `uid` on `target`'s diagram for the subVI (or control) at `new_path`, in place - the callee-swap
+    verb (card 75-4, m8 plan PD14(d)): OpReplaceGObj_v0 = OpOwnerChain_v1's `UID to GObject Reference.vi` -> Invoke
+    `GObject.Replace` 632A402 (Path) -> `GObject.UID` 632A813 on the returned ref -> Close Reference (that ref).
+    Built by tools/bench/diag_swap_build.py; labels in tools/bench/swap_verb_75_oplabels.json. Returns
+    {"new_uid", "err_replace", "err_uid", "err"}; err_* are "" when clean. Wires are kept or not as LabVIEW decides -
+    the caller MEASURES that (tools/bench/diag_swap_measure.py), this verb asserts nothing about it."""
+    global _REPLACE_LABELS
+    if _REPLACE_LABELS is None:
+        import json
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "swap_verb_75_oplabels.json"),
+                  encoding="utf-8") as f:
+            _REPLACE_LABELS = json.load(f)
+    lab = _REPLACE_LABELS
+    ensure_loaded(target)   # edits are silently declined on a target that is not fully loaded
+    vi = op(OP_REPLACE_GOBJ)
+    vi.SetControlValue(lab["vi_path"], target)
+    vi.SetControlValue(lab["class_name"], "Diagram"); vi.SetControlValue(lab["index"], 0)   # donor seed, keep legal
+    vi.SetControlValue(lab["uid_in"], int(uid))
+    vi.SetControlValue(lab["path"], new_path)
+    vi.SetControlValue(lab["new_uid"], 0)
+    _run(vi)
+    return {"new_uid": int(vi.GetControlValue(lab["new_uid"])), "err_replace": _err(vi, lab["err_replace"]) or "",
+            "err_uid": _err(vi, lab["err_uid"]) or "", "err": _err(vi, "error out") or ""}
+
+
 def conpane_assign(target, control_label, terminal_index):
     """Assign the front-panel control `control_label` of `target` to connector-pane terminal `terminal_index`
     (ConnectorPane.Assign Control To Terminal 239A8000 — OpConPaneAssign_v0, 2026-09-10). Verified on TRACK_kernel_v1.

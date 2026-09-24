@@ -1,0 +1,44 @@
+{
+ "schema": "task/1",
+ "id": "75-3",
+ "kind": "measure",
+ "goal": "Replay-stage prep (m8 plan PD13(f)): measure connector panes of #6810's VI and the #22692 IMAQdx Get Image instance; find a scripted in-place subVI-callee swap; prior-art-review PD13.",
+ "why": "PD13 swaps two subVI nodes for replay subVIs with identical connector panes. Before building, judgement needs exact terminals, a proven swap route with wires intact, and prior-art on the design.",
+ "inputs": [
+  {"path": "docs/m8-real-run-plan.md", "md5": "4a202784562dfecff83a13a0019162e3"},
+  {"path": "tools/bench/m8b_frame_source_75.json", "md5": "5565e33479d82fbd885b3901d9b0f2c2"},
+  {"path": "tools/bench/m8b_grab_consumers_75.json", "md5": "6b90229bdf3ed7c420f57bbf6af939e8"},
+  {"path": "docs/NAMES.md"},
+  {"path": "docs/toolkit-capabilities.md"},
+  {"path": "tools/gscript.py"}
+ ],
+ "pass": [
+  "#6810 callee (path, md5) and #22692 callee (polymorphic instance name/path): each connector terminal = name, direction, data type, pane position; from wiki JSON or a read-only LabVIEW read",
+  "swap route: existing op/verb (file:line) that swaps a SubVI node's callee keeping wires, or 'none found' with the searched scope + external search result (NI docs: SubVI.Replace / Node.Replace)",
+  "if an op exists: evidence it was measured before (log:line); do not run it on any bed or original",
+  "prior-art review of m8 plan PD13 via tools/prior_art_review.py under bgrun; verdict + findings quoted, archive path given",
+  "tools/bench/m8b_replay_prep_75.json written; S1/S3 md5 unchanged; LabVIEW closed and verified gone if opened"
+ ],
+ "outputs": ["tools/bench/m8b_replay_prep_75.json", "tools/bench/m8b_replay_prep_75.log"],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/bench/m8b_replay_prep_75*", "tools/bench/diag_m8b_*.py", "tools/bench/priorart*", "archive/peer/**", "tools/bench/cards/**"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "fact"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "rules": [
+  "CLAUDE.md 1: originals and beds never opened for write; read-only reads only",
+  "measurement only: FACTS + OPEN; do not build replay VIs; do not edit the plan",
+  "external search mandatory before any 'not possible' claim (CLAUDE.md 5)",
+  "priorart review: quote verdict; write no FIXED/REFUTED lines - judgement does"
+ ],
+ "advances": ["M8", "R5"]
+}
