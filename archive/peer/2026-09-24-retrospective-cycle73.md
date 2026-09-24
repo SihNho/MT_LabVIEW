@@ -241,4 +241,21 @@ VIOLATION: device-failed | loss_min=8 | loss_usd=1.10 | evidence=bgrun-inner-fai
 
 ## What was done with it
 
-(Claude fills in)
+Judgement, chat session 2026-09-24 ~19:3x (cycle 73 itself died on the CLI login failure before disposing this).
+Both violations ACCEPTED; the user's structure discussion of the same day turned them into standing rules.
+
+- **repeated-failure-class (own-script defect found inside a LabVIEW run): ACCEPTED.** Answered by the user's decisions
+  1/2/4 (dry run + offline pre-run mandatory, re-pre-run after a failure) — `CLAUDE.md` §3 "Stages are SIMULATED and
+  PRE-RUN OFFLINE", `docs/stage-simulator-plan.md`; being built under card `tools/bench/cards/task_chat-C1.json`
+  (launch gate refuses a recipe run without dry + pre-run PASS for its sha256). Finding 2 (offline rehearsal of gate
+  arithmetic) is the same device.
+- **device-failed (bgrun inner-failure scan): ACCEPTED and REMOVED.** Session protocol v1 C6: machinery reads only
+  the script's `RESULT` line; the body scan is deleted (`b0f2ced`; replay of 209 runs: 9 false failures removed, 0
+  real failures missed). Finding 2's "negative-test marker" is unnecessary once the scan is gone.
+- **Finding 3 (handle criterion by inference): ACCEPTED** as a finding; the handle baseline of an opened bed is to be
+  MEASURED in the next LabVIEW material run (already in STATUS NEXT as Pre-decided 147(c)).
+- **Finding 6 (vacuous retire gates, #1929/#5020 vanished): ACCEPTED** as a finding; the simulator's per-step
+  comparison (decision 7) makes a gate on a vanished object fail instead of pass vacuously.
+- **Finding 7 (judgement inside material, three instances): ACCEPTED**; under protocol v1 a material session returns
+  a `result/1` card with `open` questions and cannot accept review tests on its own — the task card's `pass` list is
+  the only acceptance authority.
