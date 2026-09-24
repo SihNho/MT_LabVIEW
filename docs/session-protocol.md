@@ -159,6 +159,17 @@ RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":61,"fail":0},"f
 
 The runner's "NEXT unchanged twice" stop and `guard_bash next_gate()` compare `next.json`, not prose md5.
 
+## C8 `steer/1` (outcome review → judgement) and the retry card — added 2026-09-24 (user: items 3/4)
+
+`tools/outcome_review.py` writes `tools/bench/cards/steer_<cycle>.json` when a verdict repeats: `{schema, cycle,
+slugs, required_act, advances, evidence}`. The `cycle/1` card carries its path; `next/1` must answer it with
+`steer: {item, follow | refuse, evidence}`. An unanswered steer counts as a refusal; two refusals of the same item
+stop the runner (exit 3) and add an item to `tools/bench/decisions_pending.json` (`tools/bench/steer_state.json`).
+
+**Retry cap:** `tools/stage_prerun.py` `RETRY_CAP` (2) LabVIEW runs per stage basename (`_vN` stripped) per cycle,
+counted in `tools/bench/stage_runs.jsonl` by the launch gate. A further run needs `RETRY_CARD=<task/1 with
+retry_of>` on the command; one card id = one run. The number is tuned from the recorded counts (user).
+
 ## Measurement (before and after)
 
 Baseline from cycles 68–73: brief length (words), return length, number of result-misread incidents (the 57-min
