@@ -600,7 +600,7 @@ summary.
 |---|---|---|---|
 | **codex** | ✅ project dir, read-only sandbox | ✅ | `gpt-5.6-sol` / medium, pinned in peer.ps1 (user, 2026-09-15). **Still selectable, no longer any default — weekly quota 9 % on 2026-09-18** |
 | **agy (gemini)** | ❌ | ✅ | RETIRED from every default/fallback 2026-09-22 (user: roles delegated to claude; headless permission auto-deny). Explicit `-Agent gemini` only |
-| **claude** | ✅ project dir (the thin roles: only what they choose to read), plan mode + acting tools denied | per role | **`-Role` decides**: `audit` sonnet · `ingest` sonnet · `priorart` opus/high · `hypothesis` opus/max +web · `fact` **fable/low +web, thin** · `outcome` **fable/medium +web, thin** · `prose` **fable/low, thin** |
+| **claude** | ✅ project dir (the thin roles: only what they choose to read), plan mode + acting tools denied | per role | **`-Role` decides**: `audit` sonnet · `ingest` sonnet · `priorart` claude-opus-5-5/medium · `hypothesis` claude-opus-5-5/high +web (user table 2026-09-23; was opus/high · opus/max) · `fact` **fable/low +web, thin** · `outcome` **fable/medium +web, thin** · `prose` **fable/low, thin** |
 
 The claude peer was added 2026-09-15 on the user's direction ("claude 하위 세션도 peer review에 참여
 시키는게 좋겠어") so the review structure survives an external quota outage. It is the one peer that

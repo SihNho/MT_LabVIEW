@@ -1,7 +1,7 @@
 ---
 decided_2026_09_17: "SINK RULE (judgement): a from-tunnel row's sink is ALWAYS a terminal with Is Source? = FALSE — the consuming node's input inside the new loop (LabVIEW creates the tunnel) or, for a MOVED structure, its INPUT tunnel's OUTSIDE terminal; an OUTPUT tunnel is never a sink (T2c2's two-source broken wire). Gate per row: sink Is Source? FALSE and bare before, wire Is Broken? FALSE after. One read-only Terminals[] census of #5540 (pre/post move) is allowed to settle tunnel-side addressing."
 type: plan
-status: current
+status: paused
 date: 2026-09-18
 cycle: 15
 kind: build

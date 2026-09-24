@@ -51,7 +51,7 @@ rows 1.1–1.9, `docs/d1-route-b-plan.md`).
    read-only and needs no motor. It is the precondition of the P2 live check, so it is not deferred behind D0.
 6. **GPU first** in D1 (`GPU_kernel_v1.vi`); CPU top level is a later, second deliverable. Fixture comparison N1
    before any D1 build.
-7. **Failed prediction ⇒ a SINGLE `-Agent claude -Role hypothesis` arm** (opus / effort max, web on), which
+7. **Failed prediction ⇒ a SINGLE `-Agent claude -Role hypothesis` arm** (claude-opus-5-5 / effort high since the user's 2026-09-23 table; was opus / max; web on), which
    `guard_peer.py` accepts as discharging the failed prediction since the **CLAUDE.md §5 amendment of
    2026-09-18** ("Codex's roles move to Claude sub-sessions" + "D3 IS AMENDED"), taken because codex's weekly
    quota reached 9 %. **`-Dual` is NOT the default any more**: it stays available and is the right call only

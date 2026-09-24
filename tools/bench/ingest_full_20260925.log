@@ -1,0 +1,60 @@
+BGRUN START 2026-09-25 00:59:30 limit 25.0 min: py tools/doc_ingest.py --full --model claude-opus-5-5 --slug full-20260925-protocol-simulator --timeout 1200
+   73 file(s); --full: every active document
+   task written to C:\Users\KimLab\AppData\Local\Temp\docingest_full-20260925-protocol-simulator.txt (3546 chars)
+   review card tools\bench\cards\review_full-20260925-protocol-simulator.json
+OUTCOME: ANSWERED (80s)  model: claude-opus-5-5 (pinned by -Model/-Effort (role ingest))  archived: archive\ingest\2026-09-25-full-20260925-protocol-simulator.md
+COST: $1.0621  in 14 / out 7558 / cache-create 97594 / cache-read 650662  (76s, 12 turn(s))
+VERDICT-CARD: VERDICT-CARD full-20260925-protocol-simulator verdict=refuted -> tools\bench\cards\verdict_full-20260925-protocol-simulator.json
+--- ANSWER ---
+Read-only document ingest over the listed set. I found 8 contradiction pairs. I checked STATUS.md in full, grep-checked the wider set for the values most likely to diverge, and read `m8-real-run-plan.md` and part of `stage-simulator-plan.md` in full.
+
+PAIR 1
+  A: STATUS.md:47  "**Motor state, unchanged and still true:** limits LEFT ON since 2026-09-18 15:37 (PI TMN 0 / TMX 39 in RAM, ASI SL/SU ±2 mm), ports closed."
+  B: STATUS.md:58  "limits RELEASED and read back — PI TMN 0 / TMX 52, ASI SL/SU ±500 mm, position unchanged (`tools/bench/motor_session_end_20260923.log`)"
+  conflict: The limits cannot have stayed on without a break since 2026-09-18 if they were released and read back on 2026-09-23.
+
+PAIR 2
+  A: STATUS.md:57  "Limits LEFT ON (PI TMN 0 / TMX 39 **in RAM**, ASI SL/SU persistent)"
+  B: STATUS.md:58  "Before: 실험중 13:43 … limits RELEASED and read back (PI 0..52, ASI ±500, `tools/bench/motor_session_end_20260923c.log`)"
+  conflict: Line 57 says the limits are on now, but line 58 records them as released, with readback.
+
+PAIR 3
+  A: STATUS.md:109  "No motor, no camera, no ASI."
+  B: STATUS.md:58  "motors (PI, rotor, ASI) may be driven by the gate AND by a running main VI while the rig stays assembled, until the user withdraws it"
+  conflict: One line of the standing instructions bans motor, camera and ASI use; the rig-state key grants motor and ASI use in the same state.
+
+PAIR 4
+  A: STATUS.md:100  "a FUNCTIONAL run of `D1_s3_loop15.vi` drives PI/rotor/ASI directly, not through `motor_gate.py`, so in 조립 it is not permitted — it needs 분해 or the user present."
+  B: docs/m8-real-run-plan.md:14  "Motors are granted until withdrawn; reference + limits are verified by the session hooks." (same grant at STATUS.md:58: "by a running main VI while the rig stays assembled")
+  conflict: A real run of the main VI in 조립, without the user present, cannot be both forbidden and granted.
+
+PAIR 5
+  A: STATUS.md:72  "🔴 **FIRST ACT WHEN THE USER RESUMES THE RUNNER = M8, the first REAL RUN of the bed … Then M3 (loop 1.2)"
+  B: STATUS.md:77  "🔴 **FIRST ACT (cycle 74): TOOL FIX — `computation_diff` blind spot (Pre-decided 176(c)), BEFORE stage K.**"
+  conflict: The NEXT section names two different acts as the first act of the next cycle.
+
+PAIR 6
+  A: STATUS.md:107  "Under the user's 2026-09-18 no-new-device order this stays a FINDING and nothing is built; the named fix is REPAIR of an existing device and is permitted the moment that order lifts."
+  B: STATUS.md:75  "USER RULE 2026-09-24 03:1x — TOOL BUILDING IS ALLOWED AGAIN when the cycle's judgement finds a tool necessary" (also docs/violation-decisions.md:1103 "The no-new-device order was lifted on 2026-09-24 03:1x")
+  conflict: Line 107 treats the 2026-09-18 order as still in force; line 75 and violation-decisions record it as lifted.
+
+PAIR 7
+  A: CLAUDE.md:258  "hypothesis reviews max→high … judgement = medium" (the table re-set 2026-09-23)
+  B: CLAUDE.md:603  "`priorart` opus/high · `hypothesis` opus/max +web"
+  conflict: The hypothesis role's effort is given as high in one place and max in the other, and priorart's as medium in one and high in the other.
+
+PAIR 8
+  A: docs/cycle27-plan.md:54  "**Failed prediction ⇒ a SINGLE `-Agent claude -Role hypothesis` arm** (opus / effort max, web on)"
+  B: STATUS.md:102  "Models: `claude-opus-5-5` — judgement medium · priorart medium · material medium · hypothesis high · log-reader low."
+  conflict: The hypothesis arm cannot run at effort max and at effort high at the same time.
+
+PAIR 9
+  A: STATUS.md:16  "D1 `docs/d1-route-b-plan.md`, paused"
+  B: docs/d1-route-b-plan.md:4  "status: current"
+  conflict: STATUS says the route-B plan is paused, while the plan's own frontmatter says it is current.
+
+CONTRADICTIONS: 9
+VERDICT {"schema":"verdict/1","id":"full-20260925-protocol-simulator","verdict":"refuted","alternative":"Some pairs may be historical lines not marked as superseded (e.g. STATUS:47/57/107/109 carried over from earlier cycles) rather than live disagreements.","discriminating_test":"Read tools/bench/motor_session_end_20260923c.log and the latest limits readback; check peer.ps1 role table for the hypothesis/priorart effort actually used.","violations":[],"sources":["STATUS.md:47","STATUS.md:57","STATUS.md:58","STATUS.md:72","STATUS.md:75","STATUS.md:77","STATUS.md:100","STATUS.md:102","STATUS.md:107","STATUS.md:109","STATUS.md:16","CLAUDE.md:258","CLAUDE.md:603","docs/cycle27-plan.md:54","docs/m8-real-run-plan.md:14","docs/d1-route-b-plan.md:4","docs/violation-decisions.md:1103"],"note":"9 pairs; STATUS.md is the main source (motor limits state, motor permission, two FIRST ACTs, no-device order); effort-level tables disagree inside CLAUDE.md and vs cycle27-plan."}
+   peer.ps1 rc 0; archived as archive/ingest/2026-09-25-full-20260925-protocol-simulator.md
+CONTRADICTIONS: 9
+BGRUN END rc=0 after 81s
