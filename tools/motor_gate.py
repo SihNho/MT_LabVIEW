@@ -622,8 +622,21 @@ def fail_line(rc):
     return "FAIL: motor_gate exit %d - %s" % (rc, EXIT_MEANING.get(rc, "sender's own non-zero code"))
 
 
+def result_line(rc):
+    """C6 (docs/session-protocol.md, user-approved 2026-09-24): the gate's verdict as its LAST line. bgrun's body scan
+    for `RESULT: REJECTED` / `NOT at target` / `ERR?=N` / `FAIL:` was REMOVED the same day, so a refused, rejected or
+    missed move is now caught by THIS line (and by the non-zero exit). A chained command prints one RESULT per call;
+    a run fails when ANY of them fails (protocol.run_verdict), so a later passing call cannot hide a rejected move.
+    Printed at PROCESS exit only, like fail_line(), so in-process self-tests of main() print neither."""
+    sys.path.insert(0, HERE)
+    import protocol
+    return protocol.result_line(protocol.make_result(0 if rc else 1, 1 if rc else 0,
+                                                     fail_line(rc) if rc else None))
+
+
 if __name__ == "__main__":
     _rc = main()
     if _rc:
         print(fail_line(_rc), flush=True)
+    print(result_line(_rc), flush=True)
     sys.exit(_rc)

@@ -1,0 +1,26 @@
+{
+  "$id": "decisions-pending/1",
+  "description": "User decisions the work is waiting on, as a machine-readable list (user 2026-09-24: '사용자 결정도 이렇게 구현하여 적용').",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "items"],
+  "properties": {
+    "schema": {"const": "decisions-pending/1"},
+    "note": {"type": "string", "maxLength": 300},
+    "items": {"type": "array", "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "asked", "by", "question", "options", "status"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,40}$"},
+        "asked": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}([T ][0-9]{2}:[0-9]{2}(:[0-9]{2})?([+-][0-9]{2}:?[0-9]{2}|Z)?)?$"},
+        "by": {"type": "string", "pattern": "^(cycle [0-9]+|chat)$"},
+        "question": {"type": "string", "minLength": 1, "maxLength": 300},
+        "options": {"type": "array", "maxItems": 4, "items": {"type": "string", "minLength": 1, "maxLength": 80}},
+        "recommendation": {"type": ["string", "null"], "maxLength": 200},
+        "blocks": {"type": "array", "items": {"type": "string", "pattern": "^M[0-9]+[a-z]?$"}},
+        "status": {"enum": ["open", "answered"]},
+        "answer": {"type": ["string", "null"], "maxLength": 300},
+        "answered_at": {"type": ["string", "null"], "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}([T ][0-9]{2}:[0-9]{2}(:[0-9]{2})?([+-][0-9]{2}:?[0-9]{2}|Z)?)?$"}
+      }}}
+  }
+}

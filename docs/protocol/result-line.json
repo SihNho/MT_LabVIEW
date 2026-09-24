@@ -1,0 +1,21 @@
+{
+  "$id": "result-line/1",
+  "description": "C6 - the LAST line a script prints, prefixed `RESULT `. bgrun, guard_peer, the runner and audit_cycle read only this line (docs/session-protocol.md C6).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "gates"],
+  "properties": {
+    "schema": {"const": "result-line/1"},
+    "status": {"enum": ["PASS", "FAIL"]},
+    "gates": {"$ref": "#/definitions/gates"},
+    "first_fail": {"type": ["string", "null"], "maxLength": 200},
+    "artefacts": {"type": "array", "items": {"$ref": "#/definitions/fileref"}}
+  },
+  "definitions": {
+    "gates": {"type": "object", "additionalProperties": false, "required": ["pass", "fail"],
+              "properties": {"pass": {"type": "integer", "minimum": 0}, "fail": {"type": "integer", "minimum": 0}}},
+    "fileref": {"type": "object", "additionalProperties": false, "required": ["path"],
+                "properties": {"path": {"type": "string", "minLength": 1, "maxLength": 400},
+                               "md5": {"type": ["string", "null"], "pattern": "^[0-9a-f]{32}$"}}}
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "$id": "goalmap/1",
+  "description": "The goal map (docs/goalmap.json): requirements, milestones, the current milestone/stage. task/1 and next/1 `advances` / `unblocks` cite its ids (user 2026-09-24).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "requirements", "milestones", "current"],
+  "properties": {
+    "schema": {"const": "goalmap/1"},
+    "note": {"type": "string", "maxLength": 300},
+    "requirements": {"type": "array", "minItems": 1, "items": {
+      "type": "object", "additionalProperties": false, "required": ["id", "title", "source", "status"],
+      "properties": {"id": {"type": "string", "pattern": "^R[0-9]+(\\.[0-9]+)*$"},
+                     "title": {"type": "string", "minLength": 1, "maxLength": 200},
+                     "source": {"type": "string", "pattern": "^[^:\\s][^:]*:.+$", "maxLength": 200},
+                     "status": {"enum": ["open", "moving", "met"]}}}},
+    "milestones": {"type": "array", "minItems": 1, "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "title", "requirements", "done_when", "status", "evidence"],
+      "properties": {"id": {"type": "string", "pattern": "^M[0-9]+[a-z]?$"},
+                     "title": {"type": "string", "minLength": 1, "maxLength": 200},
+                     "requirements": {"type": "array", "items": {"type": "string", "pattern": "^R[0-9]+(\\.[0-9]+)*$"}},
+                     "done_when": {"type": "string", "minLength": 1, "maxLength": 300},
+                     "status": {"enum": ["open", "active", "done"]},
+                     "evidence": {"type": "array", "items": {"type": "string", "maxLength": 400}}}}},
+    "current": {"type": "object", "additionalProperties": false, "required": ["milestone", "stage"],
+                "properties": {"milestone": {"type": "string", "pattern": "^M[0-9]+[a-z]?$"},
+                               "stage": {"type": "string", "maxLength": 300}}}
+  }
+}

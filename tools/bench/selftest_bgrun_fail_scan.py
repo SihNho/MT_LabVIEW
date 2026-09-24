@@ -1,5 +1,12 @@
 r"""selftest_bgrun_fail_scan.py - the self-test the round-5 `device-failed` decision demands.
 
+RE-CUT 2026-09-24 FOR SESSION PROTOCOL v1 C6 (user-approved "모든 영역에 JSON"): bgrun's body scan is REMOVED. The
+cases below are kept and their predictions INVERTED where the scan used to act: case A (a `-> FAIL` gate line, exit
+0, no RESULT line) now ends rc 0 and writes no INNER FAILURE line - an exit-0 script that wants to fail must print a
+failing RESULT line (stagekit does, from its gate counts). NEW case E: the same lines plus a failing `RESULT {...}`
+line -> rc 1 with `(RESULT:` on the END line. Case D (a review-named log) is still exempt, now from RESULT reading.
+The original contract text below is history.
+
 DECISION (docs/violation-decisions.md "## device-failed - 2026-09-17 03:38"): `tools/bgrun.py` adds
 `^\s*(?:->\s*)?FAIL\b` to the inner-failure scan for build/diagnostic logs and forces rc=1 on a match;
 "self-test on the literal line above", i.e. `tools/bench/diag_stop_condterm_panel.log:15-18`.
@@ -66,6 +73,9 @@ CASE_C = [
     "SUMMARY 3/3 gates pass",
 ]
 
+RESULT_FAIL = ("RESULT " + '{"schema":"result-line/1","status":"FAIL","gates":{"pass":3,"fail":1},'
+               '"first_fail":"Q2 no panel object","artefacts":[]}')
+
 passes, fails = [], []
 
 
@@ -115,11 +125,16 @@ def main():
         rc, txt = run_case(tmp, "a", CASE_A, "diag_case_a.log")
         inner, end = summarise(txt)
         print(f"  CASE A end line: {end!r}", flush=True)
-        gate("A1 a gate-verdict line in a build log forces a non-zero bgrun result",
-             rc == 1, f"bgrun returned {rc} (want 1)")
-        gate("A2 bgrun records WHY it overrode the child's zero", inner, f"INNER FAILURE line present={inner}")
-        gate("A3 the child itself exited zero (so only the scan can have caused A1)",
-             "the process itself said 0" in txt, "")
+        gate("A1 (C6) a gate-verdict TEXT line with exit 0 and no RESULT line no longer fails the run",
+             rc == 0, f"bgrun returned {rc} (want 0)")
+        gate("A2 (C6) no INNER FAILURE line is written any more", not inner, f"INNER FAILURE line present={inner}")
+
+        rc, txt = run_case(tmp, "e", CASE_A + [RESULT_FAIL], "diag_case_e.log")
+        inner, end = summarise(txt)
+        print(f"  CASE E end line: {end!r}", flush=True)
+        gate("E1 a failing RESULT line with exit 0 forces rc 1", rc == 1, f"bgrun returned {rc} (want 1)")
+        gate("E2 the END line says why: (RESULT: ... the process itself said 0)",
+             "(RESULT:" in txt and "the process itself said 0" in txt, "")
 
         rc, txt = run_case(tmp, "b", CASE_B, "diag_case_b.log")
         inner, end = summarise(txt)
@@ -133,7 +148,7 @@ def main():
         gate("C1 word-boundary lines (…URE/…ED/…ures) do not trip the scan",
              rc == 0 and not inner, f"bgrun returned {rc} (want 0), override={inner}")
 
-        rc, txt = run_case(tmp, "d", CASE_A, "peer_case_d.log")
+        rc, txt = run_case(tmp, "d", CASE_A + [RESULT_FAIL], "peer_case_d.log")
         inner, end = summarise(txt)
         print(f"  CASE D end line: {end!r}", flush=True)
         gate("D1 a review-named log is still exempt from the scan (logclass)",

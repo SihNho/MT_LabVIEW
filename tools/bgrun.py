@@ -28,6 +28,7 @@ import time
 PROJECT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(PROJECT, "tools"))
 import logclass  # noqa: E402  - ONE definition of "is this log the machinery watching the build?"
+import protocol  # noqa: E402  - C6: the script's own RESULT line is the verdict (docs/session-protocol.md)
 
 
 DETACHED_PROCESS = 0x00000008
@@ -233,19 +234,22 @@ def main():
         # COMMAND, NEVER BY THE LOG NAME: the exemption applies only when the SCRIPT this run executes (the first
         # `.py` token of the command) is `tools/jev*.py` or `tools/bench/jev_*.py`. The process's own exit code
         # still decides rc. Self-test: tools/bench/selftest_bgrun_jev_exempt.py.
-        scan_inner = not logclass.is_review_log(logp) and not is_jev_command(cmd)
-        inner = []
-        inner_re = re.compile(r"\b(?:exit|rc)\s*=\s*([1-9]\d*)|^\s*\*\*FAIL\*\*|^\s*(?:->\s*)?FAIL\b"
-                              r"|=== .*?\b[1-9]\d*\s+fail(?:ed|ure)?\b"
-                              r"|^RESULT:\s*(?:REJECTED\b|NOT at target\b)"
-                              r"|\bERR\?\s*(?:right after send\s*)?=\s*[1-9]\d*",
-                              re.I | re.M)
+        # ==== THE BODY SCAN ABOVE IS REMOVED (session protocol v1, C6; user-approved 2026-09-24 "모든 영역에 JSON").
+        # The history paragraphs are kept because they say WHY each alternative once existed; none of them runs now.
+        # The scan read quoted prose as failures (device_value_a/b, dryrun_l7_r_address, `rc=2` in passing
+        # self-tests: cycles 70, 71, 73) and every repair widened or narrowed one regex. The verdict is now the
+        # SCRIPT'S OWN: its `RESULT {...}` line(s) (tools/protocol.py) - status != PASS or gates.fail > 0 on ANY of
+        # them => rc=1 - and, when it prints none, the exit code alone. stagekit prints RESULT from its gate counts
+        # on every exit path; motor_gate.py prints one per call, so a rejected move is still caught.
+        # Review logs and Jev commands keep their exemption: a reviewer or a Jev survey may QUOTE a RESULT line.
+        read_result = not logclass.is_review_log(logp) and not is_jev_command(cmd)
+        results = []
 
         def pump():
             for line in p.stdout:
                 out(line)
-                if scan_inner and inner_re.search(line):
-                    inner.append(line.strip()[:160])
+                if read_result and line.startswith(protocol.RESULT_PREFIX + "{"):
+                    results.append(line)
             done.set()
         threading.Thread(target=pump, daemon=True).start()
         deadline = t0 + a.max_min * 60
@@ -271,10 +275,14 @@ def main():
                 out(f"BGRUN TIMEOUT killed after {time.time() - t0:.0f}s (limit {a.max_min} min)\n")
                 return 124
         rc = p.wait()
-        if rc == 0 and inner:
-            out(f"BGRUN INNER FAILURE: the command exited 0 but its output reported {len(inner)} failure(s); "
-                f"first: {inner[0]}\n")
-            out(f"BGRUN END rc=1 after {time.time() - t0:.0f}s (inner failure; the process itself said 0)\n")
+        done.wait(timeout=5)                   # the pump may still hold the last lines (the RESULT line) at exit
+        bad = [d for d in protocol.all_result_lines("".join(results)) if protocol.result_failed(d)]
+        if rc == 0 and bad:
+            d = bad[0]
+            g = d.get("gates") or {}
+            out(f"BGRUN END rc=1 after {time.time() - t0:.0f}s (RESULT: status={d.get('status')} "
+                f"gates {g.get('pass')}/{g.get('fail')} first_fail={str(d.get('first_fail'))[:160]}; "
+                f"the process itself said 0)\n")
             return 1
         out(f"BGRUN END rc={rc} after {time.time() - t0:.0f}s\n")
         return rc

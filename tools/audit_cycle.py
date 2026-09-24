@@ -107,6 +107,34 @@ COST_SEEN_RE = re.compile(r'^COST:|total_cost_usd|\bcost_usd\b|\btotal_cost\b', 
 # as cycle-26 cost. Each RUN is now attributed to the window its OWN `BGRUN START` stamp falls in.
 BGRUN_START_RE = re.compile(r"^BGRUN START (\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})", re.M)
 
+# C6 (session protocol v1, user-approved 2026-09-24): FAILURE_RE above is now the LEGACY rule, applied only to runs
+# that STARTED before protocol.SWITCH_TS and carry no RESULT line (history is not rewritten). A later run fails iff
+# a RESULT line it printed fails or it ended rc!=0 / TIMEOUT (protocol.run_verdict). A log with no BGRUN START at all
+# (a watchdog `stall_*` record, a hand-written note) is not a script run and keeps the FAILURE_RE reading.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import protocol  # noqa: E402
+
+
+def seg_failures(seg):
+    """Failure count of ONE run segment (starts at its BGRUN START line): legacy findall count before the switch,
+    else 0/1 from the C6 verdict."""
+    m = BGRUN_START_RE.search(seg)
+    ts = time.mktime(time.strptime(m.group(1), "%Y-%m-%d %H:%M:%S")) if m else None
+    if not protocol.all_result_lines(seg) and protocol.is_legacy(ts):
+        return len(FAILURE_RE.findall(seg))
+    return 1 if protocol.run_verdict(seg)["failed"] else 0
+
+
+def log_failed(body):
+    """A3's question for a whole log: did ANY run in it fail (legacy rule for pre-switch runs)."""
+    marks = list(BGRUN_START_RE.finditer(body))
+    if not marks:
+        return bool(FAILURE_RE.search(body))
+    if FAILURE_RE.search(body[:marks[0].start()]):          # pre-START preamble: judged as before
+        return True
+    return any(seg_failures(body[m.start():(marks[i + 1].start() if i + 1 < len(marks) else len(body))])
+               for i, m in enumerate(marks))
+
 
 def window_runs(body, cutoff, until):
     """The parts of a bgrun log that belong to THIS window: one segment per `BGRUN START` stamped inside it.
@@ -392,7 +420,7 @@ def main():
         + (f"; still running (this audit's own runner): {in_flight}" if in_flight else ""))
 
     # A3 - a failing log must be followed by an archived review
-    failing = [p for p in build_logs if FAILURE_RE.search(read(p))]
+    failing = [p for p in build_logs if log_failed(read(p))]
     unreviewed = []
     for p in failing:
         t = os.path.getmtime(p)
@@ -447,7 +475,8 @@ def main():
     # cost lines
     # EVERY COST LINE BELOW IS SUMMED OVER `window_runs`, NOT OVER WHOLE FILES - see BGRUN_START_RE above.
     starts = sum(s.count("BGRUN START") for p in build_logs for s in window_runs(read(p), cutoff, until))
-    fails = sum(len(FAILURE_RE.findall(s)) for p in build_logs for s in window_runs(read(p), cutoff, until))
+    fails = sum((seg_failures(s) if BGRUN_START_RE.match(s) else len(FAILURE_RE.findall(s)))
+                for p in build_logs for s in window_runs(read(p), cutoff, until))
     secs = 0
     for p in build_logs:
         for s in window_runs(read(p), cutoff, until):

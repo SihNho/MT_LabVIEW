@@ -16,6 +16,9 @@ PREDICTION CONTRACT
   N2 N1 written to a log NAMED `jev_survey.log` (scope is the command, not the filename)                      -> rc 1
   N3 a non-Jev command that merely has a Jev path as an ARGUMENT                                              -> rc 1
   R1..R3 selftest_bgrun_fail_scan / selftest_bgrun_final_line / selftest_motor_fail_exit on the same bgrun   -> rc 0
+RE-CUT 2026-09-24 (session protocol v1 C6): the body scan is gone, so the fixture now also prints a failing
+`RESULT {...}` line - the only thing bgrun still reads - and the override is recognised by `(RESULT:` on the END line.
+The exemption itself is unchanged: a Jev command's quoted RESULT line is not its verdict.
 """
 import os
 import shutil
@@ -27,7 +30,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 PROJECT = os.path.dirname(os.path.dirname(HERE))
 BGRUN = os.path.abspath(sys.argv[1]) if len(sys.argv) > 1 else os.path.join(PROJECT, "tools", "bgrun.py")
 
-LINES = ["  PASS  S1 one row", "  " + "FAIL" + "  S2 quoted from another run's log", "probe ex" + "it=1"]
+LINES = ["  PASS  S1 one row", "  " + "FAIL" + "  S2 quoted from another run's log", "probe ex" + "it=1",
+         "RESULT " + '{"schema":"result-line/1","status":"FAIL","gates":{"pass":1,"fail":1},"first_fail":"S2",'
+         '"artefacts":[]}']
 passes, fails = [], []
 
 
@@ -49,7 +54,7 @@ def run(tmp, logname, argv):
     p = subprocess.run([sys.executable, BGRUN, "--max-min", "2", "--log", logp, "--"] + argv,
                        capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=180)
     txt = open(logp, encoding="utf-8", errors="replace").read() if os.path.exists(logp) else ""
-    return p.returncode, "BGRUN INNER FAILURE" in txt
+    return p.returncode, "(RESULT:" in txt
 
 
 def main():

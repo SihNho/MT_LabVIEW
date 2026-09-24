@@ -1,0 +1,31 @@
+{
+  "$id": "cycle/1",
+  "description": "C1 - runner -> judgement session: the cycle's machine state (replaces the prompt text + STATUS reading for state).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "cycle", "rig_state", "model", "effort", "next", "budget"],
+  "properties": {
+    "schema": {"const": "cycle/1"},
+    "cycle": {"type": "integer", "minimum": 0},
+    "rig_state": {"enum": ["분해", "조립", "실험중", "unknown"]},
+    "model": {"type": "string", "minLength": 1, "maxLength": 80},
+    "effort": {"enum": ["low", "medium", "high", "xhigh", "max"]},
+    "firefighter": {"type": ["string", "null"], "maxLength": 200},
+    "bed": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/fileref"}]},
+    "errorlist": {"anyOf": [{"type": "null"},
+                            {"type": "object", "additionalProperties": false, "required": ["path", "verdict"],
+                             "properties": {"path": {"type": "string", "maxLength": 400},
+                                            "verdict": {"enum": ["OK", "MISMATCH"]}}}]},
+    "motor_session": {"type": ["string", "null"], "maxLength": 120},
+    "next": {"type": "string", "maxLength": 400},
+    "budget": {"type": "object", "additionalProperties": false, "required": ["minutes", "dispatches"],
+               "properties": {"minutes": {"type": "number", "minimum": 0}, "dispatches": {"type": "integer", "minimum": 0}}},
+    "rules": {"type": "array", "items": {"type": "string", "maxLength": 120}},
+    "note": {"type": "string", "maxLength": 300}
+  },
+  "definitions": {
+    "fileref": {"type": "object", "additionalProperties": false, "required": ["path"],
+                "properties": {"path": {"type": "string", "minLength": 1, "maxLength": 400},
+                               "md5": {"type": ["string", "null"], "pattern": "^[0-9a-f]{32}$"}}}
+  }
+}

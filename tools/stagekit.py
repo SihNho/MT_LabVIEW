@@ -103,6 +103,60 @@ class Stop(Exception):
     """A FATAL gate. The stage stops; `close()` still runs the hygiene tail."""
 
 
+# C6 RESULT LINE (docs/session-protocol.md, user-approved 2026-09-24). `Stage.summary()` prints
+# `RESULT {"schema":"result-line/1",...}` as its LAST line, from its own gate counts; bgrun / guard_peer / the
+# runner / audit_cycle read ONLY that line (their body scans are gone). The two exit paths summary() cannot see are
+# covered here: an UNCAUGHT exception (excepthook -> RESULT FAIL at exit, first_fail = the exception text) and gates
+# recorded AFTER the last summary (re-printed at exit). A Stage that never reached summary() and no exception ->
+# nothing printed, the exit code decides (a helper-only import must not invent a verdict).
+import atexit                                                                      # noqa: E402
+import protocol as _protocol                                                       # noqa: E402
+
+_C6 = {"stage": None, "sig": None, "exc": None}
+
+
+def _c6_line(stage, extra_fail=None):
+    n_fail = len(stage.fails) if stage is not None else 0
+    n_pass = len(stage.passes) if stage is not None else 0
+    first = extra_fail or (getattr(stage, "exc_text", None) if stage is not None else None) \
+        or (stage.fails[0] if stage is not None and stage.fails else None)
+    if extra_fail:
+        n_fail += 1
+    arts = []
+    if stage is not None:
+        sv = stage.R.get("saves") or {}
+        if sv.get("md5") and os.path.exists(stage.work):
+            arts = [{"path": stage.work, "md5": sv["md5"]}]
+    return _protocol.result_line(_protocol.make_result(n_pass, n_fail, first, arts))
+
+
+def _c6_excepthook(etype, value, tb, _orig=sys.excepthook):
+    if not issubclass(etype, (SystemExit, KeyboardInterrupt)):
+        _C6["exc"] = "{0}: {1}".format(etype.__name__, str(value))[:200]
+    elif issubclass(etype, KeyboardInterrupt):
+        _C6["exc"] = "KeyboardInterrupt"
+    _orig(etype, value, tb)
+
+
+def _c6_atexit():
+    st = _C6["stage"]
+    try:
+        if _C6["exc"]:
+            line = _c6_line(st, extra_fail=_C6["exc"])
+        elif st is not None and _C6["sig"] is not None and _C6["sig"] != (len(st.passes), len(st.fails)):
+            line = _c6_line(st)
+        else:
+            return
+        sys.stdout.write(line + "\n")
+        sys.stdout.flush()
+    except Exception:                                                              # noqa: BLE001
+        pass
+
+
+sys.excepthook = _c6_excepthook
+atexit.register(_c6_atexit)
+
+
 def md5(path):
     """build_opfsinnertunnelconnect_v0.py:227 verbatim."""
     h = hashlib.md5()
@@ -230,6 +284,8 @@ class Stage(object):
             len(self.passes), len(self.fails),
             ("; failing: " + ", ".join(self.fails)) if self.fails else ""), flush=True)
         print("JSON: {0}   elapsed {1:.1f} s".format(self.out_json, time.time() - self.t0), flush=True)
+        _C6["stage"], _C6["sig"] = self, (len(self.passes), len(self.fails))
+        print(_c6_line(self), flush=True)                  # C6: the RESULT line is the LAST line
         return 0 if not self.fails else 1
 
     # ------------------------------------------------------------------ start
@@ -1163,6 +1219,7 @@ def run(fn, stage):
         stage.gate("STOP at gate: {0}".format(e), False)
     except Exception as e:                                                         # noqa: BLE001
         import traceback
+        stage.exc_text = "{0}: {1}".format(type(e).__name__, str(e))[:200]      # C6 first_fail
         stage.R["fatal"] = traceback.format_exc()[-2500:]
         print("\nOBSERVED EXC {0}\n{1}".format(str(e)[:300], traceback.format_exc()[-2000:]), flush=True)
         stage.gate("the run completed without an unhandled exception", False, str(e)[:160])

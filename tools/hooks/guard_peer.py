@@ -139,6 +139,39 @@ MAX_AGE_S = 6 * 3600          # only recent failures gate; an old log is history
 # purpose. Excluding non-builds here would switch that rule off silently.
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 import logclass  # noqa: E402
+import protocol  # noqa: E402
+
+# C6 (session protocol v1, user-approved 2026-09-24). A run's verdict is its own `RESULT {...}` line(s) - any
+# status != PASS or gates.fail > 0 - and, when it printed none, its exit code (`BGRUN END rc!=0` / TIMEOUT). The
+# FAILURE_RE text scan above is kept ONLY for runs that STARTED before protocol.SWITCH_TS and carry no RESULT line,
+# so no historical verdict changes. `^STALL:` is not a script-body scan but the watchdog's own record format
+# (lv_stallcheck.ps1 writes no BGRUN lines), so it still arms the gate at any date (user 2026-09-14).
+STALL_RE = re.compile(r"^STALL:", re.M)
+
+
+def log_failure(text, mtime=None):
+    """(failed, first failure line) for the LAST run of a WHOLE log text - protocol.log_verdict with this hook's
+    legacy rule for pre-switch runs."""
+    ts, cmd, seg = protocol.last_segment(text)
+    if cmd and (protocol.all_result_lines(seg) or not protocol.is_legacy(ts, mtime)):
+        m = STALL_RE.search(seg)
+        if m:
+            return True, (seg[m.start():].splitlines() or [""])[0].strip()
+        v = protocol.run_verdict(seg)
+        return bool(v["failed"]), v.get("first_fail") or "(see the log)"
+    # LEGACY: a pre-switch run without a RESULT line, or not a bgrun run at all - EXACTLY the old reading, including
+    # its segmentation (after the last `BGRUN START` substring), so no historical verdict changes.
+    last = text.rsplit("BGRUN START", 1)[-1] if "BGRUN START" in text else text
+    first = next((ln.strip() for ln in last.splitlines() if FAILURE_RE.search(ln)), None)
+    return bool(FAILURE_RE.search(last)), first or "(see the log)"
+
+
+def log_failure_file(path):
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as f:
+            return log_failure(f.read().lstrip("﻿"), os.path.getmtime(path))
+    except OSError:
+        return False, "(see the log)"
 
 # A SELF-TEST OF A FAILURE PATTERN IS A FILE FULL OF FAILURE-SHAPED TEXT (2026-09-20, cycle 53, judgement's
 # decision). This is the SAME carve-out `peer_*.log` has carried since 2026-09-15 - "the gate reads build logs
@@ -214,7 +247,7 @@ def newest_failing_log():
         # its output is untouched, and every non-Jev failure still gates.
         if RUNNER_RE.search((last.splitlines() or [""])[0]):
             continue
-        if FAILURE_RE.search(last):
+        if log_failure(text, st.st_mtime)[0]:
             best = (p, st.st_mtime, last)
     return best
 
@@ -769,7 +802,7 @@ def main():
     if left > 1.0:
         _bounded(lambda: gaterow_advisory(path), left)
 
-    first = next((ln.strip() for ln in text.splitlines() if FAILURE_RE.search(ln)), "(see the log)")
+    first = log_failure_file(path)[1]
     if rejected:
         sys.stderr.write("NOT ACCEPTED as the review of this failure:\n  " + "\n  ".join(rejected) + "\n\n")
     sys.stderr.write(

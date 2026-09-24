@@ -1,0 +1,24 @@
+{
+  "$id": "verdict/1",
+  "description": "C5 - peer -> judgement. The peer's answer ends with this object; gates read only it.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "verdict"],
+  "properties": {
+    "schema": {"const": "verdict/1"},
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,40}$"},
+    "verdict": {"enum": ["refuted", "supported", "unverified", "novel", "settled-already", "none"]},
+    "alternative": {"type": "string", "maxLength": 300},
+    "discriminating_test": {"type": "string", "maxLength": 300},
+    "violations": {"type": "array", "maxItems": 2, "items": {
+      "type": "object", "additionalProperties": false, "required": ["slug", "evidence"],
+      "properties": {"slug": {"enum": ["repeated-failure-class", "tool-not-built", "inference-over-measurement",
+                                       "rule-evaded", "wrong-ordering", "unreported-fact", "scope-creep",
+                                       "premature-build", "judgement-in-material", "device-failed"]},
+                     "loss_min": {"type": ["number", "null"], "minimum": 0},
+                     "loss_usd": {"type": ["number", "null"], "minimum": 0},
+                     "evidence": {"type": "string", "maxLength": 200}}}},
+    "sources": {"type": "array", "items": {"type": "string", "maxLength": 300}},
+    "note": {"type": "string", "maxLength": 300}
+  }
+}

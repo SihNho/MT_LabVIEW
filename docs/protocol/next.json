@@ -1,0 +1,33 @@
+{
+  "$id": "next/1",
+  "description": "C7 - judgement session -> runner at cycle end (tools/bench/next.json, the machine copy of STATUS NEXT's first act). `advances` or `unblocks` is REQUIRED (user 2026-09-24).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "cycle", "act", "task_kind", "stop_requested"],
+  "anyOf": [
+    {"required": ["advances"], "properties": {"advances": {"minItems": 1}}},
+    {"required": ["unblocks"], "properties": {"unblocks": {"minLength": 1}}}
+  ],
+  "properties": {
+    "schema": {"const": "next/1"},
+    "cycle": {"type": "integer", "minimum": 0},
+    "act": {"type": "string", "minLength": 1, "maxLength": 200},
+    "task_kind": {"enum": ["build", "measure", "diagnose", "doc", "review-dispatch", "read-log"]},
+    "plan": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/fileref"}]},
+    "pass": {"type": "array", "items": {"type": "string", "maxLength": 200}},
+    "blocked_by": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/blocked"}]},
+    "stop_requested": {"type": "boolean"},
+    "advances": {"type": "array", "items": {"$ref": "#/definitions/goalid"}},
+    "unblocks": {"$ref": "#/definitions/milestoneid"},
+    "note": {"type": "string", "maxLength": 300}
+  },
+  "definitions": {
+    "goalid": {"type": "string", "pattern": "^(R[0-9]+(\\.[0-9]+)*|M[0-9]+[a-z]?)$"},
+    "milestoneid": {"type": "string", "pattern": "^M[0-9]+[a-z]?$"},
+    "blocked": {"type": "object", "additionalProperties": false, "required": ["device", "message"],
+                "properties": {"device": {"type": "string", "maxLength": 120}, "message": {"type": "string", "maxLength": 300}}},
+    "fileref": {"type": "object", "additionalProperties": false, "required": ["path"],
+                "properties": {"path": {"type": "string", "minLength": 1, "maxLength": 400},
+                               "md5": {"type": ["string", "null"], "pattern": "^[0-9a-f]{32}$"}}}
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "$id": "result/1",
+  "description": "C3 - material / log-reader -> judgement. The sub-agent's final message IS this object; the same object is written to tools/bench/cards/result_<id>.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "status", "gates"],
+  "properties": {
+    "schema": {"const": "result/1"},
+    "id": {"$ref": "#/definitions/cardid"},
+    "status": {"enum": ["PASS", "FAIL", "BLOCKED"]},
+    "gates": {"type": "object", "additionalProperties": false, "required": ["pass", "fail"],
+              "properties": {"pass": {"type": "integer", "minimum": 0}, "fail": {"type": "integer", "minimum": 0}}},
+    "first_fail": {"type": ["string", "null"], "maxLength": 200},
+    "blocked_by": {"anyOf": [{"type": "null"}, {"$ref": "#/definitions/blocked"}]},
+    "artefacts": {"type": "array", "items": {"$ref": "#/definitions/fileref"}},
+    "facts": {"type": "array", "maxItems": 10, "items": {"type": "string", "maxLength": 200}},
+    "open": {"type": "array", "maxItems": 3, "items": {"type": "string", "maxLength": 300}},
+    "cost": {"type": "object", "additionalProperties": false,
+             "properties": {"usd": {"type": ["number", "null"], "minimum": 0},
+                            "minutes": {"type": ["number", "null"], "minimum": 0},
+                            "labview_runs": {"type": ["integer", "null"], "minimum": 0}}},
+    "note": {"type": "string", "maxLength": 300}
+  },
+  "definitions": {
+    "cardid": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,40}$"},
+    "blocked": {"type": "object", "additionalProperties": false, "required": ["device", "message"],
+                "properties": {"device": {"type": "string", "maxLength": 120}, "message": {"type": "string", "maxLength": 300}}},
+    "fileref": {"type": "object", "additionalProperties": false, "required": ["path"],
+                "properties": {"path": {"type": "string", "minLength": 1, "maxLength": 400},
+                               "md5": {"type": ["string", "null"], "pattern": "^[0-9a-f]{32}$"}}}
+  }
+}
