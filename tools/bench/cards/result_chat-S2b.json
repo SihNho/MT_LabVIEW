@@ -1,0 +1,62 @@
+{
+"schema": "result/1",
+"id": "chat-S2b",
+"status": "FAIL",
+"gates": {
+"pass": 54,
+"fail": 0
+},
+"first_fail": "card pass item unmet: plan_l7_split.json final=true (1 cdiff row open by design); all 54 script gates pass",
+"blocked_by": null,
+"artefacts": [
+{
+"path": "tools/vigraph.py",
+"md5": "516ba5bf00b83b16e515927fc6806de6"
+},
+{
+"path": "tools/stagesim.py",
+"md5": "f94a3f81dfd4ca34402cf3c6e58adb56"
+},
+{
+"path": "tools/bench/sim_l7_split.log",
+"md5": "d8af8e3f9de96569fff4d0ae241a1679"
+},
+{
+"path": "tools/bench/selftest_stagesim.log",
+"md5": "176e3cf283bc14d4873cb041ce9a30c9"
+},
+{
+"path": "tools/bench/dedupe_check_s2b.log",
+"md5": "fcc13e2b8b80e608fb4094011fef0ef2"
+},
+{
+"path": "tools/bench/bench_map_a4_s2b.log",
+"md5": "b5a3a3f10d04ea6a82b8ae8239c7d592"
+},
+{
+"path": "tools/bench/plan_l7_split.json",
+"md5": "eb3a883cd3c50f7ead1153b2c5cf3cb0"
+}
+],
+"facts": [
+"vigraph.dedupe_rows (first wins) called at build4 entry; method['dedupe'] logs the count. Dropped rows: S1 23, bed 29, S3 29, all byte-identical Diagram-owned (dedupe_check_s2b.log TABLE)",
+"dedupe_check_s2b 10/0: uid-edge sets unchanged on S1/bed/S3; flags 13->0 (S1, S3), 17->4 (bed); only name-key ordinals >0 vanish (23/29/29)",
+"Before/after cdiff: S1 vs S3 0 -> 0; S1 vs D1_s4 reference (chat-S2 end state, regenerated without dedupe) 1 -> 1 row, the same row: 376 'current frame data array in'",
+"Map bench: A4 rerun 150/151 (bench_map_a4_s2b.log), unchanged. A1/A2/A3 need LabVIEW and were not rerun; offline D4/D5/D6 show no picked wire, FS row or A1 row touches a duplicate",
+"stagesim.base_state now calls vigraph.dedupe_rows, so the state holds the same rows build4 sees (stagesim.py base_state); no dedupe rule inside stagesim itself",
+"sim_l7_split 12/0: uid-edge diff 0 at L7-1a, L7-1 and the end; remove_bad_wires removed [1581, 3629, 4517]; cdiff matches the recorded 8 rows / 1 row",
+"plan_l7_split.json final=false, first divergent step 1 (move_in): the end keeps the recorded cdiff row 376 'current frame data array in' (left open by design in L7-R). Card's final=true NOT met",
+"selftest_stagesim 32/0 after the change. Commits 7678b58 (chat-S2) and 45387a7 (chat-S2b)",
+"Script failures: dedupe_check run 1 (name-keyed edge compare) and stagesim run 1 (KeyError 'objs', edit slip); one each, both my bugs, patched and rerun"
+],
+"open": [
+"plan_l7_split final=true requires end cdiff 0, but the real L7-R left 376 'current frame data array in' open on purpose (Pre-decided 175). Should the finalize rule accept a list of rows declared open by the plan, or does the plan stay non-final until the QRT row is wired?",
+"The A4 rerun rewrote tools/bench/bench_map_20260923/a4_units.json (not committed). Keep it, or restore it with git checkout?"
+],
+"cost": {
+"usd": null,
+"minutes": 35,
+"labview_runs": 0
+},
+"note": "No LabVIEW. Step files under tools/bench/sim/*/step_*.json are gitignored."
+}

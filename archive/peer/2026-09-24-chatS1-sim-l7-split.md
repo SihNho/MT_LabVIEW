@@ -98,7 +98,12 @@ I did not run anything, and I did no web search: every point here rests on this 
 
 ## What was done with it
 
-(Claude fills in)
+ANSWERED — the material session's claim was REFUTED by the review and the refutation held: the C5 failure of
+`sim_l7_split.log` was not a stagesim rule error but duplicate terminal rows (29 Diagram-owned uids returned twice
+by `allterms.read_terms`, `:60`). Fixed at the SOURCE under card chat-S2b: `tools/vigraph.py` dedupes rows on
+`term_uid` at load (first wins, count logged), stagesim's base state uses the same rows; the map bench numbers were
+shown unchanged and `sim_l7_split` then reached uid-edge diff 0 at every checkpoint (`tools/bench/sim_l7_split.log`,
+commit 45387a7). Same finding as `archive/peer/2026-09-24-chat-s2-rbw.md`.
 
 SAME-ROW: sim_l7_split.log (2026-09-24 22:23:42)
   This later failure of the SAME script was released without buying a new peer review: one review per row per cycle (CLAUDE.md, user 2026-09-22). The review above is the evidence; this line records which re-run was charged to it.

@@ -98,4 +98,8 @@ Sources:
 
 ## What was done with it
 
-(Claude fills in)
+ANSWERED (judgement, chat 2026-09-24). The claim (the two B2 gate failures were our own gate's expectation, not the
+op) was ACCEPTED by the review; its two proposed tests were added to `tools/bench/opmodels_measure.py` and the
+rerun passed 42/0 (`opmodels_measure_B2.log`). Model recorded in `tools/bench/opmodels/fs_inner_tunnel_connect.json`:
+one wire plus restoration of the tunnel chains the setup delete broke; the op's `err` output is always POISON and
+the real error channels are `invoke_err` / `err_*`. Card chat-S1, 132/0.
