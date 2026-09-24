@@ -1,0 +1,9 @@
+{"schema": "task/1", "id": "chat-C2", "kind": "build",
+ "goal": "Cycle-start Error List check: finish tools/errorlist_check.py, apply parked patch, runner errorlist_hook, cycle/1 errorlist field",
+ "why": "User decision 5 (read Error List by GUI, double-click each item to its location). Parked work: tools/bench/wip_errorlist_20260924.patch; first measurement read only 2 of 15 items.",
+ "inputs": [{"path": "tools/errorlist_check.py", "md5": "b10bbd4c20a53d7576130eb00cbb1359"}, {"path": "tools/bench/wip_errorlist_20260924.patch", "md5": "9cbdd1962c3512015680918712a967e2"}],
+ "pass": ["all items read: count read == count the list reports (15 on D1_s4_loop17), scrolling to the end", "each item double-clicked; selected object uid read by script if reachable (external search before concluding not), else screenshot path recorded", "only a byte-identical scratch copy is opened; bed md5 unchanged; scratch deleted; refs opened == closed; handles flat", "runner errorlist_hook before motor start hook: FAIL to read -> RUNNER STOP; MISMATCH -> cycle starts, cycle/1 card carries the result; skipped in 실험중 and --dry-run; --no-errorlist-hook for self-tests", "measured on D1_s4_loop17.vi and D1_l7_1_20260924_060431.vi: items, uid readable y/n, seconds", "every GUI action with -Exception Approved -Evidence \"user 2026-09-24 error-list check at cycle start\", capture before/after"],
+ "outputs": ["tools/errorlist_check.py", "tools/bench/errorlist_D1_s4_loop17_<ts>.json", "tools/bench/errorlist_D1_l7_1_<ts>.json"],
+ "flags": {"labview": "read", "gui": true, "hardware": "none", "run_vi": false, "write": ["tools/errorlist_check.py", "tools/lv_errorlist.py", "tools/cycle_runner.py", "tools/bench/**"], "status_edit": false, "git_commit": true, "peers": ["hypothesis"]},
+ "budget": {"failures": 2, "minutes": 90}, "unblocks": "M3",
+ "rules": ["Stages are SIMULATED and PRE-RUN OFFLINE", "GUI only where scripting is VERIFIED unreachable", "Reference hygiene"]}

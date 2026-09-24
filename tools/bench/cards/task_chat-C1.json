@@ -1,0 +1,9 @@
+{"schema": "task/1", "id": "chat-C1", "kind": "build",
+ "goal": "Stage launch gate + dry run + offline pre-run + RULE-CHAIN-S1 (CLAUDE.md 'Stages are SIMULATED' decisions 1,2,3,4,8)",
+ "why": "Parked 2026-09-24 for the protocol; now rebuilt on protocol v1. Replay must show which of the 6 failed L7 runs the offline checks would have caught.",
+ "inputs": [{"path": "docs/stage-simulator-plan.md", "md5": "d278bec8c3b2d1c2ec5e435624561d7b"}, {"path": "docs/session-protocol.md", "md5": "c8ab713aac1d867e2df64e9e4310aa05"}, {"path": "tools/stagekit.py", "md5": "0ce61c08a5f819efbc08790d19a6dd57"}],
+ "pass": ["tools/stage_prerun.py --dry <recipe>: COM layer stubbed from the graph JSON, whole Python path runs, RESULT line", "--prerun: every row decided; every terminal addressable offline (unwired: owner node -> terminal list -> uid echo)", "--prerun: rows to execute == plan rows; ast lint for re-typed uids/terminal names; no Jev row on chain terminals", "records in tools/bench/prerun_records.jsonl keyed by script sha256 + plan md5s", "RULE-CHAIN-S1 in jev_candidates reproduces the S1 pairs of stage_d1_l7_1b.log:35-40", "launch gate (guard_bash): recipe under bgrun refused without dry+prerun PASS for its sha256, newer than its last failing RESULT", "launch gate allows reads/dry/prerun/diagnostics; argv/ast only; edited on .new, self-tested, os.replace", "replay table: 6 failed L7 runs (git versions) x caught/not + by which check"],
+ "outputs": ["tools/stage_prerun.py", "tools/bench/selftest_launch_gate.log", "tools/bench/replay_l7_prerun.log"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false, "write": ["tools/**"], "status_edit": false, "git_commit": true, "peers": ["hypothesis"]},
+ "budget": {"failures": 2, "minutes": 120}, "unblocks": "M3",
+ "rules": ["Stages are SIMULATED and PRE-RUN OFFLINE", "§3 Tooling"]}
