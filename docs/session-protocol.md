@@ -84,8 +84,14 @@ STATUS.md stays human-readable; `next.json` is the machine copy of its first act
 | `git_commit` | bool | `guard_bash.py` refuses `git commit` unless true |
 | `peers` | list of `peer.ps1` roles | `guard_bash.py` refuses `peer.ps1` roles not listed |
 
-All flag checks live in the hooks because only a hook sees the payload's `agent_id` (judgement 2026-09-24); detectors
-that read a script's source ignore comments and docstrings.
+All flag checks live in the hooks because only a hook sees the payload's `agent_id` (judgement 2026-09-24).
+
+**Hooks judge STRUCTURE, never text patterns (judgement 2026-09-24).** Three false positives in one day came from
+regexes over free text: bgrun's body scan read a quoted `rc=1` as a failure; a path token anywhere in a command was
+read as a LabVIEW run; a `gui_save(` inside a string literal was read as a GUI call. So: a command is judged by its
+parsed argv (the program in command position and, for bgrun, the script after `--`); a script by its `ast` (real
+`Call` nodes, not comments, docstrings or string literals); a run by its `RESULT` line. A regex is only a fallback
+when parsing fails, and that fallback is logged.
 
 **MEASURED 2026-09-24 (CLI 2.1.280, a temporary probe in `guard_bash.py` over a running material agent's calls; the
 docs only say "agent_id and agent_type when inside a subagent"):** a PreToolUse payload from inside a sub-agent carries
