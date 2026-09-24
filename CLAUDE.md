@@ -375,6 +375,26 @@ dressed as 20 minutes of reasoning. **Rule: the second time a class of failure i
 read from the machine, the next build is the READER for it, not another attempt at the thing that failed.** Readers
 identified this way: **`Wire.Is Broken?` 6371004 IS BUILT** and measured (`docs/NAMES.md:902-911`, 2026-09-17) — use it instead of inferring why a wire is bad; `VI.Get Errors` (method 452) is still unbuilt and is probably unreachable over our COM path (absent from the exported `VirtualInstrument` ActiveX interface — `archive/peer/2026-09-18-fstunnel-v1-b4-execstate0-codex.md`), so it is off the critical path. Corrected 2026-09-18 by the cycle-22 judgement session after a `-Dual` review found this line stale.
 
+### Stages are SIMULATED and PRE-RUN OFFLINE before LabVIEW touches them (user, 2026-09-24)
+
+*"미리 사전계획 해서 옮길 vi들 미리 정리하고 만들 struct 미리 계산한 다음 그 결과 어떻게 될지 미리 예측 … Sequential하게
+각 단계들을 시뮬레이션 하여 temporary 파일로 저장한 후에 각 사이클의 finalized 플랜을 두는게 맞는듯."* Said after the
+loop-1.7 split failed 6 of 9 LabVIEW runs (≈49 min of LabVIEW, several times that in diagnosis) on problems that were
+all knowable offline. Eight decisions; design and build order in `docs/stage-simulator-plan.md`:
+
+1. every stage script is DRY-RUN first (COM stubbed); 2. an OFFLINE PRE-RUN (every row decided, every terminal
+addressable from the graph — unwired ones by owner node → terminal list → uid echo, rows == plan rows);
+3. error-cluster and accumulator chains are copied from S1 (`RULE-CHAIN-S1`), never asked of Jev; 4. a failed run
+invalidates the pre-run records; 5. every cycle starts by reading the bed's LabVIEW Error List through the GUI,
+each item double-clicked to its location (*"GUI로 에러 내용 확인하고 각 에러 더블클릭하면 에러 위치로 이동해서
+보여주거든"*); 6. a move's cut set and reconnect table are computed from the graph before the move and checked after;
+7. the whole stage is simulated action by action (temporary graph per step, symbolic ids bound by a before/after
+terminal-table diff) and finalized at `computation_diff` 0, then executed once with a per-step comparison;
+8. row content comes ONLY from the finalized plan file — a recipe never re-types a uid or terminal name.
+**Python computes, Jev picks per-row mechanisms, the LLM designs and takes low-confidence rows.** 1/2/4/7 are
+enforced by the launch gate in `tools/hooks/guard_bash.py`, 5 by `cycle_runner.py`'s `errorlist_hook`, 3/6/7/8 by
+stagekit gates; this section records only the why.
+
 ### Big or blocked work is SPLIT into steps that each SAVE an intermediate artefact (user, 2026-09-19)
 
 *"앞으로도 프로젝트 방향성에 관해서 큰 덩어리의 프로젝트는, 혹은 병목이 생긴 부분에서는, 세부적으로 쪼개서 중간과정
