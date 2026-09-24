@@ -1,0 +1,5598 @@
+{
+ "schema": "stagesim-summary/1",
+ "stage": "l7_split",
+ "plan": {
+  "path": "tools/bench/stageplan_l7_split.json",
+  "md5": "b8f3a81069f889b6ab1afda4535882e1"
+ },
+ "graph": {
+  "path": "tools/bench/graph_s3_loop15_20260924.json",
+  "md5": "38203f03404a37a4531403385b5faf43"
+ },
+ "s1": "D1_s1_copy",
+ "models_loaded": {
+  "bed_l7_1a": {
+   "path": "tools/bench/opmodels/bed_l7_1a.json",
+   "md5": "2f88a912638d6343c520ef70ac7366e8"
+  },
+  "bed_s3_loop15": {
+   "path": "tools/bench/opmodels/bed_s3_loop15.json",
+   "md5": "cfb5f45ee503d9be4148a79d7d73c3a4"
+  },
+  "bed_s4_loop17": {
+   "path": "tools/bench/opmodels/bed_s4_loop17.json",
+   "md5": "783d5684f44919c48bd0c932724d26eb"
+  },
+  "bed_s4_map": {
+   "path": "tools/bench/opmodels/bed_s4_map.json",
+   "md5": "a212ac8244d9fe8b0a9aaffa601b2587"
+  }
+ },
+ "steps": [
+  {
+   "n": 0,
+   "op": "base",
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_00_base.json",
+    "md5": "48f4f1a71934e12ffaa23265e8020cc3"
+   },
+   "cdiff_rows": []
+  },
+  {
+   "n": 1,
+   "op": "move_in",
+   "id": "l7_1a_move",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_01_move_in.json",
+    "md5": "7a6551f27763704abc8366f296f800da"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/diag_c71_l7_1a_tunnels.log (TERM 2043/5050 is_source True->False, FLAG w4337/w5073 n_src 0 after move_in #376); tools/bench/stage_d1_l7_1b_r3.log:207-214 (#376's cut terminals read wire=0)",
+   "model_gaps": [
+    "SR pair names reset on a cut (15/51 -> '' but 24/1108 kept 'error out') NOT modelled: names only, computation_diff collapses registers",
+    "the junk Invoke node each op leaves is NOT modelled (stagekit.junk_purge deletes it)"
+   ],
+   "error": null,
+   "n_candidates": 18,
+   "secs": 0.29,
+   "effect_summary": {
+    "moved": [
+     376
+    ],
+    "dest_diagram": 23405,
+    "cut_set": [
+     464,
+     541,
+     1397,
+     1581,
+     3268,
+     3497,
+     3629,
+     4517,
+     4880,
+     5056,
+     5090,
+     5274
+    ],
+    "n_cut": 12,
+    "cleared_term_uids": [
+     3934,
+     3954,
+     5683,
+     5704,
+     5739,
+     5754,
+     5760,
+     5763,
+     5772,
+     5778,
+     5782,
+     5787
+    ],
+    "tunnel_flips": [
+     {
+      "tunnel": 5020,
+      "outer_term_uid": 5050,
+      "wire": 5073
+     },
+     {
+      "tunnel": 1929,
+      "outer_term_uid": 2043,
+      "wire": 4337
+     }
+    ],
+    "rule_rows": [
+     {
+      "key": "376|Terminal|total data array out|0",
+      "partner": "15|InnerTerminal|total data array out|0",
+      "decided_by": "RULE-CHAIN-S1",
+      "mechanism": "shift_register"
+     },
+     {
+      "key": "376|Terminal|error out|0",
+      "partner": "24|InnerTerminal|error out|0",
+      "decided_by": "RULE-CHAIN-S1",
+      "mechanism": "shift_register"
+     },
+     {
+      "key": "376|Terminal|total data array in|0",
+      "partner": "51|InnerTerminal|total data array out|0",
+      "decided_by": "RULE-CHAIN-S1",
+      "mechanism": "shift_register"
+     },
+     {
+      "key": "376|Terminal|error in|0",
+      "partner": "1108|InnerTerminal|error out|0",
+      "decided_by": "RULE-CHAIN-S1",
+      "mechanism": "shift_register"
+     }
+    ]
+   },
+   "reconnect": [
+    {
+     "cut_wire": 464,
+     "side": "moved",
+     "key": "376|Terminal|total data array out|0",
+     "term_uid": 3954,
+     "is_source": true,
+     "partners_now": [
+      "15|InnerTerminal|total data array out|0"
+     ],
+     "chain": true,
+     "s1": {
+      "s1_key": "376|Terminal|total data array out|0",
+      "how": "same key",
+      "direct": [
+       "15|InnerTerminal|total data array out|0"
+      ],
+      "effective": [
+       "2048|Terminal|array|0",
+       "376|Terminal|total data array in|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 464,
+     "side": "outside",
+     "key": "15|InnerTerminal|total data array out|0",
+     "term_uid": 58,
+     "is_source": false,
+     "partners_now": [
+      "376|Terminal|total data array out|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "15|InnerTerminal|total data array out|0",
+      "how": "same key",
+      "direct": [
+       "376|Terminal|total data array out|0"
+      ],
+      "effective": [
+       "376|Terminal|total data array out|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 541,
+     "side": "moved",
+     "key": "376|Terminal|error out|0",
+     "term_uid": 3934,
+     "is_source": true,
+     "partners_now": [
+      "24|InnerTerminal|error out|0"
+     ],
+     "chain": true,
+     "s1": {
+      "s1_key": "376|Terminal|error out|0",
+      "how": "same key",
+      "direct": [
+       "24|InnerTerminal|error out|0"
+      ],
+      "effective": [
+       "376|Terminal|error in|0",
+       "6384|Terminal|error in|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 541,
+     "side": "outside",
+     "key": "24|InnerTerminal|error out|0",
+     "term_uid": 1339,
+     "is_source": false,
+     "partners_now": [
+      "376|Terminal|error out|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "24|InnerTerminal|error out|0",
+      "how": "same key",
+      "direct": [
+       "376|Terminal|error out|0"
+      ],
+      "effective": [
+       "376|Terminal|error out|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 1397,
+     "side": "moved",
+     "key": "376|Terminal|saved file refnum|0",
+     "term_uid": 5772,
+     "is_source": false,
+     "partners_now": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "376|Terminal|saved file refnum|0",
+      "how": "same key",
+      "direct": [
+       "3052|Terminal|File # Saved|0"
+      ],
+      "effective": [
+       "3052|Terminal|File # Saved|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 1397,
+     "side": "outside",
+     "key": "3052|Terminal|File # Saved|0",
+     "term_uid": 3060,
+     "is_source": true,
+     "partners_now": [
+      "376|Terminal|saved file refnum|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "3052|Terminal|File # Saved|0",
+      "how": "same key",
+      "direct": [
+       "376|Terminal|saved file refnum|0"
+      ],
+      "effective": [
+       "376|Terminal|saved file refnum|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 1581,
+     "side": "moved",
+     "key": "376|Terminal|file size|0",
+     "term_uid": 5778,
+     "is_source": false,
+     "partners_now": [
+      "2294|InnerTerminal||0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "376|Terminal|file size|0",
+      "how": "same key",
+      "direct": [
+       "2294|InnerTerminal||0"
+      ],
+      "effective": [
+       "1766|ParameterTerminal|32bit integer|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 1581,
+     "side": "outside",
+     "key": "2294|InnerTerminal||0",
+     "term_uid": 2313,
+     "is_source": true,
+     "partners_now": [
+      "376|Terminal|file size|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "2294|InnerTerminal||0",
+      "how": "same key",
+      "direct": [
+       "376|Terminal|file size|0"
+      ],
+      "effective": [
+       "376|Terminal|file size|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 3268,
+     "side": "moved",
+     "key": "376|Terminal|frame index|0",
+     "term_uid": 5763,
+     "is_source": false,
+     "partners_now": [
+      "10068|ParameterTerminal|x|0",
+      "1114|Terminal|index i|0",
+      "12195|Terminal||1",
+      "2136|ParameterTerminal|x|0",
+      "2213|InnerTerminal||0",
+      "29240|ParameterTerminal|x|0",
+      "3045|OuterTerminal||0",
+      "639|Terminal||1",
+      "639|Terminal||1"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "376|Terminal|frame index|0",
+      "how": "same key",
+      "direct": [
+       "639|Terminal||0",
+       "639|Terminal||1"
+      ],
+      "effective": []
+     }
+    },
+    {
+     "cut_wire": 3268,
+     "side": "outside",
+     "key": "29240|ParameterTerminal|x|0",
+     "term_uid": 29256,
+     "is_source": false,
+     "partners_now": [
+      "376|Terminal|frame index|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "29240|ParameterTerminal|x|0",
+      "how": "same key",
+      "direct": [
+       "639|Terminal||0",
+       "639|Terminal||1"
+      ],
+      "effective": []
+     }
+    },
+    {
+     "cut_wire": 3268,
+     "side": "outside",
+     "key": "12195|Terminal||1",
+     "term_uid": 12200,
+     "is_source": false,
+     "partners_now": [
+      "376|Terminal|frame index|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "12195|Terminal||1",
+      "how": "same key",
+      "direct": [
+       "639|Terminal||0",
+       "639|Terminal||1"
+      ],
+      "effective": []
+     }
+    },
+    {
+     "cut_wire": 3268,
+     "side": "outside",
+     "key": "1114|Terminal|index i|0",
+     "term_uid": 3509,
+     "is_source": false,
+     "partners_now": [
+      "376|Terminal|frame index|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "1114|Terminal|index i|0",
+      "how": "same key",
+      "direct": [
+       "639|Terminal||0",
+       "639|Terminal||1"
+      ],
+      "effective": []
+     }
+    },
+    {
+     "cut_wire": 3268,
+     "side": "outside",
+     "key": "10068|ParameterTerminal|x|0",
+     "term_uid": 10083,
+     "is_source": false,
+     "partners_now": [
+      "376|Terminal|frame index|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "10068|ParameterTerminal|x|0",
+      "how": "same key",
+      "direct": [
+       "639|Terminal||0",
+       "639|Terminal||1"
+      ],
+      "effective": []
+     }
+    },
+    {
+     "cut_wire": 3268,
+     "side": "outside",
+     "key": "3045|OuterTerminal||0",
+     "term_uid": 3272,
+     "is_source": false,
+     "partners_now": [
+      "376|Terminal|frame index|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "3045|OuterTerminal||0",
+      "how": "same key",
+      "direct": [
+       "639|Terminal||0",
+       "639|Terminal||1"
+      ],
+      "effective": []
+     }
+    },
+    {
+     "cut_wire": 3268,
+     "side": "outside",
+     "key": "2136|ParameterTerminal|x|0",
+     "term_uid": 3211,
+     "is_source": false,
+     "partners_now": [
+      "376|Terminal|frame index|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "2136|ParameterTerminal|x|0",
+      "how": "same key",
+      "direct": [
+       "639|Terminal||0",
+       "639|Terminal||1"
+      ],
+      "effective": []
+     }
+    },
+    {
+     "cut_wire": 3268,
+     "side": "outside",
+     "key": "639|Terminal||1",
+     "term_uid": 644,
+     "is_source": true,
+     "partners_now": [
+      "376|Terminal|frame index|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "639|Terminal||1",
+      "how": "same key",
+      "direct": [
+       "10068|ParameterTerminal|x|0",
+       "1114|Terminal|index i|0",
+       "12195|Terminal||1",
+       "2136|ParameterTerminal|x|0",
+       "2213|InnerTerminal||0",
+       "29240|ParameterTerminal|x|0",
+       "3045|OuterTerminal||0",
+       "376|Terminal|frame index|0"
+      ],
+      "effective": [
+       "10068|ParameterTerminal|x|0",
+       "1114|Terminal|index i|0",
+       "12045|ParameterTerminal|x|0",
+       "1628|ParameterTerminal|y|0",
+       "2136|ParameterTerminal|x|0",
+       "29240|ParameterTerminal|x|0",
+       "3162|ParameterTerminal|y|0",
+       "376|Terminal|frame index|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 3268,
+     "side": "outside",
+     "key": "639|Terminal||1",
+     "term_uid": 644,
+     "is_source": true,
+     "partners_now": [
+      "376|Terminal|frame index|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "639|Terminal||1",
+      "how": "same key",
+      "direct": [
+       "10068|ParameterTerminal|x|0",
+       "1114|Terminal|index i|0",
+       "12195|Terminal||1",
+       "2136|ParameterTerminal|x|0",
+       "2213|InnerTerminal||0",
+       "29240|ParameterTerminal|x|0",
+       "3045|OuterTerminal||0",
+       "376|Terminal|frame index|0"
+      ],
+      "effective": [
+       "10068|ParameterTerminal|x|0",
+       "1114|Terminal|index i|0",
+       "12045|ParameterTerminal|x|0",
+       "1628|ParameterTerminal|y|0",
+       "2136|ParameterTerminal|x|0",
+       "29240|ParameterTerminal|x|0",
+       "3162|ParameterTerminal|y|0",
+       "376|Terminal|frame index|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 3268,
+     "side": "outside",
+     "key": "2213|InnerTerminal||0",
+     "term_uid": 2218,
+     "is_source": false,
+     "partners_now": [
+      "376|Terminal|frame index|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "2213|InnerTerminal||0",
+      "how": "same key",
+      "direct": [
+       "639|Terminal||0",
+       "639|Terminal||1"
+      ],
+      "effective": []
+     }
+    },
+    {
+     "cut_wire": 3497,
+     "side": "moved",
+     "key": "376|Terminal|total data array in|0",
+     "term_uid": 5782,
+     "is_source": false,
+     "partners_now": [
+      "51|InnerTerminal|total data array out|0"
+     ],
+     "chain": true,
+     "s1": {
+      "s1_key": "376|Terminal|total data array in|0",
+      "how": "same key",
+      "direct": [
+       "51|InnerTerminal|total data array out|0"
+      ],
+      "effective": [
+       "376|Terminal|total data array out|0",
+       "781|Terminal|initialized array|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 3497,
+     "side": "outside",
+     "key": "51|InnerTerminal|total data array out|0",
+     "term_uid": 76,
+     "is_source": true,
+     "partners_now": [
+      "376|Terminal|total data array in|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "51|InnerTerminal|total data array out|0",
+      "how": "same key",
+      "direct": [
+       "376|Terminal|total data array in|0"
+      ],
+      "effective": [
+       "376|Terminal|total data array in|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 3629,
+     "side": "moved",
+     "key": "376|Terminal|cal cluster path|0",
+     "term_uid": 5760,
+     "is_source": false,
+     "partners_now": [
+      "3644|InnerTerminal||0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "376|Terminal|cal cluster path|0",
+      "how": "same key",
+      "direct": [
+       "3644|InnerTerminal||0"
+      ],
+      "effective": [
+       "3391|ParameterTerminal|string|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 3629,
+     "side": "outside",
+     "key": "3644|InnerTerminal||0",
+     "term_uid": 3651,
+     "is_source": true,
+     "partners_now": [
+      "376|Terminal|cal cluster path|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "3644|InnerTerminal||0",
+      "how": "same key",
+      "direct": [
+       "376|Terminal|cal cluster path|0"
+      ],
+      "effective": [
+       "376|Terminal|cal cluster path|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 4517,
+     "side": "moved",
+     "key": "376|Terminal|current frame data array in|0",
+     "term_uid": 5754,
+     "is_source": false,
+     "partners_now": [
+      "2626|Terminal|appended array|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "376|Terminal|current frame data array in|0",
+      "how": "same key",
+      "direct": [
+       "2626|Terminal|appended array|0"
+      ],
+      "effective": [
+       "2626|Terminal|appended array|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 4517,
+     "side": "outside",
+     "key": "2626|Terminal|appended array|0",
+     "term_uid": 2813,
+     "is_source": true,
+     "partners_now": [
+      "376|Terminal|current frame data array in|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "2626|Terminal|appended array|0",
+      "how": "same key",
+      "direct": [
+       "376|Terminal|current frame data array in|0"
+      ],
+      "effective": [
+       "376|Terminal|current frame data array in|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 4880,
+     "side": "moved",
+     "key": "376|Terminal|error in|0",
+     "term_uid": 5683,
+     "is_source": false,
+     "partners_now": [
+      "1108|InnerTerminal|error out|0"
+     ],
+     "chain": true,
+     "s1": {
+      "s1_key": "376|Terminal|error in|0",
+      "how": "same key",
+      "direct": [
+       "1108|InnerTerminal|error out|0"
+      ],
+      "effective": [
+       "376|Terminal|error out|0",
+       "4910|Terminal|error out|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 4880,
+     "side": "outside",
+     "key": "1108|InnerTerminal|error out|0",
+     "term_uid": 1700,
+     "is_source": true,
+     "partners_now": [
+      "376|Terminal|error in|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "1108|InnerTerminal|error out|0",
+      "how": "same key",
+      "direct": [
+       "376|Terminal|error in|0"
+      ],
+      "effective": [
+       "376|Terminal|error in|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 5056,
+     "side": "moved",
+     "key": "376|Terminal|file number to append out|0",
+     "term_uid": 5739,
+     "is_source": true,
+     "partners_now": [
+      "5020|InnerTerminal|file number to append out|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "376|Terminal|file number to append out|0",
+      "how": "same key",
+      "direct": [
+       "5020|InnerTerminal|file number to append out|0"
+      ],
+      "effective": [
+       "6384|Terminal|file # to append|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 5056,
+     "side": "outside",
+     "key": "5020|InnerTerminal|file number to append out|0",
+     "term_uid": 5044,
+     "is_source": false,
+     "partners_now": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "5020|InnerTerminal|file number to append out|0",
+      "how": "same key",
+      "direct": [
+       "376|Terminal|file number to append out|0"
+      ],
+      "effective": [
+       "376|Terminal|file number to append out|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 5090,
+     "side": "moved",
+     "key": "376|Terminal|selected path|0",
+     "term_uid": 5787,
+     "is_source": false,
+     "partners_now": [
+      "23175|ParameterTerminal|path|0",
+      "5096|InnerTerminal||0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "376|Terminal|selected path|0",
+      "how": "same key",
+      "direct": [
+       "5096|InnerTerminal||0"
+      ],
+      "effective": [
+       "29551|ParameterTerminal|path|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 5090,
+     "side": "outside",
+     "key": "23175|ParameterTerminal|path|0",
+     "term_uid": 23213,
+     "is_source": false,
+     "partners_now": [
+      "376|Terminal|selected path|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "23175|ParameterTerminal|path|0",
+      "how": "same key",
+      "direct": [
+       "5096|InnerTerminal||0"
+      ],
+      "effective": [
+       "29551|ParameterTerminal|path|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 5090,
+     "side": "outside",
+     "key": "5096|InnerTerminal||0",
+     "term_uid": 5098,
+     "is_source": true,
+     "partners_now": [
+      "376|Terminal|selected path|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "5096|InnerTerminal||0",
+      "how": "same key",
+      "direct": [
+       "23175|ParameterTerminal|path|0",
+       "376|Terminal|selected path|0"
+      ],
+      "effective": [
+       "23175|ParameterTerminal|path|0",
+       "376|Terminal|selected path|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 5274,
+     "side": "moved",
+     "key": "376|Terminal|file progress|0",
+     "term_uid": 5704,
+     "is_source": true,
+     "partners_now": [
+      "1929|InnerTerminal|file progress|0",
+      "3453|ControlTerminal|file progress|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "376|Terminal|file progress|0",
+      "how": "same key",
+      "direct": [
+       "1929|InnerTerminal|file progress|0",
+       "3453|ControlTerminal|file progress|0"
+      ],
+      "effective": [
+       "2048|Terminal|length|0",
+       "6384|Terminal|actual # data points|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 5274,
+     "side": "outside",
+     "key": "1929|InnerTerminal|file progress|0",
+     "term_uid": 1931,
+     "is_source": false,
+     "partners_now": [
+      "376|Terminal|file progress|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "1929|InnerTerminal|file progress|0",
+      "how": "same key",
+      "direct": [
+       "376|Terminal|file progress|0"
+      ],
+      "effective": [
+       "376|Terminal|file progress|0"
+      ]
+     }
+    },
+    {
+     "cut_wire": 5274,
+     "side": "outside",
+     "key": "3453|ControlTerminal|file progress|0",
+     "term_uid": 3453,
+     "is_source": false,
+     "partners_now": [
+      "376|Terminal|file progress|0"
+     ],
+     "chain": false,
+     "s1": {
+      "s1_key": "3453|ControlTerminal|file progress|0",
+      "how": "same key",
+      "direct": [
+       "376|Terminal|file progress|0"
+      ],
+      "effective": [
+       "376|Terminal|file progress|0"
+      ]
+     }
+    }
+   ],
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|cal cluster path|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|error in|0",
+    "376|Terminal|file size|0",
+    "376|Terminal|saved file refnum|0",
+    "376|Terminal|selected path|0",
+    "376|Terminal|total data array in|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|cal cluster path|0",
+     "before": [
+      "3391|ParameterTerminal|string|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0",
+      "4910|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|file size|0",
+     "before": [
+      "1766|ParameterTerminal|32bit integer|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|selected path|0",
+     "before": [
+      "29551|ParameterTerminal|path|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|total data array in|0",
+     "before": [
+      "376|Terminal|total data array out|0",
+      "781|Terminal|initialized array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 2,
+   "op": "add_shift_reg",
+   "id": "l7_1a_sr_err",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_02_add_shift_reg.json",
+    "md5": "8b62afa1f7cd5195dae09064efd12849"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_1a.json l7_1a.sr (a Right+Left pair per call); jev_candidates.rule_chain_s1 docstring (new register terminals unnamed)",
+   "model_gaps": [
+    "an error-cluster register's outer later reads 'error out' (l7_r_prediction.json s1map) - name propagation on wiring not modelled"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.23,
+   "effect_summary": {
+    "right": "new:SR1R",
+    "left": "new:SR1L",
+    "loop": 23041,
+    "body": 23405,
+    "parent": 686,
+    "terms": {
+     "R.inner": -3,
+     "R.outer": -4,
+     "L.outer": -5,
+     "L.inner": -6
+    }
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|cal cluster path|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|error in|0",
+    "376|Terminal|file size|0",
+    "376|Terminal|saved file refnum|0",
+    "376|Terminal|selected path|0",
+    "376|Terminal|total data array in|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|cal cluster path|0",
+     "before": [
+      "3391|ParameterTerminal|string|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0",
+      "4910|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|file size|0",
+     "before": [
+      "1766|ParameterTerminal|32bit integer|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|selected path|0",
+     "before": [
+      "29551|ParameterTerminal|path|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|total data array in|0",
+     "before": [
+      "376|Terminal|total data array out|0",
+      "781|Terminal|initialized array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 3,
+   "op": "add_shift_reg",
+   "id": "l7_1a_sr_acc",
+   "checkpoint": "L7-1a",
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_03_add_shift_reg.json",
+    "md5": "4f226ff912471cda8dbdea10730622bf"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_1a.json l7_1a.sr (a Right+Left pair per call); jev_candidates.rule_chain_s1 docstring (new register terminals unnamed)",
+   "model_gaps": [
+    "an error-cluster register's outer later reads 'error out' (l7_r_prediction.json s1map) - name propagation on wiring not modelled"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.15,
+   "effect_summary": {
+    "right": "new:SR2R",
+    "left": "new:SR2L",
+    "loop": 23041,
+    "body": 23405,
+    "parent": 686,
+    "terms": {
+     "R.inner": -9,
+     "R.outer": -10,
+     "L.outer": -11,
+     "L.inner": -12
+    }
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|cal cluster path|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|error in|0",
+    "376|Terminal|file size|0",
+    "376|Terminal|saved file refnum|0",
+    "376|Terminal|selected path|0",
+    "376|Terminal|total data array in|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|cal cluster path|0",
+     "before": [
+      "3391|ParameterTerminal|string|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0",
+      "4910|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|file size|0",
+     "before": [
+      "1766|ParameterTerminal|32bit integer|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|selected path|0",
+     "before": [
+      "29551|ParameterTerminal|path|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|total data array in|0",
+     "before": [
+      "376|Terminal|total data array out|0",
+      "781|Terminal|initialized array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 4,
+   "op": "wire",
+   "id": "err_R",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_04_wire.json",
+    "md5": "a4c4c0e75c54f5b2eb487c89790fcc95"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": -13,
+    "how": "new",
+    "src_term_uid": 3934,
+    "dst_term_uid": -3,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|cal cluster path|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|error in|0",
+    "376|Terminal|file size|0",
+    "376|Terminal|saved file refnum|0",
+    "376|Terminal|selected path|0",
+    "376|Terminal|total data array in|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|cal cluster path|0",
+     "before": [
+      "3391|ParameterTerminal|string|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0",
+      "4910|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|file size|0",
+     "before": [
+      "1766|ParameterTerminal|32bit integer|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|selected path|0",
+     "before": [
+      "29551|ParameterTerminal|path|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|total data array in|0",
+     "before": [
+      "376|Terminal|total data array out|0",
+      "781|Terminal|initialized array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 5,
+   "op": "wire",
+   "id": "err_L",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_05_wire.json",
+    "md5": "e74494704186001841ec060c94d4fa4f"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": -14,
+    "how": "new",
+    "src_term_uid": -6,
+    "dst_term_uid": 5683,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|cal cluster path|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|error in|0",
+    "376|Terminal|file size|0",
+    "376|Terminal|saved file refnum|0",
+    "376|Terminal|selected path|0",
+    "376|Terminal|total data array in|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|cal cluster path|0",
+     "before": [
+      "3391|ParameterTerminal|string|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0",
+      "4910|Terminal|error out|0"
+     ],
+     "after": [
+      "376|Terminal|error out|0"
+     ]
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|file size|0",
+     "before": [
+      "1766|ParameterTerminal|32bit integer|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|selected path|0",
+     "before": [
+      "29551|ParameterTerminal|path|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|total data array in|0",
+     "before": [
+      "376|Terminal|total data array out|0",
+      "781|Terminal|initialized array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 6,
+   "op": "wire",
+   "id": "acc_R",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_06_wire.json",
+    "md5": "90b005bca068df5335ea16b9821af8c9"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": -15,
+    "how": "new",
+    "src_term_uid": 3954,
+    "dst_term_uid": -9,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|cal cluster path|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|error in|0",
+    "376|Terminal|file size|0",
+    "376|Terminal|saved file refnum|0",
+    "376|Terminal|selected path|0",
+    "376|Terminal|total data array in|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|cal cluster path|0",
+     "before": [
+      "3391|ParameterTerminal|string|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0",
+      "4910|Terminal|error out|0"
+     ],
+     "after": [
+      "376|Terminal|error out|0"
+     ]
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|file size|0",
+     "before": [
+      "1766|ParameterTerminal|32bit integer|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|selected path|0",
+     "before": [
+      "29551|ParameterTerminal|path|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|total data array in|0",
+     "before": [
+      "376|Terminal|total data array out|0",
+      "781|Terminal|initialized array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 7,
+   "op": "wire",
+   "id": "acc_L",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_07_wire.json",
+    "md5": "1c07167a75d44163bb0f0048d0d8797e"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": -16,
+    "how": "new",
+    "src_term_uid": -12,
+    "dst_term_uid": 5782,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|cal cluster path|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|error in|0",
+    "376|Terminal|file size|0",
+    "376|Terminal|saved file refnum|0",
+    "376|Terminal|selected path|0",
+    "376|Terminal|total data array in|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|cal cluster path|0",
+     "before": [
+      "3391|ParameterTerminal|string|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0",
+      "4910|Terminal|error out|0"
+     ],
+     "after": [
+      "376|Terminal|error out|0"
+     ]
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|file size|0",
+     "before": [
+      "1766|ParameterTerminal|32bit integer|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|selected path|0",
+     "before": [
+      "29551|ParameterTerminal|path|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|total data array in|0",
+     "before": [
+      "376|Terminal|total data array out|0",
+      "781|Terminal|initialized array|0"
+     ],
+     "after": [
+      "376|Terminal|total data array out|0"
+     ]
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 8,
+   "op": "wire",
+   "id": "err_init",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_08_wire.json",
+    "md5": "e2b95ea07f681579a185cf3245b3a24f"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": 4969,
+    "how": "branch",
+    "src_term_uid": 4965,
+    "dst_term_uid": -5,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|cal cluster path|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|file size|0",
+    "376|Terminal|saved file refnum|0",
+    "376|Terminal|selected path|0",
+    "376|Terminal|total data array in|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|cal cluster path|0",
+     "before": [
+      "3391|ParameterTerminal|string|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|file size|0",
+     "before": [
+      "1766|ParameterTerminal|32bit integer|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|selected path|0",
+     "before": [
+      "29551|ParameterTerminal|path|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|total data array in|0",
+     "before": [
+      "376|Terminal|total data array out|0",
+      "781|Terminal|initialized array|0"
+     ],
+     "after": [
+      "376|Terminal|total data array out|0"
+     ]
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 9,
+   "op": "wire",
+   "id": "acc_init",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_09_wire.json",
+    "md5": "dadda0d323ec6820f3e92651031539a0"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": 3543,
+    "how": "branch",
+    "src_term_uid": 1842,
+    "dst_term_uid": -11,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|cal cluster path|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|file size|0",
+    "376|Terminal|saved file refnum|0",
+    "376|Terminal|selected path|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|cal cluster path|0",
+     "before": [
+      "3391|ParameterTerminal|string|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|file size|0",
+     "before": [
+      "1766|ParameterTerminal|32bit integer|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|selected path|0",
+     "before": [
+      "29551|ParameterTerminal|path|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 10,
+   "op": "tunnel",
+   "id": "tun_3644",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_10_tunnel.json",
+    "md5": "befac865c78fc6741c18463106cf4b60"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_r_r2.log PC3 (connect_nested_v1 made exactly one LoopTunnel per border)",
+   "model_gaps": [
+    "LabVIEW picks direction from the wiring; the plan states `dir`"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "tunnel": "new:T1",
+    "loop": 23041,
+    "dir": "in",
+    "indexing": false,
+    "outer": -18,
+    "inner": -19,
+    "body": 23405,
+    "parent": 686
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|cal cluster path|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|file size|0",
+    "376|Terminal|saved file refnum|0",
+    "376|Terminal|selected path|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|cal cluster path|0",
+     "before": [
+      "3391|ParameterTerminal|string|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|file size|0",
+     "before": [
+      "1766|ParameterTerminal|32bit integer|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|selected path|0",
+     "before": [
+      "29551|ParameterTerminal|path|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 11,
+   "op": "wire",
+   "id": "tun_3644_out",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_11_wire.json",
+    "md5": "78000d8c30607b41a18bfaca951ecc26"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": 21,
+    "how": "branch",
+    "src_term_uid": 1751,
+    "dst_term_uid": -18,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|cal cluster path|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|file size|0",
+    "376|Terminal|saved file refnum|0",
+    "376|Terminal|selected path|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|cal cluster path|0",
+     "before": [
+      "3391|ParameterTerminal|string|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|file size|0",
+     "before": [
+      "1766|ParameterTerminal|32bit integer|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|selected path|0",
+     "before": [
+      "29551|ParameterTerminal|path|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 12,
+   "op": "wire",
+   "id": "tun_3644_in",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_12_wire.json",
+    "md5": "db61ae6b5337a738b3f9898f1fb43c26"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": -20,
+    "how": "new",
+    "src_term_uid": -19,
+    "dst_term_uid": 5760,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|file size|0",
+    "376|Terminal|saved file refnum|0",
+    "376|Terminal|selected path|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|file size|0",
+     "before": [
+      "1766|ParameterTerminal|32bit integer|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|selected path|0",
+     "before": [
+      "29551|ParameterTerminal|path|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 13,
+   "op": "tunnel",
+   "id": "tun_2294",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_13_tunnel.json",
+    "md5": "005ecd9a7f1229bebfa9af76477fc240"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_r_r2.log PC3 (connect_nested_v1 made exactly one LoopTunnel per border)",
+   "model_gaps": [
+    "LabVIEW picks direction from the wiring; the plan states `dir`"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "tunnel": "new:T2",
+    "loop": 23041,
+    "dir": "in",
+    "indexing": false,
+    "outer": -22,
+    "inner": -23,
+    "body": 23405,
+    "parent": 686
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|file size|0",
+    "376|Terminal|saved file refnum|0",
+    "376|Terminal|selected path|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|file size|0",
+     "before": [
+      "1766|ParameterTerminal|32bit integer|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|selected path|0",
+     "before": [
+      "29551|ParameterTerminal|path|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 14,
+   "op": "wire",
+   "id": "tun_2294_out",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_14_wire.json",
+    "md5": "d7ef72b2f4f12369842ca830a34de809"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.17,
+   "effect_summary": {
+    "wire": 2362,
+    "how": "branch",
+    "src_term_uid": 2495,
+    "dst_term_uid": -22,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|file size|0",
+    "376|Terminal|saved file refnum|0",
+    "376|Terminal|selected path|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|file size|0",
+     "before": [
+      "1766|ParameterTerminal|32bit integer|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|selected path|0",
+     "before": [
+      "29551|ParameterTerminal|path|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 15,
+   "op": "wire",
+   "id": "tun_2294_in",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_15_wire.json",
+    "md5": "8ebb716cd88120d057333a1798c34ed6"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": -24,
+    "how": "new",
+    "src_term_uid": -23,
+    "dst_term_uid": 5778,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "376|Terminal|selected path|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|selected path|0",
+     "before": [
+      "29551|ParameterTerminal|path|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 16,
+   "op": "tunnel",
+   "id": "tun_5096",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_16_tunnel.json",
+    "md5": "b0f084a153e8ae5b27628072bd5241e3"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_r_r2.log PC3 (connect_nested_v1 made exactly one LoopTunnel per border)",
+   "model_gaps": [
+    "LabVIEW picks direction from the wiring; the plan states `dir`"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "tunnel": "new:T3",
+    "loop": 23041,
+    "dir": "in",
+    "indexing": false,
+    "outer": -26,
+    "inner": -27,
+    "body": 23405,
+    "parent": 686
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "376|Terminal|selected path|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|selected path|0",
+     "before": [
+      "29551|ParameterTerminal|path|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 17,
+   "op": "wire",
+   "id": "tun_5096_out",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_17_wire.json",
+    "md5": "5d63885303fd69a447132b4533be58e2"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": 5104,
+    "how": "branch",
+    "src_term_uid": 4714,
+    "dst_term_uid": -26,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "376|Terminal|selected path|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|selected path|0",
+     "before": [
+      "29551|ParameterTerminal|path|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 18,
+   "op": "wire",
+   "id": "tun_5096_in",
+   "checkpoint": "L7-1",
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_18_wire.json",
+    "md5": "4d89fb7320ac800f4a199a0c432e8f32"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": -28,
+    "how": "new",
+    "src_term_uid": -27,
+    "dst_term_uid": 5787,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 19,
+   "op": "delete_wire",
+   "id": "del_w3957",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_19_delete_wire.json",
+    "md5": "32be7ff1ffb229dc499772d3c64d1423"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete_object LoopTunnel #1929/#5020 -> False (already gone) after their inner+outer wires were deleted",
+   "model_gaps": [],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": 3957,
+    "n_terminals": 2,
+    "auto_removed_tunnels": []
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 20,
+   "op": "delete_wire",
+   "id": "del_w1899",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_20_delete_wire.json",
+    "md5": "71752a104ae9d44dab946373660bc9f7"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete_object LoopTunnel #1929/#5020 -> False (already gone) after their inner+outer wires were deleted",
+   "model_gaps": [],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": 1899,
+    "n_terminals": 2,
+    "auto_removed_tunnels": []
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 21,
+   "op": "delete_wire",
+   "id": "del_w4337",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_21_delete_wire.json",
+    "md5": "9a7151516f79db8609a0741a828a1c36"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete_object LoopTunnel #1929/#5020 -> False (already gone) after their inner+outer wires were deleted",
+   "model_gaps": [],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": 4337,
+    "n_terminals": 3,
+    "auto_removed_tunnels": []
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 22,
+   "op": "delete_wire",
+   "id": "del_w5073",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_22_delete_wire.json",
+    "md5": "271fdafbd2185cfaa98ee868fa83ae0e"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete_object LoopTunnel #1929/#5020 -> False (already gone) after their inner+outer wires were deleted",
+   "model_gaps": [],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": 5073,
+    "n_terminals": 2,
+    "auto_removed_tunnels": []
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 23,
+   "op": "delete_wire",
+   "id": "del_w5274",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_23_delete_wire.json",
+    "md5": "2e80b6fe0a6fbb77735a56eaccc3318f"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete_object LoopTunnel #1929/#5020 -> False (already gone) after their inner+outer wires were deleted",
+   "model_gaps": [],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": 5274,
+    "n_terminals": 2,
+    "auto_removed_tunnels": [
+     1929
+    ]
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 24,
+   "op": "delete_wire",
+   "id": "del_w1397",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_24_delete_wire.json",
+    "md5": "7d230014fdfbfc3c1883128cfa306f59"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete_object LoopTunnel #1929/#5020 -> False (already gone) after their inner+outer wires were deleted",
+   "model_gaps": [],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": 1397,
+    "n_terminals": 1,
+    "auto_removed_tunnels": []
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 25,
+   "op": "delete_wire",
+   "id": "del_w5056",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_25_delete_wire.json",
+    "md5": "b790a00b18278e8742fd768c5074b812"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete_object LoopTunnel #1929/#5020 -> False (already gone) after their inner+outer wires were deleted",
+   "model_gaps": [],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": 5056,
+    "n_terminals": 1,
+    "auto_removed_tunnels": [
+     5020
+    ]
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 26,
+   "op": "move_in",
+   "id": "move_3052",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_26_move_in.json",
+    "md5": "866d49cb82c4eaae492e4bdeccedd819"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/diag_c71_l7_1a_tunnels.log (TERM 2043/5050 is_source True->False, FLAG w4337/w5073 n_src 0 after move_in #376); tools/bench/stage_d1_l7_1b_r3.log:207-214 (#376's cut terminals read wire=0)",
+   "model_gaps": [
+    "SR pair names reset on a cut (15/51 -> '' but 24/1108 kept 'error out') NOT modelled: names only, computation_diff collapses registers",
+    "the junk Invoke node each op leaves is NOT modelled (stagekit.junk_purge deletes it)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.28,
+   "effect_summary": {
+    "moved": [
+     3052
+    ],
+    "dest_diagram": 23405,
+    "cut_set": [],
+    "n_cut": 0,
+    "cleared_term_uids": [],
+    "tunnel_flips": [],
+    "rule_rows": []
+   },
+   "reconnect": [],
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 27,
+   "op": "move_in",
+   "id": "move_3453",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_27_move_in.json",
+    "md5": "8e1a7d316bb704f2cc8e37316f5fe045"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/diag_c71_l7_1a_tunnels.log (TERM 2043/5050 is_source True->False, FLAG w4337/w5073 n_src 0 after move_in #376); tools/bench/stage_d1_l7_1b_r3.log:207-214 (#376's cut terminals read wire=0)",
+   "model_gaps": [
+    "SR pair names reset on a cut (15/51 -> '' but 24/1108 kept 'error out') NOT modelled: names only, computation_diff collapses registers",
+    "the junk Invoke node each op leaves is NOT modelled (stagekit.junk_purge deletes it)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.29,
+   "effect_summary": {
+    "moved": [
+     3453
+    ],
+    "dest_diagram": 23405,
+    "cut_set": [],
+    "n_cut": 0,
+    "cleared_term_uids": [],
+    "tunnel_flips": [],
+    "rule_rows": []
+   },
+   "reconnect": [],
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 28,
+   "op": "tunnel",
+   "id": "tun_TFP",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_28_tunnel.json",
+    "md5": "834572090ad1de62fa3bfe990cbea493"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_r_r2.log PC3 (connect_nested_v1 made exactly one LoopTunnel per border)",
+   "model_gaps": [
+    "LabVIEW picks direction from the wiring; the plan states `dir`"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "tunnel": "new:T4",
+    "loop": 23041,
+    "dir": "out",
+    "indexing": false,
+    "outer": -30,
+    "inner": -31,
+    "body": 23405,
+    "parent": 686
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 29,
+   "op": "wire",
+   "id": "TFP_in",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_29_wire.json",
+    "md5": "24ed35c9f14b85f89689b0799bf6e795"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": -32,
+    "how": "new",
+    "src_term_uid": 5704,
+    "dst_term_uid": -31,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "2048|Terminal|length|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|length|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 30,
+   "op": "wire",
+   "id": "TFP_to_2048",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_30_wire.json",
+    "md5": "935fbe0c9e60ff9d742ecba056ab7313"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": -33,
+    "how": "new",
+    "src_term_uid": -30,
+    "dst_term_uid": 3182,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "6384|Terminal|actual # data points|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|actual # data points|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 31,
+   "op": "wire",
+   "id": "TFP_to_6384",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_31_wire.json",
+    "md5": "107e42ddfc89c866ae12fe188dbd9c6d"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": -33,
+    "how": "branch",
+    "src_term_uid": -30,
+    "dst_term_uid": 6480,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 32,
+   "op": "tunnel",
+   "id": "tun_TFN",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_32_tunnel.json",
+    "md5": "1e4296395a5133f568745a6e9417c2a9"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_r_r2.log PC3 (connect_nested_v1 made exactly one LoopTunnel per border)",
+   "model_gaps": [
+    "LabVIEW picks direction from the wiring; the plan states `dir`"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "tunnel": "new:T5",
+    "loop": 23041,
+    "dir": "out",
+    "indexing": false,
+    "outer": -35,
+    "inner": -36,
+    "body": 23405,
+    "parent": 686
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 33,
+   "op": "wire",
+   "id": "TFN_in",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_33_wire.json",
+    "md5": "22b2d516fb94d4510c34df7d6630f6f1"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": -37,
+    "how": "new",
+    "src_term_uid": 5739,
+    "dst_term_uid": -36,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "6384|Terminal|error in|0",
+    "6384|Terminal|file # to append|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|file # to append|0",
+     "before": [
+      "376|Terminal|file number to append out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 34,
+   "op": "wire",
+   "id": "TFN_to_6384",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_34_wire.json",
+    "md5": "6abfe09e0179a237f68feb7f1bec4cbc"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": -38,
+    "how": "new",
+    "src_term_uid": -35,
+    "dst_term_uid": 6511,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "2048|Terminal|array|0",
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "6384|Terminal|error in|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 2048,
+     "class": "GrowableFunction",
+     "sink": "2048|Terminal|array|0",
+     "before": [
+      "376|Terminal|total data array out|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 35,
+   "op": "wire",
+   "id": "r_24150_2048",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_35_wire.json",
+    "md5": "12dc389616e7a3114925b540843892cc"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": -39,
+    "how": "new",
+    "src_term_uid": -10,
+    "dst_term_uid": 2316,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0",
+    "6384|Terminal|error in|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 6384,
+     "class": "SubVI",
+     "sink": "6384|Terminal|error in|0",
+     "before": [
+      "376|Terminal|error out|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 36,
+   "op": "wire",
+   "id": "r_24083_6384",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_36_wire.json",
+    "md5": "3b7ee82864b0db4a4614b0609568fc01"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": -40,
+    "how": "new",
+    "src_term_uid": -4,
+    "dst_term_uid": 6497,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0",
+    "376|Terminal|saved file refnum|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|saved file refnum|0",
+     "before": [
+      "3052|Terminal|File # Saved|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 37,
+   "op": "wire",
+   "id": "r_3052_376",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_37_wire.json",
+    "md5": "00bba9235a370a7d6d9a2eb53784fed4"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": -41,
+    "how": "new",
+    "src_term_uid": 3060,
+    "dst_term_uid": 5772,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "3453|ControlTerminal|file progress|0",
+    "376|Terminal|current frame data array in|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    },
+    {
+     "node": 3453,
+     "class": "ControlTerminal",
+     "sink": "3453|ControlTerminal|file progress|0",
+     "before": [
+      "376|Terminal|file progress|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 38,
+   "op": "wire",
+   "id": "r_376_3453",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_38_wire.json",
+    "md5": "e573034313a7f519e3fa3bf7feace4dd"
+   },
+   "model_source": "provisional",
+   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
+   "model_gaps": [
+    "a sink on a sourceless half-wire is detached from it (not measured)"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "wire": -32,
+    "how": "branch",
+    "src_term_uid": 5704,
+    "dst_term_uid": 3453,
+    "detached_from": null
+   },
+   "cdiff_rows": [
+    "376|Terminal|current frame data array in|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 39,
+   "op": "delete_object",
+   "id": "retire_15",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_39_delete_object.json",
+    "md5": "0fb840bc8639cdb0f2ee4d74efc49794"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete RightShiftRegister #15 True, then LeftShiftRegister #51 False (gone with its pair); same for #24/#1108",
+   "model_gaps": [],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.17,
+   "effect_summary": {
+    "deleted": [
+     15,
+     51
+    ],
+    "class": "RightShiftRegister",
+    "terminals_removed": 4
+   },
+   "cdiff_rows": [
+    "376|Terminal|current frame data array in|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 40,
+   "op": "delete_object",
+   "id": "retire_51",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_40_delete_object.json",
+    "md5": "ac15621c8fb1c7d7fffd4ec76b0b19dd"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete RightShiftRegister #15 True, then LeftShiftRegister #51 False (gone with its pair); same for #24/#1108",
+   "model_gaps": [],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "deleted": [],
+    "already_absent": 51
+   },
+   "cdiff_rows": [
+    "376|Terminal|current frame data array in|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 41,
+   "op": "delete_object",
+   "id": "retire_24",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_41_delete_object.json",
+    "md5": "3c0028e2610429214eb1f9676cec3cb4"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete RightShiftRegister #15 True, then LeftShiftRegister #51 False (gone with its pair); same for #24/#1108",
+   "model_gaps": [],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.17,
+   "effect_summary": {
+    "deleted": [
+     24,
+     1108
+    ],
+    "class": "RightShiftRegister",
+    "terminals_removed": 4
+   },
+   "cdiff_rows": [
+    "376|Terminal|current frame data array in|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 42,
+   "op": "delete_object",
+   "id": "retire_1108",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_42_delete_object.json",
+    "md5": "23f5e3331e3efb676fe46ab2342a7a26"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete RightShiftRegister #15 True, then LeftShiftRegister #51 False (gone with its pair); same for #24/#1108",
+   "model_gaps": [],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "deleted": [],
+    "already_absent": 1108
+   },
+   "cdiff_rows": [
+    "376|Terminal|current frame data array in|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 43,
+   "op": "delete_object",
+   "id": "retire_1929",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_43_delete_object.json",
+    "md5": "7a828cd7d311374a481ccaaa2b3ad74a"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete RightShiftRegister #15 True, then LeftShiftRegister #51 False (gone with its pair); same for #24/#1108",
+   "model_gaps": [],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "deleted": [],
+    "already_absent": 1929
+   },
+   "cdiff_rows": [
+    "376|Terminal|current frame data array in|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 44,
+   "op": "delete_object",
+   "id": "retire_5020",
+   "checkpoint": null,
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_44_delete_object.json",
+    "md5": "e3df24101c1317d6b6cb079a3b399880"
+   },
+   "model_source": "provisional",
+   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete RightShiftRegister #15 True, then LeftShiftRegister #51 False (gone with its pair); same for #24/#1108",
+   "model_gaps": [],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "deleted": [],
+    "already_absent": 5020
+   },
+   "cdiff_rows": [
+    "376|Terminal|current frame data array in|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    }
+   ]
+  },
+  {
+   "n": 45,
+   "op": "remove_bad_wires",
+   "id": "rbw",
+   "checkpoint": "L7-R",
+   "file": {
+    "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_45_remove_bad_wires.json",
+    "md5": "09ffd81c16c44262264383a01faad40c"
+   },
+   "model_source": "provisional",
+   "model_evidence": "vigraph.build4 flags (a wire with n_src != 1 or no sink); stage_d1_l7_r_r2.log 'RBW removed no live uid edge'",
+   "model_gaps": [
+    "LabVIEW may also delete dangling tunnels on RBW - not modelled"
+   ],
+   "error": null,
+   "n_candidates": 0,
+   "secs": 0.16,
+   "effect_summary": {
+    "removed_wires": [
+     1581,
+     3268,
+     3629,
+     4517,
+     13486,
+     16880,
+     19372,
+     23614,
+     25186,
+     25404,
+     25478,
+     26025,
+     28924,
+     31169,
+     31193,
+     34066
+    ]
+   },
+   "cdiff_rows": [
+    "376|Terminal|current frame data array in|0"
+   ],
+   "cdiff_detail": [
+    {
+     "node": 376,
+     "class": "SubVI",
+     "sink": "376|Terminal|current frame data array in|0",
+     "before": [
+      "2626|Terminal|appended array|0"
+     ],
+     "after": []
+    }
+   ]
+  }
+ ],
+ "failed": null,
+ "final": false,
+ "end_cdiff_rows": [
+  "376|Terminal|current frame data array in|0"
+ ],
+ "first_divergent": {
+  "n": 1,
+  "op": "move_in",
+  "id": "l7_1a_move",
+  "rows_from_here": 1
+ },
+ "n_candidates": 18,
+ "undecided": 0,
+ "candidates": {
+  "path": "tools/bench/sim/l7_split/candidates.json",
+  "md5": "52e695af50333b8ea5b15f85e4c2aca0"
+ },
+ "sym": {
+  "new:SR1R": -1,
+  "new:SR1L": -2,
+  "new:SR2R": -7,
+  "new:SR2L": -8,
+  "new:T1": -17,
+  "new:T2": -21,
+  "new:T3": -25,
+  "new:T4": -29,
+  "new:T5": -34
+ },
+ "new_classes": {
+  "-1": "RightShiftRegister",
+  "-2": "LeftShiftRegister",
+  "-7": "RightShiftRegister",
+  "-8": "LeftShiftRegister",
+  "-17": "LoopTunnel",
+  "-21": "LoopTunnel",
+  "-25": "LoopTunnel",
+  "-29": "LoopTunnel",
+  "-34": "LoopTunnel"
+ }
+}

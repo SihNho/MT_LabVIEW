@@ -1,0 +1,411 @@
+{
+ "schema": "stageplan/1",
+ "stage": "l7_split",
+ "goal": "replay loop 1.7 split (L7-1a, L7-1b, L7-R) from D1_s3_loop15",
+ "base": {
+  "path": "tools/bench/graph_s3_loop15_20260924.json",
+  "md5": "38203f03404a37a4531403385b5faf43"
+ },
+ "context": {
+  "loops": {
+   "path": "tools/bench/graph_loops_m4b_20260924.json"
+  },
+  "fs_pairs_wiki": {
+   "path": "docs/wiki/subvi/D1_s3b_m3a3b_rowD_20260922_161040.json"
+  },
+  "s1_key": "D1_s1_copy"
+ },
+ "actions": [
+  {
+   "op": "move_in",
+   "id": "l7_1a_move",
+   "nodes": [
+    376
+   ],
+   "dest_diagram": 23405
+  },
+  {
+   "op": "add_shift_reg",
+   "id": "l7_1a_sr_err",
+   "loop": 23041,
+   "body": 23405,
+   "as": "SR1"
+  },
+  {
+   "op": "add_shift_reg",
+   "id": "l7_1a_sr_acc",
+   "loop": 23041,
+   "body": 23405,
+   "as": "SR2",
+   "checkpoint": "L7-1a"
+  },
+  {
+   "op": "wire",
+   "id": "err_R",
+   "src": {
+    "uid": 376,
+    "term": "error out"
+   },
+   "dst": "new:SR1R.inner"
+  },
+  {
+   "op": "wire",
+   "id": "err_L",
+   "src": "new:SR1L.inner",
+   "dst": {
+    "uid": 376,
+    "term": "error in"
+   }
+  },
+  {
+   "op": "wire",
+   "id": "acc_R",
+   "src": {
+    "uid": 376,
+    "term": "total data array out"
+   },
+   "dst": "new:SR2R.inner"
+  },
+  {
+   "op": "wire",
+   "id": "acc_L",
+   "src": "new:SR2L.inner",
+   "dst": {
+    "uid": 376,
+    "term": "total data array in"
+   }
+  },
+  {
+   "op": "wire",
+   "id": "err_init",
+   "src": {
+    "uid": 4910,
+    "term": "error out"
+   },
+   "dst": "new:SR1L.outer"
+  },
+  {
+   "op": "wire",
+   "id": "acc_init",
+   "src": {
+    "uid": 781,
+    "term": "initialized array"
+   },
+   "dst": "new:SR2L.outer"
+  },
+  {
+   "op": "tunnel",
+   "id": "tun_3644",
+   "loop": 23041,
+   "body": 23405,
+   "dir": "in",
+   "as": "T1"
+  },
+  {
+   "op": "wire",
+   "id": "tun_3644_out",
+   "src": {
+    "uid": 1748,
+    "term": "",
+    "term_uid": 1751
+   },
+   "dst": "new:T1.outer"
+  },
+  {
+   "op": "wire",
+   "id": "tun_3644_in",
+   "src": "new:T1.inner",
+   "dst": {
+    "uid": 376,
+    "term": "cal cluster path"
+   }
+  },
+  {
+   "op": "tunnel",
+   "id": "tun_2294",
+   "loop": 23041,
+   "body": 23405,
+   "dir": "in",
+   "as": "T2"
+  },
+  {
+   "op": "wire",
+   "id": "tun_2294_out",
+   "src": {
+    "uid": 2484,
+    "term": "",
+    "term_uid": 2495
+   },
+   "dst": "new:T2.outer"
+  },
+  {
+   "op": "wire",
+   "id": "tun_2294_in",
+   "src": "new:T2.inner",
+   "dst": {
+    "uid": 376,
+    "term": "file size"
+   }
+  },
+  {
+   "op": "tunnel",
+   "id": "tun_5096",
+   "loop": 23041,
+   "body": 23405,
+   "dir": "in",
+   "as": "T3"
+  },
+  {
+   "op": "wire",
+   "id": "tun_5096_out",
+   "src": {
+    "uid": 4693,
+    "term": "",
+    "term_uid": 4714
+   },
+   "dst": "new:T3.outer"
+  },
+  {
+   "op": "wire",
+   "id": "tun_5096_in",
+   "src": "new:T3.inner",
+   "dst": {
+    "uid": 376,
+    "term": "selected path"
+   },
+   "checkpoint": "L7-1"
+  },
+  {
+   "op": "delete_wire",
+   "id": "del_w3957",
+   "wire_uid": 3957
+  },
+  {
+   "op": "delete_wire",
+   "id": "del_w1899",
+   "wire_uid": 1899
+  },
+  {
+   "op": "delete_wire",
+   "id": "del_w4337",
+   "wire_uid": 4337
+  },
+  {
+   "op": "delete_wire",
+   "id": "del_w5073",
+   "wire_uid": 5073
+  },
+  {
+   "op": "delete_wire",
+   "id": "del_w5274",
+   "wire_uid": 5274
+  },
+  {
+   "op": "delete_wire",
+   "id": "del_w1397",
+   "wire_uid": 1397
+  },
+  {
+   "op": "delete_wire",
+   "id": "del_w5056",
+   "wire_uid": 5056
+  },
+  {
+   "op": "move_in",
+   "id": "move_3052",
+   "nodes": [
+    3052
+   ],
+   "dest_diagram": 23405
+  },
+  {
+   "op": "move_in",
+   "id": "move_3453",
+   "nodes": [
+    3453
+   ],
+   "dest_diagram": 23405
+  },
+  {
+   "op": "tunnel",
+   "id": "tun_TFP",
+   "loop": 23041,
+   "body": 23405,
+   "dir": "out",
+   "as": "T4"
+  },
+  {
+   "op": "wire",
+   "id": "TFP_in",
+   "src": {
+    "uid": 376,
+    "term_uid": 5704
+   },
+   "dst": "new:T4.inner"
+  },
+  {
+   "op": "wire",
+   "id": "TFP_to_2048",
+   "src": "new:T4.outer",
+   "dst": {
+    "uid": 2048,
+    "term_uid": 3182
+   }
+  },
+  {
+   "op": "wire",
+   "id": "TFP_to_6384",
+   "src": "new:T4.outer",
+   "dst": {
+    "uid": 6384,
+    "term_uid": 6480
+   }
+  },
+  {
+   "op": "tunnel",
+   "id": "tun_TFN",
+   "loop": 23041,
+   "body": 23405,
+   "dir": "out",
+   "as": "T5"
+  },
+  {
+   "op": "wire",
+   "id": "TFN_in",
+   "src": {
+    "uid": 376,
+    "term_uid": 5739
+   },
+   "dst": "new:T5.inner"
+  },
+  {
+   "op": "wire",
+   "id": "TFN_to_6384",
+   "src": "new:T5.outer",
+   "dst": {
+    "uid": 6384,
+    "term_uid": 6511
+   }
+  },
+  {
+   "op": "wire",
+   "id": "r_24150_2048",
+   "src": {
+    "uid": "new:SR2R",
+    "side": "outer"
+   },
+   "dst": {
+    "uid": 2048,
+    "term_uid": 2316
+   }
+  },
+  {
+   "op": "wire",
+   "id": "r_24083_6384",
+   "src": {
+    "uid": "new:SR1R",
+    "side": "outer"
+   },
+   "dst": {
+    "uid": 6384,
+    "term_uid": 6497
+   }
+  },
+  {
+   "op": "wire",
+   "id": "r_3052_376",
+   "src": {
+    "uid": 3052,
+    "term_uid": 3060
+   },
+   "dst": {
+    "uid": 376,
+    "term_uid": 5772
+   }
+  },
+  {
+   "op": "wire",
+   "id": "r_376_3453",
+   "src": {
+    "uid": 376,
+    "term_uid": 5704
+   },
+   "dst": {
+    "uid": 3453,
+    "term_uid": 3453
+   }
+  },
+  {
+   "op": "delete_object",
+   "id": "retire_15",
+   "uid": 15,
+   "missing_ok": true
+  },
+  {
+   "op": "delete_object",
+   "id": "retire_51",
+   "uid": 51,
+   "missing_ok": true
+  },
+  {
+   "op": "delete_object",
+   "id": "retire_24",
+   "uid": 24,
+   "missing_ok": true
+  },
+  {
+   "op": "delete_object",
+   "id": "retire_1108",
+   "uid": 1108,
+   "missing_ok": true
+  },
+  {
+   "op": "delete_object",
+   "id": "retire_1929",
+   "uid": 1929,
+   "missing_ok": true
+  },
+  {
+   "op": "delete_object",
+   "id": "retire_5020",
+   "uid": 5020,
+   "missing_ok": true
+  },
+  {
+   "op": "remove_bad_wires",
+   "id": "rbw",
+   "checkpoint": "L7-R"
+  }
+ ],
+ "final": false,
+ "finalized": {
+  "base": {
+   "path": "tools/bench/graph_s3_loop15_20260924.json",
+   "md5": "38203f03404a37a4531403385b5faf43"
+  },
+  "plan_in": {
+   "path": "tools/bench/stageplan_l7_split.json",
+   "md5": "b8f3a81069f889b6ab1afda4535882e1"
+  },
+  "last_step": {
+   "path": "tools/bench/sim/l7_split/step_45_remove_bad_wires.json",
+   "md5": "09ffd81c16c44262264383a01faad40c"
+  },
+  "summary": {
+   "path": "tools/bench/sim/l7_split/summary.json",
+   "md5": "74b1817fcd65b5295bb01c997c57a5f0"
+  },
+  "end_cdiff_rows": [
+   "376|Terminal|current frame data array in|0"
+  ],
+  "failed": null,
+  "first_divergent": {
+   "n": 1,
+   "op": "move_in",
+   "id": "l7_1a_move",
+   "rows_from_here": 1
+  },
+  "undecided": 0,
+  "at": "2026-09-24 22:05:58"
+ }
+}
