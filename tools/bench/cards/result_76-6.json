@@ -1,0 +1,25 @@
+{"schema":"result/1","id":"76-6","status":"FAIL","gates":{"pass":13,"fail":1},
+"first_fail":"S3 cold read after make_default + save: I32[] [1,2,3,4] came back EMPTY (tools/bench/selftest_make_default.log:81-82)",
+"blocked_by":null,
+"artefacts":[
+{"path":"tools/gscript.py","md5":"ee4960cbd6ccef894b5dba153bd75fc1"},
+{"path":"tools/bench/selftest_make_default.py","md5":"d6d686f59f3eddac6065d55a124f9957"},
+{"path":"tools/bench/selftest_make_default.log","md5":null},
+{"path":"archive/peer/2026-09-25-76-6-makedefault-cold.md","md5":null},
+{"path":"tools/bench/cards/disposition_76-6-makedefault.md","md5":null}],
+"facts":[
+"make_default patched (gscript.py:2990-3020): op error out checked + read-back after set and after save, raises on mismatch; negative case raises (selftest log:78)",
+"Review archive/peer/2026-09-25-76-6-makedefault-cold.md: the after-save read-back reads CURRENT values, so it cannot catch a lost default; accepted",
+"Cold read (selftest log:81): 10044-path String[] kept, I32[4] [1,2,3,4] lost; Border Size 3 = IMAQ Create's own default, so uninformative",
+"Across 76-5+76-6: 1 of 4 informative values persisted, the 10044-element String[] each time (review table :61-67); cause H1 (3F3 not applied, panel closed) vs H2 (lost at save/load) open",
+"Self-test run 1 (05:15) died on our script: IMAQ Create 'Image Name' is required -> ES 0; fixed, run 2 is the finding. Failure budget 2 spent",
+"No JEV-LADDER line for selftest_make_default.log in jev_gate.log (only a JEV-PREFLIGHT :887); took the old path: hypothesis review dispatched, ANSWERED rc=0 175 s",
+"Stand-ins NOT rebuilt, PD18(a) tests NOT run. OpCreateConstOnTerm_v0 casts to Loop (build_opcreateconstonterm_v0.py:17): For-body nodes likely reachable (unmeasured); For N / top level: no verb",
+"Dispositions 76-5-a16 and 76-5-t1 copied into their archive/peer files (What was done with it)",
+"Pins unchanged both runs (vi.lib GI, lvlib, get-buff copy/orig, pane base, manifest, S1, ORIGINAL); refs 13/13/0; scratch deleted, files left []; LabVIEW gone (selftest log:84-103)"],
+"open":[
+"Card the review's discriminating test (Border Size 5; String[]/I32[] sizes 1/4/100/10044; sentinel + ReinitializeAllToDefault before save; save+reload; panel open variant) before any stand-in rebuild?",
+"PD19(a) N=1 as a diagram constant has no verb (For-loop N terminal is not a body-node terminal): build a constant-on-loop-terminal verb, or move the counter/Q&R into a body and accept N from elsewhere?",
+"archive/peer/2026-09-25-76-6-makedefault-cold.md needs its 'What was done with it' pasted from tools/bench/cards/disposition_76-6-makedefault.md (outside this card's write flags)"],
+"cost":{"usd":null,"minutes":25,"labview_runs":2},
+"note":"Stopped on failure budget 2 of selftest_make_default.py; replay VIs untouched (76-5 files remain, superseded per PD19(d))."}

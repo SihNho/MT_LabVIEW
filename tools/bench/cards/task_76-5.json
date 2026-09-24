@@ -1,0 +1,76 @@
+{
+ "schema": "task/1",
+ "id": "76-5",
+ "kind": "build",
+ "goal": "Build the three replay VIs per m8 plan Pre-decided 18 (call-count keyed, N=1 For-loop uninitialised SR) from replay_imaqdx_pane_base.vi, and run their tests.",
+ "why": "Result 76-4 delivered frames folder, ctl->ind verb and pane base; bodies were not reached. These VIs gate the S1/S3 swap for M8(b).",
+ "inputs": [
+  {"path": "docs/m8-real-run-plan.md", "md5": "34ec62cf06bd73f998155bf896d41156"},
+  {"path": "tools/bench/cards/result_76-4.json"},
+  {"path": "tools/bench/replay_vis_76c_skeleton.log", "md5": "18eeb8e06978b557713145dcf4fea785"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_imaqdx_pane_base.vi", "md5": "65e999d9bd292a892512bc1caf57e0e4"},
+  {"path": "G:\\m8_replay_frames\\frames_manifest.json", "md5": "f9032ae5510e96126d9f53fc92f69cfe"},
+  {"path": "docs/frame-loop-wire-graph.md"},
+  {"path": "tools/gscript.py"},
+  {"path": "tools/stagekit.py"},
+  {"path": "docs/toolkit-capabilities.md"},
+  {"path": "docs/NAMES.md"}
+ ],
+ "pass": [
+  "external search on creating primitives by VI Scripting done first; which primitive route was used (generic creator or copy_by_index), stated",
+  "if a generic primitive creator is built: in gscript.py, Close Reference on every ref, scratch test places each needed primitive, handles flat",
+  "replay_imaqdx_get_image_buf.vi and replay_get_image_cal.vi saved by SCRIPT from copies of the pane base, ExecState 1 cold, md5s",
+  "replay_get_buff_image.vi = copy of get buff image-lost frames.vi with only #529 -> buf stand-in (replace_object), ES 1 cold, md5",
+  "pane diff empty for all three vs their sources, per connector slot by data type and direction",
+  "PD18(a) tests, U8 pixel-array md5: fresh load get-buff copy b=8217,8218 -> f00000,f00001, image number == b, Missed TRUE",
+  "PD18(a) tests: fresh load b=5 -> f00000; cal stand-in 3 calls -> f00000,f00001,f00002 and Buffer Number Out 0,1,2",
+  "get-buff copy: callee census diff == exactly #529 -> buf stand-in; wire-edge diff empty after uid remap",
+  "launch gate honoured; originals, vi.lib, lvlib, fixture, background VIs, beds, pane base md5 unchanged; refs balanced; LabVIEW gone",
+  "every failed build log gets its JEV-LADDER line (76-4 run 1 had none)"
+ ],
+ "outputs": [
+  "tools/bench/replay_vis_76d.log",
+  "tools/bench/replay_vis_76d.json",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image.vi",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_imaqdx_get_image_buf.vi",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_image_cal.vi"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "tools/recipes/stage_replay_*.py",
+   "tools/bench/replay_vis_76*",
+   "tools/bench/diag_replay_*.py",
+   "tools/bench/selftest_*prim*",
+   "tools/bench/stageplans/**",
+   "tools/bench/*replay*",
+   "tools/gscript.py",
+   "tools/stagekit.py",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\**",
+   "docs/NAMES.md",
+   "docs/toolkit-capabilities.md",
+   "tools/bench/jev_gate.log",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "fact", "priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 100
+ },
+ "rules": [
+  "rule 1: never write an original, bed, vi.lib, the lvlib, fixture/frames files or background VIs",
+  "rule 1a: inside the get-buff copy ONLY #529 changes; Subtract and Equal To 0? stay",
+  "stage/diag files <=120 lines on stagekit; reference hygiene per CLAUDE.md 3",
+  "failed prediction -> JEV-LADDER line first, then hypothesis review if owed",
+  "run_vi = the replay VIs + their test harness only; main VI/S1/S3/beds not run; no camera session",
+  "save each VI as soon as it passes its own checks (split rule): a partial result must leave files",
+  "hard stop at 95 min: return what exists; do NOT start the swap into S1/S3 copies"
+ ],
+ "advances": ["M8", "R5"]
+}

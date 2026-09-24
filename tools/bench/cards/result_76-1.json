@@ -1,0 +1,21 @@
+{"schema":"result/1","id":"76-1","status":"BLOCKED","gates":{"pass":12,"fail":3},
+"first_fail":"F1a fixture is NOT img00000..img10043: 10044 files numbered 4..11825 with 124 gaps, img00005.tif absent (replay_vis_76_measure.log:18-19)",
+"blocked_by":{"device":"docs/m8-real-run-plan.md PD13(a)/PD14(b)/PD15 frame map","message":"'b mod 10044' vs test 'fixture frame 5' conflict: fixture.py maps by buffer number (img{b:05d}) and img00005 does not exist. Frame map is judgement's; nothing built. Diag at failure budget 2 (two own-script crashes)."},
+"artefacts":[{"path":"tools/bench/replay_vis_76_measure.log","md5":"c17191a77820124ec97d5cceba3a268a"},{"path":"tools/bench/diag_replay_measure.py","md5":"acb48f71085642f7163a981369c9af76"},{"path":"tools/bench/replay_vis_76_cleanup.log","md5":"4b23f6d48d4c183f3de7e1ffbe3caca3"},{"path":"tools/bench/diag_replay_cleanup.py","md5":"b3ed3d8c57d87f317ad1bb63ddc3ac00"}],
+"facts":[
+"Fixture: 10044 tifs, numbers 4,7,8,11..11825, 124 gaps, no img00005; img00004 is 1280x1024 mode L (replay_vis_76_measure.log:17-20)",
+"get buff body = IMAQdx Get Image #529 -> Subtract(x=Buffer to extract, y=Buffer Number Out) -> 'Equal To 0?' -> Missed frames? (measure.log:45-46, wiki get buff json:342-474)",
+"So with Buffer Number Out = Buffer to extract the ORIGINAL logic outputs Missed frames? = TRUE, not False as PD14(a)/card expect",
+"IMAQdx Get Image.vi is not locked: diagram readable, body = ONE CLFN niimaqdx.dll:LV_IMAQdxGetImage2 (measure.log:34-35)",
+"Its byte copy stays claimed by the lvlib: VI name 'NI_Vision_Acquisition_Software.lvlib:<copy>.vi', ExecState 0 on load (measure.log:33,38)",
+"get buff Nodes[] = 3 nodes (#529, Subtract, Equal To 0?), no panel terminals: connect_terminals cannot wire Session In->Session Out once #529 is gone (measure.log:45; gscript.py:1381)",
+"No fleet verb wires a control terminal directly to an indicator terminal (wire/connect_terminals need Nodes[]; connect_ctl needs a node source, gscript.py:2528, toolkit-capabilities.md:25)",
+"Caller image: two IMAQ Create in S1 (#13938 d87, #20436 d147), Image Type from RingConstants #13245/#20327, value unread; offline trace #6810 Image In stalls at FSIT #1690 (measure.log:23-25)",
+"Hygiene: pins S1 3e3d23ce, S3 1a11d92a, gb/gb_orig 9aaaef21, GI be7a5163 unchanged; both scratches deleted; LabVIEW gone (replay_vis_76_cleanup.log:2-8)",
+"Jev ladder both runs: our-script-bug p=0.87, NEXT-ACTION patch+rerun; run 2 crashed at diag_replay_measure.py:87 (uids() returns a set) before the #529 delete test"],
+"open":[
+"Frame map for the replay: (a) k-th file of the sorted fixture list, k = b mod 10044 (b=5 and 10049 -> img00013) or (b) file img%05d of b itself (missing numbers -> ReadFile error)?",
+"Missed frames? = TRUE is what the unchanged get-buff logic yields when Out == In; accept that (rule 1a) or make the inner stand-in return a different Buffer Number Out?",
+"Build route: the copy of IMAQdx Get Image carries the lvlib claim (clash risk with vi.lib's) and a delete of #529 needs a control->indicator connect verb the fleet lacks - build that verb (tool grant) or use a pass-through node?"],
+"cost":{"usd":null,"minutes":14,"labview_runs":1},
+"note":"No replay VI built; no stage plan/dry/prerun created (the build premise failed first). Delete-edit test on #529 not reached. STATUS not edited (status_edit false)."}

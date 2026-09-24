@@ -1,0 +1,49 @@
+{
+ "schema": "task/1",
+ "id": "76-2",
+ "kind": "build",
+ "goal": "(1) tools/logclass.py classifies a log by its LAST 'BGRUN START' command, not its filename. (2) Fill 'What was done with it' in archive/peer/2026-09-25-m8b-replay-prep-75-fact.md.",
+ "why": "Carried items (1) and (2) of STATUS NEXT cycle 75; (1) is a device-failed finding (threshold 1).",
+ "inputs": [
+  {"path": "tools/logclass.py"},
+  {"path": "archive/peer/2026-09-25-m8b-replay-prep-75-fact.md"},
+  {"path": "docs/m8-real-run-plan.md"},
+  {"path": "docs/violation-decisions.md"}
+ ],
+ "pass": [
+  "logclass self-test green (count in result) and every pre-existing logclass self-test still green",
+  "every caller of tools/logclass.py listed (grep) and each one's behaviour on the new rule stated as a fact",
+  "archive file section filled, every sentence citing a file:line"
+ ],
+ "outputs": ["tools/logclass.py", "tools/bench/selftest_logclass_cmd.py", "tools/bench/selftest_logclass_cmd.log"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/logclass.py",
+   "tools/bench/selftest_logclass*",
+   "tools/bench/fixtures/logclass/**",
+   "archive/peer/2026-09-25-m8b-replay-prep-75-fact.md",
+   "docs/violation-decisions.md",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "rules": [
+  "no LabVIEW, no hardware",
+  "(1) peer.ps1 in command position = review; Jev script = jev; no BGRUN START = current rule",
+  "(1) fixtures: review log w/ build-like name, build log w/ review-like name, no-START log",
+  "(2) source = m8 plan Pre-decided 14 and 15; cite lines; no new judgement",
+  "do not touch gscript.py, stagekit.py or any VI: another session builds in parallel",
+  "report FACTS + OPEN; no scope beyond the two items"
+ ],
+ "unblocks": "M8"
+}

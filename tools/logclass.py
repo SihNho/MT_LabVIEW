@@ -30,6 +30,8 @@ what the log's own `BGRUN START` line invoked: a build is one that ran something
 `tools/bench/`, and `tools/bench/probe_bgrun_inner.log` - a self-test of the bgrun runner that shells out to
 `Write-Output` and never touches LabVIEW - is a build by name and not by nature. Moving to the content test would
 change the audit's historical counts, so it is proposed, not done. See `is_build_log()`.
+DONE FOR THE REVIEW DIRECTION 2026-09-25 (card 76-2): a log whose last BGRUN START command is a review dispatcher is
+a review whatever its name - see `command_kind()`. The build direction is not taken (asymmetric; see there).
 
 THE EXCLUSION IS ROLE-DEPENDENT - DO NOT COLLAPSE IT TO ONE LIST. Writing this file nearly introduced a fifth
 bug: `stall_pid*.log` must be INVISIBLE to the build audit (it is not a run, so "no BGRUN line" is meaningless) and
@@ -75,9 +77,77 @@ REVIEW_LOG_RE = re.compile(
 WATCHDOG_LOG_RE = re.compile(r"^(stall_)", re.I)
 
 
+# ==== THE COMMAND DECIDES (card 76-2, 2026-09-25; the `device-failed` of archive/peer/2026-09-25-retrospective-
+# cycle75.md). `tools/bench/m8b_replay_prep_75_fact.log:1` ran `powershell ... -File tools\peer.ps1 -Kind fact` under
+# a build-like name, so the filename rule counted a $3.4414 fact review as a build (C3/C4 misfiled). The KNOWN LIMIT
+# in this module's docstring predicted exactly that. `command_kind()` now reads the log's LAST `BGRUN START` command:
+#   "review" - the SCRIPT in command position (first .py/.ps1 token; after `--` when that script is bgrun.py) is a
+#              review/monitoring dispatcher (_MACHINERY_SCRIPT_RE), or the program is claude(.exe) (judgement session);
+#   "jev"    - that script is a Jev script (same pattern as tools/bgrun.py:124 JEV_SCRIPT_RE): not a review; still a
+#              build for is_build_log (see its docstring - a pre-existing gate pins that);
+#   "build"  - some script in PYTHON COMMAND POSITION is a non-Jev tools/recipes|bench script
+#              (the rule of tools/hooks/guard_peer.py:215-224 in_prediction_scope);
+#   ""       - no BGRUN START, or a command none of the above recognises: the FILENAME rule applies unchanged.
+# ASYMMETRIC ON PURPOSE: a review-NAMED log is still a review even when its command is a recipe. Making it a build
+# would flip four pre-existing gates (selftest_logclass_recipebuild C4c/C8/C8b/C8c) and put reviewer prose back in
+# the failure scan for any such log; that direction is left to judgement (result 76-2 OPEN). Review evidence wins
+# from EITHER side; the command can only ADD machinery, never remove it.
+_MACHINERY_SCRIPT_RE = re.compile(
+    r"^(peer\.ps1|retrospective\w*\.py|outcome_review\.py|prior_art_review\.py|audit_cycle\.py|violations\.py"
+    r"|doc_ingest\.py|doc_lint\.py|cycle_runner\.py)$", re.I)
+_JEV_CMD_SCRIPT_RE = re.compile(r"(?:^|[\\/])tools[\\/](?:jev\w*|bench[\\/]jev_\w*)\.py$", re.I)
+_SCOPE_CMD_SCRIPT_RE = re.compile(r"(?:^|[\\/])tools[\\/](?:recipes|bench)[\\/][^\\/]+\.py$", re.I)
+_TOKEN_RE = re.compile(r"\"[^\"]*\"|'[^']*'|&&|\|\||[;|]|[^\s;|]+")
+_SEP = {";", "&&", "||", "|"}
+
+
+def _first_script(tokens):
+    """The first non-flag .py/.ps1 token (unquoted); when it is bgrun.py, the first one after `--`."""
+    for i, t in enumerate(tokens):
+        bare = t.strip("\"'")
+        if bare.startswith("-") or not bare.lower().endswith((".py", ".ps1")):
+            continue
+        if os.path.basename(bare.replace("\\", "/")).lower() == "bgrun.py" and "--" in tokens[i:]:
+            return _first_script(tokens[tokens.index("--", i) + 1:])
+        return bare
+    return ""
+
+
+def command_kind(cmd):
+    """"review" | "jev" | "build" | "" for a bgrun command string (see the block comment above)."""
+    if not cmd:
+        return ""
+    tokens = _TOKEN_RE.findall(cmd)
+    first = _first_script(tokens)
+    base = os.path.basename(first.replace("\\", "/"))
+    if _MACHINERY_SCRIPT_RE.match(base) or command_program(cmd) in _JUDGEMENT_PROGRAMS:
+        return "review"
+    if first and _JEV_CMD_SCRIPT_RE.search(first):
+        return "jev"
+    seg = []
+    for t in tokens + [";"]:
+        if t not in _SEP:
+            seg.append(t)
+            continue
+        prog = command_program(" ".join(seg))
+        s = _first_script(seg)
+        if (prog.startswith("py") and s and _SCOPE_CMD_SCRIPT_RE.search(s)
+                and not _JEV_CMD_SCRIPT_RE.search(s)):
+            return "build"
+        seg = []
+    return ""
+
+
+def log_kind(path):
+    """The log's class from its OWN last BGRUN START command: "review" | "jev" | "build" | "" (use the filename)."""
+    return command_kind(last_bgrun_command(path))
+
+
 def is_review_log(path):
-    """Written by the review machinery. Excluded from build accounting AND from failure scanning."""
-    return bool(REVIEW_LOG_RE.match(os.path.basename(path)))
+    """Written by the review machinery. Excluded from build accounting AND from failure scanning.
+
+    Review if the FILENAME says so (unchanged) OR the log's last BGRUN START command is a review dispatcher."""
+    return bool(REVIEW_LOG_RE.match(os.path.basename(path))) or log_kind(path) == "review"
 
 
 def is_build_log(path):
@@ -85,9 +155,15 @@ def is_build_log(path):
 
     Use this for cycle accounting and bgrun-discipline checks (audit_cycle A1/A2, guard_cycle). Do NOT use it for
     failure scanning: a watchdog record is not a build, but it IS a failure that owes a review.
+    A log whose command is a review dispatcher is not a build, whatever its name (card 76-2). A Jev command
+    (`log_kind` == "jev") is DELIBERATELY still a build here: selftest_logclass_recipebuild C4 pins `jev_trial.log`
+    is_build_log True, and the Jev exemptions live by command in bgrun/guard_peer; moving Jev out of the build set is
+    left to judgement (result 76-2 OPEN).
     """
     b = os.path.basename(path)
-    return not (REVIEW_LOG_RE.match(b) or WATCHDOG_LOG_RE.match(b))
+    if REVIEW_LOG_RE.match(b) or WATCHDOG_LOG_RE.match(b):
+        return False
+    return log_kind(path) != "review"
 
 
 # The command a bgrun log's own `BGRUN START` line invoked. bgrun writes exactly:

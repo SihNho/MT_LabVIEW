@@ -1,0 +1,57 @@
+BGRUN START 2026-09-25 03:33:17 limit 15.0 min: py -u tools/bench/diag_replay_measure.py
+
+---------- [F1] fixture index -> file map (tools/gpu/fixture.py:15, read_image)
+  FACT  tif files 10044; first ['img00004.tif', 'img00007.tif'] last ['img11824.tif', 'img11825.tif']
+  FAIL  F1a img%05d.tif for every k in 0..10043, no gaps  (10044, [4, 7], [11824, 11825])
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_replay_measure.py", line 35, in <module>
+    im = Image.open(os.path.join(FX.DATA, "img00005.tif"))
+  File "C:\Users\KimLab\AppData\Local\Programs\Python\Python310\lib\site-packages\PIL\Image.py", line 3277, in open
+    fp = builtins.open(filename, "rb")
+FileNotFoundError: [Errno 2] No such file or directory: 'G:\\Data\\SiHyeong\\20260906 Kimlab - 50bp 16X WT 90Hz 1p2 Ramp_Newbatch\\test\\img00005.tif'
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"FileNotFoundError: [Errno 2] No such file or directory: 'G:\\\\Data\\\\SiHyeong\\\\20260906 Kimlab - 50bp 16X WT 90Hz 1p2 Ramp_Newbatch\\\\test\\\\img00005.tif'","artefacts":[]}
+BGRUN END rc=1 after 0s
+BGRUN START 2026-09-25 03:33:51 limit 15.0 min: py -u tools/bench/diag_replay_measure.py
+
+---------- [F1] fixture index -> file map (tools/gpu/fixture.py:15, read_image)
+  FACT  tif files 10044; first ['img00004.tif', 'img00007.tif'] last ['img11824.tif', 'img11825.tif']
+  FAIL  F1a img%05d.tif for every k in 0..10043, no gaps  (10044, [4, 7], [11824, 11825])
+  FACT  fixture numbers: n 10044, first [4, 7, 8, 11, 12, 13], last [11823, 11824, 11825], gaps 124 (head [(4, 7), (8, 11), (151, 154), (154, 158), (176, 179), (315, 320), (380, 383), (383, 387)]), 5 present False
+  PASS  F1b img00004.tif is 1280x1024 mode L (8-bit)  ('L', (1280, 1024))
+
+---------- [F2] caller Image In source (offline, docs/wiki/subvi/D1_s1_copy.json)
+  FACT  trail [(1651, 'LoopTunnel', 1666, 'Value', ''), (1678, 'FlatSequenceInnerTunnel', 1690, 'Value', ''), (1706, 'FlatSequenceInnerTunnel', 1690, 'Value', ''), (1706, 'FlatSequenceInnerTunnel', 1690, 'Value', ''), (1706, 'FlatSequenceInnerTunnel', 1690, 'Value', ''), (1706, 'FlatSequenceInnerTunnel', 1690, 'Value', ''), (1706, 'FlatSequenceInnerTunnel', 1690, 'Value', ''), (1706, 'FlatSequenceInnerTunnel', 1690, 'Value', ''), (1706, 'FlatSequenceInnerTunnel', 1690, 'Value', ''), (1706, 'FlatSequenceInnerTunnel', 1690, 'Value', ''), (1706, 'FlatSequenceInnerTunnel', 1690, 'Value', ''), (1706, 'FlatSequenceInnerTunnel', 1690, 'Value', '')]
+  FAIL  F2a Image In traces to an IMAQ Create subVI  1690
+  FACT  IMAQ Create #1690 inputs: [('Value', 'FlatSequenceInnerTunnel', 1690)]
+
+---------- [1] RESTART LabVIEW
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33958
+
+---------- [G] IMAQdx Get Image.vi byte copy (vi.lib never written)
+  PASS  SC replay_measure_76_20260925_033351_GI.vi is a byte-identical copy of IMAQdx Get Image.vi  replay_measure_76_20260925_033351_GI.vi
+  FACT  GI es: 0
+  FACT  GI node_info: [(0, 'Call Library Function Node', 'niimaqdx.dll:LV_IMAQdxGetImage2')]
+  FACT  GI labels: [{'uid': 277, 'label': 'niimaqdx.dll:LV_IMAQdxGetImage2'}]
+  FACT  GI subvis: []
+  FACT  GI conpane: {0: 'error out', 1: 'Buffer Number Out', 2: 'Image Out', 3: 'Session Out', 4: None, 5: None, 6: None, 7: 'Buffer Number Mode (Next)', 8: 'error in', 9: 'Buffer Number In', 10: 'Image In', 11: 'Session In'}
+  FACT  GI vi_name: NI_Vision_Acquisition_Software.lvlib:replay_measure_76_20260925_033351_GI.vi
+  PASS  GI scratch deleted: replay_measure_76_20260925_033351_GI.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\replay_measure_76_20260925_033351_GI.vi
+  PASS  G1a diagram readable: node_info non-empty  1
+
+---------- [B] get buff scratch copy
+  PASS  SC replay_measure_76_20260925_033351_GB.vi is a byte-identical copy of get buff image-lost frames.vi  replay_measure_76_20260925_033351_GB.vi
+  FACT  GB es: 1
+  FACT  GB node_info: [(0, 'Unknown', 'IMAQdx Get Image.vi'), (1, 'Subtract', 'Subtract'), (2, 'Equal To 0?', 'Equal To 0?')]
+  FACT  GB labels: [{'uid': 529, 'label': 'IMAQdx Get Image.vi'}, {'uid': 76, 'label': 'Subtract'}, {'uid': 65, 'label': 'Equal To 0?'}]
+  FACT  GB subvis: [{'uid': 529, 'name': 'NI_Vision_Acquisition_Software.lvlib:IMAQdx Get Image.vi', 'path': 'C:\\Program Files\\NI\\LVAddons\\niimaqdx\\1\\vi.lib\\vision\\driver\\IMAQdx.llb\\IMAQdx Get Image.vi'}]
+  FACT  GB conpane: {0: 'Session In', 1: None, 2: None, 3: None, 4: 'Session Out', 5: 'Image In', 6: 'Image Out', 7: 'Buffer to extract', 8: 'Missed frames?', 9: None, 10: 'current image number', 11: 'error in', 12: None, 13: None, 14: None, 15: 'error out'}
+  FACT  GB vi_name: replay_measure_76_20260925_033351_GB.vi
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_replay_measure.py", line 101, in <module>
+    rb = probe("GB", GB, lambda rec: ("SubVI", 529))
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_replay_measure.py", line 87, in probe
+    i = us.index(uid) if uid in us else -1
+AttributeError: 'set' object has no attribute 'index'
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"AttributeError: 'set' object has no attribute 'index'","artefacts":[]}
+BGRUN END rc=1 after 159s

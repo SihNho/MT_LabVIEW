@@ -1,0 +1,171 @@
+BGRUN START 2026-09-25 04:47:36 limit 45.0 min: py -u tools/bench/diag_replay_gbtest.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 254 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 9aaaef21e8426035f64a04ec816491d0  got 9aaaef21e8426035f64a04ec816491d0
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE vi.lib GI        be7a516355ccb2c0fdbfe935c9146a07  (want be7a516355ccb2c0fdbfe935c9146a07) OK
+  FACT  PIN BEFORE lvlib            2aaa17d3ec745314f9a9f1e3c0b8ed4e  (want 2aaa17d3ec745314f9a9f1e3c0b8ed4e) OK
+  FACT  PIN BEFORE get-buff copy    9aaaef21e8426035f64a04ec816491d0  (want 9aaaef21e8426035f64a04ec816491d0) OK
+  FACT  PIN BEFORE get-buff orig    9aaaef21e8426035f64a04ec816491d0  (want 9aaaef21e8426035f64a04ec816491d0) OK
+  FACT  PIN BEFORE pane base        65e999d9bd292a892512bc1caf57e0e4  (want 65e999d9bd292a892512bc1caf57e0e4) OK
+  FACT  PIN BEFORE manifest         f9032ae5510e96126d9f53fc92f69cfe  (want f9032ae5510e96126d9f53fc92f69cfe) OK
+  FACT  PIN BEFORE S1               3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33970
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  replay_get_buff_image.vi
+  FACT  ExecState [after open] replay_get_buff_image.vi = 1
+  PASS  G1 #529 calls IMAQdx Get Image.vi  {529: 'C:\\Program Files\\NI\\LVAddons\\niimaqdx\\1\\vi.lib\\vision\\driver\\IMAQdx.llb\\IMAQdx Get Image.vi'}
+  FACT  replace_object -> {'new_uid': 221, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  G2a replace: no error, new uid  {'new_uid': 221, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  G2b callee census diff == exactly #529 -> buf stand-in  {529: ('C:\\Program Files\\NI\\LVAddons\\niimaqdx\\1\\vi.lib\\vision\\driver\\IMAQdx.llb\\IMAQdx Get Image.vi', None), 221: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_imaqdx_get_image_buf.vi')}
+  PASS  G2c wire-edge diff after remap == empty (13 edges)  {'rem': [], 'add': []}
+
+---------- [SAVE] replay_get_buff_image.vi
+  FACT  ExecState [before the save] replay_get_buff_image.vi = 1
+  PASS  S1 the save returned without raising (scripted route)
+  FACT  SAVED ARTEFACT: replay_get_buff_image.vi md5 ad2ab9278abccac1160914d456f676f9 size 13749 B; version bytes [31, 38, 128]
+  PASS  S2 the artefact is on disk and non-empty  13749 B
+  FACT  ExecState [re-read AFTER the save] replay_get_buff_image.vi = 1
+  PASS  S3 ExecState 1 re-read AFTER the save  ExecState 1
+  PASS  G3 pane per slot (label, direction) == source get-buff  ({0: ('Session In', False), 1: (None, None), 2: (None, None), 3: (None, None), 4: ('Session Out', True), 5: ('Image In', False), 6: ('Image Out', True), 7: ('Buffer to extract', False), 8: ('Missed frames?', True), 9: (None, None), 10: ('current image number', True), 11: ('error in', False), 12: (None, None), 13: (None, None), 14: (None, None), 15: ('error out', True)}, {0: ('Session In', False), 1: (None, None), 2: (None, None), 3: (None, None), 4: ('Session Out', True), 5: ('Image In', False), 6: ('Image Out', True), 7: ('Buffer to extract', False), 8: ('Missed frames?', True), 9: (None, None), 10: ('current image number', True), 11: ('error in', False), 12: (None, None), 13: (None, None), 14: (None, None), 15: ('error out', True)})
+  PASS  SC replay_vis_76d_tes_20260925_044737_hgb.vi is a byte-identical copy of EMPTY_v0.vi  replay_vis_76d_tes_20260925_044737_hgb.vi
+  FACT  gb VUT terms [('Session In', False), ('', False), ('', False), ('', False), ('Session Out', True), ('Image In', False), ('Image Out', True), ('Buffer to extract', False), ('Missed frames?', True), ('', False), ('current image number', True), ('error in', False), ('', False), ('', False), ('', False), ('error out', True)]
+
+OBSERVED EXC terminal pick: ['Image Out', 'current image number'] hits in [('Session In', False), ('', False), ('', False), ('', False), ('Session Out', True), ('Image In', False), ('Image Out', True), ('Buffer to extract', False), ('Missed frames?', True), ('', False), ('current image number', True), ('error in
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stagekit.py", line 1217, in run
+    fn(stage)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_replay_gbtest.py", line 68, in body
+    H1, l1 = harness(s, "gb", T); H2, l2 = harness(s, "cal", L.CAL)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_replay_gbtest.py", line 31, in harness
+    g.wire(H, "SubVI", sx("v"), L.tname(vr, lambda n: "mage" in n, True), "SubVI", sx("a"), "Image")
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_replay_lib.py", line 52, in tname
+    raise RuntimeError("terminal pick: {0} hits in {1}".format(h, [(r["name"], r["is_source"]) for r in rows]))
+RuntimeError: terminal pick: ['Image Out', 'current image number'] hits in [('Session In', False), ('', False), ('', False), ('', False), ('Session Out', True), ('Image In', False), ('Image Out', True), ('Buffer to extract', False), ('Missed frames?', True), ('', False), ('current image number', True), ('error in', False), ('', False), ('', False), ('', False), ('error out', True)]
+
+  FAIL  the run completed without an unhandled exception  terminal pick: ['Image Out', 'current image number'] hits in [('Session In', False), ('', False), ('', False), ('', False), ('Session Out', True), ('Image In', 
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 10, 'closed': 10, 'live': 0, 'cached_op_vis': 8}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 10, 'closed': 10, 'live': 0, 'cached_op_vis': 8}
+  FACT  LabVIEW handle count AFTER the work: 31121
+  PASS  H4 scratch deleted: replay_vis_76d_tes_20260925_044737_hgb.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\replay_vis_76d_tes_20260925_044737_hgb.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 9aaaef21e8426035f64a04ec816491d0 / after 9aaaef21e8426035f64a04ec816491d0
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  vi.lib GI        be7a516355ccb2c0fdbfe935c9146a07  (want be7a516355ccb2c0fdbfe935c9146a07) OK
+  FACT  PIN AFTER  lvlib            2aaa17d3ec745314f9a9f1e3c0b8ed4e  (want 2aaa17d3ec745314f9a9f1e3c0b8ed4e) OK
+  FACT  PIN AFTER  get-buff copy    9aaaef21e8426035f64a04ec816491d0  (want 9aaaef21e8426035f64a04ec816491d0) OK
+  FACT  PIN AFTER  get-buff orig    9aaaef21e8426035f64a04ec816491d0  (want 9aaaef21e8426035f64a04ec816491d0) OK
+  FACT  PIN AFTER  pane base        65e999d9bd292a892512bc1caf57e0e4  (want 65e999d9bd292a892512bc1caf57e0e4) OK
+  FACT  PIN AFTER  manifest         f9032ae5510e96126d9f53fc92f69cfe  (want f9032ae5510e96126d9f53fc92f69cfe) OK
+  FACT  PIN AFTER  S1               3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33964
+  PASS  H9 LabVIEW gone
+
+====================================================================================================
+=== GATES: 18 pass / 1 fail; failing: the run completed without an unhandled exception
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\replay_vis_76d_test.json   elapsed 252.8 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":18,"fail":1},"first_fail":"RuntimeError: terminal pick: ['Image Out', 'current image number'] hits in [('Session In', False), ('', False), ('', False), ('', False), ('Session Out', True), ('Image In', False), ('Image Out', True","artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image.vi","md5":"ad2ab9278abccac1160914d456f676f9"}]}
+BGRUN END rc=1 after 253s
+BGRUN START 2026-09-25 04:52:15 limit 45.0 min: py -u tools/bench/diag_replay_gbtest.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 254 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 9aaaef21e8426035f64a04ec816491d0  got 9aaaef21e8426035f64a04ec816491d0
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE vi.lib GI        be7a516355ccb2c0fdbfe935c9146a07  (want be7a516355ccb2c0fdbfe935c9146a07) OK
+  FACT  PIN BEFORE lvlib            2aaa17d3ec745314f9a9f1e3c0b8ed4e  (want 2aaa17d3ec745314f9a9f1e3c0b8ed4e) OK
+  FACT  PIN BEFORE get-buff copy    9aaaef21e8426035f64a04ec816491d0  (want 9aaaef21e8426035f64a04ec816491d0) OK
+  FACT  PIN BEFORE get-buff orig    9aaaef21e8426035f64a04ec816491d0  (want 9aaaef21e8426035f64a04ec816491d0) OK
+  FACT  PIN BEFORE pane base        65e999d9bd292a892512bc1caf57e0e4  (want 65e999d9bd292a892512bc1caf57e0e4) OK
+  FACT  PIN BEFORE manifest         f9032ae5510e96126d9f53fc92f69cfe  (want f9032ae5510e96126d9f53fc92f69cfe) OK
+  FACT  PIN BEFORE S1               3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33965
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  replay_get_buff_image.vi
+  FACT  ExecState [after open] replay_get_buff_image.vi = 1
+  PASS  G1 #529 calls IMAQdx Get Image.vi  {529: 'C:\\Program Files\\NI\\LVAddons\\niimaqdx\\1\\vi.lib\\vision\\driver\\IMAQdx.llb\\IMAQdx Get Image.vi'}
+  FACT  replace_object -> {'new_uid': 221, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  G2a replace: no error, new uid  {'new_uid': 221, 'err_replace': '', 'err_uid': '', 'err': ''}
+  PASS  G2b callee census diff == exactly #529 -> buf stand-in  {529: ('C:\\Program Files\\NI\\LVAddons\\niimaqdx\\1\\vi.lib\\vision\\driver\\IMAQdx.llb\\IMAQdx Get Image.vi', None), 221: (None, 'C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_imaqdx_get_image_buf.vi')}
+  PASS  G2c wire-edge diff after remap == empty (13 edges)  {'rem': [], 'add': []}
+
+---------- [SAVE] replay_get_buff_image.vi
+  FACT  ExecState [before the save] replay_get_buff_image.vi = 1
+  PASS  S1 the save returned without raising (scripted route)
+  FACT  SAVED ARTEFACT: replay_get_buff_image.vi md5 e7274612d9156fd2590f2b1eefef66e0 size 13749 B; version bytes [31, 38, 128]
+  PASS  S2 the artefact is on disk and non-empty  13749 B
+  FACT  ExecState [re-read AFTER the save] replay_get_buff_image.vi = 1
+  PASS  S3 ExecState 1 re-read AFTER the save  ExecState 1
+  PASS  G3 pane per slot (label, direction) == source get-buff  ({0: ('Session In', False), 1: (None, None), 2: (None, None), 3: (None, None), 4: ('Session Out', True), 5: ('Image In', False), 6: ('Image Out', True), 7: ('Buffer to extract', False), 8: ('Missed frames?', True), 9: (None, None), 10: ('current image number', True), 11: ('error in', False), 12: (None, None), 13: (None, None), 14: (None, None), 15: ('error out', True)}, {0: ('Session In', False), 1: (None, None), 2: (None, None), 3: (None, None), 4: ('Session Out', True), 5: ('Image In', False), 6: ('Image Out', True), 7: ('Buffer to extract', False), 8: ('Missed frames?', True), 9: (None, None), 10: ('current image number', True), 11: ('error in', False), 12: (None, None), 13: (None, None), 14: (None, None), 15: ('error out', True)})
+  PASS  SC replay_vis_76d_tes_20260925_045215_hgb.vi is a byte-identical copy of EMPTY_v0.vi  replay_vis_76d_tes_20260925_045215_hgb.vi
+  FACT  gb VUT terms [('Session In', False), ('', False), ('', False), ('', False), ('Session Out', True), ('Image In', False), ('Image Out', True), ('Buffer to extract', False), ('Missed frames?', True), ('', False), ('current image number', True), ('error in', False), ('', False), ('', False), ('', False), ('error out', True)]
+  FACT  gb harness labels {('c', 'Image Name'): 'Image Name', ('v', 'Buffer to extract'): 'Buffer to extract', ('a', 'Image Pixels (U8)'): 'Image Pixels (U8)', ('v', 'Missed frames?'): 'Missed frames?', ('v', 'current image number'): 'current image number', ('v', 'error out'): 'error out', ('c', 'error out'): 'error out 2', ('a', 'error out'): 'error out 3'}
+  PASS  gb harness ExecState 1
+  PASS  SC replay_vis_76d_tes_20260925_045215_hcal.vi is a byte-identical copy of EMPTY_v0.vi  replay_vis_76d_tes_20260925_045215_hcal.vi
+  FACT  cal VUT terms [('error out', True), ('Buffer Number Out', True), ('Image Out', True), ('Session Out', True), ('', False), ('', False), ('', False), ('Buffer Number Mode (Next)', False), ('error in', False), ('Buffer Number In', False), ('Image In', False), ('Session In', False)]
+  FACT  cal harness labels {('c', 'Image Name'): 'Image Name', ('v', 'Buffer Number Mode (Next)'): 'Buffer Number Mode (Next)', ('v', 'Buffer Number In'): 'Buffer Number In', ('a', 'Image Pixels (U8)'): 'Image Pixels (U8)', ('v', 'error out'): 'error out', ('v', 'Buffer Number Out'): 'Buffer Number Out', ('c', 'error out'): 'error out 2', ('a', 'error out'): 'error out 3'}
+  PASS  cal harness ExecState 1
+  FACT  LabVIEW handle count BEFORE the restart: 31302
+  FACT  LabVIEW handle count AFTER the restart: 33973
+  PASS  G4 get-buff copy ES 1 COLD
+  FACT  CALL gb b=8217: {'shape': (0,), 'md5': 'd41d8cd98f00b204e9800998ecf8427e', 'md5_T': 'd41d8cd98f00b204e9800998ecf8427e', 'out': {'Missed frames?': True, 'current image number': 8217, 'error out': (False, 0, ''), 'err v': "(False, 0, '')", 'err c': "(False, 0, '')", 'err a': "(False, 0, '')"}}
+  FAIL  T1 get-buff b=8217 -> f00000 pixels (md5 or transpose), image number == b, Missed TRUE  ('d41d8cd98f00b204e9800998ecf8427e', 'd41d8cd98f00b204e9800998ecf8427e', '0cd8b61d20ed314b93dfac7af9ca57eb', 8217, True)
+  FACT  CALL gb b=8218: {'shape': (0,), 'md5': 'd41d8cd98f00b204e9800998ecf8427e', 'md5_T': 'd41d8cd98f00b204e9800998ecf8427e', 'out': {'Missed frames?': True, 'current image number': 8218, 'error out': (False, 0, ''), 'err v': "(False, 0, '')", 'err c': "(False, 0, '')", 'err a': "(False, 0, '')"}}
+  FAIL  T1 get-buff b=8218 -> f00001 pixels (md5 or transpose), image number == b, Missed TRUE  ('d41d8cd98f00b204e9800998ecf8427e', 'd41d8cd98f00b204e9800998ecf8427e', '6736a0009ed14cb579d5da6d9fa1dadf', 8218, True)
+  FACT  LabVIEW handle count BEFORE the restart: 34199
+  FACT  LabVIEW handle count AFTER the restart: 33948
+  FACT  CALL gb b=5: {'shape': (0,), 'md5': 'd41d8cd98f00b204e9800998ecf8427e', 'md5_T': 'd41d8cd98f00b204e9800998ecf8427e', 'out': {'Missed frames?': True, 'current image number': 5, 'error out': (False, 0, ''), 'err v': "(False, 0, '')", 'err c': "(False, 0, '')", 'err a': "(False, 0, '')"}}
+  FAIL  T2 fresh load get-buff b=5 -> f00000  ('d41d8cd98f00b204e9800998ecf8427e', '0cd8b61d20ed314b93dfac7af9ca57eb', 5, True)
+  FACT  LabVIEW handle count BEFORE the restart: 34173
+  FACT  LabVIEW handle count AFTER the restart: 33955
+  FACT  CALL cal b=None: {'shape': (0,), 'md5': 'd41d8cd98f00b204e9800998ecf8427e', 'md5_T': 'd41d8cd98f00b204e9800998ecf8427e', 'out': {'Buffer Number Mode (Next)': 0, 'error out': (False, 0, ''), 'Buffer Number Out': 0, 'err v': "(False, 0, '')", 'err c': "(False, 0, '')", 'err a': "(False, 0, '')"}}
+  FAIL  T3 cal call 0 -> f00000, Buffer Number Out 0  ('d41d8cd98f00b204e9800998ecf8427e', '0cd8b61d20ed314b93dfac7af9ca57eb', 0)
+  FACT  CALL cal b=None: {'shape': (0,), 'md5': 'd41d8cd98f00b204e9800998ecf8427e', 'md5_T': 'd41d8cd98f00b204e9800998ecf8427e', 'out': {'Buffer Number Mode (Next)': 0, 'error out': (False, 0, ''), 'Buffer Number Out': 0, 'err v': "(False, 0, '')", 'err c': "(False, 0, '')", 'err a': "(False, 0, '')"}}
+  FAIL  T3 cal call 1 -> f00001, Buffer Number Out 1  ('d41d8cd98f00b204e9800998ecf8427e', '6736a0009ed14cb579d5da6d9fa1dadf', 0)
+  FACT  CALL cal b=None: {'shape': (0,), 'md5': 'd41d8cd98f00b204e9800998ecf8427e', 'md5_T': 'd41d8cd98f00b204e9800998ecf8427e', 'out': {'Buffer Number Mode (Next)': 0, 'error out': (False, 0, ''), 'Buffer Number Out': 0, 'err v': "(False, 0, '')", 'err c': "(False, 0, '')", 'err a': "(False, 0, '')"}}
+  FAIL  T3 cal call 2 -> f00002, Buffer Number Out 2  ('d41d8cd98f00b204e9800998ecf8427e', '0c6d9894535897df7c03b9e65b66701d', 0)
+
+---------- [H] HYGIENE
+  FACT  close_panel(replay_get_buff_image.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  close_panel(replay_vis_76d_tes_20260925_045215_hgb.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  close_panel(replay_vis_76d_tes_20260925_045215_hcal.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 20, 'closed': 20, 'live': 0, 'cached_op_vis': 1}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 20, 'closed': 20, 'live': 0, 'cached_op_vis': 1}
+  FACT  LabVIEW handle count AFTER the work: 34225
+  PASS  H4 scratch deleted: replay_vis_76d_tes_20260925_045215_hgb.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\replay_vis_76d_tes_20260925_045215_hgb.vi
+  PASS  H4 scratch deleted: replay_vis_76d_tes_20260925_045215_hcal.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\replay_vis_76d_tes_20260925_045215_hcal.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 9aaaef21e8426035f64a04ec816491d0 / after 9aaaef21e8426035f64a04ec816491d0
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  vi.lib GI        be7a516355ccb2c0fdbfe935c9146a07  (want be7a516355ccb2c0fdbfe935c9146a07) OK
+  FACT  PIN AFTER  lvlib            2aaa17d3ec745314f9a9f1e3c0b8ed4e  (want 2aaa17d3ec745314f9a9f1e3c0b8ed4e) OK
+  FACT  PIN AFTER  get-buff copy    9aaaef21e8426035f64a04ec816491d0  (want 9aaaef21e8426035f64a04ec816491d0) OK
+  FACT  PIN AFTER  get-buff orig    9aaaef21e8426035f64a04ec816491d0  (want 9aaaef21e8426035f64a04ec816491d0) OK
+  FACT  PIN AFTER  pane base        65e999d9bd292a892512bc1caf57e0e4  (want 65e999d9bd292a892512bc1caf57e0e4) OK
+  FACT  PIN AFTER  manifest         f9032ae5510e96126d9f53fc92f69cfe  (want f9032ae5510e96126d9f53fc92f69cfe) OK
+  FACT  PIN AFTER  S1               3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33965
+  PASS  H9 LabVIEW gone
+
+====================================================================================================
+=== GATES: 23 pass / 6 fail; failing: T1 get-buff b=8217 -> f00000 pixels (md5 or transpose), image number == b, Missed TRUE, T1 get-buff b=8218 -> f00001 pixels (md5 or transpose), image number == b, Missed TRUE, T2 fresh load get-buff b=5 -> f00000, T3 cal call 0 -> f00000, Buffer Number Out 0, T3 cal call 1 -> f00001, Buffer Number Out 1, T3 cal call 2 -> f00002, Buffer Number Out 2
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\replay_vis_76d_test.json   elapsed 688.4 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":23,"fail":6},"first_fail":"T1 get-buff b=8217 -> f00000 pixels (md5 or transpose), image number == b, Missed TRUE","artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image.vi","md5":"e7274612d9156fd2590f2b1eefef66e0"}]}
+BGRUN END rc=1 after 689s

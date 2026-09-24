@@ -1,0 +1,71 @@
+{
+ "schema": "task/1",
+ "id": "76-1",
+ "kind": "build",
+ "goal": "Build the two replay VIs exactly as docs/m8-real-run-plan.md Pre-decided 14(b)+15 specify (PD14 wins over PD13); tracking one (replay_get_buff_image.vi) first.",
+ "why": "M8(b) rule-1a numbers need identical recorded pixels through dated copies of S1 and S3; PD13 measured #6810 as the only pixel path into tra X/Y/Z and #22692 as the only one into calibration; PD15 accepted gscript.replace_object as the swap verb. These two VIs are the next build.",
+ "inputs": [
+  {"path": "docs/m8-real-run-plan.md"},
+  {"path": "tools/bench/m8b_replay_prep_75.json"},
+  {"path": "tools/bench/swap_verb_75.json"},
+  {"path": "tools/gpu/fixture.py"},
+  {"path": "tools/gscript.py"},
+  {"path": "tools/stagekit.py"},
+  {"path": "docs/NAMES.md"},
+  {"path": "docs/toolkit-capabilities.md"},
+  {"path": "docs/stage-simulator-plan.md"}
+ ],
+ "pass": [
+  "Measured first: is vi.lib IMAQdx Get Image.vi diagram locked/uneditable by scripting? is 'get buff image-lost frames.vi' editable?",
+  "Measured first: fixture index->file map + pixel type (tools/gpu/fixture.py:line) vs the Image In type the callers create",
+  "replay_get_buff_image.vi saved by SCRIPT in claudeDev\\replay\\, ExecState 1 cold, md5 reported",
+  "connector terminal list (names, directions, pattern) of each replay == its source callee: diff empty, measured",
+  "<=120-line stagekit test: Buffer to extract 5 and 10049 -> pixel md5 == fixture frame 5 read in Python via fixture.py",
+  "same test: current image number == Buffer to extract, Missed frames? == False",
+  "replay_get_image_cal.vi: ExecState 1, pane diff empty, calls 1,2 return consecutive fixture frames, Buffer Number Out == k",
+  "or cal VI status BLOCKED with its measured reason (e.g. vi.lib password) while the tracking VI is still delivered",
+  "launch gate honoured (stage plan file, dry + offline pre-run PASS before any LabVIEW run)",
+  "originals, vi.lib, background VIs, beds md5 unchanged; refs opened == closed; handles logged; LabVIEW closed + verified gone"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image.vi",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_image_cal.vi",
+  "tools/bench/replay_vis_76.log",
+  "tools/bench/replay_vis_76.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "tools/recipes/stage_replay_*.py",
+   "tools/bench/replay_vis_76*",
+   "tools/bench/diag_replay_*.py",
+   "tools/bench/stageplans/**",
+   "tools/bench/*replay*",
+   "tools/gscript.py",
+   "tools/stagekit.py",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\**",
+   "docs/NAMES.md",
+   "docs/toolkit-capabilities.md",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "fact", "priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 120
+ },
+ "rules": [
+  "rule 1: never write an original, bed, vi.lib or background VIs; replays are copies in claudeDev\\replay\\",
+  "rule 1a: a replay changes only the frame SOURCE, nothing downstream",
+  "stage/diag files <=120 lines on stagekit; reference hygiene per CLAUDE.md 3",
+  "failed prediction -> JEV-LADDER line first, then hypothesis review if owed",
+  "run_vi = replay VIs + their test harness only; main VI/S1/S3/beds not run; no camera session",
+  "do NOT start the swap into S1/S3 copies - that is the next dispatch"
+ ],
+ "advances": ["M8", "R5"]
+}

@@ -1,0 +1,21 @@
+{"schema":"result/1","id":"76-3","status":"BLOCKED","gates":{"pass":1,"fail":1},
+"first_fail":"Step 0 review REFUTED PD16(a): buffers start at live LastBufferNumber S (run-dependent) and the kernel is stateful, so the S1/S3 frame-number join can differ with identical maths",
+"blocked_by":{"device":"card 76-3 pass line 2 (Step 0 refute -> stop, no build)","message":"archive/peer/2026-09-25-m8b-pd16-replay-76.md verdict=refuted on PD16(a); verdict card tools/bench/cards/verdict_76-3-pd16.json. Nothing built; LabVIEW never launched."},
+"artefacts":[{"path":"archive/peer/2026-09-25-m8b-pd16-replay-76.md","md5":"f6cd2692552483d8ad9cae8c718ceec8"},{"path":"tools/bench/cards/verdict_76-3-pd16.json","md5":"4bfd1fd2894531dd8656f973b71d03f6"},{"path":"tools/bench/cards/review_76-3-pd16.json","md5":"33eec231865080472db2186d6bf9946e"},{"path":"tools/bench/replay_vis_76b_peer.log","md5":"8f27fc22f5280852ec6115bf76219fb9"}],
+"facts":[
+"Review claude/hypothesis ANSWERED, 209 s, verdict refuted (replay_vis_76b_peer.log BGRUN END rc=0; archive/peer/2026-09-25-m8b-pd16-replay-76.md:67)",
+"Buffer to extract = SR LastBufferNumber #5351, seeded from live IMAQdx property #250, then x+1 #1978; with Out=In requests are S,S+1,.. (review :70, D1_s1_copy.json:24115,:67211)",
+"Kernel #5058 is stateful: x,y,z in + pos-in-cal-image SR #2972 from the previous frame, so a different start S changes values at the same n (review :72, D1_s1_copy.json:71544)",
+"Measured offline: cycle-74 real runs started at different buffers: bed 8217, base 8331, s3 8227 (tools/bench/m8s3_run.json:22,111,200)",
+"PD16(b) holds: Missed frames? feeds only case tunnel #270 + indicator #1924, both frames give requested+1; mode enum #581 value unread (review :77-78)",
+"PD16(c) holds per NI docs (library-does-not-claim-VI error, fix = Disconnect from Library) but pane check must compare TYPES per slot, not names (review :82-83)",
+"PD16(e): 'md5 == f00005 source' fails if file md5 (TIFF header); must be U8 pixel-array md5; cal counter persists while VI in memory (review :86-87)",
+"Review proposed fix: f((n-n0) mod 10044), n0 latched at first call, S1/S3 in separate LabVIEW launches, join on iteration index (review :95)",
+"Disk fact for PD16(a): fixture is 13 GB on G:, claudeDev is on C: with 28-29 GB free; hardlink impossible cross-volume, a copy leaves ~16 GB (df, Get-PSDrive)",
+"Hygiene: no LabVIEW launched, no VI opened or written, JEV ladder n/a (no failed build log)"],
+"open":[
+"Accept the refutation and amend PD16(a): n0-latched frame index + separate launches + join on iteration, or keep buffer-number keying?",
+"Frames folder location: 13 GB copy onto C: (claudeDev, ~16 GB left) as PD16(a) says, or a junction to hardlinks on G: (outside current write flags)?",
+"Pane identity by slot TYPE (review 3) and pixel-array md5 (review 4) as amended PD16(c)/(e) predictions?"],
+"cost":{"usd":null,"minutes":20,"labview_runs":0},
+"note":"Stopped at Step 0 per card pass line 2. 'What was done with it' of the review written. STATUS not edited (status_edit false)."}

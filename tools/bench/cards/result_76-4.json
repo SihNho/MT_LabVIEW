@@ -1,0 +1,25 @@
+{"schema":"result/1","id":"76-4","status":"FAIL","gates":{"pass":24,"fail":1},
+"first_fail":"pass lines 5-9 not reached: the three replay VIs (latch + ReadFile bodies) were not built within the 110-min budget; no stand-in, no get-buff copy, no e' tests",
+"blocked_by":null,
+"artefacts":[
+{"path":"G:\\m8_replay_frames\\frames_manifest.json","md5":"f9032ae5510e96126d9f53fc92f69cfe"},
+{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpConnectCtlInd_v0.vi","md5":"e59d103fea9f8633dfb1b81d8e423744"},
+{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_imaqdx_pane_base.vi","md5":"65e999d9bd292a892512bc1caf57e0e4"},
+{"path":"tools/bench/replay_vis_76c_frames.log","md5":"122386b662d89982540449225a3ffd91"},
+{"path":"tools/bench/replay_vis_76c_skeleton.log","md5":"18eeb8e06978b557713145dcf4fea785"},
+{"path":"tools/bench/replay_vis_76_ctlind_labels.json","md5":"abddd851cda0489796b064a328e6711b"}],
+"facts":[
+"PASS line1: FIXED line added under 'What was done with it' citing docs/m8-real-run-plan.md:203 (archive/peer/2026-09-25-m8b-pd16-replay-76.md, last line)",
+"PASS line2: 10044 hardlinks f00000..f10043 on G:, samefile all, nlink 2, 20 idx file+U8-pixel md5 == source; f00005 = img00013.tif (replay_vis_76c_frames.log 8/0)",
+"PASS line3: gscript.connect_ctl_ind (gscript.py 'def connect_ctl_ind') on OpConnectCtlInd_v0, 3 Close Reference, ES 1 cold; handles 31113-31119 over 20 calls (skeleton.log V1,T1,T2)",
+"PASS line4: candidate 'new VI + pane by script' worked first: EMPTY_v0 (12 free slots) + controls created from a dropped vi.lib GI node; VI.Name has no lvlib (skeleton.log K1-K5)",
+"Type check: replace_object(get-buff scratch #529 -> base) kept all 9 terminal wires, ES 1 (skeleton.log K6); Save-As/disconnect candidates not tried (not needed)",
+"Hygiene: vi.lib GI be7a5163, lvlib 2aaa17d3, get-buff 9aaaef21 unchanged; refs 56/56 live 0; scratches deleted; LabVIEW gone (skeleton.log H1,H2)",
+"Body gap: no creator for First Call?/Select/Feedback/Increment/Q&R/Format Into String; only copy_by_index (S1 Increment #1978, Q&R #2136: docs/frame-loop-wire-graph.md:67-68)",
+"Skeleton run 1 died on our own tuple-unpack bug in close_ref (skeleton.log:24); patched, run 2 16/0. No JEV-LADDER line was written for this log",
+"No stage_* recipe launched (diag_replay_*.py only); STATUS not edited (status_edit false); nothing committed"],
+"open":[
+"Stand-in latch mechanism: (a) For-loop N=1 with uninitialized shift registers + primitives copied from S1 (~8 copies, ~20 nested wires) or (b) one CLFN into a small C DLL returning the frame path (needs a compiler; none confirmed)?",
+"May the buf stand-in use its own call count k (as the cal one) instead of the n0 latch? Identical to f((n-n0) mod 10044) only while requests are consecutive (PD17 a' premise); it halves the body work."],
+"cost":{"usd":null,"minutes":108,"labview_runs":2},
+"note":"Next dispatch can start from replay_imaqdx_pane_base.vi: copy it, connect_ctl_ind for Session/error(/BN) pass-through, add the body, then replace #529 in a get-buff copy. The base itself has NO pass-through wired (its outputs are bare indicators)."}

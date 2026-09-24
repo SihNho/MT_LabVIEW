@@ -1,0 +1,17 @@
+{
+ "schema": "verdict/1",
+ "id": "76-3-pd16",
+ "verdict": "refuted",
+ "alternative": "With Out=In the loop requests S,S+1,.. where S = live camera LastBufferNumber (#250 -> SR #5351, x+1 #1978); kernel #5058 carries state (x,y,z in, pos in cal image SR #2972), so runs starting at different S differ at the same frame n with identical maths.",
+ "discriminating_test": "Offline: trace current image number -> #5119 -> tra frame column; compare first frame of two real-run tra files. Fix: index f((n-n0) mod 10044) with n0 latched per fresh load, join on iteration, separate LabVIEW launches.",
+ "violations": [],
+ "sources": [
+  "docs/wiki/subvi/D1_s1_copy.json:24115",
+  "docs/wiki/subvi/D1_s1_copy.json:67211",
+  "docs/wiki/subvi/D1_s1_copy.json:71544",
+  "docs/wiki/subvi/get buff image-lost frames.json:380",
+  "https://documentation.help/NI-IMAQdx-VI/IMAQdx_Get_Image.html",
+  "https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/library-does-not-claim-vi.html"
+ ],
+ "note": "(b) holds: Missed frames? feeds only case selector #270 + indicator #1924; both frames give requested+1. (c) ok but pane check must compare types, not names. (e) file md5 != pixel md5; cal counter persists in memory."
+}

@@ -1,0 +1,71 @@
+{
+ "schema": "task/1",
+ "id": "76-6",
+ "kind": "build",
+ "goal": "Apply m8 plan Pre-decided 19: fix make_default (error + cold read-back), diagram constants N=1/10044, error through ReadFile, rebuild the replay VIs, rerun PD18(a) tests.",
+ "why": "Result 76-5: replay VIs built and wired, but pixels empty because saved control defaults were lost silently.",
+ "inputs": [
+  {"path": "docs/m8-real-run-plan.md", "md5": "c14a1fd2dec3930c4031822ebb1dd5c6"},
+  {"path": "tools/bench/cards/result_76-5.json"},
+  {"path": "tools/bench/replay_vis_76d_defaults.log"},
+  {"path": "tools/bench/diag_replay_lib.py"},
+  {"path": "tools/bench/diag_replay_standins.py"},
+  {"path": "tools/bench/diag_replay_gbtest.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_imaqdx_pane_base.vi", "md5": "65e999d9bd292a892512bc1caf57e0e4"},
+  {"path": "tools/gscript.py"},
+  {"path": "tools/stagekit.py"}
+ ],
+ "pass": [
+  "make_default: op error checked + value read back; self-test on scratch (scalar, numeric array, path array) passes, count reported",
+  "stand-ins rebuilt: N=1 and 10044 are diagram constants; path array default read back COLD after save (10044 entries)",
+  "error in -> IMAQ ReadFile -> error out in both stand-ins; ES 1 cold; pane per slot == IMAQdx Get Image; md5s",
+  "replay_get_buff_image.vi rebuilt on the new buf stand-in: callee diff == #529 only, wire-edge diff 0 after remap, ES 1 cold",
+  "PD18(a) tests, U8 pixel-array md5: fresh load b=8217,8218 -> f00000,f00001, image number == b, Missed TRUE; fresh b=5 -> f00000",
+  "PD18(a) tests: cal stand-in 3 calls -> f00000,f00001,f00002 and Buffer Number Out 0,1,2",
+  "dispositions from tools/bench/cards/disposition_76-5-*.md copied into their archive/peer files",
+  "originals, vi.lib, lvlib, frames, beds, pane base md5 unchanged; refs balanced; LabVIEW gone; JEV-LADDER line per failed log"
+ ],
+ "outputs": [
+  "tools/bench/replay_vis_76e.log",
+  "tools/bench/replay_vis_76e.json",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image.vi",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_imaqdx_get_image_buf.vi",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_image_cal.vi"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "tools/bench/replay_vis_76*",
+   "tools/bench/diag_replay_*.py",
+   "tools/bench/selftest_*default*",
+   "tools/bench/*replay*",
+   "tools/gscript.py",
+   "tools/stagekit.py",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\**",
+   "docs/NAMES.md",
+   "docs/toolkit-capabilities.md",
+   "archive/peer/2026-09-25-76-5-*.md",
+   "tools/bench/jev_gate.log",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "fact"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "rules": [
+  "rule 1: never write an original, bed, vi.lib, the lvlib, fixture/frames files or background VIs",
+  "rule 1a: inside the get-buff copy ONLY #529 changes",
+  "diag files <=120 lines on stagekit (diag_replay_lib.py is 147: split it); reference hygiene per CLAUDE.md 3",
+  "failed prediction -> JEV-LADDER line first, then hypothesis review if owed",
+  "run_vi = the replay VIs + their test harness only; main VI/S1/S3/beds not run; no camera session",
+  "HARD STOP at 40 min wall-clock: return what exists (files saved as each passes); no S1/S3 swap"
+ ],
+ "advances": ["M8", "R5"]
+}

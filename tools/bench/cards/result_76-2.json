@@ -1,0 +1,22 @@
+{"schema":"result/1","id":"76-2","status":"PASS","gates":{"pass":28,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/logclass.py","md5":"38bc8a5b5f282e3ec948640d2f154d82"},
+{"path":"tools/bench/selftest_logclass_cmd.py","md5":"906f799b5b1a6062d34c502a76f30589"},
+{"path":"tools/bench/selftest_logclass_cmd.log","md5":"640b046cba319c5a9f45f5b393554ada"},
+{"path":"archive/peer/2026-09-25-m8b-replay-prep-75-fact.md","md5":"0dde551ff7602c750b6d5c4c1446f97b"}],
+"facts":[
+"logclass.command_kind (tools/logclass.py:116) reads the LAST BGRUN START: peer.ps1/retro/outcome/priorart/audit/doc_*/cycle_runner/claude.exe = review; jev; py recipes|bench = build; else filename",
+"selftest_logclass_cmd.log:141 28/0: 18 fixtures (incl. real m8b_replay_prep_75_fact.log now review), 3 survey gates, 7 pre-existing self-tests with no failure beyond baseline",
+"Pre-existing baseline BEFORE the edit already failed: selftest_guard_peer_failre E1 (bold emitters in diag_c83/c86), cascading to recipebuild C10 and c4c G14 x2 (selftest_logclass_base_*.log)",
+"Survey selftest_logclass_cmd.log:104-122: of 1813 bench logs, 18 leave the build set and join the review set, all kind=review; none leaves the review set",
+"The 18 include m8b_replay_prep_75_fact, 7 prose_*, c75_outcome_review, audits, model_probe(2) (claude -p), selftest_runner_motorhook (py tools/cycle_runner.py --dry-run)",
+"First run FAILED (selftest_logclass_cmd.log:80): excluding Jev from is_build_log broke recipebuild C4 (jev_trial.log pinned build). Fixed: jev is log_kind only; is_build_log unchanged for jev",
+"ASYMMETRIC: a review-NAMED log with a recipe command stays review (logclass.py:146-151); flipping it would break recipebuild C4c/C8/C8b/C8c",
+"Callers: bgrun.py:255 is_review_log -> peer.ps1 runs under any log name skip RESULT parsing; guard_peer.py:238 -> such logs no longer arm the failed-prediction review",
+"Callers: guard_cycle.py:313,476 + retrospective.py:393 is_build_log -> such logs leave build budget/lists; audit_cycle.py:392 split -> their COST moves C3->C4; guard_cycle.py:649 recipe set unchanged",
+"archive/peer/2026-09-25-m8b-replay-prep-75-fact.md 'What was done with it' filled from m8-real-run-plan.md:130-161 + m8b_replay_prep_75.log:29-55; line 11 'why asked' still placeholder (not in card)"],
+"open":[
+"Should a review-NAMED log whose last command is a recipe become a build (symmetric rule)? It needs 4 pre-existing gates in selftest_logclass_recipebuild changed.",
+"Should Jev-command logs leave is_build_log (guard_cycle budget/audit A1)? recipebuild C4 pins jev_trial.log as a build today.",
+"Is selftest_runner_motorhook.log (a cycle_runner --dry-run self-test) correctly machinery, since cycle_runner.py is in the review-script list?"],
+"cost":{"usd":null,"minutes":14,"labview_runs":0},
+"note":"No LabVIEW, no hardware. Other bench scripts importing logclass (diag_c78, diag_d0, jev_* trials, replay_c6) are diagnostics using the same predicates; cycle_runner.py:20 and doc_ingest.py:20 cite it in comments only."}

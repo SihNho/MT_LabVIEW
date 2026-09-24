@@ -69,4 +69,24 @@ Enum values are quoted from the NI page above. The public C header only lists Ne
 
 ## What was done with it
 
-(Claude fills in)
+Filled 2026-09-25 by material card 76-2 from the cycle-75 rulings already written in `docs/m8-real-run-plan.md`
+Pre-decided 14 and 15; no new judgement is added here.
+
+- **Q2 (GObject.Replace 632A402, public, Path input): USED as the swap route.** PD14(d) names it the route
+  (`docs/m8-real-run-plan.md:146-147`), and PD15 accepts the built verb `gscript.replace_object` on
+  `claudeDev\OpReplaceGObj_v0.vi` (632A402, Path input only) after 21/0 on a scratch copy
+  (`docs/m8-real-run-plan.md:151-154`).
+- **Q1/Q2 "wire preservation not stated": ANSWERED BY MEASUREMENT, not by the peer.** Replace gives the node a new uid
+  (6810 → 23006); after remapping it the wire-edge diff was empty over 2,216 edges, and the raw −16/+16 rows are the
+  uid change (`docs/m8-real-run-plan.md:154-158`). The verb is verified only for a subVI → subVI swap with an identical
+  connector pane (`docs/m8-real-run-plan.md:160-161`).
+- **Q1 (SubVI.Replace 635E001, private): KEPT AS THE FALLBACK ONLY** (`docs/m8-real-run-plan.md:147`); PD15 accepted
+  632A402 as the route (`docs/m8-real-run-plan.md:151-152`), so the fallback was not exercised.
+- **Q3 ("not polymorphic", inferred from docs): REPLACED BY A LabVIEW READ.** `IMAQdx Get Image.vi` has a readable
+  front panel with 9 labels (`tools/bench/m8b_replay_prep_75.log:43,54`) and holds the node's 8 named terminals plus
+  `Buffer Number Mode` (`tools/bench/m8b_replay_prep_75.log:55`). Its terminal set is the one PD14(b) copies for
+  `replay_get_image_cal.vi` (`docs/m8-real-run-plan.md:137-139`). The peer's Q3 did not cover `#6810`'s callee; its
+  pane was corrected from the measurement (`docs/m8-real-run-plan.md:130-131`, `tools/bench/m8b_replay_prep_75.log:29-30`).
+- **Q4 (polymorphic-instance VI Path, Replace on a polymorphic node): NOT USED.** With Q3 read as not polymorphic,
+  the `#22692` case is a vi.lib subVI → a byte copy of it, which is the verified case
+  (`docs/m8-real-run-plan.md:160-161`).

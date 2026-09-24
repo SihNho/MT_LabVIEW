@@ -1,0 +1,143 @@
+BGRUN START 2026-09-25 03:32:14 limit 15.0 min: py -u tools/bench/selftest_logclass_cmd.py
+=== [1] fixtures
+  PASS  F1 review under a build-like name (-File peer.ps1)  got ('review', True, False) want ('review', True, False)
+  PASS  F1b review under a build-like name (-Command & peer.ps1)  got ('review', True, False) want ('review', True, False)
+  PASS  F1c peer.ps1 wrapped in bgrun (after --)  got ('review', True, False) want ('review', True, False)
+  PASS  F1d retrospective under a build-like name  got ('review', True, False) want ('review', True, False)
+  PASS  F1e claude.exe session under a build-like name  got ('review', True, False) want ('review', True, False)
+  PASS  F2 build under a review-like name: ASYMMETRIC, stays review  got ('build', True, False) want ('build', True, False)
+  PASS  F2b build under a normal name  got ('build', False, True) want ('build', False, True)
+  PASS  F2c bench script whose ARGS name peer.ps1  got ('build', False, True) want ('build', False, True)
+  PASS  F2d utility prefix then recipe  got ('build', False, True) want ('build', False, True)
+  PASS  F3 no BGRUN START, build-like name: filename rule  got ('', False, True) want ('', False, True)
+  PASS  F3b no BGRUN START, review-like name: filename rule  got ('', True, False) want ('', True, False)
+  PASS  F3c watchdog record: neither  got ('', False, False) want ('', False, False)
+  PASS  F3d unrecognised command: filename rule  got ('', False, True) want ('', False, True)
+  PASS  F4 Jev bench script: jev, neither  got ('jev', False, False) want ('jev', False, False)
+  PASS  F4b Jev top-level script  got ('jev', False, False) want ('jev', False, False)
+  PASS  F5 LAST run wins: peer after recipe  got ('review', True, False) want ('review', True, False)
+  PASS  F5b LAST run wins: recipe after peer  got ('build', False, True) want ('build', False, True)
+  PASS  F6 the real misfiled log is now a review  powershell -NoProfile -ExecutionPolicy Bypass -File tools\peer.ps1 -Kind fact -S
+=== [2] survey of tools/bench/*.log, filename rule vs command rule
+  FACT  logs 1812 ; left build set 40 ; joined review set 18
+  FACT    LEFT BUILD  allterms_jevgate.log                                    kind=jev
+  FACT    LEFT BUILD  audit_c35.log                                           kind=review
+  FACT    LEFT BUILD  c19_audit.log                                           kind=review
+  FACT    LEFT BUILD  c19_audit2.log                                          kind=review
+  FACT    LEFT BUILD  c19_doc_ingest.log                                      kind=review
+  FACT    LEFT BUILD  c56_peer_localvar.log                                   kind=review
+  FACT    LEFT BUILD  c75_outcome_review.log                                  kind=review
+  FACT    LEFT BUILD  c79_rowd_writer_peer.log                                kind=review
+  FACT    LEFT BUILD  device_value_a.log                                      kind=jev
+  FACT    LEFT BUILD  device_value_b.log                                      kind=jev
+  FACT    LEFT BUILD  jev_device_value_labels.log                             kind=jev
+  FACT    LEFT BUILD  jev_discharge.log                                       kind=jev
+  FACT    LEFT BUILD  jev_gatecheck_c89b.log                                  kind=jev
+  FACT    LEFT BUILD  jev_gaterow_smoke.log                                   kind=jev
+  FACT    LEFT BUILD  jev_l7_1_offline.log                                    kind=jev
+  FACT    LEFT BUILD  jev_ladder_c89.log                                      kind=jev
+  FACT    LEFT BUILD  jev_ladder_c89b.log                                     kind=jev
+  FACT    LEFT BUILD  jev_ladder_c90.log                                      kind=jev
+  FACT    LEFT BUILD  jev_ladder_remeasure.log                                kind=jev
+  FACT    LEFT BUILD  jev_menus_step5.log                                     kind=jev
+  FACT    LEFT BUILD  jev_menus_step5_dry.log                                 kind=jev
+  FACT    LEFT BUILD  jev_next.log                                            kind=jev
+  FACT    LEFT BUILD  jev_triage.log                                          kind=jev
+  FACT    LEFT BUILD  jev_triage_smoke.log                                    kind=jev
+  FACT    LEFT BUILD  jev_trial.log                                           kind=jev
+  FACT    LEFT BUILD  jev_wave2a.log                                          kind=jev
+  FACT    LEFT BUILD  jev_wave2b.log                                          kind=jev
+  FACT    LEFT BUILD  jev_wave3a.log                                          kind=jev
+  FACT    LEFT BUILD  jev_wave4_selftest.log                                  kind=jev
+  FACT    LEFT BUILD  m8b_replay_prep_75_fact.log                             kind=review
+  FACT    LEFT BUILD  model_probe.log                                         kind=review
+  FACT    LEFT BUILD  model_probe2.log                                        kind=review
+  FACT    LEFT BUILD  prose_c40.log                                           kind=review
+  FACT    LEFT BUILD  prose_c41.log                                           kind=review
+  FACT    LEFT BUILD  prose_c65_ordering.log                                  kind=review
+  FACT    LEFT BUILD  prose_c66_stop.log                                      kind=review
+  FACT    LEFT BUILD  prose_cycle25.log                                       kind=review
+  FACT    LEFT BUILD  prose_cycle42.log                                       kind=review
+  FACT    LEFT BUILD  prose_replan_cycle26.log                                kind=review
+  FACT    LEFT BUILD  selftest_runner_motorhook.log                           kind=review
+  PASS  S1 no log leaves the review set  []
+  PASS  S2 every log leaving the build set has command kind review|jev  
+=== [3] pre-existing self-tests vs baseline
+  FACT  selftest_logclass_recipebuild.py rc=1 tally=('22', '2') fails=['C4 jev_trial.log is_build_log is STILL True - the shared predicate is UNTOUCHED (guard_peer arms the failed-prediction review off it)', 'C10 selftest_guard_peer_failre.py still passes UNCHANGED (rc 0 and 0 failures)']
+  FAIL  B selftest_logclass_recipebuild.py no failure beyond baseline  ['C4 jev_trial.log is_build_log is STILL True - the shared predicate is UNTOUCHED (guard_peer arms the failed-prediction review off it)']
+  FACT  selftest_audit_c4c_split.py rc=1 tally=('31', '2') fails=['G14 selftest_logclass_recipebuild.py still passes UNCHANGED (rc 0, 0 failures)', 'G14 selftest_guard_peer_failre.py still passes UNCHANGED (rc 0, 0 failures)']
+  PASS  B selftest_audit_c4c_split.py no failure beyond baseline  []
+  FACT  selftest_bgrun_fail_scan.py rc=0 tally=None fails=[]
+  PASS  B selftest_bgrun_fail_scan.py no failure beyond baseline  []
+  FACT  selftest_stamp_window.py rc=0 tally=('15', '0') fails=[]
+  PASS  B selftest_stamp_window.py no failure beyond baseline  []
+  FACT  selftest_guard_peer_jev.py rc=0 tally=('17', '0') fails=[]
+  PASS  B selftest_guard_peer_jev.py no failure beyond baseline  []
+  FACT  selftest_guard_peer_failre.py rc=1 tally=('25', '1') fails=['E1 no line-start bold emitter remains under tools/bench/']
+  PASS  B selftest_guard_peer_failre.py no failure beyond baseline  []
+  FACT  selftest_audit_cost_window.py rc=0 tally=('7', '0') fails=[]
+  PASS  B selftest_audit_cost_window.py no failure beyond baseline  []
+=== GATES: 26 pass / 1 fail; failing: B selftest_logclass_recipebuild.py no failure beyond baseline
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":26,"fail":1},"first_fail":"B selftest_logclass_recipebuild.py no failure beyond baseline","artefacts":[]}
+BGRUN END rc=1 after 60s
+BGRUN START 2026-09-25 03:33:49 limit 15.0 min: py -u tools/bench/selftest_logclass_cmd.py
+=== [1] fixtures
+  PASS  F1 review under a build-like name (-File peer.ps1)  got ('review', True, False) want ('review', True, False)
+  PASS  F1b review under a build-like name (-Command & peer.ps1)  got ('review', True, False) want ('review', True, False)
+  PASS  F1c peer.ps1 wrapped in bgrun (after --)  got ('review', True, False) want ('review', True, False)
+  PASS  F1d retrospective under a build-like name  got ('review', True, False) want ('review', True, False)
+  PASS  F1e claude.exe session under a build-like name  got ('review', True, False) want ('review', True, False)
+  PASS  F2 build under a review-like name: ASYMMETRIC, stays review  got ('build', True, False) want ('build', True, False)
+  PASS  F2b build under a normal name  got ('build', False, True) want ('build', False, True)
+  PASS  F2c bench script whose ARGS name peer.ps1  got ('build', False, True) want ('build', False, True)
+  PASS  F2d utility prefix then recipe  got ('build', False, True) want ('build', False, True)
+  PASS  F3 no BGRUN START, build-like name: filename rule  got ('', False, True) want ('', False, True)
+  PASS  F3b no BGRUN START, review-like name: filename rule  got ('', True, False) want ('', True, False)
+  PASS  F3c watchdog record: neither  got ('', False, False) want ('', False, False)
+  PASS  F3d unrecognised command: filename rule  got ('', False, True) want ('', False, True)
+  PASS  F4 Jev bench script: kind jev, not review, build unchanged  got ('jev', False, True) want ('jev', False, True)
+  PASS  F4b Jev top-level script  got ('jev', False, True) want ('jev', False, True)
+  PASS  F5 LAST run wins: peer after recipe  got ('review', True, False) want ('review', True, False)
+  PASS  F5b LAST run wins: recipe after peer  got ('build', False, True) want ('build', False, True)
+  PASS  F6 the real misfiled log is now a review  powershell -NoProfile -ExecutionPolicy Bypass -File tools\peer.ps1 -Kind fact -S
+=== [2] survey of tools/bench/*.log, filename rule vs command rule
+  FACT  logs 1813 ; left build set 18 ; joined review set 18
+  FACT    LEFT BUILD  audit_c35.log                                           kind=review
+  FACT    LEFT BUILD  c19_audit.log                                           kind=review
+  FACT    LEFT BUILD  c19_audit2.log                                          kind=review
+  FACT    LEFT BUILD  c19_doc_ingest.log                                      kind=review
+  FACT    LEFT BUILD  c56_peer_localvar.log                                   kind=review
+  FACT    LEFT BUILD  c75_outcome_review.log                                  kind=review
+  FACT    LEFT BUILD  c79_rowd_writer_peer.log                                kind=review
+  FACT    LEFT BUILD  m8b_replay_prep_75_fact.log                             kind=review
+  FACT    LEFT BUILD  model_probe.log                                         kind=review
+  FACT    LEFT BUILD  model_probe2.log                                        kind=review
+  FACT    LEFT BUILD  prose_c40.log                                           kind=review
+  FACT    LEFT BUILD  prose_c41.log                                           kind=review
+  FACT    LEFT BUILD  prose_c65_ordering.log                                  kind=review
+  FACT    LEFT BUILD  prose_c66_stop.log                                      kind=review
+  FACT    LEFT BUILD  prose_cycle25.log                                       kind=review
+  FACT    LEFT BUILD  prose_cycle42.log                                       kind=review
+  FACT    LEFT BUILD  prose_replan_cycle26.log                                kind=review
+  FACT    LEFT BUILD  selftest_runner_motorhook.log                           kind=review
+  PASS  S1 no log leaves the review set  []
+  PASS  S2 every log leaving the build set has command kind review  
+  PASS  S3 the build-set leavers are exactly the review-set joiners  
+=== [3] pre-existing self-tests vs baseline
+  FACT  selftest_logclass_recipebuild.py rc=1 tally=('23', '1') fails=['C10 selftest_guard_peer_failre.py still passes UNCHANGED (rc 0 and 0 failures)']
+  PASS  B selftest_logclass_recipebuild.py no failure beyond baseline  []
+  FACT  selftest_audit_c4c_split.py rc=1 tally=('31', '2') fails=['G14 selftest_logclass_recipebuild.py still passes UNCHANGED (rc 0, 0 failures)', 'G14 selftest_guard_peer_failre.py still passes UNCHANGED (rc 0, 0 failures)']
+  PASS  B selftest_audit_c4c_split.py no failure beyond baseline  []
+  FACT  selftest_bgrun_fail_scan.py rc=0 tally=None fails=[]
+  PASS  B selftest_bgrun_fail_scan.py no failure beyond baseline  []
+  FACT  selftest_stamp_window.py rc=0 tally=('15', '0') fails=[]
+  PASS  B selftest_stamp_window.py no failure beyond baseline  []
+  FACT  selftest_guard_peer_jev.py rc=0 tally=('17', '0') fails=[]
+  PASS  B selftest_guard_peer_jev.py no failure beyond baseline  []
+  FACT  selftest_guard_peer_failre.py rc=1 tally=('25', '1') fails=['E1 no line-start bold emitter remains under tools/bench/']
+  PASS  B selftest_guard_peer_failre.py no failure beyond baseline  []
+  FACT  selftest_audit_cost_window.py rc=0 tally=('7', '0') fails=[]
+  PASS  B selftest_audit_cost_window.py no failure beyond baseline  []
+=== GATES: 28 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":28,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 61s

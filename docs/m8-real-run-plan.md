@@ -166,6 +166,113 @@ Garbage tracking values in (a) are NOT a failure (no sample channel on the micro
     calls it with `Buffer to extract` = 5 and 10049 and gets fixture frame 5 both times (pixel md5 == frame 5 read
     independently in Python through `tools/gpu/fixture.py`'s own index → file mapping).
 
+16. **Cycle-76 ruling on result 76-1 (BLOCKED, `tools/bench/replay_vis_76_measure.log`). This amends PD13(a)/14/15 and wins
+    over them where they differ.** Three premises were measured false: the fixture is 10,044 files numbered 4..11825 with
+    124 gaps (no `img00005`); inside `get buff image-lost frames.vi` `Missed frames?` = `Equal To 0?(Buffer to extract −
+    Buffer Number Out)`, so it is TRUE whenever the camera returns the requested buffer; and a byte copy of
+    `IMAQdx Get Image.vi` stays claimed by `NI_Vision_Acquisition_Software.lvlib` and loads with ExecState 0.
+    (a) **Frame map = a contiguous replay folder.** Python builds `claudeDev\replay\frames\f00000.tif … f10043.tif`
+        from the SORTED fixture list (hardlink if the same volume, else copy; manifest `frames_manifest.json` =
+        index → source file → md5). Frame for a buffer or call number n = `f(n mod 10044)`. The test's "frame 5" means
+        `f00005` = the 6th sorted fixture file, read independently in Python from the fixture list, not from the folder.
+    (b) **Replace ONLY `#529` inside the copy of `get buff image-lost frames.vi`; everything else in it stays.** The
+        Subtract and `Equal To 0?` are the original's logic (rule 1a); the replay stand-in returns
+        `Buffer Number Out` = `Buffer Number In`, like a camera that delivered the requested buffer, so the unchanged
+        logic yields `Missed frames?` = TRUE, the normal real-camera value. PD14(a)'s "`Missed frames?` = False" is
+        WITHDRAWN; the test predicts TRUE.
+    (c) **Stand-ins are VIs with `IMAQdx Get Image.vi`'s exact connector pane and NO library owner**, swapped in with
+        `gscript.replace_object` (PD15): `replay_imaqdx_get_image_buf.vi` (frame `f(Buffer Number In mod 10044)`, Out =
+        In) replaces `#529` in `claudeDev\replay\replay_get_buff_image.vi` (the get-buff copy); `replay_get_image_cal.vi`
+        (frame `f(k mod 10044)`, k = its own call count from 0, `Buffer Number Out` = k) replaces `#22692`. Session and
+        error pass straight through; `Image In` receives the frame (IMAQ ReadFile into the caller's image) and is
+        returned as `Image Out`. How an unowned pane-identical VI is made is MEASURED first (candidates: Save-As-copy
+        without the library by VI Server; library disconnect on the copy; a new VI whose pane is set by scripting) —
+        the lvlib and vi.lib are never written. Pane identity is checked against the vi.lib original, terminal by
+        terminal (name, type, direction, pattern position).
+    (d) **Tool, under the 2026-09-24 grant:** the fleet has no verb that wires a front-panel control terminal to an
+        indicator terminal (`gscript.py:2528`, `docs/toolkit-capabilities.md:25`). Build it now: the stand-ins need
+        Session In→Session Out and error in→error out, and every later loop split meets the same class. Measured on a
+        scratch VI before use (wire exists, ExecState 1, handles flat over 20 calls).
+    (e) Predictions for the three saved VIs: ExecState 1 cold; pane diff ∅ vs the vi.lib `IMAQdx Get Image.vi` (stand-ins)
+        and vs `get buff image-lost frames.vi` (the get-buff copy); get-buff copy called with `Buffer to extract` 5 and
+        10049 → pixel md5 == `f00005`'s source file, `current image number` == `Buffer to extract`, `Missed frames?` ==
+        TRUE; cal stand-in called three times → f00000, f00001, f00002, `Buffer Number Out` 0,1,2. The get-buff copy's
+        callee census diff vs its source = exactly `#529 → replay_imaqdx_get_image_buf.vi`, wire-edge diff ∅ after the
+        uid remap.
+
+17. **Cycle-76 ruling on the PD16 review (`archive/peer/2026-09-25-m8b-pd16-replay-76.md`, verdict refuted on (a),
+    result 76-3). ACCEPTED; this amends PD16 and wins over it.** Measured: `Buffer to extract` is seeded from the live
+    `LastBufferNumber` (#250 → SR #5351, +1 per frame), and the cycle-74 runs started at 8217 / 8331 / 8227
+    (`tools/bench/m8s3_run.json:22,111,200`); the kernel `#5058` carries x,y,z and SR #2972 from the previous frame. So
+    keying the frame on the absolute buffer number gives the two VIs different pixel sequences.
+    (a') **Frame = `f((n − n0) mod 10044)`, n0 latched at the stand-in's first call** (both stand-ins; for the cal one
+        n is its call count, so n0 = 0). With `Buffer Number Out` = `Buffer Number In` the get-buff logic requests
+        n0, n0+1, … with no skip, so iteration i gets `f(i)` in every run — a deterministic pixel sequence.
+        `Buffer Number Out` stays = `Buffer Number In` (PD16(b) unchanged: `Missed frames?` TRUE).
+    (a'') **Frames folder = HARDLINKS on G:** (same volume as the fixture, 0 bytes extra; claudeDev's C: would keep only
+        ~16 GB after a 13 GB copy). Location: a new folder on G: outside this project folder and outside the fixture
+        folder; the path is reported and is a constant in the stand-ins. Nothing is ever written through a link.
+    (b') **S1 and S3 replay runs are separate LabVIEW launches** (the latch and the call counter live while the VI is in
+        memory; PD3 already restarts LabVIEW between legs). The tra join key is the iteration index (row order after
+        the first replayed frame), cross-checked against `current image number − n0` where the tra file carries it.
+    (c') Pane identity is checked per connector SLOT by data TYPE and direction (names are informative only).
+    (e') The pixel check is the md5 of the U8 pixel ARRAY (IMAQ image → array in the harness vs PIL/numpy array of the
+        source file in Python), never the TIFF file md5. Tests: get-buff copy first call b=8217 then b=8218 → f00000,
+        f00001; a fresh launch with b=5 → f00000 (latch). Cal stand-in: three calls → f00000, f00001, f00002, Out 0,1,2.
+
+18. **Cycle-76 ruling on result 76-4 (FAIL on budget, 24 pass: `G:\m8_replay_frames\` 10,044 hardlinks,
+    `gscript.connect_ctl_ind` on `claudeDev\OpConnectCtlInd_v0.vi`, the unowned pane base
+    `claudeDev\replay\replay_imaqdx_pane_base.vi` md5 `65e999d9…`, whose `replace_object` onto `#529` kept all 9 wires).**
+    (a) **Both stand-ins key the frame on their OWN call count k from 0: frame = `f(k mod 10044)`.** This replaces
+        PD17(a')'s n0 latch for the buf stand-in. Call i gets `f(i)` whatever buffer number is requested, so the pixel
+        sequence stays deterministic even if the requests are not consecutive. The two stand-ins differ only in
+        `Buffer Number Out`: the buf one returns `Buffer Number In`, the cal one returns k. PD17(e')'s test becomes: after
+        a fresh load, the get-buff copy called with b = 8217 then 8218 returns f00000 then f00001 (with b = 5 on a fresh
+        load, f00000).
+    (b) **Counter = an uninitialised shift register on a For loop with N = 1** (no DLL). Primitives that have no creator
+        (Increment, Quotient & Remainder, Format Into String "f%05d.tif", Build Path) come from a GENERIC primitive
+        creator if one can be built (tool grant; cycle 68 needed `Not Equal?`/`Select` too). The external search on
+        New VI Object primitive styles is mandatory first. The fallback is `copy_by_index` from measured donors
+        (S1 `#1978` Increment, `#2136` Q&R, `docs/frame-loop-wire-graph.md:67-68`). Each replay VI is its own saved
+        file, built from a copy of the pane base.
+
+19. **Cycle-76 ruling on result 76-5 (FAIL 61/6).** The three replay VIs exist, ExecState 1 cold, pane per slot ==
+    source, and the get-buff copy's callee diff = exactly `#529`, with a wire-edge diff of 0. The pixels come back EMPTY and
+    the cal `Buffer Number Out` reads 0,0,0 because two of the three constants were panel controls with saved
+    defaults, and those defaults did not persist (`Control Names` N = [], `y` = 0.0;
+    `tools/bench/replay_vis_76d_defaults.log`). `gscript.make_default` reads no op error (`gscript.py:2985-2995`).
+    (a) **Scalar constants are DIAGRAM constants** (N = 1 and the modulus 10044), made with the fleet's constant verb.
+        The 10,044-path array may stay a control default ONLY if its value is read back COLD after the save.
+    (b) **Tool fix first:** `make_default` checks the op's error out and reads each value back after the save. It
+        FAILS loudly on a mismatch. A self-test on a scratch VI covers scalar, numeric array and path array.
+    (c) **Chain the error through IMAQ ReadFile** (error in → ReadFile → error out). The stand-ins are test
+        instruments, not the original's computation, and a silent read failure would void the equivalence test.
+        This amends PD16(c)'s "error passes straight through".
+    (d) Tests unchanged (PD18(a)). The rebuilt files replace the 76-5 files of the same names. 76-5's md5s are
+        superseded, not deliverables.
+
+20. **Cycle-76 close, ruling on result 76-6 (FAIL 13/1; review `archive/peer/2026-09-25-76-6-makedefault-cold.md`).**
+    `make_default` is now error-checked (`gscript.py:2990-3020`), but a panel default can still be lost at save/load
+    without any error: an I32[4] came back empty cold. Only the 10,044-element String[] kept its default, and it
+    kept it every time. The cause (not applied vs lost at save) is OPEN and **off the critical path**.
+    (a) **Next build = a constant-on-ANY-terminal verb** (tool grant: loop N and conditional terminals recur in every
+        loop split, as with cycle 68's loop `i` hole). The external search on `Terminal`-level Create Constant or
+        equivalent comes first. The verb is measured on a scratch VI (For N, While conditional, a body-node terminal)
+        with a COLD read-back of each constant's value. Then the stand-ins are rebuilt per PD19 with N = 1 and 10044 as
+        diagram constants. The path list stays a String[] default, read back cold. Then the PD18(a) tests run.
+    (b) The default-loss discriminating test (sizes 1/4/100/10044, panel open vs closed, reload) is a parallel-safe
+        diagnostic. It is not a precondition for (a).
+    (c) **After retrospective-cycle76 (accepted):**
+        - The new verb is needed ONLY for loop-owned terminals (For N, While conditional). The modulus 10044 goes on
+          Q&R's `y` with the existing `OpCreateConstOnTerm_v0`, which already handles body-node terminals
+          (`build_opcreateconstonterm_v0.log:46-54`).
+        - The replay VIs are rebuilt by a `tools/recipes/stage_replay_*.py` stage recipe (dry run, pre-run and
+          prior-art gates), never as a `diag_*.py`.
+        - Every value a stand-in depends on (constants, the path list default, the counter type) is read back COLD
+          before the functional tests run.
+        - The IMAQdx mode enum #581 value is read and recorded.
+        - Review dispositions are made by judgement; a material session returns them as OPEN.
+
 ## Stop conditions
 
 Any refusal from the motor gate, an Error List MISMATCH on the bed, a run that does not reach the experiment loop,

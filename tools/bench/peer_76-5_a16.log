@@ -1,0 +1,49 @@
+BGRUN START 2026-09-25 04:38:08 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug 76-5-a16-replay-standins -TaskFile tools/bench/cards/peer_76-5_a16_task.md
+OUTCOME: ANSWERED (77s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-25-76-5-a16-replay-standins.md
+COST: $0.8384  in 10 / out 5966 / cache-create 77485 / cache-read 380364  (74s, 7 turn(s))
+--- ANSWER ---
+**Verdict: the root cause holds, but the claim is incomplete.** Log line 86 shows the script itself asked for `'Buffer Number Mode (Next)'` as the source. So the wrong wire came from our label pick, not from the verb. But calling it "a script bug, and everything else passed (32/33)" hides two more defects and one damaged file on disk.
+
+### 1. Strongest reason the claim is wrong: the gate would have failed even with correct wiring
+Run 1's A16 was named "**every pane object** and the three new controls wired". `Buffer Number Mode (Next)` is a pane object. In a correct pass-through, Mode is unused and has no wire, so this gate had to fail whatever the wiring was.
+
+That makes two independent faults, not one: a wrong label selector and a wrong prediction for the gate. Proof is that the new gate at `tools/bench/diag_replay_standins.py:75-76` had to add both `"Mode" not in l` and `not pw[...Mode...]["wire"]`. The patch fixes both, but the claim credits the failure to the selector alone.
+
+I could not check run 1's exact gate code. The script is untracked (`??` in git status), so no older version survives. This point rests on the gate's name in log line 87.
+
+### 2. Alternative reading: the 32 passes are blind to the fault, and a wrong artefact was saved
+Run 1's A16 was **not fatal**. The run went on and did this:
+- Saved `claudeDev\replay\replay_imaqdx_get_image_buf.vi`, md5 `0d5377256895b548dc6fe41e1bb2cdf0` (log line 91), with **BN Out = Mode**, not BN In. That is a computation error under rule 1a.
+- C1 (ExecState 1 cold), C2 (pane matches IMAQdx Get Image) and C3 (replace #529 keeps every wire) all **passed on that wrong file** (log lines 100-103).
+
+So "everything else passed" is not evidence that the rest is right. None of the B and C gates can tell BN Out ← BN In from BN Out ← Mode. The value coerces into U32 and gives ES 1, as the brief itself admits. B2's "BN In bare" check (line 94) also passes trivially, because BN In was never wired.
+
+The file-left-on-disk check H6 reports `added [] removed []` (line 127) although two VIs were saved under `replay\`. Either that folder is outside the check's view, or the files are intended. Either way, the wrong buf file is probably still there, and nothing marks it invalid.
+
+### 3. What would falsify the claim
+Either of these, after rerunning with exact labels:
+- `panel_wiring` still shows BN Out's wire ≠ BN In's wire, or Mode with a wire.
+- `pidx(W, "Buffer Number In")` returns the same index as Mode.
+
+That would mean the fault is in the index path (fp_labels order vs the op's `Panel.Controls[]` order), not in the selector. I think this is unlikely, because Session (675/675) and error (678/678) wired correctly through the same `pidx`/`connect_ctl_ind` path.
+
+Both use `Panel.Controls[]`, which is documented as tabbing order ([LabVIEW Wiki](https://labviewwiki.org/wiki/Panel_class/Controls()_property)). That order changes when controls are created or re-tabbed ([NI forum](https://forums.ni.com/t5/LabVIEW/Way-to-reorder-controls-in-front-panel/td-p/1950859)). The same order-dependent `startswith` pattern is still live at line 69 for `Image`. It is safe today only because there is one Image control and one Image indicator.
+
+### 4. Cheapest discriminating test
+No LabVIEW is needed. Read the saved `replay_imaqdx_get_image_buf.vi` (md5 0d53…) with one `panel_wiring` call, or read the JSON `s.R["panel"]` in `tools/bench/replay_vis_76d.json`.
+- **Claim confirmed:** `Buffer Number Out.wire == Buffer Number Mode (Next).wire` and `Buffer Number In.wire == 0`.
+- **Then:** mark that buf artefact invalid, and fail the rerun if it finds that md5.
+
+Also add one line after the connects in the patched script: `assert pidx(W,"Buffer Number In") != pidx(W,"Buffer Number Mode (Next)")`. It costs nothing and separates the selector bug from an index-path bug.
+
+**Bottom line:** I agree with the selector diagnosis, backed by log line 86. I reject "our bug only; the rest passed". Three corrections are owed:
+- Record the gate-prediction fault as its own fault.
+- Invalidate the run-1 buf file on disk.
+- Accept that B1 and C1–C3 do not check who drives BN Out; only the new A16 does.
+
+I would change my mind only if run 1's A16 already excluded Mode, which the gate's name contradicts.
+
+Sources:
+- [Panel class/Controls() property – LabVIEW Wiki](https://labviewwiki.org/wiki/Panel_class/Controls()_property)
+- [Way to reorder controls in front panel – NI Community](https://forums.ni.com/t5/LabVIEW/Way-to-reorder-controls-in-front-panel/td-p/1950859)
+BGRUN END rc=0 after 78s

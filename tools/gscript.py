@@ -1042,6 +1042,35 @@ def connect_ctl(target, panel_index, node_index, terminal_index):
     return _err(vi, lab["error"])
 
 
+OP_CONNECT_CTL_IND = os.path.join(CLAUDEDEV, "OpConnectCtlInd_v0.vi")
+_CONNECT_CTL_IND_LABELS = None
+
+
+def connect_ctl_ind(target, sink_panel_index, src_panel_index):
+    """Wire the terminal of front-panel object Panel.Controls[src_panel_index] (a CONTROL, the source) into the terminal
+    of Panel.Controls[sink_panel_index] (an INDICATOR, the sink) - both in fp_labels order, both on the top-level
+    diagram. Terminal.Connect Wire 6349C03 on the sink's own terminal, 'Wire Source' = the source control's terminal
+    (Panel.Controls[] -> Index Array -> Control.Terminal 6332006, cast-free, twice). OpConnectCtlInd_v0 = OpConnectCtl_v0
+    with its Nodes[] source ladder replaced (card 76-4, m8 plan PD16(d); built by tools/bench/diag_replay_skeleton.py,
+    labels in tools/bench/replay_vis_76_ctlind_labels.json); its references are closed by Close Reference nodes.
+    Returns the invoke's error text (None = no error). Verify by EFFECT: panel_wiring(target) shows the same wire uid
+    on both terminals, and exec_state."""
+    global _CONNECT_CTL_IND_LABELS
+    if _CONNECT_CTL_IND_LABELS is None:
+        import json
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "replay_vis_76_ctlind_labels.json"),
+                  encoding="utf-8") as f:
+            _CONNECT_CTL_IND_LABELS = json.load(f)
+    lab = _CONNECT_CTL_IND_LABELS
+    ensure_loaded(target)   # edits are silently declined on a target that is not fully loaded
+    vi = op(OP_CONNECT_CTL_IND)
+    vi.SetControlValue("vi path", target)
+    vi.SetControlValue(lab["index_sink"], int(sink_panel_index))
+    vi.SetControlValue(lab["index_source"], int(src_panel_index))
+    _run(vi)
+    return _err(vi, lab["error"])
+
+
 def count(target, cls):
     vi = op(OP_REPORT)
     vi.SetControlValue("vi path", target)
@@ -2959,11 +2988,37 @@ def make_default(target, values=None):
     Why an op: the ActiveX VirtualInstrument has no MakeCurValsDefault, and a plain SetControlValue on a loaded subVI never
     reaches its calls. The touch loads the target's front panel and inflates its call time (~9 ms/frame measured on
     TRACK_kernel_v1) — RESTART LabVIEW before timing anything that calls `target` (docs/NAMES.md, timing protocol)."""
+    # 2026-09-25 (m8 plan Pre-decided 19(b), card 76-6): 76-5 set three values and only one persisted, silently. Now the
+    # op's `error out` is checked and every value is read back after the Make-Current-Default AND after the save; any
+    # mismatch RAISES. This is an in-memory read-back; a COLD read (fresh LabVIEW) stays the caller's job
+    # (tools/bench/selftest_make_default.py does it).
+    def _same(a, b):
+        if isinstance(a, (list, tuple)) or isinstance(b, (list, tuple)):
+            a, b = list(a or []), list(b or [])
+            return len(a) == len(b) and all(_same(x, y) for x, y in zip(a, b))
+        try:
+            return float(a) == float(b)
+        except (TypeError, ValueError):
+            return str(a) == str(b)
+
+    def _check(stage):
+        with vi_ref(target) as vi:
+            bad = {lab: (v if not isinstance(v, (list, tuple)) else "len %d" % len(v), vi.GetControlValue(lab))
+                   for lab, v in (values or {}).items() if not _same(vi.GetControlValue(lab), v)}
+        if bad:
+            raise RuntimeError("make_default: read-back mismatch %s on %s: %s"
+                               % (stage, os.path.basename(target), {k: (w, str(g)[:80]) for k, (w, g) in bad.items()}))
     with vi_ref(target) as vi:                         # P3: counted + released
         for lab, v in (values or {}).items():
             vi.SetControlValue(lab, v)
+    _check("after SetControlValue")
     o = op(OP_MAKE_DEFAULT); o.SetControlValue("vi path", target); _run(o)
-    return save(target)
+    err = _err(o)
+    if err:
+        raise RuntimeError("make_default: OpMakeDefault_v0 %s" % err)
+    r = save(target)
+    _check("after save")
+    return r
 
 
 OP_BUILD_CASE = os.path.join(CLAUDEDEV, "OpBuildCase_v1.vi")

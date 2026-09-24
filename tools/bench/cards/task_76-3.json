@@ -1,0 +1,76 @@
+{
+ "schema": "task/1",
+ "id": "76-3",
+ "kind": "build",
+ "goal": "Apply docs/m8-real-run-plan.md Pre-decided 16: review it, build the ctl->ind wiring verb, the frames folder, the two stand-ins and the get-buff replay copy.",
+ "why": "Result 76-1 was BLOCKED on three measured premises; PD16 rules on all three. M8(b) needs these VIs before the S1/S3 swap.",
+ "inputs": [
+  {"path": "docs/m8-real-run-plan.md", "md5": "b9c8f806202768862d50d06f005f107d"},
+  {"path": "tools/bench/cards/result_76-1.json"},
+  {"path": "tools/bench/replay_vis_76_measure.log", "md5": "c17191a77820124ec97d5cceba3a268a"},
+  {"path": "tools/bench/swap_verb_75.json"},
+  {"path": "tools/gpu/fixture.py"},
+  {"path": "tools/gscript.py"},
+  {"path": "tools/stagekit.py"},
+  {"path": "docs/toolkit-capabilities.md"},
+  {"path": "docs/NAMES.md"}
+ ],
+ "pass": [
+  "Step 0: failed-prediction review of 76-1 vs PD16 via review/1 + peer.ps1 -Agent claude -Role hypothesis, ANSWERED, verdict + archive path reported",
+  "Step 0: if the review refutes a PD16 clause, stop there and return BLOCKED citing it (no build)",
+  "frames folder f00000..f10043 + frames_manifest.json built by Python; 10044 entries; md5 spot-check of 20 random indices",
+  "ctl->ind verb: in gscript.py, Close Reference on every ref; scratch test wire exists, ExecState 1, handles range over 20 calls",
+  "unowned pane-identical route: which candidate worked, measured (VI qualified name has no lvlib), vi.lib + lvlib md5 unchanged",
+  "replay_imaqdx_get_image_buf.vi + replay_get_image_cal.vi + replay_get_buff_image.vi saved by SCRIPT, ExecState 1 cold, md5s",
+  "pane diff empty for all three vs their sources, terminal by terminal (name, type, direction, position)",
+  "PD16(e) tests: get-buff copy b=5,10049 -> md5 == f00005 source, image number == b, Missed frames? TRUE",
+  "PD16(e) tests: cal stand-in 3 calls -> f00000,f00001,f00002 and Buffer Number Out 0,1,2",
+  "get-buff copy: callee census diff == exactly #529 -> buf stand-in; wire-edge diff empty after uid remap",
+  "launch gate honoured; originals, vi.lib, lvlib, background VIs, beds md5 unchanged; refs opened == closed; LabVIEW gone"
+ ],
+ "outputs": [
+  "tools/bench/replay_vis_76b.log",
+  "tools/bench/replay_vis_76b.json",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image.vi",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_imaqdx_get_image_buf.vi",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_image_cal.vi"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "tools/recipes/stage_replay_*.py",
+   "tools/bench/replay_vis_76*",
+   "tools/bench/diag_replay_*.py",
+   "tools/bench/selftest_*ctlind*",
+   "tools/bench/stageplans/**",
+   "tools/bench/*replay*",
+   "tools/gscript.py",
+   "tools/stagekit.py",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\**",
+   "docs/NAMES.md",
+   "docs/toolkit-capabilities.md",
+   "archive/peer/**",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "fact", "priorart"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 150
+ },
+ "rules": [
+  "rule 1: never write an original, bed, vi.lib, the lvlib or background VIs; copies in claudeDev\\replay\\",
+  "rule 1a: inside the get-buff copy ONLY #529 changes; Subtract and Equal To 0? stay",
+  "stage/diag files <=120 lines on stagekit; reference hygiene per CLAUDE.md 3",
+  "failed prediction -> JEV-LADDER line first, then hypothesis review if owed",
+  "run_vi = the replay VIs + their test harness only; main VI/S1/S3/beds not run; no camera session",
+  "External search is mandatory before declaring the unowned-pane route impossible",
+  "do NOT start the swap into S1/S3 copies - that is the next dispatch"
+ ],
+ "advances": ["M8", "R5"]
+}

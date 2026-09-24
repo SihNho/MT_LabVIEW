@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"76-5","status":"FAIL","gates":{"pass":61,"fail":6},
+"first_fail":"T1-T3: U8 pixels EMPTY, cal BN Out 0,0,0; cold read shows saved defaults lost 'Control Names' (N array, empty) and 'y' (0.0); paths array persisted",
+"blocked_by":null,
+"artefacts":[
+{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_imaqdx_get_image_buf.vi","md5":"c9d4a43a1cb4bb9b8eb56da3860f3470"},
+{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_image_cal.vi","md5":"7cc14c60776685dd46a0384f4eb24c67"},
+{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image.vi","md5":"e7274612d9156fd2590f2b1eefef66e0"},
+{"path":"tools/bench/replay_vis_76d.log","md5":null},
+{"path":"tools/bench/replay_vis_76d_test.log","md5":null},
+{"path":"tools/bench/replay_vis_76d_defaults.log","md5":null}],
+"facts":[
+"Route: copy_by_index from S1 (Inc #1978, Dec #9179, Q&R #2136); no generic creator. Search on record: archive/peer/2026-09-23-c68-m4-prims.md Q1 + skill vi-scripting.md:52-70",
+"Stand-in build run 2 35/0 (replay_vis_76d.log run 2): both ES 1 COLD, no lvlib, pane per slot (label,dir) == IMAQdx Get Image, replace #529 keeps all wires",
+"Build run 1 failed A16: prefix match wired 'Buffer Number Mode (Next)'->BN Out; our script bug, fixed by exact labels; run-1 buf md5 0d537725 overwritten",
+"Get-buff copy (replay_vis_76d_test.log): callee diff == #529->buf stand-in only, wire-edge diff 0 of 13 after remap, ES 1 cold, pane == source",
+"T1/T2: image number == b and Missed TRUE for b=8217,8218,5, errors clean, but 'Image Pixels (U8)' shape (0,) every call (replay_vis_76d_test.log T1-T2)",
+"T3 cal: 3 calls -> pixels empty, Buffer Number Out 0,0,0 (predicted 0,1,2)",
+"Cold read (replay_vis_76d_defaults.log): saved defaults 'Control Names'=[] (N array), 'y'=0.0 (DBL), 'Control Names 2'=10044 paths OK, in BOTH stand-ins",
+"So N=0: loop never runs, Dec(0)=-1 -> U32 BN Out 0; Q&R y=0 -> bad index. make_default set 3 values, only 1 persisted (gscript.py:2985-2995 reads no op error)",
+"Stand-ins: IsReentrant False, ReentrancyType 1 (ActiveX read); counter chain is DBL (y control typed DBL). Reviews: 2026-09-25-76-5-a16, -t1 (hypothesis, ANSWERED)",
+"Ladder: 76d.log run1 new-problem p=0.814 -> review done; 76d_test.log run1 our-script-bug p=0.742 -> patched; run2 new-problem p=0.724 -> review done; originals/pins/pane base unchanged, LabVIEW gone"],
+"open":[
+"Fix route for the two lost defaults: re-apply make_default per control (and read back) on the saved stand-ins, or replace the 'once' array/y controls by another N=1 and y=10044 source? (3rd run of gbtest needs your card)",
+"Error pass-through leaves ReadFile's error out unwired, so a read failure is silent (T1-T3 showed clean errors with empty images). Keep PD16(c) pass-through, or chain error through ReadFile?",
+"Dispositions for archive/peer/2026-09-25-76-5-a16-replay-standins.md and -t1-replay-gbtest.md are in tools/bench/cards/disposition_76-5-*.md (archive/peer is outside this card's write flags)"],
+"cost":{"usd":null,"minutes":60,"labview_runs":5},
+"note":"Stopped at failure budget 2 for diag_replay_gbtest.py. Files: tools/bench/diag_replay_lib.py (147 lines, over 120), diag_replay_standins.py, diag_replay_gbtest.py, diag_replay_defaults.py."}
