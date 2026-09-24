@@ -33,6 +33,9 @@ def gate(label, ok, detail=""):
     print("  %s  %-44s %s" % ("PASS" if ok else "FAIL", label, str(detail)[:140]), flush=True)
 
 
+HEAD0 = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
+
+
 def main():
     for t in TESTS:
         r = subprocess.run([sys.executable, "-u", os.path.join(HERE, t + ".py")], cwd=ROOT, env=ENV,
@@ -77,6 +80,8 @@ def main():
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
+    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
+    gate("no git commit was made by any dry-run runner in this bundle", head == HEAD0, "%s -> %s" % (HEAD0[:8], head[:8]))
     print("\n=== GATES: %d pass / %d fail%s" % (len(PASS), len(FAIL),
                                                 ("; failing: " + ", ".join(FAIL)) if FAIL else ""), flush=True)
     print(P.result_line(P.make_result(len(PASS), len(FAIL), FAIL[0] if FAIL else None)), flush=True)

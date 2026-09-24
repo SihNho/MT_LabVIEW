@@ -106,3 +106,6 @@ VERDICT {"schema":"verdict/1","id":"chatb3-samerow","verdict":"supported","alter
 ## What was done with it
 
 (Claude fills in)
+
+SAME-ROW: run_selftests_chat_b2.log (2026-09-24 19:04:42)
+  This later failure of the SAME script was released without buying a new peer review: one review per row per cycle (CLAUDE.md, user 2026-09-22). The review above is the evidence; this line records which re-run was charged to it.

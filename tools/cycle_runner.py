@@ -633,7 +633,13 @@ def main():
 
         env = result_json(fresh)
         land_retrospective(bench, runner_log)
-        git_commit_cycle(n, runner_log)
+        # A DRY RUN NEVER COMMITS (2026-09-24, card chat-B3): the self-tests run this runner with --dry-run/--dry-cmd on
+        # a temp bench, and git_commit_cycle's `git add -A` on ROOT turned 16 self-test cycles into 16 "Cycle N runner
+        # auto-commit" commits of the real working tree (b0f2ced..6d9f980).
+        if a.dry_run or a.dry_cmd:
+            log_line(runner_log, "GIT | cycle %d | skipped (dry run)" % n)
+        else:
+            git_commit_cycle(n, runner_log)
         # MOTOR LIMITS OFF at cycle end, verified by readback (user 2026-09-23). Runs whatever the session's exit
         # was; a release that cannot be verified stops the runner and is written into STATUS, because limits left
         # ON silently are exactly what happened between 2026-09-18 and 2026-09-23.

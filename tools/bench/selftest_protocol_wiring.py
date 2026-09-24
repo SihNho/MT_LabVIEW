@@ -170,6 +170,8 @@ def main():
     gate("F12 hardware none: a real cycle_runner refused, --dry-run allowed",
          not allowed(a, command="py tools/cycle_runner.py --cycles 1")
          and allowed(a, command="py tools/cycle_runner.py --dry-run --cycles 1"))
+    gate("F12b hardware none: `git add tools/cycle_runner.py tools/motor_gate.py` is not a run",
+         allowed(bound("fgitadd", git_commit=True), command="git add tools/cycle_runner.py tools/motor_gate.py"))
     a3 = bound("fhw", hardware="gate")
     gate("F13 hardware gate: motor_gate allowed", allowed(a3, command="py tools/motor_gate.py --session start"))
     gate("F14 run_vi false: a script calling VI.Run() refused", not allowed(a, command="py %s" % run_src))

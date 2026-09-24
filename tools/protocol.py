@@ -551,9 +551,13 @@ def check_command(card, cmd):
     if role and role not in (fl.get("peers") or []):
         return "flags.peers %s does not include %r - this card may not dispatch that review" % (fl.get("peers"), role)
     if fl.get("hardware", "none") != "gate":
-        if MOTOR_CMD_RE.search(cmd) and not re.search(r"--dry-run|--help", cmd):
+        # INVOKED only (a launched .py, or a .ps1 after & / -File) - `git add tools/cycle_runner.py` is not a run
+        # (measured 2026-09-24: the first version refused exactly that commit).
+        ran = " ".join(scripts) + " " + " ".join(
+            re.findall(r"(?:&|-File)\s+[\"']?([^\s\"']*\.ps1)", cmd, re.I))
+        if MOTOR_CMD_RE.search(ran) and not re.search(r"--dry-run|--help", cmd):
             return "flags.hardware is 'none' - motor_gate / motor senders are refused (a --dry-run is allowed)"
-        if RUNNER_CMD_RE.search(cmd) and not re.search(r"--dry-run|--dry-cmd|--no-motor-hooks", cmd):
+        if RUNNER_CMD_RE.search(ran) and not re.search(r"--dry-run|--dry-cmd|--no-motor-hooks", cmd):
             return "flags.hardware is 'none' - a real cycle_runner run opens the motor session; use --dry-run"
     recipes = [p for p in scripts if RECIPE_PATH_RE.search(p)]
     lv_scripts = [p for p in scripts if LV_IMPORT_RE.search(srcs[p]) or RECIPE_PATH_RE.search(p)]
