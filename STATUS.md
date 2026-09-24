@@ -113,3 +113,5 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 ## RUNNER STOPPED 2026-09-22 09:58:16 — the judgement session exited non-zero twice in a row (last exit 1, log cycle_61.log) - a repeat failure is a judgement matter, not something to retry
 
 ## RUNNER STOPPED 2026-09-24 07:29:47 — the judgement session exited non-zero twice in a row (last exit 1, log cycle_73.log) - a repeat failure is a judgement matter, not something to retry
+
+## RUNNER STOPPED 2026-09-25 01:02:43 — the cycle-start Error List check could not be completed for cycle 74 (see errorlist_check_cycle74.log, G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\errorlist_D1_s4_loop17_20260925_010221.json) - no cycle runs on an unread bed
