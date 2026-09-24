@@ -1,0 +1,62 @@
+{
+ "schema": "task/1",
+ "id": "77-2",
+ "kind": "build",
+ "goal": "m8 plan PD20(a)+(c): build a gscript verb that puts a constant on a LOOP-OWNED terminal (For N, While conditional) and measure it on a scratch VI with cold read-back.",
+ "why": "Replay stand-ins need N=1 as a diagram constant (PD19(a)); loop N/conditional terminals recur in every loop split (cycle 68 hole). Tool grant 2026-09-24.",
+ "inputs": [
+  {"path": "docs/m8-real-run-plan.md"},
+  {"path": "tools/gscript.py"},
+  {"path": "tools/stagekit.py"},
+  {"path": "tools/bench/build_opcreateconstonterm_v0.log"},
+  {"path": "docs/toolkit-capabilities.md"},
+  {"path": "docs/NAMES.md"}
+ ],
+ "pass": [
+  "external search done FIRST (Terminal-level Create Constant / Loop.Count terminal / Loop Condition terminal by VI Scripting); sources cited in the result",
+  "verb in gscript.py (reuse OpCreateConstOnTerm_v0 if it reaches loop terminals; else a new claudeDev op VI): For N=1 and While conditional constant created on a scratch VI",
+  "control case: a body-node terminal constant via existing OpCreateConstOnTerm_v0 on the same scratch",
+  "each constant's VALUE and wire read back COLD after scripted save + fresh LabVIEW load; ExecState 1 cold",
+  "20 consecutive verb calls leave handle count flat (+-100); refs opened == closed",
+  "NAMES.md / toolkit-capabilities.md updated with the verb and its measured terminals"
+ ],
+ "outputs": [
+  "tools/gscript.py",
+  "tools/bench/const_loopterm_77.log",
+  "tools/bench/const_loopterm_77.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/gscript.py",
+   "tools/stagekit.py",
+   "tools/bench/*const_loopterm*",
+   "tools/bench/build_op*",
+   "tools/bench/selftest_*const*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\**",
+   "docs/NAMES.md",
+   "docs/toolkit-capabilities.md",
+   "tools/bench/jev_gate.log",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["fact", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 50
+ },
+ "rules": [
+  "rule 1: scratch VIs only under claudeDev; never an original, bed, vi.lib or lvlib",
+  "scratch deleted after the measurement; scripts <=120 lines on stagekit; reference hygiene CLAUDE.md 3",
+  "failed prediction -> JEV-LADDER line first, then hypothesis review if owed; failures budget 2",
+  "do NOT build the replay VIs in this task - verb and its measurement only",
+  "LabVIEW closed and verified gone at the end"
+ ],
+ "advances": ["M8", "R5"]
+}

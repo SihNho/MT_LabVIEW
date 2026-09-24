@@ -317,6 +317,16 @@ property page ("Short Name"). PN input is `reference`; Invoke input is `referenc
   uid on both terminals (`node_terms`) and ExecState 1. `i` is not listed (inner terminal). **`Create For Loop`'s
   `Control Names` does NOT wire an existing front-panel control into the new loop** (measured: loop created, 0 tunnels,
   control still unwired — `build_harness_copyloop.log`).
+- **A constant on a loop-owned terminal (2026-09-25, task 77-2, WARM ONLY, `tools/bench/const_loopterm_77.log:23-24`):**
+  `Terminal.Create Constant` 6349C00 invoked on an empty top-level For loop's `Terminals[0]` (N) created a
+  `DigitalNumericConstant` on the top-level diagram and wired N. The same method invoked on `WhileLoop.Loop End Ref`
+  6362C00 (`LpEndRef`) created a `BooleanConstant` INSIDE the loop body and wired the conditional terminal. Both
+  invokes returned error `''`. In `OpCreateConstOnTerm_v0` the `LpEndRef` output is ALREADY wired, so re-feeding the
+  invoke from it needs `branch=True` (run 1, `:8`). **COLD confirmed 2026-09-25 (task 77-3,
+  `tools/bench/const_loopterm_77c.log:10-14`):** after scripted save + LabVIEW restart the scratch is ExecState 1, the
+  For N constant reads text `1` (I32) on N's wire, the cond constant is still a `BooleanConstant` wiring the cond
+  terminal (its True value is not read: no Boolean reader), and 20 verb calls left handles flat (31113 → 31119,
+  refs 8/8 closed, `:8-9`). Verb: `gscript.create_const_loop_term`.
 
 ## Junk Invoke nodes break the target VI (2026-09-08 10:3x)
 

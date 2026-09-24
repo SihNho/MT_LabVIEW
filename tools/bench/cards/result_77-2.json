@@ -1,0 +1,13 @@
+{"schema":"result/1","id":"77-2","status":"FAIL","gates":{"pass":8,"fail":1},"first_fail":"X no unhandled exception: IndexError list index out of range at the control case (build_op_const_loopterm_77.py:81), run 2","blocked_by":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpCreateConstTop_v0.vi","md5":"a25cfa393eb33f0bf68485476bb09269"},{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpCreateConstLoopEnd_v0.vi","md5":"c1c9d89f5dd6cc72d60bc28b91486642"},{"path":"tools/gscript.py","md5":null},{"path":"tools/bench/build_op_const_loopterm_77.py","md5":null},{"path":"tools/bench/opcreateconst_loopterm_labels.json","md5":null}],"facts":["External search done first (claude fact peer): 6349C00 has an optional Value input, type comes from the sink, no Loop End Ref restriction, no save-loss issue. tools/bench/peer_const_loopterm_77.log",
+"Verb gscript.create_const_loop_term (gscript.py:2561) drives 2 new ops, ExecState 1 + saved: OpCreateConstTop_v0, OpCreateConstLoopEnd_v0. const_loopterm_77.log:18,22",
+"WARM For N: DigitalNumericConstant #237 on top-level diagram, N wire 0->250, invoke error ''. const_loopterm_77.log:23",
+"WARM While cond: BooleanConstant #243 in loop body, cond term #119 wire 260 (OpLoopEndRef_v0), invoke error ''. const_loopterm_77.log:24",
+"Run 1 failed at B: LpEndRef already wired in donor, connect needed branch=True (patched :62). const_loopterm_77.log:8",
+"Run 2 failed at T3 control case, IndexError: likely stale Traverse Diagram index iD taken before for_loop (NAMES.md:299). log:25, script:81",
+"Not measured: control case, value read-back, save + cold reload, ExecState 1 cold, 20-call handles. Scratches deleted, LabVIEW verified gone. log:27-28",
+"No fleet reader exists for a BooleanConstant value (NAMES.md:1149): the cond constant's True cannot be read back cold even on a clean run",
+"JEV-LADDER const_loopterm_77.log | our-script-bug p=0.684 | patch+rerun | patched, reran | 2nd script bug, budget spent. jev_gate.log:895",
+"Docs updated with WARM-only facts: toolkit-capabilities.md row after OpCreateConstOnTerm_v0; NAMES.md after line 319"],
+"open":["Third run owed (retry cap 2 reached): the fix is to re-read the body diagram index by uid after for_loop (script :73-81). Needs a judgement card.",
+"Reading the cond BooleanConstant's value cold needs a new reader (OpConstValueN_v1 retyped to BooleanConstant). Build it, or accept 'wired + class' for the conditional terminal?"],
+"cost":{"usd":null,"minutes":35,"labview_runs":2},"note":"Failure budget 2 spent on two different bugs in our own script. The verb itself works warm on both loop terminals."}

@@ -1,0 +1,42 @@
+BGRUN START 2026-09-25 06:07:28 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug const-loopterm-77c -TaskFile tools/bench/peer_task_const_loopterm_77c.txt
+OUTCOME: ANSWERED (89s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-25-const-loopterm-77c.md
+COST: $1.0177  in 20 / out 6831 / cache-create 85153 / cache-read 877955  (85s, 15 turn(s))
+--- ANSWER ---
+**Verdict: the proximate cause is ours, but the patch is wrong as written.** The 1149 does come from our teardown, not from `create_const_loop_term`. But the bare `except Exception` at `build_op_const_loopterm_77.py:114-115` catches every exception, not just 1149, so the rerun it is meant to produce would not prove what it claims.
+
+**1. Strongest reason the claim is wrong: the patch swallows everything, not 1149.**
+- `g.close_panel` goes through `vi_ref` → `GetVIReference` → `_invoke`, with a poison check first (`gscript.py:263-264`, `1331-1332`). An RPC failure, a watchdog poison or a failed reload of S would all be caught and turned into a PASS on gate X.
+- The fixed rerun can therefore never fail at that line, whatever LabVIEW does. It records "no exception" without discriminating.
+- The call is also pointless. The panel was never opened cold, and the `finally` kills LabVIEW and deletes S (lines 122-125). Deleting the call is cleaner than guarding it.
+
+**2. Did the exception hide a later failure? No, as far as our own tools can see.**
+- `close_panel(S)` was the last statement of `main()`. Every measurement gate (C0-C4) ran and passed before it (`const_loopterm_77c.log:10-14`).
+- The `finally` ran completely:
+  - Both Z gates passed (`log:17-18`).
+  - `ref_counts_end` shows opened 11, closed 11, live 0 (`const_loopterm_77.json:191-195`); `vi_ref` counts the close on the exception path too (`gscript.py:268-270`).
+- Caveat: that counter cannot see refnums leaked inside an op VI (`gscript.py:247-249`). The handle-flatness gate H1 ran only on the warm instance (line 101), not after the restart. "No leak" holds at the COM level and warm only.
+
+**3. Do any cold readers open the panel? No.**
+- After `restart_labview()` and `g.reset()` (which clears `_loaded`, `gscript.py:280`), S is touched only by `exec_state`, `C.read_const`, `C.walk`, `loop_end_ref` and `report_all`.
+- None of these calls `ensure_loaded` or `open_panel` (`build_opcreateconstonterm_v0.py:127-157`, `392-414`; `build_d1_v0.py:820-840`). Only the editing verbs call `ensure_loaded`.
+- NI documents 1149 as exactly this condition: closing or setting the state of a front panel that is not open.
+
+**Alternative explanation of the same evidence.** The panel may have been opened cold and then closed again, for example by an op VI that loads S by reference and unloads it on close, with `close_panel`'s own `GetVIReference` re-loading a fresh copy of S with no panel. The error would be identical. It matters little for teardown, but the log cannot tell the two apart.
+
+**What would falsify the claim:**
+- The panel reads as open just before the close in the cold instance.
+- The caught text is anything other than `0x47D`.
+
+**Cheapest discriminating test (no extra LabVIEW run needed to design it):**
+- In the rerun you already plan, narrow the guard: catch the exception, re-raise unless its text contains `0x47D`, and store the text in `R`. That makes the patch able to fail.
+- Optionally read the VI's front-panel-open property just before the call and record it. The exact ActiveX property name (`FPWinOpen` in older docs) is unverified here; check it first.
+- One run then separates "1149 because the panel was never opened" from "some other failure hidden by the guard".
+- A process note: this would be at least the fourth run of this script in cycle 77 (two in `const_loopterm_77.log`, plus 77c). Confirm whether `RETRY_CAP` applies to this bench before rerunning.
+
+**What would change my mind:** a rerun where the narrowed guard catches a non-1149 error, or cold handles jumping when read around C0-C4.
+
+Sources:
+- [NI forum: Error 1149 and Error 1000 at Invoke Node](https://forums.ni.com/t5/LabVIEW/Error-1149-and-Error-1000-occurred-at-Invode-Node-vi/td-p/4426143)
+- [NI forum: Maximizing/minimizing clone VI front panel windows (1149 from a reference to a panel that is not open)](https://forums.ni.com/t5/LabVIEW/Maximizing-minimizing-clone-VI-front-panel-windows/td-p/731175)
+- [LabVIEW Wiki: Front Panel Window.Open property](https://labviewwiki.org/wiki/VI_class/Front_Panel_Window.Open_property)
+BGRUN END rc=0 after 89s

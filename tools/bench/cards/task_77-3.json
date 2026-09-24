@@ -1,0 +1,60 @@
+{
+ "schema": "task/1",
+ "id": "77-3",
+ "kind": "build",
+ "goal": "Third run (judgement-authorised) of build_op_const_loopterm_77.py with the body-diagram index re-read by uid after for_loop; finish the cold measurements of create_const_loop_term.",
+ "why": "Result 77-2: verb works warm on For N and While cond; run 2 died on our own stale Traverse index (script :73-81) before value/cold/handle gates.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_77-2.json"},
+  {"path": "tools/bench/build_op_const_loopterm_77.py"},
+  {"path": "tools/bench/const_loopterm_77.log"},
+  {"path": "tools/gscript.py"},
+  {"path": "docs/NAMES.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpCreateConstTop_v0.vi", "md5": "a25cfa393eb33f0bf68485476bb09269"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpCreateConstLoopEnd_v0.vi", "md5": "c1c9d89f5dd6cc72d60bc28b91486642"}
+ ],
+ "pass": [
+  "script fix: body diagram addressed by uid after for_loop (NAMES.md:299); offline dry read of the fix before LabVIEW",
+  "control case: body-node terminal constant via OpCreateConstOnTerm_v0 on the same scratch",
+  "after scripted save + fresh LabVIEW load (COLD): For N constant VALUE == 1 and wired to N; body constant value read back; ExecState 1 cold",
+  "While conditional, COLD: a BooleanConstant wired to the cond terminal (class + wire only; value reader is OPEN, accepted by judgement 77)",
+  "20 consecutive create_const_loop_term calls: handle count flat (+-100); refs opened == closed",
+  "scratch deleted; op VI md5s unchanged unless re-saved (report); LabVIEW verified gone"
+ ],
+ "outputs": [
+  "tools/bench/build_op_const_loopterm_77.py",
+  "tools/bench/const_loopterm_77c.log",
+  "tools/bench/const_loopterm_77.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/gscript.py",
+   "tools/bench/*const_loopterm*",
+   "tools/bench/build_op_const_loopterm_77.py",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\**",
+   "docs/NAMES.md",
+   "docs/toolkit-capabilities.md",
+   "tools/bench/jev_gate.log",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 1,
+  "minutes": 30
+ },
+ "rules": [
+  "ONE LabVIEW run authorised by this card (judgement 77 third run of a bench build script)",
+  "rule 1: scratch only under claudeDev; never an original, bed, vi.lib or lvlib",
+  "failed prediction -> JEV-LADDER line first; do not build the replay VIs here",
+  "LabVIEW closed and verified gone at the end"
+ ],
+ "advances": ["M8", "R5"]
+}

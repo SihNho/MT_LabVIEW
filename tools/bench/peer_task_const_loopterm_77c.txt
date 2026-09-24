@@ -1,0 +1,14 @@
+ATTACK this claim about tools/bench/const_loopterm_77c.log (script tools/bench/build_op_const_loopterm_77.py).
+
+The run passed all 15 measurement gates (T1-T4 warm, H1-H2 handles/refs, C0-C4 COLD after save + LabVIEW restart)
+and FAILED only "X no unhandled exception": LabVIEW error 1149 (0x47D) "Cannot close or set the state of a closed front
+panel" raised by the teardown call g.close_panel(S) at the end of main(), after gate C4.
+
+Claim: this is a defect of OUR script's teardown, not of the verb under test (gscript.create_const_loop_term). After
+restart_labview() the cold instance opened S only by VI reference (exec_state / read_const / loop_end_ref / report_all),
+never FP.Open, so FP.Close on a closed panel raises 1149. The patch wraps that one call in try/except
+(build_op_const_loopterm_77.py:108-109). Planned action: rerun the patched script once to get a clean record.
+
+Attack it: the strongest reason this is wrong (e.g. does any cold reader open the panel, so 1149 signals something
+else; could the exception mask a later failure such as a lost value or a leaked reference); an alternative explanation;
+what would falsify it; the cheapest discriminating test. Read the log and the script (lines 90-125).

@@ -1,0 +1,75 @@
+{
+ "schema": "task/1",
+ "id": "77-4",
+ "kind": "build",
+ "goal": "m8 plan PD19+PD20(c): rebuild the 3 replay VIs by a tools/recipes/stage_replay_*.py stage recipe (dry, pre-run, prior-art), read every dependency back COLD, then run the PD18(a) tests.",
+ "why": "76-5 replay VIs returned empty pixels (panel defaults lost). Verb create_const_loop_term now measured cold (result 77-3); OpCreateConstOnTerm_v0 covers Q&R y.",
+ "inputs": [
+  {"path": "docs/m8-real-run-plan.md"},
+  {"path": "tools/bench/cards/result_77-3.json"},
+  {"path": "tools/bench/cards/result_76-6.json"},
+  {"path": "tools/bench/diag_replay_standins.py"},
+  {"path": "tools/bench/diag_replay_gbtest.py"},
+  {"path": "tools/bench/diag_replay_lib.py"},
+  {"path": "tools/gscript.py"},
+  {"path": "tools/stagekit.py"},
+  {"path": "G:\\m8_replay_frames\\frames_manifest.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_imaqdx_pane_base.vi", "md5": "65e999d9bd292a892512bc1caf57e0e4"}
+ ],
+ "pass": [
+  "step 0: build_op_const_loopterm_77.py (teardown patched) rerun once for a clean record; result line reported",
+  "stage_replay recipe <=120 lines on stagekit; dry run + offline pre-run PASS; prior-art review dispatched, released (FIXED/REFUTED) before the LabVIEW run",
+  "stand-ins from pane base copies: N=1 and Q&R y=10044 diagram consts, uninit SR count k, frame f(k mod 10044), error via ReadFile; buf BN Out=In, cal BN Out=k",
+  "COLD before tests: ExecState 1; N and 10044 values; path String[] default 10044 entries; counter type; IMAQdx mode enum #581 value recorded; pane per slot == IMAQdx Get Image",
+  "replay_get_buff_image.vi from get buff image-lost frames.vi copy: callee diff == #529 only, wire-edge diff 0 after uid remap, ES 1 cold",
+  "PD18(a), U8 pixel-array md5 vs Python read of the source file: fresh load b=8217,8218 -> f00000,f00001, image number == b, Missed TRUE; fresh load b=5 -> f00000",
+  "PD18(a): cal stand-in 3 calls -> f00000,f00001,f00002 and Buffer Number Out 0,1,2",
+  "originals, vi.lib, lvlib, frames, beds, pane base md5 unchanged; refs balanced; LabVIEW gone; JEV-LADDER per failed log"
+ ],
+ "outputs": [
+  "tools/recipes/stage_replay_standins.py",
+  "tools/bench/stage_replay_77.log",
+  "tools/bench/replay_vis_77.json",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_imaqdx_get_image_buf.vi",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_image_cal.vi",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\replay\\replay_get_buff_image.vi"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "tools/recipes/stage_replay*",
+   "tools/bench/*replay*",
+   "tools/bench/*const_loopterm*",
+   "tools/bench/build_op_const_loopterm_77.py",
+   "tools/bench/plans/**",
+   "tools/bench/stage_runs.jsonl",
+   "tools/gscript.py",
+   "tools/stagekit.py",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\**",
+   "docs/NAMES.md",
+   "docs/toolkit-capabilities.md",
+   "tools/bench/jev_gate.log",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis", "fact"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 75
+ },
+ "rules": [
+  "rule 1: never write an original, bed, vi.lib, the lvlib, fixture/frames or background VIs",
+  "rule 1a: inside the get-buff copy ONLY #529 changes",
+  "run_vi = replay VIs + their test harness only; no main VI/S1/S3/bed run; no camera session",
+  "failed prediction -> JEV-LADDER first; review dispositions returned as OPEN (judgement decides)",
+  "stage run cap 2 per cycle; save each VI as it passes; HARD STOP 70 min, no S1/S3 swap",
+  "LabVIEW closed and verified gone at the end"
+ ],
+ "advances": ["M8", "R5"]
+}

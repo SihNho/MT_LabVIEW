@@ -255,8 +255,12 @@ def main():
          not gp.SELFTEST_LOG_RE.match("diag_movein_set.log") and
          bool(gp.SELFTEST_LOG_RE.match("selftest_guard_peer_failre.log")))
     nf = gp.newest_failing_log()
-    gate("F4 newest_failing_log() is not a selftest_*.log", not nf or
-         not os.path.basename(nf[0]).lower().startswith("selftest_"),
+    # F4 AMENDED 2026-09-25 (card 77-1): the exclusion is now decided by the log's BGRUN START command, so a
+    # `selftest_*.log` whose command REACHES LABVIEW (selftest_make_default.log) is meant to gate. F4 now pins the
+    # remaining contract: whatever newest_failing_log() returns is not a PURE-PYTHON self-test run.
+    nf_ok = not nf or not os.path.basename(nf[0]).lower().startswith("selftest_") or (
+        not gp.selftest_exempt((nf[2].splitlines() or [""])[0]))
+    gate("F4 newest_failing_log() is not a pure-Python selftest_*.log", nf_ok,
          "now: %s" % (os.path.relpath(nf[0], ROOT) if nf else "(no failing log in the 6 h window)"))
 
     # ---- BLAST RADIUS: newly visible failures, facts only -----------------------------------------

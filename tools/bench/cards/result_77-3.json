@@ -1,0 +1,13 @@
+{"schema":"result/1","id":"77-3","status":"FAIL","gates":{"pass":15,"fail":1},"first_fail":"X no unhandled exception: LabVIEW 1149 from teardown g.close_panel(S) after the last gate C4 (cold instance never opened S's panel). const_loopterm_77c.log:15","blocked_by":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpCreateConstTop_v0.vi","md5":"a25cfa393eb33f0bf68485476bb09269"},{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\OpCreateConstLoopEnd_v0.vi","md5":"c1c9d89f5dd6cc72d60bc28b91486642"},{"path":"tools/bench/const_loopterm_77c.log","md5":null},{"path":"tools/bench/const_loopterm_77.json","md5":null},{"path":"tools/bench/build_op_const_loopterm_77.py","md5":null}],"facts":[
+"All card measurement gates PASS; the only FAIL is a teardown exception after the last gate. const_loopterm_77c.log:2-14,15",
+"Fix applied: body diagram re-read by uid after for_loop (Du 110 -> iD 2, NUMVI #44 found). build_op_const_loopterm_77.py:75-76; log:5",
+"Control case: OpCreateConstOnTerm_v0 made DigitalNumericConstant #253 in the body, inv_err ''. log:6. (Also fixed: C.OP was re-pointed at the LoopEnd op; now DON_B)",
+"COLD after save+restart: ExecState 1; For N const text '1', I32, wire 250 == N wire. log:10-11",
+"COLD body const text '-7' wire 276; cond term #119 wire 260; cond const class BooleanConstant #243. log:12-14",
+"20 create_const_loop_term calls: handles 31113 -> 31119, refs opened 8 closed 8 live 0. log:8-9",
+"Op VIs reused, not rebuilt: md5 equal to card inputs, not re-saved. log:2",
+"Scratches deleted, LabVIEW killed and verified gone. log:17-18",
+"Teardown bug patched after the run (try/except around the cold close_panel), not rerun (1 run authorised). build_op_const_loopterm_77.py:108-109",
+"JEV-LADDER: no line for const_loopterm_77c in jev_gate.log (written by guard_peer at next build launch); no review dispatched. Docs updated: NAMES.md:320-328, toolkit-capabilities.md:70"],
+"open":["Accept 77-3 as functionally PASS (15/15 measurement gates) given the lone FAIL is a post-measurement teardown call, or require a clean rerun of the patched script?"],
+"cost":{"usd":null,"minutes":12,"labview_runs":1},"note":"Verb create_const_loop_term is now measured cold on For N and While cond; Boolean value read remains unmeasured by judgement 77's acceptance."}

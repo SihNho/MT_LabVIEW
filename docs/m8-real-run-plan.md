@@ -273,6 +273,25 @@ Garbage tracking values in (a) are NOT a failure (no sample channel on the micro
         - The IMAQdx mode enum #581 value is read and recorded.
         - Review dispositions are made by judgement; a material session returns them as OPEN.
 
+21. **Cycle-77 rulings (steer_77 FOLLOWED; outcome review `archive/peer/2026-09-25-outcome-review-20260925.md`).**
+    (a) **M8(a) clean baseline DONE (card 77-6, 6 legs 8/0, INDEX rows 45–46, `tools/bench/m8_s1s3_77.json`).**
+        `D1_s1_copy.vi` has no TIFF writer. Lost frames S1 vs S3 at 3/1/6 picks: 7/4, 2/2, 11/8 of ~3,075 (35 s);
+        rows ≈ frames. The 567 lost of the cycle-74 base leg were the fixture TIFF writer's. At this load the split
+        shows NO measurable lost-frame gain; one run per cell, spread unmeasured. M3 stays justified by CLAUDE.md
+        1c (no serial on the frame path — structural), not by these numbers. Realistic load = user question
+        `D-2026-09-25-01` (not blocking).
+    (b) **Constant verb DONE:** `gscript.create_const_loop_term` (`OpCreateConstTop_v0` / `OpCreateConstLoopEnd_v0`),
+        cold: For N = 1, ExecState 1, handles flat over 20 calls (`const_loopterm_77c.log`, clean rerun
+        `const_loopterm_77d.log` 16/0). While conditional: class + wire only; its Boolean value reader stays OPEN.
+    (c) **Stand-in stage READY, NOT RUN:** `tools/recipes/stage_replay_standins.py` (md5 `610a96a2…`, dry PASS,
+        pre-run 7/0, prior-art released by FIXED lines) + `tools/bench/diag_replay_test77.py` (`330db8df…`). Q&R `y`
+        = 10044 via the top-level constant op (Q&R is top level): ACCEPTED, cold-gated. `#581` Mode stays unread,
+        not blocking; the gate instead checks each stand-in's `BN Out` wire SOURCE (buf: `BN In`; cal: count k).
+    (d) **Order from now:** the deliverable run first (stand-in stage → PD18(a) → the S1/S3 swap and replay runs with
+        bit-identical X/Y/Z, PD13(d)/15/17(b')), THEN tooling. Launch the stage as ONE non-compound PowerShell command
+        (`$env:RETRY_CARD=…; $env:MATERIAL='1'; py tools\bgrun.py --material …`); compound Bash launches are refused
+        by the permission layer AFTER the retry-cap recorder has counted them.
+
 ## Stop conditions
 
 Any refusal from the motor gate, an Error List MISMATCH on the bed, a run that does not reach the experiment loop,

@@ -24,9 +24,14 @@ import protocol as P                                                            
 CD = r"C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev"
 BED, BED_MD5 = os.path.join(CD, "D1_s4_loop17.vi"), "4b621946492da3d2fbb96b6053e715ec"
 S3, S3_MD5 = os.path.join(CD, "D1_s3_loop15.vi"), "1a11d92aacabf7ec844d65b8af19f39f"   # card 74-4 (M8', plan PD 9)
+S1, S1_MD5 = os.path.join(CD, "D1_s1_copy.vi"), "3e3d23cefd3a334001aa9d6156bf1aee"   # card 77-6 (wiki index.json:1887)
 ORIG = os.path.join(os.path.dirname(ROOT), "Min_Track N beads V6_ParallelLoop.vi")
 ORIG_MD5 = "2a78e17c449cacdaf5da389818526859"
 A = sys.argv[1:]; DRY = "--dry" in A; LEG = A[A.index("--leg") + 1] if "--leg" in A else None
+# card 77-6: --picks N (1/3/6) sets v5.PICK_FRACS; output json m8_<leg>_p<N>.json so cycle-74 files stay as they are.
+NPICK = int(A[A.index("--picks") + 1]) if "--picks" in A else None
+FRACS6 = [(0.40, 0.60), (0.21, 0.37), (0.61, 0.84), (0.30, 0.50), (0.52, 0.30), (0.75, 0.55)]
+SUF = ("_p%d" % NPICK) if NPICK else ""
 TS = time.strftime("%Y%m%d_%H%M%S")
 
 def md5(p):
@@ -52,7 +57,8 @@ def main():
     import drive_original_copy_v5 as v5
     d4, d0 = v5.d4, v5.d0
     src, smd5, name = {"bed": (BED, BED_MD5, "D1_s4_loop17_run_%s.vi"), "base": (ORIG, ORIG_MD5, "m8_orig_copy_%s.vi"),
-                       "s3": (S3, S3_MD5, "D1_s3_loop15_run_%s.vi")}[LEG]
+                       "s3": (S3, S3_MD5, "D1_s3_loop15_run_%s.vi"),
+                       "s1": (S1, S1_MD5, "D1_s1_copy_run_%s.vi")}[LEG]
     name = name % TS
     copy = os.path.join(tempfile.gettempdir() if DRY else CD, name)
     shutil.copyfile(src, copy)
@@ -62,9 +68,11 @@ def main():
         m.COPY, m.ORIGINAL, m.ORIGINAL_MD5, m.RUN_DIR = copy, ORIG, ORIG_MD5, run_dir
         m.SHOTS = os.path.join(HERE, "m8_shots")
     d0.COPY_TITLE = name; v5.EVID = os.path.join(HERE, "m8_shots")
-    v5.D0_JSON = d0.D0_JSON = os.path.join(HERE, "m8_v5_%s%s.json" % (LEG, "_dry" if DRY else ""))
-    v5.PROBE_JSON = os.path.join(HERE, "m8_v5_%s_clicks.json" % LEG)
+    v5.D0_JSON = d0.D0_JSON = os.path.join(HERE, "m8_v5_%s%s%s.json" % (LEG, SUF, "_dry" if DRY else ""))
+    v5.PROBE_JSON = os.path.join(HERE, "m8_v5_%s%s_clicks.json" % (LEG, SUF))
     v5.RUN_S = 35.0                                           # ~84 Hz measured -> ~2900 frames (>= 2000)
+    if NPICK: v5.PICK_FRACS = FRACS6[:NPICK]                  # v5's L3 (>=3 markers) / L8 (==3 panels) are v5's
+                                                              # own contract; for N!=3 M2 below uses L7+L9+L11
     if DRY: import m8_dry; m8_dry.stub(v5, d4, d0)
     real_leg, n = v5.leg, [0]
     def one_leg(tag, *a):                                      # plan step 2: the full leg ONCE
@@ -77,7 +85,7 @@ def main():
         v5.main()
     S = {s["step"].split(" ")[1] if " " in s["step"] else s["step"]: s["ok"] for s in d0.STEPS}
     F = d0.FACTS
-    G["M2 reached experiment loop"] = all(S.get("run1.L%d" % i) for i in (7, 8, 9))
+    G["M2 reached experiment loop"] = all(S.get("run1.L%d" % i) for i in ((7, 9, 11) if NPICK else (7, 8, 9)))
     files, hdr = {}, {}
     for f in sorted(os.listdir(run_dir)) if os.path.isdir(run_dir) else []:
         p = os.path.join(run_dir, f); files[f] = os.path.getsize(p)
@@ -96,7 +104,8 @@ def main():
     t0 = time.time()
     while not DRY and lv_running() and time.time() - t0 < 60: time.sleep(5)
     G["M6 LabVIEW gone (tasklist)"] = DRY or not lv_running()
-    G["M7 bed md5 unchanged"] = md5(BED) == BED_MD5 and md5(S3) == S3_MD5 and md5(ORIG) == ORIG_MD5
+    G["M7 bed md5 unchanged"] = md5(BED) == BED_MD5 and md5(S3) == S3_MD5 and md5(ORIG) == ORIG_MD5 and \
+        md5(S1) == S1_MD5
     try: os.remove(copy)
     except OSError as e: print("delete copy failed: %r" % e)
     G["M8 run copy deleted"] = not os.path.exists(copy)
@@ -107,16 +116,18 @@ def main():
            "bandpass": F.get("bandpass_run1"), "motor_after": (F.get("motor_after") or {}).get("tmx"),
            "handles": [F.get("handles_before"), F.get("handles_after")], "v5_json": v5.D0_JSON,
            "run_dir_stats": F.get("run_dir"), "tiffs_deleted": F.get("tiffs_deleted"),
-           "tra_rows": {f: tra_rows(os.path.join(run_dir, f)) for f in files if f.lower().startswith("tra")}}
-    json.dump(out, open(os.path.join(HERE, "m8_%s%s.json" % (LEG, "_dry" if DRY else "")), "w"), indent=1,
-              default=str)
+           "tra_rows": {f: tra_rows(os.path.join(run_dir, f), 3 + 3 * (NPICK or 3)) for f in files
+                        if f.lower().startswith("tra")},
+           "npicks": NPICK or 3, "v5_steps": S}
+    jp = os.path.join(HERE, "m8_%s%s%s.json" % (LEG, SUF, "_dry" if DRY else ""))
+    json.dump(out, open(jp, "w"), indent=1, default=str)
     for k, v in G.items(): print("GATE %-40s %s" % (k, "PASS" if v else "FAIL"))
-    bad = [k for k, v in G.items() if not v]; jp = os.path.join(HERE, "m8_%s%s.json" % (LEG, "_dry" if DRY else ""))
+    bad = [k for k, v in G.items() if not v]
     print(P.result_line(P.make_result(len(G) - len(bad), len(bad), bad[0] if bad else None,
                                       [{"path": os.path.relpath(jp, ROOT), "md5": md5(jp)}])), flush=True)
     return not bad
 
 if __name__ == "__main__":
     if "--table" in A: table("--s3" in A); sys.exit(0)
-    assert LEG in ("bed", "base", "s3"), "--leg bed|base|s3"
+    assert LEG in ("bed", "base", "s3", "s1"), "--leg bed|base|s3|s1"
     ok = main(); sys.stdout.flush(); os._exit(0 if ok else 1)     # os._exit: v2's COM daemon threads

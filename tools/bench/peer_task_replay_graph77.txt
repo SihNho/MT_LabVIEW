@@ -1,0 +1,17 @@
+ATTACK this claim about tools/bench/replay_graph77.log (script tools/bench/diag_replay_graph77.py, read-only diagnostic).
+
+The run passed K1/K2/K3, G1 (pane-base graph written: 9 terminals, 10 objs), E1 (#581 read, err ''), H2/H3/H5/H9, and
+FAILED only "H6 the files left on disk == [] and nothing was removed: added ['replay_graph77_20260925_061109.vi']".
+
+Claim: a defect of OUR diagnostic, not of LabVIEW or the reader. stagekit.Stage.start() (tools/stagekit.py:328-360)
+always makes a dated WORK copy under claudeDev; a stage that saves nothing must call Stage.discard_work()
+(tools/stagekit.py:498-505, as tools/bench/p0_c69_census.py:32 does) so close() deletes it. diag_replay_graph77.py never
+called it, so the work copy stayed and H6 counted it. The graph JSON it wrote (tools/bench/graph_replay_pane_base_77.json)
+is unaffected. Fix: the next diagnostic (tools/bench/diag_replay_test77.py) calls discard_work() and removes the leftover.
+
+Separately recorded, not part of the claim: E1's read_const on EnumConstant #581 returned text '' repr 0 (the reader is
+OpConstValueN_v1, numeric), so the mode value is still unread.
+
+Attack it: strongest reason this is wrong (e.g. did close() fail to delete for another reason; could the graph JSON be
+wrong because it was read from the work copy rather than the input); an alternative explanation; what would falsify it;
+the cheapest discriminating test.

@@ -1,0 +1,17 @@
+{"schema":"result/1","id":"77-7","status":"BLOCKED","gates":{"pass":0,"fail":0},
+"first_fail":null,
+"blocked_by":{"device":"tools/hooks/guard_bash.py (RETRY CAP)","message":"stage_replay_standins.py already ran 2 time(s) in cycle 77 (cap 2; tools/bench/stage_runs.jsonl). Further run needs a task/1 card with retry_of: stage_replay_standins.py carried as RETRY_CARD=<card> in the launch command."},
+"artefacts":[],
+"facts":[
+"bind OK: task_77-7 bound to agent a2c25d7273d52c3bf (bare relative-path command; a compound 'cd && bind; cat' was refused as UNBOUND)",
+"launch refused by the retry cap: stage_runs.jsonl:3 (06:22:21, card null) and :4 (06:26:07, card null) count 2 runs of stage_replay_standins.py in cycle 77",
+"both counted runs were launches guard_cycle REFUSED after the cap recorder logged them (result_77-4.json:22, result_77-5.json:8); stage_replay_77.log does not exist",
+"so the cap counter records launch ATTEMPTS that a later gate refuses; 0 LabVIEW runs of this stage have actually happened in cycle 77",
+"not run: stage run, COLD checks, diag_replay_test77.py, PD18(a); no replay VI built; stage_runs.jsonl left untouched (editing it would route around the cap)",
+"LabVIEW not running (tasklist empty); STATUS.md:25 labview-lock status: released",
+"input md5 re-check not done: md5sum on tools/bench/*.py refused by guard_bash (judgement/material classifier); Get-FileHash refused by the PowerShell permission layer"],
+"open":[
+"Issue a retry card (retry_of: stage_replay_standins.py, launched with RETRY_CARD=<card>) for this relaunch, since both counted runs were refused launches with no log?",
+"Should the retry-cap recorder count only launches that pass every guard (it now counts attempts guard_cycle refuses)?"],
+"cost":{"usd":null,"minutes":3,"labview_runs":0},
+"note":"Relaunch commands: RETRY_CARD=<card> py tools/bgrun.py --material --max-min 40 --log tools/bench/stage_replay_77.log -- py -u tools/recipes/stage_replay_standins.py ; then --max-min 30 --log tools/bench/replay_test77.log -- py -u tools/bench/diag_replay_test77.py"}

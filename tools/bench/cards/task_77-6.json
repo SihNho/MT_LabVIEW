@@ -1,0 +1,61 @@
+{
+ "schema": "task/1",
+ "id": "77-6",
+ "kind": "measure",
+ "goal": "Steer 77 / outcome-review discriminating test: REAL runs of dated copies of D1_s1_copy.vi and D1_s3_loop15.vi at 3, 1, 6 picks; lost frames + tra rows per leg, into INDEX.",
+ "why": "Outcome review 2026-09-25: no clean S1 baseline was ever run and M8 numbers never reached INDEX; the S1-vs-S3 lost-frame difference decides whether the split (M3) is the lever.",
+ "inputs": [
+  {"path": "archive/peer/2026-09-25-outcome-review-20260925.md"},
+  {"path": "docs/m8-real-run-plan.md"},
+  {"path": "tools/bench/drive_m8.py"},
+  {"path": "tools/bench/drive_original_copy_v5.py"},
+  {"path": "tools/bench/m8_run1.json"},
+  {"path": "tools/bench/m8s3_run.json"},
+  {"path": "archive/benchmarks/INDEX.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s3_loop15.vi", "md5": "1a11d92aacabf7ec844d65b8af19f39f"}
+ ],
+ "pass": [
+  "read-only census first: does D1_s1_copy.vi carry the fixture TIFF writer (IMAQ Write TIFF File 2 #22700)? reported as fact",
+  "legs in order s1@3, s3@3, s1@1, s3@1, s1@6, s3@6; each on a fresh dated byte copy, own LabVIEW launch, same experiment duration as cycle 74",
+  "per leg: reached experiment loop, frames delta, lost frames, tra rows, TIFF count, stop latency, LabVIEW exited; table tools/bench/m8_s1s3_77.json",
+  "cycle-74 M8(a) legs + these legs appended to archive/benchmarks/INDEX.md as rows (what, env, criteria, raw paths)",
+  "motor session reference+limits verified per drive_m8 contract; originals/beds md5 unchanged; run copies deleted; LabVIEW verified gone"
+ ],
+ "outputs": [
+  "tools/bench/m8_s1s3_77.json",
+  "tools/bench/m8_s1s3_77.log",
+  "archive/benchmarks/INDEX.md"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "tools/bench/drive_m8*",
+   "tools/bench/*m8_s1s3*",
+   "tools/bench/m8*",
+   "tools/bench/stage_runs.jsonl",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\**",
+   "archive/benchmarks/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/cards/**",
+   "tools/gui_actions.log"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "rules": [
+  "user grant 2026-09-24: motors allowed; PI reference + verify and limits readback never skipped",
+  "garbage tracking values are not a failure (no sample channel); lost frames and rows are the measurement",
+  "GUI bead-pick per user 2026-09-17 option 1: -Exception Approved -Evidence 'user 2026-09-17 bead-pick option 1'",
+  "rule 1: run DATED COPIES only; never the originals, S1, S3 or the bed files themselves",
+  "HARD STOP 55 min: keep legs finished so far, s1@3 + s3@3 first; LabVIEW closed and verified gone"
+ ],
+ "advances": ["M8", "M3", "R5"]
+}

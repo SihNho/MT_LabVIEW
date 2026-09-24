@@ -46,7 +46,12 @@ def gate(ok, label, detail=""):
         print("  PASS  %s  %s" % (label, detail))
     else:
         NFAIL += 1
+        global FIRST_FAIL
+        FIRST_FAIL = FIRST_FAIL or label
         print("  FAIL  %s  %s" % (label, detail))
+
+
+FIRST_FAIL = None
 
 
 # THE FIXTURE'S FAILURE MARKER IS `STOP:`, NOT `FAIL`, AND THAT IS DELIBERATE. guard_peer.FAILURE_RE matches
@@ -235,6 +240,60 @@ def main():
         os.remove(jevp)
         os.remove(nonjev)
 
+        # --- C8: THE SELF-TEST EXEMPTION IS SCOPED BY THE COMMAND (card 77-1, 2026-09-25; retrospective-cycle76
+        # device-failed: selftest_make_default.log - a LabVIEW-touching self-test - failed its prediction and the
+        # filename exemption hid it, so no JEV-LADDER line was written, jev_gate.log:887). Fixture scripts live
+        # under the temp ROOT; the LabVIEW one reaches `stagekit` only TRANSITIVELY, through a helper module.
+        fbench = os.path.join(tmp, "tools", "bench")
+        os.makedirs(fbench)
+        for name, body in (("fixture_lvlib.py", "import os\nimport stagekit as K   # noqa: E402\n"),
+                           ("selftest_lvfix.py", "import os, sys\nimport fixture_lvlib as L   # noqa: E402\n"),
+                           ("selftest_purefix.py", "import json\nimport os, sys  # noqa\nimport logclass\n")):
+            with open(os.path.join(fbench, name), "w", encoding="utf-8") as f:
+                f.write(body)
+
+        def flog(name, script, marker=True, start=True):
+            p = os.path.join(bench, name)
+            with open(p, "w", encoding="utf-8") as f:
+                if start:
+                    f.write("BGRUN START 2026-09-22 09:20:00 limit 12.0 min: py -u %s\n" % script)
+                f.write("  PASS  x\nSTOP: fixture failed prediction\nBGRUN END rc=1 after 9s\n" if marker else
+                        "  PASS  x\nBGRUN END rc=0 after 9s\n")
+            time.sleep(1.1)
+            os.utime(p, None)
+            return p
+
+        def newest():
+            nf = guard_peer.newest_failing_log()
+            return os.path.basename(nf[0]) if nf else None
+
+        made = [flog("selftest_lvfix.log", "tools/bench/selftest_lvfix.py")]
+        got = newest()
+        gate(got == "selftest_lvfix.log", "C8 a selftest_*.log whose command reaches LabVIEW (transitively, via an "
+             "imported helper) GATES", "newest_failing_log() -> %r" % got)
+        made.append(flog("selftest_purefix.log", "tools/bench/selftest_purefix.py"))
+        got = newest()
+        gate(got == "selftest_lvfix.log", "C8b a NEWER pure-Python selftest log does NOT become the failing log",
+             "newest_failing_log() -> %r" % got)
+        made.append(flog("oddly_named.log", "tools/bench/selftest_purefix.py"))
+        got = newest()
+        gate(got == "selftest_lvfix.log", "C8c scoped by COMMAND: a non-selftest-NAMED log running a pure-Python "
+             "self-test is excluded too", "newest_failing_log() -> %r" % got)
+        made.append(flog("selftest_named_recipe.log", "tools/recipes/build_y.py"))
+        got = newest()
+        gate(got == "selftest_named_recipe.log", "C8d scoped by COMMAND: a selftest-NAMED log whose command runs a "
+             "recipe GATES", "newest_failing_log() -> %r" % got)
+        made.append(flog("selftest_missing.log", "tools/bench/selftest_not_on_disk.py"))
+        got = newest()
+        gate(got == "selftest_missing.log", "C8e fails CLOSED: a selftest script that cannot be read GATES",
+             "newest_failing_log() -> %r" % got)
+        made.append(flog("selftest_nostart.log", "", start=False))
+        got = newest()
+        gate(got == "selftest_missing.log", "C8f no BGRUN START at all -> the old filename rule still excludes it",
+             "newest_failing_log() -> %r" % got)
+        for p in made:
+            os.remove(p)
+
         # --- C6: OPTIONAL live call, only if the key is really there
         jev.get_key, jev_gate.covers_failure = okey, ocf
         if jev.get_key():
@@ -252,7 +311,16 @@ def main():
         guard_peer.same_row_review = osr
         shutil.rmtree(tmp, ignore_errors=True)
 
+    # --- C9: the REAL project files, read-only (ROOT restored above). The measured instance of the defect.
+    real = "BGRUN START 2026-09-25 05:18:01 limit 12.0 min: py -u tools/bench/selftest_make_default.py"
+    gate(not guard_peer.selftest_exempt(real), "C9 the real selftest_make_default.py command is NOT exempt "
+         "(it reaches LabVIEW via diag_replay_lib -> stagekit)")
+    own = "BGRUN START 2026-09-25 06:00:00 limit 5.0 min: py -u tools/bench/selftest_guard_peer_jev.py"
+    gate(guard_peer.selftest_exempt(own), "C9b this file's own command IS exempt (pure Python, no LabVIEW)")
+
     print("\n=== selftest_guard_peer_jev: %d pass / %d fail ===" % (NPASS, NFAIL))
+    import protocol   # C6 RESULT line (session protocol v1); tools/ is on sys.path
+    print(protocol.result_line(protocol.make_result(NPASS, NFAIL, FIRST_FAIL)))
     return 0 if NFAIL == 0 else 1
 
 

@@ -1,0 +1,18 @@
+{"schema":"result/1","id":"77-8","status":"BLOCKED","gates":{"pass":0,"fail":0},
+"first_fail":null,
+"blocked_by":{"device":"tools/hooks/guard_bash.py (RETRY CAP)","message":"stage_replay_standins.py already ran 3 time(s) in cycle 77 (cap 2). RETRY_CARD id '77-8' already authorised a run of stage_replay_standins.py this cycle - one card, one run."},
+"artefacts":[],
+"facts":[
+"bind OK (bare 'py tools/protocol.py bind tools/bench/cards/task_77-8.json' in PowerShell; a Bash 'cd ... && bind' was refused UNBOUND)",
+"input md5 match card: stage_replay_standins.py 610a96a2, plan_replay_77.json 8d29fc6a, diag_replay_test77.py 330db8df",
+"launch 1 (Bash, 'cd <root>; RETRY_CARD=... MATERIAL=1 py tools/bgrun.py --material ...') refused by the harness permission layer (compound command needs approval) AFTER guard_bash recorded it",
+"stage_runs.jsonl:5 (06:56:57, card 77-8) = that refused launch; no stage_replay_77.log exists, no LabVIEW process -> 0 real runs",
+"launch 2 (PowerShell, $env:RETRY_CARD + bgrun, no cd) refused by guard_bash RETRY CAP: 3 counted runs, card 77-8 already spent",
+"retry-cap miscount FACT: stage_runs.jsonl:3,4,5 are all launches refused by a LATER gate (guard_cycle x2, permission layer x1); recorder in guard_bash runs before them; not repaired (card pass[3])",
+"not run: stage build, COLD checks, diag_replay_test77.py, PD18(a); no replay VI built; stage_runs.jsonl untouched",
+"LabVIEW not running (tasklist: no LabVIEW.exe); STATUS labview-lock released, never acquired"],
+"open":[
+"Issue a new retry card; launch it as a single non-compound PowerShell command ($env:RETRY_CARD=...; $env:MATERIAL='1'; py tools\\bgrun.py ...) which the permission layer accepts?",
+"Should the retry-cap recorder move after all gates (or record only on bgrun start) so refused launches stop consuming the cap?"],
+"cost":{"usd":null,"minutes":4,"labview_runs":0},
+"note":"Working launch shape for the next card (PowerShell tool, cwd=root): $env:RETRY_CARD='tools/bench/cards/task_<id>.json'; $env:MATERIAL='1'; py tools\\bgrun.py --material --max-min 40 --log tools\\bench\\stage_replay_77.log -- py -u tools\\recipes\\stage_replay_standins.py"}

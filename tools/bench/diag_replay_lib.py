@@ -24,6 +24,48 @@ GC = r"C:\Program Files\National Instruments\LabVIEW 2026\vi.lib\Erdos Miller\LV
 FR = r"G:\m8_replay_frames"; MAN = os.path.join(FR, "frames_manifest.json"); N_FR = 10044
 
 
+# card 77-4: tools/stage_prerun.py --dry runs a recipe with gscript STUBBED (every stub carries `_dry`). The readers
+# below then see only the pane-base graph, so a lookup of a CREATED object finds nothing. In DRY only, the lookup
+# helpers return a placeholder instead of raising; in a real run they raise exactly as before (no behaviour change).
+DRY = bool(getattr(getattr(g, "wire", None), "_dry", False))
+DUMMY = {"i": 0, "name": "", "is_source": False, "wire": 0, "uid": 0}
+
+
+class _Walk(dict):
+    def __missing__(self, k):
+        if DRY:
+            return (0, "", [])
+        raise KeyError(k)
+
+
+def new1(t, cls, before):
+    """the ONE uid of class `cls` on `t` that is not in `before` (raises on 0 or >1; DRY: 0)"""
+    n = sorted(x for x in g.uids(t, cls) if x not in before)
+    if len(n) != 1:
+        if DRY:
+            return 0
+        raise RuntimeError("new1 {0}: {1} new {2}".format(os.path.basename(str(t)), n, cls))
+    return n[0]
+
+
+def new_label(t, before, indicator):
+    n = [l for _i, l, ind in g.fp_labels(t) if bool(ind) == bool(indicator) and l not in before]
+    if not n:
+        if DRY:
+            return ""
+        raise RuntimeError("new_label: no new {0}".format("indicator" if indicator else "control"))
+    return n[-1]
+
+
+def copy_to(s, cls, uid, dest_diag_uid, pos, tag):
+    """copy_top + (dest_diag_uid) move_in into that diagram + junk purge = stagekit.copy_in:779 with DRY-safe lookups"""
+    u = copy_top(s, cls, uid, tag)
+    if dest_diag_uid is not None:
+        di = diag_index(s.work, dest_diag_uid)
+        s.move_in(u, di, tuple(pos)); s.junk_purge(tag + " after move_in", hints=[di, 0])
+    return u
+
+
 def pins():
     return (("vi.lib GI", GI, K.md5(GI)), ("lvlib", LIB, K.md5(LIB)), ("get-buff copy", GB, K.md5(GB)),
             ("get-buff orig", GB_ORIG, K.md5(GB_ORIG)), ("pane base", BASE, BASE_MD5), ("manifest", MAN, K.md5(MAN)),
@@ -32,7 +74,7 @@ def pins():
 
 def walk(t, d=0):
     labels = {r["uid"]: r["label"] for r in g.node_labels(t, d)}
-    out = {}
+    out = _Walk()
     for n in range(80):
         u, rows = g.node_terms_uid(t, d, n)
         if not u:
@@ -42,26 +84,36 @@ def walk(t, d=0):
 
 
 def term(rows, name, source):
-    return next((r for r in rows if r["name"] == name and bool(r["is_source"]) == bool(source)), None)
+    return next((r for r in rows if r["name"] == name and bool(r["is_source"]) == bool(source)), dict(DUMMY) if DRY else None)
 
 
 def tname(rows, pred, source):
     """the one terminal name satisfying pred(name) with the given direction (raises on 0 or >1)"""
     h = [r["name"] for r in rows if pred(r["name"]) and bool(r["is_source"]) == bool(source)]
     if len(h) != 1:
+        if DRY:
+            return ""
         raise RuntimeError("terminal pick: {0} hits in {1}".format(h, [(r["name"], r["is_source"]) for r in rows]))
     return h[0]
 
 
+def _ix(lst, v):
+    if DRY and v not in lst:
+        return 0
+    return lst.index(v)
+
+
 def fidx(t, cls, uid):
-    return [int(o["uid"]) for o in g.report_all(t, cls)].index(int(uid))
+    return _ix([int(o["uid"]) for o in g.report_all(t, cls)], int(uid))
 
 
 def diag_index(t, uid):
-    return [int(o["uid"]) for o in g.report_all(t, "Diagram")].index(int(uid))
+    return _ix([int(o["uid"]) for o in g.report_all(t, "Diagram")], int(uid))
 
 
 def donor_class(uid):
+    if DRY:                                  # the dry graph is the pane base, not the donor S1
+        return "Function"
     for c in ("Function", "Node"):
         if int(uid) in [int(o["uid"]) for o in g.report_all(g.MOVE_SRC, c)]:
             return c
@@ -79,25 +131,33 @@ def copy_top(s, cls, uid, tag):
     new = sorted(set(int(o["uid"]) for o in g.report_all(s.work, cls)) - before)
     s.gate("{0} copy #{1}: UID guard and exactly one new {2}".format(tag, uid, cls), sel == int(uid) and len(new) == 1,
            (sel, new), fatal=True)
-    s.junk_purge(tag); return new[0]
+    s.junk_purge(tag); return new[0] if new else 0                                   # DRY: the fatal gate did not raise
 
 
 def str_array_ctl(s, t, tag):
     before_sub = g.uids(t, "SubVI"); g.drop_subvi(t, GC, 0, (200, 700))
-    u = [x for x in g.uids(t, "SubVI") if x not in before_sub][0]; wt = walk(t, 0)
+    u = new1(t, "SubVI", before_sub); wt = walk(t, 0)
     b = {l for _i, l, ind in g.fp_labels(t) if not ind}
     g.create_control(t, wt[u][0], term(wt[u][2], "Control Names", False)["i"])
-    label = [l for _i, l, ind in g.fp_labels(t) if not ind and l not in b][-1]
-    pw = {r["label"]: r for r in g.panel_wiring(t)}
-    g.delete_object(t, "Wire", fidx(t, "Wire", pw[label]["wire"]), verify=False)
+    label = new_label(t, b, False)
+    g.delete_object(t, "Wire", fidx(t, "Wire", pwire(t, label)), verify=False)
     g.delete_object(t, "SubVI", fidx(t, "SubVI", u), verify=False); g.remove_bad_wires_scripted(t)
-    pw = {r["label"]: r for r in g.panel_wiring(t)}
-    s.gate("{0} free String[] control {1!r}".format(tag, label), pw[label]["wire"] == 0, fatal=True)
+    s.gate("{0} free String[] control {1!r}".format(tag, label), pwire(t, label) == 0, fatal=True)
     return label
 
 
+def pwire(t, label):
+    """the wire uid on panel object `label` (panel_wiring; raises if absent; DRY: 0)"""
+    pw = {r["label"]: r for r in g.panel_wiring(t)}
+    if label not in pw:
+        if DRY:
+            return 0
+        raise KeyError(label)
+    return pw[label]["wire"]
+
+
 def pidx(t, label):
-    return [l for _i, l, _ind in g.fp_labels(t)].index(label)
+    return _ix([l for _i, l, _ind in g.fp_labels(t)], label)
 
 
 def pane_dirs(t):

@@ -190,6 +190,71 @@ def log_failure_file(path):
 # about the LabVIEW machine that a peer must attack.
 # THE NAME IS THE CONTRACT: a file that is NOT a self-test must never be called `selftest_*`.
 SELFTEST_LOG_RE = re.compile(r"^selftest_", re.I)
+# ⚠️ SUPERSEDED FOR BGRUN LOGS 2026-09-25 (card 77-1; `device-failed`, archive/peer/2026-09-25-retrospective-cycle76.md,
+# threshold 1). "The name is the contract" failed: `tools/bench/selftest_make_default.log` is a self-test BY NAME whose
+# command (`py -u tools/bench/selftest_make_default.py`) builds, saves and cold-reads a scratch VI IN LABVIEW; its
+# prediction failed (S3 2/3 values, rc=1) and the filename exemption hid it from this gate, so no JEV-LADDER line was
+# ever written (tools/bench/jev_gate.log:887). The exemption is now decided by the log's LAST `BGRUN START` COMMAND -
+# the rule logclass.command_kind (card 76-2) and the Jev half (STATUS OPEN 57) already follow: excluded only when
+# every in-scope script in python command position is a `selftest_*.py` whose import closure never reaches LabVIEW
+# (`selftest_exempt`). The filename rule survives ONLY for a file with no BGRUN START at all (logclass's "" case).
+_LV_MODULES = {"gscript", "stagekit", "pythoncom", "win32com", "comtypes"}   # the COM path to LabVIEW
+# CODE, not prose: a bare mention in a comment (this file's own docstring names lv_gui.ps1) must not mark a script -
+# measured on the first self-test run, C9b: jev_gate -> guard_peer matched on its own comments. GUI clicks go through
+# gscript._lv_gui / stagekit, both already in _LV_MODULES.
+_LV_TEXT_RE = re.compile(r"Dispatch\(\s*[\"']LabVIEW\.Application", re.I)
+_IMPORT_RE = re.compile(r"^\s*(?:from\s+([\w.]+)\s+import\b|import\s+([\w., ]+?)(?:\s+as\s+\w+)?\s*(?:#.*)?$)", re.M)
+_SELFTEST_SCRIPT_RE = re.compile(r"(?:^|[\\/])selftest_[^\\/]*\.py$", re.I)
+
+
+def _module_names(src):
+    names = []
+    for m in _IMPORT_RE.finditer(src):
+        if m.group(1):
+            names.append(m.group(1).split(".")[0])
+        else:
+            names += [x.strip().split(" ")[0].split(".")[0] for x in m.group(2).split(",") if x.strip()]
+    return names
+
+
+def script_touches_labview(script, _seen=None):
+    """True when `script` (a path) or any PROJECT module it imports, transitively, reaches LabVIEW: imports one of
+    _LV_MODULES or calls Dispatch on the LabVIEW application class. FAILS CLOSED: an unreadable script counts as True."""
+    seen = _seen if _seen is not None else set()
+    key = os.path.normcase(os.path.abspath(script))
+    if key in seen:
+        return False
+    seen.add(key)
+    try:
+        with open(script, "r", encoding="utf-8", errors="replace") as f:
+            src = f.read()
+    except OSError:
+        return True
+    if _LV_TEXT_RE.search(src):
+        return True
+    dirs = [os.path.dirname(key), os.path.join(ROOT, "tools"), os.path.join(ROOT, "tools", "bench"),
+            os.path.join(ROOT, "tools", "hooks")]
+    for name in _module_names(src):
+        if name in _LV_MODULES:
+            return True
+        for d in dirs:
+            cand = os.path.join(d, name + ".py")
+            if os.path.isfile(cand):
+                if script_touches_labview(cand, seen):
+                    return True
+                break
+    return False
+
+
+def selftest_exempt(start_line):
+    """True when a bgrun START line's run is a PURE-PYTHON self-test: every in-scope script in python command position
+    is a `selftest_*.py` and none of them reaches LabVIEW (`script_touches_labview`). Decided by the command only."""
+    cmd = start_line.split(" min: ", 1)[1] if " min: " in start_line else start_line
+    scripts = [next(g for g in m.groups() if g) for m in _CMDPOS_PY_RE.finditer(cmd)]
+    scoped = [s for s in scripts if _SCOPE_SCRIPT_RE.search(s)]
+    if not scoped or not all(_SELFTEST_SCRIPT_RE.search(s) for s in scoped):
+        return False
+    return not any(script_touches_labview(s if os.path.isabs(s) else os.path.join(ROOT, s)) for s in scoped)
 
 
 def _rel(p):
@@ -235,7 +300,7 @@ def newest_failing_log():
         # read as builds. `priorart_test_run1.log` blocked the next run because the reviewer had CITED
         # `build_opgeterrors.log`'s "STOP: not saved / rc=5". Third time this session that a fix landed in one guard
         # and not its sibling; the pattern now lives in one place per hook.
-        if logclass.is_review_log(p) or SELFTEST_LOG_RE.match(os.path.basename(p)):
+        if logclass.is_review_log(p):
             continue
         try:
             st = os.stat(p)
@@ -272,6 +337,13 @@ def newest_failing_log():
         # Jev script is exempt by the user's 2026-09-22 ruling. Decided by the FIRST `.py` token of the run's own
         # command, never by the log name. Files without a BGRUN START (the `STALL:` watchdog records) still gate.
         if "BGRUN START" in text and not in_prediction_scope((last.splitlines() or [""])[0]):
+            continue
+        # SELF-TEST EXEMPTION BY COMMAND (card 77-1): a pure-Python self-test is excluded; a self-test whose command
+        # reaches LabVIEW gates like any diagnostic. No BGRUN START at all -> the old filename rule (logclass's "").
+        if "BGRUN START" in text:
+            if selftest_exempt((last.splitlines() or [""])[0]):
+                continue
+        elif SELFTEST_LOG_RE.match(os.path.basename(p)):
             continue
         if log_failure(text, st.st_mtime)[0]:
             best = (p, st.st_mtime, last)

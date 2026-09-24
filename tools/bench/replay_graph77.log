@@ -1,0 +1,52 @@
+BGRUN START 2026-09-25 06:11:09 limit 12.0 min: py -u tools/bench/diag_replay_graph77.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 256 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 65e999d9bd292a892512bc1caf57e0e4  got 65e999d9bd292a892512bc1caf57e0e4
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE vi.lib GI        be7a516355ccb2c0fdbfe935c9146a07  (want be7a516355ccb2c0fdbfe935c9146a07) OK
+  FACT  PIN BEFORE lvlib            2aaa17d3ec745314f9a9f1e3c0b8ed4e  (want 2aaa17d3ec745314f9a9f1e3c0b8ed4e) OK
+  FACT  PIN BEFORE get-buff copy    9aaaef21e8426035f64a04ec816491d0  (want 9aaaef21e8426035f64a04ec816491d0) OK
+  FACT  PIN BEFORE get-buff orig    9aaaef21e8426035f64a04ec816491d0  (want 9aaaef21e8426035f64a04ec816491d0) OK
+  FACT  PIN BEFORE pane base        65e999d9bd292a892512bc1caf57e0e4  (want 65e999d9bd292a892512bc1caf57e0e4) OK
+  FACT  PIN BEFORE manifest         f9032ae5510e96126d9f53fc92f69cfe  (want f9032ae5510e96126d9f53fc92f69cfe) OK
+  FACT  PIN BEFORE S1               3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33969
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  replay_graph77_20260925_061109.vi
+  FACT  ExecState [after open] replay_graph77_20260925_061109.vi = 1
+  PASS  G1 pane-base graph written (9 terminals, 10 objs)  G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\graph_replay_pane_base_77.json
+  PASS  SC replay_graph77_20260925_061109_gb.vi is a byte-identical copy of get buff image-lost frames.vi  replay_graph77_20260925_061109_gb.vi
+  PASS  E1 #581 read, err ''  {'cls': 'Constant', 'uid_back': 581, 'text': '', 'repr': 0, 'wire': 0, 'err': ''}
+  FACT  MODE581 [(581, 'EnumConstant')] {'cls': 'Constant', 'uid_back': 581, 'text': '', 'repr': 0, 'wire': 0, 'err': ''}
+  PASS  E1 scratch deleted: replay_graph77_20260925_061109_gb.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\replay_graph77_20260925_061109_gb.vi
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 3}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 3}
+  FACT  LabVIEW handle count AFTER the work: 34278
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 65e999d9bd292a892512bc1caf57e0e4 / after 65e999d9bd292a892512bc1caf57e0e4
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  vi.lib GI        be7a516355ccb2c0fdbfe935c9146a07  (want be7a516355ccb2c0fdbfe935c9146a07) OK
+  FACT  PIN AFTER  lvlib            2aaa17d3ec745314f9a9f1e3c0b8ed4e  (want 2aaa17d3ec745314f9a9f1e3c0b8ed4e) OK
+  FACT  PIN AFTER  get-buff copy    9aaaef21e8426035f64a04ec816491d0  (want 9aaaef21e8426035f64a04ec816491d0) OK
+  FACT  PIN AFTER  get-buff orig    9aaaef21e8426035f64a04ec816491d0  (want 9aaaef21e8426035f64a04ec816491d0) OK
+  FACT  PIN AFTER  pane base        65e999d9bd292a892512bc1caf57e0e4  (want 65e999d9bd292a892512bc1caf57e0e4) OK
+  FACT  PIN AFTER  manifest         f9032ae5510e96126d9f53fc92f69cfe  (want f9032ae5510e96126d9f53fc92f69cfe) OK
+  FACT  PIN AFTER  S1               3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['replay_graph77_20260925_061109.vi']  (removed: [])
+  FAIL  H6 the files left on disk == [] and nothing was removed  added ['replay_graph77_20260925_061109.vi'] removed []
+  FACT  LabVIEW handle count at exit: 34278
+  PASS  H9 LabVIEW gone
+
+====================================================================================================
+=== GATES: 11 pass / 1 fail; failing: H6 the files left on disk == [] and nothing was removed
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\replay_graph77.json   elapsed 63.6 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":11,"fail":1},"first_fail":"H6 the files left on disk == [] and nothing was removed","artefacts":[]}
+BGRUN END rc=1 after 64s

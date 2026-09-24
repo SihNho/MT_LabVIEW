@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"77-1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/hooks/guard_peer.py","md5":"13c373514cdbe4ddbddfef5d6c051d69"},
+ {"path":"tools/bench/selftest_guard_peer_jev.py","md5":"4557ec9d160f496910a38c203ba19d3d"},
+ {"path":"tools/bench/selftest_guard_peer_failre.py","md5":"4c6fe4be67c95282095d6e114c4407ae"},
+ {"path":"tools/bench/selftest_guard_peer_77.log","md5":"7f16f61cf0967d13cfe28707193dddd4"},
+ {"path":"tools/bench/selftest_guard_peer_77_measure.py","md5":"012f3c45c3a211f51c4594430e7e8ad8"},
+ {"path":"archive/peer/2026-09-25-76-6-makedefault-cold.md","md5":"5f1e34e64a26430a43252ceba10a822e"}],
+"facts":[
+ "guard_peer.py:249 selftest_exempt(): skip only if every in-scope py script in cmd position is selftest_*.py and its import closure never reaches LabVIEW",
+ "guard_peer.py:220 script_touches_labview: transitive over tools/,tools/bench,tools/hooks; gscript/stagekit/pythoncom/win32com/comtypes or Dispatch(LabVIEW.Application); unreadable=gate",
+ "guard_peer.py:344 filename rule kept only for logs with no BGRUN START; _rel() untouched",
+ "selftest_guard_peer_77.log:103 selftest_guard_peer_jev 25/0 (was 17/0): C8-C8f fixtures + C9 real make_default not exempt, C9b own cmd exempt; run 1 24/1 (C9b, prose match) fixed :205",
+ "selftest_guard_peer_77_failre.log:304 25/1; only fail E1 (bold emitters in diag_c83/c86) pre-existing, same in selftest_logclass_base_failre.log:38; F4 amended to pure-Python",
+ "selftest_guard_peer_77_ladder.log:30 21/0; selftest_guard_peer_77_samerow.log:24 14/0",
+ "selftest_guard_peer_77_measure.log:5 newest_failing_log -> selftest_make_default.log (gate now sees it; first fail S3 2/3)",
+ "selftest_guard_peer_77_measure.log:7 bound by archive/peer/2026-09-25-76-6-makedefault-cold.md (newest_bound_peer hit) -> main() returns 0 before ladder; no JEV-LADDER line is owed/written",
+ "archive/peer/2026-09-25-76-6-makedefault-cold.md:122 disposition pasted verbatim; nothing else changed. docs/violation-decisions.md new device-failed 2026-09-25 entry"],
+"open":[
+ "Over-gating: any selftest importing stagekit (e.g. selftest_stagekit.py, offline COM-stubbed) now gates on failure by import closure; accept or add an explicit offline marker?",
+ "bgrun reports NO RESULT LINE for selftest_guard_peer_failre/ladder/samerow (pre-existing); only _jev and _measure now print one"],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},
+"note":"No LabVIEW, no hardware. Ladder table row: selftest_make_default.log | no ladder line (bound peer hit first) | n/a | measured only | gate passes via 76-6 review."}

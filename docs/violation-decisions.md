@@ -1189,3 +1189,58 @@ Three holes in three consecutive cycles (70: the prior-art dispatch; 71: dispatc
 logic is written once as a table — record kind (blocking / novel) × verdict state (undisposed / released / novel /
 sha-mismatch / superseded) × command class (build launch / read-only / exempt program) → allow or refuse — and the
 self-test is generated from that table. The read-only hole from the 05:54 decision closes inside it.
+
+## device-failed — 2026-09-25 05:58 (cycle 77 material, card 77-1, after archive/peer/2026-09-25-retrospective-cycle76.md)
+<!-- time written as "05:5x" by card 77-1; DEC_RE needs HH:MM, so the block read as a bare date and did not discharge. Set to 05:58 by the cycle-77 judgement session, 06:2x; 77-1 returned at ~05:59. -->
+
+
+The fault: `tools/hooks/guard_peer.py` skipped every `selftest_*.log` by FILENAME (`SELFTEST_LOG_RE`, since cycle 53).
+`tools/bench/selftest_make_default.log` is a self-test by name whose command builds, saves and cold-reads a scratch VI in
+LabVIEW; its prediction failed (S3 2/3, rc=1) and never reached the gate, so no JEV-LADDER line was written
+(`tools/bench/jev_gate.log:887` is the only entry, a preflight).
+
+DECISION: device (repair, threshold 1). The exemption is now decided by the log's LAST `BGRUN START` COMMAND, the rule
+`logclass.command_kind` (card 76-2) and the Jev half (STATUS OPEN 57) already follow: `guard_peer.selftest_exempt()`
+excludes a run only when every in-scope script in python command position is a `selftest_*.py` whose import closure
+(`script_touches_labview`, transitive over tools/ and tools/bench/) never imports gscript/stagekit/pythoncom/win32com/
+comtypes or calls `Dispatch("LabVIEW.Application")`; an unreadable script fails CLOSED. A file with no `BGRUN START` keeps
+the filename rule. Self-test `tools/bench/selftest_guard_peer_jev.py` 25/0 (`tools/bench/selftest_guard_peer_77.log`),
+new C8–C8f + C9/C9b; failre F4 amended to "not a PURE-PYTHON self-test" (25/1, the 1 = pre-existing E1). Measured:
+`selftest_make_default.log` now IS the newest failing log and is BOUND by `archive/peer/2026-09-25-76-6-makedefault-cold.md`
+(`tools/bench/selftest_guard_peer_77_measure.log:5-7`).
+
+## inference-over-measurement — 2026-09-25 06:25 (cycle 77 judgement, after archive/peer/2026-09-25-retrospective-cycle76.md:277)
+
+`VIOLATION: inference-over-measurement | loss_min=22 | loss_usd=1.4932 | evidence=tools/bench/replay_vis_76d.log:91`.
+Panel defaults were assumed saved from a byte count; the cold read that settled it (61 s) ran last.
+
+DECISION: refusal of a new general device (dated, written; user's option C, 2026-09-16), because the remedy is already
+enforced at the only level that can name the values:
+- `docs/m8-real-run-plan.md` PD20(c) (line 271) requires every value a stand-in depends on to be read back COLD before
+  any functional test, and PD19(a) moves N and the modulus to DIAGRAM constants, which no longer depend on a default.
+- Card 77-4's pass list makes that a gate of the stage recipe (`tools/bench/cards/task_77-4.json` pass[3]), and the
+  constant verb was itself accepted only on a cold read-back (`tools/bench/const_loopterm_77c.log:10-14`).
+- A general device would need to know which values a stage "depends on"; only the plan names that, so the device IS
+  the plan's cold-read gate per stage. Revisit if the slug recurs on a stage whose plan carries such a gate.
+
+## wrong-ordering — 2026-09-25 06:25 (cycle 77 judgement, after archive/peer/2026-09-25-retrospective-cycle74.md:367)
+
+`VIOLATION: wrong-ordering | loss_min=25 | loss_usd=? | evidence=tools/bench/cards/result_74-1.json:1` — offline tool
+cards run in parallel with the LabVIEW deliverable, so their failing logs gated its launches through guard_peer.
+
+DECISION: refusal of a new device (dated, written). The cycle-75 disposition (retrospective-cycle74 "What was done with
+it") already changed the practice: judgement sessions dispatch material cards one at a time in the FOREGROUND. Cycles
+75, 76 and 77 did so (cycle 77: 77-1 → 77-2 → 77-3 → 77-4, each foreground, `tools/bench/cards/result_77-*.json`), and
+the slug did not recur in retrospectives 75 or 76. Re-scoping guard_peer per card stays an open alternative, not built.
+
+## device-failed — 2026-09-25 07:05 (cycle 77 judgement, found by cards 77-7 and 77-8)
+
+The retry-cap recorder in `tools/hooks/guard_bash.py` writes a `tools/bench/stage_runs.jsonl` line BEFORE later gates
+decide. `stage_runs.jsonl:3-5` are three launches of `stage_replay_standins.py` that `guard_cycle` (×2) and the
+permission layer (×1) refused; none produced a log or a LabVIEW run, yet the cap (2) and the judgement retry card 77-8
+were both spent. Loss this cycle: the whole stand-in run (≈30 min) moved to cycle 78.
+
+DECISION: device (repair, threshold 1), scheduled AFTER cycle 78's deliverable run (steer_77): count a stage run only
+when it actually starts — record in `tools/bgrun.py` at child start (the line carries the card), not in the PreToolUse
+hook. Self-test: a launch refused by guard_cycle and one refused by the permission layer leave the count unchanged; a
+started run increments it.

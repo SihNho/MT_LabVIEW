@@ -1,0 +1,43 @@
+BGRUN START 2026-09-25 06:17:25 limit 15.0 min: py -u tools/prior_art_review.py --plan-file tools/bench/plans/priorart_replay_77.md --slug priorart-c77-replay --recipe tools/recipes/stage_replay_standins.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c77-replay.txt (63259 chars)
+   review card tools\bench\cards\review_priorart-priorart-c77-replay.json
+OUTCOME: ANSWERED (76s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-25-priorart-priorart-c77-replay.md
+COST: $1.1723  in 14 / out 6558 / cache-create 111321 / cache-read 752473  (72s, 10 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-priorart-c77-replay verdict=novel -> tools\bench\cards\verdict_priorart-priorart-c77-replay.json
+--- ANSWER ---
+**Verdict: novel, with one narrow contradiction to fix in writing.** Nothing in the files already builds these three VIs this way. The earlier build failed for a different reason, and this plan deals with that reason directly. One claim in the plan does not match the measurement it cites, and one PD20(c) item is missing.
+
+## PART A — the direction
+
+**A1 Settled already: no.** The direction is the one the judgement session ordered: `docs/m8-real-run-plan.md:258-262` (PD20(a)) and `:265-274` (PD20(c)), and PD19(a)/(c) at `:244-250`. That is a mandate, not an earlier answer that would make this build unnecessary.
+
+**A2 Refuted already: no.** The 76-5 build (`tools/bench/diag_replay_standins.py`) failed because panel-default scalars were lost at save or load (`docs/m8-real-run-plan.md:239-243`; `tools/bench/cards/result_76-5.json:19`). This plan replaces those scalars with diagram constants, which is the fix. The one default it keeps, the 10,044-entry path String[], "kept it every time" (`:256`), and gate C3 reads it back cold (recipe `:108`).
+
+**A3 Contradicted: yes, narrow.** The plan says the modulus constant on Q&R's `y` is made with "the same verb on a top-level node terminal", measured cold in 77-3/77d at 16/0. The recipe docstring (`tools/recipes/stage_replay_standins.py:4`) says the same. Two things disagree with that:
+- **What was measured:** `tools/bench/const_loopterm_77d.log:3,11` covers the `for_n` route only on an empty For loop's N terminal (Terminals[0], `docs/NAMES.md:313`). T3/C2 at `:6,12` put a constant on a body node, and that used `OpCreateConstOnTerm_v0`, not this verb. No log measures `create_const_loop_term('for_n')` on some other top-level node's terminal. "Any top-level node terminal works too" (`tools/gscript.py:2567`) is stated there, not measured.
+- **What PD20(c) and the task card prescribe:** `docs/m8-real-run-plan.md:266-268` says "The modulus 10044 goes on Q&R's `y` with the existing `OpCreateConstOnTerm_v0`". `tools/bench/cards/task_77-4.json:6` says "OpCreateConstOnTerm_v0 covers Q&R y". But that op cannot reach the top level (`tools/bench/build_op_const_loopterm_77.py:3-4`), and the recipe puts Q&R there (`:41`, target diagram `None`). So PD20(c)'s route cannot be followed as written, and the plan quietly swapped in an unmeasured one.
+- **Why this does not block the build:** the recipe's own fatal gate A8 (`:25-26`) and the cold check C2 (`:103-105`) turn the claim into a measurement inside this run. The plan and docstring should still stop calling it "measured", and the judgement session should record the change from PD20(c).
+
+**A4 Unread evidence.** PD20(c) bullet 4 (`docs/m8-real-run-plan.md:273`): "The IMAQdx mode enum #581 value is read and recorded." Neither the plan nor the recipe reads or records it. Gate A9 (`:76-77`) only checks that Mode is unwired.
+
+## PART B — the artifact
+
+**B1 Already built: no, only superseded builds.** The 76-5 files (`c9d4a43a…`/`7cc14c60…`/`e7274612…`) are declared superseded, not deliverables, in PD19(d) (`docs/m8-real-run-plan.md:251-252`). The recipe names its reuse of `diag_replay_standins.py`, `diag_replay_gbtest.py` and `diag_replay_lib.py` (`:2-4`), so it is not re-deriving them.
+
+**B2 Already failed: the cause is addressed.** The 76-5 failure (empty pixels, cal output 0,0,0) came from the lost defaults (`:239-243`). The loop constant N goes through the verb exactly as measured (empty For loop, terminal 0, recipe `:33-38`, matching `const_loopterm_77d.log:3`). The modulus route is the unmeasured one covered under A3.
+
+**B3 Helper exists: no hand-rolled work.**
+- Swapping `#529`: `gscript.replace_object`
+- Panel wiring: `connect_ctl` / `connect_ctl_ind`
+- Constant read-back: `build_opcreateconstonterm_v0.read_const` (`tools/recipes/build_opcreateconstonterm_v0.py:392`)
+- Donors: `copy_by_index` through `L.copy_to`, as PD18(b) allows (`:235-236`)
+
+**B4 Already measured: no.** The PD18(a) functional tests (pixel md5, 8217→f00000) have never passed. The 76-5 run measured empty pixels.
+
+PRIOR-ART: contradicted
+PRIOR-ART: novel (for everything other than the A3 claim and the A4 omission)
+
+VERDICT {"schema":"verdict/1","id":"priorart-priorart-c77-replay","verdict":"novel","alternative":"Q&R.y via create_const_loop_term('for_n') on a top-level node was never measured (77d covers only For N of an empty loop); PD20(c) and task_77-4 name OpCreateConstOnTerm_v0, which cannot reach top level.","discriminating_test":"Recipe gate A8 (fatal) + cold C2 modulus text '10044' already discriminate; also record IMAQdx mode enum #581 per PD20(c) bullet 4.","violations":[],"sources":["docs/m8-real-run-plan.md:266-268","docs/m8-real-run-plan.md:273","tools/bench/const_loopterm_77d.log:3","tools/bench/build_op_const_loopterm_77.py:3-4","tools/gscript.py:2567","tools/bench/cards/task_77-4.json:6","tools/recipes/stage_replay_standins.py:4"],"note":"Non-blocking contradiction: fix the 'measured' wording in plan/docstring and have judgement record the PD20(c) route deviation; add #581 mode read."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c77-replay.md
+   STOP RECORD armed: tools/recipes/stage_replay_standins.py sha fce24de2cd31 verdict contradicted -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 79s

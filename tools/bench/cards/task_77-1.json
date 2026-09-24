@@ -1,0 +1,59 @@
+{
+ "schema": "task/1",
+ "id": "77-1",
+ "kind": "build",
+ "goal": "guard_peer.py: scope the selftest_*.log exclusion by the log's last BGRUN START command (like logclass.command_kind), not by filename; add self-test case; paste carried 76-6 disposition.",
+ "why": "device-failed has threshold 1; a gate that lets a failed LabVIEW prediction through by filename is broken, and cycle 77's replay build would otherwise run on an ungated failure.",
+ "inputs": [
+  {"path": "tools/hooks/guard_peer.py"},
+  {"path": "tools/logclass.py"},
+  {"path": "tools/bench/selftest_guard_peer_jev.py"},
+  {"path": "tools/bench/selftest_make_default.log"},
+  {"path": "tools/bench/jev_gate.log"},
+  {"path": "tools/bench/cards/disposition_76-6-makedefault.md"},
+  {"path": "archive/peer/2026-09-25-76-6-makedefault-cold.md"}
+ ],
+ "pass": [
+  "guard_peer scopes the selftest exclusion by the last BGRUN START command, not the filename; drive-safe _rel() kept",
+  "new self-test case(s): a LabVIEW-touching selftest_*.log with a failed prediction gates; a pure-Python selftest log does not; all existing cases still green (count reported)",
+  "measured: status of selftest_make_default.log under the new gate (gates / discharged by which review / JEV-LADDER line present) reported as FACT, not acted on beyond the ladder's own NEXT-ACTION",
+  "disposition text pasted into the archive/peer file; nothing else in that file changed"
+ ],
+ "outputs": [
+  "tools/hooks/guard_peer.py",
+  "tools/bench/selftest_guard_peer_jev.py",
+  "tools/bench/selftest_guard_peer_77.log",
+  "archive/peer/2026-09-25-76-6-makedefault-cold.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/hooks/guard_peer.py",
+   "tools/logclass.py",
+   "tools/bench/selftest_guard_peer*",
+   "tools/bench/jev_gate.log",
+   "archive/peer/2026-09-25-76-6-makedefault-cold.md",
+   "tools/bench/cards/**",
+   "docs/violation-decisions.md"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 30
+ },
+ "rules": [
+  "no LabVIEW, no hardware",
+  "retro-76 device-failed: selftest_make_default.log got no JEV-LADDER line (jev_gate.log:887)",
+  "pure-Python selftest (no LabVIEW) may stay excluded; one whose command runs LabVIEW gates",
+  "carried: paste disposition_76-6-makedefault.md into archive/peer/2026-09-25-76-6-makedefault-cold.md",
+  "scope by COMMAND never filename (Jev exemption precedent, STATUS OPEN 57)",
+  "record the repair in docs/violation-decisions.md like prior device-failed entries"
+ ],
+ "advances": ["M8"]
+}

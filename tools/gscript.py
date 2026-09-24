@@ -43,6 +43,7 @@ Usage:
   py tools\\gscript.py kernel <target.vi>                 # build the parallel tracking loop
 """
 import contextlib
+import json
 import os
 import subprocess
 import sys
@@ -2549,6 +2550,54 @@ def create_indicator(target, node_index, terminal_index):
     # it, reporting an empty ControlTerminal list with `exception None`.
     _run(vi)
     return new_since(target, "ControlTerminal", before)
+
+
+OP_CONST_TOP = os.path.join(CLAUDEDEV, "OpCreateConstTop_v0.vi")
+OP_CONST_LOOPEND = os.path.join(CLAUDEDEV, "OpCreateConstLoopEnd_v0.vi")
+CONST_LOOPTERM_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench",
+                                     "opcreateconst_loopterm_labels.json")
+
+
+def create_const_loop_term(target, kind, index, value=None, term_index=0):
+    """A DIAGRAM CONSTANT, typed by the sink and already wired, on a LOOP-OWNED terminal (task 77-2, 2026-09-25).
+
+    kind='for_n'      -> `Terminal.Create Constant` 6349C00 on top-level `Nodes[index].Terminals[term_index]`
+                         (`OpCreateConstTop_v0` = OpCreateIndicator_v0's VI->Block Diagram->Nodes[]->Terminals[]
+                         ladder, invoke swapped). An EMPTY For loop's Terminals[0] is its N (docs/NAMES.md:313), so
+                         `index` = the For loop's top-level Nodes[] index. Any top-level node terminal works too.
+    kind='while_cond' -> 6349C00 on `WhileLoop.Loop End Ref` 6362C00 of Traverse('WhileLoop')[index]
+                         (`OpCreateConstLoopEnd_v0` = OpCreateConstOnTerm_v0 with the invoke's `reference` re-fed
+                         from LpEndRef). Any nesting depth.
+    A body-node terminal inside a While loop stays `stagekit.const_row` / OpCreateConstOnTerm_v0.
+    Returns {err, inv_err, created_uid}; the created uid and the invoke's own error are the oracle (prior-art B4)."""
+    with open(CONST_LOOPTERM_LABELS, encoding="utf-8") as f:
+        lab = json.load(f)[kind]
+    ensure_loaded(target)
+    vi = op(OP_CONST_TOP if kind == "for_n" else OP_CONST_LOOPEND)
+    vi.SetControlValue(lab["uid_ind"], 0)
+    vi.SetControlValue(lab["err_ind"], (False, 0, ""))
+    vi.SetControlValue("vi path", target)
+    if kind == "for_n":
+        vi.SetControlValue("Names", []); vi.SetControlValue("Names 2", [])
+        vi.SetControlValue("Class Name", ""); vi.SetControlValue("Class Name 2", "")
+        vi.SetControlValue("index", int(index))
+        vi.SetControlValue("index 2", int(term_index))
+    else:
+        vi.SetControlValue("Class Name", "WhileLoop")
+        vi.SetControlValue("index", int(index))
+    if value is not None and lab.get("value_ctl"):
+        vi.SetControlValue(lab["value_ctl"], value)
+    _run(vi)
+    out = dict(err="", inv_err=_err(vi, lab["err_ind"]) or "", created_uid=None)
+    try:
+        out["err"] = _err(vi, "error out") or ""
+    except Exception:                                                              # noqa: BLE001
+        pass
+    try:
+        out["created_uid"] = int(vi.GetControlValue(lab["uid_ind"]))
+    except Exception:                                                              # noqa: BLE001
+        pass
+    return out
 
 
 OP_CONNECT = os.path.join(CLAUDEDEV, "OpConnect_v0.vi")
