@@ -76,8 +76,23 @@ is the stage's stop reason.
 
 1. Launch gate + dry run + pre-run + chain rule (material, no LabVIEW) — dispatched 2026-09-24.
 2. Error List check at cycle start (material, LabVIEW + GUI) — dispatched 2026-09-24.
-3. Op effect measurements on scratch copies (LabVIEW), one per op above.
-4. Simulator core (`tools/stagesim.py`): graph transforms per op, step files, symbolic ids, finalize check.
-5. Executor on the plan file with per-step comparison and binding (stagekit).
+3. Op effect measurements on scratch copies (LabVIEW), one per op above. **DONE** (chat-S1 132/0,
+   `tools/bench/opmodels/*.json`; chat-S3 adds the `sim` parameter block to each and the only-sink measurement,
+   `tools/bench/opmodels_onlysink.log` 64/0, 15 samples: fate stays AMBIGUOUS - constant 3 deleted/2 kept on delete,
+   1/1 on move; node 1/4; tunnel 0/2; R1/R2 reproduce the earlier fates on fresh scratches, so edit history is not
+   the cause - and the executor accepts either fate on those terminals, `allow_either`).
+4. Simulator core (`tools/stagesim.py`): graph transforms per op, step files, symbolic ids, finalize check. **DONE**
+   (chat-S2/S2b; chat-S3: every step on a measured model, `open_rows` finalize rule - a plan is final iff its end
+   rows are exactly the rows it declares open; `tools/bench/sim_l7_split.log` 13/0, `tools/bench/plan_l7_split.json`
+   final; `tools/bench/selftest_stagesim.log` 39/0).
+5. Executor on the plan file with per-step comparison and binding (stagekit). **DONE** (chat-S3,
+   `tools/stagexec.py`: compile plan -> real ops, per-op graph read + compare to the step file, binding by terminal
+   diff, register outer faces addressed by unique live name else tracked loop index; `selftest_stagexec.log` 15/0;
+   launch gate: `py tools/stage_prerun.py --dry|--prerun <plan.json>` records keyed on stagexec's sha256 + plan md5,
+   `selftest_stagexec_gate.log` 7/0).
 6. Bench: replay loop 1.7's split through the simulator from `D1_s3_loop15.vi` and compare the simulated end graph
-   with the real `D1_s4_loop17.vi`. Pass = identical up to new-uid naming.
+   with the real `D1_s4_loop17.vi`. Pass = identical up to new-uid naming. **DONE** (chat-S3,
+   `tools/bench/stagexec_l7_bench_r2.log` 14/0: 45 actions -> 35 real ops, every op diff 0 against its step file,
+   ExecState 1 warm, end cdiff == the declared open row, canon diff 0 against `D1_s4_loop17.vi`, scratch deleted,
+   both beds unchanged. Run 1 `stagexec_l7_bench.log` stopped at op 8 on our own face-index tracking bug, review
+   `archive/peer/2026-09-24-chatS3-stagexec-r1.md`).

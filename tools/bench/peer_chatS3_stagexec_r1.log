@@ -1,0 +1,51 @@
+BGRUN START 2026-09-24 23:35:23 limit 15.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools/peer.ps1 -Agent claude -Role hypothesis -Slug chatS3-stagexec-r1 -TaskFile tools/bench/peer_task_chatS3_stagexec_r1.txt
+OUTCOME: ANSWERED (166s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-24-chatS3-stagexec-r1.md
+COST: $1.3367  in 34 / out 12851 / cache-create 89971 / cache-read 1571469  (162s, 20 turn(s))
+--- ANSWER ---
+**Verdict:** the diagnosis holds. The fix is the weaker part, and a pass in run 2 won't show that it works.
+
+## Why the diagnosis holds
+Run 1's report is gone: run 2 overwrote `tools/bench/stagexec_l7_split.json`, which now has 308 lines and none of run 1's per-op fields. I checked the diagnosis by hand instead.
+
+- difflib's `SequenceMatcher` breaks ties by taking the earliest match in the old list.
+- After op 3, the loop's Terminals[] reads `[t0, ('',src), ('',snk), ('',src), ('',snk)]`.
+- Op 4 renames SR1's faces to `'error out'`. The longest shared run is then the unchanged `('',src),('',snk)` pair. difflib matches the OLD SR1 entries (index 1,2) to the NEW positions 3,4 and treats SR2's entries (3,4) as deleted.
+- That gives SR1L → 4 and lost `[24280, 24291]`, which are exactly the numbers the log records (`stagexec_l7_bench.log:91-92`).
+- The layout is independently confirmed. The successful earlier route read the loop as SR1 at 1,2 and SR2 at 3,4 after all the wire_sr ops (`stage_d1_l7_1b.log:271-279`).
+
+## 1. Strongest reason the fix is wrong
+The fix assumes two things about LabVIEW that nobody has measured op by op:
+- that the Terminals[] order stays the same whenever the list length stays the same;
+- that `add_shift_reg` puts the new faces at the end.
+
+The second one isn't measured by `track_new` either. When the new faces look the same as SR1's unwired faces, the same tie-break always reports "inserted at the end", wherever LabVIEW actually put them (`tools/stagexec.py:290`). Self-test T15 (`tools/stagexec.py:1038-1064`) builds both assumptions into its fake terminal list, so it tests the code against the hypothesis, not against LabVIEW.
+
+The only real-LabVIEW evidence for a stable order is one final snapshot (`stage_d1_l7_1b.log:271-279`). It is consistent with a stable order, but it doesn't prove the order was stable after each op.
+
+## 2. Alternative explanations
+- **(a) Same bug, later op.** When the list length changes (a tunnel is added), the fix aligns on (direction, wire). Unwired faces with the same direction, such as SR1R and SR2R outer (both source, wire 0), are still identical keys. If LabVIEW inserts the tunnel between them rather than at the end, the same tie-break maps one onto the other. That is the run-1 failure in a later op. L7-1b shows sink tunnels appended at the end (t5–t7); that is not shown for source tunnels.
+- **(b) Names are recomputed across the loop.** In `opmodels/raw/wire_sr_1.json:72-118`, wiring register 23789 renamed faces of a different register (24150/24187: `'' → 'total data array out'`). L7-1b shows the same SR2 faces as `''`. So names are recomputed for more than the register being wired. If order is also rebuilt then (for example, re-sorted by position or type), identity mapping fails without any error.
+
+## 3. What would falsify the fix
+A run in which the tracked index for a register face points at a different face than the unique live match, with the list length unchanged.
+
+## 4. Cheapest test (no extra LabVIEW run)
+Run 2 is in progress. Its log so far holds only the restart, at `stagexec_l7_bench_r2.log:18`. When it finishes:
+
+1. **Read the `how` field for op 8 and every later register-face address.**
+   - `unique live name … (tracked index N)` with no `DISAGREES`: identity mapping agrees with LabVIEW in this case.
+   - `DISAGREES`: identity mapping is wrong.
+2. **Don't read a clean diff 0 as proof.** SR1L (`'error out'`) and SR2L (`''` or `'total data array out'`) probably have different names, so the name-first route addresses op 8 correctly on its own. A pass would hide a broken identity mapping. Only the `DISAGREES` tag separates the two.
+3. **Make the check rigorous next time.** Have `Addr` log the loop's full Terminals[] after every op, as `stage_d1_l7_1b` does at `:271-279`, together with the uid of each register face. Stop on any `DISAGREES` rather than just reporting it (`tools/stagexec.py:367-368`). That measures directly whether LabVIEW ever reorders the list.
+
+A possibly more stable key is Data Type (the NI forum thread below mentions it for telling terminals apart). Once the register faces are wired, type separates the error cluster from the array faces, and type doesn't get recomputed the way names do. It doesn't help for unwired, untyped faces.
+
+**What would change my mind:** a per-op Terminals[] log from run 2 showing no reorder at any op, including a source-side tunnel insertion.
+
+The web searches found nothing from NI about whether a loop's Terminals[] order is guaranteed. That gap is why the question has to be answered from the machine's own logs.
+
+Sources:
+- [NI forum: Scripting – Terminal Information](https://forums.ni.com/t5/LabVIEW/Scripting-Terminal-Information/td-p/4303374)
+- [LabVIEW Wiki: VI Scripting](https://labviewwiki.org/wiki/VI_Scripting)
+- [NI forum: tunnel vs. shift register](https://forums.ni.com/t5/LabVIEW/tunnel-vs-shift-register/td-p/3213328)
+BGRUN END rc=0 after 166s

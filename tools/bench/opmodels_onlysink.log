@@ -1,0 +1,221 @@
+BGRUN START 2026-09-24 23:09:35 limit 30.0 min: py -u tools/bench/opmodels_onlysink.py
+opmodels_onlysink - card chat-S3 (docs/stage-simulator-plan.md "Op effect models"): the ONLY-SINK sub-rule that chat-S1
+left AMBIGUOUS (opmodels/move_in.json, delete_object.json `ambiguous`): when a node is moved out / deleted, what happens to
+a wire whose ONLY sink was that node - deleted outright (w8385 const->#7201, w25200 const->#25149) or kept as a
+source-side half-wire (w25190 const->#25091, w2160 Function->#1628, w2187 LoopTunnel->#1628)?
+HYPOTHESES the cases separate: H-CONST (deleted iff the source is a constant), H-HIST (the fate depends on the edit
+history of the scratch: #25091/#25149 were measured after other edits), H-TUNNEL (a tunnel/structure source keeps it).
+CASES - each on its OWN fresh dated scratch copy of claudeDev\D1_s4_loop17.vi (4b621946), chosen offline from
+tools/bench/opmodels/bed_s4_loop17.json (every sink terminal of the target is on a 2-terminal wire = a sole-sink wire):
+  R1 move_in #25091 -> body #23405 alone (repro of move_in_2: w25190 const KEPT; w24756 is branched, control)
+  R2 move_in #25149 -> body #23405 alone (repro of the RBW_2 setup: w25200 const DELETED; w25196 Function)
+  D1 delete Function #24065: w24648 DigitalNumericConstant, w24417 Function
+  D2 delete Function #5556 : w5584 DigitalNumericConstant, w5580 Function
+  D3 delete Function #23175: w5090 LoopTunnel (tunnel source)
+  D4 delete Function #9703 : w27107 SelectorTunnel, w27156 Function
+  D5 delete Function #26411: w26716 BooleanConstant, w26713 EnumConstant, w26722 Function
+  D6 delete Function #29716: w29930 StringConstant, w30456 Function
+Per case: READ BEFORE (allterms.read_terms + report_all GObject) -> op -> READ AFTER (before the junk purge) -> per
+sole-sink wire a SAMPLE {wire, source class, source uid, op, fate: deleted | kept_half | other, positions}. Raw ->
+tools/bench/opmodels/raw/onlysink_<case>.json; samples -> tools/bench/opmodels/onlysink_samples.json.
+PRIOR ART (used unchanged): opmodels_measure.py's snap/Cell shape, stagekit.Stage/scratch/drop_scratch/close,
+allterms.read_terms, gscript.report_all, build_d1_v0.move_in/diag_index, build_opfsinnertunnelconnect_v0.del_node,
+build_d1_m3a1.node_census + purge_junk. No new op.
+PREDICTION CONTRACT: C1 every op returns without raising; C2 the target node is gone (delete) / owned by #23405 (move);
+C3 every listed sole-sink wire yields a sample with fate deleted|kept_half (not 'other'); N >= 4 NEW samples (15 listed);
+hygiene: scratches deleted, bed md5 unchanged, pins hold, refs opened == closed, files left []. The FATE itself is the
+measured quantity - no fate is predicted. No VI run, no original opened (preload=False), nothing saved.
+    MATERIAL=1 py tools/bgrun.py --max-min 30 --log tools/bench/opmodels_onlysink.log -- py -u tools/bench/opmodels_onlysink.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 251 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 4b621946492da3d2fbb96b6053e715ec  got 4b621946492da3d2fbb96b6053e715ec
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN BEFORE S4 loop17 bed    4b621946492da3d2fbb96b6053e715ec  (want 4b621946492da3d2fbb96b6053e715ec) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 33969
+  FACT  LabVIEW handle count AFTER the restart: 33988
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  opmodels_onlysink_20260924_230935.vi
+  FACT  ExecState [after open] opmodels_onlysink_20260924_230935.vi = 1
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so opmodels_onlysink_20260924_230935.vi is deleted at close
+  FACT  HANDLES after open 54402
+
+---------- CASE R1: move Function #25091
+  PASS  SC opmodels_onlysink_20260924_230935_R1.vi is a byte-identical copy of D1_s4_loop17.vi  opmodels_onlysink_20260924_230935_R1.vi
+  PASS  C0 R1 the offline-chosen sole-sink wires [25190] are exactly the live ones [25190]  [25190]
+  FACT  R1 node census: 635 rows
+  PASS  C1 R1 op returned without raising
+  OBSERVED uid 25091 -> owner 'Diagram' uid 23405 | self 'Function'#25091 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  C2 R1 #25091 owned by #23405 after the move  ('Diagram', 23405)
+  FACT  SAMPLE {'case': 'R1', 'op': 'move', 'node': 25091, 'wire': 25190, 'src_uid': 25124, 'src_class': 'DigitalNumericConstant', 'src_term_uid': 25122, 'fate': 'kept_half', 'wire_obj_after': True, 'rows_after': [(25122, 25124, True)], 'src_pos': (2237, 2492), 'node_pos': (2288, 2486), 'src_owner_obj': 'Diagram'}
+  PASS  C3 R1 w25190 (DigitalNumericConstant) fate is deleted|kept_half  kept_half
+  FACT  R1 AFTER node census: 636 rows
+  FACT  R1 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(23468, 'Invoke', (4593, 6523))]
+  FACT  R1 new #23468 #23468 lives at: {'diagram_index': 20, 'diagram_uid': 23405, 'diagram_class': 'Diagram', 'nodes_index': 4, 'nodes_on_diagram': 5, 'label': 'Invoke Node'}  (21 diagram(s) scanned of 173, 0.9 s)
+  FACT  R1 new #23468 terminal table of #23468 (Diagram idx 20, Nodes[4], echo 23468): 6 terminal(s)
+  FACT      R1 new #23468 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      R1 new #23468 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      R1 new #23468 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      R1 new #23468 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      R1 new #23468 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      R1 new #23468 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  R1 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  R1 purge delete Node #23468 at index 94: gone [23468], error '', census 636 -> 635, still present False (1.28 s)
+  FACT  R1 AFTER THE PURGE node census: 635 rows
+  FACT  R1 purge arithmetic: Node 635 -> 636 -> 635
+  PASS  H4 R1 scratch deleted: opmodels_onlysink_20260924_230935_R1.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_onlysink_20260924_230935_R1.vi
+
+---------- CASE R2: move Function #25149
+  PASS  SC opmodels_onlysink_20260924_230935_R2.vi is a byte-identical copy of D1_s4_loop17.vi  opmodels_onlysink_20260924_230935_R2.vi
+  PASS  C0 R2 the offline-chosen sole-sink wires [25196, 25200] are exactly the live ones [25196, 25200]  [25196, 25200]
+  FACT  R2 node census: 635 rows
+  PASS  C1 R2 op returned without raising
+  OBSERVED uid 25149 -> owner 'Diagram' uid 23405 | self 'Function'#25149 | 482 says 'Diagram' cast 'Diagram' |  
+  PASS  C2 R2 #25149 owned by #23405 after the move  ('Diagram', 23405)
+  FACT  SAMPLE {'case': 'R2', 'op': 'move', 'node': 25149, 'wire': 25196, 'src_uid': 25091, 'src_class': 'Function', 'src_term_uid': 25100, 'fate': 'kept_half', 'wire_obj_after': True, 'rows_after': [(25100, 25091, True)], 'src_pos': (2288, 2486), 'node_pos': (2337, 2494), 'src_owner_obj': 'Diagram'}
+  PASS  C3 R2 w25196 (Function) fate is deleted|kept_half  kept_half
+  FACT  SAMPLE {'case': 'R2', 'op': 'move', 'node': 25149, 'wire': 25200, 'src_uid': 25175, 'src_class': 'DigitalNumericConstant', 'src_term_uid': 25173, 'fate': 'deleted', 'wire_obj_after': False, 'rows_after': [], 'src_pos': (2302, 2512), 'node_pos': (2337, 2494), 'src_owner_obj': 'Diagram'}
+  PASS  C3 R2 w25200 (DigitalNumericConstant) fate is deleted|kept_half  deleted
+  FACT  R2 AFTER node census: 636 rows
+  FACT  R2 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(10096, 'Invoke', (4593, 6523))]
+  FACT  R2 new #10096 #10096 lives at: {'diagram_index': 20, 'diagram_uid': 23405, 'diagram_class': 'Diagram', 'nodes_index': 4, 'nodes_on_diagram': 5, 'label': 'Invoke Node'}  (21 diagram(s) scanned of 173, 0.9 s)
+  FACT  R2 new #10096 terminal table of #10096 (Diagram idx 20, Nodes[4], echo 10096): 6 terminal(s)
+  FACT      R2 new #10096 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      R2 new #10096 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      R2 new #10096 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      R2 new #10096 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      R2 new #10096 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      R2 new #10096 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  R2 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  R2 purge delete Node #10096 at index 94: gone [10096], error '', census 636 -> 635, still present False (1.27 s)
+  FACT  R2 AFTER THE PURGE node census: 635 rows
+  FACT  R2 purge arithmetic: Node 635 -> 636 -> 635
+  PASS  H4 R2 scratch deleted: opmodels_onlysink_20260924_230935_R2.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_onlysink_20260924_230935_R2.vi
+
+---------- CASE D1: delete Function #24065
+  PASS  SC opmodels_onlysink_20260924_230935_D1.vi is a byte-identical copy of D1_s4_loop17.vi  opmodels_onlysink_20260924_230935_D1.vi
+  PASS  C0 D1 the offline-chosen sole-sink wires [24417, 24648] are exactly the live ones [24417, 24648]  [24417, 24648]
+  FACT  D1 node census: 635 rows
+      D1deleted Function #24065 -> gone [24065]
+  PASS  C1 D1 op returned without raising
+  PASS  C2 D1 #24065 gone after the delete
+  FACT  SAMPLE {'case': 'D1', 'op': 'delete', 'node': 24065, 'wire': 24417, 'src_uid': 23160, 'src_class': 'Function', 'src_term_uid': 23178, 'fate': 'deleted', 'wire_obj_after': False, 'rows_after': [], 'src_pos': (-2006, 872), 'node_pos': (-1961, 884), 'src_owner_obj': 'Diagram'}
+  PASS  C3 D1 w24417 (Function) fate is deleted|kept_half  deleted
+  FACT  SAMPLE {'case': 'D1', 'op': 'delete', 'node': 24065, 'wire': 24648, 'src_uid': 24572, 'src_class': 'DigitalNumericConstant', 'src_term_uid': 24636, 'fate': 'deleted', 'wire_obj_after': False, 'rows_after': [], 'src_pos': (-1992, 890), 'node_pos': (-1961, 884), 'src_owner_obj': 'Diagram'}
+  PASS  C3 D1 w24648 (DigitalNumericConstant) fate is deleted|kept_half  deleted
+  FACT  D1 AFTER node census: 634 rows
+  FACT  D1 CENSUS DIFF: Node 635 -> 634 ; 0 new uid(s): []
+  PASS  H4 D1 scratch deleted: opmodels_onlysink_20260924_230935_D1.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_onlysink_20260924_230935_D1.vi
+
+---------- CASE D2: delete Function #5556
+  PASS  SC opmodels_onlysink_20260924_230935_D2.vi is a byte-identical copy of D1_s4_loop17.vi  opmodels_onlysink_20260924_230935_D2.vi
+  PASS  C0 D2 the offline-chosen sole-sink wires [5580, 5584] are exactly the live ones [5580, 5584]  [5580, 5584]
+  FACT  D2 node census: 635 rows
+      D2deleted Function #5556 -> gone [5556]
+  PASS  C1 D2 op returned without raising
+  PASS  C2 D2 #5556 gone after the delete
+  FACT  SAMPLE {'case': 'D2', 'op': 'delete', 'node': 5556, 'wire': 5580, 'src_uid': 2359, 'src_class': 'Function', 'src_term_uid': 5530, 'fate': 'kept_half', 'wire_obj_after': True, 'rows_after': [(5530, 2359, True)], 'src_pos': (1738, 1460), 'node_pos': (1808, 1455), 'src_owner_obj': 'Diagram'}
+  PASS  C3 D2 w5580 (Function) fate is deleted|kept_half  kept_half
+  FACT  SAMPLE {'case': 'D2', 'op': 'delete', 'node': 5556, 'wire': 5584, 'src_uid': 5571, 'src_class': 'DigitalNumericConstant', 'src_term_uid': 5570, 'fate': 'deleted', 'wire_obj_after': False, 'rows_after': [], 'src_pos': (1784, 1448), 'node_pos': (1808, 1455), 'src_owner_obj': 'Diagram'}
+  PASS  C3 D2 w5584 (DigitalNumericConstant) fate is deleted|kept_half  deleted
+  FACT  D2 AFTER node census: 634 rows
+  FACT  D2 CENSUS DIFF: Node 635 -> 634 ; 0 new uid(s): []
+  PASS  H4 D2 scratch deleted: opmodels_onlysink_20260924_230935_D2.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_onlysink_20260924_230935_D2.vi
+
+---------- CASE D3: delete Function #23175
+  PASS  SC opmodels_onlysink_20260924_230935_D3.vi is a byte-identical copy of D1_s4_loop17.vi  opmodels_onlysink_20260924_230935_D3.vi
+  PASS  C0 D3 the offline-chosen sole-sink wires [5090] are exactly the live ones [5090]  [5090]
+  FACT  D3 node census: 635 rows
+      D3deleted Function #23175 -> gone [23175]
+  PASS  C1 D3 op returned without raising
+  PASS  C2 D3 #23175 gone after the delete
+  FACT  SAMPLE {'case': 'D3', 'op': 'delete', 'node': 23175, 'wire': 5090, 'src_uid': 5096, 'src_class': 'LoopTunnel', 'src_term_uid': 5098, 'fate': 'kept_half', 'wire_obj_after': True, 'rows_after': [(5098, 5096, True)], 'src_pos': (2633, 1028), 'node_pos': (5725, 2048), 'src_owner_obj': 'WhileLoop'}
+  PASS  C3 D3 w5090 (LoopTunnel) fate is deleted|kept_half  kept_half
+  FACT  D3 AFTER node census: 634 rows
+  FACT  D3 CENSUS DIFF: Node 635 -> 634 ; 0 new uid(s): []
+  PASS  H4 D3 scratch deleted: opmodels_onlysink_20260924_230935_D3.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_onlysink_20260924_230935_D3.vi
+
+---------- CASE D4: delete Function #9703
+  PASS  SC opmodels_onlysink_20260924_230935_D4.vi is a byte-identical copy of D1_s4_loop17.vi  opmodels_onlysink_20260924_230935_D4.vi
+  PASS  C0 D4 the offline-chosen sole-sink wires [27107, 27156] are exactly the live ones [27107, 27156]  [27107, 27156]
+  FACT  D4 node census: 635 rows
+      D4deleted Function #9703 -> gone [9703]
+  PASS  C1 D4 op returned without raising
+  PASS  C2 D4 #9703 gone after the delete
+  FACT  SAMPLE {'case': 'D4', 'op': 'delete', 'node': 9703, 'wire': 27107, 'src_uid': 10978, 'src_class': 'SelectorTunnel', 'src_term_uid': 10984, 'fate': 'kept_half', 'wire_obj_after': True, 'rows_after': [(10984, 10978, True)], 'src_pos': (5213, 2822), 'node_pos': (5364, 2810), 'src_owner_obj': 'CaseStructure'}
+  PASS  C3 D4 w27107 (SelectorTunnel) fate is deleted|kept_half  kept_half
+  FACT  SAMPLE {'case': 'D4', 'op': 'delete', 'node': 9703, 'wire': 27156, 'src_uid': 9243, 'src_class': 'Function', 'src_term_uid': 9255, 'fate': 'kept_half', 'wire_obj_after': True, 'rows_after': [(9255, 9243, True)], 'src_pos': (5319, 2815), 'node_pos': (5364, 2810), 'src_owner_obj': 'Diagram'}
+  PASS  C3 D4 w27156 (Function) fate is deleted|kept_half  kept_half
+  FACT  D4 AFTER node census: 634 rows
+  FACT  D4 CENSUS DIFF: Node 635 -> 634 ; 0 new uid(s): []
+  PASS  H4 D4 scratch deleted: opmodels_onlysink_20260924_230935_D4.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_onlysink_20260924_230935_D4.vi
+
+---------- CASE D5: delete Function #26411
+  PASS  SC opmodels_onlysink_20260924_230935_D5.vi is a byte-identical copy of D1_s4_loop17.vi  opmodels_onlysink_20260924_230935_D5.vi
+  PASS  C0 D5 the offline-chosen sole-sink wires [26713, 26716, 26722] are exactly the live ones [26713, 26716, 26722]  [26713, 26716, 26722]
+  FACT  D5 node census: 635 rows
+      D5deleted Function #26411 -> gone [26411]
+  PASS  C1 D5 op returned without raising
+  PASS  C2 D5 #26411 gone after the delete
+  FACT  SAMPLE {'case': 'D5', 'op': 'delete', 'node': 26411, 'wire': 26713, 'src_uid': 26145, 'src_class': 'EnumConstant', 'src_term_uid': 26142, 'fate': 'kept_half', 'wire_obj_after': True, 'rows_after': [(26142, 26145, True)], 'src_pos': (-4332, 867), 'node_pos': (-4262, 945), 'src_owner_obj': 'Diagram'}
+  PASS  C3 D5 w26713 (EnumConstant) fate is deleted|kept_half  kept_half
+  FACT  SAMPLE {'case': 'D5', 'op': 'delete', 'node': 26411, 'wire': 26716, 'src_uid': 26126, 'src_class': 'BooleanConstant', 'src_term_uid': 26123, 'fate': 'kept_half', 'wire_obj_after': True, 'rows_after': [(26123, 26126, True)], 'src_pos': (-4410, 964), 'node_pos': (-4262, 945), 'src_owner_obj': 'Diagram'}
+  PASS  C3 D5 w26716 (BooleanConstant) fate is deleted|kept_half  kept_half
+  FACT  SAMPLE {'case': 'D5', 'op': 'delete', 'node': 26411, 'wire': 26722, 'src_uid': 26406, 'src_class': 'Function', 'src_term_uid': 26408, 'fate': 'kept_half', 'wire_obj_after': True, 'rows_after': [(26408, 26406, True)], 'src_pos': (-4314, 898), 'node_pos': (-4262, 945), 'src_owner_obj': 'Diagram'}
+  PASS  C3 D5 w26722 (Function) fate is deleted|kept_half  kept_half
+  FACT  D5 AFTER node census: 634 rows
+  FACT  D5 CENSUS DIFF: Node 635 -> 634 ; 0 new uid(s): []
+  PASS  H4 D5 scratch deleted: opmodels_onlysink_20260924_230935_D5.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_onlysink_20260924_230935_D5.vi
+
+---------- CASE D6: delete Function #29716
+  PASS  SC opmodels_onlysink_20260924_230935_D6.vi is a byte-identical copy of D1_s4_loop17.vi  opmodels_onlysink_20260924_230935_D6.vi
+  PASS  C0 D6 the offline-chosen sole-sink wires [29930, 30456] are exactly the live ones [29930, 30456]  [29930, 30456]
+  FACT  D6 node census: 635 rows
+      D6deleted Function #29716 -> gone [29716]
+  PASS  C1 D6 op returned without raising
+  PASS  C2 D6 #29716 gone after the delete
+  FACT  SAMPLE {'case': 'D6', 'op': 'delete', 'node': 29716, 'wire': 29930, 'src_uid': 29912, 'src_class': 'StringConstant', 'src_term_uid': 29926, 'fate': 'deleted', 'wire_obj_after': False, 'rows_after': [], 'src_pos': (-533, 1417), 'node_pos': (-498, 1423), 'src_owner_obj': 'Diagram'}
+  PASS  C3 D6 w29930 (StringConstant) fate is deleted|kept_half  deleted
+  FACT  SAMPLE {'case': 'D6', 'op': 'delete', 'node': 29716, 'wire': 30456, 'src_uid': 30169, 'src_class': 'Function', 'src_term_uid': 30184, 'fate': 'kept_half', 'wire_obj_after': True, 'rows_after': [(30184, 30169, True)], 'src_pos': (-564, 1433), 'node_pos': (-498, 1423), 'src_owner_obj': 'Diagram'}
+  PASS  C3 D6 w30456 (Function) fate is deleted|kept_half  kept_half
+  FACT  D6 AFTER node census: 634 rows
+  FACT  D6 CENSUS DIFF: Node 635 -> 634 ; 0 new uid(s): []
+  PASS  H4 D6 scratch deleted: opmodels_onlysink_20260924_230935_D6.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_onlysink_20260924_230935_D6.vi
+  FACT  TABLE op=delete source=constant: {'deleted': 3, 'kept_half': 2}
+  FACT  TABLE op=delete source=node: {'deleted': 1, 'kept_half': 4}
+  FACT  TABLE op=delete source=tunnel: {'kept_half': 2}
+  FACT  TABLE op=move source=constant: {'kept_half': 1, 'deleted': 1}
+  FACT  TABLE op=move source=node: {'kept_half': 1}
+  PASS  N >= 4 new samples with a fate  15
+
+---------- [H] HYGIENE
+  FACT  close_panel(opmodels_onlysink_20260924_230935.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 20, 'closed': 20, 'live': 0, 'cached_op_vis': 7}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 20, 'closed': 20, 'live': 0, 'cached_op_vis': 7}
+  FACT  LabVIEW handle count AFTER the work: 54680
+  PASS  H4 scratch deleted: opmodels_onlysink_20260924_230935.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\opmodels_onlysink_20260924_230935.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 4b621946492da3d2fbb96b6053e715ec / after 4b621946492da3d2fbb96b6053e715ec
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN AFTER  S4 loop17 bed    4b621946492da3d2fbb96b6053e715ec  (want 4b621946492da3d2fbb96b6053e715ec) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33988
+
+====================================================================================================
+=== GATES: 64 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\opmodels_onlysink.json   elapsed 450.9 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":64,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 501s

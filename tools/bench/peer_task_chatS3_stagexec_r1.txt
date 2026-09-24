@@ -1,0 +1,17 @@
+FAILED PREDICTION (card chat-S3, tools/stagexec.py bench, log tools/bench/stagexec_l7_bench.log run 1).
+Predicted: every real op's graph equals its simulated step file. Observed: ops 1-7 diff 0; op 8 (plan action err_init:
+wire ClusterConstant #4910 'error out' -> the NEW left shift register SR1L's OUTER face on WhileLoop #23041) produced edge
+4965 -> 24291 where the simulation has 4965 -> 24205 (24205 = bound SR1L outer face; 24291 = the other new register's
+left outer face). The executor stopped there (as designed) and discarded the scratch.
+Our diagnosis: the loop Terminals[] index of a register's outer face was TRACKED by difflib alignment on (name, direction)
+across ops; wire_sr on the inner faces RENAMES outer faces ('' -> 'error out' ...), so ops 4-7 misaligned the tracked
+indexes (report: lost_register_faces [24280, 24291] from op 4 on) and op 8 used index 4 (SR2L) for SR1L.
+Fix applied before run 2: identity mapping when the loop's Terminals[] length is unchanged; (direction, wire) alignment
+when it changes; and the face is addressed FIRST by a unique live (name, direction, wire) match (the stage_d1_l7_1b route),
+the tracked index only when that is ambiguous. Self-test T15 in tools/stagexec.py covers the rename case.
+Already ruled out: a wrong binding (SR uids 24083/24133, 24150/24187 bound by terminal-table diff, identical to the
+original L7-1a run); a model error (ops 1-7 diff 0).
+Files: tools/stagexec.py (Addr.snap_loop / track_new / retrack / _triple), tools/bench/stagexec_l7_split.json (report),
+tools/bench/stagexec_l7_bench.log.
+Question: what is the strongest reason this diagnosis or fix is wrong - e.g. does LabVIEW reorder a loop's Terminals[]
+when a register is typed or renamed, so identity mapping is unsafe; and what cheapest test separates that?

@@ -882,6 +882,49 @@ def launched_stage_scripts(cmd):
     return out
 
 
+STAGEXEC = os.path.join(HERE, "stagexec.py")
+STAGEXEC_RE = re.compile(r"(?:^|[\\/])tools[\\/]stagexec\.py$", re.I)
+
+
+def launched_plan_runs(cmd):
+    """argv only (card chat-S3): every `tools/stagexec.py run <plan.json>` a command RUNS -> [(stagexec path, plan
+    path)]. A stagexec run executes a FINAL plan in LabVIEW, so it is a stage launch under the same gate."""
+    out = []
+    for seg in re.split(r"\s*(?:&&|\|\||;|\|)\s*", cmd or ""):
+        try:
+            toks = shlex.split(seg, posix=False)
+        except ValueError:
+            toks = seg.split()
+        toks = [t.strip("\"'") for t in toks]
+        for i, t in enumerate(toks):
+            if re.match(r"^py(thon)?[\d.]*(\.exe)?$", os.path.basename(t).lower()):
+                j = i + 1
+                while j < len(toks) and toks[j].startswith("-"):
+                    j += 2 if toks[j] in ("-X", "-W", "-m") else 1
+                if j + 2 < len(toks) and STAGEXEC_RE.search(toks[j].replace("\\", "/")) and toks[j + 1] == "run":
+                    p = toks[j + 2]
+                    out.append((STAGEXEC, os.path.normpath(p if os.path.isabs(p) else os.path.join(ROOT, p))))
+    return out
+
+
+def plan_record(kind, plan, status, first_fail, extra=None):
+    """A dry/prerun record for a stagexec PLAN: script = tools/stagexec.py (its sha256), plan_md5s = {plan: md5}."""
+    rec = {"t": time.time(), "iso": time.strftime("%Y-%m-%d %H:%M:%S"), "kind": kind, "script": rel(STAGEXEC),
+           "sha256": sha256(STAGEXEC), "plan_md5s": {rel(plan): md5(plan)}, "status": status, "first_fail": first_fail,
+           "plan": rel(plan)}
+    rec.update(extra or {})
+    with REAL_OPEN(RECORDS, "a", encoding="utf-8") as f:
+        f.write(json.dumps(rec, ensure_ascii=True) + "\n")
+    return rec
+
+
+def is_stageplan(path):
+    try:
+        return path.lower().endswith(".json") and json.load(open(path, encoding="utf-8")).get("schema") == "stageplan/1"
+    except Exception:                                                              # noqa: BLE001
+        return False
+
+
 def read_records():
     out = []
     try:
@@ -1014,15 +1057,16 @@ def check_launch(cmd, record=False):
     """(allow, why). Refuses a stage-recipe launch without a dry PASS and a prerun PASS for its CURRENT sha256 and
     plan md5s, both newer than the newest failing run of it (decision 4), and past RETRY_CAP runs in this cycle
     without a judgement card. `record=True` (guard_bash) appends every ALLOWED launch to STAGE_RUNS."""
-    scripts = launched_stage_scripts(cmd)
-    if not scripts:
+    units = [(s, None) for s in launched_stage_scripts(cmd)] + launched_plan_runs(cmd)
+    if not units:
         return True, ""
     recs = read_records()
     runs, ck, allowed = read_stage_runs(), cycle_key(), []
-    for s in scripts:
-        if not os.path.isfile(s):
-            return False, "launch gate: {0} does not exist".format(rel(s))
-        sha, pm = sha256(s), plan_md5s(s)
+    for s, plan in units:
+        if not os.path.isfile(s) or (plan and not os.path.isfile(plan)):
+            return False, "launch gate: {0} does not exist".format(rel(plan or s))
+        sha, pm = sha256(s), ({rel(plan): md5(plan)} if plan else plan_md5s(s))
+        what = rel(plan) if plan else rel(s)             # a plan run is pre-run BY ITS PLAN (card chat-S3)
         ok = {}
         for kind in ("dry", "prerun"):
             m = [r for r in recs if r.get("kind") == kind and r.get("sha256") == sha and r.get("status") == "PASS"
@@ -1032,16 +1076,16 @@ def check_launch(cmd, record=False):
         if missing:
             return False, ("LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): {0} has no {1} PASS "
                            "record for sha256 {2}... and plan md5s {3}. Run first:\n  py tools/stage_prerun.py --dry {0}\n"
-                           "  py tools/stage_prerun.py --prerun {0}\n").format(rel(s), " + ".join(missing), sha[:12], pm)
+                           "  py tools/stage_prerun.py --prerun {0}\n").format(what, " + ".join(missing), sha[:12], pm)
         t_ok = min(ok.values())
         bad = last_failed_run_after(s, t_ok)
         if bad:
             return False, ("LAUNCH GATE (decision 4): {0} FAILED after its pre-run records ({1}: {2}); the records are "
-                           "invalid - pre-run it again.\n").format(rel(s), bad[0], bad[2])
-        ok_cap, why_cap, cid = check_cap(cmd, s, runs, ck)
+                           "invalid - pre-run it again.\n").format(what, bad[0], bad[2])
+        ok_cap, why_cap, cid = check_cap(cmd, plan or s, runs, ck)
         if not ok_cap:
             return False, why_cap
-        allowed.append((s, cid))
+        allowed.append((plan or s, cid))
     if record:
         for s, cid in allowed:
             record_stage_run(s, ck, cid, cmd)
@@ -1066,6 +1110,24 @@ def main(argv=None):
     if not recipe:
         ap.error("--dry, --prerun or --check-launch")
     recipe = os.path.abspath(recipe)
+    if is_stageplan(recipe):
+        # card chat-S3: a FINAL stage plan is launched by tools/stagexec.py; its dry run is the executor on the
+        # simulated backend, its pre-run is stagexec.prerun_plan (final, step files intact, compiles, dry PASS)
+        import stagexec as SX
+        import protocol as P
+        if a.dry:
+            st, ff, _ex = SX.dry_run(recipe, log=lambda *_x: None)
+            npass, nfail = int(st == "PASS"), int(st != "PASS")
+        else:
+            g_, ok = SX.prerun_plan(recipe)
+            st = "PASS" if ok else "FAIL"
+            npass, nfail = sum(1 for x in g_ if x[1]), sum(1 for x in g_ if not x[1])
+            ff = next((x[0] + ": " + x[2] for x in g_ if not x[1]), None)
+        print("=== {0} (stagexec plan) {1}: first_fail={2}".format("DRY" if a.dry else "PRERUN", st, ff), flush=True)
+        if not a.no_record:
+            plan_record("dry" if a.dry else "prerun", recipe, st, ff)
+        print(P.result_line(P.make_result(npass, nfail, ff, status=st)), flush=True)
+        return 0 if st == "PASS" else 1
     real_stdout = sys.stdout
     tr = prerun(recipe, a.graph) if a.prerun else dry(recipe, a.graph)
     sys.stdout = real_stdout

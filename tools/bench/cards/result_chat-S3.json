@@ -1,0 +1,84 @@
+{
+ "schema": "result/1",
+ "id": "chat-S3",
+ "status": "PASS",
+ "gates": {
+  "pass": 152,
+  "fail": 0
+ },
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {
+   "path": "tools/stagexec.py",
+   "md5": "9299475b762b50e07d690152a832c146"
+  },
+  {
+   "path": "tools/stagesim.py",
+   "md5": "6d10eee9b1141be5fd94d2246a0ab090"
+  },
+  {
+   "path": "tools/stage_prerun.py",
+   "md5": "c57e35220670070666adbcdf5720edad"
+  },
+  {
+   "path": "tools/hooks/guard_bash.py",
+   "md5": "d9ab94588a5840dc0135d8557afa669a"
+  },
+  {
+   "path": "docs/protocol/stageplan.json",
+   "md5": "ab23c4c31b1cb54785849f91ece5c320"
+  },
+  {
+   "path": "tools/bench/plan_l7_split.json",
+   "md5": "3ad72b602c2469d9be590ee429d88716"
+  },
+  {
+   "path": "tools/bench/stagexec_l7_bench_r2.log",
+   "md5": "2360cdaadc4ef4ca99e4f05163641e63"
+  },
+  {
+   "path": "tools/bench/stagexec_l7_bench.log",
+   "md5": "d606a9e9b487a768b5cb5364fce18598"
+  },
+  {
+   "path": "tools/bench/opmodels_onlysink.log",
+   "md5": "a8a5931afd7a9c94945989a43f9e6345"
+  },
+  {
+   "path": "tools/bench/opmodels/onlysink_samples.json",
+   "md5": "9dc0d433858af31b5c98238980da8ab9"
+  },
+  {
+   "path": "tools/bench/opmodels/move_in.json",
+   "md5": "ae6bbadb8058bce47da1d645c955cd68"
+  },
+  {
+   "path": "tools/bench/opmodels/delete_object.json",
+   "md5": "872644df5c0e7f59dfef1cb44637a8ed"
+  }
+ ],
+ "facts": [
+  "BENCH stagexec_l7_bench_r2.log 14/0: 45 plan actions -> 35 real ops, every op diff 0 vs its step file; ExecState 1 warm; end cdiff == open row 376; canon diff 0 vs D1_s4_loop17",
+  "Binding reproduced the original stages' uids: SRs 24083/24133, 24150/24187, tunnels 24357/24361/25223; TFP 5073, TFN 9599 (L7-R had 5204/10404) - stagexec_l7_bench_r2.log BINDING",
+  "Run 1 stagexec_l7_bench.log stopped at op 8 err_init (edge 4965->24291 vs sim 4965->24205): our face-index tracking aligned on names, which wire_sr changes; fixed, selftest T15",
+  "Only-sink: 15 samples in 8 fresh-scratch cases (opmodels_onlysink.log 64/0). Delete: constant 3 deleted/2 kept, node 1/4, tunnel 0/2. Move: constant 1/1, node 0/1",
+  "Only-sink: R1/R2 repeat the earlier move fates exactly on fresh scratches, so edit history is not the cause; constant-vs-node does not separate the fates either",
+  "Only-sink rule = 'ambiguous' in move_in.json/delete_object.json `sim`; the executor accepts either fate on those source terminals (allow_either, selftest T09/T10)",
+  "Hint, not a rule: all 5 deleted wires had the source object's pos 24-45 px left of the node; 9 of 10 kept had >=45 px (onlysink_samples.json src_pos/node_pos)",
+  "stagesim: every step now runs on a measured model (sim_l7_split.log C9); open_rows finalize rule; plan_l7_split.json is final; selftest_stagesim.log 39/0",
+  "Compile rule: tunnel + the wire into it + the wire out of it = 1 real op (LabVIEW makes a tunnel only by wiring across), compared after the out-wire step - stagexec.py compile_plan",
+  "Launch gate: stage_prerun --dry/--prerun <plan.json> records stagexec sha256 + plan md5; check_launch covers `stagexec.py run <plan>`; selftest_stagexec_gate.log 7/0"
+ ],
+ "open": [
+  "Review archive/peer/2026-09-24-chatS3-stagexec-r1.md (ANSWERED, $1.34): register-face order unmeasured; run 2 had 0 DISAGREES in 4 face addresses. Should DISAGREES stop the run and should every op log the loop's Terminals[]?",
+  "That review's '## What was done with it' is unwritten (card write glob excludes archive/peer). Proposed text: fix = identity/(dir,wire) retrack + name-first; test 1 run on run 2: 0 DISAGREES; tests 2-3 open.",
+  "Only-sink fate stays ambiguous. Measure wire geometry (source-to-node distance) as the next discriminator, or leave both fates allowed?"
+ ],
+ "cost": {
+  "usd": 1.34,
+  "minutes": 75,
+  "labview_runs": 3
+ },
+ "note": "No VI run, nothing saved, all scratches deleted, both beds + 5 pins unchanged, refs 0 live. No JEV-LADDER line for run 1: review dispatched, run 2 was the last budgeted attempt. stagexec_l7_bench.log = run 1 (FAIL); the PASS is stagexec_l7_bench_r2.log. usd = the review only."
+}

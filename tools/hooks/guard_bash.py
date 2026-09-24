@@ -189,14 +189,14 @@ def prerun_gate(cmd):
     try:
         import stage_prerun
     except Exception as e:                                                         # noqa: BLE001
-        if re.search(r"tools[\\/]recipes[\\/]stage_\w*\.py", cmd or ""):
+        if re.search(r"tools[\\/]recipes[\\/]stage_\w*\.py|tools[\\/]stagexec\.py\s+run\b", cmd or ""):
             sys.stderr.write("BLOCKED by tools/hooks/guard_bash.py: the stage launch gate cannot load "
                              "tools/stage_prerun.py (%s); a stage script is not launched unchecked.\n" % e)
             return 2
         return 0
     allow, why = stage_prerun.check_launch(cmd)
     if allow:
-        if stage_prerun.launched_stage_scripts(cmd):
+        if stage_prerun.launched_stage_scripts(cmd) or stage_prerun.launched_plan_runs(cmd):   # card chat-S3
             _PENDING_STAGE[:] = [cmd]      # RETRY CAP: recorded by main() only if EVERY gate here passes
         return 0
     note(False, "PRERUN-GATE " + cmd)

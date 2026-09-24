@@ -13,7 +13,9 @@ RECONSTRUCTED from the recorded, gate-verified uid-edge diffs:
 and compared up to new-uid naming (stagesim.canon: a new object is its class).
 PREDICTION: base cdiff 0 rows; every action applies; move cut set = #376's 12 wires; new half-wires after the move ==
 the 12 diag_c71 observed; canon diff 0 at L7-1a / L7-1 / end; L7-1 cdiff == the recorded 8 rows; end cdiff == the
-recorded 1 row (#376 'current frame data array in', left open by design) => plan NOT final, first divergent step = 1.
+recorded 1 row (#376 'current frame data array in', left open by design) => first divergent step = 1, and (card chat-S3)
+the plan declares that row in `open_rows`, so it IS final; every step's model source is measured (opmodels `sim`);
+moves carry `pos` and registers `y` exactly as the stages used them (stage_d1_l7_1a.json ops, l7_r_prediction.json moves).
     MATERIAL=1 py tools/bgrun.py --max-min 10 --log tools/bench/sim_l7_split.log -- py -u tools/bench/sim_l7_split.py"""
 import ast, json, os, re, sys                                                      # noqa: E401
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, os.path.dirname(HERE))   # noqa: E702
@@ -35,12 +37,15 @@ def src_on(G, w):
     return [r for r in G["rows"].values() if r["wire_uid"] == w and r["is_source"]]
 def addr(r): return {"uid": V.node_of(r), "term": r["term_name"], "term_uid": r["term_uid"]}  # noqa: E704
 
-A = [{"op": "move_in", "id": "l7_1a_move", "nodes": [MOVED], "dest_diagram": BODY}]
+MV = next(o["detail"] for o in L7A["ops"] if o["verb"] == "move_in")              # '#376 -> Diagram[20] at (4760, 6765)'
+YS = [int(re.search(r"y=(\d+)", o["detail"]).group(1)) for o in L7A["ops"] if o["verb"] == "add_shift_reg"]  # err, acc
+A = [{"op": "move_in", "id": "l7_1a_move", "nodes": [MOVED], "dest_diagram": BODY,
+      "pos": [int(x) for x in re.search(r"at \((-?\d+), (-?\d+)\)", MV).groups()]}]
 chains = JC.s1_chains(S1, MOVED); fact("RULE-CHAIN-S1 chains of #{0}: {1}".format(MOVED, [(c["chain"], c["out"], c["in"], c["init"]) for c in chains]))  # noqa: E702
 sym = {}
 for c in sorted(chains, key=lambda c: c["chain"] != "err"):                         # err first, as the stage did (reg 0 = err)
     n = len(sym) + 1; sym[c["chain"]] = "SR{0}".format(n)                          # noqa: E702
-    A.append({"op": "add_shift_reg", "id": "l7_1a_sr_" + c["chain"], "loop": LOOP, "body": BODY, "as": sym[c["chain"]],
+    A.append({"op": "add_shift_reg", "id": "l7_1a_sr_" + c["chain"], "loop": LOOP, "body": BODY, "as": sym[c["chain"]], "y": YS[n - 1],
               **({"checkpoint": "L7-1a"} if n == len(chains) else {})})
 for c in sorted(chains, key=lambda c: c["chain"] != "err"):
     s = sym[c["chain"]]
@@ -63,7 +68,7 @@ A[-1]["checkpoint"] = "L7-1"
 # ---- L7-R, from l7_r_prediction.json (the rows stage_d1_l7_r.py executed, in its order)
 realsym = {L7A["l7_1a"]["sr"][c]["right"]: "new:{0}R".format(sym[c]) for c in sym}
 A += [{"op": "delete_wire", "id": "del_w{0}".format(w), "wire_uid": w} for w in PRED["del_w"]]
-A += [{"op": "move_in", "id": "move_{0}".format(u), "nodes": [u], "dest_diagram": BODY} for u, _p in PRED["moves"]]
+A += [{"op": "move_in", "id": "move_{0}".format(u), "nodes": [u], "dest_diagram": BODY, "pos": [int(x) for x in p]} for u, p in PRED["moves"]]
 added = [e for e in PRED["added"]]
 def e_src(e): return realsym.get(e[1], e[1]) if not isinstance(e[1], str) else "new:" + e[1]   # noqa: E704
 TUN = {}
@@ -81,7 +86,9 @@ A += [{"op": "delete_object", "id": "retire_{0}".format(u), "uid": u, "missing_o
 A += [{"op": "remove_bad_wires", "id": "rbw", "checkpoint": "L7-R"}]
 plan = {"schema": "stageplan/1", "stage": "l7_split", "goal": "replay loop 1.7 split (L7-1a, L7-1b, L7-R) from D1_s3_loop15",
         "base": {"path": rel(GRAPH), "md5": S.md5_file(os.path.join(HERE, GRAPH))},
-        "context": {"loops": {"path": rel(LOOPS)}, "fs_pairs_wiki": {"path": WIKI}, "s1_key": JC.S1_KEY}, "actions": A}
+        "context": {"loops": {"path": rel(LOOPS)}, "fs_pairs_wiki": {"path": WIKI}, "s1_key": JC.S1_KEY}, "actions": A,
+        "open_rows": [{"node": int(n), "term": t, "why": "left open by design for the QRT stage (docs/d1-loop12-17-split-plan.md "
+                       "Pre-decided 175; stage_d1_l7_r.json l7_r.cdiff_rows)"} for n, t in L7R["l7_r"]["cdiff_rows"]]}
 pp = os.path.join(HERE, "stageplan_l7_split.json"); json.dump(plan, open(pp, "w", encoding="utf-8"), indent=1)  # noqa: E702
 gate("C0 plan validates as stageplan/1 ({0} actions)".format(len(A)), protocol.validate_obj(plan)[0], protocol.validate_obj(plan)[1])
 R = S.simulate(pp, os.path.join(HERE, GRAPH), labels=JC.node_labels_default())
@@ -120,8 +127,11 @@ for cp in ("L7-1a", "L7-1", "L7-R"):
 rbw = json.load(open(R["steps"][-1]["file"]["path"], encoding="utf-8"))["effect"]
 gate("C8 remove_bad_wires clears only #376's real half-wires [1581, 3629, 4517] (review chat-s2-rbw; chat-S2b dedupe)",
      rbw.get("removed_wires") == [1581, 3629, 4517], rbw)
-gate("C7 plan NOT final (1 row left open by design) and first divergent step == 1 (the move)",
-     not R["final"] and (R["first_divergent"] or {}).get("n") == 1, (R["final"], R["first_divergent"]))
+gate("C7 plan FINAL under the open_rows rule (the 1 row left open by design == the declared open row; card chat-S3)",
+     R["final"] and R["open_rows_match"] and (R["first_divergent"] or {}).get("n") == 1, (R["final"], R["open_rows"], R["first_divergent"]))
+srcs = [x.get("model_source") for x in R["steps"][1:]]
+gate("C9 every step ran on a MEASURED op model (tools/bench/opmodels/*.json `sim`)", all(str(x).startswith("measured:") for x in srcs),
+     sorted(set(x for x in srcs if not str(x).startswith("measured:"))))
 fact("candidates (cut rows with >1 legal mechanism): {0}; model sources: {1}".format(R["n_candidates"], sorted(set(x.get("model_source") for x in R["steps"][1:]))))
 fact("plan_out {0}; summary {1}".format(R["plan_out"], S._rel(R["summary_path"])))
 n_pass = sum(1 for _l, ok in GATES if ok); n_fail = len(GATES) - n_pass; first = next((l for l, ok in GATES if not ok), None)  # noqa: E702

@@ -1,0 +1,19 @@
+BGRUN START 2026-09-25 00:07:53 limit 3.0 min: py -u tools/stagexec.py selftest
+  PASS  T01 the synthetic executable plan simulates FINAL  (None, [])
+  PASS  T02 compile: tunnel+in+out -> ONE real op; SR inner wires -> wire_sr; the rest 1:1  ['move_in', 'add_sr', 'tunnel', 'wire_sr', 'wire_sr', 'connect', 'delete_wire', 'tunnel', 'delete_object', 'delete_object', 'delete_object', 'remove_bad_wires']
+  PASS  T03 a tunnel without its in-wire does not compile  action 3: tunnel new:T1 must be followed by exactly one wire into it and one out of it (LabVIEW makes a tunnel only by wiring across the border)
+  PASS  T04 dry run PASS: every real op's state == its step file after binding  None
+  PASS  T05 binding: 2 SR objects + 2 tunnels bound to POSITIVE uids  {-1: 10000001, -2: 10000004, -7: 10000008, -13: 10000015}
+  PASS  T06 addressing: base ends primed by their wire, every checked end resolved to its own terminal name  ({'n': 7, 'unprovable': []}, ['cached index (proved by its wire uid while wired)', 'cached index (proved by its wire uid while wired)', 'cached index (proved by its wire uid while wired)', "unique live name '' on loop #200 (tracked index 1)", 'cached index (proved by its wire uid while wired)'])
+  PASS  T07 a real op that made one edge fewer STOPS at that op with a step-diff report  STEP-DIFF after real op 3 (tunnel, plan actions [3, 4, 5] [None, None, None]): {"only_sim_edges": [[10000010, 1021]], "dangling_real_only": [10000010], "who": {"10000010": [10000008, "LoopTunnel", ""]}}
+  PASS  T08 an extra real object after add_shift_reg stops at BINDING (count/class)  BINDING: simulated new objects {'RightShiftRegister': 1, 'LeftShiftRegister': 1} != real new objects {'RightShiftRegister': 1, 'LeftShiftRegister': 1, 'Invoke': 1} (real owners [10000001, 10000004, 99999998])
+  PASS  T09 the other only-sink fate on an allow_either terminal is accepted  None
+  PASS  T10 ... but not on a terminal the step does not allow  STEP-DIFF after real op 1 (move_in, plan actions [1] [None]): {"only_sim_edges": [[1001, 1601], [1001, 1701]], "dangling_real_only": [1601, 1701], "who": {"1601": [60, "LoopTunnel", "v"], "1701": [70, "LoopTunnel", "v"]}}
+  PASS  T11 prerun_plan passes the final plan  []
+  PASS  T12 prerun_plan refuses a non-final plan  ('X1 plan final, base graph + step files unchanged since finalize', False, 'plan is not final (final=False, finalized=null)')
+  PASS  T13 prerun_plan refuses a plan whose step file changed after finalize  ('X1 plan final, base graph + step files unchanged since finalize', False, "1 step file(s) missing or changed since finalize (['C:\\\\Users\\\\KimLab\\\\AppData\\\\Local\\\\Temp\\\\stagexec_selftest_dv0w50yw\\\\sim\\\\xs\\\\step_03_tunnel.json']...) - re-simulate")
+  PASS  T15 register faces keep their loop index when inner wiring RENAMES them (no name alignment), and across an appended tunnel face  ({1: 1, 2: 2, 3: 3, 4: 4}, {1: 1, 2: 2, 3: 3, 4: 4}, [], [])
+  PASS  T14 nothing LabVIEW-side imported  []
+=== GATES: 15 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":15,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

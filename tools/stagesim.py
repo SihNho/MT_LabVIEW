@@ -98,7 +98,9 @@ PROVISIONAL = {
 }
 MODEL_ALIASES = {"wire": ("wire", "connect_from_wire", "wire_sr", "connect_nested", "connect"),
                  "tunnel": ("tunnel", "tunnel_create", "create_tunnel"),
-                 "create": ("create", "const_create", "primitive_create", "create_const", "create_primitive")}
+                 "create": ("create", "const_create", "primitive_create", "create_const", "create_primitive", "const",
+                            "primitive")}
+ONLY_SINK_FATES = ("keep", "delete", "ambiguous")
 MECHANISMS_ACROSS = ["tunnel", "tunnel_indexing", "shift_register"]
 
 
@@ -322,6 +324,37 @@ def _flip_orphaned_output_tunnels(st, wires):
     return flipped
 
 
+def only_sink_fate(P, src_class):
+    """The only-sink sub-rule (card chat-S3; tools/bench/opmodels_onlysink.log): what happens to a wire whose ONLY
+    sink(s) sat on the moved / deleted node. `P['only_sink']` is 'keep' (a source-side half-wire), 'delete', 'ambiguous'
+    (kept in the simulation, and the executor accepts either outcome), or {'constant': fate, 'tunnel': fate,
+    'node': fate} by the SOURCE's class. Missing => 'keep' (the provisional rule)."""
+    rule = P.get("only_sink", "keep")
+    if isinstance(rule, dict):
+        kind = "constant" if str(src_class).endswith("Constant") else (
+            "tunnel" if "Tunnel" in str(src_class) else "node")
+        rule = rule.get(kind, rule.get("default", "keep"))
+    return rule if rule in ONLY_SINK_FATES else "keep"
+
+
+def _apply_only_sink(st, P, wires, gone):
+    """For each wire in `wires` whose every SINK is owned by a node in `gone` and whose source is outside: apply the
+    only-sink fate to the source row. Returns the records (the executor reads `allow_either`)."""
+    out = []
+    for w in sorted(set(x for x in wires if x)):
+        rows = wire_rows(st, w)
+        srcs = [r for r in rows if r["is_source"] and V.node_of(r) not in gone]
+        snks = [r for r in rows if not r["is_source"]]
+        if len(srcs) != 1 or not snks or any(V.node_of(r) not in gone for r in snks):
+            continue
+        fate = only_sink_fate(P, srcs[0]["owner_class"])
+        if fate == "delete":
+            srcs[0]["wire_uid"] = 0
+        out.append({"wire": w, "src_term_uid": srcs[0]["term_uid"], "src_uid": V.node_of(srcs[0]),
+                    "src_class": srcs[0]["owner_class"], "fate": fate})
+    return out
+
+
 def op_move_in(st, a, P, S1, labels):
     moved = set(resolve_uid(st, u) for u in a["nodes"])
     dest = int(a["dest_diagram"])
@@ -348,6 +381,7 @@ def op_move_in(st, a, P, S1, labels):
                               "chain": (V.node_of(r), r["term_name"]) in chains,
                               "s1": s1_partner(S1, G0, k) if (S1 is not None and k) else None})
     # apply
+    only = _apply_only_sink(st, P, cut.keys(), moved)
     for r in inside:
         r["frame_diagram"] = dest
     cleared = []
@@ -399,7 +433,8 @@ def op_move_in(st, a, P, S1, labels):
                           "n_src_terms": 1, "n_dst_terms": 1, "pairs": pairs, "excluded": {}})
     return {"moved": sorted(moved), "dest_diagram": dest, "cut_set": sorted(cut), "n_cut": len(cut),
             "reconnect": table, "cleared_term_uids": sorted(cleared), "tunnel_flips": flipped,
-            "rule_rows": rule_rows}, cands
+            "rule_rows": rule_rows, "only_sink": only,
+            "allow_either": sorted(x["src_term_uid"] for x in only if x["fate"] == "ambiguous")}, cands
 
 
 def _parent_of(st, body, a, labels):
@@ -532,11 +567,17 @@ def op_delete_object(st, a, P, S1, labels):
                     gone += [int(x) for x in ls]
                 elif uid in [int(x) for x in ls]:
                     gone.append(int(r))
+    gone = list(dict.fromkeys(gone))
+    ws = set(r["wire_uid"] for u in gone for r in node_rows(st, u) if r["wire_uid"])
+    only = _apply_only_sink(st, P, ws, set(gone))
     out = {}
-    for u in dict.fromkeys(gone):
+    for u in gone:
         if obj_class(st, u) is not None:
             out[u] = _drop_node(st, u)
-    return {"deleted": sorted(out), "class": cls, "terminals_removed": sum(out.values())}, []
+    flipped = _flip_orphaned_output_tunnels(st, ws) if P.get("tunnel_flip", False) else []
+    return {"deleted": sorted(out), "class": cls, "terminals_removed": sum(out.values()), "only_sink": only,
+            "allow_either": sorted(x["src_term_uid"] for x in only if x["fate"] == "ambiguous"),
+            "tunnel_flips": flipped}, []
 
 
 def op_wire(st, a, P, S1, labels):
@@ -560,8 +601,15 @@ def op_wire(st, a, P, S1, labels):
         w, how = new_uid(st), "new"
         s["wire_uid"] = w
     d["wire_uid"] = w
+    joined = []
+    if detached and P.get("sourceless_sink") == "join":
+        # measured (opmodels/tunnel.json tunnel_2): a sink on a sourceless half-wire is JOINED - every other terminal
+        # still on that half-wire ends up on the new net as well
+        for r in wire_rows(st, detached):
+            r["wire_uid"] = w
+            joined.append(r["term_uid"])
     return {"wire": w, "how": how, "src_term_uid": s["term_uid"], "dst_term_uid": d["term_uid"],
-            "detached_from": detached}, []
+            "detached_from": detached, "joined": joined}, []
 
 
 def op_remove_bad_wires(st, a, P, S1, labels):
@@ -576,7 +624,16 @@ def op_remove_bad_wires(st, a, P, S1, labels):
             bad.append(w)
             for r in rows:
                 r["wire_uid"] = 0
-    return {"removed_wires": sorted(bad)}, []
+    dropped = []
+    if P.get("drop_unconnected_fsit"):
+        # measured (opmodels/remove_bad_wires.json, RBW_1 #2283/#2301): a FlatSequenceInnerTunnel the deletion left
+        # with no wired terminal is deleted too
+        touched = set(V.node_of(r) for w in bad for r in by_w[w] if r["owner_class"] == "FlatSequenceInnerTunnel")
+        for u in sorted(touched):
+            if not any(r["wire_uid"] for r in node_rows(st, u)):
+                _drop_node(st, u)
+                dropped.append(u)
+    return {"removed_wires": sorted(bad), "dropped_fsit": dropped}, []
 
 
 def op_create(st, a, P, S1, labels):
@@ -722,7 +779,12 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
         n0 = min(firsts)
         s0 = next(s for s in steps if s["n"] == n0)
         first_div = {"n": n0, "op": s0["op"], "id": s0.get("id"), "rows_from_here": len(end_rows)}
-    final = bool(S1 is not None and not failed and end_rows == [] and not undecided)
+    # FINALIZE RULE (card chat-S3): a plan may declare `open_rows` - rows it leaves for a later stage by design (e.g.
+    # 376 'current frame data array in', Pre-decided 175). Final iff the end rows are EXACTLY those, no more, no fewer.
+    open_rows = sorted(set((int(r["node"]), r["term"]) for r in plan.get("open_rows") or []))
+    end_pairs = sorted(set((V.key_parts(k)[0], V.key_parts(k)[2]) for k in end_rows)) if end_rows is not None else None
+    open_match = end_pairs is not None and end_pairs == open_rows
+    final = bool(S1 is not None and not failed and open_match and not undecided)
     cands_path = os.path.join(out_dir, "candidates.json")
     with open(cands_path, "w", encoding="utf-8") as f:
         json.dump({"schema": "stagesim-candidates/1", "stage": stage, "note": "jev_candidates shape; the "
@@ -732,6 +794,7 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
                "s1": (plan.get("context") or {}).get("s1_key") or (plan.get("context") or {}).get("s1_graph"),
                "models_loaded": dict((k, {"path": _rel(v["path"]), "md5": v.get("md5")}) for k, v in models.items()),
                "steps": steps, "failed": failed, "final": final, "end_cdiff_rows": end_rows,
+               "open_rows": [list(x) for x in open_rows], "open_rows_match": open_match,
                "first_divergent": first_div, "n_candidates": len(all_cands), "undecided": len(undecided),
                "candidates": {"path": _rel(cands_path), "md5": md5_file(cands_path)}, "sym": st["sym"],
                "new_classes": dict((str(k), v) for k, v in cls_new.items())}
@@ -746,6 +809,9 @@ def simulate(plan_path, graph_path, out_root=SIM_ROOT, plan_out_dir=BENCH, model
                                                             "md5": last["file"]["md5"]},
                              "summary": {"path": _rel(sp), "md5": md5_file(sp)},
                              "end_cdiff_rows": end_rows, "failed": failed, "first_divergent": first_div,
+                             "open_rows": [list(x) for x in open_rows], "open_rows_match": open_match,
+                             "step_files": [{"n": s["n"], "op": s["op"], "path": _rel(s["file"]["path"]),
+                                             "md5": s["file"]["md5"]} for s in steps if s.get("file")],
                              "undecided": len(undecided), "at": time.strftime("%Y-%m-%d %H:%M:%S")}
     pp = os.path.join(plan_out_dir, "plan_{0}.json".format(stage))
     with open(pp, "w", encoding="utf-8") as f:
@@ -990,6 +1056,47 @@ def selftest():
     gate("G32 nothing LabVIEW-side was imported (gscript / win32com / pythoncom absent)",
          not any(m in sys.modules for m in ("gscript", "win32com", "pythoncom", "stagekit")),
          [m for m in ("gscript", "win32com", "pythoncom", "stagekit") if m in sys.modules])
+    # card chat-S3: open_rows finalize rule
+    po1 = copy.deepcopy(pe)
+    po1["stage"] = "openrows"
+    po1["open_rows"] = [{"node": 4, "term": "x", "why": "left for a later stage (self-test)"}]
+    S12 = run(po1, "openrows", log=quiet)
+    gate("G33 open_rows == the end rows => final (the #4 'x' row declared open)", S12["final"] and S12["open_rows_match"],
+         (S12["final"], S12["end_cdiff_rows"], S12["open_rows"]))
+    po2 = copy.deepcopy(pf)
+    po2["stage"] = "openextra"
+    po2["open_rows"] = [{"node": 4, "term": "x", "why": "declared but not open (self-test)"}]
+    S13 = run(po2, "openextra", log=quiet)
+    gate("G34 a declared open row that is NOT open (end rows []) => not final", not S13["final"] and not S13["open_rows_match"],
+         (S13["final"], S13["end_cdiff_rows"]))
+    po3 = copy.deepcopy(pd)
+    po3["stage"] = "openfewer"
+    po3["actions"] = [x for x in po3["actions"] if x.get("dst") != "4.x"]
+    po3["open_rows"] = [{"node": 4, "term": "x", "why": "only one of two open rows declared (self-test)"}]
+    S14 = run(po3, "openfewer", log=quiet)
+    gate("G35 more end rows than declared open => not final", not S14["final"] and len(S14["end_cdiff_rows"]) == 2,
+         S14["end_cdiff_rows"])
+    # card chat-S3: only-sink fates (const #1 'v' -> tunnel #60 is branched; #3 'err' -> #51 outer is a sole sink)
+    pdel = {"schema": "stageplan/1", "stage": "onlysink", "context": {"s1_graph": {"path": s1p}},
+            "actions": [{"op": "delete_object", "uid": 51}]}
+    fates = {}
+    for nm, rule in (("keep", "keep"), ("delete", "delete"), ("ambiguous", "ambiguous"),
+                     ("byclass", {"constant": "delete", "node": "keep"})):
+        mdx = os.path.join(tmp, "om_" + nm)
+        os.makedirs(mdx)
+        with open(os.path.join(mdx, "delete_object.json"), "w", encoding="utf-8") as f:
+            json.dump({"op": "delete_object", "sim": {"only_sink": rule, "sr_pair": False}}, f)
+        Sx = run(pdel, "onlysink_" + nm, model_dir=mdx, log=quiet)
+        ex = _j(Sx["steps"][1]["file"]["path"])
+        w3 = [r["wire_uid"] for r in ex["state"]["terminals"] if r["term_uid"] == 1003]
+        fates[nm] = (ex["effect"]["only_sink"], ex["effect"]["allow_either"], w3)
+    gate("G36 only_sink keep: the constant's wire 3 survives as a source-side half-wire",
+         fates["keep"][2] == [3] and fates["keep"][0][0]["fate"] == "keep", fates["keep"])
+    gate("G37 only_sink delete: the constant's terminal reads wire 0", fates["delete"][2] == [0], fates["delete"])
+    gate("G38 only_sink ambiguous: kept, and its source terminal is listed in allow_either for the executor",
+         fates["ambiguous"][2] == [3] and fates["ambiguous"][1] == [1003], fates["ambiguous"])
+    gate("G39 only_sink by source class: a constant source takes the 'constant' fate",
+         fates["byclass"][2] == [0] and fates["byclass"][0][0]["src_class"] == "Constant", fates["byclass"])
     n_pass = sum(1 for _l, ok in gates if ok)
     n_fail = len(gates) - n_pass
     first = next((l for l, ok in gates if not ok), None)

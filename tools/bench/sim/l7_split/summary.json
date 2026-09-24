@@ -3,7 +3,7 @@
  "stage": "l7_split",
  "plan": {
   "path": "tools/bench/stageplan_l7_split.json",
-  "md5": "b8f3a81069f889b6ab1afda4535882e1"
+  "md5": "d21b307daac9c2227c3fae477e4f3f44"
  },
  "graph": {
   "path": "tools/bench/graph_s3_loop15_20260924.json",
@@ -11,6 +11,10 @@
  },
  "s1": "D1_s1_copy",
  "models_loaded": {
+  "add_shift_reg": {
+   "path": "tools/bench/opmodels/add_shift_reg.json",
+   "md5": "c184ce030aea6aaee181fc7b97eeca83"
+  },
   "bed_l7_1a": {
    "path": "tools/bench/opmodels/bed_l7_1a.json",
    "md5": "2f88a912638d6343c520ef70ac7366e8"
@@ -26,6 +30,50 @@
   "bed_s4_map": {
    "path": "tools/bench/opmodels/bed_s4_map.json",
    "md5": "a212ac8244d9fe8b0a9aaffa601b2587"
+  },
+  "connect_from_wire": {
+   "path": "tools/bench/opmodels/connect_from_wire.json",
+   "md5": "87135ed9639c7ee773786a9bd8af2def"
+  },
+  "const": {
+   "path": "tools/bench/opmodels/const.json",
+   "md5": "45351563158665d45578e83cf314bdb9"
+  },
+  "delete_object": {
+   "path": "tools/bench/opmodels/delete_object.json",
+   "md5": "872644df5c0e7f59dfef1cb44637a8ed"
+  },
+  "delete_wire": {
+   "path": "tools/bench/opmodels/delete_wire.json",
+   "md5": "3ee49994f25b3d2d38f85b9310f3a32a"
+  },
+  "fs_inner_tunnel_connect": {
+   "path": "tools/bench/opmodels/fs_inner_tunnel_connect.json",
+   "md5": "0f32775d6d1bc4c4c7f996c461fa2747"
+  },
+  "move_in": {
+   "path": "tools/bench/opmodels/move_in.json",
+   "md5": "ae6bbadb8058bce47da1d645c955cd68"
+  },
+  "onlysink_samples": {
+   "path": "tools/bench/opmodels/onlysink_samples.json",
+   "md5": "9dc0d433858af31b5c98238980da8ab9"
+  },
+  "primitive": {
+   "path": "tools/bench/opmodels/primitive.json",
+   "md5": "ea66ddd900891e2c40c26d540272297e"
+  },
+  "remove_bad_wires": {
+   "path": "tools/bench/opmodels/remove_bad_wires.json",
+   "md5": "495e40658bb6bc201e31fbb42e078c39"
+  },
+  "tunnel": {
+   "path": "tools/bench/opmodels/tunnel.json",
+   "md5": "479b0084c41c0069d9f873205763fac4"
+  },
+  "wire_sr": {
+   "path": "tools/bench/opmodels/wire_sr.json",
+   "md5": "4043edc9a337156a434ef6780684543a"
   }
  },
  "steps": [
@@ -45,14 +93,11 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_01_move_in.json",
-    "md5": "ac1954f1689f24b095ce76a7a8363d58"
+    "md5": "47efac2dfcb53a4b5e0ca53b3b92d753"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/diag_c71_l7_1a_tunnels.log (TERM 2043/5050 is_source True->False, FLAG w4337/w5073 n_src 0 after move_in #376); tools/bench/stage_d1_l7_1b_r3.log:207-214 (#376's cut terminals read wire=0)",
-   "model_gaps": [
-    "SR pair names reset on a cut (15/51 -> '' but 24/1108 kept 'error out') NOT modelled: names only, computation_diff collapses registers",
-    "the junk Invoke node each op leaves is NOT modelled (stagekit.junk_purge deletes it)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/move_in.json@ae6bbadb8058bce47da1d645c955cd68",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 17,
    "secs": 0.29,
@@ -127,6 +172,58 @@
       "decided_by": "RULE-CHAIN-S1",
       "mechanism": "shift_register"
      }
+    ],
+    "only_sink": [
+     {
+      "wire": 1397,
+      "src_term_uid": 3060,
+      "src_uid": 3052,
+      "src_class": "ControlReferenceConstant",
+      "fate": "ambiguous"
+     },
+     {
+      "wire": 1581,
+      "src_term_uid": 2313,
+      "src_uid": 2294,
+      "src_class": "LoopTunnel",
+      "fate": "ambiguous"
+     },
+     {
+      "wire": 3497,
+      "src_term_uid": 76,
+      "src_uid": 51,
+      "src_class": "LeftShiftRegister",
+      "fate": "ambiguous"
+     },
+     {
+      "wire": 3629,
+      "src_term_uid": 3651,
+      "src_uid": 3644,
+      "src_class": "LoopTunnel",
+      "fate": "ambiguous"
+     },
+     {
+      "wire": 4517,
+      "src_term_uid": 2813,
+      "src_uid": 2626,
+      "src_class": "BuildArray",
+      "fate": "ambiguous"
+     },
+     {
+      "wire": 4880,
+      "src_term_uid": 1700,
+      "src_uid": 1108,
+      "src_class": "LeftShiftRegister",
+      "fate": "ambiguous"
+     }
+    ],
+    "allow_either": [
+     76,
+     1700,
+     2313,
+     2813,
+     3060,
+     3651
     ]
    },
    "reconnect": [
@@ -983,16 +1080,14 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_02_add_shift_reg.json",
-    "md5": "a2d9a74329d831f1697096e0cedb9aa7"
+    "md5": "b046d016d0b6dbc1c41590ee446dde57"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_1a.json l7_1a.sr (a Right+Left pair per call); jev_candidates.rule_chain_s1 docstring (new register terminals unnamed)",
-   "model_gaps": [
-    "an error-cluster register's outer later reads 'error out' (l7_r_prediction.json s1map) - name propagation on wiring not modelled"
-   ],
+   "model_source": "measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.19,
+   "secs": 0.23,
    "effect_summary": {
     "right": "new:SR1R",
     "left": "new:SR1L",
@@ -1150,16 +1245,14 @@
    "checkpoint": "L7-1a",
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_03_add_shift_reg.json",
-    "md5": "f2869c07ea5a5b08f8511b6fd0d080fe"
+    "md5": "66393962549cd729fc50b187e247103b"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_1a.json l7_1a.sr (a Right+Left pair per call); jev_candidates.rule_chain_s1 docstring (new register terminals unnamed)",
-   "model_gaps": [
-    "an error-cluster register's outer later reads 'error out' (l7_r_prediction.json s1map) - name propagation on wiring not modelled"
-   ],
+   "model_source": "measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.16,
+   "secs": 0.15,
    "effect_summary": {
     "right": "new:SR2R",
     "left": "new:SR2L",
@@ -1317,13 +1410,11 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_04_wire.json",
-    "md5": "6d3a8dcc98acec9edf1825449d00ac73"
+    "md5": "e53623c7114a94b7d69f6873dc8e2da2"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
    "secs": 0.16,
@@ -1332,7 +1423,8 @@
     "how": "new",
     "src_term_uid": 3934,
     "dst_term_uid": -3,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "2048|Terminal|array|0",
@@ -1478,13 +1570,11 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_05_wire.json",
-    "md5": "e2d199af5d8674fa14b8f00a09d684f7"
+    "md5": "cde0a069c51e4a871c5e99df36cb26ed"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
    "secs": 0.16,
@@ -1493,7 +1583,8 @@
     "how": "new",
     "src_term_uid": -6,
     "dst_term_uid": 5683,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "2048|Terminal|array|0",
@@ -1641,13 +1732,11 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_06_wire.json",
-    "md5": "d719519ea22d701c15f328caeb804dbf"
+    "md5": "b874a86e186aef78204e4318ac2ce8fa"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
    "secs": 0.16,
@@ -1656,7 +1745,8 @@
     "how": "new",
     "src_term_uid": 3954,
     "dst_term_uid": -9,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "2048|Terminal|array|0",
@@ -1804,13 +1894,11 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_07_wire.json",
-    "md5": "527b819d6f902a81a29b07db616ddab9"
+    "md5": "d6e01af1dd8052f5ce83fae01ccb47f9"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
    "secs": 0.16,
@@ -1819,7 +1907,8 @@
     "how": "new",
     "src_term_uid": -12,
     "dst_term_uid": 5782,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "2048|Terminal|array|0",
@@ -1969,13 +2058,11 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_08_wire.json",
-    "md5": "234c40c5dbdb0c54a8bc6efc1b6a8f3f"
+    "md5": "af4cbb5e78150d58dbd469cc5c436f31"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
    "secs": 0.16,
@@ -1984,7 +2071,8 @@
     "how": "branch",
     "src_term_uid": 4965,
     "dst_term_uid": -5,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "2048|Terminal|array|0",
@@ -2121,13 +2209,11 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_09_wire.json",
-    "md5": "66ab4803f5bc637131834bfac38ad23f"
+    "md5": "6bcb5c527efb25f87ccd6268cee2668a"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
    "secs": 0.16,
@@ -2136,7 +2222,8 @@
     "how": "branch",
     "src_term_uid": 1842,
     "dst_term_uid": -11,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "2048|Terminal|array|0",
@@ -2260,13 +2347,11 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_10_tunnel.json",
-    "md5": "9d340a3bb7826d78c4fe5d0f0e507621"
+    "md5": "f05b39b5d30e4cc3a2f5894bacc3ed02"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_r_r2.log PC3 (connect_nested_v1 made exactly one LoopTunnel per border)",
-   "model_gaps": [
-    "LabVIEW picks direction from the wiring; the plan states `dir`"
-   ],
+   "model_source": "measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
    "secs": 0.16,
@@ -2402,22 +2487,21 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_11_wire.json",
-    "md5": "52cd039a800c541388a03d9e84e2f5db"
+    "md5": "0014bfd072c6ed1b82f3afce826573d6"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.16,
+   "secs": 0.17,
    "effect_summary": {
     "wire": 21,
     "how": "branch",
     "src_term_uid": 1751,
     "dst_term_uid": -18,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "2048|Terminal|array|0",
@@ -2541,13 +2625,11 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_12_wire.json",
-    "md5": "a02d6b95556542fc9a145b22fef4e989"
+    "md5": "6bc44fd70c0b5335b8f6f4d488023d96"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
    "secs": 0.16,
@@ -2556,7 +2638,8 @@
     "how": "new",
     "src_term_uid": -19,
     "dst_term_uid": 5760,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "2048|Terminal|array|0",
@@ -2670,16 +2753,14 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_13_tunnel.json",
-    "md5": "8be7610484924dd41aee4afb9b6f1bae"
+    "md5": "9f5ea93a367c4de1e331e2f7a8b8acd0"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_r_r2.log PC3 (connect_nested_v1 made exactly one LoopTunnel per border)",
-   "model_gaps": [
-    "LabVIEW picks direction from the wiring; the plan states `dir`"
-   ],
+   "model_source": "measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.17,
+   "secs": 0.16,
    "effect_summary": {
     "tunnel": "new:T2",
     "loop": 23041,
@@ -2802,22 +2883,21 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_14_wire.json",
-    "md5": "ba07049d117bf4c93d3125c505f1aa10"
+    "md5": "72e7d104d946a7a7a878dd5437312657"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.17,
+   "secs": 0.16,
    "effect_summary": {
     "wire": 2362,
     "how": "branch",
     "src_term_uid": 2495,
     "dst_term_uid": -22,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "2048|Terminal|array|0",
@@ -2931,22 +3011,21 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_15_wire.json",
-    "md5": "0b968c2f58e927179f8c6410f4f4b024"
+    "md5": "81da02289f1b9825a7e68a5946b832be"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.16,
+   "secs": 0.17,
    "effect_summary": {
     "wire": -24,
     "how": "new",
     "src_term_uid": -23,
     "dst_term_uid": 5778,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "2048|Terminal|array|0",
@@ -3050,16 +3129,14 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_16_tunnel.json",
-    "md5": "2a90c48e6f79de3aa8b807b1452ad330"
+    "md5": "19f3c3f8b53f925582046c11aa3a2e5a"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_r_r2.log PC3 (connect_nested_v1 made exactly one LoopTunnel per border)",
-   "model_gaps": [
-    "LabVIEW picks direction from the wiring; the plan states `dir`"
-   ],
+   "model_source": "measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.17,
+   "secs": 0.16,
    "effect_summary": {
     "tunnel": "new:T3",
     "loop": 23041,
@@ -3172,22 +3249,21 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_17_wire.json",
-    "md5": "db7f28267023e5e9f292b11867425eff"
+    "md5": "42ef3b1510a668a77b3c686cd52142e0"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.16,
+   "secs": 0.18,
    "effect_summary": {
     "wire": 5104,
     "how": "branch",
     "src_term_uid": 4714,
     "dst_term_uid": -26,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "2048|Terminal|array|0",
@@ -3291,13 +3367,11 @@
    "checkpoint": "L7-1",
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_18_wire.json",
-    "md5": "4ac5a74e9b33740b304356d801847078"
+    "md5": "c5f814610bab53ace0c9b93eb7957e68"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
    "secs": 0.16,
@@ -3306,7 +3380,8 @@
     "how": "new",
     "src_term_uid": -27,
     "dst_term_uid": 5787,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "2048|Terminal|array|0",
@@ -3400,10 +3475,10 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_19_delete_wire.json",
-    "md5": "4469fb3162e7c374d65efad69a138056"
+    "md5": "935735d2878a70f59e9c46e5a3aafc0d"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete_object LoopTunnel #1929/#5020 -> False (already gone) after their inner+outer wires were deleted",
+   "model_source": "measured:tools/bench/opmodels/delete_wire.json@3ee49994f25b3d2d38f85b9310f3a32a",
+   "model_evidence": "opmodel file",
    "model_gaps": [],
    "error": null,
    "n_candidates": 0,
@@ -3505,10 +3580,10 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_20_delete_wire.json",
-    "md5": "4f45d8ec9b9e66bc06dbbad5a6136e2e"
+    "md5": "e6189bdaf4d692f5ac9bb4884c5558a2"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete_object LoopTunnel #1929/#5020 -> False (already gone) after their inner+outer wires were deleted",
+   "model_source": "measured:tools/bench/opmodels/delete_wire.json@3ee49994f25b3d2d38f85b9310f3a32a",
+   "model_evidence": "opmodel file",
    "model_gaps": [],
    "error": null,
    "n_candidates": 0,
@@ -3610,14 +3685,14 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_21_delete_wire.json",
-    "md5": "904b39f1a3131371dda17997e9e1acb9"
+    "md5": "8b74ba9c60525815e91ac0ed7bae3228"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete_object LoopTunnel #1929/#5020 -> False (already gone) after their inner+outer wires were deleted",
+   "model_source": "measured:tools/bench/opmodels/delete_wire.json@3ee49994f25b3d2d38f85b9310f3a32a",
+   "model_evidence": "opmodel file",
    "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.17,
+   "secs": 0.16,
    "effect_summary": {
     "wire": 4337,
     "n_terminals": 3,
@@ -3715,10 +3790,10 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_22_delete_wire.json",
-    "md5": "a17fd5eb66aabd37e8cde445a2ed8861"
+    "md5": "46fb611b8e0e7d99c410d0c027c6196f"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete_object LoopTunnel #1929/#5020 -> False (already gone) after their inner+outer wires were deleted",
+   "model_source": "measured:tools/bench/opmodels/delete_wire.json@3ee49994f25b3d2d38f85b9310f3a32a",
+   "model_evidence": "opmodel file",
    "model_gaps": [],
    "error": null,
    "n_candidates": 0,
@@ -3820,10 +3895,10 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_23_delete_wire.json",
-    "md5": "98f51cdd663a6d915cb09a60619df5a5"
+    "md5": "a9b429e4f83086e5ee6d4b8b44f34d9f"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete_object LoopTunnel #1929/#5020 -> False (already gone) after their inner+outer wires were deleted",
+   "model_source": "measured:tools/bench/opmodels/delete_wire.json@3ee49994f25b3d2d38f85b9310f3a32a",
+   "model_evidence": "opmodel file",
    "model_gaps": [],
    "error": null,
    "n_candidates": 0,
@@ -3927,10 +4002,10 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_24_delete_wire.json",
-    "md5": "eaa61aad161f77b95e328e02e2aacb30"
+    "md5": "e4fb046d1402089aff2518e1e4d96a9c"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete_object LoopTunnel #1929/#5020 -> False (already gone) after their inner+outer wires were deleted",
+   "model_source": "measured:tools/bench/opmodels/delete_wire.json@3ee49994f25b3d2d38f85b9310f3a32a",
+   "model_evidence": "opmodel file",
    "model_gaps": [],
    "error": null,
    "n_candidates": 0,
@@ -4032,10 +4107,10 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_25_delete_wire.json",
-    "md5": "965c36d6dc5433bf4830e1c82b5f9039"
+    "md5": "b107d1e368a12904c6b2fb852068a7d2"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete_object LoopTunnel #1929/#5020 -> False (already gone) after their inner+outer wires were deleted",
+   "model_source": "measured:tools/bench/opmodels/delete_wire.json@3ee49994f25b3d2d38f85b9310f3a32a",
+   "model_evidence": "opmodel file",
    "model_gaps": [],
    "error": null,
    "n_candidates": 0,
@@ -4139,17 +4214,14 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_26_move_in.json",
-    "md5": "f84376b0ecf486872e62242113246580"
+    "md5": "ea0390b3f8595e8309b028a14a6cbd2a"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/diag_c71_l7_1a_tunnels.log (TERM 2043/5050 is_source True->False, FLAG w4337/w5073 n_src 0 after move_in #376); tools/bench/stage_d1_l7_1b_r3.log:207-214 (#376's cut terminals read wire=0)",
-   "model_gaps": [
-    "SR pair names reset on a cut (15/51 -> '' but 24/1108 kept 'error out') NOT modelled: names only, computation_diff collapses registers",
-    "the junk Invoke node each op leaves is NOT modelled (stagekit.junk_purge deletes it)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/move_in.json@ae6bbadb8058bce47da1d645c955cd68",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.25,
+   "secs": 0.29,
    "effect_summary": {
     "moved": [
      3052
@@ -4159,7 +4231,9 @@
     "n_cut": 0,
     "cleared_term_uids": [],
     "tunnel_flips": [],
-    "rule_rows": []
+    "rule_rows": [],
+    "only_sink": [],
+    "allow_either": []
    },
    "reconnect": [],
    "cdiff_rows": [
@@ -4254,17 +4328,14 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_27_move_in.json",
-    "md5": "a7c2e6bdca72d8eea6243442585a2ab0"
+    "md5": "6037cf7e2dab1474dad4c8eb3e7a8224"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/diag_c71_l7_1a_tunnels.log (TERM 2043/5050 is_source True->False, FLAG w4337/w5073 n_src 0 after move_in #376); tools/bench/stage_d1_l7_1b_r3.log:207-214 (#376's cut terminals read wire=0)",
-   "model_gaps": [
-    "SR pair names reset on a cut (15/51 -> '' but 24/1108 kept 'error out') NOT modelled: names only, computation_diff collapses registers",
-    "the junk Invoke node each op leaves is NOT modelled (stagekit.junk_purge deletes it)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/move_in.json@ae6bbadb8058bce47da1d645c955cd68",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.29,
+   "secs": 0.3,
    "effect_summary": {
     "moved": [
      3453
@@ -4274,7 +4345,9 @@
     "n_cut": 0,
     "cleared_term_uids": [],
     "tunnel_flips": [],
-    "rule_rows": []
+    "rule_rows": [],
+    "only_sink": [],
+    "allow_either": []
    },
    "reconnect": [],
    "cdiff_rows": [
@@ -4369,13 +4442,11 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_28_tunnel.json",
-    "md5": "d0e2965715ec5c45678121405081b6c9"
+    "md5": "707aeb0728762bc0a31ae559292c165d"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_r_r2.log PC3 (connect_nested_v1 made exactly one LoopTunnel per border)",
-   "model_gaps": [
-    "LabVIEW picks direction from the wiring; the plan states `dir`"
-   ],
+   "model_source": "measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
    "secs": 0.16,
@@ -4481,22 +4552,21 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_29_wire.json",
-    "md5": "e37b759ce6032882e0831aa2b6445109"
+    "md5": "f26b3cea29edde9087e3e498dca55fae"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.16,
+   "secs": 0.17,
    "effect_summary": {
     "wire": -32,
     "how": "new",
     "src_term_uid": 5704,
     "dst_term_uid": -31,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "2048|Terminal|array|0",
@@ -4590,13 +4660,11 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_30_wire.json",
-    "md5": "eb829ad59a111bfd759b5f4c9ebdadff"
+    "md5": "43d7c28b873551817f749c98808fe405"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
    "secs": 0.16,
@@ -4605,7 +4673,8 @@
     "how": "new",
     "src_term_uid": -30,
     "dst_term_uid": 3182,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "2048|Terminal|array|0",
@@ -4689,13 +4758,11 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_31_wire.json",
-    "md5": "99ba90503822c7f4327b6c7fe108b4d8"
+    "md5": "ac612471f28d6171e48bbc00a3b5cb4c"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
    "secs": 0.16,
@@ -4704,7 +4771,8 @@
     "how": "branch",
     "src_term_uid": -30,
     "dst_term_uid": 6480,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "2048|Terminal|array|0",
@@ -4778,13 +4846,11 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_32_tunnel.json",
-    "md5": "04a0b48da95b5bb2d62cbdea3e2f1aa2"
+    "md5": "4e0c650edf7117b5ae99d3c5c766da43"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_r_r2.log PC3 (connect_nested_v1 made exactly one LoopTunnel per border)",
-   "model_gaps": [
-    "LabVIEW picks direction from the wiring; the plan states `dir`"
-   ],
+   "model_source": "measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
    "secs": 0.16,
@@ -4870,22 +4936,21 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_33_wire.json",
-    "md5": "948ed0baaa826f89ec9a3a924b582905"
+    "md5": "676331dc908162d2203872e1c1b3206e"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.17,
+   "secs": 0.16,
    "effect_summary": {
     "wire": -37,
     "how": "new",
     "src_term_uid": 5739,
     "dst_term_uid": -36,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "2048|Terminal|array|0",
@@ -4959,22 +5024,21 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_34_wire.json",
-    "md5": "079af7ea8da9111df899e8f98e5c95f6"
+    "md5": "9f69244a575e45f04029b0af9a4058a9"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.17,
+   "secs": 0.16,
    "effect_summary": {
     "wire": -38,
     "how": "new",
     "src_term_uid": -35,
     "dst_term_uid": 6511,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "2048|Terminal|array|0",
@@ -5038,13 +5102,11 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_35_wire.json",
-    "md5": "a43d38431b022d8e7de09c3fbe11fa0b"
+    "md5": "ae84fc331740faa345b34ad52fcc3edd"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
    "secs": 0.16,
@@ -5053,7 +5115,8 @@
     "how": "new",
     "src_term_uid": -10,
     "dst_term_uid": 2316,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "3453|ControlTerminal|file progress|0",
@@ -5107,22 +5170,21 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_36_wire.json",
-    "md5": "eec03b9871a15a327854314101bee130"
+    "md5": "c9a9a9ce594eb2f4bd6c0d19a69eb63d"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.17,
+   "secs": 0.16,
    "effect_summary": {
     "wire": -40,
     "how": "new",
     "src_term_uid": -4,
     "dst_term_uid": 6497,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "3453|ControlTerminal|file progress|0",
@@ -5166,13 +5228,11 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_37_wire.json",
-    "md5": "737ace6442f35b6640c4894b4855018e"
+    "md5": "71fe410b9fb3e93b842faf904070b7b6"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
    "secs": 0.16,
@@ -5181,7 +5241,8 @@
     "how": "new",
     "src_term_uid": 3060,
     "dst_term_uid": 5772,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "3453|ControlTerminal|file progress|0",
@@ -5215,22 +5276,21 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_38_wire.json",
-    "md5": "a14b6ab8c14948c1acea7f4f3377c008"
+    "md5": "e5a8512e82af500dab9e80b295208ff8"
    },
-   "model_source": "provisional",
-   "model_evidence": "stage_d1_l7_1b_r3.log connect_from_wire results `UID 2` = the EXISTING wire (4969, 3543): a sink wired to an already-wired source joins that wire",
-   "model_gaps": [
-    "a sink on a sourceless half-wire is detached from it (not measured)"
-   ],
+   "model_source": "measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.17,
+   "secs": 0.16,
    "effect_summary": {
     "wire": -32,
     "how": "branch",
     "src_term_uid": 5704,
     "dst_term_uid": 3453,
-    "detached_from": null
+    "detached_from": null,
+    "joined": []
    },
    "cdiff_rows": [
     "376|Terminal|current frame data array in|0"
@@ -5254,21 +5314,24 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_39_delete_object.json",
-    "md5": "3574b93771fa9f05a6d4a82b34454bed"
+    "md5": "84da2e08161be3b027a728df98bbe60e"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete RightShiftRegister #15 True, then LeftShiftRegister #51 False (gone with its pair); same for #24/#1108",
+   "model_source": "measured:tools/bench/opmodels/delete_object.json@872644df5c0e7f59dfef1cb44637a8ed",
+   "model_evidence": "opmodel file",
    "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.17,
+   "secs": 0.18,
    "effect_summary": {
     "deleted": [
      15,
      51
     ],
     "class": "RightShiftRegister",
-    "terminals_removed": 4
+    "terminals_removed": 4,
+    "only_sink": [],
+    "allow_either": [],
+    "tunnel_flips": []
    },
    "cdiff_rows": [
     "376|Terminal|current frame data array in|0"
@@ -5292,10 +5355,10 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_40_delete_object.json",
-    "md5": "ab657932e2ad5858fd778fcedfda61f5"
+    "md5": "54b8e58a44f8971f9e25afb39385732e"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete RightShiftRegister #15 True, then LeftShiftRegister #51 False (gone with its pair); same for #24/#1108",
+   "model_source": "measured:tools/bench/opmodels/delete_object.json@872644df5c0e7f59dfef1cb44637a8ed",
+   "model_evidence": "opmodel file",
    "model_gaps": [],
    "error": null,
    "n_candidates": 0,
@@ -5326,21 +5389,24 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_41_delete_object.json",
-    "md5": "c72e8b354e0abe7d39eea123030c1320"
+    "md5": "1f539cc86d08d9a8d5eb77c27de3ff38"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete RightShiftRegister #15 True, then LeftShiftRegister #51 False (gone with its pair); same for #24/#1108",
+   "model_source": "measured:tools/bench/opmodels/delete_object.json@872644df5c0e7f59dfef1cb44637a8ed",
+   "model_evidence": "opmodel file",
    "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.17,
+   "secs": 0.18,
    "effect_summary": {
     "deleted": [
      24,
      1108
     ],
     "class": "RightShiftRegister",
-    "terminals_removed": 4
+    "terminals_removed": 4,
+    "only_sink": [],
+    "allow_either": [],
+    "tunnel_flips": []
    },
    "cdiff_rows": [
     "376|Terminal|current frame data array in|0"
@@ -5364,10 +5430,10 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_42_delete_object.json",
-    "md5": "4ff1ffdf072e66cebf36d2cc421a5f96"
+    "md5": "f53ec4914fb0ad405bac567367d0c2fc"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete RightShiftRegister #15 True, then LeftShiftRegister #51 False (gone with its pair); same for #24/#1108",
+   "model_source": "measured:tools/bench/opmodels/delete_object.json@872644df5c0e7f59dfef1cb44637a8ed",
+   "model_evidence": "opmodel file",
    "model_gaps": [],
    "error": null,
    "n_candidates": 0,
@@ -5398,10 +5464,10 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_43_delete_object.json",
-    "md5": "42939dbc60901623f9d4a8e83fd62a85"
+    "md5": "b2ab3453583741b292ba336cca7b297e"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete RightShiftRegister #15 True, then LeftShiftRegister #51 False (gone with its pair); same for #24/#1108",
+   "model_source": "measured:tools/bench/opmodels/delete_object.json@872644df5c0e7f59dfef1cb44637a8ed",
+   "model_evidence": "opmodel file",
    "model_gaps": [],
    "error": null,
    "n_candidates": 0,
@@ -5432,10 +5498,10 @@
    "checkpoint": null,
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_44_delete_object.json",
-    "md5": "ffb18a9ad5488aa1ecb2fccdab5f9262"
+    "md5": "ca5cefb0ca49d5ce590778195fd1f880"
    },
-   "model_source": "provisional",
-   "model_evidence": "tools/bench/stage_d1_l7_r.json ops: delete RightShiftRegister #15 True, then LeftShiftRegister #51 False (gone with its pair); same for #24/#1108",
+   "model_source": "measured:tools/bench/opmodels/delete_object.json@872644df5c0e7f59dfef1cb44637a8ed",
+   "model_evidence": "opmodel file",
    "model_gaps": [],
    "error": null,
    "n_candidates": 0,
@@ -5466,22 +5532,21 @@
    "checkpoint": "L7-R",
    "file": {
     "path": "G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\sim\\l7_split\\step_45_remove_bad_wires.json",
-    "md5": "08ea5534b4dd009ab6627f322b64d0eb"
+    "md5": "7be9fdc00c22fbffa502111e62428b1f"
    },
-   "model_source": "provisional",
-   "model_evidence": "vigraph.build4 flags (a wire with n_src != 1 or no sink); stage_d1_l7_r_r2.log 'RBW removed no live uid edge'",
-   "model_gaps": [
-    "LabVIEW may also delete dangling tunnels on RBW - not modelled"
-   ],
+   "model_source": "measured:tools/bench/opmodels/remove_bad_wires.json@495e40658bb6bc201e31fbb42e078c39",
+   "model_evidence": "opmodel file",
+   "model_gaps": [],
    "error": null,
    "n_candidates": 0,
-   "secs": 0.16,
+   "secs": 0.17,
    "effect_summary": {
     "removed_wires": [
      1581,
      3629,
      4517
-    ]
+    ],
+    "dropped_fsit": []
    },
    "cdiff_rows": [
     "376|Terminal|current frame data array in|0"
@@ -5500,10 +5565,17 @@
   }
  ],
  "failed": null,
- "final": false,
+ "final": true,
  "end_cdiff_rows": [
   "376|Terminal|current frame data array in|0"
  ],
+ "open_rows": [
+  [
+   376,
+   "current frame data array in"
+  ]
+ ],
+ "open_rows_match": true,
  "first_divergent": {
   "n": 1,
   "op": "move_in",

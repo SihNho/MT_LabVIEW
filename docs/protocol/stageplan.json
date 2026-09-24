@@ -21,6 +21,10 @@
     },
     "final": {"type": "boolean"},
     "finalized": {"type": "object"},
+    "open_rows": {"type": "array", "description": "card chat-S3 finalize rule: computation_diff rows this plan LEAVES OPEN for a later stage by design (each with the decision that says so). The plan is final iff the end cdiff rows == exactly these.",
+                  "items": {"type": "object", "additionalProperties": false, "required": ["node", "term", "why"],
+                            "properties": {"node": {"type": "integer"}, "term": {"type": "string", "maxLength": 120},
+                                           "why": {"type": "string", "minLength": 3, "maxLength": 300}}}},
     "actions": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/action"}}
   },
   "definitions": {
@@ -46,6 +50,8 @@
         "checkpoint": {"type": "string", "maxLength": 80},
         "nodes": {"type": "array", "minItems": 1, "items": {"type": "integer"}},
         "dest_diagram": {"type": "integer"},
+        "pos": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "integer"}},
+        "y": {"type": "integer"},
         "loop": {"type": "integer"},
         "body": {"type": "integer"},
         "parent": {"type": "integer"},
