@@ -1,7 +1,7 @@
 ---
 type: plan
 kind: protocol
-status: draft
+status: current
 date: 2026-09-24
 tags: [protocol, sessions, flags, hooks]
 ---
@@ -84,10 +84,16 @@ STATUS.md stays human-readable; `next.json` is the machine copy of its first act
 | `git_commit` | bool | `guard_bash.py` refuses `git commit` unless true |
 | `peers` | list of `peer.ps1` roles | `peer.ps1` refuses other roles |
 
-**OPEN (must be measured before building):** how a hook knows which card is active for a sub-agent. Candidates: the
-hook input's agent/session id (if Claude Code exposes one to hooks for sub-agents), else a registry
-`tools/bench/cards/active.json` keyed by the id the card's first command writes. Checked against Claude Code's hook
-documentation, not assumed.
+**MEASURED 2026-09-24 (CLI 2.1.280, a temporary probe in `guard_bash.py` over a running material agent's calls; the
+docs only say "agent_id and agent_type when inside a subagent"):** a PreToolUse payload from inside a sub-agent carries
+`agent_id` (e.g. `af3da0954d2ef3124`) and `agent_type` (`material`); the main session's payload has neither;
+`session_id` and `transcript_path` are the PARENT's for both. **Binding rule:** a sub-agent's FIRST command is
+`py tools/protocol.py bind <card>`; the hook sees that command with the payload's `agent_id` and writes
+`tools/bench/cards/active.json` {agent_id: card path}. Every later call of that `agent_id` is checked against the
+card's flags. A sub-agent call whose `agent_id` has no binding is refused except `protocol.py bind` itself. The main
+session (no `agent_id`) is governed by the rules as today. `SubagentStop` is not documented for this CLI; the
+result-card check is therefore done by the dispatching session (`protocol.py validate` on the returned JSON) until
+that event is measured.
 
 ## C3 `result/1` (material / log-reader → judgement)
 
