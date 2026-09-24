@@ -130,6 +130,16 @@ def is_jev_command(cmd):
     return bool(script and JEV_SCRIPT_RE.search(script.strip("\"'")))
 
 
+SCOPED_SCRIPT_RE = re.compile(r"(?:^|[\\/])tools[\\/](?:recipes|bench)[\\/][^\\/]+\.py$", re.I)
+
+
+def is_scoped_script(cmd):
+    """True when the script this command runs (its FIRST `.py` token) is a tools/recipes or tools/bench script and
+    not a Jev one - the scripts that owe a C6 RESULT line."""
+    script = next((t.strip("\"'") for t in cmd if t.lower().strip("\"'").endswith(".py")), None)
+    return bool(script and SCOPED_SCRIPT_RE.search(script) and not JEV_SCRIPT_RE.search(script))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--max-min", type=float, required=True, help="hard deadline in minutes")
@@ -284,7 +294,11 @@ def main():
                 f"gates {g.get('pass')}/{g.get('fail')} first_fail={str(d.get('first_fail'))[:160]}; "
                 f"the process itself said 0)\n")
             return 1
-        out(f"BGRUN END rc={rc} after {time.time() - t0:.0f}s\n")
+        # C6 COMPLIANCE MARK (session protocol v1 wiring, 2026-09-24): a recipe or bench script is REQUIRED to end with
+        # a RESULT line. One that printed none is judged by its exit code as before (rc unchanged), but the END line
+        # says so, and audit_cycle counts it as a WARN - so the missing verdict is visible instead of silent.
+        tag = " (NO RESULT LINE)" if (read_result and not results and is_scoped_script(cmd)) else ""
+        out(f"BGRUN END rc={rc} after {time.time() - t0:.0f}s{tag}\n")
         return rc
 
 

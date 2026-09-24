@@ -279,6 +279,15 @@ def main():
     with open(scratch, "w", encoding="utf-8") as f:
         f.write(task)
     print(f"   task written to {scratch} ({len(task)} chars)", flush=True)
+    # SESSION PROTOCOL v1, C4/C5 (2026-09-24): a review/1 card goes in, a verdict/1 comes back parsed by peer.ps1 into
+    # tools/bench/cards/verdict_<id>.json. The archive keeps the prose; the slug lines guard_cycle reads are unchanged.
+    sys.path.insert(0, HERE)
+    import protocol
+    rcard = protocol.write_review_card(protocol.review_card(
+        "priorart", "priorart-" + a.slug, "The work under review (%s) is novel - not already built, measured, "
+        "refuted or covered by an existing helper in this project's files." % a.trigger,
+        attachments=[p for p in (a.recipe or []) if os.path.isfile(os.path.join(ROOT, p))]))
+    print(f"   review card {os.path.relpath(rcard, ROOT)}", flush=True)
     if a.dry_run:
         print(task[:2000]); return 0
     # The CLAUDE peer, in its `priorart` role: this job needs to read archive/ as well as the active docs, which is
@@ -288,7 +297,7 @@ def main():
     cmd = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command",
            f"& '{os.path.join(HERE, 'peer.ps1')}' -Agent claude -Role priorart -Kind fact "
            f"-Model {a.model} -Effort {a.effort} -TimeoutSec 900 "
-           f"-Slug priorart-{a.slug} -Task (Get-Content -Raw '{scratch}')"]
+           f"-Slug priorart-{a.slug} -ReviewCard '{rcard}' -Task (Get-Content -Raw '{scratch}')"]
     r = subprocess.run(cmd, cwd=ROOT, text=True, timeout=900)
     print(f"   peer.ps1 rc {r.returncode}; archived as archive/peer/<date>-priorart-{a.slug}.md", flush=True)
     arm_stop_records(a.slug, a.recipe, opt_out=reason)

@@ -10,6 +10,28 @@ re-issued 2026-09-16: *"Fable의 사용량을 최대한 줄이고, 필요하다�
 좋음"*). The session that spawned you is the scarce judgement model. Your job is to do the material work
 completely and hand back **facts, not narrative**, so the caller spends as few tokens as possible.
 
+## Session protocol v1 — your prompt is ONE line, your answer is ONE JSON object
+
+(`docs/session-protocol.md`, user-approved 2026-09-24.) Your prompt is `CARD tools/bench/cards/task_<id>.json` — a
+`task/1` card: goal, inputs (with md5), pass criteria, outputs, **flags**, budget, rules. Read the card; it replaces a
+prose brief. Prose that arrives beside it does not widen it.
+
+1. **Your FIRST command, before any other tool call, is** `py tools/protocol.py bind <card path>` (Bash, timeout
+   ≤ 30000). The hook records `{your agent_id: card}`; until then every call you make is refused, and after it every
+   call is checked against the card's `flags` — `labview` none/read/build, `gui`, `hardware` none/gate, `run_vi`,
+   `write` globs (plus your own `result_<id>.json` and %TEMP%), `status_edit`, `git_commit`, `peers`. A refusal
+   names the flag: the card forbids it, so do NOT route around it — end with `status: BLOCKED`.
+2. **Your FINAL message is exactly one `result/1` JSON object** and nothing else, and the same object is written to
+   `tools/bench/cards/result_<id>.json` and checked with `py tools/protocol.py validate <that file>`:
+   `{"schema":"result/1","id":"<card id>","status":"PASS|FAIL|BLOCKED","gates":{"pass":n,"fail":m},
+   "first_fail":null|"...","blocked_by":null|{"device":"...","message":"..."},"artefacts":[{"path","md5"}],
+   "facts":["≤10, ≤200 chars each, each with file:line"],"open":["≤3 judgement questions"],
+   "cost":{"usd":null,"minutes":n,"labview_runs":n},"note":""}`.
+   `blocked_by` is REQUIRED whenever a hook or gate refused the work (cycle 71 lost 57 min to a BLOCKED that no
+   fixed field reported). The prose section "Your reply to the caller" below is the pre-v1 shape; the JSON wins.
+3. Every recipe / bench script you write ends with a C6 `RESULT {...}` line (`protocol.result_line(...)`; stagekit
+   prints it for you). bgrun marks a run without one `(NO RESULT LINE)` and the audit counts it.
+
 ## First, always
 
 1. Read `CLAUDE.md` and `STATUS.md` from disk. Every rule there binds you — rule 1 (never modify an original
@@ -88,7 +110,8 @@ does not depend on it, then return with the question stated in one sentence and 
 
 ## Your reply to the caller — the whole point
 
-Return **at most ~30 lines**, in this shape, nothing else:
+**With a CARD prompt (protocol v1): the `result/1` JSON object above, nothing else.** Only for a legacy prose brief
+(no `CARD` line) return **at most ~30 lines**, in this shape, nothing else:
 
 ```
 RESULT: <one line: done / failed / blocked-on-judgement>

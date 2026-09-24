@@ -146,6 +146,13 @@ param(
     # -Confirm semantics to a script that has no state to confirm.
     [switch]$DryRun,
 
+    # SESSION PROTOCOL v1, C4/C5 (docs/session-protocol.md, user-approved 2026-09-24): a review/1 card
+    # (tools/bench/cards/review_<id>.json). It is validated (an invalid card is REFUSED, nothing dispatched), rendered
+    # in front of the task, and the VERDICT CONTRACT is appended at the end; the peer's last line must then be
+    # `VERDICT {verdict/1 json}`, which is parsed into tools/bench/cards/verdict_<id>.json. The archive keeps the full
+    # prose exchange as before and records the parse result on its `verdict-card:` line.
+    [string]$ReviewCard = '',
+
     [switch]$CheckQuota
 )
 
@@ -170,6 +177,18 @@ if ($CheckQuota) {
 if ($TaskFile) {
     if (-not (Test-Path $TaskFile)) { throw "-TaskFile not found: $TaskFile" }
     $Task = Get-Content -Path $TaskFile -Raw -Encoding UTF8
+}
+
+# C4: the review/1 card, rendered by tools/protocol.py (ONE renderer; this script does not restate the schema).
+$verdictId = ''
+$verdictContract = ''
+if ($ReviewCard -and -not $Dual) {
+    $protoPy = Join-Path $PSScriptRoot 'protocol.py'
+    $cardBlock = (& py $protoPy render-review $ReviewCard --part card | Out-String)
+    if ($LASTEXITCODE -ne 0) { throw "REFUSED by peer.ps1: -ReviewCard $ReviewCard is not a valid review/1 card: $cardBlock" }
+    $verdictContract = (& py $protoPy render-review $ReviewCard --part contract | Out-String)
+    $verdictId = ((Get-Content $ReviewCard -Raw -Encoding UTF8) | ConvertFrom-Json).id
+    $Task = $cardBlock + "`n" + $Task
 }
 
 # --- DEFAULT ROUTING (user's decision, 2026-09-18, TRIAL) -------------------------------------------------
@@ -205,6 +224,7 @@ if ($Dual) {
     # $Agent and 'fact' on $TaskFile (measured on the first self-test run, `peer_dual_selftest.log`).
     $common = @{ Kind = $Kind; TimeoutSec = $TimeoutSec; TaskFile = $dualFile }
     if ($Image) { $common['Image'] = $Image }
+    if ($ReviewCard) { $common['ReviewCard'] = $ReviewCard }
 
     Write-Output "=== DUAL ARM 1/2: codex -> $Slug-codex ==="
     & $PSCommandPath -Agent codex -Slug "$Slug-codex" @common
@@ -257,6 +277,7 @@ Your job is to REFUTE the claim above, not to confirm it. Do not open with agree
 If you still believe the claim holds after all four, say so explicitly and state what would change your mind.
 "@
 }
+if ($verdictContract) { $Task = $Task + $verdictContract }
 
 # Peers must not be steered into the archive; AGENTS.md already forbids it, repeat it per-call.
 $preamble = 'You are a read-only research assistant. Never run or modify anything. ' +
@@ -533,6 +554,7 @@ if ($DryRun) {
     Write-Output "DRYRUN prompt     : $($prompt.Length) chars"
     Write-Output "DRYRUN archive    : $archP"
     Write-Output "DRYRUN timeout    : ${TimeoutSec}s"
+    Write-Output "DRYRUN reviewcard : $(if ($verdictId) { "id $verdictId, card block + verdict contract ($($verdictContract.Length) chars) in the prompt, verdict -> tools\bench\cards\verdict_$verdictId.json" } else { '(none)' })"
     Remove-Item $promptFile -Force -ErrorAction SilentlyContinue
     exit 0
 }
@@ -665,6 +687,17 @@ if (-not $done) {
 # A PROSE PASS IS NOT A PEER REVIEW. It goes to archive\prose\, because guard_peer.py, prior_art_review.py and
 # violations.py all glob archive\peer\*.md (verified 2026-09-16) - a proofreading exchange landing there would
 # lift a failed-prediction gate and be counted as a review by the audit, for work it never looked at.
+# C5: parse the peer's VERDICT line into tools/bench/cards/verdict_<id>.json (gates read that; the archive keeps prose).
+$verdictLine = ''
+if ($verdictId) {
+    if ($outcome -eq 'ANSWERED') {
+        $ansFile = Join-Path $env:TEMP ("peer_answer_{0}.txt" -f (Get-Random))
+        Set-Content -Path $ansFile -Value $answer -Encoding utf8
+        $vOut = Join-Path $PSScriptRoot ("bench\cards\verdict_{0}.json" -f $verdictId)
+        $verdictLine = (& py (Join-Path $PSScriptRoot 'protocol.py') parse-verdict $ansFile --id $verdictId --out $vOut | Out-String).Trim()
+        Remove-Item $ansFile -Force -ErrorAction SilentlyContinue
+    } else { $verdictLine = "NO-VERDICT: outcome $outcome" }
+}
 $date = Get-Date -Format 'yyyy-MM-dd'
 # THE FRONTMATTER NOW CARRIES A TIME (2026-09-17, OPEN 31). The archive FILENAME stays date-only - violations.py
 # and the audit key off it - but the `- **date:**` line gets `yyyy-MM-dd HH:mm:ss`, because a re-archived slug is
@@ -688,6 +721,7 @@ $archFile = Join-Path $archDir "$date-$Slug.md"
 - **cost:** $costLine
 - **date:** $dateStamp
 - **outcome:** $outcome (${elapsed}s)
+- **verdict-card:** $(if ($verdictId) { $verdictLine } else { '(no -ReviewCard)' })
 - **why asked:** (Claude fills in)
 - **verdict:** unverified
 
@@ -710,6 +744,7 @@ $answer
 
 Write-Output "OUTCOME: $outcome (${elapsed}s)  model: $modelLine  archived: $archRel"
 if ($costLine) { Write-Output "COST: $costLine" }
+if ($verdictId) { Write-Output "VERDICT-CARD: $verdictLine" }
 if ($outcome -eq 'ANSWERED') { Write-Output '--- ANSWER ---'; Write-Output $answer }
 
 Remove-Item $outFile, $promptFile -Force -ErrorAction SilentlyContinue

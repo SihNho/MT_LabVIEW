@@ -189,13 +189,21 @@ def main():
         f.write(task)
     print(f"   {len(files)} file(s); {basis}", flush=True)
     print(f"   task written to {scratch} ({len(task)} chars)", flush=True)
+    # SESSION PROTOCOL v1, C4/C5 (2026-09-24): review/1 in (role `ingest`, added to docs/protocol/review.json for this
+    # caller), verdict/1 parsed by peer.ps1. The CONTRADICTIONS: count below still reads the prose.
+    sys.path.insert(0, HERE)
+    import protocol
+    rcard = protocol.write_review_card(protocol.review_card(
+        "ingest", slug, "The %d listed documents do not contradict each other, CLAUDE.md or STATUS.md." % len(files)))
+    print(f"   review card {os.path.relpath(rcard, ROOT)}", flush=True)
     if a.dry_run:
         print(task)
         return 0
 
     cmd = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command",
            f"& '{os.path.join(HERE, 'peer.ps1')}' -Agent claude -Role ingest -Kind fact "
-           f"-Model {a.model} -TimeoutSec {a.timeout} -Slug {slug} -Task (Get-Content -Raw '{scratch}')"]
+           f"-Model {a.model} -TimeoutSec {a.timeout} -Slug {slug} -ReviewCard '{rcard}' "
+           f"-Task (Get-Content -Raw '{scratch}')"]
     r = subprocess.run(cmd, cwd=ROOT, text=True, timeout=a.timeout + 300)
 
     arch = os.path.join(ROOT, "archive", "ingest", f"{time.strftime('%Y-%m-%d')}-{slug}.md")

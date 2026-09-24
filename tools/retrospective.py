@@ -448,6 +448,13 @@ def main():
     print(f"   window {fmt(start)} .. {fmt(end)} ({(end - start) / 60:.0f} min); {len(logs)} build logs, "
           f"{len(machinery)} machinery logs, {len(devices)} devices", flush=True)
     print(f"   task written to {scratch} ({len(task)} chars)", flush=True)
+    # SESSION PROTOCOL v1, C4/C5 (2026-09-24): review/1 in, verdict/1 parsed by peer.ps1 (violations[] mirror the
+    # `VIOLATION:` lines, which violations.py keeps counting from the archive prose).
+    sys.path.insert(0, HERE)
+    import protocol
+    rcard = protocol.write_review_card(protocol.review_card(
+        "retrospective", slug, "Cycle %s was run without a costly structural fault." % a.cycle))
+    print(f"   review card {os.path.relpath(rcard, ROOT)}", flush=True)
     if a.dry_run:
         print(task)
         return 0
@@ -459,7 +466,7 @@ def main():
            # 2026-09-18: codex quota at 9 % (user) - the retrospective goes to the thin claude `outcome` role
            # (fable/medium, --safe-mode, reads the attached audit/logs). Codex stays one flag away.
            f"& '{os.path.join(HERE, 'peer.ps1')}' -Agent claude -Role outcome -Kind fact -TimeoutSec 600 "
-           f"-Slug {slug} -Task (Get-Content -Raw '{scratch}')"]
+           f"-Slug {slug} -ReviewCard '{rcard}' -Task (Get-Content -Raw '{scratch}')"]
     r = subprocess.run(cmd, cwd=ROOT, text=True, timeout=900)
     print(f"   peer.ps1 rc {r.returncode}; archived as archive/peer/<date>-{slug}.md", flush=True)
     return r.returncode

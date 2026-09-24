@@ -174,8 +174,15 @@ def main():
     # -Role outcome: fable / medium, --safe-mode (see this file's docstring, 2026-09-18).
     # -TaskFile, not -Task (Get-Content -Raw ...): the question set is 5 kB of mixed Korean/English and argv is
     # exactly what -TaskFile exists to avoid (peer.ps1's own note on PowerShell 5.1 quoting).
+    # SESSION PROTOCOL v1, C4/C5 (2026-09-24): review/1 in, verdict/1 parsed by peer.ps1 (OUTCOME-VIOLATION lines stay
+    # in the prose for the existing readers).
+    sys.path.insert(0, HERE)
+    import protocol
+    rcard = protocol.write_review_card(protocol.review_card(
+        "outcome", slug, "The cycles since the last outcome review moved the deliverable (a runnable experimental VI)."))
+    print(f"   review card {os.path.relpath(rcard, ROOT)}", flush=True)
     dispatch = (f"& '{os.path.join(HERE, 'peer.ps1')}' -Agent claude -Role outcome -Kind fact -Slug {slug} "
-                f"-TimeoutSec 600 -TaskFile '{scratch}'")
+                f"-TimeoutSec 600 -ReviewCard '{rcard}' -TaskFile '{scratch}'")
     if a.dry_run:
         # Resolve the routing through peer.ps1 itself rather than describing it here - a second description of
         # the role table is how the two copies of a list drift apart (CLAUDE.md's own recurring finding).

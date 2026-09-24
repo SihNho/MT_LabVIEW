@@ -196,6 +196,7 @@ def cost_split(machinery_logs, cutoff, until):
 
 
 RESULT = []
+WARNS = []      # (check, count) - reported and put in --json, never a violation (A8)
 
 
 def _self_test():
@@ -472,6 +473,16 @@ def main():
     say("A6 state-changing GUI actions are recorded", None,
         f"{len(recent_gui)} lines in gui_actions.log (all time); this cycle used no GUI if the retrospective agrees")
 
+    # A8 - C6 compliance (session protocol v1 wiring, 2026-09-24): bgrun marks a recipe/bench run that ended with no
+    # RESULT line as `BGRUN END ... (NO RESULT LINE)`. Its verdict fell back to the exit code alone, so it is a WARN,
+    # never a violation: counted and named, and it does not change `AUDIT PASS`.
+    no_result = sorted({os.path.basename(p) for p in build_logs for s in window_runs(read(p), cutoff, until)
+                        if re.search(r"^BGRUN END rc=-?\d+ after \d+s \(NO RESULT LINE\)", s, re.M)})
+    print(f"  {'WARN' if no_result else 'PASS'}  A8 recipe/bench runs ended with a RESULT line (C6): "
+          + (f"{len(no_result)} log(s) with a run that printed none: {no_result[:6]}{'…' if len(no_result) > 6 else ''}"
+             if no_result else "every scoped run in the window printed one (or predates the mark)"), flush=True)
+    WARNS.append(("A8", len(no_result)))
+
     # cost lines
     # EVERY COST LINE BELOW IS SUMMED OVER `window_runs`, NOT OVER WHOLE FILES - see BGRUN_START_RE above.
     starts = sum(s.count("BGRUN START") for p in build_logs for s in window_runs(read(p), cutoff, until))
@@ -647,7 +658,7 @@ def main():
     bad = [r for r in RESULT if r["ok"] is False]
     print(f"AUDIT {'PASS' if not bad else 'VIOLATIONS: ' + ', '.join(r['check'] for r in bad)}\n", flush=True)
     if a.json:
-        print(json.dumps(dict(checks=RESULT, builds=starts, failures=fails, failing_logs=len(failing),
+        print(json.dumps(dict(checks=RESULT, warns=dict(WARNS), builds=starts, failures=fails, failing_logs=len(failing),
                               reviews_dispatched=len(peer_logs), reviews_archived=len(reviews), bgrun_seconds=secs),
                          indent=1))
     return 1 if bad else 0

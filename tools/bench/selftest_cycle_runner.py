@@ -43,11 +43,18 @@ nowhere.
 """
 # A stand-in "session": it rewrites the NEXT section of the STATUS file it is given, the way a real judgement
 # session ends its cycle. Written to the temp dir so --dry-cmd can be whitespace-split safely.
-MUTATOR = """import sys, time
+# Since session protocol v1 (C7, 2026-09-24) the runner reads `<bench>/next.json`, not the prose: the stand-in also
+# writes a valid next/1 there (argv[2] = the bench dir; argv[3] = 'stop' sets stop_requested).
+MUTATOR = """import sys, time, json, os
 p = sys.argv[1]
 b = open(p, encoding='utf-8').read()
 b = b.replace('## NEXT\\n', '## NEXT\\nturn %s\\n' % time.time())
 open(p, 'w', encoding='utf-8').write(b)
+if len(sys.argv) > 2:
+    json.dump({"schema": "next/1", "cycle": 1, "act": "self-test act", "task_kind": "build", "plan": None,
+               "pass": [], "blocked_by": None, "stop_requested": len(sys.argv) > 3 and sys.argv[3] == 'stop',
+               "advances": ["M3"], "note": "turn %s" % time.time()},
+              open(os.path.join(sys.argv[2], 'next.json'), 'w', encoding='utf-8'))
 print('session done')
 """
 
@@ -102,7 +109,7 @@ def main():
 
         # G2 - three cycles that move
         sp, bench = new_case(tmp, "moving")
-        code, out = run_runner("--dry-cmd", "%s %s %s" % (sys.executable, mut, sp),
+        code, out = run_runner("--dry-cmd", "%s %s %s %s" % (sys.executable, mut, sp, bench),
                                "--cycles", "3", "--status", sp, "--bench-dir", bench, "--max-min", "2")
         lines = cycle_lines(bench)
         logs_ok = all(os.path.isfile(os.path.join(bench, "cycle_%d.log" % i)) for i in (1, 2, 3))
@@ -110,9 +117,31 @@ def main():
                    if "BGRUN END" in open(os.path.join(bench, "cycle_%d.log" % i), encoding="utf-8").read())
         gate("G2 three moving cycles complete", code == 0 and len(lines) == 3 and logs_ok and ends == 3,
              "exit %d, %d CYCLE lines, %d ended" % (code, len(lines), ends))
+        # G8 - C1: one valid cycle/1 card per cycle, and the session's prompt starts with `CARD <path>`
+        import protocol
+        cards_ok = 0
+        for i in (1, 2, 3):
+            cp = os.path.join(bench, "cards", "cycle_%d.json" % i)
+            try:
+                c = protocol.load_card(cp, None)
+                cards_ok += (c["cycle"] == i and c["errorlist"] is None)
+            except (OSError, ValueError):
+                pass
+        rlog = open(os.path.join(bench, "cycle_runner.log"), encoding="utf-8").read()
+        gate("G8 a valid cycle/1 card is written for every cycle", cards_ok == 3 and rlog.count("CYCLE-CARD |") == 3,
+             "%d/3 cards valid" % cards_ok)
+        gate("G9 next.json is read after every cycle (C7)", rlog.count("next.json read, CHANGED") == 3,
+             "%d CHANGED readings" % rlog.count("next.json read, CHANGED"))
+
+        # G10 - stop_requested in next.json stops the runner with exit 0 after that cycle
+        sp10, bench10 = new_case(tmp, "stopreq")
+        code10, out10 = run_runner("--dry-cmd", "%s %s %s %s stop" % (sys.executable, mut, sp10, bench10),
+                                   "--cycles", "3", "--status", sp10, "--bench-dir", bench10, "--max-min", "2")
+        gate("G10 next.json stop_requested stops the runner", code10 == 0 and len(cycle_lines(bench10)) == 1
+             and "stop_requested" in out10, "exit %d, %d cycles" % (code10, len(cycle_lines(bench10))))
 
         # G6 - numbering continues from the runner log (same bench dir, fresh invocation)
-        code6, _ = run_runner("--dry-cmd", "%s %s %s" % (sys.executable, mut, sp),
+        code6, _ = run_runner("--dry-cmd", "%s %s %s %s" % (sys.executable, mut, sp, bench),
                               "--cycles", "1", "--status", sp, "--bench-dir", bench, "--max-min", "2")
         lines6 = cycle_lines(bench)
         gate("G6 cycle numbering continues across invocations",
@@ -154,6 +183,9 @@ def main():
 
     good = sum(1 for _, ok in RESULTS if ok)
     print("SUMMARY %d/%d gates pass" % (good, len(RESULTS)), flush=True)
+    import protocol
+    bad = [lab for lab, ok in RESULTS if not ok]
+    print(protocol.result_line(protocol.make_result(good, len(bad), bad[0] if bad else None)), flush=True)
     return 0 if good == len(RESULTS) else 1
 
 

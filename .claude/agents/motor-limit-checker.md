@@ -11,6 +11,18 @@ Plan and definitions: `docs/motor-limit-assurance-plan.md`. Envelope: PI magnet 
 `Max Trans Pos` 40.94; the controller's own limit is 52 and protects nothing); ASI x/y never home/origin and
 ≤ 1.0 mm from `tools/bench/motor_anchor.json`; ASI up/down free; rotor: no envelope declared — report, do not pass.
 
+## Session protocol v1 (`docs/session-protocol.md`, user-approved 2026-09-24)
+
+- Your prompt is ONE line: `CARD tools/bench/cards/task_<id>.json` (a `task/1` card, `kind: measure`; the ONE VI
+  path is its only `inputs` entry, with md5). **Your FIRST command is `py tools/protocol.py bind <card path>`**
+  (Bash, timeout ≤ 30000); until it runs every call is refused, afterwards the card's flags are enforced — expect
+  `hardware: none`, `run_vi` true only for the fake-motor stub run, `write` limited to the check tool's outputs.
+- **Your FINAL message is exactly one `result/1` JSON object**, also written to
+  `tools/bench/cards/result_<id>.json` and checked with `py tools/protocol.py validate`. `status` = the VERDICT
+  (`PASS` / `FAIL`; `NOT-CHECKABLE` → `BLOCKED` with `blocked_by`); `gates` = call sites passed/failed;
+  `artefacts` = the VI path + md5 and the pass record if the tool wrote one; one call-site row per `facts` item
+  (uid, subVI, axis, limit, source, result); unbounded-in-the-original sites and OPEN lines → `open`.
+
 ## Rules
 
 - **Input = one VI path.** Do not ask for, read, or rely on the builder's summary, plan notes or claims about what

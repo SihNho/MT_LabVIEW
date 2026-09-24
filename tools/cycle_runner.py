@@ -24,8 +24,9 @@ STOP CONDITIONS (all four, each written to the runner log, the last three also a
   1. `STOP` at the start of a line in STATUS.md's first 60 lines, or a `## STOP` heading - the USER'S handle on
      the loop. Checked BEFORE every cycle. Exit 0.
   2. the session exited non-zero twice in a row. Exit 3.
-  3. STATUS.md's `## NEXT` section came out byte-identical two cycles running - a cycle that changed nothing is
-     a loop, and a loop is cheaper to stop than to watch. Exit 3.
+  3. `tools/bench/next.json` (C7, next/1) came out absent, invalid or byte-identical two cycles running - a cycle
+     that changed nothing is a loop, and a loop is cheaper to stop than to watch. Exit 3. (Until 2026-09-24 this
+     compared STATUS.md's prose `## NEXT`.) `stop_requested: true` in next.json stops the runner with exit 0.
   4. `--cycles N` exhausted. Exit 0.
 USAGE LIMIT (CLAUDE.md's protocol): a rate/usage-limit message in the session's output is NOT a failure - the
 runner sleeps until the renewal time + 2 min and RERUNS THE SAME CYCLE from the beginning ("rerun, don't resume";
@@ -50,6 +51,20 @@ except Exception:
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 BGRUN = os.path.join(HERE, "bgrun.py")
+sys.path.insert(0, HERE)
+import protocol  # noqa: E402  - session protocol v1: C1 cycle card, C6 first_fail_signature, C7 next.json
+
+# SESSION PROTOCOL v1 (docs/session-protocol.md, user-approved 2026-09-24), wired 2026-09-24 (task card chat-B):
+#   C1  before every spawn the runner writes `<bench>/cards/cycle_<n>.json` (cycle/1, validated) and the session's
+#       prompt starts with the one line `CARD <that path>`.
+#   C7  the session writes `<bench>/next.json` (next/1). It REPLACES the md5 of STATUS.md's prose `## NEXT` in both
+#       places that used it: the snapshot guard_bash.next_gate compares against (now the md5 of next.json's bytes,
+#       or `absent`), and stop condition 3 (a next.json that is absent, invalid or byte-identical after the cycle
+#       counts as "unchanged"; twice running stops the loop). `stop_requested: true` in next.json stops the runner.
+#   C6  the FAILED-RECIPES same-mistake signature is protocol.first_fail_signature (RESULT.first_fail; the old
+#       GATE_FAIL_RE only for runs that started before protocol.SWITCH_TS).
+RIG_STATE_CARD = {"disassembled": "분해", "assembled": "조립", "experiment": "실험중"}
+CYCLE_RULES = ["§3 judgement vs material", "§2c run the cycle to the end", "Stages are SIMULATED"]
 
 STOP_LINE_RE = re.compile(r"^STOP\b", re.M)
 STOP_HEAD_RE = re.compile(r"^#{1,6}\s*STOP\b", re.M)
@@ -258,9 +273,11 @@ def failed_recipes(bench, t_start, t_end):
         # SAME MISTAKE, different file name (user, 2026-09-18: "동일 실수 반복하는 것도 판단 조건에 들어가야"): the
         # first failing GATE line of the run, normalised (uids/#numbers dropped, lower-cased, 60 chars) - a recipe
         # renamed v1 -> v2 that dies at the same gate keeps the same signature.
-        g = GATE_FAIL_RE.search(seg)
-        if g:
-            sig = re.sub(r"#\d+|\b\d{3,}\b", "#", g.group(1) or g.group(2) or "").lower()
+        # C6: the signature is the run's own RESULT.first_fail; GATE_FAIL_RE only for a pre-switch run without one.
+        st_ts, _st_cmd, st_seg = protocol.last_segment(txt)
+        raw = protocol.first_fail_signature(st_seg, GATE_FAIL_RE, st_ts)
+        if raw:
+            sig = re.sub(r"#\d+|\b\d{3,}\b", "#", raw).lower()
             sig = re.sub(r"\s+", " ", sig).strip()[:60]
             out.add("gate:" + sig)
             LAST_FAIL_LOGS["gate:" + sig] = p
@@ -395,6 +412,44 @@ def motor_limits_hook(phase, n, a, bench, runner_log, status_text):
     return ok, verdict
 
 
+def write_cycle_card(bench, n, status_text, model, effort, ff_recipe, motor_verdict, a):
+    """C1: `<bench>/cards/cycle_<n>.json`, validated against docs/protocol/cycle.json. Returns (path, None) or
+    (None, reason). `errorlist` stays null until the parked error-list step resumes (task card chat-B); `bed` is read
+    from the optional `<bench>/bed.json` ({path, md5}) and is null when there is none."""
+    try:
+        import motor_gate
+        rig = RIG_STATE_CARD.get(motor_gate.rig_state(status_text), "unknown")
+    except Exception:       # noqa: BLE001
+        rig = "unknown"
+    bed = None
+    try:
+        with open(os.path.join(bench, "bed.json"), encoding="utf-8") as f:
+            b = json.load(f)
+        bed = {"path": str(b["path"]), "md5": b.get("md5")}
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    next_path = os.path.join(bench, "next.json")
+    card = {"schema": "cycle/1", "cycle": n, "rig_state": rig, "model": model, "effort": effort,
+            "firefighter": ff_recipe or None, "bed": bed, "errorlist": None,
+            "motor_session": (motor_verdict or None) and str(motor_verdict)[:120],
+            "next": protocol._rel(next_path), "budget": {"minutes": float(a.max_min), "dispatches": 8},
+            "rules": CYCLE_RULES}
+    ok, why = protocol.validate_obj(card)
+    if not ok:
+        return None, why
+    d = os.path.join(bench, "cards")
+    os.makedirs(d, exist_ok=True)
+    p = os.path.join(d, "cycle_%d.json" % n)
+    with open(p, "w", encoding="utf-8") as f:
+        json.dump(card, f, ensure_ascii=False, indent=1)
+    return p, None
+
+
+def next_json_reading(bench):
+    """(md5 | 'absent', card | None, why | None) of `<bench>/next.json` - the ONE reading the runner uses."""
+    return protocol.next_state(os.path.join(bench, "next.json"))
+
+
 def note_in_status(status_path, reason):
     """APPEND a stop notice; never rewrite STATUS.md - it is the user's file and the next session's cold start."""
     try:
@@ -521,13 +576,12 @@ def main():
                                  "two previous cycles" % (time.strftime("%Y-%m-%d %H:%M:%S"), n, model, effort,
                                                           ff_rung + 1, len(FF_LADDER), ff_recipe))
         ff_active = bool(ff_recipe)
-        # NEXT snapshot for guard_bash.next_gate (user, 2026-09-21): the session may not launch its retrospective
-        # until `## NEXT` differs from this. Written right before the spawn, from the same status_text the
-        # session will read.
+        # NEXT snapshot for guard_bash.next_gate (user, 2026-09-21; C7 since 2026-09-24): the session may not launch
+        # its retrospective until `next.json` differs from this. md5 of next.json's BYTES, or `absent`.
+        next_md5_before, _nc, _nw = next_json_reading(bench)
         try:
-            import hashlib
             with open(os.path.join(bench, "next_snapshot.md5"), "w", encoding="utf-8") as f:
-                f.write(hashlib.md5(next_section(status_text).encode("utf-8")).hexdigest())
+                f.write(next_md5_before)
         except OSError:
             pass
         # MOTOR LIMITS ON at cycle start, verified by readback (user 2026-09-23). A start that cannot be verified
@@ -539,6 +593,17 @@ def main():
             log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
             note_in_status(status_path, reason)
             return 3
+        # C1: the cycle card. An invalid card is not dispatched (docs/session-protocol.md, common rule 5).
+        card_path, card_why = write_cycle_card(bench, n, status_text, model, effort, ff_recipe, why, a)
+        if not card_path:
+            reason = "the cycle/1 card for cycle %d did not validate (%s) - no cycle is dispatched without one" \
+                     % (n, card_why)
+            log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
+            note_in_status(status_path, reason)
+            return 3
+        log_line(runner_log, "CYCLE-CARD | %s | cycle %d | wrote %s (cycle/1 valid; next.json before: %s)"
+                 % (time.strftime("%Y-%m-%d %H:%M:%S"), n, protocol._rel(card_path), next_md5_before[:12]))
+        this_prompt = "CARD %s\n\n" % protocol._rel(card_path).replace("\\", "/") + this_prompt
         cmd = ([sys.executable, BGRUN, "--max-min", str(a.max_min), "--log", cyc_log, "--"]
                + session_cmd(a, this_prompt, model, effort))
         for attempt in range(1, LIMIT_RETRIES + 1):
@@ -582,9 +647,21 @@ def main():
         cost =("$%.4f" % env["total_cost_usd"]) if isinstance(env, dict) and isinstance(
             env.get("total_cost_usd"), (int, float)) else "?"
         status_after = read(status_path)
-        next_after = next_section(status_after)
+        # C7: the machine NEXT. Absent / invalid / byte-identical all count as "unchanged" for stop condition 3.
+        next_md5_after, next_card, next_why = next_json_reading(bench)
+        next_moved = next_card is not None and next_md5_after != next_md5_before
+        log_line(runner_log, "NEXT | %s | cycle %d | next.json %s | %s"
+                 % (time.strftime("%Y-%m-%d %H:%M:%S"), n,
+                    ("absent" if next_md5_after == "absent" else
+                     "INVALID (%s)" % next_why if next_card is None else
+                     ("read, CHANGED" if next_moved else "read, UNCHANGED") + " md5 " + next_md5_after[:12]),
+                    ("act: %s | %s: %s" % (next_card["act"][:120],
+                                           "advances" if next_card.get("advances") else "unblocks",
+                                           next_card.get("advances") or next_card.get("unblocks"))
+                     if next_card else "-")))
         log_line(runner_log, "CYCLE %d | %s | %s | exit %d | %s | %s"
-                 % (n, start, end, rc, cost, next_last_line(status_after)))
+                 % (n, start, end, rc, cost,
+                    ("next.json: " + next_card["act"][:150]) if next_card else next_last_line(status_after)))
         done += 1
         fails = failed_recipes(bench, t0, time.time())
         fail_hist.append(fails)
@@ -604,8 +681,13 @@ def main():
                 note_in_status(status_path, reason)
                 return 3
 
+        if next_card is not None and next_card.get("stop_requested"):
+            reason = "next.json (cycle %d) sets stop_requested: %s" % (n, next_card.get("note") or next_card["act"][:150])
+            log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
+            note_in_status(status_path, reason)
+            return 0
         bad_streak = bad_streak + 1 if rc != 0 else 0
-        unchanged_streak = unchanged_streak + 1 if next_after == next_before else 0
+        unchanged_streak = 0 if next_moved else unchanged_streak + 1
         if bad_streak >= 2:
             reason = ("the judgement session exited non-zero twice in a row (last exit %d, log %s) - a repeat "
                       "failure is a judgement matter, not something to retry" % (rc, os.path.basename(cyc_log)))
@@ -613,8 +695,8 @@ def main():
             note_in_status(status_path, reason)
             return 3
         if unchanged_streak >= 2:
-            reason = ("STATUS.md's NEXT section was byte-identical after two consecutive cycles (%d and %d) - "
-                      "the loop is not moving" % (n - 1, n))
+            reason = ("tools/bench/next.json was absent, invalid or byte-identical after two consecutive cycles "
+                      "(%d and %d) - the loop is not moving" % (n - 1, n))
             log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
             note_in_status(status_path, reason)
             return 3

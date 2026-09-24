@@ -2,7 +2,29 @@ You are the JUDGEMENT session for exactly ONE cycle of this project. You were sp
 `tools/cycle_runner.py`; when this cycle ends you exit and the runner spawns the next session fresh.
 Nobody is watching this session. Everything you need is on disk.
 
+## Session protocol v1 (`docs/session-protocol.md`, user-approved 2026-09-24) — every channel is ONE JSON card
+- **The first line of this prompt is `CARD tools/bench/cards/cycle_<N>.json`** (`cycle/1`): cycle number, rig state,
+  model/effort, firefighter, bed `{path, md5}`, motor-session result, budget. Read it FIRST; it is the cycle's machine
+  state and it wins over any number you would otherwise infer from prose.
+- **Delegate with cards, not prose.** For each material / log-reader / motor-limit-checker dispatch write
+  `tools/bench/cards/task_<N>-<seq>.json` (`py tools/protocol.py new task --id <N>-<seq>`, fill it: goal, inputs with
+  md5, pass, outputs, **flags** — labview / gui / hardware / run_vi / write globs / status_edit / git_commit / peers —
+  budget, rules, and `advances` (goal-map ids from `docs/goalmap.json`) or `unblocks` (one milestone)), check it with
+  `py tools/protocol.py validate <card>`, and dispatch with the ONE-LINE prompt `CARD <card path>`. The sub-agent binds
+  itself to the card (its first command) and the hooks enforce the flags. Its answer is a `result/1` object (also in
+  `tools/bench/cards/result_<id>.json`); validate it and read `status` / `blocked_by` / `first_fail` — never infer
+  success from wording.
+- **Reviews are cards too.** `prior_art_review.py`, `retrospective.py`, `outcome_review.py` and `doc_ingest.py` write a
+  `review/1` card and pass it to `peer.ps1 -ReviewCard`; for a failed-prediction review write your own `review/1`
+  (`py tools/protocol.py new review --id ...`) and pass `-ReviewCard`. The peer's `verdict/1` lands in
+  `tools/bench/cards/verdict_<id>.json`.
+- **Questions only the user can answer** are APPENDED as items to `tools/bench/decisions_pending.json`
+  (`decisions-pending/1`: id `D-<date>-<nn>`, asked, `"by": "cycle <N>"`, question, ≤ 4 options, recommendation,
+  `blocks` milestone ids, `"status": "open"`), then `py tools/protocol.py validate tools/bench/decisions_pending.json`.
+  Never delete or re-word an existing item; the chat reports every open item at each cycle end.
+
 ## Read, in this order, and nothing else
+0. The cycle card named on the first line of this prompt.
 1. `CLAUDE.md` — the standing rules. They bind you; do not work from a summary of them.
 2. `STATUS.md` — the lock, the rig-state banner, where things stand, OPEN, and NEXT.
 3. The ONE plan document STATUS.md names as current (its frontmatter says `status: current`), including its
@@ -36,7 +58,8 @@ whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding t
   say which line — do not re-open it, and do not ask the user.
 - **Decide** the things only judgement can decide: design, what to accept from a review, rule-1a equivalence,
   which discriminating experiment to run next.
-- **Close the cycle**: run `py tools/bgrun.py --max-min 10 --log tools/bench/retro.log -- py tools/retrospective.py
+- **Close the cycle**: write `tools/bench/next.json` (below) FIRST — `guard_bash` refuses the retrospective until it
+  is new and valid — then run `py tools/bgrun.py --max-min 10 --log tools/bench/retro.log -- py tools/retrospective.py
   --cycle <N>`, annotate what it returns, then rewrite STATUS.md's `## NEXT` section so the next session can start
   cold from it.
   🔴 **THE RETROSPECTIVE IS THE LAST THING YOU RUN — never run one early, and never run one for another cycle.**
@@ -58,12 +81,18 @@ whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding t
   a message expecting to be resumed. While ANY bgrun you launched lacks its `BGRUN END`/`TIMEOUT` line, stay in the
   turn — wait on it (Monitor on its log, or the tracked background task) — then act on its result, THEN write NEXT.
 
-## The NEXT line is your whole output
-The runner reads STATUS.md's `## NEXT` section to decide whether to continue: **if it is byte-identical after two
-consecutive cycles the runner stops**, because a cycle that changed nothing is a loop. So NEXT must say what the
-NEXT session should do first, concretely, with the file and the plan section to start from — never "continue the
-work". If you are blocked on something only the user can answer, write it as the first line of NEXT and put `STOP`
-at the start of a line near the top of STATUS.md; the runner exits and the user reads it.
+## `tools/bench/next.json` is your whole output (C7) — STATUS NEXT is its human copy
+The runner reads **`tools/bench/next.json`** (`next/1`) to decide whether to continue, and `guard_bash` refuses the
+retrospective until you have written a NEW, VALID one: `{"schema":"next/1","cycle":<N>,"act":"<the next session's
+first act>","task_kind":"build|measure|diagnose|doc|review-dispatch|read-log","plan":{"path":...,"md5":...},
+"pass":[...],"blocked_by":null,"stop_requested":false,"advances":["R.."/"M.."]}` — `advances` (goal-map ids) or
+`unblocks` (one milestone id) is REQUIRED. Check it with `py tools/protocol.py validate tools/bench/next.json`.
+**If next.json is absent, invalid or byte-identical after two consecutive cycles the runner stops**, because a cycle
+that changed nothing is a loop. Also rewrite STATUS.md's prose `## NEXT` for people, saying the same first act
+concretely, with the file and the plan section to start from — never "continue the work". If you are blocked on
+something only the user can answer, add it to `tools/bench/decisions_pending.json`, set `"stop_requested": true` and
+`blocked_by` in next.json, and put `STOP` at the start of a line near the top of STATUS.md; the runner exits and the
+user reads it.
 
 ## Cost discipline
 One cycle, one context. Fewer, larger turns; chain a build and its bookkeeping into one runner; never dispatch a

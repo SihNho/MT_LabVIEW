@@ -33,6 +33,11 @@ if len(sys.argv) > 1 and sys.argv[1] in ("fail", "fail2", "samegate"):
     # (peer finding 2026-09-18: the first fix was necessary, not sufficient)
     with open(os.path.join(bench, "STATUS.md"), "a", encoding="utf-8") as f:
         f.write("cycle %d\n" % c)
+    # session protocol v1 (C7, 2026-09-24): the runner's "NEXT moved" test reads <bench>/next.json, not the prose
+    import json
+    with open(os.path.join(bench, "next.json"), "w", encoding="utf-8") as f:
+        json.dump({"schema": "next/1", "cycle": c, "act": "ff self-test cycle %d" % c, "task_kind": "build",
+                   "stop_requested": False, "advances": ["M3"]}, f)
     time.sleep(1.1)
     sys.exit(0)
 
@@ -64,4 +69,7 @@ for mode, cycles, want_ff, want_stop in (("fail", 4, True, True), ("fail2", 4, T
     if not res:
         print(log)
 print("%d/3 PASS" % ok)
+sys.path.insert(0, os.path.join(ROOT, "tools"))
+import protocol  # noqa: E402
+print(protocol.result_line(protocol.make_result(ok, 3 - ok, None if ok == 3 else "%d/3 modes" % ok)))
 sys.exit(0 if ok == 3 else 1)

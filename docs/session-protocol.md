@@ -75,14 +75,17 @@ STATUS.md stays human-readable; `next.json` is the machine copy of its first act
 
 | flag | values | enforced by |
 |---|---|---|
-| `labview` | `none` · `read` · `build` | `guard_bash.py`: `none` refuses any LabVIEW-touching command; `read` refuses recipes and saves |
-| `gui` | `true` · `false` | `lv_gui.ps1` refuses state-changing actions unless true (on top of its Exception/Evidence gate) |
-| `hardware` | `none` · `gate` | `motor_gate.py` refuses unless `gate` (rig state still decides) |
-| `run_vi` | `false` (default) · `true` | `guard_bash.py` refuses Run/`ExecState`-changing run calls unless true |
-| `write` | glob list | PreToolUse Edit/Write hook refuses paths outside the list |
-| `status_edit` | bool | same hook, for `STATUS.md` / `CLAUDE.md` |
+| `labview` | `none` · `read` · `build` | `guard_bash.py` (card-bound sub-agent calls): `none` refuses any LabVIEW-touching command; `read` refuses recipes and saves |
+| `gui` | `true` · `false` | `guard_bash.py` refuses `lv_gui.ps1` state-changing actions and scripts that call the GUI unless true (`lv_gui.ps1`'s own Exception/Evidence gate still applies) |
+| `hardware` | `none` · `gate` | `guard_bash.py` refuses `motor_gate.py` unless `gate` (rig state still decides inside the gate) |
+| `run_vi` | `false` (default) · `true` | `guard_bash.py` refuses scripts that run a VI unless true |
+| `write` | glob list | `guard_card.py` (PreToolUse Edit/Write) refuses paths outside the list |
+| `status_edit` | bool | `guard_card.py`, for `STATUS.md` / `CLAUDE.md` |
 | `git_commit` | bool | `guard_bash.py` refuses `git commit` unless true |
-| `peers` | list of `peer.ps1` roles | `peer.ps1` refuses other roles |
+| `peers` | list of `peer.ps1` roles | `guard_bash.py` refuses `peer.ps1` roles not listed |
+
+All flag checks live in the hooks because only a hook sees the payload's `agent_id` (judgement 2026-09-24); detectors
+that read a script's source ignore comments and docstrings.
 
 **MEASURED 2026-09-24 (CLI 2.1.280, a temporary probe in `guard_bash.py` over a running material agent's calls; the
 docs only say "agent_id and agent_type when inside a subagent"):** a PreToolUse payload from inside a sub-agent carries

@@ -54,14 +54,27 @@ def fake_jev(p, err=None, missing="first-act"):
     return m
 
 
-def run_case(label, next_text, snap_text, p, err=None):
-    """Returns (rc, stderr text, gate-log lines) with guard_bash pointed at a throwaway root."""
+NEXT_JSON = ('{"schema": "next/1", "cycle": 9, "act": "%s", "task_kind": "build", "stop_requested": false, '
+             '"advances": ["M3"]}')
+
+
+def run_case(label, next_text, snap_text, p, err=None, mode=None):
+    """Returns (rc, stderr text, gate-log lines) with guard_bash pointed at a throwaway root.
+
+    SESSION PROTOCOL v1 (C7, 2026-09-24): the gate compares tools/bench/next.json's BYTES with the snapshot, so the
+    fake root now carries a next.json whose `act` is `next_text` and a snapshot = md5 of the next.json built from
+    `snap_text`. mode 'absent' writes no next.json; mode 'invalid' writes one that fails the next/1 schema."""
     tmp = tempfile.mkdtemp(prefix="nextgate_")
     os.makedirs(os.path.join(tmp, "tools", "bench"))
     os.makedirs(os.path.join(tmp, "tools", "hooks"))
     with open(os.path.join(tmp, "STATUS.md"), "w", encoding="utf-8") as f:
         f.write(STATUS_BODY % next_text)
-    snap = hashlib.md5(snap_text.strip().encode("utf-8")).hexdigest()
+    esc = lambda s: s.replace("\\", "\\\\").replace('"', '\\"')     # noqa: E731
+    snap = hashlib.md5((NEXT_JSON % esc(snap_text)).encode("utf-8")).hexdigest()
+    if mode != "absent":
+        body = NEXT_JSON % esc(next_text) if mode != "invalid" else '{"schema": "next/1", "act": "no cycle field"}'
+        with open(os.path.join(tmp, "tools", "bench", "next.json"), "w", encoding="utf-8", newline="") as f:
+            f.write(body)
     with open(os.path.join(tmp, "tools", "bench", "next_snapshot.md5"), "w", encoding="utf-8") as f:
         f.write(snap)
     old_here, old_err = guard_bash.HERE, sys.stderr
@@ -113,8 +126,16 @@ def main():
     gate("C4 an error from Jev is silence, never a block", rc == 0 and not err and not lines,
          "returned %d, stderr %r" % (rc, err[:40]))
 
+    rc, err, lines, _ = run_case("C5", "x", same, 0.95, mode="absent")
+    gate("C5 no next.json BLOCKS (C7)", rc == 2 and "does not exist" in err, "returned %d" % rc)
+    rc, err, lines, _ = run_case("C6", "x", same, 0.95, mode="invalid")
+    gate("C6 an invalid next.json BLOCKS (C7)", rc == 2 and "INVALID" in err, "returned %d" % rc)
+
     print("\n=== GATES %d pass / %d fail%s" % (len(PASS), len(FAIL),
                                                ("; failing: " + ", ".join(FAIL)) if FAIL else ""))
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
+    import protocol
+    print(protocol.result_line(protocol.make_result(len(PASS), len(FAIL), FAIL[0] if FAIL else None)))
     return 1 if FAIL else 0
 
 

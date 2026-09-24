@@ -13,6 +13,9 @@ CLI
     py tools/protocol.py new <kind> --id 74-03 [--force]   skeleton card -> tools/bench/cards/<kind>_<id>.json
     py tools/protocol.py result-line --pass N --fail M [--first-fail TEXT] [--artefact PATH ...]
     py tools/protocol.py verdict <log>                     the C6 verdict of the log's LAST run (JSON)
+    py tools/protocol.py bind <task-card>                  C2: a card agent's FIRST command (the hook records it)
+    py tools/protocol.py parse-verdict <answer> [--id X] [--out cards/verdict_X.json]    C5
+    py tools/protocol.py render-review <review-card>       C4: the card block + verdict contract peer.ps1 sends
 
 IMPORTABLE
     load_card(path) -> dict           (raises ValueError(reason) when invalid)
@@ -351,6 +354,369 @@ def stagekit_result_from_gates(segment):
     return make_result(npass, nfail, first if nfail else None)
 
 
+# ------------------------------------------------------------------------------ C2 binding + flag enforcement
+# MEASURED 2026-09-24 (docs/session-protocol.md, "Binding rule"): a PreToolUse payload from inside a sub-agent carries
+# `agent_id` + `agent_type`; the main session's has neither. A card-carrying sub-agent's FIRST command is
+# `py tools/protocol.py bind <card>`; the hook (tools/hooks/guard_card.py, called by guard_bash for Bash/PowerShell and
+# registered on its own for the other tools) records {agent_id: card} here, and every later call of that agent_id is
+# checked against the card's flags. Only the agent types that are DEFINED to take a card are bound; Explore/Plan/
+# bench-*/claude-code-guide carry no card and are not governed by this (they are not dispatched with task/1).
+ACTIVE = os.environ.get("PROTOCOL_ACTIVE") or os.path.join(CARDS_DIR, "active.json")   # env: self-tests only
+CARD_AGENT_TYPES = ("material", "log-reader", "motor-limit-checker")
+
+# The WHOLE command must be the bind call (optionally after `cd <dir> &&`): an unbound agent may run nothing else, so
+# `py tools/protocol.py bind x; <anything>` is not a bind.
+BIND_CMD_RE = re.compile(
+    r"^\s*(?:cd\s+(?:\"[^\"]*\"|'[^']*'|\S+)\s*(?:&&|;)\s*)?"
+    r"py(?:thon)?(?:\.exe)?\s+(?:-\S+\s+)*[\"']?(?:[^\s\"'|;&]*[\\/])?tools[\\/]protocol\.py[\"']?\s+bind\s+"
+    r"[\"']?([^\s\"'|;&]+)[\"']?\s*$", re.I)
+
+# a quoted path may contain spaces (this project lives under "2. Tracking"); an unquoted one may not
+PY_TOKEN_RE = re.compile(r"\"([^\"]*\.py)\"|'([^']*\.py)'|((?:[A-Za-z]:)?[^\s\"'|;&]*\.py)\b", re.I)
+LV_IMPORT_RE = re.compile(r"^\s*(?:import|from)\s+(?:gscript|lvclick|stagekit|win32com)\b", re.M)
+LV_CMD_RE = re.compile(r"lv_gui\.ps1|LabVIEW\.exe|Stop-Process\s+-Name\s+LabVIEW|import\s+(?:gscript|lvclick)|"
+                       r"from\s+(?:gscript|lvclick)", re.I)
+RECIPE_PATH_RE = re.compile(r"tools[\\/]recipes[\\/]", re.I)
+SAVE_SRC_RE = re.compile(r"\b(?:gscript\.|gs\.)?(?:gui_save|save)\s*\(|SaveInstrument|\.SaveVI\b", re.I)
+GUI_STATE_ACTIONS = ("click", "clickprobe", "rclick", "dclick", "drag", "wire", "keys", "key", "activate")  # lv_gui.ps1:669
+GUI_ACTION_RE = re.compile(r"lv_gui\.ps1\b[^|;&]*?-Action\s+['\"]?(\w+)", re.I)
+GUI_SRC_RE = re.compile(r"\bgui_save\s*\(|['\"]-Action['\"]\s*,\s*['\"](?:%s)['\"]" % "|".join(GUI_STATE_ACTIONS), re.I)
+RUN_VI_SRC_RE = re.compile(r"\.Run\(\s*(?:True|False|0|1)?\s*\)")
+RUN_VI_CMD_RE = re.compile(r"drive_original_copy", re.I)
+GIT_COMMIT_RE = re.compile(r"\bgit\b(?:\s+-\S+(?:\s+\S+)?)*\s+commit\b", re.I)
+MOTOR_CMD_RE = re.compile(r"motor_gate\.py|motor_send_pi\.ps1|motor_asi_io\.ps1", re.I)
+RUNNER_CMD_RE = re.compile(r"cycle_runner\.py", re.I)
+STATUS_WRITE_RE = re.compile(r"(?:>>?|\bSet-Content\b|\bAdd-Content\b|\bOut-File\b|\bsed\s+-i\b|\btee\b|\bmv\b|\bcp\b|"
+                             r"\bMove-Item\b|\bCopy-Item\b|os\.replace)[^|;&\n]*?\b(?:STATUS|CLAUDE)\.md\b", re.I)
+# peer dispatch -> the role name the card's `peers` list uses (docs/protocol/task.json flags.peers enum)
+PEER_SCRIPT_ROLES = (("prior_art_review.py", "priorart"), ("retrospective.py", "retrospective"),
+                     ("outcome_review.py", "outcome"), ("doc_ingest.py", "ingest"))
+
+
+def _norm(p):
+    return os.path.normcase(os.path.abspath(p)).replace("\\", "/")
+
+
+def _glob_re(g):
+    """A write-flag glob -> regex over '/'-separated paths. `**/` = any depth incl. none, `**` = anything, `*` = one
+    segment, `?` = one char. Relative globs are relative to the project root."""
+    g = g.replace("\\", "/")
+    out, i = "", 0
+    while i < len(g):
+        if g.startswith("**/", i):
+            out, i = out + "(?:.*/)?", i + 3
+        elif g.startswith("**", i):
+            out, i = out + ".*", i + 2
+        elif g[i] == "*":
+            out, i = out + "[^/]*", i + 1
+        elif g[i] == "?":
+            out, i = out + "[^/]", i + 1
+        else:
+            out, i = out + re.escape(g[i]), i + 1
+    return re.compile("^" + out + "$", re.I)
+
+
+def path_in_globs(path, globs):
+    ap = _norm(path)
+    root = _norm(ROOT)
+    rel = ap[len(root) + 1:] if ap.startswith(root + "/") else None
+    for g in globs or []:
+        gg = g.replace("\\", "/")
+        absg = bool(re.match(r"^[A-Za-z]:/|^/", gg))
+        target = ap if absg else rel
+        if target is not None and _glob_re(_norm(gg) if absg else gg).match(target):
+            return True
+    return False
+
+
+def _load_active():
+    try:
+        with open(ACTIVE, encoding="utf-8") as f:
+            d = json.load(f)
+        return d if isinstance(d, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def _save_active(d):
+    os.makedirs(os.path.dirname(ACTIVE), exist_ok=True)
+    tmp = ACTIVE + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(d, f, ensure_ascii=False, indent=1)
+    os.replace(tmp, ACTIVE)
+
+
+def _abs(p):
+    return p if os.path.isabs(p) else os.path.join(ROOT, p)
+
+
+def bind(agent_id, agent_type, card_path, goals="default"):
+    """Record the binding. Returns (ok, message). The card must be a VALID task/1."""
+    p = _abs(card_path)
+    try:
+        card = load_card(p, goal_ids() if goals == "default" else goals)
+    except (OSError, ValueError) as e:
+        return False, "card %s is not a valid task/1: %s" % (card_path, str(e)[:200])
+    if card.get("schema") != "task/1":
+        return False, "card %s is %s, not task/1" % (card_path, card.get("schema"))
+    d = _load_active()
+    d[agent_id] = {"card": _rel(p), "agent_type": agent_type, "id": card["id"],
+                   "bound": time.strftime("%Y-%m-%d %H:%M:%S"), "md5": _md5(p)}
+    _save_active(d)
+    return True, "BOUND agent %s (%s) -> %s (id %s)" % (agent_id, agent_type, _rel(p), card["id"])
+
+
+def binding(agent_id):
+    return _load_active().get(agent_id)
+
+
+def _launched_scripts(cmd):
+    """Every `.py` path in the command that exists under the project (resolved against ROOT)."""
+    out = []
+    for m in PY_TOKEN_RE.finditer(cmd or ""):
+        t = next(g for g in m.groups() if g)
+        p = _abs(t)
+        if os.path.isfile(p):
+            out.append(p)
+    return out
+
+
+def _src(p):
+    try:
+        with open(p, encoding="utf-8", errors="replace") as f:
+            return f.read()
+    except OSError:
+        return ""
+
+
+def peer_role_of(cmd):
+    """The review role a command dispatches, or None. peer.ps1: -Role wins, else -Kind (fact/prose), else a
+    -Kind review / -Dual = hypothesis."""
+    for script, role in PEER_SCRIPT_ROLES:
+        if re.search(r"(?:^|[\\/\s\"'])" + re.escape(script), cmd or "", re.I):
+            return role
+    if not re.search(r"peer\.ps1", cmd or "", re.I):
+        return None
+    m = re.search(r"-Role\s+['\"]?(\w+)", cmd, re.I)
+    if m:
+        return m.group(1).lower()
+    m = re.search(r"-Kind\s+['\"]?(\w+)", cmd, re.I)
+    if m and m.group(1).lower() in ("fact", "prose"):
+        return m.group(1).lower()
+    if re.search(r"-Agent\s+['\"]?claude", cmd, re.I):
+        return "audit"
+    return "hypothesis"
+
+
+def check_command(card, cmd):
+    """None = allowed, else the refusal reason. The card's flags applied to ONE Bash/PowerShell command."""
+    fl = card.get("flags") or {}
+    cmd = cmd or ""
+    scripts = _launched_scripts(cmd)
+    srcs = {p: _src(p) for p in scripts}
+    if GIT_COMMIT_RE.search(cmd) and not fl.get("git_commit"):
+        return "flags.git_commit is false - this card may not `git commit`"
+    if not fl.get("status_edit") and STATUS_WRITE_RE.search(cmd):
+        return "flags.status_edit is false - this card may not write STATUS.md / CLAUDE.md"
+    role = peer_role_of(cmd)
+    if role and role not in (fl.get("peers") or []):
+        return "flags.peers %s does not include %r - this card may not dispatch that review" % (fl.get("peers"), role)
+    if fl.get("hardware", "none") != "gate":
+        if MOTOR_CMD_RE.search(cmd) and not re.search(r"--dry-run|--help", cmd):
+            return "flags.hardware is 'none' - motor_gate / motor senders are refused (a --dry-run is allowed)"
+        if RUNNER_CMD_RE.search(cmd) and not re.search(r"--dry-run|--dry-cmd|--no-motor-hooks", cmd):
+            return "flags.hardware is 'none' - a real cycle_runner run opens the motor session; use --dry-run"
+    recipes = [p for p in scripts if RECIPE_PATH_RE.search(p)]
+    lv_scripts = [p for p in scripts if LV_IMPORT_RE.search(srcs[p]) or RECIPE_PATH_RE.search(p)]
+    lv = fl.get("labview", "none")
+    if lv == "none" and (LV_CMD_RE.search(cmd) or lv_scripts):
+        return "flags.labview is 'none' - this command touches LabVIEW (%s)" % (
+            _rel(lv_scripts[0]) if lv_scripts else LV_CMD_RE.search(cmd).group(0))
+    if lv == "read":
+        if recipes:
+            return "flags.labview is 'read' - recipes are refused (%s)" % _rel(recipes[0])
+        saving = [p for p in lv_scripts if SAVE_SRC_RE.search(srcs[p])]
+        if saving:
+            return "flags.labview is 'read' - %s saves a VI" % _rel(saving[0])
+    if not fl.get("gui"):
+        m = GUI_ACTION_RE.search(cmd)
+        if m and m.group(1).lower() in GUI_STATE_ACTIONS:
+            return "flags.gui is false - lv_gui.ps1 -Action %s is state-changing" % m.group(1)
+        g = [p for p in scripts if GUI_SRC_RE.search(srcs[p])]
+        if g:
+            return "flags.gui is false - %s performs state-changing GUI actions" % _rel(g[0])
+    if not fl.get("run_vi"):
+        if RUN_VI_CMD_RE.search(cmd):
+            return "flags.run_vi is false - this command runs a VI (%s)" % RUN_VI_CMD_RE.search(cmd).group(0)
+        r = [p for p in scripts if RUN_VI_SRC_RE.search(srcs[p])]
+        if r:
+            return "flags.run_vi is false - %s calls VI.Run()" % _rel(r[0])
+    return None
+
+
+def check_write(card, file_path):
+    """None = allowed, else the refusal reason, for Edit / Write / NotebookEdit on `file_path`."""
+    fl = card.get("flags") or {}
+    ap = _norm(file_path)
+    for special in ("STATUS.md", "CLAUDE.md"):
+        if ap == _norm(os.path.join(ROOT, special)):
+            return None if fl.get("status_edit") else "flags.status_edit is false - %s may not be edited" % special
+    own = _norm(os.path.join(CARDS_DIR, "result_%s.json" % card.get("id", "")))
+    if ap == own:
+        return None                      # the card's own result/1 file is always writable
+    import tempfile
+    tmp = _norm(tempfile.gettempdir())
+    if ap.startswith(tmp + "/"):
+        return None                      # scratch space (the session's scratchpad lives under %TEMP%)
+    if path_in_globs(file_path, fl.get("write") or []):
+        return None
+    return "flags.write %s does not cover %s" % (fl.get("write"), _rel(file_path))
+
+
+WRITE_TOOLS = ("Edit", "Write", "NotebookEdit", "MultiEdit")
+
+
+def hook_decision(payload):
+    """The PreToolUse decision for ONE tool call. Returns (allow: bool, message: str|None).
+    Main session (no agent_id) and agent types that take no card: always allowed here (the other guards still run)."""
+    aid = payload.get("agent_id")
+    atype = payload.get("agent_type") or ""
+    if not aid or atype not in CARD_AGENT_TYPES:
+        return True, None
+    tool = payload.get("tool_name") or ""
+    ti = payload.get("tool_input") or {}
+    cmd = ti.get("command", "") if tool in ("Bash", "PowerShell") else ""
+    m = BIND_CMD_RE.match(cmd) if cmd else None
+    if m:
+        ok, msg = bind(aid, atype, m.group(1))
+        return ok, (msg if ok else "BIND REFUSED: " + msg)
+    b = binding(aid)
+    if not b:
+        return False, ("UNBOUND sub-agent (%s %s): this agent's FIRST command must be "
+                       "`py tools/protocol.py bind <card>` (docs/session-protocol.md, binding rule). Nothing else "
+                       "runs until then." % (atype, aid))
+    try:
+        card = load_card(_abs(b["card"]), None)
+    except (OSError, ValueError) as e:
+        return False, "the bound card %s no longer loads: %s" % (b.get("card"), str(e)[:200])
+    if tool in ("Bash", "PowerShell"):
+        why = check_command(card, cmd)
+    elif tool in WRITE_TOOLS:
+        why = check_write(card, ti.get("file_path") or ti.get("notebook_path") or "")
+    else:
+        why = None
+    if why:
+        return False, "CARD %s (%s): %s" % (card.get("id"), b.get("card"), why)
+    return True, None
+
+
+# ------------------------------------------------------------------------------------------ C4/C5 review/verdict
+VERDICT_LINE_RE = re.compile(r"^\s*`{0,3}\s*VERDICT\s+(\{.*\})\s*`{0,3}\s*$", re.M)
+ROLE_VERDICTS = {
+    "hypothesis": "refuted | supported | unverified",
+    "priorart": "novel | settled-already",
+    "fact": "supported | refuted | unverified",
+    "outcome": "none (no outcome violation) | refuted (the work did not move the deliverable)",
+    "retrospective": "none (no violation) | refuted (a structural fault; name it in violations)",
+    "ingest": "none (no contradiction) | refuted (contradictions found; count them in note)",
+}
+
+
+def review_card(role, rid, claim, predicted="", observed="", ruled_out=(), attachments=(), note=""):
+    """Build + validate a review/1 card; returns the dict. `attachments` = paths (md5 filled in when the file exists)."""
+    rid = re.sub(r"[^A-Za-z0-9_.-]", "-", str(rid))[:41].strip("-_.") or "review"
+    atts = []
+    for a in attachments:
+        p = _abs(a)
+        atts.append({"path": _rel(p), "md5": _md5(p) if os.path.isfile(p) else None})
+    d = {"schema": "review/1", "id": rid, "role": role, "claim": str(claim)[:300], "predicted": str(predicted)[:300],
+         "observed": str(observed)[:300], "ruled_out": [str(x)[:200] for x in list(ruled_out)[:3]],
+         "attachments": atts, "ask": "refute"}
+    if note:
+        d["note"] = str(note)[:300]
+    ok, why = validate_obj(d)
+    if not ok:
+        raise ValueError("review_card: " + why)
+    return d
+
+
+def write_review_card(d):
+    os.makedirs(CARDS_DIR, exist_ok=True)
+    p = os.path.join(CARDS_DIR, "review_%s.json" % d["id"])
+    with open(p, "w", encoding="utf-8") as f:
+        json.dump(d, f, ensure_ascii=False, indent=1)
+    return p
+
+
+def render_review(card):
+    """The review/1 card as the text block peer.ps1 puts in front of the task, plus the verdict/1 contract."""
+    lines = ["--- REVIEW CARD (review/1, id %s, role %s) ---" % (card["id"], card["role"]),
+             "CLAIM: " + card["claim"]]
+    if card.get("predicted"):
+        lines.append("PREDICTED: " + card["predicted"])
+    if card.get("observed"):
+        lines.append("OBSERVED: " + card["observed"])
+    for r in card.get("ruled_out") or []:
+        lines.append("ALREADY RULED OUT: " + r)
+    for a in card.get("attachments") or []:
+        lines.append("ATTACHMENT: %s (md5 %s)" % (a["path"], a.get("md5")))
+    lines.append("--- END REVIEW CARD ---")
+    return "\n".join(lines) + "\n"
+
+
+def verdict_contract(card):
+    allowed = ROLE_VERDICTS.get(card["role"], "refuted | supported | unverified")
+    return ("\n\n--- VERDICT CONTRACT (session protocol v1, C5; mandatory) ---\n"
+            "Write your answer as usual. Then make the LAST line of your answer exactly one line of the form\n"
+            "VERDICT {\"schema\":\"verdict/1\",\"id\":\"%s\",\"verdict\":\"<one of: %s>\",\"alternative\":\"...\","
+            "\"discriminating_test\":\"...\",\"violations\":[],\"sources\":[\"url or file:line\"],\"note\":\"\"}\n"
+            "Single-line JSON, no code fence. alternative/discriminating_test/note <= 300 chars each; violations <= 2 "
+            "items {\"slug\",\"loss_min\",\"loss_usd\",\"evidence\"} using the retrospective slug list. Gates read "
+            "ONLY this line; the prose above it is archived for people.\n" % (card["id"], allowed))
+
+
+def parse_verdict(text, want_id=None):
+    """(dict, None) for the LAST valid `VERDICT {...}` line of the answer, else (None, reason)."""
+    ms = list(VERDICT_LINE_RE.finditer(text or ""))
+    if not ms:
+        return None, "no VERDICT line"
+    raw = ms[-1].group(1)
+    try:
+        d = json.loads(raw)
+    except ValueError as e:
+        return None, "VERDICT line is not JSON: %s" % e
+    ok, why = validate_obj(d)
+    if not ok:
+        return None, why
+    if want_id and d.get("id") != want_id:
+        return None, "VERDICT id %r != review id %r" % (d.get("id"), want_id)
+    return d, None
+
+
+# ------------------------------------------------------------------------------------- C7 next.json / decisions
+NEXT_JSON = os.path.join(HERE, "bench", "next.json")
+DECISIONS = os.path.join(HERE, "bench", "decisions_pending.json")
+
+
+def next_state(path=NEXT_JSON):
+    """(md5_of_bytes | 'absent', card | None, reason | None) - the runner's and next_gate's single reading."""
+    if not os.path.exists(path):
+        return "absent", None, "no next.json"
+    m = _md5(path)
+    try:
+        return m, load_card(path, goal_ids()), None
+    except (OSError, ValueError) as e:
+        return m, None, str(e)[:200]
+
+
+def open_decisions(path=DECISIONS):
+    try:
+        d = load_card(path, None)
+    except (OSError, ValueError):
+        return []
+    return [it for it in d.get("items", []) if it.get("status") == "open"]
+
+
 # ------------------------------------------------------------------------------------------------- skeletons + CLI
 SKELETONS = {
     "task": {"schema": "task/1", "id": "", "kind": "build", "goal": "", "why": "", "inputs": [], "pass": [],
@@ -428,9 +794,63 @@ def _cmd_verdict(a):
     return 1 if v["failed"] else 0
 
 
+def _cmd_bind(a):
+    """The CLI half of the binding: validates the card and reports whether the HOOK recorded it. The binding itself
+    is written by the PreToolUse hook, which is the only process that sees the caller's agent_id."""
+    p = _abs(a.card)
+    try:
+        card = load_card(p, goal_ids())
+    except (OSError, ValueError) as e:
+        print("INVALID %s: %s" % (a.card, str(e)[:300]))
+        return 1
+    held = [aid for aid, b in _load_active().items() if _norm(_abs(b.get("card", ""))) == _norm(p)]
+    if held:
+        print("BOUND %s (id %s) to agent(s) %s" % (_rel(p), card["id"], ", ".join(held)))
+    else:
+        print("VALID %s (id %s) - no binding recorded (main session, or the hook is not installed)" % (_rel(p), card["id"]))
+    return 0
+
+
+def _cmd_parse_verdict(a):
+    with open(a.file, encoding="utf-8", errors="replace") as f:
+        d, why = parse_verdict(f.read(), a.id or None)
+    if d is None:
+        print("NO-VERDICT: %s" % why)
+        return 1
+    if a.out:
+        os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
+        with open(a.out, "w", encoding="utf-8") as f:
+            json.dump(d, f, ensure_ascii=False, indent=1)
+    print("VERDICT-CARD %s verdict=%s%s" % (d["id"], d["verdict"], (" -> " + _rel(a.out)) if a.out else ""))
+    return 0
+
+
+def _cmd_render_review(a):
+    try:
+        card = load_card(_abs(a.card), None)
+    except (OSError, ValueError) as e:
+        print("INVALID %s: %s" % (a.card, str(e)[:300]))
+        return 1
+    if card.get("schema") != "review/1":
+        print("INVALID: %s is not review/1" % a.card)
+        return 1
+    parts = {"card": render_review(card), "contract": verdict_contract(card)}
+    sys.stdout.write(parts[a.part] if a.part in parts else parts["card"] + parts["contract"])
+    return 0
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sub = ap.add_subparsers(dest="cmd")
+    b = sub.add_parser("bind")
+    b.add_argument("card")
+    pv = sub.add_parser("parse-verdict")
+    pv.add_argument("file")
+    pv.add_argument("--id", default="")
+    pv.add_argument("--out", default="")
+    rr = sub.add_parser("render-review")
+    rr.add_argument("card")
+    rr.add_argument("--part", choices=("card", "contract", "both"), default="both")
     v = sub.add_parser("validate")
     v.add_argument("file")
     v.add_argument("--no-goalmap", action="store_true", help="do not check advances/unblocks ids against the goal map")
@@ -446,7 +866,8 @@ def main(argv=None):
     d = sub.add_parser("verdict")
     d.add_argument("log")
     a = ap.parse_args(argv)
-    fn = {"validate": _cmd_validate, "new": _cmd_new, "result-line": _cmd_result_line, "verdict": _cmd_verdict}
+    fn = {"validate": _cmd_validate, "new": _cmd_new, "result-line": _cmd_result_line, "verdict": _cmd_verdict,
+          "bind": _cmd_bind, "parse-verdict": _cmd_parse_verdict, "render-review": _cmd_render_review}
     if a.cmd not in fn:
         ap.print_help()
         return 2
