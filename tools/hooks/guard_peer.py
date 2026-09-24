@@ -206,6 +206,8 @@ def _rel(p):
 
 
 _FIRST_PY_RE = re.compile(r"\"([^\"]*\.py)\"|'([^']*\.py)'|([^\s\"'|;&]*\.py)\b", re.I)
+_CMDPOS_PY_RE = re.compile(r"(?:^|[\s;&|(])py(?:thon)?[\w.]*\s+(?:-[\w-]+\s+)*"
+                           r"(?:\"([^\"]*\.py)\"|'([^']*\.py)'|([^\s\"'|;&]*\.py))", re.I)
 _SCOPE_SCRIPT_RE = re.compile(r"(?:^|[\\/])tools[\\/](?:recipes|bench)[\\/][^\\/]+\.py$", re.I)
 _JEV_SCRIPT_RE = re.compile(r"(?:^|[\\/])jev[\w]*\.py$", re.I)
 
@@ -213,14 +215,13 @@ _JEV_SCRIPT_RE = re.compile(r"(?:^|[\\/])jev[\w]*\.py$", re.I)
 def in_prediction_scope(start_line):
     """True when a bgrun START line's command runs a tools/recipes/*.py or tools/bench/*.py script (not a Jev one)."""
     cmd = start_line.split(" min: ", 1)[1] if " min: " in start_line else start_line
-    # the runner itself is not the script: a START line that quotes the whole `py tools/bgrun.py ... -- py <script>`
-    # call (selftest_guard_peer_samerow.py's fixture, and any wrapper that logs its own command) is judged by <script>
-    scripts = [next(g for g in m.groups() if g) for m in _FIRST_PY_RE.finditer(cmd)]
-    scripts = [s for s in scripts if not re.search(r"(?:^|[\\/])bgrun\.py$", s, re.I)]
-    if not scripts:
-        return False
-    script = scripts[0]
-    return bool(_SCOPE_SCRIPT_RE.search(script)) and not _JEV_SCRIPT_RE.search(script)
+    # IN SCOPE when ANY script in PYTHON COMMAND POSITION is a tools/recipes|bench script (not Jev) - judgement
+    # 2026-09-24 (card chat-B4), after review archive/peer/2026-09-24-chatb3-samerow.md: a START line that quotes the
+    # bgrun call (`py tools/bgrun.py ... -- py <script>`, the samerow fixture) and a utility prefix
+    # (`py -u tools/lv_restart.py; py -u tools/recipes/build_d1_v0.py`, tools/bench/build_d1_v0_run4.log:1) are both
+    # judged by the recipe/bench script. `py -c` probes stay out; .ps1 motor scripts stay with motor_gate.
+    scripts = [next(g for g in m.groups() if g) for m in _CMDPOS_PY_RE.finditer(cmd)]
+    return any(_SCOPE_SCRIPT_RE.search(s) and not _JEV_SCRIPT_RE.search(s) for s in scripts)
 
 
 def newest_failing_log():

@@ -513,7 +513,7 @@ def code_only(src):
 def _src(p):
     try:
         with open(p, encoding="utf-8", errors="replace") as f:
-            return code_only(f.read())
+            return f.read()      # raw: src_features parses it; LV_IMPORT_RE runs on code_only() of it
     except OSError:
         return ""
 
@@ -535,6 +535,64 @@ def peer_role_of(cmd):
     if re.search(r"-Agent\s+['\"]?claude", cmd, re.I):
         return "audit"
     return "hypothesis"
+
+
+SAVE_CALLS = {"gui_save", "save", "saveinstrument", "savevi", "save_vi", "save_instrument"}
+GUI_CALLS = {"gui_save"}
+SHELL_CALLS = {"run", "popen", "call", "check_call", "check_output", "system", "_lv_gui", "lv_gui"}
+
+
+def _fname(call):
+    f = call.func
+    return (f.attr if hasattr(f, "attr") else getattr(f, "id", "")) or ""
+
+
+def _consts(nodes):
+    import ast
+    return [n.value if isinstance(n, ast.Constant) and isinstance(n.value, str) else None for n in nodes]
+
+
+def src_features(src):
+    """{'save','gui','run'} for ONE script's source, from its CALLS (judgement 2026-09-24, card chat-B4): a string
+    literal that merely contains `gui_save(` or `.Run(` (a self-test fixture, a log quote) triggers nothing.
+      save : a call named gui_save / save / SaveInstrument / SaveVI / save_vi / save_instrument
+      gui  : a call named gui_save, or an lv_gui invocation with a state-changing action - either `-Action`, <action>
+             as consecutive string constants in a call's args or in a list/tuple literal, or a shell call
+             (subprocess.run/Popen/..., os.system, _lv_gui) whose string argument reads `lv_gui.ps1 ... -Action <x>`
+      run  : a call of an attribute named `Run` (VI.Run(...))
+    Regex fallback ONLY on SyntaxError (the old detectors, over code_only())."""
+    import ast
+    try:
+        tree = ast.parse(src)
+    except (SyntaxError, ValueError):
+        s = code_only(src)
+        return {"save": bool(SAVE_SRC_RE.search(s)), "gui": bool(GUI_SRC_RE.search(s)),
+                "run": bool(RUN_VI_SRC_RE.search(s))}
+    out = {"save": False, "gui": False, "run": False}
+
+    def action_pair(vals):
+        return any(a == "-Action" and (b or "").lower() in GUI_STATE_ACTIONS for a, b in zip(vals, vals[1:]))
+
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Call):
+            name = _fname(n)
+            low = name.lower()
+            if low in SAVE_CALLS:
+                out["save"] = True
+            if low in GUI_CALLS:
+                out["gui"] = True
+            if isinstance(n.func, ast.Attribute) and name == "Run":
+                out["run"] = True
+            if action_pair(_consts(n.args)):
+                out["gui"] = True
+            if low in SHELL_CALLS:
+                for c in _consts(list(n.args) + [k.value for k in n.keywords]):
+                    m = GUI_ACTION_RE.search(c or "")
+                    if m and m.group(1).lower() in GUI_STATE_ACTIONS:
+                        out["gui"] = True
+        elif isinstance(n, (ast.List, ast.Tuple)) and action_pair(_consts(n.elts)):
+            out["gui"] = True
+    return out
 
 
 def check_command(card, cmd):
@@ -560,7 +618,8 @@ def check_command(card, cmd):
         if RUNNER_CMD_RE.search(ran) and not re.search(r"--dry-run|--dry-cmd|--no-motor-hooks", cmd):
             return "flags.hardware is 'none' - a real cycle_runner run opens the motor session; use --dry-run"
     recipes = [p for p in scripts if RECIPE_PATH_RE.search(p)]
-    lv_scripts = [p for p in scripts if LV_IMPORT_RE.search(srcs[p]) or RECIPE_PATH_RE.search(p)]
+    lv_scripts = [p for p in scripts if LV_IMPORT_RE.search(code_only(srcs[p])) or RECIPE_PATH_RE.search(p)]
+    feats = {p: src_features(srcs[p]) for p in scripts}
     lv = fl.get("labview", "none")
     if lv == "none" and (LV_CMD_RE.search(cmd) or lv_scripts):
         return "flags.labview is 'none' - this command touches LabVIEW (%s)" % (
@@ -568,20 +627,20 @@ def check_command(card, cmd):
     if lv == "read":
         if recipes:
             return "flags.labview is 'read' - recipes are refused (%s)" % _rel(recipes[0])
-        saving = [p for p in lv_scripts if SAVE_SRC_RE.search(srcs[p])]
+        saving = [p for p in lv_scripts if feats[p]["save"]]
         if saving:
             return "flags.labview is 'read' - %s saves a VI" % _rel(saving[0])
     if not fl.get("gui"):
         m = GUI_ACTION_RE.search(cmd)
         if m and m.group(1).lower() in GUI_STATE_ACTIONS:
             return "flags.gui is false - lv_gui.ps1 -Action %s is state-changing" % m.group(1)
-        g = [p for p in scripts if GUI_SRC_RE.search(srcs[p])]
+        g = [p for p in scripts if feats[p]["gui"]]
         if g:
             return "flags.gui is false - %s performs state-changing GUI actions" % _rel(g[0])
     if not fl.get("run_vi"):
         if RUN_VI_CMD_RE.search(cmd):
             return "flags.run_vi is false - this command runs a VI (%s)" % RUN_VI_CMD_RE.search(cmd).group(0)
-        r = [p for p in scripts if RUN_VI_SRC_RE.search(srcs[p])]
+        r = [p for p in scripts if feats[p]["run"]]
         if r:
             return "flags.run_vi is false - %s calls the VI Run method" % _rel(r[0])   # no literal call text here
     return None

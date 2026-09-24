@@ -162,6 +162,23 @@ def main():
          not allowed(a, command="& .\\tools\\lv_gui.ps1 -Action click -X 1 -Y 2")
          and allowed(a, command="& .\\tools\\lv_gui.ps1 -Action shot"))
     gate("F9 gui false: a script calling gui_save is refused", not allowed(a, command="py %s" % gui_src))
+    selff = P.src_features(open(os.path.abspath(__file__), encoding="utf-8").read())
+    gate("A1 this file's string-literal fixtures trigger NOTHING (ast call detector)",
+         selff == {"save": False, "gui": False, "run": False}, selff)
+    f_at = P.src_features(open(os.path.join(HERE, "allterms_s2.py"), encoding="utf-8", errors="replace").read())
+    f_m3 = P.src_features(raw1)
+    gate("A2 a REAL gui_save call triggers (allterms_s2.py:262); build_d1_m3a1.py (prose only) does not",
+         f_at["gui"] and not f_m3["gui"], "allterms %s / m3a1 %s" % (f_at, f_m3))
+    gate("A3 lv_gui action literals: list/_lv_gui args/shell string trigger; a non-shell string does not",
+         P.src_features("x = ['powershell', 'lv_gui.ps1', '-Action', 'click']\n")["gui"]
+         and P.src_features("g._lv_gui('-Action', 'dclick', '-X', '1')\n")["gui"]
+         and P.src_features("import subprocess\nsubprocess.run('powershell -File tools/lv_gui.ps1 -Action keys')\n")["gui"]
+         and not P.src_features("print('lv_gui.ps1 -Action click')\nallowed(a, command='lv_gui.ps1 -Action click')\n")["gui"]
+         and not P.src_features("x = ['-Action', 'shot']\n")["gui"])
+    gate("A4 VI.Run() call triggers run; the text '.Run(False)' in a string does not",
+         P.src_features("vi.Run(False)\n")["run"] and not P.src_features("s = 'vi.Run(False)'\n")["run"])
+    gate("A5 unparseable source falls back to the regexes",
+         P.src_features("def (:\n  gscript.gui_save('x')\n")["gui"])
     a2 = bound("fgui", labview="build", gui=True)
     gate("F10 gui true: click allowed", allowed(a2, command="& .\\tools\\lv_gui.ps1 -Action click -X 1 -Y 2"))
     gate("F11 hardware none: motor_gate refused, --dry-run allowed",
@@ -261,6 +278,9 @@ def main():
     gate("P6 a START line quoting the bgrun call is judged by the script after `--`",
          s("py tools/bgrun.py --material --max-min 10 --log x.log -- py -u tools/recipes/stage_x_v3.py")
          and not s("py tools/bgrun.py --max-min 5 --log x.log -- py tools/motor_gate.py --session end"))
+    gate("P7 a utility prefix does not hide a recipe (build_d1_v0_run4.log:1); py -c stays out",
+         s("powershell -NoProfile -Command py -u tools/lv_restart.py; py -u tools/recipes/build_d1_v0.py")
+         and not s("py -c import gscript as g; g.open_panel('tools/recipes/x.py')"))
 
     # ---- R: report_gate open decisions
     rgm = load("report_gate")

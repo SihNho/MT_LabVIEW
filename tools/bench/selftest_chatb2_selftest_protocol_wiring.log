@@ -2,9 +2,9 @@
   PASS  B1 main session (no agent_id) is not governed                  
   PASS  B2 unbound card agent: Bash refused                            
   PASS  B3 unbound card agent: Read refused                            
-  PASS  B4 bind of a valid card is allowed and recorded                BOUND agent b4 (material) -> C:/Users/KimLab/AppData/Local/Temp/pwiring_7r5byd94/task_b4.json (id b4)
+  PASS  B4 bind of a valid card is allowed and recorded                BOUND agent b4 (material) -> C:/Users/KimLab/AppData/Local/Temp/pwiring_4d1w47jx/task_b4.json (id b4)
   PASS  B5 `bind x; other` is NOT a bind (stays unbound)               
-  PASS  B6 bind of an INVALID card is refused                          BIND REFUSED: card C:/Users/KimLab/AppData/Local/Temp/pwiring_7r5byd94/task_bad.json is not a valid task/1: $: matches none of the alternatives ($: mi
+  PASS  B6 bind of an INVALID card is refused                          BIND REFUSED: card C:/Users/KimLab/AppData/Local/Temp/pwiring_4d1w47jx/task_bad.json is not a valid task/1: $: matches none of the alternatives ($: mi
   PASS  B7 a non-card agent type (Explore) is not governed             
   PASS  F1 labview none: a recipe is refused (quoted absolute path and relative path) 
   PASS  F2 labview none: a gscript-importing script is refused         
@@ -18,9 +18,15 @@
   PASS  F7c a REAL call survives code_only (x = 1  # gui_save() -> kept only the call) 
   PASS  F8 gui false: lv_gui click refused, shot allowed               
   PASS  F9 gui false: a script calling gui_save is refused             
+  PASS  A1 this file's string-literal fixtures trigger NOTHING (ast call detector) {'save': False, 'gui': False, 'run': False}
+  PASS  A2 a REAL gui_save call triggers (allterms_s2.py:262); build_d1_m3a1.py (prose only) does not allterms {'save': True, 'gui': True, 'run': False} / m3a1 {'save': True, 'gui': False, 'run': False}
+  PASS  A3 lv_gui action literals: list/_lv_gui args/shell string trigger; a non-shell string does not 
+  PASS  A4 VI.Run() call triggers run; the text '.Run(False)' in a string does not 
+  PASS  A5 unparseable source falls back to the regexes                
   PASS  F10 gui true: click allowed                                    
   PASS  F11 hardware none: motor_gate refused, --dry-run allowed       
   PASS  F12 hardware none: a real cycle_runner refused, --dry-run allowed 
+  PASS  F12b hardware none: `git add tools/cycle_runner.py tools/motor_gate.py` is not a run 
   PASS  F13 hardware gate: motor_gate allowed                          
   PASS  F14 run_vi false: a script calling VI.Run() refused            
   PASS  F15 run_vi true: allowed                                       
@@ -44,6 +50,7 @@
   PASS  P4 Jev script out of scope                                     
   PASS  P5 a non-python command out of scope                           
   PASS  P6 a START line quoting the bgrun call is judged by the script after `--` 
+  PASS  P7 a utility prefix does not hide a recipe (build_d1_v0_run4.log:1); py -c stays out 
   PASS  R1 report_gate lists the OPEN decision                         OPEN USER DECISIONS — the report MUST list each of these (tools/bench/decisions_
   PASS  R2 report_gate omits the answered one                          
   PASS  V1 review_card builds a valid review/1                         
@@ -61,5 +68,5 @@ BGRUN END rc=0 after 0s (NO RESULT LINE)
   PASS  G2 with a RESULT line -> no mark                               
   PASS  G3 audit A8's pattern matches the mark                         
 
-=== GATES: 59 pass / 0 fail
-RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":59,"fail":0},"first_fail":null,"artefacts":[]}
+=== GATES: 66 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":66,"fail":0},"first_fail":null,"artefacts":[]}
