@@ -35,6 +35,7 @@ VERDICT fails when ANY RESULT line printed by that run fails. Reason: a chained 
 earlier rejected move. For a single script (stagekit) the two readings coincide: failures only accumulate.
 """
 import argparse
+import io
 import json
 import os
 import re
@@ -371,8 +372,11 @@ BIND_CMD_RE = re.compile(
     r"py(?:thon)?(?:\.exe)?\s+(?:-\S+\s+)*[\"']?(?:[^\s\"'|;&]*[\\/])?tools[\\/]protocol\.py[\"']?\s+bind\s+"
     r"[\"']?([^\s\"'|;&]+)[\"']?\s*$", re.I)
 
-# a quoted path may contain spaces (this project lives under "2. Tracking"); an unquoted one may not
-PY_TOKEN_RE = re.compile(r"\"([^\"]*\.py)\"|'([^']*\.py)'|((?:[A-Za-z]:)?[^\s\"'|;&]*\.py)\b", re.I)
+# A script in COMMAND POSITION (after py/python and its flags) - never a path that is only read (`head x.py`, `grep
+# y x.py`): measured 2026-09-24, the first version refused `head tools/bench/selftest_stagekit.py` as a LabVIEW run.
+# A quoted path may contain spaces (this project lives under "2. Tracking"); an unquoted one may not.
+PY_TOKEN_RE = re.compile(r"(?:^|[\s;&|(\"'])py(?:thon)?[\w.]*\s+(?:-[\w-]+\s+)*"
+                         r"(?:\"([^\"]*\.py)\"|'([^']*\.py)'|((?:[A-Za-z]:)?[^\s\"'|;&]*\.py))", re.I)
 LV_IMPORT_RE = re.compile(r"^\s*(?:import|from)\s+(?:gscript|lvclick|stagekit|win32com)\b", re.M)
 LV_CMD_RE = re.compile(r"lv_gui\.ps1|LabVIEW\.exe|Stop-Process\s+-Name\s+LabVIEW|import\s+(?:gscript|lvclick)|"
                        r"from\s+(?:gscript|lvclick)", re.I)
@@ -481,10 +485,35 @@ def _launched_scripts(cmd):
     return out
 
 
+def code_only(src):
+    """The source with COMMENTS and DOCSTRINGS (any bare string statement) blanked, so the flag detectors see calls,
+    not prose that mentions them (judgement 2026-09-24, card chat-B2: tools/recipes/build_d1_m3a1.py:95,154,670 only
+    MENTION gui_save()). Line numbers are kept. Unparseable source is returned unchanged (fail closed)."""
+    import ast
+    import tokenize
+    try:
+        lines = src.splitlines(True)
+        tree = ast.parse(src)
+        for node in ast.walk(tree):
+            if (isinstance(node, ast.Expr) and isinstance(getattr(node, "value", None), ast.Constant)
+                    and isinstance(node.value.value, str)):
+                for i in range(node.lineno - 1, (node.end_lineno or node.lineno)):
+                    lines[i] = "\n"
+        text = "".join(lines)
+        out = text.splitlines(True)
+        for tok in tokenize.generate_tokens(io.StringIO(text).readline):
+            if tok.type == tokenize.COMMENT:
+                r, c = tok.start
+                out[r - 1] = out[r - 1][:c] + "\n"
+        return "".join(out)
+    except Exception:           # noqa: BLE001
+        return src
+
+
 def _src(p):
     try:
         with open(p, encoding="utf-8", errors="replace") as f:
-            return f.read()
+            return code_only(f.read())
     except OSError:
         return ""
 

@@ -214,13 +214,29 @@ def next_md5(status_path):
     return hashlib.md5((m.group(1).strip() if m else "").encode("utf-8")).hexdigest()
 
 
-def next_gate():
-    """Refuse a retrospective launch while STATUS's `## NEXT` still hashes as it did when the cycle started.
+def next_json_state(root):
+    """(md5 of tools/bench/next.json bytes | 'absent', why-invalid | None). Session protocol v1 C7: the machine copy
+    of NEXT is `next.json` (docs/protocol/next.json); the prose `## NEXT` in STATUS stays for people."""
+    path = os.path.join(root, "tools", "bench", "next.json")
+    try:
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+        import protocol
+    except Exception as e:      # noqa: BLE001
+        return "absent", "protocol.py not importable: %s" % e
+    m, card, why = protocol.next_state(path)
+    return m, (None if (card is not None or m == "absent") else why)
 
-    A NEXT that HAS been rewritten then gets one ADVISORY Jev reading (docs/jev-integration-plan.md #5,
-    measured in tools/bench/jev_next_trial.py on tools/bench/jev_next_set.json). It prints and it logs; it
-    NEVER blocks and it never changes this function's return value - the md5 check above is still the only
-    gate here. Any failure of the reading (no key, no network, no answer) is silence, by construction."""
+
+def next_gate():
+    """Refuse a retrospective launch until the cycle has written a NEW, VALID `tools/bench/next.json`.
+
+    SESSION PROTOCOL v1, C7 (2026-09-24): the runner writes `tools/bench/next_snapshot.md5` = md5 of next.json's
+    bytes (or `absent`) right before it spawns the session; the retrospective is refused while next.json is absent,
+    unchanged from that snapshot, or invalid against docs/protocol/next.json. (Until 2026-09-24 this compared the md5
+    of STATUS.md's prose `## NEXT` section; sessions 58/64/65/66 are why the gate exists at all.)
+
+    A next.json that passes then gets one ADVISORY Jev reading of STATUS's prose NEXT (docs/jev-integration-plan.md
+    #5). It prints and it logs; it NEVER blocks. Any failure of the reading is silence, by construction."""
     root = os.path.dirname(os.path.dirname(HERE))
     snap_path = os.path.join(root, "tools", "bench", "next_snapshot.md5")
 
@@ -265,15 +281,21 @@ def next_gate():
             snap = f.read().strip()
     except OSError:
         return 0          # no runner snapshot (interactive chat, self-tests): nothing to compare against
-    if not snap or next_md5(os.path.join(root, "STATUS.md")) != snap:
+    if not snap:
+        return 0
+    cur, invalid = next_json_state(root)
+    if cur != "absent" and cur != snap and not invalid:
         _jev_advisory()
         return 0
+    why = ("tools/bench/next.json does not exist" if cur == "absent" else
+           "tools/bench/next.json is INVALID: %s" % invalid if invalid else
+           "tools/bench/next.json is byte-identical to what this cycle started with")
     sys.stderr.write(
-        "BLOCKED by tools/hooks/guard_bash.py (NEXT before the retrospective; user 2026-09-21): STATUS.md's `## NEXT`\n"
-        "is byte-identical to what this cycle started with. Write the hand-off FIRST - what the next session does\n"
-        "first, with the file and plan section to start from, and every saved artefact's md5 - then launch the\n"
-        "retrospective. Sessions 58/64/65/66 exited waiting on their retrospective with NEXT never written; the\n"
-        "chat rewrote it four times. Reading, diagnostics and every other command are not affected.\n")
+        "BLOCKED by tools/hooks/guard_bash.py (NEXT before the retrospective; user 2026-09-21; session protocol v1\n"
+        "C7): %s. Write the hand-off FIRST - `tools/bench/next.json` (schema next/1: act, task_kind, plan {path,md5},\n"
+        "pass, advances or unblocks, stop_requested) checked with `py tools/protocol.py validate tools/bench/next.json`,\n"
+        "and STATUS.md's prose `## NEXT` for people - then launch the retrospective. Reading, diagnostics and every\n"
+        "other command are not affected.\n" % why)
     return 2
 
 
@@ -341,6 +363,19 @@ def main():
         return 0
     ti = data.get("tool_input") or {}
     cmd = ti.get("command", "") or ""
+    # SESSION PROTOCOL v1, C2 (2026-09-24): a card-carrying sub-agent (payload has agent_id + agent_type) is bound to
+    # its task/1 card by its first command, `py tools/protocol.py bind <card>`, and every later command is checked
+    # against the card's flags (labview / gui / hardware / run_vi / status_edit / git_commit / peers). ONE decision
+    # function, tools/protocol.py hook_decision(), shared with tools/hooks/guard_card.py (the non-shell tools). The
+    # main session has no agent_id and is not affected. Checked first and not disabled by any env var.
+    try:
+        import guard_card
+        rc, msg = guard_card.decide(data)
+    except Exception:      # noqa: BLE001 - a broken card guard must not wedge every command
+        rc, msg = 0, None
+    if rc:
+        sys.stderr.write("BLOCKED by tools/hooks/guard_bash.py (session protocol v1, card flags): %s\n" % msg)
+        return rc
     # THE MOTOR GATE IS CHECKED FIRST AND IS NOT DISABLED BY ANY ENV VAR (see motor_gate_check).
     rc = motor_gate_check(cmd)
     if rc:

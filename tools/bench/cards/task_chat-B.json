@@ -1,0 +1,12 @@
+{"schema": "task/1", "id": "chat-B", "kind": "build",
+ "goal": "Wire session protocol v1 into every channel: card binding + flag hooks, agents, peers, runner C1/C7, next.json, pending decisions",
+ "why": "User 2026-09-24 approved JSON on all channels, goal map, advances field, pending-decisions list; core (schemas, protocol.py, RESULT line) is done in b0f2ced.",
+ "inputs": [{"path": "docs/session-protocol.md", "md5": "198bdceb786c5455c17fb816f8513df0"}, {"path": "docs/goalmap.json", "md5": "76b65bc5ab581728d9c31e7d755edcf5"}, {"path": "tools/bench/decisions_pending.json", "md5": "d371144077ea29ca5f4d2daf3bbb64d3"}, {"path": "tools/protocol.py", "md5": "0ee9346e0a5f7ccad5f083110efaeb64"}],
+ "pass": ["protocol.py bind + active.json per MEASURED binding rule; unbound sub-agent call refused except bind", "flags labview/gui/hardware/run_vi/write/status_edit/git_commit/peers enforced, self-test per flag", "material.md, log-reader.md, motor-limit-checker.md: CARD one-line prompt, first command bind, final message result/1", "peer.ps1, prior_art_review.py, retrospective.py, outcome_review.py, doc_ingest.py: review/1 in, verdict/1 parsed; archive keeps prose", "cycle_runner.py: cycle/1 card per cycle, next.json replaces NEXT md5 compare and next_gate, FAILED-RECIPES via protocol.first_fail_signature at :261-263, errorlist field null until parked work resumes", "cycle_prompt.md: judgement reads cycle card, writes next.json with advances/unblocks, appends user-only questions to decisions_pending.json", "report_gate.py: cycle-end report must list open decisions_pending items", "guard_peer failing-log scope limited to tools/recipes and tools/bench scripts; Jev and tools/*.py utilities exempt", "bgrun: under bgrun a recipe or bench script ending without RESULT line logs BGRUN END ... (NO RESULT LINE) and audit_cycle counts it as WARN", "all existing self-tests green; selftest_cycle_runner_ff passes; one dry-run runner cycle with --dry-run shows cycle card written and next.json read", "live hooks edited on .new copies, self-tested, then os.replace"],
+ "outputs": ["tools/bench/selftest_protocol_wiring.log", "tools/bench/cards/active.json"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+           "write": ["tools/**", ".claude/agents/**", "docs/protocol/**"], "status_edit": false,
+           "git_commit": true, "peers": []},
+ "budget": {"failures": 2, "minutes": 120},
+ "unblocks": "M3",
+ "rules": ["§3 Tooling", "Reference hygiene", "Stages are SIMULATED"]}

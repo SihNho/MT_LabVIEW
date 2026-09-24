@@ -205,6 +205,21 @@ def _rel(p):
         return p
 
 
+_FIRST_PY_RE = re.compile(r"\"([^\"]*\.py)\"|'([^']*\.py)'|([^\s\"'|;&]*\.py)\b", re.I)
+_SCOPE_SCRIPT_RE = re.compile(r"(?:^|[\\/])tools[\\/](?:recipes|bench)[\\/][^\\/]+\.py$", re.I)
+_JEV_SCRIPT_RE = re.compile(r"(?:^|[\\/])jev[\w]*\.py$", re.I)
+
+
+def in_prediction_scope(start_line):
+    """True when a bgrun START line's command runs a tools/recipes/*.py or tools/bench/*.py script (not a Jev one)."""
+    cmd = start_line.split(" min: ", 1)[1] if " min: " in start_line else start_line
+    m = _FIRST_PY_RE.search(cmd)
+    if not m:
+        return False
+    script = next(g for g in m.groups() if g)
+    return bool(_SCOPE_SCRIPT_RE.search(script)) and not _JEV_SCRIPT_RE.search(script)
+
+
 def newest_failing_log():
     best = None
     for p in glob.glob(os.path.join(BENCH, "*.log")):
@@ -246,6 +261,13 @@ def newest_failing_log():
         # started on a Jev script, which is exactly what the user exempted. A build that merely mentions Jev in
         # its output is untouched, and every non-Jev failure still gates.
         if RUNNER_RE.search((last.splitlines() or [""])[0]):
+            continue
+        # SCOPE = RECIPES AND BENCH SCRIPTS ONLY (session protocol v1 wiring, task card chat-B, 2026-09-24). A failed
+        # PREDICTION is a recipe's or a diagnostic's; a bgrun run of a tools/*.py UTILITY (motor_gate, wiki_build,
+        # doc_lint, cycle_runner, ...) or of a non-python command is machinery, not a prediction under test, and a
+        # Jev script is exempt by the user's 2026-09-22 ruling. Decided by the FIRST `.py` token of the run's own
+        # command, never by the log name. Files without a BGRUN START (the `STALL:` watchdog records) still gate.
+        if "BGRUN START" in text and not in_prediction_scope((last.splitlines() or [""])[0]):
             continue
         if log_failure(text, st.st_mtime)[0]:
             best = (p, st.st_mtime, last)
