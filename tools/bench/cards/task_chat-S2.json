@@ -1,0 +1,63 @@
+{
+ "schema": "task/1",
+ "id": "chat-S2",
+ "kind": "build",
+ "goal": "Stage simulator core tools/stagesim.py: apply a stage plan action by action to the graph JSON, save step files, symbolic ids for new objects, finalize check computation_diff(S1)=0",
+ "why": "User 2026-09-24: '시뮬레이터 먼저 완성하자'. Pure Python on tools/vigraph.py; op models come from card chat-S1 (running in parallel) - use provisional models from the plan table, loadable from tools/bench/opmodels/*.json when they land.",
+ "inputs": [
+  {
+   "path": "docs/stage-simulator-plan.md",
+   "md5": "d278bec8c3b2d1c2ec5e435624561d7b"
+  },
+  {
+   "path": "tools/vigraph.py",
+   "md5": "72da9562c9de17b43f99ec2c290b16fc"
+  },
+  {
+   "path": "docs/session-protocol.md",
+   "md5": "d89799aa3043261a52932cda1a5b9476"
+  }
+ ],
+ "pass": [
+  "plan schema docs/protocol/stageplan.json (stageplan/1): ordered actions move_in, add_shift_reg, tunnel, delete_wire, delete_object, wire, remove_bad_wires, create",
+  "action addresses are owner uid + terminal name, or a symbolic id new:<kind><n>.<terminal> for objects the plan creates",
+  "stagesim.py simulate <plan> <graph.json> writes tools/bench/sim/<stage>/step_NN_<action>.json + a summary",
+  "move cut set = wires crossing the moved set boundary; reconnect table = each cut terminal -> its S1 partner",
+  "finalize: last step vs S1 computation_diff == 0 rows -> plan_<stage>.json marked final with md5s; else name the first divergent step",
+  "rows with more than one legal mechanism go to a candidates list in jev_candidates format; the simulator decides none of them",
+  "op models loaded from tools/bench/opmodels/*.json when present (card chat-S1), provisional models from the plan table otherwise, source recorded per step",
+  "self-test >= 20 gates on synthetic graphs",
+  "real case: simulate the L7 split from graph_s3_loop15_20260924.json; compare the end graph with a graph of D1_s4_loop17 up to new-uid naming; report the diff count",
+  "no LabVIEW; RESULT line; commit"
+ ],
+ "outputs": [
+  "tools/stagesim.py",
+  "docs/protocol/stageplan.json",
+  "tools/bench/selftest_stagesim.log"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/**",
+   "docs/protocol/**"
+  ],
+  "status_edit": false,
+  "git_commit": true,
+  "peers": [
+   "hypothesis",
+   "priorart"
+  ]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 150
+ },
+ "unblocks": "M3",
+ "rules": [
+  "Stages are SIMULATED and PRE-RUN OFFLINE",
+  "§3 Tooling"
+ ]
+}
