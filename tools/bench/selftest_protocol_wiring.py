@@ -61,6 +61,8 @@ def gate(label, ok, detail=""):
 
 def load(name):
     path = os.path.join(HOOKS, name + ".py" + SUFFIX)
+    if not os.path.exists(path):
+        path = os.path.join(HOOKS, name + ".py")        # only some hooks have a pending .new copy
     mod = name + "_under_test"
     spec = importlib.util.spec_from_file_location(mod, path,
                                                   loader=importlib.machinery.SourceFileLoader(mod, path))
@@ -202,6 +204,8 @@ def main():
 
     # ---- H: guard_bash end to end (the file under test, as a subprocess, with the isolated binding file)
     gb = os.path.join(HOOKS, "guard_bash.py" + SUFFIX)
+    if not os.path.exists(gb):
+        gb = os.path.join(HOOKS, "guard_bash.py")
 
     def hook(payload):
         r = subprocess.run([sys.executable, gb], input=json.dumps(payload), capture_output=True, text=True,
@@ -252,6 +256,9 @@ def main():
     gate("P3 tools/*.py utility out of scope", not s("py tools/motor_gate.py --session start"))
     gate("P4 Jev script out of scope", not s("py tools/bench/jev_trial.py") and not s("py tools/jev_triage.py x"))
     gate("P5 a non-python command out of scope", not s("powershell -File tools/lv_gui.ps1 -Action shot"))
+    gate("P6 a START line quoting the bgrun call is judged by the script after `--`",
+         s("py tools/bgrun.py --material --max-min 10 --log x.log -- py -u tools/recipes/stage_x_v3.py")
+         and not s("py tools/bgrun.py --max-min 5 --log x.log -- py tools/motor_gate.py --session end"))
 
     # ---- R: report_gate open decisions
     rgm = load("report_gate")

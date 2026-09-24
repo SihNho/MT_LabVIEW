@@ -1,0 +1,12 @@
+{"schema": "task/1", "id": "chat-B3", "kind": "build",
+ "goal": "Finish chat-B2: dispatch the owed hypothesis review, install guard_peer.py.new, rerun the self-test bundle, commit",
+ "why": "chat-B2 BLOCKED by the failed-prediction gate; judgement grants peers:[hypothesis]. E1 accepted as pre-existing (fails in the c6 baseline).",
+ "inputs": [{"path": "tools/bench/cards/task_chat-B.json", "md5": "a3acb04ba0c5c77f6c7a5b46f6627f68"}],
+ "pass": ["selftest_protocol_wiring load() fixed; F7 uses a gui:true card or a recipe that really calls gui_save", "GUI_SRC_RE/SAVE_SRC_RE/RUN_VI_SRC_RE ignore comments and docstrings (tokenize/ast), test with build_d1_m3a1.py", "every self-test green: protocol_wiring, protocol, cycle_runner, cycle_runner_ff, next_gate_jev, guard_peer suites, jev_ladder_action, bgrun suites, motor_fail_exit, stagekit", "peer.ps1 -ReviewCard and the 4 review callers exercised with -DryRun, verdict parse checked", "the three .new hooks replaced by os.replace only after green", "cycle_runner --dry-run --cycles 1 --no-motor-hooks writes a valid cycle/1 card and reads next.json", "one git commit with all chat-B + B2 changes"],
+ "outputs": ["tools/bench/selftest_protocol_wiring.log", "tools/bench/cards/result_chat-B3.json"],
+ "flags": {"labview": "none", "gui": false, "hardware": "none", "run_vi": false,
+           "write": ["tools/**", ".claude/agents/**", "docs/protocol/**"], "status_edit": false,
+           "git_commit": true, "peers": ["hypothesis"]},
+ "budget": {"failures": 2, "minutes": 60},
+ "unblocks": "M3",
+ "rules": ["§3 Tooling"]}

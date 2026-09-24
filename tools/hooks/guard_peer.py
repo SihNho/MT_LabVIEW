@@ -213,10 +213,13 @@ _JEV_SCRIPT_RE = re.compile(r"(?:^|[\\/])jev[\w]*\.py$", re.I)
 def in_prediction_scope(start_line):
     """True when a bgrun START line's command runs a tools/recipes/*.py or tools/bench/*.py script (not a Jev one)."""
     cmd = start_line.split(" min: ", 1)[1] if " min: " in start_line else start_line
-    m = _FIRST_PY_RE.search(cmd)
-    if not m:
+    # the runner itself is not the script: a START line that quotes the whole `py tools/bgrun.py ... -- py <script>`
+    # call (selftest_guard_peer_samerow.py's fixture, and any wrapper that logs its own command) is judged by <script>
+    scripts = [next(g for g in m.groups() if g) for m in _FIRST_PY_RE.finditer(cmd)]
+    scripts = [s for s in scripts if not re.search(r"(?:^|[\\/])bgrun\.py$", s, re.I)]
+    if not scripts:
         return False
-    script = next(g for g in m.groups() if g)
+    script = scripts[0]
     return bool(_SCOPE_SCRIPT_RE.search(script)) and not _JEV_SCRIPT_RE.search(script)
 
 

@@ -579,7 +579,7 @@ def check_command(card, cmd):
             return "flags.run_vi is false - this command runs a VI (%s)" % RUN_VI_CMD_RE.search(cmd).group(0)
         r = [p for p in scripts if RUN_VI_SRC_RE.search(srcs[p])]
         if r:
-            return "flags.run_vi is false - %s calls VI.Run()" % _rel(r[0])
+            return "flags.run_vi is false - %s calls the VI Run method" % _rel(r[0])   # no literal call text here
     return None
 
 

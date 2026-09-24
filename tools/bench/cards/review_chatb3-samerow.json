@@ -1,0 +1,12 @@
+{"schema": "review/1", "id": "chatb3-samerow", "role": "hypothesis",
+ "claim": "run_selftests_chat_b2.log: selftest_guard_peer_samerow 4/10 (and budget R4, jev_ladder_action) failed ONLY because its fixture START line quotes `py tools/bgrun.py ... -- py <script>` and the new guard_peer.in_prediction_scope took bgrun.py as the script.",
+ "predicted": "all self-tests green after the session-protocol wiring (guard_peer scope limited to tools/recipes + tools/bench scripts, Jev and tools/*.py utilities exempt)",
+ "observed": "samerow S0-S6b: the gate never blocked (rc 0) on a fixture log it must block on; budget R4 and jev_ladder_action fail because they re-run samerow",
+ "ruled_out": ["guard_peer_failre E1 is pre-existing: identical failure in tools/bench/selftest_c6_final_selftest_guard_peer_failre.log:38",
+               "the c6 baseline passed samerow 14/0 (tools/bench/selftest_c6_new_selftest_guard_peer_samerow.log) before this change"],
+ "attachments": [{"path": "tools/bench/run_selftests_chat_b2.log", "md5": null},
+                 {"path": "tools/bench/selftest_chatb2_selftest_guard_peer_samerow.log", "md5": null},
+                 {"path": "tools/bench/selftest_guard_peer_samerow.py", "md5": null},
+                 {"path": "tools/hooks/guard_peer.py", "md5": null},
+                 {"path": "tools/hooks/guard_peer.py.new", "md5": null}],
+ "ask": "refute"}

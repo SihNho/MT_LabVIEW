@@ -1,0 +1,20 @@
+{
+ "schema": "verdict/1",
+ "id": "chatb3-samerow",
+ "verdict": "supported",
+ "alternative": "The cause is right, but the first-.py scope rule, with or without .new, also exempts real prediction runs: a recipe behind a utility prefix (build_d1_v0_run4.log:1), py -c LabVIEW probes, and .ps1 motor scripts. Real bgrun never writes a START line with bgrun.py in it.",
+ "discriminating_test": "REPL: in_prediction_scope(fixture START) False live/True .new; patch it to lambda s: True and re-run samerow (expect 14/0); then call it on build_d1_v0_run4.log:1 and open_main_fp.log:1 (expect False on both = the holes).",
+ "violations": [],
+ "sources": [
+  "tools/bgrun.py:192",
+  "tools/hooks/guard_peer.py:213-220",
+  "tools/hooks/guard_peer.py.new:216-219",
+  "tools/protocol.py:58",
+  "tools/protocol.py:305-307",
+  "tools/bench/build_d1_v0_run4.log:1",
+  "tools/bench/open_main_fp.log:1",
+  "tools/bench/p2_asi_set_limits.log:1",
+  "https://docs.python.org/3/reference/lexical_analysis.html"
+ ],
+ "note": "Fix the fixture to real bgrun output rather than teaching the guard a fixture-only shape; judge scope by any recipes/bench script in the command, as log_script does; the py -c/.ps1/tools/*.py exemption needs its own reviewed decision."
+}
