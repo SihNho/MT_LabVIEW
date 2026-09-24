@@ -1,0 +1,296 @@
+diff --git a/tools/cycle_runner.py b/tools/cycle_runner.py
+index 1a9bb69..5ad28f5 100644
+--- a/tools/cycle_runner.py
++++ b/tools/cycle_runner.py
+@@ -412,9 +412,44 @@ def motor_limits_hook(phase, n, a, bench, runner_log, status_text):
+     return ok, verdict
+ 
+ 
+-def write_cycle_card(bench, n, status_text, model, effort, ff_recipe, motor_verdict, a):
++def errorlist_hook(n, a, bench, runner_log, status_text):
++    """User decision 5, 2026-09-24 ("사이클 시작하기 전에 LabVIEW 컴파일 에러 창은 반드시 확인해야할듯"): before every
++    cycle - and BEFORE the motor start hook (card chat-C2) - `tools/errorlist_check.py` reads the current bed's Error
++    List on a byte-identical scratch copy (GUI, capture-confirmed), double-clicks each item, and compares against the
++    bed's expected-errors file.
++
++    Returns (verdict, json_path, reason); verdict OK | MISMATCH | FAIL | SKIP. FAIL stops the runner before the cycle;
++    MISMATCH starts the cycle and the cycle/1 card carries the result. Skipped (logged) in rig state 실험중 (no
++    LabVIEW use at all), under --dry-run/--dry-cmd and --no-errorlist-hook (self-tests)."""
++    stamp = time.strftime("%Y-%m-%d %H:%M:%S")
++    if a.dry_run or a.dry_cmd or getattr(a, "no_errorlist_hook", False):
++        log_line(runner_log, "ERRORLIST | %s | cycle %d | SKIP | dry run / --no-errorlist-hook" % (stamp, n))
++        return "SKIP", None, "skipped"
++    try:
++        import motor_gate
++        state = motor_gate.rig_state(status_text)
++    except Exception as e:  # noqa: BLE001
++        state = "unknown (%s)" % e
++    if state == "experiment":
++        log_line(runner_log, "ERRORLIST | %s | cycle %d | SKIP | rig state 실험중 (no LabVIEW use)" % (stamp, n))
++        return "SKIP", None, "rig state experiment"
++    log = os.path.join(bench, "errorlist_check_cycle%d.log" % n)
++    cmd = [sys.executable, BGRUN, "--max-min", "15", "--log", log, "--",
++           sys.executable, "-u", os.path.join(HERE, "errorlist_check.py")]
++    proc = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
++                          env=dict(os.environ, MATERIAL="1"))
++    text = read(log) + (proc.stdout or "")
++    m = re.findall(r"ERRORLIST-VERDICT: (OK|MISMATCH|FAIL) (\S.*\.json)", text)
++    verdict, js = (m[-1][0], m[-1][1].strip()) if m else ("FAIL", None)
++    if "BGRUN END" not in text:
++        verdict = "FAIL"
++    log_line(runner_log, "ERRORLIST | %s | cycle %d | %s | %s" % (stamp, n, verdict, js or os.path.basename(log)))
++    return verdict, js, "see %s" % os.path.basename(log)
++
++
++def write_cycle_card(bench, n, status_text, model, effort, ff_recipe, motor_verdict, a, errorlist=None):
+     """C1: `<bench>/cards/cycle_<n>.json`, validated against docs/protocol/cycle.json. Returns (path, None) or
+-    (None, reason). `errorlist` stays null until the parked error-list step resumes (task card chat-B); `bed` is read
++    (None, reason). `errorlist` is {path, verdict OK|MISMATCH} from errorlist_hook, null when skipped (card chat-C2); `bed` is read
+     from the optional `<bench>/bed.json` ({path, md5}) and is null when there is none."""
+     try:
+         import motor_gate
+@@ -430,7 +465,7 @@ def write_cycle_card(bench, n, status_text, model, effort, ff_recipe, motor_verd
+         pass
+     next_path = os.path.join(bench, "next.json")
+     card = {"schema": "cycle/1", "cycle": n, "rig_state": rig, "model": model, "effort": effort,
+-            "firefighter": ff_recipe or None, "bed": bed, "errorlist": None,
++            "firefighter": ff_recipe or None, "bed": bed, "errorlist": errorlist,
+             "motor_session": (motor_verdict or None) and str(motor_verdict)[:120],
+             "next": protocol._rel(next_path), "budget": {"minutes": float(a.max_min), "dispatches": 8},
+             "rules": CYCLE_RULES}
+@@ -482,6 +517,7 @@ def main():
+     ap.add_argument("--dry-cmd", default="", help="self-test only: the exact command to run instead of a session")
+     ap.add_argument("--no-sleep", action="store_true", help="self-test only: report a usage-limit wait, do not take it")
+     ap.add_argument("--no-motor-hooks", action="store_true", help="self-test only: skip motor_gate --session start/end (never for a real run)")
++    ap.add_argument("--no-errorlist-hook", action="store_true", help="self-test only: skip the cycle-start Error List check (never for a real run)")
+     a = ap.parse_args()
+ 
+     status_path = os.path.abspath(a.status)
+@@ -584,6 +620,25 @@ def main():
+                 f.write(next_md5_before)
+         except OSError:
+             pass
++        # ERROR LIST at cycle start, BEFORE the motor start hook (user decision 5, 2026-09-24; card chat-C2). FAIL to
++        # read = RUNNER STOP before the cycle (no motor limits were set yet); MISMATCH = the cycle runs, its cycle/1
++        # card carries the result and the prompt says to deal with those errors first.
++        el_verdict, el_json, el_why = errorlist_hook(n, a, bench, runner_log, status_text)
++        if el_verdict == "FAIL":
++            reason = "the cycle-start Error List check could not be completed for cycle %d (%s, %s) - no cycle runs " \
++                     "on an unread bed" % (n, el_why, el_json)
++            log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
++            note_in_status(status_path, reason)
++            return 3
++        el_card = None
++        if el_json and el_verdict in ("OK", "MISMATCH"):
++            el_card = {"path": protocol._rel(el_json)[:400], "verdict": el_verdict}
++            os.environ["ERRORLIST_JSON"] = el_json
++            this_prompt += ("\n\nERRORLIST (cycle-start Error List check, user decision 5 2026-09-24): %s - %s\n"
++                            % (el_verdict, el_card["path"]))
++            if el_verdict == "MISMATCH":
++                this_prompt += ("The bed's Error List does NOT match its expected-errors file: deal with the "
++                                "unexpected/missing errors listed in that JSON FIRST, before any other work.\n")
+         # MOTOR LIMITS ON at cycle start, verified by readback (user 2026-09-23). A start that cannot be verified
+         # stops the runner: a cycle must never run with unknown controller limits.
+         ok, why = motor_limits_hook("start", n, a, bench, runner_log, status_text)
+@@ -594,7 +649,7 @@ def main():
+             note_in_status(status_path, reason)
+             return 3
+         # C1: the cycle card. An invalid card is not dispatched (docs/session-protocol.md, common rule 5).
+-        card_path, card_why = write_cycle_card(bench, n, status_text, model, effort, ff_recipe, why, a)
++        card_path, card_why = write_cycle_card(bench, n, status_text, model, effort, ff_recipe, why, a, el_card)
+         if not card_path:
+             reason = "the cycle/1 card for cycle %d did not validate (%s) - no cycle is dispatched without one" \
+                      % (n, card_why)
+diff --git a/tools/errorlist_check.py b/tools/errorlist_check.py
+index cde68a9..a229810 100644
+--- a/tools/errorlist_check.py
++++ b/tools/errorlist_check.py
+@@ -33,6 +33,11 @@ from bench_prep import labview_handles
+ EVID = "user 2026-09-24 error-list check at cycle start"
+ E.EVIDENCE = EVID
+ BENCH = os.path.join(HERE, "bench")
++# 2026-09-24 card chat-C2: external search (WebSearch, "LabVIEW scripting read selected objects block diagram
++# Selection List") found no route other than a VI Server property node on TopLevelDiagram.Selection List[]; the
++# ActiveX VirtualInstrument interface has no diagram access (toolkit-capabilities.md:666), and building an op VI is
++# outside a labview=read card. So the uid is not read here; the after-capture of the diagram is the record.
++UID_ROUTE = "none: needs a Selection List[] 6349400 op (unbuilt; card labview=read) - screenshot recorded"
+ COUNT_RE = re.compile(r"(\d+)\s*errors?\s*and\s*warnings?", re.I)
+ 
+ 
+@@ -96,7 +101,7 @@ def make_on_item(scratch, R):
+         rec["show_error"] = {"fg_after": fg, "bd_before": b_path, "bd_after": a_path,
+                              "bd_changed": bool(a_md5 and a_md5 != b_md5), "diagram_fronted": bd in fg,
+                              "error_list_still_open": still, "uid": None, "class": None,
+-                             "uid_route": "none: Selection List[] 6349400 op not built"}
++                             "uid_route": UID_ROUTE, "screenshot": a_path}
+         acts.append({"act": "confirm", "tag": "item %d diagram fronted + changed" % rec["index"],
+                      "confirmed": bd in fg and rec["show_error"]["bd_changed"]})
+         if not still:
+@@ -191,10 +196,20 @@ def main():
+         items = R.get("items") or []
+         R["item_count"] = len(items)
+         R["show_error_ok"] = sum(1 for i in items if (i.get("show_error") or {}).get("diagram_fronted"))
++        R["dclicked"] = sum(1 for i in items if i.get("show_error"))
+         R["extra"], R["missing"] = compare(items, expected)
+-        read_ok = (bool(R.get("window")) and R.get("n_reported") is not None and R["item_count"] == R["n_reported"]
+-                   and R.get("closed_with_esc") and R["scratch_deleted"]
+-                   and R["bed_md5_after"] == R["bed_md5_before"] and R.get("block_diagram_open"))
++        R["gates"] = {
++            "window_opened": bool(R.get("window")),
++            "count_read": R.get("n_reported") is not None,
++            "all_items_read": R.get("n_reported") is not None and R["item_count"] == R["n_reported"],
++            "every_item_dclicked": R["dclicked"] == R["item_count"],
++            "closed_with_esc": bool(R.get("closed_with_esc")),
++            "scratch_identical": bool(R.get("scratch_identical")),
++            "scratch_deleted": R["scratch_deleted"],
++            "bed_md5_unchanged": R["bed_md5_after"] == R["bed_md5_before"],
++            "block_diagram_open": bool(R.get("block_diagram_open")),
++            "refs_balanced": (R["ref_counts"] or {}).get("live", 0) == 0}
++        read_ok = all(R["gates"].values())
+         verdict = ("OK" if not (R["extra"] or R["missing"]) else "MISMATCH") if read_ok else "FAIL"
+     R["verdict"], R["seconds"] = verdict, round(time.time() - t0, 1)
+     with open(out, "w", encoding="utf-8") as f:
+@@ -205,6 +220,16 @@ def main():
+                                              R.get("handles_before"), R.get("handles_after"),
+                                              R.get("bed_md5_after") == R.get("bed_md5_before"), R["seconds"]),
+           flush=True)
++    try:
++        import protocol
++        gates = R.get("gates") or {"bed_exists": False}
++        fails = [k for k, v in gates.items() if not v]
++        print(protocol.result_line(protocol.make_result(
++            len(gates) - len(fails), len(fails), fails[0] if fails else None,
++            [{"path": protocol._rel(out), "md5": md5(out)}],
++            status="PASS" if verdict in ("OK", "MISMATCH") else "FAIL")), flush=True)
++    except Exception as e:                                                         # noqa: BLE001
++        print("RESULT-LINE ERROR %s: %s" % (type(e).__name__, e), flush=True)
+     print("ERRORLIST-VERDICT: %s %s" % (verdict, out), flush=True)
+     return {"OK": 0, "MISMATCH": 1}.get(verdict, 2)
+ 
+diff --git a/tools/lv_errorlist.py b/tools/lv_errorlist.py
+index 596e2a8..a64783d 100644
+--- a/tools/lv_errorlist.py
++++ b/tools/lv_errorlist.py
+@@ -578,7 +578,7 @@ def _sel_in(lay, eb):
+     return None
+ 
+ 
+-def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None):
++def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None, on_item=None):
+     """METHOD B. Walk the list one row at a time; each step: capture -> LOCATE the highlighted row by
+     COLOUR on that capture -> OCR that row and the Details pane -> act -> capture -> CONFIRM the
+     selection moved exactly one row.
+@@ -677,7 +677,7 @@ def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None):
+         if sel is None:
+             sel = sel2
+ 
+-    wheel_dir, stall, row_ord = -1, 0, 0
++    wheel_dir, row_ord = -1, 0
+     for step in range(max_steps):
+         if img is None or sel is None:
+             break
+@@ -721,22 +721,37 @@ def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None):
+             R["items"].append(rec)
+             log("   item {0:>2}: object={1!r} reason={2!r} detail={3!r}".format(
+                 rec["index"], obj[:40], reason[:70], (detail or "")[:70]))
++            # 2026-09-24 (tools/errorlist_check.py, user decision 5): an optional per-item hook, called while
++            # the row is the highlighted one; the walk re-fronts the dialog itself before its next keystroke.
++            if on_item is not None:
++                try:
++                    on_item(rec, acts)
++                except Exception as e:                                             # noqa: BLE001
++                    rec["on_item_error"] = "{0}: {1}".format(type(e).__name__, str(e)[:160])
+         if n_want and len(R["items"]) >= n_want:
+             log("  reached the window's own count of {0} items".format(n_want))
+             break
+ 
+         # --- advance exactly one row, and CONFIRM it moved -----------------------------------
++        # 2026-09-24 (card chat-C2): (a) the dialog is RE-FRONTED before every wheel and every click - an
++        # `on_item` double-click fronts the block diagram, which then sits over the list, and run
++        # errorlist_check_s4_r1 clicked the DIAGRAM twice (gui_actions.log 18:08:14/18:08:22) and stopped at
++        # 2 of 15; (b) a retry never re-records the row (that run recorded item 0 twice); (c) the wheel
++        # direction is flipped inside the step, not by `continue` (which re-recorded the row too).
+         target = y0 + pitch
+         if target + pitch - 1 > eb[1] - 2:            # no room: scroll first, measure the step
+-            g._lv_gui("-Action", "wheel", "-X", str(org[0] + img.width // 2),
+-                      "-Y", str(org[1] + (eb[0] + eb[1]) // 2), "-Notches", str(wheel_dir))
+-            acts.append({"act": "wheel", "tag": "step %d scroll" % step, "notches": wheel_dir})
+-            time.sleep(0.45)
+-            img, path, lay, eb, s2 = grab("s{0}".format(step))
++            s2 = None
++            for _wtry in (1, 2):
++                ensure_foreground(wtitle, hwnd, acts, "step %d before wheel" % step)
++                g._lv_gui("-Action", "wheel", "-X", str(org[0] + img.width // 2),
++                          "-Y", str(org[1] + (eb[0] + eb[1]) // 2), "-Notches", str(wheel_dir))
++                acts.append({"act": "wheel", "tag": "step %d scroll" % step, "notches": wheel_dir})
++                time.sleep(0.45)
++                img, path, lay, eb, s2 = grab("s{0}_{1}".format(step, _wtry))
++                if s2 is not None and s2[0] != y0:
++                    break
++                wheel_dir = -wheel_dir                # direction measured, never assumed
+             if s2 is None or s2[0] == y0:
+-                if wheel_dir == -1:                   # direction measured, never assumed
+-                    wheel_dir = 1
+-                    continue
+                 log("  the list will not scroll further - end of the list")
+                 break
+             acts.append({"act": "confirm", "tag": "step %d list scrolled" % step, "confirmed": True,
+@@ -745,24 +760,23 @@ def read_by_capture(R, wtitle, acts, log, max_steps=80, hwnd=None):
+             target = y0 + pitch
+             if target + pitch - 1 > eb[1] - 2:
+                 break
+-        if mode == "keys":
+-            ensure_foreground(wtitle, hwnd, acts, "step %d" % step)
+-            send_keys("{DOWN}", acts, "step %d" % step, wait_ms=300)
+-        else:
+-            click_img(img.width // 6, target + pitch // 2, "step %d select the next row" % step, org)
+-        img, path, lay, eb, s3 = grab("b{0}".format(step + 1))
+-        moved = bool(s3 and s3[0] == target)
+-        acts.append({"act": "confirm", "tag": "step %d highlight moved one row down" % step,
+-                     "confirmed": moved, "want_y": target, "got_y": s3[0] if s3 else None})
+-        if not moved:
+-            stall += 1
+-            if stall >= 2:
+-                log("  the highlight stopped moving - end of the list")
++        moved, s3 = False, None
++        for _try in (1, 2):
++            ensure_foreground(wtitle, hwnd, acts, "step %d try %d" % (step, _try))
++            if mode == "keys":
++                send_keys("{DOWN}", acts, "step %d" % step, wait_ms=300)
++            else:
++                click_img(img.width // 6, target + pitch // 2, "step %d select the next row" % step, org)
++            img, path, lay, eb, s3 = grab("b{0}_{1}".format(step + 1, _try))
++            moved = bool(s3 and s3[0] == target)
++            acts.append({"act": "confirm", "tag": "step %d highlight moved one row down" % step,
++                         "confirmed": moved, "want_y": target, "got_y": s3[0] if s3 else None})
++            if moved:
+                 break
+-            if s3:
+-                sel = s3
+-            continue
+-        stall, sel = 0, s3
++        if not moved:
++            log("  the highlight stopped moving - end of the list")
++            break
++        sel = s3
+     R["categories"] = headers
+ 
+ 
+@@ -775,7 +789,7 @@ def _split(raw):
+     return (m.group(1).strip(), m.group(2).strip()) if m else ("", t)
+ 
+ 
+-def read(vi_path, out_json=None, maxdepth=14, dump_tree=True, log=print):
++def read(vi_path, out_json=None, maxdepth=14, dump_tree=True, log=print, on_item=None):
+     """Open the Error List for `vi_path` (already in memory), read every item, close it.
+ 
+     Returns the record; also written to `out_json`. The VI is never run and never saved."""
+@@ -846,7 +860,7 @@ def read(vi_path, out_json=None, maxdepth=14, dump_tree=True, log=print):
+     # --- method B: capture + OCR, used when no accessibility route exposed a row ---------------
+     if not R["items"]:
+         try:
+-            read_by_capture(R, wtitle, acts, log, hwnd=hwnd)
++            read_by_capture(R, wtitle, acts, log, hwnd=hwnd, on_item=on_item)
+         except Exception as e:                                                     # noqa: BLE001
+             R["errors"].append("capture+OCR: {0}: {1}".format(type(e).__name__, str(e)[:200]))
+             log("  capture+OCR RAISED {0}: {1}".format(type(e).__name__, str(e)[:200]))
