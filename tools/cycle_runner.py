@@ -30,6 +30,9 @@ STOP CONDITIONS (all four, each written to the runner log, the last three also a
   4. `--cycles N` exhausted. Exit 0.
   (2026-09-24, card chat-D) also: LabVIEW not verified gone at cycle end (labview_close_hook), and a steer/1 card
   refused twice (protocol.steer_after_cycle -> a decisions_pending item). Exit 3.
+  (2026-09-26, card chat-M1) also: the JUDGEMENT LADDER (opus medium -> opus high -> fable low -> fable medium,
+  state in <bench>/judge_ladder.json) triggered again at fable/medium -> a decisions_pending item. Exit 3.
+  JUDGE A/B: until 2026-09-28 07:00 KST the level-0 effort is medium on odd cycles, high on even (--judge-ab).
 USAGE LIMIT (CLAUDE.md's protocol): a rate/usage-limit message in the session's output is NOT a failure - the
 runner sleeps until the renewal time + 2 min and RERUNS THE SAME CYCLE from the beginning ("rerun, don't resume";
 a cycle interrupted mid-run is void). The partial attempt is logged as a non-result.
@@ -232,6 +235,151 @@ FF_PROMPT = ("\n\n## FIREFIGHTER CYCLE (runner-triggered, model fable/low)\n"
              "it inside this cycle. "
              "Every other rule stands: no new process device, no motor move, no original touched, STATUS NEXT "
              "written, retrospective run. If you cannot clear it, say so in NEXT in one paragraph for the user.\n")
+
+
+# JUDGEMENT LADDER (user 2026-09-26, card chat-M1): the judgement model is raised BY RULE, from files only, never by
+# a session's own feeling. Level 0 = --model/--effort (opus 5.5 medium; A/B below); +1 after a cycle whose next.json
+# came out UNCHANGED, or whose retrospective (archived in that cycle) names a judgement-quality VIOLATION slug; a
+# cycle that DELIVERS (a PASS result card with artefacts, or a goalmap milestone newly `done`) resets to 0. A trigger
+# at level 3 is RUNNER STOP + a decisions_pending item. Data: fable/low delivered L7-1b (cycles 71/72) after Opus failed
+# twice; cycle 87 fable/low judgement produced nothing in 6 min - so fable is a rung, not the default.
+# The recipe FIREFIGHTER ladder is unchanged; both map onto the same RANK scale and the higher rank wins, so the two
+# never stack above rank 3 = fable/medium.
+JUDGE_RANKS = [None, ("claude-opus-5-5", "high"), ("fable", "low"), ("fable", "medium")]   # rank 0 = --model/--effort
+JUDGE_TOP = len(JUDGE_RANKS) - 1
+JUDGE_SLUGS = ("inference-over-measurement", "wrong-ordering", "judgement-in-material")
+FF_RANK = {"low": 2, "medium": 3}
+VIOLATION_SLUG_RE = re.compile(r"^VIOLATION:\s*([a-z][\w-]*)", re.M)
+# JUDGE A/B (user 2026-09-26, "Opus 5.5도 기본을 medium이 좋을지 high가 좋을지도 판단 필요"): until 2026-09-28 07:00 KST
+# the LEVEL-0 effort alternates by cycle parity (odd = medium, even = high); a raised ladder level overrides it.
+JUDGE_AB_UNTIL = 1790546400    # 2026-09-28 07:00:00 KST = 2026-09-27 22:00:00 UTC (calendar.timegm)
+
+
+def judge_ab_effort(n, mode, now=None):
+    """(effort | None, why). mode on|off|auto; auto = on before JUDGE_AB_UNTIL."""
+    now = time.time() if now is None else now
+    on = mode == "on" or (mode == "auto" and now < JUDGE_AB_UNTIL)
+    if not on:
+        return None, "A/B off (%s)" % ("after 2026-09-28 07:00 KST" if mode == "auto" else mode)
+    return ("medium" if n % 2 else "high"), "A/B cycle parity %s" % ("odd" if n % 2 else "even")
+
+
+def judge_choice(level, ff_recipe, ff_rung, base_model, base_effort):
+    """(rank, model, effort): the higher of the judgement-ladder level and the firefighter rung, capped at fable/medium."""
+    rank = max(0, min(int(level), JUDGE_TOP))
+    if ff_recipe:
+        rank = max(rank, FF_RANK.get(FF_LADDER[min(ff_rung, len(FF_LADDER) - 1)], 2))
+    rank = min(rank, JUDGE_TOP)
+    if rank == 0:
+        return 0, base_model, base_effort
+    m, e = JUDGE_RANKS[rank]
+    return rank, m, e
+
+
+def judge_ladder_step(level, next_moved, slugs, delivered):
+    """-> (new_level, reason, stop). Pure; the caller persists and logs."""
+    if delivered:
+        return 0, "delivered (%s) - reset to level 0" % delivered, False
+    trig = []
+    if not next_moved:
+        trig.append("next.json UNCHANGED")
+    hit = sorted(set(slugs) & set(JUDGE_SLUGS))
+    if hit:
+        trig.append("retrospective VIOLATION " + ",".join(hit))
+    if not trig:
+        return level, "no trigger - level %d kept" % level, False
+    if level >= JUDGE_TOP:
+        return level, "level %d (fable/medium) triggered again: %s" % (level, "; ".join(trig)), True
+    return level + 1, "+1: %s" % "; ".join(trig), False
+
+
+def retro_slugs_in_window(peer_dir, t_start, t_end):
+    """VIOLATION slugs from retrospective files CREATED inside the cycle window (creation time, as failed_recipes)."""
+    out = set()
+    try:
+        names = os.listdir(peer_dir)
+    except OSError:
+        return out
+    for fn in names:
+        if "retrospective" not in fn or not fn.endswith(".md"):
+            continue
+        p = os.path.join(peer_dir, fn)
+        try:
+            st = os.stat(p)
+        except OSError:
+            continue
+        if t_start <= min(st.st_ctime, st.st_mtime) <= t_end:
+            out.update(VIOLATION_SLUG_RE.findall(read(p)))
+    return out
+
+
+def goalmap_done(path):
+    try:
+        with open(path, encoding="utf-8") as f:
+            return {m.get("id") for m in json.load(f).get("milestones", []) if m.get("status") == "done"}
+    except (OSError, ValueError, AttributeError):
+        return set()
+
+
+def delivered_in_window(cards_dir, t_start, t_end, done_before, goalmap_path):
+    """'' or a short description: a PASS result/1 card with artefacts written in the window, or a milestone newly done."""
+    newly = sorted(goalmap_done(goalmap_path) - set(done_before))
+    if newly:
+        return "goalmap milestone done: " + ",".join(newly)
+    try:
+        names = sorted(os.listdir(cards_dir))
+    except OSError:
+        return ""
+    for fn in names:
+        if not (fn.startswith("result_") and fn.endswith(".json")):
+            continue
+        p = os.path.join(cards_dir, fn)
+        try:
+            if not (t_start <= os.path.getmtime(p) <= t_end):
+                continue
+            with open(p, encoding="utf-8") as f:
+                d = json.load(f)
+        except (OSError, ValueError):
+            continue
+        if isinstance(d, dict) and d.get("schema") == "result/1" and d.get("status") == "PASS" and d.get("artefacts"):
+            return "PASS card " + fn
+    return ""
+
+
+def judge_state_load(bench):
+    d = protocol._json_load(os.path.join(bench, "judge_ladder.json"), {})
+    try:
+        return max(0, min(int(d.get("level", 0)), JUDGE_TOP)), str(d.get("reason", "start"))
+    except (TypeError, ValueError):
+        return 0, "start"
+
+
+def judge_state_save(bench, level, reason, n):
+    try:
+        protocol._json_save(os.path.join(bench, "judge_ladder.json"),
+                            {"level": level, "reason": reason[:300], "after_cycle": n,
+                             "at": time.strftime("%Y-%m-%d %H:%M:%S")})
+    except Exception:   # noqa: BLE001 - a lost state file only restarts the ladder at 0
+        pass
+
+
+def add_judge_decision(n, reason, blocks, path):
+    """One open decisions-pending/1 item for a judgement ladder exhausted at fable/medium. (id, None) | (None, why)."""
+    d = protocol._json_load(path, {"schema": "decisions-pending/1", "items": []})
+    items = d.setdefault("items", [])
+    day = time.strftime("%Y-%m-%d")
+    did = "D-%s-%02d" % (day, 1 + sum(1 for it in items if str(it.get("id", "")).startswith("D-%s-" % day)))
+    q = ("Judgement ladder exhausted in cycle %d (opus medium -> opus high -> fable low -> fable medium): %s. "
+         "How should the work continue?" % (n, reason))
+    items.append({"id": did, "asked": time.strftime("%Y-%m-%dT%H:%M"), "by": "cycle %d" % n, "question": q[:300],
+                  "options": ["re-plan the current item", "restart the ladder at level 0", "discuss"],
+                  "recommendation": None, "blocks": [b for b in blocks if re.match(r"^M[0-9]+[a-z]?$", b)],
+                  "status": "open", "answer": None, "answered_at": None})
+    ok, why = protocol.validate_obj(d)
+    if not ok:
+        return None, why
+    protocol._json_save(path, d)
+    return did, None
 
 
 LAST_FAIL_LOGS = {}     # key -> log path of the run that produced it, for the most recent failed_recipes() call
@@ -573,7 +721,8 @@ def errorlist_hook(n, a, bench, runner_log, status_text):
     return verdict, js, "see %s" % os.path.basename(log)
 
 
-def write_cycle_card(bench, n, status_text, model, effort, ff_recipe, motor_verdict, a, errorlist=None, steer=None):
+def write_cycle_card(bench, n, status_text, model, effort, ff_recipe, motor_verdict, a, errorlist=None, steer=None,
+                     note=None):
     """C1: `<bench>/cards/cycle_<n>.json`, validated against docs/protocol/cycle.json. Returns (path, None) or
     (None, reason). `errorlist` is {path, verdict OK|MISMATCH} from errorlist_hook, null when skipped (card chat-C2); `bed` is read
     from the optional `<bench>/bed.json` ({path, md5}) and is null when there is none."""
@@ -607,6 +756,8 @@ def write_cycle_card(bench, n, status_text, model, effort, ff_recipe, motor_verd
             "motor_session": (motor_verdict or None) and str(motor_verdict)[:120],
             "next": protocol._rel(next_path), "budget": {"minutes": float(a.max_min), "dispatches": 8},
             "rules": CYCLE_RULES}
+    if note:
+        card["note"] = str(note)[:300]
     ok, why = protocol.validate_obj(card)
     if not ok:
         return None, why
@@ -807,6 +958,13 @@ def main():
     ap.add_argument("--firefighter", default="", metavar="RECIPE",
                     help="USER-ORDERED: start the FIRST cycle as a firefighter on this recipe basename (the ladder "
                          "low -> medium -> user then applies as usual)")
+    ap.add_argument("--judge-ab", default="auto", choices=("auto", "on", "off"),
+                    help="level-0 judgement effort A/B by cycle parity (odd medium, even high); auto = on until "
+                         "2026-09-28 07:00 KST (user 2026-09-26)")
+    ap.add_argument("--peer-dir", default=os.path.join(ROOT, "archive", "peer"),
+                    help="self-test only: where retrospectives are read for the judgement ladder")
+    ap.add_argument("--goalmap", default=os.path.join(ROOT, "docs", "goalmap.json"),
+                    help="self-test only: the goal map whose milestones count as delivery")
     ap.add_argument("--status", default=os.path.join(ROOT, "STATUS.md"))
     ap.add_argument("--bench-dir", default=os.path.join(ROOT, "tools", "bench"))
     ap.add_argument("--prompt-file", default=os.path.join(HERE, "cycle_prompt.md"))
@@ -913,7 +1071,23 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
                 ff_recipe, ff_rung = key, 0
                 break
         ff_pending = None
-        model, effort = (a.ff_model, FF_LADDER[ff_rung]) if ff_recipe else (a.model, a.effort)
+        # JUDGEMENT LADDER + A/B (card chat-M1): level from <bench>/judge_ladder.json; rank = max(level, ff rung).
+        j_level, j_reason = judge_state_load(bench)
+        ab_eff, ab_why = judge_ab_effort(n, a.judge_ab)
+        base_effort = ab_eff or a.effort
+        j_rank, model, effort = judge_choice(j_level, ff_recipe, ff_rung, a.model, base_effort)
+        if ff_recipe and model == "fable":
+            model = a.ff_model          # --ff-model still names the firefighter's fable build
+        if ab_eff:
+            log_line(runner_log, "JUDGE-AB | cycle %d | %s | %s" % (n, ab_eff, ab_why if j_rank == 0 else
+                                                                   "%s, OVERRIDDEN by rank %d (%s/%s)"
+                                                                   % (ab_why, j_rank, model, effort)))
+        log_line(runner_log, "JUDGE-LADDER | %s | cycle %d | level %d rank %d -> %s/%s | %s%s"
+                 % (time.strftime("%Y-%m-%d %H:%M:%S"), n, j_level, j_rank, model, effort, j_reason[:160],
+                    (" | firefighter rung %d" % (ff_rung + 1)) if ff_recipe else ""))
+        j_note = "judge-ladder level %d rank %d: %s%s" % (j_level, j_rank, j_reason[:150],
+                                                          ("; judge-ab %s" % ab_eff) if ab_eff else "")
+        goal_done_before = goalmap_done(a.goalmap)
         this_prompt = prompt + (FF_PROMPT % ff_recipe if ff_recipe else "")
         if ff_recipe:
             log_line(runner_log, "FIREFIGHTER | %s | cycle %d runs as %s/%s (rung %d of %d): `%s` failed in the "
@@ -970,7 +1144,7 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
                                ", ".join(steer_card["goal_ids"]), steer_card["item"]))
         # C1: the cycle card. An invalid card is not dispatched (docs/session-protocol.md, common rule 5).
         card_path, card_why = write_cycle_card(bench, n, status_text, model, effort, ff_recipe, why, a, el_card,
-                                               steer_path if steer_card else None)
+                                               steer_path if steer_card else None, j_note)
         if not card_path:
             reason = "the cycle/1 card for cycle %d did not validate (%s) - no cycle is dispatched without one" \
                      % (n, card_why)
@@ -1073,6 +1247,24 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
                 log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
                 note_in_status(status_path, reason)
                 return 3
+
+        # JUDGEMENT LADDER step (card chat-M1), from files only: next.json moved?, retrospective slugs, delivery.
+        t_now = time.time()
+        delivered = delivered_in_window(os.path.join(bench, "cards"), t0, t_now, goal_done_before, a.goalmap)
+        slugs = retro_slugs_in_window(a.peer_dir, t0, t_now)
+        new_level, j_why, j_stop = judge_ladder_step(j_level, next_moved, slugs, delivered)
+        log_line(runner_log, "JUDGE-LADDER | %s | cycle %d end | level %d -> %d | %s"
+                 % (time.strftime("%Y-%m-%d %H:%M:%S"), n, j_level, new_level, j_why[:200]))
+        if j_stop:
+            blocks = list((next_card or {}).get("advances") or []) if next_card else []
+            did, derr = add_judge_decision(n, j_why, blocks, os.path.join(bench, "decisions_pending.json"))
+            judge_state_save(bench, 0, "reset after RUNNER STOP in cycle %d (%s)" % (n, j_why), n)
+            reason = ("the judgement ladder is exhausted: %s - the user's decision is requested (%s)"
+                      % (j_why, ("decisions_pending " + did) if did else ("decisions_pending NOT written: %s" % derr)))
+            log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
+            note_in_status(status_path, reason)
+            return 3
+        judge_state_save(bench, new_level, j_why, n)
 
         if steer_card:
             s_act, s_detail = protocol.steer_after_cycle(steer_path, steer_card, next_card, n,

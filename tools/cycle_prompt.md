@@ -74,6 +74,14 @@ whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding t
   **`material-fable-medium`**; after that the item goes to `tools/bench/decisions_pending.json` and the card stops.
   Two rungs per card, never more; the result card records which rung solved it (the Opus-vs-Fable data the user
   wants). Same flags, same rules, same peers.
+  **UNTIL 2026-09-28 07:00 KST (user 2026-09-26, card chat-M1) `material` itself runs on fable/low**, so the ladder
+  is ONE rung: a failed `material` card goes to **`material-fable-medium`** (`escalation: 2`), and if that fails the
+  item goes to `tools/bench/decisions_pending.json`. `material-fable-low` is not dispatched while this note stands.
+  After that time `material` is back on Opus 5.5 medium and the two-rung ladder above applies again.
+- **JUDGEMENT LADDER (runner-decided, user 2026-09-26, card chat-M1).** Your model/effort is chosen by
+  `tools/cycle_runner.py` from files (opus medium -> opus high -> fable low -> fable medium -> RUNNER STOP) and
+  recorded in the cycle card's `note` as `judge-ladder level N: <reason>`. Do not change it; deliver something
+  (a PASS result card with artefacts, or a goalmap milestone done) and the next cycle drops back to level 0.
 - **Answer from the plan first.** If the plan's `## Pre-decided` section already settles a question, apply it and
   say which line — do not re-open it, and do not ask the user.
 - **Decide** the things only judgement can decide: design, what to accept from a review, rule-1a equivalence,
