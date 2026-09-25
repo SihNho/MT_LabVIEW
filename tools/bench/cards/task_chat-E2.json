@@ -1,0 +1,60 @@
+{
+ "schema": "task/1",
+ "id": "chat-E2",
+ "kind": "build",
+ "goal": "errorlist_check: handle count advisory (never a FAIL); expected-errors from the plan open_rows; A/B COM pointer test; _APP_PIN comment corrected",
+ "why": "Runner relaunch 10:24 stopped at cycle 80: errorlist read 22/22 items on D1_k but FAILed on handles_flat (37239->31287, tol 5000 was a guess). Handles are a record, not a start condition (judgement).",
+ "inputs": [
+  {
+   "path": "tools/errorlist_check.py",
+   "md5": "9064e9358b241d98f10ab611993d0326"
+  },
+  {
+   "path": "tools/bench/errorlist_check_cycle80.log",
+   "md5": "738a879d1246cc6802bcd04fe64ce8db"
+  },
+  {
+   "path": "archive/peer/2026-09-25-chat-E1r-pointer-release.md",
+   "md5": "d905ebc21564c6be904192c60dad35e3"
+  }
+ ],
+ "pass": [
+  "handles_before/after/delta recorded in the JSON and log; handles_flat is no longer a gate and cannot set verdict FAIL",
+  "expected errors: if tools/bench/plan_<stage>.json for the bed declares open_rows, derive the expected Error List items and compare; MISMATCH only for undeclared items",
+  "K bed: rerun the check on D1_k_20260925_100155.vi from cold: 22/22 read, verdict OK or MISMATCH (not FAIL), LabVIEW closed after, bed md5 unchanged",
+  "A/B COM pointer test (~90 s, COM only, no VI): A release pointer, poll PID 30 s, re-Dispatch; B hold + second Dispatch; PIDs/StartTime logged; verdict on the E1r hypothesis",
+  "_APP_PIN comment in errorlist_check.py corrected to GetVIReference / 0x80010007 per the review",
+  "selftest_errorlist_retry + selftest_cycle_runner_ff green; RESULT line; commit"
+ ],
+ "outputs": [
+  "tools/errorlist_check.py",
+  "tools/bench/errorlist_check_k_20260925.log",
+  "tools/bench/com_pointer_ab_20260925.log"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/errorlist_check.py",
+   "tools/lv_errorlist.py",
+   "tools/cycle_runner.py",
+   "tools/bench/**"
+  ],
+  "status_edit": false,
+  "git_commit": true,
+  "peers": [
+   "hypothesis"
+  ]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "unblocks": "M3",
+ "rules": [
+  "GUI only where scripting is VERIFIED unreachable",
+  "Reference hygiene"
+ ]
+}
