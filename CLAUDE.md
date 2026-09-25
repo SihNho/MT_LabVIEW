@@ -249,6 +249,18 @@ labview-lock:
    a tool, re-queuing a cell). If a route needs the user, say that in one sentence and build the
    scripted route.
 
+### Reports reach the user THROUGH THE CLAUDE SESSION — the user is remote (user, 2026-09-25)
+
+*"보통은 내가 원격으로 러너 확인 및 지침을 줌. 그러니 클로드 세션으로 확인 필요함. 훅 경로 변경하도록."* A Windows toast,
+a local file or a session-only timer (CronCreate, ScheduleWakeup — both failed silently, 09-23 and 09-25) is not a
+report. Path in force: (1) `cycle_runner.py` writes `HEARTBEAT` at every cycle end and at RUNNER STOP
+(`tools/bench/heartbeat_latest.md`, mechanical, no model); (2) the app-level scheduled task `runner-cycle-report`
+(`~/.claude/scheduled-tasks/runner-cycle-report/SKILL.md`, every 30 min, survives session changes, runs while the app
+is open) turns new events into a Korean report (`tools/bench/reports/`), acks `report_gate`, and its completion
+notifies the main chat session, which relays the report verbatim and calls `PushNotification` (phone when mobile
+push is on); (3) `tools/hooks/report_gate.py` still blocks the chat's turn on unreported events when the user speaks
+first. Open user decisions (`tools/bench/decisions_pending.json`) are part of every report.
+
 ### Unattended runs: silence is not progress (2026-09-05) — now mechanical
 
 A log monitor only reports what a live process writes. Two mechanisms replace attention:
