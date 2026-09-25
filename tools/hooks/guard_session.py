@@ -8,8 +8,8 @@ going after its cycle is finished, so the context grows all night and the expens
 
 Prose cannot enforce "now stop" on the session that is enjoying itself. So two refusals, both counted in a file:
 
-  (a) DISPATCH CAP. The 9th `material` / `log-reader` dispatch in one session is refused. Eight is what a cycle
-      has cost when it was run well; past that the session is carrying a second cycle.
+  (a) DISPATCH CAP. The 7th material-type dispatch (material + its Fable rungs + log-reader + SendMessage resumes)
+      in one session is refused (card chat-N1 (4b), user 2026-09-26; was 8). peer.ps1 is never counted.
   (b) AFTER THE RETROSPECTIVE, THE CYCLE IS CLOSED. Once `tools/retrospective.py` has run in this session
       (recorded by `tools/hooks/guard_bash.py`, which sees the command), any further material dispatch is
       refused. A retrospective reviews a cycle; work done after it belongs to a cycle nobody reviewed.
@@ -33,10 +33,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 BENCH = os.path.join(ROOT, "tools", "bench")
 
-MAX_DISPATCHES = 8
-# The two agents a cycle's material work goes through (.claude/agents/). Every other subagent_type - the peer
-# roles, Explore, a one-off general-purpose search - is not a cycle's work and is never counted or refused.
-COUNTED = {"material", "log-reader"}
+MAX_DISPATCHES = 6          # card chat-N1 (4b), user-approved 2026-09-26 (was 8)
+# The agents a cycle's material work goes through (.claude/agents/), incl. the Fable escalation rungs. Every other
+# subagent_type - the peer roles, Explore, a one-off general-purpose search - is never counted or refused; peer.ps1
+# runs through Bash and is never counted.
+COUNTED = {"material", "material-fable-low", "material-fable-medium", "log-reader"}
 # This harness names the sub-agent tool `Agent`; older Claude Code builds name it `Task`. Matching both costs
 # nothing and stops the hook from becoming silently inert after an upgrade (the defect guard_cycle's PRIOR_ART_RE
 # had for a day: a gate that never fires looks exactly like a gate that passes).
@@ -154,10 +155,10 @@ def main():
             "BLOCKED by tools/hooks/guard_session.py: CYCLE DISPATCH CAP REACHED (%d material/log-reader "
             "dispatches).\n"
             "  session state : %s\n\n"
-            "Eight dispatches is a cycle's worth of material work; past that this session is carrying a second\n"
-            "cycle, which CLAUDE.md section 3 item 2 forbids. Close this one: run the retrospective if it is\n"
-            "owed, write STATUS.md's NEXT line, and let the runner start a fresh session - a fresh session beats\n"
-            "compacting a long one.\n"
+            "Six dispatches is a cycle's worth of material work (card chat-N1, 2026-09-26); past that this\n"
+            "session is carrying a second cycle, which CLAUDE.md section 3 item 2 forbids. WRITE NEXT AND EXIT:\n"
+            "run the retrospective if it is owed, write STATUS.md's NEXT line, and let the runner start a fresh\n"
+            "session.\n"
             % (MAX_DISPATCHES, os.path.relpath(state_path(sid), ROOT)))
         return 2
     st["dispatches"] = n

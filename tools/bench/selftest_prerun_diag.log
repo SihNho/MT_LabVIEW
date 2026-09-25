@@ -11,3 +11,16 @@ BGRUN START 2026-09-26 08:07:39 limit 3.0 min: py -u C:/Users/KimLab/AppData/Loc
 SUMMARY 9/9 gates pass
 RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"artefacts":[]}
 BGRUN END rc=0 after 0s
+BGRUN START 2026-09-26 08:09:44 limit 3.0 min: py -u tools/bench/selftest_prerun_diag.py
+  ok   D1 modifying fixture refused without records, names classifier + records  [classifier stage_prerun.is_vi_modifying (card chat-N1): C:/Users/KimLab/AppData/Local/Temp/prerun_diag_selftest_8060/diag_fake_mod.py imports stagekit and calls connect, move_in - gated like tools/recipes/stage_*.py] LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/
+  ok   D2 modifying fixture allowed with dry + prerun records  
+  ok   D3 read-only stagekit fixture allowed without records  
+  ok   D4 connect() without importing stagekit is not modifying  []
+  ok   D5 stage_* unchanged: refused w/o records, allowed with; grep is no launch  ["LAUNCH GATE (CLAUDE.md §3 'Stages are SIMULATED', decisions 1/2): C:/Users/KimLab/AppData/Local/Temp/prerun_diag_selftes", '']
+  ok   D6 diag_c90_t0_step3b.py -> True, drive_m8_panelmin89b.py -> False  [['connect_from_wire', 'discard_work', 'junk_purge', 'move_in', 'save'], []]
+  ok   D7 guard_bash refuses the modifying fixture launch (exit 2, classifier named)  exit 2 BLOCKED by tools/hooks/guard_bash.py: [classifier stage_prerun.is_vi_modifying (card chat-N1): C:/Users/KimLab/AppData/Local/Temp/prerun_diag_selftest_8060/diag_fake_mod2.py imports stagekit and calls
+  ok   D8 the gate's own tooling is not classified  
+  ok   D9 MODIFY_VERBS listed (20 verbs)  ['add_shift_reg', 'add_sr_row', 'cfw_second_pass', 'connect', 'connect_from_wire', 'const_row', 'copy_in', 'create_local_read', 'delete_object', 'delete_wire', 'discard_work', 'from_decision', 'fs_inner_tunnel_connect', 'junk_purge', 'move_in', 'plan_rows', 'save', 'save_route', 'wire_indicators', '
+SUMMARY 9/9 gates pass
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 0s

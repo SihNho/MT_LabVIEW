@@ -194,6 +194,37 @@
   "retry_of_card": {
    "$ref": "#/definitions/cardid",
    "description": "the card this escalation re-issues"
+  },
+  "requires": {
+   "type": "array",
+   "description": "card chat-N1 (4a), user 2026-09-26: every op / verb / donor file / terminal the card depends on and the plan does not cite by uid. Checked OFFLINE by `py tools/protocol.py requires <card>` (writes tools/bench/cards/requires_<id>.json); a bgrun/LabVIEW launch under the bound card is refused until that file exists, matches the card's md5 and lists nothing missing.",
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+     "kind",
+     "name"
+    ],
+    "properties": {
+     "kind": {
+      "enum": [
+       "op",
+       "file",
+       "terminal",
+       "verb"
+      ]
+     },
+     "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+     },
+     "where": {
+      "type": "string",
+      "maxLength": 200
+     }
+    }
+   }
   }
  },
  "definitions": {

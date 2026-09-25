@@ -1146,6 +1146,59 @@ def write_record(kind, recipe, status, first_fail, extra=None):
 def launched_stage_scripts(cmd):
     """argv only: every `tools/recipes/stage_*.py` a command RUNS - a python token followed (past flags) by that
     path, directly or after bgrun's `--`. A path that is only an argument (grep, cat, --dry X) is not a launch."""
+    return [p for p in launched_py(cmd) if STAGE_RE.search(p.replace("\\", "/"))]
+
+
+# ------------------------------------------------------------------ card chat-N1 (2): VI-modifying scripts by AST
+# Cycle 90: tools/bench/diag_c90_t0_step3*.py (not stage_*) broke a VI 3x on offline-knowable faults. The gate now
+# classifies ANY launched .py by STRUCTURE: it imports stagekit AND calls a MUTATING stagekit verb. MODIFY_VERBS is
+# the mutating subset of stagekit.Stage's public methods (tools/stagekit.py:466-1097); the read-only ones (es, count,
+# census, uid_index, wired_terminals, net_sources, broken_wire_count, fs_inner_tunnel_read, address, resolve,
+# live_graph, rule_check, start, close, gate, fact, ...) are not in it. VI_MOD_EXEMPT = the gate's own tooling.
+MODIFY_VERBS = frozenset((
+    "junk_purge", "delete_wire", "delete_object", "move_in", "connect", "connect_from_wire",
+    "fs_inner_tunnel_connect", "wire_indicators", "add_shift_reg", "wire_sr", "create_local_read", "copy_in",
+    "add_sr_row", "const_row", "cfw_second_pass", "from_decision", "save", "save_route", "plan_rows",
+    "discard_work"))
+VI_MOD_EXEMPT = frozenset(("stage_prerun.py", "stagekit.py", "stagexec.py", "stagesim.py"))
+
+
+def vi_modifying_calls(path):
+    """[] or the sorted MODIFY_VERBS names the file calls, when it imports stagekit (ast; never text search)."""
+    if os.path.basename(path).lower() in VI_MOD_EXEMPT:
+        return []
+    try:
+        tree = ast.parse(REAL_OPEN(path, encoding="utf-8", errors="replace").read(), filename=path)
+    except (OSError, SyntaxError, ValueError):
+        return []
+    imports = False
+    calls = set()
+    for n in ast.walk(tree):
+        if isinstance(n, ast.Import) and any(a.name.split(".")[0] == "stagekit" for a in n.names):
+            imports = True
+        elif isinstance(n, ast.ImportFrom) and (n.module or "").split(".")[0] == "stagekit":
+            imports = True
+        elif isinstance(n, ast.Call):
+            f = n.func
+            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
+            if name in MODIFY_VERBS:
+                calls.add(name)
+    return sorted(calls) if imports else []
+
+
+def is_vi_modifying(path):
+    """card chat-N1 (2): True iff the .py imports stagekit AND calls a name in MODIFY_VERBS."""
+    return bool(vi_modifying_calls(path))
+
+
+def launched_vi_modifying(cmd):
+    """argv only: launched .py scripts that are NOT tools/recipes/stage_*.py but is_vi_modifying() -> gated alike."""
+    return [p for p in launched_py(cmd) if not STAGE_RE.search(p.replace("\\", "/"))
+            and p.lower().endswith(".py") and os.path.isfile(p) and is_vi_modifying(p)]
+
+
+def launched_py(cmd):
+    """argv only: every script path a python token RUNS (past interpreter flags), directly or after bgrun's `--`."""
     out = []
     segs = re.split(r"\s*(?:&&|\|\||;|\|)\s*", cmd or "")
     for seg in segs:
@@ -1164,7 +1217,7 @@ def launched_stage_scripts(cmd):
                 if j < len(toks):
                     p = toks[j]
                     ap = p if os.path.isabs(p) else os.path.join(ROOT, p)
-                    if STAGE_RE.search(p.replace("\\", "/")):
+                    if p.lower().endswith(".py"):
                         out.append(os.path.normpath(ap))
                     i = j + 1
                     continue
@@ -1356,7 +1409,8 @@ def record_started(cmdline, log=None, pid=None):
     script / stagexec plan the child runs; returns the records ([] for any other command). The card id is the
     `--retry-card` judgement card when this run is past the cap (check_cap decides, as the hook did), else None;
     `retry_card_path` records the flag whenever it was given."""
-    units = [(s, None) for s in launched_stage_scripts(cmdline)] + launched_plan_runs(cmdline)
+    units = ([(s, None) for s in launched_stage_scripts(cmdline) + launched_vi_modifying(cmdline)]
+             + launched_plan_runs(cmdline))
     if not units:
         return []
     runs, ck, out = read_stage_runs(), cycle_key(), []
@@ -1376,9 +1430,22 @@ def check_launch(cmd):
     without a judgement card. It RECORDS NOTHING: a run is recorded in ONE place, record_started() called by
     tools/bgrun.py at child start (card 78-2; card chat-L2 removed the old `record=True` path, whose lines carried
     `by: check_launch` and were never counted - a second recorder that looked like the first)."""
-    units = [(s, None) for s in launched_stage_scripts(cmd)] + launched_plan_runs(cmd)
+    units = ([(s, None) for s in launched_stage_scripts(cmd) + launched_vi_modifying(cmd)]
+             + launched_plan_runs(cmd))
     if not units:
         return True, ""
+    ok_all, why_all = _check_units(units, cmd)
+    if not ok_all:
+        cls = [s for s, plan in units if not plan and not STAGE_RE.search(s.replace("\\", "/"))]
+        if cls:
+            why_all = ("[classifier stage_prerun.is_vi_modifying (card chat-N1): {0} imports stagekit and calls {1} "
+                       "- gated like tools/recipes/stage_*.py] ").format(
+                           ", ".join(rel(s) for s in cls), ", ".join(vi_modifying_calls(cls[0]))) + why_all
+    return ok_all, why_all
+
+
+def _check_units(units, cmd):
+    """check_launch's per-unit decision (dry + prerun records, decision 4, RETRY_CAP), unchanged by card chat-N1."""
     recs = read_records()
     runs, ck = read_stage_runs(), cycle_key()
     for s, plan in units:

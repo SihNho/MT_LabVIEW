@@ -14,6 +14,14 @@ Nobody is watching this session. Everything you need is on disk.
   itself to the card (its first command) and the hooks enforce the flags. Its answer is a `result/1` object (also in
   `tools/bench/cards/result_<id>.json`); validate it and read `status` / `blocked_by` / `first_fail` — never infer
   success from wording.
+- **Fill `requires` (card chat-N1 4a, user 2026-09-26).** Every op VI, script verb, donor file or terminal the card
+  depends on and your plan does NOT already cite by uid goes into the card's `requires`
+  (`[{"kind": "op|verb|file|terminal", "name": "...", "where": "<optional dir / source file / wiki key>"}]`). Check it
+  yourself first with `py tools/protocol.py requires <card>` (offline, seconds); a MISSING item is a tool to build or a
+  plan to change NOW, not a 60-minute discovery inside LabVIEW (cycle 89, cards 89-1/89-2). The material session runs
+  the same check first and returns BLOCKED on anything missing; the hook refuses its launches until it passes.
+- **Six material-type dispatches per session** (material, its Fable rungs, log-reader, SendMessage resumes; user
+  2026-09-26, was 8). The 7th is refused: write NEXT and exit.
 - **Reviews are cards too.** `prior_art_review.py`, `retrospective.py`, `outcome_review.py` and `doc_ingest.py` write a
   `review/1` card and pass it to `peer.ps1 -ReviewCard`; for a failed-prediction review write your own `review/1`
   (`py tools/protocol.py new review --id ...`) and pass `-ReviewCard`. The peer's `verdict/1` lands in
@@ -74,10 +82,8 @@ whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding t
   **`material-fable-medium`**; after that the item goes to `tools/bench/decisions_pending.json` and the card stops.
   Two rungs per card, never more; the result card records which rung solved it (the Opus-vs-Fable data the user
   wants). Same flags, same rules, same peers.
-  **UNTIL 2026-09-28 07:00 KST (user 2026-09-26, card chat-M1) `material` itself runs on fable/low**, so the ladder
-  is ONE rung: a failed `material` card goes to **`material-fable-medium`** (`escalation: 2`), and if that fails the
-  item goes to `tools/bench/decisions_pending.json`. `material-fable-low` is not dispatched while this note stands.
-  After that time `material` is back on Opus 5.5 medium and the two-rung ladder above applies again.
+  (The 2026-09-26 "material on fable/low until Monday" trial was ENDED EARLY by the user the same morning after cycles
+  89-91: `material` is back on Opus 5.5 medium and the two-rung ladder above applies.)
 - **JUDGEMENT LADDER (runner-decided, user 2026-09-26, card chat-M1).** Your model/effort is chosen by
   `tools/cycle_runner.py` from files (opus medium -> opus high -> fable low -> fable medium -> RUNNER STOP) and
   recorded in the cycle card's `note` as `judge-ladder level N: <reason>`. Do not change it; deliver something

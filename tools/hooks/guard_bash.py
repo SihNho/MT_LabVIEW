@@ -196,7 +196,8 @@ def prerun_gate(cmd):
         return 0
     allow, why = stage_prerun.check_launch(cmd)
     if allow:
-        if stage_prerun.launched_stage_scripts(cmd) or stage_prerun.launched_plan_runs(cmd):   # card chat-S3
+        if (stage_prerun.launched_stage_scripts(cmd) or stage_prerun.launched_plan_runs(cmd)     # card chat-S3
+                or getattr(stage_prerun, "launched_vi_modifying", lambda _c: [])(cmd)):        # card chat-N1 (2)
             _PENDING_STAGE[:] = [cmd]      # kept for callers; RECORDING moved to tools/bgrun.py (card 78-2)
         return 0
     note(False, "PRERUN-GATE " + cmd)

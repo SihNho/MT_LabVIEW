@@ -597,6 +597,142 @@ def src_features(src):
     return out
 
 
+# ------------------------------------------------------------------ card chat-N1 (4a): task/1 `requires`, OFFLINE
+# Cycle 89: cards 89-1/89-2 spent 60 min in LabVIEW learning that a verb and a donor did not exist. A card now lists
+# what it depends on; `py tools/protocol.py requires <card>` checks each item WITHOUT LabVIEW (file system + JSON
+# only) and writes tools/bench/cards/requires_<id>.json; check_command refuses a bgrun / LabVIEW launch under the
+# bound card until that file exists, carries the card's current md5 and lists nothing missing.
+CLAUDEDEV = os.environ.get("REQUIRES_CLAUDEDEV") or r"C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev"
+WIKI_DIR = os.environ.get("REQUIRES_WIKI_DIR") or os.path.join(ROOT, "docs", "wiki", "subvi")
+OP_DOCS = ("docs/toolkit-capabilities.md", "docs/NAMES.md")
+VERB_SRCS = ("tools/gscript.py", "tools/stagekit.py", "tools/stagexec.py")
+BGRUN_SCRIPT_RE = re.compile(r"(?:^|[\\/])bgrun\.py$", re.I)
+
+
+def requires_path(card_id, cards_dir=None):
+    return os.path.join(cards_dir or CARDS_DIR, "requires_%s.json" % card_id)
+
+
+def _grep_cite(rel_path, token):
+    """'<rel>:<line>' of the first line containing token as a whole word, or None."""
+    p = os.path.join(ROOT, rel_path)
+    try:
+        with io.open(p, encoding="utf-8", errors="replace") as f:
+            for i, line in enumerate(f, 1):
+                if re.search(r"(?<![\w])%s(?![\w])" % re.escape(token), line):
+                    return "%s:%d" % (rel_path, i)
+    except OSError:
+        pass
+    return None
+
+
+def _req_op(name, where=None):
+    base = name[:-3] if name.lower().endswith(".vi") else name
+    for d in ([os.path.join(CLAUDEDEV, where)] if where else [os.path.join(CLAUDEDEV, "ops"), CLAUDEDEV]):
+        p = os.path.join(d, base + ".vi")
+        if os.path.isfile(p):
+            cite = next((c for c in (_grep_cite(r, base) for r in OP_DOCS) if c), None)
+            return "%s%s" % (p, (" ; " + cite) if cite else "")
+    return None
+
+
+def _req_verb(name, where=None):
+    import ast as _ast
+    meth = name.split(".")[-1]
+    for r in ([where] if where else VERB_SRCS):
+        try:
+            tree = _ast.parse(io.open(os.path.join(ROOT, r), encoding="utf-8", errors="replace").read())
+        except (OSError, SyntaxError, ValueError):
+            continue
+        for n in _ast.walk(tree):
+            if isinstance(n, (_ast.FunctionDef, _ast.AsyncFunctionDef)) and n.name == meth:
+                return "%s:%d" % (r, n.lineno)
+    return None
+
+
+def _req_file(name, where=None):
+    for p in ([name] if os.path.isabs(name) else [os.path.join(ROOT, name), os.path.join(CLAUDEDEV, name)]):
+        if os.path.isfile(p):
+            return p
+    return None
+
+
+def _req_terminal(name, where=None):
+    import glob as _glob
+    files = ([os.path.join(WIKI_DIR, (where if where.endswith(".json") else where + ".json"))] if where
+             else sorted(_glob.glob(os.path.join(WIKI_DIR, "*.json"))))
+    for f in files:
+        try:
+            d = json.load(io.open(f, encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        for t in d.get("terminals") or []:
+            if isinstance(t, dict) and t.get("term_name") == name:
+                return "%s term_uid %s (%s)" % (_rel(f), t.get("term_uid"), t.get("owner_class"))
+        for c in d.get("connector_pane") or []:
+            if isinstance(c, dict) and c.get("label") == name:
+                return "%s connector_pane[%s]" % (_rel(f), c.get("index"))
+    return None
+
+
+REQ_CHECKS = {"op": _req_op, "verb": _req_verb, "file": _req_file, "terminal": _req_terminal}
+
+
+def check_requires(card):
+    """{ok, missing, found} for the card's `requires` (OFFLINE: file system + JSON, never LabVIEW)."""
+    found, missing = [], []
+    for it in card.get("requires") or []:
+        cite = REQ_CHECKS[it["kind"]](it["name"], it.get("where"))
+        (found if cite else missing).append(dict(it, cite=cite) if cite else dict(it))
+    return {"ok": not missing, "missing": missing, "found": found}
+
+
+def requires_refusal(card, cmd, scripts):
+    """None, or why a bgrun / LabVIEW launch is refused under a card that declares `requires` (argv + card)."""
+    if not card.get("requires"):
+        return None
+    launches = any(BGRUN_SCRIPT_RE.search(p) for p in scripts) or LV_CMD_RE.search(cmd) or any(
+        LV_IMPORT_RE.search(code_only(_src(p))) or RECIPE_PATH_RE.search(p) for p in scripts)
+    if not launches:
+        return None
+    rp = requires_path(card.get("id", ""))
+    try:
+        d = json.load(io.open(rp, encoding="utf-8"))
+    except (OSError, ValueError):
+        return ("card declares `requires` but %s is absent - run `py tools/protocol.py requires <card>` first "
+                "(card chat-N1 4a)" % _rel(rp))
+    if d.get("card_md5") != card.get("_md5"):
+        return "%s is stale (card changed since it was written) - re-run `py tools/protocol.py requires <card>`" % _rel(rp)
+    if not d.get("ok") or d.get("missing"):
+        return "requires missing %s (%s) - BLOCKED until they exist" % (
+            ", ".join("%s:%s" % (m.get("kind"), m.get("name")) for m in d.get("missing") or []) or "?", _rel(rp))
+    return None
+
+
+def _cmd_requires(a):
+    p = _abs(a.card)
+    try:
+        card = load_card(p, None)
+    except (OSError, ValueError) as e:
+        print("INVALID %s: %s" % (a.card, str(e)[:300]))
+        return 1
+    r = check_requires(card)
+    out = dict(r, schema="requires/1", id=card["id"], card=_rel(p), card_md5=_md5(p),
+               t=time.strftime("%Y-%m-%d %H:%M:%S"))
+    rp = requires_path(card["id"], a.cards_dir or None)
+    os.makedirs(os.path.dirname(rp), exist_ok=True)
+    with io.open(rp, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, indent=1)
+    for x in r["found"]:
+        print("FOUND   %s %s -> %s" % (x["kind"], x["name"], x["cite"]))
+    for x in r["missing"]:
+        print("MISSING %s %s" % (x["kind"], x["name"]))
+    ff = ("missing %s:%s" % (r["missing"][0]["kind"], r["missing"][0]["name"])) if r["missing"] else None
+    print(result_line(make_result(len(r["found"]), len(r["missing"]), ff,
+                                  artefacts=[{"path": _rel(rp), "md5": _md5(rp)}])))
+    return 0 if r["ok"] else 1
+
+
 def check_command(card, cmd):
     """None = allowed, else the refusal reason. The card's flags applied to ONE Bash/PowerShell command."""
     fl = card.get("flags") or {}
@@ -605,6 +741,9 @@ def check_command(card, cmd):
     srcs = {p: _src(p) for p in scripts}
     if GIT_COMMIT_RE.search(cmd) and not fl.get("git_commit"):
         return "flags.git_commit is false - this card may not `git commit`"
+    why = requires_refusal(card, cmd, scripts)          # card chat-N1 (4a)
+    if why:
+        return why
     if not fl.get("status_edit") and STATUS_WRITE_RE.search(cmd):
         return "flags.status_edit is false - this card may not write STATUS.md / CLAUDE.md"
     role = peer_role_of(cmd)
@@ -691,6 +830,7 @@ def hook_decision(payload):
                        "runs until then." % (atype, aid))
     try:
         card = load_card(_abs(b["card"]), None)
+        card["_md5"] = _md5(_abs(b["card"]))            # card chat-N1 (4a): requires_<id>.json freshness
     except (OSError, ValueError) as e:
         return False, "the bound card %s no longer loads: %s" % (b.get("card"), str(e)[:200])
     if tool in ("Bash", "PowerShell"):
@@ -1130,8 +1270,12 @@ def main(argv=None):
     r.add_argument("--artefact", action="append")
     d = sub.add_parser("verdict")
     d.add_argument("log")
+    q = sub.add_parser("requires", help="card chat-N1 (4a): check a task/1 card's `requires` OFFLINE")
+    q.add_argument("card")
+    q.add_argument("--cards-dir", default="")
     a = ap.parse_args(argv)
     fn = {"validate": _cmd_validate, "new": _cmd_new, "result-line": _cmd_result_line, "verdict": _cmd_verdict,
+          "requires": _cmd_requires,
           "bind": _cmd_bind, "parse-verdict": _cmd_parse_verdict, "render-review": _cmd_render_review}
     if a.cmd not in fn:
         ap.print_help()
