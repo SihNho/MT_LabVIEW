@@ -1,0 +1,471 @@
+diff --git a/.claude/agents/material.md b/.claude/agents/material.md
+index 6a64757..fe196d6 100644
+--- a/.claude/agents/material.md
++++ b/.claude/agents/material.md
+@@ -26,6 +26,13 @@ prose brief. Prose that arrives beside it does not widen it.
+    call is checked against the card's `flags` — `labview` none/read/build, `gui`, `hardware` none/gate, `run_vi`,
+    `write` globs (plus your own `result_<id>.json` and %TEMP%), `status_edit`, `git_commit`, `peers`. A refusal
+    names the flag: the card forbids it, so do NOT route around it — end with `status: BLOCKED`.
++1a. **Your FIRST command after the bind is** `py tools/protocol.py requires <card path>` (card chat-N1 4a, user
++   2026-09-26; the bind has to stay first because nothing runs unbound). It checks the card's `requires` OFFLINE
++   (op VIs in claudeDev, verbs by `def` in gscript/stagekit/stagexec, files, terminals in `docs/wiki/subvi/*.json`)
++   and writes `tools/bench/cards/requires_<id>.json`; every bgrun / LabVIEW launch under the card is refused until
++   that file exists and lists nothing missing. **Anything MISSING → end at once with `status: BLOCKED`**,
++   `blocked_by: {"device":"requires","message":"<kind:name, ...>"}` — do not build the missing thing unless the card
++   says so.
+ 2. **Your FINAL message is exactly one `result/1` JSON object** and nothing else, and the same object is written to
+    `tools/bench/cards/result_<id>.json` and checked with `py tools/protocol.py validate <that file>`:
+    `{"schema":"result/1","id":"<card id>","status":"PASS|FAIL|BLOCKED","gates":{"pass":n,"fail":m},
+diff --git a/docs/protocol/task.json b/docs/protocol/task.json
+index c87abe3..6d9edeb 100644
+--- a/docs/protocol/task.json
++++ b/docs/protocol/task.json
+@@ -194,6 +194,37 @@
+   "retry_of_card": {
+    "$ref": "#/definitions/cardid",
+    "description": "the card this escalation re-issues"
++  },
++  "requires": {
++   "type": "array",
++   "description": "card chat-N1 (4a), user 2026-09-26: every op / verb / donor file / terminal the card depends on and the plan does not cite by uid. Checked OFFLINE by `py tools/protocol.py requires <card>` (writes tools/bench/cards/requires_<id>.json); a bgrun/LabVIEW launch under the bound card is refused until that file exists, matches the card's md5 and lists nothing missing.",
++   "items": {
++    "type": "object",
++    "additionalProperties": false,
++    "required": [
++     "kind",
++     "name"
++    ],
++    "properties": {
++     "kind": {
++      "enum": [
++       "op",
++       "file",
++       "terminal",
++       "verb"
++      ]
++     },
++     "name": {
++      "type": "string",
++      "minLength": 1,
++      "maxLength": 200
++     },
++     "where": {
++      "type": "string",
++      "maxLength": 200
++     }
++    }
++   }
+   }
+  },
+  "definitions": {
+diff --git a/tools/bench/selftest_guard_session.py b/tools/bench/selftest_guard_session.py
+index 96d06fa..4e520d9 100644
+--- a/tools/bench/selftest_guard_session.py
++++ b/tools/bench/selftest_guard_session.py
+@@ -8,8 +8,9 @@ PREDICTION CONTRACT (checked below, 18 gates; G15-G18 added 2026-09-24 cycle 73)
+   G17     without CYCLE_SESSION (the interactive chat) the same SendMessage is ALLOWED and COUNTED (card chat-L2)
+   G19-G20 a SendMessage resume past the cap / after the retrospective is REFUSED (card chat-L2; 20 gates)
+   G18     under CYCLE_SESSION=1 a SendMessage to `main` is ALLOWED
+-  G1-G8   dispatches 1..8 of `material` / `log-reader` are ALLOWED (exit 0) and the counter reaches 8
+-  G9      the 9th dispatch is REFUSED (exit 2) with "CYCLE DISPATCH CAP"
++  G1-G6   dispatches 1..6 of material / its Fable rungs / log-reader are ALLOWED; G7 the counter reaches 6
++  G8-G9   the 7th dispatch (material or a Fable rung) is REFUSED with "CYCLE DISPATCH CAP" + "WRITE NEXT AND EXIT"
++          (card chat-N1 (4b): cap 8 -> 6)
+   G10     an uncounted subagent_type (`Explore`) is ALLOWED even at the cap, and does not move the counter
+   G11     a non-Agent tool name is ALLOWED (the hook only speaks about Agent/Task)
+   G12     in a FRESH session, `py tools/bgrun.py ... -- py tools/retrospective.py --cycle 9` is allowed by
+@@ -78,19 +79,23 @@ def main():
+     if env_off is not None:
+         print("  note: BENCH_CELL was set and is ignored for this run", flush=True)
+ 
+-    # G1-G8 : the cap is 8, so eight dispatches pass
+-    for i in range(1, 9):
+-        rc, _ = agent_call(SID_A, "material" if i % 2 else "log-reader")
+-        gate("G%d dispatch %d allowed" % (i, i), rc == 0, "exit %d" % rc)
++    # G1-G6 : the cap is 6 (card chat-N1 (4b), was 8), so six dispatches pass; a Fable rung counts too
++    kinds = ["material", "log-reader", "material-fable-low", "material", "material-fable-medium", "log-reader"]
++    for i in range(1, 7):
++        rc, _ = agent_call(SID_A, kinds[i - 1])
++        gate("G%d dispatch %d (%s) allowed" % (i, i, kinds[i - 1]), rc == 0, "exit %d" % rc)
+     st = guard_session.load(guard_session.SAFE_RE.sub("_", SID_A))
+-    # G9 : the ninth is refused
++    gate("G7 counter reached 6 (Fable rungs counted)", st.get("dispatches") == 6, "counter %s" % st.get("dispatches"))
++    # G9 : the seventh is refused, and the refusal says write NEXT and exit
+     rc, err = agent_call(SID_A, "material")
+-    gate("G9 ninth dispatch refused", rc == 2 and "CYCLE DISPATCH CAP" in err,
++    gate("G9 seventh dispatch refused", rc == 2 and "CYCLE DISPATCH CAP" in err and "WRITE NEXT AND EXIT" in err,
+          "exit %d, counter %s" % (rc, st.get("dispatches")))
++    rc, err = agent_call(SID_A, "material-fable-low")
++    gate("G8 seventh as a Fable rung refused too", rc == 2 and "CYCLE DISPATCH CAP" in err, "exit %d" % rc)
+     # G10 : an uncounted agent type passes even at the cap and does not move the counter
+     rc, _ = agent_call(SID_A, "Explore")
+     after = guard_session.load(guard_session.SAFE_RE.sub("_", SID_A))
+-    gate("G10 uncounted subagent_type allowed", rc == 0 and after.get("dispatches") == 8,
++    gate("G10 uncounted subagent_type allowed", rc == 0 and after.get("dispatches") == 6,
+          "exit %d, counter %s" % (rc, after.get("dispatches")))
+     # G11 : not an Agent call at all
+     rc, _ = call(GUARD_SESSION, {"session_id": SID_A, "tool_name": "Bash",
+diff --git a/tools/cycle_prompt.md b/tools/cycle_prompt.md
+index c4f3d14..ba7deba 100644
+--- a/tools/cycle_prompt.md
++++ b/tools/cycle_prompt.md
+@@ -14,6 +14,14 @@ Nobody is watching this session. Everything you need is on disk.
+   itself to the card (its first command) and the hooks enforce the flags. Its answer is a `result/1` object (also in
+   `tools/bench/cards/result_<id>.json`); validate it and read `status` / `blocked_by` / `first_fail` — never infer
+   success from wording.
++- **Fill `requires` (card chat-N1 4a, user 2026-09-26).** Every op VI, script verb, donor file or terminal the card
++  depends on and your plan does NOT already cite by uid goes into the card's `requires`
++  (`[{"kind": "op|verb|file|terminal", "name": "...", "where": "<optional dir / source file / wiki key>"}]`). Check it
++  yourself first with `py tools/protocol.py requires <card>` (offline, seconds); a MISSING item is a tool to build or a
++  plan to change NOW, not a 60-minute discovery inside LabVIEW (cycle 89, cards 89-1/89-2). The material session runs
++  the same check first and returns BLOCKED on anything missing; the hook refuses its launches until it passes.
++- **Six material-type dispatches per session** (material, its Fable rungs, log-reader, SendMessage resumes; user
++  2026-09-26, was 8). The 7th is refused: write NEXT and exit.
+ - **Reviews are cards too.** `prior_art_review.py`, `retrospective.py`, `outcome_review.py` and `doc_ingest.py` write a
+   `review/1` card and pass it to `peer.ps1 -ReviewCard`; for a failed-prediction review write your own `review/1`
+   (`py tools/protocol.py new review --id ...`) and pass `-ReviewCard`. The peer's `verdict/1` lands in
+diff --git a/tools/hooks/guard_bash.py b/tools/hooks/guard_bash.py
+index aebbf91..ceedde6 100644
+--- a/tools/hooks/guard_bash.py
++++ b/tools/hooks/guard_bash.py
+@@ -196,7 +196,8 @@ def prerun_gate(cmd):
+         return 0
+     allow, why = stage_prerun.check_launch(cmd)
+     if allow:
+-        if stage_prerun.launched_stage_scripts(cmd) or stage_prerun.launched_plan_runs(cmd):   # card chat-S3
++        if (stage_prerun.launched_stage_scripts(cmd) or stage_prerun.launched_plan_runs(cmd)     # card chat-S3
++                or getattr(stage_prerun, "launched_vi_modifying", lambda _c: [])(cmd)):        # card chat-N1 (2)
+             _PENDING_STAGE[:] = [cmd]      # kept for callers; RECORDING moved to tools/bgrun.py (card 78-2)
+         return 0
+     note(False, "PRERUN-GATE " + cmd)
+diff --git a/tools/hooks/guard_session.py b/tools/hooks/guard_session.py
+index 69b0396..b732ecc 100644
+--- a/tools/hooks/guard_session.py
++++ b/tools/hooks/guard_session.py
+@@ -8,8 +8,8 @@ going after its cycle is finished, so the context grows all night and the expens
+ 
+ Prose cannot enforce "now stop" on the session that is enjoying itself. So two refusals, both counted in a file:
+ 
+-  (a) DISPATCH CAP. The 9th `material` / `log-reader` dispatch in one session is refused. Eight is what a cycle
+-      has cost when it was run well; past that the session is carrying a second cycle.
++  (a) DISPATCH CAP. The 7th material-type dispatch (material + its Fable rungs + log-reader + SendMessage resumes)
++      in one session is refused (card chat-N1 (4b), user 2026-09-26; was 8). peer.ps1 is never counted.
+   (b) AFTER THE RETROSPECTIVE, THE CYCLE IS CLOSED. Once `tools/retrospective.py` has run in this session
+       (recorded by `tools/hooks/guard_bash.py`, which sees the command), any further material dispatch is
+       refused. A retrospective reviews a cycle; work done after it belongs to a cycle nobody reviewed.
+@@ -33,10 +33,11 @@ HERE = os.path.dirname(os.path.abspath(__file__))
+ ROOT = os.path.dirname(os.path.dirname(HERE))
+ BENCH = os.path.join(ROOT, "tools", "bench")
+ 
+-MAX_DISPATCHES = 8
+-# The two agents a cycle's material work goes through (.claude/agents/). Every other subagent_type - the peer
+-# roles, Explore, a one-off general-purpose search - is not a cycle's work and is never counted or refused.
+-COUNTED = {"material", "log-reader"}
++MAX_DISPATCHES = 6          # card chat-N1 (4b), user-approved 2026-09-26 (was 8)
++# The agents a cycle's material work goes through (.claude/agents/), incl. the Fable escalation rungs. Every other
++# subagent_type - the peer roles, Explore, a one-off general-purpose search - is never counted or refused; peer.ps1
++# runs through Bash and is never counted.
++COUNTED = {"material", "material-fable-low", "material-fable-medium", "log-reader"}
+ # This harness names the sub-agent tool `Agent`; older Claude Code builds name it `Task`. Matching both costs
+ # nothing and stops the hook from becoming silently inert after an upgrade (the defect guard_cycle's PRIOR_ART_RE
+ # had for a day: a gate that never fires looks exactly like a gate that passes).
+@@ -154,10 +155,10 @@ def main():
+             "BLOCKED by tools/hooks/guard_session.py: CYCLE DISPATCH CAP REACHED (%d material/log-reader "
+             "dispatches).\n"
+             "  session state : %s\n\n"
+-            "Eight dispatches is a cycle's worth of material work; past that this session is carrying a second\n"
+-            "cycle, which CLAUDE.md section 3 item 2 forbids. Close this one: run the retrospective if it is\n"
+-            "owed, write STATUS.md's NEXT line, and let the runner start a fresh session - a fresh session beats\n"
+-            "compacting a long one.\n"
++            "Six dispatches is a cycle's worth of material work (card chat-N1, 2026-09-26); past that this\n"
++            "session is carrying a second cycle, which CLAUDE.md section 3 item 2 forbids. WRITE NEXT AND EXIT:\n"
++            "run the retrospective if it is owed, write STATUS.md's NEXT line, and let the runner start a fresh\n"
++            "session.\n"
+             % (MAX_DISPATCHES, os.path.relpath(state_path(sid), ROOT)))
+         return 2
+     st["dispatches"] = n
+diff --git a/tools/protocol.py b/tools/protocol.py
+index c474e20..56fcfe6 100644
+--- a/tools/protocol.py
++++ b/tools/protocol.py
+@@ -597,6 +597,142 @@ def src_features(src):
+     return out
+ 
+ 
++# ------------------------------------------------------------------ card chat-N1 (4a): task/1 `requires`, OFFLINE
++# Cycle 89: cards 89-1/89-2 spent 60 min in LabVIEW learning that a verb and a donor did not exist. A card now lists
++# what it depends on; `py tools/protocol.py requires <card>` checks each item WITHOUT LabVIEW (file system + JSON
++# only) and writes tools/bench/cards/requires_<id>.json; check_command refuses a bgrun / LabVIEW launch under the
++# bound card until that file exists, carries the card's current md5 and lists nothing missing.
++CLAUDEDEV = os.environ.get("REQUIRES_CLAUDEDEV") or r"C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev"
++WIKI_DIR = os.environ.get("REQUIRES_WIKI_DIR") or os.path.join(ROOT, "docs", "wiki", "subvi")
++OP_DOCS = ("docs/toolkit-capabilities.md", "docs/NAMES.md")
++VERB_SRCS = ("tools/gscript.py", "tools/stagekit.py", "tools/stagexec.py")
++BGRUN_SCRIPT_RE = re.compile(r"(?:^|[\\/])bgrun\.py$", re.I)
++
++
++def requires_path(card_id, cards_dir=None):
++    return os.path.join(cards_dir or CARDS_DIR, "requires_%s.json" % card_id)
++
++
++def _grep_cite(rel_path, token):
++    """'<rel>:<line>' of the first line containing token as a whole word, or None."""
++    p = os.path.join(ROOT, rel_path)
++    try:
++        with io.open(p, encoding="utf-8", errors="replace") as f:
++            for i, line in enumerate(f, 1):
++                if re.search(r"(?<![\w])%s(?![\w])" % re.escape(token), line):
++                    return "%s:%d" % (rel_path, i)
++    except OSError:
++        pass
++    return None
++
++
++def _req_op(name, where=None):
++    base = name[:-3] if name.lower().endswith(".vi") else name
++    for d in ([os.path.join(CLAUDEDEV, where)] if where else [os.path.join(CLAUDEDEV, "ops"), CLAUDEDEV]):
++        p = os.path.join(d, base + ".vi")
++        if os.path.isfile(p):
++            cite = next((c for c in (_grep_cite(r, base) for r in OP_DOCS) if c), None)
++            return "%s%s" % (p, (" ; " + cite) if cite else "")
++    return None
++
++
++def _req_verb(name, where=None):
++    import ast as _ast
++    meth = name.split(".")[-1]
++    for r in ([where] if where else VERB_SRCS):
++        try:
++            tree = _ast.parse(io.open(os.path.join(ROOT, r), encoding="utf-8", errors="replace").read())
++        except (OSError, SyntaxError, ValueError):
++            continue
++        for n in _ast.walk(tree):
++            if isinstance(n, (_ast.FunctionDef, _ast.AsyncFunctionDef)) and n.name == meth:
++                return "%s:%d" % (r, n.lineno)
++    return None
++
++
++def _req_file(name, where=None):
++    for p in ([name] if os.path.isabs(name) else [os.path.join(ROOT, name), os.path.join(CLAUDEDEV, name)]):
++        if os.path.isfile(p):
++            return p
++    return None
++
++
++def _req_terminal(name, where=None):
++    import glob as _glob
++    files = ([os.path.join(WIKI_DIR, (where if where.endswith(".json") else where + ".json"))] if where
++             else sorted(_glob.glob(os.path.join(WIKI_DIR, "*.json"))))
++    for f in files:
++        try:
++            d = json.load(io.open(f, encoding="utf-8"))
++        except (OSError, ValueError):
++            continue
++        for t in d.get("terminals") or []:
++            if isinstance(t, dict) and t.get("term_name") == name:
++                return "%s term_uid %s (%s)" % (_rel(f), t.get("term_uid"), t.get("owner_class"))
++        for c in d.get("connector_pane") or []:
++            if isinstance(c, dict) and c.get("label") == name:
++                return "%s connector_pane[%s]" % (_rel(f), c.get("index"))
++    return None
++
++
++REQ_CHECKS = {"op": _req_op, "verb": _req_verb, "file": _req_file, "terminal": _req_terminal}
++
++
++def check_requires(card):
++    """{ok, missing, found} for the card's `requires` (OFFLINE: file system + JSON, never LabVIEW)."""
++    found, missing = [], []
++    for it in card.get("requires") or []:
++        cite = REQ_CHECKS[it["kind"]](it["name"], it.get("where"))
++        (found if cite else missing).append(dict(it, cite=cite) if cite else dict(it))
++    return {"ok": not missing, "missing": missing, "found": found}
++
++
++def requires_refusal(card, cmd, scripts):
++    """None, or why a bgrun / LabVIEW launch is refused under a card that declares `requires` (argv + card)."""
++    if not card.get("requires"):
++        return None
++    launches = any(BGRUN_SCRIPT_RE.search(p) for p in scripts) or LV_CMD_RE.search(cmd) or any(
++        LV_IMPORT_RE.search(code_only(_src(p))) or RECIPE_PATH_RE.search(p) for p in scripts)
++    if not launches:
++        return None
++    rp = requires_path(card.get("id", ""))
++    try:
++        d = json.load(io.open(rp, encoding="utf-8"))
++    except (OSError, ValueError):
++        return ("card declares `requires` but %s is absent - run `py tools/protocol.py requires <card>` first "
++                "(card chat-N1 4a)" % _rel(rp))
++    if d.get("card_md5") != card.get("_md5"):
++        return "%s is stale (card changed since it was written) - re-run `py tools/protocol.py requires <card>`" % _rel(rp)
++    if not d.get("ok") or d.get("missing"):
++        return "requires missing %s (%s) - BLOCKED until they exist" % (
++            ", ".join("%s:%s" % (m.get("kind"), m.get("name")) for m in d.get("missing") or []) or "?", _rel(rp))
++    return None
++
++
++def _cmd_requires(a):
++    p = _abs(a.card)
++    try:
++        card = load_card(p, None)
++    except (OSError, ValueError) as e:
++        print("INVALID %s: %s" % (a.card, str(e)[:300]))
++        return 1
++    r = check_requires(card)
++    out = dict(r, schema="requires/1", id=card["id"], card=_rel(p), card_md5=_md5(p),
++               t=time.strftime("%Y-%m-%d %H:%M:%S"))
++    rp = requires_path(card["id"], a.cards_dir or None)
++    os.makedirs(os.path.dirname(rp), exist_ok=True)
++    with io.open(rp, "w", encoding="utf-8") as f:
++        json.dump(out, f, ensure_ascii=False, indent=1)
++    for x in r["found"]:
++        print("FOUND   %s %s -> %s" % (x["kind"], x["name"], x["cite"]))
++    for x in r["missing"]:
++        print("MISSING %s %s" % (x["kind"], x["name"]))
++    ff = ("missing %s:%s" % (r["missing"][0]["kind"], r["missing"][0]["name"])) if r["missing"] else None
++    print(result_line(make_result(len(r["found"]), len(r["missing"]), ff,
++                                  artefacts=[{"path": _rel(rp), "md5": _md5(rp)}])))
++    return 0 if r["ok"] else 1
++
++
+ def check_command(card, cmd):
+     """None = allowed, else the refusal reason. The card's flags applied to ONE Bash/PowerShell command."""
+     fl = card.get("flags") or {}
+@@ -605,6 +741,9 @@ def check_command(card, cmd):
+     srcs = {p: _src(p) for p in scripts}
+     if GIT_COMMIT_RE.search(cmd) and not fl.get("git_commit"):
+         return "flags.git_commit is false - this card may not `git commit`"
++    why = requires_refusal(card, cmd, scripts)          # card chat-N1 (4a)
++    if why:
++        return why
+     if not fl.get("status_edit") and STATUS_WRITE_RE.search(cmd):
+         return "flags.status_edit is false - this card may not write STATUS.md / CLAUDE.md"
+     role = peer_role_of(cmd)
+@@ -691,6 +830,7 @@ def hook_decision(payload):
+                        "runs until then." % (atype, aid))
+     try:
+         card = load_card(_abs(b["card"]), None)
++        card["_md5"] = _md5(_abs(b["card"]))            # card chat-N1 (4a): requires_<id>.json freshness
+     except (OSError, ValueError) as e:
+         return False, "the bound card %s no longer loads: %s" % (b.get("card"), str(e)[:200])
+     if tool in ("Bash", "PowerShell"):
+@@ -1130,8 +1270,12 @@ def main(argv=None):
+     r.add_argument("--artefact", action="append")
+     d = sub.add_parser("verdict")
+     d.add_argument("log")
++    q = sub.add_parser("requires", help="card chat-N1 (4a): check a task/1 card's `requires` OFFLINE")
++    q.add_argument("card")
++    q.add_argument("--cards-dir", default="")
+     a = ap.parse_args(argv)
+     fn = {"validate": _cmd_validate, "new": _cmd_new, "result-line": _cmd_result_line, "verdict": _cmd_verdict,
++          "requires": _cmd_requires,
+           "bind": _cmd_bind, "parse-verdict": _cmd_parse_verdict, "render-review": _cmd_render_review}
+     if a.cmd not in fn:
+         ap.print_help()
+diff --git a/tools/stage_prerun.py b/tools/stage_prerun.py
+index 86d9456..6d3e3cb 100644
+--- a/tools/stage_prerun.py
++++ b/tools/stage_prerun.py
+@@ -1146,6 +1146,59 @@ def write_record(kind, recipe, status, first_fail, extra=None):
+ def launched_stage_scripts(cmd):
+     """argv only: every `tools/recipes/stage_*.py` a command RUNS - a python token followed (past flags) by that
+     path, directly or after bgrun's `--`. A path that is only an argument (grep, cat, --dry X) is not a launch."""
++    return [p for p in launched_py(cmd) if STAGE_RE.search(p.replace("\\", "/"))]
++
++
++# ------------------------------------------------------------------ card chat-N1 (2): VI-modifying scripts by AST
++# Cycle 90: tools/bench/diag_c90_t0_step3*.py (not stage_*) broke a VI 3x on offline-knowable faults. The gate now
++# classifies ANY launched .py by STRUCTURE: it imports stagekit AND calls a MUTATING stagekit verb. MODIFY_VERBS is
++# the mutating subset of stagekit.Stage's public methods (tools/stagekit.py:466-1097); the read-only ones (es, count,
++# census, uid_index, wired_terminals, net_sources, broken_wire_count, fs_inner_tunnel_read, address, resolve,
++# live_graph, rule_check, start, close, gate, fact, ...) are not in it. VI_MOD_EXEMPT = the gate's own tooling.
++MODIFY_VERBS = frozenset((
++    "junk_purge", "delete_wire", "delete_object", "move_in", "connect", "connect_from_wire",
++    "fs_inner_tunnel_connect", "wire_indicators", "add_shift_reg", "wire_sr", "create_local_read", "copy_in",
++    "add_sr_row", "const_row", "cfw_second_pass", "from_decision", "save", "save_route", "plan_rows",
++    "discard_work"))
++VI_MOD_EXEMPT = frozenset(("stage_prerun.py", "stagekit.py", "stagexec.py", "stagesim.py"))
++
++
++def vi_modifying_calls(path):
++    """[] or the sorted MODIFY_VERBS names the file calls, when it imports stagekit (ast; never text search)."""
++    if os.path.basename(path).lower() in VI_MOD_EXEMPT:
++        return []
++    try:
++        tree = ast.parse(REAL_OPEN(path, encoding="utf-8", errors="replace").read(), filename=path)
++    except (OSError, SyntaxError, ValueError):
++        return []
++    imports = False
++    calls = set()
++    for n in ast.walk(tree):
++        if isinstance(n, ast.Import) and any(a.name.split(".")[0] == "stagekit" for a in n.names):
++            imports = True
++        elif isinstance(n, ast.ImportFrom) and (n.module or "").split(".")[0] == "stagekit":
++            imports = True
++        elif isinstance(n, ast.Call):
++            f = n.func
++            name = f.attr if isinstance(f, ast.Attribute) else (f.id if isinstance(f, ast.Name) else None)
++            if name in MODIFY_VERBS:
++                calls.add(name)
++    return sorted(calls) if imports else []
++
++
++def is_vi_modifying(path):
++    """card chat-N1 (2): True iff the .py imports stagekit AND calls a name in MODIFY_VERBS."""
++    return bool(vi_modifying_calls(path))
++
++
++def launched_vi_modifying(cmd):
++    """argv only: launched .py scripts that are NOT tools/recipes/stage_*.py but is_vi_modifying() -> gated alike."""
++    return [p for p in launched_py(cmd) if not STAGE_RE.search(p.replace("\\", "/"))
++            and p.lower().endswith(".py") and os.path.isfile(p) and is_vi_modifying(p)]
++
++
++def launched_py(cmd):
++    """argv only: every script path a python token RUNS (past interpreter flags), directly or after bgrun's `--`."""
+     out = []
+     segs = re.split(r"\s*(?:&&|\|\||;|\|)\s*", cmd or "")
+     for seg in segs:
+@@ -1164,7 +1217,7 @@ def launched_stage_scripts(cmd):
+                 if j < len(toks):
+                     p = toks[j]
+                     ap = p if os.path.isabs(p) else os.path.join(ROOT, p)
+-                    if STAGE_RE.search(p.replace("\\", "/")):
++                    if p.lower().endswith(".py"):
+                         out.append(os.path.normpath(ap))
+                     i = j + 1
+                     continue
+@@ -1356,7 +1409,8 @@ def record_started(cmdline, log=None, pid=None):
+     script / stagexec plan the child runs; returns the records ([] for any other command). The card id is the
+     `--retry-card` judgement card when this run is past the cap (check_cap decides, as the hook did), else None;
+     `retry_card_path` records the flag whenever it was given."""
+-    units = [(s, None) for s in launched_stage_scripts(cmdline)] + launched_plan_runs(cmdline)
++    units = ([(s, None) for s in launched_stage_scripts(cmdline) + launched_vi_modifying(cmdline)]
++             + launched_plan_runs(cmdline))
+     if not units:
+         return []
+     runs, ck, out = read_stage_runs(), cycle_key(), []
+@@ -1376,9 +1430,22 @@ def check_launch(cmd):
+     without a judgement card. It RECORDS NOTHING: a run is recorded in ONE place, record_started() called by
+     tools/bgrun.py at child start (card 78-2; card chat-L2 removed the old `record=True` path, whose lines carried
+     `by: check_launch` and were never counted - a second recorder that looked like the first)."""
+-    units = [(s, None) for s in launched_stage_scripts(cmd)] + launched_plan_runs(cmd)
++    units = ([(s, None) for s in launched_stage_scripts(cmd) + launched_vi_modifying(cmd)]
++             + launched_plan_runs(cmd))
+     if not units:
+         return True, ""
++    ok_all, why_all = _check_units(units, cmd)
++    if not ok_all:
++        cls = [s for s, plan in units if not plan and not STAGE_RE.search(s.replace("\\", "/"))]
++        if cls:
++            why_all = ("[classifier stage_prerun.is_vi_modifying (card chat-N1): {0} imports stagekit and calls {1} "
++                       "- gated like tools/recipes/stage_*.py] ").format(
++                           ", ".join(rel(s) for s in cls), ", ".join(vi_modifying_calls(cls[0]))) + why_all
++    return ok_all, why_all
++
++
++def _check_units(units, cmd):
++    """check_launch's per-unit decision (dry + prerun records, decision 4, RETRY_CAP), unchanged by card chat-N1."""
+     recs = read_records()
+     runs, ck = read_stage_runs(), cycle_key()
+     for s, plan in units:
