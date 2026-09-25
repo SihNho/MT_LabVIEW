@@ -1,0 +1,61 @@
+{
+ "schema": "task/1",
+ "id": "chat-M1",
+ "kind": "build",
+ "goal": "Model ladders (user 2026-09-26): material default Fable low until 2026-09-28 07:00; runner-decided JUDGEMENT ladder Opus medium -> Opus high -> Fable low -> Fable medium -> STOP",
+ "why": "User wants the weekly quota used before Monday and judgement raised by rule when needed. Data: fable/low delivered L7-1b (cycles 71/72) after Opus failed twice; cycle 87 fable/low judgement produced nothing in 6 min.",
+ "inputs": [
+  {
+   "path": "tools/cycle_runner.py",
+   "md5": "1bbff684df742b8306ec641dea4ae2b1"
+  },
+  {
+   "path": ".claude/agents/material.md",
+   "md5": "dc2c5e64a4ec729a37e2c21db09eae15"
+  },
+  {
+   "path": "docs/goalmap.json",
+   "md5": "36dfdd9b87c3c2289c62428f749010b5"
+  }
+ ],
+ "pass": [
+  "material.md: model fable, effort low, dated note (until 2026-09-28 07:00 KST, then back to claude-opus-5-5 medium)",
+  "escalation rungs for material become fable medium -> decisions_pending (cycle_prompt.md updated)",
+  "cycle_runner judgement ladder from files only: level 0 opus medium; +1 when last next.json UNCHANGED",
+  "+1 also when the last retrospective VIOLATION slug is inference-over-measurement, wrong-ordering or judgement-in-material",
+  "levels: 1 claude-opus-5-5 high, 2 fable low, 3 fable medium; level 3 failing the same way -> RUNNER STOP + decisions_pending item",
+  "a cycle that delivers (PASS result card with artefacts, or a goalmap milestone done) resets the ladder to level 0",
+  "existing recipe firefighter unchanged; the two ladders never stack above fable medium",
+  "chosen level + reason written as a JUDGE-LADDER runner-log line and into the cycle/1 card",
+  "selftest_cycle_runner_ladder.py: unchanged next -> 1; judgement slug twice -> 2; deliver -> reset; level 3 repeat -> STOP; ff+ladder max fable medium",
+  "selftest_cycle_runner_ff still 3/3; CLAUDE.md and the Monday reminder are judgement work, not yours; RESULT line; commit"
+ ],
+ "outputs": [
+  "tools/cycle_runner.py",
+  ".claude/agents/material.md",
+  "tools/bench/selftest_cycle_runner_ladder.log"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/**",
+   ".claude/agents/**",
+   "docs/protocol/**"
+  ],
+  "status_edit": false,
+  "git_commit": true,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "unblocks": "M3",
+ "rules": [
+  "§3 judgement vs material",
+  "FIREFIGHTER cycles"
+ ]
+}
