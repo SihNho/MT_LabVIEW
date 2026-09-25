@@ -1,0 +1,38 @@
+BGRUN START 2026-09-25 21:29:51 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/plan_85-2.md --slug priorart-c85-tunouter-b --trigger new-op --recipe tools/recipes/build_optunouter_v1.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c85-tunouter-b.txt (28680 chars)
+   review card tools\bench\cards\review_priorart-priorart-c85-tunouter-b.json
+OUTCOME: ANSWERED (62s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-25-priorart-priorart-c85-tunouter-b.md
+COST: $1.1666  in 16 / out 4711 / cache-create 112481 / cache-read 862460  (58s, 13 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-priorart-c85-tunouter-b verdict=novel -> tools\bench\cards\verdict_priorart-priorart-c85-tunouter-b.json
+--- ANSWER ---
+**Verdict: novel.** Nothing in the project already does what `build_optunouter_v1.py` builds: a wiring op whose `Wire Source` is a `SelectorTunnel`'s outer face, reached through that tunnel's own uid. The first-round review of this card said the same about tunouter (`archive/peer/2026-09-25-priorart-priorart-c85-ctlsink-tunouter.md:223-227`, `:238`). The one gap it raised, a FlatSequence negative case, is now in the recipe as gate N4 (`tools/recipes/build_optunouter_v1.py:71-75`).
+
+## Part A: the direction
+
+- **A1 (settled already): no.** Pre-decided 191(b) is the first decision on this route (`docs/d1-loop12-17-split-plan.md:905`), and this recipe carries it out. The card 85-1 review left the route open (`archive/peer/2026-09-25-hyp-unroutable-85.md:126-134`).
+- **A2 (refuted already): no.**
+  - Two dead-end tables list `Tunnel.Outside Terminal` 6356001 as ❌: `docs/NAMES.md:1246` and `docs/vi-server-ids.json:140`. Both are about `FlatSequenceInnerTunnel`, which is not a `Tunnel` subclass. The #5680/#6016 tunnels are `SelectorTunnel`, where the `Tunnel` cast is measured 24/24 (`docs/toolkit-capabilities.md:77`).
+  - What failed before was addressing through the owner's `Terminals[]` (T2c2, `docs/NAMES.md:1132-1137`). The recipe avoids that by design (`build_optunouter_v1.py:1-3`).
+- **A3 (contradicted): no.**
+  - The short name `Outer Term` matches `docs/NAMES.md:856` and `:288`.
+  - `docs/NAMES.md:1134-1137` warns against wiring a source onto an OUTPUT tunnel's outside terminal. Here the outer face is the source, which is the right direction, so the warning does not apply.
+- **A4 (unread evidence): no finding.** One relevant precedent is not cited, though it is not blocking:
+  - The four `OpWireSR_*_v0` ops already feed a `Tunnel[Outer Term]` property node straight into `Terminal.Connect Wire` (`tools/recipes/build_opwiresr_v0.py:9`, `:21-22`, `:66`). There it is the invoke's `reference` (the sink side), on a shift register reached through `Loop.ShiftRegs[]`.
+  - So a `Tunnel.Outer Term` output working as a Terminal reference into Connect Wire is already shown in this project. Using it as `Wire Source` on a `SelectorTunnel` reached by `Traverse` is not.
+
+## Part B: the artefact
+
+- **B1 (already built): no.**
+  - `OpWireSR_*` covers only the register-outer-face-as-SINK case. `OpTunnels_v0` and `OpTunnelRead_v0` only read (`docs/toolkit-capabilities.md:24`, `:77`).
+  - `gscript.wire_tunouter` (`tools/gscript.py:2064-2086`) is this card's own wrapper and still uncommitted, so it is not earlier work.
+- **B2 (already failed): no.** There is no `unroutable_l2a1_85_build_tun.log` or `.json` in `tools/bench/`, so this build has not run before.
+- **B3 (helper exists): no.** The recipe reuses `OpConstWire_v1` as the donor, plus `build_property`, `create_control`, `wire_control` and `N.connect`. It hand-rolls nothing the toolkit already provides.
+- **B4 (already measured): no.** No write through a tunnel outer face used as the source is recorded anywhere.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-priorart-c85-tunouter-b","verdict":"novel","alternative":"Closest precedent: OpWireSR_*_v0 wires Tunnel[Outer Term] into Connect Wire, but as the SINK reference on a shift register reached via Loop.ShiftRegs[] (build_opwiresr_v0.py:9,21-22); nothing uses a SelectorTunnel outer face as Wire Source.","discriminating_test":"The recipe's own N1-N4 plus one positive scratch call on #5680 -> #5082: the sole source owner is 5680, the sink is 5082, and Is Broken? is False.","violations":[],"sources":["archive/peer/2026-09-25-priorart-priorart-c85-ctlsink-tunouter.md:223-238","tools/recipes/build_opwiresr_v0.py:9","docs/NAMES.md:1246","docs/toolkit-capabilities.md:77","docs/NAMES.md:1132-1137","tools/recipes/build_optunouter_v1.py:71-75"],"note":"NAMES.md:1246 and vi-server-ids.json:140 refuse 6356001 on FlatSequenceInnerTunnel only (not a Tunnel subclass); they do not cover SelectorTunnel. The round-1 FlatSequence negative is now gate N4."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c85-tunouter-b.md
+   STOP RECORD: none - 2026-09-25-priorart-priorart-c85-tunouter-b.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/build_optunouter_v1.py sha 17bb426e2777 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 65s

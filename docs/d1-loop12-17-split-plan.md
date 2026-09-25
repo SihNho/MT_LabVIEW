@@ -890,6 +890,64 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
      - Known limit: the per-leg `m8_<leg>_p<N>_r120.json` names do not carry the Hz cell, so the 90 Hz per-leg files
        were overwritten by the 150-written repeats; `m8_load_83.json` carries all eight rows.
 
+191. **(cycle 85 judgement, on result `85-1` FAIL 3/1; review `archive/peer/2026-09-25-hyp-unroutable-85.md`)
+     188(c) is DELIVERED: `ops\OpConstWire_v1.vi` md5 `c978863c…`. The separator returned 5001, so the 1057 came from
+     the SOURCE cast. Op 35's two rows land their sole predicted sources (`constsrc_l2a1_85.log:510-552`). stagexec
+     md5 `aa4c425a…`, self-test 40/0. The dry run now lists every unroutable row. It found TWO: acts 41 and 45
+     (`dry_l2a1_85b.log:47-48`). **Decided:**
+     - **(a) R41 `rw_10988_17272`: build a new verb whose sink is the ControlTerminal.** It is `OpConstWire_v1` with the
+       ladders swapped. The sink is the ControlTerminal, reached by the 179(b)/187(b) route (`report_all('ControlTerminal')`,
+       own uid), then TMSC(Terminal) and `Connect Wire`. The source is the bare terminal #10988 on its owner #10969. The
+       `Wire Indicators.vi` wired-source guard stays in place, because it is a measured limit (`tools/gscript.py:1835-1838`).
+       Rejected: re-cutting {#10969,#17272} into one joint move. That changes plan rows, which 183 fixed from the
+       simulator, and nothing has measured it (`l2a1_tunflip_80*` 0 hits).
+     - **(b) R45 `rw_6007_5082` (and its twin #6026): address each outer face by the TUNNEL uid through
+       `Tunnel.Outside Terminal` 6356001.** Its cast is already measured on these #5540 tunnels (24/24,
+       `docs/toolkit-capabilities.md:77`). If that route is refused, the fallback is `UID to GObject Reference` on the
+       face uid. Before any write, a read-only scratch check runs after `mv_5540`: `Is Source?`, `Connected Wire` and
+       the data type of each face must match the plan's pairing (#6007 `Bead is good? array` → #5082; #6026
+       `x,y,z array` → #5164). Rejected: carrying `Terminals[]` order across the move. That is the T2c2 failure on this
+       same tunnel #5680 (`docs/NAMES.md:1132-1137`).
+     - **(c)** Patch `stage_d1_l2a1.py`'s dry path so that it names the unroutable rows. Today it hits an
+       UnboundLocalError `real` after an E1 stop (`prerun_l2a1_85c.log:184`). The edit re-arms the launch gate, and
+       the gate is supposed to do that.
+     - Both new routes are gated like op 35: sole source owner equals the planned uid, and `Is Broken?` is False.
+       Each has a negative case. Rule 1a: the same edges as S1, so no computation change.
+
+192. **(cycle 85 judgement, on results `85-2` FAIL 2/1 and `85-3` FAIL 3/1; review
+     `archive/peer/2026-09-25-hyp-unroutable-err2-85.md`)** Both 191 verbs are BUILT:
+     - `ops\OpCtlSinkWire_v1.vi` md5 `ce9f2088…`, 24/0.
+     - `ops\OpTunOuterWire_v1.vi` md5 `093b0539…`, 28/0. The freed-uid reuse was measured
+       (`unroutable_l2a1_85_build_tun2.log:35-37`), and stagexec now raises `UID-REUSE` in `bind_new`
+       (md5 `4186fcb4…`, self-test 50/0).
+     - Dry run: 42/42, 0 unroutable.
+     - On a real scratch, acts 1–44 had diff 0, R41 included (`unroutable_l2a1_85.log:329-554`). Act 45 returned no
+       error, and then the next `report_all(GObject)` read raised **LabVIEW error 2 (memory full)** 18 min after a
+       fresh start (`:562`).
+
+     ⚠️ **AMENDED the same session, after `archive/peer/2026-09-25-retrospective-cycle85.md` finding 4 + 5 (ACCEPTED).**
+     The first draft of 192 ordered an `OpReportAll_v0` Close Reference repair first. That rested on a cause the
+     project WITHDREW:
+     - `docs/REFERENCES.md:200-229` (§4a-bis): S0 was CLOSED by measurement. 20 traverses gave −0.1 MB private
+       bytes; the drift was VI growth. The ops are accepted as they are, and only the user may overturn that reading
+       of the rule.
+     - `docs/cycle27-plan.md:329-336`: error 2's cause is OPEN, and the repair is not predicted to close it.
+
+     It also put a repair ahead of a measurement. **Decided instead, in this order, before stage run 1:**
+     - **(a) Wire `stagekit.private_bytes()` (`tools/stagekit.py:177`) into the stagexec executor.** Stamp private
+       bytes and handles per op, and per read, beside each STEPX line, and stop loudly before the error-2 region. It
+       is a reader, it is necessary, and it is the meter cycle27-plan.md:335-336 already names. A self-test goes
+       with it.
+     - **(b) The review's single-op test on a fresh LabVIEW** (`hyp-unroutable-err2-85.md:87-93`): run act 45 alone
+       (after the prefix it needs), then `read_live`, then read the new wire's sink back by uid. It must show
+       `SubVI[17].t0` = #5082. Log private bytes per step.
+     - **(c) One full executor replay on a scratch with the (a) meter** (no save): acts 1–46 plus the rest. It tells
+       us whether private bytes grow per op with VI growth (mutate) or per whole-VI read (`wiki_build.py:240`). If the
+       read is what grows, the next decision is a per-diagram read in place of the whole-VI traverse. That is
+       decided on the numbers, not now.
+     - **(d) Stage run 1** only after (a)–(c), and only if (c) shows a full run fits under the budget.
+     - NO repair of `OpReportAll_v0` (REFERENCES §4a-bis).
+
 ## OPEN (design choices — for judgement; not decided here)
 
 > 2026-09-24: O2, O3, O4 (SR half; the queue half is QRT), O6 (placement + route), O7, O8 are CLOSED by Pre-decided

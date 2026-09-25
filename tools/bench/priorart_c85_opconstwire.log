@@ -1,0 +1,37 @@
+BGRUN START 2026-09-25 20:31:46 limit 20.0 min: py tools/prior_art_review.py --plan-file docs/d1-loop12-17-split-plan.md --slug c85-opconstwire --trigger cycle-start --recipe tools/recipes/build_opconstwire_v1.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c85-opconstwire.txt (124870 chars)
+   review card tools\bench\cards\review_priorart-c85-opconstwire.json
+OUTCOME: ANSWERED (65s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-25-priorart-c85-opconstwire.md
+COST: $1.3342  in 14 / out 4681 / cache-create 132363 / cache-read 908270  (63s, 12 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c85-opconstwire verdict=novel -> tools\bench\cards\verdict_priorart-c85-opconstwire.json
+--- ANSWER ---
+Still checking the last helper tables. So far nothing blocks: the verdict is **novel**.
+
+**Answer: novel.** No existing op, recipe or helper wires a bare diagram constant as the source of a wire. This exact build has not been tried before, and the recipe carries its own record of what it checked.
+
+### Part A: the direction
+- **A1: not settled already.** The direction was decided, not built: Pre-decided 188(c) in `docs/d1-loop12-17-split-plan.md` ("a new op is built … `Constant.Terminal` (634AC04) … `Terminal.Connect Wire` (6349C03)"). Pre-decided 189 resumed it for cycle 84. That decision is what authorises this build, so it does not count as prior art against it.
+- **A2: not refuted already.** The only related failure is the cycle-82 measurement: OpWire_v1 raised 1057 and wire_control raised 5001 (`tools/bench/constsrc_l2a1_82.log:511-533`). The recipe answers it directly. Its P1 runs the separator the review asked for (`archive/peer/2026-09-25-hyp-constsrc82.md:84-86`), and that gate is fatal if the 1057 turns out to be the destination cast.
+- **A3: no contradiction.** The recipe's route (typed Constant cast → `Constant.Terminal`, then `Node.Terminals[]` → Index Array → Connect Wire on the sink) matches the review's "build it this way" at `hyp-constsrc82.md:81`. It also matches the class facts at `:66`: Constant is a GObject, not a Node.
+- **A4: nothing important unread.** The recipe cites OpConstValueN_v1, OpConnect_v0, OpConnectNested_v1 and build_opconstwire_v0 in its header (`build_opconstwire_v1.py:2-6`).
+
+### Part B: the artefact
+- **B1: not already built.** `build_opconstwire_v0.py:1,35` is a different tool: a scan that finds the wire a constant feeds. It was never built; see `tools/bench/diag_c64_perturb_t1t3.json:1262` ("VI not on disk") and `archive/2026-09-15-status-stage2-cycles-1-7.md:392`. No `OpConstWire*` VI exists under `claudeDev`. `gscript.wire_const` (`tools/gscript.py:2047-2084`) is new, uncommitted work that belongs to this same card.
+- **B2: not already failed.** No `constsrc_l2a1_84*` or `constsrc_l2a1_85*` log exists, and cycle 84 left no build of this op.
+- **B3: no existing helper does it.** Each close match has a gap that blocks this use:
+  - `OpConstValueN_v1` reaches the constant's terminal but only reads it (`hyp-constsrc82.md:78`).
+  - Every Connect Wire writer takes its source from a node's terminals, a control or a shift register: `connect_ctl` and the `wire_sr` family at `docs/toolkit-capabilities.md:25,57`.
+  - `All Objects[]` (6375804) is registered but not used by any op, and it would still need a new op (`hyp-constsrc82.md:80`).
+- **B4: not already measured.** The separator in P1 has never been run. STATUS NEXT step 1 still lists it as owed.
+
+**Non-blocking notes:**
+1. The source is addressed by `Traverse(class)[index]`. The review's point 2b warns that a wrong index would raise the same 1057 (`hyp-constsrc82.md:70`). The gate "the new wire's only source is owned by the constant uid" from 188(c) is not in this recipe, so it has to sit in the use-site stage.
+2. The negative test N1 calls `g.wire_const(scr, "Comparison", di, "Comparison", di, 0, labels)`. That wires a Comparison into itself, so if the cast wrongly passed, a real self-wire could land on the scratch. Only the scratch is at risk, and N2 would catch it.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c85-opconstwire","verdict":"novel","alternative":"No existing verb wires from a Constant; OpConstValueN_v1 only reads Constant.Terminal, OpConnect/connect_ctl/wire_sr take node/control/SR sources, build_opconstwire_v0 is an unbuilt wire-scan reader, not a writer.","discriminating_test":"P1 separator g.wire(Comparison #10950 'zz_nonexistent'->'y') on a D1_k scratch: 5001 from Get Outputs => source cast was the 1057, build proceeds; 1057 => destination cast, fix OpWire_v1 instead.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md Pre-decided 188(c)","archive/peer/2026-09-25-hyp-constsrc82.md:78-86","tools/bench/constsrc_l2a1_82.log:511-533","tools/recipes/build_opconstwire_v0.py:1","tools/bench/diag_c64_perturb_t1t3.json:1262","docs/toolkit-capabilities.md:25,57"],"note":"Non-blocking: index addressing can hit the wrong constant (review 2b); the 188(c) source-owner==constant-uid gate belongs in the use-site stage, not this op build."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c85-opconstwire.md
+   STOP RECORD: none - 2026-09-25-priorart-c85-opconstwire.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/build_opconstwire_v1.py sha 8a4958de8e5f -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 68s

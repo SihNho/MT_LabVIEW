@@ -51,7 +51,26 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 
 ## NEXT
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
-🔴🔴🔴 **FIRST ACT (cycle 84) = L2-A1 RESUMES, `docs/d1-loop12-17-split-plan.md` Pre-decided 189 (the load test chose loop 1.2)** — steps 1–3 below, in order; machine copy `tools/bench/next.json`; advances M3/R1/R3; follows `steer_82`.
+🔴🔴🔴 **FIRST ACT (cycle 86) = `docs/d1-loop12-17-split-plan.md` Pre-decided 192 AS AMENDED (measure first), in order:**
+- **(a)** Wire `stagekit.private_bytes()` into the stagexec executor: private bytes and handles per op and per read, with a loud stop before error 2.
+- **(b)** On a fresh LabVIEW, run act 45 alone, then read the sink back by uid. It must show `SubVI[17].t0` = #5082.
+- **(c)** One metered full replay on a scratch, with no save. It answers whether memory grows with VI edits or with the whole-VI read after each op.
+- **(d)** Only then, stage run 1 of `tools/recipes/stage_d1_l2a1.py` (md5 `d40e1e16…`), with `bgrun --max-min 60`.
+- ⚠️ **DO NOT "repair" `OpReportAll_v0`.** REFERENCES §4a-bis closed that on measurement, and only the user may overturn it. The retrospective for cycle 85 caught the first draft of 192.
+
+The machine copy is `tools/bench/next.json`. It advances M3/R1/R3.
+- Not previously reported: all three cycle-85 cards returned FAIL. Card 85-3 hung about 13 min in `close_panel` after error 2, and LabVIEW was killed. The passing 40-act run had already grown handles 33,954 → 46,075.
+🟡 **CYCLE 85 DONE (cycle 84 never ran: weekly usage limit).** No stage run was launched.
+- The separator returned 5001, so the old 1057 came from the source cast (PD191).
+- Three new ops were built, each self-tested with a negative case and handle-flat:
+  - `ops\OpConstWire_v1.vi` `c978863c…`, for op 35.
+  - `OpCtlSinkWire_v1.vi` `ce9f2088…`, for R41.
+  - `OpTunOuterWire_v1.vi` `093b0539…`, for R45/46.
+- stagexec md5 `4186fcb4…`, self-test 50/0. The dry run lists every unroutable row, and a uid-reuse guard was added.
+- Dry run 42/42 with 0 unroutable; pre-run 8/0.
+- On a real scratch, acts 1–44 had diff 0. After act 45, `report_all` raised **LabVIEW error 2 (memory full)** (`tools/bench/unroutable_l2a1_85.log:562`; review `archive/peer/2026-09-25-hyp-unroutable-err2-85.md`).
+- D1_k is unchanged.
+⬇ Older (cycle 84 plan, now done up to step 2's dry/pre-run):
 ✅ **CYCLE 83 (firefighter, fable/low) = the PD188(d) load measurement RAN — INDEX row 48, `tools/bench/m8_load_83.json`, 8 real legs 8/0, LabVIEW closed after each.** Total Lost Frames S1 copy vs `D1_s3_loop15.vi`, 120 s at ~89 frames/s (~10,680 frames): **8 picks 16 vs 12** (repeat 12 vs 14) · **15 picks 3,331 vs 3,493** (repeat 3,161 vs 3,269). Frame loss goes from ~0.1 % to ~⅓ between 8 and 15 beads on BOTH VIs ⇒ **the per-bead tracking cost (loop 1.2, M3) is the lever; the loop-1.5 split is neutral at this load.**
 - ⚠️ **150 Hz was NOT reached**: the driver wrote 150 Hz to the camera between legs, but EVERY `IMAQdxOpenCamera` reloads the camera file (`…\NI-IMAQdx\Data\JAI Corporation SP-5000M-USB (…).icd`, 90 Hz) — measured `tools/bench/diag_camrate_persist83b.log` 4/0 after the failed-prediction review `archive/peer/2026-09-25-hyp-camrate83.md` (accepted; `camera-acquisition-facts.md:642` corrected). The "150 Hz" cells are 90 Hz repeats. Real 150 Hz needs a VI-side setting or an `.icd` change → **user decision D-2026-09-25-05**.
 - 🟡 The user has 4 open questions: D-2026-09-25-02 (`.cal` scope), -03 (autofocus limits, OPEN 58), -04 (a supervised S3 run with beads), **-05 (how to reach 150 Hz)**.

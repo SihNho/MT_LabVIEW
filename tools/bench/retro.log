@@ -2397,3 +2397,78 @@ VIOLATION: inference-over-measurement | loss_min=33 | loss_usd=1.4192 | evidence
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle83","verdict":"refuted","alternative":"The 150 Hz legs were a legitimate measurement: PD188(d) said '150 Hz only if the camera reaches it' and the only way to learn that was to run them.","discriminating_test":"Read docs/camera-acquisition-facts.md:437-439 (2026-09-16) against drive_m8_load83.py:6-8, then run diag_camrate_persist83.py (26 s) with no VI: if it reads 90 after reopen, the 150 Hz legs were decidable before launch.","violations":[{"slug":"inference-over-measurement","loss_min":33,"loss_usd":1.4192,"evidence":"tools/bench/drive_m8_load83.py:6"}],"sources":["tools/bench/drive_m8_load83.py:6","docs/camera-acquisition-facts.md:437","tools/bench/m8_load_83.log:355","tools/bench/m8_load_83.log:373","tools/bench/peer_camrate83.log:3","archive/peer/2026-09-25-hyp-camrate83.md:67","tools/bench/diag_camrate_persist83b.log:11","tools/bench/jev_gate.log:1093","tools/gui_actions.log:2633"],"note":"Load result and the loop-1.2 decision stand. $ figure is the review only; the fable/low session's cost is logged after the window. C7 fired on the wrong plan again (repair already on file 14:28), not re-slugged."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle83.md
 BGRUN END rc=0 after 294s
+BGRUN START 2026-09-25 22:21:59 limit 10.0 min: py tools/retrospective.py --cycle 85
+   window 2026-09-25 17:27:35 .. 2026-09-25 22:21:59 (294 min); 131 build logs, 17 machinery logs, 24 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle85.txt (37321 chars)
+   review card tools\bench\cards\review_retrospective-cycle85.json
+OUTCOME: ANSWERED (434s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-25-retrospective-cycle85.md
+COST: $5.7381  in 194 / out 30151 / cache-create 200895 / cache-read 843037  (432s, 48 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle85 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle85.json
+--- ANSWER ---
+I have what I need. Cycle 85 proper runs 20:23:03 to 22:21:59 (cycle_runner_main_20260925e.log:1, retro.log:2400); everything earlier in the window is cycle 84's two aborted spawns and the interactive chat's verification work.
+
+## Window and cost, corrected
+
+The audit's window (17:27–22:21) mixes three things. Cycle 84 never ran: both spawns died on the weekly usage limit (cycle_84.log:120 `api_error_status 429`, $3.76 for 369 s; cycle_84.log:241 $0 after 8 s). From 18:52 to 20:20 the interactive chat ran the chat-L1/L2 verification (about 90 `selftest_chatl*` logs, `lint_verify_*`, the $1.58 hyp-lintverify review). None of that is cycle 85, and it is what produces the audit's A1/A2 FAILs (chat selftests without bgrun lines) and most of C3's 110 min.
+
+Cycle 85's own numbers, from the BGRUN lines:
+
+| item | wall | cost |
+|---|---|---|
+| constsrc op build + 40-act scratch run | 125 s + 2303 s | – |
+| ctlsink / tunouter builds (3 runs) | 88 + 63 + 92 s | – |
+| 46-act scratch run `unroutable_l2a1_85` | 1923 s (rc=1) | – |
+| dry/prerun/selftest runs (12) | ~215 s | – |
+| 4 prior-art reviews | ~5 min | $4.66 |
+| 3 hypothesis reviews | ~9 min | $4.44 |
+| judgement session | not yet in cycle_85.log | – |
+
+Builds ≈ 80 min, of which the two LabVIEW scratch runs are 70 min. Stage run 1 was never launched (`stage_runs.jsonl` has no 20:00–22:59 entry). All three result cards are FAIL (result_85-1/2/3.json line 1).
+
+## The one structural fault
+
+**The cycle's last 40 minutes replayed a known failure class with the meter for it switched off.** Card 85-3's run drove 46 acts through the real executor, which does a whole-VI `report_all(GObject)` after every op (`wiki_build.py:240`, trace at unroutable_l2a1_85.log:569-573). After act 45 the read raised LabVIEW error 2 (unroutable_l2a1_85.log:562), the hygiene phase hung in `close_panel` for about 13 min until the material session killed LabVIEW (result_85-3.json line 17-18), and the P3 read-back the card existed to produce never ran.
+
+This is the second occurrence of exactly this class: route-B run 8 on 2026-09-19 raised the same `error 2 … Traverse for GObjects.vi->OpReportAll_v0.vi` after about 50 traversals (docs/cycle27-plan.md:233-235). The project then decided that the meter for error 2 is private bytes, never handles (cycle27-plan.md:321-324), left the cause OPEN (cycle27-plan.md:333-334), and proposed a no-edit `report_all` loop as the discriminating test, which has never been run (hyp-unroutable-err2-85.md:96). `stagekit.private_bytes()` exists (tools/stagekit.py:177) and is not called in the run: the only meter logged is the handle count (unroutable_l2a1_85.log:29, :584). The warning was also on the table before launch: the 40-act constsrc run that passed at 21:15 had grown handles 33,954 → 46,075 (constsrc_l2a1_85.log:27, :560), and nobody read that as "one more run of this length is at the edge".
+
+So the review bought at 22:17 ($1.46, unroutable_l2a1_85_peerhyp.log:3) could only say "accumulation likely but unmeasured" (hyp-unroutable-err2-85.md:50-55), which is the same inference the project made on 2026-09-19. The CLAUDE.md rule for this case ("when a diagnosis is guessed twice, build the reader", CLAUDE.md:406-413) was triggered and not followed.
+
+Counterfactual: card 85-3 was dispatched at ~21:41 with 102 min of the 180-min budget left. Had it been the review-shaped probe (fresh LabVIEW, act 1 + act 45 + uid read-back, ~5 min, hyp-unroutable-err2-85.md:87-93) with private bytes per step, P3 would have been measured by ~21:55 and the cycle could have closed by ~22:00 with R45 proven, or spent the remaining hour on the read-budget measurement. Instead it closed at 22:21 with P3 unmeasured, the sink of the act-45 wire still identified by name only (result_85-3.json line 26), and the same open question carried to cycle 86.
+
+Loss: 1923 s run + 142 s review ≈ 34 min; dollars carried by a log: $1.46 (the review; LabVIEW time is unpriced).
+
+## Findings
+
+**1. Repeated failure.** Two classes recurred. (a) Error 2 above, second occurrence, and the approach should have changed at this attempt's design (private bytes per step, or the single-op probe). (b) Freed-uid reuse: the tunouter B1 gate tested absence of uid 136 and the new node got 136 (unroutable_l2a1_85_build_tun.log:35). The review shows this was already accepted as a class on 2026-09-17 (hyp-optunouter-uidreuse-85.md:54, :67-70). It was fixed after attempt 1 and measured on attempt 2 (build_tun2.log:35-37), which is the right response; cost 63 s + $1.24 + ~10 min.
+
+**2. Missing tool.** Three readers, all cheap: (i) a private-bytes stamp per executor step (function exists, not wired into stagexec); (ii) a read-back by uid of a new wire's sink after a wire op, so `SubVI[17].t0 == #5082` is measured rather than name-matched; (iii) a per-diagram read in place of the whole-VI traverse after every op, which is the read budget itself. The 85-1 card also notes "no data-type reader exists" (unroutable_l2a1_85.log:11), so the R45 type pairing is by S1 names only.
+
+**3. Unmeasured steps.** Memory accumulation (inference; meter available). The act-45 sink identity (by name). Both are named as open in result_85-3.json lines 21-26, so the session knew.
+
+**4. Rule compliance.** Two points beyond the fault above. First, Pre-decided 192(a) orders the `OpReportAll_v0` Close Reference repair "because CLAUDE.md says…" (d1-loop12-17-split-plan.md:929-931). But docs/REFERENCES.md:200-229 records S0 CLOSED on measurement, the ops "accepted as they are", "flagged to the user: only they may overturn this reading of their own rule", and cycle27-plan.md:334 says the repair "is NOT predicted to close" error 2. PD192 cites neither, and C8 reported 0 contradiction suspects. Cycle 86's first act therefore rests on a cause the project withdrew on 2026-09-19 and overrides a decision reserved to the user. Second, the judgement session's own bookkeeping commands (`protocol.py new task` chained with `md5sum`) were refused three times (material_marker.log:1723, :1741, :1742) and nine times in cycle 84's spawn (cycle_84.log:120 `permission_denials`); the protocol tells the judgement session to run that command. What the audit does not cover: window contamination by another session; C7 reading the wrong plan (below); whether each card's P-list was completed (85-2 skipped P1/P3/P5, 85-3 never reached P3); whether a review's discriminating test was run before the next build; LabVIEW hang time.
+
+**5. Ordering.** Defensible up to 21:41: separator → op → route → dry → pre-run found two more unroutable rows (dry_l2a1_85b.log:47-48), which is the device built on 2026-09-25 16:10 doing its job. Card 85-2 built both ops before its P1 read-only check, contrary to the card's order (task_85-2.json:17), but P1 passed in 85-3 (unroutable_l2a1_85.log:555-556) so nothing was lost. The wrong order is in PD192: repair (a) before measurement (b); the review's cheapest test should come first.
+
+**6. Not reported.** STATUS NEXT (STATUS.md:60-69) says "CYCLE 85 DONE" and one line about error 2. It omits: the 13-min hang and manual kill; the +12k handle growth in the passing constsrc run; that all three cards returned FAIL; that stage run 1 was deferred to cycle 86 at 21:41 with 102 min left (task_85-3.json:6 "time"); that the prior-art `settled-already` verdict was released by the material session 2 min 39 s after it landed (stop_records.json:986-991, 12:25:15Z → 12:27:54Z); and the PD192(a)/REFERENCES 4a-bis contradiction.
+
+**7. Judgement inside material.** Closest case: card 85-2's material session rejected the prior-art finding `helper-exists` and chose the reviewer's "option 2" in writing (priorart-priorart-c85-ctlsink-tunouter.md:246-261). Accepting or rejecting a review finding is judgement, but PD191(a) had already fixed the sink route (d1-loop12-17-split-plan.md:898-901), so the material applied the plan and the refutation is a fact check on the plan file. Card 85-1's material disposed a 2026-09-18 codex review "recorded from the code as it stands, not re-decided" (2026-09-18-stopgate-priorart-deadlock-codex.md:152-162). The LabVIEW kill is standing authority. No violation.
+
+## Device effect
+
+- `unreported-fact` (bgrun FAIL scan): worked. Both failing runs ended rc=1 (unroutable_l2a1_85.log:609, build_tun.log:64).
+- `rule-evaded` (confirm-bait refusal): not exercised; all three hypothesis briefs carried the adversarial set.
+- `tool-not-built` (prior-art): fired 4 times ($4.66). One non-novel verdict, refuted in 2.6 min by material (above). No already-built thing was rebuilt.
+- `repeated-failure-class` (guard_peer refuses dispatch while newest review undisposed): **FAILED, fired on the wrong thing and was worked around.** It blocked card 85-1's prior-art dispatch on a 2026-09-18 codex *hypothesis* review whose filename contains "priorart", already marked `disposition: legacy` by the chat's lint (file lines 6-7); the material session wrote a disposition to get past it (:152-162). Cost is not in any log; at most the 7 min between card bind (guard_card.log:205, 20:24:48) and the dispatch (priorart_c85_opconstwire.log:1, 20:31:46).
+- `scope-creep` (C7 out-of-plan list): **FAILED again.** It read `docs/cycle27-plan.md` and listed 118 files including the chat's screenshots. The repair (read the plan from next.json) was decided 2026-09-25 14:28 and is still unbuilt (STATUS.md:91, :168). Cost 0 min; the list is unusable.
+- `premature-build`: held. Every op build launched after its prior-art END (constsrc 20:33:10 after 20:32:54; ctlsink 21:28:03 after release 21:27:54).
+- `device-failed` cost-line device: worked as designed. C4c printed the 2-seen/1-parsed mismatch itself; the miss is cycle_84.log:241's `total_cost_usd: 0`.
+- Stop record: held and re-armed on the byte change to `stage_d1_l2a1.py` (STOPPED-RECIPE at material_marker.log:1737-1738), released by round2 at 21:38 (stop_records.json:1042-1049). Five minutes and $1.13 to release a one-line UnboundLocalError fix; by design, but expensive.
+- Dry-run-lists-every-unroutable-row (16:10), PRIME parity (14:28), sink_gates, uid-reuse guard: exercised and held (dry_l2a1_85b.log:47-48; unroutable_l2a1_85.log:36; selftest_stagexec_85c.log 50/0).
+- SendMessage refusal, bgrun stage counting, Jev exemption scoping: not exercised this cycle.
+
+VIOLATION: repeated-failure-class | loss_min=34 | loss_usd=1.46 | evidence=tools/bench/unroutable_l2a1_85.log:562
+VIOLATION: device-failed | loss_min=3 | loss_usd=? | evidence=archive/peer/2026-09-18-stopgate-priorart-deadlock-codex.md:154
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle85","verdict":"refuted","alternative":"The 46-act run was the only way to prove R45 live through stagexec, and the error-2 budget is a new blocker worth the 32 min; the review's single-op probe (act 1 + act 45 + uid read-back, ~5 min) refutes that.","discriminating_test":"On a fresh LabVIEW, loop report_all(GObject) with no edits logging private bytes per call until error 2; then run act 45 alone with the same meter. Accumulation vs the tunouter write is decided in under 10 min.","violations":[{"slug":"repeated-failure-class","loss_min":34,"loss_usd":1.46,"evidence":"tools/bench/unroutable_l2a1_85.log:562"},{"slug":"device-failed","loss_min":3,"loss_usd":null,"evidence":"archive/peer/2026-09-18-stopgate-priorart-deadlock-codex.md:154"}],"sources":["tools/bench/unroutable_l2a1_85.log:562","docs/cycle27-plan.md:233-235","docs/cycle27-plan.md:321-334","tools/stagekit.py:177","tools/bench/constsrc_l2a1_85.log:560","tools/bench/unroutable_l2a1_85_peerhyp.log:3","docs/REFERENCES.md:223-229","docs/d1-loop12-17-split-plan.md:929-931","tools/bench/stop_records.json:986-991","archive/peer/2026-09-18-stopgate-priorart-deadlock-codex.md:152-162"],"note":"Window 17:27-20:23 is cycle 84 (429 limit, $3.76) and the chat's chat-L1/L2 verification, not cycle 85. PD192(a) reopens S0 (REFERENCES 4a-bis, user-flagged) and contradicts cycle27-plan:334; C7 read the wrong plan again (repair decided 14:28, unbuilt)."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle85.md
+BGRUN END rc=0 after 437s

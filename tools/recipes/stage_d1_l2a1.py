@@ -65,6 +65,8 @@ def body(s):
         real = x.run(); s.gate("E1 every real op's graph == its simulated step ({0} ops)".format(len(OPS)), True)   # noqa: E702
     except SX.ExecStop as e:
         s.R["stagexec"] = x.report; s.gate("E1 every real op's graph == its simulated step", False, str(e)[:CUT], fatal=True)   # noqa: E702
+        [s.fact("UNROUTABLE acts {0} ids {1}: {2}".format(u["acts"], u["ids"], u["err"])) for u in getattr(be, "unroutable", None) or []]
+        return                                                                      # PD191(c): a stop names its rows, never UnboundLocalError
     s.R["stagexec"] = x.report; s.fact("BINDING obj {0}".format(x.bind["obj"]))    # noqa: E702
     for u in CT_UIDS:
         ok, d = ct_read(u, "row")

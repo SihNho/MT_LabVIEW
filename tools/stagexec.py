@@ -212,9 +212,37 @@ def compare(sim_terms, real_terms, bind, allow_either=()):
     return out
 
 
+def uid_reuse(prev_real, real):
+    """Evidence that LabVIEW re-issued a freed uid to a NEW object within one op (hyp-optunouter-uidreuse-85.md:78-82; NI:
+    'if you delete an object, LabVIEW might assign the UID for that deleted object to a different object'). A uid present
+    before and after whose identity changed: (1) owner uid with another owner_class, (2) terminal uid with another
+    term_class/owner_class, (3) non-Diagram owner uid whose terminal-uid sets before/after are both non-empty and DISJOINT
+    (same class re-issued, e.g. Property #136 in unroutable_l2a1_85_build_tun.log:34). Diagram owners are exempt from (3):
+    control terminals move between diagrams legitimately."""
+    oc0 = dict((r["owner_uid"], r["owner_class"]) for r in prev_real)
+    oc1 = dict((r["owner_uid"], r["owner_class"]) for r in real)
+    tk0 = dict((r["term_uid"], (r["term_class"], r["owner_class"])) for r in prev_real)
+    tk1 = dict((r["term_uid"], (r["term_class"], r["owner_class"])) for r in real)
+    ts0, ts1 = collections.defaultdict(set), collections.defaultdict(set)
+    for r in prev_real:
+        ts0[r["owner_uid"]].add(r["term_uid"])
+    for r in real:
+        ts1[r["owner_uid"]].add(r["term_uid"])
+    out = ["owner #{0} {1}->{2}".format(u, oc0[u], oc1[u]) for u in sorted(set(oc0) & set(oc1)) if oc0[u] != oc1[u]]
+    out += ["term #{0} {1}->{2}".format(t, tk0[t], tk1[t]) for t in sorted(set(tk0) & set(tk1)) if tk0[t] != tk1[t]]
+    out += ["owner #{0} ({1}) terminals {2}->{3}".format(u, oc1[u], sorted(ts0[u])[:4], sorted(ts1[u])[:4])
+            for u in sorted(set(ts0) & set(ts1)) if oc1[u] != "Diagram" and ts0[u] and ts1[u] and not ts0[u] & ts1[u]]
+    return out
+
+
 def bind_new(prev_real, real, sim_prev, sim_now, bind):
     """Bind the objects the simulation created between sim_prev and sim_now to the real objects that appeared between
-    prev_real and real, by class and then by terminal class. Count/class mismatch => ExecStop."""
+    prev_real and real, by class and then by terminal class. Count/class mismatch => ExecStop. A uid re-issued to a new
+    object inside the op => ExecStop 'UID-REUSE' FIRST (it would otherwise be dropped as 'old' and misreported as a
+    sim/real mismatch; card 85-3 P4)."""
+    ru_ = uid_reuse(prev_real, real)
+    if ru_:
+        raise ExecStop("UID-REUSE: {0} uid(s) re-issued to a different object in one op: {1}".format(len(ru_), ru_[:6]))
     sp = set(r["owner_uid"] for r in sim_prev)
     new_sim = collections.OrderedDict()
     for r in sim_now:
@@ -292,6 +320,13 @@ def listed_as_node(r):
 # HOLDOUT (all 173 diagrams of D1_k, tools/bench/parity_l2a1_82_holdout.log:45-50): the ONLY one-side-only entries left
 # were 21 real-only ControlReferenceConstant on 5 untouched diagrams - that class IS in Diagram.Nodes[].
 NODE_CONSTANTS = ("ControlReferenceConstant",)
+
+
+def is_const(r):
+    """PD188(c) (card 85-1): a diagram CONSTANT end - outside Diagram.Nodes[] (listed_as_node), addressed by its class
+    traverse (report_all(<class>), the same order OpConstWire_v1's Traverse uses), never by a Nodes[] triple."""
+    c = r["owner_class"]
+    return c.endswith("Constant") and c not in NODE_CONSTANTS and not is_ct(r)
 
 
 def loop_parent(st, L):
@@ -389,7 +424,15 @@ def connect_route(addr, real, src, dst, loop_of):
     if is_ct(rd):
         info["dst_ct"] = addr.ct(real, dst)[1]
         if not rs["wire_uid"]:
-            raise ExecStop("CONNECT-NO-VERB: panel sink #{0} needs a WIRED source for wire_indicators; #{1} is bare".format(dst, src))
+            # PD191(a) (card 85-2): a BARE node terminal -> a ControlTerminal sink = 'ctlsink' (gscript.wire_ctlsink,
+            # OpCtlSinkWire_v1: Connect Wire invoked ON the CT, Wire Source = Traverse(src class)[j].Terminals[t]).
+            # wire_indicators stays for WIRED sources only (its measured limit, tools/gscript.py:1835-1838).
+            if is_ct(rs) or is_const(rs) or rs["owner_class"] in NOT_NODES + SR_CLS or V.node_of(rs) != rs["owner_uid"]:
+                raise ExecStop("CONNECT-NO-VERB: panel sink #{0} needs a WIRED source for wire_indicators; #{1} is bare and "
+                               "not a node's own terminal (ctlsink addresses the source NODE by class traverse)".format(dst, src))
+            st_, hs = addr.triple(real, src, True, loop_of)
+            info.update(ct=addr.ct(real, dst)[0], src=st_, src_how=hs, src_term=st_[2])
+            return "ctlsink", rs, rd, info
         return "indicator", rs, rd, info
     dt, hd = addr.triple(real, dst, False, loop_of)
     info.update(dst=dt, dst_how=hd)
@@ -414,9 +457,45 @@ def connect_route(addr, real, src, dst, loop_of):
                            "among its node's sink terminals (wire_control is name-addressed)".format(src, dst, nm))
         info.update(ctl_label=rs["term_name"], ctl_didx=c["didx"], dst_name=nm)
         return "ctl", rs, rd, info
+    if is_const(rs):                                       # PD188(c), card 85-1: gscript.wire_const (OpConstWire_v1)
+        if rd["owner_class"] in OWNER_ROUTED or rd["owner_class"] in SR_CLS or rd["owner_class"] == FSIT_CLS \
+                or V.node_of(rd) != rd["owner_uid"]:
+            raise ExecStop("CONNECT-NO-VERB: bare constant source #{0} -> sink #{1} on {2} #{3}: wire_const addresses the "
+                           "sink NODE by class traverse; this sink's owner is not that node".format(
+                               src, dst, rd["owner_class"], rd["owner_uid"]))
+        c, hc = addr.const(real, src)
+        info.update(const=c, const_how=hc, dst_term=dt[2])
+        return "const", rs, rd, info
+    if rs["owner_class"] in OWNER_ROUTED and rs["term_class"] == "OuterTerminal" and len(face_twins(real, rs, addr.owners)) > 1:
+        # PD191(b), card 85-2: by the TUNNEL uid - only where the owner's Terminals[] holds a TWIN face (same name and
+        # direction: R45 #6007 / R46 #6026 on #5540). A face with no twin keeps its measured owner route ('nested',
+        # rw_10594_10259 at op 34, constsrc_l2a1_85.log diff 0).
+        if rd["owner_class"] in OWNER_ROUTED or rd["owner_class"] in SR_CLS or rd["owner_class"] == FSIT_CLS \
+                or V.node_of(rd) != rd["owner_uid"]:
+            raise ExecStop("CONNECT-NO-VERB: bare tunnel outer face #{0} -> sink #{1} on {2} #{3}: wire_tunouter addresses "
+                           "the sink NODE by class traverse; this sink's owner is not that node".format(
+                               src, dst, rd["owner_class"], rd["owner_uid"]))
+        c, hc = addr.tun(real, src)
+        info.update(tun=c, tun_how=hc, dst_term=dt[2])
+        return "tunouter", rs, rd, info
     st_, hs = addr.triple(real, src, True, loop_of)
     info.update(src=st_, src_how=hs)
     return "nested", rs, rd, info
+
+
+def face_twins(rows, r, owners):
+    """PD191(b): the owner-routed OUTER faces on the same owner structure as row r with r's (name, direction) - r included.
+    A face whose owner is unknown has no twins (its owner route stops in Addr._triple as before)."""
+    def own(x):
+        try:
+            return tunnel_owner(rows, x["owner_uid"], owners)
+        except ExecStop:
+            return None
+    o = own(r)
+    if o is None:
+        return [r]
+    return [x for x in rows if x["owner_class"] in OWNER_ROUTED and x["term_class"] == "OuterTerminal"
+            and x["term_name"] == r["term_name"] and bool(x["is_source"]) == bool(r["is_source"]) and own(x) == o]
 
 
 def tunnel_owner(rows, tun, owners):
@@ -545,6 +624,41 @@ class Addr(object):
              "wire": int(r["wire_uid"] or 0)}
         return a, "ControlTerminal route 179(b): own uid #{0}, owner Diagram #{1} (idx {2}), in report_all{3}".format(
             term_uid, diag, a["didx"], " (row owner_uid #{0} stale)".format(r["owner_uid"]) if stale else "")
+
+    def const(self, real, term_uid):
+        """PD188(c): a bare diagram-CONSTANT source -> {const, cls, term}. Its terminal row must be the constant's own
+        (node == owner), and the owner must be in the reader's class listing (report_all(<class>) on the real reader)."""
+        rows = [r for r in real if r["term_uid"] == term_uid]
+        if len(rows) != 1:
+            raise ExecStop("ADDRESS-CONST: #{0}: {1} rows in the live read".format(term_uid, len(rows)))
+        r = rows[0]
+        if not is_const(r) or V.node_of(r) != r["owner_uid"]:
+            raise ExecStop("ADDRESS-CONST: #{0} is {1} #{2} (node #{3}), not a constant's own terminal".format(
+                term_uid, r["owner_class"], r["owner_uid"], V.node_of(r)))
+        cls, u = r["owner_class"], int(r["owner_uid"])
+        if u not in self.rd.obj_uids(cls):
+            raise ExecStop("ADDRESS-CONST: #{0} not in report_all({1!r})".format(u, cls))
+        return {"const": u, "cls": cls, "term": term_uid}, "constant route 188(c): {0} #{1} in report_all, terminal #{2}".format(
+            cls, u, term_uid)
+
+    def tun(self, real, term_uid):
+        """PD191(b): a structure tunnel's OUTER face -> {tun, cls, term}, addressed by the TUNNEL uid (Tunnel.Outside
+        Terminal 6356001), never through the owner's Terminals[] (T2c2, docs/NAMES.md:1132-1137). The tunnel must own exactly
+        ONE OuterTerminal row (this one) and be in the reader's class listing (report_all(<class>) on the real reader)."""
+        rows = [r for r in real if r["term_uid"] == term_uid]
+        if len(rows) != 1:
+            raise ExecStop("ADDRESS-TUN: #{0}: {1} rows in the live read".format(term_uid, len(rows)))
+        r = rows[0]
+        if r["owner_class"] not in OWNER_ROUTED or r["term_class"] != "OuterTerminal":
+            raise ExecStop("ADDRESS-TUN: #{0} is {1} {2}, not a tunnel's outer face".format(term_uid, r["owner_class"], r["term_class"]))
+        cls, u = r["owner_class"], int(r["owner_uid"])
+        outer = [x["term_uid"] for x in real if x["owner_uid"] == u and x["term_class"] == "OuterTerminal"]
+        if outer != [term_uid]:
+            raise ExecStop("ADDRESS-TUN: tunnel #{0} has outer faces {1}, not exactly #{2}".format(u, outer, term_uid))
+        if u not in self.rd.obj_uids(cls):
+            raise ExecStop("ADDRESS-TUN: tunnel #{0} not in report_all({1!r})".format(u, cls))
+        return {"tun": u, "cls": cls, "term": term_uid}, "tunnel route 191(b): {0} #{1} in report_all, Outside Terminal #{2}".format(
+            cls, u, term_uid)
 
     def _triple(self, real, r, term_uid, loop_of):
         node = V.node_of(r)
@@ -746,6 +860,10 @@ class Executor(object):
                     k, op["kind"], op["acts"], rec["ids"], json.dumps({x: y for x, y in d.items() if y and x != "n"},
                                                                        default=str)[:1500]))
             real = real_new
+        un = getattr(be, "unroutable", None)      # a collecting (dry) backend: every unroutable row, reported at the end
+        if un:
+            raise ExecStop("UNROUTABLE {0} row(s): {1}".format(len(un), "; ".join(
+                "acts {0} {1}: {2}".format(u["acts"], u["ids"], u["err"][:160]) for u in un)))
         fin = getattr(be, "run_deferred", None)   # card 80-3: deferred op errors are answered by their declared gates
         if fin:
             fin()
@@ -828,6 +946,9 @@ class LVReader(object):
 
     def ct_uids(self):
         return set(int(o["uid"]) for o in self.g.report_all(self.work, "ControlTerminal"))
+
+    def obj_uids(self, cls):                                           # PD188(c): the class traverse wire_const indexes
+        return [int(o["uid"]) for o in self.g.report_all(self.work, cls)]
 
 
 def check_sink_gates(sink_gates, gates):
@@ -942,7 +1063,37 @@ class LVBackend(object):
         kind, rs, rd, info = connect_route(self.addr, real, src, dst, loop_of)   # PD187(b): the route both backends take
         if kind == "indicator":
             return self.indicator(rs, rd)
+        if kind == "ctlsink":                              # card 85-2, PD191(a): OpCtlSinkWire_v1 (build_opctlsinkwire_v1.py)
+            ci = self.s.uid_index("ControlTerminal", int(dst))
+            si = self.s.uid_index(rs["owner_class"], int(rs["owner_uid"]))
+            if ci is None or si is None:
+                raise ExecStop("ctlsink: CT #{0} / {1} #{2} not in their class traverses ({3}, {4})".format(
+                    dst, rs["owner_class"], rs["owner_uid"], ci, si))
+            t = info["src_term"]
+            rec = self.s._op("wire_ctlsink", lambda: self.g.wire_ctlsink(self.s.work, ci, rs["owner_class"], si, t),
+                             "ControlTerminal[{0}] #{1} <- {2}[{3}].t{4}".format(ci, dst, rs["owner_class"], si, t))
+            res = rec.get("result")
+            if isinstance(res, (list, tuple)) and len(res) > 1 and res[1]:
+                rec["err"] = rec.get("err") or res[1]
+            out = self._done(rec, "connect #{0}->#{1}".format(src, dst))
+            out["how"] = ["ctlsink", info["dst_ct"], info["src_how"]]
+            return out
         dt, hd = info["dst"], info["dst_how"]
+        if kind == "tunouter":                             # card 85-2, PD191(b): OpTunOuterWire_v1 (build_optunouter_v1.py)
+            c = info["tun"]
+            ti = self.s.uid_index(c["cls"], c["tun"])
+            di = self.s.uid_index(rd["owner_class"], int(rd["owner_uid"]))
+            if ti is None or di is None:
+                raise ExecStop("tunouter: {0} #{1} -> {2} #{3} not in their class traverses ({4}, {5})".format(
+                    c["cls"], c["tun"], rd["owner_class"], rd["owner_uid"], ti, di))
+            rec = self.s._op("wire_tunouter", lambda: self.g.wire_tunouter(self.s.work, c["cls"], ti, rd["owner_class"], di, dt[2]),
+                             "{0}[{1}] #{2} -> {3}[{4}].t{5}".format(c["cls"], ti, c["tun"], rd["owner_class"], di, dt[2]))
+            res = rec.get("result")
+            if isinstance(res, (list, tuple)) and len(res) > 1 and res[1]:
+                rec["err"] = rec.get("err") or res[1]
+            out = self._done(rec, "connect #{0}->#{1}".format(src, dst))
+            out["how"] = ["tunouter", info["tun_how"], hd]
+            return out
         if kind == "ctl":                                  # card 82-2: measured in tools/bench/ctsrc_l2a1_82.log
             di = self.s.uid_index(rd["owner_class"], int(rd["owner_uid"]))
             if di is None:
@@ -952,6 +1103,21 @@ class LVBackend(object):
                 "{0!r}@D[{1}] -> {2}[{3}].{4!r}".format(info["ctl_label"], info["ctl_didx"], rd["owner_class"], di, info["dst_name"]))
             out = self._done(rec, "connect #{0}->#{1}".format(src, dst))
             out["how"] = ["ctl", info["src_ct"], hd]
+            return out
+        if kind == "const":                                # card 85-1: OpConstWire_v1 (tools/recipes/build_opconstwire_v1.py)
+            c = info["const"]
+            si = self.s.uid_index(c["cls"], c["const"])
+            di = self.s.uid_index(rd["owner_class"], int(rd["owner_uid"]))
+            if si is None or di is None:
+                raise ExecStop("const: {0} #{1} -> {2} #{3} not in their class traverses ({4}, {5})".format(
+                    c["cls"], c["const"], rd["owner_class"], rd["owner_uid"], si, di))
+            rec = self.s._op("wire_const", lambda: self.g.wire_const(self.s.work, c["cls"], si, rd["owner_class"], di, dt[2]),
+                             "{0}[{1}] #{2} -> {3}[{4}].t{5}".format(c["cls"], si, c["const"], rd["owner_class"], di, dt[2]))
+            res = rec.get("result")
+            if isinstance(res, (list, tuple)) and len(res) > 1 and res[1]:
+                rec["err"] = rec.get("err") or res[1]
+            out = self._done(rec, "connect #{0}->#{1}".format(src, dst))
+            out["how"] = ["const", info["const_how"], hd]
             return out
         if kind == "cfw":
             rec = self._cfw(int(rs["wire_uid"]), V.node_of(rs) if V.node_class(rs) != FP else rs["owner_uid"], dt)
@@ -1079,6 +1245,13 @@ class SimReader(object):
     def ct_uids(self):                                                  # the report_all('ControlTerminal') analogue
         return set(r["term_uid"] for r in self.be.st["terminals"] if is_ct(r))
 
+    def obj_uids(self, cls):                                            # the report_all(<class>) analogue (PD188(c))
+        out = []
+        for r in self.be.st["terminals"]:
+            if r["owner_class"] == cls and int(r["owner_uid"]) not in out:
+                out.append(int(r["owner_uid"]))
+        return out
+
 
 class SimBackend(object):
     """The DRY backend: every real op applies the plan actions it covers with stagesim's own OPS on a private state
@@ -1090,6 +1263,7 @@ class SimBackend(object):
         self.next = 10 ** 7
         self.addr = Addr(SimReader(self))
         self.calls = []
+        self.unroutable = []
         self.S1 = SS.load_s1(plan)
 
     def read(self):
@@ -1147,11 +1321,29 @@ class SimBackend(object):
         return self._apply(op)
 
     def wire_sr(self, variant, loop, right, term, real, op):
-        return self._apply(op, self._check(real, term, variant == "RightIn"))
+        try:
+            chk = self._check(real, term, variant == "RightIn")
+        except ExecStop as e:
+            return self._unroutable(op, e)
+        return self._apply(op, chk)
+
+    def _unroutable(self, op, e):
+        """violation-decisions 16:10 (card 85-1): the DRY run records EVERY unroutable row and keeps simulating (the op is
+        still applied from the plan), so one dry run lists them all; dry_run() then FAILS naming each. The real backend
+        never collects - it stops at the first."""
+        rec = {"acts": op["acts"], "ids": [self.plan["actions"][n - 1].get("id") for n in op["acts"]], "err": str(e)[:300]}
+        self.unroutable.append(rec)
+        return self._apply(op, {"unroutable": rec["err"]})
 
     def connect(self, src, dst, real, loop_of, op):
-        kind, _rs, _rd, info = connect_route(self.addr, real, src, dst, loop_of)   # PD187(b): the real backend's route
-        chk = None if kind == "indicator" else self._check(real, dst, False, loop_of)
+        try:
+            if self.fault.get("kind") == "unroutable" and op["acts"][-1] in self.fault.get("at_acts", ()):
+                raise ExecStop("CONNECT-NO-VERB: injected unroutable row (self-test)")
+            kind, _rs, _rd, info = connect_route(self.addr, real, src, dst, loop_of)   # PD187(b): the real backend's route
+            chk = None if kind == "indicator" else ({"src_triple": list(info["src"]), "how": info["src_how"]}
+                                                     if kind == "ctlsink" else self._check(real, dst, False, loop_of))
+        except ExecStop as e:
+            return self._unroutable(op, e)
         if chk is not None:
             chk["route"] = kind
         return self._apply(op, chk)
@@ -1179,11 +1371,18 @@ def dry_run(plan_path, fault=None, log=print, model_dir=None):
     st = SS.base_state(base, plan.get("context"))
     be = SimBackend(plan, st, SS.load_models(model_dir or SS.OPMODEL_DIR), fault)
     ex = Executor(plan_path, be, log)
+    ex.unroutable = be.unroutable
     try:
-        ex.run()
+        ex.run()                                       # raises UNROUTABLE at the end when any row was unroutable
         return "PASS", None, ex
     except ExecStop as e:
-        return "FAIL", str(e)[:400], ex
+        for u in be.unroutable:                        # every unroutable row, not only the first (violation-decisions 16:10)
+            log("  UNROUTABLE acts {0} ids {1}: {2}".format(u["acts"], u["ids"], u["err"]))
+        msg = str(e)
+        if be.unroutable and not msg.startswith("UNROUTABLE"):     # a later hard stop: name the rows collected before it
+            msg = "UNROUTABLE {0} row(s) before the stop: {1} | STOP {2}".format(
+                len(be.unroutable), "; ".join("acts {0} {1}".format(u["acts"], u["ids"]) for u in be.unroutable), msg)
+        return "FAIL", msg[:4000], ex
 
 
 def prerun_plan(plan_path, log=print, model_dir=None):
@@ -1542,7 +1741,122 @@ def selftest():
             gate(lab_, False, "routed " + k_)
         except ExecStop as e:
             gate(lab_, (want is None or want in str(e)), str(e)[:160])
-    gate("T14 nothing LabVIEW-side imported", not any(m in sys.modules for m in ("gscript", "win32com", "pythoncom", "stagekit")),
+    # PD188(c) (card 85-1): a BARE diagram-constant source -> 'const' (gscript.wire_const, OpConstWire_v1), both backends
+    rk = rc_ + [row(901, "disabled index (col)", True, 0, 900, "DigitalNumericConstant", 1, "Terminal")]
+    sk = SimReader(_StateHolder({"loops": [], "owners": {}, "objs": [], "terminals": rk}))
+    try:
+        k_, _a1, _a2, i_ = connect_route(Addr(sk, {}), rk, 901, 701, {})
+        gate("T28 bare constant source -> 'const' route: constant #900 by its class listing, sink terminal index 0 ('y'), "
+             "and the constant is NOT a Nodes[] entry", k_ == "const" and i_["const"]["const"] == 900 and i_["dst_term"] == 0
+             and 900 not in sk.node_uids(0), (k_, i_))
+    except ExecStop as e:
+        gate("T28 bare constant source -> 'const' route", False, e)
+
+    class NoConst(SimReader):
+        def obj_uids(self, cls):
+            return []
+    negk = (("T28b NEGATIVE: a constant absent from report_all(<class>) is not addressable", Addr(NoConst(sk.be), {}), 901, 701, "ADDRESS-CONST"),
+            ("T28c NEGATIVE: constant -> a sink owned by an owner-routed tunnel -> STOP", Addr(SimReader(_StateHolder(
+                {"loops": [], "owners": {}, "objs": [], "terminals": rk + [row(801, "", False, 0, 800, "SelectorTunnel", 1, "OuterTerminal")]})), {}),
+             901, 801, None))
+    for lab_, ad_, s_, d_, want in negk:
+        rows3 = rk + [row(801, "", False, 0, 800, "SelectorTunnel", 1, "OuterTerminal")]
+        try:
+            k_ = connect_route(ad_, rows3, s_, d_, {})[0]
+            gate(lab_, False, "routed " + k_)
+        except ExecStop as e:
+            gate(lab_, (want is None or want in str(e)), str(e)[:160])
+    try:
+        Addr(sk, {}).triple(rk, 901, True)
+        gate("T28d NEGATIVE: a constant as a Nodes[] triple FAILS", False, "resolved")
+    except ExecStop as e:
+        gate("T28d NEGATIVE: a constant as a Nodes[] triple FAILS", "ADDRESS" in str(e), e)
+    # PD191 (card 85-2): 'ctlsink' (bare node terminal -> CT sink) and 'tunouter' (bare tunnel outer face, by the TUNNEL uid)
+    r30 = rc_ + [row(710, "min value", True, 0, 705, "Function", 1, "ParameterTerminal"),
+                 row(711, "x", False, 0, 705, "Function", 1, "ParameterTerminal"),
+                 row(606, "min value", False, 0, 1, "Diagram", 1, FP)]
+    s30 = SimReader(_StateHolder({"loops": [], "owners": {}, "objs": [], "terminals": r30}))
+    try:
+        k_, _a1, _a2, i_ = connect_route(Addr(s30, {}), r30, 710, 606, {})
+        gate("T30 bare node terminal -> ControlTerminal sink -> 'ctlsink': the CT by 179(b), the source by its node's "
+             "Terminals[] index", k_ == "ctlsink" and i_["ct"]["ct"] == 606 and i_["src_term"] == 0, (k_, i_))
+    except ExecStop as e:
+        gate("T30 bare node terminal -> ControlTerminal sink -> 'ctlsink'", False, e)
+    for lab_, s_ in (("T30b NEGATIVE: a bare ControlTerminal source -> CT sink STOPS", 601),
+                     ("T30c NEGATIVE: a bare constant source -> CT sink STOPS", 901)):
+        rr = r30 + [row(901, "c", True, 0, 900, "DigitalNumericConstant", 1, "Terminal")]
+        try:
+            k_ = connect_route(Addr(SimReader(_StateHolder({"loops": [], "owners": {}, "objs": [], "terminals": rr})), {}),
+                               rr, s_, 606, {})[0]
+            gate(lab_, False, "routed " + k_)
+        except ExecStop as e:
+            gate(lab_, "needs a WIRED source" in str(e), str(e)[:160])
+    ow31 = {"2": ["CaseStructure", 820]}
+    r31 = rc_ + [row(811, "", True, 0, 810, "SelectorTunnel", 1, "OuterTerminal"),
+                 row(812, "", False, 33, 810, "SelectorTunnel", 2, "InnerTerminal"),
+                 row(816, "", True, 0, 815, "SelectorTunnel", 1, "OuterTerminal"),          # the TWIN (#6026 beside #6007)
+                 row(817, "", False, 34, 815, "SelectorTunnel", 2, "InnerTerminal")]
+    s31 = SimReader(_StateHolder({"loops": [], "owners": ow31, "objs": [], "terminals": r31}))
+    try:
+        k_, _a1, _a2, i_ = connect_route(Addr(s31, ow31), r31, 811, 701, {})
+        gate("T31 bare tunnel outer face with a twin on its owner -> 'tunouter' by the TUNNEL uid (#810), sink terminal "
+             "index 0 ('y')", k_ == "tunouter" and i_["tun"]["tun"] == 810 and i_["dst_term"] == 0, (k_, i_))
+    except ExecStop as e:
+        gate("T31 bare tunnel outer face -> 'tunouter'", False, e)
+    r31d = rc_ + r31[-4:-2]
+    try:
+        k_ = connect_route(Addr(SimReader(_StateHolder({"loops": [], "owners": ow31, "objs": [], "terminals": r31d})), ow31),
+                           r31d, 811, 701, {})[0]
+    except ExecStop as e:
+        k_ = "STOP " + str(e)[:80]
+    gate("T31d a tunnel outer face WITHOUT a twin keeps its measured owner route (not 'tunouter')", k_ == "nested", k_)
+    r31b = r31 + [row(813, "", True, 0, 810, "SelectorTunnel", 1, "OuterTerminal")]
+    for lab_, ad_, rr in (("T31b NEGATIVE: a tunnel with TWO outer faces is not addressable by its uid",
+                           Addr(SimReader(_StateHolder({"loops": [], "owners": ow31, "objs": [], "terminals": r31b})), ow31), r31b),
+                          ("T31c NEGATIVE: a tunnel absent from report_all(<class>) is not addressable",
+                           Addr(NoConst(s31.be), ow31), r31)):
+        try:
+            k_ = connect_route(ad_, rr, 811, 701, {})[0]
+            gate(lab_, False, "routed " + k_)
+        except ExecStop as e:
+            gate(lab_, "ADDRESS-TUN" in str(e), str(e)[:160])
+    # violation-decisions 16:10 (card 85-1): the dry run reports EVERY unroutable row, not only the first
+    two =[o["acts"][-1] for o in ops if o["kind"] in ("tunnel", "connect")][:2]
+    st6, ff6, ex6 = dry_run(fin, fault={"kind": "unroutable", "at_acts": two}, log=q, model_dir=md)
+    gate("T29 two unroutable rows -> the dry run FAILS naming BOTH, and simulates on to the last op",
+         len(two) == 2 and st6 == "FAIL" and "UNROUTABLE 2" in str(ff6) and [u["acts"][-1] for u in ex6.unroutable] == two
+         and len(ex6.report) == len(ops) + 1, (two, str(ff6)[:200], len(ex6.report), len(ops)))
+    be7 = SimBackend(pl_, SS.base_state(_j(_abs(pl_["finalized"]["base"]["path"])), pl_.get("context")), SS.load_models(md),
+                     fault={"kind": "unroutable", "at_acts": two})
+    try:                                          # a recipe's own DryBE calls Executor.run() directly, not dry_run()
+        Executor(fin, be7, log=q).run()
+        gate("T29b NEGATIVE: Executor.run() on a collecting backend with unroutable rows RAISES at the end (never silent)", False, "ran clean")
+    except ExecStop as e:
+        gate("T29b NEGATIVE: Executor.run() on a collecting backend with unroutable rows RAISES at the end (never silent)",
+             str(e).startswith("UNROUTABLE 2"), str(e)[:160])
+    # card 85-3 P4 (hyp-optunouter-uidreuse-85.md:78-82): a uid re-issued inside one op is named, not misreported
+    p32 = [row(900, "Terminal", True, 0, 136, "Property", 5, "Terminal"), row(901, "ref", False, 0, 136, "Property", 5, "Terminal"),
+           row(910, "x", False, 0, 300, "WhileLoop", 5, "OuterTerminal"), row(920, "c", True, 0, 5, "Diagram", 5, "ControlTerminal")]
+    r32 = [row(950, "Outer Term", True, 0, 136, "Property", 5, "Terminal"), row(951, "ref", False, 0, 136, "Property", 5, "Terminal"),
+           row(910, "x", False, 0, 300, "WhileLoop", 5, "OuterTerminal"), row(920, "c", True, 0, 5, "Diagram", 5, "ControlTerminal")]
+    try:
+        bind_new(p32, r32, [], [], {"obj": {}, "term": {}})
+        gate("T32 NEGATIVE: Property #136 deleted and re-issued in one op (disjoint terminals) -> ExecStop UID-REUSE", False, "bound")
+    except ExecStop as e:
+        gate("T32 NEGATIVE: Property #136 deleted and re-issued in one op (disjoint terminals) -> ExecStop UID-REUSE",
+             str(e).startswith("UID-REUSE") and "#136" in str(e), str(e)[:200])
+    r32b = [dict(r, owner_class="Constant") if r["owner_uid"] == 136 else r for r in p32]
+    try:
+        bind_new(p32, r32b, [], [], {"obj": {}, "term": {}})
+        gate("T32b NEGATIVE: a uid whose class changed (Property -> Constant) -> ExecStop UID-REUSE", False, "bound")
+    except ExecStop as e:
+        gate("T32b NEGATIVE: a uid whose class changed (Property -> Constant) -> ExecStop UID-REUSE", str(e).startswith("UID-REUSE"),
+             str(e)[:200])
+    r32c = p32[:3] + [row(911, "", True, 0, 300, "WhileLoop", 5, "OuterTerminal"), row(920, "c", True, 0, 6, "Diagram", 6,
+                                                                                         "ControlTerminal")]
+    gate("T32c a structure GAINING a face and a control terminal MOVING diagram are not reuse", uid_reuse(p32, r32c) == [],
+         uid_reuse(p32, r32c))
+    gate("T14 nothing LabVIEW-side imported",not any(m in sys.modules for m in ("gscript", "win32com", "pythoncom", "stagekit")),
          [m for m in ("gscript", "win32com", "pythoncom", "stagekit") if m in sys.modules])
     n_pass = sum(1 for _l, ok in gates if ok)
     n_fail = len(gates) - n_pass

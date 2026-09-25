@@ -1,0 +1,54 @@
+BGRUN START 2026-09-25 21:23:46 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/plan_85-2.md --slug priorart-c85-ctlsink-tunouter --trigger new-op --recipe tools/recipes/build_opctlsinkwire_v1.py --recipe tools/recipes/build_optunouter_v1.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c85-ctlsink-tunouter.txt (28680 chars)
+   review card tools\bench\cards\review_priorart-priorart-c85-ctlsink-tunouter.json
+OUTCOME: ANSWERED (85s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-25-priorart-priorart-c85-ctlsink-tunouter.md
+COST: $1.0351  in 12 / out 7820 / cache-create 96049 / cache-read 551510  (81s, 15 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-priorart-c85-ctlsink-tunouter verdict=settled-already -> tools\bench\cards\verdict_priorart-priorart-c85-ctlsink-tunouter.json
+--- ANSWER ---
+The work is not novel as planned: `OpConnectCtl_v0` already exists and does R41's wiring step from the sink side. The tunnel-outer-face op (`tunouter`) is new as a writer. Details and citations follow.
+
+## PART A: the direction
+
+- **A1 (settled already): no.** Card 85-1's review recorded both routes as undecided (`archive/peer/2026-09-25-hyp-unroutable-85.md:126-134`). Pre-decided 191(a)/(b) (`docs/d1-loop12-17-split-plan.md:898-915`) is the first place they are decided, and this plan carries that decision out. There is nothing earlier to contradict it.
+- **A2 (refuted already): no.** The two directions 191 rejects were each rejected with measured grounds:
+  - the joint re-cut: `l2a1_tunflip_80*` has 0 hits (`d1-loop12-17-split-plan.md:902-903`);
+  - carrying the owner's `Terminals[]` order across the move: the T2c2 failure on #5680 (`docs/NAMES.md:1132-1137`).
+
+  The plan avoids both. `Outside Terminal` is marked "UNBUILT" (`tools/recipes/build_d1_m3a1.py:1552-1564`, `:1653`). That marks it as not yet built. It does not say anyone tried it and it failed.
+- **A3 (contradicted): no.** The plan's facts match their sources:
+  - the Wire Indicators wired-source limit: `tools/gscript.py:1835-1838`;
+  - the `SelectorTunnel`→`Tunnel` cast, 24/24 on the #5540 tunnels: `docs/toolkit-capabilities.md:77`.
+
+  One scope note: `Tunnel.Outside Terminal` 6356001 was refused (1077) on `FlatSequenceOuterTunnel` (`tools/bench/build_opfstunnelterm_v2_run1.log:38`; `archive/2026-09-18-status-cycle21-wire-semantics.md:113-114`). That refusal was on a different class. The #5680/#6016 tunnels are selector tunnels, where the cast is measured, so it does not bite here. The 20-call negative test should still include one FlatSequence tunnel, which is expected to return 1077.
+- **A4 (unread evidence): yes.**
+  - `tools/recipes/build_opconnectctl_v0.py:1-16` and `docs/toolkit-capabilities.md:25` describe `OpConnectCtl_v0`. It calls `Terminal.Connect Wire` 6349C03 on a front-panel object's own ControlTerminal, reached with no cast (`Panel.Controls[]` → IA → `Control.Terminal` 6332006). Its `Wire Source` is a `Node.Terminals[]` element. That is exactly R41's verb. Neither Pre-decided 191(a) nor card 85-2 mentions it.
+  - `docs/cycle27-plan.md:108-110` records a related fact: a ControlTerminal has no node index, and `OpConnectNested_v1` can only address `Diagram[].Nodes[].Terminals[]`. So one of the two ladders has to be a panel ladder or a class `Traverse`.
+
+## PART B: the artefacts
+
+- **B1 (already built): partly, for ctlsink only.**
+  - `OpConnectCtl_v0.vi` is on disk (`claudeDev\OpConnectCtl_v0.vi`), wrapped as `gscript.connect_ctl` (`tools/gscript.py:1024-1043`), and measured in `build_harness_dispI.log` run 4 (`toolkit-capabilities.md:25`). Its sink half is the same as ctlsink's.
+  - The difference is the source ladder. `connect_ctl` takes its source from the top-level diagram's `Nodes[]`, by index. If #10969 sits inside a loop diagram after `mv_10969`, that half does not reach it. So what is really new in ctlsink is one thing: a nested source reached by class `Traverse`.
+  - The plan's sink route (`Traverse('ControlTerminal')` → re-typed TMSC seed) adds a cast that the existing sink route does not need.
+  - **tunouter:** no writer uses `Outside Terminal` as `Wire Source`. What exists only reads it:
+    - `build_optunnelind.py:45` (for Create Indicator);
+    - `build_opshiftregs_v0/v1`;
+    - `build_oploopcast_v0.py:280`.
+- **B2 (already failed): no.** Neither op build has been attempted before.
+- **B3 (helper exists): yes, for ctlsink's sink ladder.** The existing route is `Panel.Controls[i]` → `Control.Terminal` from `OpConnectCtl_v0` / `OpConnectCtlInd_v0` (`gscript.py:1050-1072`). Two ways forward:
+  1. Build ctlsink on `OpConnectCtl_v0`'s sink ladder plus `OpConstWire_v1`'s source ladder.
+  2. Keep the plan, and state in writing why the `Traverse`+TMSC sink is preferred. One acceptable reason: panel-index addressing does not match stagexec's `Addr.ct` uid route (179(b)/187(b)).
+- **B4 (already measured): no.** Nobody has measured a write through either route; the cheapest tests in `hyp-unroutable-85.md:101-112` were never run. Note that the `wire_ctlsink` and `wire_tunouter` wrappers at `tools/gscript.py:2064-2090` belong to this card and are uncommitted. They are not earlier work.
+
+## Machine-readable lines
+
+PRIOR-ART: helper-exists
+PRIOR-ART: unread-evidence
+
+**How to release this:** add a `FIXED:` or `REFUTED:` line that does one of two things. Either re-base ctlsink's sink half on the `OpConnectCtl_v0` `Panel.Controls[]`→`Control.Terminal` ladder, or show in writing why the uid route has to use `Traverse('ControlTerminal')`+TMSC. Also confirm #10969 is not on the top-level diagram after `mv_10969`; if it is, `connect_ctl` already wires R41 as it stands. tunouter is not blocked by anything I found.
+
+VERDICT {"schema":"verdict/1","id":"priorart-priorart-c85-ctlsink-tunouter","verdict":"settled-already","alternative":"ctlsink's sink half already exists: OpConnectCtl_v0 (Panel.Controls[]->Control.Terminal, cast-free, Connect Wire on the ControlTerminal, Wire Source = Node.Terminals[] element). Only a nested class-Traverse source is new; tunouter is novel.","discriminating_test":"Read #10969's owning diagram after mv_10969 on a scratch: top-level => connect_ctl wires R41 as is; nested => build ctlsink from OpConnectCtl_v0's sink ladder + OpConstWire_v1's source ladder, or justify the Traverse+TMSC sink.","violations":[],"sources":["tools/recipes/build_opconnectctl_v0.py:1-16","docs/toolkit-capabilities.md:25","tools/gscript.py:1024-1043","docs/cycle27-plan.md:108-110","docs/d1-loop12-17-split-plan.md:898-915","tools/bench/build_opfstunnelterm_v2_run1.log:38"],"note":"helper-exists + unread-evidence apply to ctlsink only (the sink ladder); tunouter (Outside Terminal as Wire Source) has no prior writer and its cast is measured 24/24 (toolkit-capabilities.md:77)."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c85-ctlsink-tunouter.md
+   STOP RECORD armed: tools/recipes/build_opctlsinkwire_v1.py sha 38748fe217d0 verdict helper-exists, unread-evidence -> launching it is refused until a FIXED:/REFUTED: line releases it
+   STOP RECORD armed: tools/recipes/build_optunouter_v1.py sha 74d49aec5b79 verdict helper-exists, unread-evidence -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 88s

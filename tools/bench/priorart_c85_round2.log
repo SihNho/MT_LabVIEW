@@ -1,0 +1,39 @@
+BGRUN START 2026-09-25 21:36:55 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/plan_85-2.md --slug priorart-c85-round2 --trigger new-op --recipe tools/recipes/build_optunouter_v1.py --recipe tools/recipes/stage_d1_l2a1.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c85-round2.txt (29172 chars)
+   review card tools\bench\cards\review_priorart-priorart-c85-round2.json
+OUTCOME: ANSWERED (69s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-25-priorart-priorart-c85-round2.md
+COST: $1.1273  in 16 / out 5958 / cache-create 105828 / cache-read 807288  (66s, 15 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-priorart-c85-round2 verdict=novel -> tools\bench\cards\verdict_priorart-priorart-c85-round2.json
+--- ANSWER ---
+**Verdict: novel.** Nothing in the project already builds, measures or refutes the round-2 work. Both edits apply known facts in the right way: LabVIEW can reuse uids after a delete, and it recycles wire uids.
+
+## Part A: the direction
+- **A1, settled already: no.** Pre-decided 191(b)/(c) is the first decision on this route (`docs/d1-loop12-17-split-plan.md:893-915`). The round-1 review found tunouter novel (`archive/peer/2026-09-25-priorart-priorart-c85-tunouter-b.md:197`, `:221`). Its one gap, the FlatSequence negative case, is now gate N4 (`tools/recipes/build_optunouter_v1.py:75-79`).
+- **A2, refuted already: no.** The ❌ entries for 6356001 cover only `FlatSequence*Tunnel`, which is not a `Tunnel` subclass (`docs/NAMES.md:1246`; `archive/peer/2026-09-18-fstunnel-wire-fail-codex.md:72-73`). The `Tunnel` cast is measured 24/24 on the #5540 selector tunnels (`docs/toolkit-capabilities.md:77`). What failed before was addressing the tunnel through its owner's `Terminals[]` (`docs/NAMES.md:1132-1137`), and the recipe avoids that by design (`build_optunouter_v1.py:1-3`).
+- **A3, contradicted: no.** The round-2 identity fix agrees with existing records:
+  - The project has seen this before. A new Property Node took uid 145 right after the node holding it was deleted (`archive/peer/2026-09-18-fstunnel-wire-fail-codex.md:49`).
+  - Uid reuse after deletion is on file in `archive/peer/2026-09-20-priorart-d1-s2-loops.md:271`, which cites `.claude/skills/labview-automation/references/vi-scripting.md:601`. Wire-uid reuse is in `docs/NAMES.md:888`.
+  - Gating by the output name `Outer Term` (`build_optunouter_v1.py:36-38`) and re-reading the old seed wire (`:49-51`) apply those facts. Neither contradicts them.
+  - One caution to carry: in the 2026-09-18 case, uid reuse was judged causally weak. The real fault was a wire-count false negative on a branch (`archive/peer/2026-09-25-hyp-optunouter-uidreuse-85.md:105-107`; `fstunnel-wire-fail-codex.md:97-107`, `:127-129`). Run 1's B1 failure (`tools/bench/unroutable_l2a1_85_build_tun.log:35`) is still labelled "leading explanation, not measured". The recipe now logs the delete's return value and the list of Property uids after the delete (`:30-33`), so run 2 can tell the two apart. This does not block.
+- **A4, unread evidence: nothing blocking.** The recipe's `link()` already passes `branch=` from a read of the source terminal (`:40-43`). That is the lesson from the 2026-09-18 wire-count false negative.
+
+## Part B: the artefact
+- **B1, already built: no.**
+  - `OpTunnelInd_v0` (`tools/gscript.py:1952-1965`) and `OpWireSR_*_v0` (`tools/recipes/build_opwiresr_v0.py:9`, `:21-22`) use `Tunnel.Outer Term` 6356001 only as a Terminal reference: to create an indicator, or as the sink `reference`.
+  - `OpTunnels_v0` only reads (`gscript.py:982-989`).
+  - No op uses a SelectorTunnel's outer face as `Wire Source`. `gscript.wire_tunouter` (`gscript.py:2081-2086`) is this card's own wrapper.
+- **B2, already failed: yes, and this is the retry.** Run 1 stopped at gate B1 (`unroutable_l2a1_85_build_tun.log:35-36`, `:64`). The round-2 edits answer the accepted review directly (`archive/peer/2026-09-25-hyp-optunouter-uidreuse-85.md:103-110`). It is not a blind retry, so this is not a finding.
+- **B3, helper exists: no.**
+  - The recipe reuses `OpConstWire_v1`, `build_property`, `create_control`, `wire_control`, `N.connect` and `N.del_net`.
+  - The `stage_d1_l2a1.py` change (`:65-69`) reads the existing `be.unroutable` list. That list is already built into stagexec (`docs/d1-loop12-17-split-plan.md:896`), and the recipe does not re-implement it.
+  - Earlier review round-1 raised helper-exists for ctlsink (`connect_ctl`). That was refuted in writing and the refutation stands (`archive/peer/2026-09-25-priorart-priorart-c85-ctlsink-tunouter.md:260-261`).
+- **B4, already measured: no.** No write through a selector-tunnel outer face used as the source is recorded anywhere.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-priorart-c85-round2","verdict":"novel","alternative":"Run-1 B1 failure may not be uid reuse at all (2026-09-18 precedent: uid reuse was causally weak, the real fault a count false-negative); round-2 name-identity gate is correct either way.","discriminating_test":"Run 2's logged delete_object return + Property uid list after delete (build_optunouter_v1.py:30-33): 136 absent then reappearing on the new PN = reuse; gate B1 by 'Outer Term' then passes or names the real cause.","violations":[],"sources":["archive/peer/2026-09-18-fstunnel-wire-fail-codex.md:49","archive/peer/2026-09-25-hyp-optunouter-uidreuse-85.md:103-110","archive/peer/2026-09-25-priorart-priorart-c85-tunouter-b.md:197","docs/NAMES.md:888","docs/NAMES.md:1246","docs/toolkit-capabilities.md:77","docs/d1-loop12-17-split-plan.md:896","tools/gscript.py:1952-1965"],"note":"Round-2 edits apply the known uid- and wire-reuse facts; stage_d1_l2a1.py:65-69 reads stagexec's existing unroutable list and does not duplicate it."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c85-round2.md
+   STOP RECORD: none - 2026-09-25-priorart-priorart-c85-round2.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/build_optunouter_v1.py sha 7f115da9fbc1 -> these bytes are released by this review; editing them again re-arms the gate
+   NOVEL RECORD written: tools/recipes/stage_d1_l2a1.py sha b08993057516 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 73s

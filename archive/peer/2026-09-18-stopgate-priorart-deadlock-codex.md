@@ -151,4 +151,12 @@ Bottom line: no honest supported route was found, so the operational deadlock is
 
 ## What was done with it
 
-(Claude fills in)
+Written 2026-09-25 by card 85-1 (material), because `guard_peer.py` refused a new prior-art dispatch on this
+placeholder; recorded from the code as it stands, not re-decided:
+- Point 2 (a blanket substring exemption opens a compound-command hole) ACCEPTED: the repair that landed is the
+  per-SEGMENT, COMMAND-POSITION exemption, not a mirror of `MATERIAL_EXEMPT_RE` - `tools/stop_record.py:88-111`
+  (`EXEMPT_PROGRAMS`, `SEGMENT_SPLIT_RE`, `COMMAND_POSITION_RE`); `py -u <recipe> && py tools/stop_record.py ...`
+  stays refused (`:90-92`). The bgrun-wrapped form was added 2026-09-24 (`:113-122`, self-test
+  `tools/bench/selftest_stoprecord_bgrun.py`).
+- Point 1 (shell-expansion bypass exists but is not an authorised route) ACCEPTED as a finding; nothing uses it.
+- Point 4's dry-run discriminating test was not run; superseded by the exemption above.

@@ -1,0 +1,22 @@
+FAILED PREDICTION, card 85-3: tools/bench/unroutable_l2a1_85.py (stagexec real executor on a D1_k scratch), log
+tools/bench/unroutable_l2a1_85.log.
+
+Prediction (P0/P2/P3): all 42 ops run with graph diff 0; act 45 (row rw_6007_5082, route 'tunouter', op
+ops\OpTunOuterWire_v1.vi built and gated 28/0 in unroutable_l2a1_85_build_tun2.log) adds one wire whose only source is tunnel
+#5680's outer face #6007 and only sink SubVI #5058 terminal #5082.
+Observed: ops 00-40 (acts 1-44) all diff 0 (log:329-554); P1 read before act 45 PASSED for both faces (log:555-556); the op
+logged "OP wire_tunouter SelectorTunnel[11] #5680 -> SubVI[17].t0 -> err '' (0.5 s)" and "CENSUS DIFF: Node 635 -> 635"
+(log:558-560); then the executor's next read, be.read() -> wiki_build.read_live -> gscript.report_all(GObject), raised
+"error 2: Invoke Node in TRef Traverse.vi ... Traverse for GObjects.vi->OpReportAll_v0.vi (Traverse Failed)" (log:562-578),
+~18 min after start (LabVIEW fresh restart, 33,997 handles, log:29). Hygiene then hung in close_panel until LabVIEW was killed
+(~13 min). LabVIEW error 2 = memory full.
+
+My explanation: memory exhaustion accumulated over the run (two full GObject traversals of a ~600-node VI per op, 41 ops,
+plus censuses) - NOT caused by the tunouter write itself; the failure just landed on the first read after act 45.
+Alternative I cannot exclude: the tunouter op itself made something pathological (e.g. 'SubVI[17].t0' is NOT #5082 and the wire
+landed on a different/incompatible terminal, or a type-propagation storm) so the next Traverse blew up.
+
+Question: which is it, and what in our own files (tools/stagexec.py LVBackend.read ~line 1009, tools/wiki_build.py read_live
+~line 240, gscript.report_all, previous long stagexec runs e.g. tools/bench/constsrc_l2a1_85.log, stage_d1_l2a1*.log) shows
+whether a 40+-op real stagexec run has ever completed without error 2? Is 'SubVI[17].t0' the terminal #5082? Cheapest test that
+separates "accumulated memory" from "the tunouter write caused it" without a full 30-min rerun.

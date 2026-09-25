@@ -1,0 +1,57 @@
+BGRUN START 2026-09-25 21:33:23 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug hyp-optunouter-uidreuse-85 -TaskFile tools/bench/cards/review_hyp-optunouter-uidreuse-85.txt
+OUTCOME: ANSWERED (151s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-25-hyp-optunouter-uidreuse-85.md
+COST: $1.2434  in 28 / out 12265 / cache-create 90725 / cache-read 1292629  (148s, 22 turn(s))
+--- ANSWER ---
+**I don't accept your framing as written.** Your conclusion is probably right: LabVIEW most likely gave the freed uid 136 to the new node. But the run-1 log does not measure that. And the alternative you asked me to separate (the delete silently failed) is one your own code already rules out. What makes the reuse account plausible is prior evidence plus the code path, not this log.
+
+## 1. Strongest reason the claim is wrong: nothing in the log shows reuse
+- The log has no line between "B0 donor holds…" and the B1 failure (`tools/bench/unroutable_l2a1_85_build_tun.log:34-35`). It doesn't record:
+  - the set of uids that `delete_object` reported gone;
+  - the Property uids after the delete;
+  - the uid that `build_property` returned.
+- The recipe was patched in place under the same name (`build_optunouter_v1.py:33-34`), so the code that produced this log can no longer be inspected. "Reused 136" is read from one gate string.
+- The same criticism was accepted on 2026-09-17 for uid 5058: reuse was "the leading explanation, not a measured" fact (`archive/peer/2026-09-17-d1-s3b-uid-reuse-after-delete.md:118-124`). Label this one the same way.
+
+## 2. Alternative explanations
+- **Your alternative is already excluded, if run 1 used the defaults.** "The delete silently failed and the build returned the old node's uid" conflicts with the code in three places:
+  - `delete_object` defaults to `verify=True` and raises when zero objects are gone (`tools/gscript.py:2511-2513`).
+  - `build_property` takes its "before" set after the delete (`gscript.py:2388`) and returns only uids not in that set (`gscript.py:2427`, `new_since` at `:1094-1102`). It cannot return 136 if 136 still existed.
+  - Node #136's only data output after the build was `'Outer Term'` (log:35). That is the Tunnel property's name, not the output of a Constant.Terminal node.
+- **Remaining alternative 1:** run 1 called `delete_object(..., verify=False)`, or used a different order than the code now shows. Only the original file or its git history can settle this.
+- **Remaining alternative 2:** `uids()` uses `report_all` (`gscript.py:1091`) but `new_since` uses `report` (`:1102`). The two were verified identical only on 2026-09-13. If they disagree about 136, the "new" test is wrong in both directions.
+
+## 3. Reuse is documented, and this project has seen it before
+- **LabVIEW help** (the NI UID page returned only navigation; the LabVIEW Wiki quotes it): UIDs are unique within a VI, "however, if you delete an object, LabVIEW might assign the UID for that deleted object to a different object in the future." It recommends also checking Class Name or Label. https://labviewwiki.org/wiki/GObject_class/UID_property
+- **Local precedents:**
+  - On the same donor family, a new property node got uid 145 again (`archive/2026-09-18-status-cycle21-wire-semantics.md:36`).
+  - uid 5058 came back after a delete (`tools/bench/build_d1_v0_run9.log:238`).
+  - Newly created nodes reused low uids (`docs/keystone-op-spec.md:407`, `.claude/skills/labview-automation/references/vi-scripting.md:601`).
+  - Wire uids are recycled too (`docs/cycle27-plan.md:3090-3091`).
+- So "PN #136 gone" in contract line B was a prior-art miss when the plan was written. It was not a new LabVIEW behaviour.
+
+## 4. What else depends on a deleted uid never coming back
+**In the recipe:**
+- **`old_seed` at `build_optunouter_v1.py:30`** is a wire uid captured before the delete, `remove_bad_wires_scripted`, `link` (which creates a wire) and `create_control`. It is used at `:49`. Wire uids are recycled, so a stale `old_seed` could name a different wire, and `del_net` would delete that wire. Fix: read TMSC #683's `target class` wire again right before `:49`, and assert it is the net coming from the old seed control.
+- **Safe:** `link`/`N.connect`, `N.idx` and the new B1 gate all look up uids again at the time they are used, so reuse can't mislead them.
+
+**In `tools/stagexec.py`, `bind_new` (`:215-249`):**
+- `old_t` is the set of terminal uids from before the step (`:223`). If one step deletes and creates, the new object's reused terminal uids fall into `old_t` and its rows are dropped (`:226`).
+- The owner filter `not in bind["obj"].values()` drops a new object whose uid was freed by an object bound earlier.
+- Both cases end in `ExecStop` from the class or terminal-class comparison (`:230`, `:242`). That is a loud failure, not a silent wrong binding, but it will be misreported as a simulation/real mismatch.
+- Neither this file nor `compare()` (`:192`) checks for reuse. Add a note or check that a real uid present before the step and absent after it may reappear later.
+
+## 5. Observation that would falsify the claim
+Any one of these, from a run that logs the facts below:
+- 136 is still in `uids(op, "Property")` after `delete_object` returns without raising;
+- `build_property` returns 136 while 136 was in its "before" set;
+- the old reference to #136 is still valid after the delete.
+
+## 6. Cheapest discriminating test
+- **No LabVIEW needed, do first:** check whether run 1's recipe called `delete_object` with the default `verify=True`, from git history or the card's copy of it. If it did, `gscript.py:2511-2513` plus `:2427` already rule out "delete silently failed". What remains is reuse, or the `report`/`report_all` disagreement.
+- **Then, in the re-run (no extra LabVIEW run):** log one line per step:
+  - the `delete_object` return, expected `{136}`;
+  - `sorted(uids(op, "Property"))` after the delete, expected to lack 136;
+  - the uid `build_property` returned, with that node's label and its non-standard output names.
+- "136 absent, then 136 returned with `Outer Term`" demonstrates reuse. Anything else refutes it.
+- Following NI's own advice, change B1a to identify the node by output name (`Terminal` vs `Outer Term`) as well as by uid.
+BGRUN END rc=0 after 152s

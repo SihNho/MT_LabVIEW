@@ -1,0 +1,18 @@
+FAILED PREDICTION, card 85-2: tools/recipes/build_optunouter_v1.py run 1, log tools/bench/unroutable_l2a1_85_build_tun.log.
+
+Prediction (gate B1): after deleting Property #136 (Constant.Terminal) from a copy of ops\OpConstWire_v1.vi and building a new
+`VI Server:Tunnel` property node (Outside Terminal 6356001) with gscript.build_property, the walk shows #136 absent AND the new
+PN has exactly one data output.
+Observed: "FAIL B1 PN #136 gone; Tunnel PN #136 has ONE data output ['Outer Term']" - the NEW property node itself got uid 136,
+so `136 not in walk` was False while the new PN had exactly one data output 'Outer Term' (as docs/NAMES.md:856 predicts).
+
+My explanation: a SCRIPT bug, not a LabVIEW fault - LabVIEW re-issued the freed uid 136 to the next object created in the same
+VI, and the gate tested absence of a uid number instead of the deleted object's identity. The sibling recipe
+build_opctlsinkwire_v1.py (same donor, same delete) checked deletion BEFORE creating anything and passed 24/0
+(tools/bench/unroutable_l2a1_85_build_ctl.log). Fix already applied: deletion gated before build_property; B1 only checks the
+new PN's outputs.
+
+Question: is uid reuse after delete a known LabVIEW 2026 VI Scripting behaviour (search our docs/NAMES.md, archive, and the web),
+and does anything else in this recipe (or in stagexec's uid-keyed bindings, tools/stagexec.py bind_new) depend on a deleted uid
+never coming back? Cheapest test that separates "uid reuse" from "the delete silently failed and the PN build returned the old
+node's uid".

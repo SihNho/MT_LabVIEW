@@ -1,0 +1,135 @@
+﻿# hyp-unroutable-85
+
+- **agent:** claude
+- **role:** hypothesis
+- **model:** claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)
+- **kind:** review
+- **cost:** $1.7347  in 36 / out 18651 / cache-create 115918 / cache-read 1993602  (214s, 32 turn(s))
+- **date:** 2026-09-25 20:44:41
+- **outcome:** ANSWERED (218s)
+- **verdict-card:** (no -ReviewCard)
+- **why asked:** (Claude fills in)
+- **verdict:** unverified
+
+## Question
+
+FAILED PREDICTION, card 85-1 P4 (tools/bench/dry_l2a1_85b.log:47-48; stagexec dry now collects EVERY unroutable row).
+
+Context: LabVIEW 2026 VI Scripting over COM, staged move L2-A1 (plan tools/bench/sim/l2a1/plan_l2a1.json, 46 actions -> 42 real
+ops) on bed D1_k. Op 35/36 (bare DigitalNumericConstant sources) are now routed by a new verb gscript.wire_const
+(OpConstWire_v1: Traverse(const class)[i] -> TMSC(Constant) -> Constant.Terminal -> Terminal.Connect Wire on the sink
+Node.Terminals[t]); simulated dry run: all 42 ops diff 0 against their step files.
+
+Prediction: the dry run is 42/42 with no unroutable row, so run 1 may launch.
+Observed: two rows AFTER op 36 are unroutable in the (reader-parity-fitted) SimReader:
+ R41 rw_10988_17272: source #10988 'min value' (output of Function #10969, moved at op mv_10969; in the base graph wired
+     w17287 to front-panel ControlTerminal #17272 'min value', also moved) -> sink ControlTerminal #17272. stagexec.connect_route
+     (tools/stagexec.py, 'indicator' kind) refuses: "panel sink #17272 needs a WIRED source for wire_indicators; #10988 is bare".
+     LVBackend.indicator addresses the source as s.wire_indicators(uid_index(owner_class, owner_uid), [term_name], [ind_name],
+     diagram_index) - i.e. by node class-traverse index + output NAME, not by wire.
+ R45 rw_6007_5082: source #6007 = OUTER face of SelectorTunnel #5680 (owner CaseStructure #5540, base wire w5637, bare after
+     the move) -> sink #5082 on #5058. Addr._triple routes an owner-routed face through its owner's Terminals[]: "#6007 '' on
+     node #5540: 2 (name,dir,wire) matches" - two bare unnamed source faces on #5540 (the other is #6026, row R46 rw_6026_5164,
+     same sink node #5058). Pre-decided 184 already named "option (c), offline addressing of ends the stage itself wires" as owed.
+
+My explanation: R41 is a stagexec route rule (wired-source requirement), not a LabVIEW limit - wire_indicators by name may
+accept a bare source; R45 is a genuine addressing ambiguity that needs a disambiguator (order proof on the owner's
+Terminals[] across the move, or tunnel-owned addressing).
+
+Questions: (1) is the wired-source requirement for the indicator route necessary (what does Wire Indicators.vi need -
+docs/NAMES.md, archive/2026-08-29-status-sweep-opexitloop-opwireind.md:60-70)? (2) is there an existing verb that wires an
+owner-routed tunnel OUTER face addressed by the TUNNEL uid (e.g. OpFsInnerTunnelConnect-style Left/Right Terminal, a
+tunnel 'Terminals'/'Outer Terminal' property) so the owner's Terminals[] ambiguity never arises? (3) the cheapest test for each.
+
+
+--- HOW TO ANSWER (mandatory, from the dispatcher) ---
+Your job is to REFUTE the claim above, not to confirm it. Do not open with agreement.
+1. Name the single strongest reason the claim is WRONG.
+2. Name at least one ALTERNATIVE explanation of the same evidence.
+3. Name the observation that would FALSIFY the claim.
+4. End with the CHEAPEST discriminating test that separates the claim from your alternative.
+If you still believe the claim holds after all four, say so explicitly and state what would change your mind.
+
+## Answer
+
+**Verdict: the explanation is wrong on R41 and incomplete on R45.** R41's wired-source requirement is a measured limit of `Wire Indicators.vi`, not a rule stagexec invented. R45 is only ambiguous because stagexec looks faces up through the owner's `Terminals[]`. Both terminals are LabVIEW `Terminal` objects with their own uids, and they could be addressed directly. I read files and fetched two web pages; nothing was run.
+
+## 1. The strongest reason the claim is wrong (R41)
+
+The project measured this on 2026-08-29 and recorded it in `tools/gscript.py:1835-1838`: *"Each source terminal MUST ALREADY BE WIRED: WI branches the indicator onto the wire attached to the source terminal. An UNWIRED source makes it extend an unrelated wire instead -> 'This wire connects more than one data source' and the target breaks."* `docs/NAMES.md:53` says the same thing ("source must already be wired").
+
+- Your hypothesis that "wire_indicators by name may accept a bare source" has already been tested, and it failed.
+- The guard at `tools/stagexec.py:398-399` and `:1028-1029` is that measurement written into code. Removing it would bring back a known way to break the VI.
+- So the answer to your question (1) is yes, the requirement is necessary for **this verb**.
+- The limit belongs to the erdosmiller helper, though, not to LabVIEW. `Terminal` has the children `ControlTerminal`, `InnerTerminal`, `OuterTerminal` and `ParameterTerminal`. Its method `Connect Wire` "connects a wire to the terminal. The wire source can be either another terminal or a node" ([labviewwiki Terminal class](https://labviewwiki.org/wiki/Terminal_class)).
+- So a bare `ParameterTerminal` (#10988) can be wired straight into `ControlTerminal` #17272 by calling `Connect Wire` on #17272, which is the sink. That matches the project's own rule at `docs/NAMES.md:245`.
+- **What R41 actually lacks is a verb that treats a ControlTerminal as the sink.** The ControlTerminal address already exists (Addr.ct, route 179(b)).
+- **Answer to (1):** the requirement is necessary for `Wire Indicators.vi` but not for LabVIEW itself.
+- **Missing verb:** `Traverse('ControlTerminal')[i] → TMSC(Terminal) → Connect Wire`, with the source taken from `Traverse('Function')[j].Terminals[t]`.
+- That is `OpConstWire_v1`'s pattern with the source and sink ladders swapped.
+
+## 2. Alternative explanations
+
+**R41: the bare source may come from how the move was split.**
+- #10969 is moved at op 7 and #17272 at op 14, as separate moves.
+- Pre-decided 180(a)(4) (`docs/d1-loop12-17-split-plan.md:648-654`) measured that moving uid by uid drops edges between members, while a joint move mostly keeps them.
+- No measured joint move contains w17287: `l2a1_tunflip_80*` has 0 hits for 17287 or 10988.
+- So "w17287 is cut" is a model output, not a measurement. If one joint move keeps w17287, the R41 row disappears.
+
+**R45: the ambiguity comes from the addressing scheme, not from LabVIEW.**
+- `_triple` identifies an owner-routed face by the key (name, direction, wire) on #5540's `Terminals[]` (`tools/stagexec.py:591-595, 642-645`). Two bare, unnamed source faces are identical under that key by construction.
+- It also sets `mine = None` for owner-routed faces, so the order-proof path at `:639-641` can never run for them.
+- Each face has its own uid, and `OuterTerminal` is a `Terminal`, so the owner does not need to be involved at all.
+- Two routes already exist in the project:
+  - **Tunnel route:** `Tunnel.Outside Terminal` 6356001 (`docs/NAMES.md:856, 1134`), reached through the tunnel uid. The cast from `SelectorTunnel` to `Tunnel` is already measured on **these exact #5540 output tunnels** by `OpTunnelRead_v0`, 24/24 (`docs/toolkit-capabilities.md:77`).
+  - **Uid route:** `UID to GObject Reference.vi` → TMSC, which `OpConnectFromWire_v0` already carries (`docs/toolkit-capabilities.md:75`), with a Terminal-typed seed instead of a Wire-typed one.
+- **Answer to (2):** no finished verb exists yet, but every part of one is built and measured.
+
+**Your proposed disambiguator repeats a failure the project has already had.**
+- The idea is to carry #5540's `Terminals[]` order across the move.
+- At the base state, index 2 is #6007/w5637 and index 6 is #6026/w5975 (`tools/bench/l2a1_faces_81.log:34`). The SimReader shows the sources at those same positions after the move, but that is the simulator assuming the order is kept.
+- A terminal index carried from one version of the VI to another has already gone wrong on **this same tunnel #5680**. T2c2 (`docs/toolkit-capabilities.md:75`, `docs/NAMES.md:1132-1137`) produced a broken wire with two drivers because the index came from a census of a different version.
+- The move model's branches for `SelectorTunnel` were explicitly flagged UNMEASURED (`docs/d1-loop12-17-split-plan.md:594-597`). Those flags were written before the refit, and I found nothing showing that this branch was measured afterwards.
+
+**The wrong pairing may not be silent.**
+- #6007 carries `Bead is good? array` and #6026 carries `x,y,z array` (`docs/stage2-assembly-step-e.md:144`).
+- If sinks #5082 and #5164 have different types, a swapped pairing would probably show up as a broken wire rather than a silent computation change. I did not verify the sink types.
+- Type is also a disambiguator that the (name, direction, wire) key leaves out.
+
+## 3. What would prove the claim wrong
+
+- **R41:** `Connect Wire` called on #17272 with the bare #10988 as source gives a new wire with `Is Broken? False` and no change in `ExecState`. Then the verb is what's missing, and relaxing wire_indicators is the wrong fix.
+- **R41, alternatively:** w17287 survives a joint move of {#10969, #17272}. Then the row should not exist at all.
+- **R45:** `UID to GObject Reference` on uid 6007, cast to `Terminal`, returns a valid reference whose `Is Source?` and `Connected Wire` match the plan. Then no disambiguator is needed, and "genuine ambiguity" is false.
+
+## 4. The cheapest tests that tell the two explanations apart
+
+1. **No LabVIEW needed:** re-read `tools/gscript.py:1826-1847` and the 2026-08-29 scratch log. That settles question (1) as it stands; the bare-source case was already run and broke the VI.
+2. **One scratch run, read-only, about 1 s:** on a copy of D1_k after `mv_5540`, resolve uids 6007 and 6026 with `UID to GObject Reference.vi` → TMSC(Terminal), and read `Is Source?` and `Connected Wire`.
+   - If both come back distinct and valid, R45 is addressable by uid and the owner-order proof is unnecessary.
+   - If the lookup refuses terminal uids (not verified; I found no source either way), fall back to the tunnel uid → `Tunnel.Outside Terminal`.
+3. **One scratch write:** call `Connect Wire` on #17272's ControlTerminal with source #10969 `Terminals[t]`. Check the wire count goes up by 1, `Is Broken? False`, and `ExecState` stays unchanged.
+4. **Optional, would remove R41 entirely:** move {#10969, #17272} jointly on a scratch and check whether w17287 still exists.
+
+**What would change my mind on R45:** a terminal uid lookup refused on this LabVIEW 2026 install, **and** a refused `Tunnel.Outside Terminal` on #5680. Only then is ownership through `Terminals[]` the only route, and the order proof would need a live read on each side of the move, not the SimReader's copy of the base order.
+
+Sources:
+- [labviewwiki — Terminal class](https://labviewwiki.org/wiki/Terminal_class): class hierarchy and the `Connect Wire` method
+- [NI — Tutorial: Wiring Objects Using VI Scripting](https://www.ni.com/docs/en-US/bundle/labview/page/tutorial-wiring-objects-using-vi-scripting.html): the fetch returned only site navigation, so I cite nothing from it
+
+## Sources
+
+(extract from answer)
+
+## What was done with it
+
+Card 85-1 (material), 2026-09-25 ~21:0x. Recorded; NOTHING built or run on it - the route choice for R41/R45 is the
+judgement session's (card rule: review owed -> review, then stop; P5 run 1 is gated on P4, which failed):
+- Point 1 (R41's wired-source requirement is the measured Wire Indicators.vi limit, `tools/gscript.py:1835-1838`,
+  `docs/NAMES.md:53`) ACCEPTED: my "may accept a bare source" hypothesis is refuted; the stagexec guard stays.
+- R41 missing verb (Connect Wire on the ControlTerminal sink, source by Nodes[]/class traverse) and the alternative (a
+  joint move of {#10969, #17272} may keep w17287) REPORTED as OPEN in `tools/bench/cards/result_85-1.json`.
+- R45 uid / `Tunnel.Outside Terminal` 6356001 routes (no owner Terminals[] ambiguity) REPORTED as OPEN; the review's
+  warning against carrying the owner's Terminals[] order across the move is ACCEPTED (not proposed further).
+- Cheapest tests 2/3/4 (read-only uid lookup of 6007/6026; one Connect Wire onto #17272; a joint-move scratch) listed in
+  the result for the judgement session; none run here.

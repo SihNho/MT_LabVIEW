@@ -2044,6 +2044,79 @@ def wire_control(target, control_names, dst_cls, dst_i, dst_terms, branch=False,
     return after
 
 
+OP_CONST_WIRE = os.path.join(CLAUDEDEV, "ops", "OpConstWire_v1.vi")
+CONST_WIRE_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench",
+                                 "constsrc_l2a1_85_opcw_labels.json")
+
+
+def wire_const(target, src_cls, src_i, dst_cls, dst_i, dst_term_index, labels=None):
+    """A BARE DIAGRAM CONSTANT as the SOURCE of a new wire (card 85-1, Pre-decided 188(c)).
+
+    `OpConstWire_v1` (tools/recipes/build_opconstwire_v1.py) = OpWire_v1's two Traverse chains with both
+    erdosmiller ends replaced: SOURCE Traverse(src_cls)[src_i] -> To More Specific Class(Constant, typed seed)
+    -> Constant.Terminal 634AC04 -> `Wire Source`; SINK Traverse(dst_cls)[dst_i] -> TMSC(Node) ->
+    Node.Terminals[] 6359000 -> Index Array[dst_term_index] -> Terminal.Connect Wire 6349C03 `reference`.
+    A non-Constant source fails the cast (1057) and nothing is wired. Returns (wire delta, op error text)."""
+    return _opcw_call(OP_CONST_WIRE, CONST_WIRE_LABELS, target, src_cls, src_i, dst_cls, dst_i, dst_term_index, labels)
+
+
+# PD191 (card 85-2): two siblings of OpConstWire_v1, same four inputs (Class Name/index, Class Name 2/index 2, the IA index
+# control, the error indicator), built by tools/recipes/build_opctlsinkwire_v1.py and build_optunouter_v1.py.
+OP_CTLSINK_WIRE = os.path.join(CLAUDEDEV, "ops", "OpCtlSinkWire_v1.vi")
+CTLSINK_WIRE_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "unroutable_l2a1_85_ctlsink_labels.json")
+OP_TUNOUTER_WIRE = os.path.join(CLAUDEDEV, "ops", "OpTunOuterWire_v1.vi")
+TUNOUTER_WIRE_LABELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "bench", "unroutable_l2a1_85_tunouter_labels.json")
+
+
+def wire_ctlsink(target, ct_i, src_cls, src_i, src_term_index, labels=None):
+    """PD191(a): a FRONT-PANEL TERMINAL as the SINK (Connect Wire invoked on it), a bare node terminal as the source.
+    `OpCtlSinkWire_v1` = OpConstWire_v1 with the ladders swapped: SINK Traverse('ControlTerminal')[ct_i] -> To More
+    Specific Class(Terminal, typed seed) -> Terminal.Connect Wire 6349C03 `reference`; SOURCE Traverse(src_cls)[src_i] ->
+    TMSC(Node) -> Node.Terminals[] -> Index Array[src_term_index] -> `Wire Source`. A sink that is not a Terminal fails
+    the cast (1057) and nothing is wired. Returns (wire delta, op error text)."""
+    return _opcw_call(OP_CTLSINK_WIRE, CTLSINK_WIRE_LABELS, target, "ControlTerminal", ct_i, src_cls, src_i,
+                      src_term_index, labels)
+
+
+def wire_tunouter(target, tun_cls, tun_i, dst_cls, dst_i, dst_term_index, labels=None):
+    """PD191(b): a structure TUNNEL's OUTER face as the source, addressed by the TUNNEL (never by its owner's Terminals[]).
+    `OpTunOuterWire_v1` = OpConstWire_v1 with Constant.Terminal replaced by `Tunnel.Outside Terminal` 6356001 behind a
+    Tunnel-typed cast: SOURCE Traverse(tun_cls)[tun_i] -> TMSC(Tunnel) -> Outside Terminal -> `Wire Source`; SINK as
+    wire_const. A non-Tunnel source fails the cast (1057). Returns (wire delta, op error text)."""
+    return _opcw_call(OP_TUNOUTER_WIRE, TUNOUTER_WIRE_LABELS, target, tun_cls, tun_i, dst_cls, dst_i, dst_term_index, labels)
+
+
+def _opcw_call(opath, labels_path, target, cls1, i1, cls2, i2, term_index, labels=None):
+    """The OpConstWire_v1-family call: `Class Name`/`index` (ladder 1), `Class Name 2`/`index 2` (ladder 2 = the Node whose
+    Terminals[] is indexed by the labelled IA control). Returns (wire delta, op error text)."""
+    import json
+    if labels is None:
+        with open(labels_path, encoding="utf-8") as f:
+            labels = json.load(f)
+    src_cls, src_i, dst_cls, dst_i, dst_term_index = cls1, i1, cls2, i2, term_index
+    ensure_loaded(target)
+    w0 = count(target, "Wire")
+    vi = op(opath)
+    vi.SetControlValue("vi path", target)
+    vi.SetControlValue("Class Name", src_cls)
+    vi.SetControlValue("index", int(src_i))
+    vi.SetControlValue("Class Name 2", dst_cls)
+    vi.SetControlValue("index 2", int(dst_i))
+    vi.SetControlValue(labels["term"], int(dst_term_index))
+    for k in ("Names", "Names 2"):
+        try:
+            vi.SetControlValue(k, [])
+        except Exception:
+            pass
+    err = ""
+    try:
+        _run(vi)
+        err = _err(vi, labels["err"]) or ""
+    except RuntimeError as e:
+        err = "modal dialog (dismissed)" if "modal dialog" in str(e) else "EXC " + str(e)[:140]
+    return count(target, "Wire") - w0, err
+
+
 def exec_state(target):
     with vi_ref(target) as r:                          # P3: counted + released
         return int(r.ExecState)

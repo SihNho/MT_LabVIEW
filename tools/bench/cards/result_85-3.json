@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"85-3","status":"FAIL","gates":{"pass":3,"fail":1},
+"first_fail":"P3: unroutable_l2a1_85.log:562 read after act 45 (wire_tunouter err '') -> report_all(GObject) error 2 (memory full); P3 read-back never ran",
+"blocked_by":null,
+"artefacts":[
+ {"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\ops\\OpTunOuterWire_v1.vi","md5":"093b0539ff46a58e16dae089655db323"},
+ {"path":"tools/stagexec.py","md5":"4186fcb48e8941958fb1499aabe63789"},
+ {"path":"tools/bench/unroutable_l2a1_85_build_tun2.log","md5":null},
+ {"path":"tools/bench/unroutable_l2a1_85.log","md5":null},
+ {"path":"tools/bench/selftest_stagexec_85c.log","md5":null},
+ {"path":"tools/bench/dry_l2a1_85d.log","md5":null},
+ {"path":"archive/peer/2026-09-25-hyp-unroutable-err2-85.md","md5":null}],
+"facts":[
+ "P1 PASS 28/0: OpTunOuterWire_v1 ES 1 saved md5 093b0539; neg x20 1057, Wire/Invoke unchanged, handles 45757->45773; FSOuterTunnel refused (build_tun2.log:51-93)",
+ "uid reuse MEASURED: delete_object->{136}, Property uids after [139], build_property->#136 'Outer Term' (build_tun2.log:35-37)",
+ "P2 PASS: before act 45 both faces #6007/#5680, #6026/#6016 sole outer face, source, bare; sinks #5082/#5164 bare on #5058 (unroutable_l2a1_85.log:555-556); type not read (no reader)",
+ "P0 partial: STEPX 00-40 (acts 1-44) all diff 0 incl. R41 ctlsink (log:329-554); act 45 op 'SelectorTunnel[11] #5680 -> SubVI[17].t0' err '' 0.5 s, Node 635->635 (log:558-560)",
+ "P3 FAIL: next be.read()->read_live->report_all(GObject) error 2 at ~22:03, 18 min after a fresh restart (33,997 handles, log:29); hygiene hung in close_panel",
+ "LabVIEW killed by me ~22:16 (standing restart authority, hung after error 2); close_panel RPC 0x800706BE + handles 0 (log:581-584) are artefacts of that kill",
+ "P4 PASS: stagexec.uid_reuse + bind_new raises 'UID-REUSE' before binding; selftest 50/0 (+T32/T32b/T32c, selftest_stagexec_85c.log); dry 42/42 diff 0 (dry_l2a1_85d.log)",
+ "unroutable_l2a1_85.log | no JEV-LADDER line | review owed (old path) | hyp-unroutable-err2-85 ANSWERED, disposition written | stopped (budget 1 spent)",
+ "Review: accumulation likely but unmeasured (no private_bytes line, stagekit.py:177); OpReportAll_v0 0 Close Reference (docs/REFERENCES.md:158); whole-VI read per op (wiki_build.py:240)",
+ "H PASS: D1_k md5 6cf5b077 unchanged, scratch deleted, pins hold, LabVIEW gone (tasklist empty) (log:585-600)"],
+"open":[
+ "Next card: review's 3-5 min single-op test (fresh LV, private_bytes per step, act 45 alone + read_live + sink uid read-back) then no-edit report_all(GObject) loop to the error-2 budget?",
+ "Fix the read budget structurally (OpReportAll_v0 Close Reference, or executor not traversing the whole VI after every op) before stage run 1 in cycle 86? 85-1 constsrc passed at 40 acts only.",
+ "Is 'SubVI[17].t0' uid #5082? matched by name only; index addressing unverified at act 45."],
+"cost":{"usd":1.3,"minutes":58,"labview_runs":2},
+"note":"Card rule applied: failed gate -> no ladder line -> hypothesis review -> stop. stage_d1_l2a1.py not launched. No STATUS edit (status_edit false)."}

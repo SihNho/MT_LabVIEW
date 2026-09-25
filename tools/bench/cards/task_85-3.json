@@ -1,0 +1,59 @@
+{
+ "schema": "task/1",
+ "id": "85-3",
+ "kind": "build",
+ "goal": "PD191(b): re-run patched build_optunouter_v1.py, then tools/bench/unroutable_l2a1_85.py (P1 live face read after mv_5540, P3 tunouter write at act 45); add stagexec bind_new uid-reuse guard offline",
+ "why": "85-2: R41 op PASS 24/0, dry 42/42 0 unroutable, pre-run 8/0; tunouter op build run 1 failed on freed uid 136 reused (build_tun.log:34), reviewed hyp-optunouter-uidreuse-85, patched, not re-run. Run 1 of the stage goes to cycle 86 (time).",
+ "inputs": [
+  {"path": "archive/peer/2026-09-25-hyp-optunouter-uidreuse-85.md"},
+  {"path": "tools/recipes/build_optunouter_v1.py", "md5": "b26375cb7dc0e8a4690b67b9c63eeeab"},
+  {"path": "tools/bench/unroutable_l2a1_85.py", "md5": "70b2251a82fc2c49a874daf07d0036c2"},
+  {"path": "tools/stagexec.py", "md5": "d1fadc94a8bc5c6eb838fc3c7c162d33"},
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "163775667199134dc2dcd4095fca5a54"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_20260925_100155.vi", "md5": "6cf5b0777aafa12112d8a786a9eed1ed"}
+ ],
+ "pass": [
+  "P1 build_optunouter_v1.py: gate counts, ES 1, negative refused, 20 calls handle-flat, op md5",
+  "P2 live read after mv_5540 per face #6007/#6026: Is Source?, Connected Wire, type vs sinks #5082/#5164",
+  "P3 act 45/46 on scratch via stagexec tunouter: sole source owner = planned tunnel, planned sink, Is Broken? False",
+  "P4 stagexec bind_new refuses/flags a reused uid explicitly (review point 4), selftest count + md5; dry 42/42 still 0 unroutable",
+  "D1_k md5 unchanged; scratches deleted; LabVIEW gone (tasklist)"
+ ],
+ "outputs": ["tools/stagexec.py", "tools/bench/unroutable_l2a1_85_build_tun*.log", "tools/bench/unroutable_l2a1_85*.log"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/gscript.py",
+   "tools/recipes/build_optunouter*",
+   "tools/bench/unroutable_l2a1_85*",
+   "tools/bench/selftest_stagexec*",
+   "tools/bench/dry_l2a1_85*",
+   "tools/bench/sim/l2a1/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "docs/NAMES.md",
+   "docs/toolkit-capabilities.md",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_scratch_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\ops\\**",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 1, "minutes": 55},
+ "rules": [
+  "do NOT launch tools/recipes/stage_d1_l2a1.py (run 1 is cycle 86)",
+  "never save D1_k; scratch copies only, deleted after",
+  "P2 type/pairing mismatch -> stop before the P3 write, report it",
+  "failed gate -> JEV-LADDER NEXT-ACTION first; review owed -> hypothesis review (review/1) then stop",
+  "result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

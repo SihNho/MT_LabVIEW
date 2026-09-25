@@ -1,0 +1,89 @@
+BGRUN START 2026-09-25 21:28:03 limit 20.0 min: py -u tools/recipes/build_opctlsinkwire_v1.py
+build_opctlsinkwire_v1 - card 85-2, Pre-decided 191(a): a verb whose SINK is a front-panel ControlTerminal and whose
+SOURCE is a bare node terminal (R41 rw_10988_17272). PRIOR ART (checked first): OpConstWire_v1 (the donor, 85-1, 31/0,
+tools/bench/constsrc_l2a1_85_build.log:43-74: PN Constant.Terminal #136, PN Node.Terms[] #139, IA #142, Invoke Connect
+Wire #145, TMSC #683 source / #788 sink); Wire Indicators.vi needs a WIRED source (tools/gscript.py:1835-1838, kept);
+OpWireCtl_v0 sources a control, not sinks one. No new primitive: delete, re-wire and re-type the seed only.
+DESIGN (ladders swapped, hyp-unroutable-85.md:64-69): delete PN #136; IA#142.element -> Invoke.Wire Source;
+ a Terminal-typed seed (create_control on Invoke.reference) retargets TMSC #683; #683 -> Invoke.reference / error in.
+ Call: Class Name='ControlTerminal'/index = the sink CT; Class Name 2/index 2/'index 3' = the source node + terminal.
+PREDICTION CONTRACT:
+ B  PN #136 gone, 4 re-wires land the same wire uid on both ends, one new seed control, ExecState 1, saved, labels file
+ N  negative x20 on a D1_k scratch: sink class 'Comparison' (a Node, not a Terminal) -> err carries 1057 every call,
+    Wire/Invoke counts unchanged, LabVIEW handles flat +-100
+ H  D1_k md5 unchanged, scratch deleted, LabVIEW gone.
+   py tools/bgrun.py --material --max-min 20 --log tools/bench/unroutable_l2a1_85_build_ctl.log -- py -u tools/recipes/build_opctlsinkwire_v1.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 257 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == c978863c68161ed051285fccdcd071e5  got c978863c68161ed051285fccdcd071e5
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33991
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  OpCtlSinkWire_v1.vi
+  FACT  ExecState [after open] OpCtlSinkWire_v1.vi = 1
+  PASS  B0 donor holds PN #136/#139, IA #142, Invoke #145, TMSC #683  [43, 124, 136, 139, 142, 145, 170, 308, 327, 369, 370, 683, 788]
+  PASS  B1 PN Constant.Terminal #136 deleted  [43, 124, 139, 142, 145, 170, 308, 327, 369, 370, 683, 788]
+      IA->ref deleted wire net w585
+      B #142.'element' -> #145.'Wire Source': wire 172 / 172 OK
+  PASS  B wire #142.'element' -> #145.'Wire Source' on both ends  w172
+  PASS  B2 Terminal-typed seed control created on Invoke.reference  'reference 2'
+      seed deleted wire net w478
+      old-seed deleted wire net w575
+      B #683.'specific class reference' -> #145.'reference': wire 463 / 463 OK
+  PASS  B wire #683.'specific class reference' -> #145.'reference' on both ends  w463
+      B #683.'error out' -> #145.'error in (no error)': wire 468 / 468 OK
+  PASS  B wire #683.'error out' -> #145.'error in (no error)' on both ends  w468
+  FACT  ExecState [op assembled] OpCtlSinkWire_v1.vi = 1
+  PASS  E op ExecState 1 before the save
+
+---------- [SAVE] OpCtlSinkWire_v1.vi
+  FACT  ExecState [before the save] OpCtlSinkWire_v1.vi = 1
+  PASS  S1 the save returned without raising (scripted route)
+  FACT  SAVED ARTEFACT: OpCtlSinkWire_v1.vi md5 ce9f208814d16438aef94398432404d3 size 11604 B; version bytes [38, 128]
+  PASS  S2 the artefact is on disk and non-empty  11604 B
+  FACT  ExecState [re-read AFTER the save] OpCtlSinkWire_v1.vi = 1
+  PASS  S3 ExecState 1 re-read AFTER the save  ExecState 1
+  FACT  OP C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\ops\OpCtlSinkWire_v1.vi md5 ce9f208814d16438aef94398432404d3; labels {'term': 'index 3', 'err': 'error out 2', 'seed': 'reference 2'}
+  PASS  SC D1_k_scratch_c85ct_20260925_212803_neg.vi is a byte-identical copy of D1_k_20260925_100155.vi  D1_k_scratch_c85ct_20260925_212803_neg.vi
+  PASS  N1 negative x20: non-Terminal sink refused with 1057, no wire  (0, 'error 1057: To More Specific Class in OpCtlSinkWire_v1.vi')
+  PASS  N2 Wire and Invoke counts unchanged on the scratch
+  PASS  N3 handles flat over 20 calls (+-100)  45726 -> 45745
+  PASS  H4 scratch deleted: D1_k_scratch_c85ct_20260925_212803_neg.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_k_scratch_c85ct_20260925_212803_neg.vi
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 14, 'closed': 14, 'live': 0, 'cached_op_vis': 3}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 14, 'closed': 14, 'live': 0, 'cached_op_vis': 3}
+  FACT  LabVIEW handle count AFTER the work: 34325
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before c978863c68161ed051285fccdcd071e5 / after c978863c68161ed051285fccdcd071e5
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 34325
+
+====================================================================================================
+=== GATES: 22 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\unroutable_l2a1_85_build_ctl.json   elapsed 83.3 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":22,"fail":0},"first_fail":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\ops\\OpCtlSinkWire_v1.vi","md5":"ce9f208814d16438aef94398432404d3"}]}
+  PASS  H1 LabVIEW process gone
+  PASS  H2 D1_k md5 unchanged
+
+====================================================================================================
+=== GATES: 24 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\unroutable_l2a1_85_build_ctl.json   elapsed 87.5 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":24,"fail":0},"first_fail":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\ops\\OpCtlSinkWire_v1.vi","md5":"ce9f208814d16438aef94398432404d3"}]}
+BGRUN END rc=0 after 88s

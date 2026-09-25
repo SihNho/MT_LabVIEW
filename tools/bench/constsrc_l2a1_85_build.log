@@ -1,0 +1,106 @@
+BGRUN START 2026-09-25 20:33:10 limit 30.0 min: py -u tools/recipes/build_opconstwire_v1.py
+build_opconstwire_v1 - card 85-1 P1 + the op half of P2 (Pre-decided 188(c)): a verb whose SOURCE is a bare
+diagram CONSTANT. PRIOR ART (checked first): OpWire_v1 (erdosmiller Get Outputs needs a Node - 1057 on a constant,
+constsrc_l2a1_82.log:511), OpWireCtl_v0 (labels, 5001), OpConnectNested_v1 (Nodes[] omits constants), OpConstValueN_v1
+(Constant.Terminal 634AC04 measured functional, reads only), OpConnect_v0 (Connect Wire 6349C03, Terminal-typed ends;
+keystone-op-spec.md §24/§28), build_opconstwire_v0 (never built). The typed-seed TMSC retarget is build_opconnectnested_v1
+V3/V5. Nothing here is a new primitive: every step is an existing gscript verb.
+DESIGN: copy OpWire_v1 (ops\OpConstWire_v1.vi); delete Get Outputs #216 and Wire Inputs #262;
+ SOURCE Traverse(Class Name)[index] -> TMSC #683 retargeted by a Constant-typed seed -> Constant.Terminal -> Wire Source;
+ SINK   Traverse(Class Name 2)[index 2] -> TMSC #788 (Node) -> Node.Terminals[] -> IA[<term>] -> Connect Wire reference.
+PREDICTION CONTRACT:
+ P1 separator (hyp-constsrc82.md:84): g.wire(Comparison #10950 'zz_nonexistent' -> 'y') on a D1_k scratch raises 5001
+    (Get Outputs), NOT 1057, and adds no wire -> the 1057 was the SOURCE cast -> route = the new op (188(c)).
+ B  4 nodes built (+1 each), 8 connects each with the same wire uid on both ends, 1 seed + 1 index control +
+    1 error indicator, ExecState 1, scripted save, ExecState 1 cold.
+ N  negative: source = Comparison (a Node, not a Constant) x20 on the scratch: err carries 1057 every call, Wire and
+    Invoke counts unchanged, LabVIEW handles flat within +-100.
+ H  D1_k md5 unchanged, scratch deleted, LabVIEW gone.
+   py tools/bgrun.py --material --max-min 30 --log tools/bench/constsrc_l2a1_85_build.log -- py -u tools/recipes/build_opconstwire_v1.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 257 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == e7dfb9e0366130481931e34042880770  got e7dfb9e0366130481931e34042880770
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33982
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  OpConstWire_v1.vi
+  FACT  ExecState [after open] OpConstWire_v1.vi = 1
+  PASS  SC D1_k_scratch_c85_20260925_203311_sep.vi is a byte-identical copy of D1_k_20260925_100155.vi  D1_k_scratch_c85_20260925_203311_sep.vi
+  FACT  P1 separator raised RuntimeError: wire zz_nonexistent->y: error 5001: LV-Scripting.lvlib:Get Outputs.vi<ERR> | Output zz_nonexistent not found | <b>Complete call chain:</b> | LV-Scripting.lvlib:Get Outputs.vi | OpWire_v1.vi
+  PASS  P1a separator made no wire  Comparison[13]
+  PASS  P1 separator: 5001 and no 1057 -> the 82-3 1057 was the SOURCE cast -> route = new op (188(c))  RuntimeError: wire zz_nonexistent->y: error 5001: LV-Scripting.lvlib:Get Outputs.vi<ERR> | Output zz_nonexistent not found | <b>Complete call chain:</b> | LV-Scripting.lvlib:Get Outputs.vi | OpWire_v1.vi
+  PASS  B0 donor holds TMSC 683/788 and SubVIs 216/262  TMSC [683, 788], nodes 11
+  FACT  B built PN Constant.Terminal #136, PN Node.Terminals[] #139, IA #142, Invoke Connect Wire #145
+      B #788.'specific class reference' -> #139.'reference': wire 579 / 579 OK
+  PASS  B wire #788.'specific class reference' -> #139.'reference' on both ends  w579
+      B #139.'Terms[]' -> #142.'array': wire 582 / 582 OK
+  PASS  B wire #139.'Terms[]' -> #142.'array' on both ends  w582
+      B #142.'element' -> #145.'reference': wire 585 / 585 OK
+  PASS  B wire #142.'element' -> #145.'reference' on both ends  w585
+      B #136.'Terminal' -> #145.'Wire Source': wire 588 / 588 OK
+  PASS  B wire #136.'Terminal' -> #145.'Wire Source' on both ends  w588
+      B #788.'error out' -> #139.'error in (no error)': wire 462 / 462 OK
+  PASS  B wire #788.'error out' -> #139.'error in (no error)' on both ends  w462
+  PASS  B seed control created on the Constant PN reference  'reference'
+      seed deleted wire net w613
+      class-const deleted wire net w772
+      B #683.'specific class reference' -> #136.'reference': wire 604 / 604 OK
+  PASS  B wire #683.'specific class reference' -> #136.'reference' on both ends  w604
+      B #683.'error out' -> #136.'error in (no error)': wire 608 / 608 OK
+  PASS  B wire #683.'error out' -> #136.'error in (no error)' on both ends  w608
+      B #136.'error out' -> #145.'error in (no error)': wire 612 / 612 OK
+  PASS  B wire #136.'error out' -> #145.'error in (no error)' on both ends  w612
+  PASS  B index control + one error indicator labelled  'index 3' ['error out 2']
+  FACT  ExecState [op assembled] OpConstWire_v1.vi = 1
+  PASS  E op ExecState 1 before the save
+
+---------- [SAVE] OpConstWire_v1.vi
+  FACT  ExecState [before the save] OpConstWire_v1.vi = 1
+  PASS  S1 the save returned without raising (scripted route)
+  FACT  SAVED ARTEFACT: OpConstWire_v1.vi md5 c978863c68161ed051285fccdcd071e5 size 11682 B; version bytes [38, 128]
+  PASS  S2 the artefact is on disk and non-empty  11682 B
+  FACT  ExecState [re-read AFTER the save] OpConstWire_v1.vi = 1
+  PASS  S3 ExecState 1 re-read AFTER the save  ExecState 1
+  FACT  OP C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\ops\OpConstWire_v1.vi md5 c978863c68161ed051285fccdcd071e5; labels {'term': 'index 3', 'err': 'error out 2', 'seed': 'reference'}
+  PASS  N1 negative x20: non-Constant source refused with 1057, no wire  (0, 'error 1057: To More Specific Class in OpConstWire_v1.vi')
+  PASS  N2 Wire and Invoke counts unchanged on the scratch
+  PASS  N3 handles flat over 20 calls (+-100)  42413 -> 42445
+  PASS  H4 scratch deleted: D1_k_scratch_c85_20260925_203311_sep.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_k_scratch_c85_20260925_203311_sep.vi
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 14, 'closed': 14, 'live': 0, 'cached_op_vis': 2}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 14, 'closed': 14, 'live': 0, 'cached_op_vis': 2}
+  FACT  LabVIEW handle count AFTER the work: 31026
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before e7dfb9e0366130481931e34042880770 / after e7dfb9e0366130481931e34042880770
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 31026
+
+====================================================================================================
+=== GATES: 29 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\constsrc_l2a1_85_build.json   elapsed 120.4 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":29,"fail":0},"first_fail":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\ops\\OpConstWire_v1.vi","md5":"c978863c68161ed051285fccdcd071e5"}]}
+  PASS  H1 LabVIEW process gone
+  PASS  H2 D1_k md5 unchanged
+
+====================================================================================================
+=== GATES: 31 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\constsrc_l2a1_85_build.json   elapsed 124.6 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":31,"fail":0},"first_fail":null,"artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\ops\\OpConstWire_v1.vi","md5":"c978863c68161ed051285fccdcd071e5"}]}
+BGRUN END rc=0 after 125s

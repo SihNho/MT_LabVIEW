@@ -1,0 +1,64 @@
+BGRUN START 2026-09-25 21:31:17 limit 20.0 min: py -u tools/recipes/build_optunouter_v1.py
+build_optunouter_v1 - card 85-2, Pre-decided 191(b): a verb whose SOURCE is a structure tunnel's OUTER face, addressed
+by the TUNNEL (R45 rw_6007_5082, R46 rw_6026_5164) - never through the owner's Terminals[] (the T2c2 failure on this same
+tunnel #5680, docs/NAMES.md:1132-1137). PRIOR ART (checked first): OpConstWire_v1 (the donor, 85-1: PN Constant.Terminal
+#136, PN Node.Terms[] #139, IA #142, Invoke Connect Wire #145, TMSC #683/#788); OpTunnelRead_v0 cast(Tunnel) on both #5540
+output tunnels 24/24 (docs/toolkit-capabilities.md:77); Tunnel.Outside Terminal 6356001, short name 'Outer Term'
+(docs/NAMES.md:856). No new primitive: one build_property + the donor's seed re-type pattern.
+DESIGN: replace PN #136 (Constant.Terminal) by PN VI Server:Tunnel[6356001]; its output -> Invoke.Wire Source; a
+ Tunnel-typed seed (create_control on the new PN's reference) retargets TMSC #683; the sink ladder is untouched.
+PREDICTION CONTRACT:
+ B  PN #136 gone, one new Tunnel PN with one data output, 4 wires same uid on both ends, ExecState 1, saved, labels file
+ N  negative x20 on a D1_k scratch: source class 'Comparison' (a Node, not a Tunnel) -> 1057 every call, Wire/Invoke
+    counts unchanged, handles flat +-100
+ H  D1_k md5 unchanged, scratch deleted, LabVIEW gone.
+   py tools/bgrun.py --material --max-min 20 --log tools/bench/unroutable_l2a1_85_build_tun.log -- py -u tools/recipes/build_optunouter_v1.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 257 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == c978863c68161ed051285fccdcd071e5  got c978863c68161ed051285fccdcd071e5
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33995
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  OpTunOuterWire_v1.vi
+  FACT  ExecState [after open] OpTunOuterWire_v1.vi = 1
+  PASS  B0 donor holds PN #136, Invoke #145, TMSC #683  [43, 124, 136, 139, 142, 145, 170, 308, 327, 369, 370, 683, 788]
+  FAIL  B1 PN #136 gone; Tunnel PN #136 has ONE data output  ['Outer Term']
+  FAIL  STOP at gate: B1 PN #136 gone; Tunnel PN #136 has ONE data output
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 7}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 7}
+  FACT  LabVIEW handle count AFTER the work: 34320
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before c978863c68161ed051285fccdcd071e5 / after c978863c68161ed051285fccdcd071e5
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 34321
+
+====================================================================================================
+=== GATES: 8 pass / 2 fail; failing: B1 PN #136 gone; Tunnel PN #136 has ONE data output, STOP at gate: B1 PN #136 gone; Tunnel PN #136 has ONE data output
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\unroutable_l2a1_85_build_tun.json   elapsed 59.0 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":8,"fail":2},"first_fail":"B1 PN #136 gone; Tunnel PN #136 has ONE data output","artefacts":[]}
+  PASS  H1 LabVIEW process gone
+  PASS  H2 D1_k md5 unchanged
+
+====================================================================================================
+=== GATES: 10 pass / 2 fail; failing: B1 PN #136 gone; Tunnel PN #136 has ONE data output, STOP at gate: B1 PN #136 gone; Tunnel PN #136 has ONE data output
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\unroutable_l2a1_85_build_tun.json   elapsed 63.3 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":10,"fail":2},"first_fail":"B1 PN #136 gone; Tunnel PN #136 has ONE data output","artefacts":[]}
+BGRUN END rc=1 after 63s

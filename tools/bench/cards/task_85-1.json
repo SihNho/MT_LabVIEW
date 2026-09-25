@@ -1,0 +1,69 @@
+{
+ "schema": "task/1",
+ "id": "85-1",
+ "kind": "build",
+ "goal": "PD188(c)+189 L2-A1: separator, constant-source op (route per PD188(c)) routed in stagexec, dry run lists every unroutable row, then dry -> pre-run -> run 1 of stage_d1_l2a1.py saving D1_l2_a1_<ts>.vi",
+ "why": "Cycle 84 never ran (usage limit). PD189: M3 is the lever. L2-A1 stops offline at op 35: bare constants #10739->#10950 'y', #10929->#10757 'index' have no verb (constsrc_l2a1_82.log:511-533). violation-decisions 16:10: dry run lists every unroutable row first.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "archive/peer/2026-09-25-hyp-constsrc82.md"},
+  {"path": "tools/stagexec.py", "md5": "3e2b15276caa94d7fa3f758c2e8bf124"},
+  {"path": "tools/recipes/stage_d1_l2a1.py", "md5": "e589dc746833aaaafe47f3eff4c22dc6"},
+  {"path": "tools/bench/sim/l2a1/stageplan_l2a1.json", "md5": "329d89eecaa2706ccce38640dbede5aa"},
+  {"path": "tools/recipes/build_opconstvaluen_v1.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_20260925_100155.vi", "md5": "6cf5b0777aafa12112d8a786a9eed1ed"}
+ ],
+ "pass": [
+  "P1 separator hyp-constsrc82.md:84: exact error code + raising VI on a D1_k scratch; the PD188(c) route it selects",
+  "P2 op at op 35, both rows: wire_delta, sole source owned by the constant uid, sink uid, Is Broken? False; negative case refused; 20 calls handle-flat",
+  "P3 routed in real Addr + SimReader; stagexec selftest count; two-unroutable-row selftest reports both; new md5",
+  "P4 dry run 42/42 diff 0 + offline pre-run PASS (log lines); stageplan md5",
+  "P5 run 1 if P4 passed: D1_l2_a1_<ts>.vi md5 + PD187(c) gates, or first FAIL row + JEV-LADDER NEXT-ACTION + what was done; D1_k unchanged; LabVIEW gone"
+ ],
+ "outputs": ["tools/stagexec.py", "tools/bench/constsrc_l2a1_85.log", "tools/bench/prerun_l2a1_85.log", "tools/bench/stage_d1_l2a1_85.log"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stagekit.py",
+   "tools/gscript.py",
+   "tools/recipes/build_opconstwire*",
+   "tools/recipes/stage_d1_l2a1*",
+   "tools/bench/selftest_stagexec*",
+   "tools/bench/selftest_opconstwire*",
+   "tools/bench/constsrc_l2a1_85*",
+   "tools/bench/prerun_l2a1_85*",
+   "tools/bench/dry_l2a1_85*",
+   "tools/bench/stage_d1_l2a1_85*",
+   "tools/bench/stage_d1_l2a1*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/sim/l2a1/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "docs/NAMES.md",
+   "docs/toolkit-capabilities.md",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_scratch_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a1_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\ops\\**",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 150},
+ "rules": [
+  "never save D1_k; separator and op tests on D1_k_scratch_* copies only, deleted after",
+  "never replace the constant or re-order plan rows; no route passes -> BLOCKED with the P2 table",
+  "run 1 via launch gate only; bgrun --max-min 60 (PD188(e)); RETRY_CAP; more runs need a judgement card",
+  "failed gate -> JEV-LADDER NEXT-ACTION first; review owed -> hypothesis review (review/1) then stop",
+  "new op script <=120 lines on stagekit, every ref closed",
+  "result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

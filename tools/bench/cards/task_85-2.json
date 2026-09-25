@@ -1,0 +1,69 @@
+{
+ "schema": "task/1",
+ "id": "85-2",
+ "kind": "build",
+ "goal": "PD191: ControlTerminal-sink verb for R41, tunnel Outside-Terminal route for R45 (+#6026), dry-path fix in stage_d1_l2a1.py, then dry -> pre-run -> run 1 saving D1_l2_a1_<ts>.vi",
+ "why": "85-1 delivered op 35 (OpConstWire_v1) and made the dry run list all unroutable rows: acts 41 rw_10988_17272 and 45 rw_6007_5082 (dry_l2a1_85b.log:47-48). PD191 decides both routes.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "163775667199134dc2dcd4095fca5a54"},
+  {"path": "archive/peer/2026-09-25-hyp-unroutable-85.md"},
+  {"path": "tools/stagexec.py", "md5": "aa4c425ad34105ec8bd915e3c4244890"},
+  {"path": "tools/recipes/stage_d1_l2a1.py", "md5": "e589dc746833aaaafe47f3eff4c22dc6"},
+  {"path": "tools/bench/sim/l2a1/stageplan_l2a1.json", "md5": "329d89eecaa2706ccce38640dbede5aa"},
+  {"path": "tools/recipes/build_opconstwire_v1.py", "md5": "03bb422a619b6c6696b59b7b670be458"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_20260925_100155.vi", "md5": "6cf5b0777aafa12112d8a786a9eed1ed"}
+ ],
+ "pass": [
+  "P1 R45 read-only scratch after mv_5540: per face #6007/#6026 via Tunnel.Outside Terminal: Is Source?, Connected Wire, type; sinks #5082/#5164 types",
+  "P2 R41 verb (PD191(a)): on scratch at act 41, wire_delta, sole source owner #10969 term #10988, sink #17272, Is Broken? False; negative refused; 20 calls handle-flat",
+  "P3 R45 route (PD191(b)) on scratch at act 45: both faces land the planned sink, sole source owner = planned tunnel, Is Broken? False; negative refused",
+  "P4 stagexec selftest count + md5; recipe dry path names unroutable rows; dry 42/42 diff 0, 0 unroutable; offline pre-run PASS",
+  "P5 run 1 if P4 passed: D1_l2_a1_<ts>.vi md5 + PD187(c) gates, or first FAIL row + JEV-LADDER NEXT-ACTION + what was done; D1_k unchanged; LabVIEW gone"
+ ],
+ "outputs": ["tools/stagexec.py", "tools/bench/unroutable_l2a1_85.log", "tools/bench/prerun_l2a1_85d.log", "tools/bench/stage_d1_l2a1_85.log"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/stagekit.py",
+   "tools/gscript.py",
+   "tools/recipes/build_opctlsinkwire*",
+   "tools/recipes/build_optunouter*",
+   "tools/recipes/stage_d1_l2a1*",
+   "tools/bench/selftest_stagexec*",
+   "tools/bench/unroutable_l2a1_85*",
+   "tools/bench/prerun_l2a1_85*",
+   "tools/bench/dry_l2a1_85*",
+   "tools/bench/stage_d1_l2a1*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/sim/l2a1/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "docs/NAMES.md",
+   "docs/toolkit-capabilities.md",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_scratch_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a1_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\ops\\**",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 80},
+ "rules": [
+  "never save D1_k; scratch copies only, deleted after",
+  "never re-order plan rows or re-cut moves (PD191); no route passes -> BLOCKED with the P1-P3 table",
+  "R45 P1 mismatch (type/pairing) -> BLOCKED before any write",
+  "run 1 via launch gate only; bgrun --max-min 60 (PD188(e)); RETRY_CAP; more runs need a judgement card",
+  "failed gate -> JEV-LADDER NEXT-ACTION first; review owed -> hypothesis review (review/1) then stop",
+  "new op scripts <=120 lines on stagekit, every ref closed",
+  "result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}
