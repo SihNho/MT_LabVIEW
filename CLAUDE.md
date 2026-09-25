@@ -380,6 +380,12 @@ background notification is a full turn over the whole conversation. Standing rul
   judgement fault (`inference-over-measurement`, `wrong-ordering`, `judgement-in-material`); back to 0 after a cycle
   that delivers. The recipe firefighter (fable/low on a repeated recipe failure) stays; the two never stack above
   Fable medium. The level and its reason are a `JUDGE-LADDER` runner-log line and a field of the cycle card.
+- **Judgement effort A/B until Monday** (user, 2026-09-26: *"Opus 5.5도 기본을 medium이 좋을지 high가 좋을지도 판단
+  필요"*): no cycle so far ran judgement at high, so there is no basis to choose; `cycle_runner --judge-ab` alternates
+  level-0 effort by cycle parity (odd medium, even high, `JUDGE-AB` log line, `effort` in the cycle card; a triggered
+  ladder level overrides it) until 2026-09-28 07:00, and the Monday comparison (minutes, cost, deliveries, judgement
+  slugs, unchanged-NEXT count) sets the default. External prior: Artificial Analysis index Opus 5.5 medium 51 / high
+  54 at $1.34 / $1.82 per task.
 
 ### INTRA-CYCLE ESCALATION — a card that runs out of budget goes to Fable low, then Fable medium, then to the user (user, 2026-09-25)
 
