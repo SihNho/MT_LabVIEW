@@ -1,0 +1,51 @@
+{
+ "schema": "task/1",
+ "id": "chat-H1",
+ "kind": "build",
+ "goal": "Runner-side heartbeat every 30 min (log line + heartbeat_latest.md + Windows toast) and report_gate treating HEARTBEAT lines as reportable; no session timers",
+ "why": "User 2026-09-25: session cron never fired all afternoon; 세션 예약이면 세션 바뀔 때마다 새로 셋팅 필요 -> 훅으로. Reporting must come from the runner process, session-independent.",
+ "inputs": [
+  {
+   "path": "tools/cycle_runner.py",
+   "md5": "1e48ceb961e40246ffb258349b89c6ad"
+  },
+  {
+   "path": "tools/hooks/report_gate.py",
+   "md5": "b9920a4fb0b1d937986f0a2966033b7d"
+  }
+ ],
+ "pass": [
+  "cycle_runner: a daemon thread writes every HEARTBEAT_MIN=30 a line HEARTBEAT | ts | cycle N running since T (m min) | last result card id+status | hooks errorlist/motor/close | open decisions n",
+  "same content written to tools/bench/heartbeat_latest.md (Korean one-paragraph + table) and shown as a Windows toast (PowerShell BurntToast if present, else a msg/balloon fallback; never blocks)",
+  "heartbeat also fires at every cycle end and at RUNNER STOP (final summary: cycles, cost, deliverables, next act)",
+  "report_gate.py: HEARTBEAT lines are reportable events like CYCLE/RUNNER STOP; --ack covers them; runner cells (CYCLE_SESSION=1) stay exempt",
+  "self-test: HEARTBEAT_MIN=0.05 dry run emits >=2 heartbeats, toast call stubbed, report_gate blocks until --ack; selftest_cycle_runner_ff 3/3",
+  "no LabVIEW; RESULT line; commit"
+ ],
+ "outputs": [
+  "tools/cycle_runner.py",
+  "tools/hooks/report_gate.py",
+  "tools/bench/selftest_heartbeat.log"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/**"
+  ],
+  "status_edit": false,
+  "git_commit": true,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 45
+ },
+ "unblocks": "M3",
+ "rules": [
+  "§3 Tooling",
+  "Unattended runs: silence is not progress"
+ ]
+}
