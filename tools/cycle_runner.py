@@ -632,6 +632,166 @@ def note_in_status(status_path, reason):
         pass
 
 
+# HEARTBEAT (card chat-H1, user 2026-09-25: the session cron never fired all afternoon; "세션 예약이면 세션 바뀔 때마다
+# 새로 셋팅 필요 -> 훅으로"). Reporting comes from the RUNNER PROCESS, not from any session timer and no LLM: a
+# `HEARTBEAT | ...` line at EVERY CYCLE END (after the motor end hook and the LabVIEW close) and one FINAL at RUNNER
+# STOP. No periodic timer (judgement change to the card, user: "싸이클 종료 시점 기준이 좋을 것 같기는 함. 30분을 할 필요는
+# 없지"). Each goes to the runner log (so tools/hooks/report_gate.py sees it in cycle_runner_main_*.log and refuses to
+# let the chat stay silent), to <bench>/heartbeat_latest.md, and to a Windows toast (tools/heartbeat_toast.ps1,
+# detached, never waited on). Dry runs do not toast unless HEARTBEAT_TOAST_STUB=<file> is set, which records the call.
+TOAST_PS1 = os.path.join(HERE, "heartbeat_toast.ps1")
+_HOOK_PREFIX = {"errorlist": "ERRORLIST |", "motor": "MOTOR-LIMITS |", "close": "LABVIEW-CLOSE |"}
+
+
+class Heartbeat:
+    def __init__(self, a, bench, runner_log, status_path, t0):
+        self.a, self.bench, self.runner_log, self.status_path, self.t0 = a, bench, runner_log, status_path, t0
+        self.cycle, self.cycle_t0, self.phase = None, None, "starting"
+        self.cycles_done, self.cost = 0, 0.0
+        self.final_done = False
+
+    # -- state the main loop updates
+    def begin(self, n):
+        self.cycle, self.cycle_t0, self.phase = n, time.time(), "running"
+
+    def cycle_end(self, n, rc, cost):
+        self.cycles_done += 1
+        try:
+            self.cost += float(str(cost).lstrip("$"))
+        except ValueError:
+            pass
+        self.phase = "ended %s (exit %d, %s)" % (time.strftime("%H:%M"), rc, cost)
+        self.emit("cycle-end")
+
+    # -- facts
+    def _last_result(self):
+        cards = [os.path.join(self.bench, "cards", f) for f in _listdir(os.path.join(self.bench, "cards"))
+                 if f.startswith("result_") and f.endswith(".json")]
+        if not cards:
+            return "none"
+        p = max(cards, key=os.path.getmtime)
+        try:
+            with open(p, encoding="utf-8") as f:
+                d = json.load(f)
+            return "%s %s" % (d.get("id", os.path.basename(p)), d.get("status", "?"))
+        except (OSError, ValueError):
+            return "%s unreadable" % os.path.basename(p)
+
+    def _hooks(self):
+        lines = read(self.runner_log).splitlines()
+        out = {}
+        for k, pre in _HOOK_PREFIX.items():
+            last = next((ln for ln in reversed(lines) if ln.startswith(pre)), None)
+            if not last:
+                out[k] = "-"
+                continue
+            parts = [p.strip() for p in last.split("|")]
+            v = parts[3] if len(parts) > 3 else "?"
+            out[k] = ("%s %s" % (parts[2], v.split()[0] if v else "?"))[:60]
+        return out
+
+    def _decisions(self):
+        try:
+            return len(protocol.open_decisions(os.path.join(self.bench, "decisions_pending.json")))
+        except Exception:   # noqa: BLE001
+            return -1
+
+    def _next_act(self):
+        try:
+            _m, card, _w = next_json_reading(self.bench)
+            return card["act"][:150] if card else "(no valid next.json)"
+        except Exception:   # noqa: BLE001
+            return "(unreadable)"
+
+    def _deliverables(self):
+        d = os.path.join(self.bench, "cards")
+        ids = []
+        for f in _listdir(d):
+            p = os.path.join(d, f)
+            if f.startswith("result_") and f.endswith(".json") and os.path.getmtime(p) >= self.t0:
+                try:
+                    with open(p, encoding="utf-8") as fh:
+                        r = json.load(fh)
+                    if r.get("status") == "PASS":
+                        ids.append("%s(%d artefacts)" % (r.get("id", f), len(r.get("artefacts") or [])))
+                except (OSError, ValueError):
+                    pass
+        return ", ".join(ids) or "none"
+
+    # -- output
+    def emit(self, kind):
+        try:
+            now = time.time()
+            stamp = time.strftime("%Y-%m-%d %H:%M:%S")
+            hooks, dec, last = self._hooks(), self._decisions(), self._last_result()
+            if self.cycle is None:
+                cyc = "no cycle yet (runner up %.0f min)" % ((now - self.t0) / 60.0)
+            else:
+                cyc = "cycle %d %s since %s (%.0f min)" % (
+                    self.cycle, self.phase, time.strftime("%H:%M", time.localtime(self.cycle_t0)),
+                    (now - self.cycle_t0) / 60.0)
+            hk = "hooks errorlist=%s motor=%s close=%s" % (hooks["errorlist"], hooks["motor"], hooks["close"])
+            tag = "FINAL" if kind == "final" else "cycle-end"
+            extra = "%s | cycles %d, cost $%.2f, deliverables %s, next act: %s" % (
+                tag, self.cycles_done, self.cost, self._deliverables(), self._next_act())
+            line = "HEARTBEAT | %s | %s | %s | last result %s | %s | open decisions %d" % (
+                stamp, extra, cyc, last, hk, dec)
+            log_line(self.runner_log, line)
+            self._write_md(kind, stamp, cyc, last, hooks, dec)
+            self._toast(kind, cyc, last, dec)
+        except Exception as e:  # noqa: BLE001 - a heartbeat must never break the runner
+            try:
+                log_line(self.runner_log, "HEARTBEAT-ERROR | %s | %s: %s"
+                         % (time.strftime("%Y-%m-%d %H:%M:%S"), type(e).__name__, str(e)[:160]))
+            except Exception:   # noqa: BLE001
+                pass
+
+    def _write_md(self, kind, stamp, cyc, last, hooks, dec):
+        kind_ko = {"cycle-end": "사이클 종료 보고", "final": "러너 종료 최종 보고"}.get(kind, kind)
+        para = ("%s — %s 기준. 현재 %s. 마지막 결과 카드는 %s, 사용자 결정 대기 %d건. 누적 %d사이클, 비용 $%.2f."
+                % (kind_ko, stamp, cyc, last, dec, self.cycles_done, self.cost))
+        para += " 이번 실행 산출물: %s. 다음 할 일: %s." % (self._deliverables(), self._next_act())
+        rows = [("종류", kind), ("시각", stamp), ("사이클", cyc), ("마지막 결과", last),
+                ("Error List 훅", hooks["errorlist"]), ("모터 리밋 훅", hooks["motor"]),
+                ("LabVIEW 종료 훅", hooks["close"]), ("결정 대기", str(dec)),
+                ("누적 사이클 / 비용", "%d / $%.2f" % (self.cycles_done, self.cost))]
+        body = "# 러너 하트비트\n\n%s\n\n| 항목 | 값 |\n|---|---|\n%s\n" % (
+            para, "\n".join("| %s | %s |" % (k, str(v).replace("|", "/")) for k, v in rows))
+        tmp = os.path.join(self.bench, "heartbeat_latest.md.tmp")
+        with open(tmp, "w", encoding="utf-8") as f:
+            f.write(body)
+        os.replace(tmp, os.path.join(self.bench, "heartbeat_latest.md"))
+
+    def _toast(self, kind, cyc, last, dec):
+        title = "cycle runner: %s" % kind
+        body = "%s | last %s | decisions %d" % (cyc, last, dec)
+        stub = os.environ.get("HEARTBEAT_TOAST_STUB")
+        if stub:
+            with open(stub, "a", encoding="utf-8") as f:
+                f.write("TOAST | %s | %s\n" % (title, body))
+            return
+        if self.a.dry_run or self.a.dry_cmd:
+            return
+        flags = getattr(subprocess, "CREATE_NO_WINDOW", 0) | getattr(subprocess, "DETACHED_PROCESS", 0)
+        subprocess.Popen(["powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
+                          "-WindowStyle", "Hidden", "-File", TOAST_PS1],
+                         env=dict(os.environ, HB_TITLE=title, HB_BODY=body[:240]), creationflags=flags,
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         close_fds=True)
+
+    def final(self):
+        if not self.final_done:
+            self.final_done = True
+            self.emit("final")
+
+
+def _listdir(d):
+    try:
+        return os.listdir(d)
+    except OSError:
+        return []
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--max-min", type=float, default=180.0, help="wall-clock cap for ONE cycle's session")
@@ -668,8 +828,16 @@ def main():
         print("no prompt: %s is empty or missing" % a.prompt_file, flush=True)
         return 4
 
-    n = last_cycle_number(runner_log)
     run_t0 = time.time()
+    hb = Heartbeat(a, bench, runner_log, status_path, run_t0)
+    try:
+        return _loop(a, status_path, bench, runner_log, prompt, run_t0, hb)
+    finally:
+        hb.final()      # every exit of the loop follows a RUNNER STOP line: the final summary heartbeat
+
+
+def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
+    n = last_cycle_number(runner_log)
     done = 0
     bad_streak = 0
     unchanged_streak = 0
@@ -699,6 +867,7 @@ def main():
             return 0
 
         n += 1
+        hb.begin(n)
         next_before = next_section(status_text)
         cyc_log = os.path.join(bench, "cycle_%d.log" % n)
         # firefighter trigger: the same recipe failed in the two previous cycles (fail_hist[-2] & fail_hist[-1])
@@ -854,6 +1023,10 @@ def main():
         # LabVIEW CLOSED AND VERIFIED GONE at every cycle end, after the motor end hook and whatever it returned (the
         # camera must not keep acquiring - user 2026-09-24). Its failure stops the runner below.
         ok_lv, why_lv = labview_close_hook(n, a, bench, runner_log, read(status_path))
+        cost =("$%.4f" % env["total_cost_usd"]) if isinstance(env, dict) and isinstance(
+            env.get("total_cost_usd"), (int, float)) else "?"
+        # HEARTBEAT at cycle end (card chat-H1): after motor end + LabVIEW close, before any stop decision below
+        hb.cycle_end(n, rc, cost)
         if not ok_end:
             reason = "motor limits could not be RELEASED and verified at the end of cycle %d (%s) - the " \
                      "controllers may still carry the session limits; check them before any experiment" % (n, why_end)
@@ -866,8 +1039,6 @@ def main():
             log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
             note_in_status(status_path, reason)
             return 3
-        cost =("$%.4f" % env["total_cost_usd"]) if isinstance(env, dict) and isinstance(
-            env.get("total_cost_usd"), (int, float)) else "?"
         status_after = read(status_path)
         # C7: the machine NEXT. Absent / invalid / byte-identical all count as "unchanged" for stop condition 3.
         next_md5_after, next_card, next_why = next_json_reading(bench)
