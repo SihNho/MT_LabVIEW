@@ -84,9 +84,10 @@ not be re-wired.** `#10407` t6's outgoing half is carried by the new `LoopTunnel
 
 ⚠️ Derivation status: read directly from the cited lines.
 `tools/bench/diag_c90b_severed_arith.py` re-derives all of the above mechanically (6 prediction
-gates, writes `tools/bench/m3a1_severed_arith.json`) but **has not been run** — every `py` and
+gates; it would write a `m3a1_severed_arith` JSON under `tools/bench`) but **has not been run** — every `py` and
 `bgrun` invocation in the cycle-68 session was refused by the permission layer, so no
-`tools/bench/m3a1_severed_rows.log` was produced. Running it is outstanding.
+`m3a1_severed_rows` log was produced (neither file exists; lint 2026-09-25). M3a-1 was later delivered by other
+means (cycle 63, `D1_s3b_m3a_BROKEN_20260922_005732.vi`), so running it is no longer owed.
 
 ⚠️ The four non-node owner uids (`#4344`, `#4274`, `#4334`, `#9641`) are the cycle-67 machine reads
 carried in `STATUS.md`'s `labview-lock` `purpose_dispatch4`, not readings of these files.
