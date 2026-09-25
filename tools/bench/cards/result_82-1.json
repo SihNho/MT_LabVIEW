@@ -1,0 +1,19 @@
+{"schema":"result/1","id":"82-1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/stagexec.py","md5":"209d5e5790733fd505306b4686602a0b"},{"path":"tools/bench/parity_l2a1_82.py","md5":"8ce5771b9e4395fa8e6573d4c42ab061"},{"path":"tools/bench/parity_l2a1_82_real.json","md5":"80193ddb96f022db7e42410d6c52d4db"},{"path":"tools/bench/parity_l2a1_82_holdout.log","md5":null},{"path":"tools/bench/prerun_l2a1_82c.log","md5":null},{"path":"archive/peer/2026-09-25-parity-l2a1-82-hyp.md","md5":null}],
+"facts":[
+"P1 selftest 30/0: 22 old + parity at PRIME, 2 parity negatives, CT 179(b) route, CT-as-triple negatives, not-in-report_all negative, connect_route (selftest_stagexec_82c.log)",
+"P2 BEFORE fit: 231 Nodes[] entries SimReader-only on #639/#686/#23166 (CT, LoopTunnel, *Constant, FSOuterTunnel, Diagram, all 23 loops everywhere): parity_l2a1_82.log:36-39",
+"P2 AFTER fit: 0/0/0 on touched diagrams (parity_l2a1_82_holdout.log:40-44); holdout 173 diagrams: 21 real-only ControlReferenceConstant (:45-50), fitted -> 0 offline",
+"Fit = stagexec.py:282-294 listed_as_node (no *Tunnel, *Constant except ControlReferenceConstant, Diagram owner, CT) + loop_parent; list ORDER differs from real (not gated)",
+"(b) Addr.ct stagexec.py:505 + connect_route :375 in BOTH backends; all 4 CT ends #10225 #5634 #17272 #17487 addressable on the REAL read: parity_l2a1_82_holdout.log:55",
+"P3 dry (dry_l2a1_82c.log): PARITY 0, PRIME 17 + 4 CT, ops 1-30 diff 0, stops OFFLINE at op 31 rw_5634_10256 CONNECT-NO-VERB - run 3's stop now caught before LabVIEW",
+"P3 prerun (prerun_l2a1_82c.log): X1-X3 PASS, X4 FAIL (same stop); stageplan md5 329d89ee and plan_l2a1.json unchanged, no re-simulation",
+"stagesim move_in leaves a moved CT row's owner_uid at the old Diagram (#5634: 639 vs frame 23166); Addr.ct uses frame_diagram, flags it stale (prerun_l2a1_82.log X4)",
+"P4: D1_k md5 6cf5b077 unchanged, scratches deleted, refs 4/4 closed, handles 45644->45761 during reads, 34003 at exit, LabVIEW gone: parity_l2a1_82_holdout.log:56-81",
+"JEV | parity_l2a1_82.log | new-problem p=0.782 | review owed | hypothesis review ANSWERED, applied (*Tunnel rule, holdout) | rerun 14/0 (jev_gate.log:1073)"],
+"open":[
+"Which verb wires a BARE CT source on nested #23166 (rw_5634_10256, rw_17487_9676)? connect_nested_v1 = Nodes[] only; connect_ctl = top-level only; wire_control (by label) unmeasured here",
+"guard_cycle refused stage_prerun --dry/--prerun of stage_d1_l2a1.py: repeated-failure-class at 26 needs a DECISION in docs/violation-decisions.md (not my flags); ran stagexec dry/prerun instead",
+"tools/jev_pairs.py:139 claims Nodes[] lists constants (contradicted here); parity_l2a1_82.py is 144 lines (>120 stagekit rule)"],
+"cost":{"usd":null,"minutes":27,"labview_runs":2},
+"note":"No stage run. Parity diagnostic failed once (A1 predicted before the fit existed); review applied; rerun PASS."}

@@ -1,0 +1,49 @@
+BGRUN START 2026-09-25 15:55:55 limit 12.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools/peer.ps1 -Agent claude -Role hypothesis -Slug hyp-constsrc82 -TimeoutSec 600 -TaskFile tools/bench/cards/peer_constsrc82_task.txt
+OUTCOME: ANSWERED (214s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-25-hyp-constsrc82.md
+COST: $1.6767  in 38 / out 15861 / cache-create 113277 / cache-read 2031048  (211s, 29 turn(s))
+--- ANSWER ---
+**Verdict:** your conclusion holds. Neither existing verb can wire from a Constant, and a new op is the right next step. But the mechanism you gave was never measured, and part of it is misattributed. I found no existing verb that avoids building the op.
+
+**1. Strongest reason the claim is wrong as stated.** The 1057 was not raised inside Get Outputs or Wire Inputs.
+- The error source reads "To More Specific Class in OpWire_v1.vi". That is a primitive on OpWire_v1's own diagram. When a subVI raises an error, its name appears in the source, as C2's did: `LV-Scripting.lvlib:Get Controls.vi` (`tools/bench/constsrc_l2a1_82.log:517`).
+- OpWire_v1 contains two of its own casts (To More Specific Class, TMSC), both to class `Node`:
+  - TMSC 683 on the source chain, feeding Get Outputs.
+  - TMSC 788 on the destination chain, feeding Wire Inputs.
+  - Evidence: `tools/recipes/build_opconnect_gateway_attempt.py:9-12` and `archive/2026-08-29-status-sweep-opexitloop-opwireind.md:70,83` ("retarget TMSC2 class constant `Node`→…").
+- The log does not say which of the two raised the error. What was actually measured is "one of OpWire_v1's two casts to Node failed".
+- The source-side reading is now backed by external documentation, not just the unmeasured note at `build_d1_v0.py:1178`: Constant is **Generic → GObject → Constant**, not a Node ([labviewwiki Constant class](https://labviewwiki.org/wiki/Constant_class)). A cast to Node must fail on any DigitalNumericConstant.
+
+**2. Alternative explanations of the same log.**
+- **(a) The destination-chain cast (TMSC 788) raised it.** This is unlikely. Comparison and IndexArray are Nodes, and the destination index is re-read at the call site (`tools/stagekit.py:409-412`). The log cannot rule it out, though.
+- **(b) More important: C1 never tested addressing.** The source cast fails for *every* DigitalNumericConstant index. So a wrong index (30 or 31 pointing at some other constant) would give exactly the same 1057. C1 says nothing about whether index-by-class reaches #10739.
+- **C2's 5001 is consistent with your reading.** Get Controls resolves front-panel control labels only; a constant's label is not one ([Terminal class](https://labviewwiki.org/wiki/Terminal_class) shows Terminal is its own GObject subclass). This part is fine.
+
+**3. What would falsify the claim.**
+- If OpWire_v1 with a *Node* source and the same destination (Comparison[3].'y') also returns 1057, the destination chain is at fault and the "Constant is not a Node" explanation is not what happened.
+- If any DigitalNumericConstant source gets past OpWire_v1's cast, the class-hierarchy argument is wrong.
+
+**Existing routes that reach a Constant's terminal: none that wire it.**
+- **OpConstValueN_v1** already reaches the terminal: Traverse(DigitalNumericConstant)[i] → cast to DigitalNumericConstant → `Constant.Terminal` 634AC04. It measured this functionally (`tools/recipes/build_opconstvaluen_v1.py:5-7`). It only *reads*; it does not connect.
+- **Erdos Miller LV-Scripting** (the vi.lib directory listing) has no constant-terminal getter. Its `Conditionally Connect Wire.vi` needs Terminal-typed inputs (`docs/keystone-op-spec.md:385-388`).
+- **`AbstractDiagram.All Objects[]` (6375804)** returns "all the top-level objects" of a diagram, where `Nodes[]` returns only nodes ([labviewwiki AbstractDiagram](https://labviewwiki.org/wiki/AbstractDiagram_class)). It is registered in `docs/vi-server-ids.json:35` but no op uses it. It would let you address the constant as D[i].AllObjs[k] on nested #23166, but it still needs a cast plus Connect Wire, so it is still a new op. Whether it actually lists constants is unmeasured.
+- **Build it this way:** OpConstValueN_v1's source half (functional), then `Terminal.Connect Wire` 6349C03 invoked on the **sink** terminal, with Wire Source = the constant's terminal. Address the sink with OpConnectNested_v1's D[i].Nodes[n].Terminals[t] ladder. Per the [Terminal class](https://labviewwiki.org/wiki/Terminal_class) docs, Connect Wire's source "can be either another terminal or a node", so a Terminal source is legal.
+- **Prediction contract for the new op:** it should also check that the new wire's only source is owned by #10739. That check covers the addressing gap in point 2b.
+
+**4. Cheapest discriminating test.** One call of about 0.3 s that changes nothing on the diagram: `g.wire(work, "Comparison", di, "zz_nonexistent", "Comparison", di, "y")`.
+- If it returns **5001 from Get Outputs.vi**, the source-chain cast passed on a Node and the destination chain is clean. The original 1057 was then the source cast on the constant, and your claim stands on measurement.
+- If it returns **1057**, the destination chain (TMSC 788) is at fault and needs its own diagnosis.
+
+Of the two, the class-hierarchy documentation is the stronger evidence; this test only closes the destination-chain alternative. My conclusion would change only if that call returns 1057, or if the new op's first run wires to a constant other than #10739.
+
+I could not write my plan file: the Write tool is disabled in this session, so this review exists only in this reply.
+
+Sources:
+- [Constant class — LabVIEW Wiki](https://labviewwiki.org/wiki/Constant_class)
+- [Terminal class — LabVIEW Wiki](https://labviewwiki.org/wiki/Terminal_class)
+- [AbstractDiagram class — LabVIEW Wiki](https://labviewwiki.org/wiki/AbstractDiagram_class)
+- [Diagram class — LabVIEW Wiki](https://labviewwiki.org/wiki/Diagram_class)
+- [To More Specific Class function — LabVIEW Wiki](https://labviewwiki.org/wiki/To_More_Specific_Class_function)
+- [NI forum: refnum more specific class error (1057 = object cannot be cast)](https://forums.ni.com/t5/LabVIEW/refnum-more-specific-class-error/td-p/727620)
+- [NI forum: to more specific class – error 1057](https://forums.ni.com/t5/LabVIEW/to-more-specific-class-cursor-reference-error-1057/td-p/2271120)
+- [NI forum: Error code 1057](https://forums.ni.com/t5/LabVIEW/Error-code-1057/td-p/481852)
+BGRUN END rc=0 after 215s

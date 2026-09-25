@@ -1,0 +1,29 @@
+FAILED PREDICTION, card 82-3 (tools/bench/constsrc_l2a1_82.log, script tools/bench/constsrc_l2a1_82.py).
+
+Context: LabVIEW 2026 VI Scripting over COM. On a scratch copy of D1_k, ops 1-34 of a staged move ran with graph diff 0.
+Two BARE DigitalNumericConstants (#10739 terminal #10738 'disabled index (col)'; #10929 terminal #10943 'index') now sit
+on nested Diagram #23166 (a While loop body) and must be wired to Comparison #10950 input 'y' and IndexArray #10757 input
+'index' on the same diagram. The real Diagram.Nodes[] does not list *Constant objects (measured, card 82-1), so our
+index-triple verb (connect_nested_v1: D[i].Nodes[n].Terminals[t]) cannot address the source.
+
+Prediction: one of two existing verbs wires the constant source.
+  C1 gscript.wire (OpWire_v1: erdosmiller Traverse for GObjects(class)[i] -> Get Outputs by name -> Wire Inputs onto
+     Traverse(dst class)[j].<input name>), src class 'DigitalNumericConstant'.
+  C2 gscript.wire_control (OpWireCtl_v0: erdosmiller Get Controls on Diagram[i] by LABEL -> Wire Inputs) - the route that
+     worked for bare ControlTerminals in card 82-2.
+Observed (log lines 511, 518, 526, 533): no mutation at all (Wire delta 0, node census unchanged) and
+  C1 -> "error 1057: To More Specific Class in OpWire_v1.vi" on both rows;
+  C2 -> "error 5001: LV-Scripting.lvlib:Get Controls.vi | Control <label> not found" on both rows.
+My explanation: Get Outputs / Wire Inputs cast the traversed object to Node, and a Constant is a GObject, not a Node
+(recorded unmeasured at tools/recipes/build_d1_v0.py:1181-1186); Get Controls looks only at control terminals. So neither
+existing verb can source from a Constant; the remaining route is a NEW op: Traverse(DigitalNumericConstant)[i] -> To More
+Specific Class(Constant) -> Constant.Terminal (634AC04) -> Terminal.Connect Wire (6349C03) onto the sink terminal
+(sink addressed as Diagram[i].Nodes[n].Terminals[t] or by class traverse). Both halves exist inside OpConstValueN_v1
+(Constant.Terminal) and OpConnectNested_v1 / OpConnect_v0 (Connect Wire).
+
+Already ruled out: connect_nested_v1 (Nodes[] omits constants), connect_from_wire (source bare), OpCreateConstOnTerm
+(would replace the constant - forbidden), re-ordering the plan to wire before the move (rejected by judgement, plan 187).
+
+Questions: is the 1057 really the Node cast (vs. a class-name / index problem in OpWire_v1's own TMSC)? Is there an
+existing scripting route (VI Server property/method, e.g. Diagram 'AllObjs[]', Terminal lookups, or an erdosmiller VI)
+that reaches a Constant's terminal without building a new op? What is the cheapest discriminating test?

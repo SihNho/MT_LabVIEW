@@ -1,0 +1,19 @@
+{"schema":"result/1","id":"82-3","status":"BLOCKED","gates":{"pass":13,"fail":4},"first_fail":"P2 rw_10738_11055 C1: OpWire_v1 error 1057 (To More Specific Class), no wire","blocked_by":{"device":"LabVIEW VI Scripting: OpWire_v1 (gscript.wire) and OpWireCtl_v0 (gscript.wire_control)","message":"No existing verb wires a bare DigitalNumericConstant source; no route passed, so P3 was not started (card rule)"},
+"artefacts":[{"path":"tools/bench/constsrc_l2a1_82.py","md5":"ccef5e8d78db78ca41849ff2fed46dc8"},{"path":"tools/bench/constsrc_l2a1_82.log","md5":"0a43d786cb651fced49580c3369a6756"},{"path":"archive/peer/2026-09-25-outcome-review-20260925.md","md5":"59f87e977e127c2ede0b652d00d72e78"},{"path":"tools/bench/cards/steer_82.json","md5":"da8b7a90f8281d542fe777b7f93550e2"},{"path":"archive/peer/2026-09-25-hyp-constsrc82.md","md5":"b11994ee4964c1e23e0a309119e5d338"},{"path":"archive/peer/2026-09-25-outcome-review-20260925-am.md","md5":null}],
+"facts":[
+"P0 outcome review END rc=0 186s (outcome_review_c82.log): verdict refuted; OUTCOME-VIOLATION tooling-over-delivery, ordering-stale, goal-requirement-not-advanced, decision-starved (review :189-192)",
+"P0 verdict slugs wrong-ordering 242 min, repeated-failure-class 126 min; steer_82.json written (3 repeated slugs). 06:30 review kept as ...20260925-am.md (same slug overwrites)",
+"P1: C1 gscript.wire:1410 (OpWire_v1), C2 gscript.wire_control:1998; C3 Constant.Terminal+Connect Wire has NO op (build_d1_v0.py:1181); rest excluded (constsrc_l2a1_82.py:2-11)",
+"P2 scratch: ops 1-34 diff 0, op 35 stopped at ADDRESS #10739 not in Diagram[21] (#23166).Nodes[], no mutation (constsrc_l2a1_82.log:507)",
+"C1 both rows: err 1057 To More Specific Class in OpWire_v1.vi, Wire delta 0, census unchanged (constsrc_l2a1_82.log:511,526)",
+"C2 both rows: err 5001 Get Controls.vi 'Control <label> not found', Wire delta 0 (constsrc_l2a1_82.log:518,533)",
+"Ends: #10739 DigitalNumericConstant term #10738 'disabled index (col)' -> Comparison #10950 'y' #11055; #10929 term #10943 'index' -> IndexArray #10757 'index' #10877 (log:508,523)",
+"Hygiene: LabVIEW gone, D1_k md5 6cf5b077 unchanged, scratch deleted, refs 14/14 closed, handles 46116 -> 34005 at exit (log:560-566)",
+"Wall clock: start 57s, executor ops 1-34 957s, 4 candidates 113s, then Stage.close 1070s->2265s (~20 min after 'handle count AFTER the work'); BGRUN END rc=1 2270s",
+"JEV | constsrc_l2a1_82.log | no ladder line | hypothesis review owed (old path) | hyp-constsrc82 ANSWERED, disposition written | 1057 = one of OpWire_v1's 2 casts to Node"],
+"open":[
+"Build new op (review route): OpConstValueN_v1 source half -> Constant.Terminal 634AC04 -> Terminal.Connect Wire 6349C03 on sink D[i].Nodes[n].Terminals[t]? Gate: new wire's only source owned by #10739",
+"Review's cheap test not run: g.wire(work,'Comparison',di,'zz_nonexistent','Comparison',di,'y') on any scratch separates source-cast vs dest-cast 1057 (hyp-constsrc82 :84-86)",
+"Stage.close spends ~20 min after the work in both 82-2 and 82-3 (restart path); per-phase stamps inside stagekit.close are owed to find where"],
+"cost":{"usd":5.31,"minutes":62,"labview_runs":1},
+"note":"P3 not attempted (no passing route). stagexec.py and stageplan unchanged (md5 3e2b1527 / 329d89ee). Outcome review annotation (why asked/verdict) left to judgement. cost.usd = the two peer calls only (outcome $3.64 + hypothesis $1.68)."}

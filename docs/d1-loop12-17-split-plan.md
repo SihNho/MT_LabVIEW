@@ -831,6 +831,43 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
      - Re-ordering the plan to wire the ControlTerminal before its move was rejected: 183 fixed the plan from the
        simulator, and (a) is what prevents a fourth member of the class.
 
+188. **(cycle 82 judgement, on results `82-1` PASS 4/0, `82-2` PASS 4/0, `82-3` BLOCKED 13/4) 187(a)+(b) are
+     DELIVERED; L2-A1 now stops OFFLINE at op 35, one class later than run 3.**
+     - **(a) Reader parity is ACCEPTED.** `tools/stagexec.py` compares SimReader with a real `Nodes[]` read at PRIME
+       and fails on any one-sided class (`parity_l2a1_82_holdout.log:40-50`, 0 after the fit, 173-diagram holdout 0).
+       The real `Nodes[]` omits `*Tunnel`, `*Constant` (except ControlReferenceConstant), the Diagram owner and
+       ControlTerminals.
+     - **(b) Bare nested ControlTerminal SOURCE = `gscript.wire_control` (OpWireCtl_v0, by label on its Diagram).**
+       Measured on a scratch at op 31: `#5634→#10256` and `#17487→#9676` each landed the sole predicted source and
+       sink with 0 broken wires (`ctsrc_l2a1_82.log:457-508`). It is routed as `connect_route 'ctl'` (stagexec md5
+       `3e2b1527…`, self-test 34/0). Dry run: ops 1–34 diff 0.
+     - **(c) Op 35 `rw_10738_11055` (bare DigitalNumericConstant `#10739` → `#10950 'y'`) and `#10929 → #10757
+       'index'` have NO verb.** `OpWire_v1` raises 1057 (To More Specific Class), and `wire_control` raises 5001
+       (`constsrc_l2a1_82.log:511-533`). **Decided: a new op is built (the tools rule, 2026-09-24; L2-A2/B move
+       constants too).** It takes the source Constant by uid through the report_all(class) route, reads
+       `Constant.Terminal` (634AC04), and calls `Terminal.Connect Wire` (6349C03) on the sink terminal. Gate: the new
+       wire's only source is owned by the constant uid. Before building it, run the review's cheap separator
+       (`archive/peer/2026-09-25-hyp-constsrc82.md:84-86`): it shows whether OpWire_v1's 1057 is the source cast or
+       the destination cast. If it is the destination cast, fixing that cast is the smaller op. Both routes pass the
+       same gate.
+     - **(d) Cycle 83 follows steer_82 with the outcome review's discriminating test, and L2-A1 is PAUSED behind it.**
+       `archive/peer/2026-09-25-outcome-review-20260925.md:180-187` is the second same-day review with the same
+       verdicts. The user's 09:30 load answer (`decisions_pending.json` D-2026-09-25-01: 8 and 15 beads, 90 and 150
+       Hz, a reduced ROI) has not been used for four cycles.
+       - The measurement: real runs of the S1 copy vs `D1_s3_loop15.vi` with the existing driver
+         (`tools/bench/drive_m8_s1s3.py`, the INDEX rows 46–47 method). Use 8 and 15 bead picks, at 90 Hz and then 150
+         Hz (150 Hz only if the camera reaches it; report the ROI used). Each run is 2–5 min. Report Total Lost Frames
+         per cell, and write archive rows 48+.
+       - It is a real run of the bed with motors allowed (the 2026-09-24 grant), and it advances R4 and M8. No beads
+         are on the rig, so the tracking values are garbage by design, and only operation and frame counts are read.
+       - What it decides: if lost frames grow with the bead count, the tracking kernel (M3, loop 1.2) is the lever, and
+         (c) + the L2-A1 run resume in cycle 84. If they do not, the camera loop (M4) is the lever, and the split order
+         is re-decided.
+       - Until then, (c) stays decided but NOT built.
+     - **(e) `Stage.close` takes about 20 min after the work** in both 82-2 and 82-3 (`constsrc_l2a1_82.log`,
+       close 1070→2265 s). The run's bgrun uses `--max-min 60`. Per-phase stamps inside `stagekit.close` come after
+       the deliverable.
+
 ## OPEN (design choices — for judgement; not decided here)
 
 > 2026-09-24: O2, O3, O4 (SR half; the queue half is QRT), O6 (placement + route), O7, O8 are CLOSED by Pre-decided

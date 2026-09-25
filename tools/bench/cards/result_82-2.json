@@ -1,0 +1,19 @@
+{"schema":"result/1","id":"82-2","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/stagexec.py","md5":"3e2b15276caa94d7fa3f758c2e8bf124"},{"path":"tools/bench/ctsrc_l2a1_82.py","md5":null},{"path":"tools/bench/ctsrc_l2a1_82.log","md5":null},{"path":"tools/bench/ctsrc_l2a1_82_cleanup.log","md5":null},{"path":"tools/bench/selftest_stagexec_82d.log","md5":null},{"path":"tools/bench/dry_l2a1_82d.log","md5":null},{"path":"tools/bench/prerun_l2a1_82d.log","md5":null},{"path":"archive/peer/2026-09-25-hyp-ctsrc82-timeout.md","md5":"daf11caf3a6428b5efbcd6302c7a25f5"}],
+"facts":[
+"P1: only gscript.wire_control:1998 (OpWireCtl_v0, label on Diagram idx -> class-traverse node . name) fits; connect_ctl/ctl_ind/nested_v1/wire_indicators/probe Q4 rejected (ctsrc_l2a1_82.py:2-8)",
+"P2 real scratch at op 31: executor ops 1-30 diff 0, stopped CONNECT-NO-VERB before any mutation (ctsrc_l2a1_82.log:451)",
+"rw_5634_10256: err '', Wire +1, w9385 sole source [5634] sole sink [10256], 2nd pass delta 0 Is Broken? False, plan step 35 compare 0 (ctsrc_l2a1_82.log:457-480)",
+"rw_17487_9676: err '', Wire +1, w25415 sole source [17487] sole sink [9676], 2nd pass delta 0 Is Broken? False (ctsrc_l2a1_82.log:486-508)",
+"OpWireSource_v5 names a CT source's owner as its Diagram (#23166), not the CT uid; graph read names the CT terminal uid (ctsrc_l2a1_82.log:464,458)",
+"Routed: connect_route 'ctl' (stagexec.py:394-416: label unique on its Diagram, sink name unique, sink owner = node) + LVBackend wire_control (stagexec.py:946); SimBackend shares the route",
+"selftest 34/0 incl. T25b ctl, T26 carried label/didx/name, T27a-c negatives (selftest_stagexec_82d.log)",
+"P4 dry: PARITY 0, ops 1-34 diff 0 (op 31 = rw_5634 via ctl), first stop op 35 rw_10738_11055: bare DigitalNumericConstant #10739 not in Nodes[] of #23166 (dry_l2a1_82d.log)",
+"P4 prerun X1-X3 PASS, X4 FAIL same stop; stageplan md5 329d89ee unchanged (prerun_l2a1_82d.log)",
+"Run 2 BGRUN TIMEOUT at 1802s inside close's restart_labview after all gates (LV pid 9968 start 15:02:51); cleanup 4/0: LV gone, scratch deleted, D1_k 6cf5b077 (ctsrc_l2a1_82_cleanup.log)"],
+"open":[
+"Which verb wires a BARE constant source (#10739 DigitalNumericConstant, op 35 rw_10738_11055; likely also #10929) - real Nodes[] omits *Constant (82-1), so connect_nested_v1 cannot address it",
+"Review hyp-ctsrc82-timeout: ~150 s of run time unexplained vs r3; per-phase wall-clock stamps + dump() before close() in stagekit/stagexec? (outside this card; next run uses --max-min 45)",
+"guard_cycle refuses any command naming tools/recipes/* until the outcome review (5 retrospectives due) runs - blocks stage_prerun of stage_d1_l2a1.py"],
+"cost":{"usd":1.74,"minutes":42,"labview_runs":1},
+"note":"JEV | ctsrc_l2a1_82.log | new-problem p=0.526 | hypothesis review owed | ANSWERED, test 4 run (location confirmed) | disposition written. Run 1 = KeyError in my script (no LabVIEW)."}

@@ -1,0 +1,57 @@
+{
+ "schema": "task/1",
+ "id": "82-1",
+ "kind": "build",
+ "goal": "PD187(a)+(b) in stagexec: PRIME reader-parity check (SimReader vs real Nodes[]) + ControlTerminal connect-end route via 179(b); self-test; measure parity on a D1_k scratch; dry+pre-run. No stage run.",
+ "why": "Cycle 81 lost 3 runs to one class: SimReader lists as nodes things the real Nodes[] does not (border tunnels -> selectors -> ControlTerminal #5634 at op 31; stage_d1_l2a1_r3.log:36-439). PD187 decides the device first.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/stagexec.py", "md5": "029ea027a26b9ce11d1387763187cb25"},
+  {"path": "tools/recipes/stage_d1_l2a1.py", "md5": "e589dc746833aaaafe47f3eff4c22dc6"},
+  {"path": "tools/bench/sim/l2a1/stageplan_l2a1.json", "md5": "329d89eecaa2706ccce38640dbede5aa"},
+  {"path": "tools/bench/stage_d1_l2a1_r3.log"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_20260925_100155.vi", "md5": "6cf5b0777aafa12112d8a786a9eed1ed"}
+ ],
+ "pass": [
+  "P1 stagexec selftest passes (old 22 cases + new parity and ControlTerminal cases, each with a negative case that fails as intended)",
+  "P2 real parity read on a D1_k scratch: per-diagram table of classes/uids listed by only one side BEFORE the fit and AFTER the fit (after = 0 rows expected, report the actual)",
+  "P3 dry run + offline pre-run of stage_d1_l2a1.py with the new stagexec: gate lines and counts; whether any plan row changed (the stageplan md5 before/after)",
+  "P4 D1_k md5 unchanged; scratch deleted; refs closed (handle count before/after); LabVIEW exited"
+ ],
+ "outputs": ["tools/stagexec.py", "tools/bench/parity_l2a1_82.log", "tools/bench/prerun_l2a1_82.log"],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/bench/selftest_stagexec*",
+   "tools/bench/parity_l2a1_82*",
+   "tools/bench/prerun_l2a1_82*",
+   "tools/bench/dry_l2a1_82*",
+   "tools/bench/sim/l2a1/**",
+   "tools/bench/jev_gate.log",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_scratch_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "(a) per touched diagram: SimReader Nodes[] (class+uid) vs a REAL Nodes[] read; FAIL on one-side-only",
+  "(a) then fit SimReader's listing rules to that real read",
+  "(b) ControlTerminal end #5634/#17487: term_uid=own uid, owner=its Diagram, report_all('ControlTerminal')",
+  "(b) applies in BOTH the real Addr and SimReader, source or sink, bare or wired",
+  "negatives: SimReader lists a class the real read lacks -> FAIL; CT as a Nodes[] triple -> FAIL",
+  "measure and report; do not launch stage_d1_l2a1.py for real",
+  "D1_k never saved over; scratch deleted after the read",
+  "if the fit changes the stageplan: re-simulate, report new md5; never re-order plan rows",
+  "result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

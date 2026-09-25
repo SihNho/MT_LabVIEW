@@ -8,8 +8,8 @@
 - **date:** 2026-09-25 13:53:32
 - **outcome:** ANSWERED (413s)
 - **verdict-card:** VERDICT-CARD retrospective-cycle81 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle81.json
-- **why asked:** (Claude fills in)
-- **verdict:** unverified
+- **why asked:** mandatory end-of-cycle retrospective for cycle 81 (landed by the runner after the session exited).
+- **verdict:** accepted — both named faults acted on by the cycle-82 judgement session (below).
 
 ## Question
 
@@ -317,4 +317,18 @@ VERDICT {"schema":"verdict/1","id":"retrospective-cycle81","verdict":"refuted","
 
 ## What was done with it
 
-(Claude fills in)
+(cycle 82 judgement, 2026-09-25 16:1x)
+- **repeated-failure-class (the fault): ACCEPTED.** The reader-parity device was built first in cycle 82, as card 82-1
+  (`docs/d1-loop12-17-split-plan.md` Pre-decided 188(a); `docs/violation-decisions.md` 2026-09-25 14:28). After the
+  fit, 0 one-sided entries remain. Run 3's stop is now caught offline (`tools/bench/dry_l2a1_82c.log`). No stage was
+  launched in cycle 82 without an offline pass through every op it would reach.
+- **device-failed (audit C7 reads the wrong plan): ACCEPTED.** The repair is decided in `docs/violation-decisions.md`
+  2026-09-25 14:28 (C7 takes `plan.path` from next.json). It is owed after the deliverable (STATUS NEXT).
+- **Finding 3 (CT sinks skipped by inference):** superseded. 82-1 measured the real read, so the membership of
+  ControlTerminal is now read from the machine, not reasoned (`parity_l2a1_82_holdout.log:55`).
+- **Finding 4 (retrospective abandoned):** accepted. Cycle 82 runs its retrospective as a tracked background task and
+  stays in the turn until the task ends.
+- **Finding 6 (not reported):** `selftest_launch_gate` 20/8 is carried in STATUS NEXT, under the owed tools.
+- **Finding 7 (judgement in material, 81-8 weakening PRIME):** accepted. The 82-1 parity gate replaces the skip with a
+  measured rule. Cycle-82 cards put every design choice into the card's own rules (for example 82-3: "no route passes
+  -> BLOCKED; never replace the constant"). 82-3 returned BLOCKED instead of choosing a route itself.

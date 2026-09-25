@@ -1272,6 +1272,51 @@ the bgrun command as well as `RETRY_CARD=`. Self-test `tools/bench/selftest_retr
 `py tools/bgrun.py --material --max-min N --log tools/bench/<x>.log -- py -u <script>`; the stage then ran 35/0
 (`tools/bench/stage_replay_78.log:2` shows the recorder line).
 
+## repeated-failure-class — 2026-09-25 14:28 (cycle 82 judgement, after archive/peer/2026-09-25-retrospective-cycle81.md:309)
+
+`VIOLATION: repeated-failure-class | loss_min=26 | loss_usd=? | evidence=tools/bench/cards/task_81-9.json:7`. L2-A1
+runs 1–3 each stopped on one class: SimReader listed as a node something the real `Diagram.Nodes[]` does not (border
+tunnels, then case selectors, then ControlTerminal `#5634`).
+
+DECISION: device (`docs/d1-loop12-17-split-plan.md` Pre-decided 187(a)). OUTCOME: BUILT by card 82-1
+(`tools/bench/cards/result_82-1.json`). `tools/stagexec.py` md5 `209d5e57…` compares SimReader's `Nodes[]` membership
+with a REAL read at PRIME, per touched diagram, and fails on any class listed by one side only. SimReader's listing rule
+(`stagexec.py:282-294`) is fitted to the real read of D1_k: 231 SimReader-only entries before the fit, 0 after, and a
+173-diagram holdout also reaches 0 after one class (ControlReferenceConstant) was added. Self-test 30/0. Measured
+effect: the dry run now stops OFFLINE at op 31 `rw_5634_10256`, where run 3 stopped only after 30 real ops.
+
+## device-failed — 2026-09-25 14:28 (cycle 82 judgement, after archive/peer/2026-09-25-retrospective-cycle81.md:310)
+
+`VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/audit_cycle.py:581`. The C7 out-of-plan counter
+takes the FIRST `status: current` plan (`docs/cycle27-plan.md`), not the plan the cycle worked from
+(`docs/d1-loop12-17-split-plan.md`, named in `tools/bench/next.json`). So it judged 101 files against the wrong plan.
+
+DECISION: device (repair, threshold 1). The fix: C7 takes `plan.path` from the cycle's `next.json` (the previous
+cycle's act) and falls back to `current_plans()` only when that is absent. It needs a self-test with a two-current-plans
+case. Scheduled after this cycle's L2-A1 deliverable run (deliverable first); if not reached, it is carried in STATUS
+NEXT.
+
+## repeated-failure-class — 2026-09-25 16:10 (cycle 82 judgement, after archive/peer/2026-09-25-retrospective-cycle82.md:265)
+
+`VIOLATION: repeated-failure-class | loss_min=16 | loss_usd=? | evidence=tools/bench/dry_l2a1_82d.log:39`. The dry run
+stops at the first unaddressable row, so op 31 and then op 35 each cost their own real replay of ops 1–34.
+
+DECISION: device. `stagexec`'s dry run collects every row whose end has no route (CONNECT-NO-VERB / ADDRESS) and
+reports them all, then fails. Self-test: a plan with two unroutable rows reports both. It is built as the FIRST step
+when L2-A1 resumes (`docs/d1-loop12-17-split-plan.md` Pre-decided 188(c)/(d)), before any real replay. Cycle 83 is the
+load measurement and runs no stage.
+
+## rule-evaded — 2026-09-25 16:10 (cycle 82 judgement, after archive/peer/2026-09-25-retrospective-cycle82.md:266)
+
+`VIOLATION: rule-evaded | loss_min=0 | loss_usd=? | evidence=tools/bench/next.json:1`. The review read a next.json
+that ordered the L2-A1 run, while PD188(d) paused it.
+
+DECISION: no new device. The contradiction was a timing overlap: the outcome-review disposition re-ordered the plan
+while the retrospective was already running. next.json was then rewritten to the measurement act, and all three
+documents agree (plan md5 `f501a620…`). `guard_bash`'s next_gate already requires next.json to be written before the
+retrospective. The session's error was editing the plan after writing next.json. Rule for the judgement: re-validate
+next.json against the plan's last Pre-decided entry before launching the retrospective. Revisit if the slug recurs.
+
 ## device-failed — 2026-09-25 (cycle 80 material, card 80-3, after archive/peer/2026-09-25-retrospective-cycle79.md)
 
 `VIOLATION: device-failed` at the old `tools/stagexec.py:679-680`: `LVBackend.indicator` cleared any wire_indicators

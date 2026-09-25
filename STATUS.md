@@ -50,22 +50,32 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 58. 🟡 **FOR THE USER — three known limits of the new autofocus loop (loop 1.5) in `D1_s3_loop15.vi`** (decision: `docs/connectivity-map-plan.md` Pre-decided 147(b)). The new loop starts an autofocus when the "focus now" signal switches from off to on. (1) If **Frame rate** is set to 1 the signal is on every frame, so the new loop focuses once instead of every frame. (2) If you run the VI again without reopening it, the first autofocus can be skipped when the previous run stopped on a focus frame. (3) If loop 1.5 falls more than one frame (~11 ms) behind, that one scheduled autofocus is skipped; focus values are not saved data. Tell us if any of these matters for your experiments.
 
 ## NEXT
-🔴🔴🔴 **FIRST ACT (cycle 82) = `docs/d1-loop12-17-split-plan.md` Pre-decided 187(a)+(b), then L2-A1 from the bed `claudeDev\D1_k_20260925_100155.vi` md5 `6cf5b077…`** (machine copy `tools/bench/next.json`; advances M3/R1/R3).
-(a) Build a reader-parity check at PRIME in `tools/stagexec.py` (md5 `029ea027…`).
-- For each diagram the plan touches, compare SimReader's `Nodes[]` membership with a REAL `Nodes[]` read.
-- Fail on any class that only one side lists, then fit SimReader to that read.
-(b) Address a ControlTerminal connect end (`#5634`, `#17487`; source or sink, bare or wired) by the 179(b) route, `report_all('ControlTerminal')` with term_uid = its own uid. Do this in both the real `Addr` and SimReader. Self-test it, including a negative case.
-(c) Then dry → pre-run → run. The recipe is `tools/recipes/stage_d1_l2a1.py` md5 `e589dc74…`, and the finalized stageplan is `tools/bench/sim/l2a1/stageplan_l2a1.json` md5 `329d89ee…`.
-- Pass: E1 diff 0 on all 42 ops; frame cdiff == the 9 PB rows; frame-uid sets equal; ControlTerminal rows read by the 179(b) reader.
-- Save `D1_l2_a1_<ts>.vi`.
-🟡 **CYCLE 81 = no L2-A1 artefact; 3 runs, each stopped SAFELY with nothing saved and D1_k unchanged. All three stops have one cause: SimReader lists items the real `Nodes[]` does not.**
-- Run 1 stopped at op 18 on border tunnels. Run 2 stopped at PRIME on case selectors. Run 3 stopped at op 31 on a bare ControlTerminal, `#5634`.
-- Run 3 got furthest: ops 1–30 had diff 0, and the owner-structure route for tunnel and selector ends is measured working (`tools/bench/stage_d1_l2a1_r3.log`).
-- Also delivered this cycle:
-  - The cycle-start Error List check re-uses the saved read when the bed md5 is unchanged (`tools/cycle_runner.py:530`, self-test 16/0).
-  - The stageplan is finalized, with the un-flip rule measured on a scratch copy (Pre-decided 182–186).
-  - The `unreported-fact` slug is answered in `docs/violation-decisions.md` (2026-09-25 12:28).
+🔴🔴🔴 **FIRST ACT (cycle 83) = THE LOAD MEASUREMENT, `docs/d1-loop12-17-split-plan.md` Pre-decided 188(d)** (machine copy `tools/bench/next.json`; advances M8/R4; follows `tools/bench/cards/steer_82.json` and the outcome review's test, `archive/peer/2026-09-25-outcome-review-20260925.md:180-187`).
+- Real runs of the S1 copy vs `claudeDev\D1_s3_loop15.vi` with `tools/bench/drive_m8_s1s3.py`, at 8 and 15 bead picks, 90 then 150 Hz, 2–5 min each. Use the user's 09:30 load (D-2026-09-25-01).
+- Report Total Lost Frames per cell as archive INDEX rows 48+. Motors are allowed (2026-09-24 grant). No beads are on the rig, so the tracking numbers are garbage by design.
+- If lost frames grow with the bead count, L2-A1 resumes in cycle 84 with the steps below. If they do not, the camera loop (M4) is the lever, and the split order is re-decided.
+- 🟡 The user has 3 new open questions: D-2026-09-25-02 (`.cal` scope), -03 (autofocus limits, OPEN 58), -04 (a supervised S3 run with beads).
+
+⏸ **PAUSED until the measurement says loop 1.2 is the lever — the L2-A1 run from the bed `claudeDev\D1_k_20260925_100155.vi` md5 `6cf5b077…`, Pre-decided 188(c):**
+1. Op 35 needs a verb for a bare constant source: `#10739 → #10950 'y'` and `#10929 → #10757 'index'`.
+   - First run the review's cheap separator (`archive/peer/2026-09-25-hyp-constsrc82.md:84-86`): is OpWire_v1's 1057 the source cast or the destination cast?
+   - Then build the smaller op: either the fixed cast, or `Constant.Terminal` (634AC04) + `Terminal.Connect Wire` (6349C03), with the source taken by uid through report_all(class).
+   - Gate: the new wire's only source is owned by the constant uid, and `Is Broken?` is False. Self-test it with a negative case.
+   - Route it in `tools/stagexec.py` (md5 `3e2b1527…`, self-test 34/0), in both the real Addr and SimReader.
+2. Then run dry → pre-run on all 42 ops (no offline stop) → run 1. The recipe is `tools/recipes/stage_d1_l2a1.py` md5 `e589dc74…`. The stageplan is `tools/bench/sim/l2a1/stageplan_l2a1.json` md5 `329d89ee…`. The pass criteria are 187(c)'s. Save `D1_l2_a1_<ts>.vi`.
+3. Use `bgrun --max-min 60`: `Stage.close` takes about 20 min after the work (188(e)).
+🟡 **CYCLE 82 = no L2-A1 artefact, and no real stage run. The tools the run needs were built and measured on scratch copies; D1_k is unchanged.**
+- **Reader parity at PRIME** (187(a)) is built and accepted. It turned up 231 SimReader-only entries before the fit and 0 after, and the 173-diagram holdout is also 0. Run 3's stop is now caught offline.
+- **Nested ControlTerminal source** (187(b)) is routed through `gscript.wire_control`. Both rows were measured correct on a scratch at op 31. The dry run now has ops 1–34 at diff 0.
+- **Op 35 (bare constant source) is BLOCKED.** OpWire_v1 gives 1057 and wire_control gives 5001 (`tools/bench/constsrc_l2a1_82.log:511-533`). The new op is decided in 188(c).
+- **Outcome review ran** (`archive/peer/2026-09-25-outcome-review-20260925.md`): tooling-over-delivery, ordering-stale, goal-requirement-not-advanced, decision-starved. It wrote `steer_82.json`.
+- `docs/violation-decisions.md` 14:28 records two decisions:
+  - `repeated-failure-class`: the parity device, BUILT.
+  - `device-failed`: `audit_cycle` C7 should read the plan named in next.json, not the first `current` plan. This repair is owed after the deliverable.
 - Owed tools, not ahead of the deliverable:
+  - When L2-A1 resumes, FIRST make the stagexec dry run report EVERY unroutable row, not just the first (`docs/violation-decisions.md` 16:10).
+  - Per-phase stamps in `stagekit.close`, to find where the ~20 min goes.
+  - The `audit_cycle` C7 repair above.
   - `guard_card` accepts any `cd <dir> &&` before `stagexec.py selftest` (review `archive/peer/2026-09-25-hyp-selftest-elreuse-81.md`).
   - `selftest_launch_gate.py` fails 20/8 (C2-C6, M4-M6).
   - `selftest_cycle_runner.py` needs `--dry-run`.

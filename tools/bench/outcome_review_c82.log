@@ -1,0 +1,119 @@
+BGRUN START 2026-09-25 15:14:00 limit 20.0 min: py -u tools/outcome_review.py
+   cadence: 5 cycle retrospectives since 2026-09-25-outcome-review-20260925.md (every 5)
+   task written to C:\Users\KimLab\AppData\Local\Temp\outcome-review-20260925.txt (7681 chars)
+   review card tools\bench\cards\review_outcome-review-20260925.json
+OUTCOME: ANSWERED (185s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-25-outcome-review-20260925.md
+COST: $3.6380  in 194 / out 14556 / cache-create 138973 / cache-read 515246  (184s, 34 turn(s))
+VERDICT-CARD: VERDICT-CARD outcome-review-20260925 verdict=refuted -> tools\bench\cards\verdict_outcome-review-20260925.json
+--- ANSWER ---
+Evidence is gathered. Writing the review now.
+
+# OUTCOME REVIEW, 2026-09-25 14:xx (eleventh; last one `archive/peer/2026-09-25-outcome-review-20260925-am.md`, 06:30, 0.4 days ago)
+
+Window judged: end of cycle 77 through the running cycle 82 (`tools/bench/cycle_runner.log:230-276`).
+
+## 1. DELIVERABLE
+
+Nothing new is runnable. No VI saved in this window runs. `claudeDev/D1_l2*.vi` does not exist (glob empty). The one file the window did save, `claudeDev\D1_k_20260925_100155.vi` (cycle 79, `stage_d1_k_r2.log` 35/0), is ExecState 0 by design and is a broken intermediate (`STATUS.md:10`, `docs/d1-loop12-17-split-plan.md:153`). Cycles 80, 81 and 82 tried to build L2-A1 from it five times and every run stopped with nothing saved: runs 1–3 in cycle 81 (`STATUS.md:61-62`), the parity rerun and the CT-source scratch in cycle 82 (`result_82-1.json`, `result_82-2.json` "No stage run", "stopped CONNECT-NO-VERB before any mutation").
+
+What did move is evidence about a VI that already existed at the last review, `D1_s3_loop15.vi`:
+
+| row | what | result | source |
+|---|---|---|---|
+| INDEX 46 | S1 vs S3 real runs, 1/3/6 picks, 35 s | lost frames 2 vs 2, 7 vs 4, 11 vs 8 | `archive/benchmarks/INDEX.md:67`, `tools/bench/m8_s1s3_77.json` |
+| INDEX 47 | same recorded frames through S1 and S3 | 10,310 rows X/Y/Z bit-identical | `INDEX.md:68`, `tools/bench/m8b_replay_78.json` |
+
+Row 46 also settles the "3,514 rows vs 3,073 frames" anomaly the last review flagged: S1 writes 3,512–3,515 rows too, so it is the original's behaviour, not a defect of the split.
+
+So the claim on the card is refuted: the deliverable did not move. The two INDEX rows were the previous review's discriminating test and they answered it. The answer was "no measurable gain at this load", and the project then spent the next four cycles building the next split anyway.
+
+## 2. GOAL ALIGNMENT
+
+Against `project-requirements/parallelization-requirement.md` and `docs/goalmap.json`:
+
+- **Req 1, parallelize the radial-profile / `.cal` stage after 'Done Picking Beads?'.** NOT MOVED since 2026-08-24. Still in no milestone; the goal map's R1 is the loop split, which is req 3 (`goalmap.json:7`).
+- **Req 2.1 motor control.** Met in the original. Unchanged.
+- **Req 2.2 motor reading.** The ASI focus subVI is in loop 1.5 and that file is now proven numerically identical (row 47). Advanced on correctness, but its effect on frame loss is measured at 1/3/6 picks as within run spread (row 46).
+- **Req 2.3 camera acquisition.** NOT MOVED. M4 open, no evidence (`goalmap.json:113-122`).
+- **Req 2.4 scheduler.** NOT MOVED. M5 open (`goalmap.json:124-132`).
+- **Req 2.5 merge/save.** Loop 1.7 exists and runs but writes header-only files (`INDEX.md:66`). Unchanged this window.
+- **Req 3, functions run in parallel.** One of seven loops runs for real. Unchanged this window; the second (loop 1.2) has no file.
+- **R4, no frame loss at the user's load.** The user answered at 09:30: typically 8 beads, up to 15, 90 Hz already loses frames, 150 Hz more, smaller ROI wanted (`tools/bench/decisions_pending.json:52`). M10 was written with that done_when (`goalmap.json:186`). No run at 8 or 15 picks, at 150 Hz, or at a reduced ROI exists: no `m8_*_p8` or `_p15` file in `tools/bench/`. R4 has not moved and the baseline of the user's pain has never been measured.
+- **R5, rule 1a numbers.** Advanced for S3 (row 47). Real progress, and the only one.
+
+Unmoved since the project began, ninth review: requirements 1, 2.3, 2.4. R4 unmoved since 06:30 even though the user gave the load the same morning.
+
+## 3. COST vs PRODUCT
+
+Counted output delta since 06:30: +3 recipes, +26 peer exchanges, +3 INDEX rows (45 was cycle 74's backfill), +5 retrospectives, +0 runnable VIs.
+
+Money in the logs for the window:
+
+| item | cost | source |
+|---|---|---|
+| judgement sessions, cycles 78–81 | $116.0 | `cycle_runner.log:240,250,262,271` |
+| cycle 77 (ran the S1/S3 legs after 06:30) | $26.0 | `cycle_runner.log:230` |
+| five retrospectives, cycles 77–81 | $27.6 | `archive/peer/2026-09-25-retrospective-cycle7*.md:7`, `…cycle8*.md:7` |
+| peer reviews 07:00 onward | ≈$28 | `cost:` lines, `archive/peer/2026-09-25-*.md` |
+| cycle 82 so far | unlogged | in progress |
+
+About $200 logged for two INDEX rows and one broken intermediate. The rows cost roughly $25 (cycle 78 plus its retrospective and two reviews). The other $175 bought stage K and five L2-A1 attempts that saved nothing.
+
+Not defensible. What a competent engineer would have skipped:
+
+- **Cycles 80–82's L2-A1 tooling.** Three L2-A1 runs in cycle 81 stopped on one cause, "SimReader lists items the real `Nodes[]` does not" (`STATUS.md:61`). Cycle 82 answered with a reader-parity device that refit 231 entries (`result_82-1.json` P2), then a ControlTerminal route, then found the next class, bare constants, and stopped again (`result_82-2.json` P4). Five prior-art dispatches on one recipe in cycle 81 cost $7.10 (`retrospective-cycle81.md:253`). The retrospective for cycle 81 already named the third run as bought "knowing the failing class was not yet addressed" (`retrospective-cycle81.md:241`).
+- **Building loop 1.2 at all before knowing it is the lever.** Row 46 says the loop 1.5 split changed nothing measurable at ≤6 beads. The user's load is 8–15 beads at 90–150 Hz. Whether the kernel path (loop 1.2, M3, GPU M9), the camera path (M4) or the display (M7) is what loses frames is unknown, and one cycle of `drive_m8_s1s3.py --picks 8|15` would have said. Instead four cycles went to the split whose lever was never tested.
+- **Stage K as its own saved artefact and cycle.** A broken-by-design intermediate that only exists to feed L2-A1, which then did not land ($35.38, `cycle_runner.log:250`).
+- **Five retrospectives at $4–7 on cycles of 46–126 minutes**, one of which (cycle 80) was 46 minutes and produced a device fix.
+
+Credit: row 47 is the first rule-1a proof of a built VI and it was done cleanly; the user's load answer was recorded into M10 the same morning; motors and LabVIEW were handled as the user asked on every cycle (`cycle_runner.log` MOTOR-LIMITS and LABVIEW-CLOSE lines all OK).
+
+## 4. ORDERING AT PROJECT SCALE
+
+Wrong. `STATUS.md:53-60` puts the reader-parity device and a sixth L2-A1 attempt first, advancing M3. Two things scheduled after it should come before it:
+
+1. **M10's measurement, scheduled last** (`goalmap.json:181-189`). The driver exists (`tools/bench/drive_m8_s1s3.py`, `--picks` already added), the rig is assembled, the motor grant stands. S1 and S3 at 8 and 15 picks, 90 Hz, runs of 2–5 minutes, then 150 Hz. This is the only measurement that can say which loop to split next.
+2. **The user's own use of S3.** It is numerically identical and no worse on lost frames. Whether it goes into the lab is the user's call and has never been offered.
+
+M3 should be gated on M10's result, not the other way round. If lost frames at 15 beads scale with bead count, the kernel path is the lever and M3 or the GPU path M9 is justified. If they do not, M4 (camera acquisition, req 2.3, unmoved since day one) is the lever and L2-A1 is the wrong split.
+
+## 5. STALE DECISIONS
+
+- **Requirement 1, the `.cal` stage**: never asked, since 2026-08-24. `decisions_pending.json` holds no open item. This is the second review to say so.
+- **OPEN 58, autofocus limits of loop 1.5**: on the board since cycle 68 (2026-09-23), no answer recorded (`STATUS.md:50`). It blocks handing S3 to the user.
+- **D-2026-09-25-01**: the user answered at 09:30 and the answer was not acted on in cycles 79–82. Decisions asked and then ignored are worse than decisions not asked.
+- **OPEN 53** (controller zero), since 09-18: the gate references at every session start (`cycle_runner.log:264` and every MOTOR-LIMITS line), closed in practice, still 🔴.
+- **OPEN 54**, since 09-19: "repair named, deliberately NOT BUILT"; cycle 81's retrospective was again killed by session exit and re-run by the runner (`cycle_runner.log:266`), the exact hole.
+- **OPEN 42/47** audit false positives since cycle 40; A1/A3 still fire every cycle and are ignored (`retrospective-cycle81.md:297`).
+
+Two things should be put to the user now, in one message: is the `.cal` stage in scope, and do the OPEN 58 limits matter. A third: will they run `D1_s3_loop15.vi` with beads under supervision.
+
+## 6. THE EXPERIMENT TEST
+
+**The original.** `D1_s3_loop15.vi` is now the strongest project file there has been: X/Y/Z bit-identical on 10,310 frames and lost frames no worse at 1/3/6 picks. But it gives the user nothing the original does not, its autofocus semantics changed and the three limits are unanswered, and it has never run with beads or with the user present. A user with a week of samples picks the file they know. The gap to closing that is one supervised run and one answer, not another split.
+
+## 7. TERMINATION
+
+Shortest path to something the user can use:
+
+1. **One measurement cycle, M10's test**: S1 vs S3 at 8 and 15 picks, 90 Hz, then 150 Hz, 2–5 minutes each, existing driver, INDEX rows 48+. This names the lever.
+2. **One message to the user**: `.cal` scope, OPEN 58, and the offer of a supervised S3 run.
+3. **Supervised S3 run with beads** if they say yes. That is the first deliverable in the user's hands.
+4. **Only then** the next split, chosen by step 1, not by the plan's order.
+
+Abandon to get there: the L2-A1 simulator-parity path (SimReader fits, ControlTerminal and constant routes, the sixth run) until step 1 says loop 1.2 is the lever; stage K as a bed; five prior-art dispatches per recipe; per-cycle retrospectives on sub-two-hour cycles.
+
+Consequence: this is the second consecutive review with the same findings on the same day. The 06:30 review's steering card was followed for one cycle (78) and the work order reverted to tooling on the next. Under the rule the user approved on 2026-09-24, a repeated verdict issues a steering card and a second refusal stops the runner. The next cycle must be the M10 measurement cycle. If it is not, stop and re-plan with the user.
+
+OUTCOME-VIOLATION: tooling-over-delivery
+OUTCOME-VIOLATION: ordering-stale
+OUTCOME-VIOLATION: goal-requirement-not-advanced
+OUTCOME-VIOLATION: decision-starved
+
+Mapping notes: `tooling-over-delivery` is cycles 80–82, five L2-A1 runs and their devices with no file saved. `ordering-stale` is NEXT leading with a parity device while M10's measurement, the one the user's answer enables, sits last. `goal-requirement-not-advanced` is requirements 1, 2.3, 2.4 unmoved for the ninth review and R4 unmeasured at the load the user gave. `decision-starved` is req 1 never asked, OPEN 58 unanswered since cycle 68, and the 09:30 answer not acted on. Not flagged: `product-not-runnable`, since S3 runs; `measurement-without-product`, since rows 46–47 were the requested discriminating test and they discriminated; `scope-inflation`, folded into tooling-over-delivery.
+
+VERDICT {"schema":"verdict/1","id":"outcome-review-20260925","verdict":"refuted","alternative":"Rows 46-47 (S3 X/Y/Z bit-identical, lost frames no worse) count as the deliverable moving, and stage K plus five L2-A1 attempts are the necessary run-up to loop 1.2, so the interval is on track.","discriminating_test":"Run drive_m8_s1s3.py at 8 and 15 picks, 90 then 150 Hz, 2-5 min each, S1 vs S3. If lost frames scale with bead count, the kernel path (M3/M9) is the lever and L2-A1 is justified; if not, M4 (camera loop) is the lever and L2-A1 is the wrong split.","violations":[{"slug":"wrong-ordering","loss_min":242,"loss_usd":62.75,"evidence":"tools/bench/cycle_runner.log:262"},{"slug":"repeated-failure-class","loss_min":126,"loss_usd":42.70,"evidence":"tools/bench/cycle_runner.log:272"}],"sources":["archive/benchmarks/INDEX.md:67","archive/benchmarks/INDEX.md:68","tools/bench/decisions_pending.json:52","docs/goalmap.json:186","tools/bench/cards/result_82-1.json:19","tools/bench/cards/result_82-2.json:5","STATUS.md:53","STATUS.md:61","tools/bench/cycle_runner.log:240","tools/bench/cycle_runner.log:250","tools/bench/cycle_runner.log:262","tools/bench/cycle_runner.log:271","archive/peer/2026-09-25-retrospective-cycle81.md:241","project-requirements/parallelization-requirement.md:10"],"note":"No new runnable VI since 06:30; no D1_l2* file exists. Rows 46-47 prove S3 correct but show no gain at 1/3/6 picks. User gave the real load (8-15 beads, 90/150 Hz) at 09:30; never measured. Cycles 80-82 built L2-A1 tooling instead. Next cycle = M10 load measurement, then offer S3 to the user."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-outcome-review-20260925.md
+   STEER: tools\bench\cards\steer_82.json (repeated: ['goal-requirement-not-advanced', 'ordering-stale', 'tooling-over-delivery'])
+   Now annotate it: 'why asked' and 'verdict', and act on the OUTCOME-VIOLATION lines.
+BGRUN END rc=0 after 186s

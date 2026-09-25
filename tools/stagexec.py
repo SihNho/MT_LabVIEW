@@ -262,6 +262,161 @@ OWNER_ROUTED = ("SelectorTunnel", "Tunnel")
 # #10445 t0 ('', sink, w9921), exactly one each (l2a1_faces_81.log, owner Terminals[] listings).
 FSIT_CLS = "FlatSequenceInnerTunnel"
 NOT_NODES = OWNER_ROUTED + (FSIT_CLS,)
+# PD187(b) (card 82-1): a front-panel ControlTerminal is NEVER in Diagram.Nodes[] (stage_d1_l2a1_r3.log:439, #5634 moved
+# at op 10, bare at op 31). Its address is the 179(b) route: term_uid == its own uid, owner == its Diagram, membership
+# proved by report_all('ControlTerminal') (tools/bench/diag_ctlterm_read_80.py). Addr.ct() is that route, in the real
+# Addr and in SimReader alike; Addr.triple() REFUSES a ControlTerminal (it is not a Nodes[] triple).
+
+
+def is_ct(r):
+    return V.node_class(r) == FP
+
+
+# PD187(a) FIT (card 82-1, tools/bench/parity_l2a1_82.log + parity_l2a1_82_real.json, the REAL Diagram.Nodes[] of D1_k on
+# #639/#686/#23166): the real Nodes[] holds NO LoopTunnel, NO FlatSequenceOuterTunnel, NO *Constant (Digital/String/
+# Cluster measured), NO Diagram-owned terminal owner, NO ControlTerminal, and a loop only on its PARENT diagram (the old
+# SimReader appended all 23 loops to every diagram). Before the fit 231 one-side-only entries, all on the SimReader side.
+NOT_NODE_CLASSES = ("LoopTunnel", "FlatSequenceOuterTunnel", "Diagram", "TopLevelDiagram")
+
+
+def listed_as_node(r):
+    """Constant / Tunnel / Terminal are OUTSIDE the Node branch of the VI Server hierarchy (gobject/constant/..,
+    gobject/tunnel/.. - archive/peer/2026-09-25-parity-l2a1-82-hyp.md 1+2a), so every *Constant and every *Tunnel class
+    is excluded, not only the ones measured; owner-routed tunnels still list their OWNER structure (_routed)."""
+    c = r["owner_class"]
+    if c in NODE_CONSTANTS:
+        return True
+    return not (c in SR_CLS + NOT_NODES + NOT_NODE_CLASSES or c.endswith("Constant") or c.endswith("Tunnel") or is_ct(r))
+
+
+# HOLDOUT (all 173 diagrams of D1_k, tools/bench/parity_l2a1_82_holdout.log:45-50): the ONLY one-side-only entries left
+# were 21 real-only ControlReferenceConstant on 5 untouched diagrams - that class IS in Diagram.Nodes[].
+NODE_CONSTANTS = ("ControlReferenceConstant",)
+
+
+def loop_parent(st, L):
+    """The diagram uid a loop sits on: its own non-body rows, else its registers' / tunnels' OUTER faces (one value)."""
+    u = int(L["loop_uid"])
+    bodies = set(k for k, v in (st.get("owners") or {}).items() if int(v[1] or 0) == u)
+    T = st["terminals"]
+    ds = set(int(r["frame_diagram"] or 0) for r in T if r["owner_uid"] == u and str(int(r["frame_diagram"] or 0)) not in bodies)
+    if not ds:
+        regs = set(int(x) for x in L.get("right_uids") or []) | set(
+            int(y) for v in (L.get("left_of") or {}).values() for y in (v if isinstance(v, list) else [v]))
+        tuns = set(r["owner_uid"] for r in T if r["term_class"] == "InnerTerminal" and str(int(r["frame_diagram"] or 0)) in bodies)
+        ds = set(int(r["frame_diagram"] or 0) for r in T if (r["owner_uid"] in tuns or r["owner_uid"] in regs)
+                 and r["term_class"] == "OuterTerminal")
+    return ds.pop() if len(ds) == 1 else None
+
+
+# PD187(a) (card 82-1): READER PARITY. Three runs in cycle 81 stopped on one class - SimReader listed as a Nodes[] entry
+# something the real Diagram.Nodes[] does not (border tunnels -> selectors -> ControlTerminals). At PRIME, per diagram the
+# plan touches, SimReader's Nodes[] membership (class, uid) is compared with a REAL Nodes[] read; any one-side-only entry
+# STOPS before op 1, so the next member of the class shows up offline / at PRIME, not at op N.
+def touched_diagrams(plan, st):
+    """Base diagram uids the plan touches: moved nodes' source diagrams, move destinations, register/tunnel parent + body,
+    and the diagram of every base plan end (resolved on the base state)."""
+    base_d = set(int(r["frame_diagram"] or 0) for r in st["terminals"])
+    out = set()
+    for a in plan["actions"]:
+        if a["op"] == "move_in":
+            for u in a["nodes"]:
+                out |= set(int(r["frame_diagram"] or 0) for r in st["terminals"] if V.node_of(r) == int(u))
+            out.add(int(a["dest_diagram"]))
+        for k in ("parent", "body"):
+            if a.get(k) is not None:
+                out.add(int(a[k]))
+        for side, src in (("src", True), ("dst", False), ("at", True)):
+            e = a.get(side)
+            if e is None or _sym_of(e)[0]:
+                continue
+            try:
+                out.add(int(SS.resolve_addr(st, e, src)["frame_diagram"] or 0))
+            except SS.SimError:
+                pass
+    return sorted(out & base_d)
+
+
+def listing(rd, diag, cls):
+    """{(class, uid)} of reader rd's Nodes[] on diagram uid `diag` (None when the reader has no such diagram)."""
+    dl = rd.diagrams()
+    if diag not in dl:
+        return None
+    return set((cls.get(u, "?"), u) for u in rd.node_uids(dl.index(diag)))
+
+
+def reader_parity(real_rd, sim_rd, diags, cls_real, cls_sim):
+    """[{diagram, n_real, n_sim, only_real, only_sim}] per diagram; `n` = total one-side-only entries."""
+    rows, n = [], 0
+    for d in diags:
+        R, S = listing(real_rd, d, cls_real), listing(sim_rd, d, cls_sim)
+        miss = [k for k, v in (("real", R), ("sim", S)) if v is None]       # a diagram one side lacks = an EMPTY listing
+        R, S = R or set(), S or set()
+        orr, osm = sorted(R - S), sorted(S - R)
+        rows.append(dict({"diagram": d, "n_real": len(R), "n_sim": len(S), "only_real": orr, "only_sim": osm},
+                         **({"missing_on": miss} if miss else {})))
+        n += len(orr) + len(osm)
+    return rows, n
+
+
+def classes_of(st_or_rows, objs):
+    """uid -> class, from the objects list, else from the terminal rows (node_of / node_class)."""
+    c = dict((int(o["uid"]), o["class"]) for o in objs or [])
+    for r in st_or_rows:
+        c.setdefault(V.node_of(r), V.node_class(r))
+    return c
+
+
+class _StateHolder(object):
+    def __init__(self, st):
+        self.st = st
+
+
+def connect_route(addr, real, src, dst, loop_of):
+    """The connect route BOTH backends take (so the dry run sees what the real run does): 'indicator' (panel sink, wired
+    source: wire_indicators), 'cfw' (wired source: connect_from_wire), 'nested' (bare Nodes[] source: connect_nested_v1),
+    'ctl' (BARE ControlTerminal source, card 82-2: gscript.wire_control = OpWireCtl_v0, Get Controls by LABEL on the CT's own
+    Diagram index -> Wire Inputs onto Traverse(sink class)[i].<sink NAME>; measured on a D1_k scratch at op 31 for
+    rw_5634_10256 + rw_17487_9676: Wire +1, sole source = the CT, sole sink = the plan sink, ordered second pass wire_delta 0 /
+    Is Broken? False, plan step 35 compare 0 - tools/bench/ctsrc_l2a1_82.log). Both ends are NAME-addressed there, so the
+    route stops unless the CT's label is unique among the ControlTerminals on its Diagram and the sink's name is unique
+    among its node's sink terminals, and the sink's owner is the node itself (not an owner-routed face / register)."""
+    rs = next(r for r in real if r["term_uid"] == src)
+    rd = next(r for r in real if r["term_uid"] == dst)
+    info = {}
+    if is_ct(rs):
+        info["src_ct"] = addr.ct(real, src)[1]
+    if is_ct(rd):
+        info["dst_ct"] = addr.ct(real, dst)[1]
+        if not rs["wire_uid"]:
+            raise ExecStop("CONNECT-NO-VERB: panel sink #{0} needs a WIRED source for wire_indicators; #{1} is bare".format(dst, src))
+        return "indicator", rs, rd, info
+    dt, hd = addr.triple(real, dst, False, loop_of)
+    info.update(dst=dt, dst_how=hd)
+    if rs["wire_uid"]:
+        return "cfw", rs, rd, info
+    if is_ct(rs):
+        c = addr.ct(real, src)[0]
+        same = [r for r in real if is_ct(r) and int(r["frame_diagram"] or 0) == c["diag"] and r["term_name"] == rs["term_name"]]
+        if not rs["term_name"] or len(same) != 1:
+            raise ExecStop("CONNECT-NO-VERB: bare ControlTerminal source #{0} {1!r}: label not unique among the {2} "
+                           "ControlTerminal(s) of that name on Diagram #{3} (wire_control is label-addressed)".format(
+                               src, rs["term_name"], len(same), c["diag"]))
+        if rd["owner_class"] in OWNER_ROUTED or rd["owner_class"] in SR_CLS or rd["owner_class"] == FSIT_CLS \
+                or V.node_of(rd) != rd["owner_uid"]:
+            raise ExecStop("CONNECT-NO-VERB: bare ControlTerminal source #{0} -> sink #{1} on {2} #{3}: wire_control "
+                           "addresses the sink NODE by class traverse; this sink's owner is not that node".format(
+                               src, dst, rd["owner_class"], rd["owner_uid"]))
+        _e, nt = addr.rd.node_terms(dt[0], dt[1])
+        nm = nt[dt[2]]["name"]
+        if not nm or sum(1 for x in nt if x["name"] == nm and not x["is_source"]) != 1:
+            raise ExecStop("CONNECT-NO-VERB: bare ControlTerminal source #{0} -> sink #{1} {2!r}: sink name not unique "
+                           "among its node's sink terminals (wire_control is name-addressed)".format(src, dst, nm))
+        info.update(ctl_label=rs["term_name"], ctl_didx=c["didx"], dst_name=nm)
+        return "ctl", rs, rd, info
+    st_, hs = addr.triple(real, src, True, loop_of)
+    info.update(src=st_, src_how=hs)
+    return "nested", rs, rd, info
 
 
 def tunnel_owner(rows, tun, owners):
@@ -366,8 +521,36 @@ class Addr(object):
             self.cache[term_uid] = (self.rd.node_uids(t[0])[t[1]], t[2])
         return t, how
 
+    def ct(self, real, term_uid):
+        """PD187(b) / 179(b): a ControlTerminal end -> {ct, diag, didx, name, is_source, wire}. term_uid == its own uid,
+        owner == its Diagram (which must be in the live Diagram list), membership in report_all('ControlTerminal')."""
+        rows = [r for r in real if r["term_uid"] == term_uid]
+        if len(rows) != 1:
+            raise ExecStop("ADDRESS-CT: #{0}: {1} rows in the live read".format(term_uid, len(rows)))
+        r = rows[0]
+        if not is_ct(r):
+            raise ExecStop("ADDRESS-CT: #{0} is {1}, not a ControlTerminal".format(term_uid, V.node_class(r)))
+        diag = int(r["frame_diagram"] or 0)
+        if r["owner_class"] not in ("Diagram", "TopLevelDiagram"):
+            raise ExecStop("ADDRESS-CT: #{0} owner {1} #{2} is not a Diagram".format(term_uid, r["owner_class"], r["owner_uid"]))
+        # the diagram is the row's frame_diagram: stagesim's move_in re-homes frame_diagram but leaves a ControlTerminal
+        # row's owner_uid at the old Diagram (prerun_l2a1_82.log, #5634 639 vs 23166); compare() never reads owner_uid
+        stale = int(r["owner_uid"]) != diag
+        if term_uid not in self.rd.ct_uids():
+            raise ExecStop("ADDRESS-CT: #{0} not in report_all('ControlTerminal')".format(term_uid))
+        dl = self.rd.diagrams()
+        if diag not in dl:
+            raise ExecStop("ADDRESS-CT: #{0}'s Diagram #{1} not in the live Diagram list".format(term_uid, diag))
+        a = {"ct": term_uid, "diag": diag, "didx": dl.index(diag), "name": r["term_name"], "is_source": bool(r["is_source"]),
+             "wire": int(r["wire_uid"] or 0)}
+        return a, "ControlTerminal route 179(b): own uid #{0}, owner Diagram #{1} (idx {2}), in report_all{3}".format(
+            term_uid, diag, a["didx"], " (row owner_uid #{0} stale)".format(r["owner_uid"]) if stale else "")
+
     def _triple(self, real, r, term_uid, loop_of):
         node = V.node_of(r)
+        if is_ct(r):                                                         # PD187(b): never a Nodes[] triple
+            raise ExecStop("ADDRESS: #{0} is a ControlTerminal: not in any Diagram.Nodes[] - its route is 179(b) "
+                           "(Addr.ct: own uid, owner Diagram #{1}, report_all('ControlTerminal'))".format(term_uid, r["frame_diagram"]))
         diag = int(r["frame_diagram"])
         mine = [x for x in real if V.node_of(x) == node and int(x["frame_diagram"] or 0) == diag]
         if r["owner_class"] == FSIT_CLS:
@@ -478,17 +661,31 @@ class Executor(object):
         # PRIME: every plan end on a BASE node whose terminal is wired now gets its Terminals[] index proved by its
         # wire uid, before any edit (the stage_d1_l7_r A0 anchor for #2048 'length', generalised)
         be.addr.owners = st0.get("owners") or be.addr.owners
+        # PD187(a): reader parity at base, per touched diagram, BEFORE any address is proved
+        diags = touched_diagrams(self.plan, st0)
+        rows, npar = reader_parity(be.addr.rd, SimReader(_StateHolder(st0)), diags, be.obj_classes(real),
+                                   classes_of(st0["terminals"], st0.get("objs")))
+        self.report[0]["parity"] = {"diagrams": diags, "n": npar, "rows": rows}
+        self.log("  PARITY {0} touched diagram(s) {1}: one-side-only Nodes[] entries {2}".format(len(diags), diags, npar))
+        if npar:
+            raise ExecStop("PARITY: SimReader vs real Nodes[] differ on {0} entr(ies) - stop before op 1: {1}".format(
+                npar, json.dumps([r for r in rows if r.get("only_real") or r.get("only_sim") or r.get("missing_on")], default=str)[:900]))
         rightin = set(o["acts"][0] for o in self.ops if o["kind"] == "wire_sr" and o["variant"] == "RightIn")
-        primed, why = 0, []
+        primed, why, ct_primed = 0, [], 0
         for i, a in enumerate(A, 1):
             for side, src in (("src", True), ("dst", False), ("at", None)):
                 e = a.get(side)
                 if e is None or _sym_of(e)[0]:
                     continue
+                if SS.obj_class(st0, e.get("uid") if isinstance(e, dict) else None) == FP:
+                    try:                                   # PD187(b): every ControlTerminal end, source or sink, bare or wired
+                        be.addr.ct(real, SS.resolve_addr(st0, e, src if src is not None else True)["term_uid"])
+                        ct_primed += 1
+                    except (ExecStop, SS.SimError) as x:
+                        why.append(str(x)[:160])
+                    continue
                 if side == "src" and i not in rightin:     # PD185: a connect source is routed by its WIRE, never by index
                     continue
-                if side == "dst" and SS.obj_class(st0, e.get("uid") if isinstance(e, dict) else None) == FP:
-                    continue                               # a panel-terminal sink is wired by wire_indicators, never by index
                 try:
                     r = SS.resolve_addr(st0, e, src if src is not None else True)
                 except SS.SimError:
@@ -499,8 +696,9 @@ class Executor(object):
                         primed += 1
                     except ExecStop as x:
                         why.append(str(x)[:160])
-        self.report[0]["primed"] = {"n": primed, "unprovable": why[:10]}
-        self.log("  PRIME {0} terminal indexes proved at base; unprovable {1}".format(primed, why[:4]))
+        self.report[0]["primed"] = {"n": primed, "ct": ct_primed, "unprovable": why[:10]}
+        self.log("  PRIME {0} terminal indexes proved at base; {1} ControlTerminal end(s) by 179(b); unprovable {2}".format(
+            primed, ct_primed, why[:4]))
         if why:                                            # PD185(3): an unprovable end STOPS before op 1
             raise ExecStop("PRIME: {0} wired end(s) not addressable at base - stop before op 1: {1}".format(len(why), why[:6]))
         for k, op in enumerate(self.ops, 1):
@@ -628,6 +826,9 @@ class LVReader(object):
     def node_terms(self, didx, nidx):
         return self.g.node_terms_uid(self.work, didx, nidx)
 
+    def ct_uids(self):
+        return set(int(o["uid"]) for o in self.g.report_all(self.work, "ControlTerminal"))
+
 
 def check_sink_gates(sink_gates, gates):
     """SINK GATES (card 80-3, retrospective-cycle79 device-failed at the old whitelist here): a recipe may let a
@@ -689,6 +890,9 @@ class LVBackend(object):
         self.last_objs = lv["objs"]
         return dedupe(lv["terminals"])
 
+    def obj_classes(self, real):
+        return classes_of(real, getattr(self, "last_objs", None))
+
     def _done(self, rec, tag):
         self.s.junk_purge(tag)
         if rec.get("err"):
@@ -735,16 +939,25 @@ class LVBackend(object):
         return rec
 
     def connect(self, src, dst, real, loop_of, op):
-        rs = next(r for r in real if r["term_uid"] == src)
-        rd = next(r for r in real if r["term_uid"] == dst)
-        if V.node_class(rd) == FP:
+        kind, rs, rd, info = connect_route(self.addr, real, src, dst, loop_of)   # PD187(b): the route both backends take
+        if kind == "indicator":
             return self.indicator(rs, rd)
-        dt, hd = self.addr.triple(real, dst, False, loop_of)
-        if rs["wire_uid"]:
+        dt, hd = info["dst"], info["dst_how"]
+        if kind == "ctl":                                  # card 82-2: measured in tools/bench/ctsrc_l2a1_82.log
+            di = self.s.uid_index(rd["owner_class"], int(rd["owner_uid"]))
+            if di is None:
+                raise ExecStop("ctl: sink node {0} #{1} not in its class traverse".format(rd["owner_class"], rd["owner_uid"]))
+            rec = self.s._op("wire_control", lambda: self.g.wire_control(
+                self.s.work, [info["ctl_label"]], rd["owner_class"], di, [info["dst_name"]], src_diagram_index=info["ctl_didx"]),
+                "{0!r}@D[{1}] -> {2}[{3}].{4!r}".format(info["ctl_label"], info["ctl_didx"], rd["owner_class"], di, info["dst_name"]))
+            out = self._done(rec, "connect #{0}->#{1}".format(src, dst))
+            out["how"] = ["ctl", info["src_ct"], hd]
+            return out
+        if kind == "cfw":
             rec = self._cfw(int(rs["wire_uid"]), V.node_of(rs) if V.node_class(rs) != FP else rs["owner_uid"], dt)
             how = ["cfw", hd]
         else:
-            st, hs = self.addr.triple(real, src, True, loop_of)
+            st, hs = info["src"], info["src_how"]
             N = self.K.mod("build_opconnectnested_v1")
             lab = json.load(open(N.MAP_OUT, encoding="utf-8"))
             rec = self.s._op("connect_nested_v1", lambda: N.connect_nested_v1(self.s.work, dt[0], dt[1], dt[2], st[0], st[1], st[2], lab),
@@ -838,21 +1051,23 @@ class SimReader(object):
         out = []
         for r in self.be.st["terminals"]:
             n = V.node_of(r)
-            if int(r["frame_diagram"] or 0) == d and n not in out and r["owner_class"] not in SR_CLS + NOT_NODES:
+            if int(r["frame_diagram"] or 0) == d and n not in out and listed_as_node(r):
                 out.append(n)
         for o, _r in self._routed(d):
             if o not in out:
                 out.append(o)
-        for L in self.be.st["loops"] or []:
-            if int(L["loop_uid"]) not in out:
-                out.append(int(L["loop_uid"]))
+        for L in self.be.st["loops"] or []:                     # PD187 fit: a loop is a node of its PARENT diagram only
+            u = int(L["loop_uid"])
+            p = loop_parent(self.be.st, L)                      # unplaceable (no owners map) -> legacy: every diagram,
+            if u not in out and p in (d, None):                 # which the PRIME parity then reports as only_sim
+                out.append(u)
         return out
 
     def node_terms(self, didx, nidx):
         d = self.diagrams()[didx]
         u = self.node_uids(didx)[nidx]
         rows = [r for r in self.be.st["terminals"] if V.node_of(r) == u and int(r["frame_diagram"] or 0) == d
-                and r["owner_class"] not in NOT_NODES] + [r for o, r in self._routed(d) if o == u]
+                and r["owner_class"] not in NOT_NODES and not is_ct(r)] + [r for o, r in self._routed(d) if o == u]
         loop = next((L for L in self.be.st["loops"] or [] if int(L["loop_uid"]) == u), None)
         if loop:
             regs = set(int(x) for x in loop.get("right_uids") or []) | set(
@@ -860,6 +1075,9 @@ class SimReader(object):
             rows = rows + [r for r in self.be.st["terminals"] if r["owner_uid"] in regs and r["term_class"] == "OuterTerminal"]
         return u, [{"i": i, "name": r["term_name"], "is_source": r["is_source"], "wire": r["wire_uid"]}
                    for i, r in enumerate(rows)]
+
+    def ct_uids(self):                                                  # the report_all('ControlTerminal') analogue
+        return set(r["term_uid"] for r in self.be.st["terminals"] if is_ct(r))
 
 
 class SimBackend(object):
@@ -876,6 +1094,9 @@ class SimBackend(object):
 
     def read(self):
         return copy.deepcopy(dedupe(self.st["terminals"]))
+
+    def obj_classes(self, real):
+        return classes_of(real, self.st.get("objs"))
 
     def _apply(self, op, check=None):
         self.calls.append(op["kind"])
@@ -929,8 +1150,10 @@ class SimBackend(object):
         return self._apply(op, self._check(real, term, variant == "RightIn"))
 
     def connect(self, src, dst, real, loop_of, op):
-        rd = next(r for r in real if r["term_uid"] == dst)
-        chk = None if V.node_class(rd) == FP else self._check(real, dst, False, loop_of)
+        kind, _rs, _rd, info = connect_route(self.addr, real, src, dst, loop_of)   # PD187(b): the real backend's route
+        chk = None if kind == "indicator" else self._check(real, dst, False, loop_of)
+        if chk is not None:
+            chk["route"] = kind
         return self._apply(op, chk)
 
     def branch(self, tun, dst, real, loop_of, op):
@@ -1237,6 +1460,88 @@ def selftest():
         gate("T20 an unprovable PRIME end STOPS before op 1 (PD185(3))", False, "ran")
     except ExecStop as e:
         gate("T20 an unprovable PRIME end STOPS before op 1 (PD185(3))", "PRIME" in str(e) and be_.calls == [], (str(e)[:120], be_.calls))
+    # PD187(a) (card 82-1): reader parity at PRIME
+    gate("T21 PARITY recorded at PRIME on the synthetic plan: touched diagrams listed, 0 one-side-only entries",
+         ex.report[0].get("parity", {}).get("n") == 0 and ex.report[0]["parity"]["diagrams"], ex.report[0].get("parity", {}).get("diagrams"))
+    be2 = SimBackend(pl_, SS.base_state(_j(_abs(pl_["finalized"]["base"]["path"])), pl_.get("context")), SS.load_models(md))
+
+    class Extra(SimReader):                                     # a SimReader listing a node the "real" one lacks
+        def node_uids(self, didx):
+            return SimReader.node_uids(self, didx) + [99999]
+    rows_, n_ = reader_parity(SimReader(be2), Extra(be2), touched_diagrams(pl_, be2.st), be2.obj_classes(be2.read()),
+                              be2.obj_classes(be2.read()))
+    gate("T22a NEGATIVE: SimReader listing a class the real read lacks -> parity n > 0 with an only_sim entry",
+         n_ > 0 and any(r.get("only_sim") for r in rows_), n_)
+    be2.addr.rd = Extra(be2)                                    # the backend's "real" reader lacks nothing but lists extra
+    try:
+        Executor(fin, be2, log=q).run()
+        gate("T22b NEGATIVE: a parity difference STOPS at PRIME before op 1", False, "ran")
+    except ExecStop as e:
+        gate("T22b NEGATIVE: a parity difference STOPS at PRIME before op 1", "PARITY" in str(e) and be2.calls == [], (str(e)[:120], be2.calls))
+    # PD187(b): ControlTerminal ends (source/sink, bare/wired) by the 179(b) route, never as a Nodes[] triple
+
+    class FC(object):
+        st = {"loops": [], "owners": {}, "objs": [],
+              "terminals": [row(601, "Reset Tracking", True, 0, 1, "Diagram", 1, FP),        # bare CT source (#5634 at op 31)
+                            row(602, "min value", False, 14, 1, "Diagram", 1, FP),           # wired CT sink (#17272)
+                            row(603, "Auto-Reset", True, 15, 1, "Diagram", 1, FP),           # wired CT source
+                            row(701, "y", False, 0, 700, "Function", 1, "ParameterTerminal"),
+                            row(702, "x", True, 14, 700, "Function", 1, "ParameterTerminal"),
+                            row(703, "z", False, 15, 700, "Function", 1, "ParameterTerminal")]}
+    sc = SimReader(FC())
+    adc, rc_ = Addr(sc, {}), FC.st["terminals"]
+    try:
+        got = [adc.ct(rc_, u)[0] for u in (601, 602, 603)]
+        gate("T23 ControlTerminal ends resolve by 179(b) (bare source, wired sink, wired source): own uid, owner Diagram, "
+             "in ct_uids; and SimReader never lists a ControlTerminal in Nodes[]",
+             [x["diag"] for x in got] == [1, 1, 1] and [x["is_source"] for x in got] == [True, False, True] and
+             not (set([601, 602, 603]) & set(sc.node_uids(0))) and 700 in sc.node_uids(0), (got, sc.node_uids(0)))
+    except ExecStop as e:
+        gate("T23 ControlTerminal ends resolve by 179(b)", False, e)
+
+    class LegacyCT(SimReader):                                  # the pre-PD187 listing: a ControlTerminal = a node
+        def node_uids(self, didx):
+            return [601, 602, 603, 700]
+    for lab_, rd_ in (("T24a", sc), ("T24b (reader lists the CT as a node)", LegacyCT(FC()))):
+        try:
+            Addr(rd_, {}).triple(rc_, 601, True)
+            gate(lab_ + " NEGATIVE: a ControlTerminal as a Nodes[] triple FAILS", False, "resolved")
+        except ExecStop as e:
+            gate(lab_ + " NEGATIVE: a ControlTerminal as a Nodes[] triple FAILS", "ControlTerminal" in str(e), e)
+
+    class NoCT(SimReader):
+        def ct_uids(self):
+            return set()
+    try:
+        Addr(NoCT(FC()), {}).ct(rc_, 601)
+        gate("T25a NEGATIVE: a ControlTerminal absent from report_all('ControlTerminal') is not addressable", False, "resolved")
+    except ExecStop as e:
+        gate("T25a NEGATIVE: a ControlTerminal absent from report_all('ControlTerminal') is not addressable", "ADDRESS-CT" in str(e), e)
+    kinds_ = []
+    for s_, d_ in ((603, 703), (702, 602), (601, 701)):
+        try:
+            kinds_.append(connect_route(adc, rc_, s_, d_, {})[0])
+        except ExecStop as e:
+            kinds_.append("STOP:" + str(e)[:40])
+    gate("T25b connect_route: wired CT source -> cfw; wired source -> CT sink = indicator; BARE CT source -> ctl "
+         "(wire_control, card 82-2; the same in the real and the simulated backend)",
+         kinds_ == ["cfw", "indicator", "ctl"], kinds_)
+    info_ = connect_route(adc, rc_, 601, 701, {})[3]
+    gate("T26 ctl route carries the CT label, its Diagram index and the sink NAME (what wire_control addresses)",
+         (info_.get("ctl_label"), info_.get("ctl_didx"), info_.get("dst_name")) == ("Reset Tracking", 0, "y"), info_)
+    negs = (("T27a NEGATIVE: a second CT with the same label on that Diagram -> STOP",
+             rc_ + [row(604, "Reset Tracking", True, 0, 1, "Diagram", 1, FP)], 601, 701, "label not unique"),
+            ("T27b NEGATIVE: a sink whose name repeats on its node -> STOP",
+             rc_ + [row(704, "y", False, 16, 700, "Function", 1, "ParameterTerminal")], 601, 701, "sink name not unique"),
+            ("T27c NEGATIVE: a sink owned by an owner-routed tunnel -> STOP (at addressing or at the owner check)",
+             rc_ + [row(801, "", False, 0, 800, "SelectorTunnel", 1, "OuterTerminal")], 601, 801, None))
+    for lab_, rows2, s_, d_, want in negs:
+        fn = SimReader(_StateHolder({"loops": [], "owners": {}, "objs": [], "terminals": rows2}))
+        try:
+            k_ = connect_route(Addr(fn, {}), rows2, s_, d_, {})[0]
+            gate(lab_, False, "routed " + k_)
+        except ExecStop as e:
+            gate(lab_, (want is None or want in str(e)), str(e)[:160])
     gate("T14 nothing LabVIEW-side imported", not any(m in sys.modules for m in ("gscript", "win32com", "pythoncom", "stagekit")),
          [m for m in ("gscript", "win32com", "pythoncom", "stagekit") if m in sys.modules])
     n_pass = sum(1 for _l, ok in gates if ok)

@@ -1,0 +1,17 @@
+ATTACK this claim about tools/bench/ctsrc_l2a1_82.log (script tools/bench/ctsrc_l2a1_82.py, card tools/bench/cards/task_82-2.json).
+
+CLAIM: the run ended "BGRUN TIMEOUT killed after 1802s (limit 30.0 min)" because the 30-minute bgrun budget I chose was
+too short for the work, NOT because anything hung. Every measurement gate had already passed (P0, R1-R3 for both rows, R4,
+H5 refs 13/13 closed; log lines 451-508 of the second run). The kill landed inside stagekit.Stage.close() ->
+bench_prep.restart_labview() (tools/bench/bench_prep.py:74-79: Stop-Process, sleep 5, Start-Process, sleep 45), right
+after "LabVIEW handle count AFTER the work: 46081". Evidence offered: after the kill a LabVIEW.exe (pid 9968) was still
+running, i.e. the NEW instance restart_labview had started; the scratch D1_k_scratch_ctsrc82_20260925_143307.vi was left
+on disk (close never reached its delete loop). The 30 real ops before op 31 each re-read the whole graph
+(wiki_build.read_live, ~20 s each) plus node censuses and purges, which by itself approaches 25 min.
+
+Already ruled out: a hang in the executor (the P0 gate and all row gates printed), an unclosed VI reference (H5 13/13).
+
+What I want from you: the strongest reason this claim is wrong (e.g. restart_labview's Start-Process with
+capture_output blocking on inherited pipe handles; labview_handles() PowerShell without timeout; close_panel's com_error),
+an alternative explanation, and the cheapest discriminating test. Read tools/stagekit.py:1097-1148 (close),
+tools/bench/bench_prep.py:64-79, and the log tools/bench/ctsrc_l2a1_82.log (second BGRUN block).

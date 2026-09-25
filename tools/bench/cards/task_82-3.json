@@ -1,0 +1,57 @@
+{
+ "schema": "task/1",
+ "id": "82-3",
+ "kind": "build",
+ "goal": "Wire a BARE diagram-constant source on nested #23166 (op 35 rw_10738_11055 #10739; also #10929): measure candidate routes at op 35 on a D1_k scratch, route the passing one; run the due outcome review.",
+ "why": "82-2: dry run passes ops 1-34, stops offline at op 35 (real Nodes[] omits *Constant, 82-1). PD182(a) moves #10739/#10929 with their consumer. guard_cycle blocks recipe commands until the outcome review runs.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/stagexec.py", "md5": "3e2b15276caa94d7fa3f758c2e8bf124"},
+  {"path": "tools/recipes/stage_d1_l2a1.py", "md5": "e589dc746833aaaafe47f3eff4c22dc6"},
+  {"path": "tools/bench/sim/l2a1/stageplan_l2a1.json", "md5": "329d89eecaa2706ccce38640dbede5aa"},
+  {"path": "tools/bench/cards/result_82-2.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_20260925_100155.vi", "md5": "6cf5b0777aafa12112d8a786a9eed1ed"}
+ ],
+ "pass": [
+  "P0 outcome_review.py run to its END line (bgrun), verdict card path + verdict lines reported; nothing else about it decided here",
+  "P1 candidate table from prior art (a report_all(class)+own-uid route like 179(b), Terminals[] of the constant, other ops), file:line",
+  "P2 per candidate on a scratch at op 35: wire_delta, source owner read back (== constant uid), sink, Is Broken?, error",
+  "P3 passing route in real Addr+SimReader, selftest (+negative); dry + offline pre-run of all 42 ops: first stop if any, stageplan md5; D1_k unchanged, scratch gone, LabVIEW exited"
+ ],
+ "outputs": ["tools/stagexec.py", "tools/bench/constsrc_l2a1_82.log", "tools/bench/prerun_l2a1_82e.log"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/gscript.py",
+   "tools/bench/selftest_stagexec*",
+   "tools/bench/constsrc_l2a1_82*",
+   "tools/bench/prerun_l2a1_82*",
+   "tools/bench/dry_l2a1_82*",
+   "tools/bench/sim/l2a1/**",
+   "tools/bench/outcome*",
+   "tools/bench/jev_gate.log",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_scratch_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\ops\\**",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "archive/outcome/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart", "outcome"]
+ },
+ "budget": {"failures": 2, "minutes": 55},
+ "rules": [
+  "diagnostic on scratch copies only; do not launch stage_d1_l2a1.py for real; never save D1_k",
+  "no route passes -> BLOCKED with the P2 table; never replace the constant with a new one or re-order rows",
+  "bgrun --max-min 45 for any LabVIEW script; log per-phase wall-clock stamps (review hyp-ctsrc82-timeout)",
+  "a new op VI: <=120-line script on stagekit, refs closed, 20-call handle-flat check",
+  "result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

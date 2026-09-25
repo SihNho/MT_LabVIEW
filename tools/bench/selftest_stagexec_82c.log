@@ -1,0 +1,34 @@
+BGRUN START 2026-09-25 14:25:19 limit 5.0 min: py -u tools/stagexec.py selftest
+  PASS  T01 the synthetic executable plan simulates FINAL  (None, [])
+  PASS  T02 compile: tunnel+in+out -> ONE real op; SR inner wires -> wire_sr; the rest 1:1  ['move_in', 'add_sr', 'tunnel', 'wire_sr', 'wire_sr', 'connect', 'delete_wire', 'tunnel', 'delete_object', 'delete_object', 'delete_object', 'remove_bad_wires']
+  PASS  T03 a tunnel without its in-wire does not compile  action 3: tunnel new:T1 must be followed by exactly one wire into it and one out of it (LabVIEW makes a tunnel only by wiring across the border)
+  PASS  T04 dry run PASS: every real op's state == its step file after binding  None
+  PASS  T05 binding: 2 SR objects + 2 tunnels bound to POSITIVE uids  {-1: 10000001, -2: 10000004, -7: 10000008, -13: 10000015}
+  PASS  T06 addressing: base ends primed by their wire, every checked end resolved to its own terminal name  ({'n': 4, 'ct': 0, 'unprovable': []}, ['cached index (proved by its wire uid while wired)', 'cached index (proved by its wire uid while wired)', 'cached index (proved by its wire uid while wired)', "unique live name '' on loop #200 (tracked index 1)", 'cached index (proved by its wire uid while wire
+  PASS  T07 a real op that made one edge fewer STOPS at that op with a step-diff report  STEP-DIFF after real op 3 (tunnel, plan actions [3, 4, 5] [None, None, None]): {"only_sim_edges": [[10000010, 1021]], "dangling_real_only": [10000010], "who": {"10000010": [10000008, "LoopTunnel", ""]}}
+  PASS  T08 an extra real object after add_shift_reg stops at BINDING (count/class)  BINDING: simulated new objects {'RightShiftRegister': 1, 'LeftShiftRegister': 1} != real new objects {'RightShiftRegister': 1, 'LeftShiftRegister': 1, 'Invoke': 1} (real owners [10000001, 10000004, 99999998])
+  PASS  T09 the other only-sink fate on an allow_either terminal is accepted  None
+  PASS  T10 ... but not on a terminal the step does not allow  STEP-DIFF after real op 1 (move_in, plan actions [1] [None]): {"only_sim_edges": [[1001, 1601], [1001, 1701]], "dangling_real_only": [1601, 1701], "who": {"1601": [60, "LoopTunnel", "v"], "1701": [70, "LoopTunnel", "v"]}}
+  PASS  T11 prerun_plan passes the final plan  []
+  PASS  T12 prerun_plan refuses a non-final plan  ('X1 plan final, base graph + step files unchanged since finalize', False, 'plan is not final (final=False, finalized=null)')
+  PASS  T13 prerun_plan refuses a plan whose step file changed after finalize  ('X1 plan final, base graph + step files unchanged since finalize', False, "1 step file(s) missing or changed since finalize (['C:\\\\Users\\\\KimLab\\\\AppData\\\\Local\\\\Temp\\\\stagexec_selftest_ybn6p54g\\\\sim\\\\xs\\\\step_03_tunnel.json']...) - re-simulate")
+  PASS  T15 register faces keep their loop index when inner wiring RENAMES them (no name alignment), and across an appended tunnel face  ({1: 1, 2: 2, 3: 3, 4: 4}, {1: 1, 2: 2, 3: 3, 4: 4}, [], [])
+  PASS  T16 SimReader lists the owner structure, never the SelectorTunnel / FSIT, as a Nodes[] entry (PD185)  [100, 300]
+  PASS  T17 a SelectorTunnel outer sink resolves on its OWNER's Terminals[] (the measured route, l2a1_faces_81.log)  (0, 0, 1, 'unique-match')
+  PASS  T17b a case SELECTOR (class Tunnel) sink resolves on its owner's Terminals[] (stage_d1_l2a1_r2.log:36)  (0, 0, 2, 'unique-match')
+  PASS  T18a owners unknown -> the end is NOT addressable (negative)  ADDRESS: tunnel #200: owner structure not unique from its inner frames ['2'] (0 owners known)
+  PASS  T18b tunnel listed only as a node -> the end is NOT addressable (negative)  ADDRESS: node #100 not in Diagram[0] (#1).Nodes[]
+  PASS  T19 an FSIT end stops with its Left/Right Terminal route named  ADDRESS: #401 is a FlatSequenceInnerTunnel face (#400): not a Nodes[] triple - its route is Left/Right Terminal (docs/NAMES.md:1245-1255, OpFsInnerTunnelConnect_v1)
+  PASS  T20 an unprovable PRIME end STOPS before op 1 (PD185(3))  ("PRIME: 4 wired end(s) not addressable at base - stop before op 1: ['ADDRESS: injected unprovable end', 'ADDRESS: injecte", [])
+  PASS  T21 PARITY recorded at PRIME on the synthetic plan: touched diagrams listed, 0 one-side-only entries  [10, 20, 30]
+  PASS  T22a NEGATIVE: SimReader listing a class the real read lacks -> parity n > 0 with an only_sim entry  3
+  PASS  T22b NEGATIVE: a parity difference STOPS at PRIME before op 1  ('PARITY: SimReader vs real Nodes[] differ on 3 entr(ies) - stop before op 1: [{"diagram": 10, "n_real": 4, "n_sim": 3, "o', [])
+  PASS  T23 ControlTerminal ends resolve by 179(b) (bare source, wired sink, wired source): own uid, owner Diagram, in ct_uids; and SimReader never lists a ControlTerminal in Nodes[]  ([{'ct': 601, 'diag': 1, 'didx': 0, 'name': 'Reset Tracking', 'is_source': True, 'wire': 0}, {'ct': 602, 'diag': 1, 'didx': 0, 'name': 'min value', 'is_source': False, 'wire': 14}, {'ct': 603, 'diag': 1, 'didx': 0, 'name': 'Auto-Reset', 'is_source': True, 'wire': 15}], [700])
+  PASS  T24a NEGATIVE: a ControlTerminal as a Nodes[] triple FAILS  ADDRESS: #601 is a ControlTerminal: not in any Diagram.Nodes[] - its route is 179(b) (Addr.ct: own uid, owner Diagram #1, report_all('ControlTerminal'))
+  PASS  T24b (reader lists the CT as a node) NEGATIVE: a ControlTerminal as a Nodes[] triple FAILS  ADDRESS: #601 is a ControlTerminal: not in any Diagram.Nodes[] - its route is 179(b) (Addr.ct: own uid, owner Diagram #1, report_all('ControlTerminal'))
+  PASS  T25a NEGATIVE: a ControlTerminal absent from report_all('ControlTerminal') is not addressable  ADDRESS-CT: #601 not in report_all('ControlTerminal')
+  PASS  T25b connect_route: wired CT source -> cfw; wired source -> CT sink = indicator; BARE CT source -> CONNECT-NO-VERB stop (the same in the real and the simulated backend)  ['cfw', 'indicator', 'STOP:CONNECT-NO-VERB: bare ControlTerminal so']
+  PASS  T14 nothing LabVIEW-side imported  []
+=== GATES: 30 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":30,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 1s

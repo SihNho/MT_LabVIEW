@@ -1,0 +1,45 @@
+BGRUN START 2026-09-25 15:04:44 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug hyp-ctsrc82-timeout -TaskFile tools/bench/cards/peer_ctsrc82_task.txt
+OUTCOME: ANSWERED (222s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-25-hyp-ctsrc82-timeout.md
+COST: $1.7414  in 40 / out 18766 / cache-create 113338 / cache-read 2177617  (219s, 27 turn(s))
+--- ANSWER ---
+**Verdict:** the claim's conclusion probably holds: the kill most likely landed inside `restart_labview()`, and nothing hung in that function. But two parts of how it is argued are wrong. The "~25 min" breakdown doesn't match the measured timings, and a gap of about 2–4 minutes is left unexplained. None of the records settle whether that gap was a stall or ordinary variation.
+
+**1. Strongest reason it is wrong: the timing argument is invented, and the real comparison run leaves time unexplained.**
+- The log has no timestamps. The JSON was last written at `t: 56.6` (`ctsrc_l2a1_82.json:15`), and the per-op `secs` were lost because `dump()` never ran. The "~20 s per read" figure comes from a docstring (`stagexec.py:19`), not from this run.
+- There is a direct baseline: `stage_d1_l2a1_r3.log` ran the same 30 ops on the same D1_k through the same `close()`, and it did the same restart inside close.
+  - The 30 ops took **753 s in total** (sum of `"secs"` in `stage_d1_l2a1.json:1726–2641`, 22–28 s each), which is about 12.5 min, not about 25.
+  - The whole run took **1562 s** (`r3.log:461`), with the same 56.6 s to reach "after open".
+- In r3, "AFTER the work" printed at about 1505 s: 1562 s minus about 57 s for the close-time restart, deletes and pins (`r3.log:446–457`).
+- For ctsrc82 to be killed inside `restart_labview` (Stop-Process, sleep 5, Start-Process, sleep 45; about 52 s in all), `ctsrc_l2a1_82.log:516` must have printed between about 1750 s and 1802 s. That makes ctsrc82's work before close **about 245–300 s longer than r3's**.
+- The extra work (two rows, their second passes and one R4 `read_live`) is about four op-equivalents plus one read. At the measured per-op cost that is about 125 s.
+- That leaves **about 2–3 minutes unaccounted for**. "The budget was too short" is true, but it doesn't explain those minutes.
+
+**2. Alternative explanations for the same evidence**
+- **(a) A slow step before close, not a hang.** The ctsrc82-only work (the PRIME route for 4 ControlTerminal ends, `wire_control`, `OpWireSource_v5`, the R4 compare) or a COM call that stalled for minutes and then returned would produce exactly this log. So would a slow phase between open and op 1: in r3 that phase already took about 700 s, and nothing records its breakdown.
+- **(b) Stop-Process failed silently, so pid 9968 is the old instance.** Output is captured and `-ErrorAction SilentlyContinue` discards errors (`bench_prep.py:75–76`). Nothing in the evidence shows 9968 is the new instance.
+
+What I checked against your suggested hangs:
+- **A Start-Process pipe hang or a `labview_handles()` hang is unlikely.**
+  - The same `restart_labview` finished inside `close()` in r3 with LabVIEW running (`r3.log:446→457`, handles 46059 → 33955).
+  - The taskkill tree (`ctsrc_l2a1_82.log:518`) shows only two direct children of pid 16056 and no grandchildren. With `py -u` under bgrun (`bgrun.py:207`), 16056 is most likely the `py.exe` launcher, whose children are `python.exe` and, probably, `conhost` ([Python docs: launcher](https://docs.python.org/3/using/windows.html#python-launcher-for-windows); [launcher spawns interpreter as a child](https://github.com/Senkichi/charlie-work/issues/1851)).
+  - So `python.exe` probably had no live PowerShell child when it was killed, which means it was in a `time.sleep` and not blocked in `subprocess.run`. This rests on my guess of what 15104 and 6080 are; neither was recorded.
+- **The `close_panel` com_error (0x47D) is harmless.** r3 shows the same error at `r3.log:443` and still completed.
+
+**3. What would falsify the claim**
+- If pid 9968 **started before about 15:02:15** (kill ≈ 14:33:07 + 1802 s ≈ 15:03:09), it is not the new instance restart_labview launched. Either Stop-Process failed, or the kill was not in the restart window.
+- If it started **around 14:33–14:34**, it is the original instance, and the "LabVIEW gone" chain failed.
+- If it started **around 15:02:20–15:03:09**, the location is confirmed, and its start time gives the moment line 516 printed to within a few seconds.
+
+**4. Cheapest test (read-only, one command)** — run it if pid 9968 is still alive:
+`Get-CimInstance Win32_Process -Filter "ProcessId=9968" | Select ProcessId,CreationDate,ParentProcessId`
+- A start time in about 15:02:20–15:03:09 confirms the claim's location. Subtracting about 6 s gives the time line 516 printed, and comparing that with r3's about 1505 s gives the true extra time.
+- If the extra time is well over about 150 s, the rerun needs per-phase timestamps (and `dump()` called before `close()`), not just a larger `--max-min`.
+
+If 9968 is gone, the next rerun should do three things: print a wall-clock time on every phase header, `dump()` before `close()`, and use `--max-min 45`.
+
+**Bottom line:** "killed inside `restart_labview`, not in a hang there" is well supported. The budget claim is right in direction: r3 shows this pipeline needs about 26 min, so 30 min left about 4 min of margin. But this pipeline was about 2–3 min slower than the extra rows explain. Until pid 9968's start time or a timestamped rerun accounts for that gap, it shouldn't be closed as "budget only".
+
+Sources:
+- [Python docs — Python Launcher for Windows](https://docs.python.org/3/using/windows.html#python-launcher-for-windows)
+- [charlie-work #1851 — py launcher + interpreter child pairs on Windows](https://github.com/Senkichi/charlie-work/issues/1851)
+BGRUN END rc=0 after 223s
