@@ -1,0 +1,31 @@
+{
+ "schema": "result/1",
+ "id": "89-2",
+ "status": "FAIL",
+ "gates": {"pass": 0, "fail": 1},
+ "first_fail": "B0 verb inventory: t0_stamp.vi body needs >=10 primitives + a reentrancy setter that no existing verb creates; not buildable in 75 min",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/diag_c89_donor_census.py", "md5": "5dd85c83be818c085e0f0333736fbb1e"},
+  {"path": "tools/bench/diag_c89_donor_census.log", "md5": "a82152730aae4b788eb5b26bf9ff0c95"}
+ ],
+ "facts": [
+  "No helper built, no LabVIEW opened, 0 LabVIEW runs; D1_s1_copy/kswap/L2-A1 bed untouched. Only an offline census ran (diag_c89_donor_census.log).",
+  "Verbs present (gscript.py): while_loop :1261 (tunnels from FP controls only), add_shift_reg :698, wire_sr :748, build_case :3149, drop_subvi :1295, connect_terminals :2679, conpane_assign :3073.",
+  "vi.lib\\Utility\\High Resolution Relative Seconds.vi exists on disk -> droppable by drop_subvi and name-wireable; Tick Count donors uids 10972/12096/21710 (main_vi_node_labels.json).",
+  "No verb writes VI reentrancy: property 288 is registered only (docs/vi-server-ids.json:66); grep of tools/ for Reentrancy|288|Preallocat finds no writer -> a new op (VI PN 288 write) is needed.",
+  "Primitives are creatable only via copy_by_index gscript.py:1549-1628: Move-fixture restore + byte substitution + a LabVIEW restart per copy session; target must reach ExecState 1 before its COM save.",
+  "Donor census (log): main-VI lineage holds Replace Array Subset x23, Quotient & Remainder x6, Write to Binary File x1 (uid 26615), Initialize Array x11, Equal To 0? x5, Increment x14, Build Path x1.",
+  "Not in any donor: Open/Create/Replace File, Close File, Select. Write to Binary File accepts a path and closes it, so Open/Close are avoidable; Select is avoidable with a case.",
+  "Only the main-VI lineage holds those primitives: D1_s1_copy.vi (forbidden by the card) or its copies (D1_s3_loop15.vi, not in the forbid list). wiki/subvi dumps carry no primitive labels (0/14).",
+  "diag_c89_donor_census.log | our-script-bug p=1.000 | patch and rerun, no review | run1 TypeError on result_line (patched), run2 FAIL = census verdict encoded as a gate | stopped: budget 2 spent.",
+  "Size estimate: >=10 copied primitives (1 copy_by_index step each), 1 dropped VI, while loop + 2 uninit SRs, 1 case, ~25 wires, reentrancy op, conpane -> a multi-cycle staged build, not a 75-min card."
+ ],
+ "open": [
+  "May D1_s3_loop15.vi (same lineage as D1_s1_copy, not in the forbid list) be loaded READ-ONLY as the copy_by_index donor, or must a small donor VI be prepared first?",
+  "Is a simpler helper acceptable: vi.lib named-terminal VIs only (High Resolution Relative Seconds + Write To Spreadsheet File.vi append per call), no buffer -> per-call file I/O, which the brief forbade?",
+  "Should the build be re-issued as a decomposition plan (one saved artefact per copied primitive, reentrancy op first) before any LabVIEW run, per the 2026-09-19 split rule?"
+ ],
+ "cost": {"usd": null, "minutes": 32, "labview_runs": 0},
+ "note": "Failure budget was spent on the offline census diagnostic (2 runs), not on a LabVIEW build; no build was attempted because the verb inventory shows the card's helper cannot be assembled from existing verbs within budget."
+}

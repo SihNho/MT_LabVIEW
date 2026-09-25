@@ -1,0 +1,38 @@
+{
+ "schema": "result/1",
+ "id": "89-4",
+ "status": "FAIL",
+ "gates": {"pass": 24, "fail": 5},
+ "first_fail": "PF8 `timing_stat` ON (A3) (diag_c89_profiler_live2.log:34) - Part 2 A1 liveness failed twice, profiler legs NOT run; Part 1 17/17 PASS",
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/t0_insitu_89.json", "md5": "307809d96a311d7d56fd4796777f600e"},
+  {"path": "tools/bench/m8_panelmin_89.json", "md5": "dc1b65b0d7a7a50896f84cf37a054bf8"},
+  {"path": "tools/bench/drive_m8_panelmin89.py", "md5": "bae08e3f5bf536714edf1a1b37d77963"},
+  {"path": "tools/bench/drive_m8_panelmin89_leg.py", "md5": "1460bd00bc496e49c919559f54eca00b"},
+  {"path": "tools/bench/diag_c89_profiler_leg.py", "md5": "f5e64cbf59a6f5bb8788f42cd8418518"},
+  {"path": "tools/bench/profile_89_live_20260926_024225.json", "md5": "2cdc23c36a7c5202415f4159b4400104"},
+  {"path": "tools/bench/m8_dry.py", "md5": "e7f5df3d8acbadf9b5271791413c87a8"},
+  {"path": "archive/peer/2026-09-26-c89-panelmin-dry-t5.md", "md5": "14f4b19e2e5ec92bb4ef1da36d417dd2"},
+  {"path": "archive/peer/2026-09-26-c89-profiler-live.md", "md5": "3ad297f7532e86b7c947015f7034dfd6"}
+ ],
+ "facts": [
+  "L-ctl 15 picks 120 s 90 Hz: Total Lost Frames 3434 (13 at loop start -> 3434 at stop, 3421 over L11), frames 10678, 89.0 Hz, tra rows 7719. m8_panelmin_89.log:4-6,55",
+  "L-min (FPState=4 via COM right after L9, =1 before L12; rect -32000 iconic): lost 2616 (13 -> 2616), frames 10678, 89.0 Hz, tra rows 8825. m8_panelmin_89.log:53-57",
+  "min - ctl = -818 lost frames (24.4 % vs 32.0 % loss); ctl ran FIRST so the order effect (cycle 88: 3410->3490->3776, +-300 spread) works AGAINST the drop. m8_panelmin_89.json",
+  "Part 1 gates 17/17: M1-M8 x2, PM1-PM4 x2, T1-T10, camera 90 Hz before/after, TMX 39 after each leg, S1+bed+kswap md5 unchanged, LabVIEW gone. m8_panelmin_89.log:104-122 rc=0",
+  "m8_panelmin_89_dry.log | ladder new-problem p=0.922 | hypothesis review owed | dispatched c89-panelmin-dry-t5 ANSWERED 180 s, 4 fixes applied, dry2 15/15 | real run PASS",
+  "Part 2 A1 liveness run 1 (diag_c89_profiler_live.log rc=1, 58 s): Tools>Profile>Performance and Memory located by OCR + clicked, window listed; OCR labels carry a leading space; Esc closed the window",
+  "diag_c89_profiler_live.log | ladder new-problem p=0.692 | hypothesis review owed | dispatched c89-profiler-live ANSWERED 169 s ($1.39), 4 fixes applied | run 2 still FAIL",
+  "A1 run 2 (diag_c89_profiler_live2.log rc=1, 72 s): Time unit milliseconds->microseconds OK; Start clicked; COM alive after Start (ExecState 1, set/get 0.0 s) PF3 PASS; LabVIEW gone, S1 md5 unchanged",
+  "A1 run 2 fails: checkbox clicks gave no box change (timing_stat 0.132->0.16, timing_det 0.583->0.583 = crop on text, profile_89_live_20260926_024225.json:39-48); no `Stop` OCR'd after Start (:26)",
+  "Failure budget spent on the A1 diagnostic (2 fails): NO profiler leg run, 0 frames spent on Part 2; Jev ladder line for live2.log not yet written; a review is owed before any rerun (guard_peer)"
+ ],
+ "open": [
+  "Part 1 answered the discriminator: minimizing the panel cut 15-pick loss 3434 -> 2616 (-818, 2.7x the +-300 spread) but did not collapse it - is display the lever, a lever, or is a second pair (ABBA) needed?",
+  "Part 2: continue the GUI profiler route (fix the checkbox reader: locate the 16x16 box by pixels left of the label instead of x0-20, and re-check 'Stop' via a fresh shotwin after 1.5 s), or drop it for the CLFN stamp route (89-3 open 3)?",
+  "brief pre-scripted: the profiler legs (8 then 15 picks) were to follow A1; not run - judgement re-delegates or withdraws"
+ ],
+ "cost": {"usd": null, "minutes": 78, "labview_runs": 4},
+ "note": "LabVIEW runs: 2 real legs + 2 liveness opens (no VI run). Peers: dry-t5 review, profiler-live $1.39. GUI acts in tools/gui_actions.log (NegativeSearch, evidence diag_c89_profiler_search.md); only plan-enumerated acts. No VI edited; S1/kswap/L2-A1 md5 pins held (T8)."
+}

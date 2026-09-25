@@ -1,0 +1,53 @@
+{
+ "schema": "task/1",
+ "id": "89-5",
+ "kind": "measure",
+ "goal": "Repeat the panel discriminator in REVERSED order (ABBA): 15 picks L-min then L-ctl; then 8 picks L-min then L-ctl; unmodified D1_s1_copy.vi, 120 s, 90 Hz",
+ "why": "89-4 Part 1: minimized panel 2616 vs control 3434 lost at 15 picks, one pair, control first. Order reversal + 8-pick pair decide size and per-bead scaling of the display term.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_89-4.json"},
+  {"path": "tools/bench/drive_m8_panelmin89.py"},
+  {"path": "tools/bench/drive_m8_panelmin89_leg.py"},
+  {"path": "tools/bench/m8_panelmin_89.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "4 real legs in order: 15 min, 15 ctl, 8 min, 8 ctl; Total Lost Frames / frames / rate / tra rows each; LabVIEW gone each; TMX 39 after each",
+  "same scripted minimize (FPState via COM) as 89-4; no GUI act beyond the driver's bead picking",
+  "tools/bench/m8_panelmin_89b.json written; t0_insitu_89.json appended; D1_s1_copy, kswap, L2-A1 bed md5 unchanged"
+ ],
+ "outputs": ["tools/bench/m8_panelmin_89b*", "tools/bench/t0_insitu_89*"],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "tools/bench/m8_panelmin_89b*",
+   "tools/bench/t0_insitu_89*",
+   "tools/bench/drive_m8*",
+   "tools/bench/m8_*",
+   "tools/bench/diag_c89_*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/errorlist_shots/**",
+   "tools/bench/gui_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 55},
+ "rules": [
+  "never edit/save D1_s1_copy.vi, kswap, originals, or the L2-A1 bed",
+  "bead picking as drive_m8_load83 does, lv_gui capture->act->confirm, Exception Approved",
+  "no beads: garbage tracking is not a failure",
+  "facts only, no design recommendation; result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

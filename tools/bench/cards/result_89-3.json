@@ -1,0 +1,37 @@
+{
+ "schema": "result/1",
+ "id": "89-3",
+ "status": "PASS",
+ "gates": {"pass": 4, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/profiler_run_plan_89.md", "md5": "91fb68044676b95608e85b538af5ab9e"},
+  {"path": "tools/bench/diag_c89_profiler_search.md", "md5": "5df3f5a84aa64ee38801004eb7b49d3d"},
+  {"path": "tools/bench/diag_c89_profiler_lvsr.py", "md5": "5ba5b730ae4c38d73d1ef3ad86c7b01f"},
+  {"path": "tools/bench/diag_c89_profiler_lvsr.log", "md5": "8439ba83c57f545523c93f87f1971f30"},
+  {"path": "archive/peer/2026-09-26-c89-profiler-fact.md", "md5": "87af89dc1cb2a684c3ce7024245f5b2a"},
+  {"path": "archive/peer/2026-09-26-c89-profiler-fact2.md", "md5": "30900c1b4ec44af7d2cfbdda862363c8"},
+  {"path": "archive/peer/2026-09-26-c89-profiler-plan-hyp.md", "md5": "550eb6700305a48df718a2c00455ef23"},
+  {"path": "archive/peer/2026-09-26-c89-donor-census-hyp.md", "md5": "c11d3eea5681906d91d41177b80f9a89"}
+ ],
+ "facts": [
+  "Profiler NOT scriptable: no VI Server method/property, ini token, CLI switch (NI employee quote); only hidden password-protected _Profile Buffer Allocation.vi (in LabVIEW 2026\\project). fact.md:31-37",
+  "Local negative search 0 hits: vi-server-ids.json, gscript.py, lv_gui.ps1, LabVIEW.ini, resource/**, vi.lib/** (diag_c89_profiler_search.md 'Local search' table).",
+  "Save = tab-delimited text of DISPLAYED data: VI Time, Sub VIs Time, Total Time, +# Runs/Average/Shortest/Longest, +Diagram/Display/Draw/Tracking/Locals; unit us/ms/s; Snapshot first. fact.md:41",
+  "Profiler is CPU-time only; memory profiling 'adds significant overhead' -> OFF. NI documents no Allow-debugging precondition. fact.md:48,51-53",
+  "D1_s1_copy.vi HAS debugging allowed: LVSR instrState@0x18=0x40800210, DebugCapable bit9 SET (pylabview); same on ORIGINAL/kswap; vi.lib VI decodes False. diag_c89_profiler_lvsr.log 15/0, offline",
+  "COM cross-check (ActiveX VirtualInstrument.AllowDebugging, fact2.md:30) is the diag's --com switch, NOT run (would start LabVIEW; offline read suffices). tasklist: no LabVIEW at end",
+  "Plan profiler_run_plan_89.md: wrapper patches v5.leg before drive_m8.main() (drive_m8.py:88); 11 GUI acts P-A..P-K capture/locate/act/confirm; gates W0-W6; overhead vs 3776/3331/3161. No leg run",
+  "Plan review ANSWERED (opus-5-5 high, 206 s): claim does NOT hold as written - inline top-level code is ONE row; Start-before-L1 mixes phases; 'grows ~2x' returns every group. plan-hyp.md:42-58",
+  "diag_c89_donor_census.log | new-problem p=0.802 | review owed | dispatched c89-donor-census-hyp, ANSWERED 111 s, block lifted | verdict: 89-2 claim wrong, build_clfn+DLL needs no primitives",
+  "Tooling: `#!/usr/bin/env python` shebang makes `py -u` hit the WindowsApps stub (rc 9009) under bgrun - 2 runs lost (diag_c89_profiler_lvsr_run.log); shebang removed, then PASS"
+ ],
+ "open": [
+  "Adopt the review's amendments before any profiler leg? A1 idle GUI+COM liveness test (30 s, no leg); A3 Timing details ON, Time unit us, Snapshot+Save at L10 AND after L12 then difference, 8-pick leg FIRST (plan §6).",
+  "Run the review's cheaper discriminating leg FIRST: one 15-pick leg with the front panel MINIMIZED after L10 via COM (OpenFrontPanel/FPState) - if lost frames collapse, display/UI thread is the lever and the profiler is the wrong instrument (plan §6 A2).",
+  "Re-open route 89-2 as a CLFN stamp (build_clfn + a 10-line C DLL, no copied primitives, rule 1a untouched per the census review)? Is a C DLL acceptable as instrumentation, and does it go before or after the profiler legs?"
+ ],
+ "cost": {"usd": null, "minutes": 19, "labview_runs": 0},
+ "note": "Peer costs seen: fact $3.63 (fable/low, 71 turns), census-hyp $1.02; fact2 and plan-hyp cost lines in their archive headers. guard_peer blocked bench runs on card 89-2's log until the census review landed (~3 min)."
+}

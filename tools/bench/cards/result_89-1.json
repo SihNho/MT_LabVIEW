@@ -1,0 +1,25 @@
+{
+ "schema": "result/1",
+ "id": "89-1",
+ "status": "FAIL",
+ "gates": {"pass": 4, "fail": 1},
+ "first_fail": "B0 bracketing mechanism reachable with existing verbs: NO - 9 of 11 group nodes have no error wire and no FlatSequence/frame-move verb exists",
+ "blocked_by": null,
+ "artefacts": [],
+ "facts": [
+  "No LabVIEW run, no file written; D1_s1_copy/kswap/bed untouched (nothing opened). Offline read of docs/wiki/subvi/D1_s1_copy.json only.",
+  "Error wires ONLY on save trace #376 (w4880/w541) and save N xyz #6384 (w1899/w1920); none on #5058, #5987, #30306, #29009, #28233, #6085, #5696, #15472, #15511 (wiki terminals).",
+  "9/11 groups need a flat-sequence wrap; no verb creates a FlatSequence or moves nodes into a frame (gscript.py build_case:3149, loop_in:1225); find_node misses FlatSequence (toolkit-capabilities:609).",
+  "Groups span 8 diagrams: 5058+376 on 43 (loop B), 5987 on 16, 6384 on 19, filters 50/74, plots 75/76, display 99 (loop C) - a non-reentrant helper needs one copy per loop.",
+  "Tick Count (ms) donors exist in the VI (uids 10972/12096/21710/21887, tools/bench/main_vi_node_labels.json:1235-1371); vigraph.py:229 WAIT_LABEL makes them transparent to computation_diff.",
+  "computation_diff (vigraph.py:847): new nodes go to computation_nodes_added; rows only for shared nodes - branch reads add 0 rows, a helper spliced INTO an error wire adds 1 row per downstream sink.",
+  "Verbs missing before any build: FlatSequence create + move-into-frame, per-loop accumulate (Subtract/Build Array/SR), post-loop file write: >=3 verbs with self-tests, beyond budget.minutes 120.",
+  "Run half is ready: drive_m8.py --leg replay_s1 --src <vi> (drive_m8.py:68) and the drive_m8_load83_kswap88.py sequencer need only the VI path."
+ ],
+ "open": [
+  "Bracketing needs a FlatSequence-wrap verb (create + move live nodes into frames) for 9/11 groups: build it (>=1 cycle) or narrow 195(d) to whole-iteration ms per loop + error-wire splices on the two save VIs only?",
+  "Is a Tick Count branch-read design (no sequence, duration = input-ready to output-ready of each node) an acceptable measurement for 195(d)? It needs no frame moves but only bounds, not brackets, each group."
+ ],
+ "cost": {"usd": null, "minutes": 28, "labview_runs": 0},
+ "note": "Failure budget unspent: no build was attempted because the offline read showed the card's mechanism (error-wire splice OR flat-sequence wrap) is unreachable with existing verbs for 9 of 11 groups; the missing tool is a multi-verb build, which is a judgement call per CLAUDE.md 2026-09-24 tool grant."
+}

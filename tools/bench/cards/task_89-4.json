@@ -1,0 +1,59 @@
+{
+ "schema": "task/1",
+ "id": "89-4",
+ "kind": "measure",
+ "goal": "PD195(d): 15-pick legs panel-minimized vs control on unmodified D1_s1_copy.vi, then profiler legs (8 then 15 picks) per profiler_run_plan_89.md with A1+A3",
+ "why": "In-VI stamps unreachable (89-1/89-2); review of the profiler plan named the minimized-panel leg as the cheaper discriminator. Detail: brief_89-4.md",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_89-4.md"},
+  {"path": "tools/bench/profiler_run_plan_89.md"},
+  {"path": "tools/bench/diag_c89_profiler_search.md"},
+  {"path": "archive/peer/2026-09-26-c89-profiler-plan-hyp.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"path": "tools/bench/drive_m8_load83.py"},
+  {"path": "tools/bench/m8_kswap_88.json"}
+ ],
+ "pass": [
+  "L-min (panel minimized by script during the experiment loop) and L-ctl at 15 picks, 120 s, 90 Hz: lost/acquired/rate each; LabVIEW gone each",
+  "A1 liveness test done; profiler legs 8 then 15 picks: saved profile tables (L10 and after L12), per-subVI VI time/#runs/avg us, lost frames",
+  "every GUI act capture->locate->act->capture->confirm, logged; no unplanned GUI act",
+  "tools/bench/t0_insitu_89.json written; D1_s1_copy, kswap and L2-A1 bed md5 unchanged"
+ ],
+ "outputs": ["tools/bench/t0_insitu_89*", "tools/bench/profile_89_*", "tools/bench/m8_*"],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "tools/bench/t0_insitu_89*",
+   "tools/bench/profile_89_*",
+   "tools/bench/profiler_run_plan_89*",
+   "tools/bench/diag_c89_*",
+   "tools/recipes/diag_c89_*",
+   "tools/bench/drive_m8*",
+   "tools/bench/m8_*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/errorlist_shots/**",
+   "tools/bench/gui_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "rules": [
+  "never edit/save D1_s1_copy.vi, kswap, originals, or the L2-A1 bed; the profiler and panel state change no VI",
+  "GUI only as in profiler_run_plan_89.md, -Exception NegativeSearch; failed prediction -> RECOVERY_LOCKED, stop",
+  "bead picking as drive_m8_load83 does, lv_gui capture->act->confirm, Exception Approved",
+  "no beads: garbage tracking is not a failure",
+  "facts only, no design recommendation; result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

@@ -1,0 +1,66 @@
+{
+ "schema": "task/1",
+ "id": "89-1",
+ "kind": "build",
+ "goal": "PD195(d): instrumented diagnostic copy D1_s1_t0_<ts>.vi (timing stamps around each per-bead group + per-loop iteration), then real legs at 15 and 8 picks: ms/iteration per group + lost frames",
+ "why": "Kernel swap did not move frame loss at 15 picks (195(c)); the per-bead cost must be placed before L2 stage 2. Detail: brief_89-1.md",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_89-1.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"path": "docs/t0-instrumentation-plan.md"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/m8_kswap_88.json"},
+  {"path": "tools/bench/m8_load_83.json"},
+  {"path": "tools/bench/drive_m8_load83.py"},
+  {"path": "docs/camera-acquisition-facts.md"}
+ ],
+ "pass": [
+  "D1_s1_t0_<ts>.vi: computation_diff vs D1_s1_copy = 0 rows, only timing nodes/sequencing added, ExecState 1 warm+cold, saved by script, md5",
+  "no non-reentrant helper shared across loops, no queue wait / UI property node / per-iteration file I/O added on the frame path",
+  "PRECONDITION build gates pass; real legs 120 s 90 Hz: 15 picks x1 and 8 picks x1; lost/acquired/rate + per-group timing each; LabVIEW gone each",
+  "tools/bench/t0_insitu_89.json written; D1_s1_copy, kswap and L2-A1 bed md5 unchanged"
+ ],
+ "outputs": ["claudeDev/D1_s1_t0_*.vi", "tools/bench/t0_insitu_89*", "tools/bench/build_t0_89*"],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_t0_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\ops\\**",
+   "tools/bench/t0_insitu_89*",
+   "tools/bench/build_t0_89*",
+   "tools/bench/diag_c89_*",
+   "tools/recipes/build_t0_89*",
+   "tools/recipes/stage_t0_89*",
+   "tools/recipes/diag_c89_*",
+   "tools/bench/sim/t0/**",
+   "tools/bench/drive_m8_load83*",
+   "tools/bench/m8_*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/errorlist_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 120},
+ "rules": [
+  "rule 1a: stamps change no computed value; computation_diff 0 is the gate; diagnostic copy is never delivered",
+  "never edit/save D1_s1_copy.vi, kswap, originals, or the L2-A1 bed",
+  "missing verb/helper may be built: <=120 lines stagekit, negative self-test, handle-flat",
+  "bead picking as drive_m8_load83 does, lv_gui capture->act->confirm, Exception Approved",
+  "no beads: garbage tracking is not a failure",
+  "failed gate -> JEV-LADDER first; review owed -> hypothesis review then stop",
+  "facts only, no design recommendation; result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

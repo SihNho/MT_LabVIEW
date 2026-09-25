@@ -1,0 +1,50 @@
+{
+ "schema": "task/1",
+ "id": "89-3",
+ "kind": "measure",
+ "goal": "PD195(d) via LabVIEW's built-in profiler on unmodified D1_s1_copy.vi: scriptable? (external search), save format, enumerated run plan + peer review. No leg run.",
+ "why": "89-1 and 89-2 FAIL at B0: in-VI instrumentation needs verbs we lack (frame move; >=10 primitives). The profiler times every per-bead subVI group in situ with no VI edit. Detail: brief_89-3.md",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_89-3.md"},
+  {"path": "tools/bench/cards/result_89-1.json"},
+  {"path": "tools/bench/cards/result_89-2.json"},
+  {"path": "docs/t0-instrumentation-plan.md"},
+  {"path": "docs/vi-server-ids.json"},
+  {"path": "tools/bench/drive_m8_load83.py"},
+  {"path": "tools/lv_gui.ps1"}
+ ],
+ "pass": [
+  "profiler scriptability answered with external evidence (URLs) + local grep; negative-search record written if no scripted route",
+  "profiler save format/columns and D1_s1_copy debugging-allowed property stated with evidence (headless read only)",
+  "tools/bench/profiler_run_plan_89.md: every GUI act enumerated with prediction contract; leg integration; overhead statement",
+  "adversarial hypothesis peer review of the plan ANSWERED, archived, disposition annotated in the plan"
+ ],
+ "outputs": ["tools/bench/profiler_run_plan_89.md", "tools/bench/diag_c89_profiler_*", "archive/peer/*profiler*"],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/profiler_run_plan_89*",
+   "tools/bench/diag_c89_*",
+   "tools/recipes/diag_c89_*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "fact"]
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "external search mandatory before any 'not scriptable' claim",
+  "never edit/save D1_s1_copy.vi, originals, or the L2-A1 bed; headless read only",
+  "GUI only where scripting verified unreachable; every GUI act enumerated in the reviewed plan",
+  "facts only; result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

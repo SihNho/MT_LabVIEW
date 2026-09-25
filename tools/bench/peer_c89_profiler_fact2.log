@@ -1,0 +1,40 @@
+BGRUN START 2026-09-26 01:54:58 limit 16.0 min: powershell -Command & 'tools/peer.ps1' -Agent claude -Kind fact -Role fact -Slug c89-profiler-fact2 -TaskFile tools/bench/peer_c89_profiler_fact2.md -TimeoutSec 780
+OUTCOME: ANSWERED (223s)  model: fable (effort low; peer.ps1 default for role fact)  archived: archive\peer\2026-09-26-c89-profiler-fact2.md
+COST: $2.2050  in 290 / out 11985 / cache-create 42692 / cache-read 444314  (222s, 49 turn(s))
+--- ANSWER ---
+**1. VI Server property for "Allow debugging"**
+
+- Property: VI class, long name `Execution:Allow Debugging`, short name `Exec.AllowDebug`, Boolean, Read/Write, remote access yes, not settable while running, Run-Time Engine: read only. Public (not scripting/private). Property ID listed as **206** in the LabVIEW Wiki VI class table (the table's "Property ID" column; hex-style IDs). https://labviewwiki.org/wiki/VI_class/Execution.Allow_Debugging_property and https://labviewwiki.org/wiki/VI_class
+- NI reference page for the same property (content not fetchable through my tool, only navigation returned): https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/vi-server/vi/allowdebugging.html
+- ActiveX: yes. The VirtualInstrument object (obtained via Application.GetVIReference) has a documented `AllowDebugging` property, Boolean, read/write, `object.AllowDebugging`. Writing it recompiles the VI; TRUE generates extra breakpoint/single-step code. https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/activex/vi/allowdebugging.html
+- NI's ActiveX VI property list (VI Properties (ActiveX)) also documents other execution settings: `IsReentrant`, `ReentrancyType`, `ExecPriority`, `PreferredExecSystem`, `ExecInlining`, `ExecIsInlineable`, `SuspendOnCall`, `ExecState`, `EditMode`, `IsProbe`, plus `FPState`, `FPBehavior`, `FPWinBounds`, `CodeSize`, `DataSize`, `BDSize`, `FPSize`, `Name`, `Path`, `Description`, `VIType`, `Callers`, `Library`, `OwningApp`, `IsCloneVI`, `CloneName`, `RunOnOpen`, `ShowFPOnCall`, `ShowFPOnLoad`, `CloseFPAfterCall`, `LogAtFinish`, `LogFilePath`, `HistoryText`, `RevisionNumber`, printing/help/toolbar/history properties. https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/activex/vi-p.html
+- ActiveX VI methods documented: `Abort`, `Call`, `Call2`, `CenterFrontPanel`, `CloseFrontPanel`, `DisconnectFromLibrary`, `ExportVIStrings`, `FPGetRuntimePos`, `FPRunTimePosRun*` (Centered/Custom/Max/Min/Unchanged), `GetControlValue`, `GetLockState`, `GetVIDependencies`, `ImportVIStrings`, `MakeCurValueDefault`, `OpenFrontPanel`, `PrintPanel`, `PrintVIToHTML/Printer/RTF/Text`, `ReinitializeAllToDefault`, `Revert`, `Run`, `SaveForPrevious`, `SaveInstrument`, `SaveRunTimeMenu`, `SetControlValue`, `SetLockState`, `SetVIIcon`. https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/activex/vi-m.html
+- Side note: LabVIEW 2026 Q1 adds a per-target override ("Override VI Properties to Enable Debugging" / Project Environment Settings) stored in `.__<project>UserState\<project>.lvprojstate`, without modifying the VI. https://forums.ni.com/t5/LabVIEW-Public-Beta-Program-in/New-2026-Q1-Feature-Enable-Disable-VI-Debugging-Without-File/td-p/4458707
+
+**2. LVSR block, pylabview**
+
+- Debug flag enum (LVinstrument.py): class `VI_IN_ST_FLAGS` ("VI Insrument State flags"), member `DebugCapable = 1 << 9` with comment "Whether you can use debugging tools on the VI. For example, you can set breakpoints, create probes, enable execution highlighting, and single-step through execution." Set = debugging allowed (positive sense). Other members are `InStBit0..InStBit31` (unknown) and `PrintAfterExec = 1 << 15`. https://raw.githubusercontent.com/mefistotelis/pylabview/master/pylabview/LVinstrument.py
+- Structure `LVSRData` field order and byte offsets: `version` u32 @0, `execFlags` u32 @4 (`VI_EXEC_FLAGS`), `viFlags2` u32 @8 (`VI_FLAGS2`), `field0C` u32 @12, `flags10` u16 @16, `field12` u16 @18, `buttonsHidden` u16 @20, `frontpFlags` u16 @22, **`instrState` u32 @24 (0x18)**, `execState` u32 @28, `execPrio` u16 @32, `viType` u16 @34, `prefExecSyst` i32 @36, ... `viSignature` 16 bytes @52, ... `inlineStg` u8 @136, `field8C` u32 @140. So `DebugCapable` is bit 9 of the u32 at LVSR offset 0x18 (mask 0x200). Same URL as above.
+- Related `VI_EXEC_FLAGS` (u32 at offset 4): `IsReentrant = 1<<5`, `PooledReentrancy = 1<<7`, `HasSetBP = 1<<12`, `LibProtected = 1<<13` (0x2000), `IsSubroutine = 1<<17`, `SaveParallel = 1<<24`, etc. Same URL.
+- pylabview wiki "Blocks" page only documents LVSR as version u32 @0, int16 @4, u16 flags @6 with "Protected 0x2000"; it says nothing about debugging. The code (above) is the authoritative layout. https://github.com/mefistotelis/pylabview/wiki/Blocks
+- Not found: I could not retrieve the `class LVSR` parser in LVblock.py (file truncated by my fetch), so any version-dependent block length for 2020+ is unverified. https://github.com/mefistotelis/pylabview/blob/master/pylabview/LVblock.py
+
+**3. LabVIEW.ini profiler / debugging tokens**
+
+- Profiler tokens that start or auto-save profiling: **none found**. LabVIEW Wiki Debugging, Performance, Execution System and Miscellaneous pages contain no "profil*" token. https://labviewwiki.org/wiki/LabVIEW_configuration_file/Debugging , https://labviewwiki.org/wiki/LabVIEW_configuration_file/Performance , https://labviewwiki.org/wiki/LabVIEW_configuration_file/Execution_System , https://labviewwiki.org/wiki/LabVIEW_configuration_file/Miscellaneous
+- Debugging tokens (Wiki Debugging page): `DWarnDialog`, `showExePathInWindowTitle`, `prettyExecHilite`, `autoProbe`, `showWarnings`, `massCompAll`. https://labviewwiki.org/wiki/LabVIEW_configuration_file/Debugging
+- Undocumented debugging tokens: `debugging` (runtime checks logged to `<lvdir>\dprintf.txt`), `LVdebugKeys` (Ctrl+Shift+H/W internal monitors, Heap Peek), `memoryChecking`, `nodeBreakPointMenuItem`; also `DPrintfLogging=True`. https://labview.brianrenken.com/INI/undoc.htm and https://blog.dmitriev.de/labview/ini_keys/hidden_ini_keys/
+
+Sources:
+- [VI class/Execution.Allow Debugging property - LabVIEW Wiki](https://labviewwiki.org/wiki/VI_class/Execution.Allow_Debugging_property)
+- [VI class - LabVIEW Wiki](https://labviewwiki.org/wiki/VI_class)
+- [AllowDebugging (ActiveX) - NI](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/activex/vi/allowdebugging.html)
+- [VI Properties (ActiveX) - NI](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/activex/vi-p.html)
+- [VI Methods (ActiveX) - NI](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/properties-and-methods/activex/vi-m.html)
+- [pylabview LVinstrument.py](https://raw.githubusercontent.com/mefistotelis/pylabview/master/pylabview/LVinstrument.py)
+- [pylabview wiki Blocks](https://github.com/mefistotelis/pylabview/wiki/Blocks)
+- [LabVIEW configuration file/Debugging](https://labviewwiki.org/wiki/LabVIEW_configuration_file/Debugging)
+- [Undocumented INI settings](https://labview.brianrenken.com/INI/undoc.htm)
+- [LabVIEW's hidden INI Keys](https://blog.dmitriev.de/labview/ini_keys/hidden_ini_keys/)
+- [NI 2026 Q1 debugging override](https://forums.ni.com/t5/LabVIEW-Public-Beta-Program-in/New-2026-Q1-Feature-Enable-Disable-VI-Debugging-Without-File/td-p/4458707)
+BGRUN END rc=0 after 224s

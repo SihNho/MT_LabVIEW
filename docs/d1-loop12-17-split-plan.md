@@ -1029,6 +1029,35 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        The output is ms per iteration per group, which names the lever. Rule 1a: stamps add timing reads and change
        no computed value; the numeric rule-1a check does not apply to an instrumented diagnostic copy that is never
        delivered. L2 stage 2 waits for this: moving loops is not the lever until the per-bead cost is placed.
+196. **(cycle 89 judgement, on results `89-1` FAIL, `89-2` FAIL, `89-3` PASS, `89-4` FAIL 24/5 with Part 1 17/17, `89-5` PASS
+     32/0 and `89-6` PASS)**
+     - **(a) In-VI bracketing with the existing verbs is CLOSED.** 9 of the 11 groups have no error wire, and no verb
+       moves live nodes into a FlatSequence (`result_89-1.json`). A LabVIEW-primitive stamp helper needs 10 or more
+       primitives that only `copy_by_index` can make (`result_89-2.json`). Neither is escalated: a stronger model does
+       not create missing verbs.
+     - **(b) The built-in profiler cannot be scripted** (negative search `tools/bench/diag_c89_profiler_search.md`). Its GUI
+       route failed its liveness test twice at the checkbox reader (`diag_c89_profiler_live2.log:34`). It is DROPPED as
+       the per-bead instrument: it reports CPU time per VI, not waits or serialisation, and it is fragile GUI.
+     - **(c) The display term is REAL but MINOR.** On unmodified `D1_s1_copy.vi`, 120 s at 90 Hz, 15 picks, the panel was
+       minimized through COM with FPState 4 (`m8_panelmin_89.json`, `m8_panelmin_89b.json`):
+       - ctl 3,434 / 3,603 against min 2,616 / 3,286; both pairs favour min (−818 with ctl first, −317 with min first);
+         mean −568, about −16 %;
+       - at 8 picks, 16 against 15 lost, so the term is not measurable;
+       - the minimized legs saved more `.tra` rows (8,147 vs 7,548; 11,505 vs 11,143).
+       About 25–31 % loss REMAINS at 15 picks with the panel minimized. So the main per-bead cost is NOT display and NOT
+       the kernel (195(c)).
+     - **(d) NEXT instrument = a CLFN stamp.** Build a tiny C DLL, `t0stamp.dll`: `stamp(int32 site, void* any)`,
+       "Adapt to type", pass by pointer so the data is not copied. It keeps per-site QueryPerformanceCounter buffers
+       inside the DLL and dumps them to a file on every 1024th call and at unload. It is called by `build_clfn` nodes
+       fed a BRANCH of each group's output wire, plus each holding loop's `i`. That gives completion stamps as in
+       brief_89-2, with no LabVIEW primitive to create (census review `archive/peer/2026-09-26-c89-donor-census-hyp.md`).
+       - This is a TOOL under the 2026-09-24 grant. Loop timing will be needed again for every loop split (M8
+         acceptance).
+       - Order: (1) the DLL + its self-test outside LabVIEW; (2) one CLFN node on a scratch VI, handle-flat, with a
+         negative case; (3) the instrumented `D1_s1_t0_<ts>.vi`, with `computation_diff` 0 and ExecState 1;
+         (4) legs at 15 and 8 picks, with the panel minimized AND normal.
+       - Each step saves its artefact (split rule).
+     - **(e) Rule 1a:** stamps read time only. The instrumented copy is diagnostic and is never delivered.
 
 ## OPEN (design choices — for judgement; not decided here)
 

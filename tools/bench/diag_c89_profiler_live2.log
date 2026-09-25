@@ -1,0 +1,41 @@
+BGRUN START 2026-09-26 02:42:25 limit 12.0 min: py -u tools/bench/diag_c89_profiler_leg.py --liveness
+[   0.1s]   com.deq  #1 app
+[profiler live] apartment2 attached, LabVIEW 26.3.1f1
+[  14.5s]   com.deq  #2 open ('C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy_live_20260926_024225.vi',)
+[  15.8s]   com.deq  #3 panel (False,)
+[  17.2s]   com.deq  #4 state
+[profiler live] ExecState=1
+[profiler live] locate P-B `Tools` menu label       -> ('Tools', 235, 92)   (rows: ['D1_s1_c0py_live_20260926_024225.vi Front Panel', 'Help', 'File', 'Edit', 'Tools', 'Window', 'View', 'Project', 'Operate', '15pt Application Font', 'Framerate', 'Plot 0', '15000.0', '#FDnoints'])
+[profiler live] CLICK (235,92) Tools menu (P-B)
+[profiler live] locate P-C `Profile` row            -> ('Profile', 248, 225)   (rows: ['TUUIS', 'MnNIIAn', 'diau', 'Measurement & Automation Explorer..', 'it Applic', 'Instrumentation', 'Plot (', 'Chat with Nigel Al...', 'Ctrl+Shift+N', 'Plot ', 'Compare', 'Plot :', 'Merge', 'Plot :'])
+[profiler live] locate P-D `Performance and Memory...` -> ('Performance and Memory..', 609, 226)   (rows: ['ompare', 'lerge', 'Performance and Memory..', 'rofile ', 'Show Buffer Allocations...', 'ecurity', 'ser Name...', 'Vi Metrics...', 'Find Parallelizable Loops...', 'ild Application (EXE) from Vi...', 'Profile Buffer Allocations...', 'surce Control', 'Trace Execution...', 'I Analyzer'])
+[profiler live] CLICK (609,226) Performance and Memory... (P-D)
+[profiler live] locate P-E `timing_stat`            -> ('Timing statistics', 47, 52)   (rows: ['Profile Performance and Memory', 'X', '口', ' Profile memory usage', 'Timing statistics', 'Application Instances', ' Timing details', 'Memory usage', 'Time unit', 'Size unit', 'kilobytes', 'milliseconds', 'Select Application Instances..', 'Profile Data'])
+[profiler live] CLICK (634,410) checkbox timing_stat click 1
+[profiler live] locate P-E `timing_det`             -> (' Timing details', 33, 71)   (rows: ['Profile Performance and Memory', 'X', '口', ' Profile memory usage', 'Timing statistics', 'Application Instances', ' Timing details', 'Memory usage', 'Time unit', 'Size unit', 'kilobytes', 'milliseconds', 'Select Application Instances...', 'Profile Data'])
+[profiler live] CLICK (620,429) checkbox timing_det click 1
+[profiler live] locate P-E `prof_mem`               -> (' Profile memory usage', 196, 52)   (rows: ['Profile Performance and Memory', 'X', '口', ' Profile memory usage', 'Timing statistics', 'Application Instances', ' Timing details', 'Memory usage', 'Time unit', 'Size unit', 'kilobytes', 'milliseconds', 'Select Application Instances...', 'Profile Data'])
+[profiler live] locate P-E `mem_usage`              -> ('Memory usage', 207, 72)   (rows: ['Profile Performance and Memory', 'X', '口', ' Profile memory usage', 'Timing statistics', 'Application Instances', ' Timing details', 'Memory usage', 'Time unit', 'Size unit', 'kilobytes', 'milliseconds', 'Select Application Instances...', 'Profile Data'])
+[profiler live] locate Time unit ring value         -> ('milliseconds', 61, 112)   (rows: ['Profile Performance and Memory', 'X', '口', ' Profile memory usage', 'Timing statistics', 'Application Instances', ' Timing details', 'Memory usage', 'Time unit', 'Size unit', 'kilobytes', 'milliseconds', 'Select Application Instances...', 'Profile Data'])
+[profiler live] CLICK (670,470) Time unit ring (A3: -> microseconds)
+[profiler live] locate microseconds item            -> ('microseconds', 666, 489)   (rows: ['Profile Performance and Memory', 'Profile memory usa(', 'Timing statistics', 'Timing details', ' Memory usage', 'Size unit', 'Time unit', 'kilobytes', 'milliseconds', 'microseconds', 'P', 'milliseconds', 'Time Total Time # Runs', 'seconds'])
+[profiler live] CLICK (666,489) microseconds (A3)
+[profiler live] locate Time unit after              -> ('microseconds', 58, 112)   (rows: ['Profile Performance and Memory', 'X', '口', ' Profile memory usage', 'Timing statistics', 'Application Instances', 'Timing details', 'Memory usage', 'Time unit', 'Size unit', 'kilobytes', 'Select Application Instances...', 'microseconds', 'Profile Data'])
+[profiler live] locate P-F `Start`                  -> ('Start', 215, 434)   (rows: ['Profile Performance and Memory', 'X', '口', ' Profile memory usage', 'Timing statistics', 'Application Instances', 'Timing details', 'Memory usage', 'Time unit', 'Size unit', 'kilobytes', 'Select Application Instances...', 'microseconds', 'Profile Data'])
+[profiler live] CLICK (826,792) Start profiling (P-F)
+[profiler live] locate P-F `Stop` after Start       -> None   (rows: ['Profile Performance and Memory', '×', '口', ' Profile memory usage', 'Timing statistics', 'Application Instances', 'Timing details', 'Memory usage', 'Size unit', 'Time unit', 'kilobytes', 'Select Application Instances..', 'microseconds', 'Profile Data'])
+[  65.3s]   com.deq  #5 state
+[  65.3s]   com.deq  #6 set ('stop (end)',)
+[  65.3s]   com.deq  #7 get ('stop (end)',)
+[profiler live] RECOVERY_LOCKED: ['P-F `Stop` after Start']
+[  66.3s]   com.deq  #8 closepanel
+[  66.3s]   com.deq  #9 release
+GATE PF1 Profile window listed <= 10 s                  PASS
+GATE PF8 `timing_stat` ON (A3)                          FAIL
+GATE PF8 `timing_det` ON (A3)                           FAIL
+GATE PF2 Start -> `Stop` label visible                  FAIL
+GATE PF3 COM alive after Start                          PASS
+GATE PF6 LabVIEW gone                                   PASS
+GATE PF7 live copy deleted, S1 md5 unchanged            PASS
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":7,"fail":5},"first_fail":"PF8 `timing_stat` ON (A3)","artefacts":[{"path":"tools\\bench\\profile_89_live_20260926_024225.json","md5":"2cdc23c36a7c5202415f4159b4400104"}]}
+BGRUN END rc=1 after 72s

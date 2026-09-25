@@ -25,8 +25,10 @@ def stub(v5, d4, d0):
             b"Raw data file of N bead xyz trace\nactual data points/nominal: 2968/2000000\n" + b"\x00" * 800)
         for i in (7, 8, 9, 10, 13):
             v5.rec("%d %s.L%d dry" % (n + i, tag, i), "DRY", True, "dry")
-        v5.rec("%d %s.L11 dry" % (n + 11, tag), "DRY", True, "current image number over 35s: 100 .. 3000 (lost=0)")
-        v5.FACTS["frames_%s" % tag] = [100, 3000]
+        last = 100 + int(90 * v5.RUN_S)     # card 89-4 review: sized from v5.RUN_S so a --run-s plumbing regression fails T5
+        v5.rec("%d %s.L11 dry" % (n + 11, tag), "DRY", True, "current image number over %.0fs: 100 .. %d (lost=0)" % (v5.RUN_S, last))
+        print("DRY RUN_S=%s" % v5.RUN_S, flush=True)
+        v5.FACTS["frames_%s" % tag] = [100, last]
         v5.FACTS["stop_%s" % tag] = {"mechanism": "VI SERVER SetControlValue (DRY)", "latency_s": 1.0}
         return True
     v5.leg = fake_leg

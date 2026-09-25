@@ -387,8 +387,53 @@ def add_judge_decision(n, reason, blocks, path):
 LAST_FAIL_LOGS = {}     # key -> log path of the run that produced it, for the most recent failed_recipes() call
 
 
+def command_identity(cmd):
+    """The SCRIPT identity of a bgrun command: every `.py` path in it, basename, `_vN` stripped, lower-cased, joined
+    by `+` (so `py -u tools/stage_prerun.py --prerun tools/recipes/stage_d1_l2a1.py --graph x.json` and the same
+    command without `--graph` are ONE recipe). Empty string when the command names no script."""
+    parts = []
+    for tok in re.findall(r"[\w.\\/\-]+\.py\b", cmd or "", re.I):
+        base = re.sub(r"_v\d+(?=\.py$)", "", os.path.basename(tok.replace("\\", "/")).lower())
+        parts.append(base)
+    return "+".join(parts)
+
+
+def newest_run_passed(bench, identity, since_mtime, skip_names=()):
+    """True when the NEWEST bgrun run of `identity` (any log in bench with mtime >= since_mtime, by START time then
+    mtime) ended rc=0 without a failed RESULT line. retrospective-cycle88 `device-failed` (threshold 1): cycle 87's
+    firefighter fired on `gate:x1 dry run ...` although `prerun_l2a1_86-5b.log:213` had already PASSED 8/0 - the
+    trigger read failures without asking whether a later run of the same recipe passed. In flight / no END = not
+    passed (the failure stands until a finished run clears it)."""
+    best = None      # ((start_ts, mtime), verdict)
+    try:
+        names = os.listdir(bench)
+    except OSError:
+        return False
+    for fn in names:
+        if not fn.endswith(".log") or fn.startswith(("cycle_", "peer_", "priorart_", "retro")) or fn in skip_names:
+            continue
+        p = os.path.join(bench, fn)
+        try:
+            mt = os.path.getmtime(p)
+        except OSError:
+            continue
+        if mt < since_mtime:
+            continue
+        ts, cmd, seg = protocol.last_segment(read(p))
+        if not cmd or command_identity(cmd) != identity:
+            continue
+        key = (ts or 0.0, mt)
+        if best is None or key > best[0]:
+            best = (key, protocol.run_verdict(seg))
+    if best is None:
+        return False
+    v = best[1]
+    return v["source"] != "none" and not v["failed"]
+
+
 def failed_recipes(bench, t_start, t_end):
-    """Recipe basenames whose bgrun log (mtime inside [t_start, t_end]) ended rc!=0 or TIMEOUT."""
+    """Recipe basenames whose bgrun log (mtime inside [t_start, t_end]) ended rc!=0 or TIMEOUT - unless the NEWEST
+    run of the same recipe (command identity) passed, in which case the recipe is CLEARED (2026-09-26)."""
     out = set()
     LAST_FAIL_LOGS.clear()
     try:
@@ -413,6 +458,11 @@ def failed_recipes(bench, t_start, t_end):
             continue
         m = starts[-1]
         if not BGRUN_FAIL_RE.search(txt[m.end():]):
+            continue
+        # NEWEST RUN WINS (2026-09-26, retrospective-cycle88 device-failed): a later run of the same recipe that
+        # PASSED clears this failure - no recipe key and no gate key are taken from a superseded failing run.
+        ident = command_identity(m.group(1))
+        if ident and newest_run_passed(bench, ident, mt):
             continue
         seg = txt[m.end():]
         # bookkeeping tools always carry a standing FAIL (doc_lint L6, audit lines) - never a firefighter signal

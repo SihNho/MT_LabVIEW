@@ -1,0 +1,52 @@
+{
+ "schema": "task/1",
+ "id": "89-2",
+ "kind": "build",
+ "goal": "Build and self-test claudeDev\\t0_stamp.vi (reentrant preallocated completion-stamp helper, per-site buffer, periodic overwrite to t0_out\\site_<n>.bin) for PD195(d) completion-stamp instrumentation",
+ "why": "89-1 FAIL B0: flat-sequence bracketing unreachable for 9/11 groups; judgement chose branch-fed completion stamps (brief_89-2.md). The helper is the one missing tool.",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_89-2.md"},
+  {"path": "tools/bench/cards/result_89-1.json"},
+  {"path": "docs/t0-instrumentation-plan.md"},
+  {"path": "docs/toolkit-capabilities.md"},
+  {"path": "docs/NAMES.md"}
+ ],
+ "pass": [
+  "t0_stamp.vi: reentrancy preallocated, inputs data(Variant)+site(I32), ExecState 1, saved by script, md5",
+  "self-test: 3000 calls site 7 -> file >=2048 monotone stamps; interleaved 2 sites -> 2 files, correct counts, no cross-site leak",
+  "handle count flat over 20 runs (+-100)",
+  "cost per call median reported; Variant coercion cost 2-D U16 1280x1024 vs I32 reported"
+ ],
+ "outputs": ["claudeDev/t0_stamp.vi", "claudeDev/t0_out/", "tools/bench/build_t0stamp_89*"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0_out\\**",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\ops\\**",
+   "tools/bench/build_t0stamp_89*",
+   "tools/bench/diag_c89_*",
+   "tools/recipes/build_t0stamp_89*",
+   "tools/recipes/diag_c89_*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "tool grant 2026-09-24: <=120 lines on stagekit/gscript, negative self-test, handle-flat",
+  "never open/edit D1_s1_copy.vi, kswap, originals, or the L2-A1 bed",
+  "failed gate -> JEV-LADDER first; review owed -> hypothesis review then stop",
+  "facts only; result/1 <=10 facts <=3 open"
+ ],
+ "unblocks": "M8"
+}

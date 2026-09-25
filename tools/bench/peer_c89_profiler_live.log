@@ -1,0 +1,40 @@
+BGRUN START 2026-09-26 02:38:28 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c89-profiler-live -TaskFile tools/bench/peer_c89_profiler_live.md
+OUTCOME: ANSWERED (169s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c89-profiler-live.md
+COST: $1.3855  in 30 / out 12072 / cache-create 98292 / cache-read 1510186  (165s, 22 turn(s))
+--- ANSWER ---
+**Verdict: the claim about why the window disappeared holds up. The prediction that the fixed script will pass does not.** The run's own captures show two more defects, and one of them silently defeats amendment A3. One of the planned fixes also brings back the exact Esc failure the claim blames.
+
+**1. The strongest reason the claim is wrong: the checkbox reader, not the regex, is the A3 failure, and the fix does not touch it.**
+- `m8_shots/20260926_023542_prof_live_unit_menu.png` shows all four boxes in the Profile window **unchecked**, including "Timing statistics".
+- Yet `profile_89_live_20260926_023542.json:27-28` records `chk_timing_stat_before: 0.132` → `chk_timing_stat_ok: true`. The threshold is `d_before > 0.12` (`diag_c89_profiler_leg.py:114`), so an empty enabled box read as ON and was never clicked. That 0.132 is the box border plus part of the glyph. The only 0.0 was the greyed, disabled "Memory usage" box.
+- With the fixed regex, `^\s*Timing details` will now match. Its box, drawn the same way, will read about 0.13 → "on" → no click.
+- **Result:** Timing statistics and Timing details both stay OFF, and every gate still passes. PF4 only checks for `VI Time`, and the capture shows the columns `VI Time / Sub VIs Time / Total Time` present with every box off. The liveness run would "pass" while A3 is not met.
+
+**2. A defect the fix keeps, of the same kind the claim describes: `snapshot_and_save` line 169 calls `d0.focus(title)` on the Save file dialog.**
+- `d0` is `drive_original_copy_v2` (v5 → v4 → v2), and its `focus` is `lv_gui focus` = Alt tap + **Esc tap** (`lv_gui.ps1:243-252`).
+- Esc in a Windows common file dialog means Cancel. So the dialog is likely dismissed before `^a`, the path and `{ENTER}` are typed. Those keystrokes then land on the Profile window, where Enter may press its default button (Start/Stop or Close).
+- Line 174 does the same thing again on the "stuck" path. The comment at line 154 applies to line 169 too.
+
+**3. The alternative explanations for the missing window, tested against the machine record:**
+- **"A dropdown opened, and Esc closed only the dropdown":** refuted. The capture about 1 s after the click at (803,449) shows no dropdown. That point is on the "Size unit" label, and the Size unit ring is greyed/disabled anyway.
+- **"The window lost focus and lv_gui can no longer list it":** refuted. `Find` enumerates every visible top-level window of the LabVIEW process, whatever has focus (`lv_gui.ps1:219-223`). The final `dialogs` output (`profile_89_live…json:34`) lists only the Front Panel and `LabVIEW 0,0,0,0`. `…_locked.png` shows no Profile window anywhere on screen.
+- **The window really closed.** The capture also shows it has a **Close** button, and Windows dialogs normally map Esc to their Close/Cancel button. So part (2) of the claim is well supported: 1.7 s between "locate us item" and RECOVERY_LOCKED fits esc + a failed `shotwin`.
+- **Caveat:** the original script text was overwritten, and the run never logged the Esc or the failed `shotwin` (the fix only now adds that log line). "Esc closed it" is therefore strongly supported, not directly observed.
+- NI's documentation does not say whether this window closes on Esc; I found no source either way.
+
+**4. The fix's time-unit branch leaves a dropdown open when nothing matches.**
+- If the list has no `microseconds` item (NI's docs don't list the ring's values), line 137 does nothing.
+- The first click on Start is then spent closing the dropdown. PF2 would fail with a misleading cause.
+
+**Your LabVIEW questions:**
+- **Start → Stop:** NI's and third-party guides describe separate Start, Snapshot and Stop steps, with Save afterwards ([NI: Using the Profile window](https://www.ni.com/docs/en-US/bundle/labview/page/using-the-profile-performance-and-memory-window.html), [OpenStax lab](https://www.jobilize.com/course/section/profile-tool-lab-1-introduction-to-labview-by-openstax)). The capture shows only Start/Snapshot/Save/Close/Help, so Stop is the Start button's relabel. That fits, but no source I found states it outright.
+- **Save:** writes a **tab-delimited text file** ([LAVA: LabVIEW Performance and Memory Management](https://lavag.org/old_files/post-705-1100237457.pdf)). Save is greyed until a Snapshot exists, as the capture shows. Whether the dialog is the native Windows one depends on LabVIEW's native-file-dialog option; I found no source for 2026.
+- **Close on Esc:** not documented. The local evidence (see 3) says yes.
+
+**What would falsify the claim:** a fixed-script run that reaches `Stop` and saves a file, but where `pJ1.png` shows no file dialog, or the saved header lacks timing-statistics columns. Either would show the run failing on the defects above rather than on the regex/Esc bugs.
+
+**The cheapest discriminating test, offline and free:** run `box_dark` on the existing `…_chk_timing_det.png` at the fixed regex's hit. If it returns > 0.12 for a box the capture shows empty, points 1 and 2 of this reply are confirmed before any LabVIEW run. Then, before the next live run:
+- replace `d0.focus` at lines 169 and 174 with `activate`;
+- check each box's state by comparing it against a known-checked template, and require a visible change after every click;
+- add `timing_stat` and `timing_det` ON as gates, not optional facts.
+BGRUN END rc=0 after 169s

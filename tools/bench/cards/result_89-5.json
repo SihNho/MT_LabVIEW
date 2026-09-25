@@ -1,0 +1,32 @@
+{
+ "schema": "result/1",
+ "id": "89-5",
+ "status": "PASS",
+ "gates": {"pass": 32, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/bench/m8_panelmin_89b.json", "md5": "42d5f5529b332856f59beb5d3f742709"},
+  {"path": "tools/bench/t0_insitu_89.json", "md5": "0482357247a6cf72e26d08bd99173b85"},
+  {"path": "tools/bench/drive_m8_panelmin89b.py", "md5": "96da07ee26e0efa2bdeb4464794349db"}
+ ],
+ "facts": [
+  "4 real legs in order min15, ctl15, min8, ctl8; 120 s, 90 Hz read back before each; all T gates 32/0; BGRUN END rc=0 after 1536 s. m8_panelmin_89b.log:204-238",
+  "15 picks L-min (FPState 4 via COM, rect -32000): lost 13 -> 3286 (3273 over the minimized window), frames 10671, 88.9 Hz, tra rows 8147. m8_panelmin_89b.log:4-8,236",
+  "15 picks L-ctl (FPState 1, never written): lost 12 -> 3603, frames 10678, 89.0 Hz, tra rows 7548. m8_panelmin_89b.log:55-57,236",
+  "15-pick min - ctl = -317 with min FIRST (89-4, ctl first: -818). Both pairs have min lower; the size differs by 501 between the two orders. m8_panelmin_89b.log:236, m8_panelmin_89.json",
+  "8 picks L-min: lost 7 -> 15, frames 10664, tra rows 11505. L-ctl: lost 7 -> 16, frames 10669, tra rows 11143. min - ctl = -1 (loss ~0.15 % both). m8_panelmin_89b.log:104-108,155-157,236",
+  "All four 15-pick lost values so far (3434, 2616, 3286, 3603) are within cycle 83/88's 3161..3776 band except 89-4's min 2616. t0_insitu_89.json part1/part1b",
+  "PM gates 4/4 on both min legs (FPState 1->4->1, rect iconic then restored). LabVIEW gone after each leg (T6), TMX 39 after each leg (T10). m8_panelmin_89b.log:6,8,106,108,210-231",
+  "v5 step `run1.L8 three choose bandpass panels` FAILs in every leg (15 or 8 closed vs contract 3), same as 89-4's v5_failing; leg rc 0, M1-M8 pass. m8_panelmin_89b.log:27,76,127,176",
+  "Dry run first: m8_panelmin_89b_dry.log 27/0 rc=0 (2 s). S1 md5 3e3d23ce…, bed and kswap md5 unchanged (T8). No VI edited; no GUI act beyond the driver's picks.",
+  "Fixed-name leg jsons (m8_s1_p15/p8_r120, m8_v5_*, m8_panelmin_89_*_pm) were backed up and restored byte-identical (T9); per-leg copies at m8_panelmin_89b_leg{1..4}[_pm].json"
+ ],
+ "open": [
+  "The 15-pick min-vs-ctl difference is -818 (ctl first) and -317 (min first): is the display term ~300-800 lost frames of ~3400, or is it inside the run-to-run spread (3161..3776)? A judgement on a third pair or on accepting the two",
+  "At 8 picks min and ctl lose 15 vs 16 of ~10,670 frames: the display term is not measurable at 8 beads; the per-bead scaling of the display term cannot be read from these two loads",
+  "The min legs saved MORE tra rows than ctl at both loads (8147 vs 7548; 11505 vs 11143) while frames were equal: what tra rows measure vs Total Lost Frames is a judgement question"
+ ],
+ "cost": {"usd": null, "minutes": 34, "labview_runs": 4},
+ "note": "Sequencer drive_m8_panelmin89b.py = 89-4's with LEGS carrying the pick count; leg wrapper unchanged. HARD_MIN 48 / bgrun 52 min; run took 25.6 min. Runner hooks: guard_bash required `bgrun --material` (env-prefix form refused by the permission layer)."
+}

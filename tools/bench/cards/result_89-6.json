@@ -1,0 +1,23 @@
+{"schema":"result/1","id":"89-6","status":"PASS","gates":{"pass":3,"fail":0},
+"first_fail":null,"blocked_by":null,
+"artefacts":[
+ {"path":"tools/cycle_runner.py","md5":"abff8d9c46d7a5fca5bf27a564e9f3bc"},
+ {"path":"tools/bench/selftest_cycle_runner_ff.py","md5":"502eca26decf2af5d0265ac713aa68cd"},
+ {"path":"tools/bench/selftest_cycle_runner_ff_89-6.log","md5":"0fe84dbef8b93ca934acd95852929330"},
+ {"path":"archive/peer/2026-09-26-retrospective-cycle88.md","md5":"b9dbceaa5502abf03815c913db7c32b1"}
+],
+"facts":[
+ "tools/cycle_runner.py:390 command_identity(): every .py in a bgrun command, basename, _vN stripped, joined '+' (stage_prerun.py+stage_d1_l2a1.py with/without --graph = one recipe)",
+ "tools/cycle_runner.py:401 newest_run_passed(): newest run of that identity (mtime >= failing log; START ts then mtime) with rc=0 and no failed RESULT clears; in-flight/no END does not clear",
+ "tools/cycle_runner.py:465 failed_recipes() skips the whole failing run (recipe key AND gate key) when newest_run_passed; cycle-87 case (prerun_l2a1_86-5b.log:213 PASS 8/0) is this path",
+ "selftest_cycle_runner_ff.py: new modes newestpass (same recipe passes later -> ff=False) and otherpass (other recipe passes -> ff fires, STOP); selftest_cycle_runner_ff_89-6.log:2-9 5/5 PASS rc=0",
+ "selftest_cycle_runner_89-6.log:13-14 10/10 PASS rc=0; selftest_cycle_runner_ladder_89-6.log:13-15 11/11 PASS rc=0 (both import/run the patched runner, so it compiles)",
+ "py -m py_compile on cycle_runner.py is refused by guard_bash (hardware:none RUNNER_CMD_RE); compile proof is the three self-tests executing the patched runner via --dry-cmd",
+ "archive/peer/2026-09-26-retrospective-cycle88.md:268 OUTCOME line added under 'What was done with it' (device-failed disposition)",
+ "running runner untouched (card rule); patch takes effect at the next launch"
+],
+"open":[
+ "the replay of the real cycle-86 window (failed_recipes over tools/bench with the 22:00-00:14 window) was NOT run: guard_bash refuses a py -c import of cycle_runner in this session; the self-test fixtures model it instead"
+],
+"cost":{"usd":null,"minutes":14,"labview_runs":0},
+"note":"MATERIAL=1 env-prefix form is refused by the permission layer; `py tools/bgrun.py --material ...` is the working shape (guard_bash message)."}

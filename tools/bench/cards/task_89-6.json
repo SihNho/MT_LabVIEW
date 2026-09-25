@@ -1,0 +1,42 @@
+{
+ "schema": "task/1",
+ "id": "89-6",
+ "kind": "build",
+ "goal": "cycle_runner.py firefighter trigger: skip a recipe whose NEWEST run ended rc=0/PASS; add a self-test case for it (retrospective-cycle88 device-failed disposition)",
+ "why": "Cycle 87's firefighter fired on a recipe whose newest run had already passed (prerun_l2a1_86-5b.log:213). device-failed has threshold 1.",
+ "inputs": [
+  {"path": "archive/peer/2026-09-26-retrospective-cycle88.md"},
+  {"path": "tools/cycle_runner.py"},
+  {"path": "tools/bench/selftest_cycle_runner_ff.py"},
+  {"path": "tools/bench/prerun_l2a1_86-5b.log"}
+ ],
+ "pass": [
+  "trigger ignores a recipe whose newest bgrun log ends BGRUN END rc=0 (or RESULT PASS), even if two earlier consecutive runs failed",
+  "selftest_cycle_runner_ff.py: new positive and negative cases pass; all existing ff cases still pass; selftest_cycle_runner.py still passes",
+  "patch by Edit tool only; py_compile clean; annotate the disposition in the retrospective file's 'What was done with it'"
+ ],
+ "outputs": ["tools/cycle_runner.py", "tools/bench/selftest_cycle_runner_ff*"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/cycle_runner.py",
+   "tools/bench/selftest_cycle_runner*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/cards/**",
+   "archive/peer/2026-09-26-retrospective-cycle88.md"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 40},
+ "rules": [
+  "the running runner process is not restarted or killed; the patch takes effect at the next launch",
+  "facts only; result/1 <=10 facts <=3 open"
+ ],
+ "unblocks": "M8"
+}

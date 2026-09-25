@@ -53,13 +53,19 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
 current-bed: D1_l2_a1_20260925_235224.vi
 <!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. -->
-🔴🔴🔴 **FIRST ACT (cycle 89) = `docs/d1-loop12-17-split-plan.md` Pre-decided 195(d): find WHERE the per-bead frame cost goes.**
-- Build an instrumented COPY of `claudeDev\D1_s1_copy.vi` → `D1_s1_t0_<ts>.vi`. Add tick-count stamps around each per-bead group of `docs/t0-instrumentation-plan.md` Step 1: kernel, `check N bead pos`, median/FIR filters, display, file write.
-- The build is a ≤120-line stagekit file. Pass: only timing nodes are added, `computation_diff` is 0 against D1_s1_copy, ExecState is 1.
-- Then run one real leg at 15 picks and one at 8 picks (120 s, 90 Hz, `drive_m8_load83.py` pattern). Output: ms per iteration per group, plus lost frames.
-- Why: the kernel swap did not change frame loss (195(c)), so the lever is some other per-bead work. L2 stage 2 waits until that work is placed.
-- The machine copy is `tools/bench/next.json` (advances M8/M3/R1/R3).
-- 🟠 **Owed right after that measurement (retrospective-cycle88, `device-failed`, threshold 1):** `cycle_runner.py`'s firefighter trigger fired cycle 87 on a recipe whose newest run had already passed (`prerun_l2a1_86-5b.log:213`). Make it skip a recipe whose NEWEST run ended rc=0/PASS, and add a self-test for that case. The disposition is in `archive/peer/2026-09-26-retrospective-cycle88.md` § "What was done with it".
+🔴🔴🔴 **FIRST ACT (cycle 90) = `docs/d1-loop12-17-split-plan.md` Pre-decided 196(d), steps 1–2: the CLFN stamp tool.**
+- Step 1: build `claudeDev\t0stamp.dll`. `stamp(int32 site, adapt-to-type ptr)` keeps a per-site QueryPerformanceCounter buffer and dumps it on every 1024th call and at unload. Self-test it OUTSIDE LabVIEW: 3000 calls on one site give ≥2048 monotone stamps, and 2 interleaved sites give 2 files with no leak.
+- Step 2: put one `build_clfn` node calling it on a SCRATCH VI, fed a branch of a 2-D U16 wire. Pass: ExecState 1, the file is written, per-call cost reported, handle count flat over 20 runs, and a negative case.
+- Save each artefact (split rule). Steps 3–4 (the instrumented `D1_s1_t0_<ts>.vi`, then legs at 15 and 8 picks, minimized and normal) follow in the next cycle.
+- Machine copy: `tools/bench/next.json` (M8/M3/R1/R3).
+- 🟠 **Owed right after steps 1–2 (retrospective-cycle89, `device-failed`, threshold 1):** `tools/audit_cycle.py:579` C7 must read the plan named in `tools/bench/next.json` (`plan.path`), not `doc_lint.current_plans()`. It has failed for eight cycles. Also: `.claude/agents/material*.md` still prescribe the refused `MATERIAL=1` prefix; the working form is `py tools/bgrun.py --material …`. Dispositions: `archive/peer/2026-09-26-retrospective-cycle89.md` § "What was done with it".
+- Carry (bookkeeping, material): an `archive/benchmarks/INDEX.md` row for the cycle-89 panel legs (`tools/bench/m8_panelmin_89.json`, `…_89b.json`).
+
+🟢 **CYCLE 89 DONE (PD196).**
+- In-VI bracketing and a LabVIEW-primitive stamp helper are unreachable with our verbs (89-1, 89-2).
+- The profiler cannot be scripted, and its GUI route failed its liveness test twice, so it was dropped (89-3, 89-4).
+- **Display is a minor lever.** 15 picks, unmodified S1, panel minimized via COM, ABBA order: ctl 3,434 / 3,603 lost against min 2,616 / 3,286, about −16 %. At 8 picks the two are equal (16 / 15). Roughly 30 % loss remains, so the main per-bead cost is neither display nor the kernel.
+- ✅ The firefighter trigger now skips a recipe whose newest run passed (`tools/cycle_runner.py:401` `newest_run_passed`). Self-tests: ff 5/5, runner 10/10, ladder 11/11 (89-6). This closes retrospective-cycle88's `device-failed`.
 
 🟢 **CYCLE 88 DONE.**
 - **Bed = `claudeDev\D1_l2_a1_20260925_235224.vi` md5 `51d9b8a3…`** (195(a)). The read-only P2 check passed 5/5 (`tools/bench/p2check_l2a1_88.json`). This is structural; the file has never been run.

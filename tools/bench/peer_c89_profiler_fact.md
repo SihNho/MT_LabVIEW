@@ -1,0 +1,7 @@
+API-fact question (LabVIEW 2026, Windows). Answer from NI documentation and forums with URLs for every claim; say "not found" where nothing exists. No project context needed.
+
+1. Is LabVIEW's built-in profiler (Tools » Profile » Performance and Memory) controllable programmatically — any VI Server Application/VI method or property (public or private/scripting, e.g. 'Profile', 'Start Profiling'), any LabVIEW.ini token that starts profiling or auto-saves it, any vi.lib/resource VI that backs the Profile window, or any command-line switch? Cite the URL where each route is documented or discussed; list forum threads that concluded it is NOT programmable.
+2. The Profile window's "Save" button: what file format is written (text? tab-delimited?), what columns (VI Time, Sub VIs Time, Total Time, # Runs, Average, Shortest, Longest, memory columns), what units (ms), and whether "Snapshot" is needed before Save.
+3. Does a VI need "Allow debugging" (VI Properties » Execution) enabled to appear in the profiler with timing statistics? What does NI say about the profiler's own overhead and about "Timing statistics" / "Timing details" / "Memory usage" checkboxes and the timer resolution (ms, per-thread)?
+4. Are subVIs called inside reentrant/inlined/parallel-For-loop contexts reported, and how (per clone, aggregated)? Are VIs inside an executable or an .llb reported?
+Return a compact list of facts, each with its URL.

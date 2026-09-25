@@ -13,12 +13,25 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 RUNNER = os.path.join(ROOT, "tools", "cycle_runner.py")
 
-if len(sys.argv) > 1 and sys.argv[1] in ("fail", "fail2", "samegate"):
+if len(sys.argv) > 1 and sys.argv[1] in ("fail", "fail2", "samegate", "newestpass", "otherpass"):
     bench = os.environ["FF_BENCH"]
     cnt_path = os.path.join(bench, "count.txt")
     c = int(open(cnt_path).read() or 0) + 1 if os.path.exists(cnt_path) else 1
     open(cnt_path, "w").write(str(c))
-    if sys.argv[1] == "samegate":
+    if sys.argv[1] in ("newestpass", "otherpass"):
+        # retrospective-cycle88 device-failed: the recipe fails every cycle, then a NEWER run is written.
+        # newestpass: the newer run of the SAME recipe (same command identity, extra --graph arg) PASSES -> no
+        # firefighter, ever. otherpass: the newer passing run is a DIFFERENT recipe -> the failure stands, ff fires.
+        with open(os.path.join(bench, "build_fake_v0_run%d.log" % c), "w") as f:
+            f.write("BGRUN START 2026-09-18 00:00:00 limit 1.0 min: py tools/recipes/build_fake_v0.py\n"
+                    "**FAIL B4 [OUT Tunnel] ExecState 0 at uid #77\nBGRUN END rc=1 after 1s\n")
+        time.sleep(0.05)
+        later = "build_fake_v0.py --graph g.json" if sys.argv[1] == "newestpass" else "build_other_v0.py"
+        with open(os.path.join(bench, "later_pass_run%d.log" % c), "w") as f:
+            f.write("BGRUN START 2026-09-18 00:00:01 limit 1.0 min: py -u tools/recipes/%s\n"
+                    "RESULT {\"schema\":\"result-line/1\",\"status\":\"PASS\",\"gates\":{\"pass\":8,\"fail\":0},"
+                    "\"first_fail\":null,\"artefacts\":[]}\nBGRUN END rc=0 after 1s\n" % later)
+    elif sys.argv[1] == "samegate":
         # SAME MISTAKE under a new file name: v1, v2, v3 ... all die at gate B4 with different uids
         with open(os.path.join(bench, "build_fake_v%d_run1.log" % c), "w") as f:
             f.write("BGRUN START 2026-09-18 00:00:00 limit 1.0 min: py tools/recipes/build_fake_v%d.py\n"
@@ -42,8 +55,11 @@ if len(sys.argv) > 1 and sys.argv[1] in ("fail", "fail2", "samegate"):
     sys.exit(0)
 
 ok = 0
-for mode, cycles, want_ff, want_stop in (("fail", 4, True, True), ("fail2", 4, True, False),
-                                         ("samegate", 4, True, True)):
+MODES = (("fail", 4, True, True), ("fail2", 4, True, False), ("samegate", 4, True, True),
+         # 2026-09-26 (retrospective-cycle88 device-failed): newest run of the same recipe PASSED -> no firefighter;
+         # a newer passing run of ANOTHER recipe clears nothing -> the ladder runs to the STOP as in `fail`
+         ("newestpass", 4, False, False), ("otherpass", 4, True, True))
+for mode, cycles, want_ff, want_stop in MODES:
     bench = tempfile.mkdtemp(prefix="ffbench_")
     status = os.path.join(bench, "STATUS.md")
     open(status, "w", encoding="utf-8").write("## NEXT\nx\n")
@@ -66,10 +82,15 @@ for mode, cycles, want_ff, want_stop in (("fail", 4, True, True), ("fail2", 4, T
     # "runner-exit", not "rc=": bgrun's inner-failure scan reads a literal `rc=3` in output as a failure
     print("%s mode=%s ff=%s stop=%s runner-exit %d" % ("PASS" if res else "FAIL", mode, got_ff, got_stop,
                                                         r.returncode))
+    if mode == "newestpass" and "FAILED-RECIPES" in log and "build_fake" in log:
+        print("FAIL: newestpass - a superseded failure was still listed under FAILED-RECIPES")
+        ok -= res
+        res = False
     if not res:
         print(log)
-print("%d/3 PASS" % ok)
+N = len(MODES)
+print("%d/%d PASS" % (ok, N))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 import protocol  # noqa: E402
-print(protocol.result_line(protocol.make_result(ok, 3 - ok, None if ok == 3 else "%d/3 modes" % ok)))
-sys.exit(0 if ok == 3 else 1)
+print(protocol.result_line(protocol.make_result(ok, N - ok, None if ok == N else "%d/%d modes" % (ok, N))))
+sys.exit(0 if ok == N else 1)
