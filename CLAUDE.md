@@ -109,14 +109,17 @@ requests, setpoints, enable flags, counters) are locals; queues are for lossless
 results FIFO, master plan 1.7). **Never detect an EDGE on a polled boolean** (that is what produced STATUS OPEN 58's
 three autofocus limits); publish a value the reader can compare (a counter, a position).
 
-**Autofocus, the user's account of the mechanism (2026-09-25):** the loop moves the ASI focus axis when the
-**FIRST-CLICKED reference bead's** z leaves its setpoint by more than a distance threshold (`Focus Deviation from the
-Center`); the original's "every 25 frames" gate (`camera-acquisition-facts.md:255-270`) only rate-limited the serial
-traffic and is not the meaning. The user does not run with `Frame rate` = 1. DESIGN IN FORCE for the focus loop
+**Autofocus — the user's account (2026-09-25) and what the code MEASURES:** the user remembers a distance-threshold
+trigger on the **first-clicked reference bead**; the offline read of Case `#10407` (`docs/autofocus-case-10407.md`,
+card chat-F1) shows NO threshold: every firing (every 25 frames, `camera-acquisition-facts.md:255-270`) moves the axis
+by `clamp(idx_bead0 − slices/2 + 'Focus Deviation from the Center', ±0.2)` — a proportional correction with an
+additive setpoint OFFSET, on bead index 0; `Focus Step (F1)` is not read there; the `In Range?` node is unwired.
+**Rule 1a decides: the redesign copies the CODE, not the memory.** A threshold trigger would be a new feature and
+needs the user's separate decision. The user does not run with `Frame rate` = 1. DESIGN IN FORCE for the focus loop
 (after M3, `docs/connectivity-map-plan.md` Pre-decided 148): frame loop publishes the reference bead's z and the
 auto-reset counter as locals; the focus loop runs on its own time cadence, reads them, applies the original's
-deviation test and step under `Auto-Focus` / `Limit of Auto-Focus`, and moves — no schedule boolean in the frame
-loop, no edge detection, no queue. Scheduling changes; the deviation test and the step amount do not (rule 1a).
+correction arithmetic (offset, clamp ±0.2, bead index 0) under `Auto-Focus` / `Limit of Auto-Focus`, and moves — no
+schedule boolean in the frame loop, no edge detection, no queue. Scheduling changes; the arithmetic does not (rule 1a).
 Mechanical: `tools/stage_prerun.py` refuses a stage plan that creates a queue primitive for a control signal or
 wires a boolean into a shift-register edge detector across loops (`control_path_lint`).
 

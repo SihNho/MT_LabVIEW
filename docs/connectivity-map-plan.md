@@ -102,8 +102,9 @@ Order: 1 ∥ 2 → 3, 4 (need 1) → 5 → **4b → 5b(A) → 5b(B)** → 6 → 
    `#10445` auto-reset counter. The schedule boolean `(i mod 'Frame rate' == 0) AND NOT 'Fix to a Certain Pattern'` is
    removed from the frame loop; `Frame rate` no longer gates focus. (b) Loop 1.5 runs on its own time cadence (a
    panel interval in ms, default = 25 frames' worth at the current rate), reads the locals, applies the ORIGINAL's
-   deviation test (`Focus Deviation from the Center`) and step (`Focus Step`) under `Auto-Focus` AND `counter <
-   Limit of Auto-Focus` AND NOT reseeding, and moves the ASI axis. (c) No queue, no shift-register edge detector, no
+   correction `clamp(idx_bead0 − slices/2 + 'Focus Deviation from the Center', ±0.2)` (MEASURED offline, card
+   chat-F1, `docs/autofocus-case-10407.md`: no threshold compare, `Focus Step` not read, bead index 0) under
+   `Auto-Focus` AND `counter < Limit of Auto-Focus` AND NOT reseeding, and moves the ASI axis by that amount. (c) No queue, no shift-register edge detector, no
    uninitialised register: OPEN 58's three limits vanish. (d) Before the stage is planned, the body of Case `#10407`
    is read OFFLINE from `docs/wiki/subvi/D1_s1_copy.json` into a table (which bead's z, which setpoint, threshold
    compare, step arithmetic) so (b) copies the computation exactly — card chat-F1. (e) `stage_prerun.py

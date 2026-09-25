@@ -1,0 +1,19 @@
+{"schema":"result/1","id":"chat-F1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/stage_prerun.py","md5":"81d8abfd3ffd9f2b7c56c1fff36e864a"},{"path":"tools/bench/selftest_control_path_lint.log","md5":"c69f5bd372bc9daf31e66d9ac6d79a7e"},{"path":"docs/autofocus-case-10407.md","md5":"e4e546b461dd6f20ea9d816db84c45c9"}],
+"facts":[
+"control_path_lint at tools/stage_prerun.py:799; X8 gate in prerun() :1033 and in the stageplan --prerun branch :1446; CLI --control-lint / --selftest-control-lint",
+"self-test 10/0 (selftest_control_path_lint.log): L7+K plans clean; queue, queue_node, empty why, edge detector (created, base-uid, And) refuse; data_stream+why and u32 counter pass",
+"Edge rule: SR fed by local/tunnel, previous value only to compare/logic node that also gets current value -> refuse unless src declares a non-bool type AND consumer is a comparison",
+"#10407 move frame = Diagram #10423 (wiki frame_diagram); #10417 is pass-through; selector Tunnel #10429 <- #10686 x.and.y (wiki wires row 10799)",
+"#10407 math: clamp((idx_bead0 - #slices/2 + Focus Deviation from the Center)*1, -0.2, +0.2) -> Move Axis Relative #26539; consts opconstvaluen_scan.log:65-68,74",
+"NO threshold compare in #10407: Focus Deviation is ADDED (offset of setpoint); InRangeAndCoerce #25455 'In Range?' unwired; moves every firing (docs/autofocus-case-10407.md)",
+"Bead = index const #10929 = 0 (opconstvaluen_scan.log:74) despite label 'bead 2'; Focus Step (F1) is NOT read by #10407 (main-vi-panel-map.md:282,552)",
+"Outputs: Get Current Position #19093 -> Local Focus Pos (Track) #11574 and tunnel #2017 -> wire 9113 -> SR #4256 + #12673; errors of both ASI subVIs unwired",
+"Not read: Axis enum #18509 value, which frame is TRUE (inferred), InRangeAndCoerce include flags, index data type",
+"Side check: --prerun stageplan_l7_split.json: X8 PASS, X1 FAIL 'plan is not final' (pre-existing); log moved to %TEMP%/prerun_l7_cpl_check.log"],
+"open":[
+"CLAUDE.md 1c'' and PD148(b) say the loop moves when z leaves the setpoint 'by more than a threshold' and uses 'Focus Step'; #10407 has no threshold (Focus Deviation is an additive offset, step = error clamped to +-0.2). Which does 148(b) copy?",
+"Edge-lint assumption: an undeclared source type compared with its previous value is refused (treated as boolean); a counter reader must declare type on the wire src. Keep?",
+"Is bead array index 0 the first-clicked (reference) bead? Not verified offline."],
+"cost":{"usd":null,"minutes":25,"labview_runs":0},
+"note":"No LabVIEW, no GUI, no hardware. priorart peer not dispatched (not a pass criterion). Committed c46cdf6."}
