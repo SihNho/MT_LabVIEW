@@ -1,0 +1,59 @@
+{
+ "schema": "task/1",
+ "id": "chat-F1",
+ "kind": "build",
+ "goal": "control_path_lint in stage_prerun (CLAUDE.md 1c-doubleprime) + offline table of Case #10407 (autofocus) body from the S1 wiki",
+ "why": "User 2026-09-25: loop-to-loop control by LOCAL variables, never queues; no edge detection on polled booleans; focus loop on its own clock. Pre-decided 148(d)(e).",
+ "inputs": [
+  {
+   "path": "tools/stage_prerun.py",
+   "md5": "b825000ba64d635db88fd66525853115"
+  },
+  {
+   "path": "docs/wiki/subvi/D1_s1_copy.json",
+   "md5": "5de014fe580b938328fa8662cf2b0652"
+  },
+  {
+   "path": "docs/connectivity-map-plan.md",
+   "md5": "17e9767ad23269c7227a89b154e9b3d1"
+  }
+ ],
+ "pass": [
+  "control_path_lint: a stageplan that creates Obtain/Enqueue/Dequeue Queue (or Notifier) primitives is refused unless the action carries data_stream: true with a why",
+  "control_path_lint: a plan that wires a boolean local/tunnel into a shift register whose only consumer compares it with its previous value (edge detector) across loops is refused",
+  "lint reads the plan JSON structurally (ast/JSON), no text regex; self-test: L7 plan passes, a synthetic queue plan refuses, a synthetic edge-detector plan refuses",
+  "docs/autofocus-case-10407.md: table of Case #10407 body from the S1 wiki (nodes, which bead z, setpoint source, threshold compare, step arithmetic, outputs) with uids; name what could not be read",
+  "no LabVIEW; RESULT line; commit"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/selftest_control_path_lint.log",
+  "docs/autofocus-case-10407.md"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/**",
+   "docs/autofocus-case-10407.md"
+  ],
+  "status_edit": false,
+  "git_commit": true,
+  "peers": [
+   "priorart"
+  ]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 60
+ },
+ "advances": [
+  "M11"
+ ],
+ "rules": [
+  "1c'' locals not queues",
+  "Stages are SIMULATED and PRE-RUN OFFLINE"
+ ]
+}

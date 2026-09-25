@@ -99,6 +99,27 @@ path.** A mechanism that *can* stall the frame loop is disqualified even if it u
 its own loop, owns its VISA session exclusively, and reaches the frame path only through a non-blocking handoff.
 Any argument of the form "the serial branch is conditional, so it is cheap on average" is refuted at the premise.
 
+## 1c''. Loop-to-loop CONTROL signals travel by LOCAL VARIABLE (latest value), never by queue; the focus loop runs on its own clock (user, 2026-09-25)
+
+*"큐를 넣어버린다면 두 루프 사이에 상관관계가 생겨버린다 … 그런 리스크를 감당할 필요가 있는지 모르겠음. 그냥 Boolean 값 및
+타겟 값을 local variable로 전달하는게 더 좋지 않을지? ASI autofocus 루프는 애초에 frame acquisition 루프와 동시에 돌
+필요가 없을듯."* A queue couples producer and consumer (backlog, timeouts, shutdown order); a local variable does not —
+the writer never waits and the reader sees the latest value. So: **control / trigger signals between loops (focus
+requests, setpoints, enable flags, counters) are locals; queues are for lossless DATA streams only** (the file writer's
+results FIFO, master plan 1.7). **Never detect an EDGE on a polled boolean** (that is what produced STATUS OPEN 58's
+three autofocus limits); publish a value the reader can compare (a counter, a position).
+
+**Autofocus, the user's account of the mechanism (2026-09-25):** the loop moves the ASI focus axis when the
+**FIRST-CLICKED reference bead's** z leaves its setpoint by more than a distance threshold (`Focus Deviation from the
+Center`); the original's "every 25 frames" gate (`camera-acquisition-facts.md:255-270`) only rate-limited the serial
+traffic and is not the meaning. The user does not run with `Frame rate` = 1. DESIGN IN FORCE for the focus loop
+(after M3, `docs/connectivity-map-plan.md` Pre-decided 148): frame loop publishes the reference bead's z and the
+auto-reset counter as locals; the focus loop runs on its own time cadence, reads them, applies the original's
+deviation test and step under `Auto-Focus` / `Limit of Auto-Focus`, and moves — no schedule boolean in the frame
+loop, no edge detection, no queue. Scheduling changes; the deviation test and the step amount do not (rule 1a).
+Mechanical: `tools/stage_prerun.py` refuses a stage plan that creates a queue primitive for a control signal or
+wires a boolean into a shift-register edge detector across loops (`control_path_lint`).
+
 ## 1c'. Test runs are UNATTENDED until the rig is reassembled — the harness clicks the beads itself (user, 2026-09-17)
 
 The main VI runs as: panel parameters → device configure → **a while loop that waits for mouse clicks on the live

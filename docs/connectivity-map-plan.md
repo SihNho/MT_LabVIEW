@@ -97,6 +97,17 @@ Order: 1 ∥ 2 → 3, 4 (need 1) → 5 → **4b → 5b(A) → 5b(B)** → 6 → 
 
 ## Pre-decided — ADDED 2026-09-24 01:xx (cycle 68 judgement): S3b-M4 ACCEPTED and promoted
 
+148. **FOCUS LOOP REDESIGN (user 2026-09-25; CLAUDE.md 1c''), scheduled AFTER M3, supersedes 147(b)'s edge cadence.**
+   (a) The frame loop publishes, as LOCAL variables (latest value): the first-clicked reference bead's z and the
+   `#10445` auto-reset counter. The schedule boolean `(i mod 'Frame rate' == 0) AND NOT 'Fix to a Certain Pattern'` is
+   removed from the frame loop; `Frame rate` no longer gates focus. (b) Loop 1.5 runs on its own time cadence (a
+   panel interval in ms, default = 25 frames' worth at the current rate), reads the locals, applies the ORIGINAL's
+   deviation test (`Focus Deviation from the Center`) and step (`Focus Step`) under `Auto-Focus` AND `counter <
+   Limit of Auto-Focus` AND NOT reseeding, and moves the ASI axis. (c) No queue, no shift-register edge detector, no
+   uninitialised register: OPEN 58's three limits vanish. (d) Before the stage is planned, the body of Case `#10407`
+   is read OFFLINE from `docs/wiki/subvi/D1_s1_copy.json` into a table (which bead's z, which setpoint, threshold
+   compare, step arithmetic) so (b) copies the computation exactly — card chat-F1. (e) `stage_prerun.py
+   control_path_lint` refuses plans that violate 1c''.
 147. **S3b-M4 is ACCEPTED; `claudeDev\D1_s3_loop15.vi` is its byte copy.**
    (a) `claudeDev\D1_s3b_m4b_20260924_004214.vi` md5 `1a11d92aacabf7ec844d65b8af19f39f` (482,312 B) is the S3b-M4
    deliverable, promoted by a BYTE COPY to `claudeDev\D1_s3_loop15.vi`, copy md5 equal, source kept
