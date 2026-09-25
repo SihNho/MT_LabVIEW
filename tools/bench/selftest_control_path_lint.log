@@ -1,0 +1,13 @@
+BGRUN START 2026-09-25 19:24:05 limit 5.0 min: py -u tools/stage_prerun.py --selftest-control-lint
+  PASS  C1 real plan stageplan_l7_split.json (md5 d21b307daac9c2227c3fae477e4f3f44, 45 actions, base graph 10058 objs) passes  []
+  PASS  C2 real plan stageplan_k_split.json (md5 c3892b15d071078febec7c58e34f6d24, 27 actions, base graph 10067 objs) passes  []
+  PASS  C3 synthetic queue plan (Obtain + Enqueue, no data_stream) refuses both  ["Q action 1 (q_obt): creates a queue/notifier primitive ['obtain queue'] without data_stream: true + why (CLAUDE.md 1c'': control signals between loops are locals)", "Q action 2 (q_enq): creates a queue/notifier primitive ['enqueue element'] without data_stream: true + why (CLAUDE.md 1c'': control 
+  PASS  C4 synthetic queue_node dequeue op refuses  ["Q action 1 (qd): creates a queue/notifier primitive queue_node without data_stream: true + why (CLAUDE.md 1c'': control signals between loops are locals)"]
+  PASS  C5 same queue plan with data_stream: true + why passes  []
+  PASS  C6 data_stream: true with an EMPTY why still refuses  ["Q action 1 (q_obt): creates a queue/notifier primitive ['obtain queue'] without data_stream: true + why (CLAUDE.md 1c'': control signals between loops are locals)"]
+  PASS  C7 synthetic edge detector (local -> SR, Not Equal?(current, previous)) refuses  ["E shift register SRP (sr_prev): new:LV 'value' from a local/tunnel is compared with its previous value by ['new:NE'] - an edge detector on a polled boolean across loops; source type undeclared - declare type (e.g. 'u32') on the wire src to allow a counter (CLAUDE.md 1c'': publish a counter/value)"
+  PASS  C8 same shape on a declared u32 counter passes (the 1c'' prescribed reader)  []
+  PASS  C9 logic consumer (And of current, previous) refuses even when a type is declared  ["E shift register SRP (sr_prev): new:LV 'value' from a local/tunnel is compared with its previous value by ['new:NE'] - an edge detector on a polled boolean across loops (CLAUDE.md 1c'': publish a counter/value)"]
+  PASS  C10 edge detector on BASE-graph uids (Local #501, Not Equal? by terminal names) refuses  ["E shift register SRP (sr): 501 'Focus Request' from a local/tunnel is compared with its previous value by [502] - an edge detector on a polled boolean across loops; source type undeclared - declare type (e.g. 'u32') on the wire src to allow a counter (CLAUDE.md 1c'': publish a counter/value)"]
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 0s

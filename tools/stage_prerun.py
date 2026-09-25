@@ -42,6 +42,11 @@ PRE-RUN (decision 2, 3, 8), all offline, on the same graph JSON + the dry run's 
   X6 ast lint: no int literal that is a node uid of the input graph, no string literal that is a terminal name of
      such a node (decision 8: a recipe never re-types a uid or a terminal name)
   X7 no Jev row on a RULE-CHAIN-S1 chain terminal (decision 3)
+  X8 control_path_lint (CLAUDE.md 1c'', card chat-F1): a stageplan/1 that creates a queue/notifier primitive without
+     `data_stream: true` + a non-empty `why` is refused; so is a shift register fed by a local/tunnel whose previous
+     value goes only to a compare/logic node that also gets the current value (an edge detector) unless the source is
+     a DECLARED non-boolean (`type`) compared by a comparison (a counter reader). Also on --prerun of a plan.
+     `--control-lint <plan>` (exit 0/2) · `--selftest-control-lint` (log tools/bench/selftest_control_path_lint.log)
 Records: tools/bench/prerun_records.jsonl, one line per dry/prerun, keyed by the script's sha256 + the plan files'
 md5s. Launch gate (decisions 1/2/4): a `tools/recipes/stage_*.py` launch needs a dry PASS and a prerun PASS for the
 script's CURRENT sha256 and plan md5s, both newer than the newest failing run of that script (a failed run
@@ -733,6 +738,219 @@ def stageplan_check(path):
     return True, "final, finalized PASS, {0} actions -> {1} real ops".format(len(plan["actions"]), len(ops)), plan, ops
 
 
+# ------------------------------------------------------------------------------ control_path_lint (CLAUDE.md 1c'')
+# Card chat-F1, Pre-decided 148(c)(e). Loop-to-loop CONTROL travels by local variable; queues/notifiers are for
+# lossless DATA streams only; no edge detection on a polled boolean. Reads the stageplan/1 JSON STRUCTURALLY (action
+# fields, endpoint dicts/symbols, the base graph's classes and terminal names) - no regex over the file text.
+# Existed first: gscript.queue_node (obtain/enqueue/dequeue/release, the only queue writer), stagesim OPS (no queue
+# op), no lint of either kind anywhere in tools/.
+QUEUE_OPS = frozenset(("queue", "queue_node", "obtain_queue", "enqueue", "enqueue_element", "dequeue",
+                       "dequeue_element", "release_queue", "notifier", "notifier_node", "obtain_notifier",
+                       "send_notification", "wait_on_notification", "release_notifier"))
+QUEUE_NAMES = frozenset(n.lower() for n in (
+    "Obtain Queue", "Enqueue Element", "Enqueue Element at Opposite End", "Lossy Enqueue Element", "Dequeue Element",
+    "Preview Queue Element", "Flush Queue", "Release Queue", "Get Queue Status", "Obtain Notifier",
+    "Send Notification", "Wait on Notification", "Wait on Notification from Multiple", "Release Notifier",
+    "Get Notifier Status", "Cancel Notification"))
+QUEUE_KINDS = frozenset(("obtain", "enqueue", "dequeue", "release", "preview", "flush", "send", "wait"))
+QUEUE_TERMS = frozenset(("queue", "queue out", "notifier", "notifier out", "element data type"))
+NAME_FIELDS = ("class", "name", "prim", "primitive", "function", "label", "subvi", "vi")
+COMPARE_NAMES = frozenset(n.lower() for n in ("Equal?", "Not Equal?", "Greater?", "Less?", "Greater Or Equal?",
+                                              "Less Or Equal?"))
+LOGIC_NAMES = frozenset(n.lower() for n in ("And", "Or", "Not", "Exclusive Or", "Not Exclusive Or", "Not And",
+                                            "Not Or", "Implies"))
+COMPARE_TERMS = frozenset(("x = y?", "x != y?", "x > y?", "x < y?", "x >= y?", "x <= y?"))
+LOGIC_TERMS = frozenset(("x .and. y?", "x .or. y?", ".not. x?", "x .xor. y?", "x .nxor. y?", ".not. (x .and. y)?",
+                         ".not. (x .or. y)?", "x .implies. y?"))
+LOCAL_CLASSES = frozenset(("Local", "LocalVariable"))
+BOOL_TYPES = frozenset(("bool", "boolean", "tf"))
+
+
+def _ep(ref):
+    """endpoint -> (node key, term). node key: int uid, or 'new:X' for a plan-created object."""
+    if isinstance(ref, dict):
+        return ref.get("uid"), ref.get("side") or ref.get("term")
+    if isinstance(ref, str):
+        h, _d, t = ref.partition(".")
+        if h.startswith("new:"):
+            return h, t
+        try:
+            return int(h), t
+        except ValueError:
+            return h, t
+    return None, None
+
+
+def _base_graph(plan):
+    """(class by uid, set of terminal names by owner uid) from the plan's base graph JSON; ({}, {}) if unreadable."""
+    p = ((plan.get("base") or {}).get("path")) or ""
+    p = p if os.path.isabs(p) else os.path.join(ROOT, p)
+    try:
+        g = json.load(open(p, encoding="utf-8"))
+    except Exception:                                                              # noqa: BLE001
+        return {}, {}
+    cls = dict((o["uid"], o["class"]) for o in g.get("objs") or [] if isinstance(o, dict) and "uid" in o)
+    terms = collections.defaultdict(set)
+    for t in g.get("terminals") or []:
+        terms[t.get("owner_uid")].add(t.get("term_name") or "")
+    return cls, terms
+
+
+def control_path_lint(plan, base=None):
+    """List of refusals (empty = the plan passes). `base` = (cls, terms) for tests; else read from plan['base']."""
+    cls, bterms = base if base is not None else _base_graph(plan)
+    A = plan.get("actions") or []
+    bad = []
+    created = {}                                            # 'new:X' -> action (create / tunnel / add_shift_reg)
+    for i, a in enumerate(A, 1):
+        if not isinstance(a, dict):
+            continue
+        op = str(a.get("op") or "").lower()
+        names = set(str(a.get(f)).strip().lower() for f in NAME_FIELDS if isinstance(a.get(f), str))
+        tnames = set(str(t.get("name") or "").strip().lower() for t in a.get("terminals") or [] if isinstance(t, dict))
+        qhit = (op in QUEUE_OPS) or bool(names & QUEUE_NAMES) or \
+               (op in ("create", "primitive", "primitive_create") and bool(tnames & QUEUE_TERMS)) or \
+               (str(a.get("kind") or "").lower() in QUEUE_KINDS and ("queue" in op.split("_") or "notifier" in op.split("_")))
+        if qhit:
+            why = a.get("why")
+            if not (a.get("data_stream") is True and isinstance(why, str) and why.strip()):
+                bad.append("Q action {0} ({1}): creates a queue/notifier primitive {2} without data_stream: true + why "
+                           "(CLAUDE.md 1c'': control signals between loops are locals)".format(
+                               i, a.get("id"), sorted((names & QUEUE_NAMES) or (tnames & QUEUE_TERMS)) or op))
+        if a.get("as"):
+            if op == "add_shift_reg":
+                created["new:" + a["as"] + "R"] = created["new:" + a["as"] + "L"] = a
+            created["new:" + a["as"]] = a
+    wires = [(i, a) for i, a in enumerate(A, 1) if isinstance(a, dict) and str(a.get("op")).lower() == "wire"]
+
+    def kind_of(node):
+        """'compare' | 'logic' | None for a consumer node."""
+        if isinstance(node, str) and node in created:
+            a = created[node]
+            ns = set(str(a.get(f)).strip().lower() for f in NAME_FIELDS if isinstance(a.get(f), str))
+            ts = set(str(t.get("name") or "") for t in a.get("terminals") or [] if isinstance(t, dict))
+        else:
+            ns, ts = set(), bterms.get(node, set())
+        if ns & LOGIC_NAMES or ts & LOGIC_TERMS:
+            return "logic"
+        if ns & COMPARE_NAMES or ts & COMPARE_TERMS:
+            return "compare"
+        return None
+
+    def crosses(node):
+        """the source is a local variable or a tunnel (a value arriving from / published across a loop border)."""
+        if isinstance(node, str) and node in created:
+            a = created[node]
+            return str(a.get("op")).lower() == "tunnel" or a.get("class") in LOCAL_CLASSES
+        return cls.get(node) in LOCAL_CLASSES or cls.get(node) in TUNNELS
+
+    def declared_type(*objs):
+        for o in objs:
+            if isinstance(o, dict):
+                for f in ("type", "dtype", "data_type"):
+                    if isinstance(o.get(f), str):
+                        return o[f].strip().lower()
+        return None
+
+    for a in A:
+        if not (isinstance(a, dict) and str(a.get("op")).lower() == "add_shift_reg" and a.get("as")):
+            continue
+        R, L = "new:" + a["as"] + "R", "new:" + a["as"] + "L"
+        writers = [(i, w) for i, w in wires if _ep(w.get("dst")) == (R, "inner")]
+        readers = [(i, w) for i, w in wires if _ep(w.get("src")) == (L, "inner")]
+        if not writers or not readers:
+            continue
+        for iw, w in writers:
+            s_node, s_term = _ep(w.get("src"))
+            if not crosses(s_node):
+                continue
+            cons = [_ep(r.get("dst"))[0] for _i, r in readers]
+            kinds = [kind_of(c) for c in cons]
+            if any(k is None for k in kinds):
+                continue                                    # the previous value feeds something other than a compare
+            both = all(any(_ep(x.get("src")) == (s_node, s_term) and _ep(x.get("dst"))[0] == c for _j, x in wires)
+                       for c in cons)
+            if not both:
+                continue                                    # not "current vs previous of the same signal"
+            ty = declared_type(w.get("src"), a, created.get(s_node) if isinstance(s_node, str) else None)
+            if ty is not None and ty not in BOOL_TYPES and "logic" not in kinds:
+                continue                                    # a declared non-boolean (a counter) compared: allowed
+            bad.append("E shift register {0} ({1}): {2} {3!r} from a {4} is compared with its previous value by {5} - "
+                       "an edge detector on a polled boolean across loops{6} (CLAUDE.md 1c'': publish a counter/value)"
+                       .format(a["as"], a.get("id"), s_node, s_term, "local/tunnel", sorted(set(cons), key=str),
+                               "" if ty in BOOL_TYPES or "logic" in kinds else
+                               "; source type undeclared - declare type (e.g. 'u32') on the wire src to allow a counter"))
+    return bad
+
+
+def _selftest_control_lint():
+    """L7 plan passes; a synthetic queue plan refuses (and passes with data_stream+why); a synthetic edge-detector plan
+    refuses (and a declared-counter variant passes). Prints gates + a RESULT line; returns rc."""
+    import protocol as P
+    gates = []
+
+    def gate(label, ok, detail=""):
+        gates.append((label, bool(ok), detail))
+        print("  {0}  {1}  {2}".format("PASS" if ok else "FAIL", label, str(detail)[:300]), flush=True)
+    for nm in ("stageplan_l7_split.json", "stageplan_k_split.json"):
+        p = os.path.join(BENCH, nm)
+        pl = json.load(open(p, encoding="utf-8"))
+        cls, _t = _base_graph(pl)
+        b = control_path_lint(pl)
+        gate("C{0} real plan {1} (md5 {2}, {3} actions, base graph {4} objs) passes".format(
+            1 if "l7" in nm else 2, nm, md5(p), len(pl["actions"]), len(cls)), not b and len(cls) > 0, b)
+    q = {"schema": "stageplan/1", "actions": [
+        {"op": "create", "id": "q_obt", "class": "Function", "name": "Obtain Queue", "diagram": 10, "as": "Q1"},
+        {"op": "create", "id": "q_enq", "class": "Function", "name": "Enqueue Element", "diagram": 10, "as": "Q2"}]}
+    b = control_path_lint(q, base=({}, {}))
+    gate("C3 synthetic queue plan (Obtain + Enqueue, no data_stream) refuses both", len(b) == 2 and all(x.startswith("Q ") for x in b), b)
+    b = control_path_lint({"actions": [{"op": "queue_node", "kind": "dequeue", "id": "qd"}]}, base=({}, {}))
+    gate("C4 synthetic queue_node dequeue op refuses", len(b) == 1, b)
+    q2 = json.loads(json.dumps(q))
+    for a in q2["actions"]:
+        a.update(data_stream=True, why="results FIFO to the file writer (master plan 1.7)")
+    b = control_path_lint(q2, base=({}, {}))
+    gate("C5 same queue plan with data_stream: true + why passes", not b, b)
+    q3 = json.loads(json.dumps(q2))
+    q3["actions"][0]["why"] = ""
+    b = control_path_lint(q3, base=({}, {}))
+    gate("C6 data_stream: true with an EMPTY why still refuses", len(b) == 1, b)
+    e = {"schema": "stageplan/1", "actions": [
+        {"op": "create", "id": "loc", "class": "Local", "name": "Focus Request", "diagram": 20, "as": "LV"},
+        {"op": "add_shift_reg", "id": "sr_prev", "loop": 30, "body": 20, "as": "SRP"},
+        {"op": "create", "id": "neq", "class": "Function", "name": "Not Equal?", "diagram": 20, "as": "NE",
+         "terminals": [{"name": "x", "is_source": False}, {"name": "y", "is_source": False},
+                       {"name": "x != y?", "is_source": True}]},
+        {"op": "wire", "id": "w1", "src": "new:LV.value", "dst": "new:SRPR.inner"},
+        {"op": "wire", "id": "w2", "src": "new:SRPL.inner", "dst": "new:NE.y"},
+        {"op": "wire", "id": "w3", "src": "new:LV.value", "dst": "new:NE.x"}]}
+    b = control_path_lint(e, base=({}, {}))
+    gate("C7 synthetic edge detector (local -> SR, Not Equal?(current, previous)) refuses", len(b) == 1 and b[0].startswith("E "), b)
+    e2 = json.loads(json.dumps(e))
+    e2["actions"][3]["src"] = {"uid": "new:LV", "term": "value", "type": "u32"}
+    e2["actions"][5]["src"] = {"uid": "new:LV", "term": "value", "type": "u32"}
+    b = control_path_lint(e2, base=({}, {}))
+    gate("C8 same shape on a declared u32 counter passes (the 1c'' prescribed reader)", not b, b)
+    e3 = json.loads(json.dumps(e))
+    e3["actions"][2].update(name="And", terminals=[{"name": "x", "is_source": False}, {"name": "y", "is_source": False},
+                                                     {"name": "x .and. y?", "is_source": True}])
+    e3["actions"][3]["src"] = e3["actions"][5]["src"] = {"uid": "new:LV", "term": "value", "type": "u32"}
+    b = control_path_lint(e3, base=({}, {}))
+    gate("C9 logic consumer (And of current, previous) refuses even when a type is declared", len(b) == 1, b)
+    e4 = {"schema": "stageplan/1", "actions": [
+        {"op": "add_shift_reg", "id": "sr", "loop": 30, "body": 20, "as": "SRP"},
+        {"op": "wire", "id": "w1", "src": {"uid": 501, "term": "Focus Request"}, "dst": "new:SRPR.inner"},
+        {"op": "wire", "id": "w2", "src": "new:SRPL.inner", "dst": {"uid": 502, "term": "y"}},
+        {"op": "wire", "id": "w3", "src": {"uid": 501, "term": "Focus Request"}, "dst": {"uid": 502, "term": "x"}}]}
+    b = control_path_lint(e4, base=({501: "Local", 502: "Comparison"}, {502: {"x", "y", "x != y?"}}))
+    gate("C10 edge detector on BASE-graph uids (Local #501, Not Equal? by terminal names) refuses", len(b) == 1, b)
+    npass = sum(1 for g_ in gates if g_[1])
+    first = next((g_[0] + ": " + str(g_[2])[:120] for g_ in gates if not g_[1]), None)
+    st = "PASS" if npass == len(gates) else "FAIL"
+    print(P.result_line(P.make_result(npass, len(gates) - npass, first, status=st)), flush=True)
+    return 0 if st == "PASS" else 1
+
+
 def addr_offline(OG, end, is_source):
     """None if addressable offline, else the reason. Unwired terminals: owner node -> terminal list -> uid echo."""
     if not isinstance(end, dict) or not isinstance(end.get("uid"), int):
@@ -809,6 +1027,11 @@ def prerun(recipe, graph=None):
         if not ok_ or covered != list(range(1, len(acts) + 1)):
             und.append((rel(p), "actions not all compiled exactly once ({0} of {1})".format(len(covered), len(acts))))
     gate("X3 every plan row decided", plans and not und, und or "{0} rows + {1} stageplan actions".format(len(rows), sp_acts))
+    cpl = []
+    for p, (_ok, _d, pl, _o) in spc.items():
+        cpl += ["{0}: {1}".format(rel(p), x) for x in control_path_lint(pl or json.load(open(p, encoding="utf-8")))]
+    gate("X8 control_path_lint (CLAUDE.md 1c'': no queue for control, no polled-boolean edge detector)", not cpl,
+         cpl[:6] or "{0} stageplan(s)".format(len(spc)))
     bad = []
     if OG is None:
         gate("X4 every end addressable offline", False, "no graph JSON for input md5 {0}".format(tr["input_md5"]))
@@ -1192,7 +1415,15 @@ def main(argv=None):
     ap.add_argument("--no-record", action="store_true")
     ap.add_argument("--json-out")
     ap.add_argument("--check-launch")
+    ap.add_argument("--control-lint", help="control_path_lint one stageplan/1 JSON (exit 0 clean / 2 refused)")
+    ap.add_argument("--selftest-control-lint", action="store_true")
     a = ap.parse_args(argv)
+    if a.selftest_control_lint:
+        return _selftest_control_lint()
+    if a.control_lint is not None:
+        b = control_path_lint(json.load(open(a.control_lint, encoding="utf-8")))
+        print("\n".join(b) or "CLEAN")
+        return 2 if b else 0
     if a.check_launch is not None:
         ok, why = check_launch(a.check_launch)
         print("ALLOW" if ok else why)
@@ -1211,6 +1442,9 @@ def main(argv=None):
             npass, nfail = int(st == "PASS"), int(st != "PASS")
         else:
             g_, ok = SX.prerun_plan(recipe)
+            cpl = control_path_lint(json.load(open(recipe, encoding="utf-8")))
+            g_ = list(g_) + [("X8 control_path_lint (CLAUDE.md 1c'')", not cpl, "; ".join(cpl)[:600] or "clean")]
+            ok = ok and not cpl
             st = "PASS" if ok else "FAIL"
             npass, nfail = sum(1 for x in g_ if x[1]), sum(1 for x in g_ if not x[1])
             ff = next((x[0] + ": " + x[2] for x in g_ if not x[1]), None)
