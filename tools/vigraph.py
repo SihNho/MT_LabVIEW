@@ -278,13 +278,67 @@ def dedupe_rows(terms):
     return out, {"dropped": len(dropped), "term_uids": sorted(set(dropped))[:20], "nonidentical": sorted(set(odd))}
 
 
-def build4(terms, objs=None, loops=None, labels=None, fs_pairs=None):
+# FRAME-KEYED MODE (card 80-7, plan PD180(b), answering 178(e); OPT-IN, the default is unchanged).
+# A Case/Event structure tunnel (`Tunnel`/`SelectorTunnel`) is ONE object owning its outer terminal and one
+# InnerTerminal PER FRAME (measured: #6016 inners 6018 on frame 5582, 6022 on 5592 - tools/bench/cdiff_frame_80_probe.log).
+# In the default mode the `thru` edge joins every inner to the outer and `effective_sources` returns a SET, so a wire
+# moved from one frame's inner to another frame's inner of the same tunnel is invisible (the two frames MERGE).
+# frame_keyed=True:
+#   * the ordinal of such an InnerTerminal key is the FRAME ORDINAL, not the rank of its term uid. Frames are grouped
+#     per structure as the connected components of "inner terminals of one multi-frame tunnel"; the ordinal is the
+#     rank of the frame diagram uid inside its component (ASSUMPTION F: Frames[] index is not in the offline census, so
+#     uid rank stands in for it; both sides of a diff must keep the frame diagrams' uids - the same assumption every
+#     key here already makes of node uids);
+#   * `effective_sources` returns "<source key>@<tunnel uid>/f<ordinal>+..." - each source TAGGED with every
+#     (tunnel, frame) the relay path crossed on a multi-frame inner terminal, so the per-frame route is part of the
+#     compared value (the tag omits the terminal NAME, which echoes the wired source and is not stable).
+FRAME_TUN = ("Tunnel", "SelectorTunnel")
+FRAME_STATE_CAP = 400000                  # walk states per effective_sources call before it refuses (explosion guard)
+
+
+def _frame_ordinals(rows):
+    """{term_uid: frame ordinal} for every InnerTerminal of a multi-frame FRAME_TUN tunnel, + a record."""
+    frames_of = collections.defaultdict(set)
+    for r in rows:
+        if r["owner_class"] in FRAME_TUN and r.get("term_class") == "InnerTerminal" and r.get("frame_diagram"):
+            frames_of[r["node"]].add(int(r["frame_diagram"]))
+    multi = dict((n, fs) for n, fs in frames_of.items() if len(fs) >= 2)
+    parent = {}
+
+    def find(x):
+        while parent.setdefault(x, x) != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+    for fs in multi.values():
+        fs = sorted(fs)
+        for f in fs[1:]:
+            parent[find(f)] = find(fs[0])
+    comp = collections.defaultdict(list)
+    for f in set(f for fs in multi.values() for f in fs):
+        comp[find(f)].append(f)
+    ordinal = {}
+    for fs in comp.values():
+        for i, f in enumerate(sorted(fs)):
+            ordinal[f] = i
+    out = {}
+    for r in rows:
+        if r["node"] in multi and r.get("term_class") == "InnerTerminal" and r.get("frame_diagram"):
+            out[r["term_uid"]] = ordinal[int(r["frame_diagram"])]
+    rec = {"multi_frame_tunnels": len(multi), "structures": len(comp),
+           "frames": sum(len(v) for v in comp.values()), "inner_terms": len(out),
+           "rule": "ordinal = rank of frame diagram uid within its structure (ASSUMPTION F)"}
+    return out, rec
+
+
+def build4(terms, objs=None, loops=None, labels=None, fs_pairs=None, frame_keyed=False):
     """The full terminal-level graph. `terms` = OpAllTerms_v1 rows (the 7th column `frame_diagram` is
     REQUIRED for frame-exact sequence tunnels), each tagged with `term_class` (leaf class, from
     `objs`). `objs` = the GObject census (positions). `loops` = [{loop_uid, right_uids}] read from
     `Loop.Shift Registers[]` - the exact membership the pairing is VALIDATED against.
     `fs_pairs` = the wiki's `fs_tunnel_pairs` (STEP 4b: both faces of every flat-sequence tunnel READ by
-    uid). When given, FS edges come from it EXACTLY; when absent, the step-4 heuristic runs."""
+    uid). When given, FS edges come from it EXACTLY; when absent, the step-4 heuristic runs.
+    `frame_keyed` = the opt-in FRAME-KEYED MODE (see the block above); False builds exactly the old graph."""
     pos, leaf = {}, {}
     for o in (objs or []):
         pos[int(o["uid"])] = tuple(o["pos"])
@@ -298,12 +352,26 @@ def build4(terms, objs=None, loops=None, labels=None, fs_pairs=None):
         r["node"] = r["term_uid"] if _is_diag_source(r) else node_of(r)
         rows.append(r)
 
+    fo, fo_rec = _frame_ordinals(rows) if frame_keyed else ({}, None)
     groups = collections.defaultdict(list)
     for r in rows:
         groups[(r["node"], r["term_class"], r["term_name"])].append(r)
+    collide = []
     for g_rows in groups.values():
+        if frame_keyed and any(r["term_uid"] in fo for r in g_rows):
+            used = collections.Counter()
+            for r in sorted(g_rows, key=lambda x: x["term_uid"]):
+                o = fo.get(r["term_uid"], -1)
+                if used[o]:
+                    collide.append(r["term_uid"])
+                    o = o * 1000 + 100 + used[o]          # never silently shares a key; listed in the record
+                used[fo.get(r["term_uid"], -1)] += 1
+                r["key"] = _k(r["node"], r["term_class"], r["term_name"], o)
+            continue
         for i, r in enumerate(sorted(g_rows, key=lambda x: x["term_uid"])):
             r["key"] = _k(r["node"], r["term_class"], r["term_name"], i)
+    if fo_rec is not None:
+        fo_rec["key_collisions"] = collide[:20]
 
     cls, by_node, by_key = {}, collections.defaultdict(list), {}
     for r in rows:
@@ -551,9 +619,14 @@ def build4(terms, objs=None, loops=None, labels=None, fs_pairs=None):
         out_e[a].append((kind, b, info))
         in_e[b].append((kind, a, info))
     lab = dict((int(u), t) for u, t in (labels or {}).items())
-    return {"cls": cls, "rows": by_key, "by_node": dict(by_node), "edges": edges,
-            "out": dict(out_e), "in": dict(in_e), "pos": pos, "labels": lab,
-            "flags": flags, "method": method, "nodes": sorted(cls), "n_terminals": len(rows)}
+    G = {"cls": cls, "rows": by_key, "by_node": dict(by_node), "edges": edges,
+         "out": dict(out_e), "in": dict(in_e), "pos": pos, "labels": lab,
+         "flags": flags, "method": method, "nodes": sorted(cls), "n_terminals": len(rows)}
+    if frame_keyed:
+        G["frame_keyed"] = True
+        G["frame_inner"] = frozenset(r["key"] for r in rows if r["term_uid"] in fo)
+        method["frame_keyed"] = fo_rec
+    return G
 
 
 def is_scheduling(G, node):
@@ -714,6 +787,9 @@ def effective_sources(G, key, memo=None):
         memo = {}
     if key in memo:
         return memo[key]
+    if G.get("frame_keyed"):
+        memo[key] = _effective_sources_frame(G, key)
+        return memo[key]
     out, stack, seen = set(), [key], {key}
     while stack:
         cur = stack.pop()
@@ -729,10 +805,52 @@ def effective_sources(G, key, memo=None):
     return out
 
 
+def _effective_sources_frame(G, key):
+    """FRAME-KEYED effective sources: {"<source key>" or "<source key>@<inner key>+..."}. The walk state is
+    (terminal key, frozenset of multi-frame inner keys crossed so far); a source reached along two routes that
+    cross different frames appears twice, once per route."""
+    # A TAG is "<tunnel node uid>/f<frame ordinal>", NOT the inner key: a tunnel terminal's NAME echoes whatever is
+    # wired to it and changed S1 -> D1_k on #10978 ('Index of closest\ncal image slice, bead 2' -> 'index') while the
+    # merged diff saw no change (selftest_vigraph_frame_80.log run 1, V2 extra #9703 'x').
+    fi = G["frame_inner"]
+    start = (key, frozenset())
+    out, stack, seen = set(), [start], {start}
+    while stack:
+        cur, tags = stack.pop()
+        for _kind, prev, _i in G["in"].get(cur, ()):
+            if prev in fi:
+                pn, _pc, _pname, po = key_parts(prev)
+                nt = tags | {"{0}/f{1}".format(pn, po)}
+            else:
+                nt = tags
+            st = (prev, nt)
+            if st in seen or prev == key:
+                continue
+            seen.add(st)
+            if len(seen) > FRAME_STATE_CAP:
+                raise RuntimeError("frame-keyed effective_sources({0}): more than {1} walk states".format(
+                    key, FRAME_STATE_CAP))
+            if transparent(G, prev):
+                stack.append(st)
+            else:
+                out.add(prev + ("@" + "+".join(sorted(nt)) if nt else ""))
+    return out
+
+
+def computation_diff_frame(A, B):
+    """PD180(b): computation_diff over two FRAME-KEYED graphs (build4(..., frame_keyed=True)). Refuses a mix."""
+    if not (A.get("frame_keyed") and B.get("frame_keyed")):
+        raise ValueError("computation_diff_frame needs two frame_keyed graphs")
+    return computation_diff(A, B)
+
+
 def computation_diff(A, B):
     """ASSUMPTION A's rule-1a question: for every COMPUTATION node (subVI, primitive, constant,
     front-panel terminal), is every input fed by the SAME computation source in both graphs once
-    scheduling relays are collapsed? Returns exactly the rows where it is not."""
+    scheduling relays are collapsed? Returns exactly the rows where it is not.
+    Both graphs must be built in the SAME mode (default or frame_keyed)."""
+    if bool(A.get("frame_keyed")) != bool(B.get("frame_keyed")):
+        raise ValueError("computation_diff: one graph is frame_keyed and the other is not")
     ma, mb = {}, {}
     rows, added, removed = [], [], []
     ca = set(n for n in A["cls"] if not is_scheduling(A, n))

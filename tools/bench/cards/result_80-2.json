@@ -1,0 +1,14 @@
+{"schema":"result/1","id":"80-2","status":"PASS","gates":{"pass":15,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/k_ind_read_80.log","md5":"fc9df1f676df7c24ff173c72cea22dd1"},{"path":"tools/bench/diag_ctlterm_read_80.py","md5":"4d8955d5572cdb3919828397b5c38fe6"}],
+"facts":[
+"Reader = existing allterms.read_terms(OpAllTerms_v1)+report_all('ControlTerminal'); no new op. A ControlTerminal's term_uid is its own uid, owner = its Diagram (diag_ctlterm_read_80.py:1-20)",
+"M1 PASS on D1_s4_loop17 scratch: #3173,#9519 sink, wire 121, source SubVI #5058 'pos in cal image out' (t5171); w121 sinks #10969,#10757,RSR #119,#3173,#9519 (k_ind_read_80.log:28-35)",
+"M2 D1_k: #3173 and #9519 each 1 row, is_source False, wire 23807, owner Diagram #23166 (1.2 body) (k_ind_read_80.log:40-43)",
+"M2 w23807: 1 source = SubVI #5058 'pos in cal image out' (term 5171); sinks #3173, #9519, RightShiftRegister #23508 term 23798 (k_ind_read_80.log:41)",
+"M2 cross-check OpWireSource_v5 on w23807: source owners [SubVI 5058], PD85 0; panel_wiring: controls uid 49/9402 wire 23807 (k_ind_read_80.log:45,54,63)",
+"Is Broken? proxy (no read-only op exists): Remove Bad Wires on a D1_k scratch deleted 16 wires; w23807 SURVIVED (k_ind_read_80.log:68-71)",
+"RBW-deleted on D1_k: old w121 (sourceless, feeds K open rows #10969/#10757) + 42,373,505,2924,3040,3472,3512,3646,3912,4027,5637,5859,5975,7429,23556 (k_ind_read_80.log:69)",
+"M3: exactly 2 ControlTerminals carry the two labels on D1_k (3173, 9519) - no duplicates from wire_indicators; 116 ControlTerminals on both S4 and K (k_ind_read_80.log:39,44)",
+"M4: bed + all pins md5 unchanged (H2/H3), refs 9/9 live 0, files left [], handles 33,965 -> 45,807 (work) -> 33,998 exit, LabVIEW gone (k_ind_read_80.log:78-98)"],
+"open":["Wire 23807 = the value NEXT names as 'landed, K stands'; whether K is accepted is judgement's call (PD178(i))","Is Broken? was measured only by the RBW-survival proxy, not property 6371004 - acceptable as the gate reader, or build a read-only Is Broken? op?"],
+"cost":{"usd":null,"minutes":15,"labview_runs":1},"note":"No VI run, no hardware, no GUI. Launched with bgrun --material (MATERIAL=1 prefix refused by the permission layer)."}

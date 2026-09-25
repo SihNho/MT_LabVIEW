@@ -1253,3 +1253,21 @@ the bgrun command as well as `RETRY_CARD=`. Self-test `tools/bench/selftest_retr
 (`tools/bench/selftest_retry_cap.log`). Accepted launch form, measured: Bash, non-compound, run_in_background,
 `py tools/bgrun.py --material --max-min N --log tools/bench/<x>.log -- py -u <script>`; the stage then ran 35/0
 (`tools/bench/stage_replay_78.log:2` shows the recorder line).
+
+## device-failed — 2026-09-25 (cycle 80 material, card 80-3, after archive/peer/2026-09-25-retrospective-cycle79.md)
+
+`VIOLATION: device-failed` at the old `tools/stagexec.py:679-680`: `LVBackend.indicator` cleared any wire_indicators
+error containing "target BROKEN after wiring" (added for stage_d1_l7_r's fp_ind gate). In stage K that hid two errored
+ops with no reader on their sinks (`tools/bench/stage_d1_k_r2.log:232` 'Pos within cal image', `:238`
+'Pos: Diffraction Pattern').
+
+DECISION: device (repair, threshold 1; PD178(i) item 2). OUTCOME: BUILT. The whitelist is removed. A wire_indicators
+op error now stops the run (`ExecStop`) unless the recipe passes `LVBackend(s, fs, sink_gates=[{"gate", "sink":
+[owner_uid, term_name]}], gates={label: reader})` naming a gate it owns for that exact sink
+(`tools/stagexec.py:590` check_sink_gates refuses an absent gate; `:607` sink_gate_for refuses another sink;
+`:725` the indicator path; `:635` run_deferred makes each declared gate READ its sink at the end of `Executor.run`
+(`:509`), and a failing read stops). Other ops' errors are unchanged: still stopped by `_done`. Self-test
+`tools/bench/selftest_stagexec_gate.py` G8-G13 (13/0 total, `tools/bench/selftest_stagexec_gate.log`).
+Replay impact: stage_d1_k.py uses LVBackend with no declaration, so a replay now stops at its first indicator row
+until it declares gates for those two sinks; stage_d1_l7_r.py does not use stagexec (it calls `s.wire_indicators`
+itself and keeps its own tolerance at `tools/recipes/stage_d1_l7_r.py:92`, outside this repair).

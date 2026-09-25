@@ -1,0 +1,19 @@
+{"schema":"result/1","id":"80-5","status":"PASS","gates":{"pass":27,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/l2a1_facts_80.py","md5":"d7a6a903831ebf9aecc84384a4e77939"},{"path":"tools/bench/l2a1_facts_80.log","md5":"92b62d7547dd41a35c548bbbab2093c6"},{"path":"tools/bench/l2a1_facts_80.json","md5":"d5003581aa1469ac5b82728d22361f0d"},{"path":"tools/bench/l2a1_tunflip_80.log","md5":"c1859c986177ac678d8093b8f49d95ac"},{"path":"tools/bench/l2a1_tunflip_80.json","md5":"578193386b5744495b1f593030210081"},{"path":"tools/bench/l2a1_graph_k_80.json","md5":"c764150c4587b78429d0bbdb9d30c27f"}],
+"facts":[
+"F1/F2: group A, #17487, #5634 all on Diagram 639 of WhileLoop #637 (1.1); every other end is in #637. #5540/#10445 = CaseStructure (l2a1_facts_80.log:279-323)",
+"F3: pairs owned by #637; inits from #686 (#1142 w2731, #5805 w5812, #11001 w11253 'Auto-reset zero'); #1147/#5796/#7311 outers unwired; #5796 inner w5859 has no other end (log:324-341)",
+"F4: K t0/t3/t4/t7 wire 0; t8 w23807 -> #3173,#9519,RSR #23508; #10757/#10969 'array' on w121 which has NO source; w10990 absent, #10757 'element' w23556 -> CT #23541 (log:345-350,311-318)",
+"P1 PASS: cdiff(S1,D1_k) == exactly 178(c)'s 10 PB rows (log:364-374); sim base l2a1_graph_k_80.json, 5788 rows",
+"F5: frames #5540=[5582,5592], #10445=[10453,10459]; key node|class|name|ordinal, no frame (vigraph.py:244-245,301-306); thru joins all per-frame inners (:332-346); cdiff compares SETS (:709-729,749)",
+"F5 example: CDIFF #5058 'Bead is good? array in' before={#5058 'Bead is good? array out', #5527 'initialized array'} = frames 5582+5592 in one set (log:367); ST #10584 -> F10459+F10453 (log:361)",
+"F6 singles: only #9647/#10247 hit an unmeasured branch (input 'Tunnel' = case selector #10465/#5603, unwired inners). Real: 0 of 4 predicted flips; compare n=0 (tunflip log:24-25,215-216,235-236)",
+"F6 joint L2-A1 move (10 moves, err '' each): sim 0 flips; real 10 SelectorTunnel inners flipped (#5680 #5702 #5725 #5825 #5967 #10750) + 2 outers (t6007, t6026); compare n=23 (tunflip log:33,195-196)",
+"F6 joint: real lost 3 edges between moved members (#5634->#10247 y, #10247->t5608, t10594->#10247 x) + 5 inner edges; deleted half-wires w5637/w5975 the sim kept (l2a1_tunflip_80.json runs[0])",
+"F7: bed md5 unchanged, pins held, refs 4/4 + 10/10 live 0, scratches deleted, H6 []; handles 45632->45881 and 33972->45859->33972; LabVIEW gone after both runs; stagesim untouched"],
+"open":[
+"stagesim.op_move_in has 3 measured gaps: a structure uid moves only its own rows (a closure is needed); it flips a selector 'Tunnel' with unwired inners (real: no); it misses a MOVED structure's input-tunnel inner flips. Refit it before the L2-A1 plan?",
+"Moving the joint set one uid at a time lost 3 edges between moved members (all at #10247). Does L2-A1 fix the move order or re-wire those rows? Should the sim model sequential moves?",
+"w10990 (#10757->#10407, PD161) is absent on D1_k; #10757 'element' feeds CT #23541. Which row, if any, replaces it in L2-A1?"],
+"cost":{"usd":null,"minutes":25,"labview_runs":2},
+"note":"facts: BGRUN END rc=0 161s 11/0; tunflip: BGRUN END rc=0 264s 16/0. No failed gate, so no Jev ladder row. STATUS not edited (status_edit false)."}

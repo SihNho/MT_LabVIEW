@@ -1,0 +1,44 @@
+{
+ "schema": "task/1",
+ "id": "80-7",
+ "kind": "build",
+ "goal": "PD180(b): opt-in frame_keyed computation_diff in vigraph (Case/selector inners keyed by frame ordinal) + self-tests; PD180(c): fact check of ControlTerminal #23541 readers/writers on D1_k.",
+ "why": "178(e): vigraph keys node|class|name|ordinal with no frame and compares sets (vigraph.py:244-245,301-306,332-346,709-729), so #5540/#10445 frames merge; L2-A1 gates on cdiff.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/vigraph.py"},
+  {"path": "tools/bench/diag_vigraph_check.py"},
+  {"path": "tools/bench/l2a1_graph_k_80.json", "md5": "c764150c4587b78429d0bbdb9d30c27f"},
+  {"path": "tools/bench/l2a1_facts_80.json", "md5": "d5003581aa1469ac5b82728d22361f0d"},
+  {"path": "docs/wiki/index.json"}
+ ],
+ "pass": [
+  "V1 frame_keyed mode: inner terminal identity of CaseStructure/selector tunnels carries the frame ORDINAL (not uid); default mode unchanged",
+  "V2 cdiff_frame(S1, D1_k) listed; == 178(c)'s 10 PB rows, else every extra/missing row reported (not accepted)",
+  "V3 negative: synthetic swap of one wire between #5540's two frames is detected by frame mode and missed by merged mode",
+  "V4 diag_vigraph_check still passes (counts); graph sources offline (wiki/l2a1_graph_k_80); a LabVIEW read only if no offline source exists",
+  "V5 #23541 on D1_k: class, owner diagram/loop, label, every writer, every reader (Locals: owner loop each); STOP-fact if any non-Local reader or 2nd writer"
+ ],
+ "outputs": ["tools/vigraph.py", "tools/bench/selftest_vigraph_frame_80.py", "tools/bench/selftest_vigraph_frame_80.log", "tools/bench/ct23541_facts_80.log"],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/vigraph.py",
+   "tools/bench/selftest_vigraph*",
+   "tools/bench/vigraph_check*",
+   "tools/bench/ct23541_*",
+   "tools/bench/cdiff_frame_80*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": ["rule 1: never write D1_k or any original", "no VI run, no motor/camera; bgrun for anything LabVIEW-touching; hold turn to BGRUN END", "result/1 <=10 facts <=3 open"],
+ "unblocks": "M3"
+}

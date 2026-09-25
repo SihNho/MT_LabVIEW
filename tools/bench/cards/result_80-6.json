@@ -1,0 +1,19 @@
+{"schema":"result/1","id":"80-6","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/stagesim.py","md5":"d8ef0cb44649b56bb1b0a5fb7de935ce"},{"path":"tools/bench/selftest_stagesim_l2a1_80.py","md5":"723b0b05f6d597f5002f279bc1848dd4"},{"path":"tools/bench/selftest_stagesim_l2a1_80.log","md5":"1909bda4fc36e65a4f47c77c4ff38dfc"},{"path":"tools/bench/sim/l2a1_real_80.json","md5":"fbeca03ede968c2bc212ac11babd0952"},{"path":"tools/bench/sim/l2a1_real_80_derive.py","md5":"7fc15e7a851a77cc9a9602066cc448e9"},{"path":"tools/bench/sim/x80_6_tunnels.log","md5":"10ef4df9a8854b1aee38a5f53c7a2dd0"}],
+"facts":[
+"Truth fixture: 80-5 saved no real terminal table, so l2a1_real_80.json = old sim +/- recorded compare, derived BEFORE the refit; self-consistent 3/3 runs (sim/l2a1_real_80_derive.log)",
+"Fixture caveat: allow_either terms the old sim left dangling have unrecoverable real state; excluded from D checks (joint 7, singles 2 each; l2a1_real_80.json 'either')",
+"R-CLOSURE stagesim.py:403 closure_of from base_state's new owner map (context.owners or graph.owners); no owner map + structure uid = SimError (S1c). 5540/10445 = 10 nodes, union 28 == fixture",
+"R-SEQ stagesim.py:417: multi-node move_in = one uid at a time in list order ('joint': true keeps old); reproduces the 6 lost member edges (S4)",
+"R-FLIP-IN: cleared sink of a MOVED tunnel seeds the flip; cascade flips #5680/#6016 outers. Sim flips == the 12 measured, same wires (S3, selftest log)",
+"R-S2 stagesim.py:344: no flip if every opposite-side terminal is unwired (needs_wired, default False so delete_object is unchanged); singles 0 flips, diff 0 (S2)",
+"R-BARE: single-terminal wire on a moved node deleted AFTER flips; joint deleted w5637 w5975 + 6 sequential half-wires (w5709 w10573 w9868 w17393 w9806 w10312)",
+"S5: joint sequential replay == real over the 23 recorded rows and full edge/dangling sets, diff 0; N1 old rules give the 23 back (selftest_stagesim_l2a1_80.log)",
+"Regression: stagesim selftest 42/0 and selftest_stagesim_k79 4/0, same as pre-refit baselines (sim/x80_6_base_*.log). stagexec selftest not run: card labview=none, hook blocks it",
+"New params sit in PROVISIONAL move_in; measured opmodels/move_in.json 'sim' carries none of them (not in write flags), so model_source stays measured:move_in.json@ae6bbadb"],
+"open":[
+"R-S2 fits two rules equally: 'all opposite terminals unwired' (chosen) vs 'class Tunnel never flips'. 118 'Tunnel' nodes on D1_k include wired non-selector ones (x80_6_tunnels.log). Measure a wired 'Tunnel' orphan?",
+"R-BARE vs only_sink: the end read cannot say whether the 6 half-wires went at the cut (only_sink delete) or later as bare. The sim keeps only_sink 'ambiguous'. Is that enough for L2-A1's executor?",
+"Should the new move_in params go into opmodels/move_in.json 'sim' (outside this card's write flags) so model_source cites them?"],
+"cost":{"usd":null,"minutes":14,"labview_runs":0},
+"note":"No LabVIEW, no failed gate, so no Jev ladder row and no peer. Scratch explorers deleted. STATUS and stage-simulator-plan.md not edited."}

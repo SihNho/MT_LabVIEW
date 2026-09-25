@@ -1,0 +1,54 @@
+{
+ "schema": "task/1",
+ "id": "80-5",
+ "kind": "measure",
+ "goal": "L2-A1 offline facts table on bed D1_k (k_facts_79.py shape) + PD178(e) cdiff Case-frame facts + PD178(i) unmeasured TUN_FLIP branches measured on a dated scratch vs stagesim prediction.",
+ "why": "NEXT (cycle 80): L2-A1 Pre-decided entry needs measured rows; 178(e) cdiff merges Case frames; 178(i) generalised TUN_FLIP branches (input LoopTunnel/Tunnel, output SelectorTunnel all frames orphaned) are unmeasured.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/k_facts_79.py"},
+  {"path": "tools/stagesim.py"},
+  {"path": "tools/vigraph.py"},
+  {"path": "tools/bench/diag_ctlterm_read_80.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_20260925_100155.vi", "md5": "6cf5b0777aafa12112d8a786a9eed1ed"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "F1 per group-A node #5540 #9647 #10247 #10445 #10950 #17289 #10969 #10757: owner, every terminal row (uid, name, is_source, wire, other end, frame_diagram), and which loop each other end is in",
+  "F2 ControlTerminals Auto-Reset #17487, Reset Tracking #5634 (80-2 reader): wires + other ends",
+  "F3 SR pairs #1147/#1142, #5796/#5805, #7311/#11001: left/right uids, init, every wire in/out and its loop",
+  "F4 K open rows t0 t3 t4 t7 t8->#10969/#10757 + w10990 #10757->#10407: current state on D1_k",
+  "F5 PD178(e): for #5540/#10445 list frames (frame_diagram uids); does computation_diff key rows by frame? cite vigraph.py lines + one example row",
+  "F6 PD178(i): from F1 name which L2-A1 move hits each unmeasured TUN_FLIP branch; on a dated scratch of D1_k run that move op, read the tunnels, compare to stagesim prediction per branch",
+  "F7 bed md5 unchanged; scratch deleted; refs opened==closed; handles recorded; LabVIEW gone at end"
+ ],
+ "outputs": ["tools/bench/l2a1_facts_80.py", "tools/bench/l2a1_facts_80.log", "tools/bench/l2a1_facts_80.json", "tools/bench/l2a1_tunflip_80.log"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/l2a1_*",
+   "tools/bench/selftest_stagesim*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/sim/**",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\scratch_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_scratch_*",
+   "docs/NAMES.md",
+   "tools/bench/cards/**",
+   "archive/peer/2026-09-25-*80*.md"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis", "fact"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "rules": [
+  "rule 1: never write D1_k or any original; F6 edits only a dated scratch copy, deleted after",
+  "rule 1a: measurement only; no stage recipe, no row decided; stagesim NOT changed (report mismatches as facts)",
+  "no VI run/motor/camera; launch Bash non-compound backgrounded py tools/bgrun.py --material; hold turn to BGRUN END",
+  "result/1 <=10 facts <=3 open; the full table lives in l2a1_facts_80.json"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

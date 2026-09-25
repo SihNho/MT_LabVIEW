@@ -1,0 +1,43 @@
+{
+ "schema": "task/1",
+ "id": "80-4",
+ "kind": "build",
+ "goal": "PD179(d): errorlist_check licenses an empty-raw tree-header row only if the next item is licensed and the header detail matches its class; offline re-verdict of cycle-80 json; stagexec selftest.",
+ "why": "cycle-80 cycle-start MISMATCH = 1 extra item, index 0, empty OCR header of licensed item 1 (#5058 Image In not wired); without the fix every cycle start on this bed reports MISMATCH.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_80-1.json"},
+  {"path": "tools/errorlist_check.py"},
+  {"path": "tools/bench/errorlist_D1_k_20260925_100155_20260925_104258.json"},
+  {"path": "tools/bench/errorlist_D1_k_20260925_100155_20260925_104258_raw.json"},
+  {"path": "tools/stagexec.py"}
+ ],
+ "pass": [
+  "E1 rule implemented in the checker (locate it; errorlist_check.py:265-302 per 80-1); licence reason logged as 'header-of <n>'",
+  "E2 self-test: positive = this json's item 0+1 -> no extra; negative = same header followed by an unlicensed item -> extra; both pass",
+  "E3 offline re-verdict of the saved cycle-80 raw json (no LabVIEW) -> MATCH, or report exactly what remains",
+  "E4 existing errorlist_check self-tests still pass (counts)",
+  "E5 py tools/stagexec.py selftest T01-T15 run (pure Python; flags.labview read granted for the hook only) -> counts"
+ ],
+ "outputs": ["tools/errorlist_check.py", "tools/bench/selftest_errorlist_check*.log", "tools/bench/selftest_stagexec.log"],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/errorlist_check.py",
+   "tools/bench/selftest_errorlist*",
+   "tools/bench/selftest_stagexec*",
+   "tools/bench/errorlist_recheck_80*",
+   "docs/violation-decisions.md",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 40},
+ "rules": ["no LabVIEW process is started: offline on saved json only (E5 is pure Python)", "tightening only: no other licence rule loosened", "result/1 <=10 facts <=3 open"],
+ "unblocks": "M3"
+}

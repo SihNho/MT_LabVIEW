@@ -1,0 +1,40 @@
+{
+ "schema": "task/1",
+ "id": "80-3",
+ "kind": "build",
+ "goal": "PD178(i) item 2 (device-failed): remove stagexec.py:679-680 whitelist; an op error stops the run unless the recipe declares a named gate reading that exact sink. Self-test both cases.",
+ "why": "retrospective-cycle79 VIOLATION device-failed at tools/stagexec.py:679: the whitelist, added for L7-R's fp_ind gate, hid two errored K ops with no reader covering the sinks.",
+ "inputs": [
+  {"path": "tools/stagexec.py"},
+  {"path": "tools/bench/selftest_stagexec_gate.py"},
+  {"path": "tools/recipes/stage_d1_l7_r.py"},
+  {"path": "tools/recipes/stage_d1_k.py"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "pass": [
+  "T1 whitelist removed; a wire_indicators error with NO declared gate -> ExecStop (run stops), self-test case",
+  "T2 error WITH a declared gate naming that sink -> continues, logged; declaration naming an absent gate or another sink -> refused; self-test cases",
+  "T3 every existing stagexec self-test (selftest_stagexec*.py) still passes; report counts",
+  "T4 report whether stage_d1_l7_r.py / stage_d1_k.py would need the declaration to replay (do not edit those recipes' rows)",
+  "T5 docs/violation-decisions.md gets the device-failed 2026-09-25 cycle-79 entry: what changed, file:line, self-test log"
+ ],
+ "outputs": ["tools/stagexec.py", "tools/bench/selftest_stagexec_gate.log"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/bench/selftest_stagexec*",
+   "docs/violation-decisions.md",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 40},
+ "rules": ["no LabVIEW; pure Python", "tightening only: no other stagexec behaviour loosened", "result/1 <=10 facts <=3 open"],
+ "unblocks": "M3"
+}

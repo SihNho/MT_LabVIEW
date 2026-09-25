@@ -63,10 +63,15 @@ SR_CLS = ("RightShiftRegister", "LeftShiftRegister")
 
 # The plan table's ops with the provisional rule each one runs until chat-S1's measured model lands.
 PROVISIONAL = {
-    "move_in": {"params": {"cut_clears": "moved", "tunnel_flip": True},
+    "move_in": {"params": {"cut_clears": "moved", "tunnel_flip": True,
+                           # card 80-6 refit to the L2-A1 reads (tools/bench/l2a1_tunflip_80.log:195-236, fixture
+                           # tools/bench/sim/l2a1_real_80.json): closure / sequential / moved-input flips / S2 no-flip /
+                           # bare half-wires deleted - see op_move_in's docstring for each rule's evidence
+                           "closure": True, "sequential": True, "flip_moved_inputs": True, "flip_needs_wired": True,
+                           "bare_half_wire": "delete"},
                 "evidence": "tools/bench/diag_c71_l7_1a_tunnels.log (TERM 2043/5050 is_source True->False, FLAG w4337/w5073 "
                             "n_src 0 after move_in #376); tools/bench/stage_d1_l7_1b_r3.log:207-214 (#376's cut terminals read "
-                            "wire=0)",
+                            "wire=0); tools/bench/l2a1_tunflip_80.log:195-196,215-216,235-236 (card 80-5 joint + singles)",
                 "gaps": ["SR pair names reset on a cut (15/51 -> '' but 24/1108 kept 'error out') NOT modelled: names only, "
                          "computation_diff collapses registers", "the junk Invoke node each op leaves is NOT modelled "
                                                                      "(stagekit.junk_purge deletes it)"]},
@@ -183,6 +188,13 @@ def base_state(graph, context=None):
         w = _j(_abs(ctx["fs_pairs_wiki"]["path"]))
         st["fs_pairs"] = w.get("fs_tunnel_pairs")
         st["graph_summary"] = w.get("graph_summary") or st["graph_summary"]
+    # card 80-6: the OWNER map {uid: [owner class, owner uid]} (build_d1_v0.owner_of, as l2a1_facts_80.py records it under
+    # "owners") - the only source of structure -> frame-diagram membership, which the terminal table does not carry
+    own = graph.get("owners")
+    if ctx.get("owners"):
+        d = _j(_abs(ctx["owners"]["path"]))
+        own = d.get(ctx["owners"].get("key", "owners"), d) if isinstance(d, dict) else d
+    st["owners"] = dict((str(k), [v[0], int(v[1] or 0)]) for k, v in (own or {}).items())
     for r in st["terminals"]:
         r.setdefault("term_class", "")
     return st
@@ -307,36 +319,53 @@ def s1_partner(S1, G, key):
 
 
 # ------------------------------------------------------------------------------------------------ ops
-def _flip_orphaned_output_tunnels(st, wires):
+def _flip_orphaned_output_tunnels(st, wires, seeds=(), needs_wired=False):
     """A tunnel left with NO SOURCE on its driving side becomes undirected: every terminal on its other side that read
     as a source reads as a sink afterwards (NI 'Wire connected to an undirected tunnel'). Repeated to a fixpoint.
     Output direction (inner sink orphaned -> outer flips): diag_c71_l7_1a_tunnels.log TERM 2043/5050 (LoopTunnel).
     Input direction (outer sink orphaned -> EVERY inner flips), SelectorTunnel: tools/bench/k_op3_read_79.log:93-111
     (card 79-7 M1: after move_in #5058, #2765's outer 2811 and inners 2789/2792 all is_source=False, wires 505/3472/
     2924 kept, 0 sources each). A tunnel with several driving-side terminals (a case tunnel's per-frame inners) flips
-    only when NONE of them still sits on a sourced wire."""
+    only when NONE of them still sits on a sourced wire.
+    card 80-6 additions: `seeds` = sink rows whose wire was CLEARED by the op (a MOVED tunnel's driving-side terminal on
+    a cut wire) - the tunnel is checked exactly like one whose wire lost its source (l2a1_tunflip_80.log:195: the moved
+    #5540/#10445 input SelectorTunnels #5702 #5725 #5825 #5967 #10750 flipped every inner, wired or not). `needs_wired`:
+    a tunnel whose opposite-side terminals are ALL unwired does not flip (l2a1_tunflip_80.log:215-216,235-236: the
+    case-selector 'Tunnel's #10465/#5603, inners unwired, stayed sources; compare n 0)."""
     flipped, todo = [], set(w for w in wires if w)
+    done = set()
+
+    def try_flip(r):
+        rows = node_rows(st, r["owner_uid"])
+        if any(o["term_class"] == r["term_class"] and not o["is_source"] and o["wire_uid"] and
+               has_source(st, o["wire_uid"]) for o in rows):
+            return
+        other = [o for o in rows if o["term_class"] == TUN_SIDES[r["term_class"]] and o["is_source"]]
+        if needs_wired and not any(o["wire_uid"] for o in other):
+            return
+        for o in other:
+            o["is_source"] = False
+            rec = {"tunnel": r["owner_uid"], "term_uid": o["term_uid"], "side": o["term_class"], "wire": o["wire_uid"]}
+            if o["term_class"] == "OuterTerminal":
+                rec["outer_term_uid"] = o["term_uid"]
+            flipped.append(rec)
+            if o["wire_uid"]:
+                todo.add(o["wire_uid"])
+
+    def flippable(r):
+        return not r["is_source"] and r["term_class"] in TUN_SIDES and r["owner_class"] in TUN_FLIP
+
+    for r in seeds:
+        if flippable(r) and (r["owner_uid"], r["term_class"]) not in done:
+            done.add((r["owner_uid"], r["term_class"]))
+            try_flip(r)
     while todo:
         w = todo.pop()
         if has_source(st, w):
             continue
         for r in wire_rows(st, w):
-            if r["is_source"] or r["term_class"] not in TUN_SIDES or r["owner_class"] not in TUN_FLIP:
-                continue
-            rows = node_rows(st, r["owner_uid"])
-            if any(o["term_class"] == r["term_class"] and not o["is_source"] and o["wire_uid"] and
-                   has_source(st, o["wire_uid"]) for o in rows):
-                continue
-            for o in rows:
-                if o["term_class"] == TUN_SIDES[r["term_class"]] and o["is_source"]:
-                    o["is_source"] = False
-                    rec = {"tunnel": r["owner_uid"], "term_uid": o["term_uid"], "side": o["term_class"],
-                           "wire": o["wire_uid"]}
-                    if o["term_class"] == "OuterTerminal":
-                        rec["outer_term_uid"] = o["term_uid"]
-                    flipped.append(rec)
-                    if o["wire_uid"]:
-                        todo.add(o["wire_uid"])
+            if flippable(r):
+                try_flip(r)
     return flipped
 
 
@@ -371,18 +400,73 @@ def _apply_only_sink(st, P, wires, gone):
     return out
 
 
+def closure_of(st, uid):
+    """(nodes, diagrams): everything a move of `uid` carries - `uid` itself plus every node with a terminal on a diagram
+    nested (at any depth) under it. Membership comes from the owner map (st['owners'], build_d1_v0.owner_of rows); the
+    walk is tools/bench/l2a1_facts_80.py:40-46's `closure`, whose 28-node joint set the 80-5 real move matched (compare
+    only_sim_terms/only_real_terms both [], l2a1_tunflip_80.log:196)."""
+    O = st.get("owners") or {}
+    D, grow = set(), {uid}
+    while grow:
+        f = set(int(d) for d, (c, u) in O.items() if u in grow) - D
+        D |= f
+        grow = set(int(u) for u, (c, d) in O.items() if d in f and c == "Diagram" and int(u) not in D) - {uid}
+    return {uid} | set(V.node_of(r) for r in st["terminals"] if int(r.get("frame_diagram") or 0) in D), D
+
+
 def op_move_in(st, a, P, S1, labels):
-    moved = set(resolve_uid(st, u) for u in a["nodes"])
+    """MOVE (card 80-6 refit to the L2-A1 reads, fixture tools/bench/sim/l2a1_real_80.json):
+    R-CLOSURE  a named structure carries every node on its nested frames (closure_of; needs the owner map - a named uid
+               owning no terminal and no frame is REFUSED, never moved as nothing).
+    R-SEQ      several named uids are moved ONE AT A TIME in the listed order (the real op moves one uid per call,
+               stagekit.move_in; stagexec refuses a multi-node action). A wire between a moved member and a member not
+               yet moved is CUT at the earlier move - l2a1_tunflip_80.json runs[0] only_sim_edges (#10247's three edges,
+               #9647's two, #17289->#10950). `joint: true` keeps the old simultaneous move (no measured op does that).
+    R-FLIP-IN  a MOVED tunnel whose driving-side sink was cleared by the cut flips its other side (seeds of
+               _flip_orphaned_output_tunnels); the cascade reaches output tunnels of the same structure (#5680 #6016 outers).
+    R-S2       no flip when every opposite-side terminal is unwired (#5603/#10465 case selectors).
+    R-BARE     a wire with exactly ONE terminal, that terminal on a moved node, is deleted - AFTER the flips (w5637/w5975 on
+               #5680/#6016's outers; the half-wires an earlier sequential step left on #10253/#5634/#17487)."""
+    tops = [resolve_uid(st, u) for u in a["nodes"]]
     dest = int(a["dest_diagram"])
+    if len(tops) > 1 and P.get("sequential", True) and not a.get("joint"):
+        effs, cands = [], []
+        for u in tops:
+            e, c = _move_one(st, [u], dest, P, S1, labels)
+            effs.append(e)
+            cands += c
+        cat = lambda k: [x for e in effs for x in e[k]]                                   # noqa: E731
+        return {"sequential": [dict((k, v) for k, v in e.items() if k != "reconnect") for e in effs],
+                "moved": sorted(set(cat("moved"))), "dest_diagram": dest, "cut_set": sorted(set(cat("cut_set"))),
+                "n_cut": sum(e["n_cut"] for e in effs), "reconnect": cat("reconnect"),
+                "cleared_term_uids": sorted(set(cat("cleared_term_uids"))), "tunnel_flips": cat("tunnel_flips"),
+                "rule_rows": cat("rule_rows"), "only_sink": cat("only_sink"),
+                "allow_either": sorted(set(cat("allow_either"))), "bare_deleted": cat("bare_deleted")}, cands
+    return _move_one(st, tops, dest, P, S1, labels)
+
+
+def _move_one(st, tops, dest, P, S1, labels):
+    moved, inner_d = set(), set()
+    for u in tops:
+        n, D = closure_of(st, u) if P.get("closure", True) else ({u}, set())
+        if not D and not node_rows(st, u):
+            raise SimError("move_in: #{0} owns no terminal and no frame diagram (a structure needs context.owners "
+                           "for its closure)".format(u))
+        moved |= n
+        inner_d |= D
     G0 = graph(st, labels)
     inside = [r for r in st["terminals"] if V.node_of(r) in moved]
     if not inside:
         raise SimError("move_in: none of {0} owns a terminal".format(sorted(moved)))
     by_w = collections.defaultdict(lambda: ([], []))
+    n_rows = collections.Counter()
     for r in st["terminals"]:
         if r["wire_uid"]:
             by_w[r["wire_uid"]][0 if V.node_of(r) in moved else 1].append(r)
+            n_rows[r["wire_uid"]] += 1
     cut = dict((w, v) for w, v in by_w.items() if v[0] and v[1])
+    bare = [(w, v[0][0]) for w, v in sorted(by_w.items()) if n_rows[w] == 1 and v[0]] \
+        if P.get("bare_half_wire", "keep") == "delete" else []
     key_of = dict(((r["term_uid"], r["term_class"], r["frame_diagram"]), k) for k, r in G0["rows"].items())
     kk = lambda r: key_of.get((r["term_uid"], r["term_class"], r["frame_diagram"]))       # noqa: E731
     chains = JC.chain_terminals(S1, moved) if S1 is not None else set()
@@ -399,14 +483,24 @@ def op_move_in(st, a, P, S1, labels):
     # apply
     only = _apply_only_sink(st, P, cut.keys(), moved)
     for r in inside:
-        r["frame_diagram"] = dest
-    cleared = []
+        if int(r.get("frame_diagram") or 0) not in inner_d:      # rows on the structure's nested frames stay put
+            r["frame_diagram"] = dest
+    cleared, seeds = [], []
     for w, (ins, outs) in cut.items():
         victims = ins if P.get("cut_clears", "moved") == "moved" else outs
         for r in victims:
             r["wire_uid"] = 0
             cleared.append(r["term_uid"])
-    flipped = _flip_orphaned_output_tunnels(st, cut.keys()) if P.get("tunnel_flip", True) else []
+            if not r["is_source"] and V.node_of(r) in moved:
+                seeds.append(r)
+    flipped = _flip_orphaned_output_tunnels(
+        st, cut.keys(), seeds if P.get("flip_moved_inputs", False) else (),
+        needs_wired=P.get("flip_needs_wired", False)) if P.get("tunnel_flip", True) else []
+    bare_deleted = []
+    for w, r in bare:
+        if r["wire_uid"] == w:
+            r["wire_uid"] = 0
+            bare_deleted.append({"wire": w, "term_uid": r["term_uid"], "node": V.node_of(r), "is_source": r["is_source"]})
     # candidates: moved-side rows that must cross a border and are not RULE-CHAIN-S1
     G1 = graph(st, labels)
     key1 = dict(((r["term_uid"], r["term_class"]), k) for k, r in G1["rows"].items())
@@ -447,9 +541,10 @@ def op_move_in(st, a, P, S1, labels):
                           "resolved": {"src": [pairs[0]["row_key"]["src_uid"]], "src_method": "cut set",
                                        "dst": [pairs[0]["row_key"]["dst_uid"]], "dst_method": "cut set"},
                           "n_src_terms": 1, "n_dst_terms": 1, "pairs": pairs, "excluded": {}})
-    return {"moved": sorted(moved), "dest_diagram": dest, "cut_set": sorted(cut), "n_cut": len(cut),
+    return {"moved": sorted(moved), "tops": tops, "inner_diagrams": sorted(inner_d), "dest_diagram": dest,
+            "cut_set": sorted(cut), "n_cut": len(cut),
             "reconnect": table, "cleared_term_uids": sorted(cleared), "tunnel_flips": flipped,
-            "rule_rows": rule_rows, "only_sink": only,
+            "bare_deleted": bare_deleted, "rule_rows": rule_rows, "only_sink": only,
             "allow_either": sorted(x["src_term_uid"] for x in only if x["fate"] == "ambiguous")}, cands
 
 

@@ -1,0 +1,32 @@
+{
+ "schema": "result/1",
+ "id": "80-4",
+ "status": "PASS",
+ "gates": {"pass": 5, "fail": 0},
+ "first_fail": null,
+ "blocked_by": null,
+ "artefacts": [
+  {"path": "tools/errorlist_check.py", "md5": "6be8a3f8b100fe4758d5c35c98bfa372"},
+  {"path": "tools/bench/selftest_errorlist_check_header.py", "md5": "4ddabe8cf36783f498ab39df8dc119c7"},
+  {"path": "tools/bench/selftest_errorlist_check_header.log", "md5": "a146b5b61a2e5e25056c8fda4cc0061d"},
+  {"path": "tools/bench/errorlist_recheck_80.py", "md5": "21a246ae04e45782f8ba36c8c554767b"},
+  {"path": "tools/bench/errorlist_recheck_80.log", "md5": "3bbd33fac6b5d4f7f83235857bfbf2f1"},
+  {"path": "tools/bench/selftest_errorlist_retry_80-4.log", "md5": "0a7c3fb31c04a72f9f4dc6c229cd2e19"},
+  {"path": "tools/bench/selftest_stagexec.log", "md5": "6dc2b7aa0590f845ca400a2b8306786c"}
+ ],
+ "facts": [
+  "E1 errorlist_check.py:323-336 license_headers: empty-raw row licensed only if next item licensed (not itself a header), non-empty raw, and norm(detail) equal; sets 'header-of <n>'",
+  "E1 compare() calls it after the counted pass (errorlist_check.py:309), consumes no licence count, adds usage kind header_of_next; main() prints 'LICENCE item i: header-of n' (:407)",
+  "E2 selftest_errorlist_check_header.log: 5/5 PASS - P1 cycle-80 items 0+1 extra [] 'header-of 1'; N1 unlicensed next -> extra ['', raw]; N2 other detail, N3 last row, N4 double header -> extra ['']",
+  "E3 errorlist_recheck_80.log: saved MISMATCH extra [''] -> RECHECK 22 items extra [] missing [] gates 11/11 -> verdict OK; item 0 'header-of 1'",
+  "E4 selftest_errorlist_retry_80-4.log: 4/4 PASS (the only pre-existing errorlist self-test; it covers cycle_runner retry, not compare)",
+  "E5 selftest_stagexec.log: GATES 15 pass / 0 fail (T01-T15)",
+  "No LabVIEW started; all runs pure Python under bgrun --material, each BGRUN END rc=0",
+  "Tightening only: no existing rule changed; the old path (empty raw matched on detail text alone by a derived rule, errorlist_check.py:297-299) is untouched"
+ ],
+ "open": [
+  "An empty-raw row can still be licensed by a derived rule hitting its DETAIL text alone (compare, errorlist_check.py:297-299) and consume a counted licence; restrict counted rules to non-empty raw?"
+ ],
+ "cost": {"usd": null, "minutes": 6, "labview_runs": 0},
+ "note": "Temporary peek script errorlist_recheck_80_peek.py/.log was created and deleted."
+}

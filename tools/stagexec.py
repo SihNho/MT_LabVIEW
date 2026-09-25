@@ -506,6 +506,9 @@ class Executor(object):
                     k, op["kind"], op["acts"], rec["ids"], json.dumps({x: y for x, y in d.items() if y and x != "n"},
                                                                        default=str)[:1500]))
             real = real_new
+        fin = getattr(be, "run_deferred", None)   # card 80-3: deferred op errors are answered by their declared gates
+        if fin:
+            fin()
         return real
 
     # --------------------------------------------------------------------------- one real op
@@ -584,10 +587,37 @@ class LVReader(object):
         return self.g.node_terms_uid(self.work, didx, nidx)
 
 
+def check_sink_gates(sink_gates, gates):
+    """SINK GATES (card 80-3, retrospective-cycle79 device-failed at the old whitelist here): a recipe may let a
+    wire_indicators op error pass ONLY by declaring, per sink, a NAMED gate it owns that reads that exact sink.
+    `sink_gates` = [{"gate": <label>, "sink": [<owner_uid>, <term_name>]}]; `gates` = {<label>: callable(entry) ->
+    (ok, detail)}. A declaration naming a gate absent from `gates` (or not callable), or a malformed sink, is REFUSED."""
+    out = []
+    for d in sink_gates or []:
+        name, sink = d.get("gate"), d.get("sink")
+        if not isinstance(sink, (list, tuple)) or len(sink) != 2:
+            raise ExecStop("sink gate {0!r}: sink must be [owner_uid, term_name], got {1!r}".format(name, sink))
+        if name not in (gates or {}) or not callable(gates[name]):
+            raise ExecStop("sink gate {0!r} for sink {1}: no such gate declared by the recipe (declared: {2})".format(
+                name, list(sink), sorted(gates or {})))
+        out.append({"gate": name, "sink": [int(sink[0]), str(sink[1])]})
+    return out
+
+
+def sink_gate_for(tag, err, sink, decls):
+    """The declaration whose sink == `sink` exactly, else ExecStop (the op error stops the run)."""
+    key = [int(sink[0]), str(sink[1])]
+    hit = [d for d in decls if d["sink"] == key]
+    if not hit:
+        raise ExecStop("{0}: op error {1} on sink {2} - no declared gate reads that sink (declared sinks: {3})".format(
+            tag, err, key, [d["sink"] for d in decls]))
+    return hit[0]
+
+
 class LVBackend(object):
     """Every mutator is a stagekit / gscript verb the L7 stages used; each is followed by the measured junk purge."""
 
-    def __init__(self, s, fs_pairs):
+    def __init__(self, s, fs_pairs, sink_gates=None, gates=None):
         import stagekit as K
         import gscript as g
         self.K, self.g, self.s, self.fs = K, g, s, fs_pairs
@@ -595,6 +625,21 @@ class LVBackend(object):
         self.C82 = K.mod("build_opfsinnertunnelconnect_v0")
         self.addr = Addr(LVReader(g, s.work))
         self.reads = []
+        self._init_sink_gates(sink_gates, gates)
+
+    def _init_sink_gates(self, sink_gates, gates):
+        self.gates = dict(gates or {})
+        self.sink_gates = check_sink_gates(sink_gates, self.gates)
+        self.deferred = []
+
+    def run_deferred(self):
+        """Executor.run's last act: every deferred op error's declared gate READS its sink now; a gate that fails stops."""
+        for e in self.deferred:
+            ok, detail = self.gates[e["gate"]](dict(e))
+            self.s.gate("{0} (declared sink gate for {1} on {2})".format(e["gate"], e["tag"], e["sink"]), ok, detail)
+            e["gate_ok"] = bool(ok)
+            if not ok:
+                raise ExecStop("declared sink gate {0!r} failed on {1}: {2}".format(e["gate"], e["sink"], str(detail)[:300]))
 
     def read(self):
         lv = self.K.mod("wiki_build").read_live(self.s.work, fs_pairs=self.fs)
@@ -676,9 +721,17 @@ class LVBackend(object):
         di = self.B.diag_index(self.s.work, int(rs["frame_diagram"]))
         rec = self.s.wire_indicators(self.s.uid_index(rs["owner_class"], rs["owner_uid"]), [rs["term_name"]],
                                      [rd["term_name"]], diagram_index=di, node_class=rs["owner_class"])
-        if rec.get("err") and "target BROKEN after wiring" in str(rec["err"]):
-            rec["err"] = None                     # its own post-wiring ExecState check (stage_d1_l7_r.py fp_ind gate)
-        out = self._done(rec, "wire_indicators #{0}".format(rs["owner_uid"]))
+        tag = "wire_indicators #{0}".format(rs["owner_uid"])
+        if rec.get("err"):                        # no whitelist (card 80-3): stop unless a declared gate reads this sink
+            self.s.junk_purge(tag)
+            sink = [rd["owner_uid"], rd["term_name"]]
+            d = sink_gate_for(tag, rec["err"], sink, self.sink_gates)
+            self.deferred.append({"gate": d["gate"], "sink": d["sink"], "tag": tag, "err": str(rec["err"])[:300],
+                                  "source": [rs["owner_uid"], rs["term_name"]]})
+            self.s.fact("OP-ERROR {0} on sink {1} DEFERRED to declared gate {2!r}: {3}".format(tag, d["sink"], d["gate"],
+                                                                                                str(rec["err"])[:200]))
+            return {"err": rec["err"], "s": rec.get("s"), "how": "wire_indicators", "deferred_to": d["gate"]}
+        out = self._done(rec, tag)
         out["how"] = "wire_indicators"
         return out
 

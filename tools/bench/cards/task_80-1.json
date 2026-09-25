@@ -1,0 +1,32 @@
+{
+ "schema": "task/1",
+ "id": "80-1",
+ "kind": "read-log",
+ "goal": "Facts of the cycle-80 Error List MISMATCH on bed D1_k: UNEXPECTED and MISSING items (message, uid, location), the expected-errors source and how it is matched, handles_flat.",
+ "why": "errorlist_hook verdict MISMATCH for tools/bench/errorlist_D1_k_20260925_100155_20260925_104258.json; runner says deal with it FIRST. Judgement needs the item list, not the 78 KB file.",
+ "inputs": [
+  {"path": "tools/bench/errorlist_D1_k_20260925_100155_20260925_104258.json"},
+  {"path": "tools/bench/errorlist_check_cycle80.log"},
+  {"path": "tools/cycle_runner.py"}
+ ],
+ "pass": [
+  "R1 table of every UNEXPECTED item: message text, object class/uid if present, location/owner",
+  "R2 table of every MISSING expected item",
+  "R3 the expected-errors source file path + how the comparison decides match (cite cycle_runner.py / errorlist tool line)",
+  "R4 whether any item names ControlTerminal #3173 or #9519, wire 23807, or the indicators 'x,y,z array'-type rows moved by stage K"
+ ],
+ "outputs": [],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": ["tools/bench/cards/result_80-1.json"],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 15},
+ "rules": ["read-only; targeted reads (json.load in a one-liner is fine), never paste the whole file", "result/1 <=10 facts <=3 open"],
+ "advances": ["M3"]
+}

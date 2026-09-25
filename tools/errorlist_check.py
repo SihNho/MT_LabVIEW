@@ -306,7 +306,34 @@ def compare(items, expected, derived=()):
             left[k]["count"] -= 1
     missing = [e.get("match") for e in left if e["required"] for _ in range(e["count"])]
     usage = [{"kind": e["kind"], "from": e.get("from") or e.get("match"), "used": u} for e, u in zip(left, used)]
+    heads = license_headers(items)
+    for pos in heads:                                   # remove exactly the licensed empty headers from `extra`
+        extra.remove(items[pos].get("raw"))
+    usage.append({"kind": "header_of_next", "from": "PD179(d): empty-raw tree header before a licensed item",
+                  "used": len(heads)})
     return extra, missing, usage
+
+
+# TREE-HEADER ROWS (card 80-4, plan PD179(d), 2026-09-25): the Error List shows a subVI's required-input error as a
+# tree - a header row whose OCR text can come back EMPTY, then the item row. cycle 80 read item 0 raw='' with the
+# detail of item 1 (#5058 'Image In' is not wired, licensed by an open row) and called it extra. An empty-raw row is
+# licensed ONLY when (a) the NEXT item is itself licensed and non-empty, and (b) the header's detail text (the error
+# class description) equals that item's detail after norm(). It consumes no licence count. Anything else stays extra.
+
+def license_headers(items):
+    """Mark `licensed_by = 'header-of <n>'` on qualifying empty-raw rows; return their positions in `items`."""
+    out = []
+    for pos, it in enumerate(items):
+        if it.get("licensed_by") or norm(it.get("raw")) or pos + 1 >= len(items):
+            continue
+        nxt = items[pos + 1]
+        det = norm(it.get("detail"))
+        if not (nxt.get("licensed_by") and not str(nxt["licensed_by"]).startswith("header-of")
+                and norm(nxt.get("raw")) and det and det == norm(nxt.get("detail"))):
+            continue
+        it["licensed_by"] = "header-of %s" % nxt.get("index", pos + 1)
+        out.append(pos)
+    return out
 
 
 def main():
@@ -376,6 +403,10 @@ def main():
         R["show_error_ok"] = sum(1 for i in items if (i.get("show_error") or {}).get("diagram_fronted"))
         R["dclicked"] = sum(1 for i in items if i.get("show_error"))
         R["extra"], R["missing"], R["licence_usage"] = compare(items, expected, derived)
+        for i in items:
+            if str(i.get("licensed_by") or "").startswith("header-of"):
+                print("LICENCE item %s: %s (empty-raw tree header, PD179(d))" % (i.get("index"), i["licensed_by"]),
+                      flush=True)
         R["gates"] = {
             "window_opened": bool(R.get("window")),
             "count_read": R.get("n_reported") is not None,

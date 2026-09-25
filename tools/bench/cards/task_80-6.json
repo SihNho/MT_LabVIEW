@@ -1,0 +1,42 @@
+{
+ "schema": "task/1",
+ "id": "80-6",
+ "kind": "build",
+ "goal": "PD180(a): refit stagesim.op_move_in to the measured L2-A1 reads (closure, no-flip selector w/ unwired inners, moved-structure input flips, sequential edge loss) with self-tests.",
+ "why": "80-5 joint L2-A1 move on a D1_k scratch: sim 0 flips vs real 10 inner + 2 outer flips, 3 lost member edges, 2 deleted half-wires (compare n=23); singles 0 of 4 predicted flips.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/stagesim.py"},
+  {"path": "tools/bench/l2a1_tunflip_80.json", "md5": "578193386b5744495b1f593030210081"},
+  {"path": "tools/bench/l2a1_tunflip_80.log"},
+  {"path": "tools/bench/l2a1_graph_k_80.json", "md5": "c764150c4587b78429d0bbdb9d30c27f"},
+  {"path": "tools/bench/cards/result_80-5.json"}
+ ],
+ "pass": [
+  "S1 closure: moving a structure uid moves every node/terminal it contains (self-test from the joint read)",
+  "S2 selector Tunnel with unwired inners does not flip (both singles: 0 flips, compare diff 0)",
+  "S3 moved structure's input-tunnel inners flip as measured; outers t6007/t6026 as measured",
+  "S4 sequential move: edges between moved and not-yet-moved members dropped, bare half-wires (w5637/w5975) deleted as measured",
+  "S5 joint L2-A1 replay in the sim == real read over all 23 compare rows (diff 0); every existing selftest_stagesim* still passes (counts)"
+ ],
+ "outputs": ["tools/stagesim.py", "tools/bench/selftest_stagesim_l2a1_80.py", "tools/bench/selftest_stagesim_l2a1_80.log"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagesim.py",
+   "tools/bench/selftest_stagesim*",
+   "tools/bench/sim/**",
+   "docs/stage-simulator-plan.md",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": ["the measured read is the truth; fit the model to it, never the reverse", "no LabVIEW; if a branch cannot be fitted without a new read, stop and report it as OPEN", "result/1 <=10 facts <=3 open"],
+ "unblocks": "M3"
+}

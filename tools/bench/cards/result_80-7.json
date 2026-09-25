@@ -1,0 +1,16 @@
+{"schema":"result/1","id":"80-7","status":"PASS","gates":{"pass":35,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/vigraph.py","md5":"3f2fe63c5be47e1dd0ff11e8e70f8586"},{"path":"tools/bench/selftest_vigraph_frame_80.py","md5":"e4d0275b660cb27b7e27d163b6e649a8"},{"path":"tools/bench/selftest_vigraph_frame_80.log","md5":"e1f7ac8d16a8ae79882f53d13ea7b772"},{"path":"tools/bench/ct23541_facts_80.log","md5":"af52446950c86dfa91afcbb2e4dda2eb"},{"path":"tools/bench/vigraph_check_80.log","md5":"920157cdd8e09cc5587494d0e6a55621"}],
+"facts":[
+"V1 build4(frame_keyed=True): inner terms of multi-frame Tunnel/SelectorTunnel key on frame ordinal (rank of frame-diagram uid per structure, ASSUMPTION F) vigraph.py:299,334; selftest 12/0",
+"V1b default mode identical keys+edges; mixed-mode computation_diff raises; computation_diff_frame vigraph.py:840 (selftest_vigraph_frame_80.log V1b,V1d)",
+"frame effective_sources tags each source with every <tunnel uid>/f<ordinal> crossed (vigraph.py:808); S1/K: 247 multi-frame tunnels, 43 structures, 92 frames, 0 key collisions",
+"V2 cdiff_frame(S1,D1_k) == exactly the 10 PB rows of 178(c), 0 extra/missing; merged baseline also 10 (selftest_vigraph_frame_80.log V2a,V2)",
+"Run 1 FAIL (1 of budget 2): extra #9703 'x' because tag used tunnel term NAME (#10978 'Index of closest..bead 2'->'index'); tag now omits name, run 2 12/0",
+"V3 swap of #6016 frame inners' wires (6018 w6071 <-> 6022 w6030) on S1: merged cdiff 0 rows, frame cdiff 1 row on #5058 'x,y,z array'; unswapped control 0 rows",
+"V4 diag_vigraph_check --no-dump 19/0 (vigraph_check_80.log), no LabVIEW; all sources offline (wiki D1_s1_copy + l2a1_graph_k_80.json)",
+"V5 #23541 = ControlTerminal INDICATOR 'index' on diagram #639 (WhileLoop#637), sole writer w23556 from #10757 'element'; label unique (ct23541_facts_80.log C1,C2)",
+"V5 readers: one Local #23523 READ in WhileLoop#23032 -> #10978 SelectorTunnel; no Local/Global writer; no Property/Invoke/CtlRefConst labelled 'index', none unlabelled (C3,C4)",
+"No STOP-fact: no non-Local reader, no 2nd writer found. Offline limit: bound Property/ControlReference targets are inferred from original labels, not read"],
+"open":["ASSUMPTION F: frame ordinal = frame-diagram uid rank (true Frames[] index not in the offline census); holds only while frame diagram uids survive a stage. Accept, or read Frames[] live?"],
+"cost":{"usd":null,"minutes":8,"labview_runs":0},
+"note":"No LabVIEW touched. Scratch probe tools/bench/cdiff_frame_80_probe.py/.log kept (layout evidence). No JEV-LADDER line existed for the failed run; own-script bug patched."}

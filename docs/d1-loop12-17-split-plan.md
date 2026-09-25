@@ -613,6 +613,109 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
            ControlTerminal sinks.
      - **(e) Carried to L2-A1** (review `:76-99`): `computation_diff` merges Case frames. Before L2-A1 gates on cdiff,
        its plan entry must say how the `#5540`/`#10445` frames are kept apart.
+179. **(cycle 80 judgement, on results `80-1`/`80-2`/`80-3`) the three Before-L2-A1 items of 178(i) are settled.**
+     - **(a) K STANDS — the conditional in 178(i) is lifted.** `tools/bench/k_ind_read_80.log:40-45`: on `D1_k`,
+       `#3173` and `#9519` are sinks of wire **23807**, whose single source is `#5058` term 5171 `'pos in cal image out'`.
+       Its third sink is the K replacement register `RightShiftRegister #23508`. The labelled case on `D1_s4_loop17`
+       reads the same source through w121 (`:28-35`), so the source is the same one. There are exactly 2 ControlTerminals
+       with those labels, so `wire_indicators` made no duplicates (`:39,44`). w23807 survived Remove Bad Wires on a
+       scratch (`:68-71`). The op's `target BROKEN after wiring` was the ExecState-0 false alarm that 178(i) described.
+       Level: STRUCTURAL, never run.
+       ⚠️ The material session called RBW survival a proxy because "no read-only Is Broken? op exists". That contradicts
+       CLAUDE.md (`Wire.Is Broken?` 6371004 BUILT, `docs/NAMES.md:902-911`), and K's own P2 used it. This is a
+       fact-check item for the next tool pass, not a blocker: RBW survival is the stronger test.
+     - **(b) The panel-terminal reader EXISTS without a new op** (80-2): `allterms.read_terms(OpAllTerms_v1)` plus
+       `report_all('ControlTerminal')`. A ControlTerminal's term_uid is its own uid, and its owner is its Diagram
+       (`tools/bench/diag_ctlterm_read_80.py`). From L2-A1 on, every ControlTerminal row is gated by this reader.
+     - **(c) The stagexec whitelist is REMOVED** (80-3; `tools/stagexec.py:607,725`, `selftest_stagexec_gate.log`
+       13/0). An op error now stops the run, unless the recipe declares a `sink_gates` entry naming that exact sink
+       together with an existing gate that reads it. `stage_d1_k.py` would therefore stop at its indicator rows on
+       replay. That is accepted, because K is not replayed.
+       `stage_d1_l7_r.py:92` keeps its own tolerance. That recipe is finished history and is not replayed, so no repair
+       is needed. Any NEW recipe that copies that line is refused in review.
+     - **(d) The cycle-80 Error List MISMATCH is a checker artefact, not a bed fault.** `result_80-1`: there is
+       exactly one extra item (index 0). Its raw text and object are empty (OCR), and its detail reads "The designer of
+       this subVI has specified that this terminal must be wired". It is the tree-header row of item 1, `#5058 'Image
+       In' is not wired`, which is licensed by the open row t1. Nothing is MISSING. The checker (`errorlist_check.py:269`)
+       cannot license an empty-raw row. The repair is a tool task:
+       - an empty-raw row is licensed ONLY when the next item is licensed AND the header's detail text matches that
+         item's error class;
+       - negative case: the same header followed by an unlicensed item stays extra.
+       ✅ DONE in the same cycle (80-4): `errorlist_check.py:309,323-336`, self-test 5/5, and an offline re-verdict of
+       the cycle-80 json gives OK (`tools/bench/errorlist_recheck_80.log`). `stagexec` selftest T01-T15 passes 15/0.
+180. **(cycle 80 judgement, on result `80-5` PASS 27/0: `tools/bench/l2a1_facts_80.log`, `…/l2a1_tunflip_80.log`/
+     `.json`) the L2-A1 design inputs. The stage is NOT built until (a) and (b) are delivered.**
+     - **(a) STAGESIM IS REFIT FIRST (tool, necessary; the class recurs in L2-A2/B).** The measured joint L2-A1 move on
+       a scratch of D1_k had 10 moves. The simulator predicted 0 flips. The real VI flipped 10 SelectorTunnel inners and
+       2 outers, lost 3 edges between moved members (all at `#10247`), and deleted half-wires w5637/w5975 that the
+       simulator kept (`l2a1_tunflip_80.log:33,195-196`, compare n=23). The two single moves flipped 0 of 4 predicted.
+       So `stagesim.op_move_in` must learn four things from `l2a1_tunflip_80.json`, which is the labelled set:
+       (1) moving a structure moves its closure; (2) a selector `Tunnel` with unwired inners does NOT flip; (3) a moved
+       structure's input-tunnel inners DO flip; (4) moving uid by uid drops edges between members that were already
+       moved and members still to move, and deletes bare half-wires.
+       Pass: the simulator reproduces the joint read with compare diff 0 over all 23 rows, and both singles with
+       0 flips. Every existing stagesim self-test still passes. The model is fitted to the read, never the reverse.
+       The 3 lost edges are then ordinary reconnect-table rows of L2-A1 (CLAUDE.md "Stages are SIMULATED", decision 6).
+       They are re-wired, not avoided by choosing a move order.
+     - **(b) 178(e) ANSWERED: a frame-keyed cdiff.** `vigraph` keys rows by node|class|name|ordinal with no frame
+       (`vigraph.py:244-245,301-306`). It joins all per-frame inners (`:332-346`) and compares SETS (`:709-729`).
+       Frames `5582/5592` of `#5540` and `10453/10459` of `#10445` therefore merge (`l2a1_facts_80.log:361,367`).
+       The fix is an opt-in `frame_keyed` mode: the identity of an inner terminal of a CaseStructure/selector tunnel
+       carries its frame's ordinal index, not its uid, so the comparison with S1 is by position. Pass:
+       - cdiff_frame(S1, D1_k) == the 10 PB rows of 178(c). Any other difference is reported, not accepted.
+       - Negative: a synthetic graph that swaps one wire between the two frames of `#5540` is detected, while the
+         merged mode misses it.
+       From L2-A1 on, the cdiff gate is the frame-keyed one.
+     - **(c) w10990 IS GONE and PD157/161's L2-A1 row for it is OBSOLETE.** On D1_k, `#10757 'element'` feeds
+       ControlTerminal `#23541` through w23556 (`l2a1_facts_80.log:311-318`). That is the S3a indicator branch that
+       carries the value to loop 1.5, and P1 shows no cdiff row for `#10407`. Tentative ruling, conditional on a fact
+       check in the same tool dispatch: `#23541` moves with `#10757` into the 1.2 body. This is a moved row gated by
+       the 179(b) reader. It keeps w23556's source and name, and it leaves `#23541`'s Local readers in 1.5 untouched.
+       This is scheduling only: the indicator is written by 1.2 instead of 1.1. If `#23541` has any reader other than
+       Locals, or any other writer, STOP; judgement re-decides.
+       §3's L2-A1 row "w10990 wired" becomes "`#10757 'element'` → `#23541` wired (179(b) reader), `#10686`/w10799
+       untouched".
+     - **(d) Reset controls:** `Auto-Reset` `#17487` and `Reset Tracking` `#5634` are ControlTerminals on `#637`'s
+       diagram whose only other ends are group-A members (`l2a1_facts_80.log:279-323`). They move with group A, per
+       §2, and their rows are gated by the 179(b) reader.
+     - **(e) Mixed pairs** `#1147/#1142`, `#5796/#5805`, `#7311/#11001` are initialised from `#686` (w2731/w5812/w11253),
+       and their outers are unwired (`:324-341`). L2-A1 creates 1.2's four register pairs from these, under
+       RULE-CHAIN-S1 (init source = the same `#686` FSIT; never asked of Jev).
+181. **(cycle 80 judgement, on results `80-6` PASS 13/0 and `80-7` PASS 35/0) 180(a)–(c) are DELIVERED. L2-A1 may now
+     be simulated.**
+     - **(a) The stagesim refit is ACCEPTED as PROVISIONAL** (`tools/stagesim.py:344,403,417`,
+       `selftest_stagesim_l2a1_80.log`; the old self-tests still pass, 42/0 and 4/0). The joint sequential replay equals
+       the recorded 23 rows with diff 0, and both singles give 0 flips.
+       Limits, stated:
+       - The truth fixture `tools/bench/sim/l2a1_real_80.json` is the old simulator's output plus or minus the recorded
+         compare. It is not a full real terminal table, and the `allow_either` terminals are excluded.
+       - R-S2 has an equally fitting alternative ("class `Tunnel` never flips").
+       - R-BARE timing is ambiguous.
+       Consequences, decided:
+       - (1) The next cycle first registers the new `move_in` params in `tools/bench/opmodels/move_in.json` `sim`,
+         so that `model_source` cites them. That is a small material task.
+       - (2) If L2-A1's simulated plan orphans a WIRED class-`Tunnel` (the branch R-S2 cannot tell apart), that one
+         branch is measured on a scratch of D1_k before launch, as in 178(i).
+       - (3) The run's per-step comparison (E1) stays the backstop. The simulator's `only_sink` stays `ambiguous`,
+         and the executor compares edges after each step, not the half-wire timing.
+     - **(b) The frame-keyed cdiff is ACCEPTED** (`vigraph.py:299,334,808,840`, `selftest_vigraph_frame_80.log` 12/0).
+       `cdiff_frame(S1,D1_k)` == the 10 PB rows exactly. The negative test is detected by the frame-keyed mode and
+       missed by the merged mode, and `diag_vigraph_check` passes 19/0.
+       ASSUMPTION F (frame ordinal = the rank of the frame-diagram uid) is accepted on a condition: every stage that
+       gates on it checks that the frame-diagram uid SETS of the moved Case structures (`#5540` [5582,5592],
+       `#10445` [10453,10459]) are equal before and after. If they are not equal, the gate FAILS; they are not
+       re-ranked.
+     - **(c) 180(c) is CONFIRMED** (`tools/bench/ct23541_facts_80.log` C1–C4):
+       - `#23541` is the indicator `'index'` on `#639`, with a sole writer (w23556 from `#10757 'element'`).
+       - Its only reader is Local `#23523`, in WhileLoop `#23032`, feeding `#10978`.
+       - `#23541` moves with `#10757` into the 1.2 body.
+     - **(d) L2-A1's row set** = group A (8) + `#17487` + `#5634` + `#23541`. It adds 1.2's register pairs from the three
+       mixed pairs under RULE-CHAIN-S1. Its re-wires are:
+       - K's open rows t0, t3, t4, t7, and t8→`#10969`/`#10757`;
+       - the reconnect table the refit simulator computes, including the 3 member edges at `#10247`.
+       Gates: frame-keyed cdiff; the 179(b) reader on every ControlTerminal row; the 181(b) frame-uid check.
+       PB = the simulator's finalized open-row list. There is no whitelist (179(c)); a `sink_gates` entry is allowed
+       only for a ControlTerminal sink that the reader gates.
 
 ## OPEN (design choices — for judgement; not decided here)
 

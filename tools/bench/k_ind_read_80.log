@@ -1,0 +1,104 @@
+BGRUN START 2026-09-25 10:53:42 limit 45.0 min: py -u tools/bench/diag_ctlterm_read_80.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 257 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 6cf5b0777aafa12112d8a786a9eed1ed  got 6cf5b0777aafa12112d8a786a9eed1ed
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN BEFORE S4 L7-R          4b621946492da3d2fbb96b6053e715ec  (want 4b621946492da3d2fbb96b6053e715ec) OK
+  FACT  PIN BEFORE K bed            6cf5b0777aafa12112d8a786a9eed1ed  (want 6cf5b0777aafa12112d8a786a9eed1ed) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33965
+  FACT  PRELOAD: the ORIGINAL is resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_ctl80_k_20260925_105342.vi
+  FACT  ExecState [after open] scratch_ctl80_k_20260925_105342.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_ctl80_k_20260925_105342.vi is deleted at close
+
+---------- M1 LABELLED CASE - scratch of D1_s4_loop17 (w121 expected)
+  PASS  SC scratch_ctl80_20260925_105342_s4.vi is a byte-identical copy of D1_s4_loop17.vi  scratch_ctl80_20260925_105342_s4.vi
+  FACT  M1 S4: 5801 terminal rows (25.2 s), 1913 Wire objects, 116 ControlTerminals
+  FACT  M1 S4 #3173: rows 1 is_ControlTerminal True row {'term_uid': 3173, 'term_name': 'Pos within cal image', 'is_source': False, 'wire_uid': 121, 'owner_uid': 639, 'owner_class': 'Diagram', 'frame_diagram': 639}
+  FACT  M1 S4 #3173: wire 121 n_src 1 n_sink 5 SOURCES [('SubVI', 5058, 'pos in cal image out', 5171)] SINKS [('Function', 10969, 'array', 10975), ('IndexArray', 10757, 'array', 10871), ('RightShiftRegister', 119, 'pos in cal image out', 3064), ('Diagram', 639, 'Pos within cal image', 3173), ('Diagram', 639, 'Pos: Diffraction Pattern', 9519)]
+  FACT  M1 S4 #9519: rows 1 is_ControlTerminal True row {'term_uid': 9519, 'term_name': 'Pos: Diffraction Pattern', 'is_source': False, 'wire_uid': 121, 'owner_uid': 639, 'owner_class': 'Diagram', 'frame_diagram': 639}
+  FACT  M1 S4 #9519: wire 121 n_src 1 n_sink 5 SOURCES [('SubVI', 5058, 'pos in cal image out', 5171)] SINKS [('Function', 10969, 'array', 10975), ('IndexArray', 10757, 'array', 10871), ('RightShiftRegister', 119, 'pos in cal image out', 3064), ('Diagram', 639, 'Pos within cal image', 3173), ('Diagram', 639, 'Pos: Diffraction Pattern', 9519)]
+  FACT  M1 S4 M3 ControlTerminals carrying the two labels: 2 -> [('Pos within cal image', 3173, 121, 'Diagram', 639, False), ('Pos: Diffraction Pattern', 9519, 121, 'Diagram', 639, False)]
+  FACT  M1 S4 panel_wiring rows with the labels: [{'label': 'Pos within cal image', 'indicator': True, 'uid': 49, 'is_source': False, 'wire': 121, 'term_err': 0, 'wire_err': 0}, {'label': 'Pos: Diffraction Pattern', 'indicator': True, 'uid': 9402, 'is_source': False, 'wire': 121, 'term_err': 0, 'wire_err': 0}]
+  PASS  M1 #3173 read wired from w121 with a source  [('SubVI', 5058, 'pos in cal image out', 5171)]
+  PASS  M1 #9519 read wired from w121 with a source  [('SubVI', 5058, 'pos in cal image out', 5171)]
+  PASS  M1 scratch deleted: scratch_ctl80_20260925_105342_s4.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_ctl80_20260925_105342_s4.vi
+
+---------- M2/M3 D1_k (work copy = byte copy of the bed)
+  FACT  M2 K: 5817 terminal rows (13.7 s), 1921 Wire objects, 116 ControlTerminals
+  FACT  M2 K #3173: rows 1 is_ControlTerminal True row {'term_uid': 3173, 'term_name': 'Pos within cal image', 'is_source': False, 'wire_uid': 23807, 'owner_uid': 23166, 'owner_class': 'Diagram', 'frame_diagram': 23166}
+  FACT  M2 K #3173: wire 23807 n_src 1 n_sink 3 SOURCES [('SubVI', 5058, 'pos in cal image out', 5171)] SINKS [('Diagram', 23166, 'Pos within cal image', 3173), ('Diagram', 23166, 'Pos: Diffraction Pattern', 9519), ('RightShiftRegister', 23508, '', 23798)]
+  FACT  M2 K #9519: rows 1 is_ControlTerminal True row {'term_uid': 9519, 'term_name': 'Pos: Diffraction Pattern', 'is_source': False, 'wire_uid': 23807, 'owner_uid': 23166, 'owner_class': 'Diagram', 'frame_diagram': 23166}
+  FACT  M2 K #9519: wire 23807 n_src 1 n_sink 3 SOURCES [('SubVI', 5058, 'pos in cal image out', 5171)] SINKS [('Diagram', 23166, 'Pos within cal image', 3173), ('Diagram', 23166, 'Pos: Diffraction Pattern', 9519), ('RightShiftRegister', 23508, '', 23798)]
+  FACT  M2 K M3 ControlTerminals carrying the two labels: 2 -> [('Pos within cal image', 3173, 23807, 'Diagram', 23166, False), ('Pos: Diffraction Pattern', 9519, 23807, 'Diagram', 23166, False)]
+  FACT  M2 K panel_wiring rows with the labels: [{'label': 'Pos within cal image', 'indicator': True, 'uid': 49, 'is_source': False, 'wire': 23807, 'term_err': 0, 'wire_err': 0}, {'label': 'Pos: Diffraction Pattern', 'indicator': True, 'uid': 9402, 'is_source': False, 'wire': 23807, 'term_err': 0, 'wire_err': 0}]
+  ROW   M2 #3173 wire : observed=23807 expected=None
+  FACT  M2 #3173 w23807 OpWireSource_v5(UID 2 = 23807): 5 row(s), 4 with a REAL owner
+  FACT      M2 #3173 w23807   t0  is_source=True  owner_class='SubVI'                    owner_uid=5058    recip=23807
+  FACT      M2 #3173 w23807   t1  is_source=False owner_class='RightShiftRegister'       owner_uid=23508   recip=23807
+  FACT      M2 #3173 w23807   t2  is_source=False owner_class='Diagram'                  owner_uid=23166   recip=23807
+  FACT      M2 #3173 w23807   t3  is_source=False owner_class='Diagram'                  owner_uid=23166   recip=23807
+  FACT      M2 #3173 w23807   t4  is_source=None  owner_class=None                       owner_uid=None    recip=None  READ ERROR errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; errG=error 1055: Property Node in OpWireSource_v5.vi; errS=error 1055: Property Node in OpWireSource_v5.vi; errWU=error 1055: Property Node in OpWireSource_v5.vi; errCO=error 1055: Property Node in OpWireSource_v5.vi
+  FACT  M2 #3173 w23807 PD85 PRECONDITION: 4 real-owner row(s), 0 violate recip==queried_uid
+  FACT  NET w23807: source-terminal owners [('SubVI', 5058)] ; every owner [('Diagram', 23166), ('RightShiftRegister', 23508), ('SubVI', 5058)] ; PD85 0
+  ROW   M2 #9519 wire : observed=23807 expected=None
+  FACT  M2 #9519 w23807 OpWireSource_v5(UID 2 = 23807): 5 row(s), 4 with a REAL owner
+  FACT      M2 #9519 w23807   t0  is_source=True  owner_class='SubVI'                    owner_uid=5058    recip=23807
+  FACT      M2 #9519 w23807   t1  is_source=False owner_class='RightShiftRegister'       owner_uid=23508   recip=23807
+  FACT      M2 #9519 w23807   t2  is_source=False owner_class='Diagram'                  owner_uid=23166   recip=23807
+  FACT      M2 #9519 w23807   t3  is_source=False owner_class='Diagram'                  owner_uid=23166   recip=23807
+  FACT      M2 #9519 w23807   t4  is_source=None  owner_class=None                       owner_uid=None    recip=None  READ ERROR errO=error 1055: Property Node in OpWireSource_v5.vi; errU=error 1055: Property Node in OpWireSource_v5.vi; errG=error 1055: Property Node in OpWireSource_v5.vi; errS=error 1055: Property Node in OpWireSource_v5.vi; errWU=error 1055: Property Node in OpWireSource_v5.vi; errCO=error 1055: Property Node in OpWireSource_v5.vi
+  FACT  M2 #9519 w23807 PD85 PRECONDITION: 4 real-owner row(s), 0 violate recip==queried_uid
+  FACT  NET w23807: source-terminal owners [('SubVI', 5058)] ; every owner [('Diagram', 23166), ('RightShiftRegister', 23508), ('SubVI', 5058)] ; PD85 0
+  ROW   M3 ControlTerminals with the two labels : observed=2 expected=2
+
+---------- M2b broken-wire PROXY - Remove Bad Wires on a throwaway scratch of D1_k
+  PASS  SC scratch_ctl80_20260925_105342_rbw.vi is a byte-identical copy of D1_k_20260925_100155.vi  scratch_ctl80_20260925_105342_rbw.vi
+  FACT  M2b BROKEN-WIRE COUNT: Wire 1921 -> 1905 after Remove Bad Wires = 16 bad wire(s); ExecState after 0
+  FACT  M2b wires deleted by RBW: [42, 121, 373, 505, 2924, 3040, 3472, 3512, 3646, 3912, 4027, 5637, 5859, 5975, 7429, 23556]
+  ROW   M2b #3173 w23807 survives Remove Bad Wires (proxy for Is Broken? False) : observed=True expected=None
+  ROW   M2b #9519 w23807 survives Remove Bad Wires (proxy for Is Broken? False) : observed=True expected=None
+  PASS  M2b scratch deleted: scratch_ctl80_20260925_105342_rbw.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_ctl80_20260925_105342_rbw.vi
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_ctl80_k_20260925_105342.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  PRELOAD references released; refs {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 6}
+  FACT  gscript ref_counts: {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 6}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 9, 'closed': 9, 'live': 0, 'cached_op_vis': 6}
+  FACT  LabVIEW handle count AFTER the work: 45807
+  PASS  H4 scratch deleted: scratch_ctl80_k_20260925_105342.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_ctl80_k_20260925_105342.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 6cf5b0777aafa12112d8a786a9eed1ed / after 6cf5b0777aafa12112d8a786a9eed1ed
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN AFTER  S4 L7-R          4b621946492da3d2fbb96b6053e715ec  (want 4b621946492da3d2fbb96b6053e715ec) OK
+  FACT  PIN AFTER  K bed            6cf5b0777aafa12112d8a786a9eed1ed  (want 6cf5b0777aafa12112d8a786a9eed1ed) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33998
+
+====================================================================================================
+=== GATES: 14 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\k_ind_read_80.json   elapsed 157.7 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":14,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  M4 LabVIEW process gone at the end
+
+====================================================================================================
+=== GATES: 15 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\k_ind_read_80.json   elapsed 162.0 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":15,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 162s
