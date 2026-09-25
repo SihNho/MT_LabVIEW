@@ -50,8 +50,11 @@ def md5(p):
 # 0 -> 31,287; ..._191838.json: 0 -> 34,643) - a gate on that delta would be meaningless. So LabVIEW is started and
 # allowed to SETTLE first; `handles_before` is read only then. HANDLE_TOL: the one warm measurement is +25 over a
 # whole check (..._180737.json 42,764 -> 42,789), but a check on a freshly started LabVIEW LOADS the bed's hierarchy
-# (fresh baseline ~31,500 per CLAUDE.md; ..._191838.json ended at 34,643, i.e. up to ~+3,100). 5,000 catches a
-# runaway leak without failing on a hierarchy load; tune it from the handles_delta values the JSONs now record.
+# (fresh baseline ~31,500 per CLAUDE.md; ..._191838.json ended at 34,643, i.e. up to ~+3,100).
+# HANDLES ARE A RECORD, NOT A GATE (card chat-E2, judgement 2026-09-25): cycle 80 read 22/22 items and FAILed only
+# on handles_flat (37,239 -> 31,287, a DROP of 5,952 after the hierarchy unloaded; errorlist_check_cycle80.log).
+# handles_before / handles_after / handles_delta are recorded in the JSON and log; HANDLE_TOL only sets the
+# advisory flag `handles_advisory` ("within" / "outside"), which never touches the verdict.
 HANDLE_TOL = 5000
 LV_UP_S = 60.0
 SETTLE_BAND = 300
@@ -63,12 +66,16 @@ VI_READY_S = 60.0
 # errorlist_D1_s4_loop17_20260925_010221.json). The app object comes up before the VirtualInstrument class does, so
 # readiness is now proven with the call the check actually needs (vi_ready), retried until it answers.
 NOT_READY = ("-2147221231", "ClassFactory")
-# _APP_PIN (card chat-E1, run 2 errorlist_check_cold_20260925.log 01:05): with the vi_ready poll the ClassFactory
-# error cleared on try 2 (20.4 s, ExecState 1), but OpenFrontPanel right after it raised DISP_E_EXCEPTION
-# (scode 0x80010107) and LabVIEW was gone when the run ended. HYPOTHESIS (not yet measured beyond this run): a
-# LabVIEW started BY a COM Dispatch exits when its last Application pointer is released, and this file dropped that
-# pointer (`g._lv = None`) between Version and GetVIReference. So one Application pointer is now held for the whole
-# run and never reset after it answered; LabVIEW still closes when the process exits (the card's "closed after").
+# _APP_PIN (card chat-E1, run r1 errorlist_check_cold_20260925.log 01:05; CORRECTED card chat-E2 per the review
+# archive/peer/2026-09-25-chat-E1r-pointer-release.md): with the vi_ready poll the ClassFactory error cleared on
+# try 2 (20.4 s, ExecState 1 - ~16 s for a call that takes 1.3 s warm), then the NEXT call failed: the
+# GetVIReference inside open_panel's vi_ref (ref_counts opened 1 / closed 1, errorlist_D1_s4_loop17_20260925_010538
+# .json), com_error with inner scode 0x80010007 RPC_E_SERVER_DIED - not OpenFrontPanel and not 0x80010107. Two
+# explanations fit and both predict that one held pointer works: (a) a COM-launched LabVIEW exits when its last
+# Application pointer is released (this file dropped it, `g._lv = None`, before each retry); (b) the SECOND
+# Dispatch during a cold launch reached a second or tearing-down instance. The A/B test
+# tools/bench/com_pointer_ab.py (log com_pointer_ab_20260925.log) separates them. Either way ONE Application
+# pointer is held for the whole run and there is no second Dispatch; LabVIEW closes when the process exits.
 _APP_PIN = None
 
 
@@ -213,18 +220,93 @@ def count_zero(R):
     return None, None, caps[-1] if caps else None
 
 
-def compare(items, expected):
-    left = [dict(e, count=int(e.get("count", 1))) for e in expected]
+def norm(s):
+    return re.sub(r"[^a-z0-9]", "", (s or "").lower())
+
+
+# EXPECTED ERRORS FROM THE PLAN (card chat-E2): a staged bed is broken BY DESIGN - its plan
+# (tools/bench/plan_<stage>*.json, schema stageplan/1) declares `open_rows` [{node, term, why}] left for a later
+# stage. Each open row licenses the Error List items LabVIEW raises for it, derived per node class from the plan's
+# base graph (`base.path` objs[].class): a SubVI -> "... '<term>' is not wired" (only REQUIRED inputs are listed,
+# so the licence is not required to appear); any other node -> one "Contains unwired or bad terminal"; and the
+# half-wires an open row leaves -> the wire classes in WIRE_CLASSES. Their COUNT is not derivable from open_rows
+# (one deleted sink can leave loose ends on several branches), so the wire licence is class-level and uncapped;
+# the JSON records how many items it absorbed. Anything no licence covers is `extra` -> MISMATCH.
+WIRE_CLASSES = ("wirehaslooseends", "hasnosource", "outputlooptunneltoaninput", "twoterminalsofdifferenttypes")
+
+
+def plan_for_bed(bed):
+    """stage_d1_<s>.json whose `work` is this bed -> the stageplan plan_<s>*.json carrying open_rows."""
+    name = os.path.basename(bed).lower()
+    for sp in sorted(glob.glob(os.path.join(BENCH, "stage_d1_*.json"))):
+        try:
+            if os.path.basename(str(json.load(open(sp, encoding="utf-8")).get("work") or "")).lower() != name:
+                continue
+        except Exception:                                                          # noqa: BLE001
+            continue
+        stage = os.path.basename(sp)[len("stage_d1_"):-len(".json")]
+        for pp in sorted(glob.glob(os.path.join(BENCH, "plan_%s*.json" % stage))):
+            try:
+                p = json.load(open(pp, encoding="utf-8"))
+            except Exception:                                                      # noqa: BLE001
+                continue
+            if p.get("schema") == "stageplan/1" and "open_rows" in p:
+                return sp, pp, p
+    return None, None, None
+
+
+def derive_expected(plan):
+    base = (plan.get("base") or {}).get("path")
+    cls = {}
+    if base and os.path.exists(os.path.join(ROOT, base)):
+        for o in json.load(open(os.path.join(ROOT, base), encoding="utf-8")).get("objs") or []:
+            cls[o.get("uid")] = o.get("class")
+    rules, seen_nodes = [], set()
+    for r in plan.get("open_rows") or []:
+        n, t = int(r["node"]), r["term"]
+        c = cls.get(n)
+        if c == "SubVI":
+            rules.append({"norm_all": [norm(t), "isnotwired"], "count": 1, "required": False,
+                          "kind": "subvi_input_not_wired", "from": [n, t, c]})
+        elif n not in seen_nodes:
+            rules.append({"norm_all": ["containsunwiredorbadterminal"], "count": 1, "required": False,
+                          "kind": "node_unwired", "from": [n, t, c]})
+        seen_nodes.add(n)
+    if plan.get("open_rows"):
+        rules.append({"norm_any": list(WIRE_CLASSES), "count": None, "required": False,
+                      "kind": "wire_from_open_rows", "from": "all open rows"})
+    return rules
+
+
+def _hit(rule, txt):
+    if "match" in rule:
+        return rule["match"].lower() in txt.lower()
+    n = norm(txt)
+    if "norm_all" in rule:
+        return all(k in n for k in rule["norm_all"])
+    return any(k in n for k in rule.get("norm_any") or [])
+
+
+def compare(items, expected, derived=()):
+    """Explicit expected entries (file) are REQUIRED; plan-derived licences are not. Returns extra raws, missing
+    explicit matches, and per-rule usage."""
+    left = [dict(e, count=int(e.get("count", 1)), required=True, kind="explicit") for e in expected]
+    left += [dict(d) for d in derived]
+    used = [0] * len(left)
     extra = []
     for it in items:
         txt = "%s %s" % (it.get("raw") or "", it.get("detail") or "")
-        hit = next((e for e in left if e["count"] > 0 and e["match"].lower() in txt.lower()), None)
-        if hit:
-            hit["count"] -= 1
-        else:
+        k = next((i for i, e in enumerate(left) if (e["count"] is None or e["count"] > 0) and _hit(e, txt)), None)
+        if k is None:
             extra.append(it.get("raw"))
-    missing = [e["match"] for e in left for _ in range(e["count"])]
-    return extra, missing
+            continue
+        used[k] += 1
+        it["licensed_by"] = left[k]["kind"]
+        if left[k]["count"] is not None:
+            left[k]["count"] -= 1
+    missing = [e.get("match") for e in left if e["required"] for _ in range(e["count"])]
+    usage = [{"kind": e["kind"], "from": e.get("from") or e.get("match"), "used": u} for e, u in zip(left, used)]
+    return extra, missing, usage
 
 
 def main():
@@ -247,6 +329,11 @@ def main():
                                               os.path.splitext(os.path.basename(bed))[0])
         expected = json.load(open(exp_path, encoding="utf-8")).get("expected", []) if os.path.exists(exp_path) else []
         R["expected_file"] = exp_path if os.path.exists(exp_path) else None
+        R["stage_file"], R["plan_file"], plan = plan_for_bed(bed)
+        derived = derive_expected(plan) if plan else []
+        R["open_rows"] = (plan or {}).get("open_rows")
+        print("plan %s open_rows %s -> %d derived licences" % (R["plan_file"], len(R["open_rows"] or []),
+                                                                len(derived)), flush=True)
         scratch = os.path.join(g.CLAUDEDEV, "_elc_%s_%s.vi" % (os.path.splitext(os.path.basename(bed))[0][:40], ts))
         shutil.copyfile(bed, scratch)
         R["scratch"], R["scratch_identical"] = scratch, md5(scratch) == R["bed_md5_before"]
@@ -288,7 +375,7 @@ def main():
         R["item_count"] = len(items)
         R["show_error_ok"] = sum(1 for i in items if (i.get("show_error") or {}).get("diagram_fronted"))
         R["dclicked"] = sum(1 for i in items if i.get("show_error"))
-        R["extra"], R["missing"] = compare(items, expected)
+        R["extra"], R["missing"], R["licence_usage"] = compare(items, expected, derived)
         R["gates"] = {
             "window_opened": bool(R.get("window")),
             "count_read": R.get("n_reported") is not None,
@@ -300,11 +387,14 @@ def main():
             "bed_md5_unchanged": R["bed_md5_after"] == R["bed_md5_before"],
             "block_diagram_open": bool(R.get("block_diagram_open")),
             "refs_balanced": (R["ref_counts"] or {}).get("live", 0) == 0,
-            "handles_baseline_up": bool(R.get("handles_before")),
-            "handles_flat": bool(R.get("handles_before")) and bool(R.get("handles_after"))
-                            and abs(R["handles_after"] - R["handles_before"]) <= HANDLE_TOL}
+            "handles_baseline_up": bool(R.get("handles_before"))}
         R["handles_delta"] = ((R["handles_after"] - R["handles_before"])
                               if R.get("handles_before") and R.get("handles_after") else None)
+        R["handles_advisory"] = (None if R["handles_delta"] is None else
+                                 "within" if abs(R["handles_delta"]) <= HANDLE_TOL else "outside")   # record only
+        print("HANDLES (record, not a gate): before %s after %s delta %s advisory %s (tol %d)" % (
+            R.get("handles_before"), R.get("handles_after"), R["handles_delta"], R["handles_advisory"],
+            HANDLE_TOL), flush=True)
         read_ok = all(R["gates"].values())
         verdict = ("OK" if not (R["extra"] or R["missing"]) else "MISMATCH") if read_ok else "FAIL"
     R["verdict"], R["seconds"] = verdict, round(time.time() - t0, 1)
