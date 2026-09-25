@@ -31,7 +31,13 @@ A = sys.argv[1:]; DRY = "--dry" in A; LEG = A[A.index("--leg") + 1] if "--leg" i
 # card 77-6: --picks N (1/3/6) sets v5.PICK_FRACS; output json m8_<leg>_p<N>.json so cycle-74 files stay as they are.
 NPICK = int(A[A.index("--picks") + 1]) if "--picks" in A else None
 FRACS6 = [(0.40, 0.60), (0.21, 0.37), (0.61, 0.84), (0.30, 0.50), (0.52, 0.30), (0.75, 0.55)]
+# cycle 83 (PD188(d) load measurement): --run-s <s> sets v5.RUN_S (default 35); picks > 6 come from a 5 x 4 grid
+# inside the located display rect (fractions 0.15..0.85), first 6 = FRACS6 so rows 45-47 stay comparable.
+RUN_S_ARG = float(A[A.index("--run-s") + 1]) if "--run-s" in A else 35.0
+GRID = [(0.15 + 0.175 * c, 0.15 + 0.2333 * r) for r in range(4) for c in range(5)]
+FRACS_ALL = FRACS6 + [g for g in GRID if all(abs(g[0] - f[0]) + abs(g[1] - f[1]) > 0.12 for f in FRACS6)]
 SUF = ("_p%d" % NPICK) if NPICK else ""
+if "--run-s" in A: SUF += "_r%d" % int(RUN_S_ARG)
 TS = time.strftime("%Y%m%d_%H%M%S")
 
 def md5(p):
@@ -73,8 +79,10 @@ def main():
     d0.COPY_TITLE = name; v5.EVID = os.path.join(HERE, "m8_shots")
     v5.D0_JSON = d0.D0_JSON = os.path.join(HERE, "m8_v5_%s%s%s.json" % (LEG, SUF, "_dry" if DRY else ""))
     v5.PROBE_JSON = os.path.join(HERE, "m8_v5_%s%s_clicks.json" % (LEG, SUF))
-    v5.RUN_S = 35.0                                           # ~84 Hz measured -> ~2900 frames (>= 2000)
-    if NPICK: v5.PICK_FRACS = FRACS6[:NPICK]                  # v5's L3 (>=3 markers) / L8 (==3 panels) are v5's
+    v5.RUN_S = RUN_S_ARG                                      # 35 s: ~84 Hz measured -> ~2900 frames (>= 2000)
+    if NPICK:
+        v5.PICK_FRACS = FRACS_ALL[:NPICK]                     # v5's L3 (>=3 markers) / L8 (==3 panels) are v5's
+        v5.BP_CAP = max(v5.BP_CAP, NPICK + 2)                 # one `choose bandpass` panel per pick (p6: 6 panels)
                                                               # own contract; for N!=3 M2 below uses L7+L9+L11
     if DRY: import m8_dry; m8_dry.stub(v5, d4, d0)
     real_leg, n = v5.leg, [0]

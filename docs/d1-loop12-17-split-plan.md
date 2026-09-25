@@ -868,6 +868,28 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        close 1070→2265 s). The run's bgrun uses `--max-min 60`. Per-phase stamps inside `stagekit.close` come after
        the deliverable.
 
+189. **(cycle 83 firefighter, fable/low, steer_82 FOLLOWED; result `tools/bench/m8_load_83.json`, INDEX row 48)
+     The load measurement of 188(d) RAN — eight real legs, all 8/0 — and it decides the lever: LOOP 1.2 (M3).**
+     - **Total Lost Frames, 120 s at ~89 frames/s (≈10,680 frames), S1 copy vs `D1_s3_loop15.vi`:** 8 picks
+       **16 vs 12** and (repeat) 12 vs 14; 15 picks **3,331 vs 3,493** and (repeat) 3,161 vs 3,269. Lost frames go
+       from ~0.1 % to ~⅓ between 8 and 15 beads on BOTH VIs; the loop-1.5 split is neutral at this load (within the
+       run-to-run spread the repeats show: 12–16 and 3,161–3,493). Camera 1280×1024, offsets 0, no ROI change.
+     - **150 Hz was NOT reached — a failed prediction (T5 ×4), reviewed as `hyp-camrate83`.** The driver wrote
+       `AcquisitionFrameRate` = 150 through the IMAQdx C API between legs and read it back (150.0, period 6666 µs);
+       after every VI run the camera read 90.0009 again and the VI's own counter advanced 89 frames/s in all eight
+       legs. So the "150 Hz" cells are 90 Hz repeats, reported as such. The user's 150 Hz question needs the rate
+       set INSIDE the VI's session (its camera file or an attribute write) — a VI-side change, decided by judgement
+       (D-2026-09-25-05 for the user, since it touches the original's camera configuration).
+     - **Decision per 188(d): lost frames grow with the bead count ⇒ the tracking kernel (M3, loop 1.2) is the
+       lever. 188(c) + the L2-A1 run RESUME in cycle 84**, first act = the cheap separator from
+       `archive/peer/2026-09-25-hyp-constsrc82.md:84-86`, then the constant-source op, then dry → pre-run → run 1
+       (the steps under STATUS "PAUSED" become the NEXT).
+     - Driver changes (measured by the eight 8/0 legs): `drive_m8.py --run-s <s>` (RUN_S was fixed at 35),
+       `BP_CAP` = N+2 (one bandpass panel per pick; 15 answered at 15 picks), picks > 6 from a 5×4 grid at
+       fractions 0.15–0.85 of the located display rect. Sequencer `tools/bench/drive_m8_load83.py`.
+     - Known limit: the per-leg `m8_<leg>_p<N>_r120.json` names do not carry the Hz cell, so the 90 Hz per-leg files
+       were overwritten by the 150-written repeats; `m8_load_83.json` carries all eight rows.
+
 ## OPEN (design choices — for judgement; not decided here)
 
 > 2026-09-24: O2, O3, O4 (SR half; the queue half is QRT), O6 (placement + route), O7, O8 are CLOSED by Pre-decided

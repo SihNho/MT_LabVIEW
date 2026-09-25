@@ -639,7 +639,12 @@ Read 2026-09-12 from `C:\Program Files\NI\LVAddons\niimaqdx\1\vi.lib\vision\driv
 
 Hardware in place: **NI-IMAQdx USB3 Vision Device, VID_14FB (JAI) PID_1006** — the SP-5000M-USB, e2v Lince5M CMOS,
 2560×2048, 5 µm pixels, global shutter, 62 fps at full resolution, USB3 Vision. Run today at **2×2 binning**, normally
-**90 Hz**, with **150 Hz or higher wanted**. No `.icd` file exists, so the attributes are set in code. The camera's
+**90 Hz**, with **150 Hz or higher wanted**. ~~No `.icd` file exists, so the attributes are set in code.~~ **CORRECTED
+2026-09-25 (review `archive/peer/2026-09-25-hyp-camrate83.md`, measured by `tools/bench/diag_camrate_persist83.log`): the
+camera file EXISTS — `C:\Users\Public\Documents\National Instruments\NI-IMAQdx\Data\JAI Corporation SP-5000M-USB
+(#000014FB0067A270).icd` — and EVERY `IMAQdxOpenCamera` (C API or the VI) reloads it, so a rate written in one session
+(150 Hz) reads 90.0009 Hz again after any close + reopen. A different rate needs the VI's own session to set it, or the
+`.icd` changed (the user's decision, D-2026-09-25-05).** The camera's
 onboard frame memory is not stated in any public JAI datasheet found, and was not assumed.
 
 ## Connector panes (exact, for building against)

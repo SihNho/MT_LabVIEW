@@ -1,0 +1,53 @@
+BGRUN START 2026-09-25 17:16:12 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug hyp-camrate83 -TaskFile tools/bench/peer_task_camrate83.md
+OUTCOME: ANSWERED (139s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-25-hyp-camrate83.md
+COST: $1.4192  in 26 / out 10435 / cache-create 106876 / cache-read 1378508  (135s, 20 turn(s))
+--- ANSWER ---
+**The claim is wrong where it matters.** The camera does reset to 90 Hz when a session opens, but not only when the VI opens it. Your own C-API open resets it too. So the test you planned will read 90 Hz, and its prediction (B) will fail.
+
+## 1. Strongest reason the claim is wrong
+
+- **Mode 0 is Controller mode.** In the C API, `IMAQdxCameraControlModeController` is 0 and `Listener` is 1 ([NIMAQDXUnit.pas](https://github.com/johndempster/SESComponents/blob/master/NIMAQDXUnit.pas), [pylablib IMAQdx](https://pylablib.readthedocs.io/en/stable/_modules/pylablib/devices/IMAQdx/IMAQdx.html)). `drive_m8_load83.py:36` opens with `c_uint32(0)`. So it opens the camera exactly the way the VI's "Controller mode" does. There is no second kind of open that skips the camera file.
+- **Every open loads the camera file.** NI's documentation says `IMAQdxOpenCamera` "queries the camera for its capabilities, loads a camera configuration file" ([function reference](https://documentation.help/NI-IMAQdx-Function-Reference/imaqdxOpenCamera.html)). The same file "is then used whenever the camera is opened in either MAX or LabVIEW/C" ([NI forum](https://forums.ni.com/t5/Machine-Vision/saving-camera-settings-with-NI-IMAQdx/td-p/658253)).
+- **The file is on this machine.** `docs/camera-acquisition-facts.md:642` says "No `.icd` file exists". That is wrong. The file is `C:\Users\Public\Documents\National Instruments\NI-IMAQdx\Data\JAI Corporation SP-5000M-USB (#000014FB0067A270).icd`, and it holds:
+  - `AcquisitionFrameRate = "90"` and `AcquisitionFrameRateRaw = "11111"` (lines 43–44)
+  - `Width 1280`, `Height 1024` (lines 32–33)
+  - `ExposureTime 1909.11` and `ExposureAuto Continuous` (lines 75–77)
+
+  These are exactly the "defaults" every fresh open has returned.
+- **This was already measured and documented.** `camera-acquisition-facts.md:427-443`, from 2026-09-16, reads: "`IMAQdxOpenCamera` hands every session the camera's own defaults, and a setting written by one process is gone the moment that process closes." The same was shown for the ROI with the C API alone (`imaqdx_reset_test.py`, `:418-425`). The failed prediction was predictable from our own files.
+
+## 2. Alternative explanations
+
+- **(Main alternative) The sequencer's check could never pass or fail meaningfully.** `camera(hz)` writes 150, reads it back in the same session, then closes (`drive_m8_load83.py:39-47`). So the "150 before the leg" check only proved the write worked inside that session, not that the value survived. The VI then opened the camera, the file reloaded 90, and the VI ran at 90. By the same logic, `camera_after` tells you nothing about the rate the VI ran at. It opens a fresh session, which reloads 90. It would read 90.0009 even if the VI had run at 150.
+- **Not ruled out, but not needed:** the VI could also write the rate itself. The byte scan (`:621`) counted IMAQdx VIs, not IMAQdx property nodes, and uid 9775 shows the VI does use property nodes on the session. Since the camera file already explains the observation, this matters only if you later set 150 inside the VI's session and it still counts about 90 per second.
+- **Unlikely here, but a real risk later:** the exposure contract capping the rate. `ExposureAuto` is Continuous with a maximum of 15,000 µs (`.icd:736`). If auto-exposure rises above about 6.6 ms, 150 Hz becomes impossible. It does not explain this run, because the fresh read equals the file's value exactly. It does belong in the design of any real 150 Hz run: bound or disable auto-exposure in the same session.
+
+## 3. What falsifies the claim
+
+The claim fails if a C-API open followed by a close and reopen, with no LabVIEW involved, reads 90.0 instead of 150. The file content above makes that the expected result.
+
+The remedy in the claim is also incomplete. "Needs a VI change" is not the only route. Editing the `.icd` (for example through MAX Save) would change the rate for every opener, including the original VI's experiments. That is a change to the production rig's condition, so it is the user's decision, not ours.
+
+## 4. Cheapest discriminating test
+
+Run `tools/bench/diag_camrate_persist83.py` as written: no LabVIEW, a few seconds. I predict P2 and P3 FAIL at 90.0009, which contradicts the script's own stated prediction (B).
+
+To tell "the file reloads" apart from "the camera's built-in user set reloads", read the `.icd` modification time and compare the fresh-open values with the file. They already match on all four attributes. For the conclusion (any open resets the rate), the difference doesn't matter.
+
+## Is frame-counter delta ÷ RUN_S a valid rate measure?
+
+Yes for telling 90 Hz from 150 Hz; it is biased a little low for exact values.
+
+- **It follows the camera, not the processing loop.** The deltas were identical (10,679–10,682) at 8 and 15 picks, and for S1 and S3, even though lost frames were 12 in some legs and more than 3,100 in others. A count of processed iterations would drop as lost frames rise. So `current image number` tracks the camera's buffer number.
+- **The divisor is a little too large.** The samples are taken every 2 s plus the time of each value read, starting at t0 + 2 s (`drive_original_copy_v5.py:456-458`). The first-to-last span is therefore about 117–118 s, not 120. That is why the result reads 89 instead of about 90.8. Use the sample timestamps as the divisor.
+- **The 150 Hz rows are repeats of the 90 Hz rows.** A camera at 150 Hz would give about 17,600 counts. Reporting the "150 Hz" cells as repeats of the 90 Hz cells is correct.
+
+**Also:** `camera-acquisition-facts.md:642` should be corrected, since the camera file exists. That file is also a lead on the unexplained fresh-session 640×512 reading (`:460-472`): the file may have held that ROI when it was once saved from MAX. Not verified.
+
+Sources:
+- [NIMAQDXUnit.pas (enum values)](https://github.com/johndempster/SESComponents/blob/master/NIMAQDXUnit.pas)
+- [pylablib IMAQdx source](https://pylablib.readthedocs.io/en/stable/_modules/pylablib/devices/IMAQdx/IMAQdx.html)
+- [IMAQdxOpenCamera function reference](https://documentation.help/NI-IMAQdx-Function-Reference/imaqdxOpenCamera.html)
+- [NI forum: saving camera settings with NI-IMAQdx](https://forums.ni.com/t5/Machine-Vision/saving-camera-settings-with-NI-IMAQdx/td-p/658253)
+- [Teledyne: configuring a NI-MAX .icd file](https://www.teledynevisionsolutions.com/support/support-center/technical-guidance/iis/configuring-a-ni-max-.icd-file-to-save-camera-settings)
+BGRUN END rc=0 after 139s

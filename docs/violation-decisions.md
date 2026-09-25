@@ -1317,6 +1317,19 @@ documents agree (plan md5 `f501a620…`). `guard_bash`'s next_gate already requi
 retrospective. The session's error was editing the plan after writing next.json. Rule for the judgement: re-validate
 next.json against the plan's last Pre-decided entry before launching the retrospective. Revisit if the slug recurs.
 
+## inference-over-measurement — 2026-09-25 17:3x (cycle 83 firefighter, after archive/peer/2026-09-25-retrospective-cycle83.md:266)
+
+`VIOLATION: inference-over-measurement | loss_min=33 | loss_usd=1.4192 | evidence=tools/bench/drive_m8_load83.py:6`. The
+sequencer's docstring ASSUMED the VI inherits an externally written camera rate (from the wiki's lack of a rate write) and
+ran four 120-s legs on that assumption; a 26-s C-API close/reopen check (`diag_camrate_persist83b.log`, 4/0) would have shown
+beforehand that every `IMAQdxOpenCamera` reloads the `.icd`. Cost: 4 legs (~25 min) that repeated the 90 Hz cells, one
+hypothesis review ($1.42).
+
+DECISION: no new device — the reader already existed (`camera()` in the driver, `camera_contract.py`). Rule for the
+judgement (recorded in PD189): when a run's cell depends on a state written OUTSIDE the VI's process, measure the state's
+persistence across a close/reopen BEFORE the run, as a gate. The repeats were not wasted: they are the run-to-run spread
+row 48 lacked. Revisit if the slug recurs on a camera/instrument state.
+
 ## device-failed — 2026-09-25 (cycle 80 material, card 80-3, after archive/peer/2026-09-25-retrospective-cycle79.md)
 
 `VIOLATION: device-failed` at the old `tools/stagexec.py:679-680`: `LVBackend.indicator` cleared any wire_indicators
