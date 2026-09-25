@@ -1,0 +1,13 @@
+{"schema":"result/1","id":"chat-M1b","status":"PASS","gates":{"pass":24,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/cycle_runner.py","md5":"1277de913816dbdd8dafef3de94dea9f"},{"path":"tools/bench/selftest_cycle_runner_ladder.log","md5":"e150bf629ddbe9575c6ba2f2bcac749a"},{"path":"tools/bench/selftest_cycle_runner_m1b.log","md5":"f43888cb0db9d1f14df094f0493ed1ca"}],
+"facts":[
+"cycle_runner.py:1298-1302: stop condition 3 (next.json unchanged x2) no longer stops; it logs NEXT-UNCHANGED and the judgement ladder decides",
+"cycle_runner.py:31-35 docstring STOP CONDITIONS item 3 rewritten: x1 opus high, x2 fable low, x3 fable medium, x4 RUNNER STOP + decisions_pending",
+"ladder step unchanged (cycle_runner.py:279): +1 per unchanged cycle or judgement slug; delivery resets; level after STOP starts at 0 (answer 2 kept)",
+"selftest_cycle_runner_ladder.log: 11/11 (I2 cycles 3/4/5 = opus-high / fable-low / fable-medium, I3 4th unchanged -> exit 3 'ladder is exhausted', no 6th card)",
+"selftest_cycle_runner_m1b.log: 10/10 (G3 rewritten: exit 3 after 4 cycles, 'ladder is exhausted'); selftest_cycle_runner_ff_m1b.log: 3/3",
+"selftest_cycle_runner.py:11-13,157-158 G3 text/assertion updated (patched with a py heredoc, read-back verified; noted as a rule-slip)",
+"no task_chat-M1b.json card exists; work ran under the chat-M1 binding (same flags), commit a8b7563"
+],
+"open":[],
+"cost":{"usd":null,"minutes":6,"labview_runs":0},"note":"selftest_cycle_runner.py G3 now encodes the 4-unchanged rule; unchanged_streak variable kept for the NEXT-UNCHANGED log line."}
