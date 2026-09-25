@@ -116,7 +116,7 @@ by `clamp(idx_bead0 − slices/2 + 'Focus Deviation from the Center', ±0.2)` �
 additive setpoint OFFSET, on bead index 0; `Focus Step (F1)` is not read there; the `In Range?` node is unwired.
 **Rule 1a decides: the redesign copies the CODE, not the memory.** A threshold trigger would be a new feature and
 needs the user's separate decision. The user does not run with `Frame rate` = 1. DESIGN IN FORCE for the focus loop
-(after M3, `docs/connectivity-map-plan.md` Pre-decided 148): frame loop publishes the reference bead's z and the
+(after M3, `docs/connectivity-map-plan.md` Pre-decided 190 — renumbered 2026-09-25 from 148, which clashed with `d1-loop12-17-split-plan.md`): frame loop publishes the reference bead's z and the
 auto-reset counter as locals; the focus loop runs on its own time cadence, reads them, applies the original's
 correction arithmetic (offset, clamp ±0.2, bead index 0) under `Auto-Focus` / `Limit of Auto-Focus`, and moves — no
 schedule boolean in the frame loop, no edge detection, no queue. Scheduling changes; the arithmetic does not (rule 1a).
@@ -398,7 +398,7 @@ failures were diagnosed by inference — branch wire, downcast, transient Remove
 and a rebuild, because the fleet has no way to ask LabVIEW *why* a VI is broken. Each was 3 minutes of measurement
 dressed as 20 minutes of reasoning. **Rule: the second time a class of failure is explained by inference rather than
 read from the machine, the next build is the READER for it, not another attempt at the thing that failed.** Readers
-identified this way: **`Wire.Is Broken?` 6371004 IS BUILT** and measured (`docs/NAMES.md:902-911`, 2026-09-17) — use it instead of inferring why a wire is bad; `VI.Get Errors` (method 452) is still unbuilt and is probably unreachable over our COM path (absent from the exported `VirtualInstrument` ActiveX interface — `archive/peer/2026-09-18-fstunnel-v1-b4-execstate0-codex.md`), so it is off the critical path. Corrected 2026-09-18 by the cycle-22 judgement session after a `-Dual` review found this line stale.
+identified this way: **`Wire.Is Broken?` 6371004 IS BUILT** and measured (`docs/NAMES.md:902-911`, 2026-09-17) — but ONLY inside the connect ops, there is no stand-alone read-only `Wire.Is Broken?` op (STATUS 2026-09-25, `docs/NAMES.md:1081-1089`); use the connect ops' read-back instead of inferring why a wire is bad; `VI.Get Errors` (method 452) is still unbuilt and is probably unreachable over our COM path (absent from the exported `VirtualInstrument` ActiveX interface — `archive/peer/2026-09-18-fstunnel-v1-b4-execstate0-codex.md`), so it is off the critical path. Corrected 2026-09-18 by the cycle-22 judgement session after a `-Dual` review found this line stale.
 
 ### Stages are SIMULATED and PRE-RUN OFFLINE before LabVIEW touches them (user, 2026-09-24)
 
