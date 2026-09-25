@@ -365,6 +365,22 @@ background notification is a full turn over the whole conversation. Standing rul
      short status lines and questions of a sentence or two. A proofreading variant was tried first and
      rejected the same day — rewriting Claude's sentences keeps Claude's sentence shapes.
 
+### MODEL LADDERS, decided by the runner from files (user, 2026-09-26)
+
+*"지금 3일 안에 사용량 다 써야하는데, 당분간 Fable 5.1 low 사용빈도를 높여보는 건"* · *"판정 세션은 필요에 따라서 medium
+상위 혹은 fable로 교체하는 것도 생각해보는게 어떨지"*. Two ladders, both mechanical (`tools/cycle_runner.py`), nobody
+"feels" a level:
+- **Material sessions:** default **Fable 5.1 low until 2026-09-28 07:00 KST** (the weekly renewal; a one-time app
+  reminder `revert-material-model-monday` fires then), escalation rungs Fable medium → `decisions_pending`. After
+  Monday the default returns to `claude-opus-5-5` medium unless the Fable-vs-Opus comparison (result cards carry
+  `escalation`) says otherwise. Data so far: fable/low delivered L7-1b after two Opus failures (cycles 71/72); a
+  fable/low JUDGEMENT cycle (87) produced nothing in 6 min.
+- **Judgement sessions:** level 0 `claude-opus-5-5` medium → 1 Opus high → 2 Fable low → 3 Fable medium → RUNNER STOP
+  + decision item. Up one level when the last cycle left `next.json` UNCHANGED or its retrospective named a
+  judgement fault (`inference-over-measurement`, `wrong-ordering`, `judgement-in-material`); back to 0 after a cycle
+  that delivers. The recipe firefighter (fable/low on a repeated recipe failure) stays; the two never stack above
+  Fable medium. The level and its reason are a `JUDGE-LADDER` runner-log line and a field of the cycle card.
+
 ### INTRA-CYCLE ESCALATION — a card that runs out of budget goes to Fable low, then Fable medium, then to the user (user, 2026-09-25)
 
 *"한 싸이클 내부에서도 특정 프로세스가 과하게 오래 걸리거나 반복적으로 실패할 경우 Fable 5.1 낮음 (그래도 안된다면 Fable
