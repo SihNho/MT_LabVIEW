@@ -1,0 +1,176 @@
+{
+ "schema": "matbench-truth/0",
+ "note": "chat-N2 ground truth from result cards; a replay run is scored on its result/1 card only",
+ "tasks": [
+  {
+   "id": "T1_89-1_missing_verb",
+   "replay_card": "tools/bench/cards/task_89-1.json",
+   "base_commit": "before d71798d",
+   "offline_only": true,
+   "expect": {
+    "status": [
+     "BLOCKED",
+     "FAIL"
+    ],
+    "facts_any": [
+     [
+      "FlatSequence",
+      "flat-sequence",
+      "frame-move"
+     ],
+     [
+      "9 of 11",
+      "9/11"
+     ]
+    ],
+    "facts_all": [
+     [
+      "no LabVIEW run",
+      "nothing opened",
+      "not opened",
+      "0 LabVIEW"
+     ]
+    ],
+    "max_minutes": 15
+   },
+   "why": "the right answer is to report the missing verb fast, without opening LabVIEW (result_89-1 took 28 min)"
+  },
+  {
+   "id": "T2_90-6_diagnosis",
+   "replay_card": "tools/bench/cards/task_90-6.json",
+   "base_commit": "before 5887e24",
+   "offline_only": true,
+   "inputs_note": "give it diag_c90_t0_step3.log and step3b logs as they existed; expect the two faults read from the logs, not a rerun",
+   "expect": {
+    "facts_any": [
+     [
+      "1055"
+     ],
+     [
+      "ForLoop",
+      "For-body"
+     ],
+     [
+      "N[74]",
+      "index out of range",
+      "Nodes[] order",
+      "index shift"
+     ]
+    ],
+    "max_minutes": 20
+   }
+  },
+  {
+   "id": "T3_88-1A_p2_desk",
+   "replay_card": "tools/bench/cards/task_88-1.json",
+   "base_commit": "before e18924c",
+   "offline_only": true,
+   "scope": "(A) desk check only",
+   "expect": {
+    "facts_any": [
+     [
+      "25240",
+      "25344",
+      "25382"
+     ],
+     [
+      "25422",
+      "25428"
+     ],
+     [
+      "5883",
+      "6038",
+      "10760",
+      "5741",
+      "5976"
+     ]
+    ],
+    "facts_all": [
+     [
+      "1 source",
+      "one source",
+      "1 sink"
+     ]
+    ],
+    "max_minutes": 20
+   }
+  },
+  {
+   "id": "T4_86-5_prerun_graph",
+   "replay_card": "tools/bench/cards/task_86-5.json",
+   "base_commit": "before 33ea0b3",
+   "offline_only": true,
+   "scope": "pre-run only, no stage run",
+   "expect": {
+    "facts_any": [
+     [
+      "graph_k_80_owners"
+     ],
+     [
+      "X1"
+     ]
+    ],
+    "facts_all": [
+     [
+      "8/0",
+      "PASS 8"
+     ]
+    ],
+    "max_minutes": 20
+   }
+  },
+  {
+   "id": "T5_stageplan_author",
+   "kind": "authoring",
+   "source": "tools/bench/sim/l2a1 or the L7 bench (stagesim) - pick the smallest stage whose finalized plan simulates to computation_diff 0",
+   "expect": {
+    "mechanical": "py tools/stagesim.py on the produced plan -> computation_diff 0 and rows == reference rows",
+    "max_minutes": 30
+   }
+  },
+  {
+   "id": "T6_log_extract",
+   "kind": "log-reader",
+   "source": "a real failing bgrun log with a known first failing GATE line (e.g. tools/bench/diag_c90_t0_step3b.log first FAIL)",
+   "expect": {
+    "facts_all": [
+     [
+      "S03.2",
+      "OpCreateConstOnTerm_v0"
+     ],
+     [
+      "1055"
+     ]
+    ],
+    "max_minutes": 10,
+    "max_lines": 25
+   }
+  }
+ ],
+ "conditions": [
+  {
+   "agent": "material",
+   "model": "claude-opus-5-5",
+   "effort": "medium"
+  },
+  {
+   "agent": "material-fable-low",
+   "model": "fable",
+   "effort": "low"
+  },
+  {
+   "agent": "material-fable-medium",
+   "model": "fable",
+   "effort": "medium"
+  }
+ ],
+ "score": {
+  "per_task": "1 if status matches (when given) and every facts_all group has a hit and every facts_any group has a hit; partial = fraction of groups hit",
+  "plus": [
+   "minutes",
+   "usd (from claude -p json)",
+   "dispatches",
+   "BLOCKED-vs-workaround: a run that designs around a missing verb instead of reporting it scores 0 on T1"
+  ]
+ }
+}

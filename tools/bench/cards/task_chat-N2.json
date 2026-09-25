@@ -1,0 +1,83 @@
+{
+ "schema": "task/1",
+ "id": "chat-N2",
+ "kind": "build",
+ "goal": "MATERIAL-MODEL REPLAY BENCH (user 2026-09-26): replay 6 past cards with known answers on Opus medium / Fable low / Fable medium in worktrees, LabVIEW forbidden, mechanical scores, comparison table",
+ "why": "User: material sessions judge and generate, so a model change needs a proper test before live cycles; cycle-level cost/pass comparisons are unfair (task difficulty differs). Detail: brief_chat-N2.md",
+ "inputs": [
+  {
+   "path": "tools/bench/cards/brief_chat-N2.md",
+   "md5": "f1be6d5124f9acfd8097c05577874a13"
+  },
+  {
+   "path": "tools/bench/matbench/truth_v0.json",
+   "md5": "ea518e0f440c196cc2d96829e39488fa"
+  },
+  {
+   "path": "tools/bench/cards/result_89-1.json",
+   "md5": "cba59fcc727e03d7ba77835ef911c9a8"
+  },
+  {
+   "path": "tools/bench/cards/result_90-6.json",
+   "md5": "68b123f5604367de56f812f26df65ff2"
+  },
+  {
+   "path": "tools/bench/cards/result_88-1.json",
+   "md5": "22bb542b4e397d98acdd1951a7e3a043"
+  },
+  {
+   "path": "tools/bench/cards/result_86-5.json",
+   "md5": "a15635171fd67c8420a534a4d28e7702"
+  },
+  {
+   "path": "tools/cycle_runner.py",
+   "md5": "abff8d9c46d7a5fca5bf27a564e9f3bc"
+  },
+  {
+   "path": "tools/protocol.py",
+   "md5": "b631c3fe91dac219b897aee917333d78"
+  }
+ ],
+ "pass": [
+  "matbench.py per brief 1-2: worktree at the card's parent commit, replay card with labview-none flags, one claude -p cell per task x condition (model/effort by condition), bgrun timeout max_minutes+5",
+  "T5 authoring and T6 log-reader cards written from truth_v0.json sources (brief 3); truth_v0.json filled with the exact sources (paths, md5, reference rows)",
+  "score.py per brief 4: result/1 parse, expect groups, max_minutes, minutes/usd/dispatches, T1 workaround = 0; no model judges",
+  "18 cells run (6 tasks x 3 conditions), <= 3 in parallel, each under bgrun; timeout = 0 and logged; no LabVIEW.exe at any time (tasklist before/after each batch)",
+  "report_v0.md: task x condition score table, totals / minutes / usd per condition, note per 0-score run; results_v0.json raw",
+  "selftest_matbench.py dry mode: 1 task x 3 conditions on stubbed claude, fake cards hit / miss / workaround / timeout scored right -> 6/0",
+  "worktrees pruned; main checkout untouched outside tools/bench/matbench/** and new cards; RESULT line; commit"
+ ],
+ "outputs": [
+  "tools/bench/matbench/matbench.py",
+  "tools/bench/matbench/score.py",
+  "tools/bench/matbench/truth_v0.json",
+  "tools/bench/matbench/results_v0.json",
+  "tools/bench/matbench/report_v0.md",
+  "tools/bench/selftest_matbench.log"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/matbench/**",
+   "tools/bench/selftest_matbench.py",
+   "tools/bench/selftest_matbench.log",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": true,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 300
+ },
+ "unblocks": "M8",
+ "rules": [
+  "judgement vs material",
+  "Usage discipline",
+  "hooks judge STRUCTURE"
+ ]
+}
