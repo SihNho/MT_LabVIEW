@@ -353,6 +353,18 @@ background notification is a full turn over the whole conversation. Standing rul
      short status lines and questions of a sentence or two. A proofreading variant was tried first and
      rejected the same day — rewriting Claude's sentences keeps Claude's sentence shapes.
 
+### INTRA-CYCLE ESCALATION — a card that runs out of budget goes to Fable low, then Fable medium, then to the user (user, 2026-09-25)
+
+*"한 싸이클 내부에서도 특정 프로세스가 과하게 오래 걸리거나 반복적으로 실패할 경우 Fable 5.1 낮음 (그래도 안된다면 Fable
+5.1 중간) 높여보는 것이 유효할지"* — asked while cycle 85 spent 105 min building two missing verbs on Opus. The
+cycle-level firefighter (fable/low after two failing cycles) already exists; this is the same ladder inside a cycle,
+per card. Trigger: a `task/1` card returns FAIL with its failure budget spent, or exceeds `budget.minutes`. Rung 1:
+re-issue the card (`escalation: 1`, `retry_of_card`) to `.claude/agents/material-fable-low.md`; rung 2: `escalation:
+2` to `material-fable-medium.md`; then `decisions_pending.json` and stop. Two rungs per card, same flags, rules and
+peers; the result card carries `escalation`, so Opus-vs-Fable outcomes accumulate as data. Evidence so far: cycles
+71/72 (fable/low) delivered L7-1b after two Opus failures. This does not relax the standing rule to minimise Fable —
+it bounds it to a card that Opus has already failed twice.
+
 ### Every cycle ends with a RETROSPECTIVE — the peer loop cannot criticise judgement otherwise (user, 2026-09-15)
 
 (User: *"피어 리뷰를 통해 판단 및 실행 구조에 대한 비평은 할 수 없는 것 같아."*) The hypothesis-level reviews all

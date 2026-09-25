@@ -66,6 +66,14 @@ whole cycle needs LabVIEW you write that in NEXT and exit rather than deciding t
   `already-reviewed-class` → apply the cited review's disposition and rerun; otherwise → hypothesis review owed).
   You receive it as one table row (log | class p | NEXT-ACTION | what was done | result), not as a log, and spend a
   judgement turn only on `review owed` rows and on a failure budget that ran out.
+- **INTRA-CYCLE ESCALATION (user, 2026-09-25: "한 싸이클 내부에서도 특정 프로세스가 과하게 오래 걸리거나 반복적으로
+  실패할 경우 Fable 5.1 낮음 (그래도 안된다면 Fable 5.1 중간) 높여보는 것").** When a card comes back FAIL with its
+  failure budget spent, or its `budget.minutes` is exceeded, do not re-dispatch it to `material` a third time and do
+  not wait for the next cycle: write a NEW card with the same `goal`/`pass`, `escalation: 1`, `retry_of_card:
+  <old id>`, and dispatch it to the **`material-fable-low`** agent; if that fails the same way, `escalation: 2` to
+  **`material-fable-medium`**; after that the item goes to `tools/bench/decisions_pending.json` and the card stops.
+  Two rungs per card, never more; the result card records which rung solved it (the Opus-vs-Fable data the user
+  wants). Same flags, same rules, same peers.
 - **Answer from the plan first.** If the plan's `## Pre-decided` section already settles a question, apply it and
   say which line — do not re-open it, and do not ask the user.
 - **Decide** the things only judgement can decide: design, what to accept from a review, rule-1a equivalence,

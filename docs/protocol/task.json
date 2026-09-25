@@ -1,50 +1,234 @@
 {
-  "$id": "task/1",
-  "description": "C2 - judgement -> material / log-reader. `advances` (goal-map ids) or, for a pure tooling task, `unblocks` (one milestone id) is REQUIRED (user 2026-09-24).",
-  "type": "object",
-  "additionalProperties": false,
-  "required": ["schema", "id", "kind", "goal", "flags", "budget"],
-  "anyOf": [
-    {"required": ["advances"], "properties": {"advances": {"minItems": 1}}},
-    {"required": ["unblocks"], "properties": {"unblocks": {"minLength": 1}}}
-  ],
-  "properties": {
-    "schema": {"const": "task/1"},
-    "id": {"$ref": "#/definitions/cardid"},
-    "kind": {"enum": ["build", "measure", "diagnose", "doc", "review-dispatch", "read-log"]},
-    "goal": {"type": "string", "minLength": 1, "maxLength": 200},
-    "why": {"type": "string", "maxLength": 300},
-    "inputs": {"type": "array", "items": {"$ref": "#/definitions/fileref"}},
-    "pass": {"type": "array", "items": {"type": "string", "maxLength": 200}},
-    "outputs": {"type": "array", "items": {"type": "string", "maxLength": 400}},
-    "flags": {
-      "type": "object", "additionalProperties": false,
-      "required": ["labview", "gui", "hardware", "run_vi", "write", "status_edit", "git_commit", "peers"],
-      "properties": {
-        "labview": {"enum": ["none", "read", "build"]},
-        "gui": {"type": "boolean"},
-        "hardware": {"enum": ["none", "gate"]},
-        "run_vi": {"type": "boolean"},
-        "write": {"type": "array", "items": {"type": "string", "maxLength": 200}},
-        "status_edit": {"type": "boolean"},
-        "git_commit": {"type": "boolean"},
-        "peers": {"type": "array", "items": {"enum": ["hypothesis", "priorart", "fact", "outcome", "retrospective", "audit", "ingest", "prose"]}}
-      }
-    },
-    "budget": {"type": "object", "additionalProperties": false, "required": ["failures", "minutes"],
-               "properties": {"failures": {"type": "integer", "minimum": 0}, "minutes": {"type": "number", "minimum": 0}}},
-    "rules": {"type": "array", "items": {"type": "string", "maxLength": 120}},
-    "advances": {"type": "array", "items": {"$ref": "#/definitions/goalid"}},
-    "unblocks": {"$ref": "#/definitions/milestoneid"},
-    "retry_of": {"type": "string", "pattern": "^stage_[a-z0-9_]+\\.py$", "description": "RETRY CAP (user 2026-09-24): a judgement card that authorises ONE further run of this stage script (basename, _vN stripped) past stage_prerun.RETRY_CAP in the current cycle"},
-    "note": {"type": "string", "maxLength": 300}
+ "$id": "task/1",
+ "description": "C2 - judgement -> material / log-reader. `advances` (goal-map ids) or, for a pure tooling task, `unblocks` (one milestone id) is REQUIRED (user 2026-09-24).",
+ "type": "object",
+ "additionalProperties": false,
+ "required": [
+  "schema",
+  "id",
+  "kind",
+  "goal",
+  "flags",
+  "budget"
+ ],
+ "anyOf": [
+  {
+   "required": [
+    "advances"
+   ],
+   "properties": {
+    "advances": {
+     "minItems": 1
+    }
+   }
   },
-  "definitions": {
-    "cardid": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,40}$"},
-    "goalid": {"type": "string", "pattern": "^(R[0-9]+(\\.[0-9]+)*|M[0-9]+[a-z]?)$"},
-    "milestoneid": {"type": "string", "pattern": "^M[0-9]+[a-z]?$"},
-    "fileref": {"type": "object", "additionalProperties": false, "required": ["path"],
-                "properties": {"path": {"type": "string", "minLength": 1, "maxLength": 400},
-                               "md5": {"type": ["string", "null"], "pattern": "^[0-9a-f]{32}$"}}}
+  {
+   "required": [
+    "unblocks"
+   ],
+   "properties": {
+    "unblocks": {
+     "minLength": 1
+    }
+   }
   }
+ ],
+ "properties": {
+  "schema": {
+   "const": "task/1"
+  },
+  "id": {
+   "$ref": "#/definitions/cardid"
+  },
+  "kind": {
+   "enum": [
+    "build",
+    "measure",
+    "diagnose",
+    "doc",
+    "review-dispatch",
+    "read-log"
+   ]
+  },
+  "goal": {
+   "type": "string",
+   "minLength": 1,
+   "maxLength": 200
+  },
+  "why": {
+   "type": "string",
+   "maxLength": 300
+  },
+  "inputs": {
+   "type": "array",
+   "items": {
+    "$ref": "#/definitions/fileref"
+   }
+  },
+  "pass": {
+   "type": "array",
+   "items": {
+    "type": "string",
+    "maxLength": 200
+   }
+  },
+  "outputs": {
+   "type": "array",
+   "items": {
+    "type": "string",
+    "maxLength": 400
+   }
+  },
+  "flags": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "labview",
+    "gui",
+    "hardware",
+    "run_vi",
+    "write",
+    "status_edit",
+    "git_commit",
+    "peers"
+   ],
+   "properties": {
+    "labview": {
+     "enum": [
+      "none",
+      "read",
+      "build"
+     ]
+    },
+    "gui": {
+     "type": "boolean"
+    },
+    "hardware": {
+     "enum": [
+      "none",
+      "gate"
+     ]
+    },
+    "run_vi": {
+     "type": "boolean"
+    },
+    "write": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "maxLength": 200
+     }
+    },
+    "status_edit": {
+     "type": "boolean"
+    },
+    "git_commit": {
+     "type": "boolean"
+    },
+    "peers": {
+     "type": "array",
+     "items": {
+      "enum": [
+       "hypothesis",
+       "priorart",
+       "fact",
+       "outcome",
+       "retrospective",
+       "audit",
+       "ingest",
+       "prose"
+      ]
+     }
+    }
+   }
+  },
+  "budget": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "failures",
+    "minutes"
+   ],
+   "properties": {
+    "failures": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "minutes": {
+     "type": "number",
+     "minimum": 0
+    }
+   }
+  },
+  "rules": {
+   "type": "array",
+   "items": {
+    "type": "string",
+    "maxLength": 120
+   }
+  },
+  "advances": {
+   "type": "array",
+   "items": {
+    "$ref": "#/definitions/goalid"
+   }
+  },
+  "unblocks": {
+   "$ref": "#/definitions/milestoneid"
+  },
+  "retry_of": {
+   "type": "string",
+   "pattern": "^stage_[a-z0-9_]+\\.py$",
+   "description": "RETRY CAP (user 2026-09-24): a judgement card that authorises ONE further run of this stage script (basename, _vN stripped) past stage_prerun.RETRY_CAP in the current cycle"
+  },
+  "note": {
+   "type": "string",
+   "maxLength": 300
+  },
+  "escalation": {
+   "type": "integer",
+   "minimum": 0,
+   "maximum": 2,
+   "description": "INTRA-CYCLE ESCALATION (user 2026-09-25): 0 = material (Opus 5.5 medium), 1 = material-fable-low, 2 = material-fable-medium. Set only on a re-issue of a card that spent its failure budget or minutes."
+  },
+  "retry_of_card": {
+   "$ref": "#/definitions/cardid",
+   "description": "the card this escalation re-issues"
+  }
+ },
+ "definitions": {
+  "cardid": {
+   "type": "string",
+   "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,40}$"
+  },
+  "goalid": {
+   "type": "string",
+   "pattern": "^(R[0-9]+(\\.[0-9]+)*|M[0-9]+[a-z]?)$"
+  },
+  "milestoneid": {
+   "type": "string",
+   "pattern": "^M[0-9]+[a-z]?$"
+  },
+  "fileref": {
+   "type": "object",
+   "additionalProperties": false,
+   "required": [
+    "path"
+   ],
+   "properties": {
+    "path": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 400
+    },
+    "md5": {
+     "type": [
+      "string",
+      "null"
+     ],
+     "pattern": "^[0-9a-f]{32}$"
+    }
+   }
+  }
+ }
 }
