@@ -1,0 +1,62 @@
+BGRUN START 2026-09-26 01:23:02 limit 14.0 min: powershell -NoProfile -File tools\peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c88-reuse-stalepin -TaskFile tools\bench\peer_c88_reuse_stalepin_task.txt
+OUTCOME: ANSWERED (118s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c88-reuse-stalepin.md
+COST: $1.3020  in 24 / out 10454 / cache-create 104809 / cache-read 1271778  (114s, 21 turn(s))
+--- ANSWER ---
+The claim is **partly wrong**. Both self-test failures do come from a stale fixture, and pinning the status text does isolate the test. But the claim's reason, that "STATUS.md now names D1_l2_a1 as the bed, so both functions correctly followed STATUS", is false. The bed was chosen by **newest file time**, not by anything STATUS decides, and that fallback will move the runner to the wrong bed again.
+
+## 1. Strongest reason the claim is wrong
+
+- **STATUS.md has no `current-bed:` line.** A grep for `^current-bed` finds 0 matches.
+- **So the fallback at `tools/errorlist_check.py:167-170` decided the bed.** It collects every `D1_*.vi` name in STATUS, keeps the ones that exist in claudeDev, and returns the one with the newest mtime (`max(paths, key=os.path.getmtime)`).
+- **STATUS names about 17 D1 files.** They are on lines 10, 11, 50, 54, 62, 88 and 93. `D1_k_20260925_100155.vi` is still named as a bed on line 93 ("THE L2-A1 run from the bed `claudeDev\D1_k_…`").
+- **`D1_l2_a1` won on file time only.** It lines up with Pre-decided 195(a) by coincidence; nothing in the code reads 195(a).
+- **The same fallback is live in production.** It feeds `errorlist_hook` (`tools/cycle_runner.py:685`) and `write_cycle_card` (`tools/cycle_runner.py:749`).
+- **A newer D1 file already exists.** `claudeDev\D1_s1_kswap_20260926_004935.vi` is on disk. Pre-decided 195(d) also plans another instrumented copy of the S1 file. As soon as STATUS names either one, the cycle-start check and the cycle card switch to that file:
+  - It is runnable (ExecState 1), so a GUI read returns 0 items and the verdict is OK.
+  - The L2-A1 bed would then silently stop being checked.
+- **Pinning the text in the self-test hides this; it does not fix it.** The self-test was the only thing that noticed the bed had moved.
+
+## 2. Alternative explanation of the same evidence
+
+"The runner's bed is chosen by file time, not by decision, and the self-test is the only thing that noticed." The log (`tools/bench/selftest_errorlist_reuse_88.log:2,16`) looks identical under the claim and under this reading. They predict different things for the next new D1 file STATUS mentions.
+
+## 3. What would falsify the claim
+
+If STATUS gained a line naming `D1_s1_kswap_20260926_004935.vi` and `current_bed_text` still returned `D1_l2_a1`, the claim would hold. The code at `tools/errorlist_check.py:166-170` says it will return the kswap file instead. I did not run this (read-only).
+
+## The three sub-questions
+
+- **Does pinning isolate the test? Yes.**
+  - Both functions take `status_text` as an argument. `current_bed_text` is pure apart from the claudeDev directory and file times.
+  - `write_cycle_card` reads `<bench>/bed.json` first, and the test's bench is an empty temp directory.
+  - `D1_k_20260925_100155.vi` still exists in claudeDev.
+  - R1 still depends on the real bench. That is fine: the latest D1_k re-verdict (`errorlist_D1_k_20260925_100155_20260925_223239_reuse.json`) is OK with 22 items and 0 extra. Its items are licensed only by `subvi_input_not_wired`, `node_unwired`, the header rule and the four wire classes left after the revert. So the cycle-87 revert does not break R1.
+- **Is 35 vs 22 a reuse-selection bug? No.**
+  - `find_reusable` globs by the bed's name stem and checks the basename (`tools/errorlist_check.py:187-195`).
+  - The 35 items belong to the L2-A1 read `…_001456`, the same read and verdict as `tools/bench/c88_reverdict.log:3-5`.
+  - The wrong input was the bed, not the choice of read.
+- **Does dropping all derived licences break a bed with a partial explicit file?**
+  - Explicit entries are required with exact counts (`tools/errorlist_check.py:393,407`). A partial file therefore produces extra items and a MISMATCH. That fails loudly, which is the safe direction.
+  - Today only one explicit file exists, and it is complete: 35 of 35 used, derived licences 0 (`tools/bench/c88_reverdict.log:16`).
+  - Two caveats:
+    - (a) 195(b) does not literally say "no derived licences when an explicit file exists". That wording appears only in `tools/bench/cards/task_88-4.json:6`. Dropping the capped `node_unwired` and `subvi_input_not_wired` licences goes further than 195(b). It is defensible, but it is an interpretation and should be labelled as one.
+    - (b) `missing` is built from `e.get("match")` (`tools/errorlist_check.py:407`). The explicit file uses `norm_all` entries, so every missing entry would print as `None`. The verdict is still correct, but the report is unreadable.
+- **The planned negative self-test can pass without testing anything.** With current code, a 15th "Wire has loose ends" item is absorbed by the uncapped `wire_from_open_rows` licence only if `plan_for_bed` finds `sim/l2a1/stageplan_l2a1.json`. A fake bench without that plan gives no derived licences, so the test reports MISMATCH on both the old and the new code. The test must first be run against the unpatched checker and shown to get OK. It needs the real bench, or a copy of `stage_d1_l2a1.json` plus the sim plan.
+
+## 4. Cheapest discriminating test
+
+Offline, no LabVIEW, about one second:
+
+```
+py -c "import sys; sys.path.insert(0,'tools'); import errorlist_check as E; t=open('STATUS.md',encoding='utf-8').read(); print(E.current_bed_text(t)); print(E.current_bed_text(t+'\nD1_s1_kswap_20260926_004935.vi\n'))"
+```
+
+- **If the claim is right:** both lines print `D1_l2_a1`.
+- **If my alternative is right:** the second line prints `D1_s1_kswap…`.
+
+If the second line prints the kswap file, the fix belongs in STATUS and the runner, not only in the self-test:
+- Write `current-bed: D1_l2_a1_20260925_235224.vi` into STATUS; the mechanism already exists at `tools/errorlist_check.py:166`.
+- Log a warning, or refuse, whenever the mtime fallback is what picked the bed.
+
+No web search was needed. Every claim here is about this project's own Python and is cited by file and line.
+BGRUN END rc=0 after 118s

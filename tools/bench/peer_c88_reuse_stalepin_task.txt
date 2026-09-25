@@ -1,0 +1,25 @@
+ATTACK this claim about the failed self-test tools/bench/selftest_errorlist_reuse_88.log (script tools/bench/selftest_errorlist_reuse_81.py).
+
+OBSERVED (selftest_errorlist_reuse_88.log:3,16): 14 pass / 2 fail.
+  R1 "real bed D1_k, unchanged md5 -> REUSE, OK, 22 items" got ('OK', 0 GUI calls, 35 items, extra []), and the REUSE line names
+  errorlist_D1_l2_a1_20260925_235224_..._reuse.json (bed md5 51d9b8a3...), NOT the D1_k bed (md5 6cf5b077...).
+  C1 "cycle card carries the bed {path, md5}" got bed = D1_l2_a1_20260925_235224.vi / 51d9b8a3..., expected D1_k_20260925_100155.vi.
+
+CLAIM: both failures are a STALE FIXTURE in the self-test, not a fault in tools/errorlist_check.py or tools/cycle_runner.py.
+  The self-test fed the LIVE STATUS.md text to run_hook()/write_cycle_card(); STATUS.md now names D1_l2_a1_20260925_235224.vi as the
+  bed (docs/d1-loop12-17-split-plan.md Pre-decided 195(a), cycle 88), so both functions correctly followed STATUS to the new bed.
+  The checker verdict itself (OK, 35 items, 0 extra) matches tools/bench/c88_reverdict.log:5 on the same read.
+  Patch already made (selftest_errorlist_reuse_81.py:87-91): status text pinned to "current-bed: D1_k_20260925_100155.vi\n"
+  (errorlist_check.py:166, `current-bed:` wins).
+
+Also planned in the same card (Pre-decided 195(b), "no uncapped licence for a bed with an explicit file"):
+  errorlist_check.py derive_expected():375-377 still appends an UNCAPPED wire_from_open_rows licence (count None) even when an
+  explicit expected file (errorlist_expected_<stem>.json) exists; explicit entries consume first, so here it absorbed 0, but a new
+  loose-ends fault would be silently absorbed. Planned edit: skip derived licences when an explicit file exists (both call sites,
+  reverdict():223-225 and main():456-461), plus a new negative self-test (explicit file + 1 extra "wire has loose ends" item -> MISMATCH).
+
+Questions to attack: Is the stale-pin explanation wrong or incomplete (e.g. does current_bed() resolution or write_cycle_card read
+something other than the status text passed in, so pinning the text would not isolate the test)? Could R1's 35-vs-22 reflect a
+real reuse-selection bug (wrong newest read chosen) rather than the bed change? Does dropping ALL derived licences (not only the
+uncapped wire class) when an explicit file exists break a bed whose explicit file is partial? Name the cheapest discriminating test.
+Read-only; do not edit files.

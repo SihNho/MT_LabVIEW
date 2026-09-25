@@ -1,0 +1,55 @@
+{
+ "schema": "task/1",
+ "id": "88-3",
+ "kind": "doc",
+ "goal": "PD195(b): revert cycle-87 WIRE_CLASSES additions; write errorlist_expected_D1_l2_a1_20260925_235224.json (exact counts); offline re-verdict OK; PD194(c) graph placement; INDEX row for 88-2",
+ "why": "PD195(a) makes D1_l2_a1 the bed; the next cycle-start Error List check must pass on exact, cited licences, not uncapped classes. No LabVIEW.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/errorlist_check.py"},
+  {"path": "tools/bench/errorlist_D1_l2_a1_20260925_235224_20260926_001456.json"},
+  {"path": "tools/bench/errorlist_rbw_l2a1_88_20260926_003907.json", "md5": "9096e1f9554edbcdd898f9cfaf043a44"},
+  {"path": "tools/bench/diag_c88_p2rbw.log"},
+  {"path": "tools/bench/m8_kswap_88.json", "md5": "f484102a09513358c7463aec1931a103"},
+  {"path": "tools/stage_prerun.py"}
+ ],
+ "pass": [
+  "errorlist_check.py: only the two cycle-87 WIRE_CLASSES entries removed (+comment citing PD195(b)); its self-test green",
+  "expected file: 35 items by class with exact counts, each class citing diag_c88_p2rbw.log lines; format = what the checker reads",
+  "offline re-verdict of the 001456 read with the expected file: OK, 0 extra, 0 missing (RESULT line)",
+  "PD194(c): graph json for md5 6cf5b077 found by --prerun without --graph (dry check); INDEX row for m8_kswap_88",
+  "no LabVIEW touched; files + md5 listed"
+ ],
+ "outputs": ["tools/bench/errorlist_expected_D1_l2_a1_20260925_235224.json", "tools/bench/c88_reverdict*"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/errorlist_check.py",
+   "tools/bench/errorlist_expected_D1_l2_a1_20260925_235224.json",
+   "tools/bench/errorlist_D1_l2_a1_*reverdict*",
+   "tools/bench/errorlist_D1_l2_a1_*_reuse.json",
+   "tools/bench/c88_reverdict*",
+   "tools/bench/selftest_errorlist*",
+   "tools/bench/sim/l2a1/**",
+   "tools/bench/graph_*.json",
+   "tools/stage_prerun.py",
+   "tools/bench/INDEX.md",
+   "**/INDEX.md",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 30},
+ "rules": [
+  "change nothing in errorlist_check.py except the two entries named",
+  "no licence class may be uncapped for this bed; exact counts only",
+  "report MEASUREMENTS; gate refusal = BLOCKED with its message",
+  "result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M3"]
+}

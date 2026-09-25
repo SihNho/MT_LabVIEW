@@ -222,7 +222,10 @@ def reverdict(bed, main_json, raw_json, bench=None, out_dir=None, expected_path=
     exp_path = expected_path or os.path.join(bench, "errorlist_expected_%s.json" % stem)
     expected = json.load(open(exp_path, encoding="utf-8")).get("expected", []) if os.path.exists(exp_path) else []
     sp, pp, plan = plan_for_bed(bed, bench)
-    derived = derive_expected(plan) if plan else []
+    # PD195(b) (card 88-4): a bed with an EXPLICIT expected file gets NO plan-derived licences - the uncapped
+    # wire_from_open_rows class would silently absorb a new fault of the same wording. Interpretation: all derived
+    # licences are dropped, not only the uncapped one (archive/peer/2026-09-26-c88-reuse-stalepin.md:90).
+    derived = derive_expected(plan) if plan and not os.path.exists(exp_path) else []
     items = [dict(i) for i in raw.get("items") or []]
     for i in items:
         i.pop("licensed_by", None)
@@ -321,13 +324,11 @@ def norm(s):
 # half-wires an open row leaves -> the wire classes in WIRE_CLASSES. Their COUNT is not derivable from open_rows
 # (one deleted sink can leave loose ends on several branches), so the wire licence is class-level and uncapped;
 # the JSON records how many items it absorbed. Anything no licence covers is `extra` -> MISMATCH.
-WIRE_CLASSES = ("wirehaslooseends", "hasnosource", "outputlooptunneltoaninput", "twoterminalsofdifferenttypes",
-                # cycle-87 firefighter, measured on the L2-A1 bed (tools/bench/c87_errorlist_reverdict.log): a move_in
-                # cuts BOTH ends of a wire, so the fragment is "This wire is not connected to anything." (9 items,
-                # the string lv_errorlist.py:1086 already names); and a sinks-only wire is phrased per sink pair
-                # ("You have connected an input of Less? to a right shift register", detail "two data sinks but zero
-                # sources" - the same detail as the output-loop-tunnel item). Class-level, uncapped, like the others.
-                "isnotconnectedtoanything", "zerosources")
+WIRE_CLASSES = ("wirehaslooseends", "hasnosource", "outputlooptunneltoaninput", "twoterminalsofdifferenttypes")
+# REVERTED by docs/d1-loop12-17-split-plan.md Pre-decided 195(b) (cycle 88): cycle 87's uncapped additions
+# "isnotconnectedtoanything" and "zerosources" are removed - an uncapped class licence hides a real fault of the same
+# wording (archive/peer/2026-09-26-c87-errorlist-extras.md:118). The L2-A1 bed's items are licensed instead by an
+# explicit, exact-count file: tools/bench/errorlist_expected_D1_l2_a1_20260925_235224.json.
 
 
 def plan_for_bed(bed, bench=None):
@@ -460,7 +461,7 @@ def main():
         expected = json.load(open(exp_path, encoding="utf-8")).get("expected", []) if os.path.exists(exp_path) else []
         R["expected_file"] = exp_path if os.path.exists(exp_path) else None
         R["stage_file"], R["plan_file"], plan = plan_for_bed(bed)
-        derived = derive_expected(plan) if plan else []
+        derived = derive_expected(plan) if plan and not os.path.exists(exp_path) else []   # PD195(b), card 88-4
         R["open_rows"] = (plan or {}).get("open_rows")
         print("plan %s open_rows %s -> %d derived licences" % (R["plan_file"], len(R["open_rows"] or []),
                                                                 len(derived)), flush=True)

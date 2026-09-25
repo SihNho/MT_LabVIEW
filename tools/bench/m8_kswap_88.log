@@ -1,0 +1,149 @@
+BGRUN START 2026-09-26 00:52:49 limit 60.0 min: py -u tools/bench/drive_m8_load83_kswap88.py C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_kswap_20260926_004935.vi
+backed up ['m8_s1_p15_r120.json', 'm8_v5_s1_p15_r120.json', 'm8_v5_s1_p15_r120_clicks.json']
+=== LEG leg1 kswap@15@90Hz start at 0.0 min; camera before: {"camera": "cam1", "set_rc": 0, "hz": 90.0, "period_us": 11111, "w": 1280, "h": 1024, "ox": 0, "oy": 0}
+  | step | method | result | detail |
+  |---|---|---|---|
+  | 0 G0 motor gate --session start (BEFORE LabVIEW opens COM3/COM4) | MOTOR | PASS | exit=0; LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0; REFSTATE RON=1 FRF=1 POS=0 POS_BEFORE=0 ERR=0 travelled=0.000; SESSION START OK -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools
+  | 1 G1 md5(ORIGINAL) before | FILE | PASS | 2a78e17c449cacdaf5da389818526859 |
+  | 2 G2 the D0 copy exists (nothing copied, saved or deleted) | FILE | PASS | C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_kswap_20260926_004935_run_20260926_005259.vi (474627 B) md5=e77b8d5805d90f76e426cb06fdc26d1c |
+  | 3 G3a apartment2 attach | COM | PASS | apartment2 attached, LabVIEW 26.3.1f1 |
+  | 4 G3b ORIGINAL resident READ-ONLY | COM | PASS | original resident (ExecState=1) |
+  | 5 G3c copy loads, idle, unblocked | COM | PASS | ExecState=1; VERDICT: clear (no modal dialog) |
+  | 6 G4 panel parameters RECORDED (never set) | VISERVER | PASS | 60 of 60 controls returned a value, 0 errors |
+  | 7 G5 panel window rect read LIVE (recorded; NO click is derived from it) | GUI | PASS | rect=(-6, 51, 1930, 1107); v3's V6 rect (-6, 51, 1930, 1107) is printed for contrast only - v4's gate 7 compared these two and passed while the control positions differed |
+  | 10 run1.pre reset+readback of the 3 control-flow booleans | VISERVER | PASS | {'stop (end)': False, 'stop (end) 2': False, 'Done Picking \nBeads?': False} (no panel PARAMETER is written) |
+  | 11 run1.L1 VI left idle | COM | PASS | ExecState=2 after 3s; Run returned=False |
+  | 12 run1.L2 IMAQ display LOCATED in this leg's own capture | GUI | PASS | panel rect=(-6, 51, 1930, 1107); mid-grey band (233, 503, 873, 1015) = 641x513 px; (v3's V6 rect, NOT used: (232, 500, 873, 1013)) |
+  | 13 run1.L3 3 picks landed - CONFIRMED BY THE MARKERS THE VI DREW | GUI | PASS | picks=[(489, 810), (367, 692), (623, 933), (425, 759), (565, 656), (713, 784), (329, 579), (441, 579), (553, 579), (665, 579), (777, 579), (441, 699), (665, 699), (777, 699), (329, 818)] in located rect (233, 503, 873,
+  | 14 run1.L4 `Done Picking \nBeads?` Yes button LOCATED on THIS VI's own panel | GUI | PASS | search rect (-6, 51, 1930, 1107) in 20260926_005300_v5_run1_before_done.png; 347 red clusters, 6 passed shape, winner=(1113, 914) / template score 0.00 (next 28.35152922957801); mean/diff/ over 46x29 vs ref
+  | 15 run1.L5 done click DELIVERED (clickprobe, never -Action click) | GUI | PASS | {'sfw_ret': True, 'fg_after_sfw_is_target': True, 'fg_at_buttondown_is_target': True, 'wfp_press_root_is_target': True}; target hwnd=6949198; pressed at (1114, 914) |
+  | 16 run1.L6 `choose bandpass` within 30 s (brief step 5) | GUI | PASS | present=True after 25s; the V6 copy needed ~2 min of z-stack calibration first (drive_original_copy_v2.py:147), so a FAIL here is a TIMING statement, not a verdict on the click - L7 is the verdict |
+  | 17 run1.L7 picking loop ended | GUI | PASS | Count 1 -> 1 after 25s; bandpass present=True; save present=False |
+  | 18 run1.L8 the three `choose bandpass` panels (Yes LOCATED, HWND-gated) | GUI | FAIL | 15 closed (contract 3), hwnds [8979984, 9045520, 9111056, 9176592, 9242128, 9307664, 9373200, 9438736, 9504272, 9569808, 9635344, 9700880, 9766416, 9831952, 9897488]; terminal=save dialog appeared after 15 panel
+  | 19 run1.L9 save dialog answered by keyboard | GUI | PASS | focus + ^a + type + ENTER; rect=(752, 55, 1712, 595); path=G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\m8_out\replay_s1_20260926_005259\cal001; shot=20260926_005300_save_dialog_v5_run1.png 
+  | 20 run1.L10 cal file in OUR folder | FILE | PASS | G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\m8_out\replay_s1_20260926_005259\cal001 (857377 B); `Cal File Path` indicator='G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V
+  | 21 run1.L11 frame counter advances (it read 0 all run in v4) | VISERVER | PASS | current image number over 120s: 21834 .. 32515 (lost=3410) |
+  | 22 run1.L12 stop - VI Server FIRST, COM Abort as the fallback | VISERVER | PASS | WORKED: VI SERVER SetControlValue, ONE write each, no re-arm after 1.0s -- idle after 1.0s; write 'stop (end)'=True / write 'stop (end) 2'=True / t=1.0 ExecState=1 'stop (end)'=False 'stop (end) 2'=False frame=32518 
+  | 23 run1.L13 trace file written | FILE | PASS | non-TIFF files: ['cal001 (857377 B)', 'tra001-000 (2956480 B)']; by ext: {'<none>': (2, 3813857)}; `Track File Path` indicator='G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\m8_out\\replay_s1_2
+  | 90 G90 md5(COPY) unchanged - RUN, never saved, never deleted | FILE | PASS | e77b8d5805d90f76e426cb06fdc26d1c -> e77b8d5805d90f76e426cb06fdc26d1c (exists=True) |
+  | 91 G91 md5(ORIGINAL) after | FILE | PASS | 2a78e17c449cacdaf5da389818526859 |
+  | 92 G92 LabVIEW exited before the motor port is touched | PROC | PASS | waited 6s; forced kill used=False; running now=False |
+  | 93 G93 post-run TMX? still 39 | MOTOR | PASS | TMX?=39.0 from 'PRELIMITS TMN=0 TMX=39'; gate exit=0; LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0; REFSTATE RON=1 FRF=1 POS=-5E-05 POS_BEFORE=30 ERR=0 travelled=30.000 |
+  === D0 v5: 25 pass, 1 fail ===
+  FAILING: 18 run1.L8 the three `choose bandpass` panels (Yes LOCATED, HWND-gated)
+  GATE M1 run copy md5 == source                PASS
+  GATE M2 reached experiment loop               PASS
+  GATE M3 frames >= 2000                        PASS
+  GATE M4 stopped by the VI's own control       PASS
+  GATE M5 cal+tra written                       PASS
+  GATE M6 LabVIEW gone (tasklist)               PASS
+  GATE M7 bed md5 unchanged                     PASS
+  GATE M8 run copy deleted                      PASS
+  RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[{"path":"tools\\bench\\m8_replay_s1_p15_r120.json","md5":"1c053d23afe06caf6c62c72b61cd9c17"}]}
+ROW {"leg": "leg1 kswap@15@90Hz", "vi": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_kswap_20260926_004935.vi", "hz_cell": 90, "picks": 15, "run_s": 120, "rc": 0, "secs": 419, "json": "tools/bench/m8_kswap_88_leg1.json", "camera_before": {"camera": "cam1", "set_rc": 0, "hz": 90.0, "period_us": 11111, "w": 1280, "h": 1024, "ox": 0, "oy": 0}, "camera_after": {"camera": "cam1", "set_rc": null, "hz": 90.0009, "period_us": 11111, "w": 1280, "h": 1024, "ox": 0, "oy": 0}, "reached_experiment_loop": true, "frames_delta": 10681, "measured_hz": 89.0, "lost_frames": "3410", "tra_rows_header": {"tra001-000": 7698}, "tiffs": 0, "stop_latency_s": 1.0, "labview_exited": true, "picks_done": {"points": [[489, 810], [367, 692], [623, 933], [425, 759], [565, 656], [713, 784], [329, 579], [441, 579], [553, 579], [665, 579], [777, 579], [441, 699], [665, 699], [777, 699], [329, 818]], "markers_before": 0, "markers_after": 15}, "motor_tmx_after": 39.0, "gates": {"M1 run copy md5 == source": true, "M2 reached experiment loop": true, "M3 frames >= 2000": true, "M4 stopped by the VI's own control": true, "M5 cal+tra written": true, "M6 LabVIEW gone (tasklist)": true, "M7 b
+=== LEG leg2 kswap@15@90Hz start at 7.1 min; camera before: {"camera": "cam1", "set_rc": 0, "hz": 90.0, "period_us": 11111, "w": 1280, "h": 1024, "ox": 0, "oy": 0}
+  | step | method | result | detail |
+  |---|---|---|---|
+  | 0 G0 motor gate --session start (BEFORE LabVIEW opens COM3/COM4) | MOTOR | PASS | exit=0; LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0; REFSTATE RON=1 FRF=1 POS=0 POS_BEFORE=0 ERR=0 travelled=0.000; SESSION START OK -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools
+  | 1 G1 md5(ORIGINAL) before | FILE | PASS | 2a78e17c449cacdaf5da389818526859 |
+  | 2 G2 the D0 copy exists (nothing copied, saved or deleted) | FILE | PASS | C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_kswap_20260926_004935_run_20260926_010003.vi (474627 B) md5=e77b8d5805d90f76e426cb06fdc26d1c |
+  | 3 G3a apartment2 attach | COM | PASS | apartment2 attached, LabVIEW 26.3.1f1 |
+  | 4 G3b ORIGINAL resident READ-ONLY | COM | PASS | original resident (ExecState=1) |
+  | 5 G3c copy loads, idle, unblocked | COM | PASS | ExecState=1; VERDICT: clear (no modal dialog) |
+  | 6 G4 panel parameters RECORDED (never set) | VISERVER | PASS | 60 of 60 controls returned a value, 0 errors |
+  | 7 G5 panel window rect read LIVE (recorded; NO click is derived from it) | GUI | PASS | rect=(-6, 51, 1930, 1107); v3's V6 rect (-6, 51, 1930, 1107) is printed for contrast only - v4's gate 7 compared these two and passed while the control positions differed |
+  | 10 run1.pre reset+readback of the 3 control-flow booleans | VISERVER | PASS | {'stop (end)': False, 'stop (end) 2': False, 'Done Picking \nBeads?': False} (no panel PARAMETER is written) |
+  | 11 run1.L1 VI left idle | COM | PASS | ExecState=2 after 3s; Run returned=False |
+  | 12 run1.L2 IMAQ display LOCATED in this leg's own capture | GUI | PASS | panel rect=(-6, 51, 1930, 1107); mid-grey band (233, 503, 873, 1015) = 641x513 px; (v3's V6 rect, NOT used: (232, 500, 873, 1013)) |
+  | 13 run1.L3 3 picks landed - CONFIRMED BY THE MARKERS THE VI DREW | GUI | PASS | picks=[(489, 810), (367, 692), (623, 933), (425, 759), (565, 656), (713, 784), (329, 579), (441, 579), (553, 579), (665, 579), (777, 579), (441, 699), (665, 699), (777, 699), (329, 818)] in located rect (233, 503, 873,
+  | 14 run1.L4 `Done Picking \nBeads?` Yes button LOCATED on THIS VI's own panel | GUI | PASS | search rect (-6, 51, 1930, 1107) in 20260926_010003_v5_run1_before_done.png; 348 red clusters, 6 passed shape, winner=(1113, 914) / template score 0.00 (next 28.35152922957801); mean/diff/ over 46x29 vs ref
+  | 15 run1.L5 done click DELIVERED (clickprobe, never -Action click) | GUI | PASS | {'sfw_ret': True, 'fg_after_sfw_is_target': True, 'fg_at_buttondown_is_target': True, 'wfp_press_root_is_target': True}; target hwnd=27461436; pressed at (1114, 914) |
+  | 16 run1.L6 `choose bandpass` within 30 s (brief step 5) | GUI | PASS | present=True after 25s; the V6 copy needed ~2 min of z-stack calibration first (drive_original_copy_v2.py:147), so a FAIL here is a TIMING statement, not a verdict on the click - L7 is the verdict |
+  | 17 run1.L7 picking loop ended | GUI | PASS | Count 1 -> 1 after 25s; bandpass present=True; save present=False |
+  | 18 run1.L8 the three `choose bandpass` panels (Yes LOCATED, HWND-gated) | GUI | FAIL | 15 closed (contract 3), hwnds [14680906, 14746442, 14811978, 14877514, 14943050, 15008586, 15074122, 15139658, 15205194, 15270730, 15336266, 15401802, 15467338, 15532874, 15598410]; terminal=save dialog appeared
+  | 19 run1.L9 save dialog answered by keyboard | GUI | PASS | focus + ^a + type + ENTER; rect=(752, 55, 1712, 595); path=G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\m8_out\replay_s1_20260926_010003\cal001; shot=20260926_010003_save_dialog_v5_run1.png 
+  | 20 run1.L10 cal file in OUR folder | FILE | PASS | G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\m8_out\replay_s1_20260926_010003\cal001 (857376 B); `Cal File Path` indicator='G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V
+  | 21 run1.L11 frame counter advances (it read 0 all run in v4) | VISERVER | PASS | current image number over 120s: 21782 .. 32457 (lost=3490) |
+  | 22 run1.L12 stop - VI Server FIRST, COM Abort as the fallback | VISERVER | PASS | WORKED: VI SERVER SetControlValue, ONE write each, no re-arm after 1.0s -- idle after 1.0s; write 'stop (end)'=True / write 'stop (end) 2'=True / t=1.0 ExecState=1 'stop (end)'=False 'stop (end) 2'=False frame=32458 
+  | 23 run1.L13 trace file written | FILE | PASS | non-TIFF files: ['cal001 (857376 B)', 'tra001-000 (2928832 B)']; by ext: {'<none>': (2, 3786208)}; `Track File Path` indicator='G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\m8_out\\replay_s1_2
+  | 90 G90 md5(COPY) unchanged - RUN, never saved, never deleted | FILE | PASS | e77b8d5805d90f76e426cb06fdc26d1c -> e77b8d5805d90f76e426cb06fdc26d1c (exists=True) |
+  | 91 G91 md5(ORIGINAL) after | FILE | PASS | 2a78e17c449cacdaf5da389818526859 |
+  | 92 G92 LabVIEW exited before the motor port is touched | PROC | PASS | waited 6s; forced kill used=False; running now=False |
+  | 93 G93 post-run TMX? still 39 | MOTOR | PASS | TMX?=39.0 from 'PRELIMITS TMN=0 TMX=39'; gate exit=0; LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0; REFSTATE RON=1 FRF=1 POS=0 POS_BEFORE=30 ERR=0 travelled=30.000 |
+  === D0 v5: 25 pass, 1 fail ===
+  FAILING: 18 run1.L8 the three `choose bandpass` panels (Yes LOCATED, HWND-gated)
+  GATE M1 run copy md5 == source                PASS
+  GATE M2 reached experiment loop               PASS
+  GATE M3 frames >= 2000                        PASS
+  GATE M4 stopped by the VI's own control       PASS
+  GATE M5 cal+tra written                       PASS
+  GATE M6 LabVIEW gone (tasklist)               PASS
+  GATE M7 bed md5 unchanged                     PASS
+  GATE M8 run copy deleted                      PASS
+  RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[{"path":"tools\\bench\\m8_replay_s1_p15_r120.json","md5":"76a483942d005667677c94cfae4942b8"}]}
+ROW {"leg": "leg2 kswap@15@90Hz", "vi": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_kswap_20260926_004935.vi", "hz_cell": 90, "picks": 15, "run_s": 120, "rc": 0, "secs": 419, "json": "tools/bench/m8_kswap_88_leg2.json", "camera_before": {"camera": "cam1", "set_rc": 0, "hz": 90.0, "period_us": 11111, "w": 1280, "h": 1024, "ox": 0, "oy": 0}, "camera_after": {"camera": "cam1", "set_rc": null, "hz": 90.0009, "period_us": 11111, "w": 1280, "h": 1024, "ox": 0, "oy": 0}, "reached_experiment_loop": true, "frames_delta": 10675, "measured_hz": 89.0, "lost_frames": "3490", "tra_rows_header": {"tra001-000": 7626}, "tiffs": 0, "stop_latency_s": 1.0, "labview_exited": true, "picks_done": {"points": [[489, 810], [367, 692], [623, 933], [425, 759], [565, 656], [713, 784], [329, 579], [441, 579], [553, 579], [665, 579], [777, 579], [441, 699], [665, 699], [777, 699], [329, 818]], "markers_before": 0, "markers_after": 15}, "motor_tmx_after": 39.0, "gates": {"M1 run copy md5 == source": true, "M2 reached experiment loop": true, "M3 frames >= 2000": true, "M4 stopped by the VI's own control": true, "M5 cal+tra written": true, "M6 LabVIEW gone (tasklist)": true, "M7 b
+=== LEG leg3 s1@15@90Hz start at 14.2 min; camera before: {"camera": "cam1", "set_rc": 0, "hz": 90.0, "period_us": 11111, "w": 1280, "h": 1024, "ox": 0, "oy": 0}
+  | step | method | result | detail |
+  |---|---|---|---|
+  | 0 G0 motor gate --session start (BEFORE LabVIEW opens COM3/COM4) | MOTOR | PASS | exit=0; LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0; REFSTATE RON=1 FRF=1 POS=0 POS_BEFORE=0 ERR=0 travelled=0.000; SESSION START OK -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools
+  | 1 G1 md5(ORIGINAL) before | FILE | PASS | 2a78e17c449cacdaf5da389818526859 |
+  | 2 G2 the D0 copy exists (nothing copied, saved or deleted) | FILE | PASS | C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_s1_copy_run_20260926_010706.vi (474202 B) md5=3e3d23cefd3a334001aa9d6156bf1aee |
+  | 3 G3a apartment2 attach | COM | PASS | apartment2 attached, LabVIEW 26.3.1f1 |
+  | 4 G3b ORIGINAL resident READ-ONLY | COM | PASS | original resident (ExecState=1) |
+  | 5 G3c copy loads, idle, unblocked | COM | PASS | ExecState=1; VERDICT: clear (no modal dialog) |
+  | 6 G4 panel parameters RECORDED (never set) | VISERVER | PASS | 60 of 60 controls returned a value, 0 errors |
+  | 7 G5 panel window rect read LIVE (recorded; NO click is derived from it) | GUI | PASS | rect=(-6, 51, 1930, 1107); v3's V6 rect (-6, 51, 1930, 1107) is printed for contrast only - v4's gate 7 compared these two and passed while the control positions differed |
+  | 10 run1.pre reset+readback of the 3 control-flow booleans | VISERVER | PASS | {'stop (end)': False, 'stop (end) 2': False, 'Done Picking \nBeads?': False} (no panel PARAMETER is written) |
+  | 11 run1.L1 VI left idle | COM | PASS | ExecState=2 after 3s; Run returned=False |
+  | 12 run1.L2 IMAQ display LOCATED in this leg's own capture | GUI | PASS | panel rect=(-6, 51, 1930, 1107); mid-grey band (233, 503, 873, 1015) = 641x513 px; (v3's V6 rect, NOT used: (232, 500, 873, 1013)) |
+  | 13 run1.L3 3 picks landed - CONFIRMED BY THE MARKERS THE VI DREW | GUI | PASS | picks=[(489, 810), (367, 692), (623, 933), (425, 759), (565, 656), (713, 784), (329, 579), (441, 579), (553, 579), (665, 579), (777, 579), (441, 699), (665, 699), (777, 699), (329, 818)] in located rect (233, 503, 873,
+  | 14 run1.L4 `Done Picking \nBeads?` Yes button LOCATED on THIS VI's own panel | GUI | PASS | search rect (-6, 51, 1930, 1107) in 20260926_010706_v5_run1_before_done.png; 346 red clusters, 6 passed shape, winner=(1113, 914) / template score 0.00 (next 28.35152922957801); mean/diff/ over 46x29 vs ref
+  | 15 run1.L5 done click DELIVERED (clickprobe, never -Action click) | GUI | PASS | {'sfw_ret': True, 'fg_after_sfw_is_target': True, 'fg_at_buttondown_is_target': True, 'wfp_press_root_is_target': True}; target hwnd=15861312; pressed at (1114, 914) |
+  | 16 run1.L6 `choose bandpass` within 30 s (brief step 5) | GUI | PASS | present=True after 25s; the V6 copy needed ~2 min of z-stack calibration first (drive_original_copy_v2.py:147), so a FAIL here is a TIMING statement, not a verdict on the click - L7 is the verdict |
+  | 17 run1.L7 picking loop ended | GUI | PASS | Count 1 -> 1 after 25s; bandpass present=True; save present=False |
+  | 18 run1.L8 the three `choose bandpass` panels (Yes LOCATED, HWND-gated) | GUI | FAIL | 15 closed (contract 3), hwnds [19989562, 20055098, 20120634, 20186170, 20251706, 20317242, 20382778, 20448314, 20513850, 20579386, 20644922, 20710458, 20775994, 20841530, 20907066]; terminal=save dialog appeared
+  | 19 run1.L9 save dialog answered by keyboard | GUI | PASS | focus + ^a + type + ENTER; rect=(752, 55, 1712, 595); path=G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\m8_out\s1_20260926_010706\cal001; shot=20260926_010706_save_dialog_v5_run1.png |
+  | 20 run1.L10 cal file in OUR folder | FILE | PASS | G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\m8_out\s1_20260926_010706\cal001 (857376 B); `Cal File Path` indicator='G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_Paral
+  | 21 run1.L11 frame counter advances (it read 0 all run in v4) | VISERVER | PASS | current image number over 120s: 21746 .. 32424 (lost=3776) |
+  | 22 run1.L12 stop - VI Server FIRST, COM Abort as the fallback | VISERVER | PASS | WORKED: VI SERVER SetControlValue, ONE write each, no re-arm after 1.0s -- idle after 1.0s; write 'stop (end)'=True / write 'stop (end) 2'=True / t=1.0 ExecState=1 'stop (end)'=False 'stop (end) 2'=False frame=32425 
+  | 23 run1.L13 trace file written | FILE | PASS | non-TIFF files: ['cal001 (857376 B)', 'tra001-000 (2817849 B)']; by ext: {'<none>': (2, 3675225)}; `Track File Path` indicator='G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\bench\\m8_out\\s1_20260926
+  | 90 G90 md5(COPY) unchanged - RUN, never saved, never deleted | FILE | PASS | 3e3d23cefd3a334001aa9d6156bf1aee -> 3e3d23cefd3a334001aa9d6156bf1aee (exists=True) |
+  | 91 G91 md5(ORIGINAL) after | FILE | PASS | 2a78e17c449cacdaf5da389818526859 |
+  | 92 G92 LabVIEW exited before the motor port is touched | PROC | PASS | waited 6s; forced kill used=False; running now=False |
+  | 93 G93 post-run TMX? still 39 | MOTOR | PASS | TMX?=39.0 from 'PRELIMITS TMN=0 TMX=39'; gate exit=0; LIMITS TMN=0 TMX=39 SPA15=39 SPA30=0; REFSTATE RON=1 FRF=1 POS=0 POS_BEFORE=30 ERR=0 travelled=30.000 |
+  === D0 v5: 25 pass, 1 fail ===
+  FAILING: 18 run1.L8 the three `choose bandpass` panels (Yes LOCATED, HWND-gated)
+  GATE M1 run copy md5 == source                PASS
+  GATE M2 reached experiment loop               PASS
+  GATE M3 frames >= 2000                        PASS
+  GATE M4 stopped by the VI's own control       PASS
+  GATE M5 cal+tra written                       PASS
+  GATE M6 LabVIEW gone (tasklist)               PASS
+  GATE M7 bed md5 unchanged                     PASS
+  GATE M8 run copy deleted                      PASS
+  RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[{"path":"tools\\bench\\m8_s1_p15_r120.json","md5":"0fc2b1178f3d9ea397567f94445ae6c7"}]}
+ROW {"leg": "leg3 s1@15@90Hz", "vi": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi", "hz_cell": 90, "picks": 15, "run_s": 120, "rc": 0, "secs": 418, "json": "tools/bench/m8_kswap_88_leg3.json", "camera_before": {"camera": "cam1", "set_rc": 0, "hz": 90.0, "period_us": 11111, "w": 1280, "h": 1024, "ox": 0, "oy": 0}, "camera_after": {"camera": "cam1", "set_rc": null, "hz": 90.0009, "period_us": 11111, "w": 1280, "h": 1024, "ox": 0, "oy": 0}, "reached_experiment_loop": true, "frames_delta": 10678, "measured_hz": 89.0, "lost_frames": "3776", "tra_rows_header": {"tra001-000": 7337}, "tiffs": 0, "stop_latency_s": 1.0, "labview_exited": true, "picks_done": {"points": [[489, 810], [367, 692], [623, 933], [425, 759], [565, 656], [713, 784], [329, 579], [441, 579], [553, 579], [665, 579], [777, 579], [441, 699], [665, 699], [777, 699], [329, 818]], "markers_before": 0, "markers_after": 15}, "motor_tmx_after": 39.0, "gates": {"M1 run copy md5 == source": true, "M2 reached experiment loop": true, "M3 frames >= 2000": true, "M4 stopped by the VI's own control": true, "M5 cal+tra written": true, "M6 LabVIEW gone (tasklist)": true, "M7 bed md5 unchanged": t
+camera restored: {"camera": "cam1", "set_rc": 0, "hz": 90.0, "period_us": 11111, "w": 1280, "h": 1024, "ox": 0, "oy": 0}
+GATE T2 leg1 kswap@15@90Hz LabVIEW gone before start         PASS
+GATE T4 leg1 kswap@15@90Hz camera 90 Hz before               PASS
+GATE T6 leg1 kswap@15@90Hz LabVIEW gone after                PASS
+GATE T1 leg1 kswap@15@90Hz leg rc 0                          PASS
+GATE T3 leg1 kswap@15@90Hz 0 TIFFs                           PASS
+GATE T5 leg1 kswap@15@90Hz frames/s within 15% of 90         PASS
+GATE T2 leg2 kswap@15@90Hz LabVIEW gone before start         PASS
+GATE T4 leg2 kswap@15@90Hz camera 90 Hz before               PASS
+GATE T6 leg2 kswap@15@90Hz LabVIEW gone after                PASS
+GATE T1 leg2 kswap@15@90Hz leg rc 0                          PASS
+GATE T3 leg2 kswap@15@90Hz 0 TIFFs                           PASS
+GATE T5 leg2 kswap@15@90Hz frames/s within 15% of 90         PASS
+GATE T2 leg3 s1@15@90Hz LabVIEW gone before start            PASS
+GATE T4 leg3 s1@15@90Hz camera 90 Hz before                  PASS
+GATE T6 leg3 s1@15@90Hz LabVIEW gone after                   PASS
+GATE T1 leg3 s1@15@90Hz leg rc 0                             PASS
+GATE T3 leg3 s1@15@90Hz 0 TIFFs                              PASS
+GATE T5 leg3 s1@15@90Hz frames/s within 15% of 90            PASS
+GATE T9 backed-up jsons restored                             PASS
+GATE T7 camera restored to 90 Hz                             PASS
+GATE T8 S1 + bed + kswap md5 unchanged                       PASS
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":21,"fail":0},"first_fail":null,"artefacts":[{"path":"tools\\bench\\m8_kswap_88.json","md5":"f484102a09513358c7463aec1931a103"}]}
+BGRUN END rc=0 after 1280s

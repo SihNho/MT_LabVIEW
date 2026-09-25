@@ -1000,6 +1000,36 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        test repoints the S1 copy's tracking call to the verified parallel kernel and runs drive_m8_load83 at 15
        picks. The next judgement session picks between the two.
 
+195. **(cycle 88 judgement, on results `88-1` PASS 38/0 and `88-2` PASS 34/0; review
+     `archive/peer/2026-09-26-c87-errorlist-extras.md`)**
+     - **(a) `claudeDev\D1_l2_a1_20260925_235224.vi` md5 `51d9b8a3…` IS THE BED** (194(a) closed). The P2 check on a byte
+       copy passed 5/5: sole source and sole sink are as planned, and the ordered-pass `Is Broken?` is False
+       (`tools/bench/p2check_l2a1_88.json`, `diag_c88_p2rbw.log:47-156`). This is STRUCTURAL, never run.
+     - **(b) The cycle-start Error List MISMATCH is explained by measurement, not by the licence classes.** Remove Bad
+       Wires on a scratch deletes the same 29 wires as `stage_d1_l2a1.json:866`, none of them on a re-wired sink.
+       After that, all 11 extras are ABSENT: the Polymorphic item, the 9 unconnected wires and Less?→RSR. The 8 items
+       left are open-row items (`diag_c88_p2rbw.log:171-241`). The Less? wire joins open row `#11529.x` to the
+       pre-existing RSR `#7311`; it is not the new SR3R (`:198`).
+       Decided:
+       - cycle 87's UNCAPPED `WIRE_CLASSES` additions (`isnotconnectedtoanything`, `zerosources`) are REVERTED. An
+         uncapped class licence hides a real fault of the same wording, which is what the review warned (`:118`).
+       - This bed gets an EXPLICIT expected-errors file with exact per-class counts: the 35 measured items, citing
+         (b)'s RBW attribution. The Polymorphic item is licensed ONLY as a count-1 RBW-removable leftover; per-wire
+         attribution is not worth a new op.
+     - **(c) The kernel swap does NOT move frame loss at 15 picks.** `claudeDev\D1_s1_kswap_20260926_004935.vi` md5
+       `e77b8d58…` (one callee `#5058` → `PARALLEL_kernel_v3.vi`; rule 1a on INDEX rows 12/17/40; ExecState 1 warm
+       and cold) lost 3,410 and 3,490 frames, against 3,776 for the same-session S1 control and 3,331/3,161 in cycle
+       83 (`tools/bench/m8_kswap_88.json`). The difference is inside run-to-run spread. So the tracking KERNEL is
+       not the per-frame lever at 15 beads. The t0 model (`docs/t0-instrumentation-plan.md:16`: 4.7 ms fixed + 0.67
+       ms per bead ⇒ ~14.7 ms at 15 beads against an 11.1 ms frame at 90 Hz) predicts the size of the loss, but not
+       which per-bead work carries it.
+     - **(d) NEXT deliverable act = attribute the per-bead cost in situ.** Instrument a COPY of the S1 file with
+       tick-count stamps around each per-bead group of `docs/t0-instrumentation-plan.md` Step 1 (kernel,
+       `check N bead pos`, median/FIR filters, display, file write), then run one real leg at 15 picks and one at 8.
+       The output is ms per iteration per group, which names the lever. Rule 1a: stamps add timing reads and change
+       no computed value; the numeric rule-1a check does not apply to an instrumented diagnostic copy that is never
+       delivered. L2 stage 2 waits for this: moving loops is not the lever until the per-bead cost is placed.
+
 ## OPEN (design choices — for judgement; not decided here)
 
 > 2026-09-24: O2, O3, O4 (SR half; the queue half is QRT), O6 (placement + route), O7, O8 are CLOSED by Pre-decided

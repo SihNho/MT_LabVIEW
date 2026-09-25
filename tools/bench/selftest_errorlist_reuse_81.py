@@ -15,6 +15,8 @@ PREDICTION CONTRACT:
   R5 newest read on another md5, an OLDER read on this md5                   -> GUI-READ (no fallback to older)
   R6 nothing LabVIEW-side imported by the offline path
   C1 write_cycle_card with no bed.json                                       -> bed = {D1_k path, md5 6cf5b077...}
+  N1c real L2-A1 read + 1 extra loose-ends item, OLD rule (explicit+derived)  -> extra [] (control: test discriminates)
+  N1  same through reverdict() with the explicit file (PD195(b), card 88-4)  -> MISMATCH, extra 1, no derived licence
   K1..K7 guard_card: the stagexec self-test command (3 forms) is allowed on a labview:none card; dry/compound/
      foreign-path/other-refusal forms are still refused; baseline = protocol alone refuses the plain form.
 """
@@ -84,7 +86,11 @@ def fake_bench(tmp, bed, reads):
 
 def main():
     tmp = tempfile.mkdtemp(prefix="elreuse81_")
-    status = open(os.path.join(ROOT, "STATUS.md"), encoding="utf-8").read()
+    # STALE PIN FIXED (card 88-3): R1 and C1 read the LIVE STATUS.md, which named D1_k as the bed when this test was
+    # written; Pre-decided 195(a) moved the bed to D1_l2_a1_20260925_235224.vi, so both gates followed STATUS to a bed
+    # they do not describe. The fixture is D1_k, so the status text is pinned to it (`current-bed:` wins,
+    # errorlist_check.py:166).
+    status = "current-bed: D1_k_20260925_100155.vi\n"
     # R1 real data
     o1 = os.path.join(tmp, "r1"); os.makedirs(o1)
     v, js, calls, log = run_hook(status, HERE, o1)
@@ -140,6 +146,28 @@ def main():
     gate("C1 cycle card carries the bed {path, md5} with no bed.json", (card.get("bed") or {}).get("md5") == K_MD5
          and os.path.basename((card.get("bed") or {}).get("path", "")) == "D1_k_20260925_100155.vi",
          (why, card.get("bed")))
+    # N1 (card 88-4, PD195(b)): explicit expected file + ONE extra loose-ends item -> MISMATCH. Real bench, so
+    # plan_for_bed DOES find sim/l2a1's open_rows; the control N1c shows the OLD rule (derived licences added) would
+    # have absorbed the item (review archive/peer/2026-09-26-c88-reuse-stalepin.md:92: the test must discriminate).
+    l2 = r"C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_l2_a1_20260925_235224.vi"
+    l2main = os.path.join(HERE, "errorlist_D1_l2_a1_20260925_235224_20260926_001456.json")
+    l2exp = os.path.join(HERE, "errorlist_expected_D1_l2_a1_20260925_235224.json")
+    raw = json.load(open(l2main[:-5] + "_raw.json", encoding="utf-8"))
+    loose = next(i for i in raw["items"] if "wirehaslooseends" in EC.norm("%s %s" % (i.get("raw"), i.get("detail"))))
+    raw["items"].append(dict(loose, index=len(raw["items"])))
+    n1raw = os.path.join(tmp, "n1_raw.json")
+    json.dump(raw, open(n1raw, "w", encoding="utf-8"))
+    _sp, _pp, plan = EC.plan_for_bed(l2, HERE)
+    items = [dict(i) for i in raw["items"]]
+    old_extra = EC.compare(items, json.load(open(l2exp, encoding="utf-8"))["expected"], EC.derive_expected(plan))[0]
+    gate("N1c control: OLD rule (explicit + derived) absorbs the extra loose-ends item -> extra []",
+         bool(plan) and old_extra == [], (_pp, old_extra))
+    v, out = EC.reverdict(l2, l2main, n1raw, HERE, tmp, l2exp)
+    jn = json.load(open(out, encoding="utf-8"))
+    gate("N1 explicit file + 1 extra loose-ends item -> MISMATCH, extra 1, no derived licence",
+         v == "MISMATCH" and len(jn["extra"]) == 1 and "loose" in (jn["extra"][0] or "").lower()
+         and all(u["kind"] in ("explicit", "header_of_next") for u in jn["licence_usage"]),
+         (v, jn["extra"], [u["kind"] for u in jn["licence_usage"]][-3:]))
     # K guard_card exemption, bound to this very card (labview: none)
     card_path = os.path.join(HERE, "cards", "task_81-1.json")
     orig_b = protocol.binding

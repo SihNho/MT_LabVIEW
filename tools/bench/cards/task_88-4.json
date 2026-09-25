@@ -1,0 +1,50 @@
+{
+ "schema": "task/1",
+ "id": "88-4",
+ "kind": "review-dispatch",
+ "goal": "Owed hypothesis review for selftest_errorlist_reuse_88.log FAIL 14/2, rerun the patched self-test; errorlist_check: explicit expected file disables derived licences (PD195(b))",
+ "why": "88-3 BLOCKED: guard_peer owes a review (JEV new-problem p=0.436). PD195(b) says no uncapped licence for a bed with an explicit file; derive_expected (:376) still adds one.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_88-3.json"},
+  {"path": "tools/bench/selftest_errorlist_reuse_88.log"},
+  {"path": "tools/bench/selftest_errorlist_reuse_81.py", "md5": "72d0a7d5004fcc2d1c25099e6fe87f7c"},
+  {"path": "tools/errorlist_check.py", "md5": "b8a166684d400447deacd326c17b6b63"},
+  {"path": "tools/bench/errorlist_expected_D1_l2_a1_20260925_235224.json", "md5": "dc455250f21c961f67c71c2914ef9297"},
+  {"path": "docs/d1-loop12-17-split-plan.md"}
+ ],
+ "pass": [
+  "hypothesis review (review/1, -Role hypothesis) on the claim 'R1/C1 failed on a stale bed pin in the self-test, not a checker fault'; ANSWERED; verdict + cheapest test cited",
+  "errorlist_check: when an explicit expected file exists, derived open-row licences are NOT added; comment cites PD195(b)",
+  "self-tests rerun: reuse self-test + header self-test green, plus a NEW negative case: explicit file + 1 extra loose-end item -> MISMATCH",
+  "c88_reverdict rerun: OK, 0 extra, 0 missing; files + md5 listed; no LabVIEW"
+ ],
+ "outputs": ["tools/bench/selftest_errorlist*", "tools/bench/c88_reverdict*", "archive/peer/**"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/errorlist_check.py",
+   "tools/bench/selftest_errorlist*",
+   "tools/bench/c88_reverdict*",
+   "tools/bench/errorlist_D1_l2_a1_*_reuse.json",
+   "tools/bench/peer_*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 35},
+ "rules": [
+  "review FIRST, in the foreground or held open under bgrun until its END line; do not act on it beyond the named edit",
+  "errorlist_check.py: only the derived-licence condition changes",
+  "report MEASUREMENTS; gate refusal = BLOCKED with its message",
+  "result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M3"]
+}
