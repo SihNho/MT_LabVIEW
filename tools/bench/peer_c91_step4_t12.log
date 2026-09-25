@@ -1,0 +1,90 @@
+BGRUN START 2026-09-26 07:14:37 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c91-step4-t12 -TaskFile tools/bench/peer_c91_step4_t12_task.md
+OUTCOME: ANSWERED (162s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c91-step4-t12.md
+COST: $1.2698  in 26 / out 13897 / cache-create 90834 / cache-read 1203384  (158s, 18 turn(s))
+--- ANSWER ---
+**Verdict: the claim's conclusion survives, but its mechanism is wrong, and the replacement rule would hide exactly the fault T12 is there to catch.** The header does not undercount the rows by about one. In every leg the header row count is exact and the file holds 8 extra bytes.
+
+## 1. Strongest reason the claim is wrong: "the header undercounts the rows by ~1" does not fit the byte counts
+
+Here is the arithmetic on the four legs, from `diag_c91_step4.log:26,52,80,108`. Row width is 24 + 24N bytes: 360 bytes for 14 beads, 384 for 15.
+
+| leg | data_bytes | rows_hdr | rows_hdr × width | leftover bytes |
+|---|---|---|---|---|
+| leg1 a1 (14) | 3,166,208 | 8795 | 360 × 8795 = 3,166,200 | **8** |
+| leg1 rerun (15) | 3,122,696 | 8132 | 384 × 8132 = 3,122,688 | **8** |
+| leg2 a1 (15) | 3,282,056 | 8547 | 384 × 8547 = 3,282,048 | **8** |
+| leg2 rerun (14) | 3,126,968 | 8686 | 360 × 8686 = 3,126,960 | **8** |
+
+- If the header were one row short, the leftover would be 360 or 384 bytes. It is the same 8 bytes in all four legs, across two bead counts and four row counts.
+- The 15.00004 comes from 8 / (24 × rows), not from a missing row.
+- The likely source is LabVIEW's "prepend array size" for a 2D array: two I32 dimensions, big-endian by default, 8 bytes in total ([NI KB](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000004B6DSAU), [LabVIEW Wiki](https://labviewwiki.org/wiki/Write_Binary_File_function), [NI forum](https://forums.ni.com/t5/LabVIEW/Format-for-writing-arrays-to-binary-files/td-p/3086703)).
+- `diag_c91_step4_leg.py:158` measures the data from the end of `"not in z!)"`, so that prefix counts as data.
+
+**Answer to (a):** a truncated last row cannot produce this pattern. A partial row would leave a leftover anywhere from 0 up to the row width, and it would differ from leg to leg; a constant 8 bytes in four legs is structural. So the registrations of 15 are clean, and the conclusion stands for a different reason than the one given.
+
+**Why this matters for the fix:** `round(n) == N and |n − N| < 0.05` is far too loose.
+
+- With about 8,000 rows, 0.05 allows 0.05 × 24 × 8000 ≈ 9,600 bytes, which is about 25 rows.
+- A file whose rows disagree with its header by one row gives n ≈ 14.9999 or 15.0001, and it would pass.
+- The rule that matches what the file actually shows is an exact integer check: `(d − 8) == rows_hdr × (24 + 24N)`.
+- If the 8 bytes decode as (rows, 3 + 3N), the dimension prefix itself can confirm both numbers.
+
+## 2. Alternative explanations
+
+**T12/T13.** An exact check would have given the same PASS on leg1 rerun and leg2 a1, and the same FAIL on the two 14-pick legs. So the rerun and the skipped 8-pick legs do trace back to the float comparison. That part of the claim holds. The mechanism story does not.
+
+**Lost first click (question b).** The capture is the immediate cause, not a coincidence. In `m8_v5_replay_s1_p15_r120_clicks.json:36-99`:
+
+- `hwndCapture = 23463992` sits on LabVIEW's own GUI thread (tid 15528) before focus and before the button press.
+- Right after click 1 it is **0**.
+- So click 1's press and release went to the window holding the capture, which then let go. That is why click 1 was lost and click 2 was not.
+- `SetCapture` is thread-local, so a window created by LabVIEW's GUI thread held the capture. Neither the harness nor another process did.
+
+The open question is why that window exists only in stamped runs. Two alternatives the data does not exclude:
+
+- **(i) A timing shift.** The stamped VI (for example, from DLL load or its 12 extra nodes) reaches the pick loop at a different moment relative to the harness's previous GUI action, such as the Run press or a panel set. A LabVIEW mouse-down capture from that action is then still live when click 1 arrives.
+- **(ii) A confound other than the stamps.** The stamped runs are the newest ones (smoke and step 4, both on 2026-09-26). Harness version, run length (r120 vs r30/35), VI title and time of day all change together with the stamps. The "0 of 16 unstamped" comparison needs those 16 runs to have been made with the same `d0_clickprobe` build.
+
+The association is real: 3 captures out of 22 runs, all 3 in the 6 stamped runs, has a hypergeometric p ≈ C(6,3)/C(22,3) = 20/1540 ≈ 0.013. The stamps' role is not settled.
+
+There is also a gap in follow-through. The smoke review asked for the capture window's name and class to be logged before every click (`archive/peer/2026-09-26-c91-smoke-k1.md:107`). The step-4 clicks json records only the handle, so that was never done.
+
+**Something not reported in the claim: the frame accounting does not balance.**
+
+| leg | rows + lost | frames_delta | excess |
+|---|---|---|---|
+| leg1 a1 | 8795 + 2369 = 11,164 | 10,685 | +479 |
+| leg1 rerun | 8132 + 3024 = 11,156 | 10,673 | +483 |
+| leg2 a1 | 8547 + 2899 = 11,446 | 10,681 | +765 |
+| leg2 rerun | 8686 + 2757 = 11,443 | 10,670 | +773 |
+
+- The excess is about 480 on the ctl leg and about 770 on the min leg, so it is consistent within each condition.
+- "Lost" and "rows" therefore do not split the same set of frames.
+- Losing 22–28 % of frames is also not a passing condition just because no gate tests for it. The smoke review had already flagged a 3× loss compared with unstamped runs (`archive/peer/2026-09-26-c91-smoke-k1.md:114`).
+- "Every run gate passed" is therefore not the same as "no run fault".
+
+## 3. What would falsify "script compare only"
+
+- The 8 extra bytes are **not** the (rows, 3 + 3N) prefix, for example trailing bytes or a partial row.
+- `(d − 8) / (24 + 24N)` is not an exact integer equal to `rows_hdr` on any leg.
+- A 14-pick leg's cal/bandpass count disagrees with the tra count.
+
+Any one of these would mean the files, not only the comparison, are at fault.
+
+For the click: a lost click with `hwndCapture == 0` on a stamped leg would point to the VI. A capture on click 1 in an unstamped run from today's harness would clear the stamps.
+
+## 4. Cheapest discriminating test (offline, before launch 2)
+
+1. **Tra check (a few seconds, no LabVIEW).** For the four saved tra files, read the 8 bytes after `"not in z!)"` as big-endian I32 pairs and check that they equal (rows_hdr, 3 + 3N), and that the file ends exactly on a row boundary. If this passes, replace the 0.05 tolerance with the exact integer rule before merging launch 1's rows.
+2. **Click check, added to launch 2 at no extra run cost.** Before pick 1, log `GetClassName`/`GetWindowText`/owner of `hwndCapture`. If it is non-zero, do one neutral click outside the image or send `WM_CANCELMODE`, confirm the capture is 0, then click.
+   - If click 1 then registers on stamped legs every time, the lost click comes from a stale capture, whatever caused the capture.
+   - The window's class then says whether it is IMAQ display, tip strip or button-press machinery. That tells you whether the stamps' timing could plausibly create it.
+
+If the tra check passes and the capture window turns out to be a LabVIEW press/drag remnant from the harness's previous action, I would accept "script compare only, harness input path". Until then, the rounded-tolerance fix should not go into the merge.
+
+Sources:
+- [NI KB — Write and Read Binary Files Using LabVIEW](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000004B6DSAU)
+- [LabVIEW Wiki — Write Binary File function](https://labviewwiki.org/wiki/Write_Binary_File_function)
+- [NI Community — Format for writing arrays to binary files](https://forums.ni.com/t5/LabVIEW/Format-for-writing-arrays-to-binary-files/td-p/3086703)
+- [NI Community — prepend array or string size adds bytes](https://forums.ni.com/t5/LabVIEW/Writing-to-binary-file-automatically-adds-s-empty-spaces-when/td-p/4315254)
+BGRUN END rc=0 after 162s

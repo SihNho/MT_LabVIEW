@@ -1,0 +1,67 @@
+BGRUN START 2026-09-26 06:19:33 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c91-smoke-k1 -TaskFile tools/bench/peer_c91_smoke_k1_task.md
+OUTCOME: ANSWERED (289s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c91-smoke-k1.md
+COST: $2.2909  in 64 / out 21297 / cache-create 130769 / cache-read 3854842  (285s, 44 turn(s))
+--- ANSWER ---
+**Verdict: the claim is refuted as written.** The run's own records contradict the evidence it rests on. What they do support is narrower: something in the Windows mouse-input path took the first click. That points more to the harness than the stamps, but it does not clear the stamps.
+
+## 1. Strongest reason the claim is wrong
+
+**The "known flake" precedent doesn't exist in the recorded runs, and the stamps sit inside the pick loop.**
+
+- **No precedent.** I checked every v5-driver record in `tools/bench` (17 click files, plus the m8 logs). Every run where the picks registered short of the target was a leg whose target was itself short (1 of 1, 6 of 6, 8 of 8, 15 of 15). Two examples:
+  - `m8_s1s3_77.log:98` is 1 marker from 1 pick, a 1-pick leg checked against a fixed contract of 3.
+  - `drive_m8_replay_s1_78b.log:179` is 3 of 3.
+
+  The smoke run is the only run that lost a delivered click (`diag_c91_t0_smoke.log:180`), and it is the only run on the stamped VI. The record is 1 lost click in 1 stamped run, against 0 in about 16 runs without stamps. If a 2-of-3 run exists elsewhere, it needs a file:line citation; otherwise that sentence has to go.
+- **The "display loop" is the bead-pick loop.** `Done Picking \nBeads?` is wired to wire 19456 (`docs/main-vi-panel-map.md:359`). That wire is the stop-condition wire of While loop #15173 (`docs/main-vi-stop-and-save.md:65`). So #15173 is the loop that takes the clicks, and it carries 5 of the 12 stamps:
+  - sites 10, 11, 12, 13 and 16 (`tools/bench/t0_sites_s1_step3c_r2.json:2546-2678`);
+  - site 16 is the circle/text case tunnel, which is the branch that draws the markers.
+- **Answer to your question (a): yes, this is a real mechanism.** LabVIEW's default setting for a Call Library Function Node (CLFN) is "Run in UI thread". A UI-thread CLFN in a loop forces a thread switch on every call and queues behind front-panel work.
+  - Sources: [NI forum, slow front panel with a UI-thread CLFN](https://forums.ni.com/t5/LabVIEW/Slow-Front-Panel-update-with-Call-Library-Function-Node-Pico-USB/td-p/3756574), [NI forum, DLL slows a parallel while loop](https://forums.ni.com/t5/LabVIEW/dll-slows-down-parrellel-while-loop/td-p/3312649), and your own `docs/t0-instrumentation-plan.md:71`.
+  - `build_clfn` passes `reentrant=True` (`tools/gscript.py:2968,2996`), which should mean "any thread". I found no readback of that setting on any of the 12 nodes, so the thread setting is unmeasured.
+  - IMAQ's `Get Last Event` returns only the latest event on the display ([NI example](https://forums.ni.com/t5/Example-Programs/How-to-use-the-IMAQ-quot-Get-Last-Event-quot-property/ta-p/3503816)). A pick loop that stalls can therefore lose a click to a later event.
+
+## 2. Alternative explanation, backed by a recorded fact nobody cited
+
+**Another window held the mouse capture during click 1.** `m8_v5_replay_s1_r30_clicks.json:42,82` shows `hwndCapture = 109053432` on LabVIEW's GUI thread (tid 16608), both before focus and just before the button went down. The panel's own handle is 3082674, so this was a different window.
+
+- This happened on click 1 and on no other pick click in any of the 17 click files. In every other file, the capture handle is non-zero only on the Done-button entry (line 525 and its equivalents).
+- It had cleared by `gti_after_click` (line 99).
+- In Windows, the window holding the capture receives the mouse input ([SetCapture](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setcapture)). The button-down most likely went to window 109053432. `WindowFromPoint`, which drove all four "delivered=True" checks, ignores capture, so those checks could not see this.
+
+This is harness-side evidence, but it is a specific mechanism, not the claim's "clicked before the display redrew". It also leaves one question open: which LabVIEW window held the capture, and why only in this run? The measurement does not tell whether the stamped VI caused that window to exist.
+
+**L3 and L8 are one event, not two flakes.** The VI really ran with 2 beads. The `.cal` size follows 96 + 57152·n bytes exactly for n = 1, 3, 6, 8 and 15 (57248, 171552, 343008, 457312, 857376 B). The smoke's `cal001` is 114400 B, which is n = 2. Two bandpass panels is simply what the VI does when 2 beads are registered.
+
+## 3. What would falsify "harness only"
+
+- **A stall in the pick loop.** `t0_site10_pid18276.bin` records one timestamp per pick-loop iteration: an int64 frequency first, then int64 counts (`tools/t0stamp/t0stamp.c:6-8`). An iteration gap longer than about 350 ms (a press takes 346 ms, `click_ms` at line 92) at click 1's time would point to the VI. It would count even more if the gap follows the loop's first stamp, which is when the stamp DLL starts being called.
+- **A repeat without the capture anomaly.** A lost click in a later stamped leg with `hwndCapture == 0` would point to the VI.
+- **An exonerating result.** A lost click on the unstamped S1 copy while a foreign capture is held would clear the stamps.
+
+To count registered picks without relying on markers, use either of these:
+- `.cal` size: n = (size − 96) / 57152.
+- The `Bead Pos` indicator (#80, uid 11831, `docs/main-vi-panel-map.md:360`), read over VI Server after Done. Its array shows which click is missing.
+
+## 4. Cheapest discriminating test (no LabVIEW, about a minute of Python)
+
+1. Parse `tools/bench/t0_legs/smoke_20260926_060544/t0_site10_pid18276.bin` and list the iteration intervals, especially the first few and the largest.
+2. Anchor the time axis on the last stamp, which falls at the Done press (06:07:06.860 wall clock). Click 1 was 15.12 s earlier (06:06:51.738).
+3. Check two things:
+   - Was the loop already iterating at click 1?
+   - Does a gap of 350 ms or more span that moment?
+
+   A clean cadence at click 1 plus the foreign capture points to the harness. A gap there points to the stamps.
+
+Then change the step-4 card before running the four 120 s legs:
+- Each leg logs `hwndCapture` and the name and class of the capturing window before every click.
+- Each leg records the site-10 gaps and the `.cal`-derived n.
+- The harness refuses to click while a foreign capture is held.
+- "Rerun once" applies only when a lost click coincides with a foreign capture. Otherwise, rerunning until a leg passes would hide a VI-side effect.
+
+## Also left out of the claim
+
+The smoke run lost 25 frames in 30 s. Unstamped live-camera S1 legs lost 2–11 in 35 s (`m8_v5_s1_p1/p3/p6.json:145`). The run averaged 84 frames/s, which matches a live camera. That suggests the true comparison is live S1, not the recorded-frame replay copy that its leg name implies, but this is an inference from the frame rate. The loss is about 3× higher, is not settled by this data, and step 4 should measure it rather than assume it away.
+
+**What would change my mind:** clean site-10 intervals at click 1, together with the capture-window reading (already recorded). If both hold, I would accept "harness input path, not stamps" and proceed with the amended step-4 rule.
+BGRUN END rc=0 after 289s

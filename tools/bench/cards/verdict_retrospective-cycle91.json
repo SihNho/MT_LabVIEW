@@ -1,0 +1,27 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle91",
+ "verdict": "refuted",
+ "alternative": "The cycle had no structural fault: the float-compare miss is a 15-min script bug inside a card that still delivered, and the provisional step-4 table is the honest outcome of a measurement that could only be judged after the 8-pick legs ran.",
+ "discriminating_test": "Run diag_c91_step4_leg.py's launch-1 reader (abs(n-N)<1e-9) on m8_out/replay_s1_20260926_060634/tra001-000 (n=2 known at 06:13); if it reports a mismatch, the 12-min leg2 rerun and the T12 review were avoidable before 06:26:29.",
+ "violations": [
+  {
+   "slug": "inference-over-measurement",
+   "loss_min": 15,
+   "loss_usd": 1.2698,
+   "evidence": "tools/bench/diag_c91_step4.log:81"
+  }
+ ],
+ "sources": [
+  "tools/bench/diag_c91_step4.log:81",
+  "tools/bench/diag_c91_step4_dry.log:3",
+  "tools/bench/m8_replay_s1_r30.json:36",
+  "tools/bench/peer_c91_step4_t12.log:3",
+  "tools/bench/diag_c91_step4_summary.log:62",
+  "archive/peer/2026-09-26-c91-smoke-k1.md:107",
+  "archive/peer/2026-09-26-c91-step4-t12.md:108",
+  "tools/bench/cards/result_91-3.json:29",
+  "tools/hooks/material_marker.log:1885"
+ ],
+ "note": "Next cycle: the 8-pick cell is frame-bound (period 11.14 ms vs camera 11.11 ms), so 'the kernel does not grow' is not shown by the table; negative slopes at summary.log:62 are the tell. Run the unstamped control and read the CLFN thread setting before building on site 4."
+}

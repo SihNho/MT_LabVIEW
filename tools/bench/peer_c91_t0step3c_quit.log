@@ -1,0 +1,37 @@
+BGRUN START 2026-09-26 06:03:29 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c91-t0step3c-quit -TaskFile tools/bench/peer_c91_t0step3c_quit_task.md
+OUTCOME: ANSWERED (94s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c91-t0step3c-quit.md
+COST: $0.9536  in 16 / out 6854 / cache-create 79433 / cache-read 677814  (90s, 13 turn(s))
+--- ANSWER ---
+The claim holds for the saved artefact but not for its explanation. Run 1 is not a valid control. The most likely cause of the 90 s block is a "save changes?" prompt, and the proposed fix would hide it.
+
+**1. Strongest reason the claim is wrong: run 1 never tested COM Quit on a LabVIEW that had been used.**
+- In run 1 a scratch copy existed, so `stagekit.close()` force-killed and restarted LabVIEW before the quit step (`tools/stagekit.py:1112-1113`, `Stop-Process -Force` at `tools/bench/bench_prep.py:74-76`).
+- The handle count shows it: 54,394 after the work, then 33,990 at exit, which is a fresh instance (`diag_c91_t0_step3c.log:1311,1324`). So run 1's Quit went to an empty LabVIEW.
+- Run 2 used `--reuse-probe`, had no scratch, and did not restart (36,769 then 34,345, `diag_c91_t0_step3c_r2.log:739,751`). Its Quit went to the instance that still held the work VI and the preloaded ORIGINAL (`stagekit.py:349-350,362-364`, "the ORIGINAL resident READ-ONLY").
+- Run 2 is therefore the first time this code path ever called Quit on a used instance. "Run 1 shows it can return late but fine" is not evidence for anything.
+
+**2. Alternative explanation for the 90 s block.** NI's documentation, quoted in [this NI forum thread](https://forums.ni.com/t5/LabVIEW/When-should-one-use-quot-Quit-LabVIEW-quot/td-p/4277506), says: *"If there is any unsaved work in memory, you will be prompted to save. Selecting Cancel will abort the quit."* A modal save prompt that nobody answers blocks Quit with no time limit. [Another thread](https://forums.ni.com/t5/LabVIEW/How-to-prevent-the-save-message-when-program-exit-vi-is-used/td-p/931905) reports the same prompt when a VI's panel was merely resized, without deliberate edits. Two things could have been unsaved:
+- **The preloaded ORIGINAL hierarchy**, dirtied by relinking when it loaded. CLAUDE.md rule 1 describes exactly this, and it is the dangerous case: a prompt offering to save originals sat on screen until something killed pid 24856.
+- **The work VI, dirtied after its save.** For example, the S3 ExecState re-read or `close_panel` (`stagekit.py:1101-1102`) could have set a modified flag.
+
+Either one is a real state of LabVIEW, not a harness quirk. The harness bug (the uncaught `TimeoutExpired`) only decided how the script died.
+
+**3. What would falsify "harness only".**
+- The artefact's md5 or mtime today differs from `25ea4f7d10d91c41c4b5de64f850c945` / the save time. That would mean something wrote the file after the save, for example a "Save" answered on the prompt.
+- The ORIGINAL's md5, or any file in `background VIs\`, has changed.
+- The blocking window turns out to be a save dialog that lists the ORIGINAL's subVIs.
+
+On (a), a deferred write: this is unlikely. The md5 was computed after `SaveInstrument` returned (`r2.log:728-729`), through the same OS file cache, and S3 re-read ExecState 1. Only a later write could change the bytes. Nothing I found records who killed pid 24856 or when, so I cannot rule out a late write from the logs alone.
+
+**4. Cheapest discriminating test, before the smoke run of `diag_c90_t0_smoke.py`.**
+1. **Files only:** re-hash `claudeDev\D1_s1_t0_20260926_055551.vi` (expect 25ea4f7d…, mtime ≈ 05:59–06:00) and the ORIGINAL (expect 2a78e17c…). This settles whether the artefact is in doubt, in seconds.
+2. **For the cause:** in the patched quit branch (`diag_c91_t0_step3c.py:183-192`, already applied), take `lv_gui.ps1 -Action` window-list and a screenshot before the `taskkill`. Better still, reproduce it once: run 2's sequence with no scratch, then Quit, then capture the dialog title and its VI list. A "Save changes" dialog naming the ORIGINAL's subVIs confirms my alternative explanation. No dialog, or a busy/recompile cursor, supports the claim's recompile theory.
+
+Two more notes:
+- The fix as written (fall through to `taskkill`) makes the rule-1 hazard silent. It should capture and log the dialog before killing.
+- `stagekit.close()` should either abort/close the preloaded ORIGINAL without saving, or always restart LabVIEW before Quit, so both runs take the same path.
+
+What would change my mind: a capture during a blocked Quit that shows no modal dialog at all.
+
+Plan mode blocked writing the review file (the Write tool is disabled in this session), so this reply is the whole review.
+BGRUN END rc=0 after 94s

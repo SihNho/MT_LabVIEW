@@ -1,0 +1,37 @@
+{"schema":"result/1","id":"91-3","status":"PASS","gates":{"pass":58,"fail":5},
+ "first_fail":"diag_c91_step4.log:T12 leg1 ctl@15 registered picks == target (launch 1: our 1e-9 float compare on tra width 15.00004; fixed by the exact tra rule, launch 2 diag_c91_step4_b.log 28/0)",
+ "blocked_by":null,
+ "artefacts":[
+  {"path":"tools/bench/t0_step4_91.json","md5":"5dc35ebca21d2425f1bdb865e77797b4"},
+  {"path":"tools/bench/diag_c91_step4.py","md5":"63b4aee9fa21565c421db381ed30b98b"},
+  {"path":"tools/bench/diag_c91_step4_leg.py","md5":"a28836720b4b1d46b06fc6974e69148a"},
+  {"path":"tools/bench/diag_c91_step4_stats.py","md5":"17917e51e052a4b4cede1de6a563bb24"},
+  {"path":"tools/bench/diag_c91_step4_click1.py","md5":"390f4ff61061a94ce8c55c4a6464701b"},
+  {"path":"tools/bench/diag_c91_step4_summary.py","md5":"ef8378362c89908fca3f6c45eca0544e"},
+  {"path":"tools/bench/diag_c91_step4.log","md5":"4668208ac44de80b68b85a0c1ef9303f"},
+  {"path":"tools/bench/diag_c91_step4_b.log","md5":"0c98fdfa2fadef99e82aa895e8676773"},
+  {"path":"tools/bench/diag_c91_step4_click1.log","md5":"952b41dd102fb7b789639414b5e949c0"},
+  {"path":"tools/bench/diag_c91_step4_summary.log","md5":"99f26e735d84be4cfc3f0406ce049480"},
+  {"path":"archive/peer/2026-09-26-c91-smoke-k1.md","md5":"154e5af66c210ae8b97a0541cfb37cfb"},
+  {"path":"archive/peer/2026-09-26-c91-step4-t12.md","md5":"c9f31976ff4c585404d93f7b86361032"},
+  {"path":"archive/benchmarks/INDEX.md","md5":"852f857b7159ffadacea61f1d5e62eb3"}
+ ],
+ "facts":[
+  "Lost frames 120 s @89 Hz (diag_c91_step4_summary.log:3-9): 15ctl 3024 (14-bead leg 2369), 15min 2899 (14-bead 2757), 8min 138 (7-bead 118), 8ctl 144; unstamped S1 (INDEX 48-50) 8p 15-16, 15p 3331-3776",
+  "Loop #637 period median us (summary.log:11,25,39,53): 8p 11150 ctl / 11139 min -> 15p 13805 ctl / 12469 min = +379 us/bead ctl, +190 min; iterations 11023/11366 (8p) vs 8133/8548 (15p)",
+  "Site delta-from-i median us 8p->15p (summary.log): kernel #2 9690->8423 ctl, 10121->9920 min; #3 10555->9908 / 10178->10275; #6/#8 within 100 us of #2 in all cells",
+  "Site #4 (Median#29009+FIR For-tunnel) is the only site that grows: 10775->12559 ctl, 10898->12110 min = +255 / +173 us/bead; MIN delta 4.9-5.3 ms (8p) -> 9.6 ms (15p) (summary.log:14,28,42,56)",
+  "Every site fires ONCE per iteration (per_iter med=max=1, all cells): For tunnels 3/4 stamp at loop end, not per bead; loop #25380 period 34.4-34.8 ms (8p) -> 42.6 ms (15p)",
+  "Loop #15173 (sites 10-13,16) spans only the PICK phase: 40 s at 8p, 71 s at 15p (summary.log:17,31,45,59); period 11.5-11.6 ms, sites 8.8/9.3/10.3/11.1 ms, same at both picks/panels",
+  "Registered picks: EXACT tra rule (bytes-8 == rows*(24+24N), LE dims [rows,3+3N]) agrees with .cal (96+57152n) and bandpass count on all 7 legs; rows+lost > frame delta by ~480 ctl / ~770 min at 15p",
+  "First pick click LOST under a foreign hwndCapture (LabVIEW GUI thread) in 4 of 8 stamped legs, 0 of ~16 unstamped; pick loop iterating at click 1 (step4_click1.log: 64 stamps +-0.5 s, max gap 122 ms)",
+  "Ladder: t0_smoke.log | already-reviewed p=0.426 | review owed | c91-smoke-k1 ANSWERED, test run | stamps not implicated; step4.log | new-problem p=0.784 | review owed | c91-step4-t12 ANSWERED | 28/0",
+  "S1 3e3d23ce / t0 25ea4f7d unchanged (T8); TMX 39 after all 7 legs; LabVIEW gone; camera 90 Hz (T7); INDEX row 51; budget 75 min EXCEEDED: 95 min (78 legs, 12 needless rerun, 7.5 reviews)"
+ ],
+ "open":[
+  "Review c91-step4-t12 §4 test 2 (log the capture window's class before pick 1; release a foreign capture by a neutral click / WM_CANCELMODE) is a harness GUI change: apply it, or first run one UNSTAMPED S1 leg on today's harness to separate stamps from harness?",
+  "The stamped VI loses ~9x more frames at 8 picks than unstamped S1 (138-144 vs 15-16) while 15-pick losses match: is the per-site table used as-is for PD197(h), or is the stamp cost measured first?",
+  "Both reviews propose changing the card's rerun-once rule (rerun only when a lost click coincides with a foreign capture): adopt for the next legs?"
+ ],
+ "cost":{"usd":null,"minutes":95,"labview_runs":7},
+ "note":"fable/low (card rule). Legs: 15ctl a1 (14 beads), 15ctl a2 (15, cell), 15min a1 (15, cell), 15min a2 (14, needless rerun), 8min a1 (7), 8min a2 (8, cell), 8ctl a1 (8, cell). Gate totals = launch 1 30/5 + launch 2 28/0. STATUS.md not edited (status_edit false); D1_s1_t0 copy not modified."}

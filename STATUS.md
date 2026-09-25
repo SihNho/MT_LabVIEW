@@ -53,18 +53,22 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
 current-bed: D1_l2_a1_20260925_235224.vi
 <!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. -->
-🔴🔴🔴 **FIRST ACT (cycle 91) = `docs/d1-loop12-17-split-plan.md` Pre-decided 197(h): step 3, the instrumented copy `claudeDev\D1_s1_t0_<ts>.vi`, as a NEW card** (not a third rung of 90-5/90-6).
-- 🟠 **FIRST, a scratch probe (retrospective-cycle90, fault 1, accepted).** On a byte copy of S1, place ONE stamp per distinct wire class (`i` I32, bool array, error cluster, U8 image, picture, a For/case output tunnel). Read ExecState, then delete the stamp. Only after that comes the build below.
-- 🟠 **Owed right after the step-3 run (`device-failed`, threshold 1):** the `tools/bgrun.py` END guarantee under a tree kill (run 1 of step 2 died with no END line). Disposition: `archive/peer/2026-09-26-retrospective-cycle90.md`.
-- Read offline, from `docs/wiki/subvi/D1_s1_copy.json`, the OUTPUT-TUNNEL wires on the While bodies #639 / #15266 of the For loops and case structures around these nodes: Median #30306/#29009, FIR #28233, plot Z/dZ #6085/#5696, circle/text #16788/#16827.
-- Then do ONE LabVIEW run of the patched `tools/bench/diag_c90_t0_step3b.py` (md5 `9cb6f8d1…`).
-  - Every stamp goes at While-body level: sites 0, 2, 8, 10–13 and 20 from `tools/bench/t0_sites_s1.json`, plus those tunnel wires.
-  - Use the route MEASURED in 90-6: `move_in`, purge, re-find the node by uid, `OpCreateConstOnTerm_v0`, branch.
-  - Review gates 5.2/5.4/5.5: sink owner == CLFN uid; delete the site on its first ExecState 0.
-  - Read ExecState after every site.
-- Save the file by script at ExecState 1, then smoke it (`diag_c90_t0_smoke.py`). Step 4 (legs at 15 and 8 picks) comes after.
-- User decision **D-2026-09-26-01** (loop-level timers only) is OPEN; the work proceeds under its recommendation.
+🔴🔴🔴 **FIRST ACT (cycle 92) = `docs/d1-loop12-17-split-plan.md` Pre-decided 198(c): test whether the stamp instrument itself is costing frames.** These are two MEASUREMENTS in one card:
+  1. Read-only: the thread setting ("run in UI thread" or "any thread") of all 12 CLFN stamps in `claudeDev\D1_s1_t0_20260926_055551.vi`, md5 `25ea4f7d…`.
+  2. ONE unstamped `D1_s1_copy.vi` leg: 8 picks, panel normal, 120 s, on today's harness. Report lost frames, registered picks (exact tra rule) and the first-click capture class.
+- The reason: at 8 picks the stamped copy lost 138–144 frames, against 15–16 for unstamped S1. Until that gap is explained, the step-4 table is provisional.
+- **Then, owed:** `tools/bench/cards/task_91-2.json` (the bgrun END reaper, retrospective-cycle90 `device-failed`). The card is valid and ready to dispatch as is.
+- User decision **D-2026-09-26-01** (loop-level timers only) is still OPEN; the work proceeds under its recommendation.
 - Machine copy: `tools/bench/next.json`.
+
+🟢 **CYCLE 91 (PD198).**
+- ✅ **Step 3 is DONE.** `claudeDev\D1_s1_t0_20260926_055551.vi`, md5 `25ea4f7d…`: 12 While-body stamps, with ExecState 1 read after every site. `computation_diff` is 0 rows with 24 added. It was saved by script, and the smoke run wrote 12 stamp files.
+- ✅ **Step 4 ran** (`tools/bench/t0_step4_91.json`, INDEX row 51).
+  - Only **site 4 grows with bead count**: the For #7911 output, which carries Median #29009 + FIR #28233.
+  - It adds +255 µs/bead (panel normal) and +173 µs/bead (minimized).
+  - ⚠️ The 8-pick cell is frame-bound (11.14 ms against the camera's 11.11 ms), so "the kernel does not grow" is WITHDRAWN (retrospective-cycle91 finding 3). At 15 picks, site 4 fires 12.6 ms after `i` and the kernel 8.4 ms after it.
+  - This is only a candidate lever until the instrument is cleared (PD198(c)).
+- Also owed in the first act: log the capture window's class before pick 1 (a read, not a GUI act; asked by both reviews). With the reaper card: capture the quit dialog before taskkill (`archive/peer/2026-09-26-c91-t0step3c-quit.md`).
 - 🟡 **FOR THE USER:** `.claude/agents/material*.md` still prescribe the refused `MATERIAL=1` prefix, and the permission layer refused the edit. The replacement text is in `tools/bench/audit_c7_agent_patch.md`; apply it.
 
 🟢/🔴 **CYCLE 90 (PD197).**

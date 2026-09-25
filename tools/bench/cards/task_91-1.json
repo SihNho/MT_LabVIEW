@@ -1,0 +1,73 @@
+{
+ "schema": "task/1",
+ "id": "91-1",
+ "kind": "build",
+ "goal": "PD197(h) step 3: (A) offline tunnel-site read, (B) per-wire-class scratch probe, (C) one run of step3b with all stamps at While-body level, (D) save D1_s1_t0_<ts>.vi at ExecState 1 and smoke",
+ "why": "90-5/90-6 FAIL on For-body sites (OpCreateConstOnTerm_v0 1055 on ForLoop owner) and a reader index shift; PD197(h) moves every stamp to holding-loop body level; retrospective-cycle90 fault 1 (accepted) owes a per-wire-class probe before the build",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_90-6.json"},
+  {"path": "archive/peer/2026-09-26-c90-t0step3b-forloop.md"},
+  {"path": "archive/peer/2026-09-26-c90-t0step3b-r2-indexshift.md"},
+  {"path": "archive/peer/2026-09-26-retrospective-cycle90.md"},
+  {"path": "tools/bench/diag_c90_t0_step3b.py", "md5": "9cb6f8d14d40f2e584719e0d032d9670"},
+  {"path": "tools/bench/t0_sites_s1.json"},
+  {"path": "docs/wiki/subvi/D1_s1_copy.json"},
+  {"path": "tools/bench/diag_c90_t0_smoke.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi", "md5": "3e3d23cefd3a334001aa9d6156bf1aee"}
+ ],
+ "pass": [
+  "(A) t0_tunnel_sites_s1.json: For/case output-tunnel wire on #639/#15266 for #30306 #29009 #28233 #6085 #5696 #16788 #16827",
+  "(B) probe: per wire class (i, bool[], error, U8 image, picture, tunnel) ExecState after stamp and after delete",
+  "(C) sites 0,2,8,10-13,20 + (A) tunnels; a class (B) left at ExecState 0 is skipped+logged; ExecState after EVERY site",
+  "(C) PD197(h) gates: re-find by uid, sink owner==CLFN uid, Is Broken? False; first ExecState 0 => site deleted",
+  "(D) ExecState 1, cdiff(S1,new) added-only, no Invoke; saved by script D1_s1_t0_<ts>.vi + md5",
+  "(D) smoke <=60 s, fresh T0STAMP_DIR: stamp file counts per site; sites 0/10/20 present",
+  "S1/kswap/bed md5 unchanged; LabVIEW gone; TMX 39 after any real run"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_t0_*.vi",
+  "tools/bench/t0_tunnel_sites_s1.json",
+  "tools/bench/diag_c91_*",
+  "tools/bench/cards/result_91-1.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_s1_t0_*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c91_*",
+   "tools/bench/t0_tunnel_sites_s1*",
+   "tools/bench/t0_sites_s1_step3*",
+   "tools/bench/t0_legs/**",
+   "tools/bench/diag_c91_*",
+   "tools/bench/diag_c90_t0_step3b*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/errorlist_shots/**",
+   "tools/bench/gui_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "rules": [
+  "new card per PD197(h), not a third rung of 90-5/90-6; material runs fable/low until 2026-09-28 07:00",
+  "no stamp inside a For body or case frame (PD197(h)); step 4 legs are NOT this card",
+  "input is a BYTE COPY of D1_s1_copy.vi; never open-for-edit D1_s1_copy, kswap, the bed or originals",
+  "a failed prediction goes through the Jev ladder first; review owed only on its verdict",
+  "GUI only for bead picking in the smoke (capture->act->confirm, Exception Approved)",
+  "hold your turn until every bgrun you start has its END/TIMEOUT line; LabVIEW gone before return",
+  "rule 1a: stamps read time only; the copy is diagnostic and never delivered",
+  "facts only; result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

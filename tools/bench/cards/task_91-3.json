@@ -1,0 +1,65 @@
+{
+ "schema": "task/1",
+ "id": "91-3",
+ "kind": "measure",
+ "goal": "PD196(d) step 4: legs of D1_s1_t0_20260926_055551.vi at 15 and 8 picks, panel normal AND minimized, 120 s each; per-site time table from the stamps",
+ "why": "step 3 delivered (result_91-1.json); PD197(h): the per-bead cost group comes from the 8- vs 15-pick slope of the While-body group stamps",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_91-1.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_t0_20260926_055551.vi", "md5": "25ea4f7d10d91c41c4b5de64f850c945"},
+  {"path": "tools/bench/t0_sites_s1_step3c_r2.json", "md5": "d8358af4883b2791ee13845d551f282c"},
+  {"path": "tools/bench/t0_tunnel_sites_s1.json", "md5": "385dc55146f4369978379d62847cadc3"},
+  {"path": "tools/bench/drive_m8_panelmin89_leg.py"},
+  {"path": "tools/bench/diag_c90_t0_smoke.py"},
+  {"path": "archive/peer/2026-09-26-c91-t0step3c-quit.md"}
+ ],
+ "pass": [
+  "4 legs: 15/normal, 15/min, 8/normal, 8/min (ABBA order within each pick count), 120 s, 90 Hz, fresh T0STAMP_DIR per leg",
+  "per leg: Total Lost Frames, picks actually registered (from the saved .cal/.tra, not the marker count), stamp file counts",
+  "per leg per loop: iterations bucketed by the loop's i stamps; per site median and p95 of (stamp - own iteration i stamp), us",
+  "per site: 15-minus-8 difference of the medians and per-bead slope (us/bead), normal and min separately",
+  "table written to tools/bench/t0_step4_91.json; INDEX row appended in archive/benchmarks/INDEX.md",
+  "S1/kswap/bed/t0 md5 unchanged; LabVIEW gone after every leg; TMX 39 after the real runs"
+ ],
+ "outputs": [
+  "tools/bench/t0_step4_91.json",
+  "tools/bench/t0_legs/**",
+  "tools/bench/diag_c91_step4*",
+  "tools/bench/cards/result_91-3.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "tools/bench/t0_step4_91*",
+   "tools/bench/t0_legs/**",
+   "tools/bench/diag_c91_step4*",
+   "tools/bench/m8_*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gui_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "archive/benchmarks/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": [
+  "input VI is the step-3 copy; never open-for-edit S1, kswap, the bed or originals; do not modify the t0 copy",
+  "a leg whose registered picks differ from its target is logged as such and rerun once; a leg is never half-counted",
+  "smoke K1 (2/3 markers) failed prediction: route it via the Jev ladder at launch; do not buy a review for it by hand",
+  "rule 1a: diagnostic only; stamps read time only",
+  "hold your turn until every bgrun you start has its END/TIMEOUT line; LabVIEW gone before return",
+  "facts only (numbers, not conclusions about which group is the lever); result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

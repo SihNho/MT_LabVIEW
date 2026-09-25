@@ -1133,6 +1133,38 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
          - on the first ExecState 0, the site's nodes are deleted, and the site is logged as refused.
        - The next retry is a NEW card, not a third rung of 90-5/90-6. The user's decision item `D-2026-09-26-01`
          records it, and the work proceeds under this recommendation unless the user overturns it (CLAUDE.md 2c).
+198. **(cycle 91 judgement, on results `91-1` PASS 207/2 and `91-3` PASS 58/5)**
+     - **(a) Step 3 is DONE.** `claudeDev\D1_s1_t0_20260926_055551.vi` md5 `25ea4f7d10d91c41c4b5de64f850c945`:
+       12 sites (0,2,3,4,6,8,10-13,16,20), all at While-body level. ExecState 1 was read after every site, and
+       `computation_diff(S1,·)` is 0 rows with 24 added. It was saved by script. The per-wire-class probe (10 classes)
+       left every class at ExecState 1. The smoke run is ACCEPTED on its (D) criteria: 12 stamp files, and sites 0/10/20
+       are present. Its K1 failure (2 of 3 pick markers) is a harness GUI fault (review `archive/peer/2026-09-26-c91-smoke-k1.md`).
+       `D1_s1_t0_20260926_054248.vi` (10 sites) is superseded and kept.
+     - **(b) Step 4 ran.** The results are in `tools/bench/t0_step4_91.json` and INDEX row 51. On loop #637, the period
+       grows +379 µs/bead with the panel normal (ctl) and +190 µs/bead with it minimized (min). **The only site that
+       grows is site 4, the For #7911 output tunnel for Median #29009 + FIR #28233:** +255 µs/bead ctl and +173 µs/bead min.
+       ⚠️ CORRECTED by retrospective-cycle91 finding 3 (accepted): the 8-pick cell is FRAME-BOUND (period 11.14 ms
+       against a camera period of 11.11 ms), so its deltas measure the wait for the frame. The negative slopes of sites
+       2/3/6/8 show this. "The kernel does not grow" is WITHDRAWN. What stands is the 15-pick ordering: site 4 fires
+       12.6 ms after `i` and the kernel 8.4 ms after it. Loop #15173 runs only during the pick phase.
+       A per-bead slope needs two NON-frame-bound pick counts (for example 11 and 15), a decision for the next judgement.
+       **CANDIDATE lever = For #7911. This is not accepted yet; see (c).**
+     - **(c) The instrument is SUSPECT.** At 8 picks the stamped copy lost 138–144 frames, while unstamped S1 lost 15–16
+       (INDEX 48–50); the 15-pick losses match. The first pick click was lost under a foreign capture on the LabVIEW
+       GUI thread in 4 of 8 stamped legs, against 0 of about 16 unstamped legs. The stamp's own cost is 0.3–1.4 µs × 12,
+       too small to explain this. The hypothesis to test is that the CLFN nodes run in the UI THREAD, so every stamp
+       forces a switch to the UI thread and serialises the loops. Before (b) is used, measure two things:
+       (1) read-only: the thread setting of all 12 CLFNs in the t0 copy;
+       (2) ONE unstamped `D1_s1_copy.vi` leg at 8 picks, panel normal, on today's harness. It separates the harness
+       from the stamps.
+       If the setting is the UI thread, a copy with "any thread" CLFNs is built from S1 by the same step-3c route
+       (the DLL keeps one buffer per site, and each site has one writer), and the 8 ctl and 15 ctl legs are rerun.
+       That is a decision for the next judgement, taken on the measurement.
+     - **(d) The harness GUI change (log the capture window's class, release a foreign capture) waits for (c)(2).**
+       The rerun rule stays "rerun when registered picks ≠ target", using the exact tra rule. Launch 1's needless
+       rerun was a float-compare bug, now fixed.
+     - **(e) The bgrun reaper card `task_91-2.json` (retrospective-cycle90 device-failed) is valid and was NOT
+       dispatched:** the session cap ran out. It is owed right after (c).
 
 ## OPEN (design choices — for judgement; not decided here)
 
