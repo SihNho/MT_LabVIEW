@@ -321,7 +321,13 @@ def norm(s):
 # half-wires an open row leaves -> the wire classes in WIRE_CLASSES. Their COUNT is not derivable from open_rows
 # (one deleted sink can leave loose ends on several branches), so the wire licence is class-level and uncapped;
 # the JSON records how many items it absorbed. Anything no licence covers is `extra` -> MISMATCH.
-WIRE_CLASSES = ("wirehaslooseends", "hasnosource", "outputlooptunneltoaninput", "twoterminalsofdifferenttypes")
+WIRE_CLASSES = ("wirehaslooseends", "hasnosource", "outputlooptunneltoaninput", "twoterminalsofdifferenttypes",
+                # cycle-87 firefighter, measured on the L2-A1 bed (tools/bench/c87_errorlist_reverdict.log): a move_in
+                # cuts BOTH ends of a wire, so the fragment is "This wire is not connected to anything." (9 items,
+                # the string lv_errorlist.py:1086 already names); and a sinks-only wire is phrased per sink pair
+                # ("You have connected an input of Less? to a right shift register", detail "two data sinks but zero
+                # sources" - the same detail as the output-loop-tunnel item). Class-level, uncapped, like the others.
+                "isnotconnectedtoanything", "zerosources")
 
 
 def plan_for_bed(bed, bench=None):
@@ -335,7 +341,13 @@ def plan_for_bed(bed, bench=None):
         except Exception:                                                          # noqa: BLE001
             continue
         stage = os.path.basename(sp)[len("stage_d1_"):-len(".json")]
-        for pp in sorted(glob.glob(os.path.join(BENCH_, "plan_%s*.json" % stage))):
+        # cycle-87 firefighter: a simulated stage (docs/stage-simulator-plan.md) keeps its finalized plan under
+        # tools/bench/sim/<stage>/ (plan_<stage>.json, stageplan_<stage>.json), not in tools/bench/; without this
+        # the L2-A1 bed derived 0 licences and every one of its 35 by-design items was `extra` (cycle 87 MISMATCH).
+        cands = sorted(glob.glob(os.path.join(BENCH_, "plan_%s*.json" % stage)))
+        cands += sorted(glob.glob(os.path.join(BENCH_, "sim", stage, "plan_%s*.json" % stage)))
+        cands += sorted(glob.glob(os.path.join(BENCH_, "sim", stage, "stageplan_%s*.json" % stage)))
+        for pp in cands:
             try:
                 p = json.load(open(pp, encoding="utf-8"))
             except Exception:                                                      # noqa: BLE001

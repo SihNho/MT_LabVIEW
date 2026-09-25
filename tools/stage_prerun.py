@@ -110,9 +110,12 @@ def rel(p):
 
 # ---------------------------------------------------------------------------------------------- graph JSON
 def find_graph(input_md5):
-    """The newest tools/bench/graph_*.json whose top-level `md5` is `input_md5` (header read only)."""
+    """The newest tools/bench/graph_*.json OR tools/bench/sim/<stage>/graph_*.json whose top-level `md5` is
+    `input_md5` (header read only). The sim/ subtree was added by the cycle-87 firefighter (PD194(c)): the L2-A1
+    graph lives in sim/l2a1/, so every `--prerun` launched without `--graph` failed gate X1 in cycles 85 and 86
+    (prerun_l2a1_85.log:29, prerun_l2a1_86-5.log:29) and was re-launched by hand with `--graph`."""
     hits = []
-    for p in glob.glob(os.path.join(BENCH, "graph_*.json")):
+    for p in glob.glob(os.path.join(BENCH, "graph_*.json")) + glob.glob(os.path.join(BENCH, "sim", "*", "graph_*.json")):
         try:
             with open(p, encoding="utf-8", errors="replace") as f:
                 head = f.read(800)

@@ -1,0 +1,39 @@
+ATTACK this claim (cycle 87 firefighter; failing log tools/bench/c87_errorlist_reverdict.log, script tools/bench/c87_errorlist_reverdict.py).
+
+CONTEXT. The cycle-start Error List check (tools/errorlist_check.py) read 35 items from a scratch copy of the L2-A1
+bed claudeDev\D1_l2_a1_20260925_235224.vi (ExecState 0 BY DESIGN: 9 sinks are left open for the next stage, listed as
+`open_rows` in tools/bench/sim/l2a1/plan_l2a1.json). The checker licenses items derived from open rows (per-node
+"not wired"/"unwired or bad terminal" and, class-level and UNCAPPED, the half-wire classes WIRE_CLASSES at
+tools/errorlist_check.py:324). Cycle 87's verdict was MISMATCH with 35 extra because plan_for_bed() only looked in
+tools/bench/, not tools/bench/sim/<stage>/ (patched). With the plan found: 10 licences, 24 items licensed, 11 extra
+(tools/bench/c87_errorlist_reverdict.log:5-39):
+  9 x "This wire is not connected to anything." (detail: "This is a completely unconnected wire.")
+  1 x "You have connected an input of Less? to a right shift register. Change the input to an output, or add a
+      source." (detail: "This wire is connected to two data sinks but zero sources.")
+  1 x "Polymorphic terminal cannot accept this data type."
+
+CLAIM under attack.
+(1) The 9 fully-unconnected wires are open-row consequences: a move_in of a node into the loop body cuts BOTH ends of
+    the wires that fed the now-open sinks, leaving fragments with no end at all, whereas "Wire has loose ends" is
+    the one-end-cut case. So "isnotconnectedtoanything" belongs in WIRE_CLASSES (class-level, uncapped), like
+    "wirehaslooseends" already is.
+(2) The Less?-to-right-shift-register item is the sinks-only-wire class already licensed for "output loop tunnel to
+    an input" (identical detail text "two data sinks but zero sources"); Less? is #11529 whose 'x' IS an open row.
+    So "zerosources" belongs in WIRE_CLASSES.
+(3) The one "Polymorphic terminal cannot accept this data type." item is NOT explained by any open row and must stay
+    `extra` (MISMATCH with 1 extra), to be located by the read-only P2 check of PD194(a) (docs/d1-loop12-17-split-plan.md:990)
+    on the five re-wired rows sr1_L0, sr2_L0, sr3_L0, tun1, tun2 (SelectorTunnel outer faces), or by a Selection List[]
+    reader that does not exist yet.
+
+Evidence you may read: tools/bench/c87_errorlist_reverdict.log, tools/bench/errorlist_D1_l2_a1_20260925_235224_20260926_001456.json
+(items[] with raw/detail; the uid of each item is NOT read - uid_route says why), tools/bench/stage_d1_l2a1.json
+"facts" (CDIFF ROW lines = the 9 open rows before/after; "RBW deleted [...]" = 29 bad wires removed on a scratch,
+none on a re-wired sink), tools/errorlist_check.py:316-368, tools/lv_errorlist.py:1080-1100.
+
+Already ruled out: an expected-errors file (none exists for this bed; expected_file null); the bed md5 changing
+(unchanged 51d9b8a3...); OCR merging rows (n_reported 35 == items 35).
+
+Questions: the strongest reason (1) or (2) is WRONG (e.g. a fully-unconnected wire that a stage-wired row LEFT
+BEHIND rather than an open row); an alternative explanation for the polymorphic item that the open rows DO cover
+(would that make (3) too strict, or is keeping it extra right); what would falsify each; and the cheapest
+discriminating test that needs no new LabVIEW op.
