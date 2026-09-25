@@ -99,3 +99,5 @@ instance; try 2 took ~16 s, the cold-launch time) fits the same evidence, and th
 NOT CLAIMED as root cause. OWED, next card that gets the LabVIEW lock: the reviewer's ~90 s A/B COM test (A release
 the pointer, poll the PID 30 s, re-Dispatch; B hold + second Dispatch; log PIDs/StartTime), and the `_APP_PIN`
 comment corrected to the right call and scode. Card id reserved: chat-E2.
+
+**UPDATE 2026-09-25 11:xx (card chat-E2, A/B test `tools/bench/com_pointer_ab_20260925.log`): hypothesis (a) SUPPORTED — arm A: releasing the only Application pointer ended PID 18944 within 2.9 s and the re-Dispatch launched a new PID; arm B: with the pointer held a second Dispatch reached the same PID 9192. LabVIEW had been launched by COM (`/Automation -Embedding`). `_APP_PIN` is the right fix; comment corrected to GetVIReference / 0x80010007.**

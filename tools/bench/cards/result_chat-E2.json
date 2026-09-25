@@ -1,0 +1,19 @@
+{"schema":"result/1","id":"chat-E2","status":"PASS","gates":{"pass":6,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/errorlist_check.py","md5":"35f01f7d4816c28d3ba0c9ef2816ebd3"},{"path":"tools/bench/errorlist_check_k_20260925.log","md5":"f353ad95b82947cd8489e39f8a89fbf4"},{"path":"tools/bench/com_pointer_ab_20260925.log","md5":"563b1cd0185d0f52fdd0bb9ae1721b97"},{"path":"tools/bench/com_pointer_ab.py","md5":"6906c05d012fd5dfb513c3a7070dc70f"}],
+"facts":[
+"handles_flat removed from gates; handles_before/after/delta + advisory within/outside recorded, never in verdict (tools/errorlist_check.py:393)",
+"K cold rerun: 22/22 read, 11/0 gates, verdict MISMATCH rc=1, handles 37246->31290 (delta -5956, advisory outside) (errorlist_check_k_20260925.log:54-57)",
+"K bed md5 6cf5b077... before==after, scratch deleted, LabVIEW not running after; ExecState 0, vi_ready try 1",
+"Expected errors: stage_d1_k.json work==bed -> plan_k_split.json 10 open_rows -> 11 licences (errorlist_check.py:238-288)",
+"Licences absorbed 21/22 items: 4 node/subVI (Build Array, Array Max&Min, Index Array, Image In) + 17 wire-class; the 1 extra is item 0, an empty OCR row ('')",
+"A/B: arm A released the only pointer -> PID 18944 gone at 2.9 s; re-Dispatch = new PID 19264 (com_pointer_ab_20260925.log:3-4)",
+"A/B: arm B held P1 + second Dispatch -> same PID 9192, Version in 0.0 s, P1 still answers at +5 s; reading = (a) exit-on-release (log:5-8)",
+"Launch cmdline is '/Automation -Embedding' (COM-launched); E1r hypothesis (a) supported, alternative (b) not observed",
+"_APP_PIN comment corrected to GetVIReference / 0x80010007 RPC_E_SERVER_DIED with both hypotheses (errorlist_check.py:66-79)",
+"selftest_errorlist_retry 4/4, selftest_cycle_runner_ff 3/3; commit b568d2d. Ladder: no JEV-LADDER line for errorlist_check_cycle80.log; card was the disposition"],
+"open":[
+"Wire-class licence (loose ends / no source / output-tunnel-to-input / different types) is uncapped: count not derivable from open_rows. Accept, or cap it?",
+"Item 0 is an empty OCR row (not refined, errorlist_check_k log) and alone makes K MISMATCH: treat blank rows as read defects or as extras?",
+"cycle80 FAIL on errorlist_check_cycle80.log has no hypothesis review; card treated as its disposition (judgement to confirm)"],
+"cost":{"usd":null,"minutes":16,"labview_runs":2},
+"note":"STATUS lock not edited (status_edit=false); cycle_runner.py needed no change (MISMATCH already starts the cycle, cycle_runner.py:741-746)."}
