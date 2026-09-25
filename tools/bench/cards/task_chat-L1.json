@@ -1,0 +1,61 @@
+{
+ "schema": "task/1",
+ "id": "chat-L1",
+ "kind": "measure",
+ "goal": "LINT + VERIFY every rule device before the runner resumes: all self-tests, doc lint, changed-doc ingest, legacy-close the 52 undisposed pre-09-22 reviews, resume checklist",
+ "why": "User 2026-09-25: 지금 작업 마무리한 다음 현재까지의 규율 및 훅을 lint할 것. lint 내용 검증한 이후 러너 재개. Runner stays STOPPED until judgement verifies this card.",
+ "inputs": [
+  {
+   "path": "tools/bench/run_selftests_chat_b2.py",
+   "md5": "735a9ec0bdbdc5edebcd8e21f356a93d"
+  },
+  {
+   "path": "tools/mark_legacy_dispositions.py",
+   "md5": "98704d6ab2092794aff38673ec7296ce"
+  },
+  {
+   "path": "CLAUDE.md",
+   "md5": "2804be5571ae6a236e0b086010e12623"
+  }
+ ],
+ "pass": [
+  "run EVERY tools/bench/selftest_*.py (50) under bgrun --material; table: name, pass/fail, rc; a stale fixture is fixed, anything else is reported",
+  "hooks live-checked with piped payloads: guard_bash (material, motor, launch gate, retro), guard_peer, guard_cycle, guard_session, guard_card, report_gate",
+  "each hook refuses and allows exactly as CLAUDE.md documents; a mismatch is reported, not silently patched",
+  ".claude/settings.json hook entries all resolve to existing files; each hook script compiles",
+  "doc_lint: L2 0 dangling; L6 0 blank after legacy-closing reviews dated before 2026-09-22 (mark_legacy_dispositions gets --cutoff + a dated note; gates G1-G4 kept)",
+  "post-2026-09-22 reviews untouched by the legacy closer",
+  "doc_ingest on docs changed since 2026-09-25 00:00 (sonnet): contradictions listed with file:line; none fixed silently",
+  "resume checklist measured: STATUS STOP line present (leave it), next.json valid + stop_requested value, motor_session.json absent, no LabVIEW.exe, git tree clean after commit",
+  "RESULT line; commit"
+ ],
+ "outputs": [
+  "tools/bench/lint_verify_20260925.log",
+  "tools/bench/lint_verify_20260925.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/**",
+   "archive/peer/**",
+   "docs/**"
+  ],
+  "status_edit": false,
+  "git_commit": true,
+  "peers": [
+   "ingest"
+  ]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "unblocks": "M3",
+ "rules": [
+  "§3 Tooling",
+  "Documents are LINTED by code and INGESTED by a model every cycle"
+ ]
+}
