@@ -1,0 +1,50 @@
+{
+ "schema": "task/1",
+ "id": "86-2",
+ "kind": "measure",
+ "goal": "PD192 (b)+(c) merged: fresh LV, scratch of D1_k, full 42-op metered replay (meter_l2a1_86c.py, warn-only), with act 45's sink read back by uid right after op 41; no save",
+ "why": "86-1: meter built (selftest 55/0); (b) run 1 stopped on our own prefix prediction (#6007 not a source after act 1 alone; hyp-meter86b-prefix supported). Judgement: act 45 after acts 1-44 is the error-2 condition, so one replay answers both.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_86-1.json"},
+  {"path": "archive/peer/2026-09-25-hyp-meter86b-prefix.md"},
+  {"path": "tools/stagexec.py", "md5": "e848a14e9cdacf84a13e380bef4ae9f4"},
+  {"path": "tools/bench/meter_l2a1_86c.py", "md5": "0098705467a63126a60101d01dc19d5e"},
+  {"path": "tools/bench/sim/l2a1/stageplan_l2a1.json", "md5": "329d89eecaa2706ccce38640dbede5aa"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_20260925_100155.vi", "md5": "6cf5b0777aafa12112d8a786a9eed1ed"}
+ ],
+ "pass": [
+  "act 45 (op 41): new wire sink read back by uid = #5082 (SubVI[17].t0), sole source = planned tunnel face, Is Broken? False; same for #6026 -> #5164",
+  "per-op table: act, kind, private MB delta at mutate vs at read, handles; last act reached; peak MB; error 2 yes/no and at which act/read",
+  "per-act computation diff vs the stageplan step file (0 expected) through the last act reached",
+  "D1_k md5 unchanged; scratch deleted; LabVIEW gone (tasklist)"
+ ],
+ "outputs": ["tools/bench/meter_l2a1_86c*", "tools/bench/meter_l2a1_86b*"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/meter_l2a1_86c*",
+   "tools/bench/meter_l2a1_86b*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_scratch_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "do NOT launch tools/recipes/stage_d1_l2a1.py; do NOT patch tools/stagexec.py or OpReportAll_v0",
+  "you MAY add the act-45 uid read-back to meter_l2a1_86c.py (read-only COM reads, no edit)",
+  "restart LabVIEW fresh first; bgrun --material --max-min 50",
+  "a measurement is reported, not remedied; error 2 is a result, not a failure of the card",
+  "failed gate -> JEV-LADDER NEXT-ACTION first; review owed -> hypothesis review (review/1) then stop",
+  "result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

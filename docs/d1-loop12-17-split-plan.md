@@ -948,6 +948,58 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
      - **(d) Stage run 1** only after (a)–(c), and only if (c) shows a full run fits under the budget.
      - NO repair of `OpReportAll_v0` (REFERENCES §4a-bis).
 
+193. **(cycle 86 judgement, on results `86-1` FAIL 3/1, `86-2` FAIL 14/2 and `86-3` PASS 18/0; reviews
+     `archive/peer/2026-09-25-hyp-meter86b-prefix.md`, `archive/peer/2026-09-25-hyp-meter86c-err2.md`)** 192(a)–(c) were
+     measured:
+     - (a) The meter is in stagexec (md5 `e848a14e…`, self-test 55/0), with a default MEMSTOP of 700 MB. Most of the
+       cycle-85 handle growth is the VI LOAD: 33,987 → 45,631 (`meter_l2a1_86b.log:31,37`).
+     - (c) Full replay with a whole-VI read after every op: edits sum to +1.7 MB and reads sum to +140.4 MB. Error 2
+       came at the read right after act 45, at 695 MB, for the second time (`meter_l2a1_86c.log:686,730`).
+     - The separator skipped 34 of the 43 reads (9 real: ops 0, 15, 19, 23, 27, 28, 40, 41, 42). All 42 ops ran, with
+       diff 0 at the step_44 check and at ops 41–42. R41 #6007→#5082 and R42 #6026→#5164 each have their sole
+       planned source, and `Is Broken?` is False. Peak was 634 MB, and error 2 did not occur
+       (`meter_l2a1_86d.log:673-743`).
+     - ⇒ **Error 2 does not occur with 9 reads, so act 45 itself is not the cause.** Whether the cause is the reads
+       themselves or accumulated memory stays OPEN (`hyp-meter86c-err2.md:105`; REFERENCES §4a-bis). The no-edit read
+       loop would separate the two. Amended after prior-art `archive/peer/2026-09-25-priorart-c86-l2a1-checkpoints.md`.
+
+     **Decided:**
+     - **(a) The stagexec executor does its whole-VI read and diff only at a checkpoint set.** The default stays "every
+       op", so existing behaviour and self-tests are unchanged. `stage_d1_l2a1.py` passes the 86d set {0, 15, 19, 23,
+       27, 28, 40, 41, 42}, because that set was measured to fit.
+     - **Rule 1a:** a checkpoint diff against the step file compares the WHOLE graph state, so every edge change
+       since the last checkpoint is still caught. Only the per-op localisation of a failure is lost. Every op keeps
+       its own connect read-back (sole source/sink).
+     - (b) MEMSTOP 700 MB is passed explicitly by the stage recipe.
+     - (c) Stage run 1 follows in the same card after the self-test, dry run and pre-run are re-armed.
+     - The no-edit read-threshold probe (`hyp-meter86c-err2.md:105`) is NOT run. The deliverable does not need it,
+       and a per-diagram read stays a later option if a larger stage needs one.
+
+194. **(cycle 86 judgement, on result `86-5` FAIL 27/5; review `archive/peer/2026-09-26-hyp-l2a1-p2-86-5.md`, refuted a
+     build fault)** L2-A1 stage run 1 SAVED `claudeDev\D1_l2_a1_20260925_235224.vi` md5 `51d9b8a3…`, 307,992 B, by
+     gui_save. ExecState is 0 by design.
+     - E1: 42/42 ops match their sim step.
+     - PB cdiff equals the 9 open_rows exactly. CT 4/4, FU equal.
+     - RBW on a scratch removed 29 bad wires, none of them on a re-wired sink.
+     - Peak memory 638 MB, no error 2 (`stage_d1_l2a1_86-5.log:660-770`).
+     - The 5 FAILs are all P2 rows (sr1_L0, sr2_L0, sr3_L0, tun1, tun2). `address()` raised before any connect,
+       because `stage_d1_l2a1.py:90` blanks owner_class/term_class for SelectorTunnel outer-face sinks. That is a
+       reader defect, not a build defect.
+
+     **Decided:**
+     - **(a) The file is the L2-A1 artefact, CONDITIONALLY.** It becomes the bed only after a READ-ONLY P2 check on it
+       passes for those 5 rows. The check addresses the sinks as SelectorTunnel outer faces (owner_class /
+       term_class / objs, as `OpTunOuterWire_v1` does) and reads sole source, sole sink and the ordered-pass
+       `Is Broken?`. It is a read of the saved file, NOT a rerun of the stage.
+     - **Rule 1a:** the per-op diffs against the simulator are already 0, so the check can only CONFIRM the result,
+       or catch a broken wire that RBW did not attribute.
+     - (b) The recipe:90 fix waits until L2-A1 needs another run. The prior-art gate would be re-armed for nothing.
+     - (c) A `graph_*.json` for md5 `6cf5b077…` is placed so that `--prerun` finds it without `--graph` by hand. This
+       is bookkeeping, done after (a).
+     - (d) The outcome review's kernel-swap test is the candidate that competes with L2 stage 2 once (a) closes. The
+       test repoints the S1 copy's tracking call to the verified parallel kernel and runs drive_m8_load83 at 15
+       picks. The next judgement session picks between the two.
+
 ## OPEN (design choices — for judgement; not decided here)
 
 > 2026-09-24: O2, O3, O4 (SR half; the queue half is QRT), O6 (placement + route), O7, O8 are CLOSED by Pre-decided

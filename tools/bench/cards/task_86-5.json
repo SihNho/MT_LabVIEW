@@ -1,0 +1,52 @@
+{
+ "schema": "task/1",
+ "id": "86-5",
+ "kind": "build",
+ "goal": "L2-A1 pre-run + stage run 1 of tools/recipes/stage_d1_l2a1.py (md5 1098a443, PD193 checkpoints + MEMSTOP 700) from D1_k -> D1_l2_a1_<ts>.vi",
+ "why": "86-4 built + selftested (59/0, dry 5/0); launch was refused only by gates now cleared: prior-art released by FIXED (priorart-c86-l2a1-checkpoints), outcome review run (steer_86 followed).",
+ "inputs": [
+  {"path": "tools/bench/cards/result_86-4.json"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/stagexec.py", "md5": "0d1311393ee98e4bcd5a7921865aba39"},
+  {"path": "tools/recipes/stage_d1_l2a1.py", "md5": "1098a4432affd6175339bdaad7dc44a0"},
+  {"path": "tools/bench/sim/l2a1/stageplan_l2a1.json", "md5": "329d89eecaa2706ccce38640dbede5aa"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_20260925_100155.vi", "md5": "6cf5b0777aafa12112d8a786a9eed1ed"}
+ ],
+ "pass": [
+  "pre-run passes and the launch gate accepts (stop_record ALLOW, guard_cycle pass)",
+  "stage run 1 (bgrun --material --max-min 60): PD187(c) gates, checkpoint diffs 0, per-op connect read-backs, METER SUMMARY",
+  "saved D1_l2_a1_<ts>.vi path + md5 + bytes, or the first FAIL row + its JEV-LADDER line",
+  "D1_k md5 unchanged; LabVIEW gone (tasklist)"
+ ],
+ "outputs": ["tools/bench/stage_d1_l2a1*", "tools/bench/prerun_l2a1_86*", "claudeDev/D1_l2_a1_*.vi"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/stage_d1_l2a1*",
+   "tools/bench/prerun_l2a1_86*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/sim/l2a1/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a1_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_scratch_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 1, "minutes": 75},
+ "rules": [
+  "ONE stage run; do NOT edit stage_d1_l2a1.py or stagexec.py (re-arms the gate)",
+  "never save D1_k; do NOT repair OpReportAll_v0",
+  "a gate refusal is reported as BLOCKED with its message, not routed around",
+  "failed gate -> JEV-LADDER NEXT-ACTION first; review owed -> hypothesis review (review/1) then stop",
+  "result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

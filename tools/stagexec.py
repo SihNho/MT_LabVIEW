@@ -57,6 +57,52 @@ class ExecStop(Exception):
     """The executor stops here (a difference, an unbound object, an unaddressable terminal)."""
 
 
+# PD192(a), card 86-1: the MEMORY METER. LabVIEW error 2 ("memory full") was observed at ~770 MB private bytes on LV2026
+# (.claude/skills/labview-automation/references/com-driving.md:310; a restart dropped it to ~410 MB). The loud stop sits
+# 70 MB below that observation so the run ends with a report instead of an error-2 cascade (unroutable_l2a1_85.log:562).
+# Handles are logged beside it but gate nothing: the handle count is blind to VI Server refnums (stagekit.py:178).
+MEM_STOP_MB = 700.0
+
+
+class Meter(object):
+    """Private bytes (MB) + handle count, stamped per op and per read. `probe()` -> (private_bytes_int_or_None,
+    handles_int_or_None). stop_mb=None = warn-only (a measurement run that must reach error 2 to locate it)."""
+
+    def __init__(self, probe, stop_mb=MEM_STOP_MB, log=print):
+        self.probe, self.stop_mb, self.log = probe, stop_mb, log
+        self.rows = []
+        self.warned = None
+
+    def __call__(self, tag, k=None):
+        pb, hc = self.probe()
+        mb = round(pb / 1048576.0, 1) if pb else None
+        prev = self.rows[-1] if self.rows else {}
+        d_mb = round(mb - prev["mb"], 1) if mb is not None and prev.get("mb") is not None else None
+        d_h = hc - prev["handles"] if hc is not None and prev.get("handles") is not None else None
+        row = {"tag": tag, "k": k, "t": round(time.time(), 1), "mb": mb, "handles": hc, "d_mb": d_mb, "d_h": d_h}
+        self.rows.append(row)
+        self.log("  METER {0:<6} k {1!s:>3}  private {2} MB (d {3})  handles {4} (d {5})".format(
+            tag, k, mb, "{0:+.1f}".format(d_mb) if d_mb is not None else "-", hc, "{0:+d}".format(d_h) if d_h is not None else "-"))
+        if self.stop_mb and mb is not None and mb >= self.stop_mb:
+            raise ExecStop("MEMSTOP: LabVIEW private bytes {0} MB >= {1} MB at {2} k {3} (error 2 observed ~770 MB, "
+                           "com-driving.md:310)".format(mb, self.stop_mb, tag, k))
+        if mb is not None and mb >= MEM_STOP_MB and self.warned is None:
+            self.warned = row
+            self.log("  METER WARN private bytes {0} MB crossed {1} MB at {2} k {3} (warn-only run)".format(mb, MEM_STOP_MB, tag, k))
+        return row
+
+    def summary(self):
+        mbs = [r["mb"] for r in self.rows if r["mb"] is not None]
+        per = {"op": [r["d_mb"] for r in self.rows if r["tag"] == "op" and r["d_mb"] is not None],
+               "read": [r["d_mb"] for r in self.rows if r["tag"] == "read" and r["d_mb"] is not None]}
+        return {"n": len(self.rows), "first_mb": mbs[0] if mbs else None, "peak_mb": max(mbs) if mbs else None,
+                "last": self.rows[-1] if self.rows else None,
+                "sum_d_mb_op": round(sum(per["op"]), 1), "sum_d_mb_read": round(sum(per["read"]), 1),
+                "mean_d_mb_op": round(sum(per["op"]) / len(per["op"]), 2) if per["op"] else None,
+                "mean_d_mb_read": round(sum(per["read"]) / len(per["read"]), 2) if per["read"] else None,
+                "warned_at": self.warned}
+
+
 def md5(p):
     return SS.md5_file(p)
 
@@ -730,7 +776,16 @@ class Addr(object):
 
 # ============================================================================================ the executor
 class Executor(object):
-    def __init__(self, plan_path, backend, log=print):
+    """PD193(a), card 86-4: `checkpoints` = the real-op numbers k after which the whole-VI read + step diff run. None =
+    every op (the default; unchanged behaviour). A set must hold every add_sr/tunnel op (bind_new needs the fresh read)
+    and the LAST op (the final state is always compared and returned); otherwise ExecStop CHECKPOINT before op 1.
+    Between checkpoints the last real read is reused; each op keeps its own connect read-back. A pre-mutation
+    addressing ExecStop on a reused read gets ONE fresh read + one retry (connect/tunnel/wire_sr), as meter_l2a1_86d.py."""
+    RETRY_KINDS = ("connect", "tunnel", "wire_sr")
+
+    def __init__(self, plan_path, backend, log=print, checkpoints=None):
+        self.checkpoints = None if checkpoints is None else set(int(k) for k in checkpoints)
+        self.reads_skipped, self.reads_real, self.stale_retries = [], [], []
         self.plan_path = plan_path
         self.plan, self.step_paths = load_final_plan(plan_path)
         self.ops = compile_plan(self.plan)
@@ -764,7 +819,10 @@ class Executor(object):
 
     def run(self):
         be, A = self.be, self.plan["actions"]
+        meter = getattr(be, "meter", None) or (lambda *_a, **_k: None)     # PD192(a): per op + per read; absent on dry runs
+        meter("start", 0)
         real = be.read()
+        meter("read", 0)
         st0 = self.step(0)["state"]
         d = compare(st0["terminals"], real, self.bind)
         self.report.append({"op": "base", "acts": [0], "diff": d})
@@ -815,6 +873,15 @@ class Executor(object):
             primed, ct_primed, why[:4]))
         if why:                                            # PD185(3): an unprovable end STOPS before op 1
             raise ExecStop("PRIME: {0} wired end(s) not addressable at base - stop before op 1: {1}".format(len(why), why[:6]))
+        cp = self.checkpoints
+        if cp is not None:
+            need = set(k for k, o in enumerate(self.ops, 1) if o["kind"] in ("add_sr", "tunnel")) | {len(self.ops)}
+            bad = sorted(need - cp) + sorted(k for k in cp if not 0 <= k <= len(self.ops))
+            if bad:
+                raise ExecStop("CHECKPOINT: set {0} lacks binding/last op(s) or is out of range: {1} (need {2}) - stop before op 1".format(
+                    sorted(cp), bad, sorted(need)))
+            self.log("  CHECKPOINTS whole-VI read+diff after ops {0} of {1}".format(sorted(k for k in cp if k), len(self.ops)))
+        stale = False
         for k, op in enumerate(self.ops, 1):
             first, last = op["acts"][0], op["acts"][-1]
             prev = self.step(first - 1)["state"]
@@ -824,8 +891,38 @@ class Executor(object):
             if op["kind"] == "add_sr":
                 a = A[first - 1]
                 be.addr.snap_loop(int(a["loop"]), int(after["state"]["diagrams"][str(a["body"])]))
-            res = self.execute(op, prev, after["state"], real)
+            meter("pre", k)                        # parity/PRIME (k=1) or retrack/bind reads since the last whole-VI read
+            try:
+                be.strict = stale and op["kind"] in self.RETRY_KINDS
+                res = self.execute(op, prev, after["state"], real)
+            except ExecStop as e:                  # PD193: a stale read may mis-address; one fresh read, one retry
+                if not stale or op["kind"] not in self.RETRY_KINDS or "op error" in str(e):
+                    raise
+                self.log("  STALE-ADDRESS op {0}: fresh read + one retry ({1})".format(k, str(e)[:200]))
+                self.stale_retries.append({"k": k, "err": str(e)[:200]})
+                real, stale, be.strict = be.read(), False, False
+                meter("read_retry", k)
+                res = self.execute(op, prev, after["state"], real)
+            be.strict = False
+            meter("op", k)
+            if cp is not None and k not in cp:     # PD193(a): no whole-VI read/diff between checkpoints
+                self.reads_skipped.append(k)
+                stale = True
+                lost = be.addr.retrack()           # never add_sr/tunnel here (both are required checkpoints)
+                if lost:
+                    res = dict(res or {}, lost_register_faces=lost)
+                for n in op["acts"]:
+                    self.allow.update((self.step(n).get("effect") or {}).get("allow_either") or [])
+                rec = {"k": k, "op": op["kind"], "acts": op["acts"], "ids": [A[n - 1].get("id") for n in op["acts"]],
+                       "result": res, "bound": {}, "diff": {"n": 0, "skipped": True}, "secs": round(time.time() - t0, 1)}
+                self.report.append(rec)
+                self.log("  STEPX {0:02d} {1:<14} acts {2} ids {3} diff skipped (not a checkpoint)".format(
+                    k, op["kind"], op["acts"], rec["ids"]))
+                continue
             real_new = be.read()
+            stale = False
+            self.reads_real.append(k)
+            meter("read", k)
             made = {}
             if op["kind"] in ("add_sr", "tunnel"):
                 made = bind_new(real, real_new, prev["terminals"], after["state"]["terminals"], self.bind)
@@ -981,7 +1078,7 @@ def sink_gate_for(tag, err, sink, decls):
 class LVBackend(object):
     """Every mutator is a stagekit / gscript verb the L7 stages used; each is followed by the measured junk purge."""
 
-    def __init__(self, s, fs_pairs, sink_gates=None, gates=None):
+    def __init__(self, s, fs_pairs, sink_gates=None, gates=None, mem_stop_mb=MEM_STOP_MB):
         import stagekit as K
         import gscript as g
         self.K, self.g, self.s, self.fs = K, g, s, fs_pairs
@@ -989,6 +1086,9 @@ class LVBackend(object):
         self.C82 = K.mod("build_opfsinnertunnelconnect_v0")
         self.addr = Addr(LVReader(g, s.work))
         self.reads = []
+        bp = K.mod("bench_prep")                     # PD192(a): stagekit.private_bytes() + bench_prep.labview_handles()
+        self.meter = Meter(lambda: (K.private_bytes(), bp.labview_handles()), stop_mb=mem_stop_mb,
+                           log=lambda m: print(m, flush=True))
         self._init_sink_gates(sink_gates, gates)
 
     def _init_sink_gates(self, sink_gates, gates):
@@ -1331,6 +1431,8 @@ class SimBackend(object):
         """violation-decisions 16:10 (card 85-1): the DRY run records EVERY unroutable row and keeps simulating (the op is
         still applied from the plan), so one dry run lists them all; dry_run() then FAILS naming each. The real backend
         never collects - it stops at the first."""
+        if getattr(self, "strict", False):             # PD193: on a reused (stale) read the executor retries once on a
+            raise e                                    # fresh read, as the real backend's pre-mutation stop would
         rec = {"acts": op["acts"], "ids": [self.plan["actions"][n - 1].get("id") for n in op["acts"]], "err": str(e)[:300]}
         self.unroutable.append(rec)
         return self._apply(op, {"unroutable": rec["err"]})
@@ -1441,9 +1543,11 @@ def lv_run(plan_path, reference=None, max_min=60):
             real = ex.run()
             s.gate("E1 every real op's graph == its simulated step ({0} ops, first difference none)".format(len(ex.ops)), True)
         except ExecStop as e:
-            s.R["stagexec"] = ex.report
+            s.R["stagexec"], s.R["meter"] = ex.report, be.meter.rows
+            s.fact("METER SUMMARY {0}".format(json.dumps(be.meter.summary(), default=str)))
             s.gate("E1 every real op's graph == its simulated step", False, str(e)[:1500], fatal=True)
-        s.R["stagexec"] = ex.report
+        s.R["stagexec"], s.R["meter"] = ex.report, be.meter.rows
+        s.fact("METER SUMMARY {0}".format(json.dumps(be.meter.summary(), default=str)))
         s.fact("BINDING obj {0}".format(ex.bind["obj"]))
         s.fact("GRAPH READ seconds {0}".format([r.get("total") for r in be.reads]))
         s.es("end (warm)")
@@ -1856,6 +1960,73 @@ def selftest():
                                                                                          "ControlTerminal")]
     gate("T32c a structure GAINING a face and a control terminal MOVING diagram are not reuse", uid_reuse(p32, r32c) == [],
          uid_reuse(p32, r32c))
+    # PD192(a), card 86-1: the memory meter (fake probe; no LabVIEW)
+    seq = iter([(400 << 20, 31500), (412 << 20, 31600), (409 << 20, 31550), (705 << 20, 40000)])
+    mt = Meter(lambda: next(seq), stop_mb=700.0, log=q)
+    r1, r2, r3 = mt("read", 0), mt("op", 1), mt("read", 1)
+    gate("T33 meter: MB from bytes, deltas vs the previous stamp (op +12.0 MB/+100 h, read -3.0 MB/-50 h)",
+         r1["mb"] == 400.0 and r1["d_mb"] is None and r2["d_mb"] == 12.0 and r2["d_h"] == 100 and r3["d_mb"] == -3.0
+         and r3["d_h"] == -50, (r1, r2, r3))
+    try:
+        mt("op", 2)
+        gate("T33b NEGATIVE: private bytes >= stop_mb -> ExecStop MEMSTOP", False, "no stop")
+    except ExecStop as e:
+        gate("T33b NEGATIVE: private bytes >= stop_mb -> ExecStop MEMSTOP", str(e).startswith("MEMSTOP") and "705.0" in str(e), str(e)[:160])
+    mw = Meter(lambda: (800 << 20, 1), stop_mb=None, log=q)
+    mw("op", 1)
+    mw("op", 2)
+    gate("T33c warn-only meter (stop_mb=None) passes 800 MB and records the FIRST crossing",
+         mw.warned is not None and mw.warned["k"] == 1 and len(mw.rows) == 2, mw.warned)
+    cnt = [0]
+
+    def fprobe(lim=None):
+        cnt[0] += 1
+        return ((300 + cnt[0]) << 20, 30000 + cnt[0])
+    bem = SimBackend(pl_, SS.base_state(_j(_abs(pl_["finalized"]["base"]["path"])), pl_.get("context")), SS.load_models(md))
+    bem.meter = Meter(fprobe, stop_mb=None, log=q)
+    exm = Executor(fin, bem, log=q)
+    exm.run()
+    tags = [r["tag"] for r in bem.meter.rows]
+    gate("T34 Executor stamps start + base read + (pre, op, read) per op on a backend with a meter",
+         tags[:2] == ["start", "read"] and tags[2:] == ["pre", "op", "read"] * len(exm.ops) and
+         [r["k"] for r in bem.meter.rows if r["tag"] == "op"] == list(range(1, len(exm.ops) + 1)), (len(tags), len(exm.ops), tags[:8]))
+    cnt[0] = 0
+    bes = SimBackend(pl_, SS.base_state(_j(_abs(pl_["finalized"]["base"]["path"])), pl_.get("context")), SS.load_models(md))
+    bes.meter = Meter(fprobe, stop_mb=300 + 2 + 3 * 3 + 0.5, log=q)   # 311.5: the 12th stamp (312) = op 4's 'pre'
+    exs = Executor(fin, bes, log=q)
+    try:
+        exs.run()
+        gate("T34b NEGATIVE: a meter crossing stop_mb mid-run STOPS the executor with MEMSTOP", False, "ran clean")
+    except ExecStop as e:
+        lr = bes.meter.rows[-1]
+        gate("T34b NEGATIVE: a meter crossing stop_mb mid-run STOPS the executor with MEMSTOP (last stamp = op 4 'pre')",
+             str(e).startswith("MEMSTOP") and (lr["tag"], lr["k"]) == ("pre", 4) and len(exs.report) == 4, (str(e)[:120], lr, len(exs.report)))
+    # PD193(a), card 86-4: the checkpoint read set
+    mkbe = lambda fault=None: SimBackend(pl_, SS.base_state(_j(_abs(pl_["finalized"]["base"]["path"])), pl_.get("context")),  # noqa: E731
+                                         SS.load_models(md), fault)
+    opsx = compile_plan(pl_)
+    bindk = set(k for k, o in enumerate(opsx, 1) if o["kind"] in ("add_sr", "tunnel"))
+    cps = bindk | {0, len(opsx)}
+    exc_ = Executor(fin, mkbe(), log=q, checkpoints=cps)
+    exc_.run()
+    gate("T35 checkpoint set (binding ops + last): run PASS, whole-VI reads only at the set, the rest skipped",
+         exc_.reads_real == sorted(cps - {0}) and exc_.reads_skipped == sorted(set(range(1, len(opsx) + 1)) - cps) and
+         len(exc_.reads_skipped) > 0, (sorted(cps), exc_.reads_real, exc_.reads_skipped))
+    gate("T35d a stale-read addressing stop is recovered by ONE fresh read + retry (no unroutable row left)",
+         len(exc_.stale_retries) >= 1 and not exc_.be.unroutable, (exc_.stale_retries, exc_.be.unroutable))
+    fk = next((k for k in range(1, len(opsx)) if k not in cps and any(c > k for c in cps)), None)
+    nxt = min(c for c in cps if fk is not None and c > fk) if fk else None
+    try:
+        Executor(fin, mkbe({"at": opsx[fk - 1]["acts"][-1], "kind": "drop_edge"}), log=q, checkpoints=cps).run()
+        gate("T35b NEGATIVE: an edge dropped at a skipped op is caught by the NEXT checkpoint diff", False, "ran clean")
+    except ExecStop as e:
+        gate("T35b NEGATIVE: an edge dropped at skipped op {0} is caught by the NEXT checkpoint diff (op {1})".format(fk, nxt),
+             "STEP-DIFF after real op {0} ".format(nxt) in str(e), str(e)[:200])
+    try:
+        Executor(fin, mkbe(), log=q, checkpoints={0, len(opsx)}).run()
+        gate("T35c NEGATIVE: a set missing a binding op (add_sr/tunnel) stops before op 1", False, "ran")
+    except ExecStop as e:
+        gate("T35c NEGATIVE: a set missing a binding op (add_sr/tunnel) stops before op 1", str(e).startswith("CHECKPOINT"), str(e)[:200])
     gate("T14 nothing LabVIEW-side imported",not any(m in sys.modules for m in ("gscript", "win32com", "pythoncom", "stagekit")),
          [m for m in ("gscript", "win32com", "pythoncom", "stagekit") if m in sys.modules])
     n_pass = sum(1 for _l, ok in gates if ok)

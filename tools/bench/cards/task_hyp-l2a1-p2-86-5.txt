@@ -1,0 +1,35 @@
+FAILED PREDICTION, card 86-5: tools/recipes/stage_d1_l2a1.py (md5 1098a443), log tools/bench/stage_d1_l2a1_86-5.log (one run, 594 s).
+
+Test: fresh LabVIEW, D1_k_20260925_100155.vi (md5 6cf5b077, unchanged after) -> D1_l2_a1_20260925_235224.vi, the
+finalized plan_l2a1 (42 ops / 46 acts) through stagexec with PD193 checkpoints [15,19,23,27,28,40,41,42].
+
+Passed: E1 every real op's graph == its simulated step (42 ops) (log:660); READS only at the checkpoints, 0 stale
+retries (log:662); 4 CT ControlTerminal rows == simulated ends (log:665-671); FU frame-uid sets equal; PB frame-keyed
+cdiff == the plan's 9 open_rows, extra [] missing [] (log:~730); saved md5 51d9b8a3, 307992 B (log:748); RBW on a scratch
+deletes 29 wires, none of a re-wired sink (log:757-758); refs 22/22; pins and input md5 unchanged. 27 pass / 5 fail.
+
+Failed: all 5 P2 `Wire.Is Broken?` gates (sr1_L0, sr2_L0, sr3_L0, tun1, tun2) - the ONLY P2 rows the recipe does not
+skip (kind tunnel/wire_sr with a non-ControlTerminal node sink, stage_d1_l2a1.py:82-91). Each second pass raised
+BEFORE any connect: "RuntimeError: #5825 not in Diagram[21].Nodes[]" (#5702, #10750, #5725, #5967 likewise, all
+Diagram[21]) (log:689-711), raised by Stage.address (tools/stagekit.py:740-741) called from cfw_second_pass
+(stagekit.py:848-864). So Is Broken? = None, and the "wire_delta 0" PASS beside each is vacuous (no connect ran).
+This is the first run that ever reached P2 (no earlier stage_d1_l2a1*.log has a P2 sr/tun line).
+
+My explanation: a READING/ADDRESSING defect in the recipe's P2 end, not a build defect. The recipe builds `end` with
+"diagram": r["frame_diagram"] from SS.resolve_addr(L, a["dst"], False) on the LAST checkpoint read L, and
+owner_class/term_class "" (stage_d1_l2a1.py:87-90). All five resolve to the same live Diagram[21], which does not hold
+the sink nodes - so either resolve_addr's frame_diagram names the wrong diagram for these sinks (e.g. the loop/structure
+diagram rather than the Case frame that owns them, or a pre-move location), or the uid->index match in address()
+(report_all('Diagram') by uid, stagekit.py:722-723) picks a diagram other than the one E1 used.
+Competing explanation: the sinks really are not where the plan says - the build left these five sink nodes in a
+different diagram than the simulation (a real structural difference E1 did not catch because E1 compares the
+checkpoint graph with a sim built from the same resolver), i.e. the defect is in the artefact, and the 29 RBW bad
+wires include consequences of it.
+
+Questions: (1) which explanation do log:660-711 and the plan rows (tools/bench/sim/l2a1/stageplan_l2a1.json:207-215 for
+sr1_L0 dst #5825 term 5883) support; (2) the cheapest separating check WITHOUT a new stage run (e.g. read the saved
+D1_l2_a1_20260925_235224.vi's graph and look up the diagram that owns #5825/#5702/#10750/#5725/#5967 vs Diagram[21]'s
+uid); (3) does PD184's rule (connect sinks = E1 + RBW) already cover these five rows so the P2 gate should skip them?
+Files: tools/bench/stage_d1_l2a1_86-5.log, tools/recipes/stage_d1_l2a1.py, tools/stagekit.py (address 713-759,
+cfw_second_pass 848-864, expect_is_broken_false 686-707), tools/stagexec.py, tools/bench/sim/l2a1/stageplan_l2a1.json,
+docs/d1-loop12-17-split-plan.md.

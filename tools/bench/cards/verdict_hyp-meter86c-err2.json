@@ -1,0 +1,19 @@
+{
+ "schema": "verdict/1",
+ "id": "hyp-meter86c-err2",
+ "verdict": "unverified",
+ "alternative": "Act 45's tunnel-outer-face->SubVI wire leaves a state Traverse for GObjects cannot walk, reported as error 2 (not only memory-full); prior read k40 ran fine 690.9->694.9 MB, op41 added +0.1 MB, and 85/86c both failed on the first read after the only novel op",
+ "discriminating_test": "Fresh LV: replay ops 1-40 with per-op reads skipped (one step_44 check at ~580 MB), then op 41 + one read + R41 uid read-back. Error 2 => act 45; clean with sink #5082 => then no-edit report_all(GObject)+terminals loop to find the read/memory threshold",
+ "violations": [],
+ "sources": [
+  "tools/bench/meter_l2a1_86c.log:677-687",
+  "tools/bench/meter_l2a1_86c.log:730",
+  "docs/REFERENCES.md:158",
+  "docs/REFERENCES.md:211",
+  ".claude/skills/labview-automation/references/com-driving.md:310-311",
+  "tools/bench/unroutable_l2a1_85.log:558-562",
+  "https://lavag.org/topic/18730-error-2-memory-is-full-but-it-isnt/",
+  "https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019KhWSAU"
+ ],
+ "note": "Deterministic replay means 'same act twice' alone cannot discriminate; per-read MB growth is timing attribution, not a proven retained leak (traverse-only arm was flat)."
+}

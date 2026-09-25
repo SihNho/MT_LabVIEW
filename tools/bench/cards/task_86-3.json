@@ -1,0 +1,51 @@
+{
+ "schema": "task/1",
+ "id": "86-3",
+ "kind": "measure",
+ "goal": "Separator (hyp-meter86c-err2.md:98-107): fresh LV, D1_k scratch, ops 1-40 with per-op whole-VI reads SKIPPED, one step_44 check, then op 41 + ONE whole-VI read + R41/R42 uid read-back; no save",
+ "why": "86-2: error 2 at the whole-VI read right after act 45, twice now (cycles 85, 86); reads +140.4 MB vs edits +1.7 MB; 695 MB at failure. Separates act-45 state from read/memory threshold.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_86-2.json"},
+  {"path": "archive/peer/2026-09-25-hyp-meter86c-err2.md", "md5": "f858821df41424a8a0123afe22daba75"},
+  {"path": "tools/stagexec.py", "md5": "e848a14e9cdacf84a13e380bef4ae9f4"},
+  {"path": "tools/bench/meter_l2a1_86c.py", "md5": "91be0244cfb6b16612bce0aecf954114"},
+  {"path": "tools/bench/sim/l2a1/stageplan_l2a1.json", "md5": "329d89eecaa2706ccce38640dbede5aa"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_20260925_100155.vi", "md5": "6cf5b0777aafa12112d8a786a9eed1ed"}
+ ],
+ "pass": [
+  "private MB + handles after load, after ops 1-40 (no reads), after the step_44 check, after op 41, after the one read",
+  "step_44 check vs the stageplan step file: diff count",
+  "the read after op 41: error 2 yes/no; if no, R41 sink = #5082 and R42 sink = #5164 by uid, sole source = planned tunnel face",
+  "if the read passes: ordered 2nd pass (connect call, wire_delta 0) Is Broken? False on R41/R42",
+  "D1_k md5 unchanged; scratch deleted; LabVIEW gone (tasklist)"
+ ],
+ "outputs": ["tools/bench/meter_l2a1_86d*"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/meter_l2a1_86d*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_scratch_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "thin driver meter_l2a1_86d.py (<=120 lines, stagekit/stagexec)",
+  "do NOT patch stagexec.py or OpReportAll_v0; do NOT launch stage_d1_l2a1.py",
+  "the ordered 2nd pass on R41/R42 is accepted as the Is Broken? reader (judgement 86)",
+  "restart LabVIEW fresh first; bgrun --material --max-min 40",
+  "error 2 at the read is a RESULT, not a card failure; report which branch it took, choose no remedy",
+  "failed gate -> JEV-LADDER NEXT-ACTION first; review owed -> hypothesis review (review/1) then stop",
+  "result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

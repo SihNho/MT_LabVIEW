@@ -18,6 +18,8 @@ P = J(PLAN); BASE = J(K.ROOT, P["finalized"]["base"]["path"]); A = P["actions"] 
 DRY, CUT, LAB = bool(getattr(g.report_all, "_dry", False)), 10 ** 3, JC.node_labels_default()
 WIRING = ("tunnel", "connect", "wire_sr", "branch")
 SINK_GATE_IDS = ("rw_10988_17272",)                                                 # PD183(d): the ONLY sink_gates entry
+CHECKPOINTS = (0, 15, 19, 23, 27, 28, 40, 41, 42)       # PD193(a): the 86d-measured whole-VI read set (meter_l2a1_86d.log:695)
+MEMSTOP_MB = 700.0                                      # PD193(b): passed explicitly
 MOVED = set(a["nodes"][0] for a in A if a["op"] == "move_in")
 CT_UIDS = sorted(set(int(o["uid"]) for o in BASE["objs"] if o["class"] == "ControlTerminal") & MOVED)   # class from objs (sim_l2a1_81b.py:110)
 D0 = set(int(d) for d, v in BASE["owners"].items() if v[0] == "CaseStructure" and int(v[1] or 0) in MOVED)   # 182(e): from the graph
@@ -56,18 +58,23 @@ def body(s):
     sg, nm = [a for a in A if a["id"] in SINK_GATE_IDS], dict((r["term_uid"], r["term_name"]) for r in BASE["terminals"])
     decl = [{"gate": "CT-" + a["id"], "sink": [a["dst"]["uid"], nm[a["dst"]["term_uid"]]]} for a in sg]
     gates = dict(("CT-" + a["id"], lambda e, u=a["dst"]["uid"]: ct_read(u, "sink gate")) for a in sg)
-    be = DryBE(s) if DRY else SX.LVBackend(s, BASE["fs_tunnel_pairs"], sink_gates=decl, gates=gates)
-    x = ex["x"] = SX.Executor(PLAN, be, log=lambda m: print(m, flush=True))
+    be = DryBE(s) if DRY else SX.LVBackend(s, BASE["fs_tunnel_pairs"], sink_gates=decl, gates=gates, mem_stop_mb=MEMSTOP_MB)
+    x = ex["x"] = SX.Executor(PLAN, be, log=lambda m: print(m, flush=True), checkpoints=CHECKPOINTS)
     OPS = [dict(o, id=A[o["acts"][0] - 1]["id"]) for o in x.ops]; acts = sorted(n for o in OPS for n in o["acts"])   # noqa: E702
     s.gate("L1 every plan action compiled into exactly one real op ({0} -> {1}); sink_gates {2}; CT rows {3}".format(len(A), len(OPS), decl, CT_UIDS),
            acts == list(range(1, len(A) + 1)) and len(sg) == len(SINK_GATE_IDS) and len(CT_UIDS) == 4, acts, fatal=True)
     try:
         real = x.run(); s.gate("E1 every real op's graph == its simulated step ({0} ops)".format(len(OPS)), True)   # noqa: E702
     except SX.ExecStop as e:
+        s.R["meter"] = getattr(getattr(be, "meter", None), "rows", None)
+        s.fact("READS real {0} skipped {1} stale retries {2}".format(x.reads_real, x.reads_skipped, x.stale_retries))
         s.R["stagexec"] = x.report; s.gate("E1 every real op's graph == its simulated step", False, str(e)[:CUT], fatal=True)   # noqa: E702
         [s.fact("UNROUTABLE acts {0} ids {1}: {2}".format(u["acts"], u["ids"], u["err"])) for u in getattr(be, "unroutable", None) or []]
         return                                                                      # PD191(c): a stop names its rows, never UnboundLocalError
     s.R["stagexec"] = x.report; s.fact("BINDING obj {0}".format(x.bind["obj"]))    # noqa: E702
+    s.fact("READS real {0} skipped {1} stale retries {2}".format(x.reads_real, x.reads_skipped, x.stale_retries))
+    if not DRY:
+        s.R["meter"] = be.meter.rows; s.fact("METER SUMMARY {0}".format(json.dumps(be.meter.summary(), default=str)))   # noqa: E702
     for u in CT_UIDS:
         ok, d = ct_read(u, "row")
         s.gate("CT #{0} ControlTerminal row read by the 179(b) reader == simulated end".format(u), ok, d)

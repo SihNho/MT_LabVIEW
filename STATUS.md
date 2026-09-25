@@ -51,15 +51,29 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 
 ## NEXT
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
-🔴🔴🔴 **FIRST ACT (cycle 86) = `docs/d1-loop12-17-split-plan.md` Pre-decided 192 AS AMENDED (measure first), in order:**
-- **(a)** Wire `stagekit.private_bytes()` into the stagexec executor: private bytes and handles per op and per read, with a loud stop before error 2.
-- **(b)** On a fresh LabVIEW, run act 45 alone, then read the sink back by uid. It must show `SubVI[17].t0` = #5082.
-- **(c)** One metered full replay on a scratch, with no save. It answers whether memory grows with VI edits or with the whole-VI read after each op.
-- **(d)** Only then, stage run 1 of `tools/recipes/stage_d1_l2a1.py` (md5 `d40e1e16…`), with `bgrun --max-min 60`.
-- ⚠️ **DO NOT "repair" `OpReportAll_v0`.** REFERENCES §4a-bis closed that on measurement, and only the user may overturn it. The retrospective for cycle 85 caught the first draft of 192.
+🔴🔴🔴 **FIRST ACT (cycle 87) = `docs/d1-loop12-17-split-plan.md` Pre-decided 194(a).** Run a READ-ONLY P2 check on `claudeDev\D1_l2_a1_20260925_235224.vi` (md5 `51d9b8a3…`), 307,992 B, for the 5 rows sr1_L0, sr2_L0, sr3_L0, tun1 and tun2.
+- Address each sink as a SelectorTunnel outer face (owner_class / term_class / objs, as `OpTunOuterWire_v1` does).
+- Pass: sole source is the planned uid, sole sink is the planned sink, and the ordered-pass `Is Broken?` is False.
+- No edit, no save, no stage rerun. Leave the recipe's :90 fix alone; editing the recipe re-arms the prior-art gate (194(b)).
+- Desk-check each predicted sink/source against `tools/bench/sim/l2a1/step_*.json` BEFORE the LabVIEW read. Cycle 86's retrospective (`archive/peer/2026-09-26-retrospective-cycle86.md`, VIOLATION none) found that 86-1(b) ran on a prediction that `step_01_move_in.json` already refuted.
+- If the check passes, that file IS the new bed. Then judgement picks 194(d): L2 stage 2, or the outcome review's kernel-swap test (repoint the S1 copy's tracking call to the verified parallel kernel, then drive_m8_load83 at 15 picks).
+- `steer_86` is FOLLOWED. The machine copy is `tools/bench/next.json` (advances M3/R1/R3).
 
-The machine copy is `tools/bench/next.json`. It advances M3/R1/R3.
-- Not previously reported: all three cycle-85 cards returned FAIL. Card 85-3 hung about 13 min in `close_panel` after error 2, and LabVIEW was killed. The passing 40-act run had already grown handles 33,954 → 46,075.
+🟢 **CYCLE 86 DONE: THE L2-A1 FILE EXISTS.** Stage run 1 (card 86-5, 594 s) saved `D1_l2_a1_20260925_235224.vi` by gui_save. ExecState is 0 by design.
+- E1: 42/42 ops match the simulator.
+- PB cdiff equals exactly the 9 open rows.
+- RBW: 29 bad wires, none on a re-wired sink.
+- Peak memory 638 MB, no error 2.
+- 5 P2 FAILs: the recipe's reader could not address SelectorTunnel sinks (`stage_d1_l2a1.py:90`). Review `archive/peer/2026-09-26-hyp-l2a1-p2-86-5.md` refuted a build fault.
+
+How the run was made possible (PD192 → 193):
+- stagexec now meters private MB and handles per op and per read (md5 `0d131139…`, self-test 59/0).
+- Most of cycle 85's handle growth was the VI LOAD: 33,987 → 45,631 handles.
+- Error 2 recurred right after act 45 when there was a whole-VI read after every op: reads added +140 MB, edits +1.7 MB, and it failed at 695 MB.
+- With 9 reads there was no error 2, so act 45 is not the cause. Whether it is the reads or accumulated memory is still OPEN (prior-art amendment).
+- The recipe now reads only at checkpoints {0,15,19,23,27,28,40,41,42}, with MEMSTOP 700.
+- The prerun needs `--graph tools/bench/sim/l2a1/graph_k_80_owners.json` (194(c)).
+- The outcome review ran again: the same 4 verdicts, not a stop (user 2026-09-23). All 7 items in `decisions_pending.json` are ANSWERED; the "4 open questions" line below is stale.
 🟡 **CYCLE 85 DONE (cycle 84 never ran: weekly usage limit).** No stage run was launched.
 - The separator returned 5001, so the old 1057 came from the source cast (PD191).
 - Three new ops were built, each self-tested with a negative case and handle-flat:
@@ -73,7 +87,7 @@ The machine copy is `tools/bench/next.json`. It advances M3/R1/R3.
 ⬇ Older (cycle 84 plan, now done up to step 2's dry/pre-run):
 ✅ **CYCLE 83 (firefighter, fable/low) = the PD188(d) load measurement RAN — INDEX row 48, `tools/bench/m8_load_83.json`, 8 real legs 8/0, LabVIEW closed after each.** Total Lost Frames S1 copy vs `D1_s3_loop15.vi`, 120 s at ~89 frames/s (~10,680 frames): **8 picks 16 vs 12** (repeat 12 vs 14) · **15 picks 3,331 vs 3,493** (repeat 3,161 vs 3,269). Frame loss goes from ~0.1 % to ~⅓ between 8 and 15 beads on BOTH VIs ⇒ **the per-bead tracking cost (loop 1.2, M3) is the lever; the loop-1.5 split is neutral at this load.**
 - ⚠️ **150 Hz was NOT reached**: the driver wrote 150 Hz to the camera between legs, but EVERY `IMAQdxOpenCamera` reloads the camera file (`…\NI-IMAQdx\Data\JAI Corporation SP-5000M-USB (…).icd`, 90 Hz) — measured `tools/bench/diag_camrate_persist83b.log` 4/0 after the failed-prediction review `archive/peer/2026-09-25-hyp-camrate83.md` (accepted; `camera-acquisition-facts.md:642` corrected). The "150 Hz" cells are 90 Hz repeats. Real 150 Hz needs a VI-side setting or an `.icd` change → **user decision D-2026-09-25-05**.
-- 🟡 The user has 4 open questions: D-2026-09-25-02 (`.cal` scope), -03 (autofocus limits, OPEN 58), -04 (a supervised S3 run with beads), **-05 (how to reach 150 Hz)**.
+- ✅ (stale as of cycle 86: all ANSWERED in `decisions_pending.json`) The user had 4 open questions: D-2026-09-25-02 (`.cal` scope), -03 (autofocus limits, OPEN 58), -04 (a supervised S3 run with beads), **-05 (how to reach 150 Hz)**.
 - Owed before the constant-source op (violation-decisions 16:10): make the stagexec dry run report EVERY unroutable row.
 
 ▶ **THE L2-A1 run from the bed `claudeDev\D1_k_20260925_100155.vi` md5 `6cf5b077…`, Pre-decided 188(c) + 189:**

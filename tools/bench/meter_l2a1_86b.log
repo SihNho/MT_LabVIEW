@@ -1,0 +1,91 @@
+BGRUN START 2026-09-25 22:39:39 limit 25.0 min: py -u tools/bench/meter_l2a1_86b.py
+meter_l2a1_86b - card 86-1 (b), PD192(b): act 45 ALONE (after the prefix it needs) on a FRESH LabVIEW, metered.
+PRIOR ART: tools/bench/unroutable_l2a1_85.py (same Stage/LVBackend skeleton, the P1 face/sink check and the P3 read-back +
+ordered second pass), archive/peer/2026-09-25-hyp-unroutable-err2-85.md section 5 (this test), stagexec.Meter (PD192(a)).
+PREFIX: act 1 only (mv_5540 moves case #5540, owner of SelectorTunnel #5680 / face #6007, into loop body 23166, where SubVI
+#5058 already sits - plan actions 17/21 wire #5058 inside 23166). Acts 2-44 touch neither #6007 nor #5082.
+METHOD: Executor.execute() on op 1 then op 41 (the plan's own routing: move_in, then connect -> 'tunouter'); each followed by
+the whole-VI read_live; then 5 NO-EDIT read_live calls (the per-read memory cost in isolation). Nothing is saved.
+PREDICTION CONTRACT:
+  B0 after act 1 the live graph == step_01 (stagexec.compare diff 0)
+  B1 before act 45: #6007 source, bare, its tunnel #5680's only OuterTerminal; #5082 bare sink on SubVI #5058
+  B2 act 45 routed 'tunouter', op err ''; afterwards the wire on #6007 has ONE source #6007 (owner #5680) and ONE sink,
+     read back BY UID == #5082 ('SubVI[17].t0' == #5082)
+  B3 ordered second pass (connect_from_wire onto the same sink) wire_delta 0, Is Broken? False
+  B4 no LabVIEW error 2 / RPC failure on any read; METER line per step (private MB, handles)
+  H  D1_k md5 unchanged, scratch deleted, LabVIEW gone.
+    py tools/bgrun.py --material --max-min 25 --log tools/bench/meter_l2a1_86b.log -- py -u tools/bench/meter_l2a1_86b.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 257 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 6cf5b0777aafa12112d8a786a9eed1ed  got 6cf5b0777aafa12112d8a786a9eed1ed
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33987
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_k_scratch_meter86b_20260925_223940.vi
+  FACT  ExecState [after open] D1_k_scratch_meter86b_20260925_223940.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so D1_k_scratch_meter86b_20260925_223940.vi is deleted at close
+  METER start  k   0  private 570.0 MB (d -)  handles 45631 (d -)
+  METER read   k   0  private 578.6 MB (d +8.6)  handles 45724 (d +93)
+  PASS  B-base live graph == step_00
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #5540 -> Diagram[21] at (3771, 1033) -> err '' (0.2 s)
+  FACT  move_in #5540 AFTER node census: 636 rows
+  FACT  move_in #5540 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(24354, 'Invoke', (4593, 5723))]
+  FACT  move_in #5540 new #24354 #24354 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 3, 'nodes_on_diagram': 4, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  move_in #5540 new #24354 terminal table of #24354 (Diagram idx 21, Nodes[3], echo 24354): 6 terminal(s)
+  FACT      move_in #5540 new #24354 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5540 new #24354 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5540 new #24354 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5540 new #24354 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5540 new #24354 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5540 new #24354 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #5540 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #5540 purge delete Node #24354 at index 98: gone [24354], error '', census 636 -> 635, still present False (1.28 s)
+  FACT  move_in #5540 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #5540 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k   1  private 559.2 MB (d -19.4)  handles 45879 (d +155)
+  METER read   k   1  private 564.9 MB (d +5.7)  handles 45872 (d -7)
+  PASS  B0 after act 1 (mv_5540) the live graph == step_01  {"r": {"err": "", "s": 0.2}, "d": {"only_sim_terms": [], "only_real_terms": [], "only_sim_edges": [], "only_real_edges": [], "dangling_sim_only": [], "dangling_real_only": [], "unbound": [], "n": 0, "who": {}}}
+  FAIL  B1 #6007 source bare, sole outer face of #5680; #5082 bare sink on #5058  {"f": [{"term_uid": 6007, "term_name": "", "is_source": false, "wire_uid": 0, "owner_uid": 5680, "owner_class": "SelectorTunnel", "frame_diagram": 23166, "term_class": "OuterTerminal"}], "outer": [6007], "sk": [{"term_uid": 5082, "term_name": "Bead is good? array in", "is_source": false, "wire_uid": 0, "owner_uid": 5058, "owner_class": "SubVI", "frame_diagram": 23166, "term_class": "Terminal"}]}
+  FAIL  STOP at gate: B1 #6007 source bare, sole outer face of #5680; #5082 bare sink on #5058
+
+---------- [H] HYGIENE
+  FACT  close_panel(D1_k_scratch_meter86b_20260925_223940.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 6}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 6}
+  FACT  LabVIEW handle count AFTER the work: 45873
+  PASS  H4 scratch deleted: D1_k_scratch_meter86b_20260925_223940.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_k_scratch_meter86b_20260925_223940.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 6cf5b0777aafa12112d8a786a9eed1ed / after 6cf5b0777aafa12112d8a786a9eed1ed
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 34000
+
+====================================================================================================
+=== GATES: 10 pass / 2 fail; failing: B1 #6007 source bare, sole outer face of #5680; #5082 bare sink on #5058, STOP at gate: B1 #6007 source bare, sole outer face of #5680; #5082 bare sink on #5058
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\meter_l2a1_86b.json   elapsed 173.3 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":10,"fail":2},"first_fail":"B1 #6007 source bare, sole outer face of #5680; #5082 bare sink on #5058","artefacts":[]}
+  PASS  H1 LabVIEW process gone at the end
+  PASS  H2b D1_k md5 unchanged  6cf5b0777aafa12112d8a786a9eed1ed
+  PASS  H3b scratch copy deleted  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_k_scratch_meter86b_20260925_223940.vi
+
+====================================================================================================
+=== GATES: 13 pass / 2 fail; failing: B1 #6007 source bare, sole outer face of #5680; #5082 bare sink on #5058, STOP at gate: B1 #6007 source bare, sole outer face of #5680; #5082 bare sink on #5058
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\meter_l2a1_86b.json   elapsed 177.6 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":13,"fail":2},"first_fail":"B1 #6007 source bare, sole outer face of #5680; #5082 bare sink on #5058","artefacts":[]}
+BGRUN END rc=1 after 178s

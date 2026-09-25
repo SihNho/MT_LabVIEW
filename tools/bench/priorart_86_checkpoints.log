@@ -1,0 +1,46 @@
+BGRUN START 2026-09-25 23:45:54 limit 20.0 min: py tools/prior_art_review.py --slug c86-l2a1-checkpoints --trigger new-op --recipe tools/recipes/stage_d1_l2a1.py --plan Pre-decided 193 (docs/d1-loop12-17-split-plan.md): stage_d1_l2a1.py now passes CHECKPOINTS=(0,15,19,23,27,28,40,41,42) and MEMSTOP_MB=700 to the stagexec Executor. The whole-VI read and diff run only at those ops; every op keeps its own connect read-back; a stale-read addressing stop gets 1 fresh read + 1 retry. Reason: whole-VI reads accumulate private bytes (+140 MB over 43 reads vs +1.7 MB for edits), and LabVIEW error 2 hit at 695 MB (meter_l2a1_86c.log:686,730). With 9 reads all 42 ops landed, diff 0, peak 634 MB (meter_l2a1_86d.log). Question: has this project already measured or refuted thinning whole-VI reads, checkpointed diffs, or a read-driven memory cause of error 2?
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c86-l2a1-checkpoints.txt (28816 chars)
+   review card tools\bench\cards\review_priorart-c86-l2a1-checkpoints.json
+OUTCOME: ANSWERED (91s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-25-priorart-c86-l2a1-checkpoints.md
+COST: $1.1576  in 16 / out 7798 / cache-create 104769 / cache-read 817128  (87s, 14 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c86-l2a1-checkpoints verdict=novel -> tools\bench\cards\verdict_priorart-c86-l2a1-checkpoints.json
+--- ANSWER ---
+**Verdict: novel, with one scoped `contradicted` finding.** The checkpoint thinning in `stage_d1_l2a1.py` and `stagexec.py` has not been built, tried or refuted here before. One sentence in Pre-decided 193, the one naming the cause of error 2, claims more than the measurements show and conflicts with a closed measurement.
+
+## PART A: the direction
+
+**A1 Settled already: no.** No earlier decision thins whole-VI reads in the stage executor. The nearest precedent is `docs/cycle27-plan.md:257-259` (route B, run 9). There, the census walks were "taken ONCE and cached — never per row", because "a per-row `fresh=True` re-walk is the traverse volume that is a candidate cause of run 8's 6 → 11 `error 2` worsening". That was a census cache inside `build_d1_routeb_v6.py:2160-2256`, not an executor checkpoint set. Error 2 still killed run 9 (`cycle27-plan.md:290-291`), but the reads there were `report_all(Diagram)`/`(Wire)`, not a checkpointed whole-graph diff. It is a precedent, not the same work.
+
+**A2 Refuted already: no, for the mechanism.** Something close to the cause was measured and closed:
+- `docs/REFERENCES.md:211`: traverse-only, 20 × `report_all(Diagram)`, gave **+9 handles and −0.1 MB**, with no error 2.
+- `docs/REFERENCES.md:213-217`: all of the +34.6 MB drift in the traverse-and-edit arm was VI growth, so "not a traverse leak".
+- `docs/cycle27-plan.md:329-336` withdrew the traverse-leak cause: "`error 2`'s cause returns to OPEN".
+
+That measurement does **not** cover the case in Pre-decided 193. It used `report_all(Diagram)` (170 objects) on the pristine 2a78 copy with no edits in between. The new case is `report_all(GObject)` plus an ~11.7 s terminals pass on the ~480 KB D1_k-derived bed, after 40+ edits. So it does not refute thinning, which 86d supports empirically: 9 reads, all 42 ops, diff 0, peak 634 MB, and `meter_l2a1_86d.log:696` records "error 2 no".
+
+**A3 Contradicted: yes, but only the causal sentence.**
+- Pre-decided 193 (`docs/d1-loop12-17-split-plan.md:962`) says: "⇒ **Error 2 is caused by the accumulated whole-VI reads, not by act 45.**"
+- The review it cites (`archive/peer/2026-09-25-hyp-meter86c-err2.md:74`) says "unverified, and I lean against the claim". Its own reading rule (`:105`) gives a clean 86d result as "the cause is reads **or accumulated memory**", with the no-edit read loop as the second leg that would separate the two.
+- The same review says at `:81-84`: "Reads have not been shown to leak … the traverse-only arm was measured flat … +140.4 MB says only when memory grew, not that it is retained … the growth cannot be pinned on the GObject traverse."
+- Pre-decided 193(:973) then declines that second leg.
+
+So the "⇒" line claims a cause that the review, and REFERENCES §4a-bis, say is not established. What 86d does show: with 9 reads, act 45 does not produce error 2, and the run fits under 700 MB. The claim is still unproven either way. `com-driving.md:308-312` attributes error 2 to accumulated load in general, and has a different observed ceiling (~770 MB against 695 MB).
+
+**A4 Unread evidence:** `docs/REFERENCES.md:200-230` (§4a-bis). Pre-decided 192 cites it (`:931-933`), but Pre-decided 193's causal line does not reconcile with it.
+
+## PART B: the artefact
+
+- **B1 Already built: no.** Checkpoints exist only as the card 86-4 change itself (`tools/stagexec.py:779-787`, `:876-919`, self-tests T35/T35b/T35c at `:2004-2029`). `stagesim.py:895` carries a per-act `checkpoint` field, but that is plan metadata, not a read-thinning executor.
+- **B2 Already failed: no.** No checkpointed stage run is on record before 86d.
+- **B3 Helper exists: no.** MEMSTOP reuses `stagekit.private_bytes()` (`stagekit.py:177`) and `bench_prep.labview_handles()` (`stagexec.py:1089-1090`), which is correct reuse. The fresh-read-plus-one-retry on a stale read reuses `addr.retrack()` (`:911`).
+- **B4 Already measured: partly.** The traverse-only memory cost was measured (REFERENCES:211), but on a different read class and a different VI, as covered in A2.
+
+**What releases this:** amend Pre-decided 193:962 to say something like "error 2 does not occur with 9 reads; whether reads or accumulated memory is the cause stays open (hyp-meter86c-err2:105; REFERENCES §4a-bis)". The checkpoint set, MEMSTOP 700 and stage run 1 need no change.
+
+PRIOR-ART: contradicted
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c86-l2a1-checkpoints","verdict":"novel","alternative":"Checkpointed executor reads are new here; only precedent is route-B's cache-walks-once census (cycle27-plan:257-259). But PD193:962 'error 2 is caused by accumulated whole-VI reads' contradicts REFERENCES:211-217 (traverse-only flat) and hyp-meter86c-err2:74,81-84,105 (reads OR accumulated memory).","discriminating_test":"Not needed for the build (86d: 9 reads, 42 ops, diff 0, 634 MB, no error 2). To settle the cause: the review's no-edit report_all(GObject)+terminals loop on the step_44 graph, logging private bytes per call (hyp-meter86c-err2:105).","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:962","docs/d1-loop12-17-split-plan.md:973","docs/REFERENCES.md:211","docs/REFERENCES.md:213-217","docs/cycle27-plan.md:257-259","docs/cycle27-plan.md:329-336","archive/peer/2026-09-25-hyp-meter86c-err2.md:81-84","archive/peer/2026-09-25-hyp-meter86c-err2.md:105","tools/bench/meter_l2a1_86d.log:696"],"note":"Mechanism novel; release = reword PD193:962 causal line to 'reads or accumulated memory, cause open'. Checkpoint set, MEMSTOP and run 1 need no change."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c86-l2a1-checkpoints.md
+   STOP RECORD armed: tools/recipes/stage_d1_l2a1.py sha ac1d101830c0 verdict contradicted -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 95s

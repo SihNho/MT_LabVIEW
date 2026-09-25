@@ -1,0 +1,12 @@
+{
+ "schema": "review/1",
+ "id": "hyp-meter86c-err2",
+ "role": "hypothesis",
+ "claim": "LabVIEW error 2 after op 41 (act 45) in the full replay is caused by memory accumulated by ~41 whole-VI GObject traverse reads (OpReportAll_v0), not by act 45's wire itself.",
+ "predicted": "after op 41 the uid read-back shows the wire on #6007 with sole source #6007 (owner #5680) and sole sink #5082 on #5058",
+ "observed": "meter_l2a1_86c.log:682-686: op 41 wire_tunouter err '' at 695.0 MB; the next whole-VI read raised error 2 (Traverse for GObjects, OpReportAll_v0); read-back empty (log:734); ops 1-40 diff 0; reads summed +140.4 MB vs edits +1.7 MB (log:730)",
+ "ruled_out": ["plan/sim divergence: 41 per-op diffs all 0 (log:733)", "op 41 edit error: returned err '' and node census 635->635 (log:682-684)"],
+ "attachments": [{"path": "tools/bench/meter_l2a1_86c.log"}, {"path": "tools/bench/meter_l2a1_86c.py"}, {"path": "tools/stagexec.py"}, {"path": "archive/peer/2026-09-25-hyp-unroutable-err2-85.md"}],
+ "ask": "refute",
+ "note": "card 86-2; error 2 is a result of this measurement card, the question is its cause and the cheapest separating run"
+}

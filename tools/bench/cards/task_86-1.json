@@ -1,0 +1,58 @@
+{
+ "schema": "task/1",
+ "id": "86-1",
+ "kind": "measure",
+ "goal": "PD192 (a) private-bytes+handles meter per op/read in stagexec + selftest; (b) fresh LV: act 45 alone after prefix, sink uid read-back (#5082); (c) fresh LV: full metered replay on scratch, no save",
+ "why": "Cycle 85 real scratch: acts 1-44 diff 0, act 45 no error, then report_all(GObject) raised LabVIEW error 2 (memory full) (unroutable_l2a1_85.log:562); handles 33,954 -> 46,075 on 40 acts. Cause OPEN (cycle27-plan.md:329-336). Run 1 waits on these numbers.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "b7cbe41bc8a74c10d2ee494837df941d"},
+  {"path": "archive/peer/2026-09-25-hyp-unroutable-err2-85.md"},
+  {"path": "tools/stagexec.py", "md5": "4186fcb48e8941958fb1499aabe63789"},
+  {"path": "tools/stagekit.py", "md5": "0ce61c08a5f819efbc08790d19a6dd57"},
+  {"path": "tools/bench/unroutable_l2a1_85.py", "md5": "70b2251a82fc2c49a874daf07d0036c2"},
+  {"path": "tools/bench/sim/l2a1/stageplan_l2a1.json", "md5": "329d89eecaa2706ccce38640dbede5aa"},
+  {"path": "tools/recipes/stage_d1_l2a1.py", "md5": "d40e1e1613c3b725f0b44e6e502c97c1"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_20260925_100155.vi", "md5": "6cf5b0777aafa12112d8a786a9eed1ed"}
+ ],
+ "pass": [
+  "(a) stagexec logs private bytes (MB) + handle count per op and per read; loud stop threshold stated with its basis; selftest count + new stagexec md5; dry run 42/42 still 0 unroutable",
+  "(b) fresh LV, act 45 alone: sink read back by uid (expect #5082), sole source = planned tunnel, Is Broken? False; private MB + handles per step",
+  "(c) fresh LV, full metered replay, no save: per-op MB delta at mutate vs at read, handles, last act reached, error 2 at which act, peak MB",
+  "D1_k md5 unchanged; scratches deleted; LabVIEW gone (tasklist) at the end"
+ ],
+ "outputs": ["tools/stagexec.py", "tools/bench/selftest_stagexec*", "tools/bench/meter_l2a1_86*.log", "tools/bench/meter_l2a1_86*.json"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagekit.py",
+   "tools/bench/selftest_stagexec*",
+   "tools/bench/meter_l2a1_86*",
+   "tools/bench/dry_l2a1_86*",
+   "tools/bench/unroutable_l2a1_86*",
+   "tools/bench/sim/l2a1/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_scratch_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 100},
+ "rules": [
+  "do NOT launch tools/recipes/stage_d1_l2a1.py (the judgement session decides run 1 from these numbers)",
+  "do NOT repair OpReportAll_v0 (REFERENCES 4a-bis; only the user may overturn it)",
+  "never save D1_k; scratch copies only, deleted after",
+  "every LabVIEW run under bgrun with --max-min; restart LabVIEW fresh before (b) and before (c)",
+  "(b) and (c) are measurements: report the numbers, do not choose a remedy",
+  "failed gate -> JEV-LADDER NEXT-ACTION first; review owed -> hypothesis review (review/1) then stop",
+  "result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

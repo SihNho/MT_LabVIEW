@@ -1,0 +1,778 @@
+BGRUN START 2026-09-25 23:52:24 limit 60.0 min: py -u tools/recipes/stage_d1_l2a1.py
+BGRUN STAGE-RUN recorded stage_d1_l2a1.py cycle='cycle 86' card=None pid=1464 -> stage_runs.jsonl
+stage_d1_l2a1 - cycle 81 STAGE L2-A1 (docs/d1-loop12-17-split-plan.md Pre-decided 181(d), 182, 183; executed, not re-decided).
+INPUT the bed claudeDev\D1_k_20260925_100155.vi (6cf5b077..., named by the plan's base graph), FRESH LabVIEW -> claudeDev\D1_l2_a1_<ts>.vi
+(rule-6 GUI save when ExecState 0 - the 9 PB rows are open by design). ROWS ONLY FROM THE FINALIZED PLAN tools/bench/sim/l2a1/plan_l2a1.json
+(its finalized.plan_in = stageplan_l2a1.json md5 329d89ee, PD183(e) pos rows, sim_l2a1_81c.log); no uid and no terminal name is typed here, except
+the PD183(d) sink-gate ACTION ID, looked up in the plan.
+PRIOR ART: stage_d1_k.py (the skeleton), stagexec (sink_gates 80-3), diag_ctlterm_read_80.py (179(b) reader), sim_l2a1_81b.py (frame-keyed S1,
+frame-uid set). No new op. PREDICTION: E1 each real op == its step (42 ops); CT 179(b) reader on every ControlTerminal row (ONE row, a
+ControlTerminal, wire partners == the simulated end's) - also the rw_10988_17272 sink gate; P2 second pass (wire_delta 0, Is Broken? False)
+on tunnel/register node sinks (PD184: connect sinks = E1 + RBW); FU frame-uid sets of moved Cases equal and non-empty; PB frame-keyed cdiff == the 9 open_rows (FATAL, pre-save);
+RBW on a scratch of the saved file deletes no re-wired sink's wire; ES recorded; md5/pins unchanged; refs closed; LabVIEW gone at exit.
+    MATERIAL=1 py tools/bgrun.py --max-min 80 --log tools/bench/stage_d1_l2a1.log -- py -u tools/recipes/stage_d1_l2a1.py
+  PASS  L0 the executed plan is FINAL and its plan_in is the PD183(e) stageplan (md5 329d89ee)  ('046237e1ab47d2d6f9faee2fc7bec9a3', {'path': 'tools/bench/sim/l2a1/stageplan_l2a1.json', 'md5': '329d89eecaa2706ccce38640dbede5aa'})
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 257 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 6cf5b0777aafa12112d8a786a9eed1ed  got 6cf5b0777aafa12112d8a786a9eed1ed
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33980
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_l2_a1_20260925_235224.vi
+  FACT  ExecState [after open] D1_l2_a1_20260925_235224.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so D1_l2_a1_20260925_235224.vi is deleted at close
+  PASS  L1 every plan action compiled into exactly one real op (46 -> 42); sink_gates [{'gate': 'CT-rw_10988_17272', 'sink': [17272, 'min value']}]; CT rows [5634, 17272, 17487, 23541]  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46]
+  METER start  k   0  private 569.7 MB (d -)  handles 45624 (d -)
+  METER read   k   0  private 577.7 MB (d +8.0)  handles 45718 (d +94)
+  STEPX 00 base read vs step_00: diff 0
+  PARITY 3 touched diagram(s) [639, 686, 23166]: one-side-only Nodes[] entries 0
+  PRIME 17 terminal indexes proved at base; 4 ControlTerminal end(s) by 179(b); unprovable []
+  CHECKPOINTS whole-VI read+diff after ops [15, 19, 23, 27, 28, 40, 41, 42] of 42
+  METER pre    k   1  private 563.2 MB (d -14.5)  handles 45772 (d +54)
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #5540 -> Diagram[21] at (3771, 1033) -> err '' (0.1 s)
+  FACT  move_in #5540 AFTER node census: 636 rows
+  FACT  move_in #5540 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(24354, 'Invoke', (4593, 5723))]
+  FACT  move_in #5540 new #24354 #24354 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 3, 'nodes_on_diagram': 4, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.8 s)
+  FACT  move_in #5540 new #24354 terminal table of #24354 (Diagram idx 21, Nodes[3], echo 24354): 6 terminal(s)
+  FACT      move_in #5540 new #24354 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5540 new #24354 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5540 new #24354 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5540 new #24354 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5540 new #24354 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5540 new #24354 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #5540 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #5540 purge delete Node #24354 at index 98: gone [24354], error '', census 636 -> 635, still present False (1.24 s)
+  FACT  move_in #5540 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #5540 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k   1  private 563.9 MB (d +0.7)  handles 45868 (d +96)
+  STEPX 01 move_in        acts [1] ids ['mv_5540'] diff skipped (not a checkpoint)
+  METER pre    k   2  private 563.9 MB (d +0.0)  handles 45868 (d +0)
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #9647 -> Diagram[21] at (3204, 995) -> err '' (0.1 s)
+  FACT  move_in #9647 AFTER node census: 636 rows
+  FACT  move_in #9647 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(9363, 'Invoke', (4593, 5723))]
+  FACT  move_in #9647 new #9363 #9363 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 4, 'nodes_on_diagram': 5, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.8 s)
+  FACT  move_in #9647 new #9363 terminal table of #9363 (Diagram idx 21, Nodes[4], echo 9363): 6 terminal(s)
+  FACT      move_in #9647 new #9363 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #9647 new #9363 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #9647 new #9363 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #9647 new #9363 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #9647 new #9363 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #9647 new #9363 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #9647 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #9647 purge delete Node #9363 at index 98: gone [9363], error '', census 636 -> 635, still present False (1.24 s)
+  FACT  move_in #9647 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #9647 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k   2  private 564.2 MB (d +0.3)  handles 45868 (d +0)
+  STEPX 02 move_in        acts [2] ids ['mv_9647'] diff skipped (not a checkpoint)
+  METER pre    k   3  private 564.2 MB (d +0.0)  handles 45868 (d +0)
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #10247 -> Diagram[21] at (3626, 1023) -> err '' (0.1 s)
+  FACT  move_in #10247 AFTER node census: 636 rows
+  FACT  move_in #10247 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(9363, 'Invoke', (4593, 5723))]
+  FACT  move_in #10247 new #9363 #9363 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 5, 'nodes_on_diagram': 6, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.8 s)
+  FACT  move_in #10247 new #9363 terminal table of #9363 (Diagram idx 21, Nodes[5], echo 9363): 6 terminal(s)
+  FACT      move_in #10247 new #9363 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10247 new #9363 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10247 new #9363 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10247 new #9363 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10247 new #9363 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10247 new #9363 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #10247 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #10247 purge delete Node #9363 at index 98: gone [9363], error '', census 636 -> 635, still present False (1.24 s)
+  FACT  move_in #10247 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #10247 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k   3  private 565.4 MB (d +1.2)  handles 45865 (d -3)
+  STEPX 03 move_in        acts [3] ids ['mv_10247'] diff skipped (not a checkpoint)
+  METER pre    k   4  private 565.4 MB (d +0.0)  handles 45865 (d +0)
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #10445 -> Diagram[21] at (3305, 972) -> err '' (0.1 s)
+  FACT  move_in #10445 AFTER node census: 636 rows
+  FACT  move_in #10445 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(9363, 'Invoke', (4593, 5723))]
+  FACT  move_in #10445 new #9363 #9363 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 6, 'nodes_on_diagram': 7, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.8 s)
+  FACT  move_in #10445 new #9363 terminal table of #9363 (Diagram idx 21, Nodes[6], echo 9363): 6 terminal(s)
+  FACT      move_in #10445 new #9363 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10445 new #9363 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10445 new #9363 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10445 new #9363 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10445 new #9363 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10445 new #9363 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #10445 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #10445 purge delete Node #9363 at index 98: gone [9363], error '', census 636 -> 635, still present False (1.24 s)
+  FACT  move_in #10445 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #10445 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k   4  private 565.5 MB (d +0.1)  handles 45864 (d -1)
+  STEPX 04 move_in        acts [4] ids ['mv_10445'] diff skipped (not a checkpoint)
+  METER pre    k   5  private 565.5 MB (d +0.0)  handles 45864 (d +0)
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #10950 -> Diagram[21] at (3073, 976) -> err '' (0.1 s)
+  FACT  move_in #10950 AFTER node census: 636 rows
+  FACT  move_in #10950 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(9363, 'Invoke', (4593, 5723))]
+  FACT  move_in #10950 new #9363 #9363 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 7, 'nodes_on_diagram': 8, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.8 s)
+  FACT  move_in #10950 new #9363 terminal table of #9363 (Diagram idx 21, Nodes[7], echo 9363): 6 terminal(s)
+  FACT      move_in #10950 new #9363 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10950 new #9363 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10950 new #9363 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10950 new #9363 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10950 new #9363 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10950 new #9363 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #10950 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #10950 purge delete Node #9363 at index 98: gone [9363], error '', census 636 -> 635, still present False (1.23 s)
+  FACT  move_in #10950 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #10950 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k   5  private 565.8 MB (d +0.3)  handles 45865 (d +1)
+  STEPX 05 move_in        acts [5] ids ['mv_10950'] diff skipped (not a checkpoint)
+  METER pre    k   6  private 565.8 MB (d +0.0)  handles 45865 (d +0)
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #17289 -> Diagram[21] at (2946, 964) -> err '' (0.1 s)
+  FACT  move_in #17289 AFTER node census: 636 rows
+  FACT  move_in #17289 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(9363, 'Invoke', (4593, 5723))]
+  FACT  move_in #17289 new #9363 #9363 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 7, 'nodes_on_diagram': 9, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.8 s)
+  FACT  move_in #17289 new #9363 terminal table of #9363 (Diagram idx 21, Nodes[7], echo 9363): 6 terminal(s)
+  FACT      move_in #17289 new #9363 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #17289 new #9363 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #17289 new #9363 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #17289 new #9363 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #17289 new #9363 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #17289 new #9363 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #17289 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #17289 purge delete Node #9363 at index 99: gone [9363], error '', census 636 -> 635, still present False (1.24 s)
+  FACT  move_in #17289 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #17289 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k   6  private 566.2 MB (d +0.4)  handles 45864 (d -1)
+  STEPX 06 move_in        acts [6] ids ['mv_17289'] diff skipped (not a checkpoint)
+  METER pre    k   7  private 566.2 MB (d +0.0)  handles 45864 (d +0)
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #10969 -> Diagram[21] at (4586, 1411) -> err '' (0.1 s)
+  FACT  move_in #10969 AFTER node census: 636 rows
+  FACT  move_in #10969 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(9363, 'Invoke', (4593, 5723))]
+  FACT  move_in #10969 new #9363 #9363 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 9, 'nodes_on_diagram': 10, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.8 s)
+  FACT  move_in #10969 new #9363 terminal table of #9363 (Diagram idx 21, Nodes[9], echo 9363): 6 terminal(s)
+  FACT      move_in #10969 new #9363 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10969 new #9363 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10969 new #9363 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10969 new #9363 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10969 new #9363 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10969 new #9363 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #10969 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #10969 purge delete Node #9363 at index 98: gone [9363], error '', census 636 -> 635, still present False (1.24 s)
+  FACT  move_in #10969 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #10969 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k   7  private 568.9 MB (d +2.7)  handles 45864 (d +0)
+  STEPX 07 move_in        acts [7] ids ['mv_10969'] diff skipped (not a checkpoint)
+  METER pre    k   8  private 568.9 MB (d +0.0)  handles 45860 (d -4)
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #10757 -> Diagram[21] at (4702, 1361) -> err '' (0.1 s)
+  FACT  move_in #10757 AFTER node census: 636 rows
+  FACT  move_in #10757 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(9363, 'Invoke', (4593, 5723))]
+  FACT  move_in #10757 new #9363 #9363 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  move_in #10757 new #9363 terminal table of #9363 (Diagram idx 21, Nodes[10], echo 9363): 6 terminal(s)
+  FACT      move_in #10757 new #9363 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10757 new #9363 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10757 new #9363 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10757 new #9363 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10757 new #9363 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10757 new #9363 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #10757 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #10757 purge delete Node #9363 at index 98: gone [9363], error '', census 636 -> 635, still present False (1.24 s)
+  FACT  move_in #10757 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #10757 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k   8  private 569.2 MB (d +0.3)  handles 45857 (d -3)
+  STEPX 08 move_in        acts [8] ids ['mv_10757'] diff skipped (not a checkpoint)
+  METER pre    k   9  private 569.2 MB (d +0.0)  handles 45856 (d -1)
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #17487 -> Diagram[21] at (3160, 987) -> err '' (0.1 s)
+  FACT  move_in #17487 AFTER node census: 636 rows
+  FACT  move_in #17487 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(9363, 'Invoke', (4593, 5723))]
+  FACT  move_in #17487 new #9363 #9363 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  move_in #17487 new #9363 terminal table of #9363 (Diagram idx 21, Nodes[10], echo 9363): 6 terminal(s)
+  FACT      move_in #17487 new #9363 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #17487 new #9363 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #17487 new #9363 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #17487 new #9363 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #17487 new #9363 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #17487 new #9363 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #17487 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #17487 purge delete Node #9363 at index 98: gone [9363], error '', census 636 -> 635, still present False (1.24 s)
+  FACT  move_in #17487 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #17487 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k   9  private 569.9 MB (d +0.7)  handles 45857 (d +1)
+  STEPX 09 move_in        acts [9] ids ['mv_17487'] diff skipped (not a checkpoint)
+  METER pre    k  10  private 569.9 MB (d +0.0)  handles 45857 (d +0)
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #5634 -> Diagram[21] at (3498, 1024) -> err '' (0.1 s)
+  FACT  move_in #5634 AFTER node census: 636 rows
+  FACT  move_in #5634 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(9363, 'Invoke', (4593, 5723))]
+  FACT  move_in #5634 new #9363 #9363 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  move_in #5634 new #9363 terminal table of #9363 (Diagram idx 21, Nodes[10], echo 9363): 6 terminal(s)
+  FACT      move_in #5634 new #9363 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5634 new #9363 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5634 new #9363 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5634 new #9363 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5634 new #9363 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5634 new #9363 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #5634 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #5634 purge delete Node #9363 at index 98: gone [9363], error '', census 636 -> 635, still present False (1.25 s)
+  FACT  move_in #5634 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #5634 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k  10  private 570.6 MB (d +0.7)  handles 45857 (d +0)
+  STEPX 10 move_in        acts [10] ids ['mv_5634'] diff skipped (not a checkpoint)
+  METER pre    k  11  private 570.6 MB (d +0.0)  handles 45856 (d -1)
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #23541 -> Diagram[21] at (2759, 4933) -> err '' (0.1 s)
+  FACT  move_in #23541 AFTER node census: 636 rows
+  FACT  move_in #23541 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(9363, 'Invoke', (4593, 5723))]
+  FACT  move_in #23541 new #9363 #9363 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  move_in #23541 new #9363 terminal table of #9363 (Diagram idx 21, Nodes[10], echo 9363): 6 terminal(s)
+  FACT      move_in #23541 new #9363 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #23541 new #9363 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #23541 new #9363 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #23541 new #9363 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #23541 new #9363 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #23541 new #9363 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #23541 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #23541 purge delete Node #9363 at index 98: gone [9363], error '', census 636 -> 635, still present False (1.25 s)
+  FACT  move_in #23541 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #23541 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k  11  private 574.0 MB (d +3.4)  handles 45856 (d +0)
+  STEPX 11 move_in        acts [11] ids ['mv_23541'] diff skipped (not a checkpoint)
+  METER pre    k  12  private 574.0 MB (d +0.0)  handles 45856 (d +0)
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #10739 -> Diagram[21] at (3049, 984) -> err '' (0.1 s)
+  FACT  move_in #10739 AFTER node census: 636 rows
+  FACT  move_in #10739 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(9363, 'Invoke', (4593, 5723))]
+  FACT  move_in #10739 new #9363 #9363 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  move_in #10739 new #9363 terminal table of #9363 (Diagram idx 21, Nodes[10], echo 9363): 6 terminal(s)
+  FACT      move_in #10739 new #9363 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10739 new #9363 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10739 new #9363 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10739 new #9363 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10739 new #9363 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10739 new #9363 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #10739 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #10739 purge delete Node #9363 at index 98: gone [9363], error '', census 636 -> 635, still present False (1.26 s)
+  FACT  move_in #10739 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #10739 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k  12  private 575.1 MB (d +1.1)  handles 45856 (d +0)
+  STEPX 12 move_in        acts [12] ids ['mv_10739'] diff skipped (not a checkpoint)
+  METER pre    k  13  private 575.1 MB (d +0.0)  handles 45856 (d +0)
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #10929 -> Diagram[21] at (4678, 1373) -> err '' (0.1 s)
+  FACT  move_in #10929 AFTER node census: 636 rows
+  FACT  move_in #10929 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(9363, 'Invoke', (4593, 5723))]
+  FACT  move_in #10929 new #9363 #9363 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  move_in #10929 new #9363 terminal table of #9363 (Diagram idx 21, Nodes[10], echo 9363): 6 terminal(s)
+  FACT      move_in #10929 new #9363 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10929 new #9363 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10929 new #9363 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10929 new #9363 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10929 new #9363 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #10929 new #9363 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #10929 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #10929 purge delete Node #9363 at index 98: gone [9363], error '', census 636 -> 635, still present False (1.24 s)
+  FACT  move_in #10929 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #10929 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k  13  private 575.3 MB (d +0.2)  handles 45857 (d +1)
+  STEPX 13 move_in        acts [13] ids ['mv_10929'] diff skipped (not a checkpoint)
+  METER pre    k  14  private 575.3 MB (d +0.0)  handles 45857 (d +0)
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #17272 -> Diagram[21] at (4656, 1415) -> err '' (0.1 s)
+  FACT  move_in #17272 AFTER node census: 636 rows
+  FACT  move_in #17272 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(9363, 'Invoke', (4593, 5723))]
+  FACT  move_in #17272 new #9363 #9363 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  move_in #17272 new #9363 terminal table of #9363 (Diagram idx 21, Nodes[10], echo 9363): 6 terminal(s)
+  FACT      move_in #17272 new #9363 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #17272 new #9363 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #17272 new #9363 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #17272 new #9363 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #17272 new #9363 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #17272 new #9363 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #17272 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #17272 purge delete Node #9363 at index 98: gone [9363], error '', census 636 -> 635, still present False (1.25 s)
+  FACT  move_in #17272 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #17272 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k  14  private 576.3 MB (d +1.0)  handles 45856 (d -1)
+  STEPX 14 move_in        acts [14] ids ['mv_17272'] diff skipped (not a checkpoint)
+  METER pre    k  15  private 576.3 MB (d +0.0)  handles 45856 (d +0)
+  FACT  add_shift_reg node census: 635 rows
+  FACT  OP add_shift_reg loop[1] y=120 -> err '' (0.1 s)
+  FACT  add_sr #10170 AFTER node census: 635 rows
+  FACT  add_sr #10170 CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k  15  private 576.3 MB (d +0.0)  handles 45878 (d +22)
+  METER read   k  15  private 581.8 MB (d +5.5)  handles 45878 (d +0)
+  STEPX 15 add_sr         acts [15] ids ['sr1'] bound {-1: 10850, -2: 25240} diff 0
+  METER pre    k  16  private 582.7 MB (d +0.9)  handles 45877 (d -1)
+  FACT  connect_from_wire node census: 635 rows
+  FACT  OP connect_from_wire sink D[19].N[22].t10 <- w2731[0] -> err '' (0.3 s)
+  FACT  connect #2892->#25315 AFTER node census: 636 rows
+  FACT  connect #2892->#25315 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(9363, 'Invoke', (1985, 112))]
+  FACT  connect #2892->#25315 new #9363 #9363 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 24, 'nodes_on_diagram': 25, 'label': 'Invoke Node'}  (20 diagram(s) scanned of 173, 0.8 s)
+  FACT  connect #2892->#25315 new #9363 terminal table of #9363 (Diagram idx 19, Nodes[24], echo 9363): 6 terminal(s)
+  FACT      connect #2892->#25315 new #9363 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #2892->#25315 new #9363 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #2892->#25315 new #9363 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #2892->#25315 new #9363 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #2892->#25315 new #9363 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #2892->#25315 new #9363 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  connect #2892->#25315 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  connect #2892->#25315 purge delete Node #9363 at index 93: gone [9363], error '', census 636 -> 635, still present False (1.25 s)
+  FACT  connect #2892->#25315 AFTER THE PURGE node census: 635 rows
+  FACT  connect #2892->#25315 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k  16  private 583.6 MB (d +0.9)  handles 45968 (d +91)
+  STEPX 16 connect        acts [16] ids ['sr1_init'] diff skipped (not a checkpoint)
+  METER pre    k  17  private 583.5 MB (d -0.1)  handles 45968 (d +0)
+  FACT  wire_sr node census: 635 rows
+  FACT  OP wire_sr RightIn loop[1] reg[1] {'node_index': 1, 'term_index': 4} -> err '' (0.1 s)
+  FACT  wire_sr RightIn AFTER node census: 635 rows
+  FACT  wire_sr RightIn CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k  17  private 583.5 MB (d +0.0)  handles 46023 (d +55)
+  STEPX 17 wire_sr        acts [17] ids ['sr1_R'] diff skipped (not a checkpoint)
+  METER pre    k  18  private 583.5 MB (d +0.0)  handles 46023 (d +0)
+  FACT  wire_sr node census: 635 rows
+  FACT  OP wire_sr LeftIn loop[1] reg[1] {'node_index': 2, 'term_index': 5} -> err '' (0.0 s)
+  FACT  wire_sr LeftIn AFTER node census: 635 rows
+  FACT  wire_sr LeftIn CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k  18  private 583.6 MB (d +0.1)  handles 46049 (d +26)
+  STEPX 18 wire_sr        acts [18] ids ['sr1_L0'] diff skipped (not a checkpoint)
+  METER pre    k  19  private 583.5 MB (d -0.1)  handles 46048 (d -1)
+  FACT  add_shift_reg node census: 635 rows
+  FACT  OP add_shift_reg loop[1] y=120 -> err '' (0.0 s)
+  FACT  add_sr #10170 AFTER node census: 635 rows
+  FACT  add_sr #10170 CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k  19  private 587.5 MB (d +4.0)  handles 46049 (d +1)
+  METER read   k  19  private 592.8 MB (d +5.3)  handles 46049 (d +0)
+  STEPX 19 add_sr         acts [19] ids ['sr2'] bound {-9: 25339, -10: 25344} diff 0
+  METER pre    k  20  private 592.8 MB (d +0.0)  handles 46049 (d +0)
+  FACT  connect_from_wire node census: 635 rows
+  FACT  OP connect_from_wire sink D[19].N[22].t12 <- w5812[0] -> err '' (0.3 s)
+  FACT  connect #5820->#25363 AFTER node census: 636 rows
+  FACT  connect #5820->#25363 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(9363, 'Invoke', (1985, 112))]
+  FACT  connect #5820->#25363 new #9363 #9363 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 24, 'nodes_on_diagram': 25, 'label': 'Invoke Node'}  (20 diagram(s) scanned of 173, 0.8 s)
+  FACT  connect #5820->#25363 new #9363 terminal table of #9363 (Diagram idx 19, Nodes[24], echo 9363): 6 terminal(s)
+  FACT      connect #5820->#25363 new #9363 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5820->#25363 new #9363 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5820->#25363 new #9363 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5820->#25363 new #9363 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5820->#25363 new #9363 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5820->#25363 new #9363 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  connect #5820->#25363 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  connect #5820->#25363 purge delete Node #9363 at index 93: gone [9363], error '', census 636 -> 635, still present False (1.26 s)
+  FACT  connect #5820->#25363 AFTER THE PURGE node census: 635 rows
+  FACT  connect #5820->#25363 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k  20  private 596.8 MB (d +4.0)  handles 46051 (d +2)
+  STEPX 20 connect        acts [20] ids ['sr2_init'] diff skipped (not a checkpoint)
+  METER pre    k  21  private 596.8 MB (d +0.0)  handles 46050 (d -1)
+  FACT  wire_sr node census: 635 rows
+  FACT  OP wire_sr RightIn loop[1] reg[2] {'node_index': 1, 'term_index': 3} -> err '' (0.0 s)
+  FACT  wire_sr RightIn AFTER node census: 635 rows
+  FACT  wire_sr RightIn CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k  21  private 596.8 MB (d +0.0)  handles 46051 (d +1)
+  STEPX 21 wire_sr        acts [21] ids ['sr2_R'] diff skipped (not a checkpoint)
+  METER pre    k  22  private 596.8 MB (d +0.0)  handles 46051 (d +0)
+  FACT  wire_sr node census: 635 rows
+  FACT  OP wire_sr LeftIn loop[1] reg[2] {'node_index': 2, 'term_index': 3} -> err '' (0.0 s)
+  FACT  wire_sr LeftIn AFTER node census: 635 rows
+  FACT  wire_sr LeftIn CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k  22  private 596.8 MB (d +0.0)  handles 46050 (d -1)
+  STEPX 22 wire_sr        acts [22] ids ['sr2_L0'] diff skipped (not a checkpoint)
+  METER pre    k  23  private 596.8 MB (d +0.0)  handles 46050 (d +0)
+  FACT  add_shift_reg node census: 635 rows
+  FACT  OP add_shift_reg loop[1] y=120 -> err '' (0.0 s)
+  FACT  add_sr #10170 AFTER node census: 635 rows
+  FACT  add_sr #10170 CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k  23  private 596.8 MB (d +0.0)  handles 46050 (d +0)
+  METER read   k  23  private 597.3 MB (d +0.5)  handles 46050 (d +0)
+  STEPX 23 add_sr         acts [23] ids ['sr3'] bound {-17: 25371, -18: 25382} diff 0
+  METER pre    k  24  private 597.4 MB (d +0.1)  handles 46051 (d +1)
+  FACT  connect_from_wire node census: 635 rows
+  FACT  OP connect_from_wire sink D[19].N[22].t14 <- w11253[0] -> err '' (0.3 s)
+  FACT  connect #10225->#25399 AFTER node census: 636 rows
+  FACT  connect #10225->#25399 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(9363, 'Invoke', (1985, 112))]
+  FACT  connect #10225->#25399 new #9363 #9363 lives at: {'diagram_index': 19, 'diagram_uid': 686, 'diagram_class': 'Diagram', 'nodes_index': 24, 'nodes_on_diagram': 25, 'label': 'Invoke Node'}  (20 diagram(s) scanned of 173, 0.8 s)
+  FACT  connect #10225->#25399 new #9363 terminal table of #9363 (Diagram idx 19, Nodes[24], echo 9363): 6 terminal(s)
+  FACT      connect #10225->#25399 new #9363 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #10225->#25399 new #9363 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #10225->#25399 new #9363 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #10225->#25399 new #9363 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #10225->#25399 new #9363 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #10225->#25399 new #9363 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  connect #10225->#25399 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  connect #10225->#25399 purge delete Node #9363 at index 93: gone [9363], error '', census 636 -> 635, still present False (1.26 s)
+  FACT  connect #10225->#25399 AFTER THE PURGE node census: 635 rows
+  FACT  connect #10225->#25399 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k  24  private 598.4 MB (d +1.0)  handles 46050 (d -1)
+  STEPX 24 connect        acts [24] ids ['sr3_init'] diff skipped (not a checkpoint)
+  METER pre    k  25  private 598.4 MB (d +0.0)  handles 46050 (d +0)
+  FACT  wire_sr node census: 635 rows
+  FACT  OP wire_sr RightIn loop[1] reg[3] {'node_index': 5, 'term_index': 3} -> err '' (0.0 s)
+  FACT  wire_sr RightIn AFTER node census: 635 rows
+  FACT  wire_sr RightIn CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k  25  private 598.5 MB (d +0.1)  handles 46050 (d +0)
+  STEPX 25 wire_sr        acts [25] ids ['sr3_R'] diff skipped (not a checkpoint)
+  METER pre    k  26  private 598.5 MB (d +0.0)  handles 46051 (d +1)
+  FACT  wire_sr node census: 635 rows
+  FACT  OP wire_sr LeftIn loop[1] reg[3] {'node_index': 5, 'term_index': 2} -> err '' (0.0 s)
+  FACT  wire_sr LeftIn AFTER node census: 635 rows
+  FACT  wire_sr LeftIn CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k  26  private 598.5 MB (d +0.0)  handles 46050 (d -1)
+  STEPX 26 wire_sr        acts [26] ids ['sr3_L0'] diff skipped (not a checkpoint)
+  METER pre    k  27  private 598.5 MB (d +0.0)  handles 46050 (d +0)
+  FACT  connect_from_wire node census: 635 rows
+  FACT  OP connect_from_wire sink D[21].N[2].t4 <- w2731[0] -> err '' (0.4 s)
+  FACT  connect #2892->#5741 AFTER node census: 636 rows
+  FACT  connect #2892->#5741 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(2731, 'Invoke', (4593, 5723))]
+  FACT  connect #2892->#5741 new #2731 #2731 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  connect #2892->#5741 new #2731 terminal table of #2731 (Diagram idx 21, Nodes[10], echo 2731): 6 terminal(s)
+  FACT      connect #2892->#5741 new #2731 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #2892->#5741 new #2731 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #2892->#5741 new #2731 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #2892->#5741 new #2731 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #2892->#5741 new #2731 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #2892->#5741 new #2731 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  connect #2892->#5741 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  connect #2892->#5741 purge delete Node #2731 at index 98: gone [2731], error '', census 636 -> 635, still present False (1.28 s)
+  FACT  connect #2892->#5741 AFTER THE PURGE node census: 635 rows
+  FACT  connect #2892->#5741 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k  27  private 598.5 MB (d +0.0)  handles 46050 (d +0)
+  METER read   k  27  private 602.6 MB (d +4.1)  handles 46051 (d +1)
+  STEPX 27 tunnel         acts [27, 28, 29] ids ['tun1', 'tun1_out', 'tun1_in'] bound {-25: 25422} diff 0
+  METER pre    k  28  private 608.6 MB (d +6.0)  handles 46051 (d +0)
+  FACT  connect_from_wire node census: 635 rows
+  FACT  OP connect_from_wire sink D[21].N[2].t1 <- w5812[0] -> err '' (0.4 s)
+  FACT  connect #5820->#5976 AFTER node census: 636 rows
+  FACT  connect #5820->#5976 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(2731, 'Invoke', (4593, 5723))]
+  FACT  connect #5820->#5976 new #2731 #2731 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  connect #5820->#5976 new #2731 terminal table of #2731 (Diagram idx 21, Nodes[10], echo 2731): 6 terminal(s)
+  FACT      connect #5820->#5976 new #2731 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5820->#5976 new #2731 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5820->#5976 new #2731 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5820->#5976 new #2731 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5820->#5976 new #2731 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5820->#5976 new #2731 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  connect #5820->#5976 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  connect #5820->#5976 purge delete Node #2731 at index 98: gone [2731], error '', census 636 -> 635, still present False (1.27 s)
+  FACT  connect #5820->#5976 AFTER THE PURGE node census: 635 rows
+  FACT  connect #5820->#5976 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k  28  private 608.5 MB (d -0.1)  handles 46050 (d -1)
+  METER read   k  28  private 612.5 MB (d +4.0)  handles 46045 (d -5)
+  STEPX 28 tunnel         acts [30, 31, 32] ids ['tun2', 'tun2_out', 'tun2_in'] bound {-29: 25428} diff 0
+  METER pre    k  29  private 612.5 MB (d +0.0)  handles 46045 (d +0)
+  FACT  connect_from_wire node census: 635 rows
+  FACT  OP connect_from_wire sink D[21].N[9].t0 <- w23807[0] -> err '' (0.3 s)
+  FACT  connect #5171->#10871 AFTER node census: 636 rows
+  FACT  connect #5171->#10871 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(2731, 'Invoke', (4593, 5723))]
+  FACT  connect #5171->#10871 new #2731 #2731 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  connect #5171->#10871 new #2731 terminal table of #2731 (Diagram idx 21, Nodes[10], echo 2731): 6 terminal(s)
+  FACT      connect #5171->#10871 new #2731 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5171->#10871 new #2731 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5171->#10871 new #2731 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5171->#10871 new #2731 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5171->#10871 new #2731 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5171->#10871 new #2731 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  connect #5171->#10871 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  connect #5171->#10871 purge delete Node #2731 at index 98: gone [2731], error '', census 636 -> 635, still present False (1.28 s)
+  FACT  connect #5171->#10871 AFTER THE PURGE node census: 635 rows
+  FACT  connect #5171->#10871 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k  29  private 612.6 MB (d +0.1)  handles 46046 (d +1)
+  STEPX 29 connect        acts [33] ids ['rw_5171_10871'] diff skipped (not a checkpoint)
+  METER pre    k  30  private 612.6 MB (d +0.0)  handles 46045 (d -1)
+  FACT  connect_from_wire node census: 635 rows
+  FACT  OP connect_from_wire sink D[21].N[8].t0 <- w23807[0] -> err '' (0.3 s)
+  FACT  connect #5171->#10975 AFTER node census: 636 rows
+  FACT  connect #5171->#10975 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(2731, 'Invoke', (4593, 5723))]
+  FACT  connect #5171->#10975 new #2731 #2731 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  connect #5171->#10975 new #2731 terminal table of #2731 (Diagram idx 21, Nodes[10], echo 2731): 6 terminal(s)
+  FACT      connect #5171->#10975 new #2731 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5171->#10975 new #2731 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5171->#10975 new #2731 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5171->#10975 new #2731 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5171->#10975 new #2731 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #5171->#10975 new #2731 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  connect #5171->#10975 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  connect #5171->#10975 purge delete Node #2731 at index 98: gone [2731], error '', census 636 -> 635, still present False (1.28 s)
+  FACT  connect #5171->#10975 AFTER THE PURGE node census: 635 rows
+  FACT  connect #5171->#10975 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k  30  private 612.7 MB (d +0.1)  handles 46045 (d +0)
+  STEPX 30 connect        acts [34] ids ['rw_5171_10975'] diff skipped (not a checkpoint)
+  METER pre    k  31  private 612.7 MB (d +0.0)  handles 46045 (d +0)
+  FACT  wire_control node census: 635 rows
+  FACT  OP wire_control 'Reset Tracking'@D[21] -> Function[32].'y' -> err '' (0.4 s)
+  FACT  connect #5634->#10256 AFTER node census: 635 rows
+  FACT  connect #5634->#10256 CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k  31  private 612.8 MB (d +0.1)  handles 46069 (d +24)
+  STEPX 31 connect        acts [35] ids ['rw_5634_10256'] diff skipped (not a checkpoint)
+  METER pre    k  32  private 612.7 MB (d -0.1)  handles 46069 (d +0)
+  FACT  connect_nested_v1 node census: 635 rows
+      op readback {'UID': 10445, 'Name': '', 'UID 2': 0, 'Is Broken?': False}
+  FACT  OP connect_nested_v1 D[21].N[5].t0 <- D[21].N[3].t0 -> err '' (0.4 s)
+  FACT  connect #9668->#10469 AFTER node census: 636 rows
+  FACT  connect #9668->#10469 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(2731, 'Invoke', (4593, 5723))]
+  FACT  connect #9668->#10469 new #2731 #2731 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  connect #9668->#10469 new #2731 terminal table of #2731 (Diagram idx 21, Nodes[10], echo 2731): 6 terminal(s)
+  FACT      connect #9668->#10469 new #2731 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #9668->#10469 new #2731 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #9668->#10469 new #2731 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #9668->#10469 new #2731 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #9668->#10469 new #2731 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #9668->#10469 new #2731 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  connect #9668->#10469 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  connect #9668->#10469 purge delete Node #2731 at index 98: gone [2731], error '', census 636 -> 635, still present False (1.28 s)
+  FACT  connect #9668->#10469 AFTER THE PURGE node census: 635 rows
+  FACT  connect #9668->#10469 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k  32  private 612.8 MB (d +0.1)  handles 46096 (d +27)
+  STEPX 32 connect        acts [36] ids ['rw_9668_10469'] diff skipped (not a checkpoint)
+  METER pre    k  33  private 612.8 MB (d +0.0)  handles 46096 (d +0)
+  FACT  connect_nested_v1 node census: 635 rows
+      op readback {'UID': 5540, 'Name': '', 'UID 2': 0, 'Is Broken?': False}
+  FACT  OP connect_nested_v1 D[21].N[2].t0 <- D[21].N[4].t0 -> err '' (0.4 s)
+  FACT  connect #10253->#5608 AFTER node census: 636 rows
+  FACT  connect #10253->#5608 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(2731, 'Invoke', (4593, 5723))]
+  FACT  connect #10253->#5608 new #2731 #2731 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  connect #10253->#5608 new #2731 terminal table of #2731 (Diagram idx 21, Nodes[10], echo 2731): 6 terminal(s)
+  FACT      connect #10253->#5608 new #2731 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #10253->#5608 new #2731 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #10253->#5608 new #2731 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #10253->#5608 new #2731 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #10253->#5608 new #2731 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #10253->#5608 new #2731 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  connect #10253->#5608 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  connect #10253->#5608 purge delete Node #2731 at index 98: gone [2731], error '', census 636 -> 635, still present False (1.29 s)
+  FACT  connect #10253->#5608 AFTER THE PURGE node census: 635 rows
+  FACT  connect #10253->#5608 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k  33  private 616.9 MB (d +4.1)  handles 46100 (d +4)
+  STEPX 33 connect        acts [37] ids ['rw_10253_5608'] diff skipped (not a checkpoint)
+  METER pre    k  34  private 616.9 MB (d +0.0)  handles 46100 (d +0)
+  FACT  connect_nested_v1 node census: 635 rows
+      op readback {'UID': 10247, 'Name': 'x', 'UID 2': 0, 'Is Broken?': False}
+  FACT  OP connect_nested_v1 D[21].N[4].t2 <- D[21].N[5].t1 -> err '' (0.4 s)
+  FACT  connect #10594->#10259 AFTER node census: 636 rows
+  FACT  connect #10594->#10259 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(2731, 'Invoke', (4593, 5723))]
+  FACT  connect #10594->#10259 new #2731 #2731 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  connect #10594->#10259 new #2731 terminal table of #2731 (Diagram idx 21, Nodes[10], echo 2731): 6 terminal(s)
+  FACT      connect #10594->#10259 new #2731 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #10594->#10259 new #2731 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #10594->#10259 new #2731 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #10594->#10259 new #2731 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #10594->#10259 new #2731 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #10594->#10259 new #2731 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  connect #10594->#10259 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  connect #10594->#10259 purge delete Node #2731 at index 98: gone [2731], error '', census 636 -> 635, still present False (1.29 s)
+  FACT  connect #10594->#10259 AFTER THE PURGE node census: 635 rows
+  FACT  connect #10594->#10259 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k  34  private 616.9 MB (d +0.0)  handles 46096 (d -4)
+  STEPX 34 connect        acts [38] ids ['rw_10594_10259'] diff skipped (not a checkpoint)
+  METER pre    k  35  private 616.9 MB (d +0.0)  handles 46096 (d +0)
+  FACT  wire_const node census: 635 rows
+  FACT  OP wire_const DigitalNumericConstant[30] #10739 -> Comparison[3].t1 -> err '' (0.4 s)
+  FACT  connect #10738->#11055 AFTER node census: 635 rows
+  FACT  connect #10738->#11055 CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k  35  private 617.0 MB (d +0.1)  handles 46115 (d +19)
+  STEPX 35 connect        acts [39] ids ['rw_10738_11055'] diff skipped (not a checkpoint)
+  METER pre    k  36  private 616.9 MB (d -0.1)  handles 46114 (d -1)
+  FACT  wire_const node census: 635 rows
+  FACT  OP wire_const DigitalNumericConstant[31] #10929 -> IndexArray[7].t2 -> err '' (0.3 s)
+  FACT  connect #10943->#10877 AFTER node census: 635 rows
+  FACT  connect #10943->#10877 CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k  36  private 616.9 MB (d +0.0)  handles 46115 (d +1)
+  STEPX 36 connect        acts [40] ids ['rw_10943_10877'] diff skipped (not a checkpoint)
+  METER pre    k  37  private 617.0 MB (d +0.1)  handles 46115 (d +0)
+  FACT  wire_ctlsink node census: 635 rows
+  FACT  OP wire_ctlsink ControlTerminal[28] #17272 <- Function[29].t3 -> err '' (0.4 s)
+  FACT  connect #10988->#17272 AFTER node census: 635 rows
+  FACT  connect #10988->#17272 CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k  37  private 617.0 MB (d +0.0)  handles 46132 (d +17)
+  STEPX 37 connect        acts [41] ids ['rw_10988_17272'] diff skipped (not a checkpoint)
+  METER pre    k  38  private 617.0 MB (d +0.0)  handles 46132 (d +0)
+  FACT  connect_nested_v1 node census: 635 rows
+      op readback {'UID': 9647, 'Name': 'x', 'UID 2': 0, 'Is Broken?': False}
+  FACT  OP connect_nested_v1 D[21].N[3].t2 <- D[21].N[6].t0 -> err '' (0.4 s)
+  FACT  connect #11052->#9680 AFTER node census: 636 rows
+  FACT  connect #11052->#9680 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(2731, 'Invoke', (4593, 5723))]
+  FACT  connect #11052->#9680 new #2731 #2731 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  connect #11052->#9680 new #2731 terminal table of #2731 (Diagram idx 21, Nodes[10], echo 2731): 6 terminal(s)
+  FACT      connect #11052->#9680 new #2731 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #11052->#9680 new #2731 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #11052->#9680 new #2731 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #11052->#9680 new #2731 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #11052->#9680 new #2731 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #11052->#9680 new #2731 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  connect #11052->#9680 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  connect #11052->#9680 purge delete Node #2731 at index 98: gone [2731], error '', census 636 -> 635, still present False (1.29 s)
+  FACT  connect #11052->#9680 AFTER THE PURGE node census: 635 rows
+  FACT  connect #11052->#9680 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k  38  private 617.1 MB (d +0.1)  handles 46133 (d +1)
+  STEPX 38 connect        acts [42] ids ['rw_11052_9680'] diff skipped (not a checkpoint)
+  METER pre    k  39  private 617.1 MB (d +0.0)  handles 46132 (d -1)
+  FACT  connect_nested_v1 node census: 635 rows
+      op readback {'UID': 10950, 'Name': 'x', 'UID 2': 0, 'Is Broken?': False}
+  FACT  OP connect_nested_v1 D[21].N[6].t2 <- D[21].N[7].t4 -> err '' (0.4 s)
+  FACT  connect #17365->#11059 AFTER node census: 636 rows
+  FACT  connect #17365->#11059 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(2731, 'Invoke', (4593, 5723))]
+  FACT  connect #17365->#11059 new #2731 #2731 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  connect #17365->#11059 new #2731 terminal table of #2731 (Diagram idx 21, Nodes[10], echo 2731): 6 terminal(s)
+  FACT      connect #17365->#11059 new #2731 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #17365->#11059 new #2731 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #17365->#11059 new #2731 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #17365->#11059 new #2731 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #17365->#11059 new #2731 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      connect #17365->#11059 new #2731 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  connect #17365->#11059 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  connect #17365->#11059 purge delete Node #2731 at index 98: gone [2731], error '', census 636 -> 635, still present False (1.29 s)
+  FACT  connect #17365->#11059 AFTER THE PURGE node census: 635 rows
+  FACT  connect #17365->#11059 purge arithmetic: Node 635 -> 636 -> 635
+  METER op     k  39  private 630.1 MB (d +13.0)  handles 46132 (d +0)
+  STEPX 39 connect        acts [43] ids ['rw_17365_11059'] diff skipped (not a checkpoint)
+  METER pre    k  40  private 630.1 MB (d +0.0)  handles 46132 (d +0)
+  FACT  wire_control node census: 635 rows
+  FACT  OP wire_control 'Auto-Reset'@D[21] -> Function[33].'y' -> err '' (0.4 s)
+  FACT  connect #17487->#9676 AFTER node census: 635 rows
+  FACT  connect #17487->#9676 CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k  40  private 630.1 MB (d +0.0)  handles 46132 (d +0)
+  METER read   k  40  private 634.2 MB (d +4.1)  handles 46132 (d +0)
+  STEPX 40 connect        acts [44] ids ['rw_17487_9676'] bound {} diff 0
+  METER pre    k  41  private 634.2 MB (d +0.0)  handles 46132 (d +0)
+  FACT  wire_tunouter node census: 635 rows
+  FACT  OP wire_tunouter SelectorTunnel[11] #5680 -> SubVI[17].t0 -> err '' (0.4 s)
+  FACT  connect #6007->#5082 AFTER node census: 635 rows
+  FACT  connect #6007->#5082 CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k  41  private 634.2 MB (d +0.0)  handles 46151 (d +19)
+  METER read   k  41  private 634.2 MB (d +0.0)  handles 46150 (d -1)
+  STEPX 41 connect        acts [45] ids ['rw_6007_5082'] bound {} diff 0
+  METER pre    k  42  private 634.2 MB (d +0.0)  handles 46151 (d +1)
+  FACT  wire_tunouter node census: 635 rows
+  FACT  OP wire_tunouter SelectorTunnel[15] #6016 -> SubVI[17].t7 -> err '' (0.4 s)
+  FACT  connect #6026->#5164 AFTER node census: 635 rows
+  FACT  connect #6026->#5164 CENSUS DIFF: Node 635 -> 635 ; 0 new uid(s): []
+  METER op     k  42  private 634.3 MB (d +0.1)  handles 46151 (d +0)
+  METER read   k  42  private 638.4 MB (d +4.1)  handles 46151 (d +0)
+  STEPX 42 connect        acts [46] ids ['rw_6026_5164'] bound {} diff 0
+  PASS  E1 every real op's graph == its simulated step (42 ops)
+  FACT  BINDING obj {-1: 10850, -2: 25240, -9: 25339, -10: 25344, -17: 25371, -18: 25382, -25: 25422, -29: 25428}
+  FACT  READS real [15, 19, 23, 27, 28, 40, 41, 42] skipped [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 20, 21, 22, 24, 25, 26, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39] stale retries []
+  FACT  METER SUMMARY {"n": 94, "first_mb": 569.7, "peak_mb": 638.4, "last": {"tag": "read", "k": 42, "t": 1790348427.2, "mb": 638.4, "handles": 46151, "d_mb": 4.1, "d_h": 0}, "sum_d_mb_op": 40.9, "sum_d_mb_read": 35.6, "mean_d_mb_op": 0.97, "mean_d_mb_read": 3.96, "warned_at": null}
+  FACT  CT row #5634: ControlTerminal True rows 1 partners real [10256] sim [10256]
+  PASS  CT #5634 ControlTerminal row read by the 179(b) reader == simulated end  {'real': [10256], 'sim': [10256], 'rows': 1}
+  FACT  CT row #17272: ControlTerminal True rows 1 partners real [10988] sim [10988]
+  PASS  CT #17272 ControlTerminal row read by the 179(b) reader == simulated end  {'real': [10988], 'sim': [10988], 'rows': 1}
+  FACT  CT row #17487: ControlTerminal True rows 1 partners real [9676] sim [9676]
+  PASS  CT #17487 ControlTerminal row read by the 179(b) reader == simulated end  {'real': [9676], 'sim': [9676], 'rows': 1}
+  FACT  CT row #23541: ControlTerminal True rows 1 partners real [] sim []
+  PASS  CT #23541 ControlTerminal row read by the 179(b) reader == simulated end  {'real': [], 'sim': [], 'rows': 1}
+  FACT  P2 mv_5540 (move_in): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 mv_9647 (move_in): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 mv_10247 (move_in): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 mv_10445 (move_in): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 mv_10950 (move_in): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 mv_17289 (move_in): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 mv_10969 (move_in): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 mv_10757 (move_in): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 mv_17487 (move_in): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 mv_5634 (move_in): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 mv_23541 (move_in): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 mv_10739 (move_in): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 mv_10929 (move_in): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 mv_17272 (move_in): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 sr1 (add_sr): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 sr1_init (connect): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 sr1_R (wire_sr): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  2nd pass sr1_L0 raised RuntimeError: #5825 not in Diagram[21].Nodes[]
+  FACT  P2 sr1_L0 ORDERED SECOND PASS: Wire 1938 -> 1938 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 sr1_L0 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  FAIL  P2 sr1_L0 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  Is Broken? None ; `UID 2` None vs wire None (same True)
+  FACT  P2 sr2 (add_sr): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 sr2_init (connect): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 sr2_R (wire_sr): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  2nd pass sr2_L0 raised RuntimeError: #5702 not in Diagram[21].Nodes[]
+  FACT  P2 sr2_L0 ORDERED SECOND PASS: Wire 1938 -> 1938 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 sr2_L0 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  FAIL  P2 sr2_L0 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  Is Broken? None ; `UID 2` None vs wire None (same True)
+  FACT  P2 sr3 (add_sr): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 sr3_init (connect): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 sr3_R (wire_sr): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  2nd pass sr3_L0 raised RuntimeError: #10750 not in Diagram[21].Nodes[]
+  FACT  P2 sr3_L0 ORDERED SECOND PASS: Wire 1938 -> 1938 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 sr3_L0 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  FAIL  P2 sr3_L0 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  Is Broken? None ; `UID 2` None vs wire None (same True)
+  FACT  2nd pass tun1 raised RuntimeError: #5725 not in Diagram[21].Nodes[]
+  FACT  P2 tun1 ORDERED SECOND PASS: Wire 1938 -> 1938 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 tun1 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  FAIL  P2 tun1 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  Is Broken? None ; `UID 2` None vs wire None (same True)
+  FACT  2nd pass tun2 raised RuntimeError: #5967 not in Diagram[21].Nodes[]
+  FACT  P2 tun2 ORDERED SECOND PASS: Wire 1938 -> 1938 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 tun2 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  FAIL  P2 tun2 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  Is Broken? None ; `UID 2` None vs wire None (same True)
+  FACT  P2 rw_5171_10871 (connect): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 rw_5171_10975 (connect): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 rw_5634_10256 (connect): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 rw_9668_10469 (connect): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 rw_10253_5608 (connect): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 rw_10594_10259 (connect): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 rw_10738_11055 (connect): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 rw_10943_10877 (connect): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 rw_10988_17272 (connect): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 rw_11052_9680 (connect): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 rw_17365_11059 (connect): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 rw_17487_9676 (connect): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 rw_6007_5082 (connect): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  FACT  P2 rw_6026_5164 (connect): connect / register face / panel sink - E1 + RBW (+CT) only (PD184)
+  PASS  FU frame-diagram uid sets of moved CaseStructures equal before/after, non-empty (181(b))  ([5582, 5592, 10453, 10459], [5582, 5592, 10453, 10459])
+  FACT  ExecState [after all rows (warm, RECORDED - the PB rows are open by design)] D1_l2_a1_20260925_235224.vi = 0
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'current frame data array in'", 'before': ['2626|Terminal|appended array|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'frame index'", 'before': ['644|Terminal||0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array'", 'before': ['5058|Terminal|x,y,z array out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 5058, 'class': 'SubVI', 'sink': "#5058 Terminal 'Image In'", 'before': ['6810|Terminal|Image Out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 5696, 'class': 'SubVI', 'sink': "#5696 Terminal 'x,y,z array'", 'before': ['5058|Terminal|x,y,z array out|0@2765/f1'], 'after': []}
+  FACT  CDIFF ROW {'node': 6085, 'class': 'SubVI', 'sink': "#6085 Terminal 'x,y,z array'", 'before': ['5058|Terminal|x,y,z array out|0@2765/f0'], 'after': []}
+  FACT  CDIFF ROW {'node': 9703, 'class': 'Function', 'sink': "#9703 ParameterTerminal 'x'", 'before': ['10757|Terminal|element|0@10978/f1'], 'after': ['23541|ControlTerminal|index|0@10978/f1']}
+  FACT  CDIFF ROW {'node': 10382, 'class': 'Function', 'sink': "#10382 ParameterTerminal 'x'", 'before': ['9647|ParameterTerminal|x .and. y?|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 11529, 'class': 'Comparison', 'sink': "#11529 ParameterTerminal 'x'", 'before': ['10150|OverridableParameterTerminal|x+1|0@11336/f1', '9907|Terminal|Value|0@11336/f0'], 'after': []}
+  PASS  PB frame-keyed cdiff(S1, real end) == the plan's 9 open_rows (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  CENSUS after L2-A1 D1_l2_a1_20260925_235224.vi: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 97, 'Wire': 1938, 'LoopTunnel': 148, 'Local': 10, 'ControlTerminal': 116, 'Node': 635}
+  FACT  PH handles RECORDED: post-open 45624 -> before-save 46151
+
+---------- [SAVE] D1_l2_a1_20260925_235224.vi
+  FACT  ExecState [before the save] D1_l2_a1_20260925_235224.vi = 0
+  FACT  SAVE ROUTE = gui_save, the APPROVED broken-intermediate route (CLAUDE.md split-rule 6; evidence "user 2026-09-22 broken-intermediate save"). The artefact is BROKEN BY DESIGN and is NEVER RUN (34(f)).
+  PASS  S1 the save returned without raising (gui_save route)
+  FACT  SAVED ARTEFACT: D1_l2_a1_20260925_235224.vi md5 51d9b8a3af5b4240cdc2ad193d9b4f41 size 307992 B; version bytes [0, 38]
+  PASS  S2 the artefact is on disk and non-empty  307992 B
+  FACT  S3 COLD re-open check SKIPPED BY RULE: ExecState was 0, and a broken-saved VI is never cold-loaded headless (recompile spin).
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  51d9b8a3af5b4240cdc2ad193d9b4f41
+  PASS  SC D1_l2_a1_20260925_235224_rbw.vi is a byte-identical copy of D1_l2_a1_20260925_235224.vi  D1_l2_a1_20260925_235224_rbw.vi
+  FACT  RBW BROKEN-WIRE COUNT: Wire 1938 -> 1909 after Remove Bad Wires = 29 bad wire(s); ExecState after 0
+  FACT  RBW deleted [42, 121, 373, 505, 1681, 2924, 3040, 3472, 3512, 3646, 3912, 4027, 5637, 5709, 5746, 5859, 5975, 5979, 6041, 7429, 9868, 9921, 10312, 10573, 10763, 11389, 17287, 17393, 23556]
+  PASS  RBW deletes no wire of a re-wired sink (scratch of the saved file)  [42, 121, 373, 505, 1681, 2924, 3040, 3472, 3512, 3646, 3912, 4027, 5637, 5709, 5746, 5859, 5975, 5979, 6041, 7429, 9868, 9921, 10312, 10573, 10763, 11389, 17287, 17393, 23556]
+  PASS  RBW scratch deleted: D1_l2_a1_20260925_235224_rbw.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_l2_a1_20260925_235224_rbw.vi
+
+---------- [H] HYGIENE
+  FACT  gscript ref_counts: {'opened': 22, 'closed': 22, 'live': 0, 'cached_op_vis': 4}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 22, 'closed': 22, 'live': 0, 'cached_op_vis': 4}
+  FACT  LabVIEW handle count AFTER the work: 32095
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 6cf5b0777aafa12112d8a786a9eed1ed / after 6cf5b0777aafa12112d8a786a9eed1ed
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: ['D1_l2_a1_20260925_235224.vi']  (removed: [])
+  PASS  H6 the files left on disk == ['D1_l2_a1_20260925_235224.vi'] and nothing was removed  added ['D1_l2_a1_20260925_235224.vi'] removed []
+  FACT  LabVIEW handle count at exit: 32095
+
+====================================================================================================
+=== GATES: 27 pass / 5 fail; failing: P2 sr1_L0 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b)), P2 sr2_L0 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b)), P2 sr3_L0 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b)), P2 tun1 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b)), P2 tun2 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\stage_d1_l2a1.json   elapsed 590.0 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":27,"fail":5},"first_fail":"P2 sr1_L0 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))","artefacts":[{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a1_20260925_235224.vi","md5":"51d9b8a3af5b4240cdc2ad193d9b4f41"}]}
+LabVIEW gone at exit: True
+BGRUN END rc=1 after 594s

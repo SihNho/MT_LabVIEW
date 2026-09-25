@@ -1,0 +1,12 @@
+{
+ "schema": "review/1",
+ "id": "hyp-meter86b-prefix",
+ "role": "hypothesis",
+ "claim": "meter_l2a1_86b.py run 1 failed B1 by OUR SCRIPT BUG: the prefix was act 1 only, but #6007 turns source only at step_22 (sr2_L0), so after act 1 it is correctly a SINK face; the fix is prefix = ops 1-22 via Executor.run on ex.ops[:22].",
+ "predicted": "after act 1 (mv_5540) alone: #6007 source, bare, sole outer face of SelectorTunnel #5680; #5082 bare sink on SubVI #5058",
+ "observed": "meter_l2a1_86b.log:58-59: B0 diff 0 vs step_01, but #6007 is_source False (wire 0, owner #5680, frame 23166); #5082 as predicted. step_01_move_in.json also has #6007 is_source False; step_22_wire.json first has True",
+ "ruled_out": ["LabVIEW state: B0 compare vs the simulated step_01 was diff 0 (the sim predicts the same sink face)", "memory: private 559-579 MB, no error, meter lines 37-57"],
+ "attachments": [{"path": "tools/bench/meter_l2a1_86b.log"}, {"path": "tools/bench/meter_l2a1_86b.py"}, {"path": "tools/bench/sim/l2a1/plan_l2a1.json"}, {"path": "tools/stagexec.py"}],
+ "ask": "refute",
+ "note": "card 86-1 (b); the corrected script is already on disk; is the ops[:22] prefix sufficient and is running op 41 with prev=step_44 state valid when acts 23-44 are skipped?"
+}

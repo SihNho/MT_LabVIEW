@@ -1,0 +1,44 @@
+BGRUN START 2026-09-25 23:13:25 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug hyp-meter86c-err2 -TaskFile tools/bench/cards/task_hyp-meter86c-err2.txt -ReviewCard tools/bench/cards/review_hyp-meter86c-err2.json
+OUTCOME: ANSWERED (138s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-25-hyp-meter86c-err2.md
+COST: $1.2032  in 20 / out 9542 / cache-create 99419 / cache-read 975020  (135s, 14 turn(s))
+VERDICT-CARD: VERDICT-CARD hyp-meter86c-err2 verdict=unverified -> tools\bench\cards\verdict_hyp-meter86c-err2.json
+--- ANSWER ---
+**Verdict: unverified, and I lean against the claim.** The meter shows memory growing during the reads. It does not show that memory caused error 2. The timing points at act 45's wire at least as strongly.
+
+## 1. Strongest reason the claim is wrong: the ceiling it needs is a knife edge
+- **The previous read passed at almost the same memory.** The read after op 40 started at 690.9 MB, ran to completion and finished at 694.9 MB (`meter_l2a1_86c.log:677-678`). Op 41 added only +0.1 MB (`:685`). The read that failed started at 695.0 MB (`:686-687`). For the memory claim to hold, the limit has to sit inside that last read's ~4 MB of growth.
+- **Nothing shows the process nearing a limit.** Memory grows in a steady line, about 3.4 MB per read. Reads do not slow down: GObject reads take 8.83 s at the start and 8.95 s at the end (`:730`). 695 MB is small for a 64-bit process. The only earlier error-2 figure is about 770 MB (`com-driving.md:310-311`), which is 75 MB higher, so there is no fixed ceiling here.
+- **The failure lands on the one new step, twice.** In both 85 and 86c, error 2 came on the first read after `wire_tunouter`, the only step type never run in sequence before. Every other step type had already passed dozens of reads (`log:40-679`, `unroutable_l2a1_85.log:558-562`).
+- **Caveat: "85 also died at act 45" cannot decide this on its own.** The replay is deterministic, so a memory threshold would also land on the same act every time. One detail weakly favours act 45: 85 started from a different process state, with 33,997 handles against 45,652 here, and still failed at the same act. But 85 had no private-bytes meter.
+- **Reads have not been shown to leak.** `OpReportAll_v0` has no Close Reference (`docs/REFERENCES.md:158`). However, the traverse-only arm was measured flat, −0.1 MB over 20 calls (`REFERENCES.md:211`).
+  - The steps of 4.0–4.1 MB, alternating with 0.1 MB (`log:689-728`), look like the memory allocator growing in chunks. They do not look like a per-object leak.
+  - The +140.4 MB figure says only when memory grew, not that it is retained (`:730`).
+  - Each read also includes a terminals pass of about 11.7 s. So the growth cannot be pinned on the GObject traverse.
+  - **Answer to your question (3):** the leak exists by construction, but it has not been measured as the cause of this growth.
+
+## 2. Alternative explanation
+The act-45 wire, from the SelectorTunnel #5680 outer face to SubVI #5082 on the same diagram 23166, leaves an object or state that `Traverse for GObjects` cannot walk. LabVIEW then reports that failure as error 2, which also covers failures other than RAM running out ([NI KB](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019KhWSAU), [LAVA: "Error 2: memory is full – but it isn't"](https://lavag.org/topic/18730-error-2-memory-is-full-but-it-isnt/)).
+
+The node census stays at 635 (`:684`), but the wire's sink was never read back, so "err ''" only means the op returned without error.
+
+## 3. What would falsify each side
+- **Falsifies the claim:** act 45 on the full step_44 graph at low memory (about 580 MB), followed by one read, gives error 2.
+- **Falsifies the alternative:** the same act-45 read comes back clean with sink #5082, and error 2 appears in a no-edit read loop at about 42 reads / 695 MB.
+
+**Answer to your question (2):** 695 MB against 770 MB fits a threshold that depends on the process's state, or it fits no memory ceiling at all. It does not fit a fixed ceiling.
+
+## 4. Cheapest discriminating test (about 5 minutes instead of 20)
+1. Start a fresh LabVIEW. Replay ops 1–40 **with the per-op whole-VI reads skipped**, then do one read at the end and check it against step_44 (diff 0). Memory should be about 580 MB.
+2. Run op 41 (act 45).
+3. Do one read plus the R41 uid read-back.
+
+How to read the result:
+- **Error 2 at about 580 MB:** act 45 is the cause.
+- **Clean, sink #5082:** the cause is reads or accumulated memory. Only then run the second leg: a no-edit loop of `report_all(GObject)` plus the terminals pass on that graph, logging private bytes on every call.
+
+`Executor.run` diffs after every op (`stagexec.py:902`), so skipping the reads needs a thin driver over `ex.ops[:40]`. That is also why this test answers the gap the 86b review left: it runs act 45 on the full 44-act graph, not on the 22-op prefix (`archive/peer/2026-09-25-hyp-meter86b-prefix.md:100-106`).
+
+Sources: [NI KB, error 2 on opening references](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019KhWSAU) · [LAVA, error 2 not from memory](https://lavag.org/topic/18730-error-2-memory-is-full-but-it-isnt/) · [NI, Traverse for GObjects VI](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/vi-lib/utility/traverseref-llb/traverse-for-gobjects-vi.html)
+
+VERDICT {"schema":"verdict/1","id":"hyp-meter86c-err2","verdict":"unverified","alternative":"Act 45's tunnel-outer-face->SubVI wire leaves a state Traverse for GObjects cannot walk, reported as error 2 (not only memory-full); prior read k40 ran fine 690.9->694.9 MB, op41 added +0.1 MB, and 85/86c both failed on the first read after the only novel op","discriminating_test":"Fresh LV: replay ops 1-40 with per-op reads skipped (one step_44 check at ~580 MB), then op 41 + one read + R41 uid read-back. Error 2 => act 45; clean with sink #5082 => then no-edit report_all(GObject)+terminals loop to find the read/memory threshold","violations":[],"sources":["tools/bench/meter_l2a1_86c.log:677-687","tools/bench/meter_l2a1_86c.log:730","docs/REFERENCES.md:158","docs/REFERENCES.md:211",".claude/skills/labview-automation/references/com-driving.md:310-311","tools/bench/unroutable_l2a1_85.log:558-562","https://lavag.org/topic/18730-error-2-memory-is-full-but-it-isnt/","https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019KhWSAU"],"note":"Deterministic replay means 'same act twice' alone cannot discriminate; per-read MB growth is timing attribution, not a proven retained leak (traverse-only arm was flat)."}
+BGRUN END rc=0 after 139s

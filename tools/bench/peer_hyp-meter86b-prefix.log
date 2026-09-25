@@ -1,0 +1,45 @@
+BGRUN START 2026-09-25 22:44:34 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug hyp-meter86b-prefix -TaskFile tools/bench/cards/task_hyp-meter86b-prefix.txt -ReviewCard tools/bench/cards/review_hyp-meter86b-prefix.json
+OUTCOME: ANSWERED (157s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-25-hyp-meter86b-prefix.md
+COST: $1.4261  in 28 / out 12902 / cache-create 108699 / cache-read 1383197  (153s, 20 turn(s))
+VERDICT-CARD: NO-VERDICT: $.violations[0].loss_min: expected number/null, got str
+--- ANSWER ---
+**Verdict: supported, with one gap.** Run 1 failed because the test's own prediction was wrong. LabVIEW did nothing unexpected. The fix (run acts 1–22 first) is enough to get act 45 addressed and routed. It is not enough to show that act 45 behaves the same way it would after acts 1–44.
+
+**1. Strongest reason the claim could be wrong.** LabVIEW never measured `sr2_L0` flipping #6007 on its own. The only LabVIEW reading of #6007 turning from sink to source is `l2a1_unflip_81_run2.log:217,261,272`, and that run wired 6038 (on #5702) and 5741 (on #5725) together before reading. Pinning the flip on `sr2_L0` alone comes from the wiring layout plus the simulator's unflip model (`tools/stagesim.py:374-399`). The model was fitted to that same run, so the sim agreeing with it proves nothing new.
+
+**2. Alternative explanation of the same evidence.**
+- **Different cause:** the flip back to source could have come from the 5741 wire in run 2, and not from 6038.
+- **Weak on wiring layout:** 5741's inner (5733) feeds #6016, not #5680 (`l2a1_unflip_81.py:27-28`).
+- **Weak on how LabVIEW works:** NI's documentation says a tunnel's direction follows where its source is, and a tunnel with no source has no direction ([NI: wire connected to undirected tunnel](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-connected-to-undirected-tunnel.html), [NI forum](https://forums.ni.com/t5/LabVIEW/wiring-inputs-n-outputs-for-case-structure/td-p/584388)). That matches the chain the claim describes:
+  - the move cuts wire 5637 (`step_01_move_in.json`, flip record);
+  - #5702's inner 5705 loses its source;
+  - wire 5710 into #5680's inner 5999 has no source;
+  - so #5680 has no direction and its outer face 6007 reads as a sink;
+  - wiring 6038 restores the chain.
+
+**3. What would falsify the claim.** In the fixed run, op 21 (step_21: 6007 still a sink) or op 22 (step_22: 6007 a source) ends with a STEP-DIFF on 6007. `Executor.run` checks every op against its step file (`tools/stagexec.py:902-913`). Also, if B1 still fails after op 22, the claim is wrong.
+
+**Your three questions:**
+
+- **(1) Cause of the flip.** It is a LabVIEW behaviour the sim copied, not something the sim made up: #6007 read as a sink after the move and as a source after the wire in `run2.log:217/261`. The step files agree: 6007 is a sink at steps 01, 17, 18 and 21 and a source from step 22; 6026 is a source from step 18. Only the `sr2_L0`-alone attribution is unmeasured, and the fixed run measures it for free.
+- **(2) Is ops 1–22 enough?** Yes. The claim missed one dependency that happens to be inside the prefix:
+  - **Hidden dependency:** the `tunouter` route needs `face_twins(...) > 1` (`stagexec.py:515`). That means #6026 must also be a *source* outer face on #5540, because twins must match direction (`:544`). #6026 becomes a source only at step 18.
+  - **`Addr.tun` needs #5680 to have exactly one outer face** (`:701-703`). Acts 23–44 add no outer face to #5680.
+  - **#5082 is found by a unique name/direction/wire match** (`:770`). Acts 23–44 wire only *sources* on #5058 (5124/5111 in the prefix, 5171 in acts 35–36), so the "Bead is good? array in" sink match does not change.
+- **(3) Is `prev=step_44` valid?** Yes for this op. `real_term` resolves `{uid, term_uid}` for base uids 6007/5082 through a binding that returns the same uid (`:799-809`). No symbolic `new:` end is involved. The script never compares the live graph against step_45, so the missing acts 23–44 cannot cause a false diff.
+
+**The gap in scope.** After acts 1–22 the graph is not the one run 85 failed on:
+- Wire 6011 into #5680's other inner (6003) still has no source, because #5967 is only restored by `tun2_in` (act 30).
+- SR3, T1 and T2 do not exist.
+- Terminal 5171 is unwired.
+
+So a PASS on B2/B4 says act 45 works on this smaller graph. It does not clear act 45 inside the full sequence. That matters most if run 85's error 2 came from memory built up over acts 23–44: "act 45 alone passes" would then be expected and would settle nothing.
+
+**Process fault.** The step file was on disk before the run and already said 6007 is a sink at step_01. The prediction was taken from run 85's state after act 44 (`meter_l2a1_86b.py` first-run docstring, log lines 5–6) and was not checked against step_01 offline.
+
+**4. Cheapest discriminating test.** It is already on disk: run the fixed `meter_l2a1_86b.py` and read STEPX lines 21 and 22. The diff should be 0 at both, which means 6007 is still a sink after op 21 and a source after op 22. Then B1 should pass.
+
+To check the scope gap cheaply, extend the prefix to `ops[:40]` (acts 1–44, still one LabVIEW launch) and meter act 45 on both graphs. If act 45 passes after 22 and fails after 44, the fault is accumulated state, not the op itself.
+
+VERDICT {"schema":"verdict/1","id":"hyp-meter86b-prefix","verdict":"supported","alternative":"The source-flip of #6007 was only measured in LabVIEW with 6038 AND 5741 wired together (unflip_81_run2.log:261); sr2_L0-alone attribution is sim/topology. Also: prefix 1-22 omits acts 23-44 (6011 still unsourced, no T1/T2/SR3), so an act-45 PASS does not clear act 45 in the full sequence.","discriminating_test":"Run fixed meter_l2a1_86b.py: STEPX 21 and 22 diff 0 (6007 sink after op21, source after op22) then B1 PASS. For scope: meter act 45 after ops[:40] too; pass@22 + fail@44 => accumulated-state cause.","violations":[{"slug":"inference-over-measurement","loss_min":"?","loss_usd":"?","evidence":"tools/bench/sim/l2a1/step_01_move_in.json (6007 is_source false) vs meter_l2a1_86b.log:5-6"}],"sources":["tools/bench/l2a1_unflip_81_run2.log:217","tools/bench/l2a1_unflip_81_run2.log:261","tools/bench/sim/l2a1/step_21_wire.json","tools/bench/sim/l2a1/step_22_wire.json","tools/stagexec.py:515","tools/stagexec.py:701","tools/stagesim.py:374","https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-connected-to-undirected-tunnel.html","https://forums.ni.com/t5/LabVIEW/wiring-inputs-n-outputs-for-case-structure/td-p/584388"],"note":"tunouter also needs #6026 source (step_18) for face_twins>1 - inside the 22-op prefix, unstated in the claim."}
+BGRUN END rc=0 after 158s

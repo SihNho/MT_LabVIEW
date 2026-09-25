@@ -1,0 +1,24 @@
+FAILED PREDICTION, card 86-1 (b): tools/bench/meter_l2a1_86b.py, log tools/bench/meter_l2a1_86b.log (run 1).
+
+Test: on a fresh LabVIEW and a D1_k scratch, run plan_l2a1 act 45 (rw_6007_5082: SelectorTunnel #5680 outer face #6007 ->
+SubVI #5058 terminal #5082, route 'tunouter') ALONE after a prefix, then read the new wire's sink back by uid.
+
+Prediction: after the prefix act 1 only (mv_5540: case #5540 into loop body 23166), #6007 is a SOURCE, bare, the only
+OuterTerminal of #5680, and #5082 is a bare sink on #5058 (the state 85-3's P1 saw after acts 1-44,
+unroutable_l2a1_85.log:555-556).
+Observed (meter_l2a1_86b.log:58-59): B0 = live graph after act 1 vs simulated step_01 diff 0; B1 FAILED: #6007 is_source
+False (wire 0, owner #5680, frame 23166, OuterTerminal); #5082 as predicted.
+
+My explanation: our own script's bug. The prefix assumption "acts 2-44 touch neither #6007 nor #5082" was wrong. The
+simulated step files themselves record #6007 as a sink face at step_01 and a source only from step_22_wire.json
+(sr2_L0 wires new:SR2L.inner to #5702 terminal 6038 inside case #5540, so the case tunnel flips to output); #6026 flips
+at step_18. Fix already on disk: meter_l2a1_86b.py now runs the executor's own diff-checked run over ex.ops[:22]
+(acts 1-22), then executes op 41 (act 45) with prev = step_44 state / after = step_45 state, then reads back.
+
+Questions: (1) is the flip really caused by sr1_L0/sr2_L0 wiring into the case (and not something LabVIEW-side the
+sim merely copied)? (2) is prefix ops 1-22 sufficient, or does act 45's addressing (tunouter: face_twins via owners map,
+Addr.tun needs #5680 to own exactly one OuterTerminal; destination triple on #5058 by unique (name, dir, wire) match)
+depend on acts 23-44 (tunnels T1/T2, rewires on #5058 terminals 5171 etc.)? (3) is passing prev=step_44 state to
+Executor.execute valid when acts 23-44 did not run (real_term resolves base uids 6007/5082 through the binding only)?
+Files: tools/bench/meter_l2a1_86b.py, tools/stagexec.py (Executor.run ~line 810, execute ~925, connect_route ~455,
+Addr.tun ~690), tools/bench/sim/l2a1/plan_l2a1.json and step_*.json.

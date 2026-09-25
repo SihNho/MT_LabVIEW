@@ -1,0 +1,28 @@
+FAILED PREDICTION, card 86-2: tools/bench/meter_l2a1_86c.py, log tools/bench/meter_l2a1_86c.log (one run, 1236 s).
+
+Test: fresh LabVIEW (process absent before launch), D1_k scratch, the full plan_l2a1 executor replay (42 ops / 46 acts)
+with the stagexec.Meter in warn-only mode, plus a READ-ONLY uid read-back of the new wire hooked onto the executor's own
+whole-VI read right after op 41 (act 45, rw_6007_5082) and op 42 (act 46, rw_6026_5164).
+
+Prediction (gates R41/R42): after op 41 the wire on #6007 has sole source #6007 (owner SelectorTunnel #5680) and sole
+sink #5082 on SubVI #5058; same for #6026 -> #5164 after op 42.
+Observed: ops 1-40 each diff 0 vs their step file (log:40-679). Op 41's edit itself returned OK: "OP wire_tunouter
+SelectorTunnel[11] #5680 -> SubVI[17].t0 -> err ''" (log:682), node census 635 -> 635 (log:684), meter op k41 695.0 MB,
+handles 46171 (log:685). The whole-VI read right after it (OpReportAll_v0, Traverse for GObjects) raised LabVIEW error 2
+(log:686). So the read-back had no data: R41/R42 = {} (log:734-735). Op 42 never ran.
+Memory (private bytes): 570.7 MB after load -> 694.9 MB after op 40's read; sum of d_mb at the edit calls +1.7 MB, sum at
+the whole-VI reads +140.4 MB (log:689-730, METER SUMMARY log:730). Handles 45,889 -> 46,171, flat-ish.
+Prior: run 85 (unroutable_l2a1_85.py) died at act 45 with error 2 too (unroutable_l2a1_85.log:562); com-driving.md:310-312
+records error 2 near ~770 MB private bytes. Here it came at 695 MB.
+
+My explanation: error 2 ("memory full") is triggered by the whole-VI GObject traverse report (OpReportAll_v0) once
+LabVIEW's private bytes have grown ~125 MB through ~41 such reads on this 635-node VI - i.e. the per-op READ, not the
+edit, accumulates memory, and the failure point is a read-count/memory threshold, not something specific to act 45.
+Competing explanation: act 45's wire itself (tunnel outer face -> SubVI t0) leaves the diagram in a state that makes the
+next GObject traverse fail (e.g. a wire LabVIEW cannot report), and memory is incidental - 85 also died at exactly act 45.
+
+Questions: (1) which explanation do the numbers support; what single run separates them cheapest (e.g. act 45 after
+ops[:22] only, where memory is ~635 MB, or ops 1-40 with the reads thinned)? (2) is 695 MB vs 770 MB consistent with a
+memory ceiling at all? (3) anything in stagexec LVBackend.read / OpReportAll_v0 usage that leaks per call?
+Files: tools/bench/meter_l2a1_86c.log, tools/bench/meter_l2a1_86c.py, tools/stagexec.py (Executor.run ~811-922,
+LVBackend.read ~1063), archive/peer/2026-09-25-hyp-unroutable-err2-85.md, archive/peer/2026-09-25-hyp-meter86b-prefix.md.

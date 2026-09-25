@@ -1,0 +1,38 @@
+BGRUN START 2026-09-26 00:05:24 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug hyp-l2a1-p2-86-5 -TaskFile tools/bench/cards/task_hyp-l2a1-p2-86-5.txt -ReviewCard tools/bench/cards/review_hyp-l2a1-p2-86-5.json
+OUTCOME: ANSWERED (100s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-hyp-l2a1-p2-86-5.md
+COST: $1.1058  in 20 / out 8318 / cache-create 90442 / cache-read 965646  (97s, 15 turn(s))
+VERDICT-CARD: VERDICT-CARD hyp-l2a1-p2-86-5 verdict=refuted -> tools\bench\cards\verdict_hyp-l2a1-p2-86-5.json
+--- ANSWER ---
+**The claim is refuted.** The failures are an addressing defect in the recipe, as the claim says, but not the one it names. Diagram[21] is the correct diagram. The recipe clears the two fields `address()` needs to handle a tunnel, so the lookup could never succeed.
+
+**1. Strongest reason the claim is wrong.** All five sinks are `SelectorTunnel` **OuterTerminals**, not node terminals.
+- `graph_k_80_owners.json` lists them as `{"uid":5825,"class":"SelectorTunnel","owner":"CaseStructure"}`, and the same for 5702, 10750, 5725 and 5967.
+- Their terminal rows (5883, 6038, 10760, 5741) all read `owner_class:"SelectorTunnel", term_class:"OuterTerminal"`.
+- A tunnel is owned by its Case structure, not by the diagram, so its uid is never in `Diagram[k].Nodes[]`, whichever diagram is named.
+- `Stage.address` already handles this. `tools/stagekit.py:728-739` maps a tunnel's outer terminal to its structure node, but only when `owner_class`/`term_class` say so.
+- The recipe hard-codes `"owner_class": "", "term_class": ""` (`tools/recipes/stage_d1_l2a1.py:90`), so that branch is skipped and the lookup fails at `stagekit.py:740-741`.
+
+**2. The diagram is correct.**
+- The tunnels share their x position with the Case structures that were moved: 5825, 5702 and 5725 sit at x=3771, the same x as CaseStructure #5540, which was moved to (3771,1033). #10750 sits at x=3305, the same x as #10445, which was moved to (3305,972).
+- Those moves landed on "Diagram[21]" (`stage_d1_l2a1_86-5.log:43,100`), which is dest #23166 (`stageplan_l2a1.json:19`).
+- So Diagram[21] holds the owning structures, and `frame_diagram` names the right diagram. The claim's first sub-hypothesis ("wrong diagram / pre-move location") is not supported, and neither is its second (uid→index picks a different diagram).
+- The competing explanation ("the build left the sinks elsewhere") is also not supported. The owners are where the plan put them, and E1 42/42 plus PB extra/missing [] agree.
+
+**Second latent defect.** `cfw_second_pass` calls `self.address(dst, False)` without `objs` (`stagekit.py:853`). Even with the class fields restored, the geometry lookup `pos[uid]` at line 730 would raise KeyError. There is a further question: `wired_terminals(dst["uid"])` (line 855) and `node_terms(dd, dn)` would then address the structure node, so the terminal must be matched by `verify_term_uid` on the structure. Only the uid path at line 750 can do that reliably. The recipe's own comment "tunnel/register **node** sinks" (line 9) and its filter (line 84, which excludes only ControlTerminal) show the classification was assumed, not read.
+
+**Alternative explanation.** The P2 row filter picks the wrong set of rows. Rows whose sink is a tunnel's outer face should have been skipped under PD184, like the register-face rows at log 686-688, or routed through the structure path. They were sent down the plain node path instead.
+
+**3. What would falsify my reading (and support the claim).** A live read of `D1_l2_a1_20260925_235224.vi` showing that CaseStructure #5540 or #10445 is *not* in Diagram[21].Nodes[] (Diagram[21] uid ≠ 23166 at P2 time), or that a SelectorTunnel uid *does* appear in some diagram's Nodes[].
+
+**4. Your question (3), PD184 coverage.** PD184(a) lists "register face" among the E1 + RBW (+CT) only rows. These five sinks are a Case tunnel's outer face, the same kind of structure face. The recipe skipped the SR faces (log 686-688) but not these, so either the filter should skip them or it needs the structure-addressing path. That is a judgement call and I have not settled it. The artefact itself shows no fault: E1, PB and RBW all passed.
+
+**Cheapest discriminating test (no new stage run).** Run a headless `report_all('Diagram')` plus `node_labels` on the saved `D1_l2_a1_20260925_235224.vi` (md5 51d9b8a3). Check that Diagram[21] has uid 23166, that its Nodes[] contains #5540 and #10445, and that none of the five tunnel uids appears in any diagram's Nodes[]. Alternatively, dry-run `address()` on the same five ends with `owner_class="SelectorTunnel", term_class="OuterTerminal"` and `objs` passed. If it resolves to the structures with 1-hit terminals, the recipe's line 90 is the whole defect.
+
+The web search did not settle whether Diagram.Nodes[] ever lists tunnels. The results cover only tunnel scripting in general ([NI forum: pass-through tunnel in a case structure](https://forums.ni.com/t5/LabVIEW/LabvVIEW-Scripting-wiring-a-pass-through-tunnel-inside-a-case/td-p/3945608), [LabVIEW Wiki: VI Scripting properties](https://labviewwiki.org/wiki/Category:VI_Scripting_Property)). The "not in Nodes[]" point rests on local evidence: the objects table lists these tunnels as owned by `CaseStructure`, and the `address()` docstring and code (`stagekit.py:715-719`) treat them the same way.
+
+Sources:
+- [NI forum: pass-through tunnel scripting](https://forums.ni.com/t5/LabVIEW/LabvVIEW-Scripting-wiring-a-pass-through-tunnel-inside-a-case/td-p/3945608)
+- [LabVIEW Wiki: VI Scripting Property](https://labviewwiki.org/wiki/Category:VI_Scripting_Property)
+
+VERDICT {"schema":"verdict/1","id":"hyp-l2a1-p2-86-5","verdict":"refuted","alternative":"Diagram[21] (=#23166) is right: owners #5540/#10445 were moved there. The 5 sinks are SelectorTunnel OuterTerminals (not in Nodes[]); recipe:90 blanks owner_class/term_class so address():728-739 never maps tunnel->structure; objs also not passed (stagekit:853).","discriminating_test":"Headless read of saved D1_l2_a1_20260925_235224.vi: Diagram[21] uid==23166, its Nodes[] holds #5540/#10445, no tunnel uid in any Nodes[]; or dry address() with owner_class=SelectorTunnel, term_class=OuterTerminal, objs passed.","violations":[],"sources":["tools/bench/sim/l2a1/graph_k_80_owners.json (objs 5825/5702/10750/5725/5967 SelectorTunnel owner CaseStructure; rows 5883/6038/10760/5741 OuterTerminal)","tools/recipes/stage_d1_l2a1.py:90","tools/stagekit.py:728-741","tools/stagekit.py:853","tools/bench/stage_d1_l2a1_86-5.log:43,100,689-711","tools/bench/sim/l2a1/stageplan_l2a1.json:19"],"note":"Addressing defect confirmed but mis-located: not the diagram, the tunnel-vs-node class. Whether PD184 should skip tunnel outer faces is a judgement call; the artefact shows no build fault."}
+BGRUN END rc=0 after 101s
