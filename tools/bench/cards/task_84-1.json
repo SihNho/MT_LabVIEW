@@ -1,0 +1,67 @@
+{
+ "schema": "task/1",
+ "id": "84-1",
+ "kind": "build",
+ "goal": "PD188(c)+189: separator (hyp-constsrc82.md:84-86), constant-source op, route in stagexec, dry run lists ALL unroutable rows, L2-A1 dry + offline pre-run of 42 ops. No real run.",
+ "why": "PD189: the load test (m8_load_83.json) chose loop 1.2 (M3) as the lever; L2-A1 resumes. Op 35 rw_10738_11055 (#10739 -> #10950 'y') and #10929 -> #10757 'index' have no verb (constsrc_l2a1_82.log:511-533).",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "2e366c51e343d9e3eb908503d2502c9b"},
+  {"path": "archive/peer/2026-09-25-hyp-constsrc82.md"},
+  {"path": "tools/stagexec.py", "md5": "3e2b15276caa94d7fa3f758c2e8bf124"},
+  {"path": "tools/recipes/stage_d1_l2a1.py", "md5": "e589dc746833aaaafe47f3eff4c22dc6"},
+  {"path": "tools/bench/sim/l2a1/stageplan_l2a1.json", "md5": "329d89eecaa2706ccce38640dbede5aa"},
+  {"path": "tools/bench/cards/result_82-3.json"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_20260925_100155.vi", "md5": "6cf5b0777aafa12112d8a786a9eed1ed"}
+ ],
+ "pass": [
+  "P1 separator result: which cast raises 1057 (source or destination), with log file:line",
+  "P2 op on a D1_k scratch, both rows (#10739->#10950 'y', #10929->#10757 'index'): wire_delta, ONLY source owner == constant uid, sink, Is Broken? False",
+  "P2b negative case (non-constant / wrong uid) refused; 20-call handle count flat +-100",
+  "P3 routed in real Addr + SimReader; stagexec selftest passes incl. a case with TWO unroutable rows both reported; new stagexec md5",
+  "P4 L2-A1 dry run: ops diff 0 count out of 42, and every unroutable row listed (expected none); offline pre-run PASS/FAIL with its first failing check; stageplan md5 (changed or not)",
+  "P5 D1_k md5 unchanged, scratch copies deleted, LabVIEW process gone at the end"
+ ],
+ "outputs": ["tools/stagexec.py", "tools/bench/constsrc_l2a1_84.log", "tools/bench/dry_l2a1_84.log", "tools/bench/prerun_l2a1_84.log", "tools/bench/cards/result_84-1.json"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stagexec.py",
+   "tools/stagesim.py",
+   "tools/gscript.py",
+   "tools/bench/selftest_stagexec*",
+   "tools/bench/constsrc_l2a1_84*",
+   "tools/bench/sepcast_84*",
+   "tools/bench/prerun_l2a1_84*",
+   "tools/bench/dry_l2a1_84*",
+   "tools/bench/sim/l2a1/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/stage_runs.jsonl",
+   "tools/recipes/op_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_scratch_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\ops\\**",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "docs/NAMES.md"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "rules": [
+  "scratch copies of D1_k only; do NOT launch stage_d1_l2a1.py for a real run (that is card 84-2); never save D1_k",
+  "step 1 separator: is OpWire_v1's 1057 the SOURCE or the DESTINATION cast (hyp-constsrc82.md:84-86)",
+  "step 2 op per PD188(c): fixed cast, or Constant.Terminal 634AC04 + Connect Wire 6349C03, src uid via report_all",
+  "step 3 route in stagexec real Addr+SimReader; step 4 dry run lists EVERY unroutable row; step 5 dry+pre-run",
+  "separator picks the smaller route (PD188(c)); both routes must pass the same P2 gate",
+  "no route passes -> BLOCKED with the P2 table; never replace the constant or re-order plan rows",
+  "bgrun --max-min 60 for LabVIEW scripts (Stage.close ~20 min); per-phase wall-clock stamps",
+  "a new op/stage script: <=120 lines on stagekit, refs closed, handle-flat check",
+  "a failed gate goes to the Jev ladder first (jev_gate.log NEXT-ACTION)",
+  "result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}
