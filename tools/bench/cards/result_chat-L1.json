@@ -1,0 +1,24 @@
+{"schema":"result/1","id":"chat-L1","status":"FAIL","gates":{"pass":111,"fail":14},
+"first_fail":"guard_session.py | settings matcher reaches SendMessage (rule (c) live): matcher is 'Agent|Task'",
+"blocked_by":null,
+"artefacts":[{"path":"tools/bench/lint_verify_20260925.log","md5":"e5b9aeccefb31a99781594d5a23d4f6a"},{"path":"tools/bench/lint_verify_20260925.json","md5":"55ad960e490dffda61008e2dff793fca"},{"path":"tools/bench/lint_verify_20260925.py","md5":"f09a59163439226c95ad7f5cbfe084af"},{"path":"tools/mark_legacy_dispositions.py","md5":"3957d5519040bb343d7d07ac12e27d56"},{"path":"archive/ingest/2026-09-25-ingest-chat-l1-20260925.md","md5":"00aeb21e72687028f42e8280dfac18f7"}],
+"facts":[
+"Selftests: 38/50 PASS, 11 FAIL, 1 skipped (c67 opens LabVIEW COM). Stale fixtures fixed: 0 (none clearly stale). lint_verify_20260925.json 'selftests'",
+"Hooks: 44/46 live cases as documented. Mismatch 1: guard_session rule (c) SendMessage refusal never reached - hook registered for Agent|Task only (.claude/settings.json:87)",
+"Mismatch 2: selftest_guard_session G12/G13 fail because guard_bash NEXT gate refuses retrospective.py on the LIVE next_snapshot.md5 == next.json (not isolated); lint_verify log:124",
+"selftest_launch_gate C2-C6,M4-M6: RETRY CAP no longer refuses run 3; guard_bash no longer records (moved to bgrun, guard_bash.py:386). Cascade: item34 S8, stageplan EX",
+"guard_peer_failre E1: bold line-start emitters in diag_c83_connect2x2.py:143, diag_c83_connect2x2_r2.py:132, diag_c86_norbw.py:175. Cascade: logclass_recipebuild C10, audit_c4c_split G14",
+"stoprecord_supersession C9: stop_record_selftest.py rc1, no score line (cascade eqform R1). errorlist_reuse_81 R1 FAIL on D1_k bed (selftest_chatl1_selftest_errorlist_reuse_81.log:2)",
+"CARD BREACH: selftest_make_default started LabVIEW twice (labview=none); scratch deleted, original md5 same, LabVIEW exited; S3 cold-read mismatch (selftest_chatl1_selftest_make_default.log:14-51)",
+"Legacy --cutoff 2026-09-22: 48 closed with legacy_note; G1-G4 PASS after G3 fix (old compare failed every no-frontmatter file); 124 post-09-22 reviews unchanged. doc_lint L2 PASS 2179/0; L6 4 blank",
+"doc_ingest sonnet, 14 docs: 2 contradictions, both 'Pre-decided 148': connectivity-map-plan.md:100 vs d1-loop12-17-split-plan.md:204; header connectivity-map-plan.md:98 dated 09-24. Not fixed",
+"Resume: STOP line STATUS.md:7 (left); next.json valid, stop_requested=false; motor_session.json absent; no LabVIEW process. guard_peer now armed on lint_verify_20260925.log (review owed)"
+],
+"open":[
+"11 selftest failures: which are stale fixtures to rewrite (launch_gate retry-cap/recording, guard_session G12 live snapshot) vs real defects (failre E1 emitters, stop_record_selftest)?",
+"guard_session rule (c): widen the matcher to Agent|Task|SendMessage, or retire the documented rule?",
+"L6 still FAILs on 4 reviews dated 09-22 or later (card expected 0): write those 4 dispositions, or accept? A hypothesis review of lint_verify_20260925.log is owed before the next build"
+],
+"cost":{"usd":null,"minutes":45,"labview_runs":2},
+"note":"Jev ladder NEXT-ACTION: hypothesis review owed; not dispatched (card peers=[ingest]). Run 1 crashed on my script bug; run 2 complete. A selftest deleted tracked review_outcome-review-20260925.json (restored) and left 2 scratch cards (removed); motor_gate.log +2 DRY rows (no port)."
+}

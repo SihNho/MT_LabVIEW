@@ -1,4 +1,13 @@
-﻿# priorart-hard-sharded-r1
+---
+type: peer-review
+status: historical
+date: 2026-09-15
+tags: [peer-review, archive, labview]
+disposition: legacy
+legacy_note: closed as legacy 2026-09-25 by card chat-L1 (cutoff 2026-09-22; user 2026-09-25 lint order before runner resume)
+---
+
+# priorart-hard-sharded-r1
 
 - **agent:** claude
 - **model:** opus (effort high; pinned by -Model/-Effort (role priorart))

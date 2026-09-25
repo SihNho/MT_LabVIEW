@@ -1,4 +1,13 @@
-﻿# dual-selftest-codex
+---
+type: peer-review
+status: historical
+date: 2026-09-17
+tags: [peer-review, archive, labview]
+disposition: legacy
+legacy_note: closed as legacy 2026-09-25 by card chat-L1 (cutoff 2026-09-22; user 2026-09-25 lint order before runner resume)
+---
+
+# dual-selftest-codex
 
 - **agent:** codex
 - **model:** gpt-5.6-sol (effort medium; peer.ps1 default (user, 2026-09-15))

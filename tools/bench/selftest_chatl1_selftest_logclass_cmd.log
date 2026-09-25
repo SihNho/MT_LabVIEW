@@ -1,0 +1,70 @@
+=== [1] fixtures
+  PASS  F1 review under a build-like name (-File peer.ps1)  got ('review', True, False) want ('review', True, False)
+  PASS  F1b review under a build-like name (-Command & peer.ps1)  got ('review', True, False) want ('review', True, False)
+  PASS  F1c peer.ps1 wrapped in bgrun (after --)  got ('review', True, False) want ('review', True, False)
+  PASS  F1d retrospective under a build-like name  got ('review', True, False) want ('review', True, False)
+  PASS  F1e claude.exe session under a build-like name  got ('review', True, False) want ('review', True, False)
+  PASS  F2 build under a review-like name: ASYMMETRIC, stays review  got ('build', True, False) want ('build', True, False)
+  PASS  F2b build under a normal name  got ('build', False, True) want ('build', False, True)
+  PASS  F2c bench script whose ARGS name peer.ps1  got ('build', False, True) want ('build', False, True)
+  PASS  F2d utility prefix then recipe  got ('build', False, True) want ('build', False, True)
+  PASS  F3 no BGRUN START, build-like name: filename rule  got ('', False, True) want ('', False, True)
+  PASS  F3b no BGRUN START, review-like name: filename rule  got ('', True, False) want ('', True, False)
+  PASS  F3c watchdog record: neither  got ('', False, False) want ('', False, False)
+  PASS  F3d unrecognised command: filename rule  got ('', False, True) want ('', False, True)
+  PASS  F4 Jev bench script: kind jev, not review, build unchanged  got ('jev', False, True) want ('jev', False, True)
+  PASS  F4b Jev top-level script  got ('jev', False, True) want ('jev', False, True)
+  PASS  F5 LAST run wins: peer after recipe  got ('review', True, False) want ('review', True, False)
+  PASS  F5b LAST run wins: recipe after peer  got ('build', False, True) want ('build', False, True)
+  PASS  F6 the real misfiled log is now a review  powershell -NoProfile -ExecutionPolicy Bypass -File tools\peer.ps1 -Kind fact -S
+=== [2] survey of tools/bench/*.log, filename rule vs command rule
+  FACT  logs 2038 ; left build set 29 ; joined review set 29
+  FACT    LEFT BUILD  audit_c35.log                                           kind=review
+  FACT    LEFT BUILD  c19_audit.log                                           kind=review
+  FACT    LEFT BUILD  c19_audit2.log                                          kind=review
+  FACT    LEFT BUILD  c19_doc_ingest.log                                      kind=review
+  FACT    LEFT BUILD  c56_peer_localvar.log                                   kind=review
+  FACT    LEFT BUILD  c75_outcome_review.log                                  kind=review
+  FACT    LEFT BUILD  c79_rowd_writer_peer.log                                kind=review
+  FACT    LEFT BUILD  k_priorart_79-5.log                                     kind=review
+  FACT    LEFT BUILD  k_priorart_79-5b.log                                    kind=review
+  FACT    LEFT BUILD  m8b_replay_prep_75_fact.log                             kind=review
+  FACT    LEFT BUILD  model_probe.log                                         kind=review
+  FACT    LEFT BUILD  model_probe2.log                                        kind=review
+  FACT    LEFT BUILD  outcome_77.log                                          kind=review
+  FACT    LEFT BUILD  parity_l2a1_82_peer.log                                 kind=review
+  FACT    LEFT BUILD  prose_c40.log                                           kind=review
+  FACT    LEFT BUILD  prose_c41.log                                           kind=review
+  FACT    LEFT BUILD  prose_c65_ordering.log                                  kind=review
+  FACT    LEFT BUILD  prose_c66_stop.log                                      kind=review
+  FACT    LEFT BUILD  prose_cycle25.log                                       kind=review
+  FACT    LEFT BUILD  prose_cycle42.log                                       kind=review
+  FACT    LEFT BUILD  prose_replan_cycle26.log                                kind=review
+  FACT    LEFT BUILD  replay_vis_76b_peer.log                                 kind=review
+  FACT    LEFT BUILD  selftest_runner_motorhook.log                           kind=review
+  FACT    LEFT BUILD  stage_d1_l2a1_hyp.log                                   kind=review
+  FACT    LEFT BUILD  stage_d1_l2a1_priorart.log                              kind=review
+  FACT    LEFT BUILD  stage_d1_l2a1_priorart2.log                             kind=review
+  FACT    LEFT BUILD  stage_d1_l2a1_priorart3.log                             kind=review
+  FACT    LEFT BUILD  stage_d1_l2a1_priorart4.log                             kind=review
+  FACT    LEFT BUILD  stage_d1_l2a1_priorart5.log                             kind=review
+  PASS  S1 no log leaves the review set  []
+  PASS  S2 every log leaving the build set has command kind review  
+  PASS  S3 the build-set leavers are exactly the review-set joiners  
+=== [3] pre-existing self-tests vs baseline
+  FACT  selftest_logclass_recipebuild.py rc=1 tally=('23', '1') fails=['C10 selftest_guard_peer_failre.py still passes UNCHANGED (rc 0 and 0 failures)']
+  PASS  B selftest_logclass_recipebuild.py no failure beyond baseline  []
+  FACT  selftest_audit_c4c_split.py rc=1 tally=('31', '2') fails=['G14 selftest_logclass_recipebuild.py still passes UNCHANGED (rc 0, 0 failures)', 'G14 selftest_guard_peer_failre.py still passes UNCHANGED (rc 0, 0 failures)']
+  PASS  B selftest_audit_c4c_split.py no failure beyond baseline  []
+  FACT  selftest_bgrun_fail_scan.py rc=0 tally=None fails=[]
+  PASS  B selftest_bgrun_fail_scan.py no failure beyond baseline  []
+  FACT  selftest_stamp_window.py rc=0 tally=('15', '0') fails=[]
+  PASS  B selftest_stamp_window.py no failure beyond baseline  []
+  FACT  selftest_guard_peer_jev.py rc=0 tally=('25', '0') fails=[]
+  PASS  B selftest_guard_peer_jev.py no failure beyond baseline  []
+  FACT  selftest_guard_peer_failre.py rc=1 tally=('25', '1') fails=['E1 no line-start bold emitter remains under tools/bench/']
+  PASS  B selftest_guard_peer_failre.py no failure beyond baseline  []
+  FACT  selftest_audit_cost_window.py rc=0 tally=('7', '0') fails=[]
+  PASS  B selftest_audit_cost_window.py no failure beyond baseline  []
+=== GATES: 28 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":28,"fail":0},"first_fail":null,"artefacts":[]}

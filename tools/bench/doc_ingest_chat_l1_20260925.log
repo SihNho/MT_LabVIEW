@@ -1,0 +1,26 @@
+BGRUN START 2026-09-25 19:33:23 limit 30.0 min: py -u tools/doc_ingest.py --from 2026-09-25 00:00 --to 2026-09-25 19:30 --model sonnet --slug ingest-chat-l1-20260925
+   14 file(s); explicit window 2026-09-25 00:00:00 .. 2026-09-25 19:30:00
+   task written to C:\Users\KimLab\AppData\Local\Temp\docingest_ingest-chat-l1-20260925.txt (1915 chars)
+   review card tools\bench\cards\review_ingest-chat-l1-20260925.json
+OUTCOME: ANSWERED (169s)  model: sonnet (pinned by -Model/-Effort (role ingest))  archived: archive\ingest\2026-09-25-ingest-chat-l1-20260925.md
+COST: $1.5835  in 10 / out 16980 / cache-create 305176 / cache-read 965029  (165s, 17 turn(s))
+VERDICT-CARD: NO-VERDICT: $.violations[0].loss_usd: expected number/null, got str
+--- ANSWER ---
+## Document ingest — contradiction check (14 files, window 2026-09-25 00:00–19:30)
+
+PAIR 1
+  A: docs/connectivity-map-plan.md:98  "## Pre-decided — ADDED 2026-09-24 01:xx (cycle 68 judgement): S3b-M4 ACCEPTED and promoted"
+  B: docs/connectivity-map-plan.md:100  "148. **FOCUS LOOP REDESIGN (user 2026-09-25; CLAUDE.md 1c''), scheduled AFTER M3, supersedes 147(b)'s edge cadence.**"
+  conflict: the section header asserts every item under it was added 2026-09-24 (cycle 68), but the first item in that section is explicitly dated 2026-09-25 — the item cannot have been added on both dates.
+
+PAIR 2
+  A: docs/connectivity-map-plan.md:100  "148. **FOCUS LOOP REDESIGN (user 2026-09-25; CLAUDE.md 1c''), scheduled AFTER M3, supersedes 147(b)'s edge cadence.**"
+  B: docs/d1-loop12-17-split-plan.md:204  "148. **Owed node sets** are `build_d1_v0.json` key `moved`: 17 → 1.2, 1 → 1.7 (1.5's 5 are done); cut rows A 26 · B 38 · C 3 · W 12 (67 + 12), key `cut`."
+  conflict: two different, unrelated Pre-decided rulings are both numbered "148" across documents whose numbering is declared continuous (`d1-loop12-17-split-plan.md:202` "continues `docs/connectivity-map-plan.md`"), so "Pre-decided 148" cannot refer to a single, unambiguous decision as the shared numbering scheme requires.
+
+CONTRADICTIONS: 2
+
+VERDICT {"schema":"verdict/1","id":"ingest-chat-l1-20260925","verdict":"refuted","alternative":"Both pairs could be read as harmless drafting slips (a misplaced section header; a reused Pre-decided number) rather than substantive rule conflicts, since no downstream document appears to have acted on the wrong reading of '148'.","discriminating_test":"Grep every citation of 'Pre-decided 148' across docs/ and STATUS.md and check which of the two rulings (focus-loop redesign vs owed-node-sets) each citing passage actually relies on; if any citation is ambiguous between the two, the collision is live, not cosmetic.","violations":[{"slug":"unreported-fact","loss_min":0,"loss_usd":"?","evidence":"docs/connectivity-map-plan.md:100"}],"sources":["docs/connectivity-map-plan.md:98","docs/connectivity-map-plan.md:100","docs/d1-loop12-17-split-plan.md:202","docs/d1-loop12-17-split-plan.md:204"],"note":"2 contradictions found, both numbering/dating collisions on 'Pre-decided 148'; no substantive rule-content contradiction (autofocus arithmetic, camera-rate correction, load-test numbers, bed md5s) found across the 14 files in the stated window."}
+   peer.ps1 rc 0; archived as archive/ingest/2026-09-25-ingest-chat-l1-20260925.md
+CONTRADICTIONS: 2
+BGRUN END rc=0 after 173s

@@ -317,7 +317,8 @@ def check_dispositions():
         if i < 0 or not tail or tail.startswith(PLACEHOLDER):
             blank.append(rel(p))
     n = len(files) - legacy
-    suffix = f" ({legacy} pre-2026-09-15 closed as `disposition: legacy`, skipped)" if legacy else ""
+    # 39 pre-2026-09-15 (2026-09-16 backfill) + 48 dated 2026-09-15..21 (2026-09-25, card chat-L1, --cutoff 2026-09-22)
+    suffix = f" ({legacy} closed as `disposition: legacy`, skipped)" if legacy else ""
     if blank:
         say("FAIL", "L6 archived reviews are disposed",
             f"{n - len(blank)}/{n} disposed; {len(blank)} still blank or placeholder{suffix}. "

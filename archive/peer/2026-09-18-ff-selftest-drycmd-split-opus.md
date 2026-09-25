@@ -1,4 +1,13 @@
-﻿# ff-selftest-drycmd-split-opus
+---
+type: peer-review
+status: historical
+date: 2026-09-18
+tags: [peer-review, archive, labview]
+disposition: legacy
+legacy_note: closed as legacy 2026-09-25 by card chat-L1 (cutoff 2026-09-22; user 2026-09-25 lint order before runner resume)
+---
+
+# ff-selftest-drycmd-split-opus
 
 - **agent:** claude
 - **model:** opus (effort max; peer.ps1 default for role hypothesis)

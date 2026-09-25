@@ -26,11 +26,20 @@ PREDICTION CONTRACT (checked by the script itself, printed as GATE lines):
 
   py tools/mark_legacy_dispositions.py --dry-run
   py tools/mark_legacy_dispositions.py
+
+2026-09-25 NOTE (card chat-L1, user 2026-09-25 "현재까지의 규율 및 훅을 lint할 것"): `--cutoff YYYY-MM-DD` added.
+The second backfill runs with `--cutoff 2026-09-22` - the day the one-review-per-row rule and the Jev review ladder
+were adopted (CLAUDE.md section 3); the undisposed reviews dated 2026-09-15 .. 2026-09-21 were owed by cycles that
+have all ended, and nobody can now say from memory what was done with them. Reviews dated 2026-09-22 or later are
+NOT touched (G1 checks it). A file closed by a non-default cutoff also gets `legacy_note:` in its frontmatter
+naming the date, the cutoff and the card, so the closure is dated in the file itself. Gates G1-G4 are unchanged in
+meaning; "cutoff" in them is whatever --cutoff says.
 """
 import argparse
 import glob
 import os
 import re
+import time
 import sys
 
 try:
@@ -83,7 +92,17 @@ def body_below_fm(body):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--cutoff", default=CUTOFF, help="strictly before this date -> legacy (default %s)" % CUTOFF)
+    ap.add_argument("--note", default="", help="text for the `legacy_note:` key (non-default cutoff only)")
     a = ap.parse_args()
+    cutoff = a.cutoff
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", cutoff):
+        print("bad --cutoff %r" % cutoff)
+        return 2
+    extra = ""
+    if cutoff != CUTOFF:
+        note = a.note or "closed as legacy on %s (cutoff %s)" % (time.strftime("%Y-%m-%d"), cutoff)
+        extra = "legacy_note: %s\n" % note.replace("\n", " ")
 
     files = sorted(glob.glob(os.path.join(PEER, "*.md")))
     touched, skipped_recent, no_date = [], [], []
@@ -99,7 +118,7 @@ def main():
             no_date.append(name)
             continue
         date = m.group(1)
-        if date >= CUTOFF:
+        if date >= cutoff:
             skipped_recent.append(name)
             continue
 
@@ -115,16 +134,20 @@ def main():
                 f"date: {date}\n"
                 "tags: [peer-review, archive, labview]\n"
                 "disposition: legacy\n"
+                + extra +
                 "---\n\n"
             )
             new = block + body
         else:
             mm = FM_RE.match(body)
             keys = mm.group(1).rstrip("\r\n")
-            new = "---\n" + keys + "\ndisposition: legacy\n---\n" + body[mm.end():]
-        if body_below_fm(new) != before_body:
+            new = "---\n" + keys + "\ndisposition: legacy\n" + extra + "---\n" + body[mm.end():]
+        # A CREATED block ends "---\n\n", so the text below it is "\n" + the untouched body; that one separator
+        # line is the only allowed difference (2026-09-25: the old exact comparison FAILed G3 on every
+        # no-frontmatter file although no body byte changed - measured on 48 files in a --dry-run).
+        if body_below_fm(new) != (before_body if fm is not None else "\n" + body):
             g3 = False
-        if not (p.startswith(PEER) and date < CUTOFF):
+        if not (p.startswith(PEER) and date < cutoff):
             g1 = False
         touched.append((name, "created" if fm is None else "key-added"))
         if not a.dry_run:
@@ -132,12 +155,12 @@ def main():
                 f.write(new)
 
     for name, _ in touched:
-        if not DATE_RE.match(name) or DATE_RE.match(name).group(1) >= CUTOFF:
+        if not DATE_RE.match(name) or DATE_RE.match(name).group(1) >= cutoff:
             g2 = False
 
     print(f"peer archives scanned : {len(files)}")
     print(f"marked legacy         : {len(touched)}" + (" (dry run)" if a.dry_run else ""))
-    print(f"left FAILing (>= {CUTOFF}) : {len(skipped_recent)}")
+    print(f"left FAILing (>= {cutoff}) : {len(skipped_recent)}")
     for n in skipped_recent:
         print(f"    DEBT {n}")
     if no_date:
@@ -154,7 +177,7 @@ def main():
             if fmx.get("disposition") == "legacy":
                 continue
             mm = DATE_RE.match(os.path.basename(p))
-            if mm and mm.group(1) < CUTOFF:
+            if mm and mm.group(1) < cutoff:
                 g4 = False
                 print(f"    G4 MISS {os.path.basename(p)}")
     for label, ok in (("G1 all touched are archive/peer and pre-cutoff", g1),
