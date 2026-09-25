@@ -1,0 +1,19 @@
+{"schema":"result/1","id":"chat-M1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/cycle_runner.py","md5":"6139e26dad20544695837031bfa84c71"},{"path":".claude/agents/material.md","md5":"f3675dfd64b6fa2e9bf6971a959d746e"},{"path":"tools/cycle_prompt.md","md5":"7c0d8e1998b587194c6035824e1a4ed1"},{"path":"tools/bench/selftest_cycle_runner_ladder.py","md5":"29b4326b1d1bfd5c93f24ad78163758f"},{"path":"tools/bench/selftest_cycle_runner_ladder.log","md5":"11598d979908036b5f89c480ec2ba649"}],
+"facts":[
+"material.md:3-4 model fable effort low; dated note material.md:8 says back to claude-opus-5-5/medium after 2026-09-28 07:00 KST",
+"cycle_prompt.md:77-80: until that date material escalation is material -> material-fable-medium (escalation 2) -> decisions_pending; :81 describes the judgement ladder",
+"cycle_runner.py:248-255 JUDGE_RANKS opus-base/opus-high/fable-low/fable-medium, JUDGE_SLUGS, JUDGE_AB_UNTIL=1790546400 (2026-09-28 07:00 KST)",
+"cycle_runner.py:279 judge_ladder_step: +1 on next.json UNCHANGED or retro VIOLATION slug; delivery resets to 0; trigger at level 3 -> stop",
+"cycle_runner.py:1256-1266 cycle-end JUDGE-LADDER line; on stop: add_judge_decision (decisions_pending) + RUNNER STOP exit 3; state in <bench>/judge_ladder.json, reset to 0 after the stop",
+"cycle_runner.py:267 judge_choice = max(ladder level, ff rung low=2/medium=3) capped at 3 = fable/medium; FF trigger logic untouched",
+"A/B: cycle_runner.py:258 + --judge-ab auto|on|off (:961); level-0 effort odd=medium even=high; JUDGE-AB line (:1082), OVERRIDDEN when rank>0; card effort + note",
+"selftest_cycle_runner_ladder.log: 10/10 PASS (L1-L5, A1-A3, I1 card effort medium/high, I2 cycle 3 claude-opus-5-5/high note level 1)",
+"selftest_cycle_runner_ff_m1.log: 3/3 PASS unchanged; commit 1892a09"
+],
+"open":[
+"Stop condition 3 (next.json unchanged twice -> RUNNER STOP) is unchanged, so the UNCHANGED trigger can only ever reach level 1; only retro slugs climb to 2-3. Keep, or let the ladder replace stop 3?",
+"After a ladder STOP the level is reset to 0 for the next launch; should a relaunch instead resume at level 3?",
+"Reverting material.md to Opus and the A/B end are date-gated only in code/notes; the Monday reminder is judgement work."
+],
+"cost":{"usd":null,"minutes":12,"labview_runs":0},"note":"Coordinator mid-task addition (--judge-ab) implemented within write globs tools/**."}

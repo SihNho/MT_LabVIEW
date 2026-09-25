@@ -1,0 +1,57 @@
+BGRUN START 2026-09-26 00:33:31 limit 15.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c87-errorlist-extras -TaskFile tools/bench/peer_task_c87_errorlist_extras.txt
+OUTCOME: ANSWERED (216s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c87-errorlist-extras.md
+COST: $1.4531  in 20 / out 18949 / cache-create 103832 / cache-read 941743  (212s, 14 turn(s))
+--- ANSWER ---
+**Verdict: (1) is wrong about the cause, and (2) is wrong in a way that matters: licensing "zerosources" would probably hide a broken row that the stage wired itself. (3) is right to keep the item as extra, but it points at the wrong rows.** One more thing to know first: `WIRE_CLASSES` at `tools/errorlist_check.py:324-330` already contains both new classes, so this patch is live and is currently absorbing items.
+
+## 1. Strongest reason the claim is wrong
+
+**(2) The zero-sources wire is almost certainly on the `sr3_R` net, a row the stage wired itself.**
+- Less?'s `x` (#11529) was originally fed through tunnel #11336 (`stage_d1_l2a1.json:858`: sources `10150 x+1 @11336/f1` and `9907 Value @11336/f0`).
+- The plan's `sr3_R` row wires that same source, #11336 term 11346, into `SR3R.inner` (`plan_l2a1.json:268-276`).
+- The bed did not do that terminal-to-terminal. It ran `connect_from_wire sink D[19].N[22].t14 <- w11253[0]` (`stage_d1_l2a1.json:776`). That attaches the new shift register's right face to the *existing wire*, not to terminal 11346.
+- The error text "input of Less? connected to a right shift register … two data sinks but zero sources" is exactly this result: SR3R.inner and Less?.x sit on w11253, and 11346 is no longer on it.
+- In the simulator, SR3R.inner has a source (11346). In the bed it has none. SR3's right face is not an open row, and CDIFF only checks the 9 listed sinks (`:850-858`), so nothing compared it.
+- If this is right, SR3 carries no value into the next iteration. That is a computation change under rule 1a, not a by-design gap.
+- A class-level, uncapped "zerosources" licence would hide this permanently, and on every later bed too.
+- One more point: `P2 sr3_R` was only checked with "E1 + RBW (+CT) only" (`:828`), and the `sr3_L0` second pass crashed with `#10750 not in Diagram[21].Nodes[]` (`:829-830`). Nothing has verified SR3.
+
+**(1) The fully-unconnected wires cannot come from open rows.**
+- No open-row sink node was moved. The moved set is #5540, 9647, 10247, 10445, 10950, 17289, 10969, 10757, 17487, 5634, 23541, 10739, 10929, 17272 (`:753-766`). The open-row nodes are 376, 2626, 5058, 5696, 6085, 9703, 10382, 11529. The two sets do not overlap.
+- A wire that lost its source but still touches an unmoved open sink is still connected to that sink. LabVIEW reports that as "has no source" (4 items) or "loose ends" (14 items), never as "a completely unconnected wire".
+- A wire with no end at all needs both endpoints detached. That happens when both nodes were moved. Seven `rw_*` rows reconnect exactly such pairs in the new body: 5634→10247, 10739→10950, 10929→10757, 10969→17272, 10950→9647, 17289→10950 and 17487→9647 (`plan_l2a1.json:366-485`). Their old wires stay behind, fully detached.
+- So these 9 items are leftovers from the move list plus the re-wire rows. They are probably harmless, but the stated mechanism is wrong. Because the number is derivable, it can be capped instead of uncapped. The licence is also gated on `open_rows` being present (`:377`), which is the wrong condition.
+- NI documents the two errors as separate wire states: [Wire has loose ends](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-has-loose-ends.html) and [This wire is not connected to anything](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-is-not-connected.html). The page body did not render for me. The local detail text ("This is a completely unconnected wire.") is the authority here. Loose wire fragments left by moves and deletions are a known LabVIEW behaviour ([NI forum](https://forums.ni.com/t5/LabVIEW/Invisible-wire-ever-see-this/td-p/1066448), [Remove Wire Loose Ends](https://labviewwiki.org/wiki/AbstractDiagram_class/Remove_Wire_Loose_Ends_method)).
+
+## 2. Alternative explanation for the polymorphic item: open row #9703 is not actually open
+
+- The bed's CDIFF shows #9703's `x` has a source after the stage: `23541|ControlTerminal|index|0@10978/f1`. Before, it was `10757|element` (`:856`). The simulator predicted it would be open (`plan_l2a1.json:585`).
+- So in the bed, 9703.x is fed through tunnel 10978 by the `index` control that the stage moved in (mv_23541). This is a different, and probably differently typed, source from the original `element`.
+- The counts support this. Four non-SubVI open nodes (2626, 9703, 10382, 11529) produced only **three** "Contains unwired or bad terminal" items (Not, BuildArray, Less?). Because `node_unwired` licences do not carry the node's identity (`:374`), the missing one shows up as `USED 0` on 11529 (log:24). The node that is actually silent is most likely 9703: it is not unwired, it is wired to the wrong thing, so LabVIEW reports the wire instead ([NI: Polymorphic terminal cannot accept this data type](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/polymorphic-terminal-cannot-accept-data-type.html), [forum example](https://forums.ni.com/t5/LabVIEW/Polymorphic-terminal-cannot-accept-this-data-type-error/td-p/4188757)).
+- Verdict on (3): keeping it as **extra is right**. It must never be licensed, because it is evidence that the bed and the simulator disagree on an "open" row. But the P2 target list should start with **9703 / 10978 / 23541**, not the five SR/tunnel rows. The item is not grounds for a new Selection List[] reader until this cheaper check has run.
+
+## 3. What would falsify each part
+
+- **(1)** Count the base-graph wires (`graph_k_80_owners.json`) whose endpoints all lie in the moved set, allowing for branches. About 9 means "move-pair leftovers", not open rows. Finding a completely unconnected wire whose former endpoint is an open-row sink would support the claim.
+- **(2)** Find which right shift register the Less? wire touches. If it is a pre-existing SR on another loop, and SR1R/SR2R/SR3R.inner each have a real source, my objection falls.
+  - One caveat on "RBW deleted 29, none on a re-wired sink". If RBW removed the Less?–SR3R wire and that check still passed, the check cannot see `new:`-addressed sinks (SR faces, tunnels). That is plausible, but I have not verified it.
+- **(3)** If 9703.x's source really has the same type as the original `element`, the 9703 theory fails, and the SR/tunnel rows become the suspects.
+
+## 4. Additional finding
+
+The existing `outputlooptunneltoaninput` licence may already be hiding 2 defective stage rows.
+- Its two items say "output loop tunnel to an input of SubVI", with the same "zero sources" detail (json:232, :272).
+- There are exactly two stage rows that wire tunnels into SubVI #5058: `rw_6007_5082` and `rw_6026_5164` (`wire_tunouter SelectorTunnel #5680/#6016 -> SubVI[17].t0/.t7`, `:793-794`).
+- If the op connected an inner (sink) face, you get exactly this message. The same fix applies: tie the licence to a derived count, not to the class.
+
+## 5. Cheapest discriminating test (no LabVIEW)
+
+Run one offline script over the files already on disk:
+1. From `graph_k_80_owners.json`, list every base wire whose every terminal is on a moved node. Compare that count with 9.
+2. List each open-row sink's original source owner, and check whether it was moved (9703's goes through 10757 and 10978). This settles (1).
+3. Open the saved Error List screenshots for the Less? item and for the polymorphic item (`show_error.bd_after` in `errorlist_…_001456.json`; each double-click fronts the diagram at the fault). Check whether the highlighted wire touches the new SR3 (at the loop 10170 border) and whether the polymorphic wire enters #9703.
+
+These captures already exist. Checking them costs no new op and splits (2) and (3) directly.
+
+Until this is done, I'd revert "zerosources" out of `WIRE_CLASSES`. "isnotconnectedtoanything" can stay, but capped by the move-pair count and with its stated reason corrected.
+BGRUN END rc=0 after 217s

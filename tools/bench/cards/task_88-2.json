@@ -1,0 +1,61 @@
+{
+ "schema": "task/1",
+ "id": "88-2",
+ "kind": "build",
+ "goal": "Kernel swap (PD194(d)): copy D1_s1_copy.vi -> D1_s1_kswap_<ts>.vi with the tracking call repointed to the verified parallel kernel; lost frames at 15 picks, 120 s, 90 Hz",
+ "why": "Cycle 83: 15 picks lost 3,331/~10,680 frames on the S1 copy; per-bead tracking cost is the lever. One call-site repoint of a verified subVI. Detail: brief_88-2.md",
+ "inputs": [
+  {"path": "tools/bench/cards/brief_88-2.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"path": "tools/bench/m8_load_83.json"},
+  {"path": "tools/bench/drive_m8_load83.py"},
+  {"path": "archive/peer/2026-09-25-outcome-review-20260925.md"},
+  {"path": "docs/t0-instrumentation-plan.md"},
+  {"path": "docs/camera-acquisition-facts.md"}
+ ],
+ "pass": [
+  "PRECONDITION: INDEX rows 12+17 cited for bit-identity and same connector pane, else BLOCKED, no swap",
+  "D1_s1_kswap_<ts>.vi: one node's callee changed, all wires on same terminals (uid read-back), ExecState 1, md5",
+  "real legs, 15 picks, 120 s, 90 Hz: kswap x2 + D1_s1_copy x1 control; lost/acquired/rate each; LabVIEW gone each",
+  "tools/bench/m8_kswap_88.json written; D1_s1_copy.vi and L2-A1 bed md5 unchanged"
+ ],
+ "outputs": ["claudeDev/D1_s1_kswap_*.vi", "tools/bench/m8_kswap_88*", "tools/bench/build_kswap_88*"],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_kswap_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\ops\\**",
+   "tools/bench/m8_kswap_88*",
+   "tools/bench/build_kswap_88*",
+   "tools/bench/diag_c88_*",
+   "tools/recipes/build_kswap_88*",
+   "tools/recipes/diag_c88_*",
+   "tools/bench/drive_m8_load83*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/errorlist_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "rules": [
+  "rule 1a: swap only on cited bit-identity; same wires, whole arrays non-indexed",
+  "never edit/save D1_s1_copy.vi, originals, or the L2-A1 bed",
+  "missing replace-callee verb may be built: <=120 lines stagekit, negative self-test, handle-flat",
+  "bead picking as drive_m8_load83 does, lv_gui capture->act->confirm, Exception Approved",
+  "no beads: tracking values garbage is not a failure; the number is lost frames",
+  "failed gate -> JEV-LADDER first; review owed -> hypothesis review then stop",
+  "result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M8", "R1", "R3"]
+}

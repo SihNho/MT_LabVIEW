@@ -1,0 +1,266 @@
+BGRUN START 2026-09-26 00:39:07 limit 45.0 min: py -u tools/bench/diag_c88_p2rbw.py
+diag_c88_p2rbw - card 88-1 parts (A)+(B). A DIAGNOSTIC: measures, decides nothing, saves nothing.
+    MATERIAL=1 py tools/bgrun.py --max-min 45 --log tools/bench/diag_c88_p2rbw.log -- py -u tools/bench/diag_c88_p2rbw.py
+PRIOR ART (read first, nothing new built): stagekit.Stage (pins, restart, dated copies, hygiene), stagekit.address +
+cfw_second_pass's body (stagekit.py:713,848 - called here WITH objs so a SelectorTunnel OUTER face addresses; the
+recipe's :90 blanks owner/term class, PD194(a)), wiki_build.read_live (terminals+term_class+objs), allterms.read_terms,
+stage_d1_l2a1.py:112-118 (RBW on a scratch), errorlist_check.open_diagram/make_on_item/compare + lv_errorlist.read.
+The BED is only byte-COPIED: (A) runs on copy D1_l2a1_scratch_88_p2_*, (B) on D1_l2a1_scratch_88_*_rbw; both deleted.
+PREDICTION (A): desk (sim step_46) = each of the 5 sinks has ONE source, the new SR-L / tunnel inner (real uids by the
+stage BINDING, stage_d1_l2a1.json:795); live: sole source == planned, sole sink == planned SelectorTunnel OuterTerminal,
+ordered idempotent re-connect wire_delta 0 and `Is Broken?` False. (B): RBW deletes 29 wires (stage_d1_l2a1.json:865);
+the Error List is then read in full (items == window N). No prediction on which items survive: that is the measurement.
+
+---------- [A0] DESK CHECK from tools/bench/sim/l2a1/step_46_wire.json (final simulated state)
+  FACT  DESK sr1_L0: plan sr1_L0 src new:SR1L.inner -> sim source owner [-2] ['LeftShiftRegister'] (real #25240); sink #5825 term 5883 [('SelectorTunnel', 'OuterTerminal')]; sinks on net 1
+  PASS  A0 sr1_L0 simulated net has exactly one source and one sink
+  FACT  DESK sr2_L0: plan sr2_L0 src new:SR2L.inner -> sim source owner [-10] ['LeftShiftRegister'] (real #25344); sink #5702 term 6038 [('SelectorTunnel', 'OuterTerminal')]; sinks on net 1
+  PASS  A0 sr2_L0 simulated net has exactly one source and one sink
+  FACT  DESK sr3_L0: plan sr3_L0 src new:SR3L.inner -> sim source owner [-18] ['LeftShiftRegister'] (real #25382); sink #10750 term 10760 [('SelectorTunnel', 'OuterTerminal')]; sinks on net 1
+  PASS  A0 sr3_L0 simulated net has exactly one source and one sink
+  FACT  DESK tun1: plan tun1_in src new:T1.inner -> sim source owner [-25] ['LoopTunnel'] (real #25422); sink #5725 term 5741 [('SelectorTunnel', 'OuterTerminal')]; sinks on net 1
+  PASS  A0 tun1 simulated net has exactly one source and one sink
+  FACT  DESK tun2: plan tun2_in src new:T2.inner -> sim source owner [-29] ['LoopTunnel'] (real #25428); sink #5967 term 5976 [('SelectorTunnel', 'OuterTerminal')]; sinks on net 1
+  PASS  A0 tun2 simulated net has exactly one source and one sink
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 258 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 51d9b8a3af5b4240cdc2ad193d9b4f41  got 51d9b8a3af5b4240cdc2ad193d9b4f41
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33953
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_l2a1_scratch_88_p2_20260926_003907.vi
+  FACT  ExecState [after open] D1_l2a1_scratch_88_p2_20260926_003907.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so D1_l2a1_scratch_88_p2_20260926_003907.vi is deleted at close
+
+---------- [A] P2 READ on the byte copy of the bed (work copy, deleted at close)
+  FACT  LIVE READ {'gobject': 8.75, 'terminals': 25.1, 'fs': 0.0, 'total': 33.95}
+  FACT  P2 sr1_L0: wire w25309; sources [('LeftShiftRegister', 25240, 25312)]; sinks [('SelectorTunnel', 5825, 5883, 'OuterTerminal')]; planned src #25240 sink #5825/t5883
+  PASS  A1 sr1_L0 sole source == planned #25240  [('LeftShiftRegister', 25240, 25312)]
+  PASS  A2 sr1_L0 sole sink == planned SelectorTunnel #5825 OuterTerminal t5883  [('SelectorTunnel', 5825, 5883, 'OuterTerminal')]
+  FACT  sr1_L0 sink addressed: D[21].N[2].t5 via structure #5540 of tunnel #5825 (geometry: left edge x); terminal by uid #5883 (wire 25309)
+  FACT  2nd sr1_L0 node census: 635 rows
+  FACT  2nd purge sr1_L0 AFTER node census: 636 rows
+  FACT  2nd purge sr1_L0 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(25513, 'Invoke', (4593, 5723))]
+  FACT  2nd purge sr1_L0 new #25513 #25513 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  2nd purge sr1_L0 new #25513 terminal table of #25513 (Diagram idx 21, Nodes[10], echo 25513): 6 terminal(s)
+  FACT      2nd purge sr1_L0 new #25513 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge sr1_L0 new #25513 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge sr1_L0 new #25513 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge sr1_L0 new #25513 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge sr1_L0 new #25513 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge sr1_L0 new #25513 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  2nd purge sr1_L0 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  2nd purge sr1_L0 purge delete Node #25513 at index 98: gone [25513], error '', census 636 -> 635, still present False (1.24 s)
+  FACT  2nd purge sr1_L0 AFTER THE PURGE node census: 635 rows
+  FACT  2nd purge sr1_L0 purge arithmetic: Node 635 -> 636 -> 635
+  FACT  A3 sr1_L0 ORDERED SECOND PASS: Wire 1938 -> 1938 (delta 0); op err ''; `UID 2` 25309; `Is Broken?` False
+  PASS  A3 sr1_L0 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  PASS  A3 sr1_L0 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  Is Broken? False ; `UID 2` 25309 vs wire 25309 (same True)
+  FACT  P2 sr2_L0: wire w25358; sources [('LeftShiftRegister', 25344, 25361)]; sinks [('SelectorTunnel', 5702, 6038, 'OuterTerminal')]; planned src #25344 sink #5702/t6038
+  PASS  A1 sr2_L0 sole source == planned #25344  [('LeftShiftRegister', 25344, 25361)]
+  PASS  A2 sr2_L0 sole sink == planned SelectorTunnel #5702 OuterTerminal t6038  [('SelectorTunnel', 5702, 6038, 'OuterTerminal')]
+  FACT  sr2_L0 sink addressed: D[21].N[2].t3 via structure #5540 of tunnel #5702 (geometry: left edge x); terminal by uid #6038 (wire 25358)
+  FACT  2nd sr2_L0 node census: 635 rows
+  FACT  2nd purge sr2_L0 AFTER node census: 636 rows
+  FACT  2nd purge sr2_L0 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(25513, 'Invoke', (4593, 5723))]
+  FACT  2nd purge sr2_L0 new #25513 #25513 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  2nd purge sr2_L0 new #25513 terminal table of #25513 (Diagram idx 21, Nodes[10], echo 25513): 6 terminal(s)
+  FACT      2nd purge sr2_L0 new #25513 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge sr2_L0 new #25513 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge sr2_L0 new #25513 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge sr2_L0 new #25513 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge sr2_L0 new #25513 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge sr2_L0 new #25513 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  2nd purge sr2_L0 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  2nd purge sr2_L0 purge delete Node #25513 at index 98: gone [25513], error '', census 636 -> 635, still present False (1.24 s)
+  FACT  2nd purge sr2_L0 AFTER THE PURGE node census: 635 rows
+  FACT  2nd purge sr2_L0 purge arithmetic: Node 635 -> 636 -> 635
+  FACT  A3 sr2_L0 ORDERED SECOND PASS: Wire 1938 -> 1938 (delta 0); op err ''; `UID 2` 25358; `Is Broken?` False
+  PASS  A3 sr2_L0 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  PASS  A3 sr2_L0 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  Is Broken? False ; `UID 2` 25358 vs wire 25358 (same True)
+  FACT  P2 sr3_L0: wire w25394; sources [('LeftShiftRegister', 25382, 25396)]; sinks [('SelectorTunnel', 10750, 10760, 'OuterTerminal')]; planned src #25382 sink #10750/t10760
+  PASS  A1 sr3_L0 sole source == planned #25382  [('LeftShiftRegister', 25382, 25396)]
+  PASS  A2 sr3_L0 sole sink == planned SelectorTunnel #10750 OuterTerminal t10760  [('SelectorTunnel', 10750, 10760, 'OuterTerminal')]
+  FACT  sr3_L0 sink addressed: D[21].N[5].t2 via structure #10445 of tunnel #10750 (geometry: left edge x); terminal by uid #10760 (wire 25394)
+  FACT  2nd sr3_L0 node census: 635 rows
+  FACT  2nd purge sr3_L0 AFTER node census: 636 rows
+  FACT  2nd purge sr3_L0 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(25513, 'Invoke', (4593, 5723))]
+  FACT  2nd purge sr3_L0 new #25513 #25513 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  2nd purge sr3_L0 new #25513 terminal table of #25513 (Diagram idx 21, Nodes[10], echo 25513): 6 terminal(s)
+  FACT      2nd purge sr3_L0 new #25513 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge sr3_L0 new #25513 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge sr3_L0 new #25513 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge sr3_L0 new #25513 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge sr3_L0 new #25513 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge sr3_L0 new #25513 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  2nd purge sr3_L0 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  2nd purge sr3_L0 purge delete Node #25513 at index 98: gone [25513], error '', census 636 -> 635, still present False (1.24 s)
+  FACT  2nd purge sr3_L0 AFTER THE PURGE node census: 635 rows
+  FACT  2nd purge sr3_L0 purge arithmetic: Node 635 -> 636 -> 635
+  FACT  A3 sr3_L0 ORDERED SECOND PASS: Wire 1938 -> 1938 (delta 0); op err ''; `UID 2` 25394; `Is Broken?` False
+  PASS  A3 sr3_L0 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  PASS  A3 sr3_L0 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  Is Broken? False ; `UID 2` 25394 vs wire 25394 (same True)
+  FACT  P2 tun1: wire w25405; sources [('LoopTunnel', 25422, 25425)]; sinks [('SelectorTunnel', 5725, 5741, 'OuterTerminal')]; planned src #25422 sink #5725/t5741
+  PASS  A1 tun1 sole source == planned #25422  [('LoopTunnel', 25422, 25425)]
+  PASS  A2 tun1 sole sink == planned SelectorTunnel #5725 OuterTerminal t5741  [('SelectorTunnel', 5725, 5741, 'OuterTerminal')]
+  FACT  tun1 sink addressed: D[21].N[2].t4 via structure #5540 of tunnel #5725 (geometry: left edge x); terminal by uid #5741 (wire 25405)
+  FACT  2nd tun1 node census: 635 rows
+  FACT  2nd purge tun1 AFTER node census: 636 rows
+  FACT  2nd purge tun1 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(25513, 'Invoke', (4593, 5723))]
+  FACT  2nd purge tun1 new #25513 #25513 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  2nd purge tun1 new #25513 terminal table of #25513 (Diagram idx 21, Nodes[10], echo 25513): 6 terminal(s)
+  FACT      2nd purge tun1 new #25513 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge tun1 new #25513 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge tun1 new #25513 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge tun1 new #25513 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge tun1 new #25513 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge tun1 new #25513 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  2nd purge tun1 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  2nd purge tun1 purge delete Node #25513 at index 98: gone [25513], error '', census 636 -> 635, still present False (1.25 s)
+  FACT  2nd purge tun1 AFTER THE PURGE node census: 635 rows
+  FACT  2nd purge tun1 purge arithmetic: Node 635 -> 636 -> 635
+  FACT  A3 tun1 ORDERED SECOND PASS: Wire 1938 -> 1938 (delta 0); op err ''; `UID 2` 25405; `Is Broken?` False
+  PASS  A3 tun1 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  PASS  A3 tun1 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  Is Broken? False ; `UID 2` 25405 vs wire 25405 (same True)
+  FACT  P2 tun2: wire w9806; sources [('LoopTunnel', 25428, 25434)]; sinks [('SelectorTunnel', 5967, 5976, 'OuterTerminal')]; planned src #25428 sink #5967/t5976
+  PASS  A1 tun2 sole source == planned #25428  [('LoopTunnel', 25428, 25434)]
+  PASS  A2 tun2 sole sink == planned SelectorTunnel #5967 OuterTerminal t5976  [('SelectorTunnel', 5967, 5976, 'OuterTerminal')]
+  FACT  tun2 sink addressed: D[21].N[2].t1 via structure #5540 of tunnel #5967 (geometry: left edge x); terminal by uid #5976 (wire 9806)
+  FACT  2nd tun2 node census: 635 rows
+  FACT  2nd purge tun2 AFTER node census: 636 rows
+  FACT  2nd purge tun2 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(25513, 'Invoke', (4593, 5723))]
+  FACT  2nd purge tun2 new #25513 #25513 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 10, 'nodes_on_diagram': 11, 'label': 'Invoke Node'}  (1 diagram(s) scanned of 173, 0.2 s)
+  FACT  2nd purge tun2 new #25513 terminal table of #25513 (Diagram idx 21, Nodes[10], echo 25513): 6 terminal(s)
+  FACT      2nd purge tun2 new #25513 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge tun2 new #25513 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge tun2 new #25513 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge tun2 new #25513 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge tun2 new #25513 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      2nd purge tun2 new #25513 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  2nd purge tun2 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  2nd purge tun2 purge delete Node #25513 at index 98: gone [25513], error '', census 636 -> 635, still present False (1.24 s)
+  FACT  2nd purge tun2 AFTER THE PURGE node census: 635 rows
+  FACT  2nd purge tun2 purge arithmetic: Node 635 -> 636 -> 635
+  FACT  A3 tun2 ORDERED SECOND PASS: Wire 1938 -> 1938 (delta 0); op err ''; `UID 2` 9806; `Is Broken?` False
+  PASS  A3 tun2 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  PASS  A3 tun2 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  Is Broken? False ; `UID 2` 9806 vs wire 9806 (same True)
+  FACT  EXTRA SR_R_inner #10850 t25303 '' src=True wire w0: net sources []; net sinks []
+  FACT  EXTRA SR_R_inner #25339 t25355 '' src=True wire w0: net sources []; net sinks []
+  FACT  EXTRA SR_R_inner #25371 t25393 'Auto-reset zero' src=True wire w0: net sources []; net sinks []
+  FACT  EXTRA SR_R_inner #10850 t25246 '' src=False wire w25283: net sources [('SubVI', 5058, 'x,y,z array out')]; net sinks [('RightShiftRegister', 10850, '')]
+  FACT  EXTRA SR_R_inner #25339 t25347 '' src=False wire w25348: net sources [('SubVI', 5058, 'Bead is good? array out')]; net sinks [('RightShiftRegister', 25339, '')]
+  FACT  EXTRA SR_R_inner #25371 t25385 'Auto-reset zero' src=False wire w25386: net sources [('SelectorTunnel', 11336, 'Value')]; net sinks [('RightShiftRegister', 25371, 'Auto-reset zero')]
+  FACT  EXTRA node_9703 #9703 t9710 'x-y' src=True wire w9769: net sources [('Function', 9703, 'x-y')]; net sinks [('Function', 9621, 'x')]
+  FACT  EXTRA node_9703 #9703 t9713 'y' src=False wire w27156: net sources [('Function', 9243, 'x/y')]; net sinks [('Function', 9703, 'y')]
+  FACT  EXTRA node_9703 #9703 t9716 'x' src=False wire w27107: net sources [('SelectorTunnel', 10978, 'index')]; net sinks [('Function', 9703, 'x')]
+  PASS  A-H4 scratch deleted: D1_l2a1_scratch_88_p2_20260926_003907.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_l2a1_scratch_88_p2_20260926_003907.vi
+  PASS  A9 part A ran to its end
+
+---------- [B] RBW on a SCRATCH byte copy, then the Error List of that in-memory scratch (never saved)
+  PASS  SC D1_l2a1_scratch_88_20260926_003907_rbw.vi is a byte-identical copy of D1_l2_a1_20260925_235224.vi  D1_l2a1_scratch_88_20260926_003907_rbw.vi
+  FACT  RBW BROKEN-WIRE COUNT: Wire 1938 -> 1909 after Remove Bad Wires = 29 bad wire(s); ExecState after 0
+  FACT  RBW deleted 29 wire(s): [42, 121, 373, 505, 1681, 2924, 3040, 3472, 3512, 3646, 3912, 4027, 5637, 5709, 5746, 5859, 5975, 5979, 6041, 7429, 9868, 9921, 10312, 10573, 10763, 11389, 17287, 17393, 23556]
+  FACT  RBW w42 ends: [('LoopTunnel', 2396, '', 2418, 'src')]
+  FACT  RBW w121 ends: [('RightShiftRegister', 119, '', 3064, 'snk')]
+  FACT  RBW w373 ends: [('LoopTunnel', 2580, '', 2887, 'src')]
+  FACT  RBW w505 ends: [('BuildArray', 2626, 'array', 4168, 'snk'), ('SelectorTunnel', 2765, 'x,y,z array out', 2811, 'snk'), ('RightShiftRegister', 1147, '', 1148, 'snk')]
+  FACT  RBW w1681 ends: [('LeftShiftRegister', 1142, '', 1157, 'src')]
+  FACT  RBW w2924 ends: [('SubVI', 5696, 'x,y,z array', 5910, 'snk'), ('SelectorTunnel', 2765, 'x,y,z array out', 2792, 'snk')]
+  FACT  RBW w3040 ends: [('SubVI', 6810, 'Image Out', 6865, 'src')]
+  FACT  RBW w3472 ends: [('SubVI', 6085, 'x,y,z array', 6253, 'snk'), ('SelectorTunnel', 2765, 'x,y,z array out', 2789, 'snk')]
+  FACT  RBW w3512 ends: [('LoopTunnel', 4432, '', 5059, 'src')]
+  FACT  RBW w3646 ends: [('LoopTunnel', 3656, '', 3660, 'src')]
+  FACT  RBW w3912 ends: [('LoopTunnel', 3920, 'Real-space cosine window', 3918, 'src')]
+  FACT  RBW w4027 ends: [('LoopTunnel', 4031, 'Cosine bandpass for Hilbert', 4013, 'src')]
+  FACT  RBW w5637 ends: NONE (termless wire)
+  FACT  RBW w5709 ends: NONE (termless wire)
+  FACT  RBW w5746 ends: [('LoopTunnel', 5752, '', 5755, 'src')]
+  FACT  RBW w5859 ends: [('RightShiftRegister', 5796, '', 5810, 'snk')]
+  FACT  RBW w5975 ends: NONE (termless wire)
+  FACT  RBW w5979 ends: [('LoopTunnel', 5569, '', 5578, 'src')]
+  FACT  RBW w6041 ends: [('LeftShiftRegister', 5805, '', 5817, 'src')]
+  FACT  RBW w7429 ends: [('LeftShiftRegister', 2972, '', 3204, 'src')]
+  FACT  RBW w9868 ends: NONE (termless wire)
+  FACT  RBW w9921 ends: [('Function', 10382, 'x', 10393, 'snk')]
+  FACT  RBW w10312 ends: NONE (termless wire)
+  FACT  RBW w10573 ends: NONE (termless wire)
+  FACT  RBW w10763 ends: [('LeftShiftRegister', 11001, 'Auto-reset zero', 11013, 'src')]
+  FACT  RBW w11389 ends: [('Comparison', 11529, 'x', 13163, 'snk'), ('RightShiftRegister', 7311, 'Auto-reset zero', 11005, 'snk')]
+  FACT  RBW w17287 ends: NONE (termless wire)
+  FACT  RBW w17393 ends: NONE (termless wire)
+  FACT  RBW w23556 ends: NONE (termless wire)
+  windows before Ctrl+L: [['D1_l2a1_scratch_88_20260926_003907_rbw.vi Block Diagram', 'LVDChild'], ['D1_l2a1_scratch_88_20260926_003907_rbw.vi Front Panel', 'LVDChild'], ['LabVIEW', 'LVFrame']]
+  fronted 'D1_l2a1_scratch_88_20260926_003907_rbw.vi Block Diagram' (measured foreground 'D1_l2a1_scratch_88_20260926_003907_rbw.vi Block Diagram')
+  Error List window: hwnd=5835060 title='Error list' class=LVDChild rect=(463, 195, 1462, 895)
+  win32 CHILD windows of the dialog: 0
+  --- UIA tree (7 elements) ---
+   0 [Window] name='Error list' cls='LVDChild' aid='' val='' sel=None
+     0.0 [50037] name='' cls='' aid='' val='Error list' sel=None
+       0.0.0 [50010] name='시스템' cls='' aid='MenuBar' val='' sel=None
+         0.0.0.0 [MenuItem] name='시스템' cls='' aid='' val='' sel=None
+       0.0.1 [Button] name='최소화' cls='' aid='' val='' sel=None
+       0.0.2 [Button] name='최대화' cls='' aid='' val='' sel=None
+       0.0.3 [Button] name='닫기' cls='' aid='' val='' sel=None
+  UIA: 0 list-ish container(s), 0 item element(s) exposed
+  window's own count: None (from None)
+  MSAA: 1 accessible object(s); 0 with role=listitem; roles seen ['window']
+   msaa 0 [window] hwnd=5835060 name='Error list' value='' state=1048580
+  OCR engine: rapidocr-onnxruntime
+  layout: bands=[(63, 201), (228, 386), (411, 645)] selections=[(65, 80), (246, 261)] errors_band=(228, 386) details_band=(411, 645)
+  window's own count: 8 (from '8 errors and warnings')
+  dialog is the measured foreground: True
+  stepping mechanism: click (highlight (246, 261) -> (246, 261) after one {DOWN})
+   item  0: object="Subvl 'Track N beads four-fold over-kern" reason="required input 'Image In' is not wired" detail='The designer of this subvl has specified that this terminal must be wi'
+   item  1: object="Less?'Less?'" reason='Contains unwired or bad terminal' detail='One or more required inputs to this function are not wired or are wire'
+   item  2: object="Not'Not'" reason='Contains unwired or bad terminal' detail='One or more required inputs to this function are not wired or are wire'
+   item  3: object="Build Array'Build Arrav'" reason='Contains unwired orbad terminal' detail='One or more required inputs to this function are not wired or are wire'
+   item  4: object='' reason='ShiftRegister:unwiredfrom insidetheloop' detail=''
+   item  5: object='' reason='Shift Register:unwired from inside theloop' detail=''
+   item  6: object='Shift Register' reason='unwired from inside the loop' detail=''
+   item  7: object='Shift Register' reason='unwired from inside the loop' detail=''
+  reached the window's own count of 8 items
+  Esc closed the Error List: True
+  refine_rows: 4 row(s) re-read unselected; not refined: [3]
+  JSON -> G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\errorlist_rbw_l2a1_88_20260926_003907_raw.json  (8 items)
+  PASS  B1 Error List read complete: items 8 == window N 8
+  FACT  B CLASS x4: 'Shift Register: unwired from inside the loop'
+  FACT  B CLASS x1: "Subvl 'Track N beads four-fold over-kernel-v3.vi': required input 'Image In' is not wired"
+  FACT  B CLASS x1: "Less? 'Less?': Contains unwired or bad terminal"
+  FACT  B CLASS x1: "Not 'Not': Contains unwired or bad terminal"
+  FACT  B CLASS x1: "Build Array'Build Arrav': Contains unwired orbad terminal"
+  FACT  B PRESENCE after RBW: {'polymorphic': 0, 'not_connected_to_anything': 0, 'less_right_shift_register': 0} ; checker extra ['Shift Register: unwired from inside the loop', 'Shift Register: unwired from inside the loop', 'Shift Register: unwired from inside the loop', 'Shift Register: unwired from inside the loop'] ; usage [{'kind': 'subvi_input_not_wired', 'from': [376, 'current frame data array in', 'SubVI'], 'used': 0}, {'kind': 'subvi_input_not_wired', 'from': [376, 'frame index', 'SubVI'], 'used': 0}, {'kind': 'node_unwired', 'from': [2626, 'array', 'BuildArray'], 'used': 1}, {'kind': 'subvi_input_not_wired', 'from': [5058, 'Image In', 'SubVI'], 'used': 1}, {'kind': 'subvi_input_not_wired', 'from': [5696, 'x,y,z array', 'SubVI'], 'used': 0}, {'kind': 'subvi_input_not_wired', 'from': [6085, 'x,y,z array', 'SubVI'], 'used': 0}, {'kind': 'node_unwired', 'from': [9703, 'x', 'Function'], 'used': 1}, {'kind': 'node_unwired', 'from': [10382, 'x', 'Function'], 'used': 1}, {'kind': 'node_unwired', 'from': [11529, 'x', 'Comparison'], 'used': 0}, {'kind': 'wire_from_open_rows', 'from': 'all open rows', 'used': 0}, {'kind': 'header_of_next', 'from': 'PD179(d): empty-raw tree header before a licensed item', 'used': 0}]
+  PASS  B-H4 scratch deleted: D1_l2a1_scratch_88_20260926_003907_rbw.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_l2a1_scratch_88_20260926_003907_rbw.vi
+  PASS  B9 part B ran to its end
+
+---------- [H] HYGIENE
+  FACT  close_panel(D1_l2a1_scratch_88_p2_20260926_003907.vi) raised com_error: (-2147352567, '??? ??????.', (5507, 'LabVIEW', 'LabVIEW: (Hex 0x7) File not found. The file might be in a different location or deleted. Use the command prompt or the file explorer to verify that the path is correct.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 12, 'closed': 12, 'live': 0, 'cached_op_vis': 10}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 12, 'closed': 12, 'live': 0, 'cached_op_vis': 10}
+  FACT  LabVIEW handle count AFTER the work: 31718
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 51d9b8a3af5b4240cdc2ad193d9b4f41 / after 51d9b8a3af5b4240cdc2ad193d9b4f41
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 31719
+
+====================================================================================================
+=== GATES: 38 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\p2check_l2a1_88.json   elapsed 317.0 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":38,"fail":0},"first_fail":null,"artefacts":[]}
+LabVIEW gone at exit: True
+BGRUN END rc=0 after 321s
