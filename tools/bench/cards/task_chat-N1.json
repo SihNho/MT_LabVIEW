@@ -1,0 +1,81 @@
+{
+ "schema": "task/1",
+ "id": "chat-N1",
+ "kind": "build",
+ "goal": "User-approved gates 2026-09-26: (2) VI-modifying scripts pass the stage dry-run+pre-run gate whatever their name; (4a) cards declare requires, checked offline first; (4b) 6 dispatches/session. PATCHES",
+ "why": "PATCHES + self-tests on COPIES only: cycle 91 reads the live hooks every call. Cycle 90: diag_c90_t0_step3*.py (not stage_*) broke a VI 3x on offline-knowable faults, each a LabVIEW run + review. Cycle 89: cards 89-1/89-2 spent 60 min learning a verb and a donor did not exist.",
+ "inputs": [
+  {
+   "path": "tools/hooks/guard_bash.py",
+   "md5": "f406dafeef51b9932b5413bd552d0831"
+  },
+  {
+   "path": "tools/stage_prerun.py",
+   "md5": "2b3b0e7ce52b52f9dd7311ffe5f1381f"
+  },
+  {
+   "path": "tools/hooks/guard_session.py",
+   "md5": "ddb374eb78fb27bad45ad85e16f76ba8"
+  },
+  {
+   "path": "tools/protocol.py",
+   "md5": "72671af7115af76ad413f58d04d10078"
+  },
+  {
+   "path": "docs/protocol/task.json",
+   "md5": "23815f03de27eb161f9824157a409f8d"
+  },
+  {
+   "path": "tools/cycle_prompt.md",
+   "md5": "7c0d8e1998b587194c6035824e1a4ed1"
+  },
+  {
+   "path": ".claude/agents/material.md",
+   "md5": "f3675dfd64b6fa2e9bf6971a959d746e"
+  }
+ ],
+ "pass": [
+  "COPIES ONLY: copy inputs to <scratchpad>/n1/ (same layout), edit and self-test there; NO live edit of tools/hooks/*, stage_prerun.py, protocol.py, cycle_prompt.md, .claude/agents/*",
+  "Deliver ONE unified diff tools/bench/patches/chat-N1.patch that git apply --check accepts against HEAD, plus chat-N1.README.md with the exact post-apply self-test commands",
+  "(2) stage_prerun.is_vi_modifying(path): ast-parse the launched .py; True iff it imports stagekit AND calls a name in a MODIFY set derived from stagekit public verbs (list it)",
+  "(2) guard_bash.prerun_gate treats is_vi_modifying True like tools/recipes/stage_*.py: needs --dry record + offline pre-run record via check_launch, same RETRY_CAP; refusal names classifier + records",
+  "(2) selftest_prerun_diag.py: modifying fixture refused without records / allowed with both; read-only allowed; stage_* unchanged; diag_c90_t0_step3b.py -> True; drive_m8_panelmin89b.py -> False",
+  "(4a) task.json: optional requires [{kind: op|file|terminal|verb, name, where?}]; protocol.py requires <card> checks OFFLINE: op registry (find, cite), file exists, terminal in wiki graph",
+  "(4a) writes tools/bench/cards/requires_<id>.json {ok, missing} + RESULT; guard_bash refuses bgrun/LabVIEW launch under a bound card with requires when the file is absent or lists missing (argv+card)",
+  "(4a) cycle_prompt.md: judgement fills requires for any op/verb/donor/terminal not cited by uid in the plan; material.md: first command = py tools/protocol.py requires <card>; missing -> BLOCKED",
+  "(4a) selftest_requires.py: all present -> ok + launch allowed; one missing op -> listed + launch refused; card without requires unchanged; task_88-*/89-*/90-* still validate",
+  "(4b) guard_session: material-type dispatches (Agent + SendMessage) capped at 6/session (was 8), refusal says write NEXT and exit; peer.ps1 not counted; its selftest + 7th case green",
+  "All new and existing selftest_stage_prerun*/selftest_protocol*/selftest_guard_session* green on the copies; commit ONLY patch, README, self-tests, logs, result card"
+ ],
+ "outputs": [
+  "tools/bench/patches/chat-N1.patch",
+  "tools/bench/patches/chat-N1.README.md",
+  "tools/bench/selftest_prerun_diag.py",
+  "tools/bench/selftest_requires.py",
+  "tools/bench/selftest_prerun_diag.log",
+  "tools/bench/selftest_requires.log"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/**",
+   "docs/protocol/**"
+  ],
+  "status_edit": false,
+  "git_commit": true,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "unblocks": "M8",
+ "rules": [
+  "Stages are SIMULATED and PRE-RUN OFFLINE",
+  "Tooling: hooks judge STRUCTURE (argv/ast), never text",
+  "Patch files with Edit/Write, never heredoc"
+ ]
+}
