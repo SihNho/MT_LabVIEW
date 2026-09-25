@@ -1,0 +1,71 @@
+{
+ "schema": "task/1",
+ "id": "90-1",
+ "kind": "build",
+ "goal": "PD196(d) steps 1-2: build claudeDev\\t0stamp.dll (per-site QPC stamps, sites 0..63, dump every 1024th + at unload) and self-test it outside LabVIEW; then one CLFN stamp node on a scratch VI",
+ "why": "PD196(a)-(c): in-VI bracketing and LV-primitive stamps are unreachable with our verbs, the profiler is dropped, and display is minor. A CLFN completion stamp on a wire branch is the in-situ per-bead timer that step 3 (instrumented D1_s1_t0 copy) needs; also needed for every later loop split.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "docs/t0-instrumentation-plan.md"},
+  {"path": "archive/peer/2026-09-26-c89-donor-census-hyp.md"},
+  {"path": "tools/bench/cards/result_89-2.json"}
+ ],
+ "rules": [
+  "D src: tools/t0stamp/t0stamp.c + build script + selftest there; any installed compiler, report which",
+  "D bitness: match LabVIEW 2026 as MEASURED (report it); export int32_t stamp(int32_t site, void* any), cdecl",
+  "D out dir: env T0STAMP_DIR, else <dll dir>\\t0stamp_out; file t0_site<SS>_pid<PID>.bin per site+process",
+  "D format: little-endian int64; first record = QueryPerformanceFrequency, then raw QPC counts in call order",
+  "D dump: a site's buffer written on its every 1024th stamp; all sites flushed at DLL_PROCESS_DETACH",
+  "D threads: thread-safe, atomic per-site index, per-site lock only around a flush; no alloc on hot path",
+  "D arg: `any` never dereferenced; return 0 ok, nonzero for site outside 0..63 (no write)",
+  "D CLFN: param 2 Adapt to Type, CONSTANT, handle passing that avoids a copy (report which); any thread",
+  "never open-for-edit or save D1_s1_copy, kswap, the L2-A1 bed or any original; the scratch VI is new",
+  "step 1 fully first (no LabVIEW); step 2 only after step 1 passes; each step saves its artefact",
+  "every LabVIEW command under bgrun; close every reference; LabVIEW verified gone before you return",
+  "no GUI: the CLFN is configured by script (build_clfn or its op)",
+  "if a D CLFN item cannot be set by script, report WHICH and what it got; no silent workaround",
+  "facts only, no design recommendation; result/1 <=10 facts <=3 open"
+ ],
+ "pass": [
+  "claudeDev\\t0stamp.dll exists; md5 + size + compiler + bitness reported",
+  "selftest A (no LabVIEW): 3000 calls site 7 -> 1 file = frequency record + 3000 monotone stamps after unload (>=2048 before unload)",
+  "selftest B: 2 threads interleaving sites 3 and 9 -> exactly 2 files, each monotone, counts = calls; site 64 -> nonzero return, no file",
+  "selftest C: process handle count flat over 10 load-stamp-unload rounds",
+  "scratch VI claudeDev\\t0stamp_scratch_<ts>.vi, new, by script: 2-D U16 array (e.g. 1024x1280) to its consumer AND branched into one CLFN stamp; ExecState 1; saved by script",
+  "scratch runs write the stamp file; per-call cost median and p99 in us (>=1000 calls); whether the 2-D array is copied (vs a CLFN-free twin, or buffer-allocation read)",
+  "LabVIEW handle count flat (+-100) over 20 runs of the scratch VI",
+  "one negative case caught: CLFN at a missing DLL path -> ExecState 0 / error, OR site 64 from LabVIEW -> nonzero, no file",
+  "D1_s1_copy, kswap_20260926_004935 and bed D1_l2_a1 (md5 51d9b8a3...) md5 unchanged; LabVIEW gone at end (process list)"
+ ],
+ "outputs": [
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp.dll",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp_scratch_*.vi",
+  "tools/t0stamp/**",
+  "tools/bench/t0stamp_*",
+  "tools/bench/cards/result_90-1.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "tools/t0stamp/**",
+   "tools/bench/t0stamp_*",
+   "tools/bench/diag_c90_*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/errorlist_shots/**",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/t0stamp*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "advances": ["M8", "M3", "R1", "R3"]
+}

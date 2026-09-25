@@ -1,0 +1,48 @@
+{
+ "schema": "task/1",
+ "id": "90-2",
+ "kind": "build",
+ "goal": "Repair audit_cycle C7 to read the plan named in tools/bench/next.json plan.path (fallback doc_lint.current_plans()), and replace the refused MATERIAL=1 prefix in .claude/agents/material*.md",
+ "why": "retrospective-cycle89 device-failed (threshold 1): C7 at tools/audit_cycle.py:579 read the wrong plan for eight cycles; agent files prescribe a launch form guard_bash refuses. Dispositions in archive/peer/2026-09-26-retrospective-cycle89.md.",
+ "inputs": [
+  {"path": "tools/audit_cycle.py"},
+  {"path": "tools/bench/next.json"},
+  {"path": "archive/peer/2026-09-26-retrospective-cycle89.md"},
+  {"path": ".claude/agents/material.md"},
+  {"path": ".claude/agents/material-fable-low.md"},
+  {"path": ".claude/agents/material-fable-medium.md"}
+ ],
+ "pass": [
+  "self-test (new, tools/bench/selftest_audit_c7.py): next.json plan.path used when valid; fallback when absent/invalid; a negative case where the two differ",
+  "audit_cycle run on cycle 89 now reports C7 against docs/d1-loop12-17-split-plan.md (log line cited)",
+  "the three agent files use `py tools/bgrun.py --material ...`, no `MATERIAL=1` left (grep count 0)",
+  "archive/benchmarks/INDEX.md gets a row for the cycle-89 panel legs (m8_panelmin_89.json, _89b.json)",
+  "retrospective-cycle89 file: FIXED: lines under '## What was done with it' for the repaired items"
+ ],
+ "outputs": ["tools/audit_cycle.py", "tools/bench/selftest_audit_c7.py", "tools/bench/cards/result_90-2.json"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/audit_cycle.py",
+   "tools/bench/selftest_audit_c7*",
+   "tools/bench/audit_c7_*",
+   ".claude/agents/material*.md",
+   "archive/benchmarks/INDEX.md",
+   "archive/peer/2026-09-26-retrospective-cycle89.md",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 30},
+ "rules": [
+  "no LabVIEW, no hardware; do not run retrospective.py (it ends the session's dispatches)",
+  "change only C7's plan source; no other audit behaviour changes",
+  "facts only; result/1 <=10 facts <=3 open"
+ ],
+ "unblocks": "M8"
+}

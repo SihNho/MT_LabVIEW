@@ -1,0 +1,27 @@
+BGRUN START 2026-09-26 03:37:02 limit 5.0 min: py -u tools/t0stamp/selftest.py --install
+tmp C:\Users\KimLab\AppData\Local\Temp\t0stamp_st_nh20je0l
+t0stamp.c
+t0stamp.c(44): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+t0stamp.c(56): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+   t0stamp.lib 라이브러리 및 t0stamp.exp 개체를 생성하고 있습니다.
+BUILD_RC=0
+ 'vswhere.exe'은(는) 내부 또는 외부 명령, 실행할 수 있는 프로그램, 또는
+배치 파일이 아닙니다.
+
+GATE S0 PASS rc=0 machine=0x8664 size=135168
+GATE A PASS files=1 n=3000 mono=True before_unload=2048 freq=10000000
+GATE B PASS files=2 rc={3: 0, 9: 0} r64=1 r-1=1 ['t0_site03_pid17152.bin n=1500 mono=True', 't0_site09_pid17152.bin n=1500 mono=True']
+GATE C PASS handles per round [126, 126, 126, 126, 126, 126, 126, 126, 126, 126]
+FACT dll md5=9cc732edda716f07ae47a3b6395a8252 size=135168 machine=0x8664 compiler=MSVC 14.44.35207 x64 (BuildTools 2022) /O2 /MT /LD
+FACT A: 3000 ctypes calls 2.4 us/call (ctypes ceiling); stamps span 7.341 ms by QPC
+FACT D: ctypes stamp(11, 2.6MB ptr) median 0.50 us p99 0.70 us (Python ceiling, not the CLFN cost)
+FACT installed C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\t0stamp.dll md5=9cc732edda716f07ae47a3b6395a8252
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\t0stamp\selftest.py", line 141, in <module>
+    sys.exit(main())
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\t0stamp\selftest.py", line 136, in main
+    print(P.result_line(P.make_result(npass, nfail, next((k for k, v in GATES.items() if not v), None), arte)), flush=True)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\protocol.py", line 225, in result_line
+    raise ValueError("result_line: " + why)
+ValueError: result_line: $.artefacts[0]: expected object, got str
+BGRUN END rc=1 after 3s

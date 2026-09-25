@@ -1,0 +1,95 @@
+BGRUN START 2026-09-26 04:14:04 limit 30.0 min: py -u tools/bench/diag_c90_t0_place.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 261 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 3e3d23cefd3a334001aa9d6156bf1aee  got 3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN BEFORE kswap            e77b8d5805d90f76e426cb06fdc26d1c  (want e77b8d5805d90f76e426cb06fdc26d1c) OK
+  FACT  PIN BEFORE L2-A1 bed        51d9b8a3af5b4240cdc2ad193d9b4f41  (want 51d9b8a3af5b4240cdc2ad193d9b4f41) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 34002
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c90_place_20260926_041404.vi
+  FACT  ExecState [after open] scratch_c90_place_20260926_041404.vi = 1
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so scratch_c90_place_20260926_041404.vi is deleted at close
+  FACT  ExecState [after open] scratch_c90_place_20260926_041404.vi = 1
+
+---------- [1] build_clfn on the S1 scratch (top-level op), then move_in to loop bodies
+  FACT  PL1-before #22968 lives on Diagram idx 0 uid 536 (Nodes[0]) after scanning 1 diagrams
+  PASS  PL1 build_clfn creates 1 CallLibrary (6 terms) and it lists on diagram index 0 (no diagram param)  errs ((False, 0, ''), (False, 0, ''))
+  FACT  move_in node census: 625 rows
+  FACT  OP move_in #22968 -> Diagram[43] at (1200, 900) -> err '' (0.2 s)
+  FACT  PL2-after #22968 lives on Diagram idx 43 uid 639 (Nodes[73]) after scanning 1 diagrams
+  PASS  PL2 move_in(#22968 -> Diagram[43] = #639) lists the node there  err '' found {'diagram_index': 43, 'diagram_uid': 639, 'diagram_class': 'Diagram', 'nodes_index': 73, 'nodes_on_diagram': 75, 'label': 't0stamp.*:stamp'}
+  PASS  PL4 moved CLFN #22968 keeps its terminals (echo 22968, 10 rows)
+  FACT  PL3-before #22997 lives on Diagram idx 0 uid 536 (Nodes[0]) after scanning 1 diagrams
+  FACT  move_in node census: 627 rows
+  FACT  OP move_in #22997 -> Diagram[99] at (1200, 900) -> err '' (0.2 s)
+  FACT  PL4-after #22997 lives on Diagram idx 99 uid 15266 (Nodes[22]) after scanning 1 diagrams
+  PASS  PL3 move_in(#22997 -> Diagram[99] = #15266) lists the node there  err '' found {'diagram_index': 99, 'diagram_uid': 15266, 'diagram_class': 'Diagram', 'nodes_index': 22, 'nodes_on_diagram': 24, 'label': 't0stamp.*:stamp'}
+  PASS  PL4 moved CLFN #22997 keeps its terminals (echo 22997, 10 rows)
+
+---------- [2] owner-chain walk (build_d1_v0.owner_of, strict uid echo) for the tunnel-tree gap diagrams - review c90-sites-p2-treegap test
+  OBSERVED uid 639 -> owner 'WhileLoop' uid 637 | self 'Diagram'#639 | 482 says 'WhileLoop' cast 'WhileLoop' |  
+  OBSERVED uid 637 -> owner 'Diagram' uid 686 | self 'WhileLoop'#637 | 482 says 'Diagram' cast 'Diagram' |  
+  OBSERVED uid 686 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#686 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  FACT  OWNER CHAIN from #639 (positive control: expect WhileLoop #637): #639[WhileLoop] -> #637[Diagram] -> #686[owner_of(686) is not an answer: echoed 'Diagram'#686, errors 'error 1055: Property Node in OpOwnerChain_v1.vi']
+  OBSERVED uid 3121 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#3121 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  FACT  OWNER CHAIN from #3121 (sites #6216/#5987): #3121[owner_of(3121) is not an answer: echoed 'Diagram'#3121, errors 'error 1055: Property Node in OpOwnerChain_v1.vi']
+  OBSERVED uid 686 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#686 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  FACT  OWNER CHAIN from #686 (site #6384; loop #637 sits on it): #686[owner_of(686) is not an answer: echoed 'Diagram'#686, errors 'error 1055: Property Node in OpOwnerChain_v1.vi']
+  OBSERVED uid 15041 -> owner 'FlatSequenceFrame' uid 0 | self 'Diagram'#15041 | 482 says 'FlatSequenceFrame' cast '' |  error 1055: Property Node in OpOwnerChain_v1.vi
+  FACT  OWNER CHAIN from #15041 (loop #15173 sits on it): #15041[owner_of(15041) is not an answer: echoed 'Diagram'#15041, errors 'error 1055: Property Node in OpOwnerChain_v1.vi']
+  PASS  OC1 positive control: #639's owner is WhileLoop #637  [{'uid': 639, 'owner_class': 'WhileLoop', 'owner_uid': 637}]
+  FAIL  OC2 chain from #3121 reaches the top level; While loops above it: []  [{'uid': 3121, 'err': "owner_of(3121) is not an answer: echoed 'Diagram'#3121, errors 'error 1055: Property Node in OpOwnerChain_v1.vi'"}]
+  FAIL  OC2 chain from #686 reaches the top level; While loops above it: []  [{'uid': 686, 'err': "owner_of(686) is not an answer: echoed 'Diagram'#686, errors 'error 1055: Property Node in OpOwnerChain_v1.vi'"}]
+  FAIL  OC2 chain from #15041 reaches the top level; While loops above it: []  [{'uid': 15041, 'err': "owner_of(15041) is not an answer: echoed 'Diagram'#15041, errors 'error 1055: Property Node in OpOwnerChain_v1.vi'"}]
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c90_place_20260926_041404.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 9}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 9}
+  FACT  LabVIEW handle count AFTER the work: 54894
+  PASS  H4 scratch deleted: scratch_c90_place_20260926_041404.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c90_place_20260926_041404.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 3e3d23cefd3a334001aa9d6156bf1aee / after 3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN AFTER  kswap            e77b8d5805d90f76e426cb06fdc26d1c  (want e77b8d5805d90f76e426cb06fdc26d1c) OK
+  FACT  PIN AFTER  L2-A1 bed        51d9b8a3af5b4240cdc2ad193d9b4f41  (want 51d9b8a3af5b4240cdc2ad193d9b4f41) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33992
+
+====================================================================================================
+=== GATES: 14 pass / 3 fail; failing: OC2 chain from #3121 reaches the top level; While loops above it: [], OC2 chain from #686 reaches the top level; While loops above it: [], OC2 chain from #15041 reaches the top level; While loops above it: []
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\t0_sites_s1_place.json   elapsed 117.9 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":14,"fail":3},"first_fail":"OC2 chain from #3121 reaches the top level; While loops above it: []","artefacts":[]}
+
+---------- [Q] COM Quit, verify LabVIEW gone
+  PASS  Q1 LabVIEW gone (quit rc 1, forced=False)
+  FACT  PIN FINAL  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN FINAL  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN FINAL  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN FINAL  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN FINAL  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  FACT  PIN FINAL  kswap            e77b8d5805d90f76e426cb06fdc26d1c  (want e77b8d5805d90f76e426cb06fdc26d1c) OK
+  FACT  PIN FINAL  L2-A1 bed        51d9b8a3af5b4240cdc2ad193d9b4f41  (want 51d9b8a3af5b4240cdc2ad193d9b4f41) OK
+  PASS  Q2 md5 pins after quit
+
+====================================================================================================
+=== GATES: 16 pass / 3 fail; failing: OC2 chain from #3121 reaches the top level; While loops above it: [], OC2 chain from #686 reaches the top level; While loops above it: [], OC2 chain from #15041 reaches the top level; While loops above it: []
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\t0_sites_s1_place.json   elapsed 184.2 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":16,"fail":3},"first_fail":"OC2 chain from #3121 reaches the top level; While loops above it: []","artefacts":[]}
+BGRUN END rc=1 after 184s

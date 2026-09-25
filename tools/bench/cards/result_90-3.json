@@ -1,0 +1,28 @@
+{"schema":"result/1","id":"90-3","status":"FAIL","gates":{"pass":20,"fail":1},
+ "first_fail":"T9b tails flushed: sites 05/07/09 each hold 1101 (got 1100/1101/1101) - JEV-LADDER our-script-bug p=0.766: T7's site-64 run skips site 05 by design; expectation patched, no rerun (budget spent)",
+ "blocked_by":null,
+ "artefacts":[
+  {"path":"C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/t0stamp_scratch_20260926_035629.vi","md5":"b7d4bfd8ac2fb85c3e042ed1f72b87ac"},
+  {"path":"tools/bench/diag_c90_t0stamp_scratch_r2.log","md5":"0fca3603c7b521f3ca7899b29cdd1b5e"},
+  {"path":"tools/bench/diag_c90_t0stamp_scratch.json","md5":"66538e70de4b406f89452a20e4fd1f3c"},
+  {"path":"tools/bench/diag_c90_t0stamp_scratch.py","md5":"5cc982f62b7c9192e2721ae3b1f39667"},
+  {"path":"tools/bench/diag_c90_t0stamp_scratch.log","md5":"8d3045f2db259b5af1e93cbbc756e921"}
+ ],
+ "facts":[
+  "run 1: log mtime 03:41:35 = last line; LabVIEW 24288 StartTime 03:41:40 = restart_labview's Start-Process (stagekit.py:321); it had 33,927 handles, Responding True",
+  "run 1 tree: no py/python from 03:41 alive at 03:53 (all others 01:35/03:29); no BGRUN END/TIMEOUT => killed from outside bgrun (STATUS carry 'bgrun END under a tree kill')",
+  "run 1 blocked step NOT measurable post-mortem: lv_gui windows/dialogs and taskkill REFUSED by the permission layer (Bash+PowerShell); LabVIEW 24288 closed by run 2's Stop-Process",
+  "same restart path printed BEFORE:0 -> AFTER in 150 earlier logs; run 2 stamped: Stop 03:56:29, Start 03:56:34, handles 34006 at 03:57:23, no hang (r2.log:16-25)",
+  "r2.log:34-39 T1-T4 PASS: 2-D U16 ctl `img`, 3 CLFN stamp nodes, ExecState 1 (wires 8 nodes 4); :55-60 saved by script, ExecState 1 re-read, 7183 B, md5 b7d4bfd8",
+  "r2.log:48-51: 1100 runs 12.9 s (11.7 ms/run incl COM); files site05/07/09 8200 B each before quit (T5); handles [31252,31252,31252] flat (T6); site 64 -> return 1, no file (T7)",
+  "r2.log:92-94 cost: A-X (array in front + 1 call) median 1.40 us p99 2.40; B-A (scalar call) median 0.30 p99 0.80; array cost 1.10 us => 1024x1280 U16 NOT copied (copy >= 100 us)",
+  "r2.log:89-91 COM Quit rc 1, LabVIEW gone unforced; tails flushed at DETACH: site05 1100, site07 1101, site09 1101 (1100 runs + the site-64 run on 07/09 only)",
+  "pins OK BEFORE/AFTER/FINAL: D1_s1_copy 3e3d23ce, kswap e77b8d58, L2-A1 bed 51d9b8a3 (r2.log:68-76,95-102); H5 refs opened==closed 12/12; tasklist labview 0 at 04:0x",
+  "JEV-LADDER 03:59:58 r2.log our-script-bug p=0.766 'patch the script and rerun'; T9b want patched to 05:1100/07:1101/09:1101 (script :157-161); rerun NOT done: budget failures=1 spent"
+ ],
+ "open":[
+  "Accept step 2 on run 2's measurements (every card 90-1 step-2 pass item met; only T9b's expected value was wrong) or issue a rerun card for the patched script (LabVIEW ~3 min)?",
+  "Run 1's killer is unidentified (no process, no END line): was the 90-1 agent's Bash tool timeout the tree kill? Only that session's transcript can say."
+ ],
+ "cost":{"usd":null,"minutes":14,"labview_runs":1},
+ "note":"Diagnostics were limited to process/log reads: the permission layer refused lv_gui.ps1 (windows/dialogs) and taskkill in both shells."}

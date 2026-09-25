@@ -1,0 +1,65 @@
+BGRUN START 2026-09-26 04:18:13 limit 14.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c90-place-oc2-ownerchain -TaskFile tools/bench/peer_c90_place_oc2_task.md
+OUTCOME: ANSWERED (172s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c90-place-oc2-ownerchain.md
+COST: $1.9383  in 38 / out 15068 / cache-create 142305 / cache-read 2470387  (168s, 32 turn(s))
+--- ANSWER ---
+**Verdict: the mechanism in the claim is roughly right. Its conclusion is wrong: the question it calls "unmeasured" was already answered offline on 2026-09-24, and the failure was predictable from the repo's own documents.**
+
+## 1. Strongest reason the claim is wrong
+
+The claim ends by saying "is there a While loop above #3121 / #686 / #15041" stays unmeasured. That was already answered two days ago, with no LabVIEW:
+
+- `tools/bench/p1_c70_f3a.log:44-60` (run 2026-09-24 02:45, rc=0) groups `[113, 124, 686, 759, 1817, 3121, 3628, 4866, 5031, 81548]` and `[12960, 13236, 14840, 15041, …]` as the frames of the two top-level flat sequences, both owned by `#536`, the top-level diagram.
+- `:42` says 167 directed edges agree with that tree, with 0 contradictions. `:41` says 238 FlatSequenceInnerTunnel owner faces point at `#536`.
+- `docs/d1-loop12-17-split-plan.md:114-117` records the same result as a plan fact.
+
+So all three gap diagrams are frames of top-level flat sequences, and no While loop sits above them. OC2 did not need this op. The chain in the cycle-90 offline script stopped early because that script's tree is built only from LoopTunnel/Tunnel/SelectorTunnel/SR edges and leaves out the flat-sequence edges (`diag_c90_t0_sites_offline.py:110-111`). The gap was in that tree builder, not in the diagrams and not only in the reader.
+
+The failure itself was also a known, measured limit before the run:
+
+- `docs/toolkit-capabilities.md:65` (the OpOwnerChain row, "MEASURED LIMIT 2026-09-16")
+- `docs/diagram-hierarchy.md:95-97, 158-175`
+- `tools/bench/diag_owner_semantics.log:96-98`: diagram 113 → `FlatSequenceFrame#0`, error 1055, reproduced
+- the review `archive/peer/2026-09-16-ownerchain-flatseqframe-1055-r2.md`
+
+`build_d1_m3a1.py:274,1550` and `build_d1_m3a3.py:34,825` even carry the warning that "an owner chain terminates SILENTLY at a FlatSequenceFrame". Running OC2 as a prediction was a prior-art miss, and that miss is the real fault here.
+
+## 2. Alternative explanation, and corrections to the mechanism
+
+- **"1055 means the Owner reference is invalid" is wrong.** The Owner node's own error (`errO`) is empty. The 1055 appears only in `errG` (the UID read) and `errCO` (the ClassName read taken from the cast's output) (`docs/diagram-hierarchy.md:163-168`). The raw Owner reference is valid, which is why node 482 reads `'FlatSequenceFrame'` in this run too (log:43).
+- **"FlatSequenceFrame is a Structure-frame class" is inaccurate.** It is a direct child of `Generic`, not of `GObject` or `Structure`. It exposes `Diagram` 18E76802, `Outer Tunnels[]`, inner-tunnel arrays and similar, and it has no UID property ([labviewwiki FlatSequenceFrame class](https://labviewwiki.org/wiki/FlatSequenceFrame_class); [VI Server class hierarchy](https://labviewwiki.org/wiki/VI_Server_Class_Hierarchy)). The cast to GObject yields Not-A-Refnum, and every node that reads from it then raises 1055 ([NI: To More Specific Class](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/functions/to-more-specific-class.html)).
+- **So it can be fixed inside the op, just not by changing the cast.** Casting to the reported class still gives no UID, because the frame has none. The fix is one more `Generic.Owner` hop on the uncast frame reference, which should reach the `FlatSequence` (a GObject with a UID); that was review r2's suggestion (`…-1055-r2.md:85`). That the frame's Owner is the FlatSequence is a hypothesis: it is inherited from `Generic`, but nobody has measured it on this rig.
+
+## 3. What would falsify the claim's conclusion ("no data on the ancestry")
+
+If `FlatSequence #681` → `Diagrams[]` returns 686 and 3121, and `#12938` → `Diagrams[]` returns 15041, the ancestry is measured and matches f3a. #681 and #12938 are the only two FlatSequences whose owner is `TopLevelDiagram` (`graph_objs_s1_20260923.json:16-22`, `:45547-45553`).
+
+An independent cross-check, weaker because partly positional:
+
+- The main VI has exactly 3 While loops (`diag_owner_semantics.log:10`), sitting on 686, 686 and 15041 (`:23`, `:31`, `:39`).
+- So #686 cannot lie inside bodies 639 or 25392, since those loops sit on #686; the only body left that could contain it is 15266.
+- #15041 sits at x = −15217, right beside the top-level FlatSequence #12938 at x = −17474. That makes f3a's grouping plausible, but position is not proof.
+- Caveat: that census was taken on the main VI, not on S1. S1 is a copy, so that is probably fine, but it has not been re-counted.
+
+A caveat against f3a too: it derives the grouping from FlatSequenceInnerTunnel owner faces, which `tools/vigraph.py:405-408` says are wrong for half the rows. It is a derivation with 0 contradictions, not a direct read.
+
+## 4. Existing verbs, and the cheapest discriminating test
+
+**Existing verbs:** none returns a FlatSequence's frames.
+
+- `OpCaseFrames` uses `MultiFrameStructure.Frames[]` 6363801. On `VI Server:FlatSequence` the creator refuses that id with 1077 (`diag_flatseq_diagrams_attach.log:15-18`).
+- `FlatSequence.Diagrams[]` 3578BC00 and `Frames[]` 3578BC07 both attach (`:7-14`), but no op wraps them. The grep only finds them in docs and bench logs.
+- Every current owner walk stops at the frame with 1055.
+
+**Cheapest test, offline first (zero LabVIEW):**
+
+1. Load `p1_c70_f3a.py`'s derived groups.
+2. Check that the cycle-90 sites' frame diagrams 686, 3121 and 15041 are members, with `[536]` as the parent group. This is already true at log:44-60.
+3. Swap the cycle-90 script's tree for f3a's tree, which includes the flat-sequence edges, and re-run P2/OC2 offline.
+
+**If a machine read is required, one LabVIEW read:** extend `OpOwnerChain_v1` with a second `Generic.Owner` hop on the uncast reference when `ClassName == 'FlatSequenceFrame'`, then cast to GObject and read the UID. Prediction: 686 → `FlatSequence#681`, 3121 → `#681`, 15041 → `#12938`, then 681/12938 → `TopLevelDiagram#536`.
+
+- If that hop still returns 1055, the frame's Owner is not the FlatSequence. The route then becomes `#681.Diagrams[]` (3578BC00), a new small op.
+- If it returns the predicted chain, f3a is confirmed by measurement and OC2 passes with no new reader.
+
+**Recommendation:** pass placement PL1–PL4 as measured. Answer OC2 from f3a now and mark it "derived, 0 contradictions". Build the Owner-hop fix only if a later stage needs the ancestry proven by a machine read.
+BGRUN END rc=0 after 172s

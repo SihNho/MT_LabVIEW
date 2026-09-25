@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"90-2","status":"BLOCKED","gates":{"pass":4,"fail":1},
+ "first_fail":"pass[3]: the three agent files still carry MATERIAL=1 (grep count 2 each) - Edit refused by the permission layer",
+ "blocked_by":{"device":"permission layer (Edit on .claude/agents/*.md)","message":"Edit tool refused writes to .claude/agents/material.md, material-fable-low.md, material-fable-medium.md ('requested permissions ... not granted'), one attempt each; the card's write flag allows them, the harness does not. Not routed around."},
+ "artefacts":[
+  {"path":"tools/audit_cycle.py","md5":"c2994f8bb4d00c118c673e9193763035"},
+  {"path":"tools/bench/selftest_audit_c7.py","md5":"067acfad067bc1c19d227277f93bca58"},
+  {"path":"tools/bench/audit_c7_cycle89.log","md5":"02a6f96a03ce10164037277d7340b6b6"},
+  {"path":"archive/benchmarks/INDEX.md","md5":"ecd3bcf01385bb2298d1ea3b343c8631"},
+  {"path":"archive/peer/2026-09-26-retrospective-cycle89.md","md5":"9a4ffaa3f0979a49546a9152f3ab00ac"},
+  {"path":"tools/bench/audit_c7_agent_patch.md","md5":"4d8f77d541f4482dfcb8e8b38696365a"}
+ ],
+ "facts":[
+  "tools/audit_cycle.py:357 new c7_plan(): next.json plan.path (if file exists) > doc_lint.current_plans() > newest docs/cycle<N>-plan.md; C7 call site `plan, plan_basis = c7_plan()`; scan unchanged",
+  "tools/bench/selftest_audit_c7.log: 8 pass / 0 fail (S1 valid path, S2 absent, S3 missing file, S4a/b/c no key / bad JSON / no current plan, S5 NEGATIVE current A vs next.json B -> B, S6 live)",
+  "tools/bench/audit_c7_cycle89.log:25 `C7 files modified ... NOT named in docs/d1-loop12-17-split-plan.md [tools/bench/next.json plan.path]: 183` (window 02:00-03:30, --no-jev)",
+  "audit_c7_cycle89.log:43 BGRUN END rc=1 = the audit's pre-existing A1 FAIL (diag_c89_profiler_lvsr.log has no BGRUN line, :6); not C7, not touched (card rule: only C7's plan source)",
+  ".claude/agents/material.md:53-57, material-fable-low.md:48-52, material-fable-medium.md:48-52 UNCHANGED: grep MATERIAL=1 = 2 per file; Edit refused by the permission layer",
+  "archive/benchmarks/INDEX.md:71 row 50 added: cards 89-4/89-5 panel-minimized legs, @15 ctl 3434/3603 vs min 2616/3286 (-317 ABBA), @8 16 vs 15, 17/0 + 32/0, md5 dc1b65b0/42d5f552",
+  "archive/peer/2026-09-26-retrospective-cycle89.md:280 `FIXED: device-failed - tools/audit_cycle.py:357 - ...`; :281 records finding 1(b) NOT FIXED (permission refusal), text pointer",
+  "tools/bench/audit_c7_legs89.py (helper under the card's audit_c7_* glob) printed the two panel-leg tables for the INDEX row; tools/bench/audit_c7_legs89.log rc=0"
+ ],
+ "open":[
+  "Who applies the .claude/agents/material*.md text? It is harness config the material session cannot write; replacement text is in `note`.",
+  "audit_cycle --cycle 89 exits rc=1 on the pre-existing A1 FAIL (diag_c89_profiler_lvsr.log without a BGRUN line) - out of this card's scope; leave or open a card?"
+ ],
+ "cost":{"usd":null,"minutes":9,"labview_runs":0},
+ "note":"Replacement text for material.md:53-57 (same block at :48-52 in the two fable files) is in tools/bench/audit_c7_agent_patch.md; apply it and grep MATERIAL=1 -> 0. Four other pass items done; the agent-file item is the only one blocked."}

@@ -1,0 +1,62 @@
+{
+ "schema": "task/1",
+ "id": "90-5",
+ "kind": "build",
+ "goal": "PD196(d) step 3 per PD197(c)-(f): build claudeDev\\D1_s1_t0_<ts>.vi = byte copy of D1_s1_copy.vi + CLFN t0stamp nodes on the 18 listed sites",
+ "why": "Steps 1-2 done (PD197a). The instrumented copy is the in-situ per-bead timer for step 4 (legs at 15 and 8 picks); display and kernel were ruled out as the main per-bead cost (PD196c, 195c).",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/t0_sites_s1.json"},
+  {"path": "tools/bench/t0_sites_s1_place.json"},
+  {"path": "tools/bench/diag_c90_t0_place.py"},
+  {"path": "tools/bench/diag_c90_t0stamp_scratch.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi", "md5": "3e3d23cefd3a334001aa9d6156bf1aee"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp.dll", "md5": "1ea78380385b4fdcc47abdf975633d77"}
+ ],
+ "pass": [
+  "site list = PD197(c) exactly (18 sites); site 1 = frame-grab output of loop #637, READ first (uid, wire) - if no grab node in #637, report and omit site 1",
+  "each stamp node sits in the node's own diagram (For body / case frame / loop body per PD197b), uid-echo verified; param1 = site constant, param2 = branch of the listed wire",
+  "computation_diff(S1, new) = exactly the added CLFN nodes + their constants + branch wires; no other row",
+  "ExecState 1; saved by script as claudeDev\\D1_s1_t0_<ts>.vi; md5 reported",
+  "smoke: a short run (<=60 s, driver of cycle 89 legs or camera-free if it reaches the loops) with T0STAMP_DIR fresh writes a file for sites 0, 10 and 20; counts reported per site",
+  "D1_s1_copy, kswap, L2-A1 bed md5 unchanged; LabVIEW verified gone; motor limits TMX 39 after any real run"
+ ],
+ "outputs": ["C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_t0_*.vi", "tools/bench/t0_sites_s1_step3*", "tools/bench/diag_c90_*", "tools/bench/cards/result_90-5.json"],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_s1_t0_*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c90_*",
+   "tools/bench/t0_sites_s1_step3*",
+   "tools/bench/t0_legs/**",
+   "tools/bench/diag_c90_*",
+   "tools/recipes/stage_d1_t0*",
+   "tools/bench/sim/t0/**",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/errorlist_shots/**",
+   "tools/bench/gui_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 70},
+ "rules": [
+  "input is a BYTE COPY of D1_s1_copy.vi; never open-for-edit D1_s1_copy, kswap, the bed or originals",
+  "stage file <=120 lines on stagekit; dry run + offline pre-run before the LabVIEW run (launch gate)",
+  "CLFN config as card 90-1 D CLFN: Adapt to Type CONSTANT, handles by value, any thread, path claudeDev\\t0stamp.dll",
+  "GUI only for bead picking in the smoke run (lv_gui capture->act->confirm, Exception Approved); no other GUI",
+  "hold your turn until every bgrun you start has its END/TIMEOUT line; LabVIEW gone before return",
+  "facts only; result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

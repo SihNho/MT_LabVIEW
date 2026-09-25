@@ -354,6 +354,50 @@ def _jev_contradict(a, plan_path=None):
     return lines
 
 
+def c7_plan(root=None, next_path=None):
+    """Which plan document C7 measures scope against. Returns (path or None, basis string).
+
+    REPAIRED 2026-09-26 (card 90-2; retrospective-cycle89 `device-failed`, threshold 1): for eight cycles C7 read
+    `doc_lint.current_plans()[0]` = `docs/cycle27-plan.md` while the cycles were actually working from
+    `docs/d1-loop12-17-split-plan.md`, the plan the runner's own `tools/bench/next.json` names in `plan.path`.
+    Order now: (1) next.json `plan.path` when the file exists (relative to `root`, either slash flavour);
+    (2) `doc_lint.current_plans()`; (3) the newest `docs/cycle<N>-plan.md`. Only the plan SOURCE changed; the
+    scan below is untouched. `root`/`next_path` exist for the self-test (tools/bench/selftest_audit_c7.py)."""
+    root = root or ROOT
+    next_path = next_path or os.path.join(root, "tools", "bench", "next.json")
+    try:
+        with open(next_path, encoding="utf-8") as fh:
+            nx = json.load(fh)
+        rel = (nx.get("plan") or {}).get("path") if isinstance(nx, dict) else None
+        if isinstance(rel, str) and rel.strip():
+            cand = rel if os.path.isabs(rel) else os.path.join(root, rel.replace("/", os.sep).replace("\\", os.sep))
+            if os.path.isfile(cand):
+                return cand, "tools/bench/next.json plan.path"
+            print(f"  C7 note: next.json plan.path {rel!r} does not exist; falling back to `status: current`")
+        else:
+            print("  C7 note: next.json has no plan.path; falling back to `status: current`")
+    except FileNotFoundError:
+        print("  C7 note: tools/bench/next.json absent; falling back to `status: current`")
+    except Exception as e:                                                     # noqa: BLE001
+        print(f"  C7 note: next.json unreadable ({e}); falling back to `status: current`")
+    plan, plan_basis = None, ""
+    try:
+        import doc_lint as _dl
+        cur = _dl.current_plans()
+        if cur:
+            plan, plan_basis = cur[0], "frontmatter `status: current`"
+            if len(cur) > 1:                       # doc_lint L4 FAILs on this; C7 just says which it took
+                plan_basis += f" (WARNING: {len(cur)} current plans, took the first)"
+    except Exception as e:                                                     # pragma: no cover
+        print(f"  C7 note: doc_lint.current_plans() unavailable ({e}); falling back to the newest cycle plan")
+    if plan is None:
+        pl = [(int(m.group(1)), p) for p in glob.glob(os.path.join(root, "docs", "cycle*-plan.md"))
+              for m in [re.match(r"cycle(\d+)-plan\.md$", os.path.basename(p))] if m]
+        if pl:
+            plan, plan_basis = max(pl)[1], "FALLBACK: newest docs/cycle<N>-plan.md, none is `status: current`"
+    return plan, plan_basis
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--since-hours", type=float, default=24.0)
@@ -572,22 +616,7 @@ def main():
     # It now reads the SAME predicate doc_lint's L4/L8 use, `doc_lint.current_plans()` = the plan whose frontmatter
     # says `status: current`, so a future scheme rename breaks one function instead of three. The cycle NUMBER
     # still selects the time window (cutoff/until above); it no longer selects the document.
-    plan = None
-    plan_basis = ""
-    try:
-        import doc_lint as _dl
-        cur = _dl.current_plans()
-        if cur:
-            plan, plan_basis = cur[0], "frontmatter `status: current`"
-            if len(cur) > 1:                       # doc_lint L4 FAILs on this; C7 just says which it took
-                plan_basis += f" (WARNING: {len(cur)} current plans, took the first)"
-    except Exception as e:                                                     # pragma: no cover
-        print(f"  C7 note: doc_lint.current_plans() unavailable ({e}); falling back to the newest cycle plan")
-    if plan is None:
-        pl = [(int(m.group(1)), p) for p in glob.glob(os.path.join(ROOT, "docs", "cycle*-plan.md"))
-              for m in [re.match(r"cycle(\d+)-plan\.md$", os.path.basename(p))] if m]
-        if pl:
-            plan, plan_basis = max(pl)[1], "FALLBACK: newest docs/cycle<N>-plan.md, none is `status: current`"
+    plan, plan_basis = c7_plan()
     if plan is None:
         print("  C7 out-of-plan files: no docs/cycle*-plan.md found - scope cannot be checked mechanically\n")
     else:

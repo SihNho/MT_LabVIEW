@@ -1,0 +1,52 @@
+{
+ "schema": "task/1",
+ "id": "90-3",
+ "kind": "build",
+ "goal": "Finish PD196(d) step 2 of card 90-1: scratch VI with one CLFN t0stamp node; first diagnose why run 1 hung in the RESTART section, then rerun",
+ "why": "Card 90-1: step 1 PASS (t0stamp_selftest_90b.log 4/0, dll md5 1ea78380). Step 2 run 1 (diag_c90_t0stamp_scratch.log, START 03:41:35, limit 40 min) printed nothing after 'handle count BEFORE the restart: 0' for 11+ min.",
+ "inputs": [
+  {"path": "tools/bench/cards/task_90-1.json"},
+  {"path": "tools/bench/diag_c90_t0stamp_scratch.py"},
+  {"path": "tools/bench/diag_c90_t0stamp_scratch.log"},
+  {"path": "tools/stagekit.py"}
+ ],
+ "pass": [
+  "FACTS on run 1's hang: LabVIEW PID 24288 (684 MB, up before 03:41) - who started it, its open windows/dialogs; where the py script is blocked",
+  "run 1 ended (its own deadline or a tree kill) with BGRUN END/TIMEOUT line; LabVIEW gone before the rerun",
+  "rerun: every pass item of card 90-1 step 2 (scratch VI saved, ExecState 1, stamp file, per-call cost, copy check, 20-run handles, negative case)",
+  "D1_s1_copy, kswap and the L2-A1 bed md5 unchanged; LabVIEW verified gone at the end"
+ ],
+ "outputs": ["C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp_scratch_*.vi", "tools/bench/diag_c90_t0stamp_*", "tools/bench/cards/result_90-3.json"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "tools/t0stamp/**",
+   "tools/bench/t0stamp_*",
+   "tools/bench/diag_c90_*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/errorlist_shots/**",
+   "tools/bench/gui_shots/**",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/t0stamp*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 1, "minutes": 60},
+ "rules": [
+  "run 1 counts as failure 1 of card 90-1's budget 2: ONE rerun left; a failed rerun returns FAIL with facts",
+  "diagnostics (screenshot, window/dialog list, handle reads) before any kill; standing restart authority for LabVIEW",
+  "DESIGN items of card 90-1 still bind; no GUI state-changing act; a failed prediction owes its review",
+  "hold your turn until every bgrun you start has its END/TIMEOUT line; never return while one is running",
+  "facts only, no design recommendation; result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

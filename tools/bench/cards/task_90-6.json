@@ -1,0 +1,63 @@
+{
+ "schema": "task/1",
+ "id": "90-6",
+ "kind": "build",
+ "goal": "Retry of 90-5 per PD197(g): claudeDev\\D1_s1_t0_<ts>.vi with stamps on While-body and For-body sites, ExecState read after every site",
+ "why": "90-5 FAIL, budget spent: run 1 ExecState 0, cause unmeasured (junk Invokes / bare site-0 CLFN / a site refusing). PD197(g) fixes the route and makes the per-site ExecState read the measurement.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_90-5.json"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "archive/peer/2026-09-26-c90-t0step3-movewire.md"},
+  {"path": "tools/bench/diag_c90_t0_step3.py", "md5": "24da7f2de327cda39fc84b38615573a2"},
+  {"path": "tools/bench/diag_c90_t0_step3.log"},
+  {"path": "tools/bench/t0_sites_s1.json"},
+  {"path": "tools/bench/diag_c90_t0_smoke.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi", "md5": "3e3d23cefd3a334001aa9d6156bf1aee"}
+ ],
+ "pass": [
+  "sites: 0,2,8 (#637 body), 3,4,5 (For bodies in #637), 10-13 (#15266), 16,17 (For #16621 body), 20 (#25392); case sites 6/7/14/15 not attempted",
+  "per site: move_in, junk Invoke purged, const on t6 via OpCreateConstOnTerm_v0, branch Is Broken? False + sink +1, then ExecState READ and logged",
+  "table site -> ExecState after it; the first site that turns ExecState 0 (if any) named with its wire type and the node's error text if readable",
+  "if final ExecState 1: computation_diff(S1,new) rows 0, added = CLFN + constants only (no Invoke); saved by script as D1_s1_t0_<ts>.vi, md5",
+  "if saved: smoke run (diag_c90_t0_smoke.py, <=60 s, fresh T0STAMP_DIR) -> per-site file counts; else report why not run",
+  "D1_s1_copy, kswap, L2-A1 bed md5 unchanged; LabVIEW verified gone; TMX 39 after any real run"
+ ],
+ "outputs": ["C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_t0_*.vi", "tools/bench/t0_sites_s1_step3*", "tools/bench/diag_c90_*", "tools/bench/cards/result_90-6.json"],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/D1_s1_t0_*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c90_*",
+   "tools/bench/t0_sites_s1_step3*",
+   "tools/bench/t0_legs/**",
+   "tools/bench/diag_c90_*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/errorlist_shots/**",
+   "tools/bench/gui_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 50},
+ "rules": [
+  "escalation 2 of card 90-5 (material runs fable/low until 2026-09-28); same rules as 90-5",
+  "input is a BYTE COPY of D1_s1_copy.vi; never open-for-edit D1_s1_copy, kswap, the bed or originals",
+  "build step before smoke; a saved ExecState-1 file is the step-3 artefact even if the smoke is not reached",
+  "GUI only for bead picking in the smoke (capture->act->confirm, Exception Approved)",
+  "hold your turn until every bgrun you start has its END/TIMEOUT line; LabVIEW gone before return",
+  "facts only; result/1 <=10 facts <=3 open"
+ ],
+ "escalation": 2,
+ "retry_of_card": "90-5",
+ "advances": ["M8", "M3", "R1", "R3"]
+}

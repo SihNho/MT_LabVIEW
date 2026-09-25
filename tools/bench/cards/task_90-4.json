@@ -1,0 +1,53 @@
+{
+ "schema": "task/1",
+ "id": "90-4",
+ "kind": "measure",
+ "goal": "(A) one clean rerun of the patched diag_c90_t0stamp_scratch.py; (B) read-only stamp-site table for PD196(d) step 3 on a byte copy of D1_s1_copy.vi",
+ "why": "90-3: step 2 accepted on run 2 (T9b's expected value was the script's error, site 64 replaces 05 in T7). A gives a clean record. B is the addressing step 3 needs before building D1_s1_t0_<ts>.vi.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_90-3.json"},
+  {"path": "tools/bench/diag_c90_t0stamp_scratch.py"},
+  {"path": "docs/t0-instrumentation-plan.md"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "A: rerun log has BGRUN END rc=0, T9b PASS, all 90-3 gates PASS; LabVIEW gone after",
+  "B: tools/bench/t0_sites_s1.json - one row per group: kernel #5058, ImageToArray, display VIs, plot Z/dZ, save trace/xyz, check N bead pos, Median, FIR",
+  "B row fields: node uid, VI name, enclosing loop uid + case-frame path, one output terminal name + its wire uid (branch point), whether it runs every frame",
+  "B also: the `i` terminal of each holding While loop (uid), and whether build_clfn can place a node in that nested diagram (owner param; measured on a scratch, not inferred)",
+  "B: rows where no output wire exists (e.g. no outputs) listed with the alternative completion wire, or UNADDRESSABLE with the reason",
+  "D1_s1_copy (3e3d23ce...), kswap and L2-A1 bed md5 unchanged; LabVIEW verified gone at end"
+ ],
+ "outputs": ["tools/bench/t0_sites_s1.json", "tools/bench/diag_c90_*", "tools/bench/cards/result_90-4.json"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": true,
+  "write": [
+   "tools/bench/t0_sites_s1*",
+   "tools/bench/t0stamp_*",
+   "tools/bench/diag_c90_*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/t0stamp*",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c90_*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": [
+  "B is READ-ONLY on a byte copy (scratch_c90_*); never open-for-edit D1_s1_copy, kswap, the bed or originals",
+  "no build of the instrumented VI in this card; placement check only on a throwaway scratch",
+  "hold your turn until every bgrun you start has its END/TIMEOUT line",
+  "no GUI; close every reference; facts only; result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

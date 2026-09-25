@@ -1,0 +1,32 @@
+{"schema":"result/1","id":"90-6","status":"FAIL","gates":{"pass":38,"fail":12},
+ "first_fail":"diag_c90_t0_step3b_r2.log:62 S00.3 CLFN on Diagram[43]=#639 N[74], t6 wire 0 (index out of range after the purge; run 1 first_fail :172 S03.2 OpCreateConstOnTerm_v0 'ForLoop' -> 1055)",
+ "blocked_by":null,
+ "artefacts":[
+  {"path":"tools/bench/diag_c90_t0_step3b.py","md5":"9cb6f8d14d40f2e584719e0d032d9670"},
+  {"path":"tools/bench/diag_c90_t0_step3b.log","md5":"5d7b26739fba9f29a0d4e41be2dd79c6"},
+  {"path":"tools/bench/diag_c90_t0_step3b_r2.log","md5":"af0652757e3cf523c4bcbf96437b3556"},
+  {"path":"tools/bench/t0_sites_s1_step3b.json","md5":"b653b2e095d96402cdb09b8d40e6904e"},
+  {"path":"archive/peer/2026-09-26-c90-t0step3b-forloop.md","md5":"cdb0016af0c39ae784dbd3ccb1fdd194"},
+  {"path":"archive/peer/2026-09-26-c90-t0step3b-r2-indexshift.md","md5":"1e49e105f791932f114ea4629be50224"},
+  {"path":"tools/bench/peer_c90_t0step3b_forloop.log","md5":"5eb06e925de74877b93b5f740ee8b373"},
+  {"path":"tools/bench/peer_c90_t0step3b_r2.log","md5":"6771af49f09e73744efaf8137b72924b"}
+ ],
+ "facts":[
+  "NO D1_s1_t0 file: both runs ended ExecState 0, work copy discarded (step3b.log:463,474; _r2.log:463,474); pins/input unchanged, LabVIEW gone (Q1 :494), no motor run so TMX untouched",
+  "RUN 1 ES TABLE (step3b.log:673): site 0 ->1, 2 ->1, 3 ->0 (FIRST), 4/5 ->0, 8/10/11/12/13 ->0, 16/17 ->0, 20 ->0. Sites 0/2 = constant in place + branch + ExecState 1: the While-body route WORKS",
+  "MEASURED: OpCreateConstOnTerm_v0 'ForLoop' -> invoke error 1055 on all 5 For-body sites (step3b.log:172,213,253,573,613); CLFN left bare -> ExecState 0 from site 3 on; cast-vs-index unmeasured",
+  "MEASURED: a bare t0stamp CLFN breaks the VI the moment it exists at top level (ExecState 0 right after build_clfn, _r2.log:42, every site); run 1 shows it returns to 1 once t6+t8 are wired (:79,:135)",
+  "RUN 2 (While-body only) FAILED on my reader: move_in's junk Invoke sorted BEFORE the CLFN (N[73]/N[74], _r2.log:49,61); after the purge N[74] was out of range -> t6 read 0 (:62), no branch, ES 0",
+  "Review r2-indexshift: Nodes[] order NOT position-controlled (Invoke N[74] run 1 vs N[73] run 2); 5.4 rule-1a hazard: the connect op's own junk can shift Nodes[n] inside the op; 'sinks +1' blind",
+  "Branch gate (Is Broken? False + sink +1 + t8==site wire) PASSED at every attempted While-body site, both runs (step3b.log:77,133,310-670; _r2.log:122-458); UID 4 scrub reads 0 (_r2.log:46)",
+  "Script patched, NOT RERUN (budget 2 spent): purge right after move_in then find_node; re-find by uid after every purge; ExecState read after the constant (diag_c90_t0_step3b.py)",
+  "Ladder: step3b.log | new-problem p=0.680 | review owed | c90-t0step3b-forloop ANSWERED 236 s, disposed | run 2. _r2.log | no ladder line (no launch) | r2-indexshift ANSWERED 233 s, disposed | stopped",
+  "cdiff both runs: rows 0, removed 0, added = CallLibrary + DigitalNumericConstant only, no Invoke junk (step3b.log:677 added 21; _r2.log:465 added 16)"
+ ],
+ "open":[
+  "Third LabVIEW run of the patched script (8 While-body sites, ~7 min) - with or without review 5.2/5.4/5.5 (uid-checked node_terms, sink-owner == CLFN uid, delete-on-first-ES0)? 5.4 is a rule-1a hazard the current gates cannot see",
+  "For-body sites 3/4/5/16/17: OpCreateConstOnTerm_v0 refuses 'ForLoop' (1055). Options: separator OpLoopEndRef_v0 Class ForLoop (cast vs index), OpCreateConstTop_v0 then move both (wire dropped in 90-5), or a new op = OpConnectNested_v0 ladder + Create Constant 6349C00",
+  "Adapt-to-Type acceptance is shown only for w3268/w5859 (ES 1 after sites 0/2); sites 8, 10-13, 20 unshown - accept the third run as the measurement, or bisect per site first?"
+ ],
+ "cost":{"usd":null,"minutes":36,"labview_runs":2},
+ "note":"Escalation 2 (fable/low). Gate totals are run 2's (38/12 incl. Q); run 1 was 49/23. Both failed-prediction reviews ANSWERED and annotated; no third run was launched (failure budget)."}

@@ -1,0 +1,24 @@
+BGRUN START 2026-09-26 04:33:49 limit 4.0 min: py -u tools/stage_prerun.py --dry tools/bench/diag_c90_t0_step3.py --no-record
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 3e3d23cefd3a334001aa9d6156bf1aee  got 3e3d23cefd3a334001aa9d6156bf1aee
+  FAIL  dry: unhandled exception KeyError: 'terminals'
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 600, in run
+    fn(stage)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c90_t0_step3.py", line 93, in body
+    W = s.start(); s.es("after open"); rows = []; method = "A"; done = []
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 568, in start
+    G = _graph()
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 356, in _graph
+    D.graph = OfflineGraph(p) if p else False
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 135, in __init__
+    self.path, self.md5, self.terms, self.objs = path, d.get("md5"), d["terminals"], d["objs"]
+KeyError: 'terminals'
+
+
+---------- [Q] COM Quit, verify LabVIEW gone
+
+=== DRY FAIL: first_fail=PY KeyError: 'terminals' coverage 31/98 lines, first mutation None, unverified 0, graph tools/bench/graph_s1_20260924.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"PY KeyError: 'terminals'","artefacts":[]}
+BGRUN END rc=1 after 0s

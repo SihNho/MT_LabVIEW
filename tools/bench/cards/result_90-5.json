@@ -1,0 +1,33 @@
+{"schema":"result/1","id":"90-5","status":"FAIL","gates":{"pass":33,"fail":10},
+ "first_fail":"diag_c90_t0_step3.log:30 S00.3 CLFN on Diagram[43]=#639 N[73], t6 wire 0 after moving CLFN+constant (tunnels unchanged)",
+ "blocked_by":{"device":"tools/hooks/guard_peer.py + budget","message":"run 2 launch (04:40) refused until the run-1 failed prediction had its hypothesis review (JEV-LADDER new-problem p=0.712, NEXT-ACTION old path); review ANSWERED 04:47 (312 s); 63 of 70 budget minutes then spent, no second LabVIEW run launched"},
+ "artefacts":[
+  {"path":"tools/bench/diag_c90_t0_step3.py","md5":"24da7f2de327cda39fc84b38615573a2"},
+  {"path":"tools/bench/diag_c90_t0_step3.log","md5":"ac019930ab9b146d2970be3765a0afa9"},
+  {"path":"tools/bench/t0_sites_s1_step3.json","md5":"c4e5c44b769c87eb023fd435da8d20a2"},
+  {"path":"tools/bench/diag_c90_t0_step3_dry.log","md5":"ea112a05ded944c2ff7950416f652041"},
+  {"path":"tools/bench/diag_c90_t0_smoke.py","md5":"45dd2755d44d3301633240dfca3630e5"},
+  {"path":"tools/bench/diag_c90_t0_wikiq.py","md5":"6eab82f8f7d9de7dd787226700968d2f"},
+  {"path":"tools/bench/diag_c90_t0_wikiq.log","md5":"26520c8ac32f595c34ad79f47d4b907c"},
+  {"path":"archive/peer/2026-09-26-c90-t0step3-movewire.md","md5":"d3e7d835b7270bd3a47dc271bba6765c"},
+  {"path":"tools/bench/peer_c90_t0step3_movewire.log","md5":"439cb718e0a67e566a2c9692b693cf36"}
+ ],
+ "facts":[
+  "NO D1_s1_t0 file delivered: run 1 ended ExecState 0 (diag_c90_t0_step3.log:195-199), not saved, work copy deleted (:207); pins/input unchanged (:208-216); LabVIEW gone (:227), tasklist empty 04:49",
+  "Site 1 OMITTED per card pass 1: no grab node in loop #637 - IMAQdx Grab #15403 is on display body #15266, IMAQdx Get Image #22692 on frame diagram 22650 (diag_c90_t0_wikiq.log)",
+  "MEASURED: constant on the top-level CLFN t6 (OpCreateConstTop_v0 #23090, err '') then move_in of CLFN and constant into Diagram[43] -> t6 wire 0, tunnels unchanged 468/132/146 (step3.log:25-30)",
+  "MEASURED: OpCreateConstOnTerm_v0 after move_in works on all 7 While-body sites - constants #23526..#25125, t6 wired (step3.log:35-36,62-63,84-85,106-107,128-129,150-151,176-177)",
+  "MEASURED: branch landed on all 7 sites: err '', Is Broken? False, UID 2 == site wire (t0_sites_s1_step3.json:66,91,...,216); my 'wire delta +1' gate was WRONG (a branch adds no Wire) -> 7 false FAILs",
+  "cdiff(S1,run-1 end): rows 0, removed 0, added 25 = 8 CallLibrary + 8 DigitalNumericConstant + 9 Invoke (step3.log:198); review: the 9 Invokes are move_in's junk, 1 per call (:26-37), not build_clfn's",
+  "ExecState 0 cause UNMEASURED: 9 unwired junk Invokes, site-0 CLFN left with t6/t8 bare, or an Adapt-to-Type refusal on a display-body wire (review §2; §4 bisect not run)",
+  "For sites 3/4/5/16/17 and case sites 6/7/14/15 never attempted; run-2 script (md5 24da7f2d) does For bodies via owner_of->ForLoop, SKIPS case frames; review §5 = const top, move both, OpConnectNested",
+  "Ladder: diag_c90_t0_step3.log | new-problem p=0.712 | hypothesis review owed (old path) | dispatched c90-t0step3-movewire, ANSWERED 312 s, disposition written | run 2 NOT launched (budget)",
+  "stage_prerun --dry cannot dry-run this script: OfflineGraph needs a graph JSON with 'terminals'; graph_s1_2026092[34].json lack it (step3_dry.log:5-17); no dry/pre-run record for the LabVIEW run"
+ ],
+ "open":[
+  "Rerun the patched run-2 script as is (13 sites, case frames skipped) or first add review §5's case-frame route (17 sites)? Either is one LabVIEW run (~5 min) + the smoke (~6 min, diag_c90_t0_smoke.py ready, untested)",
+  "Run review §4's ExecState bisect first (purge Invokes -> delete site-0 CLFN -> one CLFN at a time)? It decides whether an Adapt-to-Type refusal on a display-loop wire (w19372/19465/19468/19429) invalidates the site list",
+  "Diag scripts bypass the stage launch gate (no dry/pre-run possible without an S1 graph carrying terminals) - accept for this diagnostic copy, or build the S1 graph file first?"
+ ],
+ "cost":{"usd":null,"minutes":66,"labview_runs":1},
+ "note":"Gate totals from run 1 (33/10 incl. Q gates); 7 of the 10 fails are the wrong branch gate, 1 is method A (site 0), E1 ExecState 0, CD (Invoke junk). Escalation rung: this session is fable/low (material default until 2026-09-28)."}

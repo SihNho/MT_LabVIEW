@@ -53,13 +53,25 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
 current-bed: D1_l2_a1_20260925_235224.vi
 <!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. -->
-🔴🔴🔴 **FIRST ACT (cycle 90) = `docs/d1-loop12-17-split-plan.md` Pre-decided 196(d), steps 1–2: the CLFN stamp tool.**
-- Step 1: build `claudeDev\t0stamp.dll`. `stamp(int32 site, adapt-to-type ptr)` keeps a per-site QueryPerformanceCounter buffer and dumps it on every 1024th call and at unload. Self-test it OUTSIDE LabVIEW: 3000 calls on one site give ≥2048 monotone stamps, and 2 interleaved sites give 2 files with no leak.
-- Step 2: put one `build_clfn` node calling it on a SCRATCH VI, fed a branch of a 2-D U16 wire. Pass: ExecState 1, the file is written, per-call cost reported, handle count flat over 20 runs, and a negative case.
-- Save each artefact (split rule). Steps 3–4 (the instrumented `D1_s1_t0_<ts>.vi`, then legs at 15 and 8 picks, minimized and normal) follow in the next cycle.
-- Machine copy: `tools/bench/next.json` (M8/M3/R1/R3).
-- 🟠 **Owed right after steps 1–2 (retrospective-cycle89, `device-failed`, threshold 1):** `tools/audit_cycle.py:579` C7 must read the plan named in `tools/bench/next.json` (`plan.path`), not `doc_lint.current_plans()`. It has failed for eight cycles. Also: `.claude/agents/material*.md` still prescribe the refused `MATERIAL=1` prefix; the working form is `py tools/bgrun.py --material …`. Dispositions: `archive/peer/2026-09-26-retrospective-cycle89.md` § "What was done with it".
-- Carry (bookkeeping, material): an `archive/benchmarks/INDEX.md` row for the cycle-89 panel legs (`tools/bench/m8_panelmin_89.json`, `…_89b.json`).
+🔴🔴🔴 **FIRST ACT (cycle 91) = `docs/d1-loop12-17-split-plan.md` Pre-decided 197(h): step 3, the instrumented copy `claudeDev\D1_s1_t0_<ts>.vi`, as a NEW card** (not a third rung of 90-5/90-6).
+- 🟠 **FIRST, a scratch probe (retrospective-cycle90, fault 1, accepted).** On a byte copy of S1, place ONE stamp per distinct wire class (`i` I32, bool array, error cluster, U8 image, picture, a For/case output tunnel). Read ExecState, then delete the stamp. Only after that comes the build below.
+- 🟠 **Owed right after the step-3 run (`device-failed`, threshold 1):** the `tools/bgrun.py` END guarantee under a tree kill (run 1 of step 2 died with no END line). Disposition: `archive/peer/2026-09-26-retrospective-cycle90.md`.
+- Read offline, from `docs/wiki/subvi/D1_s1_copy.json`, the OUTPUT-TUNNEL wires on the While bodies #639 / #15266 of the For loops and case structures around these nodes: Median #30306/#29009, FIR #28233, plot Z/dZ #6085/#5696, circle/text #16788/#16827.
+- Then do ONE LabVIEW run of the patched `tools/bench/diag_c90_t0_step3b.py` (md5 `9cb6f8d1…`).
+  - Every stamp goes at While-body level: sites 0, 2, 8, 10–13 and 20 from `tools/bench/t0_sites_s1.json`, plus those tunnel wires.
+  - Use the route MEASURED in 90-6: `move_in`, purge, re-find the node by uid, `OpCreateConstOnTerm_v0`, branch.
+  - Review gates 5.2/5.4/5.5: sink owner == CLFN uid; delete the site on its first ExecState 0.
+  - Read ExecState after every site.
+- Save the file by script at ExecState 1, then smoke it (`diag_c90_t0_smoke.py`). Step 4 (legs at 15 and 8 picks) comes after.
+- User decision **D-2026-09-26-01** (loop-level timers only) is OPEN; the work proceeds under its recommendation.
+- Machine copy: `tools/bench/next.json`.
+- 🟡 **FOR THE USER:** `.claude/agents/material*.md` still prescribe the refused `MATERIAL=1` prefix, and the permission layer refused the edit. The replacement text is in `tools/bench/audit_c7_agent_patch.md`; apply it.
+
+🟢/🔴 **CYCLE 90 (PD197).**
+- ✅ **The stamp tool is DONE.** `claudeDev\t0stamp.dll` md5 `1ea78380…`, self-test 4/0 outside LabVIEW. Scratch `claudeDev\t0stamp_scratch_20260926_040425.vi` md5 `5e4fd1f0…`: ExecState 1; 0.30 µs per stamp, 1.40 µs with a 1024×1280 U16 branch (no copy); handles flat; the negative case (site 64) is caught (`diag_c90_t0stamp_scratch_r3.log` 21/0).
+- ✅ **Stamp-site table:** `tools/bench/t0_sites_s1.json`. `check N bead pos`, `save N xyz traces` and `grayscale color table` run ONCE, outside every While loop, so they are not per-frame costs.
+- 🔴 **Step 3 failed twice** (90-5 fable/low, 90-6 fable/medium; no file). The While-body route works: sites 0 and 2 are ExecState 1. `OpCreateConstOnTerm_v0` refuses a ForLoop owner (1055), and a reader index shift caused run 2's failure (patched, not rerun). There are 4 answered reviews under `archive/peer/2026-09-26-c90-*`.
+- ✅ `audit_cycle` C7 now reads the plan named in `next.json` (self-test 8/0, 90-2). INDEX row 50 was added for the cycle-89 panel legs.
 
 🟢 **CYCLE 89 DONE (PD196).**
 - In-VI bracketing and a LabVIEW-primitive stamp helper are unreachable with our verbs (89-1, 89-2).

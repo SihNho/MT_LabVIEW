@@ -1058,6 +1058,81 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
          (4) legs at 15 and 8 picks, with the panel minimized AND normal.
        - Each step saves its artefact (split rule).
      - **(e) Rule 1a:** stamps read time only. The instrumented copy is diagnostic and is never delivered.
+197. **(cycle 90 judgement, on results `90-1` (step 1 PASS, selftest 4/0), `90-3` FAIL 20/1 = step 2 met on run 2, the one
+     fail was T9b's wrong expected value, and `90-4` PASS: clean rerun 21/0 + `tools/bench/t0_sites_s1.json`)**
+     - **(a) Steps 1–2 of 196(d) are DONE.** `claudeDev\t0stamp.dll` md5 `1ea78380…` (x64, cdecl). Scratch VI
+       `claudeDev\t0stamp_scratch_20260926_040425.vi` md5 `5e4fd1f0…`: ExecState 1; a stamp costs 0.30 µs with a scalar
+       and 1.40 µs with a 1024×1280 U16 branch, so the array is NOT copied; handles are flat; site 64 returns 1 and
+       writes nothing (`tools/bench/diag_c90_t0stamp_scratch_r3.log` 21/0).
+     - **(b) Stamps are bucketed by the holding loop's `i` stamps.** A While iteration cannot start before every
+       node of the previous iteration has completed, so every stamp that falls between the `i` stamps of iterations
+       k and k+1 belongs to iteration k. That holds for stamps inside For bodies and case frames too. So those stamps
+       are placed WHERE THE NODE IS: a stamp in a For body fires once per bead, which gives per-bead time directly,
+       and a stamp in a case frame fires only when the frame runs.
+     - **(c) Sites for step 3.** Every site uses the `stamp_terminal` wire from `t0_sites_s1.json`, branched.
+       - Loop #637 (tracking):
+         - 0 = `i` w3268
+         - 1 = the frame-grab output (to be read; see (f))
+         - 2 = kernel w5859
+         - 3 = Median #30306 w25157
+         - 4 = Median #29009 w24106
+         - 5 = FIR #28233 w28509
+         - 6 = plot Z w363
+         - 7 = plot dZ w7109
+         - 8 = save trace w541
+       - Loop #15173 (display):
+         - 10 = `i` w19372
+         - 11 = ImageToArray w19465
+         - 12 = Flatten w19468
+         - 13 = Draw Flattened w19429
+         - 14 = rect w16210
+         - 15 = grayed rect w16183
+         - 16 = circle w16898
+         - 17 = text w16895
+       - Loop #25380: 20 = `i` w34066.
+       - NOT stamped: `check N bead pos` #5987, `save N xyz traces` #6384 and `grayscale color table` #6216. They sit
+         in top-level sequence frames outside every While loop, so they run once per run, not per frame. This
+         corrects `docs/t0-instrumentation-plan.md` Step 1's "per-bead post-processing" guess.
+     - **(d) Output directory per leg.** Every run sets `T0STAMP_DIR` to a fresh per-run directory before LabVIEW
+       starts, so no file from an older process id can satisfy a gate (90-4 open 3).
+     - **(e) No owner-chain op.** `OpOwnerChain_v1` stops at a FlatSequenceFrame (1055). The tunnel tree and f3a
+       already prove ancestry, and placement is proven by uid echo, so that reader is NOT built.
+     - **(f) Step 3 acceptance:**
+       - `claudeDev\D1_s1_t0_<ts>.vi` is a byte copy of `D1_s1_copy.vi` plus CLFN stamp nodes and branch wires only;
+       - `computation_diff(S1,·)` lists exactly the added CLFN nodes and wires and nothing else;
+       - ExecState 1, saved by script;
+       - one short camera-free or real smoke run writes a file for every loop's `i` site.
+       Rule 1a: the copy is diagnostic, never delivered, and stamps read time only.
+     - **(g) On `90-5` FAIL (review `archive/peer/2026-09-26-c90-t0step3-movewire.md`).** Site 1 is DROPPED: loop #637
+       has no grab node (`IMAQdx Grab #15403` is on the display body). The retry card (escalation 2) is decided as
+       follows:
+       - scope = the While-body sites plus the For-body sites 3/4/5/16/17. Case-frame sites 6/7/14/15 wait until the
+         For-body route is measured.
+       - the route is the one MEASURED in 90-5: `move_in` first, then `OpCreateConstOnTerm_v0`, then the branch;
+         purge the `Invoke` junk that `move_in` leaves after EVERY call.
+       - **ExecState is read after EVERY site** (an incremental read, not a bisect afterwards), so the first site
+         that breaks the VI is named by measurement.
+       - the branch gate is `Is Broken?` False plus a sink count of +1 on that wire. A branch adds no Wire object, so
+         90-5's "wire delta +1" gate was wrong.
+       - no stage launch gate for this diagnostic copy, because no S1 graph carries `terminals`. That is accepted: the
+         copy is never delivered, and `computation_diff(S1,·)` 0-rows plus added-only is its structural check.
+     - **(h) On `90-6` FAIL (escalation 2, both rungs spent; reviews `archive/peer/2026-09-26-c90-t0step3b-forloop.md`,
+       `…-c90-t0step3b-r2-indexshift.md`).**
+       - MEASURED: the While-body route works. Sites 0 and 2 are ExecState 1 once t6 and t8 are wired; a bare CLFN
+         is ExecState 0 by itself. `OpCreateConstOnTerm_v0` refuses a `ForLoop` owner with 1055 at all 5 For sites.
+         Run 2 failed on OUR reader (a `move_in` junk Invoke sorts before the CLFN; the index shifts after the purge).
+       - DECIDED: **every stamp sits at holding-loop body level. No stamp goes inside a For body or a case frame.**
+         For a node inside a For or a case frame, the stamp branches the ENCLOSING structure's output-tunnel wire on
+         the While body. That gives the group's completion per iteration.
+         - The per-bead cost comes from the slope between the 8-pick and 15-pick legs, not from per-bead stamps. That
+           answers the 196(d) question, which group carries the per-bead time.
+         - No new For-body verb is built for this. 197(b)'s per-bead stamps are withdrawn.
+       - DECIDED: adopt the review gates (5.2, 5.4, 5.5):
+         - node terminals are re-found by uid after every purge, never by `Nodes[n]`;
+         - the new sink's owner must equal the CLFN uid (this closes the rule-1a hazard of a shifted index);
+         - on the first ExecState 0, the site's nodes are deleted, and the site is logged as refused.
+       - The next retry is a NEW card, not a third rung of 90-5/90-6. The user's decision item `D-2026-09-26-01`
+         records it, and the work proceeds under this recommendation unless the user overturns it (CLAUDE.md 2c).
 
 ## OPEN (design choices — for judgement; not decided here)
 

@@ -1,0 +1,77 @@
+BGRUN START 2026-09-26 05:16:14 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c90-t0step3b-r2-indexshift -TaskFile tools/bench/peer_c90_t0step3b_r2_task.md
+OUTCOME: ANSWERED (233s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c90-t0step3b-r2-indexshift.md
+COST: $1.5585  in 14 / out 18024 / cache-create 122390 / cache-read 770871  (229s, 11 turn(s))
+--- ANSWER ---
+I've finished reading both logs and the script. **Verdict: point 3 is refuted by your own two runs, point 2 is right in outline but wrong in one detail that hides a gate weakness, and point 1 is unproven for six of the eight sites.** Re-finding after every purge is necessary, but it is not enough to be confident of ExecState 1 in a third run.
+
+## 1. The strongest reason the claim is wrong: point 3
+
+Run 1 and run 2 did the same thing at site 0 and got opposite orders:
+
+- **Same inputs in both runs:** CLFN uid #22968 (`step3b.log:26`, `r2:26`), same target Diagram[43] at (1400, 900) (`step3b.log:43`, `r2:44`), same junk Invoke uid #22989.
+- **Run 1:** the Invoke was at N[74] (`step3b.log:46`), after the CLFN at N[73] (`:58`).
+- **Run 2:** the Invoke was at N[73] (`r2:49`), before the CLFN at N[74] (`r2:61`).
+
+So the order does not depend on position, and "run 1 was lucky" should be "the order is not controlled by anything we set".
+
+Two more facts point the same way:
+- Both "Invoke before CLFN" cases in run 2 were at y=900 (sites 0 and 11). But run 1's site 5 was also at y=900, at (1520, 900), and there the Invoke came after the CLFN (`step3b.log:238,241,253`).
+- The same Invoke sat at census index 157 in run 1 (`step3b.log:55`) and 158 in run 2 (`r2:58`), even though its place in the diagram moved the other way. So the census order is not Nodes[] order either.
+
+The practical consequence: **any Nodes[] index can go stale after any edit.** This includes edits made inside an op VI that you hand an index to, not only edits your script makes.
+
+## 2. An alternative reading of the "t6 wire 0" results
+
+After the purge, `node_terms(43, 74)` did not read an original node. It read nothing, because N[74] was past the end of the array:
+
+- **Site 0:** Diagram[43] has 73 nodes of its own. Site 2 shows 76 nodes = 73 + CLFN0 + CLFN2 + Invoke (`r2:91`). So after site 0's purge there were 74 nodes, N[0]..N[73].
+- **Site 11:** Diagram[99] has 22 nodes of its own (`r2:209`: 24 = 22 + CLFN10 + Invoke). After site 11's purge there were 24 nodes, and N[24] is again out of range.
+- The same arithmetic shows constants are not counted in Nodes[] (a constant was present at `r2:49`, yet the node count still adds up to 75 without it).
+- `gscript.py:966-967` says `node_terms` returns empty rows when the index is out of range. Line 102 of the script turns those empty rows into `w6 = 0` through `next(..., 0)`.
+
+So gate S.3 cannot tell "the terminal is unwired" from "no such node". The re-find in lines 97–101 fixes this case, but the gate still has the weakness: it never checks which node it actually read.
+
+Also, "the constant WAS created on the CLFN" is plausible but was never read back. S.2 only checks that a uid came back with no error.
+
+## 3. An alternative for ExecState 0 after sites 2–20
+
+"Inherited from site 0" fits the data, but so does "each of these sites breaks the VI on its own". Your ruled-out list overstates what was shown:
+
+- Only w3268 and w5859 (sites 0 and 2) have ever been seen with ExecState 1 after their branch.
+- Sites 8 and 10 read 0 in run 1 too (`step3b.log:311,367`), but by then the run had already been broken by the For-body sites.
+- `Is Broken? False` is a property of the wire. It does not show that the CLFN parameter accepts the wire's type. An Adapt to Type parameter can reject some types; in one NI forum case, an array of strings inside a cluster broke the node ([NI forum 3832312](https://forums.ni.com/t5/LabVIEW/Call-Library-Function-Adapt-Interface-to-Data-Breaking/td-p/3832312?profile.language=en)).
+
+So whether Adapt to Type accepts w541, w19372, w19468, w19429 and w34066 is still an open question.
+
+For the bare CLFN at top level (`r2:42`), a narrower explanation also fits: only the unwired Adapt to Type input `any` (t8) breaks the VI, because its type is not yet known. An unwired input `site` (t6) of plain I32 type is normally fine; the node uses the default value. Your "and/or" does not choose between these.
+
+## 4. What would falsify each point
+
+| point | falsified if |
+|---|---|
+| 1 (inherited) | With both of site 0's inputs verifiably wired, some later site still reads ExecState 0 after its own branch, and deleting that site's CLFN and constant brings ExecState back to 1 (a per-site type rejection). |
+| 1 (t6 matters) | ExecState stays 0 after the constant goes on t6 and turns 1 only after the t8 branch. That would mean t8 alone is what breaks it. |
+| 2 | Re-finding by uid shows CLFN0 at N[73] with t6 unwired. That would mean the constant op itself missed. |
+| 3 | Already falsified by the run 1 / run 2 site-0 comparison above. |
+
+## 5. Cheapest discriminating test (inside the planned third run, no extra LabVIEW time)
+
+1. Purge immediately after `move_in`, then call `find_node`, so no junk node exists while an index is being used.
+2. Replace `node_terms` with `node_terms_uid` and require the returned node uid to equal the CLFN's uid. An out-of-range index then fails loudly instead of reading as "unwired".
+3. Read ExecState once after the constant is on t6 and before the branch. This separates t6 from t8.
+4. After each branch, check which node the new sink on the site wire belongs to: its owner uid must equal the CLFN's uid, not just "sinks went up by 1". `connect_from_wire` creates its own junk Invoke (`r2:108`). If that Invoke is created before the op looks up Nodes[n] and it sorts ahead of the CLFN, the op wires the site wire into a different node. That would be an original node, which is a rule-1a hazard. "Sinks +1" and "Is Broken? False" would both still pass, so neither check catches it.
+5. On the first site that reads ExecState 0, delete that site's CLFN and constant by uid and read ExecState again. This separates "inherited" from "this site's own type".
+
+## 6. Is "re-find after every purge" enough for all eight While-body sites to end at ExecState 1?
+
+**Not with confidence.** It fixes the out-of-range read at sites 0 and 11, and that is the only index hazard your run actually hit. Two gaps remain:
+
+- **Index hazard:** the stale-index risk inside the connect op (step 5.4 above).
+- **Not an index issue:** whether Adapt to Type accepts the wire types at sites 8–20 has never been shown.
+
+Without steps 5.2, 5.4 and 5.5, a third run could end at ExecState 0 again and not tell you why.
+
+Sources:
+- [NI forum: Call Library Function – Adapt / Interface to Data breaking](https://forums.ni.com/t5/LabVIEW/Call-Library-Function-Adapt-Interface-to-Data-Breaking/td-p/3832312?profile.language=en)
+- [LabVIEW Wiki: AbstractDiagram Firing Order](https://labviewwiki.org/wiki/AbstractDiagram_class/Firing_Order_property). I found no NI document that guarantees any Nodes[] order; the evidence for that is the two runs above.
+BGRUN END rc=0 after 233s
