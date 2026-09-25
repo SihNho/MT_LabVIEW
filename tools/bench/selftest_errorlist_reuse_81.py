@@ -89,9 +89,17 @@ def main():
     o1 = os.path.join(tmp, "r1"); os.makedirs(o1)
     v, js, calls, log = run_hook(status, HERE, o1)
     j = json.load(open(js, encoding="utf-8")) if js and os.path.exists(js) else {}
+    # STALE PIN FIXED (card chat-L2): R1 pinned the raw md5 of read 113500 (432f7297...), the newest D1_k read when
+    # this test was written. A later real read on the SAME bed md5 (172834, raw 839ac213...) is now the newest one,
+    # and the hook correctly reuses the NEWEST read (R5 pins "no fallback to older"). The expectation is therefore
+    # the raw file of the newest main read for this bed, by stamp - the fixture, not the hook, was out of date.
+    import glob as _glob
+    _mains = sorted(p for p in _glob.glob(os.path.join(HERE, "errorlist_D1_k_20260925_100155_*.json"))
+                    if not p.endswith(("_raw.json", "_reuse.json")))
+    want_raw = md5b(open(_mains[-1][:-5] + "_raw.json", "rb").read()) if _mains else None
     gate("R1 real bed D1_k, unchanged md5 -> REUSE, OK, 22 items, 0 GUI runs",
          v == "OK" and not calls and "| REUSE | OK |" in log and j.get("item_count") == 22 and j.get("extra") == []
-         and j.get("bed_md5") == K_MD5 and j.get("reused_raw_md5") == "432f7297e38c7e78d04a04462207f8cd",
+         and j.get("bed_md5") == K_MD5 and j.get("reused_raw_md5") == want_raw,
          (v, len(calls), j.get("item_count"), j.get("extra"), j.get("licence_usage"), log[-300:]))
     # fake bed in a fake claudeDev
     cd = os.path.join(tmp, "claudeDev"); os.makedirs(cd)

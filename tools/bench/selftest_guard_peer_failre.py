@@ -19,7 +19,9 @@ is the failure mode this whole class of bug is made of.
   B-gates  nothing regressed   : a passing log is still not flagged, under old AND new.
   C-gates  the old vocabulary  : `  FAIL  `, `-> FAIL`, STALL, TIMEOUT, EXC, BROKEN, STOP still match.
   D-gates  no loosening        : prose that merely CONTAINS the word, `**FAILURE**`, and PASS rows do NOT match.
-  E-gate   the emitters        : no tools/bench/*.py prints the bold form at the START of a line any more.
+  E-gates  the verdict source  : (card chat-L2) a post-switch run is judged by its RESULT line + exit code only;
+                                 body text, bold or not, neither arms nor disarms it. The old source scan for bold
+                                 emitters is kept as an INFO list (history), no longer a gate.
 
 Plus a BLAST RADIUS section (facts only, no gates): every tools/bench build log the WIDENED pattern flags that the
 OLD one did not, with its mtime, age, first failing line and whether an archive/peer review newer than it already
@@ -218,25 +220,43 @@ def main():
                           ("D5 an emitter's own source line", "    print('PASS' if ok else 'FAIL')")):
         gate(label, not NEW_RE.search(sample), "| " + safe(sample))
 
-    # ---- E: the other end - the emitters ---------------------------------------------------------
-    print("\n--- E: no tools/bench/*.py prints the bold form at the START of a line ---", flush=True)
-    start_bold, midline_bold = [], []
+    # ---- E: the other end - since session protocol v1 C6 the VERDICT is the RESULT line --------------
+    # REWRITTEN by card chat-L2 (judgement ruling: "E1 rewritten to the RESULT-line regime (body scan gone); the 3
+    # old diag emitters left as history"). Until 2026-09-24 a run's verdict was read from its body text, so every
+    # emitter's spelling of FAIL mattered and E1 scanned script SOURCE for the bold form. Since protocol.SWITCH_TS
+    # guard_peer.log_failure() judges a post-switch bgrun run by its RESULT line(s) and its exit code only; the body
+    # text no longer decides anything (CARD rule: hooks judge structure, never text patterns). So E1 now pins the
+    # structural contract on synthetic post-switch runs; a bold row in a body is neither needed nor able to arm it.
+    print("\n--- E: post-switch runs are judged by RESULT line + exit code, never by body text ---", flush=True)
+    import protocol as _P
+    t_new = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(max(time.time(), _P.SWITCH_TS + 60)))
+    head = "BGRUN START %s limit 5.0 min: py -u tools/bench/diag_e1_fixture.py\n" % t_new
+    fail_line = _P.result_line(_P.make_result(3, 1, "P6 fixture"))
+    pass_line = _P.result_line(_P.make_result(4, 0, None))
+    e_cases = (
+        ("E1a RESULT FAIL, plain body, rc 0 -> FAILING (the RESULT line decides)",
+         head + "  step ok\n" + fail_line + "\nBGRUN END rc=0 after 3s\n", True),
+        ("E1b bold row in the body but RESULT PASS and rc 0 -> NOT failing (body text is not a verdict)",
+         head + "  **" + "FAIL**  P6 quoted from an old log\n" + pass_line + "\nBGRUN END rc=0 after 3s\n", False),
+        ("E1c no RESULT line, rc 1 -> FAILING (the exit code decides)",
+         head + "  step ok\nBGRUN END rc=1 after 3s\n", True),
+        ("E1d no RESULT line, rc 0, bold row in the body -> NOT failing",
+         head + "  **" + "FAIL**  P6\nBGRUN END rc=0 after 3s\n", False),
+    )
+    for label, txt, want in e_cases:
+        got, first = gp.log_failure(txt, time.time())
+        gate(label, bool(got) == want, "| got failed=%s first=%s" % (got, safe(str(first))[:80]))
+    # History, not a gate: source lines that still print the bold form at line start (pre-C6 emitters; card chat-L2
+    # leaves them as they are - they can only matter to a PRE-switch run, whose verdict is frozen).
+    start_bold = []
     for p in sorted(glob.glob(os.path.join(BENCH, "*.py"))):
         if os.path.abspath(p) == os.path.abspath(__file__):
             continue
         for i, ln in enumerate(read(p).splitlines(), 1):
-            # A FULL-LINE COMMENT PRINTS NOTHING. The repair added `# \`FAIL\`, NOT \`**FAIL**\` ...` above each
-            # emitter it changed, and counting those as surviving bold emitters made the INFO list read as 45
-            # untouched sites when the real number is the handful below. Only executable lines are classified.
-            if "**FAIL**" not in ln or ln.lstrip().startswith("#"):
-                continue
-            (start_bold if emits_at_line_start(ln) else midline_bold).append("%s:%d" % (os.path.basename(p), i))
-    gate("E1 no line-start bold emitter remains under tools/bench/", not start_bold,
-         ", ".join(start_bold[:8]) if start_bold else "0 found")
-    print("  INFO  bold literals left mid-line / in prose (invisible to the anchor either way, so the bold "
-          "form is what keeps audit_cycle able to see them): %d" % len(midline_bold), flush=True)
-    for m in midline_bold:
-        print("        %s" % m, flush=True)
+            if "**FAIL**" in ln and not ln.lstrip().startswith("#") and emits_at_line_start(ln):
+                start_bold.append("%s:%d" % (os.path.basename(p), i))
+    print("  INFO  line-start bold emitters left as history (no gate since C6): %d  %s"
+          % (len(start_bold), ", ".join(start_bold[:8])), flush=True)
 
     # ---- F: the gate must not be armed by its own test -------------------------------------------
     # Added the same hour the repair shipped. Widening FAILURE_RE made THIS log - which quotes `BGRUN TIMEOUT`,

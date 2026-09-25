@@ -1,0 +1,228 @@
+====================================================================================================
+=== selftest_logclass_recipebuild - Pre-decided 112, the cycle gate's budget classifier
+====================================================================================================
+
+---------- [1] THE THREE REAL LOGS Pre-decided 112 NAMES, read off disk
+  FACT  C1 jev_trial.log command VERBATIM: 'py -u tools/bench/jev_trial.py --rescore'
+  PASS  C1 jev_trial.log is_recipe_build_log is False  got False
+  PASS  C4 jev_trial.log is_build_log is STILL True - the shared predicate is UNTOUCHED (guard_peer arms the failed-prediction review off it)  got True
+  FACT  C2 selftest_guard_peer_jev.log command VERBATIM: 'py -u tools/bench/selftest_guard_peer_jev.py'
+  PASS  C2 selftest_guard_peer_jev.log is_recipe_build_log is False  got False
+  PASS  C4 selftest_guard_peer_jev.log is_build_log is STILL True - the shared predicate is UNTOUCHED (guard_peer arms the failed-prediction review off it)  got True
+  FACT  C3 build_d1_m3a3_run2.log command VERBATIM: 'py -u tools/recipes/build_d1_m3a3.py'
+  PASS  C3 build_d1_m3a3_run2.log is_recipe_build_log is True  got True
+  PASS  C4 build_d1_m3a3_run2.log is_build_log is STILL True - the shared predicate is UNTOUCHED (guard_peer arms the failed-prediction review off it)  got True
+
+---------- [2] THE SCOPING CASES - the command in COMMAND POSITION, never the filename and never the prose
+  PASS  C5 prose-only mention -> is_recipe_build_log False  got False ; command 'py -u tools/bench/diag_c77_rowd_addr.py'
+  PASS  C6 cp into tools/recipes -> is_recipe_build_log False  got False ; command 'cp "tools/recipes/a.py" "tools/recipes/b.py"'
+  PASS  C6b cp from elsewhere -> is_recipe_build_log False  got False ; command 'cp "a.py" "tools/recipes/b.py"'
+  PASS  C7 appended, LAST run is the recipe -> is_recipe_build_log True  got True ; command 'py -u tools/recipes/build_d1_m3a3.py'
+  PASS  C7b appended, LAST run is a bench script -> is_recipe_build_log False  got False ; command 'py -u tools/bench/jev_trial.py'
+  PASS  C8 a peer transcript whose command names a recipe -> is_recipe_build_log False  got False ; command 'py -u tools/recipes/build_d1_m3a3.py'
+  PASS  C8b a cycle-runner session transcript -> is_recipe_build_log False  got False ; command 'py -u tools/recipes/build_d1_m3a3.py'
+  PASS  C8c a retrospective runner log -> is_recipe_build_log False  got False ; command 'py -u tools/recipes/build_d1_m3a3.py'
+  PASS  C9 a watchdog record with no BGRUN line -> is_recipe_build_log False  got False ; command ''
+  PASS  C9b a bench log with no BGRUN line at all -> is_recipe_build_log False  got False ; command ''
+  PASS  C10a a windows-path recipe command -> is_recipe_build_log True  got True ; command 'py -u tools\\recipes\\build_d1_m3a3.py'
+  PASS  C10b a recipe under an absolute path -> is_recipe_build_log True  got True ; command 'py -u G:\\proj\\tools\\recipes\\build_d1_m3a3.py'
+
+---------- [3] THE SHARED PREDICATE DID NOT MOVE - is_build_log on the same fixtures
+  PASS  C4b is_build_log still True for a plain bench log
+  PASS  C4c is_build_log still False for a peer transcript
+  PASS  C4d is_build_log still False for a watchdog record (guard_peer sees it by its OWN route)
+
+---------- [4] GUARD_PEER's OWN SELF-TESTS, RUN UNCHANGED (Pre-decided 112: its classifier is not touched)
+  FACT  selftest_guard_peer_jev.py rc=0 ; tally ('25', '0') ; last line 'RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":25,"fail":0},"first_fail":null,"artefacts":[]}'
+  PASS  C10 selftest_guard_peer_jev.py still passes UNCHANGED (rc 0 and 0 failures)  rc=0 nfail=0
+  FACT  selftest_guard_peer_failre.py rc=0 ; tally ('29', '0') ; last line '=== 29 pass / 0 fail ===  (2.9 s)'
+  PASS  C10 selftest_guard_peer_failre.py still passes UNCHANGED (rc 0 and 0 failures)  rc=0 nfail=0
+
+---------- [5] THE BUDGET, RECOUNTED - what guard_cycle now sees
+  FACT  tools/bench/*.log total 2116 ; is_build_log 1421 ; is_recipe_build_log 182
+  FACT    RECIPE BUILD  2026-09-08 05:45:23  build_opsetlabel.log
+  FACT    RECIPE BUILD  2026-09-08 07:55:16  build_opmoveout.log
+  FACT    RECIPE BUILD  2026-09-08 07:56:14  build_opmoveout2.log
+  FACT    RECIPE BUILD  2026-09-09 12:06:25  build_harness_gpu2.log
+  FACT    RECIPE BUILD  2026-09-10 04:09:40  build_opmakedefault.log
+  FACT    RECIPE BUILD  2026-09-12 22:01:14  build_opctrlvalue.log
+  FACT    RECIPE BUILD  2026-09-12 22:03:01  build_opctrlvalue2.log
+  FACT    RECIPE BUILD  2026-09-13 21:14:40  build_opreportall.log
+  FACT    RECIPE BUILD  2026-09-13 22:00:34  build_opreportall2.log
+  FACT    RECIPE BUILD  2026-09-13 22:02:14  build_opreportall3.log
+  FACT    RECIPE BUILD  2026-09-13 22:44:48  probe_arrayout.log
+  FACT    RECIPE BUILD  2026-09-13 22:45:43  probe_arrayout2.log
+  FACT    RECIPE BUILD  2026-09-13 22:47:40  probe_arrayout3.log
+  FACT    RECIPE BUILD  2026-09-13 22:50:13  inspect_setindexmode.log
+  FACT    RECIPE BUILD  2026-09-13 22:51:31  build_optunnelind.log
+  FACT    RECIPE BUILD  2026-09-13 22:52:59  build_optunnelind2.log
+  FACT    RECIPE BUILD  2026-09-13 22:54:35  test_optunnelind.log
+  FACT    RECIPE BUILD  2026-09-13 23:07:38  build_opreportnodes3.log
+  FACT    RECIPE BUILD  2026-09-13 23:11:01  build_opreportall_v1.log
+  FACT    RECIPE BUILD  2026-09-13 23:12:40  build_opreportall_v2.log
+  FACT    RECIPE BUILD  2026-09-13 23:26:46  test_opreportall.log
+  FACT    RECIPE BUILD  2026-09-13 23:28:18  fix_opreportall_errors.log
+  FACT    RECIPE BUILD  2026-09-14 00:13:42  build_opreportsubvi.log
+  FACT    RECIPE BUILD  2026-09-14 00:14:30  build_opreportsubvi2.log
+  FACT    RECIPE BUILD  2026-09-14 00:18:23  build_opreportnodes.log
+  FACT    RECIPE BUILD  2026-09-14 00:19:56  build_opreportnodes2.log
+  FACT    RECIPE BUILD  2026-09-14 01:36:50  build_opgeterrors.log
+  FACT    RECIPE BUILD  2026-09-14 01:56:34  probe_allow_private.log
+  FACT    RECIPE BUILD  2026-09-14 01:58:10  probe_allow_private2.log
+  FACT    RECIPE BUILD  2026-09-14 01:59:42  probe_allow_private3.log
+  FACT    RECIPE BUILD  2026-09-14 09:38:20  probe_castfree.log
+  FACT    RECIPE BUILD  2026-09-14 09:41:01  probe_castfree2.log
+  FACT    RECIPE BUILD  2026-09-14 09:44:03  probe_attach_reader.log
+  FACT    RECIPE BUILD  2026-09-14 09:47:54  probe_attach_reader2.log
+  FACT    RECIPE BUILD  2026-09-14 09:50:25  build_opbuildpn_v1.log
+  FACT    RECIPE BUILD  2026-09-14 09:51:21  probe_attach_reader2b.log
+  FACT    RECIPE BUILD  2026-09-14 09:52:57  probe_walk_raw.log
+  FACT    RECIPE BUILD  2026-09-14 09:54:54  probe_stale_nodes.log
+  FACT    RECIPE BUILD  2026-09-14 09:56:33  build_opbuildpn_v1b.log
+  FACT    RECIPE BUILD  2026-09-14 10:00:46  build_opbuildpn_v1c.log
+  FACT    RECIPE BUILD  2026-09-14 10:03:07  probe_castfree3.log
+  FACT    RECIPE BUILD  2026-09-14 10:06:10  probe_castfree4.log
+  FACT    RECIPE BUILD  2026-09-14 10:12:41  probe_builder_artifact.log
+  FACT    RECIPE BUILD  2026-09-14 10:26:35  probe_attach_reader2c.log
+  FACT    RECIPE BUILD  2026-09-14 10:33:52  probe_castfree5.log
+  FACT    RECIPE BUILD  2026-09-14 10:41:54  build_opsubvis_v0.log
+  FACT    RECIPE BUILD  2026-09-14 10:50:44  build_opsubvis_v1.log
+  FACT    RECIPE BUILD  2026-09-14 11:04:33  build_oppanelwiring_v0_run1.log
+  FACT    RECIPE BUILD  2026-09-14 11:07:51  build_oppanelwiring_v0.log
+  FACT    RECIPE BUILD  2026-09-14 12:07:52  build_opnodeterms_v0.log
+  FACT    RECIPE BUILD  2026-09-14 13:02:18  build_optunnels_v0.log
+  FACT    RECIPE BUILD  2026-09-14 13:22:25  build_harness_display.log
+  FACT    RECIPE BUILD  2026-09-14 13:28:27  derive_harness_disp4.log
+  FACT    RECIPE BUILD  2026-09-14 13:38:49  build_harness_copy.log
+  FACT    RECIPE BUILD  2026-09-14 14:07:16  build_opconnectctl_v0.log
+  FACT    RECIPE BUILD  2026-09-14 14:09:16  build_harness_dispI.log
+  FACT    RECIPE BUILD  2026-09-14 14:25:32  build_harness_copyloop.log
+  FACT    RECIPE BUILD  2026-09-14 14:33:40  build_harness_copyloop2.log
+  FACT    RECIPE BUILD  2026-09-14 14:36:33  build_harness_copyloopX.log
+  FACT    RECIPE BUILD  2026-09-14 14:45:17  build_opnodelabels_v0.log
+  FACT    RECIPE BUILD  2026-09-14 15:06:49  build_oploopcast_v0.log
+  FACT    RECIPE BUILD  2026-09-14 17:05:45  build_opwhilecast_v0.log
+  FACT    RECIPE BUILD  2026-09-14 17:19:45  build_opshiftregs_v0.log
+  FACT    RECIPE BUILD  2026-09-14 17:31:31  build_opshiftregs_v1.log
+  FACT    RECIPE BUILD  2026-09-14 17:37:41  build_oploopcast_v1.log
+  FACT    RECIPE BUILD  2026-09-14 19:53:22  build_setcommand_signed.log
+  FACT    RECIPE BUILD  2026-09-14 20:21:09  build_rawcmd.log
+  FACT    RECIPE BUILD  2026-09-14 20:40:48  build_opwhileloop.log
+  FACT    RECIPE BUILD  2026-09-14 20:47:26  build_opexitwhile.log
+  FACT    RECIPE BUILD  2026-09-14 20:54:03  build_opqueue.log
+  FACT    RECIPE BUILD  2026-09-14 22:07:12  build_empty_vi.log
+  FACT    RECIPE BUILD  2026-09-14 22:12:39  build_oploopin.log
+  FACT    RECIPE BUILD  2026-09-14 22:30:38  build_opaddshiftreg_v0.log
+  FACT    RECIPE BUILD  2026-09-14 22:36:17  build_opaddshiftreg_v0_run2.log
+  FACT    RECIPE BUILD  2026-09-14 22:41:46  build_opaddshiftreg_v0_run3.log
+  FACT    RECIPE BUILD  2026-09-14 23:09:35  build_opwiresr_v0.log
+  FACT    RECIPE BUILD  2026-09-14 23:21:04  fix_fleet_auto_error.log
+  FACT    RECIPE BUILD  2026-09-14 23:55:23  cycle3_toolkit.log
+  FACT    RECIPE BUILD  2026-09-15 00:19:39  cycle3b_toolkit.log
+  FACT    RECIPE BUILD  2026-09-15 00:29:24  build_strtopath.log
+  FACT    RECIPE BUILD  2026-09-15 01:05:48  build_track_v6_core.log
+  FACT    RECIPE BUILD  2026-09-15 01:12:45  build_track_v6_core_full.log
+  FACT    RECIPE BUILD  2026-09-15 03:39:28  build_track_v6_queue.log
+  FACT    RECIPE BUILD  2026-09-15 03:45:58  build_track_v6_queue_full.log
+  FACT    RECIPE BUILD  2026-09-15 04:46:39  build_opconstvalue_v1.log
+  FACT    RECIPE BUILD  2026-09-15 04:55:55  build_opconstvalue_v1b.log
+  FACT    RECIPE BUILD  2026-09-15 05:15:10  build_opconstvalue_v1c.log
+  FACT    RECIPE BUILD  2026-09-15 05:36:55  build_opconstvaluen_v0.log
+  FACT    RECIPE BUILD  2026-09-15 05:52:19  build_opconstvaluen_v1.log
+  FACT    RECIPE BUILD  2026-09-15 05:58:44  opconstvaluen_scan.log
+  FACT    RECIPE BUILD  2026-09-15 11:47:45  build_opwiresource_v0.log
+  FACT    RECIPE BUILD  2026-09-15 12:03:25  build_opwiresource_v1.log
+  FACT    RECIPE BUILD  2026-09-15 12:21:24  build_opwiresource_v2.log
+  FACT    RECIPE BUILD  2026-09-15 12:26:45  build_opwiresource_v3.log
+  FACT    RECIPE BUILD  2026-09-15 12:31:22  build_opwiresource_v4.log
+  FACT    RECIPE BUILD  2026-09-15 12:37:56  build_opwiresource_v5.log
+  FACT    RECIPE BUILD  2026-09-15 12:52:16  build_optunnelread_v0.log
+  FACT    RECIPE BUILD  2026-09-15 13:11:33  build_opcaseframes_v0.log
+  FACT    RECIPE BUILD  2026-09-15 17:55:51  probe_relocate_route.log
+  FACT    RECIPE BUILD  2026-09-15 18:23:32  probe_migrate_compiles.log
+  FACT    RECIPE BUILD  2026-09-15 18:26:48  probe_migrate_v2.log
+  FACT    RECIPE BUILD  2026-09-15 18:30:48  probe_migrate_v3.log
+  FACT    RECIPE BUILD  2026-09-16 15:16:43  build_opownerchain_v0.log
+  FACT    RECIPE BUILD  2026-09-16 16:27:59  build_opdelete_v1.log
+  FACT    RECIPE BUILD  2026-09-16 18:54:20  build_opownerchain_v1.log
+  FACT    RECIPE BUILD  2026-09-17 04:23:17  build_oploopendref_v0.log
+  FACT    RECIPE BUILD  2026-09-17 05:22:55  probe_move_into_v0.log
+  FACT    RECIPE BUILD  2026-09-17 06:01:07  probe_move_ctlterm_v0.log
+  FACT    RECIPE BUILD  2026-09-17 07:13:18  build_d1_v0.log
+  FACT    RECIPE BUILD  2026-09-17 07:16:43  build_d1_v0_run2.log
+  FACT    RECIPE BUILD  2026-09-17 07:21:00  build_d1_v0_run3.log
+  FACT    RECIPE BUILD  2026-09-17 07:25:54  build_d1_v0_run4.log
+  FACT    RECIPE BUILD  2026-09-17 08:04:50  build_opstopfromnode_v0.log
+  FACT    RECIPE BUILD  2026-09-17 08:15:39  build_opstopfromnode_v0_run2.log
+  FACT    RECIPE BUILD  2026-09-17 08:17:20  build_opstopfromnode_v0_run3.log
+  FACT    RECIPE BUILD  2026-09-17 08:18:35  build_d1_v0_run5.log
+  FACT    RECIPE BUILD  2026-09-17 09:45:13  build_opsentinel_ops.log
+  FACT    RECIPE BUILD  2026-09-17 09:49:29  build_opsentinel_ops_run2.log
+  FACT    RECIPE BUILD  2026-09-17 09:52:18  build_opsentinel_ops_run3.log
+  FACT    RECIPE BUILD  2026-09-17 09:57:12  build_d1_v0_run6.log
+  FACT    RECIPE BUILD  2026-09-17 09:59:07  diag_d1_full_route.log
+  FACT    RECIPE BUILD  2026-09-17 10:27:55  diag_d1_full_route_run2.log
+  FACT    RECIPE BUILD  2026-09-17 10:47:39  build_opcreateconstonterm_v0.log
+  FACT    RECIPE BUILD  2026-09-17 10:58:33  build_d1_v0_run7.log
+  FACT    RECIPE BUILD  2026-09-17 11:24:37  build_opconnectnested_v0_run1.log
+  FACT    RECIPE BUILD  2026-09-17 11:55:04  build_opconnectnested_v0.log
+  FACT    RECIPE BUILD  2026-09-17 13:37:55  build_opconnectnested_v1.log
+  FACT    RECIPE BUILD  2026-09-17 13:39:34  build_opconnectnested_v1_run2.log
+  FACT    RECIPE BUILD  2026-09-17 14:19:05  build_d1_v0_run9.log
+  FACT    RECIPE BUILD  2026-09-17 15:04:07  build_opconnectfromwire_v0.log
+  FACT    RECIPE BUILD  2026-09-17 15:08:01  build_opconnectfromwire_v0_run2.log
+  FACT    RECIPE BUILD  2026-09-17 15:38:04  diag_moved_structure_terminals.log
+  FACT    RECIPE BUILD  2026-09-17 15:58:11  build_d1_routeb_v0.log
+  FACT    RECIPE BUILD  2026-09-17 16:27:50  build_d1_routeb_v0_run2.log
+  FACT    RECIPE BUILD  2026-09-17 18:01:49  build_d1_routeb_v0_run3.log
+  FACT    RECIPE BUILD  2026-09-18 09:01:19  build_opfstunnelterm_v0.log
+  FACT    RECIPE BUILD  2026-09-18 09:03:28  build_opfstunnelterm_v0_run2.log
+  FACT    RECIPE BUILD  2026-09-18 10:53:22  build_opfstunnelterm_v1_run1.log
+  FACT    RECIPE BUILD  2026-09-18 13:44:01  build_opfstunnelterm_v2_run1.log
+  FACT    RECIPE BUILD  2026-09-18 22:41:57  build_d1_routeb_v1_run4.log
+  FACT    RECIPE BUILD  2026-09-19 00:18:08  build_d1_routeb_v2_run5.log
+  FACT    RECIPE BUILD  2026-09-19 02:06:49  build_d1_routeb_v3_run6.log
+  FACT    RECIPE BUILD  2026-09-19 03:10:37  build_d1_routeb_v4_run7.log
+  FACT    RECIPE BUILD  2026-09-19 04:28:36  build_d1_routeb_v5_run8.log
+  FACT    RECIPE BUILD  2026-09-19 06:00:45  build_d1_routeb_v6_run9.log
+  FACT    RECIPE BUILD  2026-09-19 06:54:24  v7_syntax_c42.log
+  FACT    RECIPE BUILD  2026-09-19 07:25:42  build_d1_routeb_v7_run10.log
+  FACT    RECIPE BUILD  2026-09-19 18:15:59  build_s0_closeref_v1.log
+  FACT    RECIPE BUILD  2026-09-19 19:00:52  build_s0_closeref_v3.log
+  FACT    RECIPE BUILD  2026-09-19 21:51:04  stage_d1_s1.log
+  FACT    RECIPE BUILD  2026-09-20 00:07:25  stage_d1_s1_cd_prev2351.log
+  FACT    RECIPE BUILD  2026-09-20 00:19:29  stage_d1_s1_cd.log
+  FACT    RECIPE BUILD  2026-09-20 04:06:11  stage_d1_s2_loops.log
+  FACT    RECIPE BUILD  2026-09-21 02:11:19  cycle59_s3a_recipe.log
+  FACT    RECIPE BUILD  2026-09-22 01:01:46  build_d1_m3a1.log
+  FACT    RECIPE BUILD  2026-09-22 02:32:30  build_d1_m3a2.log
+  FACT    RECIPE BUILD  2026-09-22 07:58:13  build_d1_m3a3.log
+  FACT    RECIPE BUILD  2026-09-22 08:13:01  build_d1_m3a3_run2.log
+  FACT    RECIPE BUILD  2026-09-22 10:45:52  c80_rowd_routeA.log
+  FACT    RECIPE BUILD  2026-09-22 11:18:09  c80_rowd_routeA_r2.log
+  FACT    RECIPE BUILD  2026-09-22 12:38:13  build_opfsinnertunnelconnect_v0.log
+  FACT    RECIPE BUILD  2026-09-22 14:11:58  build_d1_m3a3b_d3.log
+  FACT    RECIPE BUILD  2026-09-22 15:38:40  build_d1_m3a3b_rowD.log
+  FACT    RECIPE BUILD  2026-09-22 16:13:11  build_d1_m3a3b_rowD_clean.log
+  FACT    RECIPE BUILD  2026-09-23 18:56:51  stage_d1_m3a4.log
+  FACT    RECIPE BUILD  2026-09-24 00:31:12  stage_d1_m4a.log
+  FACT    RECIPE BUILD  2026-09-24 00:46:22  stage_d1_m4b.log
+  FACT    RECIPE BUILD  2026-09-24 03:16:56  stage_d1_l7_1.log
+  FACT    RECIPE BUILD  2026-09-24 03:32:07  stage_d1_l7_1_r2.log
+  FACT    RECIPE BUILD  2026-09-24 04:00:14  stage_d1_l7_1a.log
+  FACT    RECIPE BUILD  2026-09-24 04:25:12  stage_d1_l7_1b.log
+  FACT    RECIPE BUILD  2026-09-24 05:45:37  stage_d1_l7_1b_r2.log
+  FACT    RECIPE BUILD  2026-09-24 06:17:12  stage_d1_l7_1b_r3.log
+  FACT    RECIPE BUILD  2026-09-24 07:07:40  stage_d1_l7_r.log
+  FACT    RECIPE BUILD  2026-09-24 07:20:59  stage_d1_l7_r_r2.log
+  FACT    RECIPE BUILD  2026-09-25 07:20:53  stage_replay_78.log
+  FACT    RECIPE BUILD  2026-09-25 08:04:55  stage_replay_swap_78.log
+  FACT    RECIPE BUILD  2026-09-25 09:45:02  stage_d1_k.log
+  FACT    RECIPE BUILD  2026-09-25 10:12:04  stage_d1_k_r2.log
+  FACT    RECIPE BUILD  2026-09-25 12:58:06  stage_d1_l2a1.log
+  FACT    RECIPE BUILD  2026-09-25 13:15:04  stage_d1_l2a1_r2.log
+  FACT    RECIPE BUILD  2026-09-25 13:44:32  stage_d1_l2a1_r3.log
+  PASS  C11 the recipe-build set is a STRICT SUBSET of the old set  182 of 1421
+
+====================================================================================================
+=== GATES: 24 pass / 0 fail

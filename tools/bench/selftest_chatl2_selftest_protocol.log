@@ -1,0 +1,54 @@
+=== selftest_protocol (no LabVIEW) ===
+  PASS  S1 cycle/1 accepts its example  OK cycle/1
+  PASS  S2 decisions-pending/1 accepts its example  OK decisions-pending/1
+  PASS  S3 goalmap/1 accepts its example  OK goalmap/1
+  PASS  S4 next/1 accepts its example  OK next/1
+  PASS  S5 result-line/1 accepts its example  OK result-line/1
+  PASS  S6 result/1 accepts its example  OK result/1
+  PASS  S7 review/1 accepts its example  OK review/1
+  PASS  S8 task/1 accepts its example  OK task/1
+  PASS  S9 verdict/1 accepts its example  OK verdict/1
+  PASS  R1 cycle/1 refuses an unknown field  $: unknown field(s) ['surprise']
+  PASS  R1 decisions-pending/1 refuses an unknown field  $: unknown field(s) ['surprise']
+  PASS  R1 goalmap/1 refuses an unknown field  $: unknown field(s) ['surprise']
+  PASS  R1 next/1 refuses an unknown field  $: unknown field(s) ['surprise']
+  PASS  R1 result-line/1 refuses an unknown field  $: unknown field(s) ['surprise']
+  PASS  R1 result/1 refuses an unknown field  $: unknown field(s) ['surprise']
+  PASS  R1 review/1 refuses an unknown field  $: unknown field(s) ['surprise']
+  PASS  R1 task/1 refuses an unknown field  $: unknown field(s) ['surprise']
+  PASS  R1 verdict/1 refuses an unknown field  $: unknown field(s) ['surprise']
+  PASS  R2 task refuses a 301-char why  $.why: 301 chars > limit 300
+  PASS  R3 task/1 refuses missing advances+unblocks  $: matches none of the alternatives ($: missing required field 'advances' | $: missing required field 'unblocks')
+  PASS  R4 task/1 refuses an EMPTY advances  $: matches none of the alternatives ($.advances: fewer than 1 items | $: missing required field 'unblocks')
+  PASS  R5 task/1 accepts unblocks alone (a pure tooling task)  OK task/1
+  PASS  R3 next/1 refuses missing advances+unblocks  $: matches none of the alternatives ($: missing required field 'advances' | $: missing required field 'unblocks')
+  PASS  R4 next/1 refuses an EMPTY advances  $: matches none of the alternatives ($.advances: fewer than 1 items | $: missing required field 'unblocks')
+  PASS  R5 next/1 accepts unblocks alone (a pure tooling task)  OK next/1
+  PASS  R6 result refuses 11 facts  $.facts: 11 items > limit 10
+  PASS  R7 result refuses 4 open items  $.open: 4 items > limit 3
+  PASS  R8 a goal id not in the goal map is refused  $: goal-map id(s) ['M99'] not in docs/goalmap.json
+  PASS  R9 a malformed schema name is refused  schema field 'task' is not '<name>/<version>'
+  PASS  P1 result_line -> parse_result_line round trip  RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":5,"fail":1},"first_fail":"G3 wire landed","artefacts":[{"path":"claudeDev/x.vi","md5":"00000000
+  PASS  P2 parse_result_line returns the LAST line
+  PASS  P3 no RESULT line -> None
+  PASS  P4 a malformed RESULT line reads as FAIL  {'schema': 'result-line/1', 'status': 'FAIL', 'gates': {'pass': 0, 'fail': 1}, 'first_fail': 'malformed RESULT line ($: missing required field \'gates\'): {"sch
+  PASS  P5 run_verdict: ANY failing RESULT fails the run  {'source': 'result', 'failed': True, 'first_fail': 'refused', 'rc': 0, 'timeout': False, 'results': 2}
+  PASS  P6 log_verdict: legacy rule before SWITCH_TS, exit code after  ('legacy', 'rc')
+  PASS  P7 first_fail_signature: RESULT / legacy / none  ('refused', 'FAIL  G1', None)
+  PASS  C1 CLI validate: exit 0 on a valid card  OK task/1 C:\Users\KimLab\AppData\Local\Temp\selftest_protocol_88mvpe0i\task_ok.json
+
+  PASS  C2 CLI validate: exit 1 + one-line reason  INVALID C:\Users\KimLab\AppData\Local\Temp\selftest_protocol_88mvpe0i\task_bad.json: $: unknown field(s) ['extra']
+
+WROTE C:\Users\KimLab\AppData\Local\Temp\selftest_protocol_88mvpe0i\cards\task_74-03.json (skeleton - fill it, then `validate`)
+  PASS  C3 `new task --id 74-03` writes tools/bench/cards-shaped task_74-03.json
+  PASS  B1 RESULT FAIL + exit 0 -> rc 1 with (RESULT:  (1, ' after 0s (RESULT: status=FAIL gates 2/1 first_fail=G2 x; the process itself said 0)')
+  PASS  B2 FAIL / rc=2 text, no RESULT, exit 0 -> rc 0 (body scan removed)  (0, ' after 0s')
+  PASS  B3 RESULT PASS + exit 0 -> rc 0  (0, ' after 0s')
+  PASS  B4 RESULT PASS + exit 3 -> rc 3 (exit code still counts)  (3, ' after 0s')
+  PASS  B5 a RESULT FAIL inside a peer_*.log is not the run's verdict -> rc 0  (0, ' after 0s')
+  PASS  K1 summary() ends with RESULT FAIL, first_fail = first failing gate  RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":1,"fail":1},"first_fail":"g2 bad","artefacts":[]}
+  PASS  K2 run(): exception -> RESULT FAIL, first_fail = the exception text  RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":1,"fail":1},"first_fail":"ValueError: boom 42","artefacts":[]}
+  PASS  K3 uncaught exception -> a RESULT FAIL line is LAST  RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"RuntimeError: uncaught 7","artefacts":[]}
+  PASS  K4 a gate after summary() -> RESULT re-printed at exit  RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":1,"fail":1},"first_fail":"late","artefacts":[]}
+=== 48 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":48,"fail":0},"first_fail":null,"artefacts":[]}

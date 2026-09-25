@@ -48,6 +48,7 @@ VERIFICATION LEVEL: STRUCTURAL, never functional (34(f)). No VI is run. No motor
 ASSEMBLED). No new op, no new verb, no new process device, no GUI, no `allow_broken`, no `gui_save`,
 no `GObject` census anywhere (dispatch #3 measured ~10k handles per census).
 """
+# REQUIRES: labview   (declaration read by verifiers, e.g. lint_verify_20260925b.py: skipped under a labview=none card)
 import json
 import os
 import shutil

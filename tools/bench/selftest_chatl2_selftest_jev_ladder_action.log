@@ -1,0 +1,24 @@
+=== selftest_jev_ladder_action - testing the LIVE files ===
+--- selftest_guard_peer_ladder.py      code 0  21 pass / 0 fail
+--- selftest_guard_peer_jev.py         code 0  25 pass / 0 fail
+--- selftest_guard_peer_samerow.py     code 0  21 pass / 0 fail
+--- selftest_guard_peer_failre.py      code 0  29 pass / 0 fail
+           first flagged line: | **F~IL**  G12 save attempt 2 completed without raising  RuntimeError: refusing to save a BROKEN VI - SaveInstrument blocks forever on one
+--- NEW                                code 0  14 pass / 0 fail
+    [child] staged modules: none (live files)
+      PASS  N1 our-script-bug ALLOW: log line ends with the script-bug NEXT-ACTION  attack) | NEXT-ACTION: patch the script and rerun; no review, no judgement turn; failure budget 2 still counts
+      PASS  N1b the allow message on stderr carries the same NEXT-ACTION  N: patch the script and rerun; no review, no judgement turn; failure budget 2 still counts
+      PASS  C1 second gate call on the same log md5 -> ladder_classify NOT re-asked  classify calls=1 code 0/0
+      PASS  C1b one JEV-LADDER line, one allowed-jsonl line, one cache record after two calls  lines=1 jsonl=1 cache=1
+      PASS  C1c the cached allow still prints the NEXT-ACTION   no review, no judgement turn; failure budget 2 still counts
+      PASS  C2 the log changed (new md5) -> evaluated afresh  classify calls=2
+      PASS  C3 write=False evaluates every time and leaves the cache alone  classify calls=4 cache 2->2
+      PASS  N2 reviewed class + covering review: NEXT-ACTION cites that review  ACTION: apply the cited review's disposition (archive/peer/2026-09-22-fake-ladder-review.md) and rerun; no new diagnosis
+      PASS  N2b ... and the allow message says the same  ted review's disposition (archive/peer/2026-09-22-fake-ladder-review.md) and rerun; no new diagnosis
+      PASS  N3 reviewed class, nothing citable: BLOCK + review owed (log and stderr)  code 2
+      PASS  N4 new-problem: BLOCK, the log line and the block message carry `review owed`  code 2
+      PASS  N4b a blocked verdict is cached too (second call: no re-ask, still BLOCK)  classify calls=1 code 2
+      PASS  N5 below band + old discharge allows: the newest ladder line says apply-disposition  ted review's disposition (archive/peer/2026-09-22-fake-ladder-review.md) and rerun; no new diagnosis
+      PASS  N5b a second call adds no duplicate line  2 -> 2
+    === new cases: 14 pass / 0 fail ===
+=== TOTAL: 110 pass / 0 fail, 0 pre-existing excluded (worst code 0) ===

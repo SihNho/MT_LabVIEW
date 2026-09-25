@@ -12,7 +12,7 @@ sources:
 
 # Autofocus — the body of `CaseStructure #10407`, read offline
 
-For Pre-decided 148(d) (`docs/connectivity-map-plan.md`): the focus loop of 148(b) must copy this computation
+For Pre-decided 190(d) (`docs/connectivity-map-plan.md`; numbered 148 until card chat-L2): the focus loop of 190(b) must copy this computation
 exactly (rule 1a). Read entirely offline; **no LabVIEW was started**. Level: **structural** (wires and constant
 values read from files) — nothing here has been run.
 

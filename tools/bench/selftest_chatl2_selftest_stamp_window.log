@@ -1,0 +1,18 @@
+=== OPEN 31 self-test: guard_cycle.stamp() + retrospective window ===
+  PASS  T1 ntfs-tunnel : within the cache: ctime 2026-09-25 20:15:53 -> 2026-09-25 20:15:53, mtime 2026-09-25 20:15:55  => stamp() under-reports by 2 s
+  PASS  T1b tunnel-decay : absent 18 s then rewritten: ctime 2026-09-25 20:16:13 (first write 2026-09-25 20:15:53, fresh control 2026-09-25 20:16:13), mtime 2026-09-25 20:16:13 -> tunneled=False
+  PASS  T1d setcontent-inplace : Set-Content over an existing path: ctime 2026-09-25 20:16:13 -> 2026-09-25 20:16:13 (unchanged), mtime 2026-09-25 20:16:16 -> stamp() stale by 2 s
+  NOTE  T1c real-rearchive : 2026-09-17-retrospective-cycle15.md was archived at 08:06:44 (cycle-16's window cites that mtime) and RE-ARCHIVED later; today it reads ctime 2026-09-17 13:37:04 / mtime 2026-09-17 13:37:04 -> stale-by 0 s
+  PASS  T2a stamp-never-future : 637 archives read; 0 stamped after their own mtime []
+  PASS  T2b stamp-exact-when-timed : 0 timed-frontmatter archives disagree with their stamp []
+  PASS  T2d stamp-clamped-to-mtime : frontmatter claims 2030-01-01 -> stamp 2026-09-25 20:16:16, mtime 2026-09-25 20:16:16
+  PASS  T2e body-date-ignored : a second date line below '## Question' -> stamp 2026-09-17 12:00:00 (header says 12:00:00)
+  NOTE  T2c stamp-corrections : 0 lifted, 296 lowered ['2026-09-17-open31-window-codex.md', '2026-09-17-open31b-stamp-codex.md', '2026-09-17-open31b-stamp-opus.md']
+  PASS  T3 stamp-exact : frontmatter '2026-09-17 15:42:07' -> stamp 2026-09-17 15:42:07 (file times 2026-09-25 20:16:16); old stamp would have been 2026-09-25 20:16:16
+  PASS  T4 stamp-nolift : mtime bumped by +2 h with the date line untouched: stamp 2026-09-25 20:16:16 -> 2026-09-25 20:16:16 (ctime 2026-09-25 20:16:16); the 2026-09-16 property still holds
+  PASS  T5 retrospective-cycle15-d1-build3 : newest build log at dispatch 10:02:15 = diag_d1_full_route.log@09:59:07 | OLD 07:10:02..13:32:51 -> covers | NEW 08:14:48..10:02:15 (start 2026-09-17-retrospective-cycle16b.md) -> covers | recorded-in-archive 07:10:02..08:04:04
+  PASS  T5 retrospective-cycle16b : newest build log at dispatch 08:11:43 = build_opstopfromnode_v0.log@08:04:50 | OLD 13:37:04..08:07:42 -> MISSES | NEW 06:59:43..08:11:43 (start --since-hours 1.2 (override)) -> covers | recorded-in-archive 08:06:44..08:07:42
+  PASS  T5 retrospective-cycle15-routeb : newest build log at dispatch 16:11:54 = build_d1_routeb_v0.log@15:58:11 | OLD 07:10:02..13:32:51 -> MISSES | NEW 13:37:04..16:11:54 (start 2026-09-17-retrospective-cycle15.md) -> covers | recorded-in-archive 07:10:02..13:32:51
+  PASS  T6 peer-writes-time : format present=True, header uses $dateStamp=True
+
+SELFTEST 15 pass / 0 fail

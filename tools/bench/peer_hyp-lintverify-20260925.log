@@ -1,0 +1,50 @@
+BGRUN START 2026-09-25 19:51:21 limit 14.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -TimeoutSec 780 -Slug hyp-lintverify-20260925 -TaskFile 'C:\Users\KimLab\AppData\Local\Temp\claude\G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop\1e5293f3-09a7-4b72-9393-fcba8dd55703\scratchpad\hyp_lintverify.txt'
+OUTCOME: ANSWERED (162s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-25-hyp-lintverify-20260925.md
+COST: $1.5806  in 26 / out 14033 / cache-create 123919 / cache-read 1428728  (158s, 28 turn(s))
+--- ANSWER ---
+**Verdict:** H3 and H4 are wrong. H1 has the cause right and the fix wrong. H2 is plausible and its fix has already landed. H5 treats a card-flag breach as a missing skip-list entry. H6, together with three failures no hypothesis mentions, is not explained at all. I read the files and did not edit or run anything. I couldn't save a copy of this review to the plan file because Write is disabled in this session.
+
+## H3: this is not a regression. The self-test fixture is out of date, so don't delete it; rebuild it on the new recording path.
+- **Strongest reason it's wrong.** C1 passed but C2 failed. `check_launch(record=True)` writes lines with `by="check_launch"` (`tools/stage_prerun.py:1342,1405`). But `check_cap` counts only lines with `by=="bgrun"` (`stage_prerun.py:1331`). So the test's first two runs were recorded but never counted, and the 3rd run was allowed. M4, M5 and M6 fail because `guard_bash.main()` no longer records runs at all (`guard_bash.py:386-392`). The test is exercising the old recording path.
+- **Evidence the cap works live:**
+  - `selftest_retry_cap` passed 8/0 in this same run (log:224). Its C5 checks that the 3rd run is refused; its C6 checks that a judgement card allows one more.
+  - In `stage_runs.jsonl:12-14`, the 3rd run of `stage_d1_l2a1` in cycle 81 carries the card `81-9`.
+- **Real gaps that H3 misses:**
+  - A stage run started outside bgrun is never counted.
+  - When bgrun fails to write the record, it only writes a line to the log and the run goes ahead uncounted (`bgrun.py:219-220`).
+  - No test feeds the real `guard_bash.main()` a 3rd launch after two real `by=bgrun` lines. `selftest_retry_cap` calls `check_cap` directly.
+  - The `check_launch(record=True)` path now writes lines nobody counts, which is misleading.
+- **What would prove H3 right:** `guard_bash.main()` allows a 3rd launch after two `by="bgrun"` lines for the same cycle.
+- **Cheapest test:** rewrite M6 so it seeds two such lines, then require rc 2 and the text "RETRY CAP". Rewrite C1-C6 and M4-M6 on `record_started()`. Do not remove them.
+
+## H4: the premise is false, and the proposed rewrite would weaken the gate
+- **Strongest reason it's wrong.** The three scripts are not old history. `diag_c83_connect2x2.py:4` and `diag_c83_connect2x2_r2.py:31` cite reviews dated 2026-09-22. That is after the 2026-09-20 repair (`selftest_guard_peer_failre.py:1`). They copied the bold `**FAIL**` form back in, and catching that copy-paste is the whole point of E1 (`failre:12-13`). E1 is a correct catch, not a false alarm.
+- **Why the rewrite weakens it.** Judging the RESULT line would change what E1 inspects. E1 would stop looking at the gate rows that `guard_peer`'s FAILURE_RE and `audit_cycle` still read.
+- **Alternative fix.** Change those 3 `print` lines to the plain `FAIL` form, or exempt the 3 files by name and sha256. Keep E1 as it is. The two dependent failures, `logclass_recipebuild` C10 and `audit_c4c_split` G14, should then pass unchanged.
+- **What would prove H4 right:** git shows the three files existed before 2026-09-20.
+
+## H1: the cause is right, the fix is not
+- **The cause is supported.** The matcher is `Agent|Task` (`.claude/settings.json:87`). A matcher made only of letters and `|` is matched as an exact list of tool names, and PreToolUse fires for every tool except EndConversation (https://code.claude.com/docs/en/hooks). So a SendMessage call never reaches the hook, and rule (c) never fires live.
+- **The fix is wrong.** Rule (c) refuses every SendMessage in a cycle session except one addressed to "main" (`guard_session.py:93-111`). "Count a SendMessage as a dispatch" would allow up to 8 of them, which weakens the rule. Widen the matcher only.
+- **Also:** `guard_card`'s matcher (`settings.json:76`) doesn't include SendMessage either.
+- **Test:** run a real `claude -p` session with `CYCLE_SESSION=1` that sends one SendMessage. G15-G18 call the hook directly, so they cannot test whether it is registered.
+
+## H2: plausible, and the fix is already in
+- `guard_bash.py:251,272` already read `NEXT_JSON` and `NEXT_SNAPSHOT`, and `selftest_guard_session.py:72-76` sets them. Log:51 confirms the live pair hashed equal during the run.
+- **Alternative cause:** G12's bgrun command has no `--material`, and the judgement-session refusal (log:39) might catch it.
+- **Test:** run the self-test alone now. If G12 is still refused with a message that isn't the NEXT gate's, the other cause is live.
+
+## H5: this is a card breach, not a skip-list omission
+- The card said `labview=none`, yet `selftest_make_default` drove LabVIEW for 201 s (log:218). The card flags are checked only on the top-level command, so a Python script that starts child processes gets past them. Adding the test to the skip list fixes the verifier, not that hole.
+- The "no LabVIEW.exe running" check (log:185) ran before the self-tests (section 2 starts at log:187). Nobody checked afterwards whether LabVIEW was running, and closing LabVIEW is a standing cycle-end rule.
+- **Tests:**
+  1. Run `tasklist` now.
+  2. Have an agent bound to a `labview=none` card run a script that imports `gscript` in a child process, and see whether anything refuses it.
+
+## H6, and failures that no hypothesis covers
+- **Not covered by any hypothesis:**
+  - `selftest_stoprecord_eqform` failed (log:234).
+  - "fake session state files removed" failed (log:161), and git shows `session_1e5293f3…json` modified.
+  - "tools script background WITHOUT bgrun" returned rc 0 when 2 was expected in the first, crashed run (log:43), then passed 4 minutes later (log:116). That hook result depends on state and has not been explained.
+- **`errorlist_reuse_81` R1** most likely depends on the live D1_k bed file. Compare the md5 stored in the error-list record against the current bed file's md5.
+BGRUN END rc=0 after 162s

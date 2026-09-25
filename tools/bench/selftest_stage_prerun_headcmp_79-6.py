@@ -31,8 +31,11 @@ def run(path, pp):
 pp = os.pathsep.join([TOOLS, os.path.join(TOOLS, "hooks"), os.path.join(TOOLS, "bench")])
 fw, sw = run(os.path.join(HERE, "selftest_launch_gate.py"), pp)
 fh, sh = run(os.path.join(T, "tools", "bench", "selftest_launch_gate.py"), pp)
-want = ["C2", "C3", "C4", "C5", "C6", "M4", "M5", "M6"]
-g = [("H1 working-tree failing set == HEAD failing set", fw == fh), ("H2 failing set == the predicted 8", fw == want)]
+# PIN MOVED by card chat-L2: the 8 were selftest_launch_gate's STALE retry-cap cases (they recorded through
+# check_launch(record=True), whose lines were never counted). chat-L2 rebuilt them on bgrun's record_started(), so the
+# predicted failing set is now EMPTY (archive/peer/2026-09-25-hyp-lintverify-20260925.md, H3).
+want = []
+g = [("H1 working-tree failing set == HEAD failing set", fw == fh), ("H2 failing set == the predicted (empty since chat-L2)", fw == want)]
 for lab, ok in g:
     print("  {0}  {1}  work {2} head {3}".format("PASS" if ok else "FAIL", lab, fw, fh))
 shutil.rmtree(T, ignore_errors=True)

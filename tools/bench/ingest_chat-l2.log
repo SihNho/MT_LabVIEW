@@ -1,0 +1,26 @@
+BGRUN START 2026-09-25 20:16:50 limit 16.0 min: py -u tools/doc_ingest.py --from 2026-09-25 19:45 --slug ingest-chat-l2-20260925
+   4 file(s); explicit window 2026-09-25 19:45:00 .. 2026-09-25 20:16:50
+   task written to C:\Users\KimLab\AppData\Local\Temp\docingest_ingest-chat-l2-20260925.txt (1633 chars)
+   review card tools\bench\cards\review_ingest-chat-l2-20260925.json
+OUTCOME: ANSWERED (187s)  model: sonnet (pinned by -Model/-Effort (role ingest))  archived: archive\ingest\2026-09-25-ingest-chat-l2-20260925.md
+COST: $0.6982  in 6 / out 18441 / cache-create 116271 / cache-read 243705  (183s, 6 turn(s))
+VERDICT-CARD: VERDICT-CARD ingest-chat-l2-20260925 verdict=refuted -> tools\bench\cards\verdict_ingest-chat-l2-20260925.json
+--- ANSWER ---
+Findings from reading all four files in full (CLAUDE.md 703 lines, STATUS.md 94 lines, docs/autofocus-case-10407.md 90 lines, docs/connectivity-map-plan.md 131 lines).
+
+PAIR 1
+  A: CLAUDE.md:119  "(after M3, `docs/connectivity-map-plan.md` Pre-decided 148): frame loop publishes the reference bead's z and the"
+  B: docs/connectivity-map-plan.md:100-103  "190. **FOCUS LOOP REDESIGN...** (Added 2026-09-25 under the cycle-68 header above as "148"... renumbered to the next free Pre-decided number, 190, by card chat-L2. Every former "Pre-decided 148" that meant THIS entry now reads 190.)"
+  conflict: CLAUDE.md still cites the focus-loop redesign as "Pre-decided 148", while connectivity-map-plan.md states that entry was renumbered to 190 and that every former citation of "148" for it should now read 190 — the two documents disagree on the entry's current identifying number.
+
+PAIR 2
+  A: CLAUDE.md:401  "Readers identified this way: **`Wire.Is Broken?` 6371004 IS BUILT** and measured (`docs/NAMES.md:902-911`, 2026-09-17) — use it instead of inferring why a wire is bad"
+  B: STATUS.md:83  "Fact: there is NO read-only `Wire.Is Broken?` op. The reader exists only inside connect ops (`docs/NAMES.md:1081-1089`), so CLAUDE.md's "BUILT" means only that."
+  conflict: CLAUDE.md asserts `Wire.Is Broken?` is built as a usable (implicitly standalone/read-only) op to call instead of inferring wire breakage, while STATUS.md explicitly states no such read-only op exists — the reader only exists embedded inside connect ops — directly disputing what CLAUDE.md's "BUILT" claim means.
+
+CONTRADICTIONS: 2
+
+VERDICT {"schema":"verdict/1","id":"ingest-chat-l2-20260925","verdict":"refuted","alternative":"Both pairs may be intentional: Pair 1 could be an unmerged doc-ingest correction still pending in CLAUDE.md; Pair 2 could be STATUS.md correcting a stale CLAUDE.md claim that was never propagated back.","discriminating_test":"Check git blame/dates on CLAUDE.md:119 and :401 against connectivity-map-plan.md:100-103 (2026-09-25) and STATUS.md:83 to see which side is more recent and whether CLAUDE.md was ever edited after those corrections landed.","violations":[],"sources":["CLAUDE.md:119","docs/connectivity-map-plan.md:100-103","CLAUDE.md:401","STATUS.md:83"],"note":"2 contradictions found: Pre-decided 148 vs 190 renumbering (CLAUDE.md not updated), and Wire.Is Broken? BUILT-as-standalone-op vs STATUS's explicit correction that no such standalone op exists."}
+   peer.ps1 rc 0; archived as archive/ingest/2026-09-25-ingest-chat-l2-20260925.md
+CONTRADICTIONS: 2
+BGRUN END rc=0 after 190s

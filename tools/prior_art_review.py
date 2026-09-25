@@ -287,7 +287,11 @@ def main():
         "priorart", "priorart-" + a.slug, "The work under review (%s) is novel - not already built, measured, "
         "refuted or covered by an existing helper in this project's files." % a.trigger,
         attachments=[p for p in (a.recipe or []) if os.path.isfile(os.path.join(ROOT, p))]))
-    print(f"   review card {os.path.relpath(rcard, ROOT)}", flush=True)
+    try:                                   # card chat-L2: relpath RAISES across drives (ROOT on C: in a self-test,
+        shown_card = os.path.relpath(rcard, ROOT)   # the card on G:) - stop_record_selftest C6 died here, rc 1
+    except ValueError:
+        shown_card = rcard
+    print(f"   review card {shown_card}", flush=True)
     if a.dry_run:
         print(task[:2000]); return 0
     # The CLAUDE peer, in its `priorart` role: this job needs to read archive/ as well as the active docs, which is

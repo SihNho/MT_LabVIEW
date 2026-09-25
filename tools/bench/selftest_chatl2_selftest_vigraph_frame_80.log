@@ -1,0 +1,41 @@
+  FACT  S1 parts: wiki D1_s1_copy md5 3e3d23cefd3a334001aa9d6156bf1aee; objs graph_objs_s1_20260923.json; loops graph_loops_s1_20260924.json
+  FACT  D1_k graph md5 field 6cf5b0777aafa12112d8a786a9eed1ed (5817 terminals)
+  FACT  build 4 graphs 0.2 s; frame record S1 {'multi_frame_tunnels': 247, 'structures': 43, 'frames': 92, 'inner_terms': 599, 'rule': 'ordinal = rank of frame diagram uid within its structure (ASSUMPTION F)', 'key_collisions': []}; K {'multi_frame_tunnels': 247, 'structures': 43, 'frames': 92, 'inner_terms': 599, 'rule': 'ordinal = rank of frame diagram uid within its structure (ASSUMPTION F)', 'key_collisions': []}
+---------- V1 keying
+  PASS  V1a S1: #5540/#10445 tunnel inners key on frame ordinal (5582/10453->0, 5592/10459->1) | [(5705, 0), (5999, 0), (6003, 1), (6018, 0), (6022, 1), (6033, 1), (10586, 0), (10590, 1), (10752, 0), (10755, 1), (11338, 0), (11342, 1)]
+  PASS  V1c S1: frame mode has no key collisions | []
+  PASS  V1a K: #5540/#10445 tunnel inners key on frame ordinal (5582/10453->0, 5592/10459->1) | [(5705, 0), (5999, 0), (6003, 1), (6018, 0), (6022, 1), (6033, 1), (10586, 0), (10590, 1), (10752, 0), (10755, 1), (11338, 0), (11342, 1)]
+  PASS  V1c K: frame mode has no key collisions | []
+  PASS  V1b default mode unchanged: same keys and edges with and without frame_keyed=False, no frame fields
+  FACT  V1 S1 keys that differ default vs frame: 0 (the inner terminals whose uid rank != frame rank)
+  PASS  V1d mixed-mode computation_diff refused | computation_diff: one graph is frame_keyed and the other is not
+---------- V2 cdiff_frame(S1, D1_k) vs 178(c) PB
+  FACT  PB (l2a1_facts_80.json table.cdiff, 178(c)): [(376, 'current frame data array in'), (376, 'frame index'), (2626, 'array'), (5058, 'Bead is good? array in'), (5058, 'Image In'), (5058, 'x,y,z array'), (5696, 'x,y,z array'), (6085, 'x,y,z array'), (10757, 'array'), (10969, 'array')]
+  FACT  cdiff merged+frame 1.2 s
+  PASS  V2a merged baseline cdiff(S1, D1_k) == the 10 PB rows | {'extra': [], 'missing': []}
+  PASS  V2 cdiff_frame(S1, D1_k) == the 10 PB rows (by node, sink) | {'extra': [], 'missing': []}
+  FACT  CDIFF_FRAME #376 Terminal 'current frame data array in' before ['2626|Terminal|appended array|0'] after []
+  FACT  CDIFF_FRAME #376 Terminal 'frame index' before ['644|Terminal||0'] after []
+  FACT  CDIFF_FRAME #2626 Terminal 'array' before ['5058|Terminal|x,y,z array out|0'] after []
+  FACT  CDIFF_FRAME #5058 Terminal 'Bead is good? array in' before ['5058|Terminal|Bead is good? array out|0@5680/f0+5702/f0', '5527|Terminal|initialized array|0@5680/f0+5702/f0', '5527|Terminal|initialized array|0@5680/f1+5967/f1'] after []
+  FACT  CDIFF_FRAME #5058 Terminal 'Image In' before ['6810|Terminal|Image Out|0'] after []
+  FACT  CDIFF_FRAME #5058 Terminal 'x,y,z array' before ['27741|Terminal|output array|0@5725/f1+6016/f1', '27741|Terminal|output array|0@5825/f0+6016/f0', '5058|Terminal|x,y,z array out|0@5825/f0+6016/f0'] after []
+  FACT  CDIFF_FRAME #5696 Terminal 'x,y,z array' before ['5058|Terminal|x,y,z array out|0@2765/f1'] after []
+  FACT  CDIFF_FRAME #6085 Terminal 'x,y,z array' before ['5058|Terminal|x,y,z array out|0@2765/f0'] after []
+  FACT  CDIFF_FRAME #10757 Terminal 'array' before ['5058|Terminal|pos in cal image out|0'] after []
+  FACT  CDIFF_FRAME #10969 ParameterTerminal 'array' before ['5058|Terminal|pos in cal image out|0'] after []
+  FACT  nodes added/removed frame 12/0, merged 12/0
+---------- V3 negative: swap #6016's frame inners' wires on S1
+  FACT  V3 before swap: 6018 w6071 (frame 5582), 6022 w6030 (frame 5592)
+  PASS  V3a merged mode MISSES the swap (0 rows) | []
+  PASS  V3b frame mode DETECTS the swap (>= 1 row) | [("#5058 Terminal 'x,y,z array'", ['27741|Terminal|output array|0@5725/f1+6016/f1', '27741|Terminal|output array|0@5825/f0+6016/f0', '5058|Terminal|x,y,z array out|0@5825/f0+6016/f0'], ['27741|Terminal|output array|0@5725/f1+6016/f0', '27741|Terminal|output array|0@5825/f0+6016/f1', '5058|Terminal|x,y,z array out|0@5825/f0+6016/f1'])]
+  PASS  V3c control: frame cdiff(S1, S1 rebuilt) == 0 rows | []
+---------- V5 #23541 on D1_k (offline)
+  FACT  V5 #23541 rows [{'term_uid': 23541, 'term_name': 'index', 'is_source': False, 'wire_uid': 23556, 'owner_uid': 639, 'owner_class': 'Diagram', 'frame_diagram': 639, 'term_class': 'ControlTerminal'}]; census class ControlTerminal
+  FACT  V5 ControlTerminals labelled 'index': [(23541, False, 23556, 639)]
+  FACT  V5 #23541 SINK(indicator) w23556 diagram 639 loop WhileLoop#637 -> [(10757, 'IndexArray', 'element', True, 'WhileLoop#637')]
+  FACT  V5 Local #23523 READ w23856 diagram 23058 loop WhileLoop#23032
+  FACT  V5 reference-capable objects on D1_k by class (targets NOT in the offline census): {'Property': 106, 'ControlReferenceConstant': 21}
+  PASS  V5 #23541: ControlTerminal, exactly 1 writer (w23556 from #10757), readers all Locals, label unique | {'writers': [(639, 'Diagram', 23556)], 'local_readers': 1, 'same_label': 1}
+=== selftest_vigraph_frame_80: 12 pass / 0 fail (3.5 s)
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[]}

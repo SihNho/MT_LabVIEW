@@ -68,4 +68,11 @@ Sources:
 
 ## What was done with it
 
-(Claude fills in)
+Written 2026-09-25 by card chat-L2 from the record already committed (3701ba5, "Cycle 77: session outputs"); no new
+judgement. (1) ACCEPTED and MEASURED: `Terminal.Create Constant` on `WhileLoop.Loop End Ref` built a `BooleanConstant`
+in the loop body wired to the conditional terminal (`tools/bench/cards/result_77-2.json:4`, `const_loopterm_77.log:24`).
+(2) ANSWERED BY MEASUREMENT, not by the docs: `Create Constant` on the For loop's `Terminals[0]` (N) built a top-level
+`DigitalNumericConstant` wired to N (`result_77-2.json:3`); the verb is `gscript.create_const_loop_term`
+(`result_77-2.json:2`). (3) Type-from-terminal: consistent with the I32 `1` read cold (`docs/NAMES.md:320-328`).
+(4) No documented save/reload loss: COLD read after save + restart kept both constants (task 77-3,
+`const_loopterm_77c.log:10-14`, recorded at `docs/NAMES.md:320-328`).

@@ -224,6 +224,11 @@ def main():
             return _FakeProc()
 
         old_root, old_sub, old_argv = par.ROOT, par.subprocess, sys.argv
+        # card chat-L2: prior_art_review.main() writes a review/1 card through protocol.CARDS_DIR; without this the
+        # self-test left scratch review cards in the REAL tools/bench/cards/ (chat-L1 removed 2 by hand).
+        import protocol as _proto
+        old_cards = _proto.CARDS_DIR
+        _proto.CARDS_DIR = os.path.join(fake_root, "cards")
         try:
             par.ROOT = fake_root
             par.subprocess = types.SimpleNamespace(run=_fake_run)
@@ -232,6 +237,7 @@ def main():
             rc6 = par.main()
         finally:
             par.ROOT, par.subprocess, sys.argv = old_root, old_sub, old_argv
+            _proto.CARDS_DIR = old_cards
         with open(rev6, encoding="utf-8") as f:
             body6 = f.read()
         gate("C6a --no-recipe \"<reason>\" RUNS (rc 0)", rc6 == 0, "rc %s" % rc6)

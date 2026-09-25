@@ -5,7 +5,8 @@ subprocesses and asserts their exit codes (0 = allow, 2 = refuse), exactly as th
 
 PREDICTION CONTRACT (checked below, 18 gates; G15-G18 added 2026-09-24 cycle 73):
   G15-G16 under CYCLE_SESSION=1 a SendMessage to an agent id / `log-reader` is REFUSED (exit 2)
-  G17     without CYCLE_SESSION (the interactive chat) the same SendMessage is ALLOWED
+  G17     without CYCLE_SESSION (the interactive chat) the same SendMessage is ALLOWED and COUNTED (card chat-L2)
+  G19-G20 a SendMessage resume past the cap / after the retrospective is REFUSED (card chat-L2; 20 gates)
   G18     under CYCLE_SESSION=1 a SendMessage to `main` is ALLOWED
   G1-G8   dispatches 1..8 of `material` / `log-reader` are ALLOWED (exit 0) and the counter reaches 8
   G9      the 9th dispatch is REFUSED (exit 2) with "CYCLE DISPATCH CAP"
@@ -69,6 +70,11 @@ def cleanup():
 def main():
     cleanup()
     env_off = os.environ.pop("BENCH_CELL", None)   # this test IS the thing under test
+    # card chat-L2: isolate guard_bash's NEXT gate from the LIVE tools/bench/next_snapshot.md5 / next.json (G12/G13
+    # failed in chat-L1 because the live pair hashed equal). A snapshot path that does not exist = "no runner
+    # snapshot", which is the interactive-session case this test models.
+    os.environ["NEXT_SNAPSHOT"] = os.path.join(os.environ.get("TEMP", "."), "gs_selftest_no_snapshot_%d.md5" % os.getpid())
+    os.environ["NEXT_JSON"] = os.path.join(os.environ.get("TEMP", "."), "gs_selftest_no_next_%d.json" % os.getpid())
     if env_off is not None:
         print("  note: BENCH_CELL was set and is ignored for this run", flush=True)
 
@@ -109,23 +115,31 @@ def main():
          "retro_done %s" % stc.get("retro_done"))
 
     # G15-G18 : SendMessage resume refused in a cycle session only (violation-decisions 2026-09-24 05:54)
-    def send(to, cycle):
+    def send(to, cycle, sid=SID_C):
         env = dict(os.environ)
         env.pop("CYCLE_SESSION", None)
         if cycle:
             env["CYCLE_SESSION"] = "1"
         p = subprocess.run([sys.executable, GUARD_SESSION], input=json.dumps(
-            {"session_id": SID_C, "tool_name": "SendMessage", "tool_input": {"to": to, "message": "go on"}}),
+            {"session_id": sid, "tool_name": "SendMessage", "tool_input": {"to": to, "message": "go on"}}),
             text=True, capture_output=True, encoding="utf-8", errors="replace", timeout=60, env=env)
         return p.returncode, p.stderr or ""
     rc, err = send("a1b2c3d4-material", True)
     gate("G15 SendMessage to an agent refused in cycle", rc == 2 and "NEW foreground Agent" in err, "exit %d" % rc)
     rc, err = send("log-reader", True)
     gate("G16 SendMessage to log-reader refused in cycle", rc == 2, "exit %d" % rc)
+    n0 = guard_session.load(guard_session.SAFE_RE.sub("_", SID_C)).get("dispatches", 0)
     rc, _ = send("a1b2c3d4-material", False)
-    gate("G17 interactive chat SendMessage untouched", rc == 0, "exit %d" % rc)
+    n1 = guard_session.load(guard_session.SAFE_RE.sub("_", SID_C)).get("dispatches", 0)
+    gate("G17 interactive SendMessage allowed AND counted", rc == 0 and n1 == n0 + 1,
+         "exit %d, counter %s -> %s" % (rc, n0, n1))
     rc, _ = send("main", True)
     gate("G18 SendMessage to main allowed in cycle", rc == 0, "exit %d" % rc)
+    # G19-G20 (card chat-L2): a SendMessage resume is a dispatch - the cap and the retrospective close apply to it
+    rc, err = send("a1b2c3d4-material", False, sid=SID_A)
+    gate("G19 SendMessage past the cap refused", rc == 2 and "CYCLE DISPATCH CAP" in err, "exit %d" % rc)
+    rc, err = send("a1b2c3d4-material", False, sid=SID_B)
+    gate("G20 SendMessage after retrospective refused", rc == 2 and "CYCLE IS CLOSED" in err, "exit %d" % rc)
 
     cleanup()
     good = sum(1 for _, ok in RESULTS if ok)

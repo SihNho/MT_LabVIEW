@@ -122,11 +122,19 @@ def main():
     if why:
         sys.stderr.write(why)
         return 2
-    if data.get("tool_name") not in AGENT_TOOLS:
-        return 0
     ti = data.get("tool_input") or {}
-    sub = str(ti.get("subagent_type") or "").strip().lower()
-    if sub not in COUNTED:
+    if data.get("tool_name") == "SendMessage":
+        # card chat-L2: a SendMessage RESUME is a dispatch - it restarts a material/log-reader agent's work, so it
+        # counts against MAX_DISPATCHES and is refused after the retrospective like a new Agent call. The target's
+        # subagent_type is not visible here (see send_message_refusal), so every resume counts except to "main".
+        if str(ti.get("to") or "").strip().lower() in ("", "main"):
+            return 0
+        sub = "sendmessage-resume"
+    elif data.get("tool_name") in AGENT_TOOLS:
+        sub = str(ti.get("subagent_type") or "").strip().lower()
+        if sub not in COUNTED:
+            return 0
+    else:
         return 0
     sid = session_id(data)
     st = load(sid)

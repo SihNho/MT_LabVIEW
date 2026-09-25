@@ -108,12 +108,22 @@ def nruns(cycle=None):
     return len([r for r in SP.read_stage_runs() if cycle is None or r.get("cycle") == cycle])
 
 
+def launch(cmd):
+    """The live path in miniature (card chat-L2): guard_bash CHECKS (check_launch, records nothing); only when it
+    allows does bgrun start the child and RECORD it (record_started, `by: bgrun`) - the ONE recording place."""
+    ok_, why_ = SP.check_launch(cmd)
+    if ok_:
+        SP.record_started(cmd, log="x.log", pid=0)
+    return ok_, why_
+
+
 ok, _w = SP.check_launch(LAUNCH)
-gate("C0 record=False (the --check-launch CLI) records nothing", ok and nruns() == 0, nruns())
-r1 = SP.check_launch(LAUNCH, record=True)
-r2 = SP.check_launch(LAUNCH, record=True)
-gate("C1 runs 1 and 2 of a stage in one cycle are allowed and recorded", r1[0] and r2[0] and nruns() == 2, (r1, r2, nruns()))
-ok, why = SP.check_launch(LAUNCH, record=True)
+gate("C0 check_launch records nothing (recording lives only in bgrun.record_started)", ok and nruns() == 0, nruns())
+r1 = launch(LAUNCH)
+r2 = launch(LAUNCH)
+gate("C1 runs 1 and 2 of a stage in one cycle are allowed and recorded by bgrun",
+     r1[0] and r2[0] and nruns() == 2 and all(r.get("by") == "bgrun" for r in SP.read_stage_runs()), (r1, r2, nruns()))
+ok, why = launch(LAUNCH)
 gate("C2 run 3 without a judgement card -> refused (RETRY CAP), not recorded", not ok and "RETRY CAP" in why and nruns() == 2,
      why.splitlines()[0] if why else "")
 
@@ -130,19 +140,19 @@ def task_card(cid, retry_of):
 
 
 good = task_card("lg-retry-1", "stage_lgtest.py")
-ok, why = SP.check_launch("RETRY_CARD={0} ".format(good) + LAUNCH, record=True)
+ok, why = launch("RETRY_CARD={0} ".format(good) + LAUNCH)
 gate("C3 run 3 WITH a task/1 card retry_of=stage_lgtest.py -> allowed, recorded with the card id",
      ok and nruns() == 3 and SP.read_stage_runs()[-1].get("card") == "lg-retry-1", why)
-ok, why = SP.check_launch("RETRY_CARD={0} ".format(good) + LAUNCH, record=True)
+ok, why = launch("RETRY_CARD={0} ".format(good) + LAUNCH)
 gate("C4 the SAME card again -> refused (one card, one run)", not ok and "one card, one run" in why, why.splitlines()[0] if why else "")
 wrong = task_card("lg-retry-2", "stage_other.py")
-ok, why = SP.check_launch("RETRY_CARD={0} ".format(wrong) + LAUNCH, record=True)
+ok, why = launch("RETRY_CARD={0} ".format(wrong) + LAUNCH)
 gate("C5 a card whose retry_of names another stage -> refused", not ok and "retry_of" in why, why.splitlines()[0] if why else "")
 plain = task_card("lg-retry-3", None)
-ok, why = SP.check_launch("$env:RETRY_CARD='{0}'; ".format(plain) + LAUNCH, record=True)
+ok, why = launch("$env:RETRY_CARD='{0}'; ".format(plain) + LAUNCH)
 gate("C6 a task card without retry_of (PowerShell env form) -> refused", not ok and "retry_of" in why, why.splitlines()[0] if why else "")
 os.environ["STAGE_RUNS_CYCLE"] = "cycle 902"
-ok, why = SP.check_launch(LAUNCH, record=True)
+ok, why = launch(LAUNCH)
 gate("C7 a new cycle starts a fresh count -> allowed", ok and nruns("cycle 902") == 1, why)
 os.environ["STAGE_RUNS_CYCLE"] = "cycle 901"
 gate("C8 stage key strips _vN (stage_x_v3.py == stage_x.py)", SP.stage_key("tools/recipes/stage_x_v3.py") == "stage_x.py")
@@ -186,14 +196,18 @@ gate("M2 guard_bash.new passes a grep of the stage file", rc == 0, err[:160])
 records(("dry", "PASS"), ("prerun", "PASS"), t=time.time() - 100)
 rc, err = main_rc(LAUNCH, run_in_background=True)
 gate("M3 guard_bash.new passes the same launch once dry + prerun PASS exist", rc == 0, err[:160])
-gate("M4 that allowed launch is recorded ONCE in stage_runs.jsonl (main records only on rc 0)", nruns() == 1, nruns())
+gate("M4 the hook itself records nothing (bgrun is the one recorder, card 78-2 / chat-L2)", nruns() == 0, nruns())
+SP.record_started(LAUNCH, log="x.log", pid=0)      # bgrun started that allowed launch
 records()
 rc, err = main_rc(LAUNCH, run_in_background=True)
 gate("M5 a refused launch (no records) is NOT recorded", rc == 2 and nruns() == 1, nruns())
 records(("dry", "PASS"), ("prerun", "PASS"), t=time.time() - 100)
-main_rc(LAUNCH, run_in_background=True)
+rc2, _e = main_rc(LAUNCH, run_in_background=True)
+if rc2 == 0:
+    SP.record_started(LAUNCH, log="x.log", pid=0)  # run 2 started
 rc, err = main_rc(LAUNCH, run_in_background=True)
-gate("M6 guard_bash refuses the 3rd launch in the cycle with the RETRY CAP text", rc == 2 and "RETRY CAP" in err, err[:160])
+gate("M6 guard_bash refuses the 3rd launch in the cycle with the RETRY CAP text",
+     rc2 == 0 and rc == 2 and "RETRY CAP" in err and nruns() == 2, "run2 exit %d, run3 exit %d, %s" % (rc2, rc, err[:160]))
 RETRO = "py tools/retrospective.py --cycle 99"
 closed.clear()
 main_rc(RETRO, {"agent_id": "a123", "agent_type": "material"})

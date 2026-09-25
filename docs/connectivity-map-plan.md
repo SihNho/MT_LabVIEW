@@ -97,7 +97,10 @@ Order: 1 ∥ 2 → 3, 4 (need 1) → 5 → **4b → 5b(A) → 5b(B)** → 6 → 
 
 ## Pre-decided — ADDED 2026-09-24 01:xx (cycle 68 judgement): S3b-M4 ACCEPTED and promoted
 
-148. **FOCUS LOOP REDESIGN (user 2026-09-25; CLAUDE.md 1c''), scheduled AFTER M3, supersedes 147(b)'s edge cadence.**
+190. **FOCUS LOOP REDESIGN (user 2026-09-25; CLAUDE.md 1c''), scheduled AFTER M3, supersedes 147(b)'s edge cadence.**
+   (Added 2026-09-25 under the cycle-68 header above as "148", which `docs/d1-loop12-17-split-plan.md:204` already
+   used; renumbered to the next free Pre-decided number, 190, by card chat-L2. Every former "Pre-decided 148" that
+   meant THIS entry now reads 190.)
    (a) The frame loop publishes, as LOCAL variables (latest value): the first-clicked reference bead's z and the
    `#10445` auto-reset counter. The schedule boolean `(i mod 'Frame rate' == 0) AND NOT 'Fix to a Certain Pattern'` is
    removed from the frame loop; `Frame rate` no longer gates focus. (b) Loop 1.5 runs on its own time cadence (a

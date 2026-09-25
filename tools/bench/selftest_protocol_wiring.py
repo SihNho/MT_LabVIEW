@@ -318,6 +318,16 @@ def main():
     gate("D2 peer.ps1 refuses an invalid review card", r.returncode != 0 and "REFUSED" in (r.stdout + r.stderr))
     os.remove(rpath)
     before = set(glob.glob(os.path.join(P.CARDS_DIR, "review_*.json")))
+    # card chat-L2: outcome_review --dry-run writes review_outcome-review-<today>.json - the SAME name as a real,
+    # committed card when a real outcome review ran today - and the cleanup below deleted it (chat-L1 and chat-L2
+    # both found tools/bench/cards/review_outcome-review-20260925.json deleted). Keep every pre-existing card's bytes
+    # and put them back after the cleanup.
+    kept = {}
+    for p in before:
+        try:
+            kept[p] = open(p, "rb").read()
+        except OSError:
+            pass
     outs = []
     for cmd in ([sys.executable, os.path.join(TOOLS, "outcome_review.py"), "--dry-run"],
                 [sys.executable, os.path.join(TOOLS, "doc_ingest.py"), "--full", "--dry-run", "--slug",
@@ -342,6 +352,12 @@ def main():
                 os.remove(p)
             except OSError:
                 pass
+    for p, b in kept.items():                      # restore pre-existing cards (overwritten or deleted above)
+        try:
+            if not os.path.exists(p) or open(p, "rb").read() != b:
+                open(p, "wb").write(b)
+        except OSError:
+            pass
 
     # ---- G: bgrun NO RESULT LINE
     s_no = os.path.join(HERE, "_wiring_tmp_noresult.py")

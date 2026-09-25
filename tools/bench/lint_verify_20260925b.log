@@ -1,0 +1,330 @@
+BGRUN START 2026-09-25 20:01:23 limit 40.0 min: py -u tools/bench/lint_verify_20260925b.py
+
+=== 1. legacy-close undisposed reviews dated before 2026-09-22
+peer archives scanned : 637
+marked legacy         : 0
+left FAILing (>= 2026-09-22) : 0
+GATE PASS  G1 all touched are archive/peer and pre-cutoff
+GATE PASS  G2 all touched were undisposed
+GATE PASS  G3 body below frontmatter unchanged
+GATE PASS  G4 no pre-cutoff file left undisposed-and-unmarked
+
+  PASS  legacy closer rc 0 and G1-G4 PASS                            [('PASS', 'G1'), ('PASS', 'G2'), ('PASS', 'G3'), ('PASS', 'G4')]
+  PASS  post-2026-09-22 reviews byte-identical (125 files)           []
+
+=== 3. .claude/settings.json hook entries
+  PASS  settings PostToolUse[Bash|PowerShell] lv_stallcheck.ps1      ps parse errors=0
+  PASS  settings PreToolUse[Bash|PowerShell] guard_bash.py           compiles
+  PASS  settings PreToolUse[Bash|PowerShell] guard_peer.py           compiles
+  PASS  settings PreToolUse[Bash|PowerShell] guard_cycle.py          compiles
+  PASS  settings PreToolUse[Edit|Write|NotebookEdit|MultiEdit|Read|Glob|Grep|WebFetch|WebSearch|Agent|Task] guard_card.py compiles
+  PASS  settings PreToolUse[Agent|Task|SendMessage] guard_session.py compiles
+  PASS  settings UserPromptSubmit[*] answer_first.py                 compiles
+  PASS  settings UserPromptSubmit[*] report_gate.py                  compiles
+  PASS  settings Stop[*] report_gate.py                              compiles
+  PASS  compile answer_first.py                                      
+  PASS  compile guard_bash.py                                        
+  PASS  compile guard_card.py                                        
+  PASS  compile guard_cycle.py                                       
+  PASS  compile guard_peer.py                                        
+  PASS  compile guard_session.py                                     
+  PASS  compile report_gate.py                                       
+
+=== 4. hooks live (JEV_ADVISORY_OFF=1, TYPESAFE_API_KEY stripped, fake session lintverify_1790334083)
+  PASS  guard_bash.py | read-only cat                                rc=0 expect=0 0.1s | 
+  PASS  guard_bash.py | bench script, no marker                      rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py (CLAUDE.md section 3, judgement vs material): this session is treated as a JUDGEMENT session, and a judgement session never runs tools/recipes
+  PASS  guard_bash.py | bgrun --material bench, background           rc=0 expect=0 0.1s | 
+  PASS  guard_bash.py | MATERIAL=1 env form, background              rc=0 expect=0 0.1s | 
+  PASS  guard_bash.py | bgrun --material bench, foreground 600 s     rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py (CLAUDE.md 2b): a LabVIEW-touching command must run with run_in_background=true, or with an explicit timeout <= 30 s. Got timeout=600000. Back
+  PASS  guard_bash.py | tools script background WITHOUT bgrun        rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py: a backgrounded LabVIEW command must run through `py tools/bgrun.py --max-min <N> --log <file> -- <command>` so it has a hard deadline and a f
+  PASS  guard_bash.py | motor: sender by hand                        rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a motor by a route that bypasses the safe envelope.
+  PASS  guard_bash.py | motor: inline serial                         rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a motor by a route that bypasses the safe envelope.
+  PASS  guard_bash.py | motor: raw MOV one-liner                     rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a motor by a route that bypasses the safe envelope.
+  PASS  guard_bash.py | motor: gateway dry-run                       rc=0 expect=0 0.1s | 
+  PASS  guard_bash.py | motor: grep of a blocked name                rc=0 expect=0 0.1s | 
+  PASS  guard_bash.py | launch gate: stage script stage_d1_k.py      rc=0 expect=state 0.2s | 
+  PASS  guard_bash.py | launch gate: non-stage recipe (stop_record)  rc=0 expect=state 0.1s | 
+  PASS  guard_bash.py | retro: next.json == snapshot (same)          rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py (NEXT before the retrospective; user 2026-09-21; session protocol v1
+  PASS  retro refused => session NOT marked retro_done               False
+  PASS  guard_bash.py | retro --dry-run (LV_GUARD path)              rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py (NEXT before the retrospective; user 2026-09-21; session protocol v1
+  PASS  guard_bash.py | card: bound material, gui click              rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py (session protocol v1, card flags): CARD chat-L1 (tools\bench\cards\task_chat-L1.json): flags.labview is 'none' - this command touches LabVIEW 
+  PASS  guard_bash.py | card: bound material, git status             rc=0 expect=0 0.1s | 
+  PASS  guard_bash.py | card: unbound material agent                 rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py (session protocol v1, card flags): UNBOUND sub-agent (material ffff0000l1unbound): this agent's FIRST command must be `py tools/protocol.py bi
+  PASS  guard_card.py | bound: Write STATUS.md                       rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_card.py (session protocol v1): CARD chat-L1 (tools\bench\cards\task_chat-L1.json): flags.status_edit is false - STATUS.md may not be edited
+  PASS  guard_card.py | bound: Write tools/x                         rc=0 expect=0 0.1s | 
+  PASS  guard_card.py | bound: Write CLAUDE.md (outside globs)       rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_card.py (session protocol v1): CARD chat-L1 (tools\bench\cards\task_chat-L1.json): flags.status_edit is false - CLAUDE.md may not be edited
+  PASS  guard_card.py | bound: Edit a .vi under tools                rc=0 expect=state 0.1s | 
+  PASS  guard_card.py | unbound material: Read                       rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_card.py (session protocol v1): UNBOUND sub-agent (material ffff0000l1unbound): this agent's FIRST command must be `py tools/protocol.py bind <card>` (
+  PASS  guard_card.py | Explore agent (no card type): Read           rc=0 expect=0 0.1s | 
+  PASS  guard_card.py | main session Write STATUS.md                 rc=0 expect=0 0.1s | 
+  PASS  guard_session.py | Explore not counted                       rc=0 expect=0 0.1s | 
+  PASS  guard_session.py | dispatches 1..8 allowed                   stopped at 8 rc=0
+  PASS  guard_session.py | 9th material dispatch refused             rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_session.py: CYCLE DISPATCH CAP REACHED (8 material/log-reader dispatches).
+  PASS  guard_session.py | after retrospective: material refused     rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_session.py: THIS SESSION'S CYCLE IS CLOSED BY ITS RETROSPECTIVE.
+  PASS  guard_session.py | SendMessage in CYCLE_SESSION (direct pipe) rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_session.py: NO SendMessage RESUME IN A CYCLE SESSION (to='agent123').
+  PASS  guard_session.py | SendMessage to main in CYCLE_SESSION      rc=0 expect=0 0.1s | 
+  PASS  guard_session.py | settings matcher reaches SendMessage (rule (c) live) ['Agent|Task|SendMessage']
+  PASS  report_gate.py | Stop, unacked event                         rc=2 expect=2 0.1s | [hook report_gate] 1 UNREPORTED RUNNER EVENT(S) in cycle_runner_main_20990101.log \u2014 report them to the user FIRST (cycle number, exit code, cost, what the cycle delivered, wh
+  PASS  report_gate.py | Stop, stop_hook_active                      rc=0 expect=0 0.1s | 
+  PASS  report_gate.py | Stop, CYCLE_SESSION exempt                  rc=0 expect=0 0.1s | 
+  PASS  report_gate.py | UserPromptSubmit prints context             rc=0 expect=0 0.1s | [hook report_gate] 1 UNREPORTED RUNNER EVENT(S) in cycle_runner_main_20990101.log — report them to the user FIRST (cycle number, exit code, cost, what the cycle delivered, what NE
+  PASS  report_gate.py | UserPromptSubmit stdout names the event     [hook report_gate] 1 UNREPORTED RUNNER EVENT(S) in cycle_runner_main_20990101.log — report them to the user FIRST (cycle
+  PASS  report_gate.py | Stop after --ack                            rc=0 expect=0 0.1s | 
+  live report_gate --status: log=G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\cycle_runner_main_20260925d.log unreported=0
+  PASS  guard_peer.py | read-only cat                                rc=0 expect=0 0.1s | 
+  PASS  guard_peer.py | cycle_runner under bgrun                     rc=0 expect=0 0.1s | 
+  PASS  guard_peer.py | jev script under bgrun                       rc=0 expect=0 0.1s | 
+  PASS  guard_peer.py | recipe build under bgrun                     rc=0 expect=state 0.4s | 
+  PASS  guard_peer.py | PEER_GUARD_OFF=1                             rc=0 expect=0 0.1s | 
+  PASS  guard_cycle.py | read-only cat                               rc=0 expect=0 0.1s | 
+  PASS  guard_cycle.py | bench diagnostic                            rc=0 expect=0 0.1s | 
+  PASS  guard_cycle.py | retrospective itself                        rc=0 expect=0 0.1s | 
+  PASS  guard_cycle.py | recipe build                                rc=0 expect=state 1.0s | 
+  PASS  guard_cycle.py | CYCLE_GUARD_OFF=1                           rc=0 expect=0 0.1s | 
+  PASS  fake session state files removed                             []
+
+=== 5. doc_lint
+  WARN  L1 frontmatter present and valid: 341/711 ok; 370 missing, 0 incomplete. Fix with `py tools/frontmatter.py`. first: ['archive/peer/2026-09-15-priorart-ownerchain.md', 'archive/peer/2026-09-16-delete-object-noop-failed-prediction.md', 'archive/peer/2026-09-16-delete-silent-noop2.md', 'archive/peer/2026-09-16-flatseq-frame-unreachable.md', 'archive/peer/2026-09-16-load-vs-editmode-23c-r2.md']
+  PASS  L2 every cited project path exists: 2180 citations checked, none dangling
+  WARN  L2c plan documents cite files that do not exist yet: 18 forward reference(s) in plan documents (expected while the cycle is open): ['docs/cycle14-plan.md:95 -> tools/recipes/build_opflatseqdiagrams_v0.py', 'docs/cycle14-plan.md:106 -> tools/bench/opflatseqdiagrams_labels.json', 'docs/cycle14-plan.md:168 -> tools/recipes/build_opflatseqdiagrams_v0.py', 'docs/cycle14-plan.md:169 -> tools/bench/build_opflatseqdiagrams_v0.log', 'docs/cycle14-plan.md:169 -> tools/bench/opflatseqdiagrams_labels.json', 'docs/cycle14-plan.md:170 -> tools/bench/diag_a3_complete.py']
+  PASS  L2b cited line numbers are in range: no citation points past a file's end
+  PASS  L3 STATUS.md stays one screen: 93 lines (limit 110)
+  PASS  L4 at most one current plan per family: ['docs/cycle27-plan.md'] current
+  PASS  L8 the current plan has a `## Pre-decided` section: docs/cycle27-plan.md ok
+  PASS  L5 superseded documents are not still current: no `supersedes:` target is still marked current
+  PASS  L6 archived reviews are disposed: 550/550 disposed (87 closed as `disposition: legacy`, skipped)
+  WARN  L7 decision/measurement sentences carry a mark: 604 unmarked line(s); a fact stated without `DECIDED:`/`MEASURED:`/`DECISION:` has to be inferred rather than extracted. first: ['docs/NAMES.md:404', 'docs/NAMES.md:421', 'docs/NAMES.md:455', 'docs/NAMES.md:594', 'docs/NAMES.md:716']
+DOC-LINT PASS: 0 fail, 3 warn, 7 pass
+
+
+  PASS  doc_lint L2 0 dangling                                       every cited project path exists: 2180 citations checked, none dangling
+  PASS  doc_lint L6 blank == post-09-22 debt only (0)                archived reviews are disposed: 550/550 disposed (87 closed as `disposition: legacy`, skipped)
+  PASS  doc_lint L6 0 blank (card wording)                           archived reviews are disposed: 550/550 disposed (87 closed as `disposition: legacy`, skipped)
+
+=== 6. resume checklist
+  PASS  STATUS STOP line present (left in place)                     ['STOP — user 2026-09-25 19:xx ("러너는 멈춰"). Runner not to be started; only the user removes this line.']
+  PASS  next.json validates                                          OK next/1
+  PASS  motor_session.json absent                                    
+  PASS  no LabVIEW.exe running                                       
+
+=== 2. every tools/bench/selftest_*.py
+  PASS  selftest selftest_audit_c4c_split                            rc 0 33s | === GATES: 33 pass / 0 fail
+  PASS  selftest selftest_audit_cost_window                          rc 0 0s | SELFTEST 7 pass / 0 fail
+  PASS  selftest selftest_bgrun_fail_scan                            rc 0 1s | === selftest_bgrun_fail_scan: 8 pass, 0 fail ===
+  PASS  selftest selftest_bgrun_final_line                           rc 0 4s | === selftest_bgrun_final_line: 8 pass, 0 fail ===
+  PASS  selftest selftest_bgrun_jev_exempt                           rc 0 8s | === selftest_bgrun_jev_exempt: 9 pass, 0 fail ===
+  PASS  selftest selftest_c60c_route                                 rc 0 0s | === SELFTEST 6/6 cells
+  SKIP  selftest_c67_ensureloaded                                    declares '# REQUIRES: labview   (declaration read by verifiers, e.g. lint_verify_20260925b.py: skipped under a labview=none card)'; card task_chat-L2.json flags.labview='none'
+  PASS  selftest selftest_cycle_runner                               rc 0 3s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_cycle_runner_ff                            rc 0 25s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":3,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_errorlist_check_header                     rc 0 0s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_errorlist_retry                            rc 0 0s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_errorlist_reuse_81                         rc 0 1s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":16,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_guard_bash_jev                             rc 0 2s | === 11 PASS / 0 FAIL
+  PASS  selftest selftest_guard_cycle_fixed                          rc 0 0s | NEGATIVE PROOF (plan Pre-decided 3): 2 pass / 0 fail   [B1 must REFUSE, B2 must ALLOW]
+  PASS  selftest selftest_guard_cycle_rerun                          rc 0 0s | === selftest_guard_cycle_rerun: 4 pass, 0 fail ===
+  PASS  selftest selftest_guard_peer_77_measure                      rc 0 1s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_guard_peer_budget                          rc 0 22s | === selftest_guard_peer_budget: 12 pass, 0 fail ===
+  PASS  selftest selftest_guard_peer_failre                          rc 0 3s | === 29 pass / 0 fail ===  (2.8 s)
+  PASS  selftest selftest_guard_peer_jev                             rc 0 13s | JEV-LADDER | 2026-09-25 20:03:14 | fake_stage.log | old-path discharge | ALLOW via discharge | NEXT-ACTION: apply the cited review's disposition (archive/peer/2026-09-22-fake-widget-failpre
+  PASS  selftest selftest_guard_peer_ladder                          rc 0 1s | JEV-LADDER | 2026-09-25 20:03:26 | fake_ladder_stage.log | old-path discharge | ALLOW via discharge | NEXT-ACTION: apply the cited review's disposition (archive/peer/2026-09-22-fake-ladder-r
+  PASS  selftest selftest_guard_peer_samerow                         rc 0 0s |   (one review per row per cycle - user 2026-09-22; no new review is owed for a later failure of the same script inside 6 h.)
+  PASS  selftest selftest_guard_peer_scan_tmp                        rc 0 0s | RESULT {"schema":"result_line/1","status":"PASS"}
+  PASS  selftest selftest_guard_session                              rc 0 5s | SUMMARY 20/20 gates pass
+  PASS  selftest selftest_heartbeat                                  rc 0 28s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_item34                                     rc 0 40s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":32,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_jev_device_value                           rc 0 1s | === SELFTEST: 12 pass / 0 fail
+  PASS  selftest selftest_jev_ladder_action                          rc 0 19s | === TOTAL: 110 pass / 0 fail, 0 pre-existing excluded (worst code 0) ===
+  PASS  selftest selftest_launch_gate                                rc 0 0s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":28,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_logclass_cmd                               rc 0 90s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":28,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_logclass_recipebuild                       rc 0 16s | === GATES: 24 pass / 0 fail
+  SKIP  selftest_make_default                                        declares '# REQUIRES: labview   (declaration read by verifiers, e.g. lint_verify_20260925b.py: skipped under a labview=none card)'; card task_chat-L2.json flags.labview='none'
+  PASS  selftest selftest_motor_fail_exit                            rc 0 1s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_motor_gate2                                rc 0 6s | REFUSED: no session file C:\Users\KimLab\AppData\Local\Temp\selftest_motor_gate2_6xlmgmmn\no_such_session.json - run `py tools/motor_gate.py --session start` first, which installs the CONTRO
+  PASS  selftest selftest_next_gate_jev                              rc 0 0s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_protocol                                   rc 0 2s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":48,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_protocol_wiring                            rc 0 8s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":66,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_retry_cap                                  rc 0 6s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[]}
+  FAIL  selftest selftest_stage_prerun_headcmp_79-6                  rc 1 5s | RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":1,"fail":1},"first_fail":"H2 failing set == the predicted 8","artefacts":[]}
+  PASS  selftest selftest_stage_prerun_stageplan                     rc 0 5s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_stagekit                                   rc 0 0s | === GATES: 47 pass / 0 fail
+  PASS  selftest selftest_stagesim_k79                               rc 0 1s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_stagesim_l2a1_80                           rc 0 6s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_stagesim_unflip_81                         rc 0 10s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_stagexec_gate                              rc 0 1s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_stamp_window                               rc 0 23s | SELFTEST 15 pass / 0 fail
+  PASS  selftest selftest_stoprecord_bgrun                           rc 0 0s | === selftest_stoprecord_bgrun: 6 pass, 0 fail ===
+  PASS  selftest selftest_stoprecord_eqform                          rc 0 3s | === selftest_stoprecord_eqform: 5 pass, 0 fail ===
+  PASS  selftest selftest_stoprecord_supersession                    rc 0 3s | === supersession selftest (PATCHED): 36 pass, 0 fail ===
+  PASS  selftest selftest_stoprecord_table                           rc 0 1s | === selftest_stoprecord_table: 107 pass, 0 fail ===
+  PASS  selftest selftest_vigraph_frame_80                           rc 0 4s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  no self-test made a git commit                               a893c961 -> a893c961
+
+=== GATES: 123 pass / 1 fail; failing: selftest selftest_stage_prerun_headcmp_79-6
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":123,"fail":1},"first_fail":"selftest selftest_stage_prerun_headcmp_79-6","artefacts":[{"path":"tools/bench/lint_verify_20260925b.json","md5":"e63b86f8bebb55dccc117ae10bed76b0"}]}
+BGRUN END rc=1 after 409s
+BGRUN START 2026-09-25 20:09:40 limit 40.0 min: py -u tools/bench/lint_verify_20260925b.py
+
+=== 1. legacy-close undisposed reviews dated before 2026-09-22
+peer archives scanned : 637
+marked legacy         : 0
+left FAILing (>= 2026-09-22) : 0
+GATE PASS  G1 all touched are archive/peer and pre-cutoff
+GATE PASS  G2 all touched were undisposed
+GATE PASS  G3 body below frontmatter unchanged
+GATE PASS  G4 no pre-cutoff file left undisposed-and-unmarked
+
+  PASS  legacy closer rc 0 and G1-G4 PASS                            [('PASS', 'G1'), ('PASS', 'G2'), ('PASS', 'G3'), ('PASS', 'G4')]
+  PASS  post-2026-09-22 reviews byte-identical (125 files)           []
+
+=== 3. .claude/settings.json hook entries
+  PASS  settings PostToolUse[Bash|PowerShell] lv_stallcheck.ps1      ps parse errors=0
+  PASS  settings PreToolUse[Bash|PowerShell] guard_bash.py           compiles
+  PASS  settings PreToolUse[Bash|PowerShell] guard_peer.py           compiles
+  PASS  settings PreToolUse[Bash|PowerShell] guard_cycle.py          compiles
+  PASS  settings PreToolUse[Edit|Write|NotebookEdit|MultiEdit|Read|Glob|Grep|WebFetch|WebSearch|Agent|Task] guard_card.py compiles
+  PASS  settings PreToolUse[Agent|Task|SendMessage] guard_session.py compiles
+  PASS  settings UserPromptSubmit[*] answer_first.py                 compiles
+  PASS  settings UserPromptSubmit[*] report_gate.py                  compiles
+  PASS  settings Stop[*] report_gate.py                              compiles
+  PASS  compile answer_first.py                                      
+  PASS  compile guard_bash.py                                        
+  PASS  compile guard_card.py                                        
+  PASS  compile guard_cycle.py                                       
+  PASS  compile guard_peer.py                                        
+  PASS  compile guard_session.py                                     
+  PASS  compile report_gate.py                                       
+
+=== 4. hooks live (JEV_ADVISORY_OFF=1, TYPESAFE_API_KEY stripped, fake session lintverify_1790334580)
+  PASS  guard_bash.py | read-only cat                                rc=0 expect=0 0.1s | 
+  PASS  guard_bash.py | bench script, no marker                      rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py (CLAUDE.md section 3, judgement vs material): this session is treated as a JUDGEMENT session, and a judgement session never runs tools/recipes
+  PASS  guard_bash.py | bgrun --material bench, background           rc=0 expect=0 0.1s | 
+  PASS  guard_bash.py | MATERIAL=1 env form, background              rc=0 expect=0 0.1s | 
+  PASS  guard_bash.py | bgrun --material bench, foreground 600 s     rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py (CLAUDE.md 2b): a LabVIEW-touching command must run with run_in_background=true, or with an explicit timeout <= 30 s. Got timeout=600000. Back
+  PASS  guard_bash.py | tools script background WITHOUT bgrun        rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py: a backgrounded LabVIEW command must run through `py tools/bgrun.py --max-min <N> --log <file> -- <command>` so it has a hard deadline and a f
+  PASS  guard_bash.py | motor: sender by hand                        rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a motor by a route that bypasses the safe envelope.
+  PASS  guard_bash.py | motor: inline serial                         rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a motor by a route that bypasses the safe envelope.
+  PASS  guard_bash.py | motor: raw MOV one-liner                     rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py (motor gate): this command can write MOTION to a motor by a route that bypasses the safe envelope.
+  PASS  guard_bash.py | motor: gateway dry-run                       rc=0 expect=0 0.1s | 
+  PASS  guard_bash.py | motor: grep of a blocked name                rc=0 expect=0 0.1s | 
+  PASS  guard_bash.py | launch gate: stage script stage_d1_k.py      rc=0 expect=state 0.2s | 
+  PASS  guard_bash.py | launch gate: non-stage recipe (stop_record)  rc=0 expect=state 0.1s | 
+  PASS  guard_bash.py | retro: next.json == snapshot (same)          rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py (NEXT before the retrospective; user 2026-09-21; session protocol v1
+  PASS  retro refused => session NOT marked retro_done               False
+  PASS  guard_bash.py | retro --dry-run (LV_GUARD path)              rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py (NEXT before the retrospective; user 2026-09-21; session protocol v1
+  PASS  guard_bash.py | card: bound material, gui click              rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py (session protocol v1, card flags): CARD chat-L1 (tools\bench\cards\task_chat-L1.json): flags.labview is 'none' - this command touches LabVIEW 
+  PASS  guard_bash.py | card: bound material, git status             rc=0 expect=0 0.1s | 
+  PASS  guard_bash.py | card: unbound material agent                 rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_bash.py (session protocol v1, card flags): UNBOUND sub-agent (material ffff0000l1unbound): this agent's FIRST command must be `py tools/protocol.py bi
+  PASS  guard_card.py | bound: Write STATUS.md                       rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_card.py (session protocol v1): CARD chat-L1 (tools\bench\cards\task_chat-L1.json): flags.status_edit is false - STATUS.md may not be edited
+  PASS  guard_card.py | bound: Write tools/x                         rc=0 expect=0 0.1s | 
+  PASS  guard_card.py | bound: Write CLAUDE.md (outside globs)       rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_card.py (session protocol v1): CARD chat-L1 (tools\bench\cards\task_chat-L1.json): flags.status_edit is false - CLAUDE.md may not be edited
+  PASS  guard_card.py | bound: Edit a .vi under tools                rc=0 expect=state 0.1s | 
+  PASS  guard_card.py | unbound material: Read                       rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_card.py (session protocol v1): UNBOUND sub-agent (material ffff0000l1unbound): this agent's FIRST command must be `py tools/protocol.py bind <card>` (
+  PASS  guard_card.py | Explore agent (no card type): Read           rc=0 expect=0 0.1s | 
+  PASS  guard_card.py | main session Write STATUS.md                 rc=0 expect=0 0.1s | 
+  PASS  guard_session.py | Explore not counted                       rc=0 expect=0 0.1s | 
+  PASS  guard_session.py | dispatches 1..8 allowed                   stopped at 8 rc=0
+  PASS  guard_session.py | 9th material dispatch refused             rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_session.py: CYCLE DISPATCH CAP REACHED (8 material/log-reader dispatches).
+  PASS  guard_session.py | after retrospective: material refused     rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_session.py: THIS SESSION'S CYCLE IS CLOSED BY ITS RETROSPECTIVE.
+  PASS  guard_session.py | SendMessage in CYCLE_SESSION (direct pipe) rc=2 expect=2 0.1s | BLOCKED by tools/hooks/guard_session.py: NO SendMessage RESUME IN A CYCLE SESSION (to='agent123').
+  PASS  guard_session.py | SendMessage to main in CYCLE_SESSION      rc=0 expect=0 0.1s | 
+  PASS  guard_session.py | settings matcher reaches SendMessage (rule (c) live) ['Agent|Task|SendMessage']
+  PASS  report_gate.py | Stop, unacked event                         rc=2 expect=2 0.1s | [hook report_gate] 1 UNREPORTED RUNNER EVENT(S) in cycle_runner_main_20990101.log \u2014 report them to the user FIRST (cycle number, exit code, cost, what the cycle delivered, wh
+  PASS  report_gate.py | Stop, stop_hook_active                      rc=0 expect=0 0.1s | 
+  PASS  report_gate.py | Stop, CYCLE_SESSION exempt                  rc=0 expect=0 0.1s | 
+  PASS  report_gate.py | UserPromptSubmit prints context             rc=0 expect=0 0.1s | [hook report_gate] 1 UNREPORTED RUNNER EVENT(S) in cycle_runner_main_20990101.log — report them to the user FIRST (cycle number, exit code, cost, what the cycle delivered, what NE
+  PASS  report_gate.py | UserPromptSubmit stdout names the event     [hook report_gate] 1 UNREPORTED RUNNER EVENT(S) in cycle_runner_main_20990101.log — report them to the user FIRST (cycle
+  PASS  report_gate.py | Stop after --ack                            rc=0 expect=0 0.1s | 
+  live report_gate --status: log=G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\cycle_runner_main_20260925d.log unreported=0
+  PASS  guard_peer.py | read-only cat                                rc=0 expect=0 0.1s | 
+  PASS  guard_peer.py | cycle_runner under bgrun                     rc=0 expect=0 0.1s | 
+  PASS  guard_peer.py | jev script under bgrun                       rc=0 expect=0 0.1s | 
+  PASS  guard_peer.py | recipe build under bgrun                     rc=0 expect=state 0.4s | 
+  PASS  guard_peer.py | PEER_GUARD_OFF=1                             rc=0 expect=0 0.1s | 
+  PASS  guard_cycle.py | read-only cat                               rc=0 expect=0 0.1s | 
+  PASS  guard_cycle.py | bench diagnostic                            rc=0 expect=0 0.1s | 
+  PASS  guard_cycle.py | retrospective itself                        rc=0 expect=0 0.1s | 
+  PASS  guard_cycle.py | recipe build                                rc=0 expect=state 1.0s | 
+  PASS  guard_cycle.py | CYCLE_GUARD_OFF=1                           rc=0 expect=0 0.1s | 
+  PASS  fake session state files removed                             []
+
+=== 5. doc_lint
+  WARN  L1 frontmatter present and valid: 341/711 ok; 370 missing, 0 incomplete. Fix with `py tools/frontmatter.py`. first: ['archive/peer/2026-09-15-priorart-ownerchain.md', 'archive/peer/2026-09-16-delete-object-noop-failed-prediction.md', 'archive/peer/2026-09-16-delete-silent-noop2.md', 'archive/peer/2026-09-16-flatseq-frame-unreachable.md', 'archive/peer/2026-09-16-load-vs-editmode-23c-r2.md']
+  PASS  L2 every cited project path exists: 2180 citations checked, none dangling
+  WARN  L2c plan documents cite files that do not exist yet: 18 forward reference(s) in plan documents (expected while the cycle is open): ['docs/cycle14-plan.md:95 -> tools/recipes/build_opflatseqdiagrams_v0.py', 'docs/cycle14-plan.md:106 -> tools/bench/opflatseqdiagrams_labels.json', 'docs/cycle14-plan.md:168 -> tools/recipes/build_opflatseqdiagrams_v0.py', 'docs/cycle14-plan.md:169 -> tools/bench/build_opflatseqdiagrams_v0.log', 'docs/cycle14-plan.md:169 -> tools/bench/opflatseqdiagrams_labels.json', 'docs/cycle14-plan.md:170 -> tools/bench/diag_a3_complete.py']
+  PASS  L2b cited line numbers are in range: no citation points past a file's end
+  PASS  L3 STATUS.md stays one screen: 93 lines (limit 110)
+  PASS  L4 at most one current plan per family: ['docs/cycle27-plan.md'] current
+  PASS  L8 the current plan has a `## Pre-decided` section: docs/cycle27-plan.md ok
+  PASS  L5 superseded documents are not still current: no `supersedes:` target is still marked current
+  PASS  L6 archived reviews are disposed: 550/550 disposed (87 closed as `disposition: legacy`, skipped)
+  WARN  L7 decision/measurement sentences carry a mark: 604 unmarked line(s); a fact stated without `DECIDED:`/`MEASURED:`/`DECISION:` has to be inferred rather than extracted. first: ['docs/NAMES.md:404', 'docs/NAMES.md:421', 'docs/NAMES.md:455', 'docs/NAMES.md:594', 'docs/NAMES.md:716']
+DOC-LINT PASS: 0 fail, 3 warn, 7 pass
+
+
+  PASS  doc_lint L2 0 dangling                                       every cited project path exists: 2180 citations checked, none dangling
+  PASS  doc_lint L6 blank == post-09-22 debt only (0)                archived reviews are disposed: 550/550 disposed (87 closed as `disposition: legacy`, skipped)
+  PASS  doc_lint L6 0 blank (card wording)                           archived reviews are disposed: 550/550 disposed (87 closed as `disposition: legacy`, skipped)
+
+=== 6. resume checklist
+  PASS  STATUS STOP line present (left in place)                     ['STOP — user 2026-09-25 19:xx ("러너는 멈춰"). Runner not to be started; only the user removes this line.']
+  PASS  next.json validates                                          OK next/1
+  PASS  motor_session.json absent                                    
+  PASS  no LabVIEW.exe running                                       
+
+=== 2. every tools/bench/selftest_*.py
+  PASS  selftest selftest_audit_c4c_split                            rc 0 33s | === GATES: 33 pass / 0 fail
+  PASS  selftest selftest_audit_cost_window                          rc 0 0s | SELFTEST 7 pass / 0 fail
+  PASS  selftest selftest_bgrun_fail_scan                            rc 0 1s | === selftest_bgrun_fail_scan: 8 pass, 0 fail ===
+  PASS  selftest selftest_bgrun_final_line                           rc 0 4s | === selftest_bgrun_final_line: 8 pass, 0 fail ===
+  PASS  selftest selftest_bgrun_jev_exempt                           rc 0 8s | === selftest_bgrun_jev_exempt: 9 pass, 0 fail ===
+  PASS  selftest selftest_c60c_route                                 rc 0 0s | === SELFTEST 6/6 cells
+  SKIP  selftest_c67_ensureloaded                                    declares '# REQUIRES: labview   (declaration read by verifiers, e.g. lint_verify_20260925b.py: skipped under a labview=none card)'; card task_chat-L2.json flags.labview='none'
+  PASS  selftest selftest_cycle_runner                               rc 0 2s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_cycle_runner_ff                            rc 0 24s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":3,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_errorlist_check_header                     rc 0 0s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_errorlist_retry                            rc 0 0s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_errorlist_reuse_81                         rc 0 1s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":16,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_guard_bash_jev                             rc 0 1s | === 11 PASS / 0 FAIL
+  PASS  selftest selftest_guard_cycle_fixed                          rc 0 0s | NEGATIVE PROOF (plan Pre-decided 3): 2 pass / 0 fail   [B1 must REFUSE, B2 must ALLOW]
+  PASS  selftest selftest_guard_cycle_rerun                          rc 0 0s | === selftest_guard_cycle_rerun: 4 pass, 0 fail ===
+  PASS  selftest selftest_guard_peer_77_measure                      rc 0 1s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":1,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_guard_peer_budget                          rc 0 22s | === selftest_guard_peer_budget: 12 pass, 0 fail ===
+  PASS  selftest selftest_guard_peer_failre                          rc 0 3s | === 29 pass / 0 fail ===  (2.9 s)
+  PASS  selftest selftest_guard_peer_jev                             rc 0 13s | JEV-LADDER | 2026-09-25 20:11:30 | fake_stage.log | old-path discharge | ALLOW via discharge | NEXT-ACTION: apply the cited review's disposition (archive/peer/2026-09-22-fake-widget-failpre
+  PASS  selftest selftest_guard_peer_ladder                          rc 0 1s | JEV-LADDER | 2026-09-25 20:11:42 | fake_ladder_stage.log | old-path discharge | ALLOW via discharge | NEXT-ACTION: apply the cited review's disposition (archive/peer/2026-09-22-fake-ladder-r
+  PASS  selftest selftest_guard_peer_samerow                         rc 0 0s |   (one review per row per cycle - user 2026-09-22; no new review is owed for a later failure of the same script inside 6 h.)
+  PASS  selftest selftest_guard_peer_scan_tmp                        rc 0 0s | RESULT {"schema":"result_line/1","status":"PASS"}
+  PASS  selftest selftest_guard_session                              rc 0 5s | SUMMARY 20/20 gates pass
+  PASS  selftest selftest_heartbeat                                  rc 0 27s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_item34                                     rc 0 40s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":32,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_jev_device_value                           rc 0 1s | === SELFTEST: 12 pass / 0 fail
+  PASS  selftest selftest_jev_ladder_action                          rc 0 19s | === TOTAL: 110 pass / 0 fail, 0 pre-existing excluded (worst code 0) ===
+  PASS  selftest selftest_launch_gate                                rc 0 0s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":28,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_logclass_cmd                               rc 0 89s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":28,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_logclass_recipebuild                       rc 0 17s | === GATES: 24 pass / 0 fail
+  SKIP  selftest_make_default                                        declares '# REQUIRES: labview   (declaration read by verifiers, e.g. lint_verify_20260925b.py: skipped under a labview=none card)'; card task_chat-L2.json flags.labview='none'
+  PASS  selftest selftest_motor_fail_exit                            rc 0 1s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_motor_gate2                                rc 0 6s | REFUSED: no session file C:\Users\KimLab\AppData\Local\Temp\selftest_motor_gate2_s0l43ouo\no_such_session.json - run `py tools/motor_gate.py --session start` first, which installs the CONTRO
+  PASS  selftest selftest_next_gate_jev                              rc 0 0s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_protocol                                   rc 0 2s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":48,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_protocol_wiring                            rc 0 9s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":66,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_retry_cap                                  rc 0 6s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_stage_prerun_headcmp_79-6                  rc 0 5s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":2,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_stage_prerun_stageplan                     rc 0 5s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_stagekit                                   rc 0 0s | === GATES: 47 pass / 0 fail
+  PASS  selftest selftest_stagesim_k79                               rc 0 1s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":4,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_stagesim_l2a1_80                           rc 0 6s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_stagesim_unflip_81                         rc 0 10s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":8,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_stagexec_gate                              rc 0 1s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  selftest selftest_stamp_window                               rc 0 23s | SELFTEST 15 pass / 0 fail
+  PASS  selftest selftest_stoprecord_bgrun                           rc 0 0s | === selftest_stoprecord_bgrun: 6 pass, 0 fail ===
+  PASS  selftest selftest_stoprecord_eqform                          rc 0 3s | === selftest_stoprecord_eqform: 5 pass, 0 fail ===
+  PASS  selftest selftest_stoprecord_supersession                    rc 0 3s | === supersession selftest (PATCHED): 36 pass, 0 fail ===
+  PASS  selftest selftest_stoprecord_table                           rc 0 1s | === selftest_stoprecord_table: 107 pass, 0 fail ===
+  PASS  selftest selftest_vigraph_frame_80                           rc 0 4s | RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  no self-test made a git commit                               a893c961 -> a893c961
+
+=== GATES: 124 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":124,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/lint_verify_20260925b.json","md5":"11afa58b282f68c2fb853745758f9f0a"}]}
+BGRUN END rc=0 after 408s

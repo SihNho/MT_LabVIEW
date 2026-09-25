@@ -83,4 +83,8 @@ Sources:
 
 ## What was done with it
 
-(Claude fills in)
+Written 2026-09-25 by card chat-L2 from the record already committed (3701ba5, "Cycle 77: session outputs"); no new
+judgement. ACCEPTED: finding 1 (the bare `except Exception` around the cold `close_panel` swallowed everything) — the
+teardown guard was NARROWED to error 0x47D (1149) only and the stage re-run passed 16/0, its C5 catching exactly 1149
+(`tools/bench/cards/result_77-4.json:14-15`, `const_loopterm_77d.log:14-18`). Findings 2-3 (no hidden later failure; no
+cold reader opens the panel) matched the run's own gates C0-C4 and Z (`result_77-3.json:2`); nothing further done.

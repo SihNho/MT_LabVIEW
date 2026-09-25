@@ -243,7 +243,6 @@ VIOLATION: repeated-failure-class | loss_min=15 | loss_usd=4.5005 | evidence=doc
 
 ## What was done with it
 
-(Claude fills in)
 
 **Disposed 2026-09-23 by the cycle-67 judgement session (the session it criticises). All seven findings ACCEPTED; nothing refuted.**
 

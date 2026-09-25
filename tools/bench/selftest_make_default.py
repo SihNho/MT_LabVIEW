@@ -7,6 +7,7 @@ free String[] control exist; S2 make_default({scalar: 3, array: [1,2,3,4], Strin
 raising; S3 fresh LabVIEW, cold read: all three equal (count 3/3); S4 a negative case: make_default with a label that is
 not on the panel RAISES. Scratch deleted, LabVIEW gone.
     MATERIAL=1 py tools/bgrun.py --max-min 12 --log tools/bench/selftest_make_default.log -- py -u tools/bench/selftest_make_default.py"""
+# REQUIRES: labview   (declaration read by verifiers, e.g. lint_verify_20260925b.py: skipped under a labview=none card)
 import os, sys                                                                           # noqa: E401
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import diag_replay_lib as L                                                              # noqa: E402

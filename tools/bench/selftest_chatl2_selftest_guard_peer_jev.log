@@ -1,0 +1,51 @@
+=== selftest_guard_peer_jev: the JEV-DISCHARGE branch of tools/hooks/guard_peer.py ===
+NO LabVIEW. Branch cases make NO API call (covers_failure is stubbed).
+
+  PASS  C0 the fake failing log is the one the gate sees  
+  PASS  C0b with no key the gate still BLOCKS (old behaviour preserved)  rc=2
+  PASS  C1 p=0.97 -> the gate ALLOWS  rc=0, 1 stub call(s)
+  PASS  C1b the JEV-DISCHARGE line is appended to jev_gate.log  JEV-LADDER | 2026-09-25 20:11:30 | fake_stage.log | old-path discharge | ALLOW via discharge | NEXT-ACTION: ap
+  PASS  C1c the citation is written into the review under its disposition heading  disposition heading present once: True
+  PASS  C1d the citation writes NO release line (cannot free a prior-art verdict)  
+  PASS  C2 p=0.55 -> the gate BLOCKS as before  rc=2
+  PASS  C2b an advisory line is emitted with the block  JEV-ADVISORY | 2026-09-25 20:11:30 | fake_stage.log closest review 2026-09-22-fake-widget-failpred.md p=0.550 
+  PASS  C2c the original block message is still printed in full  
+  PASS  C3 p=0.02 -> BLOCK with no advisory line  rc=2
+  PASS  C4 an exception inside the discharge degrades to the old block  rc=2
+  PASS  C5 the REMEDY exemption still passes (peer.ps1 dispatch)  
+  PASS  C5b the cycle_runner exemption still passes  
+  PASS  C7 a NEWER Jev-script log does not become the failing log the gate blocks on  newest_failing_log() -> 'fake_stage.log'
+  PASS  C7b a NON-Jev build that merely MENTIONS a Jev script still gates (scoped by the command, not the filename)  newest_failing_log() -> 'jev_mentioning_build.log'
+  PASS  C8 a selftest_*.log whose command reaches LabVIEW (transitively, via an imported helper) GATES  newest_failing_log() -> 'selftest_lvfix.log'
+  PASS  C8b a NEWER pure-Python selftest log does NOT become the failing log  newest_failing_log() -> 'selftest_lvfix.log'
+  PASS  C8c scoped by COMMAND: a non-selftest-NAMED log running a pure-Python self-test is excluded too  newest_failing_log() -> 'selftest_lvfix.log'
+  PASS  C8d scoped by COMMAND: a selftest-NAMED log whose command runs a recipe GATES  newest_failing_log() -> 'selftest_named_recipe.log'
+  PASS  C8e fails CLOSED: a selftest script that cannot be read GATES  newest_failing_log() -> 'selftest_missing.log'
+  PASS  C8f no BGRUN START at all -> the old filename rule still excludes it  newest_failing_log() -> 'selftest_missing.log'
+  PASS  C6 LIVE: the real transport answers this fixture pair  p=0.752 err=None
+  PASS  C6b LIVE: the review that attacks this very prediction reads as covering it  p=0.752
+  PASS  C9 the real selftest_make_default.py command is NOT exempt (it reaches LabVIEW via diag_replay_lib -> stagekit)  
+  PASS  C9b this file's own command IS exempt (pure Python, no LabVIEW)  
+
+=== selftest_guard_peer_jev: 25 pass / 0 fail ===
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":25,"fail":0},"first_fail":null,"artefacts":[]}
+BLOCKED by tools/hooks/guard_peer.py (CLAUDE.md: a FAILED PREDICTION triggers mandatory peer review).
+  latest failing log : bench\fake_stage.log
+  first failure line : STOP: A2 THE WIDGET RESOLVED - widget #4242 appears exactly once on Frobnicator #99's terminal table
+
+Before the next build, dispatch a peer to ATTACK the explanation you formed for this failure:
+  py tools/bgrun.py --max-min 14 --log tools/bench/peer_<slug>.log -- \
+     powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 \
+     -Slug <slug> -TaskFile <file with: ATTACK this claim ...>
+
+The block lifts once archive/peer/ holds an exchange that (a) is newer than that log, (b) NAMES the failure
+    - any of: fake_stage.log, fake_stage.py  (put the log or script name in the -Task),
+    (c) ended with outcome ANSWERED, and (d) came from an ADVERSARY: codex, gemini, or
+    `-Agent claude -Role hypothesis` (opus / effort max / web) - the last one added 2026-09-18 while
+    codex's weekly quota is at 9 % (user's decision, a trial).
+A `-Agent claude` exchange in ANY OTHER role is this project's rule/consistency audit - dispatch it too if
+it helps, but it cannot discharge a failed prediction on its own (user's decision, 2026-09-15).
+Reading logs, writing docs and dispatching the peer are never blocked. Set PEER_GUARD_OFF=1 only inside
+benchmark cells.
+NEXT-ACTION: hypothesis review owed (old path)
+JEV-LADDER | 2026-09-25 20:11:30 | fake_stage.log | old-path discharge | ALLOW via discharge | NEXT-ACTION: apply the cited review's disposition (archive/peer/2026-09-22-fake-widget-failpred.md) and rerun; no new diagnosis

@@ -273,4 +273,10 @@ VERDICT {"schema":"verdict/1","id":"retrospective-cycle83","verdict":"refuted","
 
 ## What was done with it
 
-(Claude fills in)
+Written 2026-09-25 by card chat-L2 from the record already committed (22d810d, "Cycle 83: session outputs"); no new
+judgement. The named fault `inference-over-measurement` (loss 33 min, $1.42) is DISPOSED at
+`docs/violation-decisions.md:1320-1330`: DECISION no new device (the reader existed); the rule "measure a state written
+outside the VI's process for persistence across close/reopen BEFORE the run" was recorded in PD189. Finding 4's wrong
+doc line was corrected in the same cycle (`docs/camera-acquisition-facts.md:642-647`). Findings 1, 3(b), 5, 6(a) (STATUS
+says "8 real legs 8/0" while the sequencer's RESULT is FAIL 37/4, `m8_load_83.log:372-373`) and the `-ReviewCard`
+omission in 4 carry NO recorded action as of commit a893c96 — listed for the judgement session, not decided here.

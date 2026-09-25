@@ -246,7 +246,9 @@ def next_md5(status_path):
 def next_json_state(root):
     """(md5 of tools/bench/next.json bytes | 'absent', why-invalid | None). Session protocol v1 C7: the machine copy
     of NEXT is `next.json` (docs/protocol/next.json); the prose `## NEXT` in STATUS stays for people."""
-    path = os.path.join(root, "tools", "bench", "next.json")
+    # NEXT_JSON / NEXT_SNAPSHOT env overrides: self-tests only (selftest_guard_session G12/G13, card chat-L2) - so a
+    # test never reads the LIVE hand-off files. Unset in every real session.
+    path = os.environ.get("NEXT_JSON") or os.path.join(root, "tools", "bench", "next.json")
     try:
         sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
         import protocol
@@ -267,7 +269,7 @@ def next_gate():
     A next.json that passes then gets one ADVISORY Jev reading of STATUS's prose NEXT (docs/jev-integration-plan.md
     #5). It prints and it logs; it NEVER blocks. Any failure of the reading is silence, by construction."""
     root = os.path.dirname(os.path.dirname(HERE))
-    snap_path = os.path.join(root, "tools", "bench", "next_snapshot.md5")
+    snap_path = os.environ.get("NEXT_SNAPSHOT") or os.path.join(root, "tools", "bench", "next_snapshot.md5")
 
     def _jev_advisory():
         """ADVISORY ONLY. Reads STATUS's NEXT, asks Jev whether a fresh session could start from it, and on a

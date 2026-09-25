@@ -739,7 +739,7 @@ def stageplan_check(path):
 
 
 # ------------------------------------------------------------------------------ control_path_lint (CLAUDE.md 1c'')
-# Card chat-F1, Pre-decided 148(c)(e). Loop-to-loop CONTROL travels by local variable; queues/notifiers are for
+# Card chat-F1, Pre-decided 190(c)(e) (connectivity-map-plan; numbered 148 until card chat-L2). Loop-to-loop CONTROL travels by local variable; queues/notifiers are for
 # lossless DATA streams only; no edge detection on a polled boolean. Reads the stageplan/1 JSON STRUCTURALLY (action
 # fields, endpoint dicts/symbols, the base graph's classes and terminal names) - no regex over the file text.
 # Existed first: gscript.queue_node (obtain/enqueue/dequeue/release, the only queue writer), stagesim OPS (no queue
@@ -1339,7 +1339,7 @@ def check_cap(cmd, s, runs, ck):
                    "RETRY_CARD=<card path> in the launch command ({4}).\n").format(key, len(mine), ck, RETRY_CAP, why), None
 
 
-def record_stage_run(s, ck, card_id, cmd, by="check_launch", extra=None):
+def record_stage_run(s, ck, card_id, cmd, by=COUNTED_BY, extra=None):
     rec = {"t": time.time(), "iso": time.strftime("%Y-%m-%d %H:%M:%S"), "cycle": ck, "stage": stage_key(s),
            "script": rel(s), "sha256": sha256(s), "card": card_id, "cap": RETRY_CAP, "by": by}
     rec.update(extra or {})
@@ -1367,15 +1367,17 @@ def record_started(cmdline, log=None, pid=None):
     return out
 
 
-def check_launch(cmd, record=False):
+def check_launch(cmd):
     """(allow, why). Refuses a stage-recipe launch without a dry PASS and a prerun PASS for its CURRENT sha256 and
     plan md5s, both newer than the newest failing run of it (decision 4), and past RETRY_CAP runs in this cycle
-    without a judgement card. `record=True` (guard_bash) appends every ALLOWED launch to STAGE_RUNS."""
+    without a judgement card. It RECORDS NOTHING: a run is recorded in ONE place, record_started() called by
+    tools/bgrun.py at child start (card 78-2; card chat-L2 removed the old `record=True` path, whose lines carried
+    `by: check_launch` and were never counted - a second recorder that looked like the first)."""
     units = [(s, None) for s in launched_stage_scripts(cmd)] + launched_plan_runs(cmd)
     if not units:
         return True, ""
     recs = read_records()
-    runs, ck, allowed = read_stage_runs(), cycle_key(), []
+    runs, ck = read_stage_runs(), cycle_key()
     for s, plan in units:
         if not os.path.isfile(s) or (plan and not os.path.isfile(plan)):
             return False, "launch gate: {0} does not exist".format(rel(plan or s))
@@ -1396,13 +1398,9 @@ def check_launch(cmd, record=False):
         if bad:
             return False, ("LAUNCH GATE (decision 4): {0} FAILED after its pre-run records ({1}: {2}); the records are "
                            "invalid - pre-run it again.\n").format(what, bad[0], bad[2])
-        ok_cap, why_cap, cid = check_cap(cmd, plan or s, runs, ck)
+        ok_cap, why_cap, _cid = check_cap(cmd, plan or s, runs, ck)
         if not ok_cap:
             return False, why_cap
-        allowed.append((plan or s, cid))
-    if record:
-        for s, cid in allowed:
-            record_stage_run(s, ck, cid, cmd)
     return True, ""
 
 
