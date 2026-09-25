@@ -135,12 +135,17 @@ gate("I1", card(1).get("effort") == "medium" and card(2).get("effort") == "high"
      "%s %s" % (card(1).get("effort"), card(2).get("effort")))
 if not gates[-1][1]:
     print(log)
-r, log, card = dry(3, "off", "once")
-c3 = card(3)
-gate("I2", c3.get("model") == "claude-opus-5-5" and c3.get("effort") == "high" and "level 1" in c3.get("note", "")
-     and "level 0 -> 1" in log and "JUDGE-LADDER |" in log, "%s/%s note=%r" % (c3.get("model"), c3.get("effort"),
-                                                                            c3.get("note", "")[:80]))
-if not gates[-1][1]:
+# I2/I3 (card chat-M1b): the ladder REPLACES stop condition 3. next.json moves in cycle 1 only; cycles 2..5 unchanged
+# -> cycle 3 opus/high, cycle 4 fable/low, cycle 5 fable/medium, after cycle 5 (4th unchanged) RUNNER STOP.
+r, log, card = dry(6, "off", "once")
+c3, c4, c5 = card(3), card(4), card(5)
+gate("I2", (c3.get("model"), c3.get("effort")) == ("claude-opus-5-5", "high") and "level 1" in c3.get("note", "")
+     and (c4.get("model"), c4.get("effort")) == ("fable", "low") and (c5.get("model"), c5.get("effort")) == ("fable", "medium")
+     and "level 0 -> 1" in log and "the loop is not moving" not in log,
+     "%s/%s %s/%s %s/%s" % (c3.get("model"), c3.get("effort"), c4.get("model"), c4.get("effort"), c5.get("model"), c5.get("effort")))
+gate("I3", not card(6) and "judgement ladder is exhausted" in log and r.returncode == 3,
+     "runner-exit %d card6=%s" % (r.returncode, bool(card(6))))
+if not (gates[-1][1] and gates[-2][1]):
     print(log)
 
 n_pass = sum(ok for _, ok in gates)

@@ -8,7 +8,9 @@ PREDICTION CONTRACT (7 gates):
   G1  a STATUS.md with a `STOP` line in its head       -> exit 0, no cycle run, runner log says STOP marker
   G2  three cycles whose session CHANGES the NEXT text -> exit 0 after exactly 3 cycles, 3 CYCLE lines logged,
                                                           per-cycle logs cycle_1/2/3.log each with a BGRUN END
-  G3  a session that leaves NEXT identical             -> exit 3 after 2 cycles, "byte-identical" in the reason
+  G3  a session that leaves NEXT identical             -> exit 3 after 4 cycles (judgement ladder, card chat-M1b
+                                                          2026-09-26: x1 opus high, x2 fable low, x3 fable medium,
+                                                          x4 RUNNER STOP), "ladder is exhausted" in the reason
   G4  the same run appends `## RUNNER STOPPED` to STATUS and does not rewrite what was there
   G5  a session that exits non-zero twice              -> exit 3, reason names the repeat
   G6  cycle numbering continues from the runner log    -> a second invocation starts at CYCLE 4
@@ -152,8 +154,8 @@ def main():
         sp, bench = new_case(tmp, "stuck")
         code, out = run_runner("--dry-run", "--cycles", "5", "--status", sp, "--bench-dir", bench, "--max-min", "2")
         body = open(sp, encoding="utf-8").read()
-        gate("G3 unchanged NEXT twice stops the loop",
-             code == 3 and len(cycle_lines(bench)) == 2 and "byte-identical" in out,
+        gate("G3 unchanged NEXT four times stops the loop (judgement ladder)",
+             code == 3 and len(cycle_lines(bench)) == 4 and "ladder is exhausted" in out,
              "exit %d, %d cycles" % (code, len(cycle_lines(bench))))
         gate("G4 the stop notice is APPENDED to STATUS",
              "## RUNNER STOPPED" in body and body.startswith("# STATUS (self-test copy)")

@@ -24,9 +24,11 @@ STOP CONDITIONS (all four, each written to the runner log, the last three also a
   1. `STOP` at the start of a line in STATUS.md's first 60 lines, or a `## STOP` heading - the USER'S handle on
      the loop. Checked BEFORE every cycle. Exit 0.
   2. the session exited non-zero twice in a row. Exit 3.
-  3. `tools/bench/next.json` (C7, next/1) came out absent, invalid or byte-identical two cycles running - a cycle
-     that changed nothing is a loop, and a loop is cheaper to stop than to watch. Exit 3. (Until 2026-09-24 this
-     compared STATUS.md's prose `## NEXT`.) `stop_requested: true` in next.json stops the runner with exit 0.
+  3. REPLACED 2026-09-26 (card chat-M1b) by the JUDGEMENT LADDER: `tools/bench/next.json` (C7, next/1) absent,
+     invalid or byte-identical after a cycle raises the ladder one level (x1 opus high, x2 fable low, x3 fable
+     medium); the FOURTH consecutive unchanged cycle is RUNNER STOP + a decisions_pending item. Exit 3. (Until
+     2026-09-26 two unchanged cycles stopped the runner; until 2026-09-24 the comparison was STATUS.md's prose
+     `## NEXT`.) `stop_requested: true` in next.json stops the runner with exit 0.
   4. `--cycles N` exhausted. Exit 0.
   (2026-09-24, card chat-D) also: LabVIEW not verified gone at cycle end (labview_close_hook), and a steer/1 card
   refused twice (protocol.steer_after_cycle -> a decisions_pending item). Exit 3.
@@ -1295,12 +1297,11 @@ def _loop(a, status_path, bench, runner_log, prompt, run_t0, hb):
             log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
             note_in_status(status_path, reason)
             return 3
+        # stop condition 3 (next.json unchanged twice) was REPLACED 2026-09-26 (card chat-M1b) by the judgement
+        # ladder above: unchanged x1 -> opus high, x2 -> fable low, x3 -> fable medium, x4 -> RUNNER STOP.
         if unchanged_streak >= 2:
-            reason = ("tools/bench/next.json was absent, invalid or byte-identical after two consecutive cycles "
-                      "(%d and %d) - the loop is not moving" % (n - 1, n))
-            log_line(runner_log, "RUNNER STOP | %s | %s" % (time.strftime("%Y-%m-%d %H:%M:%S"), reason))
-            note_in_status(status_path, reason)
-            return 3
+            log_line(runner_log, "NEXT-UNCHANGED | %s | cycle %d | %d consecutive cycles without a new next.json - "
+                                 "handled by the judgement ladder" % (time.strftime("%Y-%m-%d %H:%M:%S"), n, unchanged_streak))
 
 
 if __name__ == "__main__":
