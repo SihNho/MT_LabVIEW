@@ -1,0 +1,65 @@
+BGRUN START 2026-09-25 09:46:06 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c79-6-k_e1op3 -TaskFile C:/Users/KimLab/AppData/Local/Temp/claude/G--Codes-LabVIEW-Codes-MinLab-zz-LabView-VI-AAA-UNIST-2--Tracking-V6-ParallelLoop/4872ab60-45dd-4686-8d58-8e95b472eaeb/scratchpad/peer_79-6_k_task.txt
+OUTCOME: ANSWERED (187s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-25-c79-6-k_e1op3.md
+COST: $1.5011  in 38 / out 16115 / cache-create 98810 / cache-read 1831394  (183s, 30 turn(s))
+--- ANSWER ---
+**Verdict: the claim is wrong.** Its topology and its mechanism are both refuted by the files already on disk. One part survives: the fault really is in the simulator, not in LabVIEW or the recipe, and E1 should not be relaxed. But the fix the claim proposes, "model whole-wire loss on move", is the wrong fix.
+
+## 1. Strongest reason it is wrong: there is no single branched wire, and #5058 is upstream of #2765, not downstream
+
+In `step_02_move_in.json`, the simulator's graph just before op 3:
+
+- **#5058 is the source.** Its output `'x,y,z array out'` (terminal 5124, `is_source:true`) drives **wire 505**. Wire 505 ends at three sinks: tunnel #2765's outside terminal (2811), shift register #1147 (1148) and Build Array #2626 (4168).
+- **#2765 is an input tunnel of a case structure.** Its outside terminal 2811 is a sink.
+- **Its two inside terminals sit in different case frames, on separate wires:**
+  - 2789 (frame 2235) → wire 3472 → #6085 (terminal 6253)
+  - 2792 (frame 2265) → wire 2924 → #5696 (terminal 5910)
+- **#5058's own `'x,y,z array'` input (5164) is on wire 5975**, which does not touch #2765 at all.
+
+So "#2765 feeds one branched wire that reaches #5058, #5696 and #6085" has the direction backwards. It also merges three separate wires into one.
+
+**The diff code rules out deletion as well.** `edges()` (`tools/stagexec.py:165-178`) skips any terminal whose `wire_uid` is 0. A terminal whose wire LabVIEW deleted could therefore never appear in `dangling_real_only`. All four terminals do appear there. So they still sit on wires that exist, and each of those wires is missing either its source or its sink.
+
+The outside of the tree was not deleted either. The sinks on wire 505 (2811, 1148, 4168) do not appear in the diff, so real and simulated agree on them.
+
+## 2. Alternative explanation: the tunnel lost its direction
+
+Once #5058 moves, wire 505 has no source. #2765 then has no source on either side. NI documents that a tunnel with no source "cannot decide the direction of dataflow" and becomes an undirected tunnel ([NI: Wire connected to an undirected tunnel](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-connected-to-undirected-tunnel.html)).
+
+Its inside terminals 2789 and 2792 then stop reading as sources. Wires 3472 and 2924 become sink-only. That produces exactly what the log shows: both edges gone and all four terminals dangling.
+
+The simulator already has a rule for this effect, but a narrower one. `_flip_orphaned_output_tunnels` (`tools/stagesim.py:308-324`) flips direction only when:
+
+- the tunnel is an **output** tunnel (its inside end is a sink on a wire with no source), and
+- the tunnel class is `LoopTunnel` or `Tunnel` (`TUN1`, line 58).
+
+Our case is the mirror image: an **input** `SelectorTunnel`. Neither the direction nor the class is covered. The rule's own evidence comes from cycle 71 (terminals 2043 and 5050 flipped `True->False`), which is the same phenomenon on a different tunnel class.
+
+A side point: the brief says "the final end state agrees". That holds only at the `computation_diff` level. In `step_27_wire.json`, wires 3472 and 2924 are still fully wired. The simulator never removes them. #5696 and #6085 count as open in the end state only because their upstream chain dies at wire 505, which has no source.
+
+## 3. What would falsify the claim
+
+- **Claim holds if** a real terminal dump after op 3 shows `wire_uid 0` on 2789, 2792, 5910 and 6253 (wires deleted). The `edges()` logic above already makes this nearly impossible.
+- **Tunnel-flip explanation holds if** the dump shows wires 3472 and 2924 still present, with `is_source` False on 2789 and 2792.
+- **A third possibility** (LabVIEW renumbered the wires) would show non-zero but different wire uids on the two ends of each pair.
+
+## 4. Cheapest discriminating test
+
+The real graph after op 3 was not saved. `stage_d1_k.json:598-643` holds only the diff. So one headless read is needed, with no build and no save:
+
+1. Replay ops 1–3 on a scratch copy.
+2. Dump `term_uid`, `is_source` and `wire_uid` for terminals 2789, 2792, 5910, 6253 and 2811.
+3. Optionally read `Wire.Is Broken?` on wires 3472 and 2924. The tunnel-flip explanation predicts they read as broken.
+
+**If the flip is confirmed, the fix is:**
+
+- Widen the simulator's tunnel-direction rule to every tunnel class (`SelectorTunnel` included) and to both directions: a tunnel with no source on either side reads all of its terminals as `is_source=False`.
+- Then re-simulate and re-finalize, and keep E1 as it is.
+
+**What would change my mind:** a dump showing `wire_uid 0` on those four terminals, or wire 505's sinks missing in the real graph.
+
+I did not save this review to a file here: the Write tool is disabled in this session.
+
+Sources:
+- [NI: Wire connected to an undirected tunnel](https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-connected-to-undirected-tunnel.html)
+- [NI Forums: scripting a pass-through tunnel inside a case structure](https://forums.ni.com/t5/LabVIEW/LabvVIEW-Scripting-wiring-a-pass-through-tunnel-inside-a-case/td-p/3945608)
+BGRUN END rc=0 after 187s

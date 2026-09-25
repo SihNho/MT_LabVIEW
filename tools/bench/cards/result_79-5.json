@@ -1,0 +1,24 @@
+{"schema":"result/1","id":"79-5","status":"BLOCKED","gates":{"pass":3,"fail":1},
+"first_fail":"R2 recipe pre-run X2/X3/X5 (tools/bench/stage_d1_k_prerun_79-5.log:145-148): plan_files() accepts only a decisions-row json; plan_k_split.json is stageplan/1 with no decisions",
+"blocked_by":{"device":"tools/stage_prerun.py plan_files (:674-692) behind the launch gate check_launch (:1083-1120)","message":"binding the recipe to plan_k_split.json needs a stage_prerun.py code change (recognise a stageplan/1 named by a recipe); card R2 says STOP; no LabVIEW run, R3/R4 not reached"},
+"artefacts":[
+{"path":"tools/recipes/stage_d1_k.py","md5":"899c1f5dcfff06368eabf9324542fb59"},
+{"path":"tools/bench/stage_d1_k_dry_79-5b.log","md5":"a298b84fd620c0c643c2d3ca5a35feb7"},
+{"path":"tools/bench/stage_d1_k_prerun_79-5.log","md5":"604204ba9a4edbf6a0dc92488e3469c9"},
+{"path":"tools/bench/k_selfwire_79.log","md5":"b808d8783b436c3ad8328b96aa9a8ca4"},
+{"path":"tools/bench/k_selfwire_79.py","md5":"27de60e3af48739092e0cb10684ce4c3"}],
+"facts":[
+"R0 done: 79-5 disposition under 'What was done with it' in archive/peer/2026-09-25-c79-k-x4.md (route c applied, route a not taken, no exec end removed)",
+"R1 PASS: stage_d1_k.py 120 lines, reads only plan_k_split.json (K0 final stageplan, K1b 27 actions->15 ops/11 wired); dry PASS stage_d1_k_dry_79-5b.log:20,27,60,136,145",
+"R1 gates kept: IM from plan tunnel 'indexing' (178(a)), P2 over compiled ops, PB 10/10 rows (dry :136), KN, PS save; P2 dry IndexError facts identical to the 79-4 dry (stage_d1_k_prerun.log:76)",
+"R2 FAIL: recipe pre-run 4/3, X2 'none among [plan_k_split.json]', X3 0 rows, X5 ops 11 vs plan wire rows 0 (stage_d1_k_prerun_79-5.log:145-148)",
+"R2 cause: plan_files() needs a 'decisions' list of id+action rows (tools/stage_prerun.py:674-692); plan_k_split.json keys = schema/stage/goal/base/context/actions/open_rows/final/finalized",
+"R2: X4 now PASSES on the recipe's own 7 address() ends (stage_d1_k_prerun_79-5.log:147); only the plan binding fails",
+"Prior-art: r2 novel (archive/peer/2026-09-25-priorart-priorart-c79-k-r2.md) predicted the X2 fail; trim to 120 lines re-reviewed r3 novel, releases sha bf5a50b4c442; both dispositioned",
+"R5: self-wires present in S1 too: w7617 #6239, w3877 #3862, w5670 #5659 on diagram 536 (k_selfwire_79.log:7,13,19 bed = :25,31,37 S1) => reader artefact per 178(f)",
+"No LabVIEW run, no lock taken, 0 stage runs used; bed md5 4b621946 read by the dry (stage_d1_k_prerun_79-5.log:23); no JEV-LADDER line for the prerun log yet",
+"Note: prerun ran on sha 50da595c (123 lines); trimmed bytes differ by 2 joined/blank lines only, named .json strings unchanged, so plan_files result is the same"],
+"open":[
+"Authorise a stage_prerun.py change so a recipe that names a stageplan/1 is pre-run against it (X2/X3/X5 counting plan actions; plan_md5s keyed on it)? Or another binding route?"],
+"cost":{"usd":null,"minutes":14,"labview_runs":0},
+"note":"Two prior-art reviews (~$1.5 + ~$1) because the 120-line trim after r2 re-armed stop_record; a FIXED: line in a novel review does not release. plan_k_rows.json left on disk as a derived report."}

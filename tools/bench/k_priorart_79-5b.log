@@ -1,0 +1,37 @@
+BGRUN START 2026-09-25 09:30:04 limit 20.0 min: py -u tools/prior_art_review.py --slug priorart-c79-k-r3 --trigger new-op --plan-file tools/bench/k_priorart_plan_79-5.md --recipe tools/recipes/stage_d1_k.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_priorart-c79-k-r3.txt (66400 chars)
+   review card tools\bench\cards\review_priorart-priorart-c79-k-r3.json
+OUTCOME: ANSWERED (43s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-25-priorart-priorart-c79-k-r3.md
+COST: $1.0125  in 10 / out 3602 / cache-create 105148 / cache-read 496243  (39s, 9 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-priorart-c79-k-r3 verdict=novel -> tools\bench\cards\verdict_priorart-priorart-c79-k-r3.json
+--- ANSWER ---
+**Verdict: novel.** These bytes are the recipe that r2 already reviewed and found novel, with three lines of trimming (`archive/peer/2026-09-25-priorart-priorart-c79-k-r2.md:258-260`). Nothing in the project files had already built, refuted or settled this route or this recipe shape before cycle 79.
+
+**PART A: the direction**
+- **A1 (settled already).** Pre-decided 178(f) decides route (c) this cycle (`docs/d1-loop12-17-split-plan.md:546-562`). The recipe carries out that ruling; no earlier work covered it. The first review (`archive/peer/2026-09-25-priorart-c79-k.md:294`) asked for the KN name gate. Its release at `:308` still holds, because KN is still in the recipe at `tools/recipes/stage_d1_k.py:97-104`. That review's `FIXED:` line points to `:102`, which still falls inside the KN block.
+- **A2 (refuted already).** Nothing refutes route (c). The only route ruled out is route (b) on its own, because it drops the gates (`d1-loop12-17-split-plan.md:557`). The recipe keeps K0, K1b, E1, IM, P2, PB, KN and the save (`stage_d1_k.py:55-114`).
+- **A3 (contradicted).** There is one known conflict, and it is not new, so I am not raising it as a slug:
+  - The docstring says the recipe presents `plan_k_split.json` to the launch gate (`stage_d1_k.py:6`).
+  - `stage_prerun.plan_files()` only counts a `.json` file with a `decisions` list as a plan (`tools/stage_prerun.py:675-689`, X2 at `:751`).
+  - This has now been measured: the pre-run of the previous bytes (sha `50da595c…`) failed X2 with the message "none among ['plan_k_split.json']" (`tools/bench/prerun_records.jsonl:31`).
+  - 178(f) already sets the outcome: "If the launch gate cannot bind this recipe to that plan without a code change, the run STOPS and reports" (`d1-loop12-17-split-plan.md:558-559`).
+  - The trim changed no logic, so the same X2 result is expected on these bytes. This limits whether the recipe can launch. It is not prior art against the recipe shape.
+- **A4 (unread evidence).** None. The docstring cites `tools/stagexec.py` and `stage_d1_l7_r.py`, and the x4 review was dispositioned in 178(f).
+
+**PART B: the artefact**
+- **B1 (already built).** The closest existing code is `stagexec.lv_run` (`tools/stagexec.py:884-944`). It runs the same Executor and the same end-cdiff against `open_rows`. But it discards the work copy and has no IM, P2, KN or save gates, so 178(f) rules it out on its own. The recipe's `end_graph()` (`stage_d1_k.py:41-50`) copies `lv_run`'s end-graph code. r2 already recorded that duplication and did not act on it (`r2.md:236,256-257`).
+- **B2 (already failed).** Earlier failures of this recipe were:
+  - the dry and pre-run records against `plan_k_rows.json` (`prerun_records.jsonl:24-27`), a cause the route (c) edit removes;
+  - the X2 pre-run failure above, which is the launch-gate binding gap and not a recipe fault.
+
+  No Executor-driven stage recipe that saves its output has ever been run.
+- **B3 (helper exists).** The recipe uses existing tools and does not rewrite them: `SX.Executor`/`LVBackend`, `s.cfw_second_pass`, `s.expect_is_broken_false`, `g.subvis`, `V.computation_diff`, `K.uid_edges` and `s.save`.
+- **B4 (already measured).** The originals' IndexMode was measured as 0 (`k_contract_79.log:28,31-42`, 178(a)), and IM compares against the plan's `indexing` field, which is consistent with that. The register-face and indicator rows are covered by E1 only, a limit the first review already accepted (`archive/peer/2026-09-25-priorart-c79-k.md:103`).
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-priorart-c79-k-r3","verdict":"novel","alternative":"stagexec.lv_run (tools/stagexec.py:884-944) runs Executor+end cdiff but discards work, no IM/P2/KN/save; 178(f) rules it out alone. r3 bytes = r2's reviewed recipe trimmed 123->120 lines, no logic change (r2.md:258-260).","discriminating_test":"Re-run py tools/stage_prerun.py --prerun on these bytes: expect X2 FAIL as at prerun_records.jsonl:31 (plan_files needs `decisions`, stage_prerun.py:675-689); 178(f):558-559 then says STOP and report, a launch-gate gap, not prior art.","violations":[],"sources":["docs/d1-loop12-17-split-plan.md:546-562","archive/peer/2026-09-25-priorart-priorart-c79-k-r2.md:243-260","archive/peer/2026-09-25-priorart-c79-k.md:308","tools/bench/prerun_records.jsonl:31","tools/stage_prerun.py:675-689","tools/stagexec.py:884-944"],"note":"X2 binding gap for stageplan/1 is already measured (prerun_records.jsonl:31) and governed by 178(f)'s STOP; recorded, not a prior-art slug."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-priorart-c79-k-r3.md
+   STOP RECORD: none - 2026-09-25-priorart-priorart-c79-k-r3.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_k.py sha bf5a50b4c442 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 46s

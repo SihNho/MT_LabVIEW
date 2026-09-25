@@ -1,0 +1,582 @@
+{
+ "schema": "stageplan/1",
+ "stage": "k_split",
+ "goal": "stage K (Pre-decided 177): kernel #5058 into 1.2 body #23166",
+ "base": {
+  "path": "tools/bench/graph_k_s4_20260925.json",
+  "md5": "c166d036ea7b1ba6083ae4df69fe073d"
+ },
+ "context": {
+  "loops": {
+   "path": "tools/bench/graph_loops_k_s4_20260925.json"
+  },
+  "fs_pairs_wiki": {
+   "path": "docs/wiki/subvi/D1_s3b_m3a3b_rowD_20260922_161040.json"
+  },
+  "s1_key": "D1_s1_copy"
+ },
+ "actions": [
+  {
+   "op": "move_in",
+   "id": "move_ind_1",
+   "nodes": [
+    3173
+   ],
+   "dest_diagram": 23166,
+   "pos": [
+    4901,
+    5900
+   ]
+  },
+  {
+   "op": "move_in",
+   "id": "move_ind_2",
+   "nodes": [
+    9519
+   ],
+   "dest_diagram": 23166,
+   "pos": [
+    4901,
+    5960
+   ]
+  },
+  {
+   "op": "move_in",
+   "id": "move_kernel",
+   "nodes": [
+    5058
+   ],
+   "dest_diagram": 23166,
+   "pos": [
+    4761,
+    5965
+   ]
+  },
+  {
+   "op": "add_shift_reg",
+   "id": "sr_acc",
+   "loop": 10170,
+   "body": 23166,
+   "as": "SR1",
+   "y": 120
+  },
+  {
+   "op": "wire",
+   "id": "chain_R",
+   "src": {
+    "uid": 5058,
+    "term": "pos in cal image out"
+   },
+   "dst": "new:SR1R.inner"
+  },
+  {
+   "op": "wire",
+   "id": "chain_L",
+   "src": "new:SR1L.inner",
+   "dst": {
+    "uid": 5058,
+    "term": "pos in cal image in"
+   }
+  },
+  {
+   "op": "wire",
+   "id": "chain_init",
+   "src": {
+    "uid": 6239,
+    "term_uid": 6247
+   },
+   "dst": "new:SR1L.outer"
+  },
+  {
+   "op": "tunnel",
+   "id": "tun_t2",
+   "loop": 10170,
+   "body": 23166,
+   "dir": "in",
+   "as": "T1",
+   "indexing": false
+  },
+  {
+   "op": "wire",
+   "id": "tun_t2_out",
+   "src": {
+    "uid": 3862,
+    "term_uid": 3868
+   },
+   "dst": "new:T1.outer"
+  },
+  {
+   "op": "wire",
+   "id": "tun_t2_in",
+   "src": "new:T1.inner",
+   "dst": {
+    "uid": 5058,
+    "term": "cross size"
+   }
+  },
+  {
+   "op": "tunnel",
+   "id": "tun_t9",
+   "loop": 10170,
+   "body": 23166,
+   "dir": "in",
+   "as": "T2",
+   "indexing": false
+  },
+  {
+   "op": "wire",
+   "id": "tun_t9_out",
+   "src": {
+    "uid": 2932,
+    "term_uid": 2934
+   },
+   "dst": "new:T2.outer"
+  },
+  {
+   "op": "wire",
+   "id": "tun_t9_in",
+   "src": "new:T2.inner",
+   "dst": {
+    "uid": 5058,
+    "term": "# of bead 4 packs"
+   }
+  },
+  {
+   "op": "tunnel",
+   "id": "tun_t11",
+   "loop": 10170,
+   "body": 23166,
+   "dir": "in",
+   "as": "T3",
+   "indexing": false
+  },
+  {
+   "op": "wire",
+   "id": "tun_t11_out",
+   "src": {
+    "uid": 5287,
+    "term_uid": 5293
+   },
+   "dst": "new:T3.outer"
+  },
+  {
+   "op": "wire",
+   "id": "tun_t11_in",
+   "src": "new:T3.inner",
+   "dst": {
+    "uid": 5058,
+    "term": "4 pack remainder"
+   }
+  },
+  {
+   "op": "tunnel",
+   "id": "tun_t12",
+   "loop": 10170,
+   "body": 23166,
+   "dir": "in",
+   "as": "T4",
+   "indexing": false
+  },
+  {
+   "op": "wire",
+   "id": "tun_t12_out",
+   "src": {
+    "uid": 3675,
+    "term_uid": 3677
+   },
+   "dst": "new:T4.outer"
+  },
+  {
+   "op": "wire",
+   "id": "tun_t12_in",
+   "src": "new:T4.inner",
+   "dst": {
+    "uid": 5058,
+    "term": "Array of cal clusters"
+   }
+  },
+  {
+   "op": "tunnel",
+   "id": "tun_t14",
+   "loop": 10170,
+   "body": 23166,
+   "dir": "in",
+   "as": "T5",
+   "indexing": false
+  },
+  {
+   "op": "wire",
+   "id": "tun_t14_out",
+   "src": {
+    "uid": 5659,
+    "term_uid": 5661
+   },
+   "dst": "new:T5.outer"
+  },
+  {
+   "op": "wire",
+   "id": "tun_t14_in",
+   "src": "new:T5.inner",
+   "dst": {
+    "uid": 5058,
+    "term": "Real-space cosine window"
+   }
+  },
+  {
+   "op": "tunnel",
+   "id": "tun_t15",
+   "loop": 10170,
+   "body": 23166,
+   "dir": "in",
+   "as": "T6",
+   "indexing": false
+  },
+  {
+   "op": "wire",
+   "id": "tun_t15_out",
+   "src": {
+    "uid": 5952,
+    "term_uid": 5958
+   },
+   "dst": "new:T6.outer"
+  },
+  {
+   "op": "wire",
+   "id": "tun_t15_in",
+   "src": "new:T6.inner",
+   "dst": {
+    "uid": 5058,
+    "term": "Cosine bandpass\nfor Hilbert "
+   }
+  },
+  {
+   "op": "wire",
+   "id": "ind_1",
+   "src": {
+    "uid": 5058,
+    "term": "pos in cal image out"
+   },
+   "dst": {
+    "uid": 3173,
+    "term": "Pos within cal image"
+   }
+  },
+  {
+   "op": "wire",
+   "id": "ind_2",
+   "src": {
+    "uid": 5058,
+    "term": "pos in cal image out"
+   },
+   "dst": {
+    "uid": 9519,
+    "term": "Pos: Diffraction Pattern"
+   }
+  }
+ ],
+ "open_rows": [
+  {
+   "node": 376,
+   "term": "current frame data array in",
+   "why": "Pre-decided 177(e) / carried L7 row (175)"
+  },
+  {
+   "node": 376,
+   "term": "frame index",
+   "why": "Pre-decided 177(e) / carried L7 row (175)"
+  },
+  {
+   "node": 2626,
+   "term": "array",
+   "why": "Pre-decided 177(e) / carried L7 row (175)"
+  },
+  {
+   "node": 5058,
+   "term": "Bead is good? array in",
+   "why": "Pre-decided 177(e) / carried L7 row (175)"
+  },
+  {
+   "node": 5058,
+   "term": "Image In",
+   "why": "Pre-decided 177(e) / carried L7 row (175)"
+  },
+  {
+   "node": 5058,
+   "term": "x,y,z array",
+   "why": "Pre-decided 177(e) / carried L7 row (175)"
+  },
+  {
+   "node": 5696,
+   "term": "x,y,z array",
+   "why": "Pre-decided 177(e) / carried L7 row (175)"
+  },
+  {
+   "node": 6085,
+   "term": "x,y,z array",
+   "why": "Pre-decided 177(e) / carried L7 row (175)"
+  },
+  {
+   "node": 10757,
+   "term": "array",
+   "why": "Pre-decided 177(e) / carried L7 row (175)"
+  },
+  {
+   "node": 10969,
+   "term": "array",
+   "why": "Pre-decided 177(e) / carried L7 row (175)"
+  }
+ ],
+ "final": true,
+ "finalized": {
+  "base": {
+   "path": "tools/bench/graph_k_s4_20260925.json",
+   "md5": "c166d036ea7b1ba6083ae4df69fe073d"
+  },
+  "plan_in": {
+   "path": "tools/bench/stageplan_k_split.json",
+   "md5": "c3892b15d071078febec7c58e34f6d24"
+  },
+  "last_step": {
+   "path": "tools/bench/sim/k_split/step_27_wire.json",
+   "md5": "11118032982f3409a02938dc276589da"
+  },
+  "summary": {
+   "path": "tools/bench/sim/k_split/summary.json",
+   "md5": "020e0ec2f246f042c9c72b6d4fafbc95"
+  },
+  "end_cdiff_rows": [
+   "10757|Terminal|array|0",
+   "10969|ParameterTerminal|array|0",
+   "2626|Terminal|array|0",
+   "376|Terminal|current frame data array in|0",
+   "376|Terminal|frame index|0",
+   "5058|Terminal|Bead is good? array in|0",
+   "5058|Terminal|Image In|0",
+   "5058|Terminal|x,y,z array|0",
+   "5696|Terminal|x,y,z array|0",
+   "6085|Terminal|x,y,z array|0"
+  ],
+  "failed": null,
+  "first_divergent": {
+   "n": 0,
+   "op": "base",
+   "id": null,
+   "rows_from_here": 10
+  },
+  "open_rows": [
+   [
+    376,
+    "current frame data array in"
+   ],
+   [
+    376,
+    "frame index"
+   ],
+   [
+    2626,
+    "array"
+   ],
+   [
+    5058,
+    "Bead is good? array in"
+   ],
+   [
+    5058,
+    "Image In"
+   ],
+   [
+    5058,
+    "x,y,z array"
+   ],
+   [
+    5696,
+    "x,y,z array"
+   ],
+   [
+    6085,
+    "x,y,z array"
+   ],
+   [
+    10757,
+    "array"
+   ],
+   [
+    10969,
+    "array"
+   ]
+  ],
+  "open_rows_match": true,
+  "step_files": [
+   {
+    "n": 0,
+    "op": "base",
+    "path": "tools/bench/sim/k_split/step_00_base.json",
+    "md5": "c1334054012efb18b34273d11f48929e"
+   },
+   {
+    "n": 1,
+    "op": "move_in",
+    "path": "tools/bench/sim/k_split/step_01_move_in.json",
+    "md5": "01745d84f2b963735c1335de35e49179"
+   },
+   {
+    "n": 2,
+    "op": "move_in",
+    "path": "tools/bench/sim/k_split/step_02_move_in.json",
+    "md5": "586791bfe3f3912e463727b861f8bfda"
+   },
+   {
+    "n": 3,
+    "op": "move_in",
+    "path": "tools/bench/sim/k_split/step_03_move_in.json",
+    "md5": "2d69ec6f31737fa33343a1ece45bfc8a"
+   },
+   {
+    "n": 4,
+    "op": "add_shift_reg",
+    "path": "tools/bench/sim/k_split/step_04_add_shift_reg.json",
+    "md5": "949939d2f8ae48190bec6d20fe202657"
+   },
+   {
+    "n": 5,
+    "op": "wire",
+    "path": "tools/bench/sim/k_split/step_05_wire.json",
+    "md5": "0219d116fddc00243268208bbb875906"
+   },
+   {
+    "n": 6,
+    "op": "wire",
+    "path": "tools/bench/sim/k_split/step_06_wire.json",
+    "md5": "c7c07a83e625c730f150d0d37756e7ec"
+   },
+   {
+    "n": 7,
+    "op": "wire",
+    "path": "tools/bench/sim/k_split/step_07_wire.json",
+    "md5": "127324553ec589efb6606c42c0a3f7b8"
+   },
+   {
+    "n": 8,
+    "op": "tunnel",
+    "path": "tools/bench/sim/k_split/step_08_tunnel.json",
+    "md5": "12dc0cc09fc0bdcff4c09a42eff3c6f4"
+   },
+   {
+    "n": 9,
+    "op": "wire",
+    "path": "tools/bench/sim/k_split/step_09_wire.json",
+    "md5": "52724cc2a80ce2f61e821140a47e5a48"
+   },
+   {
+    "n": 10,
+    "op": "wire",
+    "path": "tools/bench/sim/k_split/step_10_wire.json",
+    "md5": "fe1ee34de288c3521c0ad548de732f30"
+   },
+   {
+    "n": 11,
+    "op": "tunnel",
+    "path": "tools/bench/sim/k_split/step_11_tunnel.json",
+    "md5": "b43bc5aa0f1532eff57e447010be572e"
+   },
+   {
+    "n": 12,
+    "op": "wire",
+    "path": "tools/bench/sim/k_split/step_12_wire.json",
+    "md5": "071b90e764c7c3db0330c9acbb16c6b1"
+   },
+   {
+    "n": 13,
+    "op": "wire",
+    "path": "tools/bench/sim/k_split/step_13_wire.json",
+    "md5": "d7bbed33d0a41b08328879120639ffdc"
+   },
+   {
+    "n": 14,
+    "op": "tunnel",
+    "path": "tools/bench/sim/k_split/step_14_tunnel.json",
+    "md5": "0f2607c4fd9c6f7dd364e934097baf7f"
+   },
+   {
+    "n": 15,
+    "op": "wire",
+    "path": "tools/bench/sim/k_split/step_15_wire.json",
+    "md5": "d66701aa9dd55616d04a80ae33b3211e"
+   },
+   {
+    "n": 16,
+    "op": "wire",
+    "path": "tools/bench/sim/k_split/step_16_wire.json",
+    "md5": "d4a8ca81f692f8d858156a171d1c0c70"
+   },
+   {
+    "n": 17,
+    "op": "tunnel",
+    "path": "tools/bench/sim/k_split/step_17_tunnel.json",
+    "md5": "952d16fe1f4600382db07128a92f9a4a"
+   },
+   {
+    "n": 18,
+    "op": "wire",
+    "path": "tools/bench/sim/k_split/step_18_wire.json",
+    "md5": "6e303e9224f9a5b85014f2937d2697fd"
+   },
+   {
+    "n": 19,
+    "op": "wire",
+    "path": "tools/bench/sim/k_split/step_19_wire.json",
+    "md5": "c1437d997e3523a4a2e7313f38ce6497"
+   },
+   {
+    "n": 20,
+    "op": "tunnel",
+    "path": "tools/bench/sim/k_split/step_20_tunnel.json",
+    "md5": "b3c5af87642df310f0117e984f42a1f0"
+   },
+   {
+    "n": 21,
+    "op": "wire",
+    "path": "tools/bench/sim/k_split/step_21_wire.json",
+    "md5": "b60e9efb85d56d482599598db30ea5ea"
+   },
+   {
+    "n": 22,
+    "op": "wire",
+    "path": "tools/bench/sim/k_split/step_22_wire.json",
+    "md5": "ebb8373b392f47bda45dc8486100b19b"
+   },
+   {
+    "n": 23,
+    "op": "tunnel",
+    "path": "tools/bench/sim/k_split/step_23_tunnel.json",
+    "md5": "e5fffb72fdd2dbefb801a357483e9d91"
+   },
+   {
+    "n": 24,
+    "op": "wire",
+    "path": "tools/bench/sim/k_split/step_24_wire.json",
+    "md5": "87f8363055ea1e221e1c0ede1ee69270"
+   },
+   {
+    "n": 25,
+    "op": "wire",
+    "path": "tools/bench/sim/k_split/step_25_wire.json",
+    "md5": "49ba4def433e2d51213c56d435636188"
+   },
+   {
+    "n": 26,
+    "op": "wire",
+    "path": "tools/bench/sim/k_split/step_26_wire.json",
+    "md5": "ca1c2f89489806135bab69bf32adcea3"
+   },
+   {
+    "n": 27,
+    "op": "wire",
+    "path": "tools/bench/sim/k_split/step_27_wire.json",
+    "md5": "11118032982f3409a02938dc276589da"
+   }
+  ],
+  "undecided": 0,
+  "at": "2026-09-25 10:00:46"
+ }
+}

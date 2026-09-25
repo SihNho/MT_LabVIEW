@@ -1,0 +1,68 @@
+{
+ "schema": "task/1",
+ "id": "79-5",
+ "kind": "build",
+ "goal": "Stage K per PD178(f) route (c): recipe executes plan_k_split.json via stagexec inside its own gates; re-pre-run on that plan; one LabVIEW run; save D1_k_<ts>.vi.",
+ "why": "79-4 BLOCKED on X4 over plan_k_rows.json, a file no op executes; plan_k_split.json (the executed plan) already pre-runs 4/0. Judgement ruled route (c), no gate loosened.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "7d4e1d24a5c56c0f8194eb7250f0a7aa"},
+  {"path": "tools/bench/cards/result_79-4.json"},
+  {"path": "archive/peer/2026-09-25-c79-k-x4.md"},
+  {"path": "tools/bench/plan_k_split.json", "md5": "fb798f5f100cf0bfe3d6c7e8378c00bf"},
+  {"path": "tools/recipes/stage_d1_k.py"},
+  {"path": "tools/stage_prerun.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s4_loop17.vi", "md5": "4b621946492da3d2fbb96b6053e715ec"}
+ ],
+ "pass": [
+  "R0 disposition lines for c79-k-x4 written under 'What was done with it' per PD178(f)",
+  "R1 stage_d1_k.py executes plan_k_split.json via stagexec, keeps IM/P2/PB(178c)/KN/second-pass/save gates, <=120 lines; dry PASS",
+  "R2 launch gate binds recipe to plan_k_split.json; pre-run PASS recorded. If that needs a stage_prerun.py code change: STOP, report",
+  "R3 one LabVIEW run: all gates pass; D1_k_<ts>.vi saved (script if ES 1, GUI rule 6 if ES 0), md5; ES warm recorded",
+  "R4 bed md5 + pins unchanged; refs opened==closed; handles recorded; LabVIEW verified gone",
+  "R5 side check PD178(f): FSIT self-wires #6239/#3862/#5659 present in S1 graph too? one line each, file:line"
+ ],
+ "outputs": [
+  "tools/recipes/stage_d1_k.py",
+  "tools/bench/stage_d1_k.log",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_<ts>.vi"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/recipes/stage_d1_k*",
+   "tools/bench/*k_*",
+   "tools/bench/sim_k*",
+   "tools/bench/stage_d1_k*",
+   "tools/bench/plan_*k*",
+   "tools/bench/sim/**",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/stagekit.py",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\**",
+   "docs/NAMES.md",
+   "tools/bench/cards/**",
+   "archive/peer/2026-09-25-*79*.md",
+   "archive/peer/2026-09-25-*k*.md"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "rules": [
+  "rule 1: never write D1_s4_loop17.vi or any original; dated copies only",
+  "rule 1a: rows only from plan_k_split.json; no queue built; no VI run; no motor/ASI/camera",
+  "do not edit tools/stage_prerun.py or loosen any gate",
+  "launch: Bash non-compound backgrounded py tools/bgrun.py --material; retry cap 2 per stage",
+  "GUI only for rule-6 save with before/after capture; hold the turn until BGRUN END",
+  "result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

@@ -1,0 +1,24 @@
+ATTACK this claim (card 79-4, stage K, cycle 79). Logs: tools/bench/stage_d1_k_prerun.log (X4 FAIL, line 146) and
+tools/bench/sim_k_x4probe_79.log (probe; its RESULT FAIL only means "the named variant still fails", the probe itself measured).
+
+CLAIM: the stage K recipe tools/recipes/stage_d1_k.py cannot pass tools/stage_prerun.py X4 by any honest change to OUR
+files, because X4's addr_offline (tools/stage_prerun.py:695-721) has two blind spots, both in the pre-run tool:
+ (1) it selects a terminal by NAME + direction first and only then compares term_uid (:710-718). FlatSequenceInnerTunnel
+     #6239 has TWO wired source terminals named '' (term 7605 on diagram 536, term 6247 on diagram 686 -
+     tools/bench/graph_k_s4_20260925.json), so name '' gives 2 hits, the "prefer unwired" filter (:711-712) leaves 0, and
+     the plan end {"uid": 6239, "term_uid": 6247} (the one the simulator and executor use) is refused. The same for the
+     other 6 FSIT sources (#3862, #2932, #5287, #3675, #5659, #5952; the last two carry names and still fail).
+ (2) a ControlTerminal (#3173 'Pos within cal image', #9519 'Pos: Diffraction Pattern') has its terminal row owned by
+     its DIAGRAM (#639, owner_class Diagram, term_uid == the node uid), so OG.term_rows(3173) (:167-176, by_owner) is
+     empty and X4 says "no terminal list offline".
+Consequence claimed: the launch gate (dry PASS + prerun PASS) cannot be met without a change to tools/stage_prerun.py
+(outside this card's write scope): term_uid-first selection when term_uid is given, and ControlTerminal rows looked up by
+term_uid == node uid. The dry run PASSED (tools/bench/stage_d1_k_dry.log) and the simulator is 21/0
+(tools/bench/sim_k_split.log, last block).
+
+Already ruled out: duplicate raw rows (term 6247 appears once); a wrong plan end (stagesim resolve_addr and the stagexec dry
+run resolve the same end by term_uid, sim_k_split.log P7 PASS).
+
+Attack: is there an existing, legitimate way for a plan row to name an FSIT source or a ControlTerminal that X4 already
+accepts (e.g. how earlier stage recipes that passed X4 wrote such ends - check tools/bench/prerun_records.jsonl and the
+plans they name)? Would adding the graph's own name '' to the end, or omitting the exec end, be gaming the gate?

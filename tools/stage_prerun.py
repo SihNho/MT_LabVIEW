@@ -34,6 +34,11 @@ PRE-RUN (decision 2, 3, 8), all offline, on the same graph JSON + the dry run's 
      direction on the owner's terminal list (unwired: owner node -> terminal list -> uid echo), a structure by its
      border tunnels; a verify_term_uid must name a WIRED terminal of that owner; a term_uid must agree with the name
   X5 wiring ops executed in the dry run == plan wire rows
+  (card 79-6, PD178(g)) a named stageplan/1 counts as the plan ONLY via stageplan_check - final true, finalized.failed
+     None, open_rows_match, undecided 0, stagexec.load_final_plan (base + step-file md5s) and compile_plan all pass;
+     X3 counts its actions (each compiled exactly once); X5 expects its compiled WIRING real ops (tunnel/connect/
+     wire_sr/branch), which must cover every `wire` action; its md5 joins plan_md5s. Decisions-row path unchanged.
+     Self-test: tools/bench/selftest_stage_prerun_stageplan.py
   X6 ast lint: no int literal that is a node uid of the input graph, no string literal that is a terminal name of
      such a node (decision 8: a recipe never re-types a uid or a terminal name)
   X7 no Jev row on a RULE-CHAIN-S1 chain terminal (decision 3)
@@ -672,7 +677,9 @@ def dry(recipe, graph=None):
 
 # ---------------------------------------------------------------------------------------------- the pre-run
 def plan_files(recipe):
-    """(plan paths, every .json the recipe names). A plan = a named .json with a `decisions` list of id+action rows."""
+    """(plan paths, every .json the recipe names). A plan = a named .json with a `decisions` list of id+action rows,
+    OR (card 79-6, PD178(g)) a named `stageplan/1` file - admitted here by schema so its md5 keys the records; whether it
+    may pass X2 is stageplan_check's call (finalized + final PASS), never this function's."""
     tree = ast.parse(open(recipe, encoding="utf-8").read())
     named, plans = [], []
     for n in ast.walk(tree):
@@ -688,8 +695,42 @@ def plan_files(recipe):
                     if isinstance(d, dict) and isinstance(d.get("decisions"), list) and \
                             all(isinstance(r, dict) and "id" in r and "action" in r for r in d["decisions"]):
                         plans.append(p)
+                    elif isinstance(d, dict) and d.get("schema") == "stageplan/1":
+                        plans.append(p)
                     break
     return sorted(set(plans)), sorted(set(named))
+
+
+SP_WIRING = ("tunnel", "connect", "wire_sr", "branch")     # stagexec compiled-op kinds that make a wire
+
+
+def stageplan_check(path):
+    """(ok, detail, plan|None, compiled ops|None) for a stageplan/1 a recipe names (card 79-6). ok only when
+    final is True, finalized present with failed None, open_rows_match True, undecided 0, stagexec.load_final_plan
+    passes (validates, base graph + every step file md5 unchanged) and every action compiles to a real op."""
+    import stagexec as SX
+    try:
+        plan, _paths = SX.load_final_plan(path)
+    except Exception as e:                                                         # noqa: BLE001
+        return False, "load_final_plan: {0}".format(str(e)[:300]), None, None
+    fz, bad = plan.get("finalized"), []
+    if plan.get("final") is not True or not isinstance(fz, dict):
+        bad.append("final={0!r}, finalized {1}".format(plan.get("final"), type(fz).__name__))
+        fz = fz if isinstance(fz, dict) else {}
+    if fz.get("failed") is not None:
+        bad.append("finalized.failed={0!r}".format(fz.get("failed")))
+    if fz.get("open_rows_match") is not True:
+        bad.append("finalized.open_rows_match={0!r}".format(fz.get("open_rows_match")))
+    if fz.get("undecided") != 0:
+        bad.append("finalized.undecided={0!r}".format(fz.get("undecided")))
+    try:
+        ops = SX.compile_plan(plan)
+    except Exception as e:                                                         # noqa: BLE001
+        bad.append("compile_plan: {0}".format(str(e)[:200]))
+        ops = None
+    if bad:
+        return False, "; ".join(bad), plan, ops
+    return True, "final, finalized PASS, {0} actions -> {1} real ops".format(len(plan["actions"]), len(ops)), plan, ops
 
 
 def addr_offline(OG, end, is_source):
@@ -748,13 +789,26 @@ def prerun(recipe, graph=None):
     gate("X1 dry run PASS (whole Python path, COM stubbed)", tr["status"] == "PASS", tr["first_fail"])
     OG = _graph()
     plans, named = plan_files(recipe)
-    gate("X2 a finalized plan file (decisions rows) is named by the recipe", plans, [rel(p) for p in plans] or
-         "none among {0}".format([os.path.basename(p) for p in named]))
+    sps = [p for p in plans if is_stageplan(p)]                  # card 79-6: stageplan/1 plans, checked, not trusted
+    spc = dict((p, stageplan_check(p)) for p in sps)
+    sp_bad = ["{0}: {1}".format(rel(p), c[1]) for p, c in spc.items() if not c[0]]
+    gate("X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe",
+         plans and not sp_bad, sp_bad or [rel(p) for p in plans] or "none among {0}".format([os.path.basename(p) for p in named]))
     rows = []
     for p in plans:
+        if p in spc:
+            continue
         rows += [dict(r, _plan=os.path.basename(p)) for r in json.load(open(p, encoding="utf-8"))["decisions"]]
     und = [(r["id"], r.get("action")) for r in rows if r.get("action") in (None, "", "llm", "unknown", "undecided")]
-    gate("X3 every plan row decided", plans and not und, und or "{0} rows".format(len(rows)))
+    sp_acts = 0
+    for p, (ok_, _d, pl, ops_) in spc.items():
+        acts = (pl or {}).get("actions") or []
+        sp_acts += len(acts)
+        und += [(a.get("id"), a.get("op")) for a in acts if a.get("op") in (None, "", "llm", "unknown", "undecided")]
+        covered = sorted(x for o in (ops_ or []) for x in o["acts"])
+        if not ok_ or covered != list(range(1, len(acts) + 1)):
+            und.append((rel(p), "actions not all compiled exactly once ({0} of {1})".format(len(covered), len(acts))))
+    gate("X3 every plan row decided", plans and not und, und or "{0} rows + {1} stageplan actions".format(len(rows), sp_acts))
     bad = []
     if OG is None:
         gate("X4 every end addressable offline", False, "no graph JSON for input md5 {0}".format(tr["input_md5"]))
@@ -779,8 +833,18 @@ def prerun(recipe, graph=None):
         gate("X4 every end addressable offline ({0} ends)".format(len(seen)), not bad, bad[:8])
     wires = [r for r in rows if r.get("action") == "wire"]
     ops = [v for v in tr["ops"] if WIRE_VERB_RE.search(v)]
-    gate("X5 wiring ops executed in the dry run == plan wire rows", plans and len(ops) == len(wires),
-         "ops {0} vs plan wire rows {1}".format(len(ops), len(wires)))
+    # card 79-6: a stageplan's wire actions are executed as stagexec real ops (a tunnel op carries its two border
+    # wires); expected = compiled wiring ops, AND those ops must cover every `wire` action of the plan exactly once
+    sp_wops, sp_wact, sp_cov = 0, 0, 0
+    for p, (_ok, _d, pl, ops_) in spc.items():
+        A = (pl or {}).get("actions") or []
+        wa = set(i for i, a in enumerate(A, 1) if a.get("op") == "wire")
+        wo = [o for o in (ops_ or []) if o["kind"] in SP_WIRING]
+        sp_wops, sp_wact = sp_wops + len(wo), sp_wact + len(wa)
+        sp_cov += len(wa & set(x for o in wo for x in o["acts"]))
+    gate("X5 wiring ops executed in the dry run == plan wire rows", plans and not sp_bad and len(ops) == len(wires) + sp_wops
+         and sp_cov == sp_wact, "ops {0} vs plan wire rows {1} + stageplan wiring real ops {2} (covering {3}/{4} wire actions)"
+         .format(len(ops), len(wires), sp_wops, sp_cov, sp_wact))
     if OG is not None:
         ints, strs = lint(recipe, OG)
         gate("X6 ast lint: no re-typed uid / terminal name", not ints and not strs,

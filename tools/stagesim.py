@@ -55,7 +55,9 @@ import vigraph as V            # noqa: E402
 import jev_candidates as JC    # noqa: E402
 import protocol                # noqa: E402
 
-TUN1 = ("LoopTunnel", "Tunnel")                     # single-object tunnels whose outer can flip direction
+TUN1 = ("LoopTunnel", "Tunnel")                     # single-object tunnels (kept for reference; the flip uses TUN_FLIP)
+TUN_FLIP = ("LoopTunnel", "Tunnel", "SelectorTunnel")   # single-object tunnels that go undirected (k_op3_read_79.log)
+TUN_SIDES = {"InnerTerminal": "OuterTerminal", "OuterTerminal": "InnerTerminal"}
 DROP_WHEN_UNWIRED = ("LoopTunnel", "Tunnel")
 SR_CLS = ("RightShiftRegister", "LeftShiftRegister")
 
@@ -306,21 +308,35 @@ def s1_partner(S1, G, key):
 
 # ------------------------------------------------------------------------------------------------ ops
 def _flip_orphaned_output_tunnels(st, wires):
-    """PROVISIONAL (diag_c71_l7_1a_tunnels.log TERM 2043/5050): an output LoopTunnel/Tunnel whose INNER sink is left
-    on a wire with no source reads its OUTER terminal as a sink afterwards. Repeated to a fixpoint."""
+    """A tunnel left with NO SOURCE on its driving side becomes undirected: every terminal on its other side that read
+    as a source reads as a sink afterwards (NI 'Wire connected to an undirected tunnel'). Repeated to a fixpoint.
+    Output direction (inner sink orphaned -> outer flips): diag_c71_l7_1a_tunnels.log TERM 2043/5050 (LoopTunnel).
+    Input direction (outer sink orphaned -> EVERY inner flips), SelectorTunnel: tools/bench/k_op3_read_79.log:93-111
+    (card 79-7 M1: after move_in #5058, #2765's outer 2811 and inners 2789/2792 all is_source=False, wires 505/3472/
+    2924 kept, 0 sources each). A tunnel with several driving-side terminals (a case tunnel's per-frame inners) flips
+    only when NONE of them still sits on a sourced wire."""
     flipped, todo = [], set(w for w in wires if w)
     while todo:
         w = todo.pop()
         if has_source(st, w):
             continue
         for r in wire_rows(st, w):
-            if r["is_source"] or r["term_class"] != "InnerTerminal" or r["owner_class"] not in TUN1:
+            if r["is_source"] or r["term_class"] not in TUN_SIDES or r["owner_class"] not in TUN_FLIP:
                 continue
-            for o in node_rows(st, r["owner_uid"]):
-                if o["term_class"] == "OuterTerminal" and o["is_source"]:
+            rows = node_rows(st, r["owner_uid"])
+            if any(o["term_class"] == r["term_class"] and not o["is_source"] and o["wire_uid"] and
+                   has_source(st, o["wire_uid"]) for o in rows):
+                continue
+            for o in rows:
+                if o["term_class"] == TUN_SIDES[r["term_class"]] and o["is_source"]:
                     o["is_source"] = False
-                    flipped.append({"tunnel": r["owner_uid"], "outer_term_uid": o["term_uid"], "wire": o["wire_uid"]})
-                    todo.add(o["wire_uid"])
+                    rec = {"tunnel": r["owner_uid"], "term_uid": o["term_uid"], "side": o["term_class"],
+                           "wire": o["wire_uid"]}
+                    if o["term_class"] == "OuterTerminal":
+                        rec["outer_term_uid"] = o["term_uid"]
+                    flipped.append(rec)
+                    if o["wire_uid"]:
+                        todo.add(o["wire_uid"])
     return flipped
 
 
@@ -1097,6 +1113,30 @@ def selftest():
          fates["ambiguous"][2] == [3] and fates["ambiguous"][1] == [1003], fates["ambiguous"])
     gate("G39 only_sink by source class: a constant source takes the 'constant' fate",
          fates["byclass"][2] == [0] and fates["byclass"][0][0]["src_class"] == "Constant", fates["byclass"])
+
+    # G40-G42 the undirected-tunnel rule, both directions (k_op3_read_79.log:93-111, card 79-7 M2)
+    def tr(tu, src, w, owner, ocls, tc, fd=10):
+        return {"term_uid": tu, "term_name": "x", "is_source": src, "wire_uid": w, "owner_uid": owner,
+                "owner_class": ocls, "frame_diagram": fd, "term_class": tc}
+    sel = [tr(1801, False, 1, 80, "SelectorTunnel", "OuterTerminal"), tr(1802, True, 2, 80, "SelectorTunnel", "InnerTerminal", 21),
+           tr(1803, True, 3, 80, "SelectorTunnel", "InnerTerminal", 22), tr(1051, False, 2, 5, "SubVI", "Terminal", 21),
+           tr(1061, False, 3, 6, "SubVI", "Terminal", 22), tr(1001, True, 0, 1, "SubVI", "Terminal")]
+    ss = {"terminals": sel}
+    fl = _flip_orphaned_output_tunnels(ss, [1])
+    gate("G40 input SelectorTunnel whose outer sink lost its source: EVERY inner flips to a sink, wires kept (M1 read)",
+         sorted(f["term_uid"] for f in fl) == [1802, 1803] and all(not r["is_source"] for r in sel if r["owner_uid"] == 80)
+         and [r["wire_uid"] for r in sel if r["owner_uid"] == 80] == [1, 2, 3], fl)
+    osel = [tr(1901, True, 9, 90, "SelectorTunnel", "OuterTerminal"), tr(1902, False, 7, 90, "SelectorTunnel", "InnerTerminal", 21),
+            tr(1903, False, 8, 90, "SelectorTunnel", "InnerTerminal", 22), tr(1071, True, 8, 7, "SubVI", "Terminal", 22),
+            tr(1091, False, 9, 9, "SubVI", "Terminal")]
+    fo = _flip_orphaned_output_tunnels({"terminals": osel}, [7])
+    gate("G41 output SelectorTunnel with ONE frame still sourced stays directed (outer stays a source)",
+         fo == [] and osel[0]["is_source"] is True, fo)
+    lt = [tr(1601, False, 1, 60, "LoopTunnel", "OuterTerminal"), tr(1602, True, 2, 60, "LoopTunnel", "InnerTerminal", 20),
+          tr(1611, False, 6, 61, "LoopTunnel", "InnerTerminal", 20), tr(1612, True, 7, 61, "LoopTunnel", "OuterTerminal")]
+    fl2 = _flip_orphaned_output_tunnels({"terminals": lt}, [6])
+    gate("G42 output LoopTunnel rule unchanged: orphaned inner sink flips ONLY its outer (outer_term_uid kept)",
+         [(f["tunnel"], f.get("outer_term_uid")) for f in fl2] == [(61, 1612)] and lt[1]["is_source"] is True, fl2)
     n_pass = sum(1 for _l, ok in gates if ok)
     n_fail = len(gates) - n_pass
     first = next((l for l, ok in gates if not ok), None)

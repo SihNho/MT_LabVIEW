@@ -487,8 +487,9 @@ def undisposed(kind):
 #   * It only ever cites an exchange that ALREADY passed review_quality() - ANSWERED, from codex, gemini or
 #     `-Agent claude -Role hypothesis`. A TIMEOUT exchange releases nothing; a claude audit releases nothing.
 #   * SAME SCRIPT, by the name in the log's own last `BGRUN START` line, `_v\d+` stripped, and the review has
-#     to NAME that script in its `## Question` or its `- **task:**` / `- **slug:**` header lines. A review of a
-#     different row, or of the same row yesterday, does not match.
+#     to be ABOUT that script: its subject script (review_subject_scripts - a `Script:` line, else the first
+#     path-qualified script in `## Question`) must equal the log's stem exactly. A mere mention does not count
+#     (tightened 2026-09-25, card 79-2). A review of a different row, or of the same row yesterday, does not match.
 #   * It spends NO Jev call and asks no model: this rung is mechanical, and it runs BEFORE the ladder so the
 #     cheapest branch is also the first one.
 #   * Every release is written twice - `RULE-SAME-ROW` in tools/bench/jev_gate.log AND a `SAME-ROW:` citation
@@ -499,7 +500,7 @@ SAME_ROW_AGE_S = 6 * 3600
 SCRIPT_IN_CMD_RE = re.compile(r"tools[\\/](?:recipes|bench)[\\/]([\w.-]+)\.py", re.I)
 VSUFFIX_RE = re.compile(r"_v\d+$", re.I)
 QUESTION_SEC_RE = re.compile(r"^##\s+Question\s*$(.*?)(?=^##\s|\Z)", re.M | re.S)
-TASK_SLUG_RE = re.compile(r"^\-\s*\*\*(?:task|slug):\*\*.*$", re.M | re.I)
+TASK_SLUG_RE = re.compile(r"^\-\s*\*\*(?:task|slug):\*\*.*$", re.M | re.I)   # unused here since 79-2; jev_wave3a_trials.py imports it
 
 
 def log_script(text):
@@ -518,19 +519,39 @@ def log_script(text):
     return VSUFFIX_RE.sub("", names[-1])
 
 
+# TIGHTENED 2026-09-25 (card 79-2; retrospective-cycle78 finding 6, jev_gate.log:952): the old matcher accepted
+# ANY mention of the stem anywhere in the Question (a bare-word `re.search`), so `drive_m8_replay_s1_78.log` was
+# discharged by the endianness review of `tools/bench/m8b_replay_compare.py`, whose Question only said
+# "drive_m8.tra_rows' earlier count". The row is now the review's SUBJECT script, read in this order:
+#   1. a `Script:` line in `## Question` (the path-qualified scripts on that line);
+#   2. else the FIRST path-qualified `tools/(recipes|bench)/X.py` in `## Question` (a dispatch names its subject
+#      first). Bare words (`drive_m8.tra_rows`) and scripts named only in the Answer never count.
+# Match is EXACT on the stem after `_v\d+` is stripped - `drive_m8` no longer matches `drive_m8_replay`.
+# Peer archives carry no machine-readable task-script field (census 2026-09-25: no `task:`/`slug:` header in any
+# review; review/1 has no script field; the `verdict-card:` header points at the OUTPUT verdict/1 card, not the
+# input review card, and a review card's attachments are rendered INTO the Question) - so this is a convention on
+# the question text, stated as such. The `- **task:**`/`- **slug:**` header route is dropped: no archive has one.
+SCRIPT_LINE_RE = re.compile(r"^\s*Script\s*:(.*)$", re.M | re.I)
+
+
+def review_subject_scripts(body):
+    """The set of script stems (`_v\\d+` stripped) this review was dispatched ABOUT - empty when it names none."""
+    q = QUESTION_SEC_RE.search(body)
+    if not q:
+        return set()
+    qtext = q.group(1)
+    for line in SCRIPT_LINE_RE.findall(qtext):
+        names = SCRIPT_IN_CMD_RE.findall(line)
+        if names:
+            return {VSUFFIX_RE.sub("", n).lower() for n in names}
+    first = SCRIPT_IN_CMD_RE.search(qtext)
+    return {VSUFFIX_RE.sub("", first.group(1)).lower()} if first else set()
+
+
 def review_names_script(body, stem):
-    """True when this archive NAMES that script where a dispatch names its subject: the `## Question` section
-    (what the peer was actually asked) or the `- **task:**` / `- **slug:**` header lines peer.ps1 writes.
-    Deliberately NOT the whole body - an answer that merely quotes a directory listing is not a review OF it."""
-    hay = []
-    m = QUESTION_SEC_RE.search(body)
-    if m:
-        hay.append(m.group(1))
-    hay.extend(TASK_SLUG_RE.findall(body))
-    if not hay:
-        return False
-    pat = re.compile(re.escape(stem) + r"(?:_v\d+)?", re.I)
-    return any(pat.search(h) for h in hay)
+    """True when this archive's SUBJECT script (review_subject_scripts) is exactly `stem`, `_v\\d+` stripped.
+    A mere mention - in the Question's prose, a header, or the Answer - is not a review OF that script."""
+    return VSUFFIX_RE.sub("", stem).lower() in review_subject_scripts(body)
 
 
 def same_row_review(log_path, text, now=None):

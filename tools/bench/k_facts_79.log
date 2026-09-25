@@ -1,0 +1,169 @@
+BGRUN START 2026-09-25 08:38:39 limit 3.0 min: py -u tools/bench/k_facts_79.py
+F4 bed md5 4b621946492da3d2fbb96b6053e715ec | S3 graph file md5 38203f03404a37a4531403385b5faf43 vi-md5 1a11d92aacabf7ec844d65b8af19f39f | S1 wiki file md5 5de014fe580b938328fa8662cf2b0652 vi-md5 3e3d23cefd3a334001aa9d6156bf1aee
+ PASS bed md5 == card
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\k_facts_79.py", line 28, in <module>
+    if r['uid'] in s and r.get('p1_tunnel'): s.add(r['p1_tunnel'])
+TypeError: unhashable type: 'dict'
+BGRUN END rc=1 after 0s (NO RESULT LINE)
+BGRUN START 2026-09-25 08:38:55 limit 3.0 min: py -u tools/bench/k_facts_79.py
+F4 bed md5 4b621946492da3d2fbb96b6053e715ec | S3 graph file md5 38203f03404a37a4531403385b5faf43 vi-md5 1a11d92aacabf7ec844d65b8af19f39f | S1 wiki file md5 5de014fe580b938328fa8662cf2b0652 vi-md5 3e3d23cefd3a334001aa9d6156bf1aee
+ PASS bed md5 == card
+group sets incl. P1 tunnels {'A': 8, 'B': 8, 'C': 1, 'W': 3} sample p1_tunnel {'tunnel_uid': 5603, 'tunnel_class': 'Tunnel', 'face': 'outer', 'outer_term_uid': 5608, 'outer_frame_diagram': 639, 'inner_frame_diagrams': [5582, 5592], 'wire_candidates_on_bed': 1, 's1_tunnel_uids': [5603], 's1_agrees': True}
+
+== F1/F2 #5058 terminals (S3 order = index); bed wire = S3 wire (F4)
+ t0  IN  'Bead is good? array in'       w5637   S1 w5637   graph_s3 terminals[2681] | build_d1_v0 cut[96] | d1_rewire_sources rows[96] cross-loop:1.2->None
+      -> #5680 SelectorTunnel 'Bead is good? array out' d639 [1.1-stays (639)] (graph_s3 terminals[2727])
+      via SelectorTunnel #5680 face w5710 d5582: ["#5702 SelectorTunnel 'Bead is good? array out' d5582 [diagram 5582]"]
+      via SelectorTunnel #5680 face w6011 d5592: ["#5967 SelectorTunnel '' d5592 [diagram 5592]"]
+ t1  IN  'Image In'                     w3040   S1 w3040   graph_s3 terminals[2682] | build_d1_v0 cut[97] | d1_rewire_sources rows[97] from-stay:6810
+      -> #6810 SubVI 'Image Out' d639 [1.1-stays (639)] (graph_s3 terminals[2715])
+ t2  IN  'cross size'                   w373    S1 w373    graph_s3 terminals[2683] | build_d1_v0 cut[98] | d1_rewire_sources rows[98] from-tunnel
+      -> #2580 LoopTunnel '' d639 [1.1-stays (639)] (graph_s3 terminals[2793])
+      via LoopTunnel #2580 face w3853 d686: ["#3862 FlatSequenceInnerTunnel '' d686 [top-level #686]"]
+ t3  OUT 'Bead is good? array out'      w5859   S1 w5859   graph_s3 terminals[2684] | build_d1_v0 cut[99] | d1_rewire_sources rows[99] to-sr
+      -> #5796 RightShiftRegister 'Bead is good? array out' d639 [#637 SR (PD149) 1.2] (graph_s3 terminals[2786])
+ t4  OUT 'x,y,z array out'              w505    S1 w505    graph_s3 terminals[2685] | build_d1_v0 cut[100] | d1_rewire_sources rows[100] to-sr
+      -> #2626 BuildArray 'array' d639 [group B] (graph_s3 terminals[1870])
+      -> #2765 SelectorTunnel 'x,y,z array out' d639 [1.1-stays (639)] (graph_s3 terminals[2609])
+      -> #1147 RightShiftRegister 'x,y,z array out' d639 [#637 SR (PD149) 1.2] (graph_s3 terminals[2760])
+      via SelectorTunnel #2765 face w2924 d2265: ["#5696 SubVI 'x,y,z array' d2265 [diagram 2265]"]
+      via SelectorTunnel #2765 face w3472 d2235: ["#6085 SubVI 'x,y,z array' d2235 [diagram 2235]"]
+ t5  IN  ''                             w0      S1 w0      graph_s3 terminals[2686] | None | None
+ t6  IN  ''                             w0      S1 w0      graph_s3 terminals[2687] | None | None
+ t7  IN  'x,y,z array'                  w5975   S1 w5975   graph_s3 terminals[2688] | build_d1_v0 cut[101] | d1_rewire_sources rows[101] cross-loop:1.2->None
+      -> #6016 SelectorTunnel 'x,y,z array out' d639 [1.1-stays (639)] (graph_s3 terminals[2731])
+      via SelectorTunnel #6016 face w6071 d5582: ["#5825 SelectorTunnel 'x,y,z array out' d5582 [diagram 5582]"]
+      via SelectorTunnel #6016 face w6030 d5592: ["#5725 SelectorTunnel '' d5592 [diagram 5592]"]
+ t8  OUT 'pos in cal image out'         w121    S1 w121    graph_s3 terminals[2689] | build_d1_v0 cut[102] | d1_rewire_sources rows[102] to-sr
+      -> #10969 Function 'array' d639 [group A] (graph_s3 terminals[2451])
+      -> #10757 IndexArray 'array' d639 [group A] (graph_s3 terminals[2481])
+      -> #119 RightShiftRegister 'pos in cal image out' d639 [#637 SR (PD149) 1.2] (graph_s3 terminals[2778])
+      -> #639 Diagram 'Pos within cal image' d639 [#637 loop terminal] (graph_s3 terminals[2780])
+      -> #639 Diagram 'Pos: Diffraction Pattern' d639 [#637 loop terminal] (graph_s3 terminals[2811])
+ t9  IN  '# of bead 4 packs'            w42     S1 w42     graph_s3 terminals[2690] | build_d1_v0 cut[103] | d1_rewire_sources rows[103] from-tunnel
+      -> #2396 LoopTunnel '' d639 [1.1-stays (639)] (graph_s3 terminals[2791])
+      via LoopTunnel #2396 face w2641 d686: ["#2932 FlatSequenceInnerTunnel '' d686 [top-level #686]"]
+ t10 IN  ''                             w0      S1 w0      graph_s3 terminals[2691] | None | None
+ t11 IN  '4 pack remainder'             w3512   S1 w3512   graph_s3 terminals[2692] | build_d1_v0 cut[104] | d1_rewire_sources rows[104] from-tunnel
+      -> #4432 LoopTunnel '' d639 [1.1-stays (639)] (graph_s3 terminals[2792])
+      via LoopTunnel #4432 face w5265 d686: ["#5287 FlatSequenceInnerTunnel '' d686 [top-level #686]"]
+ t12 IN  'Array of cal clusters'        w3646   S1 w3646   graph_s3 terminals[2693] | build_d1_v0 cut[105] | d1_rewire_sources rows[105] from-tunnel
+      -> #3656 LoopTunnel '' d639 [1.1-stays (639)] (graph_s3 terminals[2776])
+      via LoopTunnel #3656 face w3668 d686: ["#3675 FlatSequenceInnerTunnel '' d686 [top-level #686]"]
+ t13 IN  'pos in cal image in'          w7429   S1 w7429   graph_s3 terminals[2694] | build_d1_v0 cut[106] | d1_rewire_sources rows[106] from-sr
+      -> #2972 LeftShiftRegister 'pos in cal image out' d639 [#637 SR (PD149) 1.2] (graph_s3 terminals[2779])
+      via LeftShiftRegister #2972 face w8590 d686: ["#6239 FlatSequenceInnerTunnel '' d686 [top-level #686]"]
+ t14 IN  'Real-space cosine window'     w3912   S1 w3912   graph_s3 terminals[2695] | build_d1_v0 cut[107] | d1_rewire_sources rows[107] from-tunnel
+      -> #3920 LoopTunnel 'Real-space cosine window' d639 [1.1-stays (639)] (graph_s3 terminals[2763])
+      via LoopTunnel #3920 face w5786 d686: ["#5659 FlatSequenceInnerTunnel 'Real-space cosine window' d686 [top-level #686]"]
+ t15 IN  'Cosine bandpass\nfor Hilbert ' w4027   S1 w4027   graph_s3 terminals[2696] | build_d1_v0 cut[108] | d1_rewire_sources rows[108] from-tunnel
+      -> #4031 LoopTunnel 'Cosine bandpass for Hilbert' d639 [1.1-stays (639)] (graph_s3 terminals[2764])
+      via LoopTunnel #4031 face w4029 d686: ["#5952 FlatSequenceInnerTunnel 'Cosine bandpass for Hilbert' d686 [top-level #686]"]
+ PASS F1 16 terminals on #5058 (16)
+ PASS F1 13 wired
+ PASS F4 no #5058 row (incl. one tunnel hop) touches an L7 wire/node: []
+
+== F3 1.2 SR pairs (PD149): left read by / right fed by (graph_s3)
+ #1147/#1142 left->[(5825, 'x,y,z array out', '1.1-stays (639)')]
+      right<-[(2626, 'array', 'group B'), (2765, 'x,y,z array out', '1.1-stays (639)'), (5058, 'x,y,z array out', '1.1-stays (639)')]
+      init<-[(5752, '', 'top-level #686'), (2886, '', 'top-level #686')]
+ #5796/#5805 left->[(5702, 'Bead is good? array out', '1.1-stays (639)')]
+      right<-[(5058, 'Bead is good? array out', '1.1-stays (639)')]
+      init<-[(5569, '', 'top-level #686'), (5818, '', 'top-level #686')]
+ #119/#2972 left->[(5058, 'pos in cal image in', '1.1-stays (639)')]
+      right<-[(10969, 'array', 'group A'), (10757, 'array', 'group A'), (5058, 'pos in cal image out', '1.1-stays (639)'), (639, 'Pos within cal image', '#637 loop terminal'), (639, 'Pos: Diffraction Pattern', '#637 loop terminal')]
+      init<-[(6239, '', 'top-level #686')]
+ #7311/#11001 left->[(10750, 'Value', '1.1-stays (639)')]
+      right<-[(11529, 'x', '1.1-stays (639)'), (11336, 'Value', '1.1-stays (639)')]
+      init<-[(686, 'Auto-reset zero', '#637 loop terminal')]
+
+== F5 cross-check vs build_d1_v0 cut / d1_rewire_sources
+ DIS t0 rewire other_ends [5540] not on S3 wire (S3 has [5680])
+ DIS t1 rewire other_ends [22700] not on S3 wire (S3 has [6810])
+ DIS t4 rewire other_ends [2222] not on S3 wire (S3 has [1147, 2626, 2765])
+ DIS t7 rewire other_ends [5540] not on S3 wire (S3 has [6016])
+ PASS F5 cut and rewire_sources index sets equal (13/13)
+
+== F6 docs/stage-simulator-plan.md:40,69,91: plan = tools/bench/plan_<stage>.json (+ sim steps tools/bench/sim/<stage>/step_NN_<action>.json); launch gate needs dry + pre-run PASS records in tools/bench/prerun_records.jsonl (py tools/stage_prerun.py --dry|--prerun <plan.json>)
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/k_facts_79.json","md5":"10644c55fa4efa005acdb67c47a0c96b"}]}
+BGRUN END rc=0 after 0s
+BGRUN START 2026-09-25 08:39:15 limit 3.0 min: py -u tools/bench/k_facts_79.py
+F4 bed md5 4b621946492da3d2fbb96b6053e715ec | S3 graph file md5 38203f03404a37a4531403385b5faf43 vi-md5 1a11d92aacabf7ec844d65b8af19f39f | S1 wiki file md5 5de014fe580b938328fa8662cf2b0652 vi-md5 3e3d23cefd3a334001aa9d6156bf1aee
+ PASS bed md5 == card
+group sets incl. P1 tunnels {'A': 19, 'B': 30, 'C': 1, 'W': 3, 'K': 1} sample p1_tunnel {'tunnel_uid': 5603, 'tunnel_class': 'Tunnel', 'face': 'outer', 'outer_term_uid': 5608, 'outer_frame_diagram': 639, 'inner_frame_diagrams': [5582, 5592], 'wire_candidates_on_bed': 1, 's1_tunnel_uids': [5603], 's1_agrees': True}
+
+== F1/F2 #5058 terminals (S3 order = index); bed wire = S3 wire (F4)
+ t0  IN  'Bead is good? array in'       w5637   S1 w5637   graph_s3 terminals[2681] | build_d1_v0 cut[96] | d1_rewire_sources rows[96] cross-loop:1.2->None
+      -> #5680 SelectorTunnel 'Bead is good? array out' d639 [group A (tunnel of #5540, P1)] (graph_s3 terminals[2727])
+      via SelectorTunnel #5680 face w5710 d5582: ["#5702 SelectorTunnel 'Bead is good? array out' d5582 [group A (tunnel of #5540, P1)]"]
+      via SelectorTunnel #5680 face w6011 d5592: ["#5967 SelectorTunnel '' d5592 [group A (tunnel of #5540, P1)]"]
+ t1  IN  'Image In'                     w3040   S1 w3040   graph_s3 terminals[2682] | build_d1_v0 cut[97] | d1_rewire_sources rows[97] from-stay:6810
+      -> #6810 SubVI 'Image Out' d639 [1.1-stays (639)] (graph_s3 terminals[2715])
+ t2  IN  'cross size'                   w373    S1 w373    graph_s3 terminals[2683] | build_d1_v0 cut[98] | d1_rewire_sources rows[98] from-tunnel
+      -> #2580 LoopTunnel '' d639 [1.1-stays (639)] (graph_s3 terminals[2793])
+      via LoopTunnel #2580 face w3853 d686: ["#3862 FlatSequenceInnerTunnel '' d686 [top-level #686]"]
+ t3  OUT 'Bead is good? array out'      w5859   S1 w5859   graph_s3 terminals[2684] | build_d1_v0 cut[99] | d1_rewire_sources rows[99] to-sr
+      -> #5796 RightShiftRegister 'Bead is good? array out' d639 [#637 SR (PD149) 1.2] (graph_s3 terminals[2786])
+ t4  OUT 'x,y,z array out'              w505    S1 w505    graph_s3 terminals[2685] | build_d1_v0 cut[100] | d1_rewire_sources rows[100] to-sr
+      -> #2626 BuildArray 'array' d639 [group B] (graph_s3 terminals[1870])
+      -> #2765 SelectorTunnel 'x,y,z array out' d639 [group B (tunnel of #2222, P1)] (graph_s3 terminals[2609])
+      -> #1147 RightShiftRegister 'x,y,z array out' d639 [#637 SR (PD149) 1.2] (graph_s3 terminals[2760])
+      via SelectorTunnel #2765 face w2924 d2265: ["#5696 SubVI 'x,y,z array' d2265 [diagram 2265]"]
+      via SelectorTunnel #2765 face w3472 d2235: ["#6085 SubVI 'x,y,z array' d2235 [diagram 2235]"]
+ t5  IN  ''                             w0      S1 w0      graph_s3 terminals[2686] | None | None
+ t6  IN  ''                             w0      S1 w0      graph_s3 terminals[2687] | None | None
+ t7  IN  'x,y,z array'                  w5975   S1 w5975   graph_s3 terminals[2688] | build_d1_v0 cut[101] | d1_rewire_sources rows[101] cross-loop:1.2->None
+      -> #6016 SelectorTunnel 'x,y,z array out' d639 [group A (tunnel of #5540, P1)] (graph_s3 terminals[2731])
+      via SelectorTunnel #6016 face w6071 d5582: ["#5825 SelectorTunnel 'x,y,z array out' d5582 [group A (tunnel of #5540, P1)]"]
+      via SelectorTunnel #6016 face w6030 d5592: ["#5725 SelectorTunnel '' d5592 [group A (tunnel of #5540, P1)]"]
+ t8  OUT 'pos in cal image out'         w121    S1 w121    graph_s3 terminals[2689] | build_d1_v0 cut[102] | d1_rewire_sources rows[102] to-sr
+      -> #10969 Function 'array' d639 [group A] (graph_s3 terminals[2451])
+      -> #10757 IndexArray 'array' d639 [group A] (graph_s3 terminals[2481])
+      -> #119 RightShiftRegister 'pos in cal image out' d639 [#637 SR (PD149) 1.2] (graph_s3 terminals[2778])
+      -> #639 Diagram 'Pos within cal image' d639 [#637 loop terminal] (graph_s3 terminals[2780])
+      -> #639 Diagram 'Pos: Diffraction Pattern' d639 [#637 loop terminal] (graph_s3 terminals[2811])
+ t9  IN  '# of bead 4 packs'            w42     S1 w42     graph_s3 terminals[2690] | build_d1_v0 cut[103] | d1_rewire_sources rows[103] from-tunnel
+      -> #2396 LoopTunnel '' d639 [1.1-stays (639)] (graph_s3 terminals[2791])
+      via LoopTunnel #2396 face w2641 d686: ["#2932 FlatSequenceInnerTunnel '' d686 [top-level #686]"]
+ t10 IN  ''                             w0      S1 w0      graph_s3 terminals[2691] | None | None
+ t11 IN  '4 pack remainder'             w3512   S1 w3512   graph_s3 terminals[2692] | build_d1_v0 cut[104] | d1_rewire_sources rows[104] from-tunnel
+      -> #4432 LoopTunnel '' d639 [1.1-stays (639)] (graph_s3 terminals[2792])
+      via LoopTunnel #4432 face w5265 d686: ["#5287 FlatSequenceInnerTunnel '' d686 [top-level #686]"]
+ t12 IN  'Array of cal clusters'        w3646   S1 w3646   graph_s3 terminals[2693] | build_d1_v0 cut[105] | d1_rewire_sources rows[105] from-tunnel
+      -> #3656 LoopTunnel '' d639 [1.1-stays (639)] (graph_s3 terminals[2776])
+      via LoopTunnel #3656 face w3668 d686: ["#3675 FlatSequenceInnerTunnel '' d686 [top-level #686]"]
+ t13 IN  'pos in cal image in'          w7429   S1 w7429   graph_s3 terminals[2694] | build_d1_v0 cut[106] | d1_rewire_sources rows[106] from-sr
+      -> #2972 LeftShiftRegister 'pos in cal image out' d639 [#637 SR (PD149) 1.2] (graph_s3 terminals[2779])
+      via LeftShiftRegister #2972 face w8590 d686: ["#6239 FlatSequenceInnerTunnel '' d686 [top-level #686]"]
+ t14 IN  'Real-space cosine window'     w3912   S1 w3912   graph_s3 terminals[2695] | build_d1_v0 cut[107] | d1_rewire_sources rows[107] from-tunnel
+      -> #3920 LoopTunnel 'Real-space cosine window' d639 [1.1-stays (639)] (graph_s3 terminals[2763])
+      via LoopTunnel #3920 face w5786 d686: ["#5659 FlatSequenceInnerTunnel 'Real-space cosine window' d686 [top-level #686]"]
+ t15 IN  'Cosine bandpass\nfor Hilbert ' w4027   S1 w4027   graph_s3 terminals[2696] | build_d1_v0 cut[108] | d1_rewire_sources rows[108] from-tunnel
+      -> #4031 LoopTunnel 'Cosine bandpass for Hilbert' d639 [1.1-stays (639)] (graph_s3 terminals[2764])
+      via LoopTunnel #4031 face w4029 d686: ["#5952 FlatSequenceInnerTunnel 'Cosine bandpass for Hilbert' d686 [top-level #686]"]
+ PASS F1 16 terminals on #5058 (16)
+ PASS F1 13 wired
+ PASS F4 no #5058 row (incl. one tunnel hop) touches an L7 wire/node: []
+
+== F3 1.2 SR pairs (PD149): left read by / right fed by (graph_s3)
+ #1147/#1142 left->[(5825, 'x,y,z array out', 'group A (tunnel of #5540, P1)')]
+      right<-[(2626, 'array', 'group B'), (2765, 'x,y,z array out', 'group B (tunnel of #2222, P1)'), (5058, 'x,y,z array out', 'group K')]
+      init<-[(5752, '', 'top-level #686'), (2886, '', 'top-level #686')]
+ #5796/#5805 left->[(5702, 'Bead is good? array out', 'group A (tunnel of #5540, P1)')]
+      right<-[(5058, 'Bead is good? array out', 'group K')]
+      init<-[(5569, '', 'top-level #686'), (5818, '', 'top-level #686')]
+ #119/#2972 left->[(5058, 'pos in cal image in', 'group K')]
+      right<-[(10969, 'array', 'group A'), (10757, 'array', 'group A'), (5058, 'pos in cal image out', 'group K'), (639, 'Pos within cal image', '#637 loop terminal'), (639, 'Pos: Diffraction Pattern', '#637 loop terminal')]
+      init<-[(6239, '', 'top-level #686')]
+ #7311/#11001 left->[(10750, 'Value', 'group A (tunnel of #10445, P1)')]
+      right<-[(11529, 'x', '1.1-stays (639)'), (11336, 'Value', 'group A (tunnel of #10445, P1)')]
+      init<-[(686, 'Auto-reset zero', '#637 loop terminal')]
+
+== F5 cross-check vs build_d1_v0 cut / d1_rewire_sources
+ DIS t1 rewire other_ends [22700] not on S3 wire (S3 has [6810])
+ PASS F5 cut and rewire_sources index sets equal (13/13)
+
+== F6 docs/stage-simulator-plan.md:40,69,91: plan = tools/bench/plan_<stage>.json (+ sim steps tools/bench/sim/<stage>/step_NN_<action>.json); launch gate needs dry + pre-run PASS records in tools/bench/prerun_records.jsonl (py tools/stage_prerun.py --dry|--prerun <plan.json>)
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/k_facts_79.json","md5":"079f855dde2665e33575c6bcf45583fc"}]}
+BGRUN END rc=0 after 0s

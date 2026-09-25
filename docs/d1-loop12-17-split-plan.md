@@ -65,13 +65,13 @@ use — never a Traverse / node / diagram index (Pre-decided 158; `docs/d1-build
 | **L7-1b** | ✅ **DELIVERED 2026-09-24 06:1x (cycle 72 firefighter, run 3): `claudeDev\D1_l7_1_20260924_060431.vi` md5 `e5c7d68b56d018131f2ebf0df656fdd6`, `tools/bench/stage_d1_l7_1b_r3.log` 38/0, 761 s; all 9 rows wired, second pass by `verify_term_uid` Is Broken? False ×4, PB = exactly the 8 predicted rows, PC1–PC3 pass, ExecState 0 as predicted (L7-R rows open), input + bed md5 unchanged, refs 23/23, handles 34,146 at exit. r4's B4 is MEASURED: the new SR outer terminals kept their uids across the connect (#24205/#24291 resolved by uid after wiring).** Original brief: **Pre-decided 169/171**: from the saved L7-1a file, fresh LabVIEW: the 9 rows of the L7-1 row below (4 S1-mapped per 168 + 2 single-candidate per 165 + 3 tunnels per 166), corrected intent lines (171(1)); PB `computation_diff` FATAL before save (170(c)); runs in the same material dispatch as L7-1a when L7-1a passes (171(4)); recipe `tools/recipes/stage_d1_l7_1b.py` | `D1_l7_1a_<ts>.vi` | `D1_l7_1_<ts>.vi` | 9 | 4 S1-mapped / 5 rule |
 | **L7-1** (superseded by the L7-1a/L7-1b rows above, kept for the row detail) | **REWRITTEN 2026-09-24 by Pre-decided 164** (was: "2 SR pairs move with their node; re-wire its 12 rows; w4517 made as a 1.1→1.7 crossing here"): move `#376` into body `#23405` of `#23041`; create 1.7's TWO NEW SR pairs replacing `#15/#51` and `#24/#1108` (the old pairs stay on `#637` until L7-R), each new LEFT initialised off the same source as the original (`#4910` w4969, `#781` w3543); wire the 4 rows inside 1.7 (`#376` ↔ new SRs) by Jev PAIR; the 2 SR-init rows are RULE-SINGLE-CANDIDATE rows (Pre-decided 165); i6/i9/i11 (`#3644`/`#2294`/`#5096`) are re-made as NEW tunnels on `#23041` off the same outer feed (Pre-decided 166, `tunnel_outer` rule rows). Of `#376`'s 12 rows: in-1.7 4 · top-level tunnel 3 (L7-1, 166) · cross-loop OPEN 3 (i5 w4517, i7 w3268, i8 w1397 — queues, never made here) · L7-R 1 (i4) · split 1 (i3). Prediction `tools/bench/l7_1_prediction.json` (`tools/bench/l7_1_predict_r2.log`) | `D1_s3_loop15.vi` | `D1_l7_1_<ts>.vi` (GUI save if broken, CLAUDE.md §3 rule 6) | 9 (4 body + 2 init + 3 tunnel) | 4 / 5 |
 | **L7-R** | ✅ **DELIVERED 2026-09-24 07:2x (cycle 73 material, run 2): `claudeDev\D1_s4_loop17.vi` md5 `4b621946492da3d2fbb96b6053e715ec`, 481,808 B, `tools/bench/stage_d1_l7_r_r2.log` 61/0, 459 s. Executed Pre-decided 175: PMV (move_in ControlTerminal on a scratch) PASS; A0 index 3 == uid 3182; 7 wires deleted by uid; #3052/#3453 moved into #23405; Jev top == S1-mapped on 4 rows (p 0.42/0.95/0.91/0.93); 2 re-feeds from the new RIGHT SRs; output tunnels #5204 (file progress → #2048 'length' + #6384 'actual # data points') and #10404 (→ #6384 'file # to append'), IndexMode 0 = #1929/#5020; 6 second passes Is Broken? False; retire 6 carriers (#1929/#5020 already gone with their wires); RBW 7 half-wires, no live edge. PB cdiff(S1,new) = exactly the w4517 row; PC1/PC2 = predicted; ExecState 1 warm, scripted save + re-read 1 (t5/t7 OPEN yet not required); cold not read (moves to QRT, 175). cdiff does NOT report the unwired 'frame index' (w3268) — FIN finding. Contract `tools/bench/l7_r_predict.log`, recipe `tools/recipes/stage_d1_l7_r.py`.** Original row: retire `#15/#51`, `#24/#1108` on `#637` after live-consumer check; re-feed from 1.7's output tunnels. **CORRECTED 2026-09-24 (prior-art c70-l7-1-r2 A3.3; measured `tools/bench/l7_1_predict_r2.log:22-27`):** L7-1 leaves SIX consumers of `#376`'s outputs unsourced, not two — `#6384` `error in` / `file # to append` / `actual # data points`, `#2048` `array` / `length`, `#3453` `file progress` (an indicator on 1.1). Which stage owns `#2048` and `#3453`, and the third `#6384` input, is OPEN (judgement). RBW; save by script | `D1_l7_1_<ts>.vi` | **`D1_s4_loop17.vi`** | retire + 6 (ownership OPEN) | 0 / all |
-| **K** | move the CPU kernel `#5058` `Track N beads four-fold over-kernel-v3.vi` into the 1.2 body (Pre-decided 156; name-gated, `docs/cycle27-plan.md:754-755`); re-wire its 13 rows | `D1_s4_loop17.vi` | `D1_k_<ts>.vi` (GUI save if broken) | 13 | P0 recounts |
+| **K** | ✅ **DELIVERED 2026-09-25 10:0x (cycle 79): `claudeDev\D1_k_20260925_100155.vi` md5 `6cf5b077…`, `tools/bench/stage_d1_k_r2.log` 35/0; design Pre-decided 177–178(i).** Original row: move the CPU kernel `#5058` `Track N beads four-fold over-kernel-v3.vi` into the 1.2 body (Pre-decided 156; name-gated, `docs/cycle27-plan.md:754-755`); re-wire its 13 rows | `D1_s4_loop17.vi` | `D1_k_<ts>.vi` (GUI save if broken) | 13 | P0 recounts |
 | **L2-A1** | move group A (8) + the `Auto-Reset` / `Reset Tracking` control terminals into the 1.2 body; add 1.2's 4 SR pairs; re-wire batch 1 (incl. w10990 `#10757`→`#10407`, the only row left of old L2-C — Pre-decided 161) | `D1_k_<ts>.vi` | `D1_l2_a1_<ts>.vi` (broken by design → GUI Ctrl+S, CLAUDE.md §3 rule 6) | 13 | 3 / 10 |
 | **L2-A2** | re-wire batch 2 of group A (`min value` #17257 is an INDICATOR fed by `#10969` — a sink row, not a moved control, Pre-decided 158) | `D1_l2_a1_<ts>.vi` | `D1_l2_a2_<ts>.vi` | 13 | 3 / 10 |
 | ~~**L2-C**~~ | **REMOVED by Pre-decided 161**: `#10686` stays on 1.1, so w10799 `#10686`→`#10407` stays as S3 left it; w10990 moved into L2-A1 | — | — | 0 | — |
 | **L2-B1..B3** | move group B (8, incl. ForLoops `#1359` / `#29874` with their own SRs) + the FOUR controls `Z/dZ` #47, `Correction Factor` #9289, `Force\nsmoothing\nhalf-width` #28148 (→ `#1359` t7), `Extension\nmedian filter\nhalf-width` #28996 (→ `#1359` t8 / `#29874` t6); `Force (pN) vs Extension (nm) ` #8038 is an INDICATOR fed by `#11261` (sink row); rows from `d1_rewire_sources.json` cross-checked against `build_d1_v0.json` (Pre-decided 158); gate per Pre-decided 159 | previous | `D1_l2_b1_<ts>.vi` → `…b2…` → `…b3…` | 13/13/12 + the two control rows | 2 / 36 over the three |
 | **L2-R** | retire the 4 old 1.2 carriers on `#637` after a live-consumer check (Pre-decided 142's pattern), junk purge, Remove Bad Wires, save by script | `D1_l2_b3_<ts>.vi` | **`D1_s5_loop12.vi`** | retire rows | 0 / all |
-| **QRT** | (+ Pre-decided 175: the two OWED 1.7 input rows t5 w4517 `#2626`→`#376 'current frame data array in'` and t7 w3268 `#637` i→`#376 'frame index'` get a queue here — no planned queue carries them) the queue RESOLUTION TABLE (`docs/cycle27-plan.md:930-933`, 34(g)): for each of the eight queues the `(uid, exact terminal name, diagram)` on `D1_s5_loop12.vi`, or the stage that must run first. A document, no LabVIEW write (Pre-decided 156) | `D1_s5_loop12.vi` → read only | the table (doc) | 0 | — |
+| **QRT** | (+ Pre-decided 175: the two OWED 1.7 input rows t5 w4517 `#2626`→`#376 'current frame data array in'` and t7 w3268 `#637` i→`#376 'frame index'` get a queue here — no planned queue carries them; + Pre-decided 177(e): the OWED 1.2 input row w3040 `#6810 'Image Out'`→`#5058 'Image In'`) the queue RESOLUTION TABLE (`docs/cycle27-plan.md:930-933`, 34(g)): for each of the eight queues the `(uid, exact terminal name, diagram)` on `D1_s5_loop12.vi`, or the stage that must run first. A document, no LabVIEW write (Pre-decided 156) | `D1_s5_loop12.vi` → read only | the table (doc) | 0 | — |
 | **STOP** | 1.2 / 1.7 conditional terminals driven by the stop design (build-plan S4/S4s, `:679-680`), inputs from QRT | `D1_s5_loop12.vi` | `D1_s6_stop.vi` | from QRT | — |
 | **ROT** | Pre-decided 133: repoint the 9 rotor call sites to `claudeDev\SetCommand_signed.vi` md5 `ec87a2657b158722082ca00c7074f114` by `SubVI.Replace` 635E001, measured first on a scratch copy together with the Baseline/Ring constants (Pre-decided 160) | `D1_s6_stop.vi` | `D1_s7_rotor.vi` | 9 (+ constants per the scratch measurement) | 0 / 9 |
 | **FIN** | census, ExecState 1 warm + cold, final save — the GPU top level is the default final file (Pre-decided 161) | `D1_s7_rotor.vi` | GPU top level (name after the GPU-swap stage, never "GPU" before it, `docs/cycle27-plan.md:756`) | 0 | — |
@@ -473,6 +473,146 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        - This is done BEFORE stage K. Offline, no LabVIEW.
      - **(d)** §3's L7-R rows `:159-160` (cold ExecState 1, cdiff 0) are superseded by 175: that criterion moves to the
        stage that builds the t5/t7 queues (QRT/STOP).
+
+177. **(cycle 79 judgement, on `tools/bench/k_facts_79.log:91-169` run 3, `BGRUN END rc=0`, offline; result card
+     `tools/bench/cards/result_79-1.json`) STAGE K DESIGN — decided.** Input `claudeDev\D1_s4_loop17.vi` md5 `4b621946…`,
+     output `claudeDev\D1_k_<ts>.vi` (GUI save if ExecState 0, rule 6). `#5058` has 16 terminals, 13 wired; the bed wire
+     equals the S1 wire on all 13 (`:97-146`). t5/t6/t10 stay UNWIRED (defaults, the same as the original).
+     - **(a) MOVE:** `#5058` → body `#23166` of `#10170` (1.2) by `move_in`.
+     - **(b) SR pair `#119/#2972` is KERNEL-ONLY** (F3 `:150-161`: left `#2972` → `#5058` t13 only; right `#119` ← w121
+       from `#5058` t8 only). By 156 (SRs move with their nodes) K creates ONE new SR pair on `#10170`:
+       - t8 → new RIGHT and new LEFT → t13 are S1-MAPPED rows (168/171, Jev argmax check).
+       - The new LEFT's initial value comes from the same source as `#2972`'s, FSIT `#6239` on `#686`. That is a
+         RULE-SINGLE-CANDIDATE row (165).
+       - The old `#119/#2972` is NOT deleted in K. It is retired in L2-R with the other carriers, after the
+         live-consumer check.
+       - The three MIXED pairs stay in L2-A1: `#1147/#1142` (A+B+K), `#5796/#5805` (A+K) and `#7311/#11001` (no K).
+     - **(c) Six top-level rows are re-made as NEW input tunnels on `#10170` (166, rule rows):** t2, t9, t11, t12, t14
+       and t15. Each takes the SAME outer FSIT source on `#686` as its `#637` tunnel
+       (`#2580`←`#3862` · `#2396`←`#2932` · `#4432`←`#5287` · `#3656`←`#3675` · `#3920`←`#5659` · `#4031`←`#5952`).
+       Each new tunnel's IndexMode must EQUAL its original's, read on the live file (rule 1a: whole-array parameters
+       stay non-indexed).
+       - The old `#637` tunnels stay for any other inside consumer. A tunnel left with none is an L2-R retire row.
+     - **(d) The two `#639` sinks of t8** (`Pos within cal image`, `Pos: Diffraction Pattern`; 79-1 OPEN 1) are handled
+       like `#3453` in 175:
+       - The contract first MEASURES each one's class. It must be a ControlTerminal that is an indicator, with w121 as
+         its only source.
+       - If so, it MOVES into `#23166` and is re-wired from t8 (rule row, display only).
+       - Any other finding ⇒ STOP (a gate, not a branch), and judgement decides.
+     - **(e) Rows left OPEN by K** (the gate lists them one by one; none of them is wired in K):
+       - t0 ← `#5680` and t7 ← `#6016` (tunnels of `#5540`, group A) go to L2-A1.
+       - t3 → `#5796` right goes to L2-A1, with that pair.
+       - t4 w505 → `#2626`, `#2765` (group B) and `#1147` right go to L2-A1/L2-B.
+       - t8's sinks `#10969` and `#10757` (group A) go to L2-A1.
+       - **t1 `Image In` ← `#6810 'Image Out'`** stays on 1.1 and crosses 1.1→1.2 every frame. By 164 it is a
+         queue, and it is ADDED TO THE QRT ROW as an owed row, beside t5/t7 of 175. K builds no queue.
+     - **(f) `#22700` on w3040** (79-1 F5, present only in `d1_rewire_sources.json`) is the fixture TIFF writer the
+       working copy carried. It is absent from S1/S3 and from the original (STATUS cycle 74, PD11 of the m8 plan). It
+       is IGNORED and listed as a disagreement row (158), never wired.
+     - **(g) Gates:**
+       - PB `computation_diff(S1,new)` is FATAL before the save. It must equal exactly (e)'s rows plus the two carried
+         L7 rows (w4517 and w3268, the latter visible since the cycle-74 DIAG_TERM fix). The simulator computes the list
+         in `tools/bench/plan_<stage>.json`; nobody types it.
+       - `diff(prev,new)` is an edge list.
+       - The new tunnels' IndexMode must equal their originals'.
+       - Second pass `Is Broken?` False on every wired row, addressed by `verify_term_uid` (174).
+       - ExecState is MEASURED, not gated (the (e) rows are open).
+       - Handles are recorded (176(a)).
+       - Input md5 and pins must be unchanged.
+     - **(h) Launch:** simulator plan files + dry + pre-run PASS (`docs/stage-simulator-plan.md:34,40,69,91`),
+       prior-art released, one LabVIEW run under the retry cap. Mixed-pair creation stays in L2-A1, so K has at most
+       11 wired rows (1 init + 2 S1-mapped + 6 tunnels + 2 indicator rows), inside the 10–15 batch size.
+178. **(cycle 79 judgement, on result `79-3` FAIL 27/2 — `tools/bench/sim_k_split.log:69`, review
+     `archive/peer/2026-09-25-c79-sim-k-split.md` ANSWERED) three rulings. The failures are OUR gate definitions; the
+     K design is unchanged.**
+     - **(a) Contract measured, 177(d) holds:** `#3173`/`#9519` are indicator ControlTerminals whose sole source is t8
+       w121, and the six originals have IndexMode 0 (`k_contract_79.log:28,31-42`). So they move, and the new tunnels
+       are IndexMode 0.
+     - **(b) The simulator gates are corrected as the review proposed (§4):**
+       - A0 becomes an OWNERSHIP check: `#5058` is owned by `#23166`, and `#23166` by `#10170`. Pixel offsets are
+         never compared exactly.
+       - P3 credits t3 by an end-graph source check (t3 is unwired; the old `#5796` right has no source) plus a
+         negative control: a fake t3→`#2626` edge must FAIL the gate.
+       - A THIRD offline simulator run is AUTHORISED. The failure budget restarts on card 79-4. This is not the "same
+         stage fails twice at the same place" trigger: run 1 failed on a data-file overwrite, run 2 on two gate
+         definitions.
+     - **(c) PB = the 10 rows the simulator lists** (`sim_k_split.log:24-33`): `#376`×2 (L7), `#2626 'array'`,
+       `#5696`/`#6085 'x,y,z array'`, `#10757`/`#10969 'array'`, and `#5058` t0/t1/t7. t3 has NO row of its own; its
+       only S1 computation consumer is `#5058` t0, through the mixed pair `#5796/#5805` and the selector tunnels. So
+       `#5058` t0's row covers it, and the end-graph source check in (b) proves it separately. ACCEPTED.
+     - **(d) 177(b)'s "Jev argmax check" is WITHDRAWN** for `#119/#2972`. That pair is a register chain, and CLAUDE.md
+       §3 "Stages are SIMULATED", decision 3, puts chains under RULE-CHAIN-S1 (copied from S1, never asked of Jev;
+       `stage_prerun` X7). The standing rule wins over this plan's wording.
+     - **(f) (cycle 79 judgement, on result `79-4` BLOCKED: `tools/bench/stage_d1_k_prerun.log:146` X4; review
+       `archive/peer/2026-09-25-c79-k-x4.md`) ROUTE (c): the plan the launch gate checks must be the plan that EXECUTES.**
+       No op reads `plan_k_rows.json`'s exec ends; only X4 reads them. The simulator-finalized `plan_k_split.json` is
+       what runs, and its pre-run already passed (`stage_d1_k_planprerun.log:2-7`, 4/0). So:
+       - `stage_d1_k.py` executes `plan_k_split.json` through stagexec. It keeps its OWN gates around it: IM, P2,
+         PB = 178(c), KN (the name gate, prior-art c79-k), Is Broken? second pass, and save.
+       - The recipe presents `plan_k_split.json` to the launch gate as its plan file. `plan_k_rows.json` is demoted to
+         a derived report.
+       - The pre-run is re-run on the recipe + `plan_k_split.json`.
+       - Route (a), patching `addr_offline` for '' names, is NOT taken now: nothing that executes needs it. If L2
+         shows the same X4 class on a plan that DOES execute, it becomes a tool task then.
+       - Route (b) alone is refused, because it drops the gates.
+       - **No gate is loosened.** If the launch gate cannot bind this recipe to that plan without a code change, the run
+         STOPS and reports.
+       - **Side check (non-blocking):** the self-wires the review flagged on FSITs `#6239`/`#3862`/`#5659`
+         (`c79-k-x4.md:68-76`) are compared with the S1 graph. Present in S1 too ⇒ a reader modelling artefact that is
+         harmless to cdiff; absent from S1 ⇒ a finding for the next cycle.
+     - **(g) (cycle 79 judgement, on result `79-5` BLOCKED: `tools/bench/stage_d1_k_prerun_79-5.log:145-148`) TOOL
+       NECESSARY — the launch gate learns the simulator's own plan format.** `stage_prerun.plan_files`
+       (`tools/stage_prerun.py:674-692`) accepts only a `decisions` row file. The simulator (CLAUDE.md §3 decision 7)
+       emits `stageplan/1`, so every simulated stage (all of L2) would be refused, and a recipe cannot be bound to the
+       plan it executes. This is the user's 2026-09-24 tool permission: the class recurs. Change, tightening only:
+       - A recipe that names a `stageplan/1` is pre-run against it only if `finalized` is true and `final` is PASS.
+       - X3 counts that plan's actions. X5 requires the recipe's compiled ops == the plan's wire actions.
+       - `plan_md5s` is keyed on the plan file.
+       - Self-test negatives: a non-finalized stageplan is refused, and an op-count mismatch is refused.
+       - Every existing `stage_prerun` self-test still passes.
+       R5 closed the side check: the FSIT self-wires are in S1 too (`k_selfwire_79.log:7-37`), so they are a reader
+       artefact.
+     - **(h) (cycle 79 judgement, on result `79-6`: `stage_d1_k.log:97` E1 STEP-DIFF at op 3, run 1 of 2, nothing
+       saved, bed unchanged; review `archive/peer/2026-09-25-c79-6-k_e1op3.md`) the per-step comparison WORKED.**
+       The simulator's orphaned-tunnel rule (`stagesim.py:308-324`) covers only OUTPUT Loop/Tunnel objects. `#5058` is
+       the source of w505 into the input SelectorTunnel `#2765`, and the move orphaned that tunnel.
+       - Remedy: measure the real graph after ops 1–3 headless (is_source / wire uid of 2789/2792/5910/6253/2811).
+       - Then widen the stagesim rule until its step-3 graph EQUALS that read, with a self-test on this case.
+       - Then re-simulate, re-finalize and re-pre-run K. Run 2 is launched only if those pass (a gate).
+       - `tools/stage_prerun.py` now pre-runs finalized `stageplan/1` files (79-6 T1–T3; self-test 9/9).
+       - The 8 pre-existing `selftest_launch_gate` failures (C2-C6, M4-M6: stale counting since 78-2, same on HEAD)
+         are OWED to a later small tool task.
+     - **(i) (cycle 79 judgement, on result `79-7` PASS 6/0) K ACCEPTED: `claudeDev\D1_k_20260925_100155.vi`, md5
+       `6cf5b0777aafa12112d8a786a9eed1ed`, 307,364 B.** Evidence:
+       - `stage_d1_k_r2.log:569` 35/0, 610 s. E1: 15/15 ops have step diff 0 against the simulator.
+       - IM 6/6 IndexMode 0. P2: 7 rows, Is Broken? False. PB: exactly 178(c)'s 10 rows. KN name gate OK.
+       - ExecState 0 warm, BY DESIGN (the (e) rows are open), so it was saved by GUI under rule 6.
+       - The bed and pins are unchanged, and LabVIEW was verified gone.
+       - The simulator's tunnel-flip rule now matches the measured op-3 read (`k_op3_read_79.log:93-111`; self-tests
+         `selftest_stagesim.log` 42/0 and `selftest_stagesim_k79.log` 4/0).
+       - Level: STRUCTURAL + graph-equivalent under ASSUMPTION A, NEVER RUN.
+       - **The generalised TUN_FLIP branches are UNMEASURED:** input LoopTunnel/Tunnel, and output SelectorTunnel with
+         every frame orphaned. They are marked unmeasured, and the first stage that exercises them (L2-A1: the Case
+         structures `#5540`/`#10445`) must measure each branch on a scratch before it relies on the prediction. The
+         per-step comparison remains the backstop.
+       - 🔵 **THE BED IS NOW `D1_k_20260925_100155.vi`.**
+       - 🔴 **CORRECTED the same cycle by retrospective-cycle79 (`archive/peer/2026-09-25-retrospective-cycle79.md:244-254`):
+         ACCEPTANCE IS CONDITIONAL.** Both `wire_indicators` ops (plan actions 26/27, t8 → `#3173`/`#9519`) raised
+         `target BROKEN after wiring` (`stage_d1_k_r2.log:232-239`), and `tools/stagexec.py:679-680` whitelisted
+         that error. That whitelist exists for an `fp_ind` gate found only in L7-R. The op's own check,
+         `exec_state != 1` (`gscript.py:1864-1867`), always fires on an ExecState-0 VI, so it proves nothing here.
+         No reader covered the two sinks: not E1, not the second pass, not the edge diff. The "2 indicators moved"
+         line is therefore UNVERIFIED.
+         **Before L2-A1:**
+         - (1) Headless read of `D1_k` for the terminals of `#3173`/`#9519`. Wire 23807 = landed. Wire 0 = not wired
+           (a small follow-up stage from `D1_k`). Any other wire = K is REJECTED, and K is re-run from
+           `D1_s4_loop17.vi`.
+         - (2) DEVICE-FAILED, threshold 1: remove the whitelist, so every op error stops the run unless the recipe
+           declares a named gate that reads that sink.
+         - (3) Build a reader for panel-terminal wiring. The simulator state, the edge diff and cdiff are all blind to
+           ControlTerminal sinks.
+     - **(e) Carried to L2-A1** (review `:76-99`): `computation_diff` merges Case frames. Before L2-A1 gates on cdiff,
+       its plan entry must say how the `#5540`/`#10445` frames are kept apart.
 
 ## OPEN (design choices — for judgement; not decided here)
 

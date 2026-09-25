@@ -1,0 +1,23 @@
+ATTACK this claim about tools/bench/sim_k_split.py and its log tools/bench/sim_k_split.log (cycle 79, stage K of
+docs/d1-loop12-17-split-plan.md Pre-decided 177; pure Python, no LabVIEW).
+
+CLAIM: both failed runs of sim_k_split.py are defects of OUR plan-builder script, not of the stage-K design, the
+simulator (tools/stagesim.py) or computation_diff (tools/vigraph.py):
+ (1) run 1 (08:53:29, KeyError 'graph', sim_k_split.py:28): the contract data it reads (k_contract_79.json) had been
+     overwritten by stagekit.Stage.close()'s own JSON dump, because tools/bench/k_contract_79.py wrote its data to the
+     same file name as the Stage record (stagekit.py:222 out_json default). Fixed: data now goes to k_contract_79_data.json.
+ (2) run 2 (08:56:22, 16 pass / 2 fail): gate A0 compared the 1.2 loop/body pixel offset (10,1) EXACTLY with L7's
+     loop/body offset read on the same live base (9,1) - a geometry criterion that should never have been exact (fixed to
+     <= 1 px); gate P3 required every 177(e) terminal to explain >= 1 end computation_diff row, and credited each row to
+     ONE cause: the row (#5058 'Bead is good? array in') was credited to the (e) input t0 only, so the (e) output t3
+     ('Bead is good? array out') looked unused. Measured offline on the S1 graph: t3's ONLY computation consumer is
+     #5058 'Bead is good? array in' itself, through RightShiftRegister #5796 -> sr -> #5805 -> SelectorTunnel #5702 ->
+     #5680 (all scheduling relays), effective sources {t3, #5527 'initialized array'}. Fixed: a row is credited to every
+     (e) cause. With both fixes the rest of run 2 already passed: every action applied on measured op models, base
+     cdiff == the 2 carried L7 rows, 10 end rows all explained, plan FINAL with open_rows = those 10 rows, 15 real ops
+     (11 wired rows), stagexec dry run PASS.
+
+Competing explanation to weigh: the relay collapse in computation_diff hides the t3 edge (a computation-level blind
+spot like the cycle-74 diagram-terminal one), so "PB cdiff == 177(e) rows + w4517 + w3268" is not a sound acceptance
+criterion for stage K: an (e) row that feeds back into the moved node itself is only visible as the node's own input
+row. What would falsify the claim? What is the cheapest discriminating test (offline, on tools/bench/sim/k_split/)?

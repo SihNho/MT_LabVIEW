@@ -1,0 +1,16 @@
+{"schema":"result/1","id":"79-1","status":"PASS","gates":{"pass":5,"fail":0},"first_fail":null,"blocked_by":null,
+"artefacts":[{"path":"tools/bench/k_facts_79.py","md5":"e8273d10ca24952c5ef3a8635071d375"},{"path":"tools/bench/k_facts_79.log","md5":"6ee8a88ab80dee793bccaca760e121a1"},{"path":"tools/bench/k_facts_79.json","md5":"079f855dde2665e33575c6bcf45583fc"}],
+"facts":[
+"F4: no S4 graph on disk; used S3 graph (file md5 38203f03, vi 1a11d92a) + L7 edits; bed md5 4b621946 checked; no #5058 row or tunnel hop touches an L7 wire/node (k_facts_79.log:92-93,147)",
+"F1: #5058 has 16 terminals, 13 wired; t5,t6,t10 unwired inputs; bed wire == S1 wire on all 13 (k_facts_79.log:97-146)",
+"F2 group A: t0 <- #5680 (tunnel of #5540), t7 'x,y,z array' <- #6016 (#5540); t8 'pos in cal image out' w121 -> #10969,#10757 (A), SR #119, two #639 terms (log:98,117,120-125)",
+"F2 group B: t4 'x,y,z array out' w505 -> #2626 (B), #2765 (tunnel of #2222 -> #5696/#6085 inside), SR right #1147 (log:108-113)",
+"F2 SR (PD149): t3 w5859 -> right #5796; t13 'pos in cal image in' w7429 <- left #2972 (init from FSIT #6239 on #686) (log:106-107,136-138)",
+"F2 1.1-stays: t1 'Image In' w3040 <- #6810 SubVI 'Image Out' on 639 (log:101-102)",
+"F2 top-level via #637 LoopTunnel: t2 #2580<-#3862, t9 #2396<-#2932, t11 #4432<-#5287, t12 #3656<-#3675, t14 #3920<-#5659, t15 #4031<-#5952 (all FSIT on #686) (log:103-144)",
+"F3: #1147/#1142 left->#5825(A) right<-#2626,#2765,#5058; #5796/#5805 left->#5702(A) right<-#5058; #119/#2972 left->#5058 right<-w121; #7311/#11001 left->#10750 right<-#11529,#11336 (log:150-161)",
+"F5: cut and d1_rewire_sources give the same 13 indices; one disagreement: t1 rewire lists #22700 on w3040, absent on S3 (only #6810) (log:164-165)",
+"F6: the K stage needs tools/bench/plan_<stage>.json (+ tools/bench/sim/<stage>/step_NN_*.json) with dry + pre-run PASS in tools/bench/prerun_records.jsonl (docs/stage-simulator-plan.md:34,40,69,91)"],
+"open":["Tag caveat: the '#637 loop terminal' tag also covers terminals owned by a Diagram, so #639 'Pos within cal image'/'Pos: Diffraction Pattern' (t8 sinks) and #686 'Auto-reset zero' (#11001 init) are probably ControlTerminals and not loop i/N. Check before using them as row modes.","#22700 on w3040 in d1_rewire_sources: probably the TIFF-writer fixture insertion that is missing from S1/S3. Should K ignore that row?"],
+"cost":{"usd":null,"minutes":6,"labview_runs":0},
+"note":"Run 1 crashed on a script bug (p1_tunnel is a dict) and was fixed. Run 2 mis-tagged the structure tunnels, which was fixed in run 3. The final log is run 3 (log:91-169, BGRUN END rc=0). No LabVIEW was used, and no row mode was decided."}

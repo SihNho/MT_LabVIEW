@@ -1,0 +1,41 @@
+BGRUN START 2026-09-25 09:40:01 limit 8.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_k.py
+stage_d1_k - cycle 79 STAGE K (docs/d1-loop12-17-split-plan.md Pre-decided 177, executed, not re-decided). INPUT the S4 bed
+claudeDev\D1_s4_loop17.vi (4b621946...), FRESH LabVIEW -> claudeDev\D1_k_<ts>.vi (scripted save if ExecState 1, else the
+rule-6 GUI save). ROWS ONLY FROM THE FINALIZED SIMULATOR PLAN plan_k_split.json (tools/bench/sim_k_split.py): the stagexec
+Executor runs its compiled ops one by one and compares the REAL graph after every op with the simulated step file
+(docs/stage-simulator-plan.md step 6). No uid and no terminal name is written in this file. ROUTE (c), Pre-decided 178(f):
+plan_k_split.json is the plan this recipe executes AND presents; plan_k_rows.json is a derived report, not read here.
+PRIOR ART: tools/stagexec.py (Executor + LVBackend + lv_run's end-cdiff code; L7 bench 14/0, never saved), stage_d1_l7_r.py
+(IndexMode gate, ordered second pass via cfw_second_pass, shots + save), stagekit. No new op.
+PREDICTION CONTRACT (177(g)): E1 every real op's graph == its simulated step, every created object bound; IM each new
+tunnel's IndexMode == its original's (the plan's tunnel `indexing`, 178(a) from k_contract_79); P2 the ordered second pass
+(wire_delta 0, Wire.Is Broken? False) on every row whose SINK is a node terminal (6 tunnel rows + the chain's left row),
+addressed by verify_term_uid; the 2 register-face rows and the 2 indicator rows are covered by E1 only (recorded);
+PB computation_diff(S1, real end) == the plan's open_rows exactly (FATAL, before the save); KN the moved kernel's VI name
+read on its new diagram (gscript.subvis) == the CPU kernel (31(a), FATAL, before the save); ES measured, NOT gated;
+handles recorded (176(a)); input md5 + pins unchanged (H2/H3); refs opened == closed (H5).
+DRY RUN (tools/stage_prerun.py): the COM layer is stubbed, so the Executor runs on stagexec's SIMULATED backend, which
+records each real op once as a Stage op (wiring ops as wire_<kind>).
+    py tools/bgrun.py --material --max-min 55 --log tools/bench/stage_d1_k.log -- py -u tools/recipes/stage_d1_k.py
+  PASS  K0 the executed plan is a FINAL stageplan (178(f) route c)  ('stageplan/1', True, 'fb798f5f100cf0bfe3d6c7e8378c00bf')
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 4b621946492da3d2fbb96b6053e715ec  got 4b621946492da3d2fbb96b6053e715ec
+  FAIL  dry: unhandled exception KeyError: 'terminals'
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 592, in run
+    fn(stage)
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\recipes\stage_d1_k.py", line 57, in body
+    s.start(); s.discard_work(); bp = K.mod("bench_prep")                          # noqa: E702
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 560, in start
+    G = _graph()
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 348, in _graph
+    D.graph = OfflineGraph(p) if p else False
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\stage_prerun.py", line 127, in __init__
+    self.path, self.md5, self.terms, self.objs = path, d.get("md5"), d["terminals"], d["objs"]
+KeyError: 'terminals'
+
+
+=== DRY FAIL: first_fail=PY KeyError: 'terminals' coverage 23/95 lines, first mutation None, unverified 0, graph tools/bench/graph_loops_k_s4_20260925.json
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"PY KeyError: 'terminals'","artefacts":[]}
+BGRUN END rc=1 after 0s

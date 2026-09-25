@@ -1,0 +1,71 @@
+{
+ "schema": "task/1",
+ "id": "79-6",
+ "kind": "build",
+ "goal": "PD178(g): teach stage_prerun.py to pre-run a recipe against a finalized stageplan/1 (tightening only, self-tested), then pre-run stage_d1_k.py and do its ONE LabVIEW run.",
+ "why": "79-5 BLOCKED: plan_files() (stage_prerun.py:674-692) accepts only decisions rows; the simulator emits stageplan/1, so every simulated stage is refused. Judgement: tool necessary (recurs for L2).",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "cc4523d0f75c3fe6e6533637348f802c"},
+  {"path": "tools/bench/cards/result_79-5.json"},
+  {"path": "tools/stage_prerun.py"},
+  {"path": "tools/bench/plan_k_split.json", "md5": "fb798f5f100cf0bfe3d6c7e8378c00bf"},
+  {"path": "tools/recipes/stage_d1_k.py", "md5": "899c1f5dcfff06368eabf9324542fb59"},
+  {"path": "docs/stage-simulator-plan.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s4_loop17.vi", "md5": "4b621946492da3d2fbb96b6053e715ec"}
+ ],
+ "pass": [
+  "T1 stage_prerun.py accepts a stageplan/1 named by a recipe ONLY if finalized true and final PASS; X3 counts its actions; X5 ops == its wire actions",
+  "T2 self-test: non-finalized stageplan refused; op-count mismatch refused; valid K plan accepted; all existing stage_prerun self-tests pass (counts)",
+  "T3 recipe pre-run on stage_d1_k.py + plan_k_split.json PASS, recorded in prerun_records.jsonl (sha of the exact launched bytes)",
+  "T4 one LabVIEW run: all 177(g)/178 gates pass; D1_k_<ts>.vi saved (script if ES 1, GUI rule 6 if ES 0), md5; ES warm recorded",
+  "T5 bed md5 + pins unchanged; refs opened==closed; handles recorded; LabVIEW verified gone",
+  "T6 on a failed gate: JEV-LADDER NEXT-ACTION applied; return the table row"
+ ],
+ "outputs": [
+  "tools/stage_prerun.py",
+  "tools/bench/selftest_stage_prerun_stageplan.log",
+  "tools/bench/stage_d1_k.log",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_<ts>.vi"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/stage_prerun.py",
+   "tools/bench/selftest_stage_prerun*",
+   "tools/recipes/stage_d1_k*",
+   "tools/bench/*k_*",
+   "tools/bench/stage_d1_k*",
+   "tools/bench/plan_*k*",
+   "tools/bench/sim/**",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/stagekit.py",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\**",
+   "docs/NAMES.md",
+   "docs/stage-simulator-plan.md",
+   "tools/bench/cards/**",
+   "archive/peer/2026-09-25-*79*.md",
+   "archive/peer/2026-09-25-*k*.md"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 90
+ },
+ "rules": [
+  "tighten only: no existing stage_prerun check removed or weakened; decisions-row path unchanged",
+  "rule 1: never write D1_s4_loop17.vi or any original; dated copies only",
+  "rule 1a: rows only from plan_k_split.json; no queue built; no VI run; no motor/ASI/camera",
+  "launch: Bash non-compound backgrounded py tools/bgrun.py --material; retry cap 2 per stage",
+  "GUI only for rule-6 save with before/after capture; hold the turn until BGRUN END",
+  "result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

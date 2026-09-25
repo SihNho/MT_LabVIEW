@@ -1,0 +1,67 @@
+{
+ "schema": "task/1",
+ "id": "79-3",
+ "kind": "build",
+ "goal": "Build stage K per split plan Pre-decided 177: move kernel #5058 into 1.2 body #23166, wire its <=11 K rows, leave 177(e) rows open, save claudeDev\\D1_k_<ts>.vi.",
+ "why": "M3 (loop 1.2 split) is the deliverable; K is its first sub-stage (plan §2 order, PD157). Facts: tools/bench/k_facts_79.json (result_79-1, 5/0).",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "e13cc504d9b2c3e0a56ee146494feeb3"},
+  {"path": "docs/stage-simulator-plan.md", "md5": "834956d0e98f1a2d9a2a1e65f35bb991"},
+  {"path": "tools/bench/k_facts_79.json", "md5": "079f855dde2665e33575c6bcf45583fc"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s4_loop17.vi", "md5": "4b621946492da3d2fbb96b6053e715ec"},
+  {"path": "tools/recipes/stage_d1_l7_r.py"},
+  {"path": "tools/bench/plan_l7_split.json"},
+  {"path": "tools/stagekit.py"}
+ ],
+ "pass": [
+  "S0 simulator plan tools/bench/plan_<k stage>.json + sim steps; PB cdiff list computed by the simulator = 177(e) rows + w4517 + w3268",
+  "S1 contract measures 177(d) sinks' class and 177(c) original IndexModes on a dated scratch; STOP on any 177(d) mismatch",
+  "S2 <=120-line tools/recipes/stage_d1_k.py on stagekit; dry PASS + pre-run PASS; prior-art review released (novel or FIXED/REFUTED)",
+  "S3 one LabVIEW run: gates of 177(g) all pass; output D1_k_<ts>.vi saved (script if ES 1, GUI rule 6 if ES 0), md5 recorded",
+  "S4 bed md5 4b621946 + pins unchanged; refs opened==closed; handles recorded; LabVIEW verified gone at end",
+  "S5 on a failed gate: JEV-LADDER line read and acted on per its NEXT-ACTION; return the table row, not the log"
+ ],
+ "outputs": [
+  "tools/recipes/stage_d1_k.py",
+  "tools/bench/stage_d1_k.log",
+  "tools/bench/k_predict.log",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_<ts>.vi"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/recipes/stage_d1_k*",
+   "tools/bench/*k_*",
+   "tools/bench/stage_d1_k*",
+   "tools/bench/plan_*k*",
+   "tools/bench/sim/**",
+   "tools/bench/prerun_records.jsonl",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/stagekit.py",
+   "tools/vigraph.py",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\**",
+   "docs/NAMES.md",
+   "tools/bench/cards/**",
+   "archive/peer/2026-09-25-*79*.md"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 150
+ },
+ "rules": [
+  "rule 1: never write D1_s4_loop17.vi or any original; work on a dated copy",
+  "rule 1a: rows only from 177 + simulator plan file; no row typed in the recipe; no queue built",
+  "launch: Bash non-compound backgrounded py tools/bgrun.py --material; retry cap 2 per stage",
+  "no VI is RUN, no motor/ASI/camera; GUI only for rule-6 save with before/after capture",
+  "return facts; hold the turn until BGRUN END; result/1 <=10 facts <=3 open"
+ ],
+ "advances": ["M3", "R1", "R3"]
+}

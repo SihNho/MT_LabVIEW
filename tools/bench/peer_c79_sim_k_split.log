@@ -1,0 +1,60 @@
+BGRUN START 2026-09-25 08:58:43 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c79-sim-k-split -TaskFile tools/bench/peer_task_sim_k_79.txt
+OUTCOME: ANSWERED (166s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-25-c79-sim-k-split.md
+COST: $1.4202  in 24 / out 14341 / cache-create 114050 / cache-read 1104516  (162s, 15 turn(s))
+--- ANSWER ---
+**Verdict: the claim is not established.** There is no run after the fix, and the log contradicts the claim's own description of run 2. The stage-K design itself does hold up.
+
+## 1. Strongest reason the claim is wrong
+
+**The claim says "with both fixes the rest of run 2 already passed", but nothing has run since the fixes.** That sentence is an inference.
+
+- `tools/bench/sim_k_split.log` has only two runs (lines 1–6 and 7–70). The A0 label in the log (`:10`, "offset == L7's") differs from the current source (`sim_k_split.py:47`, "within 1 px"), so the source was edited after the last run.
+- The rows file on disk is still run 2's output. `plan_k_rows.json:93` reads `"#5058 Bead is good? array in": "(e) in"`. After the fix it should also say "(e) out via Bead is good? array out".
+- **The claim's account of run 2 does not match the log.** Line 34 lists four unused terminals: `'Bead is good? array in'`, `'Bead is good? array out'`, `'Image In'` and `'x,y,z array'`. The claim says t0's row was credited to t0 "only", which would leave t0 used. But t0, Image In and x,y,z array (all (e) inputs) were never counted as used at all. So run 2's code never added the (e) inputs to `used`. That is a second defect the claim does not mention, fixed by the `own` line (`sim_k_split.py:112-114`). Either the diagnosis describes code other than what ran, or the log was misread. Both are the "inference over measurement" pattern.
+
+## 2. Alternative explanations of the same evidence
+
+**(a) The fixed P3 can no longer fail for t3.** Credit comes from S1's effective sources of the broken sink (`sim_k_split.py:109-110`), not from what happened to t3 in the end graph. t3 is in S1's source set for t0, so t3 is "explained" whether t3 is open, wired straight to t0, or misrouted. The gate went from failing on an artefact to passing by construction. That is not the same as being correct.
+
+**(b) The missing t3 row is a property of the diff, not a relay bug.** `computation_diff` produces rows keyed by sink terminal (`tools/vigraph.py:744-753`). An output shows up only at its consumers. The relay collapse did *not* hide the t3 edge: t3 is in t0's effective sources, and the graph confirms it. In `graph_k_s4_20260925.json`:
+- #5796's outer terminal (term_uid 5815) is unwired (`wire_uid 0`), so nothing after the loop consumes t3.
+- #5805 has one inner consumer, #5702, via w6041.
+- #5702 feeds #5680 via w5710, and #5680 feeds t0.
+
+So the competing explanation as framed is **not supported for stage K**. The claim's measurement (t3's only consumer is t0) holds.
+
+**(c) A real blind spot, but in a later stage.** t0 is fed through Case-structure selector tunnels:
+- In frame 5582 the path is #5702, which carries the shift-register value.
+- In frame 5592 it is #5967, fed through LoopTunnel #5569 by FSIT #5818 (w5812), the same wire that initialises the register. That is the "initialized array" source.
+
+`effective_sources` merges both frames and ignores the selector. So a reconnection that swaps which frame gets the register value and which gets the initial value gives an identical set, {t3, init}, and a computation diff of 0. This is the same class as the cycle-74 blind spot. It does not affect stage K, because 177(b) deliberately leaves the mixed pair #5796/#5805 for L2-A1 (`docs/d1-loop12-17-split-plan.md:489`). **L2-A1 must not use a computation diff of 0 as its acceptance test for this pair.**
+
+**(d) The A0 relaxation weakens an identity check.** A0 is the only thing tying BODY #23166 to LOOP #10170. `par(BODY)==par(l7_body)` only compares the diagram one level up, and the pixel offset was acting as a stand-in for "this body belongs to this loop". Allowing ≤1 px turns an unexplained (10,1) vs (9,1) difference into a pass without explaining it. The right fix is to check structurally that #23166's owner is #10170, from the contract's diagram tree, not to loosen the pixel tolerance.
+
+## 3. What would falsify the claim
+
+Any of these, from a run after the fix:
+- P3's unused list is not empty.
+- The end state still has any wire on t3 (5058 'Bead is good? array out').
+- The end-graph effective sources of t0 still contain t3.
+- A deliberately wrong reroute of t3 (the negative control in step 4) still passes P3. That would show the fix only made the gate impossible to fail.
+
+## 4. Cheapest test that separates the claim from the alternatives
+
+All offline, about 2 minutes:
+1. **Re-run `sim_k_split.py` once (62 s).** Without this the claim has no run behind it. Check that the result is 18/0 and that `plan_k_rows.json` now credits t0's row to t3 as well.
+2. **On `tools/bench/sim/k_split/step_27_*.json`:** build `Gend`, then:
+   - confirm the key (5058, 'Bead is good? array out') has no outgoing edges;
+   - confirm `effective_sources(Gend, t0)` does not contain t3;
+   - confirm Image In and x,y,z array are unsourced.
+
+   This checks t3's crediting against the end graph rather than S1.
+3. **Negative control:** add one wrong wire, t3 → #2626 'array', to a copy of the stage plan, simulate it, and run the P3 crediting. If P3 still reports "explained", the P3 fix does not actually test t3. The gate should then also require that every (e) terminal has no wire in the end graph and that each end row's end-graph source set is a subset of S1's set minus the (e) terminals.
+4. **Replace A0's pixel check with an ownership check:** #23166's owner is #10170.
+
+## What would change my mind
+
+A post-fix run at 18/0, plus step 2 showing t3 unwired and absent from t0's end-graph sources, plus the negative control in step 3 making P3 fail. Then I would accept that both failures were our script's defects and the P3 gate still has teeth. As things stand, the evidence supports "our script's defects" for run 1 only. For run 2 it supports "our script's defects, one of them not described, and the fix untested".
+
+No external claim here depends on a web source. That a Case structure's selector decides which frame's value leaves an output tunnel is standard LabVIEW behaviour and I have not cited a URL for it. Every local claim above carries a file:line.
+BGRUN END rc=0 after 167s

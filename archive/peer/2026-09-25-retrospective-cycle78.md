@@ -275,3 +275,5 @@ items, each corrected on the next attempt. **Finding carried as a tool item, not
 comparer (`jev_gate.log:952`). It must match the reviewed task's script. Its test is the review's own offline
 re-run of the 08:10:42 discharge, which must NOT discharge. It is listed in STATUS NEXT after stage K
 (deliverable first, steer_77).
+
+FIXED: finding-6-same-row-matcher - tools/hooks/guard_peer.py:537 - RULE-SAME-ROW now matches only the review's SUBJECT script (a `Script:` line, else the first path-qualified tools/(recipes|bench)/X.py in `## Question`, exact stem after `_v\d+` strip); the offline re-run of the 08:10:42 pair no longer discharges (tools/bench/selftest_guard_peer_sameRow.log, S11, 21/0; card 79-2).

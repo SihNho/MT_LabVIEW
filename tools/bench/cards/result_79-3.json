@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"79-3","status":"FAIL","gates":{"pass":27,"fail":2},
+"first_fail":"S0 sim_k_split.py run 2: A0 (exact 1-px loop/body offset) and P3 (t3 not credited) - failure budget 2 spent (run 1 KeyError)",
+"blocked_by":{"device":"tools/hooks/guard_peer.py + card failure budget 2","message":"3rd sim_k_split run refused until a hypothesis review (done: c79-sim-k-split ANSWERED); budget 2 spent, so no 3rd run"},
+"artefacts":[
+{"path":"tools/bench/graph_k_s4_20260925.json","md5":"c166d036ea7b1ba6083ae4df69fe073d"},
+{"path":"tools/bench/graph_loops_k_s4_20260925.json","md5":"b0db6bd69802202eda3aab2d6b84478b"},
+{"path":"tools/bench/k_contract_79_data.json","md5":"741b5bd5edd024950eb6837c823d5a02"},
+{"path":"tools/bench/plan_k_split.json","md5":"0fc6e77fc999f72f685a13ed4e699734"},
+{"path":"tools/bench/plan_k_rows.json","md5":"46cb7a489089a9d550e1eae828198c30"},
+{"path":"tools/recipes/stage_d1_k.py","md5":"30e572632940c7c60e92c1fad066ccc3"}],
+"facts":[
+"S1 contract 11/0 (k_contract_79.log:135): #3173/#9519 are ControlTerminal indicators, sole source #5058 t8 w121 (:28); 6 originals IndexMode 0 (:31-42)",
+"Base for the simulator written live: 5801 terminals + loop table (k_contract_79.log:91-92); cdiff(S1,bed) = the 2 L7 rows (:25-27); bed md5 unchanged (:120)",
+"sim run 1 KeyError 'graph' (sim_k_split.log:5): contract data was overwritten by Stage.close()'s own k_contract_79.json dump; data now in k_contract_79_data.json",
+"sim run 2 16/2 (sim_k_split.log:69): A0 compared loop/body offset (10,1) exactly vs L7's (9,1); P3 left t3 uncredited. Both fixed in sim_k_split.py, NOT re-run",
+"Run 2 otherwise: all 27 actions applied on measured opmodels, plan FINAL, 10 open rows, 15 real ops / 11 wired rows, stagexec dry PASS (sim_k_split.log:22,62-66)",
+"End cdiff rows: 376 x2 (L7), #2626 'array', #5696/#6085 'x,y,z array', #10757/#10969 'array', #5058 t0/t1/t7 (sim_k_split.log:24-33); every one explained",
+"t3 has no own cdiff row: its only S1 computation consumer is #5058 t0 via SR #5796/#5805 and selector tunnels #5702/#5680 (archive/peer/2026-09-25-c79-sim-k-split.md:65-70)",
+"Chain rows are RULE-CHAIN-S1 (one chain: #119/#2972, init FSIT #6239 term 6247), no Jev call (sim_k_split.log:11-13); 177(b) said Jev argmax check",
+"Review c79-sim-k-split ANSWERED: proposes A0 = ownership #23166->#10170, P3 negative control; flags Case-frame merge in cdiff for L2-A1 (…c79-sim-k-split.md:76-99)",
+"JEV-LADDER sim_k_split.log | new-problem p=0.542 | review owed | dispatched c79-sim-k-split | ANSWERED; recipe (110 lines) not dry-run/launched; LabVIEW killed, gone"],
+"open":[
+"Authorise a 3rd offline sim_k_split run with review §4 (A0 as an ownership check, P3 + negative control t3->#2626 + end-graph source checks)?",
+"Accept PB = (e)+L7 when t3 appears only as #5058 t0's row (feedback through the mixed pair #5796/#5805)?",
+"177(b) 'Jev argmax check' vs RULE-CHAIN-S1 (CLAUDE.md §3 decision 3, stage_prerun X7): confirm the chain rows go by rule with no Jev call?"],
+"cost":{"usd":null,"minutes":40,"labview_runs":2},
+"note":"Contract ran twice (run 2 only to rewrite the overwritten data file). 0 stage runs, no retry-cap count used. Prior-art plan tools/bench/priorart_plan_k_79.md written, not dispatched. The un-run fixes are in sim_k_split.py."}

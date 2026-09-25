@@ -251,11 +251,68 @@ def main():
         gate(run_main("py tools/bgrun.py --max-min 14 --log tools/bench/peer_x.log -- powershell -NoProfile "
                       "-File tools/peer.ps1 -Agent claude -Role hypothesis -Slug x -TaskFile t.txt") == 0,
              "S10 the REMEDY exemption still passes (peer.ps1 dispatch)")
+
+        # --- S11-S15 (card 79-2): the SUBJECT-script matcher, replayed on the REAL 08:10:42 pair
+        real_log = os.path.join(HERE, "drive_m8_replay_s1_78.log")
+        real_rev = os.path.join(ROOT, "archive", "peer", "2026-09-25-78-3-selftest-endian.md")
+
+        def real_case(label, review_body, age_s):
+            b, p = os.path.join(tmp, label, "bench"), os.path.join(tmp, label, "peer")
+            os.makedirs(b)
+            os.makedirs(p)
+            lp = os.path.join(b, "drive_m8_replay_s1_78.log")
+            shutil.copyfile(real_log, lp)            # mtime = now: the review is OLDER, so only SAME-ROW can release
+            rp = os.path.join(p, "2026-09-25-%s.md" % label)
+            with open(rp, "w", encoding="utf-8") as f:
+                f.write(review_body)
+            t = time.time() - age_s
+            os.utime(rp, (t, t))
+            guard_peer.BENCH, guard_peer.PEER = b, p
+            pre = guard_peer.newest_failing_log()
+            rc, err = run_main(CMD, capture=True)
+            return pre, rc, err
+
+        endian = read(real_rev)
+        stem = guard_peer.log_script(read(real_log))
+        gate(stem == "drive_m8" and bool(endian),
+             "S11a the real log's row is drive_m8 and the real endian review is readable", "stem=%r" % stem)
+        gate(guard_peer.review_subject_scripts(endian) == {"m8b_replay_compare"}
+             and not guard_peer.review_names_script(endian, stem),
+             "S11b the endian review's SUBJECT is m8b_replay_compare, not drive_m8",
+             "subject=%r" % sorted(guard_peer.review_subject_scripts(endian)))
+        pre, rc, err = real_case("s11", endian, 18 * 60)
+        gate(pre is not None and rc == 2 and "RULE-SAME-ROW" not in err,
+             "S11 08:10:42 replay: the endian review (18 min old) must NOT discharge drive_m8_replay_s1_78.log",
+             "failing=%s rc=%s" % (bool(pre), rc))
+
+        same = endian.replace("Script: tools/bench/m8b_replay_compare.py", "Script: tools/bench/drive_m8.py")
+        pre, rc, err = real_case("s12", same, 18 * 60)
+        gate(rc == 0 and "RULE-SAME-ROW" in err,
+             "S12 a review whose Script: line IS tools/bench/drive_m8.py, 18 min old -> ALLOW", "rc=%s" % rc)
+        pre, rc, err = real_case("s13", same, 7 * 3600)
+        gate(rc == 2 and "RULE-SAME-ROW" not in err,
+             "S13 the same drive_m8 review 7 h old -> BLOCK", "rc=%s" % rc)
+
+        first = REVIEW_TMPL % {"slug": "s14", "agent": "claude", "role": "hypothesis", "outcome": "ANSWERED",
+                               "names": "tools/bench/m8b_replay_compare.py (compare with tools/bench/drive_m8.py)",
+                               "answer": "x"}
+        gate(not guard_peer.review_names_script(first, "drive_m8")
+             and guard_peer.review_names_script(first, "m8b_replay_compare"),
+             "S14 no Script: line -> the FIRST path-qualified script is the subject; a second one is a mention")
+        gate(not guard_peer.review_names_script(
+                 REVIEW_TMPL % {"slug": "s15", "agent": "claude", "role": "hypothesis", "outcome": "ANSWERED",
+                                "names": "tools/recipes/drive_m8_replay.py", "answer": "x"}, "drive_m8"),
+             "S15 exact stem: a review of drive_m8_replay.py is not a review of drive_m8.py")
     finally:
         guard_peer.BENCH, guard_peer.PEER, guard_peer.ROOT, jev.get_key = saved
         shutil.rmtree(tmp, ignore_errors=True)
 
     print("\n=== selftest_guard_peer_samerow: %d pass / %d fail ===" % (NPASS, NFAIL))
+    try:
+        import protocol
+        print(protocol.result_line(protocol.make_result(NPASS, NFAIL)))
+    except Exception as e:      # noqa: BLE001
+        print("RESULT line unavailable: %s" % e)
     return 0 if NFAIL == 0 else 1
 
 

@@ -1,0 +1,46 @@
+BGRUN START 2026-09-25 09:11:54 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/priorart_plan_k_79.md --slug c79-k --trigger cycle-start --recipe tools/recipes/stage_d1_k.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c79-k.txt (69533 chars)
+   review card tools\bench\cards\review_priorart-c79-k.json
+OUTCOME: ANSWERED (99s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-25-priorart-c79-k.md
+COST: $1.4581  in 22 / out 8161 / cache-create 127556 / cache-read 1371894  (95s, 16 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c79-k verdict=settled-already -> tools\bench\cards\verdict_priorart-c79-k.json
+--- ANSWER ---
+**Verdict: not novel, but only on one narrow point.** The direction and the build itself are new. One requirement that was settled earlier is missing from the recipe: a gate on the VI name at `#5058`. Adding that gate releases the review with a `FIXED:` line.
+
+## PART A: The direction
+
+**A1 Settled already: yes, one settled requirement is not carried into K.**
+- `docs/cycle27-plan.md:750-756` (Pre-decided 31(a), cycle 49, 2026-09-20) says `#5058` is the CPU kernel `Track N beads four-fold over-kernel-v3.vi` and that moving it is correct. It also requires that "a gate reads the VI name at `#5058` on the artefact and **FAILS the stage** if it is not `Track N beads four-fold over-kernel-v3.vi`". The reason given is that logs had misnamed this node as `GPU_kernel_v1.vi` (the `unreported-fact` class).
+- K's own row in the split plan repeats the requirement: `docs/d1-loop12-17-split-plan.md:68` reads "move the CPU kernel `#5058` … (Pre-decided 156; **name-gated**, `docs/cycle27-plan.md:754-755`)".
+- K's gate list does not include it. It is not in `docs/d1-loop12-17-split-plan.md:512-521` (177(g)), not in the prediction contract at `tools/recipes/stage_d1_k.py:8-13`, and not in the body at `:50-105`. A search of `k_contract_79.py/.log`, `k_facts_79.py/.log` and `sim_k_split.py/.log` finds no "four-fold" or kernel-name check. `k_contract_79.json:284-285` only lists claudeDev files.
+- **To release:** add one gate that reads `#5058`'s VI name on the work copy and fails the stage on a mismatch. Then write `FIXED:` citing that line.
+
+**A2 Refuted already: no.** The earlier treatment of `#5058` was a different route. Route A deleted it and dropped the GPU kernel instead (`tools/recipes/build_d1_v0.py:238`, `docs/d1-build-plan.md:954`). v7 left it out of its `move_in` landings for a bookkeeping reason that has since been ruled not a finding (`docs/cycle27-plan.md:832-839`, `:855-861`). Nothing argues against moving it by `move_in`.
+
+**A3 Contradicted: nothing that affects K's facts.** Two items worth knowing:
+- `docs/cycle27-plan.md:850-854` (33(a)) says `move_in` cuts every wire and the node lands unwired. K's plan is consistent with this: the (e) rows are left open, and the 11 remade rows are all new wiring.
+- The OPEN list at `docs/d1-loop12-17-split-plan.md:570-572` (O5) still says there is no verb to move nested ControlTerminal rows. That line is stale. L7-R already moved the `#3453` ControlTerminal into body `#23405` by `move_in` (175 at `:422-426`; delivered 61/0 per `tools/bench/stage_d1_l7_r_r2.log`, as the STATUS lock notes record). K's (d) rows reuse that measured route. The OPEN list needs a cleanup, but this is not a contradiction in K.
+
+**A4 Unread evidence:** `docs/cycle27-plan.md:750-756`. It is cited in row K (`:68`) but its gate was dropped between the row table and 177(g). This is the same citation as A1, not a second finding.
+
+## PART B: The artifact
+
+- **B1 Already built: no.** Nothing matching `D1_k*` exists in claudeDev, and no `tools/bench/stage_d1_k*` log exists. The helpers are reused as the brief says:
+  - Executor and LVBackend from `tools/stagexec.py`.
+  - The second-pass pattern from `stage_d1_l7_r.py:93`, and `stagekit`.
+- **B2 Already failed: no.** This exact build has never been attempted. The two `sim_k_split` failures were gate definitions in our own script. They are disposed in `archive/peer/2026-09-25-c79-sim-k-split.md:127-141` and ruled on in 178(b) (`docs/d1-loop12-17-split-plan.md:531-538`).
+- **B3 Helper exists: none missed.**
+  - IndexMode is set with `be.index_mode_fix`.
+  - The second pass uses `cfw_second_pass`.
+  - The diff uses `V.computation_diff` and `K.uid_edges`.
+  - The save uses `s.save(broken_ok=True)`, following the rule-6 route.
+- **B4 Already measured:**
+  - 178(a) cites the contract's own measurements: the class and sole source of `#3173`/`#9519`, and IndexMode 0 on the six originals (`tools/bench/k_contract_79.log:28,31-42`). Nothing is re-measured, so there is no redundant work.
+  - Leaving Remove Bad Wires out has no prior finding against it. The rejected Row-D artefact was about an unpurged junk `Invoke`, not about half-wires (STATUS "SUPERSEDED, NOT A BED").
+
+PRIOR-ART: settled-already
+
+VERDICT {"schema":"verdict/1","id":"priorart-c79-k","verdict":"settled-already","alternative":"Stage K's direction and build are new; only the #5058 VI-name gate settled in cycle27-plan 31(a) and repeated in split-plan row K ('name-gated') is missing from 177(g) and stage_d1_k.py.","discriminating_test":"Grep stage_d1_k.py, sim_k_split.py and k_contract_79.py for a gate that reads #5058's VI name == 'Track N beads four-fold over-kernel-v3.vi' and fails the stage; none exists today. Add it and release with FIXED:.","violations":[],"sources":["docs/cycle27-plan.md:750-756","docs/d1-loop12-17-split-plan.md:68","docs/d1-loop12-17-split-plan.md:512-521","tools/recipes/stage_d1_k.py:8-13"],"note":"Narrow finding: one missing name gate. Stale O5 OPEN text (split-plan:570-572) is superseded by the L7-R move_in of #3453 and does not block."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c79-k.md
+   STOP RECORD armed: tools/recipes/stage_d1_k.py sha 458e177a1e8e verdict settled-already -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 102s

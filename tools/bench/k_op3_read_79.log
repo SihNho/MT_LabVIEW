@@ -1,0 +1,154 @@
+BGRUN START 2026-09-25 09:52:47 limit 25.0 min: py -u tools/bench/k_op3_read_79.py
+k_op3_read_79 - card 79-7 M1 (Pre-decided 178(h)): the HEADLESS READ the hypothesis review
+archive/peer/2026-09-25-c79-6-k_e1op3.md asks for. FRESH LabVIEW (Stage.start restarts it - standing authority; this also
+retires the stale pid 23284 left by 79-6) -> dated scratch copy of the S4 bed claudeDev\D1_s4_loop17.vi -> replay the FIRST
+THREE compiled ops of plan_k_split.json with the SAME stagexec Executor + LVBackend stage_d1_k.py uses (op 3 = move_in #5058
+is expected to raise the E1 step-diff exactly as in stage_d1_k.log:97 - caught, not a failure here) -> one live read ->
+dump every real terminal row to k_op3_read_79.json (the M2 fixture) and print the rows of 2789/2792/5910/6253/2811/5124 and
+every row on wires 505/3472/2924. NOTHING IS SAVED; the scratch is deleted at close. No VI run, no motor/ASI/camera.
+PRIOR ART: tools/recipes/stage_d1_k.py (Executor/LVBackend wiring), stagekit.Stage/discard_work (scratch diagnostic
+shape), stagexec.compare/edges (the E1 diff). No new op.
+PREDICTION CONTRACT (the review's discriminator, section 3):
+  R1 read OK and all 5 named terminals present in the real rows;
+  tunnel-flip  <=> wire_uid(2789)=3472, wire_uid(2792)=2924 (non-zero) AND is_source False on 2789 and 2792;
+  whole-wire loss <=> wire_uid 0 on 2789/2792/5910/6253; renumbering <=> non-zero but different uids on each pair's ends.
+  Which of the three holds is RECORDED as a FACT, not gated (the read is the truth, M2 fits the model to it).
+    MATERIAL=1 py tools/bgrun.py --material --max-min 25 --log tools/bench/k_op3_read_79.log -- py -u tools/bench/k_op3_read_79.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 256 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 4b621946492da3d2fbb96b6053e715ec  got 4b621946492da3d2fbb96b6053e715ec
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 33958
+  FACT  LabVIEW handle count AFTER the restart: 34006
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_k_read79_20260925_095247.vi
+  FACT  ExecState [after open] D1_k_read79_20260925_095247.vi = 1
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so D1_k_read79_20260925_095247.vi is deleted at close
+  FACT  HANDLES after open 54421
+  FACT  COMPILED first 3 of 15 ops: [('move_in', [1]), ('move_in', [2]), ('move_in', [3])]
+  STEPX 00 base read vs step_00: diff 0
+  PRIME 8 terminal indexes proved at base; unprovable ['ADDRESS: node #6239 not in Diagram[19] (#686).Nodes[]', 'ADDRESS: node #3862 not in Diagram[19] (#686).Nodes[]', 'ADDRESS: node #2932 not in Diagram[19] (#686).Nodes[]', 'ADDRESS: node #5287 not in Diagram[19] (#686).Nodes[]']
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #3173 -> Diagram[21] at (4901, 5900) -> err '' (0.1 s)
+  FACT  move_in #3173 AFTER node census: 636 rows
+  FACT  move_in #3173 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(23468, 'Invoke', (4593, 5723))]
+  FACT  move_in #3173 new #23468 #23468 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 1, 'nodes_on_diagram': 2, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 1.0 s)
+  FACT  move_in #3173 new #23468 terminal table of #23468 (Diagram idx 21, Nodes[1], echo 23468): 6 terminal(s)
+  FACT      move_in #3173 new #23468 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #3173 new #23468 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #3173 new #23468 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #3173 new #23468 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #3173 new #23468 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #3173 new #23468 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #3173 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #3173 purge delete Node #23468 at index 98: gone [23468], error '', census 636 -> 635, still present False (1.26 s)
+  FACT  move_in #3173 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #3173 purge arithmetic: Node 635 -> 636 -> 635
+  STEPX 01 move_in        acts [1] ids ['move_ind_1'] bound {} diff 0
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #9519 -> Diagram[21] at (4901, 5960) -> err '' (0.1 s)
+  FACT  move_in #9519 AFTER node census: 636 rows
+  FACT  move_in #9519 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(10354, 'Invoke', (4593, 5723))]
+  FACT  move_in #9519 new #10354 #10354 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 1, 'nodes_on_diagram': 2, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  move_in #9519 new #10354 terminal table of #10354 (Diagram idx 21, Nodes[1], echo 10354): 6 terminal(s)
+  FACT      move_in #9519 new #10354 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #9519 new #10354 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #9519 new #10354 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #9519 new #10354 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #9519 new #10354 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #9519 new #10354 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #9519 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #9519 purge delete Node #10354 at index 98: gone [10354], error '', census 636 -> 635, still present False (1.25 s)
+  FACT  move_in #9519 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #9519 purge arithmetic: Node 635 -> 636 -> 635
+  STEPX 02 move_in        acts [2] ids ['move_ind_2'] bound {} diff 0
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #5058 -> Diagram[21] at (4761, 5965) -> err '' (0.1 s)
+  FACT  move_in #5058 AFTER node census: 636 rows
+  FACT  move_in #5058 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(10351, 'Invoke', (4593, 5723))]
+  FACT  move_in #5058 new #10351 #10351 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 2, 'nodes_on_diagram': 3, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  move_in #5058 new #10351 terminal table of #10351 (Diagram idx 21, Nodes[2], echo 10351): 6 terminal(s)
+  FACT      move_in #5058 new #10351 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5058 new #10351 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5058 new #10351 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5058 new #10351 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5058 new #10351 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5058 new #10351 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #5058 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #5058 purge delete Node #10351 at index 98: gone [10351], error '', census 636 -> 635, still present False (1.25 s)
+  FACT  move_in #5058 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #5058 purge arithmetic: Node 635 -> 636 -> 635
+  STEPX 03 move_in        acts [3] ids ['move_kernel'] bound {} diff 6
+  FACT  REPLAY ops 1-3 ended: STEP-DIFF after real op 3 (move_in, plan actions [3] ['move_kernel']): {"only_sim_edges": [[2789, 6253], [2792, 5910]], "dangling_real_only": [2789, 2792, 5910, 6253], "who": {"2789": [2765, "SelectorTunnel", "x,y,z array out"], "2792": [2765, "SelectorTunnel", "x,y,z array out"], "5910": [5696, "SubVI", "x,y,z array"], "6253": [6085, "SubVI", "x,y,z array"]}}
+  FACT  COMPARE sim step 3 vs real: {"only_sim_edges": [[2789, 6253], [2792, 5910]], "dangling_real_only": [2789, 2792, 5910, 6253], "n": 6, "who": {"2789": [2765, "SelectorTunnel", "x,y,z array out"], "2792": [2765, "SelectorTunnel", "x,y,z array out"], "5910": [5696, "SubVI", "x,y,z array"], "6253": [6085, "SubVI", "x,y,z array"]}}
+  FACT  READ term 2789 owner #2765 SelectorTunnel/InnerTerminal 'x,y,z array out' is_source=False wire=3472
+  FACT  READ term 2792 owner #2765 SelectorTunnel/InnerTerminal 'x,y,z array out' is_source=False wire=2924
+  FACT  READ term 5910 owner #5696 SubVI/Terminal 'x,y,z array' is_source=False wire=2924
+  FACT  READ term 6253 owner #6085 SubVI/Terminal 'x,y,z array' is_source=False wire=3472
+  FACT  READ term 2811 owner #2765 SelectorTunnel/OuterTerminal 'x,y,z array out' is_source=False wire=505
+  FACT  READ term 5124 owner #5058 SubVI/Terminal 'x,y,z array out' is_source=True wire=0
+  FACT  WIRE 505: 3 row(s) (sources 0, sinks 3)
+  FACT      term 4168 owner #2626 BuildArray/Terminal 'array' is_source=False wire=505
+  FACT      term 2811 owner #2765 SelectorTunnel/OuterTerminal 'x,y,z array out' is_source=False wire=505
+  FACT      term 1148 owner #1147 RightShiftRegister/InnerTerminal '' is_source=False wire=505
+  FACT  WIRE 3472: 2 row(s) (sources 0, sinks 2)
+  FACT      term 6253 owner #6085 SubVI/Terminal 'x,y,z array' is_source=False wire=3472
+  FACT      term 2789 owner #2765 SelectorTunnel/InnerTerminal 'x,y,z array out' is_source=False wire=3472
+  FACT  WIRE 2924: 2 row(s) (sources 0, sinks 2)
+  FACT      term 5910 owner #5696 SubVI/Terminal 'x,y,z array' is_source=False wire=2924
+  FACT      term 2792 owner #2765 SelectorTunnel/InnerTerminal 'x,y,z array out' is_source=False wire=2924
+  FACT  OWNER #2765 term 2811 owner #2765 SelectorTunnel/OuterTerminal 'x,y,z array out' is_source=False wire=505
+  FACT  OWNER #2765 term 2792 owner #2765 SelectorTunnel/InnerTerminal 'x,y,z array out' is_source=False wire=2924
+  FACT  OWNER #2765 term 2789 owner #2765 SelectorTunnel/InnerTerminal 'x,y,z array out' is_source=False wire=3472
+  FACT  OWNER #5058 term 5082 owner #5058 SubVI/Terminal 'Bead is good? array in' is_source=False wire=0
+  FACT  OWNER #5058 term 5089 owner #5058 SubVI/Terminal 'Image In' is_source=False wire=0
+  FACT  OWNER #5058 term 5106 owner #5058 SubVI/Terminal 'cross size' is_source=False wire=0
+  FACT  OWNER #5058 term 5111 owner #5058 SubVI/Terminal 'Bead is good? array out' is_source=True wire=0
+  FACT  OWNER #5058 term 5124 owner #5058 SubVI/Terminal 'x,y,z array out' is_source=True wire=0
+  FACT  OWNER #5058 term 5151 owner #5058 SubVI/Terminal '' is_source=False wire=0
+  FACT  OWNER #5058 term 5156 owner #5058 SubVI/Terminal '' is_source=False wire=0
+  FACT  OWNER #5058 term 5164 owner #5058 SubVI/Terminal 'x,y,z array' is_source=False wire=0
+  FACT  OWNER #5058 term 5171 owner #5058 SubVI/Terminal 'pos in cal image out' is_source=True wire=0
+  FACT  OWNER #5058 term 5177 owner #5058 SubVI/Terminal '# of bead 4 packs' is_source=False wire=0
+  FACT  OWNER #5058 term 5180 owner #5058 SubVI/Terminal '' is_source=False wire=0
+  FACT  OWNER #5058 term 5184 owner #5058 SubVI/Terminal '4 pack remainder' is_source=False wire=0
+  FACT  OWNER #5058 term 5190 owner #5058 SubVI/Terminal 'Array of cal clusters' is_source=False wire=0
+  FACT  OWNER #5058 term 5207 owner #5058 SubVI/Terminal 'pos in cal image in' is_source=False wire=0
+  FACT  OWNER #5058 term 5240 owner #5058 SubVI/Terminal 'Real-space cosine window' is_source=False wire=0
+  FACT  OWNER #5058 term 5262 owner #5058 SubVI/Terminal 'Cosine bandpass\nfor Hilbert ' is_source=False wire=0
+  PASS  R1 live read after op 3 holds all 6 named terminals
+  FACT  VERDICT tunnel-flip=True whole-wire-loss=False renumbered=False (pairs 2789/6253 3472/3472, 2792/5910 2924/2924)
+  PASS  R2 fixture written k_op3_read_79.json  ad2183bbb5b38fa5ef8ba707ec96441a
+  FACT  HANDLES at end of work 54653
+
+---------- [H] HYGIENE
+  FACT  close_panel(D1_k_read79_20260925_095247.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 6}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 6}
+  FACT  LabVIEW handle count AFTER the work: 54654
+  PASS  H4 scratch deleted: D1_k_read79_20260925_095247.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_k_read79_20260925_095247.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 4b621946492da3d2fbb96b6053e715ec / after 4b621946492da3d2fbb96b6053e715ec
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33994
+
+====================================================================================================
+=== GATES: 10 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\k_op3_read_79_stage.json   elapsed 257.3 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":10,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 258s

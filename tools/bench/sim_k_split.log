@@ -1,0 +1,208 @@
+BGRUN START 2026-09-25 08:53:29 limit 10.0 min: py -u tools/bench/sim_k_split.py
+Traceback (most recent call last):
+  File "G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\sim_k_split.py", line 28, in <module>
+    GP = os.path.join(os.path.dirname(HERE), "..", C["graph"]["path"]); GP = os.path.normpath(GP)
+KeyError: 'graph'
+BGRUN END rc=1 after 0s (NO RESULT LINE)
+BGRUN START 2026-09-25 08:56:22 limit 10.0 min: py -u tools/bench/sim_k_split.py
+  PASS  C0 base graph + loop table unchanged since the contract  {'path': 'tools/bench/graph_k_s4_20260925.json', 'md5': 'c166d036ea7b1ba6083ae4df69fe073d'}
+  FACT  A0 body #23166: parent 686 (L7 body parent 686); body-loop offset (10, 1) (L7 (9, 1)); nodes on it [(10171, 'Comparison'), (23166, 'Diagram'), (23417, 'LoopTunnel')]
+  FAIL  A0 #BODY is a Diagram on L7's parent diagram, loop/body offset == L7's, holds no plan node (only the loop's own comparison + tunnel)  [10171, 23166, 23417]
+  FACT  RULE-CHAIN-S1 chains of #5058: [('acc', 'pos in cal image out', 'pos in cal image in', 119, (6239, ''))]
+  PASS  B0 exactly one S1 chain, and it is the kernel-only pair of k_facts (left read by the kernel only)  ([{'chain': 'acc', 'out': 'pos in cal image out', 'in': 'pos in cal image in', 's1_right': 119, 's1_left': 2972, 'init': (6239, '')}], ['1147/1142', '5796/5805', '119/2972', '7311/11001'])
+  PASS  B1 the old left #2972's outer init wire has ONE source, owned by the S1 chain's init #6239 (177(b) single candidate)  ([{'term_uid': 3218, 'term_name': 'pos in cal image out', 'is_source': False, 'wire_uid': 8590, 'owner_uid': 2972, 'owner_class': 'LeftShiftRegister', 'frame_diagram': 686, 'term_class': 'OuterTerminal'}], [{'term_uid': 6247, 'term_name': '', 'is_source': True, 'wire_uid': 8590, 'owner_uid': 6239, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}])
+  PASS  T0 t2: ONE source term of FSIT #3862 on the old tunnel #2580's outer wire w3853  [{'term_uid': 3868, 'term_name': '', 'is_source': True, 'wire_uid': 3853, 'owner_uid': 3862, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}]
+  PASS  T0 t9: ONE source term of FSIT #2932 on the old tunnel #2396's outer wire w2641  [{'term_uid': 2934, 'term_name': '', 'is_source': True, 'wire_uid': 2641, 'owner_uid': 2932, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}]
+  PASS  T0 t11: ONE source term of FSIT #5287 on the old tunnel #4432's outer wire w5265  [{'term_uid': 5293, 'term_name': '', 'is_source': True, 'wire_uid': 5265, 'owner_uid': 5287, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}]
+  PASS  T0 t12: ONE source term of FSIT #3675 on the old tunnel #3656's outer wire w3668  [{'term_uid': 3677, 'term_name': '', 'is_source': True, 'wire_uid': 3668, 'owner_uid': 3675, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}]
+  PASS  T0 t14: ONE source term of FSIT #5659 on the old tunnel #3920's outer wire w5786  [{'term_uid': 5661, 'term_name': 'Real-space cosine window', 'is_source': True, 'wire_uid': 5786, 'owner_uid': 5659, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}]
+  PASS  T0 t15: ONE source term of FSIT #5952 on the old tunnel #4031's outer wire w4029  [{'term_uid': 5958, 'term_name': 'Cosine bandpass for Hilbert', 'is_source': True, 'wire_uid': 4029, 'owner_uid': 5952, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}]
+  FACT  (e) OPEN by rule: inputs ['Bead is good? array in', 'Image In', 'x,y,z array']; outputs ['Bead is good? array out', 'x,y,z array out', 'pos in cal image out']; t8's open sinks [10757, 10969]
+  PASS  P0 plan validates as stageplan/1 (27 actions)  
+  PASS  P1 every action applied  None
+  PASS  P2 base computation_diff(S1) == the contract's 2 carried L7 rows  ['376|Terminal|current frame data array in|0', '376|Terminal|frame index|0']
+  FACT  END CDIFF ROW (376, 'current frame data array in') <- L7 carried
+  FACT  END CDIFF ROW (376, 'frame index') <- L7 carried
+  FACT  END CDIFF ROW (2626, 'array') <- (e) out via x,y,z array out
+  FACT  END CDIFF ROW (5058, 'Bead is good? array in') <- (e) in
+  FACT  END CDIFF ROW (5058, 'Image In') <- (e) in
+  FACT  END CDIFF ROW (5058, 'x,y,z array') <- (e) in
+  FACT  END CDIFF ROW (5696, 'x,y,z array') <- (e) out via x,y,z array out
+  FACT  END CDIFF ROW (6085, 'x,y,z array') <- (e) out via x,y,z array out
+  FACT  END CDIFF ROW (10757, 'array') <- (e) out via pos in cal image out
+  FACT  END CDIFF ROW (10969, 'array') <- (e) out via pos in cal image out
+  FAIL  P3 every end cdiff row is an (e) row or a carried L7 row, and every (e) terminal explains >= 1 row  {'unexplained': [], 'unused': ['Bead is good? array in', 'Bead is good? array out', 'Image In', 'x,y,z array']}
+  STEP 01 move_in          ok cands=5 cdiff=3 measured:tools/bench/opmodels/move_in.json@ae6bbadb8058bce47da1d645c955cd68
+  STEP 02 move_in          ok cands=4 cdiff=4 measured:tools/bench/opmodels/move_in.json@ae6bbadb8058bce47da1d645c955cd68
+  STEP 03 move_in          ok cands=13 cdiff=19 measured:tools/bench/opmodels/move_in.json@ae6bbadb8058bce47da1d645c955cd68
+  STEP 04 add_shift_reg    ok cands=0 cdiff=19 measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83
+  STEP 05 wire             ok cands=0 cdiff=19 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 06 wire             ok cands=0 cdiff=19 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 07 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 08 tunnel           ok cands=0 cdiff=18 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 09 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 10 wire             ok cands=0 cdiff=17 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 11 tunnel           ok cands=0 cdiff=17 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 12 wire             ok cands=0 cdiff=17 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 13 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 14 tunnel           ok cands=0 cdiff=16 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 15 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 16 wire             ok cands=0 cdiff=15 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 17 tunnel           ok cands=0 cdiff=15 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 18 wire             ok cands=0 cdiff=15 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 19 wire             ok cands=0 cdiff=14 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 20 tunnel           ok cands=0 cdiff=14 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 21 wire             ok cands=0 cdiff=14 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 22 wire             ok cands=0 cdiff=13 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 23 tunnel           ok cands=0 cdiff=13 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 24 wire             ok cands=0 cdiff=13 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 25 wire             ok cands=0 cdiff=12 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 26 wire             ok cands=0 cdiff=11 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 27 wire             ok cands=0 cdiff=10 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  PASS  P4 plan FINAL: end rows == declared open_rows (10 rows), no undecided row  (True, None)
+  PASS  P5 every step ran on a MEASURED op model  ['measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83', 'measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def', 'measured:tools/bench/opmodels/move_in.json@ae6bbadb8058bce47da1d645c955cd68', 'measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4']
+  FACT  COMPILED 15 real ops: [('move_in', [1]), ('move_in', [2]), ('move_in', [3]), ('add_sr', [4]), ('wire_sr', [5]), ('wire_sr', [6]), ('connect', [7]), ('tunnel', [8, 9, 10]), ('tunnel', [11, 12, 13]), ('tunnel', [14, 15, 16]), ('tunnel', [17, 18, 19]), ('tunnel', [20, 21, 22]), ('tunnel', [23, 24, 25]), ('connect', [26]), ('connect', [27])]
+  PASS  P6 11 wired rows (1 init + 2 chain + 6 tunnel + 2 indicator)  ['move_in', 'move_in', 'move_in', 'add_sr', 'wire_sr', 'wire_sr', 'connect', 'tunnel', 'tunnel', 'tunnel', 'tunnel', 'tunnel', 'tunnel', 'connect', 'connect']
+  PASS  P7 stagexec dry run on the simulated backend PASS  None
+  FACT  plan_out {'path': 'tools/bench/plan_k_split.json', 'md5': '0fc6e77fc999f72f685a13ed4e699734'}; rows file tools/bench/plan_k_rows.json (15 decisions)
+=== GATES: 16 pass / 2 fail; failing: A0 #BODY is a Diagram on L7's parent diagram, loop/body offset == L7's, holds no plan node (only the loop's own comparison + tunnel)
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":16,"fail":2},"first_fail":"A0 #BODY is a Diagram on L7's parent diagram, loop/body offset == L7's, holds no plan node (only the loop's own comparison + tunnel)","artefacts":[{"path":"tools/bench/plan_k_split.json","md5":"0fc6e77fc999f72f685a13ed4e699734"}]}
+BGRUN END rc=1 after 62s (RESULT: status=FAIL gates 16/2 first_fail=A0 #BODY is a Diagram on L7's parent diagram, loop/body offset == L7's, holds no plan node (only the loop's own comparison + tunnel); the process itself said 0)
+BGRUN START 2026-09-25 09:09:02 limit 10.0 min: py -u tools/bench/sim_k_split.py
+  PASS  C0 base graph + loop table unchanged since the contract  {'path': 'tools/bench/graph_k_s4_20260925.json', 'md5': 'c166d036ea7b1ba6083ae4df69fe073d'}
+  FACT  A0 body #23166: parent 686 (L7 body parent 686); body-loop offset (10, 1) (L7 (9, 1)); nodes on it [(10171, 'Comparison'), (23166, 'Diagram'), (23417, 'LoopTunnel')]
+  FACT  A0 ownership: body of #10170 = #None; body of L7 loop #23041 = #None (L7 plan body #23405)
+  FAIL  A0 #BODY is owned by #LOOP (WhileLoop), same parent diagram as L7's body, reader returns L7's pair too, holds no plan node  [10171, 23166, 23417]
+  FACT  RULE-CHAIN-S1 chains of #5058: [('acc', 'pos in cal image out', 'pos in cal image in', 119, (6239, ''))]
+  PASS  B0 exactly one S1 chain, and it is the kernel-only pair of k_facts (left read by the kernel only)  ([{'chain': 'acc', 'out': 'pos in cal image out', 'in': 'pos in cal image in', 's1_right': 119, 's1_left': 2972, 'init': (6239, '')}], ['1147/1142', '5796/5805', '119/2972', '7311/11001'])
+  PASS  B1 the old left #2972's outer init wire has ONE source, owned by the S1 chain's init #6239 (177(b) single candidate)  ([{'term_uid': 3218, 'term_name': 'pos in cal image out', 'is_source': False, 'wire_uid': 8590, 'owner_uid': 2972, 'owner_class': 'LeftShiftRegister', 'frame_diagram': 686, 'term_class': 'OuterTerminal'}], [{'term_uid': 6247, 'term_name': '', 'is_source': True, 'wire_uid': 8590, 'owner_uid': 6239, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}])
+  PASS  T0 t2: ONE source term of FSIT #3862 on the old tunnel #2580's outer wire w3853  [{'term_uid': 3868, 'term_name': '', 'is_source': True, 'wire_uid': 3853, 'owner_uid': 3862, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}]
+  PASS  T0 t9: ONE source term of FSIT #2932 on the old tunnel #2396's outer wire w2641  [{'term_uid': 2934, 'term_name': '', 'is_source': True, 'wire_uid': 2641, 'owner_uid': 2932, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}]
+  PASS  T0 t11: ONE source term of FSIT #5287 on the old tunnel #4432's outer wire w5265  [{'term_uid': 5293, 'term_name': '', 'is_source': True, 'wire_uid': 5265, 'owner_uid': 5287, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}]
+  PASS  T0 t12: ONE source term of FSIT #3675 on the old tunnel #3656's outer wire w3668  [{'term_uid': 3677, 'term_name': '', 'is_source': True, 'wire_uid': 3668, 'owner_uid': 3675, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}]
+  PASS  T0 t14: ONE source term of FSIT #5659 on the old tunnel #3920's outer wire w5786  [{'term_uid': 5661, 'term_name': 'Real-space cosine window', 'is_source': True, 'wire_uid': 5786, 'owner_uid': 5659, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}]
+  PASS  T0 t15: ONE source term of FSIT #5952 on the old tunnel #4031's outer wire w4029  [{'term_uid': 5958, 'term_name': 'Cosine bandpass for Hilbert', 'is_source': True, 'wire_uid': 4029, 'owner_uid': 5952, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}]
+  FACT  (e) OPEN by rule: inputs ['Bead is good? array in', 'Image In', 'x,y,z array']; outputs ['Bead is good? array out', 'x,y,z array out', 'pos in cal image out']; t8's open sinks [10757, 10969]
+  PASS  P0 plan validates as stageplan/1 (27 actions)  
+  PASS  P1 every action applied  None
+  PASS  P2 base computation_diff(S1) == the contract's 2 carried L7 rows  ['376|Terminal|current frame data array in|0', '376|Terminal|frame index|0']
+  PASS  A0-END #KERN is owned by #BODY at the end (every #5058 terminal on diagram #23166)  [23166]
+  FACT  END CDIFF ROW (376, 'current frame data array in') <- L7 carried
+  FACT  END CDIFF ROW (376, 'frame index') <- L7 carried
+  FACT  END CDIFF ROW (2626, 'array') <- (e) out via x,y,z array out
+  FACT  END CDIFF ROW (5058, 'Bead is good? array in') <- (e) in
+  FACT  END CDIFF ROW (5058, 'Image In') <- (e) in
+  FACT  END CDIFF ROW (5058, 'x,y,z array') <- (e) in
+  FACT  END CDIFF ROW (5696, 'x,y,z array') <- (e) out via x,y,z array out
+  FACT  END CDIFF ROW (6085, 'x,y,z array') <- (e) out via x,y,z array out
+  FACT  END CDIFF ROW (10757, 'array') <- (e) out via pos in cal image out
+  FACT  END CDIFF ROW (10969, 'array') <- (e) out via pos in cal image out
+  FACT  P3 end-graph Bead is good? array out <- credited: unwired, base consumers [5810] sourceless [(5810, 5859, False)]
+  PASS  P3 every end row is an (e)/L7 row, every (e) terminal credited (t3 by end-graph sources), no (e) terminal wired or END-sourcing a row  {'unexplained': [], 'unused': [], 'bad': []}
+  PASS  P3-NEG fake Bead is good? array out -> #2626 'array' edge (1 src + 1 sink rows) FAILS P3  {'unexplained': [(10067, 'Initial Time at Start'), (12236, 'x'), (12236, 'y'), (19532, 'Cycle Start Time'), (21699, 'x')], 'unused': ['Bead is good? array out'], 'bad': ["row #2626 array END-sourced by (e) ['Bead is good? array out']", '(e) Bead is good? array out still wired (w-33)']}
+  PASS  PB end rows == Pre-decided 178(c)'s 10 rows (typed from the ruling)  {'extra': [], 'missing': []}
+  STEP 01 move_in          ok cands=5 cdiff=3 measured:tools/bench/opmodels/move_in.json@ae6bbadb8058bce47da1d645c955cd68
+  STEP 02 move_in          ok cands=4 cdiff=4 measured:tools/bench/opmodels/move_in.json@ae6bbadb8058bce47da1d645c955cd68
+  STEP 03 move_in          ok cands=13 cdiff=19 measured:tools/bench/opmodels/move_in.json@ae6bbadb8058bce47da1d645c955cd68
+  STEP 04 add_shift_reg    ok cands=0 cdiff=19 measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83
+  STEP 05 wire             ok cands=0 cdiff=19 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 06 wire             ok cands=0 cdiff=19 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 07 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 08 tunnel           ok cands=0 cdiff=18 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 09 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 10 wire             ok cands=0 cdiff=17 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 11 tunnel           ok cands=0 cdiff=17 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 12 wire             ok cands=0 cdiff=17 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 13 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 14 tunnel           ok cands=0 cdiff=16 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 15 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 16 wire             ok cands=0 cdiff=15 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 17 tunnel           ok cands=0 cdiff=15 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 18 wire             ok cands=0 cdiff=15 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 19 wire             ok cands=0 cdiff=14 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 20 tunnel           ok cands=0 cdiff=14 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 21 wire             ok cands=0 cdiff=14 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 22 wire             ok cands=0 cdiff=13 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 23 tunnel           ok cands=0 cdiff=13 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 24 wire             ok cands=0 cdiff=13 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 25 wire             ok cands=0 cdiff=12 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 26 wire             ok cands=0 cdiff=11 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 27 wire             ok cands=0 cdiff=10 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  PASS  P4 plan FINAL: end rows == declared open_rows (10 rows), no undecided row  (True, None)
+  PASS  P5 every step ran on a MEASURED op model  ['measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83', 'measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def', 'measured:tools/bench/opmodels/move_in.json@ae6bbadb8058bce47da1d645c955cd68', 'measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4']
+  FACT  COMPILED 15 real ops: [('move_in', [1]), ('move_in', [2]), ('move_in', [3]), ('add_sr', [4]), ('wire_sr', [5]), ('wire_sr', [6]), ('connect', [7]), ('tunnel', [8, 9, 10]), ('tunnel', [11, 12, 13]), ('tunnel', [14, 15, 16]), ('tunnel', [17, 18, 19]), ('tunnel', [20, 21, 22]), ('tunnel', [23, 24, 25]), ('connect', [26]), ('connect', [27])]
+  PASS  P6 11 wired rows (1 init + 2 chain + 6 tunnel + 2 indicator)  ['move_in', 'move_in', 'move_in', 'add_sr', 'wire_sr', 'wire_sr', 'connect', 'tunnel', 'tunnel', 'tunnel', 'tunnel', 'tunnel', 'tunnel', 'connect', 'connect']
+  PASS  P7 stagexec dry run on the simulated backend PASS  None
+  FACT  plan_out {'path': 'tools/bench/plan_k_split.json', 'md5': 'fd7289c8dbff2e6be92a36c99283e4b5'}; rows file tools/bench/plan_k_rows.json (15 decisions)
+=== GATES: 20 pass / 1 fail; failing: A0 #BODY is owned by #LOOP (WhileLoop), same parent diagram as L7's body, reader returns L7's pair too, holds no plan node
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":20,"fail":1},"first_fail":"A0 #BODY is owned by #LOOP (WhileLoop), same parent diagram as L7's body, reader returns L7's pair too, holds no plan node","artefacts":[{"path":"tools/bench/plan_k_split.json","md5":"fd7289c8dbff2e6be92a36c99283e4b5"}]}
+BGRUN END rc=1 after 59s (RESULT: status=FAIL gates 20/1 first_fail=A0 #BODY is owned by #LOOP (WhileLoop), same parent diagram as L7's body, reader returns L7's pair too, holds no plan node; the process itself said 0)
+BGRUN START 2026-09-25 09:10:43 limit 10.0 min: py -u tools/bench/sim_k_split.py
+  PASS  C0 base graph + loop table unchanged since the contract  {'path': 'tools/bench/graph_k_s4_20260925.json', 'md5': 'c166d036ea7b1ba6083ae4df69fe073d'}
+  FACT  A0 body #23166: parent 686 (L7 body parent 686); body-loop offset (10, 1) (L7 (9, 1)); nodes on it [(10171, 'Comparison'), (23166, 'Diagram'), (23417, 'LoopTunnel')]
+  FACT  A0 ownership: body of #10170 = #23166; body of L7 loop #23041 = #23405 (L7 plan body #23405)
+  PASS  A0 #BODY is owned by #LOOP (WhileLoop), same parent diagram as L7's body, reader returns L7's pair too, holds no plan node  [10171, 23166, 23417]
+  FACT  RULE-CHAIN-S1 chains of #5058: [('acc', 'pos in cal image out', 'pos in cal image in', 119, (6239, ''))]
+  PASS  B0 exactly one S1 chain, and it is the kernel-only pair of k_facts (left read by the kernel only)  ([{'chain': 'acc', 'out': 'pos in cal image out', 'in': 'pos in cal image in', 's1_right': 119, 's1_left': 2972, 'init': (6239, '')}], ['1147/1142', '5796/5805', '119/2972', '7311/11001'])
+  PASS  B1 the old left #2972's outer init wire has ONE source, owned by the S1 chain's init #6239 (177(b) single candidate)  ([{'term_uid': 3218, 'term_name': 'pos in cal image out', 'is_source': False, 'wire_uid': 8590, 'owner_uid': 2972, 'owner_class': 'LeftShiftRegister', 'frame_diagram': 686, 'term_class': 'OuterTerminal'}], [{'term_uid': 6247, 'term_name': '', 'is_source': True, 'wire_uid': 8590, 'owner_uid': 6239, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}])
+  PASS  T0 t2: ONE source term of FSIT #3862 on the old tunnel #2580's outer wire w3853  [{'term_uid': 3868, 'term_name': '', 'is_source': True, 'wire_uid': 3853, 'owner_uid': 3862, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}]
+  PASS  T0 t9: ONE source term of FSIT #2932 on the old tunnel #2396's outer wire w2641  [{'term_uid': 2934, 'term_name': '', 'is_source': True, 'wire_uid': 2641, 'owner_uid': 2932, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}]
+  PASS  T0 t11: ONE source term of FSIT #5287 on the old tunnel #4432's outer wire w5265  [{'term_uid': 5293, 'term_name': '', 'is_source': True, 'wire_uid': 5265, 'owner_uid': 5287, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}]
+  PASS  T0 t12: ONE source term of FSIT #3675 on the old tunnel #3656's outer wire w3668  [{'term_uid': 3677, 'term_name': '', 'is_source': True, 'wire_uid': 3668, 'owner_uid': 3675, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}]
+  PASS  T0 t14: ONE source term of FSIT #5659 on the old tunnel #3920's outer wire w5786  [{'term_uid': 5661, 'term_name': 'Real-space cosine window', 'is_source': True, 'wire_uid': 5786, 'owner_uid': 5659, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}]
+  PASS  T0 t15: ONE source term of FSIT #5952 on the old tunnel #4031's outer wire w4029  [{'term_uid': 5958, 'term_name': 'Cosine bandpass for Hilbert', 'is_source': True, 'wire_uid': 4029, 'owner_uid': 5952, 'owner_class': 'FlatSequenceInnerTunnel', 'frame_diagram': 686, 'term_class': 'Terminal'}]
+  FACT  (e) OPEN by rule: inputs ['Bead is good? array in', 'Image In', 'x,y,z array']; outputs ['Bead is good? array out', 'x,y,z array out', 'pos in cal image out']; t8's open sinks [10757, 10969]
+  PASS  P0 plan validates as stageplan/1 (27 actions)  
+  PASS  P1 every action applied  None
+  PASS  P2 base computation_diff(S1) == the contract's 2 carried L7 rows  ['376|Terminal|current frame data array in|0', '376|Terminal|frame index|0']
+  PASS  A0-END #KERN is owned by #BODY at the end (every #5058 terminal on diagram #23166)  [23166]
+  FACT  END CDIFF ROW (376, 'current frame data array in') <- L7 carried
+  FACT  END CDIFF ROW (376, 'frame index') <- L7 carried
+  FACT  END CDIFF ROW (2626, 'array') <- (e) out via x,y,z array out
+  FACT  END CDIFF ROW (5058, 'Bead is good? array in') <- (e) in
+  FACT  END CDIFF ROW (5058, 'Image In') <- (e) in
+  FACT  END CDIFF ROW (5058, 'x,y,z array') <- (e) in
+  FACT  END CDIFF ROW (5696, 'x,y,z array') <- (e) out via x,y,z array out
+  FACT  END CDIFF ROW (6085, 'x,y,z array') <- (e) out via x,y,z array out
+  FACT  END CDIFF ROW (10757, 'array') <- (e) out via pos in cal image out
+  FACT  END CDIFF ROW (10969, 'array') <- (e) out via pos in cal image out
+  FACT  P3 end-graph Bead is good? array out <- credited: unwired, base consumers [5810] sourceless [(5810, 5859, False)]
+  PASS  P3 every end row is an (e)/L7 row, every (e) terminal credited (t3 by end-graph sources), no (e) terminal wired or END-sourcing a row  {'unexplained': [], 'unused': [], 'bad': []}
+  PASS  P3-NEG fake Bead is good? array out -> #2626 'array' edge (1 src + 1 sink rows) FAILS P3  {'unexplained': [], 'unused': ['Bead is good? array out'], 'bad': ["row #2626 array END-sourced by (e) ['Bead is good? array out']", '(e) Bead is good? array out still wired (w-33)']}
+  PASS  PB end rows == Pre-decided 178(c)'s 10 rows (typed from the ruling)  {'extra': [], 'missing': []}
+  STEP 01 move_in          ok cands=5 cdiff=3 measured:tools/bench/opmodels/move_in.json@ae6bbadb8058bce47da1d645c955cd68
+  STEP 02 move_in          ok cands=4 cdiff=4 measured:tools/bench/opmodels/move_in.json@ae6bbadb8058bce47da1d645c955cd68
+  STEP 03 move_in          ok cands=13 cdiff=19 measured:tools/bench/opmodels/move_in.json@ae6bbadb8058bce47da1d645c955cd68
+  STEP 04 add_shift_reg    ok cands=0 cdiff=19 measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83
+  STEP 05 wire             ok cands=0 cdiff=19 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 06 wire             ok cands=0 cdiff=19 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 07 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 08 tunnel           ok cands=0 cdiff=18 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 09 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 10 wire             ok cands=0 cdiff=17 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 11 tunnel           ok cands=0 cdiff=17 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 12 wire             ok cands=0 cdiff=17 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 13 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 14 tunnel           ok cands=0 cdiff=16 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 15 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 16 wire             ok cands=0 cdiff=15 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 17 tunnel           ok cands=0 cdiff=15 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 18 wire             ok cands=0 cdiff=15 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 19 wire             ok cands=0 cdiff=14 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 20 tunnel           ok cands=0 cdiff=14 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 21 wire             ok cands=0 cdiff=14 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 22 wire             ok cands=0 cdiff=13 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 23 tunnel           ok cands=0 cdiff=13 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 24 wire             ok cands=0 cdiff=13 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 25 wire             ok cands=0 cdiff=12 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 26 wire             ok cands=0 cdiff=11 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 27 wire             ok cands=0 cdiff=10 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  PASS  P4 plan FINAL: end rows == declared open_rows (10 rows), no undecided row  (True, None)
+  PASS  P5 every step ran on a MEASURED op model  ['measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83', 'measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def', 'measured:tools/bench/opmodels/move_in.json@ae6bbadb8058bce47da1d645c955cd68', 'measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4']
+  FACT  COMPILED 15 real ops: [('move_in', [1]), ('move_in', [2]), ('move_in', [3]), ('add_sr', [4]), ('wire_sr', [5]), ('wire_sr', [6]), ('connect', [7]), ('tunnel', [8, 9, 10]), ('tunnel', [11, 12, 13]), ('tunnel', [14, 15, 16]), ('tunnel', [17, 18, 19]), ('tunnel', [20, 21, 22]), ('tunnel', [23, 24, 25]), ('connect', [26]), ('connect', [27])]
+  PASS  P6 11 wired rows (1 init + 2 chain + 6 tunnel + 2 indicator)  ['move_in', 'move_in', 'move_in', 'add_sr', 'wire_sr', 'wire_sr', 'connect', 'tunnel', 'tunnel', 'tunnel', 'tunnel', 'tunnel', 'tunnel', 'connect', 'connect']
+  PASS  P7 stagexec dry run on the simulated backend PASS  None
+  FACT  plan_out {'path': 'tools/bench/plan_k_split.json', 'md5': 'fb798f5f100cf0bfe3d6c7e8378c00bf'}; rows file tools/bench/plan_k_rows.json (15 decisions)
+=== GATES: 21 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":21,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/plan_k_split.json","md5":"fb798f5f100cf0bfe3d6c7e8378c00bf"}]}
+BGRUN END rc=0 after 59s

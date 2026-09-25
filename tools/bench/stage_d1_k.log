@@ -1,0 +1,121 @@
+BGRUN START 2026-09-25 09:41:07 limit 55.0 min: py -u tools/recipes/stage_d1_k.py
+BGRUN STAGE-RUN recorded stage_d1_k.py cycle='cycle 79' card=None pid=23936 -> stage_runs.jsonl
+stage_d1_k - cycle 79 STAGE K (docs/d1-loop12-17-split-plan.md Pre-decided 177, executed, not re-decided). INPUT the S4 bed
+claudeDev\D1_s4_loop17.vi (4b621946...), FRESH LabVIEW -> claudeDev\D1_k_<ts>.vi (scripted save if ExecState 1, else the
+rule-6 GUI save). ROWS ONLY FROM THE FINALIZED SIMULATOR PLAN plan_k_split.json (tools/bench/sim_k_split.py): the stagexec
+Executor runs its compiled ops one by one and compares the REAL graph after every op with the simulated step file
+(docs/stage-simulator-plan.md step 6). No uid and no terminal name is written in this file. ROUTE (c), Pre-decided 178(f):
+plan_k_split.json is the plan this recipe executes AND presents; plan_k_rows.json is a derived report, not read here.
+PRIOR ART: tools/stagexec.py (Executor + LVBackend + lv_run's end-cdiff code; L7 bench 14/0, never saved), stage_d1_l7_r.py
+(IndexMode gate, ordered second pass via cfw_second_pass, shots + save), stagekit. No new op.
+PREDICTION CONTRACT (177(g)): E1 every real op's graph == its simulated step, every created object bound; IM each new
+tunnel's IndexMode == its original's (the plan's tunnel `indexing`, 178(a) from k_contract_79); P2 the ordered second pass
+(wire_delta 0, Wire.Is Broken? False) on every row whose SINK is a node terminal (6 tunnel rows + the chain's left row),
+addressed by verify_term_uid; the 2 register-face rows and the 2 indicator rows are covered by E1 only (recorded);
+PB computation_diff(S1, real end) == the plan's open_rows exactly (FATAL, before the save); KN the moved kernel's VI name
+read on its new diagram (gscript.subvis) == the CPU kernel (31(a), FATAL, before the save); ES measured, NOT gated;
+handles recorded (176(a)); input md5 + pins unchanged (H2/H3); refs opened == closed (H5).
+DRY RUN (tools/stage_prerun.py): the COM layer is stubbed, so the Executor runs on stagexec's SIMULATED backend, which
+records each real op once as a Stage op (wiring ops as wire_<kind>).
+    py tools/bgrun.py --material --max-min 55 --log tools/bench/stage_d1_k.log -- py -u tools/recipes/stage_d1_k.py
+  PASS  K0 the executed plan is a FINAL stageplan (178(f) route c)  ('stageplan/1', True, 'fb798f5f100cf0bfe3d6c7e8378c00bf')
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 256 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 4b621946492da3d2fbb96b6053e715ec  got 4b621946492da3d2fbb96b6053e715ec
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 34002
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_k_20260925_094107.vi
+  FACT  ExecState [after open] D1_k_20260925_094107.vi = 1
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so D1_k_20260925_094107.vi is deleted at close
+  FACT  HANDLES after open 54419
+  FACT  COMPILED 15 real ops: [('move_in', [1]), ('move_in', [2]), ('move_in', [3]), ('add_sr', [4]), ('wire_sr', [5]), ('wire_sr', [6]), ('connect', [7]), ('tunnel', [8, 9, 10]), ('tunnel', [11, 12, 13]), ('tunnel', [14, 15, 16]), ('tunnel', [17, 18, 19]), ('tunnel', [20, 21, 22]), ('tunnel', [23, 24, 25]), ('connect', [26]), ('connect', [27])]
+  PASS  K1b every plan action is compiled into exactly one real op (27 actions -> 15 ops, 11 wired)  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
+  STEPX 00 base read vs step_00: diff 0
+  PRIME 8 terminal indexes proved at base; unprovable ['ADDRESS: node #6239 not in Diagram[19] (#686).Nodes[]', 'ADDRESS: node #3862 not in Diagram[19] (#686).Nodes[]', 'ADDRESS: node #2932 not in Diagram[19] (#686).Nodes[]', 'ADDRESS: node #5287 not in Diagram[19] (#686).Nodes[]']
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #3173 -> Diagram[21] at (4901, 5900) -> err '' (0.1 s)
+  FACT  move_in #3173 AFTER node census: 636 rows
+  FACT  move_in #3173 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(23468, 'Invoke', (4593, 5723))]
+  FACT  move_in #3173 new #23468 #23468 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 1, 'nodes_on_diagram': 2, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 1.0 s)
+  FACT  move_in #3173 new #23468 terminal table of #23468 (Diagram idx 21, Nodes[1], echo 23468): 6 terminal(s)
+  FACT      move_in #3173 new #23468 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #3173 new #23468 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #3173 new #23468 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #3173 new #23468 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #3173 new #23468 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #3173 new #23468 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #3173 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #3173 purge delete Node #23468 at index 98: gone [23468], error '', census 636 -> 635, still present False (1.26 s)
+  FACT  move_in #3173 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #3173 purge arithmetic: Node 635 -> 636 -> 635
+  STEPX 01 move_in        acts [1] ids ['move_ind_1'] bound {} diff 0
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #9519 -> Diagram[21] at (4901, 5960) -> err '' (0.1 s)
+  FACT  move_in #9519 AFTER node census: 636 rows
+  FACT  move_in #9519 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(10354, 'Invoke', (4593, 5723))]
+  FACT  move_in #9519 new #10354 #10354 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 1, 'nodes_on_diagram': 2, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  move_in #9519 new #10354 terminal table of #10354 (Diagram idx 21, Nodes[1], echo 10354): 6 terminal(s)
+  FACT      move_in #9519 new #10354 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #9519 new #10354 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #9519 new #10354 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #9519 new #10354 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #9519 new #10354 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #9519 new #10354 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #9519 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #9519 purge delete Node #10354 at index 98: gone [10354], error '', census 636 -> 635, still present False (1.24 s)
+  FACT  move_in #9519 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #9519 purge arithmetic: Node 635 -> 636 -> 635
+  STEPX 02 move_in        acts [2] ids ['move_ind_2'] bound {} diff 0
+  FACT  move_in node census: 635 rows
+  FACT  OP move_in #5058 -> Diagram[21] at (4761, 5965) -> err '' (0.1 s)
+  FACT  move_in #5058 AFTER node census: 636 rows
+  FACT  move_in #5058 CENSUS DIFF: Node 635 -> 636 ; 1 new uid(s): [(10351, 'Invoke', (4593, 5723))]
+  FACT  move_in #5058 new #10351 #10351 lives at: {'diagram_index': 21, 'diagram_uid': 23166, 'diagram_class': 'Diagram', 'nodes_index': 2, 'nodes_on_diagram': 3, 'label': 'Invoke Node'}  (22 diagram(s) scanned of 173, 0.9 s)
+  FACT  move_in #5058 new #10351 terminal table of #10351 (Diagram idx 21, Nodes[2], echo 10351): 6 terminal(s)
+  FACT      move_in #5058 new #10351 t0  'reference'                        is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5058 new #10351 t1  'reference out'                    is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5058 new #10351 t2  'error in (no error)'              is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5058 new #10351 t3  'error out'                        is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5058 new #10351 t4  'Method'                           is_source=False wire=0       errs=[0, 0, 0, 1055]
+  FACT      move_in #5058 new #10351 t5  'Method'                           is_source=True  wire=0       errs=[0, 0, 0, 1055]
+  FACT  move_in #5058 the junk node's FULL terminal table is printed above; 6 terminal(s), 0 WIRED - the purge precondition (ZERO wired) HOLDS
+  FACT  move_in #5058 purge delete Node #10351 at index 98: gone [10351], error '', census 636 -> 635, still present False (1.24 s)
+  FACT  move_in #5058 AFTER THE PURGE node census: 635 rows
+  FACT  move_in #5058 purge arithmetic: Node 635 -> 636 -> 635
+  STEPX 03 move_in        acts [3] ids ['move_kernel'] bound {} diff 6
+  FAIL  E1 every real op's graph == its simulated step  STEP-DIFF after real op 3 (move_in, plan actions [3] ['move_kernel']): {"only_sim_edges": [[2789, 6253], [2792, 5910]], "dangling_real_only": [2789, 2792, 5910, 6253], "who": {"2789": [2765, "SelectorTunnel", "x,y,z array out"], "2792": [2765, "SelectorTunnel", "x,y,z array out"], "5910": [5696, "SubVI", "x,y,z array"], "6253": [6085, "SubVI", "x,y,z array"]}}
+  FAIL  STOP at gate: E1 every real op's graph == its simulated step
+
+---------- [H] HYGIENE
+  FACT  close_panel(D1_k_20260925_094107.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 6}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 6}
+  FACT  LabVIEW handle count AFTER the work: 54651
+  PASS  H4 scratch deleted: D1_k_20260925_094107.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_k_20260925_094107.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 4b621946492da3d2fbb96b6053e715ec / after 4b621946492da3d2fbb96b6053e715ec
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33992
+
+====================================================================================================
+=== GATES: 10 pass / 2 fail; failing: E1 every real op's graph == its simulated step, STOP at gate: E1 every real op's graph == its simulated step
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\stage_d1_k.json   elapsed 234.8 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":10,"fail":2},"first_fail":"E1 every real op's graph == its simulated step","artefacts":[]}
+BGRUN END rc=1 after 235s

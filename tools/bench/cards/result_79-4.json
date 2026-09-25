@@ -1,0 +1,24 @@
+{"schema":"result/1","id":"79-4","status":"BLOCKED","gates":{"pass":4,"fail":1},
+"first_fail":"D2 recipe pre-run X4 (tools/bench/stage_d1_k_prerun.log:146): 9 exec ends of plan_k_rows.json not addressable offline (7 FSIT sources, 2 ControlTerminal indicators)",
+"blocked_by":{"device":"tools/stage_prerun.py launch gate (--check-launch rc 2) via tools/hooks/guard_bash.py","message":"tools/recipes/stage_d1_k.py has no prerun PASS for sha 40f0c0768e75 + plan_k_rows.json 57c1a2cf; X4's addr_offline cannot address these ends and tools/stage_prerun.py is outside the card's write globs"},
+"artefacts":[
+{"path":"tools/bench/plan_k_split.json","md5":"fb798f5f100cf0bfe3d6c7e8378c00bf"},
+{"path":"tools/bench/plan_k_rows.json","md5":"57c1a2cf9c0d4bdc924b93f14be760b6"},
+{"path":"tools/bench/sim_k_split.log","md5":null},
+{"path":"tools/recipes/stage_d1_k.py","md5":null}],
+"facts":[
+"D1 PASS: sim run 4 = 21/0 (sim_k_split.log last block); A0 ownership: #23166 owned by #10170, reader also returns L7's #23041->#23405; A0-END #5058 on #23166",
+"P3 PASS: t3 credited only by end-graph evidence (unwired; #5796 inner 5810 sourceless on w5859); P3-NEG fake t3->#2626 'array' FAILS for t3; PB == 178(c)'s 10 rows",
+"Sim run 3 (09:09) 20/1 failed A0 only: my first ownership reader expected the body right after the loop; dumps list the loop's OuterTerminals first (sim_k_probe_79.log OWNED_BODY, 6/6 loops)",
+"D0 done: 178 dispositions written under 'What was done with it' in archive/peer/2026-09-25-c79-sim-k-split.md; 178(d) chain rows RULE-CHAIN-S1, no Jev call",
+"Prior-art c79-k = settled-already on one point (31(a) #5058 name gate missing); added as FATAL gate KN (stage_d1_k.py:96-103, gscript.subvis); released by FIXED: settled-already",
+"Recipe dry PASS (stage_d1_k_dry.log, 2nd run with --graph graph_k_s4_20260925.json; 1st auto-picked the loops json and hit KeyError 'terminals')",
+"Prerun X4 FAIL: addr_offline picks by name first (stage_prerun.py:710-712); FSIT #6239 has 2 wired sources named '' (7605, 6247) -> 0 hits; #3173/#9519 rows owned by Diagram #639",
+"Review c79-k-x4 ANSWERED: plan_k_rows exec ends are read by no op (only X4); the stagexec-plan route exists: stage_prerun --prerun plan_k_split.json = PASS 4/0 (stage_d1_k_planprerun.log:2-7)",
+"Review also flags self-wires in the bed graph: #6239 7605->6487 on w7617, #3862 3899->3871, #5659 5687->5664, all on diagram 536 (archive/peer/2026-09-25-c79-k-x4.md:68-76); not investigated",
+"No LabVIEW run: LabVIEW not running, no lock taken, 0 stage runs used; bed D1_s4_loop17.vi md5 4b621946 (dry K1); JEV-LADDER for probe log: new-problem p=0.514 -> review done (c79-k-x4)"],
+"open":[
+"Which route for K: (a) authorise patching tools/stage_prerun.py addr_offline (term_uid-first when given; ControlTerminal rows by term_uid == node uid), (b) run stagexec.py run on plan_k_split.json (gated PASS, but no IM/P2/PB/KN/save), or (c) stop presenting plan_k_rows.json as a plan?",
+"Are the same-diagram self-wires of FSITs #6239/#3862/#5659 on diagram 536 a real bed artefact or a graph-reader join error?"],
+"cost":{"usd":null,"minutes":30,"labview_runs":0},
+"note":"sim_k_split.py runs under this card: 2 (09:09 FAIL A0 reader, 09:10 PASS). Recipe prerun failures: 1. Prior-art ~$ unknown; hypothesis review 179 s. Probe scripts sim_k_probe_79.py / sim_k_x4probe_79.py are diagnostics (read-only)."}

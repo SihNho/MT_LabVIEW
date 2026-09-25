@@ -1,0 +1,27 @@
+{"schema":"result/1","id":"79-7","status":"PASS","gates":{"pass":6,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+{"path":"C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_20260925_100155.vi","md5":"6cf5b0777aafa12112d8a786a9eed1ed"},
+{"path":"tools/stagesim.py","md5":"4265b23a2c9758e6050bab4e631f3017"},
+{"path":"tools/bench/k_op3_read_79.log","md5":"a8ce372e63914f5bfe7ae430bc966b14"},
+{"path":"tools/bench/k_op3_read_79.json","md5":"ad2183bbb5b38fa5ef8ba707ec96441a"},
+{"path":"tools/bench/selftest_stagesim_k79.log","md5":"cb2547eaf127cdad667ce5a2a789677e"},
+{"path":"tools/bench/plan_k_split.json","md5":"30fee17f937b6ca351379444af6e4d45"},
+{"path":"tools/bench/stage_d1_k_r2.log","md5":"02849e15150b9b379e1e5460508020a2"}],
+"facts":[
+"M1 k_op3_read_79.log:93-111 (10/0): after op 3, 2789/2792 is_source False on wires 3472/2924 (kept), 2811 sink on w505, w505 0 sources: tunnel-flip TRUE, no wire loss/renumber",
+"M2 stagesim.py _flip_orphaned_output_tunnels widened: TUN_FLIP adds SelectorTunnel, both directions, multi-inner flips only if no driving-side sink sourced",
+"M2 self-tests: stagesim 42/0 (39 old + G40-G42, selftest_stagesim.log:176-179); selftest_stagesim_k79 4/0 sim step 3 == M1 read, negative TUN1 reproduces 79-6 diff",
+"M3 sim_k_split_79-7.log:73 21/0; plan_k_split.json md5 fb798f5f -> 30fee17f; PB end rows == 178(c)'s 10 (no change); dry PASS, prerun 7/0 (stage_d1_k_prerun_79-7.log:154)",
+"M4 stage_d1_k_r2.log:569 35/0, 610 s: E1 15/15 ops diff 0; IM 6/6 IndexMode 0; P2 7 rows delta 0 Is Broken? False; PB 10 rows exact; KN kernel name OK",
+"M4 ExecState 0 warm (by design, (e) rows open) -> gui_save rule 6, shots before/after_save.png; D1_k_20260925_100155.vi 307,364 B md5 6cf5b077 (log:548)",
+"M5 bed 4b621946 unchanged (H2), pins OK (H3), refs 23/23/0 (H5), handles 54406 -> 54922 -> exit 34128; M1 scratch deleted (k_op3_read_79.log:138)",
+"M5 LabVIEW pid 5580 stopped after the run via Stop-Process; tasklist shows no LabVIEW.exe",
+"Own-script bug fixed: tools/bench/sim_k_split.py:188 two statements merged on one line (SyntaxError, sim_k_split_79-7.log:5); split, rerun PASS",
+"Model change beyond the M1 case: input LoopTunnel/Tunnel with orphaned outer now also flips its inner (NI rule; not measured on those classes)"],
+"open":[
+"Input-direction flip for LoopTunnel/Tunnel and output SelectorTunnel (all frames orphaned) are unmeasured generalisations; measure them or restrict TUN_FLIP?",
+"D1_k is ES 0 by design (10 open (e) rows): next stage closes them; no VI run made"],
+"cost":{"usd":null,"minutes":22,"labview_runs":2},
+"note":"No peer dispatched (no failed prediction). LabVIEW runs: 1 headless read (M1) + stage_d1_k run 2 of 2 (cap). STATUS not edited (status_edit false)."}

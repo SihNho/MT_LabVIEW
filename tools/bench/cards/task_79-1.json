@@ -1,0 +1,55 @@
+{
+ "schema": "task/1",
+ "id": "79-1",
+ "kind": "measure",
+ "goal": "Stage K facts: every terminal of kernel #5058 on bed D1_s4_loop17.vi (md5 4b621946...), classified by where its other end lives, for judgement to write K's Pre-decided entry.",
+ "why": "Split plan §2 row K moves #5058 into body #23166 of 1.2 (#10170). Its 13 rows (PD151) couple it to groups A/B, 1.1 and top level; row modes cannot be decided without this table. Same shape as the plan's 'L7-R facts (cycle 73, measured)'.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "b14e62f88701a5485f3430176cb35cda"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s4_loop17.vi", "md5": "4b621946492da3d2fbb96b6053e715ec"},
+  {"path": "docs/wiki/subvi/D1_s1_copy.json"},
+  {"path": "tools/bench/build_d1_v0.json"},
+  {"path": "tools/bench/d1_rewire_sources.json"},
+  {"path": "tools/bench/split_rows_l2l7.json"},
+  {"path": "tools/vigraph.py"},
+  {"path": "tools/bench/c73_l7r_facts.py"}
+ ],
+ "pass": [
+  "F1 one row per #5058 terminal (all 16): index, exact name, direction, bed + S1 wire uid, other end(s) uid/class/terminal/owner diagram, each with a file:line or json-key citation",
+  "F2 other end tagged by plan group (§1 A/B/C/W, 1.1-stays, top-level #686, #637 SR pair per PD149, #637 loop terminal, constant); via-tunnel column naming tunnel uid + its outer source",
+  "F3 for each 1.2 SR pair of PD149 (#1147/#1142 #5796/#5805 #119/#2972 #7311/#11001): which nodes read the left and feed the right",
+  "F4 which graph/wiki of D1_s4_loop17 was used + md5; if none on disk say so and derive from S3 graph + L7 edits as c73_l7r_facts.py did",
+  "F5 cross-check vs build_d1_v0.json cut uid 5058 and d1_rewire_sources.json: list every disagreement",
+  "F6 from docs/stage-simulator-plan.md: which plan files the launch gate needs for a K stage (path pattern), one line",
+  "outputs k_facts_79.py (<=120 lines) + .log + .json; NO design choice, no row-mode decision"
+ ],
+ "outputs": [
+  "tools/bench/k_facts_79.py",
+  "tools/bench/k_facts_79.log",
+  "tools/bench/k_facts_79.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/k_facts_79*",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 40
+ },
+ "rules": [
+  "offline only: no LabVIEW, no VI opened; if not derivable offline return BLOCKED naming what is missing",
+  "facts only - never decide which rows are QRT, tunnel or later-stage; that is judgement's",
+  "run the script under py tools/bgrun.py with a log; hold the turn until BGRUN END",
+  "result/1 with <=10 facts, <=3 open"
+ ],
+ "advances": ["M3"]
+}

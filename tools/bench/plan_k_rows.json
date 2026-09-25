@@ -1,0 +1,351 @@
+{
+ "schema": "k-rows/1",
+ "plan": {
+  "path": "tools/bench/plan_k_split.json",
+  "md5": "30fee17f937b6ca351379444af6e4d45"
+ },
+ "tunnels": [
+  {
+   "t": 2,
+   "old": 2580,
+   "as": "T1",
+   "index_mode": 0
+  },
+  {
+   "t": 9,
+   "old": 2396,
+   "as": "T2",
+   "index_mode": 0
+  },
+  {
+   "t": 11,
+   "old": 4432,
+   "as": "T3",
+   "index_mode": 0
+  },
+  {
+   "t": 12,
+   "old": 3656,
+   "as": "T4",
+   "index_mode": 0
+  },
+  {
+   "t": 14,
+   "old": 3920,
+   "as": "T5",
+   "index_mode": 0
+  },
+  {
+   "t": 15,
+   "old": 4031,
+   "as": "T6",
+   "index_mode": 0
+  }
+ ],
+ "open": [
+  [
+   376,
+   "current frame data array in"
+  ],
+  [
+   376,
+   "frame index"
+  ],
+  [
+   2626,
+   "array"
+  ],
+  [
+   5058,
+   "Bead is good? array in"
+  ],
+  [
+   5058,
+   "Image In"
+  ],
+  [
+   5058,
+   "x,y,z array"
+  ],
+  [
+   5696,
+   "x,y,z array"
+  ],
+  [
+   6085,
+   "x,y,z array"
+  ],
+  [
+   10757,
+   "array"
+  ],
+  [
+   10969,
+   "array"
+  ]
+ ],
+ "why": {
+  "#10757 array": "(e) out via pos in cal image out",
+  "#10969 array": "(e) out via pos in cal image out",
+  "#2626 array": "(e) out via x,y,z array out",
+  "#376 current frame data array in": "L7 carried",
+  "#376 frame index": "L7 carried",
+  "#5058 Bead is good? array in": "(e) in",
+  "#5058 Image In": "(e) in",
+  "#5058 x,y,z array": "(e) in",
+  "#5696 x,y,z array": "(e) out via x,y,z array out",
+  "#6085 x,y,z array": "(e) out via x,y,z array out",
+  "#e n": "credited: unwired, base consumers [5810] sourceless [(5810, 5859, False)]"
+ },
+ "decisions": [
+  {
+   "id": "move_ind_1",
+   "action": "move_in",
+   "kind": "move_in",
+   "acts": [
+    1
+   ],
+   "decided_by": "rule 177(a)",
+   "exec": {}
+  },
+  {
+   "id": "move_ind_2",
+   "action": "move_in",
+   "kind": "move_in",
+   "acts": [
+    2
+   ],
+   "decided_by": "rule 177(a)",
+   "exec": {}
+  },
+  {
+   "id": "move_kernel",
+   "action": "move_in",
+   "kind": "move_in",
+   "acts": [
+    3
+   ],
+   "decided_by": "rule 177(a)",
+   "exec": {}
+  },
+  {
+   "id": "sr_acc",
+   "action": "add_sr",
+   "kind": "add_sr",
+   "acts": [
+    4
+   ],
+   "decided_by": "rule 177(a)",
+   "exec": {}
+  },
+  {
+   "id": "chain_R",
+   "action": "wire",
+   "kind": "wire_sr",
+   "acts": [
+    5
+   ],
+   "decided_by": "RULE-CHAIN-S1",
+   "exec": {
+    "src": {
+     "uid": 5058,
+     "term": "pos in cal image out"
+    }
+   }
+  },
+  {
+   "id": "chain_L",
+   "action": "wire",
+   "kind": "wire_sr",
+   "acts": [
+    6
+   ],
+   "decided_by": "RULE-CHAIN-S1",
+   "exec": {
+    "dst": {
+     "uid": 5058,
+     "term": "pos in cal image in"
+    }
+   }
+  },
+  {
+   "id": "chain_init",
+   "action": "wire",
+   "kind": "connect",
+   "acts": [
+    7
+   ],
+   "decided_by": "RULE-SINGLE-CANDIDATE (165)",
+   "exec": {
+    "src": {
+     "uid": 6239,
+     "term_uid": 6247
+    }
+   }
+  },
+  {
+   "id": "tun_t2",
+   "action": "wire",
+   "kind": "tunnel",
+   "acts": [
+    8,
+    9,
+    10
+   ],
+   "decided_by": "rule 166 tunnel",
+   "exec": {
+    "dst": {
+     "uid": 5058,
+     "term": "cross size"
+    },
+    "src": {
+     "uid": 3862,
+     "term_uid": 3868
+    }
+   }
+  },
+  {
+   "id": "tun_t9",
+   "action": "wire",
+   "kind": "tunnel",
+   "acts": [
+    11,
+    12,
+    13
+   ],
+   "decided_by": "rule 166 tunnel",
+   "exec": {
+    "dst": {
+     "uid": 5058,
+     "term": "# of bead 4 packs"
+    },
+    "src": {
+     "uid": 2932,
+     "term_uid": 2934
+    }
+   }
+  },
+  {
+   "id": "tun_t11",
+   "action": "wire",
+   "kind": "tunnel",
+   "acts": [
+    14,
+    15,
+    16
+   ],
+   "decided_by": "rule 166 tunnel",
+   "exec": {
+    "dst": {
+     "uid": 5058,
+     "term": "4 pack remainder"
+    },
+    "src": {
+     "uid": 5287,
+     "term_uid": 5293
+    }
+   }
+  },
+  {
+   "id": "tun_t12",
+   "action": "wire",
+   "kind": "tunnel",
+   "acts": [
+    17,
+    18,
+    19
+   ],
+   "decided_by": "rule 166 tunnel",
+   "exec": {
+    "dst": {
+     "uid": 5058,
+     "term": "Array of cal clusters"
+    },
+    "src": {
+     "uid": 3675,
+     "term_uid": 3677
+    }
+   }
+  },
+  {
+   "id": "tun_t14",
+   "action": "wire",
+   "kind": "tunnel",
+   "acts": [
+    20,
+    21,
+    22
+   ],
+   "decided_by": "rule 166 tunnel",
+   "exec": {
+    "dst": {
+     "uid": 5058,
+     "term": "Real-space cosine window"
+    },
+    "src": {
+     "uid": 5659,
+     "term_uid": 5661
+    }
+   }
+  },
+  {
+   "id": "tun_t15",
+   "action": "wire",
+   "kind": "tunnel",
+   "acts": [
+    23,
+    24,
+    25
+   ],
+   "decided_by": "rule 166 tunnel",
+   "exec": {
+    "dst": {
+     "uid": 5058,
+     "term": "Cosine bandpass\nfor Hilbert "
+    },
+    "src": {
+     "uid": 5952,
+     "term_uid": 5958
+    }
+   }
+  },
+  {
+   "id": "ind_1",
+   "action": "wire",
+   "kind": "connect",
+   "acts": [
+    26
+   ],
+   "decided_by": "rule 177(d) indicator",
+   "exec": {
+    "src": {
+     "uid": 5058,
+     "term": "pos in cal image out"
+    },
+    "dst": {
+     "uid": 3173,
+     "term": "Pos within cal image"
+    }
+   }
+  },
+  {
+   "id": "ind_2",
+   "action": "wire",
+   "kind": "connect",
+   "acts": [
+    27
+   ],
+   "decided_by": "rule 177(d) indicator",
+   "exec": {
+    "src": {
+     "uid": 5058,
+     "term": "pos in cal image out"
+    },
+    "dst": {
+     "uid": 9519,
+     "term": "Pos: Diffraction Pattern"
+    }
+   }
+  }
+ ]
+}

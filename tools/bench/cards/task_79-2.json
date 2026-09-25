@@ -1,0 +1,52 @@
+{
+ "schema": "task/1",
+ "id": "79-2",
+ "kind": "build",
+ "goal": "guard_peer RULE-SAME-ROW: discharge a failed log only by a review whose reviewed task ran the same script (basename, _vN stripped) as the log's BGRUN command, never on a mere mention.",
+ "why": "retrospective-cycle78 finding 6 (:256, :274-276): the 08:10:42 drive_m8_replay_s1_78.log crash was discharged by a review of another task that only mentioned the script, so a failed prediction passed unreviewed.",
+ "inputs": [
+  {"path": "tools/hooks/guard_peer.py"},
+  {"path": "archive/peer/2026-09-25-retrospective-cycle78.md"},
+  {"path": "tools/bench/jev_gate.log"},
+  {"path": "tools/bench/selftest_guard_peer_jev.py"}
+ ],
+ "pass": [
+  "P1 RULE-SAME-ROW code path located (file:line) and the field it matches on now stated",
+  "P2 patch with Edit (no heredoc): match on the reviewed TASK's script (failing log's BGRUN command basename, _vN stripped), not free text",
+  "P3 self-test: 08:10:42 discharge re-run offline must NOT discharge; same-script review <6 h still does; >6 h does not",
+  "P3b all existing guard_peer self-tests still pass (report counts)",
+  "P4 FIXED: disposition for finding 6 under 'What was done with it' in archive/peer/2026-09-25-retrospective-cycle78.md"
+ ],
+ "outputs": [
+  "tools/hooks/guard_peer.py",
+  "tools/bench/selftest_guard_peer_sameRow.py",
+  "tools/bench/selftest_guard_peer_sameRow.log"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/hooks/guard_peer.py",
+   "tools/bench/selftest_guard_peer*",
+   "tools/bench/cards/**",
+   "archive/peer/2026-09-25-retrospective-cycle78.md",
+   "docs/violation-decisions.md"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {
+  "failures": 2,
+  "minutes": 40
+ },
+ "rules": [
+  "no LabVIEW; self-tests under py tools/bgrun.py with a log, hold the turn until BGRUN END",
+  "loosen no other guard_peer path",
+  "if reviews carry no machine-readable task script, say so in OPEN and match on review-card inputs",
+  "result/1 with <=10 facts, <=3 open"
+ ],
+ "unblocks": "M3"
+}
