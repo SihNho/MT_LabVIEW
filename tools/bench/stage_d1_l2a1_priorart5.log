@@ -1,0 +1,47 @@
+BGRUN START 2026-09-25 13:10:52 limit 20.0 min: py tools\prior_art_review.py --plan-file docs\d1-loop12-17-split-plan.md --slug c81-l2a1-r5-stagexec --trigger cycle-start --recipe tools\recipes\stage_d1_l2a1.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c81-l2a1-r5-stagexec.txt (113042 chars)
+   review card tools\bench\cards\review_priorart-c81-l2a1-r5-stagexec.json
+OUTCOME: ANSWERED (70s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-25-priorart-c81-l2a1-r5-stagexec.md
+COST: $1.5743  in 14 / out 5973 / cache-create 157491 / cache-read 974214  (66s, 16 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c81-l2a1-r5-stagexec verdict=novel -> tools\bench\cards\verdict_priorart-c81-l2a1-r5-stagexec.json
+--- ANSWER ---
+The run-1 failure is now covered, so I'm writing up the verdict. The attached recipe is unchanged from run 1 (md5 `e589dc74…`), and the new element is the PD185 addressing tool added to `stagexec`.
+
+## Verdict: novel
+
+This is run 2 of 2 of the L2-A1 recipe. Nothing blocks it: the one prior failure of this exact recipe now has a measured cause, a built fix, and a pre-run that passes on the fixed toolchain.
+
+### Part A: the direction
+
+- **A1, already settled:** no finding. PD185 (`docs/d1-loop12-17-split-plan.md`, cycle 81) decided the next sequence: build the addressing tool, then dry run, then pre-run, then run 2 of 2. This run is that sequence being carried out, not a question already answered elsewhere.
+- **A2, already refuted:** no finding.
+  - Route B's in-memory re-wire failure (PD162) does not apply. The recipe starts from the saved `D1_k` file and saves its own output (`tools/recipes/stage_d1_l2a1.py:2-3,101,115`).
+  - The 178(f) "tool task when L2 shows the X4 class" condition, which r3 blocked on (`archive/peer/2026-09-25-priorart-c81-l2a1-r3.md:951,975-976`), was released. Pre-run `81c` passed (`tools/bench/prerun_l2a1_81c.log:209`, rc=0), and r4 then returned novel (`archive/peer/2026-09-25-priorart-c81-l2a1-r4.md:986`).
+- **A3, contradicted:** nothing new that blocks. The stale stageplan md5 in PD183 (`73e95bc7`, superseded by `329d89ee`) was already reported by r2 and r3 (`…-r3.md:953`). It is record-keeping only; the recipe's L0 gate pins `329d89ee` (`stage_d1_l2a1.py:41`).
+- **A4, unread evidence:** none that bears on this. The recipe header does not cite the run-1 failure or PD185. The toolchain does, though: `tools/stagexec.py:253-258` cites `stage_d1_l2a1.log:302`, `l2a1_faces_81.log` and `build_d1_m3a1.log:1145-1154`.
+
+### Part B: the artefact
+
+- **B1, already built:** no. `tools/bench/stage_d1_l2a1.log:327` is the only run (`BGRUN END rc=1`), and it saved no `D1_l2_a1_*` file (`tools/bench/cards/result_81-7.json`, fact "no D1_l2_a1_* saved").
+- **B2, already failed:** yes, once. It does not block this run because the cause has been dealt with.
+  - **Where it stopped:** run 1 stopped at real op 18 `sr1_L0` with `ADDRESS: node #5825 not in Diagram[21] (#23166).Nodes[]` (`stage_d1_l2a1.log:302`; `result_81-7.json`).
+  - **What caused it:** the real reader does not list border SelectorTunnels in `Nodes[]`, while the offline simulator did. A PRIME step that could not prove every wired end also did not stop the run.
+  - **Why the fix holds:**
+    - `stagexec` now routes SelectorTunnel ends through their owner structure's `Terminals[]`, in both the real and simulated readers. FlatSequenceInnerTunnel ends stop with their correct route named. An unprovable PRIME end now stops the run before op 1 (`tools/stagexec.py:253-271`, `:373`, `:497-499`).
+    - The route was measured on a `D1_k` scratch: each of the five L2-A1 sink ends has exactly one matching face on its owner (`tools/bench/l2a1_faces_81.log:35-51`, 13 pass / 0 fail, `BGRUN END rc=0` at `:74`).
+    - The new self-tests T16–T20 pass, 21 pass / 0 fail overall (`tools/bench/selftest_stagexec_81.log:16-23`).
+    - Pre-run `81d` on the fixed toolchain passes: `PRIME … unprovable []`, `BGRUN END rc=0` (`tools/bench/prerun_l2a1_81d.log:20,209`).
+- **B3, helper exists:** no hand-rolled work. The recipe reuses `stagexec` `Executor`/`LVBackend` with `sink_gates`, the 179(b) panel-terminal reader through `allterms.read_terms`, `vigraph.computation_diff_frame`, `Stage.cfw_second_pass`, and `Stage.save(broken_ok)`. Its second-pass filter follows K's precedent (`stage_d1_l2a1.py:75` vs `tools/recipes/stage_d1_k.py:81`).
+- **B4, already measured:** no. The real end state of L2-A1 (frame-keyed PB, frame-uid sets, the CT reader on the real file) has never been measured, because run 1 stopped at op 18.
+
+### Side note (not a blocking finding)
+
+Pre-run `81d` proved 18 terminal indexes at PRIME, where `81c` proved 34 (`prerun_l2a1_81d.log:20` vs `prerun_l2a1_81c.log:20`). That drop is expected if SelectorTunnel and FSIT ends no longer go through the node route. Still, the run should check that its PRIME count against the real `D1_k` matches `81d` before op 1.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c81-l2a1-r5-stagexec","verdict":"novel","alternative":"Run 1's cause (SelectorTunnel not in Nodes[]) could recur for an end class the 5-end faces read did not cover; the fixed stagexec's PRIME stop (stagexec.py:497-499) would then halt before op 1 rather than mid-run.","discriminating_test":"Run 2's PRIME line on real D1_k must read 'unprovable []' with the same count as prerun_l2a1_81d.log:20 (18); any unprovable end stops before op 1.","violations":[],"sources":["tools/bench/stage_d1_l2a1.log:302","tools/bench/cards/result_81-7.json","tools/stagexec.py:253-271","tools/bench/l2a1_faces_81.log:35-51","tools/bench/selftest_stagexec_81.log:16-23","tools/bench/prerun_l2a1_81d.log:20","archive/peer/2026-09-25-priorart-c81-l2a1-r4.md:986"],"note":"Recipe md5 e589dc74 unchanged since run 1; the only failure of this build is addressed by PD185's measured owner-Terminals[] route plus PRIME stop, and prerun 81d passes. Run 2 = PD185's scheduled retry 2 of 2."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c81-l2a1-r5-stagexec.md
+   STOP RECORD: none - 2026-09-25-priorart-c81-l2a1-r5-stagexec.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2a1.py sha c0f25031e759 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 73s

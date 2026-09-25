@@ -1,0 +1,125 @@
+BGRUN START 2026-09-25 12:29:38 limit 20.0 min: py -u tools/bench/sim_l2a1_81b.py sim
+  PASS  G0 inputs: graph c764150c, facts d5003581  
+  FACT  move_in model measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2 params {'cut_clears': 'moved', 'tunnel_flip': True, 'closure': True, 'sequential': True, 'flip_moved_inputs': True, 'flip_needs_wired': True, 'bare_half_wire': 'delete', 'only_sink': 'ambiguous', 'unflip_on_source': True, 'unflip_cascade': True, '_evidence_81_5': 'card 81-5 F1 (PD182(d)), MEASURED on dated scratches of D1_k 6cf5b077 (deleted, bed unchanged): after the joint L2-A1 move, a new #10170 register L.inner wired to the flipped input SelectorTunnel outers 6038 (#5702) / 5741 (#5725) turned EVERY inner back to a source (5705 6033 / 5729 5733, wired and unwired), outers stayed sinks, untouched #5967 stayed flipped; the output tunnels they feed reverted their outers (#5680 6007 via 5999, #6016 6026 via 6022) = cascade. tools/bench/l2a1_unflip_81.log (run 1, 17/0) + tools/bench/l2a1_unflip_81_run2.log (run 2, 17/0); stagesim._unflip_restored_tunnels; tools/bench/selftest_stagesim_unflip_81.py', '_evidence_80_6': "card 80-6 refit, accepted PROVISIONAL by Pre-decided 181(a), registered by card 81-2: closure (R-CLOSURE stagesim.py:403), sequential (R-SEQ :417), flip_moved_inputs (R-FLIP-IN), flip_needs_wired (R-S2 :344; alternative 'class Tunnel never flips' fits equally), bare_half_wire delete (R-BARE; timing ambiguous) - labelled set tools/bench/l2a1_tunflip_80.json, fixture tools/bench/sim/l2a1_real_80.json, tools/bench/selftest_stagesim_l2a1_80.log 13/0", '_evidence': 'card chat-S3: R1 (moved-side cut, measured move_in_1/2 + L7-1a check 5/0); R2 flips opmodels_check_move.log; only_sink AMBIGUOUS after 15 more samples - tools/bench/opmodels_onlysink.log TABLE (move: constant 1 deleted/1 kept, node 1 kept; delete: constant 3/2, node 1/4, tunnel 0/2); R1/R2 reproduce the earlier fates on fresh scratches (history refuted)'}
+  PASS  G1 derived base == l2a1_graph_k_80.json + owners only  313a7a39bbed9fc0d78606e621e271c4
+  PASS  B1b owners carry LoopTunnels #5752/#5569 -> loop #637  [['WhileLoop', 637], ['WhileLoop', 637]]
+  PASS  B1c frame-uid set sourced from the graph == {5582,5592,10453,10459}, non-empty  ([5582, 5592, 10453, 10459], [5582, 5592, 10453, 10459], 9)
+  FACT  moves: 32 nodes moved, cuts 20, flips [(5967, 5969), (5967, 5973), (5702, 5705), (5702, 6033), (5725, 5729), (5725, 5733), (5825, 5828), (5825, 5855), (5680, 6007), (6016, 6026), (10750, 10752), (10750, 10755)], bare [(5637, 6007), (5975, 6026), (5709, 10253), (10573, 10594), (9868, 11052), (17393, 17365), (9806, 17487), (10312, 5634), (23556, 23541), (10850, 10738), (10947, 10943), (17287, 17272)]
+  PASS  B1 #1147/#1142 is a pair of loop #637 in the base loop table  [1142]
+  PASS  B1b RULE-CHAIN-S1: old right fed by ONE S1 source in M, old left feeds only M, ONE base init source  ([(5124, 1148, 5058)], [(1157, 5883, 5825)], [(2892, 2886, 686)])
+  PASS  B2 #5796/#5805 is a pair of loop #637 in the base loop table  [5805]
+  PASS  B2b RULE-CHAIN-S1: old right fed by ONE S1 source in M, old left feeds only M, ONE base init source  ([(5111, 5810, 5058)], [(5817, 6038, 5702)], [(5820, 5818, 686)])
+  PASS  B3 #7311/#11001 is a pair of loop #637 in the base loop table  [11001]
+  PASS  B3b RULE-CHAIN-S1: old right fed by ONE S1 source in M, old left feeds only M, ONE base init source  ([(11346, 11005, 11336)], [(11013, 10760, 10750)], [(10225, 10225, 686)])
+  PASS  T1 rule-166 tunnel for #637 input LoopTunnel #5752 -> #5725 t5741: ONE outer source, recorded IndexMode 0  2892
+  PASS  T2 rule-166 tunnel for #637 input LoopTunnel #5569 -> #5967 t5976: ONE outer source, recorded IndexMode 0  5820
+  PASS  B1a no re-wire row joins two terminals already on one wire (rw_5705_5999 absent)  11
+  FACT  RECONNECT: 14 lost edges re-wired ['rw_5171_10871', 'rw_5171_10975', 'rw_5634_10256', 'rw_6007_5082', 'rw_6026_5164', 'rw_9668_10469', 'rw_10253_5608', 'rw_10594_10259', 'rw_10738_11055', 'rw_10943_10877', 'rw_10988_17272', 'rw_11052_9680', 'rw_17365_11059', 'rw_17487_9676']; 11 kept (still on one wire); 2 need a source that reads is_source False after the moves: [('rw_6007_5082', {'uid': 5680, 'term_uid': 6007}), ('rw_6026_5164', {'uid': 6016, 'term_uid': 6026})]
+  FACT  AMBIGUOUS (not wired, stays open) {"moved_term": 9668, "moved_node": 9647, "dir": "out", "s1_partner": 10382, "partner_class": "Function", "partner_diagram": null, "cut_wire": 9921, "pd182c_qrt": true}
+  FACT  AMBIGUOUS (not wired, stays open) {"moved_term": 11346, "moved_node": 11336, "dir": "out", "s1_partner": 11529, "partner_class": "Comparison", "partner_diagram": null, "cut_wire": 11389, "pd182c_qrt": true}
+  FACT  AMBIGUOUS (not wired, stays open) {"moved_term": 10874, "moved_node": 10757, "dir": "out", "s1_partner": 10978, "partner_class": "SelectorTunnel", "partner_diagram": null, "cut_wire": 23556, "pd182c_qrt": false}
+  PASS  B1d the only non-QRT, non-tunnel AMBIGUOUS rows are K's frame-image row class (no #5752/#5569 left)  [10382, 11529, 10978]
+  FACT  P5 sink_gates needed (wire rows whose SINK is a ControlTerminal, 179(b) reader): ['rw_10988_17272']
+  PASS  P0 plan validates as stageplan/1 (46 actions)  
+  STEP 01 move_in          ok cands=5 cdiff=10 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 02 move_in          ok cands=4 cdiff=13 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 03 move_in          ok cands=2 cdiff=15 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 04 move_in          ok cands=4 cdiff=17 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 05 move_in          ok cands=2 cdiff=19 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 06 move_in          ok cands=0 cdiff=19 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 07 move_in          ok cands=3 cdiff=20 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 08 move_in          ok cands=3 cdiff=22 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 09 move_in          ok cands=0 cdiff=22 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 10 move_in          ok cands=0 cdiff=22 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 11 move_in          ok cands=0 cdiff=22 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 12 move_in          ok cands=0 cdiff=22 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 13 move_in          ok cands=0 cdiff=22 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 14 move_in          ok cands=0 cdiff=22 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 15 add_shift_reg    ok cands=0 cdiff=22 measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83
+  STEP 16 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 17 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 18 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 19 add_shift_reg    ok cands=0 cdiff=22 measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83
+  STEP 20 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 21 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 22 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 23 add_shift_reg    ok cands=0 cdiff=22 measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83
+  STEP 24 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 25 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 26 wire             ok cands=0 cdiff=21 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 27 tunnel           ok cands=0 cdiff=21 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 28 wire             ok cands=0 cdiff=21 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 29 wire             ok cands=0 cdiff=21 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 30 tunnel           ok cands=0 cdiff=21 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 31 wire             ok cands=0 cdiff=21 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 32 wire             ok cands=0 cdiff=21 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 33 wire             ok cands=0 cdiff=20 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 34 wire             ok cands=0 cdiff=19 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 35 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 36 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 37 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 38 wire             ok cands=0 cdiff=17 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 39 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 40 wire             ok cands=0 cdiff=15 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 41 wire             ok cands=0 cdiff=14 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 42 wire             ok cands=0 cdiff=13 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 43 wire             ok cands=0 cdiff=12 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 44 wire             ok cands=0 cdiff=11 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 45 wire             ok cands=0 cdiff=10 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 46 wire             ok cands=0 cdiff=9 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  PASS  P2 every action applied (no SimError)  None
+  PASS  P3b frame-diagram uid sets of #5540/#10445 equal before/after (181(b)), from the graph  ([5582, 5592, 10453, 10459], [5582, 5592, 10453, 10459])
+  FACT  base frame cdiff 10 rows [(376, 'current frame data array in'), (376, 'frame index'), (2626, 'array'), (5058, 'Bead is good? array in'), (5058, 'Image In'), (5058, 'x,y,z array'), (5696, 'x,y,z array'), (6085, 'x,y,z array'), (10757, 'array'), (10969, 'array')]
+  FACT  END frame cdiff 9 rows (= PB) [(376, 'current frame data array in'), (376, 'frame index'), (2626, 'array'), (5058, 'Image In'), (5696, 'x,y,z array'), (6085, 'x,y,z array'), (9703, 'x'), (10382, 'x'), (11529, 'x')]; merged 9
+  FACT  PB rows on the PD182(c) QRT sinks' partner #10886: []
+  STEP 01 move_in          ok cands=5 cdiff=10 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 02 move_in          ok cands=4 cdiff=13 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 03 move_in          ok cands=2 cdiff=15 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 04 move_in          ok cands=4 cdiff=17 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 05 move_in          ok cands=2 cdiff=19 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 06 move_in          ok cands=0 cdiff=19 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 07 move_in          ok cands=3 cdiff=20 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 08 move_in          ok cands=3 cdiff=22 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 09 move_in          ok cands=0 cdiff=22 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 10 move_in          ok cands=0 cdiff=22 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 11 move_in          ok cands=0 cdiff=22 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 12 move_in          ok cands=0 cdiff=22 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 13 move_in          ok cands=0 cdiff=22 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 14 move_in          ok cands=0 cdiff=22 measured:tools/bench/opmodels/move_in.json@5dd1e439287f01601858592e1a552bb2
+  STEP 15 add_shift_reg    ok cands=0 cdiff=22 measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83
+  STEP 16 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 17 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 18 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 19 add_shift_reg    ok cands=0 cdiff=22 measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83
+  STEP 20 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 21 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 22 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 23 add_shift_reg    ok cands=0 cdiff=22 measured:tools/bench/opmodels/add_shift_reg.json@c184ce030aea6aaee181fc7b97eeca83
+  STEP 24 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 25 wire             ok cands=0 cdiff=22 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 26 wire             ok cands=0 cdiff=21 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 27 tunnel           ok cands=0 cdiff=21 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 28 wire             ok cands=0 cdiff=21 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 29 wire             ok cands=0 cdiff=21 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 30 tunnel           ok cands=0 cdiff=21 measured:tools/bench/opmodels/tunnel.json@479b0084c41c0069d9f873205763fac4
+  STEP 31 wire             ok cands=0 cdiff=21 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 32 wire             ok cands=0 cdiff=21 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 33 wire             ok cands=0 cdiff=20 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 34 wire             ok cands=0 cdiff=19 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 35 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 36 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 37 wire             ok cands=0 cdiff=18 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 38 wire             ok cands=0 cdiff=17 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 39 wire             ok cands=0 cdiff=16 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 40 wire             ok cands=0 cdiff=15 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 41 wire             ok cands=0 cdiff=14 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 42 wire             ok cands=0 cdiff=13 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 43 wire             ok cands=0 cdiff=12 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 44 wire             ok cands=0 cdiff=11 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 45 wire             ok cands=0 cdiff=10 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  STEP 46 wire             ok cands=0 cdiff=9 measured:tools/bench/opmodels/connect_from_wire.json@87135ed9639c7ee773786a9bd8af2def
+  PASS  P3 FINAL: frame cdiff(S1, end) == the plan's open rows (9) and merged end rows agree  (True, None)
+  FACT  plan_out {'path': 'tools/bench/sim/l2a1/plan_l2a1.json', 'md5': '046237e1ab47d2d6f9faee2fc7bec9a3'}; steps 46; candidates 23
+=== GATES: 18 pass / 0 fail
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":18,"fail":0},"first_fail":null,"artefacts":[{"path":"tools/bench/sim/l2a1/plan_l2a1.json","md5":"046237e1ab47d2d6f9faee2fc7bec9a3"}]}
+BGRUN END rc=0 after 98s

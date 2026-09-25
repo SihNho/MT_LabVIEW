@@ -26,12 +26,25 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, "bench"))
-import gscript as g                                                                # noqa: E402
-import lv_errorlist as E                                                           # noqa: E402
-from bench_prep import labview_handles                                             # noqa: E402
+# LAZY LabVIEW IMPORTS (card 81-1, 2026-09-25): the offline re-verdict (`find_reusable` / `reverdict`, used by
+# cycle_runner.errorlist_hook when the bed md5 is unchanged) must import nothing LabVIEW-side, so gscript /
+# lv_errorlist / bench_prep are bound only by `_lv_imports()`, which main() calls first. Same modules, same order.
+g = E = labview_handles = None
+CLAUDEDEV = r"C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev"   # == gscript.CLAUDEDEV
 
 EVID = "user 2026-09-24 error-list check at cycle start"
-E.EVIDENCE = EVID
+
+
+def _lv_imports():
+    global g, E, labview_handles
+    if g is None:
+        import gscript as _g
+        import lv_errorlist as _E
+        from bench_prep import labview_handles as _lh
+        g, E, labview_handles = _g, _E, _lh
+        E.EVIDENCE = EVID
+
+
 BENCH = os.path.join(HERE, "bench")
 # 2026-09-24 card chat-C2: external search (WebSearch, "LabVIEW scripting read selected objects block diagram
 # Selection List") found no route other than a VI Server property node on TopLevelDiagram.Selection List[]; the
@@ -145,12 +158,88 @@ def vi_ready(target, R):
 
 def current_bed(status_path):
     """`current-bed: <file.vi>` in STATUS wins; else the NEWEST-on-disk claudeDev D1_*.vi that STATUS names."""
-    txt = open(status_path, encoding="utf-8").read()
+    return current_bed_text(open(status_path, encoding="utf-8").read())
+
+
+def current_bed_text(txt, claudedev=None):
+    """current_bed() on STATUS text (pure; cycle_runner holds the text already)."""
     m = re.search(r"^current-bed:\s*(\S+\.vi)", txt, re.M)
     names = [m.group(1)] if m else sorted(set(re.findall(r"(D1_[\w\-]+\.vi)", txt)))
-    paths = [os.path.join(g.CLAUDEDEV, os.path.basename(n)) for n in names]
+    paths = [os.path.join(claudedev or CLAUDEDEV, os.path.basename(n)) for n in names]
     paths = [p for p in paths if os.path.exists(p)]
     return max(paths, key=os.path.getmtime) if paths else None
+
+
+# OFFLINE RE-VERDICT (card 81-1, retrospective-cycle80 device-failed, archive/peer/2026-09-25-retrospective-cycle80.md:266):
+# the GUI read of an UNCHANGED bed returns the same items, so re-reading it every cycle only buys new chances to fail
+# (cycles 74 and 80 stopped the runner on the READ, not on the bed). When the newest complete read of this bed was
+# taken on the SAME md5, its saved raw items are re-judged with the CURRENT checker (expected file + plan licences +
+# header rule) and no LabVIEW is started. A read qualifies only if its own JSON records bed_md5_before == after ==
+# the bed's md5 now, every read gate it recorded is True (handles_flat excluded: a record, not a gate, since chat-E2),
+# and its _raw.json sibling holds exactly n_reported items. Anything else -> the GUI read, unchanged.
+REUSE_SKIP_GATES = ("handles_flat",)
+
+
+def find_reusable(bed, bed_md5, bench=None):
+    """(main_json, raw_json, None) for the newest qualifying read of `bed` at `bed_md5`, else (None, None, reason)."""
+    bench = bench or BENCH
+    stem = os.path.splitext(os.path.basename(bed))[0]
+    cands = [p for p in glob.glob(os.path.join(bench, "errorlist_%s_*.json" % stem))
+             if not re.search(r"_(raw|reuse)\.json$", p)]
+    for p in sorted(cands, key=lambda q: os.path.basename(q), reverse=True):     # names end in the read's stamp
+        try:
+            d = json.load(open(p, encoding="utf-8"))
+        except Exception:                                                          # noqa: BLE001
+            continue
+        if os.path.basename(str(d.get("bed") or "")).lower() != os.path.basename(bed).lower():
+            continue
+        raw = p[:-len(".json")] + "_raw.json"
+        # the NEWEST read of this bed decides: if it does not qualify, the GUI reads again (no fallback to older)
+        if not (d.get("bed_md5_before") == d.get("bed_md5_after") == bed_md5):
+            return None, None, "newest read %s was taken on md5 %s, bed is %s" % (
+                os.path.basename(p), d.get("bed_md5_before"), bed_md5)
+        gates = {k: v for k, v in (d.get("gates") or {}).items() if k not in REUSE_SKIP_GATES}
+        if not gates or not all(gates.values()):
+            return None, None, "newest read %s is incomplete (gates %s)" % (
+                os.path.basename(p), [k for k, v in gates.items() if not v] or "none")
+        if not os.path.exists(raw):
+            return None, None, "newest read %s has no _raw.json" % os.path.basename(p)
+        r = json.load(open(raw, encoding="utf-8"))
+        if len(r.get("items") or []) != d.get("n_reported"):
+            return None, None, "raw %s holds %d items, read reported %s" % (
+                os.path.basename(raw), len(r.get("items") or []), d.get("n_reported"))
+        return p, raw, None
+    return None, None, "no saved read of %s" % os.path.basename(bed)
+
+
+def reverdict(bed, main_json, raw_json, bench=None, out_dir=None, expected_path=None):
+    """Offline verdict of a saved read with the CURRENT checker. Writes errorlist_<stem>_<ts>_reuse.json; returns
+    (verdict OK|MISMATCH, out_path). No LabVIEW, no GUI."""
+    bench = bench or BENCH
+    src = json.load(open(main_json, encoding="utf-8"))
+    raw = json.load(open(raw_json, encoding="utf-8"))
+    stem = os.path.splitext(os.path.basename(bed))[0]
+    exp_path = expected_path or os.path.join(bench, "errorlist_expected_%s.json" % stem)
+    expected = json.load(open(exp_path, encoding="utf-8")).get("expected", []) if os.path.exists(exp_path) else []
+    sp, pp, plan = plan_for_bed(bed, bench)
+    derived = derive_expected(plan) if plan else []
+    items = [dict(i) for i in raw.get("items") or []]
+    for i in items:
+        i.pop("licensed_by", None)
+    extra, missing, usage = compare(items, expected, derived)
+    verdict = "OK" if not (extra or missing) else "MISMATCH"
+    ts = time.strftime("%Y%m%d_%H%M%S")
+    out = os.path.join(out_dir or bench, "errorlist_%s_%s_reuse.json" % (stem, ts))
+    R = {"mode": "REUSE", "bed": bed, "bed_md5": src.get("bed_md5_before"), "reused_from": main_json,
+         "reused_raw": raw_json, "reused_raw_md5": hashlib.md5(open(raw_json, "rb").read()).hexdigest(),
+         "source_stamp": src.get("stamp"), "source_verdict": src.get("verdict"), "stamp": ts,
+         "expected_file": exp_path if os.path.exists(exp_path) else None, "stage_file": sp, "plan_file": pp,
+         "open_rows": (plan or {}).get("open_rows"), "item_count": len(items), "n_reported": src.get("n_reported"),
+         "items": items, "extra": extra, "missing": missing, "licence_usage": usage, "verdict": verdict,
+         "no_labview": True}
+    with open(out, "w", encoding="utf-8") as f:
+        json.dump(R, f, indent=1, ensure_ascii=False, default=str)
+    return verdict, out
 
 
 def windows_named(sub):
@@ -235,17 +324,18 @@ def norm(s):
 WIRE_CLASSES = ("wirehaslooseends", "hasnosource", "outputlooptunneltoaninput", "twoterminalsofdifferenttypes")
 
 
-def plan_for_bed(bed):
+def plan_for_bed(bed, bench=None):
     """stage_d1_<s>.json whose `work` is this bed -> the stageplan plan_<s>*.json carrying open_rows."""
+    BENCH_ = bench or BENCH
     name = os.path.basename(bed).lower()
-    for sp in sorted(glob.glob(os.path.join(BENCH, "stage_d1_*.json"))):
+    for sp in sorted(glob.glob(os.path.join(BENCH_, "stage_d1_*.json"))):
         try:
             if os.path.basename(str(json.load(open(sp, encoding="utf-8")).get("work") or "")).lower() != name:
                 continue
         except Exception:                                                          # noqa: BLE001
             continue
         stage = os.path.basename(sp)[len("stage_d1_"):-len(".json")]
-        for pp in sorted(glob.glob(os.path.join(BENCH, "plan_%s*.json" % stage))):
+        for pp in sorted(glob.glob(os.path.join(BENCH_, "plan_%s*.json" % stage))):
             try:
                 p = json.load(open(pp, encoding="utf-8"))
             except Exception:                                                      # noqa: BLE001
@@ -342,6 +432,7 @@ def main():
     ap.add_argument("--expected", default="")
     ap.add_argument("--status", default=os.path.join(ROOT, "STATUS.md"))
     a = ap.parse_args()
+    _lv_imports()
     t0, ts = time.time(), time.strftime("%Y%m%d_%H%M%S")
     bed = a.vi or current_bed(a.status)
     R = {"bed": bed, "stamp": ts, "errors": [], "gui_acts_outer": [], "no_vi_was_run": True, "evidence": EVID}

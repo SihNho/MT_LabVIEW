@@ -1,0 +1,19 @@
+{
+ "schema": "verdict/1",
+ "id": "hyp-sim-l2a1-81",
+ "verdict": "refuted",
+ "alternative": "Builder defect: rw_5705_5999 re-wires an uncut in-closure wire (edges() drops flipped-direction edges), and #5725/#5967 outers are never re-sourced (owner map lacks LoopTunnels 5752/5569, log:16-17), so an un-flip rule alone still fails.",
+ "discriminating_test": "Offline on step-32 state: print wire_uid/is_source of 5705,5999,6038,5741; apply a local un-flip for #5702 and replay step 33+. Claim predicts pass; alternative predicts 'sink occupied' at 33 and 0-source at the #5725/#5967 rows.",
+ "violations": [],
+ "sources": [
+  "tools/bench/sim_l2a1_81.py:50-54",
+  "tools/bench/sim_l2a1_81.py:87",
+  "tools/bench/sim_l2a1_81.py:98-102",
+  "tools/bench/sim_l2a1_81.log:12",
+  "tools/bench/sim_l2a1_81.log:16-17",
+  "tools/stagesim.py:701-704",
+  "tools/bench/l2a1_tunflip_80.log:195-196",
+  "https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-connected-to-undirected-tunnel.html"
+ ],
+ "note": "Un-flip gap is plausibly real (NI: direction follows source) but unmeasured here; it is not the only defect. Script docstring (:13-15) already predicted this stop."
+}

@@ -717,6 +717,120 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
        PB = the simulator's finalized open-row list. There is no whitelist (179(c)); a `sink_gates` entry is allowed
        only for a ControlTerminal sink that the reader gates.
 
+182. **(cycle 81 judgement, on results `81-2` BLOCKED and `81-3` FAIL 4/1: `tools/bench/sim_l2a1_81.log:15-23,59`,
+     `tools/bench/l2a1_partners_81.log`, review `archive/peer/2026-09-25-hyp-sim-l2a1-81.md`) the five `#639` partners
+     are decided and the simulator failure is split in two.**
+     - **(a) Constants `#10739` (→`#10950 'y'`, w10850) and `#10929` (→`#10757 'index'`, w10947) MOVE with their only
+       consumer.** Each is the sole source of a single group-A sink (`l2a1_partners_81.log:21,25`). A diagram constant
+       has no state, so where it sits is scheduling only (rule 1a).
+     - **(b) Indicator `#17272 'min value'` MOVES with `#10969`, on the 181(c) precedent.** Its sole writer is `#10969`
+       (w17287), it has 0 Locals/Globals, and its only reader is the labelled Property `#17289`, which is itself
+       group A (`:27-32`). The row is gated by the 179(b) reader.
+     - **(c) `#10382 Not` (x ← `#9647`, w9921) and `#11529 Less?` (x ← w11389 from the group-A side) STAY on 1.1.**
+       Both feed `#10886` there (`:6-13`). These are 1.2→1.1 crossings, and PD156–161 (O4 closed) send every such
+       crossing to QRT. Their two edges are PB OPEN rows owed to QRT, the same as K's frame-image row. The L2-A1
+       artefact is BROKEN BY DESIGN at those two sinks. No indicator/Local carrier is invented here.
+     - **(d) The sim failure is FIRST treated as our-script-bug.** The review found that `sim_l2a1_81.py` re-wires an
+       uncut wire inside the closure, and that the owners table lacks LoopTunnels `#5752`/`#5569`. Both are fixed in the
+       plan builder, not in the model.
+       Whether stagesim also needs an un-flip rule (does re-wiring a flipped tunnel's outer from an outside source make
+       it an input again?) is MEASURED once on a dated scratch of D1_k: do the joint L2-A1 move, wire `#5702`'s outer
+       from its K source, then read the direction of that tunnel's outer and inner terminals. No VI is run, and the
+       scratch is deleted afterwards.
+       The model is fitted to that read, the same way 180(a) was. It is not assumed either way.
+     - **(e) Frame-uid check.** `sim_l2a1_81.log:61` read the frame-uid sets as `([],[])`. An empty set is a FAIL of
+       181(b), not a pass. The builder must source them from the graph (`#5540` [5582,5592], `#10445` [10453,10459]).
+
+183. **(cycle 81 judgement, on result `81-5` PASS 6/0: `tools/bench/sim_l2a1_81b.log:14-22,71-73,121`,
+     `tools/bench/l2a1_unflip_81_run2.log:269-273`) the L2-A1 stageplan is FINALIZED:
+     `tools/bench/sim/l2a1/stageplan_l2a1.json` md5 `73e95bc7…`. It may be built.**
+     - **(a) The un-flip rule is ACCEPTED as measured.** On a D1_k scratch, re-sourcing the outers from the new 1.2
+       register turns the inners of `#5702`/`#5725` back into sources, and the output tunnels `#5680`/`#6016` flip back
+       in cascade. `stagesim.py:374` reproduces this (`selftest_stagesim_unflip_81` 8/0; the old self-tests still pass).
+       `#5825`/`#10750` are modelled by the same rule but were not read. The run's per-step comparison E1 is the
+       backstop (181(a)3).
+     - **(b) The source of the re-wired outers is the new 1.2 register (plan row `sr2_L0`), not `5817` on `#637`.**
+       This is what 180(e) + RULE-CHAIN-S1 mean: the mixed pairs become 1.2's registers, and the tunnels inside 1.2
+       read them there. The other choice would be a cross-loop wire.
+     - **(c) PB row `(9703,'x')` is QRT-owed, the same class as 182(c).** It is the S1 edge `#10978` inner → `#9703`,
+       whose outer was fed from `#10757` (w23556), so it is a 1.2→1.1 crossing. PB = the 9 rows at
+       `sim_l2a1_81b.log:73`. Of these, `5058 'Image In'` and the `376`/`2626`/`5696`/`6085` rows are K's
+       and the earlier stages' open rows carried forward.
+     - **(d) `sink_gates`** = `rw_10988_17272` only (ControlTerminal `#17272`, gated by the 179(b) reader).
+     - **(e) (after result `81-6` BLOCKED at stagexec X3) `move_in` rows carry `pos` from the PLAN, never from the
+       recipe.** `sim_l2a1_81b.py:56` omitted the field that `sim_k_split.py:70-72` sets. The builder sets
+       `pos` = each node's base position (K's convention). The stageplan is re-simulated and re-finalized, and it gets
+       a new md5, which supersedes `73e95bc7…`. A scratch probe with the same `pos` compiled 42 ops with every STEPX
+       diff 0 (result 81-6). This is decision 8 of "Stages are SIMULATED": a recipe never re-types row content.
+
+184. **(cycle 81 judgement, on result `81-6` FAIL: `tools/bench/prerun_l2a1_81b.log` X4) the finalized stageplan is
+     now `tools/bench/sim/l2a1/stageplan_l2a1.json` md5 `329d89ee…`, which supersedes `73e95bc7…` (183(e) re-sim 18/0,
+     same 9 PB rows).**
+     X4 failed because the recipe gave the P2 second pass to every node-terminal sink, including the two re-wire
+     ends `#5058` t5082/t5164. The stage itself wires those two, so they are unwired when they are addressed offline,
+     and the uid path needs a wire.
+     - **Decided, option (a) = K's precedent (`stage_d1_k.py:81`):** connect-op sinks are NOT in P2. They are covered
+       by the per-step edge comparison E1 (181(a)3) and by Remove Bad Wires / `Is Broken?` on the moved wires. P2
+       keeps every move row and every ControlTerminal row (179(b) reader).
+     - Option (c), offline addressing of ends the stage itself wires (178(f) `addr_offline`), is a tool the same class
+       will need in L2-A2/B. It is OWED as a tool task after L2-A1 and is not built here.
+     - The recipe edit re-arms the launch gate, so a prior-art review of the new sha is owed before the run.
+
+185. **(cycle 81 judgement, on result `81-7` FAIL 10/2: `tools/bench/stage_d1_l2a1.log:35-302`, review
+     `archive/peer/2026-09-25-hyp-l2a1-run1-81.md`) run 1 stopped SAFELY at real op 18 (`sr1_L0`).**
+     Ops 1–17 had step diff 0. Nothing was saved and D1_k is unchanged. The failure is a real-vs-simulated READER
+     divergence, not a plan error:
+     - the real LVReader does not list border tunnels in `Diagram.Nodes[]`, while `SimReader` does
+       (`stagexec.py:782-792`), so dry run and pre-run cannot see the class;
+     - PRIME had already flagged `#2886 #5825 #5818 #5702` as unprovable, and the run did not stop on that.
+
+     **Decided: the ADDRESSING TOOL is built now** (the tools rule, 2026-09-24; L2-A2/B need it again):
+     - (1) First, a read-only measurement on a D1_k scratch: does the owner structure's `Terminals[]` hold exactly one
+       face for each of `#5825 #5702 #10750 #5725 #5967` (the review's discriminating test)?
+     - (2) `stagexec` addresses a SelectorTunnel end through its owner structure's `Terminals[]` (measured,
+       `build_d1_m3a1.log:1145-1154`) and an FSIT end through Left/Right Terminal (`docs/NAMES.md:1245-1255`). This
+       applies in BOTH the real `Addr` and `SimReader`, so the offline gates see what the real one sees.
+     - (3) An unprovable PRIME end STOPS the run before op 1.
+     - (4) Self-tests cover each route, plus a negative case where SimReader must now fail when a tunnel is listed
+       only as a node.
+     Then dry → pre-run → run 2 of 2. If run 2 fails, a third run needs a judgement retry card.
+
+186. **(cycle 81 judgement, on result `81-8` FAIL 4/1: `tools/bench/l2a1_faces_81.log` 13/0,
+     `tools/bench/stage_d1_l2a1_r2.log:36-37`) run 2 stopped SAFELY at PRIME before op 1, with no mutation.**
+     - Case SELECTORS `#5603`/`#10465` (class `Tunnel`) are not in `Nodes[]` either. M1 read them as t0 on their owners
+       (w5709/w9921).
+     - `#17272` is a front-panel sink wired by `wire_indicators`, so it has no Nodes[] index. PRIME now skips
+       ControlTerminal sinks, which the 179(b) reader gates instead.
+     - Offline after the run: `OWNER_ROUTED` += `Tunnel`, stagexec md5 `029ea027…`, self-test 22/0, pre-run 81e 7/0,
+       PRIME 17 proved / 0 unprovable in the simulation.
+
+     **Decided: RUN 3 is authorised by retry card `tools/bench/cards/task_81-9.json`.** No separate face read comes
+     first, because PRIME IS a gated real read before any mutation and stops on any unprovable end. A fourth run is
+     not authorised in this cycle.
+
+187. **(cycle 81 judgement, on result `81-9` FAIL 10/2: `tools/bench/stage_d1_l2a1_r3.log:36-439`) run 3 stopped
+     SAFELY at real op 31 `rw_5634_10256`.**
+     - Ops 1–30 had diff 0 (the furthest any L2-A1 run has reached). The 185/186 owner route is MEASURED WORKING on
+       the real VI for all 5 tunnel ends and both selectors (ops 18–28).
+     - The stop: ControlTerminal `#5634`, moved at op 10, lost its half-wire in the move, so it is a BARE source.
+       `connect_nested` addresses a bare source by its Nodes[] triple, and a live ControlTerminal is not in
+       `Nodes[]`. `#17487` (`rw_17487_9676`) is the same case later in the plan.
+
+     This is the THIRD failure in one cycle of the same class: SimReader lists as a node something the real Nodes[]
+     does not (border tunnels → selectors → ControlTerminals). **Decided for cycle 82, in this order:**
+     - **(a) Reader-parity device (tool, necessary).** At PRIME, compare SimReader's `Nodes[]` membership, per diagram
+       the plan touches, against a REAL `Nodes[]` read of the same VI, and fail on any class listed by one side only.
+       SimReader's listing rules are then FITTED to that read. Wanted: the next member of this class shows up offline,
+       not at op N of a real run.
+     - **(b) ControlTerminal route for connect ends.** A ControlTerminal end, source or sink, bare or wired, is
+       addressed by the 179(b) route: its term_uid is its own uid, its owner is its Diagram, and it is found with
+       `report_all('ControlTerminal')`. This applies in the real `Addr` and in SimReader. It gets a self-test, plus a
+       negative case where a ControlTerminal listed as a node fails.
+     - **(c)** Then dry → pre-run → run 4, starting from D1_k again. The retry cap is per cycle, so run 4 is run 1 of
+       cycle 82, and the recipe is unchanged unless (a)/(b) change a row.
+     - Re-ordering the plan to wire the ControlTerminal before its move was rejected: 183 fixed the plan from the
+       simulator, and (a) is what prevents a fourth member of the class.
+
 ## OPEN (design choices — for judgement; not decided here)
 
 > 2026-09-24: O2, O3, O4 (SR half; the queue half is QRT), O6 (placement + route), O7, O8 are CLOSED by Pre-decided

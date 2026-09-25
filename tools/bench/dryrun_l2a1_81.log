@@ -1,0 +1,21 @@
+BGRUN START 2026-09-25 12:33:01 limit 10.0 min: py -u tools/stage_prerun.py --dry tools/recipes/stage_d1_l2a1.py
+stage_d1_l2a1 - cycle 81 STAGE L2-A1 (docs/d1-loop12-17-split-plan.md Pre-decided 181(d), 182, 183; executed, not re-decided).
+INPUT the bed claudeDev\D1_k_20260925_100155.vi (6cf5b077..., named by the plan's base graph), FRESH LabVIEW -> claudeDev\D1_l2_a1_<ts>.vi
+(rule-6 GUI save when ExecState 0 - the 9 PB rows are open by design). ROWS ONLY FROM THE FINALIZED PLAN tools/bench/sim/l2a1/plan_l2a1.json
+(its finalized.plan_in = stageplan_l2a1.json md5 329d89ee, PD183(e) pos rows, sim_l2a1_81c.log); no uid and no terminal name is typed here, except
+the PD183(d) sink-gate ACTION ID, looked up in the plan.
+PRIOR ART: stage_d1_k.py (the skeleton), stagexec (sink_gates 80-3), diag_ctlterm_read_80.py (179(b) reader), sim_l2a1_81b.py (frame-keyed S1,
+frame-uid set). No new op. PREDICTION: E1 each real op == its step (42 ops); CT 179(b) reader on every ControlTerminal row (ONE row, a
+ControlTerminal, wire partners == the simulated end's) - also the rw_10988_17272 sink gate; P2 second pass (wire_delta 0, Is Broken? False)
+on every node-terminal sink; FU frame-uid sets of moved Cases equal and non-empty; PB frame-keyed cdiff == the 9 open_rows (FATAL, pre-save);
+RBW on a scratch of the saved file deletes no re-wired sink's wire; ES recorded; md5/pins unchanged; refs closed; LabVIEW gone at exit.
+    MATERIAL=1 py tools/bgrun.py --max-min 80 --log tools/bench/stage_d1_l2a1.log -- py -u tools/recipes/stage_d1_l2a1.py
+  PASS  L0 the executed plan is FINAL and its plan_in is the PD183(e) stageplan (md5 329d89ee)  ('046237e1ab47d2d6f9faee2fc7bec9a3', {'path': 'tools/bench/sim/l2a1/stageplan_l2a1.json', 'md5': '329d89eecaa2706ccce38640dbede5aa'})
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 6cf5b0777aafa12112d8a786a9eed1ed  got 6cf5b0777aafa12112d8a786a9eed1ed
+  FAIL  DRY graph JSON for input md5 6cf5b0777aafa12112d8a786a9eed1ed  no tools/bench/graph_*.json carries this md5
+
+=== DRY FAIL: first_fail=GATE DRY graph JSON for input md5 6cf5b0777aafa12112d8a786a9eed1ed coverage 29/102 lines, first mutation None, unverified 0, graph None
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":0,"fail":1},"first_fail":"GATE DRY graph JSON for input md5 6cf5b0777aafa12112d8a786a9eed1ed","artefacts":[]}
+BGRUN END rc=1 after 0s

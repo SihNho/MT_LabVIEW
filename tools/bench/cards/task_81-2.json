@@ -1,0 +1,48 @@
+{
+ "schema": "task/1",
+ "id": "81-2",
+ "kind": "build",
+ "goal": "PD181(a)1+(d): register the 80-6 move_in params in opmodels/move_in.json sim, then simulate and finalize the L2-A1 stageplan/1 on D1_k offline; report the plan facts.",
+ "why": "docs/d1-loop12-17-split-plan.md Pre-decided 181: L2-A1 may now be simulated; rows per 181(d), gates per 181(b)/179(b).",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md", "md5": "2cdc66bb7e5b3ac6694e1fb43127c1d5"},
+  {"path": "docs/stage-simulator-plan.md"},
+  {"path": "tools/stagesim.py"},
+  {"path": "tools/bench/opmodels/move_in.json"},
+  {"path": "tools/bench/cards/result_80-6.json"},
+  {"path": "tools/bench/l2a1_facts_80.json", "md5": "d5003581aa1469ac5b82728d22361f0d"},
+  {"path": "tools/bench/l2a1_graph_k_80.json", "md5": "c764150c4587b78429d0bbdb9d30c27f"},
+  {"path": "tools/bench/sim/k_split"},
+  {"path": "tools/vigraph.py"}
+ ],
+ "pass": [
+  "P1 move_in.json sim carries the 80-6 params; stagesim model_source cites them; existing selftest_stagesim* counts unchanged",
+  "P2 stageplan/1 in tools/bench/sim/l2a1/: rows = group A (8) + #17487 + #5634 + #23541 into body #23166, per PD181(d)",
+  "P2b 1.2 register pairs from #1147/#1142 #5796/#5805 #7311/#11001, init = same #686 FSIT (RULE-CHAIN-S1); K rows t0,t3,t4,t7,t8 re-wired",
+  "P2c the simulator's reconnect table, including the 3 member edges at #10247",
+  "P3 finalize: sim computation_diff_frame(S1, final) == PB; frame-diagram uid sets of #5540 and #10445 equal before/after",
+  "P4 REPORT only: every WIRED class-Tunnel the plan orphans (uid, wire) or none; PB rows; reconnect count; ambiguous rows",
+  "P5 REPORT: sink_gates entries the plan needs, and for which ControlTerminal sinks"
+ ],
+ "outputs": ["tools/bench/opmodels/move_in.json", "tools/bench/sim/l2a1/**", "tools/bench/sim_l2a1_81.log"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/opmodels/move_in.json",
+   "tools/stagesim.py",
+   "tools/bench/sim/**",
+   "tools/bench/sim_l2a1_81*",
+   "tools/bench/selftest_stagesim*",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": ["offline only, no LabVIEW; the graph is l2a1_graph_k_80.json", "do not refit the model to make the plan pass - report the miss", "measure and report; the orphan-tunnel branch is judgement's (PD181(a)2)", "result/1 <=10 facts <=3 open"],
+ "advances": ["M3", "R1", "R3"]
+}

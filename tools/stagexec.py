@@ -250,6 +250,30 @@ def bind_new(prev_real, real, sim_prev, sim_now, bind):
 
 
 # ============================================================================================ addressing
+# PD185 (card 81-8): a SelectorTunnel is NOT in Diagram.Nodes[] (stage_d1_l2a1.log:302). Its OUTER face is a terminal of
+# its OWNER STRUCTURE's Terminals[], measured EXACTLY ONE matching face for all five L2-A1 sink ends on D1_k
+# (tools/bench/l2a1_faces_81.log M1 5/5; prior build_d1_m3a1.log:1145-1154). The owner = the structure that owns the
+# tunnel's inner frame diagram (the plan state's `owners` map). A FlatSequenceInnerTunnel face is reachable only
+# through Left/Right Terminal (docs/NAMES.md:1245-1255), never as a (diagram, node, terminal) triple: its end STOPS
+# with that route named. The real Addr and SimReader use the SAME rule, so the offline gates see what LabVIEW does.
+OWNER_ROUTED = ("SelectorTunnel", "Tunnel")
+# "Tunnel" = a case structure's SELECTOR (#5603 on #5540, #10465 on #10445): run 2's PRIME stopped on both
+# (stage_d1_l2a1_r2.log:36). Their faces are measured on the owner's Terminals[] too: #5540 t0 ('', sink, w5709) and
+# #10445 t0 ('', sink, w9921), exactly one each (l2a1_faces_81.log, owner Terminals[] listings).
+FSIT_CLS = "FlatSequenceInnerTunnel"
+NOT_NODES = OWNER_ROUTED + (FSIT_CLS,)
+
+
+def tunnel_owner(rows, tun, owners):
+    """The structure uid owning tunnel `tun` (via its inner frame diagrams in `owners`), else ExecStop."""
+    fr = set(str(int(r["frame_diagram"] or 0)) for r in rows if r["owner_uid"] == tun and r["term_class"] == "InnerTerminal")
+    own = set(int((owners or {})[f][1]) for f in fr if f in (owners or {}))
+    if len(own) != 1:
+        raise ExecStop("ADDRESS: tunnel #{0}: owner structure not unique from its inner frames {1} ({2} owners known)".format(
+            tun, sorted(fr), len(owners or {})))
+    return own.pop()
+
+
 class Addr(object):
     """Terminal -> live index triple (Diagram idx, Nodes[] idx, Terminals[] idx). `rd` = reader with diagrams(),
     node_uids(didx), node_terms(didx, nidx) -> (echo, rows[i,name,is_source,wire]). Graph rows = the LAST real read.
@@ -257,8 +281,9 @@ class Addr(object):
     (name, direction, wire) sequence as node_terms) or else from a UNIQUE (name, direction, wire) match. A border
     terminal of a created register (outer face) is a terminal of its LOOP (the loop the plan created it on)."""
 
-    def __init__(self, rd):
+    def __init__(self, rd, owners=None):
         self.rd = rd
+        self.owners = owners or {}  # str(frame diagram uid) -> [structure class, structure uid] (PD185)
         self.cache = {}           # term_uid -> (node uid, Terminals[] index) proved while the terminal was WIRED
         self.loops = {}           # loop uid -> {"diag": diagram uid, "keys": [(name, is_source)], "track": {term_uid: idx}}
 
@@ -345,6 +370,14 @@ class Addr(object):
         node = V.node_of(r)
         diag = int(r["frame_diagram"])
         mine = [x for x in real if V.node_of(x) == node and int(x["frame_diagram"] or 0) == diag]
+        if r["owner_class"] == FSIT_CLS:
+            raise ExecStop("ADDRESS: #{0} is a FlatSequenceInnerTunnel face (#{1}): not a Nodes[] triple - its route is "
+                           "Left/Right Terminal (docs/NAMES.md:1245-1255, OpFsInnerTunnelConnect_v1)".format(term_uid, node))
+        if r["owner_class"] in OWNER_ROUTED:                                 # PD185: via the owner structure's Terminals[]
+            if r["term_class"] != "OuterTerminal":
+                raise ExecStop("ADDRESS: #{0} is an INNER face of {1} #{2}: only the outer face's owner route is measured "
+                               "(l2a1_faces_81.log)".format(term_uid, r["owner_class"], node))
+            node, mine = tunnel_owner(real, node, self.owners), None
         if r["owner_class"] in SR_CLS and r["term_class"] == "OuterTerminal":
             if not loop_of or r["owner_uid"] not in loop_of:
                 raise ExecStop("ADDRESS: register #{0}'s loop is unknown".format(r["owner_uid"]))
@@ -444,12 +477,18 @@ class Executor(object):
                 {k: v[:6] for k, v in d.items() if isinstance(v, list) and v}))
         # PRIME: every plan end on a BASE node whose terminal is wired now gets its Terminals[] index proved by its
         # wire uid, before any edit (the stage_d1_l7_r A0 anchor for #2048 'length', generalised)
+        be.addr.owners = st0.get("owners") or be.addr.owners
+        rightin = set(o["acts"][0] for o in self.ops if o["kind"] == "wire_sr" and o["variant"] == "RightIn")
         primed, why = 0, []
-        for a in A:
+        for i, a in enumerate(A, 1):
             for side, src in (("src", True), ("dst", False), ("at", None)):
                 e = a.get(side)
                 if e is None or _sym_of(e)[0]:
                     continue
+                if side == "src" and i not in rightin:     # PD185: a connect source is routed by its WIRE, never by index
+                    continue
+                if side == "dst" and SS.obj_class(st0, e.get("uid") if isinstance(e, dict) else None) == FP:
+                    continue                               # a panel-terminal sink is wired by wire_indicators, never by index
                 try:
                     r = SS.resolve_addr(st0, e, src if src is not None else True)
                 except SS.SimError:
@@ -462,10 +501,13 @@ class Executor(object):
                         why.append(str(x)[:160])
         self.report[0]["primed"] = {"n": primed, "unprovable": why[:10]}
         self.log("  PRIME {0} terminal indexes proved at base; unprovable {1}".format(primed, why[:4]))
+        if why:                                            # PD185(3): an unprovable end STOPS before op 1
+            raise ExecStop("PRIME: {0} wired end(s) not addressable at base - stop before op 1: {1}".format(len(why), why[:6]))
         for k, op in enumerate(self.ops, 1):
             first, last = op["acts"][0], op["acts"][-1]
             prev = self.step(first - 1)["state"]
             after = self.step(last)
+            be.addr.owners = prev.get("owners") or be.addr.owners
             t0 = time.time()
             if op["kind"] == "add_sr":
                 a = A[first - 1]
@@ -779,13 +821,28 @@ class SimReader(object):
     def diagrams(self):
         return sorted(set(int(r["frame_diagram"] or 0) for r in self.be.st["terminals"]))
 
+    def _routed(self, d):
+        """PD185: (owner structure, outer row) for every owner-routed tunnel face on diagram d - as LabVIEW lists them:
+        the tunnel is NOT a node, its outer face is a terminal of its owner structure."""
+        st, out = self.be.st, []
+        for r in st["terminals"]:
+            if r["owner_class"] in OWNER_ROUTED and r["term_class"] == "OuterTerminal" and int(r["frame_diagram"] or 0) == d:
+                try:
+                    out.append((tunnel_owner(st["terminals"], r["owner_uid"], st.get("owners")), r))
+                except ExecStop:
+                    pass            # owner unknown: listed nowhere, so addressing it stops in Addr._triple (as the real one)
+        return out
+
     def node_uids(self, didx):
         d = self.diagrams()[didx]
         out = []
         for r in self.be.st["terminals"]:
             n = V.node_of(r)
-            if int(r["frame_diagram"] or 0) == d and n not in out and r["owner_class"] not in SR_CLS:
+            if int(r["frame_diagram"] or 0) == d and n not in out and r["owner_class"] not in SR_CLS + NOT_NODES:
                 out.append(n)
+        for o, _r in self._routed(d):
+            if o not in out:
+                out.append(o)
         for L in self.be.st["loops"] or []:
             if int(L["loop_uid"]) not in out:
                 out.append(int(L["loop_uid"]))
@@ -794,7 +851,8 @@ class SimReader(object):
     def node_terms(self, didx, nidx):
         d = self.diagrams()[didx]
         u = self.node_uids(didx)[nidx]
-        rows = [r for r in self.be.st["terminals"] if V.node_of(r) == u and int(r["frame_diagram"] or 0) == d]
+        rows = [r for r in self.be.st["terminals"] if V.node_of(r) == u and int(r["frame_diagram"] or 0) == d
+                and r["owner_class"] not in NOT_NODES] + [r for o, r in self._routed(d) if o == u]
         loop = next((L for L in self.be.st["loops"] or [] if int(L["loop_uid"]) == u), None)
         if loop:
             regs = set(int(x) for x in loop.get("right_uids") or []) | set(
@@ -1115,6 +1173,70 @@ def selftest():
     gate("T15 register faces keep their loop index when inner wiring RENAMES them (no name alignment), and across an "
          "appended tunnel face", not lost and not lost2 and t15 == {1: 1, 2: 2, 3: 3, 4: 4} and
          ad.loops[500]["track"] == {1: 1, 2: 2, 3: 3, 4: 4}, (t15, ad.loops[500]["track"], lost, lost2))
+    # PD185 (card 81-8): owner-routed SelectorTunnel ends, FSIT ends, the legacy node listing, PRIME stop
+    def row(t, n, s, w, o, oc, fd, tc):
+        return {"term_uid": t, "term_name": n, "is_source": s, "wire_uid": w, "owner_uid": o, "owner_class": oc,
+                "frame_diagram": fd, "term_class": tc}
+
+    class FB(object):
+        st = {"loops": [], "owners": {"2": ["CaseStructure", 100]},
+              "terminals": [row(101, "", False, 8, 100, "CaseStructure", 1, "Terminal"),
+                            row(201, "", False, 9, 200, "SelectorTunnel", 1, "OuterTerminal"),
+                            row(202, "", True, 10, 200, "SelectorTunnel", 2, "InnerTerminal"),
+                            row(301, "out", True, 9, 300, "Function", 1, "Terminal"),
+                            row(302, "o2", True, 8, 300, "Function", 1, "Terminal"),
+                            row(401, "", True, 11, 400, FSIT_CLS, 1, "OuterTerminal"),
+                            row(501, "", False, 12, 500, "Tunnel", 1, "OuterTerminal"),      # the case SELECTOR (run 2)
+                            row(502, "", True, 13, 500, "Tunnel", 2, "InnerTerminal"),
+                            row(303, "o3", True, 12, 300, "Function", 1, "Terminal")]}
+    sr = SimReader(FB())
+    real = FB.st["terminals"]
+    nu = sr.node_uids(0)
+    gate("T16 SimReader lists the owner structure, never the SelectorTunnel / FSIT, as a Nodes[] entry (PD185)",
+         100 in nu and 200 not in nu and 400 not in nu, nu)
+    try:
+        (d_, n_, t_), how = Addr(sr, FB.st["owners"]).triple(real, 201, False)
+        e_, nt_ = sr.node_terms(d_, n_)
+        gate("T17 a SelectorTunnel outer sink resolves on its OWNER's Terminals[] (the measured route, l2a1_faces_81.log)",
+             e_ == 100 and nt_[t_]["wire"] == 9 and not nt_[t_]["is_source"], (d_, n_, t_, how))
+    except ExecStop as e:
+        gate("T17 a SelectorTunnel outer sink resolves on its OWNER's Terminals[]", False, e)
+    try:
+        (d_, n_, t_), how = Addr(sr, FB.st["owners"]).triple(real, 501, False)
+        e_, nt_ = sr.node_terms(d_, n_)
+        gate("T17b a case SELECTOR (class Tunnel) sink resolves on its owner's Terminals[] (stage_d1_l2a1_r2.log:36)",
+             e_ == 100 and nt_[t_]["wire"] == 12 and 500 not in sr.node_uids(0), (d_, n_, t_, how))
+    except ExecStop as e:
+        gate("T17b a case SELECTOR (class Tunnel) sink resolves on its owner's Terminals[]", False, e)
+
+    class Legacy(SimReader):                                                        # the pre-PD185 listing: tunnel = node
+        def node_uids(self, didx):
+            return [200, 300]
+    for lab_, ad_ in (("T18a owners unknown", Addr(sr, {})), ("T18b tunnel listed only as a node", Addr(Legacy(FB()), FB.st["owners"]))):
+        try:
+            ad_.triple(real, 201, False)
+            gate(lab_ + " -> the end is NOT addressable (negative)", False, "resolved")
+        except ExecStop as e:
+            gate(lab_ + " -> the end is NOT addressable (negative)", "ADDRESS" in str(e), e)
+    try:
+        Addr(sr, FB.st["owners"]).triple(real, 401, True)
+        gate("T19 an FSIT end stops with its Left/Right Terminal route named", False, "resolved")
+    except ExecStop as e:
+        gate("T19 an FSIT end stops with its Left/Right Terminal route named", "Left/Right Terminal" in str(e), e)
+    txt = open(_abs(stp), encoding="utf-8").read()                               # undo T13's appended space
+    with open(_abs(stp), "w", encoding="utf-8") as f:
+        f.write(txt[:-1] if txt.endswith(" ") else txt)
+    pl_, _pp = load_final_plan(fin)
+    be_ = SimBackend(pl_, SS.base_state(_j(_abs(pl_["finalized"]["base"]["path"])), pl_.get("context")), SS.load_models(md))
+
+    def _no(*_a, **_k):
+        raise ExecStop("ADDRESS: injected unprovable end")
+    be_.addr.triple = _no
+    try:
+        Executor(fin, be_, log=q).run()
+        gate("T20 an unprovable PRIME end STOPS before op 1 (PD185(3))", False, "ran")
+    except ExecStop as e:
+        gate("T20 an unprovable PRIME end STOPS before op 1 (PD185(3))", "PRIME" in str(e) and be_.calls == [], (str(e)[:120], be_.calls))
     gate("T14 nothing LabVIEW-side imported", not any(m in sys.modules for m in ("gscript", "win32com", "pythoncom", "stagekit")),
          [m for m in ("gscript", "win32com", "pythoncom", "stagekit") if m in sys.modules])
     n_pass = sum(1 for _l, ok in gates if ok)

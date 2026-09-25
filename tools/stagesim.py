@@ -319,7 +319,7 @@ def s1_partner(S1, G, key):
 
 
 # ------------------------------------------------------------------------------------------------ ops
-def _flip_orphaned_output_tunnels(st, wires, seeds=(), needs_wired=False):
+def _flip_orphaned_output_tunnels(st, wires, seeds=(), needs_wired=False, reg=None):
     """A tunnel left with NO SOURCE on its driving side becomes undirected: every terminal on its other side that read
     as a source reads as a sink afterwards (NI 'Wire connected to an undirected tunnel'). Repeated to a fixpoint.
     Output direction (inner sink orphaned -> outer flips): diag_c71_l7_1a_tunnels.log TERM 2043/5050 (LoopTunnel).
@@ -348,6 +348,8 @@ def _flip_orphaned_output_tunnels(st, wires, seeds=(), needs_wired=False):
             rec = {"tunnel": r["owner_uid"], "term_uid": o["term_uid"], "side": o["term_class"], "wire": o["wire_uid"]}
             if o["term_class"] == "OuterTerminal":
                 rec["outer_term_uid"] = o["term_uid"]
+            if reg is not None:                  # card 81-5 F1: remember what the flip turned, for the un-flip
+                reg[str(o["term_uid"])] = r["owner_uid"]
             flipped.append(rec)
             if o["wire_uid"]:
                 todo.add(o["wire_uid"])
@@ -367,6 +369,34 @@ def _flip_orphaned_output_tunnels(st, wires, seeds=(), needs_wired=False):
             if flippable(r):
                 try_flip(r)
     return flipped
+
+
+def _unflip_restored_tunnels(st, seeds, cascade=False):
+    """card 81-5 F1, MEASURED (tools/bench/l2a1_unflip_81_run1.log, l2a1_unflip_81_run2.log): after the joint L2-A1 move
+    flipped every inner of the input SelectorTunnels #5702/#5725 to a sink, wiring each one's OUTER from a new register's
+    L.inner turned EVERY inner back into a source - wired (5705 w5710, 5733 w6030) and unwired (6033, 5729) alike - while the
+    outer stayed a sink and the untouched #5967 stayed flipped (control). Rule: a driving-side sink of a tunnel whose wire now
+    has a source reverts every opposite-side terminal that the move's flip turned (st['flip_reg'], written only when the
+    move_in model has `unflip_on_source`). `cascade` = the reverted terminals' wires are re-checked the same way (an output
+    tunnel fed by a reverted inner), set from run 2's read of #5680/#6016 (move_in.json `unflip_cascade`)."""
+    reg = st.get("flip_reg") or {}
+    out, todo = [], list(seeds)
+    while todo:
+        r = todo.pop()
+        if r["is_source"] or r["term_class"] not in TUN_SIDES or r["owner_class"] not in TUN_FLIP:
+            continue
+        if not (r["wire_uid"] and has_source(st, r["wire_uid"])):
+            continue
+        for o in node_rows(st, r["owner_uid"]):
+            if o["term_class"] == TUN_SIDES[r["term_class"]] and not o["is_source"] and \
+                    reg.get(str(o["term_uid"])) == r["owner_uid"]:
+                o["is_source"] = True
+                reg.pop(str(o["term_uid"]), None)
+                out.append({"tunnel": r["owner_uid"], "term_uid": o["term_uid"], "side": o["term_class"],
+                            "wire": o["wire_uid"]})
+                if cascade and o["wire_uid"]:
+                    todo += [x for x in wire_rows(st, o["wire_uid"]) if x["term_uid"] != o["term_uid"]]
+    return out
 
 
 def only_sink_fate(P, src_class):
@@ -493,9 +523,13 @@ def _move_one(st, tops, dest, P, S1, labels):
             cleared.append(r["term_uid"])
             if not r["is_source"] and V.node_of(r) in moved:
                 seeds.append(r)
+    reg = None
+    if P.get("unflip_on_source", False):         # card 81-5 F1: op_wire reverts these flips (_unflip_restored_tunnels)
+        reg = st.setdefault("flip_reg", {})
+        st["unflip"] = {"cascade": bool(P.get("unflip_cascade", False))}
     flipped = _flip_orphaned_output_tunnels(
         st, cut.keys(), seeds if P.get("flip_moved_inputs", False) else (),
-        needs_wired=P.get("flip_needs_wired", False)) if P.get("tunnel_flip", True) else []
+        needs_wired=P.get("flip_needs_wired", False), reg=reg) if P.get("tunnel_flip", True) else []
     bare_deleted = []
     for w, r in bare:
         if r["wire_uid"] == w:
@@ -719,8 +753,11 @@ def op_wire(st, a, P, S1, labels):
         for r in wire_rows(st, detached):
             r["wire_uid"] = w
             joined.append(r["term_uid"])
-    return {"wire": w, "how": how, "src_term_uid": s["term_uid"], "dst_term_uid": d["term_uid"],
-            "detached_from": detached, "joined": joined}, []
+    eff = {"wire": w, "how": how, "src_term_uid": s["term_uid"], "dst_term_uid": d["term_uid"],
+           "detached_from": detached, "joined": joined}
+    if st.get("unflip"):                         # card 81-5 F1 (measured l2a1_unflip_81_run1.log); absent = old behaviour
+        eff["unflipped"] = _unflip_restored_tunnels(st, [d], st["unflip"].get("cascade", False))
+    return eff, []
 
 
 def op_remove_bad_wires(st, a, P, S1, labels):

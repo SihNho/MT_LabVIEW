@@ -1,0 +1,17 @@
+{"schema":"result/1","id":"81-2","status":"BLOCKED","gates":{"pass":0,"fail":0},"first_fail":null,
+"blocked_by":{"device":"tools/hooks/guard_peer.py","message":"sim_l2a1_81.py launch refused twice: failing log selftest_errorlist_reuse_81.log (card 81-1, not this card), JEV-LADDER new-problem p=0.612, hypothesis review owed; waiting denied"},
+"artefacts":[{"path":"tools/bench/opmodels/move_in.json","md5":"44fe678ec39e58b210cf2b69a4dede13"},{"path":"tools/bench/sim_l2a1_81.py","md5":"7f9b3c4e7abb9be51c4db90f4551dfc6"}],
+"facts":[
+"P1 edit done, unverified by run: move_in.json sim += closure, sequential, flip_moved_inputs, flip_needs_wired, bare_half_wire=delete (move_in.json:4-7)",
+"stageplan/1 context forbids 'owners' (docs/protocol/stageplan.json:12-21); graph has none; script uses base sim/l2a1/graph_k_80_owners.json (+owners, gate G1)",
+"Code-read, unrun: K rows t0/t7 must source from #5680/#6016 outers, which the move flips to sinks; no un-flip rule on re-wire (stagesim.py:322-369,694) -> SimError expected",
+"Same gap: flipped input SelectorTunnel inners (#5702 #5725 #5825 #5967 #10750) stay sinks after outers are re-wired, so frame internals stay sourceless (stagesim.py:338-353)",
+"#639 partners with no decided mechanism: #9647->#10382, t11346->#11529, #10969->#17272 ind., consts #10739, #10929 (l2a1_facts_80.log:288,299,302,314,319)",
+"#637 input LoopTunnels #5569/#5752 feed #5540 t5976/t5741, index_mode 0 (diag_d1_step0.log:82,84); script re-makes them as rule-166 tunnels",
+"Mixed-pair inits: w2731 FSIT #2886, w5812 FSIT #5818, w11253 = ControlTerminal #10225 'Auto-reset zero' on #686, not an FSIT (l2a1_facts_80.log:328,334,340)"],
+"open":[
+"81-1's failed log blocks all tools/bench runs this cycle: after its hypothesis review, re-run 81-2 unchanged (MATERIAL=1 bgrun sim_l2a1_81.py, --max-min 20)?",
+"No un-flip rule for re-wired flipped tunnels: measure on a D1_k scratch (LabVIEW) before any L2-A1 plan can finalize? Not refit here, per the card.",
+"The 5 #639-partner crossings (#10382, #11529, #17272, consts #10739/#10929): leave open, move with the group, or queue? Not covered by PD181(d)."],
+"cost":{"usd":null,"minutes":35,"labview_runs":0},
+"note":"No LabVIEW, no sim log produced. Facts 3-4 come from reading code. Did not review 81-1's failure: not my diagnosis; 81-1 owns it."}

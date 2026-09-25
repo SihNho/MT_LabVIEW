@@ -1,0 +1,20 @@
+{
+ "schema": "review/1",
+ "id": "hyp-sim-l2a1-81",
+ "role": "hypothesis",
+ "claim": "sim_l2a1_81.py stops at step 33 (rw_5705_5999) because stagesim flips the moved #5540 input SelectorTunnels' terminals to sinks on move_in and has no un-flip rule once their outers are re-wired: a simulator model gap, not a plan-row defect.",
+ "predicted": "81-2 (code-read, unrun) predicted a SimError at K rows t0/t7 (#5680/#6016 outers) and sourceless inners of #5702 #5725 #5825 #5967 #10750; the script's own P2 predicted no SimError.",
+ "observed": "sim_l2a1_81.log:59 SimError step 33 wire rw_5705_5999: #5702 t5705 resolves to 0 source terminals; log:15 lists 7 re-wires whose source reads is_source False after the moves; log:8 flips include (5702,5705).",
+ "ruled_out": [
+  "inputs drifted: G0 md5s match (log:2), stagesim self-tests unchanged 42/0, 4/0, 13/0 (log:4-6), G1 base == graph + owners (log:7)"
+ ],
+ "attachments": [
+  {"path": "tools/bench/sim_l2a1_81.log"},
+  {"path": "tools/bench/sim_l2a1_81.py", "md5": "7f9b3c4e7abb9be51c4db90f4551dfc6"},
+  {"path": "tools/stagesim.py"},
+  {"path": "tools/bench/opmodels/move_in.json", "md5": "44fe678ec39e58b210cf2b69a4dede13"},
+  {"path": "tools/bench/cards/result_81-2.json"}
+ ],
+ "ask": "refute",
+ "note": "Measurement only; no fix is being chosen here. Attack whether the flip itself is wrong (the real LabVIEW move may not flip a SelectorTunnel whose outer gets re-wired) vs the re-wire order in the plan (outer wired before the inner use)."
+}

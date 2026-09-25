@@ -1,0 +1,74 @@
+BGRUN START 2026-09-25 13:05:03 limit 25.0 min: py -u tools/bench/l2a1_faces_81.py
+l2a1_faces_81 - card 81-8 M1 (docs/d1-loop12-17-split-plan.md Pre-decided 185(1); review archive/peer/2026-09-25-hyp-l2a1-run1-81.md sec.4).
+READ-ONLY on a byte copy of the bed D1_k (6cf5b077; stagekit work copy, discarded, never saved). For each SelectorTunnel sink end of the
+L2-A1 plan (the plan's wire rows whose dst owner is a SelectorTunnel - #5825 #5702 #10750 #5725 #5967), find the OWNER structure (the owner
+of the tunnel's inner frame diagram, base graph `owners`) and read its Diagram.Nodes[k].Terminals[] with gscript.node_terms_uid; count the
+faces whose (name, is_source, wire) == the plan terminal's live row; also read whether the TUNNEL uid itself is in that Diagram's Nodes[].
+PRIOR ART: build_d1_m3a1.log:1145-1154 (SelectorTunnel #12673 addressed as CaseStructure #12589 Nodes[47] t1); stagexec.LVReader
+(node_labels / node_terms_uid / report_all Diagram) - the same reads, reused. No new op.
+PREDICTION (the review's discriminating test): every target end has EXACTLY ONE matching face on its owner's Terminals[] (H-owner); the
+tunnel uid is NOT in Nodes[] (run-1 log:302). A count != 1 falsifies the owner route for that end -> card rule: STOP before T1.
+    py tools/bgrun.py --material --max-min 25 --log tools/bench/l2a1_faces_81.log -- py -u tools/bench/l2a1_faces_81.py
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 257 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 6cf5b0777aafa12112d8a786a9eed1ed  got 6cf5b0777aafa12112d8a786a9eed1ed
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 33997
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_k_scratch_faces81_20260925_130503.vi
+  FACT  ExecState [after open] D1_k_scratch_faces81_20260925_130503.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so D1_k_scratch_faces81_20260925_130503.vi is deleted at close
+  FACT  ENDS [('sr1_L0', 5825, 5883), ('sr2_L0', 5702, 6038), ('sr3_L0', 10750, 10760), ('tun1_in', 5725, 5741), ('tun2_in', 5967, 5976)]
+  FACT  sr1_L0: tunnel #5825 term 5883 row {'term_name': '', 'term_class': 'OuterTerminal', 'is_source': False, 'wire_uid': 1681, 'frame_diagram': 639}; owner CaseStructure #5540 (frames ['5582', '5592']); outer diagram #639
+  FACT  sr1_L0: tunnel #5825 in Diagram[48] #639.Nodes[]: False; owner #5540 in it: True
+  FACT  sr1_L0: owner #5540 echo 5540, 7 terminals [(0, '', False, 5709), (1, '', False, 5979), (2, '', True, 5637), (3, '', False, 6041), (4, '', False, 5746), (5, '', False, 1681), (6, '', True, 5975)]
+  PASS  M1 sr1_L0: owner #5540 Terminals[] has EXACTLY ONE face == #5883 key ('', False, 1681) (hits [5])  [5]
+  FACT  sr2_L0: tunnel #5702 term 6038 row {'term_name': '', 'term_class': 'OuterTerminal', 'is_source': False, 'wire_uid': 6041, 'frame_diagram': 639}; owner CaseStructure #5540 (frames ['5582', '5592']); outer diagram #639
+  FACT  sr2_L0: tunnel #5702 in Diagram[48] #639.Nodes[]: False; owner #5540 in it: True
+  FACT  sr2_L0: owner #5540 echo 5540, 7 terminals [(0, '', False, 5709), (1, '', False, 5979), (2, '', True, 5637), (3, '', False, 6041), (4, '', False, 5746), (5, '', False, 1681), (6, '', True, 5975)]
+  PASS  M1 sr2_L0: owner #5540 Terminals[] has EXACTLY ONE face == #6038 key ('', False, 6041) (hits [3])  [3]
+  FACT  sr3_L0: tunnel #10750 term 10760 row {'term_name': 'Value', 'term_class': 'OuterTerminal', 'is_source': False, 'wire_uid': 10763, 'frame_diagram': 639}; owner CaseStructure #10445 (frames ['10453', '10459']); outer diagram #639
+  FACT  sr3_L0: tunnel #10750 in Diagram[48] #639.Nodes[]: False; owner #10445 in it: True
+  FACT  sr3_L0: owner #10445 echo 10445, 4 terminals [(0, '', False, 9921), (1, '', True, 10573), (2, 'Value', False, 10763), (3, 'Value', True, 11389)]
+  PASS  M1 sr3_L0: owner #10445 Terminals[] has EXACTLY ONE face == #10760 key ('Value', False, 10763) (hits [2])  [2]
+  FACT  tun1_in: tunnel #5725 term 5741 row {'term_name': '', 'term_class': 'OuterTerminal', 'is_source': False, 'wire_uid': 5746, 'frame_diagram': 639}; owner CaseStructure #5540 (frames ['5582', '5592']); outer diagram #639
+  FACT  tun1_in: tunnel #5725 in Diagram[48] #639.Nodes[]: False; owner #5540 in it: True
+  FACT  tun1_in: owner #5540 echo 5540, 7 terminals [(0, '', False, 5709), (1, '', False, 5979), (2, '', True, 5637), (3, '', False, 6041), (4, '', False, 5746), (5, '', False, 1681), (6, '', True, 5975)]
+  PASS  M1 tun1_in: owner #5540 Terminals[] has EXACTLY ONE face == #5741 key ('', False, 5746) (hits [4])  [4]
+  FACT  tun2_in: tunnel #5967 term 5976 row {'term_name': '', 'term_class': 'OuterTerminal', 'is_source': False, 'wire_uid': 5979, 'frame_diagram': 639}; owner CaseStructure #5540 (frames ['5582', '5592']); outer diagram #639
+  FACT  tun2_in: tunnel #5967 in Diagram[48] #639.Nodes[]: False; owner #5540 in it: True
+  FACT  tun2_in: owner #5540 echo 5540, 7 terminals [(0, '', False, 5709), (1, '', False, 5979), (2, '', True, 5637), (3, '', False, 6041), (4, '', False, 5746), (5, '', False, 1681), (6, '', True, 5975)]
+  PASS  M1 tun2_in: owner #5540 Terminals[] has EXACTLY ONE face == #5976 key ('', False, 5979) (hits [1])  [1]
+
+---------- [H] HYGIENE
+  FACT  close_panel(D1_k_scratch_faces81_20260925_130503.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 3}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 3}
+  FACT  LabVIEW handle count AFTER the work: 45767
+  PASS  H4 scratch deleted: D1_k_scratch_faces81_20260925_130503.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_k_scratch_faces81_20260925_130503.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 6cf5b0777aafa12112d8a786a9eed1ed / after 6cf5b0777aafa12112d8a786a9eed1ed
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33976
+
+====================================================================================================
+=== GATES: 13 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\l2a1_faces_81.json   elapsed 112.1 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":13,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 112s

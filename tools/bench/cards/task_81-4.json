@@ -1,0 +1,42 @@
+{
+ "schema": "task/1",
+ "id": "81-4",
+ "kind": "build",
+ "goal": "Tool holes from 81-3: guard_card selftest exemption only from the project root; selftest_cycle_runner via --dry-run; the 8 stale selftest_launch_gate cases.",
+ "why": "review archive/peer/2026-09-25-hyp-selftest-elreuse-81.md K9: a cd elsewhere && stagexec selftest is exempted; launch_gate 20/8 (C2-C6, M4-M6) vs 16/0 on 2026-09-24 19:33.",
+ "inputs": [
+  {"path": "tools/hooks/guard_card.py", "md5": "1865c9843efa78317d6f1b5250fd696e"},
+  {"path": "tools/bench/selftest_errorlist_reuse_81.py"},
+  {"path": "tools/bench/selftest_launch_gate.py"},
+  {"path": "tools/bench/selftest_launch_gate_81.log"},
+  {"path": "tools/bench/selftest_cycle_runner.py"},
+  {"path": "archive/peer/2026-09-25-hyp-selftest-elreuse-81.md"}
+ ],
+ "pass": [
+  "G1 guard_card PURE_SELFTEST_RE: only no-cd or cd to the project root; K9 case refused; K0-K8 still pass",
+  "G2 selftest_cycle_runner.py run with --dry-run (no motor session, no LabVIEW) -> counts",
+  "G3 selftest_launch_gate: first FACT why C2-C6/M4-M6 fail on HEAD (which commit changed the gate); then fix test or gate so it reads 28/0",
+  "G4 a launch_gate case whose fix changes gate code (not the test) is reported as such in facts"
+ ],
+ "outputs": ["tools/hooks/guard_card.py", "tools/bench/selftest_launch_gate*", "tools/bench/selftest_cycle_runner_81.log"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/hooks/guard_card.py",
+   "tools/hooks/guard_bash.py",
+   "tools/stage_prerun.py",
+   "tools/bench/selftest_*",
+   "docs/violation-decisions.md",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": ["no LabVIEW, no motor session", "tightening only: a gate is never loosened to make a test pass", "result/1 <=10 facts <=3 open"],
+ "unblocks": "M3"
+}

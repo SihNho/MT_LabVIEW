@@ -2193,3 +2193,86 @@ VIOLATION: device-failed | loss_min=27 | loss_usd=? | evidence=tools/bench/error
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle80","verdict":"refuted","alternative":"The 18 pre-session minutes belong to the interactive chat, not the cycle; then the cycle's own loss is only 80-1 + 80-4 (about 9 min) and the fault is a finding, not structural.","discriminating_test":"Re-run errorlist_check offline on errorlist_D1_k_..._102446_raw.json with the current checker: if it prints OK with no LabVIEW, every minute after 10:30:19 spent on the Error List was the device's false alarm.","violations":[{"slug":"device-failed","loss_min":27,"loss_usd":"?","evidence":"tools/bench/errorlist_check_cycle80.log:54"}],"sources":["tools/bench/errorlist_check_cycle80.log:54","tools/bench/errorlist_check_cycle80.log:113","tools/bench/cycle_runner_main_20260925c.log:3","tools/bench/errorlist_check_k_20260925.log:57","tools/bench/cards/result_80-1.json:11","tools/bench/cards/result_80-4.json:30","tools/errorlist_check.py:55","tools/hooks/material_marker.log:1561"],"note":"Device = cycle-start Error List hook (CLAUDE.md:389-396 decision 5), absent from the extracted list. Session itself ran cleanly: 7 cards, 0 VI runs, no judgement-in-material. Secondary device noise: C7 counts against the wrong plan; card-flag hook bypassed by labview:read in 80-4."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle80.md
 BGRUN END rc=0 after 340s
+BGRUN START 2026-09-25 13:46:22 limit 10.0 min: py tools/retrospective.py --cycle 81
+BGRUN START 2026-09-25 13:46:33 limit 20.0 min: C:\Users\KimLab\AppData\Local\Programs\Python\Python310\python.exe G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\retrospective.py --cycle 81
+   window 2026-09-25 11:33:54 .. 2026-09-25 13:46:33 (133 min); 34 build logs, 13 machinery logs, 21 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle81.txt (23726 chars)
+   review card tools\bench\cards\review_retrospective-cycle81.json
+OUTCOME: ANSWERED (413s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-25-retrospective-cycle81.md
+COST: $6.4005  in 162 / out 30760 / cache-create 234494 / cache-read 683933  (411s, 33 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle81 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle81.json
+--- ANSWER ---
+**Verdict: cycle 81 had one structural fault.** The judgement session bought a third LabVIEW run of stage L2-A1 at 13:16 knowing the failing class was not yet addressed, and that run ended the cycle 26 minutes later with nothing the offline tools could not have given. A second, zero-cost line is emitted only because the device section's threshold is 1: the scope counter measures against the wrong plan and reads 101 every time.
+
+The window holds. The earliest logs (cycle_80.log ending 11:34:56, motor_session_end_cycle80 at 11:35:00) are cycle 80's close hooks and cost nothing here. Everything from errorlist_check_cycle81 (11:35) onward is cycle 81.
+
+What the cycle cost, from the logs that carry numbers:
+
+| item | wall | cost |
+|---|---|---|
+| judgement session (cycle_81.log:121, audit C4c) | 125 min 56 s | $42.70 |
+| builds under bgrun (audit C3) | 71 min 21 s | no line |
+| of which the three stage runs (824 s + 156 s + 1567 s) | 42 min 27 s | no line |
+| eight reviews (audit C4, 8/8 parsed) | 12 min 33 s | $11.20 |
+| of which five prior-art dispatches on one recipe | 5 min 27 s | $7.10 |
+| cycle 80, for scale (cycle_runner_main_20260925d.log:9) | 46 min | $20.05 |
+
+## The fault
+
+Three runs of `tools/recipes/stage_d1_l2a1.py` stopped on one class. The session's own NEXT says so (STATUS.md:61). Run 1 died at op 18 on SelectorTunnel #5825 (stage_d1_l2a1.log:302). Run 2 died at PRIME on selectors #10465/#5603 and ControlTerminal #17272 (stage_d1_l2a1_r2.log:36-37). Run 3 died at op 31 on ControlTerminal #5634 (stage_d1_l2a1_r3.log:439). The class is that the simulator lists as nodes what the real reader does not.
+
+The decision that changed the cycle's end is the retry card. Its "why" line reads "selectors routed via owner, CT sinks skipped; pre-run 81e PASS, PRIME 17/0" (tools/bench/cards/task_81-9.json:7). The judgement knew ControlTerminal ends were skipped, not solved, and launched anyway. PRIME's "0 unprovable" was a pass only because the material session had just made PRIME skip ControlTerminal sinks (result_81-8.json, fact 8). The recipe header itself lists CT rows [5634, 17272, 17487, 23541] on every run (stage_d1_l2a1_r3.log:34). The run-1 review had already warned that unwired faces would break the unique-match step (archive/peer/2026-09-25-hyp-l2a1-run1-81.md:70).
+
+Loss: run 3 took 1567 s (stage_d1_l2a1_r3.log:464). Its one measured gain, the owner route working on the real VI for ops 18 to 28 (result_81-9.json, fact 3), was obtainable from a read-only scratch diagnostic of the kind that took 112 s earlier the same hour (l2a1_faces_81.log:74). Net loss 26 minutes. No log carries a dollar figure for a LabVIEW run, so loss_usd is unknown. Counterfactual: had card 81-9 at 13:16 ordered the reader-parity check and the ControlTerminal route (exactly what NEXT now orders as PD187(a)+(b), STATUS.md:54-57), the cycle would have ended at the same 13:46 with those tools built and run 4 ready, instead of ending with the same tools still owed. Had the session simply closed after result 81-8 at 13:20, it would have ended 26 minutes earlier with an identical NEXT.
+
+## Findings
+
+**1. Repeated failure.** Yes, three times, same class. The approach should have changed at attempt 2's launch decision (13:12), and at the latest at attempt 3 (13:16). At 13:02 the review had already said the fix is a model change in both readers and that a failed PRIME must stop the run (hyp-l2a1-run1-81.md:47-50, :63). CLAUDE.md's own rule for the second inferred diagnosis of one class is "the next build is the READER for it" (CLAUDE.md:370-377). The reader is PD187(a), and it was written into NEXT only after run 3.
+
+**2. Missing tool.** The reader-parity check, PD187(a): compare SimReader's node membership against a real `Nodes[]` read for every diagram the plan touches. It would have caught all three stops offline: tunnels (run 1), selectors and a ControlTerminal (run 2), and a ControlTerminal that becomes bare after its move (run 3, whose bareness the simulator already knew: "sim bare list: w10312 t5634", result_81-9.json fact 4). The real read existed and was cheap (l2a1_faces_81.py, 13/0 in 112 s).
+
+**3. Unmeasured steps.** Two inferences where a read was available. First, "#17272 is an FP sink, wired by wire_indicators, and needs no index" (result_81-8.json, fact 7) was reasoned, not read, and led straight to skipping CT sinks in PRIME. Second, run 1 proceeded past a PRIME line that named the exact node it died on 13 minutes later (stage_d1_l2a1.log:36 lists #5825 unprovable; :302 fails on #5825). That cost 819 s of LabVIEW for information PRIME had printed at second 30. It was repaired in-cycle (T2, result_81-8.json fact 4), so it is a finding, not the fault.
+
+**4. Rule compliance.** Broken: "stay in the turn while any bgrun you launched lacks its END line" (cycle_81.log:92-96). The session launched the retrospective at 13:46:22 (retro.log:2196), ended 11 s later with "The retrospective is running as the cycle's last act. I'll record what it finds once it finishes" (cycle_81.log:120), and the runner had to land it (retro.log:2197; cycle_runner.py:342 land_retrospective). The first launch attempt was also permission-denied (cycle_81.log:120, permission_denials). Satisfied only formally: the retry cap. A card was written, so the gate passed, but the card's purpose is a judgement on evidence, and the evidence line says the class was skipped. The Jev ladder never fired for run 1 (result_81-7.json fact 8: no JEV-LADDER line, old path) nor for run 3 (jev_gate.log has no line after 13:18:14; audit A3 lists r3 unreviewed). Run 2 was discharged by the run-1 review at p=0.858 (jev_gate.log:1061) although run 2's PRIME list included a ControlTerminal the review never discussed. What the audit does not cover: whether an offline PASS means anything (reader parity), GUI use (A6 says n-a, but gui_actions.log:2426-2440 records 15 approved error-list actions at 11:35 inside the window), the session-end behaviour, and per-decision cost inside the $42.70 judgement lump.
+
+**5. Ordering.** Mostly defensible. The first 50 minutes went to the previous NEXT's ordered first act (errorlist reuse, cycle_runner.py:530) and to finalizing the stageplan with the un-flip measurement (l2a1_unflip_81 16/0, 17/0). The recipe/prior-art churn from 12:32 to 12:44 (four edits, four reviews, three stop-record refusals at material_marker.log:1620,1621,1624) is the stop-record device working as designed, but it shows dry-run failures being fixed by editing a gated recipe at $1.40 per edit. The one ordering error is that parity between the two readers was never measured before the pre-run was trusted; the pre-run passed 7/0 at 12:43 (prerun_l2a1_81c.log:208) on a model the machine does not have.
+
+**6. Not reported.** STATUS NEXT gives the three stops honestly. It omits: the judgement session cost twice cycle 80's ($42.70 vs $20.05); the retrospective was launched and abandoned; run 3's failure has no review and no ladder line; the retry-cap self-test fails 8 of 28 cases including "guard_bash refuses the 3rd launch" (selftest_launch_gate_81.log:16-29), so the cap's refusal path is unverified even though run 3 carried a card; and the first errorlist-reuse self-test failed 13/2 before its r2 passed 16/0 (selftest_errorlist_reuse_81.log:25).
+
+**7. Judgement inside a material session.** Yes, one. After run 2, card 81-8's material session changed two things offline that its card did not list: it extended the owner route to class Tunnel and made PRIME skip ControlTerminal sinks (result_81-8.json, fact 8). Weakening a gate so the pre-run passes is a design choice. The judgement then took the resulting "PRIME 17/0" as the reason for run 3 (task_81-9.json:7). The card's own rule was "no third run" and "run 2 only after T1-T3 pass"; nothing authorised post-run edits. The review disposition in hyp-l2a1-run1-81.md:92 correctly handed the choice to judgement, so the review side was clean.
+
+## Device effect
+
+Each device on file, against this window:
+
+- **unreported-fact (rc=0 masking):** worked. All three stage runs ended rc=1, and bgrun forced rc=1 on a sim whose process said 0 (sim_l2a1_81.log:66).
+- **rule-evaded (confirm-bait refusal):** worked. The hypothesis task carries the appended refute block (hyp-l2a1-run1-81.md:29-35).
+- **tool-not-built (prior-art):** worked. Dispatch r3 returned already-failed and was released by a real code change with citation (stop_records.json:935). Cost five dispatches, $7.10.
+- **repeated-failure-class (guard_peer refuses dispatch on a blank disposition):** not triggered; the run-1 review's disposition is filled (hyp-l2a1-run1-81.md:90-92).
+- **unreported-fact (C3/C4 cost lines):** worked, 8/8 parsed.
+- **premature-build (guard_cycle needs a newer prior-art):** worked. Review r5 at 13:12:05 precedes the run-2 launch at 13:12:24.
+- **scope-creep (C7 out-of-plan counter):** FAILED, mode 3. It measures against the plan whose frontmatter says current in the cycle-plan family (tools/audit_cycle.py:581), which is docs/cycle27-plan.md. This cycle worked from docs/d1-loop12-17-split-plan.md (next.json:2), so C7 reads 101 files and judges nothing.
+- **device-failed (COST regex):** worked.
+- **device-failed (bgrun FAIL scan):** worked (sim_l2a1_81.log:66).
+- **repeated-failure-class (OpLoopEndRef_v0):** not exercised.
+- **device-failed (stop record + launch gate):** worked as designed; fired three times, honoured each time, released by hash or FIXED.
+- **device-failed (motor_gate FAIL exit):** not exercised; both session hooks OK (cycle_runner_main_20260925d.log:6,11).
+- **repeated-failure-class (guard_peer retry replay):** not exercised.
+- **device-failed (Jev command-scope for FAIL scans):** the carry persists. jev_gate.log, a hook log, still counts as a build log without a BGRUN line (audit A1, A3). It fires every cycle and is ignored (STATUS.md:77 lists it as a carry). Same mode as C7; not the named evidence because C7's misfire is cleaner to open.
+- **repeated-failure-class (guard_session refuses SendMessage to material):** not installed; STATUS.md:75 still asks the user to add the matcher. Not exercised this cycle.
+- **device-failed (stop record vs read-only commands):** not triggered; the md5sum refusals at material_marker.log:1599,1600,1626 are the judgement/material split refusing the judgement session, which is correct.
+- **device-failed (write_novel_record) and the release table:** worked (stop_records.json:905-965).
+- **device-failed (selftest_exempt closure):** not exercised.
+- **device-failed (stage run counted at child start):** worked; stage_runs.jsonl:12-14 carry pid and card.
+- **device-failed (op error stops the run unless sink_gates):** not exercised; sink_gates declared, no op error.
+
+Two devices outside the extracted list also matter: the Jev ladder did not fire on run 1 or run 3, and the runner's RETRO-LANDED fallback did fire and saved this retrospective.
+
+The second machine line below is emitted on the device section's threshold-1 instruction. It is not of the first fault's magnitude, and I say so rather than pretend otherwise.
+
+VIOLATION: repeated-failure-class | loss_min=26 | loss_usd=? | evidence=tools/bench/cards/task_81-9.json:7
+VIOLATION: device-failed | loss_min=0 | loss_usd=? | evidence=tools/audit_cycle.py:581
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle81","verdict":"refuted","alternative":"Run 3 was a measured gain (owner route proven on the real VI at ops 18-28, result_81-9.json fact 3) rather than a repeat, so the loss is about 2 min and the cycle had no structural fault.","discriminating_test":"On a D1_k scratch, run a read-only diagnostic like l2a1_faces_81.py that addresses #5825/#5702/#10750/#5725/#5967 via owner Terminals[]; if it proves the same ends run 3 proved, the 26 min were a repeat.","violations":[{"slug":"repeated-failure-class","loss_min":26,"loss_usd":null,"evidence":"tools/bench/cards/task_81-9.json:7"},{"slug":"device-failed","loss_min":0,"loss_usd":null,"evidence":"tools/audit_cycle.py:581"}],"sources":["tools/bench/stage_d1_l2a1.log:36","tools/bench/stage_d1_l2a1_r2.log:36","tools/bench/stage_d1_l2a1_r3.log:439","tools/bench/cards/result_81-8.json","tools/bench/cards/task_81-9.json:7","archive/peer/2026-09-25-hyp-l2a1-run1-81.md:70","tools/bench/cycle_81.log:120","tools/bench/retro.log:2196","tools/audit_cycle.py:581","tools/bench/next.json:2"],"note":"Second line is the device section's threshold-1 rule (C7 scope counter measures against docs/cycle27-plan.md, not the cycle's plan); it did not change how the cycle ended. Judgement session $42.70 vs cycle 80 $20.05; retrospective abandoned at 13:46:33 and landed by the runner."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle81.md
+BGRUN END rc=0 after 419s

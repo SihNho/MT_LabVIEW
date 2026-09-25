@@ -1233,6 +1233,24 @@ it") already changed the practice: judgement sessions dispatch material cards on
 75, 76 and 77 did so (cycle 77: 77-1 → 77-2 → 77-3 → 77-4, each foreground, `tools/bench/cards/result_77-*.json`), and
 the slug did not recur in retrospectives 75 or 76. Re-scoping guard_peer per card stays an open alternative, not built.
 
+## unreported-fact — 2026-09-25 12:28 (cycle 81 judgement, after archive/peer/2026-09-25-retrospective-cycle79.md:288)
+
+`VIOLATION: unreported-fact | loss_min=10 | loss_usd=? | evidence=tools/bench/stage_d1_k_r2.log:233`. This is the 8th
+count, and the first since cycle 13. The two indicator-wiring ops in stage K ERRORED, and the run reported PASS because
+`stagexec`'s whitelist cleared the error.
+
+DECISION: I decline to build a new device (dated, written; the user's option C, 2026-09-16). This occurrence has the same
+root cause as the `device-failed` at `tools/stagexec.py:679` in the same retrospective. That cause is already removed
+by a device:
+- Cycle 80 removed the whitelist, so an op error now stops the run unless the recipe names a `sink_gates` entry with
+  a reader that reads that sink (`docs/d1-loop12-17-split-plan.md` Pre-decided 179(c); `selftest_stagexec_gate.log`
+  13/0).
+- The two facts the run hid were then read and reported (179(a), `tools/bench/k_ind_read_80.log:40-45`).
+- The earlier seven counts (cycles 7–13) were answered by the 2026-09-16 decisions above.
+
+A second device would only duplicate the stop that stagexec now performs. Revisit if the slug recurs on a run whose op
+errors were NOT whitelisted.
+
 ## device-failed — 2026-09-25 07:05 (cycle 77 judgement, found by cards 77-7 and 77-8)
 
 The retry-cap recorder in `tools/hooks/guard_bash.py` writes a `tools/bench/stage_runs.jsonl` line BEFORE later gates

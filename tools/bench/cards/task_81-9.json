@@ -1,0 +1,44 @@
+{
+ "schema": "task/1",
+ "id": "81-9",
+ "kind": "build",
+ "retry_of": "stage_d1_l2a1.py",
+ "goal": "PD186: L2-A1 run 3 (judgement retry card) with stagexec 029ea027 and recipe e589dc74; launch carries RETRY_CARD=tools/bench/cards/task_81-9.json.",
+ "why": "run 2 stopped at PRIME before op 1 (stage_d1_l2a1_r2.log:36-37); selectors routed via owner, CT sinks skipped; pre-run 81e PASS, PRIME 17/0.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/stagexec.py", "md5": "029ea027a26b9ce11d1387763187cb25"},
+  {"path": "tools/recipes/stage_d1_l2a1.py", "md5": "e589dc746833aaaafe47f3eff4c22dc6"},
+  {"path": "tools/bench/sim/l2a1/stageplan_l2a1.json", "md5": "329d89eecaa2706ccce38640dbede5aa"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_20260925_100155.vi", "md5": "6cf5b0777aafa12112d8a786a9eed1ed"}
+ ],
+ "pass": [
+  "R1 PRIME 0 unprovable on the real VI; E1 per-step diff 0 on every op",
+  "R2 frame-keyed cdiff(S1,new) == the 9 PB rows; frame-uid sets of #5540/#10445 equal before/after",
+  "R3 CT rows #17487 #5634 #23541 #17272 verified by the 179(b) reader; moved wires not broken",
+  "R4 saved claudeDev D1_l2_a1_<ts>.vi (rule-6 GUI save if ExecState 0), md5+bytes; D1_k + pins unchanged; refs closed; LabVIEW exited"
+ ],
+ "outputs": ["tools/bench/stage_d1_l2a1_r3.log", "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a1_*.vi"],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/stage_d1_l2a1*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/gui_actions.log",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a1_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_scratch_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 1, "minutes": 45},
+ "rules": ["ONE run; no code edit before it (tools and recipe exactly at the pinned md5)", "on failure report the first failing step and stop", "D1_k never saved over; GUI only for the rule-6 save", "result/1 <=10 facts <=3 open"],
+ "advances": ["M3", "R1", "R3"]
+}

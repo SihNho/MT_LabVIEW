@@ -15,6 +15,7 @@ every session) and is logged.
 """
 import json
 import os
+import re
 import sys
 import time
 
@@ -32,6 +33,33 @@ def log(line):
         pass
 
 
+# PURE-PYTHON SELF-TEST EXEMPTION (card 81-1, 2026-09-25): `stagexec.py` imports stagekit/gscript inside LVBackend
+# and lv_run, so the source scan calls ANY launch of it LabVIEW-touching - including `stagexec.py selftest`, which
+# runs on a synthetic graph and asserts itself that nothing LabVIEW-side was imported (stagexec.py T14). Card 80-4
+# was given `labview: read` only to get past this. Exempted BY COMMAND, never by filename: the whole command must be
+# exactly that self-test (optionally after `cd <dir> &&`, an env prefix, and a bgrun wrapper), and only a refusal
+# on the labview flag is lifted; every other flag, and an unbound agent, is still refused.
+_Q = r"(?:\"[^\"]*\"|'[^']*'|[^\s\"';&|]+)"
+PURE_SELFTEST_RE = re.compile(
+    r"^\s*(?:cd\s+" + _Q + r"\s*&&\s*)?"
+    r"(?:(?:\$env:)?[A-Z_]+\s*=\s*['\"]?\w*['\"]?\s*;?\s+)*"
+    r"(?:py(?:thon)?(?:\.exe)?\s+(?:-u\s+)?[\"']?[^\s\"';&|]*bgrun\.py[\"']?\s+(?:--[\w-]+(?:\s+(?!--)" + _Q +
+    r")?\s+)*--\s+)?"
+    r"py(?:thon)?(?:\.exe)?\s+(?:-u\s+)?(?:\"([^\"]*)\"|'([^']*)'|([^\s\"';&|]+))\s+selftest\s*$", re.I)
+
+
+def pure_selftest(cmd):
+    """True only for THIS project's tools/stagexec.py (relative `tools/stagexec.py` or its absolute path)."""
+    m = PURE_SELFTEST_RE.match(cmd or "")
+    if not m:
+        return False
+    p = (m.group(1) or m.group(2) or m.group(3) or "").replace("\\", "/")
+    if re.match(r"^(?:\./)?tools/stagexec\.py$", p, re.I):
+        return True
+    want = os.path.normcase(os.path.abspath(os.path.join(TOOLS, "stagexec.py")))
+    return bool(re.match(r"^[A-Za-z]:/", p)) and os.path.normcase(os.path.abspath(p)) == want
+
+
 def decide(payload):
     """(exit_code, message). Shared by main() and guard_bash.py."""
     try:
@@ -39,6 +67,12 @@ def decide(payload):
             sys.path.insert(0, TOOLS)
         import protocol
         ok, msg = protocol.hook_decision(payload)
+        cmd = (payload.get("tool_input") or {}).get("command", "") \
+            if payload.get("tool_name") in ("Bash", "PowerShell") else ""
+        if not ok and msg and "flags.labview is " in msg and pure_selftest(cmd):
+            log("EXEMPT %s %s | pure-Python self-test by command: %s" % (
+                payload.get("agent_type"), payload.get("agent_id"), cmd[:200]))
+            return 0, None
     except Exception as e:      # noqa: BLE001
         log("GUARD ERROR (allowed) %s: %s" % (type(e).__name__, e))
         return 0, None

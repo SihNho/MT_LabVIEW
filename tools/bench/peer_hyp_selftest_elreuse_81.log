@@ -1,0 +1,49 @@
+BGRUN START 2026-09-25 11:53:29 limit 20.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -TimeoutSec 900 -Slug hyp-selftest-elreuse-81 -TaskFile 'tools/bench/cards/review_hyp-selftest-elreuse-81_task.md' -ReviewCard 'tools/bench/cards/review_hyp-selftest-elreuse-81.json'
+OUTCOME: ANSWERED (94s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-25-hyp-selftest-elreuse-81.md
+COST: $0.9728  in 18 / out 7500 / cache-create 82342 / cache-read 768857  (90s, 13 turn(s))
+VERDICT-CARD: VERDICT-CARD hyp-selftest-elreuse-81 verdict=refuted -> tools\bench\cards\verdict_hyp-selftest-elreuse-81.json
+--- ANSWER ---
+**Verdict: partly refuted.** C1 is a self-test bug, as claimed. K6 is also a self-test bug, but it hides a real hole in `guard_card`'s exemption, and replacing K6 with K8 does not cover that hole.
+
+## 1. The strongest reason the claim is wrong (K6)
+
+"The None came from protocol having no source file to scan" is true, but it is not the end of the story.
+
+- **Why K6 could never test the matcher.** `protocol._launched_scripts` scans only paths where `os.path.isfile(_abs(p))` is true (`tools/protocol.py:479-487`). A path that does not exist is never scanned, so protocol allows the command. `decide()` only looks at `pure_selftest` when protocol has refused on `flags.labview` (`tools/hooks/guard_card.py:72`). So K6 would have returned 0 whatever `pure_selftest` did. The claim is right that this is a test design defect.
+- **The real hole.** `_abs()` resolves relative paths against ROOT and ignores any `cd` (`tools/protocol.py:455-456`). The exemption regex, meanwhile, accepts `cd <any dir> &&` followed by the relative `tools/stagexec.py` (`guard_card.py:44,57`). Take this command:
+  `cd "C:/elsewhere" && py tools/stagexec.py selftest`
+  1. Protocol scans the project's own `stagexec.py` and refuses on `flags.labview`.
+  2. `pure_selftest` returns True, so `decide()` exempts the command.
+  3. The shell actually runs `C:/elsewhere/tools/stagexec.py`, a foreign file that was never scanned.
+
+  That is exactly the "foreign stagexec.py" case K6 was meant to cover, and `guard_card` lets it through. The `guard_card.py:36-41` comment says the exemption is "never by filename". In the `cd` form it is effectively by filename.
+- **What K8 misses.** K8 tests `pure_selftest` directly, and only with an absolute foreign path and the project's absolute path (`selftest_errorlist_reuse_81.py:162-164`). K2 checks `cd` only with ROOT. So the `cd <foreign> && py tools/stagexec.py` path is uncovered.
+- **The same `cd` blindness in protocol.** It affects every relative script, not just this exemption: `cd X && py y.py` gets its source scan from ROOT/y.py, or no scan at all if that file is absent. That is outside this card, but it is the same fail-open pattern.
+
+## 2. Alternative explanation of the same evidence
+
+- **K6:** the observation is equally consistent with "`guard_card` has a real foreign-path hole and K6 was too blunt to show it". The logged None tells the two apart for the absolute form only; nothing tested the `cd` form.
+- **C1:** "a second defect hidden behind the schema error" is possible in principle. I checked and found nothing likely:
+  - With a valid effort, the fallback calls `EC.current_bed_text(status_text)` (`tools/cycle_runner.py:595-602`). That is the same resolver the errorlist hook uses. R1 got md5 `6cf5b077…` from it on the same STATUS text in the same run (log line 2), so the fallback should give that path and md5.
+  - `hashlib` is imported (`cycle_runner.py:41`).
+  - `protocol._rel` catches the cross-drive `ValueError` for the temp dir on C: against ROOT on G: (`protocol.py:72-77`). Python raises that error when path and start are on different drives (https://docs.python.org/3/library/os.path.html). The absolute path it falls back to is well under the 400-character limit.
+  - The md5 matches the pattern in `docs/protocol/cycle.json:30`.
+  - I could not confirm how the old call produced `'e'`, whether a placeholder argument or shifted arguments. The file on disk already has `"medium"` at line 130, and the older source is untracked and gone. Only the log's message is left.
+- **C1 residual risk:** the fallback swallows every exception and leaves `bed` null (`cycle_runner.py:601`). If the rerun fails, the log will give no reason.
+
+## 3. What would falsify the claim
+
+- **K6 part:** `decide()` returning 0 for `cd "C:/elsewhere" && py tools/stagexec.py selftest` on the labview:none card 81-1. By the code above, I predict it does.
+- **C1 part:** the rerun with `"medium"` still getting `bed` None, or an md5 other than `6cf5b077…`.
+
+## 4. Cheapest discriminating tests
+
+These are for the executing session to run; I have run nothing.
+
+- **K6:** add one gate: `dec('cd "C:/elsewhere" && py tools/stagexec.py selftest')` and expect rc 2. If it returns rc 0, the defect is in `guard_card`.
+  - Fix options: accept the `cd` prefix only when its directory normalises to ROOT, or drop the `cd` alternative from `PURE_SELFTEST_RE`.
+  - Also add an end-to-end gate: `decide()` refusing an existing foreign `stagexec.py` (a temp file that imports `gscript`, run by absolute path).
+- **C1:** rerun the self-test as it is now on disk (line 130 already passes `"medium"`). Pass means C1 was only a self-test bug. If it fails, temporarily log the exception at `cycle_runner.py:601`.
+
+VERDICT {"schema":"verdict/1","id":"hyp-selftest-elreuse-81","verdict":"refuted","alternative":"C1 is a self-test bug, but K6 hides a real guard_card hole: the exemption regex accepts `cd <any dir> && py tools/stagexec.py selftest` while protocol._abs resolves against ROOT and ignores the cd, so a foreign stagexec.py gets exempted. K8 does not cover this.","discriminating_test":"Add gate dec('cd \"C:/elsewhere\" && py tools/stagexec.py selftest') and expect rc 2 on card 81-1; rc 0 means a guard_card defect. Rerun C1 with effort 'medium' and expect bed md5 6cf5b077 for D1_k_20260925_100155.vi.","violations":[],"sources":["tools/hooks/guard_card.py:44","tools/hooks/guard_card.py:57","tools/hooks/guard_card.py:72","tools/protocol.py:455-456","tools/protocol.py:479-487","tools/cycle_runner.py:595-602","tools/bench/selftest_errorlist_reuse_81.py:162-164","https://docs.python.org/3/library/os.path.html"],"note":"C1 part of the claim holds (the schema rejected effort 'e' before bed was used; the fallback resolver is the same one R1 used successfully). K6 part holds only for the nonexistent absolute path; the cd-relative foreign path is exempted by the code as written."}
+BGRUN END rc=0 after 95s

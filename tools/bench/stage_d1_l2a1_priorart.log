@@ -1,0 +1,28 @@
+BGRUN START 2026-09-25 12:32:04 limit 20.0 min: py tools\prior_art_review.py --plan-file docs\d1-loop12-17-split-plan.md --slug c81-l2a1 --trigger cycle-start --recipe tools\recipes\stage_d1_l2a1.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c81-l2a1.txt (110310 chars)
+   review card tools\bench\cards\review_priorart-c81-l2a1.json
+OUTCOME: ANSWERED (38s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-25-priorart-c81-l2a1.md
+COST: $1.0524  in 6 / out 3113 / cache-create 116550 / cache-read 288807  (34s, 7 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c81-l2a1 verdict=novel -> tools\bench\cards\verdict_priorart-c81-l2a1.json
+--- ANSWER ---
+**Verdict: novel.** Nothing in this project has already built, measured, refuted or covered stage L2-A1, and the recipe hand-rolls none of the toolkit helpers.
+
+**PART A — the direction**
+- **A1, already settled:** Only the design of L2-A1 was settled beforehand, never its build. Pre-decided 181(d), 182(a–e) and 183(a–e) in `docs/d1-loop12-17-split-plan.md` set the rows, gates, sink gates and plan file. The recipe carries these out and does not decide them again (`tools/recipes/stage_d1_l2a1.py:1-5`, `:20`, `:40-41`).
+- **A2, already refuted:** Nothing found. The one dead route for this node set is route B v0→v7, which rewired it in LabVIEW memory without saving between steps (Pre-decided 162). This recipe avoids that failure: it starts from the saved bed `D1_k`, runs in a fresh LabVIEW, and saves a file (`:2-3`, `:101`, `:115`).
+- **A3, contradicted:** None that blocks. Pre-decided 183 names the stageplan md5 `73e95bc7…`, and `task_81-6.json:6,9` still cites it. The recipe instead requires `329d89ee…` (`:41`), which is `plan_l2a1.json:566` and `sim/l2a1/summary.json:6`. That matches 183(e), which says the re-finalized plan "gets a new md5, which supersedes `73e95bc7`". It is a stale reference in the task card, not a contradiction. **Housekeeping:** 183(e) should record `329d89ee` explicitly.
+- **A4, evidence not read:** None. The recipe cites its own sources: `stage_d1_k.py`, `stagexec` sink gates (80-3), `diag_ctlterm_read_80.py` (the 179(b) reader) and `sim_l2a1_81b.py` (`:6-7`).
+
+**PART B — the recipe**
+- **B1, already built:** No. There is no `stage_d1_l2a1.log` and no `D1_l2_a1_*` artefact. The `D1_l2_a1` hits in `archive/peer/` are earlier prior-art reviews and the cycle-80 retrospective, which name it as a planned stage.
+- **B2, already failed:** No earlier build attempt. Result 81-6 was blocked at stagexec X3 on a scratch probe with no `pos` field, before any build. That cause is fixed by 183(e) and by the `plan_in` check at `:40-41`.
+- **B3, helper exists:** No hand-rolling found. The recipe uses `stagexec.Executor` / `LVBackend` with `sink_gates` (`:59-60`), `allterms.read_terms` plus `report_all('ControlTerminal')` for the 179(b) reader (`:48`), `vigraph.computation_diff_frame` (`:92`), `cfw_second_pass` with `verify_term_uid` (`:80-82`), and `Stage.save(broken_ok=True)`, the rule-6 GUI save (`:101`).
+- **B4, already measured:** No. The open-row list (PB) at the real end of this stage has never been measured. The simulator's prediction in `sim_l2a1_81b.log:73` / `sim_l2a1_81c.log` is what this run is meant to test.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c81-l2a1","verdict":"novel","alternative":"Only candidate conflict: PD183 and task_81-6.json:6,9 still name stageplan md5 73e95bc7 while the recipe pins 329d89ee (plan_l2a1.json:566); 183(e) itself says the md5 is superseded, so it is a stale citation, not prior art.","discriminating_test":"Confirm sim_l2a1_81c.log records 329d89ee as the re-finalized stageplan with pos rows and a PASS final; if it does, the recipe's L0 gate matches PD183(e).","violations":[],"sources":["tools/recipes/stage_d1_l2a1.py:40-41","tools/bench/sim/l2a1/plan_l2a1.json:566","tools/bench/cards/task_81-6.json:6","docs/d1-loop12-17-split-plan.md PD183(e)","tools/bench/stage_d1_l2a1_priorart.log:1"],"note":"No prior L2-A1 build, log or artefact exists; the design comes from PD181-183 and the recipe carries it out. Housekeeping: record 329d89ee in PD183(e)."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c81-l2a1.md
+   STOP RECORD: none - 2026-09-25-priorart-c81-l2a1.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2a1.py sha a6037772426f -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 42s

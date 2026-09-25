@@ -1,0 +1,37 @@
+BGRUN START 2026-09-25 12:34:32 limit 20.0 min: py tools\prior_art_review.py --plan-file docs\d1-loop12-17-split-plan.md --slug c81-l2a1-r2 --trigger cycle-start --recipe tools\recipes\stage_d1_l2a1.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c81-l2a1-r2.txt (110310 chars)
+   review card tools\bench\cards\review_priorart-c81-l2a1-r2.json
+OUTCOME: ANSWERED (45s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-25-priorart-c81-l2a1-r2.md
+COST: $1.3955  in 12 / out 3671 / cache-create 145252 / cache-read 800278  (42s, 8 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c81-l2a1-r2 verdict=novel -> tools\bench\cards\verdict_priorart-c81-l2a1-r2.json
+--- ANSWER ---
+Checking the re-edited L2-A1 recipe against the earlier review and the logs; the answer follows.
+
+**Verdict: novel.** Between the first review (recipe md5 `b430fbe4…`) and this one (`33b10246…`), only the recipe's own script bugs were fixed. Nothing in the project has since built, run or measured stage L2-A1.
+
+**PART A: the direction**
+- **A1, already settled:** Only the design was settled, not the build. Pre-decided 181(d), 182(a–e) and 183(a–e) set the rows, gates, sink gates and plan file (`docs/d1-loop12-17-split-plan.md:746-763`). The recipe carries them out and does not decide them again (`tools/recipes/stage_d1_l2a1.py:1-5,20,40-41`). The first review already found this (`archive/peer/2026-09-25-priorart-c81-l2a1.md:951`).
+- **A2, already refuted:** Nothing found. The only dead route for this node set is route B's in-memory re-wire (Pre-decided 162). This recipe starts from the saved bed `D1_k`, opens it in a fresh LabVIEW and saves its output (`:2-3,101,115`).
+- **A3, contradicted:** Nothing that blocks. Two notes:
+  - Pre-decided 183 still names the stageplan md5 `73e95bc7…` (`docs/d1-loop12-17-split-plan.md:746`). The recipe's L0 gate pins `329d89ee…` (`:41`), and that gate passes in the dry run (`tools/bench/dryrun_l2a1_81b.log:13`). 183(e) itself says the re-finalized plan's new md5 supersedes `73e95bc7` (`:763`). So this is a stale citation. The first review asked for 183(e) to record `329d89ee`, and it still does not.
+  - Inside the recipe, the docstring says the CT gate covers "ONE row, a ControlTerminal" (`:7-8`), but L1 now requires 4 CT rows (`:63`). The 4 rows are the four terminals Pre-decided 181(d) and 182(b) move: `#17487`, `#5634`, `#23541` and `#17272`. Only the docstring is wrong. The next person to edit the recipe should correct it.
+- **A4, evidence not read:** None. The recipe cites its sources at `:6-7`.
+
+**PART B: the recipe**
+- **B1, already built:** No. There is no `tools/bench/stage_d1_l2a1.log` and no `D1_l2_a1_*` artefact. The only `*l2a1*` files in the bench folder are facts, simulator, unflip, dry-run and prior-art logs.
+- **B2, already failed:** No LabVIEW build has been attempted. The recipe's edits since the first review answer its own dry-run findings (`archive/peer/2026-09-25-priorart-c81-l2a1.md:976`, `FIXED:` line). The earlier block, result 81-6 at stagexec X3, was fixed by 183(e).
+- **B3, helper exists:** No hand-rolling. The recipe uses:
+  - `stagexec.Executor` / `LVBackend` with `sink_gates` (`:59-60`)
+  - `allterms.read_terms` + `report_all('ControlTerminal')`, the 179(b) reader (`:48`)
+  - `vigraph.computation_diff_frame` (`:92`)
+  - `cfw_second_pass` with `verify_term_uid` (`:80-82`)
+  - `Stage.save(broken_ok=True)` (`:101`)
+- **B4, already measured:** No. The real end-state open rows, PB against the simulator's 9 `open_rows`, have never been measured. The dry run only replays the simulation (`dryrun_l2a1_81b.log:105`, E1 passing on the simulated steps).
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c81-l2a1-r2","verdict":"novel","alternative":"Only stale citations: PD183 still names stageplan md5 73e95bc7 (split-plan:746) while the recipe pins 329d89ee (L0 passes, dryrun_l2a1_81b.log:13); recipe docstring says ONE CT row while L1 requires 4 (:7-8 vs :63).","discriminating_test":"Glob tools/bench/stage_d1_l2a1.log and claudeDev D1_l2_a1_*; both absent means no prior build. Check sim_l2a1_81c.log shows 329d89ee finalized PASS.","violations":[],"sources":["tools/recipes/stage_d1_l2a1.py:40-41","tools/recipes/stage_d1_l2a1.py:63","docs/d1-loop12-17-split-plan.md:746","docs/d1-loop12-17-split-plan.md:763","tools/bench/dryrun_l2a1_81b.log:13","archive/peer/2026-09-25-priorart-c81-l2a1.md:976"],"note":"r2 differs from r1 only by the recipe's own dry-run bug fixes; no L2-A1 build, log or artefact exists. Housekeeping: record 329d89ee in PD183(e); fix the recipe docstring CT count."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c81-l2a1-r2.md
+   STOP RECORD: none - 2026-09-25-priorart-c81-l2a1-r2.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2a1.py sha d71667ac4357 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 49s

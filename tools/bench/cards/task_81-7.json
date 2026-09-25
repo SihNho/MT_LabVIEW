@@ -1,0 +1,51 @@
+{
+ "schema": "task/1",
+ "id": "81-7",
+ "kind": "build",
+ "goal": "PD184: stage_d1_l2a1.py drops connect-op sinks from P2 (K precedent), then pre-run -> prior-art -> ONE LabVIEW run of stage L2-A1 from D1_k (retry cap 2).",
+ "why": "result 81-6 FAIL at prerun X4 (prerun_l2a1_81b.log): P2 on #5058 t5082/t5164, ends the stage itself wires; stageplan now 329d89ee.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_81-6.json"},
+  {"path": "tools/recipes/stage_d1_l2a1.py", "md5": "1528a16fc96261d0934f49d90265e367"},
+  {"path": "tools/bench/sim/l2a1/stageplan_l2a1.json", "md5": "329d89eecaa2706ccce38640dbede5aa"},
+  {"path": "tools/bench/sim/l2a1/plan_l2a1.json", "md5": "046237e1ab47d2d6f9faee2fc7bec9a3"},
+  {"path": "tools/recipes/stage_d1_k.py"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_20260925_100155.vi", "md5": "6cf5b0777aafa12112d8a786a9eed1ed"}
+ ],
+ "pass": [
+  "R1 recipe P2 = move rows + ControlTerminal rows only; connect-op sinks covered by E1 + RBW/Is Broken; <=120 lines",
+  "R2 dry PASS; stage_prerun --prerun X1-X7 PASS; prior-art review of the new sha released",
+  "R3 one run: E1 per-step diff 0; frame-keyed cdiff(S1,new) == the 9 PB rows; frame-uid sets of #5540/#10445 equal",
+  "R4 CT rows #17487 #5634 #23541 #17272 verified by the 179(b) reader; moved wires not broken",
+  "R5 saved claudeDev D1_l2_a1_<ts>.vi (rule-6 GUI save if ExecState 0), md5+bytes; D1_k + pins unchanged; refs closed; LabVIEW exited"
+ ],
+ "outputs": ["tools/recipes/stage_d1_l2a1.py", "tools/bench/stage_d1_l2a1*.log", "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a1_*.vi"],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/recipes/stage_d1_l2a1*",
+   "tools/bench/stage_d1_l2a1*",
+   "tools/bench/dryrun_l2a1*",
+   "tools/bench/prerun_l2a1*",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/sim/**",
+   "tools/bench/sim_l2a1_81*",
+   "tools/gui_actions.log",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_l2_a1_*",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_scratch_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["priorart", "hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": ["D1_k is never saved over", "a failed LabVIEW run is reported with its first failing step; no second run without a judgement retry card", "GUI only for the rule-6 save, capture-locate-act-capture", "result/1 <=10 facts <=3 open"],
+ "advances": ["M3", "R1", "R3"]
+}

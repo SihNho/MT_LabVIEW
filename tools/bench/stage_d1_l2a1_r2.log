@@ -1,0 +1,62 @@
+BGRUN START 2026-09-25 13:12:29 limit 80.0 min: py -u tools/recipes/stage_d1_l2a1.py
+BGRUN STAGE-RUN recorded stage_d1_l2a1.py cycle='cycle 81' card=None pid=15576 -> stage_runs.jsonl
+stage_d1_l2a1 - cycle 81 STAGE L2-A1 (docs/d1-loop12-17-split-plan.md Pre-decided 181(d), 182, 183; executed, not re-decided).
+INPUT the bed claudeDev\D1_k_20260925_100155.vi (6cf5b077..., named by the plan's base graph), FRESH LabVIEW -> claudeDev\D1_l2_a1_<ts>.vi
+(rule-6 GUI save when ExecState 0 - the 9 PB rows are open by design). ROWS ONLY FROM THE FINALIZED PLAN tools/bench/sim/l2a1/plan_l2a1.json
+(its finalized.plan_in = stageplan_l2a1.json md5 329d89ee, PD183(e) pos rows, sim_l2a1_81c.log); no uid and no terminal name is typed here, except
+the PD183(d) sink-gate ACTION ID, looked up in the plan.
+PRIOR ART: stage_d1_k.py (the skeleton), stagexec (sink_gates 80-3), diag_ctlterm_read_80.py (179(b) reader), sim_l2a1_81b.py (frame-keyed S1,
+frame-uid set). No new op. PREDICTION: E1 each real op == its step (42 ops); CT 179(b) reader on every ControlTerminal row (ONE row, a
+ControlTerminal, wire partners == the simulated end's) - also the rw_10988_17272 sink gate; P2 second pass (wire_delta 0, Is Broken? False)
+on tunnel/register node sinks (PD184: connect sinks = E1 + RBW); FU frame-uid sets of moved Cases equal and non-empty; PB frame-keyed cdiff == the 9 open_rows (FATAL, pre-save);
+RBW on a scratch of the saved file deletes no re-wired sink's wire; ES recorded; md5/pins unchanged; refs closed; LabVIEW gone at exit.
+    MATERIAL=1 py tools/bgrun.py --max-min 80 --log tools/bench/stage_d1_l2a1.log -- py -u tools/recipes/stage_d1_l2a1.py
+  PASS  L0 the executed plan is FINAL and its plan_in is the PD183(e) stageplan (md5 329d89ee)  ('046237e1ab47d2d6f9faee2fc7bec9a3', {'path': 'tools/bench/sim/l2a1/stageplan_l2a1.json', 'md5': '329d89eecaa2706ccce38640dbede5aa'})
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 257 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 6cf5b0777aafa12112d8a786a9eed1ed  got 6cf5b0777aafa12112d8a786a9eed1ed
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 33941
+  FACT  LabVIEW handle count AFTER the restart: 34001
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  D1_l2_a1_20260925_131229.vi
+  FACT  ExecState [after open] D1_l2_a1_20260925_131229.vi = 0
+  FACT  THE WORK COPY IS A SCRATCH: this stage saves nothing, so D1_l2_a1_20260925_131229.vi is deleted at close
+  PASS  L1 every plan action compiled into exactly one real op (46 -> 42); sink_gates [{'gate': 'CT-rw_10988_17272', 'sink': [17272, 'min value']}]; CT rows [5634, 17272, 17487, 23541]  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46]
+  STEPX 00 base read vs step_00: diff 0
+  PRIME 15 terminal indexes proved at base; unprovable ['ADDRESS: node #10465 not in Diagram[48] (#639).Nodes[]', 'ADDRESS: node #5603 not in Diagram[48] (#639).Nodes[]', 'ADDRESS: node #17272 not in Diagram[48] (#639).Nodes[]']
+  FAIL  E1 every real op's graph == its simulated step  PRIME: 3 wired end(s) not addressable at base - stop before op 1: ['ADDRESS: node #10465 not in Diagram[48] (#639).Nodes[]', 'ADDRESS: node #5603 not in Diagram[48] (#639).Nodes[]', 'ADDRESS: node #17272 not in Diagram[48] (#639).Nodes[]']
+  FAIL  STOP at gate: E1 every real op's graph == its simulated step
+
+---------- [H] HYGIENE
+  FACT  close_panel(D1_l2_a1_20260925_131229.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  gscript ref_counts: {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 4}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 4, 'closed': 4, 'live': 0, 'cached_op_vis': 4}
+  FACT  LabVIEW handle count AFTER the work: 45797
+  PASS  H4 scratch deleted: D1_l2_a1_20260925_131229.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\D1_l2_a1_20260925_131229.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 6cf5b0777aafa12112d8a786a9eed1ed / after 6cf5b0777aafa12112d8a786a9eed1ed
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 33989
+
+====================================================================================================
+=== GATES: 10 pass / 2 fail; failing: E1 every real op's graph == its simulated step, STOP at gate: E1 every real op's graph == its simulated step
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\stage_d1_l2a1.json   elapsed 151.2 s
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":10,"fail":2},"first_fail":"E1 every real op's graph == its simulated step","artefacts":[]}
+LabVIEW gone at exit: True
+BGRUN END rc=1 after 156s

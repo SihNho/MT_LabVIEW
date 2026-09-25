@@ -1,0 +1,41 @@
+BGRUN START 2026-09-25 12:37:19 limit 20.0 min: py tools\prior_art_review.py --plan-file docs\d1-loop12-17-split-plan.md --slug c81-l2a1-r3 --trigger cycle-start --recipe tools\recipes\stage_d1_l2a1.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c81-l2a1-r3.txt (110310 chars)
+   review card tools\bench\cards\review_priorart-c81-l2a1-r3.json
+OUTCOME: ANSWERED (102s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-25-priorart-c81-l2a1-r3.md
+COST: $1.6434  in 28 / out 8766 / cache-create 135010 / cache-read 1939682  (99s, 21 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c81-l2a1-r3 verdict=settled-already -> tools\bench\cards\verdict_priorart-c81-l2a1-r3.json
+--- ANSWER ---
+The recipe's own pre-run already failed on something this edit does not fix, and Pre-decided 178(f) already ruled on that failure class. So the verdict is **settled-already**, and this should hold the LabVIEW run until it is released. I checked the r3 recipe (md5 `384c5141…`) against the r1/r2 reviews, the cycle-81 bench logs and the plan.
+
+**PART A: the direction**
+- **A1, already settled (blocking).** Pre-decided 178(f) addressed exactly this failure. The pre-run gate X4 had failed on ends with empty terminal names, and the ruling said: *"Route (a), patching `addr_offline` for '' names, is NOT taken now: nothing that executes needs it. If L2 shows the same X4 class on a plan that DOES execute, it becomes a tool task then."* (`docs/d1-loop12-17-split-plan.md`, 178(f), cycle 79.) L2 has now shown that class on the plan it executes (see B2).
+- **A2, already refuted:** nothing new. Route B's in-memory re-wire (Pre-decided 162) does not apply: this recipe starts from the saved `D1_k` bed in a fresh LabVIEW and saves its output (`tools/recipes/stage_d1_l2a1.py:2-3,101,115`).
+- **A3, contradicted (stale citation, not blocking, not new).** Pre-decided 183 still names stageplan md5 `73e95bc7…` (`docs/d1-loop12-17-split-plan.md:746`). The recipe's L0 gate pins `329d89ee…` (`stage_d1_l2a1.py:41`), and that gate passes (`tools/bench/prerun_l2a1_81.log:13`). 183(e) says a new md5 supersedes the old one (`:763`), but no document records `329d89ee` yet. r2 reported this already (`archive/peer/2026-09-25-priorart-c81-l2a1-r2.md:956`).
+- **A4, evidence not read:** `tools/bench/prerun_l2a1_81.log`. It is this recipe's own launch-gate record and it failed. The recipe header cites no pre-run result.
+
+**PART B: the recipe**
+- **B1, already built:** No. There is no `stage_d1_l2a1.log` and no `claudeDev\D1_l2_a1_*` file.
+- **B2, already failed (blocking).** The pre-run at 12:36 ended `PRERUN FAIL: 3 pass / 4 fail`, `BGRUN END rc=1` (`tools/bench/prerun_l2a1_81.log:285-287`):
+  - **X2 and X3 look fixed.** Their cause was that no plan-file literal resolved ("none among []", `:277`). The recipe now names `sim/l2a1/plan_l2a1.json` as one literal (`stage_d1_l2a1.py:16`), and `stage_prerun.plan_files` finds it by joining it to `BENCH` (`tools/stage_prerun.py:686-689`).
+  - **X4 is not fixed** (`prerun_l2a1_81.log:279`). The failing ends read `address() after Stage._op move_in: terminal None (sink) on #5825 SelectorTunnel … #5702 … #10750 … #5725`.
+    - These sinks carry only a `term_uid` in the plan, never a name. Examples: `sr1_L0` → `{"uid":5825,"term_uid":5883}` and `sr2_L0` → `{"uid":5702,"term_uid":6038}` (`tools/bench/sim/l2a1/plan_l2a1.json:208-249`).
+    - The r3 recipe still builds the second-pass end as `"term": a["dst"].get("term")`, which is `None` for these sinks (`stage_d1_l2a1.py:80`).
+    - It also lets the `connect` kind into that second pass (`:75`). The K recipe excluded it (`tools/recipes/stage_d1_k.py:81`).
+    - So the edit that fixed X2 leaves the X4 cause in place. That is the 178(f) class, and the release 178(f) names is the tool task.
+  - **X5** also failed (`:280`), but its count comes from the plan X2 could not find. It should follow once X2 passes.
+- **B3, helper exists:** The recipe reuses the existing tools: `stagexec` `Executor`/`LVBackend` with `sink_gates`, the 179(b) reader, `computation_diff_frame`, `cfw_second_pass`, `Stage.save(broken_ok)`. The second-pass end skeleton is copied from `stage_d1_k.py:80-89`, but without K's filter on which ops get a second pass.
+- **B4, already measured:** No. The real end-state PB has never been measured; only the dry run passed (`prerun_l2a1_81.log:272`).
+
+**What releases this review:** re-run the pre-run (`stage_prerun --prerun`) on the recipe at md5 `384c5141`.
+- If X4 passes, cite that log in a `REFUTED:` line.
+- Otherwise, fix it in one of two ways and cite the change in a `FIXED:` line:
+  - do the 178(f) tool task: `addr_offline` resolves a `term_uid`-only sink;
+  - or have the second pass address those sinks by `verify_term_uid` alone, with the name taken from the base terminal table.
+
+PRIOR-ART: already-failed
+PRIOR-ART: settled-already
+
+VERDICT {"schema":"verdict/1","id":"priorart-c81-l2a1-r3","verdict":"settled-already","alternative":"X4 may already pass at md5 384c5141 if the 12:36 prerun ran an older recipe whose P2 ends differed; X2 fix (:16) is real. Stale PD183 md5 73e95bc7 (split-plan:746) vs 329d89ee is housekeeping only.","discriminating_test":"Re-run py tools/stage_prerun.py --prerun tools/recipes/stage_d1_l2a1.py --graph tools/bench/sim/l2a1/graph_k_80_owners.json; X4 must show 0 'terminal None' ends on #5825/#5702/#10750/#5725.","violations":[],"sources":["tools/bench/prerun_l2a1_81.log:277-287","tools/recipes/stage_d1_l2a1.py:75-80","tools/bench/sim/l2a1/plan_l2a1.json:208-249","tools/recipes/stage_d1_k.py:81","docs/d1-loop12-17-split-plan.md:746"],"note":"178(f): X4 ''/None-name class on an executing plan becomes a tool task (addr_offline on term_uid-only sinks) or P2 must address those sinks by verify_term_uid; release with REFUTED/FIXED citing a passing prerun."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c81-l2a1-r3.md
+   STOP RECORD armed: tools/recipes/stage_d1_l2a1.py sha e44f6d78552f verdict already-failed, settled-already -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 106s

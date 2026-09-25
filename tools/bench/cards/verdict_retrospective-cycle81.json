@@ -1,0 +1,34 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle81",
+ "verdict": "refuted",
+ "alternative": "Run 3 was a measured gain (owner route proven on the real VI at ops 18-28, result_81-9.json fact 3) rather than a repeat, so the loss is about 2 min and the cycle had no structural fault.",
+ "discriminating_test": "On a D1_k scratch, run a read-only diagnostic like l2a1_faces_81.py that addresses #5825/#5702/#10750/#5725/#5967 via owner Terminals[]; if it proves the same ends run 3 proved, the 26 min were a repeat.",
+ "violations": [
+  {
+   "slug": "repeated-failure-class",
+   "loss_min": 26,
+   "loss_usd": null,
+   "evidence": "tools/bench/cards/task_81-9.json:7"
+  },
+  {
+   "slug": "device-failed",
+   "loss_min": 0,
+   "loss_usd": null,
+   "evidence": "tools/audit_cycle.py:581"
+  }
+ ],
+ "sources": [
+  "tools/bench/stage_d1_l2a1.log:36",
+  "tools/bench/stage_d1_l2a1_r2.log:36",
+  "tools/bench/stage_d1_l2a1_r3.log:439",
+  "tools/bench/cards/result_81-8.json",
+  "tools/bench/cards/task_81-9.json:7",
+  "archive/peer/2026-09-25-hyp-l2a1-run1-81.md:70",
+  "tools/bench/cycle_81.log:120",
+  "tools/bench/retro.log:2196",
+  "tools/audit_cycle.py:581",
+  "tools/bench/next.json:2"
+ ],
+ "note": "Second line is the device section's threshold-1 rule (C7 scope counter measures against docs/cycle27-plan.md, not the cycle's plan); it did not change how the cycle ended. Judgement session $42.70 vs cycle 80 $20.05; retrospective abandoned at 13:46:33 and landed by the runner."
+}

@@ -1,0 +1,20 @@
+{
+ "schema": "review/1",
+ "id": "hyp-selftest-elreuse-81",
+ "role": "hypothesis",
+ "claim": "Both gate failures in selftest_errorlist_reuse_81.log are defects of the self-test itself, not of the code under test: C1 passed effort 'e' to write_cycle_card (schema rejects), K6 asserted a refusal for a nonexistent foreign path that protocol cannot scan.",
+ "predicted": "15/15 gates PASS: C1 cycle card carries bed {path, md5}; K6 foreign stagexec.py path refused by guard_card.",
+ "observed": "13 pass / 2 fail: C1 -> \"$.effort: 'e' not in [low..max]\", bed None; K6 -> decide() returned no refusal (None) for py C:/elsewhere/tools/stagexec.py selftest.",
+ "ruled_out": [
+  "C1: cycle_runner bed fallback absent - result_81-1 E1 cites cycle_runner.py:592 current_bed_text + md5 fallback; the card was never written because schema validation failed first on effort",
+  "K6: exemption too wide - pure_selftest() (guard_card.py:51-60) accepts only tools/stagexec.py or this project's abs path; the None came from protocol having no source file to scan"
+ ],
+ "attachments": [
+  {"path": "tools/bench/selftest_errorlist_reuse_81.log", "md5": "e03740e803139e08a0d1dee13fa76c9d"},
+  {"path": "tools/bench/selftest_errorlist_reuse_81.py", "md5": "57c8d944fe10f1742f55890fc83a4e7a"},
+  {"path": "tools/hooks/guard_card.py", "md5": "1865c9843efa78317d6f1b5250fd696e"},
+  {"path": "tools/cycle_runner.py", "md5": "1e48ceb961e40246ffb258349b89c6ad"}
+ ],
+ "ask": "refute",
+ "note": "The .py was already patched (C1 now passes 'medium'; K6 replaced by K8 testing pure_selftest directly) but not rerun. Attack whether the patched test would hide a real defect in write_cycle_card or guard_card."
+}

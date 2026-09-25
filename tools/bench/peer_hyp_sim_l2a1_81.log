@@ -1,0 +1,43 @@
+BGRUN START 2026-09-25 11:58:18 limit 20.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -TimeoutSec 900 -Slug hyp-sim-l2a1-81 -TaskFile 'tools/bench/cards/review_hyp-sim-l2a1-81_task.md' -ReviewCard 'tools/bench/cards/review_hyp-sim-l2a1-81.json'
+OUTCOME: ANSWERED (125s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-25-hyp-sim-l2a1-81.md
+COST: $1.2317  in 22 / out 10576 / cache-create 98634 / cache-read 1046316  (122s, 15 turn(s))
+VERDICT-CARD: VERDICT-CARD hyp-sim-l2a1-81 verdict=refuted -> tools\bench\cards\verdict_hyp-sim-l2a1-81.json
+--- ANSWER ---
+**The claim is wrong as stated.** The simulator does lack an un-flip rule, but the plan rows are also defective. Adding an un-flip rule alone would not get L2-A1 through step 33 or the six flipped-source rows after it.
+
+**1. Strongest reason it is wrong: `rw_5705_5999` re-wires a wire that was never cut.**
+- t5705 is an inner terminal of input SelectorTunnel #5702, and it flipped (`sim_l2a1_81.log:8`, pairs (5702,5705) and (5702,6033)). The driving outer 6038 is fed in S1 by #5805's left terminal 5817 (`log:12`, `(5817, 6038, 5702)`).
+- #5702, t5999's owner and the frame between them move together as one closure. The 5705→5999 wire is inside the moved set, so it is not cut and not bare-deleted. `_move_one` only clears wires with one end moved and the other outside (`stagesim.py:467,489-495`).
+- The reconnect builder still calls the edge "lost". Its `edges()` only counts a wire from a row with `is_source` set (`sim_l2a1_81.py:50-54`), and it emits a wire row for any S1 edge missing from that set (`:98-102`). So it treats a lost direction as a lost wire.
+- The outer was re-sourced before step 33: `sr2_L0` wires SR2L.inner → 6038 at step 19 (`sim_l2a1_81.py:73`; steps 16–19 in `log:41-44`).
+- If the simulator had an un-flip rule, step 33 would still fail, but differently. 5705 would become a source again on wire w, and 5999 already sits on that same wire. `op_wire` would then raise "sink is occupied by wire w, which has a source" (`stagesim.py:701-704`). The correct plan has no row here at all.
+
+**2. Alternative explanation: two of the seven outers are never re-sourced, because the plan builder never made their tunnels.**
+- Row `rw_5733_6022` is on #5725 and row `rw_5973_6003` is on #5967. Their outers get no source at all.
+- The rule-166 tunnel branch needs `OWN[partner][1] == 637` (`sim_l2a1_81.py:87`). For LoopTunnels #5752 and #5569 the owner lookup returns null (`log:16-17`, `partner_diagram: null`), so both fell to AMBIGUOUS. The log has no T-gates.
+- `result_81-2.json:10` says "script re-makes them as rule-166 tunnels". The log contradicts that.
+- These two rows would fail with a perfect un-flip rule, and a real LabVIEW run would leave undirected tunnels (a broken VI).
+
+**Q1 (right terminal?):** Yes, 5705 is the frame-side inner source in S1. The row targets the right face of the tunnel, but the row itself should not exist.
+
+**Q2 (does real LabVIEW flip?):**
+- **The flip on move is measured.** The joint real move showed 10 unpredicted inner flips and 2 unpredicted outer flips on SelectorTunnels, and 5705/5999 left dangling (`l2a1_tunflip_80.log:195-196`).
+- **The un-flip after re-sourcing is not measured anywhere I found in the repo.** NI's documentation says a tunnel's direction follows where its source is. That supports an un-flip in real LabVIEW once 6038 gets a source: https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-connected-to-undirected-tunnel.html, and forum discussion at https://lavag.org/topic/11590-wire-connected-to-undirected-tunnel/.
+- So the model gap is real. It is just not the only defect.
+
+**Also:** this was not a surprise failure. The script's own docstring predicts a stop at the first row whose source is flipped (`sim_l2a1_81.py:13-15`). Only the P2 gate contradicted it.
+
+**3. What would falsify the claim:** In the step-32 state file, 5705 and 5999 share one nonzero wire uid, 6038 sits on a sourced wire, and #5725's outer 5741 has wire_uid 0.
+
+**Cheapest discriminating test (pure Python, no LabVIEW):**
+1. Load the step-32 state from `tools/bench/sim/l2a1/`.
+2. Print `wire_uid` and `is_source` for 5705, 5999, 6038 and 5741.
+3. Apply a local un-flip: set #5702's inners back to `is_source` once 6038 has a source.
+4. Re-run steps 33 onwards.
+
+Under the claim, those steps pass. Under my alternative, step 33 fails with "sink is occupied", and the #5725 and #5967 rows fail with 0 source terminals.
+
+To separate this from "plan order wrong": step 19 < step 33 already rules out ordering for #5702.
+
+VERDICT {"schema":"verdict/1","id":"hyp-sim-l2a1-81","verdict":"refuted","alternative":"Builder defect: rw_5705_5999 re-wires an uncut in-closure wire (edges() drops flipped-direction edges), and #5725/#5967 outers are never re-sourced (owner map lacks LoopTunnels 5752/5569, log:16-17), so an un-flip rule alone still fails.","discriminating_test":"Offline on step-32 state: print wire_uid/is_source of 5705,5999,6038,5741; apply a local un-flip for #5702 and replay step 33+. Claim predicts pass; alternative predicts 'sink occupied' at 33 and 0-source at the #5725/#5967 rows.","violations":[],"sources":["tools/bench/sim_l2a1_81.py:50-54","tools/bench/sim_l2a1_81.py:87","tools/bench/sim_l2a1_81.py:98-102","tools/bench/sim_l2a1_81.log:12","tools/bench/sim_l2a1_81.log:16-17","tools/stagesim.py:701-704","tools/bench/l2a1_tunflip_80.log:195-196","https://www.ni.com/docs/en-US/bundle/labview-api-ref/page/errors/wire-connected-to-undirected-tunnel.html"],"note":"Un-flip gap is plausibly real (NI: direction follows source) but unmeasured here; it is not the only defect. Script docstring (:13-15) already predicted this stop."}
+BGRUN END rc=0 after 126s

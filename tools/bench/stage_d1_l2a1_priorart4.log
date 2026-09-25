@@ -1,0 +1,39 @@
+BGRUN START 2026-09-25 12:42:23 limit 20.0 min: py tools\prior_art_review.py --plan-file docs\d1-loop12-17-split-plan.md --slug c81-l2a1-r4 --trigger cycle-start --recipe tools\recipes\stage_d1_l2a1.py
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c81-l2a1-r4.txt (111462 chars)
+   review card tools\bench\cards\review_priorart-c81-l2a1-r4.json
+OUTCOME: ANSWERED (53s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-25-priorart-c81-l2a1-r4.md
+COST: $1.4300  in 14 / out 4088 / cache-create 144979 / cache-read 941714  (49s, 9 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c81-l2a1-r4 verdict=novel -> tools\bench\cards\verdict_priorart-c81-l2a1-r4.json
+--- ANSWER ---
+I'm checking the current recipe against the two failed pre-runs and Pre-decided 184, then I'll give the verdict.
+
+**No: the work under review is `novel`.** No prior-art finding blocks it. The one thing still owed is the pre-run at the recipe's current md5 (`e589dc74`), and that is a launch-gate step, not prior art.
+
+**PART A: the direction**
+- **A1, settled already: not blocking.** The direction was decided in Pre-decided 181(d), 182, 183(e) and 184 of `docs/d1-loop12-17-split-plan.md`. The recipe carries out those decisions and does not reopen any of them:
+  - It pins stageplan `329d89ee` in its L0 gate (`tools/recipes/stage_d1_l2a1.py:40-41`), as 184 requires.
+  - It declares `rw_10988_17272` as its only sink gate (`:20`), as 183(d) requires.
+  - Its FU gate checks that the frame-uid sets are taken from the graph and are non-empty (`:23-25, :84`), as 182(e) and 181(b) require.
+  - Its PB gate is the frame-keyed cdiff, fatal, before the save (`:92-97`).
+- **A1 via 178(f): released last round.** Review r3 blocked on 178(f)'s X4 class ("terminal None" on `#5825/#5702/#10750/#5725`). That block was released with `FIXED:` at `archive/peer/2026-09-25-priorart-c81-l2a1-r3.md:988-989`. The current recipe still carries that fix: `"term": nm.get(a["dst"]["term_uid"])` at `stage_d1_l2a1.py:80`.
+- **A2, refuted already: nothing applies.** Route B's failure mode (Pre-decided 162, re-wiring in memory) does not occur here. The recipe starts from the saved `D1_k` bed in a fresh instance and saves its own output (`:2-3, :101, :115`).
+- **A3, contradicted: nothing new.** r3 reported that 183 still named stageplan md5 `73e95bc7`. Pre-decided 184 now states in the plan that `329d89ee` supersedes it. The recipe's `len(CT_UIDS) == 4` check (`:63`) matches the ControlTerminals named in 181(d) and 182(b): `#17487`, `#5634`, `#23541`, `#17272`.
+- **A4, unread evidence: nothing missing.** `tools/bench/prerun_l2a1_81b.log` records the latest pre-run failure, and 184 already carries its ruling.
+
+**PART B: the artifact**
+- **B1, already built: No.** There is no `tools/bench/stage_d1_l2a1.log` and no `claudeDev\D1_l2_a1_*` file.
+- **B2, already failed: pre-run only, and both causes have been addressed.**
+  - **Pre-run 1** (`prerun_l2a1_81.log:279-285`) failed on X2/X3, because the recipe named no plan-file literal, and on X4, because of `term None`. The recipe now names the plan at `:16`, and the X4 fix is at `:80` (the r3 `FIXED:` release).
+  - **Pre-run 2** (`prerun_l2a1_81b.log:279, :285`) failed on X4 alone: `verify_term_uid #5082/#5164 on #5058: UNWIRED`. Those two sinks belong to the plan's connect rows `rw_6007_5082` and `rw_6026_5164` (`tools/bench/sim/l2a1/plan_l2a1.json:487-507`). Pre-decided 184 took option (a), K's precedent at `stage_d1_k.py:81`. The current recipe applies it at `:75`: only op kinds `tunnel` and `wire_sr` get the P2 second pass, and connect sinks fall back to E1 plus Remove Bad Wires. This is a new change, not a repeat of the failed build.
+  - **No pre-run exists yet at md5 `e589dc74`.** Whether X4 now passes is still unmeasured. That is the discriminating test below.
+- **B3, helper exists: the recipe reuses them.** It uses `stagexec` `Executor`/`LVBackend` with `sink_gates`, `allterms.read_terms` (the 179(b) reader), `vigraph.computation_diff_frame`, `cfw_second_pass` and `Stage.save(broken_ok=True)`. Nothing is hand-rolled.
+  - The `addr_offline` tool from 178(f)/184 option (c) remains owed after L2-A1, as 184 itself says. It does not block this run.
+- **B4, already measured: No.** Only dry runs exist. The real end-state PB has never been measured.
+
+PRIOR-ART: novel
+
+VERDICT {"schema":"verdict/1","id":"priorart-c81-l2a1-r4","verdict":"novel","alternative":"If some compiled P2 op other than connect still targets an unwired #5058 terminal, X4 fails a third time; the :75 filter covers only kinds tunnel/wire_sr, and the plan's rw_6007_5082/rw_6026_5164 compile kind is inferred from PD184, not read.","discriminating_test":"Run py tools/stage_prerun.py --prerun tools/recipes/stage_d1_l2a1.py (md5 e589dc74) on graph_k_80_owners.json: X4 must be 18/18 addressable with 0 UNWIRED lines for #5082/#5164, and X2-X5 must PASS.","violations":[],"sources":["tools/recipes/stage_d1_l2a1.py:75-80","tools/bench/prerun_l2a1_81b.log:279-287","tools/bench/prerun_l2a1_81.log:279-285","archive/peer/2026-09-25-priorart-c81-l2a1-r3.md:988-989","tools/bench/sim/l2a1/plan_l2a1.json:487-507"],"note":"Both earlier X4 causes are addressed: the r3 FIXED at :80 and the PD184(a) connect exclusion at :75. There is no stage_d1_l2a1.log and no D1_l2_a1 VI. The 178(f)/184(c) addr_offline tool task is owed after L2-A1 and does not block."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c81-l2a1-r4.md
+   STOP RECORD: none - 2026-09-25-priorart-c81-l2a1-r4.md carries no blocking verdict
+   NOVEL RECORD written: tools/recipes/stage_d1_l2a1.py sha c0f25031e759 -> these bytes are released by this review; editing them again re-arms the gate
+BGRUN END rc=0 after 57s

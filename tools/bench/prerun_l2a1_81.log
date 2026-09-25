@@ -1,0 +1,287 @@
+BGRUN START 2026-09-25 12:36:30 limit 10.0 min: py -u tools/stage_prerun.py --prerun tools/recipes/stage_d1_l2a1.py --graph tools/bench/sim/l2a1/graph_k_80_owners.json
+stage_d1_l2a1 - cycle 81 STAGE L2-A1 (docs/d1-loop12-17-split-plan.md Pre-decided 181(d), 182, 183; executed, not re-decided).
+INPUT the bed claudeDev\D1_k_20260925_100155.vi (6cf5b077..., named by the plan's base graph), FRESH LabVIEW -> claudeDev\D1_l2_a1_<ts>.vi
+(rule-6 GUI save when ExecState 0 - the 9 PB rows are open by design). ROWS ONLY FROM THE FINALIZED PLAN tools/bench/sim/l2a1/plan_l2a1.json
+(its finalized.plan_in = stageplan_l2a1.json md5 329d89ee, PD183(e) pos rows, sim_l2a1_81c.log); no uid and no terminal name is typed here, except
+the PD183(d) sink-gate ACTION ID, looked up in the plan.
+PRIOR ART: stage_d1_k.py (the skeleton), stagexec (sink_gates 80-3), diag_ctlterm_read_80.py (179(b) reader), sim_l2a1_81b.py (frame-keyed S1,
+frame-uid set). No new op. PREDICTION: E1 each real op == its step (42 ops); CT 179(b) reader on every ControlTerminal row (ONE row, a
+ControlTerminal, wire partners == the simulated end's) - also the rw_10988_17272 sink gate; P2 second pass (wire_delta 0, Is Broken? False)
+on every node-terminal sink; FU frame-uid sets of moved Cases equal and non-empty; PB frame-keyed cdiff == the 9 open_rows (FATAL, pre-save);
+RBW on a scratch of the saved file deletes no re-wired sink's wire; ES recorded; md5/pins unchanged; refs closed; LabVIEW gone at exit.
+    MATERIAL=1 py tools/bgrun.py --max-min 80 --log tools/bench/stage_d1_l2a1.log -- py -u tools/recipes/stage_d1_l2a1.py
+  PASS  L0 the executed plan is FINAL and its plan_in is the PD183(e) stageplan (md5 329d89ee)  ('046237e1ab47d2d6f9faee2fc7bec9a3', {'path': 'tools/bench/sim/l2a1/stageplan_l2a1.json', 'md5': '329d89eecaa2706ccce38640dbede5aa'})
+
+---------- [0] FILES ONLY (DRY RUN: no LabVIEW, no copy)
+  PASS  K1 input md5 == 6cf5b0777aafa12112d8a786a9eed1ed  got 6cf5b0777aafa12112d8a786a9eed1ed
+  PASS  DRY graph JSON for input md5 6cf5b0777aafa12112d8a786a9eed1ed  tools/bench/sim/l2a1/graph_k_80_owners.json
+  PASS  L1 every plan action compiled into exactly one real op (46 -> 42); sink_gates [{'gate': 'CT-rw_10988_17272', 'sink': [17272, 'min value']}]; CT rows [5634, 17272, 17487, 23541]  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46]
+  STEPX 00 base read vs step_00: diff 0
+  PRIME 34 terminal indexes proved at base; unprovable []
+  FACT  OP move_in [1] -> err '' (0.0 s)
+  STEPX 01 move_in        acts [1] ids ['mv_5540'] bound {} diff 0
+  FACT  OP move_in [2] -> err '' (0.0 s)
+  STEPX 02 move_in        acts [2] ids ['mv_9647'] bound {} diff 0
+  FACT  OP move_in [3] -> err '' (0.0 s)
+  STEPX 03 move_in        acts [3] ids ['mv_10247'] bound {} diff 0
+  FACT  OP move_in [4] -> err '' (0.0 s)
+  STEPX 04 move_in        acts [4] ids ['mv_10445'] bound {} diff 0
+  FACT  OP move_in [5] -> err '' (0.0 s)
+  STEPX 05 move_in        acts [5] ids ['mv_10950'] bound {} diff 0
+  FACT  OP move_in [6] -> err '' (0.0 s)
+  STEPX 06 move_in        acts [6] ids ['mv_17289'] bound {} diff 0
+  FACT  OP move_in [7] -> err '' (0.0 s)
+  STEPX 07 move_in        acts [7] ids ['mv_10969'] bound {} diff 0
+  FACT  OP move_in [8] -> err '' (0.0 s)
+  STEPX 08 move_in        acts [8] ids ['mv_10757'] bound {} diff 0
+  FACT  OP move_in [9] -> err '' (0.0 s)
+  STEPX 09 move_in        acts [9] ids ['mv_17487'] bound {} diff 0
+  FACT  OP move_in [10] -> err '' (0.0 s)
+  STEPX 10 move_in        acts [10] ids ['mv_5634'] bound {} diff 0
+  FACT  OP move_in [11] -> err '' (0.0 s)
+  STEPX 11 move_in        acts [11] ids ['mv_23541'] bound {} diff 0
+  FACT  OP move_in [12] -> err '' (0.0 s)
+  STEPX 12 move_in        acts [12] ids ['mv_10739'] bound {} diff 0
+  FACT  OP move_in [13] -> err '' (0.0 s)
+  STEPX 13 move_in        acts [13] ids ['mv_10929'] bound {} diff 0
+  FACT  OP move_in [14] -> err '' (0.0 s)
+  STEPX 14 move_in        acts [14] ids ['mv_17272'] bound {} diff 0
+  FACT  OP add_sr [15] -> err '' (0.0 s)
+  STEPX 15 add_sr         acts [15] ids ['sr1'] bound {-1: 10000001, -2: 10000004} diff 0
+  FACT  OP wire_connect [16] -> err '' (0.0 s)
+  STEPX 16 connect        acts [16] ids ['sr1_init'] bound {} diff 0
+  FACT  OP wire_wire_sr [17] -> err '' (0.0 s)
+  STEPX 17 wire_sr        acts [17] ids ['sr1_R'] bound {} diff 0
+  FACT  OP wire_wire_sr [18] -> err '' (0.0 s)
+  STEPX 18 wire_sr        acts [18] ids ['sr1_L0'] bound {} diff 0
+  FACT  OP add_sr [19] -> err '' (0.0 s)
+  STEPX 19 add_sr         acts [19] ids ['sr2'] bound {-9: 10000009, -10: 10000012} diff 0
+  FACT  OP wire_connect [20] -> err '' (0.0 s)
+  STEPX 20 connect        acts [20] ids ['sr2_init'] bound {} diff 0
+  FACT  OP wire_wire_sr [21] -> err '' (0.0 s)
+  STEPX 21 wire_sr        acts [21] ids ['sr2_R'] bound {} diff 0
+  FACT  OP wire_wire_sr [22] -> err '' (0.0 s)
+  STEPX 22 wire_sr        acts [22] ids ['sr2_L0'] bound {} diff 0
+  FACT  OP add_sr [23] -> err '' (0.0 s)
+  STEPX 23 add_sr         acts [23] ids ['sr3'] bound {-17: 10000017, -18: 10000020} diff 0
+  FACT  OP wire_connect [24] -> err '' (0.0 s)
+  STEPX 24 connect        acts [24] ids ['sr3_init'] bound {} diff 0
+  FACT  OP wire_wire_sr [25] -> err '' (0.0 s)
+  STEPX 25 wire_sr        acts [25] ids ['sr3_R'] bound {} diff 0
+  FACT  OP wire_wire_sr [26] -> err '' (0.0 s)
+  STEPX 26 wire_sr        acts [26] ids ['sr3_L0'] bound {} diff 0
+  FACT  OP wire_tunnel [27, 28, 29] -> err '' (0.0 s)
+  STEPX 27 tunnel         acts [27, 28, 29] ids ['tun1', 'tun1_out', 'tun1_in'] bound {-25: 10000026} diff 0
+  FACT  OP wire_tunnel [30, 31, 32] -> err '' (0.0 s)
+  STEPX 28 tunnel         acts [30, 31, 32] ids ['tun2', 'tun2_out', 'tun2_in'] bound {-29: 10000030} diff 0
+  FACT  OP wire_connect [33] -> err '' (0.0 s)
+  STEPX 29 connect        acts [33] ids ['rw_5171_10871'] bound {} diff 0
+  FACT  OP wire_connect [34] -> err '' (0.0 s)
+  STEPX 30 connect        acts [34] ids ['rw_5171_10975'] bound {} diff 0
+  FACT  OP wire_connect [35] -> err '' (0.0 s)
+  STEPX 31 connect        acts [35] ids ['rw_5634_10256'] bound {} diff 0
+  FACT  OP wire_connect [36] -> err '' (0.0 s)
+  STEPX 32 connect        acts [36] ids ['rw_9668_10469'] bound {} diff 0
+  FACT  OP wire_connect [37] -> err '' (0.0 s)
+  STEPX 33 connect        acts [37] ids ['rw_10253_5608'] bound {} diff 0
+  FACT  OP wire_connect [38] -> err '' (0.0 s)
+  STEPX 34 connect        acts [38] ids ['rw_10594_10259'] bound {} diff 0
+  FACT  OP wire_connect [39] -> err '' (0.0 s)
+  STEPX 35 connect        acts [39] ids ['rw_10738_11055'] bound {} diff 0
+  FACT  OP wire_connect [40] -> err '' (0.0 s)
+  STEPX 36 connect        acts [40] ids ['rw_10943_10877'] bound {} diff 0
+  FACT  OP wire_connect [41] -> err '' (0.0 s)
+  STEPX 37 connect        acts [41] ids ['rw_10988_17272'] bound {} diff 0
+  FACT  OP wire_connect [42] -> err '' (0.0 s)
+  STEPX 38 connect        acts [42] ids ['rw_11052_9680'] bound {} diff 0
+  FACT  OP wire_connect [43] -> err '' (0.0 s)
+  STEPX 39 connect        acts [43] ids ['rw_17365_11059'] bound {} diff 0
+  FACT  OP wire_connect [44] -> err '' (0.0 s)
+  STEPX 40 connect        acts [44] ids ['rw_17487_9676'] bound {} diff 0
+  FACT  OP wire_connect [45] -> err '' (0.0 s)
+  STEPX 41 connect        acts [45] ids ['rw_6007_5082'] bound {} diff 0
+  FACT  OP wire_connect [46] -> err '' (0.0 s)
+  STEPX 42 connect        acts [46] ids ['rw_6026_5164'] bound {} diff 0
+  PASS  E1 every real op's graph == its simulated step (42 ops)
+  FACT  BINDING obj {-1: 10000001, -2: 10000004, -9: 10000009, -10: 10000012, -17: 10000017, -18: 10000020, -25: 10000026, -29: 10000030}
+  PASS  CT #5634 ControlTerminal row read by the 179(b) reader == simulated end  dry
+  PASS  CT #17272 ControlTerminal row read by the 179(b) reader == simulated end  dry
+  PASS  CT #17487 ControlTerminal row read by the 179(b) reader == simulated end  dry
+  PASS  CT #23541 ControlTerminal row read by the 179(b) reader == simulated end  dry
+  FACT  P2 mv_5540 (move_in): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 mv_9647 (move_in): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 mv_10247 (move_in): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 mv_10445 (move_in): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 mv_10950 (move_in): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 mv_17289 (move_in): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 mv_10969 (move_in): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 mv_10757 (move_in): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 mv_17487 (move_in): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 mv_5634 (move_in): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 mv_23541 (move_in): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 mv_10739 (move_in): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 mv_10929 (move_in): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 mv_17272 (move_in): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 sr1 (add_sr): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 sr1_init (connect): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 sr1_R (wire_sr): sink is a register face / panel terminal - E1 (+CT) only
+  UNVERIFIED  address {'uid': 5825, 'term': None, 'verify_term_uid': 5883, 'diagram': 23166, 'owner_class': '', 'term_class': ''} after mutation Stage._op move_in: #5825 not in Diagram[21].Nodes[]
+  FACT  2nd-pass sink addressed: dry: unverified after mutation
+  FACT  #5825: 0 terminal(s), 0 WIRED
+  FACT  2nd pass sr1_L0 raised IndexError: list index out of range
+  FACT  P2 sr1_L0 ORDERED SECOND PASS: Wire 1921 -> 1921 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 sr1_L0 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  UNVERIFIED  P2 sr1_L0 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  (dry: after mutation Stage._op move_in)
+  FACT  P2 sr2 (add_sr): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 sr2_init (connect): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 sr2_R (wire_sr): sink is a register face / panel terminal - E1 (+CT) only
+  UNVERIFIED  address {'uid': 5702, 'term': None, 'verify_term_uid': 6038, 'diagram': 23166, 'owner_class': '', 'term_class': ''} after mutation Stage._op move_in: #5702 not in Diagram[21].Nodes[]
+  FACT  2nd-pass sink addressed: dry: unverified after mutation
+  FACT  #5702: 0 terminal(s), 0 WIRED
+  FACT  2nd pass sr2_L0 raised IndexError: list index out of range
+  FACT  P2 sr2_L0 ORDERED SECOND PASS: Wire 1921 -> 1921 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 sr2_L0 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  UNVERIFIED  P2 sr2_L0 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  (dry: after mutation Stage._op move_in)
+  FACT  P2 sr3 (add_sr): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 sr3_init (connect): sink is a register face / panel terminal - E1 (+CT) only
+  FACT  P2 sr3_R (wire_sr): sink is a register face / panel terminal - E1 (+CT) only
+  UNVERIFIED  address {'uid': 10750, 'term': None, 'verify_term_uid': 10760, 'diagram': 23166, 'owner_class': '', 'term_class': ''} after mutation Stage._op move_in: #10750 not in Diagram[21].Nodes[]
+  FACT  2nd-pass sink addressed: dry: unverified after mutation
+  FACT  #10750: 0 terminal(s), 0 WIRED
+  FACT  2nd pass sr3_L0 raised IndexError: list index out of range
+  FACT  P2 sr3_L0 ORDERED SECOND PASS: Wire 1921 -> 1921 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 sr3_L0 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  UNVERIFIED  P2 sr3_L0 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  (dry: after mutation Stage._op move_in)
+  UNVERIFIED  address {'uid': 5725, 'term': None, 'verify_term_uid': 5741, 'diagram': 23166, 'owner_class': '', 'term_class': ''} after mutation Stage._op move_in: #5725 not in Diagram[21].Nodes[]
+  FACT  2nd-pass sink addressed: dry: unverified after mutation
+  FACT  #5725: 0 terminal(s), 0 WIRED
+  FACT  2nd pass tun1 raised IndexError: list index out of range
+  FACT  P2 tun1 ORDERED SECOND PASS: Wire 1921 -> 1921 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 tun1 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  UNVERIFIED  P2 tun1 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  (dry: after mutation Stage._op move_in)
+  UNVERIFIED  address {'uid': 5967, 'term': None, 'verify_term_uid': 5976, 'diagram': 23166, 'owner_class': '', 'term_class': ''} after mutation Stage._op move_in: #5967 not in Diagram[21].Nodes[]
+  FACT  2nd-pass sink addressed: dry: unverified after mutation
+  FACT  #5967: 0 terminal(s), 0 WIRED
+  FACT  2nd pass tun2 raised IndexError: list index out of range
+  FACT  P2 tun2 ORDERED SECOND PASS: Wire 1921 -> 1921 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 tun2 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  UNVERIFIED  P2 tun2 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  (dry: after mutation Stage._op move_in)
+  UNVERIFIED  address {'uid': 10757, 'term': None, 'verify_term_uid': 10871, 'diagram': 23166, 'owner_class': '', 'term_class': ''} after mutation Stage._op move_in: #10757 not in Diagram[21].Nodes[]
+  FACT  2nd-pass sink addressed: dry: unverified after mutation
+  FACT  #10757: 0 terminal(s), 0 WIRED
+  FACT  2nd pass rw_5171_10871 raised IndexError: list index out of range
+  FACT  P2 rw_5171_10871 ORDERED SECOND PASS: Wire 1921 -> 1921 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 rw_5171_10871 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  UNVERIFIED  P2 rw_5171_10871 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  (dry: after mutation Stage._op move_in)
+  UNVERIFIED  address {'uid': 10969, 'term': None, 'verify_term_uid': 10975, 'diagram': 23166, 'owner_class': '', 'term_class': ''} after mutation Stage._op move_in: #10969 not in Diagram[21].Nodes[]
+  FACT  2nd-pass sink addressed: dry: unverified after mutation
+  FACT  #10969: 0 terminal(s), 0 WIRED
+  FACT  2nd pass rw_5171_10975 raised IndexError: list index out of range
+  FACT  P2 rw_5171_10975 ORDERED SECOND PASS: Wire 1921 -> 1921 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 rw_5171_10975 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  UNVERIFIED  P2 rw_5171_10975 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  (dry: after mutation Stage._op move_in)
+  UNVERIFIED  address {'uid': 10247, 'term': None, 'verify_term_uid': 10256, 'diagram': 23166, 'owner_class': '', 'term_class': ''} after mutation Stage._op move_in: #10247 not in Diagram[21].Nodes[]
+  FACT  2nd-pass sink addressed: dry: unverified after mutation
+  FACT  #10247: 0 terminal(s), 0 WIRED
+  FACT  2nd pass rw_5634_10256 raised IndexError: list index out of range
+  FACT  P2 rw_5634_10256 ORDERED SECOND PASS: Wire 1921 -> 1921 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 rw_5634_10256 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  UNVERIFIED  P2 rw_5634_10256 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  (dry: after mutation Stage._op move_in)
+  UNVERIFIED  address {'uid': 10465, 'term': None, 'verify_term_uid': 10469, 'diagram': 23166, 'owner_class': '', 'term_class': ''} after mutation Stage._op move_in: #10465 not in Diagram[21].Nodes[]
+  FACT  2nd-pass sink addressed: dry: unverified after mutation
+  FACT  #10465: 0 terminal(s), 0 WIRED
+  FACT  2nd pass rw_9668_10469 raised IndexError: list index out of range
+  FACT  P2 rw_9668_10469 ORDERED SECOND PASS: Wire 1921 -> 1921 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 rw_9668_10469 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  UNVERIFIED  P2 rw_9668_10469 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  (dry: after mutation Stage._op move_in)
+  UNVERIFIED  address {'uid': 5603, 'term': None, 'verify_term_uid': 5608, 'diagram': 23166, 'owner_class': '', 'term_class': ''} after mutation Stage._op move_in: #5603 not in Diagram[21].Nodes[]
+  FACT  2nd-pass sink addressed: dry: unverified after mutation
+  FACT  #5603: 0 terminal(s), 0 WIRED
+  FACT  2nd pass rw_10253_5608 raised IndexError: list index out of range
+  FACT  P2 rw_10253_5608 ORDERED SECOND PASS: Wire 1921 -> 1921 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 rw_10253_5608 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  UNVERIFIED  P2 rw_10253_5608 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  (dry: after mutation Stage._op move_in)
+  UNVERIFIED  address {'uid': 10247, 'term': None, 'verify_term_uid': 10259, 'diagram': 23166, 'owner_class': '', 'term_class': ''} after mutation Stage._op move_in: #10247 not in Diagram[21].Nodes[]
+  FACT  2nd-pass sink addressed: dry: unverified after mutation
+  FACT  #10247: 0 terminal(s), 0 WIRED
+  FACT  2nd pass rw_10594_10259 raised IndexError: list index out of range
+  FACT  P2 rw_10594_10259 ORDERED SECOND PASS: Wire 1921 -> 1921 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 rw_10594_10259 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  UNVERIFIED  P2 rw_10594_10259 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  (dry: after mutation Stage._op move_in)
+  UNVERIFIED  address {'uid': 10950, 'term': None, 'verify_term_uid': 11055, 'diagram': 23166, 'owner_class': '', 'term_class': ''} after mutation Stage._op move_in: #10950 not in Diagram[21].Nodes[]
+  FACT  2nd-pass sink addressed: dry: unverified after mutation
+  FACT  #10950: 0 terminal(s), 0 WIRED
+  FACT  2nd pass rw_10738_11055 raised IndexError: list index out of range
+  FACT  P2 rw_10738_11055 ORDERED SECOND PASS: Wire 1921 -> 1921 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 rw_10738_11055 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  UNVERIFIED  P2 rw_10738_11055 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  (dry: after mutation Stage._op move_in)
+  UNVERIFIED  address {'uid': 10757, 'term': None, 'verify_term_uid': 10877, 'diagram': 23166, 'owner_class': '', 'term_class': ''} after mutation Stage._op move_in: #10757 not in Diagram[21].Nodes[]
+  FACT  2nd-pass sink addressed: dry: unverified after mutation
+  FACT  #10757: 0 terminal(s), 0 WIRED
+  FACT  2nd pass rw_10943_10877 raised IndexError: list index out of range
+  FACT  P2 rw_10943_10877 ORDERED SECOND PASS: Wire 1921 -> 1921 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 rw_10943_10877 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  UNVERIFIED  P2 rw_10943_10877 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  (dry: after mutation Stage._op move_in)
+  FACT  P2 rw_10988_17272 (connect): sink is a register face / panel terminal - E1 (+CT) only
+  UNVERIFIED  address {'uid': 9647, 'term': None, 'verify_term_uid': 9680, 'diagram': 23166, 'owner_class': '', 'term_class': ''} after mutation Stage._op move_in: #9647 not in Diagram[21].Nodes[]
+  FACT  2nd-pass sink addressed: dry: unverified after mutation
+  FACT  #9647: 0 terminal(s), 0 WIRED
+  FACT  2nd pass rw_11052_9680 raised IndexError: list index out of range
+  FACT  P2 rw_11052_9680 ORDERED SECOND PASS: Wire 1921 -> 1921 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 rw_11052_9680 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  UNVERIFIED  P2 rw_11052_9680 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  (dry: after mutation Stage._op move_in)
+  UNVERIFIED  address {'uid': 10950, 'term': None, 'verify_term_uid': 11059, 'diagram': 23166, 'owner_class': '', 'term_class': ''} after mutation Stage._op move_in: #10950 not in Diagram[21].Nodes[]
+  FACT  2nd-pass sink addressed: dry: unverified after mutation
+  FACT  #10950: 0 terminal(s), 0 WIRED
+  FACT  2nd pass rw_17365_11059 raised IndexError: list index out of range
+  FACT  P2 rw_17365_11059 ORDERED SECOND PASS: Wire 1921 -> 1921 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 rw_17365_11059 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  UNVERIFIED  P2 rw_17365_11059 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  (dry: after mutation Stage._op move_in)
+  UNVERIFIED  address {'uid': 9647, 'term': None, 'verify_term_uid': 9676, 'diagram': 23166, 'owner_class': '', 'term_class': ''} after mutation Stage._op move_in: #9647 not in Diagram[21].Nodes[]
+  FACT  2nd-pass sink addressed: dry: unverified after mutation
+  FACT  #9647: 0 terminal(s), 0 WIRED
+  FACT  2nd pass rw_17487_9676 raised IndexError: list index out of range
+  FACT  P2 rw_17487_9676 ORDERED SECOND PASS: Wire 1921 -> 1921 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 rw_17487_9676 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  UNVERIFIED  P2 rw_17487_9676 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  (dry: after mutation Stage._op move_in)
+  UNVERIFIED  address {'uid': 5058, 'term': None, 'verify_term_uid': 5082, 'diagram': 23166, 'owner_class': '', 'term_class': ''} after mutation Stage._op move_in: terminal uid #5082: wire 0, is_source False - uid addressing needs a wired terminal of direction False
+  FACT  2nd-pass sink addressed: dry: unverified after mutation
+  FACT  #5058: 0 terminal(s), 0 WIRED
+  FACT  2nd pass rw_6007_5082 raised IndexError: list index out of range
+  FACT  P2 rw_6007_5082 ORDERED SECOND PASS: Wire 1921 -> 1921 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 rw_6007_5082 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  UNVERIFIED  P2 rw_6007_5082 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  (dry: after mutation Stage._op move_in)
+  UNVERIFIED  address {'uid': 5058, 'term': None, 'verify_term_uid': 5164, 'diagram': 23166, 'owner_class': '', 'term_class': ''} after mutation Stage._op move_in: terminal uid #5164: wire 0, is_source False - uid addressing needs a wired terminal of direction False
+  FACT  2nd-pass sink addressed: dry: unverified after mutation
+  FACT  #5058: 0 terminal(s), 0 WIRED
+  FACT  2nd pass rw_6026_5164 raised IndexError: list index out of range
+  FACT  P2 rw_6026_5164 ORDERED SECOND PASS: Wire 1921 -> 1921 (delta 0); op err None; `UID 2` None; `Is Broken?` None
+  PASS  P2 rw_6026_5164 wire_delta 0 on the ordered idempotent second pass (Pre-decided 94)  wire_delta 0
+  UNVERIFIED  P2 rw_6026_5164 `Wire.Is Broken?` 6371004 reads False on the SEPARATE ORDERED pass (42(b))  (dry: after mutation Stage._op move_in)
+  PASS  FU frame-diagram uid sets of moved CaseStructures equal before/after, non-empty (181(b))  ([5582, 5592, 10453, 10459], [5582, 5592, 10453, 10459])
+  FACT  ExecState [after all rows (warm, RECORDED - the PB rows are open by design)] D1_l2_a1_20260925_123631.vi = <dry:g.exec_state>
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'current frame data array in'", 'before': ['2626|Terminal|appended array|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 376, 'class': 'SubVI', 'sink': "#376 Terminal 'frame index'", 'before': ['644|Terminal||0'], 'after': []}
+  FACT  CDIFF ROW {'node': 2626, 'class': 'BuildArray', 'sink': "#2626 Terminal 'array'", 'before': ['5058|Terminal|x,y,z array out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 5058, 'class': 'SubVI', 'sink': "#5058 Terminal 'Image In'", 'before': ['6810|Terminal|Image Out|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 5696, 'class': 'SubVI', 'sink': "#5696 Terminal 'x,y,z array'", 'before': ['5058|Terminal|x,y,z array out|0@2765/f1'], 'after': []}
+  FACT  CDIFF ROW {'node': 6085, 'class': 'SubVI', 'sink': "#6085 Terminal 'x,y,z array'", 'before': ['5058|Terminal|x,y,z array out|0@2765/f0'], 'after': []}
+  FACT  CDIFF ROW {'node': 9703, 'class': 'Function', 'sink': "#9703 ParameterTerminal 'x'", 'before': ['10757|Terminal|element|0@10978/f1'], 'after': ['23541|ControlTerminal|index|0@10978/f1']}
+  FACT  CDIFF ROW {'node': 10382, 'class': 'Function', 'sink': "#10382 ParameterTerminal 'x'", 'before': ['9647|ParameterTerminal|x .and. y?|0'], 'after': []}
+  FACT  CDIFF ROW {'node': 11529, 'class': 'Comparison', 'sink': "#11529 ParameterTerminal 'x'", 'before': ['10150|OverridableParameterTerminal|x+1|0@11336/f1', '9907|Terminal|Value|0@11336/f0'], 'after': []}
+  PASS  PB frame-keyed cdiff(S1, real end) == the plan's 9 open_rows (FATAL, before save)  {'extra': [], 'missing': []}
+  FACT  CENSUS after L2-A1 D1_l2_a1_20260925_123631.vi: {'Diagram': 173, 'WhileLoop': 6, 'SubVI': 92, 'Wire': 1921, 'LoopTunnel': 146, 'Local': 10, 'ControlTerminal': 116, 'Node': 0}
+  FACT  PH handles RECORDED: post-open <dry:bench_prep.labview_handles> -> before-save <dry:bench_prep.labview_handles>
+  PASS  PS artefact saved, md5 differs from the input; input unchanged  dry0dry0dry0dry0dry0dry0dry0dry0
+  PASS  X1 dry run PASS (whole Python path, COM stubbed)  None
+  FAIL  X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe  none among []
+  FAIL  X3 every plan row decided  0 rows + 0 stageplan actions
+  FAIL  X4 every end addressable offline (18 ends)  ["address() after Stage._op move_in: terminal None (sink) on #5825 SelectorTunnel: 0 matches; list ['']", "address() after Stage._op move_in: terminal None (sink) on #5702 SelectorTunnel: 0 matches; list ['']", "address() after Stage._op move_in: terminal None (sink) on #10750 SelectorTunnel: 0 matches; list ['Value']", "address() after Stage._op move_in: terminal None (sink) on #5725 SelectorTunn
+  FAIL  X5 wiring ops executed in the dry run == plan wire rows  ops 25 vs plan wire rows 0 + stageplan wiring real ops 0 (covering 0/0 wire actions)
+  PASS  X6 ast lint: no re-typed uid / terminal name  uids []; names []
+  PASS  X7 no Jev row on a RULE-CHAIN-S1 chain terminal (chain nodes [])  []
+
+=== DRY PASS: first_fail=None coverage 84/102 lines, first mutation Stage._op move_in, unverified 36, graph tools/bench/sim/l2a1/graph_k_80_owners.json
+=== PRERUN FAIL: 3 pass / 4 fail; first X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe: none among []
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":3,"fail":4},"first_fail":"X2 a finalized plan file (decisions rows, or a final PASS stageplan/1) is named by the recipe: none among []","artefacts":[]}
+BGRUN END rc=1 after 29s

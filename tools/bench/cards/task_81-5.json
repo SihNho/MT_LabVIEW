@@ -1,0 +1,50 @@
+{
+ "schema": "task/1",
+ "id": "81-5",
+ "kind": "build",
+ "goal": "PD182(d)(e): fix the L2-A1 plan builder, measure the tunnel un-flip on a D1_k scratch, fit stagesim to that read, then re-simulate L2-A1 with PD182(a)-(c) rows.",
+ "why": "sim_l2a1_81.log:59 SimError step 33; review archive/peer/2026-09-25-hyp-sim-l2a1-81.md: uncut in-closure re-wire + owners lack LT #5752/#5569.",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/sim_l2a1_81.py", "md5": "7f9b3c4e7abb9be51c4db90f4551dfc6"},
+  {"path": "tools/bench/sim_l2a1_81.log", "md5": "76b27160b9fafab58678451f61b041eb"},
+  {"path": "archive/peer/2026-09-25-hyp-sim-l2a1-81.md"},
+  {"path": "tools/bench/l2a1_partners_81.log"},
+  {"path": "tools/stagesim.py"},
+  {"path": "tools/bench/l2a1_graph_k_80.json", "md5": "c764150c4587b78429d0bbdb9d30c27f"},
+  {"path": "tools/bench/l2a1_tunflip_80.log"}
+ ],
+ "pass": [
+  "B1 builder: no re-wire of an uncut in-closure wire; owners include LT #5752/#5569; frame-uid sets sourced from graph (non-empty) - offline self-check counts",
+  "M1 scratch of D1_k (dated, claudeDev D1_k_scratch_*): joint L2-A1 move, wire #5702 outer from its K source, read dir of outer+inner terms",
+  "M1b same read for one more flipped input tunnel (#5725 or #5967); scratch deleted, D1_k md5 6cf5b077 unchanged, handles recorded",
+  "F1 stagesim fitted to the M1 read (un-flip rule or none, as measured); all selftest_stagesim* counts still pass; new case from M1",
+  "S1 re-run sim with PD182(a)(b) moved and (c) as PB open rows -> finalize verdict, PB list, cdiff_frame == PB, frame-uid sets equal",
+  "S2 REPORT: finalized stageplan path+md5, reconnect count, remaining ambiguous rows, sink_gates needed"
+ ],
+ "outputs": ["tools/bench/sim_l2a1_81*", "tools/bench/sim/l2a1/**", "tools/bench/l2a1_unflip_81.log", "tools/stagesim.py"],
+ "flags": {
+  "labview": "build",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/sim_l2a1_81*",
+   "tools/bench/sim/**",
+   "tools/bench/l2a1_*",
+   "tools/bench/opmodels/move_in.json",
+   "tools/stagesim.py",
+   "tools/bench/selftest_stagesim*",
+   "tools/bench/jev_gate.log",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_k_scratch_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 75},
+ "rules": ["no VI is run; D1_k itself is never opened for write", "the M1 read is the truth; fit the model to it", "if S1 does not finalize, report the first failing step; do not relax a gate", "result/1 <=10 facts <=3 open"],
+ "advances": ["M3", "R1", "R3"]
+}

@@ -1,0 +1,44 @@
+{
+ "schema": "task/1",
+ "id": "81-3",
+ "kind": "measure",
+ "goal": "Discharge the guard_peer block (hypothesis review of selftest_errorlist_reuse_81.log), rerun the 81-1 self-tests, then run 81-2's sim_l2a1_81.py unchanged and measure the #639 partners.",
+ "why": "results 81-1/81-2 BLOCKED on guard_peer: failed prediction in selftest_errorlist_reuse_81.log (C1 fixture effort 'e', K6 absent path), JEV new-problem p=0.612.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_81-1.json"},
+  {"path": "tools/bench/cards/result_81-2.json"},
+  {"path": "tools/bench/selftest_errorlist_reuse_81.py", "md5": "57c8d944fe10f1742f55890fc83a4e7a"},
+  {"path": "tools/bench/sim_l2a1_81.py", "md5": "7f9b3c4e7abb9be51c4db90f4551dfc6"},
+  {"path": "tools/bench/l2a1_facts_80.json", "md5": "d5003581aa1469ac5b82728d22361f0d"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/build_d1_v0.json"}
+ ],
+ "pass": [
+  "R1 review/1 card for selftest_errorlist_reuse_81.log; peer.ps1 -Agent claude -Role hypothesis -ReviewCard, ANSWERED, archived, disposition written",
+  "R2 rerun selftest_errorlist_reuse_81.py, selftest_errorlist_retry*, selftest_cycle_runner* and guard_card self-test -> counts each",
+  "R3 run sim_l2a1_81.py unchanged under bgrun (MATERIAL=1, --max-min 20) -> BGRUN END line, first SimError or finalize verdict, PB rows",
+  "R4 FACTS offline: for #10382 #11529 #17272 #10739 #10929: class, diagram, which plan section 2 sub-stage / build_d1_v0 moved set owns each",
+  "R5 FACTS: #17272's writers and readers (Locals? other?), like 181(c) for #23541"
+ ],
+ "outputs": ["tools/bench/sim_l2a1_81.log", "tools/bench/l2a1_partners_81.log", "tools/bench/cards/verdict_*"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/selftest_*",
+   "tools/bench/sim_l2a1_81*",
+   "tools/bench/sim/**",
+   "tools/bench/l2a1_partners_81*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": ["no LabVIEW; sim_l2a1_81.py is NOT edited before R3 (its result is the measurement)", "measure and report; do not add an un-flip rule or decide crossings", "result/1 <=10 facts <=3 open"],
+ "advances": ["M3", "R1", "R3"]
+}

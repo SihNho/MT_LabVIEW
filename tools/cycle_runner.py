@@ -38,6 +38,7 @@ SAFETY: this script starts no LabVIEW and touches no instrument. What the spawne
 by STATUS.md's rig-state banner, which `tools/cycle_prompt.md` forbids it to infer.
 """
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -54,6 +55,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 BGRUN = os.path.join(HERE, "bgrun.py")
 ERRORLIST_RETRY_S = 20      # card chat-E1: one retry of a COM-not-ready Error List FAIL
+ERRORLIST_REUSE_OUT = None  # card 81-1: where an offline re-verdict JSON is written (None = bench; self-tests set a tmp)
 sys.path.insert(0, HERE)
 import protocol  # noqa: E402  - session protocol v1: C1 cycle card, C6 first_fail_signature, C7 next.json
 
@@ -525,6 +527,25 @@ def errorlist_hook(n, a, bench, runner_log, status_text):
     if state == "experiment":
         log_line(runner_log, "ERRORLIST | %s | cycle %d | SKIP | rig state 실험중 (no LabVIEW use)" % (stamp, n))
         return "SKIP", None, "rig state experiment"
+    # REUSE (card 81-1, retrospective-cycle80 device-failed): bed md5 == the md5 of the newest complete saved read of
+    # that bed -> re-verdict its raw items OFFLINE with the current checker, no LabVIEW, log 'REUSE'. Any other case
+    # (no bed, changed md5, incomplete read, an error in the offline path) -> the GUI read below, unchanged.
+    try:
+        import errorlist_check as EC
+        bed = EC.current_bed_text(status_text)
+        if bed:
+            bmd5 = hashlib.md5(open(bed, "rb").read()).hexdigest()
+            src, raw, why = EC.find_reusable(bed, bmd5, bench)
+            if src:
+                verdict, js = EC.reverdict(bed, src, raw, bench, out_dir=ERRORLIST_REUSE_OUT)
+                log_line(runner_log, "ERRORLIST | %s | cycle %d | REUSE | %s | %s (bed md5 %s unchanged since %s; "
+                         "no LabVIEW)" % (stamp, n, verdict, js, bmd5, os.path.basename(src)))
+                return verdict, js, "offline re-verdict of %s" % os.path.basename(raw)
+            log_line(runner_log, "ERRORLIST | %s | cycle %d | GUI-READ | %s" % (stamp, n, why))
+    except Exception as e:  # noqa: BLE001 - the offline path must never block the GUI read
+        log_line(runner_log, "ERRORLIST | %s | cycle %d | GUI-READ | reuse path error %s: %s"
+                 % (stamp, n, type(e).__name__, str(e)[:160]))
+
     def run_once(log):
         cmd = [sys.executable, BGRUN, "--max-min", "15", "--log", log, "--",
                sys.executable, "-u", os.path.join(HERE, "errorlist_check.py")]
@@ -568,6 +589,17 @@ def write_cycle_card(bench, n, status_text, model, effort, ff_recipe, motor_verd
         bed = {"path": str(b["path"]), "md5": b.get("md5")}
     except (OSError, ValueError, KeyError, TypeError):
         pass
+    # card 81-1 E1: NOTHING ever writes <bench>/bed.json (grep over tools/: only this reader), so `bed` was null on
+    # every card (cycle_81.json). Fall back to the bed the Error List check itself reads (STATUS -> newest named
+    # claudeDev D1_*.vi, errorlist_check.current_bed_text) with its md5 - the value errorlist_hook's REUSE compares.
+    if bed is None:
+        try:
+            import errorlist_check as EC
+            bp = EC.current_bed_text(status_text)
+            if bp:
+                bed = {"path": bp, "md5": hashlib.md5(open(bp, "rb").read()).hexdigest()}
+        except Exception:   # noqa: BLE001 - a missing bed stays null, as before
+            bed = None
     next_path = os.path.join(bench, "next.json")
     card = {"schema": "cycle/1", "cycle": n, "rig_state": rig, "model": model, "effort": effort,
             "firefighter": ff_recipe or None, "bed": bed, "errorlist": errorlist,

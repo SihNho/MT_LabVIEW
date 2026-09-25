@@ -1,0 +1,19 @@
+{
+ "schema": "verdict/1",
+ "id": "hyp-selftest-elreuse-81",
+ "verdict": "refuted",
+ "alternative": "C1 is a self-test bug, but K6 hides a real guard_card hole: the exemption regex accepts `cd <any dir> && py tools/stagexec.py selftest` while protocol._abs resolves against ROOT and ignores the cd, so a foreign stagexec.py gets exempted. K8 does not cover this.",
+ "discriminating_test": "Add gate dec('cd \"C:/elsewhere\" && py tools/stagexec.py selftest') and expect rc 2 on card 81-1; rc 0 means a guard_card defect. Rerun C1 with effort 'medium' and expect bed md5 6cf5b077 for D1_k_20260925_100155.vi.",
+ "violations": [],
+ "sources": [
+  "tools/hooks/guard_card.py:44",
+  "tools/hooks/guard_card.py:57",
+  "tools/hooks/guard_card.py:72",
+  "tools/protocol.py:455-456",
+  "tools/protocol.py:479-487",
+  "tools/cycle_runner.py:595-602",
+  "tools/bench/selftest_errorlist_reuse_81.py:162-164",
+  "https://docs.python.org/3/library/os.path.html"
+ ],
+ "note": "C1 part of the claim holds (the schema rejected effort 'e' before bed was used; the fallback resolver is the same one R1 used successfully). K6 part holds only for the nonexistent absolute path; the cd-relative foreign path is exempted by the code as written."
+}

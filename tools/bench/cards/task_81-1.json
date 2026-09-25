@@ -1,0 +1,49 @@
+{
+ "schema": "task/1",
+ "id": "81-1",
+ "kind": "build",
+ "goal": "retro-80 device-failed: errorlist_hook re-verdicts the saved raw json offline when the bed md5 is unchanged, GUI read only on a changed md5; plus STATUS NEXT's small tool items.",
+ "why": "archive/peer/2026-09-25-retrospective-cycle80.md:266; also cycle_81.json carries bed:null, which the md5 comparison needs.",
+ "inputs": [
+  {"path": "tools/cycle_runner.py"},
+  {"path": "tools/errorlist_check.py"},
+  {"path": "tools/bench/errorlist_D1_k_20260925_100155_20260925_113500_raw.json", "md5": "432f7297e38c7e78d04a04462207f8cd"},
+  {"path": "tools/bench/cards/cycle_81.json"},
+  {"path": "archive/peer/2026-09-25-retrospective-cycle80.md"},
+  {"path": "tools/hooks/guard_card.py"},
+  {"path": "STATUS.md"}
+ ],
+ "pass": [
+  "E1 report why cycle_81.json bed is null (write_cycle_card, cycle_runner.py:555ff) and fix it: card carries {path, md5} of the bed D1_k (6cf5b077...)",
+  "E2 errorlist_hook: bed md5 == md5 of newest saved raw json for that bed -> offline re-verdict, no GUI, log 'REUSE'; else GUI read as today",
+  "E3 self-test both E2 branches with no LabVIEW (GUI branch stubbed) -> counts; existing cycle_runner self-tests still pass",
+  "E4 guard_card exempts the pure-Python 'py tools/stagexec.py selftest' command (by command, not filename); self-test case",
+  "E5 FACT only: does a read-only Wire.Is Broken? 6371004 op/verb exist (gscript.py, claudeDev ops, docs/NAMES.md:902-911)? path+function or none",
+  "E6 STATUS.md to <= ~100 lines: cycle 74-80 narrative + old lock keys VERBATIM to archive/2026-09-25-status-cycle81-relocate.md",
+  "E7 if budget left: selftest_launch_gate.py stale cases C2-C6, M4-M6 updated to HEAD behaviour, counts"
+ ],
+ "outputs": ["tools/cycle_runner.py", "tools/hooks/guard_card.py", "tools/bench/selftest_errorlist_reuse_81.log", "STATUS.md", "archive/2026-09-25-status-cycle81-relocate.md"],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/cycle_runner.py",
+   "tools/errorlist_check.py",
+   "tools/hooks/guard_card.py",
+   "tools/bench/selftest_*",
+   "tools/bench/errorlist_recheck_81*",
+   "STATUS.md",
+   "archive/2026-09-25-status-cycle81-relocate.md",
+   "docs/violation-decisions.md",
+   "tools/bench/cards/**"
+  ],
+  "status_edit": true,
+  "git_commit": false,
+  "peers": []
+ },
+ "budget": {"failures": 2, "minutes": 60},
+ "rules": ["no LabVIEW process is started", "relocation VERBATIM (rule 4); do NOT touch STATUS ## NEXT or the rig-state line", "tightening only; changed-md5 GUI behaviour unchanged", "result/1 <=10 facts <=3 open"],
+ "unblocks": "M3"
+}
