@@ -610,8 +610,13 @@ def _move_one(st, tops, dest, P, S1, labels):
     if P.get("unflip_on_source", False):         # card 81-5 F1: op_wire reverts these flips (_unflip_restored_tunnels)
         reg = st.setdefault("flip_reg", {})
         st["unflip"] = {"cascade": bool(P.get("unflip_cascade", False))}
+    # PD214(d)1 (cycle 102): an OUTSIDE sink whose wire the only-source rule DELETED is a seed too - its tunnel lost its
+    # source exactly like one left on a sourceless wire (r5 k12 real read: 11365 wire 0 AND #11363's outer 11369 flipped;
+    # diag_c101c_resim.log:33 - without this seed the node:delete re-sim kept edge 11369->11270, the one thing LabVIEW
+    # did not). A deleted wire has no rows left for the wire walk, so the seed is the only way the flip is reached.
+    del_seeds = [r for r in st["terminals"] if r["term_uid"] in set(x["sink_term_uid"] for x in only_src if x["fate"] == "delete")]
     flipped = _flip_orphaned_output_tunnels(
-        st, cut.keys(), seeds if P.get("flip_moved_inputs", False) else (),
+        st, cut.keys(), list(seeds if P.get("flip_moved_inputs", False) else ()) + del_seeds,
         needs_wired=P.get("flip_needs_wired", False), reg=reg) if P.get("tunnel_flip", True) else []
     bare_deleted = []
     for w, r in bare:
@@ -1614,6 +1619,13 @@ def selftest():
          _fate_by_class({"node": "delete"}, "SubVI") == "delete" and _fate_by_class({"node": "delete", "subvi": "keep"}, "SubVI") == "keep"
          and _fate_by_class({"node": "delete", "subvi": "keep"}, "Bundler") == "delete" and w56[1611] == 6 and w56[1501] == 5
          and e56["only_source"] == [], (w56[1611], w56[1501], e56["only_source"]))
+    # PD214(d)1 (cycle 102): a sink whose wire the only-source rule DELETED still seeds the undirected-tunnel flip
+    src54 = dict((r["term_uid"], r["is_source"]) for r in s54["terminals"])
+    src56 = dict((r["term_uid"], r["is_source"]) for r in s56["terminals"])
+    gate("G56 under node:delete the deleted sink 1611 (LoopTunnel #61 inner) still flips the outer 1612 to a sink (r5 k12: 11365 "
+         "wire 0 AND 11369 flipped); under keep the sourceless half-wire flips it the same way - the two rules agree on the tunnel",
+         src54[1612] is False and any(f["tunnel"] == 61 and f["term_uid"] == 1612 for f in e54["tunnel_flips"]) and
+         src56[1612] is False and any(f["tunnel"] == 61 for f in e56["tunnel_flips"]), (e54["tunnel_flips"], e56["tunnel_flips"]))
     n_pass = sum(1 for _l, ok in gates if ok)
     n_fail = len(gates) - n_pass
     first = next((l for l, ok in gates if not ok), None)

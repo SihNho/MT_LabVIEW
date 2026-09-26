@@ -1,0 +1,49 @@
+BGRUN START 2026-09-27 01:11:12 limit 20.0 min: py tools/prior_art_review.py --plan-file tools/bench/cards/priorart_plan_102.md --slug c102-disp-warn --trigger cycle-start --recipe tools/recipes/stage_d1_disp.py
+BGRUN PID 7184
+   task written to C:\Users\KimLab\AppData\Local\Temp\priorart_c102-disp-warn.txt (49145 chars)
+   review card tools\bench\cards\review_priorart-c102-disp-warn.json
+OUTCOME: ANSWERED (83s)  model: claude-opus-5-5 (effort medium; pinned by -Model/-Effort (role priorart))  archived: archive\peer\2026-09-27-priorart-c102-disp-warn.md
+COST: $1.1612  in 18 / out 7460 / cache-create 102781 / cache-read 948283  (79s, 15 turn(s))
+VERDICT-CARD: VERDICT-CARD priorart-c102-disp-warn verdict=settled-already -> tools\bench\cards\verdict_priorart-c102-disp-warn.json
+--- ANSWER ---
+**Verdict: not novel.** Changes 1 and 3 (the WARN classification and how the recipe handles it) are new work that carries out an existing decision. Change 2, the tunnel-flip seed in `stagesim._move_one`, goes against a review that was already accepted and against the log line that review cites.
+
+## PART A — the direction
+
+**A1 (settled already), change 2 only.** The accepted hypothesis review `archive/peer/2026-09-27-c101-5-onlysource.md` already answered the tunnel-flip question:
+- `:108`: *"The new model set 11365 to wire 0. The tunnel-flip step then flipped #11363 and cut the edge 11369 → 11270. The real read kept that edge (`diag_c101c_resim.log:33`), and it still showed #11363's outer terminal 11369 as the source. **Whatever rule wins, a sink cleared by a delete must not trigger the tunnel flip.**"*
+- `:138-140` (What was done with it, ACCEPTED 2026-09-27 00:5x): *"the separate tunnel-flip defect (a sink cleared by a delete must not seed the flip; `diag_c101c_resim.log:33`) is recorded as an open item."*
+- `docs/d1-loop12-17-split-plan.md:1799` (PD214(d)) calls the same thing a bug to fix: *"a sink cleared by an only-source delete seeds the flip."*
+
+**A3 (contradicted).** The new code does the opposite of what the review says:
+- `tools/stagesim.py:613-619` adds `del_seeds`, so a sink whose wire the only-source rule deleted now seeds `_flip_orphaned_output_tunnels`. Its comment claims the real r5 read showed *"11365 wire 0 AND #11363's outer 11369 flipped"* and that *"without this seed the node:delete re-sim kept edge 11369->11270, the one thing LabVIEW did not."*
+- The log it cites says the reverse. At `tools/bench/diag_c101c_resim.log:33`, the real read against the old plan differs only by `dangling_sim_only [11365]`, so the real read has the same edges as the old plan and **kept** edge 11369→11270. The node:delete re-simulation is the run that lost the edge (`only_real_edges [[11369,11270]]`, with 11270 and 11369 left dangling).
+- The r5 log records nothing at k12 except `dangling_sim_only [11365]` (`tools/bench/stage_d1_disp_r5.log:249`, `:455`). Nothing there shows 11369 flipping.
+- So the patch and self-test gate G56 lock in the behaviour the accepted review called wrong. That review also lists `inference-over-measurement` as this area's latest fault.
+
+How far this reaches: the brief is right that the rule in force, `{"constant":"delete","default":"keep"}`, keeps the Bundler #11310 half-wire. So `del_seeds` is empty for this display plan, and R6b passes (`tools/bench/diag_c101c_resim3.log:18`). The record-mode run itself is not affected. The first plan to use a `delete` fate on a tunnel sink will be affected.
+
+**A2 (refuted already).** Nothing refutes the WARN direction. PD214(c) (`docs/d1-loop12-17-split-plan.md:1794-1797`) is the decision, and changes 1 and 3 carry it out as written: class from the plan file, and the end gates unchanged.
+
+**A4 (unread evidence).** The review file above, lines 108 and 138-140, should have been read before writing `stagesim.py:613-616`.
+
+**Side fact.** The plan on disk after this cycle's re-simulation is md5 `94800c90…` (`diag_c101c_resim3.log:21`), not `7c432e1b`, and R6 (byte-identical) fails. Only R6b (content-identical) passes, which matches the brief's "provenance-only" claim.
+
+## PART B — the artifact
+
+- **B1 (already built):** no. `classify_step_diff` (`tools/stagexec.py:426`, T39f at `:2560-2567`) is new. Nothing older classifies step differences.
+- **B2 (already failed):** r4 and r5 stopped for other reasons (`dangling_sim_only [8753]` and the local-read index), and those causes are addressed.
+- **B3 (helper exists):** none found that the plan hand-rolls.
+- **B4 (already measured):** the k12 half-wire's harmlessness rests on PD214(c)'s reasoning. It was not measured, and nothing in the record claims otherwise.
+
+## To release
+
+Either remove `del_seeds` and flip G56 so it asserts no seed from a delete-cleared sink, or cite a real read showing the 11369 flip and explain in writing why `diag_c101c_resim.log:33` does not show the edge was kept.
+
+PRIOR-ART: contradicted
+PRIOR-ART: settled-already
+
+VERDICT {"schema":"verdict/1","id":"priorart-c102-disp-warn","verdict":"settled-already","alternative":"Changes 1 and 3 (WARN class, recipe STEP-WARN) are novel and carry out PD214(c). Change 2 (stagesim del_seeds seeding the tunnel flip, G56) inverts the accepted c101-5 review, which says a delete-cleared sink must NOT seed the flip because the real read kept edge 11369->11270.","discriminating_test":"Open diag_c101c_resim.log:33. r5 real-vs-OLD differs only by dangling [11365], so real kept edge 11369->11270, and the node:delete re-sim lost it. Remove del_seeds (stagesim.py:613-619) and flip G56, or cite a real read showing 11369 flipped.","violations":[],"sources":["archive/peer/2026-09-27-c101-5-onlysource.md:108","archive/peer/2026-09-27-c101-5-onlysource.md:138","tools/stagesim.py:613","tools/bench/diag_c101c_resim.log:33","tools/bench/stage_d1_disp_r5.log:249","docs/d1-loop12-17-split-plan.md:1799"],"note":"Slug in prose: contradicted. Latent for this display plan (the rule keeps the Bundler half-wire, del_seeds empty, R6b PASS diag_c101c_resim3.log:18), so the record run is unaffected; the model and G56 are wrong for any later delete-fate tunnel sink."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-priorart-c102-disp-warn.md
+   STOP RECORD armed: tools/recipes/stage_d1_disp.py sha bb6ee9fa2623 verdict contradicted, settled-already -> launching it is refused until a FIXED:/REFUTED: line releases it
+BGRUN END rc=0 after 86s

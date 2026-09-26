@@ -684,10 +684,17 @@ class Stage(object):
             if len(rows) != 1:
                 raise Stop("create_local_read: label {0!r} matches {1} panel rows".format(label, len(rows)))
             panel_index = rows[0]
-        L = mod("diag_s3b_l0_localname_v2")
-        return self._op("create_local_read",
-                        lambda: L.create_local(self.work, label, panel_index, tag or self.name),
-                        "{0!r} panel[{1}]".format(label, panel_index))
+        # Cycle 102 (stage_d1_disp_r6.log:544,572,595): the old binding drove the donor OpCreateLocal_v0, whose Local is
+        # BORN WRITE (is_source False), so a `.value` SOURCE could never be addressed. Now OpCreateLocalRead_v0 with
+        # `Write?` = False (gscript.create_local_read, the read twin of create_local_write); the caller still moves it.
+        def _mk():
+            r = g.create_local_read(self.work, panel_index)
+            if r.get("err"):
+                raise RuntimeError(r["err"])
+            if r.get("is_source") != [True]:
+                raise RuntimeError("Local #{0} is_source {1!r}, wanted [True] (READ)".format(r.get("uid"), r.get("is_source")))
+            return r
+        return self._op("create_local_read", _mk, "{0!r} panel[{1}] (READ mode)".format(label, panel_index))
 
     def create_local_write(self, label, panel_index=None, dest_diagram_uid=None, position=(40, 40), tag=""):
         """The WRITE twin of create_local_read (card 100-2 V5): `gscript.create_local_write` = OpCreateLocalRead_v0

@@ -1417,3 +1417,51 @@ to `tools/bench` because `guard_cycle` refused `tools/recipes`, so the op was bu
 DECISION: no-device. The gate did not fail; the brief was scoped too narrowly. Its rule "never move a script to dodge a
 gate" was written about the launch gate only. It now names every gate (`docs/d1-loop12-17-split-plan.md` PD203(e)), and
 the slugs that caused the refusal were answered at 13:47. The built op keeps its 84/0 gates and is not rebuilt.
+
+## device-failed — 2026-09-27 01:15 (cycle 102 firefighter judgement, after archive/peer/2026-09-27-retrospective-cycle101.md:290)
+
+`VIOLATION: device-failed | loss_min=6 | loss_usd=0.8822 | evidence=tools/hooks/material_marker.log:2175`: the stop record
+refused a READ-ONLY command (`wc -l ... && py -m pyflakes ...`) on a stopped recipe; the 2026-09-24 05:54 decision already
+named this hole. Also fired wrong in the window: `selftest_exempt` classing `selftest_stagekit.py` as a stage.
+
+DECISION: device (repair, threshold 1). `tools/stop_record.py` is to refuse only commands that EXECUTE the recipe
+(`py`/`python` with the recipe in command position, or a bgrun whose `--` command does), and let every read-only /
+checker command through; `selftest_stagekit.py` is to be classed a self-test, not a stage. Both with a self-test carrying
+the two failing cases as negatives (`tools/bench/selftest_launch_gate.py`, currently 20/8). Owed in the FIRST tooling
+card after this cycle's stage run (PD214(e), deliverable-first); this firefighter cycle runs the stage only.
+
+## inference-over-measurement — 2026-09-27 01:15 (cycle 102 firefighter judgement, after archive/peer/2026-09-27-retrospective-cycle101.md:289)
+
+`VIOLATION: inference-over-measurement | loss_min=15 | loss_usd=1.979 | evidence=tools/bench/cards/task_101-5.json:31`: the
+cycle-101 judgement wrote a model rule ("primitive deletes / SubVI keeps") from two samples while `result_101-4.json:20`
+already held the refuting read (k24/k25 diff 0 under keep for a primitive). The retrospective's own verdict is `refuted`
+in part (the review was the cheapest measurement).
+
+DECISION: no-device. The device exists and fired: the offline replay of the re-simulated plan against the REAL reads
+(`tools/bench/diag_c101c_resim.py`, R3/R4/R6b + REPLAY facts) is what a model rule is measured against before any run,
+and the failed-prediction review refuted the rule the same hour. The gap was ordering, not a missing reader: PD214(b) now
+says "measure before any run", and this cycle measured (`tools/bench/diag_c102_probe_b.log`) before touching the model.
+A rule that the judgement must read its own result cards before writing a model rule is a discipline, not a hook.
+
+## wrong-ordering — 2026-09-27 01:55 (cycle 102 firefighter judgement, after archive/peer/2026-09-27-retrospective-cycle102.md:259)
+
+`VIOLATION: wrong-ordering | loss_min=13 | evidence=tools/bench/stage_d1_disp_r7.log:807`: the split rule (CLAUDE.md "Big or
+blocked work is SPLIT") was due after r5 ended without an artefact, and op 41's MOVE_DST precondition was on file
+(`tools/bench/diag_c100_rows.py:214`, `tools/stagekit.py:813`); r6 and r7 were full-length retries, and dry/pre-run passed
+an op that could never execute on a claudeDev work file.
+
+DECISION: device. The pre-run gets a VERB-PRECONDITION check: every stagexec create/copy route declares the precondition
+its executor raises on (`copy_in`: work == gscript.MOVE_DST; `primitive`: a registered donor; `local_read/write`: one
+panel row per label; `const_on_term`: a WhileLoop body), and `stage_prerun --prerun` evaluates each row's precondition
+against the recipe's work path and the labels/donor registry OFFLINE, failing the row that cannot run. Self-tested with
+r7's op 41 as the negative case. Built in the FIRST tooling card after Part A (PD215(b)), together with the stop-record
+read-only repair below. Until then, PD215(b) names op 41's route change explicitly, so the next Part-B plan cannot carry it.
+
+## device-failed — 2026-09-27 01:55 (cycle 102 firefighter judgement, after archive/peer/2026-09-27-retrospective-cycle102.md:260)
+
+`VIOLATION: device-failed | loss_min=3 | evidence=tools/hooks/material_marker.log:2192`: the stop record refused a read-only
+`git log` on the plan file at 01:03:40 - the same defect as 2026-09-24 05:54 and 2026-09-27 01:15, recurring.
+
+DECISION: device (repair, threshold 1) - unchanged from the 01:15 block: refuse only commands that EXECUTE the recipe, let
+read-only commands through, `selftest_stagekit.py` classed a self-test; negatives = `material_marker.log:2175` and `:2192`.
+Same owed tooling card as above (first after Part A). No new device beyond that one.

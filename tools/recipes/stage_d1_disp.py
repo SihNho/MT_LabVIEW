@@ -14,7 +14,10 @@ diff => every diff listed + the E3 cdiff of the last read, E1 FAILS, NOTHING sav
 binding ops + 4, 5 (the moved constants, stagesim only_source) + 12 + last: every-op reads cost ~3.4 MB (meter_l2a1_86c.log,
 error 2 at 695 MB) and r4 was at 594.6 MB after op 4 of 47 (stage_d1_disp_r4.log:88) - 47 reads would cross MEMSTOP 700.
 CARD 101-5: create_local_read resolves the panel index by label (r5 stop); the k12 only_source gap is OPEN (review c101-5-onlysource).
-    py tools/bgrun.py --material --max-min 35 --retry-card tools/bench/cards/task_101-5.json --log tools/bench/stage_d1_disp_r6.log -- py -u tools/recipes/stage_d1_disp.py"""
+CYCLE 102 (firefighter, PD214(c)): a step difference made ONLY of dangling terminals that no later plan action names by uid is a
+WARN (stagexec.classify_step_diff, read from the plan) - logged, not a save blocker; any other difference still FAILS E1 and saves
+nothing. The end gates (W1 RBW, E2 ExecState 1, E3 cdiff == open_rows) decide the save as before.
+    py tools/bgrun.py --material --max-min 40 --log tools/bench/stage_d1_disp_r6.log -- py -u tools/recipes/stage_d1_disp.py"""
 import copy, json, os, subprocess, sys, time                                       # noqa: E401
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import stagekit as K, gscript as g, vigraph as V, stagesim as SS, stagexec as SX, jev_candidates as JC, allterms as AT  # noqa: E401,E402
@@ -77,17 +80,20 @@ def body(s):
     s.R["stagexec"] = x.report; s.R["step_diffs"] = x.diffs; s.fact("BINDING obj {0}".format(x.bind["obj"]))   # noqa: E702
     if not DRY:
         s.fact("METER SUMMARY {0}".format(json.dumps(be.meter.summary(), default=str)))
-    if x.diffs:                                                                    # card 101-4: record, report, never save
-        [s.fact("STEP-DIFF k {0} {1} ids {2} ops since last read {3}: new {4} | whole {5}".format(
-            d["k"], d["op"], d["ids"], d["ops_since_last_read"], json.dumps(d["new_since_last_diff"], default=str)[:CUT],
-            json.dumps(dict((a, b) for a, b in d["diff"].items() if b and a not in ("n", "who")), default=str)[:CUT])) for d in x.diffs]
+    fails = [d for d in x.diffs if d.get("class") != "warn"]                    # PD214(c): WARN = dangling only, no later uid ref
+    [s.fact("STEP-{0} k {1} {2} ids {3} ops since last read {4} later_refs {5}: new {6} | whole {7}".format(
+        "WARN" if d.get("class") == "warn" else "DIFF", d["k"], d["op"], d["ids"], d["ops_since_last_read"], d.get("later_refs"),
+        json.dumps(d["new_since_last_diff"], default=str)[:CUT],
+        json.dumps(dict((a, b) for a, b in d["diff"].items() if b and a not in ("n", "who")), default=str)[:CUT])) for d in x.diffs]
+    if fails:                                                                      # card 101-4: record, report, never save
         got, want = cdiff(x, be, real)                                             # the LAST checkpoint read, no LabVIEW call
         s.fact("E3-INFO cdiff(S1, last read) vs open_rows: extra {0} missing {1}".format(sorted(set(got) - set(want)), sorted(set(want) - set(got))))
         s.es("end (record mode, not saved)")
-        s.gate("E1 every checkpoint's real graph == its simulated step (record mode, {0} diff(s)) - NOTHING SAVED".format(len(x.diffs)),
-               False, [(d["k"], d["diff"]["n"]) for d in x.diffs], fatal=True)
+        s.gate("E1 every checkpoint's real graph == its simulated step (record mode, {0} FAIL diff(s), {1} WARN) - NOTHING SAVED".format(
+            len(fails), len(x.diffs) - len(fails)), False, [(d["k"], d["diff"]["n"], d.get("class")) for d in x.diffs], fatal=True)
         return
-    s.gate("E1 every checkpoint's real graph == its simulated step (record mode, 0 diffs at {0} reads)".format(len(x.reads_real)), True)
+    s.gate("E1 every checkpoint's real graph == its simulated step, or a PD214(c) WARN (record mode, {0} warn(s) at {1} reads)".format(
+        len(x.diffs), len(x.reads_real)), True, [(d["k"], d["diff"]["n"]) for d in x.diffs])
     s.es("after all rows, BEFORE RBW (recorded)")
     if not DRY:                                                                    # W1: PD211(b) / PD212(f)
         rows0 = AT.read_terms(s.work, AT.OP_ALLTERMS_V1)[0]; wh = g.wire_health(s.work, rows=rows0)   # noqa: E702
@@ -113,7 +119,7 @@ def body(s):
 
 
 if __name__ == "__main__":
-    st = K.Stage(BASE["vi"], BASE["md5"], "D1_s1_disp", preload=False, deadline_min=36, out_json=os.path.join(K.BENCH, "stage_d1_disp.json"), task="card 101-5")
+    st = K.Stage(BASE["vi"], BASE["md5"], "D1_s1_disp", preload=False, deadline_min=36, out_json=os.path.join(K.BENCH, "stage_d1_disp.json"), task="cycle 102 firefighter")
     rc = K.run(body, st)
     if not DRY:
         subprocess.run(["taskkill", "/F", "/IM", "LabVIEW.exe"], capture_output=True, text=True, timeout=60); time.sleep(4.0)   # noqa: E702

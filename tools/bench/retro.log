@@ -3325,3 +3325,56 @@ VIOLATION: device-failed | loss_min=6 | loss_usd=0.8822 | evidence=tools/hooks/m
 VERDICT {"schema":"verdict/1","id":"retrospective-cycle101","verdict":"refuted","alternative":"The 101-5 rule was a reasonable two-sample hypothesis and the peer review that refuted it was the cheapest measurement; then the cost is the review, not a fault. Against: result_101-4.json:20 already recorded k24/k25 diff 0 under default-keep for a primitive.","discriminating_test":"Re-read result_101-4.json:20 and stage_d1_disp_r5.log:440,448 before task_101-5.json:31 was written: if BuildArray #11261 -> #8323 KEPT was visible there, the rule was refuted by data on disk, not by new measurement.","violations":[{"slug":"inference-over-measurement","loss_min":15,"loss_usd":1.979,"evidence":"tools/bench/cards/task_101-5.json:31"},{"slug":"device-failed","loss_min":6,"loss_usd":0.8822,"evidence":"tools/hooks/material_marker.log:2175"}],"sources":["tools/bench/cards/task_101-5.json:31","tools/bench/cards/result_101-4.json:20","tools/bench/stage_d1_disp_r5.log:440","tools/bench/peer_c101-5-onlysource.log:4","tools/hooks/material_marker.log:2175","tools/bench/peer_c101-4-syntax.log:4","tools/bench/stage_runs.jsonl:30","tools/bench/result_101-1.json:1"],"note":"Device named: stop record refusing a read-only command, the unrepaired half of the 2026-09-24 05:54 decision; guard_peer own-ledger re-arm and selftest_exempt on selftest_stagekit.py also fired wrong this window."}
    peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle101.md
 BGRUN END rc=0 after 308s
+BGRUN START 2026-09-27 01:46:55 limit 10.0 min: py tools/retrospective.py --cycle 102
+BGRUN PID 11624
+   window 2026-09-27 00:55:44 .. 2026-09-27 01:46:55 (51 min); 17 build logs, 6 machinery logs, 28 devices
+   task written to C:\Users\KimLab\AppData\Local\Temp\retro_task_retrospective-cycle102.txt (24469 chars)
+   review card tools\bench\cards\review_retrospective-cycle102.json
+OUTCOME: ANSWERED (290s)  model: fable (effort medium; peer.ps1 default for role outcome)  archived: archive\peer\2026-09-27-retrospective-cycle102.md
+COST: $5.3657  in 194 / out 22274 / cache-create 202029 / cache-read 837775  (289s, 39 turn(s))
+VERDICT-CARD: VERDICT-CARD retrospective-cycle102 verdict=refuted -> tools\bench\cards\verdict_retrospective-cycle102.json
+--- ANSWER ---
+I have the evidence I need. Writing the review now.
+
+**Cycle 102 outcome review (retrospective, firefighter on `gate:e1`)**
+
+**Bottom line.** The cycle was a firefighter on the display stage. It ran the stage twice (r6, r7), got 40 of 47 ops matching the simulator for the first time, and ended with no file, the retry cap spent, and the next cycle told to re-run ops 1-40. The one structural fault is ordering: the split into a saved Part A was decided at the end (`docs/d1-loop12-17-split-plan.md:1817`), after r7 had already stood at op 40, although a standing rule required the decomposition plan to be the first act, and the plan's own row text said r7 could never pass op 41.
+
+**Structural fault (one): the split came last instead of first.**
+- CLAUDE.md:486-490 says a stage that ends without a saved artefact makes the next cycle's FIRST act a decomposition plan, and forbids a full-length retry. r5 (cycle 101) ended without an artefact, so cycle 102 owed the decomposition first. It instead ran two more full-length attempts (`tools/bench/stage_runs.jsonl:33-34`).
+- The op-41 stop was written down before the cycle started. The plan row for `r7_wait` carries the verb text "precondition work == gscript.MOVE_DST" (`tools/bench/diag_c100_rows.py:214`, cycle 100), and `tools/stagekit.py:809-814` raises exactly that Stop. The recipe builds its work copy under claudeDev (`tools/recipes/stage_d1_disp.py:122`), so op 41 could not succeed in r5, r6 or r7. Dry and pre-run both marked op 41 "diff 0" because the verb is stubbed (`tools/bench/stage_d1_disp_dry9.log:117`).
+- Counterfactual on the clock: at 01:27, after r6 ended and before r7 launched at 01:29:48, reading the r7_wait row would have shown r7 ends at op 41. Deciding PD215(b) then and running r7 as Part A (ops 1-40, gui_save of the broken intermediate, the route approved 2026-09-22) would have ended the cycle at about 01:45 with `D1_s1_dispA_<ts>.vi` on disk. It ended at 01:46 with nothing, and the next cycle must repeat the 756 s run (`tools/bench/stage_d1_disp_r7.log:829`) to reach the same state.
+- Loss: 13 min of LabVIEW (r7's wall clock) plus a cycle boundary. No log in the window carries this judgement session's cost (audit C4c: none), so the dollar figure is unknown.
+
+**FINDINGS**
+
+1. **Repeated failure.** The same class recurred: one run per bug, each bug knowable offline. r5 stopped at op 26 (local-read index), r6 at op 31 (`ADDRESS: terminal #23792 is_source False`, `stage_d1_disp_r6.log:595`, a Local born as a write), r7 at op 41 (a documented precondition, `stage_d1_disp_r7.log:807`). This is the seventh run of this stage since cycle 100. The approach should have changed at attempt 6 (before r6): walk every remaining op's verb against its precondition offline, and split at the first op that cannot run. The r6 fix itself was sound (r7 passed op 31 and reached op 40 with diff 0).
+
+2. **Missing tool.** A pre-run check of verb preconditions. The pre-run proves terminal addressability and row count but not whether the verb can execute on this work file. It passed 8/0 twice (`stage_d1_disp_prerun9.log:150`) on a plan with an unrunnable op 41. It would have answered r7's stop and, in cycle 101, r5's op-41 fate had r5 got that far.
+
+3. **Unmeasured steps.** Two, both defensible. (a) "The ceiling is crossed in one session even with op 41 fixed" (`split-plan.md:1816`) is extrapolated from measured per-read deltas (690.4 MB at op 40, `r7.log:804`), not measured. (b) The three re-sim runs at 01:10-01:13 turned FAIL into PASS by retiring the byte gate R6 and md5 gate A0 to facts (`diag_c101c_resim3.log:20`, `resim4.log:3`, `resim5.log:21`). PD214(d)2 authorised deciding provenance versus content, and the content gate R6b passed, so this is a decision the plan asked for, not an evasion.
+
+4. **Rule compliance.** Broken: the split-first rule above. Satisfied only formally: the firefighter brief's "ONE record-mode run" became two. Not covered by the audit: A3 lists r7 unreviewed but not r6, because r6 was discharged by the same-row rule against `c100-6-r2` (`jev_gate.log:1712`), a review of a different problem (op 2 binding). The audit also cannot see that dry/pre-run passed an unrunnable op, nor that the split rule was due. A1 and A3 fire on `jev_gate.log`, a known misfire owed since cycle 96 (STATUS.md:193).
+
+5. **Ordering.** The work order was: probes, self-tests, prior-art, re-sim, dry, pre-run, r6, fix, dry, pre-run, r7, split decision. The split decision belonged at the front, and the op-41 route (Wait (ms) donor) belonged before r7. Everything else was in a sensible order, and the prior-art review was awaited before the build (ended 01:12:38, r6 at 01:17:32).
+
+6. **Not reported.** The prior-art annotation says it was written at "01:3x" (`archive/peer/2026-09-27-priorart-c102-disp-warn.md:435`), but the stop record shows the release at 01:14:57 local (`tools/bench/stop_records.json:1189-1191`), before r6. The refutation rests on probe scripts that live in the session scratchpad, not the repository (`diag_c102_probe_b.log:1`); the log is kept but the script is not. The summary also does not say that ops 26-40 ran without any hypothesis review on r6, only a same-row discharge.
+
+7. **Judgement inside a material session.** None. The firefighter suspends the material hand-off, no `material` or `log-reader` agent was dispatched, and every decision (the prior-art refutation, the r6 diagnosis, the split) sits in the judgement session's own files.
+
+**DEVICE EFFECT**
+
+- Stop record / prior-art release: worked. It refused the dry run on the non-novel verdict at 01:14:07 (`tools/hooks/material_marker.log:2196`) and released after a written refutation at 01:14:57. It also refused a read-only `git log` at 01:03:40 (`material_marker.log:2192`), the defect the 2026-09-24 05:54 decision named and the 2026-09-27 01:15 decision re-owed. The session worked around it with a scratchpad probe (`diag_c102_probe.log`, 01:06). About 3 minutes lost. This is the recorded, already-owed defect recurring, not a new one, and it did not change the ending.
+- `guard_cycle` premature-build gate: correct; the build waited for the prior-art END.
+- Retry cap: correct; two launches, no third (`stage_runs.jsonl:33-34`).
+- Same-row discharge: fired as designed but on a different problem class for r6; by the user's rule that is intended.
+- `bgrun` FAIL scan, rc forcing, reaper, motor gate: all correct in the window (r6/r7 rc=1, motor session logs PASS).
+- Audit A1/A3 on `jev_gate.log`: misfired again, known and owed.
+- Pre-run graph-shape device: no crash, but the pre-run passed an unrunnable op, which is the gap in finding 2, not a failure of that device.
+
+VIOLATION: wrong-ordering | loss_min=13 | loss_usd=? | evidence=tools/bench/stage_d1_disp_r7.log:807
+VIOLATION: device-failed | loss_min=3 | loss_usd=? | evidence=tools/hooks/material_marker.log:2192
+
+VERDICT {"schema":"verdict/1","id":"retrospective-cycle102","verdict":"refuted","alternative":"The firefighter did its job: ops 1-40 matched for the first time and the split is now decided. Under that reading the op-41 stop is the price of discovery, not a fault.","discriminating_test":"Open tools/bench/diag_c100_rows.py:214 and tools/stagekit.py:813. If the MOVE_DST precondition was on file before cycle 102, r7 could never pass op 41 and the split (CLAUDE.md:486-490) was due before r6, not after r7.","violations":[{"slug":"wrong-ordering","loss_min":13,"loss_usd":null,"evidence":"tools/bench/stage_d1_disp_r7.log:807"},{"slug":"device-failed","loss_min":3,"loss_usd":null,"evidence":"tools/hooks/material_marker.log:2192"}],"sources":["tools/bench/stage_d1_disp_r7.log:807","tools/bench/diag_c100_rows.py:214","tools/stagekit.py:813","docs/d1-loop12-17-split-plan.md:1817","tools/bench/stage_runs.jsonl:34","tools/hooks/material_marker.log:2192","tools/bench/stop_records.json:1191","tools/bench/stage_d1_disp_prerun9.log:150"],"note":"device-failed is the already-owed stop-record read-only refusal (decided 2026-09-24 05:54 and 2026-09-27 01:15) recurring; smaller than the first item. No judgement-session cost line exists in the window, so loss_usd is unknown."}
+   peer.ps1 rc 0; archived as archive/peer/<date>-retrospective-cycle102.md
+BGRUN END rc=0 after 294s

@@ -159,7 +159,7 @@ def _sym_of(ref):
 CREATE_ROUTES = {
     "while": "gscript.loop_in('while') - OpWhileLoopIn_v0",
     "for": "gscript.loop_in('for') - OpForLoopIn_v0",
-    "local_read": "stagekit.create_local_read (OpCreateLocal_v0) + stagekit.move_in",
+    "local_read": "stagekit.create_local_read (OpCreateLocalRead_v0, Write?=False) + stagekit.move_in",
     "local_write": "stagekit.create_local_write (100-2) + stagekit.move_in when it does not place it",
     "indicator": "gscript.create_indicator_nested (100-2) + set_control_label + set_visible (100-2)",
     "control": "gscript.create_control_nested (100-2) + set_control_label + set_default_in_memory",
@@ -407,6 +407,38 @@ def compare(sim_terms, real_terms, bind, allow_either=()):
     out["who"] = dict((str(t), info.get(t)) for k in ("only_sim_terms", "only_real_terms", "dangling_sim_only",
                                                       "dangling_real_only") for t in out[k][:12])
     return out
+
+
+def _ints_in(o, out):
+    if isinstance(o, bool):
+        return out
+    if isinstance(o, int):
+        out.add(o)
+    elif isinstance(o, dict):
+        for v in o.values():
+            _ints_in(v, out)
+    elif isinstance(o, (list, tuple)):
+        for v in o:
+            _ints_in(v, out)
+    return out
+
+
+def classify_step_diff(plan, last_act, d):
+    """PD214(c) (user-side plan decision, cycle 101): a step difference made ONLY of sourceless (dangling) terminals -
+    `dangling_sim_only` / `dangling_real_only` - whose uids NO LATER plan action references by uid is a WARN, not a
+    save blocker: a sourceless half-wire carries no data (rule 1a) and the symbolic binding is untouched. Anything
+    else (a terminal, an edge, an unbound id) stays 'fail'. Returns (class, later_refs): later_refs are the dangling
+    uids some later action (index > last_act) does name, which makes the diff 'fail'. Read from the plan, never by hand."""
+    if any(d.get(x) for x in ("only_sim_terms", "only_real_terms", "only_sim_edges", "only_real_edges", "unbound")):
+        return "fail", []
+    uids = set(d.get("dangling_sim_only") or []) | set(d.get("dangling_real_only") or [])
+    if not uids:
+        return "fail", []
+    refs = set()
+    for a in plan["actions"][last_act:]:
+        _ints_in(a, refs)
+    hit = sorted(uids & refs)
+    return ("fail" if hit else "warn"), hit
 
 
 def uid_reuse(prev_real, real):
@@ -1170,10 +1202,13 @@ class Executor(object):
                 prev = self.diffs[-1]["diff"] if self.diffs else {}
                 new = dict((x, sorted(set(map(json.dumps, y)) - set(map(json.dumps, prev.get(x) or []))))
                            for x, y in d.items() if isinstance(y, list) and y)
-                self.diffs.append({"k": k, "op": op["kind"], "acts": op["acts"], "ids": rec["ids"], "diff": d,
+                cls, hit = classify_step_diff(self.plan, last, d)          # PD214(c): WARN vs FAIL, from the plan
+                self.diffs.append({"k": k, "op": op["kind"], "acts": op["acts"], "ids": rec["ids"], "diff": d, "class": cls,
+                                   "later_refs": hit,
                                    "new_since_last_diff": dict((x, [json.loads(v) for v in y]) for x, y in new.items() if y),
                                    "ops_since_last_read": list(range(last_read_k + 1, k + 1))})
-                self.log("  RECORD " + msg[:1600])
+                self.log("  RECORD {0} ".format("WARN (dangling only, no later uid reference)" if cls == "warn" else
+                                                "STEP-DIFF" + (" later refs {0}".format(hit) if hit else "")) + msg[:1600])
             last_read_k = k
             real = real_new
         un = getattr(be, "unroutable", None)      # a collecting (dry) backend: every unroutable row, reported at the end
@@ -2517,6 +2552,19 @@ def selftest():
              all("only_sim_edges" not in d["new_since_last_diff"] for d in exr.diffs[1:]), [d["k"] for d in exr.diffs])
     except ExecStop as e:
         gate("T39 record mode: the dropped edge is RECORDED and the run CONTINUES to the last op", False, str(e)[:200])
+    gate("T39e a dropped-edge diff (an edge entry) is classed 'fail' by PD214(c)",
+         exr.diffs and exr.diffs[0].get("class") == "fail", [d.get("class") for d in exr.diffs][:3])
+    # PD214(c) (cycle 102): a dangling-only diff is WARN unless a later action names the uid
+    planj = _j(fin)
+    dd = {"only_sim_terms": [], "only_real_terms": [], "only_sim_edges": [], "only_real_edges": [], "unbound": [],
+          "dangling_sim_only": [1611], "dangling_real_only": [], "n": 1}
+    n_act = len(planj["actions"])
+    gate("T39f classify_step_diff: dangling-only + no later reference -> warn; a later action naming the uid -> fail; an edge -> fail",
+         classify_step_diff(planj, n_act, dd) == ("warn", []) and
+         classify_step_diff(dict(planj, actions=planj["actions"] + [{"op": "delete_object", "uid": 1611}]), n_act, dd) == ("fail", [1611]) and
+         classify_step_diff(planj, 0, dict(dd, only_sim_edges=[[1, 2]]))[0] == "fail" and
+         classify_step_diff(planj, 0, dict(dd, dangling_sim_only=[]))[0] == "fail",
+         (classify_step_diff(planj, n_act, dd), classify_step_diff(planj, 0, dict(dd, only_sim_edges=[[1, 2]]))))
     exr0 = Executor(fin, mkbe(), log=q, record=True)
     exr0.run()
     gate("T39c record mode on a clean run: no diff recorded", exr0.diffs == [] and exr0.cur["k"] == len(opsx), exr0.diffs)

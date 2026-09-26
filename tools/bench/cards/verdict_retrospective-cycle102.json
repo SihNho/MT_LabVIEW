@@ -1,0 +1,32 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle102",
+ "verdict": "refuted",
+ "alternative": "The firefighter did its job: ops 1-40 matched for the first time and the split is now decided. Under that reading the op-41 stop is the price of discovery, not a fault.",
+ "discriminating_test": "Open tools/bench/diag_c100_rows.py:214 and tools/stagekit.py:813. If the MOVE_DST precondition was on file before cycle 102, r7 could never pass op 41 and the split (CLAUDE.md:486-490) was due before r6, not after r7.",
+ "violations": [
+  {
+   "slug": "wrong-ordering",
+   "loss_min": 13,
+   "loss_usd": null,
+   "evidence": "tools/bench/stage_d1_disp_r7.log:807"
+  },
+  {
+   "slug": "device-failed",
+   "loss_min": 3,
+   "loss_usd": null,
+   "evidence": "tools/hooks/material_marker.log:2192"
+  }
+ ],
+ "sources": [
+  "tools/bench/stage_d1_disp_r7.log:807",
+  "tools/bench/diag_c100_rows.py:214",
+  "tools/stagekit.py:813",
+  "docs/d1-loop12-17-split-plan.md:1817",
+  "tools/bench/stage_runs.jsonl:34",
+  "tools/hooks/material_marker.log:2192",
+  "tools/bench/stop_records.json:1191",
+  "tools/bench/stage_d1_disp_prerun9.log:150"
+ ],
+ "note": "device-failed is the already-owed stop-record read-only refusal (decided 2026-09-24 05:54 and 2026-09-27 01:15) recurring; smaller than the first item. No judgement-session cost line exists in the window, so loss_usd is unknown."
+}

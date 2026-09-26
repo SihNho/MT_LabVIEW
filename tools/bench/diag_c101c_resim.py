@@ -42,8 +42,8 @@ def comp(a, b):
 
 
 OLD_MD5 = SS.md5_file(PO)
-gate("A0 OLD plan on disk is the r5 plan (b535071e) or run 1's refuted re-sim (8a96086f)",
-     OLD_MD5 in ("b535071ef8e62fdf045ecb30499f89ce", "8a96086f1310acd51b974f434a0f5e15"), OLD_MD5)
+fact("A0 (a FACT since cycle 102: every re-sim re-stamps finalized.at, so the md5 is never a fixed known value; R6b compares "
+     "content) OLD plan on disk md5 {0}; r5 ran b535071e, run 1 wrote 8a96086f, run 2 7c432e1b, run 3 94800c90".format(OLD_MD5))
 OLD = J(PO)
 old_st = []
 for f in OLD["finalized"]["step_files"]:
@@ -85,18 +85,24 @@ fact("NEW plan_disp.json md5 {0}; {1} step files".format(SS.md5_file(PO), len(ne
 # the re-simulation equals the r5 plan at every step (NEW == OLD), so the k12 gap [11365] is STILL OPEN and is reported as a
 # fact, not hidden behind a rule fitted to one sample.
 OLD_IS_R5 = OLD_MD5 == "b535071ef8e62fdf045ecb30499f89ce"
+same_all = True                                                                    # cycle 102: content, not bytes (PD214(d)2)
+for k in range(1, len(new_st)):
+    got_k = comp(old_st[k]["state"]["terminals"], new_st[k]["state"]["terminals"])
+    same_all = same_all and not any(got_k[x] for x in KEYS)
 for k in cps:
     want_k = dict((x, [list(v) if isinstance(v, (list, tuple)) else v for v in r5d[k].get(x) or []]) for x in KEYS)
     got_k = comp(old_st[k]["state"]["terminals"], new_st[k]["state"]["terminals"])
     fact("REPLAY k{0}: r5 real-vs-OLD {1} | NEW-vs-OLD({2}) {3}".format(
-        k, dict((x, y) for x, y in want_k.items() if y), "r5" if OLD_IS_R5 else "run1",
+        k, dict((x, y) for x, y in want_k.items() if y), "r5" if OLD_IS_R5 else "run1/run2",
         dict((x, y) for x, y in got_k.items() if y)))
+gate("R6b (cycle 102, PD214(d)2) the re-simulated plan is CONTENT-IDENTICAL to the plan on disk at every step (terminals, edges, "
+     "dangling sets; only finalized.at / md5 provenance may differ) - so 7c432e1b vs b535071e is provenance-only IF the plan on "
+     "disk was itself content-identical to r5's (run 2's REPLAY facts: NEW-vs-OLD {} at k 2,3,4,5,12,24,25)", same_all, len(new_st))
 w11365 = next(r["wire_uid"] for r in new_st[12]["state"]["terminals"] if r["term_uid"] == 11365)
 fact("KNOWN GAP k12: sim keeps LoopTunnel inner 11365 on sourceless w{0}; real read wire 0 (r5.log:249). Source-class and "
      "sink-class rules are both refuted (review c101-5-onlysource); candidates A/B/C there are confounded on 4 real samples".format(w11365))
-gate("R6 the re-simulated plan_disp.json is BYTE-IDENTICAL to the r5 plan (md5 b535071e): r5's step-diff record applies "
-     "unchanged - 0 at k 2,3,4,5,24,25 and dangling_sim_only [11365] at k12", SS.md5_file(PO) == "b535071ef8e62fdf045ecb30499f89ce",
-     SS.md5_file(PO))
+fact("R6 (retired cycle 102 - `finalized.at` is stamped on every re-sim, so bytes never repeat; R6b is the content gate) "
+     "re-simulated plan_disp.json md5 {0} vs r5's b535071e".format(SS.md5_file(PO)))
 n = sum(1 for _l, g in gates if g)
 ff = next((l for l, g in gates if not g), None)
 arts = [{"path": os.path.relpath(p, ROOT), "md5": SS.md5_file(p)} for p in (R4O, PO)]

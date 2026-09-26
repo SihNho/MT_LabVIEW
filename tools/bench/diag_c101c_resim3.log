@@ -1,0 +1,22 @@
+BGRUN START 2026-09-27 01:10:45 limit 6.0 min: py -u tools/bench/diag_c101c_resim.py
+BGRUN PID 19200
+  PASS  A0 OLD plan on disk is the r5 plan (b535071e), run 1's refuted re-sim (8a96086f) or run 2's reverted re-sim (7c432e1b)  7c432e1ba4d89626282d89f4017ef750
+  PASS  A1 all 58 OLD step files intact (md5 == finalized)  58
+  PASS  A2 the r5 record (task card 101-4) has REAL reads exactly at k [2, 3, 4, 5, 12, 24, 25] (facts_c101b_stage.json reads_compared)  ('card 101-4', '20260927_001537', [2, 3, 4, 5, 12, 24, 25])
+  FACT k12 shape: 11365 on wire 11374; rows [(11316, 11310, 'Bundler', True), (11365, 11363, 'LoopTunnel', False)]
+  PASS  D1 before op 12 the wire on 11365 has ONE moved-side source row (Bundler #11310) and ONE outside sink row (11365)  (1, 1)
+  PASS  R3 re-simulation FINAL  (None, 0, {'n': 0, 'op': 'base', 'id': None, 'rows_from_here': 21})
+  PASS  R4 end cdiff rows == the 21 declared open_rows  {'extra': [], 'missing': []}
+  FACT NEW plan_disp.json md5 94800c907fd24e219c07396f40fb8321; 58 step files
+  FACT REPLAY k2: r5 real-vs-OLD {} | NEW-vs-OLD(run1/run2) {}
+  FACT REPLAY k3: r5 real-vs-OLD {} | NEW-vs-OLD(run1/run2) {}
+  FACT REPLAY k4: r5 real-vs-OLD {} | NEW-vs-OLD(run1/run2) {}
+  FACT REPLAY k5: r5 real-vs-OLD {} | NEW-vs-OLD(run1/run2) {}
+  FACT REPLAY k12: r5 real-vs-OLD {'dangling_sim_only': [11365]} | NEW-vs-OLD(run1/run2) {}
+  FACT REPLAY k24: r5 real-vs-OLD {} | NEW-vs-OLD(run1/run2) {}
+  FACT REPLAY k25: r5 real-vs-OLD {} | NEW-vs-OLD(run1/run2) {}
+  PASS  R6b (cycle 102, PD214(d)2) the re-simulated plan is CONTENT-IDENTICAL to the plan on disk at every step (terminals, edges, dangling sets; only finalized.at / md5 provenance may differ) - so 7c432e1b vs b535071e is provenance-only IF the plan on disk was itself content-identical to r5's (run 2's REPLAY facts: NEW-vs-OLD {} at k 2,3,4,5,12,24,25)  58
+  FACT KNOWN GAP k12: sim keeps LoopTunnel inner 11365 on sourceless w11374; real read wire 0 (r5.log:249). Source-class and sink-class rules are both refuted (review c101-5-onlysource); candidates A/B/C there are confounded on 4 real samples
+  FAIL  R6 the re-simulated plan_disp.json is BYTE-IDENTICAL to the r5 plan (md5 b535071e): r5's step-diff record applies unchanged - 0 at k 2,3,4,5,24,25 and dangling_sim_only [11365] at k12  94800c907fd24e219c07396f40fb8321
+RESULT {"schema":"result-line/1","status":"FAIL","gates":{"pass":7,"fail":1},"first_fail":"R6 the re-simulated plan_disp.json is BYTE-IDENTICAL to the r5 plan (md5 b535071e): r5's step-diff record applies unchanged - 0 at k 2,3,4,5,24,25 and dangling_sim_only [11365] at k12","artefacts":[{"path":"tools\\bench\\sim\\disp\\stageplan_disp_r4_open.json","md5":"9270cb8c264724d926f483a58f2b318a"},{"path":"tools\\bench\\sim\\disp\\plan_disp.json","md5":"94800c907fd24e219c07396f40fb8321"}]}
+BGRUN END rc=1 after 63s

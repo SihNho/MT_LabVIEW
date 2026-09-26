@@ -3996,11 +3996,23 @@ def read_bool_const(target, uid):
     return out
 
 
+def create_local_read(target, panel_index, dest_diagram_uid=None, position=(40, 40)):
+    """Cycle 102 (stage_d1_disp_r6.log:544,572,595): the READ twin of create_local_write - OpCreateLocalRead_v0 with
+    `Write?` = False (toolkit-capabilities.md:76: the Boolean steers the mode; a Local is BORN write, is_source False).
+    stagekit.create_local_read drove the donor OpCreateLocal_v0 (write-mode locals, is_source False), so the display
+    stage's `.value` sources could not be addressed at op 31. Same return shape; is_source [True] = READ."""
+    return _create_local_mode(target, panel_index, False, dest_diagram_uid, position)
+
+
 def create_local_write(target, panel_index, dest_diagram_uid=None, position=(40, 40)):
     """V5 core: a Local Variable in WRITE mode bound to Panel.Controls[panel_index] (OpCreateLocalRead_v0 with
     `Write?` = True, toolkit-capabilities.md:76), then - when dest_diagram_uid is given - moved INTO that nested
     diagram (build_d1_v0.move_in). The destination is resolved BEFORE the local is created. Returns {uid, owner_class,
     owner, is_source (False = WRITE), err}."""
+    return _create_local_mode(target, panel_index, True, dest_diagram_uid, position)
+
+
+def _create_local_mode(target, panel_index, write, dest_diagram_uid=None, position=(40, 40)):
     _c97_paths()
     import build_d1_v0 as B
     ensure_loaded(target)
@@ -4014,7 +4026,7 @@ def create_local_write(target, panel_index, dest_diagram_uid=None, position=(40,
             vi.SetControlValue(k, v)
         except Exception:                                                          # noqa: BLE001
             pass
-    vi.SetControlValue("Write?", True)
+    vi.SetControlValue("Write?", bool(write))
     err = ""
     try:
         _run(vi)
