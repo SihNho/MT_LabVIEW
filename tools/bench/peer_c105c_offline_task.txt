@@ -1,0 +1,18 @@
+ATTACK this claim about a failed prediction in tools/bench/diag_c105c_offline.py (log tools/bench/diag_c105c_offline.log).
+
+Failure: gate "O1 list_ports ran (>=1 port)" FAILED; log line 3: list_ports "ERR ModuleNotFoundError("No module named 'serial'")".
+Claim: this is a defect of OUR script only - pyserial is not installed for the `py` interpreter, so serial.tools.list_ports
+could not be imported. Nothing about the COM ports themselves is implied. The other four read-only sources in the same
+run DID read the ports (log lines 4-15: SERIALCOMM, Get-PnpDevice -Class Ports, ComDB, visaconf.ini), so the port
+inventory is complete without pyserial. Planned patch (already written, not yet run): on ImportError fall back to
+Win32_PnPEntity (Name matching '(COMn)', PNPDeviceID as hwid, DEVPKEY_Device_LocationInfo), and add
+DEVPKEY_Device_LastArrivalDate/LastRemovalDate to the PnP list.
+
+Second claim, same log: "events_n all 0" (line 16) for System-log providers Kernel-PnP / UserPnp /
+DriverFrameworks-UserMode plus the Microsoft-Windows-Kernel-PnP/Configuration log since 2026-09-26 12:00 means no USB
+serial arrival/removal happened in that window. The patch adds a sanity count (all System events since the start time,
+and the newest 5 Kernel-PnP/Configuration timestamps) so a dead query cannot pass as "no events".
+
+Context (do not judge the rotor cause): card tools/bench/cards/task_105-3.json asks for a COM5 inventory because LabVIEW's
+VISA Open on COM5 fails busy (0xBFFF0072) while external probes before and after find COM5 FREE.
+Read the script and the log. Name the strongest reason either claim is wrong, and the cheapest test that separates them.

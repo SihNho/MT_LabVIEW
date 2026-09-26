@@ -1,0 +1,34 @@
+{"schema":"result/1","id":"105-2","status":"PASS","gates":{"pass":14,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/lv_gui.ps1","md5":"84ca34a9da524e8136f56779dbfd03f1"},
+ {"path":"tools/bench/diag_c105b_t0.py","md5":"749fe4bd83853147ea761f14c3b614c0"},
+ {"path":"tools/bench/diag_c105b_t0.log","md5":"94b6342bd90641996ec47b8e279ac307"},
+ {"path":"tools/bench/diag_c105b_leg.py","md5":"355eb1806bc3113e2c967370bd98e04f"},
+ {"path":"tools/bench/diag_c105b_leg.log","md5":"b577573488176ab96898a0edbb2f5981"},
+ {"path":"tools/bench/facts_c105b_dialog.json","md5":"255bde9354df239281cd8404a49b7056"},
+ {"path":"tools/bench/diag_c105b_out/pw/c105b_20260927_055929_h1706538_birth_pw.png","md5":"7bde67ed2350bae12253a304889182f2"},
+ {"path":"tools/bench/diag_c105b_out/pw/c105b_20260927_055929_h1706538_t20_shotwin.png","md5":"22ca3c6a5afb3a642787644bf063bb41"},
+ {"path":"tools/bench/diag_c105b_out/pw/c105b_20260927_055929_h13765160_birth_pw.png","md5":"fe405acdd4bfe9f452d16ae68e62822e"},
+ {"path":"tools/bench/diag_c105b_out/windows_20260927_055929.jsonl","md5":"1113e066b6c565df6e3b310588e474ba"}
+],
+"facts":[
+ "T0 4/0: shotwin -Hwnd captured non-LabVIEW hwnd 132954 ('Claude'), 2582 colours, foreground unchanged, 1.42 s incl. powershell start (diag_c105b_t0.log:4-10)",
+ "Modal LVDChild hwnd 1706538, rect 786,398-1134,643 (same as 105-1), visible t=0.41 s; in-process PrintWindow done t=0.46, shotwin rc 0; re-captured t=5.05, t=20.06 (diag_c105b_leg.log:176-178,188,223)",
+ "C2 text verbatim (pw png h1706538 birth, t05, t20 identical): 'Error -1073807246 occurred at VISA Open in Configure.vi->scratch_c105b_s1_20260927_055929_run_20260927_060020.vi'",
+ "C2 cont.: 'Possible reason(s): VISA: (Hex 0xBFFF0072) The resource is valid, but VISA cannot currently access it.' Buttons: Continue (has the focus rectangle), Stop; link 'Search ni.com for error'",
+ "Post-Abort window hwnd 13765160 created t=113.65, visible t=114.69; text: 'Resetting VI: scratch_c105b_s1_20260927_055929_run_20260927_060020.vi', no buttons (jsonl:676,680; h13765160_birth_pw.png)",
+ "Both windows stayed visible until LabVIEW was killed: 'gone' only at t=830.1 (windows_20260927_055929.jsonl:3425); stop called t=20.77 after the t=20 captures (diag_c105b_leg.log:224,231)",
+ "End identical to 105-1: COM Abort did not return in 20 s, exec after stop -1, panel reads timed out, forced kill after 256 s (diag_c105b_leg.log:484,489-491,639)",
+ "Own gates 10/0 (diag_c105b_leg.log:950-960); bgrun END rc=1 quotes drive_m8's inner RESULT M2-M5 FAIL, by design at an L2 stop (:948,961); review c105b-leg-rc1 ANSWERED, agrees",
+ "C4: one leg, no picks; S1 md5 3e3d23ce unchanged; TMX 39 read back; COM5 FREE at T0 and T2; LabVIEW gone; no GUI act before L2 (diag_c105b_leg.log:952-959)",
+ "lv_gui.ps1 edit: new [long]$Hwnd param, used only by shotwin (IsWindow check, existing ShotWindow = PrintWindow flag 2); no state-changing action touched (tools/lv_gui.ps1:118-120,750-757)"
+],
+"open":[
+ "Review c105b-leg-rc1 (archive/peer/2026-09-27-c105b-leg-rc1.md:45-52): C4a 'one leg' held only because the stop failed; after a clean stop v5 would call leg('run2') (drive_original_copy_v5.py:560-565)",
+ "Not measured: which VISA resource name Configure.vi's VISA Open received in this run (105-1 read ('',0) after the stop; no VISA-typed constant reader exists)",
+ "JEV-PREFLIGHT advisory: diag_c105b_leg.py is 212 lines, not on stagekit (jev_gate.log:1869); it extends the 148-line 105-1 driver"
+],
+"cost":{"usd":null,"minutes":34,"labview_runs":1},
+"note":"diag_c105b_leg.log | ladder: none | NEXT-ACTION: old path | hypothesis review c105b-leg-rc1 ANSWERED, disposition written | no fix. T0 4/0, leg own gates 10/0. No VI saved; no dismiss/click/key/focus; no COM5 bytes; STATUS untouched; no commit."}

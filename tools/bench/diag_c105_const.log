@@ -1,0 +1,65 @@
+BGRUN START 2026-09-27 05:30:36 limit 15.0 min: py -u tools/bench/diag_c105_const.py
+BGRUN PID 23608
+
+---------- [0] FILES ONLY - the input's md5, the pins, the claudeDev listing
+  FACT  claudeDev holds 292 .vi file(s) BEFORE the run
+  PASS  K1 input md5 == 3e3d23cefd3a334001aa9d6156bf1aee  got 3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  PIN BEFORE ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN BEFORE S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN BEFORE S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN BEFORE ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN BEFORE M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  K2 the ORIGINAL's md5 is 2a78e17c449cacdaf5da389818526859  got 2a78e17c449cacdaf5da389818526859 at G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\Min_Track N beads V6_ParallelLoop.vi
+
+---------- [1] RESTART LabVIEW (standing authority; fresh ~31,500 handles)
+  FACT  LabVIEW handle count BEFORE the restart: 0
+  FACT  LabVIEW handle count AFTER the restart: 34003
+  FACT  PRELOAD: the ORIGINAL is resident READ-ONLY (LabVIEW 26.3.1f1), its own ExecState 1; nothing opened, nothing saved
+
+---------- [2] THE DATED WORK COPY under claudeDev - the input is never opened for writing
+  PASS  K3 the work copy is byte-identical to the input  scratch_c105_read_20260927_053036.vi
+  FACT  ExecState [after open] scratch_c105_read_20260927_053036.vi = 1
+  FACT  HANDLES before reads: 63230
+  FACT  VISA constants (report_all order): [43937, 36793, 30488] err ''
+  PASS  R1 #30488 listed among VISAResourceNameConstant  [43937, 36793, 30488]
+  FACT  CONST #43937 [VISAResourceNameConstant 0] -> {"uid_back": 43937, "hex": "2600800000000001000400000001000000000000", "nbytes": 20, "td_code": "0000", "void": true, "ascii": [], "err": ""}
+  FACT  CONST #36793 [VISAResourceNameConstant 1] -> {"uid_back": 36793, "hex": "2600800000000001000400000001000000000000", "nbytes": 20, "td_code": "0000", "void": true, "ascii": [], "err": ""}
+  FACT  CONST #30488 [VISAResourceNameConstant 2] -> {"uid_back": 30488, "hex": "2600800000000001000400000001000000000000", "nbytes": 20, "td_code": "0000", "void": true, "ascii": [], "err": ""}
+  PASS  R2 #30488 read with identity and no op error  {'uid_back': 30488, 'hex': '2600800000000001000400000001000000000000', 'nbytes': 20, 'td_code': '0000', 'void': True, 'ascii': [], 'err': ''}
+  PASS  R3 all VISA constants read  3
+  FACT  CONST #30488 [Constant 167] -> {"uid_back": 30488, "hex": "2600800000000001000400000001000000000000", "nbytes": 20, "td_code": "0000", "void": true, "ascii": [], "err": ""}
+  FACT  ALL VISA constants VOID (C1b trigger): True
+  FACT  Configure.vi (ExecState, 'VISA resource name') at load: (1, ('', 0)) err ''
+  PASS  R4 Configure.vi default read  (1, ('', 0))
+  FACT  HANDLES after reads: 63337
+
+---------- [H] HYGIENE
+  FACT  close_panel(scratch_c105_read_20260927_053036.vi) raised com_error: (-2147352567, '??? ??????.', (6649, 'LabVIEW', 'LabVIEW: (Hex 0x47D) Cannot close or set the state of a closed front panel. The front panel must already be open before you close it or set its state.', None, 0, 0), None)
+  FACT  PRELOAD references released; refs {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 2}
+  FACT  gscript ref_counts: {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 2}
+  PASS  H5 VI-Server reference counter level (opened == closed)  {'opened': 5, 'closed': 5, 'live': 0, 'cached_op_vis': 2}
+  FACT  LabVIEW handle count AFTER the work: 54524
+  PASS  H4 scratch deleted: scratch_c105_read_20260927_053036.vi  C:\Program Files\National Instruments\LabVIEW 2026\user.lib\claudeDev\scratch_c105_read_20260927_053036.vi
+  PASS  H2 the INPUT's md5 is UNCHANGED after the run  before 3e3d23cefd3a334001aa9d6156bf1aee / after 3e3d23cefd3a334001aa9d6156bf1aee
+  FACT  PIN AFTER  ORIGINAL         2a78e17c449cacdaf5da389818526859  (want 2a78e17c449cacdaf5da389818526859) OK
+  FACT  PIN AFTER  S1 D1_s1_copy    3e3d23cefd3a334001aa9d6156bf1aee  (want 3e3d23cefd3a334001aa9d6156bf1aee) OK
+  FACT  PIN AFTER  S2 D1_s2_loops   6ff19497f2309e007a214660bb64b911  (want 6ff19497f2309e007a214660bb64b911) OK
+  FACT  PIN AFTER  ROW2 bed         26c54ff784cb5cea21edbd214d2cc3a0  (want 26c54ff784cb5cea21edbd214d2cc3a0) OK
+  FACT  PIN AFTER  M3a-2            3842f5e6f128226235dc78353f26ef44  (want 3842f5e6f128226235dc78353f26ef44) OK
+  PASS  H3 every md5 pin still holds
+  FACT  THE FILES THIS RUN LEFT ON DISK: []  (removed: [])
+  PASS  H6 the files left on disk == [] and nothing was removed  added [] removed []
+  FACT  LabVIEW handle count at exit: 34002
+
+====================================================================================================
+=== GATES: 12 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c105_const.json   elapsed 111.2 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":12,"fail":0},"first_fail":null,"artefacts":[]}
+  PASS  Z LabVIEW gone after the run
+  PASS  Z2 S1 md5 unchanged
+
+====================================================================================================
+=== GATES: 14 pass / 0 fail
+JSON: G:\Codes\LabVIEW_Codes\MinLab\zz_LabView VI\AAA_UNIST\2. Tracking\V6_ParallelLoop\tools\bench\diag_c105_const.json   elapsed 115.5 s
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":14,"fail":0},"first_fail":null,"artefacts":[]}
+BGRUN END rc=0 after 116s

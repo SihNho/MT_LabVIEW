@@ -1,0 +1,32 @@
+{"schema":"result/1","id":"105-3","status":"PASS","gates":{"pass":17,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/diag_c105c_offline.py","md5":"3be03be082da897936150f7b6ad2ade5"},
+ {"path":"tools/bench/diag_c105c_offline.log","md5":"80fff44ed5c6be4f5c29eaef7c32340a"},
+ {"path":"tools/bench/facts_c105c_offline.json","md5":"f2bafbc729eb3b6c24670e8123728535"},
+ {"path":"tools/bench/diag_c105c_leg.py","md5":"76728905392377939dbe3a3e62917223"},
+ {"path":"tools/bench/diag_c105c_leg.log","md5":"32fdee4ec1b775b8584e40df39b905d4"},
+ {"path":"tools/bench/facts_c105c_com5.json","md5":"335aed4036235c77b5ce4eb4cb65cee7"},
+ {"path":"tools/bench/diag_c105_out/c105c/c105c_20260927_062819_p02.png","md5":"0ecedc3fc4d322a1759632fa7f2171a5"},
+ {"path":"tools/bench/diag_c105_out/c105c/c105c_20260927_062819_p10.png","md5":"fd0a8d7e4760fbc9f610369b0b3955a5"}
+],
+"facts":[
+ "C3: same dialog 'Error -1073807246 at VISA Open in Configure.vi' seen t=0.48 s; COM5 CreateFileW FREE (err 0) at t=2.6 and 10.63 s, dialog still up (diag_c105c_leg.log:173,178,195)",
+ "C3b: both probes: one LabVIEW.exe (06:28:25), no NI MAX, no other port client by name; NI services from boot 09-23 13:19 (facts_c105c_com5.json:367-609). Holders unmeasured: no handle tool",
+ "C1: COM5 = FTDI USB Serial Port, FTDIBUS\\VID_0403+PID_6001+AI03Q9JZA, \\Device\\VCP0, Status OK, present (diag_c105c_offline.log:28,35)",
+ "C1: COM3/COM4 = SUNIX PCI ports (PI, ASI); COM6 = a 2nd FTDI adapter FTY0W18RA (\\Device\\VCP1, VISA alias 'COM6'); COM7 none; COM8/9 Coherent OBIS not present (diag_c105c_offline.log:33-39)",
+ "C1: visaconf 7 aliases, Rotor->ASRL5::INSTR->COM5 9600 baud == motor_gate PORTS rotor COM5 (tools/motor_gate.py:59-61; diag_c105c_offline.log:46-50)",
+ "C1: ComDB reserves only COM3,COM4,COM5 although COM6 is present and in SERIALCOMM - registries disagree on COM6 (diag_c105c_offline.log:28,30)",
+ "C2: COM5 adapter LastArrival 2026-09-23 13:19:37 (= COM3/4/6, boot), no LastRemoval recorded (facts_c105c_offline.json:59-62)",
+ "C2: Kernel-PnP, UserPnp, DriverFrameworks-UserMode, Kernel-PnP/Configuration: 0 events since 09-26 12:00 ('No events were found'); unfiltered System 206 (diag_c105c_offline.log:40-44)",
+ "C4: one real leg, no 2nd leg; no GUI act before +10 probe; S1 md5 3e3d23ce; TMX 39; LabVIEW gone; stop failed 3rd time: COM Abort RAISED, exec -1 (diag_c105c_leg.log:458,863-873)",
+ "Reviews: c105c-offline-o1 (run 1 O1 FAIL, pyserial missing; patched, run 2 7/0) and c105c-leg-rc1 (bgrun rc=1 = drive_m8 inner M2-M5, by design) ANSWERED, dispositions written"
+],
+"open":[
+ "Review c105c-leg-rc1 (archive/peer/2026-09-27-c105c-leg-rc1.md:85-95): +2.6 s probe cannot see t~0.4 s; cheap separator = pyvisa open of 'Rotor'/ASRL5 with nothing running + probe calibration (CreateFileW hold vs VISA open)",
+ "Still unmeasured: the resource string S1 wires into Configure.vi's VISA Open (diagram read), and whether S1 has two open paths to the rotor resource",
+ "Win10 19045 logs no surprise-removal event in the queried logs (review c105c-offline-o1 :57), so C2's zero covers arrivals/config only; LastRemoval is empty"
+],
+"cost":{"usd":null,"minutes":31,"labview_runs":1},
+"note":"diag_c105c_offline.log | ladder new-problem p=0.75 | hypothesis review owed | reviewed, patched, rerun 7/0 | PASS; diag_c105c_leg.log | ladder: none | old path | review c105c-leg-rc1 | own gates 10/0. No VI saved/edited, no COM bytes, no dismiss/click/key/focus; STATUS untouched; no commit."}

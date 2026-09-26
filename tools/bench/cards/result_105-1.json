@@ -1,0 +1,32 @@
+{"schema":"result/1","id":"105-1","status":"FAIL","gates":{"pass":25,"fail":2},
+"first_fail":"C3a main ExecState read after stop: COM Abort did not return in 20 s, every later COM read timed out (diag_c105_leg.log:474-477)",
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/diag_c105_const.py","md5":"eb413e40756e390b28679eb9cb54e290"},
+ {"path":"tools/bench/diag_c105_const.log","md5":"d9e783885c99add2c009849819c8735e"},
+ {"path":"tools/bench/diag_c105_leg.py","md5":"9c7621dce361a623c15f87b093a1322c"},
+ {"path":"tools/bench/diag_c105_leg.log","md5":"ded1233a4e8481bcdd40f020b2a46382"},
+ {"path":"tools/bench/facts_c105_rotor.json","md5":"d77883a7cf8121ecb0de7e8aee9789f1"},
+ {"path":"tools/bench/diag_c105_out/windows_20260927_053401.jsonl","md5":"065c22f0eca0f640dd2f648f2c289ffc"},
+ {"path":"tools/bench/diag_c105_out/m8_replay_s1_p15_r120.json","md5":"9f0cb0024e95183b24ad1146cdc1cc68"},
+ {"path":"archive/peer/2026-09-27-c105-modal-lvdchild.md","md5":"229bfb6faa3da7d170d267148bbd0195"}
+],
+"facts":[
+ "#30488 value UNREAD: OpConstValue_v1 gives the 20-byte VOID variant for all 3 VISAResourceNameConstants (43937, 36793, 30488), also as class Constant (diag_c105_const.log:23-31)",
+ "Configure.vi 'VISA resource name' load-time default in a fresh instance = ('', 0), identical to the post-run reads of 104-6 and 105 (diag_c105_const.log:32; diag_c105_leg.log:472)",
+ "Leg, zero GUI acts: an untitled visible LVDChild hwnd 30673386, rect 786,398-1134,643, no child HWNDs, appeared 0.46 s after Run (diag_c105_leg.log:173); samples every <=0.267 s (:217)",
+ "At L2 (t=20.1 s) lv_gui dialogs: 'BLOCKED by 1 modal dialog' (30673386); main ExecState 2 at every 0.5 s poll 0.5-20.1 s; Run(False) not returned (diag_c105_leg.log:213-216)",
+ "30673386 stayed until the forced kill (windows_20260927_053401.jsonl:244 new, :3421 gone); 2nd untitled LVDChild 17958164 became visible t=114.39 s, ~1 s after COM Abort (jsonl:673,678)",
+ "Dialog content NOT captured: every change screenshot shows the Claude desktop app covering the screen (diag_c105_out/shots/c105_20260927_053401_t+0000.46.png)",
+ "COM answered every call to t~113 s; VI-Server stop writes (~45 s) did not idle it; COM Abort did not return in 20 s; later reads timed out; forced kill after 256 s (diag_c105_leg.log:470-477,625)",
+ "Configure.vi after the stop attempt: ExecState 3, 'VISA resource name' and 'VISA resource name out' both ['', 0] (diag_c105_leg.log:472)",
+ "104-6 differs: its driver called d0.focus before L2 (diag_c104f_leg.py:82); lv_gui focus taps Alt then Esc, which 'dismisses any dialog that closes on Esc' (tools/lv_gui.ps1:239-252)",
+ "End: one leg, no picks; S1 md5 3e3d23ce unchanged; TMX 39 read back; COM5 FREE at T0/T2 (no bytes); LabVIEW gone; scratch_c105 copies deleted (diag_c105_leg.log:936-949)"
+],
+"open":[
+ "C1b NOT run: no VISA-typed constant reader exists (the base-Constant reader is void for VISA, as for numeric/Boolean, docs/NAMES.md:1159); a VISAResourceNameConstant-typed reader + scratch pos/neg is a build card",
+ "Review c105 (ANSWERED, archive/peer/2026-09-27-c105-modal-lvdchild.md:43-85): COM ran with the dialog up until the Abort; alt = unabortable call behind a 'Resetting VI' dialog; separator = PrintWindow(PW_RENDERFULLCONTENT), no focus",
+ "Unmeasured: whether 104-6's Esc tap (lv_gui focus) closed this dialog and caused Run to return after 4 s there vs never here"
+],
+"cost":{"usd":null,"minutes":36,"labview_runs":2},
+"note":"diag_c105_leg.log | ladder: none | NEXT-ACTION: old path | hypothesis review ANSWERED, disposition written | separator left to judgement. const 14/0 (rc=0); leg 11/2 (rc=1, 916 s). No VI saved; no GUI act; no COM5 bytes; STATUS untouched; no commit."}

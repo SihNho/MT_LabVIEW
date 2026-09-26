@@ -1,0 +1,63 @@
+{
+ "schema": "task/1",
+ "id": "105-2",
+ "kind": "diagnose",
+ "goal": "Read the CONTENT of the modal untitled LVDChild dialog that appears ~0.46 s after Run of S1 (105-1), by PrintWindow on its hwnd, with no focus, key or click",
+ "why": "105-1: a modal LVDChild (no child HWNDs) blocks S1 from 0.46 s after Run; its screenshots show only the covering desktop app. Review c105 separator = PrintWindow(PW_RENDERFULLCONTENT), no focus (:43-85).",
+ "inputs": [
+  {"path": "tools/bench/cards/result_105-1.json"},
+  {"path": "archive/peer/2026-09-27-c105-modal-lvdchild.md", "md5": "229bfb6faa3da7d170d267148bbd0195"},
+  {"path": "tools/bench/diag_c105_leg.py", "md5": "9c7621dce361a623c15f87b093a1322c"},
+  {"path": "tools/lv_gui.ps1"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c105_leg.py"},
+  {"kind": "file", "name": "tools/lv_gui.ps1"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "T0: lv_gui.ps1 shotwin accepts -Hwnd <n> (PrintWindow flag 2, read-only, no focus); checked offline on a non-LabVIEW window hwnd, png non-blank",
+  "C1: ONE A leg (D1_s1_copy.vi), the 105-1 window log unchanged; each new visible LVDChild is captured by shotwin -Hwnd within 1 s and again at t=5 s and t=20 s",
+  "C2: the dialog's text transcribed from the png(s) verbatim (error code, source, buttons), with the png path; if the png is blank say so",
+  "C3: no dismiss, click, key, focus or Abort call before C1/C2 are logged; then end the leg exactly as 105-1 did (forced kill allowed)",
+  "C4: the driver stops after this ONE leg; S1 md5 3e3d23ce unchanged; no bytes to COM5; LabVIEW verified gone; TMX 39 read back"
+ ],
+ "outputs": [
+  "tools/bench/diag_c105b_*",
+  "tools/bench/facts_c105b_dialog.json",
+  "tools/bench/cards/result_105-2.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "tools/lv_gui.ps1",
+   "tools/bench/diag_c105b*",
+   "tools/bench/facts_c105b*",
+   "tools/bench/diag_c105_out/**",
+   "tools/bench/m8_shots/**",
+   "tools/bench/gui_shots/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 40},
+ "rules": [
+  "measure only: no fix, no ABBA, no rotor motion, no bytes to COM5",
+  "the lv_gui.ps1 edit adds -Hwnd to shotwin only; no state-changing action is added or changed",
+  "never edit or save any VI",
+  "each LabVIEW step under bgrun (--max-min <= 20); hold the turn until its BGRUN END",
+  "facts <=10 with file:line; OPEN <=3; do not judge the cause and do not propose the fix"
+ ],
+ "unblocks": "M8"
+}

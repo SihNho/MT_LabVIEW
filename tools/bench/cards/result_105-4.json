@@ -1,0 +1,26 @@
+{"schema":"result/1","id":"105-4","status":"PASS","gates":{"pass":6,"fail":0},
+"first_fail":null,
+"blocked_by":null,
+"artefacts":[
+ {"path":"tools/bench/diag_c105d_visa.py","md5":"1ac65600c670c4fab7d76f75b03d5d8b"},
+ {"path":"tools/bench/diag_c105d_visa.log","md5":"f899bd30ac459f10d69a04e0da9a81b0"},
+ {"path":"tools/bench/facts_c105d_visa.json","md5":"18354ce37d92706b7f89be6ebbc60126"}
+],
+"facts":[
+ "P0: no LabVIEW.exe before/after; only nimxs.exe (since 09-23 13:19 boot) + runner/bgrun python, no port client by name (diag_c105d_visa.log:3,24)",
+ "Env: 64-bit py, ctypes on NI visa64.dll (pyvisa not installed), viOpenDefaultRM = 0 (diag_c105d_visa.log:4-5)",
+ "V1: viOpen('Rotor') x3 and viOpen('ASRL5::INSTR') x3 all -1073807246 (0xBFFF0072), each in 0.6-6.1 ms, no LabVIEW running (diag_c105d_visa.log:6-11)",
+ "V2: ASRL5 session A already 0xBFFF0072, so B (0xBFFF0072) is not a two-session test (diag_c105d_visa.log:12)",
+ "V3 fwd: CreateFileW(COM5) opened (err 0) and closed; viOpen ASRL5 after 0/100/1000 ms still 0xBFFF0072 (diag_c105d_visa.log:13-15)",
+ "V3 rev: viOpen ASRL5 failed, so no VISA session held; CreateFileW then got a handle, err 0 (diag_c105d_visa.log:16)",
+ "V3 cal: child process held COM5 (HOLD True 0); viOpen ASRL5 gave the same 0xBFFF0072 in 0.6 ms, so the error does not tell OS-held from free here (diag_c105d_visa.log:17)",
+ "V4 control: viOpen('COM6') x3 and 'ASRL6::INSTR' x3 all status 0, 4.5-24 ms, viClose 0 (diag_c105d_visa.log:18-23)",
+ "visaconf: ASRL5 and ASRL6 have the same settings (Enabled 1, Static 0, 9600 8N1, flow 0); only the COM number differs (visaconf.ini:40-57)",
+ "Status text came back in cp949, decoded here as latin-1: garbled in log, meaning = 'resource valid but VISA cannot currently access it' (diag_c105d_visa.log:6)"
+],
+"open":[
+ "Brief pre-scripted by review c105c-leg-rc1:88: '(a) not clean -> error inside VISA or the alias, holder search moot'. Measured (a) not clean; the next step is for judgement",
+ "Unmeasured: NI-VISA's own state for ASRL5 (NI MAX / nimxs view, VISA's port reservation). This card forbade touching NI MAX/services, so it was not read"
+],
+"cost":{"usd":null,"minutes":9,"labview_runs":0},
+"note":"diag_c105d_visa.log | ladder: n/a (rc=0, 6/0) | none | one bgrun run, 12 s | PASS. No byte written or read, no attribute set, visaconf/NI MAX untouched, no LabVIEW, STATUS untouched, no commit."}

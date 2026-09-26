@@ -1,0 +1,51 @@
+BGRUN START 2026-09-27 05:50:21 limit 15.0 min: powershell -NoProfile -Command & 'tools/peer.ps1' -Agent claude -Role hypothesis -Slug c105-modal-lvdchild -TaskFile tools/bench/peer_c105_task.txt -TimeoutSec 780
+BGRUN PID 6188
+OUTCOME: ANSWERED (207s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c105-modal-lvdchild.md
+COST: $1.4074  in 20 / out 16762 / cache-create 93714 / cache-read 911536  (203s, 17 turn(s))
+--- ANSWER ---
+**The claim doesn't hold up. The window may well be an error dialog, but the log shows it did not block COM. The blocking began with the Abort itself.**
+
+## 1. Strongest reason the claim is wrong
+- **COM kept working for 112 s while the window was on screen.** The window appeared at t=0.46 s and stayed until the kill. It is never listed as "gone" before `windows_20260927_053401.jsonl:3421`. During that time LabVIEW answered every call:
+  - the 0.5 s `state` polls from 10.8 s to 30.4 s (`diag_c105_leg.log:174-212`, ExecState 2 at L2);
+  - the `get` reads and the `set 'stop (end)'` writes every 1–2 s up to 122.8 s (`:218-469`).
+- **The first call that did not return was the Abort** (`:470`, `:474`). The driver's own message says later commands "WAS enqueued" (`:474`, `:519`). So the later timeouts are calls queued behind a hung Abort, not calls blocked by the dialog.
+- **ExecState 2 proves nothing.** Run(False) is the synchronous form: it does not return until the VI finishes ([NI forum](https://forums.ni.com/t5/LabVIEW/Trouble-running-a-VI-asynchronously-when-called-from-Python-via/td-p/4103346)). ExecState 2 plus a pending Run is what any running VI looks like.
+- **Configure.vi's ExecState 3 does not mean execution is inside it.** "Running" means reserved by an active top-level VI, whether it is executing or not ([LabVIEW Wiki](https://labviewwiki.org/wiki/VI_class/Execution.State_property), [NI forum](https://forums.ni.com/t5/LabVIEW/Why-is-execution-state-RUNNING/td-p/115411)). The empty resource `''` fits "never called" just as well, as your brief admits. Nothing measured in 105 puts execution inside Configure.vi.
+
+## 2. Alternative explanation
+**Something that cannot be aborted is still running, and the Abort is waiting for it to finish.**
+- A second window appeared right after the Abort. The Abort was issued at log 123.3 s, and Run(False) started at log 10.3 s, so t ≈ 113.0 s.
+- A new hidden LVDChild window with an empty title (hwnd 17958164) was created at t=113.09 and became visible at t=114.39 (`windows_*.jsonl:673`, `:678`).
+- A window that LabVIEW opens about a second after an Abort that cannot finish matches the known "Resetting VI" dialog. That dialog appears when a VISA call or a DLL call won't return ([NI forum, "VISA Read hangs. Get Resetting VI dialog on abort"](https://forums.ni.com/t5/Instrument-Control-GPIB-Serial/VISA-Read-hangs-Get-Resetting-VI-dialog-on-abort/td-p/2004797/page/6)).
+- Likely candidates for the stuck call: a VISA read on a motor port, or a camera driver call in a parallel branch.
+- LabVIEW's handle count went from 33,972 to 65,667 (`:518`). A VI parked at a dialog doing nothing does not normally create about 31,700 handles. The retried COM calls might explain the growth, so this point does not settle anything on its own.
+- On this reading, the 0.46 s window could be a normal prompt built into the original VI, or an error dialog from some other branch. It would be a bystander either way.
+
+**What I concede to the claim:** in 104-6, Configure.vi's panel and block diagram were open after Run returned (`diag_c104f_leg.log:180`). That matches LabVIEW's automatic error handling, which "highlights the subVI or function where the error occurred" ([NI, Debugging and Handling Errors](https://lumen.ni.com/pdf/labview101/us/debugging_explanation.pdf)). So an error in Configure.vi in 104-6 is plausible.
+- That does not show that the 105 window is the same dialog.
+- It does not show which button Esc picks on that dialog, and I found no source for that.
+- The Esc story is only an inference, and it does not explain the hung Abort.
+
+## 3. What would falsify the claim
+- **The 0.46 s window's text is not an error message naming Configure.vi.** Examples: a prompt from the original VI, or an error from a different VI. Or:
+- **The window after the Abort is a "Resetting VI" / "waiting for" dialog that names a different VI or node.** That would mean the Abort was blocked by a call that cannot be aborted, not by the first dialog.
+
+## 4. Cheapest test that separates them (no click, key or focus)
+**Capture the window's own contents with Win32 `PrintWindow(hwnd, hdc, PW_RENDERFULLCONTENT=2)`.** Do it for every new visible LVDChild the existing EnumWindows watcher already reports:
+- for the 0.46 s window, at L2, before any stop write;
+- for the window that appears within about 1 s of the Abort.
+
+This flag renders a window that is fully covered, such as by the Claude app in your screenshots, without raising it or taking focus ([GitHub issue](https://github.com/PerryLink/dsh-click/issues/6), [Microsoft Q&A](https://learn.microsoft.com/en-us/answers/questions/1611498/clarification-on-the-nflags-parameter-default-valu)).
+
+How to read the result:
+- An automatic error dialog shows the error code and the call chain, e.g. "…in Configure.vi → …". That supports the claim's first half.
+- A prompt from the original VI's own design supports the alternative.
+- A "Resetting" dialog after the Abort answers the COM-blocking question directly.
+
+**Caveat:** `PrintWindow` goes through WM_PRINT, and I found nothing on how LabVIEW windows respond to it. A black image would tell you nothing, not refute the claim. Test it once on the idle main panel first.
+
+**Also add (no clicks):** log EnumWindows again right after the Abort returns or times out, to record whether 30673386 closed when the Abort was issued. If it closed and the Abort still hung, the first dialog was not what blocked it.
+
+**What would change my mind:** if the capture shows an error dialog in Configure.vi, and the window after the Abort is not a "Resetting" dialog, then the claim that the dialog held up the Abort becomes the better explanation.
+BGRUN END rc=0 after 208s

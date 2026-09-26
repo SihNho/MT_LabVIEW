@@ -1,0 +1,63 @@
+{
+ "schema": "task/1",
+ "id": "105-3",
+ "kind": "diagnose",
+ "goal": "Who holds COM5 when S1's rotor VISA Open fails busy (-1073807246): external COM5 probe DURING the paused error dialog, serial-port inventory, USB PnP events since 09-26 12:00",
+ "why": "105-2: S1 stops 0.41 s after Run on 'Error -1073807246 at VISA Open in Configure.vi: resource valid but VISA cannot currently access it'; COM5 probed FREE before Run and after LabVIEW exit (104-6, 105-1/2).",
+ "inputs": [
+  {"path": "tools/bench/cards/result_105-2.json"},
+  {"path": "tools/bench/facts_c105b_dialog.json", "md5": "255bde9354df239281cd8404a49b7056"},
+  {"path": "tools/bench/diag_c105b_leg.py", "md5": "355eb1806bc3113e2c967370bd98e04f"},
+  {"path": "tools/bench/facts_c104f_rotor.json"},
+  {"path": "tools/motor_gate.py"},
+  {"path": "C:/ProgramData/National Instruments/NIvisa/visaconf.ini"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c105b_leg.py"},
+  {"kind": "file", "name": "tools/motor_gate.py"},
+  {"kind": "file", "name": "C:/ProgramData/National Instruments/NIvisa/visaconf.ini"}
+ ],
+ "pass": [
+  "C1 offline: every COM port present now (pyserial list_ports: device, description, hwid VID:PID SER, location) vs visaconf.ini aliases vs motor_gate PORTS",
+  "C2 offline: Windows System log USB/serial PnP arrival/removal events (Kernel-PnP, UserPnp, DriverFrameworks) from 2026-09-26 12:00 to now, with times",
+  "C3: ONE A leg (105-2 driver): once the error dialog is visible, exclusive open+close probe of COM5 (no bytes) at t~2 s and t~10 s: FREE or BUSY + error text",
+  "C3b: at the same instants, process list with command lines (python/powershell/LabVIEW/NI/VISA/serial) and, if a handle tool exists, holders of COM5",
+  "C4: no dismiss/click/key/focus before C3 is logged; the driver ends after this ONE leg; S1 md5 3e3d23ce unchanged; LabVIEW gone; TMX 39 read back"
+ ],
+ "outputs": [
+  "tools/bench/diag_c105c_*",
+  "tools/bench/facts_c105c_com5.json",
+  "tools/bench/cards/result_105-3.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "tools/bench/diag_c105c*",
+   "tools/bench/facts_c105c*",
+   "tools/bench/diag_c105_out/**",
+   "tools/bench/m8_shots/**",
+   "tools/bench/gui_shots/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 40},
+ "rules": [
+  "measure only: no fix, no ABBA, no rotor motion, never write bytes to any COM port",
+  "never edit or save any VI; never change visaconf.ini or NI MAX",
+  "each LabVIEW step under bgrun (--max-min <= 20); hold the turn until its BGRUN END",
+  "facts <=10 with file:line; OPEN <=3; do not judge the cause and do not propose the fix"
+ ],
+ "unblocks": "M8"
+}

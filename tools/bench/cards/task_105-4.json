@@ -1,0 +1,55 @@
+{
+ "schema": "task/1",
+ "id": "105-4",
+ "kind": "diagnose",
+ "goal": "Separator without LabVIEW: NI-VISA viOpen of 'Rotor' and 'ASRL5::INSTR' (open/close only, no bytes) - alone, twice in one process, right after a CreateFileW open/close",
+ "why": "105-3: S1's VISA Open on the rotor fails busy (-1073807246) at t=0.4 s while CreateFileW sees COM5 FREE at 2.6/10.6 s; review c105c-leg-rc1 :85-95 names a VISA open with nothing running as the cheap separator.",
+ "inputs": [
+  {"path": "tools/bench/cards/result_105-3.json"},
+  {"path": "archive/peer/2026-09-27-c105c-leg-rc1.md"},
+  {"path": "tools/bench/facts_c105c_offline.json", "md5": "f2bafbc729eb3b6c24670e8123728535"},
+  {"path": "C:/ProgramData/National Instruments/NIvisa/visaconf.ini"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/facts_c105c_offline.json"},
+  {"kind": "file", "name": "C:/ProgramData/National Instruments/NIvisa/visaconf.ini"}
+ ],
+ "pass": [
+  "P0: LabVIEW not running (tasklist) before and after; no other COM client by name",
+  "V1: viOpenDefaultRM + viOpen('Rotor') and viOpen('ASRL5::INSTR'), each x3 with close: status code + text (pyvisa on the NI backend, or visa32.dll by ctypes)",
+  "V2: two sessions to ASRL5 in ONE process (open A, open B, close both): status of B",
+  "V3: CreateFileW(COM5) open+close, then viOpen ASRL5 after 0, 100 and 1000 ms: status each; and the reverse (viOpen held, CreateFileW probe)",
+  "V4: the same V1 on 'COM6' (the other FTDI) as a control; no bytes written anywhere, no attribute set except what viOpen itself does"
+ ],
+ "outputs": [
+  "tools/bench/diag_c105d_*",
+  "tools/bench/facts_c105d_visa.json",
+  "tools/bench/cards/result_105-4.json"
+ ],
+ "flags": {
+  "labview": "none",
+  "gui": false,
+  "hardware": "gate",
+  "run_vi": false,
+  "write": [
+   "tools/bench/diag_c105d*",
+   "tools/bench/facts_c105d*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 20},
+ "rules": [
+  "open/close only: never write or read bytes, never set baud/flow/termination attributes, no rotor command",
+  "never change visaconf.ini, NI MAX, drivers or services; no LabVIEW",
+  "run under bgrun (--max-min <= 10)",
+  "facts <=10 with file:line; OPEN <=3; do not judge the cause and do not propose the fix"
+ ],
+ "unblocks": "M8"
+}

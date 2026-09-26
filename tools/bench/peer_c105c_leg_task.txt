@@ -1,0 +1,19 @@
+ATTACK this claim about tools/bench/diag_c105c_leg.log (script tools/bench/diag_c105c_leg.py, card tools/bench/cards/task_105-3.json).
+
+Failure as bgrun reports it: `BGRUN END rc=1 ... (RESULT: status=FAIL gates 4/4 first_fail=M2 reached experiment loop; the
+process itself said 0)` (log line 874). The M2-M5 FAILs are drive_m8's inner RESULT (log:853-861).
+Claim: this is BY DESIGN and not a failed prediction of the diagnostic. The driver replaces v5.leg with probe_leg, which
+stops the VI at L2 (after the +10 s probe) and returns without picks, so the experiment loop, frames, own-control stop and
+cal/tra files (M2-M5) cannot happen; the diagnostic's own contract is gates P1-P4, C3, C4a-e, all PASS (log:863-873), and
+the script exited 0. Same shape as the 105-2 run reviewed in archive/peer/2026-09-27-c105b-leg-rc1.md.
+
+Measured facts the claim rests on (do not judge the rotor cause, only whether the measurement is sound):
+- dialog LVDChild hwnd 2099770 visible t=0.48 s after Run, rect 786,398-1134,643 (log:173); screenshot
+  tools/bench/diag_c105_out/c105c/c105c_20260927_062819_p02.png shows "Error -1073807246 occurred at VISA Open in Configure.vi".
+- COM5 exclusive CreateFileW(GENERIC_READ|WRITE, share 0, OPEN_EXISTING) + CloseHandle at t=2.6 s and t=10.63 s: FREE,
+  win32_error 0 (log:178,195), while that dialog was still visible (gate P4).
+- Process list at both probes: exactly one LabVIEW.exe (created 06:28:25), no NI MAX, no other client of the port
+  visible by name (tools/bench/facts_c105c_com5.json).
+Attack especially: can a FREE CreateFileW probe at +2 s coexist with VISA having held COM5 at t~0.4 s (i.e. is the probe
+able to see the relevant state at all)? Name the cheapest test that would separate "COM5 was busy only for a moment at
+VISA Open" from "VISA's busy error does not come from the Windows port handle at all".

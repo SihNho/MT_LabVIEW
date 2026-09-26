@@ -26,6 +26,7 @@
       focus     -Title <substr>                   bring a LabVIEW window to the foreground
       shot      -Out <png>                        full-screen capture (sees popup menus)
       shotwin   -Title <substr> -Out <png>        single-window capture (misses popup menus)
+      shotwin   -Hwnd <n> -Out <png>              same, one exact hwnd (untitled / any process), no focus
       crop      -In <png> -Out <png> -Left -Top -Width -Height [-Scale n]
                                                   magnify a region of an existing capture
       click     -X n -Y n                         left click
@@ -114,6 +115,9 @@ param(
     [string]$Zoom = '',
     [int]$Y2 = 0,
     [int]$WaitMs = 0,
+    # shotwin only (card 105-2, 2026-09-27): capture this exact hwnd by PrintWindow(flag 2) - read-only, no focus,
+    # works for untitled windows (e.g. a modal LVDChild) and for windows of any process.
+    [long]$Hwnd = 0,
 
     # --- GUI authorization gate (2026-08-31, peer-reviewed design) -------------------------
     # State-changing actions REQUIRE a structured exception + evidence. Free text is not a
@@ -743,7 +747,15 @@ switch ($Action) {
     }
 
     'shotwin' {
-        if (-not $Title) { throw "-Title is required for 'shotwin'." }
+        if ($Hwnd -ne 0) {
+            $path = Resolve-Out $Out
+            $h = [IntPtr]$Hwnd
+            if (-not [LVGui]::IsWindow($h)) { throw "No window with hwnd $Hwnd." }
+            $rect = [LVGui]::ShotWindow($h, $path)
+            Write-Output "saved $path (hwnd $Hwnd, window rect $rect)"
+            break
+        }
+        if (-not $Title) { throw "-Title or -Hwnd is required for 'shotwin'." }
         $path = Resolve-Out $Out
         $h = [LVGui]::Find((Get-LVPid), $Title)
         if ($h -eq [IntPtr]::Zero) { throw "No LabVIEW window whose title contains '$Title'." }

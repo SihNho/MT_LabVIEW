@@ -1,0 +1,68 @@
+{
+ "schema": "task/1",
+ "id": "105-1",
+ "kind": "diagnose",
+ "goal": "PD217(g) rotor-stop diagnosis, measure only: #30488 VISA constant value in S1 by script; ONE S1 leg logging every window every <=0.5 s from Run to L2 before any dismiss",
+ "why": "104-5/104-6: every leg (A and B) stopped before pick 1 with rotor Configure.vi panel+diagram open; Run returned after 4.0 s with no error to COM, no dialog seen AT the capture; review c104-6 separators :64-69. The same S1 md5 ran normally 09-26 14:18 (96-1).",
+ "inputs": [
+  {"path": "tools/bench/cards/result_104-6.json"},
+  {"path": "archive/peer/2026-09-27-c104-6-configure-empty-resource.md", "md5": "996faf3e14d251f16d4bef4ef16c93fd"},
+  {"path": "tools/bench/diag_c104f_leg.py", "md5": "b517d3fd74c0b0c569d3fb560c698205"},
+  {"path": "tools/bench/diag_c99b_lvread.py"},
+  {"path": "tools/recipes/build_opcreateconstonterm_v0.py"},
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "requires": [
+  {"kind": "file", "name": "tools/bench/diag_c104f_leg.py"},
+  {"kind": "file", "name": "tools/bench/diag_c99b_lvread.py"},
+  {"kind": "file", "name": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"}
+ ],
+ "pass": [
+  "C1: raw value and type of VISAResourceNameConstant #30488 in S1 (or a claudeDev scratch_c105_* byte copy), read by script",
+  "C1b: if the const reader cannot read a VISA constant, it is first measured on a scratch VI: known resource (positive) + empty (negative), both reported",
+  "C2: ONE A leg (D1_s1_copy.vi): every <=0.5 s from Run to L2, LabVIEW windows (title, class, visible) + child text of any dialog; shot on each change",
+  "C2b: NO dismiss, click or key until the L2 sample is logged; report the ordered window-set changes with times relative to Run",
+  "C3: after the stop: every error/string indicator on the main panel by COM (label -> value), main ExecState, Configure.vi 'VISA resource name'",
+  "C4: the driver stops after this ONE leg whatever happens: no B leg, no ABBA, no picks",
+  "C5: LabVIEW verified gone; S1 md5 3e3d23ce unchanged; no bytes written to COM5 by the harness; TMX 39 read back"
+ ],
+ "outputs": [
+  "tools/bench/diag_c105_*",
+  "tools/bench/facts_c105_rotor.json",
+  "tools/bench/cards/result_105-1.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "tools/bench/diag_c105*",
+   "tools/bench/facts_c105*",
+   "tools/bench/t0_legs/**",
+   "tools/bench/m8_shots/**",
+   "tools/bench/gui_shots/**",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "C:/Program Files/National Instruments/LabVIEW 2026/user.lib/claudeDev/scratch_c105*"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis", "priorart"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "measure only: no fix, no ABBA, no rotor motion, no bytes to COM5",
+  "never edit or save any VI except claudeDev scratch_c105*",
+  "each LabVIEW step under bgrun (--max-min <= 20); hold the turn until its BGRUN END",
+  "GUI only via lv_gui.ps1 -Exception Approved -Evidence 'user 2026-09-17 bead-pick option 1'",
+  "the C2 window log starts before any GUI act",
+  "facts <=10 with file:line; OPEN <=3; do not judge the cause and do not propose the fix"
+ ],
+ "unblocks": "M8"
+}

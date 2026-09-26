@@ -1,0 +1,60 @@
+BGRUN START 2026-09-27 06:40:28 limit 14.0 min: powershell -NoProfile -File tools/peer.ps1 -Agent claude -Role hypothesis -TimeoutSec 780 -Slug c105c-leg-rc1 -TaskFile tools/bench/peer_c105c_leg_task.txt
+BGRUN PID 9220
+OUTCOME: ANSWERED (121s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-27-c105c-leg-rc1.md
+COST: $1.3155  in 20 / out 8891 / cache-create 111336 / cache-read 1085001  (117s, 14 turn(s))
+--- ANSWER ---
+The claim is wrong in the part that matters. Calling the rc=1 "by design" holds. But "the diagnostic did not fail a prediction" is true only because its COM5 gate could not fail. And a FREE probe at +2.6 s says nothing about COM5 at t≈0.4 s, so the measurement cannot answer the card's question ("who holds COM5").
+
+**Settled, and I agree:** rc=1 comes from drive_m8's inner RESULT (log:861, M2–M5 FAIL). The diagnostic's own RESULT is PASS 10/0 (log:873). The second leg was suppressed this time (`diag_c105c_leg.py:98`), which closes the C4a hazard raised in `archive/peer/2026-09-27-c105b-leg-rc1.md`. The stop failed again: `"COM Abort RAISED"`, exec state after stop −1 (`facts_c105c_com5.json:1322-1328`), and D0 step 30 failed (log:851-852). That stop failure was not gated, so it is not a failed prediction, but it did happen three runs in a row.
+
+**1. Strongest reason the claim is wrong: gate P2 cannot fail.**
+- P2 passes if the state is `FREE`, `BUSY` or `ERR` (`diag_c105c_leg.py:121`). That is every possible outcome, and C4e is built the same way (`:127`).
+- The card's hypothesis was "someone holds COM5 while VISA Open fails busy" (`task_105-3.json:5`). The run could not fail that prediction, because none was written down.
+- FREE is in fact evidence *against* the working hypothesis. It should have been read as a failed prediction of the "held port" model, not filed as PASS.
+
+**2. The probe cannot see the relevant moment.**
+- VISA Open failed at about t=0.4 s (dialog seen at t=0.48, log:172). The first CreateFileW ran at t=2.6 s, more than 2 s later.
+- Anything that opened COM5 and closed it inside those 2 s is invisible to it. Candidates:
+  - another VISA session inside the same LabVIEW process, e.g. a second Configure/Open on the rotor in the S1 copy. S1 is a restructured copy, not the original.
+  - an NI service touching serial ports. `nidevldu.exe` and `nimxs.exe` are running (`facts_c105c_com5.json:365-450`).
+- The process list cannot name a holder either:
+  - It is filtered by a name regex (`diag_c105c_leg.py:70`), so a non-NI vendor service is missed.
+  - A holder inside LabVIEW.exe looks identical to "no holder".
+  - No handle tool was available (docstring line 8), so holders were never measured.
+- So a FREE result at +2 s fits both of these:
+  - (a) COM5 was busy only briefly around VISA Open;
+  - (b) the busy error never came from the Windows handle at all.
+
+**3. Alternative explanation that fits every observation.** 0xBFFF0072 (`VI_ERROR_RSRC_BUSY`) is also returned by VISA itself, not only by the OS:
+- when a session to the same resource already exists and holds an exclusive lock, including one in the same process;
+- when an alias does not release cleanly. In one LAVA thread the fix was to remove all VISA aliases (https://lavag.org/topic/17776-visa-hex-0xbfff0072-the-resource-is-valid-but-visa-cannot-currently-access-it/).
+- NI's forum lists "a session left open in LabVIEW" alongside "another application" (https://forums.ni.com/t5/LabVIEW/VISA-Hex-0xBFFF0072-The-resource-is-valid-but-VISA-cannot/td-p/835913).
+
+Two local facts make this more likely:
+- The rotor goes through the alias `Rotor` → `ASRL5::INSTR` (`docs/instrument-libraries.md:58,169`).
+- Which string S1 actually passes to VISA Open is still an open question (`docs/instrument-libraries.md:206-209`). The 105-1 run even read Configure.vi's `VISA resource name` back as `""` (`facts_c105_rotor.json:357-360`). That readback came from a subVI whose run had just been aborted, so it is weak evidence, but nobody has explained it.
+
+The claim assumes COM5 is the port being opened. Nothing in this log shows that.
+
+**4. What would falsify the claim.** The claim is that COM5 contention at the OS level explains the error and the probe is sound. Any one of these would falsify it:
+- a VISA Open of the same resource from a separate process returns 0xBFFF0072 while CreateFileW on COM5 returns FREE;
+- the string S1 passes is not `Rotor`/`ASRL5::INSTR`;
+- S1 contains two open paths to the rotor resource.
+
+**5. Cheapest test that separates "busy only for a moment" from "busy error does not come from the Windows handle".**
+
+No LabVIEW is needed; pyvisa on NI-VISA is enough, and no bytes are written:
+- a) With nothing running, open `Rotor` and then `ASRL5::INSTR` with pyvisa and close each one. If either returns 0xBFFF0072 while COM5 is FREE to CreateFileW, the error is inside VISA or the alias. That rules out a hidden holder and makes the whole port-holder search moot.
+- b) Calibrate the probe: hold COM5 with CreateFileW in one process, then open `ASRL5::INSTR` with VISA from another. This confirms OS contention really shows up as −1073807246 on this FTDI port. If it shows up as a different error, the 105 dialog was never OS contention.
+
+Only if (a) is clean and (b) reproduces the error does a re-run earn its cost. That re-run needs two things:
+- a CreateFileW poll every ~20 ms that starts before Run and stops the moment VISA Open is due. Otherwise the probe itself could make VISA busy.
+- a read of the resource string S1 wires into Configure.vi, taken from the diagram rather than the panel.
+
+**What would change my mind:** (a) is clean, (b) reproduces the error, and a pre-Run poll catches COM5 BUSY at t≈0.3–0.5 s. Then the claim of a brief OS-level hold would stand, and the +2 s probe would simply have been too late.
+
+Sources:
+- [LAVA: 0xBFFF0072 resource valid but VISA cannot access it (alias fix)](https://lavag.org/topic/17776-visa-hex-0xbfff0072-the-resource-is-valid-but-visa-cannot-currently-access-it/)
+- [NI Community: VISA Hex 0xBFFF0072](https://forums.ni.com/t5/LabVIEW/VISA-Hex-0xBFFF0072-The-resource-is-valid-but-VISA-cannot/td-p/835913)
+- [NI KB: Error -1073807246](https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019NeQSAU&l=en-US) (would not load here because of a certificate error; cited from the search result only)
+BGRUN END rc=0 after 122s

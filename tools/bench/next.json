@@ -1,13 +1,13 @@
 {
  "schema": "next/1",
- "cycle": 104,
- "act": "PD217(g): ONE diagnostic card - read S1 VISA constant #30488 by script; ONE A leg logging every window title+text Run->L2 (<=0.5 s) before any dismiss. No ABBA until the rotor-stop cause is read.",
- "task_kind": "diagnose",
- "plan": {"path": "docs/d1-loop12-17-split-plan.md", "md5": "1cc0d625b61d23956e253c07f2b50045"},
+ "cycle": 105,
+ "act": "PD218(c): first re-run tools/bench/diag_c105d_visa.py (no LabVIEW). If viOpen ASRL5 == 0 (user fixed D-2026-09-27-03) run the 217(f) ABBA unchanged; else the 216(g)/217(d)/218(d) tooling card.",
+ "task_kind": "build",
+ "plan": {"path": "docs/d1-loop12-17-split-plan.md", "md5": "121f0c674a5fd2f81018145230579fa7"},
  "pass": [
-  "#30488 value read (string) from D1_s1_copy.vi by script, reader measured on a scratch first",
-  "one A leg: window titles + texts + shots from Run to L2 at <=0.5 s, logged before any dismiss; the error text (or its absence) reported",
-  "LabVIEW gone; S1 md5 3e3d23ce unchanged; no bytes to COM5 outside the VI's own run"
+  "VISA precondition: diag_c105d_visa.py V1 status for 'Rotor' and ASRL5 recorded before any leg",
+  "if ASRL5 opens: ABBA A15 B15 B15 A15 per 217(f), legs stop on an A-leg failure before pick 1, dialogs logged by shotwin -Hwnd",
+  "else tooling card: stagesim labels+fs pairs, recipe <=120 lines, pre-run verb-precondition + memory-margin checks, gui_save Evidence, leg driver fail-fast on a modal dialog"
  ],
  "blocked_by": null,
  "stop_requested": false,
