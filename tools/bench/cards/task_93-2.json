@@ -1,0 +1,73 @@
+{
+ "schema": "task/1",
+ "id": "93-2",
+ "kind": "measure",
+ "goal": "PD200(c): (1) offline flush-alignment of 92-3 B-leg outliers; (2) t0stamp v2 = no file I/O in stamp(); (3) ABBA 8 picks: A = D1_s1_copy.vi, B = t0at on v2",
+ "why": "review 93-h1 (accepted): t0stamp.c:61-62,74-78 flushes to disk in the tracking thread every 1024th stamp, 6 sites in the same iteration; that fits the ~110 extra lost frames",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "archive/peer/2026-09-26-c93-h1-stamp-array-copy.md"},
+  {"path": "tools/bench/cards/result_92-3.json"},
+  {"path": "tools/bench/m8_anythread8_92.json"},
+  {"path": "tools/t0stamp/t0stamp.c"},
+  {"path": "tools/bench/diag_c92c_abba.py", "md5": "d52958ba37bb225cf2d9cb3afedd90c3"},
+  {"path": "tools/bench/diag_c92c_leg.py", "md5": "53d3cd62d4c37b6058f13186d435560d"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp.dll"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_copy.vi"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_t0at_20260926_090833.vi", "md5": "30a15c6772d5ef3336ed274abc4c2f40"}
+ ],
+ "pass": [
+  "(1) top-15 tracking-period outliers of leg2/leg3 site00 .bin: value (ms) + iteration index + distance to nearest k*1024-1; in tools/bench/t0_flushalign_93.json",
+  "(2) v2 exports the same stamp(int32,void*) cdecl; no WriteFile/Flush in stamp(); >=65536 stamps/site preallocated, overflow counted; files written only at detach",
+  "(2) self-test outside LabVIEW: 6 sites x >=20000 calls, call-time MAX and p99.9 reported; negative case site 64; file contents match call order",
+  "(2) v1 kept as byte copy claudeDev\\t0stamp_v1.dll (md5 1ea78380...); v2 installed at the path the t0at CLFNs reference, read from the VI; no VI edited",
+  "(3) leg dry run EXECUTES the leg script with GUI/COM stubbed to saved real returns (PD199h) before the first launch",
+  "(3) ABBA A B B A, 8/8 picks, normal, 120 s: lost frames per leg; B stamp counts, per-site median/p95/max period; B period outlier indices",
+  "numbers in tools/bench/m8_flushfree8_93.json + INDEX row; S1/t0/t0at/kswap/bed md5 unchanged; LabVIEW gone; TMX 39"
+ ],
+ "outputs": [
+  "tools/t0stamp/**",
+  "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp*.dll",
+  "tools/bench/t0_flushalign_93*",
+  "tools/bench/m8_flushfree8_93*",
+  "tools/bench/diag_c93b_*",
+  "tools/bench/t0_legs/**",
+  "tools/bench/cards/result_93-2.json"
+ ],
+ "flags": {
+  "labview": "build",
+  "gui": true,
+  "hardware": "gate",
+  "run_vi": true,
+  "write": [
+   "tools/t0stamp/**",
+   "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\t0stamp*.dll",
+   "tools/bench/t0_flushalign_93*",
+   "tools/bench/m8_*",
+   "tools/bench/diag_c93b_*",
+   "tools/bench/t0_legs/**",
+   "tools/bench/stage_runs.jsonl",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/gui_shots/**",
+   "tools/gui_actions.log",
+   "tools/bench/peer_*",
+   "tools/bench/cards/**",
+   "archive/peer/**",
+   "archive/benchmarks/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 90},
+ "rules": [
+  "never save any VI; if the CLFN library path is not the claudeDev t0stamp.dll, return BLOCKED",
+  "reuse diag_c92c_abba/leg (copy to diag_c93b_*) incl. the pick-1 capture release; <=120 lines new code",
+  "GUI acts via lv_gui.ps1 -Exception Approved -Evidence 'user 2026-09-17 bead-pick option 1'",
+  "a leg with registered picks != 8 is logged and rerun once, never half-counted",
+  "do not judge clearance or alignment: report numbers; PD199(c)/PD200 applied by judgement",
+  "hold your turn until every bgrun has END/TIMEOUT; LabVIEW gone before return; facts only, <=10"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

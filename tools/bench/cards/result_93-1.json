@@ -1,0 +1,29 @@
+{"schema":"result/1","id":"93-1","status":"FAIL","gates":{"pass":6,"fail":1},
+ "first_fail":"B: type reader cannot be checked on a known-type wire - no op reads Terminal.Data Type (docs/NAMES.md:478-485); card flags forbid building one",
+ "blocked_by":null,
+ "artefacts":[
+  {"path":"tools/bench/cards/verdict_93-h1.json","md5":null},
+  {"path":"archive/peer/2026-09-26-c93-h1-stamp-array-copy.md","md5":null},
+  {"path":"tools/bench/t0at_stamp_wiretypes_93.json","md5":"5ccb79f9c4c0a942da9dae097beebcce"},
+  {"path":"tools/bench/diag_c93_wiretypes.py","md5":null},
+  {"path":"tools/bench/diag_c93_wiretypes.log","md5":null},
+  {"path":"tools/bench/peer_93-h1.log","md5":null}
+ ],
+ "facts":[
+  "Review 93-h1 ANSWERED 96 s, verdict=refuted (archive/peer/2026-09-26-c93-h1-stamp-array-copy.md:9-10, tools/bench/cards/verdict_93-h1.json)",
+  "Strongest refutation: t0stamp.c:74-78 WriteFile+FlushFileBuffers every 1024th stamp in the caller thread; 6 tracking sites hit it in the same iteration ~10x/leg (peer_93-h1.log verdict)",
+  "Peer: median period 11.16 ms < measured frame 11.25 ms (88.9 fps, result_92-3.json:19) -> loss is from tail stalls, not a per-frame copy; B period max 211/156 ms",
+  "Alternative (b): a real copy but on Filtered X / X out wires; rated weaker since a per-frame copy would raise the median (archive/peer/2026-09-26-c93-h1-stamp-array-copy.md)",
+  "Cheapest test (peer): offline read leg2/leg3 t0_site00 .bin, top-15 period outliers; if at iteration k*1024-1 (+-1) the flush is the cause; no LabVIEW",
+  "12 CLFN rows, each wire found in S1 graph with 1 source, build read-back uid match, not broken (diag_c93_wiretypes.log:3-6)",
+  "Scalar i I32: S00 #22968 w3268, S10 #23466 w19372, S20 #24309 w34066; S08 #23258 w541 = save trace error out (error cluster) (diag_c93_wiretypes.log:8-19)",
+  "Array/large, INFERRED: S02 w5859 bool[]; S11 w19465 ImageToArray 'Image Pixels (U8)' 2D frame; S12 w19468 Flatten Pixmap 'image data'; S13/S16 pictures",
+  "Tunnels, INFERRED: S03 w32890 LoopTunnel#29172, S04 w11352 LoopTunnel#11363 fed by Bundler clusters in For loops; S06 w4906 SelectorTunnel#2451 'Z out' (D1_s1_copy.json:70619,73067,86915)",
+  "t0at md5 30a15c67... unchanged; LabVIEW never launched (offline), nothing saved, tasklist shows no LabVIEW; handle count not read (no instance)"
+ ],
+ "open":[
+  "Peer's flush-alignment test is offline and cheaper than the scalar-only build; run it before (2)? (judgement)",
+  "Build a Terminal.Data Type (634A008) reader op to replace the INFERRED type column, or accept the inferred types? (needs a card with claudeDev write)"
+ ],
+ "cost":{"usd":null,"minutes":22,"labview_runs":0},
+ "note":"opus material. Review not disposed (judgement). Type column level INFERRED from source terminal identity + build tags, never READ. No LabVIEW launched, so the handle-count gate is vacuous."}

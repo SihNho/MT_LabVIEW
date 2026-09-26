@@ -1,0 +1,16 @@
+{
+ "schema": "verdict/1",
+ "id": "93-h1",
+ "verdict": "refuted",
+ "alternative": "t0stamp.c:74-78 runs WriteFile+FlushFileBuffers in the tracking thread every 1024th stamp; 6 lockstep sites flush in the same iteration ~10x per leg -> ~120 ms stalls (period max 211/156 ms) ~= 110 extra lost frames. Median 11.16 ms < measured 11.25 ms frame, so no per-frame copy.",
+ "discriminating_test": "Offline: read existing leg2/leg3 t0_site00 .bin, list the top-15 period outliers; if their iteration indices sit at k*1024-1 (+/-1), the flush is the cause, not array copies. No LabVIEW run.",
+ "violations": [],
+ "sources": [
+  "tools/t0stamp/t0stamp.c:61-62,74-78",
+  "tools/bench/m8_anythread8_92.json:425-430,1008,1219",
+  "tools/bench/cards/result_92-3.json:19",
+  "tools/bench/diag_c90_t0stamp_scratch_r3.log:91-94",
+  "https://github.com/boltdb/bolt/issues/516"
+ ],
+ "note": "The 50us/iter excess is measured against nominal 11.11 ms, not arm A (unstamped, no period data); the real frame period is 11.25 ms. The scratch test (n=1100, median/p99) could not see a once-per-1024 stall."
+}

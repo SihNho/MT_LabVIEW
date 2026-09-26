@@ -1,0 +1,21 @@
+{
+ "schema": "review/1",
+ "id": "93-h1",
+ "role": "hypothesis",
+ "claim": "In t0at (S1 copy + 12 any-thread CLFN stamps, each fed by a BRANCH of an existing wire), the ~110 extra lost frames/120 s at 8 beads come from stamps branching LARGE-ARRAY wires: the shared buffer forces a per-frame array copy. Scalar-wired stamps don't. Test: wire types -> scalar-only copy -> ABBA.",
+ "predicted": "Stamps cost only their call cost (0.3-1.4 us x 12/iteration; a 1024x1280 U16 branch showed no copy on a scratch VI), so a stamped copy loses about what unstamped S1 loses; then, any-thread CLFNs should remove the extra loss if it was UI-thread switching.",
+ "observed": "ABBA, 8 picks, 120 s, 90 Hz: unstamped S1 lost 20/22; any-thread stamped 130/131; UI-thread stamped (earlier) 138/144. Stamped tracking period median 11.16-11.18 ms vs camera 11.11 ms: ~50 us/iteration extra, which 12 x <=1.4 us cannot explain.",
+ "ruled_out": [
+  "UI-thread switching as the main cause: any-thread copy still loses 130/131 (tools/bench/cards/result_92-3.json, tools/bench/m8_anythread8_92.json)",
+  "harness first-click loss as a stamp effect: it occurs 2/2 on unstamped legs too and all 4 ABBA legs registered 8/8 after the capture-release fix (docs/d1-loop12-17-split-plan.md PD199 measured block)",
+  "the stamp call cost itself: 0.30 us per stamp, 1.40 us with a 1024x1280 U16 branch on a scratch VI (tools/bench/diag_c90_t0stamp_scratch_r3.log)"
+ ],
+ "attachments": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/result_92-3.json"},
+  {"path": "tools/bench/m8_anythread8_92.json"},
+  {"path": "tools/bench/t0_sites_s1.json"},
+  {"path": "tools/t0stamp/t0stamp.c"}
+ ],
+ "ask": "refute"
+}

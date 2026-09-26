@@ -53,16 +53,24 @@ rig-state: 조립   <!-- 2026-09-24 20:xx USER GRANT: "당분간 내가 말하�
 🟡 **CARRY (from the 2026-09-25 verification review `archive/peer/2026-09-25-hyp-lintverify-20260925.md`, not blocking): card flags are checked only on the top-level command (a child process could reach LabVIEW under labview=none); a stage run launched outside bgrun is not counted by the retry cap; a bgrun record failure is only logged (`tools/bgrun.py:219-220`). Close in a tooling cycle, deliverable-first.**
 current-bed: D1_l2_a1_20260925_235224.vi
 <!-- ^ machine key read by tools/errorlist_check.py current_bed_text(); without it the bed is chosen by mtime among D1_*.vi names in this file, and the newer D1_s1_kswap_* would silently take over (review archive/peer/2026-09-26-c88-reuse-stalepin.md). Change it only when a new bed is accepted. -->
-🔴🔴🔴 **FIRST ACT (cycle 93) = `docs/d1-loop12-17-split-plan.md` Pre-decided 199(f): find out why the stamps still cost ~110 frames.**
-  0. FIRST, a `-Role hypothesis` review of the candidate cause. The candidate: branching a large-array wire into a stamp makes that buffer shared, so a downstream in-place node copies the image every frame. This is owed because 198(c)'s UI-thread prediction failed.
-  1. Read-only: the data type of each of the 12 stamp wires (scalar, or array with its dimensions) in `claudeDev\D1_s1_t0at_20260926_090833.vi`, md5 `30a15c67…`.
-  2. Build `D1_s1_t0sc_<ts>.vi` from t0at, keeping only the scalar-wired stamps (the others deleted by uid, cdiff 0 rows, ExecState 1).
-  3. ABBA, 8 picks, panel normal, 120 s, against unstamped S1. It is cleared when B ≤ 2 × mean(A) + 20.
-- The step-4 table (`t0_step4_91.json`) stays UNUSABLE until some stamped copy passes that criterion.
-- 🔴 **NEW PASS criterion for every leg card (PD199(h), retrospective-cycle92 accepted, `inference-over-measurement` count 2):** the dry run must EXECUTE the leg script, with GUI/COM stubbed to saved real returns. A third occurrence triggers the device rule.
-- Recorded (retro-c92 6(a)): in 92-1's launch 1, LabVIEW was force-killed twice after a COM Abort, so the VI never closed the camera. It read 90.0009 Hz afterwards.
+🔴🔴🔴 **FIRST ACT (cycle 94) = `docs/d1-loop12-17-split-plan.md` Pre-decided 201: per-site timing on the CLEARED instrument.**
+- Legs: B = `claudeDev\D1_s1_t0at_20260926_090833.vi` (md5 `30a15c67…`) with `claudeDev\t0stamp.dll` v2 (md5 `b35b398d…`), and A = unstamped `D1_s1_copy.vi` as the control. Panel normal, 120 s, order A11 B11 B15 A15 B15 B11. The control arm is kept because of retrospective-cycle93 finding 3: the clearance is thin.
+- Harness: `tools/bench/diag_c93b_abba.py` / `…_leg.py`.
+- Per site: median and p95 of (stamp − own `i`), and the slope µs/bead = (mean15 − mean11) / 4.
+- Every leg card's dry run must EXECUTE the leg script with GUI/COM stubbed (PD199(h)).
+- The next judgement names the per-bead lever from the table. The candidate is For #7911, site 4; any change there is accepted numerically (rule 1a).
+- `t0_step4_91.json` (v1 DLL) stays unusable.
 - User decision **D-2026-09-26-01** (loop-level timers only) is still OPEN; the work proceeds under its recommendation.
 - Machine copy: `tools/bench/next.json`.
+
+🟢 **CYCLE 93 (PD200).**
+- **The stamps' ~110 lost frames are EXPLAINED AND FIXED.**
+- The hypothesis review (`archive/peer/2026-09-26-c93-h1-stamp-array-copy.md`, accepted) refuted the array-copy candidate.
+- The cause: `t0stamp` v1 ran `FlushFileBuffers` inside `stamp()` every 1024 calls. Six sites flushed in the same iteration.
+- Offline check: in the old B legs, the top-10 periods are exactly at iterations k·1024−1, at 108–212 ms.
+- `t0stamp` v2 has no I/O in `stamp()`. It is in place (`b35b398d…`); v1 is kept as `claudeDev\t0stamp_v1.dll`.
+- ABBA at 8 picks: unstamped **14 / 19** against stamped v2 **24 / 43**, under the limit of 53 ⇒ **the instrument is CLEARED** (INDEX 54, `tools/bench/m8_flushfree8_93.json`). The clearance is thin: B still loses about 2× A, with a 24-vs-43 spread and n = 2.
+- The scalar-only build is cancelled.
 
 🟢 **CYCLE 92 (PD199).**
 - **The UI-thread hypothesis is REFUTED.**

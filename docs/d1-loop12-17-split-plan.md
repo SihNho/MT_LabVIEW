@@ -1228,6 +1228,56 @@ above by a material session. These close O1's framing, O2, O3, O4's shift-regist
          not escalated.
        - The cycle-92 material model was mixed: 92-1 and 92-2 on fable/low, 92-3 on Opus after the mid-cycle agent
          change. Keep this out of a single-condition Fable-vs-Opus row.
+200. **(cycle 93 judgement, on result `93-1` FAIL 6/1 and review `archive/peer/2026-09-26-c93-h1-stamp-array-copy.md`)**
+     - **(a) The array-copy candidate of 199(f) is SET ASIDE.** The review (verdict `refuted`) was checked against the
+       source: `tools/t0stamp/t0stamp.c:61-62,74-78` calls `WriteFile` + `FlushFileBuffers` inside `stamp()` in the
+       caller's thread on every 1024th call per site. The six tracking-loop sites fire once per iteration, so they
+       flush in the SAME iteration, about 10 times per 120 s leg. The B legs' tracking period median (11.16 ms) is below
+       the MEASURED frame period (11.25 ms, 88.9 fps), with maxima of 211 / 157 ms. That is tail stalls, not a
+       per-frame copy. The scalar-only build (199(f) 2) is DEFERRED, not cancelled: it runs only if (c) fails to clear.
+     - **(b) 93-1's single fail (no reader for `Terminal.Data Type`) is judged, not escalated (199(h) reading).** The
+       type column of `tools/bench/t0at_stamp_wiretypes_93.json` stays INFERRED. It is not needed while (a) stands. The
+       reader is built only if the scalar-only build is revived.
+     - **(c) DECIDED (card `93-2`):**
+       - (1) offline, no LabVIEW: the top-15 tracking-period outliers of the 92-3 B legs' site-00 `.bin`, with their
+         iteration indices set against k·1024−1;
+       - (2) `t0stamp` v2: the same export `int32_t stamp(int32_t, void*)` cdecl; NO file I/O in `stamp()`; a
+         preallocated per-site buffer of at least 65,536 stamps, where overflow is counted and dropped, never flushed;
+         the files are written only at `DLL_PROCESS_DETACH`. It is self-tested outside LabVIEW on the call-time MAXIMUM,
+         not the median. v1 (md5 `1ea78380…`) is kept as a byte copy. v2 goes in at the path the CLFNs reference, with
+         no VI edited;
+       - (3) ABBA, 8 picks, panel normal, 120 s: A = `D1_s1_copy.vi`, B = t0at on v2, under 199(c)'s criterion
+         (B ≤ 2 × mean(A) + 20). The leg dry run follows 199(h).
+       The flush is fixed whatever (1) shows, because a synchronous disk flush inside a timing probe is a defect of the
+       instrument. (1) tells us whether it was THE cause, and so whether (3) failing to clear revives the array candidate.
+     - **(d) RESULTS (`93-2` PASS 59/0, INDEX row 54, `tools/bench/t0_flushalign_93.json`, `tools/bench/m8_flushfree8_93.json`):**
+       - (1) In the 92-3 B legs, the top-10 tracking periods of each leg sit EXACTLY at iterations 1023, 2047, …, 10239,
+         at 108–212 / 113–157 ms. Each holds the flushes of the six tracking sites. Periods without a flush: median
+         11.157 / 11.175 ms, max 39.8 / 39.3 ms. ⇒ **the flush WAS the cause.**
+       - (2) `t0stamp` v2 is in place at `claudeDev\t0stamp.dll`, md5 `b35b398d…`; v1 is kept as `claudeDev\t0stamp_v1.dll`,
+         md5 `1ea78380…`. Self-test 9/0. In a 120k-call C bench, v2 has p99.9 100 ns and max 13.6 µs; v1 had max 6.05 ms.
+       - (3) ABBA, 8/8 picks, normal, 120 s: **A 14 / 19 · B (t0at on v2) 24 / 43.** The criterion is B ≤ 2 × 16.5 + 20 = 53
+         ⇒ **THE INSTRUMENT IS CLEARED** (199(c)). B max periods 61.6 / 63.1 ms, both at iteration 1 (start-up). No
+         top-15 period sits at k·1024−1. Overflow 0 at every site.
+       - ⇒ The array-copy candidate is CLOSED, and the scalar-only build (199(f) 2) is CANCELLED. The step-4 table
+         `t0_step4_91.json` (v1 DLL) stays unusable. Per-site attribution must be re-measured on v2.
+       - 93-1's G5 (a hard-coded FAIL for the type-reader check, `tools/bench/diag_c93_wiretypes.py:79-80`) was
+         discharged by `archive/peer/2026-09-26-c93b-g5-wiretypes.md`. No type reader is built (200(b)).
+201. **(cycle 93 judgement) NEXT: redo the per-site timing with the cleared instrument, i.e. 198(b) on t0stamp v2.**
+     - Legs: t0at (`claudeDev\D1_s1_t0at_20260926_090833.vi`, md5 `30a15c67…`) with v2 DLL md5 `b35b398d…`; panel
+       normal; 120 s; order **11, 15, 15, 11** picks. These two counts are not frame-bound (198(b)). A leg with registered
+       picks ≠ target is rerun once.
+       ⚠️ AMENDED by retrospective-cycle93 finding 3 (accepted): the 8-pick clearance is thin. B lost 24 / 43, about 2× A's
+       14 / 19, with n = 2, and 199(c)'s criterion was sized for a 100-frame effect. So the legs KEEP an unstamped
+       control: add one `D1_s1_copy.vi` leg at 11 picks and one at 15 picks (6 legs in all, in the order
+       A11 B11 B15 A15 B15 B11). Report the stamped/unstamped loss per pick count. The per-site table is read as
+       ordering and slope, and never as absolute loss.
+     - Per leg, per site: stamp count, overflow, and the median and p95 of (stamp − own `i`). Also the tracking-loop
+       period median / p95 and lost frames.
+     - Per site, slope µs/bead = (mean15 − mean11) / 4, with the spread between the two repeats as its error bar.
+     - The leg dry run follows 199(h). The harness is `tools/bench/diag_c93b_abba.py` / `…_leg.py`.
+     - Judgement then names the per-bead lever (198(b)'s candidate is For #7911, site 4). The acceptance of any change
+       to that group stays numeric (rule 1a).
 
 ## OPEN (design choices — for judgement; not decided here)
 

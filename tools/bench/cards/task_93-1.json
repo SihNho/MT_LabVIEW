@@ -1,0 +1,55 @@
+{
+ "schema": "task/1",
+ "id": "93-1",
+ "kind": "measure",
+ "goal": "PD199(f) 0+1: (A) dispatch review_93-h1 (-Agent claude -Role hypothesis -ReviewCard, foreground); (B) read-only: data type + source of every input wire of the 12 stamp CLFNs in t0at",
+ "why": "PD199(e): any-thread stamps lose 130/131 vs 20/22 unstamped; the array-branch-copy candidate owes a hypothesis review first (CLAUDE.md 5); the scalar/array split decides which stamps a scalar-only copy keeps",
+ "inputs": [
+  {"path": "docs/d1-loop12-17-split-plan.md"},
+  {"path": "tools/bench/cards/review_93-h1.json"},
+  {"path": "tools/bench/cards/result_92-3.json"},
+  {"path": "tools/bench/t0_sites_s1.json"},
+  {"path": "tools/t0stamp/t0stamp.c"},
+  {"path": "C:\\Program Files\\National Instruments\\LabVIEW 2026\\user.lib\\claudeDev\\D1_s1_t0at_20260926_090833.vi", "md5": "30a15c6772d5ef3336ed274abc4c2f40"}
+ ],
+ "pass": [
+  "review: verdict_93-h1.json exists, exchange ANSWERED, archived under archive/peer/; its strongest refutation, alternative cause and cheapest test quoted in facts",
+  "read-only table for all 12 stamp CLFNs: CLFN uid, site, each input wire's source node/terminal and data type (scalar/array+dims/cluster); written to tools/bench/t0at_stamp_wiretypes_93.json",
+  "reader checked first on a wire with a KNOWN type (e.g. a loop i terminal = I32 scalar) before the table is trusted",
+  "t0at md5 unchanged (30a15c67...), nothing saved, LabVIEW gone at return, handle count read before/after"
+ ],
+ "outputs": [
+  "tools/bench/t0at_stamp_wiretypes_93*",
+  "tools/bench/diag_c93_*",
+  "tools/bench/cards/verdict_93-h1.json",
+  "tools/bench/cards/result_93-1.json"
+ ],
+ "flags": {
+  "labview": "read",
+  "gui": false,
+  "hardware": "none",
+  "run_vi": false,
+  "write": [
+   "tools/bench/t0at_stamp_wiretypes_93*",
+   "tools/bench/diag_c93_*",
+   "tools/bench/peer_*",
+   "tools/bench/jev_gate.log",
+   "tools/bench/jev_usage.jsonl",
+   "tools/bench/cards/**",
+   "archive/peer/**"
+  ],
+  "status_edit": false,
+  "git_commit": false,
+  "peers": ["hypothesis"]
+ },
+ "budget": {"failures": 2, "minutes": 45},
+ "rules": [
+  "(A) peer.ps1 -Agent claude -Role hypothesis -ReviewCard <card> -TimeoutSec 900, foreground",
+  "(B) per CLFN: uid, site, each input wire's source node/terminal + type (scalar/array elt+dims/cluster)",
+  "never save or modify any VI; the read opens the t0at copy only",
+  "do not dispose the review: quote it; disposition is judgement's",
+  "do not build the scalar-only copy in this card",
+  "hold your turn until every bgrun you start has its END/TIMEOUT line; LabVIEW gone before return; facts only, <=10"
+ ],
+ "advances": ["M8", "M3", "R1", "R3"]
+}

@@ -1,8 +1,8 @@
-{"schema": "next/1", "cycle": 92, "act": "PD199(f): hypothesis review first; then 12 stamp-wire data types in D1_s1_t0at_20260926_090833.vi; build t0sc (scalar stamps only); ABBA 8 picks vs S1 under PD199(c)", "task_kind": "measure",
- "plan": {"path": "docs/d1-loop12-17-split-plan.md", "md5": "b4034d451c9baf3875bbd1bb31cbd153"},
- "pass": ["dry run EXECUTES the leg script with GUI/COM stubbed to saved real returns (PD199h)","-Role hypothesis review ANSWERED and disposed before any build", "per stamp site: wire data type (scalar / array + dims), t0at md5 30a15c67 unchanged",
-  "t0sc: byte copy of t0at minus the array-wired stamps by uid, cdiff(S1,.) 0 rows, ExecState 1 warm+cold, saved by script",
-  "ABBA 8 picks normal 120 s, 8/8 registered, lost frames per leg; clearance B <= 2 x mean(A) + 20 applied by judgement",
-  "S1/t0/t0at/kswap/bed md5 unchanged; LabVIEW gone; TMX 39"],
+{"schema": "next/1", "cycle": 93, "act": "PD201 amended: per-site timing, B = t0at + t0stamp v2, A = unstamped S1 control; normal 120 s; legs A11 B11 B15 A15 B15 B11; per-site median/p95 (stamp - i), slope us/bead", "task_kind": "measure",
+ "plan": {"path": "docs/d1-loop12-17-split-plan.md", "md5": "63d7ba4123fda2210a63cd33f7d74ebb"},
+ "pass": ["leg dry run EXECUTES the leg script with GUI/COM stubbed to saved real returns (PD199h)",
+  "6 legs A11 B11 B15 A15 B15 B11, registered picks = target (rerun once otherwise), 120 s, normal; lost frames per leg, stamped/unstamped loss per pick count",
+  "B: per site stamp count, overflow 0, median/p95 (stamp - own i), tracking period median/p95; slope us/bead = (mean15-mean11)/4 with repeat spread",
+  "numbers in tools/bench/t0_step4v2_*.json + INDEX row; S1/t0/t0at/kswap/bed + v2 dll md5 unchanged; LabVIEW gone; TMX 39"],
  "blocked_by": null, "stop_requested": false, "advances": ["M8", "M3", "R1", "R3"],
- "note": "C92: UI-thread CLFNs measured (12/12 False); any-thread copy built (t0at 30a15c67); harness capture fix -> 8/8 picks all 4 legs; ABBA A 20/22 vs B 130/131 -> NOT cleared, UI-thread hypothesis refuted (PD199e). bgrun reaper 92-4 PASS 18/0 (retro-c90 device-failed closed)."}
+ "note": "C93: review 93-h1 refuted the array-copy candidate; cause = t0stamp v1 FlushFileBuffers in stamp() every 1024 calls (outliers exactly at k*1024-1). v2 (no I/O in stamp) built; ABBA 8 picks A 14/19 vs B 24/43 <= 53 -> CLEARED but thin (retro-c93 F3: control arm kept). Scalar-only build cancelled."}

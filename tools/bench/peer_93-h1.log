@@ -1,0 +1,46 @@
+BGRUN START 2026-09-26 10:17:52 limit 18.0 min: powershell -NoProfile -ExecutionPolicy Bypass -File tools/peer.ps1 -Agent claude -Role hypothesis -Kind review -Slug c93-h1-stamp-array-copy -ReviewCard tools/bench/cards/review_93-h1.json -TimeoutSec 900 -Task Refute the claim in the attached review card. The attachments it lists are readable in the project directory.
+BGRUN PID 19864
+OUTCOME: ANSWERED (96s)  model: claude-opus-5-5 (effort high; peer.ps1 default for role hypothesis)  archived: archive\peer\2026-09-26-c93-h1-stamp-array-copy.md
+COST: $1.3040  in 10 / out 7820 / cache-create 129150 / cache-read 457354  (92s, 10 turn(s))
+VERDICT-CARD: VERDICT-CARD 93-h1 verdict=refuted -> tools\bench\cards\verdict_93-h1.json
+--- ANSWER ---
+**I think the claim is wrong.** The large-array-copy idea is only one hypothesis, and it doesn't fit the shape of the recorded data. A more likely cause is built into the stamp DLL itself, and it can be checked offline for free before any new LabVIEW build.
+
+## 1. The strongest reason the claim is wrong
+
+**The stamp DLL blocks the tracking loop for a synchronous disk flush about every 11 s, and the loop's stalls look like that.**
+
+- **The flush is in the call path.** In `tools/t0stamp/t0stamp.c:74-78`, every 1024th `stamp()` call runs `WriteFile` and then `FlushFileBuffers` (`:61-62`). This happens inside the calling thread. In the any-thread copy, that thread is the tracking loop's.
+- **All six tracking sites flush in the same iteration.** Sites 00/02/03/04/06/08 each fire once per iteration: 10983 stamps each in `m8_anythread8_92.json:425-430`. So all six reach their 1024th stamp together, and one iteration pays six serial disk flushes. That happens about 10 times per 120 s leg.
+- **The files go to a real disk.** The `.bin` files land in the leg folder on `G:` (the Glob shows `tools/bench/t0_legs/.../leg2_B_p8_a1/*.bin`). `FlushFileBuffers` stalls are well documented, at about 10 ms per flush on higher-latency disks ([boltdb #516](https://github.com/boltdb/bolt/issues/516)).
+- **The size matches.** 10 events costing about 11 frames each (roughly 120 ms of stall) gives the observed ~110 extra lost frames.
+- **The long gaps are in the data.** The tracking period max is 211.8 ms in leg 2 and 156.6 ms in leg 3 (`m8_anythread8_92.json:1008, 1219`). Site deltas reach 62–176 ms (`:1023-1099`).
+- **The scratch test never saw this.** It ran only n=1100 calls on isolated sites (`diag_c90_t0stamp_scratch_r3.log:91-93`): at most one flush, and it reported only the median and p99. That hides one stall in 1100 by construction. The same log's ruling-out of "the stamp call cost itself" was a median result, so it doesn't reach this.
+
+**The "~50 µs per iteration extra" premise is also not measured.**
+- Arm A has no stamps, so it has no period data. The comparison is against the nominal 11.11 ms, not against A.
+- Both arms actually ran at a measured 88.9 fps (`result_92-3.json:19`), which is 11.25 ms per frame.
+- The tracking loop did 10983 iterations in 123.4 s, a mean of 11.24 ms. So the loop is paced by the camera. Its 11.16 ms median is *below* the real frame period; the gap between median and mean comes from tail stalls, not from a per-iteration cost.
+- A per-frame copy of a 2.6 MB array would push the whole distribution up. What the data shows is a mostly normal loop with rare long gaps.
+
+## 2. Alternative explanations
+
+- **(a) Periodic flush stalls, as above.** This also explains why the UI-thread copy (138/144) and the any-thread copy (130/131) lose about the same. The flush costs the same whichever thread makes the call.
+- **(b) The in-place copy is real, but on a different wire.** A CLFN's Adapt-to-Type parameter that isn't marked Constant can force LabVIEW to copy a branched buffer. The only large-looking tracking wires are `Filtered X` and `X out` (`t0_sites_s1.json:486-490, 690`). But a per-frame copy would raise the median, and it didn't. That makes (b) weaker than (a).
+
+## 3. What would falsify the claim
+
+The claim fails if the long tracking-period gaps (say over 30 ms) sit at site-00 iteration indices of about 1023, 2047, 3071, … (±1). That would mean the loss follows the flush schedule, not the array wires. The claim fails again if a scalar-only copy still loses about 130 frames.
+
+## 4. Cheapest discriminating test (no LabVIEW, no build)
+
+1. Read the existing `t0_site00_pid26352.bin` and `pid26424.bin` (int64 values: the QPC frequency first, then the counts).
+2. Compute the per-iteration periods and list the indices of the top ~15.
+3. Check whether they fall at `k·1024−1`.
+
+If they cluster there, the fix is to take `FlushFileBuffers` out of `stamp()`, or to write from a background thread and stagger sites so their chunks don't close together. Then rerun ABBA.
+
+Only if the gaps turn out *not* to align with the flushes is the planned scalar-only build (`d1-loop12-17-split-plan.md:1210-1211`) worth a LabVIEW run.
+
+VERDICT {"schema":"verdict/1","id":"93-h1","verdict":"refuted","alternative":"t0stamp.c:74-78 runs WriteFile+FlushFileBuffers in the tracking thread every 1024th stamp; 6 lockstep sites flush in the same iteration ~10x per leg -> ~120 ms stalls (period max 211/156 ms) ~= 110 extra lost frames. Median 11.16 ms < measured 11.25 ms frame, so no per-frame copy.","discriminating_test":"Offline: read existing leg2/leg3 t0_site00 .bin, list the top-15 period outliers; if their iteration indices sit at k*1024-1 (+/-1), the flush is the cause, not array copies. No LabVIEW run.","violations":[],"sources":["tools/t0stamp/t0stamp.c:61-62,74-78","tools/bench/m8_anythread8_92.json:425-430,1008,1219","tools/bench/cards/result_92-3.json:19","tools/bench/diag_c90_t0stamp_scratch_r3.log:91-94","https://github.com/boltdb/bolt/issues/516"],"note":"The 50us/iter excess is measured against nominal 11.11 ms, not arm A (unstamped, no period data); the real frame period is 11.25 ms. The scratch test (n=1100, median/p99) could not see a once-per-1024 stall."}
+BGRUN END rc=0 after 97s

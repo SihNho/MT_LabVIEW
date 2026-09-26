@@ -1,0 +1,21 @@
+BGRUN START 2026-09-26 10:21:15 limit 1.0 min: py -u tools/bench/diag_c93_wiretypes.py
+BGRUN PID 23832
+PASS  G1 12 stamp CLFN rows  12
+PASS  G2 every wire uid found in the S1 graph with exactly one source  []
+PASS  G3 build read-back uid == wire uid, not broken, sink terminal 'any'  
+PASS  G4 t0at md5 unchanged  30a15c6772d5ef3336ed274abc4c2f40
+FAIL  G5 type reader verified on a known-type wire (loop i = I32)  no reader: Terminal.Data Type 634A008 value needs a new op (docs/NAMES.md:478-485); card flags labview=read, no claudeDev write
+S00 clfn#22968 w3268 <- Diagram#639 '' | declared [i I32] | expect I32 scalar (loop iteration terminal)
+S02 clfn#22989 w5859 <- SubVI#5058 'Bead is good? array out' | declared [bool[]] | expect 1D Boolean array (n beads)
+S03 clfn#22997 w32890 <- LoopTunnel#29172 '' | declared [For tunnel (Median #30306)] | expect None
+S04 clfn#23004 w11352 <- LoopTunnel#11363 '' | declared [For tunnel (Median #29009 + FIR #28233, site 5 shares)] | expect None
+S06 clfn#23076 w4906 <- SelectorTunnel#2451 'Z out' | declared [case tunnel (plot Z #6085 + plot dZ #5696, site 7 shares)] | expect None
+S08 clfn#23258 w541 <- SubVI#376 'error out' | declared [error cluster] | expect error cluster (status, code, source string)
+S10 clfn#23466 w19372 <- Diagram#15266 '' | declared [i I32] | expect I32 scalar (loop iteration terminal)
+S11 clfn#23534 w19465 <- SubVI#15442 'Image Pixels (U8)' | declared [U8 image] | expect 2D U8 array (full frame; IMAQ ImageToArray)
+S12 clfn#24008 w19468 <- SubVI#15472 'image data' | declared [image data] | expect cluster (NI picture 'image data': image type, depth, 1D U8 image, 1D U32 colors, rect)
+S13 clfn#24012 w19429 <- SubVI#15511 'new picture' | declared [picture] | expect picture (flattened-string type, grows with drawn content)
+S16 clfn#24015 w19441 <- SelectorTunnel#16277 'new picture' | declared [case tunnel (circle #16788 + text #16827, site 17 shares)] | expect picture (flattened-string type, grows with drawn content)
+S20 clfn#24309 w34066 <- Diagram#25392 '' | declared [i I32] | expect I32 scalar (loop iteration terminal)
+RESULT {"status":"FAIL","gates":{"pass":4,"fail":1},"first_fail":"G5 type reader verified on a known-type wire (loop i = I32)","artefacts":[{"path":"tools\\bench\\t0at_stamp_wiretypes_93.json","md5":"5ccb79f9c4c0a942da9dae097beebcce"}],"schema":"result-line/1"}
+BGRUN END rc=1 after 1s (RESULT: status=FAIL gates 4/1 first_fail=G5 type reader verified on a known-type wire (loop i = I32); the process itself said 0)

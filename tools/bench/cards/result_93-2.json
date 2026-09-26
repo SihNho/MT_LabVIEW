@@ -1,0 +1,32 @@
+{"schema":"result/1","id":"93-2","status":"PASS","gates":{"pass":59,"fail":0},
+ "first_fail":null,
+ "blocked_by":null,
+ "artefacts":[
+  {"path":"tools/bench/t0_flushalign_93.json","md5":"0c3e6464e4fb32bf5c4281535acbf8be"},
+  {"path":"tools/t0stamp/t0stamp.dll","md5":"b35b398d59b35743e2669d043f701fe6"},
+  {"path":"tools/bench/m8_flushfree8_93.json","md5":"192f87c0f00802e855188c1e50c36a27"},
+  {"path":"tools/bench/diag_c93b_abba.py","md5":"a56924a8443cf46d3904473a5f052f7e"},
+  {"path":"tools/bench/diag_c93b_leg.py","md5":"316ca5c29dfcaf7b1d76b901a291d1b3"},
+  {"path":"tools/bench/diag_c93b_flushalign.py","md5":null},
+  {"path":"tools/t0stamp/selftest_v2.py","md5":null},
+  {"path":"tools/t0stamp/bench.c","md5":null},
+  {"path":"tools/bench/t0_legs/c93b_abba8_20260926_103112","md5":null}
+ ],
+ "facts":[
+  "(1) 92-3 B legs: top-10 tracking periods per leg are exactly iter 1023,2047..10239, 108-212 / 113-157 ms, each holding the flush calls of sites 00/02/03/04/06/08 (diag_c93b_flushalign.log:3-12,19-28)",
+  "(1) periods containing a flush n=13, median 121.5/122.8 ms; periods without: median 11.157/11.175 ms, max 39.8/39.3 ms (diag_c93b_flushalign.log:18,34)",
+  "(2) v2 self-test 9/0: no I/O in stamp(); 6x20000 stamps each inside its call's QPC window; site 64/-1 rc 1; 70000->65536 + overflow 4464; handles flat (diag_c93b_t0v2_selftest_r2.log:13-27)",
+  "(2) C bench 120k calls, QPC 10 MHz: v2 p99.9 100 ns, max 13.6 us (3 calls >10 us); v1 same shape p99.9 2.5 us, max 6.05 ms (118 calls >10 us) diag_c93b_t0v2_selftest_r2.log:29-30",
+  "(2) t0at CLFN path read from VI bytes = <userlib>\\claudeDev\\t0stamp.dll (x2); v1 kept as claudeDev\\t0stamp_v1.dll 1ea78380..; v2 in place b35b398d.. (selftest_v2_r2.log:24-27); no VI edited",
+  "(3) dry run EXECUTED diag_c93b_leg.py x4 on saved 92-3 returns (clickprobe dicts, capture reads incl. held LVDChild -> release branch ran, leg2 .bin) 45/0 (diag_c93b_abba_dry.log)",
+  "(3) ABBA 8 picks normal 120 s, all 4 legs 8/8 first attempt: Lost A 14, 19; B 24, 43 (diag_c93b_abba.log:168); PD199(c) criterion not applied",
+  "(3) B tracking period median/p95 us 11156/12583 and 11175/12699; max 61.6/63.1 ms, both at iteration 1; no top-15 period at k*1024-1 (m8_flushfree8_93.json:449-773, 169-170 of log)",
+  "(3) B stamps tracking 11076/11064, display 2861/2859, #25380 3242/3240, overflow 0 all sites (t0_meta files); capture held before pick 1 only in A1, released by 1 click gui_actions.log:3671",
+  "(3) sequencer 45/0: frames delta 10657-10673, TMX 39, 0 TIFFs, LabVIEW gone each leg, camera 90 Hz, S1/t0/t0at/kswap/bed + v2 dll md5 unchanged; INDEX row 54 (archive/benchmarks/INDEX.md:75)"
+ ],
+ "open":[
+  "PD199(c) clearance on A 14/19 vs B 24/43 (B <= 2 x mean A + 20 = 53) is for judgement to apply",
+  "guard_peer blocked on diag_c93_wiretypes.log G5; review archive/peer/2026-09-26-c93b-g5-wiretypes.md (ANSWERED) says G5 was a hard-coded FAIL (diag_c93_wiretypes.py:79-80) and an offline pylabview typedesc route is untested; relabel?"
+ ],
+ "cost":{"usd":null,"minutes":50,"labview_runs":4},
+ "note":"opus material. Budget use 1: selftest_v2 run 1 FAIL gate B = own test bug (meta split on \\r\\n in text mode, diag_c93b_t0v2_selftest.log:20), fixed, run 2 PASS; no JEV-LADDER line. One hypothesis peer c93b-g5-wiretypes, disposition written. STATUS not edited."}

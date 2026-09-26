@@ -1,0 +1,33 @@
+BGRUN START 2026-09-26 10:29:09 limit 8.0 min: py -u tools/t0stamp/selftest_v2.py --install
+BGRUN PID 24300
+t0stamp.c
+t0stamp.c(40): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+t0stamp.c(60): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+t0stamp.c(67): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+t0stamp.c(71): warning C4996: '_snprintf': This function or variable may be unsafe. Consider using _snprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+   t0stamp.lib 라이브러리 및 t0stamp.exp 개체를 생성하고 있습니다.
+BUILD_RC=0
+ 'vswhere.exe'은(는) 내부 또는 외부 명령, 실행할 수 있는 프로그램, 또는
+배치 파일이 아닙니다.
+
+GATE S0 PASS rc=0 machine=0x8664 size=135168
+bench.c
+bench.c(32): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+BUILD_RC=0
+
+GATE S1 stamp() has no file I/O or lock PASS 388 chars
+BENCH n=120000 r64=1 rm1=1 
+GATE B PASS files=6 r64=1 rm1=1 ['s00 n=20000 inwin=True', 's02 n=20000 inwin=True', 's03 n=20000 inwin=True', 's04 n=20000 inwin=True', 's06 n=20000 inwin=True', 's08 n=20000 inwin=True'] meta=['0 20000 20000 0', '2 20000 20000 0', '3 20000 20000 0', '4 20000 20000 0', '6 20000 20000 0', '8 20000 20000 0']
+GATE O PASS stored=65536 meta='5 70000 65536 4464' rc2=4464
+GATE C PASS handles per round [126, 126, 126, 126, 126, 126, 126, 126, 126, 126]
+BENCH n=120000 r64=1 rm1=1 
+GATE I1 CLFN path(s) resolve to claudeDev\t0stamp.dll PASS [{'type': 0, 'comps': ['<userlib>', 'claudeDev', 't0stamp.dll']}, {'type': 0, 'comps': ['<userlib>', 'claudeDev', 't0stamp.dll']}]
+GATE I2 installed dll is v1 (1ea78380...) or already this v2 PASS 1ea78380385b4fdcc47abdf975633d77
+GATE I3 claudeDev t0stamp_v1.dll byte copy md5 1ea78380... PASS 1ea78380385b4fdcc47abdf975633d77
+GATE I4 v2 installed md5 == local build PASS b35b398d59b35743e2669d043f701fe6
+FACT dll md5=b35b398d59b35743e2669d043f701fe6 size=135168 machine=0x8664 compiler=MSVC 14.44.35207 x64 (BuildTools 2022) /O2 /MT /LD
+FACT v2 C-bench 6 sites x 20000 calls: {'n': 120000, 'qpc_hz': 10000000, 'median_ns': 0, 'p99_9_ns': 100, 'max_ns': 13600, 'calls_over_10us': 3}
+FACT v1 C-bench same shape (comparison, not gated): {'n': 120000, 'qpc_hz': 10000000, 'median_ns': 0, 'p99_9_ns': 2500, 'max_ns': 6048500, 'calls_over_10us': 118}
+FACT t0at VI CLFN library paths (read from VI bytes): [{'type': 0, 'comps': ['<userlib>', 'claudeDev', 't0stamp.dll']}, {'type': 0, 'comps': ['<userlib>', 'claudeDev', 't0stamp.dll']}]; raw 't0stamp.dll' occurrences 2
+RESULT {"schema":"result-line/1","status":"PASS","gates":{"pass":9,"fail":0},"first_fail":null,"artefacts":[{"path":"G:\\Codes\\LabVIEW_Codes\\MinLab\\zz_LabView VI\\AAA_UNIST\\2. Tracking\\V6_ParallelLoop\\tools\\t0stamp\\t0stamp.dll","md5":"b35b398d59b35743e2669d043f701fe6"}]}
+BGRUN END rc=0 after 5s

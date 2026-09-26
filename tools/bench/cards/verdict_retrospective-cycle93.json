@@ -1,0 +1,19 @@
+{
+ "schema": "verdict/1",
+ "id": "retrospective-cycle93",
+ "verdict": "none",
+ "alternative": "A structural fault would be the G5 constant-FAIL gate (diag_c93_wiretypes.py:79-80) buying review c93b-g5 ($1.1542) and blocking card 93-2 for ~3 min; it did not change what the cycle produced or when it ended in any material way.",
+ "discriminating_test": "Compare the cycle's end time with and without the 10:23:59-10:26:45 guard_peer block: card 93-2's first run at 10:27:37 vs ~10:24; retro at 11:15 vs ~11:12. A 3-minute, $1.15 delta on a delivered cycle is a finding.",
+ "violations": [],
+ "sources": [
+  "tools/bench/diag_c93b_flushalign.log:3-12",
+  "tools/bench/diag_c93b_abba.log:167",
+  "tools/bench/peer_93-h1.log:4",
+  "tools/bench/peer_c93b-g5-wiretypes.log:4",
+  "tools/bench/jev_gate.log:1373",
+  "tools/bench/cards/requires_93-1.json:2-4",
+  "docs/d1-loop12-17-split-plan.md:1259-1268",
+  "tools/bench/cards/guard_card.log:266"
+ ],
+ "note": "selftest_matbench.log and jev_gate.log in A1/A3 belong to chat card chat-N3 (bound 11:02:04), not cycle 93. A6 n-a is wrong: 81 authorised GUI lines in window. Clearance rests on n=2 per arm with B still ~2x A; PD201 drops the control arm."
+}
